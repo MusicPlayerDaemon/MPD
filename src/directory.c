@@ -102,7 +102,9 @@ Song * getSongDetails(char * file, char ** shortnameRet,
 		Directory ** directoryRet);
 
 int isUpdatingDB() {
-	if(directory_updatePid>0) return directory_updateJobId;
+	if(directory_updatePid>0 || directory_reReadDB) {
+		return directory_updateJobId;
+	}
 	return 0;
 }
 
