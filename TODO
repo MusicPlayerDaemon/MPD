@@ -1,6 +1,6 @@
 0.12
 ----
-*) cleanup list code and sorting
+*) rewrite linked list code!
 
 *) parsing of lame tags (including getting replaygain info)
 

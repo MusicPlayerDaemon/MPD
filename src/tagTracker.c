@@ -32,11 +32,9 @@ char * getTagItemString(int type, char * string) {
 	}
 
 	if(findNodeInList(tagLists[type], string, &node)) {
-		DEBUG("found\n");
 		((TagTrackerItem *)node->data)->count++;
 	}
 	else {
-		DEBUG("not found\n");
 		TagTrackerItem * item = malloc(sizeof(TagTrackerItem));
 		item->count = 1;
 		item->visited = 0;
@@ -44,7 +42,6 @@ char * getTagItemString(int type, char * string) {
 				item);
 	}
 
-	DEBUG("key: %s:%s\n", string, node->key);
 	return node->key;
 }
 
