@@ -259,8 +259,9 @@ static int alsa_openDevice(AudioOutput * audioOutput)
 
 	audioOutput->open = 1;
 
-	DEBUG("alsa device \"%s\" will be playing %i channel audio at %i Hz\n",
-			ad->device, channels, sampleRate);
+	DEBUG("alsa device \"%s\" will be playing %i bit, %i channel audio at "
+			"%i Hz\n", ad->device, (int)audioFormat->bits,
+			channels, sampleRate);
 
 	return 0;
 

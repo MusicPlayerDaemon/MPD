@@ -92,7 +92,9 @@ int sendDataToOutputBuffer(OutputBuffer * cb, InputStream * inStream,
 				&(cb->audioFormat),data);
 	}
 
-	doReplayGain(replayGainInfo, data, datalen, &cb->audioFormat);
+	if(replayGainInfo) {
+		doReplayGain(replayGainInfo, data, datalen, &cb->audioFormat);
+	}
 
         while(datalen) {
 		if(currentChunk != cb->end) {

@@ -482,8 +482,9 @@ static int oss_openDevice(AudioOutput * audioOutput)
 	audioFormat->sampleRate = od->sampleRate;
 	audioFormat->bits = od->bits;
 
-	DEBUG("oss device \"%s\" will be playing %i channel audio at %i Hz\n",
-			od->device, od->channels, od->sampleRate);
+	DEBUG("oss device \"%s\" will be playing %i bit %i channel audio at "
+			"%i Hz\n", od->device, od->bits,
+			od->channels, od->sampleRate);
 
 	return ret;
 }
