@@ -251,7 +251,7 @@ void changeToUser(Options * options) {
                  * (must be done before we change our uid)
                  */
                 if (initgroups(options->usr, gid) == -1) {
-                        ERROR("cannot init suplementary groups "
+                        WARNING("cannot init suplementary groups "
                                         "of user %s: %s\n", options->usr, 
                                         strerror(errno));
                 }
