@@ -19,10 +19,12 @@
 #include "sig_handlers.h"
 #include "player.h"
 #include "playlist.h"
+#include "directory.h"
 
 #include <signal.h>
 
 struct sigaction original_termSa;
+struct sigaction original_hupSa;
 
 void termSigHandler(int signal) {
 	if(signal==SIGTERM) {
@@ -33,6 +35,10 @@ void termSigHandler(int signal) {
 }
 
 void usr1SigHandler(int signal) {
+}
+
+void hupSigHandler(int signal) {
+	readDirectoryDB();
 }
 
 void initSigHandlers() {
@@ -46,12 +52,15 @@ void initSigHandlers() {
 	sigaction(SIGUSR1,&sa,NULL);
 	sa.sa_handler = player_sigHandler;
 	sigaction(SIGCHLD,&sa,NULL);
+	sa.sa_handler = hupSigHandler;
+	sigaction(SIGHUP,&sa,&original_hupSa);
 	sa.sa_handler = termSigHandler;
-	sigaddset(&sa.sa_mask,SIGTERM);
+	/*sigaddset(&sa.sa_mask,SIGTERM);*/
 	sigaction(SIGTERM,&sa,&original_termSa);
 }
 
 void finishSigHandlers() {
+	sigaction(SIGHUP,&original_termSa,NULL);
 	sigaction(SIGTERM,&original_termSa,NULL);
 }
 

@@ -191,9 +191,9 @@ void insertSongIntoList(SongList * list, ListNode ** nextSongNode, char * key,
 			tempSong->tag = song->tag;
 			tempSong->mtime = song->mtime;
 			song->tag = NULL;
-			freeJustSong(song);
 			addSongToTables(tempSong);
 		}
+		freeJustSong(song);
 		*nextSongNode = (*nextSongNode)->nextNode;
 	}
 	else {

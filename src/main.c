@@ -58,6 +58,7 @@ typedef struct _Options {
         char * dbFile;
         int daemon;
         int createDB;
+	int onlyCreateDB;
 } Options;
 
 void usage(char * argv[]) {
@@ -72,6 +73,7 @@ void usage(char * argv[]) {
         ERROR("   --help             this usage statement\n");
         ERROR("   --no-daemon        don't detach from console\n");
         ERROR("   --create-db        force (re)creation database\n");
+        ERROR("   --only-create-db   create database and exit\n");
         ERROR("   --no-create-db     don't create database\n");
         ERROR("   --verbose          verbose logging\n");
         ERROR("   --version          prints version information\n");
@@ -91,6 +93,7 @@ void parseOptions(int argc, char ** argv, Options * options) {
         options->usr = NULL;
         options->daemon = 1;
         options->createDB = 0;
+        options->onlyCreateDB = 0;
         options->dbFile = NULL;
 
         if(argc>1) {
@@ -107,6 +110,10 @@ void parseOptions(int argc, char ** argv, Options * options) {
                                 }
                                 else if(strcmp(argv[i],"--create-db")==0) {
                                         options->createDB = 1;
+                                        argcLeft--;
+                                }
+                                else if(strcmp(argv[i],"--only-create-db")==0) {
+                                        options->onlyCreateDB = 1;
                                         argcLeft--;
                                 }
                                 else if(strcmp(argv[i],"--no-create-db")==0) {
@@ -210,7 +217,7 @@ int main(int argc, char * argv[]) {
                 return EXIT_FAILURE;
         }
 
-        if((listenSocket = establish(port))<0) {
+        if(!options.onlyCreateDB && (listenSocket = establish(port))<0) {
                 ERROR("error binding port\n");
                 return EXIT_FAILURE;
         }
@@ -340,7 +347,8 @@ int main(int argc, char * argv[]) {
 		strncpy(directorydb,options.dbFile,MAXPATHLEN);
 		directorydb[MAXPATHLEN] = '\0';
 	}
-        if(options.createDB>0 || readDirectoryDB()<0) {
+        if(options.createDB>0 || options.onlyCreateDB || readDirectoryDB()<0) 
+	{
                 if(options.createDB<0) {
                         ERROR("can't open db file and using \"--no-create-db\""
                                         " command line option\n");
@@ -351,6 +359,7 @@ int main(int argc, char * argv[]) {
                         ERROR("problem opening db for reading or writing\n");
                         exit(EXIT_FAILURE);
                 }
+		if(options.onlyCreateDB) exit(EXIT_SUCCESS);
         }
 
         initCommands();

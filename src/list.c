@@ -88,6 +88,9 @@ int insertInListBeforeNode(List * list, ListNode * beforeNode, char * key,
 	}
 	else {
 		node->prevNode = beforeNode->prevNode;
+		if(node->prevNode) {
+			node->prevNode->nextNode = node;
+		}
 		beforeNode->prevNode = node;
 	}
 	

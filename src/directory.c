@@ -473,7 +473,7 @@ void readDirectoryInfo(FILE * fp,Directory * directory) {
 				nextDirNode = nodeTemp;
 			}
 
-			if(!nextDirNode) {
+			if(NULL==nextDirNode) {
 				subDirectory = newDirectory(directory,name,
 						mtime);
 				insertInList(directory->subDirectories,key,

@@ -103,6 +103,7 @@ int playerInit() {
 
 		sa.sa_handler = SIG_IGN;
 		sigaction(SIGPIPE,&sa,NULL);
+		sigaction(SIGHUP,&sa,NULL);
 		sa.sa_handler = decodeSigHandler;
 		sigaction(SIGCHLD,&sa,NULL);
 		sigaction(SIGTERM,&sa,NULL);
