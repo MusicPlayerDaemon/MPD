@@ -23,15 +23,33 @@
 #include "../conf.h"
 #include "../log.h"
 
+#include <CoreAudio/AudioHardware.h>
 #include <stdlib.h>
 
 typedef struct _OsxData {
+	AudioDeviceID	deviceID;
 } OsxData;
 
 static OsxData * newOsxData() {
 	OsxData * ret = malloc(sizeof(OsxData));
 
 	return ret;
+}
+
+static int osx_testDefault() {
+	int err;
+	AudioDeviceID deviceID;
+	UInt32 propertySize = sizeof(deviceID);
+
+	err = AudioHardwareGetProperty(
+			kAudioHardwarePropertyDefaultOutputDevice,
+			&propertySize, &deviceID);
+	if(err || deviceID == kAudioDeviceUnknown) {
+		WARNING("Not able to get the default OS X device\n");
+		return -1;
+	}
+
+	return 0;
 }
 
 static int osx_initDriver(AudioOutput * audioOutput, ConfigParam * param) {
@@ -79,7 +97,7 @@ static int osx_play(AudioOutput * audioOutput, char * playChunk, int size) {
 AudioOutputPlugin osxPlugin = 
 {
 	"osx",
-	NULL,
+	osx_testDefault,
 	osx_initDriver,
 	osx_finishDriver,
 	osx_openDevice,
