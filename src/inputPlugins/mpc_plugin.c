@@ -182,10 +182,10 @@ static int mpc_decode(OutputBuffer * cb, DecoderControl * dc,
 	getOutputAudioFormat(&(dc->audioFormat), &(cb->audioFormat));
 
 	replayGainInfo = newReplayGainInfo();
-	replayGainInfo->albumGain = info.gain_album;
+	/*replayGainInfo->albumGain = info.gain_album;
 	replayGainInfo->albumPeak = info.peak_album;
 	replayGainInfo->trackGain = info.gain_title;
-	replayGainInfo->trackPeak = info.peak_title;
+	replayGainInfo->trackPeak = info.peak_title;*/
 
 	dc->state = DECODE_STATE_DECODE;
 
