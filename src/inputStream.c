@@ -49,4 +49,8 @@ int closeInputStream(InputStream * inStream) {
 int inputStreamAtEOF(InputStream * inStream) {
         return inStream->atEOFFunc(inStream);
 }
+
+int bufferInputStream(InputStream * inStream) {
+        return inStream->bufferFunc(inStream);
+}
 /* vim:set shiftwidth=8 tabstop=8 expandtab: */

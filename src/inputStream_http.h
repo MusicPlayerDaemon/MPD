@@ -32,5 +32,7 @@ int inputStream_httpClose(InputStream * inStream);
 
 int inputStream_httpAtEOF(InputStream * inStream);
 
+int inputStream_httpBuffer(InputStream * inStream);
+
 #endif
 /* vim:set shiftwidth=8 tabstop=8 expandtab: */

@@ -29,6 +29,7 @@ typedef size_t (* InputStreamReadFunc) (InputStream * inStream, void * ptr, size
 		size_t nmemb);
 typedef int (* InputStreamCloseFunc) (InputStream * inStream);
 typedef int (* InputStreamAtEOFFunc) (InputStream * inStream);
+typedef int (* InputStreamBufferFunc) (InputStream * inStream);
 
 struct _InputStream {
 	int error;
@@ -42,6 +43,7 @@ struct _InputStream {
         InputStreamReadFunc readFunc;
         InputStreamCloseFunc closeFunc;
         InputStreamAtEOFFunc atEOFFunc;
+        InputStreamBufferFunc bufferFunc;
         void * data;
 };
 
@@ -51,6 +53,7 @@ int openInputStream(InputStream * inStream, char * url);
 int seekInputStream(InputStream * inStream, long offset, int whence);
 int closeInputStream(InputStream * inStream);
 int inputStreamAtEOF(InputStream * inStream);
+int bufferInputStream(InputStream * inStream);
 
 size_t readFromInputStream(InputStream * inStream, void * ptr, size_t size,
 		size_t nmemb);

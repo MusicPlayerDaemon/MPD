@@ -45,6 +45,7 @@ int inputStream_fileOpen(InputStream * inStream, char * filename) {
         inStream->closeFunc = inputStream_fileClose;
         inStream->readFunc = inputStream_fileRead;
         inStream->atEOFFunc = inputStream_fileAtEOF;
+        inStream->bufferFunc = inputStream_fileBuffer;
 
 	return 0;
 }
@@ -84,5 +85,9 @@ int inputStream_fileClose(InputStream * inStream) {
 
 int inputStream_fileAtEOF(InputStream * inStream) {
 	return feof((FILE *)inStream->data);
+}
+
+int inputStream_fileBuffer(InputStream * inStream) {
+        return 0;
 }
 /* vim:set shiftwidth=4 tabstop=8 expandtab: */

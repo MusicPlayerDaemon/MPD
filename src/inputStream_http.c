@@ -423,6 +423,7 @@ int inputStream_httpOpen(InputStream * inStream, char * url) {
         inStream->closeFunc = inputStream_httpClose;
         inStream->readFunc = inputStream_httpRead;
         inStream->atEOFFunc = inputStream_httpAtEOF;
+        inStream->bufferFunc = inputStream_httpBuffer;
 
         inStream->offset = 0;
         inStream->size = 0;
@@ -443,21 +444,8 @@ size_t inputStream_httpRead(InputStream * inStream, void * ptr, size_t size,
         InputStreamHTTPData * data = (InputStreamHTTPData *)inStream->data;
         int readed = 0;
         int inlen = size*nmemb;
-        fd_set readSet;
-        struct timeval tv;
-        int ret;
 
-        if(data->connState == HTTP_CONN_STATE_REOPEN) {
-                if(initHTTPConnection(inStream) < 0) return 0;
-        }
-
-        if(data->connState == HTTP_CONN_STATE_INIT) {
-                if(finishHTTPInit(inStream) < 0) return 0;
-        }
-
-        if(data->connState == HTTP_CONN_STATE_HELLO) {
-                if(getHTTPHello(inStream) < 0) return 0;
-        }
+        inputStream_httpBuffer(inStream);
 
         switch(data->connState) {
         case HTTP_CONN_STATE_OPEN:
@@ -465,41 +453,6 @@ size_t inputStream_httpRead(InputStream * inStream, void * ptr, size_t size,
                 break;
         default:
                 return 0;
-        }
-
-        if(data->connState == HTTP_CONN_STATE_OPEN &&
-                                data->buflen < HTTP_BUFFER_SIZE-1) 
-        {
-                FD_ZERO(&readSet);
-                FD_SET(data->sock, &readSet);
-
-                tv.tv_sec = 0;
-                tv.tv_usec = 0;
-
-                ret = select(data->sock+1,&readSet,NULL,NULL,&tv);
-                if(ret == 0 || (ret < 0 && errno == EINTR)) ret = 0;
-                else if(ret < 0) {
-                        data->connState = HTTP_CONN_STATE_CLOSED;
-                        close(data->sock);
-                        return 0;
-                }
-
-                if(ret == 1) {
-                        readed = recv(data->sock, 
-                        data->buffer+data->buflen, 
-                        HTTP_BUFFER_SIZE-1-data->buflen, 0);
-
-                        if(readed < 0 && (errno == EAGAIN || 
-                                        errno == EINTR)) 
-                        {
-                                readed = 0;
-                        }
-                        else if(readed <= 0) {
-                                close(data->sock);
-                                data->connState = HTTP_CONN_STATE_CLOSED;
-                        }
-                        else data->buflen += readed;
-                }
         }
 
         readed = inlen > data->buflen ? data->buflen : inlen;
@@ -537,5 +490,70 @@ int inputStream_httpAtEOF(InputStream * inStream) {
         default:
                 return 0;
         }
+}
+
+int inputStream_httpBuffer(InputStream * inStream) {
+        InputStreamHTTPData * data = (InputStreamHTTPData *)inStream->data;
+        int readed = 0;
+        fd_set readSet;
+        struct timeval tv;
+        int ret;
+
+        if(data->connState == HTTP_CONN_STATE_REOPEN) {
+                if(initHTTPConnection(inStream) < 0) return -1;
+        }
+
+        if(data->connState == HTTP_CONN_STATE_INIT) {
+                if(finishHTTPInit(inStream) < 0) return -1;
+        }
+
+        if(data->connState == HTTP_CONN_STATE_HELLO) {
+                if(getHTTPHello(inStream) < 0) return -1;
+        }
+
+        switch(data->connState) {
+        case HTTP_CONN_STATE_OPEN:
+        case HTTP_CONN_STATE_CLOSED:
+                break;
+        default:
+                return -1;
+        }
+
+        if(data->connState == HTTP_CONN_STATE_OPEN &&
+                                data->buflen < HTTP_BUFFER_SIZE-1) 
+        {
+                FD_ZERO(&readSet);
+                FD_SET(data->sock, &readSet);
+
+                tv.tv_sec = 0;
+                tv.tv_usec = 0;
+
+                ret = select(data->sock+1,&readSet,NULL,NULL,&tv);
+                if(ret == 0 || (ret < 0 && errno == EINTR)) ret = 0;
+                else if(ret < 0) {
+                        data->connState = HTTP_CONN_STATE_CLOSED;
+                        close(data->sock);
+                        return 0;
+                }
+
+                if(ret == 1) {
+                        readed = recv(data->sock, 
+                        data->buffer+data->buflen, 
+                        HTTP_BUFFER_SIZE-1-data->buflen, 0);
+
+                        if(readed < 0 && (errno == EAGAIN || 
+                                        errno == EINTR)) 
+                        {
+                                readed = 0;
+                        }
+                        else if(readed <= 0) {
+                                close(data->sock);
+                                data->connState = HTTP_CONN_STATE_CLOSED;
+                        }
+                        else data->buflen += readed;
+                }
+        }
+
+        return 0;
 }
 /* vim:set shiftwidth=8 tabstop=8 expandtab: */
