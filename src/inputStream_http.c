@@ -405,7 +405,7 @@ static int getHTTPHello(InputStream * inStream) {
 
         data->connState = HTTP_CONN_STATE_OPEN;
 
-	data->prebuffer = 1;
+	/*data->prebuffer = 1;*/
 
         return 0;
 }
