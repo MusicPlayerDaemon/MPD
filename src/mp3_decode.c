@@ -37,6 +37,7 @@
 #include "log.h"
 #include "utils.h"
 #include "inputStream.h"
+#include "outputBuffer.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -111,13 +112,15 @@ signed long audio_linear_dither(unsigned int bits, mad_fixed_t sample, struct au
 
 /* decoder stuff is based on madlld */
 
+#define MP3_DATA_OUTPUT_BUFFER_SIZE 4096
+
 typedef struct _mp3DecodeData {
 	struct mad_stream stream;
 	struct mad_frame frame;
 	struct mad_synth synth;
 	mad_timer_t timer;
 	unsigned char readBuffer[READ_BUFFER_SIZE];
-	char outputBuffer[CHUNK_SIZE];
+	char outputBuffer[MP3_DATA_OUTPUT_BUFFER_SIZE];
 	char * outputPtr;
 	char * outputBufferEnd;
 	float totalTime;
@@ -141,7 +144,7 @@ int initMp3DecodeData(mp3DecodeData * data, char * file) {
 	if(ret<0) return -1;
 
 	data->outputPtr = data->outputBuffer;
-	data->outputBufferEnd = data->outputBuffer+CHUNK_SIZE;
+	data->outputBufferEnd = data->outputBuffer+MP3_DATA_OUTPUT_BUFFER_SIZE;
 	data->muteFrame = 0;
 	data->highestFrame = 0;
 	data->maxFrames = 0;
@@ -406,29 +409,7 @@ int openMp3(char * file, mp3DecodeData * data) {
 	return 0;
 }
 
-int mp3ChildSendData(mp3DecodeData * data, Buffer * cb, DecoderControl * dc) {
-	while(cb->begin==cb->end && cb->wrap && !dc->stop && !dc->seek) 
-		my_usleep(10000);
-	if(dc->stop) return -1;
-	/* just for now, so it doesn't hang */
-	if(dc->seek) return 0;
-	/* be sure to remove this! */
-
-	memcpy(cb->chunks+cb->end*CHUNK_SIZE,data->outputBuffer,CHUNK_SIZE);
-	cb->chunkSize[cb->end] = data->outputPtr-data->outputBuffer;
-	cb->bitRate[cb->end] = data->bitRate/1000;
-	cb->times[cb->end] = data->elapsedTime;
-
-	cb->end++;
-	if(cb->end>=buffered_chunks) {
-		cb->end = 0;
-		cb->wrap = 1;
-	}
-
-	return 0;
-}
-
-int mp3Read(mp3DecodeData * data, Buffer * cb, DecoderControl * dc) {
+int mp3Read(mp3DecodeData * data, OutputBuffer * cb, DecoderControl * dc) {
 	static int i;
 	static int ret;
 	static struct audio_dither dither;
@@ -464,6 +445,8 @@ int mp3Read(mp3DecodeData * data, Buffer * cb, DecoderControl * dc) {
 		}
 	}
 	else {
+                long ret;
+            
 		mad_synth_frame(&data->synth,&data->frame);
 
 		for(i=0;i<(data->synth).pcm.length;i++) {
@@ -484,12 +467,24 @@ int mp3Read(mp3DecodeData * data, Buffer * cb, DecoderControl * dc) {
 			}
 
 			if(data->outputPtr==data->outputBufferEnd) {
-				if(mp3ChildSendData(data,cb,dc)<0) {
-					data->flush = 0;
-					return DECODE_BREAK;
-				}
-				data->outputPtr = data->outputBuffer;
-				if(dc->seek) break;
+                                ret = sendDataToOutputBuffer(cb,dc,
+                                                0,data->outputBuffer,
+                                                MP3_DATA_OUTPUT_BUFFER_SIZE,
+                                                data->elapsedTime,
+                                                data->bitRate/1000);
+                                if(ret == OUTPUT_BUFFER_DC_STOP) {
+                                        return DECODE_BREAK;
+                                }
+                                if(ret >= 0) {
+                                        memmove(data->outputBuffer,
+                                                data->outputBuffer+ret,
+                                                MP3_DATA_OUTPUT_BUFFER_SIZE-
+                                                ret);
+                                        data->outputPtr-=ret;
+                                }
+                                else data->outputPtr = data->outputBuffer;
+
+                                if(ret == OUTPUT_BUFFER_DC_SEEK) break;
 			}
 		}
 
@@ -534,7 +529,7 @@ void initAudioFormatFromMp3DecodeData(mp3DecodeData * data, AudioFormat * af) {
 	af->channels = MAD_NCHANNELS(&(data->frame).header);
 }
 
-int mp3_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc) {
+int mp3_decode(OutputBuffer * cb, AudioFormat * af, DecoderControl * dc) {
 	mp3DecodeData data;
 
 	if(openMp3(dc->file,&data) < 0) {
@@ -550,7 +545,9 @@ int mp3_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc) {
 	while(mp3Read(&data,cb,dc)!=DECODE_BREAK);
 	/* send last little bit if not dc->stop */
 	if(data.outputPtr!=data.outputBuffer && data.flush)  {
-		mp3ChildSendData(&data,cb,dc);
+        	sendDataToOutputBuffer(cb,dc,1,data.outputBuffer,
+                                data.outputPtr-data.outputBuffer,
+                                data.elapsedTime,data.bitRate/1000);
 	}
 
 	mp3DecodeDataFinalize(&data);
@@ -567,4 +564,4 @@ int mp3_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc) {
 }
 
 #endif
-/* vim:set shiftwidth=4 tabstop=8 expandtab: */
+/* vim:set shiftwidth=8 tabstop=8 expandtab: */

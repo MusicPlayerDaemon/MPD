@@ -16,21 +16,30 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef MP3_DECODE_H
-#define MP3_DECODE_H
+#ifndef OUTPUT_BUFFER_H
+#define OUTPUT_BUFFER_H
 
-#include "../config.h"
+#include "mpd_types.h"
+#include "decode.h"
 
-#ifdef HAVE_MAD
+#define OUTPUT_BUFFER_DC_STOP   -1
+#define OUTPUT_BUFFER_DC_SEEK   -2
 
-#include "playerData.h"
+typedef struct _OutputBuffer {
+	char * volatile chunks;
+	mpd_uint16 * volatile chunkSize;
+	mpd_uint16 * volatile bitRate;
+	float * volatile times;
+	mpd_sint16 volatile begin;
+	mpd_sint16 volatile end;
+	mpd_sint16 volatile next;
+	mpd_sint8 volatile wrap;
+	float totalTime;
+} OutputBuffer;
 
-/* this is primarily used in tag.c */
-int getMp3TotalTime(char * file);
-
-int mp3_decode(OutputBuffer * cb, AudioFormat * af, DecoderControl * dc);
-
-#endif
+long sendDataToOutputBuffer(OutputBuffer * cb, DecoderControl * dc, 
+               int flushAllData, char * data, long datalen, float time, 
+               mpd_uint16 bitRate);
 
 #endif
 /* vim:set shiftwidth=4 tabstop=8 expandtab: */

@@ -51,7 +51,7 @@ int getAudiofileTotalTime(char * file)
 	return time;
 }
 
-int audiofile_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc)
+int audiofile_decode(OutputBuffer * cb, AudioFormat * af, DecoderControl * dc)
 {
 	int fs, frame_count;
 	AFfilehandle af_fp;

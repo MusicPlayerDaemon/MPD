@@ -112,7 +112,7 @@ int calculateCrossFadeChunks(PlayerControl * pc, AudioFormat * af) {
 }
 
 int waitOnDecode(PlayerControl * pc, AudioFormat * af, DecoderControl * dc,
-		Buffer * cb) 
+		OutputBuffer * cb) 
 {
 	while(decode_pid && *decode_pid>0 && dc->start) my_usleep(1000);
 
@@ -143,7 +143,7 @@ int waitOnDecode(PlayerControl * pc, AudioFormat * af, DecoderControl * dc,
 }
 
 void decodeSeek(PlayerControl * pc, AudioFormat * af, DecoderControl * dc, 
-		Buffer * cb) 
+		OutputBuffer * cb) 
 {
 	if(decode_pid && *decode_pid>0) {
 		cb->next = -1;
@@ -217,7 +217,7 @@ void decodeSeek(PlayerControl * pc, AudioFormat * af, DecoderControl * dc,
 		return; \
 	}
 
-int decoderInit(PlayerControl * pc, Buffer * cb, AudioFormat *af, 
+int decoderInit(PlayerControl * pc, OutputBuffer * cb, AudioFormat *af, 
 			DecoderControl * dc) {
 	int pid;
 	int ret; 
@@ -311,7 +311,7 @@ int decoderInit(PlayerControl * pc, Buffer * cb, AudioFormat *af,
  * parent process does playing audio
  */
 void decode() {
-	Buffer * cb;
+	OutputBuffer * cb;
 	PlayerControl * pc;
 	AudioFormat * af;
 	DecoderControl * dc;

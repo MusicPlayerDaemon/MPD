@@ -39,7 +39,7 @@ void initPlayerData() {
 	int crossfade = 0;
 	size_t bufferSize;
 	size_t allocationSize;
-	Buffer * buffer;
+	OutputBuffer * buffer;
 
 	bufferSize = strtol(getConf()[CONF_BUFFER_SIZE],&test,10);
 	if(*test!='\0' || bufferSize<=0) {

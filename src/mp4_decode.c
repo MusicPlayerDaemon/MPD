@@ -84,7 +84,7 @@ uint32_t mp4_inputStreamSeekCallback(void *inStream, uint64_t position) {
 }       
 		    
 
-int mp4_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc) {
+int mp4_decode(OutputBuffer * cb, AudioFormat * af, DecoderControl * dc) {
 	mp4ff_t * mp4fh;
 	mp4ff_callback_t * mp4cb; 
 	int32_t track;

@@ -37,7 +37,7 @@ typedef struct {
 	float time;
 	int bitRate;
 	FLAC__uint64 position;
-	Buffer * cb;
+	OutputBuffer * cb;
 	AudioFormat * af;
 	DecoderControl * dc;
         char * file;
@@ -65,7 +65,7 @@ FLAC__SeekableStreamDecoderLengthStatus flacLength(
                 const FLAC__SeekableStreamDecoder *, FLAC__uint64 *, void *);
 FLAC__bool flacEOF(const FLAC__SeekableStreamDecoder *, void *);
 
-void flacPlayFile(char *file, Buffer * cb, AudioFormat * af, 
+void flacPlayFile(char *file, OutputBuffer * cb, AudioFormat * af, 
 	DecoderControl *dc)
 {
 	FLAC__SeekableStreamDecoder * flacDec;
@@ -392,7 +392,7 @@ int getFlacTotalTime(char * file) {
 	return (int)(totalTime+0.5);
 }
 
-int flac_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc) {
+int flac_decode(OutputBuffer * cb, AudioFormat * af, DecoderControl * dc) {
 	if(flac_getAudioFormatAndTime(dc->file,af,&(cb->totalTime))<0) {
 		ERROR("\"%s\" doesn't seem to be a flac\n",dc->file);
 		return -1;

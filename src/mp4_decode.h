@@ -29,7 +29,7 @@
 
 int mp4_getAACTrack(mp4ff_t *infile);
 
-int mp4_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc);
+int mp4_decode(OutputBuffer * cb, AudioFormat * af, DecoderControl * dc);
 
 uint32_t mp4_inputStreamReadCallback(void *inStream, void *buffer, 
 	uint32_t length);

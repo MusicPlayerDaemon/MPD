@@ -25,6 +25,7 @@
 #include "player.h"
 #include "decode.h"
 #include "mpd_types.h"
+#include "outputBuffer.h"
 
 /* pick 1020 since its devisible for 8,16,24, and 32-bit audio */
 #define CHUNK_SIZE		1020
@@ -32,20 +33,8 @@
 extern int buffered_before_play;
 extern int buffered_chunks;
 
-typedef struct _Buffer {
-	char * volatile chunks;
-	mpd_uint16 * volatile chunkSize;
-	mpd_uint16 * volatile bitRate;
-	float * volatile times;
-	mpd_sint16 volatile begin;
-	mpd_sint16 volatile end;
-	mpd_sint16 volatile next;
-	mpd_sint8 volatile wrap;
-	float totalTime;
-} Buffer;
-
 typedef struct _PlayerData {
-	Buffer buffer;
+	OutputBuffer buffer;
 	AudioFormat audioFormat;
 	PlayerControl playerControl;
 	DecoderControl decoderControl;
@@ -54,7 +43,6 @@ typedef struct _PlayerData {
 void initPlayerData();
 
 PlayerData * getPlayerData();
-Buffer * getBuffer();
 
 void freePlayerData();
 

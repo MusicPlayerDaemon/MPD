@@ -250,7 +250,7 @@ int getAacTotalTime(char * file) {
 }
 
 
-int aac_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc) {
+int aac_decode(OutputBuffer * cb, AudioFormat * af, DecoderControl * dc) {
 	float time;
 	float totalTime;
 	faacDecHandle decoder;

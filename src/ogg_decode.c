@@ -82,7 +82,7 @@ long ogg_tell_cb(void * inStream) {
 	return ((InputStream *)inStream)->offset;
 }
 
-int ogg_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc)
+int ogg_decode(OutputBuffer * cb, AudioFormat * af, DecoderControl * dc)
 {
 	OggVorbis_File vf;
 	ov_callbacks callbacks;

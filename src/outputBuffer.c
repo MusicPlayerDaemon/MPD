@@ -20,17 +20,13 @@
 
 #include "pcm_utils.h"
 #include "playerData.h"
-#include "log.h"
 #include "utils.h"
 
 #include <string.h>
-#include <errno.h>
 
-#define OUTPUT_BUFFER_DC_STOP   -1
-#define OUTPUT_BUFFER_DC_SEEK   -2
-
-long sendDataToOutputBuffer(Buffer * cb, DecoderControl * dc, int flushAllData,
-                char * data, long datalen, float time, mpd_uint16 bitRate)
+long sendDataToOutputBuffer(OutputBuffer * cb, DecoderControl * dc, 
+                int flushAllData, char * data, long datalen, float time, 
+		mpd_uint16 bitRate)
 {
         long dataSent = 0;
         long dataToSend;
