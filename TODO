@@ -15,6 +15,7 @@
 *) state
 	*) abstract out state code from playlist.c
 	*) save states of audioOutput devices
+	*) put MPD Version in statefile
 
 *) put more debugging info when failing to read/write db and other similar 
 	errors

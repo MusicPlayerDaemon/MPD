@@ -151,7 +151,8 @@ static int establishListen(unsigned int port, ConfigParam * param) {
 	}
 
 	if(bind(sock,addrp,addrlen)<0) {
-		ERROR("unable to bind port %i: %s\n", port, strerror(errno));
+		ERROR("unable to bind port %i (for address at line %i): %s\n", 
+				port, param->line, strerror(errno));
 		ERROR("maybe MPD is still running?\n");
 		exit(EXIT_FAILURE);
 	}
