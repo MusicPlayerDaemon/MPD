@@ -70,10 +70,12 @@ error_file 		"~/mpd.error"
 #audio_write_size	"1024"
 ##################################
 
+
 #### OUTPUT BUFFER SETTINGS ######
 #buffer_size		"2048"
 #buffer_before_play 	"25%"
 ##################################
+
 
 ########### SECURITY SETTINGS ############
 # if you start mpd as root, its recmmoned
@@ -92,6 +94,7 @@ error_file 		"~/mpd.error"
 #     given by for a connection/client.
 #default_permissions	"read,add,control,admin"
 ##########################################
+
 
 ########### MISC OPTIONS #################
 #max_playlist_length 	"4096"
