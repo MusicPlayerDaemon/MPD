@@ -343,11 +343,18 @@ int decodeFirstFrame(mp3DecodeData * data) {
 		}
 	}
 	else {
+		size_t offset = data->currentOffset;
 		mad_timer_t duration = data->frame.header.duration;
 		float frameTime = ((float)mad_timer_count(duration,
 					MAD_UNITS_MILLISECONDS))/1000;
 		fstat(fileno(data->fp),&filestat);
-		data->totalTime = (filestat.st_size*8.0)/
+		if(data->stream.this_frame!=NULL) {
+			offset-= data->stream.bufend-data->stream.this_frame;
+		}
+		else {
+			offset-= data->stream.bufend-data->stream.buffer;
+		}
+		data->totalTime = ((filestat.st_size-offset)*8.0)/
 					(data->frame).header.bitrate;
 		data->maxFrames = data->totalTime/frameTime+FRAMES_CUSHION;
 	}
