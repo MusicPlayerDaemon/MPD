@@ -17,27 +17,28 @@ pid_file 		"~/.mpd/mpd.pid"
 
 ################## AUDIO OUTPUT ##########################
 #
-# libao (ao_driver) supports any of the following:
-# Refer to libao documentation for more information
-#
-audio_output {
-# Use default settings
-	type		"ao"
-	name		"default ao output"
-#
 # use this if you want to use OSS audio output
+#audio_output {
 #	type		"oss"
 #	name		"my OSS sound card"
 #	device	 	"/dev/dsp" # optional
 #	format		"44100:16:2" #optional
+#} 
 #
 # use this if you want to use ALSA audio output
+#audio_output {
 #	type		"alsa"
 #	name		"my ALSA device"
 #	device		"hw:0,0" # optional
 #	format		"44100:16:2" #optional
+#} 
 #
-} # end of audio_output "ao"
+# as a last resort, try using libao
+#audio_output {
+#	type		"ao"
+#	name		"default ao output"
+#} 
+#
 #
 # Set this if you have problems 
 # playing audio files.
