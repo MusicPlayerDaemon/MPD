@@ -242,7 +242,7 @@ int decoderInit(PlayerControl * pc, Buffer * cb, AudioFormat *af,
 				dc->stop = 0;
 			}
 			else if(dc->seek) dc->start = 1;
-			else usleep(1000);
+			else usleep(10000);
 		}
 
 		exit(0);
@@ -311,7 +311,7 @@ void decode() {
 		{
 			processDecodeInput();
 			if(quit) return;
-			usleep(100);
+			usleep(1000);
 		}
 
 		while(!quit) {
@@ -458,7 +458,7 @@ void decode() {
 				quit = 1;
 				break;
 			}
-			else usleep(10);
+			else usleep(1000);
 		}
 
 		pc->totalPlayTime+= pc->elapsedTime-pc->beginTime; \

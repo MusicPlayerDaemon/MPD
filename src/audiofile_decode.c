@@ -99,7 +99,7 @@ int audiofile_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc)
 			else {
 				while(cb->begin==cb->end && cb->wrap &&
 						!dc->stop && !dc->seek){
-					usleep(1000);
+					usleep(10000);
 				}
 				if(dc->stop) break;
 				else if(dc->seek) continue;

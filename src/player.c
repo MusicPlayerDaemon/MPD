@@ -134,7 +134,7 @@ int playerInit() {
 				pc->queueLockState = PLAYER_QUEUE_UNLOCKED;
 				pc->unlockQueue = 0;
 			}
-			else usleep(1000);
+			else usleep(10000);
 		}
 
 		exit(0);

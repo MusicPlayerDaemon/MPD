@@ -181,7 +181,7 @@ int flacSendChunk(FlacData * data) {
 	while(data->cb->begin==data->cb->end && data->cb->wrap && 
 		!data->dc->stop && !data->dc->seek)  
 	{
-		usleep(1000);
+		usleep(10000);
 	}
 
 	if(data->dc->stop) return -1;
