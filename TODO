@@ -11,10 +11,6 @@
 	*) command for displaying playlist contents
 	*) command for appending to playlist
 
-*) use getaddrinfo instead of gethostbyname (check libshout)
-
-*) have children ignore SIGHUP
-
 *) put more debugging info when failing to read/write db and other similar 
 	errors
 

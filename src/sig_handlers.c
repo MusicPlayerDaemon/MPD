@@ -25,6 +25,7 @@
 #include "signal_check.h"
 #include "log.h"
 #include "player.h"
+#include "decode.h"
 
 #include <signal.h>
 #include <sys/types.h>
@@ -87,6 +88,21 @@ void finishSigHandlers() {
         signal_unhandle(SIGUSR1);
         signal_unhandle(SIGTERM);
         signal_unhandle(SIGHUP);
+}
+
+void setSigHandlersForDecoder() {
+	struct sigaction sa;
+
+	finishSigHandlers();
+
+	sa.sa_flags = 0;
+	sigemptyset(&sa.sa_mask);
+	sa.sa_handler = SIG_IGN;
+	while(sigaction(SIGHUP,&sa,NULL)<0 && errno==EINTR);
+	sa.sa_handler = decodeSigHandler;
+	while(sigaction(SIGCHLD,&sa,NULL)<0 && errno==EINTR);
+	while(sigaction(SIGTERM,&sa,NULL)<0 && errno==EINTR);
+	while(sigaction(SIGINT,&sa,NULL)<0 && errno==EINTR);
 }
 
 void ignoreSignals() {

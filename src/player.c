@@ -105,20 +105,12 @@ int playerInit() {
 	player_pid = fork();
 	if(player_pid==0) {
 		PlayerControl * pc = &(getPlayerData()->playerControl);
-		struct sigaction sa;
 
 		clearUpdatePid();
 
 		unblockSignals();
 
-		sa.sa_flags = 0;
-		sigemptyset(&sa.sa_mask);
-
-		finishSigHandlers();
-		sa.sa_handler = decodeSigHandler;
-		while(sigaction(SIGCHLD,&sa,NULL)<0 && errno==EINTR);
-		while(sigaction(SIGTERM,&sa,NULL)<0 && errno==EINTR);
-		while(sigaction(SIGINT,&sa,NULL)<0 && errno==EINTR);
+		setSigHandlersForDecoder();
 
 		while(close(listenSocket)<0 && errno==EINTR);
 		freeAllInterfaces();

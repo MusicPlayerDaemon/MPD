@@ -27,6 +27,8 @@ void initSigHandlers();
 
 void finishSigHandlers();
 
+void setSigHandlersForDecoder();
+
 void ignoreSignals();
 
 void blockSignals();
