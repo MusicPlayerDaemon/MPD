@@ -25,13 +25,75 @@
 
 #include <CoreAudio/AudioHardware.h>
 #include <stdlib.h>
+#include <pthread.h>
+
+#define BUFFER_SIZE 1024
 
 typedef struct _OsxData {
-	AudioDeviceID	deviceID;
+	AudioDeviceID deviceID;
+	AudioStreamBasicDescription streamDesc;
+	pthread_mutex_t	mutex;
+	pthread_cond_t condition;
+	Float32 buffer[BUFFER_SIZE];
+	int pos;
+	int len;
+	int go;
+	int started;
 } OsxData;
+
+static void printError(OSStatus val) {
+	switch(val) {
+	case kAudioHardwareNoError:
+		ERROR("kAudioHardwareNoErr");
+		break;
+	case kAudioHardwareNotRunningError:
+		ERROR("kAudioHardwareNotRunningError");
+		break;
+	case kAudioHardwareUnspecifiedError:
+		ERROR("kAudioHardwareUnspecifiedError");
+		break;
+	case kAudioHardwareUnknownPropertyError:
+		ERROR("kAudioHardwareUnknownPropertyError");
+		break;
+	case kAudioHardwareBadPropertySizeError:
+		ERROR("kAudioHardwareBadPropertySizeError");
+		break;
+	case kAudioHardwareIllegalOperationError:
+		ERROR("kAudioHardwareIllegalOperationError");
+		break;
+	case kAudioHardwareBadDeviceError:
+		ERROR("kAudioHardwareBadDeviceError");
+		break;
+	case kAudioHardwareBadStreamError:
+		ERROR("kAudioHardwareBadStreamError");
+		break;
+	case kAudioHardwareUnsupportedOperationError:
+		ERROR("kAudioHardwareUnsupportedOperationError");
+		break;
+	case kAudioDeviceUnsupportedFormatError:
+		ERROR("kAudioDeviceUnsupportedFormatError");
+		break;
+	case kAudioDevicePermissionsError:
+		ERROR("kAudioDevicePermissionsError");
+		break;
+	default:
+		ERROR("unknown");
+		break;
+	}
+}
 
 static OsxData * newOsxData() {
 	OsxData * ret = malloc(sizeof(OsxData));
+
+	ret->deviceID = kAudioDeviceUnknown;
+
+	pthread_mutex_init(&ret->mutex, NULL);
+	pthread_cond_init(&ret->condition, NULL);
+
+	ret->pos = 0;
+	ret->len = 0;
+	ret->go = 0;
+	ret->started = 0;
 
 	return ret;
 }
@@ -79,18 +141,198 @@ static void osx_closeDevice(AudioOutput * audioOutput) {
 	audioOutput->open = 0;
 }
 
+static OSStatus osx_IOProc(AudioDeviceID deviceID, 
+	const AudioTimeStamp * inNow, const AudioBufferList *inData,
+	const AudioTimeStamp * inInputTime, AudioBufferList *outData,
+	const AudioTimeStamp * inOutputTime, void * vdata)
+{
+	OsxData * od = (OsxData *)vdata;
+	AudioBuffer * buffer = &outData->mBuffers[0];
+	int bufferSize = buffer->mDataByteSize/sizeof(Float32);
+	int floatsToCopy;
+	int curpos = 0;
+
+	DEBUG("entering IOProc\n");
+
+	pthread_mutex_lock(&od->mutex);
+
+	while((od->go || od->len) && bufferSize) {
+		while(od->go && od->len < bufferSize && 
+				od->len < BUFFER_SIZE)
+		{
+			pthread_cond_wait(&od->condition, &od->mutex);
+		}
+
+		floatsToCopy = od->len < bufferSize ? od->len : bufferSize;
+		bufferSize -= floatsToCopy;
+
+		if(od->pos+floatsToCopy > BUFFER_SIZE) {
+			int floats = BUFFER_SIZE-od->pos;
+			memcpy(buffer->mData+curpos, od->buffer+od->pos, 
+					floats*sizeof(Float32));
+			od->len -= floats;
+			od->pos = 0;
+			curpos += floats;
+			floatsToCopy -= floats;
+		}
+
+		memcpy(buffer->mData+curpos, od->buffer+od->pos, 
+				floatsToCopy*sizeof(Float32));
+		od->len -= floatsToCopy;
+		od->pos += floatsToCopy;
+		curpos += floatsToCopy;
+	}
+
+	if(bufferSize) {
+		memset(buffer->mData+curpos, 0, bufferSize*sizeof(Float32));
+	}
+
+	pthread_mutex_unlock(&od->mutex);
+	pthread_cond_signal(&od->condition);
+
+	DEBUG("exiting IOProc\n");
+
+	return 0;
+}
+
 static int osx_openDevice(AudioOutput * audioOutput) {
-	//OsxData * od = (OsxData *)audioOutput->data;
+	int err;
+	OsxData * od = (OsxData *)audioOutput->data;
+	UInt32 propertySize;
+	AudioFormat * audioFormat = &audioOutput->outAudioFormat;
+	UInt32 bufferByteCount = 8192;
+
+	propertySize = sizeof(od->deviceID);
+	err = AudioHardwareGetProperty(
+			kAudioHardwarePropertyDefaultOutputDevice,
+			&propertySize, &od->deviceID);
+	if(err || od->deviceID == kAudioDeviceUnknown) {
+		ERROR("Not able to get the default OS X device\n");
+		return -1;
+	}
+
+	od->streamDesc.mFormatID = kAudioFormatLinearPCM;
+	od->streamDesc.mSampleRate = audioFormat->sampleRate;
+	od->streamDesc.mFormatFlags = kLinearPCMFormatFlagIsFloat |
+				      kLinearPCMFormatFlagIsBigEndian |
+				      kLinearPCMFormatFlagIsPacked;
+	od->streamDesc.mBytesPerPacket = audioFormat->channels*sizeof(Float32);
+	od->streamDesc.mFramesPerPacket = 1;
+	od->streamDesc.mBytesPerFrame = audioFormat->channels*sizeof(Float32);
+	od->streamDesc.mChannelsPerFrame = audioFormat->channels;
+	od->streamDesc.mBitsPerChannel = 8 * sizeof(Float32);
+
+	audioFormat->bits = 16;
+
+	propertySize = sizeof(od->streamDesc);
+	err = AudioDeviceSetProperty(od->deviceID, 0, 0, false, 
+			kAudioDevicePropertyStreamFormat,
+			propertySize, &od->streamDesc);
+	if(err) {
+		ERROR("unable to set format %i:%i:% on osx device\n",
+				(int)audioFormat->sampleRate,
+				(int)audioFormat->bits,
+				(int)audioFormat->channels);
+		return -1;
+	}
+
+	propertySize = sizeof(UInt32);
+	err = AudioDeviceSetProperty(od->deviceID, 0, 0, false, 
+			kAudioDevicePropertyBufferSize,
+        		propertySize, &bufferByteCount);
+
+	err = AudioDeviceAddIOProc(od->deviceID, osx_IOProc, od);
+	if(err) {
+		ERROR("error adding IOProc\n");
+		return -1;
+	}
+
+	od->go = 1;
+	od->pos = 0;
+	od->len = 0;
 
 	audioOutput->open = 1;
 
 	return 0;
 }
 
+static void copyIntBufferToFloat(char * playChunk, int size, float * buffer,
+		int floats) 
+{
+	/* this is for 16-bit audio only */
+	SInt16 * sample;
+
+	while(floats) {
+		sample = (SInt16 *)playChunk;
+		*buffer = *sample/32767.0;
+		playChunk += 2;
+		buffer++;
+		floats--;
+	}
+}
 
 static int osx_play(AudioOutput * audioOutput, char * playChunk, int size) {
-	//OsxData * od = (OsxData *)audioOutput->data;
+	OsxData * od = (OsxData *)audioOutput->data;
+	int floatsToCopy;
 
+	size /= 2;
+
+	DEBUG("entering osx_play\n");
+
+	pthread_mutex_lock(&od->mutex);
+
+	DEBUG("entering while loop\n");
+	while(size) {
+		DEBUG("iterating loop with size = %i\n", size);
+		while(od->len == BUFFER_SIZE) {
+			if(!od->started) {
+				OSStatus err = AudioDeviceStart(od->deviceID,
+							osx_IOProc);
+				DEBUG("start audio device\n");
+				if(err) {
+					printError(err);
+					ERROR(" error doing AudioDeviceStart "
+							"for osx device: %i\n",
+							(int)err);
+					pthread_mutex_unlock(&od->mutex);
+					return -1;
+				}
+				od->started = 1;
+				DEBUG("audio device started\n");
+			}
+
+			DEBUG("cond_wait\n");
+			pthread_cond_wait(&od->condition, &od->mutex);
+		}
+
+		floatsToCopy = BUFFER_SIZE - od->len;
+		floatsToCopy = floatsToCopy < size ? floatsToCopy : size;
+		size -= floatsToCopy;
+
+		if(od->pos+floatsToCopy > BUFFER_SIZE) {
+			int floats = BUFFER_SIZE-od->pos;
+			copyIntBufferToFloat(playChunk, 
+					audioOutput->outAudioFormat.bits/8, 
+					od->buffer,
+					floats);
+			od->pos = 0;
+			od->len += floats;
+			playChunk += floats*sizeof(Float32);
+		}
+
+		copyIntBufferToFloat(playChunk, 
+				audioOutput->outAudioFormat.bits/8, 
+				od->buffer,
+				floatsToCopy);
+		od->pos += floatsToCopy;
+		od->len += floatsToCopy;
+		playChunk += floatsToCopy*sizeof(Float32);
+	}
+
+	pthread_mutex_unlock(&od->mutex);
+	pthread_cond_signal(&od->condition);
+
+	DEBUG("exiting osx_play\n");
 	return 0;
 }
 
