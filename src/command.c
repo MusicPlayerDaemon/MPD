@@ -38,6 +38,7 @@
 #include <unistd.h>
 
 #define COMMAND_PLAY           	"play"
+#define COMMAND_PLAYID         	"playid"
 #define COMMAND_STOP           	"stop"
 #define COMMAND_PAUSE          	"pause"
 #define COMMAND_STATUS         	"status"
@@ -45,6 +46,7 @@
 #define COMMAND_CLOSE          	"close"
 #define COMMAND_ADD            	"add"
 #define COMMAND_DELETE         	"delete"
+#define COMMAND_DELETEID       	"deleteid"
 #define COMMAND_PLAYLIST       	"playlist"
 #define COMMAND_SHUFFLE        	"shuffle"
 #define COMMAND_CLEAR          	"clear"
@@ -53,6 +55,7 @@
 #define COMMAND_LSINFO         	"lsinfo"
 #define COMMAND_RM             	"rm"
 #define COMMAND_PLAYLISTINFO   	"playlistinfo"
+#define COMMAND_PLAYLISTID   	"playlistid"
 #define COMMAND_FIND           	"find"
 #define COMMAND_SEARCH         	"search"
 #define COMMAND_UPDATE         	"update"
@@ -66,8 +69,11 @@
 #define COMMAND_CLEAR_ERROR    	"clearerror"
 #define COMMAND_LIST           	"list"
 #define COMMAND_MOVE           	"move"
+#define COMMAND_MOVEID         	"moveid"
 #define COMMAND_SWAP           	"swap"
+#define COMMAND_SWAPID      	"swapid"
 #define COMMAND_SEEK           	"seek"
+#define COMMAND_SEEKID         	"seekid"
 #define COMMAND_LISTALLINFO	"listallinfo"
 #define COMMAND_PING		"ping"
 #define COMMAND_SETVOL		"setvol"
@@ -83,6 +89,7 @@
 #define COMMAND_STATUS_PLAYLIST         "playlist"
 #define COMMAND_STATUS_PLAYLIST_LENGTH  "playlistlength"
 #define COMMAND_STATUS_SONG             "song"
+#define COMMAND_STATUS_SONGID           "songid"
 #define COMMAND_STATUS_TIME             "time"
 #define COMMAND_STATUS_BITRATE          "bitrate"
 #define COMMAND_STATUS_ERROR            "error"
@@ -163,6 +170,23 @@ int handlePlay(FILE * fp, unsigned int * permission, int argArrayLength,
         return playPlaylist(fp,song,0);
 }
 
+int handlePlayId(FILE * fp, unsigned int * permission, int argArrayLength, 
+		char ** argArray) 
+{
+        int id = -1;
+        char * test;
+
+        if(argArrayLength==2) {
+                id = strtol(argArray[1],&test,10);
+                if(*test!='\0') {
+                        commandError(fp, ACK_ERROR_ARG,
+					 "need a positive integer");
+                        return -1;
+                }
+        }
+        return playPlaylist(fp, id, 0);
+}
+
 int handleStop(FILE * fp, unsigned int * permission, int argArrayLength, 
 		char ** argArray) 
 {
@@ -216,7 +240,11 @@ int commandStatus(FILE * fp, unsigned int * permission, int argArrayLength,
         myfprintf(fp,"%s: %s\n",COMMAND_STATUS_STATE,state);
 
         song = getPlaylistCurrentSong();
-        if(song >= 0) myfprintf(fp,"%s: %i\n",COMMAND_STATUS_SONG,song);
+        if(song >= 0) {
+		myfprintf(fp,"%s: %i\n", COMMAND_STATUS_SONG, song);
+		myfprintf(fp,"%s: %i\n", COMMAND_STATUS_SONGID, 
+				getPlaylistSongId(song));
+	}
         if(getPlayerState()!=PLAYER_STATE_STOP) {
                 myfprintf(fp,"%s: %i:%i\n",COMMAND_STATUS_TIME,getPlayerElapsedTime(),getPlayerTotalTime());
                 myfprintf(fp,"%s: %li\n",COMMAND_STATUS_BITRATE,getPlayerBitRate(),getPlayerTotalTime());
@@ -273,6 +301,21 @@ int handleDelete(FILE * fp, unsigned int * permission, int argArrayLength,
                 return -1;
         }
         return deleteFromPlaylist(fp,song); 
+}
+
+int handleDeleteId(FILE * fp, unsigned int * permission, int argArrayLength, 
+		char ** argArray) 
+{
+        int id;
+        char * test;
+
+        id = strtol(argArray[1],&test,10);
+        if(*test!='\0') {
+                commandError(fp, ACK_ERROR_ARG, 
+				"need a positive integer");
+                return -1;
+        }
+        return deleteFromPlaylist(fp, id); 
 }
 
 int handlePlaylist(FILE * fp, unsigned int * permission, int argArrayLength, 
@@ -353,6 +396,23 @@ int handlePlaylistInfo(FILE * fp, unsigned int * permission,
                 }
         }
         return playlistInfo(fp,song);
+}
+
+int handlePlaylistId(FILE * fp, unsigned int * permission, 
+		int argArrayLength, char ** argArray) 
+{
+        int id = -1;
+        char * test;
+
+        if(argArrayLength == 2) {
+                id = strtol(argArray[1],&test,10);
+                if(*test!='\0') {
+                        commandError(fp, ACK_ERROR_ARG,
+					"%s need a positive integer");
+                        return -1;
+                }
+        }
+        return playlistId(fp, id);
 }
 
 int handleFind(FILE * fp, unsigned int * permission, int argArrayLength, 
@@ -529,6 +589,28 @@ int handleMove(FILE * fp, unsigned int * permission, int argArrayLength,
         return moveSongInPlaylist(fp,from,to);
 }
 
+int handleMoveId(FILE * fp, unsigned int * permission, int argArrayLength, 
+		char ** argArray) 
+{
+        int id;
+        int to;
+        char * test;
+
+        id = strtol(argArray[1],&test,10);
+        if(*test!='\0') {
+                commandError(fp, ACK_ERROR_ARG,
+				"\"%s\" is not a integer", argArray[1]);
+                return -1;
+        }
+        to = strtol(argArray[2],&test,10);
+        if(*test!='\0') {
+                commandError(fp, ACK_ERROR_ARG,
+				"\"%s\" is not a integer", argArray[2]);
+                return -1;
+        }
+        return moveSongInPlaylistById(fp, id, to);
+}
+
 int handleSwap(FILE * fp, unsigned int * permission, int argArrayLength, 
 		char ** argArray) 
 {
@@ -551,6 +633,28 @@ int handleSwap(FILE * fp, unsigned int * permission, int argArrayLength,
         return swapSongsInPlaylist(fp,song1,song2);
 }
 
+int handleSwapId(FILE * fp, unsigned int * permission, int argArrayLength, 
+		char ** argArray) 
+{
+        int id1;
+        int id2;
+        char * test;
+
+        id1 = strtol(argArray[1],&test,10);
+        if(*test!='\0') {
+                commandError(fp, ACK_ERROR_ARG,
+				"\"%s\" is not a integer", argArray[1]);
+                return -1;
+        }
+        id2 = strtol(argArray[2],&test,10);
+        if(*test!='\0') {
+                commandError(fp, ACK_ERROR_ARG, "\"%s\" is not a integer",
+				argArray[2]);
+                return -1;
+        }
+        return swapSongsInPlaylist(fp, id1, id2);
+}
+
 int handleSeek(FILE * fp, unsigned int * permission, int argArrayLength,
 		char ** argArray) 
 {
@@ -571,6 +675,28 @@ int handleSeek(FILE * fp, unsigned int * permission, int argArrayLength,
                 return -1;
         }
         return seekSongInPlaylist(fp,song,time);
+}
+
+int handleSeekId(FILE * fp, unsigned int * permission, int argArrayLength,
+		char ** argArray) 
+{
+        int id;
+        int time;
+        char * test;
+
+        id = strtol(argArray[1],&test,10);
+        if(*test!='\0') {
+                commandError(fp, ACK_ERROR_ARG,
+				"\"%s\" is not a integer", argArray[1]);
+                return -1;
+        }
+        time = strtol(argArray[2],&test,10);
+        if(*test!='\0') {
+                commandError(fp, ACK_ERROR_ARG,
+				"\"%s\" is not a integer", argArray[2]);
+                return -1;
+        }
+        return seekSongInPlaylist(fp, id, time);
 }
 
 int handleListAllInfo(FILE * fp, unsigned int * permission, int argArrayLength,
@@ -621,6 +747,7 @@ void initCommands() {
         commandList = makeList(free);
 
         addCommand(COMMAND_PLAY        ,PERMISSION_CONTROL, 0, 1,handlePlay,NULL);
+        addCommand(COMMAND_PLAYID      ,PERMISSION_CONTROL, 0, 1,handlePlayId,NULL);
         addCommand(COMMAND_STOP        ,PERMISSION_CONTROL, 0, 0,handleStop,NULL);
         addCommand(COMMAND_PAUSE       ,PERMISSION_CONTROL, 0, 1,handlePause,NULL);
         addCommand(COMMAND_STATUS      ,PERMISSION_READ,    0, 0,commandStatus,NULL);
@@ -628,7 +755,9 @@ void initCommands() {
         addCommand(COMMAND_CLOSE       ,0,                 -1,-1,handleClose,NULL);
         addCommand(COMMAND_ADD         ,PERMISSION_ADD,     0, 1,handleAdd,NULL);
         addCommand(COMMAND_DELETE      ,PERMISSION_CONTROL, 1, 1,handleDelete,NULL);
+        addCommand(COMMAND_DELETEID    ,PERMISSION_CONTROL, 1, 1,handleDeleteId,NULL);
         addCommand(COMMAND_PLAYLIST    ,PERMISSION_READ,    0, 0,handlePlaylist,NULL);
+        addCommand(COMMAND_PLAYLISTID  ,PERMISSION_READ,    0, 0,handlePlaylistId,NULL);
         addCommand(COMMAND_SHUFFLE     ,PERMISSION_CONTROL, 0, 0,handleShuffle,NULL);
         addCommand(COMMAND_CLEAR       ,PERMISSION_CONTROL, 0, 0,handleClear,NULL);
         addCommand(COMMAND_SAVE        ,PERMISSION_CONTROL, 1, 1,handleSave,NULL);
@@ -649,8 +778,11 @@ void initCommands() {
         addCommand(COMMAND_CLEAR_ERROR ,PERMISSION_CONTROL, 0, 0,handleClearError,NULL);
         addCommand(COMMAND_LIST        ,PERMISSION_READ,    1, 2,handleList,NULL);
         addCommand(COMMAND_MOVE        ,PERMISSION_CONTROL, 2, 2,handleMove,NULL);
+        addCommand(COMMAND_MOVEID      ,PERMISSION_CONTROL, 2, 2,handleMoveId,NULL);
         addCommand(COMMAND_SWAP        ,PERMISSION_CONTROL, 2, 2,handleSwap,NULL);
+        addCommand(COMMAND_SWAPID      ,PERMISSION_CONTROL, 2, 2,handleSwapId,NULL);
         addCommand(COMMAND_SEEK        ,PERMISSION_CONTROL, 2, 2,handleSeek,NULL);
+        addCommand(COMMAND_SEEKID      ,PERMISSION_CONTROL, 2, 2,handleSeekId,NULL);
         addCommand(COMMAND_LISTALLINFO ,PERMISSION_READ,    0, 1,handleListAllInfo,NULL);
         addCommand(COMMAND_PING        ,0,                  0, 0,handlePing,NULL);
         addCommand(COMMAND_SETVOL      ,PERMISSION_CONTROL, 1, 1,handleSetVol,NULL);

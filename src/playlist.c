@@ -1081,12 +1081,10 @@ int moveSongInPlaylist(FILE * fp, int from, int to) {
 	return 0;
 }
 
-int moveSongInPlaylistById(FILE * fp, int id1, int id2) {
+int moveSongInPlaylistById(FILE * fp, int id1, int to) {
 	checkSongId(id1);
-	checkSongId(id2);
 
-	return moveSongInPlaylist(fp, playlist.idToNum[id1], 
-					playlist.idToNum[id2]);
+	return moveSongInPlaylist(fp, playlist.idToNum[id1], to);
 }
 
 void orderPlaylist() {
@@ -1460,4 +1458,8 @@ int seekSongInPlaylistById(FILE * fp, int id, float time) {
 	checkSongId(id);
 
 	return seekSongInPlaylist(fp, playlist.idToNum[id], time);
+}
+
+int getPlaylistSongId(int song) {
+	return playlist.numToId[song];
 }

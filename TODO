@@ -1,6 +1,3 @@
-*) add songids
-	a) add playlistid, moveid, swapid, deleteid, playid, seekid
-
 *) put some sort of error reporting for streaming/inputStream!
 
 *) Fix charset errors so they don't goto stderr/out

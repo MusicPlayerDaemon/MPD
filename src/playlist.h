@@ -50,11 +50,17 @@ int showPlaylist(FILE * fp);
 
 int deleteFromPlaylist(FILE * fp, int song);
 
+int deleteFromPlaylistById(FILE * fp, int song);
+
 int playlistInfo(FILE * fp, int song);
+
+int playlistId(FILE * fp, int song);
 
 int stopPlaylist(FILE * fp);
 
 int playPlaylist(FILE * fp, int song, int stopOnError);
+
+int playPlaylistById(FILE * fp, int song, int stopOnError);
 
 int nextSongInPlaylist(FILE * fp);
 
@@ -68,11 +74,17 @@ int savePlaylist(FILE * fp, char * utf8file);
 
 int deletePlaylist(FILE * fp, char * utf8file);
 
+int deletePlaylistById(FILE * fp, char * utf8file);
+
 void deleteASongFromPlaylist(Song * song);
 
 int moveSongInPlaylist(FILE * fp, int from, int to);
 
+int moveSongInPlaylistById(FILE * fp, int id, int to);
+
 int swapSongsInPlaylist(FILE * fp, int song1, int song2);
+
+int swapSongsInPlaylistById(FILE * fp, int id1, int id2);
 
 int loadPlaylist(FILE * fp, char * utf8file);
 
@@ -86,6 +98,8 @@ int setPlaylistRandomStatus(FILE * fp, int status);
 
 int getPlaylistCurrentSong();
 
+int getPlaylistSongId(int song);
+
 int getPlaylistLength();
 
 unsigned long getPlaylistVersion();
@@ -93,6 +107,8 @@ unsigned long getPlaylistVersion();
 void playPlaylistIfPlayerStopped();
 
 int seekSongInPlaylist(FILE * fp, int song, float time);
+
+int seekSongInPlaylistById(FILE * fp, int id, float time);
 
 void playlistVersionChange();
 
