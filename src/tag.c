@@ -25,6 +25,7 @@
 #include "aac_decode.h"
 #include "utils.h"
 #include "utf8.h"
+#include "log.h"
 
 #include <sys/stat.h>
 #include <stdlib.h>
@@ -61,6 +62,7 @@ void printMpdTag(FILE * fp, MpdTag * tag) {
 #define fixUtf8(str) { \
 	if(str && !validUtf8String(str)) { \
 		char * temp; \
+		DEBUG("not valid utf8 in tag: %s\n",str); \
 		temp = asciiStrToUtf8Dup(str); \
 		free(str); \
 		str = temp; \

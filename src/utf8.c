@@ -59,7 +59,7 @@ int validateUtf8Char(unsigned char * utf8Char) {
 	
 	if(utf8Char[0]>=0xC0 && utf8Char[0]<=0xFD) {
 		int count = 1;
-		unsigned char t = 0x20;
+		unsigned char t = 1 << 5;
 		int i;
 		while(count < 6 && (t & utf8Char[0])) {
 			t = (t >> 1);
@@ -69,7 +69,7 @@ int validateUtf8Char(unsigned char * utf8Char) {
 		for(i=1;i<=count;i++) {
 			if(utf8Char[i] < 0x80 || utf8Char[i] > 0xBF) return 0;
 		}
-		return count;
+		return count+1;
 	}
 	else return 0;
 }
@@ -79,7 +79,7 @@ int validUtf8String(unsigned char * string) {
 
 	while(*string) {
 		ret = validateUtf8Char(string);
-		if(!ret) return 0;
+		if(0==ret) return 0;
 		string+= ret;
 	}
 
