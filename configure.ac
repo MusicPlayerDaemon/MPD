@@ -31,11 +31,11 @@ if test x$CC = xgcc; then
 fi
 MPD_LIBS=""
 
-AC_ARG_ENABLE(audio,[  --disable-audio    disable support for playing],,enable_ao=yes)
+AC_ARG_ENABLE(ao,[  --disable-ao    disable support for libao],,enable_ao=yes)
 AC_ARG_ENABLE(shout,[  --disable-shout    disable support for streaming through shout],,enable_shout=yes)
 AC_ARG_ENABLE(iconv,[  --disable-iconv     disable iconv support],,enable_iconv=yes)
 AC_ARG_ENABLE(ipv6,[  --disable-ipv6     disable IPv6 support],,enable_ipv6=yes)
-AC_ARG_ENABLE(alsa,[  --disable-oss     disable OSS support],,enable_oss=yes)
+AC_ARG_ENABLE(oss,[  --disable-oss     disable OSS support],,enable_oss=yes)
 AC_ARG_ENABLE(alsa,[  --disable-alsa     disable ALSA Mixer support],,enable_alsa=yes)
 AC_ARG_ENABLE(ogg,[  --disable-ogg     disable ogg support],,enable_ogg=yes)
 AC_ARG_ENABLE(flac,[  --disable-flac    disable flac support],,enable_flac=yes)
@@ -101,15 +101,13 @@ AP_maGiC_VALUE
 )
 fi
 
-if test x$enable_ao = xyes; then
-	if test x$enable_ogg = xno; then
-		AC_MSG_WARN("disabling shout streaming support since vorbis was not found")
-	fi
+if test x$enable_ogg = xno; then
+	AC_MSG_WARN("disabling shout streaming support since vorbis was not found")
 fi
 
 if test x$enable_ao = xyes; then
 	XIPH_PATH_AO(MPD_LIBS="$MPD_LIBS $AO_LIBS" MPD_CFLAGS="$MPD_CFLAGS $AO_CFLAGS",AC_MSG_ERROR(Must have libao installed!!!))
-	AC_DEFINE(HAVE_AUDIO, 1, [Define to play audio])
+	AC_DEFINE(HAVE_AO, 1, [Define to play with ao])
 fi
 
 if test x$enable_shout = xyes; then
@@ -535,9 +533,15 @@ fi
 echo ""
 echo "Audio Format Support:"
 if test x$enable_ao = xyes; then
-	echo "Playing audio .................enabled"
+	echo "Playing audio via libao .......enabled"
 else
-	echo "Playing audio .................disabled"
+	echo "Playing audio via libao .......disabled"
+fi
+
+if test x$enable_oss = xyes; then
+	echo "Playing audio via OSS .........enabled"
+else
+	echo "Playing audio via OSS .........disabled"
 fi
 
 if test x$enable_shout = xyes; then

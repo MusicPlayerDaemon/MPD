@@ -17,6 +17,9 @@
  */
 
 #include "../audioOutput.h"
+
+#ifdef HAVE_AO
+
 #include "../conf.h"
 #include "../log.h"
 
@@ -237,3 +240,20 @@ AudioOutputPlugin aoPlugin =
 	audioOutputAo_closeDevice,
 	NULL /* sendMetadataFunc */
 };
+
+#else
+
+#include <stdio.h>
+
+AudioOutputPlugin aoPlugin = 
+{
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL
+};
+
+#endif
