@@ -70,6 +70,7 @@ InputPlugin * getInputPluginFromName(char * name) {
 extern InputPlugin mp3Plugin;
 extern InputPlugin oggPlugin;
 extern InputPlugin flacPlugin;
+extern InputPlugin audiofilePlugin;
 
 void initInputPlugins() {
 	inputPlugin_list = makeList(NULL);
@@ -78,6 +79,7 @@ void initInputPlugins() {
 	loadInputPlugin(&mp3Plugin);
 	loadInputPlugin(&oggPlugin);
 	loadInputPlugin(&flacPlugin);
+	loadInputPlugin(&audiofilePlugin);
 }
 
 void finishInputPlugins() {

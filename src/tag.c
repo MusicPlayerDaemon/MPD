@@ -19,9 +19,6 @@
 #include "tag.h"
 #include "path.h"
 #include "myfprintf.h"
-#include "audiofile_decode.h"
-#include "mp4_decode.h"
-#include "aac_decode.h"
 #include "utils.h"
 #include "utf8.h"
 #include "log.h"
@@ -153,22 +150,6 @@ MpdTag * id3Dup(char * file) {
 #endif
 	return ret;	
 }
-
-#ifdef HAVE_AUDIOFILE
-MpdTag * audiofileTagDup(char * utf8file) {
-	MpdTag * ret = NULL;
-	int time = getAudiofileTotalTime(rmp2amp(utf8ToFsCharset(utf8file)));
-	
-	if (time>=0) {
-		if(!ret) ret = newMpdTag();
-		ret->time = time;
-	}
-
-	if(ret) validateUtf8Tag(ret);
-
-	return ret;
-}
-#endif
 
 #ifdef HAVE_FAAD
 MpdTag * aacTagDup(char * utf8file) {

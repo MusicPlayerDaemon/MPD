@@ -18,15 +18,15 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "audiofile_decode.h"
+#include "../inputPlugin.h"
 
 #ifdef HAVE_AUDIOFILE
 
-#include "command.h"
-#include "utils.h"
-#include "audio.h"
-#include "log.h"
-#include "pcm_utils.h"
+#include "../utils.h"
+#include "../audio.h"
+#include "../log.h"
+#include "../pcm_utils.h"
+#include "../playerData.h"
 
 #include <stdio.h>
 #include <unistd.h>
@@ -139,5 +139,42 @@ int audiofile_decode(OutputBuffer * cb, DecoderControl * dc) {
 	return 0;
 }
 
+MpdTag * audiofileTagDup(char * file) {
+	MpdTag * ret = NULL;
+	int time = getAudiofileTotalTime(file);
+	
+	if (time>=0) {
+		if(!ret) ret = newMpdTag();
+		ret->time = time;
+	}
+
+	return ret;
+}
+
+char * audiofileSuffixes[] = {"wav", NULL};
+
+InputPlugin audiofilePlugin = 
+{
+        "audiofile",
+        NULL,
+        audiofile_decode,
+        audiofileTagDup,
+        INPUT_PLUGIN_STREAM_FILE,
+        audiofileSuffixes,
+        NULL
+};
+
+#else
+
+InputPlugin audiofilePlugin =
+{
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        0,
+        NULL,
+        NULL
+};
+
 #endif /* HAVE_AUDIOFILE */
-/* vim:set shiftwidth=4 tabstop=8 expandtab: */
