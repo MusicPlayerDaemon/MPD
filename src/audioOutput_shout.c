@@ -18,9 +18,10 @@
 
 #include "../config.h"
 
+#include "audioOutput.h"
+
 #ifdef HAVE_SHOUT
 
-#include "audioOutput.h"
 #include "conf.h"
 #include "log.h"
 #include "sig_handlers.h"
