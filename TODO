@@ -1,3 +1,9 @@
+*) Implement HTTP proxy
+
+*) Optimize read() on cleints
+
+*) Optimize db update
+
 Post-1.0
 --------
 1) crosslink "list" stuff, for example, artists are crosslinked to alubms and 
