@@ -278,6 +278,11 @@ int playAudio(char * playChunk, int size) {
 	return 0;
 }
 
+int isAudioDeviceOpen() {
+	if(audio_device) return 1;
+	return 0;
+}
+
 void closeAudioDevice() {
 #ifdef HAVE_AUDIO
 	if(audio_device) {

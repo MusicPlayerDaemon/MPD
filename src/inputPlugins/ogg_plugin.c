@@ -321,9 +321,8 @@ int ogg_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream)
 						ov_pcm_tell(&vf)/
 						dc->audioFormat.sampleRate,
 						bitRate);
-					
-			if(dc->stop) break;
 			chunkpos = 0;
+			if(dc->stop) break;
 		}
 	}
 

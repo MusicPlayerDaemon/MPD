@@ -575,11 +575,11 @@ int mp3Read(mp3DecodeData * data, OutputBuffer * cb, DecoderControl * dc) {
                                                 MP3_DATA_OUTPUT_BUFFER_SIZE,
                                                 data->elapsedTime,
                                                 data->bitRate/1000);
+                                data->outputPtr = data->outputBuffer;
+
                                 if(ret == OUTPUT_BUFFER_DC_STOP) {
                                         return DECODE_BREAK;
                                 }
-
-                                data->outputPtr = data->outputBuffer;
 
                                 if(ret == OUTPUT_BUFFER_DC_SEEK) break;
 			}
@@ -640,7 +640,7 @@ void initAudioFormatFromMp3DecodeData(mp3DecodeData * data, AudioFormat * af) {
 
 int mp3_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream) {
 	mp3DecodeData data;
-	MpdTag * tag;
+	MpdTag * tag = NULL;
 
 	if(openMp3FromInputStream(inStream, &data, dc, &tag) < 0) {
 		closeInputStream(inStream);
@@ -664,7 +664,6 @@ int mp3_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream) {
 		if(tag) freeMpdTag(tag);
 		tag = newMpdTag();
 		tag->title = strdup(inStream->metaTitle);
-		/* free ths now, so we know we are done with it */
 		free(inStream->metaTitle);
 		inStream->metaTitle = NULL;
 		if(inStream->metaName) {
@@ -694,7 +693,7 @@ int mp3_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream) {
 
 	while(mp3Read(&data,cb,dc)!=DECODE_BREAK);
 	/* send last little bit if not dc->stop */
-	if(data.outputPtr!=data.outputBuffer && data.flush)  {
+	if(!dc->stop && data.outputPtr!=data.outputBuffer && data.flush)  {
         	sendDataToOutputBuffer(cb, NULL, dc, 
                                 data.inStream->seekable,
                                 data.outputBuffer,

@@ -98,6 +98,12 @@ int calculateCrossFadeChunks(PlayerControl * pc, AudioFormat * af) {
 	return (int)chunks;
 }
 
+#define playSilenceOrSleep() \
+	if(isAudioDeviceOpen()) { \
+		playAudio(silence, CHUNK_SIZE); \
+	} \
+	else my_usleep(10000);
+
 #define handleDecodeStart() \
         if(decodeWaitedOn) { \
                 if(dc->state!=DECODE_STATE_START &&  *decode_pid > 0 && \
@@ -128,7 +134,7 @@ int calculateCrossFadeChunks(PlayerControl * pc, AudioFormat * af) {
 		        return; \
                 } \
                 else { \
-                        my_usleep(10000); \
+			my_usleep(10000); \
                         continue; \
                 } \
         }
@@ -462,9 +468,8 @@ void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb) {
 				dc->state!=DECODE_STATE_STOP) 
 	{
 		processDecodeInput();
-                handleDecodeStart();
 		if(quit) return;
-		my_usleep(10000);
+		playSilenceOrSleep();
 	}
 
 	while(!quit) {

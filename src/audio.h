@@ -49,6 +49,8 @@ int playAudio(char * playChunk,int size);
 
 void closeAudioDevice();
 
+int isAudioDeviceOpen();
+
 void audioError();
 
 int isCurrentAudioFormat(AudioFormat * audioFormat);
