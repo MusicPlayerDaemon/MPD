@@ -272,7 +272,6 @@ int decodeNextFrameHeader(mp3DecodeData * data, MpdTag ** tag) {
 		}
 #endif
 		if(MAD_RECOVERABLE((data->stream).error)) {
-			if(tag) printf("AHHH\n");
 			return DECODE_SKIP;
 		}
 		else {
