@@ -239,8 +239,7 @@ static int alsa_openDevice(AudioOutput * audioOutput)
 	if(err < 0) goto error;
 
 	cmd = "snd_pcm_sw_params_set_start_threshold";
-	err = snd_pcm_sw_params_set_start_threshold(ad->pcmHandle, swparams,
-			alsa_buffer_size - alsa_period_size);
+	err = snd_pcm_sw_params_set_start_threshold(ad->pcmHandle, swparams, 0);
 	if(err < 0) goto error;
 
 	cmd = "snd_pcm_sw_params_set_avail_min";
