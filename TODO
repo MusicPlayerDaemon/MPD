@@ -1,10 +1,8 @@
-1) rewrite outputBuffering
-	a) rewrite outputBuffer to be nonBlocking-esqe to handle seek better
-		while paused
-		a) while() over sendToOutputBuffer until success or stop or
-			seek and return number of bytes written
-		b) means also removing conversion buffers from outputBuffer
-			and moving somewhere else
+1) rewrite outputBuffer to be nonBlocking-esqe to handle seek better
+	while paused
+	a) pass sendToBuffer() a argument indicating seekability, whether
+		or not to exit on a dc->seek
+	b) if not seekable, then set dc->seekError and dc->seek = 0
 
 2) play streams
 	a) put some sort of error reporting for streaming/inputStream!
