@@ -6,10 +6,18 @@ Format:
 -------
 
 If arguments contain spaces, they should be surrounded by double quotation 
-marks, ".
+marks, ".  
 
 command <type arg1> <type arg2> ...
 	explanation: w/ arg1 and arg2
+
+All data between the client and server is encoded in UTF-8. (Note,
+that in UTF-8 all standard ansi characters, 0-127, are the same as a standard
+ansi encoding. Also, no ansi character appears in any multi-byte
+characters.  So, you can use standard C functions like strlen, and strcpy
+just fine with UTF-8 encoded strings. For example: "OK\n" encoded in UTF-8 is
+simply "OK\n".  For more information on UTF=8: 
+http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8 )
 
 Command Completion:
 -------------------
