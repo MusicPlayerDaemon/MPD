@@ -119,6 +119,7 @@ static int alsa_openDevice(AudioOutput * audioOutput)
 	unsigned int alsa_buffer_time = MPD_ALSA_BUFFER_TIME;
 	unsigned int alsa_period_time = MPD_ALSA_PERIOD_TIME;
 	int err;
+	char * cmd = NULL;
 
 	switch(audioFormat->bits) {
 	case 8:
@@ -146,12 +147,14 @@ static int alsa_openDevice(AudioOutput * audioOutput)
 		goto error;
 	}
 
+	cmd = "snd_pcm_nonblock";
 	err = snd_pcm_nonblock(ad->pcmHandle, 0);
 	if(err < 0) goto error;
 
 	/* configure HW params */
 	snd_pcm_hw_params_alloca(&hwparams);
 
+	cmd = "snd_pcm_hw_params_any";
 	err = snd_pcm_hw_params_any(ad->pcmHandle, hwparams);
 	if(err < 0) goto error;
 
@@ -169,6 +172,7 @@ static int alsa_openDevice(AudioOutput * audioOutput)
 	}
 
 	if(!ad->useMmap) {
+		cmd = "snd_pcm_hw_params_set_access";
 		err = snd_pcm_hw_params_set_access(ad->pcmHandle, hwparams,
 				SND_PCM_ACCESS_RW_INTERLEAVED);
 		if(err < 0) goto error;
@@ -202,20 +206,25 @@ static int alsa_openDevice(AudioOutput * audioOutput)
 	}
 	audioFormat->sampleRate = sampleRate;
 
+	cmd = "snd_pcm_hw_params_set_buffer_time_near";
 	err = snd_pcm_hw_params_set_buffer_time_near(ad->pcmHandle, hwparams,
 			&alsa_buffer_time, 0);
 	if(err < 0) goto error;
 	
+	cmd = "snd_pcm_hw_params_set_period_time_near";
 	err = snd_pcm_hw_params_set_period_time_near(ad->pcmHandle, hwparams,
 			&alsa_period_time, 0);
 	if(err < 0) goto error;
 
+	cmd = "snd_pcm_hw_params";
 	err = snd_pcm_hw_params(ad->pcmHandle, hwparams);
 	if(err < 0) goto error;
 
+	cmd = "snd_pcm_hw_params_get_buffer_size";
 	err = snd_pcm_hw_params_get_buffer_size(hwparams, &alsa_buffer_size);
 	if(err < 0) goto error;
 
+	cmd = "snd_pcm_hw_params_get_period_size";
 	err = snd_pcm_hw_params_get_period_size(hwparams, &alsa_period_size, 0);
 	if(err < 0) goto error;
 
@@ -224,12 +233,26 @@ static int alsa_openDevice(AudioOutput * audioOutput)
 
 	/* configure SW params */
 	snd_pcm_sw_params_alloca(&swparams);
-	snd_pcm_sw_params_current(ad->pcmHandle, swparams);
 
+	cmd = "snd_pcm_sw_params_current";
+	err = snd_pcm_sw_params_current(ad->pcmHandle, swparams);
+	if(err < 0) goto error;
+
+	cmd = "snd_pcm_sw_params_set_start_threshold";
 	err = snd_pcm_sw_params_set_start_threshold(ad->pcmHandle, swparams,
 			alsa_buffer_size - alsa_period_size);
 	if(err < 0) goto error;
 
+	cmd = "snd_pcm_sw_params_set_avail_min";
+	err = snd_pcm_sw_params_set_avail_min(ad->pcmHandle, swparams, 
+			alsa_period_size);
+	if(err < 0) goto error;
+
+	cmd = "snd_pcm_sw_params_set_xfer_align";
+	err = snd_pcm_sw_params_set_xfer_align(ad->pcmHandle, swparams, 1);
+	if(err < 0) goto error;
+
+	cmd = "snd_pcm_sw_params";
 	err = snd_pcm_sw_params(ad->pcmHandle, swparams);
 	if(err < 0) goto error;
 	
@@ -243,8 +266,14 @@ static int alsa_openDevice(AudioOutput * audioOutput)
 	return 0;
 
 error:
-	ERROR("Error opening alsa device \"%s\": %s\n", ad->device, 
-			snd_strerror(-err));
+	if(cmd) {
+		ERROR("Error opening alsa device \"%s\" (%s): %s\n",  
+				ad->device, cmd, snd_strerror(-err));
+	}
+	else {
+		ERROR("Error opening alsa device \"%s\": %s\n", ad->device, 
+				snd_strerror(-err));
+	}
 fail:
 	if(ad->pcmHandle) snd_pcm_close(ad->pcmHandle);
 	ad->pcmHandle = NULL;
