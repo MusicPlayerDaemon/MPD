@@ -12,6 +12,9 @@
 		indicating the type of metadata and its value)
 	*) MpdDBTag <-> MpdTag interface
 
+*) implement listener socket protocol as documented here:
+	http://www.musicpd.org/wiki/moin.cgi/MpdListenerProtocol
+
 *) add support for coverart using freedesktop standard for icons/images
 
 *) rewrite saved playlist code
