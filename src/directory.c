@@ -29,6 +29,7 @@
 #include "listen.h"
 #include "interface.h"
 #include "volume.h"
+#include "mpd_types.h"
 
 #include <string.h>
 #include <sys/types.h>
@@ -72,6 +73,8 @@ char directorydb[MAXPATHLEN+1];
 
 int directory_updatePid = 0;
 
+mpd_uint16 directory_updateJobId = 0;
+
 DirectoryList * newDirectoryList();
 
 int addToDirectory(Directory * directory, char * shortname, char * name);
@@ -89,7 +92,7 @@ void deleteEmptyDirectoriesInDirectory(Directory * directory);
 int addSubDirectoryToDirectory(Directory * directory, char * shortname, char * name);
 
 int isUpdatingDB() {
-	if(directory_updatePid>0) return 1;
+	if(directory_updatePid>0) return directory_updateJobId;
 	return 0;
 }
 
@@ -143,7 +146,11 @@ int updateInit(FILE * fp) {
 		return -1;
 	}
 
-	DEBUG("updateInit: fork()'d update child\n");
+	directory_updateJobId++;
+	if(directory_updateJobId > 1<<15) directory_updateJobId = 1;
+	DEBUG("updateInit: fork()'d update child for update job id %i\n",
+			(int)directory_updateJobId);
+	myfprintf(fp,"updating_db: %i\n",(int)directory_updateJobId);
 
 	return 0;
 }

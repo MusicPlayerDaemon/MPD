@@ -165,6 +165,7 @@ int commandStatus(FILE * fp, unsigned int * permission, int argArrayLength,
 		char ** argArray) 
 {
         char * state = NULL;
+	int updateJobId;
 
         playPlaylistIfPlayerStopped();
         switch(getPlayerState()) {
@@ -194,7 +195,9 @@ int commandStatus(FILE * fp, unsigned int * permission, int argArrayLength,
                 myfprintf(fp,"%s: %u:%i:%i\n",COMMAND_STATUS_AUDIO,getPlayerSampleRate(),getPlayerBits(),getPlayerChannels());
         }
 
-	if(isUpdatingDB()) myfprintf(fp,"%s: 1\n",COMMAND_STATUS_UPDATING_DB);
+	if((updateJobId = isUpdatingDB())) {
+		myfprintf(fp,"%s: %i\n",COMMAND_STATUS_UPDATING_DB,updateJobId);
+	}
 
         if(getPlayerError()!=PLAYER_ERROR_NOERROR) {
                 myfprintf(fp,"%s: %s\n",COMMAND_STATUS_ERROR,getPlayerErrorStr());
