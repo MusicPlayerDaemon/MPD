@@ -139,6 +139,7 @@ void finishAudioConfig() {
 void finishAudioDriver() {
 	finishAudioOutput(aoOutput);
 	if(shoutOutput) finishAudioOutput(shoutOutput);
+	shoutOutput = NULL;
 	aoOutput = NULL;
 }
 
