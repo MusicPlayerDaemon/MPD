@@ -166,7 +166,8 @@ void readDirectoryDBIfUpdateIsFinished() {
 
 int updateInit(FILE * fp, List * pathList) {
 	if(directory_updatePid > 0) {
-		commandError(fp, ACK_ERROR_UPDATE_ALREADY, "already updating");
+		commandError(fp, ACK_ERROR_UPDATE_ALREADY, "already updating",
+				NULL);
 		return -1;
 	}
 
@@ -224,7 +225,7 @@ int updateInit(FILE * fp, List * pathList) {
 		unblockSignals();
 		ERROR("updateInit: Problems forking()'ing\n");
 		commandError(fp, ACK_ERROR_SYSTEM,
-                                "problems trying to update");
+                                "problems trying to update", NULL);
 		directory_updatePid = 0;
 		return -1;
 	}
@@ -745,7 +746,8 @@ int printDirectoryInfo(FILE * fp, char * name) {
 	Directory * directory;
 	
 	if((directory = getDirectory(name))==NULL) {
-		commandError(fp, ACK_ERROR_NO_EXIST, "directory not found");
+		commandError(fp, ACK_ERROR_NO_EXIST, "directory not found",
+				NULL);
 		return -1;
 	}
 
@@ -1047,7 +1049,7 @@ int traverseAllIn(FILE * fp, char * name,
 			return forEachSong(fp, song, data);
 		}
 		commandError(fp, ACK_ERROR_NO_EXIST,
-                                "directory or file not found");
+                                "directory or file not found", NULL);
 		return -1;
 	}
 
@@ -1129,7 +1131,7 @@ int searchForSongsIn(FILE * fp, char * name, char * item, char * string) {
 		ret = traverseAllIn(fp,name,searchForFilenameInDirectory,NULL,
 			(void *)dup);
 	}
-	else commandError(fp, ACK_ERROR_ARG, "unknown table");
+	else commandError(fp, ACK_ERROR_ARG, "unknown table", NULL);
 
 	free(dup);
 
@@ -1166,7 +1168,7 @@ int findSongsIn(FILE * fp, char * name, char * item, char * string) {
 			(void *)string);
 	}
 
-	commandError(fp, ACK_ERROR_ARG, "unknown table");
+	commandError(fp, ACK_ERROR_ARG, "unknown table", NULL);
 	return -1;
 }
 

@@ -164,7 +164,7 @@ int handlePlay(FILE * fp, unsigned int * permission, int argArrayLength,
                 song = strtol(argArray[1],&test,10);
                 if(*test!='\0') {
                         commandError(fp, ACK_ERROR_ARG,
-					 "need a positive integer");
+					 "need a positive integer", NULL);
                         return -1;
                 }
         }
@@ -181,7 +181,7 @@ int handlePlayId(FILE * fp, unsigned int * permission, int argArrayLength,
                 id = strtol(argArray[1],&test,10);
                 if(*test!='\0') {
                         commandError(fp, ACK_ERROR_ARG,
-					 "need a positive integer");
+					 "need a positive integer", NULL);
                         return -1;
                 }
         }
@@ -309,7 +309,7 @@ int handleDelete(FILE * fp, unsigned int * permission, int argArrayLength,
         song = strtol(argArray[1],&test,10);
         if(*test!='\0') {
                 commandError(fp, ACK_ERROR_ARG, 
-				"need a positive integer");
+				"need a positive integer", NULL);
                 return -1;
         }
         return deleteFromPlaylist(fp,song); 
@@ -324,7 +324,7 @@ int handleDeleteId(FILE * fp, unsigned int * permission, int argArrayLength,
         id = strtol(argArray[1],&test,10);
         if(*test!='\0') {
                 commandError(fp, ACK_ERROR_ARG, 
-				"need a positive integer");
+				"need a positive integer", NULL);
                 return -1;
         }
         return deleteFromPlaylistById(fp, id); 
@@ -387,7 +387,8 @@ int handlePlaylistChanges(FILE * fp, unsigned int * permission,
 
         version = strtoul(argArray[1], &test, 10);
         if(*test!='\0') {
-                commandError(fp, ACK_ERROR_ARG, "need a positive integer");
+                commandError(fp, ACK_ERROR_ARG, "need a positive integer", 
+					NULL);
                 return -1;
         }
         return playlistChanges(fp, version);
@@ -403,7 +404,7 @@ int handlePlaylistInfo(FILE * fp, unsigned int * permission,
                 song = strtol(argArray[1],&test,10);
                 if(*test!='\0') {
                         commandError(fp, ACK_ERROR_ARG,
-					"%s need a positive integer");
+					"need a positive integer", NULL);
                         return -1;
                 }
         }
@@ -420,7 +421,7 @@ int handlePlaylistId(FILE * fp, unsigned int * permission,
                 id = strtol(argArray[1],&test,10);
                 if(*test!='\0') {
                         commandError(fp, ACK_ERROR_ARG,
-					"%s need a positive integer");
+					"need a positive integer", NULL);
                         return -1;
                 }
         }
@@ -509,7 +510,7 @@ int handleVolume(FILE * fp, unsigned int * permission, int argArrayLength,
 
         change = strtol(argArray[1],&test,10);
         if(*test!='\0') {
-                commandError(fp, ACK_ERROR_ARG, "need an integer");
+                commandError(fp, ACK_ERROR_ARG, "need an integer", NULL);
                 return -1;
         }
         return changeVolumeLevel(fp,change,1);
@@ -523,7 +524,7 @@ int handleSetVol(FILE * fp, unsigned int * permission, int argArrayLength,
 
         level = strtol(argArray[1],&test,10);
         if(*test!='\0') {
-                commandError(fp, ACK_ERROR_ARG, "need an integer");
+                commandError(fp, ACK_ERROR_ARG, "need an integer", NULL);
                 return -1;
         }
         return changeVolumeLevel(fp,level,0);
@@ -537,7 +538,7 @@ int handleRepeat(FILE * fp, unsigned int * permission, int argArrayLength,
 
         status = strtol(argArray[1],&test,10);
         if(*test!='\0') {
-                commandError(fp, ACK_ERROR_ARG, "need an integer");
+                commandError(fp, ACK_ERROR_ARG, "need an integer", NULL);
                 return -1;
         }
         return setPlaylistRepeatStatus(fp,status);
@@ -551,7 +552,7 @@ int handleRandom(FILE * fp, unsigned int * permission, int argArrayLength,
 
         status = strtol(argArray[1],&test,10);
         if(*test!='\0') {
-                commandError(fp, ACK_ERROR_ARG, "need an integer");
+                commandError(fp, ACK_ERROR_ARG, "need an integer", NULL);
                 return -1;
         }
         return setPlaylistRandomStatus(fp,status);
@@ -730,7 +731,7 @@ int handlePassword(FILE * fp, unsigned int * permission, int argArrayLength,
 		char ** argArray) 
 {
 	if(getPermissionFromPassword(argArray[1],permission)<0) {
-		commandError(fp, ACK_ERROR_PASSWORD, "incorrect password");
+		commandError(fp, ACK_ERROR_PASSWORD, "incorrect password", NULL);
 		return -1;
 	}
 

@@ -609,7 +609,7 @@ int addToPlaylist(FILE * fp, char * url) {
 int addSongToPlaylist(FILE * fp, Song * song) {
 	if(playlist.length==playlist_max_length) {
 		commandError(fp, ACK_ERROR_PLAYLIST_MAX,
-                                "playlist is at the max size");
+                                "playlist is at the max size", NULL);
 		return -1;
 	}
 
@@ -1248,7 +1248,7 @@ int deletePlaylist(FILE * fp, char * utf8file) {
 
 	if(unlink(actualFile)<0) {
 		commandError(fp, ACK_ERROR_SYSTEM,
-                                "problems deleting file");
+                                "problems deleting file", NULL);
 		return -1;
 	}
 
@@ -1293,7 +1293,8 @@ int savePlaylist(FILE * fp, char * utf8file) {
 
 	while(!(fileP = fopen(actualFile,"w")) && errno==EINTR);
 	if(fileP==NULL) {
-		commandError(fp, ACK_ERROR_SYSTEM, "problems opening file");
+		commandError(fp, ACK_ERROR_SYSTEM, "problems opening file", 
+				NULL);
 		return -1;
 	}
 

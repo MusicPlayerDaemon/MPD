@@ -33,7 +33,7 @@ void freeAllInterfaces();
 void closeOldInterfaces();
 void closeInterfaceWithFD(int fd);
 void flushAllInterfaceBuffers();
-int interfacePrintWithFD(int fd, char * buffer);
+int interfacePrintWithFD(int fd, char * buffer, int len);
 
 int doIOForInterfaces();
 

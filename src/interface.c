@@ -542,20 +542,21 @@ void flushAllInterfaceBuffers() {
 	}
 }
 
-int interfacePrintWithFD(int fd,char * buffer) {
-	int i;
-	int buflen;
+int interfacePrintWithFD(int fd, char * buffer, int buflen) {
+	static int i = 0;
 	int copylen;
 	Interface * interface;
 
-	if(!(buflen = strlen(buffer))) return -1;
-
-	for(i=0;i<interface_max_connections;i++) {
-		if(interfaces[i].open && interfaces[i].fd==fd) break;
+	if(i>=interface_max_connections || 
+			!interfaces[i].open || interfaces[i].fd!=fd) 
+	{
+		for(i=0;i<interface_max_connections;i++) {
+			if(interfaces[i].open && interfaces[i].fd==fd) break;
+		}
+		if(i==interface_max_connections) return -1;
 	}
 
 	/* if fd isn't found or interfaces is going to be closed, do nothing */
-	if(i==interface_max_connections) return -1;
 	if(interfaces[i].expired) return 0;
 
 	interface = interfaces+i;

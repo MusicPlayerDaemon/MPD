@@ -37,8 +37,7 @@ FILE * myfprintf_err;
 char * myfprintf_outFilename;
 char * myfprintf_errFilename;
 
-void blockingWrite(int fd, char * string) {
-	int len = strlen(string);
+void blockingWrite(int fd, char * string, int len) {
 	int ret;
 
 	while(len) {
@@ -71,28 +70,26 @@ void myfprintf(FILE * fp, char * format, ... ) {
 	char buffer[BUFFER_LENGTH+1];
 	va_list arglist;
 	int fd = fileno(fp);
-	int fcntlret;
 
 	memset(buffer,0,BUFFER_LENGTH+1);
 
 	va_start(arglist,format);
-	while((fcntlret=fcntl(fd,F_GETFL))==-1 && errno==EINTR);
 	if(myfprintf_stdLogMode && (fd==1 || fd==2)) {
 		time_t t = time(NULL);
 		if(fd==1) fp = myfprintf_out;
 		else fp = myfprintf_err;
 		strftime(buffer,14,"%b %e %R",localtime(&t));
-		blockingWrite(fd,buffer);
-		blockingWrite(fd," : ");
+		blockingWrite(fd,buffer,strlen(buffer));
+		blockingWrite(fd," : ",3);
 		vsnprintf(buffer,BUFFER_LENGTH,format,arglist);
-		blockingWrite(fd,buffer);
+		blockingWrite(fd,buffer,strlen(buffer));
 	}
 	else {
+		int len;
 		vsnprintf(buffer,BUFFER_LENGTH,format,arglist);
-		if(!(fcntlret & O_NONBLOCK) || 
-				interfacePrintWithFD(fd,buffer)<0) 
-		{
-			blockingWrite(fd,buffer);
+		len = strlen(buffer);
+		if(interfacePrintWithFD(fd,buffer,len)<0) {
+			blockingWrite(fd,buffer,len);
 		}
 	}
 

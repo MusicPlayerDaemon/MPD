@@ -145,7 +145,7 @@ int changeOssVolumeLevel(FILE * fp, int change, int rel) {
 	if (rel) {
 		if((current = getOssVolumeLevel()) < 0) {
 			commandError(fp, ACK_ERROR_SYSTEM,
-                                        "problem getting current volume");
+                                        "problem getting current volume", NULL);
 			return -1;
 		}
 
@@ -159,7 +159,8 @@ int changeOssVolumeLevel(FILE * fp, int change, int rel) {
 	level = (new << 8) + new;
 
 	if(ioctl(volume_ossFd,MIXER_WRITE(volume_ossControl),&level) < 0) {
-		commandError(fp, ACK_ERROR_SYSTEM, "problems setting volume");
+		commandError(fp, ACK_ERROR_SYSTEM, "problems setting volume",
+				NULL);
 		return -1;
 	}
 
@@ -271,7 +272,8 @@ int changeAlsaVolumeLevel(FILE * fp, int change, int rel) {
 
 	if((err = snd_mixer_selem_get_playback_volume(volume_alsaElem,
 		SND_MIXER_SCHN_FRONT_LEFT,&level))<0) {
-		commandError(fp, ACK_ERROR_SYSTEM, "problems getting volume");
+		commandError(fp, ACK_ERROR_SYSTEM, "problems getting volume",
+				NULL);
 		WARNING("problems getting alsa volume: %s\n",snd_strerror(err));
 		return -1;
 	}
@@ -297,7 +299,8 @@ int changeAlsaVolumeLevel(FILE * fp, int change, int rel) {
 
 	if((err = snd_mixer_selem_set_playback_volume_all(
 				volume_alsaElem,level))<0) {
-		commandError(fp, ACK_ERROR_SYSTEM, "problems setting volume");
+		commandError(fp, ACK_ERROR_SYSTEM, "problems setting volume",
+				NULL);
 		WARNING("problems setting alsa volume: %s\n",snd_strerror(err));
 		return -1;
 	}
