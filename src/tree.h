@@ -46,7 +46,7 @@ TreeIterator * newTreeIterator(Tree * tree, TreeIteratorType type);
 /* will return the same pointer passed in on success
  * if NULL is returned, this indicates the end of tree
  */
-TreeIterator * nextTreeIterator(TreeIterator * iter);
+data * nextTreeIterator(TreeIterator * iter);
 
 void freeTreeIterator(TreeIterator * iter);
 
