@@ -47,8 +47,16 @@ close
 crossfade <int seconds>
 	sets crossfading between songs
 
+currentsong
+	displays the song info of current song (same song that is identified
+	in status)
+
 delete <int song>
 	delete _song_ from playlist
+	increments playlist version by 1
+
+deleteid <int songid>
+	delete song with _songid_ from playlist
 	increments playlist version by 1
 
 find <string type> <string what>
@@ -85,12 +93,17 @@ move <int from> <int to>
 	move song at _from_ to _to_ in the playlist
 	increments playlist version by 1
 
+move <int songid> <int to>
+	move song with _songid_ to  _to_ in the playlist
+	increments playlist version by 1
+
 next
 	plays next song in playlist
 
 pause	<bool pause>
 	toggle pause/resume playing
-	_pause_ is optional and should be 0 or 1
+	_pause_ is required and should be 0 or 1
+	NOTE: use of pause command w/o the _pause_ argument is depricated
 
 password <string password>
 	this is used for authentication with the server.
@@ -102,6 +115,9 @@ ping
 play <int song>
 	begin playing playlist at song number _song_, _song_ is optional
 
+playid <int songid>
+	begin playing playlist at song with _songid_, _songid_ is optional
+
 playlist
 	displays the current playlist
 	NOTE: do not use this, instead use 'playlistinfo'
@@ -110,9 +126,15 @@ playlistinfo <int song>
 	displays list of songs in the playlist
 	_song_ is optional and species a single song to displa info for
 
+playlistiid <int songid>
+	displays list of songs in the playlist
+	_songid_ is optional and species a single song to display info for
+
 plchanges <playlist version>
 	displays changed songs currently in the playlist since 
 	_playlist version_
+	NOTE: to detect songs that were deleted at the end of the playlist,
+	use playlistlength returned by status command.
 
 previous
 	plays previous song in playlist
@@ -137,6 +159,9 @@ search <string type> <string what>
 seek <int song> <int time>
 	seeks to the position _time_ (in seconds) of entry _song_ in the 
 	playlist
+
+seekid <int songid> <int time>
+	seeks to the position _time_ (in seconds) of song with _songid_
 
 setvol <int vol>
 	set volume to _vol_
@@ -163,7 +188,8 @@ status
 	playlist: (31-bit unsigned integer, the playlist version number)
 	playlistlength: (integer, the length of the playlist)
 	state: ("play", "stop", or "pause")
-	song: (current song playing/paused, playlist song number)
+	song: (current song stopped on or playing, playlist song number)
+	songid: (current song stopped on or playing, playlist songid)
 	time: <int elapsed>:<time total> (of current playing/paused song)
 	bitrate: <int bitrate> (instantaneous bitrate in kbps)
 	xfade: <int seconds> (crossfade in seconds)
@@ -178,6 +204,10 @@ swap <int song1> <int song2>
 	swap positions of _song1_ and _song2_
 	increments playlist version by 1
 
+swapid <int songid1> <int songid2>
+	swap positions of of songs with song id's of _songid1_ and _songid2_
+	increments playlist version by 1
+
 update <string path>
 	searches mp3 directory for new music and removes old music from the db
 	_path_ is an optional argument that maybe a particular directory or 
@@ -187,8 +217,10 @@ update <string path>
 	where job id, is the job id requested for your update, and is displayed
 	in status, while the requested update is happening
 	increments playlist version by 1
-	NOTE: to update a number of paths/songs at once, use command_list,
-	it will be much more faster/effecient
+	NOTE: To update a number of paths/songs at once, use command_list,
+	it will be much more faster/effecient.  Also, if you use a 
+	command_list for updating, only one update_db job id will be returned
+	per sequence of updates.
 
 volume <int change>
 	change volume by amount _change_
