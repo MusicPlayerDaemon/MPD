@@ -735,23 +735,22 @@ int playPlaylist(FILE * fp, int song, int stopOnError) {
 }
 
 void syncCurrentPlayerDecodeMetadata() {
-        long i = 0;
         Song * songPlayer = playerCurrentDecodeSong();
         Song * song;
 
         if(!songPlayer) return;
 
-        for(i=0; i<playlist.length; i++) {
-                song = playlist.songs[i];
+	if(playlist_state!=PLAYLIST_STATE_PLAY);
 
-                if(song->type == SONG_TYPE_URL &&
-                                0 == strcmp(song->utf8url,  
-                                songPlayer->utf8url))
-                {
-                        if(song->tag) freeMpdTag(song->tag);
-                        song->tag = mpdTagDup(songPlayer->tag);
-	                incrPlaylistVersion();
-                }
+        song = playlist.songs[playlist.order[playlist.current]];
+
+        if(song->type == SONG_TYPE_URL &&
+                        0 == strcmp(song->utf8url, songPlayer->utf8url) &&
+                        !mpdTagsAreEqual(song->tag, songPlayer->tag))
+        {
+                if(song->tag) freeMpdTag(song->tag);
+                song->tag = mpdTagDup(songPlayer->tag);
+                incrPlaylistVersion();
         }
 }
 

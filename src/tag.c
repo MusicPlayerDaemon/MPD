@@ -184,4 +184,26 @@ MpdTag * mpdTagDup(MpdTag * tag) {
 
 	return ret;
 }
-/* vim:set shiftwidth=4 tabstop=8 expandtab: */
+
+int mpdTagStringsAreEqual(char * s1, char * s2) {
+        if(s1 && s2) {
+                if(strcmp(s1, s2)) return 0;
+        }
+        else if(s1 || s2) return 0;
+
+        return 1;
+}
+
+int mpdTagsAreEqual(MpdTag * tag1, MpdTag * tag2) {
+        if(tag1 == NULL && tag2 == NULL) return 1;
+        else if(!tag1 || ! !tag2) return 0;
+
+        if(tag1->time != tag2->time) return 0;
+
+        if(!mpdTagStringsAreEqual(tag1->artist, tag2->artist)) return 0;
+        if(!mpdTagStringsAreEqual(tag1->album, tag2->album)) return 0;
+        if(!mpdTagStringsAreEqual(tag1->track, tag2->track)) return 0;
+        if(!mpdTagStringsAreEqual(tag1->title, tag2->title)) return 0;
+
+        return 1;
+}
