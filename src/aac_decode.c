@@ -301,14 +301,10 @@ int aac_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc) {
 		return -1;
 	}
 
-	af->sampleRate = sampleRate;
-	af->channels = channels;
 	af->bits = 16;
 
 	cb->totalTime = totalTime;
 
-	dc->state = DECODE_STATE_DECODE;
-	dc->start = 0;
 	time = 0.0;
 
 	advanceAacBuffer(&b,bread);
@@ -322,7 +318,6 @@ int aac_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc) {
 		
 		sampleBuffer = faacDecDecode(decoder,&frameInfo,b.buffer,
 						b.bytesIntoBuffer);
-		advanceAacBuffer(&b,frameInfo.bytesconsumed);
 
 		if(frameInfo.error > 0) {
 			ERROR("error decoding AAC file: %s\n",dc->file);
@@ -331,6 +326,15 @@ int aac_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc) {
 			eof = 1;
 			break;
 		}
+
+		if(dc->start) {
+			af->channels = frameInfo.channels;
+			af->sampleRate = frameInfo.samplerate;
+			dc->state = DECODE_STATE_DECODE;
+			dc->start = 0;
+		}
+
+		advanceAacBuffer(&b,frameInfo.bytesconsumed);
 
 		sampleCount = (unsigned long)(frameInfo.samples);
 
@@ -383,6 +387,12 @@ int aac_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc) {
 		if(b.bytesIntoBuffer==0) eof = 1;
 	} while (!eof);
 
+	faacDecClose(decoder);
+	fclose(b.infile);
+	if(b.buffer) free(b.buffer);
+
+	if(dc->start) return -1;
+
 	if(!dc->stop && !dc->seek && chunkLen>0) {
 		cb->chunkSize[cb->end] = chunkLen;
 		++cb->end;
@@ -393,10 +403,6 @@ int aac_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc) {
 		}
 		chunkLen = 0;
 	}
-
-	faacDecClose(decoder);
-	fclose(b.infile);
-	if(b.buffer) free(b.buffer);
 
 	if(dc->seek) dc->seek = 0;
 

@@ -174,8 +174,6 @@ int mp4_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc) {
 
 	numSamples = mp4ff_num_samples(mp4fh,track);
 
-	dc->state = DECODE_STATE_DECODE;
-	dc->start = 0;
 	time = 0.0;
 
 	seekTable = malloc(sizeof(float)*numSamples);
@@ -224,6 +222,16 @@ int mp4_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc) {
 
 		sampleBuffer = faacDecDecode(decoder,&frameInfo,mp4Buffer,
 						mp4BufferSize);
+
+		if(dc->start) {
+			channels = frameInfo.channels;
+			scale = frameInfo.samplerate;
+			af->channels = frameInfo.channels;
+			af->sampleRate = frameInfo.samplerate;
+			dc->state = DECODE_STATE_DECODE;
+			dc->start = 0;
+		}
+
 		if(mp4Buffer) free(mp4Buffer);
 		if(frameInfo.error > 0) {
 			ERROR("error decoding MP4 file: %s\n",dc->file);
@@ -287,6 +295,14 @@ int mp4_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc) {
 		}
 	}
 
+	free(seekTable);
+	faacDecClose(decoder);
+	mp4ff_close(mp4fh);
+	fclose(fh);
+	free(mp4cb);
+
+	if(dc->start) return -1;
+
 	if(!dc->stop && !dc->seek && chunkLen>0) {
 		cb->chunkSize[cb->end] = chunkLen;
 		++cb->end;
@@ -297,12 +313,6 @@ int mp4_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc) {
 		}
 		chunkLen = 0;
 	}
-
-	free(seekTable);
-	faacDecClose(decoder);
-	mp4ff_close(mp4fh);
-	fclose(fh);
-	free(mp4cb);
 
 	if(dc->seek) dc->seek = 0;
 
