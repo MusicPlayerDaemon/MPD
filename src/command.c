@@ -317,6 +317,7 @@ int handleSearch(FILE * fp, unsigned int * permission, int argArrayLength,
 int handleUpdate(FILE * fp, unsigned int * permission, int argArrayLength, 
 		char ** argArray) 
 {
+	incrPlaylistVersion(); 
         return updateMp3Directory(fp);
 }
 

@@ -93,4 +93,6 @@ void playPlaylistIfPlayerStopped();
 
 int seekSongInPlaylist(FILE * fp, int song, float time);
 
+void incrPlaylistVersion();
+
 #endif
