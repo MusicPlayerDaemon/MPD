@@ -31,7 +31,8 @@ void makeListNodesArray(List * list) {
 
 	if(!list->numberOfNodes) return;
 
-	list->nodesArray = malloc(sizeof(ListNode *)*list->numberOfNodes);
+	list->nodesArray = realloc(list->nodesArray,
+				sizeof(ListNode *)*list->numberOfNodes);
 
 	for(i=0;i<list->numberOfNodes;i++) {
 		list->nodesArray[i] = node;
@@ -71,41 +72,40 @@ ListNode * insertInListBeforeNode(List * list, ListNode * beforeNode, 				char *
 	node = malloc(sizeof(ListNode));
 	assert(node!=NULL);
 
-	if(beforeNode==NULL) node = insertInList(list, key, data);
-	else {
-		node->nextNode = beforeNode;
-		if(beforeNode==list->firstNode) {
-			if(list->firstNode==NULL) {
-				assert(list->lastNode==NULL);
-				list->lastNode = node;
-			}
-			else {
-				assert(list->lastNode!=NULL);
-				assert(list->lastNode->nextNode==NULL);
-				list->firstNode->prevNode = node;
-			}
-			node->prevNode = NULL;
-			list->firstNode = node;
+	node->nextNode = beforeNode;
+	if(beforeNode==list->firstNode) {
+		if(list->firstNode==NULL) {
+			assert(list->lastNode==NULL);
+			list->lastNode = node;
 		}
 		else {
+			assert(list->lastNode!=NULL);
+			assert(list->lastNode->nextNode==NULL);
+			list->firstNode->prevNode = node;
+		}
+		node->prevNode = NULL;
+		list->firstNode = node;
+	}
+	else {
+		if(beforeNode) {
 			node->prevNode = beforeNode->prevNode;
-			if(node->prevNode) {
-				node->prevNode->nextNode = node;
-			}
 			beforeNode->prevNode = node;
 		}
-
-		if(list->strdupKeys) node->key = strdup(key);
-		else node->key = key;
-
-		assert(node->key!=NULL);
-
-		node->data = data;
-	
-		list->numberOfNodes++;
+		else {
+			node->prevNode = list->lastNode;
+			list->lastNode = node;
+		}
+		node->prevNode->nextNode = node;
 	}
+
+	if(list->strdupKeys) node->key = strdup(key);
+	else node->key = key;
+
+	node->data = data;
+
+	list->numberOfNodes++;
 	
-	freeListNodesArray(list);
+	/*freeListNodesArray(list);*/
 	if(list->sorted) makeListNodesArray(list);
 
 	return node;
