@@ -1053,8 +1053,8 @@ int savePlaylist(FILE * fp, char * utf8file) {
 
 	for(i=0;i<playlist.length;i++) {
 		if(playlist_saveAbsolutePaths) {
-			myfprintf(fileP,"%s%s\n",musicDir,
-				utf8ToFsCharset((playlist.songs[i])->utf8file));
+			myfprintf(fileP,"%s\n",rmp2amp(utf8ToFsCharset((
+				        playlist.songs[i])->utf8file)));
 		}
 		else myfprintf(fileP,"%s\n",
 				utf8ToFsCharset((playlist.songs[i])->utf8file));

@@ -23,10 +23,9 @@
 
 #include <sys/param.h>
 
-extern char musicDir[MAXPATHLEN+1];
-extern char playlistDir[MAXPATHLEN+1];
+extern char * musicDir;
 
-void initPaths();
+void initPaths(char * playlistDirArg, char * musicDirArg);
 
 void finishPaths();
 
@@ -51,6 +50,8 @@ char * parentPath(char * path);
 
 /* strips extra "///" and leading "/" and trailing "/" */
 char * sanitizePathDup(char * path);
+
+char * prependCwdToPathDup(char * path);
 
 #endif
 /* vim:set shiftwidth=4 tabstop=8 expandtab: */

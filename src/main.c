@@ -195,7 +195,6 @@ void parseOptions(int argc, char ** argv, Options * options) {
 
 int main(int argc, char * argv[]) {
         int port, uid, gid;
-        struct stat st;
         FILE * out;
         FILE * err;
         Options options;
@@ -301,61 +300,15 @@ int main(int argc, char * argv[]) {
                 return EXIT_FAILURE;
         }
 
-	initPaths();
+	initPaths(options.playlistDirArg,options.musicDirArg);
 	initPermissions();
-
-        if(options.playlistDirArg[0]=='/') {
-                strcpy(playlistDir,options.playlistDirArg);
-        }
-        else {
-                getcwd(playlistDir,MAXPATHLEN-strlen(options.playlistDirArg)-1);
-                if(playlistDir[strlen(playlistDir)-1]!='/') {
-                        strcat(playlistDir,"/");
-                }
-                strcat(playlistDir,options.playlistDirArg);
-        }
-        if(playlistDir[strlen(playlistDir)-1]!='/') {
-                strcat(playlistDir,"/");
-        }
-        if((stat(playlistDir,&st))<0) {
-                ERROR("problem stat'ing \"%s\"\n",options.playlistDirArg);
-                return EXIT_FAILURE;
-        }
-        if(!S_ISDIR(st.st_mode)) {
-                ERROR("\"%s\" is not a directory\n",options.playlistDirArg);
-                return EXIT_FAILURE;
-        }
-
-        if(options.musicDirArg[0]=='/') {
-                strcpy(musicDir,options.musicDirArg);
-        }
-        else {
-                getcwd(musicDir,MAXPATHLEN-strlen(options.musicDirArg)-1);
-                if(musicDir[strlen(musicDir)-1]!='/') strcat(musicDir,"/");
-                strcat(musicDir,options.musicDirArg);
-        }
-        if(musicDir[strlen(musicDir)-1]!='/') strcat(musicDir,"/");
-        if((stat(musicDir,&st))<0) {
-                ERROR("problem stat'ing \"%s\"\n",options.musicDirArg);
-                return EXIT_FAILURE;
-        }
-        if(!S_ISDIR(st.st_mode)) {
-                ERROR("\"%s\" is not a directory\n",options.musicDirArg);
-                return EXIT_FAILURE;
-        }
 
         initTables();
         initPlaylist();
 
-        if(!options.dbFile) {
-                strncpy(directorydb,playlistDir,MAXPATHLEN);
-		directorydb[MAXPATHLEN] = '\0';
-                strncat(directorydb,"/.mpddb",MAXPATHLEN-strlen(playlistDir));
-        }
-        else {
-		strncpy(directorydb,options.dbFile,MAXPATHLEN);
-		directorydb[MAXPATHLEN] = '\0';
-	}
+        if(!options.dbFile) directorydb = strdup(rpp2app(".mpddb"));
+        else directorydb = strdup(options.dbFile);
+
         if(options.createDB>0 || options.onlyCreateDB || readDirectoryDB()<0) 
 	{
                 if(options.createDB<0) {

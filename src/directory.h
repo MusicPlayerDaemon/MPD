@@ -27,7 +27,7 @@
 #include <stdio.h>
 #include <sys/param.h>
 
-extern char directorydb[MAXPATHLEN+1];
+extern char * directorydb;
 
 void readDirectoryDBIfUpdateIsFinished();
 

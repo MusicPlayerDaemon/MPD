@@ -24,6 +24,9 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 #ifdef HAVE_LOCALE
 #ifdef HAVE_LANGINFO
@@ -32,8 +35,8 @@
 #endif
 #endif
 
-char musicDir[MAXPATHLEN+1];
-char playlistDir[MAXPATHLEN+1];
+char * musicDir;
+char * playlistDir;
 
 char * fsCharset = NULL;
 
@@ -106,9 +109,30 @@ char * getFsCharset() {
 	return fsCharset;
 }
 
-void initPaths() {
+void initPaths(char * playlistDirArg, char * musicDirArg) {
 	char * charset = NULL;
 	char * originalLocale;
+        struct stat st;
+
+        playlistDir = prependCwdToPathDup(playlistDirArg);
+        if((stat(playlistDir,&st))<0) {
+                ERROR("problem stat'ing \"%s\"\n",playlistDirArg);
+                exit(EXIT_FAILURE);
+        }
+        if(!S_ISDIR(st.st_mode)) {
+                ERROR("\"%s\" is not a directory\n",playlistDirArg);
+                exit(EXIT_FAILURE);
+        }
+
+        musicDir = prependCwdToPathDup(musicDirArg);
+        if((stat(musicDir,&st))<0) {
+                ERROR("problem stat'ing \"%s\"\n",musicDirArg);
+                exit(EXIT_FAILURE);
+        }
+        if(!S_ISDIR(st.st_mode)) {
+                ERROR("\"%s\" is not a directory\n",musicDirArg);
+                exit(EXIT_FAILURE);
+        }
 
 	if(getConf()[CONF_FS_CHARSET]) {
 		charset = strdup(getConf()[CONF_FS_CHARSET]);
@@ -241,4 +265,35 @@ char * sanitizePathDup(char * path) {
 
 	return realloc(ret,len+1);
 }
+
+char * prependCwdToPathDup(char * path) {
+        int len = MAXPATHLEN+1;
+        char * ret = malloc(len);
+
+        memset(ret,0,len);
+
+        len = 0;
+
+        if(path[0]=='/') {
+                strncpy(ret,path,MAXPATHLEN);
+                len = strlen(ret);
+        }
+        else {
+                getcwd(ret,MAXPATHLEN);
+                len = strlen(ret);
+                if(ret[len-1]!='/') {
+                        strncat(ret,"/",MAXPATHLEN-len);
+                        len = strlen(path);
+                }
+                strncat(ret,path,MAXPATHLEN-len);
+                len = strlen(ret);
+        }
+        if(ret[len-1]!='/') {
+                strncat(ret,"/",MAXPATHLEN-len);
+                len = strlen(path);
+        }
+
+        return realloc(ret,len+1);
+}
+
 /* vim:set shiftwidth=4 tabstop=8 expandtab: */

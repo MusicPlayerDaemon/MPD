@@ -70,7 +70,7 @@ typedef struct _Directory {
 
 Directory * mp3rootDirectory = NULL;
 
-char directorydb[MAXPATHLEN+1];
+char * directorydb;
 
 volatile int directory_updatePid = 0;
 
