@@ -22,6 +22,8 @@
 	*) write a mac os X native audioOutput
 	*) write a esd native audioOutput
 	*) need better resampling code
+	*) add support for saving and restoring audioOutput state to the 
+		state_file
 
 0.13
 ----
