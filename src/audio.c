@@ -210,12 +210,7 @@ int isCurrentAudioFormat(AudioFormat * audioFormat) {
 #ifdef HAVE_AUDIO
 	if(!audio_device || !audioFormat) return 0;
 
-	if(audio_format.bits!=audioFormat->bits || 
-			audio_format.sampleRate!=audioFormat->sampleRate ||
-			audio_format.channels!=audioFormat->channels) 
-	{
-		return 0;
-	}
+	if(memcmp(audioFormat,&audio_format,sizeof(AudioFormat)) != 0) return 0;
 #endif
 	return 1;
 }
