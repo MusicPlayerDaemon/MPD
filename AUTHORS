@@ -1,10 +1,19 @@
-Developer -> Warren Dukes <shank@mercury.chem.pitt.edu>
-Developer -> tw-nym
-audiofile support and command.c cleanup -> normalperson
-setuid patch -> Nagilum
-'next' and 'previous' patch -> Niklas Hofer
-command.c and signal handling cleanup -> mackstann
-replayGain -> AliasMrJones
+General Development
+ - Warren Dukes <shank@mercury.chem.pitt.edu>
+ - tw-nym
+ - normalperson
+
+'next' and 'previous' command
+ - Niklas Hofer
+
+'mute' command
+ - danb
+
+setuid support
+ - nagilum
+
+replayGain support
+ - AliasMrJones
 
 libid3tag and libmad copyrighted by Robert Leslie, http://www.underbit.com/products/mad
 mp4ff copyrighted by M. Bakker, Ahead Software AG, http://www.nero.com

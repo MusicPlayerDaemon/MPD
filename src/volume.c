@@ -63,6 +63,9 @@ char * volume_mixerDevice = VOLUME_MIXER_DEVICE_DEFAULT;
 
 int volume_softwareSet = 100;
 
+int volume_fakeMuteStatus = 0;
+int volume_fakeLastUnmutedLevel = -1;
+
 #ifdef HAVE_OSS
 int volume_ossFd;
 int volume_ossControl = SOUND_MIXER_PCM;
@@ -443,6 +446,9 @@ int changeSoftwareVolume(FILE * fp, int change, int rel) {
 }
 
 int changeVolumeLevel(FILE * fp, int change, int rel) {
+	if(getVolumeMuteStatus())
+		setVolumeMuteStatus(fp,0);
+
 	switch(volume_mixerType) {
 #ifdef HAVE_ALSA
 	case VOLUME_MIXER_TYPE_ALSA:
@@ -457,5 +463,113 @@ int changeVolumeLevel(FILE * fp, int change, int rel) {
 	default:
                 return 0;
                 break;
+	}
+}
+
+int getAlsaVolumeMuteStatus() {
+	int err;
+	int status;
+
+	if((err = snd_mixer_selem_get_playback_switch(volume_alsaElem,
+		SND_MIXER_SCHN_FRONT_LEFT,&status))<0) {
+		WARNING("problems getting alsa mute status: %s\n",
+			snd_strerror(err));
+		return -1;
+	}
+
+	return !status;
+}
+
+int setAlsaVolumeMuteStatus(FILE * fp, int status) {
+	int err;
+
+	if(status == getVolumeMuteStatus())
+		return 0;
+
+	if((err = snd_mixer_selem_set_playback_switch_all(volume_alsaElem,
+								!status))<0) {
+		commandError(fp, ACK_ERROR_SYSTEM, "problems muting volume",
+				NULL);
+		WARNING("problems muting alsa volume: %s\n", snd_strerror(err));
+		return -1;
+	}
+
+	return 0;
+}
+
+int getFakeVolumeMuteStatus() {
+	return volume_fakeMuteStatus;
+}
+
+// Fake mute: just drop volume to 0
+int setFakeVolumeMuteStatus(FILE * fp, int status) {
+	// Don't call changeVolumeLevel while volume_fakeMuteStatus is set!
+	if(status && !getVolumeMuteStatus()) {
+		// Mute
+		int ret;
+		volume_fakeLastUnmutedLevel = getVolumeLevel();
+		ret = changeVolumeLevel(fp,0,0);
+		volume_fakeMuteStatus = 1;
+		return ret;
+	}
+	else if(!status && getVolumeMuteStatus()){
+		// Unmute
+		volume_fakeMuteStatus = 0;
+		return changeVolumeLevel(fp,volume_fakeLastUnmutedLevel,0);
+	}
+	else {
+		return 0;
+	}
+}
+
+int getOssVolumeMuteStatus() {
+	return getFakeVolumeMuteStatus();
+}
+
+int setOssVolumeMuteStatus(FILE * fp, int status) {
+	return setFakeVolumeMuteStatus(fp,status);
+}
+
+int getSoftwareVolumeMuteStatus() {
+	return getFakeVolumeMuteStatus();
+}
+
+int setSoftwareVolumeMuteStatus(FILE * fp, int status) {
+	return setFakeVolumeMuteStatus(fp,status);
+}
+
+int getVolumeMuteStatus() {
+	switch(volume_mixerType) {
+#ifdef HAVE_ALSA
+	case VOLUME_MIXER_TYPE_ALSA:
+		return getAlsaVolumeMuteStatus();
+#endif
+#ifdef HAVE_OSS
+	case VOLUME_MIXER_TYPE_OSS:
+		return getOssVolumeMuteStatus();
+#endif
+	case VOLUME_MIXER_TYPE_SOFTWARE:
+		return getSoftwareVolumeMuteStatus();
+	default:
+		return 0;
+		break;
+	}
+}
+
+int setVolumeMuteStatus(FILE * fp, int status) {
+	switch(volume_mixerType) {
+#ifdef HAVE_ALSA
+	case VOLUME_MIXER_TYPE_ALSA:
+		return setAlsaVolumeMuteStatus(fp,status);
+#endif
+#ifdef HAVE_OSS
+	case VOLUME_MIXER_TYPE_OSS:
+		return setOssVolumeMuteStatus(fp,status);
+#endif
+	case VOLUME_MIXER_TYPE_SOFTWARE:
+		return setSoftwareVolumeMuteStatus(fp,status);
+	default:
+		return 0;
+		break;
 	}
 }

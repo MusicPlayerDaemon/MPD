@@ -64,6 +64,7 @@
 #define COMMAND_PREVIOUS       	"previous"
 #define COMMAND_LISTALL        	"listall"
 #define COMMAND_VOLUME         	"volume"
+#define COMMAND_MUTE           	"mute"
 #define COMMAND_REPEAT         	"repeat"
 #define COMMAND_RANDOM         	"random"
 #define COMMAND_STATS          	"stats"
@@ -90,6 +91,7 @@
 #define COMMAND_NOTCOMMANDS	"notcommands"
 
 #define COMMAND_STATUS_VOLUME           "volume"
+#define COMMAND_STATUS_MUTE             "mute"
 #define COMMAND_STATUS_STATE            "state"
 #define COMMAND_STATUS_REPEAT           "repeat"
 #define COMMAND_STATUS_RANDOM           "random"
@@ -248,6 +250,7 @@ int commandStatus(FILE * fp, unsigned int * permission, int argArrayLength,
         }
 
         myfprintf(fp,"%s: %i\n",COMMAND_STATUS_VOLUME,getVolumeLevel());
+        myfprintf(fp,"%s: %i\n",COMMAND_STATUS_MUTE,getVolumeMuteStatus());
         myfprintf(fp,"%s: %i\n",COMMAND_STATUS_REPEAT,getPlaylistRepeatStatus());
         myfprintf(fp,"%s: %i\n",COMMAND_STATUS_RANDOM,getPlaylistRandomStatus());
         myfprintf(fp,"%s: %li\n",COMMAND_STATUS_PLAYLIST,getPlaylistVersion());
@@ -570,6 +573,20 @@ int handleSetVol(FILE * fp, unsigned int * permission, int argArrayLength,
                 return -1;
         }
         return changeVolumeLevel(fp,level,0);
+}
+
+int handleMute(FILE * fp, unsigned int * permission, int argArrayLength, 
+		char ** argArray) 
+{
+	int status;
+	char * test;
+
+	status = strtol(argArray[1],&test,10);
+	if(*test!='\0') {
+		commandError(fp, ACK_ERROR_ARG, "need an integer", NULL);
+		return -1;
+	}
+	return setVolumeMuteStatus(fp,status);
 }
 
 int handleRepeat(FILE * fp, unsigned int * permission, int argArrayLength, 
@@ -942,6 +959,7 @@ void initCommands() {
         addCommand(COMMAND_PREVIOUS    ,PERMISSION_CONTROL, 0, 0,handlePrevious,NULL);
         addCommand(COMMAND_LISTALL     ,PERMISSION_READ,    0, 1,handleListAll,NULL);
         addCommand(COMMAND_VOLUME      ,PERMISSION_CONTROL, 1, 1,handleVolume,NULL);
+        addCommand(COMMAND_MUTE        ,PERMISSION_CONTROL, 1, 1,handleMute,NULL);
         addCommand(COMMAND_REPEAT      ,PERMISSION_CONTROL, 1, 1,handleRepeat,NULL);
         addCommand(COMMAND_RANDOM      ,PERMISSION_CONTROL, 1, 1,handleRandom,NULL);
         addCommand(COMMAND_STATS       ,PERMISSION_READ,    0, 0,handleStats,NULL);
