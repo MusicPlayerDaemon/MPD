@@ -2,9 +2,7 @@
 	a) put some sort of error reporting for streaming/inputStream!
 
 2) http stuff
-	a) allow http proxy
-	b) handle http authentication
-	c) ensure URL's are all ASCII, and properly %'d! check rfc's
+	a) ensure URL's are all ASCII, and properly %'d! check rfc's
 		for legal characters
 
 3) ACK error codes
