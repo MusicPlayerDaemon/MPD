@@ -28,6 +28,7 @@ AC_ARG_ENABLE(ipv6,[  --disable-ipv6     disable IPv6 support],,enable_ipv6=yes)
 AC_ARG_ENABLE(ogg,[  --disable-ogg     disable ogg support],,enable_ogg=yes)
 AC_ARG_ENABLE(flac,[  --disable-flac    disable flac support],,enable_flac=yes)
 AC_ARG_ENABLE(mp3,[  --disable-mp3     disable mp3 support],,enable_mp3=yes)
+AC_ARG_ENABLE(aac,[  --disable-aac     disable AAC support],,enable_aac=yes)
 AC_ARG_ENABLE(audiofile,[  --disable-audiofile disable audiofile support, disables wave support],,enable_audiofile=yes)
 AC_ARG_ENABLE(mpd_mad,[  --enable-mpd-mad     use mpd libmad],use_mpd_mad=yes,)
 AC_ARG_ENABLE(id3,[  --disable-id3     disable id3 support],,enable_id3=yes)
@@ -40,6 +41,10 @@ AC_ARG_WITH(id3tag-includes,[  --with-id3tag-includes=DIR   Directory where libi
 AC_ARG_WITH(mad,[  --with-mad=PFX   Prefix where libmad is installed (optional)], mad_prefix="$withval", mad_prefix="")
 AC_ARG_WITH(mad-libraries,[  --with-mad-libraries=DIR   Directory where libmad library is installed (optional)], mad_libraries="$withval", mad_libraries="")
 AC_ARG_WITH(mad-includes,[  --with-mad-includes=DIR   Directory where mad header files are installed (optional)], mad_includes="$withval", mad_includes="")
+
+AC_ARG_WITH(faad,[  --with-faad=PFX   Prefix where faad lib is installed (optional)], faad_prefix="$withval", faad_prefix="")
+AC_ARG_WITH(faad-libraries,[  --with-faad-libraries=DIR   Directory where faad library is installed (optional)], faad_libraries="$withval", faad_libraries="")
+AC_ARG_WITH(faad-includes,[  --with-faad-includes=DIR   Directory where faad header files are installed (optional)], faad_includes="$withval", faad_includes="")
 
 AC_C_BIGENDIAN
 
@@ -120,20 +125,23 @@ if test x$enable_id3 = xyes; then
   		if test "x$id3tag_includes" != "x" ; then
   			ID3TAG_CFLAGS="-I$id3tag_includes"
   		elif test "x$id3tag_prefix" != "x" ; then
-    			ID3TAG_CFLAGS="-I$id3tag_prefix/lib"
+    			ID3TAG_CFLAGS="-I$id3tag_prefix/include"
   		elif test "x$prefix" != "xNONE"; then
-    			ID3TAG_CFLAGS="-I$libdir"
+    			ID3TAG_CFLAGS="-I$includedir"
   		fi
 
   		ID3TAG_CFLAGS="$ID3TAG_CFLAGS"
 
 		oldcflags=$CFLAGS
-		CFLAGS="$CFLAGS $ID3TAG_CFLAGS $ID3TAG_LIBS"
+		oldlibs=$LIBS
+		CFLAGS="$CFLAGS $MPD_CFLAGS $ID3TAG_CFLAGS"
+		LIBS="$LIBS $MPD_LIBS $ID3TAG_LIBS"
 		AC_CHECK_LIB(id3tag,id3_file_open,[ID3_LIB="$ID3TAG_LIBS";
      			MPD_CFLAGS="$MPD_CFLAGS $ID3TAG_CFLAGS";
 			use_libid3tag=yes],
 			[use_libid3tag=no;use_mpd_id3tag=yes])
 		CFLAGS=$oldcflags
+		LIBS=$oldlibs
 	fi
 	if test x$use_mpd_id3tag = xyes; then
 		MPD_CFLAGS="$MPD_CFLAGS -DUSE_MPD_ID3TAG"
@@ -163,14 +171,20 @@ if test x$enable_mp3 = xyes; then
   		if test "x$mad_includes" != "x" ; then
   			MAD_CFLAGS="-I$mad_includes"
   		elif test "x$mad_prefix" != "x" ; then
-    			MAD_CFLAGS="-I$mad_prefix/lib"
+    			MAD_CFLAGS="-I$mad_prefix/include"
   		elif test "x$prefix" != "xNONE"; then
-    			MAD_CFLAGS="-I$libdir"
+    			MAD_CFLAGS="-I$includedir"
   		fi
 
+		oldcflags=$CFLAGS
+		oldlibs=$LIBS
+		CFLAGS="$CFLAGS $MPD_CFLAGS $MAD_CFLAGS"
+		LIBS="$LIBS $MPD_LIBS $MAD_LIBS"
 		AC_CHECK_LIB(mad,mad_stream_init,[MAD_LIB="$MAD_LIBS";
 			MPD_CFLAGS="$MPD_CFLAGS $MAD_CFLAGS";use_libmad=yes],
      			[use_libmad=no;use_mpd_mad=yes])
+		CFLAGS=$oldcflags
+		LIBS=$oldlibs
 	fi
 	if test x$use_mpd_mad = xyes; then
 		MPD_CFLAGS="$MPD_CFLAGS -DUSE_MPD_MAD"
@@ -179,6 +193,37 @@ if test x$enable_mp3 = xyes; then
 		AC_CONFIG_SUBDIRS(src/libmad)
 	fi
 	MPD_CFLAGS="$MPD_CFLAGS -DHAVE_MAD"
+fi
+
+if test x$enable_aac = xyes; then
+  	if test "x$faad_libraries" != "x" ; then
+  		FAAD_LIBS="-L$faad_libraries"
+  	elif test "x$faad_prefix" != "x" ; then
+    		FAAD_LIBS="-L$faad_prefix/lib"
+  	elif test "x$prefix" != "xNONE"; then
+    		FAAD_LIBS="-L$libdir"
+  	fi
+
+ 	FAAD_LIBS="$FAAD_LIBS -lfaad"
+
+  	if test "x$faad_includes" != "x" ; then
+  		FAAD_CFLAGS="-I$faad_includes"
+  	elif test "x$faad_prefix" != "x" ; then
+    		FAAD_CFLAGS="-I$faad_prefix/include"
+  	elif test "x$prefix" != "xNONE"; then
+    		FAAD_CFLAGS="-I$includedir"
+  	fi
+
+	oldcflags=$CFLAGS
+	oldlibs=$LIBS
+	CFLAGS="$CFLAGS $MPD_CFLAGS $FAAD_CFLAGS"
+	LIBS="$LIBS $MPD_LIBS $FAAD_LIBS"
+	AC_CHECK_HEADER(faad.h,,enable_aac=no)
+	if test x$enable_aac = xyes; then
+		AC_CHECK_LIB(faad, faacDecDecode,[MPD_LIBS="$MPD_LIBS $FAAD_LIBS";MPD_CFLAGS="$MPD_CFLAGS $FAAD_CFLAGS -DHAVE_FAAD"],enable_aac=no)
+	fi
+	CFLAGS=$oldcflags
+	LIBS=$oldlibs
 fi
 
 if test x$enable_ogg = xyes; then

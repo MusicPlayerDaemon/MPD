@@ -125,6 +125,9 @@ int isMusic(char * utf8file, time_t * mtime) {
 #ifdef HAVE_AUDIOFILE
 	if((ret = isWave(utf8file,mtime))) return ret;
 #endif
+#ifdef HAVE_FAAD
+	if((ret = isAac(utf8file,mtime))) return ret;
+#endif
 
 	return ret;
 }
@@ -234,6 +237,35 @@ int isOgg(char * utf8file, time_t * mtime) {
 			cNext = cLast = strtok(dup,".");
 			while((cNext = strtok(NULL,"."))) cLast = cNext;
 			if(cLast && 0==strcasecmp(cLast,"ogg")) {
+				if(mtime) *mtime = st.st_mtime;
+				ret = 1;
+			}
+			free(dup);
+			return ret;
+		}
+		else return 0;
+	}
+
+	return 0;
+}
+
+int isAac(char * utf8file, time_t * mtime) {
+	struct stat st;
+	char * file = utf8ToFsCharset(utf8file);
+	char * actualFile = file;
+
+	if(actualFile[0]!='/') actualFile = rmp2amp(file);
+
+	if(stat(actualFile,&st)==0) {
+		if(S_ISREG(st.st_mode)) {
+			char * dup;
+			char * cLast;
+			char * cNext;
+			int ret = 0;
+			dup = strdup(file);
+			cNext = cLast = strtok(dup,".");
+			while((cNext = strtok(NULL,"."))) cLast = cNext;
+			if(cLast && 0==strcasecmp(cLast,"aac")) {
 				if(mtime) *mtime = st.st_mtime;
 				ret = 1;
 			}

@@ -26,6 +26,8 @@ int lsPlaylists(FILE * fp, char * utf8path);
 
 int isMp3(char * utf8file, time_t * mtime);
 
+int isAac(char * utf8file, time_t * mtime);
+
 int isOgg(char * utf8file, time_t * mtime);
 
 int isFlac(char * utf8file, time_t * mtime);

@@ -177,6 +177,9 @@ int playerPlay(FILE * fp, char * utf8file) {
 #ifdef HAVE_AUDIOFILE
 	else if(isWave(utf8file,NULL)) pc->decodeType = DECODE_TYPE_AUDIOFILE;
 #endif
+#ifdef HAVE_FAAD
+	else if(isAac(utf8file,NULL)) pc->decodeType = DECODE_TYPE_AAC;
+#endif
 	else {
 		strncpy(pc->erroredFile,pc->file,MAXPATHLEN);
 		pc->error = PLAYER_ERROR_UNKTYPE;

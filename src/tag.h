@@ -37,6 +37,10 @@ void freeMpdTag(MpdTag * tag);
 MpdTag * mp3TagDup(char * utf8file);
 #endif
 
+#ifdef HAVE_FAAD
+MpdTag * aacTagDup(char * utf8file);
+#endif
+
 #ifdef HAVE_OGG
 MpdTag * oggTagDup(char * utf8file);
 #endif

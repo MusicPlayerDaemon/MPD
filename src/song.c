@@ -78,6 +78,11 @@ Song * newSong(char * utf8file) {
 		song->tag = audiofileTagDup(utf8file);
 	}
 #endif
+#ifdef HAVE_FAAD
+	else if(isAac(utf8file,&(song->mtime))) {
+		song->tag = aacTagDup(utf8file);
+	}
+#endif
 
 	if(!song->tag || song->tag->time<0) {
 		freeSong(song);
@@ -238,6 +243,11 @@ int updateSongInfo(Song * song) {
 #ifdef HAVE_AUDIOFILE
 	else if(isWave(utf8file,&(song->mtime))) {
 		song->tag = audiofileTagDup(utf8file);
+	}
+#endif
+#ifdef HAVE_FAAD
+	else if(isAac(utf8file,&(song->mtime))) {
+		song->tag = aacTagDup(utf8file);
 	}
 #endif
 

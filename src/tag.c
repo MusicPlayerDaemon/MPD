@@ -167,6 +167,25 @@ MpdTag * mp3TagDup(char * utf8file) {
 }
 #endif
 
+#ifdef HAVE_FAAD
+MpdTag * aacTagDup(char * utf8file) {
+	MpdTag * ret = NULL;
+	int time;
+
+	ret = id3Dup(utf8file);
+
+#warning getAacTotalTime needs implementing
+	//time = getAacTotalTime(rmp2amp(utf8ToFsCharset(utf8file)));
+
+	if(time>=0) {
+		if(!ret) ret = newMpdTag();
+		ret->time = time;
+	}
+
+	return ret;
+}
+#endif
+
 #ifdef HAVE_OGG
 MpdTag * oggTagDup(char * utf8file) {
 	MpdTag * ret = NULL;
