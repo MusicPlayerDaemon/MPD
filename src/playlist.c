@@ -505,9 +505,11 @@ int addSongToPlaylist(FILE * fp, Song * song) {
 		/*if(playlist_state==PLAYLIST_STATE_STOP) start = 0;
 		else */if(playlist.queued>=0) start = playlist.queued+1;
 		else start = playlist.current+1;
-		swap = rand()%(playlist.length-start);
-		swap+=start;
-		swapOrder(playlist.length-1,swap);
+                if(start < playlist.length) {
+		        swap = rand()%(playlist.length-start);
+		        swap+=start;
+		        swapOrder(playlist.length-1,swap);
+                }
 	}
 	
 	incrPlaylistVersion();
