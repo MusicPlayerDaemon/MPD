@@ -261,7 +261,7 @@ char * sanitizePathDup(char * path) {
 		ret[len] = '\0';
 	}
 
-	printf("sanitized: %s\n", ret);
+	DEBUG("sanitized: %s\n", ret);
 
 	return realloc(ret,len+1);
 }
