@@ -129,6 +129,7 @@ seek <int song> <int time>
 
 setvol <int vol>
 	set volume to _vol_
+	_vol_ the range of volume is 0-100
 
 shuffle
 	shuffles the current playlist
