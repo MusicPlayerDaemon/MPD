@@ -37,7 +37,7 @@ AC_ARG_ENABLE(iconv,[  --disable-iconv     disable iconv support],,enable_iconv=
 AC_ARG_ENABLE(ipv6,[  --disable-ipv6     disable IPv6 support],,enable_ipv6=yes)
 AC_ARG_ENABLE(sun,[  --disable-sun     disable sun support],,enable_sun=yes)
 AC_ARG_ENABLE(oss,[  --disable-oss     disable OSS support],,enable_oss=yes)
-AC_ARG_ENABLE(alsa,[  --disable-alsa     disable ALSA Mixer support],,enable_alsa=yes)
+AC_ARG_ENABLE(alsa,[  --disable-alsa     disable ALSA support],,enable_alsa=yes)
 AC_ARG_ENABLE(ogg,[  --disable-ogg     disable ogg support],,enable_ogg=yes)
 AC_ARG_ENABLE(flac,[  --disable-flac    disable flac support],,enable_flac=yes)
 AC_ARG_ENABLE(mp3,[  --disable-mp3     disable mp3 support],,enable_mp3=yes)
@@ -534,63 +534,41 @@ echo ""
 echo "########### MPD CONFIGURATION ############"
 echo ""
 
-echo "i18n Support:"
-
-if test x$enable_iconv = xyes; then
-	echo "iconv support .................enabled"
-else
-	echo "iconv support .................disabled"
-fi
-
-if test x$enable_locale = xyes; then
-	echo "locale support ................enabled"
-else
-	echo "locale support ................disabled"
-fi
-
-if test x$am_cv_langinfo_codeset = xyes; then
-	echo "langinfo support ..............enabled"
-else
-	echo "langinfo support ..............disabled"
-fi
-
-echo ""
-
-echo "Audio Output Support:"
+echo " Playback Support:"
 if test x$enable_ao = xyes; then
-	echo "Playing audio via libao .......enabled"
+	echo " libao support .................enabled"
 else
-	echo "Playing audio via libao .......disabled"
+	echo " libao support .................disabled"
 fi
 
 if test x$enable_oss = xyes; then
-	echo "Playing audio via OSS .........enabled"
+	echo " OSS support ...................enabled"
 else
-	echo "Playing audio via OSS .........disabled"
+	echo " OSS support ...................disabled"
 fi
 
 if test x$enable_alsa = xyes; then
-	echo "Playing audio via ALSA ........enabled"
+	echo " ALSA support ..................enabled"
 else
-	echo "Playing audio via ALSA ........disabled"
+	echo " ALSA support ..................disabled"
 fi
 
 if test x$enable_sun = xyes; then
-	echo "Playing audio via SUN .........enabled"
+	echo " Sun support ...... ............enabled"
 else
-	echo "Playing audio via SUN .........disabled"
+	echo " Sun support ...... ............disabled"
 fi
 
 if test x$enable_osx = xyes; then
-	echo "Playing audio on OS X .........enabled"
+	echo " OS X support ..................enabled"
 else
-	echo "Playing audio on OS X .........disabled"
+	echo " OS X support ..................disabled"
 fi
 
 if test x$enable_shout = xyes; then
-	echo "Streaming through shout .......enabled"
+	echo " Shout streaming support .......enabled"
 else
-	echo "Streaming through shout .......disabled"
+	echo " Shout streaming support .......disabled"
 fi
 
 echo ""
@@ -604,64 +582,64 @@ if test x$enable_ao = xno &&
 	AC_MSG_ERROR("No Audio Output types configured!")
 fi
 
-echo "Audio Format Support:"
+echo " File Format Support:"
 
 if test x$enable_id3 = xyes; then
-	echo "ID3 tag support ...............enabled"
+	echo " ID3 tag support ...............enabled"
 	if test x$use_mpd_id3tag = xyes; then
-		echo "  using MPD's libid3tag........yes"
+		echo "   using MPD's libid3tag........yes"
 	else
-		echo "  using MPD's libid3tag........no"
+		echo "   using MPD's libid3tag........no"
 	fi
 else
-	echo "ID3 tag support ...............disabled"
+	echo " ID3 tag support ...............disabled"
 fi
 
 if test x$enable_mp3 = xyes; then
-	echo "mp3 support ...................enabled"
+	echo " mp3 support ...................enabled"
 	if test x$use_mpd_mad = xyes; then
-		echo "  using MPD's libmad...........yes"
+		echo "   using MPD's libmad...........yes"
 	else
-		echo "  using MPD's libmad...........no"
+		echo "   using MPD's libmad...........no"
 	fi
 else
-	echo "mp3 support ...................disabled"
+	echo " mp3 support ...................disabled"
 fi
 
 if test x$enable_ogg = xyes; then
-	echo "Ogg Vorbis support ............enabled"
+	echo " Ogg Vorbis support ............enabled"
 else
-	echo "Ogg Vorbis support ............disabled"
+	echo " Ogg Vorbis support ............disabled"
 fi
 
 if test x$enable_flac = xyes; then
-	echo "FLAC support ..................enabled"
+	echo " FLAC support ..................enabled"
 else
-	echo "FLAC support ..................disabled"
+	echo " FLAC support ..................disabled"
 fi
 
 if test x$enable_audiofile = xyes; then
-	echo "Wave file support .............enabled"
+	echo " Wave file support .............enabled"
 else
-	echo "Wave file support .............disabled"
+	echo " Wave file support .............disabled"
 fi
 
 if test x$enable_aac = xyes; then
-	echo "MP4/AAC support ...............enabled"
+	echo " MP4/AAC support ...............enabled"
 else
-	echo "MP4/AAC support ...............disabled"
+	echo " MP4/AAC support ...............disabled"
 fi
 
 if test x$enable_mpc = xyes; then
-	echo "musepack (MPC) support ........enabled"
+	echo " Musepack (MPC) support ........enabled"
 else
-	echo "musepack (MPC) support ........disabled"
+	echo " Musepack (MPC) support ........disabled"
 fi
 
 if test x$enable_mod = xyes; then
-	echo "MOD support ...................enabled"
+	echo " MOD support ...................enabled"
 else
-	echo "MOD support ...................disabled"
+	echo " MOD support ...................disabled"
 fi
 
 echo ""
