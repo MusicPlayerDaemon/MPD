@@ -48,7 +48,7 @@ void removeTagItemString(int type, char * string) {
 
 	assert(string);
 
-	assert(tagLists[type]);
+	/*assert(tagLists[type]);*/
 	if(tagLists[type] == NULL) return;
 
 	node = findNodeInList(tagLists[type], string);
