@@ -188,9 +188,6 @@ int flacSendChunk(FlacData * data) {
 	if(data->dc->stop) return -1;
 	if(data->dc->seek) return 0;
 
-#ifdef WORDS_BIGENDIAN
-	pcm_changeBufferEndianness(data->chunk,CHUNK_SIZE,data->af->bits);
-#endif
 	memcpy(data->cb->chunks+data->cb->end*CHUNK_SIZE,data->chunk,
 			CHUNK_SIZE);
 	data->cb->chunkSize[data->cb->end] = data->chunk_length;
