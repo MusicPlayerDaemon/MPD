@@ -251,9 +251,6 @@ int mp4_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc) {
 			size_t size = sampleBufferLen>CHUNK_SIZE-chunkLen ? 
 							CHUNK_SIZE-chunkLen:
 							sampleBufferLen;
-#ifdef WORDS_BIGENDIAN
-			pcm_changeBufferEndianness(sampleBuffer,size,af->bits);
-#endif
 			while(cb->begin==cb->end && cb->wrap &&
 					!dc->stop && !dc->seek)
 			{

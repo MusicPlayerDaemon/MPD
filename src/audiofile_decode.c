@@ -104,10 +104,6 @@ int audiofile_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc)
 				if(dc->stop) break;
 				else if(dc->seek) continue;
 				
-#ifdef WORDS_BIGENDIAN
-				pcm_changeBufferEndianness(chunk,CHUNK_SIZE,
-						af->bits);
-#endif
 				memcpy(cb->chunks+cb->end*CHUNK_SIZE,chunk,
 						CHUNK_SIZE);
 				cb->chunkSize[cb->end] = CHUNK_SIZE;

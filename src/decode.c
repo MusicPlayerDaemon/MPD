@@ -180,8 +180,19 @@ void decodeSeek(PlayerControl * pc, AudioFormat * af, DecoderControl * dc,
 	} \
 	if(pc->pause) { \
 		pause = !pause; \
-		if(pause) pc->state = PLAYER_STATE_PAUSE; \
-		else pc->state = PLAYER_STATE_PLAY; \
+		if(pause) { \
+			finishAudio(); \
+			pc->state = PLAYER_STATE_PAUSE; \
+		} \
+		else { \
+			if(initAudio(NULL)<0) { \
+				strncpy(pc->erroredFile,pc->file,MAXPATHLEN); \
+				pc->error = PLAYER_ERROR_AUDIO; \
+				quitDecode(pc,dc); \
+				return; \
+			} \
+			pc->state = PLAYER_STATE_PLAY; \
+		} \
 		pc->pause = 0; \
 		kill(getppid(),SIGUSR1); \
 	} \
@@ -296,7 +307,6 @@ void decode() {
 
 	{
 		/* PARENT */
-		char silence[CHUNK_SIZE];
 		int pause = 0;
 		int quit = 0;
 		int bbp = buffered_before_play;
@@ -305,8 +315,6 @@ void decode() {
 		int fadePosition;
 		int nextChunk = -1;
 		int test;
-
-		memset(silence,0,CHUNK_SIZE);
 
 		if(waitOnDecode(pc,af,dc,cb)<0) return;
 
@@ -348,9 +356,7 @@ void decode() {
 				}
 				else doCrossFade = -1;
 			}
-			if(pause) {
-				if(playAudio(silence,CHUNK_SIZE)<0) quit = 1;
-			}
+			if(pause) usleep(10000);
 			else if((cb->begin!=cb->end || cb->wrap) && 
 				cb->begin!=cb->next)
 			{

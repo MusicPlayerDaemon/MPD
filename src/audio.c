@@ -131,18 +131,21 @@ int isCurrentAudioFormat(AudioFormat * audioFormat) {
 int initAudio(AudioFormat * audioFormat) {
 	ao_sample_format format;
 
-	if(audio_device && !isCurrentAudioFormat(audioFormat)) {
+	if(audioFormat && audio_device && !isCurrentAudioFormat(audioFormat)) {
 		finishAudio();
 	}
 
 	if(!audio_device) {
-		format.bits = audioFormat->bits;
-		format.rate = audioFormat->sampleRate;
+		if(audioFormat) {
+			audio_format.bits = audioFormat->bits;
+			audio_format.sampleRate = audioFormat->sampleRate;
+			audio_format.channels = audioFormat->channels;
+		}
+
+		format.bits = audio_format.bits;
+		format.rate = audio_format.sampleRate;
 		format.byte_format = AO_FMT_NATIVE;
-		format.channels = audioFormat->channels;
-		audio_format.bits = format.bits;
-		audio_format.sampleRate = format.rate;
-		audio_format.channels = format.channels;
+		format.channels = audio_format.channels;
 
 		blockSignals();
 		audio_device = ao_open_live(audio_ao_driver_id, &format, 
