@@ -50,6 +50,8 @@ int findSongsIn(FILE * fp, char * name, char * item, char * string);
 
 int countSongsIn(FILE * fp, char * name);
 
+unsigned long sumSongTimesIn(FILE * fp, char * name);
+
 Song * getSong(char * file);
 
 time_t getDbModTime();

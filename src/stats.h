@@ -24,6 +24,7 @@
 typedef struct _Stats {
 	unsigned long daemonStart;
 	int numberOfSongs;
+	unsigned long dbPlayTime;
 	/*unsigned long playTime;
 	unsigned long songsPlayed;*/
 } Stats;
