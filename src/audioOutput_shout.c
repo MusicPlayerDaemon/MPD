@@ -224,31 +224,35 @@ static void shout_closeDevice(AudioOutput * audioOutput) {
 	audioOutput->open = 0;
 }
 
-static void shout_handleError(ShoutData * sd, int err) {
+static int shout_handleError(ShoutData * sd, int err) {
 	switch(err) {
 	case SHOUTERR_SUCCESS:
 		break;
 	case SHOUTERR_UNCONNECTED:
 	case SHOUTERR_SOCKET:
-		ERROR("Lost shout connection, attempting to reconnect\n");
-		shout_close(sd->shoutConn);
-		shout_open(sd->shoutConn);
-		break;
+		ERROR("Lost shout connection\n");
+		return -1;
 	default:
 		ERROR("shout: error: %s\n", shout_get_error(sd->shoutConn));
-		break;
+		return -1;
 	}
+
+	return 0;
 }
 
-static void write_page(ShoutData * sd) {
-	if(!sd->og.header_len || !sd->og.body_len) return;
-
+static int write_page(ShoutData * sd) {
 	shout_sync(sd->shoutConn);
 	int err = shout_send(sd->shoutConn, sd->og.header, sd->og.header_len);
-	shout_handleError(sd, err);
+	if(shout_handleError(sd, err) < 0) goto fail;
 	err = shout_send(sd->shoutConn, sd->og.body, sd->og.body_len);
-	shout_handleError(sd, err);
+	if(shout_handleError(sd, err) < 0) goto fail;
 	/*shout_sync(sd->shoutConn);*/
+
+	return 0;
+
+fail:
+	shout_closeShoutConn(sd);
+	return -1;
 }
 
 static int initEncoder(ShoutData * sd) {
@@ -277,7 +281,7 @@ static int shout_openDevice(AudioOutput * audioOutput,
 {
 	ShoutData * sd = (ShoutData *)audioOutput->data;
 
-	memcpy(&(sd->inAudioFormat), audioFormat, sizeof(AudioFormat));
+	memmove(&(sd->inAudioFormat), audioFormat, sizeof(AudioFormat));
 
 	if(0 == memcmp(&(sd->inAudioFormat), &(sd->outAudioFormat), 
 			sizeof(AudioFormat))) 
@@ -314,7 +318,7 @@ static int shout_openDevice(AudioOutput * audioOutput,
 
 	while(ogg_stream_flush(&(sd->os), &(sd->og)))
 	{
-		write_page(sd);
+		if(write_page(sd) < 0) return -1;
 	}
 
 	sd->opened = 1;
@@ -348,6 +352,12 @@ static int shout_play(AudioOutput * audioOutput, char * playChunk, int size) {
 	int samples;
 	int bytes = sd->outAudioFormat.bits/8;
 
+	if(!sd->opened) {
+		if(shout_openDevice(audioOutput, &(sd->inAudioFormat)) < 0) {
+			return -1;
+		}
+	}
+
 	if(sd->audioFormatConvert) {
 		shout_convertAudioFormat(sd, &playChunk, &size);
 	}
@@ -377,7 +387,7 @@ static int shout_play(AudioOutput * audioOutput, char * playChunk, int size) {
 				if(ogg_stream_pageout(&(sd->os), &(sd->og)) == 0) {
 					break;
 				}
-				write_page(sd);
+				if(write_page(sd) < 0) return -1;
 			} while(ogg_page_eos(&(sd->og)));
 		}
 	}
@@ -417,7 +427,7 @@ static void shout_sendMetadata(AudioOutput * audioOutput, MpdTag * tag) {
 
 	while(ogg_stream_flush(&(sd->os), &(sd->og)))
 	{
-		write_page(sd);
+		if(write_page(sd) < 0) return -1;
 	}
 }
 
