@@ -113,6 +113,7 @@ extern InputPlugin oggPlugin;
 extern InputPlugin flacPlugin;
 extern InputPlugin audiofilePlugin;
 extern InputPlugin mp4Plugin;
+extern InputPlugin mpcPlugin;
 extern InputPlugin aacPlugin;
 extern InputPlugin modPlugin;
 
@@ -125,6 +126,7 @@ void initInputPlugins() {
 	loadInputPlugin(&flacPlugin);
 	loadInputPlugin(&audiofilePlugin);
 	loadInputPlugin(&mp4Plugin);
+	loadInputPlugin(&mpcPlugin);
 	loadInputPlugin(&modPlugin);
 }
 

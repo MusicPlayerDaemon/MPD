@@ -18,7 +18,7 @@
 
 #include "../inputPlugin.h"
 
-#ifdef HAVE_MPC
+#ifdef HAVE_MUSEPACK
 
 #include "../utils.h"
 #include "../audio.h"
@@ -41,14 +41,14 @@ typedef struct _MpcCallbackData {
 
 /* this is just for tag parsing for db import! */
 int getMpcTotalTime(char * file) {
-	int totalTime = 0
+	int totalTime = 0;
 	
 	return totalTime;
 }
 
-mpc_int32_t mpc_read_cb(void * vdata, void * ptr, size_t size) {
+mpc_int32_t mpc_read_cb(void * vdata, void * ptr, mpc_int32_t size) {
 	mpc_int32_t ret = 0;
-        OggCallbackData * data = (OggCallbackData *)vdata;
+        MpcCallbackData * data = (MpcCallbackData *)vdata;
 
         while(1) {
 	        ret = readFromInputStream(data->inStream, ptr, size, 1);
@@ -63,30 +63,57 @@ mpc_int32_t mpc_read_cb(void * vdata, void * ptr, size_t size) {
 	return ret;
 }
 
-static mpc_bool_t ogg_seek_cb(void * vdata, ogg_int64_t offset) {
-        OggCallbackData * data = (OggCallbackData *)vdata;
+static mpc_bool_t mpc_seek_cb(void * vdata, mpc_int32_t offset) {
+        MpcCallbackData * data = (MpcCallbackData *)vdata;
 
-	return data->inStream->seekable ? 
-		!seekInputStream(data->inStream , offset, SEEK_SET) :
-		false;
+	return !seekInputStream(data->inStream , offset, SEEK_SET);
 }
 
-mpd_int32_t mpc_tell_cb(void * vdata) {
-        OggCallbackData * data = (OggCallbackData *)vdata;
+mpc_int32_t mpc_tell_cb(void * vdata) {
+        MpcCallbackData * data = (MpcCallbackData *)vdata;
 
 	return (long)(data->inStream->offset);
 }
 
 mpc_bool_t mpc_canseek_cb(void * vdata) {
-        OggCallbackData * data = (OggCallbackData *)vdata;
+        MpcCallbackData * data = (MpcCallbackData *)vdata;
 
 	return data->inStream->seekable;
 }
 
 mpc_int32_t mpc_getsize_cb(void * vdata) {
-        OggCallbackData * data = (OggCallbackData *)vdata;
+        MpcCallbackData * data = (MpcCallbackData *)vdata;
 
 	return data->inStream->size;
+}
+
+inline mpd_sint16 convertSample(MPC_SAMPLE_FORMAT sample) {
+	/* only doing 16-bit audio for now */
+	mpd_sint32 val;
+
+        const int clip_min = -1 << (16 - 1);
+        const int clip_max = (1 << (16 - 1)) - 1;
+	
+#ifdef MPC_FIXED_POINT
+	const int shift = 16 - MPC_FIXED_POINT_SCALE_SHIFT;
+
+	if( ssample > 0 ) {
+		sample <<= shift;
+	}
+	else if ( shift < 0 ) {
+		sample >>= -shift;
+	}
+	val = sample;
+#else
+	const int float_scale = 1 << (16 - 1);
+
+	val = sample * float_scale;
+#endif
+
+	if( val < clip_min) val = clip_min;
+	else if ( val > clip_max ) val = clip_max;
+
+	return val;
 }
 
 int mpc_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream)
@@ -96,8 +123,8 @@ int mpc_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream)
 	mpc_streaminfo info;
 
 	MpcCallbackData data;
-	data.inStream = inStream;
-	data.dc = dc;
+
+	MPC_SAMPLE_FORMAT sample_buffer[MPC_DECODER_BUFFER_LENGTH];
 
 	int eof = 0;
 	long ret;
@@ -105,7 +132,12 @@ int mpc_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream)
 	char chunk[MPC_CHUNK_SIZE];
 	int chunkpos = 0;
 	long bitRate = 0;
-	char ** comments;
+	mpd_sint16 * s16 = (mpd_sint16 *) chunk;
+	unsigned long samplePos = 0;
+	mpc_uint32_t vbrUpdateAcc;
+	mpc_uint32_t vbrUpdateBits;
+	float time;
+	int i;
 
         data.inStream = inStream;
         data.dc = dc;
@@ -143,75 +175,72 @@ int mpc_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream)
                 }
 	}
 	
-	dc->totalTime = 0;
+	dc->totalTime = mpc_streaminfo_get_length(&info);
 
 	dc->audioFormat.bits = 16;
+	dc->audioFormat.sampleRate = info.sample_freq;
 
 	while(!eof) {
 		if(dc->seek) {
-			if(0 == ov_time_seek_page(&vf,dc->seekWhere)) {
+			samplePos = dc->seekWhere * dc->audioFormat.sampleRate;
+			if(0 == mpc_decoder_seek_sample(&decoder, samplePos)) {
                                 clearOutputBuffer(cb);
 			        chunkpos = 0;
                         }
                         else dc->seekError = 1;
 			dc->seek = 0;
 		}
-		ret = ov_read(&vf, chunk+chunkpos, 
-				OGG_CHUNK_SIZE-chunkpos,
-				OGG_DECODE_USE_BIGENDIAN,
-				2, 1, &current_section);
+		ret = mpc_decoder_decode(&decoder, sample_buffer, 
+				         &vbrUpdateAcc, &vbrUpdateBits);
 
-		if(current_section!=prev_section) {
-			/*printf("new song!\n");*/
-			vorbis_info *vi=ov_info(&vf,-1);
-			dc->audioFormat.channels = vi->channels;
-			dc->audioFormat.sampleRate = vi->rate;
-			if(dc->state == DECODE_STATE_START) {
-        			getOutputAudioFormat(&(dc->audioFormat),
-					&(cb->audioFormat));
-				dc->state = DECODE_STATE_DECODE;
-			}
-			comments = ov_comment(&vf, -1)->user_comments;
-			putOggCommentsIntoOutputBuffer(cb, inStream->metaName,
-					comments);
-        		ogg_getReplayGainInfo(comments, &replayGainInfo);
-		}
-
-		prev_section = current_section;
-
-		if(ret <= 0 && ret != OV_HOLE) {
+		if(ret <= 0 ) {
 			eof = 1;
 			break;
 		}
-                if(ret == OV_HOLE) ret = 0;
 
-		chunkpos+=ret;
+		samplePos += ret;
 
-		if(chunkpos >= OGG_CHUNK_SIZE) {
-			if((test = ov_bitrate_instant(&vf))>0) {
-				bitRate = test/1000;
-			}
-			sendDataToOutputBuffer(cb, inStream, dc, 
+		/* ret is in samples, and we have stereo */
+		ret *= 2;
+
+		for(i = 0; i < ret; i++) {
+			/* 16 bit audio again */
+			*s16 = convertSample(sample_buffer[i]);
+			chunkpos += 2;
+			s16++;
+
+		       	if(chunkpos >= MPC_CHUNK_SIZE) {
+                                time = ((float)samplePos) /
+				       dc->audioFormat.sampleRate;
+
+				bitRate = vbrUpdateBits * 
+					  dc->audioFormat.sampleRate / 
+					  (MPC_CHUNK_SIZE);
+				
+				sendDataToOutputBuffer(cb, inStream, dc, 
 						inStream->seekable,  
                                         	chunk, chunkpos, 
-						ov_pcm_tell(&vf)/
-						dc->audioFormat.sampleRate,
+						time,
 						bitRate,
-						replayGainInfo);
-			chunkpos = 0;
-			if(dc->stop) break;
+						NULL);
+				chunkpos = 0;
+				s16 = (mpd_sint16 *)chunk;
+				if(dc->stop) break;
+			}
 		}
 	}
 
 	if(!dc->stop && chunkpos > 0) {
+                time = ((float)samplePos) / dc->audioFormat.sampleRate;
+
+		bitRate = vbrUpdateBits * dc->audioFormat.sampleRate /
+			  chunkpos;
+
 		sendDataToOutputBuffer(cb, NULL, dc, inStream->seekable,
-				chunk, chunkpos,
-				ov_time_tell(&vf), bitRate, replayGainInfo);
+				       chunk, chunkpos, time, bitRate, NULL);
 	}
 
-	if(replayGainInfo) freeReplayGainInfo(replayGainInfo);
-
-	ov_clear(&vf);
+	closeInputStream(inStream);
 
 	flushOutputBuffer(cb);
 
@@ -224,47 +253,40 @@ int mpc_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream)
 	return 0;
 }
 
-MpdTag * oggTagDup(char * file) {
+MpdTag * mpcTagDup(char * file) {
 	MpdTag * ret = NULL;
 	FILE * fp;
-	OggVorbis_File vf;
 
 	fp = fopen(file,"r"); 
 	if(!fp) return NULL;
-	if(ov_open(fp,&vf,NULL,0)<0) {
-		fclose(fp);
-		return NULL;
-	}
 
-	ret = oggCommentsParse(ov_comment(&vf,-1)->user_comments);
+	/* get tag info here */
 
 	if(!ret) ret = newMpdTag();
-	ret->time = (int)(ov_time_total(&vf,-1)+0.5);
-
-	ov_clear(&vf);
+	ret->time = getMpcTotalTime(file);
 
 	return ret;	
 }
 
-char * oggSuffixes[] = {"ogg", NULL};
-char * oggMimeTypes[] = {"application/ogg", NULL};
+char * mpcSuffixes[] = {"mpc", NULL};
+char * mpcMimeTypes[] = {NULL};
 
-InputPlugin oggPlugin =
+InputPlugin mpcPlugin =
 {
-        "ogg",
+        "mpc",
 	NULL,
 	NULL,
-        ogg_decode,
+        mpc_decode,
         NULL,
-        oggTagDup,
+        mpcTagDup,
         INPUT_PLUGIN_STREAM_URL | INPUT_PLUGIN_STREAM_FILE,
-        oggSuffixes,
-        oggMimeTypes
+        mpcSuffixes,
+        mpcMimeTypes
 };
 
 #else
 
-InputPlugin oggPlugin = 
+InputPlugin mpcPlugin = 
 {
 	NULL,
 	NULL,
