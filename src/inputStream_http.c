@@ -39,7 +39,7 @@
 #define HTTP_CONN_STATE_OPEN    3
 #define HTTP_CONN_STATE_REOPEN  4
 
-#define HTTP_BUFFER_SIZE        524289
+#define HTTP_BUFFER_SIZE        131072
 #define HTTP_PREBUFFER_SIZE	(HTTP_BUFFER_SIZE >> 2)
 //#define HTTP_PREBUFFER_SIZE	0
 
@@ -406,7 +406,7 @@ static int getHTTPHello(InputStream * inStream) {
 
         data->connState = HTTP_CONN_STATE_OPEN;
 
-	/*data->prebuffer = 1;*/
+	data->prebuffer = 1;
 
 	/*mark as unseekable till we actually implement seeking*/
 	inStream->seekable = 0;

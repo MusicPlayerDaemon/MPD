@@ -251,6 +251,8 @@ int decodeSeek(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb,
 void decodeStart(PlayerControl * pc, OutputBuffer * cb, DecoderControl * dc) {
         int ret;
         InputStream inStream;
+        int suffix = pc->fileSuffix;
+        int decodeType = pc->decodeType;
 
         strncpy(dc->file,pc->file,MAXPATHLEN);
 	dc->file[MAXPATHLEN] = '\0';
@@ -275,10 +277,10 @@ void decodeStart(PlayerControl * pc, OutputBuffer * cb, DecoderControl * dc) {
                 return;
         }
 
-	switch(pc->decodeType) {
+	switch(decodeType) {
 	case DECODE_TYPE_URL:
 #ifdef HAVE_OGG
-                if(pc->fileSuffix == DECODE_SUFFIX_OGG || (inStream.mime &&
+                if(suffix == DECODE_SUFFIX_OGG || (inStream.mime &&
                                 0 == strcmp(inStream.mime, "application/ogg")))
                 {
 		        ret = ogg_decode(cb, dc, &inStream);
@@ -286,7 +288,7 @@ void decodeStart(PlayerControl * pc, OutputBuffer * cb, DecoderControl * dc) {
                 }
 #endif
 #ifdef HAVE_MAD
-                /*if(pc->fileSuffix == DECODE_SUFFIX_MP3 || (inStream.mime &&
+                /*if(fileSuffix == DECODE_SUFFIX_MP3 || (inStream.mime &&
                                 0 == strcmp(inStream.mime, "audio/mpeg")))*/
                 {
 		        ret = mp3_decode(cb,dc,&inStream);
@@ -296,38 +298,38 @@ void decodeStart(PlayerControl * pc, OutputBuffer * cb, DecoderControl * dc) {
 #endif
         case DECODE_TYPE_FILE:
 #ifdef HAVE_MAD
-                if(pc->fileSuffix == DECODE_SUFFIX_MP3) {
+                if(suffix == DECODE_SUFFIX_MP3) {
 		        ret = mp3_decode(cb, dc, &inStream);
                         break;
                 }
 #endif
 #ifdef HAVE_OGG
-                if(pc->fileSuffix == DECODE_SUFFIX_OGG) {
+                if(suffix == DECODE_SUFFIX_OGG) {
 		        ret = ogg_decode(cb, dc, &inStream);
 		        break;
                 }
 #endif
 #ifdef HAVE_FAAD
-                if(pc->fileSuffix == DECODE_SUFFIX_AAC) {
+                if(suffix == DECODE_SUFFIX_AAC) {
                         closeInputStream(&inStream);
 		        ret = aac_decode(cb,dc);
 		        break;
                 }
-                if(pc->fileSuffix == DECODE_SUFFIX_MP4) {
+                if(suffix == DECODE_SUFFIX_MP4) {
                         closeInputStream(&inStream);
 		        ret = mp4_decode(cb,dc);
 		        break;
                 }
 #endif
 #ifdef HAVE_FLAC
-                if(pc->fileSuffix == DECODE_SUFFIX_FLAC) {
+                if(suffix == DECODE_SUFFIX_FLAC) {
                         closeInputStream(&inStream);
 		        ret = flac_decode(cb,dc);
 		        break;
                 }
 #endif
 #ifdef HAVE_AUDIOFILE
-                if(pc->fileSuffix == DECODE_SUFFIX_WAVE) {
+                if(suffix == DECODE_SUFFIX_WAVE) {
                         closeInputStream(&inStream);
 		        ret = audiofile_decode(cb,dc);
 		        break;

@@ -567,6 +567,10 @@ int mp3_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream) {
                         ERROR("Input does not appear to be a mp3 bit stream.\n");
 		        return -1;
                 }
+                else {
+                        dc->state = DECODE_STATE_STOP;
+                        dc->stop = 0;
+                }
                 return 0;
 	}
 
