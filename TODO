@@ -18,9 +18,9 @@
 	*) allowing "pausing" of audio output devices
 	*) while pausing, play silence for the devices that don't support 
 	   "pausing"
-	*) add support for autodetect ao devices
 	*) write a mac os X native audioOutput
 	*) write a esd native audioOutput
+	*) write a sun native audioOutput
 	*) need better resampling code
 	*) add support for saving and restoring audioOutput state to the 
 		state_file
