@@ -340,6 +340,7 @@ static int write_page(ShoutData * sd) {
 	if(myShout_handleError(sd, err) < 0) return -1;
 	err = shout_send(sd->shoutConn, sd->og.body, sd->og.body_len);
 	if(myShout_handleError(sd, err) < 0) return -1;
+	shout_sync(sd->shoutConn);
 
 	return 0;
 }
