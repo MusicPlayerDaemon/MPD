@@ -2,6 +2,8 @@
 ----
 *) rewrite linked list code!
 
+*) add sortedArray data structure for tagTracker
+
 *) parsing of lame tags (including getting replaygain info)
 
 *) implement listener socket protocol as documented here:
