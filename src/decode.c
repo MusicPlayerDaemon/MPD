@@ -52,8 +52,11 @@ void decodeSigHandler(int sig, siginfo_t * si, void * v) {
 			*decode_pid = 0;
 		}
 	}
-	else if(sig==SIGTERM && si->si_pid==getppid()) {
-		DEBUG("player/decoder got SIGTERM from parent process\n");
+	/* this is causing problems for alsa and other things that generate
+	 * extra processes. it causes them to not die */
+	/*else if(sig==SIGTERM && si->si_pid==getppid()) {
+		DEBUG("player/decoder got SIGTERM from parent process\n");*/
+	else if(sig==SIGTERM) {
 		if(decode_pid) {
 			int pid = *decode_pid;
 			if(pid>0) kill(pid,SIGTERM);
