@@ -36,13 +36,14 @@
 #include <alsa/asoundlib.h>
 #endif
 
-#define VOLUME_MIXER_TYPE_SOFTWARE	0
-#define VOLUME_MIXER_TYPE_OSS		1
-#define VOLUME_MIXER_TYPE_ALSA		2
+#define VOLUME_MIXER_TYPE_SOFTWARE		0
+#define VOLUME_MIXER_TYPE_OSS			1
+#define VOLUME_MIXER_TYPE_ALSA			2
 
-#define VOLUME_MIXER_SOFTWARE_DEFAULT	""
-#define VOLUME_MIXER_OSS_DEFAULT	"/dev/mixer"
-#define VOLUME_MIXER_ALSA_DEFAULT	"default"
+#define VOLUME_MIXER_SOFTWARE_DEFAULT		""
+#define VOLUME_MIXER_OSS_DEFAULT		"/dev/mixer"
+#define VOLUME_MIXER_ALSA_DEFAULT		"default"
+#define VOLUME_MIXER_ALSA_CONTROL_DEFAULT	"Master"
 
 int volume_mixerType = VOLUME_MIXER_TYPE_SOFTWARE;
 char * volume_mixerDevice;
@@ -170,6 +171,7 @@ int changeOssVolumeLevel(FILE * fp, int change, int rel) {
 int prepAlsaMixer(char * card) {
 	int err;
 	snd_mixer_elem_t * elem;
+	char * controlName = VOLUME_MIXER_ALSA_CONTROL_DEFAULT;
 
 	if((err = snd_mixer_open(&volume_alsaMixerHandle,0))<0) {
 		ERROR("problems opening alsa mixer: %s\n",snd_strerror(err));
@@ -199,39 +201,29 @@ int prepAlsaMixer(char * card) {
 
 	elem = snd_mixer_first_elem(volume_alsaMixerHandle);
 	if(getConf()[CONF_MIXER_CONTROL]) {
-		while(elem) {
-			if(snd_mixer_elem_get_type(elem)
-					==SND_MIXER_ELEM_SIMPLE) 
-			{
-				if(strcasecmp(getConf()[CONF_MIXER_CONTROL],
-						snd_mixer_selem_get_name(elem))
-						==0)
-				{
-					break;
-				}
-			}
-			elem = snd_mixer_elem_next(elem);
-		}
+		controlName = getConf()[CONF_MIXER_CONTROL];
+	}
 
-		if(elem) {
-			volume_alsaElem = elem;
-			snd_mixer_selem_get_playback_volume_range(
-					volume_alsaElem,
-					&volume_alsaMin,&volume_alsaMax);
-			return 0;
+	while(elem) {
+		if(snd_mixer_elem_get_type(elem)==SND_MIXER_ELEM_SIMPLE) {
+			if(strcasecmp(controlName,
+					snd_mixer_selem_get_name(elem))==0)
+			{
+				break;
+			}
 		}
+		elem = snd_mixer_elem_next(elem);
 	}
-	else {
+
+	if(elem) {
 		volume_alsaElem = elem;
-		if(snd_mixer_elem_get_type(volume_alsaElem)
-				==SND_MIXER_ELEM_SIMPLE) 
-		{
-			snd_mixer_selem_get_playback_volume_range(
-					volume_alsaElem,
-					&volume_alsaMin,&volume_alsaMax);
-			return 0;
-		}
+		snd_mixer_selem_get_playback_volume_range(
+				volume_alsaElem,
+				&volume_alsaMin,&volume_alsaMax);
+		return 0;
 	}
+
+	ERROR("can't find alsa mixer_control \"%s\"\n",controlName);
 
 	snd_mixer_close(volume_alsaMixerHandle);
 	return -1;
