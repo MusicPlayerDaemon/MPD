@@ -126,7 +126,8 @@ save <string name>
 	saves the current playlist to _name_.m3u in the playlist directory
 
 search <string type> <string what>
-	same as "find" but searches for any song that contain _what_
+	searches for any song that contain _what_
+	_type_ can be "title","artist","album", or "filename"
 	search is not case sensitive
 
 seek <int song> <int time>
