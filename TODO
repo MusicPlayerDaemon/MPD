@@ -14,6 +14,9 @@
 *) put more debugging info when failing to read/write db and other similar 
 	errors
 
+*) make libao optional during configure, but check that some form of audioOutput
+	is enabled (either oss, shout, or ao)
+
 Post-1.0
 --------
 *) crosslink "list" stuff, for example, artists are crosslinked to alubms and 
