@@ -27,6 +27,8 @@ decoding has stopped.
 
 9) compute average replaygain to use for non-replaygain songs
 
+10) pid file
+
 
 Post-1.0
 --------
