@@ -6,6 +6,9 @@ ver 0.10.2 (2004/3/25)
 5) Pause now closes the music device, and reopens it on resuming
 6) Fix unnecessary big endian byte swapping
 7) If locale is "C" or "POSIX", then use ISO-8859-1 as the fs charset
+8) Fix a bug where alsamixer wasn't detect volume changes
+9) For alsa and software mixer, show volume to be the same as it was set (even
+if its not the exact volume)
 
 ver 0.10.1 (2004/3/7)
 1) Check to see if we need to add "-lm" when linking mpd
