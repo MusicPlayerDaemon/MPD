@@ -20,9 +20,10 @@ These denote the end of command execution.
 Commands:
 ---------
 
-add <string file>
-	add the file _file_ to the playlist
-	increments playlist version by 1
+add <string path>
+	add the file _path_ to the playlist (directories add recursively)
+	_path_ can also be a single file
+	increments playlist version by for each song added
 
 clear	
 	clears the current playlist
