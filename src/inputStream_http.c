@@ -378,6 +378,8 @@ static int getHTTPHello(InputStream * inStream) {
                         while(*(incr+cur) == ' ') incr++;
                         inStream->metaName = strdup(cur+incr);
                         *temp = '\r';
+			DEBUG("inputStream_http: metaName: %s\n", 
+					inStream->metaName);
                 }
                 else if(0 == strncmp(cur, "\r\nx-audiocast-name:", 19)) {
                         int incr = 19;
@@ -388,6 +390,8 @@ static int getHTTPHello(InputStream * inStream) {
                         while(*(incr+cur) == ' ') incr++;
                         inStream->metaName = strdup(cur+incr);
                         *temp = '\r';
+			DEBUG("inputStream_http: metaName: %s\n", 
+					inStream->metaName);
                 }
                 else if(0 == strncmp(cur, "\r\nContent-Type:", 15)) {
                         int incr = 15;
@@ -466,6 +470,8 @@ static void parseIcyMetadata(InputStream * inStream, char * metadata,
 				s[strlen(s)-1] = '\0';
 			}
 			inStream->metaTitle = strdup(s+cur);
+			DEBUG("inputStream_http: metaTitle: %s\n", 
+						inStream->metaTitle);
 		}
 		s = strtok_r(NULL, ";", &r);
 	}
