@@ -31,11 +31,7 @@ static mpd_sint8 currentMetaChunk = -1;
 static mpd_sint8 sendMetaChunk = 0;
 
 void clearAllMetaChunkSets(OutputBuffer * cb) {
-	int i;
-
-	for(i=0; i<BUFFERED_METACHUNKS; i++) {
-		cb->metaChunkSet[i] = 0;
-	}
+	memset(cb->metaChunkSet, 0, BUFFERED_METACHUNKS);
 }
 
 void clearOutputBuffer(OutputBuffer * cb) {
