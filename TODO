@@ -10,6 +10,10 @@
 
 *) saved playlist commands for getting the contents of a playlist and appending to a playlist
 
+*) have listallinfo return directories
+
+*) allow find/search commands take arbitrary search pairs
+
 Post-1.0
 --------
 1) crosslink "list" stuff, for example, artists are crosslinked to alubms and 
