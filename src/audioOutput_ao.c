@@ -56,7 +56,7 @@ static void audioOutputAo_error() {
 	}
 }
 
-static void audioOutputAo_initDriver(AudioOutput * audioOutput) {
+static int audioOutputAo_initDriver(AudioOutput * audioOutput) {
 	ao_info * ai;
 	char * dup;
 	char * stk1;
@@ -71,7 +71,7 @@ static void audioOutputAo_initDriver(AudioOutput * audioOutput) {
 
 	ad->writeSize = strtol((getConf())[CONF_AUDIO_WRITE_SIZE],&test,10);
 	if (*test!='\0') {
-		ERROR("\"%s\" is not a valid write size",
+		ERROR("\"%s\" is not a valid write size\n",
 			(getConf())[CONF_AUDIO_WRITE_SIZE]);
 		exit(EXIT_FAILURE);
 	}
@@ -133,6 +133,8 @@ static void audioOutputAo_initDriver(AudioOutput * audioOutput) {
 		}
 	}
 	free(dup);
+
+	return 0;
 }
 
 static void freeAoData(AoData * ad) {

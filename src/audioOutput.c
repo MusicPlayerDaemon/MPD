@@ -28,13 +28,16 @@ AudioOutput * newAudioOutput(char * name) {
 	if(findInList(audioOutputPluginList, name, &data)) {
 		AudioOutputPlugin * plugin = (AudioOutputPlugin *) data;
 		ret = malloc(sizeof(AudioOutput));
-		ret->finishDriverFunc = plugin->initDriverFunc;
+		ret->finishDriverFunc = plugin->finishDriverFunc;
 		ret->openDeviceFunc = plugin->openDeviceFunc;
 		ret->playFunc = plugin->playFunc;
 		ret->closeDeviceFunc = plugin->closeDeviceFunc;
 		ret->open = 0;
 
-		plugin->initDriverFunc(ret);
+		if(plugin->initDriverFunc(ret) != 0) {
+			free(ret);
+			ret = NULL;
+		}
 	}
 
 	return ret;

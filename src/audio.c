@@ -32,6 +32,7 @@ static AudioFormat audio_format;
 static AudioFormat * audio_configFormat = NULL;
 
 static AudioOutput * aoOutput = NULL;
+static AudioOutput * shoutOutput = NULL;
 
 static void copyAudioFormat(AudioFormat * dest, AudioFormat * src) {
         dest->sampleRate = src->sampleRate;
@@ -49,6 +50,7 @@ void initAudioDriver() {
 
 	aoOutput = newAudioOutput("ao");
 	assert(aoOutput);
+	shoutOutput = newAudioOutput("shout");
 }
 
 void getOutputAudioFormat(AudioFormat * inAudioFormat, 
@@ -134,6 +136,7 @@ void finishAudioConfig() {
 
 void finishAudioDriver() {
 	finishAudioOutput(aoOutput);
+	if(shoutOutput) finishAudioOutput(shoutOutput);
 	aoOutput = NULL;
 }
 
@@ -148,6 +151,7 @@ int isCurrentAudioFormat(AudioFormat * audioFormat) {
 int openAudioDevice(AudioFormat * audioFormat) {
 	if(!aoOutput->open || !isCurrentAudioFormat(audioFormat)) {
 		copyAudioFormat(&audio_format, audioFormat);
+		if(shoutOutput) openAudioOutput(shoutOutput, audioFormat);
 		return openAudioOutput(aoOutput, audioFormat);
 	}
 
@@ -155,6 +159,7 @@ int openAudioDevice(AudioFormat * audioFormat) {
 }
 
 int playAudio(char * playChunk, int size) {
+	if(shoutOutput) playAudioOutput(shoutOutput, playChunk, size);
 	return playAudioOutput(aoOutput, playChunk, size);
 }
 
@@ -163,5 +168,6 @@ int isAudioDeviceOpen() {
 }
 
 void closeAudioDevice() {
+	if(shoutOutput) closeAudioOutput(shoutOutput);
 	closeAudioOutput(aoOutput);
 }

@@ -28,7 +28,7 @@
 
 typedef struct _AudioOutput AudioOutput;
 
-typedef void (* AudioOutputInitDriverFunc) (AudioOutput * audioOutput);
+typedef int (* AudioOutputInitDriverFunc) (AudioOutput * audioOutput);
 
 typedef void (* AudioOutputFinishDriverFunc) (AudioOutput * audioOutput);
 
