@@ -79,7 +79,7 @@ int audiofile_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc)
 	
 	cb->totalTime = ((float)frame_count/(float)af->sampleRate);
 
-	bitRate = st.st_size*8.0/cb->totalTime/1024.0+0.5;
+	bitRate = st.st_size*8.0/cb->totalTime/1000.0+0.5;
 	
 	if (af->bits != 8 && af->bits != 16) {
 		ERROR("Only 8 and 16-bit files are supported. %s is %i-bit\n",

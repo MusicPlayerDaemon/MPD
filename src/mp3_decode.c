@@ -416,7 +416,7 @@ int mp3ChildSendData(mp3DecodeData * data, Buffer * cb, DecoderControl * dc) {
 
 	memcpy(cb->chunks+cb->end*CHUNK_SIZE,data->outputBuffer,CHUNK_SIZE);
 	cb->chunkSize[cb->end] = data->outputPtr-data->outputBuffer;
-	cb->bitRate[cb->end] = data->bitRate/1024;
+	cb->bitRate[cb->end] = data->bitRate/1000;
 	cb->times[cb->end] = data->elapsedTime;
 
 	cb->end++;

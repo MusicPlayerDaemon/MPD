@@ -270,7 +270,7 @@ int mp4_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc) {
 			initial =0;
 			bitRate = frameInfo.bytesconsumed*8.0*
 				frameInfo.channels*scale/
-				frameInfo.samples/1024+0.5;
+				frameInfo.samples/1000+0.5;
 		}
 			
 

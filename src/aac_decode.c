@@ -357,7 +357,7 @@ int aac_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc) {
 		if(sampleCount>0) {
 			bitRate = frameInfo.bytesconsumed*8.0*
 				frameInfo.channels*sampleRate/
-				frameInfo.samples/1024+0.5;
+				frameInfo.samples/1000+0.5;
 			time+= (float)(frameInfo.samples)/frameInfo.channels/
 				sampleRate;
 		}

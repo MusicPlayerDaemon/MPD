@@ -219,7 +219,7 @@ FLAC__StreamDecoderWriteStatus flacWrite(const FLAC__FileDecoder *dec, const FLA
 	FLAC__file_decoder_get_decode_position(dec,&newPosition);
 	if(data->position) {
 		data->bitRate = ((newPosition-data->position)*8.0/timeChange)
-				/1024+0.5;
+				/1000+0.5;
 	}
 	data->position = newPosition;
 
