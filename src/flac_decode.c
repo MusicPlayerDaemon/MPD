@@ -147,8 +147,7 @@ int flac_decode(OutputBuffer * cb, DecoderControl *dc) {
 		if(dc->seek) {
 			FLAC__uint64 sampleToSeek = dc->seekWhere*
 					dc->audioFormat.sampleRate+0.5;
-			cb->end = cb->begin;
-			cb->wrap = 0;
+                        clearOutputBuffer(cb);
 			if(FLAC__seekable_stream_decoder_seek_absolute(flacDec,
 						sampleToSeek))
 			{

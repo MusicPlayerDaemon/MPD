@@ -26,6 +26,12 @@
 
 static mpd_sint16 currentChunk = -1;
 
+void clearOutputBuffer(OutputBuffer * cb) {
+        currentChunk = -1;
+        cb->end = cb->begin;
+        cb->wrap = 0;
+}
+
 void flushOutputBuffer(OutputBuffer * cb) {
 	if(currentChunk == cb->end) {
 	        cb->end++;

@@ -38,6 +38,8 @@ typedef struct _OutputBuffer {
         AudioFormat audioFormat;
 } OutputBuffer;
 
+void clearOutputBuffer(OutputBuffer * cb);
+
 void flushOutputBuffer(OutputBuffer * cb);
 
 int sendDataToOutputBuffer(OutputBuffer * cb, DecoderControl * dc, 

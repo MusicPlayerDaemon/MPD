@@ -139,8 +139,8 @@ typedef struct _mp3DecodeData {
 int initMp3DecodeData(mp3DecodeData * data, char * file) {
 	int ret;
 
-	while(((ret = openInputStream(&(data->inStream),file))<0)) /*&& 
-			data->inStream.error==EINTR);*/
+	/*while(((*/ret = openInputStream(&(data->inStream),file)/*)<0)) && 
+			data->inStream.error==EINTR)*/;
 	if(ret<0) return -1;
 
 	data->outputPtr = data->outputBuffer;
@@ -165,10 +165,13 @@ int initMp3DecodeData(mp3DecodeData * data, char * file) {
 int fillMp3InputBuffer(mp3DecodeData * data, long offset) {
 	size_t readSize;
 	size_t remaining;
+        size_t readed;
 	unsigned char * readStart;
 
 	if(offset>=0) {
-		seekInputStream(&(data->inStream),offset,SEEK_SET);
+		if(seekInputStream(&(data->inStream),offset,SEEK_SET) < 0) {
+                        return -1;
+                }
 	}
 
 	if(offset==-1 && (data->stream).next_frame!=NULL) {
@@ -182,11 +185,15 @@ int fillMp3InputBuffer(mp3DecodeData * data, long offset) {
 		readStart = data->readBuffer,
 		remaining = 0;
 	}
-			
-	readSize = readFromInputStream(&(data->inStream),readStart,1,readSize);
-	if(readSize<=0) return -1;
 
-	mad_stream_buffer(&data->stream,data->readBuffer,readSize+remaining);
+        readed = 0;
+        while(readed == 0 && !inputStreamAtEOF(&(data->inStream))) {	
+	        readed = readFromInputStream(&(data->inStream), readStart, 1,
+                                        readSize);
+        }
+	if(readed<=0) return -1;
+
+	mad_stream_buffer(&data->stream,data->readBuffer,readed+remaining);
 	(data->stream).error = 0;
 
 	return 0;
@@ -441,6 +448,7 @@ int mp3Read(mp3DecodeData * data, OutputBuffer * cb, DecoderControl * dc) {
 	if(data->muteFrame) {
 		if(!dc->seek) data->muteFrame = 0;
 		else if(dc->seekWhere<=data->elapsedTime) {
+                        clearOutputBuffer(cb);
 			data->muteFrame = 0;
 			dc->seek = 0;
 		}
@@ -485,8 +493,6 @@ int mp3Read(mp3DecodeData * data, OutputBuffer * cb, DecoderControl * dc) {
 
 		if(dc->seek) {
 			long i = 0;
-			cb->wrap = 0;
-			cb->end = cb->begin;
 			data->muteFrame = 1;
 			while(i<data->highestFrame && dc->seekWhere >
 					((float)mad_timer_count(data->times[i],
@@ -495,9 +501,14 @@ int mp3Read(mp3DecodeData * data, OutputBuffer * cb, DecoderControl * dc) {
 				i++;
 			}
 			if(i<data->highestFrame) {
-				data->currentFrame = i;
-				fillMp3InputBuffer(data,data->frameOffset[i]);
-				data->muteFrame = 0;
+				if(fillMp3InputBuffer(data,
+                                                data->frameOffset[i]) == 0)
+                                {
+                                        clearOutputBuffer(cb);
+				        data->currentFrame = i;
+				        data->muteFrame = 0;
+                                }
+                                else dc->seekError = 1;
 				dc->seek = 0;
 			}
 		}

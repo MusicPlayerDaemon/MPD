@@ -220,8 +220,7 @@ int mp4_decode(OutputBuffer * cb, DecoderControl * dc) {
 		if(dc->seek && seekPositionFound) {
 			seekPositionFound = 0;
 			chunkLen = 0;
-			cb->end = cb->begin;
-			cb->wrap = 0;
+                        clearOutputBuffer(cb);
 			dc->seek = 0;
 		}
 

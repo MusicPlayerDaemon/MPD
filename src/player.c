@@ -161,22 +161,22 @@ int playerInit() {
 }
 
 int playerGetDecodeType(char * utf8file) {
-	if(!isFile(utf8file,NULL));
+	if(!isRemoteUrl(utf8file) && !isFile(utf8file,NULL)) return -1;
 #ifdef HAVE_MAD
-	else if(hasMp3Suffix(utf8file)) return DECODE_TYPE_MP3;
+	if(hasMp3Suffix(utf8file)) return DECODE_TYPE_MP3;
 #endif
 #ifdef HAVE_OGG	
-	else if(hasOggSuffix(utf8file)) return DECODE_TYPE_OGG;
+	if(hasOggSuffix(utf8file)) return DECODE_TYPE_OGG;
 #endif
 #ifdef HAVE_FLAC	
-	else if(hasFlacSuffix(utf8file)) return DECODE_TYPE_FLAC;
+	if(hasFlacSuffix(utf8file)) return DECODE_TYPE_FLAC;
 #endif
 #ifdef HAVE_AUDIOFILE
-	else if(hasWaveSuffix(utf8file)) return DECODE_TYPE_AUDIOFILE;
+	if(hasWaveSuffix(utf8file)) return DECODE_TYPE_AUDIOFILE;
 #endif
 #ifdef HAVE_FAAD
-	else if(hasAacSuffix(utf8file)) return DECODE_TYPE_AAC;
-	else if(hasMp4Suffix(utf8file)) return DECODE_TYPE_MP4;
+	if(hasAacSuffix(utf8file)) return DECODE_TYPE_AAC;
+	if(hasMp4Suffix(utf8file)) return DECODE_TYPE_MP4;
 #endif
 	return -1;
 }
@@ -189,7 +189,7 @@ int playerPlay(FILE * fp, char * utf8file) {
 
 	if(playerStop(fp)<0) return -1;
 
-	{
+	/*{
 		struct stat st;
 		if(stat(rmp2amp(utf8ToFsCharset(utf8file)),&st)<0) {
 			strncpy(pc->erroredFile,pc->file,MAXPATHLEN);
@@ -197,7 +197,7 @@ int playerPlay(FILE * fp, char * utf8file) {
 			pc->error = PLAYER_ERROR_FILENOTFOUND;
 			return 0;
 		}
-	}
+	}*/
 	
 	decodeType = playerGetDecodeType(utf8file);
 	if(decodeType < 0) {
@@ -208,7 +208,10 @@ int playerPlay(FILE * fp, char * utf8file) {
 	}
 	pc->decodeType = decodeType;
 
-	strncpy(pc->file,rmp2amp(utf8ToFsCharset(utf8file)),MAXPATHLEN);
+        if(isRemoteUrl(utf8file)) {
+                strncpy(pc->file,utf8file,MAXPATHLEN);
+        }
+	else strncpy(pc->file,rmp2amp(utf8ToFsCharset(utf8file)),MAXPATHLEN);
 	pc->file[MAXPATHLEN] = '\0';
 
 	pc->play = 1;
@@ -353,7 +356,10 @@ int queueSong(char * utf8file) {
 	int decodeType;
 
 	if(pc->queueState==PLAYER_QUEUE_BLANK) {
-		strncpy(pc->file,rmp2amp(utf8ToFsCharset(utf8file)),MAXPATHLEN);
+                if(isRemoteUrl(utf8file)) {
+                        strncpy(pc->file,utf8file,MAXPATHLEN);
+                }
+	        else strncpy(pc->file,rmp2amp(utf8ToFsCharset(utf8file)),MAXPATHLEN);
 		pc->file[MAXPATHLEN] = '\0';
 
 		decodeType = playerGetDecodeType(utf8file);
@@ -410,7 +416,8 @@ int playerSeek(FILE * fp, char * utf8file, float time) {
 		return -1;
 	}
 
-	file = rmp2amp(utf8ToFsCharset(utf8file));
+	if(isRemoteUrl(utf8file)) file = utf8file;
+        else file = rmp2amp(utf8ToFsCharset(utf8file));
 	if(strcmp(pc->file,file)!=0) {
 		decodeType = playerGetDecodeType(utf8file);
 		if(decodeType < 0) {
