@@ -424,7 +424,7 @@ void printPlaylistSongInfo(FILE * fp, int song) {
 	if((tag = (playlist.songs[song])->tag)) {
 		printMpdTag(fp, tag);
 	}
-	myfprintf(fp, "Num: %i\n", song);
+	myfprintf(fp, "Pos: %i\n", song);
 	myfprintf(fp, "Id: %i\n", playlist.numToId[song]);
 }
 
