@@ -297,6 +297,9 @@ int decodeNextFrameHeader(mp3DecodeData * data, MpdTag ** tag) {
 			}
 		}
 	}
+	if(data->frame.header.layer != MAD_LAYER_III) {
+		return DECODE_SKIP;
+	}
 
 	return DECODE_OK;
 }
