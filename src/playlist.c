@@ -1041,11 +1041,11 @@ int setPlaylistRandomStatus(FILE * fp, int status) {
 
 	if(status!=statusWas) {
 		if(playlist.random) {
-			if(playlist_state==PLAYLIST_STATE_PLAY) {
+			/*if(playlist_state==PLAYLIST_STATE_PLAY) {
 				randomizeOrder(playlist.current+1,
 						playlist.length-1);
 			}
-			else randomizeOrder(0,playlist.length-1);
+			else */randomizeOrder(0,playlist.length-1);
 		}
 		else orderPlaylist();
 	}
