@@ -36,6 +36,7 @@
 #include "playerData.h"
 #include "log.h"
 #include "utils.h"
+#include "inputStream.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -111,7 +112,6 @@ signed long audio_linear_dither(unsigned int bits, mad_fixed_t sample, struct au
 /* decoder stuff is based on madlld */
 
 typedef struct _mp3DecodeData {
-	FILE * fp;
 	struct mad_stream stream;
 	struct mad_frame frame;
 	struct mad_synth synth;
@@ -126,28 +126,36 @@ typedef struct _mp3DecodeData {
 	long * frameOffset;
 	mad_timer_t * times;
 	long highestFrame;
-	long currentOffset;
 	long maxFrames;
 	long currentFrame;
 	int flush;
 	unsigned long bitRate;
+	InputStream inStream;
 } mp3DecodeData;
 
-void initMp3DecodeData(mp3DecodeData * data) {
+int initMp3DecodeData(mp3DecodeData * data, char * file) {
+	int ret;
+
+	while(((ret = initInputStreamFromFile(&(data->inStream),file))<0) && 
+			data->inStream.error==EINTR);
+	if(ret<0) return -1;
+
 	data->outputPtr = data->outputBuffer;
 	data->outputBufferEnd = data->outputBuffer+CHUNK_SIZE;
 	data->muteFrame = 0;
-	data->currentOffset = 0;
 	data->highestFrame = 0;
 	data->maxFrames = 0;
 	data->frameOffset = NULL;
 	data->times = NULL;
 	data->currentFrame = 0;
 	data->flush = 1;
+
 	mad_stream_init(&data->stream);
 	mad_frame_init(&data->frame);
 	mad_synth_init(&data->synth);
 	mad_timer_reset(&data->timer);
+
+	return 0;
 }
 
 int fillMp3InputBuffer(mp3DecodeData * data, long offset) {
@@ -156,9 +164,7 @@ int fillMp3InputBuffer(mp3DecodeData * data, long offset) {
 	unsigned char * readStart;
 
 	if(offset>=0) {
-		if(fseek(data->fp,offset,SEEK_SET)==0) {
-			data->currentOffset = offset;
-		}
+		seekInputStream(&(data->inStream),offset);
 	}
 
 	if(offset==-1 && (data->stream).next_frame!=NULL) {
@@ -173,10 +179,9 @@ int fillMp3InputBuffer(mp3DecodeData * data, long offset) {
 		remaining = 0;
 	}
 			
-	readSize = fread(readStart,1,readSize,data->fp);
+	readSize = fillBufferFromInputStream(&(data->inStream),readStart,
+			readSize);
 	if(readSize<=0) return -1;
-
-	data->currentOffset+=readSize;
 
 	mad_stream_buffer(&data->stream,data->readBuffer,readSize+remaining);
 	(data->stream).error = 0;
@@ -316,7 +321,6 @@ fail:
 }
 
 int decodeFirstFrame(mp3DecodeData * data) {
-	struct stat filestat;
 	struct xing xing;
 	int ret;
 	int skip;
@@ -345,18 +349,17 @@ int decodeFirstFrame(mp3DecodeData * data) {
 		}
 	}
 	else {
-		size_t offset = data->currentOffset;
+		size_t offset = data->inStream.offset;
 		mad_timer_t duration = data->frame.header.duration;
 		float frameTime = ((float)mad_timer_count(duration,
 					MAD_UNITS_MILLISECONDS))/1000;
-		fstat(fileno(data->fp),&filestat);
 		if(data->stream.this_frame!=NULL) {
 			offset-= data->stream.bufend-data->stream.this_frame;
 		}
 		else {
 			offset-= data->stream.bufend-data->stream.buffer;
 		}
-		data->totalTime = ((filestat.st_size-offset)*8.0)/
+		data->totalTime = ((data->inStream.size-offset)*8.0)/
 					(data->frame).header.bitrate;
 		data->maxFrames = data->totalTime/frameTime+FRAMES_CUSHION;
 	}
@@ -372,7 +375,8 @@ void mp3DecodeDataFinalize(mp3DecodeData * data) {
 	mad_frame_finish(&data->frame);
 	mad_stream_finish(&data->stream);
 
-	if(data->fp) fclose(data->fp);
+	while(finishInputStream(&(data->inStream))<0 &&
+			data->inStream.error==EINTR);
 	if(data->frameOffset) free(data->frameOffset);
 	if(data->times) free(data->times);
 }
@@ -382,10 +386,7 @@ int getMp3TotalTime(char * file) {
 	mp3DecodeData data;
 	int ret;
 
-	while(!(data.fp = fopen(file,"r")) && errno==EINTR);
-	if(!data.fp) return -1;
-
-	initMp3DecodeData(&data);
+	if(initMp3DecodeData(&data,file)<0) return -1;
 	if(decodeFirstFrame(&data)<0) ret = -1;
 	else ret = data.totalTime+0.5;
 	mp3DecodeDataFinalize(&data);
@@ -394,11 +395,10 @@ int getMp3TotalTime(char * file) {
 }
 
 int openMp3(char * file, mp3DecodeData * data) {
-	if((data->fp = fopen(file,"r"))<=0) {
+	if(initMp3DecodeData(data,file) < 0) {
 		ERROR("problems opening \"%s\"\n",file);
 		return -1;
 	}
-	initMp3DecodeData(data);
 	if(decodeFirstFrame(data)<0) {
 		mp3DecodeDataFinalize(data);
 		return -1;
@@ -440,8 +440,7 @@ int mp3Read(mp3DecodeData * data, Buffer * cb, DecoderControl * dc) {
 	{
 		mad_timer_add(&data->timer,(data->frame).header.duration);
 		data->bitRate = (data->frame).header.bitrate;
-		data->frameOffset[data->currentFrame] = 
-				data->currentOffset;
+		data->frameOffset[data->currentFrame] = data->inStream.offset;
 		if(data->stream.this_frame!=NULL) {
 			data->frameOffset[data->currentFrame]-= 
 					data->stream.bufend-
