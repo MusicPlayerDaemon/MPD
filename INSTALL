@@ -25,6 +25,9 @@ libogg, libogg-devel, libvorbis, and libvorbis-devel).
 Flac - http://flac.sf.net
 For Flac support, you need Flac 1.1.0 or greater.
 
+Audiofile - http://www.68k.org/~michael/audiofile/
+For wave support.
+
 Download
 --------
 

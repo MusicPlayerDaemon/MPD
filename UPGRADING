@@ -1,5 +1,17 @@
                        Music Player Daemon (MPD) - UPGRADING
 
+Upgrading to 0.10.0
+-------------------
+
+All information is now stored in the db in UTF-8 format, and the character
+set used for the filesystem is stored in the db.  Thus, it is highly
+recommended that you recreate the db.  To do so, run mpd with the 
+"--create-db" command line option.  Also, note that the filesystem
+character set will be determined from your current locale settings.
+If your locale settings are not the same as those used for the filesystem,
+then use the config file parameter "filesystem_charset" to specify the
+correct character set (this maybe neccessary if you create the db with root).
+
 Upgrading to 0.9.3
 ------------------
 
