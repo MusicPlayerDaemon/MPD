@@ -490,13 +490,14 @@ size_t inputStream_httpRead(InputStream * inStream, void * ptr, size_t size,
 
         switch(data->connState) {
         case HTTP_CONN_STATE_OPEN:
+		if(data->prebuffer || data->buflen < data->icyMetaint) return 0;
+
+		break;
         case HTTP_CONN_STATE_CLOSED:
-                break;
+		if(data->buflen) break;
         default:
                 return 0;
         }
-
-	if(data->prebuffer || data->buflen < data->icyMetaint) return 0;
 
 	if(data->icyMetaint > 0) {
 		if(data->icyOffset >= data->icyMetaint) {
