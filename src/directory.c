@@ -1309,7 +1309,7 @@ int sumSongTime(FILE * fp, Song * song, void * data) {
 }
 
 int printInfoForAllIn(FILE * fp, char * name) {
-        return traverseAllIn(fp,name,directoryPrintSongInfo,NULL,NULL);
+        return traverseAllIn(fp,name,directoryPrintSongInfo,printDirectoryInDirectory,NULL);
 }
 
 int countSongsIn(FILE * fp, char * name) {

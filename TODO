@@ -38,8 +38,6 @@
 	*) command for displaying playlist contents
 	*) command for appending to playlist
 
-*) have listallinfo return directories
-
 *) abstract out input buffering from inputStream_http to inputStream
 
 *) use getaddrinfo instead of gethostbyname (check libshout)
