@@ -340,7 +340,6 @@ static int write_page(ShoutData * sd) {
 	if(myShout_handleError(sd, err) < 0) return -1;
 	err = shout_send(sd->shoutConn, sd->og.body, sd->og.body_len);
 	if(myShout_handleError(sd, err) < 0) return -1;
-	shout_sync(sd->shoutConn);
 
 	return 0;
 }
@@ -464,14 +463,10 @@ static int myShout_openDevice(AudioOutput * audioOutput,
 }
 
 static void myShout_sendMetadata(ShoutData * sd) {
-	ogg_int64_t granulepos = sd->vd.granulepos;
-
 	if(!sd->opened || !sd->tag) return;
 
 	clearEncoder(sd);
 	if(initEncoder(sd) < 0) return;
-
-	sd->vd.granulepos = granulepos;
 
 	copyTagToVorbisComment(sd);
 

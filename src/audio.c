@@ -261,7 +261,8 @@ int openAudioDevice(AudioFormat * audioFormat) {
 	if(!audioOpened || !isCurrentFormat) {
 		flushAudioBuffer();
 		copyAudioFormat(&audio_format, audioFormat);
-		audioBufferSize = (audio_format.bits/8)*audio_format.channels;
+		audioBufferSize = (audio_format.bits >> 3)*
+					audio_format.channels;
 		audioBufferSize*= audio_format.sampleRate >> 5;
 		audioBuffer = realloc(audioBuffer, audioBufferSize);
 	}
