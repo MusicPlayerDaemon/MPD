@@ -21,6 +21,7 @@
 #include "conf.h"
 #include "log.h"
 #include "sig_handlers.h"
+#include "command.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -31,6 +32,14 @@ static AudioFormat audio_format;
 
 static AudioFormat * audio_configFormat = NULL;
 
+static AudioOutput ** audioOutputArray = NULL;
+static mpd_uint8 audioOutputArraySize = 0;
+/* the audioEnabledArray should be stuck into shared memory, and then disable
+   and enable in playAudio() routine */
+static mpd_uint8 * audioEnabledArray = NULL;
+
+static mpd_uint8 audioOpened = 0;
+
 void copyAudioFormat(AudioFormat * dest, AudioFormat * src) {
 	if(!src) return;
 
@@ -40,9 +49,6 @@ void copyAudioFormat(AudioFormat * dest, AudioFormat * src) {
 int cmpAudioFormat(AudioFormat * f1, AudioFormat * f2) {
 	return memcmp(f1, f2, sizeof(AudioFormat));
 }
-
-static AudioOutput ** audioOutputArray = NULL;
-static int audioOutputArraySize = 0;
 
 extern AudioOutputPlugin aoPlugin;
 extern AudioOutputPlugin shoutPlugin;
@@ -58,12 +64,21 @@ void initAudioDriver() {
 	loadAudioOutputPlugin(&ossPlugin);
 
 	while((param = getNextConfigParam(CONF_AUDIO_OUTPUT, param))) {
+		if(audioOutputArraySize == 255) {
+			ERROR("only up to 255 audio output devices are "
+					"supported");
+			exit(EXIT_FAILURE);
+		}
+
 		i = audioOutputArraySize++;
 
 		audioOutputArray = realloc(audioOutputArray,
 				audioOutputArraySize*sizeof(AudioOutput *));
+		audioEnabledArray = realloc(audioEnabledArray,
+				audioOutputArraySize*sizeof(mpd_uint8));
 	
 		audioOutputArray[i] = newAudioOutput(param);
+		audioEnabledArray[i] = 1;
 
 		if(!audioOutputArray[i]) {
 			ERROR("problems configuring output device defined at "
@@ -173,6 +188,7 @@ void finishAudioDriver() {
 		finishAudioOutput(audioOutputArray[i]);
 	}
 
+	free(audioEnabledArray);
 	free(audioOutputArray);
 	audioOutputArray = NULL;
 	audioOutputArraySize = 0;
@@ -198,10 +214,21 @@ int openAudioDevice(AudioFormat * audioFormat) {
 	}
 
 	for(i = 0; i < audioOutputArraySize; i++) {
+		if(!audioEnabledArray[i]) continue;
 		if(!audioOutputArray[i]->open || !isCurrentFormat) {
 			openAudioOutput(audioOutputArray[i], &audio_format);
 		}
 		if(audioOutputArray[i]->open) ret = 0;
+	}
+
+	if(ret == 0) audioOpened = 1;
+	else {
+		/* close all devices if there was an error */
+		for(i = 0; i < audioOutputArraySize; i++) {
+			closeAudioOutput(audioOutputArray[i]);
+		}
+
+		audioOpened = 0;
 	}
 
 	return ret;
@@ -211,7 +238,10 @@ int playAudio(char * playChunk, int size) {
 	int ret = -1;
 	int i;
 
+	/* put some here to determine if enabled array changed */
+
 	for(i = 0; i < audioOutputArraySize; i++) {
+		if(!audioEnabledArray[i]) continue;
 		if(0 == playAudioOutput(audioOutputArray[i], playChunk, size)) {
 			ret = 0;
 		}
@@ -221,14 +251,15 @@ int playAudio(char * playChunk, int size) {
 }
 
 int isAudioDeviceOpen() {
-	int ret = 0;
+	/*int ret = 0;
 	int i;
 
 	for(i = 0; i < audioOutputArraySize; i++) {
+		if(!audioEnabledArray[i]) continue;
 		ret |= audioOutputArray[i]->open;
-	}
+	}*/
 
-	return ret;
+	return audioOpened;
 }
 
 void closeAudioDevice() {
@@ -237,6 +268,8 @@ void closeAudioDevice() {
 	for(i = 0; i < audioOutputArraySize; i++) {
 		closeAudioOutput(audioOutputArray[i]);
 	}
+
+	audioOpened = 0;
 }
 
 void sendMetadataToAudioDevice(MpdTag * tag) {
@@ -245,4 +278,32 @@ void sendMetadataToAudioDevice(MpdTag * tag) {
 	for(i = 0; i < audioOutputArraySize; i++) {
 		sendMetadataToAudioOutput(audioOutputArray[i], tag);
 	}
+}
+
+int enableAudioDevice(FILE * fp, int device) {
+	if(device < 0 || device >= audioOutputArraySize) {
+		commandError(fp, ACK_ERROR_ARG, "audio output device id %i "
+				"doesn't exist\n", device);
+		return -1;
+	}
+
+	audioEnabledArray[device] = 1;
+	/*if(audioOpened && !audioOutputArray[device]->open) {
+		openAudioOutput(audioOutputArray[device], &audio_format);
+	}*/
+
+	return 0;
+}
+
+int disableAudioDevice(FILE * fp, int device) {
+	if(device < 0 || device >= audioOutputArraySize) {
+		commandError(fp, ACK_ERROR_ARG, "audio output device id %i "
+				"doesn't exist\n", device);
+		return -1;
+	}
+
+	audioEnabledArray[device] = 0;
+	/*closeAudioOutput(audioOutputArray[device]);*/
+
+	return 0;
 }
