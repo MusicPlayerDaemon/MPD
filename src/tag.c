@@ -274,7 +274,7 @@ MpdTag * mp4TagDup(char * utf8file) {
 	int mp4MetadataFound = 0;
 
 	ret = mp4DataDup(utf8file,&mp4MetadataFound);
-	if(!mp4MetadataFound) {
+	if(ret && !mp4MetadataFound) {
 		MpdTag * temp = id3Dup(utf8file);
 		if(temp) {
 			temp->time = ret->time;
