@@ -69,4 +69,10 @@ typedef struct _AudioOutputPlugin {
         AudioOutputCloseDevicFunc closeDeviceFunc;
 } AudioOutputPlugin;
 
+void loadAudioOutputPlugin(AudioOutputPlugin * audioOutputPlugin);
+void unloadAudioOutputPlugin(AudioOutputPlugin * audioOutputPlugin);
+
+AudioOutput * newAudioOutput(char * name);
+void closeAudioOutput(AudioOutput * audioOutput);
+
 #endif

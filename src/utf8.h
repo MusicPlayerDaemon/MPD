@@ -26,4 +26,3 @@ unsigned char * utf8StrToLatin1Dup(unsigned char * utf8);
 int validUtf8String(unsigned char * string);
 
 #endif
-/* vim:set shiftwidth=4 tabstop=8 expandtab: */
