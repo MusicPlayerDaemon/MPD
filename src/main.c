@@ -224,7 +224,7 @@ void establishListen(Options * options) {
                 exit(EXIT_FAILURE);
         }
 
-        if(options->createDB < 0 && !options->updateDB &&
+        if(options->createDB <= 0 && !options->updateDB &&
 			(listenSocket = establish(port))<0) 
 	{
                 ERROR("error binding port\n");
