@@ -142,7 +142,7 @@ void finishPlaylist() {
         int i;
         for(i=0;i<playlist.length;i++) {
 		if(playlist.songs[i]->type == SONG_TYPE_URL) {
-			/*freeJustSong(playlist.songs[i]);*/
+			freeJustSong(playlist.songs[i]);
 		}
         }
 	free(playlist.songs);
@@ -158,7 +158,7 @@ int clearPlaylist(FILE * fp) {
 
 	for(i=0;i<playlist.length;i++) {
 		if(playlist.songs[i]->type == SONG_TYPE_URL) {
-			/*freeJustSong(playlist.songs[i]);*/
+			freeJustSong(playlist.songs[i]);
 		}
 		playlist.songs[i] = NULL;
 	}
