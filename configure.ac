@@ -66,8 +66,8 @@ AC_CHECK_LIB(nsl,gethostbyname,MPD_LIBS="$MPD_LIBS -lnsl",)
 
 AC_CHECK_LIB(m,exp,MPD_LIBS="$MPD_LIBS -lm",)
 
-AC_CHECK_HEADER(langinfo.h,AC_DEFINE(HAVE_LANGINFO,1,[Define if nl_langinfo.h is present]),)
-AC_CHECK_HEADER(locale.h,AC_DEFINE(HAVE_LOCALE,1,[Define if locale.h is present]),)
+AC_CHECK_HEADER(langinfo.h,[enable_langinfo=yes;AC_DEFINE(HAVE_LANGINFO,1,[Define if nl_langinfo.h is present])],enable_langinfo=no)
+AC_CHECK_HEADER(locale.h,[enable_locale=yes;AC_DEFINE(HAVE_LOCALE,1,[Define if locale.h is present])],enable_locale=no)
 
 if test x$enable_ipv6 = xyes; then
 	AC_MSG_CHECKING(for ipv6)
@@ -89,7 +89,7 @@ AP_maGiC_VALUE
 fi
 
 XIPH_PATH_AO(MPD_LIBS="$MPD_LIBS $AO_LIBS" MPD_CFLAGS="$MPD_CFLAGS $AO_CFLAGS",AC_MSG_ERROR(Must have libao installed!!!))
-AC_CHECK_HEADER(sys/soundcard.h,,[AC_MSG_WARN(Soundcard headers not found -- disabling mixer);AC_DEFINE(NO_OSS_MIXER,1,[Define to disable OSS mixer support])])
+AC_CHECK_HEADER(sys/soundcard.h,enable_oss=yes,[AC_MSG_WARN(Soundcard headers not found -- disabling OSS mixer);enable_oss=no;AC_DEFINE(NO_OSS_MIXER,1,[Define to disable OSS mixer support])])
 
 AC_MSG_CHECKING(for alsa)
 AC_EGREP_CPP([AP_maGiC_VALUE],
@@ -101,11 +101,14 @@ AP_maGiC_VALUE
 #endif
 #endif
 ],
-AC_DEFINE(HAVE_ALSA,1,[Define if alsa support is present])
-MPD_LIBS="$MPD_LIBS -lasound"
+enable_alsa=yes
 AC_MSG_RESULT([yes]),
 AC_MSG_RESULT([no])
 )
+
+if test x$enable_alsa = xyes; then
+	AC_CHECK_LIB(asound,main,[MPD_LIBS="$MPD_LIBS -lasound";AC_DEFINE(HAVE_ALSA,1,[Define if alsa support is present])],enable_alsa=no)
+fi
 
 if test x$enable_iconv = xyes; then
   	if test "x$iconv_libraries" != "x" ; then
@@ -372,6 +375,42 @@ AC_OUTPUT(src/mp4ff/Makefile doc/Makefile src/Makefile Makefile )
 
 echo ""
 echo "########### MPD CONFIGURATION ############"
+echo ""
+echo "Volume Mixer Support:"
+if test x$enable_oss = xyes; then
+	echo "OSS mixer support .............enabled"
+else
+	echo "OSS mixer support .............disabled"
+fi
+
+if test x$enable_alsa = xyes; then
+	echo "Alsa mixer support ............enabled"
+else
+	echo "Alsa mixer support ............disabled"
+fi
+
+echo ""
+echo "i18n Support:"
+if test x$enable_iconv = xyes; then
+	echo "iconv support .................enabled"
+else
+	echo "iconv support .................disabled"
+fi
+
+if test x$enable_locale = xyes; then
+	echo "locale support ................enabled"
+else
+	echo "locale support ................disabled"
+fi
+
+if test x$enable_langinfo = xyes; then
+	echo "langinfo support ..............enabled"
+else
+	echo "langinfo support ..............disabled"
+fi
+
+echo ""
+echo "Audio Format Support:"
 if test x$enable_id3 = xyes; then
 	echo "ID3 tag support ...............enabled"
 	if test x$use_mpd_id3tag = xyes; then
@@ -418,6 +457,8 @@ else
 	echo "MP4/AAC support ...............disabled"
 fi
 
+echo ""
+echo "##########################################"
 echo ""
 echo "You are now ready to compile MPD"
 echo "Type \"make\" to compile MPD"
