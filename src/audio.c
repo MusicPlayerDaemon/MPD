@@ -362,9 +362,9 @@ void printAudioDevices(FILE * fp) {
 	int i;
 
 	for(i = 0; i < audioOutputArraySize; i++) {
-		myfprintf(fp, "deviceid: %i\n", i);
-		myfprintf(fp, "devicename: %s\n", audioOutputArray[i]->name);
-		myfprintf(fp, "deviceenabled: %i\n", 
+		myfprintf(fp, "outputid: %i\n", i);
+		myfprintf(fp, "outputname: %s\n", audioOutputArray[i]->name);
+		myfprintf(fp, "outputenabled: %i\n", 
 				(int)pdAudioDevicesEnabled[i]);
 	}
 }
