@@ -31,10 +31,11 @@ if test x$CC = xgcc; then
 fi
 MPD_LIBS=""
 
-AC_ARG_ENABLE(ao,[  --disable-ao    disable support for libao],,enable_ao=yes)
+AC_ARG_ENABLE(ao,[  --enable-ao    disable support for libao],,enable_ao=no)
 AC_ARG_ENABLE(shout,[  --disable-shout    disable support for streaming through shout],,enable_shout=yes)
 AC_ARG_ENABLE(iconv,[  --disable-iconv     disable iconv support],,enable_iconv=yes)
 AC_ARG_ENABLE(ipv6,[  --disable-ipv6     disable IPv6 support],,enable_ipv6=yes)
+AC_ARG_ENABLE(sun,[  --disable-sun     disable sun support],,enable_sun=yes)
 AC_ARG_ENABLE(oss,[  --disable-oss     disable OSS support],,enable_oss=yes)
 AC_ARG_ENABLE(alsa,[  --disable-alsa     disable ALSA Mixer support],,enable_alsa=yes)
 AC_ARG_ENABLE(ogg,[  --disable-ogg     disable ogg support],,enable_ogg=yes)
@@ -120,6 +121,10 @@ fi
 
 if test x$enable_shout = xyes; then
 	XIPH_PATH_SHOUT([AC_DEFINE(HAVE_SHOUT, 1, [Define to enable libshout support]) MPD_LIBS="$MPD_LIBS $SHOUT_LIBS" MPD_CFLAGS="$MPD_CFLAGS $SHOUT_CFLAGS"], enable_shout=no)
+fi
+
+if test x$enable_sun = xyes; then
+	AC_CHECK_HEADER(sys/audioio.h,[enable_sun=yes;AC_DEFINE(HAVE_SUN,1,[Define to enable SUN audio support])],[AC_MSG_WARN(Sun audioio headers not found -- disabling SUN support);enable_sun=no])
 fi
 
 if test x$enable_oss = xyes; then
@@ -570,6 +575,12 @@ else
 	echo "Playing audio via ALSA ........disabled"
 fi
 
+if test x$enable_sun = xyes; then
+	echo "Playing audio via SUN .........enabled"
+else
+	echo "Playing audio via SUN .........disabled"
+fi
+
 if test x$enable_osx = xyes; then
 	echo "Playing audio on OS X .........enabled"
 else
@@ -587,6 +598,7 @@ echo ""
 if test x$enable_ao = xno &&
    test x$enable_oss = xno &&
    test x$enable_shout = xno &&
+   test x$enable_sun = xno &&
    test x$enable_alsa = xno &&
    test x$enable_osx = xno; then
 	AC_MSG_ERROR("No Audio Output types configured!")
