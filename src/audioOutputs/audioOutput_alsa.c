@@ -46,6 +46,7 @@ typedef struct _AlsaData {
 	snd_pcm_t * pcm_handle;
 	int mmap;
 	alsa_writei_t * writei;
+	int sampleSize;
 } AlsaData;
 
 static AlsaData * newAlsaData() {
@@ -122,10 +123,10 @@ static int alsa_openDevice(AudioOutput * audioOutput)
 		goto error;
 	}
 
-	err = snd_pcm_nonblock(ad->pcm_handle, 0);
-	if(err < 0) goto error;
+	/*err = snd_pcm_nonblock(ad->pcm_handle, 0);
+	if(err < 0) goto error;*/
 
-	// configure HW params
+	/* configure HW params */
 	snd_pcm_hw_params_alloca(&hwparams);
 
 	err = snd_pcm_hw_params_any(ad->pcm_handle, hwparams);
@@ -148,7 +149,7 @@ static int alsa_openDevice(AudioOutput * audioOutput)
 		err = snd_pcm_hw_params_set_access(ad->pcm_handle, hwparams,
 				SND_PCM_ACCESS_RW_INTERLEAVED);
 		if(err < 0) goto error;
-		ad->writei = snd_pcm_mmap_writei;
+		ad->writei = snd_pcm_writei;
 	}
 
 	err = snd_pcm_hw_params_set_format(ad->pcm_handle, hwparams, bitformat);
@@ -160,7 +161,7 @@ static int alsa_openDevice(AudioOutput * audioOutput)
 	}
 
 	err = snd_pcm_hw_params_set_channels(ad->pcm_handle, hwparams, 
-			(unsigned int)audioFormat->channels);
+			audioFormat->channels);
 	if(err < 0) {
 		ERROR("Alsa device \"%s\" does not support %i channels: "
 				"%s\n", ad->device, (int)audioFormat->channels, 
@@ -193,7 +194,7 @@ static int alsa_openDevice(AudioOutput * audioOutput)
 	err = snd_pcm_hw_params_get_period_size(hwparams, &alsa_period_size, 0);
 	if(err < 0) goto error;
 
-	// configure SW params
+	/* configure SW params */
 	snd_pcm_sw_params_alloca(&swparams);
 	snd_pcm_sw_params_current(ad->pcm_handle, swparams);
 
@@ -204,6 +205,8 @@ static int alsa_openDevice(AudioOutput * audioOutput)
 	err = snd_pcm_sw_params(ad->pcm_handle, swparams);
 	if(err < 0) goto error;
 	
+	ad->sampleSize = (audioFormat->bits/8)*audioFormat->channels;
+
 	audioOutput->open = 1;
 
 	return 0;
@@ -213,6 +216,7 @@ error:
 			snd_strerror(-err));
 fail:
 	if(ad->pcm_handle) snd_pcm_close(ad->pcm_handle);
+	ad->pcm_handle = NULL;
 	audioOutput->open = 0;
 	return -1;
 }
@@ -245,6 +249,8 @@ static int alsa_playAudio(AudioOutput * audioOutput, char * playChunk,
 	AlsaData * ad = audioOutput->data;
 	int ret;
 
+	size /= ad->sampleSize;
+
 	while (size > 0) {
 		ret = ad->writei(ad->pcm_handle, playChunk, size);
 
@@ -257,7 +263,7 @@ static int alsa_playAudio(AudioOutput * audioOutput, char * playChunk,
 			alsa_closeDevice(audioOutput);
 			return -1;
 		}
-		playChunk += ret;
+		playChunk += ret * ad->sampleSize;
 		size -= ret;
 	}
 
