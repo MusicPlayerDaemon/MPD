@@ -8,7 +8,12 @@
 	g) update child writes db file, parents reads db file when done (the msells/sbh alogrithm)
 	h) when reading directory db and checking for deleted, new, or changed stuff, assume all info is sorted (so we can deterimine if its new very quickly without searching through lists of stuff every time).  Also, for new stuff, insert it with insertInListBeforeNode() function, to keep lists sorted.
 	j) when reading new directory db, we should block some signals when manipulating the directorydb, so we don't receive a signal to quit in the middle of an update
+	k) when bg-update, have parent print out new old stuff to log on reading db, not the child
 
 2) rewrite interface stuff, specifically command list handling etc so its less of a hack and deals with the above update stuff better
 
 3) crosslink "list" stuff, for example, artists are crosslinked to alubms and vice versa, this way you can do list album artists or list artist albums, this will make life easier when we add genre and other metadata
+
+4) thourougly rewrite and check signal blocking and unblocking
+
+5) add a --update-only, like --only-create-db, only just for updating
