@@ -48,14 +48,14 @@ void finishCommands();
 #define commandError(fp, error, format, ... )  \
 	{\
 		if(current_command) { \
-			myfprintf(fp, "ACK [%s:%i:%i] " format "\n", \
-					current_command, command_listNum, \
-					(int)error, ##__VA_ARGS__); \
+			myfprintf(fp, "ACK [%i@%i:%s] " format "\n", \
+					(int)error, command_listNum, \
+					current_command, ##__VA_ARGS__); \
 			current_command = NULL; \
 		} \
 		else { \
-			myfprintf(fp, "ACK [:%i:%i] " format "\n", \
-					command_listNum, (int)error, \
+			myfprintf(fp, "ACK [%i@%i:] " format "\n", \
+					(int)error, command_listNum, \
 					##__VA_ARGS__); \
 		} \
 	}
