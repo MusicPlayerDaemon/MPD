@@ -86,9 +86,9 @@ void initPlayerData() {
 	buffer = &(playerData_pd->buffer);
 
 	buffer->chunks = ((char *)playerData_pd)+sizeof(PlayerData);
-	buffer->chunkSize = (mpd_sint16 *)(((char *)buffer->chunks)+
+	buffer->chunkSize = (mpd_uint16 *)(((char *)buffer->chunks)+
 				buffered_chunks*CHUNK_SIZE);
-	buffer->bitRate = (mpd_sint16 *)(((char *)buffer->chunkSize)+
+	buffer->bitRate = (mpd_uint16 *)(((char *)buffer->chunkSize)+
 				buffered_chunks*sizeof(mpd_sint16));
 	buffer->times = (float *)(((char *)buffer->bitRate)+
 				buffered_chunks*sizeof(mpd_sint16));
