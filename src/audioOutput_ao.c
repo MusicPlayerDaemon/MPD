@@ -225,5 +225,6 @@ AudioOutputPlugin aoPlugin =
 	audioOutputAo_finishDriver,
 	audioOutputAo_openDevice,
 	audioOutputAo_play,
-	audioOutputAo_closeDevice
+	audioOutputAo_closeDevice,
+	NULL /* sendMetadataFunc */
 };

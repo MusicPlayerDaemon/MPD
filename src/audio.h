@@ -22,6 +22,7 @@
 #include "../config.h"
 
 #include "mpd_types.h"
+#include "tag.h"
 
 #include <stdio.h>
 
@@ -32,6 +33,8 @@ typedef struct _AudioFormat {
 	volatile mpd_uint32 sampleRate;
 	volatile mpd_sint8 bits;
 } AudioFormat;
+
+void copyAudioFormat(AudioFormat * dest, AudioFormat * src);
 
 void getOutputAudioFormat(AudioFormat * inFormat, AudioFormat * outFormat);
 
@@ -54,5 +57,7 @@ void closeAudioDevice();
 int isAudioDeviceOpen();
 
 int isCurrentAudioFormat(AudioFormat * audioFormat);
+
+void sendMetdataToAudioDevice(MpdTag * tag);
 
 #endif

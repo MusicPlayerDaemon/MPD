@@ -145,6 +145,7 @@ int waitOnDecode(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb,
 {
         strncpy(pc->currentUrl, pc->utf8url, MAXPATHLEN);
         pc->currentUrl[MAXPATHLEN] = '\0';
+	MpdTag * tag = NULL;
 
 	while(decode_pid && *decode_pid>0 && dc->start) my_usleep(10000);
 
@@ -156,8 +157,14 @@ int waitOnDecode(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb,
 		return -1;
 	}
 
+	if((tag = metadataChunkToMpdTagDup(&(pc->fileMetadataChunk)))) {
+		sendMetdataToAudioDevice(tag);
+		printMpdTag(stdout, tag);
+		freeMpdTag(tag);
+		tag = NULL;
+	}
+
         pc->totalTime = pc->fileTime;
-        pc->elapsedTime = 0;
         pc->bitRate = 0;
         pc->sampleRate = 0;
         pc->bits = 0;
@@ -465,6 +472,7 @@ void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb) {
 
 	if(waitOnDecode(pc,dc,cb,&decodeWaitedOn)<0) return;
 
+        pc->elapsedTime = 0;
 	pc->state = PLAYER_STATE_PLAY;
 	pc->play = 0;
 	kill(getppid(),SIGUSR1);

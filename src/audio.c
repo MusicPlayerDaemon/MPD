@@ -34,7 +34,7 @@ static AudioFormat * audio_configFormat = NULL;
 static AudioOutput * aoOutput = NULL;
 static AudioOutput * shoutOutput = NULL;
 
-static void copyAudioFormat(AudioFormat * dest, AudioFormat * src) {
+void copyAudioFormat(AudioFormat * dest, AudioFormat * src) {
 	if(!src) return;
 
         dest->sampleRate = src->sampleRate;
@@ -181,4 +181,8 @@ int isAudioDeviceOpen() {
 void closeAudioDevice() {
 	if(shoutOutput) closeAudioOutput(shoutOutput);
 	closeAudioOutput(aoOutput);
+}
+
+void sendMetdataToAudioDevice(MpdTag * tag) {
+	if(shoutOutput) sendMetadataToAudioOutput(shoutOutput, tag);
 }

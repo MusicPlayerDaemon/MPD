@@ -86,6 +86,7 @@ typedef struct _PlayerControl {
 	volatile mpd_sint8 cycleLogFiles;
         volatile mpd_sint8 metadataState;
         MetadataChunk metadataChunk;
+        MetadataChunk fileMetadataChunk;
 } PlayerControl;
 
 void clearPlayerPid();

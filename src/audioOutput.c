@@ -32,6 +32,7 @@ AudioOutput * newAudioOutput(char * name) {
 		ret->openDeviceFunc = plugin->openDeviceFunc;
 		ret->playFunc = plugin->playFunc;
 		ret->closeDeviceFunc = plugin->closeDeviceFunc;
+		ret->sendMetdataFunc = plugin->sendMetdataFunc;
 		ret->open = 0;
 
 		if(plugin->initDriverFunc(ret) != 0) {
@@ -61,4 +62,9 @@ void finishAudioOutput(AudioOutput * audioOutput) {
 	closeAudioOutput(audioOutput);
 	audioOutput->finishDriverFunc(audioOutput);
 	free(audioOutput);
+}
+
+void sendMetadataToAudioOutput(AudioOutput * audioOutput, MpdTag * tag) {
+	if(!audioOutput->open || !audioOutput->sendMetdataFunc) return;
+	audioOutput->sendMetdataFunc(audioOutput, tag);
 }

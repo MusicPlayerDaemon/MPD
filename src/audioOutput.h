@@ -23,6 +23,7 @@
 
 #include "mpd_types.h"
 #include "audio.h"
+#include "tag.h"
 
 #define AUDIO_AO_DRIVER_DEFAULT	"default"
 
@@ -40,7 +41,8 @@ typedef int (* AudioOutputPlayFunc) (AudioOutput * audioOutput,
 
 typedef void (* AudioOutputCloseDeviceFunc) (AudioOutput * audioOutput);
 
-typedef int (* AudioOutputKeepAliveFunc) (AudioOutput * audioOutput, int ms);
+typedef void (* AudioOutputSendMetadataFunc) (AudioOutput * audioOutput,
+		MpdTag * tag);
 
 struct _AudioOutput {
 	int open;
@@ -49,7 +51,7 @@ struct _AudioOutput {
         AudioOutputOpenDeviceFunc openDeviceFunc;
         AudioOutputPlayFunc playFunc;
         AudioOutputCloseDeviceFunc closeDeviceFunc;
-	AudioOutputKeepAliveFunc keepAliveFunc;
+	AudioOutputSendMetadataFunc sendMetdataFunc;
 
         void * data;
 };
@@ -62,7 +64,7 @@ typedef struct _AudioOutputPlugin {
         AudioOutputOpenDeviceFunc openDeviceFunc;
         AudioOutputPlayFunc playFunc;
         AudioOutputCloseDeviceFunc closeDeviceFunc;
-	AudioOutputKeepAliveFunc keepAliveFunc;
+	AudioOutputSendMetadataFunc sendMetdataFunc;
 } AudioOutputPlugin;
 
 void initAudioOutputPlugins();
@@ -77,5 +79,6 @@ int playAudioOutput(AudioOutput * audioOutput, char * playChunk, int size);
 void closeAudioOutput(AudioOutput * audioOutput);
 void finishAudioOutput(AudioOutput * audioOutput);
 int keepAudioOutputAlive(AudioOutput * audioOutput, int ms);
+void sendMetadataToAudioOutput(AudioOutput * audioOutput, MpdTag * tag);
 
 #endif

@@ -187,6 +187,8 @@ int playerPlay(FILE * fp, Song * song) {
         if(song->tag) pc->fileTime = song->tag->time;
         else pc->fileTime = 0;
 
+	copyMpdTagToMetadataChunk(song->tag, &(pc->fileMetadataChunk));
+
         strncpy(pc->utf8url, song->utf8url, MAXPATHLEN);
 	pc->utf8url[MAXPATHLEN] = '\0';
 
@@ -338,6 +340,8 @@ int queueSong(Song * song) {
                 if(song->tag) pc->fileTime = song->tag->time;
                 else pc->fileTime = 0;
 
+		copyMpdTagToMetadataChunk(song->tag, &(pc->fileMetadataChunk));
+
 		pc->queueState = PLAYER_QUEUE_FULL;
 		return 0;
 	}
@@ -389,6 +393,8 @@ int playerSeek(FILE * fp, Song * song, float time) {
 	if(strcmp(pc->utf8url, song->utf8url)!=0) {
                 if(song->tag) pc->fileTime = song->tag->time;
                 else pc->fileTime = 0;
+
+		copyMpdTagToMetadataChunk(song->tag, &(pc->fileMetadataChunk));
 
 		strncpy(pc->utf8url, song->utf8url, MAXPATHLEN);
 		pc->utf8url[MAXPATHLEN] = '\0';

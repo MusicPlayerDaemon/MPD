@@ -54,8 +54,6 @@ typedef struct _ShoutData {
 	vorbis_info vi;
 	vorbis_comment vc;
 
-	int serialno;
-
 	float quality;
 	AudioFormat outAudioFormat;
 	AudioFormat inAudioFormat;
@@ -72,7 +70,6 @@ static ShoutData * newShoutData() {
 	ShoutData * ret = malloc(sizeof(ShoutData));
 
 	ret->shoutConn = shout_new();
-	ret->serialno = rand();
 	ret->convBuffer = NULL;
 	ret->convBufferLen = 0;
 	ret->opened = 0;
@@ -190,6 +187,14 @@ static int shout_initDriver(AudioOutput * audioOutput) {
 	return 0;
 }
 
+static void clearEncoder(ShoutData * sd) {
+	ogg_stream_clear(&(sd->os));
+	vorbis_block_clear(&(sd->vb));
+	vorbis_dsp_clear(&(sd->vd));
+	vorbis_comment_clear(&(sd->vc));
+	vorbis_info_clear(&(sd->vi));
+}
+
 static void shout_closeShoutConn(ShoutData * sd) {
 	if(sd->opened) {
 		if(shout_close(sd->shoutConn) != SHOUTERR_SUCCESS) {
@@ -197,11 +202,7 @@ static void shout_closeShoutConn(ShoutData * sd) {
 				"%s\n", shout_get_error(sd->shoutConn));
 		}
 
-		ogg_stream_clear(&(sd->os));
-		vorbis_block_clear(&(sd->vb));
-		vorbis_dsp_clear(&(sd->vd));
-		vorbis_comment_clear(&(sd->vc));
-		vorbis_info_clear(&(sd->vi));
+		clearEncoder(sd);
 	}
 
 	sd->opened = 0;
@@ -250,6 +251,27 @@ static void write_page(ShoutData * sd) {
 	/*shout_sync(sd->shoutConn);*/
 }
 
+static int initEncoder(ShoutData * sd) {
+	vorbis_info_init(&(sd->vi));
+
+	if( 0 != vorbis_encode_init_vbr(&(sd->vi), sd->outAudioFormat.channels,
+			sd->outAudioFormat.sampleRate, sd->quality) )
+	{
+		ERROR("problem seting up vorbis encoder for shout\n");
+		vorbis_info_clear(&(sd->vi));
+		return -1;
+	}
+
+	vorbis_analysis_init(&(sd->vd), &(sd->vi));
+	vorbis_block_init (&(sd->vd), &(sd->vb));
+
+	ogg_stream_init(&(sd->os), rand());
+
+	vorbis_comment_init(&(sd->vc));
+
+	return 0;
+}
+
 static int shout_openDevice(AudioOutput * audioOutput,
 		AudioFormat * audioFormat) 
 {
@@ -277,24 +299,12 @@ static int shout_openDevice(AudioOutput * audioOutput,
 		return -1;
 	}
 
-	vorbis_info_init(&(sd->vi));
-
-	if( 0 != vorbis_encode_init_vbr(&(sd->vi), sd->outAudioFormat.channels,
-			sd->outAudioFormat.sampleRate, sd->quality) )
-	{
-		ERROR("problem seting up vorbis encoder for shout\n");
-		vorbis_info_clear(&(sd->vi));
+	if(initEncoder(sd) < 0) {
 		shout_close(sd->shoutConn);
-		audioOutput->open = 0;
+		audioOutput->open = 1;
 		return -1;
 	}
 
-	vorbis_analysis_init(&(sd->vd), &(sd->vi));
-	vorbis_block_init (&(sd->vd), &(sd->vb));
-
-	ogg_stream_init(&(sd->os), sd->serialno);
-
-	vorbis_comment_init(&(sd->vc));
 	vorbis_analysis_headerout(&(sd->vd), &(sd->vc), &(sd->header_main),
 			&(sd->header_comments), &(sd->header_codebooks));
 
@@ -375,6 +385,44 @@ static int shout_play(AudioOutput * audioOutput, char * playChunk, int size) {
 	return 0;
 }
 
+#define addTag(name, value) { \
+	if(value) vorbis_comment_add_tag(&(sd->vc), name, value); \
+}
+
+static void shout_sendMetadata(AudioOutput * audioOutput, MpdTag * tag) {
+	ShoutData * sd = (ShoutData *)audioOutput->data;
+	ogg_int64_t granulepos = sd->vd.granulepos;
+
+	clearEncoder(sd);
+	if(initEncoder(sd) < 0) return;
+
+	sd->vd.granulepos = granulepos;
+
+	if(tag) {
+		addTag("ARTIST", tag->artist);
+		addTag("ALBUM", tag->album);
+		addTag("TITLE", tag->title);
+
+	}
+
+	DEBUG("shout: got tag\n");
+
+	vorbis_analysis_headerout(&(sd->vd), &(sd->vc), &(sd->header_main),
+			&(sd->header_comments), &(sd->header_codebooks));
+
+	ogg_stream_packetin(&(sd->os), &(sd->header_main));
+	ogg_stream_packetin(&(sd->os), &(sd->header_comments));
+	ogg_stream_packetin(&(sd->os), &(sd->header_codebooks));
+
+	/*vorbis_commentheader_out(&(sd->vc), &(sd->header_comments));
+	ogg_stream_packetin(&(sd->os), &(sd->header_comments));*/
+
+	while(ogg_stream_flush(&(sd->os), &(sd->og)))
+	{
+		write_page(sd);
+	}
+}
+
 AudioOutputPlugin shoutPlugin = 
 {
 	"shout",
@@ -382,7 +430,8 @@ AudioOutputPlugin shoutPlugin =
 	shout_finishDriver,
 	shout_openDevice,
 	shout_play,
-	shout_closeDevice
+	shout_closeDevice,
+	shout_sendMetadata
 };
 
 #else
@@ -392,6 +441,7 @@ AudioOutputPlugin shoutPlugin =
 AudioOutputPlugin shoutPlugin = 
 {
 	"shout",
+	NULL,
 	NULL,
 	NULL,
 	NULL,
