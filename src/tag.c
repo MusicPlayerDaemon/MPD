@@ -169,7 +169,7 @@ void clearMpdTag(MpdTag * tag) {
 	if(tag->artist) free(tag->artist);
 	if(tag->album) free(tag->album);
 	if(tag->title) free(tag->title);
-	if(tag->name) free(tag->title);
+	if(tag->name) free(tag->name);
 	if(tag->track) free(tag->track);
 }
 

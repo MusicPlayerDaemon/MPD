@@ -23,9 +23,12 @@
 #include "decode.h"
 #include "audio.h"
 #include "inputStream.h"
+#include "metadataChunk.h"
 
 #define OUTPUT_BUFFER_DC_STOP   -1
 #define OUTPUT_BUFFER_DC_SEEK   -2
+
+#define BUFFERED_METACHUNKS	25
 
 typedef struct _OutputBuffer {
 	char * volatile chunks;
@@ -37,13 +40,8 @@ typedef struct _OutputBuffer {
 	mpd_sint16 volatile next;
 	mpd_sint8 volatile wrap;
         AudioFormat audioFormat;
-        volatile mpd_sint8 metadataSet;
-        char metadata[DECODE_METADATA_LENGTH];
-        volatile mpd_sint16 title;
-        volatile mpd_sint16 artist;
-        volatile mpd_sint16 album;
-        volatile mpd_sint16 name;
-        volatile mpd_uint16 metaChunk;
+	MetadataChunk metadataChunks[BUFFERED_METACHUNKS];
+	mpd_sint8 * volatile metaChunk;
 	volatile mpd_sint8 acceptMetadata;
 } OutputBuffer;
 

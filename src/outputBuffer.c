@@ -26,6 +26,9 @@
 
 static mpd_sint16 currentChunk = -1;
 
+static mpd_sint8 currentMetaChunk = -1;
+static mpd_sint8 sendMetaChunk = 0;
+
 void clearOutputBuffer(OutputBuffer * cb) {
         currentChunk = -1;
         cb->end = cb->begin;
@@ -95,6 +98,13 @@ int sendDataToOutputBuffer(OutputBuffer * cb, InputStream * inStream,
 
 			currentChunk = cb->end;
 			cb->chunkSize[currentChunk] = 0;
+
+			if(sendMetaChunk) {
+				cb->metaChunk[currentChunk] = currentMetaChunk;
+			}
+			else cb->metaChunk[currentChunk] = -1;
+	        	cb->bitRate[currentChunk] = bitRate;
+	        	cb->times[currentChunk] = time;
 		}
 
 		chunkLeft = CHUNK_SIZE-cb->chunkSize[currentChunk];
@@ -104,9 +114,6 @@ int sendDataToOutputBuffer(OutputBuffer * cb, InputStream * inStream,
 			cb->chunkSize[currentChunk],
 			data, dataToSend);
 	        cb->chunkSize[currentChunk]+= dataToSend;
-	        cb->bitRate[currentChunk] = bitRate;
-	        cb->times[currentChunk] = time;
-
                 datalen-= dataToSend;
                 data+= dataToSend;
 
@@ -118,32 +125,19 @@ int sendDataToOutputBuffer(OutputBuffer * cb, InputStream * inStream,
 	return 0;
 }
 
-/* this is stuff for inputPlugins to use! */
-#define copyStringToMetadata(string, element) { \
-	if(string && (slen = strlen(string)) && \
-                        pos < DECODE_METADATA_LENGTH-1) \
-        { \
-		strncpy(cb->metadata+pos, string, \
-                                DECODE_METADATA_LENGTH-1-pos); \
-		element = pos; \
-		pos += slen+1; \
-	} \
-}
-
 void copyMpdTagToOutputBuffer(OutputBuffer * cb, MpdTag * tag) {
-	int pos = 0;
-	int slen;
+	printf("copyMpdTagToOB called\n");
 
-        if(!cb->acceptMetadata) return;
-        if(!tag) return;
+        if(!cb->acceptMetadata || !tag) {
+		sendMetaChunk = 0;
+		return;
+	}
 
-	memset(cb->metadata, 0, DECODE_METADATA_LENGTH);
-	
-	copyStringToMetadata(tag->name, cb->name);
-	copyStringToMetadata(tag->artist, cb->artist);
-	copyStringToMetadata(tag->title, cb->title);
-	copyStringToMetadata(tag->album, cb->album);
+	sendMetaChunk = 1;
+	currentMetaChunk++;
+	if(currentMetaChunk >= BUFFERED_METACHUNKS) currentMetaChunk = 0;
 
-        cb->metaChunk = cb->end;
-	cb->metadataSet = 1;
+	printMpdTag(stdout, tag);
+
+	copyMpdTagToMetadataChunk(tag, &(cb->metadataChunks[currentMetaChunk]));
 }

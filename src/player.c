@@ -55,9 +55,6 @@ static void resetPlayerMetadata() {
 
         if(pc->metadataState == PLAYER_METADATA_STATE_READ) {
                 pc->metadataState = PLAYER_METADATA_STATE_WRITE;
-                pc->title = -1;
-                pc->artist = -1;
-                pc->album = -1;
         }
 }
 
@@ -75,8 +72,6 @@ void resetPlayer() {
 	getPlayerData()->playerControl.seek = 0;
         getPlayerData()->playerControl.metadataState = 
                         PLAYER_METADATA_STATE_WRITE;
-        getPlayerData()->playerControl.title = -1;
-	/* kill decode process if it got left running */
 	pid = getPlayerData()->playerControl.decode_pid;
 	if(pid>0) kill(pid,SIGTERM);
 	getPlayerData()->playerControl.decode_pid = 0;
@@ -474,31 +469,24 @@ void playerCycleLogFiles() {
 /* this actually creates a dupe of the current metadata */
 Song * playerCurrentDecodeSong() {
         static Song * song = NULL;
-        static char * prev = NULL;
+        static MetadataChunk * prev = NULL;
 	PlayerControl * pc = &(getPlayerData()->playerControl);
 
         if(pc->metadataState == PLAYER_METADATA_STATE_READ && 
                         ((!song || strcmp(song->utf8url, pc->currentUrl))
-                        || (!prev || strcmp(prev,pc->metadata)))) 
+                        || (!prev || memcmp(prev, &(pc->metadataChunk), 
+			sizeof(MetadataChunk))))) 
         {
+		printf("metadata in the PLAYER!\n");
                 if(song) freeJustSong(song);
                 song = newNullSong();
-                song->tag = newMpdTag();
                 if(song->utf8url) free(song->utf8url);
                 song->utf8url = strdup(pc->currentUrl);
-                if(pc->title >= 0) {
-                        song->tag->title = strdup(pc->title + pc->metadata);
-			/*printf("player title: %s\n", song->tag->title);*/
-                }
-                if(pc->artist >= 0) {
-                        song->tag->artist = strdup(pc->artist + pc->metadata);
-                }
-                if(pc->album >= 0) {
-                        song->tag->album = strdup(pc->album + pc->metadata);
-                }
+		song->tag = metadataChunkToMpdTagDup(&(pc->metadataChunk));
                 validateUtf8Tag(song->tag);
                 if(prev) free(prev);
-                prev = strdup(pc->metadata);
+                prev = malloc(sizeof(MetadataChunk));
+		memcpy(prev, &(pc->metadataChunk), sizeof(MetadataChunk));
                 resetPlayerMetadata();
                 return song;
         }

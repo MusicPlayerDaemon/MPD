@@ -260,12 +260,7 @@ void decodeStart(PlayerControl * pc, OutputBuffer * cb, DecoderControl * dc) {
                 return;
 	}
 
-        cb->metadataSet = 0;
-        memset(cb->metadata, 0, DECODE_METADATA_LENGTH);
-        cb->name = -1;
-        cb->title = -1;
-        cb->album = -1;
-        cb->artist = -1;
+	copyMpdTagToOutputBuffer(cb, NULL);
 
         strncpy(dc->utf8url, pc->utf8url, MAXPATHLEN);
 	dc->utf8url[MAXPATHLEN] = '\0';
@@ -292,13 +287,14 @@ void decodeStart(PlayerControl * pc, OutputBuffer * cb, DecoderControl * dc) {
                 return;
         }
 
-        /*if(inStream.metaTitle) {
-                strncpy(cb->metadata, inStream.metaTitle, 
-                                DECODE_METADATA_LENGTH-1);
-                cb->name = 0;
-		cb->metaChunk = cb->end;
-                cb->metadataSet = 1;                
-        }*/
+        if(inStream.metaTitle) {
+		MpdTag * tag = newMpdTag();
+		tag->name = strdup(inStream.metaTitle);
+		copyMpdTagToOutputBuffer(cb, tag);
+		freeMpdTag(tag);
+        }
+
+	/* reset Metadata in OutputBuffer */
 
         ret = DECODE_ERROR_UNKTYPE;
 	if(isRemoteUrl(dc->utf8url)) {
@@ -403,42 +399,25 @@ int decoderInit(PlayerControl * pc, OutputBuffer * cb, DecoderControl * dc) {
 	kill(getppid(), SIGUSR1); \
 }
 
-/* do some fancier shit here, like put metadata in a linked list metadata
-buffer, and assign it to current and whether current is written */
-#define handleMetadata() { \
-	if(cb->metadataSet) {\
-		gotMetadata = 1;\
-		memcpy(metadata, cb->metadata, DECODE_METADATA_LENGTH); \
-		artist = cb->artist; \
-		name = cb->name; \
-		title = cb->title; \
-		album = cb->album; \
-		metaChunk = cb->metaChunk; \
-		cb->metadataSet = 0; \
-	} \
-	if(gotMetadata) { \
-		int end = cb->end; \
-		if(end > cb->begin && (metaChunk < cb->begin || \
-				metaChunk > end)) \
-		{ \
-			gotMetadata = 0; \
-		} \
-		else if(cb->begin > end && (metaChunk > cb->begin && \
-				metaChunk < end)) \
-		{ \
-			gotMetadata = 0; \
-		} \
-		else if(pc->metadataState == PLAYER_METADATA_STATE_WRITE) { \
-			if(end > metaChunk && metaChunk <= cb->begin ) { \
-				copyMetadata(); \
-			} \
-			else if(metaChunk >= end && (cb->begin >= metaChunk || \
-				cb->begin < end)) \
-			{ \
-				copyMetadata(); \
-			} \
-		} \
-	} \
+void handleMetadata(OutputBuffer * cb, PlayerControl * pc) {
+	static int previous = -1;
+
+	if(cb->begin!=cb->end || cb->wrap) {
+		int meta = cb->metaChunk[cb->begin];
+		if( meta != previous ) {
+			if( meta >= 0 && pc->metadataState ==
+					PLAYER_METADATA_STATE_WRITE) 
+			{
+				printf("METADATA!, copying it.\n");
+				memcpy(&(pc->metadataChunk), 
+					cb->metadataChunks+meta,
+					sizeof(MetadataChunk));
+				pc->metadataState = 
+					PLAYER_METADATA_STATE_READ;
+				previous = meta;
+			}
+		}
+	}
 }
 
 void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb) {
@@ -453,13 +432,6 @@ void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb) {
         int decodeWaitedOn = 0;
 	char silence[CHUNK_SIZE];
 	double sizeToTime = 0.0;
-	char metadata[DECODE_METADATA_LENGTH];
-	mpd_sint16 name = -1;
-	mpd_sint16 title = -1;
-	mpd_sint16 artist = -1;
-	mpd_sint16 album = -1;
-	mpd_sint16 metaChunk = -1;
-	int gotMetadata = 0;
 
 	memset(silence,0,CHUNK_SIZE);
 
@@ -473,15 +445,14 @@ void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb) {
 				dc->state!=DECODE_STATE_STOP) 
 	{
 		processDecodeInput();
-		handleMetadata();
 		if(quit) return;
 		my_usleep(10000);
 	}
 
 	while(!quit) {
 		processDecodeInput();
-		handleMetadata();
                 handleDecodeStart();
+		handleMetadata(cb, pc);
 		if(dc->state==DECODE_STATE_STOP && 
 			pc->queueState==PLAYER_QUEUE_FULL &&
 			pc->queueLockState==PLAYER_QUEUE_UNLOCKED) 
@@ -643,7 +614,6 @@ void decode() {
 	cb->begin = 0;
 	cb->end = 0;
 	cb->wrap = 0;
-	cb->metadataSet = 0;
 	pc = &(getPlayerData()->playerControl);
 	dc = &(getPlayerData()->decoderControl);
 	dc->error = 0;

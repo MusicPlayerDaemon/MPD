@@ -802,15 +802,19 @@ void syncCurrentPlayerDecodeMetadata() {
 	songNum = playlist.order[playlist.current];
         song = playlist.songs[songNum];
 
+	printf("HERE 1\n");
+
         if(song->type == SONG_TYPE_URL &&
                         0 == strcmp(song->utf8url, songPlayer->utf8url) &&
                         !mpdTagsAreEqual(song->tag, songPlayer->tag))
         {
+		printf("HERE 1-1\n");
                 if(song->tag) freeMpdTag(song->tag);
                 song->tag = mpdTagDup(songPlayer->tag);
 		playlist.songMod[songNum] = playlist.version;
                 incrPlaylistVersion();
         }
+	printf("HERE 2\n");
 }
 
 void syncPlayerAndPlaylist() {

@@ -24,6 +24,7 @@
 #include "decode.h"
 #include "mpd_types.h"
 #include "song.h"
+#include "metadataChunk.h"
 
 #include <stdio.h>
 #include <sys/param.h>
@@ -84,11 +85,7 @@ typedef struct _PlayerControl {
 	volatile int decode_pid;
 	volatile mpd_sint8 cycleLogFiles;
         volatile mpd_sint8 metadataState;
-        char metadata[DECODE_METADATA_LENGTH];
-        volatile mpd_sint16 name;
-        volatile mpd_sint16 title;
-        volatile mpd_sint16 artist;
-        volatile mpd_sint16 album;
+        MetadataChunk metadataChunk;
 } PlayerControl;
 
 void clearPlayerPid();

@@ -60,4 +60,3 @@ void validateUtf8Tag(MpdTag * tag);
 int mpdTagsAreEqual(MpdTag * tag1, MpdTag * tag2);
 
 #endif
-/* vim:set shiftwidth=4 tabstop=8 expandtab: */

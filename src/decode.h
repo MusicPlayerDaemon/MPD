@@ -46,8 +46,6 @@
 #define DECODE_SUFFIX_MP4       5
 #define DECODE_SUFFIX_WAVE      6
 
-#define DECODE_METADATA_LENGTH  8192
-
 typedef struct _DecoderControl {
 	volatile mpd_sint8 state;
 	volatile mpd_sint8 stop;

@@ -13,7 +13,7 @@ mpd_headers = buffer2array.h interface.h command.h playlist.h ls.h \
 	charConv.h permission.h mpd_types.h pcm_utils.h \
 	signal_check.h utf8.h inputStream.h \
 	outputBuffer.h replayGain.h inputStream_file.h inputStream_http.h \
-	inputPlugin.h
+	inputPlugin.h metadataChunk.h
 mpd_SOURCES = main.c buffer2array.c interface.c command.c playlist.c ls.c \
 	song.c list.c directory.c tables.c utils.c path.c \
 	tag.c player.c listen.c conf.c volume.c \
@@ -21,7 +21,7 @@ mpd_SOURCES = main.c buffer2array.c interface.c command.c playlist.c ls.c \
 	charConv.c permission.c pcm_utils.c \
 	signal_check.c utf8.c inputStream.c outputBuffer.c \
 	replayGain.c inputStream_file.c inputStream_http.c inputPlugin.c \
-	$(mpd_headers) $(mpd_inputPlugins)
+	metadataChunk.c $(mpd_headers) $(mpd_inputPlugins)
 
 mpd_CFLAGS = $(MPD_CFLAGS)
 mpd_LDADD = $(MPD_LIBS) $(ID3_LIB) $(MAD_LIB) $(MP4FF_LIB)

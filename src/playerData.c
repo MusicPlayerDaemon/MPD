@@ -73,6 +73,7 @@ void initPlayerData() {
 	allocationSize+= buffered_chunks*sizeof(float); /*for times*/
 	allocationSize+= buffered_chunks*sizeof(mpd_sint16); /*for chunkSize*/
 	allocationSize+= buffered_chunks*sizeof(mpd_sint16); /*for bitRate*/
+	allocationSize+= buffered_chunks*sizeof(mpd_sint8); /*for metaChunk*/
 	allocationSize+= sizeof(PlayerData); /*for playerData struct*/
 
 	if((shmid = shmget(IPC_PRIVATE,allocationSize,IPC_CREAT|0600))<0) {
@@ -95,8 +96,10 @@ void initPlayerData() {
 				buffered_chunks*CHUNK_SIZE);
 	buffer->bitRate = (mpd_uint16 *)(((char *)buffer->chunkSize)+
 				buffered_chunks*sizeof(mpd_sint16));
-	buffer->times = (float *)(((char *)buffer->bitRate)+
+	buffer->metaChunk = (mpd_sint8 *)(((char *)buffer->bitRate)+
 				buffered_chunks*sizeof(mpd_sint16));
+	buffer->times = (float *)(((char *)buffer->metaChunk)+
+				buffered_chunks*sizeof(mpd_sint8));
 
 	playerData_pd->playerControl.stop = 0;
 	playerData_pd->playerControl.pause = 0;
@@ -111,16 +114,10 @@ void initPlayerData() {
 	memset(playerData_pd->playerControl.utf8url, 0, MAXPATHLEN+1);
 	memset(playerData_pd->playerControl.erroredUrl, 0, MAXPATHLEN+1);
 	memset(playerData_pd->playerControl.currentUrl, 0, MAXPATHLEN+1);
-	memset(playerData_pd->playerControl.metadata, 0, 
-                        DECODE_METADATA_LENGTH);
 	playerData_pd->playerControl.crossFade = crossfade;
 	playerData_pd->playerControl.softwareVolume = 1000;
 	playerData_pd->playerControl.totalPlayTime = 0;
 	playerData_pd->playerControl.decode_pid = 0;
-	playerData_pd->playerControl.name = -1;
-	playerData_pd->playerControl.title = -1;
-	playerData_pd->playerControl.artist = -1;
-	playerData_pd->playerControl.album = -1;
 	playerData_pd->playerControl.metadataState = 
                         PLAYER_METADATA_STATE_WRITE;
 
@@ -130,9 +127,6 @@ void initPlayerData() {
 	playerData_pd->decoderControl.seek = 0;
 	playerData_pd->decoderControl.error = DECODE_ERROR_NOERROR;
 	memset(playerData_pd->decoderControl.utf8url, 0, MAXPATHLEN+1);
-
-	memset(playerData_pd->buffer.metadata, 0, DECODE_METADATA_LENGTH);
-	playerData_pd->buffer.metadataSet = 0;
 }
 
 PlayerData * getPlayerData() {
@@ -142,4 +136,3 @@ PlayerData * getPlayerData() {
 void freePlayerData() {
 	shmdt(playerData_pd);
 }
-/* vim:set shiftwidth=4 tabstop=8 expandtab: */
