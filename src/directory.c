@@ -789,8 +789,6 @@ int writeDirectoryDB() {
 
 	deleteEmptyDirectoriesInDirectory(mp3rootDirectory);
 	sortDirectory(mp3rootDirectory);
-	stats.numberOfSongs = countSongsIn(stderr,NULL);
-	stats.dbPlayTime = sumSongTimesIn(stderr,NULL);
 
 	while(!(fp=fopen(directorydb,"w")) && errno==EINTR);
 	if(!fp) return -1;
@@ -1128,6 +1126,8 @@ unsigned long sumSongTimesIn(FILE * fp, char * name) {
 void initMp3Directory() {
 	mp3rootDirectory = newDirectory(NULL,0);
 	exploreDirectory(mp3rootDirectory);
+	stats.numberOfSongs = countSongsIn(stderr,NULL);
+	stats.dbPlayTime = sumSongTimesIn(stderr,NULL);
 }
 
 Song * getSongDetails(char * file, char ** shortnameRet, 
