@@ -71,3 +71,7 @@ int closeInputStream(InputStream * inStream) {
 
 	return 0;
 }
+
+int inputStreamAtEOF(InputStream * inStream) {
+	return feof(inStream->fp);
+}

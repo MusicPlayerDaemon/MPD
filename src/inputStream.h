@@ -34,6 +34,7 @@ typedef struct _InputStream {
 int openInputStreamFromFile(InputStream * inStream, char * filename);
 int seekInputStream(InputStream * inStream, long offset, int whence);
 int closeInputStream(InputStream * inStream);
+int inputStreamAtEOF(InputStream * inStream);
 
 size_t readFromInputStream(InputStream * inStream, void * ptr, size_t size,
 		size_t nmemb);
