@@ -52,7 +52,172 @@ typedef struct _OssData {
 	int sampleRate;
 	int bitFormat;
 	int bits;
+	int * supported[3];
+	int numSupported[3];
+	int * unsupported[3];
+	int numUnsupported[3];
 } OssData;
+
+#define OSS_SUPPORTED		1
+#define OSS_UNSUPPORTED		0
+#define OSS_UNKNOWN		-1
+
+#define OSS_RATE		0
+#define OSS_CHANNELS		1
+#define OSS_BITS		2
+
+static int getIndexForParam(int param) {
+	int index = 0;
+	
+	switch(param) {
+	case SNDCTL_DSP_SPEED:
+		index = OSS_RATE;
+		break;
+	case SNDCTL_DSP_CHANNELS:
+		index = OSS_CHANNELS;
+		break;
+	case SNDCTL_DSP_SAMPLESIZE:
+		index = OSS_BITS;
+		break;
+	}
+
+	return index;
+}
+
+static int findSupportedParam(OssData * od, int param, int val) {
+	int i;
+	int index = getIndexForParam(param);
+	
+	for(i = 0; i < od->numSupported[index]; i++) {
+		if(od->supported[index][i] == val) return 1;
+	}
+
+	return 0;
+}
+
+static int canConvert(int index, int val) {
+	switch(index) {
+	case OSS_BITS:
+		if(val!=16) return 0;
+		break;
+	case OSS_CHANNELS:
+		if(val!=2) return 0;
+		break;
+	}
+
+	return 1;
+}
+
+static int getSupportedParam(OssData * od, int param, int val) {
+	int i;
+	int index = getIndexForParam(param);
+	int ret = -1;
+	int least = val;
+	int diff;
+	
+	for(i = 0; i < od->numSupported[index]; i++) {
+		diff = od->supported[index][i]-val;
+		if(diff < 0) diff = -diff;
+		if(diff < least) {
+			if(!canConvert(index, od->supported[index][i])) {
+				continue;
+			}
+			least = diff;
+			ret = od->supported[index][i];
+		}
+	}
+
+	return ret;
+}
+
+static int findUnsupportedParam(OssData * od, int param, int val) {
+	int i;
+	int index = getIndexForParam(param);
+	
+	for(i = 0; i < od->numUnsupported[index]; i++) {
+		if(od->unsupported[index][i] == val) return 1;
+	}
+
+	return 0;
+}
+
+static void addSupportedParam(OssData * od, int param, int val) {
+	int index = getIndexForParam(param);
+
+	od->numSupported[index]++;
+	od->supported[index] = realloc(od->supported[index], 
+			               od->numSupported[index]*sizeof(int));
+	od->supported[index][od->numSupported[index]-1] = val;
+}
+
+static void addUnsupportedParam(OssData * od, int param, int val) {
+	int index = getIndexForParam(param);
+
+	od->numUnsupported[index]++;
+	od->unsupported[index] = realloc(od->unsupported[index], 
+			                 od->numUnsupported[index]*sizeof(int));
+	od->unsupported[index][od->numUnsupported[index]-1] = val;
+}
+
+static void removeSupportedParam(OssData * od, int param, int val) {
+	int i = 0;
+	int j = 0;
+	int index = getIndexForParam(param);
+
+	for(i = 0; i < od->numSupported[index]-1; i++) {
+		if(od->supported[index][i] == val) j = 1;
+		od->supported[index][i] = od->supported[index][i+j];
+	}
+
+	od->numSupported[index]--;
+	od->supported[index] = realloc(od->supported[index], 
+			               od->numSupported[index]*sizeof(int));
+}
+
+static void removeUnsupportedParam(OssData * od, int param, int val) {
+	int i = 0;
+	int j = 0;
+	int index = getIndexForParam(param);
+
+	for(i = 0; i < od->numUnsupported[index]-1; i++) {
+		if(od->unsupported[index][i] == val) j = 1;
+		od->unsupported[index][i] = od->unsupported[index][i+j];
+	}
+
+	od->numUnsupported[index]--;
+	od->unsupported[index] = realloc(od->unsupported[index], 
+			                 od->numUnsupported[index]*sizeof(int));
+}
+
+static int isSupportedParam(OssData * od, int param, int val) {
+	if(findSupportedParam(od, param, val)) return OSS_SUPPORTED;
+	if(findUnsupportedParam(od, param, val)) return OSS_UNSUPPORTED;
+	return OSS_UNKNOWN;
+}
+
+static void supportParam(OssData * od, int param, int val) {
+	int supported = isSupportedParam(od, param, val);
+
+	if(supported == OSS_SUPPORTED) return;
+
+	if(supported == OSS_UNSUPPORTED) {
+		removeUnsupportedParam(od, param, val);
+	}
+
+	addSupportedParam(od, param, val);
+}
+
+static void unsupportParam(OssData * od, int param, int val) {
+	int supported = isSupportedParam(od, param, val);
+
+	if(supported == OSS_UNSUPPORTED) return;
+
+	if(supported == OSS_SUPPORTED) {
+		removeSupportedParam(od, param, val);
+	}
+
+	addUnsupportedParam(od, param, val);
+}
 
 static OssData * newOssData() {
 	OssData * ret = malloc(sizeof(OssData));
@@ -60,11 +225,37 @@ static OssData * newOssData() {
 	ret->device = NULL;
 	ret->fd = -1;
 
+	ret->supported[OSS_RATE] = NULL;
+	ret->supported[OSS_CHANNELS] = NULL;
+	ret->supported[OSS_BITS] = NULL;
+	ret->unsupported[OSS_RATE] = NULL;
+	ret->unsupported[OSS_CHANNELS] = NULL;
+	ret->unsupported[OSS_BITS] = NULL;
+
+	ret->numSupported[OSS_RATE] = 0;
+	ret->numSupported[OSS_CHANNELS] = 0;
+	ret->numSupported[OSS_BITS] = 0;
+	ret->numUnsupported[OSS_RATE] = 0;
+	ret->numUnsupported[OSS_CHANNELS] = 0;
+	ret->numUnsupported[OSS_BITS] = 0;
+
+	supportParam(ret, SNDCTL_DSP_SPEED, 		48000);
+	supportParam(ret, SNDCTL_DSP_SPEED, 		44100);
+	supportParam(ret, SNDCTL_DSP_CHANNELS, 		2);
+	supportParam(ret, SNDCTL_DSP_SAMPLESIZE,	16);
+
 	return ret;
 }
 
 static void freeOssData(OssData * od) {
 	if(od->device) free(od->device);
+
+	if(od->supported[OSS_RATE]) free(od->supported[OSS_RATE]);
+	if(od->supported[OSS_CHANNELS]) free(od->supported[OSS_CHANNELS]);
+	if(od->supported[OSS_BITS]) free(od->supported[OSS_BITS]);
+	if(od->unsupported[OSS_RATE]) free(od->unsupported[OSS_RATE]);
+	if(od->unsupported[OSS_CHANNELS]) free(od->unsupported[OSS_CHANNELS]);
+	if(od->unsupported[OSS_BITS]) free(od->unsupported[OSS_BITS]);
 
 	free(od);
 }
@@ -158,6 +349,35 @@ static void oss_finishDriver(AudioOutput * audioOutput) {
 	freeOssData(od);
 }
 
+static int setParam(OssData * od, int param, int * value) {
+	int val = *value;
+	int copy;
+	int supported = isSupportedParam(od, param, val);
+
+	do {
+		if(supported == OSS_UNSUPPORTED) {
+			val = getSupportedParam(od, param, val);
+			if(copy < 0) return -1;
+		}
+		copy = val;
+		if(ioctl(od->fd, param, &copy)) {
+			unsupportParam(od, param, val);
+			supported = OSS_UNSUPPORTED;
+		}
+		else {
+			if(supported == OSS_UNKNOWN) {
+				supportParam(od, param, val);
+				supported = OSS_SUPPORTED;
+			}
+			val = copy;
+		}
+	} while( supported == OSS_UNSUPPORTED );
+
+	*value = val;
+
+	return 0;
+}
+
 static int oss_open(AudioOutput * audioOutput) {
 	OssData * od = audioOutput->data;
 
@@ -174,7 +394,7 @@ static int oss_open(AudioOutput * audioOutput) {
 		goto fail;
 	}
 
-	if(ioctl(od->fd, SNDCTL_DSP_CHANNELS, &od->channels)) {
+	if(setParam(od, SNDCTL_DSP_CHANNELS, &od->channels)) {
 		ERROR("OSS device \"%s\" does not support %i channels: %s\n", 
 				od->device,
 				od->channels,
@@ -182,7 +402,7 @@ static int oss_open(AudioOutput * audioOutput) {
 		goto fail;
 	}
 
-	if(ioctl(od->fd, SNDCTL_DSP_SPEED, &od->sampleRate)) {
+	if(setParam(od, SNDCTL_DSP_SPEED, &od->sampleRate)) {
 		ERROR("OSS device \"%s\" does not support %i Hz audio: %s\n", 
 				od->device,
 				od->sampleRate,
@@ -190,7 +410,7 @@ static int oss_open(AudioOutput * audioOutput) {
 		goto fail;
 	}
 
-	if(ioctl(od->fd, SNDCTL_DSP_SAMPLESIZE, &od->bits)) {
+	if(setParam(od, SNDCTL_DSP_SAMPLESIZE, &od->bits)) {
 		ERROR("OSS device \"%s\" does not support %i bit audio: %s\n", 
 				od->device,
 				od->bits,
@@ -210,6 +430,7 @@ fail:
 
 static int oss_openDevice(AudioOutput * audioOutput) 
 {
+	int ret = -1;
 	OssData * od = audioOutput->data;
 	AudioFormat * audioFormat = &audioOutput->outAudioFormat;
 #ifdef WORDS_BIGENDIAN
@@ -221,7 +442,16 @@ static int oss_openDevice(AudioOutput * audioOutput)
 	od->sampleRate = audioFormat->sampleRate;
 	od->bits = audioFormat->bits;
 
-	return oss_open(audioOutput);
+	ret = oss_open(audioOutput);
+
+	audioFormat->channels = od->channels;
+	audioFormat->sampleRate = od->sampleRate;
+	audioFormat->bits = od->bits;
+
+	DEBUG("oss device \"%s\" will be playing %i channel audio at %i Hz\n",
+			od->device, od->channels, od->sampleRate);
+
+	return ret;
 }
 
 static void oss_closeDevice(AudioOutput * audioOutput) {
