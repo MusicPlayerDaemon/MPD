@@ -37,6 +37,8 @@
 *) Handle mp1 and mp2 files (including mp2's that are disguised as mp3's with 
 	a mp3 suffix)
 
+*) use alsa aclocal/m4 stuff
+
 0.13
 ----
 *) support for dynamically loading plugins
