@@ -1,3 +1,10 @@
+ver 0.10.3 (2004/4/2)
+1) Fix a segfault when a blanck line is sent from a client
+2) Fix for loading playlists on platforms where char is unsigned
+3) When pausing, release audio device after we say pause is successful (this makes pause appear to not lag)
+4) When returning errors for unknown types by player, be sure to copy the filename
+5) add --disable-alsa for disabling alsa mixer support
+
 ver 0.10.2 (2004/3/25)
 1) Add suport for AAC
 2) Substitute '\n' with ' ' in tag info
