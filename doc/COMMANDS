@@ -136,7 +136,7 @@ playlistinfo <int song>
 	displays list of songs in the playlist
 	_song_ is optional and species a single song to displa info for
 
-playlistiid <int songid>
+playlistid <int songid>
 	displays list of songs in the playlist
 	_songid_ is optional and species a single song to display info for
 
