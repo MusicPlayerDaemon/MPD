@@ -7,38 +7,28 @@
 	c) command for dealing with the changing metadata, currentsonginfo
 		or something
 
-2) how to deal with streams and the db
-	a) should streams be stored in the db?
-	b) handle url playlists!
-		1) have one fd for opening playlists in a url (allow only
-			loading of one of these at a time).
-		2) check for new data on it in the main while(select()) loop
-		3) block client requesting the log until the load is finished
-		4) need a timeout for this, 10 seconds, configurable?
-
-3) streaming and playing in general
+2) streaming and playing in general
 	a) put errors in error stuff of PlayerControl and report this to
 		status and print to error logs
-	b) make sure all decoders can handle bad seeks well (need to fix mp3)
 
-4) resampling audio for compatibility, and better gapless/crossfading
+3) resampling audio for compatibility, and better gapless/crossfading
 	a) use resampling from oggenc (is it fast enough for realtime?)
 
-5) when writing combined interface for all decodes to use, be sure to add a 
+4) when writing combined interface for all decodes to use, be sure to add a 
 common function and abstrct dealing with DecoderControl * and put
 cycleLogFiles in there, so we cycleLogFiles while decoding, not just when 
 decoding has stopped.
 
-6) ACK error codes
+5) ACK error codes
 
-7) cleanup main()
+6) cleanup main()
 
-8) handle '\n' in filenames
+7) handle '\n' in filenames
 
-9) allow "add" command to load playlists, then depricate "load" command, this 
+8) allow "add" command to load playlists, then depricate "load" command, this 
 	will be benneficial for adding m3u url's
 
-10) compute average replaygain to use for non-replaygain songs
+9) compute average replaygain to use for non-replaygain songs
 
 
 Post-1.0
