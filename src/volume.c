@@ -396,7 +396,7 @@ int getVolumeLevel() {
 int changeSoftwareVolume(FILE * fp, int change, int rel) {
 	int new = change;
 
-	if(rel) new+=getSoftwareVolume()/10.0+0.5;
+	if(rel) new+=volume_softwareSet;
 
 	if(new>100) new = 100;
 	else if(new<0) new = 0;
@@ -406,7 +406,7 @@ int changeSoftwareVolume(FILE * fp, int change, int rel) {
 	/*new = 100.0*(exp(new/50.0)-1)/(M_E*M_E-1)+0.5;*/
 	if(new>=100) new = 1000;
 	else if(new<=0) new = 0;
-	else new = 1000.0*(exp(new/20.0)-1)/(148.413159103F-1)+0.5;
+	else new = 1000.0*(exp(new/25.0)-1)/(54.5981500331F-1)+0.5;
 
 	setPlayerSoftwareVolume(new);
 
