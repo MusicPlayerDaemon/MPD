@@ -41,18 +41,21 @@ AudioOutput * newAudioOutput(char * name) {
 }
 
 int openAudioOutput(AudioOutput * audioOutput, AudioFormat * audioFormat) {
+	if(audioOutput->open) closeAudioOutput(audioOutput);
 	return audioOutput->openDeviceFunc(audioOutput, audioFormat);
 }
 
 int playAudioOutput(AudioOutput * audioOutput, char * playChunk, int size) {
+	if(!audioOutput->open) return -1;
 	return audioOutput->playFunc(audioOutput, playChunk, size);
 }
 
 void closeAudioOutput(AudioOutput * audioOutput) {
-	audioOutput->closeDeviceFunc(audioOutput);
+	if(audioOutput->open) audioOutput->closeDeviceFunc(audioOutput);
 }
 
 void finishAudioOutput(AudioOutput * audioOutput) {
+	closeAudioOutput(audioOutput);
 	audioOutput->finishDriverFunc(audioOutput);
 	free(audioOutput);
 }

@@ -136,18 +136,15 @@ void finishAudioDriver() {
 }
 
 int isCurrentAudioFormat(AudioFormat * audioFormat) {
-	if(!aoOutput || !audioFormat) return 0;
+	if(!audioFormat) return 0;
 
 	if(memcmp(audioFormat,&audio_format,sizeof(AudioFormat)) != 0) return 0;
+
 	return 1;
 }
 
 int openAudioDevice(AudioFormat * audioFormat) {
-	if(aoOutput->open && !isCurrentAudioFormat(audioFormat)) {
-		closeAudioOutput(aoOutput);
-	}
-
-	if(!aoOutput->open) {
+	if(!aoOutput->open || !isCurrentAudioFormat(audioFormat)) {
 		return openAudioOutput(aoOutput, audioFormat);
 	}
 
@@ -155,11 +152,6 @@ int openAudioDevice(AudioFormat * audioFormat) {
 }
 
 int playAudio(char * playChunk, int size) {
-	if(!aoOutput->open) {
-		ERROR("trying to play w/o the audio device being open!\n");
-		return -1;
-	}
-
 	return playAudioOutput(aoOutput, playChunk, size);
 }
 
@@ -168,7 +160,5 @@ int isAudioDeviceOpen() {
 }
 
 void closeAudioDevice() {
-	if(aoOutput->open) {
-		closeAudioOutput(aoOutput);
-	}
+	closeAudioOutput(aoOutput);
 }
