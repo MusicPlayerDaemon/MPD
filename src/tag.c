@@ -267,13 +267,82 @@ int adtsParse(AacBuffer * b, float * length) {
 	}
 	else bytesPerFrame = 0;
 	if(framesPerSec!=0) *length = (float)frames/framesPerSec;
-	else *length = 1;
 
 	return 1;
 }
 
+#define AAC_MAX_CHANNELS	6
+
 MpdTag * aacTagDup(char * utf8file) {
 	MpdTag * ret = NULL;
+	AacBuffer b;
+	size_t fileread;
+	size_t bread;
+	size_t tagsize;
+	float length = -1;
+
+	memset(&b,0,sizeof(AacBuffer));
+
+	blockSignals();
+
+	b.infile = fopen(rmp2amp(utf8ToFsCharset(utf8file)),"r");
+	if(b.infile == NULL) return NULL;
+
+	fseek(b.infile,0,SEEK_END);
+	fileread = ftell(b.infile);
+	fseek(b.infile,0,SEEK_SET);
+
+	b.buffer = malloc(FAAD_MIN_STREAMSIZE*AAC_MAX_CHANNELS);
+	memset(b.buffer,0,FAAD_MIN_STREAMSIZE*AAC_MAX_CHANNELS);
+
+	bread = fread(b.buffer,1,FAAD_MIN_STREAMSIZE*AAC_MAX_CHANNELS,b.infile);
+	b.bytesIntoBuffer = bread;
+	b.bytesConsumed = 0;
+	b.fileOffset = 0;
+
+	if(bread!=FAAD_MIN_STREAMSIZE*AAC_MAX_CHANNELS) b.atEof = 1;
+
+	tagsize = 0;
+	if(!memcmp(b.buffer,"ID3",3)) {
+		tagsize = (b.buffer[6] << 21) | (b.buffer[7] << 14) |
+				(b.buffer[8] << 7) | (b.buffer[9] << 0);
+
+		tagsize+=10;
+		advanceAacBuffer(&b,tagsize);
+		fillAacBuffer(&b);
+	}
+
+	if((b.buffer[0] == 0xFF) && ((b.buffer[1] & 0xF6) == 0xF0)) {
+		adtsParse(&b,&length);
+		fseek(b.infile,tagsize, SEEK_SET);
+
+		bread = fread(b.buffer,1,FAAD_MIN_STREAMSIZE*AAC_MAX_CHANNELS,
+				b.infile);
+		if(bread != FAAD_MIN_STREAMSIZE*AAC_MAX_CHANNELS) b.atEof = 1;
+		else b.atEof = 0;
+		b.bytesIntoBuffer = bread;
+		b.bytesConsumed = 0;
+		b.fileOffset = tagsize;
+	}
+	else if(memcmp(b.buffer,"ADIF",4) == 0) {
+		int bitRate;
+		int skipSize = (b.buffer[4] & 0x80) ? 9 : 0;
+		bitRate = ((unsigned int)(b.buffer[4 + skipSize] & 0x0F)<<19) |
+            			((unsigned int)b.buffer[5 + skipSize]<<11) |
+            			((unsigned int)b.buffer[6 + skipSize]<<3) |
+            			((unsigned int)b.buffer[7 + skipSize] & 0xE0);
+
+		length = fileread;
+		if(length!=0) length = length*8.0/bitRate;
+	}
+
+	if(b.buffer) free(b.buffer);
+	fclose(b.infile);
+
+	if(length>=0) {
+		if((ret = id3Dup(utf8file))==NULL) ret = newMpdTag();
+		ret->time = length+0.5;
+	}
 
 	return ret;
 }

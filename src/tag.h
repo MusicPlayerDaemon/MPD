@@ -40,6 +40,8 @@ MpdTag * mp3TagDup(char * utf8file);
 #endif
 
 #ifdef HAVE_FAAD
+MpdTag * aacTagDup(char * utf8file);
+
 MpdTag * mp4TagDup(char * utf8file);
 #endif
 
