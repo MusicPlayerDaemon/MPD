@@ -159,7 +159,7 @@ void initAudioConfig() {
                 exit(EXIT_FAILURE);
         }
 
-        audio_configFormat->bits = strtol(test,&test,10);
+        audio_configFormat->bits = strtol(test+1,&test,10);
         
         if(*test!=':') {
                 ERROR("error parsing audio output format: %s\n",conf);
@@ -175,7 +175,7 @@ void initAudioConfig() {
                 exit(EXIT_FAILURE);
         }
 
-        audio_configFormat->channels = strtol(test,&test,10);
+        audio_configFormat->channels = strtol(test+1,&test,10);
         
         if(*test!='\0') {
                 ERROR("error parsing audio output format: %s\n",conf);

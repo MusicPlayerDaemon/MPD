@@ -24,6 +24,7 @@
 
 #include <string.h>
 #include <math.h>
+#include <assert.h>
 
 void pcm_changeBufferEndianness(char * buffer, int bufferSize, int bits) {
 	char temp;
@@ -140,7 +141,47 @@ void pcm_mix(char * buffer1, char * buffer2, size_t bufferSize1,
 void pcm_convertAudioFormat(AudioFormat * inFormat, char * inBuffer, size_t
                 inSize, AudioFormat * outFormat, char * outBuffer)
 {
-	abort();
+	/*int inSampleSize = inFormat->bits*inFormat->channels/8;
+	int outSampleSize = outFormat->bits*outFormat->channels/8;*/
+
+	assert(inFormat->bits==16);
+	assert(outFormat->bits==16);
+	assert(inFormat->channels==2);
+	assert(outFormat->channels==2);
+
+	if(inFormat->sampleRate == outFormat->sampleRate) return;
+
+	/* only works if outFormat is 16-bit stereo! */
+	/* resampling code blatantly ripped from XMMS */
+	{
+		const int shift = sizeof(mpd_sint16);
+		mpd_sint32 i, in_samples, out_samples, x, delta;
+		mpd_sint16 * inptr = (mpd_sint16 *)inBuffer;
+		mpd_sint16 * outptr = (mpd_sint16 *)outBuffer;
+		mpd_uint32 nlen = (((inSize >> shift) * 
+				(mpd_uint32)(outFormat->sampleRate)) / 
+				inFormat->sampleRate);
+		nlen <<= shift;
+		in_samples = inSize >> shift;
+		out_samples = nlen >> shift;
+		delta = (in_samples << 12) / out_samples;
+		for(x = 0, i = 0; i < out_samples; i++) {
+			int x1, frac;
+			x1 = (x >> 12) << 12;
+			frac = x - x1;
+			*outptr++ = 
+				((inptr[(x1 >> 12) << 1] * 
+				((1<<12) - frac) +
+				inptr[((x1 >> 12) + 1) << 1 ] *
+				frac) >> 12);
+			*outptr++ =
+				((inptr[((x1 >> 12) << 1) + 1] *
+				((1<<12) - frac) +
+				inptr[(((x1 >> 12) + 1) << 1) + 1] *
+				frac) >> 12);
+			x += delta;
+		}
+	}
 
 	return;
 }
@@ -148,9 +189,20 @@ void pcm_convertAudioFormat(AudioFormat * inFormat, char * inBuffer, size_t
 size_t pcm_sizeOfOutputBufferForAudioFormatConversion(AudioFormat * inFormat,
 		char * inBuffer, size_t inSize, AudioFormat * outFormat)
 {
-	abort();
+	const int shift = sizeof(mpd_sint16);
+	mpd_uint32 nlen = (((inSize >> shift) * 
+				(mpd_uint32)(outFormat->sampleRate)) / 
+				inFormat->sampleRate);
 
-	return 0;
+	nlen <<= shift;
+
+
+	assert(inFormat->bits==16);
+	assert(outFormat->bits==16);
+	assert(inFormat->channels==2);
+	assert(outFormat->channels==2);
+
+	return nlen;
 }
 
 /* vim:set shiftwidth=8 tabstop=8 expandtab: */
