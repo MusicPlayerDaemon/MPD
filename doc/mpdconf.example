@@ -76,9 +76,11 @@ audio_output {
 #	name		"my cool stream"
 #	host		"hostname"
 #	port		"8000"
+#	mount		"/mpd.ogg"
 #	user		"source"
 #	password	"hackme"
-#	quality		"5.0"
+#	quality		"5.0"	
+#	bitrate		"128"
 #	format		"44100:16:1"
 #} # end of audio_output
 #
