@@ -734,11 +734,34 @@ int playPlaylist(FILE * fp, int song, int stopOnError) {
 	return playPlaylistOrderNumber(fp,i);
 }
 
+void syncCurrentPlayerDecodeMetadata() {
+        long i = 0;
+        Song * songPlayer = playerCurrentDecodeSong();
+        Song * song;
+
+        if(!songPlayer) return;
+
+        for(i=0; i<playlist.length; i++) {
+                song = playlist.songs[i];
+
+                if(song->type == SONG_TYPE_URL &&
+                                0 == strcmp(song->utf8url,  
+                                songPlayer->utf8url))
+                {
+                        if(song->tag) freeMpdTag(song->tag);
+                        song->tag = mpdTagDup(songPlayer->tag);
+	                incrPlaylistVersion();
+                }
+        }
+}
+
 void syncPlayerAndPlaylist() {
 	if(playlist_state!=PLAYLIST_STATE_PLAY) return;
 
 	if(getPlayerState()==PLAYER_STATE_STOP) playPlaylistIfPlayerStopped();
 	else syncPlaylistWithQueue(!playlist_queueError);
+
+        syncCurrentPlayerDecodeMetadata();
 }
 
 int currentSongInPlaylist(FILE * fp) {

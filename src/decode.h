@@ -45,6 +45,8 @@
 #define DECODE_SUFFIX_MP4       5
 #define DECODE_SUFFIX_WAVE      6
 
+#define DECODE_METADATA_LENGTH  4096
+
 typedef struct _DecoderControl {
 	volatile mpd_sint8 state;
 	volatile mpd_sint8 stop;
@@ -55,9 +57,12 @@ typedef struct _DecoderControl {
 	volatile mpd_sint8 seekable;
 	volatile mpd_sint8 cycleLogFiles;
 	volatile double seekWhere;
-	char file[MAXPATHLEN+1];
         AudioFormat audioFormat;
+        char utf8url[MAXPATHLEN+1];
         volatile float totalTime;
+        volatile mpd_sint8 metadataSet;
+        char metadata[DECODE_METADATA_LENGTH];
+        volatile mpd_sint16 title;
 } DecoderControl;
 
 void decodeSigHandler(int sig);

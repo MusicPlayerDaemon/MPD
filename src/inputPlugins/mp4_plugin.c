@@ -85,7 +85,7 @@ uint32_t mp4_inputStreamSeekCallback(void *inStream, uint64_t position) {
 }       
 		    
 
-int mp4_decode(OutputBuffer * cb, DecoderControl * dc) {
+int mp4_decode(OutputBuffer * cb, DecoderControl * dc, char * path) {
 	mp4ff_t * mp4fh;
 	mp4ff_callback_t * mp4cb; 
 	int32_t track;
@@ -113,8 +113,8 @@ int mp4_decode(OutputBuffer * cb, DecoderControl * dc) {
 	mpd_uint16 bitRate = 0;
 	InputStream inStream;
 
-	if(openInputStream(&inStream,dc->file) < 0) {
-		ERROR("failed to open %s\n",dc->file);
+	if(openInputStream(&inStream, path) < 0) {
+		ERROR("failed to open %s\n", path);
 		return -1;
 	}
 
@@ -241,7 +241,7 @@ int mp4_decode(OutputBuffer * cb, DecoderControl * dc) {
 
 		if(mp4Buffer) free(mp4Buffer);
 		if(frameInfo.error > 0) {
-			ERROR("error decoding MP4 file: %s\n",dc->file);
+			ERROR("error decoding MP4 file: %s\n", path);
 			ERROR("faad2 error: %s\n",
 				faacDecGetErrorMessage(frameInfo.error));
 			eof = 1;

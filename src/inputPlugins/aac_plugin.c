@@ -250,7 +250,7 @@ int getAacTotalTime(char * file) {
 }
 
 
-int aac_decode(OutputBuffer * cb, DecoderControl * dc) {
+int aac_decode(OutputBuffer * cb, DecoderControl * dc, char * path) {
 	float time;
 	float totalTime;
 	faacDecHandle decoder;
@@ -270,9 +270,9 @@ int aac_decode(OutputBuffer * cb, DecoderControl * dc) {
 	AacBuffer b;
 	InputStream inStream;
 
-	if((totalTime = getAacFloatTotalTime(dc->file)) < 0) return -1;
+	if((totalTime = getAacFloatTotalTime(path)) < 0) return -1;
 
-	if(openInputStream(&inStream,dc->file) < 0) return -1;
+	if(openInputStream(&inStream, path) < 0) return -1;
 
 	initAacBuffer(&inStream,&b,NULL,NULL,NULL);
 
@@ -328,7 +328,7 @@ int aac_decode(OutputBuffer * cb, DecoderControl * dc) {
 #endif
 
 		if(frameInfo.error > 0) {
-			ERROR("error decoding AAC file: %s\n",dc->file);
+			ERROR("error decoding AAC file: %s\n", path);
 			ERROR("faad2 error: %s\n",
 				faacDecGetErrorMessage(frameInfo.error));
 			eof = 1;

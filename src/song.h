@@ -44,6 +44,8 @@ typedef struct _Song {
 
 typedef List SongList;
 
+Song * newNullSong();
+
 Song * newSong(char * utf8url, SONG_TYPE type);
 
 void freeSong(Song *);

@@ -13,7 +13,8 @@
 typedef int (* InputPlugin_streamDecodeFunc) (OutputBuffer *, DecoderControl *,
 		InputStream *);
 
-typedef int (* InputPlugin_fileDecodeFunc) (OutputBuffer *, DecoderControl *);
+typedef int (* InputPlugin_fileDecodeFunc) (OutputBuffer *, DecoderControl *,
+		char * path);
 
 /* file should be the full path! */
 typedef MpdTag * (* InputPlugin_tagDupFunc) (char * file);

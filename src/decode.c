@@ -103,8 +103,9 @@ int calculateCrossFadeChunks(PlayerControl * pc, AudioFormat * af) {
                 { \
                         decodeWaitedOn = 0; \
 	                if(openAudioDevice(&(cb->audioFormat))<0) { \
-		                strncpy(pc->erroredFile,pc->file,MAXPATHLEN); \
-		                pc->erroredFile[MAXPATHLEN] = '\0'; \
+		                strncpy(pc->erroredUrl, pc->utf8url, \
+                                                MAXPATHLEN); \
+		                pc->erroredUrl[MAXPATHLEN] = '\0'; \
 		                pc->error = PLAYER_ERROR_AUDIO; \
 		                quitDecode(pc,dc); \
 		                return; \
@@ -115,8 +116,8 @@ int calculateCrossFadeChunks(PlayerControl * pc, AudioFormat * af) {
 	                pc->channels = dc->audioFormat.channels; \
                 } \
                 else if(dc->state!=DECODE_STATE_START || *decode_pid <= 0) { \
-		        strncpy(pc->erroredFile,pc->file,MAXPATHLEN); \
-		        pc->erroredFile[MAXPATHLEN] = '\0'; \
+		        strncpy(pc->erroredUrl, pc->utf8url, MAXPATHLEN); \
+		        pc->erroredUrl[MAXPATHLEN] = '\0'; \
 		        pc->error = PLAYER_ERROR_FILE; \
 		        quitDecode(pc,dc); \
 		        return; \
@@ -133,8 +134,8 @@ int waitOnDecode(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb,
 	while(decode_pid && *decode_pid>0 && dc->start) my_usleep(10000);
 
 	if(dc->start || dc->error!=DECODE_ERROR_NOERROR) {
-		strncpy(pc->erroredFile,pc->file,MAXPATHLEN);
-		pc->erroredFile[MAXPATHLEN] = '\0';
+		strncpy(pc->erroredUrl, pc->utf8url, MAXPATHLEN);
+		pc->erroredUrl[MAXPATHLEN] = '\0';
 		pc->error = PLAYER_ERROR_FILE;
 		quitDecode(pc,dc);
 		return -1;
@@ -159,7 +160,7 @@ int decodeSeek(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb,
 	if(decode_pid && *decode_pid>0) {
 		cb->next = -1;
 		if(dc->state==DECODE_STATE_STOP || dc->error || 
-				strcmp(dc->file,pc->file)!=0) 
+				strcmp(dc->utf8url, pc->utf8url)!=0) 
 		{
 			stopDecode(dc);
 			cb->begin = 0;
@@ -209,8 +210,9 @@ int decodeSeek(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb,
 		if(pause) pc->state = PLAYER_STATE_PAUSE; \
 		else { \
 			if(openAudioDevice(NULL)<0) { \
-				strncpy(pc->erroredFile,pc->file,MAXPATHLEN); \
-				pc->erroredFile[MAXPATHLEN] = '\0'; \
+				strncpy(pc->erroredUrl, pc->utf8url, \
+                                                MAXPATHLEN); \
+				pc->erroredUrl[MAXPATHLEN] = '\0'; \
 				pc->error = PLAYER_ERROR_AUDIO; \
 				quitDecode(pc,dc); \
 				return; \
@@ -239,11 +241,22 @@ void decodeStart(PlayerControl * pc, OutputBuffer * cb, DecoderControl * dc) {
         int ret;
         InputStream inStream;
         InputPlugin * plugin;
+        char path[MAXPATHLEN+1];
 
-        strncpy(dc->file,pc->file,MAXPATHLEN);
-	dc->file[MAXPATHLEN] = '\0';
+        if(isRemoteUrl(pc->utf8url)) {
+                strncpy(path, pc->utf8url, MAXPATHLEN);
+        }
+	else strncpy(path, rmp2amp(utf8ToFsCharset(pc->utf8url)), MAXPATHLEN);
+	path[MAXPATHLEN] = '\0';
 
-        if(openInputStream(&inStream,dc->file) < 0) {
+        dc->metadataSet = 0;
+        memset(dc->metadata, 0, DECODE_METADATA_LENGTH);
+        dc->title = -1;
+
+        strncpy(dc->utf8url, pc->utf8url, MAXPATHLEN);
+	dc->utf8url[MAXPATHLEN] = '\0';
+
+        if(openInputStream(&inStream, path) < 0) {
 		dc->error = DECODE_ERROR_FILE;
 		dc->start = 0;
 		dc->stop = 0;
@@ -264,11 +277,19 @@ void decodeStart(PlayerControl * pc, OutputBuffer * cb, DecoderControl * dc) {
                 return;
         }
 
+        if(inStream.metaTitle) {
+                strncpy(dc->metadata, inStream.metaTitle, 
+                                DECODE_METADATA_LENGTH-1);
+                dc->title = 0;
+                dc->metadataSet = 1;                
+        }
+
         ret = DECODE_ERROR_UNKTYPE;
-	if(isRemoteUrl(pc->file)) {
+	if(isRemoteUrl(pc->utf8url)) {
                 plugin = getInputPluginFromMimeType(inStream.mime);
                 if(plugin == NULL) {
-                        plugin = getInputPluginFromSuffix(getSuffix(dc->file));
+                        plugin = getInputPluginFromSuffix(
+                                        getSuffix(dc->utf8url));
                 }
                 if(plugin && (plugin->streamTypes & INPUT_PLUGIN_STREAM_URL) &&
                                 plugin->streamDecodeFunc) 
@@ -277,7 +298,7 @@ void decodeStart(PlayerControl * pc, OutputBuffer * cb, DecoderControl * dc) {
                 }
 	}
         else {
-                plugin = getInputPluginFromSuffix(getSuffix(dc->file));
+                plugin = getInputPluginFromSuffix(getSuffix(dc->utf8url));
                 if(plugin && (plugin->streamTypes && INPUT_PLUGIN_STREAM_FILE))
                 {
                         if(plugin->streamDecodeFunc) {
@@ -286,14 +307,14 @@ void decodeStart(PlayerControl * pc, OutputBuffer * cb, DecoderControl * dc) {
                         }
                         else if(plugin->fileDecodeFunc) {
                                 closeInputStream(&inStream);
-                                ret = plugin->fileDecodeFunc(cb, dc);
+                                ret = plugin->fileDecodeFunc(cb, dc, path);
                         }
                 }
         }
 
 	if(ret<0 || ret == DECODE_ERROR_UNKTYPE) {
-		strncpy(pc->erroredFile, dc->file, MAXPATHLEN);
-		pc->erroredFile[MAXPATHLEN] = '\0';
+		strncpy(pc->erroredUrl, dc->utf8url, MAXPATHLEN);
+		pc->erroredUrl[MAXPATHLEN] = '\0';
 		if(ret != DECODE_ERROR_UNKTYPE) dc->error = DECODE_ERROR_FILE;
                 else {
                         dc->error = DECODE_ERROR_UNKTYPE;
@@ -334,8 +355,8 @@ int decoderInit(PlayerControl * pc, OutputBuffer * cb, DecoderControl * dc) {
 	}
 	else if(pid<0) {
 		unblockSignals();
-		strncpy(pc->erroredFile,pc->file,MAXPATHLEN);
-		pc->erroredFile[MAXPATHLEN] = '\0';
+		strncpy(pc->erroredUrl, pc->utf8url, MAXPATHLEN);
+		pc->erroredUrl[MAXPATHLEN] = '\0';
 		pc->error = PLAYER_ERROR_SYSTEM;
 		return -1;
 	}

@@ -45,6 +45,7 @@ struct _InputStream {
         InputStreamAtEOFFunc atEOFFunc;
         InputStreamBufferFunc bufferFunc;
         void * data;
+        char * metaTitle;
 };
 
 /* if an error occurs for these 3 functions, then -1 is returned and errno

@@ -35,6 +35,8 @@ MpdTag * id3Dup(char * file);
 
 MpdTag * newMpdTag();
 
+void clearMpdTag(MpdTag * tag);
+
 void freeMpdTag(MpdTag * tag);
 
 void printMpdTag(FILE * fp, MpdTag * tag);

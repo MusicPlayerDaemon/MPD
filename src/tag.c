@@ -158,11 +158,15 @@ MpdTag * newMpdTag() {
 	return ret;
 }
 
-void freeMpdTag(MpdTag * tag) {
+void clearMpdTag(MpdTag * tag) {
 	if(tag->artist) free(tag->artist);
 	if(tag->album) free(tag->album);
 	if(tag->title) free(tag->title);
 	if(tag->track) free(tag->track);
+}
+
+void freeMpdTag(MpdTag * tag) {
+        clearMpdTag(tag);
 	free(tag);
 }
 
@@ -171,10 +175,10 @@ MpdTag * mpdTagDup(MpdTag * tag) {
 
 	if(tag) {
 		ret = newMpdTag();
-		ret->artist = strdup(tag->artist);
-		ret->album = strdup(tag->album);
-		ret->title = strdup(tag->title);
-		ret->track = strdup(tag->track);
+		if(tag->artist) ret->artist = strdup(tag->artist);
+		if(tag->album) ret->album = strdup(tag->album);
+		if(tag->title) ret->title = strdup(tag->title);
+		if(tag->track) ret->track = strdup(tag->track);
 		ret->time = tag->time;
 	}
 

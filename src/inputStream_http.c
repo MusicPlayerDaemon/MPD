@@ -56,7 +56,6 @@ typedef struct _InputStreemHTTPData {
         size_t buflen;
         int timesRedirected;
         int icyMetaint;
-        char * icyName;
 	int prebuffer;
 } InputStreamHTTPData;
 
@@ -68,7 +67,6 @@ static InputStreamHTTPData * newInputStreamHTTPData() {
         ret->port = 80;
         ret->connState = HTTP_CONN_STATE_CLOSED;
         ret->timesRedirected = 0;
-        ret->icyName = NULL;
         ret->icyMetaint = 0;
 	ret->prebuffer = 0;
 
@@ -78,7 +76,6 @@ static InputStreamHTTPData * newInputStreamHTTPData() {
 static void freeInputStreamHTTPData(InputStreamHTTPData * data) {
         if(data->host) free(data->host);
         if(data->path) free(data->path);
-        if(data->icyName) free(data->icyName);
 
         free(data);
 }
@@ -374,19 +371,20 @@ static int getHTTPHello(InputStream * inStream) {
                         char * temp = strstr(cur+11,"\r\n");
                         if(!temp) break;
                         *temp = '\0';
-                        if(data->icyName)  free(data->icyName);
-                        data->icyName = strdup(cur+11);
+                        if(inStream->metaTitle) free(inStream->metaTitle);
+                        inStream->metaTitle = strdup(cur+19);
                         *temp = '\r';
-                        DEBUG("stream icy-name: %s\n", data->icyName);
+                        DEBUG("stream icy-name: %s\n", inStream->metaTitle);
                 }
                 else if(0 == strncmp(cur, "\r\nx-audiocast-name:", 19)) {
                         char * temp = strstr(cur+19,"\r\n");
                         if(!temp) break;
                         *temp = '\0';
-                        if(data->icyName) free(data->icyName);
-                        data->icyName = strdup(cur+19);
+                        if(inStream->metaTitle) free(inStream->metaTitle);
+                        inStream->metaTitle = strdup(cur+19);
                         *temp = '\r';
-                        DEBUG("stream audiocast-name: %s\n", data->icyName);
+                        DEBUG("stream audiocast-name: %s\n", 
+                                        inStream->metaTitle);
                 }
                 else if(0 == strncmp(cur, "\r\nContent-Type:", 15)) {
                         int incr = 15;
@@ -445,6 +443,7 @@ int inputStream_httpOpen(InputStream * inStream, char * url) {
         inStream->error = 0;
         inStream->mime = NULL;
         inStream->seekable = 0;
+        inStream->metaTitle = NULL;
 
 	return 0;
 }

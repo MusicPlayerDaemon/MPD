@@ -51,21 +51,21 @@ int getAudiofileTotalTime(char * file)
 	return time;
 }
 
-int audiofile_decode(OutputBuffer * cb, DecoderControl * dc) {
+int audiofile_decode(OutputBuffer * cb, DecoderControl * dc, char * path) {
 	int fs, frame_count;
 	AFfilehandle af_fp;
 	int bits;
 	mpd_uint16 bitRate;
 	struct stat st;
 
-	if(stat(dc->file,&st) < 0) {
-		ERROR("failed to stat: %s\n",dc->file);
+	if(stat(path, &st) < 0) {
+		ERROR("failed to stat: %s\n", path);
 		return -1;
 	}
 
-	af_fp = afOpenFile(dc->file,"r", NULL);
+	af_fp = afOpenFile(path, "r", NULL);
 	if(af_fp == AF_NULL_FILEHANDLE) {
-		ERROR("failed to open: %s\n",dc->file);
+		ERROR("failed to open: %s\n", path);
 		return -1;
 	}
 
@@ -83,7 +83,7 @@ int audiofile_decode(OutputBuffer * cb, DecoderControl * dc) {
 	
 	if (dc->audioFormat.bits != 8 && dc->audioFormat.bits != 16) {
 		ERROR("Only 8 and 16-bit files are supported. %s is %i-bit\n",
-			dc->file,dc->audioFormat.bits);
+			path, dc->audioFormat.bits);
 		afCloseFile(af_fp);
 		return -1;
 	}

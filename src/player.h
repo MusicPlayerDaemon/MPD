@@ -66,8 +66,8 @@ typedef struct _PlayerControl {
 	volatile float totalTime;
 	volatile float elapsedTime;
         volatile float fileTime;
-	char file[MAXPATHLEN+1];
-	char erroredFile[MAXPATHLEN+1];
+	char utf8url[MAXPATHLEN+1];
+	char erroredUrl[MAXPATHLEN+1];
 	volatile mpd_sint8 queueState;
 	volatile mpd_sint8 queueLockState;
 	volatile mpd_sint8 lockQueue;
@@ -144,6 +144,8 @@ int getPlayerBits();
 int getPlayerChannels();
 
 void playerCycleLogFiles();
+
+Song * playerCurrentDecodeSong();
 
 #endif
 /* vim:set shiftwidth=4 tabstop=8 expandtab: */

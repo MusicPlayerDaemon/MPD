@@ -23,7 +23,6 @@
 #include "playlist.h"
 #include "ls.h"
 #include "listen.h"
-#include "path.h"
 #include "log.h"
 #include "utils.h"
 #include "tables.h"
@@ -179,12 +178,8 @@ int playerPlay(FILE * fp, Song * song) {
         if(song->tag) pc->fileTime = song->tag->time;
         else pc->fileTime = 0;
 
-        if(isRemoteUrl(song->utf8url)) {
-                strncpy(pc->file, song->utf8url, MAXPATHLEN);
-        }
-	else strncpy(pc->file, rmp2amp(utf8ToFsCharset(song->utf8url)),
-                        MAXPATHLEN);
-	pc->file[MAXPATHLEN] = '\0';
+        strncpy(pc->utf8url, song->utf8url, MAXPATHLEN);
+	pc->utf8url[MAXPATHLEN] = '\0';
 
 	pc->play = 1;
 	if(player_pid==0 && playerInit()<0) {
@@ -287,11 +282,11 @@ char * getPlayerErrorStr() {
 	case PLAYER_ERROR_FILENOTFOUND:
 		snprintf(error,errorlen,
 				"file \"%s\" does not exist or is inaccesible",
-				pc->erroredFile);
+				pc->erroredUrl);
 		break;
 	case PLAYER_ERROR_FILE:
 		snprintf(error,errorlen,"problems decoding \"%s\"",
-				pc->erroredFile);
+				pc->erroredUrl);
 		break;
 	case PLAYER_ERROR_AUDIO:
 		snprintf(error,errorlen,"problems opening audio device");
@@ -301,7 +296,7 @@ char * getPlayerErrorStr() {
 		break;
 	case PLAYER_ERROR_UNKTYPE:
 		snprintf(error,errorlen,"file type  of \"%s\" is unknown",
-				pc->erroredFile);
+				pc->erroredUrl);
 	default:
 		break;
 	}
@@ -327,12 +322,8 @@ int queueSong(Song * song) {
 	PlayerControl * pc = &(getPlayerData()->playerControl);
 
 	if(pc->queueState==PLAYER_QUEUE_BLANK) {
-                if(isRemoteUrl(song->utf8url)) {
-                        strncpy(pc->file, song->utf8url, MAXPATHLEN);
-                }
-	        else strncpy(pc->file, rmp2amp(utf8ToFsCharset(song->utf8url)),
-                                MAXPATHLEN);
-		pc->file[MAXPATHLEN] = '\0';
+                strncpy(pc->utf8url, song->utf8url, MAXPATHLEN);
+		pc->utf8url[MAXPATHLEN] = '\0';
 
                 if(song->tag) pc->fileTime = song->tag->time;
                 else pc->fileTime = 0;
@@ -378,7 +369,6 @@ void playerQueueUnlock() {
 
 int playerSeek(FILE * fp, Song * song, float time) {
 	PlayerControl * pc = &(getPlayerData()->playerControl);
-	char * file;
 
 	if(pc->state==PLAYER_STATE_STOP) {
 		myfprintf(fp,"%s player not currently playing\n",
@@ -386,14 +376,12 @@ int playerSeek(FILE * fp, Song * song, float time) {
 		return -1;
 	}
 
-	if(isRemoteUrl(song->utf8url)) file = song->utf8url;
-        else file = rmp2amp(utf8ToFsCharset(song->utf8url));
-	if(strcmp(pc->file,file)!=0) {
+	if(strcmp(pc->utf8url, song->utf8url)!=0) {
                 if(song->tag) pc->fileTime = song->tag->time;
                 else pc->fileTime = 0;
 
-		strncpy(pc->file,file,MAXPATHLEN);
-		pc->file[MAXPATHLEN] = '\0';
+		strncpy(pc->utf8url, song->utf8url, MAXPATHLEN);
+		pc->utf8url[MAXPATHLEN] = '\0';
 	}
 
 	if(pc->error==PLAYER_ERROR_NOERROR) {
@@ -469,6 +457,29 @@ void playerCycleLogFiles() {
 
 	pc->cycleLogFiles = 1;
 	dc->cycleLogFiles = 1;
+}
+
+/* this actually creates a dupe of the current metadata */
+Song * playerCurrentDecodeSong() {
+        static Song * song;
+	DecoderControl * dc = &(getPlayerData()->decoderControl);
+
+        if(dc->metadataSet && (!song || strcmp(song->utf8url, dc->utf8url))) {
+                if(!song) {
+                        song = newNullSong();
+                        song->tag = newMpdTag();
+                }
+                if(song->utf8url) free(song->utf8url);
+                song->utf8url = strdup(dc->utf8url);
+                if(dc->title >= 0) {
+                        song->tag->title = dc->title + dc->metadata;
+                }
+                else song->tag->title = NULL;
+
+                return song;
+        }
+
+        return NULL;
 }
 
 /* vim:set shiftwidth=4 tabstop=8 expandtab: */
