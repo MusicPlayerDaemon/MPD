@@ -65,8 +65,8 @@ typedef struct _Playlist {
 	/* holds version a song was modified on */
 	mpd_uint32 * songMod;
 	int * order;
-	int * numToId;
-	int * idToNum;
+	int * positionToId;
+	int * idToPosition;
 	int length;
 	int current;
 	int queued;
@@ -161,9 +161,9 @@ void initPlaylist() {
 	playlist.songs = malloc(sizeof(Song *)*playlist_max_length);
 	playlist.songMod = malloc(sizeof(mpd_uint32)*playlist_max_length);
 	playlist.order = malloc(sizeof(int)*playlist_max_length);
-	playlist.idToNum = malloc(sizeof(int)*playlist_max_length*
+	playlist.idToPosition = malloc(sizeof(int)*playlist_max_length*
 					PLAYLIST_HASH_MULT);
-	playlist.numToId = malloc(sizeof(int)*playlist_max_length);
+	playlist.positionToId = malloc(sizeof(int)*playlist_max_length);
 
 	memset(playlist.songs,0,sizeof(char *)*playlist_max_length);
 
@@ -174,14 +174,14 @@ void initPlaylist() {
 	}
 
 	for(i=0; i<playlist_max_length*PLAYLIST_HASH_MULT; i++) {
-		playlist.idToNum[i] = -1;
+		playlist.idToPosition[i] = -1;
 	}
 }
 
 static int getNextId() {
 	static int cur = 0;
 
-	while(playlist.idToNum[cur] != -1) {
+	while(playlist.idToPosition[cur] != -1) {
 		cur++;
 		if(cur >= playlist_max_length*PLAYLIST_HASH_MULT) {
 			cur = 0;
@@ -207,10 +207,10 @@ void finishPlaylist() {
 	playlist.songMod = NULL;
 	free(playlist.order);
 	playlist.order = NULL;
-	free(playlist.idToNum);
-	playlist.idToNum = NULL;
-	free(playlist.numToId);
-	playlist.numToId = NULL;
+	free(playlist.idToPosition);
+	playlist.idToPosition = NULL;
+	free(playlist.positionToId);
+	playlist.positionToId = NULL;
 }
 
 int clearPlaylist(FILE * fp) {
@@ -222,7 +222,7 @@ int clearPlaylist(FILE * fp) {
 		if(playlist.songs[i]->type == SONG_TYPE_URL) {
 			freeJustSong(playlist.songs[i]);
 		}
-		playlist.idToNum[playlist.numToId[i]] = -1;
+		playlist.idToPosition[playlist.positionToId[i]] = -1;
 		playlist.songs[i] = NULL;
 	}
 	playlist.length = 0;
@@ -425,7 +425,7 @@ void printPlaylistSongInfo(FILE * fp, int song) {
 		printMpdTag(fp, tag);
 	}
 	myfprintf(fp, "Pos: %i\n", song);
-	myfprintf(fp, "Id: %i\n", playlist.numToId[song]);
+	myfprintf(fp, "Id: %i\n", playlist.positionToId[song]);
 }
 
 int playlistChanges(FILE * fp, mpd_uint32 version) {
@@ -465,7 +465,7 @@ int playlistInfo(FILE * fp, int song) {
 
 # define checkSongId(id) { \
 	if(id < 0 || id >= PLAYLIST_HASH_MULT*playlist_max_length || \
-			playlist.idToNum[id] == -1 ) \
+			playlist.idToPosition[id] == -1 ) \
 	{ \
 		commandError(fp, ACK_ERROR_NO_EXIST, \
                                 "song id doesn't exist: \"%i\"", id); \
@@ -480,7 +480,7 @@ int playlistId(FILE * fp, int id) {
 
 	if(id>=0) {
 		checkSongId(id);
-		begin = playlist.idToNum[id];
+		begin = playlist.idToPosition[id];
 		end = begin+1;
 	}
 
@@ -500,12 +500,12 @@ void swapSongs(int song1, int song2) {
 	playlist.songMod[song1] = playlist.version;
 	playlist.songMod[song2] = playlist.version;
 
-	playlist.idToNum[playlist.numToId[song1]] = song2;
-	playlist.idToNum[playlist.numToId[song2]] = song1;
+	playlist.idToPosition[playlist.positionToId[song1]] = song2;
+	playlist.idToPosition[playlist.positionToId[song2]] = song1;
 
-	iTemp = playlist.numToId[song1];
-	playlist.numToId[song1] = playlist.numToId[song2];
-	playlist.numToId[song2] = iTemp;
+	iTemp = playlist.positionToId[song1];
+	playlist.positionToId[song1] = playlist.positionToId[song2];
+	playlist.positionToId[song2] = iTemp;
 }
 
 void queueNextSongInPlaylist() {
@@ -624,8 +624,8 @@ int addSongToPlaylist(FILE * fp, Song * song) {
 	playlist.songs[playlist.length] = song;
 	playlist.songMod[playlist.length] = playlist.version;
 	playlist.order[playlist.length] = playlist.length;
-	playlist.numToId[playlist.length] = getNextId();
-	playlist.idToNum[playlist.numToId[playlist.length]] = playlist.length;
+	playlist.positionToId[playlist.length] = getNextId();
+	playlist.idToPosition[playlist.positionToId[playlist.length]] = playlist.length;
 	playlist.length++;
 
 	if(playlist.random) {
@@ -702,13 +702,13 @@ int swapSongsInPlaylistById(FILE * fp, int id1, int id2) {
 	checkSongId(id1);
 	checkSongId(id2);
 
-	return swapSongsInPlaylist(fp, playlist.idToNum[id1], 
-					playlist.idToNum[id2]);
+	return swapSongsInPlaylist(fp, playlist.idToPosition[id1], 
+					playlist.idToPosition[id2]);
 }
 
 #define moveSongFromTo(from, to) { \
-	playlist.idToNum[playlist.numToId[from]] = to; \
-	playlist.numToId[to] = playlist.numToId[from]; \
+	playlist.idToPosition[playlist.positionToId[from]] = to; \
+	playlist.positionToId[to] = playlist.positionToId[from]; \
 	playlist.songs[to] = playlist.songs[from]; \
 	playlist.songMod[to] = playlist.version; \
 }
@@ -737,7 +737,7 @@ int deleteFromPlaylist(FILE * fp, int song) {
 		freeJustSong(playlist.songs[song]);
 	}
 
-	playlist.idToNum[playlist.numToId[song]] = -1;
+	playlist.idToPosition[playlist.positionToId[song]] = -1;
 
 	/* delete song from songs array */
 	for(i=song;i<playlist.length-1;i++) {
@@ -784,7 +784,7 @@ int deleteFromPlaylist(FILE * fp, int song) {
 int deleteFromPlaylistById(FILE * fp, int id) {
 	checkSongId(id);
 
-	return deleteFromPlaylist(fp, playlist.idToNum[id]);
+	return deleteFromPlaylist(fp, playlist.idToPosition[id]);
 }
 
 void deleteASongFromPlaylist(Song * song) {
@@ -885,7 +885,7 @@ int playPlaylistById(FILE * fp, int id, int stopOnError) {
 
 	checkSongId(id);
 
-	return playPlaylist(fp, playlist.idToNum[id], stopOnError);
+	return playPlaylist(fp, playlist.idToPosition[id], stopOnError);
 }
 
 void syncCurrentPlayerDecodeMetadata() {
@@ -1039,7 +1039,7 @@ int moveSongInPlaylist(FILE * fp, int from, int to) {
 	}
 
 	tmpSong = playlist.songs[from];
-	tmpId = playlist.numToId[from];
+	tmpId = playlist.positionToId[from];
 	/* move songs to one less in from->to */
 	for(i=from;i<to;i++) {
 		moveSongFromTo(i+1, i);
@@ -1049,8 +1049,8 @@ int moveSongInPlaylist(FILE * fp, int from, int to) {
 		moveSongFromTo(i-1, i);
 	}
 	/* put song at _to_ */
-	playlist.idToNum[tmpId] = to;
-	playlist.numToId[to] = tmpId;
+	playlist.idToPosition[tmpId] = to;
+	playlist.positionToId[to] = tmpId;
 	playlist.songs[to] = tmpSong;
 	playlist.songMod[to] = playlist.version;
 	/* now deal with order */
@@ -1084,7 +1084,7 @@ int moveSongInPlaylist(FILE * fp, int from, int to) {
 int moveSongInPlaylistById(FILE * fp, int id1, int to) {
 	checkSongId(id1);
 
-	return moveSongInPlaylist(fp, playlist.idToNum[id1], to);
+	return moveSongInPlaylist(fp, playlist.idToPosition[id1], to);
 }
 
 void orderPlaylist() {
@@ -1463,9 +1463,9 @@ int seekSongInPlaylist(FILE * fp, int song, float time) {
 int seekSongInPlaylistById(FILE * fp, int id, float time) {
 	checkSongId(id);
 
-	return seekSongInPlaylist(fp, playlist.idToNum[id], time);
+	return seekSongInPlaylist(fp, playlist.idToPosition[id], time);
 }
 
 int getPlaylistSongId(int song) {
-	return playlist.numToId[song];
+	return playlist.positionToId[song];
 }
