@@ -465,10 +465,9 @@ Song * playerCurrentDecodeSong() {
 	DecoderControl * dc = &(getPlayerData()->decoderControl);
 
         if(dc->metadataSet && (!song || strcmp(song->utf8url, dc->utf8url))) {
-                if(!song) {
-                        song = newNullSong();
-                        song->tag = newMpdTag();
-                }
+                if(song) freeJustSong(song);
+                song = newNullSong();
+                song->tag = newMpdTag();
                 if(song->utf8url) free(song->utf8url);
                 song->utf8url = strdup(dc->utf8url);
                 if(dc->title >= 0) {
