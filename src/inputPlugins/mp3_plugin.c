@@ -36,7 +36,6 @@
 #include "../log.h"
 #include "../utils.h"
 #include "../tag.h"
-#include "../path.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -613,20 +612,18 @@ int mp3_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream) {
 	return 0;
 }
 
-MpdTag * mp3_tagDup(char * utf8file) {
+MpdTag * mp3_tagDup(char * file) {
 	MpdTag * ret = NULL;
 	int time;
 
-	ret = id3Dup(utf8file);
+	ret = id3Dup(file);
 
-	time = getMp3TotalTime(rmp2amp(utf8ToFsCharset(utf8file)));
+	time = getMp3TotalTime(file);
 
 	if(time>=0) {
 		if(!ret) ret = newMpdTag();
 		ret->time = time;
 	}
-
-	if(ret) validateUtf8Tag(ret);
 
 	return ret;
 }

@@ -101,22 +101,22 @@ char * getID3Info(struct id3_tag * tag, char * id) {
 }
 #endif
 
-MpdTag * id3Dup(char * utf8filename) {
+MpdTag * id3Dup(char * file) {
 	MpdTag * ret = NULL;
 #ifdef HAVE_ID3TAG
-	struct id3_file * file;
+	struct id3_file * id3_file;
 	struct id3_tag * tag;
 	char * str;
 
-	file = id3_file_open(rmp2amp(utf8ToFsCharset(utf8filename)),
-			ID3_FILE_MODE_READONLY);
-	if(!file) {
+	id3_file = id3_file_open(file, ID3_FILE_MODE_READONLY);
+			
+	if(!id3_file) {
 		return NULL;
 	}
 
-	tag = id3_file_tag(file);
+	tag = id3_file_tag(id3_file);
 	if(!tag) {
-		id3_file_close(file);
+		id3_file_close(id3_file);
 		return NULL;
 	}
 
@@ -148,7 +148,7 @@ MpdTag * id3Dup(char * utf8filename) {
 		ret->track = str;
 	}
 
-	id3_file_close(file);
+	id3_file_close(id3_file);
 
 #endif
 	return ret;	

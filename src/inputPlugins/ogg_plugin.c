@@ -108,7 +108,9 @@ long ogg_tell_cb(void * vdata) {
 char * ogg_parseComment(char * comment, char * needle) {
         int len = strlen(needle);
 
-        if(strncasecmp(comment,needle,len)) return comment+len;
+        if(strncasecmp(comment, needle, len) == 0 && *(comment+len) == '=') {
+		return comment+len+1;
+	}
 
         return NULL;
 }
@@ -274,16 +276,14 @@ int ogg_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream)
 	return 0;
 }
 
-MpdTag * oggTagDup(char * utf8file) {
+MpdTag * oggTagDup(char * file) {
 	MpdTag * ret = NULL;
 	FILE * fp;
 	OggVorbis_File vf;
 	char ** comments;
 	char * temp;
-	char * s1;
-	char * s2;
 
-	fp = fopen(rmp2amp(utf8ToFsCharset(utf8file)),"r"); 
+	fp = fopen(file,"r"); 
 	if(!fp) return NULL;
 	if(ov_open(fp,&vf,NULL,0)<0) {
 		fclose(fp);
@@ -296,41 +296,34 @@ MpdTag * oggTagDup(char * utf8file) {
 	comments = ov_comment(&vf,-1)->user_comments;
 
 	while(*comments) {
-		temp = strdup(*comments);
-		++comments;
-		if(!(s1 = strtok(temp,"="))) continue;
-		s2 = strtok(NULL,"");
-		if(!s1 || !s2);
-		else if(0==strcasecmp(s1,"artist")) {
+                if((temp = ogg_parseComment(*comments,"artist"))) {
 			if(!ret->artist) {
-				stripReturnChar(s2);
-				ret->artist = strdup(s2);
+				ret->artist = strdup(temp);
+				stripReturnChar(ret->artist);
 			}
-		}
-		else if(0==strcasecmp(s1,"title")) {
+		} 
+                else if((temp = ogg_parseComment(*comments,"title"))) {
 			if(!ret->title) {
-				stripReturnChar(s2);
-				ret->title = strdup(s2);
+				ret->title = strdup(temp);
+				stripReturnChar(ret->title);
 			}
 		}
-		else if(0==strcasecmp(s1,"album")) {
+                else if((temp = ogg_parseComment(*comments,"album"))) {
 			if(!ret->album) {
-				stripReturnChar(s2);
-				ret->album = strdup(s2);
+				ret->album = strdup(temp);
+				stripReturnChar(ret->album);
 			}
 		}
-		else if(0==strcasecmp(s1,"tracknumber")) {
+                else if((temp = ogg_parseComment(*comments,"tracknumber"))) {
 			if(!ret->track) {
-				stripReturnChar(s2);
-				ret->track = strdup(s2);
+				ret->track = strdup(temp);
+				stripReturnChar(ret->track);
 			}
 		}
 		free(temp);
 	}
 
 	ov_clear(&vf);
-
-	if(ret) validateUtf8Tag(ret);
 
 	return ret;	
 }

@@ -31,33 +31,11 @@ typedef struct _MpdTag {
 	int time;
 } MpdTag;
 
-MpdTag * id3Dup(char * utf8filename);
+MpdTag * id3Dup(char * file);
 
 MpdTag * newMpdTag();
 
 void freeMpdTag(MpdTag * tag);
-
-#ifdef HAVE_MAD
-MpdTag * mp3TagDup(char * utf8file);
-#endif
-
-#ifdef HAVE_FAAD
-MpdTag * aacTagDup(char * utf8file);
-
-MpdTag * mp4TagDup(char * utf8file);
-#endif
-
-#ifdef HAVE_OGG
-MpdTag * oggTagDup(char * utf8file);
-#endif
-
-#ifdef HAVE_FLAC
-MpdTag * flacTagDup(char * utf8file);
-#endif
-
-#ifdef HAVE_AUDIOFILE
-MpdTag * audiofileTagDup(char * utf8file);
-#endif
 
 void printMpdTag(FILE * fp, MpdTag * tag);
 

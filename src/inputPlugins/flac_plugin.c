@@ -27,7 +27,6 @@
 #include "../outputBuffer.h"
 #include "../replayGain.h"
 #include "../audio.h"
-#include "../path.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -438,7 +437,7 @@ FLAC__StreamDecoderWriteStatus flacWrite(const FLAC__SeekableStreamDecoder *dec,
 	return FLAC__STREAM_DECODER_WRITE_STATUS_CONTINUE;
 }
 
-MpdTag * flacMetadataDup(char * utf8file, int * vorbisCommentFound) {
+MpdTag * flacMetadataDup(char * file, int * vorbisCommentFound) {
 	MpdTag * ret = NULL;
 	FLAC__Metadata_SimpleIterator * it;
 	FLAC__StreamMetadata * block = NULL;
@@ -448,7 +447,7 @@ MpdTag * flacMetadataDup(char * utf8file, int * vorbisCommentFound) {
 	*vorbisCommentFound = 0;
 
 	it = FLAC__metadata_simple_iterator_new();
-	if(!FLAC__metadata_simple_iterator_init(it,rmp2amp(utf8ToFsCharset(utf8file)),1,0)) {
+	if(!FLAC__metadata_simple_iterator_init(it, file ,1,0)) {
 		FLAC__metadata_simple_iterator_delete(it);
 		return ret;
 	}
@@ -530,22 +529,20 @@ MpdTag * flacMetadataDup(char * utf8file, int * vorbisCommentFound) {
 	return ret;
 }
 
-MpdTag * flacTagDup(char * utf8file) {
+MpdTag * flacTagDup(char * file) {
 	MpdTag * ret = NULL;
 	int foundVorbisComment = 0;
 
-	ret = flacMetadataDup(utf8file,&foundVorbisComment);
+	ret = flacMetadataDup(file, &foundVorbisComment);
 	if(!ret) return NULL;
 	if(!foundVorbisComment) {
-		MpdTag * temp = id3Dup(utf8file);
+		MpdTag * temp = id3Dup(file);
 		if(temp) {
 			temp->time = ret->time;
 			freeMpdTag(ret);
 			ret = temp;
 		}
 	}
-
-	if(ret) validateUtf8Tag(ret);
 
 	return ret;
 }

@@ -59,7 +59,9 @@ Song * newSong(char * utf8url, SONG_TYPE type) {
 	if(song->type == SONG_TYPE_FILE) {
                 InputPlugin * plugin;
 		if((plugin = isMusic(utf8url,&(song->mtime)))) {
-		        song->tag = plugin->tagDupFunc(utf8url);
+		        song->tag = plugin->tagDupFunc(
+                                        rmp2amp(utf8ToFsCharset(utf8url)));
+	                if(song->tag) validateUtf8Tag(song->tag);
                 }
 		if(!song->tag || song->tag->time<0) {
 			freeSong(song);
@@ -267,7 +269,9 @@ int updateSongInfo(Song * song) {
 		song->tag = NULL;
 
 		if((plugin = isMusic(utf8url,&(song->mtime)))) {
-                        song->tag = plugin->tagDupFunc(utf8url);
+		        song->tag = plugin->tagDupFunc(
+                                        rmp2amp(utf8ToFsCharset(utf8url)));
+	                if(song->tag) validateUtf8Tag(song->tag);
                 }
 		if(!song->tag || song->tag->time<0) return -1;
 		else addSongToTables(song);
