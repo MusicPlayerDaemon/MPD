@@ -202,7 +202,7 @@ int myStat(char * utf8file, struct stat * st) {
 int isFile(char * utf8file, time_t * mtime) {
 	struct stat st;
 
-	if(myStat(utf8file,&st)) {
+	if(myStat(utf8file,&st)==0) {
 		if(S_ISREG(st.st_mode)) {
 			if(mtime) *mtime = st.st_mtime;
 			return 1;
