@@ -172,13 +172,17 @@ swap <int song1> <int song2>
 	swap positions of _song1_ and _song2_
 	increments playlist version by 1
 
-update
+update <string path>
 	searches mp3 directory for new music and removes old music from the db
+	_path_ is an optional argument that maybe a particular directory or 
+		song/file to update.
 	returned:
 		updating_db: <int job id>
 	where job id, is the job id requested for your update, and is displayed
 	in status, while the requested update is happening
 	increments playlist version by 1
+	NOTE: to update a number of paths/songs at once, use command_list,
+	it will be much more faster/effecient
 
 volume <int change>
 	change volume by amount _change_
