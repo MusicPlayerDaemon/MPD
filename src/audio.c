@@ -40,10 +40,12 @@ static void copyAudioFormat(AudioFormat * dest, AudioFormat * src) {
 }
 
 extern AudioOutputPlugin aoPlugin;
+extern AudioOutputPlugin shoutPlugin;
 
 void initAudioDriver() {
 	initAudioOutputPlugins();
 	loadAudioOutputPlugin(&aoPlugin);
+	loadAudioOutputPlugin(&shoutPlugin);
 
 	aoOutput = newAudioOutput("ao");
 	assert(aoOutput);

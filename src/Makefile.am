@@ -58,6 +58,7 @@ mpd_SOURCES = \
 	audio.c \
 	audioOutput.c \
 	audioOutput_ao.c \
+	audioOutput_shout.c \
 	buffer2array.c \
 	charConv.c \
 	command.c \
