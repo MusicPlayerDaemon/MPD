@@ -359,7 +359,6 @@ int main(int argc, char * argv[]) {
         initVolume();
         initInterfaces();
 
-        close(STDIN_FILENO);
         if(options.daemon) {
                 int pid;
 
@@ -452,4 +451,4 @@ int main(int argc, char * argv[]) {
 
         return EXIT_SUCCESS;
 }
-/* vim:set shiftwidth=4 tabstop=8 expandtab: */
+/* vim:set shiftwidth=8 tabstop=8 expandtab: */
