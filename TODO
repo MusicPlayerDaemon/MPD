@@ -3,6 +3,8 @@
 		examples in alsaplayer, xine, xmms, etc.  THis will be
 		much more flexible and prevent from needing to spawn an extra 
 		process!
+	b) pass decoderControl to inputStream, so that if we are doing blocking
+		stuff, its easy to halt it and return
 
 2) streaming and playing in general
 	a) determine a clever interface to play, so that play doesn't block
