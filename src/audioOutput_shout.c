@@ -28,11 +28,18 @@
 
 #include <shout/shout.h>
 #include <vorbis/vorbisenc.h>
+#include <vorbis/codec.h>
 
 static int shoutInitCount = 0;
 
 typedef struct _ShoutData {
 	shout_t * shoutConn;
+	ogg_page og;
+	ogg_packet op;
+	vorbis_dsp_state vd;
+	vorbis_block vb;
+	vorbis_info vi;
+	vorbis_comment vc;
 } ShoutData;
 
 static ShoutData * newShoutData() {
