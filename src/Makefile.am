@@ -1,10 +1,10 @@
 bin_PROGRAMS = mpd
 SUBDIRS = $(ID3_SUBDIR) $(MAD_SUBDIR) $(MP4FF_SUBDIR)
 
-mpd_audioOutput = \
-	audioOutput/audioOutput_ao.c \
-	audioOutput/audioOutput_oss.c \
-	audioOutput/audioOutput_shout.c
+mpd_audioOutputs = \
+	audioOutputs/audioOutput_ao.c \
+	audioOutputs/audioOutput_oss.c \
+	audioOutputs/audioOutput_shout.c
 
 mpd_inputPlugins = \
 	inputPlugins/aac_plugin.c \
@@ -59,7 +59,7 @@ mpd_headers = \
 
 mpd_SOURCES = \
 	$(mpd_headers) \
-	$(mpd_audioOutput) \
+	$(mpd_audioOutputs) \
 	$(mpd_inputPlugins) \
 	audio.c \
 	audioOutput.c \
