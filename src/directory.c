@@ -120,7 +120,9 @@ void directory_sigChldHandler(int pid, int status) {
                                         "non-TERM signal: %i\n",
                                         WTERMSIG(status));
                 }
-		else if(WEXITSTATUS(status)==EXIT_SUCCESS) {
+		else if(!WIFSIGNALED(status) &&
+				WEXITSTATUS(status)==EXIT_SUCCESS) 
+		{
 			DEBUG("direcotry_sigChldHandler: "
 					"updated db succesffully\n");
 			directory_reReadDB = 1;
@@ -150,8 +152,6 @@ int updateInit(FILE * fp, List * pathList) {
 	directory_updatePid = fork();
        	if(directory_updatePid==0) {
               	/* child */
-		struct sigaction sa;
-		
 		clearPlayerPid();
 	
 		unblockSignals();
