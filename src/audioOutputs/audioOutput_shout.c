@@ -30,10 +30,13 @@
 #include <string.h>
 #include <assert.h>
 #include <signal.h>
+#include <time.h>
 
 #include <shout/shout.h>
 #include <vorbis/vorbisenc.h>
 #include <vorbis/codec.h>
+
+#define CONN_ATTEMPT_INTERVAL	60
 
 static int shoutInitCount = 0;
 
@@ -68,6 +71,9 @@ typedef struct _ShoutData {
 
 	MpdTag * tag;
 	int tagToSend;
+
+	int connAttempts;
+	time_t lastAttempt;
 } ShoutData;
 
 static ShoutData * newShoutData() {
@@ -81,6 +87,8 @@ static ShoutData * newShoutData() {
 	ret->tagToSend = 0;
 	ret->bitrate = -1;
 	ret->quality = -1.0;
+	ret->connAttempts = 0;
+	ret->lastAttempt = 0;
 
 	return ret;
 }
@@ -370,12 +378,20 @@ static int initEncoder(ShoutData * sd) {
 
 static int myShout_openShoutConn(AudioOutput * audioOutput) {
 	ShoutData * sd = (ShoutData *)audioOutput->data;
+	time_t t = time(NULL);
 
-	if(shout_open(sd->shoutConn) != SHOUTERR_SUCCESS)
-	{
-		ERROR("problem opening connection to shout server: %s\n",
+	sd->connAttempts++;
+
+	if(t - sd->lastAttempt < CONN_ATTEMPT_INTERVAL) {
+		return -1;
+	}
+
+	sd->lastAttempt = t;
+
+	if(shout_open(sd->shoutConn) != SHOUTERR_SUCCESS) {
+		ERROR("problem opening connection to shout server (attempt %i):"
+				" %s\n", sd->connAttempts,
 				shout_get_error(sd->shoutConn));
-
 		return -1;
 	}
 
@@ -404,8 +420,7 @@ static int myShout_openShoutConn(AudioOutput * audioOutput) {
 		}
 	}
 
-	/*if(sd->tag) freeMpdTag(sd->tag);
-	sd->tag = NULL;*/
+	sd->connAttempts = 0;
 
 	return 0;
 }
