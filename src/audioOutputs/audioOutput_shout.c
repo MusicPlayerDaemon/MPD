@@ -114,6 +114,7 @@ static int myShout_initDriver(AudioOutput * audioOutput, ConfigParam * param) {
 	char * user;
 	char * name;
 	BlockParam * blockParam;
+	unsigned int public;
 
 	sd = newShoutData();
 
@@ -143,8 +144,21 @@ static int myShout_initDriver(AudioOutput * audioOutput, ConfigParam * param) {
 	checkBlockParam("name");
 	name = blockParam->value;
 
-	checkBlockParam("user");
-	user = blockParam->value;
+	blockParam = getBlockParam(param, "public");
+	if(blockParam) {
+		if(0 == strcmp(blockParam->value, "yes")) public = 1;
+		else if(0 == strcmp(blockParam->value, "no")) public = 0;
+		else {
+			ERROR("public \"%s\" is not \"yes\" or \"no\" at line "
+				"%i\n", param->value, param->line);
+			exit(EXIT_FAILURE);
+		}
+	}
+	else public = 1;
+
+	blockParam = getBlockParam(param, "user");
+	if(blockParam) user = blockParam->value;
+	else user = "source";
 
 	blockParam = getBlockParam(param, "quality");
 
@@ -196,6 +210,7 @@ static int myShout_initDriver(AudioOutput * audioOutput, ConfigParam * param) {
 		shout_set_mount(sd->shoutConn, mount) != SHOUTERR_SUCCESS ||
 		shout_set_name(sd->shoutConn, name) != SHOUTERR_SUCCESS ||
 		shout_set_user(sd->shoutConn, user) != SHOUTERR_SUCCESS ||
+		shout_set_public(sd->shoutConn, public) != SHOUTERR_SUCCESS ||
 		shout_set_format(sd->shoutConn, SHOUT_FORMAT_VORBIS) 
 			!= SHOUTERR_SUCCESS ||
 		shout_set_protocol(sd->shoutConn, SHOUT_PROTOCOL_HTTP)
