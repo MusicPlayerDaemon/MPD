@@ -668,7 +668,6 @@ int playPlaylistOrderNumber(FILE * fp, int orderNum) {
 	playlist_noGoToNext = 0;
 	playlist.queued = -1;
 	playlist_queueError = 0;
-	playlist.current = orderNum;
 
 	DEBUG("playlist: play %i:\"%s\"\n",orderNum,
 			(playlist.songs[playlist.order[orderNum]])->utf8url);
@@ -677,6 +676,9 @@ int playPlaylistOrderNumber(FILE * fp, int orderNum) {
 		stopPlaylist(fp);
 		return -1;
 	}
+	else playlist.current++;
+
+	playlist.current = orderNum;
 
 	return 0;
 }
@@ -797,6 +799,16 @@ int nextSongInPlaylist(FILE * fp) {
 	}
 
 	return 0;
+}
+
+void incrPlaylistCurrent() {
+	if(playlist.current >= playlist.length || (!playlist.repeat && 
+		playlist.current == playlist.length-1))
+	{
+		playlist.current = -1;
+	}
+	else if(playlist.current == playlist.length-1) playlist.current = 0;
+	else if(playlist.current >= 0) playlist.current++;
 }
 
 void playPlaylistIfPlayerStopped() {
