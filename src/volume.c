@@ -351,7 +351,7 @@ void finishVolume() {
 		closeAlsaMixer();
 		break;
 #endif
-#ifndef HAVE_OSS
+#ifdef HAVE_OSS
 	case VOLUME_MIXER_TYPE_OSS:
 		closeOssMixer();
 		break;
@@ -370,7 +370,7 @@ void initVolume() {
 			volume_mixerDevice = VOLUME_MIXER_ALSA_DEFAULT;
 		}
 #endif
-#ifndef HAVE_OSS
+#ifdef HAVE_OSS
 		else if(strcmp(param->value, VOLUME_MIXER_OSS)==0) {
 			volume_mixerType = VOLUME_MIXER_TYPE_OSS;
 			volume_mixerDevice = VOLUME_MIXER_OSS_DEFAULT;
@@ -411,7 +411,7 @@ int getVolumeLevel() {
 	case VOLUME_MIXER_TYPE_ALSA:
 		return getAlsaVolumeLevel();
 #endif
-#ifndef HAVE_OSS
+#ifdef HAVE_OSS
 	case VOLUME_MIXER_TYPE_OSS:
 		return getOssVolumeLevel();
 #endif
@@ -448,7 +448,7 @@ int changeVolumeLevel(FILE * fp, int change, int rel) {
 	case VOLUME_MIXER_TYPE_ALSA:
 		return changeAlsaVolumeLevel(fp,change,rel);
 #endif
-#ifndef HAVE_OSS
+#ifdef HAVE_OSS
 	case VOLUME_MIXER_TYPE_OSS:
 		return changeOssVolumeLevel(fp,change,rel);
 #endif

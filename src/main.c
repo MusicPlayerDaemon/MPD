@@ -268,6 +268,9 @@ void changeToUser(Options * options) {
                         exit(EXIT_FAILURE);
                 }
 
+		if(userpwd->pw_dir) {
+			setenv("HOME", userpwd->pw_dir, 1);
+		}
         }
 }
 
