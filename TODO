@@ -5,6 +5,8 @@
 	d) have a special case where if a update is in a command list, it only forks at the beginning of the list, and writes at the end of the command list
 	e) add an element to status stating the "update state"
 	f) store stuff to updated in a linked list prior to update fork
-	g) pass changes back through a pipe from child to parent
+	g) update child writes db file, parents reads db file when done (the msells/sbh alogrithm)
 
 2) rewrite interface stuff, specifically command list handling etc so its less of a hack and deals with the above update stuff better
+
+3) crosslink "list" stuff, for example, artists are crosslinked to alubms and vice versa, this way you can do list album artists or list artist albums, this will make life easier when we add genre and other metadata
