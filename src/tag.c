@@ -43,6 +43,7 @@ void printMpdTag(FILE * fp, MpdTag * tag) {
 	if(tag->album) myfprintf(fp,"Album: %s\n",tag->album);
 	if(tag->track) myfprintf(fp,"Track: %s\n",tag->track);
 	if(tag->title) myfprintf(fp,"Title: %s\n",tag->title);
+	if(tag->name) myfprintf(fp,"Name: %s\n",tag->name);
 	if(tag->time>=0) myfprintf(fp,"Time: %i\n",tag->time);
 }
 
@@ -62,6 +63,7 @@ void validateUtf8Tag(MpdTag * tag) {
 	fixUtf8(tag->album);
 	fixUtf8(tag->track);
 	fixUtf8(tag->title);
+	fixUtf8(tag->name);
 }
 
 #ifdef HAVE_ID3TAG
@@ -158,6 +160,7 @@ MpdTag * newMpdTag() {
 	ret->artist = NULL;
 	ret->title = NULL;
 	ret->track = NULL;
+	ret->name = NULL;
 	ret->time = -1;
 	return ret;
 }
@@ -166,6 +169,7 @@ void clearMpdTag(MpdTag * tag) {
 	if(tag->artist) free(tag->artist);
 	if(tag->album) free(tag->album);
 	if(tag->title) free(tag->title);
+	if(tag->name) free(tag->title);
 	if(tag->track) free(tag->track);
 }
 
@@ -183,6 +187,7 @@ MpdTag * mpdTagDup(MpdTag * tag) {
 		if(tag->album) ret->album = strdup(tag->album);
 		if(tag->title) ret->title = strdup(tag->title);
 		if(tag->track) ret->track = strdup(tag->track);
+		if(tag->name) ret->name = strdup(tag->name);
 		ret->time = tag->time;
 	}
 
@@ -208,6 +213,7 @@ int mpdTagsAreEqual(MpdTag * tag1, MpdTag * tag2) {
         if(!mpdTagStringsAreEqual(tag1->album, tag2->album)) return 0;
         if(!mpdTagStringsAreEqual(tag1->track, tag2->track)) return 0;
         if(!mpdTagStringsAreEqual(tag1->title, tag2->title)) return 0;
+        if(!mpdTagStringsAreEqual(tag1->name, tag2->name)) return 0;
 
         return 1;
 }

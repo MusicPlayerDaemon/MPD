@@ -474,10 +474,12 @@ void playerCycleLogFiles() {
 /* this actually creates a dupe of the current metadata */
 Song * playerCurrentDecodeSong() {
         static Song * song = NULL;
+        static char * prev = NULL;
 	PlayerControl * pc = &(getPlayerData()->playerControl);
 
         if(pc->metadataState == PLAYER_METADATA_STATE_READ && 
-                        (!song || strcmp(song->utf8url, pc->currentUrl))) 
+                        ((!song || strcmp(song->utf8url, pc->currentUrl))
+                        || (!prev || strcmp(prev,pc->metadata)))) 
         {
                 if(song) freeJustSong(song);
                 song = newNullSong();
@@ -486,6 +488,7 @@ Song * playerCurrentDecodeSong() {
                 song->utf8url = strdup(pc->currentUrl);
                 if(pc->title >= 0) {
                         song->tag->title = strdup(pc->title + pc->metadata);
+			/*printf("player title: %s\n", song->tag->title);*/
                 }
                 if(pc->artist >= 0) {
                         song->tag->artist = strdup(pc->artist + pc->metadata);
@@ -494,11 +497,11 @@ Song * playerCurrentDecodeSong() {
                         song->tag->album = strdup(pc->album + pc->metadata);
                 }
                 validateUtf8Tag(song->tag);
+                if(prev) free(prev);
+                prev = strdup(pc->metadata);
                 resetPlayerMetadata();
                 return song;
         }
 
         return NULL;
 }
-
-/* vim:set shiftwidth=4 tabstop=8 expandtab: */

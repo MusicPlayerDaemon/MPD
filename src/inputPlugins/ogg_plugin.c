@@ -200,20 +200,25 @@ MpdTag * oggCommentsParse(char ** comments) {
 	return ret;
 }
 
-void putOggCommentsIntoDecoderControlMetadata(DecoderControl * dc,
-		char ** comments)
+void putOggCommentsIntoOutputBuffer(OutputBuffer * cb, char * streamName,
+		char ** comments) 
 {
 	MpdTag * tag;
 
 	tag = oggCommentsParse(comments);
 	if(!tag) return;
 
-	copyMpdTagToDecoderControlMetadata(dc, tag);
-
 	/*if(tag->artist) printf("Artist: %s\n", tag->artist);
 	if(tag->album) printf("Album: %s\n", tag->album);
 	if(tag->track) printf("Track: %s\n", tag->track);
 	if(tag->title) printf("Title: %s\n", tag->title);*/
+
+	if(streamName) {
+		if(tag->name) free(tag->name);
+		tag->name = strdup(streamName);
+	}
+
+	copyMpdTagToOutputBuffer(cb, tag);
 
 	freeMpdTag(tag);
 }
@@ -280,10 +285,14 @@ int ogg_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream)
 			vorbis_info *vi=ov_info(&vf,-1);
 			dc->audioFormat.channels = vi->channels;
 			dc->audioFormat.sampleRate = vi->rate;
-        		getOutputAudioFormat(&(dc->audioFormat),&(cb->audioFormat));
+			if(dc->state == DECODE_STATE_START) {
+        			getOutputAudioFormat(&(dc->audioFormat),
+					&(cb->audioFormat));
+				dc->state = DECODE_STATE_DECODE;
+			}
 			comments = ov_comment(&vf, -1)->user_comments;
-			putOggCommentsIntoDecoderControlMetadata(dc, comments);
-			dc->state = DECODE_STATE_DECODE;
+			putOggCommentsIntoOutputBuffer(cb, inStream->metaTitle,
+					comments);
         		replayGainScale = ogg_getReplayGainScale(comments);
 		}
 

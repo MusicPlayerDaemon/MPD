@@ -85,6 +85,7 @@ typedef struct _PlayerControl {
 	volatile mpd_sint8 cycleLogFiles;
         volatile mpd_sint8 metadataState;
         char metadata[DECODE_METADATA_LENGTH];
+        volatile mpd_sint16 name;
         volatile mpd_sint16 title;
         volatile mpd_sint16 artist;
         volatile mpd_sint16 album;

@@ -112,17 +112,6 @@ int calculateCrossFadeChunks(PlayerControl * pc, AudioFormat * af) {
 		                quitDecode(pc,dc); \
 		                return; \
 	                } \
-                        if(pc->metadataState == PLAYER_METADATA_STATE_WRITE && \
-                                        dc->metadataSet) \
-                        { \
-                                memcpy(pc->metadata, dc->metadata, \
-                                                DECODE_METADATA_LENGTH); \
-                                pc->metadata[DECODE_METADATA_LENGTH-1] = '\0'; \
-                                pc->title = dc->title; \
-                                pc->artist = dc->artist; \
-                                pc->album = dc->album; \
-                        } \
-                        pc->metadataState = PLAYER_METADATA_STATE_READ; \
 	                pc->totalTime = dc->totalTime; \
 	                pc->sampleRate = dc->audioFormat.sampleRate; \
 	                pc->bits = dc->audioFormat.bits; \
@@ -271,11 +260,12 @@ void decodeStart(PlayerControl * pc, OutputBuffer * cb, DecoderControl * dc) {
                 return;
 	}
 
-        dc->metadataSet = 0;
-        memset(dc->metadata, 0, DECODE_METADATA_LENGTH);
-        dc->title = -1;
-        dc->album = -1;
-        dc->artist = -1;
+        cb->metadataSet = 0;
+        memset(cb->metadata, 0, DECODE_METADATA_LENGTH);
+        cb->name = -1;
+        cb->title = -1;
+        cb->album = -1;
+        cb->artist = -1;
 
         strncpy(dc->utf8url, pc->utf8url, MAXPATHLEN);
 	dc->utf8url[MAXPATHLEN] = '\0';
@@ -302,15 +292,17 @@ void decodeStart(PlayerControl * pc, OutputBuffer * cb, DecoderControl * dc) {
                 return;
         }
 
-        if(inStream.metaTitle) {
-                strncpy(dc->metadata, inStream.metaTitle, 
+        /*if(inStream.metaTitle) {
+                strncpy(cb->metadata, inStream.metaTitle, 
                                 DECODE_METADATA_LENGTH-1);
-                dc->title = 0;
-                dc->metadataSet = 1;                
-        }
+                cb->name = 0;
+		cb->metaChunk = cb->end;
+                cb->metadataSet = 1;                
+        }*/
 
         ret = DECODE_ERROR_UNKTYPE;
 	if(isRemoteUrl(dc->utf8url)) {
+		cb->acceptMetadata = 1;
 		plugin = getInputPluginFromMimeType(inStream.mime);
                 if(plugin == NULL) {
                         plugin = getInputPluginFromSuffix(
@@ -328,6 +320,7 @@ void decodeStart(PlayerControl * pc, OutputBuffer * cb, DecoderControl * dc) {
                 }
 	}
         else {
+		cb->acceptMetadata = 0;
                 plugin = getInputPluginFromSuffix(getSuffix(dc->utf8url));
                 if(plugin && (plugin->streamTypes && INPUT_PLUGIN_STREAM_FILE))
                 {
@@ -399,6 +392,55 @@ int decoderInit(PlayerControl * pc, OutputBuffer * cb, DecoderControl * dc) {
 	return 0;
 }
 
+#define copyMetadata() { \
+	memcpy(pc->metadata, metadata, DECODE_METADATA_LENGTH); \
+	pc->name = name; \
+	pc->title = title; \
+	pc->artist = artist; \
+	pc->album = album; \
+	gotMetadata = 0; \
+	pc->metadataState = PLAYER_METADATA_STATE_READ; \
+	kill(getppid(), SIGUSR1); \
+}
+
+/* do some fancier shit here, like put metadata in a linked list metadata
+buffer, and assign it to current and whether current is written */
+#define handleMetadata() { \
+	if(cb->metadataSet) {\
+		gotMetadata = 1;\
+		memcpy(metadata, cb->metadata, DECODE_METADATA_LENGTH); \
+		artist = cb->artist; \
+		name = cb->name; \
+		title = cb->title; \
+		album = cb->album; \
+		metaChunk = cb->metaChunk; \
+		cb->metadataSet = 0; \
+	} \
+	if(gotMetadata) { \
+		int end = cb->end; \
+		if(end > cb->begin && (metaChunk < cb->begin || \
+				metaChunk > end)) \
+		{ \
+			gotMetadata = 0; \
+		} \
+		else if(cb->begin > end && (metaChunk > cb->begin && \
+				metaChunk < end)) \
+		{ \
+			gotMetadata = 0; \
+		} \
+		else if(pc->metadataState == PLAYER_METADATA_STATE_WRITE) { \
+			if(end > metaChunk && metaChunk <= cb->begin ) { \
+				copyMetadata(); \
+			} \
+			else if(metaChunk >= end && (cb->begin >= metaChunk || \
+				cb->begin < end)) \
+			{ \
+				copyMetadata(); \
+			} \
+		} \
+	} \
+}
+
 void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb) {
 	int pause = 0;
 	int quit = 0;
@@ -411,6 +453,13 @@ void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb) {
         int decodeWaitedOn = 0;
 	char silence[CHUNK_SIZE];
 	double sizeToTime = 0.0;
+	char metadata[DECODE_METADATA_LENGTH];
+	mpd_sint16 name = -1;
+	mpd_sint16 title = -1;
+	mpd_sint16 artist = -1;
+	mpd_sint16 album = -1;
+	mpd_sint16 metaChunk = -1;
+	int gotMetadata = 0;
 
 	memset(silence,0,CHUNK_SIZE);
 
@@ -424,12 +473,14 @@ void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb) {
 				dc->state!=DECODE_STATE_STOP) 
 	{
 		processDecodeInput();
+		handleMetadata();
 		if(quit) return;
 		my_usleep(10000);
 	}
 
 	while(!quit) {
 		processDecodeInput();
+		handleMetadata();
                 handleDecodeStart();
 		if(dc->state==DECODE_STATE_STOP && 
 			pc->queueState==PLAYER_QUEUE_FULL &&
@@ -592,6 +643,7 @@ void decode() {
 	cb->begin = 0;
 	cb->end = 0;
 	cb->wrap = 0;
+	cb->metadataSet = 0;
 	pc = &(getPlayerData()->playerControl);
 	dc = &(getPlayerData()->decoderControl);
 	dc->error = 0;
@@ -605,32 +657,4 @@ void decode() {
 	}
 
         decodeParent(pc, dc, cb);
-}
-
-/* this is stuff for inputPlugins to use! */
-#define copyStringToMetadata(string, element) { \
-	if(string && (slen = strlen(string)) && \
-                        pos < DECODE_METADATA_LENGTH-1) \
-        { \
-		strncpy(dc->metadata+pos, string, \
-                                DECODE_METADATA_LENGTH-1-pos); \
-		element = pos; \
-		pos += slen+1; \
-	} \
-}
-
-void copyMpdTagToDecoderControlMetadata(DecoderControl * dc, MpdTag * tag) {
-	int pos = 0;
-	int slen;
-
-        if(dc->metadataSet) return;
-        if(!tag) return;
-
-	memset(dc->metadata, 0, DECODE_METADATA_LENGTH);
-	
-	copyStringToMetadata(tag->title, dc->title);
-	copyStringToMetadata(tag->artist, dc->artist);
-	copyStringToMetadata(tag->album, dc->album);
-
-	dc->metadataSet = 1;
 }

@@ -644,7 +644,11 @@ int mp3_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream) {
 	dc->totalTime = data.totalTime;
 
 	if(tag) {
-		copyMpdTagToDecoderControlMetadata(dc, tag);
+		if(inStream->metaTitle) {
+			if(tag->name) free(tag->name);
+			tag->name = strdup(inStream->metaTitle);
+		}
+		copyMpdTagToOutputBuffer(cb, tag);
 		freeMpdTag(tag);
 	}
 

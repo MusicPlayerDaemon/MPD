@@ -117,6 +117,7 @@ void initPlayerData() {
 	playerData_pd->playerControl.softwareVolume = 1000;
 	playerData_pd->playerControl.totalPlayTime = 0;
 	playerData_pd->playerControl.decode_pid = 0;
+	playerData_pd->playerControl.name = -1;
 	playerData_pd->playerControl.title = -1;
 	playerData_pd->playerControl.artist = -1;
 	playerData_pd->playerControl.album = -1;
@@ -129,12 +130,9 @@ void initPlayerData() {
 	playerData_pd->decoderControl.seek = 0;
 	playerData_pd->decoderControl.error = DECODE_ERROR_NOERROR;
 	memset(playerData_pd->decoderControl.utf8url, 0, MAXPATHLEN+1);
-	memset(playerData_pd->decoderControl.metadata, 0, 
-                        DECODE_METADATA_LENGTH);
-	playerData_pd->decoderControl.title = -1;
-	playerData_pd->decoderControl.artist = -1;
-	playerData_pd->decoderControl.album = -1;
-	playerData_pd->decoderControl.metadataSet = 0;
+
+	memset(playerData_pd->buffer.metadata, 0, DECODE_METADATA_LENGTH);
+	playerData_pd->buffer.metadataSet = 0;
 }
 
 PlayerData * getPlayerData() {

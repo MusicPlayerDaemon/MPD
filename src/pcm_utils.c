@@ -281,5 +281,3 @@ size_t pcm_sizeOfOutputBufferForAudioFormatConversion(AudioFormat * inFormat,
 
 	return outSize;
 }
-
-/* vim:set shiftwidth=8 tabstop=8 expandtab: */

@@ -35,6 +35,7 @@ typedef struct _MpdTag {
 	char * album;
 	char * track;
 	char * title;
+	char * name;
 	int time;
 } MpdTag;
 

@@ -117,4 +117,33 @@ int sendDataToOutputBuffer(OutputBuffer * cb, InputStream * inStream,
 
 	return 0;
 }
-/* vim:set shiftwidth=4 tabstop=8 expandtab: */
+
+/* this is stuff for inputPlugins to use! */
+#define copyStringToMetadata(string, element) { \
+	if(string && (slen = strlen(string)) && \
+                        pos < DECODE_METADATA_LENGTH-1) \
+        { \
+		strncpy(cb->metadata+pos, string, \
+                                DECODE_METADATA_LENGTH-1-pos); \
+		element = pos; \
+		pos += slen+1; \
+	} \
+}
+
+void copyMpdTagToOutputBuffer(OutputBuffer * cb, MpdTag * tag) {
+	int pos = 0;
+	int slen;
+
+        if(!cb->acceptMetadata) return;
+        if(!tag) return;
+
+	memset(cb->metadata, 0, DECODE_METADATA_LENGTH);
+	
+	copyStringToMetadata(tag->name, cb->name);
+	copyStringToMetadata(tag->artist, cb->artist);
+	copyStringToMetadata(tag->title, cb->title);
+	copyStringToMetadata(tag->album, cb->album);
+
+        cb->metaChunk = cb->end;
+	cb->metadataSet = 1;
+}

@@ -34,6 +34,7 @@
 #define SONG_ALBUM	"Album: "
 #define SONG_TRACK	"Track: "
 #define SONG_TITLE	"Title: "
+#define SONG_NAME	"Name: "
 #define SONG_TIME	"Time: "
 #define SONG_MTIME	"mtime: "
 
@@ -234,6 +235,10 @@ void readSongInfoIntoList(FILE * fp, SongList * list) {
 		else if(0==strncmp(SONG_TITLE,buffer,strlen(SONG_TITLE))) {
 			if(!song->tag) song->tag = newMpdTag();
 			song->tag->title = strdup(&(buffer[strlen(SONG_TITLE)]));
+		}
+		else if(0==strncmp(SONG_NAME,buffer,strlen(SONG_NAME))) {
+			if(!song->tag) song->tag = newMpdTag();
+			song->tag->name = strdup(&(buffer[strlen(SONG_NAME)]));
 		}
 		else if(0==strncmp(SONG_TIME,buffer,strlen(SONG_TIME))) {
 			if(!song->tag) song->tag = newMpdTag();

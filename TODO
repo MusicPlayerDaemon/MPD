@@ -1,9 +1,20 @@
-1) Parse icymetadata
+1) Construct a small metadata buffer
+	a) MetadataChunk struct
+		1) functions for converting between block and MpdTag
+		2) char * buffer
+		3) positions ints for name, title, artist, album
+	b) MetadataChunk buffer in OutputBuffer
+		1) deal with incrementing and finding a free buffer Chunk
+			the decoder element
+		2) corresponding metachunk # for each audio chunk
+	c) player proccess
+		1) if not metachunk be sure to clear the current metadata
+			in playerControl
+		2) if it is, if WRITE, then write do pc->metadataChunk
 
-2) Put a new metadata entry for icyName for Song's
+2) Parse icymetadata
 
-3) handle changes in audioFormat in a single stream/file,
-		 esp need for vorbis streams
+3) Put a new metadata entry for icyName for Song's
 
 4) put some sort of error reporting for streaming/inputStream!
 

@@ -37,6 +37,14 @@ typedef struct _OutputBuffer {
 	mpd_sint16 volatile next;
 	mpd_sint8 volatile wrap;
         AudioFormat audioFormat;
+        volatile mpd_sint8 metadataSet;
+        char metadata[DECODE_METADATA_LENGTH];
+        volatile mpd_sint16 title;
+        volatile mpd_sint16 artist;
+        volatile mpd_sint16 album;
+        volatile mpd_sint16 name;
+        volatile mpd_uint16 metaChunk;
+	volatile mpd_sint8 acceptMetadata;
 } OutputBuffer;
 
 void clearOutputBuffer(OutputBuffer * cb);
@@ -49,5 +57,6 @@ int sendDataToOutputBuffer(OutputBuffer * cb, InputStream * inStream,
                 DecoderControl * dc, int seekable, char * data, long datalen, 
                 float time, mpd_uint16 bitRate);
 
+void copyMpdTagToOutputBuffer(OutputBuffer * cb, MpdTag * tag);
+
 #endif
-/* vim:set shiftwidth=4 tabstop=8 expandtab: */
