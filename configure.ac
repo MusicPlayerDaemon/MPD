@@ -386,9 +386,9 @@ else
 fi
 
 if test x$enable_aac = xyes; then
-	echo "AAC support ...................enabled"
+	echo "MP4/AAC support ...............enabled"
 else
-	echo "AAC support ...................disabled"
+	echo "MP4/AAC support ...............disabled"
 fi
 
 echo ""
