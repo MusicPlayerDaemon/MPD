@@ -557,6 +557,7 @@ int readDirectoryDB() {
 				else {
 					ERROR("directory: unknown line in db info: %s\n",
 						buffer);
+					exit(-1);
 				}
 			}
 		}
