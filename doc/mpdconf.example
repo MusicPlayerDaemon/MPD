@@ -71,9 +71,8 @@ error_file 		"~/mpd.error"
 ##################################
 
 ########### SECURITY SETTINGS ############
-# if you start mpd as root, its recmmoned you specify
-#     a user for mpd to run as (running mpd as root
-#     is not recommended).
+# if you start mpd as root, its recmmoned
+#     you specify a a user for mpd to run.
 #user 		"nobody"
 #
 # to only allow connections from localhost
