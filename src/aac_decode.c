@@ -264,7 +264,6 @@ int aac_decode(OutputBuffer * cb, DecoderControl * dc) {
 	unsigned int sampleCount;
 	char * sampleBuffer;
 	size_t sampleBufferLen;
-	int chunkLen = 0;
 	/*float * seekTable;
 	long seekTableEnd = -1;
 	int seekPositionFound = 0;*/
@@ -382,17 +381,6 @@ int aac_decode(OutputBuffer * cb, DecoderControl * dc) {
 	if(b.buffer) free(b.buffer);
 
 	if(dc->state != DECODE_STATE_DECODE) return -1;
-
-	if(!dc->stop && chunkLen>0) {
-		cb->chunkSize[cb->end] = chunkLen;
-		++cb->end;
-	
-		if(cb->end>=buffered_chunks) {
-			cb->end = 0;
-			cb->wrap = 1;
-		}
-		chunkLen = 0;
-	}
 
 	if(dc->seek) dc->seek = 0;
 

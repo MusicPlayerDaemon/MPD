@@ -410,7 +410,10 @@ void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb) {
 		processDecodeInput();
                 handleDecodeStart();
                 if(!dc->seek && seeking) {
-                        if(dc->seekChunk >= 0) cb->begin = dc->seekChunk;
+                        if(dc->seekChunk >= 0) {
+                                cb->begin = dc->seekChunk;
+                                cb->wrap = 0;
+                        }
                         seeking = 0;
                 }
 		if(dc->state==DECODE_STATE_STOP && 

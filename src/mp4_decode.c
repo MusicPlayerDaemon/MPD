@@ -105,7 +105,6 @@ int mp4_decode(OutputBuffer * cb, DecoderControl * dc) {
 	char * sampleBuffer;
 	size_t sampleBufferLen;
 	unsigned int initial = 1;
-	int chunkLen = 0;
 	float * seekTable;
 	long seekTableEnd = -1;
 	int seekPositionFound = 0;
@@ -219,7 +218,6 @@ int mp4_decode(OutputBuffer * cb, DecoderControl * dc) {
 
 		if(dc->seek && seekPositionFound) {
 			seekPositionFound = 0;
-			chunkLen = 0;
                         clearOutputBuffer(cb);
                         dc->seekChunk = cb->end;
 			dc->seek = 0;
@@ -298,17 +296,6 @@ int mp4_decode(OutputBuffer * cb, DecoderControl * dc) {
 	free(mp4cb);
 
 	if(dc->state != DECODE_STATE_DECODE) return -1;
-
-	if(!dc->stop && !dc->seek && chunkLen>0) {
-		cb->chunkSize[cb->end] = chunkLen;
-		++cb->end;
-	
-		if(cb->end>=buffered_chunks) {
-			cb->end = 0;
-			cb->wrap = 1;
-		}
-		chunkLen = 0;
-	}
 
 	if(dc->seek) dc->seek = 0;
 
