@@ -1,5 +1,9 @@
 0.12
 ----
+*) add genre and date metadata
+
+*) add support for coverart using freedesktop standard for icons/images
+
 *) rewrite saved playlist code
 	*) abstract out saved playlists from playlist.c
 	*) command for displaying playlist contents
@@ -45,4 +49,3 @@
 	*) multiple genre support {char *, int pairs for each metadata entry 
 		indicating the type of metadata and its value)
 	*) MpdDBTag <-> MpdTag interface
-	*) support for date (maybe composer as well)
