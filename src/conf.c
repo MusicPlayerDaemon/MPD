@@ -37,7 +37,7 @@
 
 #define CONF_COMMENT	'#'
 
-#define CONF_NUMBER_OF_PARAMS		27
+#define CONF_NUMBER_OF_PARAMS		28
 #define CONF_NUMBER_OF_PATHS		6
 #define CONF_NUMBER_OF_REQUIRED		5
 #define CONF_NUMBER_OF_ALLOW_CATS	1
@@ -123,7 +123,8 @@ char ** readConf(char * file) {
 		"filesystem_charset",
 		"password",
 		"default_permissions",
-		"buffer_size"
+		"buffer_size",
+                "replaygain"
 	};
 
 	int conf_absolutePaths[CONF_NUMBER_OF_PATHS] = {

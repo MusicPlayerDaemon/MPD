@@ -27,7 +27,5 @@
 
 int flac_decode(OutputBuffer * cb, AudioFormat * af, DecoderControl * dc);
 
-int getFlacTotalTime(char * file);
-
 #endif
-/* vim:set shiftwidth=4 tabstop=8 expandtab: */
+/* vim:set shiftwidth=8 tabstop=8 expandtab: */

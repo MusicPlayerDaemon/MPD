@@ -48,6 +48,7 @@
 #define CONF_PASSWORD				24
 #define CONF_DEFAULT_PERMISSIONS		25
 #define CONF_BUFFER_SIZE			26
+#define CONF_REPLAYGAIN                         27
 
 #define CONF_CAT_CHAR				"\n"
 

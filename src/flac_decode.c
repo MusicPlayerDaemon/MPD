@@ -25,6 +25,7 @@
 #include "pcm_utils.h"
 #include "inputStream.h"
 #include "outputBuffer.h"
+#include "replayGain.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -41,8 +42,8 @@ typedef struct {
 	OutputBuffer * cb;
 	AudioFormat * af;
 	DecoderControl * dc;
-        char * file;
         InputStream inStream;
+        float replayGainScale;
 } FlacData;
 
 /* this code is based on flac123, from flac-tools */
@@ -66,9 +67,7 @@ FLAC__SeekableStreamDecoderLengthStatus flacLength(
                 const FLAC__SeekableStreamDecoder *, FLAC__uint64 *, void *);
 FLAC__bool flacEOF(const FLAC__SeekableStreamDecoder *, void *);
 
-void flacPlayFile(char *file, OutputBuffer * cb, AudioFormat * af, 
-	DecoderControl *dc)
-{
+int flac_decode(OutputBuffer * cb, AudioFormat * af, DecoderControl *dc) {
 	FLAC__SeekableStreamDecoder * flacDec;
 	FlacData data;
 	int status = 1;
@@ -80,14 +79,14 @@ void flacPlayFile(char *file, OutputBuffer * cb, AudioFormat * af,
 	data.cb = cb;
 	data.af = af;
 	data.dc = dc;
-        data.file = file;
+        data.replayGainScale = 1.0;
 
-        if(openInputStreamFromFile(&(data.inStream),file)<0) {
-                ERROR("unable to open flac: %s\n",file);
-                return;
+        if(openInputStreamFromFile(&(data.inStream),dc->file)<0) {
+                ERROR("unable to open flac: %s\n",dc->file);
+                return -1;
         }
 	
-	if(!(flacDec = FLAC__seekable_stream_decoder_new())) return;
+	if(!(flacDec = FLAC__seekable_stream_decoder_new())) return -1;
 	/*status&=FLAC__file_decoder_set_md5_checking(flacDec,1);*/
 	status&=FLAC__seekable_stream_decoder_set_read_callback(flacDec,
                         flacRead);
@@ -107,28 +106,37 @@ void flacPlayFile(char *file, OutputBuffer * cb, AudioFormat * af,
 	status&=FLAC__seekable_stream_decoder_set_client_data(flacDec,
                         (void *)&data);
 	if(!status) {
-		ERROR("flac problem before init(): %s\n",file);
+		ERROR("flac problem before init(): %s\n",dc->file);
 		flacPrintErroredState(
-                        FLAC__seekable_stream_decoder_get_state(flacDec),file);
+                        FLAC__seekable_stream_decoder_get_state(flacDec),
+                                        dc->file);
 		FLAC__seekable_stream_decoder_delete(flacDec);
-		return;
+		return -1;
 	}
+
 	if(FLAC__seekable_stream_decoder_init(flacDec)!=
 			FLAC__STREAM_DECODER_SEARCH_FOR_METADATA) 
 	{
-		ERROR("flac problem doing init(): %s\n",file);
+		ERROR("flac problem doing init(): %s\n",dc->file);
 		flacPrintErroredState(
-                        FLAC__seekable_stream_decoder_get_state(flacDec),file);
+                        FLAC__seekable_stream_decoder_get_state(flacDec),
+                                        dc->file);
 		FLAC__seekable_stream_decoder_delete(flacDec);
-		return;
+		return -1;
 	}
+
 	if(!FLAC__seekable_stream_decoder_process_until_end_of_metadata(flacDec)) {
-		ERROR("flac problem reading metadata: %s\n",file);
+		ERROR("flac problem reading metadata: %s\n", dc->file);
 		flacPrintErroredState(
-                        FLAC__seekable_stream_decoder_get_state(flacDec),file);
+                        FLAC__seekable_stream_decoder_get_state(flacDec), 
+                                        dc->file);
 		FLAC__seekable_stream_decoder_delete(flacDec);
-		return;
+		return -1;
 	}
+
+	dc->state = DECODE_STATE_DECODE;
+	dc->start = 0;
+
 	while(1) {
 		FLAC__seekable_stream_decoder_process_single(flacDec);
 		if(FLAC__seekable_stream_decoder_get_state(flacDec)!=
@@ -155,7 +163,8 @@ void flacPlayFile(char *file, OutputBuffer * cb, AudioFormat * af,
 	/*FLAC__file_decoder_process_until_end_of_file(flacDec);*/
 	if(!dc->stop) {
 		flacPrintErroredState(
-                        FLAC__seekable_stream_decoder_get_state(flacDec),file);
+                        FLAC__seekable_stream_decoder_get_state(flacDec), 
+                                        dc->file);
 		FLAC__seekable_stream_decoder_finish(flacDec);
 	}
 	FLAC__seekable_stream_decoder_delete(flacDec);
@@ -164,6 +173,16 @@ void flacPlayFile(char *file, OutputBuffer * cb, AudioFormat * af,
 		flacSendChunk(&data);
 		flushOutputBuffer(data.cb);
 	}
+
+	if(dc->seek) dc->seek = 0;
+	
+	if(dc->stop) {
+		dc->state = DECODE_STATE_STOP;
+		dc->stop = 0;
+	}
+	else dc->state = DECODE_STATE_STOP;
+
+	return 0;
 }
 
 FLAC__SeekableStreamDecoderReadStatus flacRead(
@@ -232,16 +251,16 @@ void flacError(const FLAC__SeekableStreamDecoder *dec,
 
 	switch(status) {
 	case FLAC__STREAM_DECODER_ERROR_STATUS_LOST_SYNC:
-		ERROR("flac lost sync: %s\n",data->file);
+		ERROR("flac lost sync: %s\n",data->dc->file);
 		break;
 	case FLAC__STREAM_DECODER_ERROR_STATUS_BAD_HEADER:
-		ERROR("bad header %s\n",data->file);
+		ERROR("bad header %s\n",data->dc->file);
 		break;
 	case FLAC__STREAM_DECODER_ERROR_STATUS_FRAME_CRC_MISMATCH:
-		ERROR("crc mismatch %s\n",data->file);
+		ERROR("crc mismatch %s\n",data->dc->file);
 		break;
 	default:
-		ERROR("unknow flac error %s\n",data->file);
+		ERROR("unknow flac error %s\n",data->dc->file);
 	}
 }
 
@@ -277,12 +296,83 @@ void flacPrintErroredState(FLAC__SeekableStreamDecoderState state,
 	}
 }
 
-void flacMetadata(const FLAC__SeekableStreamDecoder *dec, 
-                const FLAC__StreamMetadata *meta, void *data) 
+int flacFindVorbisCommentFloat(const FLAC__StreamMetadata * block, char * cmnt, 
+                float * fl)
 {
+        int offset = FLAC__metadata_object_vorbiscomment_find_entry_from(
+                        block,0,cmnt);
+
+        if(offset >= 0) {
+                int pos = strlen(cmnt)+1; /* 1 is for '=' */
+                int len = block->data.vorbis_comment.comments[offset].length
+                                -pos;
+                if(len > 0) {
+                        char * dup = malloc(len+1);
+                        memcpy(dup,&(block->data.vorbis_comment.comments[offset].entry[pos]),len);
+                        dup[len] = '\0';
+                        *fl = atof(dup);
+                        free(dup);
+                        return 1;
+                }
+        }
+
+        return 0;
+}
+
+/* replaygain stuff by AliasMrJones */
+void flacParseReplayGain(const FLAC__StreamMetadata *block, FlacData * data) {
+        int found;
+        float gain = 0.0;
+        float peak = 0.0;
+        int state = getReplayGainState();
+
+        if(state == REPLAYGAIN_OFF) return;
+
+        found = flacFindVorbisCommentFloat(block,"replaygain_album_gain",&gain);
+        if(found) {
+                flacFindVorbisCommentFloat(block,"replaygain_album_peak",
+                                &peak);
+        }
+
+        if(!found || state == REPLAYGAIN_TRACK) {
+                if(flacFindVorbisCommentFloat(block,"replaygain_track_gain",
+                                &gain))
+                {
+                        peak = 0.0;
+                        flacFindVorbisCommentFloat(block,
+                                        "replaygain_track_peak",&peak);
+                }
+        }
+
+        data->replayGainScale = computeReplayGainScale(gain,peak);
+}
+
+void flacMetadata(const FLAC__SeekableStreamDecoder *dec, 
+                const FLAC__StreamMetadata *block, void *vdata) 
+{
+	FlacData * data = (FlacData *)vdata;
+
+        switch(block->type) {
+        case FLAC__METADATA_TYPE_STREAMINFO:
+		data->af->bits = block->data.stream_info.bits_per_sample;
+		data->af->bits = 16;
+		data->af->sampleRate = block->data.stream_info.sample_rate;
+		data->af->channels = block->data.stream_info.channels;
+		data->cb->totalTime = 
+                                ((float)block->data.stream_info.total_samples)/
+			        data->af->sampleRate;
+                break;
+        case FLAC__METADATA_TYPE_VORBIS_COMMENT:
+                flacParseReplayGain(block,data);
+        default:
+                break;
+        }
 }
 
 int flacSendChunk(FlacData * data) {
+        doReplayGain(data->chunk,data->chunk_length,data->af,
+                        data->replayGainScale);
+
 	switch(sendDataToOutputBuffer(data->cb,data->dc,data->chunk,
 			data->chunk_length,data->time,data->bitRate)) 
 	{
@@ -341,70 +431,5 @@ FLAC__StreamDecoderWriteStatus flacWrite(const FLAC__SeekableStreamDecoder *dec,
 	return FLAC__STREAM_DECODER_WRITE_STATUS_CONTINUE;
 }
 
-int flac_getAudioFormatAndTime(char * file, AudioFormat * format, float * time) {
-	FLAC__Metadata_SimpleIterator * it;
-	FLAC__StreamMetadata * block = NULL;
-	int found = 0;
-	int ret = -1;
-
-	if(!(it = FLAC__metadata_simple_iterator_new())) return -1;
-        if(!FLAC__metadata_simple_iterator_init(it,file,1,0)) {
-                FLAC__metadata_simple_iterator_delete(it);
-	        return -1;
-	}
-
-        do {
-                if(block) FLAC__metadata_object_delete(block);
-                block = FLAC__metadata_simple_iterator_get_block(it);
-                if(block->type == FLAC__METADATA_TYPE_STREAMINFO) found=1;
-        } while(!found && FLAC__metadata_simple_iterator_next(it));
-
-	if(found) {
-		format->bits = block->data.stream_info.bits_per_sample;
-		format->bits = 16;
-		format->sampleRate = block->data.stream_info.sample_rate;
-		format->channels = block->data.stream_info.channels;
-		*time = ((float)block->data.stream_info.total_samples)/
-			format->sampleRate;
-		ret = 0;
-	}
-
-	if(block) FLAC__metadata_object_delete(block);
-	FLAC__metadata_simple_iterator_delete(it);
-
-	return ret;
-}
-
-int getFlacTotalTime(char * file) {
-	float totalTime;
-	AudioFormat af;
-
-	if(flac_getAudioFormatAndTime(file,&af,&totalTime)<0) return -1;
-
-	return (int)(totalTime+0.5);
-}
-
-int flac_decode(OutputBuffer * cb, AudioFormat * af, DecoderControl * dc) {
-	if(flac_getAudioFormatAndTime(dc->file,af,&(cb->totalTime))<0) {
-		ERROR("\"%s\" doesn't seem to be a flac\n",dc->file);
-		return -1;
-	}
-
-	dc->state = DECODE_STATE_DECODE;
-	dc->start = 0;
-
-	flacPlayFile(dc->file,cb,af,dc);
-
-	if(dc->seek) dc->seek = 0;
-	
-	if(dc->stop) {
-		dc->state = DECODE_STATE_STOP;
-		dc->stop = 0;
-	}
-	else dc->state = DECODE_STATE_STOP;
-
-	return 0;
-}
-
 #endif
-/* vim:set shiftwidth=4 tabstop=8 expandtab: */
+/* vim:set shiftwidth=8 tabstop=8 expandtab: */
