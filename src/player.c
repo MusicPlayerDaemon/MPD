@@ -112,7 +112,7 @@ int playerInit() {
 
 		setSigHandlersForDecoder();
 
-		while(close(listenSocket)<0 && errno==EINTR);
+		closeAllListenSockets();
 		freeAllInterfaces();
 		closeMp3Directory();
 		finishPlaylist();

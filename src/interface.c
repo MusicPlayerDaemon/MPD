@@ -337,8 +337,7 @@ void addInterfacesReadyToReadAndListenSocketToFdSet(fd_set * fds, int * fdmax) {
 	int i;
 
 	FD_ZERO(fds);
-	FD_SET(listenSocket,fds);
-	if(*fdmax<listenSocket) *fdmax = listenSocket;
+	addListenSocketsToFdSet(fds, fdmax);
 
 	for(i=0;i<interface_max_connections;i++) {
 		if(interfaces[i].open && !interfaces[i].expired && !interfaces[i].bufferList) {
@@ -396,7 +395,7 @@ int doIOForInterfaces() {
 	addInterfacesForBufferFlushToFdSet(&wfds,&fdmax);
 
 	while((selret = select(fdmax+1,&rfds,&wfds,NULL,&tv))) {
-		if(FD_ISSET(listenSocket,&rfds)) getConnections(listenSocket);
+		getConnections(&rfds);
 		if(selret<0 && errno==EINTR) break;
 		else if(selret<0) {
 			closeNextErroredInterface();

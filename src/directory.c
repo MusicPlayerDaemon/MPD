@@ -193,7 +193,7 @@ int updateInit(FILE * fp, List * pathList) {
 		unblockSignals();
 
 		finishSigHandlers();
-               	close(listenSocket);
+               	closeAllListenSockets();
                	freeAllInterfaces();
                	finishPlaylist();
 		finishVolume();

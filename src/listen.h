@@ -21,10 +21,20 @@
 
 #include "../config.h"
 
-extern int listenSocket;
+#include <sys/select.h>
+#include <sys/time.h>
+#include <sys/types.h>
+#include <unistd.h>
 
-int establish(unsigned short port);
+void establish(unsigned int port);
 
-void getConnections(int sock);
+void getConnections(fd_set * fds);
+
+int isAListenSocket(int sock);
+
+void closeAllListenSockets();
+
+/* fdmax should be initialized to something */
+void addListenSocketsToFdSet(fd_set * fds, int * fdmax);
 
 #endif

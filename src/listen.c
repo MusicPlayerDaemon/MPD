@@ -41,10 +41,10 @@
 
 #define ALLOW_REUSE		1
 
-int listenSocket;
+int * listenSockets = NULL;
+int numberOfListenSockets = 0;
 
-int establish(unsigned short port) {
-        ConfigParam * param;
+static int establishListen(unsigned int port, ConfigParam * param) {
 	int allowReuse = ALLOW_REUSE;
 	int sock;
 	struct sockaddr * addrp;
@@ -62,9 +62,8 @@ int establish(unsigned short port) {
 	sin.sin_port = htons(port);
 	sin.sin_family = AF_INET;
 
-        param = getConfigParam(CONF_BIND_TO_ADDRESS);
-	
-	if(!param || 0==strcmp(param->value, "any")==0) {
+	if(!param || 0==strcmp(param->value, "any")) {
+		DEBUG("binding to any address\n");
 #ifdef HAVE_IPV6
 		if(ipv6Supported()) {
 			sin6.sin6_addr = in6addr_any;
@@ -81,6 +80,7 @@ int establish(unsigned short port) {
 	}
 	else {
 		struct hostent * he;
+		DEBUG("binding to address for %s\n", param->value);
 		if(!(he = gethostbyname(param->value))) {
 			ERROR("can't lookup host \"%s\" at line %i\n",
                                         param->value, param->line);
@@ -129,53 +129,102 @@ int establish(unsigned short port) {
 		break;
 	default:
 		ERROR("unknown address family: %i\n",addrp->sa_family);
-		return -1;
+		exit(EXIT_FAILURE);
 	}
 
 	if((sock = socket(pf,SOCK_STREAM,0)) < 0) {
 		ERROR("socket < 0\n");
-		return -1;
+		exit(EXIT_FAILURE);
+	}
+
+	if(fcntl(sock, F_SETFL ,fcntl(sock, F_GETFL) | O_NONBLOCK) < 0) {
+		ERROR("problems setting nonblocking on listen socket: %s\n",
+				strerror(errno));
+		exit(EXIT_FAILURE);
 	}
 
 	if(setsockopt(sock,SOL_SOCKET,SO_REUSEADDR,(char *)&allowReuse,
 			sizeof(allowReuse))<0) 
 	{
-		close(sock);
 		ERROR("problems setsockopt'ing\n");
-		return -1;
+		exit(EXIT_FAILURE);
 	}
 
 	if(bind(sock,addrp,addrlen)<0) {
-		ERROR("unable to bind port %i, maybe MPD is still running?\n",
-				port);
-		close(sock);
-		return -1;
+		ERROR("unable to bind port %i: %s\n", port, strerror(errno));
+		ERROR("maybe MPD is still running?\n");
+		exit(EXIT_FAILURE);
 	}
 	
 	if(listen(sock,5)<0) {
-		close(sock);
-		ERROR("problems listen'ing\n");
-		return -1;
+		ERROR("problems listen'ing: %s\n", strerror(errno));
+		exit(EXIT_FAILURE);
 	}
 
 	return sock;
 }
 
-void getConnections(int sock) {
-	fd_set fdsr;
+void establish(unsigned int port) {
+	ConfigParam * param = getNextConfigParam(CONF_BIND_TO_ADDRESS, NULL);
+
+	do {
+		numberOfListenSockets++;
+		listenSockets = realloc(listenSockets,
+					sizeof(int)*numberOfListenSockets);
+
+		listenSockets[numberOfListenSockets-1] = 
+				establishListen(port, param);
+	} while ((param = getNextConfigParam(CONF_BIND_TO_ADDRESS, param)));
+}
+
+void addListenSocketsToFdSet(fd_set * fds, int * fdmax) {
+	int i;
+
+	for(i=0; i<numberOfListenSockets; i++) {
+		FD_SET(listenSockets[i], fds);
+		if(listenSockets[i] > *fdmax) *fdmax = listenSockets[i];
+	}
+}
+
+void closeAllListenSockets() {
+	int i;
+
+	DEBUG("closeAllListenSockets called\n");
+
+	for(i=0; i<numberOfListenSockets; i++) {
+		DEBUG("closing listen scoket %i\n", i);
+		while(close(listenSockets[i]) < 0 && errno==EINTR);
+	}
+
+	numberOfListenSockets = 0;
+	free(listenSockets);
+	listenSockets = NULL;
+}
+
+int isAListenSocket(int socket) {
+	int i;
+
+	for(i=0; listenSockets[i] != socket && i<numberOfListenSockets; i++);
+
+	return (i < numberOfListenSockets);
+}
+
+void getConnections(fd_set * fds) {
+	int i;
 	int fd = 0;
-	struct timeval tv;
 	struct sockaddr sockAddr;
 	socklen_t socklen = sizeof(sockAddr);
-	tv.tv_sec = tv.tv_usec = 0;
 
-	fflush(NULL);
-	FD_ZERO(&fdsr);
-	FD_SET(sock,&fdsr);
-
-	if(select(sock+1,&fdsr,NULL,NULL,&tv)==1 &&
-		((fd = accept(sock,&sockAddr,&socklen)) >= 0)) {
-		openAInterface(fd,&sockAddr);
+	for(i=0; i<numberOfListenSockets; i++) {
+		if(FD_ISSET(listenSockets[i], fds)) {
+			if((fd = accept(listenSockets[i], &sockAddr, &socklen)) 
+					>= 0) 
+			{
+				openAInterface(fd,&sockAddr);
+			}
+			else if(fd<0 && (errno!=EAGAIN && errno!=EINTR)) {
+				 ERROR("Problems accept()'ing\n");
+			}
+		}
 	}
-	else if(fd<0) ERROR("Problems accept()'ing\n");
 }

@@ -226,12 +226,7 @@ void establishListen(Options * options) {
                 exit(EXIT_FAILURE);
         }
 
-        if(options->createDB <= 0 && !options->updateDB &&
-			(listenSocket = establish(port))<0) 
-	{
-                ERROR("error binding port\n");
-                exit(EXIT_FAILURE);
-        }
+        if(options->createDB <= 0 && !options->updateDB) establish(port);
 }
 
 void changeToUser(Options * options) {
@@ -453,7 +448,7 @@ int main(int argc, char * argv[]) {
         playerKill();
 
         freeAllInterfaces();
-        close(listenSocket);
+	closeAllListenSockets();
         closeMp3Directory();
         closeTables();
         finishPlaylist();
