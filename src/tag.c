@@ -217,6 +217,113 @@ MpdTag * id3Dup(char * file) {
 	return ret;	
 }
 
+MpdTag * apeDup(char * file) {
+	MpdTag * ret = NULL;
+	FILE * fp = NULL;
+	int tagCount;
+	unsigned char * buffer = NULL;
+	unsigned char * p;
+	int tagLen;
+	int size;
+	unsigned long flags;
+	int i;
+	unsigned char * key;
+
+	struct {
+		unsigned char id[8];
+		unsigned char version[4];
+		unsigned char length[4];
+		unsigned char tagCount[4];
+		unsigned char flags[4];
+		unsigned char reserved[8];
+	} footer;
+
+	char * apeItems[7] =
+	{
+		"title",
+		"artist",
+		"album",
+		"comment",
+		"genre",
+		"track",
+		"year"
+	};
+
+	int tagItems[7] =
+	{
+		TAG_ITEM_TITLE,
+		TAG_ITEM_ARTIST,
+		TAG_ITEM_ALBUM,
+		TAG_ITEM_COMMENT,
+		TAG_ITEM_GENRE,
+		TAG_ITEM_TRACK,
+		TAG_ITEM_DATE,
+	};
+
+	fp = fopen(file, "r");
+	if(!fp) return NULL;
+
+	/* determine if file has an apeV2 tag */
+	if(fseek(fp, 0, SEEK_END)) goto fail;
+	size = ftell(fp);
+	if(fseek(fp, size-sizeof(footer), SEEK_SET)) goto fail;
+	if(fread(&footer, 1, sizeof(footer), fp) != sizeof(footer)) goto fail;
+	if(memcmp(footer.id, "APETAGEX", sizeof(footer.id)) != 0) goto fail;
+	if(readLEuint32(footer.version) != 2000) goto fail;
+
+	/* find begining of ape tag */
+	tagLen = readLEuint32(footer.length);
+	if(tagLen < sizeof(footer)) goto fail;
+	if(fseek(fp, size-tagLen, SEEK_SET)) goto fail;
+
+	/* read tag into buffer */
+	tagLen -= sizeof(footer);
+	buffer = malloc(tagLen);
+	if(fread(buffer, 1, tagLen, fp) != tagLen) goto fail;
+
+	/* read tags */
+	tagCount = readLEuint32(footer.tagCount);
+	p = buffer;
+	while(tagCount-- && tagLen > 10) {
+		size = readLEuint32(p);
+		p += 4;
+		tagLen -= 4;
+		flags = readLEuint32(p);
+		p += 4;
+		tagLen -= 4;
+
+		/* get the key */
+		key = p;
+		while(tagLen-size > 0 && *p != '\0') {
+			p++;
+			tagLen--;
+		}
+		p++;
+		tagLen--;
+
+		/* get the value */
+		if(tagLen-size < 0) goto fail;
+
+		/* we only care about utf-8 text tags */
+		if(!(flags & (0x3 << 1))) {
+			for(i = 0; i < 7; i++) {
+				if(strcasecmp(key, apeItems[i]) == 0) {
+					if(!ret) ret = newMpdTag();
+					addItemToMpdTagWithLen(
+						ret, tagItems[i], p, size);
+				}
+			}
+		}
+		p += size;
+		tagLen -= size;
+	}
+	
+fail:
+	if(fp) fclose(fp);
+	if(buffer) free(buffer);
+	return ret;
+}
+
 MpdTag * newMpdTag() {
 	MpdTag * ret = malloc(sizeof(MpdTag));
 	ret->items = NULL;

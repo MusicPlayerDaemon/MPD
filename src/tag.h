@@ -64,6 +64,8 @@ typedef struct _MpdTag {
 MpdTag * parseId3Tag(struct id3_tag *);
 #endif
 
+MpdTag * apeDup(char * file);
+
 MpdTag * id3Dup(char * file);
 
 MpdTag * newMpdTag();

@@ -35,4 +35,6 @@ int ipv6Supported();
 
 char * appendToString(char * dest, const char * src);
 
+unsigned long readLEuint32(const unsigned char * p);
+
 #endif

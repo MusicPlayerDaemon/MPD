@@ -47,7 +47,7 @@ static mpc_int32_t mpc_read_cb(void * vdata, void * ptr, mpc_int32_t size) {
         while(1) {
 	        ret = readFromInputStream(data->inStream, ptr, 1, size);
                 if(ret == 0 && !inputStreamAtEOF(data->inStream) && 
-                                !data->dc->stop) 
+                                (data->dc && !data->dc->stop)) 
                 {
                         my_usleep(10000);
                 }
@@ -272,17 +272,50 @@ static int mpc_decode(OutputBuffer * cb, DecoderControl * dc,
 	return 0;
 }
 
+static float mpcGetTime(char * file) {
+	InputStream inStream;
+	float time = -1;
+	
+	mpc_reader reader;
+	mpc_streaminfo info;
+	MpcCallbackData data;
+
+        data.inStream = &inStream;
+        data.dc = NULL;
+
+	reader.read = mpc_read_cb;
+	reader.seek = mpc_seek_cb;
+	reader.tell = mpc_tell_cb;
+	reader.get_size = mpc_getsize_cb;
+	reader.canseek = mpc_canseek_cb;
+	reader.data = &data;
+
+	mpc_streaminfo_init(&info);
+
+	if(openInputStream(&inStream, file) < 0) return -1;
+	
+	if(mpc_streaminfo_read(&info, &reader) != ERROR_CODE_OK) {
+		closeInputStream(&inStream);
+		return -1;
+	}
+
+	time = mpc_streaminfo_get_length(&info);
+
+	closeInputStream(&inStream);
+
+	return time;
+}
+
 static MpdTag * mpcTagDup(char * file) {
 	MpdTag * ret = NULL;
-	FILE * fp;
+	float time = mpcGetTime(file);
 
-	fp = fopen(file,"r"); 
-	if(!fp) return NULL;
+	if(time < 0) return NULL;
 
-	/* get tag info here */
-
+	ret = apeDup(file);
+	if(!ret) ret = id3Dup(file);
 	if(!ret) ret = newMpdTag();
-	ret->time = 0;
+	ret->time = time;
 
 	return ret;	
 }

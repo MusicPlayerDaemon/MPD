@@ -92,3 +92,11 @@ char * appendToString(char * dest, const char * src) {
                                                                                 
         return dest;
 }
+
+unsigned long readLEuint32(const unsigned char *p)
+{
+	return ((unsigned long) p[0] << 0) |
+        	((unsigned long) p[1] << 8) |
+        	((unsigned long) p[2] << 16) | ((unsigned long) p[3] << 24);
+}
+
