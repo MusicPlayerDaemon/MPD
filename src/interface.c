@@ -27,13 +27,14 @@
 #include "playlist.h"
 #include "permission.h"
 
-#include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include <sys/time.h>
-#include <sys/param.h>
 #include <sys/select.h>
+#include <sys/time.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <sys/param.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <string.h>

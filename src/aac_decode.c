@@ -371,7 +371,7 @@ int aac_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc) {
 			while(cb->begin==cb->end && cb->wrap &&
 					!dc->stop && !dc->seek)
 			{
-					usleep(10000);
+					my_usleep(10000);
 			}
 			if(dc->seek) {
 				dc->seekError = 1;

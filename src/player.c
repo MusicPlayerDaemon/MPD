@@ -134,7 +134,7 @@ int playerInit() {
 				pc->queueLockState = PLAYER_QUEUE_UNLOCKED;
 				pc->unlockQueue = 0;
 			}
-			else usleep(10000);
+			else my_usleep(10000);
 		}
 
 		exit(0);
@@ -206,7 +206,7 @@ int playerPlay(FILE * fp, char * utf8file) {
 		return -1;
 	}
 	
-	while(player_pid>0 && pc->play) usleep(1000);
+	while(player_pid>0 && pc->play) my_usleep(1000);
 	
 	return 0;
 }
@@ -216,7 +216,7 @@ int playerStop(FILE * fp) {
 
 	if(player_pid>0 && pc->state!=PLAYER_STATE_STOP) {
 		pc->stop = 1;
-		while(player_pid>0 && pc->stop) usleep(1000);
+		while(player_pid>0 && pc->stop) my_usleep(1000);
 	}
 
 	pc->queueState = PLAYER_QUEUE_BLANK;
@@ -242,7 +242,7 @@ int playerPause(FILE * fp) {
 
 	if(player_pid>0 && pc->state!=PLAYER_STATE_STOP) {
 		pc->pause = 1;
-		while(player_pid>0 && pc->pause) usleep(1000);
+		while(player_pid>0 && pc->pause) my_usleep(1000);
 	}
 
 	return 0;
@@ -361,7 +361,7 @@ void playerQueueLock() {
 	if(player_pid>0 && pc->queueLockState==PLAYER_QUEUE_UNLOCKED)
 	{
 		pc->lockQueue = 1;
-		while(player_pid>0 && pc->lockQueue) usleep(1000);
+		while(player_pid>0 && pc->lockQueue) my_usleep(1000);
 	}
 }
 
@@ -371,7 +371,7 @@ void playerQueueUnlock() {
 	if(player_pid>0 && pc->queueLockState==PLAYER_QUEUE_LOCKED)
 	{
 		pc->unlockQueue = 1;
-		while(player_pid>0 && pc->unlockQueue) usleep(1000);
+		while(player_pid>0 && pc->unlockQueue) my_usleep(1000);
 	}
 }
 
@@ -403,7 +403,7 @@ int playerSeek(FILE * fp, char * utf8file, float time) {
 	if(pc->error==PLAYER_ERROR_NOERROR) {
 		pc->seekWhere = time;
 		pc->seek = 1;
-		while(player_pid>0 && pc->seek) usleep(1000);
+		while(player_pid>0 && pc->seek) my_usleep(1000);
 	}
 
 	return 0;

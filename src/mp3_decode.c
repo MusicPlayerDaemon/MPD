@@ -407,7 +407,7 @@ int openMp3(char * file, mp3DecodeData * data) {
 
 int mp3ChildSendData(mp3DecodeData * data, Buffer * cb, DecoderControl * dc) {
 	while(cb->begin==cb->end && cb->wrap && !dc->stop && !dc->seek) 
-		usleep(10000);
+		my_usleep(10000);
 	if(dc->stop) return -1;
 	/* just for now, so it doesn't hang */
 	if(dc->seek) return 0;

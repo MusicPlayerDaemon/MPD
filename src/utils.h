@@ -29,4 +29,6 @@ char * strDupToUpper(char * str);
 
 void stripReturnChar(char * string);
 
+void my_usleep(long usec);
+
 #endif

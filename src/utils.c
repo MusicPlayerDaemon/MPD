@@ -18,8 +18,13 @@
 
 #include "utils.h"
 
+#include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <sys/select.h>
+#include <sys/time.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 char * myFgets(char * buffer, int bufferSize, FILE * fp) {
 	char * ret = fgets(buffer,bufferSize,fp);
@@ -42,4 +47,13 @@ void stripReturnChar(char * string) {
 	while(string && (string = strstr(string,"\n"))) {
 		*string = ' ';
 	}
+}
+
+void my_usleep(long usec) {
+	struct timeval tv;
+
+	tv.tv_sec = 0;
+	tv.tv_usec = usec;
+
+	select(0,NULL,NULL,NULL,&tv);
 }
