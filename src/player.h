@@ -51,13 +51,13 @@
 #define PLAYER_QUEUE_LOCKED	1
 
 typedef struct _PlayerControl {
-	mpd_sint8 decodeType;
+	mpd_sint8 volatile decodeType;
 	mpd_sint8 volatile stop;
 	mpd_sint8 volatile play;
 	mpd_sint8 volatile pause;
 	mpd_sint8 volatile state;
 	mpd_sint8 volatile closeAudio;
-	mpd_sint8 error;
+	mpd_sint8 volatile error;
 	mpd_uint16 bitRate;
 	mpd_sint8 bits;
 	mpd_sint8 channels;
@@ -72,7 +72,7 @@ typedef struct _PlayerControl {
 	mpd_sint8 volatile lockQueue;
 	mpd_sint8 volatile unlockQueue;
 	mpd_sint8 volatile seek;
-	double seekWhere;
+	double volatile seekWhere;
 	float crossFade;
 	mpd_uint16 softwareVolume;
 	double totalPlayTime;

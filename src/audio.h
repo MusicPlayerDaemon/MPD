@@ -28,9 +28,9 @@
 #define AUDIO_AO_DRIVER_DEFAULT	"default"
 
 typedef struct _AudioFormat {
-	mpd_sint8 channels;
-	mpd_uint32 sampleRate;
-	mpd_sint8 bits;
+	mpd_sint8 volatile channels;
+	mpd_uint32 volatile sampleRate;
+	mpd_sint8 volatile bits;
 } AudioFormat;
 
 void initAudioDriver();
