@@ -301,29 +301,42 @@ int getPlayerError() {
 }
 
 char * getPlayerErrorStr() {
-	static char error[2*MAXPATHLEN];
+	static char * error = NULL;
+	int errorlen = MAXPATHLEN+1024;
 	PlayerControl * pc = &(getPlayerData()->playerControl);
+
+	error = realloc(error,errorlen+1);
+	memset(error,0,errorlen+1);
 
 	switch(pc->error) {
 	case PLAYER_ERROR_FILENOTFOUND:
-		sprintf(error,"file \"%s\" does not exist or is inaccesible",
+		snprintf(error,errorlen,
+				"file \"%s\" does not exist or is inaccesible",
 				pc->erroredFile);
-		return error;
+		break;
 	case PLAYER_ERROR_FILE:
-		sprintf(error,"problems decoding \"%s\"",pc->erroredFile);
-		return error;
+		snprintf(error,errorlen,"problems decoding \"%s\"",
+				pc->erroredFile);
+		break;
 	case PLAYER_ERROR_AUDIO:
-		sprintf(error,"problems opening audio device");
-		return error;
+		snprintf(error,errorlen,"problems opening audio device");
+		break;
 	case PLAYER_ERROR_SYSTEM:
-		sprintf(error,"system error occured");
-		return error;
+		snprintf(error,errorlen,"system error occured");
+		break;
 	case PLAYER_ERROR_UNKTYPE:
-		sprintf(error,"file type  of \"%s\" is unknown",pc->erroredFile);
-		return error;
+		snprintf(error,errorlen,"file type  of \"%s\" is unknown",
+				pc->erroredFile);
 	default:
-		return NULL;
+		break;
 	}
+
+	errorlen = strlen(error);
+	error = realloc(error,errorlen+1);
+
+	if(errorlen) return error;
+
+	return NULL;
 }
 
 void playerCloseAudio() {

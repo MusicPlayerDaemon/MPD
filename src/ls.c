@@ -63,6 +63,7 @@ int lsPlaylists(FILE * fp, char * utf8path) {
 	}
 
 	s[MAXPATHLEN] = '\0';
+	/* this is safe, notice actlen > MAXPATHLEN-1 above */
 	strcpy(s,actualPath);
 	strcat(s,"/");
 
