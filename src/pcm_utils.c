@@ -224,7 +224,7 @@ void pcm_convertAudioFormat(AudioFormat * inFormat, char * inBuffer, size_t
 		mpd_sint16 * inptr = (mpd_sint16 *)dataChannelConv;
 		mpd_sint16 * outptr = (mpd_sint16 *)outBuffer;
 		mpd_uint32 nlen = (((dataChannelLen >> shift) * 
-				(mpd_uint32)(outFormat->sampleRate)) / 
+				(outFormat->sampleRate)) / 
 				inFormat->sampleRate);
 		nlen <<= shift;
 		in_samples = dataChannelLen >> shift;
