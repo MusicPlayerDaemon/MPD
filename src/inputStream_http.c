@@ -389,10 +389,12 @@ static int getHTTPHello(InputStream * inStream) {
                         DEBUG("stream audiocast-name: %s\n", data->icyName);
                 }
                 else if(0 == strncmp(cur, "\r\nContent-Type:", 15)) {
-                        char * temp = strstr(cur+15,"\r\n");
+                        int incr = 15;
+                        char * temp = strstr(cur+incr,"\r\n");
                         if(!temp) break;
                         *temp = '\0';
                         if(inStream->mime) free(inStream->mime);
+                        while(*(incr+cur) == ' ') incr++;
                         inStream->mime = strdup(cur+15);
                         *temp = '\r';
                 }

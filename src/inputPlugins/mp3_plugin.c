@@ -16,28 +16,27 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "mp3_decode.h"
+#include "../inputPlugin.h"
 
 #ifdef HAVE_MAD
 
-#include "pcm_utils.h"
+#include "../pcm_utils.h"
 #ifdef USE_MPD_MAD
-#include "libmad/mad.h"
+#include "../libmad/mad.h"
 #else
 #include <mad.h>
 #endif
 #ifdef HAVE_ID3TAG
 #ifdef USE_MPD_ID3TAG
-#include "libid3tag/id3tag.h"
+#include "../libid3tag/id3tag.h"
 #else
 #include <id3tag.h>
 #endif
 #endif
-#include "playerData.h"
-#include "log.h"
-#include "utils.h"
-#include "inputStream.h"
-#include "outputBuffer.h"
+#include "../log.h"
+#include "../utils.h"
+#include "../tag.h"
+#include "../path.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -419,10 +418,10 @@ int getMp3TotalTime(char * file) {
 }
 
 int openMp3FromInputStream(InputStream * inStream, mp3DecodeData * data,
-		DecoderControl * dc, int ignoreCrc) 
+		DecoderControl * dc) 
 {
 	initMp3DecodeData(data, inStream);
-        if(ignoreCrc) data->stream.options |= MAD_OPTION_IGNORECRC;
+        data->stream.options |= MAD_OPTION_IGNORECRC;
 	if(decodeFirstFrame(data, dc)<0) {
 		mp3DecodeDataFinalize(data);
 		return -1;
@@ -565,12 +564,10 @@ void initAudioFormatFromMp3DecodeData(mp3DecodeData * data, AudioFormat * af) {
 	af->channels = MAD_NCHANNELS(&(data->frame).header);
 }
 
-int mp3_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream,
-                int ignoreCrc) 
-{
+int mp3_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream) {
 	mp3DecodeData data;
 
-	if(openMp3FromInputStream(inStream, &data, dc, ignoreCrc) < 0) {
+	if(openMp3FromInputStream(inStream, &data, dc) < 0) {
                 closeInputStream(inStream);
 		if(!dc->stop) {
                         ERROR("Input does not appear to be a mp3 bit stream.\n");
@@ -616,5 +613,47 @@ int mp3_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream,
 	return 0;
 }
 
+MpdTag * mp3_tagDup(char * utf8file) {
+	MpdTag * ret = NULL;
+	int time;
+
+	ret = id3Dup(utf8file);
+
+	time = getMp3TotalTime(rmp2amp(utf8ToFsCharset(utf8file)));
+
+	if(time>=0) {
+		if(!ret) ret = newMpdTag();
+		ret->time = time;
+	}
+
+	if(ret) validateUtf8Tag(ret);
+
+	return ret;
+}
+
+char * mp3_suffixes[] = {"mp3", NULL};
+char * mp3_mimeTypes[] = {"audio/mpeg", NULL};
+
+InputPlugin mp3Plugin = 
+{
+	"mp3",
+	mp3_decode,
+	NULL,
+	mp3_tagDup,
+	INPUT_PLUGIN_STREAM_FILE | INPUT_PLUGIN_STREAM_URL,
+	mp3_suffixes,
+	mp3_mimeTypes
+};
+#else
+
+InputPlugin mp3Plugin = 
+{
+	NULL,
+	NULL,
+	NULL,
+	0,
+	NULL,
+	NULL
+};
+
 #endif
-/* vim:set shiftwidth=8 tabstop=8 expandtab: */

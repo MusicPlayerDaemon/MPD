@@ -216,27 +216,15 @@ int isDir(char * utf8name) {
 	return 0;
 }
 
-int isMusic(char * utf8file, time_t * mtime) {
+InputPlugin * isMusic(char * utf8file, time_t * mtime) {
+        InputPlugin * ret = NULL;
+        
 	if(isFile(utf8file,mtime)) {
-#ifdef HAVE_OGG
-		if(hasOggSuffix(utf8file)) return 1;
-#endif
-#ifdef HAVE_FLAC
-		if(hasFlacSuffix(utf8file)) return 1;
-#endif
-#ifdef HAVE_MAD
-		if(hasMp3Suffix(utf8file)) return 1;
-#endif
-#ifdef HAVE_AUDIOFILE
-		if(hasWaveSuffix(utf8file)) return 1;
-#endif
-#ifdef HAVE_FAAD
-		if(hasMp4Suffix(utf8file)) return 1;
-		if(hasAacSuffix(utf8file)) return 1;
-#endif
+                char * s = getSuffix(utf8file);
+                if(s) ret = getInputPluginFromSuffix(s);
 	}
 
-	return 0;
+	return ret;
 }
 
 /* vim:set shiftwidth=4 tabstop=8 expandtab: */

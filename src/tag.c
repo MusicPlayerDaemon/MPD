@@ -19,7 +19,6 @@
 #include "tag.h"
 #include "path.h"
 #include "myfprintf.h"
-#include "mp3_decode.h"
 #include "audiofile_decode.h"
 #include "mp4_decode.h"
 #include "aac_decode.h"
@@ -171,26 +170,6 @@ MpdTag * audiofileTagDup(char * utf8file) {
 }
 #endif
 
-#ifdef HAVE_MAD
-MpdTag * mp3TagDup(char * utf8file) {
-	MpdTag * ret = NULL;
-	int time;
-
-	ret = id3Dup(utf8file);
-
-	time = getMp3TotalTime(rmp2amp(utf8ToFsCharset(utf8file)));
-
-	if(time>=0) {
-		if(!ret) ret = newMpdTag();
-		ret->time = time;
-	}
-
-	if(ret) validateUtf8Tag(ret);
-
-	return ret;
-}
-#endif
-
 #ifdef HAVE_FAAD
 MpdTag * aacTagDup(char * utf8file) {
 	MpdTag * ret = NULL;
@@ -297,69 +276,6 @@ MpdTag * mp4TagDup(char * utf8file) {
 	if(ret) validateUtf8Tag(ret);
 
 	return ret;
-}
-#endif
-
-#ifdef HAVE_OGG
-MpdTag * oggTagDup(char * utf8file) {
-	MpdTag * ret = NULL;
-	FILE * fp;
-	OggVorbis_File vf;
-	char ** comments;
-	char * temp;
-	char * s1;
-	char * s2;
-
-	fp = fopen(rmp2amp(utf8ToFsCharset(utf8file)),"r"); 
-	if(!fp) return NULL;
-	if(ov_open(fp,&vf,NULL,0)<0) {
-		fclose(fp);
-		return NULL;
-	}
-
-	ret = newMpdTag();
-	ret->time = (int)(ov_time_total(&vf,-1)+0.5);
-
-	comments = ov_comment(&vf,-1)->user_comments;
-
-	while(*comments) {
-		temp = strdup(*comments);
-		++comments;
-		if(!(s1 = strtok(temp,"="))) continue;
-		s2 = strtok(NULL,"");
-		if(!s1 || !s2);
-		else if(0==strcasecmp(s1,"artist")) {
-			if(!ret->artist) {
-				stripReturnChar(s2);
-				ret->artist = strdup(s2);
-			}
-		}
-		else if(0==strcasecmp(s1,"title")) {
-			if(!ret->title) {
-				stripReturnChar(s2);
-				ret->title = strdup(s2);
-			}
-		}
-		else if(0==strcasecmp(s1,"album")) {
-			if(!ret->album) {
-				stripReturnChar(s2);
-				ret->album = strdup(s2);
-			}
-		}
-		else if(0==strcasecmp(s1,"tracknumber")) {
-			if(!ret->track) {
-				stripReturnChar(s2);
-				ret->track = strdup(s2);
-			}
-		}
-		free(temp);
-	}
-
-	ov_clear(&vf);
-
-	if(ret) validateUtf8Tag(ret);
-
-	return ret;	
 }
 #endif
 

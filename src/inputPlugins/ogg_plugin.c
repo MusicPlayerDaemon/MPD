@@ -16,18 +16,18 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "ogg_decode.h"
+#include "../inputPlugin.h"
 
 #ifdef HAVE_OGG
 
-#include "command.h"
-#include "utils.h"
-#include "audio.h"
-#include "log.h"
-#include "pcm_utils.h"
-#include "inputStream.h"
-#include "outputBuffer.h"
-#include "replayGain.h"
+#include "../command.h"
+#include "../utils.h"
+#include "../audio.h"
+#include "../log.h"
+#include "../pcm_utils.h"
+#include "../inputStream.h"
+#include "../outputBuffer.h"
+#include "../replayGain.h"
 
 #include <stdio.h>
 #include <unistd.h>
@@ -274,5 +274,91 @@ int ogg_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream)
 	return 0;
 }
 
+MpdTag * oggTagDup(char * utf8file) {
+	MpdTag * ret = NULL;
+	FILE * fp;
+	OggVorbis_File vf;
+	char ** comments;
+	char * temp;
+	char * s1;
+	char * s2;
+
+	fp = fopen(rmp2amp(utf8ToFsCharset(utf8file)),"r"); 
+	if(!fp) return NULL;
+	if(ov_open(fp,&vf,NULL,0)<0) {
+		fclose(fp);
+		return NULL;
+	}
+
+	ret = newMpdTag();
+	ret->time = (int)(ov_time_total(&vf,-1)+0.5);
+
+	comments = ov_comment(&vf,-1)->user_comments;
+
+	while(*comments) {
+		temp = strdup(*comments);
+		++comments;
+		if(!(s1 = strtok(temp,"="))) continue;
+		s2 = strtok(NULL,"");
+		if(!s1 || !s2);
+		else if(0==strcasecmp(s1,"artist")) {
+			if(!ret->artist) {
+				stripReturnChar(s2);
+				ret->artist = strdup(s2);
+			}
+		}
+		else if(0==strcasecmp(s1,"title")) {
+			if(!ret->title) {
+				stripReturnChar(s2);
+				ret->title = strdup(s2);
+			}
+		}
+		else if(0==strcasecmp(s1,"album")) {
+			if(!ret->album) {
+				stripReturnChar(s2);
+				ret->album = strdup(s2);
+			}
+		}
+		else if(0==strcasecmp(s1,"tracknumber")) {
+			if(!ret->track) {
+				stripReturnChar(s2);
+				ret->track = strdup(s2);
+			}
+		}
+		free(temp);
+	}
+
+	ov_clear(&vf);
+
+	if(ret) validateUtf8Tag(ret);
+
+	return ret;	
+}
+
+char * oggSuffixes[] = {"ogg", NULL};
+char * oggMimeTypes[] = {"application/ogg", NULL};
+
+InputPlugin oggPlugin =
+{
+        "ogg",
+        ogg_decode,
+        NULL,
+        oggTagDup,
+        INPUT_PLUGIN_STREAM_URL | INPUT_PLUGIN_STREAM_FILE,
+        oggSuffixes,
+        oggMimeTypes
+};
+
+#else
+
+InputPlugin oggPlugin = 
+{
+        NULL,
+        NULL,
+        NULL,
+        0,
+        NULL,
+        NULL
+};
+
 #endif
-/* vim:set shiftwidth=4 tabstop=8 expandtab: */

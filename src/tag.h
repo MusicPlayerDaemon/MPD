@@ -31,6 +31,8 @@ typedef struct _MpdTag {
 	int time;
 } MpdTag;
 
+MpdTag * id3Dup(char * utf8filename);
+
 MpdTag * newMpdTag();
 
 void freeMpdTag(MpdTag * tag);
@@ -60,6 +62,8 @@ MpdTag * audiofileTagDup(char * utf8file);
 void printMpdTag(FILE * fp, MpdTag * tag);
 
 MpdTag * mpdTagDup(MpdTag * tag);
+
+void validateUtf8Tag(MpdTag * tag);
 
 #endif
 /* vim:set shiftwidth=4 tabstop=8 expandtab: */

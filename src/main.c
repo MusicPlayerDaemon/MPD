@@ -33,6 +33,7 @@
 #include "log.h"
 #include "permission.h"
 #include "replayGain.h"
+#include "inputPlugin.h"
 #include "../config.h"
 
 #include <stdio.h>
@@ -327,6 +328,7 @@ int main(int argc, char * argv[]) {
 
         initTables();
         initPlaylist();
+        initInputPlugins();
 
         if(!options.dbFile) directory_db = strdup(rpp2app(".mpddb"));
         else directory_db = strdup(options.dbFile);
@@ -448,6 +450,7 @@ int main(int argc, char * argv[]) {
 	finishPaths();
 	finishPermissions();
         finishCommands();
+        finishInputPlugins();
 
         return EXIT_SUCCESS;
 }

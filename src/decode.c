@@ -28,23 +28,6 @@
 #include "sig_handlers.h"
 #include "ls.h"
 
-#ifdef HAVE_MAD
-#include "mp3_decode.h"
-#endif
-#ifdef HAVE_OGG
-#include "ogg_decode.h"
-#endif
-#ifdef HAVE_FLAC
-#include "flac_decode.h"
-#endif
-#ifdef HAVE_AUDIOFILE
-#include "audiofile_decode.h"
-#endif
-#ifdef HAVE_FAAD
-#include "mp4_decode.h"
-#include "aac_decode.h"
-#endif
-
 #include <signal.h>
 #include <sys/types.h>
 #include <sys/time.h>
@@ -255,8 +238,7 @@ int decodeSeek(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb,
 void decodeStart(PlayerControl * pc, OutputBuffer * cb, DecoderControl * dc) {
         int ret;
         InputStream inStream;
-        int suffix = pc->fileSuffix;
-        int decodeType = pc->decodeType;
+        InputPlugin * plugin;
 
         strncpy(dc->file,pc->file,MAXPATHLEN);
 	dc->file[MAXPATHLEN] = '\0';
@@ -282,67 +264,33 @@ void decodeStart(PlayerControl * pc, OutputBuffer * cb, DecoderControl * dc) {
                 return;
         }
 
-	switch(decodeType) {
-	case DECODE_TYPE_URL:
-#ifdef HAVE_OGG
-                if(suffix == DECODE_SUFFIX_OGG || (inStream.mime &&
-                                0 == strcmp(inStream.mime, "application/ogg")))
+        ret = DECODE_ERROR_UNKTYPE;
+	if(isRemoteUrl(pc->file)) {
+                plugin = getInputPluginFromMimeType(inStream.mime);
+                if(plugin == NULL) {
+                        plugin = getInputPluginFromSuffix(getSuffix(dc->file));
+                }
+                if(plugin && (plugin->streamTypes & INPUT_PLUGIN_STREAM_URL) &&
+                                plugin->streamDecodeFunc) 
                 {
-		        ret = ogg_decode(cb, dc, &inStream);
-		        break;
+                        ret = plugin->streamDecodeFunc(cb, dc, &inStream);
                 }
-#endif
-#ifdef HAVE_MAD
-                /*if(fileSuffix == DECODE_SUFFIX_MP3 || (inStream.mime &&
-                                0 == strcmp(inStream.mime, "audio/mpeg")))*/
-                {
-		        ret = mp3_decode(cb, dc, &inStream, 0);
-                        break;
-                }
-		ret = DECODE_ERROR_UNKTYPE;
-#endif
-        case DECODE_TYPE_FILE:
-#ifdef HAVE_MAD
-                if(suffix == DECODE_SUFFIX_MP3) {
-		        ret = mp3_decode(cb, dc, &inStream, 1);
-                        break;
-                }
-#endif
-#ifdef HAVE_OGG
-                if(suffix == DECODE_SUFFIX_OGG) {
-		        ret = ogg_decode(cb, dc, &inStream);
-		        break;
-                }
-#endif
-#ifdef HAVE_FAAD
-                if(suffix == DECODE_SUFFIX_AAC) {
-                        closeInputStream(&inStream);
-		        ret = aac_decode(cb,dc);
-		        break;
-                }
-                if(suffix == DECODE_SUFFIX_MP4) {
-                        closeInputStream(&inStream);
-		        ret = mp4_decode(cb,dc);
-		        break;
-                }
-#endif
-#ifdef HAVE_FLAC
-                if(suffix == DECODE_SUFFIX_FLAC) {
-                        closeInputStream(&inStream);
-		        ret = flac_decode(cb,dc);
-		        break;
-                }
-#endif
-#ifdef HAVE_AUDIOFILE
-                if(suffix == DECODE_SUFFIX_WAVE) {
-                        closeInputStream(&inStream);
-		        ret = audiofile_decode(cb,dc);
-		        break;
-                }
-#endif
-	default:
-		ret = DECODE_ERROR_UNKTYPE;
 	}
+        else {
+                plugin = getInputPluginFromSuffix(getSuffix(dc->file));
+                if(plugin && (plugin->streamTypes && INPUT_PLUGIN_STREAM_FILE))
+                {
+                        if(plugin->streamDecodeFunc) {
+                                ret = plugin->streamDecodeFunc(cb, dc, 
+                                                &inStream);
+                        }
+                        else if(plugin->fileDecodeFunc) {
+                                closeInputStream(&inStream);
+                                ret = plugin->fileDecodeFunc(cb, dc);
+                        }
+                }
+        }
+
 	if(ret<0 || ret == DECODE_ERROR_UNKTYPE) {
 		strncpy(pc->erroredFile, dc->file, MAXPATHLEN);
 		pc->erroredFile[MAXPATHLEN] = '\0';

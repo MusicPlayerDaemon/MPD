@@ -21,10 +21,14 @@
 
 #include "../config.h"
 
+#include "inputPlugin.h" 
+
 #include <stdio.h>
 #include <time.h>
 
 int lsPlaylists(FILE * fp, char * utf8path);
+
+char * getSuffix(char * utf8file);
 
 int isRemoteUrl(char * url);
 
@@ -34,19 +38,7 @@ int isDir(char * utf8name);
 
 int isPlaylist(char * utf8file);
 
-int isMusic(char * utf8file, time_t * mtime);
-
-int hasWaveSuffix(char * utf8file);
-
-int hasMp3Suffix(char * utf8file);
-
-int hasAacSuffix(char * utf8file);
-
-int hasMp4Suffix(char * utf8file);
-
-int hasOggSuffix(char * utf8file);
-
-int hasFlacSuffix(char * utf8file);
+InputPlugin * isMusic(char * utf8file, time_t * mtime);
 
 char * dupAndStripPlaylistSuffix(char * file);
 

@@ -23,13 +23,10 @@
 #include "utils.h"
 #include "tag.h"
 #include "log.h"
-#include "mp3_decode.h"
-#include "audiofile_decode.h"
-#include "ogg_decode.h"
-#include "flac_decode.h"
 #include "path.h"
 #include "playlist.h"
 #include "tables.h"
+#include "inputPlugin.h"
 
 #define SONG_KEY	"key: "
 #define SONG_FILE	"file: "
@@ -60,36 +57,10 @@ Song * newSong(char * utf8url, SONG_TYPE type) {
 	song->type = type;
 
 	if(song->type == SONG_TYPE_FILE) {
-		if(!isFile(utf8url,&(song->mtime)));
-#ifdef HAVE_OGG
-		else if(hasOggSuffix(utf8url)) {
-			song->tag = oggTagDup(utf8url);
-		}
-#endif
-#ifdef HAVE_FLAC
-		else if((hasFlacSuffix(utf8url))) {
-			song->tag = flacTagDup(utf8url);
-		}
-#endif
-#ifdef HAVE_MAD
-		else if(hasMp3Suffix(utf8url)) {
-			song->tag = mp3TagDup(utf8url);
-		}
-#endif
-#ifdef HAVE_AUDIOFILE
-		else if(hasWaveSuffix(utf8url)) {
-			song->tag = audiofileTagDup(utf8url);
-		}
-#endif
-#ifdef HAVE_FAAD
-		else if(hasAacSuffix(utf8url)) {
-			song->tag = aacTagDup(utf8url);
-		}
-		else if(hasMp4Suffix(utf8url)) {
-			song->tag = mp4TagDup(utf8url);
-		}
-#endif
-
+                InputPlugin * plugin;
+		if((plugin = isMusic(utf8url,&(song->mtime)))) {
+		        song->tag = plugin->tagDupFunc(utf8url);
+                }
 		if(!song->tag || song->tag->time<0) {
 			freeSong(song);
 			song = NULL;
@@ -288,41 +259,16 @@ int updateSongInfo(Song * song) {
 	char * utf8url = song->utf8url;
 
 	if(song->type == SONG_TYPE_FILE) {
+                InputPlugin * plugin;
+
 		removeASongFromTables(song);
 		if(song->tag) freeMpdTag(song->tag);
 
 		song->tag = NULL;
 
-		if(!isFile(utf8url,&(song->mtime)));
-#ifdef HAVE_OGG
-		else if(hasOggSuffix(utf8url)) {
-			song->tag = oggTagDup(utf8url);
-		}
-#endif
-#ifdef HAVE_FLAC
-		else if((hasFlacSuffix(utf8url))) {
-			song->tag = flacTagDup(utf8url);
-		}
-#endif
-#ifdef HAVE_MAD
-		else if(hasMp3Suffix(utf8url)) {
-			song->tag = mp3TagDup(utf8url);
-		}
-#endif
-#ifdef HAVE_AUDIOFILE
-		else if(hasWaveSuffix(utf8url)) {
-			song->tag = audiofileTagDup(utf8url);
-		}
-#endif
-#ifdef HAVE_FAAD
-		else if(hasAacSuffix(utf8url)) {
-			song->tag = aacTagDup(utf8url);
-		}
-		else if(hasMp4Suffix(utf8url)) {
-			song->tag = mp4TagDup(utf8url);
-		}
-#endif
-
+		if((plugin = isMusic(utf8url,&(song->mtime)))) {
+                        song->tag = plugin->tagDupFunc(utf8url);
+                }
 		if(!song->tag || song->tag->time<0) return -1;
 		else addSongToTables(song);
 	}

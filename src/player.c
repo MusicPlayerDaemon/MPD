@@ -117,7 +117,6 @@ int playerInit() {
 		closeMp3Directory();
 		finishPlaylist();
 		closeTables();
-		finishPaths();
 		finishPermissions();
 		finishCommands();
 		finishVolume();
@@ -160,35 +159,8 @@ int playerInit() {
 	return 0;
 }
 
-int playerGetDecodeType(char * utf8file) {
-	if(isRemoteUrl(utf8file)) return DECODE_TYPE_URL;
-	if(isFile(utf8file,NULL)) return DECODE_TYPE_FILE;
-	return -1;
-}
-
-int playerGetSuffix(char * utf8file) {
-#ifdef HAVE_MAD
-        if(hasMp3Suffix(utf8file)) return DECODE_SUFFIX_MP3;
-#endif
-#ifdef HAVE_OGG
-        if(hasOggSuffix(utf8file)) return DECODE_SUFFIX_OGG;
-#endif
-#ifdef HAVE_FAAD
-        if(hasAacSuffix(utf8file)) return DECODE_SUFFIX_AAC;
-        if(hasMp4Suffix(utf8file)) return DECODE_SUFFIX_MP4;
-#endif
-#ifdef HAVE_FLAC
-        if(hasFlacSuffix(utf8file)) return DECODE_SUFFIX_FLAC;
-#endif
-#ifdef HAVE_AUDIOFILE
-        if(hasWaveSuffix(utf8file)) return DECODE_SUFFIX_WAVE;
-#endif
-        return -1;
-}
-
 int playerPlay(FILE * fp, Song * song) {
 	PlayerControl * pc = &(getPlayerData()->playerControl);
-	int decodeType;
 
 	if(fp==NULL) fp = stderr;
 
@@ -204,15 +176,6 @@ int playerPlay(FILE * fp, Song * song) {
 		}
 	}*/
 	
-	decodeType = playerGetDecodeType(song->utf8url);
-	if(decodeType < 0) {
-		strncpy(pc->erroredFile,pc->file,MAXPATHLEN);
-		pc->erroredFile[MAXPATHLEN] = '\0';
-		pc->error = PLAYER_ERROR_UNKTYPE;
-		return 0;
-	}
-	pc->decodeType = decodeType;
-        pc->fileSuffix = playerGetSuffix(song->utf8url);
         if(song->tag) pc->fileTime = song->tag->time;
         else pc->fileTime = 0;
 
@@ -362,7 +325,6 @@ void playerCloseAudio() {
 
 int queueSong(Song * song) {
 	PlayerControl * pc = &(getPlayerData()->playerControl);
-	int decodeType;
 
 	if(pc->queueState==PLAYER_QUEUE_BLANK) {
                 if(isRemoteUrl(song->utf8url)) {
@@ -372,10 +334,6 @@ int queueSong(Song * song) {
                                 MAXPATHLEN);
 		pc->file[MAXPATHLEN] = '\0';
 
-		decodeType = playerGetDecodeType(song->utf8url);
-		if(decodeType < 0) return -1;
-		pc->decodeType = decodeType;
-                pc->fileSuffix = playerGetSuffix(song->utf8url);
                 if(song->tag) pc->fileTime = song->tag->time;
                 else pc->fileTime = 0;
 
@@ -421,7 +379,6 @@ void playerQueueUnlock() {
 int playerSeek(FILE * fp, Song * song, float time) {
 	PlayerControl * pc = &(getPlayerData()->playerControl);
 	char * file;
-	int decodeType;
 
 	if(pc->state==PLAYER_STATE_STOP) {
 		myfprintf(fp,"%s player not currently playing\n",
@@ -432,16 +389,6 @@ int playerSeek(FILE * fp, Song * song, float time) {
 	if(isRemoteUrl(song->utf8url)) file = song->utf8url;
         else file = rmp2amp(utf8ToFsCharset(song->utf8url));
 	if(strcmp(pc->file,file)!=0) {
-		decodeType = playerGetDecodeType(song->utf8url);
-		if(decodeType < 0) {
-			myfprintf(fp,"%s unknown file type: %s\n",
-				COMMAND_RESPOND_ERROR, song->utf8url);
-			ERROR("playerSeek: unknown file type: %s\n", 
-                                        song->utf8url);
-			return -1;
-		}
-		pc->decodeType = decodeType;
-                pc->fileSuffix = playerGetSuffix(song->utf8url);
                 if(song->tag) pc->fileTime = song->tag->time;
                 else pc->fileTime = 0;
 
