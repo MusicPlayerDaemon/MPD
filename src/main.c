@@ -230,9 +230,6 @@ void establishListen(Options * options) {
 void changeToUser(Options * options) {
         if (options->usr && strlen(options->usr)) {
                 int uid, gid;
-#ifdef _BSD_SOURCE
-                gid_t gid_list[NGROUPS_MAX];
-#endif
 
                 /* get uid */
                 struct passwd * userpwd;
@@ -257,18 +254,6 @@ void changeToUser(Options * options) {
                         ERROR("cannot init suplementary groups "
                                         "of user %s: %s\n", options->usr, 
                                         strerror(errno));
-                }
-                else if(getgroups(NGROUPS_MAX, gid_list) == -1) {
-                        ERROR("cannot get groups "
-                                        "of user %s: %s\n", options->usr, 
-                                        strerror(errno));
-                        exit(EXIT_FAILURE);
-                }
-                else if(setgroups(NGROUPS_MAX, gid_list) == -1) {
-                        ERROR("cannot set groups "
-                                        "of user %s: %s\n", options->usr, 
-                                        strerror(errno));
-                        exit(EXIT_FAILURE);
                 }
 #endif
 
