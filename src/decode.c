@@ -161,16 +161,16 @@ int waitOnDecode(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb,
 }
 
 int decodeSeek(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb,
-                int * decodeWaitedOn) 
+                int * decodeWaitedOn, int * next) 
 {
         int ret = -1;
 
 	if(decode_pid && *decode_pid>0) {
-		cb->next = -1;
 		if(dc->state==DECODE_STATE_STOP || dc->error || 
 				strcmp(dc->utf8url, pc->utf8url)!=0) 
 		{
 			stopDecode(dc);
+			*next = -1;
 			cb->begin = 0;
 			cb->end = 0;
 			dc->error = 0;
@@ -180,6 +180,7 @@ int decodeSeek(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb,
 		if(*decode_pid>0 && dc->state!=DECODE_STATE_STOP && 
                                 dc->seekable) 
                 {
+			*next = -1;
 			dc->seekWhere = pc->seekWhere > pc->totalTime-0.1 ?
 						pc->totalTime-0.1 : 
 						pc->seekWhere;
@@ -230,7 +231,7 @@ int decodeSeek(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb,
 		if(pause) closeAudioDevice(); \
 	} \
 	if(pc->seek) { \
-		if(decodeSeek(pc,dc,cb,&decodeWaitedOn) == 0) { \
+		if(decodeSeek(pc,dc,cb,&decodeWaitedOn,&next) == 0) { \
 		        doCrossFade = 0; \
 		        nextChunk =  -1; \
                         bbp = 0; \
@@ -445,6 +446,8 @@ void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb) {
 	int previousMetadataChunk = -1;
 	MetadataChunk currentMetadataChunk;
 	int currentChunkSent = 1;
+	int end;
+	int next = -1;
 
 	memset(silence,0,CHUNK_SIZE);
 
@@ -472,12 +475,12 @@ void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb) {
 			pc->queueState==PLAYER_QUEUE_FULL &&
 			pc->queueLockState==PLAYER_QUEUE_UNLOCKED) 
 		{
-			cb->next = cb->end;
+			next = cb->end;
 			dc->start = 1;
 			pc->queueState = PLAYER_QUEUE_DECODE;
 			kill(getppid(),SIGUSR1);
 		}
-		if(cb->next>=0 && doCrossFade==0 && !dc->start) {
+		if(next>=0 && doCrossFade==0 && !dc->start) {
 			nextChunk = -1;
 			if(isCurrentAudioFormat(&(cb->audioFormat))) {
 				doCrossFade = 1;
@@ -492,21 +495,26 @@ void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb) {
 			}
 			else doCrossFade = -1;
 		}
+
+		/* copy thse to locale variables to prevent any potential
+			race conditions and weirdness */
+		end = cb->end;
+
 		if(pause) my_usleep(10000);
-		else if(cb->begin!=cb->end && cb->begin!=cb->next) {
-			if(doCrossFade==1 && cb->next>=0 &&
-					((cb->next>cb->begin && 
-					(fadePosition=cb->next-cb->begin)
+		else if(cb->begin!=end && cb->begin!=next) {
+			if(doCrossFade==1 && next>=0 &&
+					((next>cb->begin && 
+					(fadePosition=next-cb->begin)
 					<=crossFadeChunks) || 
-					(cb->begin>cb->next &&
-					(fadePosition=cb->next-cb->begin+
+					(cb->begin>next &&
+					(fadePosition=next-cb->begin+
 					buffered_chunks)<=crossFadeChunks)))
 			{
 				if(nextChunk<0) {
 					crossFadeChunks = fadePosition;
 				}
-				test = cb->end;
-				if(cb->end < cb->begin) test+=buffered_chunks;
+				test = end;
+				if(end < cb->begin) test+=buffered_chunks;
 				nextChunk = cb->begin+crossFadeChunks;
 				if(nextChunk<test) {
 					if(nextChunk>=buffered_chunks)
@@ -558,11 +566,11 @@ void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb) {
 				cb->begin = 0;
 			}
 		}
-		else if(cb->next==cb->begin) {
+		else if(next==cb->begin) {
 			if(doCrossFade==1 && nextChunk>=0) {
 				nextChunk = cb->begin+crossFadeChunks;
 				test = cb->end;
-				if(cb->end < cb->begin) test+=buffered_chunks;
+				if(end < cb->begin) test+=buffered_chunks;
 				if(nextChunk<test) {
 					if(nextChunk>=buffered_chunks)
 					{
@@ -590,7 +598,7 @@ void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb) {
 				break;
 			}
 			else {
-				cb->next = -1;
+				next = -1;
 				if(waitOnDecode(pc,dc,cb,&decodeWaitedOn)<0) {
                                         return;
                                 }
@@ -633,7 +641,6 @@ void decode() {
 	pc = &(getPlayerData()->playerControl);
 	dc = &(getPlayerData()->decoderControl);
 	dc->error = 0;
-	cb->next = -1;
         dc->seek = 0;
         dc->stop = 0;
 	dc->start = 1;

@@ -37,7 +37,6 @@ typedef struct _OutputBuffer {
 	float * volatile times;
 	mpd_sint16 volatile begin;
 	mpd_sint16 volatile end;
-	mpd_sint16 volatile next;
         AudioFormat audioFormat;
 	MetadataChunk metadataChunks[BUFFERED_METACHUNKS];
 	mpd_sint8 metaChunkSet[BUFFERED_METACHUNKS];
