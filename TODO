@@ -24,6 +24,8 @@
 	*) flush buffer on clearEncoder, it produces a little hiccup currently
 	*) cleanup configure script stuff (shout needs vorbisenc)
 
+*) Make each audioOutput device enable/disable by the client
+
 *) add command
 	*) command that takes file/url's (no directory's) and returns the songid
 	*) allow to specify position in playlist where to insert song(s)
