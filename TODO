@@ -28,8 +28,9 @@
 
 *) add command for inserting songs in a specific position
 
-*) put more debugging info when failing to read/write db and other similar 
-	errors
+*) put more debugging info for:
+	*) failing to read/write db 
+	*) stat'ing errors for music and playlist directory
 
 *) make libao optional during configure, but check that some form of audioOutput
 	is enabled (either oss, shout, or ao)
