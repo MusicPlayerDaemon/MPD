@@ -1090,7 +1090,9 @@ int moveSongInPlaylistById(FILE * fp, int id1, int to) {
 void orderPlaylist() {
 	int i;
 
-	playlist.current = playlist.order[playlist.current];
+	if(playlist.current >= 0 && playlist.current < playlist.length) {
+		playlist.current = playlist.order[playlist.current];
+	}
 
 	if(playlist_state==PLAYLIST_STATE_PLAY) {
 		if(playlist.queued>=0) {
