@@ -315,7 +315,7 @@ char * getSongUrl(Song * song) {
 		return NULL;
 	}
 
-	if(!song->parentDir || !song->parentDir->name) return song->url;
+	if(!song->parentDir || !song->parentDir->path) return song->url;
 
 	/* be careful with this!*/
 	if(song == lastSong) return buffer;
