@@ -127,7 +127,7 @@ int playerInit() {
 			else if(pc->stop) pc->stop = 0;
 			else if(pc->pause) pc->pause = 0;
 			else if(pc->closeAudio) {
-				finishAudio();
+				closeAudioDevice();
 				pc->closeAudio = 0;
 				kill(getppid(),SIGUSR1);
 			}

@@ -33,15 +33,21 @@ typedef struct _AudioFormat {
 	volatile mpd_sint8 bits;
 } AudioFormat;
 
+void getOutputAudioFormat(AudioFormat * inFormat, AudioFormat * outFormat);
+
+void initAudioConfig();
+
+void finishAudioConfig();
+
 void initAudioDriver();
 
 void finishAudioDriver();
 
-int initAudio(AudioFormat * audioFormat);
+int openAudioDevice(AudioFormat * audioFormat);
 
 int playAudio(char * playChunk,int size);
 
-void finishAudio();
+void closeAudioDevice();
 
 void audioError();
 

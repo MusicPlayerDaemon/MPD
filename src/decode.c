@@ -124,7 +124,7 @@ int waitOnDecode(PlayerControl * pc, AudioFormat * af, DecoderControl * dc,
 		return -1;
 	}
 
-	if(initAudio(af)<0) {
+	if(openAudioDevice(af)<0) {
 		strncpy(pc->erroredFile,pc->file,MAXPATHLEN);
 		pc->erroredFile[MAXPATHLEN] = '\0';
 		pc->error = PLAYER_ERROR_AUDIO;
@@ -190,7 +190,7 @@ void decodeSeek(PlayerControl * pc, AudioFormat * af, DecoderControl * dc,
 		pause = !pause; \
 		if(pause) pc->state = PLAYER_STATE_PAUSE; \
 		else { \
-			if(initAudio(NULL)<0) { \
+			if(openAudioDevice(NULL)<0) { \
 				strncpy(pc->erroredFile,pc->file,MAXPATHLEN); \
 				pc->erroredFile[MAXPATHLEN] = '\0'; \
 				pc->error = PLAYER_ERROR_AUDIO; \
@@ -201,7 +201,7 @@ void decodeSeek(PlayerControl * pc, AudioFormat * af, DecoderControl * dc,
 		} \
 		pc->pause = 0; \
 		kill(getppid(),SIGUSR1); \
-		if(pause) finishAudio(); \
+		if(pause) closeAudioDevice(); \
 	} \
 	if(pc->seek) { \
 		pc->totalPlayTime+= pc->elapsedTime-pc->beginTime; \

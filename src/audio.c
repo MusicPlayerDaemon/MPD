@@ -28,14 +28,22 @@
 #ifdef HAVE_AUDIO
 #include <ao/ao.h>
 
-int audio_write_size;
+static int audio_write_size;
 
-int audio_ao_driver_id;
-ao_option * audio_ao_options;
+static int audio_ao_driver_id;
+static ao_option * audio_ao_options;
 
-AudioFormat audio_format;
-ao_device * audio_device = NULL;
+static AudioFormat audio_format;
+static ao_device * audio_device = NULL;
 #endif
+
+static AudioFormat * audio_configFormat = NULL;
+
+static void copyAudioFormat(AudioFormat * dest, AudioFormat * src) {
+        dest->sampleRate = src->sampleRate;
+        dest->bits = src->bits;
+        dest->channels = src->channels;
+}
 
 void initAudioDriver() {
 #ifdef HAVE_AUDIO
@@ -115,6 +123,81 @@ void initAudioDriver() {
 #endif
 }
 
+void getOutputAudioFormat(AudioFormat * inAudioFormat, 
+                AudioFormat * outAudioFormat)
+{
+        if(audio_configFormat) {
+                copyAudioFormat(outAudioFormat,audio_configFormat);
+        }
+        else copyAudioFormat(outAudioFormat,inAudioFormat);
+}
+
+void initAudioConfig() {
+        char * conf = getConf()[CONF_AUDIO_OUTPUT_FORMAT];
+        char * test;
+
+        if(NULL == conf) return;
+
+        audio_configFormat = malloc(sizeof(AudioFormat));
+
+        memset(audio_configFormat,0,sizeof(AudioFormat));
+
+        audio_configFormat->sampleRate = strtol(conf,&test,10);
+       
+        if(*test!=':') {
+                ERROR("error parsing audio output format: %s\n",conf);
+                exit(EXIT_FAILURE);
+        }
+ 
+        switch(audio_configFormat->sampleRate) {
+        case 48000:
+        case 44100:
+                break;
+        default:
+                ERROR("sample rate %i can not be used for audio output\n",
+                        (int)audio_configFormat->sampleRate);
+                exit(EXIT_FAILURE);
+        }
+
+        audio_configFormat->bits = strtol(test,&test,10);
+        
+        if(*test!=':') {
+                ERROR("error parsing audio output format: %s\n",conf);
+                exit(EXIT_FAILURE);
+        }
+
+        switch(audio_configFormat->bits) {
+        case 8:
+        case 16:
+                break;
+        default:
+                ERROR("bits %i can not be used for audio output\n",
+                        (int)audio_configFormat->bits);
+                exit(EXIT_FAILURE);
+        }
+
+        audio_configFormat->channels = strtol(test,&test,10);
+        
+        if(*test!='\0') {
+                ERROR("error parsing audio output format: %s\n",conf);
+                exit(EXIT_FAILURE);
+        }
+
+        switch(audio_configFormat->channels) {
+        case 1:
+        case 2:
+                break;
+        default:
+                ERROR("channels %i can not be used for audio output\n",
+                        (int)audio_configFormat->channels);
+                exit(EXIT_FAILURE);
+        }
+}
+
+void finishAudioConfig() {
+        if(audio_configFormat) free(audio_configFormat);
+}
+
 void finishAudioDriver() {
 #ifdef HAVE_AUDIO
 	ao_free_options(audio_ao_options);
@@ -137,19 +220,17 @@ int isCurrentAudioFormat(AudioFormat * audioFormat) {
 	return 1;
 }
 
-int initAudio(AudioFormat * audioFormat) {
+int openAudioDevice(AudioFormat * audioFormat) {
 #ifdef HAVE_AUDIO
 	ao_sample_format format;
 
 	if(audio_device && !isCurrentAudioFormat(audioFormat)) {
-		finishAudio();
+		closeAudioDevice();
 	}
 
 	if(!audio_device) {
 		if(audioFormat) {
-			audio_format.bits = audioFormat->bits;
-			audio_format.sampleRate = audioFormat->sampleRate;
-			audio_format.channels = audioFormat->channels;
+                        copyAudioFormat(&audio_format,audioFormat);
 		}
 
 		format.bits = audio_format.bits;
@@ -184,7 +265,7 @@ int playAudio(char * playChunk, int size) {
 		if(ao_play(audio_device,playChunk,send)==0) {
 			audioError();
 			ERROR("closing audio device due to write error\n");
-			finishAudio();
+			closeAudioDevice();
 			return -1;
 		}
 
@@ -196,7 +277,7 @@ int playAudio(char * playChunk, int size) {
 	return 0;
 }
 
-void finishAudio() {
+void closeAudioDevice() {
 #ifdef HAVE_AUDIO
 	if(audio_device) {
 		blockSignals();

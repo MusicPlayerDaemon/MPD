@@ -353,6 +353,7 @@ int main(int argc, char * argv[]) {
 	}
 
         initCommands();
+        initAudioConfig();
         initAudioDriver();
         initPlayerData();
         initVolume();
@@ -443,6 +444,7 @@ int main(int argc, char * argv[]) {
         finishPlaylist();
         freePlayerData();
         finishAudioDriver();
+        finishAudioConfig();
         finishVolume();
 	finishPaths();
 	finishPermissions();

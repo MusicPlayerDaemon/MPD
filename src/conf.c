@@ -37,7 +37,7 @@
 
 #define CONF_COMMENT	'#'
 
-#define CONF_NUMBER_OF_PARAMS		28
+#define CONF_NUMBER_OF_PARAMS		29
 #define CONF_NUMBER_OF_PATHS		6
 #define CONF_NUMBER_OF_REQUIRED		5
 #define CONF_NUMBER_OF_ALLOW_CATS	1
@@ -124,7 +124,8 @@ char ** readConf(char * file) {
 		"password",
 		"default_permissions",
 		"buffer_size",
-                "replaygain"
+                "replaygain",
+                "audio_output_format"
 	};
 
 	int conf_absolutePaths[CONF_NUMBER_OF_PATHS] = {
