@@ -175,7 +175,7 @@ void finishAudioDriver() {
 }
 
 int isCurrentAudioFormat(AudioFormat * audioFormat) {
-	if(!audioFormat) return 0;
+	if(!audioFormat) return 1;
 
 	if(memcmp(audioFormat,&audio_format,sizeof(AudioFormat)) != 0) return 0;
 
@@ -195,12 +195,9 @@ int openAudioDevice(AudioFormat * audioFormat) {
 
 	for(i = 0; i < audioOutputArraySize; i++) {
 		if(!audioOutputArray[i]->open || !isCurrentFormat) {
-			if(0 == openAudioOutput(audioOutputArray[i], 
-					&audio_format)) 
-			{
-				ret = 0;
-			}
+			openAudioOutput(audioOutputArray[i], &audio_format);
 		}
+		if(audioOutputArray[i]->open) ret = 0;
 	}
 
 	return ret;
