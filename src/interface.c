@@ -524,9 +524,17 @@ void closeOldInterfaces() {
 	int i;
 
 	for(i=0;i<interface_max_connections;i++) {
-		if(interfaces[i].open && (interfaces[i].expired || (time(NULL)-interfaces[i].lastTime>interface_timeout))) {
-			DEBUG("interface %i: timeout\n",i);
-			closeInterface(&(interfaces[i]));
+		if(interfaces[i].open) {
+			if(interfaces[i].expired) {
+				DEBUG("interface %i: expired\n",i);
+				closeInterface(&(interfaces[i]));
+			}
+			else if(time(NULL)-interfaces[i].lastTime > 
+					interface_timeout) 
+			{
+				DEBUG("interface %i: timeout\n",i);
+				closeInterface(&(interfaces[i]));
+			}
 		}
 	}
 }
@@ -629,15 +637,11 @@ void printInterfaceOutBuffer(Interface * interface) {
 	char * buffer;
 	int ret;
 
-	DEBUG("enter print interface out buffer\n");
-
 	if(!interface->open || interface->expired || !interface->outBuflen) {
-		DEBUG("nothing todo, leaving\n");
 		return;
 	}
 
 	if(interface->bufferList) {
-		DEBUG("we have a bufferList\n");
 		interface->outputBufferSize+=sizeof(ListNode);
 		interface->outputBufferSize+=interface->outBuflen+1;
 		if(interface->outputBufferSize>
@@ -662,12 +666,9 @@ void printInterfaceOutBuffer(Interface * interface) {
 		}
 	}
 	else {
-		DEBUG("no bufferList, just generic buffer\n");
-		DEBUG("attempting to write\n");
 		if((ret = write(interface->fd,interface->outBuffer,
 				interface->outBuflen))<0) 
 		{
-			DEBUG("write unsuccessful\n");
 			if(errno==EAGAIN || errno==EINTR) {
 				buffer = malloc(interface->outBuflen+1);
 				memcpy(buffer,interface->outBuffer,
@@ -685,7 +686,6 @@ void printInterfaceOutBuffer(Interface * interface) {
 			}
 		}
 		else if(ret<interface->outBuflen) {
-			DEBUG("returned less than outBufLen\n");
 			buffer = malloc(interface->outBuflen-ret+1);
 			memcpy(buffer,interface->outBuffer+ret,
 					interface->outBuflen-ret);
@@ -702,10 +702,7 @@ void printInterfaceOutBuffer(Interface * interface) {
 					(char *)interface->bufferList->
 					firstNode->data)+1;
 		}
-		DEBUG("done writing\n");
 	}
 
 	interface->outBuflen = 0;
-
-	DEBUG("leaving print interface out buffer\n");
 }
