@@ -20,7 +20,6 @@
 
 #ifdef HAVE_OGG
 
-#include "../command.h"
 #include "../utils.h"
 #include "../audio.h"
 #include "../log.h"
