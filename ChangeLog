@@ -1,3 +1,10 @@
+ver 0.10.4 (2004/5/26)
+1) Fix configure problems on OpenBSD with langinfo and iconv
+2) Fix an infinte loop when writing to an interface and it has expired
+3) Fix a segfault in decoding flac's
+4) Ingore CRC stuff in mp3's since some encoders did not compute the CRC correctly
+5) Fix a segfault in processing faulty mp4 metadata
+
 ver 0.10.3 (2004/4/2)
 1) Fix a segfault when a blanck line is sent from a client
 2) Fix for loading playlists on platforms where char is unsigned
