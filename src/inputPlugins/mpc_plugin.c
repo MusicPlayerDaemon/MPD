@@ -60,7 +60,7 @@ mpc_int32_t mpc_read_cb(void * vdata, void * ptr, mpc_int32_t size) {
 static mpc_bool_t mpc_seek_cb(void * vdata, mpc_int32_t offset) {
         MpcCallbackData * data = (MpcCallbackData *)vdata;
 
-	return !seekInputStream(data->inStream , offset, SEEK_SET);
+	return seekInputStream(data->inStream , offset, SEEK_SET) < 0 ? 0 : 1;
 }
 
 mpc_int32_t mpc_tell_cb(void * vdata) {
@@ -149,7 +149,6 @@ int mpc_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream)
 		closeInputStream(inStream);
 		if(!dc->stop) {
 		        ERROR("Not a valid musepack stream");
-			DEBUG("ret: %i\n", ret);
 			return -1;
                 }
                 else {
@@ -185,7 +184,7 @@ int mpc_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream)
 	while(!eof) {
 		if(dc->seek) {
 			samplePos = dc->seekWhere * dc->audioFormat.sampleRate;
-			if(0 == mpc_decoder_seek_sample(&decoder, samplePos)) {
+			if(mpc_decoder_seek_sample(&decoder, samplePos)) {
                                 clearOutputBuffer(cb);
 			        chunkpos = 0;
                         }
@@ -193,10 +192,12 @@ int mpc_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream)
 			dc->seek = 0;
 		}
 
+		DEBUG("HERE 1\n");
 		ret = mpc_decoder_decode(&decoder, sample_buffer,
 				         &vbrUpdateAcc, &vbrUpdateBits);
+		DEBUG("HERE 2\n");
 
-		if(ret <= 0 ) {
+		if(ret <= 0 || dc->stop ) {
 			eof = 1;
 			break;
 		}
@@ -228,7 +229,10 @@ int mpc_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream)
 						NULL);
 				chunkpos = 0;
 				s16 = (mpd_sint16 *)chunk;
-				if(dc->stop) break;
+				if(dc->stop) {
+					eof = 1;
+					break;
+				}
 			}
 		}
 	}
@@ -246,12 +250,13 @@ int mpc_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream)
 
 	closeInputStream(inStream);
 
+	flushOutputBuffer(cb);
+
 	if(dc->stop) {
 		dc->state = DECODE_STATE_STOP;
 		dc->stop = 0;
 	}
 	else {
-		flushOutputBuffer(cb);
 		dc->state = DECODE_STATE_STOP;
 	}
 
