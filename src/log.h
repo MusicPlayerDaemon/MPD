@@ -27,22 +27,16 @@
 
 extern int logLevel;
 
-#define ERROR(x, arg...) do { \
-		myfprintf(stderr, x , ##arg); \
-	} while(0);
+#define ERROR(x, arg...) myfprintf(stderr, x , ##arg)
 
-#define LOG(x, arg...) do { \
-		myfprintf(stdout, x , ##arg); \
-	} while(0); 
+#define LOG(x, arg...) myfprintf(stdout, x , ##arg)
 
-#define SECURE(x, arg...) do { \
-		if(logLevel>=LOG_LEVEL_SECURE) myfprintf(stdout, x , ##arg); \
-	} while(0);
+#define SECURE(x, arg...) if(logLevel>=LOG_LEVEL_SECURE) \
+				myfprintf(stdout, x , ##arg)
 		
 
-#define DEBUG(x, arg...) do { \
-		if(logLevel>=LOG_LEVEL_DEBUG) myfprintf(stdout, x , ##arg); \
-	} while(0);
+#define DEBUG(x, arg...) if(logLevel>=LOG_LEVEL_DEBUG) \
+				myfprintf(stdout, x , ##arg)
 
 void initLog();
 

@@ -156,18 +156,32 @@ void openAInterface(int fd, struct sockaddr * addr) {
 		SECURE("interface %i: opened from ",i);
 		switch(addr->sa_family) {
 		case AF_INET:
-			SECURE("%s\n",inet_ntoa(
+			{
+				char * host = inet_ntoa(
 					((struct sockaddr_in *)addr)->
-					sin_addr));
+					sin_addr);
+				if(host) { 
+					SECURE("%s\n",host);
+				}
+				else {
+					SECURE("error getting ipv4 address\n");
+				}
+			}
 			break;
 #ifdef HAVE_IPV6
 		case AF_INET6:
 			{
 				char host[INET6_ADDRSTRLEN+1];
 				memset(host,0,INET6_ADDRSTRLEN+1);
-				SECURE("%s\n",inet_ntop(AF_INET6,(void *)
+				if(inet_ntop(AF_INET6,(void *)
 					&(((struct sockaddr_in6 *)addr)->
-					sin6_addr),host,INET6_ADDRSTRLEN));
+					sin6_addr),host,INET6_ADDRSTRLEN)) 
+				{
+					SECURE("%s\n",host);
+				}
+				else {
+					SECURE("error getting ipv6 address\n");
+				}
 			}
 			break;
 #endif

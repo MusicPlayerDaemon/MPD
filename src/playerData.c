@@ -103,7 +103,7 @@ void initPlayerData() {
 	playerData_pd->playerControl.queueState = PLAYER_QUEUE_BLANK;
 	playerData_pd->playerControl.queueLockState = PLAYER_QUEUE_UNLOCKED;
 	playerData_pd->playerControl.seek = 0;
-	memset(playerData_pd->playerControl.file,0,MAXPATHLEN);
+	memset(playerData_pd->playerControl.file,0,MAXPATHLEN+1);
 	playerData_pd->playerControl.crossFade = crossfade;
 	playerData_pd->playerControl.softwareVolume = 100;
 	playerData_pd->playerControl.totalPlayTime = 0;
@@ -113,7 +113,7 @@ void initPlayerData() {
 	playerData_pd->decoderControl.state = DECODE_STATE_STOP;
 	playerData_pd->decoderControl.seek = 0;
 	playerData_pd->decoderControl.error = DECODE_ERROR_NOERROR;
-	memset(playerData_pd->decoderControl.file,0,MAXPATHLEN);
+	memset(playerData_pd->decoderControl.file,0,MAXPATHLEN+1);
 }
 
 PlayerData * getPlayerData() {
