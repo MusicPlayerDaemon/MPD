@@ -133,6 +133,9 @@ This specifies the format all decoded audio should be converted to for playing. 
 .B replaygain <album or track>
 This specifies whether to use replaygain tags (currently only supported for FLAC and Ogg Vorbis formats).
 .TP
+.B replaygain_preamp <-15 to 15>
+This is the gain (in dB) applied to songs with replaygain tags.
+.TP
 .B max_command_list_size <size in KB>
 This specifies the maximum size a command list can be (in kilobytes). The default is 2048 kilobytes.
 .TP
@@ -252,6 +255,8 @@ bind_to_address         "any"
 #filesystem_charset     "UTF-8"
 .br
 #replaygain		"album"
+.br
+#replaygain_preamp	"0"
 .br
 #http_proxy_host	"proxy.isp.com"
 .br
