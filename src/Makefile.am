@@ -4,7 +4,7 @@ SUBDIRS = $(ID3_SUBDIR) $(MAD_SUBDIR) $(MP4FF_SUBDIR)
 mpd_inputPlugins = inputPlugins/mp3_plugin.c inputPlugins/ogg_plugin.c \
 	inputPlugins/flac_plugin.c inputPlugins/audiofile_plugin.c \
 	inputPlugins/mp4_plugin.c inputPlugins/aac_plugin.c \
-	inputPlugins/mod_plugin.c
+	inputPlugins/mod_plugin.c 
 
 mpd_headers = buffer2array.h interface.h command.h playlist.h ls.h \
 	song.h list.h directory.h tables.h utils.h path.h \
@@ -13,7 +13,7 @@ mpd_headers = buffer2array.h interface.h command.h playlist.h ls.h \
 	charConv.h permission.h mpd_types.h pcm_utils.h \
 	signal_check.h utf8.h inputStream.h \
 	outputBuffer.h replayGain.h inputStream_file.h inputStream_http.h \
-	inputPlugin.h metadataChunk.h
+	inputPlugin.h metadataChunk.h ack.h
 mpd_SOURCES = main.c buffer2array.c interface.c command.c playlist.c ls.c \
 	song.c list.c directory.c tables.c utils.c path.c \
 	tag.c player.c listen.c conf.c volume.c \
