@@ -199,6 +199,7 @@ int ogg_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream)
 	}
 
 	dc->totalTime = ov_time_total(&vf,-1);
+        if(dc->totalTime < 0) dc->totalTime = 0;
 	dc->state = DECODE_STATE_DECODE;
 
 	{
