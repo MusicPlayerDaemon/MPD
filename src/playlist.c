@@ -102,8 +102,6 @@ void initPlaylist() {
 	playlist.random = 0;
 	playlist.queued = -1;
 
-	blockTermSignal();
-
 	playlist_max_length = strtol((getConf())[CONF_MAX_PLAYLIST_LENGTH],&test,10);
 	if(*test!='\0') {
 		ERROR("max playlist length \"%s\" is not an integer\n",
@@ -137,7 +135,6 @@ void initPlaylist() {
 		playlist_stateFile = getConf()[CONF_STATE_FILE];
 	}
 
-	unblockTermSignal();
 }
 
 void finishPlaylist() {
@@ -152,10 +149,8 @@ int clearPlaylist(FILE * fp) {
 
 	if(stopPlaylist(fp)<0) return -1;
 
-	blockTermSignal();
 	for(i=0;i<playlist.length;i++) playlist.songs[i] = NULL;
 	playlist.length = 0;
-	unblockTermSignal();
 
 	incrPlaylistVersion();
 
@@ -176,7 +171,6 @@ void savePlaylistState() {
 	if(playlist_stateFile) {
 		FILE * fp;
 
-		blockTermSignal();
 		while(!(fp = fopen(playlist_stateFile,"w")) && errno==EINTR);
 		if(!fp) {
 			ERROR("problems opening state file \"%s\" for "
@@ -216,7 +210,6 @@ void savePlaylistState() {
 		myfprintf(fp,"%s\n",PLAYLIST_STATE_FILE_PLAYLIST_END);
 
 		while(fclose(fp) && errno==EINTR);
-		unblockTermSignal();
 	}
 }
 
@@ -518,7 +511,6 @@ int swapSongsInPlaylist(FILE * fp, int song1, int song2) {
 		return -1;
 	}
 
-	blockTermSignal();
 	
 	if(playlist_state==PLAYLIST_STATE_PLAY) {
 		if(playlist.queued>=0) {
@@ -552,8 +544,6 @@ int swapSongsInPlaylist(FILE * fp, int song1, int song2) {
 		else if(playlist.current==song2) playlist.current = song1;
 	}
 
-	unblockTermSignal();
-
 	incrPlaylistVersion();
 
 	return 0;
@@ -572,7 +562,6 @@ int deleteFromPlaylist(FILE * fp, int song) {
 		return -1;
 	}
 
-	blockTermSignal();
 	if(playlist_state==PLAYLIST_STATE_PLAY) {
 		if(playlist.queued>=0 && (playlist.order[playlist.queued]==song
 			|| playlist.order[playlist.current]==song)) 
@@ -601,8 +590,6 @@ int deleteFromPlaylist(FILE * fp, int song) {
 	/* now take care of other misc stuff */
 	playlist.songs[playlist.length-1] = NULL;
 	playlist.length--;
-
-	unblockTermSignal();
 
 	incrPlaylistVersion();
 
@@ -820,7 +807,6 @@ int moveSongInPlaylist(FILE * fp, int from, int to) {
 		return -1;
 	}
 
-	blockTermSignal();
 	
 	if(playlist_state==PLAYLIST_STATE_PLAY) {
 		if(playlist.queued>=0) {
@@ -866,8 +852,6 @@ int moveSongInPlaylist(FILE * fp, int from, int to) {
 		playlist.current++;
 	}
 
-	unblockTermSignal();
-
 	incrPlaylistVersion();
 
 	return 0;
@@ -878,7 +862,6 @@ void orderPlaylist() {
 
 	playlist.current = playlist.order[playlist.current];
 
-	blockTermSignal();
 	if(playlist_state==PLAYLIST_STATE_PLAY) {
 		if(playlist.queued>=0) {
 			lockPlaylistInteraction();
@@ -891,7 +874,6 @@ void orderPlaylist() {
 		playlist.order[i] = i;
 	}
 
-	unblockTermSignal();
 }
 
 void swapOrder(int a, int b) {
@@ -905,8 +887,6 @@ void randomizeOrder(int start,int end) {
 	int ri;
 
 	DEBUG("playlist: randomize from %i to %i\n",start,end);
-
-	blockTermSignal();
 
 	if(playlist_state==PLAYLIST_STATE_PLAY) {
 		if(playlist.queued>=start && playlist.queued<=end) {
@@ -923,7 +903,6 @@ void randomizeOrder(int start,int end) {
 		swapOrder(i,ri);
 	}
 
-	unblockTermSignal();
 }
 
 int setPlaylistRandomStatus(FILE * fp, int status) {
@@ -978,7 +957,6 @@ int shufflePlaylist(FILE * fp) {
 	int ri;
 
 	if(playlist.length>1) {
-		blockTermSignal();
 		if(playlist_state==PLAYLIST_STATE_PLAY) {
 			lockPlaylistInteraction();
 			clearPlayerQueue();
@@ -999,7 +977,6 @@ int shufflePlaylist(FILE * fp) {
 			ri = rand()%(playlist.length-1)+1;
 			swapSongs(i,ri);
 		}
-		unblockTermSignal();
 
 		incrPlaylistVersion();
 	}
@@ -1067,7 +1044,6 @@ int savePlaylist(FILE * fp, char * utf8file) {
 		myfprintf(fp,"%s A file or directory already exists with the name \"%s\"\n",COMMAND_RESPOND_ERROR,utf8file);
 		return -1;
 	}
-
 
 	while(!(fileP = fopen(actualFile,"w")) && errno==EINTR);
 	if(fileP==NULL) {

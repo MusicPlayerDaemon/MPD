@@ -21,6 +21,8 @@
 
 #include "../config.h"
 
+int handlePendingSignals();
+
 void initSigHandlers();
 
 void finishSigHandlers();

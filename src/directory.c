@@ -74,6 +74,8 @@ char directorydb[MAXPATHLEN+1];
 
 int directory_updatePid = 0;
 
+int directory_reReadDB = 0;
+
 mpd_uint16 directory_updateJobId = 0;
 
 DirectoryList * newDirectoryList();
@@ -112,13 +114,19 @@ void directory_sigChldHandler(int pid, int status) {
                                         WTERMSIG(status));
                 }
 		else if(WEXITSTATUS(status)==EXIT_SUCCESS) {
-			readDirectoryDB();
-			incrPlaylistVersion();
 			DEBUG("direcotry_sigChldHandler: "
 					"updated db succesffully\n");
+			directory_reReadDB = 1;
 		}
-		else ERROR("problems updating db\n");
 		directory_updatePid = 0;
+	}
+}
+
+void readDirectoryDBIfUpdateIsFinished() {
+	if(directory_reReadDB && 0==directory_updatePid) {
+		DEBUG("readDirectoryDB since update finished successfully\n");
+		readDirectoryDB();
+		directory_reReadDB = 0;
 	}
 }
 
@@ -135,13 +143,6 @@ int updateInit(FILE * fp, List * pathList) {
        	if(directory_updatePid==0) {
 		unblockSignals();
               	/* child */
-               	struct sigaction sa;
-               	sa.sa_flags = 0;
-               	sigemptyset(&sa.sa_mask);
-
-               	sa.sa_handler = SIG_IGN;
-               	sigaction(SIGPIPE,&sa,NULL);
-               	sigaction(SIGCHLD,&sa,NULL);
 
 		finishSigHandlers();
                	close(listenSocket);

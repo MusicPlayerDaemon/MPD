@@ -451,9 +451,9 @@ int main(int argc, char * argv[]) {
         while(COMMAND_RETURN_KILL!=doIOForInterfaces()) {
                 syncPlayerAndPlaylist();
                 closeOldInterfaces();
+		if(COMMAND_RETURN_KILL==handlePendingSignals()) break;
+		readDirectoryDBIfUpdateIsFinished();
         }
-
-        finishSigHandlers();
 
         savePlaylistState();
         playerKill();

@@ -69,9 +69,11 @@ void resetPlayer() {
 
 void player_sigChldHandler(int pid, int status) {
 	if(player_pid==pid) {
-		if(WIFSIGNALED(status) && WTERMSIG(status)!=SIGTERM) {
-			ERROR("player process died from a "
-					"non-TERM signal: %i\n",
+		DEBUG("SIGCHLD caused by player process\n");
+		if(WIFSIGNALED(status) && WTERMSIG(status)!=SIGTERM &&
+				WTERMSIG(status)!=SIGINT) 
+		{
+			ERROR("player process died from signal: %i\n",
 					WTERMSIG(status));
 		}
 		resetPlayer();
@@ -100,12 +102,11 @@ int playerInit() {
 		sa.sa_flags = 0;
 		sigemptyset(&sa.sa_mask);
 
-		sa.sa_handler = SIG_IGN;
-		sigaction(SIGPIPE,&sa,NULL);
-		sigaction(SIGHUP,&sa,NULL);
+		finishSigHandlers();
 		sa.sa_handler = decodeSigHandler;
 		sigaction(SIGCHLD,&sa,NULL);
 		sigaction(SIGTERM,&sa,NULL);
+		sigaction(SIGINT,&sa,NULL);
 
 		close(listenSocket);
 		freeAllInterfaces();

@@ -20,35 +20,41 @@
 #include "player.h"
 #include "playlist.h"
 #include "directory.h"
+#include "command.h"
+#include "signal_check.h"
+#include "log.h"
 
 #include <signal.h>
 #include <sys/types.h>
 #include <sys/time.h>
 #include <sys/resource.h>
 #include <sys/wait.h>
+#include <errno.h>
 
-struct sigaction original_termSa;
-struct sigaction original_hupSa;
+int handlePendingSignals() {
+        if(signal_is_pending(SIGINT) || signal_is_pending(SIGTERM)) {
+                DEBUG("got SIGINT or SIGTERM, exiting\n");
+		return COMMAND_RETURN_KILL;
+        }
 
-void termSigHandler(int signal) {
-	if(signal==SIGTERM) {
-		savePlaylistState();
-		playerKill();
-		exit(EXIT_SUCCESS);
+	if(signal_is_pending(SIGHUP)) {
+                DEBUG("got SIGHUP, rereading DB\n");
+		signal_clear(SIGHUP);
+		readDirectoryDB();
 	}
-}
 
-void usr1SigHandler(int signal) {
-}
-
-void hupSigHandler(int signal) {
-	readDirectoryDB();
+	return 0;
 }
 
 void chldSigHandler(int signal) {
 	int status;
 	int pid;
-	while((pid = wait3(&status,WNOHANG,NULL)) > 0) {
+	DEBUG("got SIGCHLD\n");
+	while(0 != (pid = wait3(&status,WNOHANG,NULL))) {
+		if(pid<0) {
+			if(errno==EINTR) continue;
+			else break;
+		}
 		player_sigChldHandler(pid,status);
 		directory_sigChldHandler(pid,status);
 	}
@@ -61,19 +67,19 @@ void initSigHandlers() {
 	sigemptyset(&sa.sa_mask);
 	sa.sa_handler = SIG_IGN;
 	sigaction(SIGPIPE,&sa,NULL);
-	sa.sa_handler = usr1SigHandler;
-	sigaction(SIGUSR1,&sa,NULL);
 	sa.sa_handler = chldSigHandler;
 	sigaction(SIGCHLD,&sa,NULL);
-	sa.sa_handler = hupSigHandler;
-	sigaction(SIGHUP,&sa,&original_hupSa);
-	sa.sa_handler = termSigHandler;
-	sigaction(SIGTERM,&sa,&original_termSa);
+        signal_handle(SIGUSR1);
+        signal_handle(SIGINT);
+        signal_handle(SIGTERM);
+        signal_handle(SIGHUP);
 }
 
 void finishSigHandlers() {
-	sigaction(SIGHUP,&original_termSa,NULL);
-	sigaction(SIGTERM,&original_termSa,NULL);
+        signal_unhandle(SIGINT);
+        signal_unhandle(SIGUSR1);
+        signal_unhandle(SIGTERM);
+        signal_unhandle(SIGHUP);
 }
 
 void blockSignals() {
@@ -92,24 +98,6 @@ void unblockSignals() {
 	sigemptyset(&sset);
 	sigaddset(&sset,SIGCHLD);
 	sigaddset(&sset,SIGUSR1);
-	sigaddset(&sset,SIGHUP);
-	sigprocmask(SIG_UNBLOCK,&sset,NULL);
-}
-
-void blockTermSignal() {
-	sigset_t sset;
-
-	sigemptyset(&sset);
-	sigaddset(&sset,SIGTERM);
-	sigaddset(&sset,SIGHUP);
-	sigprocmask(SIG_BLOCK,&sset,NULL);
-}
-
-void unblockTermSignal() {
-	sigset_t sset;
-
-	sigemptyset(&sset);
-	sigaddset(&sset,SIGTERM);
 	sigaddset(&sset,SIGHUP);
 	sigprocmask(SIG_UNBLOCK,&sset,NULL);
 }

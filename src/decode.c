@@ -58,9 +58,10 @@ void decodeSigHandler(int sig) {
 	if(sig==SIGCHLD) {
 		int status;
 		if(decode_pid && *decode_pid==wait3(&status,WNOHANG,NULL)) {
-			if(WIFSIGNALED(status) && WTERMSIG(status)!=SIGTERM) {
-				ERROR("decode process died from a "
-						"non-TERM signal: %i\n",
+			if(WIFSIGNALED(status) && WTERMSIG(status)!=SIGTERM &&
+					WTERMSIG(status)!=SIGINT) 
+			{
+				ERROR("decode process died from signal: %i\n",
 						WTERMSIG(status));
 			}
 			*decode_pid = 0;

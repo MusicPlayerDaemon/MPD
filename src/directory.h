@@ -29,6 +29,8 @@
 
 extern char directorydb[MAXPATHLEN+1];
 
+void readDirectoryDBIfUpdateIsFinished();
+
 int isUpdatingDB();
 
 void directory_sigChldHandler(int pid, int status);
