@@ -65,7 +65,7 @@ int countSongsIn(FILE * fp, char * name);
 
 unsigned long sumSongTimesIn(FILE * fp, char * name);
 
-Song * getSong(char * file);
+Song * getSongFromDB(char * file);
 
 time_t getDbModTime();
 

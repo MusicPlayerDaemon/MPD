@@ -41,6 +41,28 @@ char * dupAndStripPlaylistSuffix(char * file) {
 	return ret;
 }
 
+int isRemoteUrl(char * url) {
+	char * urlPrefixes[] = 	{
+					"http://",
+					"ftp://",
+					NULL
+				};
+
+	while(*urlPrefixes) {
+		if(strncmp(*urlPrefixes,url,strlen(*urlPrefixes)) == 0) {
+#ifdef HAVE_MAD
+			if(hasMp3Suffix(*urlPrefixes)) return 1;
+#endif
+#ifdef HAVE_OGG
+			if(hasOggSuffix(*urlPrefixes)) return 1;
+			return 0;
+#endif
+		}
+	}
+
+	return 0;
+}
+
 int lsPlaylists(FILE * fp, char * utf8path) {
 	DIR * dir;
 	struct stat st;

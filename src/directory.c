@@ -1045,7 +1045,7 @@ int traverseAllIn(FILE * fp, char * name,
 
 	if((directory = getDirectory(name))==NULL) {
 		Song * song;
-		if((song = getSong(name)) && forEachSong) {
+		if((song = getSongFromDB(name)) && forEachSong) {
 			return forEachSong(fp, song, data);
 		}
 		myfprintf(fp,"%s: directory or file not found\n",COMMAND_RESPOND_ERROR);
@@ -1269,7 +1269,7 @@ Song * getSongDetails(char * file, char ** shortnameRet,
 	return (Song *)song;
 }
 
-Song * getSong(char * file) {
+Song * getSongFromDB(char * file) {
 	return getSongDetails(file,NULL,NULL);
 }
 

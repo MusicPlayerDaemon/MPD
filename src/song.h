@@ -48,6 +48,8 @@ Song * newSong(char * utf8url, SONG_TYPE type);
 
 void freeSong(Song *);
 
+void freeJustSong(Song *);
+
 SongList * newSongList();
 
 void freeSongList(SongList * list);

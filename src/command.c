@@ -237,10 +237,13 @@ int handleClose(FILE * fp, unsigned int * permission, int argArrayLength,
 int handleAdd(FILE * fp, unsigned int * permission, int argArrayLength, 
 		char ** argArray) 
 {
-        char * directory = NULL;
+        char * path = NULL;
 
-        if(argArrayLength == 2) directory = argArray[1];
-        return addAllIn(fp,directory);
+        if(argArrayLength == 2) {
+		path = argArray[1];
+		if(isRemoteUrl(path)) return addToPlaylist(fp,path);
+	}
+        return addAllIn(fp,path);
 }
 
 int handleDelete(FILE * fp, unsigned int * permission, int argArrayLength, 

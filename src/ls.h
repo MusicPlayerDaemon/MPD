@@ -26,6 +26,8 @@
 
 int lsPlaylists(FILE * fp, char * utf8path);
 
+int isRemoteUrl(char * url);
+
 int isFile(char * utf8file, time_t * mtime);
 
 int isDir(char * utf8name);

@@ -149,7 +149,12 @@ int clearPlaylist(FILE * fp) {
 
 	if(stopPlaylist(fp)<0) return -1;
 
-	for(i=0;i<playlist.length;i++) playlist.songs[i] = NULL;
+	for(i=0;i<playlist.length;i++) {
+		if(playlist.songs[i]->type == SONG_TYPE_URL) {
+			free(playlist.songs[i]);
+		}
+		playlist.songs[i] = NULL;
+	}
 	playlist.length = 0;
 
 	incrPlaylistVersion();
@@ -449,13 +454,18 @@ void clearPlayerQueue() {
 	}
 }
 
-int addToPlaylist(FILE * fp, char * file) {
+int addToPlaylist(FILE * fp, char * url) {
 	Song * song;
 
-	DEBUG("add to playlist: %s\n",file);
+	DEBUG("add to playlist: %s\n",url);
 	
-	if(!(song = getSong(file))) {
-		myfprintf(fp,"%s \"%s\" is not in the music db\n",COMMAND_RESPOND_ERROR,file);
+	if((song = getSongFromDB(url))) {
+	}
+	else if(isRemoteUrl(url) && (song = newSong(url,SONG_TYPE_URL))) {
+	}
+	else {
+		myfprintf(fp,"%s \"%s\" is not in the music db\n",
+				COMMAND_RESPOND_ERROR,url);
 		return -1;
 	}
 
@@ -588,6 +598,9 @@ int deleteFromPlaylist(FILE * fp, int song) {
 		if(playlist.order[i]>song) playlist.order[i]--;
 	}
 	/* now take care of other misc stuff */
+	if(playlist.songs[playlist.length-1]->type == SONG_TYPE_URL) {
+		freeJustSong(playlist.songs[playlist.length-1]);
+	}
 	playlist.songs[playlist.length-1] = NULL;
 	playlist.length--;
 
@@ -1127,7 +1140,9 @@ int loadPlaylist(FILE * fp, char * utf8file) {
 			temp = fsCharsetToUtf8(s);
 			if(!temp) continue;
 			temp = strdup(temp);
-			if(s[0]==PLAYLIST_COMMENT && !getSong(temp)) {
+			if(s[0]==PLAYLIST_COMMENT && !getSongFromDB(temp)
+					&& !isRemoteUrl(temp)) 
+			{
 				free(temp);
 				continue;
 			}
