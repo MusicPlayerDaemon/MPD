@@ -26,6 +26,7 @@
 #include "log.h"
 #include "pcm_utils.h"
 #include "inputStream.h"
+#include "outputBuffer.h"
 
 #include "mp4ff/mp4ff.h"
 
@@ -279,7 +280,7 @@ int mp4_decode(OutputBuffer * cb, DecoderControl * dc) {
 
 		sampleBuffer+=offset*channels*2;
 
-		sendDataToOutputBuffer(cb, NULL, dc, sampleBuffer,
+		sendDataToOutputBuffer(cb, NULL, dc, 1, sampleBuffer,
 				sampleBufferLen, time, bitRate);
 		if(dc->stop) {
 			eof = 1;

@@ -44,8 +44,8 @@ void flushOutputBuffer(OutputBuffer * cb) {
 }
 
 int sendDataToOutputBuffer(OutputBuffer * cb, InputStream * inStream,  
-                DecoderControl * dc, char * dataIn, long dataInLen, float time,
-                mpd_uint16 bitRate)
+                DecoderControl * dc, int seekable, char * dataIn, 
+                long dataInLen, float time, mpd_uint16 bitRate)
 {
         mpd_uint16 dataToSend;
 	mpd_uint16 chunkLeft;
@@ -76,6 +76,12 @@ int sendDataToOutputBuffer(OutputBuffer * cb, InputStream * inStream,
 		if(currentChunk != cb->end) {
 	        	while(cb->begin==cb->end && cb->wrap && !dc->stop)
 			{
+                                if(dc->seek) {
+                                        if(seekable) {
+                                                return OUTPUT_BUFFER_DC_SEEK;
+                                        }
+                                        else dc->seek = 0;
+                                }
                                 if(!inStream || 
                                         bufferInputStream(inStream) <= 0)
                                 {

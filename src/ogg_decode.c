@@ -242,15 +242,16 @@ int ogg_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream)
 				}
                                 doReplayGain(chunk,ret,&(dc->audioFormat),
                                                 replayGainScale);
-				sendDataToOutputBuffer(cb, inStream, dc, chunk,
-					chunkpos, ov_time_tell(&vf), bitRate);
+				sendDataToOutputBuffer(cb, inStream, dc, 
+                                        inStream->seekable, chunk, chunkpos, 
+					ov_time_tell(&vf), bitRate);
 				if(dc->stop) break;
 				chunkpos = 0;
 			}
 		}
 
 		if(!dc->stop && chunkpos > 0) {
-			sendDataToOutputBuffer(cb, NULL, dc, chunk, chunkpos,
+			sendDataToOutputBuffer(cb, NULL, dc, 0, chunk, chunkpos,
 					ov_time_tell(&vf), bitRate);
 		}
 

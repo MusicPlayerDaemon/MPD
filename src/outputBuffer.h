@@ -46,8 +46,8 @@ void flushOutputBuffer(OutputBuffer * cb);
 /* we send inStream where for buffering the inputStream while waiting to
    send the next chunk */
 int sendDataToOutputBuffer(OutputBuffer * cb, InputStream * inStream,
-                DecoderControl * dc, char * data, long datalen, float time,
-                mpd_uint16 bitRate);
+                DecoderControl * dc, int seekable, char * data, long datalen, 
+                float time, mpd_uint16 bitRate);
 
 #endif
 /* vim:set shiftwidth=4 tabstop=8 expandtab: */

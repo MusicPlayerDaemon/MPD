@@ -498,6 +498,7 @@ int mp3Read(mp3DecodeData * data, OutputBuffer * cb, DecoderControl * dc) {
                                 ret = sendDataToOutputBuffer(cb,
                                                 data->inStream,
                                                 dc,
+                                                data->inStream->seekable,
                                                 data->outputBuffer,
                                                 MP3_DATA_OUTPUT_BUFFER_SIZE,
                                                 data->elapsedTime,
@@ -589,7 +590,7 @@ int mp3_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream,
 	while(mp3Read(&data,cb,dc)!=DECODE_BREAK);
 	/* send last little bit if not dc->stop */
 	if(data.outputPtr!=data.outputBuffer && data.flush)  {
-        	if(sendDataToOutputBuffer(cb,NULL,dc,data.outputBuffer,
+        	if(sendDataToOutputBuffer(cb,NULL,dc,0,data.outputBuffer,
                                 data.outputPtr-data.outputBuffer,
                                 data.elapsedTime,data.bitRate/1000) == 0)
 		{

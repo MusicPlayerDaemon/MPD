@@ -112,6 +112,7 @@ int audiofile_decode(OutputBuffer * cb, DecoderControl * dc) {
 				sendDataToOutputBuffer(cb, 
                                         NULL,
                                         dc,
+                                        1,
                                         chunk,
                                         ret*fs,
 					(float)current /
