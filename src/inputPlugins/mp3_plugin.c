@@ -246,7 +246,10 @@ static MpdTag * mp3_parseId3Tag(mp3DecodeData * data, signed long tagsize) {
 
 	id3Tag = id3_tag_parse(id3_data, tagsize);
  
-	ret = parseId3Tag(id3Tag);
+	if(id3Tag) {
+		ret = parseId3Tag(id3Tag);
+		id3_tag_delete(id3Tag);
+	}
 
 fail:
 	if(allocated) free(allocated);
@@ -272,7 +275,8 @@ int decodeNextFrameHeader(mp3DecodeData * data, MpdTag ** tag) {
 
 			if(tagsize>0) {
 				if(tag && !(*tag)) {
-					*tag =mp3_parseId3Tag(data, tagsize);
+					*tag = mp3_parseId3Tag(data, tagsize);
+					
 				}
 				else {
 					mad_stream_skip(&(data->stream),
