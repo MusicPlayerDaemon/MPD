@@ -196,10 +196,20 @@ FLAC__SeekableStreamDecoderReadStatus flacRead(
                 const FLAC__SeekableStreamDecoder * flacDec, FLAC__byte buf[],
                 unsigned * bytes, void * fdata) {
 	FlacData * data = (FlacData *) fdata;
+	size_t r;
 
-        *bytes = readFromInputStream(data->inStream,(void *)buf,1,*bytes);
-
-        if(*bytes==0) return FLAC__SEEKABLE_STREAM_DECODER_READ_STATUS_ERROR;
+	while (1) {
+		r = readFromInputStream(data->inStream,(void *)buf,1,*bytes);
+		if (r == 0 && !inputStreamAtEOF(data->inStream) &&
+				!data->dc->stop)
+			my_usleep(10000);
+		else
+			break;
+	}
+	*bytes = r;
+        
+	if (*bytes==0 && !inputStreamAtEOF(data->inStream) && !data->dc->stop)
+		return FLAC__SEEKABLE_STREAM_DECODER_READ_STATUS_ERROR;
         
         return FLAC__SEEKABLE_STREAM_DECODER_READ_STATUS_OK;
 }
