@@ -83,9 +83,9 @@
 #define COMMAND_URL_HANDLERS   	"urlhandlers" 
 #define COMMAND_PLCHANGES	"plchanges" 
 #define COMMAND_CURRENTSONG	"currentsong" 
-#define COMMAND_ENABLE_DEV	"enabledevice"
-#define COMMAND_DISABLE_DEV	"disabledevice"
-#define COMMAND_DEVICES		"devices"
+#define COMMAND_ENABLE_DEV	"enableoutput"
+#define COMMAND_DISABLE_DEV	"disableoutput"
+#define COMMAND_DEVICES		"outputs"
 #define COMMAND_COMMANDS	"commands"
 
 #define COMMAND_STATUS_VOLUME           "volume"

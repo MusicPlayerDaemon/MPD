@@ -62,8 +62,9 @@ static size_t interface_max_output_buffer_size =
 		INTERFACE_MAX_OUTPUT_BUFFER_SIZE_DEFAULT;
 
 typedef struct _Interface {
-	char buffer[INTERFACE_MAX_BUFFER_LENGTH+2];
+	char buffer[INTERFACE_MAX_BUFFER_LENGTH];
 	int bufferLength;
+	int bufferPos;
 	int fd; /* file descriptor */
 	FILE * fp; /* file pointer */
 	int open; /* open/used */
@@ -94,6 +95,7 @@ void openInterface(Interface * interface, int fd) {
 	assert(interface->open==0);
 
 	interface->bufferLength = 0;
+	interface->bufferPos = 0;
 	interface->fd = fd;
 	/* fcntl(interface->fd,F_SETOWN,(int)getpid()); */
 	while((flags = fcntl(fd,F_GETFL))<0 && errno==EINTR);
@@ -200,137 +202,134 @@ void openAInterface(int fd, struct sockaddr * addr) {
 	}
 }
 
-int interfaceReadInput(Interface * interface) {
-	blockSignals();
-	if(read(interface->fd,interface->buffer+interface->bufferLength,1)>0) {
-		int ret = 1;
-		int bytesRead = 1;
-		while(bytesRead>0) {
-			interface->buffer[interface->bufferLength+1] = '\0';
-			if(interface->buffer[interface->bufferLength]!='\r') {
-				interface->bufferLength++;
-			}
-			if(interface->bufferLength>=INTERFACE_MAX_BUFFER_LENGTH) {
-				break;
-			}
-			if(interface->buffer[interface->bufferLength-1]=='\n') {
-				break;
-			}
-			bytesRead = read(interface->fd,interface->buffer+
-						interface->bufferLength,1);
-		}
-		unblockSignals();
-		if(interface->bufferLength>=INTERFACE_MAX_BUFFER_LENGTH) {
-			ERROR("interface %i: buffer overflow\n",
-				interface->num);
-			closeInterface(interface);
-		}
-		else if(interface->buffer[interface->bufferLength-1]=='\n') {
-			interface->buffer[interface->bufferLength-1] = '\0';
-			interface->bufferLength = 0;
+static int proccessLineOfInput(Interface * interface) {
+	int ret = 1;
+	char * line = interface->buffer+interface->bufferPos;
 
-			if(interface->commandList) {
-				if(strcmp(interface->buffer,
-						INTERFACE_LIST_MODE_END)==0) 
-				{
-					DEBUG("interface %i: process command "
-						"list\n",interface->num);
-					ret = proccessListOfCommands(
-						interface->fp,
-						&(interface->permission),
-						&(interface->expired),
-                                                interface->commandListOK,
-						interface->commandList);
-					DEBUG("interface %i: process command "
-						"list returned %i\n",
-						interface->num,
-						ret);
-					if(ret==0) {
-						commandSuccess(interface->fp);
-					}
-					else if(ret==COMMAND_RETURN_CLOSE ||
-							interface->expired) {
-						closeInterface(interface);
-					}
-					printInterfaceOutBuffer(interface);
+	if(interface->bufferLength - interface->bufferPos > 1) {
+		if(interface->buffer[interface->bufferLength-2] == '\r') {
+			interface->buffer[interface->bufferLength-2] = '\0';
+		}
+	}
 
-					freeList(interface->commandList);
-					interface->commandList = NULL;
-				}
-				else {
-					interface->commandListSize+=
-						sizeof(ListNode);
-					interface->commandListSize+=
-						strlen(interface->buffer)+1;
-					if(interface->commandListSize > 
-						interface_max_command_list_size)
-					{
-						ERROR("interface %i: command "
-							"list size (%lli) is "
-							"larger than the max "
-							"(%lli)\n",
-							interface->num,
-							interface->
-							commandListSize,
-							interface_max_command_list_size);
-						closeInterface(interface);
+	if(interface->commandList) {
+		if(strcmp(line, INTERFACE_LIST_MODE_END)==0) {
+			DEBUG("interface %i: process command "
+					"list\n",interface->num);
+			ret = proccessListOfCommands(
+					interface->fp,
+					&(interface->permission),
+					&(interface->expired),
+                                        interface->commandListOK,
+					interface->commandList);
+			DEBUG("interface %i: process command "
+					"list returned %i\n",
+					interface->num,
+					ret);
+			if(ret==0) commandSuccess(interface->fp);
+			else if(ret==COMMAND_RETURN_CLOSE || interface->expired)
+			{
 						
-					}
-					else {
-						insertInListWithoutKey(
-							interface->commandList,
-							strdup(interface->
-							buffer));
-					}
-				}
+				closeInterface(interface);
+			}
+			printInterfaceOutBuffer(interface);
+
+			freeList(interface->commandList);
+			interface->commandList = NULL;
+		}
+		else {
+			interface->commandListSize+= sizeof(ListNode);
+			interface->commandListSize+= strlen(line)+1;
+			if(interface->commandListSize > 
+					interface_max_command_list_size)
+			{
+				ERROR("interface %i: command "
+						"list size (%lli) is "
+						"larger than the max "
+						"(%lli)\n",
+						interface->num,
+						interface->
+						commandListSize,
+						interface_max_command_list_size)
+					;
+				closeInterface(interface);
 			}
 			else {
-				if(strcmp(interface->buffer,
-						INTERFACE_LIST_MODE_BEGIN)==0) 
-				{
-					interface->commandList = makeList(free,
-									1);
-					interface->commandListSize = 
-						sizeof(List);
-                                        interface->commandListOK = 0;
-					ret = 1;
-				}
-				else if(strcmp(interface->buffer,
-						INTERFACE_LIST_OK_MODE_BEGIN)
-                                                ==0) 
-				{
-					interface->commandList = makeList(free,
-									1);
-					interface->commandListSize = 
-						sizeof(List);
-                                        interface->commandListOK = 1;
-					ret = 1;
-				}
-				else {
-					DEBUG("interface %i: process command \"%s\"\n",interface->num,interface->buffer);
-					ret = processCommand(
-							interface->fp,
-							&(interface->
-								permission),
-							interface->buffer);
-					DEBUG("interface %i: command returned %i\n",interface->num,ret);
-					if(ret==0) {
-						commandSuccess(interface->fp);
-					}
-					else if(ret==COMMAND_RETURN_CLOSE ||
-							interface->expired) {
-						closeInterface(interface);
-					}
-					printInterfaceOutBuffer(interface);
-				}
+				insertInListWithoutKey(interface->commandList,
+						strdup(line));
 			}
 		}
-		return ret;
 	}
 	else {
-		unblockSignals();
-		closeInterface(interface);
+		if(strcmp(line, INTERFACE_LIST_MODE_BEGIN) == 0) {
+			interface->commandList = makeList(free, 1);
+			interface->commandListSize = sizeof(List);
+                        interface->commandListOK = 0;
+			ret = 1;
+		}
+		else if(strcmp(line, INTERFACE_LIST_OK_MODE_BEGIN) == 0) {
+			interface->commandList = makeList(free, 1);
+			interface->commandListSize = sizeof(List);
+                        interface->commandListOK = 1;
+			ret = 1;
+		}
+		else {
+			DEBUG("interface %i: process command \"%s\"\n",
+					interface->num, line);
+			ret = processCommand(interface->fp,
+						&(interface->permission),
+						line);
+			DEBUG("interface %i: command returned %i\n",
+						interface->num, ret);
+			if(ret==0) commandSuccess(interface->fp);
+			else if(ret==COMMAND_RETURN_CLOSE || interface->expired)
+			{
+				closeInterface(interface);
+			}
+			printInterfaceOutBuffer(interface);
+		}
 	}
+
+	return ret;
+}
+
+static int processBytesRead(Interface * interface, int bytesRead) {
+	int ret = 1;
+
+	while(bytesRead > 0) {
+		interface->bufferLength++;
+		bytesRead--;
+		if(interface->buffer[interface->bufferLength-1]=='\n') {
+			interface->buffer[interface->bufferLength-1] = '\0';
+			ret = proccessLineOfInput(interface);
+			interface->bufferPos = interface->bufferLength;
+		}
+		if(interface->bufferLength==INTERFACE_MAX_BUFFER_LENGTH)
+		{
+			if(interface->bufferPos == 0) {
+				ERROR("interface %i: buffer overflow\n",
+						interface->num);
+				return 1;
+			}
+			interface->bufferLength-= interface->bufferPos;
+			memmove(interface->buffer, 
+					interface->buffer+interface->bufferPos,
+					interface->bufferLength);
+			interface->bufferPos = 0;
+		}
+	}
+
+	return 0;
+}
+
+int interfaceReadInput(Interface * interface) {
+	int bytesRead = read(interface->fd, 
+			interface->buffer+interface->bufferLength, 
+			INTERFACE_MAX_BUFFER_LENGTH-interface->bufferLength+1);
+	
+	if(bytesRead > 0) return processBytesRead(interface, bytesRead);
+	else if(bytesRead == 0 && errno!=EINTR) closeInterface(interface);
+	else return 0;
 
 	return 1;
 }
