@@ -220,7 +220,7 @@ static int finishHTTPInit(InputStream * inStream) {
                 return -1;
         }
 
-        memset(request, 0, 2048);
+        memset(request, 0, 2049);
         snprintf(request, 2048, "GET %s HTTP/1.1\r\n"
                              "Host: %s\r\n"
                              "Connection: close\r\n"
@@ -266,6 +266,7 @@ static int getHTTPHello(InputStream * inStream) {
         if(ret < 0) {
                 data->connState = HTTP_CONN_STATE_CLOSED;
                 close(data->sock);
+                data->buflen = 0;
                 return -1;
         }
 
@@ -283,6 +284,7 @@ static int getHTTPHello(InputStream * inStream) {
         if(readed <= 0) {
                 data->connState = HTTP_CONN_STATE_CLOSED;
                 close(data->sock);
+                data->buflen = 0;
                 return -1;
         }
 
@@ -475,7 +477,7 @@ size_t inputStream_httpRead(InputStream * inStream, void * ptr, size_t size,
         data->buflen -= readed;
         memmove(data->buffer, data->buffer+readed, data->buflen);
 
-        inStream->offset = readed;
+        inStream->offset+= readed;
 
 	return readed;
 }
