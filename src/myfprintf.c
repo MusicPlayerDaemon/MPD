@@ -44,8 +44,13 @@ void blockingWrite(int fd, char * string) {
 	while(len) {
 		ret = write(fd,string,len);
 		if(ret<0) {
-			if(errno==EAGAIN || errno==EINTR) continue;
-			return;
+			switch(errno) {
+			case EAGAIN:
+			case EINTR:
+				continue;
+			default:
+				return;
+			}
 		}
 		len-= ret;
 		string+= ret;
