@@ -45,6 +45,7 @@
 
 #define INTERFACE_MAX_BUFFER_LENGTH		MAXPATHLEN+1024
 #define INTERFACE_LIST_MODE_BEGIN		"command_list_begin"
+#define INTERFACE_LIST_OK_MODE_BEGIN		"command_list_ok_begin"
 #define INTERFACE_LIST_MODE_END			"command_list_end"
 #define INTERFACE_DEFAULT_OUT_BUFFER_SIZE	4096
 
@@ -62,6 +63,7 @@ typedef struct _Interface {
 	unsigned int permission;
 	time_t lastTime;
 	List * commandList; /* for when in list mode */
+        int commandListOK; /* print OK after each command execution */
 	unsigned long long commandListSize; /* mem commandList consumes */
 	List * bufferList; /* for output if client is slow */
 	unsigned long long outputBufferSize; /* mem bufferList consumes */
@@ -230,6 +232,7 @@ int interfaceReadInput(Interface * interface) {
 						interface->fp,
 						&(interface->permission),
 						&(interface->expired),
+                                                interface->commandListOK,
 						interface->commandList);
 					DEBUG("interface %i: process command "
 						"list returned %i\n",
@@ -281,27 +284,27 @@ int interfaceReadInput(Interface * interface) {
 					interface->commandList = makeList(free);
 					interface->commandListSize = 
 						sizeof(List);
+                                        interface->commandListOK = 0;
+					ret = 1;
+				}
+				else if(strcmp(interface->buffer,
+						INTERFACE_LIST_OK_MODE_BEGIN)
+                                                ==0) 
+				{
+					interface->commandList = makeList(free);
+					interface->commandListSize = 
+						sizeof(List);
+                                        interface->commandListOK = 1;
 					ret = 1;
 				}
 				else {
-					if(strcmp(interface->buffer,
-							INTERFACE_LIST_MODE_END)
-							==0) 
-					{
-						commandError(interface->fp,
-                                                        ACK_ERROR_NOT_LIST,
-                                                        "not in command list mode");
-						ret = -1;
-					}
-					else {
-						DEBUG("interface %i: process command \"%s\"\n",interface->num,interface->buffer);
-						ret = processCommand(
+					DEBUG("interface %i: process command \"%s\"\n",interface->num,interface->buffer);
+					ret = processCommand(
 							interface->fp,
 							&(interface->
 								permission),
 							interface->buffer);
-						DEBUG("interface %i: command returned %i\n",interface->num,ret);
-					}
+					DEBUG("interface %i: command returned %i\n",interface->num,ret);
 					if(ret==0) {
 						commandSuccess(interface->fp);
 					}
@@ -648,4 +651,3 @@ void printInterfaceOutBuffer(Interface * interface) {
 
 	interface->outBuflen = 0;
 }
-/* vim:set shiftwidth=4 tabstop=8 expandtab: */

@@ -205,12 +205,15 @@ void putOggCommentsIntoDecoderControlMetadata(DecoderControl * dc,
 {
 	MpdTag * tag;
 
-	if(dc->metadataSet) return;
-
 	tag = oggCommentsParse(comments);
 	if(!tag) return;
 
 	copyMpdTagToDecoderControlMetadata(dc, tag);
+
+	/*if(tag->artist) printf("Artist: %s\n", tag->artist);
+	if(tag->album) printf("Album: %s\n", tag->album);
+	if(tag->track) printf("Track: %s\n", tag->track);
+	if(tag->title) printf("Title: %s\n", tag->title);*/
 
 	freeMpdTag(tag);
 }
@@ -229,7 +232,7 @@ int ogg_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream)
 	int chunkpos = 0;
 	long bitRate = 0;
 	long test;
-        float replayGainScale;
+        float replayGainScale = 1.0;
 	char ** comments;
 
         data.inStream = inStream;
@@ -253,24 +256,10 @@ int ogg_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream)
                 return 0;
 	}
 	
-	{
-		vorbis_info *vi=ov_info(&vf,-1);
-		dc->audioFormat.bits = 16;
-		dc->audioFormat.channels = vi->channels;
-		dc->audioFormat.sampleRate = vi->rate;
-                getOutputAudioFormat(&(dc->audioFormat),&(cb->audioFormat));
-	}
-
 	dc->totalTime = ov_time_total(&vf,-1);
-        if(dc->totalTime < 0) dc->totalTime = 0;
+       	if(dc->totalTime < 0) dc->totalTime = 0;
 
-	comments = ov_comment(&vf, -1)->user_comments;
-
-	putOggCommentsIntoDecoderControlMetadata(dc, comments);
-
-	dc->state = DECODE_STATE_DECODE;
-
-        replayGainScale = ogg_getReplayGainScale(comments);
+	dc->audioFormat.bits = 16;
 
 	while(!eof) {
 		if(dc->seek) {
@@ -286,7 +275,17 @@ int ogg_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream)
 				OGG_DECODE_USE_BIGENDIAN,
 				2, 1, &current_section);
 
-		if(current_section!=prev_section) printf("song changed!\n");
+		if(current_section!=prev_section) {
+			/*printf("new song!\n");*/
+			vorbis_info *vi=ov_info(&vf,-1);
+			dc->audioFormat.channels = vi->channels;
+			dc->audioFormat.sampleRate = vi->rate;
+        		getOutputAudioFormat(&(dc->audioFormat),&(cb->audioFormat));
+			comments = ov_comment(&vf, -1)->user_comments;
+			putOggCommentsIntoDecoderControlMetadata(dc, comments);
+			dc->state = DECODE_STATE_DECODE;
+        		replayGainScale = ogg_getReplayGainScale(comments);
+		}
 
 		prev_section = current_section;
 

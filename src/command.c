@@ -786,7 +786,7 @@ int processCommandInternal(FILE * fp, unsigned int * permission,
 }
 
 int proccessListOfCommands(FILE * fp, int * permission, int * expired, 
-		List * list) 
+		int listOK, List * list) 
 {
 	ListNode * node = list->firstNode;
 	ListNode * tempNode;
@@ -804,6 +804,7 @@ int proccessListOfCommands(FILE * fp, int * permission, int * expired,
 		deleteNodeFromList(list,node);
 		node = tempNode;
 		if(ret!=0 || (*expired)!=0) node = NULL;
+		else if(listOK) myfprintf(fp, "list_OK\n");
 		command_listNum++;
 	}
 

@@ -110,6 +110,10 @@ playlistinfo <int song>
 	displays list of songs in the playlist
 	_song_ is optional and species a single song to displa info for
 
+plchanges <playlist version>
+	displays changed songs currently in the playlist since 
+	_playlist version_
+
 previous
 	plays previous song in playlist
 
@@ -198,6 +202,10 @@ at once using a command list.  The command list beings with:
 
 command_list_begin
 
+or:
+
+command_list_ok_begin
+
 And ends with:
 
 command_list_end
@@ -205,4 +213,5 @@ command_list_end
 It does not execute any commands until the list has ended.  The return
 value is whatever the return for a list of commands is.  On success
 for all commands, OK is returned.  If a command fails, no more commands
-are executed and the appropriate ACK error is returned.
+are executed and the appropriate ACK error is returned. If "command_list_ok_begin is used", "list_OK\n" is returned for each successful command executed
+in the command list.
