@@ -179,7 +179,7 @@ void initPlaylist() {
 
 	srand(time(NULL));
 
-	playlist_stateFile = getConfigParamValue(CONF_STATE_FILE);
+	playlist_stateFile = parseConfigFilePath(CONF_STATE_FILE, 0);
 
 	for(i=0; i<playlist_max_length*PLAYLIST_HASH_MULT; i++) {
 		playlist.idToPosition[i] = -1;
