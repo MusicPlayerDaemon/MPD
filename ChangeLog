@@ -1,3 +1,7 @@
+ver 0.11.4 (2004/7/26)
+1) Fixed a segfault when decoding mp3's with corrupt id3v2 tags
+2) Fixed a memory leak when encountering id3v2 tags in mp3 decoder
+
 ver 0.11.3 (2004/7/21)
 1) Add support for http authentication for streams
 2) Added replaygain pre-amp support
