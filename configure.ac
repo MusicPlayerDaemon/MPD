@@ -29,6 +29,7 @@ MPD_LIBS=""
 
 AC_ARG_ENABLE(iconv,[  --disable-iconv     disable iconv support],,enable_iconv=yes)
 AC_ARG_ENABLE(ipv6,[  --disable-ipv6     disable IPv6 support],,enable_ipv6=yes)
+AC_ARG_ENABLE(alsa,[  --disable-alsa     disable Alsa Mixer support],,enable_alsa=yes)
 AC_ARG_ENABLE(ogg,[  --disable-ogg     disable ogg support],,enable_ogg=yes)
 AC_ARG_ENABLE(flac,[  --disable-flac    disable flac support],,enable_flac=yes)
 AC_ARG_ENABLE(mp3,[  --disable-mp3     disable mp3 support],,enable_mp3=yes)
@@ -93,20 +94,23 @@ fi
 XIPH_PATH_AO(MPD_LIBS="$MPD_LIBS $AO_LIBS" MPD_CFLAGS="$MPD_CFLAGS $AO_CFLAGS",AC_MSG_ERROR(Must have libao installed!!!))
 AC_CHECK_HEADER(sys/soundcard.h,enable_oss=yes,[AC_MSG_WARN(Soundcard headers not found -- disabling OSS mixer);enable_oss=no;AC_DEFINE(NO_OSS_MIXER,1,[Define to disable OSS mixer support])])
 
-AC_MSG_CHECKING(for alsa)
-AC_EGREP_CPP([AP_maGiC_VALUE],
-[
+if test x$enable_alsa = xyes; then
+	AC_MSG_CHECKING(for alsa)
+	AC_EGREP_CPP([AP_maGiC_VALUE],
+	[
 #include <alsa/asoundlib.h>
 #if defined(SND_LIB_MAJOR) && defined(SND_LIB_MINOR)
 #if SND_LIB_MAJOR>0 || (SND_LIB_MAJOR==0 && SND_LIB_MINOR>=6)
 AP_maGiC_VALUE
 #endif
 #endif
-],
-enable_alsa=yes
-AC_MSG_RESULT([yes]),
-AC_MSG_RESULT([no])
-)
+	],
+	enable_alsa=yes
+	AC_MSG_RESULT([yes]),
+	enable_alsa=no
+	AC_MSG_RESULT([no])
+	)
+fi
 
 if test x$enable_alsa = xyes; then
 	AC_CHECK_LIB(asound,main,[MPD_LIBS="$MPD_LIBS -lasound";AC_DEFINE(HAVE_ALSA,1,[Define if alsa support is present])],enable_alsa=no)
