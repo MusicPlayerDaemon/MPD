@@ -159,9 +159,7 @@ int waitOnDecode(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb,
 
 	if((tag = metadataChunkToMpdTagDup(&(pc->fileMetadataChunk)))) {
 		sendMetdataToAudioDevice(tag);
-		printMpdTag(stdout, tag);
 		freeMpdTag(tag);
-		tag = NULL;
 	}
 
         pc->totalTime = pc->fileTime;
@@ -428,7 +426,15 @@ void handleMetadata(OutputBuffer * cb, PlayerControl * pc, int * previous,
 	if(!(*currentChunkSent) && pc->metadataState == 
 			PLAYER_METADATA_STATE_WRITE)
 	{
+		MpdTag * tag = NULL;
+
 		*currentChunkSent = 1;
+		
+		if((tag = metadataChunkToMpdTagDup(currentChunk))) {
+			sendMetdataToAudioDevice(tag);
+			freeMpdTag(tag);
+		}
+
 		memcpy(&(pc->metadataChunk), currentChunk, 
 				sizeof(MetadataChunk));
 		pc->metadataState = PLAYER_METADATA_STATE_READ;

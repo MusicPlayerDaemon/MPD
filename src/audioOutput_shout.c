@@ -405,8 +405,6 @@ static void shout_sendMetadata(AudioOutput * audioOutput, MpdTag * tag) {
 
 	}
 
-	DEBUG("shout: got tag\n");
-
 	vorbis_analysis_headerout(&(sd->vd), &(sd->vc), &(sd->header_main),
 			&(sd->header_comments), &(sd->header_codebooks));
 
