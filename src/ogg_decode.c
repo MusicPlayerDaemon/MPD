@@ -122,7 +122,7 @@ int ogg_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc)
 				chunkpos = 0;
 				cb->times[cb->end] = ov_time_tell(&vf);
 				if((test = ov_bitrate_instant(&vf))>0) {
-					bitRate = test/1000;
+					bitRate = test/1024;
 				}
 				cb->bitRate[cb->end] = bitRate;
 				cb->end++;

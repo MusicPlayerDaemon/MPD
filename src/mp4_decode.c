@@ -98,6 +98,7 @@ int mp4_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc) {
 	long seekTableEnd = -1;
 	int seekPositionFound = 0;
 	long offset;
+	mpd_uint16 bitRate;
 
 	fh = fopen(dc->file,"r");
 	if(!fh) {
@@ -155,6 +156,7 @@ int mp4_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc) {
 	af->sampleRate = sampleRate;
 	af->channels = channels;
 	time = mp4ff_get_track_duration_use_offsets(mp4fh,track);
+	bitRate = mp4ff_get_avg_bitrate(mp4fh,track);
 	scale = mp4ff_time_scale(mp4fh,track);
 
 	if(mp4Buffer) free(mp4Buffer);
@@ -260,6 +262,7 @@ int mp4_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc) {
 				memcpy(cb->chunks+cb->end*CHUNK_SIZE+chunkLen,
 						sampleBuffer,size);
 				cb->times[cb->end] = time;
+				cb->bitRate[cb->end] = bitRate/1024;
 				sampleBuffer+=size;
 				chunkLen+=size;
 				if(chunkLen>=CHUNK_SIZE) {
