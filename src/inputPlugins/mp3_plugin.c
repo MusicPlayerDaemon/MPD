@@ -135,6 +135,7 @@ typedef struct _mp3DecodeData {
 	int flush;
 	unsigned long bitRate;
 	InputStream * inStream;
+	struct audio_dither dither;
 } mp3DecodeData;
 
 void initMp3DecodeData(mp3DecodeData * data, InputStream * inStream) {
@@ -148,8 +149,10 @@ void initMp3DecodeData(mp3DecodeData * data, InputStream * inStream) {
 	data->currentFrame = 0;
 	data->flush = 1;
         data->inStream = inStream;
+	memset(&(data->dither), 0, sizeof(struct audio_dither));
 
 	mad_stream_init(&data->stream);
+        data->stream.options |= MAD_OPTION_IGNORECRC;
 	mad_frame_init(&data->frame);
 	mad_synth_init(&data->synth);
 	mad_timer_reset(&data->timer);
@@ -188,7 +191,10 @@ int fillMp3InputBuffer(mp3DecodeData * data) {
 			readSize);
 	if(readed <= 0 && inputStreamAtEOF(data->inStream)) return -1;
 	/* sleep for a fraction of a second! */
-	else if(readed <= 0) my_usleep(10000);
+	else if(readed <= 0) {
+		readed = 0;
+		my_usleep(10000);
+	}
 
 	mad_stream_buffer(&data->stream,data->readBuffer,readed+remaining);
 	(data->stream).error = 0;
@@ -468,7 +474,6 @@ int getMp3TotalTime(char * file) {
 
         if(openInputStream(&inStream, file) < 0) return -1;
 	initMp3DecodeData(&data,&inStream);
-        data.stream.options |= MAD_OPTION_IGNORECRC;
 	if(decodeFirstFrame(&data, NULL, NULL)<0) ret = -1;
 	else ret = data.totalTime+0.5;
 	mp3DecodeDataFinalize(&data);
@@ -481,7 +486,6 @@ int openMp3FromInputStream(InputStream * inStream, mp3DecodeData * data,
 		DecoderControl * dc, MpdTag ** tag) 
 {
 	initMp3DecodeData(data, inStream);
-        data->stream.options |= MAD_OPTION_IGNORECRC;
 	*tag = NULL;
 	if(decodeFirstFrame(data, dc, tag)<0) {
 		mp3DecodeDataFinalize(data);
@@ -495,7 +499,6 @@ int openMp3FromInputStream(InputStream * inStream, mp3DecodeData * data,
 int mp3Read(mp3DecodeData * data, OutputBuffer * cb, DecoderControl * dc) {
 	int i;
 	int ret;
-	struct audio_dither dither;
 	int skip;
 
 	if(data->currentFrame>=data->highestFrame) { 
@@ -554,32 +557,34 @@ int mp3Read(mp3DecodeData * data, OutputBuffer * cb, DecoderControl * dc) {
 			sample = (mpd_sint16 *)data->outputPtr;	
 			*sample = (mpd_sint16) audio_linear_dither(16,
 					(data->synth).pcm.samples[0][i],
-					&dither);
+					&(data->dither));
 			data->outputPtr+=2;
 
 			if(MAD_NCHANNELS(&(data->frame).header)==2) {
 				sample = (mpd_sint16 *)data->outputPtr;	
 				*sample = (mpd_sint16) audio_linear_dither(16,
 						(data->synth).pcm.samples[1][i],
-						&dither);
+						&(data->dither));
 				data->outputPtr+=2;
 			}
 
-			if(data->outputPtr==data->outputBufferEnd) {
+			if(data->outputPtr>=data->outputBufferEnd) {
                                 long ret;
                                 ret = sendDataToOutputBuffer(cb,
                                                 data->inStream,
                                                 dc,
                                                 data->inStream->seekable,
                                                 data->outputBuffer,
-                                                MP3_DATA_OUTPUT_BUFFER_SIZE,
+                                                data->outputPtr-
+						data->outputBuffer,
                                                 data->elapsedTime,
                                                 data->bitRate/1000);
-                                data->outputPtr = data->outputBuffer;
-
                                 if(ret == OUTPUT_BUFFER_DC_STOP) {
+					data->flush = 0;
                                         return DECODE_BREAK;
                                 }
+
+                                data->outputPtr = data->outputBuffer;
 
                                 if(ret == OUTPUT_BUFFER_DC_SEEK) break;
 			}
@@ -660,7 +665,7 @@ int mp3_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream) {
         
 	dc->totalTime = data.totalTime;
 
-	/*if(inStream->metaTitle) {
+	if(inStream->metaTitle) {
 		if(tag) freeMpdTag(tag);
 		tag = newMpdTag();
 		tag->title = strdup(inStream->metaTitle);
@@ -687,7 +692,7 @@ int mp3_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream) {
 		}
 		copyMpdTagToOutputBuffer(cb, tag);
 		freeMpdTag(tag);
-	}*/
+	}
 
 	dc->state = DECODE_STATE_DECODE;
 
