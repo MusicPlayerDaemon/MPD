@@ -103,7 +103,7 @@ If a client does not send any new data in this time period, the connection is cl
 .B max_connections <int>
 This specifies the maximum number of clients that can be connected to MPD. The default is 5 connections.
 .TP
-.B mixer_type <oss or alsa>
+.B mixer_type <oss, alsa, or software>
 This specifies which mixer to use. The default is oss.
 .TP
 .B mixer_device <mixer dev>
@@ -149,8 +149,7 @@ This specifies whether relative or absolute paths for song filenames are
 used when saving playlists.  The default value is "no".
 .SH EXAMPLES
 .TP
-Below is an example config file. (Note: '#' at the beginning of a line denotes
-a comment.  The '#' must be the first character/symbol on that line.)
+Below is an example config file. (Note: '#' at the beginning of a line denotes a comment.  The '#' must be the first character/symbol on that line.)
 .br
 
 .br
@@ -170,44 +169,62 @@ error_file 		"/home/shank/mpd.error"
 .br
 # optional
 .br
-mixer_type		"oss"
+mixer_type              "oss"
 .br
-mixer_device 		"/dev/mixer"
+mixer_device            "/dev/mixer"
 .br
-#mixer_type		"alsa"
+#mixer_control          "Pcm"
 .br
-#mixer_device		"default"
+# mixer_type is typically "oss", "alsa", or "software"
 .br
-#ao_driver 		"oss"
+#mixer_type             "alsa"
 .br
-#ao_driver_options 	"dsp=/dev/dsp"
+#mixer_device           "default"
 .br
-max_playlist_length 	"4096"
+#mixer_control          "PCM"
 .br
-buffer_before_play 	"25%"
+# ao_driver is typically "oss" or "alsa09"
 .br
-#db_file		"/home/shank/playlists/.mpddb"
+#ao_driver              "oss"
 .br
-#state_file		"/home/shank/playlists/.mpdstate"
+#ao_driver_options      "dsp=/dev/dsp"
 .br
-#user			"shank"
+#audio_write_size       "1024"
 .br
-connection_timeout 	"60"
+max_playlist_length     "4096"
 .br
-max_connections 	"5"
+buffer_before_play      "25%"
 .br
-max_command_list_size 	"2048"
+buffer_size             "2048"
 .br
-max_output_buffer_size 	"2048"
+#db_file                "/home/shank/playlists/.mpddb"
+.br
+#state_file             "/home/shank/playlists/.mpdstate"
+.br
+#user                   "shank"
+.br
+connection_timeout      "60"
+.br
+max_connections         "5"
+.br
+max_command_list_size   "2048"
+.br
+max_output_buffer_size  "2048"
 .br
 save_absolute_paths_in_playlists "no"
 .br
 # log_level can be "default", "secure", "verbose"
 .br
-log_level		"default"
+log_level               "default"
 .br
-# if bind_to_address is "any", MPD binds all addresses
+# when bind_to_address is set to "any", MPD binds all available addresses
 .br
-bind_to_address 	"any"
+bind_to_address         "any"
+.br
+#passwd                 "passwd@read,add,control,admin"
+.br
+#default_permissions    "read,add,control,admin"
+.br
+#filesystem_charset     "UTF-8"
 .SH SEE ALSO
 mpc(1)
