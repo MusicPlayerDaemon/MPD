@@ -25,6 +25,13 @@
 #else
 #include <mad.h>
 #endif
+#ifdef HAVE_ID3TAG
+#ifdef USE_MPD_ID3TAG
+#include "libid3tag/id3tag.h"
+#else
+#include <id3tag.h>
+#endif
+#endif
 #include "playerData.h"
 #include "log.h"
 
@@ -181,7 +188,19 @@ int decodeNextFrameHeader(mp3DecodeData * data) {
 		}
 	}
 	if(mad_header_decode(&data->frame.header,&data->stream)) {
-		if((data->stream).error==MAD_ERROR_LOSTSYNC) return DECODE_SKIP;
+		if((data->stream).error==MAD_ERROR_LOSTSYNC) {
+#ifdef HAVE_ID3TAG
+			signed long tagsize = id3_tag_query(
+					(data->stream).this_frame,
+					(data->stream).bufend-
+					(data->stream).this_frame);
+			if(tagsize>0) {
+				mad_stream_skip(&(data->stream),tagsize);
+				return DECODE_CONT;
+			}
+#endif
+			return DECODE_SKIP;
+		}
 		if(MAD_RECOVERABLE((data->stream).error)) return DECODE_CONT;
 		else {
 			if((data->stream).error==MAD_ERROR_BUFLEN) return DECODE_CONT;
@@ -206,7 +225,19 @@ int decodeNextFrame(mp3DecodeData * data) {
 		}
 	}
 	if(mad_frame_decode(&data->frame,&data->stream)) {
-		if((data->stream).error==MAD_ERROR_LOSTSYNC) return DECODE_SKIP;
+		if((data->stream).error==MAD_ERROR_LOSTSYNC) {
+#ifdef HAVE_ID3TAG
+			signed long tagsize = id3_tag_query(
+					(data->stream).this_frame,
+					(data->stream).bufend-
+					(data->stream).this_frame);
+			if(tagsize>0) {
+				mad_stream_skip(&(data->stream),tagsize);
+				return DECODE_CONT;
+			}
+#endif
+			return DECODE_SKIP;
+		}
 		if(MAD_RECOVERABLE((data->stream).error)) return DECODE_CONT;
 		else {
 			if((data->stream).error==MAD_ERROR_BUFLEN) return DECODE_CONT;

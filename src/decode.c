@@ -47,8 +47,6 @@
 #include <unistd.h>
 #include <string.h>
 
-#define FADE_CHUNKS	1024
-
 int * decode_pid = NULL;
 
 void decodeSigHandler(int sig) {
@@ -91,7 +89,7 @@ void quitDecode(PlayerControl * pc, DecoderControl * dc) {
 }
 
 int calculateCrossFadeChunks(PlayerControl * pc, AudioFormat * af) {
-	int chunks;
+	long chunks;
 
 	if(pc->crossFade<=0) return 0;
 
@@ -104,7 +102,7 @@ int calculateCrossFadeChunks(PlayerControl * pc, AudioFormat * af) {
 
 	if(chunks<0) chunks = 0;
 
-	return chunks;
+	return (int)chunks;
 }
 
 int waitOnDecode(PlayerControl * pc, AudioFormat * af, DecoderControl * dc,
