@@ -417,7 +417,7 @@ FLAC__StreamDecoderWriteStatus flacWrite(const FLAC__SeekableStreamDecoder *dec,
 		for(c_chan = 0; c_chan < frame->header.channels; c_chan++) {
 			memcpy(data->chunk+data->chunk_length,
 			       &buf[c_chan][c_samp], bytesPerSample);
-			data->chunk_length++;
+			data->chunk_length+=bytesPerSample;
 			if(FLAC_CHUNK_SIZE-data->chunk_length < bytesPerSample) 
 			{
 				if(flacSendChunk(data)<0) {
