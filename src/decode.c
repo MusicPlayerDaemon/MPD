@@ -38,6 +38,9 @@
 #ifdef HAVE_AUDIOFILE
 #include "audiofile_decode.h"
 #endif
+#ifdef HAVE_FAAD
+#include "mp4_decode.h"
+#endif
 
 #include <signal.h>
 #include <sys/types.h>
@@ -211,6 +214,11 @@ int decoderInit(PlayerControl * pc, Buffer * cb, AudioFormat *af,
 #ifdef HAVE_MAD
 				case DECODE_TYPE_MP3:
 					dc->error = mp3_decode(cb,af,dc);
+					break;
+#endif
+#ifdef HAVE_FAAD
+				case DECODE_TYPE_MP4:
+					dc->error = mp4_decode(cb,af,dc);
 					break;
 #endif
 #ifdef HAVE_OGG

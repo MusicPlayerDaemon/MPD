@@ -36,6 +36,8 @@
 #include <string.h>
 #include <faad.h>
 
+/* all code here is either based on or copied from FAAD2's frontend code */
+
 int mp4_getAACTrack(mp4ff_t *infile) {
 	/* find AAC track */
 	int i, rc;
@@ -75,20 +77,25 @@ int mp4_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc)
 	mp4ff_t * mp4fh;
 	mp4ff_callback_t * mp4cb; 
 	int32_t track;
-	int32_t time;
+	float time;
 	int32_t scale;
 	faacDecHandle decoder;
 	faacDecFrameInfo frameInfo;
 	faacDecConfigurationPtr config;
-	mp4AudioSpecificConfig mp4ASC;
 	unsigned char * mp4Buffer;
 	int mp4BufferSize;
-	unsigned int frameSize;
-	unsigned int useAacLength;
 	unsigned long sampleRate;
 	unsigned char channels;
 	long sampleId;
 	long numSamples;
+	int eof = 0;
+	int rc;
+	long dur;
+	unsigned int sampleCount;
+	char * sampleBuffer;
+	unsigned int initial = 1;
+	size_t sampleBufferLen;
+		
 
 	fh = fopen(dc->file,"r");
 	if(!fh) {
@@ -147,16 +154,8 @@ int mp4_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc)
 	af->channels = channels;
 	time = mp4ff_get_track_duration_use_offsets(mp4fh,track);
 	scale = mp4ff_time_scale(mp4fh,track);
-	frameSize = 1024;
-	useAacLength = 0;
 
-	if(mp4Buffer) {
-		if(AudioSpecificConfig(mp4Buffer,mp4BufferSize,&mp4ASC) >= 0) {
-			if(mp4ASC.frameLengthFlag==1) frameSize = 960;
-			if(mp4ASC.sbr_present_flag==1) frameSize*= 2;
-		}
-		free(mp4Buffer);
-	}
+	if(mp4Buffer) free(mp4Buffer);
 
 	if(scale < 0) {
 		ERROR("Error getting audio format of mp4 AAC track.\n");
@@ -172,110 +171,74 @@ int mp4_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc)
 
 	dc->state = DECODE_STATE_DECODE;
 	dc->start = 0;
-	{
-		int eof = 0;
-		int rc;
-		long dur;
-		unsigned int sampleCount;
-		unsigned int delay = 0;
-		char * sampleBuffer;
-		unsigned int initial = 1;
-		size_t sampleBufferLen;
+	time = 0.0;
 
-		for(sampleId=0; sampleId<numSamples && !eof; sampleId++) {
-			if(dc->seek) {
-				cb->end = 0;
-				cb->wrap = 0;
-//#warning implement seeking here!
-				dc->seek = 0;
-			}
+	for(sampleId=0; sampleId<numSamples && !eof; sampleId++) {
+		if(dc->seek) {
+			cb->end = 0;
+			cb->wrap = 0;
+#warning implement seeking here!
+			dc->seek = 0;
+		}
 
-			dur = mp4ff_get_sample_duration(mp4fh,track,sampleId);
-			rc = mp4ff_read_sample(mp4fh,track,sampleId,&mp4Buffer,
-					&mp4BufferSize);
+		dur = mp4ff_get_sample_duration(mp4fh,track,sampleId);
+		rc = mp4ff_read_sample(mp4fh,track,sampleId,&mp4Buffer,
+				&mp4BufferSize);
 
-			if(rc==0) eof = 1;
-			else {
-				sampleBuffer = faacDecDecode(decoder,
-								&frameInfo,
-								mp4Buffer,
-								mp4BufferSize);
-				if(mp4Buffer) free(mp4Buffer);
-				if(sampleId==0) dur = 0;
-				if(useAacLength || scale!=sampleRate) {
-					sampleCount = frameInfo.samples;
-				}
-				else {
-					sampleCount = (unsigned long)(dur * 
-							frameInfo.channels);
-					if(!useAacLength && !initial && 
-						(sampleId < numSamples/2) &&
-						(sampleCount!=
-						frameInfo.samples))
-					{
-						useAacLength = 1;
-						sampleCount = frameInfo.samples;
-					}
-					
-					if(initial && (sampleCount < frameSize*
-						frameInfo.channels) &&
-						(frameInfo.samples > 
-						sampleCount))
-					{
-						delay = frameInfo.samples -
-							sampleCount;
-					}
+		if(rc==0) {
+			eof = 1;
+			break;
+		}
 
-				}
+		sampleBuffer = faacDecDecode(decoder,&frameInfo,mp4Buffer,
+						mp4BufferSize);
+		if(mp4Buffer) free(mp4Buffer);
+		if(sampleId==0) dur = 0;
+		time+=((float)dur)/scale;
+		sampleCount = (unsigned long)(dur*channels);
 
-				if(sampleCount>0) initial =0;
-				sampleBufferLen = sampleCount*2;
-				sampleBuffer+=delay*2;
-				while(sampleBufferLen > 0) {
-					size_t size = sampleBufferLen>
-							CHUNK_SIZE?
-							CHUNK_SIZE:
+		if(sampleCount>0) initial =0;
+		sampleBufferLen = sampleCount*2;
+		while(sampleBufferLen > 0) {
+			size_t size = sampleBufferLen>CHUNK_SIZE ? CHUNK_SIZE:
 							sampleBufferLen;
-					while(cb->begin==cb->end && cb->wrap &&
-							!dc->stop && !dc->seek)
-					{
-						usleep(10000);
-					}
-					if(dc->stop) {
-						eof = 1;
-						break;
-					}
-					else if(dc->seek) break;
+			while(cb->begin==cb->end && cb->wrap &&
+					!dc->stop && !dc->seek)
+			{
+					usleep(10000);
+			}
+			if(dc->stop) {
+				eof = 1;
+				break;
+			}
+			else if(dc->seek) break;
 				
 #ifdef WORDS_BIGENDIAN
-					pcm_changeBufferEndianness(sampleBuffer,
-							size,af->bits);
+			pcm_changeBufferEndianness(sampleBuffer,size,af->bits);
 #endif
-					memcpy(cb->chunks+cb->end*CHUNK_SIZE,
-						sampleBuffer,size);
-					cb->chunkSize[cb->end] = size;
+			sampleBufferLen-=size;
+			memcpy(cb->chunks+cb->end*CHUNK_SIZE,sampleBuffer,size);
+			cb->chunkSize[cb->end] = size;
+			sampleBuffer+=size;
 			
-//#warning implement time for AAC	
-					cb->times[cb->end] = 0;
+			cb->times[cb->end] = time;
 				
-					++cb->end;
-				
-					if(cb->end>=buffered_chunks) {
-						cb->end = 0;
-						cb->wrap = 1;
-					}
-				}
+			++cb->end;
+	
+			if(cb->end>=buffered_chunks) {
+				cb->end = 0;
+				cb->wrap = 1;
 			}
 		}
-
-		if(dc->seek) dc->seek = 0;
-
-		if(dc->stop) {
-			dc->state = DECODE_STATE_STOP;
-			dc->stop = 0;
-		}
-		else dc->state = DECODE_STATE_STOP;
 	}
+
+	if(dc->seek) dc->seek = 0;
+
+	if(dc->stop) {
+		dc->state = DECODE_STATE_STOP;
+		dc->stop = 0;
+	}
+	else dc->state = DECODE_STATE_STOP;
 
 	faacDecClose(decoder);
 	mp4ff_close(mp4fh);
