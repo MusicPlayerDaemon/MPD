@@ -157,16 +157,10 @@ void directory_sigChldHandler(int pid, int status) {
 
 void readDirectoryDBIfUpdateIsFinished() {
 	if(directory_reReadDB && 0==directory_updatePid) {
-                struct stat st;
-
 		DEBUG("readDirectoryDB since update finished successfully\n");
 		readDirectoryDB();
 		incrPlaylistVersion();
 		directory_reReadDB = 0;
-
-	        if(stat(directory_db,&st)==0) {
-                        directory_dbModTime = st.st_mtime;
-                }
 	}
 }
 
@@ -896,6 +890,7 @@ int writeDirectoryDB() {
 
 int readDirectoryDB() {
 	FILE * fp;
+        struct stat st;
 
 	if(!mp3rootDirectory) mp3rootDirectory = newDirectory(NULL);
 	while(!(fp=fopen(directory_db,"r")) && errno==EINTR);
@@ -974,6 +969,8 @@ int readDirectoryDB() {
 
 	stats.numberOfSongs = countSongsIn(stderr,NULL);
 	stats.dbPlayTime = sumSongTimesIn(stderr,NULL);
+
+	if(stat(directory_db,&st)==0) directory_dbModTime = st.st_mtime;
 
 	return 0;
 }
