@@ -49,7 +49,7 @@ int writeDirectoryDB();
 
 int readDirectoryDB();
 
-int updateMp3Directory(FILE * fp);
+void updateMp3Directory();
 
 int printAllIn(FILE * fp, char * name);
 

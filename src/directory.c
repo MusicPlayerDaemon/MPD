@@ -166,7 +166,7 @@ void readDirectoryDBIfUpdateIsFinished() {
 
 int updateInit(FILE * fp, List * pathList) {
 	if(directory_updatePid > 0) {
-		commandError(fp, "already updating");
+		commandError(fp, ACK_ERROR_UPDATE_ALREADY, "already updating");
 		return -1;
 	}
 
@@ -223,7 +223,8 @@ int updateInit(FILE * fp, List * pathList) {
 	else if(directory_updatePid < 0) {
 		unblockSignals();
 		ERROR("updateInit: Problems forking()'ing\n");
-		commandError(fp, "problems trying to update");
+		commandError(fp, ACK_ERROR_SYSTEM,
+                                "problems trying to update");
 		directory_updatePid = 0;
 		return -1;
 	}
@@ -744,7 +745,7 @@ int printDirectoryInfo(FILE * fp, char * name) {
 	Directory * directory;
 	
 	if((directory = getDirectory(name))==NULL) {
-		commandError(fp, "directory not found");
+		commandError(fp, ACK_ERROR_NO_EXIST, "directory not found");
 		return -1;
 	}
 
@@ -977,27 +978,25 @@ int readDirectoryDB() {
 	return 0;
 }
 
-int updateMp3Directory(FILE * fp) {
+void updateMp3Directory() {
 	switch(updateDirectory(mp3rootDirectory)) {
         case 0:
                 /* nothing updated */
-                return 0;
+                return;
         case 1:
+	        if(writeDirectoryDB()<0) {
+		        ERROR("problems writing music db file, \"%s\"\n",
+                                        directory_db);
+                        exit(EXIT_FAILURE);
+	        }
                 /* something was updated and db should be written */
                 break;
         default:
 		ERROR("problems updating music db\n");
-		commandError(fp, "problems updating music db");
-		return -1;
+                exit(EXIT_FAILURE);
 	}
 
-	if(writeDirectoryDB()<0) {
-		ERROR("problems writing music db file, \"%s\"\n",directory_db);
-		commandError(fp, "problems writing music db");
-		return -1;
-	}
-	
-	return 0;
+	return;
 }
 
 int traverseAllInSubDirectory(FILE * fp, Directory * directory,
@@ -1047,7 +1046,8 @@ int traverseAllIn(FILE * fp, char * name,
 		if((song = getSongFromDB(name)) && forEachSong) {
 			return forEachSong(fp, song, data);
 		}
-		commandError(fp, "directory or file not found");
+		commandError(fp, ACK_ERROR_NO_EXIST,
+                                "directory or file not found");
 		return -1;
 	}
 
@@ -1129,7 +1129,7 @@ int searchForSongsIn(FILE * fp, char * name, char * item, char * string) {
 		ret = traverseAllIn(fp,name,searchForFilenameInDirectory,NULL,
 			(void *)dup);
 	}
-	else commandError(fp, "unknown table");
+	else commandError(fp, ACK_ERROR_ARG, "unknown table");
 
 	free(dup);
 
@@ -1166,7 +1166,7 @@ int findSongsIn(FILE * fp, char * name, char * item, char * string) {
 			(void *)string);
 	}
 
-	commandError(fp, "unknown table");
+	commandError(fp, ACK_ERROR_ARG, "unknown table");
 	return -1;
 }
 

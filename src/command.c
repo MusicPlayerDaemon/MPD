@@ -154,7 +154,8 @@ int handlePlay(FILE * fp, unsigned int * permission, int argArrayLength,
         if(argArrayLength==2) {
                 song = strtol(argArray[1],&test,10);
                 if(*test!='\0') {
-                        commandError(fp, "need a positive integer");
+                        commandError(fp, ACK_ERROR_ARG,
+					 "need a positive integer");
                         return -1;
                 }
         }
@@ -174,7 +175,7 @@ int handlePause(FILE * fp, unsigned int * permission,
 		char * test;
                 int pause = strtol(argArray[1],&test,10);
                 if(*test!='\0' || (pause!=0 && pause!=1)) {
-                        commandError(fp, "\%s\" is not 0 or 1", argArray[1]);
+                        commandError(fp, ACK_ERROR_ARG, "\%s\" is not 0 or 1", argArray[1]);
                         return -1;
                 }
 		return playerSetPause(fp,pause);
@@ -265,7 +266,8 @@ int handleDelete(FILE * fp, unsigned int * permission, int argArrayLength,
 
         song = strtol(argArray[1],&test,10);
         if(*test!='\0') {
-                commandError(fp, "need a positive integer");
+                commandError(fp, ACK_ERROR_ARG, 
+				"need a positive integer");
                 return -1;
         }
         return deleteFromPlaylist(fp,song); 
@@ -329,7 +331,8 @@ int handlePlaylistInfo(FILE * fp, unsigned int * permission,
         if(argArrayLength == 2) {
                 song = strtol(argArray[1],&test,10);
                 if(*test!='\0') {
-                        commandError(fp, "%s need a positive integer");
+                        commandError(fp, ACK_ERROR_ARG,
+					"%s need a positive integer");
                         return -1;
                 }
         }
@@ -418,7 +421,7 @@ int handleVolume(FILE * fp, unsigned int * permission, int argArrayLength,
 
         change = strtol(argArray[1],&test,10);
         if(*test!='\0') {
-                commandError(fp, "need an integer");
+                commandError(fp, ACK_ERROR_ARG, "need an integer");
                 return -1;
         }
         return changeVolumeLevel(fp,change,1);
@@ -432,7 +435,7 @@ int handleSetVol(FILE * fp, unsigned int * permission, int argArrayLength,
 
         level = strtol(argArray[1],&test,10);
         if(*test!='\0') {
-                commandError(fp, "need an integer");
+                commandError(fp, ACK_ERROR_ARG, "need an integer");
                 return -1;
         }
         return changeVolumeLevel(fp,level,0);
@@ -446,7 +449,7 @@ int handleRepeat(FILE * fp, unsigned int * permission, int argArrayLength,
 
         status = strtol(argArray[1],&test,10);
         if(*test!='\0') {
-                commandError(fp, "need an integer");
+                commandError(fp, ACK_ERROR_ARG, "need an integer");
                 return -1;
         }
         return setPlaylistRepeatStatus(fp,status);
@@ -460,7 +463,7 @@ int handleRandom(FILE * fp, unsigned int * permission, int argArrayLength,
 
         status = strtol(argArray[1],&test,10);
         if(*test!='\0') {
-                commandError(fp, "need an integer");
+                commandError(fp, ACK_ERROR_ARG, "need an integer");
                 return -1;
         }
         return setPlaylistRandomStatus(fp,status);
@@ -497,12 +500,14 @@ int handleMove(FILE * fp, unsigned int * permission, int argArrayLength,
 
         from = strtol(argArray[1],&test,10);
         if(*test!='\0') {
-                commandError(fp, "\"%s\" is not a integer", argArray[1]);
+                commandError(fp, ACK_ERROR_ARG,
+				"\"%s\" is not a integer", argArray[1]);
                 return -1;
         }
         to = strtol(argArray[2],&test,10);
         if(*test!='\0') {
-                commandError(fp, "\"%s\" is not a integer", argArray[2]);
+                commandError(fp, ACK_ERROR_ARG,
+				"\"%s\" is not a integer", argArray[2]);
                 return -1;
         }
         return moveSongInPlaylist(fp,from,to);
@@ -517,12 +522,14 @@ int handleSwap(FILE * fp, unsigned int * permission, int argArrayLength,
 
         song1 = strtol(argArray[1],&test,10);
         if(*test!='\0') {
-                commandError(fp, "\"%s\" is not a integer", argArray[1]);
+                commandError(fp, ACK_ERROR_ARG,
+				"\"%s\" is not a integer", argArray[1]);
                 return -1;
         }
         song2 = strtol(argArray[2],&test,10);
         if(*test!='\0') {
-                commandError(fp, "\"%s\" is not a integer", argArray[2]);
+                commandError(fp, ACK_ERROR_ARG, "\"%s\" is not a integer",
+				argArray[2]);
                 return -1;
         }
         return swapSongsInPlaylist(fp,song1,song2);
@@ -537,12 +544,14 @@ int handleSeek(FILE * fp, unsigned int * permission, int argArrayLength,
 
         song = strtol(argArray[1],&test,10);
         if(*test!='\0') {
-                commandError(fp, "\"%s\" is not a integer", argArray[1]);
+                commandError(fp, ACK_ERROR_ARG,
+				"\"%s\" is not a integer", argArray[1]);
                 return -1;
         }
         time = strtol(argArray[2],&test,10);
         if(*test!='\0') {
-                commandError(fp, "\"%s\" is not a integer", argArray[2]);
+                commandError(fp, ACK_ERROR_ARG,
+				"\"%s\" is not a integer", argArray[2]);
                 return -1;
         }
         return seekSongInPlaylist(fp,song,time);
@@ -567,7 +576,7 @@ int handlePassword(FILE * fp, unsigned int * permission, int argArrayLength,
 		char ** argArray) 
 {
 	if(getPermissionFromPassword(argArray[1],permission)<0) {
-		commandError(fp, "incorrect password");
+		commandError(fp, ACK_ERROR_PASSWORD, "incorrect password");
 		return -1;
 	}
 
@@ -582,7 +591,8 @@ int handleCrossfade(FILE * fp, unsigned int * permission, int argArrayLength,
 
         time = strtol(argArray[1],&test,10);
         if(*test!='\0' || time<0) {
-                commandError(fp, "\"%s\" is not a integer >= 0", argArray[1]);
+                commandError(fp, ACK_ERROR_ARG, 
+				"\"%s\" is not a integer >= 0", argArray[1]);
                 return -1;
         }
 
@@ -647,7 +657,8 @@ int checkArgcAndPermission(CommandEntry * cmd, FILE *fp,
 
 	if (cmd->reqPermission != (permission & cmd->reqPermission)) {
 		if(fp) {
-                	commandError(fp, "you don't have permission for \"%s\"",
+                	commandError(fp, ACK_ERROR_PERMISSION,
+					"you don't have permission for \"%s\"",
 					cmd->cmd);
 		}
                 return -1;
@@ -657,21 +668,24 @@ int checkArgcAndPermission(CommandEntry * cmd, FILE *fp,
 
         if (min == max && max != argc) {
                 if(fp) {
-			commandError(fp, "wrong number of arguments for \"%s\"",
+			commandError(fp, ACK_ERROR_ARG, 
+					"wrong number of arguments for \"%s\"",
 					argArray[0]);
 		}
                 return -1;
         }
         else if (argc < min) {
                 if(fp) {
-                	commandError(fp, "too few arguments for \"%s\"",
+                	commandError(fp, ACK_ERROR_ARG, 
+					"too few arguments for \"%s\"",
 					argArray[0]);
 		}
                 return -1;
         }
         else if (argc > max && max /* != 0 */) {
 		if(fp) {
-                	commandError(fp, "too many arguments for \"%s\"",
+                	commandError(fp, ACK_ERROR_ARG,
+					"too many arguments for \"%s\"",
 					argArray[0]);
 		}
                 return -1;
@@ -690,7 +704,10 @@ CommandEntry * getCommandEntryAndCheckArgcAndPermission(FILE * fp,
         if(argArrayLength == 0) return NULL;
 
         if(!findInList(commandList, argArray[0],(void *)&cmd)) {
-		if(fp) commandError(fp, "unknown command \"%s\"", argArray[0]);
+		if(fp) {
+			commandError(fp, ACK_ERROR_UNKNOWN,
+					"unknown command \"%s\"", argArray[0]);
+		}
                 return NULL;
         }
 

@@ -375,7 +375,8 @@ int playlistInfo(FILE * fp,int song) {
 		end = song+1;
 	}
 	if(song>=playlist.length) {
-		commandError(fp, "song doesn't exist: \"%i\"", song);
+		commandError(fp, ACK_ERROR_NO_EXIST,
+                                "song doesn't exist: \"%i\"", song);
 		return -1;
 	}
 
@@ -486,7 +487,8 @@ int addToPlaylist(FILE * fp, char * url) {
         {
 	}
 	else {
-		commandError(fp, "\"%s\" is not in the music db or is"
+		commandError(fp, ACK_ERROR_NO_EXIST,
+                                "\"%s\" is not in the music db or is"
                                 "not a valid url\n", url);
 		return -1;
 	}
@@ -496,7 +498,8 @@ int addToPlaylist(FILE * fp, char * url) {
 
 int addSongToPlaylist(FILE * fp, Song * song) {
 	if(playlist.length==playlist_max_length) {
-		commandError(fp, "playlist is at the max size");
+		commandError(fp, ACK_ERROR_PLAYLIST_MAX,
+                                "playlist is at the max size");
 		return -1;
 	}
 
@@ -535,11 +538,13 @@ int swapSongsInPlaylist(FILE * fp, int song1, int song2) {
 	int currentSong = -1;
 
 	if(song1<0 || song1>=playlist.length) {
-		commandError(fp, "song doesn't exist: \"%i\"", song1);
+		commandError(fp, ACK_ERROR_NO_EXIST,
+                                "song doesn't exist: \"%i\"", song1);
 		return -1;
 	}
 	if(song2<0 || song2>=playlist.length) {
-		commandError(fp, "song doesn't exist: \"%i\"", song2);
+		commandError(fp, ACK_ERROR_NO_EXIST,
+                                "song doesn't exist: \"%i\"", song2);
 		return -1;
 	}
 
@@ -586,7 +591,8 @@ int deleteFromPlaylist(FILE * fp, int song) {
 	int songOrder;
 
 	if(song<0 || song>=playlist.length) {
-		commandError(fp, "song doesn't exist: \"%i\"", song);
+		commandError(fp, ACK_ERROR_NO_EXIST,
+                                "song doesn't exist: \"%i\"", song);
 		return -1;
 	}
 
@@ -710,7 +716,8 @@ int playPlaylist(FILE * fp, int song, int stopOnError) {
                 }
         }
 	else if(song<0 || song>=playlist.length) {
-		commandError(fp, "song doesn't exist: \"%i\"", song);
+		commandError(fp, ACK_ERROR_NO_EXIST,
+                                "song doesn't exist: \"%i\"", song);
 		playlist_state = PLAYLIST_STATE_STOP;
 		return -1;
 	}
@@ -831,7 +838,7 @@ int getPlaylistRandomStatus() {
 
 int setPlaylistRepeatStatus(FILE * fp, int status) {
 	if(status!=0 && status!=1) {
-		commandError(fp, "\"%i\" is not 0 or 1", status);
+		commandError(fp, ACK_ERROR_ARG, "\"%i\" is not 0 or 1", status);
 		return -1;
 	}
 
@@ -855,12 +862,14 @@ int moveSongInPlaylist(FILE * fp, int from, int to) {
 	int currentSong = -1;
 
 	if(from<0 || from>=playlist.length) {
-		commandError(fp, "song doesn't exist: \"%i\"", from);
+		commandError(fp, ACK_ERROR_NO_EXIST,
+                                "song doesn't exist: \"%i\"", from);
 		return -1;
 	}
 
 	if(to<0 || to>=playlist.length) {
-		commandError(fp, "song doesn't exist: \"%i\"", to);
+		commandError(fp, ACK_ERROR_NO_EXIST,
+                                "song doesn't exist: \"%i\"", to);
 		return -1;
 	}
 
@@ -966,7 +975,7 @@ int setPlaylistRandomStatus(FILE * fp, int status) {
 	int statusWas = playlist.random;
 
 	if(status!=0 && status!=1) {
-		commandError(fp, "\"%i\" is not 0 or 1", status);
+		commandError(fp, ACK_ERROR_ARG, "\"%i\" is not 0 or 1", status);
 		return -1;
 	}
 
@@ -1060,12 +1069,14 @@ int deletePlaylist(FILE * fp, char * utf8file) {
 	if((actualFile = rpp2app(rfile)) && isPlaylist(actualFile)) free(rfile);
 	else {
 		free(rfile);
-		commandError(fp, "playlist \"%s\" not found", utf8file);
+		commandError(fp, ACK_ERROR_NO_EXIST, 
+                                "playlist \"%s\" not found", utf8file);
 		return -1;
 	}
 
 	if(unlink(actualFile)<0) {
-		commandError(fp, "problems deleting file");
+		commandError(fp, ACK_ERROR_SYSTEM,
+                                "problems deleting file");
 		return -1;
 	}
 
@@ -1081,7 +1092,8 @@ int savePlaylist(FILE * fp, char * utf8file) {
 	char * actualFile;
 
 	if(strstr(utf8file,"/")) {
-		commandError(fp, "cannot save \"%s\", saving playlists to "
+		commandError(fp, ACK_ERROR_ARG,
+                                "cannot save \"%s\", saving playlists to "
 				"subdirectories is not supported", utf8file);
 		return -1;
 	}
@@ -1109,7 +1121,7 @@ int savePlaylist(FILE * fp, char * utf8file) {
 
 	while(!(fileP = fopen(actualFile,"w")) && errno==EINTR);
 	if(fileP==NULL) {
-		commandError(fp, "problems opening file");
+		commandError(fp, ACK_ERROR_SYSTEM, "problems opening file");
 		return -1;
 	}
 
@@ -1151,13 +1163,15 @@ int loadPlaylist(FILE * fp, char * utf8file) {
 	if((actualFile = rpp2app(rfile)) && isPlaylist(actualFile)) free(rfile);
 	else {
 		free(rfile);
-		commandError(fp, "playlist \"%s\" not found", utf8file);
+		commandError(fp, ACK_ERROR_NO_EXIST,
+                                "playlist \"%s\" not found", utf8file);
 		return -1;
 	}
 
 	while(!(fileP = fopen(actualFile,"r")) && errno==EINTR);
 	if(fileP==NULL) {
-		commandError(fp, "problems opening file \"%s\"", utf8file);
+		commandError(fp, ACK_ERROR_SYSTEM,
+                                "problems opening file \"%s\"", utf8file);
 		return -1;
 	}
 
@@ -1175,7 +1189,9 @@ int loadPlaylist(FILE * fp, char * utf8file) {
 				strncat(s,"/",MAXPATHLEN-parentlen);
 				strncat(s,temp,MAXPATHLEN-parentlen-1);
 				if(strlen(s)>=MAXPATHLEN) {
-					commandError(fp, "\"%s\" too long",
+					commandError(fp, 
+                                                        ACK_ERROR_PLAYLIST_LOAD,
+                                                        "\"%s\" too long",
                                                         temp);
 					free(temp);
 					while(fclose(fileP) && errno==EINTR);
@@ -1201,7 +1217,8 @@ int loadPlaylist(FILE * fp, char * utf8file) {
 		}
 		else if(slength==MAXPATHLEN) {
 			s[slength] = '\0';
-			commandError(fp, "\"%s\" too long", s);
+			commandError(fp, ACK_ERROR_PLAYLIST_LOAD,
+                                        "\"%s\" too long", s);
 			while(fclose(fileP) && errno==EINTR);
 			if(erroredFile) free(erroredFile);
 			return -1;
@@ -1212,7 +1229,8 @@ int loadPlaylist(FILE * fp, char * utf8file) {
 	while(fclose(fileP) && errno==EINTR);
 
 	if(erroredFile) {
-		commandError(fp, "can't add file \"%s\"", erroredFile);
+		commandError(fp, ACK_ERROR_PLAYLIST_LOAD,
+                                "can't add file \"%s\"", erroredFile);
 		free(erroredFile);
 		return -1;
 	}
@@ -1240,7 +1258,8 @@ int seekSongInPlaylist(FILE * fp, int song, float time) {
 	int i = song;
 
 	if(song<0 || song>=playlist.length) {
-		commandError(fp, "song doesn't exist: \"%i\"", song);
+		commandError(fp, ACK_ERROR_NO_EXIST,
+                                "song doesn't exist: \"%i\"", song);
 		return -1;
 	}
 
@@ -1265,4 +1284,3 @@ int seekSongInPlaylist(FILE * fp, int song, float time) {
 
 	return playerSeek(fp, playlist.songs[playlist.order[i]], time);
 }
-/* vim:set shiftwidth=4 tabstop=8 expandtab: */

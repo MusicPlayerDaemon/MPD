@@ -144,7 +144,8 @@ int changeOssVolumeLevel(FILE * fp, int change, int rel) {
 
 	if (rel) {
 		if((current = getOssVolumeLevel()) < 0) {
-			commandError(fp, "problem getting current volume");
+			commandError(fp, ACK_ERROR_SYSTEM,
+                                        "problem getting current volume");
 			return -1;
 		}
 
@@ -158,7 +159,7 @@ int changeOssVolumeLevel(FILE * fp, int change, int rel) {
 	level = (new << 8) + new;
 
 	if(ioctl(volume_ossFd,MIXER_WRITE(volume_ossControl),&level) < 0) {
-		commandError(fp, "problems setting volume");
+		commandError(fp, ACK_ERROR_SYSTEM, "problems setting volume");
 		return -1;
 	}
 
@@ -270,7 +271,7 @@ int changeAlsaVolumeLevel(FILE * fp, int change, int rel) {
 
 	if((err = snd_mixer_selem_get_playback_volume(volume_alsaElem,
 		SND_MIXER_SCHN_FRONT_LEFT,&level))<0) {
-		commandError(fp, "problems getting volume");
+		commandError(fp, ACK_ERROR_SYSTEM, "problems getting volume");
 		ERROR("problems getting alsa volume: %s\n",snd_strerror(err));
 		return -1;
 	}
@@ -296,7 +297,7 @@ int changeAlsaVolumeLevel(FILE * fp, int change, int rel) {
 
 	if((err = snd_mixer_selem_set_playback_volume_all(
 				volume_alsaElem,level))<0) {
-		commandError(fp, "problems setting volume");
+		commandError(fp, ACK_ERROR_SYSTEM, "problems setting volume");
 		ERROR("problems setting alsa volume: %s\n",snd_strerror(err));
 		return -1;
 	}
@@ -423,8 +424,8 @@ int changeVolumeLevel(FILE * fp, int change, int rel) {
 	case VOLUME_MIXER_TYPE_SOFTWARE:
 		return changeSoftwareVolume(fp,change,rel);
 	default:
-		commandError(fp, "no volume support");
-		return -1;
+                return 0;
+                break;
 	}
 }
 /* vim:set shiftwidth=4 tabstop=8 expandtab: */

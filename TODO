@@ -1,8 +1,6 @@
 1) put some sort of error reporting for streaming/inputStream!
 
-2) ACK error codes
-
-3) Fix charset errors so they don't goto stderr/out
+2) Fix charset errors so they don't goto stderr/out
 
 
 Post-1.0

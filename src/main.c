@@ -324,7 +324,7 @@ void openDB(Options * options, char * argv0) {
 		if(options->createDB) exit(EXIT_SUCCESS);
         }
 	if(options->updateDB) {
-		if(updateMp3Directory(stderr)<0) exit(EXIT_FAILURE);
+		updateMp3Directory();
 		exit(EXIT_SUCCESS);
 	}
 }

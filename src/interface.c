@@ -289,6 +289,7 @@ int interfaceReadInput(Interface * interface) {
 							==0) 
 					{
 						commandError(interface->fp,
+                                                        ACK_ERROR_NOT_LIST,
                                                         "not in command list mode");
 						ret = -1;
 					}

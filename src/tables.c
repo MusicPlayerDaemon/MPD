@@ -172,7 +172,8 @@ int printAllAlbums(FILE * fp, char * artist) {
 			}
 		}
 		else {
-			commandError(fp, "artist \"%s\" not found", artist);
+			commandError(fp, ACK_ERROR_NO_EXIST,
+					"artist \"%s\" not found", artist);
 			return -1;
 		}
 	}
@@ -183,7 +184,8 @@ int printAllAlbums(FILE * fp, char * artist) {
 int printAllKeysOfTable(FILE * fp, char * table, char * arg1) {
 	if(strcmp(table,TABLES_ARTIST)==0) {
 		if(arg1!=NULL) {
-			commandError(fp, "%s table takes no args", table);
+			commandError(fp, ACK_ERROR_ARG, 
+					"%s table takes no args", table);
 			return -1;
 		}
 		return printAllArtists(fp);
@@ -192,7 +194,7 @@ int printAllKeysOfTable(FILE * fp, char * table, char * arg1) {
 		return printAllAlbums(fp,arg1);
 	}
 	else {
-		commandError(fp, "table \"%s\" does not exist", table);
+		commandError(fp, ACK_ERROR_ARG, "unknown table", table);
 		return -1;
 	}
 }
