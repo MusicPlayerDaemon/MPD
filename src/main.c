@@ -124,10 +124,12 @@ void parseOptions(int argc, char ** argv, Options * options) {
                                         argcLeft--;
                                 }
                                 else if(strcmp(argv[i],"--create-db")==0) {
+                                        options->stdOutput = 1;
                                         options->createDB = 1;
                                         argcLeft--;
                                 }
                                 else if(strcmp(argv[i],"--update-db")==0) {
+                                        options->stdOutput = 1;
                                         options->updateDB = 1;
                                         argcLeft--;
                                 }
@@ -289,10 +291,15 @@ void changeToUser(Options * options) {
 }
 
 void openLogFiles(Options * options, FILE ** out, FILE ** err) {
+        mode_t prev;
+
         if(options->stdOutput) {
                 flushWarningLog();
                 return;
         }
+
+        /* be sure to create log files w/ rw permissions*/
+        prev = umask(0066);
 
         if(NULL==(*out=fopen(options->logFile,"a"))) {
                 ERROR("problem opening file \"%s\" for writing\n",
@@ -305,6 +312,8 @@ void openLogFiles(Options * options, FILE ** out, FILE ** err) {
                                 options->errorFile);
                 exit(EXIT_FAILURE);
         }
+
+        umask(prev);
 }
 
 void openDB(Options * options, char * argv0) {
@@ -477,4 +486,3 @@ int main(int argc, char * argv[]) {
 
         return EXIT_SUCCESS;
 }
-/* vim:set shiftwidth=8 tabstop=8 expandtab: */
