@@ -83,7 +83,7 @@ int setCharSetConversion(char * to, char * from) {
 	return -1;
 }
 
-char * convStrDup(char * string) {
+char * convStrDup(ICONV_CONST char * string) {
 	if(!char_conv_to) return NULL;
 
 	if(char_conv_same) return strdup(string);

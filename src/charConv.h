@@ -23,7 +23,7 @@
 
 int setCharSetConversion(char * to, char * from);
 
-char * convStrDup(char * string);
+char * convStrDup(ICONV_CONST char * string);
 
 void closeCharSetConversion();
 
