@@ -414,7 +414,7 @@ static int shout_openDevice(AudioOutput * audioOutput,
 	if(sd->opened) return 0;
 
 	if(shout_openShoutConn(audioOutput) < 0) {
-		audioOutput->open = 1;
+		audioOutput->open = 0;
 		return -1;
 	}
 
