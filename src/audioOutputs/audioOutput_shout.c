@@ -212,7 +212,8 @@ static int myShout_initDriver(AudioOutput * audioOutput, ConfigParam * param) {
 			!= SHOUTERR_SUCCESS ||
 		shout_set_agent(sd->shoutConn, "MPD") != SHOUTERR_SUCCESS)
 	{
-		ERROR("error configuring shout: %s\n", 
+		ERROR("error configuring shout defined at line %i: %s\n",
+				param->line,
 				shout_get_error(sd->shoutConn));
 		exit(EXIT_FAILURE);
 	}
@@ -307,10 +308,15 @@ static int myShout_handleError(ShoutData * sd, int err) {
 		break;
 	case SHOUTERR_UNCONNECTED:
 	case SHOUTERR_SOCKET:
-		ERROR("Lost shout connection\n");
+		ERROR("Lost shout connection to %s:%i\n", 
+				shout_get_host(sd->shoutConn),
+				shout_get_port(sd->shoutConn));
 		return -1;
 	default:
-		ERROR("shout: error: %s\n", shout_get_error(sd->shoutConn));
+		ERROR("shout: connection to %s:%i error : %s\n", 
+				shout_get_host(sd->shoutConn),
+				shout_get_port(sd->shoutConn),
+				shout_get_error(sd->shoutConn));
 		return -1;
 	}
 
@@ -380,17 +386,20 @@ static int myShout_openShoutConn(AudioOutput * audioOutput) {
 	ShoutData * sd = (ShoutData *)audioOutput->data;
 	time_t t = time(NULL);
 
-	sd->connAttempts++;
-
 	if(t - sd->lastAttempt < CONN_ATTEMPT_INTERVAL) {
 		return -1;
 	}
 
+	sd->connAttempts++;
+
 	sd->lastAttempt = t;
 
 	if(shout_open(sd->shoutConn) != SHOUTERR_SUCCESS) {
-		ERROR("problem opening connection to shout server (attempt %i):"
-				" %s\n", sd->connAttempts,
+		ERROR("problem opening connection to shout server %s:%i "
+				"(attempt %i): %s\n",
+				shout_get_host(sd->shoutConn),
+				shout_get_port(sd->shoutConn),
+				sd->connAttempts,
 				shout_get_error(sd->shoutConn));
 		return -1;
 	}
