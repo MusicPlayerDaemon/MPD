@@ -69,6 +69,9 @@ size_t inputStream_fileRead(InputStream * inStream, void * ptr, size_t size,
 	size_t readSize;
 
 	readSize = fread(ptr,size,nmemb,(FILE *)inStream->data);
+        if(readSize <=0 && ferror((FILE *)inStream->data)) {
+                inStream->error = errno;
+        }
 
 	inStream->offset = ftell((FILE *)inStream->data);
 
@@ -85,10 +88,15 @@ int inputStream_fileClose(InputStream * inStream) {
 }
 
 int inputStream_fileAtEOF(InputStream * inStream) {
-	return feof((FILE *)inStream->data);
+	if(feof((FILE *)inStream->data)) return 1;
+
+        if(ferror((FILE *)inStream->data) && inStream->error != EINTR)  {
+                return 1;
+        }
+
+        return 0;
 }
 
 int inputStream_fileBuffer(InputStream * inStream) {
         return 0;
 }
-/* vim:set shiftwidth=4 tabstop=8 expandtab: */
