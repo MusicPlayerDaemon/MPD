@@ -1,6 +1,6 @@
 /*
  * libid3tag - ID3 tag manipulation library
- * Copyright (C) 2000-2003 Underbit Technologies, Inc.
+ * Copyright (C) 2000-2004 Underbit Technologies, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
  * If you would like to negotiate alternate licensing terms, you may do
  * so by contacting: Underbit Technologies, Inc. <info@underbit.com>
  *
- * $Id: id3tag.h,v 1.1 2003/08/14 03:57:13 shank Exp $
+ * $Id: id3tag.h,v 1.17 2004/01/23 23:22:46 rob Exp $
  */
 
 # ifndef LIBID3TAG_ID3TAG_H
@@ -300,6 +300,7 @@ int id3_field_setbinarydata(union id3_field *,
 			    id3_byte_t const *, id3_length_t);
 
 signed long id3_field_getint(union id3_field const *);
+enum id3_field_textencoding id3_field_gettextencoding(union id3_field const *);
 id3_latin1_t const *id3_field_getlatin1(union id3_field const *);
 id3_latin1_t const *id3_field_getfulllatin1(union id3_field const *);
 id3_ucs4_t const *id3_field_getstring(union id3_field const *);
@@ -336,7 +337,7 @@ id3_ucs4_t *id3_utf8_ucs4duplicate(id3_utf8_t const *);
 
 # define ID3_VERSION_MAJOR	0
 # define ID3_VERSION_MINOR	15
-# define ID3_VERSION_PATCH	0
+# define ID3_VERSION_PATCH	1
 # define ID3_VERSION_EXTRA	" (beta)"
 
 # define ID3_VERSION_STRINGIZE(str)	#str
@@ -347,7 +348,7 @@ id3_ucs4_t *id3_utf8_ucs4duplicate(id3_utf8_t const *);
 			ID3_VERSION_STRING(ID3_VERSION_PATCH)  \
 			ID3_VERSION_EXTRA
 
-# define ID3_PUBLISHYEAR	"2000-2003"
+# define ID3_PUBLISHYEAR	"2000-2004"
 # define ID3_AUTHOR		"Underbit Technologies, Inc."
 # define ID3_EMAIL		"info@underbit.com"
 

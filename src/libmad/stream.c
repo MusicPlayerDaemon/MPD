@@ -1,6 +1,6 @@
 /*
  * libmad - MPEG audio decoder library
- * Copyright (C) 2000-2003 Underbit Technologies, Inc.
+ * Copyright (C) 2000-2004 Underbit Technologies, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * $Id: stream.c,v 1.1 2003/08/14 03:57:13 shank Exp $
+ * $Id: stream.c,v 1.12 2004/02/05 09:02:39 rob Exp $
  */
 
 # ifdef HAVE_CONFIG_H
@@ -145,6 +145,7 @@ char const *mad_stream_errorstr(struct mad_stream const *stream)
   case MAD_ERROR_BADCRC:	 return "CRC check failed";
   case MAD_ERROR_BADBITALLOC:	 return "forbidden bit allocation value";
   case MAD_ERROR_BADSCALEFACTOR: return "bad scalefactor index";
+  case MAD_ERROR_BADMODE:	 return "bad bitrate/mode combination";
   case MAD_ERROR_BADFRAMELEN:	 return "bad frame length";
   case MAD_ERROR_BADBIGVALUES:	 return "bad big_values count";
   case MAD_ERROR_BADBLOCKTYPE:	 return "reserved block_type";

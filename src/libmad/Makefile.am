@@ -1,6 +1,6 @@
 ##
 ## libmad - MPEG audio decoder library
-## Copyright (C) 2000-2003 Underbit Technologies, Inc.
+## Copyright (C) 2000-2004 Underbit Technologies, Inc.
 ##
 ## This program is free software; you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
 ## along with this program; if not, write to the Free Software
 ## Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ##
-## $Id: Makefile.am,v 1.1 2003/08/14 03:57:13 shank Exp $
+## $Id: Makefile.am,v 1.23 2004/02/17 02:02:03 rob Exp $
 ##
 
 ## Process this file with automake to produce Makefile.in
@@ -96,7 +96,7 @@ CLEANFILES =		mad.h
 ##      then set AGE to 0.
 
 version_current =	2
-version_revision =	0
+version_revision =	1
 version_age =		2
 
 version_info =		$(version_current):$(version_revision):$(version_age)

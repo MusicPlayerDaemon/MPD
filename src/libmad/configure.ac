@@ -1,7 +1,7 @@
 dnl -*- m4 -*-
 dnl
 dnl libmad - MPEG audio decoder library
-dnl Copyright (C) 2000-2003 Underbit Technologies, Inc.
+dnl Copyright (C) 2000-2004 Underbit Technologies, Inc.
 dnl
 dnl This program is free software; you can redistribute it and/or modify
 dnl it under the terms of the GNU General Public License as published by
@@ -17,11 +17,11 @@ dnl You should have received a copy of the GNU General Public License
 dnl along with this program; if not, write to the Free Software
 dnl Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 dnl
-AC_REVISION([$Id: configure.ac,v 1.1 2003/08/14 03:57:13 shank Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.9 2004/01/23 09:41:32 rob Exp $])dnl
 
 dnl Process this file with autoconf to produce a configure script.
 
-AC_INIT([MPEG Audio Decoder], [0.15.0b], [support@underbit.com], [libmad])
+AC_INIT([MPEG Audio Decoder], [0.15.1b], [support@underbit.com], [libmad])
 AC_PREREQ(2.53)
 
 AC_CONFIG_SRCDIR([decoder.h])
@@ -212,6 +212,7 @@ dnl Checks for typedefs, structures, and compiler characteristics.
 
 AC_C_CONST
 AC_C_INLINE
+AC_C_BIGENDIAN
 AC_TYPE_PID_T
 
 AC_CHECK_SIZEOF(int, 2)

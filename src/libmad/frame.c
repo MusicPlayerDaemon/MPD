@@ -1,6 +1,6 @@
 /*
  * libmad - MPEG audio decoder library
- * Copyright (C) 2000-2003 Underbit Technologies, Inc.
+ * Copyright (C) 2000-2004 Underbit Technologies, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * $Id: frame.c,v 1.1 2003/08/14 03:57:13 shank Exp $
+ * $Id: frame.c,v 1.29 2004/02/04 22:59:19 rob Exp $
  */
 
 # ifdef HAVE_CONFIG_H
@@ -376,7 +376,8 @@ int mad_header_decode(struct mad_header *header, struct mad_stream *stream)
 
   /* calculate free bit rate */
   if (header->bitrate == 0) {
-    if ((stream->freerate == 0 || !stream->sync) &&
+    if ((stream->freerate == 0 || !stream->sync ||
+	 (header->layer == MAD_LAYER_III && stream->freerate > 640000)) &&
 	free_bitrate(stream, header) == -1)
       goto fail;
 

@@ -1,6 +1,6 @@
 /*
  * libid3tag - ID3 tag manipulation library
- * Copyright (C) 2000-2003 Underbit Technologies, Inc.
+ * Copyright (C) 2000-2004 Underbit Technologies, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * $Id: crc.h,v 1.1 2003/08/14 03:57:13 shank Exp $
+ * $Id: crc.h,v 1.8 2004/02/17 02:04:10 rob Exp $
  */
 
 # ifndef LIBID3TAG_CRC_H
@@ -24,6 +24,6 @@
 
 # include "id3tag.h"
 
-unsigned long id3_crc_calculate(id3_byte_t const *, id3_length_t);
+unsigned long id3_crc_compute(id3_byte_t const *, id3_length_t);
 
 # endif

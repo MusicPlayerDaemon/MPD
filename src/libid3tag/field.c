@@ -1,6 +1,6 @@
 /*
  * libid3tag - ID3 tag manipulation library
- * Copyright (C) 2000-2003 Underbit Technologies, Inc.
+ * Copyright (C) 2000-2004 Underbit Technologies, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * $Id: field.c,v 1.1 2003/08/14 03:57:13 shank Exp $
+ * $Id: field.c,v 1.16 2004/01/23 09:41:32 rob Exp $
  */
 
 # ifdef HAVE_CONFIG_H
@@ -744,6 +744,21 @@ signed long id3_field_getint(union id3_field const *field)
       field->type != ID3_FIELD_TYPE_INT16 &&
       field->type != ID3_FIELD_TYPE_INT24 &&
       field->type != ID3_FIELD_TYPE_INT32)
+    return -1;
+
+  return field->number.value;
+}
+
+/*
+ * NAME:	field->gettextencoding()
+ * DESCRIPTION:	return the value of a text encoding field
+ */
+enum id3_field_textencoding
+id3_field_gettextencoding(union id3_field const *field)
+{
+  assert(field);
+
+  if (field->type != ID3_FIELD_TYPE_TEXTENCODING)
     return -1;
 
   return field->number.value;

@@ -1,6 +1,6 @@
 /*
  * libid3tag - ID3 tag manipulation library
- * Copyright (C) 2000-2003 Underbit Technologies, Inc.
+ * Copyright (C) 2000-2004 Underbit Technologies, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * $Id: tag.c,v 1.1 2003/08/14 03:57:13 shank Exp $
+ * $Id: tag.c,v 1.20 2004/02/17 02:04:10 rob Exp $
  */
 
 # ifdef HAVE_CONFIG_H
@@ -506,7 +506,7 @@ struct id3_tag *v2_parse(id3_byte_t const *ptr)
 
 	      crc = id3_parse_uint(&ehptr, 4);
 
-	      if (crc != id3_crc_calculate(ptr, end - ptr))
+	      if (crc != id3_crc_compute(ptr, end - ptr))
 		goto fail;
 
 	      tag->extendedflags |= ID3_TAG_EXTENDEDFLAG_CRCDATAPRESENT;
@@ -579,7 +579,7 @@ struct id3_tag *v2_parse(id3_byte_t const *ptr)
 	    crc = id3_parse_syncsafe(&ehptr, 5);
 	    ehptr += bytes - 5;
 
-	    if (crc != id3_crc_calculate(ptr, end - ptr))
+	    if (crc != id3_crc_compute(ptr, end - ptr))
 	      goto fail;
 	  }
 
@@ -895,7 +895,7 @@ id3_length_t id3_tag_render(struct id3_tag const *tag, id3_byte_t *buffer)
 
   if (crc_ptr) {
     id3_render_syncsafe(&crc_ptr,
-			id3_crc_calculate(frames_ptr, *ptr - frames_ptr), 5);
+			id3_crc_compute(frames_ptr, *ptr - frames_ptr), 5);
   }
 
   /* footer */

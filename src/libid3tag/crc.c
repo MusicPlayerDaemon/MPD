@@ -1,6 +1,6 @@
 /*
  * libid3tag - ID3 tag manipulation library
- * Copyright (C) 2000-2003 Underbit Technologies, Inc.
+ * Copyright (C) 2000-2004 Underbit Technologies, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * $Id: crc.c,v 1.1 2003/08/14 03:57:13 shank Exp $
+ * $Id: crc.c,v 1.11 2004/02/17 02:04:10 rob Exp $
  */
 
 # ifdef HAVE_CONFIG_H
@@ -104,10 +104,10 @@ unsigned long const crc_table[256] = {
 };
 
 /*
- * NAME:	crc->calculate()
- * DESCRIPTION:	compute CRC-32 value (ISO 3309)
+ * NAME:	crc->compute()
+ * DESCRIPTION:	calculate CRC-32 value (ISO 3309)
  */
-unsigned long id3_crc_calculate(id3_byte_t const *data, id3_length_t length)
+unsigned long id3_crc_compute(id3_byte_t const *data, id3_length_t length)
 {
   register unsigned long crc;
 

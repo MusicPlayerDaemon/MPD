@@ -1,10 +1,18 @@
 
  libid3tag - ID3 tag manipulation library
- Copyright (C) 2000-2003 Underbit Technologies, Inc.
+ Copyright (C) 2000-2004 Underbit Technologies, Inc.
 
- $Id: CHANGES,v 1.1 2003/08/14 03:57:13 shank Exp $
+ $Id: CHANGES,v 1.11 2004/02/17 02:04:10 rob Exp $
 
 ===============================================================================
+
+Version 0.15.1 (beta)
+
+  * Updated to autoconf 2.59, automake 1.8.2, libtool 1.5.2.
+
+  * Fixed a potential problem in file.c when writing empty ID3v2 tags.
+
+  * Added new id3_field_gettextencoding() API routine.
 
 Version 0.15.0 (beta)
 

@@ -1,6 +1,6 @@
 ##
 ## libid3tag - ID3 tag manipulation library
-## Copyright (C) 2000-2003 Underbit Technologies, Inc.
+## Copyright (C) 2000-2004 Underbit Technologies, Inc.
 ##
 ## This program is free software; you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
 ## along with this program; if not, write to the Free Software
 ## Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ##
-## $Id: Makefile.am,v 1.1 2003/08/14 03:57:13 shank Exp $
+## $Id: Makefile.am,v 1.26 2004/02/17 02:11:28 rob Exp $
 ##
 
 ## Process this file with automake to produce Makefile.in
@@ -63,9 +63,9 @@ noinst_HEADERS =	id3tag.h
 ##   6. If any interfaces have been removed since the last public release,
 ##      then set AGE to 0.
 
-version_current =	2
+version_current =	3
 version_revision =	0
-version_age =		2
+version_age =		3
 
 version_info =		$(version_current):$(version_revision):$(version_age)
 
