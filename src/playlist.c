@@ -161,7 +161,7 @@ int showPlaylist(FILE * fp) {
 	int i;
 
 	for(i=0;i<playlist.length;i++) {
-		myfprintf(fp,"%i:%s\n",i,(playlist.songs[i])->utf8file);
+		myfprintf(fp,"%i:%s\n",i,(playlist.songs[i])->utf8url);
 	}
 
 	return 0;
@@ -357,7 +357,7 @@ int playlistInfo(FILE * fp,int song) {
 	}
 
 	for(i=begin;i<end;i++) {
-		myfprintf(fp,"file: %s\n",(playlist.songs[i])->utf8file);
+		myfprintf(fp,"file: %s\n",(playlist.songs[i])->utf8url);
 		if((tag = (playlist.songs[i])->tag)) {
 			printMpdTag(fp,tag);
 		}
@@ -380,9 +380,9 @@ void queueNextSongInPlaylist() {
 		DEBUG("playlist: queue song %i:\"%s\"\n",
 				playlist.queued,
 				playlist.songs[playlist.order[
-				playlist.queued]]->utf8file);
+				playlist.queued]]->utf8url);
 		if(queueSong(playlist.songs[playlist.order[
-				playlist.queued]]->utf8file)<0) {
+				playlist.queued]]->utf8url)<0) {
 			playlist.queued = -1;
 			playlist_queueError = 1;
 		}
@@ -395,9 +395,9 @@ void queueNextSongInPlaylist() {
 		DEBUG("playlist: queue song %i:\"%s\"\n",
 				playlist.queued,
 				playlist.songs[playlist.order[
-				playlist.queued]]->utf8file);
+				playlist.queued]]->utf8url);
 		if(queueSong(playlist.songs[playlist.order[
-				playlist.queued]]->utf8file)<0) {
+				playlist.queued]]->utf8url)<0) {
 			playlist.queued = -1;
 			playlist_queueError = 1;
 		}
@@ -645,10 +645,10 @@ int playPlaylistOrderNumber(FILE * fp, int orderNum) {
 	playlist.current = orderNum;
 
 	DEBUG("playlist: play %i:\"%s\"\n",orderNum,
-			(playlist.songs[playlist.order[orderNum]])->utf8file);
+			(playlist.songs[playlist.order[orderNum]])->utf8url);
 
 	if(playerPlay(fp,(playlist.songs[playlist.order[orderNum]])->
-			utf8file)<0) 
+			utf8url)<0) 
 	{
 		stopPlaylist(fp);
 		return -1;
@@ -1052,12 +1052,14 @@ int savePlaylist(FILE * fp, char * utf8file) {
 	}
 
 	for(i=0;i<playlist.length;i++) {
-		if(playlist_saveAbsolutePaths) {
+		if(playlist_saveAbsolutePaths && 
+				playlist.songs[i]->type==SONG_TYPE_FILE) 
+		{
 			myfprintf(fileP,"%s\n",rmp2amp(utf8ToFsCharset((
-				        playlist.songs[i])->utf8file)));
+				        playlist.songs[i])->utf8url)));
 		}
 		else myfprintf(fileP,"%s\n",
-				utf8ToFsCharset((playlist.songs[i])->utf8file));
+				utf8ToFsCharset((playlist.songs[i])->utf8url));
 	}
 
 	while(fclose(fileP) && errno==EINTR);
@@ -1203,6 +1205,6 @@ int seekSongInPlaylist(FILE * fp, int song, float time) {
 		if(playPlaylistOrderNumber(fp,i)<0) return -1;
 	}
 
-	return playerSeek(fp,playlist.songs[playlist.order[i]]->utf8file,time);
+	return playerSeek(fp,playlist.songs[playlist.order[i]]->utf8url,time);
 }
 /* vim:set shiftwidth=4 tabstop=8 expandtab: */

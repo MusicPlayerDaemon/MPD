@@ -30,15 +30,21 @@
 #include "tag.h"
 #include "list.h"
 
+typedef enum {
+	SONG_TYPE_FILE,
+	SONG_TYPE_URL
+} SONG_TYPE;
+
 typedef struct _Song {
-	char * utf8file;
+	char * utf8url;
+	SONG_TYPE type;
 	MpdTag * tag;
 	time_t mtime;
 } Song;
 
 typedef List SongList;
 
-Song * newSong(char * utf8file);
+Song * newSong(char * utf8url, SONG_TYPE type);
 
 void freeSong(Song *);
 
@@ -46,7 +52,8 @@ SongList * newSongList();
 
 void freeSongList(SongList * list);
 
-Song * addSongToList(SongList * list, char * key, char * utf8file);
+Song * addSongToList(SongList * list, char * key, char * utf8file, 
+		SONG_TYPE type);
 
 int printSongInfo(FILE * fp, Song * song);
 

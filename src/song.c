@@ -47,65 +47,69 @@ Song * newNullSong() {
 	Song * song = malloc(sizeof(Song));
 
 	song->tag = NULL;
-	song->utf8file = NULL;
+	song->utf8url = NULL;
+	song->type = SONG_TYPE_FILE;
 
 	return song;
 }
 
-Song * newSong(char * utf8file) {
+Song * newSong(char * utf8url, SONG_TYPE type) {
 	Song * song = newNullSong();
 
-	song->utf8file = strdup(utf8file);
+	song->utf8url = strdup(utf8url);
+	song->type = type;
 
-	if(!isFile(utf8file,&(song->mtime)));
+	if(song->type == SONG_TYPE_FILE) {
+		if(!isFile(utf8url,&(song->mtime)));
 #ifdef HAVE_OGG
-	else if(hasOggSuffix(utf8file)) {
-		song->tag = oggTagDup(utf8file);
-	}
+		else if(hasOggSuffix(utf8url)) {
+			song->tag = oggTagDup(utf8url);
+		}
 #endif
 #ifdef HAVE_FLAC
-	else if((hasFlacSuffix(utf8file))) {
-		song->tag = flacTagDup(utf8file);
-	}
+		else if((hasFlacSuffix(utf8url))) {
+			song->tag = flacTagDup(utf8url);
+		}
 #endif
 #ifdef HAVE_MAD
-	else if(hasMp3Suffix(utf8file)) {
-		song->tag = mp3TagDup(utf8file);
-	}
+		else if(hasMp3Suffix(utf8url)) {
+			song->tag = mp3TagDup(utf8url);
+		}
 #endif
 #ifdef HAVE_AUDIOFILE
-	else if(hasWaveSuffix(utf8file)) {
-		song->tag = audiofileTagDup(utf8file);
-	}
+		else if(hasWaveSuffix(utf8url)) {
+			song->tag = audiofileTagDup(utf8url);
+		}
 #endif
 #ifdef HAVE_FAAD
-	else if(hasAacSuffix(utf8file)) {
-		song->tag = aacTagDup(utf8file);
-	}
-	else if(hasMp4Suffix(utf8file)) {
-		song->tag = mp4TagDup(utf8file);
-	}
+		else if(hasAacSuffix(utf8url)) {
+			song->tag = aacTagDup(utf8url);
+		}
+		else if(hasMp4Suffix(utf8url)) {
+			song->tag = mp4TagDup(utf8url);
+		}
 #endif
 
-	if(!song->tag || song->tag->time<0) {
-		freeSong(song);
-		song = NULL;
+		if(!song->tag || song->tag->time<0) {
+			freeSong(song);
+			song = NULL;
+		}
+		else addSongToTables(song);
 	}
-	else addSongToTables(song);
 
 	return song;
 }
 
 void freeSong(Song * song) {
 	deleteASongFromPlaylist(song);
-	removeASongFromTables(song);
-	free(song->utf8file);
+	if(song->type == SONG_TYPE_FILE) removeASongFromTables(song);
+	free(song->utf8url);
 	if(song->tag) freeMpdTag(song->tag);
 	free(song);
 }
 
 void freeJustSong(Song * song) {
-	free(song->utf8file);
+	free(song->utf8url);
 	if(song->tag) freeMpdTag(song->tag);
 	free(song);
 }
@@ -114,11 +118,20 @@ SongList * newSongList() {
 	return makeList((ListFreeDataFunc *)freeSong);
 }
 
-Song * addSongToList(SongList * list, char * key, char * utf8file) {
+Song * addSongToList(SongList * list, char * key, char * utf8url, 
+		SONG_TYPE type) 
+{
 	Song * song = NULL;
-	
-	if(isMusic(utf8file,NULL)) {
-		song = newSong(utf8file);
+
+	switch(type) {
+	case SONG_TYPE_FILE:
+		if(isMusic(utf8url,NULL)) {
+			song = newSong(utf8url,type);
+		}
+		break;
+	case SONG_TYPE_URL:
+		song = newSong(utf8url,type);
+		break;
 	}
 
 	if(song==NULL) return NULL;
@@ -133,7 +146,7 @@ void freeSongList(SongList * list) {
 }
 
 int printSongInfo(FILE * fp, Song * song) {
-	myfprintf(fp,"%s%s\n",SONG_FILE,song->utf8file);
+	myfprintf(fp,"%s%s\n",SONG_FILE,song->utf8url);
 
 	if(song->tag) printMpdTag(fp,song->tag);
 
@@ -220,13 +233,14 @@ void readSongInfoIntoList(FILE * fp, SongList * list) {
 
 			key = strdup(&(buffer[strlen(SONG_KEY)]));
 			song = newNullSong();
+			song->type = SONG_TYPE_FILE;
 		}
 		else if(0==strncmp(SONG_FILE,buffer,strlen(SONG_FILE))) {
-			if(!song || song->utf8file) {
+			if(!song || song->utf8url) {
 				ERROR("Problems reading song info\n");
 				exit(EXIT_FAILURE);
 			}
-			song->utf8file = strdup(&(buffer[strlen(SONG_FILE)]));
+			song->utf8url = strdup(&(buffer[strlen(SONG_FILE)]));
 		}
 		else if(0==strncmp(SONG_ARTIST,buffer,strlen(SONG_ARTIST))) {
 			if(!song->tag) song->tag = newMpdTag();
@@ -271,45 +285,47 @@ void readSongInfoIntoList(FILE * fp, SongList * list) {
 }
 
 int updateSongInfo(Song * song) {
-	char * utf8file = song->utf8file;
+	char * utf8url = song->utf8url;
 
-	removeASongFromTables(song);
-	if(song->tag) freeMpdTag(song->tag);
+	if(song->type == SONG_TYPE_FILE) {
+		removeASongFromTables(song);
+		if(song->tag) freeMpdTag(song->tag);
 
-	song->tag = NULL;
+		song->tag = NULL;
 
-	if(!isFile(utf8file,&(song->mtime)));
+		if(!isFile(utf8url,&(song->mtime)));
 #ifdef HAVE_OGG
-	else if(hasOggSuffix(utf8file)) {
-		song->tag = oggTagDup(utf8file);
-	}
+		else if(hasOggSuffix(utf8url)) {
+			song->tag = oggTagDup(utf8url);
+		}
 #endif
 #ifdef HAVE_FLAC
-	else if((hasFlacSuffix(utf8file))) {
-		song->tag = flacTagDup(utf8file);
-	}
+		else if((hasFlacSuffix(utf8url))) {
+			song->tag = flacTagDup(utf8url);
+		}
 #endif
 #ifdef HAVE_MAD
-	else if(hasMp3Suffix(utf8file)) {
-		song->tag = mp3TagDup(utf8file);
-	}
+		else if(hasMp3Suffix(utf8url)) {
+			song->tag = mp3TagDup(utf8url);
+		}
 #endif
 #ifdef HAVE_AUDIOFILE
-	else if(hasWaveSuffix(utf8file)) {
-		song->tag = audiofileTagDup(utf8file);
-	}
+		else if(hasWaveSuffix(utf8url)) {
+			song->tag = audiofileTagDup(utf8url);
+		}
 #endif
 #ifdef HAVE_FAAD
-	else if(hasAacSuffix(utf8file)) {
-		song->tag = aacTagDup(utf8file);
-	}
-	else if(hasMp4Suffix(utf8file)) {
-		song->tag = mp4TagDup(utf8file);
-	}
+		else if(hasAacSuffix(utf8url)) {
+			song->tag = aacTagDup(utf8url);
+		}
+		else if(hasMp4Suffix(utf8url)) {
+			song->tag = mp4TagDup(utf8url);
+		}
 #endif
 
-	if(!song->tag || song->tag->time<0) return -1;
-	else addSongToTables(song);
+		if(!song->tag || song->tag->time<0) return -1;
+		else addSongToTables(song);
+	}
 
 	return 0;
 }
@@ -317,9 +333,10 @@ int updateSongInfo(Song * song) {
 Song * songDup(Song * song) {
 	Song * ret = malloc(sizeof(Song));
 
-	ret->utf8file = strdup(song->utf8file);
+	ret->utf8url = strdup(song->utf8url);
 	ret->mtime = song->mtime;
 	ret->tag = mpdTagDup(song->tag);
+	ret->type = song->type;
 
 	return ret;
 }

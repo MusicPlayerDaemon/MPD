@@ -277,7 +277,7 @@ void removeSongFromDirectory(Directory * directory, char * shortname) {
 	void * song;
 	
 	if(findInList(directory->songs,shortname,&song)) {
-		LOG("removing: %s\n",((Song *)song)->utf8file);
+		LOG("removing: %s\n",((Song *)song)->utf8url);
 		deleteFromList(directory->songs,shortname);
 	}
 }
@@ -508,7 +508,7 @@ int updatePath(char * utf8path) {
 	}
 	else if((song = getSongDetails(path,&shortname,&parentDirectory))) {
 		/* if this song update is successfull, we are done */
-		if(song && isMusic(song->utf8file,&mtime)) {
+		if(song && isMusic(song->utf8url,&mtime)) {
 			free(path);
                         if(song->mtime==mtime) return 0;
                         else if(updateSongInfo(song)==0) return 1;
@@ -655,7 +655,8 @@ int addToDirectory(Directory * directory, char * shortname, char * name) {
 	}
 	else if(isMusic(name,NULL)) {
 		Song * song;
-		song = addSongToList(directory->songs,shortname,name);
+		song = addSongToList(directory->songs,shortname,name,
+				SONG_TYPE_FILE);
 		if(!song) return -1;
 		LOG("added %s\n",name);
 		return 1;
@@ -1071,7 +1072,7 @@ int printDirectoryInDirectory(FILE * fp, Directory * directory, void * data) {
 }
 
 int printSongInDirectory(FILE * fp, Song * song, void * data) {
-        myfprintf(fp,"file: %s\n",song->utf8file);
+        myfprintf(fp,"file: %s\n",song->utf8url);
         return 0;
 }
 
@@ -1103,7 +1104,7 @@ int searchForTitleInDirectory(FILE * fp, Song * song, void * string) {
 }
 
 int searchForFilenameInDirectory(FILE * fp, Song * song, void * string) {
-	char * dup = strDupToUpper(song->utf8file);
+	char * dup = strDupToUpper(song->utf8url);
 	if(strstr(dup,(char *)string)) printSongInfo(fp,song);
 	free(dup);
 	return 0;
