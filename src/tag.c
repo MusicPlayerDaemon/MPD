@@ -19,7 +19,6 @@
 #include "tag.h"
 #include "path.h"
 #include "myfprintf.h"
-#include "sig_handlers.h"
 #include "mp3_decode.h"
 #include "audiofile_decode.h"
 #include "mp4_decode.h"
@@ -90,18 +89,15 @@ MpdTag * id3Dup(char * utf8filename) {
 	struct id3_tag * tag;
 	char * str;
 
-	blockSignals();
 	file = id3_file_open(rmp2amp(utf8ToFsCharset(utf8filename)),
 			ID3_FILE_MODE_READONLY);
 	if(!file) {
-		unblockSignals();
 		return NULL;
 	}
 
 	tag = id3_file_tag(file);
 	if(!tag) {
 		id3_file_close(file);
-		unblockSignals();
 		return NULL;
 	}
 
@@ -135,7 +131,6 @@ MpdTag * id3Dup(char * utf8filename) {
 
 	id3_file_close(file);
 
-	unblockSignals();
 #endif
 	return ret;	
 }
@@ -177,16 +172,12 @@ MpdTag * aacTagDup(char * utf8file) {
 	MpdTag * ret = NULL;
 	int time;
 
-	blockSignals();
-
 	time = getAacTotalTime(rmp2amp(utf8ToFsCharset(utf8file)));
 
 	if(time>=0) {
 		if((ret = id3Dup(utf8file))==NULL) ret = newMpdTag();
 		ret->time = time;
 	}
-
-	unblockSignals();
 
 	return ret;
 }
@@ -202,11 +193,8 @@ MpdTag * mp4DataDup(char * utf8file, int * mp4MetadataFound) {
 
 	*mp4MetadataFound = 0;
 
-	blockSignals();
-	
 	fh = fopen(rmp2amp(utf8ToFsCharset(utf8file)),"r");
 	if(!fh) {
-		unblockSignals();
 		return NULL;
 	}
 
@@ -219,7 +207,6 @@ MpdTag * mp4DataDup(char * utf8file, int * mp4MetadataFound) {
 	if(!mp4fh) {
 		free(cb);
 		fclose(fh);
-		unblockSignals();
 		return NULL;
 	}
 
@@ -228,7 +215,6 @@ MpdTag * mp4DataDup(char * utf8file, int * mp4MetadataFound) {
 		mp4ff_close(mp4fh);
 		fclose(fh);
 		free(cb);
-		unblockSignals();
 		return NULL;
 	}
 
@@ -240,7 +226,6 @@ MpdTag * mp4DataDup(char * utf8file, int * mp4MetadataFound) {
 		fclose(fh);
 		free(cb);
 		freeMpdTag(ret);
-		unblockSignals();
 		return NULL;
 	}
 	ret->time = ((float)time)/scale+0.5;
@@ -264,7 +249,6 @@ MpdTag * mp4DataDup(char * utf8file, int * mp4MetadataFound) {
 	mp4ff_close(mp4fh);
 	fclose(fh);
 	free(cb);
-	unblockSignals();
 
 	return ret;
 }
@@ -300,9 +284,7 @@ MpdTag * oggTagDup(char * utf8file) {
 	while(!(fp = fopen(rmp2amp(utf8ToFsCharset(utf8file)),"r")) 
 			&& errno==EINTR);
 	if(!fp) return NULL;
-	blockSignals();
 	if(ov_open(fp,&vf,NULL,0)<0) {
-		unblockSignals();
 		while(fclose(fp) && errno==EINTR);
 		return NULL;
 	}
@@ -347,7 +329,6 @@ MpdTag * oggTagDup(char * utf8file) {
 
 	ov_clear(&vf);
 
-	unblockSignals();
 	return ret;	
 }
 #endif
@@ -362,11 +343,9 @@ MpdTag * flacMetadataDup(char * utf8file, int * vorbisCommentFound) {
 
 	*vorbisCommentFound = 0;
 
-	blockSignals();
 	it = FLAC__metadata_simple_iterator_new();
 	if(!FLAC__metadata_simple_iterator_init(it,rmp2amp(utf8ToFsCharset(utf8file)),1,0)) {
 		FLAC__metadata_simple_iterator_delete(it);
-		unblockSignals();
 		return ret;
 	}
 	
@@ -444,7 +423,6 @@ MpdTag * flacMetadataDup(char * utf8file, int * vorbisCommentFound) {
 	} while(FLAC__metadata_simple_iterator_next(it));
 
 	FLAC__metadata_simple_iterator_delete(it);
-	unblockSignals();
 	return ret;
 }
 
