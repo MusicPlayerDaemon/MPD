@@ -112,7 +112,7 @@ void parseOptions(int argc, char ** argv, Options * options) {
                                         exit(EXIT_SUCCESS);
                                 }
                                 else if(strcmp(argv[i],"--kill")==0) {
-                                        options->kill = 1;
+                                        options->kill++;
                                         argcLeft--;
                                 }
                                 else if(strcmp(argv[i],"--no-daemon")==0) {
@@ -384,7 +384,7 @@ void cleanUpPidFile() {
 	unlink(pidFileParam->value);
 }
 
-void killMpdFromPidFile(char * cmd) {
+void killMpdFromPidFile(char * cmd, int killOption) {
 	struct stat st_cmd;
 	struct stat st_exe;
 	ConfigParam * pidFileParam = parseConfigFilePath(CONF_PID_FILE, 1);
@@ -408,23 +408,34 @@ void killMpdFromPidFile(char * cmd) {
 	memset(buf, 0, 32);
 	snprintf(buf, 31, "/proc/%i/exe", pid);
 
-	if(stat(cmd, &st_cmd)) {
-		ERROR("unable to stat file \"%s\"\n", cmd);
-		exit(EXIT_FAILURE);
-	}
-	if(stat(buf, &st_exe)) {
-		ERROR("unable to kill proccess %i (%s: %s)\n", pid, buf,
-				strerror(errno));
-		exit(EXIT_FAILURE);
+	if(killOption == 1) {
+		if(stat(cmd, &st_cmd)) {
+			ERROR("unable to stat file \"%s\"\n", cmd);
+			ERROR("execute \"%s --kill -kill\" to kill pid %i\n", 
+					cmd, pid);
+			exit(EXIT_FAILURE);
+		}
+		if(stat(buf, &st_exe)) {
+			ERROR("unable to kill proccess %i (%s: %s)\n", pid, buf,
+					strerror(errno));
+			ERROR("execute \"%s --kill -kill\" to kill pid %i\n", 
+					cmd, pid);
+			exit(EXIT_FAILURE);
+		}
+
+		if(st_exe.st_dev != st_cmd.st_dev || st_exe.st_ino != st_cmd.st_ino) {
+			ERROR("%s doesn't appear to be running as pid %i\n",
+					cmd, pid);
+			ERROR("execute \"%s --kill -kill\" to kill pid %i\n", 
+					cmd, pid);
+			exit(EXIT_FAILURE);
+		}
 	}
 
-	if(st_exe.st_dev != st_cmd.st_dev || st_exe.st_ino != st_cmd.st_ino) {
-		ERROR("%s doesn't appear to be running as pid %i\n",
-				cmd, pid);
+	if(kill(pid, SIGTERM)) {
+		ERROR("unable to kill proccess %i: %s\n", pid, strerror(errno));
 		exit(EXIT_FAILURE);
 	}
-
-	kill(pid, SIGTERM);
 	exit(EXIT_SUCCESS);
 }
 
@@ -439,7 +450,7 @@ int main(int argc, char * argv[]) {
 
         parseOptions(argc, argv, &options);
 
-	if(options.kill) killMpdFromPidFile(argv[0]);
+	if(options.kill) killMpdFromPidFile(argv[0], options.kill);
 
         initStats();
 	initTagConfig();
