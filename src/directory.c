@@ -76,6 +76,8 @@ int exploreDirectory(Directory * directory);
 
 int updateDirectory(Directory * directory);
 
+void deleteEmptyDirectoriesInDirectory(Directory * directory);
+
 int addSubDirectoryToDirectory(Directory * directory, char * shortname, char * name);
 
 Directory * newDirectory(Directory * parentDirectory, char * dirname, time_t mtime) {
@@ -118,6 +120,24 @@ void removeSongFromDirectory(Directory * directory, char * shortname) {
 		removeASongFromTables((Song *)song);
 		deleteASongFromPlaylist((Song *)song);
 		deleteFromList(directory->songs,shortname);
+	}
+}
+
+void deleteEmptyDirectoriesInDirectory(Directory * directory) {
+	ListNode * node = directory->subDirectories->firstNode;
+	ListNode * nextNode;
+	Directory * subDir;
+
+	while(node) {
+		subDir = (Directory *)node->data;
+		deleteEmptyDirectoriesInDirectory(subDir);
+		nextNode = node->nextNode;
+		if(subDir->subDirectories->numberOfNodes==0 &&
+				subDir->songs->numberOfNodes==0) 
+		{
+			deleteNodeFromList(directory->subDirectories,node);
+		}
+		node = nextNode;
 	}
 }
 
@@ -475,6 +495,7 @@ void sortDirectory(Directory * directory) {
 int writeDirectoryDB() {
 	FILE * fp;
 
+	deleteEmptyDirectoriesInDirectory(mp3rootDirectory);
 	sortDirectory(mp3rootDirectory);
 	stats.numberOfSongs = countSongsIn(stderr,NULL);
 	stats.dbPlayTime = sumSongTimesIn(stderr,NULL);
