@@ -210,7 +210,7 @@ void closeAllListenSockets() {
 	DEBUG("closeAllListenSockets called\n");
 
 	for(i=0; i<numberOfListenSockets; i++) {
-		DEBUG("closing listen scoket %i\n", i);
+		DEBUG("closing listen socket %i\n", i);
 		while(close(listenSockets[i]) < 0 && errno==EINTR);
 	}
 
