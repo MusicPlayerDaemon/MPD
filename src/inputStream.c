@@ -75,3 +75,4 @@ int closeInputStream(InputStream * inStream) {
 int inputStreamAtEOF(InputStream * inStream) {
 	return feof(inStream->fp);
 }
+/* vim:set shiftwidth=4 tabstop=8 expandtab: */
