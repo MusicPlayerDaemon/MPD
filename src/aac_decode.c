@@ -210,6 +210,7 @@ float getAacFloatTotalTime(char * file) {
 	unsigned long sampleRate;
 	unsigned char channels;
 	FILE * fp = fopen(file,"r");
+	size_t bread;
 
 	if(fp==NULL) return -1;
 
@@ -223,12 +224,13 @@ float getAacFloatTotalTime(char * file) {
 		faacDecSetConfiguration(decoder,config);
 
 		fillAacBuffer(&b);
-		if(faacDecInit(decoder,b.buffer,b.bytesIntoBuffer,
-				&sampleRate,&channels) >= 0 &&
-				sampleRate > 0 && channels > 0)
-		{
-			length = 0;
-		}
+#ifdef HAVE_FAAD_BUFLEN_FUNCS
+		bread = faacDecInit(decoder,b.buffer,b.bytesIntoBuffer,
+				&sampleRate,&channels);
+#else
+		bread = faacDecInit(decoder,b.buffer,&sampleRate,&channels);
+#endif
+		if(bread >= 0 && sampleRate > 0 && channels > 0) length = 0;
 
 		faacDecClose(decoder);
 	}
@@ -291,9 +293,14 @@ int aac_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc) {
 	faacDecSetConfiguration(decoder,config);
 
 	fillAacBuffer(&b);
-	if((bread = faacDecInit(decoder,b.buffer,b.bytesIntoBuffer,
-			&sampleRate,&channels)) < 0)
-	{
+
+#ifdef HAVE_FAAD_BUFLEN_FUNCS
+	bread = faacDecInit(decoder,b.buffer,b.bytesIntoBuffer,
+			&sampleRate,&channels);
+#else
+	bread = faacDecInit(decoder,b.buffer,&sampleRate,&channels);
+#endif
+	if(bread < 0) {
 		ERROR("Error not a AAC stream.\n");
 		faacDecClose(decoder);
 		fclose(b.infile);
@@ -317,8 +324,12 @@ int aac_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc) {
 			break;
 		}
 
+#ifdef HAVE_FAAD_BUFLEN_FUNCS
 		sampleBuffer = faacDecDecode(decoder,&frameInfo,b.buffer,
 						b.bytesIntoBuffer);
+#else
+		sampleBuffer = faacDecDecode(decoder,&frameInfo,b.buffer);
+#endif
 
 		if(frameInfo.error > 0) {
 			ERROR("error decoding AAC file: %s\n",dc->file);
@@ -328,9 +339,13 @@ int aac_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc) {
 			break;
 		}
 
+#ifdef HAVE_FAACDECFRAMEINFO_SAMPLERATE
+		sampleRate = frameInfo.samplerate;
+#endif
+
 		if(dc->start) {
 			af->channels = frameInfo.channels;
-			af->sampleRate = frameInfo.samplerate;
+			af->sampleRate = sampleRate;
 			dc->state = DECODE_STATE_DECODE;
 			dc->start = 0;
 		}
@@ -341,10 +356,10 @@ int aac_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc) {
 
 		if(sampleCount>0) {
 			bitRate = frameInfo.bytesconsumed*8.0*
-				frameInfo.channels*frameInfo.samplerate/
+				frameInfo.channels*sampleRate/
 				frameInfo.samples/1024+0.5;
 			time+= (float)(frameInfo.samples)/frameInfo.channels/
-				frameInfo.samplerate;
+				sampleRate;
 		}
 			
 		sampleBufferLen = sampleCount*2;

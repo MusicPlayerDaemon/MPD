@@ -15,9 +15,16 @@ typedef unsigned __int64 uint64_t;
 
 #else
 
-#include <stdint.h>
+#include "../../config.h"
 
+#ifdef HAVE_STDINT_H
+#include <stdint.h>
+#else
+#ifdef HAVE_INTTYPES_H
+#include <inttypes.h>
+#endif
 #endif
 
+#endif
 
 #endif

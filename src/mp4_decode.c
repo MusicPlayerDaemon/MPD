@@ -44,12 +44,24 @@ int mp4_getAACTrack(mp4ff_t *infile) {
 	for (i = 0; i < numTracks; i++) {
 		unsigned char *buff = NULL;
 		int buff_size = 0;
+#ifdef HAVE_MP4AUDIOSPECIFICCONFIG
 		mp4AudioSpecificConfig mp4ASC;
+#else
+		unsigned long dummy1_32;
+            	unsigned char dummy2_8, dummy3_8, dummy4_8, dummy5_8, dummy6_8,
+                		dummy7_8, dummy8_8;
+#endif
 	
 		mp4ff_get_decoder_config(infile, i, &buff, &buff_size);
 
 		if (buff) {
+#ifdef HAVE_MP4AUDIOSPECIFICCONFIG
 			rc = AudioSpecificConfig(buff, buff_size, &mp4ASC);
+#else
+			rc = AudioSpecificConfig(buff, &dummy1_32, &dummy2_8,
+					&dummy3_8, &dummy4_8, &dummy5_8, 
+					&dummy6_8, &dummy7_8, &dummy8_8);
+#endif
 			free(buff);
 			if (rc < 0) continue;
             		return i;
@@ -220,8 +232,12 @@ int mp4_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc) {
 			continue;
 		}
 
+#ifdef HAVE_FAAD_BUFLEN_FUNCS
 		sampleBuffer = faacDecDecode(decoder,&frameInfo,mp4Buffer,
 						mp4BufferSize);
+#else
+		sampleBuffer = faacDecDecode(decoder,&frameInfo,mp4Buffer);
+#endif
 
 		if(mp4Buffer) free(mp4Buffer);
 		if(frameInfo.error > 0) {
@@ -234,9 +250,11 @@ int mp4_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc) {
 
 		if(dc->start) {
 			channels = frameInfo.channels;
+#ifdef HAVE_FAACDECFRAMEINFO_SAMPLERATE
 			scale = frameInfo.samplerate;
+#endif
+			af->sampleRate = scale;
 			af->channels = frameInfo.channels;
-			af->sampleRate = frameInfo.samplerate;
 			dc->state = DECODE_STATE_DECODE;
 			dc->start = 0;
 		}
