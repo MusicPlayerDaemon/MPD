@@ -25,7 +25,7 @@ echo "This may take a while ..."
 # Regenerate configuration files
 libtoolize -f -c
 
-for i in -1.8 -1.7 -1.6 ''; do
+for i in -1.7 -1.6 ''; do
 	if [ -z $ACLOCAL ]; then
 		which aclocal$i
 		if [ "$?" = "0" ]; then
