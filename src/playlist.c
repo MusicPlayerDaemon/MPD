@@ -177,7 +177,7 @@ void initPlaylist() {
 
 	memset(playlist.songs,0,sizeof(char *)*playlist_max_length);
 
-	srand(time(NULL));
+	srandom(time(NULL));
 
 	playlist_stateFile = parseConfigFilePath(CONF_STATE_FILE, 0);
 
@@ -643,7 +643,7 @@ int addSongToPlaylist(FILE * fp, Song * song) {
 		else */if(playlist.queued>=0) start = playlist.queued+1;
 		else start = playlist.current+1;
                 if(start < playlist.length) {
-		        swap = rand()%(playlist.length-start);
+		        swap = random()%(playlist.length-start);
 		        swap+=start;
 		        swapOrder(playlist.length-1,swap);
                 }
@@ -1137,7 +1137,7 @@ void randomizeOrder(int start,int end) {
 	}
 
 	for(i=start;i<=end;i++) {
-		ri = rand()%(end-start+1)+start;
+		ri = random()%(end-start+1)+start;
 		if(ri==playlist.current) playlist.current = i;
 		else if(i==playlist.current) playlist.current = ri;
 		swapOrder(i,ri);
@@ -1228,7 +1228,7 @@ int shufflePlaylist(FILE * fp) {
                 }
 		/* shuffle the rest of the list */
 		for(;i<playlist.length;i++) {
-			ri = rand()%(playlist.length-1)+1;
+			ri = random()%(playlist.length-1)+1;
 			swapSongs(i,ri);
 		}
 
