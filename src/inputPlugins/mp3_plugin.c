@@ -261,18 +261,14 @@ int decodeNextFrameHeader(mp3DecodeData * data, MpdTag ** tag) {
 					(data->stream).bufend-
 					(data->stream).this_frame);
 
-			printf("HERE 1\n");
 			if(tagsize>0) {
-				printf("HERE 1-1\n");
 				if(tag) *tag =mp3_parseId3Tag(data, tagsize);
 				else {
 					mad_stream_skip(&(data->stream),
 							tagsize);
 				}
-				printf("HERE 1-2\n");
 				return DECODE_CONT;
 			}
-			printf("HERE 2\n");
 		}
 #endif
 		if(MAD_RECOVERABLE((data->stream).error)) {

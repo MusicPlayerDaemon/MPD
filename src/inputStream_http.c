@@ -376,7 +376,6 @@ static int getHTTPHello(InputStream * inStream) {
                         while(*(incr+cur) == ' ') incr++;
                         inStream->metaTitle = strdup(cur+incr);
                         *temp = '\r';
-                        DEBUG("stream icy-name: %s\n", inStream->metaTitle);
                 }
                 else if(0 == strncmp(cur, "\r\nx-audiocast-name:", 19)) {
                         int incr = 19;
@@ -387,8 +386,6 @@ static int getHTTPHello(InputStream * inStream) {
                         while(*(incr+cur) == ' ') incr++;
                         inStream->metaTitle = strdup(cur+incr);
                         *temp = '\r';
-                        DEBUG("stream audiocast-name: %s\n", 
-                                        inStream->metaTitle);
                 }
                 else if(0 == strncmp(cur, "\r\nContent-Type:", 15)) {
                         int incr = 15;
