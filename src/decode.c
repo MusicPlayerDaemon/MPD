@@ -114,6 +114,8 @@ int waitOnDecode(PlayerControl * pc, AudioFormat * af, DecoderControl * dc,
 
 	if(dc->start || dc->error!=DECODE_ERROR_NOERROR) {
 		strncpy(pc->erroredFile,pc->file,MAXPATHLEN);
+		printf("error: %i, start: %i, decode_pid: %i\n",dc->error,
+			dc->start,*decode_pid);
 		pc->error = PLAYER_ERROR_FILE;
 		quitDecode(pc,dc);
 		return -1;
@@ -198,9 +200,9 @@ void decodeSeek(PlayerControl * pc, AudioFormat * af, DecoderControl * dc,
 int decoderInit(PlayerControl * pc, Buffer * cb, AudioFormat *af, 
 			DecoderControl * dc) {
 	decode_pid = &(pc->decode_pid);
-	*decode_pid = fork();
+	int pid = fork();
 
-	if(*decode_pid==0) {
+	if(pid==0) {
 		/* CHILD */
 
 		while(1) {
@@ -247,11 +249,12 @@ int decoderInit(PlayerControl * pc, Buffer * cb, AudioFormat *af,
 		exit(0);
 		/* END OF CHILD */
 	}
-	else if(*decode_pid<0) {
+	else if(pid<0) {
 		strncpy(pc->erroredFile,pc->file,MAXPATHLEN);
 		pc->error = PLAYER_ERROR_SYSTEM;
 		return -1;
 	}
+	else *decode_pid = pid;
 
 	return 0;
 }

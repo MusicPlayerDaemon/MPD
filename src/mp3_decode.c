@@ -479,7 +479,7 @@ void initAudioFormatFromMp3DecodeData(mp3DecodeData * data, AudioFormat * af) {
 
 int mp3_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc) {
 	mp3DecodeData data;
-	
+
 	if(openMp3(dc->file,&data) < 0) {
 		ERROR("Input does not appear to be a mp3 bit stream.\n");
 		return -1;
