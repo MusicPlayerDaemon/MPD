@@ -157,26 +157,6 @@ if test x$enable_iconv = xyes; then
 	if test x$enable_iconv = xyes; then
 		AC_CHECK_LIB(iconv,main,MPD_LIBS="$MPD_LIBS $ICONV_LIBS",)
 		AC_DEFINE(HAVE_ICONV,1,[Define to use iconv])
-		AC_MSG_CHECKING([for iconv declaration])
-		AC_CACHE_VAL(proto_iconv, [
-			AC_TRY_COMPILE([
-#include <stdlib.h>
-#include <iconv.h>
-extern
-#ifdef __cplusplus
-"C"
-#endif
-#if defined(__STDC__) || defined(__cplusplus)
-size_t iconv (iconv_t cd, char * *inbuf, size_t *inbytesleft, char * *outbuf, size_t *outbytesleft);
-#else
-size_t iconv();
-#endif
-], [], iconv_arg1="", iconv_arg1="const")
-		        proto_iconv="extern size_t iconv (iconv_t cd, $am_cv_proto_iconv_arg1 char * *inbuf, size_t *inbytesleft, char * *outbuf, size_t *outbytesleft);"])
-			proto_iconv=`echo "[$]am_cv_proto_iconv" | tr -s ' ' | sed -e 's/( /(/'`
-			AC_MSG_RESULT([$]{ac_t:-}[$]proto_iconv)
-			AC_DEFINE_UNQUOTED(ICONV_CONST, $proto_iconv_arg1,
-				[Define as const if the declaration of iconv() needs const.])
 	fi
 	CFLAGS=$oldcflags
 	LIBS=$oldlibs
