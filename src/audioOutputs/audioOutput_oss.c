@@ -48,6 +48,10 @@
 typedef struct _OssData {
 	int fd;
 	char * device;
+	int channels;
+	int sampleRate;
+	int bitFormat;
+	int bits;
 } OssData;
 
 static OssData * newOssData() {
@@ -154,28 +158,45 @@ static void oss_finishDriver(AudioOutput * audioOutput) {
 	freeOssData(od);
 }
 
-static int oss_openDevice(AudioOutput * audioOutput) 
-{
+static int oss_open(AudioOutput * audioOutput) {
 	OssData * od = audioOutput->data;
-	AudioFormat * audioFormat = &audioOutput->outAudioFormat;
-#ifdef WORDS_BIGENDIAN
-	int i = AFMT_S16_BE;
-#else
-	int i = AFMT_S16_LE;
-#endif
-	
-	if((od->fd = open(od->device, O_WRONLY)) < 0) goto fail;
 
-	if(ioctl(od->fd, SNDCTL_DSP_SETFMT, &i)) goto fail;
+	if((od->fd = open(od->device, O_WRONLY)) < 0) {
+		ERROR("Error opening OSS device \"%s\": %s\n", od->device, 
+				strerror(errno));
+		goto fail;
+	}
 
-	i = audioFormat->channels;	
-	if(ioctl(od->fd, SNDCTL_DSP_CHANNELS, &i)) goto fail;
+	if(ioctl(od->fd, SNDCTL_DSP_SETFMT, &od->bitFormat)) {
+		ERROR("Error setting bitformat on OSS device \"%s\": %s\n", 
+				od->device, 
+				strerror(errno));
+		goto fail;
+	}
 
-	i = audioFormat->sampleRate;
-	if(ioctl(od->fd, SNDCTL_DSP_SPEED, &i)) goto fail;
+	if(ioctl(od->fd, SNDCTL_DSP_CHANNELS, &od->channels)) {
+		ERROR("OSS device \"%s\" does not support %i channels: %s\n", 
+				od->device,
+				od->channels,
+				strerror(errno));
+		goto fail;
+	}
 
-	i = audioFormat->bits;
-	if(ioctl(od->fd, SNDCTL_DSP_SAMPLESIZE, &i)) goto fail;
+	if(ioctl(od->fd, SNDCTL_DSP_SPEED, &od->sampleRate)) {
+		ERROR("OSS device \"%s\" does not support %i Hz audio: %s\n", 
+				od->device,
+				od->sampleRate,
+				strerror(errno));
+		goto fail;
+	}
+
+	if(ioctl(od->fd, SNDCTL_DSP_SAMPLESIZE, &od->bits)) {
+		ERROR("OSS device \"%s\" does not support %i bit audio: %s\n", 
+				od->device,
+				od->bits,
+				strerror(errno));
+		goto fail;
+	}
 
 	audioOutput->open = 1;
 
@@ -184,9 +205,23 @@ static int oss_openDevice(AudioOutput * audioOutput)
 fail:
 	if(od->fd >= 0) close(od->fd);
 	audioOutput->open = 0;
-	ERROR("Error opening OSS device \"%s\": %s\n", od->device, 
-			strerror(errno));
 	return -1;
+}
+
+static int oss_openDevice(AudioOutput * audioOutput) 
+{
+	OssData * od = audioOutput->data;
+	AudioFormat * audioFormat = &audioOutput->outAudioFormat;
+#ifdef WORDS_BIGENDIAN
+	od->bitFormat = AFMT_S16_BE;
+#else
+	od->bitFormat = AFMT_S16_LE;
+#endif
+	od->channels = audioFormat->channels;	
+	od->sampleRate = audioFormat->sampleRate;
+	od->bits = audioFormat->bits;
+
+	return oss_open(audioOutput);
 }
 
 static void oss_closeDevice(AudioOutput * audioOutput) {
@@ -198,6 +233,17 @@ static void oss_closeDevice(AudioOutput * audioOutput) {
 	}
 
 	audioOutput->open = 0;
+}
+
+static void oss_dropBufferedAudio(AudioOutput * audioOutput) {
+	OssData * od = audioOutput->data;
+
+	if(od->fd >= 0) {
+		ioctl(od->fd, SNDCTL_DSP_RESET, 0);
+		oss_closeDevice(audioOutput);
+	}
+
+	/*oss_open(audioOutput);*/
 }
 
 static int oss_playAudio(AudioOutput * audioOutput, char * playChunk, 
@@ -227,6 +273,7 @@ AudioOutputPlugin ossPlugin =
 	oss_finishDriver,
 	oss_openDevice,
 	oss_playAudio,
+	oss_dropBufferedAudio,
 	oss_closeDevice,
 	NULL /* sendMetadataFunc */
 };
@@ -235,6 +282,7 @@ AudioOutputPlugin ossPlugin =
 
 AudioOutputPlugin ossPlugin =
 {
+	NULL,
 	NULL,
 	NULL,
 	NULL,

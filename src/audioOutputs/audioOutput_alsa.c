@@ -117,14 +117,14 @@ static int alsa_openDevice(AudioOutput * audioOutput)
 	}
 
 	err = snd_pcm_open(&ad->pcm_handle, ad->device, 
-			SND_PCM_STREAM_PLAYBACK, 0);
+			SND_PCM_STREAM_PLAYBACK, SND_PCM_NONBLOCK);
 	if(err < 0) {
 		ad->pcm_handle = NULL;
 		goto error;
 	}
 
-	/*err = snd_pcm_nonblock(ad->pcm_handle, 0);
-	if(err < 0) goto error;*/
+	err = snd_pcm_nonblock(ad->pcm_handle, 0);
+	if(err < 0) goto error;
 
 	/* configure HW params */
 	snd_pcm_hw_params_alloca(&hwparams);
@@ -221,26 +221,44 @@ fail:
 	return -1;
 }
 
-static void alsa_closeDevice(AudioOutput * audioOutput) {
+static void alsa_dropBufferedAudio(AudioOutput * audioOutput) {
 	AlsaData * ad = audioOutput->data;
 
-	if(ad->pcm_handle) {
-		snd_pcm_drain(ad->pcm_handle);
-		ad->pcm_handle = NULL;
-	}
-
-	audioOutput->open = 0;
+	snd_pcm_drop(ad->pcm_handle);
 }
 
 inline static int alsa_errorRecovery(AlsaData * ad, int err) {
 	if(err == -EPIPE) {
 		DEBUG("Underrun on alsa device \"%s\"\n", ad->device);
+	}
+	else if(err == -ESTRPIPE) {
+		DEBUG("alsa device \"%s\" was suspended\n", ad->device);
+	}
+
+	switch(snd_pcm_state(ad->pcm_handle)) {
+	case SND_PCM_STATE_SETUP:
+	case SND_PCM_STATE_XRUN:
 		err = snd_pcm_prepare(ad->pcm_handle);
 		if(err < 0) return -1;
 		return 0;
+	default:
+		/* unknown state, do nothing */
+		break;
 	}
 
 	return err;
+}
+
+static void alsa_closeDevice(AudioOutput * audioOutput) {
+	AlsaData * ad = audioOutput->data;
+
+	if(ad->pcm_handle) {
+		snd_pcm_drain(ad->pcm_handle);
+		snd_pcm_close(ad->pcm_handle);
+		ad->pcm_handle = NULL;
+	}
+
+	audioOutput->open = 0;
 }
 
 static int alsa_playAudio(AudioOutput * audioOutput, char * playChunk, 
@@ -277,6 +295,7 @@ AudioOutputPlugin alsaPlugin =
 	alsa_finishDriver,
 	alsa_openDevice,
 	alsa_playAudio,
+	alsa_dropBufferedAudio,
 	alsa_closeDevice,
 	NULL /* sendMetadataFunc */
 };

@@ -223,7 +223,10 @@ inline void syncAudioDevicesEnabledArrays() {
 		if(myAudioDevicesEnabled[i]) {
 			openAudioOutput(audioOutputArray[i], &audio_format);
 		}
-		else closeAudioOutput(audioOutputArray[i]);
+		else {
+			dropBufferedAudioOutput(audioOutputArray[i]);
+			closeAudioOutput(audioOutputArray[i]);
+		}
 	}
 }
 
@@ -310,6 +313,23 @@ int playAudio(char * playChunk, int size) {
 
 int isAudioDeviceOpen() {
 	return audioOpened;
+}
+
+void dropBufferedAudio() {
+	int i;
+
+	if(0 != memcmp(pdAudioDevicesEnabled, myAudioDevicesEnabled,
+			AUDIO_MAX_DEVICES)) 
+	{
+		syncAudioDevicesEnabledArrays();
+	}
+
+	audioBufferPos = 0;
+
+	for(i = 0; i < audioOutputArraySize; i++) {
+		if(!myAudioDevicesEnabled[i]) continue;
+		dropBufferedAudioOutput(audioOutputArray[i]);
+	}
 }
 
 void closeAudioDevice() {

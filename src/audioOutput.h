@@ -38,6 +38,8 @@ typedef int (* AudioOutputOpenDeviceFunc) (AudioOutput * audioOutput);
 typedef int (* AudioOutputPlayFunc) (AudioOutput * audioOutput,
                 char * playChunk, int size);
 
+typedef void (* AudioOutputDropBufferedAudioFunc) (AudioOutput * audioOutput);
+
 typedef void (* AudioOutputCloseDeviceFunc) (AudioOutput * audioOutput);
 
 typedef void (* AudioOutputSendMetadataFunc) (AudioOutput * audioOutput,
@@ -51,6 +53,7 @@ struct _AudioOutput {
         AudioOutputFinishDriverFunc finishDriverFunc;
         AudioOutputOpenDeviceFunc openDeviceFunc;
         AudioOutputPlayFunc playFunc;
+        AudioOutputDropBufferedAudioFunc dropBufferedAudioFunc;
         AudioOutputCloseDeviceFunc closeDeviceFunc;
 	AudioOutputSendMetadataFunc sendMetdataFunc;
 
@@ -71,6 +74,7 @@ typedef struct _AudioOutputPlugin {
         AudioOutputFinishDriverFunc finishDriverFunc;
         AudioOutputOpenDeviceFunc openDeviceFunc;
         AudioOutputPlayFunc playFunc;
+        AudioOutputDropBufferedAudioFunc dropBufferedAudioFunc;
         AudioOutputCloseDeviceFunc closeDeviceFunc;
 	AudioOutputSendMetadataFunc sendMetdataFunc;
 } AudioOutputPlugin;
@@ -84,6 +88,7 @@ void unloadAudioOutputPlugin(AudioOutputPlugin * audioOutputPlugin);
 AudioOutput * newAudioOutput(ConfigParam * param);
 int openAudioOutput(AudioOutput * audioOutput, AudioFormat * audioFormat);
 int playAudioOutput(AudioOutput * audioOutput, char * playChunk, int size);
+void dropBufferedAudioOutput(AudioOutput * audioOutput);
 void closeAudioOutput(AudioOutput * audioOutput);
 void finishAudioOutput(AudioOutput * audioOutput);
 int keepAudioOutputAlive(AudioOutput * audioOutput, int ms);

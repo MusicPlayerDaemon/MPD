@@ -57,6 +57,8 @@ int openAudioDevice(AudioFormat * audioFormat);
 
 int playAudio(char * playChunk,int size);
 
+void dropBufferedAudio();
+
 void closeAudioDevice();
 
 int isAudioDeviceOpen();

@@ -251,6 +251,7 @@ int decodeSeek(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb,
                 } \
 	} \
 	if(pc->stop) { \
+		dropBufferedAudio(); \
 		quitDecode(pc,dc); \
 		return; \
 	}

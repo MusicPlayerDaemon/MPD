@@ -61,6 +61,7 @@ AudioOutput * newAudioOutput(ConfigParam * param) {
 		ret->finishDriverFunc = plugin->finishDriverFunc;
 		ret->openDeviceFunc = plugin->openDeviceFunc;
 		ret->playFunc = plugin->playFunc;
+		ret->dropBufferedAudioFunc = plugin->dropBufferedAudioFunc;
 		ret->closeDeviceFunc = plugin->closeDeviceFunc;
 		ret->sendMetdataFunc = plugin->sendMetdataFunc;
 		ret->open = 0;
@@ -163,6 +164,10 @@ int playAudioOutput(AudioOutput * audioOutput, char * playChunk, int size) {
 	ret = audioOutput->playFunc(audioOutput, playChunk, size);
 
 	return ret;
+}
+
+void dropBufferedAudioOutput(AudioOutput * audioOutput) {
+	if(audioOutput->open) audioOutput->dropBufferedAudioFunc(audioOutput);
 }
 
 void closeAudioOutput(AudioOutput * audioOutput) {

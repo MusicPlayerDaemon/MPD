@@ -361,6 +361,10 @@ static void myShout_finishDriver(AudioOutput * audioOutput) {
 	if(shoutInitCount == 0) shout_shutdown();
 }
 
+static void myShout_dropBufferedAudioDevice(AudioOutput * audioOutput) {
+	// needs to be implemented
+}
+
 static void myShout_closeDevice(AudioOutput * audioOutput) {
 	ShoutData * sd = (ShoutData *)audioOutput->data;
 

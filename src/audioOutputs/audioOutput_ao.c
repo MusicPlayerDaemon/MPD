@@ -171,6 +171,10 @@ static void audioOutputAo_finishDriver(AudioOutput * audioOutput) {
 	if(driverInitCount == 0) ao_shutdown();
 }
 
+static void audioOutputAo_dropBufferedAudio(AudioOutput * audioOutput) {
+	// not supported by libao
+}
+
 static void audioOutputAo_closeDevice(AudioOutput * audioOutput) {
 	AoData * ad = (AoData *) audioOutput->data;
 
@@ -237,6 +241,7 @@ AudioOutputPlugin aoPlugin =
 	audioOutputAo_finishDriver,
 	audioOutputAo_openDevice,
 	audioOutputAo_play,
+	audioOutputAo_dropBufferedAudio,
 	audioOutputAo_closeDevice,
 	NULL /* sendMetadataFunc */
 };
@@ -247,6 +252,7 @@ AudioOutputPlugin aoPlugin =
 
 AudioOutputPlugin aoPlugin = 
 {
+	NULL,
 	NULL,
 	NULL,
 	NULL,
