@@ -90,7 +90,7 @@ int establish(unsigned short port) {
 		if(!(he = gethostbyname((getConf())[CONF_BIND_TO_ADDRESS]))) {
 			ERROR("can't lookup host \"%s\"\n",
 					(getConf())[CONF_BIND_TO_ADDRESS]);
-			exit(-1);
+			exit(EXIT_FAILURE);
 		}
 		switch(he->h_addrtype) {
 #ifdef HAVE_IPV6
@@ -99,7 +99,7 @@ int establish(unsigned short port) {
 				ERROR("no IPv6 support, but a IPv6 address "
 					"found for \"%s\"\n",
 					(getConf())[CONF_BIND_TO_ADDRESS]);
-				exit(-1);
+				exit(EXIT_FAILURE);
 			}
 			bcopy((char *)he->h_addr,(char *)
 					&sin6.sin6_addr.s6_addr,he->h_length);
@@ -116,7 +116,7 @@ int establish(unsigned short port) {
 		default:
 			ERROR("address type for \"%s\" is not IPv4 or IPv6\n",
 					(getConf())[CONF_BIND_TO_ADDRESS]);
-			exit(-1);
+			exit(EXIT_FAILURE);
 		}
 	}
 

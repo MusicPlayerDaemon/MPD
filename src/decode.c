@@ -70,7 +70,7 @@ void decodeSigHandler(int sig) {
 			int pid = *decode_pid;
 			if(pid>0) kill(pid,SIGTERM);
 		}
-		exit(0);
+		exit(EXIT_SUCCESS);
 	}
 }
 
@@ -275,7 +275,7 @@ int decoderInit(PlayerControl * pc, Buffer * cb, AudioFormat *af,
 			else my_usleep(10000);
 		}
 
-		exit(0);
+		exit(EXIT_SUCCESS);
 		/* END OF CHILD */
 	}
 	else if(pid<0) {

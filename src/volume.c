@@ -358,7 +358,7 @@ void initVolume() {
 	}
 	else {
 		ERROR("unknown mixer type: %s\n",(getConf())[CONF_MIXER_TYPE]);
-		exit(-1);
+		exit(EXIT_FAILURE);
 	}
 	if(strlen((getConf())[CONF_MIXER_DEVICE])) {
 		volume_mixerDevice = (getConf())[CONF_MIXER_DEVICE];

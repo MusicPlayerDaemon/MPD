@@ -444,21 +444,21 @@ void readDirectoryInfo(FILE * fp,Directory * directory) {
 			key = strdup(&(buffer[strlen(DIRECTORY_DIR)]));
 			if(myFgets(buffer,bufferSize,fp)<0) {
 				ERROR("Error reading db\n");
-				exit(-1);
+				exit(EXIT_FAILURE);
 			}
 			if(strncmp(DIRECTORY_MTIME,buffer,strlen(DIRECTORY_MTIME))) {
 				ERROR("Error reading db\n");
 				ERROR("%s\n",buffer);
-				exit(-1);
+				exit(EXIT_FAILURE);
 			}
 			mtime = atoi(&(buffer[strlen(DIRECTORY_BEGIN)]));
 			if(myFgets(buffer,bufferSize,fp)<0) {
 				ERROR("Error reading db\n");
-				exit(-1);
+				exit(EXIT_FAILURE);
 			}
 			if(strncmp(DIRECTORY_BEGIN,buffer,strlen(DIRECTORY_BEGIN))) {
 				ERROR("Error reading db\n");
-				exit(-1);
+				exit(EXIT_FAILURE);
 			}
 			name = strdup(&(buffer[strlen(DIRECTORY_BEGIN)]));
 			subDirectory = newDirectory(directory,name,mtime);
@@ -472,7 +472,7 @@ void readDirectoryInfo(FILE * fp,Directory * directory) {
 		}
 		else {
 			ERROR("Unknown line in db: %s\n",buffer);
-			exit(-1);
+			exit(EXIT_FAILURE);
 		}
 	}
 }
@@ -529,7 +529,7 @@ int readDirectoryDB() {
 
 		if(myFgets(buffer,bufferSize,fp)<0) {
 			ERROR("Error reading db\n");
-			exit(-1);
+			exit(EXIT_FAILURE);
 		}
 		if(0==strcmp(DIRECTORY_INFO_BEGIN,buffer)) {
 			while(myFgets(buffer,bufferSize,fp) && 
@@ -541,7 +541,7 @@ int readDirectoryDB() {
 					if(foundVersion) {
 						ERROR("already found "
 							"version in db\n");
-						exit(-1);
+						exit(EXIT_FAILURE);
 					}
 					foundVersion = 1;
 				}
@@ -554,7 +554,7 @@ int readDirectoryDB() {
 					if(foundFsCharset) {
 						ERROR("already found "
 							"fs charset in db\n");
-						exit(-1);
+						exit(EXIT_FAILURE);
 					}
 
 					foundFsCharset = 1;
@@ -577,7 +577,7 @@ int readDirectoryDB() {
 				else {
 					ERROR("directory: unknown line in db info: %s\n",
 						buffer);
-					exit(-1);
+					exit(EXIT_FAILURE);
 				}
 			}
 		}

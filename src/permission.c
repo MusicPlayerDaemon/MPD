@@ -59,7 +59,7 @@ unsigned int parsePermissions(char * string) {
 		}
 		else {
 			ERROR("uknown permission \"%s\"\n",temp);
-			exit(-1);
+			exit(EXIT_FAILURE);
 		}
 
 		temp = strtok_r(NULL,PERMISSION_SEPERATOR,&tok);
@@ -99,12 +99,12 @@ void initPermissions() {
 			ERROR("\"%s\" not found in password string \"%s\"\n",
 					PERMISSION_PASSWORD_CHAR,
 					nextSet);
-			exit(-1);
+			exit(EXIT_FAILURE);
 		}
 
 		if(!(temp = strtok_r(nextSet,PERMISSION_PASSWORD_CHAR,&cp2))) {
 			ERROR("something weird just happend in permission.c\n");
-			exit(-1);
+			exit(EXIT_FAILURE);
 		}
 		password = temp;
 

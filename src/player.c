@@ -137,7 +137,7 @@ int playerInit() {
 			else my_usleep(10000);
 		}
 
-		exit(0);
+		exit(EXIT_SUCCESS);
 	}
 	else if(player_pid<0) {
 		ERROR("player Problems fork()'ing\n");

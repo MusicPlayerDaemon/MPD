@@ -418,25 +418,25 @@ void initInterfaces() {
 	interface_timeout = strtol((getConf())[CONF_CONNECTION_TIMEOUT],&test,10);
 	if(*test!='\0' || interface_timeout<=0) {
 		ERROR("connection timeout \"%s\" is not a positive integer\n",(getConf())[CONF_CONNECTION_TIMEOUT]);
-		exit(-1);
+		exit(EXIT_FAILURE);
 	}
 
 	interface_max_connections = strtol((getConf())[CONF_MAX_CONNECTIONS],&test,10);
 	if(*test!='\0' || interface_max_connections<=0) {
 		ERROR("max connections \"%s\" is not a positive integer\n",(getConf())[CONF_MAX_CONNECTIONS]);
-		exit(-1);
+		exit(EXIT_FAILURE);
 	}
 
 	interface_max_command_list_size = strtoll((getConf())[CONF_MAX_COMMAND_LIST_SIZE],&test,10);
 	if(*test!='\0' || interface_max_command_list_size<=0) {
 		ERROR("max command list size \"%s\" is not a positive integer\n",(getConf())[CONF_MAX_COMMAND_LIST_SIZE]);
-		exit(-1);
+		exit(EXIT_FAILURE);
 	}
 
 	interface_max_output_buffer_size = strtoll((getConf())[CONF_MAX_OUTPUT_BUFFER_SIZE],&test,10);
 	if(*test!='\0' || interface_max_output_buffer_size<=0) {
 		ERROR("max output buffer size \"%s\" is not a positive integer\n",(getConf())[CONF_MAX_OUTPUT_BUFFER_SIZE]);
-		exit(-1);
+		exit(EXIT_FAILURE);
 	}
 
 	interface_max_command_list_size*=1024;

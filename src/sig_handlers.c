@@ -28,7 +28,7 @@ void termSigHandler(int signal) {
 	if(signal==SIGTERM) {
 		savePlaylistState();
 		playerKill();
-		exit(0);
+		exit(EXIT_SUCCESS);
 	}
 }
 

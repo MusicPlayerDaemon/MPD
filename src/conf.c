@@ -160,7 +160,7 @@ char ** readConf(char * file) {
 
 	if(!(fp=fopen(file,"r"))) {
 		ERROR("problems opening file %s for reading\n",file);
-		exit(-1);
+		exit(EXIT_FAILURE);
 	}
 
 	while(myFgets(string,sizeof(string),fp)) {
@@ -169,13 +169,13 @@ char ** readConf(char * file) {
 		if(numberOfArgs==0) continue;
 		if(2!=numberOfArgs) {
 			ERROR("improperly formated config line: %s\n",string);
-			exit(-1);
+			exit(EXIT_FAILURE);
 		}
 		i = 0;
 		while(i<CONF_NUMBER_OF_PARAMS && 0!=strcmp(conf_strings[i],array[0])) i++;
 		if(i>=CONF_NUMBER_OF_PARAMS) {
 			ERROR("unrecognized line in conf: %s\n",string);
-			exit(-1);
+			exit(EXIT_FAILURE);
 		}
 		if(conf_params[i]!=NULL) {
 			if(allowCat[i]) {
@@ -203,7 +203,7 @@ char ** readConf(char * file) {
 		if(conf_params[conf_required[i]] == NULL) {
 			ERROR("%s is unassigned in conf file\n",
 					conf_strings[conf_required[i]]);
-			exit(-1);
+			exit(EXIT_FAILURE);
 		}
 	}
 
@@ -214,7 +214,7 @@ char ** readConf(char * file) {
 		{
 			ERROR("\"%s\" is not an absolute path\n",
 					conf_params[conf_absolutePaths[i]]);
-			exit(-1);
+			exit(EXIT_FAILURE);
 		}
 		/* Parse ~ in path */
 		else if(conf_params[conf_absolutePaths[i]] &&
@@ -230,7 +230,7 @@ char ** readConf(char * file) {
 				if((pwd = getpwuid(uid)) == NULL) {
 					ERROR("problems getting passwd entry "
 						"for current user\n");
-					exit(-1);
+					exit(EXIT_FAILURE);
 				}
 			}
 			else {
@@ -249,7 +249,7 @@ char ** readConf(char * file) {
 					ERROR("user \"%s\" not found\n",
 						&(conf_params[
 						conf_absolutePaths[i]][1]));
-					exit(-1);
+					exit(EXIT_FAILURE);
 				}
 				if(foundSlash) *ch = '/';
 			}

@@ -45,7 +45,7 @@ void initPlayerData() {
 	if(*test!='\0' || bufferSize<=0) {
 		ERROR("buffer size \"%s\" is not a positive integer\n",
 				getConf()[CONF_BUFFER_SIZE]);
-		exit(-1);
+		exit(EXIT_FAILURE);
 	}
 	bufferSize*=1024;
 
@@ -53,7 +53,7 @@ void initPlayerData() {
 
 	if(buffered_chunks >= 1<<15) {
 		ERROR("buffer size \"%i\" is too big\n",bufferSize);
-		exit(-1);
+		exit(EXIT_FAILURE);
 	}
 
 	perc = strtod((getConf())[CONF_BUFFER_BEFORE_PLAY],&test);
@@ -61,7 +61,7 @@ void initPlayerData() {
 		ERROR("buffered before play \"%s\" is not a positive "
 				"percentage and less than 100 percent\n",
 				(getConf())[CONF_BUFFER_BEFORE_PLAY]);
-		exit(-1);
+		exit(EXIT_FAILURE);
 	}
 	buffered_before_play = (perc/100)*buffered_chunks;
 	if(buffered_before_play>buffered_chunks) {
@@ -77,15 +77,15 @@ void initPlayerData() {
 
 	if((shmid = shmget(IPC_PRIVATE,allocationSize,IPC_CREAT|0600))<0) {
 		ERROR("problems shmget'ing\n");
-		exit(-1);
+		exit(EXIT_FAILURE);
 	}
 	if((playerData_pd = shmat(shmid,NULL,0))<0) {
 		ERROR("problems shmat'ing\n");
-		exit(-1);
+		exit(EXIT_FAILURE);
 	}
 	if (shmctl(shmid, IPC_RMID, 0)<0) {
 		ERROR("problems shmctl'ing\n");
-		exit(-1);
+		exit(EXIT_FAILURE);
 	}
 
 	buffer = &(playerData_pd->buffer);

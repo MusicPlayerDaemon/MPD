@@ -99,7 +99,7 @@ void parseOptions(int argc, char ** argv, Options * options) {
                         if(strncmp(argv[i],"--",2)==0) {
                                 if(strcmp(argv[i],"--help")==0) {
                                         usage(argv);
-                                        exit(0);
+                                        exit(EXIT_SUCCESS);
                                 }
                                 else if(strcmp(argv[i],"--no-daemon")==0) {
                                         options->daemon = 0;
@@ -119,11 +119,11 @@ void parseOptions(int argc, char ** argv, Options * options) {
                                 }
                                 else if(strcmp(argv[i],"--version")==0) {
                                         version();
-                                        exit(0);
+                                        exit(EXIT_SUCCESS);
                                 }
                                 else {
                                         myfprintf(stderr,"unknown command line option: %s\n",argv[i]);
-                                        exit(-1);
+                                        exit(EXIT_FAILURE);
                                 }
                         }
                         else break;
@@ -176,7 +176,7 @@ void parseOptions(int argc, char ** argv, Options * options) {
         }
 
         usage(argv);
-        exit(-1);
+        exit(EXIT_FAILURE);
 }
 
 int main(int argc, char * argv[]) {
@@ -207,12 +207,12 @@ int main(int argc, char * argv[]) {
 
         if((port = atoi(options.portStr))<0) {
                 ERROR("problem with port number\n");
-                return -1;
+                return EXIT_FAILURE;
         }
 
         if((listenSocket = establish(port))<0) {
                 ERROR("error binding port\n");
-                return -1;
+                return EXIT_FAILURE;
         }
 
         /*
@@ -229,7 +229,7 @@ int main(int argc, char * argv[]) {
                 struct passwd * userpwd;
                 if ((userpwd = getpwnam(options.usr)) == NULL) {
                         ERROR("no such user: %s\n", options.usr);
-                        return -1;
+                        return EXIT_FAILURE;
                 }
                 uid = userpwd->pw_uid;
                 gid = userpwd->pw_gid;
@@ -237,7 +237,7 @@ int main(int argc, char * argv[]) {
                 if(setgid(gid) == -1) {
                         ERROR("cannot setgid of user %s: %s\n", options.usr,
                                         strerror(errno));
-                        return -1;
+                        return EXIT_FAILURE;
                 }
 
 #ifdef _BSD_SOURCE
@@ -253,13 +253,13 @@ int main(int argc, char * argv[]) {
                         ERROR("cannot get groups "
                                         "of user %s: %s\n", options.usr, 
                                         strerror(errno));
-                        return -1;
+                        return EXIT_FAILURE;
                 }
                 else if(setgroups(NGROUPS_MAX, gid_list) == -1) {
                         ERROR("cannot set groups "
                                         "of user %s: %s\n", options.usr, 
                                         strerror(errno));
-                        return -1;
+                        return EXIT_FAILURE;
                 }
 #endif
 
@@ -268,7 +268,7 @@ int main(int argc, char * argv[]) {
                         ERROR("cannot change to uid of user "
                                         "%s: %s\n", options.usr, 
                                         strerror(errno));
-                        return -1;
+                        return EXIT_FAILURE;
                 }
 
         }
@@ -276,13 +276,13 @@ int main(int argc, char * argv[]) {
         if(NULL==(out=fopen(options.logFile,"a"))) {
                 ERROR("problem opening file \"%s\" for writing\n",
                                 options.logFile);
-                return -1;
+                return EXIT_FAILURE;
         }
 
         if(NULL==(err=fopen(options.errorFile,"a"))) {
                 ERROR("problem opening file \"%s\" for writing\n",
                                 options.errorFile);
-                return -1;
+                return EXIT_FAILURE;
         }
 
 	initPaths();
@@ -303,11 +303,11 @@ int main(int argc, char * argv[]) {
         }
         if((stat(playlistDir,&st))<0) {
                 ERROR("problem stat'ing \"%s\"\n",options.playlistDirArg);
-                return -1;
+                return EXIT_FAILURE;
         }
         if(!S_ISDIR(st.st_mode)) {
                 ERROR("\"%s\" is not a directory\n",options.playlistDirArg);
-                return -1;
+                return EXIT_FAILURE;
         }
 
         if(options.musicDirArg[0]=='/') {
@@ -321,11 +321,11 @@ int main(int argc, char * argv[]) {
         if(musicDir[strlen(musicDir)-1]!='/') strcat(musicDir,"/");
         if((stat(musicDir,&st))<0) {
                 ERROR("problem stat'ing \"%s\"\n",options.musicDirArg);
-                return -1;
+                return EXIT_FAILURE;
         }
         if(!S_ISDIR(st.st_mode)) {
                 ERROR("\"%s\" is not a directory\n",options.musicDirArg);
-                return -1;
+                return EXIT_FAILURE;
         }
 
         initTables();
@@ -344,12 +344,12 @@ int main(int argc, char * argv[]) {
                 if(options.createDB<0) {
                         ERROR("can't open db file and using \"--no-create-db\""
                                         " command line option\n");
-                        exit(-1);
+                        exit(EXIT_FAILURE);
                 }
                 initMp3Directory();
                 if(writeDirectoryDB()<0) {
                         ERROR("problem opening db for reading or writing\n");
-                        exit(-1);
+                        exit(EXIT_FAILURE);
                 }
         }
 
@@ -365,54 +365,54 @@ int main(int argc, char * argv[]) {
 
                 fflush(NULL);
                 pid = fork();
-                if(pid>0) _exit(0);
+                if(pid>0) _exit(EXIT_SUCCESS);
                 else if(pid<0) {
                         ERROR("problems fork'ing for daemon!\n");
-                        exit(-1);
+                        exit(EXIT_FAILURE);
                 }
 
                 if(chdir("/")<0) {
                         ERROR("problems changing to root directory\n");
-                        exit(-1);
+                        exit(EXIT_FAILURE);
                 }
 
                 if(setsid()<0) {
                         ERROR("problems setsid'ing\n");
-                        exit(-1);
+                        exit(EXIT_FAILURE);
                 }
 
                 if(close(STDOUT_FILENO)) {
                         fprintf(err,"problems closing stdout : %s\n",
                                         strerror(errno));
-                        exit(-1);
+                        exit(EXIT_FAILURE);
                 }
 
                 if(close(STDERR_FILENO)) {
                         fprintf(err,"problems closing stderr : %s\n",
                                         strerror(errno));
-                        exit(-1);
+                        exit(EXIT_FAILURE);
                 }
 
                 if(dup2(fileno(out),STDOUT_FILENO)<0) {
                         fprintf(err,"problems dup2 stdout : %s\n",
                                         strerror(errno));
-                        exit(-1);
+                        exit(EXIT_FAILURE);
                 }
 
                 if(dup2(fileno(err),STDERR_FILENO)<0) {
                         fprintf(err,"problems dup2 stderr : %s\n",
                                         strerror(errno));
-                        exit(-1);
+                        exit(EXIT_FAILURE);
                 }
 
                 myfprintfStdLogMode(out,err);
 
                 fflush(NULL);
                 pid = fork();
-                if(pid>0) _exit(0);
+                if(pid>0) _exit(EXIT_SUCCESS);
                 else if(pid<0) {
                         ERROR("problems fork'ing for daemon!\n");
-                        exit(-1);
+                        exit(EXIT_FAILURE);
                 }
         }
         else {
@@ -426,12 +426,12 @@ int main(int argc, char * argv[]) {
                 if(fd<0) {
                         ERROR("not able to open /dev/null to redirect stdin: "
                                         "%s\n",strerror(errno));
-                        exit(-1);
+                        exit(EXIT_FAILURE);
                 }
                 if(dup2(fd,STDIN_FILENO)<0) {
                         ERROR("problems dup2's stdin for redirection: "
                                         "%s\n",strerror(errno));
-                        exit(-1);
+                        exit(EXIT_FAILURE);
                 }
         }
 
@@ -461,5 +461,5 @@ int main(int argc, char * argv[]) {
 	finishPermissions();
         finishCommands();
 
-        return 0;
+        return EXIT_SUCCESS;
 }

@@ -49,7 +49,7 @@ void initAudioDriver() {
 	if (*test!='\0') {
 		ERROR("\"%s\" is not a valid write size",
 			(getConf())[CONF_AUDIO_WRITE_SIZE]);
-		exit(-1);
+		exit(EXIT_FAILURE);
 	}
 
 	audio_ao_options = NULL;
@@ -62,13 +62,13 @@ void initAudioDriver() {
 		ao_driver_id((getConf())[CONF_AO_DRIVER]))<0) {
 		ERROR("\"%s\" is not a valid ao driver\n",
 			(getConf())[CONF_AO_DRIVER]);
-		exit(-1);
+		exit(EXIT_FAILURE);
 	}
 	
 	if((ai = ao_driver_info(audio_ao_driver_id))==NULL) {
 		ERROR("problems getting ao_driver_info\n");
 		ERROR("you may not have permission to the audio device\n");
-		exit(-1);
+		exit(EXIT_FAILURE);
 	}
 
 	dup = strdup((getConf())[CONF_AO_DRIVER_OPTIONS]);
@@ -81,7 +81,7 @@ void initAudioDriver() {
 			if(!key) {
 				ERROR("problems parsing "
 					"ao_driver_options \"%s\"\n", n1);
-				exit(-1);
+				exit(EXIT_FAILURE);
 			}
 			/*found = 0;
 			for(i=0;i<ai->option_count;i++) {
@@ -94,13 +94,13 @@ void initAudioDriver() {
 				ERROR("\"%s\" is not an option for "
 					 "\"%s\" ao driver\n",key,
 					 ai->short_name);
-				exit(-1);
+				exit(EXIT_FAILURE);
 			}*/
 			value = strtok_r(NULL,"",&stk2);
 			if(!value) {
 				ERROR("problems parsing "
 					"ao_driver_options \"%s\"\n", n1);
-				exit(-1);
+				exit(EXIT_FAILURE);
 			}
 			ao_append_option(&audio_ao_options,key,value);
 			n1 = strtok_r(NULL,";",&stk1);

@@ -108,7 +108,7 @@ void initPlaylist() {
 	if(*test!='\0') {
 		ERROR("max playlist length \"%s\" is not an integer\n",
 				(getConf())[CONF_MAX_PLAYLIST_LENGTH]);
-		exit(-1);
+		exit(EXIT_FAILURE);
 	}
 
 	if(strcmp("yes",(getConf())[CONF_SAVE_ABSOLUTE_PATHS_IN_PLAYLISTS])
@@ -123,7 +123,7 @@ void initPlaylist() {
 		ERROR("save_absolute_paths_in_playlist \"%s\" is not yes or "
 			"no\n",
 			(getConf())[CONF_SAVE_ABSOLUTE_PATHS_IN_PLAYLISTS]);
-		exit(-1);
+		exit(EXIT_FAILURE);
 	}
 
 	playlist.songs = malloc(sizeof(Song *)*playlist_max_length);
@@ -228,14 +228,14 @@ void loadPlaylistFromStateFile(FILE * fp, char * buffer, int state, int current,
 
 	if(!myFgets(buffer,PLAYLIST_BUFFER_SIZE,fp)) {
 		ERROR("error parsing state file \"%s\"\n",playlist_stateFile);
-		exit(-1);
+		exit(EXIT_FAILURE);
 	}
 	while(strcmp(buffer,PLAYLIST_STATE_FILE_PLAYLIST_END)) {
 		song = atoi(strtok(buffer,":"));
 		if(!(temp = strtok(NULL,""))) {
 			ERROR("error parsing state file \"%s\"\n",
 					playlist_stateFile);
-			exit(-1);
+			exit(EXIT_FAILURE);
 		}
 		if(addToPlaylist(stderr,temp)==0 && current==song) {
 			if(state!=PLAYER_STATE_STOP) {
@@ -252,7 +252,7 @@ void loadPlaylistFromStateFile(FILE * fp, char * buffer, int state, int current,
 		if(!myFgets(buffer,PLAYLIST_BUFFER_SIZE,fp)) {
 			ERROR("error parsing state file \"%s\"\n",
 					playlist_stateFile);
-			exit(-1);
+			exit(EXIT_FAILURE);
 		}
 	}
 }
@@ -270,14 +270,14 @@ void readPlaylistState() {
 		if(!S_ISREG(st.st_mode)) {
 			ERROR("state file \"%s\" is not a regular "
 				"file\n",playlist_stateFile);
-			exit(-1);
+			exit(EXIT_FAILURE);
 		}
 
 		fp = fopen(playlist_stateFile,"r");
 		if(!fp) {
 			ERROR("problems opening state file \"%s\" for "
 				"reading\n",playlist_stateFile);
-			exit(-1);
+			exit(EXIT_FAILURE);
 		}
 
 		while(myFgets(buffer,PLAYLIST_BUFFER_SIZE,fp)) {
@@ -329,7 +329,7 @@ void readPlaylistState() {
 					ERROR("error parsing state "
 						"file \"%s\"\n",
 						playlist_stateFile);
-					exit(-1);
+					exit(EXIT_FAILURE);
 				}
 				current = atoi(&(buffer
 					[strlen(PLAYLIST_STATE_FILE_CURRENT)]));

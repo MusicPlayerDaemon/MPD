@@ -80,7 +80,7 @@ void pcm_volumeChange(char * buffer, int bufferSize, AudioFormat * format,
 	default:
 		ERROR("%i bits not supported by pcm_volumeChange!\n",
 				format->bits);
-		exit(-1);
+		exit(EXIT_FAILURE);
 	}
 }
 
@@ -120,7 +120,7 @@ void pcm_add(char * buffer1, char * buffer2, size_t bufferSize1,
 		break;
 	default:
 		ERROR("%i bits not supported by pcm_add!\n",format->bits);
-		exit(-1);
+		exit(EXIT_FAILURE);
 	}
 }
 

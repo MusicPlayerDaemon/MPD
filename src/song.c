@@ -179,7 +179,7 @@ void readSongInfoIntoList(FILE * fp, SongList * list) {
 		else if(0==strncmp(SONG_FILE,buffer,strlen(SONG_FILE))) {
 			if(!song || song->utf8file) {
 				ERROR("Problems reading song info\n");
-				exit(-1);
+				exit(EXIT_FAILURE);
 			}
 			song->utf8file = strdup(&(buffer[strlen(SONG_FILE)]));
 		}
@@ -208,7 +208,7 @@ void readSongInfoIntoList(FILE * fp, SongList * list) {
 		}
 		else {
 			ERROR("songinfo: unknown line in db: %s\n",buffer);
-			exit(-1);
+			exit(EXIT_FAILURE);
 		}
 	}
 	
