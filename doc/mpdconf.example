@@ -6,9 +6,9 @@
 ########## REQUIRED ###############
 port 			"2100"
 music_directory 	"~/music"
-playlist_directory 	"~/playlists"
-log_file 		"~/mpd.log"
-error_file 		"~/mpd.error"
+playlist_directory 	"~/.mpd/playlists"
+log_file 		"~/.mpd/mpd.log"
+error_file 		"~/.mpd/mpd.error"
 ###################################
 
 
@@ -31,13 +31,13 @@ error_file 		"~/mpd.error"
 
 ########### OPTIONAL FILES ##############
 # Location of DB file 
-#db_file		"~/playlists/.mpddb"
+#db_file		"~/.mpd/mpddb"
 #
 # State file for storing state of mpd 
 #     when it is shutdown.  MPD will restore
 #     the state (i.e. load playlist, start
 #     playing, etc) upon restart.
-#state_file		"~/.mpdstate"
+#state_file		"~/.mpd/mpdstate"
 ##########################################
 
 
