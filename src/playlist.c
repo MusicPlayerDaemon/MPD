@@ -1408,11 +1408,21 @@ int loadPlaylist(FILE * fp, char * utf8file) {
 			if(commentCharFound && !getSongFromDB(temp)
 					&& !isRemoteUrl(temp)) 
 			{
-				free(temp);
-				continue;
 			}
-			if((addToPlaylist(stderr, temp, 0))<0) {
-				if(!erroredFile) erroredFile = strdup(temp);
+			else if((addToPlaylist(stderr, temp, 0))<0) {
+				/* for windows compatibilit, convert slashes */
+				char * temp2 = strdup(temp);
+				char * p = temp2;
+				while(*p) {
+					if(*p=='\\') *p = '/';
+					p++;
+				}
+				if((addToPlaylist(stderr, temp2, 0))<0) {
+					if(!erroredFile) {
+						erroredFile = strdup(temp);
+					}
+				}
+				free(temp2);
 			}
 			free(temp);
 		}
