@@ -46,6 +46,8 @@
 
 *) add error codes for status->error
 
+*) add support fore mousepack/mpc files
+
 0.13
 ----
 *) support for dynamically loading plugins
