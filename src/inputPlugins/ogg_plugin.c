@@ -170,6 +170,16 @@ int ogg_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream)
 	OggVorbis_File vf;
 	ov_callbacks callbacks;
         OggCallbackData data;
+	int current_section;
+	int eof = 0;
+	long ret;
+#define OGG_CHUNK_SIZE 4096
+	char chunk[OGG_CHUNK_SIZE];
+	int chunkpos = 0;
+	long bitRate = 0;
+	long test;
+        float replayGainScale;
+	char ** comments;
 
         data.inStream = inStream;
         data.dc = dc;
@@ -202,76 +212,67 @@ int ogg_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream)
 
 	dc->totalTime = ov_time_total(&vf,-1);
         if(dc->totalTime < 0) dc->totalTime = 0;
+
+	comments = ov_comment(&vf, -1)->user_comments;
+
 	dc->state = DECODE_STATE_DECODE;
 
-	{
-		int current_section;
-		int eof = 0;
-		long ret;
-#define OGG_CHUNK_SIZE 4096
-		char chunk[OGG_CHUNK_SIZE];
-		int chunkpos = 0;
-		long bitRate = 0;
-		long test;
-                float replayGainScale = ogg_getReplayGainScale(
-                                ov_comment(&vf,-1)->user_comments);
+        replayGainScale = ogg_getReplayGainScale(comments);
 
-		while(!eof) {
-			if(dc->seek) {
-				if(0 == ov_time_seek_page(&vf,dc->seekWhere)) {
-                                        clearOutputBuffer(cb);
-				        chunkpos = 0;
-                                }
-                                else dc->seekError = 1;
-				dc->seek = 0;
-			}
-			ret = ov_read(&vf, chunk+chunkpos, 
-					OGG_CHUNK_SIZE-chunkpos,
-					OGG_DECODE_USE_BIGENDIAN,
-					2, 1, &current_section);
-
-			if(ret <= 0 && ret != OV_HOLE) {
-				eof = 1;
-				break;
-			}
-                        if(ret == OV_HOLE) ret = 0;
-
-			chunkpos+=ret;
-
-			if(chunkpos >= OGG_CHUNK_SIZE) {
-				if((test = ov_bitrate_instant(&vf))>0) {
-					bitRate = test/1000;
-				}
-                                doReplayGain(chunk,ret,&(dc->audioFormat),
-                                                replayGainScale);
-				sendDataToOutputBuffer(cb, inStream, dc, 
-                                        inStream->seekable, chunk, chunkpos, 
-					ov_time_tell(&vf), bitRate);
-				if(dc->stop) break;
-				chunkpos = 0;
-			}
+	while(!eof) {
+		if(dc->seek) {
+			if(0 == ov_time_seek_page(&vf,dc->seekWhere)) {
+                                clearOutputBuffer(cb);
+			        chunkpos = 0;
+                        }
+                        else dc->seekError = 1;
+			dc->seek = 0;
 		}
+		ret = ov_read(&vf, chunk+chunkpos, 
+				OGG_CHUNK_SIZE-chunkpos,
+				OGG_DECODE_USE_BIGENDIAN,
+				2, 1, &current_section);
 
-		if(!dc->stop && chunkpos > 0) {
-			sendDataToOutputBuffer(cb, NULL, dc, inStream->seekable,                                        chunk, chunkpos,
-					ov_time_tell(&vf), bitRate);
+		if(ret <= 0 && ret != OV_HOLE) {
+			eof = 1;
+			break;
 		}
+                if(ret == OV_HOLE) ret = 0;
 
-		ov_clear(&vf);
+		chunkpos+=ret;
 
-		flushOutputBuffer(cb);
-
-		/*if(dc->seek) {
-                        dc->seekError = 1;
-                        dc->seek = 0;
-                }*/
-
-		if(dc->stop) {
-			dc->state = DECODE_STATE_STOP;
-			dc->stop = 0;
+		if(chunkpos >= OGG_CHUNK_SIZE) {
+			if((test = ov_bitrate_instant(&vf))>0) {
+				bitRate = test/1000;
+			}
+                	doReplayGain(chunk,ret,&(dc->audioFormat), 
+					replayGainScale);
+			sendDataToOutputBuffer(cb, inStream, dc, 
+						inStream->seekable,  
+                                        	chunk, chunkpos, 
+						ov_time_tell(&vf), 
+						bitRate);
+					
+			if(dc->stop) break;
+			chunkpos = 0;
 		}
-		else dc->state = DECODE_STATE_STOP;
 	}
+
+	if(!dc->stop && chunkpos > 0) {
+		sendDataToOutputBuffer(cb, NULL, dc, inStream->seekable,
+				chunk, chunkpos,
+				ov_time_tell(&vf), bitRate);
+	}
+
+	ov_clear(&vf);
+
+	flushOutputBuffer(cb);
+
+	if(dc->stop) {
+		dc->state = DECODE_STATE_STOP;
+		dc->stop = 0;
+	}
+	else dc->state = DECODE_STATE_STOP;
 
 	return 0;
 }
