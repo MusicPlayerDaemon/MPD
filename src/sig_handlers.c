@@ -40,8 +40,10 @@ int handlePendingSignals() {
 	if(signal_is_pending(SIGHUP)) {
                 DEBUG("got SIGHUP, rereading DB\n");
 		signal_clear(SIGHUP);
-		readDirectoryDB();
-		incrPlaylistVersion();
+		if(!isUpdatingDB()) {
+                        readDirectoryDB();
+		        incrPlaylistVersion();
+                }
 	}
 
 	return 0;
