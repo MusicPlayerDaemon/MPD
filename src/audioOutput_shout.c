@@ -467,7 +467,7 @@ AudioOutputPlugin shoutPlugin =
 
 AudioOutputPlugin shoutPlugin = 
 {
-	"shout",
+	NULL,
 	NULL,
 	NULL,
 	NULL,

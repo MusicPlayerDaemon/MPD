@@ -11,11 +11,13 @@
 static List * audioOutputPluginList;
 
 void loadAudioOutputPlugin(AudioOutputPlugin * audioOutputPlugin) {
+	if(!audioOutputPlugin->name) return;
 	insertInList(audioOutputPluginList, audioOutputPlugin->name,
 			audioOutputPlugin);
 }
 
 void unloadAudioOutputPlugin(AudioOutputPlugin * audioOutputPlugin) {
+	if(!audioOutputPlugin->name) return;
 	deleteFromList(audioOutputPluginList, audioOutputPlugin->name);
 }
 
