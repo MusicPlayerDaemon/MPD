@@ -385,11 +385,11 @@ void cleanUpPidFile() {
 }
 
 void killFromPidFile(char * cmd, int killOption) {
+	/*char buf[32];
 	struct stat st_cmd;
-	struct stat st_exe;
+	struct stat st_exe;*/
 	ConfigParam * pidFileParam = parseConfigFilePath(CONF_PID_FILE, 1);
 	int pid;
-	char buf[32];
 
 	FILE * fp = fopen(pidFileParam->value,"r");
 	if(!fp) {
@@ -405,7 +405,7 @@ void killFromPidFile(char * cmd, int killOption) {
 	}
 	fclose(fp);
 
-	memset(buf, 0, 32);
+	/*memset(buf, 0, 32);
 	snprintf(buf, 31, "/proc/%i/exe", pid);
 
 	if(killOption == 1) {
@@ -430,7 +430,7 @@ void killFromPidFile(char * cmd, int killOption) {
 					cmd, pid);
 			exit(EXIT_FAILURE);
 		}
-	}
+	}*/
 
 	if(kill(pid, SIGTERM)) {
 		ERROR("unable to kill proccess %i: %s\n", pid, strerror(errno));
@@ -492,9 +492,9 @@ int main(int argc, char * argv[]) {
         readPlaylistState();
 
         while(COMMAND_RETURN_KILL!=doIOForInterfaces()) {
+		if(COMMAND_RETURN_KILL==handlePendingSignals()) break;
                 syncPlayerAndPlaylist();
                 closeOldInterfaces();
-		if(COMMAND_RETURN_KILL==handlePendingSignals()) break;
 		readDirectoryDBIfUpdateIsFinished();
         }
 

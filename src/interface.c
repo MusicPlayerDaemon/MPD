@@ -393,21 +393,28 @@ int doIOForInterfaces() {
 	struct timeval tv;
 	int i;
 	int selret;
-	int fdmax = 0;
+	int fdmax;
 
 	tv.tv_sec = 1;
 	tv.tv_usec = 0;
 
-	addInterfacesReadyToReadAndListenSocketToFdSet(&rfds,&fdmax);
-	addInterfacesForBufferFlushToFdSet(&wfds,&fdmax);
+	while(1) {
+		fdmax = 0;
 
-	while((selret = select(fdmax+1,&rfds,&wfds,NULL,&tv))) {
-		getConnections(&rfds);
-		if(selret<0 && errno==EINTR) break;
-		else if(selret<0) {
+		addInterfacesReadyToReadAndListenSocketToFdSet(&rfds,&fdmax);
+		addInterfacesForBufferFlushToFdSet(&wfds,&fdmax);
+
+		selret = select(fdmax+1,&rfds,&wfds,NULL,&tv);
+
+		if(selret == 0 || (selret<0 && errno==EINTR)) break;
+
+		if(selret<0) {
 			closeNextErroredInterface();
 			continue;
 		}
+
+		getConnections(&rfds);
+
 		for(i=0;i<interface_max_connections;i++) {
 			if(interfaces[i].open && FD_ISSET(interfaces[i].fd,&rfds)) {
 				if(COMMAND_RETURN_KILL==interfaceReadInput(&(interfaces[i]))) {
@@ -420,11 +427,9 @@ int doIOForInterfaces() {
 				interfaces[i].lastTime = time(NULL);
 			}
 		}
+
 		tv.tv_sec = 0;
 		tv.tv_usec = 0;
-		fdmax = 0;
-		addInterfacesReadyToReadAndListenSocketToFdSet(&rfds,&fdmax);
-		addInterfacesForBufferFlushToFdSet(&wfds,&fdmax);
 	}
 
 	return 1;
