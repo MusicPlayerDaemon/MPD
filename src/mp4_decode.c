@@ -189,7 +189,6 @@ int mp4_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc) {
 
 		dur = mp4ff_get_sample_duration(mp4fh,track,sampleId);
 		offset = mp4ff_get_sample_offset(mp4fh,track,sampleId);
-		dur-=offset;
 
 		if(sampleId>seekTableEnd) {
 			seekTable[sampleId] = time;
@@ -197,6 +196,8 @@ int mp4_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc) {
 		}
 
 		if(sampleId==0) dur = 0;
+		if(offset>dur) dur = 0;
+		else dur-=offset;
 		time+=((float)dur)/scale;
 
 		if(dc->seek && time>dc->seekWhere) seekPositionFound = 1;
@@ -221,6 +222,16 @@ int mp4_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc) {
 		sampleBuffer = faacDecDecode(decoder,&frameInfo,mp4Buffer,
 						mp4BufferSize);
 		if(mp4Buffer) free(mp4Buffer);
+		if(frameInfo.error > 0) {
+			eof = 1;
+			break;
+		}
+
+		if(dur+offset > frameInfo.samples) {
+			dur = frameInfo.samples;
+			offset = 0;
+		}
+			
 		sampleCount = (unsigned long)(dur*channels);
 
 		if(sampleCount>0) initial =0;
@@ -228,9 +239,6 @@ int mp4_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc) {
 
 		sampleBuffer+=offset*channels*2;
 
-		printf("dur=%li offset=%li frameInfo.samples=%li\n",dur,offset,
-				frameInfo.samples);
-	
 		while(sampleBufferLen>0 && !dc->seek) {
 			size_t size = sampleBufferLen>CHUNK_SIZE-chunkLen ? 
 							CHUNK_SIZE-chunkLen:
