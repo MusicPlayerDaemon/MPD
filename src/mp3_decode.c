@@ -290,17 +290,14 @@ int decodeFirstFrame(mp3DecodeData * data) {
 	memset(&xing,0,sizeof(struct xing));
 	xing.flags = 0;
 
-	skip = 0;
 	while(1) {
-		printf("HERE 1\n");
+		skip = 0;
 		while((ret = decodeNextFrameHeader(data))==DECODE_CONT);
 		if(ret==DECODE_SKIP) skip = 1;
-		if(ret==DECODE_BREAK) return -1;
+		else if(ret==DECODE_BREAK) return -1;
 		while((ret = decodeNextFrame(data))==DECODE_CONT);
 		if(ret==DECODE_BREAK) return -1;
-		if(ret==DECODE_SKIP) skip = 1;
-		else if(skip && ret==DECODE_OK) skip = 0;
-		else if(!skip && ret==DECODE_OK) break;
+		if(!skip && ret==DECODE_OK) break;
 	}
 
 	if(parse_xing(&xing,data->stream.anc_ptr,data->stream.anc_bitlen)) {
