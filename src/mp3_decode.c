@@ -232,8 +232,8 @@ int decodeNextFrame(mp3DecodeData * data) {
 			return DECODE_BREAK;
 		}
 	}
-#ifdef HAVE_ID3TAG
 	if(mad_frame_decode(&data->frame,&data->stream)) {
+#ifdef HAVE_ID3TAG
 		if((data->stream).error==MAD_ERROR_LOSTSYNC) {
 			signed long tagsize = id3_tag_query(
 					(data->stream).this_frame,
