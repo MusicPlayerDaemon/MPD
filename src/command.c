@@ -708,7 +708,7 @@ int handleSeekId(FILE * fp, unsigned int * permission, int argArrayLength,
 				"\"%s\" is not a integer", argArray[2]);
                 return -1;
         }
-        return seekSongInPlaylist(fp, id, time);
+        return seekSongInPlaylistById(fp, id, time);
 }
 
 int handleListAllInfo(FILE * fp, unsigned int * permission, int argArrayLength,
