@@ -15,8 +15,6 @@
 
 *) Optimize read() on clients
 
-*) Make each audioOutput device enable/disable by the client
-
 *) add command
 	*) command that takes file/url's (no directory's) and returns the songid
 	*) allow to specify position in playlist where to insert song(s)

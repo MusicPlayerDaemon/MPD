@@ -82,8 +82,9 @@
 #define COMMAND_URL_HANDLERS   	"urlhandlers" 
 #define COMMAND_PLCHANGES	"plchanges" 
 #define COMMAND_CURRENTSONG	"currentsong" 
-#define COMMAND_ENABLE_DEV	"enable_device"
-#define COMMAND_DISABLE_DEV	"disable_device"
+#define COMMAND_ENABLE_DEV	"enabledevice"
+#define COMMAND_DISABLE_DEV	"disabledevice"
+#define COMMAND_DEVICES		"devices"
 
 #define COMMAND_STATUS_VOLUME           "volume"
 #define COMMAND_STATUS_STATE            "state"
@@ -790,6 +791,14 @@ int handleDisableDevice(FILE * fp, unsigned int * permission,
 	return disableAudioDevice(fp, device);
 }
 
+int handleDevices(FILE * fp, unsigned int * permission, int argArrayLength,
+		char ** argArray)
+{
+	printAudioDevices(fp);
+
+	return 0;
+}
+
 void initCommands() {
         commandList = makeList(free);
 
@@ -840,6 +849,7 @@ void initCommands() {
         addCommand(COMMAND_PLCHANGES   ,PERMISSION_READ,    1, 1,handlePlaylistChanges,NULL);
         addCommand(COMMAND_ENABLE_DEV  ,PERMISSION_ADMIN,   1, 1,handleEnableDevice,NULL);
         addCommand(COMMAND_DISABLE_DEV ,PERMISSION_ADMIN,   1, 1,handleDisableDevice,NULL);
+        addCommand(COMMAND_DEVICES     ,PERMISSION_ADMIN,   0, 0,handleDevices,NULL);
 
         sortList(commandList);
 }

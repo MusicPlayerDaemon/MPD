@@ -71,4 +71,6 @@ int enableAudioDevice(FILE * fp, int device);
 
 int disableAudioDevice(FILE * fp, int device);
 
+void printAudioDevices(FILE * fp);
+
 #endif

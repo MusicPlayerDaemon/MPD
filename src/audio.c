@@ -197,9 +197,7 @@ void finishAudioDriver() {
 
 	free(audioOutputArray);
 	audioOutputArray = NULL;
-	/* don't set to zero cause we're gonna use this for enabling
-		and disabling devices */
-	/*audioOutputArraySize = 0;*/
+	audioOutputArraySize = 0;
 }
 
 int isCurrentAudioFormat(AudioFormat * audioFormat) {
@@ -317,4 +315,15 @@ int disableAudioDevice(FILE * fp, int device) {
 	pdAudioDevicesEnabled[device] = 0;
 
 	return 0;
+}
+
+void printAudioDevices(FILE * fp) {
+	int i;
+
+	for(i = 0; i < audioOutputArraySize; i++) {
+		myfprintf(fp, "deviceid: %i\n", i);
+		myfprintf(fp, "devicename: %s\n", audioOutputArray[i]->name);
+		myfprintf(fp, "deviceenabled: %i\n", 
+				(int)pdAudioDevicesEnabled[i]);
+	}
 }
