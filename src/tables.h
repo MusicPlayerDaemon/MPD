@@ -28,8 +28,6 @@ void closeTables();
 
 void addSongToTables(Song * song);
 
-void removeSongsFromTables(SongList * songList);
-
 void removeASongFromTables(Song * song);
 
 unsigned long numberOfSongs();

@@ -129,17 +129,6 @@ void removeASongFromTables(Song * song) {
 	removeSongFromArtistTable(song);
 }
 
-void removeSongsFromTables(SongList * songList) {
-	ListNode * node = songList->firstNode;
-	Song * song;
-
-	while(node) {
-		song = (Song *)node->data;
-		removeASongFromTables(song);
-		node = node->nextNode;
-	}
-}
-
 unsigned long numberOfSongs() {
 	return 0;
 }

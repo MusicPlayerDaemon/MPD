@@ -633,17 +633,6 @@ void deleteASongFromPlaylist(Song * song) {
 	}
 }
 
-void deleteSongsFromPlaylist(SongList * songList) {
-	 ListNode * node = songList->firstNode;
-         Song * song;
-
-         while(node) {
-                 song = (Song *)node->data;
-                 deleteASongFromPlaylist(song);
-                 node = node->nextNode;
-         }
-}
-
 int stopPlaylist(FILE * fp) {
 	DEBUG("playlist: stop\n");
 	if(playerStop(fp)<0) return -1;

@@ -67,8 +67,6 @@ int deletePlaylist(FILE * fp, char * utf8file);
 
 void deleteASongFromPlaylist(Song * song);
 
-void deleteSongsFromPlaylist(SongList * songList);
-
 int moveSongInPlaylist(FILE * fp, int from, int to);
 
 int swapSongsInPlaylist(FILE * fp, int song1, int song2);
