@@ -2,9 +2,36 @@
 ----
 *) add 2-3 tree for sorted data structures
 
-*) cleanup linked list code!
+*) remove changes made to linked list for TagTracker
 
 *) parsing of lame tags (including getting replaygain info)
+
+*) put more debugging info for:
+	*) failing to read/write db 
+	*) stat'ing errors for music and playlist directory
+
+*) Cleanup Config File Code
+
+*) Handle mp1 and mp2 files (including mp2's that are disguised as mp3's with 
+	a mp3 suffix)
+
+*) add error codes for status->error
+
+*) add alsa audioOutput plugin
+
+*) add a method for clearling the audio device's buffer.  This isn't possible 
+	with libao api.
+
+*) add support for playing aac streams (gee, thanks icecast)
+
+*) implement apev2 and id3v1 tag reader from xmms-musepack plugin
+
+*) only use libid3tag for id3v2 tags, use internal implementation for id3v1 tags
+
+0.13
+----
+
+*) cleanup linked list code!
 
 *) implement listener socket protocol as documented here:
 	http://www.musicpd.org/wiki/moin.cgi/MpdListenerProtocol
@@ -28,32 +55,6 @@
 
 *) add command for inserting songs in a specific position
 
-*) put more debugging info for:
-	*) failing to read/write db 
-	*) stat'ing errors for music and playlist directory
-
-*) Cleanup Config File Code
-
-*) Handle mp1 and mp2 files (including mp2's that are disguised as mp3's with 
-	a mp3 suffix)
-
-*) add error codes for status->error
-
-*) add alsa audioOutput plugin
-
-*) add a method for closing the audio device immediatly w/o waiting for an
-   empty audio device buffer.  This isn't possible via libao api.
-
-*) add support for playing aac streams (gee, thanks icecast)
-
-*) implement apev2 and id3v1 tag reader from xmms-musepack plugin
-
-*) only use libid3tag for id3v2 tags, use internal implementation for id3v1 tags
-
-0.13
+0.14
 ----
 *) support for dynamically loading plugins
-
-*) add support for coverart 
-	*) using freedesktop standard for icons/images
-	*) use coverart in tags in the audio file
