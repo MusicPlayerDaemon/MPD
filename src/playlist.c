@@ -783,6 +783,16 @@ int currentSongInPlaylist(FILE * fp) {
 	return 0;
 }
 
+void incrPlaylistCurrent() {
+	if(playlist.current >= playlist.length || (!playlist.repeat && 
+		playlist.current == playlist.length-1))
+	{
+		playlist.current = -1;
+	}
+	else if(playlist.current == playlist.length-1) playlist.current = 0;
+	else if(playlist.current >= 0) playlist.current++;
+}
+
 int nextSongInPlaylist(FILE * fp) {
 	if(playlist_state!=PLAYLIST_STATE_PLAY) return 0;
 
@@ -798,20 +808,11 @@ int nextSongInPlaylist(FILE * fp) {
 		return playPlaylistOrderNumber(fp,0);
 	}
 	else {
+                incrPlaylistCurrent();
 		return stopPlaylist(fp);;
 	}
 
 	return 0;
-}
-
-void incrPlaylistCurrent() {
-	if(playlist.current >= playlist.length || (!playlist.repeat && 
-		playlist.current == playlist.length-1))
-	{
-		playlist.current = -1;
-	}
-	else if(playlist.current == playlist.length-1) playlist.current = 0;
-	else if(playlist.current >= 0) playlist.current++;
 }
 
 void playPlaylistIfPlayerStopped() {
