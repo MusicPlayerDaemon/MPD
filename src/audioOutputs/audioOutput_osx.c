@@ -26,7 +26,7 @@
 
 #include "../log.h"
 
-#define BUFFER_SIZE 32768
+#define BUFFER_SIZE 131072
 
 typedef struct _OsxData {
 	AudioUnit au;
