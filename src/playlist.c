@@ -88,11 +88,17 @@ static int playlist_noGoToNext = 0;
 
 static int playlist_saveAbsolutePaths = DEFAULT_PLAYLIST_SAVE_ABSOLUTE_PATHS;
 
-static char * playlist_stateFile = NULL;
-
 static void swapOrder(int a, int b);
 static int playPlaylistOrderNumber(FILE * fp, int orderNum);
 static void randomizeOrder(int start, int end);
+
+static char * getStateFile() {
+	ConfigParam * param = parseConfigFilePath(CONF_STATE_FILE, 0);
+	
+	if(!param) return NULL;
+
+	return param->value;
+}
 
 static void incrPlaylistVersion() {
 	static unsigned long max = ((mpd_uint32)1<<31)-1;
@@ -179,8 +185,6 @@ void initPlaylist() {
 
 	srandom(time(NULL));
 
-	playlist_stateFile = parseConfigFilePath(CONF_STATE_FILE, 0);
-
 	for(i=0; i<playlist_max_length*PLAYLIST_HASH_MULT; i++) {
 		playlist.idToPosition[i] = -1;
 	}
@@ -252,13 +256,15 @@ int showPlaylist(FILE * fp) {
 }
 
 void savePlaylistState() {
-	if(playlist_stateFile) {
+	char * stateFile = getStateFile();
+	
+	if(stateFile) {
 		FILE * fp;
 
-		while(!(fp = fopen(playlist_stateFile,"w")) && errno==EINTR);
+		while(!(fp = fopen(stateFile,"w")) && errno==EINTR);
 		if(!fp) {
 			ERROR("problems opening state file \"%s\" for "
-				"writing: %s\n", playlist_stateFile,
+				"writing: %s\n", stateFile,
 				strerror(errno));
 			return;
 		}
@@ -303,16 +309,16 @@ void loadPlaylistFromStateFile(FILE * fp, char * buffer, int state, int current,
 {
 	char * temp;
 	int song;
+	char * stateFile = getStateFile();
 
 	if(!myFgets(buffer,PLAYLIST_BUFFER_SIZE,fp)) {
-		ERROR("error parsing state file \"%s\"\n",playlist_stateFile);
+		ERROR("error parsing state file \"%s\"\n", stateFile);
 		exit(EXIT_FAILURE);
 	}
 	while(strcmp(buffer,PLAYLIST_STATE_FILE_PLAYLIST_END)) {
 		song = atoi(strtok(buffer,":"));
 		if(!(temp = strtok(NULL,""))) {
-			ERROR("error parsing state file \"%s\"\n",
-					playlist_stateFile);
+			ERROR("error parsing state file \"%s\"\n", stateFile);
 			exit(EXIT_FAILURE);
 		}
 		if(addToPlaylist(stderr, temp, 0)==0 && current==song) {
@@ -328,15 +334,16 @@ void loadPlaylistFromStateFile(FILE * fp, char * buffer, int state, int current,
 			}
 		}
 		if(!myFgets(buffer,PLAYLIST_BUFFER_SIZE,fp)) {
-			ERROR("error parsing state file \"%s\"\n",
-					playlist_stateFile);
+			ERROR("error parsing state file \"%s\"\n", stateFile);
 			exit(EXIT_FAILURE);
 		}
 	}
 }
 
 void readPlaylistState() {
-	if(playlist_stateFile) {
+	char * stateFile = getStateFile();
+	
+	if(stateFile) {
 		FILE * fp;
 		struct stat st;
 		int current = -1;
@@ -344,17 +351,20 @@ void readPlaylistState() {
 		int state = PLAYER_STATE_STOP;
 		char buffer[PLAYLIST_BUFFER_SIZE];
 
-		if(stat(playlist_stateFile,&st)<0) return;
+		if(stat(stateFile,&st)<0) {
+			DEBUG("failed to stat state file\n");
+			return;
+		}
 		if(!S_ISREG(st.st_mode)) {
 			ERROR("state file \"%s\" is not a regular "
-				"file\n",playlist_stateFile);
+				"file\n",stateFile);
 			exit(EXIT_FAILURE);
 		}
 
-		fp = fopen(playlist_stateFile,"r");
+		fp = fopen(stateFile,"r");
 		if(!fp) {
 			ERROR("problems opening state file \"%s\" for "
-				"reading: %s\n", playlist_stateFile,
+				"reading: %s\n", stateFile,
 				strerror(errno));
 			exit(EXIT_FAILURE);
 		}
@@ -407,7 +417,7 @@ void readPlaylistState() {
 					strlen(PLAYLIST_STATE_FILE_CURRENT)) {
 					ERROR("error parsing state "
 						"file \"%s\"\n",
-						playlist_stateFile);
+						stateFile);
 					exit(EXIT_FAILURE);
 				}
 				current = atoi(&(buffer

@@ -65,9 +65,9 @@
 #define DIRECTORY_RETURN_UPDATE         1
 #define DIRECTORY_RETURN_ERROR         -1
 
-static Directory * mp3rootDirectory = NULL;
+Directory * mp3rootDirectory = NULL;
 
-static time_t directory_dbModTime = 0;
+time_t directory_dbModTime = 0;
 
 volatile int directory_updatePid = 0;
 

@@ -116,15 +116,15 @@ static char * appendSlash(char ** path) {
 	int len = strlen(temp);
 
 	if(temp[len-1] != '/') {
-		temp = strdup(*path);
+		temp = malloc(len+2);
+		memset(temp, 0, len+2);
+		memcpy(temp, *path, len);
+		temp[len] = '/';
 		free(*path);
-		*path = malloc(len+2);
-		memset(*path, 0, len+2);
-		memcpy(*path, temp, len);
-		(*path)[len] = '/';
+		*path = temp;
 	}
 
-	return * path;
+	return temp;
 }
 
 void initPaths() {
@@ -136,8 +136,8 @@ void initPaths() {
 	char * originalLocale;
 	DIR * dir;
 
-	musicDir = appendSlash(&musicParam->value);
-	playlistDir = appendSlash(&playlistParam->value);
+	musicDir = appendSlash(&(musicParam->value));
+	playlistDir = appendSlash(&(playlistParam->value));
 
         if((dir = opendir(playlistDir)) == NULL) {
                 ERROR("cannot open %s \"%s\" (config line %i): %s\n", 
