@@ -33,6 +33,13 @@ clearerror
 close
 	close the connection with the MPD
 
+crossfade <int seconds>
+	sets and gets crossfading between songs
+	(a value of 0 disables crossfading).
+	if _seconds_ is not specified, then the return crossfade returns:
+		crossfade: <unsigned integer >= 0>
+
+
 delete <int song>
 	delete _song_ from playlist
 
@@ -55,6 +62,10 @@ listall <string directory>
 	lists all songs and directories in _directory_ (recursively)
 	_directory_ is optional
 
+listall <string directory>
+	same as listall command, except it also returns metadata info
+	in the same format as lsinfo
+
 load <string name>
 	loads the playlist _name_.m3u from the playlist directory
 
@@ -69,6 +80,13 @@ next
 
 pause
 	pause/resume playing
+
+password <string password>
+	this is used for authentication with the server.
+	_password_ is simply the plaintext password
+
+ping
+	does nothing but return "OK"
 
 play <int song>
 	begin playing playlist at song number _song_, _song_ is optional
@@ -117,7 +135,6 @@ stats
 	uptime: daemon uptime in seconds
 	db_update: last db update in UNIX time
 	playtime: time length of music played
-	songs_played: total number of songs played
 
 status
 	reports current status of player, and volume level.
