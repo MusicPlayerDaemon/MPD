@@ -29,6 +29,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <pwd.h>
 
 #define MAX_STRING_SIZE	MAXPATHLEN+80
 
@@ -206,10 +209,53 @@ char ** readConf(char * file) {
 
 	for(i=0;i<CONF_NUMBER_OF_PATHS;i++) {
 		if(conf_params[conf_absolutePaths[i]] && 
-			conf_params[conf_absolutePaths[i]][0]!='/') {
+			conf_params[conf_absolutePaths[i]][0]!='/' &&
+			conf_params[conf_absolutePaths[i]][0]!='~') 
+		{
 			ERROR("\"%s\" is not an absolute path\n",
 					conf_params[conf_absolutePaths[i]]);
 			exit(-1);
+		}
+		else if(conf_params[conf_absolutePaths[i]] &&
+			conf_params[conf_absolutePaths[i]][0]=='~') 
+		{
+			struct passwd * pwd = NULL;
+			char * path;
+			int pos = 1;
+			if(conf_params[conf_absolutePaths[i]][1]=='/') {
+				uid_t uid = geteuid();
+				if((pwd = getpwuid(uid)) == NULL) {
+					ERROR("problems getting passwd entry "
+						"for current user\n");
+					exit(-1);
+				}
+			}
+			else {
+				int foundSlash = 0;
+				char * ch = &(
+					conf_params[conf_absolutePaths[i]][1]);
+				for(;*ch!='\0' && *ch!='/';ch++);
+				if(*ch=='/') foundSlash = 1;
+				* ch = '\0';
+				pos+= ch-
+					&(conf_params[
+					conf_absolutePaths[i]][1]);
+				if((pwd = getpwnam(&(conf_params[
+					conf_absolutePaths[i]][1]))) == NULL) 
+				{
+					ERROR("user \"%s\" not found\n",
+						&(conf_params[
+						conf_absolutePaths[i]][1]));
+					exit(-1);
+				}
+				if(foundSlash) *ch = '/';
+			}
+			path = malloc(strlen(pwd->pw_dir)+strlen(
+				&(conf_params[conf_absolutePaths[i]][pos])));
+			strcpy(path,pwd->pw_dir);
+			strcat(path,&(conf_params[conf_absolutePaths[i]][pos]));
+			free(conf_params[conf_absolutePaths[i]]);
+			conf_params[conf_absolutePaths[i]] = path;
 		}
 	}
 
