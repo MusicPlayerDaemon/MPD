@@ -183,13 +183,13 @@ int commandStatus(FILE * fp, unsigned int * permission, int argArrayLength,
         myfprintf(fp,"%s: %i\n",COMMAND_STATUS_RANDOM,getPlaylistRandomStatus());
         myfprintf(fp,"%s: %li\n",COMMAND_STATUS_PLAYLIST,getPlaylistVersion());
         myfprintf(fp,"%s: %i\n",COMMAND_STATUS_PLAYLIST_LENGTH,getPlaylistLength());
+        myfprintf(fp,"%s: %i\n",COMMAND_STATUS_CROSSFADE,(int)getPlayerCrossFade());
         myfprintf(fp,"%s: %s\n",COMMAND_STATUS_STATE,state);
 
         if(getPlayerState()!=PLAYER_STATE_STOP) {
                 myfprintf(fp,"%s: %i\n",COMMAND_STATUS_SONG,getPlaylistCurrentSong());
                 myfprintf(fp,"%s: %i:%i\n",COMMAND_STATUS_TIME,getPlayerElapsedTime(),getPlayerTotalTime());
                 myfprintf(fp,"%s: %li\n",COMMAND_STATUS_BITRATE,getPlayerBitRate(),getPlayerTotalTime());
-                myfprintf(fp,"%s: %i\n",COMMAND_STATUS_CROSSFADE,(int)getPlayerCrossFade());
                 myfprintf(fp,"%s: %u:%i:%i\n",COMMAND_STATUS_AUDIO,getPlayerSampleRate(),getPlayerBits(),getPlayerChannels());
         }
 
