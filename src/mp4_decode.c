@@ -27,6 +27,7 @@
 #include "pcm_utils.h"
 #include "inputStream.h"
 #include "outputBuffer.h"
+#include "decode.h"
 
 #include "mp4ff/mp4ff.h"
 
@@ -220,7 +221,6 @@ int mp4_decode(OutputBuffer * cb, DecoderControl * dc) {
 		if(dc->seek && seekPositionFound) {
 			seekPositionFound = 0;
                         clearOutputBuffer(cb);
-                        dc->seekChunk = cb->end;
 			dc->seek = 0;
 		}
 
@@ -298,7 +298,10 @@ int mp4_decode(OutputBuffer * cb, DecoderControl * dc) {
 
 	if(dc->state != DECODE_STATE_DECODE) return -1;
 
-	if(dc->seek) dc->seek = 0;
+	/*if(dc->seek) {
+                dc->seekError = 1;
+                dc->seek = 0;
+        }*/
 
 	if(dc->stop) {
 		dc->state = DECODE_STATE_STOP;

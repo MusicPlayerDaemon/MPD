@@ -173,7 +173,7 @@ int decodeSeek(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb,
 {
         int ret = -1;
 
-	if(decode_pid && *decode_pid>0 && !dc->seek) {
+	if(decode_pid && *decode_pid>0) {
 		cb->next = -1;
 		if(dc->state==DECODE_STATE_STOP || dc->error || 
 				strcmp(dc->file,pc->file)!=0) 
@@ -186,16 +186,21 @@ int decodeSeek(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb,
 			dc->start = 1;
 			waitOnDecode(pc,dc,cb,decodeWaitedOn);
 		}
-		if(*decode_pid>0 && dc->state!=DECODE_STATE_STOP) {
+		if(*decode_pid>0 && dc->state!=DECODE_STATE_STOP && 
+                                dc->seekable) 
+                {
 			dc->seekWhere = pc->seekWhere > pc->totalTime-0.1 ?
 						pc->totalTime-0.1 : 
 						pc->seekWhere;
 			dc->seekWhere = 0 > dc->seekWhere ? 0 : dc->seekWhere;
-                        dc->seekChunk = -1;
+                        dc->seekError = 0;
 			dc->seek = 1;
-                        pc->elapsedTime = dc->seekWhere;
-		        pc->beginTime = pc->elapsedTime;
-                        ret = 0;
+                        while(*decode_pid>0 && dc->seek) my_usleep(10000);
+                        if(!dc->seekError) {
+                                pc->elapsedTime = dc->seekWhere;
+		                pc->beginTime = pc->elapsedTime;
+                                ret = 0;
+                        }
 		}
 	}
 	pc->seek = 0;
@@ -239,7 +244,6 @@ int decodeSeek(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb,
 		        doCrossFade = 0; \
 		        nextChunk =  -1; \
                         bbp = 0; \
-                        seeking = 1; \
                 } \
 	} \
 	if(pc->stop) { \
@@ -265,11 +269,12 @@ void decodeStart(PlayerControl * pc, OutputBuffer * cb, DecoderControl * dc) {
                 return;
         }
 
+        dc->seekable = inStream.seekable;
         dc->state = DECODE_STATE_START;
 	dc->start = 0;
 
         while(!inputStreamAtEOF(&inStream) && bufferInputStream(&inStream) < 0
-                        && !pc->stop);
+                        && !dc->stop);
 
         if(dc->stop) {
                 dc->state = DECODE_STATE_STOP;
@@ -368,7 +373,7 @@ int decoderInit(PlayerControl * pc, OutputBuffer * cb, DecoderControl * dc) {
                                 myfprintfCloseAndOpenLogFile();
                                 dc->cycleLogFiles = 0;
                         }
-			else if(dc->start) decodeStart(pc, cb, dc);
+			else if(dc->start || dc->seek) decodeStart(pc, cb, dc);
 			else if(dc->stop) {
 				dc->state = DECODE_STATE_STOP;
 				dc->stop = 0;
@@ -404,7 +409,6 @@ void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb) {
 	int test;
         int decodeWaitedOn = 0;
 	char silence[CHUNK_SIZE];
-        int seeking = 0;
 
 	memset(silence,0,CHUNK_SIZE);
 
@@ -426,13 +430,6 @@ void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb) {
 	while(!quit) {
 		processDecodeInput();
                 handleDecodeStart();
-                if(!dc->seek && seeking) {
-                        if(dc->seekChunk >= 0) {
-                                cb->begin = dc->seekChunk;
-                                cb->wrap = 0;
-                        }
-                        seeking = 0;
-                }
 		if(dc->state==DECODE_STATE_STOP && 
 			pc->queueState==PLAYER_QUEUE_FULL &&
 			pc->queueLockState==PLAYER_QUEUE_UNLOCKED) 
@@ -507,7 +504,7 @@ void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb) {
 					else continue;
 				}
 			}
-			if(!seeking) pc->elapsedTime = cb->times[cb->begin];
+			pc->elapsedTime = cb->times[cb->begin];
 			pc->bitRate = cb->bitRate[cb->begin];
 			pcm_volumeChange(cb->chunks+cb->begin*
 				CHUNK_SIZE,

@@ -146,15 +146,15 @@ int flac_decode(OutputBuffer * cb, DecoderControl *dc) {
 		if(dc->seek) {
 			FLAC__uint64 sampleToSeek = dc->seekWhere*
 					dc->audioFormat.sampleRate+0.5;
-                        clearOutputBuffer(cb);
 			if(FLAC__seekable_stream_decoder_seek_absolute(flacDec,
 						sampleToSeek))
 			{
+                                clearOutputBuffer(cb);
 				data.time = ((float)sampleToSeek)/
 					dc->audioFormat.sampleRate;
 				data.position = 0;
 			}
-                        dc->seekChunk = cb->end;
+                        else dc->seekError = 1;
 			dc->seek = 0;
 		}
 	}
@@ -173,7 +173,10 @@ int flac_decode(OutputBuffer * cb, DecoderControl *dc) {
 		flushOutputBuffer(data.cb);
 	}
 
-	if(dc->seek) dc->seek = 0;
+	/*if(dc->seek) {
+                dc->seekError = 1;
+                dc->seek = 0;
+        } */
 	
 	if(dc->stop) {
 		dc->state = DECODE_STATE_STOP;

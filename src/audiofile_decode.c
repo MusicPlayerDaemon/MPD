@@ -101,7 +101,6 @@ int audiofile_decode(OutputBuffer * cb, DecoderControl * dc) {
 				current = dc->seekWhere * 
                                                 dc->audioFormat.sampleRate;
 				afSeekFrame(af_fp, AF_DEFAULT_TRACK,current);
-                                dc->seekChunk = cb->end;
 				dc->seek = 0;
 			}
 
@@ -124,7 +123,10 @@ int audiofile_decode(OutputBuffer * cb, DecoderControl * dc) {
 
 		flushOutputBuffer(cb);
 
-		if(dc->seek) dc->seek = 0;
+		/*if(dc->seek) {
+                        dc->seekError = 1;
+                        dc->seek = 0;
+                }*/
 
 		if(dc->stop) {
 			dc->state = DECODE_STATE_STOP;

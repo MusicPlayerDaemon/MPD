@@ -1,9 +1,4 @@
-1) seek needs to be rethought! as it is, it hangs near end of songs!
-	a) prolly need to make it blocking again, argh!
-		1) in decodeInit(), if (dc->seek) decodeStart();
-	b) for sure, setting wrap = 0 in decode.c is not good!
-
-2) play streams
+1) play streams
 	a) put some sort of error reporting for streaming/inputStream!
 	b) fetch metadata and store in DecoderControl and pass to 
 		PlayerControl
@@ -13,23 +8,23 @@
 		or something
 	d) in songinfo add a metadata tag item for indicating stream
 
-3) resampling audio for compatibility, and better gapless/crossfading
+2) resampling audio for compatibility, and better gapless/crossfading
 	a) use resampling from oggenc (is it fast enough for realtime?)
 
-4) when writing combined interface for all decodes to use, be sure to add a 
+3) when writing combined interface for all decodes to use, be sure to add a 
 common function and abstrct dealing with DecoderControl * and put
 cycleLogFiles in there, so we cycleLogFiles while decoding, not just when 
 decoding has stopped.
 
-5) ACK error codes
+4) ACK error codes
 
-6) cleanup main()
+5) cleanup main()
 
-7) handle '\n' in filenames
+6) handle '\n' in filenames
 
-8) compute average replaygain to use for non-replaygain songs
+7) compute average replaygain to use for non-replaygain songs
 
-9) pid file
+8) pid file
 
 
 Post-1.0

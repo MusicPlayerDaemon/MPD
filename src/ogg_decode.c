@@ -219,8 +219,8 @@ int ogg_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream)
 				if(0 == ov_time_seek_page(&vf,dc->seekWhere)) {
                                         clearOutputBuffer(cb);
 				        chunkpos = 0;
-                                        dc->seekChunk = cb->end;
                                 }
+                                else dc->seekError = 1;
 				dc->seek = 0;
 			}
 			ret = ov_read(&vf, chunk+chunkpos, 
@@ -251,7 +251,7 @@ int ogg_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream)
 		}
 
 		if(!dc->stop && chunkpos > 0) {
-			sendDataToOutputBuffer(cb, NULL, dc, 0, chunk, chunkpos,
+			sendDataToOutputBuffer(cb, NULL, dc, inStream->seekable,                                        chunk, chunkpos,
 					ov_time_tell(&vf), bitRate);
 		}
 
@@ -259,7 +259,10 @@ int ogg_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream)
 
 		flushOutputBuffer(cb);
 
-		if(dc->seek) dc->seek = 0;
+		/*if(dc->seek) {
+                        dc->seekError = 1;
+                        dc->seek = 0;
+                }*/
 
 		if(dc->stop) {
 			dc->state = DECODE_STATE_STOP;

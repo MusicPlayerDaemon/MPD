@@ -28,8 +28,8 @@ static mpd_sint16 currentChunk = -1;
 
 void clearOutputBuffer(OutputBuffer * cb) {
         currentChunk = -1;
-        /*cb->end = cb->begin;
-        cb->wrap = 0;*/
+        cb->end = cb->begin;
+        cb->wrap = 0;
 }
 
 void flushOutputBuffer(OutputBuffer * cb) {
@@ -80,7 +80,10 @@ int sendDataToOutputBuffer(OutputBuffer * cb, InputStream * inStream,
                                         if(seekable) {
                                                 return OUTPUT_BUFFER_DC_SEEK;
                                         }
-                                        else dc->seek = 0;
+                                        else {
+                                                dc->seekError = 1;
+                                                dc->seek = 0;
+                                        }
                                 }
                                 if(!inStream || 
                                         bufferInputStream(inStream) <= 0)

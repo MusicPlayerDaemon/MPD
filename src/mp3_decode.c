@@ -468,7 +468,6 @@ int mp3Read(mp3DecodeData * data, OutputBuffer * cb, DecoderControl * dc) {
 		if(dc->seekWhere<=data->elapsedTime) {
                         data->outputPtr = data->outputBuffer;
                         clearOutputBuffer(cb);
-                        dc->seekChunk = cb->end;
 			data->muteFrame = 0;
 			dc->seek = 0;
 		}
@@ -528,26 +527,29 @@ int mp3Read(mp3DecodeData * data, OutputBuffer * cb, DecoderControl * dc) {
                                 {
                                         data->outputPtr = data->outputBuffer;
                                         clearOutputBuffer(cb);
-                                        dc->seekChunk = cb->end;
 				        data->currentFrame = i;
                                 }
+                                else dc->seekError = 1;
 				data->muteFrame = 0;
 				dc->seek = 0;
 			}
 		}
-                else if(dc->seek && !data->inStream->seekable) dc->seek = 0;
+                else if(dc->seek && !data->inStream->seekable) {
+                        dc->seek = 0;
+                        dc->seekError = 1;
+                }
 	}
 
 	while(1) {
 		skip = 0;
 		while((ret = decodeNextFrameHeader(data))==DECODE_CONT &&
-				!dc->stop);
-		if(ret==DECODE_SKIP) skip = 1;
-		else if(ret==DECODE_BREAK || dc->stop) break;
+				!dc->stop && !dc->seek);
+		if(ret==DECODE_BREAK || dc->stop || dc->seek) break;
+		else if(ret==DECODE_SKIP) skip = 1;
 		if(!data->muteFrame) {
 			while((ret = decodeNextFrame(data))==DECODE_CONT &&
-					!dc->stop);
-			if(ret==DECODE_BREAK || dc->stop) break;
+					!dc->stop && !dc->seek);
+			if(ret==DECODE_BREAK || dc->stop || dc->seek) break;
 		}
 		if(!skip && ret==DECODE_OK) break;
 	}
@@ -590,17 +592,20 @@ int mp3_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream,
 	while(mp3Read(&data,cb,dc)!=DECODE_BREAK);
 	/* send last little bit if not dc->stop */
 	if(data.outputPtr!=data.outputBuffer && data.flush)  {
-        	if(sendDataToOutputBuffer(cb,NULL,dc,0,data.outputBuffer,
+        	sendDataToOutputBuffer(cb, NULL, dc, 
+                                data.inStream->seekable,
+                                data.outputBuffer,
                                 data.outputPtr-data.outputBuffer,
-                                data.elapsedTime,data.bitRate/1000) == 0)
-		{
-			flushOutputBuffer(cb);
-		}
+                                data.elapsedTime,data.bitRate/1000);
 	}
 
+	flushOutputBuffer(cb);
 	mp3DecodeDataFinalize(&data);
 
-	if(dc->seek) dc->seek = 0;
+	/*if(dc->seek) {
+                dc->seekError = 1;
+                dc->seek = 0;
+        }*/
 
 	if(dc->stop) {
 		dc->state = DECODE_STATE_STOP;
