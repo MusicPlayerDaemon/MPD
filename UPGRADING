@@ -1,5 +1,16 @@
                        Music Player Daemon (MPD) - UPGRADING
 
+Upgrading to 0.11.0
+-------------------
+
+The database format has changed a little bit, but in a backward compatible way.
+This means that if you upgrade to 0.11.0 from 0.10.x, you do not need to make
+any changes.  However, if you downgrade back to 0.10.x, then you will need
+to recreate your db.
+
+The default port for MPD is now 6600, so update your mpd and client
+configurations appropriatly.
+
 Upgrading to 0.10.0
 -------------------
 
