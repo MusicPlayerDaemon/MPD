@@ -119,7 +119,7 @@ if test x$enable_oss = xyes; then
 	AC_CHECK_HEADER(sys/soundcard.h,[enable_oss=yes;AC_DEFINE(HAVE_OSS,1,[Define to enable OSS])],[AC_MSG_WARN(Soundcard headers not found -- disabling OSS support);enable_oss=no])
 fi
 
-if test x$enable_ao = xno && test x$enable_oss = xno && test x$enable_shout = xno; then
+if test x$enable_ao = xno && test x$enable_oss = xno && test x$enable_shout = xno && test x$enable_alsa = xno; then
 	AC_MSG_ERROR("Cannot compile without an output target")
 fi
 
