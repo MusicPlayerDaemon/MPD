@@ -194,7 +194,6 @@ void finishAudio() {
 }
 
 void audioError() {
-	ERROR("Error opening audio device\n");
 	if(errno==AO_ENOTLIVE) {
 		ERROR("not a live ao device\n");
 	}
