@@ -21,59 +21,72 @@
 
 #include "../config.h"
 
-#define CONF_PORT				0
-#define CONF_MUSIC_DIRECTORY			1
-#define CONF_PLAYLIST_DIRECTORY			2
-#define CONF_LOG_FILE				3
-#define CONF_ERROR_FILE				4
-#define CONF_CONNECTION_TIMEOUT			5
-#define CONF_MIXER_DEVICE			6
-#define CONF_MAX_CONNECTIONS			7
-#define CONF_MAX_PLAYLIST_LENGTH		8
-#define CONF_BUFFER_BEFORE_PLAY			9
-#define CONF_MAX_COMMAND_LIST_SIZE		10
-#define CONF_MAX_OUTPUT_BUFFER_SIZE		11
-#define CONF_AO_DRIVER				12
-#define CONF_AO_DRIVER_OPTIONS			13
-#define CONF_SAVE_ABSOLUTE_PATHS_IN_PLAYLISTS	14
-#define CONF_BIND_TO_ADDRESS			15
-#define CONF_MIXER_TYPE				16
-#define CONF_STATE_FILE				17
-#define CONF_USER				18
-#define CONF_DB_FILE				19
-#define CONF_LOG_LEVEL				20
-#define CONF_MIXER_CONTROL			21
-#define CONF_AUDIO_WRITE_SIZE			22
-#define CONF_FS_CHARSET				23
-#define CONF_PASSWORD				24
-#define CONF_DEFAULT_PERMISSIONS		25
-#define CONF_BUFFER_SIZE			26
-#define CONF_REPLAYGAIN                         27
-#define CONF_AUDIO_OUTPUT_FORMAT                28
-#define CONF_HTTP_PROXY_HOST                    29
-#define CONF_HTTP_PROXY_PORT                    30
-#define CONF_HTTP_PROXY_USER			31
-#define CONF_HTTP_PROXY_PASSWORD		32
-#define CONF_REPLAYGAIN_PREAMP			33
-#define CONF_SHOUT_HOST				34
-#define CONF_SHOUT_PORT				35
-#define CONF_SHOUT_PASSWD			36
-#define CONF_SHOUT_MOUNT			37
-#define CONF_SHOUT_NAME				38
-#define CONF_SHOUT_USER				39
-#define CONF_SHOUT_QUALITY			40
-#define CONF_ID3V1_ENCODING			41
-#define CONF_SHOUT_FORMAT			42
+#define CONF_PORT			"port"
+#define CONF_MUSIC_DIR			"music_directory"
+#define CONF_PLAYLIST_DIR		"playlist_directory"
+#define CONF_LOG_FILE			"log_file"
+#define CONF_ERROR_FILE			"error_file"
+#define CONF_CONN_TIMEOUT		"connection_timeout"
+#define CONF_MIXER_DEVICE		"mixer_device"
+#define CONF_MAX_CONN			"max_connections"
+#define CONF_MAX_PLAYLIST_LENGTH	"max_playlist_length"
+#define CONF_BUFFER_BEFORE_PLAY		"buffer_before_play"
+#define CONF_MAX_COMMAND_LIST_SIZE	"max_command_list_size"
+#define CONF_MAX_OUTPUT_BUFFER_SIZE	"max_output_buffer_size"
+#define CONF_AUDIO_OUTPUT		"audio_output"
+#define CONF_SAVE_ABSOLUTE_PATHS	"save_absolute_paths_in_playlists"
+#define CONF_BIND_TO_ADDRESS		"bind_to_address"
+#define CONF_MIXER_TYPE			"mixer_type"
+#define CONF_STATE_FILE			"state_file"
+#define CONF_USER			"user"
+#define CONF_DB_FILE			"db_file"
+#define CONF_LOG_LEVEL			"log_level"
+#define CONF_MIXER_CONTROL		"mixer_control"
+#define CONF_AUDIO_WRITE_SIZE		"audio_write_size"
+#define CONF_FS_CHARSET			"filesystem_charset"
+#define CONF_PASSWORD			"password"
+#define CONF_DEFAULT_PERMS		"default_permissions"
+#define CONF_AUDIO_BUFFER_SIZE		"audio_buffer_size"
+#define CONF_REPLAYGAIN			"replaygain"
+#define CONF_AUDIO_OUTPUT_FORMAT	"audio_output_format"
+#define CONF_HTTP_PROXY_HOST		"http_proxy_host"
+#define CONF_HTTP_PROXY_PORT		"http_proxy_port"
+#define CONF_HTTP_PROXY_USER		"http_proxy_user"
+#define CONF_HTTP_PROXY_PASSWORD	"http_proxy_password"
+#define CONF_REPLAYGAIN_PREAMP		"replaygain_preamp"
+#define CONF_ID3V1_ENCODING		"id3v1_encoding"
 
-#define CONF_CAT_CHAR				"\n"
+typedef struct _BlockParam {
+	char * name;
+	char * value;
+	int line;
+} BlockParam;
 
-/* do not free the return value, it is a static variable */
-char ** readConf(char * file);
-
-char ** getConf();
+typedef struct _ConfigParam {
+	char * value;
+	unsigned int line;
+	BlockParam * blockParams;
+	int numberOfBlockParams;
+} ConfigParam;
 
 void initConf();
 
-void writeConf(char * file);
+void readConf(char * file);
+
+/* don't free the returned value
+   set _last_ to NULL to get first entry */
+ConfigParam * getNextConfigParam(char * name, ConfigParam * last);
+
+#define getConfigParam(name) 	getNextConfigParam(name, NULL)
+
+char * getConfigParamValue(char * name);
+
+char * forceAndGetConfigParamValue(char * name);
+
+void registerConfigParam(char * name, int repeats, int block);
+
+BlockParam * getBlockParam(ConfigParam * param, char * name);
+
+char * parseConfigFilePath(char * name, int force);
 
 #endif

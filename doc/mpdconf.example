@@ -71,28 +71,25 @@ error_file 		"~/.mpd/mpd.error"
 ################## AUDIO OUTPUT ##########################
 #
 # libao (ao_driver) supports any of the following:
-#
-# * Null output (handy for testing without a sound device)
-# * WAV files
-# * AU files
-# * OSS (Open Sound System, used on Linux and FreeBSD)
-# * aRts
-# * esd (ESounD or Enlighten Sound Daemon)
-# * ALSA (Advanced Linux Sound Architecture)
-# * AIX
-# * Sun/NetBSD/OpenBSD
-# * IRIX
-# * NAS (Network Audio Server)
-#
 # Refer to libao documentation for more information
 #
 # OSS Audio Output
-#ao_driver 		"oss"
-#ao_driver_options 	"dsp=/dev/dsp"
+#audio_output {
+#	type		"ao"
+#	name		"my OSS device"
+#	driver 		"oss"
+#	options 	"dsp=/dev/dsp"
+#	write_size	"1024"
+#}
 #
 # ALSA Audio Output
-#ao_driver		"alsa09"
-#ao_driver_options	"dev=hw:0,0"
+#audio_output {
+#	type		"ao"
+#	name		"my ALSA device"
+#	driver		"alsa09"
+#	options		"dev=hw:0,0"
+#	write_size	"1024"
+#}
 #
 # Set this if you have problems 
 # playing audio files.
@@ -101,11 +98,24 @@ error_file 		"~/.mpd/mpd.error"
 #
 #audio_output_format	"44100:16:2"
 #
-# You should not need mess with 
-# this value unless you know 
-# what you're doing.
+##########################################################
+
+
+################# SHOUT STREAMING ########################
 #
-#audio_write_size	"1024"
+# Set this to allow mpd to stream its output to icecast2
+# (i.e. mpd is a icecast2 source)
+#
+#audio_output {
+#	type		"shout"
+#	name		"my cool stream"
+#	host		"hostname"
+#	port		"8000"
+#	user		"source"
+#	password	"hackme"
+#	quality		"5.0"
+#	format		"44100:16:1"
+#}
 #
 ##########################################################
 
@@ -177,20 +187,6 @@ error_file 		"~/.mpd/mpd.error"
 #default_permissions	"read,add,control,admin"
 #
 ##########################################
-
-
-################ SHOUT OPTIONS #####################
-#
-#shout_host 	"host"
-#shout_port 	"8000"
-#shout_user 	"source"
-#shout_password "hackme"
-#shout_name	"My MPD!"
-#shout_mount	"/mpd.ogg"
-#shout_quality	"0.5"
-#shout_format	"44100:16:1"
-#
-####################################################
 
 
 ################ MISCELLANEOUS OPTIONS ###################

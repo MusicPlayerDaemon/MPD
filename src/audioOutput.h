@@ -24,12 +24,14 @@
 #include "mpd_types.h"
 #include "audio.h"
 #include "tag.h"
+#include "conf.h"
 
 #define AUDIO_AO_DRIVER_DEFAULT	"default"
 
 typedef struct _AudioOutput AudioOutput;
 
-typedef int (* AudioOutputInitDriverFunc) (AudioOutput * audioOutput);
+typedef int (* AudioOutputInitDriverFunc) (AudioOutput * audioOutput, 
+		ConfigParam * param);
 
 typedef void (* AudioOutputFinishDriverFunc) (AudioOutput * audioOutput);
 
@@ -46,6 +48,8 @@ typedef void (* AudioOutputSendMetadataFunc) (AudioOutput * audioOutput,
 
 struct _AudioOutput {
 	int open;
+	char * name;
+	char * type;
 
         AudioOutputFinishDriverFunc finishDriverFunc;
         AudioOutputOpenDeviceFunc openDeviceFunc;
@@ -73,7 +77,7 @@ void finishAudioOutputPlugins();
 void loadAudioOutputPlugin(AudioOutputPlugin * audioOutputPlugin);
 void unloadAudioOutputPlugin(AudioOutputPlugin * audioOutputPlugin);
 
-AudioOutput * newAudioOutput(char * name);
+AudioOutput * newAudioOutput(ConfigParam * param);
 int openAudioOutput(AudioOutput * audioOutput, AudioFormat * audioFormat);
 int playAudioOutput(AudioOutput * audioOutput, char * playChunk, int size);
 void closeAudioOutput(AudioOutput * audioOutput);

@@ -1,6 +1,12 @@
-#include <audioOutput.h>
+#include "audioOutput.h"
 
-#include <list.h>
+#include "list.h"
+#include "log.h"
+
+#include <string.h> 
+
+#define AUDIO_OUTPUT_TYPE	"type"
+#define AUDIO_OUTPUT_NAME	"name"
 
 static List * audioOutputPluginList;
 
@@ -21,13 +27,32 @@ void finishAudioOutputPlugins() {
 	freeList(audioOutputPluginList);
 }
 
-AudioOutput * newAudioOutput(char * name) {
+#define getBlockParam(name, str) { \
+	BlockParam * bp; \
+	bp = getBlockParam(param, name); \
+	if(bp == NULL) { \
+		ERROR("couldn't find parameter \"%s\" in audio output " \
+				"definition begining at %i\n", \
+				name, param->line); \
+		exit(EXIT_FAILURE); \
+	} \
+	str = bp->value; \
+}
+
+AudioOutput * newAudioOutput(ConfigParam * param) {
 	AudioOutput * ret = NULL;
 	void * data = NULL;
+	char * name = NULL;
+	char * type = NULL;
 
-	if(findInList(audioOutputPluginList, name, &data)) {
+	getBlockParam(AUDIO_OUTPUT_NAME, name);
+	getBlockParam(AUDIO_OUTPUT_TYPE, type);
+
+	if(findInList(audioOutputPluginList, type, &data)) {
 		AudioOutputPlugin * plugin = (AudioOutputPlugin *) data;
 		ret = malloc(sizeof(AudioOutput));
+		ret->name = strdup(name);
+		ret->type = strdup(type);
 		ret->finishDriverFunc = plugin->finishDriverFunc;
 		ret->openDeviceFunc = plugin->openDeviceFunc;
 		ret->playFunc = plugin->playFunc;
@@ -35,10 +60,15 @@ AudioOutput * newAudioOutput(char * name) {
 		ret->sendMetdataFunc = plugin->sendMetdataFunc;
 		ret->open = 0;
 
-		if(plugin->initDriverFunc(ret) != 0) {
+		if(plugin->initDriverFunc(ret, param) != 0) {
 			free(ret);
 			ret = NULL;
 		}
+	}
+	else {
+		ERROR("couldn't find audio output plugin for type \"%s\" at "
+				"line %i", type, param->line);
+		exit(EXIT_FAILURE);
 	}
 
 	return ret;

@@ -1053,7 +1053,8 @@ int readDirectoryDB() {
 					fsCharset = &(buffer[strlen(
 							DIRECTORY_FS_CHARSET)]);
 					if((tempCharset = 
-						getConf()[CONF_FS_CHARSET]) && 
+						getConfigParamValue(
+							CONF_FS_CHARSET)) && 
 						strcmp(fsCharset,tempCharset))
 					{
 						WARNING("Using \"%s\" for the "

@@ -60,6 +60,9 @@
 
 #define PLAYLIST_HASH_MULT	4
 
+#define DEFAULT_PLAYLIST_MAX_LENGTH		(1024*16)
+#define DEFAULT_PLAYLIST_SAVE_ABSOLUTE_PATHS	0
+
 typedef struct _Playlist {
 	Song ** songs;
 	/* holds version a song was modified on */
@@ -77,13 +80,13 @@ typedef struct _Playlist {
 
 static Playlist playlist;
 static int playlist_state = PLAYLIST_STATE_STOP;
-static int playlist_max_length;
+static int playlist_max_length = DEFAULT_PLAYLIST_MAX_LENGTH;
 static int playlist_stopOnError;
 static int playlist_errorCount = 0;
 static int playlist_queueError;
 static int playlist_noGoToNext = 0;
 
-static int playlist_saveAbsolutePaths;
+static int playlist_saveAbsolutePaths = DEFAULT_PLAYLIST_SAVE_ABSOLUTE_PATHS;
 
 static char * playlist_stateFile = NULL;
 
@@ -128,6 +131,7 @@ static void incrPlaylistCurrent() {
 void initPlaylist() {
 	char * test;
 	int i;
+	ConfigParam * param;
 
 	playlist.length = 0;
 	playlist.repeat = 0;
@@ -136,26 +140,32 @@ void initPlaylist() {
 	playlist.queued = -1;
         playlist.current = -1;
 
-	playlist_max_length = strtol((getConf())[CONF_MAX_PLAYLIST_LENGTH],&test,10);
-	if(*test!='\0') {
-		ERROR("max playlist length \"%s\" is not an integer\n",
-				(getConf())[CONF_MAX_PLAYLIST_LENGTH]);
-		exit(EXIT_FAILURE);
+	param = getConfigParam(CONF_MAX_PLAYLIST_LENGTH);
+
+	if(param) {
+		playlist_max_length = strtol(param->value, &test, 10);
+		if(*test!='\0') {
+			ERROR("max playlist length \"%s\" is not an integer, "
+					"line %i\n", param->value, param->line);
+			exit(EXIT_FAILURE);
+		}
 	}
 
-	if(strcmp("yes",(getConf())[CONF_SAVE_ABSOLUTE_PATHS_IN_PLAYLISTS])
-			==0) {
-		playlist_saveAbsolutePaths = 1;
-	}
-	else if(strcmp("no",(getConf())[CONF_SAVE_ABSOLUTE_PATHS_IN_PLAYLISTS])
-			==0) {
-		playlist_saveAbsolutePaths = 0;
-	}
-	else {
-		ERROR("save_absolute_paths_in_playlist \"%s\" is not yes or "
-			"no\n",
-			(getConf())[CONF_SAVE_ABSOLUTE_PATHS_IN_PLAYLISTS]);
-		exit(EXIT_FAILURE);
+	param = getConfigParam(CONF_SAVE_ABSOLUTE_PATHS);
+
+	if(param) {
+		if(0 == strcmp("yes", param->value) ) {
+			playlist_saveAbsolutePaths = 1;
+		}
+		else if(0 == strcmp("no", param->value) ) {
+			playlist_saveAbsolutePaths = 0;
+		}
+		else {
+			ERROR("%s \"%s\" is not yes or no, line %i"
+				CONF_SAVE_ABSOLUTE_PATHS,
+				param->value, param->line);
+			exit(EXIT_FAILURE);
+		}
 	}
 
 	playlist.songs = malloc(sizeof(Song *)*playlist_max_length);
@@ -169,9 +179,7 @@ void initPlaylist() {
 
 	srand(time(NULL));
 
-	if(getConf()[CONF_STATE_FILE]) {
-		playlist_stateFile = getConf()[CONF_STATE_FILE];
-	}
+	playlist_stateFile = getConfigParamValue(CONF_STATE_FILE);
 
 	for(i=0; i<playlist_max_length*PLAYLIST_HASH_MULT; i++) {
 		playlist.idToPosition[i] = -1;

@@ -114,6 +114,7 @@ void initPaths(char * playlistDirArg, char * musicDirArg) {
 	char * charset = NULL;
 	char * originalLocale;
         struct stat st;
+        ConfigParam * param;
 
         playlistDir = prependCwdToPathDup(playlistDirArg);
         if((stat(playlistDir,&st))<0) {
@@ -135,8 +136,10 @@ void initPaths(char * playlistDirArg, char * musicDirArg) {
                 exit(EXIT_FAILURE);
         }
 
-	if(getConf()[CONF_FS_CHARSET]) {
-		charset = strdup(getConf()[CONF_FS_CHARSET]);
+        param = getConfigParam(CONF_FS_CHARSET);
+
+	if(param) {
+		charset = strdup(param->value);
 	}
 #ifdef HAVE_LOCALE
 #ifdef HAVE_LANGINFO_CODESET
@@ -296,5 +299,3 @@ char * prependCwdToPathDup(char * path) {
 
         return realloc(ret,len+1);
 }
-
-/* vim:set shiftwidth=4 tabstop=8 expandtab: */

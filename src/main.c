@@ -165,9 +165,12 @@ void parseOptions(int argc, char ** argv, Options * options) {
                 return;
         }
         else if(argcLeft<=2) {
-                char ** conf = NULL;
-                if(argcLeft==2) conf = readConf(argv[argc-1]);
-                if(argcLeft==1) {
+                int conf = 0;
+                if(argcLeft==2) {
+			readConf(argv[argc-1]);
+			conf = 1;
+		}
+                else if(argcLeft==1) {
                         FILE * fp;
                         char * homedir = getenv("HOME");
                         char userfile[MAXPATHLEN+1] = "";
@@ -179,23 +182,27 @@ void parseOptions(int argc, char ** argv, Options * options) {
                         }
                         if(strlen(userfile) && (fp=fopen(userfile,"r"))) {
                                 fclose(fp);
-                                conf = readConf(userfile);
+                                readConf(userfile);
+				conf = 1;
                         }
                         else if((fp=fopen(SYSTEM_CONFIG_FILE_LOCATION,"r"))) {
                                 fclose(fp);
-                                conf = readConf(SYSTEM_CONFIG_FILE_LOCATION);
+                                readConf(SYSTEM_CONFIG_FILE_LOCATION);
+				conf = 1;
                         }
                 }
                 if(conf) {
-                        options->portStr = conf[CONF_PORT];
-                        options->musicDirArg = conf[CONF_MUSIC_DIRECTORY];
-                        options->playlistDirArg = conf[CONF_PLAYLIST_DIRECTORY];
-                        options->logFile = conf[CONF_LOG_FILE];
-                        options->errorFile = conf[CONF_ERROR_FILE];
-                        options->usr = conf[CONF_USER];
-                        if(conf[CONF_DB_FILE]) {
-                                options->dbFile = conf[CONF_DB_FILE];
-                        }
+                        options->portStr = forceAndGetConfigParamValue(
+					CONF_PORT);
+                        options->musicDirArg = 
+				parseConfigFilePath(CONF_MUSIC_DIR, 1);
+                        options->playlistDirArg = 
+				parseConfigFilePath(CONF_PLAYLIST_DIR, 1);
+                        options->logFile = parseConfigFilePath(CONF_LOG_FILE,1);
+                        options->errorFile = 
+				parseConfigFilePath(CONF_ERROR_FILE, 1);
+                        options->usr = parseConfigFilePath(CONF_USER, 0);
+                        options->dbFile = parseConfigFilePath(CONF_DB_FILE, 0);
                         return;
                 }
         }

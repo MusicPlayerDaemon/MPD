@@ -22,8 +22,7 @@
 
 #include "utils.h"
 #include "buffer2array.h"
-#include "audio.h"
-#include "volume.h"
+#include "list.h"
 
 #include <sys/param.h>
 #include <stdio.h>
@@ -35,270 +34,385 @@
 
 #define MAX_STRING_SIZE	MAXPATHLEN+80
 
-#define CONF_COMMENT	'#'
+#define CONF_COMMENT		'#'
+#define CONF_BLOCK_BEGIN	"{"
+#define CONF_BLOCK_END		"}"
 
-#define CONF_NUMBER_OF_PARAMS		43
-#define CONF_NUMBER_OF_PATHS		6
-#define CONF_NUMBER_OF_REQUIRED		5
-#define CONF_NUMBER_OF_ALLOW_CATS	1
+#define CONF_REPEATABLE_MASK	0x01
+#define CONF_BLOCK_MASK		0x02
 
-#define CONF_CONNECTION_TIMEOUT_DEFAULT			"60"
-#define CONF_MAX_CONNECTIONS_DEFAULT			"5"
-#define CONF_MAX_PLAYLIST_LENGTH_DEFAULT		"16384"
-#define CONF_BUFFER_BEFORE_PLAY_DEFAULT			"25%"
-#define CONF_MAX_COMMAND_LIST_SIZE_DEFAULT		"2048"
-#define CONF_MAX_OUTPUT_BUFFER_SIZE_DEFAULT		"2048"
-#define CONF_AO_DRIVER_DEFAULT				AUDIO_AO_DRIVER_DEFAULT
-#define CONF_AO_DRIVER_OPTIONS_DEFAULT			""
-#define CONF_SAVE_ABSOLUTE_PATHS_IN_PLAYLISTS_DEFAULT	"no"
-#define CONF_BIND_TO_ADDRESS_DEFAULT			"any"
-#define CONF_USER_DEFAULT				""
-#define CONF_LOG_LEVEL_DEFAULT				"default"
-#define CONF_AUDIO_WRITE_SIZE_DEFAULT			"1024"
-#define CONF_BUFFER_SIZE_DEFAULT			"2048"
-#ifndef NO_OSS_MIXER
-#define CONF_MIXER_TYPE_DEFAULT				VOLUME_MIXER_OSS
-#define CONF_MIXER_DEVICE_DEFAULT			""
-#else
-#ifdef HAVE_ALSA
-#define CONF_MIXER_TYPE_DEFAULT				VOLUME_MIXER_ALSA
-#define CONF_MIXER_DEVICE_DEFAULT			""
-#else
-#define CONF_MIXER_TYPE_DEFAULT				VOLUME_MIXER_SOFTWARE
-#define CONF_MIXER_DEVICE_DEFAULT			""
-#endif
-#endif
+typedef struct _configEntry {
+	unsigned char mask;
+	List * configParamList;
+} ConfigEntry;
 
-static char * conf_params[CONF_NUMBER_OF_PARAMS];
+static List * configEntriesList = NULL;
 
-void initConf() {
-	int i;
+static ConfigParam * newConfigParam(char * value, int line) {
+	ConfigParam * ret = malloc(sizeof(ConfigParam));
 
-	for(i=0;i<CONF_NUMBER_OF_PARAMS;i++) conf_params[i] = NULL;
+	if(!value) ret->value = NULL;
+	else ret->value = strdup(value);
 
-	/* we don't specify these on the command line */
-	conf_params[CONF_CONNECTION_TIMEOUT] = strdup(CONF_CONNECTION_TIMEOUT_DEFAULT);
-	conf_params[CONF_MIXER_DEVICE] = strdup(CONF_MIXER_DEVICE_DEFAULT);
-	conf_params[CONF_MAX_CONNECTIONS] = strdup(CONF_MAX_CONNECTIONS_DEFAULT);
-	conf_params[CONF_MAX_PLAYLIST_LENGTH] = strdup(CONF_MAX_PLAYLIST_LENGTH_DEFAULT);
-	conf_params[CONF_BUFFER_BEFORE_PLAY] = strdup(CONF_BUFFER_BEFORE_PLAY_DEFAULT);
-	conf_params[CONF_MAX_COMMAND_LIST_SIZE] = strdup(CONF_MAX_COMMAND_LIST_SIZE_DEFAULT);
-	conf_params[CONF_MAX_OUTPUT_BUFFER_SIZE] = strdup(CONF_MAX_OUTPUT_BUFFER_SIZE_DEFAULT);
-	conf_params[CONF_AO_DRIVER] = strdup(CONF_AO_DRIVER_DEFAULT);
-	conf_params[CONF_AO_DRIVER_OPTIONS] = strdup(CONF_AO_DRIVER_OPTIONS_DEFAULT);
-	conf_params[CONF_SAVE_ABSOLUTE_PATHS_IN_PLAYLISTS] = strdup(CONF_SAVE_ABSOLUTE_PATHS_IN_PLAYLISTS_DEFAULT);
-	conf_params[CONF_BIND_TO_ADDRESS] = strdup(CONF_BIND_TO_ADDRESS_DEFAULT);
-	conf_params[CONF_MIXER_TYPE] = strdup(CONF_MIXER_TYPE_DEFAULT);
-	conf_params[CONF_USER] = strdup(CONF_USER_DEFAULT);
-	conf_params[CONF_LOG_LEVEL] = strdup(CONF_LOG_LEVEL_DEFAULT);
-	conf_params[CONF_AUDIO_WRITE_SIZE] = strdup(CONF_AUDIO_WRITE_SIZE_DEFAULT);
-	conf_params[CONF_BUFFER_SIZE] = strdup(CONF_BUFFER_SIZE_DEFAULT);
+	ret->line = line;
+
+	ret->numberOfBlockParams = 0;
+	ret->blockParams = NULL;
+
+	return ret;
 }
 
-char ** readConf(char * file) {
-	char * conf_strings[CONF_NUMBER_OF_PARAMS] = {
-		"port",
-		"music_directory",
-		"playlist_directory",
-		"log_file",
-		"error_file",
-		"connection_timeout",
-		"mixer_device",
-		"max_connections",
-		"max_playlist_length",
-		"buffer_before_play",
-		"max_command_list_size",
-		"max_output_buffer_size",
-		"ao_driver",
-		"ao_driver_options",
-		"save_absolute_paths_in_playlists",
-		"bind_to_address",
-		"mixer_type",
-		"state_file",
-		"user",
-		"db_file",
-		"log_level",
-		"mixer_control",
-		"audio_write_size",
-		"filesystem_charset",
-		"password",
-		"default_permissions",
-		"audio_buffer_size",
-                "replaygain",
-                "audio_output_format",
-                "http_proxy_host",
-                "http_proxy_port",
-		"http_proxy_user",
-		"http_proxy_password",
-		"replaygain_preamp",
-		"shout_host",
-		"shout_port",
-		"shout_password",
-		"shout_mount",
-		"shout_name",
-		"shout_user",
-		"shout_quality",
-		"id3v1_encoding",
-		"shout_format"
-	};
+static void freeConfigParam(ConfigParam * param) {
+	int i;
 
-	int conf_absolutePaths[CONF_NUMBER_OF_PATHS] = {
-		CONF_MUSIC_DIRECTORY,
-		CONF_PLAYLIST_DIRECTORY,
-		CONF_LOG_FILE,
-		CONF_ERROR_FILE,
-		CONF_STATE_FILE,
-		CONF_DB_FILE
-	};
+	if(param->value) free(param->value);
 
-	int conf_required[CONF_NUMBER_OF_REQUIRED] = {
-		CONF_MUSIC_DIRECTORY,
-		CONF_PLAYLIST_DIRECTORY,
-		CONF_LOG_FILE,
-		CONF_ERROR_FILE,
-		CONF_PORT
-	};
+	for(i=0; i<param->numberOfBlockParams; i++) {
+		if(param->blockParams[i].name) {
+			free(param->blockParams[i].name);
+		}
+		if(param->blockParams[i].value) {
+			free(param->blockParams[i].value);
+		}
+	}
 
-	short conf_allowCat[CONF_NUMBER_OF_ALLOW_CATS] = {
-		CONF_PASSWORD
-	};
+	if(param->numberOfBlockParams) free(param->blockParams);
 
+	free(param);
+}
+
+ConfigEntry * newConfigEntry(int repeatable, int block) {
+	ConfigEntry * ret =  malloc(sizeof(ConfigEntry));
+
+	ret->mask = 0;
+	ret->configParamList = makeList((ListFreeDataFunc *)freeConfigParam);
+
+	if(repeatable) ret->mask |= CONF_REPEATABLE_MASK;
+	if(block) ret->mask |= CONF_BLOCK_MASK;
+
+	return ret;
+}
+
+void freeConfigEntry(ConfigEntry * entry) {
+	freeList(entry->configParamList);
+	free(entry);
+}
+
+void registerConfigParam(char * name, int repeatable, int block) {
+	ConfigEntry * entry;
+
+	if(findInList(configEntriesList, name, NULL)) {
+		ERROR("config parameter \"%s\" already registered\n", name);
+		exit(EXIT_FAILURE);
+	}
+
+	entry = newConfigEntry(repeatable, block);
+
+	insertInList(configEntriesList, name, entry);
+}
+
+void initConf() {
+	configEntriesList = makeList((ListFreeDataFunc *)freeConfigEntry);
+
+	registerConfigParam(CONF_PORT, 				0,	0);
+	registerConfigParam(CONF_MUSIC_DIR,			0,	0);
+	registerConfigParam(CONF_PLAYLIST_DIR,			0,	0);
+	registerConfigParam(CONF_LOG_FILE,			0,	0);
+	registerConfigParam(CONF_ERROR_FILE,			0,	0);
+	registerConfigParam(CONF_CONN_TIMEOUT,			0,	0);
+	registerConfigParam(CONF_MIXER_DEVICE,			0,	0);
+	registerConfigParam(CONF_MAX_CONN,			0,	0);
+	registerConfigParam(CONF_MAX_PLAYLIST_LENGTH,		0,	0);
+	registerConfigParam(CONF_BUFFER_BEFORE_PLAY,		0,	0);
+	registerConfigParam(CONF_MAX_COMMAND_LIST_SIZE,		0,	0);
+	registerConfigParam(CONF_MAX_OUTPUT_BUFFER_SIZE,	0,	0);
+	registerConfigParam(CONF_AUDIO_OUTPUT,			1,	1);
+	registerConfigParam(CONF_SAVE_ABSOLUTE_PATHS,		0,	0);
+	registerConfigParam(CONF_BIND_TO_ADDRESS,		1,	0);
+	registerConfigParam(CONF_MIXER_TYPE,			0,	0);
+	registerConfigParam(CONF_STATE_FILE,			0,	0);
+	registerConfigParam(CONF_USER,				0,	0);
+	registerConfigParam(CONF_DB_FILE,			0,	0);
+	registerConfigParam(CONF_LOG_LEVEL,			0,	0);
+	registerConfigParam(CONF_MIXER_CONTROL,			0,	0);
+	registerConfigParam(CONF_AUDIO_WRITE_SIZE,		0,	0);
+	registerConfigParam(CONF_FS_CHARSET,			0,	0);
+	registerConfigParam(CONF_PASSWORD,			1,	0);
+	registerConfigParam(CONF_DEFAULT_PERMS,			0,	0);
+	registerConfigParam(CONF_AUDIO_BUFFER_SIZE,		0,	0);
+	registerConfigParam(CONF_REPLAYGAIN,			0,	0);
+	registerConfigParam(CONF_AUDIO_OUTPUT_FORMAT,		0,	0);
+	registerConfigParam(CONF_HTTP_PROXY_HOST,		0,	0);
+	registerConfigParam(CONF_HTTP_PROXY_PORT,		0,	0);
+	registerConfigParam(CONF_HTTP_PROXY_USER,		0,	0);
+	registerConfigParam(CONF_HTTP_PROXY_PASSWORD,		0,	0);
+	registerConfigParam(CONF_REPLAYGAIN_PREAMP,		0,	0);
+	registerConfigParam(CONF_ID3V1_ENCODING,		0,	0);
+}
+
+static void addBlockParam(ConfigParam * param, char * name, char * value,
+		int line) 
+{
+	param->numberOfBlockParams++;
+
+	param->blockParams = realloc(param->blockParams, 
+			param->numberOfBlockParams*sizeof(BlockParam));
+	
+	param->blockParams[param->numberOfBlockParams-1].name = strdup(name);
+	param->blockParams[param->numberOfBlockParams-1].value = strdup(value);
+	param->blockParams[param->numberOfBlockParams-1].line = line;
+}
+
+static ConfigParam * readConfigBlock(FILE * fp, int * count, char * string) {
+	ConfigParam * ret = newConfigParam(NULL, *count);
+
+	char ** array;
+	int i;
+	int numberOfArgs;
+	int argsMinusComment;
+
+	while(myFgets(string, MAX_STRING_SIZE ,fp)) {
+		(*count)++;
+
+		numberOfArgs = buffer2array(string, &array);
+
+		for(i=0; i<numberOfArgs; i++) {
+			if(array[i][0] == CONF_COMMENT) break;
+		}
+
+		argsMinusComment = i;
+
+		if(0 == argsMinusComment) continue;
+
+		if(1 == argsMinusComment && 
+				0 == strcmp(array[0], CONF_BLOCK_END))
+		{
+			break;
+		}
+
+		if(2 != argsMinusComment) {
+			ERROR("improperly formated config file at line %i:"
+					" %s\n", count, string);
+			exit(EXIT_FAILURE);
+		}
+
+		if(0 == strcmp(array[0], CONF_BLOCK_BEGIN) ||
+				0 == strcmp(array[1], CONF_BLOCK_BEGIN) ||
+				0 == strcmp(array[0], CONF_BLOCK_END) ||
+				0 == strcmp(array[1], CONF_BLOCK_END))
+		{
+			ERROR("improperly formated config file at line %i:"
+					" %s\n", count, string);
+			ERROR("in block begging at line %i\n", ret->line);
+			exit(EXIT_FAILURE);
+		}
+
+		addBlockParam(ret, array[0], array[1], *count);
+
+		freeArgArray(array, numberOfArgs);
+	}
+
+	return ret;
+}
+
+void readConf(char * file) {
 	FILE * fp;
 	char string[MAX_STRING_SIZE+1];
 	char ** array;
 	int i;
 	int numberOfArgs;
-	short allowCat[CONF_NUMBER_OF_PARAMS];
+	int argsMinusComment;
 	int count = 0;
-
-	for(i=0;i<CONF_NUMBER_OF_PARAMS;i++) allowCat[i] = 0;
-
-	for(i=0;i<CONF_NUMBER_OF_ALLOW_CATS;i++) allowCat[conf_allowCat[i]] = 1;
+	ConfigEntry * entry;
+	void * voidPtr;
+	ConfigParam * param;
 
 	if(!(fp=fopen(file,"r"))) {
 		ERROR("problems opening file %s for reading\n",file);
 		exit(EXIT_FAILURE);
 	}
 
-	while(myFgets(string,sizeof(string),fp)) {
+	while(myFgets(string, MAX_STRING_SIZE, fp)) {
 		count++;
 
-		if(string[0]==CONF_COMMENT) continue;
-		numberOfArgs = buffer2array(string,&array);
-		if(numberOfArgs==0) continue;
-		if(2!=numberOfArgs) {
-			ERROR("improperly formated config file at line %i: %s\n",count,string);
+		numberOfArgs = buffer2array(string, &array);
+
+		for(i=0; i<numberOfArgs; i++) {
+			if(array[i][0] == CONF_COMMENT) break;
+		}
+
+		argsMinusComment = i;
+
+		if(0 == argsMinusComment) continue;
+
+		if(2 != argsMinusComment) {
+			ERROR("improperly formated config file at line %i:"
+					" %s\n", count, string);
 			exit(EXIT_FAILURE);
 		}
-		i = 0;
-		while(i<CONF_NUMBER_OF_PARAMS && 0!=strcmp(conf_strings[i],array[0])) i++;
-		if(i>=CONF_NUMBER_OF_PARAMS) {
-			ERROR("unrecognized paramater in conf at line %i: %s\n",count,string);
+
+		if(!findInList(configEntriesList, array[0], &voidPtr)) {
+			ERROR("unrecognized paramater in config file at line "
+					"%i: %s\n", count, string);
 			exit(EXIT_FAILURE);
 		}
-		
-		if(conf_params[i]!=NULL) {
-			if(allowCat[i]) {
-				conf_params[i] = realloc(conf_params[i],
-						strlen(conf_params[i])+
-						strlen(CONF_CAT_CHAR)+
-						strlen(array[1])+1);
-				strcat(conf_params[i],CONF_CAT_CHAR);
-				strcat(conf_params[i],array[1]);
-			}
-			else {
-				free(conf_params[i]);
-				conf_params[i] = strdup(array[1]);
-			}
-		}
-		else conf_params[i] = strdup(array[1]);
-		free(array[0]);
-		free(array[1]);
-		free(array);
-	}
 
-	fclose(fp);
+		entry = (ConfigEntry *) voidPtr;
 
-	for(i=0;i<CONF_NUMBER_OF_REQUIRED;i++) {
-		if(conf_params[conf_required[i]] == NULL) {
-			ERROR("%s is unassigned in conf file\n",
-					conf_strings[conf_required[i]]);
-			exit(EXIT_FAILURE);
-		}
-	}
-
-	for(i=0;i<CONF_NUMBER_OF_PATHS;i++) {
-		if(conf_params[conf_absolutePaths[i]] && 
-			conf_params[conf_absolutePaths[i]][0]!='/' &&
-			conf_params[conf_absolutePaths[i]][0]!='~') 
+		if( !(entry->mask & CONF_REPEATABLE_MASK) &&
+			entry->configParamList->numberOfNodes)
 		{
-			ERROR("\"%s\" is not an absolute path\n",
-					conf_params[conf_absolutePaths[i]]);
+			param = entry->configParamList->firstNode->data;
+			ERROR("config paramter \"%s\" is first defined on line "
+					"%i and redefined on line %i\n",
+					array[0], param->line, count);
 			exit(EXIT_FAILURE);
 		}
-		/* Parse ~ in path */
-		else if(conf_params[conf_absolutePaths[i]] &&
-			conf_params[conf_absolutePaths[i]][0]=='~') 
-		{
-			struct passwd * pwd = NULL;
-			char * path;
-			int pos = 1;
-			if(conf_params[conf_absolutePaths[i]][1]=='/' ||
-				conf_params[conf_absolutePaths[i]][1]=='\0') 
-			{
-				if(conf_params[CONF_USER] && 
-						strlen(conf_params[CONF_USER]))
-				{
-					pwd = getpwnam(
-						conf_params[CONF_USER]);
-					if(!pwd) {
-						ERROR("no such user: %s\n",
-							conf_params[CONF_USER]);
-						exit(EXIT_FAILURE);
-					}
-				}
-				else {
-					uid_t uid = geteuid();
-					if((pwd = getpwuid(uid)) == NULL) {
-						ERROR("problems getting passwd "
-							"entry "
-							"for current user\n");
-						exit(EXIT_FAILURE);
-					}
-				}
-			}
-			else {
-				int foundSlash = 0;
-				char * ch = &(
-					conf_params[conf_absolutePaths[i]][1]);
-				for(;*ch!='\0' && *ch!='/';ch++);
-				if(*ch=='/') foundSlash = 1;
-				* ch = '\0';
-				pos+= ch-
-					&(conf_params[
-					conf_absolutePaths[i]][1]);
-				if((pwd = getpwnam(&(conf_params[
-					conf_absolutePaths[i]][1]))) == NULL) 
-				{
-					ERROR("user \"%s\" not found\n",
-						&(conf_params[
-						conf_absolutePaths[i]][1]));
-					exit(EXIT_FAILURE);
-				}
-				if(foundSlash) *ch = '/';
-			}
-			path = malloc(strlen(pwd->pw_dir)+strlen(
-				&(conf_params[conf_absolutePaths[i]][pos]))+1);
-			strcpy(path,pwd->pw_dir);
-			strcat(path,&(conf_params[conf_absolutePaths[i]][pos]));
-			free(conf_params[conf_absolutePaths[i]]);
-			conf_params[conf_absolutePaths[i]] = path;
-		}
-	}
 
-	return conf_params;
+		if(entry->mask & CONF_BLOCK_MASK) {
+			if(0 != strcmp(array[1], CONF_BLOCK_BEGIN)) {
+				ERROR("improperly formated config file at "
+					"line %i: %s\n", count, string);
+				exit(EXIT_FAILURE);
+			}
+			param = readConfigBlock(fp, &count, string);
+		}
+		else param = newConfigParam(array[1], count);
+
+		insertInListWithoutKey(entry->configParamList, param);
+
+		freeArgArray(array, numberOfArgs);
+	}
 }
 
-char ** getConf() {
-	return conf_params;
+ConfigParam * getNextConfigParam(char * name, ConfigParam * last) {
+	void * voidPtr;
+	ConfigEntry * entry;
+	ListNode * node;
+	ConfigParam * param;
+
+	if(!findInList(configEntriesList, name, &voidPtr)) return NULL;
+
+	entry = voidPtr;
+
+	node = entry->configParamList->firstNode;
+
+	if(last) {
+		while(node!=NULL) {
+			param = node->data;
+			node = node->nextNode;
+			if(param == last) break;
+		}
+	}
+
+	if(node == NULL)  return NULL;
+
+	param = node->data;
+
+	return param;
+}
+
+char * getConfigParamValue(char * name) {
+	ConfigParam * param = getConfigParam(name);
+
+	if(!param) return NULL;
+
+	return param->value;
+}
+
+char * forceAndGetConfigParamValue(char * name) {
+	ConfigParam * param = getConfigParam(name);
+
+	if(!param) {
+		ERROR("\"%s\" not found in config file\n", name);
+		exit(EXIT_FAILURE);
+	}
+
+	return param->value;
+}
+
+BlockParam * getBlockParam(ConfigParam * param, char * name) {
+	BlockParam * ret = NULL;
+	int i;
+
+	for(i = 0; i < param->numberOfBlockParams; i++) {
+		if(0 == strcmp(name, param->blockParams[i].name)) {
+			if(ret) {
+				ERROR("\"%s\" first defined on line %i, and "
+					"redefined on line %i\n", name, 
+					ret->line, param->blockParams[i].line);
+			}
+			ret = param->blockParams+i;
+		}
+	}
+
+	return ret;
+}
+
+char * parseConfigFilePath(char * name, int force) {
+	ConfigParam * param = getConfigParam(name);
+	char * path;
+
+	if(!param && force) {
+		ERROR("config parameter \"%s\" not found\n", name);
+		exit(EXIT_FAILURE);
+	}
+
+	if(!param) return NULL;
+
+	path = param->value;
+
+	if(path[0] != '/' && path[0] != '~') {
+		ERROR("\"%s\" is not an absolute path at line %i\n",
+				param->value, param->line);
+		exit(EXIT_FAILURE);
+	}
+	// Parse ~ in path 
+	else if(path[0] == '~') {
+		struct passwd * pwd = NULL;
+		char * newPath;
+		int pos = 1;
+		if(path[1]=='/' || path[1] == '\0') {
+			ConfigParam * userParam = getConfigParam(CONF_USER);
+
+			if(userParam) {
+				pwd = getpwnam(userParam->value);
+				if(!pwd) {
+					ERROR("no such user %s at line %i\n",
+							userParam->value, 
+							userParam->line);
+					exit(EXIT_FAILURE);
+				}
+			}
+			else {
+				uid_t uid = geteuid();
+				if((pwd = getpwuid(uid)) == NULL) {
+					ERROR("problems getting passwd entry "
+							"for current user\n");
+					exit(EXIT_FAILURE);
+				}
+			}
+		}
+		else {
+			int foundSlash = 0;
+			char * ch = path+1;
+			for(;*ch!='\0' && *ch!='/';ch++);
+			if(*ch=='/') foundSlash = 1;
+			* ch = '\0';
+			pos+= ch-path+1;
+			if((pwd = getpwnam(path+1)) == NULL) {
+				ERROR("user \"%s\" not found at line %i\n",
+						path+1, param->line);
+				exit(EXIT_FAILURE);
+			}
+			if(foundSlash) *ch = '/';
+		}
+		newPath = malloc(strlen(pwd->pw_dir)+strlen(path+pos)+1);
+		strcpy(newPath, pwd->pw_dir);
+		strcat(newPath, path+pos);
+		free(param->value);
+		param->value = newPath;
+	}
+
+	return param->value;
 }

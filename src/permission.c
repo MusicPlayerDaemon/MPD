@@ -69,56 +69,53 @@ unsigned int parsePermissions(char * string) {
 }
 
 void initPermissions() {
-	char * passwordSets;
-	char * nextSet;
 	char * temp;
-	char * cp1;
 	char * cp2;
 	char * password;
 	unsigned int * permission;
+        ConfigParam * param;
 
 	permission_passwords = makeList(free);
 
 	permission_default = PERMISSION_READ | PERMISSION_ADD | 
 				PERMISSION_CONTROL | PERMISSION_ADMIN;
 
-	if(getConf()[CONF_DEFAULT_PERMISSIONS]) {
-		permission_default = parsePermissions(
-				getConf()[CONF_DEFAULT_PERMISSIONS]);
-	}
+        param = getNextConfigParam(CONF_PASSWORD, NULL);
 
-	if(!getConf()[CONF_PASSWORD]) return;
+        if(param) {
+	        permission_default = 0;
 
-	if(!getConf()[CONF_DEFAULT_PERMISSIONS]) permission_default = 0;
-
-	passwordSets = strdup(getConf()[CONF_PASSWORD]);
-
-	nextSet = strtok_r(passwordSets,CONF_CAT_CHAR,&cp1);
-	while(nextSet && strlen(nextSet)) {
-		if(!strstr(nextSet,PERMISSION_PASSWORD_CHAR)) {
-			ERROR("\"%s\" not found in password string \"%s\"\n",
+                do {
+		        if(!strstr(param->value, PERMISSION_PASSWORD_CHAR)) {
+			        ERROR("\"%s\" not found in password string "
+                                        "\"%s\", line %i\n",
 					PERMISSION_PASSWORD_CHAR,
-					nextSet);
-			exit(EXIT_FAILURE);
-		}
+					param->value,
+                                        param->line);
+			        exit(EXIT_FAILURE);
+		        }
 
-		if(!(temp = strtok_r(nextSet,PERMISSION_PASSWORD_CHAR,&cp2))) {
-			ERROR("something weird just happend in permission.c\n");
-			exit(EXIT_FAILURE);
-		}
-		password = temp;
+		        if(!(temp = strtok_r(param->value,
+                                        PERMISSION_PASSWORD_CHAR,&cp2))) {
+			        ERROR("something weird just happend in permission.c\n");
+			        exit(EXIT_FAILURE);
+		        }
 
-		permission = malloc(sizeof(unsigned int));
-		*permission = parsePermissions(strtok_r(NULL,"",&cp2));
+                
+		        password = temp;
 
-		insertInList(permission_passwords,password,permission);
+		        permission = malloc(sizeof(unsigned int));
+		        *permission = parsePermissions(strtok_r(NULL,"",&cp2));
 
-		nextSet = strtok_r(NULL,CONF_CAT_CHAR,&cp1);
+		        insertInList(permission_passwords,password,permission);
+                } while((param = getNextConfigParam(CONF_PASSWORD, param)));
 	}
+
+        param = getConfigParam(CONF_DEFAULT_PERMS);
+
+	if(param) permission_default = parsePermissions(param->value);
 
 	sortList(permission_passwords);
-
-	free(passwordSets);
 }
 
 int getPermissionFromPassword(char * password, unsigned int * permission) {

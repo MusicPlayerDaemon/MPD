@@ -45,8 +45,21 @@
 #define VOLUME_MIXER_ALSA_DEFAULT		"default"
 #define VOLUME_MIXER_ALSA_CONTROL_DEFAULT	"Master"
 
-int volume_mixerType = VOLUME_MIXER_TYPE_SOFTWARE;
-char * volume_mixerDevice;
+#ifndef NO_OSS_MIXER
+#define VOLUME_MIXER_TYPE_DEFAULT               VOLUME_MIXER_TYPE_OSS
+#define VOLUME_MIXER_DEVICE_DEFAULT             VOLUME_MIXER_OSS_DEFAULT
+#else
+#ifdef HAVE_ALSA
+#define VOLUME_MIXER_TYPE_DEFAULT               VOLUME_MIXER_TYPE_ALSA
+#define VOLUME_MIXER_DEVICE_DEFAULT             VOLUME_MIXER_ALSA_DEFAULT
+#else
+#define VOLUME_MIXER_TYPE_DEFAULT               VOLUME_MIXER_TYPE_SOFTWARE
+#define VOLUME_MIXER_DEVICE_DEFAULT             VOLUME_MIXER_SOFTWARE_DEFAULT
+#endif
+#endif
+
+int volume_mixerType = VOLUME_MIXER_TYPE_DEFAULT;
+char * volume_mixerDevice = VOLUME_MIXER_DEVICE_DEFAULT;
 
 int volume_softwareSet = 100;
 
@@ -66,13 +79,16 @@ int volume_alsaSet = -1;
 #ifndef NO_OSS_MIXER
 int prepOssMixer(char * device) {
 	int devmask = 0;
+        ConfigParam * param;
 
 	if((volume_ossFd = open(device,O_RDONLY))<0) {
 		WARNING("unable to open oss mixer \"%s\"\n",device);
 		return -1;
 	}
 
-	if(getConf()[CONF_MIXER_CONTROL]) {
+        param = getConfigParam(CONF_MIXER_CONTROL);
+
+	if(param) {
 		char * labels[SOUND_MIXER_NRDEVICES] = SOUND_DEVICE_LABELS;
 		char * dup;
 		int i,j;
@@ -88,7 +104,7 @@ int prepOssMixer(char * device) {
 			/* eliminate spaces at the end */
 			j = strlen(dup)-1;
 			while(j>=0 && dup[j]==' ') dup[j--] = '\0';
-			if(strcasecmp(dup,getConf()[CONF_MIXER_CONTROL])==0) {
+			if(strcasecmp(dup, param->value)==0) {
 				free(dup);
 				break;
 			}
@@ -96,14 +112,14 @@ int prepOssMixer(char * device) {
 		}
 
 		if(i>=SOUND_MIXER_NRDEVICES) {
-			WARNING("mixer control \"%s\" not found\n",
-					getConf()[CONF_MIXER_CONTROL]);
+			WARNING("mixer control \"%s\" not found at line %i\n",
+					        param->value, param->line);
 			close(volume_ossFd);
 			return -1;
 		}
 		else if(!( ( 1 << i ) & devmask )) {
-			WARNING("mixer control \"%s\" not usable\n",
-					getConf()[CONF_MIXER_CONTROL]);
+			WARNING("mixer control \"%s\" not usable at line %i\n",
+					        param->value, param->line);
 			close(volume_ossFd);
 			return -1;
 		}
@@ -173,6 +189,7 @@ int prepAlsaMixer(char * card) {
 	int err;
 	snd_mixer_elem_t * elem;
 	char * controlName = VOLUME_MIXER_ALSA_CONTROL_DEFAULT;
+        ConfigParam * param;
 
 	if((err = snd_mixer_open(&volume_alsaMixerHandle,0))<0) {
 		WARNING("problems opening alsa mixer: %s\n",snd_strerror(err));
@@ -201,8 +218,11 @@ int prepAlsaMixer(char * card) {
 	}
 
 	elem = snd_mixer_first_elem(volume_alsaMixerHandle);
-	if(getConf()[CONF_MIXER_CONTROL]) {
-		controlName = getConf()[CONF_MIXER_CONTROL];
+
+        param = getConfigParam(CONF_MIXER_CONTROL);
+
+	if(param) {
+		controlName = param->value;
 	}
 
 	while(elem) {
@@ -340,29 +360,37 @@ void finishVolume() {
 }
 
 void initVolume() {
-	if(0);
+        ConfigParam * param = getConfigParam(CONF_MIXER_TYPE);
+
+        if(param) {
+	        if(0);
 #ifdef HAVE_ALSA
-	else if(strcmp((getConf())[CONF_MIXER_TYPE],VOLUME_MIXER_ALSA)==0) {
-		volume_mixerType = VOLUME_MIXER_TYPE_ALSA;
-		volume_mixerDevice = VOLUME_MIXER_ALSA_DEFAULT;
-	}
+		else if(strcmp(param->value, VOLUME_MIXER_ALSA)==0) {
+			volume_mixerType = VOLUME_MIXER_TYPE_ALSA;
+			volume_mixerDevice = VOLUME_MIXER_ALSA_DEFAULT;
+		}
 #endif
 #ifndef NO_OSS_MIXER
-	else if(strcmp((getConf())[CONF_MIXER_TYPE],VOLUME_MIXER_OSS)==0) {
-		volume_mixerType = VOLUME_MIXER_TYPE_OSS;
-		volume_mixerDevice = VOLUME_MIXER_OSS_DEFAULT;
-	}
+		else if(strcmp(param->value, VOLUME_MIXER_OSS)==0) {
+			volume_mixerType = VOLUME_MIXER_TYPE_OSS;
+			volume_mixerDevice = VOLUME_MIXER_OSS_DEFAULT;
+		}
 #endif
-	else if(strcmp((getConf())[CONF_MIXER_TYPE],VOLUME_MIXER_SOFTWARE)==0) {
-		volume_mixerType = VOLUME_MIXER_TYPE_SOFTWARE;
-		volume_mixerDevice = VOLUME_MIXER_SOFTWARE_DEFAULT;
+		else if(strcmp(param->value ,VOLUME_MIXER_SOFTWARE)==0) {
+			volume_mixerType = VOLUME_MIXER_TYPE_SOFTWARE;
+			volume_mixerDevice = VOLUME_MIXER_SOFTWARE_DEFAULT;
+		}
+		else {
+			ERROR("unknown mixer type %s at line %i\n",
+					param->value, param->line);
+			exit(EXIT_FAILURE);
+		}
 	}
-	else {
-		ERROR("unknown mixer type: %s\n",(getConf())[CONF_MIXER_TYPE]);
-		exit(EXIT_FAILURE);
-	}
-	if(strlen((getConf())[CONF_MIXER_DEVICE])) {
-		volume_mixerDevice = (getConf())[CONF_MIXER_DEVICE];
+
+	param = getConfigParam(CONF_MIXER_DEVICE);
+	
+	if(param) {
+		volume_mixerDevice = param->value;
 	}
 }
 
@@ -431,4 +459,3 @@ int changeVolumeLevel(FILE * fp, int change, int rel) {
                 break;
 	}
 }
-/* vim:set shiftwidth=4 tabstop=8 expandtab: */

@@ -30,23 +30,32 @@
 int buffered_before_play;
 int buffered_chunks;
 
+#define DEFAULT_BUFFER_SIZE		2048
+#define DEFAULT_BUFFER_BEFORE_PLAY	25
+
 PlayerData * playerData_pd;
 
 void initPlayerData() {
-	float perc;
+	float perc = DEFAULT_BUFFER_BEFORE_PLAY;
 	char * test;
 	int shmid;
 	int crossfade = 0;
-	size_t bufferSize;
+	size_t bufferSize = DEFAULT_BUFFER_SIZE;
 	size_t allocationSize;
 	OutputBuffer * buffer;
+	ConfigParam * param;
 
-	bufferSize = strtol(getConf()[CONF_BUFFER_SIZE],&test,10);
-	if(*test!='\0' || bufferSize<=0) {
-		ERROR("buffer size \"%s\" is not a positive integer\n",
-				getConf()[CONF_BUFFER_SIZE]);
-		exit(EXIT_FAILURE);
+	param = getConfigParam(CONF_AUDIO_BUFFER_SIZE);
+
+	if(param) {
+		bufferSize = strtol(param->value, &test, 10);
+		if(*test!='\0' || bufferSize<=0) {
+			ERROR("buffer size \"%s\" is not a positive integer, "
+					"line %i\n", param->value, param->line);
+			exit(EXIT_FAILURE);
+		}
 	}
+
 	bufferSize*=1024;
 
 	buffered_chunks = bufferSize/CHUNK_SIZE;
@@ -56,13 +65,18 @@ void initPlayerData() {
 		exit(EXIT_FAILURE);
 	}
 
-	perc = strtod((getConf())[CONF_BUFFER_BEFORE_PLAY],&test);
-	if(*test!='%' || perc<0 || perc>100) {
-		ERROR("buffered before play \"%s\" is not a positive "
-				"percentage and less than 100 percent\n",
-				(getConf())[CONF_BUFFER_BEFORE_PLAY]);
-		exit(EXIT_FAILURE);
+	param = getConfigParam(CONF_BUFFER_BEFORE_PLAY);
+
+	if(param) {
+		perc = strtod(param->value, &test);
+		if(*test!='%' || perc<0 || perc>100) {
+			ERROR("buffered before play \"%s\" is not a positive "
+				"percentage and less than 100 percent, line %i"
+				"\n", param->value, param->line);
+			exit(EXIT_FAILURE);
+		}
 	}
+
 	buffered_before_play = (perc/100)*buffered_chunks;
 	if(buffered_before_play>buffered_chunks) {
 		buffered_before_play = buffered_chunks;

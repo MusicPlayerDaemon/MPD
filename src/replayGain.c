@@ -32,34 +32,38 @@ static int replayGainState = REPLAYGAIN_OFF;
 static float replayGainPreamp = 1.0;
 
 void initReplayGainState() {
-	if(!getConf()[CONF_REPLAYGAIN]) return;
+	ConfigParam * param = getConfigParam(CONF_REPLAYGAIN);
 
-	if(strcmp(getConf()[CONF_REPLAYGAIN],"track")==0) {
+	if(!param) return;
+
+	if(strcmp(param->value, "track") == 0) {
 		replayGainState = REPLAYGAIN_TRACK;
 	}
-	else if(strcmp(getConf()[CONF_REPLAYGAIN],"album")==0) {
+	else if(strcmp(param->value, "album") == 0) {
 		replayGainState = REPLAYGAIN_ALBUM;
 	}
 	else {
-		ERROR("replaygain value \"%s\" is invalid\n",
-				getConf()[CONF_REPLAYGAIN]);
+		ERROR("replaygain value \"%s\" at line %i is invalid\n",
+				param->value, param->line);
 		exit(EXIT_FAILURE);
 	}
 
-	if(getConf()[CONF_REPLAYGAIN_PREAMP]) {
+	param = getConfigParam(CONF_REPLAYGAIN_PREAMP);
+
+	if(param) {
 		char * test;
-		float f = strtod(getConf()[CONF_REPLAYGAIN_PREAMP], &test);
+		float f = strtod(param->value, &test);
 
 		if(*test != '\0') {
-			ERROR("Replaygain preamp \"%s\" is not a number\n",
-					getConf()[CONF_REPLAYGAIN_PREAMP]);
+			ERROR("Replaygain preamp \"%s\" is not a number at "
+					"line %i\n", param->value, param->line);
 			exit(EXIT_FAILURE);
 		}
 
 		if(f < -15 || f > 15) {
 			ERROR("Replaygain preamp \"%s\" is not between -15 and"
-					"15\n", 
-					getConf()[CONF_REPLAYGAIN_PREAMP]);
+					"15 at line %i\n", 
+					param->value, param->line);
 			exit(EXIT_FAILURE);
 		}
 

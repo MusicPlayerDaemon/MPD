@@ -88,7 +88,16 @@ static void freeShoutData(ShoutData * sd) {
 	free(sd);
 }
 
-static int shout_initDriver(AudioOutput * audioOutput) {
+#define checkBlockParam(name) { \
+	blockParam = getBlockParam(param, name); \
+	if(!blockParam) { \
+		ERROR("no \"%s\" defined for shout device defined at line " \
+				"%i\n", name, param->line); \
+		exit(EXIT_FAILURE); \
+	} \
+}
+
+static int shout_initDriver(AudioOutput * audioOutput, ConfigParam * param) {
 	ShoutData * sd;
 	char * test;
 	int port;
@@ -97,73 +106,50 @@ static int shout_initDriver(AudioOutput * audioOutput) {
 	char * passwd;
 	char * user;
 	char * name;
-
-	if(!getConf()[CONF_SHOUT_HOST]) {
-		return -1;
-	}
+	BlockParam * blockParam;
 
 	sd = newShoutData();
 
-	if(!getConf()[CONF_SHOUT_MOUNT]) {
-		ERROR("shout host defined but not shout mount point\n");
-		exit(EXIT_FAILURE);
-	}
+	checkBlockParam("host");
+	host = blockParam->value;
 
-	if(!getConf()[CONF_SHOUT_PORT]) {
-		ERROR("shout host defined but not shout port\n");
-		exit(EXIT_FAILURE);
-	}
+	checkBlockParam("mount");
+	mount = blockParam->value;
 
-	if(!getConf()[CONF_SHOUT_PASSWD]) {
-		ERROR("shout host defined but not shout password\n");
-		exit(EXIT_FAILURE);
-	}
+	checkBlockParam("port");
 
-	if(!getConf()[CONF_SHOUT_NAME]) {
-		ERROR("shout host defined but not shout name\n");
-		exit(EXIT_FAILURE);
-	}
-
-	if(!getConf()[CONF_SHOUT_USER]) {
-		ERROR("shout host defined but not shout user\n");
-		exit(EXIT_FAILURE);
-	}
-
-	if(!getConf()[CONF_SHOUT_QUALITY]) {
-		ERROR("shout host defined but not shout quality\n");
-		exit(EXIT_FAILURE);
-	}
-
-	if(!getConf()[CONF_SHOUT_FORMAT]) {
-		ERROR("shout host defined but not shout format\n");
-		exit(EXIT_FAILURE);
-	}
-
-	host = getConf()[CONF_SHOUT_HOST];
-	passwd = getConf()[CONF_SHOUT_PASSWD];
-	user = getConf()[CONF_SHOUT_USER];
-	mount = getConf()[CONF_SHOUT_MOUNT];
-	name = getConf()[CONF_SHOUT_NAME];
-
-	port = strtol(getConf()[CONF_SHOUT_PORT], &test, 10);
+	port = strtol(blockParam->value, &test, 10);
 
 	if(*test != '\0' || port <= 0) {
-		ERROR("shout port \"%s\" is not a positive integer\n", 
-				getConf()[CONF_SHOUT_PORT]);
+		ERROR("shout port \"%s\" is not a positive integer, line %i\n", 
+				blockParam->value, blockParam->line);
 		exit(EXIT_FAILURE);
 	}
 
-	sd->quality = strtod(getConf()[CONF_SHOUT_QUALITY], &test);
+	checkBlockParam("password");
+	passwd = blockParam->value;
+
+	checkBlockParam("name");
+	name = blockParam->value;
+
+	checkBlockParam("user");
+	user = blockParam->value;
+
+	checkBlockParam("quality");
+
+	sd->quality = strtod(blockParam->value, &test);
 
 	if(*test != '\0' || sd->quality < 0.0 || sd->quality > 10.0) {
 		ERROR("shout quality \"%s\" is not a number in the range "
-				"0-10\n", getConf()[CONF_SHOUT_QUALITY]);
+				"0-10, line %i\n", blockParam->value,
+				blockParam->line);
 		exit(EXIT_FAILURE);
 	}
 
-	if(0 != parseAudioConfig(&(sd->outAudioFormat), 
-			getConf()[CONF_SHOUT_FORMAT]) )
-	{
+	checkBlockParam("format");
+
+	if(0 != parseAudioConfig(&(sd->outAudioFormat), blockParam->value)) {
+		ERROR("error parsing format at line %i\n", blockParam->line);
 		exit(EXIT_FAILURE);
 	}
 
@@ -276,7 +262,7 @@ static int initEncoder(ShoutData * sd) {
 	vorbis_info_init(&(sd->vi));
 
 	if( 0 != vorbis_encode_init_vbr(&(sd->vi), sd->outAudioFormat.channels,
-			sd->outAudioFormat.sampleRate, sd->quality) )
+			sd->outAudioFormat.sampleRate, sd->quality/10.0) )
 	{
 		ERROR("problem seting up vorbis encoder for shout\n");
 		vorbis_info_clear(&(sd->vi));

@@ -47,6 +47,11 @@
 
 #define HTTP_REDIRECT_MAX    10
 
+static char * proxyHost = NULL;
+static int proxyPort = 0;
+static char * proxyUser = NULL;
+static char * proxyPassword = NULL;
+
 typedef struct _InputStreemHTTPData {
         char * host;
         char * path;
@@ -59,57 +64,73 @@ typedef struct _InputStreemHTTPData {
         int icyMetaint;
 	int prebuffer;
 	int icyOffset;
-	char * proxyHost;
-	int proxyPort;
 	char * proxyAuth;
 	char * httpAuth;
 } InputStreamHTTPData;
 
 void inputStream_initHttp() {
-	if(getConf()[CONF_HTTP_PROXY_HOST]) {
-		char * portStr = getConf()[CONF_HTTP_PROXY_PORT];
-		int port = 0;
-		char * test;
+	ConfigParam * param = getConfigParam(CONF_HTTP_PROXY_HOST);
+	char * test;
 
-		if(!portStr) {
-			ERROR("http_proxy_host specified but not the http_"
-				"proxy_port\n");
+	if(param) {
+		proxyHost = param->value;
+
+		param = getConfigParam(CONF_HTTP_PROXY_PORT);
+
+		if(!param) {
+			ERROR("%s specified but not %s", CONF_HTTP_PROXY_HOST,
+					CONF_HTTP_PROXY_PORT);
 			exit(EXIT_FAILURE);
 		}
 
-		port = strtol(portStr, &test, 10);
-		if(port <= 0 || *test != '\0') {
-			ERROR("http_proxy_port \"%s\" is not a positive integer"
-				"\n", portStr);
+		proxyPort = strtol(param->value, &test, 10);
+		if(proxyPort <= 0 || *test != '\0') {
+			ERROR("%s \"%s\" is not a positive integer, line %i\n"
+				CONF_HTTP_PROXY_PORT, param->value, 
+				param->line);
 		}
 
-		if(getConf()[CONF_HTTP_PROXY_USER] && 
-			!getConf()[CONF_HTTP_PROXY_PASSWORD])
-		{
-			ERROR("http_proxy_user specified, but not http_proxy_"
-				"password\n");
-			exit(EXIT_FAILURE);
+		param = getConfigParam(CONF_HTTP_PROXY_USER);
+
+		if(param) {
+			proxyUser = param->value;
+		
+			param = getConfigParam(CONF_HTTP_PROXY_PASSWORD);
+
+			if(!param) {
+				ERROR("%s specifid but not %s\n",
+						CONF_HTTP_PROXY_USER,
+						CONF_HTTP_PROXY_PASSWORD);
+				exit(EXIT_FAILURE);
+			}
+
+			proxyPassword = param->value;	
 		}
 
-		if(getConf()[CONF_HTTP_PROXY_PASSWORD] && 
-			!getConf()[CONF_HTTP_PROXY_USER])
-		{
-			ERROR("http proxy password specified, but not http "
-					"proxy user\n");
+		param = getConfigParam(CONF_HTTP_PROXY_PASSWORD);
+
+		if(param) {
+			ERROR("%s specifid but not %s\n",
+				CONF_HTTP_PROXY_PASSWORD, CONF_HTTP_PROXY_USER);
 			exit(EXIT_FAILURE);
 		}
 	}
-	else if(getConf()[CONF_HTTP_PROXY_PORT]) {
-		ERROR("http_proxy_port specified but not http_proxy_host\n");
+	else if((param = getConfigParam(CONF_HTTP_PROXY_PORT))) {
+		ERROR("%s specified but not %s, line %i\n", 
+				CONF_HTTP_PROXY_PORT, CONF_HTTP_PROXY_HOST,
+				param->line);
 		exit(EXIT_FAILURE);
 	}
-	else if(getConf()[CONF_HTTP_PROXY_USER]) {
-		ERROR("http_proxy_user specified but not http_proxy_host\n");
+	else if((param = getConfigParam(CONF_HTTP_PROXY_USER))) {
+		ERROR("%s specified but not %s, line %i\n", 
+				CONF_HTTP_PROXY_USER, CONF_HTTP_PROXY_HOST,
+				param->line);
 		exit(EXIT_FAILURE);
 	}
-	else if(getConf()[CONF_HTTP_PROXY_PASSWORD]) {
-		ERROR("http_proxy_password specified but not http_proxy_host"
-				"\n");
+	else if((param = getConfigParam(CONF_HTTP_PROXY_PASSWORD))) {
+		ERROR("%s specified but not %s, line %i\n", 
+				CONF_HTTP_PROXY_PASSWORD, CONF_HTTP_PROXY_HOST,
+				param->line);
 		exit(EXIT_FAILURE);
 	}
 }
@@ -188,19 +209,10 @@ static char * authString(char * header, char * user, char * password) {
 static InputStreamHTTPData * newInputStreamHTTPData() {
         InputStreamHTTPData * ret = malloc(sizeof(InputStreamHTTPData));
 
-	if(getConf()[CONF_HTTP_PROXY_HOST]) {
-		ret->proxyHost = getConf()[CONF_HTTP_PROXY_HOST];
-		DEBUG(__FILE__ ": Proxy host %s\n", ret->proxyHost);
-		ret->proxyPort = atoi(getConf()[CONF_HTTP_PROXY_PORT]);
-		DEBUG(__FILE__ ": Proxy port %i\n", ret->proxyPort);
-		ret->proxyAuth = proxyAuthString(
-					getConf()[CONF_HTTP_PROXY_USER],
-					getConf()[CONF_HTTP_PROXY_PASSWORD]);
+	if(proxyHost) {
+		ret->proxyAuth = proxyAuthString(proxyUser, proxyPassword);
 	}
-        else {
-		ret->proxyHost = NULL;
-		ret->proxyAuth = NULL;
-	}
+	else ret->proxyAuth = NULL;
 
 	ret->httpAuth = NULL;
 	ret->host = NULL;
@@ -299,7 +311,7 @@ static int parseUrl(InputStreamHTTPData * data, char * url) {
         }
 
         /* fetch the path */
-	if(data->proxyHost) data->path = strdup(url);
+	if(proxyHost) data->path = strdup(url);
         else data->path = strdup(slash ? slash : "/");
 
         return 0;
@@ -319,9 +331,9 @@ static int initHTTPConnection(InputStream * inStream) {
         struct sockaddr_in6 sin6;
 #endif
 
-	if(data->proxyHost) {
-		connHost = data->proxyHost;
-		connPort = data->proxyPort;
+	if(proxyHost) {
+		connHost = proxyHost;
+		connPort = proxyPort;
 	}
 	else {
 		connHost = data->host;

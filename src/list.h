@@ -88,6 +88,7 @@ void deleteNodeFromList(List * list,ListNode * node);
  * _key_ -> which node is being searched for
  * _data_ -> a pointer to where data will be placed, 
  *	_data_ memory should not by allocated or freed
+ *      _data_ can be NULL
  * returns 1 if successful, 0 otherwise
  */
 int findInList(List * list, char * key, void ** data);

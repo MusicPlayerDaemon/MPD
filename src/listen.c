@@ -44,6 +44,7 @@
 int listenSocket;
 
 int establish(unsigned short port) {
+        ConfigParam * param;
 	int allowReuse = ALLOW_REUSE;
 	int sock;
 	struct sockaddr * addrp;
@@ -60,8 +61,10 @@ int establish(unsigned short port) {
 	memset(&sin, 0, sizeof(struct sockaddr_in));
 	sin.sin_port = htons(port);
 	sin.sin_family = AF_INET;
+
+        param = getConfigParam(CONF_BIND_TO_ADDRESS);
 	
-	if(strcmp((getConf())[CONF_BIND_TO_ADDRESS],"any")==0) {
+	if(!param || 0==strcmp(param->value, "any")==0) {
 #ifdef HAVE_IPV6
 		if(ipv6Supported()) {
 			sin6.sin6_addr = in6addr_any;
@@ -78,9 +81,9 @@ int establish(unsigned short port) {
 	}
 	else {
 		struct hostent * he;
-		if(!(he = gethostbyname((getConf())[CONF_BIND_TO_ADDRESS]))) {
-			ERROR("can't lookup host \"%s\"\n",
-					(getConf())[CONF_BIND_TO_ADDRESS]);
+		if(!(he = gethostbyname(param->value))) {
+			ERROR("can't lookup host \"%s\" at line %i\n",
+                                        param->value, param->line);
 			exit(EXIT_FAILURE);
 		}
 		switch(he->h_addrtype) {
@@ -88,8 +91,8 @@ int establish(unsigned short port) {
 		case AF_INET6:
 			if(!ipv6Supported()) {
 				ERROR("no IPv6 support, but a IPv6 address "
-					"found for \"%s\"\n",
-					(getConf())[CONF_BIND_TO_ADDRESS]);
+					"found for \"%s\" at line %i\n",
+					param->value, param->line);
 				exit(EXIT_FAILURE);
 			}
 			bcopy((char *)he->h_addr,(char *)
@@ -105,8 +108,9 @@ int establish(unsigned short port) {
 			addrlen = sizeof(struct sockaddr_in);
 			break;
 		default:
-			ERROR("address type for \"%s\" is not IPv4 or IPv6\n",
-					(getConf())[CONF_BIND_TO_ADDRESS]);
+			ERROR("address type for \"%s\" is not IPv4 or IPv6 "
+                                        "at line %i\n",
+					param->value, param->line);
 			exit(EXIT_FAILURE);
 		}
 	}

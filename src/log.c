@@ -32,16 +32,24 @@ short warningFlushed = 0;
 static char * warningBuffer = NULL;
 
 void initLog() {
-	if(strcmp(getConf()[CONF_LOG_LEVEL],"default")==0) {
+	ConfigParam * param = getConfigParam(CONF_LOG_LEVEL);
+
+	if(!param) return;
+
+	if(0 == strcmp(param->value, "default")) {
 		if(logLevel<LOG_LEVEL_LOW) logLevel = LOG_LEVEL_LOW;
 	}
-	else if(strcmp(getConf()[CONF_LOG_LEVEL],"secure")==0) {
+	else if(0 == strcmp(param->value, "secure")) {
 		if(logLevel<LOG_LEVEL_SECURE) logLevel = LOG_LEVEL_SECURE;
 	}
-	else if(strcmp(getConf()[CONF_LOG_LEVEL],"verbose")==0) {
+	else if(0 == strcmp(param->value, "verbose")) {
 		if(logLevel<LOG_LEVEL_DEBUG) logLevel = LOG_LEVEL_DEBUG;
 	}
-	else ERROR("unknown log level \"%s\"\n",getConf()[CONF_LOG_LEVEL]);
+	else {
+		ERROR("unknown log level \"%s\" at line %i\n",
+				param->value, param->line);
+		exit(EXIT_FAILURE);
+	}
 }
 
 #define BUFFER_LENGTH	4096

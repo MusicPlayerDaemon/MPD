@@ -31,9 +31,6 @@ static AudioFormat audio_format;
 
 static AudioFormat * audio_configFormat = NULL;
 
-static AudioOutput * aoOutput = NULL;
-static AudioOutput * shoutOutput = NULL;
-
 void copyAudioFormat(AudioFormat * dest, AudioFormat * src) {
 	if(!src) return;
 
@@ -42,17 +39,34 @@ void copyAudioFormat(AudioFormat * dest, AudioFormat * src) {
         dest->channels = src->channels;
 }
 
+static AudioOutput ** audioOutputArray = NULL;
+static int audioOutputArraySize = 0;
+
 extern AudioOutputPlugin aoPlugin;
 extern AudioOutputPlugin shoutPlugin;
 
 void initAudioDriver() {
+	ConfigParam * param = NULL;
+	int i;
+
 	initAudioOutputPlugins();
 	loadAudioOutputPlugin(&aoPlugin);
 	loadAudioOutputPlugin(&shoutPlugin);
 
-	aoOutput = newAudioOutput("ao");
-	assert(aoOutput);
-	shoutOutput = newAudioOutput("shout");
+	while((param = getNextConfigParam(CONF_AUDIO_OUTPUT, param))) {
+		i = audioOutputArraySize++;
+
+		audioOutputArray = realloc(audioOutputArray,
+				audioOutputArraySize*sizeof(AudioOutput *));
+	
+		audioOutputArray[i] = newAudioOutput(param);
+
+		if(!audioOutputArray[i]) {
+			ERROR("problems configuring output device defined at "
+					"line %i\n", param->line);
+			exit(EXIT_FAILURE);
+		}
+	}
 }
 
 void getOutputAudioFormat(AudioFormat * inAudioFormat, 
@@ -65,13 +79,17 @@ void getOutputAudioFormat(AudioFormat * inAudioFormat,
 }
 
 void initAudioConfig() {
-        char * conf = getConf()[CONF_AUDIO_OUTPUT_FORMAT];
+        ConfigParam * param = getConfigParam(CONF_AUDIO_OUTPUT_FORMAT);
 
-        if(NULL == conf) return;
+        if(NULL == param || NULL == param->value) return;
 
         audio_configFormat = malloc(sizeof(AudioFormat));
 
-	if(0 != parseAudioConfig(audio_configFormat, conf)) exit(EXIT_FAILURE);
+	if(0 != parseAudioConfig(audio_configFormat, param->value)) {
+		ERROR("error parsing \"%s\" at line %i\n", 
+				CONF_AUDIO_OUTPUT_FORMAT, param->line);
+		exit(EXIT_FAILURE);
+	}
 }
 
 int parseAudioConfig(AudioFormat * audioFormat, char * conf) {
@@ -145,10 +163,15 @@ void finishAudioConfig() {
 }
 
 void finishAudioDriver() {
-	finishAudioOutput(aoOutput);
-	if(shoutOutput) finishAudioOutput(shoutOutput);
-	shoutOutput = NULL;
-	aoOutput = NULL;
+	int i;
+
+	for(i = 0; i < audioOutputArraySize; i++) {
+		finishAudioOutput(audioOutputArray[i]);
+	}
+
+	free(audioOutputArray);
+	audioOutputArray = NULL;
+	audioOutputArraySize = 0;
 }
 
 int isCurrentAudioFormat(AudioFormat * audioFormat) {
@@ -160,29 +183,65 @@ int isCurrentAudioFormat(AudioFormat * audioFormat) {
 }
 
 int openAudioDevice(AudioFormat * audioFormat) {
-	if(!aoOutput->open || !isCurrentAudioFormat(audioFormat)) {
-		if(audioFormat) copyAudioFormat(&audio_format, audioFormat);
-		if(shoutOutput) openAudioOutput(shoutOutput, &audio_format);
-		return openAudioOutput(aoOutput, &audio_format);
+	int isCurrentFormat = isCurrentAudioFormat(audioFormat);
+	int ret = -1;
+	int i;
+
+	if(!audioOutputArray) return -1;
+
+	if(!isCurrentFormat) {
+		copyAudioFormat(&audio_format, audioFormat);
 	}
 
-	return 0;
+	for(i = 0; i < audioOutputArraySize; i++) {
+		if(!audioOutputArray[i]->open || !isCurrentFormat) {
+			if(0 == openAudioOutput(audioOutputArray[i], 
+					&audio_format)) 
+			{
+				ret = 0;
+			}
+		}
+	}
+
+	return ret;
 }
 
 int playAudio(char * playChunk, int size) {
-	if(shoutOutput) playAudioOutput(shoutOutput, playChunk, size);
-	return playAudioOutput(aoOutput, playChunk, size);
+	int ret = -1;
+	int i;
+
+	for(i = 0; i < audioOutputArraySize; i++) {
+		if(0 == playAudioOutput(audioOutputArray[i], playChunk, size)) {
+			ret = 0;
+		}
+	}
+
+	return ret;
 }
 
 int isAudioDeviceOpen() {
-	return aoOutput->open;
+	int ret = 0;
+	int i;
+
+	for(i = 0; i < audioOutputArraySize; i++) {
+		ret |= audioOutputArray[i]->open;
+	}
+
+	return ret;
 }
 
 void closeAudioDevice() {
-	if(shoutOutput) closeAudioOutput(shoutOutput);
-	closeAudioOutput(aoOutput);
+	int i;
+
+	for(i = 0; i < audioOutputArraySize; i++) {
+		closeAudioOutput(audioOutputArray[i]);
+	}
 }
 
 void sendMetadataToAudioDevice(MpdTag * tag) {
-	if(shoutOutput) sendMetadataToAudioOutput(shoutOutput, tag);
+	int i;
+
+	for(i = 0; i < audioOutputArraySize; i++) {
+		sendMetadataToAudioOutput(audioOutputArray[i], tag);
+	}
 }

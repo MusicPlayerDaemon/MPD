@@ -56,7 +56,9 @@ static void audioOutputAo_error() {
 	}
 }
 
-static int audioOutputAo_initDriver(AudioOutput * audioOutput) {
+static int audioOutputAo_initDriver(AudioOutput * audioOutput,
+		ConfigParam * param)
+{
 	ao_info * ai;
 	char * dup;
 	char * stk1;
@@ -66,38 +68,51 @@ static int audioOutputAo_initDriver(AudioOutput * audioOutput) {
 	char * value;
 	char * test;
 	AoData * ad  = newAoData();
+	BlockParam * blockParam;
 
 	audioOutput->data = ad;
 
-	ad->writeSize = strtol((getConf())[CONF_AUDIO_WRITE_SIZE],&test,10);
-	if (*test!='\0') {
-		ERROR("\"%s\" is not a valid write size\n",
-			(getConf())[CONF_AUDIO_WRITE_SIZE]);
-		exit(EXIT_FAILURE);
+	if((blockParam = getBlockParam(param, "write_size"))) {
+		ad->writeSize = strtol(blockParam->value, &test, 10);
+		if (*test!='\0') {
+			ERROR("\"%s\" is not a valid write size at line %i\n",
+				blockParam->value, blockParam->line);
+			exit(EXIT_FAILURE);
+		}
 	}
+	else ad->writeSize = 1024;
 
 	if(driverInitCount == 0) {
 		ao_initialize();
 	}
 	driverInitCount++;
-	
-	if(strcmp(AUDIO_AO_DRIVER_DEFAULT,(getConf())[CONF_AO_DRIVER])==0) {
+
+	blockParam = getBlockParam(param, "driver");
+
+	if(!blockParam || 0 == strcmp(blockParam->value,"default")) {
 		ad->driverId = ao_default_driver_id();
 	}
 	else if((ad->driverId = 
-		ao_driver_id((getConf())[CONF_AO_DRIVER]))<0) {
-		ERROR("\"%s\" is not a valid ao driver\n",
-			(getConf())[CONF_AO_DRIVER]);
+		ao_driver_id(blockParam->value))<0) {
+		ERROR("\"%s\" is not a valid ao driver at line %i\n",
+			blockParam->value, blockParam->line);
 		exit(EXIT_FAILURE);
 	}
 	
 	if((ai = ao_driver_info(ad->driverId))==NULL) {
-		ERROR("problems getting ao_driver_info\n");
+		ERROR("problems getting driver info for device defined at "
+				"line %i\n", param->line);
 		ERROR("you may not have permission to the audio device\n");
 		exit(EXIT_FAILURE);
 	}
 
-	dup = strdup((getConf())[CONF_AO_DRIVER_OPTIONS]);
+	blockParam = getBlockParam(param, "options");
+
+	if(blockParam) {
+		dup = strdup(blockParam->value);
+	}
+	else dup = strdup("");
+
 	if(strlen(dup)) {
 		stk1 = NULL;
 		n1 = strtok_r(dup,";",&stk1);

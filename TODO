@@ -1,5 +1,7 @@
 0.12
 ----
+*) Fix id3v1 encoding
+
 *) Abstract audio stuff into a plugin oriented thing
 	*) audio_ao & audio_oss & audio_shout
 	*) allow for sending to multiple audio devices

@@ -192,7 +192,7 @@ int findInList(List * list,char * key,void ** data) {
 			tmpNode = list->nodesArray[cur];
 			cmp = strcmp(tmpNode->key,key);
 			if(cmp==0) {
-				(*data) = tmpNode->data;
+				if(data) *data = tmpNode->data;
 				return 1;
 			}
 			else if(cmp>0) high = cur;
