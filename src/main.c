@@ -229,21 +229,14 @@ void establishListen(Options * options) {
 
 void changeToUser(Options * options) {
         if (options->usr && strlen(options->usr)) {
-                int uid, gid;
-#ifdef _BSD_SOURCE
-                gid_t gid_list[NGROUPS_MAX];
-#endif
-
                 /* get uid */
                 struct passwd * userpwd;
                 if ((userpwd = getpwnam(options->usr)) == NULL) {
                         ERROR("no such user: %s\n", options->usr);
                         exit(EXIT_FAILURE);
                 }
-                uid = userpwd->pw_uid;
-                gid = userpwd->pw_gid;
 
-                if(setgid(gid) == -1) {
+                if(setgid(userpwd->pw_gid) == -1) {
                         ERROR("cannot setgid of user %s: %s\n", options->usr,
                                         strerror(errno));
                         exit(EXIT_FAILURE);
@@ -253,33 +246,24 @@ void changeToUser(Options * options) {
                 /* init suplementary groups 
                  * (must be done before we change our uid)
                  */
-                if (initgroups(options->usr, gid) == -1) {
-                        ERROR("cannot init suplementary groups "
+                if (initgroups(options->usr, userpwd->pw_gid) == -1) {
+                        WARNING("cannot init suplementary groups "
                                         "of user %s: %s\n", options->usr, 
                                         strerror(errno));
-                }
-                else if(getgroups(NGROUPS_MAX, gid_list) == -1) {
-                        ERROR("cannot get groups "
-                                        "of user %s: %s\n", options->usr, 
-                                        strerror(errno));
-                        exit(EXIT_FAILURE);
-                }
-                else if(setgroups(NGROUPS_MAX, gid_list) == -1) {
-                        ERROR("cannot set groups "
-                                        "of user %s: %s\n", options->usr, 
-                                        strerror(errno));
-                        exit(EXIT_FAILURE);
                 }
 #endif
 
                 /* set uid */
-                if (setuid(uid) == -1) {
+                if (setuid(userpwd->pw_uid) == -1) {
                         ERROR("cannot change to uid of user "
                                         "%s: %s\n", options->usr, 
                                         strerror(errno));
                         exit(EXIT_FAILURE);
                 }
 
+		if(userpwd->pw_dir) {
+			setenv("HOME", userpwd->pw_dir, 1);
+		}
         }
 }
 

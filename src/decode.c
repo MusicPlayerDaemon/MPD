@@ -115,7 +115,7 @@ int calculateCrossFadeChunks(PlayerControl * pc, AudioFormat * af) {
                                                 MAXPATHLEN); \
 		                pc->erroredUrl[MAXPATHLEN] = '\0'; \
 		                pc->error = PLAYER_ERROR_AUDIO; \
-				ERROR("problems opeing audio device while playing \"%s\"", pc->utf8url); \
+				ERROR("problems opening audio device while playing \"%s\"", pc->utf8url); \
 		                quitDecode(pc,dc); \
 		                return; \
 	                } \
@@ -157,7 +157,6 @@ int waitOnDecode(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb,
 	}
 
         pc->totalTime = pc->fileTime;
-        pc->elapsedTime = 0;
         pc->bitRate = 0;
         pc->sampleRate = 0;
         pc->bits = 0;
@@ -228,7 +227,7 @@ int decodeSeek(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb,
                                                 MAXPATHLEN); \
 				pc->erroredUrl[MAXPATHLEN] = '\0'; \
 				pc->error = PLAYER_ERROR_AUDIO; \
-				ERROR("problems opeing audio device while playing \"%s\"", pc->utf8url); \
+				ERROR("problems opening audio device while playing \"%s\"", pc->utf8url); \
 				quitDecode(pc,dc); \
 				return; \
 			} \
@@ -286,7 +285,11 @@ void decodeStart(PlayerControl * pc, OutputBuffer * cb, DecoderControl * dc) {
 	dc->start = 0;
 
         while(!inputStreamAtEOF(&inStream) && bufferInputStream(&inStream) < 0
-                        && !dc->stop);
+                        && !dc->stop)
+	{
+		/* sleep so we don't consume 100% of the cpu */
+		my_usleep(1000);
+	}
 
         if(dc->stop) {
                 dc->state = DECODE_STATE_STOP;
@@ -461,6 +464,7 @@ void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb) {
 
 	if(waitOnDecode(pc,dc,cb,&decodeWaitedOn)<0) return;
 
+        pc->elapsedTime = 0;
 	pc->state = PLAYER_STATE_PLAY;
 	pc->play = 0;
 	kill(getppid(),SIGUSR1);

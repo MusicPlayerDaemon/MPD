@@ -23,6 +23,8 @@
 #include "utf8.h"
 #include "log.h"
 #include "inputStream.h"
+#include "conf.h"
+#include "charConv.h"
 
 #include <sys/stat.h>
 #include <stdlib.h>
@@ -54,16 +56,20 @@ void printMpdTag(FILE * fp, MpdTag * tag) {
 		temp = latin1StrToUtf8Dup(str); \
 		free(str); \
 		str = temp; \
-		stripReturnChar(str); \
 	} \
 }
 
 void validateUtf8Tag(MpdTag * tag) {
 	fixUtf8(tag->artist);
+	stripReturnChar(tag->artist);
 	fixUtf8(tag->album);
+	stripReturnChar(tag->artist);
 	fixUtf8(tag->track);
+	stripReturnChar(tag->artist);
 	fixUtf8(tag->title);
+	stripReturnChar(tag->artist);
 	fixUtf8(tag->name);
+	stripReturnChar(tag->artist);
 }
 
 #ifdef HAVE_ID3TAG
@@ -87,6 +93,18 @@ char * getID3Info(struct id3_tag * tag, char * id) {
 	utf8 = id3_ucs4_utf8duplicate(ucs4);
 	if(!utf8) return NULL;
 
+	if(getConf()[CONF_ID3V1_ENCODING]
+	  && (id3_tag_options(tag, 0, 0) & ID3_TAG_OPTION_ID3V1)) {
+
+		char* isostr;
+		setCharSetConversion("ISO-8859-1", "UTF-8");
+		isostr = convStrDup(utf8);
+		free(utf8);
+		setCharSetConversion("UTF-8", getConf()[CONF_ID3V1_ENCODING]);
+		utf8 = convStrDup(isostr);
+		free(isostr);
+	}
+
 	return utf8;
 }
 #endif
@@ -99,28 +117,24 @@ MpdTag * parseId3Tag(struct id3_tag * tag) {
 	str = getID3Info(tag,ID3_FRAME_ARTIST);
 	if(str) {
 		if(!ret) ret = newMpdTag();
-		stripReturnChar(str);
 		ret->artist = str;
 	}
 
 	str = getID3Info(tag,ID3_FRAME_TITLE);
 	if(str) {
 		if(!ret) ret = newMpdTag();
-		stripReturnChar(str);
 		ret->title = str;
 	}
 
 	str = getID3Info(tag,ID3_FRAME_ALBUM);
 	if(str) {
 		if(!ret) ret = newMpdTag();
-		stripReturnChar(str);
 		ret->album = str;
 	}
 
 	str = getID3Info(tag,ID3_FRAME_TRACK);
 	if(str) {
 		if(!ret) ret = newMpdTag();
-		stripReturnChar(str);
 		ret->track = str;
 	}
 

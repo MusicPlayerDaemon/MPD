@@ -39,7 +39,7 @@ static ao_device * audio_device = NULL;
 
 static AudioFormat * audio_configFormat = NULL;
 
-static void copyAudioFormat(AudioFormat * dest, AudioFormat * src) {
+void copyAudioFormat(AudioFormat * dest, AudioFormat * src) {
         dest->sampleRate = src->sampleRate;
         dest->bits = src->bits;
         dest->channels = src->channels;

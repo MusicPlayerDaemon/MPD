@@ -167,7 +167,7 @@ void initPlaylist() {
 
 	memset(playlist.songs,0,sizeof(char *)*playlist_max_length);
 
-	srand(time(NULL));
+	srandom(time(NULL));
 
 	if(getConf()[CONF_STATE_FILE]) {
 		playlist_stateFile = getConf()[CONF_STATE_FILE];
@@ -635,7 +635,7 @@ int addSongToPlaylist(FILE * fp, Song * song) {
 		else */if(playlist.queued>=0) start = playlist.queued+1;
 		else start = playlist.current+1;
                 if(start < playlist.length) {
-		        swap = rand()%(playlist.length-start);
+		        swap = random()%(playlist.length-start);
 		        swap+=start;
 		        swapOrder(playlist.length-1,swap);
                 }
@@ -1129,7 +1129,7 @@ void randomizeOrder(int start,int end) {
 	}
 
 	for(i=start;i<=end;i++) {
-		ri = rand()%(end-start+1)+start;
+		ri = random()%(end-start+1)+start;
 		if(ri==playlist.current) playlist.current = i;
 		else if(i==playlist.current) playlist.current = ri;
 		swapOrder(i,ri);
@@ -1220,7 +1220,7 @@ int shufflePlaylist(FILE * fp) {
                 }
 		/* shuffle the rest of the list */
 		for(;i<playlist.length;i++) {
-			ri = rand()%(playlist.length-1)+1;
+			ri = random()%(playlist.length-1)+1;
 			swapSongs(i,ri);
 		}
 
@@ -1318,7 +1318,7 @@ int savePlaylist(FILE * fp, char * utf8file) {
 
 int loadPlaylist(FILE * fp, char * utf8file) {
 	FILE * fileP;
-	char s[MAXPATHLEN*1];
+	char s[MAXPATHLEN+1];
 	int slength = 0;
 	char * temp = strdup(utf8ToFsCharset(utf8file));
 	char * rfile = malloc(strlen(temp)+strlen(".")+
@@ -1328,6 +1328,7 @@ int loadPlaylist(FILE * fp, char * utf8file) {
 	int parentlen = strlen(parent);
 	char * erroredFile = NULL;
 	int tempInt;
+	int commentCharFound = 0;
 
 	strcpy(rfile,temp);
 	strcat(rfile,".");
@@ -1353,7 +1354,11 @@ int loadPlaylist(FILE * fp, char * utf8file) {
 	while((tempInt = fgetc(fileP))!=EOF) {
 		s[slength] = tempInt;
 		if(s[slength]=='\n' || s[slength]=='\0') {
+			commentCharFound = 0;
 			s[slength] = '\0';
+			if(s[0]==PLAYLIST_COMMENT) {
+				commentCharFound = 1;
+			}
 			if(strncmp(s,musicDir,strlen(musicDir))==0) {
 				strcpy(s,&(s[strlen(musicDir)]));
 			}
@@ -1379,7 +1384,7 @@ int loadPlaylist(FILE * fp, char * utf8file) {
 			temp = fsCharsetToUtf8(s);
 			if(!temp) continue;
 			temp = strdup(temp);
-			if(s[0]==PLAYLIST_COMMENT && !getSongFromDB(temp)
+			if(commentCharFound && !getSongFromDB(temp)
 					&& !isRemoteUrl(temp)) 
 			{
 				free(temp);
@@ -1393,7 +1398,9 @@ int loadPlaylist(FILE * fp, char * utf8file) {
 		else if(slength==MAXPATHLEN) {
 			s[slength] = '\0';
 			commandError(fp, ACK_ERROR_PLAYLIST_LOAD,
-                                        "\"%s\" too long", s);
+                                        "line in \"%s\" is too long", utf8file);
+			ERROR("line \"%s\" in playlist \"%s\" is too long\n",
+				s, utf8file);
 			while(fclose(fileP) && errno==EINTR);
 			if(erroredFile) free(erroredFile);
 			return -1;

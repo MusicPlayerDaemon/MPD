@@ -77,6 +77,10 @@ This specifies the character set  used for the filesystem.  A list of supported
 character sets can be obtained by running "iconv -l".  The default is
 determined from the locale when the db was originally created.
 .TP
+.B id3v1_encoding <charset>
+This specifies the character set used for the ID3v1 tags. Supported characters
+sets also can be obtained from the iconv. By default ISO8859-1 is used.
+.TP
 .B bind_to_address <ip address or hostname or any>
 This specifies which address MPD binds to and listens on.  The default is "any",
 which binds to all available addresses.

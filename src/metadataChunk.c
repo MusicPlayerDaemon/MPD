@@ -38,7 +38,7 @@ void initMetadataChunk(MetadataChunk * chunk) {
 MpdTag * metadataChunkToMpdTagDup(MetadataChunk * chunk) {
 	MpdTag * ret = newMpdTag();
 
-	chunk->buffer[METADATA_BUFFER_LENGTH] = '\0';
+	chunk->buffer[METADATA_BUFFER_LENGTH-1] = '\0';
 
 	dupElementToTag(ret->name, chunk->name);
 	dupElementToTag(ret->title, chunk->title);
@@ -64,6 +64,8 @@ void copyMpdTagToMetadataChunk(MpdTag * tag, MetadataChunk * chunk) {
 	int slen;
 
 	initMetadataChunk(chunk);
+
+	if(!tag) return;
 
 	copyStringToChunk(tag->name, chunk->name);
 	copyStringToChunk(tag->title, chunk->title);

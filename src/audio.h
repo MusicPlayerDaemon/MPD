@@ -22,6 +22,7 @@
 #include "../config.h"
 
 #include "mpd_types.h"
+#include "tag.h"
 
 #include <stdio.h>
 
@@ -32,6 +33,8 @@ typedef struct _AudioFormat {
 	volatile mpd_uint32 sampleRate;
 	volatile mpd_sint8 bits;
 } AudioFormat;
+
+void copyAudioFormat(AudioFormat * dest, AudioFormat * src);
 
 void getOutputAudioFormat(AudioFormat * inFormat, AudioFormat * outFormat);
 
@@ -56,4 +59,3 @@ void audioError();
 int isCurrentAudioFormat(AudioFormat * audioFormat);
 
 #endif
-/* vim:set shiftwidth=4 tabstop=8 expandtab: */

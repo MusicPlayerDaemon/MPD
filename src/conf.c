@@ -37,7 +37,7 @@
 
 #define CONF_COMMENT	'#'
 
-#define CONF_NUMBER_OF_PARAMS		34
+#define CONF_NUMBER_OF_PARAMS		35
 #define CONF_NUMBER_OF_PATHS		6
 #define CONF_NUMBER_OF_REQUIRED		5
 #define CONF_NUMBER_OF_ALLOW_CATS	1
@@ -130,7 +130,8 @@ char ** readConf(char * file) {
                 "http_proxy_port",
 		"http_proxy_user",
 		"http_proxy_password",
-		"replaygain_preamp"
+		"replaygain_preamp",
+		"id3v1_encoding"
 	};
 
 	int conf_absolutePaths[CONF_NUMBER_OF_PATHS] = {
@@ -160,6 +161,7 @@ char ** readConf(char * file) {
 	int i;
 	int numberOfArgs;
 	short allowCat[CONF_NUMBER_OF_PARAMS];
+	int count = 0;
 
 	for(i=0;i<CONF_NUMBER_OF_PARAMS;i++) allowCat[i] = 0;
 
@@ -171,19 +173,22 @@ char ** readConf(char * file) {
 	}
 
 	while(myFgets(string,sizeof(string),fp)) {
+		count++;
+
 		if(string[0]==CONF_COMMENT) continue;
 		numberOfArgs = buffer2array(string,&array);
 		if(numberOfArgs==0) continue;
 		if(2!=numberOfArgs) {
-			ERROR("improperly formated config line: %s\n",string);
+			ERROR("improperly formated config file at line %i: %s\n",count,string);
 			exit(EXIT_FAILURE);
 		}
 		i = 0;
 		while(i<CONF_NUMBER_OF_PARAMS && 0!=strcmp(conf_strings[i],array[0])) i++;
 		if(i>=CONF_NUMBER_OF_PARAMS) {
-			ERROR("unrecognized line in conf: %s\n",string);
+			ERROR("unrecognized paramater in conf at line %i: %s\n",count,string);
 			exit(EXIT_FAILURE);
 		}
+		
 		if(conf_params[i]!=NULL) {
 			if(allowCat[i]) {
 				conf_params[i] = realloc(conf_params[i],
