@@ -71,8 +71,7 @@ uint32_t mp4_seekCallback(void *user_data, uint64_t position) {
 }       
 		    
 
-int mp4_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc)
-{
+int mp4_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc) {
 	FILE * fh;
 	mp4ff_t * mp4fh;
 	mp4ff_callback_t * mp4cb; 
@@ -93,8 +92,9 @@ int mp4_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc)
 	long dur;
 	unsigned int sampleCount;
 	char * sampleBuffer;
-	unsigned int initial = 1;
 	size_t sampleBufferLen;
+	unsigned int initial = 1;
+	int chunkLen = 0;
 		
 
 	fh = fopen(dc->file,"r");
@@ -200,8 +200,12 @@ int mp4_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc)
 		if(sampleCount>0) initial =0;
 		sampleBufferLen = sampleCount*2;
 		while(sampleBufferLen > 0) {
-			size_t size = sampleBufferLen>CHUNK_SIZE ? CHUNK_SIZE:
+			size_t size = sampleBufferLen>CHUNK_SIZE-chunkLen ? 
+							CHUNK_SIZE-chunkLen:
 							sampleBufferLen;
+#ifdef WORDS_BIGENDIAN
+			pcm_changeBufferEndianness(sampleBuffer,size,af->bits);
+#endif
 			while(cb->begin==cb->end && cb->wrap &&
 					!dc->stop && !dc->seek)
 			{
@@ -213,23 +217,34 @@ int mp4_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc)
 			}
 			else if(dc->seek) break;
 				
-#ifdef WORDS_BIGENDIAN
-			pcm_changeBufferEndianness(sampleBuffer,size,af->bits);
-#endif
 			sampleBufferLen-=size;
-			memcpy(cb->chunks+cb->end*CHUNK_SIZE,sampleBuffer,size);
-			cb->chunkSize[cb->end] = size;
-			sampleBuffer+=size;
-			
+			memcpy(cb->chunks+cb->end*CHUNK_SIZE+chunkLen,
+					sampleBuffer,size);
 			cb->times[cb->end] = time;
-				
-			++cb->end;
+			sampleBuffer+=size;
+			chunkLen+=size;
+			if(chunkLen>=CHUNK_SIZE) {
+				cb->chunkSize[cb->end] = CHUNK_SIZE;
+				++cb->end;
 	
-			if(cb->end>=buffered_chunks) {
-				cb->end = 0;
-				cb->wrap = 1;
+				if(cb->end>=buffered_chunks) {
+					cb->end = 0;
+					cb->wrap = 1;
+				}
+				chunkLen = 0;
 			}
 		}
+	}
+
+	if(!dc->stop && !dc->seek && chunkLen) {
+		cb->chunkSize[cb->end] = CHUNK_SIZE;
+		++cb->end;
+	
+		if(cb->end>=buffered_chunks) {
+			cb->end = 0;
+			cb->wrap = 1;
+		}
+		chunkLen = 0;
 	}
 
 	if(dc->seek) dc->seek = 0;
