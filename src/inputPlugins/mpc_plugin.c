@@ -132,6 +132,7 @@ int mpc_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream)
 	mpc_uint32_t vbrUpdateBits;
 	float time;
 	int i;
+	ReplayGainInfo * replayGainInfo = NULL;
 
         data.inStream = inStream;
         data.dc = dc;
@@ -174,10 +175,16 @@ int mpc_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream)
 	dc->totalTime = mpc_streaminfo_get_length(&info);
 
 	dc->audioFormat.bits = 16;
-	dc->audioFormat.channels = 2;
+	dc->audioFormat.channels = info.channels;
 	dc->audioFormat.sampleRate = info.sample_freq;
 	
 	getOutputAudioFormat(&(dc->audioFormat), &(cb->audioFormat));
+
+	replayGainInfo = newReplayGainInfo();
+	replayGainInfo->albumGain = info.gain_album;
+	replayGainInfo->albumPeak = info.peak_album;
+	replayGainInfo->trackGain = info.gain_title;
+	replayGainInfo->trackPeak = info.peak_title;
 
 	dc->state = DECODE_STATE_DECODE;
 
@@ -224,7 +231,8 @@ int mpc_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream)
                                         	chunk, chunkpos, 
 						time,
 						bitRate,
-						NULL);
+						replayGainInfo);
+
 				chunkpos = 0;
 				s16 = (mpd_sint16 *)chunk;
 				if(dc->stop) {
@@ -243,12 +251,14 @@ int mpc_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream)
 
 		sendDataToOutputBuffer(cb, NULL, dc, inStream->seekable,
 				       chunk, chunkpos, time, bitRate, 
-				       NULL);
+				       replayGainInfo);
 	}
 
 	closeInputStream(inStream);
 
 	flushOutputBuffer(cb);
+
+	freeReplayGainInfo(replayGainInfo);
 
 	if(dc->stop) {
 		dc->state = DECODE_STATE_STOP;

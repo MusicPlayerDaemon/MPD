@@ -40,11 +40,7 @@
 *) Handle mp1 and mp2 files (including mp2's that are disguised as mp3's with 
 	a mp3 suffix)
 
-*) choose id3v2 over id3v1 tags when both are present
-
 *) add error codes for status->error
-
-*) add support for mousepack/mpc files
 
 *) add alsa audioOutput plugin
 
@@ -52,6 +48,10 @@
    empty audio device buffer.  This isn't possible via libao api.
 
 *) add support for playing aac streams (gee, thanks icecast)
+
+*) implement apev2 and id3v1 tag reader from xmms-musepack plugin
+
+*) only use libid3tag for id3v2 tags, use internal implementation for id3v1 tags
 
 0.13
 ----
