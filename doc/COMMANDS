@@ -162,6 +162,7 @@ status
 	bitrate: <int bitrate> (instantaneous bitrate in kbps)
 	xfade: <int seconds> (crossfade in seconds)
 	audio: <int sampleRate>:<int bits>:<int channels>
+	updatings_db: <int job id>
 	error: if there is an error, returns message here
 
 stop
@@ -173,6 +174,10 @@ swap <int song1> <int song2>
 
 update
 	searches mp3 directory for new music and removes old music from the db
+	returned:
+		updating_db: <int job id>
+	where job id, is the job id requested for your update, and is displayed
+	in status, while the requested update is happening
 	increments playlist version by 1
 
 volume <int change>
