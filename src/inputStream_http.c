@@ -114,6 +114,71 @@ void inputStream_initHttp() {
 	}
 }
 
+/* base64 code taken from xmms */
+
+#define BASE64_LENGTH(len) (4 * (((len) + 2) / 3))
+
+static char * base64Dup(char * s) {
+	int i;
+	int len = strlen(s);
+	char * ret = malloc(BASE64_LENGTH(len)+1);
+	char * p = ret;
+
+	char tbl[64] = {
+		'A','B','C','D','E','F','G','H',
+                'I','J','K','L','M','N','O','P',
+                'Q','R','S','T','U','V','W','X',
+                'Y','Z','a','b','c','d','e','f',
+                'g','h','i','j','k','l','m','n',
+                'o','p','q','r','s','t','u','v',
+                'w','x','y','z','0','1','2','3',
+                '4','5','6','7','8','9','+','/'
+	};
+
+	/* Transform the 3x8 bits to 4x6 bits, as required by base64.  */
+	for(i = 0; i < len; i += 3) {
+		*p++ = tbl[s[0] >> 2];
+                *p++ = tbl[((s[0] & 3) << 4) + (s[1] >> 4)];
+                *p++ = tbl[((s[1] & 0xf) << 2) + (s[2] >> 6)];
+                *p++ = tbl[s[2] & 0x3f];
+                s += 3;
+	}
+	/* Pad the result if necessary...  */
+        if (i == len + 1)
+                *(p - 1) = '=';
+        else if (i == len + 2)
+                *(p - 1) = *(p - 2) = '=';
+        /* ...and zero-terminate it.  */
+        *p = '\0';
+
+	return ret;
+}
+
+#define PROXY_AUTH_HEADER	"Proxy-Authorization: Basic "
+
+static char * proxyAuthString(char * user, char * password) {
+	char * ret = NULL;
+	int templen;
+	char * temp;
+	char * temp64;
+
+	if(!user || !password) return NULL;
+
+	templen = strlen(user) + strlen(password) + 2;
+	temp = calloc(templen, 1);
+	snprintf(temp, templen-1, "%s:%s", user, password);
+	temp64 = base64Dup(temp);
+	free(temp);
+
+	ret = malloc(strlen(temp64)+strlen(PROXY_AUTH_HEADER)+3);
+	strcpy(ret, PROXY_AUTH_HEADER);
+	strcat(ret, temp64);
+	strcat(ret, "\r\n");
+	free(temp64);
+
+	return ret;
+}
+
 static InputStreamHTTPData * newInputStreamHTTPData() {
         InputStreamHTTPData * ret = malloc(sizeof(InputStreamHTTPData));
 
@@ -122,9 +187,9 @@ static InputStreamHTTPData * newInputStreamHTTPData() {
 		DEBUG(__FILE__ ": Proxy host %s\n", ret->proxyHost);
 		ret->proxyPort = atoi(getConf()[CONF_HTTP_PROXY_PORT]);
 		DEBUG(__FILE__ ": Proxy port %i\n", ret->proxyPort);
-		ret->proxyAuth = /*proxyAuthString(
-				getConf()[CONF_HTTP_PROXY_USER],
-				getConf()[CONF_HTTP_PROXY_PASSWORD])*/ NULL;
+		ret->proxyAuth = proxyAuthString(
+					getConf()[CONF_HTTP_PROXY_USER],
+					getConf()[CONF_HTTP_PROXY_PASSWORD]);
 	}
         else {
 		ret->proxyHost = NULL;
@@ -313,14 +378,17 @@ static int finishHTTPInit(InputStream * inStream) {
         memset(request, 0, 2049);
 	/* deal with ICY metadata later, for now its fucking up stuff! */
         snprintf(request, 2048, "GET %s HTTP/1.0\r\n"
-                             "Host: %s\r\n"
-                             /*"Connection: close\r\n"*/
-                             "User-Agent: %s/%s\r\n"
-                             /*"Range: bytes=%ld-\r\n"*/
-                             "Icy-Metadata:1\r\n"
-                             "\r\n",
-                             data->path, data->host, "httpTest", "0.0.0"/*,
-                             inStream->offset*/);
+                             	"Host: %s\r\n"
+                             	/*"Connection: close\r\n"*/
+                             	"User-Agent: %s/%s\r\n"
+                             	/*"Range: bytes=%ld-\r\n"*/
+				"%s" /* authorization */	
+                             	"Icy-Metadata:1\r\n"
+                             	"\r\n",
+                             	data->path, data->host, "httpTest", "0.0.0",
+				
+                             	/*inStream->offset,*/
+				data->proxyAuth ? data->proxyAuth : "" );
 
         ret = write(data->sock, request, strlen(request));
         if(ret!=strlen(request)) {
