@@ -97,7 +97,7 @@ error_file 		"~/.mpd/mpd.error"
 
 
 ########### MISC OPTIONS #################
-#max_playlist_length 	"4096"
+#max_playlist_length 	"16384"
 #connection_timeout 	"60"
 #max_connections 	"5"
 #max_command_list_size 	"2048"
