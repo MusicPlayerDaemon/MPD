@@ -280,8 +280,8 @@ void removeSongFromDirectory(Directory * directory, char * shortname) {
 	void * song;
 	
 	if(findInList(directory->songs,shortname,&song)) {
-		LOG("removing: %s\n",((Song *)song)->utf8url);
-		deleteFromList(directory->songs,shortname);
+		LOG("removing: %s\n", getSongUrl((Song *)song));
+		deleteFromList(directory->songs, shortname);
 	}
 }
 
@@ -317,7 +317,7 @@ int updateInDirectory(Directory * directory, char * shortname, char * name) {
 
 	if(S_ISREG(st.st_mode) && hasMusicSuffix(name)) {
 		if(0==findInList(directory->songs,shortname,&song)) {
-			addToDirectory(directory,shortname,name);
+			addToDirectory(directory, shortname, name);
                         return DIRECTORY_RETURN_UPDATE;
 		}
 		else if(st.st_mtime!=((Song *)song)->mtime) {
@@ -540,7 +540,7 @@ int updatePath(char * utf8path) {
 				parentDirectory->parent,
 				parentDirectory->stat->inode,
 				parentDirectory->stat->device) && 
-				song && isMusic(song->utf8url,&mtime)) 
+				song && isMusic(getSongUrl(song), &mtime)) 
 		{
 			free(path);
                         if(song->mtime==mtime) return 0;
@@ -553,7 +553,7 @@ int updatePath(char * utf8path) {
 		}
 		/* if updateDirectory fials, means we should delete it */
 		else {
-                        removeSongFromDirectory(parentDirectory,shortname);
+                        removeSongFromDirectory(parentDirectory, shortname);
                         ret = 1;
                         /* don't return, path maybe a directory now*/
                 }
@@ -749,10 +749,10 @@ int addToDirectory(Directory * directory, char * shortname, char * name) {
 
 	if(S_ISREG(st.st_mode) && hasMusicSuffix(name)) {
 		Song * song;
-		song = addSongToList(directory->songs,shortname,name,
-				SONG_TYPE_FILE);
+		song = addSongToList(directory->songs, shortname, name,
+				SONG_TYPE_FILE, directory);
 		if(!song) return -1;
-		LOG("added %s\n",name);
+		LOG("added %s\n", name);
 		return 1;
 	}
 	else if(S_ISDIR(st.st_mode)) {
@@ -935,7 +935,7 @@ void readDirectoryInfo(FILE * fp,Directory * directory) {
 			readDirectoryInfo(fp,subDirectory);
 		}
 		else if(0==strncmp(SONG_BEGIN,buffer,strlen(SONG_BEGIN))) {
-			readSongInfoIntoList(fp,directory->songs);
+			readSongInfoIntoList(fp, directory->songs, directory);
 		}
 		else {
 			ERROR("Unknown line in db: %s\n",buffer);

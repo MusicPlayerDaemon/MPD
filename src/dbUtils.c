@@ -6,6 +6,7 @@
 #include "playlist.h"
 #include "tag.h"
 #include "tagTracker.h"
+#include "log.h"
 
 #define LOCATE_TAG_FILE_TYPE	TAG_NUM_OF_ITEM_TYPES+10
 #define LOCATE_TAG_FILE_KEY	"filename"
@@ -76,7 +77,7 @@ static inline int strstrSearchTag(Song * song, int type, char * str) {
 	int ret = 0;
 
 	if(type == LOCATE_TAG_FILE_TYPE) {
-		dup = strDupToUpper(song->utf8url);
+		dup = strDupToUpper(getSongUrl(song));
 		if(strstr(dup, str)) ret = 1;
 		free(dup);
 		return ret;
@@ -122,7 +123,7 @@ static inline int tagItemFoundAndMatches(Song * song, int type, char * str) {
 	int i;
 
 	if(type == LOCATE_TAG_FILE_TYPE) {
-		if(0 == strcmp(str, song->utf8url)) return 1;
+		if(0 == strcmp(str, getSongUrl(song))) return 1;
 	}
 
 	if(!song->tag) return 0;
@@ -217,7 +218,7 @@ void printUnvisitedTags(FILE * fp, Song * song, int tagType) {
 	MpdTag * tag = song->tag;
 
 	if(tagType == LOCATE_TAG_FILE_TYPE) {
-		myfprintf(fp, "file: %s\n", song->utf8url);
+		printSongUrl(fp, song);
 		return;
 	}
 
@@ -267,4 +268,24 @@ int listAllUniqueTags(FILE * fp, int type, int numConditionals,
 	freeListCommandItem(item);
 
 	return ret;
+}
+
+int sumSavedMemoryInDirectory(FILE * fp, Directory * dir, void * data) {
+	int * sum = data;
+
+	if(!dir->utf8name) return 0;
+
+	*sum += (strlen(dir->utf8name)+1-sizeof(Directory *))*
+				dir->songs->numberOfNodes;
+	
+	return 0;
+}
+
+void printSavedMemoryFromFilenames() {
+	int sum;
+	
+	traverseAllIn(stderr, NULL, NULL, sumSavedMemoryInDirectory,
+			(void *)&sum);
+
+	DEBUG("saved memory from filenames: %i\n", sum);
 }

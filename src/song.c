@@ -29,16 +29,17 @@
 #define SONG_KEY	"key: "
 #define SONG_FILE	"file: "
 #define SONG_TIME	"Time: "
-#define SONG_MTIME	"mtime: "
+#define SONG_MTIME	"Mtime: "
 
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 
 Song * newNullSong() {
 	Song * song = malloc(sizeof(Song));
 
 	song->tag = NULL;
-	song->utf8url = NULL;
+	song->url = NULL;
 	song->type = SONG_TYPE_FILE;
 	song->parentDir = NULL;
 
@@ -48,11 +49,11 @@ Song * newNullSong() {
 Song * newSong(char * url, int type, Directory * parentDir) {
 	Song * song = NULL;
 
-        if(strchr(utf8url, '\n')) return NULL;
+        if(strchr(url, '\n')) return NULL;
 
         song  = newNullSong();
 
-	song->utf8url = strdup(utf8url);
+	song->url = strdup(url);
 	song->type = type;
 	song->parentDir = parentDir;
 
@@ -60,9 +61,9 @@ Song * newSong(char * url, int type, Directory * parentDir) {
 
 	if(song->type == SONG_TYPE_FILE) {
                 InputPlugin * plugin;
-		if((plugin = isMusic(utf8url,&(song->mtime)))) {
+		if((plugin = isMusic(getSongUrl(song), &(song->mtime)))) {
 		        song->tag = plugin->tagDupFunc(
-                                        rmp2amp(utf8ToFsCharset(utf8url)));
+				rmp2amp(utf8ToFsCharset(getSongUrl(song))));
                 }
 		if(!song->tag || song->tag->time<0) {
 			freeSong(song);
@@ -75,13 +76,11 @@ Song * newSong(char * url, int type, Directory * parentDir) {
 
 void freeSong(Song * song) {
 	deleteASongFromPlaylist(song);
-	free(song->utf8url);
-	if(song->tag) freeMpdTag(song->tag);
-	free(song);
+	freeJustSong(song);
 }
 
 void freeJustSong(Song * song) {
-	free(song->utf8url);
+	free(song->url);
 	if(song->tag) freeMpdTag(song->tag);
 	free(song);
 }
@@ -90,19 +89,19 @@ SongList * newSongList() {
 	return makeList((ListFreeDataFunc *)freeSong);
 }
 
-Song * addSongToList(SongList * list, char * url, int songType, 
-		Directory * parentDirectory)
+Song * addSongToList(SongList * list, char * url, char * utf8path, 
+		int songType, Directory * parentDirectory)
 {
 	Song * song = NULL;
 
-	switch(type) {
+	switch(songType) {
 	case SONG_TYPE_FILE:
-		if(isMusic(utf8url,NULL)) {
-			song = newSong(url, type, parentDirectory);
+		if(isMusic(utf8path, NULL)) {
+			song = newSong(url, songType, parentDirectory);
 		}
 		break;
 	case SONG_TYPE_URL:
-		song = newSong(utf8url, type, parentDirectory);
+		song = newSong(url, songType, parentDirectory);
 		break;
 	}
 
@@ -119,7 +118,7 @@ void freeSongList(SongList * list) {
 
 void printSongUrl(FILE * fp, Song * song) {
 	if(song->parentDir) {
-		myfprintf(fp, "%s%s%s\n", SONG_FILE, song->parentDir->utf8name,
+		myfprintf(fp, "%s%s/%s\n", SONG_FILE, song->parentDir->utf8name,
 				song->url);
 	}
 	else {
@@ -208,11 +207,10 @@ static int matchesAnMpdTagItemKey(char * buffer, int * itemType) {
 	return 0;
 }
 
-void readSongInfoIntoList(FILE * fp, SongList * list) {
+void readSongInfoIntoList(FILE * fp, SongList * list, Directory * parentDir) {
 	char buffer[MAXPATHLEN+1024];
 	int bufferSize = MAXPATHLEN+1024;
 	Song * song = NULL;
-	char * key = NULL;
 	ListNode * nextSongNode = list->firstNode;
 	ListNode * nodeTemp;
 	int itemType;
@@ -220,21 +218,25 @@ void readSongInfoIntoList(FILE * fp, SongList * list) {
 	while(myFgets(buffer,bufferSize,fp) && 0!=strcmp(SONG_END,buffer)) {
 		if(0==strncmp(SONG_KEY,buffer,strlen(SONG_KEY))) {
 			if(song) {
-				insertSongIntoList(list,&nextSongNode,key,song);
+				insertSongIntoList(list,&nextSongNode,
+						song->url,
+						song);
 				song = NULL;
-				free(key);
 			}
 
-			key = strdup(&(buffer[strlen(SONG_KEY)]));
 			song = newNullSong();
+			song->url = strdup(buffer+strlen(SONG_KEY));
 			song->type = SONG_TYPE_FILE;
+			song->parentDir = parentDir;
 		}
 		else if(0==strncmp(SONG_FILE,buffer,strlen(SONG_FILE))) {
-			if(!song || song->utf8url) {
+			if(!song) {
 				ERROR("Problems reading song info\n");
 				exit(EXIT_FAILURE);
 			}
-			song->utf8url = strdup(&(buffer[strlen(SONG_FILE)]));
+			/* we don't need this info anymore
+			song->url = strdup(&(buffer[strlen(SONG_FILE)]));
+			*/
 		}
 		else if(matchesAnMpdTagItemKey(buffer, &itemType)) {
 			if(!song->tag) song->tag = newMpdTag();
@@ -255,9 +257,8 @@ void readSongInfoIntoList(FILE * fp, SongList * list) {
 	}
 	
 	if(song) {
-		insertSongIntoList(list,&nextSongNode,key,song);
+		insertSongIntoList(list, &nextSongNode, song->url, song);
 		song = NULL;
-		free(key);
 	}
 
 	while(nextSongNode) {
@@ -268,8 +269,6 @@ void readSongInfoIntoList(FILE * fp, SongList * list) {
 }
 
 int updateSongInfo(Song * song) {
-	char * utf8url = song->utf8url;
-
 	if(song->type == SONG_TYPE_FILE) {
                 InputPlugin * plugin;
 
@@ -277,9 +276,9 @@ int updateSongInfo(Song * song) {
 
 		song->tag = NULL;
 
-		if((plugin = isMusic(utf8url,&(song->mtime)))) {
+		if((plugin = isMusic(getSongUrl(song),&(song->mtime)))) {
 		        song->tag = plugin->tagDupFunc(
-                                        rmp2amp(utf8ToFsCharset(utf8url)));
+                                        rmp2amp(getSongUrl(song)));
                 }
 		if(!song->tag || song->tag->time<0) return -1;
 	}
@@ -290,10 +289,41 @@ int updateSongInfo(Song * song) {
 Song * songDup(Song * song) {
 	Song * ret = malloc(sizeof(Song));
 
-	ret->utf8url = strdup(song->utf8url);
+	ret->url = strdup(song->url);
 	ret->mtime = song->mtime;
 	ret->tag = mpdTagDup(song->tag);
 	ret->type = song->type;
+	ret->parentDir = song->parentDir;
 
 	return ret;
+}
+
+char * getSongUrl(Song * song) {
+	static char * buffer = NULL;
+	static int bufferSize = 0;
+	static Song * lastSong = NULL;
+	int slen;
+	int dlen;
+	int size;
+
+	if(!song->parentDir || !song->parentDir->utf8name) return song->url;
+
+	/* be careful with this! */
+	if(song == lastSong) return buffer;
+
+	slen = strlen(song->url);
+	dlen = strlen(song->parentDir->utf8name);
+
+	size = slen+dlen+2;
+
+	if(size > bufferSize) {
+		buffer = realloc(buffer, size);
+		bufferSize = size;
+	}
+
+	strcpy(buffer, song->parentDir->utf8name);
+	buffer[dlen] = '/';
+	strcpy(buffer+dlen+1, song->url);
+
+	return buffer;
 }

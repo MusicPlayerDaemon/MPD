@@ -36,4 +36,6 @@ unsigned long sumSongTimesIn(FILE * fp, char * name);
 int listAllUniqueTags(FILE * fp, int type, int numConditiionals, 
 		LocateTagItem * conditionals);
 
+void printSavedMemoryFromFilenames();
+
 #endif

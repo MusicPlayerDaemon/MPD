@@ -36,6 +36,7 @@
 #include "inputStream.h"
 #include "tag.h"
 #include "tagTracker.h"
+#include "dbUtils.h"
 #include "../config.h"
 
 #include <stdio.h>
@@ -431,6 +432,7 @@ int main(int argc, char * argv[]) {
 	initInputStream(); 
 
 	printMemorySavedByTagTracker();
+	printSavedMemoryFromFilenames();
 	
         daemonize(&options);
 

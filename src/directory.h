@@ -74,4 +74,8 @@ int traverseAllIn(FILE * fp, char * name,
 			int (*forEachSong)(FILE *, Song *, void *),
 			int (*forEachDir)(FILE *, Directory *, void *),
 			void * data);
+
+/* free the string that is returned */
+char * catDirAndFileName(Directory * dir, char * filename);
+
 #endif

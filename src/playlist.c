@@ -245,7 +245,7 @@ int showPlaylist(FILE * fp) {
 	int i;
 
 	for(i=0;i<playlist.length;i++) {
-		myfprintf(fp,"%i:%s\n",i,(playlist.songs[i])->utf8url);
+		myfprintf(fp,"%i:%s\n", i, getSongUrl(playlist.songs[i]));
 	}
 
 	return 0;
@@ -428,12 +428,7 @@ void readPlaylistState() {
 }
 
 void printPlaylistSongInfo(FILE * fp, int song) {
-	MpdTag * tag;
-	
-	myfprintf(fp, "file: %s\n", (playlist.songs[song])->utf8url);
-	if((tag = (playlist.songs[song])->tag)) {
-		printMpdTag(fp, tag);
-	}
+	printSongInfo(fp, playlist.songs[song]);
 	myfprintf(fp, "Pos: %i\n", song);
 	myfprintf(fp, "Id: %i\n", playlist.positionToId[song]);
 }
@@ -523,8 +518,8 @@ void queueNextSongInPlaylist() {
 		playlist.queued = playlist.current+1;
 		DEBUG("playlist: queue song %i:\"%s\"\n",
 				playlist.queued,
-				playlist.songs[playlist.order[
-				playlist.queued]]->utf8url);
+				getSongUrl(playlist.songs[playlist.order[
+					playlist.queued]]));
 		if(queueSong(playlist.songs[playlist.order[playlist.queued]]) <
                                 0) 
                 {
@@ -539,8 +534,8 @@ void queueNextSongInPlaylist() {
 		playlist.queued = 0;
 		DEBUG("playlist: queue song %i:\"%s\"\n",
 				playlist.queued,
-				playlist.songs[playlist.order[
-				playlist.queued]]->utf8url);
+				getSongUrl(playlist.songs[playlist.order[
+					playlist.queued]]));
 		if(queueSong(playlist.songs[playlist.order[playlist.queued]]) <
 				0) 
                 {
@@ -603,7 +598,7 @@ int addToPlaylist(FILE * fp, char * url, int printId) {
 	if((song = getSongFromDB(url))) {
 	}
 	else if(isValidRemoteUtf8Url(url) && 
-                        (song = newSong(url,SONG_TYPE_URL))) 
+                        (song = newSong(url, SONG_TYPE_URL, NULL))) 
         {
 	}
 	else {
@@ -836,7 +831,7 @@ int playPlaylistOrderNumber(FILE * fp, int orderNum) {
 	playlist_queueError = 0;
 
 	DEBUG("playlist: play %i:\"%s\"\n",orderNum,
-			(playlist.songs[playlist.order[orderNum]])->utf8url);
+			getSongUrl(playlist.songs[playlist.order[orderNum]]));
 
 	if(playerPlay(fp,(playlist.songs[playlist.order[orderNum]])) < 0) {
 		stopPlaylist(fp);
@@ -917,7 +912,7 @@ void syncCurrentPlayerDecodeMetadata() {
         song = playlist.songs[songNum];
 
         if(song->type == SONG_TYPE_URL &&
-                        0 == strcmp(song->utf8url, songPlayer->utf8url) &&
+                        0 == strcmp(getSongUrl(song), songPlayer->url) &&
                         !mpdTagsAreEqual(song->tag, songPlayer->tag))
         {
                 if(song->tag) freeMpdTag(song->tag);
@@ -1321,10 +1316,10 @@ int savePlaylist(FILE * fp, char * utf8file) {
 				playlist.songs[i]->type==SONG_TYPE_FILE) 
 		{
 			myfprintf(fileP,"%s\n",rmp2amp(utf8ToFsCharset((
-				        playlist.songs[i])->utf8url)));
+				        getSongUrl(playlist.songs[i])))));
 		}
 		else myfprintf(fileP,"%s\n",
-				utf8ToFsCharset((playlist.songs[i])->utf8url));
+				utf8ToFsCharset(getSongUrl(playlist.songs[i])));
 	}
 
 	while(fclose(fileP) && errno==EINTR);

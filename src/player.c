@@ -179,7 +179,7 @@ int playerPlay(FILE * fp, Song * song) {
 
 	copyMpdTagToMetadataChunk(song->tag, &(pc->fileMetadataChunk));
 
-        strncpy(pc->utf8url, song->utf8url, MAXPATHLEN);
+        strncpy(pc->utf8url, getSongUrl(song), MAXPATHLEN);
 	pc->utf8url[MAXPATHLEN] = '\0';
 
 	pc->play = 1;
@@ -324,7 +324,7 @@ int queueSong(Song * song) {
 	PlayerControl * pc = &(getPlayerData()->playerControl);
 
 	if(pc->queueState==PLAYER_QUEUE_BLANK) {
-                strncpy(pc->utf8url, song->utf8url, MAXPATHLEN);
+                strncpy(pc->utf8url, getSongUrl(song), MAXPATHLEN);
 		pc->utf8url[MAXPATHLEN] = '\0';
 
                 if(song->tag) pc->fileTime = song->tag->time;
@@ -380,13 +380,13 @@ int playerSeek(FILE * fp, Song * song, float time) {
 		return -1;
 	}
 
-	if(strcmp(pc->utf8url, song->utf8url)!=0) {
+	if(strcmp(pc->utf8url, getSongUrl(song))!=0) {
                 if(song->tag) pc->fileTime = song->tag->time;
                 else pc->fileTime = 0;
 
 		copyMpdTagToMetadataChunk(song->tag, &(pc->fileMetadataChunk));
 
-		strncpy(pc->utf8url, song->utf8url, MAXPATHLEN);
+		strncpy(pc->utf8url, getSongUrl(song), MAXPATHLEN);
 		pc->utf8url[MAXPATHLEN] = '\0';
 	}
 
@@ -476,7 +476,7 @@ Song * playerCurrentDecodeSong() {
 		memcpy(prev, &(pc->metadataChunk), sizeof(MetadataChunk));
                 if(song) freeJustSong(song);
                 song = newNullSong();
-                song->utf8url = strdup(pc->currentUrl);
+                song->url = strdup(pc->currentUrl);
 		song->tag = metadataChunkToMpdTagDup(prev);
                 ret =  song;
         	resetPlayerMetadata();
