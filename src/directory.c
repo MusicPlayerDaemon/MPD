@@ -115,8 +115,9 @@ void freeDirectoryList(DirectoryList * directoryList) {
 
 void removeSongFromDirectory(Directory * directory, char * shortname) {
 	void * song;
-
+	
 	if(findInList(directory->songs,shortname,&song)) {
+		LOG("removing: %s\n",((Song *)song)->utf8file);
 		removeASongFromTables((Song *)song);
 		deleteASongFromPlaylist((Song *)song);
 		deleteFromList(directory->songs,shortname);
@@ -148,7 +149,6 @@ int updateInDirectory(Directory * directory, char * shortname, char * name) {
 
 	if((mtime = isMusic(name))) {
 		if(0==findInList(directory->songs,shortname,&song)) {
-			LOG("adding %s\n",name);
 			addToDirectory(directory,shortname,name);
 		}
 		else if(mtime>((Song *)song)->mtime) {
@@ -205,10 +205,12 @@ int removeDeletedFromDirectory(Directory * directory) {
 		tmpNode = node->nextNode;
 		if(findInList(entList,node->key,&name)) {
 			if(!isDir((char *)name)) {
+				LOG("removing directory: %s\n",(char*)name);
 				deleteFromList(directory->subDirectories,node->key);
 			}
 		}
 		else {
+			LOG("removing directory: %s\n",(char*)name);
 			deleteFromList(directory->subDirectories,node->key);
 		}
 		node = tmpNode;
@@ -286,7 +288,7 @@ int exploreDirectory(Directory * directory) {
 	DEBUG("explore: attempting to opendir: %s\n",dirname);
 	if((dir = opendir(rmp2amp(utf8ToFsCharset(dirname))))==NULL) return -1;
 
-	LOG("explore: %s\n",dirname);
+	DEBUG("explore: %s\n",dirname);
 	while((ent = readdir(dir))) {
 		if(ent->d_name[0]=='.') continue; /* hide hidden stuff */
 
@@ -325,6 +327,7 @@ int addToDirectory(Directory * directory, char * shortname, char * name) {
 		return addSubDirectoryToDirectory(directory,shortname,name);
 	}
 	else if(isMusic(name)) {
+		LOG("adding %s\n",name);
 		Song * song;
 		song = addSongToList(directory->songs,shortname,name);
 		if(!song) return -1;
