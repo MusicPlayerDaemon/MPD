@@ -108,14 +108,14 @@ int waitOnDecode(PlayerControl * pc, AudioFormat * af, DecoderControl * dc,
 	while(decode_pid>0 && dc->start) usleep(10);
 
 	if(dc->start || dc->error!=DECODE_ERROR_NOERROR) {
-		strcpy(pc->erroredFile,pc->file);
+		strncpy(pc->erroredFile,pc->file,MAXPATHLEN);
 		pc->error = PLAYER_ERROR_FILE;
 		quitDecode(pc,dc);
 		return -1;
 	}
 
 	if(initAudio(af)<0) {
-		strcpy(pc->erroredFile,pc->file);
+		strncpy(pc->erroredFile,pc->file,MAXPATHLEN);
 		pc->error = PLAYER_ERROR_AUDIO;
 		quitDecode(pc,dc);
 		return -1;
@@ -196,7 +196,7 @@ int decoderInit(PlayerControl * pc, Buffer * cb, AudioFormat *af,
 
 		while(1) {
 			if(dc->start) {
-				strcpy(dc->file,pc->file);
+				strncpy(dc->file,pc->file,MAXPATHLEN);
 				switch(pc->decodeType) {
 #ifdef HAVE_MAD
 				case DECODE_TYPE_MP3:
@@ -239,7 +239,7 @@ int decoderInit(PlayerControl * pc, Buffer * cb, AudioFormat *af,
 		/* END OF CHILD */
 	}
 	else if(decode_pid<0) {
-		strcpy(pc->erroredFile,pc->file);
+		strncpy(pc->erroredFile,pc->file,MAXPATHLEN);
 		pc->error = PLAYER_ERROR_SYSTEM;
 		return -1;
 	}

@@ -140,7 +140,7 @@ int playerPlay(FILE * fp, char * utf8file) {
 	{
 		struct stat st;
 		if(stat(rmp2amp(utf8ToFsCharset(utf8file)),&st)<0) {
-			strcpy(pc->erroredFile,pc->file);
+			strncpy(pc->erroredFile,pc->file,MAXPATHLEN);
 			pc->error = PLAYER_ERROR_FILENOTFOUND;
 			return 0;
 		}
@@ -160,7 +160,7 @@ int playerPlay(FILE * fp, char * utf8file) {
 	else if(isWave(utf8file)) pc->decodeType = DECODE_TYPE_AUDIOFILE;
 #endif
 	else {
-		strcpy(pc->erroredFile,pc->file);
+		strncpy(pc->erroredFile,pc->file,MAXPATHLEN);
 		pc->error = PLAYER_ERROR_UNKTYPE;
 		return 0;
 	}
