@@ -31,11 +31,11 @@ typedef struct _InputStream {
 
 /* if an error occurs for these 3 functions, then -1 is returned and errno
    for the input stream is set */
-int initInputStreamFromFile(InputStream * inStream, char * filename);
-int seekInputStream(InputStream * inStream, long offset);
-int finishInputStream(InputStream * inStream);
+int openInputStreamFromFile(InputStream * inStream, char * filename);
+int seekInputStream(InputStream * inStream, long offset, int whence);
+int closeInputStream(InputStream * inStream);
 
-size_t fillBufferFromInputStream(InputStream * inStream, char * buffer, 
-		size_t buflen);
+size_t readFromInputStream(InputStream * inStream, void * ptr, size_t size,
+		size_t nmemb);
 
 #endif

@@ -23,7 +23,7 @@
 #include <unistd.h>
 #include <errno.h>
 
-int initInputStreamFromFile(InputStream * inStream, char * filename) {
+int openInputStreamFromFile(InputStream * inStream, char * filename) {
 	inStream->fp = fopen(filename,"r");
 	if(!inStream->fp) {
 		inStream->error = errno;
@@ -39,14 +39,9 @@ int initInputStreamFromFile(InputStream * inStream, char * filename) {
 	return 0;
 }
 
-int seekInputStream(InputStream * inStream, long offset) {
-	if(offset<0) {
-		inStream->error = EINVAL;
-		return -1;
-	}
-
-	if(fseek(inStream->fp,offset,SEEK_SET)==0) {
-		inStream->offset = offset;
+int seekInputStream(InputStream * inStream, long offset, int whence) {
+	if(fseek(inStream->fp,offset,whence)==0) {
+		inStream->offset = ftell(inStream->fp);
 	}
 	else {
 		inStream->error = errno;
@@ -56,19 +51,19 @@ int seekInputStream(InputStream * inStream, long offset) {
 	return 0;
 }
 
-size_t fillBufferFromInputStream(InputStream * inStream, char * buffer, 
-		size_t buflen) 
+size_t readFromInputStream(InputStream * inStream, void * ptr, size_t size, 
+		size_t nmemb)
 {
 	size_t readSize;
 
-	readSize = fread(buffer,1,buflen,inStream->fp);
+	readSize = fread(ptr,size,nmemb,inStream->fp);
 
 	if(readSize>0) inStream->offset+=readSize;
 
 	return readSize;
 }
 
-int finishInputStream(InputStream * inStream) {
+int closeInputStream(InputStream * inStream) {
 	if(fclose(inStream->fp)<0) {
 		inStream->error = errno;
 	}

@@ -25,12 +25,14 @@
 #include "audio.h"
 #include "log.h"
 #include "pcm_utils.h"
+#include "inputStream.h"
 
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
 #include <vorbis/vorbisfile.h>
+#include <errno.h>
 
 #ifdef WORDS_BIGENDIAN
 #define OGG_DECODE_USE_BIGENDIAN	1
@@ -38,6 +40,7 @@
 #define OGG_DECODE_USE_BIGENDIAN	0
 #endif
 
+/* this is just for tag parsing for db import! */
 int getOggTotalTime(char * file) {
 	OggVorbis_File vf;
 	FILE * oggfp;
@@ -57,19 +60,47 @@ int getOggTotalTime(char * file) {
 	return totalTime;
 }
 
+size_t ogg_read_cb(void * ptr, size_t size, size_t nmemb, void * inStream)
+{
+	size_t ret;
+	ret = readFromInputStream((InputStream *)inStream,ptr,size,nmemb);
+
+	if(ret<0) errno = ((InputStream *)inStream)->error;
+
+	return ret;
+}
+
+int ogg_seek_cb(void * inStream, ogg_int64_t offset, int whence) {
+	return seekInputStream((InputStream *)inStream,offset,whence);
+}
+
+int ogg_close_cb(void * inStream) {
+	return closeInputStream((InputStream *)inStream);
+}
+
+long ogg_tell_cb(void * inStream) {
+	return ((InputStream *)inStream)->offset;
+}
+
 int ogg_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc)
 {
 	OggVorbis_File vf;
-	FILE * oggfp;
+	ov_callbacks callbacks;
+	InputStream inStream;
+
+	callbacks.read_func = ogg_read_cb;
+	callbacks.seek_func = ogg_seek_cb;
+	callbacks.close_func = ogg_close_cb;
+	callbacks.tell_func = ogg_tell_cb;
 	
-	if(!(oggfp = fopen(dc->file,"r"))) {
+	if(openInputStreamFromFile(&inStream,dc->file)<0) {
 		ERROR("failed to open ogg\n");
 		return -1;
 	}
 		
-	if(ov_open(oggfp, &vf, NULL, 0) < 0) {
+	if(ov_open_callbacks(&inStream, &vf, NULL, 0, callbacks) < 0) {
 		ERROR("Input does not appear to be an Ogg bit stream.\n");
-		fclose(oggfp);
+		closeInputStream(&inStream);
 		return -1;
 	}
 	

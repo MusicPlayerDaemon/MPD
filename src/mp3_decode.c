@@ -136,7 +136,7 @@ typedef struct _mp3DecodeData {
 int initMp3DecodeData(mp3DecodeData * data, char * file) {
 	int ret;
 
-	while(((ret = initInputStreamFromFile(&(data->inStream),file))<0) && 
+	while(((ret = openInputStreamFromFile(&(data->inStream),file))<0) && 
 			data->inStream.error==EINTR);
 	if(ret<0) return -1;
 
@@ -164,7 +164,7 @@ int fillMp3InputBuffer(mp3DecodeData * data, long offset) {
 	unsigned char * readStart;
 
 	if(offset>=0) {
-		seekInputStream(&(data->inStream),offset);
+		seekInputStream(&(data->inStream),offset,SEEK_SET);
 	}
 
 	if(offset==-1 && (data->stream).next_frame!=NULL) {
@@ -179,8 +179,7 @@ int fillMp3InputBuffer(mp3DecodeData * data, long offset) {
 		remaining = 0;
 	}
 			
-	readSize = fillBufferFromInputStream(&(data->inStream),readStart,
-			readSize);
+	readSize = readFromInputStream(&(data->inStream),readStart,1,readSize);
 	if(readSize<=0) return -1;
 
 	mad_stream_buffer(&data->stream,data->readBuffer,readSize+remaining);
@@ -375,7 +374,7 @@ void mp3DecodeDataFinalize(mp3DecodeData * data) {
 	mad_frame_finish(&data->frame);
 	mad_stream_finish(&data->stream);
 
-	while(finishInputStream(&(data->inStream))<0 &&
+	while(closeInputStream(&(data->inStream))<0 &&
 			data->inStream.error==EINTR);
 	if(data->frameOffset) free(data->frameOffset);
 	if(data->times) free(data->times);
