@@ -1,3 +1,7 @@
+*) add add command that returns song id
+
+*) add option for inserting at a specific position in the playlist
+
 *) put some sort of error reporting for streaming/inputStream!
 
 Post-1.0
