@@ -15,10 +15,8 @@
 
 *) aduio output
 	*) allowing "pausing" of audio output devices
-	*) add support so that audioOutput plugins can modify the output format.
-		(This way, alsa's _near functions can be used to adjust output
-		format devices on the fly: for channels, bits, and rate)
 	*) add support for automagically detecting the current output device
+	*) add support for allowing oss plugin to detect output
 
 0.13
 ----
