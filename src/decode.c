@@ -254,6 +254,7 @@ void decodeStart(PlayerControl * pc, OutputBuffer * cb, DecoderControl * dc) {
                 return;
         }
 
+	dc->seekable = inStream.seekable;
         dc->state = DECODE_STATE_START;
 	dc->start = 0;
 
