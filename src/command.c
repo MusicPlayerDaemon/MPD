@@ -82,6 +82,8 @@
 #define COMMAND_URL_HANDLERS   	"urlhandlers" 
 #define COMMAND_PLCHANGES	"plchanges" 
 #define COMMAND_CURRENTSONG	"currentsong" 
+#define COMMAND_ENABLE_DEV	"enable_device"
+#define COMMAND_DISABLE_DEV	"disable_device"
 
 #define COMMAND_STATUS_VOLUME           "volume"
 #define COMMAND_STATUS_STATE            "state"
@@ -756,6 +758,38 @@ int handleCrossfade(FILE * fp, unsigned int * permission, int argArrayLength,
 	return 0;
 }
 
+int handleEnableDevice(FILE * fp, unsigned int * permission, int argArrayLength,
+		char ** argArray) 
+{
+        int device;
+        char * test;
+
+        device = strtol(argArray[1],&test,10);
+        if(*test!='\0' || device<0) {
+                commandError(fp, ACK_ERROR_ARG, 
+				"\"%s\" is not a integer >= 0", argArray[1]);
+                return -1;
+        }
+
+	return enableAudioDevice(fp, device);
+}
+
+int handleDisableDevice(FILE * fp, unsigned int * permission, 
+		int argArrayLength, char ** argArray) 
+{
+        int device;
+        char * test;
+
+        device = strtol(argArray[1],&test,10);
+        if(*test!='\0' || device<0) {
+                commandError(fp, ACK_ERROR_ARG, 
+				"\"%s\" is not a integer >= 0", argArray[1]);
+                return -1;
+        }
+
+	return disableAudioDevice(fp, device);
+}
+
 void initCommands() {
         commandList = makeList(free);
 
@@ -804,6 +838,8 @@ void initCommands() {
         addCommand(COMMAND_CROSSFADE   ,PERMISSION_CONTROL, 1, 1,handleCrossfade,NULL);
         addCommand(COMMAND_URL_HANDLERS,PERMISSION_READ,    0, 0,handleUrlHandlers,NULL);
         addCommand(COMMAND_PLCHANGES   ,PERMISSION_READ,    1, 1,handlePlaylistChanges,NULL);
+        addCommand(COMMAND_ENABLE_DEV  ,PERMISSION_ADMIN,   1, 1,handleEnableDevice,NULL);
+        addCommand(COMMAND_DISABLE_DEV ,PERMISSION_ADMIN,   1, 1,handleDisableDevice,NULL);
 
         sortList(commandList);
 }

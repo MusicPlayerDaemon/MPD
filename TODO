@@ -30,6 +30,9 @@
 
 *) have children ignore SIGHUP
 
+*) put more debugging info when failing to read/write db and other similar 
+	errors
+
 Post-1.0
 --------
 *) crosslink "list" stuff, for example, artists are crosslinked to alubms and 

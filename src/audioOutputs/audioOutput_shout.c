@@ -289,6 +289,10 @@ static void myShout_finishDriver(AudioOutput * audioOutput) {
 }
 
 static void myShout_closeDevice(AudioOutput * audioOutput) {
+	ShoutData * sd = (ShoutData *)audioOutput->data;
+
+	myShout_closeShoutConn(sd);
+
 	audioOutput->open = 0;
 }
 
@@ -376,7 +380,9 @@ static int myShout_openShoutConn(AudioOutput * audioOutput) {
 	ShoutData * sd = (ShoutData *)audioOutput->data;
 	time_t t = time(NULL);
 
-	if(t - sd->lastAttempt < CONN_ATTEMPT_INTERVAL) {
+	if(sd->connAttempts!= 0 && 
+			(t - sd->lastAttempt) < CONN_ATTEMPT_INTERVAL) 
+	{
 		return -1;
 	}
 

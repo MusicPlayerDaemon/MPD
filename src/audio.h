@@ -65,4 +65,10 @@ int isCurrentAudioFormat(AudioFormat * audioFormat);
 
 void sendMetadataToAudioDevice(MpdTag * tag);
 
+/* these functions are called in the main parent process while the child
+	process is busy playing to the audio */
+int enableAudioDevice(FILE * fp, int device);
+
+int disableAudioDevice(FILE * fp, int device);
+
 #endif
