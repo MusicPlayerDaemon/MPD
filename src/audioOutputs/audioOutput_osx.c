@@ -26,7 +26,7 @@
 
 #include "../log.h"
 
-#define BUFFER_SIZE 4096
+#define BUFFER_SIZE 32768
 
 typedef struct _OsxData {
 	AudioUnit au;
@@ -168,9 +168,7 @@ static OSStatus osx_render(void * vdata,
 		if(od->pos >= BUFFER_SIZE) od->pos = 0;
 	}
 
-	if(bufferSize) {
-		memset(buffer->mData+curpos, 0, bufferSize);
-	}
+	buffer->mDataByteSize -= bufferSize;
 
 	pthread_cond_signal(&od->condition);
 	pthread_mutex_unlock(&od->mutex);
