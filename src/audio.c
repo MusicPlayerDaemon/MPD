@@ -183,6 +183,6 @@ void closeAudioDevice() {
 	closeAudioOutput(aoOutput);
 }
 
-void sendMetdataToAudioDevice(MpdTag * tag) {
+void sendMetadataToAudioDevice(MpdTag * tag) {
 	if(shoutOutput) sendMetadataToAudioOutput(shoutOutput, tag);
 }

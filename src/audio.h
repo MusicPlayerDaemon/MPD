@@ -58,6 +58,6 @@ int isAudioDeviceOpen();
 
 int isCurrentAudioFormat(AudioFormat * audioFormat);
 
-void sendMetdataToAudioDevice(MpdTag * tag);
+void sendMetadataToAudioDevice(MpdTag * tag);
 
 #endif

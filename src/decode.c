@@ -119,6 +119,12 @@ int calculateCrossFadeChunks(PlayerControl * pc, AudioFormat * af) {
 		                quitDecode(pc,dc); \
 		                return; \
 	                } \
+			{ \
+				MpdTag * tag = metadataChunkToMpdTagDup( \
+						&fileMetadataChunk); \
+				sendMetadataToAudioDevice(tag); \
+				freeMpdTag(tag); \
+			} \
 	                pc->totalTime = dc->totalTime; \
 	                pc->sampleRate = dc->audioFormat.sampleRate; \
 	                pc->bits = dc->audioFormat.bits; \
@@ -141,11 +147,10 @@ int calculateCrossFadeChunks(PlayerControl * pc, AudioFormat * af) {
         }
 
 int waitOnDecode(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb,
-                int * decodeWaitedOn) 
+                int * decodeWaitedOn, MetadataChunk * fileMetadataChunk) 
 {
         strncpy(pc->currentUrl, pc->utf8url, MAXPATHLEN);
         pc->currentUrl[MAXPATHLEN] = '\0';
-	MpdTag * tag = NULL;
 
 	while(decode_pid && *decode_pid>0 && dc->start) my_usleep(10000);
 
@@ -157,10 +162,8 @@ int waitOnDecode(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb,
 		return -1;
 	}
 
-	if((tag = metadataChunkToMpdTagDup(&(pc->fileMetadataChunk)))) {
-		sendMetdataToAudioDevice(tag);
-		freeMpdTag(tag);
-	}
+	memcpy(fileMetadataChunk, &(pc->fileMetadataChunk), 
+			sizeof(MetadataChunk));
 
         pc->totalTime = pc->fileTime;
         pc->bitRate = 0;
@@ -173,7 +176,8 @@ int waitOnDecode(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb,
 }
 
 int decodeSeek(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb,
-                int * decodeWaitedOn, int * next) 
+                int * decodeWaitedOn, int * next, 
+		MetadataChunk * fileMetadataChunk) 
 {
         int ret = -1;
 
@@ -187,7 +191,8 @@ int decodeSeek(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb,
 			cb->end = 0;
 			dc->error = 0;
 			dc->start = 1;
-			waitOnDecode(pc,dc,cb,decodeWaitedOn);
+			waitOnDecode(pc,dc,cb,decodeWaitedOn,
+					fileMetadataChunk);
 		}
 		if(*decode_pid>0 && dc->state!=DECODE_STATE_STOP && 
                                 dc->seekable) 
@@ -244,7 +249,9 @@ int decodeSeek(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb,
 		if(pause) closeAudioDevice(); \
 	} \
 	if(pc->seek) { \
-		if(decodeSeek(pc,dc,cb,&decodeWaitedOn,&next) == 0) { \
+		if(decodeSeek(pc,dc,cb,&decodeWaitedOn,&next, \
+				&fileMetadataChunk) == 0)  \
+		{ \
 		        doCrossFade = 0; \
 		        nextChunk =  -1; \
                         bbp = 0; \
@@ -431,7 +438,7 @@ void handleMetadata(OutputBuffer * cb, PlayerControl * pc, int * previous,
 		*currentChunkSent = 1;
 		
 		if((tag = metadataChunkToMpdTagDup(currentChunk))) {
-			sendMetdataToAudioDevice(tag);
+			sendMetadataToAudioDevice(tag);
 			freeMpdTag(tag);
 		}
 
@@ -470,13 +477,14 @@ void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb) {
 	double sizeToTime = 0.0;
 	int previousMetadataChunk = -1;
 	MetadataChunk currentMetadataChunk;
+	MetadataChunk fileMetadataChunk;
 	int currentChunkSent = 1;
 	int end;
 	int next = -1;
 
 	memset(silence,0,CHUNK_SIZE);
 
-	if(waitOnDecode(pc,dc,cb,&decodeWaitedOn)<0) return;
+	if(waitOnDecode(pc,dc,cb,&decodeWaitedOn,&fileMetadataChunk)<0) return;
 
         pc->elapsedTime = 0;
 	pc->state = PLAYER_STATE_PLAY;
@@ -627,7 +635,9 @@ void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb) {
 			}
 			else {
 				next = -1;
-				if(waitOnDecode(pc,dc,cb,&decodeWaitedOn)<0) {
+				if(waitOnDecode(pc,dc,cb,&decodeWaitedOn,
+						&fileMetadataChunk)<0) 
+				{
                                         return;
                                 }
 				nextChunk = -1;
