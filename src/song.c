@@ -299,4 +299,3 @@ Song * songDup(Song * song) {
 
 	return ret;
 }
-/* vim:set shiftwidth=4 tabstop=8 expandtab: */

@@ -147,4 +147,3 @@ void closeCharSetConversion() {
 		char_conv_use_iconv = 0;
 	}
 }
-/* vim:set shiftwidth=4 tabstop=8 expandtab: */

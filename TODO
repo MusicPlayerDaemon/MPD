@@ -1,10 +1,8 @@
 0.12
 ----
-*) Fix id3v1 encoding
-
-*) Cleanup Config File Code
-
-*) Optimize read() on clients
+*) network stuff
+	*) allow specifying multiple bind_to_address's
+	*) use getaddrinfo instead of gethostbyname
 
 *) rewrite saved playlist code
 	*) abstract out saved playlists from playlist.c
@@ -28,16 +26,10 @@
 *) make libao optional during configure, but check that some form of audioOutput
 	is enabled (either oss, shout, or ao)
 
-Post-1.0
---------
-*) crosslink "list" stuff, for example, artists are crosslinked to alubms and 
-vice versa, this way you can do list album artists or list artist albums, this 
-will make life easier when we add genre and other metadata
+*) support for dynamically loading plugins
 
-*) rewrite linked list impelmentation to be more flexible
-	*) remove "key" stuff
-	*) allow assigning a compare function for a list
+*) Fix id3v1 encoding
 
-*) allow find/search commands take arbitrary search pairs
+*) Cleanup Config File Code
 
-*) add configurable metadata, and add newmetadata items
+*) Optimize read() on clients

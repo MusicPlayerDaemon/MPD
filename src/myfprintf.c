@@ -123,4 +123,3 @@ int myfprintfCloseAndOpenLogFile() {
 
         return 0;
 }
-/* vim:set shiftwidth=4 tabstop=8 expandtab: */
