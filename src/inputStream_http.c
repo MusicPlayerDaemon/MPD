@@ -484,7 +484,10 @@ static int finishHTTPInit(InputStream * inStream) {
 				"%s" /* authorization */	
                              	"Icy-Metadata:1\r\n"
                              	"\r\n",
-                             	data->path, data->host, "httpTest", "0.0.0",
+                             	data->path, 
+				data->host, 
+				PACKAGE_NAME, 
+				PACKAGE_VERSION,
 				
                              	/*inStream->offset,*/
 				data->proxyAuth ? data->proxyAuth : 
