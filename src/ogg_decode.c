@@ -181,7 +181,8 @@ int ogg_decode(OutputBuffer * cb, DecoderControl * dc)
 		int current_section;
 		int eof = 0;
 		long ret;
-		char chunk[CHUNK_SIZE];
+#define OGG_CHUNK_SIZE	2048
+		char chunk[OGG_CHUNK_SIZE];
 		int chunkpos = 0;
 		long bitRate = 0;
 		long test;
@@ -196,20 +197,33 @@ int ogg_decode(OutputBuffer * cb, DecoderControl * dc)
 				ov_time_seek_page(&vf,dc->seekWhere);
 				dc->seek = 0;
 			}
-			ret = ov_read(&vf, chunk, CHUNK_SIZE,
+			ret = ov_read(&vf, chunk+chunkpos, 
+					OGG_CHUNK_SIZE-chunkpos,
 					OGG_DECODE_USE_BIGENDIAN,
 					2, 1, &current_section);
-			if(ret<=0) eof = 1;
-			else {
+			if(ret<=0) {
+				eof = 1;
+				break;
+			}
+
+			chunkpos+=ret;
+
+			if(chunkpos >= OGG_CHUNK_SIZE) {
 				if((test = ov_bitrate_instant(&vf))>0) {
 					bitRate = test/1000;
 				}
                                 doReplayGain(chunk,ret,&(dc->audioFormat),
                                                 replayGainScale);
-				sendDataToOutputBuffer(cb,dc,chunk,ret,
+				sendDataToOutputBuffer(cb,dc,chunk,chunkpos,
 					ov_time_tell(&vf),bitRate);
 				if(dc->stop) break;
+				chunkpos = 0;
 			}
+		}
+
+		if(!dc->stop && chunkpos > 0) {
+			sendDataToOutputBuffer(cb,dc,chunk,chunkpos,
+					ov_time_tell(&vf),bitRate);
 		}
 
 		ov_clear(&vf);
