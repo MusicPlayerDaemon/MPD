@@ -52,6 +52,7 @@
 
 typedef struct _PlayerControl {
 	volatile mpd_sint8 decodeType;
+	volatile mpd_sint8 fileSuffix;
 	volatile mpd_sint8 stop;
 	volatile mpd_sint8 play;
 	volatile mpd_sint8 pause;

@@ -27,19 +27,22 @@
 #include <stdio.h>
 #include <sys/param.h>
 
-#define DECODE_TYPE_MP3		0
-#define DECODE_TYPE_OGG		1
-#define DECODE_TYPE_FLAC	2
-#define DECODE_TYPE_AUDIOFILE 	3
-#define DECODE_TYPE_MP4 	4
-#define DECODE_TYPE_AAC 	5
+#define DECODE_TYPE_FILE	0
+#define DECODE_TYPE_URL		1
 
 #define DECODE_STATE_STOP	0
 #define DECODE_STATE_DECODE	1
 
 #define DECODE_ERROR_NOERROR	0
-#define DECODE_ERROR_UNKTYPE	1
-#define DECODE_ERROR_FILE	2
+#define DECODE_ERROR_UNKTYPE	-10
+#define DECODE_ERROR_FILE	-20
+
+#define DECODE_SUFFIX_MP3       1
+#define DECODE_SUFFIX_OGG       2
+#define DECODE_SUFFIX_FLAC      3
+#define DECODE_SUFFIX_AAC       4
+#define DECODE_SUFFIX_MP4       5
+#define DECODE_SUFFIX_WAVE      6
 
 typedef struct _DecoderControl {
 	volatile mpd_sint8 state;

@@ -161,25 +161,29 @@ int playerInit() {
 }
 
 int playerGetDecodeType(char * utf8file) {
-	if(isRemoteUrl(utf8file)) return DECODE_TYPE_MP3;
-	if(!isFile(utf8file,NULL)) return -1;
+	if(isRemoteUrl(utf8file)) return DECODE_TYPE_URL;
+	if(isFile(utf8file,NULL)) return DECODE_TYPE_FILE;
+	return -1;
+}
+
+int playerGetSuffix(char * utf8file) {
 #ifdef HAVE_MAD
-	if(hasMp3Suffix(utf8file)) return DECODE_TYPE_MP3;
+        if(hasMp3Suffix(utf8file)) return DECODE_SUFFIX_MP3;
 #endif
-#ifdef HAVE_OGG	
-	if(hasOggSuffix(utf8file)) return DECODE_TYPE_OGG;
-#endif
-#ifdef HAVE_FLAC	
-	if(hasFlacSuffix(utf8file)) return DECODE_TYPE_FLAC;
-#endif
-#ifdef HAVE_AUDIOFILE
-	if(hasWaveSuffix(utf8file)) return DECODE_TYPE_AUDIOFILE;
+#ifdef HAVE_OGG
+        if(hasOggSuffix(utf8file)) return DECODE_SUFFIX_OGG;
 #endif
 #ifdef HAVE_FAAD
-	if(hasAacSuffix(utf8file)) return DECODE_TYPE_AAC;
-	if(hasMp4Suffix(utf8file)) return DECODE_TYPE_MP4;
+        if(hasAacSuffix(utf8file)) return DECODE_SUFFIX_AAC;
+        if(hasMp4Suffix(utf8file)) return DECODE_SUFFIX_MP4;
 #endif
-	return -1;
+#ifdef HAVE_FLAC
+        if(hasFlacSuffix(utf8file)) return DECODE_SUFFIX_FLAC;
+#endif
+#ifdef HAVE_AUDIOFILE
+        if(hasWaveSuffix(utf8file)) return DECODE_SUFFIX_WAVE;
+#endif
+        return -1;
 }
 
 int playerPlay(FILE * fp, char * utf8file) {
@@ -208,6 +212,7 @@ int playerPlay(FILE * fp, char * utf8file) {
 		return 0;
 	}
 	pc->decodeType = decodeType;
+        pc->fileSuffix = playerGetSuffix(utf8file);
 
         if(isRemoteUrl(utf8file)) {
                 strncpy(pc->file,utf8file,MAXPATHLEN);
@@ -366,6 +371,7 @@ int queueSong(char * utf8file) {
 		decodeType = playerGetDecodeType(utf8file);
 		if(decodeType < 0) return -1;
 		pc->decodeType = decodeType;
+                pc->fileSuffix = playerGetSuffix(utf8file);
 
 		pc->queueState = PLAYER_QUEUE_FULL;
 		return 0;
@@ -428,6 +434,7 @@ int playerSeek(FILE * fp, char * utf8file, float time) {
 			return -1;
 		}
 		pc->decodeType = decodeType;
+                pc->fileSuffix = playerGetSuffix(utf8file);
 
 		strncpy(pc->file,file,MAXPATHLEN);
 		pc->file[MAXPATHLEN] = '\0';

@@ -24,11 +24,12 @@
 #ifdef HAVE_MAD
 
 #include "playerData.h"
+#include "inputStream.h"
 
 /* this is primarily used in tag.c */
 int getMp3TotalTime(char * file);
 
-int mp3_decode(OutputBuffer * cb, DecoderControl * dc);
+int mp3_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream);
 
 #endif
 

@@ -381,11 +381,13 @@ static int getHTTPHello(InputStream * inStream) {
                         *temp = '\r';
                 }
                 else if(0 == strncmp(cur, "\r\nContent-Type:", 15)) {
-                        char * temp = strstr(cur+15,"\r\n");
+                        char * temp2 = cur+15;
+                        char * temp = strstr(temp2,"\r\n");
                         if(!temp) break;
+                        while(*temp2 && *temp2==' ') temp2++;
                         *temp = '\0';
                         if(inStream->mime) free(inStream->mime);
-                        inStream->mime = strdup(cur+15);
+                        inStream->mime = strdup(temp2);
                         *temp = '\r';
                 }
 
@@ -455,13 +457,15 @@ size_t inputStream_httpRead(InputStream * inStream, void * ptr, size_t size,
                 return 0;
         }
 
-        readed = inlen > data->buflen ? data->buflen : inlen;
+        if(data->buflen > 0) {
+                readed = inlen > data->buflen ? data->buflen : inlen;
         
-        memcpy(ptr, data->buffer, readed);
-        data->buflen -= readed;
-        memmove(data->buffer, data->buffer+readed, data->buflen);
+                memcpy(ptr, data->buffer, readed);
+                data->buflen -= readed;
+                memmove(data->buffer, data->buffer+readed, data->buflen);
 
-        inStream->offset+= readed;
+                inStream->offset+= readed;
+        }
 
 	return readed;
 }
@@ -536,22 +540,17 @@ int inputStream_httpBuffer(InputStream * inStream) {
                         return 0;
                 }
 
-                if(ret == 1) {
-                        readed = recv(data->sock, 
-                        data->buffer+data->buflen, 
-                        HTTP_BUFFER_SIZE-1-data->buflen, 0);
+                if(ret == 0) return 0;
 
-                        if(readed < 0 && (errno == EAGAIN || 
-                                        errno == EINTR)) 
-                        {
-                                readed = 0;
-                        }
-                        else if(readed <= 0) {
-                                close(data->sock);
-                                data->connState = HTTP_CONN_STATE_CLOSED;
-                        }
-                        else data->buflen += readed;
+                readed = recv(data->sock, data->buffer+data->buflen,
+                                HTTP_BUFFER_SIZE-1-data->buflen, 0);
+
+                if(readed < 0 && (errno == EAGAIN || errno == EINTR));
+                else if(readed <= 0) {
+                        close(data->sock);
+                        data->connState = HTTP_CONN_STATE_CLOSED;
                 }
+                else data->buflen += readed;
         }
 
         return 0;
