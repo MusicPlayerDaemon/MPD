@@ -51,8 +51,8 @@ static char * proxyHost = NULL;
 static int proxyPort = 0;
 static char * proxyUser = NULL;
 static char * proxyPassword = NULL;
-static int bufferSize;
-static int prebufferSize;
+static int bufferSize = HTTP_BUFFER_SIZE_DEFAULT;
+static int prebufferSize = HTTP_PREBUFFER_SIZE_DEFAULT;
 
 typedef struct _InputStreemHTTPData {
         char * host;
