@@ -16,4 +16,4 @@ mpd_SOURCES = main.c buffer2array.c interface.c command.c playlist.c ls.c \
 mpd_CFLAGS = $(MPD_CFLAGS)
 mpd_LDADD = $(MPD_LIBS) $(ID3_LIB) $(MAD_LIB) $(MP4FF_LIB)
 
-DIST_SUBDIRS = mp4ff
+DIST_SUBDIRS = mp4ff $(ID3_SUBDIR) $(MAD_SUBDIR)

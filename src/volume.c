@@ -47,6 +47,8 @@
 int volume_mixerType = VOLUME_MIXER_TYPE_SOFTWARE;
 char * volume_mixerDevice;
 
+int volume_softwareSet = -1;
+
 #ifndef NO_OSS_MIXER
 int volume_ossFd;
 int volume_ossControl = SOUND_MIXER_VOLUME;
@@ -57,6 +59,7 @@ snd_mixer_t * volume_alsaMixerHandle = NULL;
 snd_mixer_elem_t * volume_alsaElem;
 long volume_alsaMin;
 long volume_alsaMax;
+int volume_alsaSet = -1;
 #endif
 
 #ifndef NO_OSS_MIXER
@@ -261,6 +264,7 @@ int getAlsaVolumeLevel() {
 int changeAlsaVolumeLevel(FILE * fp, int change, int rel) {
 	float vol;
 	long level;
+	long test;
 	long max = volume_alsaMax;
 	long min = volume_alsaMin;
 	int err;
@@ -274,11 +278,21 @@ int changeAlsaVolumeLevel(FILE * fp, int change, int rel) {
 	}
 
 	if (rel) {
-		vol =  100.0*(((float)(level-min))/(max-min));
+		test = ((volume_alsaSet/100.0)*(max-min)+min)+0.5;
+		if(volume_alsaSet >= 0 && level==test) {
+			vol = volume_alsaSet;
+		}
+		else {
+			vol =  100.0*(((float)(level-min))/(max-min));
+		}
 		vol+=change;
 	}
 	else
 		vol = change;
+
+	volume_alsaSet = vol+0.5;
+	volume_alsaSet = volume_alsaSet>100 ? 100 : 
+			(volume_alsaSet<0 ? 0 : volume_alsaSet);
 
 	level = (long)(((vol/100.0)*(max-min)+min)+0.5);
 	level = level>max?max:level;
@@ -361,6 +375,10 @@ void openVolumeDevice() {
 }
 
 int getSoftwareVolume() {
+	if(volume_softwareSet >= 0) {
+		return volume_softwareSet;
+	}
+
 	return 50*log((getPlayerSoftwareVolume()*(M_E*M_E-1)/100.0)+1)+0.5;
 }
 
@@ -388,6 +406,8 @@ int changeSoftwareVolume(FILE * fp, int change, int rel) {
 
 	if(new>100) new = 100;
 	else if(new<0) new = 0;
+
+	volume_softwareSet = new;
 
 	new = 100.0*(exp(new/50.0)-1)/(M_E*M_E-1)+0.5;
 
