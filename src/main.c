@@ -81,7 +81,7 @@ void usage(char * argv[]) {
         ERROR("   --no-daemon        don't detach from console\n");
         ERROR("   --stdout           print msgs to stdout and stderr\n");
         ERROR("   --create-db        force (re)creation database and exit\n");
-        ERROR("   --update-db        create database and exit\n");
+        /*ERROR("   --update-db        create database and exit\n");*/
         ERROR("   --no-create-db     don't create database\n");
         ERROR("   --verbose          verbose logging\n");
         ERROR("   --version          prints version information\n");
@@ -131,11 +131,11 @@ void parseOptions(int argc, char ** argv, Options * options) {
                                         options->createDB = 1;
                                         argcLeft--;
                                 }
-                                else if(strcmp(argv[i],"--update-db")==0) {
+                                /*else if(strcmp(argv[i],"--update-db")==0) {
                                         options->stdOutput = 1;
                                         options->updateDB = 1;
                                         argcLeft--;
-                                }
+                                }*/
                                 else if(strcmp(argv[i],"--no-create-db")==0) {
                                         options->createDB = -1;
                                         argcLeft--;
