@@ -60,6 +60,7 @@ typedef struct _Options {
         char * usr;
         char * dbFile;
         int daemon;
+        int stdOutput;
         int createDB;
 	int onlyCreateDB;
 	int onlyUpdateDB;
@@ -76,6 +77,7 @@ void usage(char * argv[]) {
         ERROR("options:\n");
         ERROR("   --help             this usage statement\n");
         ERROR("   --no-daemon        don't detach from console\n");
+        ERROR("   --stdout           print msgs to stdout and stderr\n");
         ERROR("   --create-db        force (re)creation database\n");
         ERROR("   --only-create-db   create database and exit\n");
         ERROR("   --only-update-db   create database and exit\n");
@@ -116,6 +118,7 @@ void parseOptions(int argc, char ** argv, Options * options) {
 
         options->usr = NULL;
         options->daemon = 1;
+        options->stdOutput = 0;
         options->createDB = 0;
         options->onlyCreateDB = 0;
         options->onlyUpdateDB = 0;
@@ -131,6 +134,10 @@ void parseOptions(int argc, char ** argv, Options * options) {
                                 }
                                 else if(strcmp(argv[i],"--no-daemon")==0) {
                                         options->daemon = 0;
+                                        argcLeft--;
+                                }
+                                else if(strcmp(argv[i],"--stdout")==0) {
+                                        options->stdOutput = 1;
                                         argcLeft--;
                                 }
                                 else if(strcmp(argv[i],"--create-db")==0) {
@@ -382,6 +389,22 @@ int main(int argc, char * argv[]) {
                         exit(EXIT_FAILURE);
                 }
 
+                fflush(NULL);
+                pid = fork();
+                if(pid>0) _exit(EXIT_SUCCESS);
+                else if(pid<0) {
+                        ERROR("problems fork'ing for daemon!\n");
+                        exit(EXIT_FAILURE);
+                }
+        }
+
+        if(options.stdOutput) {
+                fclose(out);
+                fclose(err);
+        }
+        else {
+                fflush(NULL);
+
                 if(dup2(fileno(out),STDOUT_FILENO)<0) {
                         myfprintf(err,"problems dup2 stdout : %s\n",
                                         strerror(errno));
@@ -395,18 +418,6 @@ int main(int argc, char * argv[]) {
                 }
 
                 myfprintfStdLogMode(out,err,options.logFile,options.errorFile);
-
-                fflush(NULL);
-                pid = fork();
-                if(pid>0) _exit(EXIT_SUCCESS);
-                else if(pid<0) {
-                        ERROR("problems fork'ing for daemon!\n");
-                        exit(EXIT_FAILURE);
-                }
-        }
-        else {
-                fclose(out);
-                fclose(err);
         }
 
         /* lets redirect stdin to dev null as a work around for libao bug */
