@@ -24,6 +24,7 @@
 #include "mp4_decode.h"
 #include "aac_decode.h"
 #include "utils.h"
+#include "utf8.h"
 
 #include <sys/stat.h>
 #include <stdlib.h>
@@ -55,6 +56,22 @@ void printMpdTag(FILE * fp, MpdTag * tag) {
 	if(tag->track) myfprintf(fp,"Track: %s\n",tag->track);
 	if(tag->title) myfprintf(fp,"Title: %s\n",tag->title);
 	if(tag->time>=0) myfprintf(fp,"Time: %i\n",tag->time);
+}
+
+#define fixUtf8(str) { \
+	if(str && !validUtf8String(str)) { \
+		char * temp; \
+		temp = asciiStrToUtf8Dup(str); \
+		free(str); \
+		str = temp; \
+	} \
+}
+
+void validateUtf8Tag(MpdTag * tag) {
+	fixUtf8(tag->artist);
+	fixUtf8(tag->album);
+	fixUtf8(tag->track);
+	fixUtf8(tag->title);
 }
 
 #ifdef HAVE_ID3TAG
@@ -145,6 +162,8 @@ MpdTag * audiofileTagDup(char * utf8file) {
 		ret->time = time;
 	}
 
+	if(ret) validateUtf8Tag(ret);
+
 	return ret;
 }
 #endif
@@ -163,6 +182,8 @@ MpdTag * mp3TagDup(char * utf8file) {
 		ret->time = time;
 	}
 
+	if(ret) validateUtf8Tag(ret);
+
 	return ret;
 }
 #endif
@@ -178,6 +199,8 @@ MpdTag * aacTagDup(char * utf8file) {
 		if((ret = id3Dup(utf8file))==NULL) ret = newMpdTag();
 		ret->time = time;
 	}
+
+	if(ret) validateUtf8Tag(ret);
 
 	return ret;
 }
@@ -267,6 +290,8 @@ MpdTag * mp4TagDup(char * utf8file) {
 		}
 	}
 
+	if(ret) validateUtf8Tag(ret);
+
 	return ret;
 }
 #endif
@@ -328,6 +353,8 @@ MpdTag * oggTagDup(char * utf8file) {
 	}
 
 	ov_clear(&vf);
+
+	if(ret) validateUtf8Tag(ret);
 
 	return ret;	
 }
@@ -440,6 +467,8 @@ MpdTag * flacTagDup(char * utf8file) {
 			ret = temp;
 		}
 	}
+
+	if(ret) validateUtf8Tag(ret);
 
 	return ret;
 }
