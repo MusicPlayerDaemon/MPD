@@ -49,7 +49,7 @@ MpdTag * metadataChunkToMpdTagDup(MetadataChunk * chunk) {
 }
 
 #define copyStringToChunk(string, element) { \
-	if(string && (slen = strlen(string)) && \
+	if(element < 0 && string && (slen = strlen(string)) && \
                         pos < METADATA_BUFFER_LENGTH-1) \
         { \
 		strncpy(chunk->buffer+pos, string, \
@@ -62,21 +62,26 @@ MpdTag * metadataChunkToMpdTagDup(MetadataChunk * chunk) {
 void copyMpdTagToMetadataChunk(MpdTag * tag, MetadataChunk * chunk) {
 	int pos = 0;
 	int slen;
+	int i;
 
 	initMetadataChunk(chunk);
 
 	if(!tag) return;
 
-	copyStringToChunk(
-			getNextItemFromMpdTag(tag, TAG_ITEM_NAME, NULL), 
-			chunk->name);
-	copyStringToChunk(
-			getNextItemFromMpdTag(tag, TAG_ITEM_TITLE, NULL), 
-			chunk->title);
-	copyStringToChunk(
-			getNextItemFromMpdTag(tag, TAG_ITEM_ARTIST, NULL), 
-			chunk->artist);
-	copyStringToChunk(
-			getNextItemFromMpdTag(tag, TAG_ITEM_ALBUM, NULL), 
-			chunk->album);
+	for(i = 0; i < tag->numOfItems; i++) {
+		switch(tag->items[i].type) {
+		case TAG_ITEM_NAME:
+			copyStringToChunk(tag->items[i].value, chunk->name);
+			break;
+		case TAG_ITEM_TITLE:
+			copyStringToChunk(tag->items[i].value, chunk->title);
+			break;
+		case TAG_ITEM_ARTIST:
+			copyStringToChunk(tag->items[i].value, chunk->artist);
+			break;
+		case TAG_ITEM_ALBUM:
+			copyStringToChunk(tag->items[i].value, chunk->artist);
+			break;
+		}
+	}
 }
