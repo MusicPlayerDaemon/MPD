@@ -11,11 +11,16 @@
 #define LOCATE_TAG_FILE_TYPE	TAG_NUM_OF_ITEM_TYPES+10
 #define LOCATE_TAG_FILE_KEY	"filename"
 
-typedef struct ListCommandItem {
+typedef struct _ListCommandItem {
 	mpd_sint8 tagType;
 	int numConditionals;
 	LocateTagItem * conditionals;
 } ListCommandItem;
+
+typedef struct _LocateTagItemArray {
+	int numItems;
+	LocateTagItem * items;
+} LocateTagItemArray;
 
 int getLocateTagItemType(char * str) {
 	int i;
@@ -31,19 +36,65 @@ int getLocateTagItemType(char * str) {
 	return -1;
 }
 
+static int initLocateTagItem(LocateTagItem * item, char * typeStr, 
+		char * needle)
+{
+	item->tagType = getLocateTagItemType(typeStr);
+
+	if(item->tagType < 0) return -1;
+
+	item->needle = strdup(needle);
+
+	return 0;
+}
+
 LocateTagItem * newLocateTagItem(char * typeStr, char * needle) {
 	LocateTagItem * ret = malloc(sizeof(LocateTagItem));
 
-	ret->tagType = getLocateTagItemType(typeStr);
-
-	if(ret->tagType < 0) {
+	if(initLocateTagItem(ret, typeStr, needle) < 0) {
 		free(ret);
-		return NULL;
+		ret = NULL;
 	}
 
-	ret->needle = strdup(needle);
-
 	return ret;
+}
+
+void freeLocateTagItemArray(int count, LocateTagItem * array) {
+	int i;
+	
+	for(i = 0; i < count; i++) free(array[i].needle);
+
+	free(array);
+}
+
+int newLocateTagItemArrayFromArgArray(char * argArray[],
+						int numArgs,
+						LocateTagItem ** arrayRet)
+{
+	int i,j;
+	LocateTagItem * item;
+	
+	if(numArgs == 0) return 0;
+
+	if(numArgs%2 != 0) return -1;
+	
+	*arrayRet = malloc(sizeof(LocateTagItem)*numArgs/2);
+
+	for(i = 0, item = *arrayRet; i < numArgs/2; i++, item++) {
+		if(initLocateTagItem(item, argArray[i*2], argArray[i*2+1]) < 0)
+			goto fail;
+	}
+
+	return numArgs/2;
+
+fail:
+	for(j = 0; j < i; j++) {
+		free((*arrayRet)[j].needle);
+	}
+
+	free(*arrayRet);
+	*arrayRet = NULL;
+	return -1;
 }
 
 void freeLocateTagItem(LocateTagItem * item) {
@@ -96,25 +147,48 @@ static inline int strstrSearchTag(Song * song, int type, char * str) {
 	return ret;
 }
 
-int searchInDirectory(FILE * fp, Song * song, void * item) {
-	if(strstrSearchTag(song, ((LocateTagItem *)item)->tagType,
-			((LocateTagItem *)item)->needle)) {
-		printSongInfo(fp, song);
+int searchInDirectory(FILE * fp, Song * song, void * data) {
+	LocateTagItemArray * array = data;
+	int i;
+
+	for(i = 0; i < array->numItems; i++) {
+		if(!strstrSearchTag(song, array->items[i].tagType,
+				array->items[i].needle)) 
+		{
+			return 0;
+		}
 	}
+
+	printSongInfo(fp, song);
+
 	return 0;
 }
 
-int searchForSongsIn(FILE * fp, char * name, LocateTagItem * item) {
-	char * originalNeedle = item->needle;
+int searchForSongsIn(FILE * fp, char * name, int numItems, 
+		LocateTagItem * items) 
+{
 	int ret = -1;
+	int i;
 
-	item->needle = strDupToUpper(originalNeedle);
+	char ** originalNeedles = malloc(numItems*sizeof(char *));
+	LocateTagItemArray array;
 
-	ret = traverseAllIn(fp,name,searchInDirectory, NULL,
-			(void *)item);
+	for(i = 0; i < numItems; i++) {
+		originalNeedles[i] = items[i].needle;
+		items[i].needle = strDupToUpper(originalNeedles[i]);
+	}
 
-	free(item->needle);
-	item->needle = originalNeedle;
+	array.numItems = numItems;
+	array.items = items;
+
+	ret = traverseAllIn(fp,name,searchInDirectory, NULL, &array);
+
+	for(i = 0; i < numItems; i++) {
+		free(items[i].needle);
+		items[i].needle = originalNeedles[i];
+	}
+
+	free(originalNeedles);
 
 	return ret;
 }
@@ -137,17 +211,31 @@ static inline int tagItemFoundAndMatches(Song * song, int type, char * str) {
 	return 0;
 }
 
-int findInDirectory(FILE * fp, Song * song, void * item) {
-	if(tagItemFoundAndMatches(song, ((LocateTagItem *)item)->tagType,
-			((LocateTagItem *)item)->needle)) {
-		printSongInfo(fp, song);
+int findInDirectory(FILE * fp, Song * song, void * data) {
+	LocateTagItemArray * array = data;
+	int i;
+
+	for(i = 0; i < 0; i++) {
+		if(!tagItemFoundAndMatches(song, array->items[i].tagType,
+				array->items[i].needle)) 
+		{
+			return 0;
+		}
 	}
+
+	printSongInfo(fp, song);
+
 	return 0;
 }
 
-int findSongsIn(FILE * fp, char * name, LocateTagItem * item) {
+int findSongsIn(FILE * fp, char * name, int numItems, LocateTagItem * items) {
+	LocateTagItemArray array;
+
+	array.numItems = numItems;
+	array.items = items;
+	
 	return traverseAllIn(fp, name, findInDirectory, NULL,
-			(void *)item);
+			(void *)&array);
 }
 
 int printAllIn(FILE * fp, char * name) {

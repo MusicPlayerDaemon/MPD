@@ -444,17 +444,18 @@ int handleFind(FILE * fp, unsigned int * permission, int argArrayLength,
 {
 	int ret;
 
-	LocateTagItem * item = newLocateTagItem(argArray[1], argArray[2]);
+	LocateTagItem * items;
+	int numItems = newLocateTagItemArrayFromArgArray(argArray+1, 
+			argArrayLength-1, &items);
 
-	if(!item) {
-		commandError(fp, ACK_ERROR_ARG, "\%s\" isn't recognized", 
-				argArray[1]);
+	if(numItems <= 0) {
+		commandError(fp, ACK_ERROR_ARG, "incorrect ags", NULL); 
 		return -1;
 	}
 
-        ret = findSongsIn(fp, NULL, item);
+        ret = findSongsIn(fp, NULL, numItems, items);
 
-	freeLocateTagItem(item);
+	freeLocateTagItemArray(numItems, items);
 
 	return ret;
 }
@@ -464,17 +465,18 @@ int handleSearch(FILE * fp, unsigned int * permission, int argArrayLength,
 {
 	int ret;
 
-	LocateTagItem * item = newLocateTagItem(argArray[1], argArray[2]);
+	LocateTagItem * items;
+	int numItems = newLocateTagItemArrayFromArgArray(argArray+1, 
+			argArrayLength-1, &items);
 
-	if(!item) {
-		commandError(fp, ACK_ERROR_ARG, "\%s\" isn't recognized", 
-				argArray[1]);
+	if(numItems <= 0) {
+		commandError(fp, ACK_ERROR_ARG, "incorrect ags", NULL); 
 		return -1;
 	}
 
-        ret = searchForSongsIn(fp, NULL, item);
+        ret = searchForSongsIn(fp, NULL, numItems, items);
 
-	freeLocateTagItem(item);
+	freeLocateTagItemArray(numItems, items);
 
 	return ret;
 }
@@ -636,10 +638,20 @@ int handleList(FILE * fp, unsigned int * permission, int argArrayLength,
 					argArray[2]);
 		numConditionals = 1;
 	}
+	else {
+		numConditionals = newLocateTagItemArrayFromArgArray(argArray+2,
+					argArrayLength-2, &conditionals);
+
+		if(numConditionals < 0) {
+                	commandError(fp, ACK_ERROR_ARG,
+					"not able to parse args", NULL);
+			return -1;
+		}
+	}
         
 	ret = listAllUniqueTags(fp, tagType, numConditionals,conditionals);
 
-	if(conditionals) free(conditionals);
+	if(conditionals) freeLocateTagItemArray(numConditionals, conditionals);
 
 	return ret;
 }
@@ -904,8 +916,8 @@ void initCommands() {
         addCommand(COMMAND_LSINFO      ,PERMISSION_READ,    0, 1,handleLsInfo,NULL);
         addCommand(COMMAND_RM          ,PERMISSION_CONTROL, 1, 1,handleRm,NULL);
         addCommand(COMMAND_PLAYLISTINFO,PERMISSION_READ,    0, 1,handlePlaylistInfo,NULL);
-        addCommand(COMMAND_FIND        ,PERMISSION_READ,    2, 2,handleFind,NULL);
-        addCommand(COMMAND_SEARCH      ,PERMISSION_READ,    2, 2,handleSearch,NULL);
+        addCommand(COMMAND_FIND        ,PERMISSION_READ,    2,-1,handleFind,NULL);
+        addCommand(COMMAND_SEARCH      ,PERMISSION_READ,    2,-1,handleSearch,NULL);
         addCommand(COMMAND_UPDATE      ,PERMISSION_ADMIN,   0, 1,handleUpdate,listHandleUpdate);
         addCommand(COMMAND_NEXT        ,PERMISSION_CONTROL, 0, 0,handleNext,NULL);
         addCommand(COMMAND_PREVIOUS    ,PERMISSION_CONTROL, 0, 0,handlePrevious,NULL);
@@ -915,7 +927,7 @@ void initCommands() {
         addCommand(COMMAND_RANDOM      ,PERMISSION_CONTROL, 1, 1,handleRandom,NULL);
         addCommand(COMMAND_STATS       ,PERMISSION_READ,    0, 0,handleStats,NULL);
         addCommand(COMMAND_CLEAR_ERROR ,PERMISSION_CONTROL, 0, 0,handleClearError,NULL);
-        addCommand(COMMAND_LIST        ,PERMISSION_READ,    1, 2,handleList,NULL);
+        addCommand(COMMAND_LIST        ,PERMISSION_READ,    1,-1,handleList,NULL);
         addCommand(COMMAND_MOVE        ,PERMISSION_CONTROL, 2, 2,handleMove,NULL);
         addCommand(COMMAND_MOVEID      ,PERMISSION_CONTROL, 2, 2,handleMoveId,NULL);
         addCommand(COMMAND_SWAP        ,PERMISSION_CONTROL, 2, 2,handleSwap,NULL);
