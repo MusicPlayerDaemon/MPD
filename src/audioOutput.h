@@ -58,4 +58,15 @@ struct _AudioOutput {
         void * data;
 };
 
+typedef struct _AudioOutputPlugin {
+	char * name;
+        AudioOutputInitConfigFunc initConfigFunc;
+        AudioOutputFinishConfigFunc finishConfigFunc;
+        AudioOutputInitDriverFunc initDriverFunc;
+        AudioOutputFinishDriverFunc finishDriverFunc;
+        AudioOutputOpenDeviceFunc openDeviceFunc;
+        AudioOutputPlayFunc playFunc;
+        AudioOutputCloseDevicFunc closeDeviceFunc;
+} AudioOutputPlugin;
+
 #endif
