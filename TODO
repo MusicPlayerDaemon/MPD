@@ -1,40 +1,33 @@
-1) On exploring a directory:
-	1) detect if any songs were added
-	2) if no songs added remove explored directory
-	3) use this info on exploring directory to adjust whether or not an
-		update happened
-	4) remove the deleteEmptryDirectories() function
-
-2) resampling audio for compatibility, and better gapless/crossfading
+1) resampling audio for compatibility, and better gapless/crossfading
 	a) write bit conversion stuff (8->16 and 24->16)
 	b) mono to stereo conversion
 	c) default audio format is (44.1khz, 16-bit, stereo)
 	d) option to set default sampling frequency
 	e) abitility to disable resampling and audio format conversion
 
-3) when writing combined interface for all decodes to use, be sure to add a 
+2) when writing combined interface for all decodes to use, be sure to add a 
 common function and abstrct dealing with DecoderControl * and put
 cycleLogFiles in there, so we cycleLogFiles while decoding, not just when 
 decoding has stopped.
 
-4) reaplygain
+3) reaplygain
 
-5) streaming and playing in general
-	1) determine a clever interface to play, so that play doesn't block
+4) streaming and playing in general
+	a) determine a clever interface to play, so that play doesn't block
 		until the file is opened, but just returns when the command
 		is accepted.
-	2) put errors in error stuff of PlayerControl and report this to
+	b) put errors in error stuff of PlayerControl and report this to
 		status and print to error logs
-	3) this will help streaming from blocking indefinetly or waiting
+	c) this will help streaming from blocking indefinetly or waiting
 		on a response
 
-6) play streams
+5) play streams
 
-7) ACK error codes
+6) ACK error codes
 
-8) cleanup main()
+7) cleanup main()
 
-9) handle '\n' in filenames
+8) handle '\n' in filenames
 
 
 Post-1.0

@@ -103,7 +103,7 @@ void deleteEmptyDirectoriesInDirectory(Directory * directory);
 
 void removeSongFromDirectory(Directory * directory, char * shortname);
 
-Directory * addSubDirectoryToDirectory(Directory * directory, char * shortname, 
+int addSubDirectoryToDirectory(Directory * directory, char * shortname, 
 				char * name);
 
 Directory * getDirectoryDetails(char * name, char ** shortname, 
@@ -328,8 +328,8 @@ int updateInDirectory(Directory * directory, char * shortname, char * name) {
 			if(updateDirectory((Directory *)subDir)>0) return 1;
 		}
 		else {
-                        addSubDirectoryToDirectory(directory,shortname,name);
-                        return 1;
+                        return addSubDirectoryToDirectory(directory,shortname,
+                                        name);
                 }
 	}
 
@@ -434,8 +434,9 @@ Directory * addDirectoryPathToDB(char * utf8path, char ** shortname) {
 
 	if(!findInList(parentDirectory->subDirectories,*shortname, &directory))
 	{
-		directory = (void *)addSubDirectoryToDirectory(parentDirectory,
-				*shortname,utf8path);
+                directory = newDirectory(utf8path);
+                insertInList(parentDirectory->subDirectories,*shortname,
+                                directory);
 	}
 
 	/* if we're adding directory paths, make sure to delete filenames
@@ -531,9 +532,7 @@ int updatePath(char * utf8path) {
          */
 	if(isDir(path) || isMusic(path,NULL)) {
 		parentDirectory = addParentPathToDB(path,&shortname);
-		addToDirectory(parentDirectory,shortname,path);
-		sortDirectory(parentDirectory);
-                ret = 1;
+		if(addToDirectory(parentDirectory,shortname,path)>0) ret = 1;
 	}
 
 	free(path);
@@ -587,6 +586,11 @@ int updateDirectory(Directory * directory) {
 	return ret;
 }
 
+/* return values:
+   -1 -> error
+    0 -> no error, but nothing found
+    1 -> no error, and stuff found
+ */
 int exploreDirectory(Directory * directory) {
 	DIR * dir;
 	char cwd[2];
@@ -594,6 +598,7 @@ int exploreDirectory(Directory * directory) {
 	char * s;
 	char * utf8;
 	char * dirname = directory->utf8name;
+        int ret = 0;
 
 	cwd[0] = '.';
 	cwd[1] = '\0';
@@ -619,38 +624,41 @@ int exploreDirectory(Directory * directory) {
 			sprintf(s,"%s/%s",directory->utf8name,utf8);
 		}
 		else s = strdup(utf8);
-		addToDirectory(directory,utf8,s);
+		if(addToDirectory(directory,utf8,s)>0) ret = 1;
 		free(utf8);
 		free(s);
 	}
 	
 	closedir(dir);
 
-	return 0;
+	return ret;
 }
 
-Directory * addSubDirectoryToDirectory(Directory * directory, char * shortname, 
+int addSubDirectoryToDirectory(Directory * directory, char * shortname, 
 	char * name) 
 {
 	Directory * subDirectory = newDirectory(name);
 	
-	insertInList(directory->subDirectories,shortname,subDirectory);
-	exploreDirectory(subDirectory);
+	if(exploreDirectory(subDirectory)<1) {
+                freeDirectory(subDirectory);
+                return 0;
+        }
 
-	return subDirectory;
+	insertInList(directory->subDirectories,shortname,subDirectory);
+
+	return 1;
 }
 
 int addToDirectory(Directory * directory, char * shortname, char * name) {
 	if(isDir(name)) {
-		addSubDirectoryToDirectory(directory,shortname,name);
-		return 0;
+		return addSubDirectoryToDirectory(directory,shortname,name);
 	}
 	else if(isMusic(name,NULL)) {
 		Song * song;
 		song = addSongToList(directory->songs,shortname,name);
 		if(!song) return -1;
 		LOG("added %s\n",name);
-		return 0;
+		return 1;
 	}
 
 	DEBUG("addToDirectory: %s is not a directory or music\n",name);
