@@ -90,7 +90,7 @@ Directory * newDirectory(Directory * parentDirectory, char * dirname, time_t mti
 	directory->parentDirectory = parentDirectory;
 	directory->subDirectories = newDirectoryList();
 	directory->songs = newSongList();
-	if(mtime<0) directory->mtime = isDir(dirname);
+	if(mtime<0) isDir(dirname,&(directory->mtime));
 	else directory->mtime = mtime;
 
 	return directory;
@@ -147,7 +147,7 @@ int updateInDirectory(Directory * directory, char * shortname, char * name) {
 	void * song;
 	void * subDir;
 
-	if((mtime = isMusic(name))) {
+	if(isMusic(name,&mtime)) {
 		if(0==findInList(directory->songs,shortname,&song)) {
 			addToDirectory(directory,shortname,name);
 		}
@@ -156,7 +156,7 @@ int updateInDirectory(Directory * directory, char * shortname, char * name) {
 			updateSongInfo((Song *)song);
 		}
 	}
-	else if((mtime = isDir(name))) {
+	else if(isDir(name,&mtime)) {
 		if(findInList(directory->subDirectories,shortname,(void **)&subDir)) {
 			updateDirectory((Directory *)subDir);
 		}
@@ -204,7 +204,7 @@ int removeDeletedFromDirectory(Directory * directory) {
 	while(node) {
 		tmpNode = node->nextNode;
 		if(findInList(entList,node->key,&name)) {
-			if(!isDir((char *)name)) {
+			if(!isDir((char *)name,NULL)) {
 				LOG("removing directory: %s\n",(char*)name);
 				deleteFromList(directory->subDirectories,node->key);
 			}
@@ -220,7 +220,7 @@ int removeDeletedFromDirectory(Directory * directory) {
 	while(node) {
 		tmpNode = node->nextNode;
 		if(findInList(entList,node->key,(void **)&name)) {
-			if(!isMusic(name)) {
+			if(!isMusic(name,NULL)) {
 				removeSongFromDirectory(directory,node->key);
 			}
 		}
@@ -268,7 +268,7 @@ int updateDirectory(Directory * directory) {
 	
 	closedir(dir);
 
-	if(directory->utf8name) directory->mtime = isDir(directory->utf8name);
+	if(directory->utf8name) isDir(directory->utf8name,&(directory->mtime));
 
 	return 0;
 }
@@ -323,10 +323,10 @@ int addSubDirectoryToDirectory(Directory * directory, char * shortname,
 }
 
 int addToDirectory(Directory * directory, char * shortname, char * name) {
-	if(isDir(name)) {
+	if(isDir(name,NULL)) {
 		return addSubDirectoryToDirectory(directory,shortname,name);
 	}
-	else if(isMusic(name)) {
+	else if(isMusic(name,NULL)) {
 		Song * song;
 		song = addSongToList(directory->songs,shortname,name);
 		if(!song) return -1;

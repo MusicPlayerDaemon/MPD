@@ -49,28 +49,28 @@ Song * newSong(char * utf8file) {
 
 	if(0);
 #ifdef HAVE_OGG
-	else if((song->mtime = isOgg(utf8file))) {
+	else if(isOgg(utf8file,&(song->mtime))) {
 		song->time = getOggTotalTime(
 				rmp2amp(utf8ToFsCharset(utf8file)));
 		if(song->time>=0) song->tag = oggTagDup(utf8file);
 	}
 #endif
 #ifdef HAVE_FLAC
-	else if((song->mtime = isFlac(utf8file))) {
+	else if((isFlac(utf8file,&(song->mtime)))) {
 		song->time = getFlacTotalTime(
 				rmp2amp(utf8ToFsCharset(utf8file)));
 		if(song->time>=0) song->tag = flacTagDup(utf8file);
 	}
 #endif
 #ifdef HAVE_MAD
-	else if((song->mtime = isMp3(utf8file))) {
+	else if(isMp3(utf8file,&(song->mtime))) {
 		song->time = getMp3TotalTime(
 				rmp2amp(utf8ToFsCharset(utf8file)));
 		if(song->time>=0) song->tag = mp3TagDup(utf8file);
 	}
 #endif
 #ifdef HAVE_AUDIOFILE
-	else if((song->mtime = isWave(utf8file))) {
+	else if(isWave(utf8file,&(song->mtime))) {
 		song->time = getAudiofileTotalTime(
 				rmp2amp(utf8ToFsCharset(utf8file)));
 		if(song->time>=0) song->tag = audiofileTagDup(utf8file);
@@ -98,7 +98,7 @@ SongList * newSongList() {
 Song * addSongToList(SongList * list, char * key, char * utf8file) {
 	Song * song = NULL;
 	
-	if(isMusic(utf8file)) {
+	if(isMusic(utf8file,NULL)) {
 		song = newSong(utf8file);
 	}
 
@@ -212,25 +212,25 @@ void readSongInfoIntoList(FILE * fp, SongList * list) {
 int updateSongInfo(Song * song) {
 	if(song->tag) freeMpdTag(song->tag);
 #ifdef HAVE_MAD
-	if((song->mtime = isMp3(song->utf8file))) {
+	if(isMp3(song->utf8file,&(song->mtime))) {
 		song->tag = mp3TagDup(song->utf8file);
 		return 0;
 	}
 #endif
 #ifdef HAVE_OGG
-	if((song->mtime = isOgg(song->utf8file))) {
+	if(isOgg(song->utf8file,&(song->mtime))) {
 		song->tag = oggTagDup(song->utf8file);
 		return 0;
 	}
 #endif
 #ifdef HAVE_FLAC
-	if((song->mtime = isFlac(song->utf8file))) {
+	if(isFlac(song->utf8file,&(song->mtime))) {
 		song->tag = flacTagDup(song->utf8file);
 		return 0;
 	}
 #endif
 #ifdef HAVE_AUDIOFILE
-	if((song->mtime = isWave(song->utf8file))) {
+	if(isWave(song->utf8file,&(song->mtime))) {
 		song->tag = audiofileTagDup(song->utf8file);
 		return 0;
 	}

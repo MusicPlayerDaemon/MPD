@@ -110,26 +110,26 @@ int lsPlaylists(FILE * fp, char * utf8path) {
 	return 0;
 }
 
-time_t isMusic(char * utf8file) {
-	time_t ret = 0;
+int isMusic(char * utf8file, time_t * mtime) {
+	int ret = 0;
 
 #ifdef HAVE_OGG
-	if((ret = isOgg(utf8file))) return ret;
+	if((ret = isOgg(utf8file,mtime))) return ret;
 #endif
 #ifdef HAVE_FLAC
-	if((ret = isFlac(utf8file))) return ret;
+	if((ret = isFlac(utf8file,mtime))) return ret;
 #endif
 #ifdef HAVE_MAD
-	if((ret = isMp3(utf8file))) return ret;
+	if((ret = isMp3(utf8file,mtime))) return ret;
 #endif
 #ifdef HAVE_AUDIOFILE
-	if((ret = isWave(utf8file))) return ret;
+	if((ret = isWave(utf8file,mtime))) return ret;
 #endif
 
 	return ret;
 }
 
-time_t isPlaylist(char * utf8file) {
+int isPlaylist(char * utf8file) {
 	struct stat st;
 	char * file = utf8ToFsCharset(utf8file);
 	char * actualFile = file;
@@ -147,7 +147,7 @@ time_t isPlaylist(char * utf8file) {
 			cNext = cLast = strtok(dup,".");
 			while((cNext = strtok(NULL,"."))) cLast = cNext;
 			if(cLast && 0==strcmp(cLast,PLAYLIST_FILE_SUFFIX)) {
-				ret = st.st_mtime;
+				ret = 1;
 			}
 			free(dup);
 			if(temp) free(temp);
@@ -159,7 +159,7 @@ time_t isPlaylist(char * utf8file) {
 	return 0;
 }
 
-time_t isWave(char * utf8file) {
+int isWave(char * utf8file, time_t * mtime) {
 	struct stat st;
 	char * file = utf8ToFsCharset(utf8file);
 	char * actualFile = file;
@@ -171,12 +171,13 @@ time_t isWave(char * utf8file) {
 			char * dup;
 			char * cLast;
 			char * cNext;
-			time_t ret = 0;
+			int ret = 0;
 			dup = strdup(file);
 			cNext = cLast = strtok(dup,".");
 			while((cNext = strtok(NULL,"."))) cLast = cNext;
 			if(cLast && 0==strcasecmp(cLast,"wav")) {
-				ret = st.st_mtime;
+				if(mtime) *mtime = st.st_mtime;
+				ret = 1;
 			}
 			free(dup);
 			return ret;
@@ -187,7 +188,7 @@ time_t isWave(char * utf8file) {
 	return 0;
 }
 
-time_t isFlac(char * utf8file) {
+int isFlac(char * utf8file, time_t * mtime) {
 	struct stat st;
 	char * file = utf8ToFsCharset(utf8file);
 	char * actualFile = file;
@@ -199,12 +200,13 @@ time_t isFlac(char * utf8file) {
 			char * dup;
 			char * cLast;
 			char * cNext;
-			time_t ret = 0;
+			int ret = 0;
 			dup = strdup(file);
 			cNext = cLast = strtok(dup,".");
 			while((cNext = strtok(NULL,"."))) cLast = cNext;
 			if(cLast && 0==strcasecmp(cLast,"flac")) {
-				ret = st.st_mtime;
+				if(mtime) *mtime = st.st_mtime;
+				ret = 1;
 			}
 			free(dup);
 			return ret;
@@ -215,7 +217,7 @@ time_t isFlac(char * utf8file) {
 	return 0;
 }
 
-time_t isOgg(char * utf8file) {
+int isOgg(char * utf8file, time_t * mtime) {
 	struct stat st;
 	char * file = utf8ToFsCharset(utf8file);
 	char * actualFile = file;
@@ -227,12 +229,13 @@ time_t isOgg(char * utf8file) {
 			char * dup;
 			char * cLast;
 			char * cNext;
-			time_t ret = 0;
+			int ret = 0;
 			dup = strdup(file);
 			cNext = cLast = strtok(dup,".");
 			while((cNext = strtok(NULL,"."))) cLast = cNext;
 			if(cLast && 0==strcasecmp(cLast,"ogg")) {
-				ret = st.st_mtime;
+				if(mtime) *mtime = st.st_mtime;
+				ret = 1;
 			}
 			free(dup);
 			return ret;
@@ -243,7 +246,7 @@ time_t isOgg(char * utf8file) {
 	return 0;
 }
 
-time_t isMp3(char * utf8file) {
+int isMp3(char * utf8file, time_t * mtime) {
 	struct stat st;
 	char * file = utf8ToFsCharset(utf8file);
 	char * actualFile = file;
@@ -255,12 +258,13 @@ time_t isMp3(char * utf8file) {
 			char * dup;
 			char * cLast;
 			char * cNext;
-			time_t ret = 0;
+			int ret = 0;
 			dup = strdup(file);
 			cNext = cLast = strtok(dup,".");
 			while((cNext = strtok(NULL,"."))) cLast = cNext;
 			if(cLast && 0==strcasecmp(cLast,"mp3")) {
-				ret = st.st_mtime;
+				if(mtime) *mtime = st.st_mtime;
+				ret = 1;
 			}
 			free(dup);
 			return ret;
@@ -271,11 +275,14 @@ time_t isMp3(char * utf8file) {
 	return 0;
 }
 
-time_t isDir(char * utf8name) {
+int isDir(char * utf8name, time_t * mtime) {
 	struct stat st;
 
 	if(stat(rmp2amp(utf8ToFsCharset(utf8name)),&st)==0) {
-		if(S_ISDIR(st.st_mode)) return st.st_mtime;
+		if(S_ISDIR(st.st_mode)) {
+			if(mtime) *mtime = st.st_mtime;
+			return 1;
+		}
 	}
 	else {
 		DEBUG("isDir: unable to stat: %s (%s)\n",utf8name,

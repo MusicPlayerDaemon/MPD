@@ -24,19 +24,19 @@
 
 int lsPlaylists(FILE * fp, char * utf8path);
 
-time_t isMp3(char * utf8file);
+int isMp3(char * utf8file, time_t * mtime);
 
-time_t isOgg(char * utf8file);
+int isOgg(char * utf8file, time_t * mtime);
 
-time_t isFlac(char * utf8file);
+int isFlac(char * utf8file, time_t * mtime);
 
-time_t isWave(char * utf8file);
+int isWave(char * utf8file, time_t * mtime);
 
-time_t isMusic(char * utf8file);
+int isMusic(char * utf8file, time_t * mtime);
 
-time_t isDir(char * utf8name);
+int isDir(char * utf8name, time_t * mtime);
 
-time_t isPlaylist(char * utf8file);
+int isPlaylist(char * utf8file);
 
 char * dupAndStripPlaylistSuffix(char * file);
 

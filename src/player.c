@@ -166,16 +166,16 @@ int playerPlay(FILE * fp, char * utf8file) {
 
 	if(0);
 #ifdef HAVE_MAD
-	else if(isMp3(utf8file)) pc->decodeType = DECODE_TYPE_MP3;
+	else if(isMp3(utf8file,NULL)) pc->decodeType = DECODE_TYPE_MP3;
 #endif
 #ifdef HAVE_OGG	
-	else if(isOgg(utf8file)) pc->decodeType = DECODE_TYPE_OGG;
+	else if(isOgg(utf8file,NULL)) pc->decodeType = DECODE_TYPE_OGG;
 #endif
 #ifdef HAVE_FLAC	
-	else if(isFlac(utf8file)) pc->decodeType = DECODE_TYPE_FLAC;
+	else if(isFlac(utf8file,NULL)) pc->decodeType = DECODE_TYPE_FLAC;
 #endif
 #ifdef HAVE_AUDIOFILE
-	else if(isWave(utf8file)) pc->decodeType = DECODE_TYPE_AUDIOFILE;
+	else if(isWave(utf8file,NULL)) pc->decodeType = DECODE_TYPE_AUDIOFILE;
 #endif
 	else {
 		strncpy(pc->erroredFile,pc->file,MAXPATHLEN);
@@ -317,16 +317,18 @@ int queueSong(char * utf8file) {
 
 		if(0);
 #ifdef HAVE_MAD
-		else if(isMp3(utf8file)) pc->decodeType = DECODE_TYPE_MP3;
+		else if(isMp3(utf8file,NULL)) pc->decodeType = DECODE_TYPE_MP3;
 #endif
 #ifdef HAVE_OGG	
-		else if(isOgg(utf8file)) pc->decodeType = DECODE_TYPE_OGG;
+		else if(isOgg(utf8file,NULL)) pc->decodeType = DECODE_TYPE_OGG;
 #endif
 #ifdef HAVE_FLAC	
-		else if(isFlac(utf8file)) pc->decodeType = DECODE_TYPE_FLAC;
+		else if(isFlac(utf8file,NULL)) {
+			pc->decodeType = DECODE_TYPE_FLAC;
+		}
 #endif
 #ifdef HAVE_AUDIOFILE
-		else if(isWave(utf8file)) {
+		else if(isWave(utf8file,NULL)) {
 			pc->decodeType = DECODE_TYPE_AUDIOFILE;
 		}
 #endif
