@@ -60,8 +60,8 @@ int countSongsInDirectory(FILE * fp, Directory * directory, void * data) {
 }
 
 int printDirectoryInDirectory(FILE * fp, Directory * directory, void * data) {
-        if(directory->utf8name) {
-		myfprintf(fp,"directory: %s\n",directory->utf8name);
+        if(directory->name) {
+		myfprintf(fp,"directory: %s\n", getDirectoryPath(directory));
 	}
         return 0;
 }
@@ -273,13 +273,15 @@ int listAllUniqueTags(FILE * fp, int type, int numConditionals,
 int sumSavedMemoryInDirectory(FILE * fp, Directory * dir, void * data) {
 	int * sum = data;
 
-	if(!dir->utf8name) return 0;
+	if(!dir->name) return 0;
 
-	*sum += (strlen(dir->utf8name)+1-sizeof(Directory *))*
+	*sum += (strlen(getDirectoryPath(dir))+1-sizeof(Directory *))*
 				dir->songs->numberOfNodes;
 
-	/**sum += (strlen(dir->utf8name)+1)*
-				dir->subDirectories->numberOfNodes;*/
+	*sum += (strlen(getDirectoryPath(dir))+1)*
+				dir->subDirectories->numberOfNodes;
+
+	*sum += strlen(dir->name)+1;
 
 	return 0;
 }

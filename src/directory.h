@@ -35,7 +35,7 @@ typedef struct _DirectoryStat {
 } DirectoryStat;
 
 typedef struct _Directory {
-	char * utf8name;
+	char * name;
 	DirectoryList * subDirectories;
 	SongList * songs;
 	struct _Directory * parent;
@@ -74,6 +74,9 @@ int traverseAllIn(FILE * fp, char * name,
 			int (*forEachSong)(FILE *, Song *, void *),
 			int (*forEachDir)(FILE *, Directory *, void *),
 			void * data);
+
+/* don't free this */
+char * getDirectoryPath(Directory * dir);
 
 /* free the string that is returned */
 char * catDirAndFileName(Directory * dir, char * filename);

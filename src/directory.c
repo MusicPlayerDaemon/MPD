@@ -250,8 +250,8 @@ Directory * newDirectory(char * dirname, Directory * parent) {
 
 	directory = malloc(sizeof(Directory));
 
-	if(dirname!=NULL) directory->utf8name = strdup(dirname);
-	else directory->utf8name = NULL;
+	if(dirname!=NULL) directory->name = strdup(dirname);
+	else directory->name = NULL;
 	directory->subDirectories = newDirectoryList();
 	directory->songs = newSongList();
 	directory->stat = NULL;
@@ -263,13 +263,14 @@ Directory * newDirectory(char * dirname, Directory * parent) {
 void freeDirectory(Directory * directory) {
 	freeDirectoryList(directory->subDirectories);
 	freeSongList(directory->songs);
-	if(directory->utf8name) free(directory->utf8name);
+	if(directory->name) free(directory->name);
 	freeDirectoryStatFromDirectory(directory);
 	free(directory);
+	getDirectoryPath(NULL);
 }
 
 DirectoryList * newDirectoryList() {
-	return makeList((ListFreeDataFunc *)freeDirectory, 1);
+	return makeList((ListFreeDataFunc *)freeDirectory, 0);
 }
 
 void freeDirectoryList(DirectoryList * directoryList) {
@@ -351,7 +352,7 @@ int updateInDirectory(Directory * directory, char * shortname, char * name) {
 int removeDeletedFromDirectory(Directory * directory, DIR * dir) {
 	char cwd[2];
 	struct dirent * ent;
-	char * dirname = directory->utf8name;
+	char * dirname = getDirectoryPath(directory);
 	List * entList = makeList(free, 1);
 	void * name;
 	char * s;
@@ -372,9 +373,10 @@ int removeDeletedFromDirectory(Directory * directory, DIR * dir) {
 
 		if(!utf8) continue;
 
-		if(directory->utf8name) {
-			s = malloc(strlen(directory->utf8name)+strlen(utf8)+2);
-			sprintf(s,"%s/%s",directory->utf8name,utf8);
+		if(directory->name) {
+			s = malloc(strlen(getDirectoryPath(directory))
+					+strlen(utf8)+2);
+			sprintf(s,"%s/%s", getDirectoryPath(directory), utf8);
 		}
 		else s= strdup(utf8);
 		insertInList(entList,utf8,s);
@@ -393,9 +395,9 @@ int removeDeletedFromDirectory(Directory * directory, DIR * dir) {
 		}
 		else {
 			LOG("removing directory: ");
-			if(directory->utf8name) LOG("%s/",directory->utf8name);
+			LOG("%s/",getDirectoryPath(directory));
 			LOG("%s\n",node->key);
-			deleteFromList(directory->subDirectories,node->key);
+			deleteFromList(directory->subDirectories, node->key);
                         ret = 1;
 		}
 		node = tmpNode;
@@ -451,8 +453,9 @@ Directory * addDirectoryPathToDB(char * utf8path, char ** shortname) {
 			return NULL;
 		}
 		else {
-                	directory = newDirectory(utf8path, parentDirectory);
-                	insertInList(parentDirectory->subDirectories,*shortname,
+                	directory = newDirectory(*shortname, parentDirectory);
+                	insertInList(parentDirectory->subDirectories,
+					((Directory *)directory)->name,
                                 	directory);
 		}
 	}
@@ -596,7 +599,7 @@ int updateDirectory(Directory * directory) {
 	struct dirent * ent;
 	char * s;
 	char * utf8;
-	char * dirname = directory->utf8name;
+	char * dirname = getDirectoryPath(directory);
         int ret = 0;
 
 	{
@@ -631,9 +634,10 @@ int updateDirectory(Directory * directory) {
 
 		utf8 = strdup(utf8);
 
-		if(directory->utf8name) {
-			s = malloc(strlen(directory->utf8name)+strlen(utf8)+2);
-			sprintf(s,"%s/%s",directory->utf8name,utf8);
+		if(directory->name) {
+			s = malloc(strlen(getDirectoryPath(directory))+
+					strlen(utf8)+2);
+			sprintf(s,"%s/%s", getDirectoryPath(directory), utf8);
 		}
 		else s = strdup(utf8);
 		if(updateInDirectory(directory,utf8,s)>0) ret = 1;
@@ -657,7 +661,7 @@ int exploreDirectory(Directory * directory) {
 	struct dirent * ent;
 	char * s;
 	char * utf8;
-	char * dirname = directory->utf8name;
+	char * dirname = getDirectoryPath(directory);
         int ret = 0;
 
 	cwd[0] = '.';
@@ -680,9 +684,10 @@ int exploreDirectory(Directory * directory) {
 
 		DEBUG("explore: found: %s (%s)\n",ent->d_name,utf8);
 
-		if(directory->utf8name) {
-			s = malloc(strlen(directory->utf8name)+strlen(utf8)+2);
-			sprintf(s,"%s/%s",directory->utf8name,utf8);
+		if(directory->name) {
+			s = malloc(strlen(getDirectoryPath(directory))+
+					strlen(utf8)+2);
+			sprintf(s,"%s/%s", getDirectoryPath(directory) ,utf8);
 		}
 		else s = strdup(utf8);
 		if(addToDirectory(directory,utf8,s)>0) ret = 1;
@@ -698,7 +703,9 @@ int exploreDirectory(Directory * directory) {
 int statDirectory(Directory * dir) {
 	struct stat st;
 
-	if(myStat(dir->utf8name ? dir->utf8name : "", &st) < 0) return -1;
+	if(myStat(getDirectoryPath(dir) ? getDirectoryPath(dir) : "", &st) < 0) 	{
+		return -1;
+	}
 
 	dir->stat = newDirectoryStat(&st);
 
@@ -729,7 +736,7 @@ int addSubDirectoryToDirectory(Directory * directory, char * shortname,
 
 	if(inodeFoundInParent(directory, st->st_ino, st->st_dev)) return 0;
 
-	subDirectory = newDirectory(name, directory);
+	subDirectory = newDirectory(shortname, directory);
 	subDirectory->stat = newDirectoryStat(st);
 	
 	if(exploreDirectory(subDirectory)<1) {
@@ -737,7 +744,8 @@ int addSubDirectoryToDirectory(Directory * directory, char * shortname,
                 return 0;
         }
 
-	insertInList(directory->subDirectories,shortname,subDirectory);
+	insertInList(directory->subDirectories, subDirectory->name, 
+			subDirectory);
 
 	return 1;
 }
@@ -828,7 +836,8 @@ int printDirectoryList(FILE * fp, DirectoryList * directoryList) {
 
 	while(node!=NULL) {
 		directory = (Directory *)node->data;
-		myfprintf(fp,"%s%s\n",DIRECTORY_DIR,directory->utf8name);
+		myfprintf(fp,"%s%s\n", DIRECTORY_DIR, 
+				getDirectoryPath(directory));
 		node = node->nextNode;
 	}
 
@@ -854,8 +863,9 @@ void writeDirectoryInfo(FILE * fp, Directory * directory) {
 	ListNode * node = (directory->subDirectories)->firstNode;
 	Directory * subDirectory;
 
-	if(directory->utf8name) {
-		myfprintf(fp,"%s%s\n",DIRECTORY_BEGIN,directory->utf8name);
+	if(directory->name) {
+		myfprintf(fp,"%s%s\n", DIRECTORY_BEGIN,
+				getDirectoryPath(directory));
 	}
 			
 	while(node!=NULL) {
@@ -867,8 +877,9 @@ void writeDirectoryInfo(FILE * fp, Directory * directory) {
 
 	writeSongInfoFromList(fp,directory->songs);
 
-	if(directory->utf8name) {
-		myfprintf(fp,"%s%s\n",DIRECTORY_END,directory->utf8name);
+	if(directory->name) {
+		myfprintf(fp,"%s%s\n", DIRECTORY_END,
+				getDirectoryPath(directory));
 	}
 }
 
@@ -877,7 +888,6 @@ void readDirectoryInfo(FILE * fp,Directory * directory) {
 	int bufferSize = MAXPATHLEN*2;
 	char * key;
 	Directory * subDirectory;
-	char * name;
 	int strcmpRet;
 	ListNode * nextDirNode = directory->subDirectories->firstNode;
 	ListNode * nodeTemp;
@@ -902,7 +912,8 @@ void readDirectoryInfo(FILE * fp,Directory * directory) {
 				ERROR("Error reading db at line: %s\n",buffer);
 				exit(EXIT_FAILURE);
 			}
-			name = strdup(&(buffer[strlen(DIRECTORY_BEGIN)]));
+			/* we ignore the name now 
+			name = strdup(&(buffer[strlen(DIRECTORY_BEGIN)]));*/
 
 			while(nextDirNode && (strcmpRet = 
 					strcmp(key,nextDirNode->key)) > 0) {
@@ -913,8 +924,9 @@ void readDirectoryInfo(FILE * fp,Directory * directory) {
 			}
 
 			if(NULL==nextDirNode) {
-				subDirectory = newDirectory(name, directory);
-				insertInList(directory->subDirectories,key,
+				subDirectory = newDirectory(key, directory);
+				insertInList(directory->subDirectories,
+						subDirectory->name,
 						(void *)subDirectory);
 			}
 			else if(strcmpRet == 0) {
@@ -922,16 +934,15 @@ void readDirectoryInfo(FILE * fp,Directory * directory) {
 				nextDirNode = nextDirNode->nextNode;
 			}
 			else {
-				subDirectory = newDirectory(name, directory);
+				subDirectory = newDirectory(key, directory);
 				insertInListBeforeNode(
 						directory->subDirectories,
 						nextDirNode,
-						key,
+						subDirectory->name,
 						(void *)subDirectory);
 			}
 
 			free(key);
-			free(name);
 			readDirectoryInfo(fp,subDirectory);
 		}
 		else if(0==strncmp(SONG_BEGIN,buffer,strlen(SONG_BEGIN))) {
@@ -1224,4 +1235,46 @@ Song * getSongFromDB(char * file) {
 
 time_t getDbModTime() {
 	return directory_dbModTime;
+}
+
+/* pass a NULL to this function to clear the static lastDir, this way
+ * 	if a directory is freed, and then realloced, the wrong name isn't
+ * 	output */
+char * getDirectoryPath(Directory * dir) {
+	static char * buffer = NULL;
+	static int bufferSize = 0;
+	static Directory * lastDir = NULL;
+	static int pos = 0;
+	int dlen;
+
+	if(!dir || !dir->name) {
+		lastDir = NULL;
+		return "";
+	}
+
+	if(lastDir == dir) return buffer+pos+1;
+	
+	pos = bufferSize-1;
+
+	while(dir && dir->name) {
+		dlen = strlen(dir->name);
+		/* add one for the '/' */
+		pos -= dlen+1;
+		if(pos < 0) {
+			buffer = realloc(buffer, bufferSize-pos);
+			if(bufferSize) {
+				memmove(buffer-pos, buffer, bufferSize);
+			}
+			bufferSize += -pos;
+			buffer[bufferSize-1] = '\0';
+			pos = 0;
+		}
+		strncpy(buffer+pos+1, dir->name, dlen);
+		buffer[pos] = '/';
+		dir = dir->parent;
+	}
+
+	lastDir = dir;
+
+	return buffer+pos+1;
 }

@@ -29,7 +29,7 @@
 #define SONG_KEY	"key: "
 #define SONG_FILE	"file: "
 #define SONG_TIME	"Time: "
-#define SONG_MTIME	"Mtime: "
+#define SONG_MTIME	"mtime: "
 
 #include <stdlib.h>
 #include <string.h>
@@ -83,6 +83,7 @@ void freeJustSong(Song * song) {
 	free(song->url);
 	if(song->tag) freeMpdTag(song->tag);
 	free(song);
+	getSongUrl(NULL);
 }
 
 SongList * newSongList() {
@@ -118,8 +119,8 @@ void freeSongList(SongList * list) {
 
 void printSongUrl(FILE * fp, Song * song) {
 	if(song->parentDir) {
-		myfprintf(fp, "%s%s/%s\n", SONG_FILE, song->parentDir->utf8name,
-				song->url);
+		myfprintf(fp, "%s%s/%s\n", SONG_FILE, 
+				getDirectoryPath(song->parentDir), song->url);
 	}
 	else {
 		myfprintf(fp, "%s%s\n", SONG_FILE, song->url);
@@ -299,6 +300,8 @@ Song * songDup(Song * song) {
 	return ret;
 }
 
+/* pass song = NULL to reset, we do this freeJustSong(), so that if
+ * 	we free and recreate this memory we make sure to print it correctly*/
 char * getSongUrl(Song * song) {
 	static char * buffer = NULL;
 	static int bufferSize = 0;
@@ -307,13 +310,18 @@ char * getSongUrl(Song * song) {
 	int dlen;
 	int size;
 
-	if(!song->parentDir || !song->parentDir->utf8name) return song->url;
+	if(!song) {
+		lastSong = song;
+		return NULL;
+	}
 
-	/* be careful with this! */
+	if(!song->parentDir || !song->parentDir->name) return song->url;
+
+	/* be careful with this!*/
 	if(song == lastSong) return buffer;
 
 	slen = strlen(song->url);
-	dlen = strlen(song->parentDir->utf8name);
+	dlen = strlen(getDirectoryPath(song->parentDir));
 
 	size = slen+dlen+2;
 
@@ -322,7 +330,7 @@ char * getSongUrl(Song * song) {
 		bufferSize = size;
 	}
 
-	strcpy(buffer, song->parentDir->utf8name);
+	strcpy(buffer, getDirectoryPath(song->parentDir));
 	buffer[dlen] = '/';
 	strcpy(buffer+dlen+1, song->url);
 
