@@ -404,9 +404,6 @@ int mp3ChildSendData(mp3DecodeData * data, Buffer * cb, DecoderControl * dc) {
 	if(dc->seek) return 0;
 	/* be sure to remove this! */
 
-#ifdef WORDS_BIGENDIAN
-	pcm_changeBufferEndianness(data->outputBuffer,CHUNK_SIZE,16);
-#endif
 	memcpy(cb->chunks+cb->end*CHUNK_SIZE,data->outputBuffer,CHUNK_SIZE);
 	cb->chunkSize[cb->end] = data->outputPtr-data->outputBuffer;
 	cb->bitRate[cb->end] = data->bitRate/1024;
@@ -461,16 +458,20 @@ int mp3Read(mp3DecodeData * data, Buffer * cb, DecoderControl * dc) {
 		mad_synth_frame(&data->synth,&data->frame);
 
 		for(i=0;i<(data->synth).pcm.length;i++) {
-			signed int sample;
-	
-			sample = (signed int) audio_linear_dither(16,(data->synth).pcm.samples[0][i],&dither);
-			*(data->outputPtr++) = sample&0xff;
-			*(data->outputPtr++) = sample>>8;
+			mpd_sint16 * sample;
+
+			sample = (mpd_sint16 *)data->outputPtr;	
+			*sample = (mpd_sint16) audio_linear_dither(16,
+					(data->synth).pcm.samples[0][i],
+					&dither);
+			data->outputPtr+=2;
 
 			if(MAD_NCHANNELS(&(data->frame).header)==2) {
-				sample = (signed int) audio_linear_dither(16,(data->synth).pcm.samples[1][i],&dither);
-				*(data->outputPtr++) = sample&0xff;
-				*(data->outputPtr++) = sample>>8;
+				sample = (mpd_sint16 *)data->outputPtr;	
+				*sample = (mpd_sint16) audio_linear_dither(16,
+						(data->synth).pcm.samples[1][i],
+						&dither);
+				data->outputPtr+=2;
 			}
 
 			if(data->outputPtr==data->outputBufferEnd) {
