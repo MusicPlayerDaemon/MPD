@@ -368,20 +368,24 @@ static int getHTTPHello(InputStream * inStream) {
                         data->icyMetaint = atoi(cur+14);
                 }
                 else if(0 == strncmp(cur, "\r\nicy-name:", 11)) {
-                        char * temp = strstr(cur+11,"\r\n");
+                        int incr = 11;
+                        char * temp = strstr(cur+incr,"\r\n");
                         if(!temp) break;
                         *temp = '\0';
                         if(inStream->metaTitle) free(inStream->metaTitle);
-                        inStream->metaTitle = strdup(cur+19);
+                        while(*(incr+cur) == ' ') incr++;
+                        inStream->metaTitle = strdup(cur+incr);
                         *temp = '\r';
                         DEBUG("stream icy-name: %s\n", inStream->metaTitle);
                 }
                 else if(0 == strncmp(cur, "\r\nx-audiocast-name:", 19)) {
-                        char * temp = strstr(cur+19,"\r\n");
+                        int incr = 19;
+                        char * temp = strstr(cur+incr,"\r\n");
                         if(!temp) break;
                         *temp = '\0';
                         if(inStream->metaTitle) free(inStream->metaTitle);
-                        inStream->metaTitle = strdup(cur+19);
+                        while(*(incr+cur) == ' ') incr++;
+                        inStream->metaTitle = strdup(cur+incr);
                         *temp = '\r';
                         DEBUG("stream audiocast-name: %s\n", 
                                         inStream->metaTitle);
