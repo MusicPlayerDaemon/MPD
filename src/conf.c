@@ -37,7 +37,7 @@
 
 #define CONF_COMMENT	'#'
 
-#define CONF_NUMBER_OF_PARAMS		29
+#define CONF_NUMBER_OF_PARAMS		33
 #define CONF_NUMBER_OF_PATHS		6
 #define CONF_NUMBER_OF_REQUIRED		5
 #define CONF_NUMBER_OF_ALLOW_CATS	1
@@ -125,7 +125,11 @@ char ** readConf(char * file) {
 		"default_permissions",
 		"audio_buffer_size",
                 "replaygain",
-                "audio_output_format"
+                "audio_output_format",
+                "http_proxy_host",
+                "http_proxy_port",
+		"http_proxy_user",
+		"http_proxy_password"
 	};
 
 	int conf_absolutePaths[CONF_NUMBER_OF_PATHS] = {
@@ -270,4 +274,3 @@ char ** readConf(char * file) {
 char ** getConf() {
 	return conf_params;
 }
-/* vim:set shiftwidth=4 tabstop=8 expandtab: */

@@ -50,6 +50,10 @@
 #define CONF_BUFFER_SIZE			26
 #define CONF_REPLAYGAIN                         27
 #define CONF_AUDIO_OUTPUT_FORMAT                28
+#define CONF_HTTP_PROXY_HOST                    29
+#define CONF_HTTP_PROXY_PORT                    30
+#define CONF_HTTP_PROXY_USER			31
+#define CONF_HTTP_PROXY_PASSWORD		32
 
 #define CONF_CAT_CHAR				"\n"
 
@@ -63,4 +67,3 @@ void initConf();
 void writeConf(char * file);
 
 #endif
-/* vim:set shiftwidth=4 tabstop=8 expandtab: */
