@@ -85,7 +85,7 @@ void pcm_volumeChange(char * buffer, int bufferSize, AudioFormat * format,
 }
 
 void pcm_add(char * buffer1, char * buffer2, size_t bufferSize1, 
-		size_t bufferSize2, AudioFormat * format)
+		size_t bufferSize2, int vol1, int vol2, AudioFormat * format)
 {
 	mpd_sint32 temp32;
 	mpd_sint8 * buffer8_1 = (mpd_sint8 *)buffer1;
@@ -96,7 +96,7 @@ void pcm_add(char * buffer1, char * buffer2, size_t bufferSize1,
 	switch(format->bits) {
 	case 16:
 		while(bufferSize1>0 && bufferSize2>0) {
-			temp32 = *buffer16_1+*buffer16_2;
+			temp32 = (vol1*(*buffer16_1)+vol2*(*buffer16_2))/100;
 			*buffer16_1 = temp32>32767 ? 32767 : 
 					(temp32<-32768 ? -32768 : temp32);
 			buffer16_1++;
@@ -108,7 +108,7 @@ void pcm_add(char * buffer1, char * buffer2, size_t bufferSize1,
 		break;
 	case 8:
 		while(bufferSize1>0 && bufferSize2>0) {
-			temp32 = *buffer8_1+*buffer8_2;
+			temp32 = (vol1*(*buffer8_1)+vol2*(*buffer8_2))/100;
 			*buffer8_1 = temp32>127 ? 127 : 
 					(temp32<-128 ? -128 : temp32);
 			buffer8_1++;
@@ -127,10 +127,12 @@ void pcm_add(char * buffer1, char * buffer2, size_t bufferSize1,
 void pcm_mix(char * buffer1, char * buffer2, size_t bufferSize1, 
 		size_t bufferSize2, AudioFormat * format, float portion1)
 {
+	int vol1;
 	float s = sin(M_PI_2*portion1);
 	s*=s;
+	
+	vol1 = s*100+0.5;
+	vol1 = vol1>100 ? 100 : ( vol1<0 ? 0 : vol1 );
 
-	pcm_volumeChange(buffer1,bufferSize1,format,(int)(s*100));
-	pcm_volumeChange(buffer2,bufferSize2,format,(int)((1-s)*100));
-	pcm_add(buffer1,buffer2,bufferSize1,bufferSize2,format);
+	pcm_add(buffer1,buffer2,bufferSize1,bufferSize2,vol1,100-vol1,format);
 }
