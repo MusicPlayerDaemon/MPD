@@ -393,7 +393,7 @@ void killMpdFromPidFile(char * cmd) {
 
 	FILE * fp = fopen(pidFileParam->value,"r");
 	if(!fp) {
-		ERROR("unable to open %s \"%s\" (config line %i): %s\n", 
+		ERROR("unable to open %s \"%s\": %s\n", 
 				CONF_PID_FILE, pidFileParam->value,
 				pidFileParam->line, strerror(errno));
 		exit(EXIT_FAILURE);
