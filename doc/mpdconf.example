@@ -8,6 +8,7 @@ playlist_directory 	"~/music"
 db_file 		"~/.mpd/mpd.db"
 log_file 		"~/.mpd/mpd.log"
 error_file 		"~/.mpd/mpd.error"
+pid_file 		"~/.mpd/mpd.pid"
 ##########################################################
 
 ##########################################################

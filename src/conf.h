@@ -22,6 +22,7 @@
 #include "../config.h"
 
 #define CONF_PORT			"port"
+#define CONF_PID_FILE			"pid_file"
 #define CONF_MUSIC_DIR			"music_directory"
 #define CONF_PLAYLIST_DIR		"playlist_directory"
 #define CONF_LOG_FILE			"log_file"

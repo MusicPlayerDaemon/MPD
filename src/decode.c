@@ -37,40 +37,46 @@
 #include <unistd.h>
 #include <string.h>
 
-volatile int * volatile decode_pid = NULL;
+static int decode_pid = 0;
 
 void decodeSigHandler(int sig, siginfo_t * si, void * v) {
 	if(sig==SIGCHLD) {
 		int status;
-		if(decode_pid && *decode_pid==wait3(&status,WNOHANG,NULL)) {
-			if(WIFSIGNALED(status) && WTERMSIG(status)!=SIGTERM &&
-					WTERMSIG(status)!=SIGINT) 
-			{
-				ERROR("decode process died from signal: %i\n",
-						WTERMSIG(status));
+		if(decode_pid==wait3(&status,WNOHANG,NULL)) {
+			if(WIFSIGNALED(status)) {
+				if(WTERMSIG(status)!=SIGTERM && 
+					WTERMSIG(status)!=SIGINT)
+				{
+					ERROR("decode process died from "
+							"signal: %i\n",
+							WTERMSIG(status));
+				}
 			}
-			*decode_pid = 0;
+			decode_pid = 0;
+			getPlayerData()->playerControl.decode_pid = 0;
 		}
 	}
-	/* this is causing problems for alsa and other things that generate
-	 * extra processes. it causes them to not die */
-	/*else if(sig==SIGTERM && si->si_pid==getppid()) {
-		DEBUG("player/decoder got SIGTERM from parent process\n");*/
 	else if(sig==SIGTERM) {
-		if(decode_pid) {
-			int pid = *decode_pid;
-			if(pid>0) kill(pid,SIGTERM);
+		int pid = decode_pid;
+		if(pid > 0) {
+			DEBUG("player (or child) got SIGTERM\n");
+			kill(pid,SIGTERM);
 		}
+		else DEBUG("decoder (or child) got SIGTERM\n");
 		exit(EXIT_SUCCESS);
+	}
+	else if(sig==SIGINT) {
+		if(decode_pid > 0) {
+			DEBUG("player (or child) got SIGINT\n");
+		}
+		else DEBUG("decoder (or child) got SIGINT\n");
 	}
 }
 
 void stopDecode(DecoderControl * dc) {
-	if(decode_pid && *decode_pid>0 && 
-			(dc->start || dc->state!=DECODE_STATE_STOP)) 
-	{
+	if(decode_pid>0 && (dc->start || dc->state!=DECODE_STATE_STOP)) {
 		dc->stop = 1;
-		while(decode_pid && *decode_pid>0 && dc->stop) my_usleep(10000);
+		while(decode_pid>0 && dc->stop) my_usleep(10000);
 	}
 }
 
@@ -110,7 +116,7 @@ int calculateCrossFadeChunks(PlayerControl * pc, AudioFormat * af) {
 
 #define handleDecodeStart() \
         if(decodeWaitedOn) { \
-                if(dc->state!=DECODE_STATE_START &&  *decode_pid > 0 && \
+                if(dc->state!=DECODE_STATE_START &&  decode_pid > 0 && \
                                 dc->error==DECODE_ERROR_NOERROR) \
                 { \
                         decodeWaitedOn = 0; \
@@ -131,7 +137,7 @@ int calculateCrossFadeChunks(PlayerControl * pc, AudioFormat * af) {
 					cb->audioFormat.channels/ \
 					cb->audioFormat.sampleRate; \
                 } \
-                else if(dc->state!=DECODE_STATE_START || *decode_pid <= 0) { \
+                else if(dc->state!=DECODE_STATE_START || decode_pid <= 0) { \
 		        strncpy(pc->erroredUrl, pc->utf8url, MAXPATHLEN); \
 		        pc->erroredUrl[MAXPATHLEN] = '\0'; \
 		        pc->error = PLAYER_ERROR_FILE; \
@@ -151,7 +157,7 @@ int waitOnDecode(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb,
         pc->currentUrl[MAXPATHLEN] = '\0';
 	MpdTag * tag = NULL;
 
-	while(decode_pid && *decode_pid>0 && dc->start) my_usleep(10000);
+	while(decode_pid>0 && dc->start) my_usleep(10000);
 
 	if(dc->start || dc->error!=DECODE_ERROR_NOERROR) {
 		strncpy(pc->erroredUrl, pc->utf8url, MAXPATHLEN);
@@ -181,7 +187,7 @@ int decodeSeek(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb,
 {
         int ret = -1;
 
-	if(decode_pid && *decode_pid>0) {
+	if(decode_pid>0) {
 		if(dc->state==DECODE_STATE_STOP || dc->error || 
 				strcmp(dc->utf8url, pc->utf8url)!=0) 
 		{
@@ -193,7 +199,7 @@ int decodeSeek(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb,
 			dc->start = 1;
 			waitOnDecode(pc,dc,cb,decodeWaitedOn);
 		}
-		if(*decode_pid>0 && dc->state!=DECODE_STATE_STOP && 
+		if(decode_pid>0 && dc->state!=DECODE_STATE_STOP && 
                                 dc->seekable) 
                 {
 			*next = -1;
@@ -203,7 +209,7 @@ int decodeSeek(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb,
 			dc->seekWhere = 0 > dc->seekWhere ? 0 : dc->seekWhere;
                         dc->seekError = 0;
 			dc->seek = 1;
-                        while(*decode_pid>0 && dc->seek) my_usleep(10000);
+                        while(decode_pid>0 && dc->seek) my_usleep(10000);
                         if(!dc->seekError) {
                                 pc->elapsedTime = dc->seekWhere;
                                 ret = 0;
@@ -369,14 +375,11 @@ void decodeStart(PlayerControl * pc, OutputBuffer * cb, DecoderControl * dc) {
 }
 
 int decoderInit(PlayerControl * pc, OutputBuffer * cb, DecoderControl * dc) {
-			
-	int pid;
-	decode_pid = &(pc->decode_pid);
-
 	blockSignals();
-	pid = fork();
+	getPlayerData()->playerControl.decode_pid = 0;
+	decode_pid = fork();
 
-	if(pid==0) {
+	if(decode_pid==0) {
 		/* CHILD */
 		unblockSignals();
 
@@ -396,7 +399,7 @@ int decoderInit(PlayerControl * pc, OutputBuffer * cb, DecoderControl * dc) {
 		exit(EXIT_SUCCESS);
 		/* END OF CHILD */
 	}
-	else if(pid<0) {
+	else if(decode_pid<0) {
 		unblockSignals();
 		strncpy(pc->erroredUrl, pc->utf8url, MAXPATHLEN);
 		pc->erroredUrl[MAXPATHLEN] = '\0';
@@ -404,7 +407,7 @@ int decoderInit(PlayerControl * pc, OutputBuffer * cb, DecoderControl * dc) {
 		return -1;
 	}
 
-	*decode_pid = pid;
+	getPlayerData()->playerControl.decode_pid = decode_pid;
 	unblockSignals();
 
 	return 0;
@@ -488,7 +491,7 @@ void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb) {
 	pc->play = 0;
 	kill(getppid(),SIGUSR1);
 
-	while(*decode_pid>0 && cb->end-cb->begin<bbp && 
+	while(decode_pid>0 && cb->end-cb->begin<bbp && 
 				cb->end!=buffered_chunks-1 &&
 				dc->state!=DECODE_STATE_STOP) 
 	{
@@ -642,7 +645,7 @@ void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb) {
 				kill(getppid(),SIGUSR1);
 			}
 		}
-		else if(*decode_pid<=0 || 
+		else if(decode_pid<=0 || 
 				(dc->state==DECODE_STATE_STOP && !dc->start)) 
 		{
 			quit = 1;
@@ -678,7 +681,7 @@ void decode() {
         dc->stop = 0;
 	dc->start = 1;
         
-	if(decode_pid==NULL || *decode_pid<=0) {
+	if(decode_pid<=0) {
 		if(decoderInit(pc,cb,dc)<0) return;
 	}
 

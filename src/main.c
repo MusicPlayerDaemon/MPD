@@ -55,6 +55,7 @@
 #define USER_CONFIG_FILE_LOCATION	"/.mpdconf"
 
 typedef struct _Options {
+	int kill;
         int daemon;
         int stdOutput;
         int createDB;
@@ -70,11 +71,12 @@ void usage(char * argv[]) {
         ERROR("\n");
         ERROR("options:\n");
         ERROR("   --help             this usage statement\n");
+        ERROR("   --create-db        force (re)creation database and exit\n");
+        ERROR("   --kill             kill mpd\n");
+        ERROR("   --no-create-db     don't create database\n");
         ERROR("   --no-daemon        don't detach from console\n");
         ERROR("   --stdout           print msgs to stdout and stderr\n");
-        ERROR("   --create-db        force (re)creation database and exit\n");
         /*ERROR("   --update-db        create database and exit\n");*/
-        ERROR("   --no-create-db     don't create database\n");
         ERROR("   --verbose          verbose logging\n");
         ERROR("   --version          prints version information\n");
 }
@@ -99,6 +101,7 @@ void parseOptions(int argc, char ** argv, Options * options) {
         options->stdOutput = 0;
         options->createDB = 0;
         options->updateDB = 0;
+	options->kill = 0;
 
         if(argc>1) {
                 int i = 1;
@@ -107,6 +110,10 @@ void parseOptions(int argc, char ** argv, Options * options) {
                                 if(strcmp(argv[i],"--help")==0) {
                                         usage(argv);
                                         exit(EXIT_SUCCESS);
+                                }
+                                else if(strcmp(argv[i],"--kill")==0) {
+                                        options->kill = 1;
+                                        argcLeft--;
                                 }
                                 else if(strcmp(argv[i],"--no-daemon")==0) {
                                         options->daemon = 0;
@@ -282,6 +289,20 @@ void openDB(Options * options, char * argv0) {
 }
 
 void daemonize(Options * options) {
+	FILE * fp;
+	ConfigParam * pidFileParam = parseConfigFilePath(CONF_PID_FILE, 1);
+	
+	/* do this before daemon'izing so we can fail gracefully if we can't
+	 * write to the pid file */
+	DEBUG("opening pid file\n");
+	fp = fopen(pidFileParam->value, "w+");
+	if(!fp) {
+		ERROR("could not open %s \"%s\" (at line %i) for writing: %s\n",
+				CONF_PID_FILE, pidFileParam->value,
+				pidFileParam->line, strerror(errno));
+		exit(EXIT_FAILURE);
+	}
+
         if(options->daemon) {
                 int pid;
 
@@ -309,8 +330,14 @@ void daemonize(Options * options) {
                 else if(pid<0) {
                         ERROR("problems fork'ing for daemon!\n");
                         exit(EXIT_FAILURE);
-                }
+		}
+
+		DEBUG("daemonized!\n");
         }
+
+	DEBUG("writing pid file\n");
+	fprintf(fp, "%lu\n", (unsigned long)getpid());
+	fclose(fp);
 }
 
 void setupLogOutput(Options * options, FILE * out, FILE * err) {
@@ -349,6 +376,58 @@ void setupLogOutput(Options * options, FILE * out, FILE * err) {
         }
 }
 
+void cleanUpPidFile() {
+	ConfigParam * pidFileParam = parseConfigFilePath(CONF_PID_FILE, 1);
+
+	DEBUG("cleaning up pid file\n");
+	
+	unlink(pidFileParam->value);
+}
+
+void killMpdFromPidFile(char * cmd) {
+	struct stat st_cmd;
+	struct stat st_exe;
+	ConfigParam * pidFileParam = parseConfigFilePath(CONF_PID_FILE, 1);
+	int pid;
+	char buf[32];
+
+	FILE * fp = fopen(pidFileParam->value,"r");
+	if(!fp) {
+		ERROR("unable to open %s \"%s\" (config line %i): %s\n", 
+				CONF_PID_FILE, pidFileParam->value,
+				pidFileParam->line);
+		exit(EXIT_FAILURE);
+	}
+	if(fscanf(fp, "%i",  &pid) != 1) {
+		ERROR("unable to read the pid from file \"%s\"\n",
+				pidFileParam->value);
+		exit(EXIT_FAILURE);
+	}
+	fclose(fp);
+
+	memset(buf, 0, 32);
+	snprintf(buf, 31, "/proc/%i/exe", pid);
+
+	if(stat(cmd, &st_cmd)) {
+		ERROR("unable to stat file \"%s\"\n", cmd);
+		exit(EXIT_FAILURE);
+	}
+	if(stat(buf, &st_exe)) {
+		ERROR("unable to kill proccess %i (%s: %s)\n", pid, buf,
+				strerror(errno));
+		exit(EXIT_FAILURE);
+	}
+
+	if(st_exe.st_dev != st_cmd.st_dev || st_exe.st_ino != st_cmd.st_ino) {
+		ERROR("%s doesn't appear to be running as pid %i\n",
+				cmd, pid);
+		exit(EXIT_FAILURE);
+	}
+
+	kill(pid, SIGTERM);
+	exit(EXIT_SUCCESS);
+}
+
 int main(int argc, char * argv[]) {
         FILE * out;
         FILE * err;
@@ -359,6 +438,8 @@ int main(int argc, char * argv[]) {
         initConf();
 
         parseOptions(argc, argv, &options);
+
+	if(options.kill) killMpdFromPidFile(argv[0]);
 
         initStats();
 	initTagConfig();
@@ -421,6 +502,7 @@ int main(int argc, char * argv[]) {
 	finishPermissions();
         finishCommands();
         finishInputPlugins();
+	cleanUpPidFile();
 
         return EXIT_SUCCESS;
 }

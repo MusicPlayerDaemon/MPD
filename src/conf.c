@@ -116,6 +116,7 @@ void initConf() {
 	configEntriesList = makeList((ListFreeDataFunc *)freeConfigEntry, 1);
 
 	registerConfigParam(CONF_PORT, 				0,	0);
+	registerConfigParam(CONF_PID_FILE, 			0,	0);
 	registerConfigParam(CONF_MUSIC_DIR,			0,	0);
 	registerConfigParam(CONF_PLAYLIST_DIR,			0,	0);
 	registerConfigParam(CONF_LOG_FILE,			0,	0);
