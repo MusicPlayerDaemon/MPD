@@ -10,6 +10,9 @@
 
 #define LOCATE_TAG_FILE_TYPE	TAG_NUM_OF_ITEM_TYPES+10
 #define LOCATE_TAG_FILE_KEY	"filename"
+#define LOCATE_TAG_ANY_TYPE     TAG_NUM_OF_ITEM_TYPES+20
+#define LOCATE_TAG_ANY_KEY      "any"
+
 
 typedef struct _ListCommandItem {
 	mpd_sint8 tagType;
@@ -29,6 +32,10 @@ int getLocateTagItemType(char * str) {
 		return LOCATE_TAG_FILE_TYPE;
 	}
 
+	if(0 == strcasecmp(str, LOCATE_TAG_ANY_KEY)) {
+	  	return LOCATE_TAG_ANY_TYPE;
+	}
+	
 	for(i = 0; i < TAG_NUM_OF_ITEM_TYPES; i++) {
 		if(0 == strcasecmp(str, mpdTagItemKeys[i])) return i;
 	}
@@ -127,17 +134,23 @@ static inline int strstrSearchTag(Song * song, int type, char * str) {
 	char * dup;
 	int ret = 0;
 
-	if(type == LOCATE_TAG_FILE_TYPE) {
+	if(type == LOCATE_TAG_FILE_TYPE || type == LOCATE_TAG_ANY_TYPE) {
 		dup = strDupToUpper(getSongUrl(song));
 		if(strstr(dup, str)) ret = 1;
 		free(dup);
-		return ret;
+		if (ret == 1 || type == LOCATE_TAG_FILE_TYPE) {
+			return ret;
+		}
 	}
 
 	if(!song->tag) return 0;
 
 	for(i = 0; i < song->tag->numOfItems && !ret; i++) { 
-		if(song->tag->items[i].type != type) continue;
+		if(type != LOCATE_TAG_ANY_TYPE &&
+				song->tag->items[i].type != type)
+		{
+		  	continue;
+		}
 		
 		dup = strDupToUpper(song->tag->items[i].value);
 		if(strstr(dup, str)) ret = 1;
