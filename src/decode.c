@@ -311,9 +311,7 @@ void decodeStart(PlayerControl * pc, OutputBuffer * cb, DecoderControl * dc) {
 
         ret = DECODE_ERROR_UNKTYPE;
 	if(isRemoteUrl(pc->utf8url)) {
-                if(inStream.mime) {
-			plugin = getInputPluginFromMimeType(inStream.mime);
-		}
+		plugin = getInputPluginFromMimeType(inStream.mime);
                 if(plugin == NULL) {
                         plugin = getInputPluginFromSuffix(
                                         getSuffix(dc->utf8url));
