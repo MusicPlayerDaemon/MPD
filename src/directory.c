@@ -126,6 +126,8 @@ void sortDirectory(Directory * directory);
 
 int inodeFoundInParent(Directory * parent, ino_t inode, dev_t device);
 
+int statDirectory(Directory * dir);
+
 void clearUpdatePid() {
 	directory_updatePid = 0;
 }
@@ -345,7 +347,9 @@ int updateInDirectory(Directory * directory, char * shortname, char * name) {
 	}
 	else if(S_ISDIR(st.st_mode)) {
 		if(findInList(directory->subDirectories,shortname,(void **)&subDir)) {
-			if(updateDirectory((Directory *)subDir)>0) return 1;
+			freeDirectoryStatFromDirectory(subDir);
+			((Directory *)subDir)->stat = newDirectoryStat(&st);
+			return updateDirectory((Directory *)subDir);
 		}
 		else {
                         return addSubDirectoryToDirectory(directory,shortname,
@@ -523,8 +527,18 @@ int updatePath(char * utf8path) {
 		}
 	}
 	else if((song = getSongDetails(path,&shortname,&parentDirectory))) {
+		if(!parentDirectory->stat && statDirectory(parentDirectory) < 0)
+		{
+			free(path);
+			return 0;
+		}
 		/* if this song update is successfull, we are done */
-		if(song && isMusic(song->utf8url,&mtime)) {
+		else if(0 == inodeFoundInParent(
+				parentDirectory->parent,
+				parentDirectory->stat->inode,
+				parentDirectory->stat->device) && 
+				song && isMusic(song->utf8url,&mtime)) 
+		{
 			free(path);
                         if(song->mtime==mtime) return 0;
                         else if(updateSongInfo(song)==0) return 1;
@@ -548,7 +562,17 @@ int updatePath(char * utf8path) {
          */
 	if(isDir(path) || isMusic(path,NULL)) {
 		parentDirectory = addParentPathToDB(path,&shortname);
-		if(addToDirectory(parentDirectory,shortname,path)>0) ret = 1;
+		if(!parentDirectory->stat && statDirectory(parentDirectory) < 0)
+		{
+		}
+		else if(inodeFoundInParent(parentDirectory->parent,
+				parentDirectory->stat->inode,
+				parentDirectory->stat->device))
+		{
+		}
+		else if(addToDirectory(parentDirectory,shortname,path)>0) {
+			ret = 1;
+		}
 	}
 
 	free(path);
@@ -569,6 +593,18 @@ int updateDirectory(Directory * directory) {
 	char * utf8;
 	char * dirname = directory->utf8name;
         int ret = 0;
+
+	{
+		if(!directory->stat && statDirectory(directory) < 0) {
+			return -1;
+		}
+		else if(inodeFoundInParent(directory->parent, 
+				directory->stat->inode,
+				directory->stat->device))
+		{
+			return -1;
+		}
+	}
 
 	cwd[0] = '.';
 	cwd[1] = '\0';
@@ -672,6 +708,7 @@ int inodeFoundInParent(Directory * parent, ino_t inode, dev_t device) {
 		if(parent->stat->inode == inode && 
 				parent->stat->device == device)
 		{
+			DEBUG("recursive directory found\n");
 			return 1;
 		}
 		parent = parent->parent;
@@ -1265,7 +1302,7 @@ void freeAllDirectoryStats(Directory * directory) {
 	ListNode * node = directory->subDirectories->firstNode;
 
 	while(node != NULL) {
-		freeAllDirectoryStats(directory);
+		freeAllDirectoryStats((Directory *)node->data);
 		node = node->nextNode;
 	}
 
