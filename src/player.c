@@ -66,29 +66,24 @@ void resetPlayer() {
 	getPlayerData()->playerControl.decode_pid = 0;
 }
 
-void player_sigHandler(int signal) {
-	if(signal==SIGCHLD) {
-		int status;
-		int pid = wait3(&status,WNOHANG,NULL);
-		if(player_pid==pid) {
-			if(WIFSIGNALED(status) && WTERMSIG(status)!=SIGTERM) {
-				ERROR("player process died from a "
-						"non-TERM signal: %i\n",
-						WTERMSIG(status));
-			}
-			resetPlayer();
+void player_sigChldHandler(int pid, int status) {
+	if(player_pid==pid) {
+		if(WIFSIGNALED(status) && WTERMSIG(status)!=SIGTERM) {
+			ERROR("player process died from a "
+					"non-TERM signal: %i\n",
+					WTERMSIG(status));
 		}
-		else if(pid==getPlayerData()->playerControl.decode_pid &&
-				player_pid<=0) 
-		{
-			if(WIFSIGNALED(status) && WTERMSIG(status)!=SIGTERM) {
-				ERROR("(caught by master parent) "
-						"decode process died from a "
-						"non-TERM signal: %i\n",
-						WTERMSIG(status));
-			}
-			getPlayerData()->playerControl.decode_pid = 0;
+		resetPlayer();
+	}
+	else if(pid==getPlayerData()->playerControl.decode_pid && player_pid<=0)
+	{
+		if(WIFSIGNALED(status) && WTERMSIG(status)!=SIGTERM) {
+			ERROR("(caught by master parent) "
+					"decode process died from a "
+					"non-TERM signal: %i\n",
+					WTERMSIG(status));
 		}
+		getPlayerData()->playerControl.decode_pid = 0;
 	}
 }
 

@@ -79,7 +79,7 @@ typedef struct _PlayerControl {
 	int decode_pid;
 } PlayerControl;
 
-void player_sigHandler(int signal);
+void player_sigChldHandler(int pid, int status);
 
 int playerPlay(FILE * fp, char * utf8file);
 

@@ -28,6 +28,10 @@
 
 extern char directorydb[MAXPATHLEN+1];
 
+void directory_sigChldHandler(int pid, int status);
+
+int updateInit(FILE * fp);
+
 void initMp3Directory();
 
 void closeMp3Directory();

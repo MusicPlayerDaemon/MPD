@@ -26,14 +26,21 @@
 #include "conf.h"
 #include "stats.h"
 #include "playlist.h"
+#include "listen.h"
+#include "interface.h"
+#include "volume.h"
 
 #include <string.h>
 #include <sys/types.h>
+#include <sys/time.h>
+#include <sys/resource.h>
+#include <sys/wait.h>
 #include <sys/stat.h>
 #include <dirent.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <errno.h>
+#include <signal.h>
 
 #define DIRECTORY_DIR		"directory: "
 #define DIRECTORY_MTIME		"mtime: "
@@ -63,6 +70,8 @@ Directory * mp3rootDirectory = NULL;
 
 char directorydb[MAXPATHLEN+1];
 
+int directory_updatePid = 0;
+
 DirectoryList * newDirectoryList();
 
 int addToDirectory(Directory * directory, char * shortname, char * name);
@@ -78,6 +87,61 @@ int updateDirectory(Directory * directory);
 void deleteEmptyDirectoriesInDirectory(Directory * directory);
 
 int addSubDirectoryToDirectory(Directory * directory, char * shortname, char * name);
+
+void directory_sigChldHandler(int pid, int status) {
+	if(directory_updatePid==pid) {
+		if(WIFSIGNALED(status) && WTERMSIG(status)!=SIGTERM) {
+                        ERROR("update process died from a "
+                                        "non-TERM signal: %i\n",
+                                        WTERMSIG(status));
+                }
+		else if(WEXITSTATUS(status)==EXIT_SUCCESS) {
+			readDirectoryDB();
+			incrPlaylistVersion();
+			DEBUG("direcotry_sigChldHandler: "
+					"updated db succesffully\n");
+		}
+		directory_updatePid = 0;
+	}
+}
+
+int updateInit(FILE * fp) {
+	if(directory_updatePid > 0) {
+		myfprintf(fp,"%s already updating\n",COMMAND_RESPOND_ERROR);
+		return -1;
+	}
+
+	directory_updatePid = fork();
+       	if(directory_updatePid==0) {
+              	/* child */
+               	struct sigaction sa;
+               	sa.sa_flags = 0;
+               	sigemptyset(&sa.sa_mask);
+
+               	sa.sa_handler = SIG_IGN;
+               	sigaction(SIGPIPE,&sa,NULL);
+               	sigaction(SIGCHLD,&sa,NULL);
+
+               	close(listenSocket);
+               	freeAllInterfaces();
+               	finishPlaylist();
+		finishVolume();
+
+		if(updateMp3Directory(stderr)) exit(EXIT_FAILURE);
+		exit(EXIT_SUCCESS);
+	}
+	else if(directory_updatePid < 0) {
+		ERROR("updateInit: Problems forking()'ing\n");
+		myfprintf(fp,"%s problems trying to update\n",
+				COMMAND_RESPOND_ERROR);
+		directory_updatePid = 0;
+		return -1;
+	}
+
+	DEBUG("updateInit: fork()'d update child\n");
+
+	return 0;
+}
 
 Directory * newDirectory(Directory * parentDirectory, char * dirname, time_t mtime) {
 	Directory * directory;

@@ -22,6 +22,10 @@
 #include "directory.h"
 
 #include <signal.h>
+#include <sys/types.h>
+#include <sys/time.h>
+#include <sys/resource.h>
+#include <sys/wait.h>
 
 struct sigaction original_termSa;
 struct sigaction original_hupSa;
@@ -41,6 +45,15 @@ void hupSigHandler(int signal) {
 	readDirectoryDB();
 }
 
+void chldSigHandler(int signal) {
+	int status;
+	int pid = wait3(&status,WNOHANG,NULL);
+	if(pid>0) {
+		player_sigChldHandler(pid,status);
+		directory_sigChldHandler(pid,status);
+	}
+}
+
 void initSigHandlers() {
 	struct sigaction sa;
 
@@ -50,12 +63,14 @@ void initSigHandlers() {
 	sigaction(SIGPIPE,&sa,NULL);
 	sa.sa_handler = usr1SigHandler;
 	sigaction(SIGUSR1,&sa,NULL);
-	sa.sa_handler = player_sigHandler;
+	sigaddset(&sa.sa_mask,SIGTERM);
+	sigaddset(&sa.sa_mask,SIGHUP);
+	sigaddset(&sa.sa_mask,SIGCHLD);
+	sa.sa_handler = chldSigHandler;
 	sigaction(SIGCHLD,&sa,NULL);
 	sa.sa_handler = hupSigHandler;
 	sigaction(SIGHUP,&sa,&original_hupSa);
 	sa.sa_handler = termSigHandler;
-	/*sigaddset(&sa.sa_mask,SIGTERM);*/
 	sigaction(SIGTERM,&sa,&original_termSa);
 }
 
@@ -70,6 +85,7 @@ void blockSignals() {
 	sigemptyset(&sset);
 	sigaddset(&sset,SIGCHLD);
 	sigaddset(&sset,SIGUSR1);
+	sigaddset(&sset,SIGHUP);
 	sigprocmask(SIG_BLOCK,&sset,NULL);
 }
 
@@ -79,6 +95,7 @@ void unblockSignals() {
 	sigemptyset(&sset);
 	sigaddset(&sset,SIGCHLD);
 	sigaddset(&sset,SIGUSR1);
+	sigaddset(&sset,SIGHUP);
 	sigprocmask(SIG_UNBLOCK,&sset,NULL);
 }
 
@@ -87,6 +104,7 @@ void blockTermSignal() {
 
 	sigemptyset(&sset);
 	sigaddset(&sset,SIGTERM);
+	sigaddset(&sset,SIGHUP);
 	sigprocmask(SIG_BLOCK,&sset,NULL);
 }
 
@@ -95,5 +113,6 @@ void unblockTermSignal() {
 
 	sigemptyset(&sset);
 	sigaddset(&sset,SIGTERM);
+	sigaddset(&sset,SIGHUP);
 	sigprocmask(SIG_UNBLOCK,&sset,NULL);
 }

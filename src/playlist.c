@@ -144,7 +144,9 @@ void finishPlaylist() {
 	stopPlaylist(stderr);
 	clearPlaylist(stderr);
 	free(playlist.songs);
+	playlist.songs = NULL;
 	free(playlist.order);
+	playlist.order = NULL;
 }
 
 int clearPlaylist(FILE * fp) {
@@ -626,6 +628,8 @@ int deleteFromPlaylist(FILE * fp, int song) {
 
 void deleteASongFromPlaylist(Song * song) {
 	int i;
+
+	if(NULL==playlist.songs) return;
 	
 	for(i=0;i<playlist.length;i++) {
 		if(song==playlist.songs[i]) {
