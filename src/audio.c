@@ -22,6 +22,7 @@
 #include "log.h"
 #include "sig_handlers.h"
 #include "command.h"
+#include "playerData.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -36,7 +37,8 @@ static AudioOutput ** audioOutputArray = NULL;
 static mpd_uint8 audioOutputArraySize = 0;
 /* the audioEnabledArray should be stuck into shared memory, and then disable
    and enable in playAudio() routine */
-static mpd_uint8 * audioEnabledArray = NULL;
+static mpd_sint8 * pdAudioDevicesEnabled = NULL;
+static mpd_sint8 myAudioDevicesEnabled[AUDIO_MAX_DEVICES];
 
 static mpd_uint8 audioOpened = 0;
 
@@ -54,6 +56,7 @@ extern AudioOutputPlugin aoPlugin;
 extern AudioOutputPlugin shoutPlugin;
 extern AudioOutputPlugin ossPlugin;
 
+/* make sure initPlayerData is called before this function!! */
 void initAudioDriver() {
 	ConfigParam * param = NULL;
 	int i;
@@ -63,8 +66,15 @@ void initAudioDriver() {
 	loadAudioOutputPlugin(&shoutPlugin);
 	loadAudioOutputPlugin(&ossPlugin);
 
+	pdAudioDevicesEnabled = (getPlayerData())->audioDeviceEnabled;
+
+	for(i = 0; i < AUDIO_MAX_DEVICES; i++) {
+		pdAudioDevicesEnabled[i] = 1;
+		myAudioDevicesEnabled[i] = 1;
+	}
+
 	while((param = getNextConfigParam(CONF_AUDIO_OUTPUT, param))) {
-		if(audioOutputArraySize == 255) {
+		if(audioOutputArraySize == AUDIO_MAX_DEVICES) {
 			ERROR("only up to 255 audio output devices are "
 					"supported");
 			exit(EXIT_FAILURE);
@@ -74,11 +84,8 @@ void initAudioDriver() {
 
 		audioOutputArray = realloc(audioOutputArray,
 				audioOutputArraySize*sizeof(AudioOutput *));
-		audioEnabledArray = realloc(audioEnabledArray,
-				audioOutputArraySize*sizeof(mpd_uint8));
 	
 		audioOutputArray[i] = newAudioOutput(param);
-		audioEnabledArray[i] = 1;
 
 		if(!audioOutputArray[i]) {
 			ERROR("problems configuring output device defined at "
@@ -188,10 +195,11 @@ void finishAudioDriver() {
 		finishAudioOutput(audioOutputArray[i]);
 	}
 
-	free(audioEnabledArray);
 	free(audioOutputArray);
 	audioOutputArray = NULL;
-	audioOutputArraySize = 0;
+	/* don't set to zero cause we're gonna use this for enabling
+		and disabling devices */
+	/*audioOutputArraySize = 0;*/
 }
 
 int isCurrentAudioFormat(AudioFormat * audioFormat) {
@@ -200,6 +208,19 @@ int isCurrentAudioFormat(AudioFormat * audioFormat) {
 	if(cmpAudioFormat(audioFormat, &audio_format) != 0) return 0;
 
 	return 1;
+}
+
+inline void syncAudioDevicesEnabledArrays() {
+	int i;
+
+	memcpy(myAudioDevicesEnabled, pdAudioDevicesEnabled,AUDIO_MAX_DEVICES);
+			
+	for(i = 0; i < audioOutputArraySize; i++) {
+		if(myAudioDevicesEnabled[i]) {
+			openAudioOutput(audioOutputArray[i], &audio_format);
+		}
+		else closeAudioOutput(audioOutputArray[i]);
+	}
 }
 
 int openAudioDevice(AudioFormat * audioFormat) {
@@ -213,11 +234,9 @@ int openAudioDevice(AudioFormat * audioFormat) {
 		copyAudioFormat(&audio_format, audioFormat);
 	}
 
+	syncAudioDevicesEnabledArrays();
+	
 	for(i = 0; i < audioOutputArraySize; i++) {
-		if(!audioEnabledArray[i]) continue;
-		if(!audioOutputArray[i]->open || !isCurrentFormat) {
-			openAudioOutput(audioOutputArray[i], &audio_format);
-		}
 		if(audioOutputArray[i]->open) ret = 0;
 	}
 
@@ -238,10 +257,14 @@ int playAudio(char * playChunk, int size) {
 	int ret = -1;
 	int i;
 
-	/* put some here to determine if enabled array changed */
+	if(0 != memcmp(pdAudioDevicesEnabled, myAudioDevicesEnabled,
+			AUDIO_MAX_DEVICES)) 
+	{
+		syncAudioDevicesEnabledArrays();
+	}
 
 	for(i = 0; i < audioOutputArraySize; i++) {
-		if(!audioEnabledArray[i]) continue;
+		if(!myAudioDevicesEnabled[i]) continue;
 		if(0 == playAudioOutput(audioOutputArray[i], playChunk, size)) {
 			ret = 0;
 		}
@@ -251,14 +274,6 @@ int playAudio(char * playChunk, int size) {
 }
 
 int isAudioDeviceOpen() {
-	/*int ret = 0;
-	int i;
-
-	for(i = 0; i < audioOutputArraySize; i++) {
-		if(!audioEnabledArray[i]) continue;
-		ret |= audioOutputArray[i]->open;
-	}*/
-
 	return audioOpened;
 }
 
@@ -287,10 +302,7 @@ int enableAudioDevice(FILE * fp, int device) {
 		return -1;
 	}
 
-	audioEnabledArray[device] = 1;
-	/*if(audioOpened && !audioOutputArray[device]->open) {
-		openAudioOutput(audioOutputArray[device], &audio_format);
-	}*/
+	pdAudioDevicesEnabled[device] = 1;
 
 	return 0;
 }
@@ -302,8 +314,7 @@ int disableAudioDevice(FILE * fp, int device) {
 		return -1;
 	}
 
-	audioEnabledArray[device] = 0;
-	/*closeAudioOutput(audioOutputArray[device]);*/
+	pdAudioDevicesEnabled[device] = 0;
 
 	return 0;
 }

@@ -28,6 +28,8 @@
 
 #define AUDIO_AO_DRIVER_DEFAULT	"default"
 
+#define AUDIO_MAX_DEVICES	8
+
 typedef struct _AudioFormat {
 	volatile mpd_sint8 channels;
 	volatile mpd_uint32 sampleRate;
@@ -42,6 +44,7 @@ void getOutputAudioFormat(AudioFormat * inFormat, AudioFormat * outFormat);
 
 int parseAudioConfig(AudioFormat * audioFormat, char * conf);
 
+/* make sure initPlayerData is called before this function!! */
 void initAudioConfig();
 
 void finishAudioConfig();

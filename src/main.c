@@ -427,9 +427,9 @@ int main(int argc, char * argv[]) {
         openDB(&options, argv[0]);
 
         initCommands();
+        initPlayerData();
         initAudioConfig();
         initAudioDriver();
-        initPlayerData();
         initVolume();
         initInterfaces();
 	initInputStream();

@@ -37,6 +37,7 @@ typedef struct _PlayerData {
 	OutputBuffer buffer;
 	PlayerControl playerControl;
 	DecoderControl decoderControl;
+	mpd_sint8 audioDeviceEnabled[AUDIO_MAX_DEVICES];
 } PlayerData;
 
 void initPlayerData();
@@ -46,4 +47,3 @@ PlayerData * getPlayerData();
 void freePlayerData();
 
 #endif
-/* vim:set shiftwidth=4 tabstop=8 expandtab: */
