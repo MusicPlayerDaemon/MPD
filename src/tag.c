@@ -310,11 +310,10 @@ MpdTag * oggTagDup(char * utf8file) {
 	char * s1;
 	char * s2;
 
-	while(!(fp = fopen(rmp2amp(utf8ToFsCharset(utf8file)),"r")) 
-			&& errno==EINTR);
+	fp = fopen(rmp2amp(utf8ToFsCharset(utf8file)),"r"); 
 	if(!fp) return NULL;
 	if(ov_open(fp,&vf,NULL,0)<0) {
-		while(fclose(fp) && errno==EINTR);
+		fclose(fp);
 		return NULL;
 	}
 
