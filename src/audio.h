@@ -24,7 +24,6 @@
 #include "mpd_types.h"
 
 #include <stdio.h>
-#include <ao/ao.h>
 
 #define AUDIO_AO_DRIVER_DEFAULT	"default"
 
@@ -33,9 +32,6 @@ typedef struct _AudioFormat {
 	mpd_uint32 sampleRate;
 	mpd_sint8 bits;
 } AudioFormat;
-
-extern int audio_ao_driver_id;
-extern ao_option * audio_ao_options;
 
 void initAudioDriver();
 

@@ -45,7 +45,6 @@ typedef struct {
 /* this code is based on flac123, from flac-tools */
 
 int flacSendChunk(FlacData * data);
-void flacPlayfile(const char * file, Buffer * cb, ao_sample_format * format);
 void flacError(const FLAC__FileDecoder *, FLAC__StreamDecoderErrorStatus, void *);
 void flacPrintErroredState(FLAC__FileDecoderState state, char * file);
 void flacMetadata(const FLAC__FileDecoder *, const FLAC__StreamMetadata *, void *);

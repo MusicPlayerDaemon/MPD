@@ -25,6 +25,9 @@
 #include <assert.h>
 #include <signal.h>
 
+#ifdef HAVE_AUDIO
+#include <ao/ao.h>
+
 int audio_write_size;
 
 int audio_ao_driver_id;
@@ -32,8 +35,10 @@ ao_option * audio_ao_options;
 
 AudioFormat audio_format;
 ao_device * audio_device = NULL;
+#endif
 
 void initAudioDriver() {
+#ifdef HAVE_AUDIO
 	ao_info * ai;
 	char * dup;
 	char * stk1;
@@ -107,15 +112,19 @@ void initAudioDriver() {
 		}
 	}
 	free(dup);
+#endif
 }
 
 void finishAudioDriver() {
+#ifdef HAVE_AUDIO
 	ao_free_options(audio_ao_options);
 
 	ao_shutdown();
+#endif
 }
 
 int isCurrentAudioFormat(AudioFormat * audioFormat) {
+#ifdef HAVE_AUDIO
 	if(!audio_device || !audioFormat) return 0;
 
 	if(audio_format.bits!=audioFormat->bits || 
@@ -124,11 +133,12 @@ int isCurrentAudioFormat(AudioFormat * audioFormat) {
 	{
 		return 0;
 	}
-
+#endif
 	return 1;
 }
 
 int initAudio(AudioFormat * audioFormat) {
+#ifdef HAVE_AUDIO
 	ao_sample_format format;
 
 	if(audio_device && !isCurrentAudioFormat(audioFormat)) {
@@ -154,12 +164,13 @@ int initAudio(AudioFormat * audioFormat) {
 
 		if(audio_device==NULL) return -1;
 	}
-
+#endif
 	return 0;
 }
 
 
 int playAudio(char * playChunk, int size) {
+#ifdef HAVE_AUDIO
 	int send;
 
 	if(audio_device==NULL) {
@@ -181,19 +192,23 @@ int playAudio(char * playChunk, int size) {
 		size-=send;
 	}
 
+#endif
 	return 0;
 }
 
 void finishAudio() {
+#ifdef HAVE_AUDIO
 	if(audio_device) {
 		blockSignals();
 		ao_close(audio_device);
 		audio_device = NULL;
 		unblockSignals();
 	}
+#endif
 }
 
 void audioError() {
+#ifdef HAVE_AUDIO
 	if(errno==AO_ENOTLIVE) {
 		ERROR("not a live ao device\n");
 	}
@@ -203,4 +218,5 @@ void audioError() {
 	else if(errno==AO_EBADOPTION) {
 		ERROR("bad driver option\n");
 	}
+#endif
 }

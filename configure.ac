@@ -27,6 +27,7 @@ AM_CONFIG_HEADER(config.h)
 MPD_CFLAGS="-Wall"
 MPD_LIBS=""
 
+AC_ARG_ENABLE(audio,[  --disable-audio    disable support for playing],,enable_ao=yes)
 AC_ARG_ENABLE(iconv,[  --disable-iconv     disable iconv support],,enable_iconv=yes)
 AC_ARG_ENABLE(ipv6,[  --disable-ipv6     disable IPv6 support],,enable_ipv6=yes)
 AC_ARG_ENABLE(alsa,[  --disable-alsa     disable Alsa Mixer support],,enable_alsa=yes)
@@ -91,7 +92,11 @@ AP_maGiC_VALUE
 )
 fi
 
-XIPH_PATH_AO(MPD_LIBS="$MPD_LIBS $AO_LIBS" MPD_CFLAGS="$MPD_CFLAGS $AO_CFLAGS",AC_MSG_ERROR(Must have libao installed!!!))
+if test x$enable_ao = xyes; then
+	XIPH_PATH_AO(MPD_LIBS="$MPD_LIBS $AO_LIBS" MPD_CFLAGS="$MPD_CFLAGS $AO_CFLAGS",AC_MSG_ERROR(Must have libao installed!!!))
+	AC_DEFINE(HAVE_AUDIO, 1, [Define to play audio])
+fi
+
 AC_CHECK_HEADER(sys/soundcard.h,enable_oss=yes,[AC_MSG_WARN(Soundcard headers not found -- disabling OSS mixer);enable_oss=no;AC_DEFINE(NO_OSS_MIXER,1,[Define to disable OSS mixer support])])
 
 if test x$enable_alsa = xyes; then
@@ -502,6 +507,12 @@ fi
 
 echo ""
 echo "Audio Format Support:"
+if test x$enable_ao = xyes; then
+	echo "Playing audio .................enabled"
+else
+	echo "Playing audio .................disabled"
+fi
+
 if test x$enable_id3 = xyes; then
 	echo "ID3 tag support ...............enabled"
 	if test x$use_mpd_id3tag = xyes; then
