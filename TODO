@@ -12,14 +12,20 @@
 	*) Handle mp1 and mp2 files (including files with mp3 suffixes) 
 	*) add support for playing aac streams (gee, thanks icecast)
 	*) parsing of lame tags (including getting replaygain and gapless info)
+	*) read replaygain info from id3 tag
 
 *) aduio output
 	*) allowing "pausing" of audio output devices
 	*) while pausing, play silence for the devices that don't support 
 	   "pausing"
-	*) add support for automagically detecting the current output device
-	*) correlated the automagically deteted output device to the default
-	   mixer to choose
+	*) pick a default type depending on what we detect at compile time
+		*) don't attempt to autodetect, i think this will just cause
+			problems
+		*) output default audio device at the end of the configure
+			script
+	*) write a mac os X native audioOutput
+	*) write a esd native audioOutput
+	*) remove libao support!
 	*) need better resampling code
 
 0.13
