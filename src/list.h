@@ -69,6 +69,9 @@ List * makeList(ListFreeDataFunc * freeDataFunc);
  */ 
 int insertInList(List * list,char * key,void * data);
 
+int insertInListBeforeNode(List * list, ListNode * beforeNode, char * key,
+		void * data);
+ 
 int insertInListWithoutKey(List * list,void * data);
 
 /* deletes the first node in the list with the key _key_

@@ -56,6 +56,51 @@ List * makeList(ListFreeDataFunc * freeDataFunc) {
 	return list;
 }
 
+int insertInListBeforeNode(List * list, ListNode * beforeNode, char * key,
+		void * data) 
+{
+	ListNode * node;
+
+	assert(list!=NULL);
+	assert(key!=NULL);
+	/*assert(data!=NULL);*/
+
+	node = malloc(sizeof(ListNode));
+	assert(node!=NULL);
+
+	if(list->nodesArray) freeListNodesArray(list);
+
+	if(beforeNode==NULL) beforeNode = list->firstNode;
+
+	node->nextNode = beforeNode;
+	if(beforeNode==list->firstNode) {
+		if(list->firstNode==NULL) {
+			assert(list->lastNode==NULL);
+			list->lastNode = node;
+		}
+		else {
+			assert(list->lastNode!=NULL);
+			assert(list->lastNode->nextNode==NULL);
+			list->firstNode->prevNode = node;
+		}
+		node->prevNode = NULL;
+		list->firstNode = node;
+	}
+	else {
+		node->prevNode = beforeNode->prevNode;
+		beforeNode->prevNode = node;
+	}
+	
+	node->key = malloc((strlen(key)+1)*sizeof(char));
+	assert(node->key!=NULL);
+	strcpy(node->key,key);
+	node->data = data;
+
+	list->numberOfNodes++;
+	
+	return 1;
+}
+
 int insertInList(List * list,char * key,void * data) {
 	ListNode * node;
 
