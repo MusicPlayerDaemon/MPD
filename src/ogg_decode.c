@@ -31,6 +31,12 @@
 #include <string.h>
 #include <vorbis/vorbisfile.h>
 
+#ifdef WORDS_BIGENDIAN
+#define OGG_DECODE_USE_BIGENDIAN	1
+#else
+#define OGG_DECODE_USE_BIGENDIAN	0
+#endif
+
 int ogg_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc)
 {
 	OggVorbis_File vf;
@@ -77,7 +83,8 @@ int ogg_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc)
 			}
 			ret = ov_read(&vf,chunk+chunkpos,
 					CHUNK_SIZE-chunkpos,
-					0,2,1,
+					OGG_DECODE_USE_BIGENDIAN,
+					2,1,
 					&current_section);
 			if(ret<=0) eof = 1;
 			else chunkpos+=ret;
@@ -89,10 +96,6 @@ int ogg_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc)
 				}
 				if(dc->stop) break;
 				else if(dc->seek) continue;
-#ifdef WORDS_BIGENDIAN
-				pcm_changeBufferEndianness(chunk,CHUNK_SIZE,
-						af->bits);
-#endif
 				memcpy(cb->chunks+cb->end*CHUNK_SIZE,
 						chunk,chunkpos);
 				cb->chunkSize[cb->end] = chunkpos;
