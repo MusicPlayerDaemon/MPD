@@ -87,7 +87,7 @@ int prepOssMixer(char * device) {
 			/* eliminate spaces at the end */
 			j = strlen(dup)-1;
 			while(j>=0 && dup[j]==' ') dup[j--] = '\0';
-			if(strcmp(dup,getConf()[CONF_MIXER_CONTROL])==0) {
+			if(strcasecmp(dup,getConf()[CONF_MIXER_CONTROL])==0) {
 				free(dup);
 				break;
 			}
@@ -203,7 +203,7 @@ int prepAlsaMixer(char * card) {
 			if(snd_mixer_elem_get_type(elem)
 					==SND_MIXER_ELEM_SIMPLE) 
 			{
-				if(strcmp(getConf()[CONF_MIXER_CONTROL],
+				if(strcasecmp(getConf()[CONF_MIXER_CONTROL],
 						snd_mixer_selem_get_name(elem))
 						==0)
 				{
