@@ -149,20 +149,22 @@ int isFile(char * utf8file, time_t * mtime) {
 	return 0;
 }
 
-int hasSuffix(char * utf8file, char * suffix) {
-	char * file = utf8ToFsCharset(utf8file);
-	char * dup = strdup(file);
-	char * cLast;
-	char * cNext;
-	int ret = 0;
- 
-	cNext = cLast = strtok(dup,".");
-
-	while((cNext = strtok(NULL,"."))) cLast = cNext;
-	if(cLast && 0==strcasecmp(cLast,suffix)) ret = 1;
-	free(dup);
+/* suffixes should be ascii only characters */
+char * getSuffix(char * utf8file) {
+        char * ret = NULL;
+        
+        while(*utf8file) {
+                if(*utf8file == '.') ret = utf8file+1;
+                utf8file++;
+        }
 
 	return ret;
+}
+
+int hasSuffix(char * utf8file, char * suffix) {
+        char * s = getSuffix(utf8file);
+        if(s && 0==strcmp(s,suffix)) return 1;
+        return 0;
 }
 
 int isPlaylist(char * utf8file) {
