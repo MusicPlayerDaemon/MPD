@@ -20,6 +20,7 @@
 #include "interface.h"
 #include "conf.h"
 #include "log.h"
+#include "utils.h"
 
 #include <unistd.h>
 #include <stdio.h>
@@ -41,16 +42,6 @@
 #define ALLOW_REUSE		1
 
 int listenSocket;
-
-#ifdef HAVE_IPV6
-int ipv6Supported() {
-	int s;
-	s = socket(AF_INET6,SOCK_STREAM,0);
-	if(s == -1) return 0;
-	close(s);
-	return 1;
-}
-#endif
 
 int establish(unsigned short port) {
 	int allowReuse = ALLOW_REUSE;

@@ -22,6 +22,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <sys/types.h>
+#include <sys/socket.h>
 #include <sys/select.h>
 #include <sys/time.h>
 #include <unistd.h>
@@ -57,4 +58,16 @@ void my_usleep(long usec) {
 
 	select(0,NULL,NULL,NULL,&tv);
 }
+
+int ipv6Supported() {
+#ifdef HAVE_IPV6
+	int s;
+	s = socket(AF_INET6,SOCK_STREAM,0);
+	if(s == -1) return 0;
+	close(s);
+	return 1;
+#endif
+        return 0;
+}
+
 /* vim:set shiftwidth=4 tabstop=8 expandtab: */
