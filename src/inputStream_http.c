@@ -19,6 +19,7 @@
 #include "inputStream_http.h"
 
 #include "utils.h"
+#include "log.h"
 
 #include <stdio.h>
 #include <sys/types.h>
@@ -376,6 +377,7 @@ static int getHTTPHello(InputStream * inStream) {
                         if(data->icyName)  free(data->icyName);
                         data->icyName = strdup(cur+11);
                         *temp = '\r';
+                        DEBUG("stream icy-name: %s\n", data->icyName);
                 }
                 else if(0 == strncmp(cur, "\r\nx-audiocast-name:", 19)) {
                         char * temp = strstr(cur+19,"\r\n");
@@ -384,6 +386,7 @@ static int getHTTPHello(InputStream * inStream) {
                         if(data->icyName) free(data->icyName);
                         data->icyName = strdup(cur+19);
                         *temp = '\r';
+                        DEBUG("stream audiocast-name: %s\n", data->icyName);
                 }
                 else if(0 == strncmp(cur, "\r\nContent-Type:", 15)) {
                         char * temp = strstr(cur+15,"\r\n");
