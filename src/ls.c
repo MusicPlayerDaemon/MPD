@@ -168,11 +168,14 @@ int lsPlaylists(FILE * fp, char * utf8path) {
 	free(path);
 
 	if(list) {
+		int i;
 		sortList(list);
 
 		dup = malloc(strlen(utf8path)+2);
 		strcpy(dup,utf8path);
-		while(dup[strlen(dup)-1]=='/') dup[strlen(dup)-1] = '\0';
+		for(i = strlen(dup)-1; i >= 0 && dup[i]=='/'; i--) {
+			dup[i] = '\0';
+		}
 		if(strlen(dup)) strcat(dup,"/");
 
 		node = list->firstNode;
