@@ -47,8 +47,8 @@ void hupSigHandler(int signal) {
 
 void chldSigHandler(int signal) {
 	int status;
-	int pid = wait3(&status,WNOHANG,NULL);
-	if(pid>0) {
+	int pid;
+	while((pid = wait3(&status,WNOHANG,NULL)) > 0) {
 		player_sigChldHandler(pid,status);
 		directory_sigChldHandler(pid,status);
 	}
