@@ -69,12 +69,12 @@ void usage(char * argv[]) {
                         SYSTEM_CONFIG_FILE_LOCATION);
         ERROR("\n");
         ERROR("options:\n");
-        ERROR("   --help           this usage statement\n");
-        ERROR("   --no-daemon      don't detach from console\n");
-        ERROR("   --create-db      force (re)creation database\n");
-        ERROR("   --no-create-db   don't create database\n");
-        ERROR("   --verbose        verbose logging\n");
-        ERROR("   --version        prints version information\n");
+        ERROR("   --help             this usage statement\n");
+        ERROR("   --no-daemon        don't detach from console\n");
+        ERROR("   --create-db        force (re)creation database\n");
+        ERROR("   --no-create-db     don't create database\n");
+        ERROR("   --verbose          verbose logging\n");
+        ERROR("   --version          prints version information\n");
 }
 
 void version() {

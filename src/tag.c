@@ -23,6 +23,7 @@
 #include "mp3_decode.h"
 #include "audiofile_decode.h"
 #include "mp4_decode.h"
+#include "aac_decode.h"
 #include "utils.h"
 
 #include <sys/stat.h>
@@ -46,7 +47,6 @@
 #endif
 #endif
 #ifdef HAVE_FAAD
-#include <faad.h>
 #include "mp4ff/mp4ff.h"
 #endif
 
@@ -173,176 +173,20 @@ MpdTag * mp3TagDup(char * utf8file) {
 #endif
 
 #ifdef HAVE_FAAD
-typedef struct {
-	long bytesIntoBuffer;
-	long bytesConsumed;
-	long fileOffset;
-	unsigned char *buffer;
-	int atEof;
-	FILE *infile;
-} AacBuffer;
-
-void fillAacBuffer(AacBuffer *b) {
-	if(b->bytesConsumed > 0) {
-		int bread;
-
-		if(b->bytesIntoBuffer) {
-			memmove((void *)b->buffer,(void*)(b->buffer+
-					b->bytesConsumed),b->bytesIntoBuffer);
-		}
-
-		if(!b->atEof) {
-			bread = fread((void *)(b->buffer+b->bytesIntoBuffer),1,
-					b->bytesConsumed,b->infile);
-			if(bread!=b->bytesConsumed) b->atEof = 1;
-			b->bytesIntoBuffer+=bread;
-		}
-
-		b->bytesConsumed = 0;
-
-		if(b->bytesIntoBuffer > 3) {
-			if(memcmp(b->buffer,"TAG",3)==0) b->bytesIntoBuffer = 0;
-		}
-		if(b->bytesIntoBuffer > 11) {
-			if(memcmp(b->buffer,"LYRICSBEGIN",11)==0) {
-				b->bytesIntoBuffer = 0;
-			}
-		}
-		if(b->bytesIntoBuffer > 8) {
-			if(memcmp(b->buffer,"APETAGEX",8)==0) {
-				b->bytesIntoBuffer = 0;
-			}
-		}
-	}
-}
-
-void advanceAacBuffer(AacBuffer * b, int bytes) {
-	b->fileOffset+=bytes;
-	b->bytesConsumed = bytes;
-	b->bytesIntoBuffer-=bytes;
-}
-
-static int adtsSampleRates[] = {96000,88200,64000,48000,44100,32000,24000,22050,
-				16000,12000,11025,8000,7350,0,0,0};
-
-int adtsParse(AacBuffer * b, float * length) {
-	int frames, frameLength;
-	int tFrameLength = 0;
-	int sampleRate = 0;
-	float framesPerSec, bytesPerFrame;
-
-	/* Read all frames to ensure correct time and bitrate */
-	for(frames = 0; ;frames++) {
-		fillAacBuffer(b);
-
-		if(b->bytesIntoBuffer > 7) {
-			/* check syncword */
-			if (!((b->buffer[0] == 0xFF) && 
-				((b->buffer[1] & 0xF6) == 0xF0)))
-			{
-				break;
-			}
-
-			if(frames==0) {
-				sampleRate = adtsSampleRates[
-						(b->buffer[2]&0x3c)>>2];
-			}
-
-			frameLength =  ((((unsigned int)b->buffer[3] & 0x3)) 
-					<< 11) | (((unsigned int)b->buffer[4])  
-                			<< 3) | (b->buffer[5] >> 5);
-
-			tFrameLength+=frameLength;
-
-			if(frameLength > b->bytesIntoBuffer) break;
-
-			advanceAacBuffer(b,frameLength);
-		}
-		else break;
-	}
-
-	framesPerSec = (float)sampleRate/1024.0;
-	if(frames!=0) {
-		bytesPerFrame = (float)tFrameLength/(float)(frames*1000);
-	}
-	else bytesPerFrame = 0;
-	if(framesPerSec!=0) *length = (float)frames/framesPerSec;
-
-	return 1;
-}
-
-#define AAC_MAX_CHANNELS	6
-
 MpdTag * aacTagDup(char * utf8file) {
 	MpdTag * ret = NULL;
-	AacBuffer b;
-	size_t fileread;
-	size_t bread;
-	size_t tagsize;
-	float length = -1;
-
-	memset(&b,0,sizeof(AacBuffer));
+	int time;
 
 	blockSignals();
 
-	b.infile = fopen(rmp2amp(utf8ToFsCharset(utf8file)),"r");
-	if(b.infile == NULL) return NULL;
+	time = getAacTotalTime(rmp2amp(utf8ToFsCharset(utf8file)));
 
-	fseek(b.infile,0,SEEK_END);
-	fileread = ftell(b.infile);
-	fseek(b.infile,0,SEEK_SET);
-
-	b.buffer = malloc(FAAD_MIN_STREAMSIZE*AAC_MAX_CHANNELS);
-	memset(b.buffer,0,FAAD_MIN_STREAMSIZE*AAC_MAX_CHANNELS);
-
-	bread = fread(b.buffer,1,FAAD_MIN_STREAMSIZE*AAC_MAX_CHANNELS,b.infile);
-	b.bytesIntoBuffer = bread;
-	b.bytesConsumed = 0;
-	b.fileOffset = 0;
-
-	if(bread!=FAAD_MIN_STREAMSIZE*AAC_MAX_CHANNELS) b.atEof = 1;
-
-	tagsize = 0;
-	if(!memcmp(b.buffer,"ID3",3)) {
-		tagsize = (b.buffer[6] << 21) | (b.buffer[7] << 14) |
-				(b.buffer[8] << 7) | (b.buffer[9] << 0);
-
-		tagsize+=10;
-		advanceAacBuffer(&b,tagsize);
-		fillAacBuffer(&b);
-	}
-
-	if((b.buffer[0] == 0xFF) && ((b.buffer[1] & 0xF6) == 0xF0)) {
-		adtsParse(&b,&length);
-		fseek(b.infile,tagsize, SEEK_SET);
-
-		bread = fread(b.buffer,1,FAAD_MIN_STREAMSIZE*AAC_MAX_CHANNELS,
-				b.infile);
-		if(bread != FAAD_MIN_STREAMSIZE*AAC_MAX_CHANNELS) b.atEof = 1;
-		else b.atEof = 0;
-		b.bytesIntoBuffer = bread;
-		b.bytesConsumed = 0;
-		b.fileOffset = tagsize;
-	}
-	else if(memcmp(b.buffer,"ADIF",4) == 0) {
-		int bitRate;
-		int skipSize = (b.buffer[4] & 0x80) ? 9 : 0;
-		bitRate = ((unsigned int)(b.buffer[4 + skipSize] & 0x0F)<<19) |
-            			((unsigned int)b.buffer[5 + skipSize]<<11) |
-            			((unsigned int)b.buffer[6 + skipSize]<<3) |
-            			((unsigned int)b.buffer[7 + skipSize] & 0xE0);
-
-		length = fileread;
-		if(length!=0) length = length*8.0/bitRate;
-	}
-
-	if(b.buffer) free(b.buffer);
-	fclose(b.infile);
-
-	if(length>=0) {
+	if(time>=0) {
 		if((ret = id3Dup(utf8file))==NULL) ret = newMpdTag();
-		ret->time = length+0.5;
+		ret->time = time;
 	}
+
+	unblockSignals();
 
 	return ret;
 }

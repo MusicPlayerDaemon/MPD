@@ -87,40 +87,52 @@ char * getFsCharset() {
 }
 
 void initPaths() {
-#ifdef HAVE_LOCALE
-#ifdef HAVE_LANGINFO
-	char * originalLocale;
-#endif
-#endif
 	char * charset = NULL;
+	char * originalLocale;
 
 	if(getConf()[CONF_FS_CHARSET]) {
 		charset = strdup(getConf()[CONF_FS_CHARSET]);
 	}
 #ifdef HAVE_LOCALE
 #ifdef HAVE_LANGINFO
-	else if((originalLocale = setlocale(LC_CTYPE,""))) {
+	else if((originalLocale = setlocale(LC_CTYPE,NULL))) {
 		char * temp;
+		char * currentLocale;
+		originalLocale = strdup(originalLocale);
 
-		if((temp = nl_langinfo(CODESET))) {
-			charset = strdup(temp);
+		if(!(currentLocale = setlocale(LC_CTYPE,""))) {
+			ERROR("problems setting current locale with "
+					"setlocale()\n");
 		}
-		else ERROR("problems getting charset for locale\n");
-		if(!setlocale(LC_CTYPE,originalLocale)) {
-			ERROR("problems resetting locale with setlocale()\n");
+		else {
+			if(strcmp(currentLocale,"C")==0 ||
+					strcmp(currentLocale,"POSIX")==0) 
+			{
+				ERROR("current locale is \"%s\"\n",
+						currentLocale);
+			}
+			else if((temp = nl_langinfo(CODESET))) {
+				charset = strdup(temp);
+			}
+			else ERROR("problems getting charset for locale\n");
+			if(!setlocale(LC_CTYPE,originalLocale)) {
+				ERROR("problems resetting locale with setlocale()\n");
+			}
 		}
+
+		free(originalLocale);
 	}
-#endif
-#endif
 	else ERROR("problems getting locale with setlocale()\n");
+#endif
+#endif
 
 	if(charset) {
 		setFsCharset(charset);
 		free(charset);
 	}
 	else {
-		ERROR("setting filesystem charset to UTF-8\n");
-		setFsCharset("UTF-8");
+		ERROR("setting filesystem charset to ISO-8859-1\n");
+		setFsCharset("ISO-8859-1");
 	}
 }
 

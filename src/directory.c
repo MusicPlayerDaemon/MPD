@@ -548,7 +548,8 @@ int readDirectoryDB() {
 				else if(0==strncmp(DIRECTORY_FS_CHARSET,buffer,
 						strlen(DIRECTORY_FS_CHARSET)))
 				{
-					char * fsCharset; 
+					char * fsCharset;
+					char * tempCharset; 
 
 					if(foundFsCharset) {
 						ERROR("already found "
@@ -560,15 +561,14 @@ int readDirectoryDB() {
 
 					fsCharset = &(buffer[strlen(
 							DIRECTORY_FS_CHARSET)]);
-					if(getConf()[CONF_FS_CHARSET] && 
-							strcmp(fsCharset,
-							getFsCharset())) 
+					if((tempCharset = 
+						getConf()[CONF_FS_CHARSET]) && 
+						strcmp(fsCharset,tempCharset))
 					{
 						ERROR("Using \"%s\" for the "
 							"filesystem charset "
 							"instead of \"%s\"\n",
-							fsCharset,
-							getFsCharset());
+							fsCharset,tempCharset);
 						ERROR("maybe you need to "
 							"recreate the db?\n");
 						setFsCharset(fsCharset);

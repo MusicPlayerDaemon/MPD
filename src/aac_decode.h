@@ -18,8 +18,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef MP4_DECODE_H
-#define MP4_DECODE_H
+#ifndef AAC_DECODE_H
+#define AAC_DECODE_H
 
 #include "../config.h"
 
@@ -27,15 +27,9 @@
 
 #include "playerData.h"
 
-#include "mp4ff/mp4ff.h"
+int getAacTotalTime(char * file);
 
-int mp4_getAACTrack(mp4ff_t *infile);
-
-uint32_t mp4_readCallback(void *user_data, void *buffer, uint32_t length);
-            
-uint32_t mp4_seekCallback(void *user_data, uint64_t position);
-		    
-int mp4_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc);
+int aac_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc);
 
 #endif /* HAVE_FAAD */
 
