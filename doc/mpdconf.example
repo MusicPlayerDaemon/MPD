@@ -78,7 +78,7 @@ error_file 		"~/mpd.error"
 
 
 ########### SECURITY SETTINGS ############
-# if you start mpd as root, its recmmoned
+# if you start mpd as root, its recommended
 #     you specify a a user for mpd to run.
 #user 		"nobody"
 
