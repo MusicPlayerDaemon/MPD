@@ -501,13 +501,14 @@ int mp3Read(mp3DecodeData * data, Buffer * cb, DecoderControl * dc) {
 		}
 	}
 
-	while((ret=decodeNextFrameHeader(data))==DECODE_CONT || 
-			ret==DECODE_SKIP);
-	if(ret==DECODE_OK && !data->muteFrame) {
+	if(data->muteFrame) {
+		while((ret=decodeNextFrameHeader(data))==DECODE_CONT || 
+				ret==DECODE_SKIP);
+	}
+	else {
 		while((ret=decodeNextFrame(data))==DECODE_CONT || 
 				ret==DECODE_SKIP);
 	}
-	if(ret==DECODE_SKIP) data->muteFrame = 1;
 	
 	return ret;
 }
