@@ -37,11 +37,7 @@ close
 	close the connection with the MPD
 
 crossfade <int seconds>
-	sets and gets crossfading between songs
-	(a value of 0 disables crossfading).
-	if _seconds_ is not specified, then the return crossfade returns:
-		crossfade: <unsigned integer >= 0>
-
+	sets crossfading between songs
 
 delete <int song>
 	delete _song_ from playlist
@@ -155,6 +151,8 @@ status
 	song: (current song playing/paused, playlist song number)
 	time: <int elapsed>:<time total> (of current playing/paused song)
 	bitrate: <int bitrate> (instantaneous bitrate in kbps)
+	xfade: <int seconds> (crossfade in seconds)
+	audio: <int sampleRate>:<int bits>:<int channels>
 	error: if there is an error, returns message here
 
 stop
