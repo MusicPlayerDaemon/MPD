@@ -395,7 +395,7 @@ void queueNextSongInPlaylist() {
 	}
 	else if(playlist.length && playlist.repeat) {
 		if(playlist.length>1 && playlist.random) {
-			randomizeOrder(0,playlist.length);
+			randomizeOrder(0,playlist.length-1);
 		}
 		playlist.queued = 0;
 		DEBUG("playlist: queue song %i:\"%s\"\n",
@@ -490,7 +490,7 @@ int addSongToPlaylist(FILE * fp, Song * song) {
 		int swap;
 		int start;
 		if(playlist_state==PLAYLIST_STATE_STOP) start = 0;
-		else if(playlist.queued>0) start = playlist.queued+1;
+		else if(playlist.queued>=0) start = playlist.queued+1;
 		else start = playlist.current+1;
 		swap = rand()%(playlist.length-start);
 		swap+=start;
