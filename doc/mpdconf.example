@@ -1,3 +1,8 @@
+# MPD CONFIG FILE
+# For a full description of all config parameters,
+# Check the mpd man page, "man mpd".
+
+
 ########## REQUIRED ###############
 port 			"2100"
 music_directory 	"~/mp3"
