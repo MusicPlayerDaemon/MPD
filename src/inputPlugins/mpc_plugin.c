@@ -34,6 +34,7 @@
 #include <string.h>
 #include <musepack/musepack.h>
 #include <errno.h>
+#include <math.h>
 
 typedef struct _MpcCallbackData {
         InputStream * inStream;
@@ -182,10 +183,10 @@ static int mpc_decode(OutputBuffer * cb, DecoderControl * dc,
 	getOutputAudioFormat(&(dc->audioFormat), &(cb->audioFormat));
 
 	replayGainInfo = newReplayGainInfo();
-	/*replayGainInfo->albumGain = info.gain_album;
-	replayGainInfo->albumPeak = info.peak_album;
-	replayGainInfo->trackGain = info.gain_title;
-	replayGainInfo->trackPeak = info.peak_title;*/
+	replayGainInfo->albumGain = info.gain_album * 0.01;
+	replayGainInfo->albumPeak = info.peak_album / 32767.0;
+	replayGainInfo->trackGain = info.gain_title * 0.01;
+	replayGainInfo->trackPeak = info.peak_title / 32767.0;
 
 	dc->state = DECODE_STATE_DECODE;
 

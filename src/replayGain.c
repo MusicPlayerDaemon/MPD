@@ -89,10 +89,10 @@ ReplayGainInfo * newReplayGainInfo() {
 	ReplayGainInfo * ret = malloc(sizeof(ReplayGainInfo));
 
 	ret->albumGain = 0.0;
-	ret->albumPeak = 1.0;
+	ret->albumPeak = 0.0;
 
 	ret->trackGain = 0.0;
-	ret->trackPeak = 1.0;
+	ret->trackPeak = 0.0;
 
 	/* set to -1 so that we know in doReplayGain to compute the scale */
 	ret->scale = -1.0;
