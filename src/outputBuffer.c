@@ -42,7 +42,6 @@ void clearOutputBuffer(OutputBuffer * cb) {
 
         currentChunk = -1;
         cb->end = cb->begin;
-        cb->wrap = 0;
 
 	/* be sure to reset metaChunkSets cause we are skipping over audio
          * audio chunks, and thus skipping over metadata */
@@ -60,7 +59,6 @@ void flushOutputBuffer(OutputBuffer * cb) {
 	        cb->end++;
 	        if(cb->end>=buffered_chunks) {
 		       	cb->end = 0;
-		       	cb->wrap = 1;
 	        }
 		currentChunk = -1;
 	}
@@ -97,8 +95,11 @@ int sendDataToOutputBuffer(OutputBuffer * cb, InputStream * inStream,
 
         while(datalen) {
 		if(currentChunk != cb->end) {
-	        	while(cb->begin==cb->end && cb->wrap && !dc->stop)
-			{
+	        	int next = cb->end+1;
+	        	if(next>=buffered_chunks) {
+		       		next = 0;
+	        	}
+	        	while(cb->begin==next && !dc->stop) {
                                 if(dc->seek) {
                                         if(seekable) {
                                                 return OUTPUT_BUFFER_DC_SEEK;

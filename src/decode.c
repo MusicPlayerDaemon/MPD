@@ -173,7 +173,6 @@ int decodeSeek(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb,
 			stopDecode(dc);
 			cb->begin = 0;
 			cb->end = 0;
-			cb->wrap = 0;
 			dc->error = 0;
 			dc->start = 1;
 			waitOnDecode(pc,dc,cb,decodeWaitedOn);
@@ -391,7 +390,7 @@ int decoderInit(PlayerControl * pc, OutputBuffer * cb, DecoderControl * dc) {
 void handleMetadata(OutputBuffer * cb, PlayerControl * pc, int * previous,
 		int * currentChunkSent, MetadataChunk * currentChunk) 
 {
-	if(cb->begin!=cb->end || cb->wrap) {
+	if(cb->begin!=cb->end) {
 		int meta = cb->metaChunk[cb->begin];
 		if( meta != *previous ) {
 			if( meta >= 0 && cb->metaChunkSet[meta]) {
@@ -425,7 +424,6 @@ void advanceOutputBufferTo(OutputBuffer * cb, PlayerControl * pc,
 		cb->begin++;
 		if(cb->begin>=buffered_chunks) {
 			cb->begin = 0;
-			cb->wrap = 0;
 		}
 	}
 }
@@ -454,7 +452,8 @@ void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb) {
 	pc->play = 0;
 	kill(getppid(),SIGUSR1);
 
-	while(*decode_pid>0 && !cb->wrap && cb->end-cb->begin<bbp && 
+	while(*decode_pid>0 && cb->end-cb->begin<bbp && 
+				cb->end!=buffered_chunks-1 &&
 				dc->state!=DECODE_STATE_STOP) 
 	{
 		processDecodeInput();
@@ -492,9 +491,7 @@ void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb) {
 			else doCrossFade = -1;
 		}
 		if(pause) my_usleep(10000);
-		else if((cb->begin!=cb->end || cb->wrap) && 
-				cb->begin!=cb->next)
-		{
+		else if(cb->begin!=cb->end && cb->begin!=cb->next) {
 			if(doCrossFade==1 && cb->next>=0 &&
 					((cb->next>cb->begin && 
 					(fadePosition=cb->next-cb->begin)
@@ -507,7 +504,7 @@ void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb) {
 					crossFadeChunks = fadePosition;
 				}
 				test = cb->end;
-				if(cb->wrap) test+=buffered_chunks;
+				if(cb->end < cb->begin) test+=buffered_chunks;
 				nextChunk = cb->begin+crossFadeChunks;
 				if(nextChunk<test) {
 					if(nextChunk>=buffered_chunks)
@@ -557,14 +554,13 @@ void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb) {
 			cb->begin++;
 			if(cb->begin>=buffered_chunks) {
 				cb->begin = 0;
-				cb->wrap = 0;
 			}
 		}
 		else if(cb->next==cb->begin) {
 			if(doCrossFade==1 && nextChunk>=0) {
 				nextChunk = cb->begin+crossFadeChunks;
 				test = cb->end;
-				if(cb->wrap) test+=buffered_chunks;
+				if(cb->end < cb->begin) test+=buffered_chunks;
 				if(nextChunk<test) {
 					if(nextChunk>=buffered_chunks)
 					{
@@ -631,7 +627,6 @@ void decode() {
 
 	cb->begin = 0;
 	cb->end = 0;
-	cb->wrap = 0;
 	pc = &(getPlayerData()->playerControl);
 	dc = &(getPlayerData()->decoderControl);
 	dc->error = 0;

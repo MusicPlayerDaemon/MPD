@@ -1,21 +1,16 @@
-1) remove wrap from ring buffer code, its not 100% safe
-	a) player, just ensure that begin != end
-	b) decoder: compute what the next chunk needs to be
-		and wait till begin is no longer that
+1) put some sort of error reporting for streaming/inputStream!
 
-2) put some sort of error reporting for streaming/inputStream!
+2) Fix charset errors so they don't goto stderr/out
 
-3) Fix charset errors so they don't goto stderr/out
+3) Add a timeout for streams (how long? 1 minutes?)
 
-4) Add a timeout for streams (how long? 1 minutes?)
+4) compute time of vorbis from actual number of samples played
 
-5) compute time of vorbis from actual number of samples played
+5) remove previous hack for streams
 
-6) remove previous hack for streams
+6) add "plversion" and "currentsong" commands
 
-7) add "plversion" and "currentsong" commands
-
-8) in libmpdclient, buffer all stuff going out for playlist command,
+7) in libmpdclient, buffer all stuff going out for playlist command,
 	should make it much faster
 
 
