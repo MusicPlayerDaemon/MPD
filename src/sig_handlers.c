@@ -74,6 +74,7 @@ void initSigHandlers() {
 	sa.sa_flags = 0;
 	sigemptyset(&sa.sa_mask);
 	sa.sa_handler = SIG_IGN;
+	sa.sa_sigaction = NULL;
 	while(sigaction(SIGPIPE,&sa,NULL)<0 && errno==EINTR);
 	sa.sa_handler = chldSigHandler;
 	while(sigaction(SIGCHLD,&sa,NULL)<0 && errno==EINTR);
@@ -98,8 +99,11 @@ void setSigHandlersForDecoder() {
 	sa.sa_flags = 0;
 	sigemptyset(&sa.sa_mask);
 	sa.sa_handler = SIG_IGN;
+	sa.sa_sigaction = NULL;
 	while(sigaction(SIGHUP,&sa,NULL)<0 && errno==EINTR);
-	sa.sa_handler = decodeSigHandler;
+	sa.sa_handler = NULL;
+	sa.sa_flags = SA_SIGINFO;
+	sa.sa_sigaction = decodeSigHandler;
 	while(sigaction(SIGCHLD,&sa,NULL)<0 && errno==EINTR);
 	while(sigaction(SIGTERM,&sa,NULL)<0 && errno==EINTR);
 	while(sigaction(SIGINT,&sa,NULL)<0 && errno==EINTR);
@@ -111,6 +115,7 @@ void ignoreSignals() {
 	sa.sa_flags = 0;
 	sigemptyset(&sa.sa_mask);
 	sa.sa_handler = SIG_IGN;
+	sa.sa_sigaction = NULL;
 	while(sigaction(SIGPIPE,&sa,NULL)<0 && errno==EINTR);
 	while(sigaction(SIGCHLD,&sa,NULL)<0 && errno==EINTR);
 	while(sigaction(SIGUSR1,&sa,NULL)<0 && errno==EINTR);

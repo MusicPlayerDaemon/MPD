@@ -284,7 +284,7 @@ static int alsa_playAudio(AudioOutput * audioOutput, char * playChunk,
 	while (size > 0) {
 		ret = ad->writei(ad->pcmHandle, playChunk, size);
 
-		if(ret == -EAGAIN) continue;
+		if(ret == -EAGAIN || ret == -EINTR) continue;
 		
 		if(ret < 0) {
 			if( alsa_errorRecovery(ad, ret) < 0) {

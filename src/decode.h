@@ -27,6 +27,7 @@
 
 #include <stdio.h>
 #include <sys/param.h>
+#include <signal.h>
 
 #define DECODE_TYPE_FILE	0
 #define DECODE_TYPE_URL		1
@@ -61,7 +62,7 @@ typedef struct _DecoderControl {
         volatile float totalTime;
 } DecoderControl;
 
-void decodeSigHandler(int sig);
+void decodeSigHandler(int sig, siginfo_t * siginfo, void * v);
 
 void decode();
 

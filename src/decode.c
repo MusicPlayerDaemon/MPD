@@ -39,7 +39,7 @@
 
 volatile int * volatile decode_pid = NULL;
 
-void decodeSigHandler(int sig) {
+void decodeSigHandler(int sig, siginfo_t * si, void * v) {
 	if(sig==SIGCHLD) {
 		int status;
 		if(decode_pid && *decode_pid==wait3(&status,WNOHANG,NULL)) {
@@ -52,7 +52,8 @@ void decodeSigHandler(int sig) {
 			*decode_pid = 0;
 		}
 	}
-	else if(sig==SIGTERM) {
+	else if(sig==SIGTERM && si->si_pid==getppid()) {
+		DEBUG("player/decoder got SIGTERM from parent process\n");
 		if(decode_pid) {
 			int pid = *decode_pid;
 			if(pid>0) kill(pid,SIGTERM);
