@@ -270,13 +270,38 @@ int listAllUniqueTags(FILE * fp, int type, int numConditionals,
 	return ret;
 }
 
-int sumSavedMemoryInDirectory(FILE * fp, Directory * dir, void * data) {
+int sumSavedFilenameMemoryInDirectory(FILE * fp, Directory * dir, void * data) {
 	int * sum = data;
 
 	if(!dir->name) return 0;
 
 	*sum += (strlen(getDirectoryPath(dir))+1-sizeof(Directory *))*
 				dir->songs->numberOfNodes;
+
+	return 0;
+}
+
+int sumSavedFilenameMemoryInSong(FILE * fp, Song * song, void * data) {
+	int * sum = data;
+
+	*sum += strlen(song->url)+1;
+	
+	return 0;
+}
+
+void printSavedMemoryFromFilenames() {
+	int sum = 0;
+	
+	traverseAllIn(stderr, NULL, sumSavedFilenameMemoryInSong, 
+			sumSavedFilenameMemoryInDirectory, (void *)&sum);
+
+	DEBUG("saved memory from filenames: %i\n", sum);
+}
+
+int sumSavedDirectoryNameMemoryInDirectory(FILE * fp, Directory * dir, void * data) {
+	int * sum = data;
+
+	if(!dir->name) return 0;
 
 	*sum += (strlen(getDirectoryPath(dir))+1)*
 				dir->subDirectories->numberOfNodes;
@@ -286,19 +311,11 @@ int sumSavedMemoryInDirectory(FILE * fp, Directory * dir, void * data) {
 	return 0;
 }
 
-int sumSavedMemoryInSong(FILE * fp, Song * song, void * data) {
-	int * sum = data;
-
-	*sum += strlen(song->url)+1;
+void printSavedMemoryFromDirectoryNames() {
+	int sum = 0;
 	
-	return 0;
-}
+	traverseAllIn(stderr, NULL, NULL, 
+			sumSavedDirectoryNameMemoryInDirectory, (void *)&sum);
 
-void printSavedMemoryFromFilenames() {
-	int sum;
-	
-	traverseAllIn(stderr, NULL, sumSavedMemoryInSong, 
-			sumSavedMemoryInDirectory, (void *)&sum);
-
-	DEBUG("saved memory from filenames: %i\n", sum);
+	DEBUG("saved memory from directory names: %i\n", sum);
 }

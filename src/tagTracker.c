@@ -97,7 +97,7 @@ void printMemorySavedByTagTracker() {
 		}
 	}
 
-	DEBUG("saved memory: %li\n", (long)sum);
+	DEBUG("saved memory from tags: %li\n", (long)sum);
 }
 
 void sortTagTrackerInfo() {

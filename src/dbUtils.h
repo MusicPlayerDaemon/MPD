@@ -38,4 +38,6 @@ int listAllUniqueTags(FILE * fp, int type, int numConditiionals,
 
 void printSavedMemoryFromFilenames();
 
+void printSavedMemoryFromDirectoryNames();
+
 #endif
