@@ -57,7 +57,7 @@ static mpc_int32_t mpc_read_cb(void * vdata, void * ptr, mpc_int32_t size) {
 	return ret;
 }
 
-static mpc_bool_t mpc_seek_cb(void * vdata, mpc_int32_t offset) {
+static BOOL mpc_seek_cb(void * vdata, mpc_int32_t offset) {
         MpcCallbackData * data = (MpcCallbackData *)vdata;
 
 	return seekInputStream(data->inStream , offset, SEEK_SET) < 0 ? 0 : 1;
@@ -69,7 +69,7 @@ static mpc_int32_t mpc_tell_cb(void * vdata) {
 	return (long)(data->inStream->offset);
 }
 
-static mpc_bool_t mpc_canseek_cb(void * vdata) {
+static BOOL mpc_canseek_cb(void * vdata) {
         MpcCallbackData * data = (MpcCallbackData *)vdata;
 
 	return data->inStream->seekable;
