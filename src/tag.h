@@ -41,8 +41,11 @@
 #define TAG_ITEM_NAME		4
 #define TAG_ITEM_GENRE		5
 #define TAG_ITEM_DATE		6
+#define TAG_ITEM_COMPOSER	7
+#define TAG_ITEM_PERFORMER	8
+#define TAG_ITEM_COMMENT	9
 
-#define TAG_NUM_OF_ITEM_TYPES	7
+#define TAG_NUM_OF_ITEM_TYPES	10
 
 extern char * mpdTagItemKeys[];
 

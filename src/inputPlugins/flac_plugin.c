@@ -499,6 +499,16 @@ static MpdTag * copyVorbisCommentBlockToMpdTag(FLAC__StreamMetadata * block,
 				block->data.vorbis_comment.comments+i,
 				TAG_ITEM_DATE,
 				&tag));
+		else if(commentMatchesAddToTag(
+				"composer=", 
+				block->data.vorbis_comment.comments+i,
+				TAG_ITEM_COMPOSER,
+				&tag));
+		else if(commentMatchesAddToTag(
+				"performer=", 
+				block->data.vorbis_comment.comments+i,
+				TAG_ITEM_PERFORMER,
+				&tag));
 	}
 
 	return tag;

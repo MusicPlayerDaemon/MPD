@@ -164,6 +164,14 @@ MpdTag * oggCommentsParse(char ** comments) {
 			if(!ret) ret = newMpdTag();
 			addItemToMpdTag(ret, TAG_ITEM_DATE, temp);
 		}
+                else if((temp = ogg_parseComment(*comments,"composer"))) {
+			if(!ret) ret = newMpdTag();
+			addItemToMpdTag(ret, TAG_ITEM_COMPOSER, temp);
+		}
+                else if((temp = ogg_parseComment(*comments,"performer"))) {
+			if(!ret) ret = newMpdTag();
+			addItemToMpdTag(ret, TAG_ITEM_PERFORMER, temp);
+		}
 
 		comments++;
 	}

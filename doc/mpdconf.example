@@ -25,16 +25,14 @@ audio_output {
 	name		"default ao output"
 #
 # use this if you want to use OSS audio output
-#	type		"ao"
+#	type		"oss"
 #	name		"my OSS sound card"
-#	driver 		"oss"
-#	options 	"dsp=/dev/dsp"
+#	device	 	"/dev/dsp" # optional
 #
 # use this if you want to use ALSA audio output
-#	type		"ao"
+#	type		"alsa"
 #	name		"my ALSA device"
-#	driver		"alsa09"
-#	options		"dev=hw:0,0"
+#	device		"hw:0,0" # optional
 } # end of audio_output "ao"
 #
 # Set this if you have problems 
@@ -200,8 +198,9 @@ audio_output {
 ################ MISCELLANEOUS OPTIONS ###################
 #
 # This sets the metadata mpd will use, to disable all metadata, set to "none"
+# NOTE: comment's are disabled by default
 #
-#metadata_to_use	"artist,album,title,genre,date,track"
+#metadata_to_use "artist,album,title,genre,date,track,composer,performer,comment"
 #
 # This setting exists as precaution against attacks.
 #
