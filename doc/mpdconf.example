@@ -4,7 +4,7 @@
 
 
 ########## REQUIRED ###############
-port 			"2100"
+port 			"6600"
 music_directory 	"~/music"
 playlist_directory 	"~/.mpd/playlists"
 log_file 		"~/.mpd/mpd.log"

@@ -76,7 +76,7 @@ Run
 $ mpd <port> <mp3 directory> <playlist directory> <mpd log> <mpd err>
 
 example where mpd executable is in mpd-x.x.x directory:
-$ mpd-x.x.x/mpd 2100 mp3 playlists mpd.log mpd.err
+$ mpd-x.x.x/mpd 6600 mp3 playlists mpd.log mpd.err
 
 Note: The first time you run mpd, it will "explore" your mp3 directory for
 mp3's.
