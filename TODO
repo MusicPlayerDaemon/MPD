@@ -1,4 +1,11 @@
-1) non-blocking (for other clients) update
+1) resampling audio for compatibility, and better gapless/crossfading
+	a) write bit conversion stuff (8->16 and 24->16)
+	b) mono to stereo conversion
+	c) default is 44.1khz, 16-bit stereo, if 44.1khz fails, try 48khz
+	d) option to set default sampling frequency
+	e) abitility to disable resampling and audio format conversion
+
+2) non-blocking (for other clients) update
 	j) when reading new directory db, we should block some signals when 
 		manipulating the directorydb, so we don't receive a signal to 
 		quit in the middle of an update
@@ -10,10 +17,6 @@
 		and should be reread by parent process
 	p) set error: in status when an error occurs during update
 
-2) crosslink "list" stuff, for example, artists are crosslinked to alubms and 
-vice versa, this way you can do list album artists or list artist albums, this 
-will make life easier when we add genre and other metadata
-
 3) have children close all logging stuff, and redirect stdout and stderr to
 /dev/null, and set error bits in the shared log for the parent process
 to check when it receives a SIGUSR1, and print logs and then reset values of
@@ -21,3 +24,7 @@ error bits. (don't redirect children's stdout and stderr to /dev/null if mpd is
 run with --no-daemon)
 
 4) cleanup main()
+
+5) crosslink "list" stuff, for example, artists are crosslinked to alubms and 
+vice versa, this way you can do list album artists or list artist albums, this 
+will make life easier when we add genre and other metadata
