@@ -16,18 +16,17 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "../config.h"
+#include "../audioOutput.h"
 
-#include "audioOutput.h"
+#include <stdlib.h>
 
 #ifdef HAVE_SHOUT
 
-#include "conf.h"
-#include "log.h"
-#include "sig_handlers.h"
-#include "pcm_utils.h"
+#include "../conf.h"
+#include "../log.h"
+#include "../sig_handlers.h"
+#include "../pcm_utils.h"
 
-#include <stdlib.h>
 #include <string.h>
 #include <assert.h>
 #include <signal.h>
@@ -567,8 +566,6 @@ AudioOutputPlugin shoutPlugin =
 };
 
 #else
-
-#include <stdlib.h>
 
 AudioOutputPlugin shoutPlugin = 
 {

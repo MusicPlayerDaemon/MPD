@@ -26,8 +26,6 @@
 #include "tag.h"
 #include "conf.h"
 
-#define AUDIO_AO_DRIVER_DEFAULT	"default"
-
 typedef struct _AudioOutput AudioOutput;
 
 typedef int (* AudioOutputInitDriverFunc) (AudioOutput * audioOutput, 
