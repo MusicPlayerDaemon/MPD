@@ -102,6 +102,13 @@ AP_maGiC_VALUE
 )
 fi
 
+enable_osx=no
+case $host in
+	*-darwin*)
+                AC_DEFINE(HAVE_OSX, 1, [Define for compiling OS X support])
+		enable_osx=yes ;;
+esac
+
 if test x$enable_ogg = xno; then
 	AC_MSG_WARN("disabling shout streaming support since vorbis was not found")
 fi
@@ -580,6 +587,12 @@ if test x$enable_alsa = xyes; then
 	echo "Playing audio via ALSA ........enabled"
 else
 	echo "Playing audio via ALSA ........disabled"
+fi
+
+if test x$enable_osx = xyes; then
+	echo "Playing audio on OS X .........enabled"
+else
+	echo "Playing audio on OS X .........disabled"
 fi
 
 if test x$enable_shout = xyes; then
