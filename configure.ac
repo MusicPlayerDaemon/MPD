@@ -476,7 +476,7 @@ fi
 
 if test x$enable_mod = xyes; then
 	AM_PATH_LIBMIKMOD(3.1.7, MPD_CFLAGS="$MPD_CFLAGS $LIBMIKMOD_CFLAGS"
-		MPD_LIBS="$MPD_LIBS $LIBMIKMOD_LIBS", enable_mod=no)
+		MPD_LIBS="$MPD_LIBS $LIBMIKMOD_LIBS $LIBMIKMOD_LDADD", enable_mod=no)
 	if test x$enable_mod = xyes; then
 		AC_DEFINE(HAVE_MIKMOD, 1, [Define for mikmod support])
 	fi
