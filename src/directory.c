@@ -64,7 +64,6 @@ typedef List DirectoryList;
 typedef struct _Directory {
 	char * utf8name;
 	DirectoryList * subDirectories;
-	struct _Directory * parentDirectory;
 	SongList * songs;
 	time_t mtime; /* modification time */
 } Directory;
@@ -95,12 +94,18 @@ void deleteEmptyDirectoriesInDirectory(Directory * directory);
 
 void removeSongFromDirectory(Directory * directory, char * shortname);
 
-int addSubDirectoryToDirectory(Directory * directory, char * shortname, char * name);
+int addSubDirectoryToDirectory(Directory * directory, char * shortname, 
+				char * name);
+
+Directory * getDirectoryDetails(char * name, char ** shortname, 
+				Directory ** parentDirectory);
 
 Directory * getDirectory(char * name);
 
 Song * getSongDetails(char * file, char ** shortnameRet, 
 		Directory ** directoryRet);
+
+void updatePath(char * utf8path);
 
 void clearUpdatePid() {
 	directory_updatePid = 0;
@@ -164,26 +169,9 @@ int updateInit(FILE * fp, List * pathList) {
 
 		if(pathList) {
 			ListNode * node = pathList->firstNode;
-			Directory * directory;
-			Song * song;
-			char * shortname;
 
 			while(node) {
-				if(NULL==(directory = getDirectory(node->key)))
-				{
-					song = getSongDetails(node->key,
-							&shortname,&directory);
-					if(song && updateSongInfo(song)<0) {
-						removeSongFromDirectory(
-							directory,
-							shortname);
-					}
-				}
-				else {
-					if(updateDirectory(directory)<0)  {
-						exit(EXIT_FAILURE);
-					}
-				}
+				updatePath(node->key);
 				node = node->nextNode;
 			}
 		}
@@ -216,14 +204,13 @@ int updateInit(FILE * fp, List * pathList) {
 	return 0;
 }
 
-Directory * newDirectory(Directory * parentDirectory, char * dirname, time_t mtime) {
+Directory * newDirectory(char * dirname, time_t mtime) {
 	Directory * directory;
 
 	directory = malloc(sizeof(Directory));
 
 	if(dirname!=NULL) directory->utf8name = strdup(dirname);
 	else directory->utf8name = NULL;
-	directory->parentDirectory = parentDirectory;
 	directory->subDirectories = newDirectoryList();
 	directory->songs = newSongList();
 	if(mtime<0) isDir(dirname,&(directory->mtime));
@@ -373,6 +360,30 @@ int removeDeletedFromDirectory(Directory * directory) {
 	return 0;
 }
 
+void updatePath(char * utf8path) {
+	Directory * directory;
+	Directory * parentDirectory;
+	char * shortname;
+
+	/* if path is already in the DB */
+	if(NULL==(directory = getDirectoryDetails(utf8path,&shortname,
+			&parentDirectory))) 
+	{
+		Song * song = getSongDetails(utf8path,&shortname,&directory);
+		if(song && updateSongInfo(song)<0) {
+			removeSongFromDirectory(directory,shortname);
+		}
+	}
+	else {
+		/* if updateDirectory fials, means we should delete it */
+		if(updateDirectory(directory)<0 && directory!=mp3rootDirectory)
+		{
+			deleteFromList(parentDirectory->subDirectories,
+					shortname);
+		}
+	}
+}
+
 int updateDirectory(Directory * directory) {
 	DIR * dir;
 	char cwd[2];
@@ -460,7 +471,7 @@ int exploreDirectory(Directory * directory) {
 int addSubDirectoryToDirectory(Directory * directory, char * shortname, 
 	char * name) 
 {
-	Directory * subDirectory = newDirectory(directory,name,-1);
+	Directory * subDirectory = newDirectory(name,-1);
 	
 	insertInList(directory->subDirectories,shortname,subDirectory);
 	exploreDirectory(subDirectory);
@@ -509,7 +520,9 @@ Directory * findSubDirectory(Directory * directory,char * name) {
 	return NULL;
 }
 
-Directory * getSubDirectory(Directory * directory,char * name) {
+Directory * getSubDirectory(Directory * directory, char * name, 
+		char ** shortname, Directory ** parentDirectory) 
+{
 	Directory * subDirectory;
 	int len;
 
@@ -519,15 +532,32 @@ Directory * getSubDirectory(Directory * directory,char * name) {
 
 	if((subDirectory = findSubDirectory(directory,name))==NULL) return NULL;
 
+	*shortname = name;
+	*parentDirectory = directory;
+
 	len = 0;
 	while(name[len]!='/' && name[len]!='\0') len++;
 	while(name[len]=='/') len++;
 
-	return getSubDirectory(subDirectory,&(name[len]));
+	return getSubDirectory(subDirectory,&(name[len]),shortname,
+				parentDirectory);
+}
+
+Directory * getDirectoryDetails(char * name, char ** shortname, 
+		Directory ** parentDirectory) 
+{
+	*shortname = NULL;
+	*parentDirectory = NULL;
+
+	return getSubDirectory(mp3rootDirectory,name,shortname,parentDirectory);
 }
 
 Directory * getDirectory(char * name) {
-	return getSubDirectory(mp3rootDirectory,name);
+	char * shortname;
+	Directory * parentDirectory;
+
+	return getSubDirectory(mp3rootDirectory,name,&shortname,
+				&parentDirectory);
 }
 
 int printDirectoryList(FILE * fp, DirectoryList * directoryList) {
@@ -623,8 +653,7 @@ void readDirectoryInfo(FILE * fp,Directory * directory) {
 			}
 
 			if(NULL==nextDirNode) {
-				subDirectory = newDirectory(directory,name,
-						mtime);
+				subDirectory = newDirectory(name,mtime);
 				insertInList(directory->subDirectories,key,
 						(void *)subDirectory);
 			}
@@ -634,8 +663,7 @@ void readDirectoryInfo(FILE * fp,Directory * directory) {
 				nextDirNode = nextDirNode->nextNode;
 			}
 			else {
-				subDirectory = newDirectory(directory,name,
-						mtime);
+				subDirectory = newDirectory(name,mtime);
 				insertInListBeforeNode(
 						directory->subDirectories,
 						nextDirNode,
@@ -704,7 +732,7 @@ int writeDirectoryDB() {
 int readDirectoryDB() {
 	FILE * fp;
 
-	if(!mp3rootDirectory) mp3rootDirectory = newDirectory(NULL,NULL,0);
+	if(!mp3rootDirectory) mp3rootDirectory = newDirectory(NULL,0);
 	while(!(fp=fopen(directorydb,"r")) && errno==EINTR);
 	if(!fp) return -1;
 
@@ -1019,7 +1047,7 @@ unsigned long sumSongTimesIn(FILE * fp, char * name) {
 }
 
 void initMp3Directory() {
-	mp3rootDirectory = newDirectory(NULL,NULL,0);
+	mp3rootDirectory = newDirectory(NULL,0);
 	exploreDirectory(mp3rootDirectory);
 }
 
@@ -1047,7 +1075,7 @@ Song * getSongDetails(char * file, char ** shortnameRet,
 		dir = dup;
 	}
 
-	if(!(directory = getSubDirectory(mp3rootDirectory,dir))) {
+	if(!(directory = getDirectory(dir))) {
 		free(dup);
 		return NULL;
 	}
