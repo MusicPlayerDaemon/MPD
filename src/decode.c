@@ -238,9 +238,9 @@ void decodeStart(PlayerControl * pc, OutputBuffer * cb, DecoderControl * dc) {
                                 0 == strcmp(inStream.mime, "audio/mpeg")))
                 {
 		        ret = mp3_decode(cb,dc,&inStream);
+                        break;
                 }
 		else ret = DECODE_ERROR_UNKTYPE;
-		break;
 #endif
         case DECODE_TYPE_FILE:
 #ifdef HAVE_MAD
@@ -285,10 +285,11 @@ void decodeStart(PlayerControl * pc, OutputBuffer * cb, DecoderControl * dc) {
 	default:
 		ret = DECODE_ERROR_UNKTYPE;
 	}
-	if(ret<0) {
+	if(ret<0 || ret == DECODE_ERROR_UNKTYPE) {
 		strncpy(pc->erroredFile, dc->file, MAXPATHLEN);
 		pc->erroredFile[MAXPATHLEN] = '\0';
 		if(ret != DECODE_ERROR_UNKTYPE) dc->error = DECODE_ERROR_FILE;
+                else closeInputStream(&inStream);
 		dc->start = 0;
 		dc->stop = 0;
 		dc->state = DECODE_STATE_STOP;
