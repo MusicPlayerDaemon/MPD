@@ -403,6 +403,8 @@ static void shout_sendMetadata(AudioOutput * audioOutput, MpdTag * tag) {
 	ShoutData * sd = (ShoutData *)audioOutput->data;
 	ogg_int64_t granulepos = sd->vd.granulepos;
 
+	if(!sd->opened) return;
+
 	clearEncoder(sd);
 	if(initEncoder(sd) < 0) return;
 
@@ -427,7 +429,7 @@ static void shout_sendMetadata(AudioOutput * audioOutput, MpdTag * tag) {
 
 	while(ogg_stream_flush(&(sd->os), &(sd->og)))
 	{
-		if(write_page(sd) < 0) return -1;
+		if(write_page(sd) < 0) return;
 	}
 }
 
