@@ -14,37 +14,35 @@ error_file 		"~/.mpd/mpd.error"
 # EVERYTHING ELSE IS OPTIONAL
 ##########################################################
 
-################# FILESYSTEM SETTINGS ####################
+################## AUDIO OUTPUT ##########################
 #
-# If the names of files or directories are 
-# not correctly displayed then set the 
-# following to the filesystem coding. 
+# libao (ao_driver) supports any of the following:
+# Refer to libao documentation for more information
 #
-#	Usually this is either:
-#	ISO-8859-1 or UTF-8
+audio_output {
+# Use default settings
+	type		"ao"
+	name		"default ao output"
 #
-# After changing the filesystem_charset
-# you will need to recreate the db:
-#	mpd --create-db
+# use this if you want to use OSS audio output
+#	type		"ao"
+#	name		"my OSS sound card"
+#	driver 		"oss"
+#	options 	"dsp=/dev/dsp"
 #
-#filesystem_charset "ISO-8859-1"
+# use this if you want to use ALSA audio output
+#	type		"ao"
+#	name		"my ALSA device"
+#	driver		"alsa09"
+#	options		"dev=hw:0,0"
+} # end of audio_output "ao"
 #
-##########################################################
-
-#################### OPTIONAL FILES ######################
+# Set this if you have problems 
+# playing audio files.
+# This will resample your music so
+# that it comes out at the set rate. 
 #
-# Location of DB file 
-#
-#db_file		"~/.mpd/mpd.db"
-#
-# The state file (if set) will be a file
-# for storing all current information 
-# (playlist, playing/paused, etc...) from
-# the last MPD session. This will be used
-# to recreate your last MPD session after
-# restart.
-#
-#state_file		"~/.mpd/mpdstate"
+#audio_output_format	"44100:16:2"
 #
 ##########################################################
 
@@ -68,39 +66,6 @@ error_file 		"~/.mpd/mpd.error"
 ##########################################################
 
 
-################## AUDIO OUTPUT ##########################
-#
-# libao (ao_driver) supports any of the following:
-# Refer to libao documentation for more information
-#
-# OSS Audio Output
-#audio_output {
-#	type		"ao"
-#	name		"my OSS device"
-#	driver 		"oss"
-#	options 	"dsp=/dev/dsp"
-#	write_size	"1024"
-#}
-#
-# ALSA Audio Output
-#audio_output {
-#	type		"ao"
-#	name		"my ALSA device"
-#	driver		"alsa09"
-#	options		"dev=hw:0,0"
-#	write_size	"1024"
-#}
-#
-# Set this if you have problems 
-# playing audio files.
-# This will resample your music so
-# that it comes out at the set rate. 
-#
-#audio_output_format	"44100:16:2"
-#
-##########################################################
-
-
 ################# SHOUT STREAMING ########################
 #
 # Set this to allow mpd to stream its output to icecast2
@@ -115,9 +80,46 @@ error_file 		"~/.mpd/mpd.error"
 #	password	"hackme"
 #	quality		"5.0"
 #	format		"44100:16:1"
-#}
+#} # end of audio_output
 #
 ##########################################################
+
+
+################# FILESYSTEM SETTINGS ####################
+#
+# If the names of files or directories are 
+# not correctly displayed then set the 
+# following to the filesystem coding. 
+#
+#	Usually this is either:
+#	ISO-8859-1 or UTF-8
+#
+# After changing the filesystem_charset
+# you will need to recreate the db:
+#	mpd --create-db
+#
+#filesystem_charset "ISO-8859-1"
+#
+##########################################################
+
+
+#################### OPTIONAL FILES ######################
+#
+# Location of DB file 
+#
+#db_file		"~/.mpd/mpd.db"
+#
+# The state file (if set) will be a file
+# for storing all current information 
+# (playlist, playing/paused, etc...) from
+# the last MPD session. This will be used
+# to recreate your last MPD session after
+# restart.
+#
+#state_file		"~/.mpd/mpdstate"
+#
+##########################################################
+
 
 ################# REPLAYGAIN #############################
 #
