@@ -178,6 +178,7 @@ int commandStatus(FILE * fp, unsigned int * permission, int argArrayLength,
 {
         char * state = NULL;
 	int updateJobId;
+        int song;
 
         playPlaylistIfPlayerStopped();
         switch(getPlayerState()) {
@@ -202,8 +203,9 @@ int commandStatus(FILE * fp, unsigned int * permission, int argArrayLength,
 
         myfprintf(fp,"%s: %s\n",COMMAND_STATUS_STATE,state);
 
+        song = getPlaylistCurrentSong();
+        if(song >= 0) myfprintf(fp,"%s: %i\n",COMMAND_STATUS_SONG,song);
         if(getPlayerState()!=PLAYER_STATE_STOP) {
-                myfprintf(fp,"%s: %i\n",COMMAND_STATUS_SONG,getPlaylistCurrentSong());
                 myfprintf(fp,"%s: %i:%i\n",COMMAND_STATUS_TIME,getPlayerElapsedTime(),getPlayerTotalTime());
                 myfprintf(fp,"%s: %li\n",COMMAND_STATUS_BITRATE,getPlayerBitRate(),getPlayerTotalTime());
                 myfprintf(fp,"%s: %u:%i:%i\n",COMMAND_STATUS_AUDIO,getPlayerSampleRate(),getPlayerBits(),getPlayerChannels());

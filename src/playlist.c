@@ -101,6 +101,7 @@ void initPlaylist() {
 	playlist.version = 0;
 	playlist.random = 0;
 	playlist.queued = -1;
+        playlist.current = -1;
 
 	playlist_max_length = strtol((getConf())[CONF_MAX_PLAYLIST_LENGTH],&test,10);
 	if(*test!='\0') {
@@ -501,8 +502,8 @@ int addSongToPlaylist(FILE * fp, Song * song) {
 	if(playlist.random) {
 		int swap;
 		int start;
-		if(playlist_state==PLAYLIST_STATE_STOP) start = 0;
-		else if(playlist.queued>=0) start = playlist.queued+1;
+		/*if(playlist_state==PLAYLIST_STATE_STOP) start = 0;
+		else */if(playlist.queued>=0) start = playlist.queued+1;
 		else start = playlist.current+1;
 		swap = rand()%(playlist.length-start);
 		swap+=start;
@@ -621,12 +622,12 @@ int deleteFromPlaylist(FILE * fp, int song) {
 		playerStop(stderr);
 		playlist_noGoToNext = 1;
 	}
-	else if(playlist_state!=PLAYLIST_STATE_STOP && 
+	else if(/*playlist_state!=PLAYLIST_STATE_STOP &&*/ 
 			playlist.current>songOrder) {
 		playlist.current--;
 	}
 
-	if(playlist_state!=PLAYLIST_STATE_STOP && playlist.queued>songOrder) {
+	if(/*playlist_state!=PLAYLIST_STATE_STOP && */playlist.queued>songOrder) {
 		playlist.queued--;
 	}
 
@@ -682,7 +683,15 @@ int playPlaylist(FILE * fp, int song, int stopOnError) {
 
 	clearPlayerError();
 
-	if(song==-1) i = 0;
+	if(song==-1) {
+                if(playlist.current >= 0 && playlist.current < playlist.length)
+                {
+                        i = playlist.current;
+                }
+                else {
+                        i = 0;
+                }
+        }
 	else if(song<0) {
 		myfprintf(fp,"%s need integer >= -1\n",COMMAND_RESPOND_ERROR);
 		playlist_state = PLAYLIST_STATE_STOP;
@@ -700,17 +709,17 @@ int playPlaylist(FILE * fp, int song, int stopOnError) {
 	}
 
 	if(playlist.random) {
-		/*if(song == -1 && playlist_state==PLAYLIST_STATE_PLAY) {
+		if(song == -1 && playlist_state==PLAYLIST_STATE_PLAY) {
 			randomizeOrder(0,playlist.length-1);
 		}
-		else {*/
+		else {
 			if(song>=0) for(i=0;song!=playlist.order[i];i++);
 			if(playlist_state==PLAYLIST_STATE_STOP) {
 				playlist.current = 0;
 			}
 			swapOrder(i,playlist.current);
 			i = playlist.current;
-		/*}*/
+		}
 	}
 
 	playlist_stopOnError = stopOnError;
@@ -994,7 +1003,10 @@ int shufflePlaylist(FILE * fp) {
 			else playlist.current = 0;
 			i = 1;
 		}
-		else i = 0;
+		else {
+                        i = 0;
+                        playlist.current = -1;
+                }
 		/* shuffle the rest of the list */
 		for(;i<playlist.length;i++) {
 			ri = rand()%(playlist.length-1)+1;
@@ -1184,7 +1196,11 @@ int loadPlaylist(FILE * fp, char * utf8file) {
 }
 
 int getPlaylistCurrentSong() {
-	return playlist.order[playlist.current];
+	if(playlist.current >= 0 && playlist.current < playlist.length) {
+                return playlist.order[playlist.current];
+        }
+        
+        return -1;
 }
 
 unsigned long getPlaylistVersion() {
