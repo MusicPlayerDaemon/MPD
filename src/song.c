@@ -118,7 +118,7 @@ void freeSongList(SongList * list) {
 }
 
 void printSongUrl(FILE * fp, Song * song) {
-	if(song->parentDir) {
+	if(song->parentDir && song->parentDir->path) {
 		myfprintf(fp, "%s%s/%s\n", SONG_FILE, 
 				getDirectoryPath(song->parentDir), song->url);
 	}

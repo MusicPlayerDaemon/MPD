@@ -250,7 +250,7 @@ Directory * newDirectory(char * dirname, Directory * parent) {
 
 	directory = malloc(sizeof(Directory));
 
-	if(dirname!=NULL) directory->path = strdup(dirname);
+	if(dirname && strlen(dirname)) directory->path = strdup(dirname);
 	else directory->path = NULL;
 	directory->subDirectories = newDirectoryList();
 	directory->songs = newSongList();
