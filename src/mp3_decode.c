@@ -139,8 +139,8 @@ typedef struct _mp3DecodeData {
 int initMp3DecodeData(mp3DecodeData * data, char * file) {
 	int ret;
 
-	while(((ret = openInputStreamFromFile(&(data->inStream),file))<0) && 
-			data->inStream.error==EINTR);
+	while(((ret = openInputStream(&(data->inStream),file))<0)) /*&& 
+			data->inStream.error==EINTR);*/
 	if(ret<0) return -1;
 
 	data->outputPtr = data->outputBuffer;

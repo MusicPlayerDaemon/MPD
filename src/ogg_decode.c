@@ -154,7 +154,7 @@ int ogg_decode(OutputBuffer * cb, DecoderControl * dc)
 	callbacks.close_func = ogg_close_cb;
 	callbacks.tell_func = ogg_tell_cb;
 	
-	if(openInputStreamFromFile(&inStream,dc->file)<0) {
+	if(openInputStream(&inStream,dc->file)<0) {
 		ERROR("failed to open ogg\n");
 		return -1;
 	}

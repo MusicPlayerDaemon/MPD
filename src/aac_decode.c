@@ -212,7 +212,7 @@ float getAacFloatTotalTime(char * file) {
 	InputStream inStream;
 	size_t bread;
 
-	if(openInputStreamFromFile(&inStream,file) < 0) return -1;
+	if(openInputStream(&inStream,file) < 0) return -1;
 
 	initAacBuffer(&inStream,&b,&length,&fileread,&tagsize);
 
@@ -274,7 +274,7 @@ int aac_decode(OutputBuffer * cb, DecoderControl * dc) {
 
 	if((totalTime = getAacFloatTotalTime(dc->file)) < 0) return -1;
 
-	if(openInputStreamFromFile(&inStream,dc->file) < 0) return -1;
+	if(openInputStream(&inStream,dc->file) < 0) return -1;
 
 	initAacBuffer(&inStream,&b,NULL,NULL,NULL);
 

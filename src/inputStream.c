@@ -18,61 +18,35 @@
 
 #include "inputStream.h"
 
+#include "inputStream_file.h"
+#include "inputStream_http.h"
+
 #include <stdio.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include <errno.h>
 
-int openInputStreamFromFile(InputStream * inStream, char * filename) {
-	inStream->fp = fopen(filename,"r");
-	if(!inStream->fp) {
-		inStream->error = errno;
-		return -1;
-	}
+int openInputStream(InputStream * inStream, char * url) {
+        if(inputStream_fileOpen(inStream,url) == 0) return 0;
+        if(inputStream_httpOpen(inStream,url) == 0) return 0;
 
-	inStream->offset = 0;
-
-	fseek(inStream->fp,0,SEEK_END);
-	inStream->size = ftell(inStream->fp);
-	fseek(inStream->fp,0,SEEK_SET);
-
-	return 0;
+        return -1;
 }
 
 int seekInputStream(InputStream * inStream, long offset, int whence) {
-	if(fseek(inStream->fp,offset,whence)==0) {
-		inStream->offset = ftell(inStream->fp);
-	}
-	else {
-		inStream->error = errno;
-		return -1;
-	}
-
-	return 0;
+        return inStream->seekFunc(inStream,offset,whence);
 }
 
 size_t readFromInputStream(InputStream * inStream, void * ptr, size_t size, 
 		size_t nmemb)
 {
-	size_t readSize;
-
-	readSize = fread(ptr,size,nmemb,inStream->fp);
-
-	if(readSize>0) inStream->offset+=readSize;
-
-	return readSize;
+        return inStream->readFunc(inStream,ptr,size,nmemb);
 }
 
 int closeInputStream(InputStream * inStream) {
-	if(fclose(inStream->fp)<0) {
-		inStream->error = errno;
-	}
-	else return -1;
-
-	return 0;
+        return inStream->closeFunc(inStream);
 }
 
 int inputStreamAtEOF(InputStream * inStream) {
-	return feof(inStream->fp);
+        return inStream->atEOFFunc(inStream);
 }
-/* vim:set shiftwidth=4 tabstop=8 expandtab: */
+/* vim:set shiftwidth=8 tabstop=8 expandtab: */

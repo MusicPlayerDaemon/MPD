@@ -113,7 +113,7 @@ int mp4_decode(OutputBuffer * cb, DecoderControl * dc) {
 	mpd_uint16 bitRate = 0;
 	InputStream inStream;
 
-	if(openInputStreamFromFile(&inStream,dc->file) < 0) {
+	if(openInputStream(&inStream,dc->file) < 0) {
 		ERROR("failed to open %s\n",dc->file);
 		return -1;
 	}

@@ -81,7 +81,7 @@ int flac_decode(OutputBuffer * cb, DecoderControl *dc) {
 	data.dc = dc;
         data.replayGainScale = 1.0;
 
-        if(openInputStreamFromFile(&(data.inStream),dc->file)<0) {
+        if(openInputStream(&(data.inStream),dc->file)<0) {
                 ERROR("unable to open flac: %s\n",dc->file);
                 return -1;
         }

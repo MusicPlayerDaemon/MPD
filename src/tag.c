@@ -219,8 +219,7 @@ MpdTag * mp4DataDup(char * utf8file, int * mp4MetadataFound) {
 
 	*mp4MetadataFound = 0;
 	
-	if(openInputStreamFromFile(&inStream,rmp2amp(utf8ToFsCharset(utf8file)))
-			< 0)
+	if(openInputStream(&inStream,rmp2amp(utf8ToFsCharset(utf8file))) < 0)
 	{
 		return NULL;
 	}

@@ -19,19 +19,33 @@
 #ifndef INPUT_STREAM_H
 #define INPUT_STREAM_H
 
-#include <stdio.h>
 #include <stdlib.h>
 
-typedef struct _InputStream {
-	FILE * fp;
+typedef struct _InputStream InputStream;
+
+typedef int (* InputStreamSeekFunc) (InputStream * inStream, long offset, 
+                int whence);
+typedef size_t (* InputStreamReadFunc) (InputStream * inStream, void * ptr, size_t size, 
+		size_t nmemb);
+typedef int (* InputStreamCloseFunc) (InputStream * inStream);
+typedef int (* InputStreamAtEOFFunc) (InputStream * inStream);
+
+struct _InputStream {
 	int error;
 	long offset;
 	size_t size;
-} InputStream;
+
+        /* don't touc this stuff */
+        InputStreamSeekFunc seekFunc;
+        InputStreamReadFunc readFunc;
+        InputStreamCloseFunc closeFunc;
+        InputStreamAtEOFFunc atEOFFunc;
+        void * data;
+};
 
 /* if an error occurs for these 3 functions, then -1 is returned and errno
    for the input stream is set */
-int openInputStreamFromFile(InputStream * inStream, char * filename);
+int openInputStream(InputStream * inStream, char * url);
 int seekInputStream(InputStream * inStream, long offset, int whence);
 int closeInputStream(InputStream * inStream);
 int inputStreamAtEOF(InputStream * inStream);
