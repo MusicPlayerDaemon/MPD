@@ -19,22 +19,15 @@
 #include "song.h"
 #include "ls.h"
 #include "directory.h"
-#include "tables.h"
 #include "utils.h"
 #include "tag.h"
 #include "log.h"
 #include "path.h"
 #include "playlist.h"
-#include "tables.h"
 #include "inputPlugin.h"
 
 #define SONG_KEY	"key: "
 #define SONG_FILE	"file: "
-#define SONG_ARTIST	"Artist: "
-#define SONG_ALBUM	"Album: "
-#define SONG_TRACK	"Track: "
-#define SONG_TITLE	"Title: "
-#define SONG_NAME	"Name: "
 #define SONG_TIME	"Time: "
 #define SONG_MTIME	"mtime: "
 
@@ -66,13 +59,11 @@ Song * newSong(char * utf8url, SONG_TYPE type) {
 		if((plugin = isMusic(utf8url,&(song->mtime)))) {
 		        song->tag = plugin->tagDupFunc(
                                         rmp2amp(utf8ToFsCharset(utf8url)));
-	                if(song->tag) validateUtf8Tag(song->tag);
                 }
 		if(!song->tag || song->tag->time<0) {
 			freeSong(song);
 			song = NULL;
 		}
-		else addSongToTables(song);
 	}
 
 	return song;
@@ -80,7 +71,6 @@ Song * newSong(char * utf8url, SONG_TYPE type) {
 
 void freeSong(Song * song) {
 	deleteASongFromPlaylist(song);
-	if(song->type == SONG_TYPE_FILE) removeASongFromTables(song);
 	free(song->utf8url);
 	if(song->tag) freeMpdTag(song->tag);
 	free(song);
@@ -172,25 +162,36 @@ void insertSongIntoList(SongList * list, ListNode ** nextSongNode, char * key,
 
 	if(!(*nextSongNode)) {
 		insertInList(list,key,(void *)song);
-		addSongToTables(song);
 	}
 	else if(cmpRet == 0) {
 		Song * tempSong = (Song *)((*nextSongNode)->data);
 		if(tempSong->mtime != song->mtime) {
-			removeASongFromTables(tempSong);
 			freeMpdTag(tempSong->tag);
 			tempSong->tag = song->tag;
 			tempSong->mtime = song->mtime;
 			song->tag = NULL;
-			addSongToTables(tempSong);
 		}
 		freeJustSong(song);
 		*nextSongNode = (*nextSongNode)->nextNode;
 	}
 	else {
-		addSongToTables(song);
 		insertInListBeforeNode(list,*nextSongNode,key,(void *)song);
 	}
+}
+
+static int matchesAnMpdTagItemKey(char * buffer, int * itemType) {
+	int i;
+
+	for(i = 0; i < TAG_NUM_OF_ITEM_TYPES; i++) {
+		if( 0 == strncmp(mpdTagItemKeys[i], buffer, 
+				strlen(mpdTagItemKeys[i])))
+		{
+			*itemType = i;
+			return 1;
+		}
+	}
+
+	return 0;
 }
 
 void readSongInfoIntoList(FILE * fp, SongList * list) {
@@ -200,6 +201,7 @@ void readSongInfoIntoList(FILE * fp, SongList * list) {
 	char * key = NULL;
 	ListNode * nextSongNode = list->firstNode;
 	ListNode * nodeTemp;
+	int itemType;
 
 	while(myFgets(buffer,bufferSize,fp) && 0!=strcmp(SONG_END,buffer)) {
 		if(0==strncmp(SONG_KEY,buffer,strlen(SONG_KEY))) {
@@ -220,32 +222,17 @@ void readSongInfoIntoList(FILE * fp, SongList * list) {
 			}
 			song->utf8url = strdup(&(buffer[strlen(SONG_FILE)]));
 		}
-		else if(0==strncmp(SONG_ARTIST,buffer,strlen(SONG_ARTIST))) {
+		else if(matchesAnMpdTagItemKey(buffer, &itemType)) {
 			if(!song->tag) song->tag = newMpdTag();
-			song->tag->artist = strdup(&(buffer[strlen(SONG_ARTIST)]));
-		}
-		else if(0==strncmp(SONG_ALBUM,buffer,strlen(SONG_ALBUM))) {
-			if(!song->tag) song->tag = newMpdTag();
-			song->tag->album = strdup(&(buffer[strlen(SONG_ALBUM)]));
-		}
-		else if(0==strncmp(SONG_TRACK,buffer,strlen(SONG_TRACK))) {
-			if(!song->tag) song->tag = newMpdTag();
-			song->tag->track = strdup(&(buffer[strlen(SONG_TRACK)]));
-		}
-		else if(0==strncmp(SONG_TITLE,buffer,strlen(SONG_TITLE))) {
-			if(!song->tag) song->tag = newMpdTag();
-			song->tag->title = strdup(&(buffer[strlen(SONG_TITLE)]));
-		}
-		else if(0==strncmp(SONG_NAME,buffer,strlen(SONG_NAME))) {
-			if(!song->tag) song->tag = newMpdTag();
-			song->tag->name = strdup(&(buffer[strlen(SONG_NAME)]));
+			addItemToMpdTag(song->tag, itemType,
+				&(buffer[strlen(mpdTagItemKeys[itemType])+2]));
 		}
 		else if(0==strncmp(SONG_TIME,buffer,strlen(SONG_TIME))) {
 			if(!song->tag) song->tag = newMpdTag();
 			song->tag->time = atoi(&(buffer[strlen(SONG_TIME)]));
 		}
 		else if(0==strncmp(SONG_MTIME,buffer,strlen(SONG_MTIME))) {
-			song->mtime = atoi(&(buffer[strlen(SONG_TITLE)]));
+			song->mtime = atoi(&(buffer[strlen(SONG_MTIME)]));
 		}
 		else {
 			ERROR("songinfo: unknown line in db: %s\n",buffer);
@@ -272,7 +259,6 @@ int updateSongInfo(Song * song) {
 	if(song->type == SONG_TYPE_FILE) {
                 InputPlugin * plugin;
 
-		removeASongFromTables(song);
 		if(song->tag) freeMpdTag(song->tag);
 
 		song->tag = NULL;
@@ -280,10 +266,8 @@ int updateSongInfo(Song * song) {
 		if((plugin = isMusic(utf8url,&(song->mtime)))) {
 		        song->tag = plugin->tagDupFunc(
                                         rmp2amp(utf8ToFsCharset(utf8url)));
-	                if(song->tag) validateUtf8Tag(song->tag);
                 }
 		if(!song->tag || song->tag->time<0) return -1;
-		else addSongToTables(song);
 	}
 
 	return 0;

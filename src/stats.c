@@ -18,10 +18,11 @@
 
 #include "stats.h"
 
-#include "tables.h"
 #include "directory.h"
 #include "myfprintf.h"
 #include "player.h"
+#include "tag.h"
+#include "tagTracker.h"
 
 #include <time.h>
 
@@ -35,8 +36,8 @@ void initStats() {
 }
 
 int printStats(FILE * fp) {
-	myfprintf(fp,"artists: %li\n",numberOfArtists());
-	myfprintf(fp,"albums: %li\n",numberOfAlbums());
+	myfprintf(fp,"artists: %li\n", getNumberOfTagItems(TAG_ITEM_ARTIST));
+	myfprintf(fp,"albums: %li\n", getNumberOfTagItems(TAG_ITEM_ALBUM));
 	myfprintf(fp,"songs: %i\n",stats.numberOfSongs);
 	myfprintf(fp,"uptime: %li\n",time(NULL)-stats.daemonStart);
 	myfprintf(fp,"playtime: %li\n",(long)(getPlayerTotalPlayTime()+0.5));

@@ -67,7 +67,7 @@ List * makeList(ListFreeDataFunc * freeDataFunc);
  *  _data_ -> data to be inserted in list
  * returns 1 if successful, 0 otherwise
  */ 
-int insertInList(List * list,char * key,void * data);
+ListNode * insertInList(List * list,char * key,void * data);
 
 int insertInListBeforeNode(List * list, ListNode * beforeNode, char * key,
 		void * data);
@@ -92,6 +92,8 @@ void deleteNodeFromList(List * list,ListNode * node);
  * returns 1 if successful, 0 otherwise
  */
 int findInList(List * list, char * key, void ** data);
+
+ListNode * findNodeInList(List * list, char * key);
 
 /* frees memory malloc'd for list and its nodes
  *  _list_ -> List to be free'd

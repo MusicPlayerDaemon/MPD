@@ -21,6 +21,10 @@
 
 #include "../config.h"
 
+#include "mpd_types.h"
+
+#include <string.h>
+
 #include <stdio.h>
 #ifdef HAVE_ID3TAG
 #ifdef USE_MPD_ID3TAG
@@ -30,13 +34,27 @@
 #endif
 #endif
 
+#define TAG_ITEM_ARTIST		0
+#define TAG_ITEM_ALBUM		1
+#define TAG_ITEM_TITLE		2
+#define TAG_ITEM_TRACK		3
+#define TAG_ITEM_NAME		4
+#define TAG_ITEM_GENRE		5
+#define TAG_ITEM_DATE		6
+
+#define TAG_NUM_OF_ITEM_TYPES	7
+
+extern char * mpdTagItemKeys[];
+
+typedef struct _MpdTagItem {
+	mpd_sint8 type;
+	char * value;
+} MpdTagItem;
+
 typedef struct _MpdTag {
-	char * artist;
-	char * album;
-	char * track;
-	char * title;
-	char * name;
 	int time;
+	MpdTagItem * items;
+	mpd_uint8 numOfItems;
 } MpdTag;
 
 #ifdef HAVE_ID3TAG
@@ -47,16 +65,26 @@ MpdTag * id3Dup(char * file);
 
 MpdTag * newMpdTag();
 
+void initTagConfig();
+
+void clearItemsFromMpdTag(MpdTag * tag, int itemType);
+
 void clearMpdTag(MpdTag * tag);
 
 void freeMpdTag(MpdTag * tag);
+
+void addItemToMpdTagWithLen(MpdTag * tag, int itemType, char * value, int len);
+
+#define addItemToMpdTag(tag, itemType, value) \
+		addItemToMpdTagWithLen(tag, itemType, value, strlen(value))
 
 void printMpdTag(FILE * fp, MpdTag * tag);
 
 MpdTag * mpdTagDup(MpdTag * tag);
 
-void validateUtf8Tag(MpdTag * tag);
-
 int mpdTagsAreEqual(MpdTag * tag1, MpdTag * tag2);
+
+/* *last shoudl be initialzed to -1 before calling this function */
+char * getNextItemFromMpdTag(MpdTag * tag, int itemType, int * last);
 
 #endif

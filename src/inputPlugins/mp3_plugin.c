@@ -549,9 +549,12 @@ int mp3Read(mp3DecodeData * data, OutputBuffer * cb, DecoderControl * dc) {
 		if(data->inStream->metaTitle) {
 			MpdTag * tag = newMpdTag();
 			if(data->inStream->metaName) {
-				tag->name = strdup(data->inStream->metaName);
+				addItemToMpdTag(tag,
+						TAG_ITEM_NAME,
+						data->inStream->metaName);
 			}
-			tag->title = strdup(data->inStream->metaTitle);
+			addItemToMpdTag(tag, TAG_ITEM_TITLE,
+					data->inStream->metaTitle);
 			free(data->inStream->metaTitle);
 			data->inStream->metaTitle = NULL;
 			copyMpdTagToOutputBuffer(cb, tag);
@@ -676,19 +679,21 @@ int mp3_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream) {
 	if(inStream->metaTitle) {
 		if(tag) freeMpdTag(tag);
 		tag = newMpdTag();
-		tag->title = strdup(inStream->metaTitle);
+		addItemToMpdTag(tag, TAG_ITEM_TITLE, inStream->metaTitle);
 		free(inStream->metaTitle);
 		inStream->metaTitle = NULL;
 		if(inStream->metaName) {
-			tag->name = strdup(inStream->metaName);
+			addItemToMpdTag(tag, TAG_ITEM_NAME, 
+					inStream->metaName);
 		}
 		copyMpdTagToOutputBuffer(cb, tag);
 		freeMpdTag(tag);
 	}
 	else if(tag) {
 		if(inStream->metaName) {
-			if(tag->name) free(tag->name);
-			tag->name = strdup(inStream->metaName);
+			clearItemsFromMpdTag(tag, TAG_ITEM_NAME);
+			addItemToMpdTag(tag, TAG_ITEM_NAME, 
+					inStream->metaName);
 		}
 		copyMpdTagToOutputBuffer(cb, tag);
 		freeMpdTag(tag);
@@ -696,7 +701,8 @@ int mp3_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream) {
 	else if(inStream->metaName) {
 		tag = newMpdTag();
 		if(inStream->metaName) {
-			tag->name = strdup(inStream->metaName);
+			addItemToMpdTag(tag, TAG_ITEM_NAME, 
+					inStream->metaName);
 		}
 		copyMpdTagToOutputBuffer(cb, tag);
 		freeMpdTag(tag);

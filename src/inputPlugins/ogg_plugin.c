@@ -162,27 +162,27 @@ MpdTag * oggCommentsParse(char ** comments) {
 	while(*comments) {
                 if((temp = ogg_parseComment(*comments,"artist"))) {
 			if(!ret) ret = newMpdTag();
-			if(!ret->artist) {
-				ret->artist = strdup(temp);
-			}
+			addItemToMpdTag(ret, TAG_ITEM_ARTIST, temp);
 		} 
                 else if((temp = ogg_parseComment(*comments,"title"))) {
 			if(!ret) ret = newMpdTag();
-			if(!ret->title) {
-				ret->title = strdup(temp);
-			}
+			addItemToMpdTag(ret, TAG_ITEM_TITLE, temp);
 		}
                 else if((temp = ogg_parseComment(*comments,"album"))) {
 			if(!ret) ret = newMpdTag();
-			if(!ret->album) {
-				ret->album = strdup(temp);
-			}
+			addItemToMpdTag(ret, TAG_ITEM_ALBUM, temp);
 		}
                 else if((temp = ogg_parseComment(*comments,"tracknumber"))) {
 			if(!ret) ret = newMpdTag();
-			if(!ret->track) {
-				ret->track = strdup(temp);
-			}
+			addItemToMpdTag(ret, TAG_ITEM_TRACK, temp);
+		}
+                else if((temp = ogg_parseComment(*comments,"genre"))) {
+			if(!ret) ret = newMpdTag();
+			addItemToMpdTag(ret, TAG_ITEM_GENRE, temp);
+		}
+                else if((temp = ogg_parseComment(*comments,"date"))) {
+			if(!ret) ret = newMpdTag();
+			addItemToMpdTag(ret, TAG_ITEM_DATE, temp);
 		}
 
 		comments++;
@@ -208,8 +208,8 @@ void putOggCommentsIntoOutputBuffer(OutputBuffer * cb, char * streamName,
 	if(tag->title) printf("Title: %s\n", tag->title);*/
 
 	if(streamName) {
-		if(tag->name) free(tag->name);
-		tag->name = strdup(streamName);
+		clearItemsFromMpdTag(tag, TAG_ITEM_NAME);
+		addItemToMpdTag(tag, TAG_ITEM_NAME, streamName);
 	}
 
 	copyMpdTagToOutputBuffer(cb, tag);

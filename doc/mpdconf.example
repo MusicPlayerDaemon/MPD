@@ -199,6 +199,10 @@ audio_output {
 
 ################ MISCELLANEOUS OPTIONS ###################
 #
+# This sets the metadata mpd will use, to disable all metadata, set to "none"
+#
+#metadata_to_use	"artist,album,title,genre,date,track"
+#
 # This setting exists as precaution against attacks.
 #
 #max_playlist_length 	"16384"

@@ -25,7 +25,6 @@
 #include "listen.h"
 #include "log.h"
 #include "utils.h"
-#include "tables.h"
 #include "directory.h"
 #include "volume.h"
 #include "playerData.h"
@@ -116,7 +115,6 @@ int playerInit() {
 		freeAllInterfaces();
 		closeMp3Directory();
 		finishPlaylist();
-		closeTables();
 		finishPermissions();
 		finishCommands();
 		finishVolume();
@@ -480,7 +478,6 @@ Song * playerCurrentDecodeSong() {
                 song = newNullSong();
                 song->utf8url = strdup(pc->currentUrl);
 		song->tag = metadataChunkToMpdTagDup(prev);
-                validateUtf8Tag(song->tag);
                 ret =  song;
         	resetPlayerMetadata();
         }

@@ -375,9 +375,21 @@ static void myShout_closeDevice(AudioOutput * audioOutput) {
 
 static void copyTagToVorbisComment(ShoutData * sd) {
 	if(sd->tag) {
-		addTag("ARTIST", sd->tag->artist);
-		addTag("ALBUM", sd->tag->album);
-		addTag("TITLE", sd->tag->title);
+		int i;
+
+		for(i = 0; i < sd->tag->numOfItems; i++) {
+			switch(sd->tag->items[i].type) {
+			case TAG_ITEM_ARTIST:
+				addTag("ARTIST", sd->tag->items[i].value);
+				break;
+			case TAG_ITEM_ALBUM:
+				addTag("ALBUM", sd->tag->items[i].value);
+				break;
+			case TAG_ITEM_TITLE:
+				addTag("TITLE", sd->tag->items[i].value);
+				break;
+			}
+		}
 	}
 }
 

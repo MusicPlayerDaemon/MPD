@@ -32,6 +32,9 @@
 #include "mpd_types.h"
 #include "sig_handlers.h"
 #include "player.h"
+#include "tagTracker.h"
+#include "list.h"
+#include "dbUtils.h"
 
 #include <string.h>
 #include <sys/types.h>
@@ -54,11 +57,6 @@
 #define DIRECTORY_MPD_VERSION	"mpd_version: "
 #define DIRECTORY_FS_CHARSET	"fs_charset: "
 
-#define DIRECTORY_SEARCH_ALBUM		"album"
-#define DIRECTORY_SEARCH_ARTIST		"artist"
-#define DIRECTORY_SEARCH_TITLE		"title"
-#define DIRECTORY_SEARCH_FILENAME	"filename"
-
 #define DIRECTORY_UPDATE_EXIT_NOUPDATE  0
 #define DIRECTORY_UPDATE_EXIT_UPDATE    1
 #define DIRECTORY_UPDATE_EXIT_ERROR     2
@@ -66,21 +64,6 @@
 #define DIRECTORY_RETURN_NOUPDATE       0
 #define DIRECTORY_RETURN_UPDATE         1
 #define DIRECTORY_RETURN_ERROR         -1
-
-typedef List DirectoryList;
-
-typedef struct _DirectoryStat {
-	ino_t inode;
-	dev_t device;
-} DirectoryStat;
-
-typedef struct _Directory {
-	char * utf8name;
-	DirectoryList * subDirectories;
-	SongList * songs;
-	struct _Directory * parent;
-	DirectoryStat * stat;
-} Directory;
 
 Directory * mp3rootDirectory = NULL;
 
@@ -1000,6 +983,8 @@ int writeDirectoryDB() {
 
 	while(fclose(fp) && errno==EINTR);
 
+	sortTagTrackerInfo();
+
 	return 0;
 }
 
@@ -1088,6 +1073,8 @@ int readDirectoryDB() {
 
 	if(stat(directory_db,&st)==0) directory_dbModTime = st.st_mtime;
 
+	sortTagTrackerInfo();
+
 	return 0;
 }
 
@@ -1168,159 +1155,6 @@ int traverseAllIn(FILE * fp, char * name,
 			data);
 }
 
-int countSongsInDirectory(FILE * fp, Directory * directory, void * data) {
-	int * count = (int *)data;
-
-	*count+=directory->songs->numberOfNodes;
-	
-        return 0;
-}
-
-int printDirectoryInDirectory(FILE * fp, Directory * directory, void * data) {
-        if(directory->utf8name) {
-		myfprintf(fp,"directory: %s\n",directory->utf8name);
-	}
-        return 0;
-}
-
-int printSongInDirectory(FILE * fp, Song * song, void * data) {
-        myfprintf(fp,"file: %s\n",song->utf8url);
-        return 0;
-}
-
-int searchForAlbumInDirectory(FILE * fp, Song * song, void * string) {
-	if(song->tag && song->tag->album) {
-		char * dup = strDupToUpper(song->tag->album);
-		if(strstr(dup,(char *)string)) printSongInfo(fp,song);
-		free(dup);
-	}
-	return 0;
-}
-
-int searchForArtistInDirectory(FILE * fp, Song * song, void * string) {
-	if(song->tag && song->tag->artist) {
-		char * dup = strDupToUpper(song->tag->artist);
-		if(strstr(dup,(char *)string)) printSongInfo(fp,song);
-		free(dup);
-	}
-	return 0;
-}
-
-int searchForTitleInDirectory(FILE * fp, Song * song, void * string) {
-	if(song->tag && song->tag->title) {
-		char * dup = strDupToUpper(song->tag->title);
-		if(strstr(dup,(char *)string)) printSongInfo(fp,song);
-		free(dup);
-	}
-	return 0;
-}
-
-int searchForFilenameInDirectory(FILE * fp, Song * song, void * string) {
-	char * dup = strDupToUpper(song->utf8url);
-	if(strstr(dup,(char *)string)) printSongInfo(fp,song);
-	free(dup);
-	return 0;
-}
-
-int searchForSongsIn(FILE * fp, char * name, char * item, char * string) {
-	char * dup = strDupToUpper(string);
-	int ret = -1;
-
-	if(strcmp(item,DIRECTORY_SEARCH_ALBUM)==0) {
-		ret = traverseAllIn(fp,name,searchForAlbumInDirectory,NULL,
-			(void *)dup);
-	}
-	else if(strcmp(item,DIRECTORY_SEARCH_ARTIST)==0) {
-		ret = traverseAllIn(fp,name,searchForArtistInDirectory,NULL,
-			(void *)dup);
-	}
-	else if(strcmp(item,DIRECTORY_SEARCH_TITLE)==0) {
-		ret = traverseAllIn(fp,name,searchForTitleInDirectory,NULL,
-			(void *)dup);
-	}
-	else if(strcmp(item,DIRECTORY_SEARCH_FILENAME)==0) {
-		ret = traverseAllIn(fp,name,searchForFilenameInDirectory,NULL,
-			(void *)dup);
-	}
-	else commandError(fp, ACK_ERROR_ARG, "unknown table", NULL);
-
-	free(dup);
-
-	return ret;
-}
-
-int findAlbumInDirectory(FILE * fp, Song * song, void * string) {
-	if(song->tag && song->tag->album && 
-			strcmp((char *)string,song->tag->album)==0) 
-	{
-		printSongInfo(fp,song);
-	}
-
-	return 0;
-}
-
-int findArtistInDirectory(FILE * fp, Song * song, void * string) {
-	if(song->tag && song->tag->artist && 
-			strcmp((char *)string,song->tag->artist)==0) 
-	{
-		printSongInfo(fp,song);
-	}
-
-	return 0;
-}
-
-int findSongsIn(FILE * fp, char * name, char * item, char * string) {
-	if(strcmp(item,DIRECTORY_SEARCH_ALBUM)==0) {
-		return traverseAllIn(fp,name,findAlbumInDirectory,NULL,
-			(void *)string);
-	}
-	else if(strcmp(item,DIRECTORY_SEARCH_ARTIST)==0) {
-		return traverseAllIn(fp,name,findArtistInDirectory,NULL,
-			(void *)string);
-	}
-
-	commandError(fp, ACK_ERROR_ARG, "unknown table", NULL);
-	return -1;
-}
-
-int printAllIn(FILE * fp, char * name) {
-	return traverseAllIn(fp,name,printSongInDirectory,
-				printDirectoryInDirectory,NULL);
-}
-
-int directoryAddSongToPlaylist(FILE * fp, Song * song, void * data) {
-	return addSongToPlaylist(fp, song, 0);
-}
-
-int addAllIn(FILE * fp, char * name) {
-	return traverseAllIn(fp,name,directoryAddSongToPlaylist,NULL,NULL);
-}
-
-int directoryPrintSongInfo(FILE * fp, Song * song, void * data) {
-	return printSongInfo(fp,song);
-}
-
-int sumSongTime(FILE * fp, Song * song, void * data) {
-	unsigned long * time = (unsigned long *)data;
-
-	if(song->tag && song->tag->time>=0) *time+=song->tag->time;
-
-	return 0;
-}
-
-int printInfoForAllIn(FILE * fp, char * name) {
-        return traverseAllIn(fp,name,directoryPrintSongInfo,printDirectoryInDirectory,NULL);
-}
-
-int countSongsIn(FILE * fp, char * name) {
-	int count = 0;
-	void * ptr = (void *)&count;
-	
-        traverseAllIn(fp,name,NULL,countSongsInDirectory,ptr);
-
-	return count;
-}
-
 void freeAllDirectoryStats(Directory * directory) {
 	ListNode * node = directory->subDirectories->firstNode;
 
@@ -1330,15 +1164,6 @@ void freeAllDirectoryStats(Directory * directory) {
 	}
 
 	freeDirectoryStatFromDirectory(directory);
-}
-
-unsigned long sumSongTimesIn(FILE * fp, char * name) {
-	unsigned long dbPlayTime = 0;
-	void * ptr = (void *)&dbPlayTime;
-	
-        traverseAllIn(fp,name,sumSongTime,NULL,ptr);
-
-	return dbPlayTime;
 }
 
 void initMp3Directory() {

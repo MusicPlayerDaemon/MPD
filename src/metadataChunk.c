@@ -29,9 +29,9 @@ void initMetadataChunk(MetadataChunk * chunk) {
 	chunk->title = -1;
 }
 
-#define dupElementToTag(string, element) { \
+#define dupElementToTag(item, element) { \
 	if(element >= 0 && element < METADATA_BUFFER_LENGTH) { \
-		string = strdup(chunk->buffer+element); \
+		addItemToMpdTag(ret, item, chunk->buffer+element); \
 	} \
 }
 
@@ -40,10 +40,10 @@ MpdTag * metadataChunkToMpdTagDup(MetadataChunk * chunk) {
 
 	chunk->buffer[METADATA_BUFFER_LENGTH-1] = '\0';
 
-	dupElementToTag(ret->name, chunk->name);
-	dupElementToTag(ret->title, chunk->title);
-	dupElementToTag(ret->artist, chunk->artist);
-	dupElementToTag(ret->album, chunk->album);
+	dupElementToTag(TAG_ITEM_NAME, chunk->name);
+	dupElementToTag(TAG_ITEM_TITLE, chunk->title);
+	dupElementToTag(TAG_ITEM_ARTIST, chunk->artist);
+	dupElementToTag(TAG_ITEM_ALBUM, chunk->album);
 
 	return ret;
 }
@@ -67,8 +67,16 @@ void copyMpdTagToMetadataChunk(MpdTag * tag, MetadataChunk * chunk) {
 
 	if(!tag) return;
 
-	copyStringToChunk(tag->name, chunk->name);
-	copyStringToChunk(tag->title, chunk->title);
-	copyStringToChunk(tag->artist, chunk->artist);
-	copyStringToChunk(tag->album, chunk->album);
+	copyStringToChunk(
+			getNextItemFromMpdTag(tag, TAG_ITEM_NAME, NULL), 
+			chunk->name);
+	copyStringToChunk(
+			getNextItemFromMpdTag(tag, TAG_ITEM_TITLE, NULL), 
+			chunk->title);
+	copyStringToChunk(
+			getNextItemFromMpdTag(tag, TAG_ITEM_ARTIST, NULL), 
+			chunk->title);
+	copyStringToChunk(
+			getNextItemFromMpdTag(tag, TAG_ITEM_ALBUM, NULL), 
+			chunk->album);
 }

@@ -27,6 +27,21 @@
 #include <stdio.h>
 #include <sys/param.h>
 
+typedef List DirectoryList;
+
+typedef struct _DirectoryStat {
+	ino_t inode;
+	dev_t device;
+} DirectoryStat;
+
+typedef struct _Directory {
+	char * utf8name;
+	DirectoryList * subDirectories;
+	SongList * songs;
+	struct _Directory * parent;
+	DirectoryStat * stat;
+} Directory;
+
 extern char * directory_db;
 
 void readDirectoryDBIfUpdateIsFinished();
@@ -51,22 +66,12 @@ int readDirectoryDB();
 
 void updateMp3Directory();
 
-int printAllIn(FILE * fp, char * name);
-
-int addAllIn(FILE * fp, char * name);
-
-int printInfoForAllIn(FILE * fp, char * name);
-
-int searchForSongsIn(FILE * fp, char * name, char * item, char * string);
-
-int findSongsIn(FILE * fp, char * name, char * item, char * string);
-
-int countSongsIn(FILE * fp, char * name);
-
-unsigned long sumSongTimesIn(FILE * fp, char * name);
-
 Song * getSongFromDB(char * file);
 
 time_t getDbModTime();
 
+int traverseAllIn(FILE * fp, char * name, 
+			int (*forEachSong)(FILE *, Song *, void *),
+			int (*forEachDir)(FILE *, Directory *, void *),
+			void * data);
 #endif

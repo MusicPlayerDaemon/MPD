@@ -450,12 +450,73 @@ FLAC__StreamDecoderWriteStatus flacWrite(const FLAC__SeekableStreamDecoder *dec,
 	return FLAC__STREAM_DECODER_WRITE_STATUS_CONTINUE;
 }
 
+static int commentMatchesAddToTag(
+		char * str,
+		FLAC__StreamMetadata_VorbisComment_Entry * entry,
+		int itemType,
+		MpdTag ** tag)
+{
+	int slen = strlen(str);
+	int vlen = entry->length - slen;
+
+	if( vlen <= 0 ) return 0;
+
+	if( 0 == strncasecmp(str, entry->entry, slen) ) {
+		if(*tag == NULL) *tag = newMpdTag();
+		addItemToMpdTagWithLen(*tag, itemType, 
+				entry->entry+slen, vlen);
+		return 1;
+	}
+
+	return 0;
+}
+		
+
+static MpdTag * copyVorbisCommentBlockToMpdTag(FLAC__StreamMetadata * block, 
+		MpdTag * tag)
+{
+	int i;
+
+	for(i = 0; i < block->data.vorbis_comment.num_comments; i++) {
+		if(commentMatchesAddToTag(
+				"artist=", 
+				block->data.vorbis_comment.comments+i,
+				TAG_ITEM_ARTIST,
+				&tag));
+		else if(commentMatchesAddToTag(
+				"title=", 
+				block->data.vorbis_comment.comments+i,
+				TAG_ITEM_TITLE,
+				&tag));
+		else if(commentMatchesAddToTag(
+				"album=", 
+				block->data.vorbis_comment.comments+i,
+				TAG_ITEM_ALBUM,
+				&tag));
+		else if(commentMatchesAddToTag(
+				"tracknumber=", 
+				block->data.vorbis_comment.comments+i,
+				TAG_ITEM_TRACK,
+				&tag));
+		else if(commentMatchesAddToTag(
+				"genre=", 
+				block->data.vorbis_comment.comments+i,
+				TAG_ITEM_GENRE,
+				&tag));
+		else if(commentMatchesAddToTag(
+				"date=", 
+				block->data.vorbis_comment.comments+i,
+				TAG_ITEM_DATE,
+				&tag));
+	}
+
+	return tag;
+}
+
 MpdTag * flacMetadataDup(char * file, int * vorbisCommentFound) {
 	MpdTag * ret = NULL;
 	FLAC__Metadata_SimpleIterator * it;
 	FLAC__StreamMetadata * block = NULL;
-	int offset;
-	int len, pos;
 
 	*vorbisCommentFound = 0;
 
@@ -469,60 +530,9 @@ MpdTag * flacMetadataDup(char * file, int * vorbisCommentFound) {
 		block = FLAC__metadata_simple_iterator_get_block(it);
 		if(!block) break;
 		if(block->type == FLAC__METADATA_TYPE_VORBIS_COMMENT) {
-			char * dup;
+			ret = copyVorbisCommentBlockToMpdTag(block, ret);
 
-			offset = FLAC__metadata_object_vorbiscomment_find_entry_from(block,0,"artist");
-			if(offset>=0) {
-				*vorbisCommentFound = 1;
-				if(!ret) ret = newMpdTag();
-				pos = strlen("artist=");
-				len = block->data.vorbis_comment.comments[offset].length-pos;
-				if(len>0) {
-					dup = malloc(len+1);
-					memcpy(dup,&(block->data.vorbis_comment.comments[offset].entry[pos]),len);
-					dup[len] = '\0';
-					ret->artist = dup;
-				}
-			}
-			offset = FLAC__metadata_object_vorbiscomment_find_entry_from(block,0,"album");
-			if(offset>=0) {
-				*vorbisCommentFound = 1;
-				if(!ret) ret = newMpdTag();
-				pos = strlen("album=");
-				len = block->data.vorbis_comment.comments[offset].length-pos;
-				if(len>0) {
-					dup = malloc(len+1);
-					memcpy(dup,&(block->data.vorbis_comment.comments[offset].entry[pos]),len);
-					dup[len] = '\0';
-					ret->album = dup;
-				}
-			}
-			offset = FLAC__metadata_object_vorbiscomment_find_entry_from(block,0,"title");
-			if(offset>=0) {
-				*vorbisCommentFound = 1;
-				if(!ret) ret = newMpdTag();
-				pos = strlen("title=");
-				len = block->data.vorbis_comment.comments[offset].length-pos;
-				if(len>0) {
-					dup = malloc(len+1);
-					memcpy(dup,&(block->data.vorbis_comment.comments[offset].entry[pos]),len);
-					dup[len] = '\0';
-					ret->title = dup;
-				}
-			}
-			offset = FLAC__metadata_object_vorbiscomment_find_entry_from(block,0,"tracknumber");
-			if(offset>=0) {
-				*vorbisCommentFound = 1;
-				if(!ret) ret = newMpdTag();
-				pos = strlen("tracknumber=");
-				len = block->data.vorbis_comment.comments[offset].length-pos;
-				if(len>0) {
-					dup = malloc(len+1);
-					memcpy(dup,&(block->data.vorbis_comment.comments[offset].entry[pos]),len);
-					dup[len] = '\0';
-					ret->track = dup;
-				}
-			}
+			if(ret) *vorbisCommentFound = 1;
 		}
 		else if(block->type == FLAC__METADATA_TYPE_STREAMINFO) {
 			if(!ret) ret = newMpdTag();

@@ -104,7 +104,7 @@ int insertInListBeforeNode(List * list, ListNode * beforeNode, char * key,
 	return 1;
 }
 
-int insertInList(List * list,char * key,void * data) {
+ListNode * insertInList(List * list,char * key,void * data) {
 	ListNode * node;
 
 	assert(list!=NULL);
@@ -137,7 +137,7 @@ int insertInList(List * list,char * key,void * data) {
 
 	list->numberOfNodes++;
 	
-	return 1;
+	return node;
 }
 
 int insertInListWithoutKey(List * list, void * data) {
@@ -173,7 +173,7 @@ int insertInListWithoutKey(List * list, void * data) {
 	return 1;
 }
 
-int findInList(List * list,char * key,void ** data) {
+ListNode * findNodeInList(List * list, char * key) {
 	static long high;
 	static long low;
 	static long cur;
@@ -191,10 +191,7 @@ int findInList(List * list,char * key,void ** data) {
 			cur = (high+low)/2;
 			tmpNode = list->nodesArray[cur];
 			cmp = strcmp(tmpNode->key,key);
-			if(cmp==0) {
-				if(data) *data = tmpNode->data;
-				return 1;
-			}
+			if(cmp==0) return tmpNode;
 			else if(cmp>0) high = cur;
 			else {
 				if(low==cur) break;
@@ -205,10 +202,7 @@ int findInList(List * list,char * key,void ** data) {
 		cur = high;
 		if(cur>=0) {
 			tmpNode = list->nodesArray[cur];
-			if(strcmp(tmpNode->key,key)==0) {
-				(*data) = tmpNode->data;
-				return 1;
-			}
+			if(strcmp(tmpNode->key,key)==0) return tmpNode;
 		}
 	}
 	else {
@@ -218,10 +212,18 @@ int findInList(List * list,char * key,void ** data) {
 			tmpNode = tmpNode->nextNode;
 		}
 	
-		if(tmpNode!=NULL) {
-			(*data) = tmpNode->data;
-			return 1;
-		}
+		return tmpNode;
+	}
+
+	return NULL;
+}
+
+int findInList(List * list, char * key, void ** data) {
+	ListNode * node = findNodeInList(list, key);
+	
+	if(node) {
+		if(data) *data = node->data;
+		return 1;
 	}
 
 	return 0;

@@ -24,6 +24,7 @@ mpd_headers = \
 	charConv.h \
 	command.h \
 	conf.h \
+	dbUtils.h \
 	decode.h \
 	directory.h \
 	inputPlugin.h \
@@ -51,7 +52,7 @@ mpd_headers = \
 	song.h \
 	stats.h \
 	tag.h \
-	tables.h \
+	tagTracker.h \
 	utf8.h \
 	utils.h \
 	volume.h
@@ -67,6 +68,7 @@ mpd_SOURCES = \
 	charConv.c \
 	command.c \
 	conf.c \
+	dbUtils.c \
 	decode.c \
 	directory.c \
 	inputPlugin.c \
@@ -93,8 +95,8 @@ mpd_SOURCES = \
 	signal_check.c \
 	song.c \
 	stats.c \
-	tables.c \
 	tag.c \
+	tagTracker.c \
 	utils.c \
 	volume.c \
 	utf8.c

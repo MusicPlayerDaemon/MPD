@@ -20,7 +20,6 @@
 #include "command.h"
 #include "playlist.h"
 #include "directory.h"
-#include "tables.h"
 #include "player.h"
 #include "listen.h"
 #include "conf.h"
@@ -35,6 +34,8 @@
 #include "replayGain.h"
 #include "inputPlugin.h"
 #include "inputStream.h"
+#include "tag.h"
+#include "tagTracker.h"
 #include "../config.h"
 
 #include <stdio.h>
@@ -403,6 +404,7 @@ int main(int argc, char * argv[]) {
         parseOptions(argc, argv, &options);
 
         initStats();
+	initTagConfig();
         initLog();
 
         establishListen(&options);
@@ -415,7 +417,6 @@ int main(int argc, char * argv[]) {
 	initPermissions();
         initReplayGainState();
 
-        initTables();
         initPlaylist();
         initInputPlugins();
 
@@ -427,8 +428,10 @@ int main(int argc, char * argv[]) {
         initAudioDriver();
         initVolume();
         initInterfaces();
-	initInputStream();
+	initInputStream(); 
 
+	printMemorySavedByTagTracker();
+	
         daemonize(&options);
 
         setupLogOutput(&options, out, err);
@@ -450,7 +453,6 @@ int main(int argc, char * argv[]) {
         freeAllInterfaces();
 	closeAllListenSockets();
         closeMp3Directory();
-        closeTables();
         finishPlaylist();
         freePlayerData();
         finishAudioDriver();

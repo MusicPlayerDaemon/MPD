@@ -158,10 +158,6 @@ int waitOnDecode(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb,
 	}
 
 	if((tag = metadataChunkToMpdTagDup(&(pc->fileMetadataChunk)))) {
-		/* lets put the filename in the title if no tag info */
-		if(!tag->title && !tag->artist && !tag->album) {
-			tag->title = strdup(pc->currentUrl);
-		}
 		sendMetadataToAudioDevice(tag);
 		freeMpdTag(tag);
 	}

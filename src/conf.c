@@ -151,6 +151,7 @@ void initConf() {
 	registerConfigParam(CONF_HTTP_PREBUFFER_SIZE,		0,	0);
 	registerConfigParam(CONF_REPLAYGAIN_PREAMP,		0,	0);
 	registerConfigParam(CONF_ID3V1_ENCODING,		0,	0);
+	registerConfigParam(CONF_METADATA_TO_USE,		0,	0);
 }
 
 static void addBlockParam(ConfigParam * param, char * name, char * value,

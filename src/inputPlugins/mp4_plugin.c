@@ -322,6 +322,7 @@ MpdTag * mp4DataDup(char * file, int * mp4MetadataFound) {
 	int32_t track;
 	int32_t time;
 	int32_t scale;
+	int i;
 
 	*mp4MetadataFound = 0;
 	
@@ -359,20 +360,39 @@ MpdTag * mp4DataDup(char * file, int * mp4MetadataFound) {
 	}
 	ret->time = ((float)time)/scale+0.5;
 
-	if(!mp4ff_meta_get_artist(mp4fh,&ret->artist)) {
-		*mp4MetadataFound = 1;
-	}
+	for(i = 0; i < mp4ff_meta_get_num_items(mp4fh); i++) {
+		char * item;
+		char * value;
 
-	if(!mp4ff_meta_get_album(mp4fh,&ret->album)) {
-		*mp4MetadataFound = 1;
-	}
+		mp4ff_meta_get_by_index(mp4fh, i, &item, &value);
 
-	if(!mp4ff_meta_get_title(mp4fh,&ret->title)) {
-		*mp4MetadataFound = 1;
-	}
+		if(0 == strcasecmp("artist", item)) {
+			addItemToMpdTag(ret, TAG_ITEM_ARTIST, value);
+			*mp4MetadataFound = 1;
+		}
+		else if(0 == strcasecmp("title", item)) {
+			addItemToMpdTag(ret, TAG_ITEM_TITLE, value);
+			*mp4MetadataFound = 1;
+		}
+		else if(0 == strcasecmp("album", item)) {
+			addItemToMpdTag(ret, TAG_ITEM_ALBUM, value);
+			*mp4MetadataFound = 1;
+		}
+		else if(0 == strcasecmp("track", item)) {
+			addItemToMpdTag(ret, TAG_ITEM_TRACK, value);
+			*mp4MetadataFound = 1;
+		}
+		else if(0 == strcasecmp("genre", item)) {
+			addItemToMpdTag(ret, TAG_ITEM_GENRE, value);
+			*mp4MetadataFound = 1;
+		}
+		else if(0 == strcasecmp("date", item)) {
+			addItemToMpdTag(ret, TAG_ITEM_DATE, value);
+			*mp4MetadataFound = 1;
+		}
 
-	if(!mp4ff_meta_get_track(mp4fh,&ret->track)) {
-		*mp4MetadataFound = 1;
+		free(item);
+		free(value);
 	}
 
 	mp4ff_close(mp4fh);

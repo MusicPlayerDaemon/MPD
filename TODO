@@ -1,18 +1,21 @@
 0.12
 ----
-*) disable mod support by default
-
 *) add genre,  date, composer metadata
 
 *) rewrite metadata/db handling
-	*) store all metadata entries in table
-	*) each contains a counter reference
-	*) new MpdDBTag, which instead of strings allocated for each metadata 
-		entry, store a char * string to the metadata entry in the table
-	*) multiple artist support
-	*) multiple genre support {char *, int pairs for each metadata entry 
-		indicating the type of metadata and its value)
-	*) MpdDBTag <-> MpdTag interface
+	*) rewrite search and find to be more flexible and elegant
+	*) implemnt list command
+		*) for each TagTrackerItem, include a temp varaible for storing
+			if it has been printed already
+		*) reset this variable before list command processing
+
+*) rewrite filename handling
+	*) use memory more efficiently, by iteratively constructing filename
+	*) create a function for creating directory names:
+		*) returns a static string
+		*) when creating the string, check that the same directory
+		 	string wasn't just created (store last Directory * ptr)
+		*) this should be very fast! and save memory
 
 *) implement listener socket protocol as documented here:
 	http://www.musicpd.org/wiki/moin.cgi/MpdListenerProtocol
