@@ -68,7 +68,7 @@ int isValidRemoteUtf8Url(char * utf8url) {
                 temp = utf8url;
                 while(*temp) {
                         if((*temp >= 'a' && *temp <= 'z') || 
-                                        (*temp >= 'A' && *temp <= 'z') ||
+                                        (*temp >= 'A' && *temp <= 'Z') ||
                                         (*temp >= '0' && *temp <= '9') ||
                                         *temp == '$' ||
                                         *temp == '-' ||
