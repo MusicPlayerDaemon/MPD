@@ -27,7 +27,7 @@
 #include <stdio.h>
 #include <sys/param.h>
 
-extern char * directorydb;
+extern char * directory_db;
 
 void readDirectoryDBIfUpdateIsFinished();
 

@@ -306,8 +306,8 @@ int main(int argc, char * argv[]) {
         initTables();
         initPlaylist();
 
-        if(!options.dbFile) directorydb = strdup(rpp2app(".mpddb"));
-        else directorydb = strdup(options.dbFile);
+        if(!options.dbFile) directory_db = strdup(rpp2app(".mpddb"));
+        else directory_db = strdup(options.dbFile);
 
         if(options.createDB>0 || options.onlyCreateDB || readDirectoryDB()<0) 
 	{

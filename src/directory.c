@@ -70,7 +70,9 @@ typedef struct _Directory {
 
 Directory * mp3rootDirectory = NULL;
 
-char * directorydb;
+char * directory_db;
+
+time_t directory_dbModTime = 0;
 
 volatile int directory_updatePid = 0;
 
@@ -140,10 +142,16 @@ void directory_sigChldHandler(int pid, int status) {
 
 void readDirectoryDBIfUpdateIsFinished() {
 	if(directory_reReadDB && 0==directory_updatePid) {
+                struct stat st;
+
 		DEBUG("readDirectoryDB since update finished successfully\n");
 		readDirectoryDB();
 		incrPlaylistVersion();
 		directory_reReadDB = 0;
+
+	        if(stat(directory_db,&st)==0) {
+                        directory_dbModTime = st.st_mtime;
+                }
 	}
 }
 
@@ -182,7 +190,7 @@ int updateInit(FILE * fp, List * pathList) {
 		ignoreSignals();
 		if(writeDirectoryDB()<0) {
 			ERROR("problems writing music db file, \"%s\"\n",
-					directorydb);
+					directory_db);
 			exit(EXIT_FAILURE);
 		}
 		exit(EXIT_SUCCESS);
@@ -790,7 +798,7 @@ int writeDirectoryDB() {
 	deleteEmptyDirectoriesInDirectory(mp3rootDirectory);
 	sortDirectory(mp3rootDirectory);
 
-	while(!(fp=fopen(directorydb,"w")) && errno==EINTR);
+	while(!(fp=fopen(directory_db,"w")) && errno==EINTR);
 	if(!fp) return -1;
 
 	/* block signals when writing the db so we don't get a corrupted db*/
@@ -810,7 +818,7 @@ int readDirectoryDB() {
 	FILE * fp;
 
 	if(!mp3rootDirectory) mp3rootDirectory = newDirectory(NULL,0);
-	while(!(fp=fopen(directorydb,"r")) && errno==EINTR);
+	while(!(fp=fopen(directory_db,"r")) && errno==EINTR);
 	if(!fp) return -1;
 
 	/* get initial info */
@@ -898,7 +906,7 @@ int updateMp3Directory(FILE * fp) {
 	}
 
 	if(writeDirectoryDB()<0) {
-		ERROR("problems writing music db file, \"%s\"\n",directorydb);
+		ERROR("problems writing music db file, \"%s\"\n",directory_db);
 		myfprintf(fp,"%s problems writing music db\n",COMMAND_RESPOND_ERROR);
 		return -1;
 	}
@@ -1124,10 +1132,14 @@ unsigned long sumSongTimesIn(FILE * fp, char * name) {
 }
 
 void initMp3Directory() {
+	struct stat st;
+
 	mp3rootDirectory = newDirectory(NULL,0);
 	exploreDirectory(mp3rootDirectory);
 	stats.numberOfSongs = countSongsIn(stderr,NULL);
 	stats.dbPlayTime = sumSongTimesIn(stderr,NULL);
+
+	if(stat(directory_db,&st)==0) directory_dbModTime = st.st_mtime;
 }
 
 Song * getSongDetails(char * file, char ** shortnameRet, 
@@ -1175,11 +1187,6 @@ Song * getSong(char * file) {
 }
 
 time_t getDbModTime() {
-	time_t mtime = 0;
-	struct stat st;
-
-	if(stat(directorydb,&st)==0) mtime = st.st_mtime;
-
-	return mtime;
+	return directory_dbModTime;
 }
 /* vim:set shiftwidth=4 tabstop=8 expandtab: */

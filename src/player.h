@@ -142,5 +142,7 @@ int getPlayerBits();
 
 int getPlayerChannels();
 
+void playerCycleLogFiles();
+
 #endif
 /* vim:set shiftwidth=4 tabstop=8 expandtab: */
