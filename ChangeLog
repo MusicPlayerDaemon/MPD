@@ -1,3 +1,25 @@
+ver 0.11.0 (2004/6/17)
+1) Support for playing mp3 and Ogg Vorbis streams
+2) Non-blocking Update
+3) Replaygain support for Ogg Vorbis and FLAC (by Eric Moore aka AliasMrJones)
+4) audio_output_format option that allows for all audio output to be converted to a format compatible with any sound card
+5) Own routines for to always support UTF-8 <-> ISO-8859-1 conversion
+6) Added "Id" and "Pos" metadata for songs in playlist
+7) Added commands: plchanges, currentsong, playid, seekid, playlistid, moveid, swapid, deleteid
+8) UTF-8 validation of all tags
+9) Update specific files/directories (for fast, incremental updating)
+10) Added ACK error codes
+11) Mod file support
+12) Added command_list_ok_begin
+13) Play after stop resumes from last position in the playlist
+14) Play while pause resumes playback
+15) Better signal handling by mackstann
+16) Cleanup decoder interface (now called InputPlugins)
+17) --create-db no long starts the daemon
+18) --no-daemon outputs to log files
+19) --stdout sends output to stdout/stderr
+20) Lots of other cleanups and Bugfixes
+
 ver 0.10.4 (2004/5/26)
 1) Fix configure problems on OpenBSD with langinfo and iconv
 2) Fix an infinte loop when writing to an interface and it has expired
