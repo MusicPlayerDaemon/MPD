@@ -22,6 +22,7 @@
 #include "sig_handlers.h"
 #include "mp3_decode.h"
 #include "audiofile_decode.h"
+#include "mp4_decode.h"
 #include "utils.h"
 
 #include <sys/stat.h>
@@ -173,38 +174,6 @@ MpdTag * mp3TagDup(char * utf8file) {
 
 #ifdef HAVE_FAAD
 /* copied from FAAD2 frontend */
-int mp4GetAACTrack(mp4ff_t *infile) {
-	/* find AAC track */
-	int i, rc;
-	int numTracks = mp4ff_total_tracks(infile);
-
-	for (i = 0; i < numTracks; i++) {
-		unsigned char *buff = NULL;
-		int buff_size = 0;
-		mp4AudioSpecificConfig mp4ASC;
-	
-		mp4ff_get_decoder_config(infile, i, &buff, &buff_size);
-
-		if (buff) {
-			rc = AudioSpecificConfig(buff, buff_size, &mp4ASC);
-			free(buff);
-			if (rc < 0) continue;
-            		return i;
-		}
-	}
-
-	/* can't decode this */
-	return -1;
-}
-
-uint32_t mp4ReadCallback(void *user_data, void *buffer, uint32_t length) {
-	return fread(buffer, 1, length, (FILE*)user_data);
-}
-            
-uint32_t mp4SeekCallback(void *user_data, uint64_t position) {
-	return fseek((FILE*)user_data, position, SEEK_SET);
-}       
-		    
 MpdTag * mp4DataDup(char * utf8file, int * mp4MetadataFound) {
 	MpdTag * ret = NULL;
 	FILE * fh;
@@ -225,8 +194,8 @@ MpdTag * mp4DataDup(char * utf8file, int * mp4MetadataFound) {
 	}
 
 	cb = malloc(sizeof(mp4ff_callback_t));
-	cb->read = mp4ReadCallback;
-	cb->seek = mp4SeekCallback;
+	cb->read = mp4_readCallback;
+	cb->seek = mp4_seekCallback;
 	cb->user_data = fh;
 
 	mp4fh = mp4ff_open_read(cb);
@@ -237,7 +206,7 @@ MpdTag * mp4DataDup(char * utf8file, int * mp4MetadataFound) {
 		return NULL;
 	}
 
-	track = mp4GetAACTrack(mp4fh);
+	track = mp4_getAACTrack(mp4fh);
 	if(track < 0) {
 		mp4ff_close(mp4fh);
 		fclose(fh);
