@@ -28,11 +28,13 @@ decoding has stopped.
 	3) this will help streaming from blocking indefinetly or waiting
 		on a response
 
-6) ACK error codes
+6) play streams
 
-7) cleanup main()
+7) ACK error codes
 
-8) handle '\n' in filenames
+8) cleanup main()
+
+9) handle '\n' in filenames
 
 
 Post-1.0
