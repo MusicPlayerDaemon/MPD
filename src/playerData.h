@@ -37,10 +37,10 @@ typedef struct _Buffer {
 	mpd_uint16 * chunkSize;
 	mpd_uint16 * bitRate;
 	float * times;
-	int begin;
-	int end;
-	int next;
-	int wrap;
+	mpd_sint16 begin;
+	mpd_sint16 end;
+	mpd_sint16 next;
+	mpd_sint8 wrap;
 	float totalTime;
 } Buffer;
 

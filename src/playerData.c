@@ -51,6 +51,11 @@ void initPlayerData() {
 
 	buffered_chunks = bufferSize/CHUNK_SIZE;
 
+	if(buffered_chunks >= 1<<15) {
+		ERROR("buffer size \"%i\" is too big\n",bufferSize);
+		exit(-1);
+	}
+
 	perc = strtod((getConf())[CONF_BUFFER_BEFORE_PLAY],&test);
 	if(*test!='%' || perc<0 || perc>100) {
 		ERROR("buffered before play \"%s\" is not a positive "
