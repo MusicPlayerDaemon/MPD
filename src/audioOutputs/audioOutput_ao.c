@@ -19,7 +19,6 @@
 #include "../audioOutput.h"
 #include "../conf.h"
 #include "../log.h"
-#include "../sig_handlers.h"
 
 #include <string.h>
 #include <assert.h>
@@ -173,10 +172,8 @@ static void audioOutputAo_closeDevice(AudioOutput * audioOutput) {
 	AoData * ad = (AoData *) audioOutput->data;
 
 	if(ad->device) {
-		blockSignals();
 		ao_close(ad->device);
 		ad->device = NULL;
-		unblockSignals();
 	}
 
 	audioOutput->open = 0;
@@ -197,9 +194,7 @@ static int audioOutputAo_openDevice(AudioOutput * audioOutput,
 	format.byte_format = AO_FMT_NATIVE;
 	format.channels = audioFormat->channels;
 
-	blockSignals();
 	ad->device = ao_open_live(ad->driverId, &format, ad->options);
-	unblockSignals();
 
 	if(ad->device==NULL) return -1;
 
