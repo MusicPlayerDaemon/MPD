@@ -51,6 +51,8 @@
 *) add a method for closing the audio device immediatly w/o waiting for an
    empty audio device buffer.  This isn't possible via libao api.
 
+*) add support for playing aac streams (gee, thanks icecast)
+
 0.13
 ----
 *) support for dynamically loading plugins
