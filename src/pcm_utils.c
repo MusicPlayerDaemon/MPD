@@ -138,27 +138,92 @@ void pcm_mix(char * buffer1, char * buffer2, size_t bufferSize1,
 	pcm_add(buffer1,buffer2,bufferSize1,bufferSize2,vol1,1000-vol1,format);
 }
 
+
+/* outFormat bits must be 16 and channels must be 2! */
 void pcm_convertAudioFormat(AudioFormat * inFormat, char * inBuffer, size_t
                 inSize, AudioFormat * outFormat, char * outBuffer)
 {
-	/*int inSampleSize = inFormat->bits*inFormat->channels/8;
-	int outSampleSize = outFormat->bits*outFormat->channels/8;*/
+	static char * bitConvBuffer = NULL;
+	static int bitConvBufferLength = 0;
+	static char * channelConvBuffer = NULL;
+	static int channelConvBufferLength = 0;
+	char * dataChannelConv;
+	int dataChannelLen;
+	char * dataBitConv;
+	int dataBitLen;
 
-	assert(inFormat->bits==16);
 	assert(outFormat->bits==16);
-	assert(inFormat->channels==2);
 	assert(outFormat->channels==2);
 
-	if(inFormat->sampleRate == outFormat->sampleRate) return;
+	/* converts */
+	switch(inFormat->bits) {
+	case 8:
+		dataBitLen = inSize << 1;
+		if(dataBitLen > bitConvBufferLength) {
+			bitConvBuffer = realloc(bitConvBuffer, dataBitLen);
+			bitConvBufferLength = dataBitLen;
+		}
+		dataBitConv = bitConvBuffer;
+		{
+			mpd_sint8 * in = (mpd_sint8 *)inBuffer;
+			mpd_sint16 * out = (mpd_sint16 *)dataBitConv;
+			int i;
+			for(i=0; i<inSize; i++) {
+				*out++ = (*in++) << 8;
+			}
+		}
+		break;
+	case 16:
+		dataBitConv = inBuffer;
+		dataBitLen = inSize;
+		break;
+	case 24:
+		/* put dithering code from mp3_decode here */
+	default:
+		ERROR("only 8 or 16 bits are supported for conversion!\n");
+		exit(EXIT_FAILURE);
+	}
 
-	/* only works if outFormat is 16-bit stereo! */
-	/* resampling code blatantly ripped from XMMS */
-	{
+	/* converts only between 16 bit audio between mono and stereo */
+	switch(inFormat->channels) {
+	case 1:
+		dataChannelLen = (dataBitLen >> 1) << 2;
+		if(dataChannelLen > channelConvBufferLength) {
+			channelConvBuffer = realloc(channelConvBuffer,
+					dataChannelLen);
+			channelConvBufferLength = dataChannelLen;
+		}
+		dataChannelConv = channelConvBuffer;
+		{
+			mpd_sint16 * in = (mpd_sint16 *)dataBitConv;
+			mpd_sint16 * out = (mpd_sint16 *)dataChannelConv;
+			int i, inSamples = dataChannelLen >> 1;
+			for(i=0;i<inSamples;i++) {
+				*out++ = *in;
+				*out++ = *in++;
+			}
+		}
+		break;
+	case 2:
+		dataChannelConv = dataBitConv;
+		dataChannelLen = dataBitLen;
+		break;
+	default:
+		ERROR("only 1 or 2 channels are supported for conversion!\n");
+		exit(EXIT_FAILURE);
+	}
+
+	if(inFormat->sampleRate == outFormat->sampleRate) {
+		memcpy(outBuffer,dataChannelConv,dataChannelLen);
+	}
+	else {
+		/* only works if outFormat is 16-bit stereo! */
+		/* resampling code blatantly ripped from XMMS */
 		const int shift = sizeof(mpd_sint16);
 		mpd_sint32 i, in_samples, out_samples, x, delta;
-		mpd_sint16 * inptr = (mpd_sint16 *)inBuffer;
+		mpd_sint16 * inptr = (mpd_sint16 *)dataChannelConv;
 		mpd_sint16 * outptr = (mpd_sint16 *)outBuffer;
-		mpd_uint32 nlen = (((inSize >> shift) * 
+		mpd_uint32 nlen = (((dataChannelLen >> shift) * 
 				(mpd_uint32)(outFormat->sampleRate)) / 
 				inFormat->sampleRate);
 		nlen <<= shift;
@@ -197,9 +262,7 @@ size_t pcm_sizeOfOutputBufferForAudioFormatConversion(AudioFormat * inFormat,
 	nlen <<= shift;
 
 
-	assert(inFormat->bits==16);
 	assert(outFormat->bits==16);
-	assert(inFormat->channels==2);
 	assert(outFormat->channels==2);
 
 	return nlen;
