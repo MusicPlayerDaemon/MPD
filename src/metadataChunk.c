@@ -75,7 +75,7 @@ void copyMpdTagToMetadataChunk(MpdTag * tag, MetadataChunk * chunk) {
 			chunk->title);
 	copyStringToChunk(
 			getNextItemFromMpdTag(tag, TAG_ITEM_ARTIST, NULL), 
-			chunk->title);
+			chunk->artist);
 	copyStringToChunk(
 			getNextItemFromMpdTag(tag, TAG_ITEM_ALBUM, NULL), 
 			chunk->album);
