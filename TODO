@@ -1,20 +1,27 @@
-1) resampling audio for compatibility, and better gapless/crossfading
+1) On exploring a directory:
+	1) detect if any songs were added
+	2) if no songs added remove explored directory
+	3) use this info on exploring directory to adjust whether or not an
+		update happened
+	4) remove the deleteEmptryDirectories() function
+
+2) resampling audio for compatibility, and better gapless/crossfading
 	a) write bit conversion stuff (8->16 and 24->16)
 	b) mono to stereo conversion
 	c) default audio format is (44.1khz, 16-bit, stereo)
 	d) option to set default sampling frequency
 	e) abitility to disable resampling and audio format conversion
 
-2) when writing combined interface for all decodes to use, be sure to add a 
+3) when writing combined interface for all decodes to use, be sure to add a 
 common function and abstrct dealing with DecoderControl * and put
 cycleLogFiles in there, so we cycleLogFiles while decoding, not just when 
 decoding has stopped.
 
-3) cleanup main()
+4) cleanup main()
 
-4) handle '\n' in filenames
+5) handle '\n' in filenames
 
-5) reaplygain
+6) reaplygain
 
 
 Post-1.0
