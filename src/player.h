@@ -74,7 +74,7 @@ typedef struct _PlayerControl {
 	mpd_sint8 seek;
 	double seekWhere;
 	float crossFade;
-	mpd_sint8 softwareVolume;
+	mpd_uint16 softwareVolume;
 	double totalPlayTime;
 	int decode_pid;
 } PlayerControl;

@@ -422,7 +422,7 @@ void setPlayerCrossFade(float crossFadeInSeconds) {
 
 void setPlayerSoftwareVolume(int volume) {
 	PlayerControl * pc;
-	volume = (volume>100) ? 100 : (volume<0 ? 0 : volume);
+	volume = (volume>1000) ? 1000 : (volume<0 ? 0 : volume);
 
 	pc = &(getPlayerData()->playerControl);
 

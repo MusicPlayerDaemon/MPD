@@ -111,7 +111,7 @@ void initPlayerData() {
 	memset(playerData_pd->playerControl.file,0,MAXPATHLEN+1);
 	memset(playerData_pd->playerControl.erroredFile,0,MAXPATHLEN+1);
 	playerData_pd->playerControl.crossFade = crossfade;
-	playerData_pd->playerControl.softwareVolume = 100;
+	playerData_pd->playerControl.softwareVolume = 1000;
 	playerData_pd->playerControl.totalPlayTime = 0;
 	playerData_pd->playerControl.decode_pid = 0;
 
