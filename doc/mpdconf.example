@@ -70,6 +70,22 @@ error_file 		"~/.mpd/mpd.error"
 
 ################## AUDIO OUTPUT ##########################
 #
+# libao (ao_driver) supports any of the following:
+#
+# * Null output (handy for testing without a sound device)
+# * WAV files
+# * AU files
+# * OSS (Open Sound System, used on Linux and FreeBSD)
+# * aRts
+# * esd (ESounD or Enlighten Sound Daemon)
+# * ALSA (Advanced Linux Sound Architecture)
+# * AIX
+# * Sun/NetBSD/OpenBSD
+# * IRIX
+# * NAS (Network Audio Server)
+#
+# Refer to libao documentation for more information
+#
 # OSS Audio Output
 #ao_driver 		"oss"
 #ao_driver_options 	"dsp=/dev/dsp"
