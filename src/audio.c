@@ -56,9 +56,10 @@ int cmpAudioFormat(AudioFormat * f1, AudioFormat * f2) {
 	return memcmp(f1, f2, sizeof(AudioFormat));
 }
 
+extern AudioOutputPlugin alsaPlugin;
 extern AudioOutputPlugin aoPlugin;
-extern AudioOutputPlugin shoutPlugin;
 extern AudioOutputPlugin ossPlugin;
+extern AudioOutputPlugin shoutPlugin;
 
 /* make sure initPlayerData is called before this function!! */
 void initAudioDriver() {
@@ -66,9 +67,10 @@ void initAudioDriver() {
 	int i;
 
 	initAudioOutputPlugins();
+	loadAudioOutputPlugin(&alsaPlugin);
 	loadAudioOutputPlugin(&aoPlugin);
-	loadAudioOutputPlugin(&shoutPlugin);
 	loadAudioOutputPlugin(&ossPlugin);
+	loadAudioOutputPlugin(&shoutPlugin);
 
 	pdAudioDevicesEnabled = (getPlayerData())->audioDeviceEnabled;
 

@@ -22,6 +22,10 @@
 *) add a method for clearling the audio device's buffer.  This isn't possible 
 	with libao api.
 
+*) add support so that audioOutput plugins can modify the output audio format.
+	(This way, alsa's _near functions can be used to adjust for output
+	 devices on the fly: for channels, bits, and rate)
+
 *) add support for playing aac streams (gee, thanks icecast)
 
 *) implement apev2 and id3v1 tag reader from xmms-musepack plugin
