@@ -63,9 +63,6 @@ void initSigHandlers() {
 	sigaction(SIGPIPE,&sa,NULL);
 	sa.sa_handler = usr1SigHandler;
 	sigaction(SIGUSR1,&sa,NULL);
-	sigaddset(&sa.sa_mask,SIGTERM);
-	sigaddset(&sa.sa_mask,SIGHUP);
-	sigaddset(&sa.sa_mask,SIGCHLD);
 	sa.sa_handler = chldSigHandler;
 	sigaction(SIGCHLD,&sa,NULL);
 	sa.sa_handler = hupSigHandler;

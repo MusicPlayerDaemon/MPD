@@ -141,7 +141,6 @@ void initPlaylist() {
 }
 
 void finishPlaylist() {
-	clearPlaylist(stderr);
 	free(playlist.songs);
 	playlist.songs = NULL;
 	free(playlist.order);

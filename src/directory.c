@@ -30,6 +30,7 @@
 #include "interface.h"
 #include "volume.h"
 #include "mpd_types.h"
+#include "sig_handlers.h"
 
 #include <string.h>
 #include <sys/types.h>
@@ -130,6 +131,7 @@ int updateInit(FILE * fp) {
                	sigaction(SIGPIPE,&sa,NULL);
                	sigaction(SIGCHLD,&sa,NULL);
 
+		finishSigHandlers();
                	close(listenSocket);
                	freeAllInterfaces();
                	finishPlaylist();
