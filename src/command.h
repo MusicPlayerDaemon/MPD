@@ -29,6 +29,9 @@
 #define COMMAND_RETURN_KILL	10
 #define COMMAND_RETURN_CLOSE	20
 
+extern char * current_command;
+extern int command_listNum;
+
 int proccessListOfCommands(FILE * fp, int * permission, int * expired, 
 		List * list);
 
@@ -40,6 +43,18 @@ void finishCommands();
 
 #define commandSuccess(fp)              myfprintf(fp, "OK\n")
 
-#define commandError(fp, format, ... )  myfprintf(fp, "ACK " format "\n", ##__VA_ARGS__)
+#define commandError(fp, format, ... )  \
+	{\
+		if(current_command) { \
+			myfprintf(fp, "ACK [%s:%i] " format "\n", \
+					current_command, command_listNum, \
+					##__VA_ARGS__); \
+			current_command = NULL; \
+		} \
+		else { \
+			myfprintf(fp, "ACK [:%i] " format "\n", \
+					command_listNum, ##__VA_ARGS__); \
+		} \
+	}
 
 #endif

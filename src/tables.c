@@ -192,8 +192,7 @@ int printAllKeysOfTable(FILE * fp, char * table, char * arg1) {
 		return printAllAlbums(fp,arg1);
 	}
 	else {
-		commandError(fp, "table \"%s\" does not exist or not available "
-                                "for listing", table);
+		commandError(fp, "table \"%s\" does not exist", table);
 		return -1;
 	}
 }

@@ -375,7 +375,7 @@ int playlistInfo(FILE * fp,int song) {
 		end = song+1;
 	}
 	if(song>=playlist.length) {
-		commandError(fp, "song doesn't exist");
+		commandError(fp, "song doesn't exist: \"%i\"", song);
 		return -1;
 	}
 
@@ -535,11 +535,11 @@ int swapSongsInPlaylist(FILE * fp, int song1, int song2) {
 	int currentSong = -1;
 
 	if(song1<0 || song1>=playlist.length) {
-		commandError(fp,"\"%i\" is not in the playlist", song1);
+		commandError(fp, "song doesn't exist: \"%i\"", song1);
 		return -1;
 	}
 	if(song2<0 || song2>=playlist.length) {
-		commandError(fp, "\"%i\" is not in the playlist", song2);
+		commandError(fp, "song doesn't exist: \"%i\"", song2);
 		return -1;
 	}
 
@@ -585,12 +585,8 @@ int deleteFromPlaylist(FILE * fp, int song) {
 	int i;
 	int songOrder;
 
-	if(song<0) {
-		commandError(fp, "need a positive integer");
-		return -1;
-	}
-	if(song>=playlist.length) {
-		commandError(fp, "song doesn't exist");
+	if(song<0 || song>=playlist.length) {
+		commandError(fp, "song doesn't exist: \"%i\"", song);
 		return -1;
 	}
 
@@ -713,18 +709,8 @@ int playPlaylist(FILE * fp, int song, int stopOnError) {
                         i = 0;
                 }
         }
-	else if(song<0) {
-		commandError(fp, "need integer >= -1");
-		playlist_state = PLAYLIST_STATE_STOP;
-		return -1;
-	}
-	if(!playlist.length) {
-		commandError(fp, "playlist is empty");
-		playlist_state = PLAYLIST_STATE_STOP;
-		return -1;
-	}
-	else if(song>=playlist.length) {
-		commandError(fp, "song doesn't exist");
+	else if(song<0 || song>=playlist.length) {
+		commandError(fp, "song doesn't exist: \"%i\"", song);
 		playlist_state = PLAYLIST_STATE_STOP;
 		return -1;
 	}
@@ -869,12 +855,12 @@ int moveSongInPlaylist(FILE * fp, int from, int to) {
 	int currentSong = -1;
 
 	if(from<0 || from>=playlist.length) {
-		commandError(fp, "\"%i\" is not a song in the playlist", from);
+		commandError(fp, "song doesn't exist: \"%i\"", from);
 		return -1;
 	}
 
 	if(to<0 || to>=playlist.length) {
-		commandError(fp, "\"%i\" is not a song in the playlist", to);
+		commandError(fp, "song doesn't exist: \"%i\"", to);
 		return -1;
 	}
 
@@ -1253,16 +1239,8 @@ int getPlaylistLength() {
 int seekSongInPlaylist(FILE * fp, int song, float time) {
 	int i = song;
 
-	if(song<0) {
-		commandError(fp, "need integer >= -1");
-		return -1;
-	}
-	if(!playlist.length) {
-		commandError(fp, "playlist is empty");
-		return -1;
-	}
-	else if(song>=playlist.length) {
-		commandError(fp, "song doesn't exist");
+	if(song<0 || song>=playlist.length) {
+		commandError(fp, "song doesn't exist: \"%i\"", song);
 		return -1;
 	}
 

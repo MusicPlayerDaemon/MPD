@@ -106,6 +106,9 @@ struct _CommandEntry {
 	CommandListHandlerFunction listHandler;
 };
 
+char * current_command = NULL;
+int command_listNum = 0;
+
 CommandEntry * getCommandEntryFromString(char * string, int * permission);
 
 List * commandList;
@@ -679,7 +682,10 @@ int checkArgcAndPermission(CommandEntry * cmd, FILE *fp,
 CommandEntry * getCommandEntryAndCheckArgcAndPermission(FILE * fp, 
 		unsigned int * permission, int argArrayLength, char ** argArray)
 {
+	static char unknown[] = "";
         CommandEntry * cmd;
+
+	current_command = unknown;
 
         if(argArrayLength == 0) return NULL;
 
@@ -687,6 +693,8 @@ CommandEntry * getCommandEntryAndCheckArgcAndPermission(FILE * fp,
 		if(fp) commandError(fp, "unknown command \"%s\"", argArray[0]);
                 return NULL;
         }
+
+	current_command = cmd->cmd;
 
         if(checkArgcAndPermission(cmd, fp, *permission, argArrayLength, 
 			argArray) < 0) 
@@ -739,6 +747,8 @@ int processCommandInternal(FILE * fp, unsigned int * permission,
 
 	freeArgArray(argArray,argArrayLength);
 
+	current_command = NULL;
+
 	return ret;
 }
 
@@ -748,6 +758,8 @@ int proccessListOfCommands(FILE * fp, int * permission, int * expired,
 	ListNode * node = list->firstNode;
 	ListNode * tempNode;
 	int ret = 0;
+
+	command_listNum = 0;
 
 	while(node!=NULL) {
 		DEBUG("proccesListOfCommands: process command \"%s\"\n",
@@ -759,7 +771,10 @@ int proccessListOfCommands(FILE * fp, int * permission, int * expired,
 		deleteNodeFromList(list,node);
 		node = tempNode;
 		if(ret!=0 || (*expired)!=0) node = NULL;
+		command_listNum++;
 	}
+
+	command_listNum = 0;
 	
 	return ret;
 }
@@ -767,4 +782,3 @@ int proccessListOfCommands(FILE * fp, int * permission, int * expired,
 int processCommand(FILE * fp, unsigned int * permission, char * commandString) {
 	return processCommandInternal(fp,permission,commandString,NULL);
 }
-/* vim:set shiftwidth=4 tabstop=8 expandtab: */
