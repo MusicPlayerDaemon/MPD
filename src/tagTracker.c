@@ -24,7 +24,7 @@ typedef struct tagTrackerItem {
 char * getTagItemString(int type, char * string) {
 	ListNode * node;
 
-	if(type == TAG_ITEM_TITLE) return strdup(string);
+	/*if(type == TAG_ITEM_TITLE) return strdup(string);*/
 
 	if(tagLists[type] == NULL) {
 		tagLists[type] = makeList(free, 1);
@@ -48,16 +48,16 @@ void removeTagItemString(int type, char * string) {
 
 	assert(string);
 
-	/*assert(tagLists[type]);*/
+	assert(tagLists[type]);
 	if(tagLists[type] == NULL) return;
 
 	node = findNodeInList(tagLists[type], string);
-	/*assert(node);*/
+	assert(node);
 
-	if(!node) {
+	/*if(!node) {
 		free(string);
 		return;
-	}
+	}*/
 
 	if(node) {
 		TagTrackerItem * item = node->data;
