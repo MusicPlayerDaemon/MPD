@@ -1,5 +1,9 @@
-AC_INIT(src/main.c)
-AM_INIT_AUTOMAKE(mpd, 0.10.0)
+dnl AC_INIT(src/main.c)
+dnl AM_INIT_AUTOMAKE(mpd, 0.10.0)
+
+AC_PREREQ(2.52)
+AC_INIT(mpd, 0.10.0, shank@mercury.chem.pitt.edu)
+AM_INIT_AUTOMAKE($PACKAGE_NAME, $PACKAGE_VERSION)
 
 AC_PROG_CC
 AC_PROG_INSTALL
