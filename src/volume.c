@@ -118,7 +118,6 @@ int getOssVolumeLevel() {
 	int left, right, level;
 
 	if(ioctl(volume_ossFd,MIXER_READ(volume_ossControl),&level) < 0) {
-		while(close(volume_ossFd)<0 && errno==EINTR);
 		ERROR("unable to read volume\n");
 		return -1;
 	}
