@@ -153,7 +153,7 @@ void pcm_convertAudioFormat(AudioFormat * inFormat, char * inBuffer, size_t
 	int dataBitLen;
 
 	assert(outFormat->bits==16);
-	assert(outFormat->channels==2);
+	assert(outFormat->channels==2 || outFormat->channels==1);
 
 	/* converts */
 	switch(inFormat->bits) {
@@ -185,32 +185,55 @@ void pcm_convertAudioFormat(AudioFormat * inFormat, char * inBuffer, size_t
 	}
 
 	/* converts only between 16 bit audio between mono and stereo */
-	switch(inFormat->channels) {
-	case 1:
-		dataChannelLen = (dataBitLen >> 1) << 2;
-		if(dataChannelLen > channelConvBufferLength) {
-			channelConvBuffer = realloc(channelConvBuffer,
-					dataChannelLen);
-			channelConvBufferLength = dataChannelLen;
-		}
-		dataChannelConv = channelConvBuffer;
-		{
-			mpd_sint16 * in = (mpd_sint16 *)dataBitConv;
-			mpd_sint16 * out = (mpd_sint16 *)dataChannelConv;
-			int i, inSamples = dataBitLen >> 1;
-			for(i=0;i<inSamples;i++) {
-				*out++ = *in;
-				*out++ = *in++;
-			}
-		}
-		break;
-	case 2:
+	if(inFormat->channels == outFormat->channels)
+	{
 		dataChannelConv = dataBitConv;
 		dataChannelLen = dataBitLen;
-		break;
-	default:
-		ERROR("only 1 or 2 channels are supported for conversion!\n");
-		exit(EXIT_FAILURE);
+	}
+	else {
+		switch(inFormat->channels) {
+		/* convert from 1 -> 2 channels */
+		case 1:
+			dataChannelLen = (dataBitLen >> 1) << 2;
+			if(dataChannelLen > channelConvBufferLength) {
+				channelConvBuffer = realloc(channelConvBuffer,
+						dataChannelLen);
+				channelConvBufferLength = dataChannelLen;
+			}
+			dataChannelConv = channelConvBuffer;
+			{
+				mpd_sint16 * in = (mpd_sint16 *)dataBitConv;
+				mpd_sint16 * out = (mpd_sint16 *)dataChannelConv;
+				int i, inSamples = dataBitLen >> 1;
+				for(i=0;i<inSamples;i++) {
+					*out++ = *in;
+					*out++ = *in++;
+				}
+			}
+			break;
+		/* convert from 2 -> 1 channels */
+		case 2:
+			dataChannelLen = dataBitLen >> 1;
+			if(dataChannelLen > channelConvBufferLength) {
+				channelConvBuffer = realloc(channelConvBuffer,
+						dataChannelLen);
+				channelConvBufferLength = dataChannelLen;
+			}
+			dataChannelConv = channelConvBuffer;
+			{
+				mpd_sint16 * in = (mpd_sint16 *)dataBitConv;
+				mpd_sint16 * out = (mpd_sint16 *)dataChannelConv;
+				int i, inSamples = dataBitLen >> 2;
+				for(i=0;i<inSamples;i++) {
+					*out = (*in++)/2;
+					*out++ += (*in++)/2;
+				}
+			}
+			break;
+		default:
+			ERROR("only 1 or 2 channels are supported for conversion!\n");
+			exit(EXIT_FAILURE);
+		}
 	}
 
 	if(inFormat->sampleRate == outFormat->sampleRate) {
@@ -247,7 +270,7 @@ void pcm_convertAudioFormat(AudioFormat * inFormat, char * inBuffer, size_t
 }
 
 size_t pcm_sizeOfOutputBufferForAudioFormatConversion(AudioFormat * inFormat,
-		char * inBuffer, size_t inSize, AudioFormat * outFormat)
+		size_t inSize, AudioFormat * outFormat)
 {
 	const int shift = sizeof(mpd_sint16);
 	size_t outSize = inSize;

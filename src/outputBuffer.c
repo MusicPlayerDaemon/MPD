@@ -80,7 +80,7 @@ int sendDataToOutputBuffer(OutputBuffer * cb, InputStream * inStream,
 	}
 	else {
 		datalen = pcm_sizeOfOutputBufferForAudioFormatConversion(
-				&(dc->audioFormat), dataIn, dataInLen,
+				&(dc->audioFormat), dataInLen,
 				&(cb->audioFormat));
 		if(datalen > convBufferLen) {
 			convBuffer = realloc(convBuffer,datalen);

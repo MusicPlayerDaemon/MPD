@@ -37,7 +37,7 @@
 
 #define CONF_COMMENT	'#'
 
-#define CONF_NUMBER_OF_PARAMS		42
+#define CONF_NUMBER_OF_PARAMS		43
 #define CONF_NUMBER_OF_PATHS		6
 #define CONF_NUMBER_OF_REQUIRED		5
 #define CONF_NUMBER_OF_ALLOW_CATS	1
@@ -138,7 +138,8 @@ char ** readConf(char * file) {
 		"shout_name",
 		"shout_user",
 		"shout_quality",
-		"id3v1_encoding"
+		"id3v1_encoding",
+		"shout_format"
 	};
 
 	int conf_absolutePaths[CONF_NUMBER_OF_PATHS] = {

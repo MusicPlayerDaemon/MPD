@@ -24,6 +24,7 @@
 #include "conf.h"
 #include "log.h"
 #include "sig_handlers.h"
+#include "pcm_utils.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -54,6 +55,15 @@ typedef struct _ShoutData {
 	vorbis_comment vc;
 
 	int serialno;
+
+	float quality;
+	AudioFormat outAudioFormat;
+	AudioFormat inAudioFormat;
+
+	char * convBuffer;
+	long convBufferLen;
+	/* shoud we convert the audio to a different format? */
+	int audioFormatConvert;
 } ShoutData;
 
 static ShoutData * newShoutData() {
@@ -61,6 +71,8 @@ static ShoutData * newShoutData() {
 
 	ret->shoutConn = shout_new();
 	ret->serialno = rand();
+	ret->convBuffer = NULL;
+	ret->convBufferLen = 0;
 
 	return ret;
 }
@@ -112,6 +124,16 @@ static int shout_initDriver(AudioOutput * audioOutput) {
 		exit(EXIT_FAILURE);
 	}
 
+	if(!getConf()[CONF_SHOUT_QUALITY]) {
+		ERROR("shout host defined but not shout quality\n");
+		exit(EXIT_FAILURE);
+	}
+
+	if(!getConf()[CONF_SHOUT_FORMAT]) {
+		ERROR("shout host defined but not shout format\n");
+		exit(EXIT_FAILURE);
+	}
+
 	host = getConf()[CONF_SHOUT_HOST];
 	passwd = getConf()[CONF_SHOUT_PASSWD];
 	user = getConf()[CONF_SHOUT_USER];
@@ -123,6 +145,20 @@ static int shout_initDriver(AudioOutput * audioOutput) {
 	if(*test != '\0' || port <= 0) {
 		ERROR("shout port \"%s\" is not a positive integer\n", 
 				getConf()[CONF_SHOUT_PORT]);
+		exit(EXIT_FAILURE);
+	}
+
+	sd->quality = strtod(getConf()[CONF_SHOUT_QUALITY], &test);
+
+	if(*test != '\0' || sd->quality < 0.0 || sd->quality > 10.0) {
+		ERROR("shout quality \"%s\" is not a number in the range "
+				"0-10\n", getConf()[CONF_SHOUT_QUALITY]);
+		exit(EXIT_FAILURE);
+	}
+
+	if(0 != parseAudioConfig(&(sd->outAudioFormat), 
+			getConf()[CONF_SHOUT_FORMAT]) )
+	{
 		exit(EXIT_FAILURE);
 	}
 
@@ -202,8 +238,8 @@ static int shout_openDevice(AudioOutput * audioOutput,
 
 	vorbis_info_init(&(sd->vi));
 
-	if( 0 != vorbis_encode_init_vbr(&(sd->vi), audioFormat->channels,
-			audioFormat->sampleRate, 0.5) )
+	if( 0 != vorbis_encode_init_vbr(&(sd->vi), sd->outAudioFormat.channels,
+			sd->outAudioFormat.sampleRate, sd->quality) )
 	{
 		ERROR("problem seting up vorbis encoder for shout\n");
 		vorbis_info_clear(&(sd->vi));
@@ -230,19 +266,59 @@ static int shout_openDevice(AudioOutput * audioOutput,
 		write_page(sd);
 	}
 
+	memcpy(&(sd->inAudioFormat), audioFormat, sizeof(AudioFormat));
+
+	if(0 == memcmp(&(sd->inAudioFormat), &(sd->outAudioFormat), 
+			sizeof(AudioFormat))) 
+	{
+		sd->audioFormatConvert = 0;
+	}
+	else sd->audioFormatConvert = 1;
+
 	return 0;
 }
 
+static void shout_convertAudioFormat(ShoutData * sd, char ** chunkArgPtr,
+		int * sizeArgPtr)
+{
+	int size = pcm_sizeOfOutputBufferForAudioFormatConversion(
+			&(sd->inAudioFormat), *sizeArgPtr, 
+			&(sd->outAudioFormat));
+
+	if(size > sd->convBufferLen) {
+		sd->convBuffer = realloc(sd->convBuffer, size);
+		sd->convBufferLen = size;
+	}
+
+	pcm_convertAudioFormat(&(sd->inAudioFormat), *chunkArgPtr, *sizeArgPtr,
+			&(sd->outAudioFormat), sd->convBuffer);
+	
+	*sizeArgPtr = size;
+	*chunkArgPtr = sd->convBuffer;
+}
 
 static int shout_play(AudioOutput * audioOutput, char * playChunk, int size) {
 	int i,j;
 	ShoutData * sd = (ShoutData *)audioOutput->data;
+	float ** vorbbuf;
+	int samples;
+	int bytes = sd->outAudioFormat.bits/8;
 
-	float **vorbbuf = vorbis_analysis_buffer(&(sd->vd), size/4);
+	if(sd->audioFormatConvert) {
+		shout_convertAudioFormat(sd, &playChunk, &size);
+	}
 
-	for(i=0, j=0; i < size; i+=4, j++) {
-		vorbbuf[0][j] = (*((mpd_sint16 *)(playChunk+i))) / 32768.0;
-		vorbbuf[1][j] = (*((mpd_sint16 *)(playChunk+i+2))) / 32768.0;
+	samples = size/(bytes*sd->outAudioFormat.channels);
+
+	/* this is for only 16-bit audio */
+
+	vorbbuf = vorbis_analysis_buffer(&(sd->vd), samples);
+
+	for(i=0; i<samples; i++) {
+		for(j=0; j<sd->outAudioFormat.channels; j++) {
+			vorbbuf[j][i] = (*((mpd_sint16 *)playChunk)) / 32768.0;
+			playChunk += bytes;
+		}
 	}
 
 	vorbis_analysis_wrote(&(sd->vd), size/4);

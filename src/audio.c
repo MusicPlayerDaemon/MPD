@@ -66,22 +66,27 @@ void getOutputAudioFormat(AudioFormat * inAudioFormat,
 
 void initAudioConfig() {
         char * conf = getConf()[CONF_AUDIO_OUTPUT_FORMAT];
-        char * test;
 
         if(NULL == conf) return;
 
         audio_configFormat = malloc(sizeof(AudioFormat));
 
-        memset(audio_configFormat,0,sizeof(AudioFormat));
+	if(0 != parseAudioConfig(audio_configFormat, conf)) exit(EXIT_FAILURE);
+}
 
-        audio_configFormat->sampleRate = strtol(conf,&test,10);
+int parseAudioConfig(AudioFormat * audioFormat, char * conf) {
+        char * test;
+
+        memset(audioFormat,0,sizeof(AudioFormat));
+
+        audioFormat->sampleRate = strtol(conf,&test,10);
        
         if(*test!=':') {
                 ERROR("error parsing audio output format: %s\n",conf);
-                exit(EXIT_FAILURE);
+		return -1;
         }
  
-        /*switch(audio_configFormat->sampleRate) {
+        /*switch(audioFormat->sampleRate) {
         case 48000:
         case 44100:
         case 32000:
@@ -89,47 +94,50 @@ void initAudioConfig() {
                 break;
         default:
                 ERROR("sample rate %i can not be used for audio output\n",
-                        (int)audio_configFormat->sampleRate);
-                exit(EXIT_FAILURE);
+                        (int)audioFormat->sampleRate);
+		return -1
         }*/
 
-        if(audio_configFormat->sampleRate <= 0) {
+        if(audioFormat->sampleRate <= 0) {
                 ERROR("sample rate %i is not >= 0\n",
-                                (int)audio_configFormat->sampleRate);
-                exit(EXIT_FAILURE);
+                                (int)audioFormat->sampleRate);
+		return -1;
         }
 
-        audio_configFormat->bits = strtol(test+1,&test,10);
+        audioFormat->bits = strtol(test+1,&test,10);
         
         if(*test!=':') {
                 ERROR("error parsing audio output format: %s\n",conf);
-                exit(EXIT_FAILURE);
+		return -1;
         }
 
-        switch(audio_configFormat->bits) {
+        switch(audioFormat->bits) {
         case 16:
                 break;
         default:
                 ERROR("bits %i can not be used for audio output\n",
-                        (int)audio_configFormat->bits);
-                exit(EXIT_FAILURE);
+                        (int)audioFormat->bits);
+		return -1;
         }
 
-        audio_configFormat->channels = strtol(test+1,&test,10);
+        audioFormat->channels = strtol(test+1,&test,10);
         
         if(*test!='\0') {
                 ERROR("error parsing audio output format: %s\n",conf);
-                exit(EXIT_FAILURE);
+		return -1;
         }
 
-        switch(audio_configFormat->channels) {
+        switch(audioFormat->channels) {
+	case 1:
         case 2:
                 break;
         default:
                 ERROR("channels %i can not be used for audio output\n",
-                        (int)audio_configFormat->channels);
-                exit(EXIT_FAILURE);
+                        (int)audioFormat->channels);
+		return -1;
         }
+
+	return 0;
 }
 
 void finishAudioConfig() {

@@ -37,6 +37,6 @@ void pcm_convertAudioFormat(AudioFormat * inFormat, char * inBuffer, size_t
                 inSize, AudioFormat * outFormat, char * outBuffer);
 
 size_t pcm_sizeOfOutputBufferForAudioFormatConversion(AudioFormat * inFormat,
-		char * inBuffer, size_t inSize, AudioFormat * outFormat);
+		size_t inSize, AudioFormat * outFormat);
 #endif
 /* vim:set shiftwidth=8 tabstop=8 expandtab: */

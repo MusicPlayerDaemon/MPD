@@ -63,6 +63,7 @@
 #define CONF_SHOUT_USER				39
 #define CONF_SHOUT_QUALITY			40
 #define CONF_ID3V1_ENCODING			41
+#define CONF_SHOUT_FORMAT			42
 
 #define CONF_CAT_CHAR				"\n"
 
