@@ -116,7 +116,7 @@ void finishAudioDriver() {
 }
 
 int isCurrentAudioFormat(AudioFormat * audioFormat) {
-	if(!audio_device) return 0;
+	if(!audio_device || !audioFormat) return 0;
 
 	if(audio_format.bits!=audioFormat->bits || 
 			audio_format.sampleRate!=audioFormat->sampleRate ||
@@ -131,7 +131,7 @@ int isCurrentAudioFormat(AudioFormat * audioFormat) {
 int initAudio(AudioFormat * audioFormat) {
 	ao_sample_format format;
 
-	if(audioFormat && audio_device && !isCurrentAudioFormat(audioFormat)) {
+	if(audio_device && !isCurrentAudioFormat(audioFormat)) {
 		finishAudio();
 	}
 

@@ -27,6 +27,7 @@ AM_CONFIG_HEADER(config.h)
 MPD_CFLAGS="-Wall"
 MPD_LIBS=""
 
+AC_ARG_ENABLE(iconv,[  --disable-iconv     disable iconv support],,enable_iconv=yes)
 AC_ARG_ENABLE(ipv6,[  --disable-ipv6     disable IPv6 support],,enable_ipv6=yes)
 AC_ARG_ENABLE(ogg,[  --disable-ogg     disable ogg support],,enable_ogg=yes)
 AC_ARG_ENABLE(flac,[  --disable-flac    disable flac support],,enable_flac=yes)
@@ -36,6 +37,10 @@ AC_ARG_ENABLE(audiofile,[  --disable-audiofile disable audiofile support, disabl
 AC_ARG_ENABLE(mpd_mad,[  --enable-mpd-mad     use mpd libmad],use_mpd_mad=yes,)
 AC_ARG_ENABLE(id3,[  --disable-id3     disable id3 support],,enable_id3=yes)
 AC_ARG_ENABLE(mpd_id3tag,[  --enable-mpd-id3tag    use mpd libid3tag],use_mpd_id3tag=yes,)
+
+AC_ARG_WITH(iconv,[  --with-iconv=PFX   Prefix where iconv is installed (optional)], iconv_prefix="$withval", iconv_prefix="")
+AC_ARG_WITH(iconv-libraries,[  --with-iconv-libraries=DIR   Directory where libiconv library is installed (optional)], iconv_libraries="$withval", iconv_libraries="")
+AC_ARG_WITH(iconv-includes,[  --with-iconv-includes=DIR   Directory where libiconv header files are installed (optional)], iconv_includes="$withval", iconv_includes="")
 
 AC_ARG_WITH(id3tag,[  --with-id3tag=PFX   Prefix where libid3tag is installed (optional)], id3tag_prefix="$withval", id3tag_prefix="")
 AC_ARG_WITH(id3tag-libraries,[  --with-id3tag-libraries=DIR   Directory where libid3tag library is installed (optional)], id3tag_libraries="$withval", id3tag_libraries="")
@@ -60,10 +65,6 @@ AC_CHECK_LIB(socket,socket,MPD_LIBS="$MPD_LIBS -lsocket",)
 AC_CHECK_LIB(nsl,gethostbyname,MPD_LIBS="$MPD_LIBS -lnsl",)
 
 AC_CHECK_LIB(m,exp,MPD_LIBS="$MPD_LIBS -lm",)
-
-AM_ICONV
-MPD_CFLAGS="$MPD_CFLAGS $INCICONV"
-MPD_LIBS="$MPD_LIBS $LIBICONV"
 
 AC_CHECK_HEADER(langinfo.h,AC_DEFINE(HAVE_LANGINFO,1,[Define if nl_langinfo.h is present]),)
 AC_CHECK_HEADER(locale.h,AC_DEFINE(HAVE_LOCALE,1,[Define if locale.h is present]),)
@@ -105,6 +106,38 @@ MPD_LIBS="$MPD_LIBS -lasound"
 AC_MSG_RESULT([yes]),
 AC_MSG_RESULT([no])
 )
+
+if test x$enable_iconv = xyes; then
+  	if test "x$iconv_libraries" != "x" ; then
+  		ICONV_LIBS="-L$iconv_libraries"
+  	elif test "x$iconv_prefix" != "x" ; then
+    		ICONV_LIBS="-L$iconv_prefix/lib"
+  	elif test "x$prefix" != "xNONE"; then
+    		ICONV_LIBS="-L$libdir"
+  	fi
+
+  	ICONV_LIBS="$ICONV_LIBS -liconv"
+
+  	if test "x$iconv_includes" != "x" ; then
+  		ICONV_CFLAGS="-I$iconv_includes"
+  	elif test "x$iconv_prefix" != "x" ; then
+    		ICONV_CFLAGS="-I$iconv_prefix/include"
+  	elif test "x$prefix" != "xNONE"; then
+    		ICONV_CFLAGS="-I$includedir"
+  	fi
+
+	oldcflags=$CFLAGS
+	oldlibs=$LIBS
+	CFLAGS="$CFLAGS $MPD_CFLAGS $ICONV_CFLAGS"
+	LIBS="$LIBS $MPD_LIBS $ICONV_LIBS"
+	AC_CHECK_HEADER(iconv.h,MPD_CFLAGS="$MPD_CFLAGS $ICONV_CFLAGS",enable_iconv=no)
+	if test x$enable_iconv = xyes; then
+		AC_CHECK_LIB(iconv,iconv_open,MPD_LIBS="$MPD_LIBS $ICONV_LIBS",)
+		AC_DEFINE(HAVE_ICONV,1,[Define to use iconv])
+	fi
+	CFLAGS=$oldcflags
+	LIBS=$oldlibs
+fi
 
 ID3_SUBDIR=""
 
