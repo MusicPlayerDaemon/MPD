@@ -49,7 +49,7 @@
 #define INTERFACE_LIST_MODE_END			"command_list_end"
 #define INTERFACE_DEFAULT_OUT_BUFFER_SIZE	4096
 
-int interface_max_connections;
+int interface_max_connections = 0;
 int interface_timeout;
 unsigned long long interface_max_command_list_size;
 unsigned long long interface_max_output_buffer_size;
@@ -472,6 +472,8 @@ void freeAllInterfaces() {
 	closeAllInterfaces();
 
 	free(interfaces);
+
+	interface_max_connections = 0;
 }
 
 void closeOldInterfaces() {
