@@ -1,15 +1,19 @@
-1) put some sort of error reporting for streaming/inputStream!
+*) add songids
+	a) make hash space 4*max_playlist_size
+	b) deprecate playlistinfo, move, swap, delete, play, seek
+	c) add playlist, mvid, swapid, delid, playid, seekid
 
-2) Fix charset errors so they don't goto stderr/out
+*) put some sort of error reporting for streaming/inputStream!
 
-3) Add a timeout for streams (how long? 1 minutes?)
+*) Fix charset errors so they don't goto stderr/out
 
-4) compute time of vorbis from actual number of samples played
+*) Add a timeout for streams (how long? 1 minutes?)
 
-5) remove previous hack for streams
+*) compute time of vorbis from actual number of samples played
 
-6) add "plversion" and "currentsong" commands
+*) remove previous hack for streams
 
+*) add "plversion" and "currentsong" commands
 
 Post-1.0
 --------
