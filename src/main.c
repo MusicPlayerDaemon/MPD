@@ -59,6 +59,7 @@ typedef struct _Options {
         int daemon;
         int createDB;
 	int onlyCreateDB;
+	int onlyUpdateDB;
 } Options;
 
 void usage(char * argv[]) {
@@ -74,6 +75,7 @@ void usage(char * argv[]) {
         ERROR("   --no-daemon        don't detach from console\n");
         ERROR("   --create-db        force (re)creation database\n");
         ERROR("   --only-create-db   create database and exit\n");
+        ERROR("   --only-update-db   create database and exit\n");
         ERROR("   --no-create-db     don't create database\n");
         ERROR("   --verbose          verbose logging\n");
         ERROR("   --version          prints version information\n");
@@ -94,6 +96,7 @@ void parseOptions(int argc, char ** argv, Options * options) {
         options->daemon = 1;
         options->createDB = 0;
         options->onlyCreateDB = 0;
+        options->onlyUpdateDB = 0;
         options->dbFile = NULL;
 
         if(argc>1) {
@@ -114,6 +117,10 @@ void parseOptions(int argc, char ** argv, Options * options) {
                                 }
                                 else if(strcmp(argv[i],"--only-create-db")==0) {
                                         options->onlyCreateDB = 1;
+                                        argcLeft--;
+                                }
+                                else if(strcmp(argv[i],"--only-update-db")==0) {
+                                        options->onlyUpdateDB = 1;
                                         argcLeft--;
                                 }
                                 else if(strcmp(argv[i],"--no-create-db")==0) {
@@ -217,7 +224,9 @@ int main(int argc, char * argv[]) {
                 return EXIT_FAILURE;
         }
 
-        if(!options.onlyCreateDB && (listenSocket = establish(port))<0) {
+        if(!options.onlyCreateDB && !options.onlyUpdateDB &&
+			(listenSocket = establish(port))<0) 
+	{
                 ERROR("error binding port\n");
                 return EXIT_FAILURE;
         }
@@ -361,6 +370,10 @@ int main(int argc, char * argv[]) {
                 }
 		if(options.onlyCreateDB) exit(EXIT_SUCCESS);
         }
+	if(options.onlyUpdateDB) {
+		if(updateMp3Directory(stderr)<0) exit(EXIT_FAILURE);
+		exit(EXIT_SUCCESS);
+	}
 
         initCommands();
         initAudioDriver();
