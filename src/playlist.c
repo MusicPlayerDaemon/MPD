@@ -1046,6 +1046,11 @@ int setPlaylistRandomStatus(FILE * fp, int status) {
 						playlist.length-1);
 			}
 			else */randomizeOrder(0,playlist.length-1);
+			if(playlist.current >= 0 && 
+					playlist.current < playlist.length)
+			{
+				swapOrder(playlist.current, 0);
+			}
 		}
 		else orderPlaylist();
 	}
