@@ -99,14 +99,14 @@ void initPaths() {
 	}
 #ifdef HAVE_LOCALE
 #ifdef HAVE_LANGINFO
-	else if((originalLocale = setlocale(LC_ALL,""))) {
+	else if((originalLocale = setlocale(LC_CTYPE,""))) {
 		char * temp;
 
 		if((temp = nl_langinfo(CODESET))) {
 			charset = strdup(temp);
 		}
 		else ERROR("problems getting charset for locale\n");
-		if(!setlocale(LC_ALL,originalLocale)) {
+		if(!setlocale(LC_CTYPE,originalLocale)) {
 			ERROR("problems resetting locale with setlocale()\n");
 		}
 	}
