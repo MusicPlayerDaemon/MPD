@@ -33,6 +33,8 @@ typedef struct {
 	unsigned char chunk[CHUNK_SIZE];
 	int chunk_length;
 	float time;
+	int bitRate;
+	FLAC__uint64 position;
 	Buffer * cb;
 	AudioFormat * af;
 	DecoderControl * dc;
@@ -57,6 +59,8 @@ void flacPlayFile(char *file, Buffer * cb, AudioFormat * af,
 
 	data.chunk_length = 0;
 	data.time = 0;
+	data.position = 0;
+	data.bitRate = 0;
 	data.cb = cb;
 	data.af = af;
 	data.dc = dc;
@@ -106,6 +110,7 @@ void flacPlayFile(char *file, Buffer * cb, AudioFormat * af,
 			{
 				data.time = ((float)sampleToSeek)/
 					af->sampleRate;
+				data.position = 0;
 			}
 			dc->seek = 0;
 		}
@@ -189,7 +194,7 @@ int flacSendChunk(FlacData * data) {
 			CHUNK_SIZE);
 	data->cb->chunkSize[data->cb->end] = data->chunk_length;
 	data->cb->times[data->cb->end] = data->time;
-	data->cb->bitRate[data->cb->end] = 0;
+	data->cb->bitRate[data->cb->end] = data->bitRate;
 
 	data->cb->end++;
 	if(data->cb->end>=buffered_chunks) {
@@ -207,8 +212,18 @@ FLAC__StreamDecoderWriteStatus flacWrite(const FLAC__FileDecoder *dec, const FLA
 	unsigned char * uc;
 	int c_samp, c_chan, d_samp;
 	int i;
+	float timeChange;
+	FLAC__uint64 newPosition = 0;
 	
-	data->time+=((float)samples)/frame->header.sample_rate;
+	timeChange = ((float)samples)/frame->header.sample_rate;
+	data->time+= timeChange;
+
+	FLAC__file_decoder_get_decode_position(dec,&newPosition);
+	if(data->position) {
+		data->bitRate = ((newPosition-data->position)*8.0/timeChange)
+				/1024+0.5;
+	}
+	data->position = newPosition;
 
 	for(c_samp = d_samp = 0; c_samp < frame->header.blocksize; c_samp++) {
 		for(c_chan = 0; c_chan < frame->header.channels; 
