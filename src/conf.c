@@ -191,7 +191,7 @@ static ConfigParam * readConfigBlock(FILE * fp, int * count, char * string) {
 		}
 
 		if(2 != argsMinusComment) {
-			ERROR("improperly formated config file at line %i:"
+			ERROR("improperly formatted config file at line %i:"
 					" %s\n", *count, string);
 			exit(EXIT_FAILURE);
 		}
@@ -201,7 +201,7 @@ static ConfigParam * readConfigBlock(FILE * fp, int * count, char * string) {
 				0 == strcmp(array[0], CONF_BLOCK_END) ||
 				0 == strcmp(array[1], CONF_BLOCK_END))
 		{
-			ERROR("improperly formated config file at line %i:"
+			ERROR("improperly formatted config file at line %i:"
 					" %s\n", count, string);
 			ERROR("in block begging at line %i\n", ret->line);
 			exit(EXIT_FAILURE);
@@ -246,7 +246,7 @@ void readConf(char * file) {
 		if(0 == argsMinusComment) continue;
 
 		if(2 != argsMinusComment) {
-			ERROR("improperly formated config file at line %i:"
+			ERROR("improperly formatted config file at line %i:"
 					" %s\n", count, string);
 			exit(EXIT_FAILURE);
 		}
@@ -271,7 +271,7 @@ void readConf(char * file) {
 
 		if(entry->mask & CONF_BLOCK_MASK) {
 			if(0 != strcmp(array[1], CONF_BLOCK_BEGIN)) {
-				ERROR("improperly formated config file at "
+				ERROR("improperly formatted config file at "
 					"line %i: %s\n", count, string);
 				exit(EXIT_FAILURE);
 			}
