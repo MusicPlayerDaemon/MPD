@@ -332,7 +332,7 @@ fail:
   	return 0;
 }
 
-int decodeFirstFrame(mp3DecodeData * data) {
+int decodeFirstFrame(mp3DecodeData * data, DecoderControl * dc) {
 	struct xing xing;
 	int ret;
 	int skip;
@@ -342,10 +342,12 @@ int decodeFirstFrame(mp3DecodeData * data) {
 
 	while(1) {
 		skip = 0;
-		while((ret = decodeNextFrameHeader(data))==DECODE_CONT);
+		while((ret = decodeNextFrameHeader(data))==DECODE_CONT && 
+				(!dc || !dc->stop));
 		if(ret==DECODE_SKIP) skip = 1;
 		else if(ret==DECODE_BREAK) return -1;
-		while((ret = decodeNextFrame(data))==DECODE_CONT);
+		while((ret = decodeNextFrame(data))==DECODE_CONT && 
+				(!dc || !dc->stop));
 		if(ret==DECODE_BREAK) return -1;
 		if(!skip && ret==DECODE_OK) break;
 	}
@@ -407,16 +409,18 @@ int getMp3TotalTime(char * file) {
 
         if(openInputStream(&inStream, file) < 0) return -1;
 	initMp3DecodeData(&data,&inStream);
-	if(decodeFirstFrame(&data)<0) ret = -1;
+	if(decodeFirstFrame(&data, NULL)<0) ret = -1;
 	else ret = data.totalTime+0.5;
 	mp3DecodeDataFinalize(&data);
 
 	return ret;
 }
 
-int openMp3FromInputStream(InputStream * inStream, mp3DecodeData * data) {
+int openMp3FromInputStream(InputStream * inStream, mp3DecodeData * data,
+		DecoderControl * dc) 
+{
 	initMp3DecodeData(data, inStream);
-	if(decodeFirstFrame(data)<0) {
+	if(decodeFirstFrame(data, dc)<0) {
 		mp3DecodeDataFinalize(data);
 		return -1;
 	}
@@ -550,7 +554,7 @@ void initAudioFormatFromMp3DecodeData(mp3DecodeData * data, AudioFormat * af) {
 int mp3_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream) {
 	mp3DecodeData data;
 
-	if(openMp3FromInputStream(inStream, &data) < 0) {
+	if(openMp3FromInputStream(inStream, &data, dc) < 0) {
 		ERROR("Input does not appear to be a mp3 bit stream.\n");
                 closeInputStream(inStream);
 		return -1;

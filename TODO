@@ -1,22 +1,34 @@
 1) play streams
-	a) for mp3, remember to turn off IGNORECRC for mp3 streams
-	b) deal with non-blocking in decodeFirstFrame (mp3) better!
-	c) bufferInput in outputBuffer waiting!
+	a) make seekings non-blocking:
+		1) player:
+			a) first check that seekWhere isn't already buffered
+			b) if not current song, stop it and play the song to 
+				seek
+			c) set dc->seek and dc->seekWhere if not already set
+				and set elapsed time to seekWhere and
+				then set pc->seek = 0
+			d) while seeking just continue to play buffer
+				until seek is done
+		2) decoder:
+			a) seek no longer blocks so don't worry about checking
+				seek in blocking portions, only check stop!
+			b) yay, less code mess!
+	b) bufferInput in outputBuffer waiting!
 		1) implement some sort of callback mechanism for this
 			for abstraction sake
-	d) deal with pausing better
+	c) deal with pausing better
 		1) seekable, on resuming pause, check if we need to reconnect,
 			jumping to offset
 		2) if seekable, at some point after init, mark this!
 		3) if not seekable, reset buffer, and elapsedTime when
 			unpaused
-	e) put some sort of error reporting for streaming/inputStream!
-	f) ogg streams
-	g) fetch metadata and store in DecoderControl and pass to 
+	d) put some sort of error reporting for streaming/inputStream!
+	e) ogg streams
+	f) fetch metadata and store in DecoderControl and pass to 
 		PlayerControl
 		1) eventually deal with icy-metadata
 		2) parse metadata on the fly in decoders
-	h) command for dealing with the changing metadata, currentsonginfo
+	g) command for dealing with the changing metadata, currentsonginfo
 		or something
 
 2) how to deal with streams and the db
