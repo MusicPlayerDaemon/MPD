@@ -36,20 +36,31 @@
 
 static int shoutInitCount = 0;
 
+/* lots of this code blatantly stolent from bossogg/bossao2 */
+
 typedef struct _ShoutData {
 	shout_t * shoutConn;
+
+	ogg_stream_state os;
 	ogg_page og;
 	ogg_packet op;
+	ogg_packet header_main;
+	ogg_packet header_comments;
+	ogg_packet header_codebooks;
+	
 	vorbis_dsp_state vd;
 	vorbis_block vb;
 	vorbis_info vi;
 	vorbis_comment vc;
+
+	int serialno;
 } ShoutData;
 
 static ShoutData * newShoutData() {
 	ShoutData * ret = malloc(sizeof(ShoutData));
 
 	ret->shoutConn = shout_new();
+	ret->serialno = rand();
 
 	return ret;
 }
@@ -159,7 +170,22 @@ static void shout_closeDevice(AudioOutput * audioOutput) {
 				shout_get_error(sd->shoutConn));
 	}
 
+	ogg_stream_clear(&(sd->os));
+	vorbis_block_clear(&(sd->vb));
+	vorbis_dsp_clear(&(sd->vd));
+	vorbis_comment_clear(&(sd->vc));
+	vorbis_info_clear(&(sd->vi));
+
 	audioOutput->open = 0;
+}
+
+static void write_page(ShoutData * sd) {
+	if(!sd->og.header_len || !sd->og.body_len) return;
+
+	shout_sync(sd->shoutConn);
+	shout_send(sd->shoutConn, sd->og.header, sd->og.header_len);
+	shout_send(sd->shoutConn, sd->og.body, sd->og.body_len);
+	shout_sync(sd->shoutConn);
 }
 
 static int shout_openDevice(AudioOutput * audioOutput,
@@ -174,13 +200,71 @@ static int shout_openDevice(AudioOutput * audioOutput,
 		return -1;
 	}
 
+	vorbis_info_init(&(sd->vi));
+
+#define BITRATE 128
+
+	if( 0 != vorbis_encode_init(&(sd->vi), audioFormat->channels,
+			audioFormat->sampleRate, BITRATE*1000, BITRATE*1000,
+			BITRATE*1000))
+	{
+		ERROR("problem seting up vorbis encoder for shout\n");
+		vorbis_info_clear(&(sd->vi));
+		return -1;
+	}
+
+	vorbis_analysis_init(&(sd->vd), &(sd->vi));
+	vorbis_block_init (&(sd->vd), &(sd->vb));
+
+	ogg_stream_init(&(sd->os), sd->serialno);
+
+	vorbis_comment_init(&(sd->vc));
+	vorbis_analysis_headerout(&(sd->vd), &(sd->vc), &(sd->header_main),
+			&(sd->header_comments), &(sd->header_codebooks));
+
+	ogg_stream_packetin(&(sd->os), &(sd->header_main));
+	ogg_stream_packetin(&(sd->os), &(sd->header_comments));
+	ogg_stream_packetin(&(sd->os), &(sd->header_codebooks));
+
 	audioOutput->open = 1;
+
+	while(ogg_stream_flush(&(sd->os), &(sd->og)))
+	{
+		write_page(sd);
+	}
 
 	return 0;
 }
 
 
-static int shout_play(AudioOutput * audioOutput, char * playChunk, int play) {
+static int shout_play(AudioOutput * audioOutput, char * playChunk, int size) {
+	int i,j;
+	ShoutData * sd = (ShoutData *)audioOutput->data;
+
+	float **vorbbuf = vorbis_analysis_buffer(&(sd->vd), size/4);
+
+	for(i=0, j=0; i < size; i+=4, j++) {
+		vorbbuf[0][j] = (*((mpd_sint16 *)(playChunk+i))) / 32768.0;
+		vorbbuf[1][j] = (*((mpd_sint16 *)(playChunk+i+2))) / 32768.0;
+	}
+
+	vorbis_analysis_wrote(&(sd->vd), size/4);
+
+	while(1 == vorbis_analysis_blockout(&(sd->vd), &(sd->vb))) {
+		vorbis_analysis(&(sd->vb), NULL);
+		vorbis_bitrate_addblock(&(sd->vb));
+
+		while(vorbis_bitrate_flushpacket(&(sd->vd), &(sd->op))) {
+			ogg_stream_packetin(&(sd->os), &(sd->op));
+			do {
+				if(ogg_stream_pageout(&(sd->os), &(sd->og)) == 0) {
+					break;
+				}
+				write_page(sd);
+			} while(ogg_page_eos(&(sd->og)));
+		}
+	}
+
 	return 0;
 }
 
