@@ -25,7 +25,6 @@
 			script
 	*) write a mac os X native audioOutput
 	*) write a esd native audioOutput
-	*) remove libao support!
 	*) need better resampling code
 
 0.13
