@@ -1,19 +1,15 @@
 1) play streams
 	a) put some sort of error reporting for streaming/inputStream!
 
-2) http stuff
-	a) ensure URL's are all ASCII, and properly %'d! check rfc's
-		for legal characters
+2) ACK error codes
 
-3) ACK error codes
+3) cleanup main()
 
-4) cleanup main()
+4) handle '\n' in filenames
 
-5) handle '\n' in filenames
+5) compute average replaygain to use for non-replaygain songs
 
-6) compute average replaygain to use for non-replaygain songs
-
-7) change default port to 6600
+6) change default port to 6600
 
 
 Post-1.0

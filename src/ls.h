@@ -30,6 +30,8 @@ int lsPlaylists(FILE * fp, char * utf8path);
 
 char * getSuffix(char * utf8file);
 
+int isValidRemoteUtf8Url(char * utf8url);
+
 int isRemoteUrl(char * url);
 
 int isFile(char * utf8file, time_t * mtime);

@@ -256,13 +256,19 @@ void decodeStart(PlayerControl * pc, OutputBuffer * cb, DecoderControl * dc) {
         int ret;
         InputStream inStream;
         InputPlugin * plugin;
-        char path[MAXPATHLEN+1];
+        char * path;
 
         if(isRemoteUrl(pc->utf8url)) {
-                strncpy(path, pc->utf8url, MAXPATHLEN);
+                path = utf8StrToLatin1Dup(pc->utf8url);
         }
-	else strncpy(path, rmp2amp(utf8ToFsCharset(pc->utf8url)), MAXPATHLEN);
-	path[MAXPATHLEN] = '\0';
+	else path = strdup(rmp2amp(utf8ToFsCharset(pc->utf8url)));
+
+	if(!path) {
+		dc->error = DECODE_ERROR_FILE;
+		dc->state = DECODE_STATE_STOP;
+		dc->start = 0;
+                return;
+	}
 
         dc->metadataSet = 0;
         memset(dc->metadata, 0, DECODE_METADATA_LENGTH);
@@ -275,9 +281,9 @@ void decodeStart(PlayerControl * pc, OutputBuffer * cb, DecoderControl * dc) {
 
         if(openInputStream(&inStream, path) < 0) {
 		dc->error = DECODE_ERROR_FILE;
-		dc->start = 0;
-		dc->stop = 0;
 		dc->state = DECODE_STATE_STOP;
+		dc->start = 0;
+		free(path);
                 return;
         }
 
@@ -291,6 +297,7 @@ void decodeStart(PlayerControl * pc, OutputBuffer * cb, DecoderControl * dc) {
         if(dc->stop) {
                 dc->state = DECODE_STATE_STOP;
                 dc->stop = 0;
+		free(path);
                 return;
         }
 
@@ -345,6 +352,8 @@ void decodeStart(PlayerControl * pc, OutputBuffer * cb, DecoderControl * dc) {
 		dc->stop = 0;
 		dc->state = DECODE_STATE_STOP;
 	}
+
+	free(path);
 }
 
 int decoderInit(PlayerControl * pc, OutputBuffer * cb, DecoderControl * dc) {

@@ -22,6 +22,7 @@
 #include "path.h"
 #include "myfprintf.h"
 #include "log.h"
+#include "utf8.h"
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -41,17 +42,68 @@ char * dupAndStripPlaylistSuffix(char * file) {
 	return ret;
 }
 
-int isRemoteUrl(char * url) {
-	char * prefixes[] = 	{
-					"http://",
-					NULL
-				};
+static char * remoteUrlPrefixes[] = 	
+{
+        "http://",
+	NULL
+};
 
-	char ** urlPrefixes = prefixes;
+int isValidRemoteUtf8Url(char * utf8url) {
+        int ret = 0;
+        char * lat1 = utf8StrToLatin1Dup(utf8url);
+        char * temp;
+
+        if(!lat1) return 0;
+
+        switch(isRemoteUrl(lat1)) {
+        case 1:
+                ret = 1;
+                temp = lat1;
+                while(*temp) {
+                        if((*temp >= 'a' && *temp <= 'z') || 
+                                        (*temp >= 'A' && *temp <= 'z') ||
+                                        (*temp >= '0' && *temp <= '9') ||
+                                        *temp == '$' ||
+                                        *temp == '-' ||
+                                        *temp == '.' ||
+                                        *temp == '+' ||
+                                        *temp == '!' ||
+                                        *temp == '*' ||
+                                        *temp == '\'' ||
+                                        *temp == '(' ||
+                                        *temp == ')' ||
+                                        *temp == ',' ||
+                                        *temp == '%' ||
+                                        *temp == '/' ||
+                                        *temp == ':' ||
+                                        *temp == '?' ||
+                                        *temp == ';' ||
+                                        *temp == '&' ||
+                                        *temp == '=') 
+                        {
+                        }
+                        else {
+                                ret = 1;
+                                break;
+                        }
+                        temp++;
+                }
+                break;
+        }
+
+        free(lat1);
+        
+        return ret;
+}
+
+int isRemoteUrl(char * url) {
+        int count = 0;
+	char ** urlPrefixes = remoteUrlPrefixes;
 
 	while(*urlPrefixes) {
+                count++;
 		if(strncmp(*urlPrefixes,url,strlen(*urlPrefixes)) == 0) {
-                        return 1;
+                        return count;
 		}
 		urlPrefixes++;
 	}

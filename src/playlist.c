@@ -471,10 +471,13 @@ int addToPlaylist(FILE * fp, char * url) {
 	
 	if((song = getSongFromDB(url))) {
 	}
-	else if(isRemoteUrl(url) && (song = newSong(url,SONG_TYPE_URL))) {
+	else if(isValidRemoteUtf8Url(url) && 
+                        (song = newSong(url,SONG_TYPE_URL))) 
+        {
 	}
 	else {
-		myfprintf(fp,"%s \"%s\" is not in the music db\n",
+		myfprintf(fp,"%s \"%s\" is not in the music db or is"
+                                "not a valid url\n",
 				COMMAND_RESPOND_ERROR,url);
 		return -1;
 	}
