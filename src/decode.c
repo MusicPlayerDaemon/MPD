@@ -199,8 +199,9 @@ void decodeSeek(PlayerControl * pc, AudioFormat * af, DecoderControl * dc,
 
 int decoderInit(PlayerControl * pc, Buffer * cb, AudioFormat *af, 
 			DecoderControl * dc) {
+	int pid;
 	decode_pid = &(pc->decode_pid);
-	int pid = fork();
+	pid = fork();
 
 	if(pid==0) {
 		/* CHILD */

@@ -69,7 +69,6 @@ unsigned int parsePermissions(char * string) {
 }
 
 void initPermissions() {
-	permission_passwords = makeList(free);
 	char * passwordSets;
 	char * nextSet;
 	char * temp;
@@ -77,6 +76,8 @@ void initPermissions() {
 	char * cp2;
 	char * password;
 	unsigned int * permission;
+
+	permission_passwords = makeList(free);
 
 	permission_default = PERMISSION_READ | PERMISSION_ADD | 
 				PERMISSION_CONTROL | PERMISSION_ADMIN;
