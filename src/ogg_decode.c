@@ -27,6 +27,7 @@
 #include "pcm_utils.h"
 #include "inputStream.h"
 #include "outputBuffer.h"
+#include "replayGain.h"
 
 #include <stdio.h>
 #include <unistd.h>
@@ -83,11 +84,70 @@ long ogg_tell_cb(void * inStream) {
 	return ((InputStream *)inStream)->offset;
 }
 
+char * ogg_parseComment(char * comment, char * needle) {
+        int len = strlen(needle);
+
+        if(strncasecmp(comment,needle,len)) return comment+len;
+
+        return NULL;
+}
+
+float ogg_getReplayGainScale(char ** comments) {
+        int trackGainFound = 0;
+        int albumGainFound = 0;
+        float trackGain = 1.0;
+        float albumGain = 1.0;
+        float trackPeak = 0.0;
+        float albumPeak = 0.0;
+        char * temp;
+        int replayGainState = getReplayGainState();
+
+        if(replayGainState == REPLAYGAIN_OFF) return 1.0;
+
+        while(*comments) {
+                if((temp = ogg_parseComment(*comments,"replaygain_track_gain"))) 
+                {
+                        trackGain = atof(temp);
+                        trackGainFound = 1;
+                }
+                else if((temp = ogg_parseComment(*comments,
+                                        "replaygain_album_gain"))) 
+                {
+                        albumGain = atof(temp);
+                        albumGainFound = 1;
+                }
+                else if((temp = ogg_parseComment(*comments,
+                                        "replaygain_track_peak"))) 
+                {
+                        trackPeak = atof(temp);
+                }
+                else if((temp = ogg_parseComment(*comments,
+                                        "replaygain_album_peak"))) 
+                {
+                        albumPeak = atof(temp);
+                }
+
+                comments++;
+        }
+
+        switch(replayGainState) {
+        case REPLAYGAIN_ALBUM:
+                if(albumGainFound) {
+                        return computeReplayGainScale(albumGain,albumPeak);
+                }
+        default:
+                return computeReplayGainScale(trackGain,trackPeak);
+        }
+
+        return 1.0;
+}
+
 int ogg_decode(OutputBuffer * cb, AudioFormat * af, DecoderControl * dc)
 {
 	OggVorbis_File vf;
 	ov_callbacks callbacks;
 	InputStream inStream;
+        
 
 	callbacks.read_func = ogg_read_cb;
 	callbacks.seek_func = ogg_seek_cb;
@@ -124,6 +184,8 @@ int ogg_decode(OutputBuffer * cb, AudioFormat * af, DecoderControl * dc)
 		int chunkpos = 0;
 		long bitRate = 0;
 		long test;
+                float replayGainScale = ogg_getReplayGainScale(
+                                ov_comment(&vf,-1)->user_comments);
 
 		while(!eof) {
 			if(dc->seek) {
@@ -141,6 +203,7 @@ int ogg_decode(OutputBuffer * cb, AudioFormat * af, DecoderControl * dc)
 				if((test = ov_bitrate_instant(&vf))>0) {
 					bitRate = test/1000;
 				}
+                                doReplayGain(chunk,ret,af,replayGainScale);
 				sendDataToOutputBuffer(cb,dc,chunk,ret,
 					ov_time_tell(&vf),bitRate);
 				if(dc->stop) break;

@@ -32,6 +32,7 @@
 #include "volume.h"
 #include "log.h"
 #include "permission.h"
+#include "replayGain.h"
 #include "../config.h"
 
 #include <stdio.h>
@@ -322,6 +323,7 @@ int main(int argc, char * argv[]) {
 
 	initPaths(options.playlistDirArg,options.musicDirArg);
 	initPermissions();
+        initReplayGainState();
 
         initTables();
         initPlaylist();

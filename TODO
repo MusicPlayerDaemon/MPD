@@ -10,9 +10,7 @@ common function and abstrct dealing with DecoderControl * and put
 cycleLogFiles in there, so we cycleLogFiles while decoding, not just when 
 decoding has stopped.
 
-3) reaplygain
-
-4) streaming and playing in general
+3) streaming and playing in general
 	a) determine a clever interface to play, so that play doesn't block
 		until the file is opened, but just returns when the command
 		is accepted.
@@ -21,16 +19,18 @@ decoding has stopped.
 	c) this will help streaming from blocking indefinetly or waiting
 		on a response
 
-5) play streams
+4) play streams
 
-6) ACK error codes
+5) ACK error codes
 
-7) cleanup main()
+6) cleanup main()
 
-8) handle '\n' in filenames
+7) handle '\n' in filenames
 
-9) allow "add" command to load playlists, then depricate "load" command, this 
+8) allow "add" command to load playlists, then depricate "load" command, this 
 	will be benneficial for adding m3u url's
+
+9) compute average replaygain to use for non-replaygain songs
 
 
 Post-1.0
