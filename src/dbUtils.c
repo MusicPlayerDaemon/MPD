@@ -277,6 +277,17 @@ int sumSavedMemoryInDirectory(FILE * fp, Directory * dir, void * data) {
 
 	*sum += (strlen(dir->utf8name)+1-sizeof(Directory *))*
 				dir->songs->numberOfNodes;
+
+	/**sum += (strlen(dir->utf8name)+1)*
+				dir->subDirectories->numberOfNodes;*/
+
+	return 0;
+}
+
+int sumSavedMemoryInSong(FILE * fp, Song * song, void * data) {
+	int * sum = data;
+
+	*sum += strlen(song->url)+1;
 	
 	return 0;
 }
@@ -284,8 +295,8 @@ int sumSavedMemoryInDirectory(FILE * fp, Directory * dir, void * data) {
 void printSavedMemoryFromFilenames() {
 	int sum;
 	
-	traverseAllIn(stderr, NULL, NULL, sumSavedMemoryInDirectory,
-			(void *)&sum);
+	traverseAllIn(stderr, NULL, sumSavedMemoryInSong, 
+			sumSavedMemoryInDirectory, (void *)&sum);
 
 	DEBUG("saved memory from filenames: %i\n", sum);
 }

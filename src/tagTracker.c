@@ -27,7 +27,7 @@ char * getTagItemString(int type, char * string) {
 	if(type == TAG_ITEM_TITLE) return strdup(string);
 	
 	if(tagLists[type] == NULL) {
-		tagLists[type] = makeList(free);
+		tagLists[type] = makeList(free, 1);
 	}
 
 	if((node = findNodeInList(tagLists[type], string))) {

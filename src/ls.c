@@ -152,7 +152,7 @@ int lsPlaylists(FILE * fp, char * utf8path) {
 			strncpy(s+actlen,ent->d_name,maxlen);
 			if(stat(s,&st)==0) {
 				if(S_ISREG(st.st_mode)) {
-					if(list==NULL) list = makeList(NULL);
+					if(list==NULL) list = makeList(NULL, 1);
 					dup = strdup(ent->d_name);
 					dup[suff] = '\0';
 					if((utf8 = fsCharsetToUtf8(dup))) {

@@ -269,7 +269,7 @@ void freeDirectory(Directory * directory) {
 }
 
 DirectoryList * newDirectoryList() {
-	return makeList((ListFreeDataFunc *)freeDirectory);
+	return makeList((ListFreeDataFunc *)freeDirectory, 1);
 }
 
 void freeDirectoryList(DirectoryList * directoryList) {
@@ -352,7 +352,7 @@ int removeDeletedFromDirectory(Directory * directory, DIR * dir) {
 	char cwd[2];
 	struct dirent * ent;
 	char * dirname = directory->utf8name;
-	List * entList = makeList(free);
+	List * entList = makeList(free, 1);
 	void * name;
 	char * s;
 	char * utf8;

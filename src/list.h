@@ -52,6 +52,8 @@ typedef struct _List {
 	long numberOfNodes;
 	/* array for searching when list is sorted */
 	ListNode ** nodesArray;
+	/* weather to strdup() key's on insertion */
+	int strdupKeys;
 } List;
 
 /* allocates memory for a new list and initializes it
@@ -59,7 +61,7 @@ typedef struct _List {
  *                    DEFAULT_FREE_DATAFUNC to use free()
  * returns pointer to new list if successful, NULL otherwise
  */
-List * makeList(ListFreeDataFunc * freeDataFunc);
+List * makeList(ListFreeDataFunc * freeDataFunc, int strdupKeys);
 
 /* inserts a node into _list_ with _key_ and _data_
  *  _list_ -> list the data will be inserted in

@@ -86,7 +86,7 @@ ConfigEntry * newConfigEntry(int repeatable, int block) {
 	ConfigEntry * ret =  malloc(sizeof(ConfigEntry));
 
 	ret->mask = 0;
-	ret->configParamList = makeList((ListFreeDataFunc *)freeConfigParam);
+	ret->configParamList = makeList((ListFreeDataFunc *)freeConfigParam, 1);
 
 	if(repeatable) ret->mask |= CONF_REPEATABLE_MASK;
 	if(block) ret->mask |= CONF_BLOCK_MASK;
@@ -113,7 +113,7 @@ void registerConfigParam(char * name, int repeatable, int block) {
 }
 
 void initConf() {
-	configEntriesList = makeList((ListFreeDataFunc *)freeConfigEntry);
+	configEntriesList = makeList((ListFreeDataFunc *)freeConfigEntry, 1);
 
 	registerConfigParam(CONF_PORT, 				0,	0);
 	registerConfigParam(CONF_MUSIC_DIR,			0,	0);

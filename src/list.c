@@ -42,7 +42,7 @@ void freeListNodesArray(List * list) {
 	list->nodesArray = NULL;
 }
 
-List * makeList(ListFreeDataFunc * freeDataFunc) {
+List * makeList(ListFreeDataFunc * freeDataFunc, int strdupKeys) {
 	List * list = malloc(sizeof(List));
 
 	assert(list!=NULL);
@@ -52,6 +52,7 @@ List * makeList(ListFreeDataFunc * freeDataFunc) {
 	list->freeDataFunc = freeDataFunc;
 	list->numberOfNodes = 0;
 	list->nodesArray = NULL;
+	list->strdupKeys = strdupKeys;
 
 	return list;
 }
@@ -93,10 +94,12 @@ int insertInListBeforeNode(List * list, ListNode * beforeNode, char * key,
 		}
 		beforeNode->prevNode = node;
 	}
-	
-	node->key = malloc((strlen(key)+1)*sizeof(char));
+
+	if(list->strdupKeys) node->key = strdup(key);
+	else node->key = key;
+
 	assert(node->key!=NULL);
-	strcpy(node->key,key);
+
 	node->data = data;
 
 	list->numberOfNodes++;
@@ -104,7 +107,7 @@ int insertInListBeforeNode(List * list, ListNode * beforeNode, char * key,
 	return 1;
 }
 
-ListNode * insertInList(List * list,char * key,void * data) {
+ListNode * insertInList(List * list, char * key, void * data) {
 	ListNode * node;
 
 	assert(list!=NULL);
@@ -125,10 +128,10 @@ ListNode * insertInList(List * list,char * key,void * data) {
 		assert(list->lastNode->nextNode==NULL);
 		list->lastNode->nextNode = node;
 	}
-	
-	node->key = malloc((strlen(key)+1)*sizeof(char));
-	assert(node->key!=NULL);
-	strcpy(node->key,key);
+
+	if(list->strdupKeys) node->key = strdup(key);
+	else node->key = key;
+
 	node->data = data;
 	node->nextNode = NULL;
 	node->prevNode = list->lastNode;
@@ -267,7 +270,8 @@ void deleteNodeFromList(List * list,ListNode * node) {
 	if(list->freeDataFunc) {
 		list->freeDataFunc(node->data);
 	}
-	free(node->key);
+
+	if(list->strdupKeys) free(node->key);
 	free(node);
 	list->numberOfNodes--;
 
@@ -290,7 +294,7 @@ void freeList(void * list) {
 
 	while(tmpNode!=NULL) {
 		tmpNode2 = tmpNode->nextNode;
-		free(tmpNode->key);
+		if(((List *)list)->strdupKeys) free(tmpNode->key);
 		if(((List *)list)->freeDataFunc) {
 			((List *)list)->freeDataFunc(tmpNode->data);
 		}
@@ -311,7 +315,7 @@ void clearList(List * list) {
 
 	while(tmpNode!=NULL) {
 		tmpNode2 = tmpNode->nextNode;
-		free(tmpNode->key);
+		if(list->strdupKeys) free(tmpNode->key);
 		if(((List *)list)->freeDataFunc) {
 			((List *)list)->freeDataFunc(tmpNode->data);
 		}
@@ -400,8 +404,8 @@ void quickSort(ListNode ** nodesArray, long start, long end) {
 		ListNode * pivotNode;
 		char * pivotKey;
 
-		List * startList = makeList(free);
-		List * endList = makeList(free);
+		List * startList = makeList(free, 0);
+		List * endList = makeList(free, 0);
 		long * startPtr = malloc(sizeof(long));
 		long * endPtr = malloc(sizeof(long));
 		*startPtr = start;

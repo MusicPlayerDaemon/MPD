@@ -486,7 +486,7 @@ int listHandleUpdate(FILE * fp, unsigned int * permission, int argArrayLength,
 	CommandEntry * nextCmd = NULL;
 	ListNode * nextNode = commandNode->nextNode;;
 
-	if(!pathList) pathList = makeList(NULL);
+	if(!pathList) pathList = makeList(NULL, 1);
 
 	if(argArrayLength==2) insertInList(pathList,argArray[1],NULL);
 	else insertInList(pathList,"",NULL);
@@ -511,7 +511,7 @@ int handleUpdate(FILE * fp, unsigned int * permission, int argArrayLength,
 {
 	if(argArrayLength==2) {
 		int ret;
-		List * pathList = makeList(NULL);
+		List * pathList = makeList(NULL, 1);
 		insertInList(pathList,argArray[1],NULL);
 		ret = updateInit(fp,pathList);
 		freeList(pathList);
@@ -881,7 +881,7 @@ int handleCommands(FILE * fp, unsigned int * permission, int argArrayLength,
 }
 
 void initCommands() {
-        commandList = makeList(free);
+        commandList = makeList(free, 1);
 
         addCommand(COMMAND_PLAY        ,PERMISSION_CONTROL, 0, 1,handlePlay,NULL);
         addCommand(COMMAND_PLAYID      ,PERMISSION_CONTROL, 0, 1,handlePlayId,NULL);

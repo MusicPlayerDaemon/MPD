@@ -75,7 +75,7 @@ void initPermissions() {
 	unsigned int * permission;
         ConfigParam * param;
 
-	permission_passwords = makeList(free);
+	permission_passwords = makeList(free, 1);
 
 	permission_default = PERMISSION_READ | PERMISSION_ADD | 
 				PERMISSION_CONTROL | PERMISSION_ADMIN;

@@ -24,7 +24,7 @@ void unloadAudioOutputPlugin(AudioOutputPlugin * audioOutputPlugin) {
 }
 
 void initAudioOutputPlugins() {
-	audioOutputPluginList = makeList(NULL);
+	audioOutputPluginList = makeList(NULL, 0);
 }
 
 void finishAudioOutputPlugins() {

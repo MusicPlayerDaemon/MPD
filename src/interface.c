@@ -288,7 +288,8 @@ int interfaceReadInput(Interface * interface) {
 				if(strcmp(interface->buffer,
 						INTERFACE_LIST_MODE_BEGIN)==0) 
 				{
-					interface->commandList = makeList(free);
+					interface->commandList = makeList(free,
+									1);
 					interface->commandListSize = 
 						sizeof(List);
                                         interface->commandListOK = 0;
@@ -298,7 +299,8 @@ int interfaceReadInput(Interface * interface) {
 						INTERFACE_LIST_OK_MODE_BEGIN)
                                                 ==0) 
 				{
-					interface->commandList = makeList(free);
+					interface->commandList = makeList(free,
+									1);
 					interface->commandListSize = 
 						sizeof(List);
                                         interface->commandListOK = 1;
@@ -654,7 +656,7 @@ void printInterfaceOutBuffer(Interface * interface) {
 				memcpy(buffer,interface->outBuffer,
 						interface->outBuflen);
 				buffer[interface->outBuflen] = '\0';
-				interface->bufferList = makeList(free);
+				interface->bufferList = makeList(free, 1);
 				insertInListWithoutKey(interface->bufferList,
 						(void *)buffer);
 			}
@@ -670,7 +672,7 @@ void printInterfaceOutBuffer(Interface * interface) {
 			memcpy(buffer,interface->outBuffer+ret,
 					interface->outBuflen-ret);
 			buffer[interface->outBuflen-ret] = '\0';
-			interface->bufferList = makeList(free);
+			interface->bufferList = makeList(free, 1);
 			insertInListWithoutKey(interface->bufferList,buffer);
 		}
 		/* if we needed to create buffer, initialize bufferSize info */

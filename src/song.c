@@ -86,7 +86,7 @@ void freeJustSong(Song * song) {
 }
 
 SongList * newSongList() {
-	return makeList((ListFreeDataFunc *)freeSong);
+	return makeList((ListFreeDataFunc *)freeSong, 0);
 }
 
 Song * addSongToList(SongList * list, char * url, char * utf8path, 
@@ -107,7 +107,7 @@ Song * addSongToList(SongList * list, char * url, char * utf8path,
 
 	if(song==NULL) return NULL;
 	
-	insertInList(list, url, (void *)song);
+	insertInList(list, song->url, (void *)song);
 
 	return song;
 }
@@ -174,7 +174,7 @@ void insertSongIntoList(SongList * list, ListNode ** nextSongNode, char * key,
 	}
 
 	if(!(*nextSongNode)) {
-		insertInList(list,key,(void *)song);
+		insertInList(list, song->url, (void *)song);
 	}
 	else if(cmpRet == 0) {
 		Song * tempSong = (Song *)((*nextSongNode)->data);
@@ -188,7 +188,8 @@ void insertSongIntoList(SongList * list, ListNode ** nextSongNode, char * key,
 		*nextSongNode = (*nextSongNode)->nextNode;
 	}
 	else {
-		insertInListBeforeNode(list,*nextSongNode,key,(void *)song);
+		insertInListBeforeNode(list, *nextSongNode, song->url, 
+					(void *)song);
 	}
 }
 

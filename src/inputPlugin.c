@@ -117,7 +117,7 @@ extern InputPlugin aacPlugin;
 extern InputPlugin modPlugin;
 
 void initInputPlugins() {
-	inputPlugin_list = makeList(NULL);
+	inputPlugin_list = makeList(NULL, 1);
 
 	/* load plugins here */
 	loadInputPlugin(&mp3Plugin);
