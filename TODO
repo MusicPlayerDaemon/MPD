@@ -25,6 +25,9 @@
 	*) add support for saving and restoring audioOutput state to the 
 		state_file
 
+*) on resetPlayer(), store last state info, so that a killall mpd will
+	properlly save the state, even if the player process dies first
+
 0.13
 ----
 
