@@ -165,6 +165,7 @@ swap <int song1> <int song2>
 
 update
 	searches mp3 directory for new music and removes old music from the db
+	increments playlist version by 1
 
 volume <int change>
 	change volume by amount _change_
