@@ -24,8 +24,6 @@ typedef struct tagTrackerItem {
 char * getTagItemString(int type, char * string) {
 	ListNode * node;
 
-	if(type == TAG_ITEM_TITLE) return strdup(string);
-	
 	if(tagLists[type] == NULL) {
 		tagLists[type] = makeList(free, 1);
 	}
@@ -48,11 +46,6 @@ void removeTagItemString(int type, char * string) {
 
 	assert(string);
 
-	if(type == TAG_ITEM_TITLE) {
-		free(string);
-		return;
-	}
-	
 	assert(tagLists[type]);
 	if(tagLists[type] == NULL) return;
 
@@ -124,9 +117,7 @@ void resetVisitedFlagsInTagTracker(int type) {
 }
 
 int wasVisitedInTagTracker(int type, char * str) {
-	int ret;
 	ListNode * node;
-	TagTrackerItem * item;
 
 	if(!tagLists[type]) return 0;
 
@@ -134,9 +125,35 @@ int wasVisitedInTagTracker(int type, char * str) {
 
 	if(!node) return 0;
 
-	item = node->data;
-	ret = item->visited;
-	item->visited = 1;
-
-	return ret;
+	return ((TagTrackerItem *)node->data)->visited;
 }
+
+void visitInTagTracker(int type, char * str) {
+	ListNode * node;
+
+	if(!tagLists[type]) return;
+
+	node = findNodeInList(tagLists[type], str);
+
+	if(!node) return;
+
+	((TagTrackerItem *)node->data)->visited = 1;
+}
+
+void printVisitedInTagTracker(FILE * fp, int type) {
+	ListNode * node;
+	TagTrackerItem * item;
+
+	if(!tagLists[type]) return;
+
+	node = tagLists[type]->firstNode;
+
+	while(node) {
+		item = node->data;
+		if(item->visited) {
+			myfprintf(fp, "%s: %s\n", mpdTagItemKeys[type],
+					node->key);
+		}
+		node = node->nextNode;
+	}
+

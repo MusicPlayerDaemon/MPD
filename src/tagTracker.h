@@ -17,4 +17,8 @@ void resetVisitedFlagsInTagTracker(int type);
  
 int wasVisitedInTagTracker(int type, char * str);
 
+void visitInTagTracker(int type, char * str);
+
+void printVisitedInTagTracker(FILE * fp, int type);
+
 #endif

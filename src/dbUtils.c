@@ -213,7 +213,7 @@ void freeListCommandItem(ListCommandItem * item) {
 	free(item);
 }
 
-void printUnvisitedTags(FILE * fp, Song * song, int tagType) {
+void visitTag(FILE * fp, Song * song, int tagType) {
 	int i;
 	MpdTag * tag = song->tag;
 
@@ -225,11 +225,8 @@ void printUnvisitedTags(FILE * fp, Song * song, int tagType) {
 	if(!tag) return;
 
 	for(i = 0; i < tag->numOfItems; i++) {
-		if(tag->items[i].type == tagType && 
-			!wasVisitedInTagTracker(tagType, tag->items[i].value))
-		{
-			myfprintf(fp, "%s: %s\n", mpdTagItemKeys[tagType],
-					tag->items[i].value);
+		if(tag->items[i].type == tagType) {
+			visitInTagTracker(tagType, tag->items[i].value);
 		}
 	}
 }
@@ -246,7 +243,7 @@ int listUniqueTagsInDirectory(FILE * fp, Song * song, void * data) {
 		}
 	}
 
-	printUnvisitedTags(fp, song, item->tagType);
+	visitTag(fp, song, item->tagType);
 
 	return 0;
 }
@@ -264,6 +261,10 @@ int listAllUniqueTags(FILE * fp, int type, int numConditionals,
 
 	ret = traverseAllIn(fp, NULL, listUniqueTagsInDirectory, NULL,
 			(void *)item);
+
+	if(type >= 0 && type <= TAG_NUM_OF_ITEM_TYPES) {
+		printVisitedInTagTracker(fp, type);
+	}
 
 	freeListCommandItem(item);
 
