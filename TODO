@@ -1,16 +1,6 @@
-1) resampling audio for compatibility, and better gapless/crossfading
-	a) write bit conversion stuff (8->16 and 24->16)
-	b) mono to stereo conversion
-	c) default audio format is (44.1khz, 16-bit, stereo)
-	d) option to set default sampling frequency
-	e) abitility to disable resampling and audio format conversion
+1) play streams
 
-2) when writing combined interface for all decodes to use, be sure to add a 
-common function and abstrct dealing with DecoderControl * and put
-cycleLogFiles in there, so we cycleLogFiles while decoding, not just when 
-decoding has stopped.
-
-3) streaming and playing in general
+2) streaming and playing in general
 	a) determine a clever interface to play, so that play doesn't block
 		until the file is opened, but just returns when the command
 		is accepted.
@@ -19,7 +9,14 @@ decoding has stopped.
 	c) this will help streaming from blocking indefinetly or waiting
 		on a response
 
-4) play streams
+3) resampling audio for compatibility, and better gapless/crossfading
+	a) default audio format is (44.1khz, 16-bit, stereo)
+	b) use resampling from oggenc (is it fast enough for realtime?)
+
+4) when writing combined interface for all decodes to use, be sure to add a 
+common function and abstrct dealing with DecoderControl * and put
+cycleLogFiles in there, so we cycleLogFiles while decoding, not just when 
+decoding has stopped.
 
 5) ACK error codes
 
