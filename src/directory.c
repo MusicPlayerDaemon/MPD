@@ -301,16 +301,18 @@ void deleteEmptyDirectoriesInDirectory(Directory * directory) {
     1 -> no error, and stuff updated
  */
 int updateInDirectory(Directory * directory, char * shortname, char * name) {
-	time_t mtime;
 	void * song;
 	void * subDir;
+	struct stat st;
 
-	if(isMusic(name,&mtime)) {
+	if(myStat(name, &st)) return -1;
+
+	if(S_ISREG(st.st_mode) && hasMusicSuffix(name)) {
 		if(0==findInList(directory->songs,shortname,&song)) {
 			addToDirectory(directory,shortname,name);
                         return DIRECTORY_RETURN_UPDATE;
 		}
-		else if(mtime!=((Song *)song)->mtime) {
+		else if(st.st_mtime!=((Song *)song)->mtime) {
 			LOG("updating %s\n",name);
 			if(updateSongInfo((Song *)song)<0) {
 				removeSongFromDirectory(directory,shortname);
@@ -318,7 +320,7 @@ int updateInDirectory(Directory * directory, char * shortname, char * name) {
                         return 1;
 		}
 	}
-	else if(isDir(name)) {
+	else if(S_ISDIR(st.st_mode)) {
 		if(findInList(directory->subDirectories,shortname,(void **)&subDir)) {
 			if(updateDirectory((Directory *)subDir)>0) return 1;
 		}
@@ -648,16 +650,20 @@ int addSubDirectoryToDirectory(Directory * directory, char * shortname,
 }
 
 int addToDirectory(Directory * directory, char * shortname, char * name) {
-	if(isDir(name)) {
-		return addSubDirectoryToDirectory(directory,shortname,name);
-	}
-	else if(isMusic(name,NULL)) {
+	struct stat st;
+
+	if(myStat(name, &st)) return -1;
+
+	if(S_ISREG(st.st_mode) && hasMusicSuffix(name)) {
 		Song * song;
 		song = addSongToList(directory->songs,shortname,name,
 				SONG_TYPE_FILE);
 		if(!song) return -1;
 		LOG("added %s\n",name);
 		return 1;
+	}
+	else if(S_ISDIR(st.st_mode)) {
+		return addSubDirectoryToDirectory(directory,shortname,name);
 	}
 
 	DEBUG("addToDirectory: %s is not a directory or music\n",name);
