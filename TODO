@@ -1,16 +1,10 @@
 1) play streams
-	a) deal with pausing better
-		1) seekable, on resuming pause, check if we need to reconnect,
-			jumping to offset
-		2) if seekable, at some point after init, mark this!
-		3) if not seekable, reset buffer, and elapsedTime when
-			unpaused
-	b) put some sort of error reporting for streaming/inputStream!
-	c) fetch metadata and store in DecoderControl and pass to 
+	a) put some sort of error reporting for streaming/inputStream!
+	b) fetch metadata and store in DecoderControl and pass to 
 		PlayerControl
 		1) eventually deal with icy-metadata
 		2) parse metadata on the fly in decoders
-	d) command for dealing with the changing metadata, currentsonginfo
+	c) command for dealing with the changing metadata, currentsonginfo
 		or something
 
 2) how to deal with streams and the db
