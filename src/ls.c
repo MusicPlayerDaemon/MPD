@@ -17,7 +17,6 @@
  */
 
 #include "ls.h"
-#include "command.h"
 #include "playlist.h"
 #include "path.h"
 #include "myfprintf.h"
