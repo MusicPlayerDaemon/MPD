@@ -2,10 +2,7 @@
 ----
 *) Fix id3v1 encoding
 
-*) Abstract audio stuff into a plugin oriented thing
-	*) audio_ao & audio_oss & audio_shout
-	*) allow for sending to multiple audio devices
-	*) config file format for dealing with these devices
+*) Cleanup Config File Code
 
 *) Rewrite replaygain stuff:
 	*) Replay gain struct with album and track gain's and peak's
@@ -22,10 +19,6 @@
 
 *) Add libshout && vorbis encoding support
 	*) clean up code to make more robust (only works for 16-bits)
-	*) check for memory leaks and such
-	*) add option for keeping audio devices alive (i.e. send silence even
-		when stopped/paused), this should also force a consistant
-		audio format
 	*) cleanup configure script stuff (shout needs vorbisenc)
 
 *) add command
@@ -39,16 +32,20 @@
 
 *) have listallinfo return directories
 
-*) allow find/search commands take arbitrary search pairs
-
 *) abstract out input buffering from inputStream_http to inputStream
+
+*) use getaddrinfo instead of gethostbyname (check libshout)
 
 Post-1.0
 --------
-1) crosslink "list" stuff, for example, artists are crosslinked to alubms and 
+*) crosslink "list" stuff, for example, artists are crosslinked to alubms and 
 vice versa, this way you can do list album artists or list artist albums, this 
 will make life easier when we add genre and other metadata
 
-2) rewrite linked list impelmentation to be more flexible
-	a) remove "key" stuff
-	b) allow assigning a compare function for a list
+*) rewrite linked list impelmentation to be more flexible
+	*) remove "key" stuff
+	*) allow assigning a compare function for a list
+
+*) allow find/search commands take arbitrary search pairs
+
+*) add configurable metadata, and add newmetadata items
