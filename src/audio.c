@@ -149,7 +149,7 @@ void initAudioConfig() {
                 exit(EXIT_FAILURE);
         }
  
-        switch(audio_configFormat->sampleRate) {
+        /*switch(audio_configFormat->sampleRate) {
         case 48000:
         case 44100:
         case 32000:
@@ -158,6 +158,12 @@ void initAudioConfig() {
         default:
                 ERROR("sample rate %i can not be used for audio output\n",
                         (int)audio_configFormat->sampleRate);
+                exit(EXIT_FAILURE);
+        }*/
+
+        if(audio_configFormat->sampleRate <= 0) {
+                ERROR("sample rate %i is not >= 0\n",
+                                (int)audio_configFormat->sampleRate);
                 exit(EXIT_FAILURE);
         }
 
