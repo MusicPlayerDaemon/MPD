@@ -6,17 +6,9 @@
 
 *) Steal resampling code from ices (i think this code works only for 16-bit)
 
-*) Rewrite replaygain stuff:
-	*) If replaygain tag info present, average the replaygain gain's
-		and peak's on the fly
-	*) If NULL replaygain struct, then use the average replaygain gains
-		and peak's to compute the the scale for files missing
-		replaygain tags (make this a config file option)
-
 *) Optimize read() on clients
 
 *) add command
-	*) command that takes file/url's (no directory's) and returns the songid
 	*) allow to specify position in playlist where to insert song(s)
 
 *) rewrite saved playlist code
