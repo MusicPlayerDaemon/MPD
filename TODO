@@ -6,6 +6,10 @@
 
 4) (?) Allow loading of remote playlists
 
+5) compute time of vorbis from actual number of samples played
+
+6) remove previous hack for streams
+
 
 Post-1.0
 --------
