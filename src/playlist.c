@@ -463,6 +463,32 @@ int playlistInfo(FILE * fp, int song) {
 	return 0;
 }
 
+# define checkSongId(id) { \
+	if(id < 0 || id >= PLAYLIST_HASH_MULT*playlist_max_length || \
+			playlist.idToNum[id] == -1 ) \
+	{ \
+		commandError(fp, ACK_ERROR_NO_EXIST, \
+                                "song id doesn't exist: \"%i\"", id); \
+		return -1; \
+	} \
+}
+
+int playlistId(FILE * fp, int id) {
+	int i;
+	int begin = 0;
+	int end = playlist.length;
+
+	if(id>=0) {
+		checkSongId(id);
+		begin = playlist.idToNum[id];
+		end = begin+1;
+	}
+
+	for(i=begin; i<end; i++) printPlaylistSongInfo(fp, i);
+
+	return 0;
+}
+
 void swapSongs(int song1, int song2) {
 	Song * sTemp;
 	int iTemp;
@@ -634,7 +660,6 @@ int swapSongsInPlaylist(FILE * fp, int song1, int song2) {
                                 "song doesn't exist: \"%i\"", song2);
 		return -1;
 	}
-
 	
 	if(playlist_state==PLAYLIST_STATE_PLAY) {
 		if(playlist.queued>=0) {
@@ -671,6 +696,14 @@ int swapSongsInPlaylist(FILE * fp, int song1, int song2) {
 	incrPlaylistVersion();
 
 	return 0;
+}
+
+int swapSongsInPlaylistById(FILE * fp, int id1, int id2) {
+	checkSongId(id1);
+	checkSongId(id2);
+
+	return swapSongsInPlaylist(fp, playlist.idToNum[id1], 
+					playlist.idToNum[id2]);
 }
 
 #define moveSongFromTo(from, to) { \
@@ -746,6 +779,12 @@ int deleteFromPlaylist(FILE * fp, int song) {
 	}
 
 	return 0;
+}
+
+int deleteFromPlaylistById(FILE * fp, int id) {
+	checkSongId(id);
+
+	return deleteFromPlaylist(fp, playlist.idToNum[id]);
 }
 
 void deleteASongFromPlaylist(Song * song) {
@@ -837,6 +876,16 @@ int playPlaylist(FILE * fp, int song, int stopOnError) {
 	playlist_errorCount = 0;
 
 	return playPlaylistOrderNumber(fp,i);
+}
+
+int playPlaylistById(FILE * fp, int id, int stopOnError) {
+	if(id == -1) {
+		return playPlaylist(fp, id, stopOnError);
+	}
+
+	checkSongId(id);
+
+	return playPlaylist(fp, playlist.idToNum[id], stopOnError);
 }
 
 void syncCurrentPlayerDecodeMetadata() {
@@ -1030,6 +1079,14 @@ int moveSongInPlaylist(FILE * fp, int from, int to) {
 	incrPlaylistVersion();
 
 	return 0;
+}
+
+int moveSongInPlaylistById(FILE * fp, int id1, int id2) {
+	checkSongId(id1);
+	checkSongId(id2);
+
+	return moveSongInPlaylist(fp, playlist.idToNum[id1], 
+					playlist.idToNum[id2]);
 }
 
 void orderPlaylist() {
@@ -1397,4 +1454,10 @@ int seekSongInPlaylist(FILE * fp, int song, float time) {
 	}
 
 	return playerSeek(fp, playlist.songs[playlist.order[i]], time);
+}
+
+int seekSongInPlaylistById(FILE * fp, int id, float time) {
+	checkSongId(id);
+
+	return seekSongInPlaylist(fp, playlist.idToNum[id], time);
 }
