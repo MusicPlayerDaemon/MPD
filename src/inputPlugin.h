@@ -28,15 +28,19 @@ typedef struct _InputPlugin {
 	char ** mimeTypes;
 } InputPlugin;
 
-/* interface for adding and removing plugins */
+/* interface for constructing a  plugin */
 
-InputPlugin * newInputPlugin();
-
+InputPlugin * newInputPlugin(char * name, InputPlugin_streamDecodeFunc 
+		streamDecodeFunc, InputPlugin_fileDecodeFunc fileDecodeFunc,
+		InputPlugin_tagDupFunc tagDupFunc, unsigned char streamTypes);
 void addSuffixToInputPlugin(InputPlugin * inPlugin, char * suffix);
-
 void addMimeTypeToInputPlugin(InputPlugin * inPlugin, char * suffix);
-
 void freeInputPlugin(InputPlugin * inputPlugin);
+
+/* individual functions to load/unload plugins */
+void loadInputPlugin(InputPlugin * inputPlugin);
+/* this free's inputPlugin as well! */
+void unloadInputPlugin(InputPlugin * inputPlugin);
 
 /* interface for using plugins */
 
@@ -55,7 +59,5 @@ void initInputPlugins();
 
 /* this is where we "unload" all the "plugins" */
 void finishInputPlugins();
-
-void unloadInputPlugin(InputPlugin * inputPlugin);
 
 #endif
