@@ -70,9 +70,11 @@ FLAC__SeekableStreamDecoderLengthStatus flacLength(
 FLAC__bool flacEOF(const FLAC__SeekableStreamDecoder *, void *);
 
 int flac_decode(OutputBuffer * cb, DecoderControl *dc, char * path) {
-	FLAC__SeekableStreamDecoder * flacDec;
+	FLAC__SeekableStreamDecoder * flacDec = NULL;
 	FlacData data;
 	int status = 1;
+        int ret =0;
+        int streamOpen = 0;
 
 	data.chunk_length = 0;
 	data.time = 0;
@@ -85,10 +87,15 @@ int flac_decode(OutputBuffer * cb, DecoderControl *dc, char * path) {
 
         if(openInputStream(&(data.inStream), path)<0) {
                 ERROR("unable to open flac: %s\n", path);
-                return -1;
+                ret = -1;
+                goto fail;
         }
+        streamOpen = 1;
 	
-	if(!(flacDec = FLAC__seekable_stream_decoder_new())) return -1;
+	if(!(flacDec = FLAC__seekable_stream_decoder_new())) {
+                ret = -1;
+                goto fail;
+        }
 	/*status&=FLAC__file_decoder_set_md5_checking(flacDec,1);*/
 	status&=FLAC__seekable_stream_decoder_set_read_callback(flacDec,
                         flacRead);
@@ -112,8 +119,8 @@ int flac_decode(OutputBuffer * cb, DecoderControl *dc, char * path) {
 		flacPrintErroredState(
                         FLAC__seekable_stream_decoder_get_state(flacDec),
                                         path);
-		FLAC__seekable_stream_decoder_delete(flacDec);
-		return -1;
+		ret = -1;
+                goto fail;
 	}
 
 	if(FLAC__seekable_stream_decoder_init(flacDec)!=
@@ -123,8 +130,8 @@ int flac_decode(OutputBuffer * cb, DecoderControl *dc, char * path) {
 		flacPrintErroredState(
                         FLAC__seekable_stream_decoder_get_state(flacDec),
                                         path);
-		FLAC__seekable_stream_decoder_delete(flacDec);
-		return -1;
+                ret = -1;
+                goto fail;
 	}
 
 	if(!FLAC__seekable_stream_decoder_process_until_end_of_metadata(flacDec)) {
@@ -132,8 +139,8 @@ int flac_decode(OutputBuffer * cb, DecoderControl *dc, char * path) {
 		flacPrintErroredState(
                         FLAC__seekable_stream_decoder_get_state(flacDec), 
                                         path);
-		FLAC__seekable_stream_decoder_delete(flacDec);
-		return -1;
+		ret = -1;
+                goto fail;
 	}
 
 	dc->state = DECODE_STATE_DECODE;
@@ -168,7 +175,6 @@ int flac_decode(OutputBuffer * cb, DecoderControl *dc, char * path) {
                                         path);
 		FLAC__seekable_stream_decoder_finish(flacDec);
 	}
-	FLAC__seekable_stream_decoder_delete(flacDec);
 	/* send last little bit */
 	if(data.chunk_length>0 && !dc->stop) {
 		flacSendChunk(&data);
@@ -186,7 +192,12 @@ int flac_decode(OutputBuffer * cb, DecoderControl *dc, char * path) {
 	}
 	else dc->state = DECODE_STATE_STOP;
 
-	return 0;
+fail:
+        if(streamOpen) closeInputStream(&(data.inStream));
+
+	if(flacDec) FLAC__seekable_stream_decoder_delete(flacDec);
+
+	return ret;
 }
 
 FLAC__SeekableStreamDecoderReadStatus flacRead(
@@ -576,4 +587,3 @@ InputPlugin flacPlugin =
 };
 
 #endif
-/* vim:set shiftwidth=8 tabstop=8 expandtab: */
