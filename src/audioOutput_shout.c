@@ -61,7 +61,7 @@ typedef struct _ShoutData {
 	AudioFormat inAudioFormat;
 
 	char * convBuffer;
-	long convBufferLen;
+	size_t convBufferLen;
 	/* shoud we convert the audio to a different format? */
 	int audioFormatConvert;
 
@@ -87,6 +87,7 @@ static ShoutData * newShoutData() {
 static void freeShoutData(ShoutData * sd) {
 	if(sd->shoutConn) shout_free(sd->shoutConn);
 	if(sd->tag) freeMpdTag(sd->tag);
+	if(sd->convBuffer) free(sd->convBuffer);
 
 	free(sd);
 }
@@ -112,6 +113,10 @@ static int shout_initDriver(AudioOutput * audioOutput, ConfigParam * param) {
 	BlockParam * blockParam;
 
 	sd = newShoutData();
+
+	if(shoutInitCount == 0) shout_init();
+
+	shoutInitCount++;
 
 	checkBlockParam("host");
 	host = blockParam->value;
@@ -227,10 +232,6 @@ static int shout_initDriver(AudioOutput * audioOutput, ConfigParam * param) {
 	}
 
 	audioOutput->data = sd;
-
-	if(shoutInitCount == 0) shout_init();
-
-	shoutInitCount++;
 
 	return 0;
 }
@@ -423,7 +424,7 @@ static int shout_openDevice(AudioOutput * audioOutput,
 static void shout_convertAudioFormat(ShoutData * sd, char ** chunkArgPtr,
 		int * sizeArgPtr)
 {
-	int size = pcm_sizeOfOutputBufferForAudioFormatConversion(
+	size_t size = pcm_sizeOfOutputBufferForAudioFormatConversion(
 			&(sd->inAudioFormat), *sizeArgPtr, 
 			&(sd->outAudioFormat));
 

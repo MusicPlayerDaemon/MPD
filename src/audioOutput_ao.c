@@ -212,10 +212,7 @@ static int audioOutputAo_play(AudioOutput * audioOutput, char * playChunk,
 	int send;
 	AoData * ad = (AoData *)audioOutput->data;
 
-	if(ad->device==NULL) {
-		ERROR("trying to play w/o the ao device being open!\n");
-		return -1;
-	}
+	if(ad->device==NULL) return -1;
 	
 	while(size>0) {
 		send = ad->writeSize > size ? size : ad->writeSize;
