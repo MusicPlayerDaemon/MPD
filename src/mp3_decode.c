@@ -190,7 +190,9 @@ int decodeNextFrameHeader(mp3DecodeData * data) {
 	}
 	if(mad_header_decode(&data->frame.header,&data->stream)) {
 #ifdef HAVE_ID3TAG
-		if((data->stream).error==MAD_ERROR_LOSTSYNC) {
+		if((data->stream).error==MAD_ERROR_LOSTSYNC && 
+				(data->stream).this_frame) 
+		{
 			signed long tagsize = id3_tag_query(
 					(data->stream).this_frame,
 					(data->stream).bufend-

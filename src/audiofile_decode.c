@@ -32,6 +32,9 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 #include <audiofile.h>
 
 int getAudiofileTotalTime(char * file)
@@ -53,10 +56,17 @@ int audiofile_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc)
 	int fs, frame_count;
 	AFfilehandle af_fp;
 	int bits;
-		
+	mpd_uint16 bitRate;
+	struct stat st;
+
+	if(stat(dc->file,&st) < 0) {
+		ERROR("failed to stat: %s\n",dc->file);
+		return -1;
+	}
+
 	af_fp = afOpenFile(dc->file,"r", NULL);
 	if(af_fp == AF_NULL_FILEHANDLE) {
-		ERROR("failed to open %s\n",dc->file);
+		ERROR("failed to open: %s\n",dc->file);
 		return -1;
 	}
 
@@ -68,6 +78,8 @@ int audiofile_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc)
 	frame_count = afGetFrameCount(af_fp,AF_DEFAULT_TRACK);
 	
 	cb->totalTime = ((float)frame_count/(float)af->sampleRate);
+
+	bitRate = st.st_size*8.0/cb->totalTime/1024.0+0.5;
 	
 	if (af->bits != 8 && af->bits != 16) {
 		ERROR("Only 8 and 16-bit files are supported. %s is %i-bit\n",
@@ -110,6 +122,7 @@ int audiofile_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc)
 				
 				current += ret;
 				cb->times[cb->end] = (float)current/(float)af->sampleRate;
+				cb->bitRate[cb->end] = bitRate;
 				
 				++cb->end;
 				
