@@ -336,6 +336,11 @@ int updateInDirectory(Directory * directory, char * shortname, char * name) {
 	return 0;
 }
 
+/* return values:
+   -1 -> error
+    0 -> no error, but nothing removed
+    1 -> no error, and stuff removed
+ */
 int removeDeletedFromDirectory(Directory * directory) {
 	DIR * dir;
 	char cwd[2];
