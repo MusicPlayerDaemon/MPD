@@ -15,11 +15,14 @@
 
 *) Add libshout && vorbis encoding support
 
-*) add command that only takes file's or url's (no directory's) and returns the songid of the added song
+*) add command
+	*) command that takes file/url's (no directory's) and returns the songid
+	*) allow to specify position in playlist where to insert song(s)
 
-*) allow add commands to specify position to be inserted
-
-*) saved playlist commands for getting the contents of a playlist and appending to a playlist
+*) rewrite saved playlist code
+	*) abstract out saved playlists from playlist.c
+	*) command for displaying playlist contents
+	*) command for appending to playlist
 
 *) have listallinfo return directories
 
