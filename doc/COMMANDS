@@ -106,8 +106,9 @@ playlist
 	displays the current playlist
 	NOTE: do not use this, instead use 'playlistinfo'
 
-playlistinfo
-	displays information about the current playlist
+playlistinfo <int song>
+	displays list of songs in the playlist
+	_song_ is optional and species a single song to displa info for
 
 previous
 	plays previous song in playlist
