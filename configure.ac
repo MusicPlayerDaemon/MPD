@@ -25,7 +25,10 @@ AC_PROG_MAKE_SET
 
 AM_CONFIG_HEADER(config.h)
 
-MPD_CFLAGS="-Wall"
+MPD_CFLAGS=""
+if test x$CC = xgcc; then
+	MPD_CFLAGS="-Wall"
+fi
 MPD_LIBS=""
 
 AC_ARG_ENABLE(audio,[  --disable-audio    disable support for playing],,enable_ao=yes)
