@@ -1231,6 +1231,9 @@ int seekSongInPlaylist(FILE * fp, int song, float time) {
 	}
 	else if(playPlaylistOrderNumber(fp,i)<0) return -1;
 
-	if(playlist.current!=i) if(playPlaylistOrderNumber(fp,i)<0) return -1;
+	if(playlist.current!=i) {
+		if(playPlaylistOrderNumber(fp,i)<0) return -1;
+	}
+
 	return playerSeek(fp,playlist.songs[playlist.order[i]]->utf8file,time);
 }
