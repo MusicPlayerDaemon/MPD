@@ -182,6 +182,7 @@ int playerPlay(FILE * fp, char * utf8file) {
 		struct stat st;
 		if(stat(rmp2amp(utf8ToFsCharset(utf8file)),&st)<0) {
 			strncpy(pc->erroredFile,pc->file,MAXPATHLEN);
+			pc->erroredFile[MAXPATHLEN] = '\0';
 			pc->error = PLAYER_ERROR_FILENOTFOUND;
 			return 0;
 		}
@@ -190,12 +191,14 @@ int playerPlay(FILE * fp, char * utf8file) {
 	decodeType = playerGetDecodeType(utf8file);
 	if(decodeType < 0) {
 		strncpy(pc->erroredFile,pc->file,MAXPATHLEN);
+		pc->erroredFile[MAXPATHLEN] = '\0';
 		pc->error = PLAYER_ERROR_UNKTYPE;
 		return 0;
 	}
 	pc->decodeType = decodeType;
 
 	strncpy(pc->file,rmp2amp(utf8ToFsCharset(utf8file)),MAXPATHLEN);
+	pc->file[MAXPATHLEN] = '\0';
 
 	pc->play = 1;
 	if(player_pid==0 && playerInit()<0) {
@@ -327,6 +330,7 @@ int queueSong(char * utf8file) {
 
 	if(pc->queueState==PLAYER_QUEUE_BLANK) {
 		strncpy(pc->file,rmp2amp(utf8ToFsCharset(utf8file)),MAXPATHLEN);
+		pc->file[MAXPATHLEN] = '\0';
 
 		decodeType = playerGetDecodeType(utf8file);
 		if(decodeType < 0) return -1;
@@ -393,6 +397,7 @@ int playerSeek(FILE * fp, char * utf8file, float time) {
 		pc->decodeType = decodeType;
 
 		strncpy(pc->file,file,MAXPATHLEN);
+		pc->file[MAXPATHLEN] = '\0';
 	}
 
 	if(pc->error==PLAYER_ERROR_NOERROR) {

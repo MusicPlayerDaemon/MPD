@@ -331,11 +331,15 @@ int main(int argc, char * argv[]) {
         initTables();
         initPlaylist();
 
-        if(!options.dbFile) {	
+        if(!options.dbFile) {
                 strncpy(directorydb,playlistDir,MAXPATHLEN);
+		directorydb[MAXPATHLEN] = '\0';
                 strncat(directorydb,"/.mpddb",MAXPATHLEN-strlen(playlistDir));
         }
-        else strncpy(directorydb,options.dbFile,MAXPATHLEN);
+        else {
+		strncpy(directorydb,options.dbFile,MAXPATHLEN);
+		directorydb[MAXPATHLEN] = '\0';
+	}
         if(options.createDB>0 || readDirectoryDB()<0) {
                 if(options.createDB<0) {
                         ERROR("can't open db file and using \"--no-create-db\""

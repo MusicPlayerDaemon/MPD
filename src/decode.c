@@ -116,6 +116,7 @@ int waitOnDecode(PlayerControl * pc, AudioFormat * af, DecoderControl * dc,
 
 	if(dc->start || dc->error!=DECODE_ERROR_NOERROR) {
 		strncpy(pc->erroredFile,pc->file,MAXPATHLEN);
+		pc->erroredFile[MAXPATHLEN] = '\0';
 		pc->error = PLAYER_ERROR_FILE;
 		quitDecode(pc,dc);
 		return -1;
@@ -123,6 +124,7 @@ int waitOnDecode(PlayerControl * pc, AudioFormat * af, DecoderControl * dc,
 
 	if(initAudio(af)<0) {
 		strncpy(pc->erroredFile,pc->file,MAXPATHLEN);
+		pc->erroredFile[MAXPATHLEN] = '\0';
 		pc->error = PLAYER_ERROR_AUDIO;
 		quitDecode(pc,dc);
 		return -1;
@@ -184,6 +186,7 @@ void decodeSeek(PlayerControl * pc, AudioFormat * af, DecoderControl * dc,
 		else { \
 			if(initAudio(NULL)<0) { \
 				strncpy(pc->erroredFile,pc->file,MAXPATHLEN); \
+				pc->erroredFile[MAXPATHLEN] = '\0' \
 				pc->error = PLAYER_ERROR_AUDIO; \
 				quitDecode(pc,dc); \
 				return; \
@@ -221,6 +224,7 @@ int decoderInit(PlayerControl * pc, Buffer * cb, AudioFormat *af,
 		while(1) {
 			if(dc->start) {
 				strncpy(dc->file,pc->file,MAXPATHLEN);
+				dc->file[MAXPATHLEN] = '\0';
 				switch(pc->decodeType) {
 #ifdef HAVE_MAD
 				case DECODE_TYPE_MP3:
@@ -252,6 +256,9 @@ int decoderInit(PlayerControl * pc, Buffer * cb, AudioFormat *af,
 #endif
 				default:
 					ret = DECODE_ERROR_UNKTYPE;
+					strncpy(pc->erroredFile,dc->file,
+							MAXPATHLEN);
+					pc->erroredFile[MAXPATHLEN] = '\0';
 				}
 				if(ret<0) {
 					dc->error = DECODE_ERROR_FILE;
@@ -273,6 +280,7 @@ int decoderInit(PlayerControl * pc, Buffer * cb, AudioFormat *af,
 	}
 	else if(pid<0) {
 		strncpy(pc->erroredFile,pc->file,MAXPATHLEN);
+		pc->erroredFile[MAXPATHLEN] = '\0';
 		pc->error = PLAYER_ERROR_SYSTEM;
 		return -1;
 	}
