@@ -5,9 +5,6 @@
 
 #include "tag.h"
 
-#define LOCATE_TAG_FILE_TYPE	TAG_NUM_OF_ITEM_TYPES+10
-#define LOCATE_TAG_FILE_KEY	"filename"
-
 /* struct used for search, find, list queries */
 typedef struct _LocateTagItem {
 	mpd_sint8 tagType;

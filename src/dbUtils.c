@@ -7,6 +7,9 @@
 #include "tag.h"
 #include "tagTracker.h"
 
+#define LOCATE_TAG_FILE_TYPE	TAG_NUM_OF_ITEM_TYPES+10
+#define LOCATE_TAG_FILE_KEY	"filename"
+
 typedef struct ListCommandItem {
 	mpd_sint8 tagType;
 	int numConditionals;
