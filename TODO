@@ -2,14 +2,17 @@
 
 2) Put a new metadata entry for icyName for Song's
 
-3) Add a list_OK options for command_lists, to get a list_OK after each
+3) handle changes in audioFormat in a single stream/file,
+		 esp need for vorbis streams
+
+4) Add a list_OK options for command_lists, to get a list_OK after each
 	command
 
-4) put some sort of error reporting for streaming/inputStream!
+5) put some sort of error reporting for streaming/inputStream!
 
-5) Fix charset errors so they don't goto stderr/out
+6) Fix charset errors so they don't goto stderr/out
 
-6) Add a timeout for streams (how long? 1 minutes?)
+7) Add a timeout for streams (how long? 1 minutes?)
 
 
 Post-1.0

@@ -221,6 +221,7 @@ int ogg_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream)
 	ov_callbacks callbacks;
         OggCallbackData data;
 	int current_section;
+	int prev_section = -1;
 	int eof = 0;
 	long ret;
 #define OGG_CHUNK_SIZE 4096
@@ -284,6 +285,10 @@ int ogg_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream)
 				OGG_CHUNK_SIZE-chunkpos,
 				OGG_DECODE_USE_BIGENDIAN,
 				2, 1, &current_section);
+
+		if(current_section!=prev_section) printf("song changed!\n");
+
+		prev_section = current_section;
 
 		if(ret <= 0 && ret != OV_HOLE) {
 			eof = 1;
