@@ -56,4 +56,3 @@ void audioError();
 int isCurrentAudioFormat(AudioFormat * audioFormat);
 
 #endif
-/* vim:set shiftwidth=4 tabstop=8 expandtab: */
