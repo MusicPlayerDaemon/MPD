@@ -109,10 +109,21 @@ list album <emphasis>someArtist</emphasis></programlisting><literal>list</litera
     <sect2>
       <title>Playlist: Adding, Deleting, and Managment</title>
       <sect3>
-        <title>Additional Song Metadata</title>
+        <title id="playlist_song_metadata">Additional Song Metadata</title>
+        <para>In addition to the same <link linkend="song_info_responses">song metadata</link> returned when browsing, songs in a playlist have two additional metadata elements.  <literal>Pos</literal> is the position in the playlist of the song and <literal>Id</literal> is the playlist id for a song (each song in the playlist has a unique <literal>Id</literal>, even if there is a duplicate entry for the same <literal>file</literal>).<programlisting>file: <emphasis>directory/song</emphasis>
+Artist: <emphasis>famousArtist</emphasis>
+Title: <emphasis>popularSong</emphasis>
+Num: <emphasis>0</emphasis>
+Id: <emphasis>23</emphasis>
+file: <emphasis>directory/song</emphasis>
+Artist: <emphasis>famouseArtist</emphasis>
+Title: <emphasis>popularSong</emphasis>
+Num: <emphasis>1</emphasis>
+Id: <emphasis>132</emphasis></programlisting></para>
       </sect3>
       <sect3>
-        <title>Song ID&apos;s vs Playlist Position</title>
+        <title id="song_id_vs_positiion">Song ID&apos;s vs Playlist Position</title>
+        <para>When implementing a client for MPD, the developer must keep in mind that multiple clients maybe manipulating the playlist simultaneously.  Thus, its essential to use playlist song id&apos;s instead of  the playlist position for manipulating the playlist.  This is due to the fact that another client maybe moving, deleting, etc... songs in the playlist, thus changing the order and positions of songs in the playlist.  Consequently, using song id&apos;s is a safer method for manipulating the playlist as the song id&apos;s do not depend on the order and positions of songs in the playlist.</para>
       </sect3>
       <sect3>
         <title>
@@ -120,64 +131,70 @@ list album <emphasis>someArtist</emphasis></programlisting><literal>list</litera
         </title>
         <para><programlisting>playlistinfo
 playlistinfo -1
-playlistinfo <emphasis>position</emphasis></programlisting></para>
+playlistinfo <emphasis>position</emphasis></programlisting><literal>playlistinfo</literal> responds with the <link linkend="playlist_song_metadata">information about songs</link> in the playlist.  If no argument is passed to <literal>playlistinfo</literal> or an argument of <literal>-1</literal> is passed, then every song in the playlist is returned.  If a playlist <emphasis>position</emphasis> is passed to <literal>playlistinfo</literal>, then the information about the song at <emphasis>position</emphasis> is returned.  Note: It&apos;s suggest that <link linkend="playlistid">
+            <literal>playlistid</literal>
+          </link> be used instead of <literal>playlistinfo</literal>.</para>
       </sect3>
-      <sect3>
-        <title>
+      <sect3 id="playlistinfo">
+        <title id="playlistid">
           <literal>playlistid</literal>
         </title>
         <para><programlisting>playlistid
 playlistid -1
-playlistid <emphasis>id</emphasis></programlisting></para>
+playlistid <emphasis>id</emphasis></programlisting><literal>playlistid</literal> is the same as <literal>
+            <link linkend="playlistinfo">playlistinfo</link>
+          </literal> except that  using optional argument <emphasis>id</emphasis>   causes the information for the song with  the playlist song ID <emphasis>id</emphasis>to be returned.</para>
       </sect3>
       <sect3>
         <title>
           <literal>plchanges</literal>
         </title>
-        <para><programlisting>plchanges <emphasis>version</emphasis></programlisting></para>
+        <para><programlisting>plchanges <emphasis>version</emphasis></programlisting><literal>plchanges</literal> responds with the <link linkend="playlist_song_metadata">song information</link> for songs that have changed since the <link linkend="status">playlist version</link> <emphasis>version</emphasis>.  Note, to detect songs that were removed at the end of the playlist, use the  playlist length returned by <link linkend="status">status</link>.</para>
       </sect3>
       <sect3>
-        <title>
+        <title id="deleteid">
           <literal>deleteid</literal>
         </title>
-        <para><programlisting>deleteid <emphasis>id</emphasis></programlisting></para>
+        <para><programlisting>deleteid <emphasis>id</emphasis></programlisting><literal>deleteid</literal>  removes the song with the playlist song id <emphasis>id</emphasis> from the playlist.</para>
       </sect3>
       <sect3>
         <title>
           <literal>delete</literal>
         </title>
-        <para><programlisting>delete <emphasis>position</emphasis></programlisting></para>
+        <para><programlisting>delete <emphasis>position</emphasis></programlisting><literal>delete</literal> removes the song at the playlist position <emphasis>position</emphasis> from the playlist.  Note: It&apos;s suggested that <link linkend="deleteid">
+            <literal>deleteid</literal>
+          </link> be used instead of <literal>delete</literal>.</para>
       </sect3>
       <sect3>
         <title>
           <literal>add</literal>
         </title>
         <para><programlisting>add <emphasis>file</emphasis>
-add <emphasis>url</emphasis></programlisting></para>
+add <emphasis>url</emphasis></programlisting><literal>add</literal> appends the <emphasis>file</emphasis> or <emphasis>url</emphasis> to the end of the playlist</para>
       </sect3>
       <sect3>
         <title>
           <literal>moveid</literal>
         </title>
-        <para><programlisting>movid <emphasis>id</emphasis></programlisting></para>
+        <para><programlisting>movid <emphasis>id</emphasis> <emphasis>position</emphasis></programlisting></para>
       </sect3>
       <sect3>
         <title>
           <literal>move</literal>
         </title>
-        <para><programlisting>move <emphasis>position</emphasis></programlisting></para>
+        <para><programlisting>move <emphasis>position</emphasis> <emphasis>position</emphasis></programlisting></para>
       </sect3>
       <sect3>
         <title>
           <literal>swapid</literal>
         </title>
-        <para><programlisting>swapid <emphasis>id</emphasis></programlisting></para>
+        <para><programlisting>swapid <emphasis>id1</emphasis> <emphasis>id2</emphasis></programlisting></para>
       </sect3>
       <sect3>
         <title>
           <literal>swap</literal>
         </title>
-        <para><programlisting>swap <emphasis>position</emphasis></programlisting></para>
+        <para><programlisting>swap <emphasis>position1</emphasis> <emphasis>position2</emphasis></programlisting></para>
       </sect3>
       <sect3>
         <title>
@@ -207,7 +224,7 @@ add <emphasis>url</emphasis></programlisting></para>
     <sect2>
       <title>Status Queries</title>
       <sect3>
-        <title>
+        <title id="status">
           <literal>status</literal>
         </title>
         <para><programlisting>status</programlisting></para>
