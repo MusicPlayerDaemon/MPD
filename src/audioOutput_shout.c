@@ -64,6 +64,8 @@ typedef struct _ShoutData {
 	int audioFormatConvert;
 
 	int opened;
+
+	MpdTag * tag;
 } ShoutData;
 
 static ShoutData * newShoutData() {
@@ -73,12 +75,14 @@ static ShoutData * newShoutData() {
 	ret->convBuffer = NULL;
 	ret->convBufferLen = 0;
 	ret->opened = 0;
+	ret->tag = NULL;
 
 	return ret;
 }
 
 static void freeShoutData(ShoutData * sd) {
 	if(sd->shoutConn) shout_free(sd->shoutConn);
+	if(sd->tag) freeMpdTag(sd->tag);
 
 	free(sd);
 }
@@ -345,6 +349,45 @@ static void shout_convertAudioFormat(ShoutData * sd, char ** chunkArgPtr,
 	*chunkArgPtr = sd->convBuffer;
 }
 
+#define addTag(name, value) { \
+	if(value) vorbis_comment_add_tag(&(sd->vc), name, value); \
+}
+
+static void shout_sendMetadata(ShoutData * sd) {
+	ogg_int64_t granulepos = sd->vd.granulepos;
+
+	if(!sd->opened) return;
+
+	clearEncoder(sd);
+	if(initEncoder(sd) < 0) return;
+
+	sd->vd.granulepos = granulepos;
+
+	if(sd->tag) {
+		addTag("ARTIST", sd->tag->artist);
+		addTag("ALBUM", sd->tag->album);
+		addTag("TITLE", sd->tag->title);
+	}
+
+	vorbis_analysis_headerout(&(sd->vd), &(sd->vc), &(sd->header_main),
+			&(sd->header_comments), &(sd->header_codebooks));
+
+	ogg_stream_packetin(&(sd->os), &(sd->header_main));
+	ogg_stream_packetin(&(sd->os), &(sd->header_comments));
+	ogg_stream_packetin(&(sd->os), &(sd->header_codebooks));
+
+	/*vorbis_commentheader_out(&(sd->vc), &(sd->header_comments));
+	ogg_stream_packetin(&(sd->os), &(sd->header_comments));*/
+
+	while(ogg_stream_flush(&(sd->os), &(sd->og)))
+	{
+		if(write_page(sd) < 0) return;
+	}
+
+	freeMpdTag(sd->tag);
+	sd->tag = NULL;
+}
+
 static int shout_play(AudioOutput * audioOutput, char * playChunk, int size) {
 	int i,j;
 	ShoutData * sd = (ShoutData *)audioOutput->data;
@@ -357,6 +400,8 @@ static int shout_play(AudioOutput * audioOutput, char * playChunk, int size) {
 			return -1;
 		}
 	}
+
+	if(sd->tag) shout_sendMetadata(sd);
 
 	if(sd->audioFormatConvert) {
 		shout_convertAudioFormat(sd, &playChunk, &size);
@@ -395,42 +440,15 @@ static int shout_play(AudioOutput * audioOutput, char * playChunk, int size) {
 	return 0;
 }
 
-#define addTag(name, value) { \
-	if(value) vorbis_comment_add_tag(&(sd->vc), name, value); \
-}
-
-static void shout_sendMetadata(AudioOutput * audioOutput, MpdTag * tag) {
+static void shout_setTag(AudioOutput * audioOutput, MpdTag * tag) {
 	ShoutData * sd = (ShoutData *)audioOutput->data;
-	ogg_int64_t granulepos = sd->vd.granulepos;
 
-	if(!sd->opened) return;
+	if(sd->tag) freeMpdTag(sd->tag);
+	sd->tag = NULL;
 
-	clearEncoder(sd);
-	if(initEncoder(sd) < 0) return;
+	if(!tag) return;
 
-	sd->vd.granulepos = granulepos;
-
-	if(tag) {
-		addTag("ARTIST", tag->artist);
-		addTag("ALBUM", tag->album);
-		addTag("TITLE", tag->title);
-
-	}
-
-	vorbis_analysis_headerout(&(sd->vd), &(sd->vc), &(sd->header_main),
-			&(sd->header_comments), &(sd->header_codebooks));
-
-	ogg_stream_packetin(&(sd->os), &(sd->header_main));
-	ogg_stream_packetin(&(sd->os), &(sd->header_comments));
-	ogg_stream_packetin(&(sd->os), &(sd->header_codebooks));
-
-	/*vorbis_commentheader_out(&(sd->vc), &(sd->header_comments));
-	ogg_stream_packetin(&(sd->os), &(sd->header_comments));*/
-
-	while(ogg_stream_flush(&(sd->os), &(sd->og)))
-	{
-		if(write_page(sd) < 0) return;
-	}
+	sd->tag = mpdTagDup(tag);
 }
 
 AudioOutputPlugin shoutPlugin = 
@@ -441,7 +459,7 @@ AudioOutputPlugin shoutPlugin =
 	shout_openDevice,
 	shout_play,
 	shout_closeDevice,
-	shout_sendMetadata
+	shout_setTag
 };
 
 #else
