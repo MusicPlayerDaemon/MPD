@@ -554,7 +554,7 @@ int interfacePrintWithFD(int fd,char * buffer) {
 
 	interface = interfaces+i;
 
-	while(buflen>0) {
+	while(buflen>0 && !interface->expired) {
 		copylen = buflen>
 			interface->outBufSize-interface->outBuflen?
 			interface->outBufSize-interface->outBuflen:

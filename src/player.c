@@ -390,7 +390,7 @@ int playerSeek(FILE * fp, char * utf8file, float time) {
 	if(strcmp(pc->file,file)!=0) {
 		decodeType = playerGetDecodeType(utf8file);
 		if(decodeType < 0) {
-			printf("%s unknown file type: %s\n",
+			myfprintf(fp,"%s unknown file type: %s\n",
 				COMMAND_RESPOND_ERROR, utf8file);
 			return -1;
 		}

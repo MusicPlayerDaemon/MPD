@@ -116,7 +116,8 @@ void flacPlayFile(char *file, Buffer * cb, AudioFormat * af,
 			dc->seek = 0;
 		}
 	}
-	FLAC__file_decoder_process_until_end_of_file(flacDec);
+	/* I don't think we need this bit here! =shank */
+	/*FLAC__file_decoder_process_until_end_of_file(flacDec);*/
 	if(!dc->stop) {
 		flacPrintErroredState(FLAC__file_decoder_get_state(flacDec),
 				file);

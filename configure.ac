@@ -2,7 +2,7 @@ dnl AC_INIT(src/main.c)
 dnl AM_INIT_AUTOMAKE(mpd, 0.10.0)
 
 AC_PREREQ(2.52)
-AC_INIT(mpd, 0.10.3, shank@mercury.chem.pitt.edu)
+AC_INIT(mpd, 0.10.4, shank@mercury.chem.pitt.edu)
 AM_INIT_AUTOMAKE($PACKAGE_NAME, $PACKAGE_VERSION)
 
 dnl MAD wants this stuff
@@ -69,7 +69,7 @@ AC_CHECK_LIB(nsl,gethostbyname,MPD_LIBS="$MPD_LIBS -lnsl",)
 
 AC_CHECK_LIB(m,exp,MPD_LIBS="$MPD_LIBS -lm",)
 
-AC_CHECK_HEADER(langinfo.h,[enable_langinfo=yes;AC_DEFINE(HAVE_LANGINFO,1,[Define if nl_langinfo.h is present])],enable_langinfo=no)
+AM_LANGINFO_CODESET
 AC_CHECK_HEADER(locale.h,[enable_locale=yes;AC_DEFINE(HAVE_LOCALE,1,[Define if locale.h is present])],enable_locale=no)
 
 if test x$enable_ipv6 = xyes; then
@@ -143,7 +143,7 @@ if test x$enable_iconv = xyes; then
 	CPPFLAGS=$CFLAGS
 	AC_CHECK_HEADER(iconv.h,MPD_CFLAGS="$MPD_CFLAGS $ICONV_CFLAGS",enable_iconv=no)
 	if test x$enable_iconv = xyes; then
-		AC_CHECK_LIB(iconv,iconv_open,MPD_LIBS="$MPD_LIBS $ICONV_LIBS",)
+		AC_CHECK_LIB(iconv,main,MPD_LIBS="$MPD_LIBS $ICONV_LIBS",)
 		AC_DEFINE(HAVE_ICONV,1,[Define to use iconv])
 	fi
 	CFLAGS=$oldcflags
@@ -494,7 +494,7 @@ else
 	echo "locale support ................disabled"
 fi
 
-if test x$enable_langinfo = xyes; then
+if test x$am_cv_langinfo_codeset = xyes; then
 	echo "langinfo support ..............enabled"
 else
 	echo "langinfo support ..............disabled"
