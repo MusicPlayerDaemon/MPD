@@ -99,6 +99,8 @@ void sortTagTrackerInfo() {
 	for(i = 0; i < TAG_NUM_OF_ITEM_TYPES; i++) {
 		if(!tagLists[i]) continue;
 
+		DEBUG("sorting %s info\n", mpdTagItemKeys[i]);
+
 		sortList(tagLists[i]);
 	}
 }

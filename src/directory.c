@@ -979,8 +979,14 @@ void sortDirectory(Directory * directory) {
 int writeDirectoryDB() {
 	FILE * fp;
 
+	DEBUG("removing empty directories from DB\n");
 	deleteEmptyDirectoriesInDirectory(mp3rootDirectory);
+
+	DEBUG("sorting DB\n");
+
 	sortDirectory(mp3rootDirectory);
+
+	DEBUG("writing DB\n");
 
 	while(!(fp=fopen(directory_db,"w")) && errno==EINTR);
 	if(!fp) return -1;
@@ -1076,6 +1082,8 @@ int readDirectoryDB() {
 			fseek(fp,0,SEEK_SET);
 		}
 	}
+
+	DEBUG("reading DB\n");
 
 	readDirectoryInfo(fp,mp3rootDirectory);
 	while(fclose(fp) && errno==EINTR);

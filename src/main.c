@@ -433,7 +433,7 @@ int main(int argc, char * argv[]) {
 
 	printMemorySavedByTagTracker();
 	printSavedMemoryFromFilenames();
-	printSavedMemoryFromDirectoryNames();
+	/*printSavedMemoryFromDirectoryNames();*/
 	
         daemonize(&options);
 
