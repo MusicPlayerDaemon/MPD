@@ -3,6 +3,7 @@
 *) Abstract audio stuff into a plugin oriented thing
 	*) audio_ao & audio_oss & audio_shout
 	*) allow for sending to multiple audio devices
+	*) config file format for dealing with these devices
 
 *) Rewrite replaygain stuff:
 	*) Replay gain struct with album and track gain's and peak's
@@ -23,7 +24,6 @@
 	*) add option for keeping audio devices alive (i.e. send silence even
 		when stopped/paused), this should also force a consistant
 		audio format
-	*) need some way to send metadata through shout plugin
 	*) cleanup configure script stuff (shout needs vorbisenc)
 
 *) add command
