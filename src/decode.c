@@ -162,7 +162,7 @@ void decodeSeek(PlayerControl * pc, AudioFormat * af, DecoderControl * dc,
 			dc->seek = 1;
 			pc->bitRate = 0;
 			while(*decode_pid>0 && dc->seek) usleep(1000);
-			if(dc->seekError) pc->elapsedTime = dc->seekWhere;
+			if(!dc->seekError) pc->elapsedTime = dc->seekWhere;
 		}
 	}
 	pc->seek = 0;
