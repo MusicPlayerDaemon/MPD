@@ -51,6 +51,8 @@ AC_CHECK_SIZEOF(long long)
 AC_CHECK_LIB(socket,socket,MPD_LIBS="$MPD_LIBS -lsocket",)
 AC_CHECK_LIB(nsl,gethostbyname,MPD_LIBS="$MPD_LIBS -lnsl",)
 
+AC_CHECK_LIB(m,exp,MPD_LIBS="$MPD_LIBS -lm",)
+
 AC_CHECK_HEADER(langinfo.h,MPD_CFLAGS="$MPD_CFLAGS -DHAVE_LANGINFO",)
 AC_CHECK_HEADER(locale.h,MPD_CFLAGS="$MPD_CFLAGS -DHAVE_LOCALE",)
 
