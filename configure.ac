@@ -62,9 +62,11 @@ AC_CHECK_LIB(nsl,gethostbyname,MPD_LIBS="$MPD_LIBS -lnsl",)
 AC_CHECK_LIB(m,exp,MPD_LIBS="$MPD_LIBS -lm",)
 
 AM_ICONV
+MPD_CFLAGS="$MPD_CFLAGS $INCICONV"
 MPD_LIBS="$MPD_LIBS $LIBICONV"
-AM_LANGINFO_CODESET
-AM_LC_MESSAGES
+
+AC_CHECK_HEADER(langinfo.h,AC_DEFINE(HAVE_LANGINFO,1,[Define if nl_langinfo.h is present]),)
+AC_CHECK_HEADER(locale.h,AC_DEFINE(HAVE_LOCALE,1,[Define if locale.h is present]),)
 
 if test x$enable_ipv6 = xyes; then
 	AC_MSG_CHECKING(for ipv6)
@@ -204,7 +206,7 @@ if test x$enable_aac = xyes; then
     		FAAD_LIBS="-L$libdir"
   	fi
 
- 	FAAD_LIBS="$FAAD_LIBS -lfaad -lmp4v2 -lstdc++"
+ 	FAAD_LIBS="$FAAD_LIBS -lfaad"
 
   	if test "x$faad_includes" != "x" ; then
   		FAAD_CFLAGS="-I$faad_includes"
@@ -220,22 +222,12 @@ if test x$enable_aac = xyes; then
 	LIBS="$LIBS $MPD_LIBS $FAAD_LIBS"
 	AC_CHECK_HEADER(faad.h,,enable_aac=no)
 	if test x$enable_aac = xyes; then
-		AC_CHECK_HEADER(mp4.h,,[enable_aac=no;AC_MSG_WARN(
-			You need mp4v2 installed for AAC/MP4 decoding.
-			If mp4.h is present, be sure that mpeg4ip.h does not
-			include systems.h)])
-	fi
-	if test x$enable_aac = xyes; then
-		AC_CHECK_LIB(mp4v2, MP4Create,,[enable_aac=no;AC_MSG_WARN(You need mp4v2 installed for AAC/MP4 decoding)])
-	fi
-	if test x$enable_aac = xyes; then
-		AC_CHECK_LIB(mp4v2, MP4MetadataDelete,,[enable_aac=no;AC_MSG_WARN(You need mp4v2 installed for AAC/MP4 decoding)])
-	fi
-	if test x$enable_aac = xyes; then
 		AC_CHECK_LIB(faad, faacDecDecode,[MPD_LIBS="$MPD_LIBS $FAAD_LIBS";MPD_CFLAGS="$MPD_CFLAGS $FAAD_CFLAGS";MP4FF_SUBDIR="mp4ff";MP4FF_LIB="mp4ff/libmp4ff.la"],enable_aac=no)
 	fi
 	if test x$enable_aac = xyes; then
 		AC_DEFINE(HAVE_FAAD,1,[Define to use FAAD2 for AAC decoding])
+	else
+		AC_MSG_WARN([faad2 lib needed for MP4/AAC support -- disabling MP4/AAC support])
 	fi
 	CFLAGS=$oldcflags
 	LIBS=$oldlibs
