@@ -1,0 +1,617 @@
+/* the Music Player Daemon (MPD)
+ * (c)2003-2004 by Warren Dukes (shank@mercury.chem.pitt.edu)
+ * This project's homepage is: http://www.musicpd.org
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
+#include "command.h"
+#include "player.h"
+#include "playlist.h"
+#include "ls.h"
+#include "directory.h"
+#include "tables.h"
+#include "volume.h"
+#include "path.h"
+#include "stats.h"
+#include "myfprintf.h"
+#include "list.h"
+#include "conf.h"
+#include "permission.h"
+
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
+#define COMMAND_PLAY            "play"
+#define COMMAND_STOP            "stop"
+#define COMMAND_PAUSE           "pause"
+#define COMMAND_STATUS          "status"
+#define COMMAND_KILL            "kill"
+#define COMMAND_CLOSE           "close"
+#define COMMAND_ADD             "add"
+#define COMMAND_DELETE          "delete"
+#define COMMAND_PLAYLIST        "playlist"
+#define COMMAND_SHUFFLE         "shuffle"
+#define COMMAND_CLEAR           "clear"
+#define COMMAND_SAVE            "save"
+#define COMMAND_LOAD            "load"
+#define COMMAND_LSINFO          "lsinfo"
+#define COMMAND_RM              "rm"
+#define COMMAND_PLAYLISTINFO    "playlistinfo"
+#define COMMAND_FIND            "find"
+#define COMMAND_SEARCH          "search"
+#define COMMAND_UPDATE          "update"
+#define COMMAND_NEXT            "next"
+#define COMMAND_PREVIOUS        "previous"
+#define COMMAND_LISTALL         "listall"
+#define COMMAND_VOLUME          "volume"
+#define COMMAND_REPEAT          "repeat"
+#define COMMAND_RANDOM          "random"
+#define COMMAND_STATS           "stats"
+#define COMMAND_CLEAR_ERROR     "clearerror"
+#define COMMAND_LIST            "list"
+#define COMMAND_MOVE            "move"
+#define COMMAND_SWAP            "swap"
+#define COMMAND_SEEK            "seek"
+#define COMMAND_LISTALLINFO	"listallinfo"
+#define COMMAND_PING		"ping"
+#define COMMAND_SETVOL		"setvol"
+#define COMMAND_PASSWORD	"password"
+#define COMMAND_CROSSFADE	"crossfade"
+
+#define COMMAND_STATUS_VOLUME           "volume"
+#define COMMAND_STATUS_STATE            "state"
+#define COMMAND_STATUS_REPEAT           "repeat"
+#define COMMAND_STATUS_RANDOM           "random"
+#define COMMAND_STATUS_PLAYLIST         "playlist"
+#define COMMAND_STATUS_PLAYLIST_LENGTH  "playlistlength"
+#define COMMAND_STATUS_SONG             "song"
+#define COMMAND_STATUS_TIME             "time"
+#define COMMAND_STATUS_BITRATE          "bitrate"
+#define COMMAND_STATUS_ERROR            "error"
+
+typedef int (* CommandHandlerFunction)(FILE *, unsigned int *, int, char **);
+
+/* if min: -1 don't check args *
+ * if max: -1 no max args      */
+typedef struct _CommandEntry {
+        char * cmd;
+        int min;
+        int max;
+	unsigned int reqPermission;
+        CommandHandlerFunction handler;
+} CommandEntry;
+
+List * commandList;
+
+CommandEntry * newCommandEntry() {
+        CommandEntry * cmd = malloc(sizeof(CommandEntry));
+        cmd->cmd = NULL;
+        cmd->min = 0;
+        cmd->max = 0;
+        cmd->handler = NULL;
+	cmd->reqPermission = 0;
+        return cmd;
+}
+
+void addCommand(char * name, unsigned int reqPermission, int minargs,
+                 int maxargs, CommandHandlerFunction handler_func) 
+{
+        CommandEntry * cmd = newCommandEntry();
+        cmd->cmd = name;
+        cmd->min = minargs;
+        cmd->max = maxargs;
+        cmd->handler = handler_func;
+	cmd->reqPermission = reqPermission;
+
+        insertInList(commandList, cmd->cmd, cmd);
+}
+
+int handlePlay(FILE * fp, unsigned int * permission, int argArrayLength, 
+		char ** argArray) 
+{
+        int song = -1;
+        char * test;
+
+        if(argArrayLength==2) {
+                song = strtol(argArray[1],&test,10);
+                if(*test!='\0') {
+                        myfprintf(fp,"%s need a positive integer\n",COMMAND_RESPOND_ERROR);
+                        return -1;
+                }
+        }
+        return playPlaylist(fp,song,1);
+}
+
+int handleStop(FILE * fp, unsigned int * permission, int argArrayLength, 
+		char ** argArray) 
+{
+        return stopPlaylist(fp);
+}
+
+int handlePause(FILE * fp, unsigned int * permission, 
+		int argArrayLength, char ** argArray) 
+{
+        return playerPause(fp);
+}
+
+int commandStatus(FILE * fp, unsigned int * permission, int argArrayLength, 
+		char ** argArray) 
+{
+        char * state = NULL;
+
+        playPlaylistIfPlayerStopped();
+        switch(getPlayerState()) {
+                case PLAYER_STATE_STOP:
+                        state = strdup(COMMAND_STOP);
+                        break;
+                case PLAYER_STATE_PAUSE:
+                        state = strdup(COMMAND_PAUSE);
+                        break;
+                case PLAYER_STATE_PLAY:
+                        state = strdup(COMMAND_PLAY);
+                        break;
+        }
+
+        myfprintf(fp,"%s: %i\n",COMMAND_STATUS_VOLUME,getVolumeLevel());
+        myfprintf(fp,"%s: %i\n",COMMAND_STATUS_REPEAT,getPlaylistRepeatStatus());
+        myfprintf(fp,"%s: %i\n",COMMAND_STATUS_RANDOM,getPlaylistRandomStatus());
+        myfprintf(fp,"%s: %li\n",COMMAND_STATUS_PLAYLIST,getPlaylistVersion());
+        myfprintf(fp,"%s: %i\n",COMMAND_STATUS_PLAYLIST_LENGTH,getPlaylistLength());
+        myfprintf(fp,"%s: %s\n",COMMAND_STATUS_STATE,state);
+
+        if(getPlayerState()!=PLAYER_STATE_STOP) {
+                myfprintf(fp,"%s: %i\n",COMMAND_STATUS_SONG,getPlaylistCurrentSong());
+                myfprintf(fp,"%s: %i:%i\n",COMMAND_STATUS_TIME,getPlayerElapsedTime(),getPlayerTotalTime());
+                myfprintf(fp,"%s: %li\n",COMMAND_STATUS_BITRATE,getPlayerBitRate(),getPlayerTotalTime());
+        }
+
+        if(getPlayerError()!=PLAYER_ERROR_NOERROR) {
+                myfprintf(fp,"%s: %s\n",COMMAND_STATUS_ERROR,getPlayerErrorStr());
+        }
+
+        free(state);
+
+        return 0;
+}
+
+int handleKill(FILE * fp, unsigned int * permission, int argArrayLength, 
+		char ** argArray) 
+{
+        return COMMAND_RETURN_KILL;
+}
+
+int handleClose(FILE * fp, unsigned int * permission, int argArrayLength, 
+		char ** argArray) 
+{
+        return COMMAND_RETURN_CLOSE;
+}
+
+int handleAdd(FILE * fp, unsigned int * permission, int argArrayLength, 
+		char ** argArray) 
+{
+        char * directory = NULL;
+
+        if(argArrayLength == 2) directory = argArray[1];
+        return addAllIn(fp,directory);
+}
+
+int handleDelete(FILE * fp, unsigned int * permission, int argArrayLength, 
+		char ** argArray) 
+{
+        int song;
+        char * test;
+
+        song = strtol(argArray[1],&test,10);
+        if(*test!='\0') {
+                myfprintf(fp,"%s need a positive integer\n",COMMAND_RESPOND_ERROR);
+                return -1;
+        }
+        return deleteFromPlaylist(fp,song); 
+}
+
+int handlePlaylist(FILE * fp, unsigned int * permission, int argArrayLength, 
+		char ** argArray) 
+{
+        return showPlaylist(fp);
+}
+
+int handleShuffle(FILE * fp, unsigned int * permission, int argArrayLength, 
+		char ** argArray) 
+{
+        return shufflePlaylist(fp);
+}
+
+int handleClear(FILE * fp, unsigned int * permission, int argArrayLength, 
+		char ** argArray) 
+{
+        return clearPlaylist(fp);
+}
+
+int handleSave(FILE * fp, unsigned int * permission, int argArrayLength, 
+		char ** argArray) 
+{
+        return savePlaylist(fp,argArray[1]);
+}
+
+int handleLoad(FILE * fp, unsigned int * permission, int argArrayLength, 
+		char ** argArray) 
+{
+        return loadPlaylist(fp,argArray[1]);
+}
+
+int handleLsInfo(FILE * fp, unsigned int * permission, int argArrayLength, 
+		char ** argArray) 
+{
+        if(argArrayLength==1) {
+                if(printDirectoryInfo(fp,NULL)<0) return -1;
+                else return lsPlaylists(fp,"");
+        }
+        else {
+                if(printDirectoryInfo(fp,argArray[1])<0) return -1;
+                else return lsPlaylists(fp,argArray[1]);
+        }
+}
+
+int handleRm(FILE * fp, unsigned int * permission, int argArrayLength, 
+		char ** argArray) 
+{
+        return deletePlaylist(fp,argArray[1]);
+}
+
+int handlePlaylistInfo(FILE * fp, unsigned int * permission, 
+		int argArrayLength, char ** argArray) 
+{
+        int song = -1;
+        char * test;
+
+        if(argArrayLength == 2) {
+                song = strtol(argArray[1],&test,10);
+                if(*test!='\0') {
+                        myfprintf(fp,"%s need a positive integer\n",COMMAND_RESPOND_ERROR);
+                        return -1;
+                }
+        }
+        return playlistInfo(fp,song);
+}
+
+int handleFind(FILE * fp, unsigned int * permission, int argArrayLength, 
+		char ** argArray) 
+{
+        return findSongsIn(fp,NULL,argArray[1],argArray[2]);
+}
+
+int handleSearch(FILE * fp, unsigned int * permission, int argArrayLength, 
+		char ** argArray) 
+{
+        return searchForSongsIn(fp,NULL,argArray[1],argArray[2]);
+}
+
+int handleUpdate(FILE * fp, unsigned int * permission, int argArrayLength, 
+		char ** argArray) 
+{
+        return updateMp3Directory(fp);
+}
+
+int handleNext(FILE * fp, unsigned int * permission, int argArrayLength, 
+		char ** argArray) 
+{
+        return nextSongInPlaylist(fp);
+}
+
+int handlePrevious(FILE * fp, unsigned int * permission, int argArrayLength, 
+		char ** argArray) 
+{
+        return previousSongInPlaylist(fp);
+}
+
+int handleListAll(FILE * fp, unsigned int * permission, int argArrayLength, 
+		char ** argArray) 
+{
+        char * directory = NULL;
+
+        if(argArrayLength==2) directory = argArray[1];
+        return printAllIn(fp,directory);
+}
+
+int handleVolume(FILE * fp, unsigned int * permission, int argArrayLength, 
+		char ** argArray) 
+{
+        int change;
+        char * test;
+
+        change = strtol(argArray[1],&test,10);
+        if(*test!='\0') {
+                myfprintf(fp,"%s need an integer\n",COMMAND_RESPOND_ERROR);
+                return -1;
+        }
+        return changeVolumeLevel(fp,change,1);
+}
+
+int handleSetVol(FILE * fp, unsigned int * permission, int argArrayLength, 
+		char ** argArray) 
+{
+        int level;
+        char * test;
+
+        level = strtol(argArray[1],&test,10);
+        if(*test!='\0') {
+                myfprintf(fp,"%s need an integer\n",COMMAND_RESPOND_ERROR);
+                return -1;
+        }
+        return changeVolumeLevel(fp,level,0);
+}
+
+int handleRepeat(FILE * fp, unsigned int * permission, int argArrayLength, 
+		char ** argArray) 
+{
+        int status;
+        char * test;
+
+        status = strtol(argArray[1],&test,10);
+        if(*test!='\0') {
+                myfprintf(fp,"%s need an integer\n",COMMAND_RESPOND_ERROR);
+                return -1;
+        }
+        return setPlaylistRepeatStatus(fp,status);
+}
+
+int handleRandom(FILE * fp, unsigned int * permission, int argArrayLength, 
+		char ** argArray) 
+{
+        int status;
+        char * test;
+
+        status = strtol(argArray[1],&test,10);
+        if(*test!='\0') {
+                myfprintf(fp,"%s need an integer\n",COMMAND_RESPOND_ERROR);
+                return -1;
+        }
+        return setPlaylistRandomStatus(fp,status);
+}
+
+int handleStats(FILE * fp, unsigned int * permission, int argArrayLength, 
+		char ** argArray) 
+{
+        return printStats(fp);
+}
+
+int handleClearError(FILE * fp, unsigned int * permission, int argArrayLength, 
+		char ** argArray) 
+{
+        clearPlayerError();
+        return 0;
+}
+
+int handleList(FILE * fp, unsigned int * permission, int argArrayLength, 
+		char ** argArray) 
+{
+        char * arg1 = NULL;
+
+        if(argArrayLength==3) arg1 = argArray[2];
+        return printAllKeysOfTable(fp,argArray[1],arg1);
+}
+
+int handleMove(FILE * fp, unsigned int * permission, int argArrayLength, 
+		char ** argArray) 
+{
+        int from;
+        int to;
+        char * test;
+
+        from = strtol(argArray[1],&test,10);
+        if(*test!='\0') {
+                myfprintf(fp,"%s \"%s\" is not a integer\n",
+                                COMMAND_RESPOND_ERROR,argArray[1]);
+                return -1;
+        }
+        to = strtol(argArray[2],&test,10);
+        if(*test!='\0') {
+                myfprintf(fp,"%s \"%s\" is not a integer\n",
+                                COMMAND_RESPOND_ERROR,argArray[2]);
+                return -1;
+        }
+        return moveSongInPlaylist(fp,from,to);
+}
+
+int handleSwap(FILE * fp, unsigned int * permission, int argArrayLength, 
+		char ** argArray) 
+{
+        int song1;
+        int song2;
+        char * test;
+
+        song1 = strtol(argArray[1],&test,10);
+        if(*test!='\0') {
+                myfprintf(fp,"%s \"%s\" is not a integer\n",
+                                COMMAND_RESPOND_ERROR,argArray[1]);
+                return -1;
+        }
+        song2 = strtol(argArray[2],&test,10);
+        if(*test!='\0') {
+                myfprintf(fp,"%s \"%s\" is not a integer\n",
+                                COMMAND_RESPOND_ERROR,argArray[2]);
+                return -1;
+        }
+        return swapSongsInPlaylist(fp,song1,song2);
+}
+
+int handleSeek(FILE * fp, unsigned int * permission, int argArrayLength,
+		char ** argArray) 
+{
+        int song;
+        int time;
+        char * test;
+
+        song = strtol(argArray[1],&test,10);
+        if(*test!='\0') {
+                myfprintf(fp,"%s \"%s\" is not a integer\n",
+                                COMMAND_RESPOND_ERROR,argArray[1]);
+                return -1;
+        }
+        time = strtol(argArray[2],&test,10);
+        if(*test!='\0') {
+                myfprintf(fp,"%s \"%s\" is not a integer\n",
+                                COMMAND_RESPOND_ERROR,argArray[2]);
+                return -1;
+        }
+        return seekSongInPlaylist(fp,song,time);
+}
+
+int handleListAllInfo(FILE * fp, unsigned int * permission, int argArrayLength,
+		char ** argArray) 
+{
+        char * directory = NULL;
+
+        if(argArrayLength==2) directory = argArray[1];
+        return printInfoForAllIn(fp,directory);
+}
+
+int handlePing(FILE * fp, unsigned int * permission, int argArrayLength, 
+		char ** argArray) 
+{
+        return 0;
+}
+
+int handlePassword(FILE * fp, unsigned int * permission, int argArrayLength, 
+		char ** argArray) 
+{
+	if(getPermissionFromPassword(argArray[1],permission)<0) {
+		myfprintf(fp,"%s incorrect password\n",COMMAND_RESPOND_ERROR);
+		return -1;
+	}
+
+	return 0;
+}
+
+int handleCrossfade(FILE * fp, unsigned int * permission, int argArrayLength, 
+		char ** argArray) 
+{
+        int time;
+        char * test;
+
+	if(argArrayLength==1) {
+		myfprintf(fp,"crossfade: %i\n",(int)(getPlayerCrossFade()));
+		return 0;
+	}
+
+        time = strtol(argArray[1],&test,10);
+        if(*test!='\0' || time<0) {
+                myfprintf(fp,"%s \"%s\" is not a integer >= 0\n",
+                                COMMAND_RESPOND_ERROR,argArray[1]);
+                return -1;
+        }
+
+	setPlayerCrossFade(time);
+
+	return 0;
+}
+
+void initCommands() {
+        commandList = makeList(free);
+
+        addCommand(COMMAND_PLAY        ,PERMISSION_CONTROL, 0, 1,handlePlay);
+        addCommand(COMMAND_STOP        ,PERMISSION_CONTROL, 0, 0,handleStop);
+        addCommand(COMMAND_PAUSE       ,PERMISSION_CONTROL, 0, 0,handlePause);
+        addCommand(COMMAND_STATUS      ,PERMISSION_READ,    0, 0,commandStatus);
+        addCommand(COMMAND_KILL        ,PERMISSION_ADMIN,  -1,-1,handleKill);
+        addCommand(COMMAND_CLOSE       ,0,                 -1,-1,handleClose);
+        addCommand(COMMAND_ADD         ,PERMISSION_ADD,     0, 1,handleAdd);
+        addCommand(COMMAND_DELETE      ,PERMISSION_CONTROL, 1, 1,handleDelete);
+        addCommand(COMMAND_PLAYLIST    ,PERMISSION_READ,    0, 0,handlePlaylist);
+        addCommand(COMMAND_SHUFFLE     ,PERMISSION_CONTROL, 0, 0,handleShuffle);
+        addCommand(COMMAND_CLEAR       ,PERMISSION_CONTROL, 0, 0,handleClear);
+        addCommand(COMMAND_SAVE        ,PERMISSION_CONTROL, 1, 1,handleSave);
+        addCommand(COMMAND_LOAD        ,PERMISSION_ADD,     1, 1,handleLoad);
+        addCommand(COMMAND_LSINFO      ,PERMISSION_READ,    0, 1,handleLsInfo);
+        addCommand(COMMAND_RM          ,PERMISSION_CONTROL, 1, 1,handleRm);
+        addCommand(COMMAND_PLAYLISTINFO,PERMISSION_READ,    0, 1,handlePlaylistInfo);
+        addCommand(COMMAND_FIND        ,PERMISSION_READ,    2, 2,handleFind);
+        addCommand(COMMAND_SEARCH      ,PERMISSION_READ,    2, 2,handleSearch);
+        addCommand(COMMAND_UPDATE      ,PERMISSION_ADMIN,   0, 0,handleUpdate);
+        addCommand(COMMAND_NEXT        ,PERMISSION_CONTROL, 0, 0,handleNext);
+        addCommand(COMMAND_PREVIOUS    ,PERMISSION_CONTROL, 0, 0,handlePrevious);
+        addCommand(COMMAND_LISTALL     ,PERMISSION_READ,    0, 1,handleListAll);
+        addCommand(COMMAND_VOLUME      ,PERMISSION_CONTROL, 1, 1,handleVolume);
+        addCommand(COMMAND_REPEAT      ,PERMISSION_CONTROL, 1, 1,handleRepeat);
+        addCommand(COMMAND_RANDOM      ,PERMISSION_CONTROL, 1, 1,handleRandom);
+        addCommand(COMMAND_STATS       ,PERMISSION_READ,    0, 0,handleStats);
+        addCommand(COMMAND_CLEAR_ERROR ,PERMISSION_CONTROL, 0, 0,handleClearError);
+        addCommand(COMMAND_LIST        ,PERMISSION_READ,    1, 2,handleList);
+        addCommand(COMMAND_MOVE        ,PERMISSION_CONTROL, 2, 2,handleMove);
+        addCommand(COMMAND_SWAP        ,PERMISSION_CONTROL, 2, 2,handleSwap);
+        addCommand(COMMAND_SEEK        ,PERMISSION_CONTROL, 2, 2,handleSeek);
+        addCommand(COMMAND_LISTALLINFO ,PERMISSION_READ,    0, 1,handleListAllInfo);
+        addCommand(COMMAND_PING        ,0,                  0, 0,handlePing);
+        addCommand(COMMAND_SETVOL      ,PERMISSION_CONTROL, 1, 1,handleSetVol);
+        addCommand(COMMAND_PASSWORD    ,0,                  1, 1,handlePassword);
+        addCommand(COMMAND_CROSSFADE   ,PERMISSION_CONTROL, 0, 1,handleCrossfade);
+
+        sortList(commandList);
+}
+
+void finishCommands() {
+        freeList(commandList);
+}
+
+int checkArgcAndPermission(CommandEntry * cmd, FILE *fp, 
+		unsigned int permission, int argc, char** argArray)
+{
+        int min = cmd->min + 1;
+        int max = cmd->max + 1;
+
+	if (cmd->reqPermission != (permission & cmd->reqPermission)) {
+                myfprintf(fp,"%s You don't have permission for \"%s\"\n",COMMAND_RESPOND_ERROR,cmd->cmd);
+                return -1;
+	}
+
+        if (min == 0) return 0;
+
+        if (min == max && max != argc) {
+                myfprintf(fp,"%s Wrong number of arguments for \"%s\"\n",COMMAND_RESPOND_ERROR,argArray[0]);
+                return -1;
+        }
+        else if (argc < min) {
+                myfprintf(fp,"%s too few arguments for \"%s\"\n",COMMAND_RESPOND_ERROR,argArray[0]);
+                return -1;
+        }
+        else if (argc > max && max /* != 0 */) {
+                myfprintf(fp,"%s too many arguments for \"%s\"\n",COMMAND_RESPOND_ERROR,argArray[0]);
+                return -1;
+        }
+        else return 0;
+}
+
+int processCommand(FILE * fp, unsigned int * permission, int argArrayLength, 
+		char ** argArray) 
+{
+        CommandEntry * cmd;
+
+        if(argArrayLength == 0) return 0;
+
+        if(!findInList(commandList, argArray[0],(void *)&cmd)) {
+                myfprintf(fp,"%s Unknown command \"%s\"\n",COMMAND_RESPOND_ERROR,
+                                argArray[0]);
+                return -1;
+        }
+
+        if(checkArgcAndPermission(cmd, fp, *permission, argArrayLength, 
+			argArray) < 0) 
+	{
+		return -1;
+	}
+
+        return cmd->handler(fp, permission, argArrayLength, argArray);
+}

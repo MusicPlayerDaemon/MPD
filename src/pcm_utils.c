@@ -1,0 +1,119 @@
+#include "pcm_utils.h"
+
+#include "mpd_types.h"
+#include "log.h"
+
+#include <string.h>
+#include <math.h>
+
+void pcm_changeBufferEndianness(char * buffer, int bufferSize, int bits) {
+	char temp;
+
+	switch(bits) {
+	case 16:
+		while(bufferSize) {
+			temp = *buffer;
+			*buffer = *(buffer+1);
+			*(buffer+1) = temp;
+			bufferSize-=2;
+		}
+		break;
+	}
+}
+
+void pcm_volumeChange(char * buffer, int bufferSize, AudioFormat * format,
+		int volume)
+{
+	mpd_sint32 temp32;
+	mpd_sint8 * buffer8 = (mpd_sint8 *)buffer;
+	mpd_sint16 * buffer16 = (mpd_sint16 *)buffer;
+
+	if(volume>=100) return;
+	
+	if(volume<=0) {
+		memset(buffer,0,bufferSize);
+		return;
+	}
+
+	switch(format->bits) {
+	case 16:
+		while(bufferSize>0) {
+			temp32 = *buffer16;
+			temp32*= volume;
+			temp32/=100;
+			*buffer16 = temp32>32767 ? 32767 : 
+					(temp32<-32768 ? -32768 : temp32);
+			buffer16++;
+			bufferSize-=2;
+		}
+		break;
+	case 8:
+		while(bufferSize>0) {
+			temp32 = *buffer8;
+			temp32*= volume;
+			temp32/=100;
+			*buffer8 = temp32>127 ? 127 : 
+					(temp32<-128 ? -128 : temp32);
+			buffer8++;
+			bufferSize--;
+		}
+		break;
+	default:
+		ERROR("%i bits not supported by pcm_volumeChange!\n",
+				format->bits);
+		exit(-1);
+	}
+}
+
+void pcm_add(char * buffer1, char * buffer2, size_t bufferSize1, 
+		size_t bufferSize2, AudioFormat * format)
+{
+	mpd_sint32 temp32;
+	mpd_sint8 * buffer8_1 = (mpd_sint8 *)buffer1;
+	mpd_sint8 * buffer8_2 = (mpd_sint8 *)buffer2;
+	mpd_sint16 * buffer16_1 = (mpd_sint16 *)buffer1;
+	mpd_sint16 * buffer16_2 = (mpd_sint16 *)buffer2;
+
+	switch(format->bits) {
+	case 16:
+		while(bufferSize1>0 && bufferSize2>0) {
+			temp32 = *buffer16_1;
+			temp32+= *buffer16_2;
+			*buffer16_1 = temp32>32767 ? 32767 : 
+					(temp32<-32768 ? -32768 : temp32);
+			buffer16_1++;
+			buffer16_2++;
+			bufferSize1-=2;
+			bufferSize2-=2;
+		}
+		if(bufferSize2>0) memcpy(buffer8_1,buffer8_2,bufferSize2);
+		break;
+	case 8:
+		while(bufferSize1>0 && bufferSize2>0) {
+			temp32 = *buffer8_1;
+			temp32+= *buffer8_2;
+			*buffer8_1 = temp32>127 ? 127 : 
+					(temp32<-128 ? -128 : temp32);
+			buffer8_1++;
+			buffer8_2++;
+			bufferSize1--;
+			bufferSize2--;
+		}
+		if(bufferSize2>0) memcpy(buffer8_1,buffer8_2,bufferSize2);
+		break;
+	default:
+		ERROR("%i bits not supported by pcm_add!\n",format->bits);
+		exit(-1);
+	}
+}
+
+void pcm_mix(char * buffer1, char * buffer2, size_t bufferSize1, 
+		size_t bufferSize2, AudioFormat * format, float portion1)
+{
+	float s = sin(M_PI_2*portion1);
+	s*=s;
+
+	pcm_volumeChange(buffer1,bufferSize1,format,(int)(s*100));
+	pcm_volumeChange(buffer2,bufferSize2,format,(int)((1-s)*100));
+	pcm_add(buffer1,buffer2,bufferSize1,bufferSize2,format);
+}

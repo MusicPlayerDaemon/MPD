@@ -1,0 +1,213 @@
+.TH "Music Player Daemon" 1
+.SH NAME
+MPD \- A daemon for playing music (mp3, ogg vorbis, and flac)
+.SH SYNOPSIS
+.B mpd
+.RI [ options ]
+.RI [ CONF_FILE ]
+.br
+.B mpd
+.RI [ options ]
+.I PORT MUSIC_DIR PLAYLIST_DIR LOG_FILE ERROR_FILE 
+.br
+.SH DESCRIPTION
+MPD is a daemon for playing music (mp3, ogg vorbis, and flac).  Music is played
+through the server's audio device.  The daemon stores info about all available
+music, and this info can be easily searched and retrieved.  Player control, info
+retrieval, and playlist management can all be managed remotely.
+
+MPD searches for a config file in ~/.mpdconf then /etc/mpd.conf or uses
+CONF_FILE.  Instead of using a config file, the minimal configuration paramters
+can be specified on the command line: PORT, MUSIC_DIR, PLAYLIST_DIR, LOG_FILE,
+ and ERROR_FILE.
+
+Read more about MPD on http://www.musicpd.org
+.SH OPTIONS
+.TP
+.B --create-db
+(Re)Crete the db file for mpd.
+.TP
+.BI --help
+Output a brief help message.
+.br
+.TP
+.BI --no-daemon
+Don't detach from console or redirect output to log files.
+.TP
+.BI --verbose
+Output verbose amounts of information to the logs
+.TP
+.BI --version
+Print version information.
+.SH PARAMETERS
+Below are a list of parameters that can be specified in the config file.  Each line in the config file should be of the form:
+.br
+parameter "value"
+.TP
+.B port <port>
+This specifies the port that MPD listens on. This parameter is required. This is typically 2100.
+.TP
+.B music_directory <directory>
+This specifies the directory where music is located.  This parameter is required.  The directory path should be an absolute path.
+.TP
+.B playlist_directory <directory>
+This specifies the directory where saved playlists are stored.  This parameter is required.  The directory path should be an absolute path.
+.TP
+.B log_file <file>
+This specifies where the log file should be located.  This parameter is required.  The file path should be an absolute path.
+.TP
+.B error_file <file>
+This specifies where the error file should be located.  This parameter is required.  The file path should be an absolute path.
+.TP
+.B log_level <default, secure, or verbose>
+This specifies how verbose logs are.  "default" is minimal logging, "secure" reports from what address a connection is opened, and when it is closed, and "verbose" records excessive amounts of information for debugging purposes.  The default is "default".
+.TP
+.B db_file <file>
+This specifies where the db file will be stored.  The file path should be an
+absolute path.  The default is ".mpddb" in the playlist directory.
+.TP
+.B filesystem_charset <charset>
+This specifies the character set  used for the filesystem.  A list of supported
+character sets can be obtained by running "iconv -l".  The default is
+determined from the locale when the db was originally created.
+.TP
+.B bind_to_address <ip address or hostname or any>
+This specifies which address MPD binds to and listens on.  The default is "any",
+which binds to all available addresses.
+.TP
+.B user <user>
+This specifies the user that mpd will run as, if set.
+.TP
+.B password <password@permissions>
+This specifies a password for access to mpd.  The format is 
+"password@permissions" where permissions is a comma delimmitted list composed
+of "read","add","control", and/or "admin".  "read" allows for reading of
+the database, displaying the current playlist, and current status of mpd.
+"add" allows for adding songs and loading playlists.  "control" allows
+for all other player and playlist manipulations.  "admin" allows the db
+to be updated and for the client to kill mpd.  More than one password can
+be specified.  An example of a password is "somePassword@read,add".
+.TP
+.B default_permissions <permissions>
+This specifies the permissions of a client that has not been authenticated using
+a password.  The format of permissions is specified n the description of the 
+"password" config paramter.  If not passwords are specified, the default is 
+"read,add,control,admin", otherwise it is "" (no permissions).
+.TP
+.B state_file <file>
+This specifies if a state file is used and where it is located.  The file path should be an absolute path.  The state of mpd will be saved to this file when mpd is terminated by a TERM signal or by the "kill" command.
+.TP
+.B connection_timeout <seconds>
+If a client does not send any new data in this time period, the connection is closed. The default is 60 seconds.
+.TP
+.B max_connections <int>
+This specifies the maximum number of clients that can be connected to MPD. The default is 5 connections.
+.TP
+.B mixer_type <oss or alsa>
+This specifies which mixer to use. The default is oss.
+.TP
+.B mixer_device <mixer dev>
+This specifies which mixer to use. The default for oss is /dev/mixer;
+the default for alsa is "hw:0".
+.TP
+.B mixer_control <string>
+This specifies which mixer control to use (sometimes referred to as the "device").  Examples of mixer controls are PCM, Line1, Master, etc.  An example for OSS is "Pcm", and an example for alsa is "PCM".
+.TP
+.B max_playlist_length <int>
+This specifies the maximum number of songs that can be in the playlist. The default is 4096 songs.
+.TP
+.B buffer_size <size in KB>
+This specifies the size of the buffer that mpd uses.  The default is 2048 kilobytes.
+.B buffer_before play <0-100%>
+This specifies the amount of buffer that will be filled before a song begins playing. The default is 25%.
+.TP
+.B max_command_list_size <size in KB>
+This specifies the maximum size a command list can be (in kilobytes). The default is 2048 kilobytes.
+.TP
+.B max_output_buffer_size <size in KB>
+This specifies the maximum size of the output buffer to a client (in kilobytes).
+The default is 2048 kilobytes.
+.TP
+.B ao_driver <ao plug-in>
+This specifies the ao plug-in to use for audio output.  Typical values for
+Linux include "oss" and "alsa09".  The default value is "default".
+.TP
+.B ao_driver_options <ao plug-in options>
+This specifies the options to use for the selected ao_driver.  For oss, the
+only option available is "dsp".  For alsa09, the available options are:
+"dev", "buf_size", and "periods".  Options are assigned using "=" and ";" is
+used to separate options.  An example for oss: "dsp=/dev/dsp".  An example for
+alsa09: "dev=hw:0,0;buf_size=4096".  The default value is "".
+.TP
+.B audio_write_size <size in bytes>
+This specifies how many bytes mpd writes to the audio device at once. The
+default is 1024.  This options is to work around a bug in older versions
+of libao on sound cards with very small buffers.
+.TP
+.B save_absolute_paths_in_playlists <yes or no>
+This specifies whether relative or absolute paths for song filenames are
+used when saving playlists.  The default value is "no".
+.SH EXAMPLES
+.TP
+Below is an example config file. (Note: '#' at the beginning of a line denotes
+a comment.  The '#' must be the first character/symbol on that line.)
+.br
+
+.br
+# required
+.br
+port 			"2100"
+.br
+music_directory 	"/home/shank/mp3"
+.br
+playlist_directory 	"/home/shank/playlists"
+.br
+log_file 		"/home/shank/mpd.log"
+.br
+error_file 		"/home/shank/mpd.error"
+.br
+
+.br
+# optional
+.br
+mixer_type		"oss"
+.br
+mixer_device 		"/dev/mixer"
+.br
+#mixer_type		"alsa"
+.br
+#mixer_device		"default"
+.br
+#ao_driver 		"oss"
+.br
+#ao_driver_options 	"dsp=/dev/dsp"
+.br
+max_playlist_length 	"4096"
+.br
+buffer_before_play 	"25%"
+.br
+#db_file		"/home/shank/playlists/.mpddb"
+.br
+#state_file		"/home/shank/playlists/.mpdstate"
+.br
+#user			"shank"
+.br
+connection_timeout 	"60"
+.br
+max_connections 	"5"
+.br
+max_command_list_size 	"2048"
+.br
+max_output_buffer_size 	"2048"
+.br
+save_absolute_paths_in_playlists "no"
+.br
+# log_level can be "default", "secure", "verbose"
+.br
+log_level		"default"
+.br
+# if bind_to_address is "any", MPD binds all addresses
+.br
+bind_to_address 	"any"
+.SH SEE ALSO
+mpc(1)

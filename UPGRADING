@@ -1,0 +1,30 @@
+                       Music Player Daemon (MPD) - UPGRADING
+
+Upgrading to 0.9.3
+------------------
+
+Wave support was added, so to have your wave files added, update the db (mpc
+update).  
+
+Also, song lengths are now stored in the db.  To get this stuff
+added to the db, you will need to recreate the db from scratch.  To do this,
+run mpd with the "--create-db" commandline option. 
+
+Upgrading to 0.9.0
+------------------
+
+The "stop_on_error" config parameter was removed, so be sure to remove this
+parameter from your config file.
+
+Upgrading to 0.8.x
+------------------
+
+If you have FLACs, then to have them added to your list of available music,
+just use "update".
+
+Upgrading from 0.5.x to 0.6.x
+-----------------------------
+If you have not compiled MPD with "make ogg", then nothing is needed.
+
+If you compiled with "make ogg", just use "update" (available via the phpMp
+interface) to add your OGGs to MPD's list of available music.

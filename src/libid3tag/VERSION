@@ -1,0 +1,6 @@
+0.15.0b
+configure.ac:24
+id3tag.h:334-337
+msvc++/config.h:57
+
+Makefile.am:63-65

@@ -1,0 +1,142 @@
+ver 0.9.4 (2004/1/21)
+1) Fix a bug where updated tag info wasn't being detected
+2) Set the default audio write size to 1024 bytes (should decrease cpu load a bit on some machines).
+3) Make audio write size configurable via "audio_write_size" config option
+4) Tweak output buffer size for connections by detecting the kernel output buffer size.
+
+ver 0.9.3 (2003/10/31)
+1) Store total time/length of songs in db and display in *info commands
+2) Display instantaneous bitrate in status command
+3) Add Wave Support using libaudiofile (Patch from normalperson)
+4) Command code cleanup (Patch from tw-nym)
+5) Optimize listing of playlists (10-100x faster)
+6) Optimize interface output (write in 4kB chunks instead of on every '\n')
+7) Fix bug that prevented rm command from working
+8) Fix bug where deleting current song skips the next song
+9) Use iconv to convert vorbis comments from UTF-8 to Latin1
+
+ver 0.9.2 (2003/10/6)
+1) Fix FreeBSD Compilation Problems
+2) Fix bug in move command
+3) Add mixer_control options to configure which mixer control/device mpd controls
+4) Randomize on play -1
+5) Fix a bug in toggling repeat off and at the end of the playlist
+
+ver 0.9.1 (2003/9/30)
+1) Fix a statement in the middle of declarations in listen.c, causes error for
+gcc 2.7
+
+ver 0.9.0 (2003/9/30)
+1) Random play mode
+2) Alsa Mixer Support
+3) Save and Restore "state"
+4) Default config file locations (.mpdconf and /etc/mpd.conf)
+5) Make db file locations configurable
+6) Move songs around in the playlist
+7) Gapless playback
+8) Use Xing tags for mp3's
+9) Remove stop_on_error
+10) Seeking support
+11) Playlists can be loaded and deleted from subdirectories
+12) Complete rewrite of player layer (fork()'s only once, opens and closes
+audio device as needed).
+13) Eliminate use and dependence of SIGIO
+14) IPv6 support
+15) Solaris compilations fixes
+16) Support for different log levels
+17) Timestamps for log entries
+18) "user" config parameter for setuid (patch from Nagilum)
+19) Other misc features and bug fixes
+
+ver 0.8.7 (2003/9/3)
+1) Fix a memory leak.  When closing a interface, was called close() on the fd
+instead of calling fclose() on the fp that was opened with fdopen().
+
+ver 0.8.6 (2003/8/25)
+1) Fix a memory leak when a buffered existed, and a connection was unexpectedly closed, and i wasn't free'ing the buffer apropriatly.
+
+ver 0.8.5 (2003/8/17)
+1) Fix a bug where an extra end of line is returned when attempting to play a
+non existing file.  This causes parsing errors for clients.
+
+ver 0.8.4 (2003/8/13)
+1) Fix a bug where garbage is returned with errors in "list" command
+
+ver 0.8.3 (2003/8/12) 
+1) Fix a compilation error on older linux systems
+2) Fix a bug in searching by title
+3) Add "list" command
+4) Add config options for specifying libao driver/plugin and options
+5) Add config option to specify which address to bind to
+6) Add support for loading and saving absolute pathnames in saved playlists
+7) Playlist no longer creates duplicate entries for song data (more me
+efficient)
+8) Songs deleted from the db are now removed for the playlist as well
+
+ver 0.8.2 (2003/7/22)
+1) Increased the connection que for listen() from 0 to 5
+2) Cleanup configure makefiles so that mpd uses MPD_LIBS and MPD_CFLAGS
+rather than LIBS and CFLAGS
+3) Put a cap on the number of commands per command list
+4) Put a cap on the maximum number of buffered output lines
+5) Get rid of TIME_WAIT/EADDRINUSE socket problem
+6) Use asynchronious IO (i.e. trigger SIGIO instead so we can sleep in
+select() calls longer)
+
+ver 0.8.1 (2003/7/11)
+1) FreeBSD fixes
+2) Fix for rare segfault when updating
+3) Fix bug where client was being hungup on when done playing current song
+4) Fix bug when playing flac's where it incorrectly reports an error
+5) Make stop playlist on error configurable
+6) Configure checks for installed libmad and libid3tag and uses those if found
+7) Use buffer->finished in *_decode's instead of depending on catching signals
+
+ver 0.8.0 (2003/7/6)
+1) Flac support
+2) Make playlist max length configurable
+3) New backward compatible status (backward compatible for 0.8.0 on)
+4) listall command now can take a directory as an argument
+5) Buffer rewritten to use shared memory instead of sockets
+6) Playlist adding done using db
+7) Add sort to list, and use binary search for finding
+8) New "stats" command
+9) Command list (for faster adding of large batches of files)
+10) Add buffered chunks before play
+11) Useful error reporting to clients (part of status command)
+12) Use libid3tag for reading id3 tags (more stable)
+13) Non-blocking output to clients
+14) Fix bug when removing items from directory
+15) Fix bug when playing mono mp3's
+16) Fix bug when attempting to delete files when using samba
+17) Lots of other bug fixes I can't remember
+
+ver 0.7.0 (2003/6/20)
+1) use mad instead of mpg123 for mp3 decoding
+2) volume support
+3) repeate playlist support
+4) use autoconf/automake (i.e. "configure")
+5) configurable max connections
+
+ver 0.6.2 (2003/6/11)
+1) Buffer support for ogg
+2) new config file options: "connection_timeout" and "mpg123_ignore_junk"
+3) new commands: "next", "previous", and "listall"
+Thanks to Niklas Hofer for "next" and "previous" patches!
+4) Search by filename
+5) bug fix for pause when playing mp3's
+
+ver 0.6.1 (2003/5/29)
+1) Add conf file support
+2) Fix a bug when doing mp3stop (do wait3(NULL,WNOHANG|WUNTRACED,NULL))
+3) Fix a bug when fork'ing, fflush file buffers before forking so the
+child doesn't print the same stuff in the buffer.
+
+ver 0.6.0 (2003/5/25)
+1) Add ogg vorbis support
+2) Fix two bugs relating to tables, one for search by title, and one where we
+freed the tables before directories, causing a segfault
+3) The info command has been removed.
+
+ver 0.5.0-0.5.2
+Initial release(s).  Support for MP3 via mpg123

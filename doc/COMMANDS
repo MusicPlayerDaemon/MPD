@@ -1,0 +1,163 @@
+                         Music Player Daemon - Commands
+
+This document is intended for client developers, not end users.
+
+Format:
+-------
+
+If arguments contain spaces, they should be surrounded by double quotation 
+marks, ".
+
+command <type arg1> <type arg2> ...
+	explanation: w/ arg1 and arg2
+
+Command Completion:
+-------------------
+
+A command returns "OK\n" on completion or "ACK some error\n" on failure.
+These denote the end of command execution.
+
+Commands:
+---------
+
+add <string file>
+	add the file _file_ to the playlist
+
+clear	
+	clears the current playlist
+
+clearerror	
+	clear the current error message in status
+	(this is also accomplished by any command that starts playback)
+
+close
+	close the connection with the MPD
+
+delete <int song>
+	delete _song_ from playlist
+
+find <string type> <string what>
+	finds songs in the db that are exactly _what_
+	_type_ should be "album", "artist", or "title"
+	_what_ is what to find
+
+kill
+	kill MPD
+
+list <string type> <string arg1>
+	list all tags of _type_ 
+	_type_ should be "album" or "artist"
+	_arg1_ is an optional parameter when type is album, this specifies
+		to list albums by a artist, where artist is specified with
+		arg1
+
+listall <string directory>
+	lists all songs and directories in _directory_ (recursively)
+	_directory_ is optional
+
+load <string name>
+	loads the playlist _name_.m3u from the playlist directory
+
+ls <string directory>
+	list files in _directory_.  _directory_ is optional.
+	NOTE: us this only for debugging, not meant to be used by a client.
+	instead use 'lsinfo'
+
+lsinfo <string directory>
+	list contents of _directory_, from the db.  _directory_ is optional
+
+move <int from> <int to>
+	move song at _from_ to _to_ in the playlist
+
+next
+	plays next song in playlist
+
+pause
+	pause/resume playing
+
+play <int song>
+	begin playing playlist at song number _song_, _song_ is optional
+
+playlist
+	displays the current playlist
+	NOTE: do not use this, instead use 'playlistinfo'
+
+playlistinfo
+	displays information about the current playlist
+
+previous
+	plays previous song in playlist
+
+random <int state>
+	set random state to _state_, _state_ should be 0 or 1
+
+repeat <int state>
+	set repeat state to _state_, _state_ should be 0 or 1
+
+rm <string name>
+	removes the playlist <name>.m3u from the playlist directory
+
+save <string name>
+	saves the current playlist to _name_.m3u in the playlist directory
+
+search <string type> <string what>
+	same as "find" but searches for any song that contain _what_
+	search is not case sensitive
+
+seek <int song> <int time>
+	seeks to the position _time_ (in seconds) of entry _song_ in the 
+	playlist
+
+shuffle
+	shuffles the current playlist
+
+stats
+	display stats
+	artists: number of artists
+	albums: number of albums
+	songs: number of songs
+	uptime: daemon uptime in seconds
+	db_update: last db update in UNIX time
+	playtime: time length of music played
+	songs_played: total number of songs played
+
+status
+	reports current status of player, and volume level.
+	volume: (0-100).
+	repeat: (0 or 1)
+	playlist: (31-bit unsigned integer, the playlist version number)
+	playlistlength: (integer, the length of the playlist)
+	state: ("play", "stop", or "pause")
+	song: (current song playing/paused, playlist song number)
+	time: <int elapsed>:<time total> (of current playing/paused song)
+	bitrate: <int bitrate> (instantaneous bitrate in kbps)
+	error: if there is an error, returns message here
+
+stop
+	stop playing
+
+swap <int song1> <int song2>
+	swap positions of _song1_ and _song2_
+
+update
+	searches mp3 directory for new music and removes old music from the db
+
+volume <int change>
+	change volume by amount _change_
+
+COMMAND LIST
+------------
+
+To facilitate faster adding of files, etc, you can pass a list of commands all
+at once using a command list.  The command list beings with:
+
+command_list_begin
+
+And ends with:
+
+command_list_end
+
+It does not execute any commands until the list has ended.  The return
+value is whatever the return for a list of commands is.  On success
+for all commands, OK is returned.  If a command fails, no more commands
+are executed and the appropriate ACK error is returned.

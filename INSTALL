@@ -1,0 +1,99 @@
+                       Music Player Daemon (MPD) - INSTALL
+
+Requirements
+------------
+
+libao - http://www.vorbis.com/download_unix.psp
+(This comes with most/all distributions. Make sure you have both
+the ao libs and development packages for your distribution installed.
+For Red Hat 8.0, the necessary packages are: libao and libao-devel)
+
+zlib - http://www.gzip.org/zlib
+(This comes with all distributions.  Make sure you have bot the zlib libs
+and development packages for your distribution installed.  For Red hat,
+the necessary packages are: zlib and zlib-devel)
+
+Optional
+--------
+
+Ogg Vorbis - http://www.xiph.org/ogg/vorbis/
+(This comes with most/all distributions.  Make sure you have both the
+ogg and vorbis libs as well as the development packages for your
+distribution installed.  For Red Hat 8.0, the necessary packages are:
+libogg, libogg-devel, libvorbis, and libvorbis-devel).
+
+Flac - http://flac.sf.net
+For Flac support, you need Flac 1.1.0 or greater.
+
+Download
+--------
+
+Get the latest release from of MPD from http://www.musicpd.org
+
+Compile
+-------
+
+1) unzip and untar the archive
+
+$ tar zxvf mpd-x.x.x.tar.gz
+
+2) change to directory created
+
+$ cd mpd-x.x.x
+
+3) Run configure script (this will determine what dependencies you have)
+
+$ ./configure
+
+4) Compile
+
+$ make
+
+Install (Optional)
+-------
+
+(as root)
+$ make install
+
+Run
+---
+
+1) run mpd:
+<port>: port number daemon listens on (if running as a user, this should be 
+	greater than 1024)
+<mp3 directory>:  directory containing mp3's
+<playlist directory>: directory where playlists will be stored (and .mpddb will
+	be placed)
+<mpd log>: log file for mpd
+<mpd err>: error log file for mpd
+
+$ mpd <port> <mp3 directory> <playlist directory> <mpd log> <mpd err>
+
+example where mpd executable is in mpd-x.x.x directory:
+$ mpd-x.x.x/mpd 2100 mp3 playlists mpd.log mpd.err
+
+Note: The first time you run mpd, it will "explore" your mp3 directory for
+mp3's.
+
+Also, mpd can alternatively use config file.  In this case,
+run mpd like this:
+
+$ mpd <config file>
+
+(if no config file is specified, mpd's looks for ~/.mpdconf then /etc/mpd.conf)
+
+an example would be:
+
+$ mpd playlists/.mpdconf
+
+A sample config file is included with the source of MPD, mpdconf.example .
+
+Using MPD
+---------
+
+You can download a web interface (phpMp) to MPD at 
+http://www.musicpd.org .
+
+Also, several other clients can be found for MPD at http://www.musicpd.org .
+
+MPD can be interfaced directly using telnet (see COMMANDS, if you are brave).
