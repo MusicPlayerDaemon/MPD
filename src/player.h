@@ -22,6 +22,7 @@
 #include "../config.h"
 
 #include "mpd_types.h"
+#include "song.h"
 
 #include <stdio.h>
 #include <sys/param.h>
@@ -66,6 +67,7 @@ typedef struct _PlayerControl {
 	volatile float beginTime;
 	volatile float totalTime;
 	volatile float elapsedTime;
+        volatile float fileTime;
 	char file[MAXPATHLEN+1];
 	char erroredFile[MAXPATHLEN+1];
 	volatile mpd_sint8 queueState;
@@ -85,7 +87,7 @@ void clearPlayerPid();
 
 void player_sigChldHandler(int pid, int status);
 
-int playerPlay(FILE * fp, char * utf8file);
+int playerPlay(FILE * fp, Song * song);
 
 int playerSetPause(FILE * fp, int pause);
 
@@ -115,7 +117,7 @@ int getPlayerError();
 
 int playerInit();
 
-int queueSong(char * utf8file);
+int queueSong(Song * song);
 
 int getPlayerQueueState();
 
@@ -125,7 +127,7 @@ void playerQueueLock();
 
 void playerQueueUnlock();
 
-int playerSeek(FILE * fp, char * utf8file, float time);
+int playerSeek(FILE * fp, Song * song, float time);
 
 void setPlayerCrossFade(float crossFadeInSeconds);
 

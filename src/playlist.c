@@ -386,8 +386,9 @@ void queueNextSongInPlaylist() {
 				playlist.queued,
 				playlist.songs[playlist.order[
 				playlist.queued]]->utf8url);
-		if(queueSong(playlist.songs[playlist.order[
-				playlist.queued]]->utf8url)<0) {
+		if(queueSong(playlist.songs[playlist.order[playlist.queued]]) <
+                                0) 
+                {
 			playlist.queued = -1;
 			playlist_queueError = 1;
 		}
@@ -401,8 +402,9 @@ void queueNextSongInPlaylist() {
 				playlist.queued,
 				playlist.songs[playlist.order[
 				playlist.queued]]->utf8url);
-		if(queueSong(playlist.songs[playlist.order[
-				playlist.queued]]->utf8url)<0) {
+		if(queueSong(playlist.songs[playlist.order[playlist.queued]]) <
+				0) 
+                {
 			playlist.queued = -1;
 			playlist_queueError = 1;
 		}
@@ -660,9 +662,7 @@ int playPlaylistOrderNumber(FILE * fp, int orderNum) {
 	DEBUG("playlist: play %i:\"%s\"\n",orderNum,
 			(playlist.songs[playlist.order[orderNum]])->utf8url);
 
-	if(playerPlay(fp,(playlist.songs[playlist.order[orderNum]])->
-			utf8url)<0) 
-	{
+	if(playerPlay(fp,(playlist.songs[playlist.order[orderNum]])) < 0) {
 		stopPlaylist(fp);
 		return -1;
 	}
@@ -1220,6 +1220,6 @@ int seekSongInPlaylist(FILE * fp, int song, float time) {
 		if(playPlaylistOrderNumber(fp,i)<0) return -1;
 	}
 
-	return playerSeek(fp,playlist.songs[playlist.order[i]]->utf8url,time);
+	return playerSeek(fp, playlist.songs[playlist.order[i]], time);
 }
 /* vim:set shiftwidth=4 tabstop=8 expandtab: */

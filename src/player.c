@@ -186,7 +186,7 @@ int playerGetSuffix(char * utf8file) {
         return -1;
 }
 
-int playerPlay(FILE * fp, char * utf8file) {
+int playerPlay(FILE * fp, Song * song) {
 	PlayerControl * pc = &(getPlayerData()->playerControl);
 	int decodeType;
 
@@ -204,7 +204,7 @@ int playerPlay(FILE * fp, char * utf8file) {
 		}
 	}*/
 	
-	decodeType = playerGetDecodeType(utf8file);
+	decodeType = playerGetDecodeType(song->utf8url);
 	if(decodeType < 0) {
 		strncpy(pc->erroredFile,pc->file,MAXPATHLEN);
 		pc->erroredFile[MAXPATHLEN] = '\0';
@@ -212,12 +212,15 @@ int playerPlay(FILE * fp, char * utf8file) {
 		return 0;
 	}
 	pc->decodeType = decodeType;
-        pc->fileSuffix = playerGetSuffix(utf8file);
+        pc->fileSuffix = playerGetSuffix(song->utf8url);
+        if(song->tag) pc->fileTime = song->tag->time;
+        else pc->fileTime = 0;
 
-        if(isRemoteUrl(utf8file)) {
-                strncpy(pc->file,utf8file,MAXPATHLEN);
+        if(isRemoteUrl(song->utf8url)) {
+                strncpy(pc->file, song->utf8url, MAXPATHLEN);
         }
-	else strncpy(pc->file,rmp2amp(utf8ToFsCharset(utf8file)),MAXPATHLEN);
+	else strncpy(pc->file, rmp2amp(utf8ToFsCharset(song->utf8url)),
+                        MAXPATHLEN);
 	pc->file[MAXPATHLEN] = '\0';
 
 	pc->play = 1;
@@ -247,9 +250,9 @@ int playerStop(FILE * fp) {
 
 void playerKill() {
 	int pid;
-	PlayerControl * pc = &(getPlayerData()->playerControl);
+	/*PlayerControl * pc = &(getPlayerData()->playerControl);
 
-	/*playerStop(stderr);
+	playerStop(stderr);
 	playerCloseAudio(stderr);
 	if(player_pid>0 && pc->closeAudio) sleep(1);*/
 
@@ -357,21 +360,24 @@ void playerCloseAudio() {
 	}
 }
 
-int queueSong(char * utf8file) {
+int queueSong(Song * song) {
 	PlayerControl * pc = &(getPlayerData()->playerControl);
 	int decodeType;
 
 	if(pc->queueState==PLAYER_QUEUE_BLANK) {
-                if(isRemoteUrl(utf8file)) {
-                        strncpy(pc->file,utf8file,MAXPATHLEN);
+                if(isRemoteUrl(song->utf8url)) {
+                        strncpy(pc->file, song->utf8url, MAXPATHLEN);
                 }
-	        else strncpy(pc->file,rmp2amp(utf8ToFsCharset(utf8file)),MAXPATHLEN);
+	        else strncpy(pc->file, rmp2amp(utf8ToFsCharset(song->utf8url)),
+                                MAXPATHLEN);
 		pc->file[MAXPATHLEN] = '\0';
 
-		decodeType = playerGetDecodeType(utf8file);
+		decodeType = playerGetDecodeType(song->utf8url);
 		if(decodeType < 0) return -1;
 		pc->decodeType = decodeType;
-                pc->fileSuffix = playerGetSuffix(utf8file);
+                pc->fileSuffix = playerGetSuffix(song->utf8url);
+                if(song->tag) pc->fileTime = song->tag->time;
+                else pc->fileTime = 0;
 
 		pc->queueState = PLAYER_QUEUE_FULL;
 		return 0;
@@ -412,7 +418,7 @@ void playerQueueUnlock() {
 	}
 }
 
-int playerSeek(FILE * fp, char * utf8file, float time) {
+int playerSeek(FILE * fp, Song * song, float time) {
 	PlayerControl * pc = &(getPlayerData()->playerControl);
 	char * file;
 	int decodeType;
@@ -423,18 +429,21 @@ int playerSeek(FILE * fp, char * utf8file, float time) {
 		return -1;
 	}
 
-	if(isRemoteUrl(utf8file)) file = utf8file;
-        else file = rmp2amp(utf8ToFsCharset(utf8file));
+	if(isRemoteUrl(song->utf8url)) file = song->utf8url;
+        else file = rmp2amp(utf8ToFsCharset(song->utf8url));
 	if(strcmp(pc->file,file)!=0) {
-		decodeType = playerGetDecodeType(utf8file);
+		decodeType = playerGetDecodeType(song->utf8url);
 		if(decodeType < 0) {
 			myfprintf(fp,"%s unknown file type: %s\n",
-				COMMAND_RESPOND_ERROR, utf8file);
-			ERROR("playerSeek: unknown file type: %s\n", utf8file);
+				COMMAND_RESPOND_ERROR, song->utf8url);
+			ERROR("playerSeek: unknown file type: %s\n", 
+                                        song->utf8url);
 			return -1;
 		}
 		pc->decodeType = decodeType;
-                pc->fileSuffix = playerGetSuffix(utf8file);
+                pc->fileSuffix = playerGetSuffix(song->utf8url);
+                if(song->tag) pc->fileTime = song->tag->time;
+                else pc->fileTime = 0;
 
 		strncpy(pc->file,file,MAXPATHLEN);
 		pc->file[MAXPATHLEN] = '\0';
