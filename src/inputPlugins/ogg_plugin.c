@@ -320,7 +320,8 @@ MpdTag * oggTagDup(char * file) {
 				stripReturnChar(ret->track);
 			}
 		}
-		free(temp);
+
+		comments++;
 	}
 
 	ov_clear(&vf);
