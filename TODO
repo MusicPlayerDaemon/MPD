@@ -1,25 +1,24 @@
-1) resampling audio for compatibility, and better gapless/crossfading
-	a) write bit conversion stuff (8->16 and 24->16)
-	b) mono to stereo conversion
-	c) default audio format is (44.1khz, 16-bit, stereo)
-	d) option to set default sampling frequency
-	e) abitility to disable resampling and audio format conversion
-
-2) non-blocking (for other clients) update
-	k) when bg-update, have parent print out new old stuff to log on 
-		reading db, not the child
+1) non-blocking (for other clients) update
 	n) mpd command for rereading db
 	o) rewrite update functions to indicate if something was updated, then
 	 	when update process returns, indicate wheater db was updated
 		and should be reread by parent process
 	p) set error: in status when an error occurs during update
 
-3) cleanup main()
+2) cleanup main()
 
-4) crosslink "list" stuff, for example, artists are crosslinked to alubms and 
+3) resampling audio for compatibility, and better gapless/crossfading
+	a) write bit conversion stuff (8->16 and 24->16)
+	b) mono to stereo conversion
+	c) default audio format is (44.1khz, 16-bit, stereo)
+	d) option to set default sampling frequency
+	e) abitility to disable resampling and audio format conversion
+
+4) when writing combined interface for all decodes to use, be sure to add a 
+common function and abstrct dealing with DecoderControl * and put
+cycleLogFiles in there, so we cycleLogFiles while decoding, not just when 
+decoding has stopped.
+
+5) crosslink "list" stuff, for example, artists are crosslinked to alubms and 
 vice versa, this way you can do list album artists or list artist albums, this 
 will make life easier when we add genre and other metadata
-
-5) when writing combined interface for all decodes to use, be sure to add a 
-common function and abstrct dealing with DecoderControl * and put
-cycleLogFiles in there, so we cycleLogFiles while decoding, not just when decoding has stopped.
