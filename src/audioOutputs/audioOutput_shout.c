@@ -154,7 +154,7 @@ static int myShout_initDriver(AudioOutput * audioOutput, ConfigParam * param) {
 			exit(EXIT_FAILURE);
 		}
 	}
-	else public = 1;
+	else public = 0;
 
 	blockParam = getBlockParam(param, "user");
 	if(blockParam) user = blockParam->value;
