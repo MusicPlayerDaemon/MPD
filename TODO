@@ -4,8 +4,6 @@
 
 *) Cleanup Config File Code
 
-*) Steal resampling code from ices (i think this code works only for 16-bit)
-
 *) Optimize read() on clients
 
 *) rewrite saved playlist code
