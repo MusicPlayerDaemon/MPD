@@ -32,9 +32,6 @@
 	*) failing to read/write db 
 	*) stat'ing errors for music and playlist directory
 
-*) make libao optional during configure, but check that some form of audioOutput
-	is enabled (either oss, shout, or ao)
-
 *) Cleanup Config File Code
 
 *) Handle mp1 and mp2 files (including mp2's that are disguised as mp3's with 

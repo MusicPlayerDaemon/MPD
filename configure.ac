@@ -43,7 +43,7 @@ AC_ARG_ENABLE(mp3,[  --disable-mp3     disable mp3 support],,enable_mp3=yes)
 AC_ARG_ENABLE(aac,[  --disable-aac     disable AAC support],,enable_aac=yes)
 AC_ARG_ENABLE(audiofile,[  --disable-audiofile disable audiofile support, disables wave support],,enable_audiofile=yes)
 AC_ARG_ENABLE(mod,[  --enable-mod     enable MOD support],enable_mod=yes,)
-AC_ARG_ENABLE(mpc,[  --disable-mpc     disable MPC support],,enable_mpc=yes)
+AC_ARG_ENABLE(mpc,[  --disable-mpc     disable musepack (MPC) support],,enable_mpc=yes)
 AC_ARG_ENABLE(id3,[  --disable-id3     disable id3 support],,enable_id3=yes)
 AC_ARG_ENABLE(mpd_mad,[  --enable-mpd-mad     use mpd libmad],use_mpd_mad=yes,)
 AC_ARG_ENABLE(mpd_id3tag,[  --enable-mpd-id3tag    use mpd libid3tag],use_mpd_id3tag=yes,)
@@ -115,7 +115,13 @@ if test x$enable_shout = xyes; then
 	XIPH_PATH_SHOUT([AC_DEFINE(HAVE_SHOUT, 1, [Define to enable libshout support]) MPD_LIBS="$MPD_LIBS $SHOUT_LIBS" MPD_CFLAGS="$MPD_CFLAGS $SHOUT_CFLAGS"], enable_shout=no)
 fi
 
-AC_CHECK_HEADER(sys/soundcard.h,[enable_oss=yes;AC_DEFINE(HAVE_OSS,1,[Define to enable OSS])],[AC_MSG_WARN(Soundcard headers not found -- disabling OSS support);enable_oss=no])
+if test x$enable_oss = xyes; then
+	AC_CHECK_HEADER(sys/soundcard.h,[enable_oss=yes;AC_DEFINE(HAVE_OSS,1,[Define to enable OSS])],[AC_MSG_WARN(Soundcard headers not found -- disabling OSS support);enable_oss=no])
+fi
+
+if test x$enable_ao = xno && test x$enable_oss = xno && test x$enable_shout = xno; then
+	AC_MSG_ERROR("Cannot compile without an output target")
+fi
 
 if test x$enable_alsa = xyes; then
 	AM_PATH_ALSA(0.9.0, , enable_alsa=no)
@@ -619,9 +625,9 @@ else
 fi
 
 if test x$enable_mpc = xyes; then
-	echo "MPC support ...................enabled"
+	echo "musepack (MPC) support ........enabled"
 else
-	echo "MPC support ...................disabled"
+	echo "musepack (MPC) support ........disabled"
 fi
 
 if test x$enable_mod = xyes; then
