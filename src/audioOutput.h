@@ -40,6 +40,8 @@ typedef int (* AudioOutputPlayFunc) (AudioOutput * audioOutput,
 
 typedef void (* AudioOutputCloseDeviceFunc) (AudioOutput * audioOutput);
 
+typedef int (* AudioOutputKeepAliveFunc) (AudioOutput * audioOutput, int ms);
+
 struct _AudioOutput {
 	int open;
 
@@ -47,17 +49,20 @@ struct _AudioOutput {
         AudioOutputOpenDeviceFunc openDeviceFunc;
         AudioOutputPlayFunc playFunc;
         AudioOutputCloseDeviceFunc closeDeviceFunc;
+	AudioOutputKeepAliveFunc keepAliveFunc;
 
         void * data;
 };
 
 typedef struct _AudioOutputPlugin {
 	char * name;
+
         AudioOutputInitDriverFunc initDriverFunc;
         AudioOutputFinishDriverFunc finishDriverFunc;
         AudioOutputOpenDeviceFunc openDeviceFunc;
         AudioOutputPlayFunc playFunc;
         AudioOutputCloseDeviceFunc closeDeviceFunc;
+	AudioOutputKeepAliveFunc keepAliveFunc;
 } AudioOutputPlugin;
 
 void initAudioOutputPlugins();
@@ -71,5 +76,6 @@ int openAudioOutput(AudioOutput * audioOutput, AudioFormat * audioFormat);
 int playAudioOutput(AudioOutput * audioOutput, char * playChunk, int size);
 void closeAudioOutput(AudioOutput * audioOutput);
 void finishAudioOutput(AudioOutput * audioOutput);
+int keepAudioOutputAlive(AudioOutput * audioOutput, int ms);
 
 #endif

@@ -321,7 +321,7 @@ static int shout_play(AudioOutput * audioOutput, char * playChunk, int size) {
 		}
 	}
 
-	vorbis_analysis_wrote(&(sd->vd), size/4);
+	vorbis_analysis_wrote(&(sd->vd), samples);
 
 	while(1 == vorbis_analysis_blockout(&(sd->vd), &(sd->vb))) {
 		vorbis_analysis(&(sd->vb), NULL);

@@ -306,7 +306,7 @@ size_t pcm_sizeOfOutputBufferForAudioFormatConversion(AudioFormat * inFormat,
 			outSize = (outSize >> 1) << 2;
 			break;
 		case 2:
-			//outSize >>= 1;
+			outSize >>= 1;
 			break;
 		}
 	}
