@@ -1098,6 +1098,7 @@ int loadPlaylist(FILE * fp, char * utf8file) {
 	char * parent = parentPath(temp);
 	int parentlen = strlen(parent);
 	char * erroredFile = NULL;
+	int tempInt;
 
 	strcpy(rfile,temp);
 	strcat(rfile,".");
@@ -1120,7 +1121,8 @@ int loadPlaylist(FILE * fp, char * utf8file) {
 		return -1;
 	}
 
-	while((s[slength] = fgetc(fileP))!=EOF) {
+	while((tempInt = fgetc(fileP))!=EOF) {
+		s[slength] = tempInt;
 		if(s[slength]=='\n' || s[slength]=='\0') {
 			s[slength] = '\0';
 			if(strncmp(s,musicDir,strlen(musicDir))==0) {
