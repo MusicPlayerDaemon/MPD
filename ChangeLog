@@ -1,3 +1,16 @@
+ver 0.11.5 (2004/11/1a
+1) New id3v1_ecnoding config option to configure the id3v1 tag encoding (patch from dottemag)
+2) Strip '\r' from m3u playlists (thank you windows)
+3) Use random() instead of rand() for playlist randomizing
+4) Fix a bug trying skipping some commented lines in m3u playlist files
+5) Fix a bug when fetching metadata from streams that may cause certain weirdnesses
+6) Fix a bug where replaygain preamp was used on files w/o replaygain tags
+7) Fix a busy loop when trying to prebuffer a nonexistant or missing stream
+8) Fix a bug in forgetting to remove leading ' ' in content-type for http streams
+9) Check for ice-name in http headers
+10) Be sure the strip all '\n' chars in tags
+11) Set $HOME env variable when setuid'ing, this should fix the /root/.mcop errors triggered by arts/libao
+
 ver 0.11.4 (2004/7/26)
 1) Fixed a segfault when decoding mp3's with corrupt id3v2 tags
 2) Fixed a memory leak when encountering id3v2 tags in mp3 decoder
