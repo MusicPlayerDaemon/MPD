@@ -54,6 +54,7 @@ char * mpdTagItemKeys[TAG_NUM_OF_ITEM_TYPES] =
 };
 
 static mpd_sint8 ignoreTagItems[TAG_NUM_OF_ITEM_TYPES];
+static char * id3v1_encoding = NULL;
 
 void initTagConfig() {
 	int quit = 0;
@@ -62,6 +63,11 @@ void initTagConfig() {
 	char * c;
 	ConfigParam * param;
 	int i;
+
+	param = getConfigParam(CONF_ID3V1_ENCODING);
+	if(param) id3v1_encoding = param->value;
+
+	/* parse the "metadata_to_use" config parameter below */
 	
 	memset(ignoreTagItems, 0, TAG_NUM_OF_ITEM_TYPES);
 
@@ -115,6 +121,7 @@ MpdTag * getID3Info(struct id3_tag * tag, char * id, int type, MpdTag * mpdTag)
 	struct id3_frame const * frame;
 	id3_ucs4_t const * ucs4;
 	id3_utf8_t * utf8;
+	id3_latin1_t * latin1;
 	union id3_field const * field;
 	unsigned int nstrings;
 	int i;
@@ -133,7 +140,18 @@ MpdTag * getID3Info(struct id3_tag * tag, char * id, int type, MpdTag * mpdTag)
 			ucs4 = id3_genre_name(ucs4);
 		}
 
-		utf8 = id3_ucs4_utf8duplicate(ucs4);
+		if(id3v1_encoding && 
+			(id3_tag_options(tag, 0, 0) & ID3_TAG_OPTION_ID3V1))
+		{
+			latin1 = id3_ucs4_latin1duplicate(ucs4);
+			if(!latin1) continue;
+
+			setCharSetConversion("UTF-8", id3v1_encoding);
+			utf8 = convStrDup(latin1);
+			free(latin1);
+		}
+		else utf8 = id3_ucs4_utf8duplicate(ucs4);
+
 		if(!utf8) continue;
 
 		if( NULL == mpdTag ) mpdTag = newMpdTag();
