@@ -315,14 +315,14 @@ MpdTag * flacMetadataDup(char * utf8file, int * vorbisCommentFound) {
 	return ret;
 }
 
-MpdTag * flacTagDup(char * file) {
+MpdTag * flacTagDup(char * utf8file) {
 	MpdTag * ret = NULL;
 	int foundVorbisComment = 0;
 
-	ret = flacMetadataDup(file,&foundVorbisComment);
+	ret = flacMetadataDup(utf8file,&foundVorbisComment);
 	if(!ret) return NULL;
 	if(!foundVorbisComment) {
-		MpdTag * temp = id3Dup(file);
+		MpdTag * temp = id3Dup(utf8file);
 		if(temp) {
 			temp->time = ret->time;
 			freeMpdTag(ret);

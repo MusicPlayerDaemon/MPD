@@ -61,5 +61,5 @@ autoconf
 cd ../..
 
 # Run configure for this platform
-./configure $*
+./configure "$@"
 
