@@ -230,9 +230,6 @@ int decoderInit(PlayerControl * pc, Buffer * cb, AudioFormat *af,
 		/* CHILD */
 		unblockSignals();
 
-                finishAudio();
-                finishAudioDriver();
-
 		while(1) {
 			if(dc->start) {
 				strncpy(dc->file,pc->file,MAXPATHLEN);
