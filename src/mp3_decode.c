@@ -188,8 +188,8 @@ int decodeNextFrameHeader(mp3DecodeData * data) {
 		}
 	}
 	if(mad_header_decode(&data->frame.header,&data->stream)) {
-		if((data->stream).error==MAD_ERROR_LOSTSYNC) {
 #ifdef HAVE_ID3TAG
+		if((data->stream).error==MAD_ERROR_LOSTSYNC) {
 			signed long tagsize = id3_tag_query(
 					(data->stream).this_frame,
 					(data->stream).bufend-
@@ -198,10 +198,9 @@ int decodeNextFrameHeader(mp3DecodeData * data) {
 				mad_stream_skip(&(data->stream),tagsize);
 				return DECODE_CONT;
 			}
-#endif
-			return DECODE_SKIP;
 		}
-		if(MAD_RECOVERABLE((data->stream).error)) return DECODE_CONT;
+#endif
+		if(MAD_RECOVERABLE((data->stream).error)) return DECODE_SKIP;
 		else {
 			if((data->stream).error==MAD_ERROR_BUFLEN) return DECODE_CONT;
 			else
@@ -224,9 +223,9 @@ int decodeNextFrame(mp3DecodeData * data) {
 			return DECODE_BREAK;
 		}
 	}
+#ifdef HAVE_ID3TAG
 	if(mad_frame_decode(&data->frame,&data->stream)) {
 		if((data->stream).error==MAD_ERROR_LOSTSYNC) {
-#ifdef HAVE_ID3TAG
 			signed long tagsize = id3_tag_query(
 					(data->stream).this_frame,
 					(data->stream).bufend-
@@ -235,10 +234,9 @@ int decodeNextFrame(mp3DecodeData * data) {
 				mad_stream_skip(&(data->stream),tagsize);
 				return DECODE_CONT;
 			}
-#endif
-			return DECODE_SKIP;
 		}
-		if(MAD_RECOVERABLE((data->stream).error)) return DECODE_CONT;
+#endif
+		if(MAD_RECOVERABLE((data->stream).error)) return DECODE_SKIP;
 		else {
 			if((data->stream).error==MAD_ERROR_BUFLEN) return DECODE_CONT;
 			else
