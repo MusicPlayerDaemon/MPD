@@ -19,9 +19,9 @@ error_file 		"~/.mpd/mpd.error"
 
 ######### FILESYSTEM SETTINGS ###########
 # If filenames or directory names don't
-#     display correctly, set the encoding
-#     (character set) for the filesystem here.
-#     The fileystem encoding is 
+#     display correctly, set the character 
+#     set (encoding) for the filesystem
+#     here. The fileystem encoding is 
 #     typically "ISO-8859-1" or "UTF-8".
 #     After changing fileystem_charset,
 #     recreate the db: mpd --create-db
