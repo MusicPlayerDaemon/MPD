@@ -23,7 +23,7 @@ void unloadInputPlugin(InputPlugin * inputPlugin) {
 
 static int stringFoundInStringArray(char ** array, char * suffix) {
 	while(array && *array) {
-		if(strcmp(*array, suffix) == 0) return 1;
+		if(strcasecmp(*array, suffix) == 0) return 1;
 		array++;
 	}
 	
