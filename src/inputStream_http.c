@@ -51,9 +51,9 @@ typedef struct _InputStreemHTTPData {
         int connState;
         char buffer[HTTP_BUFFER_SIZE];
         int buflen;
-        int canSeek;
         int timesRedirected;
         int icyMetaint;
+        char * icyName;
 } InputStreamHTTPData;
 
 static InputStreamHTTPData * newInputStreamHTTPData() {
@@ -63,8 +63,9 @@ static InputStreamHTTPData * newInputStreamHTTPData() {
         ret->path = NULL;
         ret->port = 80;
         ret->connState = HTTP_CONN_STATE_CLOSED;
-        ret->canSeek = 0;
         ret->timesRedirected = 0;
+        ret->icyName = NULL;
+        ret->icyMetaint = 0;
 
         return ret;
 }
@@ -72,6 +73,7 @@ static InputStreamHTTPData * newInputStreamHTTPData() {
 static void freeInputStreamHTTPData(InputStreamHTTPData * data) {
         if(data->host) free(data->host);
         if(data->path) free(data->path);
+        if(data->icyName) free(data->icyName);
 
         free(data);
 }
@@ -296,15 +298,15 @@ static int getHTTPHello(InputStream * inStream) {
         if(!needle) return 0;
 
         if(0 == strncmp(cur, "HTTP/1.0 ", 9)) {
-                data->canSeek = 0;
+                inStream->seekable = 0;
                 rc = atoi(cur+9);
         }
         else if(0 == strncmp(cur, "HTTP/1.1 ", 9)) {
-                data->canSeek = 1;
+                inStream->seekable = 1;
                 rc = atoi(cur+9);
         }
         else if(0 == strncmp(cur, "ICY 200 OK", 10)) {
-                data->canSeek = 0;
+                inStream->seekable = 0;
                 rc = 200;
         }
         else if(0 == strncmp(cur, "ICY 400 Server Full", 19)) rc = 400;
@@ -354,21 +356,48 @@ static int getHTTPHello(InputStream * inStream) {
                 return -1;
         }
 
-        cur = strstr(data->buffer, "\r\nContent-Length: ");
-        if(cur) {
-                if(!inStream->size) inStream->size = atol(cur+18);
-        }
-        else data->canSeek = 0;
+        cur = strstr(data->buffer,"\r\n");
+        while(cur && cur!=needle) {
+                if(0 == strncmp(cur,"\r\nContent-Length: ",18)) {
+                        if(!inStream->size) inStream->size = atol(cur+18);
+                }
+                else if(0 == strncmp(cur, "\r\nicy-metaint:", 14)) {
+                        data->icyMetaint = atoi(cur+14);
+                }
+                else if(0 == strncmp(cur, "\r\nicy-name:", 11)) {
+                        char * temp = strstr(cur+11,"\r\n");
+                        if(!temp) break;
+                        *temp = '\0';
+                        if(data->icyName)  free(data->icyName);
+                        data->icyName = strdup(cur+11);
+                        *temp = '\r';
+                }
+                else if(0 == strncmp(cur, "\r\nx-audiocast-name:", 19)) {
+                        char * temp = strstr(cur+19,"\r\n");
+                        if(!temp) break;
+                        *temp = '\0';
+                        if(data->icyName) free(data->icyName);
+                        data->icyName = strdup(cur+19);
+                        *temp = '\r';
+                }
+                else if(0 == strncmp(cur, "\r\nContent-Type:", 15)) {
+                        char * temp = strstr(cur+15,"\r\n");
+                        if(!temp) break;
+                        *temp = '\0';
+                        if(inStream->mime) free(inStream->mime);
+                        inStream->mime = strdup(cur+15);
+                        *temp = '\r';
+                }
 
-        cur = strstr(data->buffer, "\r\nicy-metaint:");
-        if(cur) {
-                data->icyMetaint = atoi(cur+14);
+                cur = strstr(cur+2,"\r\n");
         }
-        else data->icyMetaint = 0;
+
+        if(inStream->size <= 0) inStream->seekable = 0;
 
         needle += 4; /* 4 == strlen("\r\n\r\n") */
-        memmove(data->buffer, needle, data->buffer+data->buflen-needle);
         data->buflen -= data->buffer+data->buflen-needle;
+        /*fwrite(data->buffer, 1, data->buflen, stdout);*/
+        memmove(data->buffer, needle, data->buflen);
 
         data->connState = HTTP_CONN_STATE_OPEN;
 
@@ -398,6 +427,8 @@ int inputStream_httpOpen(InputStream * inStream, char * url) {
         inStream->offset = 0;
         inStream->size = 0;
         inStream->error = 0;
+        inStream->mime = NULL;
+        inStream->seekable = 0;
 
 	return 0;
 }
@@ -492,6 +523,7 @@ int inputStream_httpClose(InputStream * inStream) {
                 close(data->sock);
         }
 
+        if(inStream->mime) free(inStream->mime);
         freeInputStreamHTTPData(data);
 
         return 0;

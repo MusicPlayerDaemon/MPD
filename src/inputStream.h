@@ -34,6 +34,8 @@ struct _InputStream {
 	int error;
 	long offset;
 	size_t size;
+        char * mime;
+        int seekable;
 
         /* don't touc this stuff */
         InputStreamSeekFunc seekFunc;
