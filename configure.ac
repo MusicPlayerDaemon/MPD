@@ -43,8 +43,6 @@ AC_ARG_WITH(mad-includes,[  --with-mad-includes=DIR   Directory where mad header
 
 AC_C_BIGENDIAN
 
-AC_CHECK_LIBM
-
 AC_CHECK_SIZEOF(short)
 AC_CHECK_SIZEOF(int)
 AC_CHECK_SIZEOF(long)
@@ -52,6 +50,8 @@ AC_CHECK_SIZEOF(long long)
 
 AC_CHECK_LIB(socket,socket,MPD_LIBS="$MPD_LIBS -lsocket",)
 AC_CHECK_LIB(nsl,gethostbyname,MPD_LIBS="$MPD_LIBS -lnsl",)
+
+AC_CHECK_LIB(m,exp,MPD_LIBS="$MPD_LIBS -lm",)
 
 AC_CHECK_HEADER(langinfo.h,MPD_CFLAGS="$MPD_CFLAGS -DHAVE_LANGINFO",)
 AC_CHECK_HEADER(locale.h,MPD_CFLAGS="$MPD_CFLAGS -DHAVE_LOCALE",)
