@@ -7,6 +7,8 @@
 	c) command for dealing with the changing metadata, currentsonginfo
 		or something
 	d) in songinfo add a metadata tag item for indicating stream
+	e) ensure URL's are all ASCII, and properly %'d! check rfc's
+		for legal characters
 
 2) have --no-daemon still output to log files, and add option --no-log-files
 
