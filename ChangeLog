@@ -1,4 +1,4 @@
-ver 0.11.0 (2004/6/17)
+ver 0.11.0 (2004/6/18)
 1) Support for playing mp3 and Ogg Vorbis streams
 2) Non-blocking Update
 3) Replaygain support for Ogg Vorbis and FLAC (by Eric Moore aka AliasMrJones)
