@@ -5,7 +5,7 @@
 
 ########## REQUIRED ###############
 port 			"2100"
-music_directory 	"~/mp3"
+music_directory 	"~/music"
 playlist_directory 	"~/playlists"
 log_file 		"~/mpd.log"
 error_file 		"~/mpd.error"
