@@ -37,6 +37,25 @@
 #define OGG_DECODE_USE_BIGENDIAN	0
 #endif
 
+int getOggTotalTime(char * file) {
+	OggVorbis_File vf;
+	FILE * oggfp;
+	int totalTime;
+	
+	if(!(oggfp = fopen(file,"r"))) return -1;
+		
+	if(ov_open(oggfp, &vf, NULL, 0) < 0) {
+		fclose(oggfp);
+		return -1;
+	}
+	
+	totalTime = ov_time_total(&vf,-1)+0.5;
+
+	ov_clear(&vf);
+
+	return totalTime;
+}
+
 int ogg_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc)
 {
 	OggVorbis_File vf;

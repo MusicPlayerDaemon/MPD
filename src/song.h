@@ -32,6 +32,7 @@ typedef struct _Song {
 	char * utf8file;
 	MpdTag * tag;
 	time_t mtime;
+	int time;
 } Song;
 
 typedef List SongList;

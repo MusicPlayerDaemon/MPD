@@ -327,10 +327,10 @@ int addToDirectory(Directory * directory, char * shortname, char * name) {
 		return addSubDirectoryToDirectory(directory,shortname,name);
 	}
 	else if(isMusic(name)) {
-		LOG("adding %s\n",name);
 		Song * song;
 		song = addSongToList(directory->songs,shortname,name);
 		if(!song) return -1;
+		LOG("added %s\n",name);
 		addSongToTables(song);
 		return 0;
 	}
@@ -807,7 +807,7 @@ int directoryPrintSongInfo(FILE * fp, Song * song, void * data) {
 int sumSongTime(FILE * fp, Song * song, void * data) {
 	unsigned long * time = (unsigned long *)data;
 
-	if(song->tag && song->tag->time>=0) *time+=song->tag->time;
+	if(song->time>=0) *time+=song->time;
 
 	return 0;
 }

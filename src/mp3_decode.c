@@ -375,7 +375,7 @@ int getMp3TotalTime(char * file) {
 
 	initMp3DecodeData(&data);
 	if(decodeFirstFrame(&data)<0) ret = -1;
-	else ret = data.totalTime;
+	else ret = data.totalTime+0.5;
 	mp3DecodeDataFinalize(&data);
 
 	return ret;

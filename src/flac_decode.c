@@ -282,6 +282,15 @@ int flac_getAudioFormatAndTime(char * file, AudioFormat * format, float * time) 
 	return ret;
 }
 
+int getFlacTotalTime(char * file) {
+	float totalTime;
+	AudioFormat af;
+
+	if(flac_getAudioFormatAndTime(file,&af,&totalTime)<0) return -1;
+
+	return (int)(totalTime+0.5);
+}
+
 int flac_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc) {
 	if(flac_getAudioFormatAndTime(dc->file,af,&(cb->totalTime))<0) {
 		ERROR("\"%s\" doesn't seem to be a flac\n",dc->file);

@@ -25,4 +25,6 @@
 
 int ogg_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc);
 
+int getOggTotalTime(char * file);
+
 #endif

@@ -25,4 +25,6 @@
 
 int flac_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc);
 
+int getFlacTotalTime(char * file);
+
 #endif

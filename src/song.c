@@ -23,6 +23,11 @@
 #include "utils.h"
 #include "tag.h"
 #include "log.h"
+#include "mp3_decode.h"
+#include "audiofile_decode.h"
+#include "ogg_decode.h"
+#include "flac_decode.h"
+#include "path.h"
 
 #define SONG_KEY	"key: "
 #define SONG_FILE	"file: "
@@ -38,32 +43,45 @@
 
 Song * newSong(char * utf8file) {
 	Song * song = malloc(sizeof(Song));
+	song->time = -1;
 
 	song->utf8file = strdup(utf8file);
+
+	if(0);
 #ifdef HAVE_OGG
-	if((song->mtime = isOgg(utf8file))) {
-		song->tag = oggTagDup(utf8file);
-		return song;
+	else if((song->mtime = isOgg(utf8file))) {
+		song->time = getOggTotalTime(
+				rmp2amp(utf8ToFsCharset(utf8file)));
+		if(song->time>=0) song->tag = oggTagDup(utf8file);
 	}
 #endif
 #ifdef HAVE_FLAC
-	if((song->mtime = isFlac(utf8file))) {
-		song->tag = flacTagDup(utf8file);
-		return song;
+	else if((song->mtime = isFlac(utf8file))) {
+		song->time = getFlacTotalTime(
+				rmp2amp(utf8ToFsCharset(utf8file)));
+		if(song->time>=0) song->tag = flacTagDup(utf8file);
 	}
 #endif
 #ifdef HAVE_MAD
-	if((song->mtime = isMp3(utf8file))) {
-		song->tag = mp3TagDup(utf8file);
-		return song;
+	else if((song->mtime = isMp3(utf8file))) {
+		song->time = getMp3TotalTime(
+				rmp2amp(utf8ToFsCharset(utf8file)));
+		if(song->time>=0) song->tag = mp3TagDup(utf8file);
 	}
 #endif
 #ifdef HAVE_AUDIOFILE
-	if((song->mtime = isWave(utf8file))) {
-		song->tag = audiofileTagDup(utf8file);
-		return song;
+	else if((song->mtime = isWave(utf8file))) {
+		song->time = getAudiofileTotalTime(
+				rmp2amp(utf8ToFsCharset(utf8file)));
+		if(song->time>=0) song->tag = audiofileTagDup(utf8file);
 	}
 #endif
+
+	if(song->time<0) {
+		freeSong(song);
+		song = NULL;
+	}
+
 	return song;
 }
 
@@ -78,14 +96,13 @@ SongList * newSongList() {
 }
 
 Song * addSongToList(SongList * list, char * key, char * utf8file) {
-	Song * song;
+	Song * song = NULL;
 	
 	if(isMusic(utf8file)) {
 		song = newSong(utf8file);
 	}
-	else {
-		return NULL;
-	}
+
+	if(song==NULL) return NULL;
 	
 	insertInList(list,key,(void *)song);
 
@@ -98,6 +115,8 @@ void freeSongList(SongList * list) {
 
 int printSongInfo(FILE * fp, Song * song) {
 	myfprintf(fp,"%s%s\n",SONG_FILE,song->utf8file);
+
+	if(song->time>=0) myfprintf(fp,"%s%i\n",SONG_TIME,song->time);
 
 	if(song->tag) printMpdTag(fp,song->tag);
 
@@ -172,8 +191,7 @@ void readSongInfoIntoList(FILE * fp, SongList * list) {
 			song->tag->title = strdup(&(buffer[strlen(SONG_TITLE)]));
 		}
 		else if(0==strncmp(SONG_TIME,buffer,strlen(SONG_TIME))) {
-			if(!song->tag) song->tag = newMpdTag();
-			song->tag->time = atoi(&(buffer[strlen(SONG_TIME)]));
+			song->time = atoi(&(buffer[strlen(SONG_TIME)]));
 		}
 		else if(0==strncmp(SONG_MTIME,buffer,strlen(SONG_MTIME))) {
 			song->mtime = atoi(&(buffer[strlen(SONG_TITLE)]));
