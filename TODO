@@ -24,6 +24,17 @@
 	*) add support for saving and restoring audioOutput state to the 
 		state_file
 
+*) dynamic metadata
+	*) implment by recording the ftell positions of entries
+	*) buffer changes and flush them once every 60 seconds
+	*) be sure to check that the metadata "header" is what we expect
+	   before writing at the position
+	*) add support for:
+		*) last time played
+		*) times played
+		*) times skipped
+		*) ranking
+
 0.13
 ----
 
