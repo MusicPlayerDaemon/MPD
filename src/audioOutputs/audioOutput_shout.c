@@ -44,6 +44,7 @@ static int shoutInitCount = 0;
 
 typedef struct _ShoutData {
 	shout_t * shoutConn;
+	int shoutError;
 
 	ogg_stream_state os;
 	ogg_page og;
@@ -251,7 +252,43 @@ static int myShout_initDriver(AudioOutput * audioOutput, ConfigParam * param) {
 	return 0;
 }
 
-/*static void finishEncoder(ShoutData * sd) {
+static int myShout_handleError(ShoutData * sd, int err) {
+	switch(err) {
+	case SHOUTERR_SUCCESS:
+		break;
+	case SHOUTERR_UNCONNECTED:
+	case SHOUTERR_SOCKET:
+		ERROR("Lost shout connection to %s:%i\n", 
+				shout_get_host(sd->shoutConn),
+				shout_get_port(sd->shoutConn));
+		sd->shoutError = 1;
+		return -1;
+	default:
+		ERROR("shout: connection to %s:%i error : %s\n", 
+				shout_get_host(sd->shoutConn),
+				shout_get_port(sd->shoutConn),
+				shout_get_error(sd->shoutConn));
+		sd->shoutError = 1;
+		return -1;
+	}
+
+	return 0;
+}
+
+static int write_page(ShoutData * sd) {
+	int err = 0;
+
+	/*DEBUG("shout_delay: %i\n", shout_delay(sd->shoutConn));*/
+	shout_sync(sd->shoutConn);
+	err = shout_send(sd->shoutConn, sd->og.header, sd->og.header_len);
+	if(myShout_handleError(sd, err) < 0) return -1;
+	err = shout_send(sd->shoutConn, sd->og.body, sd->og.body_len);
+	if(myShout_handleError(sd, err) < 0) return -1;
+
+	return 0;
+}
+
+static void finishEncoder(ShoutData * sd) {
 	vorbis_analysis_wrote(&sd->vd, 0);
 
 	while(vorbis_analysis_blockout(&sd->vd, &sd->vb) == 1) {
@@ -263,13 +300,15 @@ static int myShout_initDriver(AudioOutput * audioOutput, ConfigParam * param) {
 	}
 }
 
-static void flushEncoder(ShoutData * sd) {
-	while(1 == ogg_stream_pageout(&sd->os, &sd->og));
-}*/
+static int flushEncoder(ShoutData * sd) {
+	return !(ogg_stream_pageout(&sd->os, &sd->og) <= 0 );
+}
 
 static void clearEncoder(ShoutData * sd) {
-	/*finishEncoder(sd);
-	flushEncoder(sd);*/
+	finishEncoder(sd);
+	while(1 == flushEncoder(sd)) {
+		if(!sd->shoutError) write_page(sd);
+	}
 
 	vorbis_comment_clear(&sd->vc);
 	ogg_stream_clear(&sd->os);
@@ -309,39 +348,6 @@ static void myShout_closeDevice(AudioOutput * audioOutput) {
 	myShout_closeShoutConn(sd);
 
 	audioOutput->open = 0;
-}
-
-static int myShout_handleError(ShoutData * sd, int err) {
-	switch(err) {
-	case SHOUTERR_SUCCESS:
-		break;
-	case SHOUTERR_UNCONNECTED:
-	case SHOUTERR_SOCKET:
-		ERROR("Lost shout connection to %s:%i\n", 
-				shout_get_host(sd->shoutConn),
-				shout_get_port(sd->shoutConn));
-		return -1;
-	default:
-		ERROR("shout: connection to %s:%i error : %s\n", 
-				shout_get_host(sd->shoutConn),
-				shout_get_port(sd->shoutConn),
-				shout_get_error(sd->shoutConn));
-		return -1;
-	}
-
-	return 0;
-}
-
-static int write_page(ShoutData * sd) {
-	int err = 0;
-
-	shout_sync(sd->shoutConn);
-	err = shout_send(sd->shoutConn, sd->og.header, sd->og.header_len);
-	if(myShout_handleError(sd, err) < 0) return -1;
-	err = shout_send(sd->shoutConn, sd->og.body, sd->og.body_len);
-	if(myShout_handleError(sd, err) < 0) return -1;
-
-	return 0;
 }
 
 #define addTag(name, value) { \
@@ -419,6 +425,8 @@ static int myShout_openShoutConn(AudioOutput * audioOutput) {
 		shout_close(sd->shoutConn);
 		return -1;
 	}
+
+	sd->shoutError = 0;
 
 	copyTagToVorbisComment(sd);
 
