@@ -304,6 +304,11 @@ void decodeStart(PlayerControl * pc, OutputBuffer * cb, DecoderControl * dc) {
                         plugin = getInputPluginFromSuffix(
                                         getSuffix(dc->utf8url));
                 }
+                /* this is needed for bastard streams that don't have a suffix
+                                or set the mimeType */
+                if(plugin == NULL) {
+                        plugin = getInputPluginFromName("mp3");
+                }
                 if(plugin && (plugin->streamTypes & INPUT_PLUGIN_STREAM_URL) &&
                                 plugin->streamDecodeFunc) 
                 {

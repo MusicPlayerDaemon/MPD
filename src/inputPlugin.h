@@ -47,10 +47,6 @@ InputPlugin * getInputPluginFromMimeType(char * mimeType);
 
 InputPlugin * getInputPluginFromName(char * name);
 
-/* this is needed b/c shoutcast and such don't indicate the proper mime type
-	and don't have a suffix in the url! */
-InputPlugin * getDefaultInputPlugin();
-
 /* this is where we "load" all the "plugins" ;-) */
 void initInputPlugins();
 
