@@ -68,6 +68,7 @@ typedef struct _ShoutData {
 	int opened;
 
 	MpdTag * tag;
+	int tagToSend;
 } ShoutData;
 
 static ShoutData * newShoutData() {
@@ -78,6 +79,7 @@ static ShoutData * newShoutData() {
 	ret->convBufferLen = 0;
 	ret->opened = 0;
 	ret->tag = NULL;
+	ret->tagToSend = 0;
 	ret->bitrate = -1;
 	ret->quality = -1.0;
 
@@ -236,7 +238,26 @@ static int shout_initDriver(AudioOutput * audioOutput, ConfigParam * param) {
 	return 0;
 }
 
+/*static void finishEncoder(ShoutData * sd) {
+	vorbis_analysis_wrote(&sd->vd, 0);
+
+	while(vorbis_analysis_blockout(&sd->vd, &sd->vb) == 1) {
+		vorbis_analysis(&sd->vb, NULL);
+		vorbis_bitrate_addblock(&sd->vb);
+		while(vorbis_bitrate_flushpacket(&sd->vd, &sd->op)) {
+			ogg_stream_packetin(&sd->os, &sd->op);
+		}
+	}
+}
+
+static void flushEncoder(ShoutData * sd) {
+	while(1 == ogg_stream_pageout(&sd->os, &sd->og));
+}*/
+
 static void clearEncoder(ShoutData * sd) {
+	/*finishEncoder(sd);*/
+	/*flushEncoder(sd);*/
+
 	ogg_stream_clear(&(sd->os));
 	vorbis_block_clear(&(sd->vb));
 	vorbis_dsp_clear(&(sd->vd));
@@ -245,9 +266,12 @@ static void clearEncoder(ShoutData * sd) {
 }
 
 static void shout_closeShoutConn(ShoutData * sd) {
+	DEBUG("closeShoutConn called\n");
+
 	if(sd->opened) {
 		clearEncoder(sd);
 
+		shout_sync(sd->shoutConn);
 		if(shout_close(sd->shoutConn) != SHOUTERR_SUCCESS) {
 			ERROR("problem closing connection to shout server: "
 				"%s\n", shout_get_error(sd->shoutConn));
@@ -270,6 +294,10 @@ static void shout_finishDriver(AudioOutput * audioOutput) {
 }
 
 static void shout_closeDevice(AudioOutput * audioOutput) {
+	ShoutData * sd = (ShoutData *)audioOutput->data;
+
+	if(sd->opened) shout_sync(sd->shoutConn);
+
 	audioOutput->open = 0;
 }
 
@@ -360,6 +388,8 @@ static int initEncoder(ShoutData * sd) {
 static int shout_openShoutConn(AudioOutput * audioOutput) {
 	ShoutData * sd = (ShoutData *)audioOutput->data;
 
+	DEBUG("openShoutConn called\n");
+
 	if(shout_open(sd->shoutConn) != SHOUTERR_SUCCESS)
 	{
 		ERROR("problem opening connection to shout server: %s\n",
@@ -387,8 +417,9 @@ static int shout_openShoutConn(AudioOutput * audioOutput) {
 		if(write_page(sd) < 0) return -1;
 	}
 
-	if(sd->tag) freeMpdTag(sd->tag);
-	sd->tag = NULL;
+	/*if(sd->tag) freeMpdTag(sd->tag);
+	sd->tag = NULL;*/
+	sd->tagToSend = 0;
 
 	sd->opened = 1;
 
@@ -464,8 +495,9 @@ static void shout_sendMetadata(ShoutData * sd) {
 		if(write_page(sd) < 0) return;
 	}
 
-	if(sd->tag) freeMpdTag(sd->tag);
-	sd->tag = NULL;
+	/*if(sd->tag) freeMpdTag(sd->tag);
+	sd->tag = NULL;*/
+	sd->tagToSend = 0;
 }
 
 static int shout_play(AudioOutput * audioOutput, char * playChunk, int size) {
@@ -475,7 +507,7 @@ static int shout_play(AudioOutput * audioOutput, char * playChunk, int size) {
 	int samples;
 	int bytes = sd->outAudioFormat.bits/8;
 
-	if(sd->opened && sd->tag) shout_sendMetadata(sd);
+	if(sd->opened && sd->tagToSend) shout_sendMetadata(sd);
 
 	if(!sd->opened) {
 		if(shout_openShoutConn(audioOutput) < 0) {
@@ -525,10 +557,12 @@ static void shout_setTag(AudioOutput * audioOutput, MpdTag * tag) {
 
 	if(sd->tag) freeMpdTag(sd->tag);
 	sd->tag = NULL;
+	sd->tagToSend = 0;
 
 	if(!tag) return;
 
 	sd->tag = mpdTagDup(tag);
+	sd->tagToSend = 1;
 }
 
 AudioOutputPlugin shoutPlugin = 
