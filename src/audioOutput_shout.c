@@ -202,11 +202,8 @@ static int shout_openDevice(AudioOutput * audioOutput,
 
 	vorbis_info_init(&(sd->vi));
 
-#define BITRATE 128
-
-	if( 0 != vorbis_encode_init(&(sd->vi), audioFormat->channels,
-			audioFormat->sampleRate, BITRATE*1000, BITRATE*1000,
-			BITRATE*1000))
+	if( 0 != vorbis_encode_init_vbr(&(sd->vi), audioFormat->channels,
+			audioFormat->sampleRate, 0.5) )
 	{
 		ERROR("problem seting up vorbis encoder for shout\n");
 		vorbis_info_clear(&(sd->vi));
