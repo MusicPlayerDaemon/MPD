@@ -1,4 +1,8 @@
 1) play streams
+	a) don't use libcurl, too messy, instead write own http code. lots of
+		examples in alsaplayer, xine, xmms, etc.  THis will be
+		much more flexible and prevent from needing to spawn an extra 
+		process!
 
 2) streaming and playing in general
 	a) determine a clever interface to play, so that play doesn't block
