@@ -155,36 +155,16 @@ int hasWaveSuffix(char * utf8file) {
 	return hasSuffix(utf8file,"wav");
 }
 
-int isWave(char * utf8file, time_t * mtime) {
-	if(isFile(utf8file,mtime)) return hasWaveSuffix(utf8file); 
-	return 0;
-}
-
 int hasFlacSuffix(char * utf8file) {
 	return hasSuffix(utf8file,"flac");
-}
-
-int isFlac(char * utf8file, time_t * mtime) {
-	if(isFile(utf8file,mtime)) return hasFlacSuffix(utf8file); 
-	return 0;
 }
 
 int hasOggSuffix(char * utf8file) {
 	return hasSuffix(utf8file,"ogg");
 }
 
-int isOgg(char * utf8file, time_t * mtime) {
-	if(isFile(utf8file,mtime)) return hasOggSuffix(utf8file); 
-	return 0;
-}
-
 int hasAacSuffix(char * utf8file) {
 	return hasSuffix(utf8file,"aac");
-}
-
-int isAac(char * utf8file, time_t * mtime) {
-	if(isFile(utf8file,mtime)) return hasAacSuffix(utf8file); 
-	return 0;
 }
 
 int hasMp4Suffix(char * utf8file) {
@@ -193,18 +173,8 @@ int hasMp4Suffix(char * utf8file) {
 	return 0;
 }
 
-int isMp4(char * utf8file, time_t * mtime) {
-	if(isFile(utf8file,mtime)) return hasMp4Suffix(utf8file); 
-	return 0;
-}
-
 int hasMp3Suffix(char * utf8file) {
 	return hasSuffix(utf8file,"mp3");
-}
-
-int isMp3(char * utf8file, time_t * mtime) {
-	if(isFile(utf8file,mtime)) return hasMp3Suffix(utf8file); 
-	return 0;
 }
 
 int isDir(char * utf8name, time_t * mtime) {

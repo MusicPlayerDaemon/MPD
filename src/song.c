@@ -57,32 +57,32 @@ Song * newSong(char * utf8file) {
 
 	song->utf8file = strdup(utf8file);
 
-	if(0);
+	if(!isFile(utf8file,&(song->mtime)));
 #ifdef HAVE_OGG
-	else if(isOgg(utf8file,&(song->mtime))) {
+	else if(hasOggSuffix(utf8file)) {
 		song->tag = oggTagDup(utf8file);
 	}
 #endif
 #ifdef HAVE_FLAC
-	else if((isFlac(utf8file,&(song->mtime)))) {
+	else if((hasFlacSuffix(utf8file))) {
 		song->tag = flacTagDup(utf8file);
 	}
 #endif
 #ifdef HAVE_MAD
-	else if(isMp3(utf8file,&(song->mtime))) {
+	else if(hasMp3Suffix(utf8file)) {
 		song->tag = mp3TagDup(utf8file);
 	}
 #endif
 #ifdef HAVE_AUDIOFILE
-	else if(isWave(utf8file,&(song->mtime))) {
+	else if(hasWaveSuffix(utf8file)) {
 		song->tag = audiofileTagDup(utf8file);
 	}
 #endif
 #ifdef HAVE_FAAD
-	else if(isAac(utf8file,&(song->mtime))) {
+	else if(hasAacSuffix(utf8file)) {
 		song->tag = aacTagDup(utf8file);
 	}
-	else if(isMp4(utf8file,&(song->mtime))) {
+	else if(hasMp4Suffix(utf8file)) {
 		song->tag = mp4TagDup(utf8file);
 	}
 #endif
@@ -227,32 +227,32 @@ int updateSongInfo(Song * song) {
 
 	song->tag = NULL;
 
-	if(0);
+	if(!isFile(utf8file,&(song->mtime)));
 #ifdef HAVE_OGG
-	else if(isOgg(utf8file,&(song->mtime))) {
+	else if(hasOggSuffix(utf8file)) {
 		song->tag = oggTagDup(utf8file);
 	}
 #endif
 #ifdef HAVE_FLAC
-	else if((isFlac(utf8file,&(song->mtime)))) {
+	else if((hasFlacSuffix(utf8file))) {
 		song->tag = flacTagDup(utf8file);
 	}
 #endif
 #ifdef HAVE_MAD
-	else if(isMp3(utf8file,&(song->mtime))) {
+	else if(hasMp3Suffix(utf8file)) {
 		song->tag = mp3TagDup(utf8file);
 	}
 #endif
 #ifdef HAVE_AUDIOFILE
-	else if(isWave(utf8file,&(song->mtime))) {
+	else if(hasWaveSuffix(utf8file)) {
 		song->tag = audiofileTagDup(utf8file);
 	}
 #endif
 #ifdef HAVE_FAAD
-	else if(isAac(utf8file,&(song->mtime))) {
+	else if(hasAacSuffix(utf8file)) {
 		song->tag = aacTagDup(utf8file);
 	}
-	else if(isMp4(utf8file,&(song->mtime))) {
+	else if(hasMp4Suffix(utf8file)) {
 		song->tag = mp4TagDup(utf8file);
 	}
 #endif

@@ -150,22 +150,22 @@ int playerInit() {
 }
 
 int playerGetDecodeType(char * utf8file) {
-	if(0);
+	if(!isFile(utf8file,NULL));
 #ifdef HAVE_MAD
-	if(isMp3(utf8file,NULL)) return DECODE_TYPE_MP3;
+	else if(hasMp3Suffix(utf8file)) return DECODE_TYPE_MP3;
 #endif
 #ifdef HAVE_OGG	
-	if(isOgg(utf8file,NULL)) return DECODE_TYPE_OGG;
+	else if(hasOggSuffix(utf8file)) return DECODE_TYPE_OGG;
 #endif
 #ifdef HAVE_FLAC	
-	if(isFlac(utf8file,NULL)) return DECODE_TYPE_FLAC;
+	else if(hasFlacSuffix(utf8file)) return DECODE_TYPE_FLAC;
 #endif
 #ifdef HAVE_AUDIOFILE
-	if(isWave(utf8file,NULL)) return DECODE_TYPE_AUDIOFILE;
+	else if(hasWaveSuffix(utf8file)) return DECODE_TYPE_AUDIOFILE;
 #endif
 #ifdef HAVE_FAAD
-	if(isAac(utf8file,NULL)) return DECODE_TYPE_AAC;
-	if(isMp4(utf8file,NULL)) return DECODE_TYPE_MP4;
+	else if(hasAacSuffix(utf8file)) return DECODE_TYPE_AAC;
+	else if(hasMp4Suffix(utf8file)) return DECODE_TYPE_MP4;
 #endif
 	return -1;
 }

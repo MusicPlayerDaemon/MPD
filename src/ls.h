@@ -26,23 +26,25 @@
 
 int lsPlaylists(FILE * fp, char * utf8path);
 
-int isMp3(char * utf8file, time_t * mtime);
-
-int isAac(char * utf8file, time_t * mtime);
-
-int isMp4(char * utf8file, time_t * mtime);
-
-int isOgg(char * utf8file, time_t * mtime);
-
-int isFlac(char * utf8file, time_t * mtime);
-
-int isWave(char * utf8file, time_t * mtime);
-
-int isMusic(char * utf8file, time_t * mtime);
+int isFile(char * utf8file, time_t * mtime);
 
 int isDir(char * utf8name, time_t * mtime);
 
 int isPlaylist(char * utf8file);
+
+int isMusic(char * utf8file, time_t * mtime);
+
+int hasWaveSuffix(char * utf8file);
+
+int hasMp3Suffix(char * utf8file);
+
+int hasAacSuffix(char * utf8file);
+
+int hasMp4Suffix(char * utf8file);
+
+int hasOggSuffix(char * utf8file);
+
+int hasFlacSuffix(char * utf8file);
 
 char * dupAndStripPlaylistSuffix(char * file);
 
