@@ -65,6 +65,37 @@ static void freeOssData(OssData * od) {
 	free(od);
 }
 
+#define OSS_STAT_NO_ERROR 	0
+#define OSS_STAT_NOT_CHAR_DEV	-1
+#define OSS_STAT_NO_PERMS	-2
+#define OSS_STAT_DOESN_T_EXIST	-3
+#define OSS_STAT_OTHER		-4
+
+static int oss_statDevice(char * device, int * stErrno) {
+	struct stat st;
+	
+	if(0 == lstat(device, &st)) {
+		if(!S_ISCHR(st.st_mode)) {
+			return OSS_STAT_NOT_CHAR_DEV;
+		}
+	}
+	else {
+		*stErrno = errno;
+
+		switch(errno) {
+		case ENOENT:
+		case ENOTDIR:
+			return OSS_STAT_DOESN_T_EXIST;
+		case EACCES:
+			return OSS_STAT_NO_PERMS;
+		default:
+			return OSS_STAT_OTHER;
+		}
+	}
+
+	return 0;
+}
+
 static int oss_initDriver(AudioOutput * audioOutput, ConfigParam * param) {
 	BlockParam * bp = getBlockParam(param, "device");
 	OssData * od = newOssData();
@@ -72,30 +103,47 @@ static int oss_initDriver(AudioOutput * audioOutput, ConfigParam * param) {
 	audioOutput->data = od;
 
 	if(!bp) {
-		int fd;
+		int err[2];
+		int ret[2];
+		
+		ret[0] = oss_statDevice("/dev/sound/dsp", err);
+		ret[1] = oss_statDevice("/dev/dsp", err+1);
 
-		if(0 <= (fd = open("/dev/sound/dsp", O_WRONLY))) {
-			od->device = strdup("/dev/sound/dsp");
-			close(fd);
-		}
-		else if(0 <= (fd = open("/dev/dsp", O_WRONLY))) {
-			od->device = strdup("/dev/dsp");
-			close(fd);
-		}
+		if(ret[0] == 0) od->device = strdup("/dev/sound/dsp");
+		else if(ret[1] == 0) od->device = strdup("/dev/dsp");
 		else {
 			ERROR("Error trying to open default OSS device "
 				"specified at line %i\n", param->line);
-			ERROR("Specify a OSS device and/or check your "
-				"permissions\n");
+
+			if(ret[0] == ret[1] == OSS_STAT_DOESN_T_EXIST) {
+				ERROR("Neither /dev/dsp nor /dev/sound/dsp "
+						"were found\n");
+			}
+			else if(ret[0] == OSS_STAT_NOT_CHAR_DEV) {
+				ERROR("/dev/sound/dsp is not a char device");
+			}
+			else if(ret[1] == OSS_STAT_NOT_CHAR_DEV) {
+				ERROR("/dev/dsp is not a char device");
+			}
+			else if(ret[0] == OSS_STAT_NO_PERMS) {
+				ERROR("no permission to access /dev/sound/dsp");
+			}
+			else if(ret[1] == OSS_STAT_NO_PERMS) {
+				ERROR("no permission to access /dev/dsp");
+			}
+			else if(ret[0] == OSS_STAT_OTHER) {
+				ERROR("Error accessing /dev/sound/dsp: %s",
+						strerror(err[0]));
+			}
+			else if(ret[1] == OSS_STAT_OTHER) {
+				ERROR("Error accessing /dev/dsp: %s",
+						strerror(err[1]));
+			}
+			
 			exit(EXIT_FAILURE);
 		}
-
-		od->fd = -1;
-
-		return 0;
 	}
-
-	od->device = strdup(bp->value);
+	else od->device = strdup(bp->value);
 
 	return 0;
 }
@@ -116,17 +164,18 @@ static int oss_openDevice(AudioOutput * audioOutput)
 	int i = AFMT_S16_LE;
 #endif
 	
-	if((od->fd = open(od->device, O_WRONLY)) < 0)
-		goto fail;
-	if(ioctl(od->fd, SNDCTL_DSP_SETFMT, &i))
-		goto fail;
-	if(ioctl(od->fd, SNDCTL_DSP_CHANNELS, &audioFormat->channels))
-		goto fail;
-	if(ioctl(od->fd, SNDCTL_DSP_SPEED, &audioFormat->sampleRate))
-		goto fail;
-	if(ioctl(od->fd, SNDCTL_DSP_SAMPLESIZE, &audioFormat->bits))
-		goto fail;
-	/*i = 1; if (ioctl(od->fd,SNDCTL_DSP_STEREO,&i)) err != 32; */
+	if((od->fd = open(od->device, O_WRONLY)) < 0) goto fail;
+
+	if(ioctl(od->fd, SNDCTL_DSP_SETFMT, &i)) goto fail;
+
+	i = audioFormat->channels;	
+	if(ioctl(od->fd, SNDCTL_DSP_CHANNELS, &i)) goto fail;
+
+	i = audioFormat->sampleRate;
+	if(ioctl(od->fd, SNDCTL_DSP_SPEED, &i)) goto fail;
+
+	i = audioFormat->bits;
+	if(ioctl(od->fd, SNDCTL_DSP_SAMPLESIZE, &i)) goto fail;
 
 	audioOutput->open = 1;
 
