@@ -1165,14 +1165,16 @@ int setPlaylistRandomStatus(FILE * fp, int status) {
 }
 
 int previousSongInPlaylist(FILE * fp) {
+	static time_t lastTime = 0;
+	time_t diff = time(NULL) - lastTime;
+
+	lastTime += diff;
+
 	if(playlist_state!=PLAYLIST_STATE_PLAY) return 0;
 
 	syncPlaylistWithQueue(0);
 
-   	if (getPlayerElapsedTime()>PLAYLIST_PREV_UNLESS_ELAPSED &&
-                        playlist.songs[playlist.order[playlist.current]]->type
-                        != SONG_TYPE_URL) 
-        {
+   	if (diff && getPlayerElapsedTime() > PLAYLIST_PREV_UNLESS_ELAPSED) {
 		return playPlaylistOrderNumber(fp,playlist.current);
    	}
    	else {

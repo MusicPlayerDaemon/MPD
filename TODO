@@ -2,10 +2,6 @@
 
 *) Fix charset errors so they don't goto stderr/out
 
-*) compute time of vorbis from actual number of samples played
-
-*) remove previous hack for streams
-
 Post-1.0
 --------
 1) crosslink "list" stuff, for example, artists are crosslinked to alubms and 

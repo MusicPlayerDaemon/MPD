@@ -318,7 +318,8 @@ int ogg_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream)
 			sendDataToOutputBuffer(cb, inStream, dc, 
 						inStream->seekable,  
                                         	chunk, chunkpos, 
-						ov_time_tell(&vf), 
+						ov_pcm_tell(&vf)/
+						dc->audioFormat.sampleRate,
 						bitRate);
 					
 			if(dc->stop) break;
