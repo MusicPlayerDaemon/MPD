@@ -163,6 +163,7 @@ int clearPlaylist(FILE * fp) {
 		playlist.songs[i] = NULL;
 	}
 	playlist.length = 0;
+        playlist.current = -1;
 
 	incrPlaylistVersion();
 
