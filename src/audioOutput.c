@@ -151,13 +151,20 @@ static void convertAudioFormat(AudioOutput * audioOutput, char ** chunkArgPtr,
 }
 
 int playAudioOutput(AudioOutput * audioOutput, char * playChunk, int size) {
+	int ret;
+
 	if(!audioOutput->open) return -1;
 
 	if(!audioOutput->sameInAndOutFormats) {
 		convertAudioFormat(audioOutput, &playChunk, &size);
 	}
-	
-	return audioOutput->playFunc(audioOutput, playChunk, size);
+
+
+	blockSignals();
+	ret = audioOutput->playFunc(audioOutput, playChunk, size);
+	unblockSignals();
+
+	return ret;
 }
 
 void closeAudioOutput(AudioOutput * audioOutput) {
