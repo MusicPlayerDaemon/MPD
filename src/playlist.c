@@ -687,6 +687,9 @@ int playPlaylist(FILE * fp, int song, int stopOnError) {
 	clearPlayerError();
 
 	if(song==-1) {
+                if(playlist_state == PLAYLIST_STATE_PLAY) {
+                        return playerSetPause(fp, 0);
+                }
                 if(playlist.current >= 0 && playlist.current < playlist.length)
                 {
                         i = playlist.current;
