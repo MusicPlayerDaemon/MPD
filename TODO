@@ -14,6 +14,9 @@
 		*) clear <playlist> /* synonym for rm */
 		*) add <playlist> <path>
 		*) playlist <playlist> /* displays saved playlist */
+		*) replaywith <playlist> /* replace current playlist
+						with saved playlist and
+						keep playing */
 
 *) state
 	*) abstract out state code from playlist.c
