@@ -1122,7 +1122,9 @@ int loadPlaylist(FILE * fp, char * utf8file) {
 				free(temp);
 			}
 			slength = 0;
-			temp = strdup(fsCharsetToUtf8(s));
+			temp = fsCharsetToUtf8(s);
+			if(!temp) continue;
+			temp = strdup(temp);
 			if(s[0]==PLAYLIST_COMMENT && !getSong(temp)) {
 				free(temp);
 				continue;

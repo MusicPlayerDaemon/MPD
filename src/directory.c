@@ -310,14 +310,18 @@ int removeDeletedFromDirectory(Directory * directory) {
 	while((ent = readdir(dir))) {
 		if(ent->d_name[0]=='.') continue; /* hide hidden stuff */
 
-		utf8 = strdup(fsCharsetToUtf8(ent->d_name));
+		utf8 = fsCharsetToUtf8(ent->d_name);
+
+		if(!utf8) continue;
+
+		utf8 = strdup(utf8);
 
 		if(directory->utf8name) {
 			s = malloc(strlen(directory->utf8name)+strlen(utf8)+2);
 			sprintf(s,"%s/%s",directory->utf8name,utf8);
 		}
 		else s= strdup(utf8);
-		insertInList(entList,fsCharsetToUtf8(ent->d_name),s);
+		insertInList(entList,utf8,s);
 		free(utf8);
 	}
 
@@ -377,7 +381,11 @@ int updateDirectory(Directory * directory) {
 	while((ent = readdir(dir))) {
 		if(ent->d_name[0]=='.') continue; /* hide hidden stuff */
 
-		utf8 = strdup(fsCharsetToUtf8(ent->d_name));
+		utf8 = fsCharsetToUtf8(ent->d_name);
+
+		if(!utf8) continue;
+
+		utf8 = strdup(utf8);
 
 		if(directory->utf8name) {
 			s = malloc(strlen(directory->utf8name)+strlen(utf8)+2);
@@ -415,7 +423,11 @@ int exploreDirectory(Directory * directory) {
 	while((ent = readdir(dir))) {
 		if(ent->d_name[0]=='.') continue; /* hide hidden stuff */
 
-		utf8 = strdup(fsCharsetToUtf8(ent->d_name));
+		utf8 = fsCharsetToUtf8(ent->d_name);
+
+		if(!utf8) continue;
+
+		utf8 = strdup(utf8);
 
 		DEBUG("explore: found: %s (%s)\n",ent->d_name,utf8);
 

@@ -85,3 +85,28 @@ int validUtf8String(unsigned char * string) {
 
 	return 1;
 }
+
+unsigned char * utf8StrToAsciiDup(unsigned char * utf8) {
+	/* utf8 should have at most two char's per ascii char */
+	int len = strlen(utf8)+1;
+	unsigned char * ret = malloc(len);
+	unsigned char * cp = ret;
+	int count;
+
+	memset(ret,0,len);
+
+	len = 0;
+
+	while(*utf8) {
+		count = validateUtf8Char(utf8);
+		if(!count) {
+			free(ret);
+			return NULL;
+		}
+		*(cp++) = utf8ToAscii(utf8);
+		utf8+= count;
+		len++;
+	}
+
+	return realloc(ret,len+1);
+}

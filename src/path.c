@@ -20,6 +20,7 @@
 #include "log.h"
 #include "charConv.h"
 #include "conf.h"
+#include "utf8.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -46,24 +47,35 @@ char * pathConvCharset(char * to, char * from, char * str, char * ret) {
 		ret = convStrDup(str);
 	}
 
-	if(!ret) ret = strdup(str);
-
 	return ret;
 }
 
 char * fsCharsetToUtf8(char * str) {
 	static char * ret = NULL;
 
-	return ret = pathConvCharset("UTF-8",fsCharset,str,ret);
+	ret = pathConvCharset("UTF-8",fsCharset,str,ret);
+
+	if(ret && !validUtf8String(ret)) ret = NULL;
+	/*if(!ret) ret = asciiStrToUtf8Dup(str);*/
+
+	/* if all else fails, just strdup */
+
+	return ret;
 }
 
 char * utf8ToFsCharset(char * str) {
 	static char * ret = NULL;
 
-	return ret = pathConvCharset(fsCharset,"UTF-8",str,ret);
+	ret = pathConvCharset(fsCharset,"UTF-8",str,ret);
+
+	if(!ret) ret = strdup(str);
+
+	return ret;
 }
 
 void setFsCharset(char * charset) {
+	int error = 0;
+
 	if(fsCharset) free(fsCharset);
 
 	fsCharset = strdup(charset);
@@ -74,11 +86,19 @@ void setFsCharset(char * charset) {
 		ERROR("fs charset conversion problem: "
 			"not able to convert from \"%s\" to \"%s\"\n",
 			fsCharset,"UTF-8");
+		error = 1;
 	}
 	if(setCharSetConversion(fsCharset,"UTF-8")!=0) {
 		ERROR("fs charset conversion problem: "
 			"not able to convert from \"%s\" to \"%s\"\n",
 			"UTF-8",fsCharset);
+		error = 1;
+	}
+	
+	if(error) {
+		free(fsCharset);
+		ERROR("setting fs charset to ISO-8859-1!\n");
+		fsCharset = strdup("ISO-8859-1");
 	}
 }
 

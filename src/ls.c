@@ -46,6 +46,7 @@ int lsPlaylists(FILE * fp, char * utf8path) {
 	struct stat st;
 	struct dirent * ent;
 	char * dup;
+	char * utf8;
 	char s[MAXPATHLEN+1];
 	List * list = NULL;
 	ListNode * node = NULL;
@@ -78,8 +79,9 @@ int lsPlaylists(FILE * fp, char * utf8path) {
 					if(list==NULL) list = makeList(NULL);
 					dup = strdup(ent->d_name);
 					dup[suff] = '\0';
-					insertInList(list,
-						fsCharsetToUtf8(dup),NULL);
+					if((utf8 = fsCharsetToUtf8(dup))) {
+						insertInList(list,utf8,NULL);
+					}
 					free(dup);
 				}
 			}
