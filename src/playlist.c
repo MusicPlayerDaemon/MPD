@@ -1398,7 +1398,9 @@ int loadPlaylist(FILE * fp, char * utf8file) {
 		else if(slength==MAXPATHLEN) {
 			s[slength] = '\0';
 			commandError(fp, ACK_ERROR_PLAYLIST_LOAD,
-                                        "\"%s\" too long", s);
+                                        "line in \"%s\" is too long", utf8file);
+			ERROR("line \"%s\" in playlist \"%s\" is too long\n",
+				s, utf8file);
 			while(fclose(fileP) && errno==EINTR);
 			if(erroredFile) free(erroredFile);
 			return -1;

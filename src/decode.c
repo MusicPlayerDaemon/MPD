@@ -286,7 +286,11 @@ void decodeStart(PlayerControl * pc, OutputBuffer * cb, DecoderControl * dc) {
 	dc->start = 0;
 
         while(!inputStreamAtEOF(&inStream) && bufferInputStream(&inStream) < 0
-                        && !dc->stop);
+                        && !dc->stop)
+	{
+		/* sleep so we don't consume 100% of the cpu */
+		my_usleep(1000);
+	}
 
         if(dc->stop) {
                 dc->state = DECODE_STATE_STOP;
