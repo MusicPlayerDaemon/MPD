@@ -42,6 +42,7 @@ void blockingWrite(int fd, char * string, int len) {
 
 	while(len) {
 		ret = write(fd,string,len);
+		if(ret==0) return;
 		if(ret<0) {
 			switch(errno) {
 			case EAGAIN:
