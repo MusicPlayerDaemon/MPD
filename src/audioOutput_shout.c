@@ -103,7 +103,7 @@ static void freeShoutData(ShoutData * sd) {
 	} \
 }
 
-static int shout_initDriver(AudioOutput * audioOutput, ConfigParam * param) {
+static int myShout_initDriver(AudioOutput * audioOutput, ConfigParam * param) {
 	ShoutData * sd;
 	char * test;
 	int port;
@@ -265,7 +265,7 @@ static void clearEncoder(ShoutData * sd) {
 	vorbis_info_clear(&sd->vi);
 }
 
-static void shout_closeShoutConn(ShoutData * sd) {
+static void myShout_closeShoutConn(ShoutData * sd) {
 	if(sd->opened) {
 		clearEncoder(sd);
 
@@ -278,10 +278,10 @@ static void shout_closeShoutConn(ShoutData * sd) {
 	sd->opened = 0;
 }
 
-static void shout_finishDriver(AudioOutput * audioOutput) {
+static void myShout_finishDriver(AudioOutput * audioOutput) {
 	ShoutData * sd = (ShoutData *)audioOutput->data;
 
-	shout_closeShoutConn(sd);
+	myShout_closeShoutConn(sd);
 
 	freeShoutData(sd);
 
@@ -290,11 +290,11 @@ static void shout_finishDriver(AudioOutput * audioOutput) {
 	if(shoutInitCount == 0) shout_shutdown();
 }
 
-static void shout_closeDevice(AudioOutput * audioOutput) {
+static void myShout_closeDevice(AudioOutput * audioOutput) {
 	audioOutput->open = 0;
 }
 
-static int shout_handleError(ShoutData * sd, int err) {
+static int myShout_handleError(ShoutData * sd, int err) {
 	switch(err) {
 	case SHOUTERR_SUCCESS:
 		break;
@@ -313,16 +313,12 @@ static int shout_handleError(ShoutData * sd, int err) {
 static int write_page(ShoutData * sd) {
 	shout_sync(sd->shoutConn);
 	int err = shout_send(sd->shoutConn, sd->og.header, sd->og.header_len);
-	if(shout_handleError(sd, err) < 0) goto fail;
+	if(myShout_handleError(sd, err) < 0) return -1;
 	err = shout_send(sd->shoutConn, sd->og.body, sd->og.body_len);
-	if(shout_handleError(sd, err) < 0) goto fail;
+	if(myShout_handleError(sd, err) < 0) return -1;
 	/*shout_sync(sd->shoutConn);*/
 
 	return 0;
-
-fail:
-	shout_closeShoutConn(sd);
-	return -1;
 }
 
 #define addTag(name, value) { \
@@ -378,7 +374,7 @@ static int initEncoder(ShoutData * sd) {
 	return 0;
 }
 
-static int shout_openShoutConn(AudioOutput * audioOutput) {
+static int myShout_openShoutConn(AudioOutput * audioOutput) {
 	ShoutData * sd = (ShoutData *)audioOutput->data;
 
 	if(shout_open(sd->shoutConn) != SHOUTERR_SUCCESS)
@@ -403,21 +399,24 @@ static int shout_openShoutConn(AudioOutput * audioOutput) {
 	ogg_stream_packetin(&(sd->os), &(sd->header_comments));
 	ogg_stream_packetin(&(sd->os), &(sd->header_codebooks));
 
+	sd->opened = 1;
+	sd->tagToSend = 0;
+
 	while(ogg_stream_flush(&(sd->os), &(sd->og)))
 	{
-		if(write_page(sd) < 0) return -1;
+		if(write_page(sd) < 0) {
+			myShout_closeShoutConn(sd);
+			return -1;
+		}
 	}
 
 	/*if(sd->tag) freeMpdTag(sd->tag);
 	sd->tag = NULL;*/
-	sd->tagToSend = 0;
-
-	sd->opened = 1;
 
 	return 0;
 }
 
-static int shout_openDevice(AudioOutput * audioOutput,
+static int myShout_openDevice(AudioOutput * audioOutput,
 		AudioFormat * audioFormat) 
 {
 	ShoutData * sd = (ShoutData *)audioOutput->data;
@@ -435,7 +434,7 @@ static int shout_openDevice(AudioOutput * audioOutput,
 
 	if(sd->opened) return 0;
 
-	if(shout_openShoutConn(audioOutput) < 0) {
+	if(myShout_openShoutConn(audioOutput) < 0) {
 		audioOutput->open = 0;
 		return -1;
 	}
@@ -443,7 +442,7 @@ static int shout_openDevice(AudioOutput * audioOutput,
 	return 0;
 }
 
-static void shout_convertAudioFormat(ShoutData * sd, char ** chunkArgPtr,
+static void myShout_convertAudioFormat(ShoutData * sd, char ** chunkArgPtr,
 		int * sizeArgPtr)
 {
 	int size = pcm_sizeOfOutputBufferForAudioFormatConversion(
@@ -462,7 +461,7 @@ static void shout_convertAudioFormat(ShoutData * sd, char ** chunkArgPtr,
 	*chunkArgPtr = sd->convBuffer;
 }
 
-static void shout_sendMetadata(ShoutData * sd) {
+static void myShout_sendMetadata(ShoutData * sd) {
 	ogg_int64_t granulepos = sd->vd.granulepos;
 
 	if(!sd->opened || !sd->tag) return;
@@ -483,7 +482,10 @@ static void shout_sendMetadata(ShoutData * sd) {
 
 	while(ogg_stream_flush(&(sd->os), &(sd->og)))
 	{
-		if(write_page(sd) < 0) return;
+		if(write_page(sd) < 0) {
+			myShout_closeShoutConn(sd);
+			return;
+		}
 	}
 
 	/*if(sd->tag) freeMpdTag(sd->tag);
@@ -491,23 +493,23 @@ static void shout_sendMetadata(ShoutData * sd) {
 	sd->tagToSend = 0;
 }
 
-static int shout_play(AudioOutput * audioOutput, char * playChunk, int size) {
+static int myShout_play(AudioOutput * audioOutput, char * playChunk, int size) {
 	int i,j;
 	ShoutData * sd = (ShoutData *)audioOutput->data;
 	float ** vorbbuf;
 	int samples;
 	int bytes = sd->outAudioFormat.bits/8;
 
-	if(sd->opened && sd->tagToSend) shout_sendMetadata(sd);
+	if(sd->opened && sd->tagToSend) myShout_sendMetadata(sd);
 
 	if(!sd->opened) {
-		if(shout_openShoutConn(audioOutput) < 0) {
+		if(myShout_openShoutConn(audioOutput) < 0) {
 			return -1;
 		}
 	}
 
 	if(sd->audioFormatConvert) {
-		shout_convertAudioFormat(sd, &playChunk, &size);
+		myShout_convertAudioFormat(sd, &playChunk, &size);
 	}
 
 	samples = size/(bytes*sd->outAudioFormat.channels);
@@ -536,13 +538,16 @@ static int shout_play(AudioOutput * audioOutput, char * playChunk, int size) {
 
 
 	while(ogg_stream_pageout(&(sd->os), &(sd->og)) != 0) {
-		if(write_page(sd) < 0) return -1;
+		if(write_page(sd) < 0) {
+			myShout_closeShoutConn(sd);
+			return -1;
+		}
 	}
 
 	return 0;
 }
 
-static void shout_setTag(AudioOutput * audioOutput, MpdTag * tag) {
+static void myShout_setTag(AudioOutput * audioOutput, MpdTag * tag) {
 	ShoutData * sd = (ShoutData *)audioOutput->data;
 
 	if(sd->tag) freeMpdTag(sd->tag);
@@ -558,12 +563,12 @@ static void shout_setTag(AudioOutput * audioOutput, MpdTag * tag) {
 AudioOutputPlugin shoutPlugin = 
 {
 	"shout",
-	shout_initDriver,
-	shout_finishDriver,
-	shout_openDevice,
-	shout_play,
-	shout_closeDevice,
-	shout_setTag
+	myShout_initDriver,
+	myShout_finishDriver,
+	myShout_openDevice,
+	myShout_play,
+	myShout_closeDevice,
+	myShout_setTag
 };
 
 #else
