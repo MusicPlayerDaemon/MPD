@@ -242,28 +242,42 @@ void pcm_convertAudioFormat(AudioFormat * inFormat, char * inBuffer, size_t
 	else {
 		/* only works if outFormat is 16-bit stereo! */
 		/* resampling code blatantly ripped from ESD */
-                mpd_sint32 rd_dat = 0;
+                mpd_uint32 rd_dat = 0;
                 mpd_uint32 wr_dat = 0;
                 mpd_sint16 lsample, rsample;
-                register mpd_sint16 * out = (mpd_sint16 *)outBuffer;
-                register mpd_sint16 * in = (mpd_sint16 *)dataChannelConv;
-                const int shift = sizeof(mpd_sint16);
-	        mpd_uint32 nlen = ((( dataChannelLen >> shift) * 
+                mpd_sint16 * out = (mpd_sint16 *)outBuffer;
+                mpd_sint16 * in = (mpd_sint16 *)dataChannelConv;
+                const int shift = sizeof(mpd_sint16)*outFormat->channels;
+	        mpd_uint32 nlen = ((( dataChannelLen / shift) * 
                                 (mpd_uint32)(outFormat->sampleRate)) /
 				inFormat->sampleRate);
-                nlen <<= shift;
+		nlen *= outFormat->channels;
 
-                while( wr_dat < nlen / shift) {
-                        rd_dat = wr_dat * inFormat->sampleRate / 
-                                outFormat->sampleRate;
-                        rd_dat &= ~1;
+		switch(outFormat->channels) {
+		case 1:
+                	while( wr_dat < nlen) {
+                        	rd_dat = wr_dat * inFormat->sampleRate / 
+                        	        outFormat->sampleRate;
 
-                        lsample = in[ rd_dat++ ];
-                        rsample = in[ rd_dat++ ];
+                        	lsample = in[ rd_dat++ ];
 
-                        out[ wr_dat++ ] = lsample;
-                        out[ wr_dat++ ] = rsample;
-                }
+                        	out[ wr_dat++ ] = lsample;
+                	}
+			break;
+		case 2:
+                	while( wr_dat < nlen) {
+                        	rd_dat = wr_dat * inFormat->sampleRate / 
+                        	        outFormat->sampleRate;
+                        	rd_dat &= ~1;
+
+                        	lsample = in[ rd_dat++ ];
+                        	rsample = in[ rd_dat++ ];
+
+                        	out[ wr_dat++ ] = lsample;
+                        	out[ wr_dat++ ] = rsample;
+                	}
+			break;
+		}
 	}
 
 	return;
@@ -272,7 +286,7 @@ void pcm_convertAudioFormat(AudioFormat * inFormat, char * inBuffer, size_t
 size_t pcm_sizeOfOutputBufferForAudioFormatConversion(AudioFormat * inFormat,
 		size_t inSize, AudioFormat * outFormat)
 {
-	const int shift = sizeof(mpd_sint16);
+	const int shift = sizeof(mpd_sint16)*outFormat->channels;
 	size_t outSize = inSize;
 
 	switch(inFormat->bits) {
@@ -286,21 +300,21 @@ size_t pcm_sizeOfOutputBufferForAudioFormatConversion(AudioFormat * inFormat,
 		exit(EXIT_FAILURE);
 	}
 
-	switch(inFormat->channels) {
-	case 1:
-		outSize = (outSize >> 1) << 2;
-		break;
-	case 2:
-		break;
-	default:
-		ERROR("only 1 or 2 channels are supported for conversion!\n");
-		exit(EXIT_FAILURE);
+	if(inFormat->channels != outFormat->channels) {
+		switch(inFormat->channels) {
+		case 1:
+			outSize = (outSize >> 1) << 2;
+			break;
+		case 2:
+			//outSize >>= 1;
+			break;
+		}
 	}
 	
-	outSize = (((outSize >> shift) * (mpd_uint32)(outFormat->sampleRate)) /
+	outSize = (((outSize / shift) * (mpd_uint32)(outFormat->sampleRate)) /
 				inFormat->sampleRate);
 
-	outSize <<= shift;
+	outSize *= shift;
 
 	return outSize;
 }
