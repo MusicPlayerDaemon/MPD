@@ -11,6 +11,10 @@
 	*) command for displaying playlist contents
 	*) command for appending to playlist
 
+*) state
+	*) abstract out state code from playlist.c
+	*) save states of audioOutput devices
+
 *) put more debugging info when failing to read/write db and other similar 
 	errors
 
