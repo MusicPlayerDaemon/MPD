@@ -327,14 +327,14 @@ int flacFindVorbisCommentFloat(const FLAC__StreamMetadata * block, char * cmnt,
 
 /* replaygain stuff by AliasMrJones */
 void flacParseReplayGain(const FLAC__StreamMetadata *block, FlacData * data) {
-	if(NULL == data->replayGainInfo) {
+	int found = 0;
+
+	if(NULL != data->replayGainInfo) {
 		freeReplayGainInfo(data->replayGainInfo);
 		data->replayGainInfo = NULL;
 	}
 
 	data->replayGainInfo = newReplayGainInfo();
-
-	int found = 0;
 
         found &= flacFindVorbisCommentFloat(block,"replaygain_album_gain",
 					&data->replayGainInfo->albumGain);
