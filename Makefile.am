@@ -1,4 +1,4 @@
-AUTOMAKE_OPTIONS = foreign 1.6 dist-zip
+AUTOMAKE_OPTIONS = foreign 1.6 dist-bzip2
 
 SUBDIRS = src doc
 docdir = $(prefix)/share/doc/$(PACKAGE)
