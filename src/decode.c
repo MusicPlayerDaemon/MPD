@@ -115,7 +115,7 @@ int calculateCrossFadeChunks(PlayerControl * pc, AudioFormat * af) {
                                                 MAXPATHLEN); \
 		                pc->erroredUrl[MAXPATHLEN] = '\0'; \
 		                pc->error = PLAYER_ERROR_AUDIO; \
-				ERROR("problems opeing audio device while playing \"%s\"", pc->utf8url); \
+				ERROR("problems opening audio device while playing \"%s\"", pc->utf8url); \
 		                quitDecode(pc,dc); \
 		                return; \
 	                } \
@@ -228,7 +228,7 @@ int decodeSeek(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb,
                                                 MAXPATHLEN); \
 				pc->erroredUrl[MAXPATHLEN] = '\0'; \
 				pc->error = PLAYER_ERROR_AUDIO; \
-				ERROR("problems opeing audio device while playing \"%s\"", pc->utf8url); \
+				ERROR("problems opening audio device while playing \"%s\"", pc->utf8url); \
 				quitDecode(pc,dc); \
 				return; \
 			} \
