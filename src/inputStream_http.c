@@ -460,9 +460,14 @@ static void parseIcyMetadata(InputStream * inStream, char * metadata,
 	s = strtok_r(temp, ";", &r);
 	while(s) {
 		if(0 == strncmp(s, "StreamTitle=", 12)) {
-			printf("StreamTitle: %s\n", s+12);
+			int cur = 12;
+			printf("StreamTitle: %s\n", s+cur);
 			if(inStream->metaTitle) free(inStream->metaTitle);
-			inStream->metaTitle = strdup(s+12);
+			if(*(s+cur) == '\'') cur++;
+			if(s[strlen(s)-1] == '\'') {
+				s[strlen(s)-1] = '\0';
+			}
+			inStream->metaTitle = strdup(s+cur);
 		}
 		s = strtok_r(NULL, ";", &r);
 	}
