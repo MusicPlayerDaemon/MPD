@@ -107,8 +107,7 @@ if test x$enable_ogg = xno; then
 fi
 
 if test x$enable_ao = xyes; then
-	XIPH_PATH_AO(MPD_LIBS="$MPD_LIBS $AO_LIBS" MPD_CFLAGS="$MPD_CFLAGS $AO_CFLAGS",AC_MSG_ERROR(Must have libao installed!!!))
-	AC_DEFINE(HAVE_AO, 1, [Define to play with ao])
+	XIPH_PATH_AO([AC_DEFINE(HAVE_AO, 1, [Define to play with ao]) MPD_LIBS="$MPD_LIBS $AO_LIBS" MPD_CFLAGS="$MPD_CFLAGS $AO_CFLAGS"], enable_ao=no)
 fi
 
 if test x$enable_shout = xyes; then
