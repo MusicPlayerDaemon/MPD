@@ -42,6 +42,10 @@ static mpd_sint8 myAudioDevicesEnabled[AUDIO_MAX_DEVICES];
 
 static mpd_uint8 audioOpened = 0;
 
+static mpd_sint32 audioBufferSize = 0;
+static char * audioBuffer = NULL;
+static mpd_sint32 audioBufferPos = 0;
+
 void copyAudioFormat(AudioFormat * dest, AudioFormat * src) {
 	if(!src) return;
 
@@ -221,6 +225,32 @@ inline void syncAudioDevicesEnabledArrays() {
 	}
 }
 
+static int flushAudioBuffer() {
+	int ret = -1;
+	int i;
+
+	if(audioBufferPos == 0) return 0;
+
+	if(0 != memcmp(pdAudioDevicesEnabled, myAudioDevicesEnabled,
+			AUDIO_MAX_DEVICES)) 
+	{
+		syncAudioDevicesEnabledArrays();
+	}
+
+	for(i = 0; i < audioOutputArraySize; i++) {
+		if(!myAudioDevicesEnabled[i]) continue;
+		if(0 == playAudioOutput(audioOutputArray[i], audioBuffer, 
+					audioBufferPos)) 
+		{
+			ret = 0;
+		}
+	}
+
+	audioBufferPos = 0;
+
+	return ret;
+}
+
 int openAudioDevice(AudioFormat * audioFormat) {
 	int isCurrentFormat = isCurrentAudioFormat(audioFormat);
 	int ret = -1;
@@ -228,8 +258,12 @@ int openAudioDevice(AudioFormat * audioFormat) {
 
 	if(!audioOutputArray) return -1;
 
-	if(!isCurrentFormat) {
+	if(!audioOpened || !isCurrentFormat) {
+		flushAudioBuffer();
 		copyAudioFormat(&audio_format, audioFormat);
+		audioBufferSize = (audio_format.bits/8)*audio_format.channels;
+		audioBufferSize*= audio_format.sampleRate >> 5;
+		audioBuffer = realloc(audioBuffer, audioBufferSize);
 	}
 
 	syncAudioDevicesEnabledArrays();
@@ -252,23 +286,23 @@ int openAudioDevice(AudioFormat * audioFormat) {
 }
 
 int playAudio(char * playChunk, int size) {
-	int ret = -1;
-	int i;
+	int send;
+	
+	while(size > 0) {
+		send = audioBufferSize-audioBufferPos;
+		send = send < size ? send : size;
 
-	if(0 != memcmp(pdAudioDevicesEnabled, myAudioDevicesEnabled,
-			AUDIO_MAX_DEVICES)) 
-	{
-		syncAudioDevicesEnabledArrays();
-	}
+		memcpy(audioBuffer+audioBufferPos, playChunk, send);
+		audioBufferPos += send;
+		size -= send;
+		playChunk+= send;
 
-	for(i = 0; i < audioOutputArraySize; i++) {
-		if(!myAudioDevicesEnabled[i]) continue;
-		if(0 == playAudioOutput(audioOutputArray[i], playChunk, size)) {
-			ret = 0;
+		if(audioBufferPos == audioBufferSize) {
+			if( flushAudioBuffer() < 0 ) return -1;
 		}
 	}
 
-	return ret;
+	return 0;
 }
 
 int isAudioDeviceOpen() {
@@ -277,6 +311,12 @@ int isAudioDeviceOpen() {
 
 void closeAudioDevice() {
 	int i;
+
+	flushAudioBuffer();
+
+	free(audioBuffer);
+	audioBuffer = NULL;
+	audioBufferSize = 0;
 
 	for(i = 0; i < audioOutputArraySize; i++) {
 		closeAudioOutput(audioOutputArray[i]);

@@ -160,9 +160,7 @@ int playAudioOutput(AudioOutput * audioOutput, char * playChunk, int size) {
 	}
 
 
-	blockSignals();
 	ret = audioOutput->playFunc(audioOutput, playChunk, size);
-	unblockSignals();
 
 	return ret;
 }
