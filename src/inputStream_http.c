@@ -42,8 +42,8 @@
 #define HTTP_CONN_STATE_OPEN    3
 #define HTTP_CONN_STATE_REOPEN  4
 
-#define HTTP_BUFFER_SIZE        131072
-#define HTTP_PREBUFFER_SIZE	(HTTP_BUFFER_SIZE >> 2)
+#define HTTP_BUFFER_SIZE_DEFAULT        131072
+#define HTTP_PREBUFFER_SIZE_DEFAULT	(HTTP_BUFFER_SIZE_DEFAULT >> 2)
 
 #define HTTP_REDIRECT_MAX    10
 
@@ -51,6 +51,8 @@ static char * proxyHost = NULL;
 static int proxyPort = 0;
 static char * proxyUser = NULL;
 static char * proxyPassword = NULL;
+static int bufferSize;
+static int prebufferSize;
 
 typedef struct _InputStreemHTTPData {
         char * host;
@@ -58,7 +60,7 @@ typedef struct _InputStreemHTTPData {
         int port;
         int sock;
         int connState;
-        char buffer[HTTP_BUFFER_SIZE];
+        char * buffer;
         size_t buflen;
         int timesRedirected;
         int icyMetaint;
@@ -132,6 +134,42 @@ void inputStream_initHttp() {
 				CONF_HTTP_PROXY_PASSWORD, CONF_HTTP_PROXY_HOST,
 				param->line);
 		exit(EXIT_FAILURE);
+	}
+
+	param = getConfigParam(CONF_HTTP_BUFFER_SIZE);
+
+	if(param) {
+		bufferSize = strtol(param->value, &test, 10);
+		
+		if(bufferSize <= 0 || *test != '\0') {
+			ERROR("\"%s\" specified for %s at line %i is not a "
+				"positivie intenger\n",
+				param->value, CONF_HTTP_BUFFER_SIZE,
+				param->line);
+			exit(EXIT_FAILURE);
+		}
+
+		bufferSize *= 1024;
+
+		if(prebufferSize > bufferSize) prebufferSize = bufferSize;
+	}
+
+	param = getConfigParam(CONF_HTTP_PREBUFFER_SIZE);
+
+	if(param) {
+		prebufferSize = strtol(param->value, &test, 10);
+		
+		if(bufferSize <= 0 || *test != '\0') {
+			ERROR("\"%s\" specified for %s at line %i is not a "
+				"positivie intenger\n",
+				param->value, CONF_HTTP_PREBUFFER_SIZE,
+				param->line);
+			exit(EXIT_FAILURE);
+		}
+
+		prebufferSize *= 1024;
+
+		if(prebufferSize > bufferSize) bufferSize = prebufferSize;
 	}
 }
 
@@ -223,6 +261,7 @@ static InputStreamHTTPData * newInputStreamHTTPData() {
         ret->icyMetaint = 0;
 	ret->prebuffer = 0;
 	ret->icyOffset = 0;
+	ret->buffer = malloc(bufferSize);
 
         return ret;
 }
@@ -232,6 +271,8 @@ static void freeInputStreamHTTPData(InputStreamHTTPData * data) {
         if(data->path) free(data->path);
 	if(data->proxyAuth) free(data->proxyAuth);
 	if(data->httpAuth) free(data->httpAuth);
+
+	free(data->buffer);
 
         free(data);
 }
@@ -489,14 +530,14 @@ static int getHTTPHello(InputStream * inStream) {
                 return -1;
         }
 
-        if(data->buflen >= HTTP_BUFFER_SIZE-1) {
+        if(data->buflen >= bufferSize-1) {
                 data->connState = HTTP_CONN_STATE_CLOSED;
                 close(data->sock);
                 return -1;
         }
 
         readed = recv(data->sock, data->buffer+data->buflen,
-                        HTTP_BUFFER_SIZE-1-data->buflen, 0);
+                        bufferSize-1-data->buflen, 0);
         
         if(readed < 0 && (errno == EAGAIN || errno == EINTR)) return 0;
 
@@ -720,7 +761,7 @@ size_t inputStream_httpRead(InputStream * inStream, void * ptr, size_t size,
 			if(metalen < 0) metalen = 0;
 			if(metalen+1 > data->buflen) {
 				/* damn that's some fucking big metadata! */
-				if(HTTP_BUFFER_SIZE < metalen+1) {
+				if(bufferSize < metalen+1) {
                         		data->connState = 
 							HTTP_CONN_STATE_CLOSED;
                         		close(data->sock);
@@ -810,13 +851,13 @@ int inputStream_httpBuffer(InputStream * inStream) {
 	if(data->buflen == 0 || data->buflen < data->icyMetaint) {
 		data->prebuffer = 1;
 	}
-	else if(data->buflen > HTTP_PREBUFFER_SIZE) data->prebuffer = 0;
+	else if(data->buflen > prebufferSize) data->prebuffer = 0;
 
         if(data->connState == HTTP_CONN_STATE_OPEN &&
-                                data->buflen < HTTP_BUFFER_SIZE-1) 
+                                data->buflen < bufferSize-1) 
         {
                 readed = read(data->sock, data->buffer+data->buflen, 
-                                (size_t)(HTTP_BUFFER_SIZE-1-data->buflen));
+                                (size_t)(bufferSize-1-data->buflen));
 
                 if(readed < 0 && (errno == EAGAIN || errno == EINTR)) {
                         readed = 0;
@@ -830,7 +871,7 @@ int inputStream_httpBuffer(InputStream * inStream) {
 		data->buflen += readed;
         }
 
-	if(data->buflen > HTTP_PREBUFFER_SIZE) data->prebuffer = 0;
+	if(data->buflen > prebufferSize) data->prebuffer = 0;
 
         return (readed ? 1 : 0);
 }

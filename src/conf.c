@@ -147,6 +147,8 @@ void initConf() {
 	registerConfigParam(CONF_HTTP_PROXY_PORT,		0,	0);
 	registerConfigParam(CONF_HTTP_PROXY_USER,		0,	0);
 	registerConfigParam(CONF_HTTP_PROXY_PASSWORD,		0,	0);
+	registerConfigParam(CONF_HTTP_BUFFER_SIZE,		0,	0);
+	registerConfigParam(CONF_HTTP_PREBUFFER_SIZE,		0,	0);
 	registerConfigParam(CONF_REPLAYGAIN_PREAMP,		0,	0);
 	registerConfigParam(CONF_ID3V1_ENCODING,		0,	0);
 }

@@ -47,13 +47,15 @@
 #define CONF_PASSWORD			"password"
 #define CONF_DEFAULT_PERMS		"default_permissions"
 #define CONF_AUDIO_BUFFER_SIZE		"audio_buffer_size"
-#define CONF_REPLAYGAIN			"replaygain"
 #define CONF_AUDIO_OUTPUT_FORMAT	"audio_output_format"
+#define CONF_REPLAYGAIN			"replaygain"
+#define CONF_REPLAYGAIN_PREAMP		"replaygain_preamp"
 #define CONF_HTTP_PROXY_HOST		"http_proxy_host"
 #define CONF_HTTP_PROXY_PORT		"http_proxy_port"
 #define CONF_HTTP_PROXY_USER		"http_proxy_user"
 #define CONF_HTTP_PROXY_PASSWORD	"http_proxy_password"
-#define CONF_REPLAYGAIN_PREAMP		"replaygain_preamp"
+#define CONF_HTTP_BUFFER_SIZE		"http_buffer_size"
+#define CONF_HTTP_PREBUFFER_SIZE	"http_prebuffer_size"
 #define CONF_ID3V1_ENCODING		"id3v1_encoding"
 
 typedef struct _BlockParam {
