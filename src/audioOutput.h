@@ -33,8 +33,7 @@ typedef int (* AudioOutputInitDriverFunc) (AudioOutput * audioOutput,
 
 typedef void (* AudioOutputFinishDriverFunc) (AudioOutput * audioOutput);
 
-typedef int (* AudioOutputOpenDeviceFunc) (AudioOutput * audioOutput, 
-                AudioFormat * audioFormat);
+typedef int (* AudioOutputOpenDeviceFunc) (AudioOutput * audioOutput);
 
 typedef int (* AudioOutputPlayFunc) (AudioOutput * audioOutput,
                 char * playChunk, int size);

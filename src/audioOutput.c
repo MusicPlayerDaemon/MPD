@@ -126,7 +126,7 @@ int openAudioOutput(AudioOutput * audioOutput, AudioFormat * audioFormat) {
 				&audioOutput->inAudioFormat);
 	}
 
-	return audioOutput->openDeviceFunc(audioOutput, audioFormat);
+	return audioOutput->openDeviceFunc(audioOutput);
 }
 
 static void convertAudioFormat(AudioOutput * audioOutput, char ** chunkArgPtr,

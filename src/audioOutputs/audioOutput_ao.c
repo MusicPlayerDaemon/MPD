@@ -179,9 +179,7 @@ static void audioOutputAo_closeDevice(AudioOutput * audioOutput) {
 	audioOutput->open = 0;
 }
 
-static int audioOutputAo_openDevice(AudioOutput * audioOutput,
-		AudioFormat * audioFormat) 
-{
+static int audioOutputAo_openDevice(AudioOutput * audioOutput) {
 	ao_sample_format format;
 	AoData * ad = (AoData *)audioOutput->data;
 
@@ -189,10 +187,10 @@ static int audioOutputAo_openDevice(AudioOutput * audioOutput,
 		audioOutputAo_closeDevice(audioOutput);
 	}
 
-	format.bits = audioFormat->bits;
-	format.rate = audioFormat->sampleRate;
+	format.bits = audioOutput->outAudioFormat.bits;
+	format.rate = audioOutput->outAudioFormat.sampleRate;
 	format.byte_format = AO_FMT_NATIVE;
-	format.channels = audioFormat->channels;
+	format.channels = audioOutput->outAudioFormat.channels;
 
 	ad->device = ao_open_live(ad->driverId, &format, ad->options);
 

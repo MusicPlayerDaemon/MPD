@@ -484,9 +484,7 @@ static int myShout_openShoutConn(AudioOutput * audioOutput) {
 	return 0;
 }
 
-static int myShout_openDevice(AudioOutput * audioOutput,
-		AudioFormat * audioFormat) 
-{
+static int myShout_openDevice(AudioOutput * audioOutput) {
 	ShoutData * sd = (ShoutData *)audioOutput->data;
 
 	audioOutput->open = 1;
