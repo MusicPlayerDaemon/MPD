@@ -47,6 +47,8 @@ InputPlugin * getInputPluginFromMimeType(char * mimeType);
 
 InputPlugin * getInputPluginFromName(char * name);
 
+void printAllInputPluginSuffixes(FILE * fp);
+
 /* this is where we "load" all the "plugins" ;-) */
 void initInputPlugins();
 

@@ -1,6 +1,7 @@
 #include "inputPlugin.h"
 
 #include "list.h"
+#include "myfprintf.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -70,6 +71,23 @@ InputPlugin * getInputPluginFromName(char * name) {
 	findInList(inputPlugin_list, name, &plugin);
 
 	return (InputPlugin *)plugin;
+}
+
+void printAllInputPluginSuffixes(FILE * fp) {
+	ListNode * node = inputPlugin_list->firstNode;
+	InputPlugin * plugin;
+	char ** suffixes;
+
+	while(node) {
+		plugin = (InputPlugin *)node->data;
+		suffixes = plugin->suffixes;
+		while(suffixes && *suffixes) {
+			myfprintf(fp, "%s ", *suffixes);
+			suffixes++;
+		}
+		node = node->nextNode;
+	}
+	myfprintf(fp, "\n");
 }
 
 extern InputPlugin mp3Plugin;

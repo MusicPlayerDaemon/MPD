@@ -85,30 +85,16 @@ void usage(char * argv[]) {
 }
 
 void version() {
-        ERROR("mpd (MPD: Music Player Daemon) %s\n",VERSION);
-        ERROR("\n");
-        ERROR("Copyright (C) 2003 Warren Dukes <shank@mercury.chem.pitt.edu>\n");
-        ERROR("This is free software; see the source for copying conditions.  There is NO\n");
-        ERROR("warranty; not even MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n");
-        ERROR("\n");
-        ERROR("Supported formats:\n");
+        LOG("mpd (MPD: Music Player Daemon) %s\n",VERSION);
+        LOG("\n");
+        LOG("Copyright (C) 2003 Warren Dukes <shank@mercury.chem.pitt.edu>\n");
+        LOG("This is free software; see the source for copying conditions.  There is NO\n");
+        LOG("warranty; not even MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n");
+        LOG("\n");
+        LOG("Supported formats:\n");
 
-#ifdef HAVE_AUDIOFILE
-        ERROR(" wav");
-#endif
-#ifdef HAVE_MAD
-        ERROR(" mp3");
-#endif
-#ifdef HAVE_FAAD
-        ERROR(" mp4 aac");
-#endif
-#ifdef HAVE_FLAC
-        ERROR(" flac");
-#endif
-#ifdef HAVE_OGG
-        ERROR(" ogg");
-#endif
-        ERROR("\n");
+        initInputPlugins();
+        printAllInputPluginSuffixes(stdout);
 }
 
 void parseOptions(int argc, char ** argv, Options * options) {
