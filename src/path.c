@@ -27,6 +27,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <errno.h>
 
 #ifdef HAVE_LOCALE
 #ifdef HAVE_LANGINFO_CODESET
@@ -116,11 +117,11 @@ void initPaths(char * playlistDirArg, char * musicDirArg) {
 
         playlistDir = prependCwdToPathDup(playlistDirArg);
         if((stat(playlistDir,&st))<0) {
-                ERROR("problem stat'ing \"%s\"\n",playlistDirArg);
+                ERROR("problem stat'ing \"%s\": %s\n", playlistDirArg, strerror(errno));
                 exit(EXIT_FAILURE);
         }
         if(!S_ISDIR(st.st_mode)) {
-                ERROR("\"%s\" is not a directory\n",playlistDirArg);
+                ERROR("\"%s\" is not a directory: %s\n", playlistDirArg, strerror(errno));
                 exit(EXIT_FAILURE);
         }
 
