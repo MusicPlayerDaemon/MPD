@@ -163,6 +163,20 @@ error_file 		"~/.mpd/mpd.error"
 ##########################################
 
 
+################ SHOUT OPTIONS #####################
+#
+#shout_host 	"host"
+#shout_port 	"8000"
+#shout_user 	"source"
+#shout_password "hackme"
+#shout_name	"My MPD!"
+#shout_mount	"/mpd.ogg"
+#shout_quality	"0.5"
+#shout_format	"44100:16:1"
+#
+####################################################
+
+
 ################ MISCELLANEOUS OPTIONS ###################
 #
 # This setting exists as precaution against attacks.
