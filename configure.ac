@@ -126,14 +126,6 @@ if test x$enable_oss = xyes; then
 	AC_CHECK_HEADER(sys/soundcard.h,[enable_oss=yes;AC_DEFINE(HAVE_OSS,1,[Define to enable OSS])],[AC_MSG_WARN(Soundcard headers not found -- disabling OSS support);enable_oss=no])
 fi
 
-if test x$enable_ao = xno &&
-   test x$enable_oss = xno &&
-   test x$enable_shout = xno &&
-   test x$enable_alsa = xno &&
-   test x$enable_osx = xno; then
-	AC_MSG_ERROR("Cannot compile without an output target")
-fi
-
 if test x$enable_alsa = xyes; then
 	AM_PATH_ALSA(0.9.0,[AC_DEFINE(HAVE_ALSA,1,[Define to enable ALSA support]) MPD_LIBS="$MPD_LIBS $ALSA_LIBS" MPD_CFLAGS="$MPD_CFLAGS $ALSA_CFLAGS"],enable_alsa=no)
 fi
@@ -559,22 +551,6 @@ fi
 
 echo ""
 
-echo "Volume Mixer Support:"
-
-if test x$enable_oss = xyes; then
-	echo "OSS mixer support .............enabled"
-else
-	echo "OSS mixer support .............disabled"
-fi
-
-if test x$enable_alsa = xyes; then
-	echo "ALSA mixer support ............enabled"
-else
-	echo "ALSA mixer support ............disabled"
-fi
-
-echo ""
-
 echo "Audio Output Support:"
 if test x$enable_ao = xyes; then
 	echo "Playing audio via libao .......enabled"
@@ -607,6 +583,14 @@ else
 fi
 
 echo ""
+
+if test x$enable_ao = xno &&
+   test x$enable_oss = xno &&
+   test x$enable_shout = xno &&
+   test x$enable_alsa = xno &&
+   test x$enable_osx = xno; then
+	AC_MSG_ERROR("No Audio Output types configured!")
+fi
 
 echo "Audio Format Support:"
 

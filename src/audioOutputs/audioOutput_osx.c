@@ -101,14 +101,9 @@ static void osx_dropBufferedAudio(AudioOutput * audioOutput) {
 	OsxData * od = (OsxData *)audioOutput->data;
 
 	pthread_mutex_lock(&od->mutex);
-	od->go = 0;
 	od->len = 0;
+	od->go = 0;
 	pthread_mutex_unlock(&od->mutex);
-
-	/*if(od->started) {
-		AudioOutputUnitStop(od->au);
-		od->started = 0;
-	}*/
 }
 
 static void osx_closeDevice(AudioOutput * audioOutput) {
