@@ -31,7 +31,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <vorbis/vorbisfile.h>
-#include <sys/time.h>
 
 #ifdef WORDS_BIGENDIAN
 #define OGG_DECODE_USE_BIGENDIAN	1
