@@ -55,6 +55,9 @@
 #define DECODE_CONT		-1
 #define DECODE_OK		0
 
+#define MUTEFRAME_SKIP          1
+#define MUTEFRAME_SEEK          2
+
 /* this is stolen from mpg321! */
 struct audio_dither {
 	mad_fixed_t error[3];
@@ -356,7 +359,7 @@ int decodeFirstFrame(mp3DecodeData * data, DecoderControl * dc) {
 		if(xing.flags & XING_FRAMES) {
 			mad_timer_t duration = data->frame.header.duration;
 			mad_timer_multiply(&duration,xing.frames);
-			data->muteFrame = 1;
+			data->muteFrame = MUTEFRAME_SKIP;
 			data->totalTime = ((float)mad_timer_count(duration,
 						MAD_UNITS_MILLISECONDS))/1000;
 			data->maxFrames = xing.frames;
@@ -429,10 +432,10 @@ int openMp3FromInputStream(InputStream * inStream, mp3DecodeData * data,
 }
 
 int mp3Read(mp3DecodeData * data, OutputBuffer * cb, DecoderControl * dc) {
-	static int i;
-	static int ret;
-	static struct audio_dither dither;
-	static int skip;
+	int i;
+	int ret;
+	struct audio_dither dither;
+	int skip;
 
 	if(data->currentFrame>=data->highestFrame) { 
 		mad_timer_add(&data->timer,(data->frame).header.duration);
@@ -457,18 +460,19 @@ int mp3Read(mp3DecodeData * data, OutputBuffer * cb, DecoderControl * dc) {
 	data->currentFrame++;
 	data->elapsedTime = ((float)mad_timer_count(data->timer,MAD_UNITS_MILLISECONDS))/1000;
 
-	if(data->muteFrame) {
-		if(!dc->seek) data->muteFrame = 0;
-		else if(dc->seekWhere<=data->elapsedTime) {
+	switch(data->muteFrame) {
+        case MUTEFRAME_SKIP:
+		data->muteFrame = 0;
+                break;
+        case MUTEFRAME_SEEK:
+		if(dc->seekWhere<=data->elapsedTime) {
                         clearOutputBuffer(cb);
                         dc->seekChunk = cb->end;
 			data->muteFrame = 0;
 			dc->seek = 0;
 		}
-	}
-	else {
-                long ret;
-            
+                break;
+        default:
 		mad_synth_frame(&data->synth,&data->frame);
 
 		for(i=0;i<(data->synth).pcm.length;i++) {
@@ -489,6 +493,7 @@ int mp3Read(mp3DecodeData * data, OutputBuffer * cb, DecoderControl * dc) {
 			}
 
 			if(data->outputPtr==data->outputBufferEnd) {
+                                long ret;
                                 ret = sendDataToOutputBuffer(cb,dc,
                                                 data->outputBuffer,
                                                 MP3_DATA_OUTPUT_BUFFER_SIZE,
@@ -506,7 +511,7 @@ int mp3Read(mp3DecodeData * data, OutputBuffer * cb, DecoderControl * dc) {
 
 		if(dc->seek) {
 			long i = 0;
-			data->muteFrame = 1;
+			data->muteFrame = MUTEFRAME_SEEK;
 			while(i<data->highestFrame && dc->seekWhere >
 					((float)mad_timer_count(data->times[i],
 					MAD_UNITS_MILLISECONDS))/1000) 
@@ -524,6 +529,7 @@ int mp3Read(mp3DecodeData * data, OutputBuffer * cb, DecoderControl * dc) {
                                 }
 				dc->seek = 0;
 			}
+                        else if(!data->inStream->seekable) dc->seek = 0;
 		}
 	}
 
