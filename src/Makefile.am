@@ -1,5 +1,5 @@
 bin_PROGRAMS = mpd
-SUBDIRS = $(ID3_SUBDIR) $(MAD_SUBDIR)
+SUBDIRS = $(ID3_SUBDIR) $(MAD_SUBDIR) $(MP4FF_SUBDIR)
 mpd_headers = buffer2array.h interface.h command.h playlist.h ls.h \
 	song.h list.h directory.h tables.h utils.h path.h mp3_decode.h \
 	tag.h player.h listen.h conf.h ogg_decode.h volume.h flac_decode.h \
@@ -12,4 +12,4 @@ mpd_SOURCES = main.c buffer2array.c interface.c command.c playlist.c ls.c \
 	audiofile_decode.c charConv.c permission.c pcm_utils.c $(mpd_headers)
 
 mpd_CFLAGS = $(MPD_CFLAGS)
-mpd_LDADD = $(MPD_LIBS) $(ID3_LIB) $(MAD_LIB)
+mpd_LDADD = $(MPD_LIBS) $(ID3_LIB) $(MAD_LIB) $(MP4FF_LIB)

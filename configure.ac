@@ -17,6 +17,8 @@ AC_SUBST(MAD_SUBDIR)
 AC_SUBST(MAD_LIB)
 AC_SUBST(ID3_SUBDIR)
 AC_SUBST(ID3_LIB)
+AC_SUBST(MP4FF_SUBDIR)
+AC_SUBST(MP4FF_LIB)
 AC_SUBST(MPD_LIBS)
 AC_SUBST(MPD_CFLAGS)
 
@@ -42,9 +44,9 @@ AC_ARG_WITH(mad,[  --with-mad=PFX   Prefix where libmad is installed (optional)]
 AC_ARG_WITH(mad-libraries,[  --with-mad-libraries=DIR   Directory where libmad library is installed (optional)], mad_libraries="$withval", mad_libraries="")
 AC_ARG_WITH(mad-includes,[  --with-mad-includes=DIR   Directory where mad header files are installed (optional)], mad_includes="$withval", mad_includes="")
 
-AC_ARG_WITH(faad,[  --with-faad=PFX   Prefix where faad lib is installed (optional)], faad_prefix="$withval", faad_prefix="")
-AC_ARG_WITH(faad-libraries,[  --with-faad-libraries=DIR   Directory where faad library is installed (optional)], faad_libraries="$withval", faad_libraries="")
-AC_ARG_WITH(faad-includes,[  --with-faad-includes=DIR   Directory where faad header files are installed (optional)], faad_includes="$withval", faad_includes="")
+AC_ARG_WITH(faad2,[  --with-faad2=PFX   Prefix where faad2 is installed (optional)], faad_prefix="$withval", faad_prefix="")
+AC_ARG_WITH(faad2-libraries,[  --with-faad-libraries=DIR   Directory where faad2 library is installed (optional)], faad_libraries="$withval", faad_libraries="")
+AC_ARG_WITH(faad2-includes,[  --with-faad-includes=DIR   Directory where faad2 header files are installed (optional)], faad_includes="$withval", faad_includes="")
 
 AC_C_BIGENDIAN
 
@@ -195,6 +197,8 @@ if test x$enable_mp3 = xyes; then
 	MPD_CFLAGS="$MPD_CFLAGS -DHAVE_MAD"
 fi
 
+MP4FF_SUBDIR=""
+
 if test x$enable_aac = xyes; then
   	if test "x$faad_libraries" != "x" ; then
   		FAAD_LIBS="-L$faad_libraries"
@@ -204,7 +208,7 @@ if test x$enable_aac = xyes; then
     		FAAD_LIBS="-L$libdir"
   	fi
 
- 	FAAD_LIBS="$FAAD_LIBS -lfaad"
+ 	FAAD_LIBS="$FAAD_LIBS -lfaad -lmp4v2"
 
   	if test "x$faad_includes" != "x" ; then
   		FAAD_CFLAGS="-I$faad_includes"
@@ -220,7 +224,16 @@ if test x$enable_aac = xyes; then
 	LIBS="$LIBS $MPD_LIBS $FAAD_LIBS"
 	AC_CHECK_HEADER(faad.h,,enable_aac=no)
 	if test x$enable_aac = xyes; then
-		AC_CHECK_LIB(faad, faacDecDecode,[MPD_LIBS="$MPD_LIBS $FAAD_LIBS";MPD_CFLAGS="$MPD_CFLAGS $FAAD_CFLAGS -DHAVE_FAAD"],enable_aac=no)
+		AC_CHECK_HEADER(mp4.h,,enable_aac=no)
+	fi
+	if test x$enable_aac = xyes; then
+		AC_CHECK_LIB(mp4v2, MP4Create,,enable_aac=no)
+	fi
+	if test x$enable_aac = xyes; then
+		AC_CHECK_LIB(mp4v2, MP4MetadataDelete,,enable_aac=no)
+	fi
+	if test x$enable_aac = xyes; then
+		AC_CHECK_LIB(faad, faacDecDecode,[MPD_LIBS="$MPD_LIBS $FAAD_LIBS";MPD_CFLAGS="$MPD_CFLAGS $FAAD_CFLAGS -DHAVE_FAAD";MP4FF_SUBDIR="mp4ff";MP4FF_LIB="mp4ff/libmp4ff.la"],enable_aac=no)
 	fi
 	CFLAGS=$oldcflags
 	LIBS=$oldlibs
@@ -320,4 +333,4 @@ if test x$enable_audiofile = xyes; then
 		[enable_audiofile=no;AC_MSG_WARN(You need audiofile  -- disabling audiofile support)])
 fi
 
-AC_OUTPUT(doc/Makefile src/Makefile Makefile )
+AC_OUTPUT(src/mp4ff/Makefile doc/Makefile src/Makefile Makefile )

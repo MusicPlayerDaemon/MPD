@@ -9,8 +9,11 @@ retrieval, and playlist management can all be managed remotely.
 
 To install MPD, see INSTALL.
 
-MPD includes 2 libraries in the source. libid3tag and libmad are released under
+MPD includes 3 libraries in the source. libid3tag and libmad are released under
 the GPL and copyrighted by Robert Leslie (http://www.underbit.com/products/mad).
+mp4ff is released under the GPL and copyrighted by M. Bakker, Ahead Software AG
+(http://www.nero.com) and is distributed as a part of the FAAD2 - Freeware
+Advance Audio (AAC) Decoder.
 
 MPD is released under the GNU Public License.
 You should have received a copy of the GNU General Public License
