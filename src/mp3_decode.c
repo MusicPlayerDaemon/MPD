@@ -527,11 +527,11 @@ int mp3Read(mp3DecodeData * data, OutputBuffer * cb, DecoderControl * dc) {
 		while((ret = decodeNextFrameHeader(data))==DECODE_CONT &&
 				!dc->seek && !dc->stop);
 		if(ret==DECODE_SKIP) skip = 1;
-		else if(ret==DECODE_BREAK) break;
+		else if(ret==DECODE_BREAK || dc->stop || dc->seek) break;
 		if(!data->muteFrame) {
 			while((ret = decodeNextFrame(data))==DECODE_CONT &&
 					!dc->seek && !dc->stop);
-			if(ret==DECODE_BREAK) break;
+			if(ret==DECODE_BREAK || dc->seek || dc->stop) break;
 		}
 		if(!skip && ret==DECODE_OK) break;
 	}
