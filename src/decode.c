@@ -44,9 +44,7 @@ void decodeSigHandler(int sig, siginfo_t * si, void * v) {
 		int status;
 		if(decode_pid==wait3(&status,WNOHANG,NULL)) {
 			if(WIFSIGNALED(status)) {
-				if(WTERMSIG(status)!=SIGTERM && 
-					WTERMSIG(status)!=SIGINT)
-				{
+				if(WTERMSIG(status)!=SIGTERM) {
 					ERROR("decode process died from "
 							"signal: %i\n",
 							WTERMSIG(status));
@@ -64,12 +62,6 @@ void decodeSigHandler(int sig, siginfo_t * si, void * v) {
 		}
 		else DEBUG("decoder (or child) got SIGTERM\n");
 		exit(EXIT_SUCCESS);
-	}
-	else if(sig==SIGINT) {
-		if(decode_pid > 0) {
-			DEBUG("player (or child) got SIGINT\n");
-		}
-		else DEBUG("decoder (or child) got SIGINT\n");
 	}
 }
 
