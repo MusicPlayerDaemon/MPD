@@ -63,6 +63,10 @@
 #define DIRECTORY_UPDATE_EXIT_UPDATE    1
 #define DIRECTORY_UPDATE_EXIT_ERROR     2
 
+#define DIRECTORY_RETURN_NOUPDATE       0
+#define DIRECTORY_RETURN_UPDATE         1
+#define DIRECTORY_RETURN_ERROR         -1
+
 typedef List DirectoryList;
 
 typedef struct _Directory {
@@ -309,7 +313,7 @@ int updateInDirectory(Directory * directory, char * shortname, char * name) {
 	if(isMusic(name,&mtime)) {
 		if(0==findInList(directory->songs,shortname,&song)) {
 			addToDirectory(directory,shortname,name);
-                        return 1;
+                        return DIRECTORY_RETURN_UPDATE;
 		}
 		else if(mtime!=((Song *)song)->mtime) {
 			LOG("updating %s\n",name);
@@ -960,13 +964,15 @@ int readDirectoryDB() {
 	return 0;
 }
 
-/* return values:
-   -1 -> error
-    0 -> no error, but nothing updated
-    1 -> no error, and stuff updated
- */
 int updateMp3Directory(FILE * fp) {
-	if(updateDirectory(mp3rootDirectory)<0) {
+	switch(updateDirectory(mp3rootDirectory)) {
+        case 0:
+                /* nothing updated */
+                return 0;
+        case 1:
+                /* something was updated and db should be written */
+                break;
+        default:
 		ERROR("problems updating music db\n");
 		myfprintf(fp,"%s problems updating music db\n",COMMAND_RESPOND_ERROR);
 		return -1;
