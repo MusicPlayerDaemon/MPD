@@ -533,7 +533,7 @@ int addToPlaylist(FILE * fp, char * url) {
 	}
 	else {
 		commandError(fp, ACK_ERROR_NO_EXIST,
-                                "\"%s\" is not in the music db or is"
+                                "\"%s\" is not in the music db or is "
                                 "not a valid url\n", url);
 		return -1;
 	}

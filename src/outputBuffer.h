@@ -41,6 +41,7 @@ typedef struct _OutputBuffer {
 	mpd_sint8 volatile wrap;
         AudioFormat audioFormat;
 	MetadataChunk metadataChunks[BUFFERED_METACHUNKS];
+	mpd_sint8 metdataChunkSet[BUFFERED_METACHUNKS];
 	mpd_sint8 * volatile metaChunk;
 	volatile mpd_sint8 acceptMetadata;
 } OutputBuffer;
@@ -56,5 +57,7 @@ int sendDataToOutputBuffer(OutputBuffer * cb, InputStream * inStream,
                 float time, mpd_uint16 bitRate);
 
 void copyMpdTagToOutputBuffer(OutputBuffer * cb, MpdTag * tag);
+
+void zeroMetadataChunkSets(OutputBuffer * cb, int begin, int end, int wrap);
 
 #endif
