@@ -364,13 +364,11 @@ static int shout_openShoutConn(AudioOutput * audioOutput) {
 		ERROR("problem opening connection to shout server: %s\n",
 				shout_get_error(sd->shoutConn));
 
-		audioOutput->open = 0;
 		return -1;
 	}
 
 	if(initEncoder(sd) < 0) {
 		shout_close(sd->shoutConn);
-		audioOutput->open = 0;
 		return -1;
 	}
 
@@ -414,7 +412,12 @@ static int shout_openDevice(AudioOutput * audioOutput,
 
 	if(sd->opened) return 0;
 
-	return shout_openShoutConn(audioOutput);
+	if(shout_openShoutConn(audioOutput) < 0) {
+		audioOutput->open = 1;
+		return -1;
+	}
+
+	return 0;
 }
 
 static void shout_convertAudioFormat(ShoutData * sd, char ** chunkArgPtr,
