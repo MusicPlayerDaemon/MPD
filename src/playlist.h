@@ -22,6 +22,7 @@
 #include "../config.h"
 
 #include "song.h"
+#include "mpd_types.h"
 
 #include <stdio.h>
 #include <sys/param.h>
@@ -93,7 +94,9 @@ void playPlaylistIfPlayerStopped();
 
 int seekSongInPlaylist(FILE * fp, int song, float time);
 
-void incrPlaylistVersion();
+void playlistVersionChange();
+
+int playlistChanges(FILE * fp, mpd_uint32 version);
 
 #endif
 /* vim:set shiftwidth=4 tabstop=8 expandtab: */

@@ -1,20 +1,15 @@
-1) add song# to metadata when printing songs
+1) Parse icymetadata
 
-2) add updated songs command, to output list of updated songs:
-	updatesongs <since-playlist-version>
+2) Put a new metadata entry for icyName for Song's
 
-3) Parse icymetadata
-
-4) Put a new metadata entry for icyName for Song's
-
-5) Add a list_OK options for command_lists, to get a list_OK after each
+3) Add a list_OK options for command_lists, to get a list_OK after each
 	command
 
-6) put some sort of error reporting for streaming/inputStream!
+4) put some sort of error reporting for streaming/inputStream!
 
-7) Fix charset errors so they don't goto stderr/out
+5) Fix charset errors so they don't goto stderr/out
 
-8) Add a timeout for streams (how long? 1 minutes?)
+6) Add a timeout for streams (how long? 1 minutes?)
 
 
 Post-1.0

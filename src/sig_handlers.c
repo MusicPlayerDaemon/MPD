@@ -44,7 +44,7 @@ int handlePendingSignals() {
 		signal_clear(SIGHUP);
 		if(!isUpdatingDB()) {
                         readDirectoryDB();
-		        incrPlaylistVersion();
+		        playlistVersionChange();
                 }
                 if(myfprintfCloseAndOpenLogFile()<0) return COMMAND_RETURN_KILL;
                 playerCycleLogFiles();

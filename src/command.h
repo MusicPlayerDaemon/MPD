@@ -54,7 +54,7 @@ void finishCommands();
 			current_command = NULL; \
 		} \
 		else { \
-			myfprintf(fp, "ACK [%i@%i] " format "\n", \
+			myfprintf(stderr, "ACK [%i@%i] " format "\n", \
 					(int)error, command_listNum, \
 					##__VA_ARGS__); \
 		} \

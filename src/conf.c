@@ -69,7 +69,7 @@
 #endif
 #endif
 
-char * conf_params[CONF_NUMBER_OF_PARAMS];
+static char * conf_params[CONF_NUMBER_OF_PARAMS];
 
 void initConf() {
 	int i;

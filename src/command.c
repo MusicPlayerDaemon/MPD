@@ -37,43 +37,44 @@
 #include <string.h>
 #include <unistd.h>
 
-#define COMMAND_PLAY            "play"
-#define COMMAND_STOP            "stop"
-#define COMMAND_PAUSE           "pause"
-#define COMMAND_STATUS          "status"
-#define COMMAND_KILL            "kill"
-#define COMMAND_CLOSE           "close"
-#define COMMAND_ADD             "add"
-#define COMMAND_DELETE          "delete"
-#define COMMAND_PLAYLIST        "playlist"
-#define COMMAND_SHUFFLE         "shuffle"
-#define COMMAND_CLEAR           "clear"
-#define COMMAND_SAVE            "save"
-#define COMMAND_LOAD            "load"
-#define COMMAND_LSINFO          "lsinfo"
-#define COMMAND_RM              "rm"
-#define COMMAND_PLAYLISTINFO    "playlistinfo"
-#define COMMAND_FIND            "find"
-#define COMMAND_SEARCH          "search"
-#define COMMAND_UPDATE          "update"
-#define COMMAND_NEXT            "next"
-#define COMMAND_PREVIOUS        "previous"
-#define COMMAND_LISTALL         "listall"
-#define COMMAND_VOLUME          "volume"
-#define COMMAND_REPEAT          "repeat"
-#define COMMAND_RANDOM          "random"
-#define COMMAND_STATS           "stats"
-#define COMMAND_CLEAR_ERROR     "clearerror"
-#define COMMAND_LIST            "list"
-#define COMMAND_MOVE            "move"
-#define COMMAND_SWAP            "swap"
-#define COMMAND_SEEK            "seek"
+#define COMMAND_PLAY           	"play"
+#define COMMAND_STOP           	"stop"
+#define COMMAND_PAUSE          	"pause"
+#define COMMAND_STATUS         	"status"
+#define COMMAND_KILL           	"kill"
+#define COMMAND_CLOSE          	"close"
+#define COMMAND_ADD            	"add"
+#define COMMAND_DELETE         	"delete"
+#define COMMAND_PLAYLIST       	"playlist"
+#define COMMAND_SHUFFLE        	"shuffle"
+#define COMMAND_CLEAR          	"clear"
+#define COMMAND_SAVE           	"save"
+#define COMMAND_LOAD           	"load"
+#define COMMAND_LSINFO         	"lsinfo"
+#define COMMAND_RM             	"rm"
+#define COMMAND_PLAYLISTINFO   	"playlistinfo"
+#define COMMAND_FIND           	"find"
+#define COMMAND_SEARCH         	"search"
+#define COMMAND_UPDATE         	"update"
+#define COMMAND_NEXT           	"next"
+#define COMMAND_PREVIOUS       	"previous"
+#define COMMAND_LISTALL        	"listall"
+#define COMMAND_VOLUME         	"volume"
+#define COMMAND_REPEAT         	"repeat"
+#define COMMAND_RANDOM         	"random"
+#define COMMAND_STATS          	"stats"
+#define COMMAND_CLEAR_ERROR    	"clearerror"
+#define COMMAND_LIST           	"list"
+#define COMMAND_MOVE           	"move"
+#define COMMAND_SWAP           	"swap"
+#define COMMAND_SEEK           	"seek"
 #define COMMAND_LISTALLINFO	"listallinfo"
 #define COMMAND_PING		"ping"
 #define COMMAND_SETVOL		"setvol"
 #define COMMAND_PASSWORD	"password"
 #define COMMAND_CROSSFADE	"crossfade"
-#define COMMAND_URL_HANDLERS    "urlhandlers" 
+#define COMMAND_URL_HANDLERS   	"urlhandlers" 
+#define COMMAND_PLCHANGES	"plchanges" 
 
 #define COMMAND_STATUS_VOLUME           "volume"
 #define COMMAND_STATUS_STATE            "state"
@@ -320,6 +321,20 @@ int handleRm(FILE * fp, unsigned int * permission, int argArrayLength,
 		char ** argArray) 
 {
         return deletePlaylist(fp,argArray[1]);
+}
+
+int handlePlaylistChanges(FILE * fp, unsigned int * permission, 
+		int argArrayLength, char ** argArray) 
+{
+        unsigned long version;
+        char * test;
+
+        version = strtoul(argArray[1], &test, 10);
+        if(*test!='\0') {
+                commandError(fp, ACK_ERROR_ARG, "need a positive integer");
+                return -1;
+        }
+        return playlistChanges(fp, version);
 }
 
 int handlePlaylistInfo(FILE * fp, unsigned int * permission, 
@@ -641,6 +656,7 @@ void initCommands() {
         addCommand(COMMAND_PASSWORD    ,0,                  1, 1,handlePassword,NULL);
         addCommand(COMMAND_CROSSFADE   ,PERMISSION_CONTROL, 1, 1,handleCrossfade,NULL);
         addCommand(COMMAND_URL_HANDLERS,PERMISSION_READ,    0, 0,handleUrlHandlers,NULL);
+        addCommand(COMMAND_PLCHANGES   ,PERMISSION_READ,    1, 1,handlePlaylistChanges,NULL);
 
         sortList(commandList);
 }
