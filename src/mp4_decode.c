@@ -235,7 +235,10 @@ int mp4_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc) {
 			{
 					usleep(10000);
 			}
-			if(dc->stop) eof = 1;
+			if(dc->stop) {
+				eof = 1;
+				break;
+			}
 			else if(!dc->seek) {
 				sampleBufferLen-=size;
 				memcpy(cb->chunks+cb->end*CHUNK_SIZE+chunkLen,
