@@ -1,6 +1,16 @@
 0.12
 ----
-*) add genre and date metadata
+*) add genre,  date, composer metadata
+
+*) rewrite metadata/db handling
+	*) store all metadata entries in table
+	*) each contains a counter reference
+	*) new MpdDBTag, which instead of strings allocated for each metadata 
+		entry, store a char * string to the metadata entry in the table
+	*) multiple artist support
+	*) multiple genre support {char *, int pairs for each metadata entry 
+		indicating the type of metadata and its value)
+	*) MpdDBTag <-> MpdTag interface
 
 *) add support for coverart using freedesktop standard for icons/images
 
@@ -39,13 +49,3 @@
 0.13
 ----
 *) support for dynamically loading plugins
-
-*) rewrite metadata/db handling
-	*) store all metadata entries in table
-	*) each contains a counter reference
-	*) new MpdDBTag, which instead of strings allocated for each metadata 
-		entry, store a char * string to the metadata entry in the table
-	*) multiple artist support
-	*) multiple genre support {char *, int pairs for each metadata entry 
-		indicating the type of metadata and its value)
-	*) MpdDBTag <-> MpdTag interface
