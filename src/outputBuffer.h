@@ -21,6 +21,7 @@
 
 #include "mpd_types.h"
 #include "decode.h"
+#include "audio.h"
 
 #define OUTPUT_BUFFER_DC_STOP   -1
 #define OUTPUT_BUFFER_DC_SEEK   -2
@@ -34,7 +35,7 @@ typedef struct _OutputBuffer {
 	mpd_sint16 volatile end;
 	mpd_sint16 volatile next;
 	mpd_sint8 volatile wrap;
-	float totalTime;
+        AudioFormat audioFormat;
 } OutputBuffer;
 
 void flushOutputBuffer(OutputBuffer * cb);

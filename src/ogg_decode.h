@@ -25,7 +25,7 @@
 
 #include <stdio.h>
 
-int ogg_decode(OutputBuffer * cb, AudioFormat * af, DecoderControl * dc);
+int ogg_decode(OutputBuffer * cb, DecoderControl * dc);
 
 int getOggTotalTime(char * file);
 

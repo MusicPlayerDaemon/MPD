@@ -35,7 +35,6 @@ extern int buffered_chunks;
 
 typedef struct _PlayerData {
 	OutputBuffer buffer;
-	AudioFormat audioFormat;
 	PlayerControl playerControl;
 	DecoderControl decoderControl;
 } PlayerData;

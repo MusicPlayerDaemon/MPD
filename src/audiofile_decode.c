@@ -51,8 +51,7 @@ int getAudiofileTotalTime(char * file)
 	return time;
 }
 
-int audiofile_decode(OutputBuffer * cb, AudioFormat * af, DecoderControl * dc)
-{
+int audiofile_decode(OutputBuffer * cb, DecoderControl * dc) {
 	int fs, frame_count;
 	AFfilehandle af_fp;
 	int bits;
@@ -71,19 +70,20 @@ int audiofile_decode(OutputBuffer * cb, AudioFormat * af, DecoderControl * dc)
 	}
 
 	afGetSampleFormat(af_fp, AF_DEFAULT_TRACK, &fs, &bits);
-	af->bits = bits;
-	af->sampleRate = afGetRate(af_fp, AF_DEFAULT_TRACK);
-	af->channels = afGetChannels(af_fp,AF_DEFAULT_TRACK);
+	dc->audioFormat.bits = bits;
+	dc->audioFormat.sampleRate = afGetRate(af_fp, AF_DEFAULT_TRACK);
+	dc->audioFormat.channels = afGetChannels(af_fp,AF_DEFAULT_TRACK);
+        getOutputAudioFormat(&(dc->audioFormat),&(cb->audioFormat));
 	
 	frame_count = afGetFrameCount(af_fp,AF_DEFAULT_TRACK);
 	
-	cb->totalTime = ((float)frame_count/(float)af->sampleRate);
+	dc->totalTime = ((float)frame_count/(float)dc->audioFormat.sampleRate);
 
-	bitRate = st.st_size*8.0/cb->totalTime/1000.0+0.5;
+	bitRate = st.st_size*8.0/dc->totalTime/1000.0+0.5;
 	
-	if (af->bits != 8 && af->bits != 16) {
+	if (dc->audioFormat.bits != 8 && dc->audioFormat.bits != 16) {
 		ERROR("Only 8 and 16-bit files are supported. %s is %i-bit\n",
-			dc->file,af->bits);
+			dc->file,dc->audioFormat.bits);
 		afCloseFile(af_fp);
 		return -1;
 	}
@@ -100,7 +100,8 @@ int audiofile_decode(OutputBuffer * cb, AudioFormat * af, DecoderControl * dc)
 			if(dc->seek) {
 				cb->end = cb->begin;
 				cb->wrap = 0;
-				current = dc->seekWhere * af->sampleRate;
+				current = dc->seekWhere * 
+                                                dc->audioFormat.sampleRate;
 				afSeekFrame(af_fp, AF_DEFAULT_TRACK,current);
 				
 				dc->seek = 0;
@@ -111,9 +112,9 @@ int audiofile_decode(OutputBuffer * cb, AudioFormat * af, DecoderControl * dc)
 			else {
 				current += ret;
 				sendDataToOutputBuffer(cb,dc,chunk,ret*fs,
-						(float)current /
-						(float)af->sampleRate,
-						bitRate);
+					(float)current /
+					(float)dc->audioFormat.sampleRate,
+					bitRate);
 				if(dc->stop) break;
 				else if(dc->seek) continue;
 			}

@@ -142,7 +142,7 @@ float ogg_getReplayGainScale(char ** comments) {
         return 1.0;
 }
 
-int ogg_decode(OutputBuffer * cb, AudioFormat * af, DecoderControl * dc)
+int ogg_decode(OutputBuffer * cb, DecoderControl * dc)
 {
 	OggVorbis_File vf;
 	ov_callbacks callbacks;
@@ -167,12 +167,13 @@ int ogg_decode(OutputBuffer * cb, AudioFormat * af, DecoderControl * dc)
 	
 	{
 		vorbis_info *vi=ov_info(&vf,-1);
-		af->bits = 16;
-		af->channels = vi->channels;
-		af->sampleRate = vi->rate;
+		dc->audioFormat.bits = 16;
+		dc->audioFormat.channels = vi->channels;
+		dc->audioFormat.sampleRate = vi->rate;
+                getOutputAudioFormat(&(dc->audioFormat),&(cb->audioFormat));
 	}
 
-	cb->totalTime = ov_time_total(&vf,-1);
+	dc->totalTime = ov_time_total(&vf,-1);
 	dc->state = DECODE_STATE_DECODE;
 	dc->start = 0;
 
@@ -203,7 +204,8 @@ int ogg_decode(OutputBuffer * cb, AudioFormat * af, DecoderControl * dc)
 				if((test = ov_bitrate_instant(&vf))>0) {
 					bitRate = test/1000;
 				}
-                                doReplayGain(chunk,ret,af,replayGainScale);
+                                doReplayGain(chunk,ret,&(dc->audioFormat),
+                                                replayGainScale);
 				sendDataToOutputBuffer(cb,dc,chunk,ret,
 					ov_time_tell(&vf),bitRate);
 				if(dc->stop) break;

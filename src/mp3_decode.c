@@ -523,7 +523,7 @@ void initAudioFormatFromMp3DecodeData(mp3DecodeData * data, AudioFormat * af) {
 	af->channels = MAD_NCHANNELS(&(data->frame).header);
 }
 
-int mp3_decode(OutputBuffer * cb, AudioFormat * af, DecoderControl * dc) {
+int mp3_decode(OutputBuffer * cb, DecoderControl * dc) {
 	mp3DecodeData data;
 
 	if(openMp3(dc->file,&data) < 0) {
@@ -531,8 +531,10 @@ int mp3_decode(OutputBuffer * cb, AudioFormat * af, DecoderControl * dc) {
 		return -1;
 	}
 
-	initAudioFormatFromMp3DecodeData(&data,af);
-	cb->totalTime = data.totalTime;
+	initAudioFormatFromMp3DecodeData(&data, &(dc->audioFormat));
+        getOutputAudioFormat(&(dc->audioFormat), &(cb->audioFormat));
+        
+	dc->totalTime = data.totalTime;
 	dc->start = 0;
 	dc->state = DECODE_STATE_DECODE;
 

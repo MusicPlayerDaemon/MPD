@@ -111,9 +111,7 @@ int calculateCrossFadeChunks(PlayerControl * pc, AudioFormat * af) {
 	return (int)chunks;
 }
 
-int waitOnDecode(PlayerControl * pc, AudioFormat * af, DecoderControl * dc,
-		OutputBuffer * cb) 
-{
+int waitOnDecode(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb) {
 	while(decode_pid && *decode_pid>0 && dc->start) my_usleep(1000);
 
 	if(dc->start || dc->error!=DECODE_ERROR_NOERROR) {
@@ -124,7 +122,7 @@ int waitOnDecode(PlayerControl * pc, AudioFormat * af, DecoderControl * dc,
 		return -1;
 	}
 
-	if(openAudioDevice(af)<0) {
+	if(openAudioDevice(&(cb->audioFormat))<0) {
 		strncpy(pc->erroredFile,pc->file,MAXPATHLEN);
 		pc->erroredFile[MAXPATHLEN] = '\0';
 		pc->error = PLAYER_ERROR_AUDIO;
@@ -132,19 +130,17 @@ int waitOnDecode(PlayerControl * pc, AudioFormat * af, DecoderControl * dc,
 		return -1;
 	}
 
-	pc->totalTime = cb->totalTime;
+	pc->totalTime = dc->totalTime;
 	pc->elapsedTime = 0;
 	pc->bitRate = 0;
-	pc->sampleRate = af->sampleRate;
-	pc->bits = af->bits;
-	pc->channels = af->channels;
+	pc->sampleRate = dc->audioFormat.sampleRate;
+	pc->bits = dc->audioFormat.bits;
+	pc->channels = dc->audioFormat.channels;
 
 	return 0;
 }
 
-void decodeSeek(PlayerControl * pc, AudioFormat * af, DecoderControl * dc, 
-		OutputBuffer * cb) 
-{
+void decodeSeek(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb) {
 	if(decode_pid && *decode_pid>0) {
 		cb->next = -1;
 		if(dc->state!=DECODE_STATE_DECODE || dc->error || 
@@ -156,7 +152,7 @@ void decodeSeek(PlayerControl * pc, AudioFormat * af, DecoderControl * dc,
 			cb->wrap = 0;
 			dc->error = 0;
 			dc->start = 1;
-			waitOnDecode(pc,af,dc,cb);
+			waitOnDecode(pc,dc,cb);
 		}
 		if(*decode_pid>0 && dc->state==DECODE_STATE_DECODE) {
 			dc->seekWhere = pc->seekWhere > pc->totalTime-0.1 ?
@@ -205,7 +201,7 @@ void decodeSeek(PlayerControl * pc, AudioFormat * af, DecoderControl * dc,
 	} \
 	if(pc->seek) { \
 		pc->totalPlayTime+= pc->elapsedTime-pc->beginTime; \
-		decodeSeek(pc,af,dc,cb); \
+		decodeSeek(pc,dc,cb); \
 		pc->beginTime = pc->elapsedTime; \
 		doCrossFade = 0; \
 		nextChunk =  -1; \
@@ -217,8 +213,8 @@ void decodeSeek(PlayerControl * pc, AudioFormat * af, DecoderControl * dc,
 		return; \
 	}
 
-int decoderInit(PlayerControl * pc, OutputBuffer * cb, AudioFormat *af, 
-			DecoderControl * dc) {
+int decoderInit(PlayerControl * pc, OutputBuffer * cb, DecoderControl * dc) {
+			
 	int pid;
 	int ret; 
 	decode_pid = &(pc->decode_pid);
@@ -237,30 +233,30 @@ int decoderInit(PlayerControl * pc, OutputBuffer * cb, AudioFormat *af,
 				switch(pc->decodeType) {
 #ifdef HAVE_MAD
 				case DECODE_TYPE_MP3:
-					ret = mp3_decode(cb,af,dc);
+					ret = mp3_decode(cb,dc);
 					break;
 #endif
 #ifdef HAVE_FAAD
 				case DECODE_TYPE_AAC:
-					ret = aac_decode(cb,af,dc);
+					ret = aac_decode(cb,dc);
 					break;
 				case DECODE_TYPE_MP4:
-					ret = mp4_decode(cb,af,dc);
+					ret = mp4_decode(cb,dc);
 					break;
 #endif
 #ifdef HAVE_OGG
 				case DECODE_TYPE_OGG:
-					ret = ogg_decode(cb,af,dc);
+					ret = ogg_decode(cb,dc);
 					break;
 #endif
 #ifdef HAVE_FLAC
 				case DECODE_TYPE_FLAC:
-					ret = flac_decode(cb,af,dc);
+					ret = flac_decode(cb,dc);
 					break;
 #endif
 #ifdef HAVE_AUDIOFILE
 				case DECODE_TYPE_AUDIOFILE:
-					ret = audiofile_decode(cb,af,dc);
+					ret = audiofile_decode(cb,dc);
 					break;
 #endif
 				default:
@@ -313,7 +309,6 @@ int decoderInit(PlayerControl * pc, OutputBuffer * cb, AudioFormat *af,
 void decode() {
 	OutputBuffer * cb;
 	PlayerControl * pc;
-	AudioFormat * af;
 	DecoderControl * dc;
 
 	cb = &(getPlayerData()->buffer);
@@ -323,13 +318,12 @@ void decode() {
 	cb->wrap = 0;
 	pc = &(getPlayerData()->playerControl);
 	dc = &(getPlayerData()->decoderControl);
-	af = &(getPlayerData()->audioFormat);
 	dc->error = 0;
 	dc->start = 1;
 	cb->next = -1;
 
 	if(decode_pid==NULL || *decode_pid<=0) {
-		if(decoderInit(pc,cb,af,dc)<0) return;
+		if(decoderInit(pc,cb,dc)<0) return;
 	}
 
 	{
@@ -343,7 +337,7 @@ void decode() {
 		int nextChunk = -1;
 		int test;
 
-		if(waitOnDecode(pc,af,dc,cb)<0) return;
+		if(waitOnDecode(pc,dc,cb)<0) return;
 
 		pc->state = PLAYER_STATE_PLAY;
 		pc->play = 0;
@@ -371,12 +365,13 @@ void decode() {
 			}
 			if(cb->next>=0 && doCrossFade==0 && !dc->start) {
 				nextChunk = -1;
-				if(isCurrentAudioFormat(af)) {
+				if(isCurrentAudioFormat(&(cb->audioFormat))) {
 					doCrossFade = 1;
 					crossFadeChunks = 
-						calculateCrossFadeChunks(pc,af);
+						calculateCrossFadeChunks(pc,
+                                                        &(cb->audioFormat));
 					if(!crossFadeChunks ||
-						pc->crossFade>=cb->totalTime) 
+						pc->crossFade>=dc->totalTime) 
 					{
 						doCrossFade = -1;
 					}
@@ -415,7 +410,7 @@ void decode() {
 								cb->begin],
 							cb->chunkSize[
 								nextChunk],
-							af,
+							&(cb->audioFormat),
 							((float)fadePosition)/
 							crossFadeChunks);
 						if(cb->chunkSize[nextChunk]>
@@ -440,7 +435,7 @@ void decode() {
 				pcm_volumeChange(cb->chunks+cb->begin*
 					CHUNK_SIZE,
 					cb->chunkSize[cb->begin],
-					af,
+					&(cb->audioFormat),
 					pc->softwareVolume);
 				if(playAudio(cb->chunks+cb->begin*CHUNK_SIZE,
 					cb->chunkSize[cb->begin])<0) 
@@ -485,7 +480,7 @@ void decode() {
 				}
 				else {
 					cb->next = -1;
-					if(waitOnDecode(pc,af,dc,cb)<0) return;
+					if(waitOnDecode(pc,dc,cb)<0) return;
 					nextChunk = -1;
 					doCrossFade = 0;
 					crossFadeChunks = 0;

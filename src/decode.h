@@ -22,6 +22,7 @@
 #include "../config.h"
 
 #include "mpd_types.h"
+#include "audio.h"
 
 #include <stdio.h>
 #include <sys/param.h>
@@ -48,8 +49,10 @@ typedef struct _DecoderControl {
 	volatile mpd_sint8 seek;
 	volatile mpd_sint8 seekError;
 	volatile mpd_sint8 cycleLogFiles;
-	double seekWhere;
+	volatile double seekWhere;
 	char file[MAXPATHLEN+1];
+        AudioFormat audioFormat;
+        volatile float totalTime;
 } DecoderControl;
 
 void decodeSigHandler(int sig);

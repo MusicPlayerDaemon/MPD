@@ -251,7 +251,7 @@ int getAacTotalTime(char * file) {
 }
 
 
-int aac_decode(OutputBuffer * cb, AudioFormat * af, DecoderControl * dc) {
+int aac_decode(OutputBuffer * cb, DecoderControl * dc) {
 	float time;
 	float totalTime;
 	faacDecHandle decoder;
@@ -306,9 +306,9 @@ int aac_decode(OutputBuffer * cb, AudioFormat * af, DecoderControl * dc) {
 		return -1;
 	}
 
-	af->bits = 16;
+	dc->audioFormat.bits = 16;
 
-	cb->totalTime = totalTime;
+	dc->totalTime = totalTime;
 
 	time = 0.0;
 
@@ -342,8 +342,10 @@ int aac_decode(OutputBuffer * cb, AudioFormat * af, DecoderControl * dc) {
 #endif
 
 		if(dc->start) {
-			af->channels = frameInfo.channels;
-			af->sampleRate = sampleRate;
+			dc->audioFormat.channels = frameInfo.channels;
+			dc->audioFormat.sampleRate = sampleRate;
+                        getOutputAudioFormat(&(dc->audioFormat),
+                                        &(cb->audioFormat));
 			dc->state = DECODE_STATE_DECODE;
 			dc->start = 0;
 		}

@@ -27,7 +27,7 @@
 
 #include "playerData.h"
 
-int audiofile_decode(OutputBuffer * cb, AudioFormat * af, DecoderControl * dc);
+int audiofile_decode(OutputBuffer * cb, DecoderControl * dc);
 
 int getAudiofileTotalTime(char * file);
 

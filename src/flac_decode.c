@@ -26,6 +26,7 @@
 #include "inputStream.h"
 #include "outputBuffer.h"
 #include "replayGain.h"
+#include "audio.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -40,7 +41,6 @@ typedef struct {
 	int bitRate;
 	FLAC__uint64 position;
 	OutputBuffer * cb;
-	AudioFormat * af;
 	DecoderControl * dc;
         InputStream inStream;
         float replayGainScale;
@@ -67,7 +67,7 @@ FLAC__SeekableStreamDecoderLengthStatus flacLength(
                 const FLAC__SeekableStreamDecoder *, FLAC__uint64 *, void *);
 FLAC__bool flacEOF(const FLAC__SeekableStreamDecoder *, void *);
 
-int flac_decode(OutputBuffer * cb, AudioFormat * af, DecoderControl *dc) {
+int flac_decode(OutputBuffer * cb, DecoderControl *dc) {
 	FLAC__SeekableStreamDecoder * flacDec;
 	FlacData data;
 	int status = 1;
@@ -77,7 +77,6 @@ int flac_decode(OutputBuffer * cb, AudioFormat * af, DecoderControl *dc) {
 	data.position = 0;
 	data.bitRate = 0;
 	data.cb = cb;
-	data.af = af;
 	data.dc = dc;
         data.replayGainScale = 1.0;
 
@@ -146,14 +145,14 @@ int flac_decode(OutputBuffer * cb, AudioFormat * af, DecoderControl *dc) {
 		}
 		if(dc->seek) {
 			FLAC__uint64 sampleToSeek = dc->seekWhere*
-					af->sampleRate+0.5;
+					dc->audioFormat.sampleRate+0.5;
 			cb->end = cb->begin;
 			cb->wrap = 0;
 			if(FLAC__seekable_stream_decoder_seek_absolute(flacDec,
 						sampleToSeek))
 			{
 				data.time = ((float)sampleToSeek)/
-					af->sampleRate;
+					dc->audioFormat.sampleRate;
 				data.position = 0;
 			}
 			dc->seek = 0;
@@ -354,13 +353,17 @@ void flacMetadata(const FLAC__SeekableStreamDecoder *dec,
 
         switch(block->type) {
         case FLAC__METADATA_TYPE_STREAMINFO:
-		data->af->bits = block->data.stream_info.bits_per_sample;
-		data->af->bits = 16;
-		data->af->sampleRate = block->data.stream_info.sample_rate;
-		data->af->channels = block->data.stream_info.channels;
-		data->cb->totalTime = 
+		data->dc->audioFormat.bits = 
+                                block->data.stream_info.bits_per_sample;
+		data->dc->audioFormat.sampleRate = 
+                                block->data.stream_info.sample_rate;
+		data->dc->audioFormat.channels = 
+                                block->data.stream_info.channels;
+		data->dc->totalTime = 
                                 ((float)block->data.stream_info.total_samples)/
-			        data->af->sampleRate;
+			        data->dc->audioFormat.sampleRate;
+                getOutputAudioFormat(&(data->dc->audioFormat),
+                                &(data->cb->audioFormat));
                 break;
         case FLAC__METADATA_TYPE_VORBIS_COMMENT:
                 flacParseReplayGain(block,data);
@@ -370,7 +373,7 @@ void flacMetadata(const FLAC__SeekableStreamDecoder *dec,
 }
 
 int flacSendChunk(FlacData * data) {
-        doReplayGain(data->chunk,data->chunk_length,data->af,
+        doReplayGain(data->chunk,data->chunk_length,&(data->dc->audioFormat),
                         data->replayGainScale);
 
 	switch(sendDataToOutputBuffer(data->cb,data->dc,data->chunk,
@@ -413,7 +416,7 @@ FLAC__StreamDecoderWriteStatus flacWrite(const FLAC__SeekableStreamDecoder *dec,
 				c_chan++, d_samp++) {
 			u16 = buf[c_chan][c_samp];
 			uc = (unsigned char *)&u16;
-			for(i=0;i<(data->af->bits/8);i++) {
+			for(i=0;i<(data->dc->audioFormat.bits/8);i++) {
 				if(data->chunk_length>=CHUNK_SIZE) {
 					if(flacSendChunk(data)<0) {
 						return FLAC__STREAM_DECODER_WRITE_STATUS_ABORT;

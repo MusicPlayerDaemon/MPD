@@ -33,5 +33,8 @@ void pcm_volumeChange(char * buffer, int bufferSize, AudioFormat * format,
 void pcm_mix(char * buffer1, char * buffer2, size_t bufferSize1, 
 		size_t bufferSize2, AudioFormat * format, float portion1);
 
+void pmc_convertAudioFormat(AudioFormat * inFormat, char * inBuffer, size_t
+                inSize, size_t * inLeft, AudioFormat * outFormat, 
+                char * outBuffer, size_t outSize, size_t * outLeft);
 #endif
 /* vim:set shiftwidth=4 tabstop=8 expandtab: */

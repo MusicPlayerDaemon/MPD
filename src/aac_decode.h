@@ -27,7 +27,7 @@
 
 int getAacTotalTime(char * file);
 
-int aac_decode(OutputBuffer * cb, AudioFormat * af, DecoderControl * dc);
+int aac_decode(OutputBuffer * cb, DecoderControl * dc);
 
 #endif /* HAVE_FAAD */
 

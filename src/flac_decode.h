@@ -25,7 +25,7 @@
 
 #include <stdio.h>
 
-int flac_decode(OutputBuffer * cb, AudioFormat * af, DecoderControl * dc);
+int flac_decode(OutputBuffer * cb, DecoderControl * dc);
 
 #endif
 /* vim:set shiftwidth=8 tabstop=8 expandtab: */

@@ -84,7 +84,7 @@ uint32_t mp4_inputStreamSeekCallback(void *inStream, uint64_t position) {
 }       
 		    
 
-int mp4_decode(OutputBuffer * cb, AudioFormat * af, DecoderControl * dc) {
+int mp4_decode(OutputBuffer * cb, DecoderControl * dc) {
 	mp4ff_t * mp4fh;
 	mp4ff_callback_t * mp4cb; 
 	int32_t track;
@@ -152,7 +152,7 @@ int mp4_decode(OutputBuffer * cb, AudioFormat * af, DecoderControl * dc) {
 #endif
 	faacDecSetConfiguration(decoder,config);
 
-	af->bits = 16;
+	dc->audioFormat.bits = 16;
 
 	mp4Buffer = NULL;
 	mp4BufferSize = 0;
@@ -169,8 +169,8 @@ int mp4_decode(OutputBuffer * cb, AudioFormat * af, DecoderControl * dc) {
 		return -1;
 	}
 
-	af->sampleRate = sampleRate;
-	af->channels = channels;
+	dc->audioFormat.sampleRate = sampleRate;
+	dc->audioFormat.channels = channels;
 	time = mp4ff_get_track_duration_use_offsets(mp4fh,track);
 	scale = mp4ff_time_scale(mp4fh,track);
 
@@ -184,7 +184,7 @@ int mp4_decode(OutputBuffer * cb, AudioFormat * af, DecoderControl * dc) {
 		free(mp4cb);
 		return -1;
 	}
-	cb->totalTime = ((float)time)/scale;
+	dc->totalTime = ((float)time)/scale;
 
 	numSamples = mp4ff_num_samples(mp4fh,track);
 
@@ -255,8 +255,10 @@ int mp4_decode(OutputBuffer * cb, AudioFormat * af, DecoderControl * dc) {
 #ifdef HAVE_FAACDECFRAMEINFO_SAMPLERATE
 			scale = frameInfo.samplerate;
 #endif
-			af->sampleRate = scale;
-			af->channels = frameInfo.channels;
+			dc->audioFormat.sampleRate = scale;
+			dc->audioFormat.channels = frameInfo.channels;
+                        getOutputAudioFormat(&(dc->audioFormat),
+                                        &(cb->audioFormat));
 			dc->state = DECODE_STATE_DECODE;
 			dc->start = 0;
 		}
