@@ -45,8 +45,8 @@
 #include <errno.h>
 #include <fcntl.h>
 
-int player_pid = 0;
-int player_termSent = 0;
+volatile int player_pid = 0;
+volatile int player_termSent = 0;
 
 void resetPlayer() {
 	int pid;

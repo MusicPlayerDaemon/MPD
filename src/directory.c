@@ -72,11 +72,11 @@ Directory * mp3rootDirectory = NULL;
 
 char directorydb[MAXPATHLEN+1];
 
-int directory_updatePid = 0;
+volatile int directory_updatePid = 0;
 
-int directory_reReadDB = 0;
+volatile int directory_reReadDB = 0;
 
-mpd_uint16 directory_updateJobId = 0;
+volatile mpd_uint16 directory_updateJobId = 0;
 
 DirectoryList * newDirectoryList();
 

@@ -51,32 +51,32 @@
 #define PLAYER_QUEUE_LOCKED	1
 
 typedef struct _PlayerControl {
-	mpd_sint8 volatile decodeType;
-	mpd_sint8 volatile stop;
-	mpd_sint8 volatile play;
-	mpd_sint8 volatile pause;
-	mpd_sint8 volatile state;
-	mpd_sint8 volatile closeAudio;
-	mpd_sint8 volatile error;
-	mpd_uint16 bitRate;
-	mpd_sint8 bits;
-	mpd_sint8 channels;
-	mpd_uint32 sampleRate;
-	float beginTime;
-	float totalTime;
-	float elapsedTime;
+	volatile mpd_sint8 decodeType;
+	volatile mpd_sint8 stop;
+	volatile mpd_sint8 play;
+	volatile mpd_sint8 pause;
+	volatile mpd_sint8 state;
+	volatile mpd_sint8 closeAudio;
+	volatile mpd_sint8 error;
+	volatile mpd_uint16 bitRate;
+	volatile mpd_sint8 bits;
+	volatile mpd_sint8 channels;
+	volatile mpd_uint32 sampleRate;
+	volatile float beginTime;
+	volatile float totalTime;
+	volatile float elapsedTime;
 	char file[MAXPATHLEN+1];
 	char erroredFile[MAXPATHLEN+1];
-	mpd_sint8 volatile queueState;
-	mpd_sint8 volatile queueLockState;
-	mpd_sint8 volatile lockQueue;
-	mpd_sint8 volatile unlockQueue;
-	mpd_sint8 volatile seek;
-	double volatile seekWhere;
-	float crossFade;
-	mpd_uint16 softwareVolume;
-	double totalPlayTime;
-	int volatile decode_pid;
+	volatile mpd_sint8 queueState;
+	volatile mpd_sint8 queueLockState;
+	volatile mpd_sint8 lockQueue;
+	volatile mpd_sint8 unlockQueue;
+	volatile mpd_sint8 seek;
+	volatile double seekWhere;
+	volatile float crossFade;
+	volatile mpd_uint16 softwareVolume;
+	volatile double totalPlayTime;
+	volatile int decode_pid;
 } PlayerControl;
 
 void player_sigChldHandler(int pid, int status);
