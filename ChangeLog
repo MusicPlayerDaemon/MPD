@@ -1,4 +1,4 @@
-ver 0.10.0 (2004/3/1)
+ver 0.10.0 (2004/3/2)
 1) Use UTF-8 for all client communications
 2) Crossfading support
 3) Password Authentication (all in plaintext)
@@ -9,10 +9,12 @@ ver 0.10.0 (2004/3/1)
 8) setvol command (deprecates volume command)
 9) add command takes directories
 10) Path's in config file now work with ~
-11) Reenable playTime in stats display
-12) Fix a segfault when doing: add ""
-13) Fix a segfault with flac vorbis comments simply being "="
-14) Fix a segfault/bug in queueNextSong with repeat+random
+11) Add samplerate,bits, and channels to status
+12) Reenable playTime in stats display
+13) Fix a segfault when doing: add ""
+14) Fix a segfault with flac vorbis comments simply being "="
+15) Fix a segfault/bug in queueNextSong with repeat+random
+16) Fix a bug, where one process may segfault, and cause more processes to spawn w/o killing ones that lost their parent.
 
 ver 0.9.4 (2004/1/21)
 1) Fix a bug where updated tag info wasn't being detected
