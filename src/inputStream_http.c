@@ -407,6 +407,9 @@ static int getHTTPHello(InputStream * inStream) {
 
 	/*data->prebuffer = 1;*/
 
+	/*mark as unseekable till we actually implement seeking*/
+	inStream->seekable = 0;
+
         return 0;
 }
 

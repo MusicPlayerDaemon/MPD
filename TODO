@@ -10,12 +10,13 @@
 		2) if seekable, at some point after init, mark this!
 		3) if not seekable, reset buffer, and elapsedTime when
 			unpaused
-	e) ogg streams
-	f) fetch metadata and store in DecoderControl and pass to 
+	e) put some sort of error reporting for streaming/inputStream!
+	f) ogg streams
+	g) fetch metadata and store in DecoderControl and pass to 
 		PlayerControl
 		1) eventually deal with icy-metadata
 		2) parse metadata on the fly in decoders
-	g) command for dealing with the changing metadata, currentsonginfo
+	h) command for dealing with the changing metadata, currentsonginfo
 		or something
 
 2) how to deal with streams and the db
@@ -30,6 +31,7 @@
 3) streaming and playing in general
 	a) put errors in error stuff of PlayerControl and report this to
 		status and print to error logs
+	b) make sure all decoders can handle bad seeks well (need to fix mp3)
 
 4) resampling audio for compatibility, and better gapless/crossfading
 	a) use resampling from oggenc (is it fast enough for realtime?)
