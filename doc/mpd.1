@@ -28,11 +28,17 @@ Read more about MPD on http://www.musicpd.org
 (Re)Crete the db file for mpd.
 .TP
 .BI --help
-Output a brief help message.
 .br
+Output a brief help message.
+.TP
+.BI --no-create-db
+Do not create the db file for mpd, even if it doesn't exist.
 .TP
 .BI --no-daemon
-Don't detach from console or redirect output to log files.
+Don't detach from console.
+.TP
+.BI --stdout
+Don't redirect output to log files.
 .TP
 .BI --verbose
 Output verbose amounts of information to the logs
