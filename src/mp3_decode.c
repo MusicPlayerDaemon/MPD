@@ -522,7 +522,6 @@ int mp3Read(mp3DecodeData * data, OutputBuffer * cb, DecoderControl * dc) {
 				        data->currentFrame = i;
 				        data->muteFrame = 0;
                                 }
-                                else dc->seekError = 1;
 				dc->seek = 0;
 			}
 		}

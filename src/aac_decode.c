@@ -364,10 +364,7 @@ int aac_decode(OutputBuffer * cb, DecoderControl * dc) {
 
 		sendDataToOutputBuffer(cb,dc,sampleBuffer,sampleBufferLen,
 				time,bitRate);
-		if(dc->seek) {
-			dc->seekError = 1;
-			dc->seek = 0;
-		}
+		if(dc->seek) dc->seek = 0;
 		else if(dc->stop) {
 			eof = 1;
 			break;

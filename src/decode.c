@@ -179,15 +179,11 @@ int decodeSeek(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb,
 						pc->totalTime-0.1 : 
 						pc->seekWhere;
 			dc->seekWhere = 0 > dc->seekWhere ? 0 : dc->seekWhere;
-			dc->seekError = 0;
                         dc->seekChunk = -1;
 			dc->seek = 1;
-			/*pc->bitRate = 0;*/
-			/*while(*decode_pid>0 && dc->seek) my_usleep(1000);*/
-			/*if(!dc->seekError) {*/
-                                ret = 0;
-                                pc->elapsedTime = dc->seekWhere;
-                        /*}*/
+                        pc->elapsedTime = dc->seekWhere;
+		        pc->beginTime = pc->elapsedTime;
+                        ret = 0;
 		}
 	}
 	pc->seek = 0;
@@ -228,7 +224,6 @@ int decodeSeek(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb,
 	if(pc->seek) { \
 		pc->totalPlayTime+= pc->elapsedTime-pc->beginTime; \
 		if(decodeSeek(pc,dc,cb,&decodeWaitedOn) == 0) { \
-		        pc->beginTime = pc->elapsedTime; \
 		        doCrossFade = 0; \
 		        nextChunk =  -1; \
 		        bbp = 0; \

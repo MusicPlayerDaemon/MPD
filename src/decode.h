@@ -52,7 +52,6 @@ typedef struct _DecoderControl {
 	volatile mpd_uint16 error;
 	volatile mpd_sint8 seek;
 	volatile mpd_sint16 seekChunk;
-	volatile mpd_sint8 seekError;
 	volatile mpd_sint8 cycleLogFiles;
 	volatile double seekWhere;
 	char file[MAXPATHLEN+1];
