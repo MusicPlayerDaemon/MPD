@@ -117,6 +117,7 @@ void directory_sigChldHandler(int pid, int status) {
 			DEBUG("direcotry_sigChldHandler: "
 					"updated db succesffully\n");
 		}
+		else ERROR("problems updating db\n");
 		directory_updatePid = 0;
 	}
 }
@@ -127,8 +128,12 @@ int updateInit(FILE * fp, List * pathList) {
 		return -1;
 	}
 
+	/* need to block CHLD signal, cause it can exit before we
+		even get a chance to assign directory_updatePID */
+	blockSignals();	
 	directory_updatePid = fork();
        	if(directory_updatePid==0) {
+		unblockSignals();
               	/* child */
                	struct sigaction sa;
                	sa.sa_flags = 0;
@@ -163,8 +168,6 @@ int updateInit(FILE * fp, List * pathList) {
 				}
 				else {
 					if(updateDirectory(directory)<0)  {
-						ERROR("problems updating music "
-							"db\n");
 						exit(EXIT_FAILURE);
 					}
 				}
@@ -175,19 +178,19 @@ int updateInit(FILE * fp, List * pathList) {
 		if(writeDirectoryDB()<0) {
 			ERROR("problems writing music db file, \"%s\"\n",
 					directorydb);
-			myfprintf(fp,"%s problems writing music db\n",
-					COMMAND_RESPOND_ERROR);
 			exit(EXIT_FAILURE);
 		}
 		exit(EXIT_SUCCESS);
 	}
 	else if(directory_updatePid < 0) {
+		unblockSignals();
 		ERROR("updateInit: Problems forking()'ing\n");
 		myfprintf(fp,"%s problems trying to update\n",
 				COMMAND_RESPOND_ERROR);
 		directory_updatePid = 0;
 		return -1;
 	}
+	unblockSignals();
 
 	directory_updateJobId++;
 	if(directory_updateJobId > 1<<15) directory_updateJobId = 1;

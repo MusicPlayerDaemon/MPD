@@ -31,6 +31,7 @@
 #include "volume.h"
 #include "playerData.h"
 #include "permission.h"
+#include "sig_handlers.h"
 
 #include <stdio.h>
 #include <sys/types.h>
@@ -88,11 +89,14 @@ void player_sigChldHandler(int pid, int status) {
 }
 
 int playerInit() {
+	blockSignals();
 	player_pid = fork();
-
 	if(player_pid==0) {
 		PlayerControl * pc = &(getPlayerData()->playerControl);
 		struct sigaction sa;
+
+		unblockSignals();
+
 		sa.sa_flags = 0;
 		sigemptyset(&sa.sa_mask);
 
@@ -136,11 +140,13 @@ int playerInit() {
 		exit(EXIT_SUCCESS);
 	}
 	else if(player_pid<0) {
+		unblockSignals();
 		ERROR("player Problems fork()'ing\n");
 		player_pid = 0;
 
 		return -1;
 	}
+	unblockSignals();
 
 	return 0;
 }

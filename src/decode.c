@@ -25,6 +25,7 @@
 #include "audio.h"
 #include "path.h"
 #include "log.h"
+#include "sig_handlers.h"
 
 #ifdef HAVE_MAD
 #include "mp3_decode.h"
@@ -216,10 +217,13 @@ int decoderInit(PlayerControl * pc, Buffer * cb, AudioFormat *af,
 	int pid;
 	int ret; 
 	decode_pid = &(pc->decode_pid);
+
+	blockSignals();
 	pid = fork();
 
 	if(pid==0) {
 		/* CHILD */
+		unblockSignals();
 
 		while(1) {
 			if(dc->start) {
@@ -279,12 +283,15 @@ int decoderInit(PlayerControl * pc, Buffer * cb, AudioFormat *af,
 		/* END OF CHILD */
 	}
 	else if(pid<0) {
+		unblockSignals();
 		strncpy(pc->erroredFile,pc->file,MAXPATHLEN);
 		pc->erroredFile[MAXPATHLEN] = '\0';
 		pc->error = PLAYER_ERROR_SYSTEM;
 		return -1;
 	}
-	else *decode_pid = pid;
+
+	*decode_pid = pid;
+	unblockSignals();
 
 	return 0;
 }
