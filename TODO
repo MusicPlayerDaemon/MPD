@@ -18,7 +18,6 @@
 	*) allowing "pausing" of audio output devices
 	*) while pausing, play silence for the devices that don't support 
 	   "pausing"
-	*) write a mac os X native audioOutput
 	*) write a esd native audioOutput
 	*) write a sun native audioOutput
 	*) need better resampling code
