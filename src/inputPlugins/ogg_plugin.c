@@ -317,7 +317,7 @@ int ogg_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream)
 			if((test = ov_bitrate_instant(&vf))>0) {
 				bitRate = test/1000;
 			}
-                	doReplayGain(chunk,ret,&(dc->audioFormat), 
+                	doReplayGain(chunk,chunkpos,&(dc->audioFormat), 
 					replayGainScale);
 			sendDataToOutputBuffer(cb, inStream, dc, 
 						inStream->seekable,  
