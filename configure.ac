@@ -525,21 +525,9 @@ AC_OUTPUT(src/mp4ff/Makefile doc/Makefile src/Makefile Makefile )
 echo ""
 echo "########### MPD CONFIGURATION ############"
 echo ""
-echo "Volume Mixer Support:"
-if test x$enable_oss = xyes; then
-	echo "OSS mixer support .............enabled"
-else
-	echo "OSS mixer support .............disabled"
-fi
 
-if test x$enable_alsa = xyes; then
-	echo "ALSA mixer support ............enabled"
-else
-	echo "ALSA mixer support ............disabled"
-fi
-
-echo ""
 echo "i18n Support:"
+
 if test x$enable_iconv = xyes; then
 	echo "iconv support .................enabled"
 else
@@ -559,7 +547,24 @@ else
 fi
 
 echo ""
-echo "Audio Format Support:"
+
+echo "Volume Mixer Support:"
+
+if test x$enable_oss = xyes; then
+	echo "OSS mixer support .............enabled"
+else
+	echo "OSS mixer support .............disabled"
+fi
+
+if test x$enable_alsa = xyes; then
+	echo "ALSA mixer support ............enabled"
+else
+	echo "ALSA mixer support ............disabled"
+fi
+
+echo ""
+
+echo "Audio Output Support:"
 if test x$enable_ao = xyes; then
 	echo "Playing audio via libao .......enabled"
 else
@@ -572,11 +577,21 @@ else
 	echo "Playing audio via OSS .........disabled"
 fi
 
+if test x$enable_alsa = xyes; then
+	echo "Playing audio via ALSA ........enabled"
+else
+	echo "Playing audio via ALSA ........disabled"
+fi
+
 if test x$enable_shout = xyes; then
 	echo "Streaming through shout .......enabled"
 else
 	echo "Streaming through shout .......disabled"
 fi
+
+echo ""
+
+echo "Audio Format Support:"
 
 if test x$enable_id3 = xyes; then
 	echo "ID3 tag support ...............enabled"
