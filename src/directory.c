@@ -943,6 +943,7 @@ void readDirectoryInfo(FILE * fp,Directory * directory) {
 						(void *)subDirectory);
 			}
 
+			free(name);
 			free(key);
 			readDirectoryInfo(fp,subDirectory);
 		}
