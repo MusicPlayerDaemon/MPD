@@ -226,6 +226,9 @@ int mp4_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc) {
 						mp4BufferSize);
 		if(mp4Buffer) free(mp4Buffer);
 		if(frameInfo.error > 0) {
+			ERROR("error decoding MP4 file: %s\n",dc->file);
+			ERROR("faad2 error: %s\n",
+				faacDecGetErrorMessage(frameInfo.error));
 			eof = 1;
 			break;
 		}

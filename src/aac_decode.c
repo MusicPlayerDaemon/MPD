@@ -325,6 +325,9 @@ int aac_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc) {
 		advanceAacBuffer(&b,frameInfo.bytesconsumed);
 
 		if(frameInfo.error > 0) {
+			ERROR("error decoding AAC file: %s\n",dc->file);
+			ERROR("faad2 error: %s\n",
+				faacDecGetErrorMessage(frameInfo.error));
 			eof = 1;
 			break;
 		}
