@@ -2,118 +2,191 @@
 # For a full description of all config parameters,
 # Check the mpd man page, "man mpd".
 
-
-########## REQUIRED ###############
+##################### REQUIRED ###########################
 port 			"6600"
 music_directory 	"~/music"
 playlist_directory 	"~/.mpd/playlists"
 log_file 		"~/.mpd/mpd.log"
 error_file 		"~/.mpd/mpd.error"
-###################################
+##########################################################
 
-
-###################################
+##########################################################
 # EVERYTHING ELSE IS OPTIONAL
-###################################
+##########################################################
 
-
-######### FILESYSTEM SETTINGS ###########
-# If filenames or directory names don't
-#     display correctly, set the character 
-#     set (encoding) for the filesystem
-#     here. The fileystem encoding is 
-#     typically "ISO-8859-1" or "UTF-8".
-#     After changing fileystem_charset,
-#     recreate the db: mpd --create-db
-#filesystem_charset "ISO-8859-1"
-#########################################
-
-
-########### OPTIONAL FILES ##############
-# Location of DB file 
-#db_file		"~/.mpd/mpddb"
+################# FILESYSTEM SETTINGS ####################
 #
-# State file for storing state of mpd 
-#     when it is shutdown.  MPD will restore
-#     the state (i.e. load playlist, start
-#     playing, etc) upon restart.
+# If the names of files or directories are 
+# not correctly displayed then set the 
+# following to the filesystem coding. 
+#
+#	Usually this is either:
+#	ISO-8859-1 or UTF-8
+#
+# After changing the filesystem_charset
+# you will need to recreate the db:
+#	mpd --create-db
+#
+#filesystem_charset "ISO-8859-1"
+#
+##########################################################
+
+#################### OPTIONAL FILES ######################
+#
+# Location of DB file 
+#
+#db_file		"~/.mpd/mpd.db"
+#
+# The state file (if set) will be a file
+# for storing all current information 
+# (playlist, playing/paused, etc...) from
+# the last MPD session. This will be used
+# to recreate your last MPD session after
+# restart.
+#
 #state_file		"~/.mpd/mpdstate"
-##########################################
+#
+##########################################################
 
 
-######### VOLUME MIXER ############
-# for OSS Mixer
-#mixer_type		"oss"
-#mixer_device 		"/dev/mixer"
-#mixer_control		"Pcm"
-
-# for Alsa Mixer 
+################### VOLUME MIXER #########################
+#
+# Examples:
+# ALSA Mixer 
 #mixer_type		"alsa"
 #mixer_device		"default"
 #mixer_control		"PCM"
-
-# for Software Mixer
+#
+# OSS Mixer
+#mixer_type		"oss"
+#mixer_device 		"/dev/mixer"
+#mixer_control		"PCM"
+#
+# Software Mixer
 #mixer_type		"software"
-##################################
+#
+##########################################################
 
 
-######### AUDIO OUTPUT ###########
-# for OSS Audio Output
+################## AUDIO OUTPUT ##########################
+#
+# OSS Audio Output
 #ao_driver 		"oss"
 #ao_driver_options 	"dsp=/dev/dsp"
-
-# for ALSA Audio Output
+#
+# ALSA Audio Output
 #ao_driver		"alsa09"
 #ao_driver_options	"dev=hw:0,0"
-
-# misc audio output options
+#
+# Set this if you have problems 
+# playing audio files.
+# This will resample your music so
+# that it comes out at the set rate. 
+#
+#audio_output_format	"44100:16:2"
+#
+# You should not need mess with 
+# this value unless you know 
+# what you're doing.
+#
 #audio_write_size	"1024"
-# use track or album replaygain
+#
+##########################################################
+
+################# REPLAYGAIN #############################
+#
+# Use Replay Gain (album or title)
+#	http://www.replaygain.org
+#
 #replaygain		"album"
-##################################
+#
+# Sets the pre-amp used for files that have replaygain
+# info.  Valid values are between -15 to 15 (in dB).
+#
+#replaygain_preamp	"0"
+#
+##########################################################
 
 
-#### OUTPUT BUFFER SETTINGS ######
+################ OUTPUT BUFFER SETTINGS ##################
+#
+# You should not need to mess with this
+# unless you know what you're doing.
+#
 #audio_buffer_size	"2048"
+#
+# This means exactly what it says, it will
+# buffer your file up to the percentage of
+# the buffer before it begins playing.
+#
 #buffer_before_play 	"25%"
-##################################
+#
+##########################################################
 
 
-############ HTTP PROXY ################
+################### HTTP PROXY ###########################
+#
 # http_proxy_host	"proxy.isp.com"
 # http_proxy_port	"8080"
 # http_proxy_user	"user"
 # http_proxy_password	"password"
-########################################
+#
+##########################################################
 
 
-########### SECURITY SETTINGS ############
-# if you start mpd as root, its recommended
-#     you specify a a user for mpd to run.
+################# SECURITY SETTINGS ######################
+#
+# It is encouraged to run MPD as 
+# non-superuser.  If you start mpd as root
+# (for example, in an init script), set
+# this value, then  mpd will drop root priveleges
+# and runs as the user specified.
+#
 #user 		"nobody"
-
-# to only allow connections from localhost
+#
+# Set this value if you only have one 
+# address you want to allow connection to. 
+#
 #bind_to_address 	"localhost"
-
-# Specify one or more passwords required to
-#     access mpd:
+#
+# If you want to setup MPD to use 
+# passwords set them here
+#
 #password 		"password1@read,add,control,admin"
 #password 		"password2@read"
-
+#
 # Specify permissions used by default when no password is 
-#     given by for a connection/client.
+# given by for a connection/client.
+#
 #default_permissions	"read,add,control,admin"
+#
 ##########################################
 
 
-########### MISC OPTIONS #################
+################ MISCELLANEOUS OPTIONS ###################
+#
+# This setting exists as precaution against attacks.
+#
 #max_playlist_length 	"16384"
-#connection_timeout 	"60"
-#max_connections 	"5"
-#max_command_list_size 	"2048"
-#max_output_buffer_size 	"2048"
-#save_absolute_paths_in_playlists "no"
-
-# log_level can be "default", "secure", "verbose"
+#
+# Valid options are "default", "secure" or "verbose".
 #log_level		"default"
-#########################################
+#
+#connection_timeout 	"60"
+#
+# This should be fine for 2-3 people using clients 
+# at the same time.
+#
+#max_connections 	"5"
+#
+# No need to change these unless you know better.
+#
+#max_command_list_size 	"2048"
+#max_output_buffer_size "2048"
+#
+# This will make playlists compatible with normal music
+# players.
+#
+#save_absolute_paths_in_playlists "no"
+#
+##########################################################

@@ -1,3 +1,12 @@
+ver 0.11.3 (2004/7/21)
+1) Add support for http authentication for streams
+2) Added replaygain pre-amp support
+3) Better error handling for fread() in inputStream_file
+4) Fixed a bug so that when a freeAllInterfaces is called, it sets max_interface_connections to 0.  This prevents potential segfaults and other nastiness for forked processes, like the player and update-er (do to interfacePrintWithFD()).
+5) Allow blockingWrite() to handle errors more gracefully (for example, if the disc is full, and thus the write() fails or can't be completed, we just skip this write() and continue, instead of getting stuck in an infinite loop until the write() becomes successful)
+6) Updated mpdconf.example from sbh/avuton
+7) If "user" is specified, then convert ~ in paths to the user's home path specified by "user" config paramter (not the actual current user running mpd).
+
 ver 0.11.2 (2004/7/5) 
 1) Work around in computing total time for mp3's whose first valid mpeg frame is not layer III
 2) Fix mp3 and mp4 decoders when seeking past the end of the file
