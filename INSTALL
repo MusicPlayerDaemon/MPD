@@ -29,7 +29,10 @@ FAAD2 - http://faac.sf.net
 For MP4/AAC support.
 
 Audiofile - http://www.68k.org/~michael/audiofile/
-For wave support.
+For wave, aiff, and au support.
+
+libmikmod - http://mikmod.raphnet.net/
+For Mod support.
 
 Download
 --------
