@@ -55,7 +55,10 @@ char * fsCharsetToUtf8(char * str) {
 
 	ret = pathConvCharset("UTF-8",fsCharset,str,ret);
 
-	if(ret && !validUtf8String(ret)) ret = NULL;
+	if(ret && !validUtf8String(ret)) {
+		free(ret);
+		ret = NULL;
+	}
 	/*if(!ret) ret = asciiStrToUtf8Dup(str);*/
 
 	/* if all else fails, just strdup */
