@@ -17,11 +17,22 @@ common function and abstrct dealing with DecoderControl * and put
 cycleLogFiles in there, so we cycleLogFiles while decoding, not just when 
 decoding has stopped.
 
-4) cleanup main()
+4) reaplygain
 
-5) handle '\n' in filenames
+5) streaming and playing in general
+	1) determine a clever interface to play, so that play doesn't block
+		until the file is opened, but just returns when the command
+		is accepted.
+	2) put errors in error stuff of PlayerControl and report this to
+		status and print to error logs
+	3) this will help streaming from blocking indefinetly or waiting
+		on a response
 
-6) reaplygain
+6) ACK error codes
+
+7) cleanup main()
+
+8) handle '\n' in filenames
 
 
 Post-1.0
