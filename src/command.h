@@ -22,14 +22,12 @@
 #include "../config.h"
 
 #include "list.h"
+#include "myfprintf.h"
 
 #include <stdio.h>
 
 #define COMMAND_RETURN_KILL	10
 #define COMMAND_RETURN_CLOSE	20
-
-#define COMMAND_RESPOND_ERROR	"ACK"
-#define COMMAND_RESPOND_OK	"OK"
 
 int proccessListOfCommands(FILE * fp, int * permission, int * expired, 
 		List * list);
@@ -40,5 +38,8 @@ void initCommands();
 
 void finishCommands();
 
+#define commandSuccess(fp)              myfprintf(fp, "OK\n")
+
+#define commandError(fp, format, ... )  myfprintf(fp, "ACK " format "\n", ##__VA_ARGS__)
+
 #endif
-/* vim:set shiftwidth=4 tabstop=8 expandtab: */

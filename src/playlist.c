@@ -375,7 +375,7 @@ int playlistInfo(FILE * fp,int song) {
 		end = song+1;
 	}
 	if(song>=playlist.length) {
-		myfprintf(fp,"%s song doesn't exist\n",COMMAND_RESPOND_ERROR);
+		commandError(fp, "song doesn't exist");
 		return -1;
 	}
 
@@ -486,9 +486,8 @@ int addToPlaylist(FILE * fp, char * url) {
         {
 	}
 	else {
-		myfprintf(fp,"%s \"%s\" is not in the music db or is"
-                                "not a valid url\n",
-				COMMAND_RESPOND_ERROR,url);
+		commandError(fp, "\"%s\" is not in the music db or is"
+                                "not a valid url\n", url);
 		return -1;
 	}
 
@@ -497,7 +496,7 @@ int addToPlaylist(FILE * fp, char * url) {
 
 int addSongToPlaylist(FILE * fp, Song * song) {
 	if(playlist.length==playlist_max_length) {
-		myfprintf(fp,"%s playlist is at the max size\n",COMMAND_RESPOND_ERROR);
+		commandError(fp, "playlist is at the max size");
 		return -1;
 	}
 
@@ -536,13 +535,11 @@ int swapSongsInPlaylist(FILE * fp, int song1, int song2) {
 	int currentSong = -1;
 
 	if(song1<0 || song1>=playlist.length) {
-		myfprintf(fp,"%s \"%i\" is not in the playlist\n",
-				COMMAND_RESPOND_ERROR,song1);
+		commandError(fp,"\"%i\" is not in the playlist", song1);
 		return -1;
 	}
 	if(song2<0 || song2>=playlist.length) {
-		myfprintf(fp,"%s \"%i\" is not in the playlist\n",
-				COMMAND_RESPOND_ERROR,song2);
+		commandError(fp, "\"%i\" is not in the playlist", song2);
 		return -1;
 	}
 
@@ -589,11 +586,11 @@ int deleteFromPlaylist(FILE * fp, int song) {
 	int songOrder;
 
 	if(song<0) {
-		myfprintf(fp,"%s need a positive integer\n",COMMAND_RESPOND_ERROR);
+		commandError(fp, "need a positive integer");
 		return -1;
 	}
 	if(song>=playlist.length) {
-		myfprintf(fp,"%s song doesn't exist\n",COMMAND_RESPOND_ERROR);
+		commandError(fp, "song doesn't exist");
 		return -1;
 	}
 
@@ -717,17 +714,17 @@ int playPlaylist(FILE * fp, int song, int stopOnError) {
                 }
         }
 	else if(song<0) {
-		myfprintf(fp,"%s need integer >= -1\n",COMMAND_RESPOND_ERROR);
+		commandError(fp, "need integer >= -1");
 		playlist_state = PLAYLIST_STATE_STOP;
 		return -1;
 	}
 	if(!playlist.length) {
-		myfprintf(fp,"%s playlist is empty\n",COMMAND_RESPOND_ERROR);
+		commandError(fp, "playlist is empty");
 		playlist_state = PLAYLIST_STATE_STOP;
 		return -1;
 	}
 	else if(song>=playlist.length) {
-		myfprintf(fp,"%s song doesn't exist\n",COMMAND_RESPOND_ERROR);
+		commandError(fp, "song doesn't exist");
 		playlist_state = PLAYLIST_STATE_STOP;
 		return -1;
 	}
@@ -848,7 +845,7 @@ int getPlaylistRandomStatus() {
 
 int setPlaylistRepeatStatus(FILE * fp, int status) {
 	if(status!=0 && status!=1) {
-		myfprintf(fp,"%s \"%i\" is not 0 or 1\n",COMMAND_RESPOND_ERROR,status);
+		commandError(fp, "\"%i\" is not 0 or 1", status);
 		return -1;
 	}
 
@@ -872,14 +869,12 @@ int moveSongInPlaylist(FILE * fp, int from, int to) {
 	int currentSong = -1;
 
 	if(from<0 || from>=playlist.length) {
-		myfprintf(fp,"%s \"%i\" is not a song in the playlist\n",
-				COMMAND_RESPOND_ERROR,from);
+		commandError(fp, "\"%i\" is not a song in the playlist", from);
 		return -1;
 	}
 
 	if(to<0 || to>=playlist.length) {
-		myfprintf(fp,"%s \"%i\" is not a song in the playlist\n",
-				COMMAND_RESPOND_ERROR,to);
+		commandError(fp, "\"%i\" is not a song in the playlist", to);
 		return -1;
 	}
 
@@ -985,7 +980,7 @@ int setPlaylistRandomStatus(FILE * fp, int status) {
 	int statusWas = playlist.random;
 
 	if(status!=0 && status!=1) {
-		myfprintf(fp,"%s \"%i\" is not 0 or 1\n",COMMAND_RESPOND_ERROR,status);
+		commandError(fp, "\"%i\" is not 0 or 1", status);
 		return -1;
 	}
 
@@ -1079,13 +1074,12 @@ int deletePlaylist(FILE * fp, char * utf8file) {
 	if((actualFile = rpp2app(rfile)) && isPlaylist(actualFile)) free(rfile);
 	else {
 		free(rfile);
-		myfprintf(fp,"%s playlist \"%s\" not found\n",
-				COMMAND_RESPOND_ERROR,utf8file);
+		commandError(fp, "playlist \"%s\" not found", utf8file);
 		return -1;
 	}
 
 	if(unlink(actualFile)<0) {
-		myfprintf(fp,"%s problems deleting file\n",COMMAND_RESPOND_ERROR);
+		commandError(fp, "problems deleting file");
 		return -1;
 	}
 
@@ -1101,9 +1095,8 @@ int savePlaylist(FILE * fp, char * utf8file) {
 	char * actualFile;
 
 	if(strstr(utf8file,"/")) {
-		myfprintf(fp,"%s cannot save \"%s\", saving playlists to "
-				"subdirectories is not supported\n",
-				COMMAND_RESPOND_ERROR,utf8file);
+		commandError(fp, "cannot save \"%s\", saving playlists to "
+				"subdirectories is not supported", utf8file);
 		return -1;
 	}
 
@@ -1123,13 +1116,14 @@ int savePlaylist(FILE * fp, char * utf8file) {
 	free(rfile);
 
 	if(0==stat(actualFile,&st)) {
-		myfprintf(fp,"%s A file or directory already exists with the name \"%s\"\n",COMMAND_RESPOND_ERROR,utf8file);
+		myfprintf(fp, "a file or directory already exists with the name"
+                                " \"%s\"", utf8file);
 		return -1;
 	}
 
 	while(!(fileP = fopen(actualFile,"w")) && errno==EINTR);
 	if(fileP==NULL) {
-		myfprintf(fp,"%s Problems opening file\n",COMMAND_RESPOND_ERROR);
+		commandError(fp, "problems opening file");
 		return -1;
 	}
 
@@ -1171,15 +1165,13 @@ int loadPlaylist(FILE * fp, char * utf8file) {
 	if((actualFile = rpp2app(rfile)) && isPlaylist(actualFile)) free(rfile);
 	else {
 		free(rfile);
-		myfprintf(fp,"%s playlist \"%s\" not found\n",
-				COMMAND_RESPOND_ERROR,utf8file);
+		commandError(fp, "playlist \"%s\" not found", utf8file);
 		return -1;
 	}
 
 	while(!(fileP = fopen(actualFile,"r")) && errno==EINTR);
 	if(fileP==NULL) {
-		myfprintf(fp,"%s Problems opening file \"%s\"\n",
-				COMMAND_RESPOND_ERROR,utf8file);
+		commandError(fp, "problems opening file \"%s\"", utf8file);
 		return -1;
 	}
 
@@ -1197,7 +1189,8 @@ int loadPlaylist(FILE * fp, char * utf8file) {
 				strncat(s,"/",MAXPATHLEN-parentlen);
 				strncat(s,temp,MAXPATHLEN-parentlen-1);
 				if(strlen(s)>=MAXPATHLEN) {
-					myfprintf(fp,"%s \"%s\" too long\n",COMMAND_RESPOND_ERROR,temp);
+					commandError(fp, "\"%s\" too long",
+                                                        temp);
 					free(temp);
 					while(fclose(fileP) && errno==EINTR);
 					if(erroredFile) free(erroredFile);
@@ -1222,7 +1215,7 @@ int loadPlaylist(FILE * fp, char * utf8file) {
 		}
 		else if(slength==MAXPATHLEN) {
 			s[slength] = '\0';
-			myfprintf(fp,"%s \"%s\" too long\n",COMMAND_RESPOND_ERROR,s);
+			commandError(fp, "\"%s\" too long", s);
 			while(fclose(fileP) && errno==EINTR);
 			if(erroredFile) free(erroredFile);
 			return -1;
@@ -1233,8 +1226,7 @@ int loadPlaylist(FILE * fp, char * utf8file) {
 	while(fclose(fileP) && errno==EINTR);
 
 	if(erroredFile) {
-		myfprintf(fp,"%s can't add file \"%s\"\n",COMMAND_RESPOND_ERROR,
-				erroredFile);
+		commandError(fp, "can't add file \"%s\"", erroredFile);
 		free(erroredFile);
 		return -1;
 	}
@@ -1262,15 +1254,15 @@ int seekSongInPlaylist(FILE * fp, int song, float time) {
 	int i = song;
 
 	if(song<0) {
-		myfprintf(fp,"%s need integer >= -1\n",COMMAND_RESPOND_ERROR);
+		commandError(fp, "need integer >= -1");
 		return -1;
 	}
 	if(!playlist.length) {
-		myfprintf(fp,"%s playlist is empty\n",COMMAND_RESPOND_ERROR);
+		commandError(fp, "playlist is empty");
 		return -1;
 	}
 	else if(song>=playlist.length) {
-		myfprintf(fp,"%s song doesn't exist\n",COMMAND_RESPOND_ERROR);
+		commandError(fp, "song doesn't exist");
 		return -1;
 	}
 

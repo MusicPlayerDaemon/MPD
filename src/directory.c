@@ -166,7 +166,7 @@ void readDirectoryDBIfUpdateIsFinished() {
 
 int updateInit(FILE * fp, List * pathList) {
 	if(directory_updatePid > 0) {
-		myfprintf(fp,"%s already updating\n",COMMAND_RESPOND_ERROR);
+		commandError(fp, "already updating");
 		return -1;
 	}
 
@@ -223,8 +223,7 @@ int updateInit(FILE * fp, List * pathList) {
 	else if(directory_updatePid < 0) {
 		unblockSignals();
 		ERROR("updateInit: Problems forking()'ing\n");
-		myfprintf(fp,"%s problems trying to update\n",
-				COMMAND_RESPOND_ERROR);
+		commandError(fp, "problems trying to update");
 		directory_updatePid = 0;
 		return -1;
 	}
@@ -745,7 +744,7 @@ int printDirectoryInfo(FILE * fp, char * name) {
 	Directory * directory;
 	
 	if((directory = getDirectory(name))==NULL) {
-		myfprintf(fp,"%s: directory not found\n",COMMAND_RESPOND_ERROR);
+		commandError(fp, "directory not found");
 		return -1;
 	}
 
@@ -988,13 +987,13 @@ int updateMp3Directory(FILE * fp) {
                 break;
         default:
 		ERROR("problems updating music db\n");
-		myfprintf(fp,"%s problems updating music db\n",COMMAND_RESPOND_ERROR);
+		commandError(fp, "problems updating music db");
 		return -1;
 	}
 
 	if(writeDirectoryDB()<0) {
 		ERROR("problems writing music db file, \"%s\"\n",directory_db);
-		myfprintf(fp,"%s problems writing music db\n",COMMAND_RESPOND_ERROR);
+		commandError(fp, "problems writing music db");
 		return -1;
 	}
 	
@@ -1048,7 +1047,7 @@ int traverseAllIn(FILE * fp, char * name,
 		if((song = getSongFromDB(name)) && forEachSong) {
 			return forEachSong(fp, song, data);
 		}
-		myfprintf(fp,"%s: directory or file not found\n",COMMAND_RESPOND_ERROR);
+		commandError(fp, "directory or file not found");
 		return -1;
 	}
 
@@ -1130,7 +1129,7 @@ int searchForSongsIn(FILE * fp, char * name, char * item, char * string) {
 		ret = traverseAllIn(fp,name,searchForFilenameInDirectory,NULL,
 			(void *)dup);
 	}
-	else myfprintf(fp,"%s unknown table\n",COMMAND_RESPOND_ERROR);
+	else commandError(fp, "unknown table");
 
 	free(dup);
 
@@ -1167,7 +1166,7 @@ int findSongsIn(FILE * fp, char * name, char * item, char * string) {
 			(void *)string);
 	}
 
-	myfprintf(fp,"%s unknown table\n",COMMAND_RESPOND_ERROR);
+	commandError(fp, "unknown table");
 	return -1;
 }
 

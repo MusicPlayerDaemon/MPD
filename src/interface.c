@@ -41,7 +41,7 @@
 #include <errno.h>
 #include <signal.h>
 
-#define GREETING 		"MPD"
+#define GREETING 		"OK MPD"
 
 #define INTERFACE_MAX_BUFFER_LENGTH		MAXPATHLEN+1024
 #define INTERFACE_LIST_MODE_BEGIN		"command_list_begin"
@@ -120,8 +120,7 @@ void openInterface(Interface * interface, int fd) {
 #endif
 	interface->outBuffer = malloc(interface->outBufSize);
 	
-	myfprintf(interface->fp,"%s %s %s\n",COMMAND_RESPOND_OK,GREETING,
-			VERSION);
+	myfprintf(interface->fp, "%s %s\n", GREETING, VERSION);
 	printInterfaceOutBuffer(interface);
 }
 
@@ -237,9 +236,7 @@ int interfaceReadInput(Interface * interface) {
 						interface->num,
 						ret);
 					if(ret==0) {
-						myfprintf(interface->fp,
-							"%s\n",
-							COMMAND_RESPOND_OK);
+						commandSuccess(interface->fp);
 					}
 					else if(ret==COMMAND_RETURN_CLOSE ||
 							interface->expired) {
@@ -291,7 +288,8 @@ int interfaceReadInput(Interface * interface) {
 							INTERFACE_LIST_MODE_END)
 							==0) 
 					{
-						myfprintf(interface->fp,"%s not in command list mode\n",COMMAND_RESPOND_ERROR);
+						commandError(interface->fp,
+                                                        "not in command list mode");
 						ret = -1;
 					}
 					else {
@@ -304,7 +302,7 @@ int interfaceReadInput(Interface * interface) {
 						DEBUG("interface %i: command returned %i\n",interface->num,ret);
 					}
 					if(ret==0) {
-						myfprintf(interface->fp,"%s\n",COMMAND_RESPOND_OK);
+						commandSuccess(interface->fp);
 					}
 					else if(ret==COMMAND_RETURN_CLOSE ||
 							interface->expired) {

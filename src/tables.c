@@ -172,8 +172,7 @@ int printAllAlbums(FILE * fp, char * artist) {
 			}
 		}
 		else {
-			myfprintf(fp,"%s artist \"%s\" not found\n",
-				COMMAND_RESPOND_ERROR,artist);
+			commandError(fp, "artist \"%s\" not found", artist);
 			return -1;
 		}
 	}
@@ -184,7 +183,7 @@ int printAllAlbums(FILE * fp, char * artist) {
 int printAllKeysOfTable(FILE * fp, char * table, char * arg1) {
 	if(strcmp(table,TABLES_ARTIST)==0) {
 		if(arg1!=NULL) {
-			myfprintf(fp,"%s %s table takes no args\n",COMMAND_RESPOND_ERROR,table);
+			commandError(fp, "%s table takes no args", table);
 			return -1;
 		}
 		return printAllArtists(fp);
@@ -193,8 +192,8 @@ int printAllKeysOfTable(FILE * fp, char * table, char * arg1) {
 		return printAllAlbums(fp,arg1);
 	}
 	else {
-		myfprintf(fp,"%s table \"%s\" does not exist or not available for listing\n",COMMAND_RESPOND_ERROR,table);
+		commandError(fp, "table \"%s\" does not exist or not available "
+                                "for listing", table);
 		return -1;
 	}
 }
-/* vim:set shiftwidth=4 tabstop=8 expandtab: */

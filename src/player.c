@@ -386,8 +386,7 @@ int playerSeek(FILE * fp, Song * song, float time) {
 	PlayerControl * pc = &(getPlayerData()->playerControl);
 
 	if(pc->state==PLAYER_STATE_STOP) {
-		myfprintf(fp,"%s player not currently playing\n",
-				COMMAND_RESPOND_ERROR);
+		commandError(fp, "player not currently playing");
 		return -1;
 	}
 
