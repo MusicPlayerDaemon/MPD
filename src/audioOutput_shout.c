@@ -16,6 +16,10 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#include "../config.h"
+
+#ifdef HAVE_SHOUT
+
 #include "audioOutput.h"
 #include "conf.h"
 #include "log.h"
@@ -189,3 +193,19 @@ AudioOutputPlugin shoutPlugin =
 	shout_play,
 	shout_closeDevice
 };
+
+#else
+
+#include <stdlib.h>
+
+AudioOutputPlugin shoutPlugin = 
+{
+	"shout",
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL
+};
+
+#endif
