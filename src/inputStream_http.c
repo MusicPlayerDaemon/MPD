@@ -63,6 +63,7 @@ typedef struct _InputStreemHTTPData {
 	char * proxyHost;
 	int proxyPort;
 	char * proxyAuth;
+	char * httpAuth;
 } InputStreamHTTPData;
 
 void inputStream_initHttp() {
@@ -154,9 +155,7 @@ static char * base64Dup(char * s) {
 	return ret;
 }
 
-#define PROXY_AUTH_HEADER	"Proxy-Authorization: Basic "
-
-static char * proxyAuthString(char * user, char * password) {
+static char * authString(char * header, char * user, char * password) {
 	char * ret = NULL;
 	int templen;
 	char * temp;
@@ -172,14 +171,20 @@ static char * proxyAuthString(char * user, char * password) {
 	temp64 = base64Dup(temp);
 	free(temp);
 
-	ret = malloc(strlen(temp64)+strlen(PROXY_AUTH_HEADER)+3);
-	strcpy(ret, PROXY_AUTH_HEADER);
+	ret = malloc(strlen(temp64)+strlen(header)+3);
+	strcpy(ret, header);
 	strcat(ret, temp64);
 	strcat(ret, "\r\n");
 	free(temp64);
 
 	return ret;
 }
+
+#define PROXY_AUTH_HEADER	"Proxy-Authorization: Basic "
+#define HTTP_AUTH_HEADER	"Authorization: Basic "
+
+#define proxyAuthString(x, y)	authString(PROXY_AUTH_HEADER, x, y)
+#define httpAuthString(x, y)	authString(HTTP_AUTH_HEADER, x, y)
 
 static InputStreamHTTPData * newInputStreamHTTPData() {
         InputStreamHTTPData * ret = malloc(sizeof(InputStreamHTTPData));
@@ -198,6 +203,7 @@ static InputStreamHTTPData * newInputStreamHTTPData() {
 		ret->proxyAuth = NULL;
 	}
 
+	ret->httpAuth = NULL;
 	ret->host = NULL;
         ret->path = NULL;
         ret->port = 80;
@@ -214,6 +220,7 @@ static void freeInputStreamHTTPData(InputStreamHTTPData * data) {
         if(data->host) free(data->host);
         if(data->path) free(data->path);
 	if(data->proxyAuth) free(data->proxyAuth);
+	if(data->httpAuth) free(data->httpAuth);
 
         free(data);
 }
@@ -222,14 +229,52 @@ static int parseUrl(InputStreamHTTPData * data, char * url) {
         char * temp;
         char * colon;
         char * slash;
+	char * at;
         int len;
 
         if(strncmp("http://",url,strlen("http://"))!=0) return -1;
 
         temp = url+strlen("http://");
 
-        slash = strchr(temp, '/');
         colon = strchr(temp, ':');
+	at = strchr(temp, '@');
+
+	if(data->httpAuth) {
+		free(data->httpAuth);
+		data->httpAuth = NULL;
+	}
+	
+	if(at) {
+		char * user;
+		char * passwd;
+
+		if(colon && colon < at) {
+			user = malloc(colon-temp+1);
+			strncpy(user, temp, colon-temp);
+			user[colon-temp] = '\0';
+
+			passwd = malloc(at-colon);
+			strncpy(passwd, colon+1, at-colon-1);
+			passwd[at-colon-1] = '\0';
+		}
+		else {
+			user = malloc(at-temp+1);
+			strncpy(user, temp, colon-temp);
+			user[colon-temp] = '\0';
+
+			passwd = strdup("");
+		}
+
+		data->httpAuth = httpAuthString(user, passwd);
+
+		free(user);
+		free(passwd);
+
+		temp = at+1;
+        	colon = strchr(temp, ':');
+	}
+
+        slash = strchr(temp, '/');
 
         if(slash && colon && slash <= colon) return -1;
 
@@ -390,7 +435,9 @@ static int finishHTTPInit(InputStream * inStream) {
                              	data->path, data->host, "httpTest", "0.0.0",
 				
                              	/*inStream->offset,*/
-				data->proxyAuth ? data->proxyAuth : "" );
+				data->proxyAuth ? data->proxyAuth : 
+					(data->httpAuth ? data->httpAuth : "")
+				);
 
         ret = write(data->sock, request, strlen(request));
         if(ret!=strlen(request)) {
