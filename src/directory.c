@@ -128,6 +128,7 @@ void readDirectoryDBIfUpdateIsFinished() {
 	if(directory_reReadDB && 0==directory_updatePid) {
 		DEBUG("readDirectoryDB since update finished successfully\n");
 		readDirectoryDB();
+		incrPlaylistVersion();
 		directory_reReadDB = 0;
 	}
 }

@@ -41,6 +41,7 @@ int handlePendingSignals() {
                 DEBUG("got SIGHUP, rereading DB\n");
 		signal_clear(SIGHUP);
 		readDirectoryDB();
+		incrPlaylistVersion();
 	}
 
 	return 0;
