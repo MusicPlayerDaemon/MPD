@@ -40,7 +40,7 @@ typedef struct _MpcCallbackData {
         DecoderControl * dc;
 } MpcCallbackData;
 
-mpc_int32_t mpc_read_cb(void * vdata, void * ptr, mpc_int32_t size) {
+static mpc_int32_t mpc_read_cb(void * vdata, void * ptr, mpc_int32_t size) {
 	mpc_int32_t ret = 0;
         MpcCallbackData * data = (MpcCallbackData *)vdata;
 
@@ -63,19 +63,19 @@ static mpc_bool_t mpc_seek_cb(void * vdata, mpc_int32_t offset) {
 	return seekInputStream(data->inStream , offset, SEEK_SET) < 0 ? 0 : 1;
 }
 
-mpc_int32_t mpc_tell_cb(void * vdata) {
+static mpc_int32_t mpc_tell_cb(void * vdata) {
         MpcCallbackData * data = (MpcCallbackData *)vdata;
 
 	return (long)(data->inStream->offset);
 }
 
-mpc_bool_t mpc_canseek_cb(void * vdata) {
+static mpc_bool_t mpc_canseek_cb(void * vdata) {
         MpcCallbackData * data = (MpcCallbackData *)vdata;
 
 	return data->inStream->seekable;
 }
 
-mpc_int32_t mpc_getsize_cb(void * vdata) {
+static mpc_int32_t mpc_getsize_cb(void * vdata) {
         MpcCallbackData * data = (MpcCallbackData *)vdata;
 
 	return data->inStream->size;
@@ -110,7 +110,8 @@ inline mpd_sint16 convertSample(MPC_SAMPLE_FORMAT sample) {
 	return val;
 }
 
-int mpc_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream)
+static int mpc_decode(OutputBuffer * cb, DecoderControl * dc, 
+		InputStream * inStream)
 {
 	mpc_decoder decoder;
 	mpc_reader reader;
@@ -271,7 +272,7 @@ int mpc_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream)
 	return 0;
 }
 
-MpdTag * mpcTagDup(char * file) {
+static MpdTag * mpcTagDup(char * file) {
 	MpdTag * ret = NULL;
 	FILE * fp;
 
