@@ -1,9 +1,6 @@
 1) play streams
 	a) make seekings non-blocking:
-		1) player:
-			a) first check that seekWhere isn't already buffered
-		2) deal with seeking forward better by calling seek function 
-			(for mp3 and mp4)!
+		1) player: first check that seekWhere isn't already buffered
 	b) bufferInput in outputBuffer waiting!
 		1) implement some sort of callback mechanism for this
 			for abstraction sake
