@@ -103,7 +103,7 @@ move <int from> <int to>
 	move song at _from_ to _to_ in the playlist
 	increments playlist version by 1
 
-move <int songid> <int to>
+moveid <int songid> <int to>
 	move song with _songid_ to  _to_ in the playlist
 	increments playlist version by 1
 
