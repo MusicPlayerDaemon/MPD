@@ -7,17 +7,15 @@
 	c) ensure URL's are all ASCII, and properly %'d! check rfc's
 		for legal characters
 
-3) have seek look in already buffered stuff!
+3) ACK error codes
 
-4) ACK error codes
+4) cleanup main()
 
-5) cleanup main()
+5) handle '\n' in filenames
 
-6) handle '\n' in filenames
+6) compute average replaygain to use for non-replaygain songs
 
-7) compute average replaygain to use for non-replaygain songs
-
-8) change default port to 6600
+7) change default port to 6600
 
 
 Post-1.0
