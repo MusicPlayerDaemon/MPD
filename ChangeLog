@@ -1,3 +1,10 @@
+ver 0.11.2 (2004/7/5) 
+1) Work around in computing total time for mp3's whose first valid mpeg frame is not layer III
+2) Fix mp3 and mp4 decoders when seeking past the end of the file
+3) Fix replaygain for flac and vorbis
+4) Fix memory leaks in flac decoder (from normalperson)
+5) Fix Several other bugs in playlist.c and directory.c (from normalperson)
+
 ver 0.11.1 (2004/6/24)
 1) Fix a bug that caused "popping" at the beginning of mp3's
 2) Fix playlistid command
