@@ -132,9 +132,12 @@ int mp4_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc) {
 
 	config = faacDecGetCurrentConfiguration(decoder);
 	config->outputFormat = FAAD_FMT_16BIT;
+#ifdef HAVE_FAACDECCONFIGURATION_DOWNMATRIX
 	config->downMatrix = 1;
-	/*comment this out, its not in faad2 2.0 rc2*/
-	/*config->dontUpSampleImplicitSBR = 0;*/
+#endif
+#ifdef HAVE_FAACDECCONFIGURATION_DONTUPSAMPLEIMPLICITSBR
+	config->dontUpSampleImplicitSBR = 0;
+#endif
 	faacDecSetConfiguration(decoder,config);
 
 	af->bits = 16;

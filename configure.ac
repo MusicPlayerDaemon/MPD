@@ -255,9 +255,13 @@ if test x$enable_aac = xyes; then
 	LIBS="$LIBS $MPD_LIBS $FAAD_LIBS"
 	AC_CHECK_HEADER(faad.h,,enable_aac=no)
 	if test x$enable_aac = xyes; then
-		AC_CHECK_LIB(faad, faacDecDecode,[MPD_LIBS="$MPD_LIBS $FAAD_LIBS";MPD_CFLAGS="$MPD_CFLAGS $FAAD_CFLAGS";MP4FF_SUBDIR="mp4ff";MP4FF_LIB="mp4ff/libmp4ff.la"],enable_aac=no)
+		AC_CHECK_DECL(faacDecInit2,,enable_aac=no,[#include <faad.h>])
 	fi
 	if test x$enable_aac = xyes; then
+		AC_CHECK_LIB(faad,faacDecInit2,[MPD_LIBS="$MPD_LIBS $FAAD_LIBS";MPD_CFLAGS="$MPD_CFLAGS $FAAD_CFLAGS";MP4FF_SUBDIR="mp4ff";MP4FF_LIB="mp4ff/libmp4ff.la"],enable_aac=no)
+	fi
+	if test x$enable_aac = xyes; then
+		AC_CHECK_MEMBERS([faacDecConfiguration.downMatrix,faacDecConfiguration.dontUpSampleImplicitSBR],,,[#include <faad.h>])
 		AC_DEFINE(HAVE_FAAD,1,[Define to use FAAD2 for AAC decoding])
 	else
 		AC_MSG_WARN([faad2 lib needed for MP4/AAC support -- disabling MP4/AAC support])
