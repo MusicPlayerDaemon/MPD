@@ -25,6 +25,16 @@ Command Completion:
 A command returns "OK\n" on completion or "ACK some error\n" on failure.
 These denote the end of command execution.
 
+NOTE:
+-----
+
+For manipulating playlists and playing, there are two sets of commands.  One
+set uses the song id of a song in the playlist, while another set uses the
+playlist position of the song.  The commands using song id's should be used
+instead of the commands that manipulate and control playback based on playlist
+position.  Using song id's is a safer method when multiple clients are 
+interacting with MPD.
+
 Commands:
 ---------
 
