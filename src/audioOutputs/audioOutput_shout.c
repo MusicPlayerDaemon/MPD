@@ -277,9 +277,10 @@ static int myShout_handleError(ShoutData * sd, int err) {
 		break;
 	case SHOUTERR_UNCONNECTED:
 	case SHOUTERR_SOCKET:
-		ERROR("Lost shout connection to %s:%i\n", 
+		ERROR("Lost shout connection to %s:%i : %s\n", 
 				shout_get_host(sd->shoutConn),
-				shout_get_port(sd->shoutConn));
+				shout_get_port(sd->shoutConn),
+				shout_get_error(sd->shoutConn));
 		sd->shoutError = 1;
 		return -1;
 	default:
