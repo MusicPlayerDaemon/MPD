@@ -215,7 +215,7 @@ int findInDirectory(FILE * fp, Song * song, void * data) {
 	LocateTagItemArray * array = data;
 	int i;
 
-	for(i = 0; i < 0; i++) {
+	for(i = 0; i < array->numItems; i++) {
 		if(!tagItemFoundAndMatches(song, array->items[i].tagType,
 				array->items[i].needle)) 
 		{
