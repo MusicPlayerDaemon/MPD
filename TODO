@@ -1,5 +1,7 @@
 0.12
 ----
+*) disable mod support by default
+
 *) add genre,  date, composer metadata
 
 *) rewrite metadata/db handling
@@ -48,6 +50,8 @@
 
 *) Optimize read() on clients
 
+*) Handle mp1 and mp2 files (including mp2's that are disguised as mp3's with 
+	a mp3 suffix)
 
 0.13
 ----
