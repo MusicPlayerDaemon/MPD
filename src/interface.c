@@ -72,9 +72,9 @@ typedef struct _Interface {
 	time_t lastTime;
 	List * commandList; /* for when in list mode */
         int commandListOK; /* print OK after each command execution */
-	unsigned long long commandListSize; /* mem commandList consumes */
+	size_t commandListSize; /* mem commandList consumes */
 	List * bufferList; /* for output if client is slow */
-	unsigned long long outputBufferSize; /* mem bufferList consumes */
+	size_t outputBufferSize; /* mem bufferList consumes */
 	int expired; /* set whether this interface should be closed on next
 			check of old interfaces */
 	int num; /* interface number */
@@ -248,8 +248,9 @@ static int proccessLineOfInput(Interface * interface) {
 						"larger than the max "
 						"(%lli)\n",
 						interface->num,
-						interface->
+						(long long)interface->
 						commandListSize,
+						(long long)
 						interface_max_command_list_size)
 					;
 				closeInterface(interface);
@@ -636,8 +637,8 @@ void printInterfaceOutBuffer(Interface * interface) {
 			ERROR("interface %i: output buffer size (%lli) is "
 					"larger than the max (%lli)\n",
 					interface->num,
-					interface->outputBufferSize,
-					interface_max_output_buffer_size);
+					(long long)interface->outputBufferSize,
+					(long long)interface_max_output_buffer_size);
 			/* cause interface to close */
 			freeList(interface->bufferList);
 			interface->bufferList = NULL;
