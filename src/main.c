@@ -201,7 +201,7 @@ void parseOptions(int argc, char ** argv, Options * options) {
                         options->logFile = parseConfigFilePath(CONF_LOG_FILE,1);
                         options->errorFile = 
 				parseConfigFilePath(CONF_ERROR_FILE, 1);
-                        options->usr = parseConfigFilePath(CONF_USER, 0);
+                        options->usr = getConfigParamValue(CONF_USER);
                         options->dbFile = parseConfigFilePath(CONF_DB_FILE, 0);
                         return;
                 }
