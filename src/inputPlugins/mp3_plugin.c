@@ -335,7 +335,7 @@ struct xing {
   	long flags;			/* valid fields (see below) */
   	unsigned long frames;		/* total number of frames */
   	unsigned long bytes;		/* total number of bytes */
-  	unsigned char toc[100];	/* 100-point seek table */
+  	unsigned char toc[100];		/* 100-point seek table */
   	long scale;			/* ?? */
 };
 
