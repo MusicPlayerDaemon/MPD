@@ -38,3 +38,4 @@ int mp4_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc);
 #endif /* HAVE_FAAD */
 
 #endif
+/* vim:set shiftwidth=4 tabstop=8 expandtab: */

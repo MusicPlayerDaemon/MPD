@@ -33,3 +33,4 @@ int getAudiofileTotalTime(char * file);
 
 #endif /* HAVE_AUDIOFILE */
 #endif /* AUDIOFILE_DECODE_H */
+/* vim:set shiftwidth=4 tabstop=8 expandtab: */

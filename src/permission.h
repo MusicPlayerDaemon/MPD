@@ -35,3 +35,4 @@ void finishPermissions();
 unsigned int getDefaultPermissions();
 
 #endif
+/* vim:set shiftwidth=4 tabstop=8 expandtab: */

@@ -28,3 +28,4 @@ void myfprintfStdLogMode(FILE * out, FILE * err);
 void myfprintf(FILE * fp, char * format, ... );
 
 #endif
+/* vim:set shiftwidth=4 tabstop=8 expandtab: */

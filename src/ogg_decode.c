@@ -148,3 +148,4 @@ int ogg_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc)
 }
 
 #endif
+/* vim:set shiftwidth=4 tabstop=8 expandtab: */

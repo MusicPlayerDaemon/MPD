@@ -56,3 +56,4 @@ void decodeSigHandler(int sig);
 void decode();
 
 #endif
+/* vim:set shiftwidth=4 tabstop=8 expandtab: */

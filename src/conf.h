@@ -61,3 +61,4 @@ void initConf();
 void writeConf(char * file);
 
 #endif
+/* vim:set shiftwidth=4 tabstop=8 expandtab: */

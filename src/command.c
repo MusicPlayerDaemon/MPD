@@ -765,3 +765,4 @@ int proccessListOfCommands(FILE * fp, int * permission, int * expired,
 int processCommand(FILE * fp, unsigned int * permission, char * commandString) {
 	return processCommandInternal(fp,permission,commandString,NULL);
 }
+/* vim:set shiftwidth=4 tabstop=8 expandtab: */

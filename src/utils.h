@@ -32,3 +32,4 @@ void stripReturnChar(char * string);
 void my_usleep(long usec);
 
 #endif
+/* vim:set shiftwidth=4 tabstop=8 expandtab: */

@@ -96,3 +96,4 @@ int seekSongInPlaylist(FILE * fp, int song, float time);
 void incrPlaylistVersion();
 
 #endif
+/* vim:set shiftwidth=4 tabstop=8 expandtab: */

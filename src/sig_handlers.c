@@ -120,3 +120,4 @@ void unblockSignals() {
 	sigaddset(&sset,SIGTERM);
 	while(sigprocmask(SIG_UNBLOCK,&sset,NULL)<0 && errno==EINTR);
 }
+/* vim:set shiftwidth=4 tabstop=8 expandtab: */

@@ -184,3 +184,4 @@ void getConnections(int sock) {
 	}
 	else if(fd<0) ERROR("Problems accept()'ing\n");
 }
+/* vim:set shiftwidth=4 tabstop=8 expandtab: */

@@ -508,3 +508,4 @@ MpdTag * mpdTagDup(MpdTag * tag) {
 
 	return ret;
 }
+/* vim:set shiftwidth=4 tabstop=8 expandtab: */

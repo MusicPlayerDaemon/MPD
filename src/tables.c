@@ -197,3 +197,4 @@ int printAllKeysOfTable(FILE * fp, char * table, char * arg1) {
 		return -1;
 	}
 }
+/* vim:set shiftwidth=4 tabstop=8 expandtab: */

@@ -34,3 +34,4 @@ void pcm_mix(char * buffer1, char * buffer2, size_t bufferSize1,
 		size_t bufferSize2, AudioFormat * format, float portion1);
 
 #endif
+/* vim:set shiftwidth=4 tabstop=8 expandtab: */

@@ -649,3 +649,4 @@ void printInterfaceOutBuffer(Interface * interface) {
 
 	interface->outBuflen = 0;
 }
+/* vim:set shiftwidth=4 tabstop=8 expandtab: */

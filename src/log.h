@@ -43,3 +43,4 @@ extern int logLevel;
 void initLog();
 
 #endif
+/* vim:set shiftwidth=4 tabstop=8 expandtab: */

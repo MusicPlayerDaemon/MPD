@@ -474,3 +474,4 @@ int getPlayerChannels() {
 
 	return pc->channels;
 }
+/* vim:set shiftwidth=4 tabstop=8 expandtab: */

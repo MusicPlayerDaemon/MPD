@@ -147,3 +147,4 @@ int audiofile_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc)
 }
 
 #endif /* HAVE_AUDIOFILE */
+/* vim:set shiftwidth=4 tabstop=8 expandtab: */

@@ -1205,3 +1205,4 @@ int seekSongInPlaylist(FILE * fp, int song, float time) {
 
 	return playerSeek(fp,playlist.songs[playlist.order[i]]->utf8file,time);
 }
+/* vim:set shiftwidth=4 tabstop=8 expandtab: */

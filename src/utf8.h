@@ -32,3 +32,4 @@ int validateUtf8Char(unsigned char * utf8Char);
 int validUtf8String(unsigned char * string);
 
 #endif
+/* vim:set shiftwidth=4 tabstop=8 expandtab: */

@@ -1182,3 +1182,4 @@ time_t getDbModTime() {
 
 	return mtime;
 }
+/* vim:set shiftwidth=4 tabstop=8 expandtab: */

@@ -46,3 +46,4 @@ int printStats(FILE * fp) {
 	myfprintf(fp,"db_update: %li\n",getDbModTime());
 	return 0;
 }
+/* vim:set shiftwidth=4 tabstop=8 expandtab: */

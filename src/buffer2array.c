@@ -120,3 +120,4 @@ void freeArgArray(char ** array, int argArrayLength) {
 	}
 	free(array);
 }
+/* vim:set shiftwidth=4 tabstop=8 expandtab: */

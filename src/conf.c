@@ -268,3 +268,4 @@ char ** readConf(char * file) {
 char ** getConf() {
 	return conf_params;
 }
+/* vim:set shiftwidth=4 tabstop=8 expandtab: */

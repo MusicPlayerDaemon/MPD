@@ -85,3 +85,4 @@ void myfprintf(FILE * fp, char * format, ... ) {
 
 	va_end(arglist);
 }
+/* vim:set shiftwidth=4 tabstop=8 expandtab: */

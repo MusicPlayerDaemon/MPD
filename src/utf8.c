@@ -128,3 +128,4 @@ unsigned char * utf8StrToLatin1Dup(unsigned char * utf8) {
 
 	return realloc(ret,len+1);
 }
+/* vim:set shiftwidth=4 tabstop=8 expandtab: */

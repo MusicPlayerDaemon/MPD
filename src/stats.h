@@ -38,3 +38,4 @@ void initStats();
 int printStats(FILE * fp);
 
 #endif
+/* vim:set shiftwidth=4 tabstop=8 expandtab: */

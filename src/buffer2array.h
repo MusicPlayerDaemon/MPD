@@ -26,3 +26,4 @@ int buffer2array(char * buffer, char *** array);
 void freeArgArray(char ** array, int argArrayLength);
 
 #endif
+/* vim:set shiftwidth=4 tabstop=8 expandtab: */

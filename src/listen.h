@@ -28,3 +28,4 @@ int establish(unsigned short port);
 void getConnections(int sock);
 
 #endif
+/* vim:set shiftwidth=4 tabstop=8 expandtab: */

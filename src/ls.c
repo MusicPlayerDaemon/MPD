@@ -219,3 +219,4 @@ int isMusic(char * utf8file, time_t * mtime) {
 	return 0;
 }
 
+/* vim:set shiftwidth=4 tabstop=8 expandtab: */

@@ -57,3 +57,4 @@ void my_usleep(long usec) {
 
 	select(0,NULL,NULL,NULL,&tv);
 }
+/* vim:set shiftwidth=4 tabstop=8 expandtab: */

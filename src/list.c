@@ -482,3 +482,4 @@ void sortList(List * list) {
 
 	quickSort(list->nodesArray,0,list->numberOfNodes-1);
 }
+/* vim:set shiftwidth=4 tabstop=8 expandtab: */

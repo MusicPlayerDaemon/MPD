@@ -37,3 +37,4 @@ void initLog() {
 	}
 	else ERROR("unknown log level \"%s\"\n",getConf()[CONF_LOG_LEVEL]);
 }
+/* vim:set shiftwidth=4 tabstop=8 expandtab: */

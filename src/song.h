@@ -61,3 +61,4 @@ int updateSongInfo(Song * song);
 Song * songDup(Song * song);
 
 #endif
+/* vim:set shiftwidth=4 tabstop=8 expandtab: */

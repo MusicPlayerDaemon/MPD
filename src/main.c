@@ -485,3 +485,4 @@ int main(int argc, char * argv[]) {
 
         return EXIT_SUCCESS;
 }
+/* vim:set shiftwidth=4 tabstop=8 expandtab: */
