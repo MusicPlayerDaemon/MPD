@@ -62,11 +62,11 @@ list <string type> <string arg1>
 		to list albums by a artist, where artist is specified with
 		arg1
 
-listall <string directory>
-	lists all songs and directories in _directory_ (recursively)
-	_directory_ is optional
+listall <string path>
+	lists all songs and directories in _path_ (recursively)
+	_path_ is optional and maybe a directory or path
 
-listall <string directory>
+listallinfo <string path>
 	same as listall command, except it also returns metadata info
 	in the same format as lsinfo
 
