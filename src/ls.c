@@ -110,202 +110,98 @@ int lsPlaylists(FILE * fp, char * utf8path) {
 	return 0;
 }
 
-int isMusic(char * utf8file, time_t * mtime) {
+int isFile(char * utf8file, time_t * mtime) {
+	struct stat st;
+	char * file = utf8ToFsCharset(utf8file);
+	char * actualFile = file;
+
+	if(actualFile[0]!='/') actualFile = rmp2amp(file);
+
+	if(stat(actualFile,&st)==0) {
+		if(S_ISREG(st.st_mode)) {
+			if(mtime) *mtime = st.st_mtime;
+			return 1;
+		}
+		else return 0;
+	}
+
+	return 0;
+}
+
+int hasSuffix(char * utf8file, char * suffix) {
+	char * file = utf8ToFsCharset(utf8file);
+	char * dup = strdup(file);;
+	char * cLast;
+	char * cNext = cLast = strtok(dup,".");
 	int ret = 0;
 
-#ifdef HAVE_OGG
-	if((ret = isOgg(utf8file,mtime))) return ret;
-#endif
-#ifdef HAVE_FLAC
-	if((ret = isFlac(utf8file,mtime))) return ret;
-#endif
-#ifdef HAVE_MAD
-	if((ret = isMp3(utf8file,mtime))) return ret;
-#endif
-#ifdef HAVE_AUDIOFILE
-	if((ret = isWave(utf8file,mtime))) return ret;
-#endif
-#ifdef HAVE_FAAD
-	if((ret = isMp4(utf8file,mtime))) return ret;
-#endif
+	while((cNext = strtok(NULL,"."))) cLast = cNext;
+	if(cLast && 0==strcasecmp(cLast,suffix)) ret = 1;
+	free(dup);
 
 	return ret;
 }
 
 int isPlaylist(char * utf8file) {
-	struct stat st;
-	char * file = utf8ToFsCharset(utf8file);
-	char * actualFile = file;
-	char * temp = NULL;
-
-	if(actualFile[0]!='/') actualFile = rpp2app(file);
-
-	if(stat(actualFile,&st)==0) {
-		if(S_ISREG(st.st_mode)) {
-			char * dup;
-			char * cLast;
-			char * cNext;
-			int ret = 0;
-			dup = strdup(file);
-			cNext = cLast = strtok(dup,".");
-			while((cNext = strtok(NULL,"."))) cLast = cNext;
-			if(cLast && 0==strcmp(cLast,PLAYLIST_FILE_SUFFIX)) {
-				ret = 1;
-			}
-			free(dup);
-			if(temp) free(temp);
-			return ret;
-		}
+	if(isFile(utf8file,NULL)) {
+		return hasSuffix(utf8file,PLAYLIST_FILE_SUFFIX);
 	}
-
-	if(temp) free(temp);
 	return 0;
+}
+
+int hasWaveSuffix(char * utf8file) {
+	return hasSuffix(utf8file,"wav");
 }
 
 int isWave(char * utf8file, time_t * mtime) {
-	struct stat st;
-	char * file = utf8ToFsCharset(utf8file);
-	char * actualFile = file;
-
-	if(actualFile[0]!='/') actualFile = rmp2amp(file);
-
-	if(stat(actualFile,&st)==0) {
-		if(S_ISREG(st.st_mode)) {
-			char * dup;
-			char * cLast;
-			char * cNext;
-			int ret = 0;
-			dup = strdup(file);
-			cNext = cLast = strtok(dup,".");
-			while((cNext = strtok(NULL,"."))) cLast = cNext;
-			if(cLast && 0==strcasecmp(cLast,"wav")) {
-				if(mtime) *mtime = st.st_mtime;
-				ret = 1;
-			}
-			free(dup);
-			return ret;
-		}
-		else return 0;
-	}
-
+	if(isFile(utf8file,mtime)) return hasWaveSuffix(utf8file); 
 	return 0;
+}
+
+int hasFlacSuffix(char * utf8file) {
+	return hasSuffix(utf8file,"flac");
 }
 
 int isFlac(char * utf8file, time_t * mtime) {
-	struct stat st;
-	char * file = utf8ToFsCharset(utf8file);
-	char * actualFile = file;
-
-	if(actualFile[0]!='/') actualFile = rmp2amp(file);
-
-	if(stat(actualFile,&st)==0) {
-		if(S_ISREG(st.st_mode)) {
-			char * dup;
-			char * cLast;
-			char * cNext;
-			int ret = 0;
-			dup = strdup(file);
-			cNext = cLast = strtok(dup,".");
-			while((cNext = strtok(NULL,"."))) cLast = cNext;
-			if(cLast && 0==strcasecmp(cLast,"flac")) {
-				if(mtime) *mtime = st.st_mtime;
-				ret = 1;
-			}
-			free(dup);
-			return ret;
-		}
-		else return 0;
-	}
-
+	if(isFile(utf8file,mtime)) return hasFlacSuffix(utf8file); 
 	return 0;
 }
 
+int hasOggSuffix(char * utf8file) {
+	return hasSuffix(utf8file,"ogg");
+}
+
 int isOgg(char * utf8file, time_t * mtime) {
-	struct stat st;
-	char * file = utf8ToFsCharset(utf8file);
-	char * actualFile = file;
+	if(isFile(utf8file,mtime)) return hasOggSuffix(utf8file); 
+	return 0;
+}
 
-	if(actualFile[0]!='/') actualFile = rmp2amp(file);
+int hasAacSuffix(char * utf8file) {
+	return hasSuffix(utf8file,"aac");
+}
 
-	if(stat(actualFile,&st)==0) {
-		if(S_ISREG(st.st_mode)) {
-			char * dup;
-			char * cLast;
-			char * cNext;
-			int ret = 0;
-			dup = strdup(file);
-			cNext = cLast = strtok(dup,".");
-			while((cNext = strtok(NULL,"."))) cLast = cNext;
-			if(cLast && 0==strcasecmp(cLast,"ogg")) {
-				if(mtime) *mtime = st.st_mtime;
-				ret = 1;
-			}
-			free(dup);
-			return ret;
-		}
-		else return 0;
-	}
+int isAac(char * utf8file, time_t * mtime) {
+	if(isFile(utf8file,mtime)) return hasAacSuffix(utf8file); 
+	return 0;
+}
 
+int hasMp4Suffix(char * utf8file) {
+	if(hasSuffix(utf8file,"mp4")) return 1;
+	if(hasSuffix(utf8file,"m4a")) return 1;
 	return 0;
 }
 
 int isMp4(char * utf8file, time_t * mtime) {
-	struct stat st;
-	char * file = utf8ToFsCharset(utf8file);
-	char * actualFile = file;
-
-	if(actualFile[0]!='/') actualFile = rmp2amp(file);
-
-	if(stat(actualFile,&st)==0) {
-		if(S_ISREG(st.st_mode)) {
-			char * dup;
-			char * cLast;
-			char * cNext;
-			int ret = 0;
-			dup = strdup(file);
-			cNext = cLast = strtok(dup,".");
-			while((cNext = strtok(NULL,"."))) cLast = cNext;
-			if(cLast && (0==strcasecmp(cLast,"m4a") || 
-					0==strcasecmp(cLast,"mp4"))) 
-			{
-				if(mtime) *mtime = st.st_mtime;
-				ret = 1;
-			}
-			free(dup);
-			return ret;
-		}
-		else return 0;
-	}
-
+	if(isFile(utf8file,mtime)) return hasMp4Suffix(utf8file); 
 	return 0;
 }
 
+int hasMp3Suffix(char * utf8file) {
+	return hasSuffix(utf8file,"mp3");
+}
+
 int isMp3(char * utf8file, time_t * mtime) {
-	struct stat st;
-	char * file = utf8ToFsCharset(utf8file);
-	char * actualFile = file;
-
-	if(actualFile[0]!='/') actualFile = rmp2amp(file);
-
-	if(stat(actualFile,&st)==0) {
-		if(S_ISREG(st.st_mode)) {
-			char * dup;
-			char * cLast;
-			char * cNext;
-			int ret = 0;
-			dup = strdup(file);
-			cNext = cLast = strtok(dup,".");
-			while((cNext = strtok(NULL,"."))) cLast = cNext;
-			if(cLast && 0==strcasecmp(cLast,"mp3")) {
-				if(mtime) *mtime = st.st_mtime;
-				ret = 1;
-			}
-			free(dup);
-			return ret;
-		}
-		else return 0;
-	}
-
+	if(isFile(utf8file,mtime)) return hasMp3Suffix(utf8file); 
 	return 0;
 }
 
@@ -325,3 +221,27 @@ int isDir(char * utf8name, time_t * mtime) {
 
 	return 0;
 }
+
+int isMusic(char * utf8file, time_t * mtime) {
+	if(isFile(utf8file,mtime)) {
+#ifdef HAVE_OGG
+		if(hasOggSuffix(utf8file)) return 1;
+#endif
+#ifdef HAVE_FLAC
+		if(hasFlacSuffix(utf8file)) return 1;
+#endif
+#ifdef HAVE_MAD
+		if(hasMp3Suffix(utf8file)) return 1;
+#endif
+#ifdef HAVE_AUDIOFILE
+		if(hasWaveSuffix(utf8file)) return 1;
+#endif
+#ifdef HAVE_FAAD
+		if(hasMp4Suffix(utf8file)) return 1;
+		if(hasAacSuffix(utf8file)) return 1;
+	}
+#endif
+
+	return 0;
+}
+
