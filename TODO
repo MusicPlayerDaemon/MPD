@@ -5,6 +5,7 @@
 		process!
 	b) pass decoderControl to inputStream, so that if we are doing blocking
 		stuff, its easy to halt it and return
+	c) for mp3, remember to turn off IGNORECRC for mp3 streams
 
 2) streaming and playing in general
 	a) determine a clever interface to play, so that play doesn't block

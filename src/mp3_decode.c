@@ -154,6 +154,7 @@ int initMp3DecodeData(mp3DecodeData * data, char * file) {
 	data->flush = 1;
 
 	mad_stream_init(&data->stream);
+	data->stream.options |= MAD_OPTION_IGNORECRC;
 	mad_frame_init(&data->frame);
 	mad_synth_init(&data->synth);
 	mad_timer_reset(&data->timer);
