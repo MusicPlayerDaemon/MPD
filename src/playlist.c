@@ -71,26 +71,36 @@ typedef struct _Playlist {
 	unsigned long version;
 } Playlist;
 
-Playlist playlist;
-int playlist_state = PLAYLIST_STATE_STOP;
-int playlist_max_length;
-int playlist_stopOnError;
-int playlist_errorCount = 0;
-int playlist_queueError;
-int playlist_noGoToNext = 0;
+static Playlist playlist;
+static int playlist_state = PLAYLIST_STATE_STOP;
+static int playlist_max_length;
+static int playlist_stopOnError;
+static int playlist_errorCount = 0;
+static int playlist_queueError;
+static int playlist_noGoToNext = 0;
 
-int playlist_saveAbsolutePaths;
+static int playlist_saveAbsolutePaths;
 
-char * playlist_stateFile = NULL;
+static char * playlist_stateFile = NULL;
 
-void swapOrder(int a, int b);
-int playPlaylistOrderNumber(FILE * fp, int orderNum);
-void randomizeOrder(int start, int end);
+static void swapOrder(int a, int b);
+static int playPlaylistOrderNumber(FILE * fp, int orderNum);
+static void randomizeOrder(int start, int end);
 
 void incrPlaylistVersion() {
 	static unsigned long max = ((unsigned long)1<<BITS_FOR_VERSION)-1;
 	playlist.version++;
 	if(playlist.version>=max) playlist.version = 0;
+}
+
+static void incrPlaylistCurrent() {
+	if(playlist.current < 0) return;
+
+	if(playlist.current >= playlist.length-1) {
+		if(playlist.repeat) playlist.current = 0;
+		else playlist.current = -1;
+	}
+	else playlist.current++;
 }
 
 void initPlaylist() {
@@ -628,12 +638,15 @@ int deleteFromPlaylist(FILE * fp, int song) {
 		playerStop(stderr);
 		playlist_noGoToNext = 1;
 	}
-	else if(/*playlist_state!=PLAYLIST_STATE_STOP &&*/ 
-			playlist.current>songOrder) {
+
+	if(playlist.current>=playlist.length) {
+		incrPlaylistCurrent();
+	}
+	else if(playlist.current>songOrder) {
 		playlist.current--;
 	}
 
-	if(/*playlist_state!=PLAYLIST_STATE_STOP && */playlist.queued>songOrder) {
+	if(playlist.queued>songOrder) {
 		playlist.queued--;
 	}
 
@@ -745,7 +758,7 @@ void syncCurrentPlayerDecodeMetadata() {
 
         if(!songPlayer) return;
 
-	if(playlist_state!=PLAYLIST_STATE_PLAY);
+	if(playlist_state!=PLAYLIST_STATE_PLAY) return;
 
         song = playlist.songs[playlist.order[playlist.current]];
 
@@ -775,22 +788,12 @@ int currentSongInPlaylist(FILE * fp) {
 
 	syncPlaylistWithQueue(0);
 
-	if(playlist.current<playlist.length) {
+	if(playlist.current>= 0 && playlist.current<playlist.length) {
 		return playPlaylistOrderNumber(fp,playlist.current);
 	}
 	else return stopPlaylist(fp);;
 
 	return 0;
-}
-
-void incrPlaylistCurrent() {
-	if(playlist.current >= playlist.length || (!playlist.repeat && 
-		playlist.current == playlist.length-1))
-	{
-		playlist.current = -1;
-	}
-	else if(playlist.current == playlist.length-1) playlist.current = 0;
-	else if(playlist.current >= 0) playlist.current++;
 }
 
 int nextSongInPlaylist(FILE * fp) {
