@@ -78,7 +78,7 @@ static void freeOssData(OssData * od) {
 static int oss_statDevice(char * device, int * stErrno) {
 	struct stat st;
 	
-	if(0 == lstat(device, &st)) {
+	if(0 == stat(device, &st)) {
 		if(!S_ISCHR(st.st_mode)) {
 			return OSS_STAT_NOT_CHAR_DEV;
 		}
