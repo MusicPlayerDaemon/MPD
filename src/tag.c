@@ -170,11 +170,12 @@ MpdTag * mp3TagDup(char * utf8file) {
 #ifdef HAVE_FAAD
 MpdTag * mp4TagDup(char * utf8file) {
 	MpdTag * ret = NULL;
-	int time = -1;
+	int time;
 
 #warning implement mp4 tag parsing, this includes using mp4v2 and id3
 #warning getMp4TotalTime needs implementing
 	//time = getMp4TotalTime(rmp2amp(utf8ToFsCharset(utf8file)));
+	time = 0;
 
 	if(time>=0) {
 		if(!ret) ret = newMpdTag();
@@ -186,10 +187,11 @@ MpdTag * mp4TagDup(char * utf8file) {
 
 MpdTag * aacTagDup(char * utf8file) {
 	MpdTag * ret = NULL;
-	int time = -1;
+	int time;
 
 #warning getMp4TotalTime needs implementing
 	//time = getAacTotalTime(rmp2amp(utf8ToFsCharset(utf8file)));
+	time = 0;
 
 	if(time>=0) {
 		if(!ret) ret = newMpdTag();

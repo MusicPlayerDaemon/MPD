@@ -244,6 +244,8 @@ void loadPlaylistFromStateFile(FILE * fp, char * buffer, int state, int current,
 			}
 			if(state==PLAYER_STATE_PAUSE) {
 				playerPause(stderr);
+			}
+			if(state!=PLAYER_STATE_STOP) {
 				seekSongInPlaylist(stderr,playlist.length-1,
 						time);
 			}
