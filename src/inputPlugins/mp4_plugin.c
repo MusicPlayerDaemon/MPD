@@ -112,6 +112,7 @@ int mp4_decode(OutputBuffer * cb, DecoderControl * dc, char * path) {
 	long offset;
 	mpd_uint16 bitRate = 0;
 	InputStream inStream;
+	int seeking = 0;
 
 	if(openInputStream(&inStream, path) < 0) {
 		ERROR("failed to open %s\n", path);
@@ -193,7 +194,9 @@ int mp4_decode(OutputBuffer * cb, DecoderControl * dc, char * path) {
 	seekTable = malloc(sizeof(float)*numSamples);
 
 	for(sampleId=0; sampleId<numSamples && !eof; sampleId++) {
-		if(dc->seek && seekTableEnd>1 && 
+		if(dc->seek) seeking = 1;
+
+		if(seeking && seekTableEnd>1 && 
 				seekTable[seekTableEnd]>=dc->seekWhere)
 		{
 			int i = 2;
@@ -215,15 +218,16 @@ int mp4_decode(OutputBuffer * cb, DecoderControl * dc, char * path) {
 		else dur-=offset;
 		time+=((float)dur)/scale;
 
-		if(dc->seek && time>dc->seekWhere) seekPositionFound = 1;
+		if(seeking && time>dc->seekWhere) seekPositionFound = 1;
 
-		if(dc->seek && seekPositionFound) {
+		if(seeking && seekPositionFound) {
 			seekPositionFound = 0;
                         clearOutputBuffer(cb);
+			seeking = 0;
 			dc->seek = 0;
 		}
 
-		if(dc->seek) continue;
+		if(seeking) continue;
 		
 		if(mp4ff_read_sample(mp4fh,track,sampleId,&mp4Buffer,
 				&mp4BufferSize) == 0)
@@ -287,8 +291,6 @@ int mp4_decode(OutputBuffer * cb, DecoderControl * dc, char * path) {
 		}
 	}
 
-	flushOutputBuffer(cb);
-
 	free(seekTable);
 	faacDecClose(decoder);
 	mp4ff_close(mp4fh);
@@ -297,10 +299,11 @@ int mp4_decode(OutputBuffer * cb, DecoderControl * dc, char * path) {
 
 	if(dc->state != DECODE_STATE_DECODE) return -1;
 
-	/*if(dc->seek) {
-                dc->seekError = 1;
+	if(dc->seek && seeking) {
+                clearOutputBuffer(cb);
                 dc->seek = 0;
-        }*/
+        }
+	flushOutputBuffer(cb);
 
 	if(dc->stop) {
 		dc->state = DECODE_STATE_STOP;
