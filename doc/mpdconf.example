@@ -32,6 +32,6 @@ save_absolute_paths_in_playlists "no"
 log_level		"default"
 # when bind_to_address is set to "any", MPD binds all available addresses
 bind_to_address 	"any"
-#passwd 		"passwd@read,add,control,admin"
+#password 		"password@read,add,control,admin"
 #default_permissions	"read,add,control,admin"
 #filesystem_charset	"UTF-8"
