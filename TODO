@@ -4,20 +4,24 @@
 	c) command for dealing with the changing metadata, currentsonginfo
 		or something
 	d) in songinfo add a metadata tag item for indicating stream
-	e) ensure URL's are all ASCII, and properly %'d! check rfc's
+
+2) http stuff
+	a) allow http proxy
+	b) handle http authentication
+	c) ensure URL's are all ASCII, and properly %'d! check rfc's
 		for legal characters
 
-2) have seek look in already buffered stuff!
+3) have seek look in already buffered stuff!
 
-3) ACK error codes
+4) ACK error codes
 
-4) cleanup main()
+5) cleanup main()
 
-5) handle '\n' in filenames
+6) handle '\n' in filenames
 
-6) compute average replaygain to use for non-replaygain songs
+7) compute average replaygain to use for non-replaygain songs
 
-7) change default port to 6600
+8) change default port to 6600
 
 
 Post-1.0
