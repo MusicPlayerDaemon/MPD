@@ -42,9 +42,9 @@ void savePlaylistState();
 
 int clearPlaylist(FILE * fp);
 
-int addToPlaylist(FILE * fp, char * file);
+int addToPlaylist(FILE * fp, char * file, int printId);
 
-int addSongToPlaylist(FILE * fp, Song * song);
+int addSongToPlaylist(FILE * fp, Song * song, int printId);
 
 int showPlaylist(FILE * fp);
 

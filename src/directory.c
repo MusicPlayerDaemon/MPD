@@ -1289,7 +1289,7 @@ int printAllIn(FILE * fp, char * name) {
 }
 
 int directoryAddSongToPlaylist(FILE * fp, Song * song, void * data) {
-	return addSongToPlaylist(fp,song);
+	return addSongToPlaylist(fp, song, 0);
 }
 
 int addAllIn(FILE * fp, char * name) {

@@ -45,6 +45,7 @@
 #define COMMAND_KILL           	"kill"
 #define COMMAND_CLOSE          	"close"
 #define COMMAND_ADD            	"add"
+#define COMMAND_ADDID		"addid"
 #define COMMAND_DELETE         	"delete"
 #define COMMAND_DELETEID       	"deleteid"
 #define COMMAND_PLAYLIST       	"playlist"
@@ -298,9 +299,15 @@ int handleAdd(FILE * fp, unsigned int * permission, int argArrayLength,
 
         if(argArrayLength == 2) {
 		path = argArray[1];
-		if(isRemoteUrl(path)) return addToPlaylist(fp,path);
+		if(isRemoteUrl(path)) return addToPlaylist(fp, path, 0);
 	}
         return addAllIn(fp,path);
+}
+
+int handleAddId(FILE * fp, unsigned int * permission, int argArrayLength,
+		char ** argArray)
+{
+	return addToPlaylist(fp, argArray[0], 1);
 }
 
 int handleDelete(FILE * fp, unsigned int * permission, int argArrayLength, 
@@ -811,6 +818,7 @@ void initCommands() {
         addCommand(COMMAND_KILL        ,PERMISSION_ADMIN,  -1,-1,handleKill,NULL);
         addCommand(COMMAND_CLOSE       ,0,                 -1,-1,handleClose,NULL);
         addCommand(COMMAND_ADD         ,PERMISSION_ADD,     0, 1,handleAdd,NULL);
+        addCommand(COMMAND_ADDID       ,PERMISSION_ADD,     0, 1,handleAddId,NULL);
         addCommand(COMMAND_DELETE      ,PERMISSION_CONTROL, 1, 1,handleDelete,NULL);
         addCommand(COMMAND_DELETEID    ,PERMISSION_CONTROL, 1, 1,handleDeleteId,NULL);
         addCommand(COMMAND_PLAYLIST    ,PERMISSION_READ,    0, 0,handlePlaylist,NULL);

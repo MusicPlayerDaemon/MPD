@@ -315,7 +315,7 @@ void loadPlaylistFromStateFile(FILE * fp, char * buffer, int state, int current,
 					playlist_stateFile);
 			exit(EXIT_FAILURE);
 		}
-		if(addToPlaylist(stderr,temp)==0 && current==song) {
+		if(addToPlaylist(stderr, temp, 0)==0 && current==song) {
 			if(state!=PLAYER_STATE_STOP) {
 				playPlaylist(stderr,playlist.length-1,0);
 			}
@@ -595,7 +595,7 @@ void clearPlayerQueue() {
 	}
 }
 
-int addToPlaylist(FILE * fp, char * url) {
+int addToPlaylist(FILE * fp, char * url, int printId) {
 	Song * song;
 
 	DEBUG("add to playlist: %s\n",url);
@@ -613,10 +613,12 @@ int addToPlaylist(FILE * fp, char * url) {
 		return -1;
 	}
 
-	return addSongToPlaylist(fp,song);
+	return addSongToPlaylist(fp,song, printId);
 }
 
-int addSongToPlaylist(FILE * fp, Song * song) {
+int addSongToPlaylist(FILE * fp, Song * song, int printId) {
+	int id;
+
 	if(playlist.length==playlist_max_length) {
 		commandError(fp, ACK_ERROR_PLAYLIST_MAX,
                                 "playlist is at the max size", NULL);
@@ -631,10 +633,12 @@ int addSongToPlaylist(FILE * fp, Song * song) {
 		}
 	}
 
+	id = getNextId();
+
 	playlist.songs[playlist.length] = song;
 	playlist.songMod[playlist.length] = playlist.version;
 	playlist.order[playlist.length] = playlist.length;
-	playlist.positionToId[playlist.length] = getNextId();
+	playlist.positionToId[playlist.length] = id;
 	playlist.idToPosition[playlist.positionToId[playlist.length]] = playlist.length;
 	playlist.length++;
 
@@ -652,6 +656,8 @@ int addSongToPlaylist(FILE * fp, Song * song) {
 	}
 	
 	incrPlaylistVersion();
+
+	if(printId) myfprintf(fp, "Id: %i\n", id);
 
 	return 0;
 }
@@ -1400,7 +1406,7 @@ int loadPlaylist(FILE * fp, char * utf8file) {
 				free(temp);
 				continue;
 			}
-			if((addToPlaylist(stderr,temp))<0) {
+			if((addToPlaylist(stderr, temp, 0))<0) {
 				if(!erroredFile) erroredFile = strdup(temp);
 			}
 			free(temp);
