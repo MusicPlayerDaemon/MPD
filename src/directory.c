@@ -338,8 +338,7 @@ int updateInDirectory(Directory * directory, char * shortname, char * name) {
     0 -> no error, but nothing removed
     1 -> no error, and stuff removed
  */
-int removeDeletedFromDirectory(Directory * directory) {
-	DIR * dir;
+int removeDeletedFromDirectory(Directory * directory, DIR * dir) {
 	char cwd[2];
 	struct dirent * ent;
 	char * dirname = directory->utf8name;
@@ -354,8 +353,6 @@ int removeDeletedFromDirectory(Directory * directory) {
 	cwd[0] = '.';
 	cwd[1] = '\0';
 	if(dirname==NULL) dirname=cwd;
-
-	if((dir = opendir(rmp2amp(utf8ToFsCharset(dirname))))==NULL) return -1;
 
 	while((ent = readdir(dir))) {
 		if(ent->d_name[0]=='.') continue; /* hide hidden stuff */
@@ -372,8 +369,6 @@ int removeDeletedFromDirectory(Directory * directory) {
 		else s= strdup(utf8);
 		insertInList(entList,utf8,s);
 	}
-
-	closedir(dir);
 
 	node = directory->subDirectories->firstNode;
 	while(node) {
@@ -556,9 +551,11 @@ int updateDirectory(Directory * directory) {
 	cwd[1] = '\0';
 	if(dirname==NULL) dirname=cwd;
 
-	if(removeDeletedFromDirectory(directory)>0) ret = 1;
-
 	if((dir = opendir(rmp2amp(utf8ToFsCharset(dirname))))==NULL) return -1;
+
+	if(removeDeletedFromDirectory(directory, dir)>0) ret = 1;
+
+	rewinddir(dir);
 
 	while((ent = readdir(dir))) {
 		if(ent->d_name[0]=='.') continue; /* hide hidden stuff */
