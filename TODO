@@ -2,6 +2,8 @@
 
 2) Fix charset errors so they don't goto stderr/out
 
+3) Add a timeout for streams (how long? 1 minutes?)
+
 
 Post-1.0
 --------
