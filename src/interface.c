@@ -24,6 +24,7 @@
 #include "listen.h"
 #include "playlist.h"
 #include "permission.h"
+#include "sig_handlers.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -323,12 +324,16 @@ static int processBytesRead(Interface * interface, int bytesRead) {
 }
 
 int interfaceReadInput(Interface * interface) {
-	int bytesRead = read(interface->fd, 
+	int bytesRead;
+
+	bytesRead = read(interface->fd, 
 			interface->buffer+interface->bufferLength, 
 			INTERFACE_MAX_BUFFER_LENGTH-interface->bufferLength);
-	
+
 	if(bytesRead > 0) return processBytesRead(interface, bytesRead);
-	else if(bytesRead == 0 && errno!=EINTR) closeInterface(interface);
+	else if(bytesRead == 0 || (bytesRead < 0 && errno != EINTR)) {
+		closeInterface(interface);
+	}
 	else return 0;
 
 	return 1;
