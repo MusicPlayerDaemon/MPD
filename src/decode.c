@@ -406,7 +406,8 @@ void handleMetadata(OutputBuffer * cb, PlayerControl * pc) {
 		int meta = cb->metaChunk[cb->begin];
 		if( meta != previous ) {
 			if( meta >= 0 && pc->metadataState ==
-					PLAYER_METADATA_STATE_WRITE) 
+					PLAYER_METADATA_STATE_WRITE &&
+					cb->metaChunkSet[meta]) 
 			{
 				printf("METADATA!, copying it.\n");
 				memcpy(&(pc->metadataChunk), 
@@ -414,6 +415,7 @@ void handleMetadata(OutputBuffer * cb, PlayerControl * pc) {
 					sizeof(MetadataChunk));
 				pc->metadataState = 
 					PLAYER_METADATA_STATE_READ;
+				cb->metaChunkSet[meta] = 0;
 				previous = meta;
 			}
 		}
@@ -621,6 +623,7 @@ void decode() {
         dc->seek = 0;
         dc->stop = 0;
 	dc->start = 1;
+	clearAllMetaChunkSets(cb);
         
 	if(decode_pid==NULL || *decode_pid<=0) {
 		if(decoderInit(pc,cb,dc)<0) return;

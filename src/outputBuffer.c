@@ -29,10 +29,25 @@ static mpd_sint16 currentChunk = -1;
 static mpd_sint8 currentMetaChunk = -1;
 static mpd_sint8 sendMetaChunk = 0;
 
+void clearAllMetaChunkSets(OutputBuffer * cb) {
+	int i;
+
+	for(i=0; i<BUFFERED_METACHUNKS; i++) {
+		cb->metaChunkSet[i] = 0;
+	}
+}
+
 void clearOutputBuffer(OutputBuffer * cb) {
         currentChunk = -1;
         cb->end = cb->begin;
         cb->wrap = 0;
+
+	if(cb->acceptMetadata) {
+		clearAllMetaChunkSets(cb);
+		if(sendMetaChunk == 0 && currentMetaChunk >= 0) {
+			cb->metaChunkSet[currentChunk] = 1;
+		}
+	}
 }
 
 void flushOutputBuffer(OutputBuffer * cb) {
@@ -126,20 +141,28 @@ int sendDataToOutputBuffer(OutputBuffer * cb, InputStream * inStream,
 }
 
 int copyMpdTagToOutputBuffer(OutputBuffer * cb, MpdTag * tag) {
+	int nextChunk;
+
 	printf("copyMpdTagToOB called\n");
 
         if(!cb->acceptMetadata || !tag) {
 		sendMetaChunk = 0;
-		return -1;
+		return 0;
 	}
 
 	sendMetaChunk = 1;
-	currentMetaChunk++;
-	if(currentMetaChunk >= BUFFERED_METACHUNKS) currentMetaChunk = 0;
+	nextChunk = currentMetaChunk+1;
+	if(nextChunk >= BUFFERED_METACHUNKS) nextChunk = 0;
+
+	if(cb->metaChunkSet[nextChunk]) return -1;
+
+	currentMetaChunk = nextChunk;
 
 	printMpdTag(stdout, tag);
 
 	copyMpdTagToMetadataChunk(tag, &(cb->metadataChunks[currentMetaChunk]));
+
+	cb->metaChunkSet[nextChunk] = 1;
 
 	return 0;
 }
