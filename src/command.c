@@ -87,6 +87,7 @@
 #define COMMAND_DISABLE_DEV	"disableoutput"
 #define COMMAND_DEVICES		"outputs"
 #define COMMAND_COMMANDS	"commands"
+#define COMMAND_NOTCOMMANDS	"notcommands"
 
 #define COMMAND_STATUS_VOLUME           "volume"
 #define COMMAND_STATUS_STATE            "state"
@@ -892,6 +893,25 @@ int handleCommands(FILE * fp, unsigned int * permission, int argArrayLength,
 	return 0;
 }
 
+int handleNotcommands(FILE * fp, unsigned int * permission, int argArrayLength,
+		char ** argArray)
+{
+	ListNode * node = commandList->firstNode;
+	CommandEntry * cmd;
+
+	while(node != NULL) {
+		cmd = (CommandEntry *) node->data;
+
+		if(!(*permission & cmd->reqPermission)) {
+			myfprintf(fp, "command: %s\n", cmd->cmd);
+		}
+
+		node = node->nextNode;
+	}
+
+	return 0;
+}
+
 void initCommands() {
         commandList = makeList(free, 1);
 
@@ -945,6 +965,7 @@ void initCommands() {
         addCommand(COMMAND_DISABLE_DEV ,PERMISSION_ADMIN,   1, 1,handleDisableDevice,NULL);
         addCommand(COMMAND_DEVICES     ,PERMISSION_ADMIN,   0, 0,handleDevices,NULL);
         addCommand(COMMAND_COMMANDS    ,0,                  0, 0,handleCommands,NULL);
+        addCommand(COMMAND_NOTCOMMANDS ,0,                  0, 0,handleNotcommands,NULL);
 
         sortList(commandList);
 }
