@@ -1,5 +1,16 @@
 0.12
 ----
+*) Rewrite replaygain stuff:
+	*) Replay gain struct with album and track gain's and peak's
+	*) Pass these to replaygain function
+	*) Don't have deocder plugins inquire weather or not to use replaygain,
+		they should just parse tags and pass these to replaygain func
+	*) If replaygain tag info present, average the replaygain gain's
+		and peak's on the fly
+	*) If NULL replaygain struct, then use the average replaygain gains
+		and peak's to compute the the scale for files missing
+		replaygain tags (make this a config file option)
+
 *) Optimize read() on cleints
 
 *) Add libshout && vorbis encoding support
