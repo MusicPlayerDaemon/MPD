@@ -43,13 +43,13 @@
 
 #define GREETING 		"OK MPD"
 
-#define INTERFACE_MAX_BUFFER_LENGTH		MAXPATHLEN+1024
-#define INTERFACE_LIST_MODE_BEGIN		"command_list_begin"
-#define INTERFACE_LIST_OK_MODE_BEGIN		"command_list_ok_begin"
-#define INTERFACE_LIST_MODE_END			"command_list_end"
-#define INTERFACE_DEFAULT_OUT_BUFFER_SIZE		4096
-#define INTERFACE_TIMEOUT_DEFAULT			60
-#define INTERFACE_MAX_CONNECTIONS_DEFAULT		10
+#define INTERFACE_MAX_BUFFER_LENGTH			(40960)
+#define INTERFACE_LIST_MODE_BEGIN			"command_list_begin"
+#define INTERFACE_LIST_OK_MODE_BEGIN			"command_list_ok_begin"
+#define INTERFACE_LIST_MODE_END				"command_list_end"
+#define INTERFACE_DEFAULT_OUT_BUFFER_SIZE		(4096)
+#define INTERFACE_TIMEOUT_DEFAULT			(60)
+#define INTERFACE_MAX_CONNECTIONS_DEFAULT		(10)
 #define INTERFACE_MAX_COMMAND_LIST_DEFAULT		(2048*1024)
 #define INTERFACE_MAX_OUTPUT_BUFFER_SIZE_DEFAULT	(2048*1024)
 
@@ -309,6 +309,7 @@ static int processBytesRead(Interface * interface, int bytesRead) {
 			if(interface->bufferPos == 0) {
 				ERROR("interface %i: buffer overflow\n",
 						interface->num);
+				closeInterface(interface);
 				return 1;
 			}
 			interface->bufferLength-= interface->bufferPos;
@@ -325,7 +326,7 @@ static int processBytesRead(Interface * interface, int bytesRead) {
 int interfaceReadInput(Interface * interface) {
 	int bytesRead = read(interface->fd, 
 			interface->buffer+interface->bufferLength, 
-			INTERFACE_MAX_BUFFER_LENGTH-interface->bufferLength+1);
+			INTERFACE_MAX_BUFFER_LENGTH-interface->bufferLength);
 	
 	if(bytesRead > 0) return processBytesRead(interface, bytesRead);
 	else if(bytesRead == 0 && errno!=EINTR) closeInterface(interface);
