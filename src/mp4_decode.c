@@ -280,40 +280,15 @@ int mp4_decode(OutputBuffer * cb, AudioFormat * af, DecoderControl * dc) {
 
 		sampleBuffer+=offset*channels*2;
 
-		while(sampleBufferLen>0 && !dc->seek) {
-			size_t size = sampleBufferLen>CHUNK_SIZE-chunkLen ? 
-							CHUNK_SIZE-chunkLen:
-							sampleBufferLen;
-			while(cb->begin==cb->end && cb->wrap &&
-					!dc->stop && !dc->seek)
-			{
-					my_usleep(10000);
-			}
-			if(dc->stop) {
-				eof = 1;
-				break;
-			}
-			else if(!dc->seek) {
-				sampleBufferLen-=size;
-				memcpy(cb->chunks+cb->end*CHUNK_SIZE+chunkLen,
-						sampleBuffer,size);
-				cb->times[cb->end] = time;
-				cb->bitRate[cb->end] = bitRate;
-				sampleBuffer+=size;
-				chunkLen+=size;
-				if(chunkLen>=CHUNK_SIZE) {
-					cb->chunkSize[cb->end] = CHUNK_SIZE;
-					++cb->end;
-		
-					if(cb->end>=buffered_chunks) {
-						cb->end = 0;
-						cb->wrap = 1;
-					}
-					chunkLen = 0;
-				}
-			}
+		sendDataToOutputBuffer(cb,dc,sampleBuffer,
+				sampleBufferLen,time,bitRate);
+		if(dc->stop) {
+			eof = 1;
+			break;
 		}
 	}
+
+	flushOutputBuffer(cb);
 
 	free(seekTable);
 	faacDecClose(decoder);

@@ -24,6 +24,7 @@
 #include "log.h"
 #include "pcm_utils.h"
 #include "inputStream.h"
+#include "outputBuffer.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -159,7 +160,10 @@ void flacPlayFile(char *file, OutputBuffer * cb, AudioFormat * af,
 	}
 	FLAC__seekable_stream_decoder_delete(flacDec);
 	/* send last little bit */
-	if(data.chunk_length>0 && !dc->stop) flacSendChunk(&data);
+	if(data.chunk_length>0 && !dc->stop) {
+		flacSendChunk(&data);
+		flushOutputBuffer(data.cb);
+	}
 }
 
 FLAC__SeekableStreamDecoderReadStatus flacRead(
@@ -279,25 +283,13 @@ void flacMetadata(const FLAC__SeekableStreamDecoder *dec,
 }
 
 int flacSendChunk(FlacData * data) {
-	while(data->cb->begin==data->cb->end && data->cb->wrap && 
-		!data->dc->stop && !data->dc->seek)  
+	switch(sendDataToOutputBuffer(data->cb,data->dc,data->chunk,
+			data->chunk_length,data->time,data->bitRate)) 
 	{
-		my_usleep(10000);
-	}
-
-	if(data->dc->stop) return -1;
-	if(data->dc->seek) return 0;
-
-	memcpy(data->cb->chunks+data->cb->end*CHUNK_SIZE,data->chunk,
-			CHUNK_SIZE);
-	data->cb->chunkSize[data->cb->end] = data->chunk_length;
-	data->cb->times[data->cb->end] = data->time;
-	data->cb->bitRate[data->cb->end] = data->bitRate;
-
-	data->cb->end++;
-	if(data->cb->end>=buffered_chunks) {
-		data->cb->end = 0;
-		data->cb->wrap = 1;
+	case OUTPUT_BUFFER_DC_STOP:
+		return -1;
+	default:
+		return 0;
 	}
 
 	return 0;

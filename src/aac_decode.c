@@ -27,6 +27,7 @@
 #include "audio.h"
 #include "log.h"
 #include "inputStream.h"
+#include "outputBuffer.h"
 
 #include <stdio.h>
 #include <unistd.h>
@@ -361,44 +362,19 @@ int aac_decode(OutputBuffer * cb, AudioFormat * af, DecoderControl * dc) {
 			
 		sampleBufferLen = sampleCount*2;
 
-		while(sampleBufferLen>0) {
-			size_t size = sampleBufferLen>CHUNK_SIZE-chunkLen ? 
-							CHUNK_SIZE-chunkLen:
-							sampleBufferLen;
-			while(cb->begin==cb->end && cb->wrap &&
-					!dc->stop && !dc->seek)
-			{
-					my_usleep(10000);
-			}
-			if(dc->seek) {
-				dc->seekError = 1;
-				dc->seek = 0;
-			}
-			else if(dc->stop) {
-				eof = 1;
-				break;
-			}
-			else {
-				sampleBufferLen-=size;
-				memcpy(cb->chunks+cb->end*CHUNK_SIZE+chunkLen,
-						sampleBuffer,size);
-				cb->times[cb->end] = time;
-				cb->bitRate[cb->end] = bitRate;
-				sampleBuffer+=size;
-				chunkLen+=size;
-				if(chunkLen>=CHUNK_SIZE) {
-					cb->chunkSize[cb->end] = CHUNK_SIZE;
-					++cb->end;
-		
-					if(cb->end>=buffered_chunks) {
-						cb->end = 0;
-						cb->wrap = 1;
-					}
-					chunkLen = 0;
-				}
-			}
+		sendDataToOutputBuffer(cb,dc,sampleBuffer,sampleBufferLen,
+				time,bitRate);
+		if(dc->seek) {
+			dc->seekError = 1;
+			dc->seek = 0;
+		}
+		else if(dc->stop) {
+			eof = 1;
+			break;
 		}
 	} while (!eof);
+
+	flushOutputBuffer(cb);
 
 	faacDecClose(decoder);
 	closeInputStream(b.inStream);

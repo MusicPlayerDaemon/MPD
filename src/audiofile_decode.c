@@ -109,29 +109,17 @@ int audiofile_decode(OutputBuffer * cb, AudioFormat * af, DecoderControl * dc)
 			ret = afReadFrames(af_fp, AF_DEFAULT_TRACK, chunk, CHUNK_SIZE/fs);
 			if(ret<=0) eof = 1;
 			else {
-				while(cb->begin==cb->end && cb->wrap &&
-						!dc->stop && !dc->seek){
-					my_usleep(10000);
-				}
+				current += ret;
+				sendDataToOutputBuffer(cb,dc,chunk,ret*fs,
+						(float)current /
+						(float)af->sampleRate,
+						bitRate);
 				if(dc->stop) break;
 				else if(dc->seek) continue;
-				
-				memcpy(cb->chunks+cb->end*CHUNK_SIZE,chunk,
-						CHUNK_SIZE);
-				cb->chunkSize[cb->end] = CHUNK_SIZE;
-				
-				current += ret;
-				cb->times[cb->end] = (float)current/(float)af->sampleRate;
-				cb->bitRate[cb->end] = bitRate;
-				
-				++cb->end;
-				
-				if(cb->end>=buffered_chunks) {
-					cb->end = 0;
-					cb->wrap = 1;
-				}
 			}
 		}
+
+		flushOutputBuffer(cb);
 
 		if(dc->seek) dc->seek = 0;
 
