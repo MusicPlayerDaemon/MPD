@@ -704,6 +704,8 @@ int playPlaylist(FILE * fp, int song, int stopOnError) {
 	clearPlayerError();
 
 	if(song==-1) {
+		if(playlist.length == 0) return 0;
+
                 if(playlist_state == PLAYLIST_STATE_PLAY) {
                         return playerSetPause(fp, 0);
                 }
