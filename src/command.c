@@ -81,7 +81,7 @@
 #define COMMAND_CROSSFADE	"crossfade"
 #define COMMAND_URL_HANDLERS   	"urlhandlers" 
 #define COMMAND_PLCHANGES	"plchanges" 
-#define COMMAND_CURRENT		"current" 
+#define COMMAND_CURRENTSONG	"currentsong" 
 
 #define COMMAND_STATUS_VOLUME           "volume"
 #define COMMAND_STATUS_STATE            "state"
@@ -194,7 +194,7 @@ int handleStop(FILE * fp, unsigned int * permission, int argArrayLength,
         return stopPlaylist(fp);
 }
 
-int handleCurrent(FILE * fp, unsigned int * permission, int argArrayLength, 
+int handleCurrentSong(FILE * fp, unsigned int * permission, int argArrayLength, 
 		char ** argArray) 
 {
         int song = getPlaylistCurrentSong();
@@ -761,7 +761,7 @@ void initCommands() {
         addCommand(COMMAND_PLAY        ,PERMISSION_CONTROL, 0, 1,handlePlay,NULL);
         addCommand(COMMAND_PLAYID      ,PERMISSION_CONTROL, 0, 1,handlePlayId,NULL);
         addCommand(COMMAND_STOP        ,PERMISSION_CONTROL, 0, 0,handleStop,NULL);
-        addCommand(COMMAND_CURRENT     ,PERMISSION_READ   , 0, 0,handleCurrent,NULL);
+        addCommand(COMMAND_CURRENTSONG ,PERMISSION_READ   , 0, 0,handleCurrentSong,NULL);
         addCommand(COMMAND_PAUSE       ,PERMISSION_CONTROL, 0, 1,handlePause,NULL);
         addCommand(COMMAND_STATUS      ,PERMISSION_READ,    0, 0,commandStatus,NULL);
         addCommand(COMMAND_KILL        ,PERMISSION_ADMIN,  -1,-1,handleKill,NULL);
