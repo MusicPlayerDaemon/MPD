@@ -192,7 +192,7 @@ static ConfigParam * readConfigBlock(FILE * fp, int * count, char * string) {
 
 		if(2 != argsMinusComment) {
 			ERROR("improperly formated config file at line %i:"
-					" %s\n", count, string);
+					" %s\n", *count, string);
 			exit(EXIT_FAILURE);
 		}
 
