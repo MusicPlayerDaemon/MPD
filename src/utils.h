@@ -25,4 +25,6 @@ char * myFgets(char * buffer, int bufferSize, FILE * fp);
 
 char * strDupToUpper(char * str);
 
+void stripReturnChar(char * string);
+
 #endif

@@ -22,6 +22,7 @@
 #include "sig_handlers.h"
 #include "mp3_decode.h"
 #include "audiofile_decode.h"
+#include "utils.h"
 
 #include <sys/stat.h>
 #include <stdlib.h>
@@ -102,24 +103,28 @@ MpdTag * id3Dup(char * utf8filename) {
 	str = getID3Info(tag,ID3_FRAME_ARTIST);
 	if(str) {
 		if(!ret) ret = newMpdTag();
+		stripReturnChar(str);
 		ret->artist = str;
 	}
 
 	str = getID3Info(tag,ID3_FRAME_TITLE);
 	if(str) {
 		if(!ret) ret = newMpdTag();
+		stripReturnChar(str);
 		ret->title = str;
 	}
 
 	str = getID3Info(tag,ID3_FRAME_ALBUM);
 	if(str) {
 		if(!ret) ret = newMpdTag();
+		stripReturnChar(str);
 		ret->album = str;
 	}
 
 	str = getID3Info(tag,ID3_FRAME_TRACK);
 	if(str) {
 		if(!ret) ret = newMpdTag();
+		stripReturnChar(str);
 		ret->track = str;
 	}
 
@@ -195,21 +200,25 @@ MpdTag * oggTagDup(char * utf8file) {
 		if(!s1 || !s2);
 		else if(0==strcasecmp(s1,"artist")) {
 			if(!ret->artist) {
+				stripReturnChar(s2);
 				ret->artist = strdup(s2);
 			}
 		}
 		else if(0==strcasecmp(s1,"title")) {
 			if(!ret->title) {
+				stripReturnChar(s2);
 				ret->title = strdup(s2);
 			}
 		}
 		else if(0==strcasecmp(s1,"album")) {
 			if(!ret->album) {
+				stripReturnChar(s2);
 				ret->album = strdup(s2);
 			}
 		}
 		else if(0==strcasecmp(s1,"tracknumber")) {
 			if(!ret->track) {
+				stripReturnChar(s2);
 				ret->track = strdup(s2);
 			}
 		}
@@ -257,6 +266,7 @@ MpdTag * flacMetadataDup(char * utf8file, int * vorbisCommentFound) {
 					dup = malloc(len+1);
 					memcpy(dup,&(block->data.vorbis_comment.comments[offset].entry[pos]),len);
 					dup[len] = '\0';
+					stripReturnChar(dup);
 					ret->artist = dup;
 				}
 			}
@@ -270,6 +280,7 @@ MpdTag * flacMetadataDup(char * utf8file, int * vorbisCommentFound) {
 					dup = malloc(len+1);
 					memcpy(dup,&(block->data.vorbis_comment.comments[offset].entry[pos]),len);
 					dup[len] = '\0';
+					stripReturnChar(dup);
 					ret->album = dup;
 				}
 			}
@@ -283,6 +294,7 @@ MpdTag * flacMetadataDup(char * utf8file, int * vorbisCommentFound) {
 					dup = malloc(len+1);
 					memcpy(dup,&(block->data.vorbis_comment.comments[offset].entry[pos]),len);
 					dup[len] = '\0';
+					stripReturnChar(dup);
 					ret->title = dup;
 				}
 			}
@@ -296,6 +308,7 @@ MpdTag * flacMetadataDup(char * utf8file, int * vorbisCommentFound) {
 					dup = malloc(len+1);
 					memcpy(dup,&(block->data.vorbis_comment.comments[offset].entry[pos]),len);
 					dup[len] = '\0';
+					stripReturnChar(dup);
 					ret->track = dup;
 				}
 			}

@@ -179,8 +179,7 @@ void readSongInfoIntoList(FILE * fp, SongList * list) {
 			song->mtime = atoi(&(buffer[strlen(SONG_TITLE)]));
 		}
 		else {
-			ERROR("unknown line in db: %s\n",buffer);
-			exit(-1);
+			ERROR("songinfo: unknown line in db: %s\n",buffer);
 		}
 	}
 	

@@ -37,3 +37,9 @@ char * strDupToUpper(char * str) {
 	
 	return ret;
 }
+
+void stripReturnChar(char * string) {
+	if(string && (string = strstr(string,"\n"))) {
+		*string = '\0';
+	}
+}
