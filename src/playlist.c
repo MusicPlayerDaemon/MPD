@@ -23,7 +23,6 @@
 #include "tag.h"
 #include "conf.h"
 #include "directory.h"
-#include "stats.h"
 #include "log.h"
 #include "path.h"
 #include "utils.h"
@@ -642,13 +641,11 @@ int stopPlaylist(FILE * fp) {
 	playlist.queued = -1;
 	playlist_state = PLAYLIST_STATE_STOP;
 	playlist_noGoToNext = 0;
-	/*stats.playTime+=getPlayerElapsedTime();*/
 	if(playlist.random) randomizeOrder(0,playlist.length-1);
 	return 0;
 }
 
 int playPlaylistOrderNumber(FILE * fp, int orderNum) {
-	/*stats.songsPlayed++;*/
 
 	if(playerStop(fp)<0) return -1;
 
@@ -743,11 +740,9 @@ int nextSongInPlaylist(FILE * fp) {
 	playlist_stopOnError = 0;
 
 	if(playlist.current<playlist.length-1) {
-		/*stats.playTime+=getPlayerElapsedTime();*/
 		return playPlaylistOrderNumber(fp,playlist.current+1);
 	}
 	else if(playlist.length && playlist.repeat) {
-		/*stats.playTime+=getPlayerElapsedTime();*/
 		if(playlist.random) randomizeOrder(0,playlist.length-1);
 		return playPlaylistOrderNumber(fp,0);
 	}

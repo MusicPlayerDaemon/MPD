@@ -180,10 +180,7 @@ void decodeSeek(PlayerControl * pc, AudioFormat * af, DecoderControl * dc,
 	} \
 	if(pc->pause) { \
 		pause = !pause; \
-		if(pause) { \
-			finishAudio(); \
-			pc->state = PLAYER_STATE_PAUSE; \
-		} \
+		if(pause) pc->state = PLAYER_STATE_PAUSE; \
 		else { \
 			if(initAudio(NULL)<0) { \
 				strncpy(pc->erroredFile,pc->file,MAXPATHLEN); \
@@ -195,6 +192,7 @@ void decodeSeek(PlayerControl * pc, AudioFormat * af, DecoderControl * dc,
 		} \
 		pc->pause = 0; \
 		kill(getppid(),SIGUSR1); \
+		if(pause) finishAudio(); \
 	} \
 	if(pc->seek) { \
 		pc->totalPlayTime+= pc->elapsedTime-pc->beginTime; \
