@@ -335,6 +335,11 @@ int queueSong(char * utf8file) {
 			pc->decodeType = DECODE_TYPE_AUDIOFILE;
 		}
 #endif
+#ifdef HAVE_AUDIOFILE
+		else if(isMp4(utf8file,NULL)) {
+			pc->decodeType = DECODE_TYPE_MP4;
+		}
+#endif
 		else return -1;
 		pc->queueState = PLAYER_QUEUE_FULL;
 		return 0;
