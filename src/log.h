@@ -19,6 +19,8 @@
 #ifndef LOG_H
 #define LOG_H
 
+#include "../config.h"
+
 #include "myfprintf.h"
 
 #define LOG_LEVEL_LOW		0

@@ -19,6 +19,8 @@
 #ifndef TABLES_H
 #define TABLES_H
 
+#include "../config.h"
+
 #include "song.h"
 
 #include <stdio.h>

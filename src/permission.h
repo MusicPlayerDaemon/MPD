@@ -19,6 +19,8 @@
 #ifndef PERMISSION_H
 #define PERMISSION_H
 
+#include "../config.h"
+
 #define PERMISSION_READ		1
 #define PERMISSION_ADD		2
 #define PERMISSION_CONTROL	4

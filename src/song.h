@@ -19,6 +19,8 @@
 #ifndef SONG_H
 #define SONG_H
 
+#include "../config.h"
+
 #define SONG_BEGIN	"songList begin"
 #define SONG_END	"songList end"
 

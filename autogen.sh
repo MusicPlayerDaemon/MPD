@@ -107,6 +107,9 @@ fi
 echo "  $ACLOCAL $ACLOCAL_FLAGS"
 $ACLOCAL $ACLOCAL_FLAGS
 
+echo "  autoheader"
+autoheader
+
 echo "  $LIBTOOLIZE --automake"
 $LIBTOOLIZE --automake
 

@@ -19,6 +19,8 @@
 #ifndef LISTEN_H
 #define LISTEN_H
 
+#include "../config.h"
+
 extern int listenSocket;
 
 int establish(unsigned short port);

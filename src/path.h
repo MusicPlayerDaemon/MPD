@@ -19,6 +19,8 @@
 #ifndef PATH_H
 #define PATH_H
 
+#include "../config.h"
+
 #include <sys/param.h>
 
 extern char musicDir[MAXPATHLEN+1];

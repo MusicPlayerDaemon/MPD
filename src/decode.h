@@ -19,6 +19,8 @@
 #ifndef DECODE_H
 #define DECODE_H
 
+#include "../config.h"
+
 #include <stdio.h>
 #include <sys/param.h>
 
@@ -26,8 +28,7 @@
 #define DECODE_TYPE_OGG		1
 #define DECODE_TYPE_FLAC	2
 #define DECODE_TYPE_AUDIOFILE 	3
-#define DECODE_TYPE_AAC 	4
-#define DECODE_TYPE_MP4 	5
+#define DECODE_TYPE_MP4 	4
 
 #define DECODE_STATE_STOP	0
 #define DECODE_STATE_DECODE	1

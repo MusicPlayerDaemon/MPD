@@ -19,6 +19,8 @@
 #ifndef BUFFER_2_ARRAY_H
 #define BUFFER_2_ARRAY_H
 
+#include "../config.h"
+
 int buffer2array(char * buffer, char *** array);
 
 void freeArgArray(char ** array, int argArrayLength);

@@ -19,6 +19,8 @@
 #ifndef VOLUME_H
 #define VOLUME_H
 
+#include "../config.h"
+
 #include <stdio.h>
 
 #define VOLUME_MIXER_OSS	"oss"

@@ -299,22 +299,6 @@ MpdTag * mp4TagDup(char * utf8file) {
 
 	return ret;
 }
-
-MpdTag * aacTagDup(char * utf8file) {
-	MpdTag * ret = NULL;
-	int time;
-
-#warning getMp4TotalTime needs implementing
-	//time = getAacTotalTime(rmp2amp(utf8ToFsCharset(utf8file)));
-	time = 0;
-
-	if(time>=0) {
-		if(!ret) ret = newMpdTag();
-		ret->time = time;
-	}
-
-	return ret;
-}
 #endif
 
 #ifdef HAVE_OGG

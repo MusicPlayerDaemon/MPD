@@ -19,6 +19,8 @@
 #ifndef DIRECTORY_H
 #define DIRECTORY_H
 
+#include "../config.h"
+
 #include "song.h"
 
 #include <stdio.h>

@@ -19,6 +19,8 @@
 #ifndef SIG_HANDLERS_H
 #define SIG_HANDLERS_H
 
+#include "../config.h"
+
 void initSigHandlers();
 
 void finishSigHandlers();

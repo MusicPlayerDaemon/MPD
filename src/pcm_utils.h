@@ -19,6 +19,8 @@
 #ifndef PCM_UTILS_H
 #define PMC_UTILS_H
 
+#include "../config.h"
+
 #include "audio.h"
 
 #include <stdlib.h>

@@ -19,6 +19,8 @@
 #ifndef PLAYLIST_H
 #define PLAYLIST_H
 
+#include "../config.h"
+
 #include "song.h"
 
 #include <stdio.h>

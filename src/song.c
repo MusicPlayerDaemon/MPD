@@ -79,9 +79,6 @@ Song * newSong(char * utf8file) {
 	}
 #endif
 #ifdef HAVE_FAAD
-	else if(isAac(utf8file,&(song->mtime))) {
-		song->tag = aacTagDup(utf8file);
-	}
 	else if(isMp4(utf8file,&(song->mtime))) {
 		song->tag = mp4TagDup(utf8file);
 	}
@@ -249,9 +246,6 @@ int updateSongInfo(Song * song) {
 	}
 #endif
 #ifdef HAVE_FAAD
-	else if(isAac(utf8file,&(song->mtime))) {
-		song->tag = aacTagDup(utf8file);
-	}
 	else if(isMp4(utf8file,&(song->mtime))) {
 		song->tag = mp4TagDup(utf8file);
 	}

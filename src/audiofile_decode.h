@@ -21,6 +21,8 @@
 #ifndef AUDIOFILE_DECODE_H
 #define AUDIOFILE_DECODE_H
 
+#include "../config.h"
+
 #ifdef HAVE_AUDIOFILE
 
 #include "playerData.h"

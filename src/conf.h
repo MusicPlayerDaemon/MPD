@@ -19,6 +19,8 @@
 #ifndef CONF_H
 #define CONF_H
 
+#include "../config.h"
+
 #define CONF_PORT				0
 #define CONF_MUSIC_DIRECTORY			1
 #define CONF_PLAYLIST_DIRECTORY			2

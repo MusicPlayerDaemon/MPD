@@ -19,6 +19,8 @@
 #ifndef OGG_DECODE_H
 #define OGG_DECODE_H
 
+#include "../config.h"
+
 #include "playerData.h"
 
 #include <stdio.h>

@@ -16,9 +16,10 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#include "mp3_decode.h"
+
 #ifdef HAVE_MAD
 
-#include "mp3_decode.h"
 #include "pcm_utils.h"
 #ifdef USE_MPD_MAD
 #include "libmad/mad.h"

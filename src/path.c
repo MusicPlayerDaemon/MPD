@@ -24,8 +24,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifdef HAVE_LOCALE
-#ifdef HAVE_LANGINFO
+#ifdef HAVE_LC_MESSAGES
+#ifdef HAVE_LANGINFO_CODESET
 #include <locale.h>
 #include <langinfo.h>
 #endif
@@ -87,8 +87,8 @@ char * getFsCharset() {
 }
 
 void initPaths() {
-#ifdef HAVE_LOCALE
-#ifdef HAVE_LANGINFO
+#ifdef HAVE_LC_MESSAGES
+#ifdef HAVE_LANGINFO_CODESET
 	char * originalLocale;
 #endif
 #endif
@@ -97,8 +97,8 @@ void initPaths() {
 	if(getConf()[CONF_FS_CHARSET]) {
 		charset = strdup(getConf()[CONF_FS_CHARSET]);
 	}
-#ifdef HAVE_LOCALE
-#ifdef HAVE_LANGINFO
+#ifdef HAVE_LC_MESSAGES
+#ifdef HAVE_LANGINFO_CODESET
 	else if((originalLocale = setlocale(LC_ALL,""))) {
 		char * temp;
 

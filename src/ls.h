@@ -19,14 +19,14 @@
 #ifndef LS_H
 #define LS_H
 
+#include "../config.h"
+
 #include <stdio.h>
 #include <time.h>
 
 int lsPlaylists(FILE * fp, char * utf8path);
 
 int isMp3(char * utf8file, time_t * mtime);
-
-int isAac(char * utf8file, time_t * mtime);
 
 int isMp4(char * utf8file, time_t * mtime);
 

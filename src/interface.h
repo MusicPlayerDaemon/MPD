@@ -19,6 +19,8 @@
 #ifndef INTERFACE_H
 #define INTERFACE_H
 
+#include "../config.h"
+
 #include <stdio.h>
 #include <time.h>
 #include <sys/types.h>

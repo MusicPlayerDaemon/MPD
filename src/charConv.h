@@ -19,6 +19,8 @@
 #ifndef CHAR_CONV_H
 #define CHAR_CONV_H
 
+#include "../config.h"
+
 int setCharSetConversion(char * to, char * from);
 
 char * convStrDup(char * string);

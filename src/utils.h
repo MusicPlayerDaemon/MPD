@@ -19,6 +19,8 @@
 #ifndef UTILS_H
 #define UTILS_H
 
+#include "../config.h"
+
 #include <stdio.h>
 
 char * myFgets(char * buffer, int bufferSize, FILE * fp);

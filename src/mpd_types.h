@@ -19,6 +19,8 @@
 #ifndef MPD_TYPES_H
 #define MPD_TYPES_H
 
+#include "../config.h"
+
 typedef unsigned char	mpd_uint8;
 typedef signed char	mpd_sint8;
 

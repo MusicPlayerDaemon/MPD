@@ -19,6 +19,8 @@
 #ifndef COMMAND_H
 #define COMMAND_H
 
+#include "../config.h"
+
 #include <stdio.h>
 
 #define COMMAND_RETURN_KILL	10

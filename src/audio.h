@@ -19,6 +19,8 @@
 #ifndef AUDIO_H
 #define AUDIO_H
 
+#include "../config.h"
+
 #include "mpd_types.h"
 
 #include <stdio.h>

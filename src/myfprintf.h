@@ -19,6 +19,8 @@
 #ifndef MYFPRINTF_H
 #define MYFPRINTF_H
 
+#include "../config.h"
+
 #include <stdio.h>
 
 void myfprintfStdLogMode(FILE * out, FILE * err);

@@ -19,6 +19,8 @@
 #ifndef MP3_DECODE_H
 #define MP3_DECODE_H
 
+#include "../config.h"
+
 #ifdef HAVE_MAD
 
 #include "playerData.h"

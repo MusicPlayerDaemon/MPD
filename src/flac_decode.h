@@ -19,6 +19,8 @@
 #ifndef FLAC_DECODE_H
 #define FLAC_DECODE_H
 
+#include "../config.h"
+
 #include "playerData.h"
 
 #include <stdio.h>
