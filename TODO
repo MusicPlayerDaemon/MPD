@@ -4,7 +4,11 @@
 	c) fork on update
 	d) have a special case where if a update is in a command list, it only forks at the beginning of the list, and writes at the end of the command list
 	e) add an element to status stating the "update state"
-	f) only pass back changed info to parent
-	g) only pass mtimes and paths to child
+	f) before a fork, the parent gets the position at the end of the db file
+	g) update child will dump changes to end of db file, this can effectively be a journal
+	h) parent reads changes at end of db file when update child is done
+	i) when mpd exits, dump the current db to the file, this will erase an journal entries
+	j) if there are journal entries on mpd start up, read the changes, then dump the entired db back to disk, and elimanate journal entries
+
 
 2) rewrite interface stuff, specifically command list handling etc so its less of a hack and deals with the above update stuff better
