@@ -38,6 +38,7 @@
 
 #define DECODE_ERROR_NOERROR	0
 #define DECODE_ERROR_UNKTYPE	1
+#define DECODE_ERROR_FILE	2
 
 typedef struct _DecoderControl {
 	mpd_sint8 state;

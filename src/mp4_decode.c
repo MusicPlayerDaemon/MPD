@@ -223,15 +223,6 @@ int mp4_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc) {
 		sampleBuffer = faacDecDecode(decoder,&frameInfo,mp4Buffer,
 						mp4BufferSize);
 
-		if(dc->start) {
-			channels = frameInfo.channels;
-			scale = frameInfo.samplerate;
-			af->channels = frameInfo.channels;
-			af->sampleRate = frameInfo.samplerate;
-			dc->state = DECODE_STATE_DECODE;
-			dc->start = 0;
-		}
-
 		if(mp4Buffer) free(mp4Buffer);
 		if(frameInfo.error > 0) {
 			ERROR("error decoding MP4 file: %s\n",dc->file);
@@ -239,6 +230,15 @@ int mp4_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc) {
 				faacDecGetErrorMessage(frameInfo.error));
 			eof = 1;
 			break;
+		}
+
+		if(dc->start) {
+			channels = frameInfo.channels;
+			scale = frameInfo.samplerate;
+			af->channels = frameInfo.channels;
+			af->sampleRate = frameInfo.samplerate;
+			dc->state = DECODE_STATE_DECODE;
+			dc->start = 0;
 		}
 
 		if(channels*(dur+offset) > frameInfo.samples) {

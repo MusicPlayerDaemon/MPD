@@ -116,8 +116,6 @@ int waitOnDecode(PlayerControl * pc, AudioFormat * af, DecoderControl * dc,
 
 	if(dc->start || dc->error!=DECODE_ERROR_NOERROR) {
 		strncpy(pc->erroredFile,pc->file,MAXPATHLEN);
-		printf("error: %i, start: %i, decode_pid: %i\n",dc->error,
-			dc->start,*decode_pid);
 		pc->error = PLAYER_ERROR_FILE;
 		quitDecode(pc,dc);
 		return -1;
@@ -214,6 +212,7 @@ void decodeSeek(PlayerControl * pc, AudioFormat * af, DecoderControl * dc,
 int decoderInit(PlayerControl * pc, Buffer * cb, AudioFormat *af, 
 			DecoderControl * dc) {
 	int pid;
+	int ret; 
 	decode_pid = &(pc->decode_pid);
 	pid = fork();
 
@@ -226,36 +225,37 @@ int decoderInit(PlayerControl * pc, Buffer * cb, AudioFormat *af,
 				switch(pc->decodeType) {
 #ifdef HAVE_MAD
 				case DECODE_TYPE_MP3:
-					dc->error = mp3_decode(cb,af,dc);
+					ret = mp3_decode(cb,af,dc);
 					break;
 #endif
 #ifdef HAVE_FAAD
 				case DECODE_TYPE_AAC:
-					dc->error = aac_decode(cb,af,dc);
+					ret = aac_decode(cb,af,dc);
 					break;
 				case DECODE_TYPE_MP4:
-					dc->error = mp4_decode(cb,af,dc);
+					ret = mp4_decode(cb,af,dc);
 					break;
 #endif
 #ifdef HAVE_OGG
 				case DECODE_TYPE_OGG:
-					dc->error = ogg_decode(cb,af,dc);
+					ret = ogg_decode(cb,af,dc);
 					break;
 #endif
 #ifdef HAVE_FLAC
 				case DECODE_TYPE_FLAC:
-					dc->error = flac_decode(cb,af,dc);
+					ret = flac_decode(cb,af,dc);
 					break;
 #endif
 #ifdef HAVE_AUDIOFILE
 				case DECODE_TYPE_AUDIOFILE:
-					dc->error = audiofile_decode(cb,af,dc);
+					ret = audiofile_decode(cb,af,dc);
 					break;
 #endif
 				default:
-					dc->error = DECODE_ERROR_UNKTYPE;
+					ret = DECODE_ERROR_UNKTYPE;
 				}
-				if(dc->error!=DECODE_ERROR_NOERROR) {
+				if(ret<0) {
+					dc->error = DECODE_ERROR_FILE;
 					dc->start = 0;
 					dc->stop = 0;
 					dc->state = DECODE_STATE_STOP;
