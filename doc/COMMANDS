@@ -22,9 +22,11 @@ Commands:
 
 add <string file>
 	add the file _file_ to the playlist
+	increments playlist version by 1
 
 clear	
 	clears the current playlist
+	increments playlist version by 1
 
 clearerror	
 	clear the current error message in status
@@ -42,6 +44,7 @@ crossfade <int seconds>
 
 delete <int song>
 	delete _song_ from playlist
+	increments playlist version by 1
 
 find <string type> <string what>
 	finds songs in the db that are exactly _what_
@@ -68,18 +71,21 @@ listall <string directory>
 
 load <string name>
 	loads the playlist _name_.m3u from the playlist directory
+	increments playlist version by the number of songs added
 
 lsinfo <string directory>
 	list contents of _directory_, from the db.  _directory_ is optional
 
 move <int from> <int to>
 	move song at _from_ to _to_ in the playlist
+	increments playlist version by 1
 
 next
 	plays next song in playlist
 
-pause
-	pause/resume playing
+pause	<bool pause>
+	toggle pause/resume playing
+	_pause_ is optional and should be 0 or 1
 
 password <string password>
 	this is used for authentication with the server.
@@ -126,6 +132,7 @@ setvol <int vol>
 
 shuffle
 	shuffles the current playlist
+	increments playlist version by 1
 
 stats
 	display stats
@@ -153,6 +160,7 @@ stop
 
 swap <int song1> <int song2>
 	swap positions of _song1_ and _song2_
+	increments playlist version by 1
 
 update
 	searches mp3 directory for new music and removes old music from the db
