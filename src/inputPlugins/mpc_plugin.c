@@ -26,6 +26,7 @@
 #include "../pcm_utils.h"
 #include "../inputStream.h"
 #include "../outputBuffer.h"
+#include "../replayGain.h"
 
 #include <stdio.h>
 #include <unistd.h>
@@ -44,7 +45,7 @@ mpc_int32_t mpc_read_cb(void * vdata, void * ptr, mpc_int32_t size) {
         MpcCallbackData * data = (MpcCallbackData *)vdata;
 
         while(1) {
-	        ret = readFromInputStream(data->inStream, ptr, size, 1);
+	        ret = readFromInputStream(data->inStream, ptr, 1, size);
                 if(ret == 0 && !inputStreamAtEOF(data->inStream) && 
                                 !data->dc->stop) 
                 {
@@ -131,6 +132,7 @@ int mpc_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream)
 	mpc_uint32_t vbrUpdateBits;
 	float time;
 	int i;
+	ReplayGainInfo * replayGainInfo;
 
         data.inStream = inStream;
         data.dc = dc;
@@ -142,12 +144,17 @@ int mpc_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream)
 	reader.canseek = mpc_canseek_cb;
 	reader.data = &data;
 
+	DEBUG("HERE 1\n");
+
 	mpc_streaminfo_init(&info);
 	
-	if(mpc_streaminfo_read(&info, &reader) != ERROR_CODE_OK) {
+	DEBUG("HERE 2\n");
+	if((ret = mpc_streaminfo_read(&info, &reader)) != ERROR_CODE_OK) {
 		closeInputStream(inStream);
 		if(!dc->stop) {
 		        ERROR("Not a valid musepack stream");
+			DEBUG("ret: %i\n", ret);
+			return -1;
                 }
                 else {
                         dc->state = DECODE_STATE_STOP;
@@ -156,7 +163,9 @@ int mpc_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream)
                 return 0;
 	}
 
+	DEBUG("HERE 3\n");
 	mpc_decoder_setup(&decoder, &reader);
+	DEBUG("HERE 4\n");
 	if(!mpc_decoder_initialize(&decoder, &info)) {
 		closeInputStream(inStream);
 		if(!dc->stop) {
@@ -168,11 +177,16 @@ int mpc_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream)
                 }
 	}
 	
+	DEBUG("HERE 5\n");
 	dc->totalTime = mpc_streaminfo_get_length(&info);
 
 	dc->audioFormat.bits = 16;
+	dc->audioFormat.channels = 16;
 	dc->audioFormat.sampleRate = info.sample_freq;
 
+	replayGainInfo = newReplayGainInfo();
+
+	DEBUG("HERE 6\n");
 	while(!eof) {
 		if(dc->seek) {
 			samplePos = dc->seekWhere * dc->audioFormat.sampleRate;
@@ -183,7 +197,7 @@ int mpc_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream)
                         else dc->seekError = 1;
 			dc->seek = 0;
 		}
-		ret = mpc_decoder_decode(&decoder, sample_buffer, 
+		ret = mpc_decoder_decode(&decoder, sample_buffer,
 				         &vbrUpdateAcc, &vbrUpdateBits);
 
 		if(ret <= 0 ) {
@@ -215,7 +229,7 @@ int mpc_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream)
                                         	chunk, chunkpos, 
 						time,
 						bitRate,
-						NULL);
+						replayGainInfo);
 				chunkpos = 0;
 				s16 = (mpd_sint16 *)chunk;
 				if(dc->stop) break;
@@ -223,6 +237,7 @@ int mpc_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream)
 		}
 	}
 
+	DEBUG("HERE 7\n");
 	if(!dc->stop && chunkpos > 0) {
                 time = ((float)samplePos) / dc->audioFormat.sampleRate;
 
@@ -230,12 +245,17 @@ int mpc_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream)
 			  chunkpos;
 
 		sendDataToOutputBuffer(cb, NULL, dc, inStream->seekable,
-				       chunk, chunkpos, time, bitRate, NULL);
+				       chunk, chunkpos, time, bitRate, 
+				       replayGainInfo);
 	}
 
+	DEBUG("HERE 8\n");
 	closeInputStream(inStream);
 
+	DEBUG("HERE 9\n");
 	flushOutputBuffer(cb);
+
+	freeReplayGainInfo(replayGainInfo);
 
 	if(dc->stop) {
 		dc->state = DECODE_STATE_STOP;
