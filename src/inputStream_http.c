@@ -20,6 +20,7 @@
 
 #include "utils.h"
 #include "log.h"
+#include "conf.h"
 
 #include <stdio.h>
 #include <sys/time.h>
@@ -60,6 +61,55 @@ typedef struct _InputStreemHTTPData {
 	int prebuffer;
 	int icyOffset;
 } InputStreamHTTPData;
+
+void inputStream_initHttp() {
+	if(getConf()[CONF_HTTP_PROXY_HOST]) {
+		char * portStr = getConf()[CONF_HTTP_PROXY_PORT];
+		int port = 0;
+		char * test;
+
+		if(!portStr) {
+			ERROR("http_proxy_host specified but not the http_"
+				"proxy_port\n");
+			exit(EXIT_FAILURE);
+		}
+
+		port = strtol(portStr, &test, 10);
+		if(port <= 0 || *test != '\0') {
+			ERROR("http_proxy_port \"%s\" is not a positive integer"
+				"\n", portStr);
+		}
+
+		if(getConf()[CONF_HTTP_PROXY_USER] && 
+			!getConf()[CONF_HTTP_PROXY_PASSWORD])
+		{
+			ERROR("http_proxy_user specified, but not http_proxy_"
+				"password\n");
+			exit(EXIT_FAILURE);
+		}
+
+		if(getConf()[CONF_HTTP_PROXY_PASSWORD] && 
+			!getConf()[CONF_HTTP_PROXY_USER])
+		{
+			ERROR("http proxy password specified, but not http "
+					"proxy user\n");
+			exit(EXIT_FAILURE);
+		}
+	}
+	else if(getConf()[CONF_HTTP_PROXY_PORT]) {
+		ERROR("http_proxy_port specified but not http_proxy_host\n");
+		exit(EXIT_FAILURE);
+	}
+	else if(getConf()[CONF_HTTP_PROXY_USER]) {
+		ERROR("http_proxy_user specified but not http_proxy_host\n");
+		exit(EXIT_FAILURE);
+	}
+	else if(getConf()[CONF_HTTP_PROXY_PASSWORD]) {
+		ERROR("http_proxy_password specified but not http_proxy_host"
+				"\n");
+		exit(EXIT_FAILURE);
+	}
+}
 
 static InputStreamHTTPData * newInputStreamHTTPData() {
         InputStreamHTTPData * ret = malloc(sizeof(InputStreamHTTPData));

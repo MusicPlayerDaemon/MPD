@@ -25,6 +25,11 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+void initInputStream() {
+	inputStream_initFile();
+	inputStream_initHttp();
+}
+
 int openInputStream(InputStream * inStream, char * url) {
         inStream->offset = 0;
         inStream->size = 0;

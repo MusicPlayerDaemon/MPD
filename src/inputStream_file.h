@@ -21,6 +21,8 @@
 
 #include "inputStream.h"
 
+void inputStream_initFile();
+
 int inputStream_fileOpen(InputStream * inStream, char * filename);
 
 int inputStream_fileSeek(InputStream * inStream, long offset, int whence);

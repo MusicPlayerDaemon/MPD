@@ -23,6 +23,9 @@
 #include <unistd.h>
 #include <errno.h>
 
+void inputStream_initFile() {
+}
+
 int inputStream_fileOpen(InputStream * inStream, char * filename) {
         FILE * fp;
 

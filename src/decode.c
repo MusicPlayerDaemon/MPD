@@ -486,7 +486,9 @@ void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb) {
 			pc->queueState = PLAYER_QUEUE_DECODE;
 			kill(getppid(),SIGUSR1);
 		}
-		if(next>=0 && doCrossFade==0 && !dc->start) {
+		if(next>=0 && doCrossFade==0 && !dc->start && 
+				dc->state!=DECODE_STATE_START) 
+		{
 			nextChunk = -1;
 			if(isCurrentAudioFormat(&(cb->audioFormat))) {
 				doCrossFade = 1;
