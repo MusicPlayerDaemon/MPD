@@ -20,6 +20,7 @@
 #include "interface.h"
 #include "path.h"
 #include "log.h"
+#include "conf.h"
 
 #include <stdarg.h>
 #include <sys/param.h>
@@ -57,14 +58,12 @@ void blockingWrite(int fd, char * string, int len) {
 	}
 }
 
-void myfprintfStdLogMode(FILE * out, FILE * err, char * outFilename,
-                char * errFilename) 
-{
+void myfprintfStdLogMode(FILE * out, FILE * err) {
 	myfprintf_stdLogMode = 1;
 	myfprintf_out = out;
 	myfprintf_err = err;
-        myfprintf_outFilename = prependCwdToPathDup(outFilename);
-        myfprintf_errFilename = prependCwdToPathDup(errFilename);
+        myfprintf_outFilename = getConfigParamValue(CONF_LOG_FILE);
+        myfprintf_errFilename = getConfigParamValue(CONF_ERROR_FILE);
 }
 
 void myfprintf(FILE * fp, char * format, ... ) {

@@ -25,7 +25,7 @@
 
 extern char * musicDir;
 
-void initPaths(char * playlistDirArg, char * musicDirArg);
+void initPaths();
 
 void finishPaths();
 

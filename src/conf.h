@@ -90,6 +90,6 @@ void registerConfigParam(char * name, int repeats, int block);
 
 BlockParam * getBlockParam(ConfigParam * param, char * name);
 
-char * parseConfigFilePath(char * name, int force);
+ConfigParam * parseConfigFilePath(char * name, int force);
 
 #endif

@@ -46,6 +46,7 @@
 #include <stdio.h>
 #include <errno.h>
 #include <signal.h>
+#include <assert.h>
 
 #define DIRECTORY_DIR		"directory: "
 #define DIRECTORY_MTIME		"mtime: "
@@ -64,11 +65,9 @@
 #define DIRECTORY_RETURN_UPDATE         1
 #define DIRECTORY_RETURN_ERROR         -1
 
-Directory * mp3rootDirectory = NULL;
+static Directory * mp3rootDirectory = NULL;
 
-char * directory_db;
-
-time_t directory_dbModTime = 0;
+static time_t directory_dbModTime = 0;
 
 volatile int directory_updatePid = 0;
 
@@ -109,6 +108,15 @@ void sortDirectory(Directory * directory);
 int inodeFoundInParent(Directory * parent, ino_t inode, dev_t device);
 
 int statDirectory(Directory * dir);
+
+static char * getDbFile() {
+	ConfigParam * param = parseConfigFilePath(CONF_DB_FILE, 1);
+
+	assert(param);
+	assert(param->value);
+
+	return param->value;
+}
 
 void clearUpdatePid() {
 	directory_updatePid = 0;
@@ -207,8 +215,6 @@ int updateInit(FILE * fp, List * pathList) {
 		/* ignore signals since we don't want them to corrupt the db*/
 		ignoreSignals();
 		if(writeDirectoryDB()<0) {
-			ERROR("problems writing music db file, \"%s\"\n",
-					directory_db);
 			exit(DIRECTORY_UPDATE_EXIT_ERROR);
 		}
 		exit(DIRECTORY_UPDATE_EXIT_UPDATE);
@@ -753,7 +759,10 @@ int addSubDirectoryToDirectory(Directory * directory, char * shortname,
 int addToDirectory(Directory * directory, char * shortname, char * name) {
 	struct stat st;
 
-	if(myStat(name, &st)) return -1;
+	if(myStat(name, &st)) {
+		DEBUG("failed to stat %s: %s\n", name, strerror(errno));
+		return -1;
+	}
 
 	if(S_ISREG(st.st_mode) && hasMusicSuffix(name)) {
 		Song * song;
@@ -979,6 +988,7 @@ void sortDirectory(Directory * directory) {
 
 int writeDirectoryDB() {
 	FILE * fp;
+	char * dbFile = getDbFile();
 
 	DEBUG("removing empty directories from DB\n");
 	deleteEmptyDirectoriesInDirectory(mp3rootDirectory);
@@ -989,8 +999,12 @@ int writeDirectoryDB() {
 
 	DEBUG("writing DB\n");
 
-	while(!(fp=fopen(directory_db,"w")) && errno==EINTR);
-	if(!fp) return -1;
+	while(!(fp=fopen(dbFile,"w")) && errno==EINTR);
+	if(!fp) {
+		ERROR("unable to write to db file \"%s\": %s\n",
+				dbFile, strerror(errno));
+		return -1;
+	}
 
 	/* block signals when writing the db so we don't get a corrupted db*/
 	myfprintf(fp,"%s\n",DIRECTORY_INFO_BEGIN);
@@ -1006,12 +1020,17 @@ int writeDirectoryDB() {
 }
 
 int readDirectoryDB() {
-	FILE * fp;
+	FILE * fp = NULL;
+	char * dbFile = getDbFile();
         struct stat st;
 
 	if(!mp3rootDirectory) mp3rootDirectory = newDirectory(NULL, NULL);
-	while(!(fp=fopen(directory_db,"r")) && errno==EINTR);
-	if(!fp) return -1;
+	while(!(fp=fopen(dbFile,"r")) && errno==EINTR);
+	if(fp == NULL) {
+		ERROR("unable open db file \"%s\": %s\n", 
+				dbFile, strerror(errno));
+		return -1;
+	}
 
 	/* get initial info */
 	{
@@ -1090,7 +1109,7 @@ int readDirectoryDB() {
 	stats.numberOfSongs = countSongsIn(stderr,NULL);
 	stats.dbPlayTime = sumSongTimesIn(stderr,NULL);
 
-	if(stat(directory_db,&st)==0) directory_dbModTime = st.st_mtime;
+	if(stat(dbFile,&st)==0) directory_dbModTime = st.st_mtime;
 
 	return 0;
 }
@@ -1102,13 +1121,11 @@ void updateMp3Directory() {
                 return;
         case 1:
 	        if(writeDirectoryDB()<0) {
-		        ERROR("problems writing music db file, \"%s\"\n",
-                                        directory_db);
                         exit(EXIT_FAILURE);
 	        }
-                /* something was updated and db should be written */
                 break;
         default:
+                /* something was updated and db should be written */
 		ERROR("problems updating music db\n");
                 exit(EXIT_FAILURE);
 	}
@@ -1192,7 +1209,7 @@ void initMp3Directory() {
 	stats.numberOfSongs = countSongsIn(stderr,NULL);
 	stats.dbPlayTime = sumSongTimesIn(stderr,NULL);
 
-	if(stat(directory_db,&st)==0) directory_dbModTime = st.st_mtime;
+	if(stat(getDbFile(),&st)==0) directory_dbModTime = st.st_mtime;
 }
 
 Song * getSongDetails(char * file, char ** shortnameRet, 

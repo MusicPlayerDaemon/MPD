@@ -23,8 +23,7 @@
 
 #include <stdio.h>
 
-void myfprintfStdLogMode(FILE * out, FILE * err, char * outFilename,
-                char * errFilename);
+void myfprintfStdLogMode(FILE * out, FILE * err);
 
 void myfprintf(FILE * fp, char * format, ... );
 

@@ -361,7 +361,7 @@ BlockParam * getBlockParam(ConfigParam * param, char * name) {
 	return ret;
 }
 
-char * parseConfigFilePath(char * name, int force) {
+ConfigParam * parseConfigFilePath(char * name, int force) {
 	ConfigParam * param = getConfigParam(name);
 	char * path;
 
@@ -426,5 +426,5 @@ char * parseConfigFilePath(char * name, int force) {
 		param->value = newPath;
 	}
 
-	return param->value;
+	return param;
 }

@@ -39,7 +39,9 @@
 
 #define MAXHOSTNAME 	1024
 
-#define ALLOW_REUSE		1
+#define ALLOW_REUSE	1
+
+#define DEFAULT_PORT	6600
 
 int * listenSockets = NULL;
 int numberOfListenSockets = 0;
@@ -166,8 +168,25 @@ static int establishListen(unsigned int port, ConfigParam * param) {
 	return sock;
 }
 
-void establish(unsigned int port) {
-	ConfigParam * param = getNextConfigParam(CONF_BIND_TO_ADDRESS, NULL);
+void listenOnPort() {
+	int port = DEFAULT_PORT;
+	ConfigParam * param = getNextConfigParam(CONF_BIND_TO_ADDRESS,NULL);
+
+	{
+		ConfigParam * portParam = getConfigParam(CONF_PORT);
+
+		if(portParam) {
+			char * test;
+			port = strtol(portParam->value, &test, 10);
+			if(port <= 0 || *test != '\0') {
+				ERROR("%s \"%s\" specified at line %i is not a "
+						"positive integer", CONF_PORT,
+						portParam->value, 
+						portParam->line);
+				exit(EXIT_FAILURE);
+			}
+		}
+	}
 
 	do {
 		numberOfListenSockets++;

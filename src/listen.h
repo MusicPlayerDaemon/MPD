@@ -26,7 +26,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-void establish(unsigned int port);
+void listenOnPort();
 
 void getConnections(fd_set * fds);
 

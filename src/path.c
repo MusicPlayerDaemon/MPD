@@ -28,6 +28,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <errno.h>
+#include <dirent.h>
 
 #ifdef HAVE_LOCALE
 #ifdef HAVE_LANGINFO_CODESET
@@ -110,36 +111,52 @@ char * getFsCharset() {
 	return fsCharset;
 }
 
-void initPaths(char * playlistDirArg, char * musicDirArg) {
+static char * appendSlash(char ** path) {
+	char * temp = *path;
+	int len = strlen(temp);
+
+	if(temp[len-1] != '/') {
+		temp = strdup(*path);
+		free(*path);
+		*path = malloc(len+2);
+		memset(*path, 0, len+2);
+		memcpy(*path, temp, len);
+		(*path)[len] = '/';
+	}
+
+	return * path;
+}
+
+void initPaths() {
+	ConfigParam * musicParam = parseConfigFilePath(CONF_MUSIC_DIR, 1);
+	ConfigParam * playlistParam = parseConfigFilePath(CONF_PLAYLIST_DIR, 1);
+        ConfigParam * fsCharsetParam = getConfigParam(CONF_FS_CHARSET);
+
 	char * charset = NULL;
 	char * originalLocale;
-        struct stat st;
-        ConfigParam * param;
+	DIR * dir;
 
-        playlistDir = prependCwdToPathDup(playlistDirArg);
-        if((stat(playlistDir,&st))<0) {
-                ERROR("problem stat'ing \"%s\": %s\n", playlistDirArg, strerror(errno));
+	musicDir = appendSlash(&musicParam->value);
+	playlistDir = appendSlash(&playlistParam->value);
+
+        if((dir = opendir(playlistDir)) == NULL) {
+                ERROR("cannot open %s \"%s\" (config line %i): %s\n", 
+				CONF_PLAYLIST_DIR, playlistParam->value, 
+				playlistParam->line, strerror(errno));
                 exit(EXIT_FAILURE);
         }
-        if(!S_ISDIR(st.st_mode)) {
-                ERROR("\"%s\" is not a directory: %s\n", playlistDirArg, strerror(errno));
+	closedir(dir);
+
+        if((dir = opendir(musicDir)) == NULL) {
+                ERROR("cannot open %s \"%s\" (config line %i): %s\n", 
+				CONF_MUSIC_DIR, musicParam->value, 
+				musicParam->line, strerror(errno));
                 exit(EXIT_FAILURE);
         }
+	closedir(dir);
 
-        musicDir = prependCwdToPathDup(musicDirArg);
-        if((stat(musicDir,&st))<0) {
-                ERROR("problem stat'ing \"%s\"\n",musicDirArg);
-                exit(EXIT_FAILURE);
-        }
-        if(!S_ISDIR(st.st_mode)) {
-                ERROR("\"%s\" is not a directory\n",musicDirArg);
-                exit(EXIT_FAILURE);
-        }
-
-        param = getConfigParam(CONF_FS_CHARSET);
-
-	if(param) {
-		charset = strdup(param->value);
+	if(fsCharsetParam) {
+		charset = strdup(fsCharsetParam->value);
 	}
 #ifdef HAVE_LOCALE
 #ifdef HAVE_LANGINFO_CODESET

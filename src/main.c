@@ -55,13 +55,6 @@
 #define USER_CONFIG_FILE_LOCATION	"/.mpdconf"
 
 typedef struct _Options {
-        char * portStr;
-        char * musicDirArg;
-        char * playlistDirArg;
-        char * logFile;
-        char * errorFile;
-        char * usr;
-        char * dbFile;
         int daemon;
         int stdOutput;
         int createDB;
@@ -103,12 +96,10 @@ void version() {
 void parseOptions(int argc, char ** argv, Options * options) {
         int argcLeft = argc;
 
-        options->usr = NULL;
         options->daemon = 1;
         options->stdOutput = 0;
         options->createDB = 0;
         options->updateDB = 0;
-        options->dbFile = NULL;
 
         if(argc>1) {
                 int i = 1;
@@ -158,54 +149,29 @@ void parseOptions(int argc, char ** argv, Options * options) {
                 }
         }
 
-        if(argcLeft==6) {
-                options->portStr = argv[argc-5];
-                options->musicDirArg = argv[argc-4];
-                options->playlistDirArg = argv[argc-3];
-                options->logFile = argv[argc-2];
-                options->errorFile = argv[argc-1];
-                return;
-        }
-        else if(argcLeft<=2) {
-                int conf = 0;
+        if(argcLeft<=2) {
                 if(argcLeft==2) {
 			readConf(argv[argc-1]);
-			conf = 1;
+			return;
 		}
                 else if(argcLeft==1) {
-                        FILE * fp;
+			struct stat st;
                         char * homedir = getenv("HOME");
                         char userfile[MAXPATHLEN+1] = "";
                         if(homedir && (strlen(homedir)+
-                                                strlen(USER_CONFIG_FILE_LOCATION)) <
-                                        MAXPATHLEN) {
+                        		strlen(USER_CONFIG_FILE_LOCATION)) <
+                                        	MAXPATHLEN) {
                                 strcpy(userfile,homedir);
                                 strcat(userfile,USER_CONFIG_FILE_LOCATION);
                         }
-                        if(strlen(userfile) && (fp=fopen(userfile,"r"))) {
-                                fclose(fp);
+                        if(strlen(userfile) && (0 == stat(userfile,&st))) {
                                 readConf(userfile);
-				conf = 1;
+				return;
                         }
-                        else if((fp=fopen(SYSTEM_CONFIG_FILE_LOCATION,"r"))) {
-                                fclose(fp);
+                        else if(0 == stat(SYSTEM_CONFIG_FILE_LOCATION,&st)) {
                                 readConf(SYSTEM_CONFIG_FILE_LOCATION);
-				conf = 1;
+				return;
                         }
-                }
-                if(conf) {
-                        options->portStr = forceAndGetConfigParamValue(
-					CONF_PORT);
-                        options->musicDirArg = 
-				parseConfigFilePath(CONF_MUSIC_DIR, 1);
-                        options->playlistDirArg = 
-				parseConfigFilePath(CONF_PLAYLIST_DIR, 1);
-                        options->logFile = parseConfigFilePath(CONF_LOG_FILE,1);
-                        options->errorFile = 
-				parseConfigFilePath(CONF_ERROR_FILE, 1);
-                        options->usr = getConfigParamValue(CONF_USER);
-                        options->dbFile = parseConfigFilePath(CONF_DB_FILE, 0);
-                        return;
                 }
         }
 
@@ -220,28 +186,20 @@ void closeAllFDs() {
         for(i = 3; i < fds; i++) close(i);
 }
 
-void establishListen(Options * options) {
-        int port;
-
-        if((port = atoi(options->portStr))<0) {
-                ERROR("problem with port number\n");
-                exit(EXIT_FAILURE);
-        }
-
-        if(options->createDB <= 0 && !options->updateDB) establish(port);
-}
-
-void changeToUser(Options * options) {
-        if (options->usr && strlen(options->usr)) {
+void changeToUser() {
+	ConfigParam * param = getConfigParam(CONF_USER);
+	
+        if (param && strlen(param->value)) {
                 /* get uid */
                 struct passwd * userpwd;
-                if ((userpwd = getpwnam(options->usr)) == NULL) {
-                        ERROR("no such user: %s\n", options->usr);
+                if ((userpwd = getpwnam(param->value)) == NULL) {
+                        ERROR("no such user \"%s\" at line %i\n", param->value,
+					param->line);
                         exit(EXIT_FAILURE);
                 }
 
                 if(setgid(userpwd->pw_gid) == -1) {
-                        ERROR("cannot setgid of user %s: %s\n", options->usr,
+                        ERROR("cannot setgid for user \"%s\" at line %i: %s\n", 					param->value, param->line,
                                         strerror(errno));
                         exit(EXIT_FAILURE);
                 }
@@ -250,9 +208,10 @@ void changeToUser(Options * options) {
                 /* init suplementary groups 
                  * (must be done before we change our uid)
                  */
-                if (initgroups(options->usr, userpwd->pw_gid) == -1) {
+                if (initgroups(param->value, userpwd->pw_gid) == -1) {
                         WARNING("cannot init suplementary groups "
-                                        "of user %s: %s\n", options->usr, 
+                                        "of user \"%s\" at line %i: %s\n", 
+					param->value, param->line, 
                                         strerror(errno));
                 }
 #endif
@@ -260,11 +219,13 @@ void changeToUser(Options * options) {
                 /* set uid */
                 if (setuid(userpwd->pw_uid) == -1) {
                         ERROR("cannot change to uid of user "
-                                        "%s: %s\n", options->usr, 
+                                        "\"%s\" at line %i: %s\n", 
+					param->value, param->line,
                                         strerror(errno));
                         exit(EXIT_FAILURE);
                 }
 
+		/* this is needed by libs such as arts */
 		if(userpwd->pw_dir) {
 			setenv("HOME", userpwd->pw_dir, 1);
 		}
@@ -272,6 +233,9 @@ void changeToUser(Options * options) {
 }
 
 void openLogFiles(Options * options, FILE ** out, FILE ** err) {
+	ConfigParam * logParam = parseConfigFilePath(CONF_LOG_FILE, 1);
+	ConfigParam * errorParam = parseConfigFilePath(CONF_ERROR_FILE, 1);
+	
         mode_t prev;
 
         if(options->stdOutput) {
@@ -282,15 +246,16 @@ void openLogFiles(Options * options, FILE ** out, FILE ** err) {
         /* be sure to create log files w/ rw permissions*/
         prev = umask(0066);
 
-        if(NULL==(*out=fopen(options->logFile,"a"))) {
-                ERROR("problem opening file \"%s\" for writing\n",
-                                options->logFile);
+        if(NULL==(*out=fopen(logParam->value,"a"))) {
+                ERROR("problem opening log file \"%s\" (config line %i) for "
+				"writing\n", logParam->value, logParam->line);
                 exit(EXIT_FAILURE);
         }
 
-        if(NULL==(*err=fopen(options->errorFile,"a"))) {
-                ERROR("problem opening file \"%s\" for writing\n",
-                                options->errorFile);
+        if(NULL==(*err=fopen(errorParam->value,"a"))) {
+                ERROR("problem opening error file \"%s\" (config line %i) for "
+				"writing\n", errorParam->value, 
+				errorParam->line);
                 exit(EXIT_FAILURE);
         }
 
@@ -298,23 +263,16 @@ void openLogFiles(Options * options, FILE ** out, FILE ** err) {
 }
 
 void openDB(Options * options, char * argv0) {
-        if(!options->dbFile) directory_db = strdup(rpp2app(".mpddb"));
-        else directory_db = strdup(options->dbFile);
-
         if(options->createDB>0 || readDirectoryDB()<0) {
                 if(options->createDB<0) {
                         ERROR("can't open db file and using \"--no-create-db\""
                                         " command line option\n");
-			ERROR("try running \"%s --create-db\"\n",
-					argv0);
+			ERROR("try running \"%s --create-db\"\n", argv0);
                         exit(EXIT_FAILURE);
                 }
                 flushWarningLog();
                 initMp3Directory();
-                if(writeDirectoryDB()<0) {
-                        ERROR("problem opening db for reading or writing\n");
-                        exit(EXIT_FAILURE);
-                }
+                if(writeDirectoryDB()<0) exit(EXIT_FAILURE);
 		if(options->createDB) exit(EXIT_SUCCESS);
         }
 	if(options->updateDB) {
@@ -372,8 +330,7 @@ void setupLogOutput(Options * options, FILE * out, FILE * err) {
                         exit(EXIT_FAILURE);
                 }
 
-                myfprintfStdLogMode(out, err, options->logFile,
-                                options->errorFile);
+                myfprintfStdLogMode(out, err);
                 flushWarningLog();
         }
 
@@ -408,13 +365,13 @@ int main(int argc, char * argv[]) {
 	initTagConfig();
         initLog();
 
-        establishListen(&options);
+        if(options.createDB <= 0 && !options.updateDB) listenOnPort();
 
-        changeToUser(&options);
+        changeToUser();
 
         openLogFiles(&options, &out, &err);
 
-	initPaths(options.playlistDirArg,options.musicDirArg);
+	initPaths();
 	initPermissions();
         initReplayGainState();
 

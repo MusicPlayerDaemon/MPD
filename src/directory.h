@@ -42,8 +42,6 @@ typedef struct _Directory {
 	DirectoryStat * stat;
 } Directory;
 
-extern char * directory_db;
-
 void readDirectoryDBIfUpdateIsFinished();
 
 void clearUpdatePid();

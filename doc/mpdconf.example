@@ -3,9 +3,9 @@
 # Check the mpd man page, "man mpd".
 
 ##################### REQUIRED ###########################
-port 			"6600"
 music_directory 	"~/music"
-playlist_directory 	"~/.mpd/playlists"
+playlist_directory 	"~/music"
+db_file 		"~/.mpd/mpd.db"
 log_file 		"~/.mpd/mpd.log"
 error_file 		"~/.mpd/mpd.error"
 ##########################################################
@@ -112,10 +112,6 @@ audio_output {
 
 #################### OPTIONAL FILES ######################
 #
-# Location of DB file 
-#
-#db_file		"~/.mpd/mpd.db"
-#
 # The state file (if set) will be a file
 # for storing all current information 
 # (playlist, playing/paused, etc...) from
@@ -199,6 +195,8 @@ audio_output {
 
 
 ################ MISCELLANEOUS OPTIONS ###################
+#
+#port	"6600"
 #
 # This sets the metadata mpd will use, to disable all metadata, set to "none"
 # NOTE: comment's are disabled by default
