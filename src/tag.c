@@ -44,6 +44,10 @@
 #include <id3tag.h>
 #endif
 #endif
+#ifdef HAVE_FAAD
+#include <faad.h>
+#include "mp4ff/mp4ff.h"
+#endif
 
 void printMpdTag(FILE * fp, MpdTag * tag) {
 	if(tag->artist) myfprintf(fp,"Artist: %s\n",tag->artist);
@@ -168,18 +172,129 @@ MpdTag * mp3TagDup(char * utf8file) {
 #endif
 
 #ifdef HAVE_FAAD
+/* copied from FAAD2 frontend */
+int mp4GetAACTrack(mp4ff_t *infile) {
+	/* find AAC track */
+	int i, rc;
+	int numTracks = mp4ff_total_tracks(infile);
+
+	for (i = 0; i < numTracks; i++) {
+		unsigned char *buff = NULL;
+		int buff_size = 0;
+		mp4AudioSpecificConfig mp4ASC;
+	
+		mp4ff_get_decoder_config(infile, i, &buff, &buff_size);
+
+		if (buff) {
+			rc = AudioSpecificConfig(buff, buff_size, &mp4ASC);
+			free(buff);
+			if (rc < 0) continue;
+            		return i;
+		}
+	}
+
+	/* can't decode this */
+	return -1;
+}
+
+uint32_t mp4ReadCallback(void *user_data, void *buffer, uint32_t length) {
+	return fread(buffer, 1, length, (FILE*)user_data);
+}
+            
+uint32_t mp4SeekCallback(void *user_data, uint64_t position) {
+	return fseek((FILE*)user_data, position, SEEK_SET);
+}       
+		    
+MpdTag * mp4DataDup(char * utf8file, int * mp4MetadataFound) {
+	MpdTag * ret = NULL;
+	FILE * fh;
+	mp4ff_t * mp4fh;
+	mp4ff_callback_t * cb; 
+	int32_t track;
+	int32_t time;
+	int32_t scale;
+
+	*mp4MetadataFound = 0;
+
+	blockSignals();
+	
+	fh = fopen(rmp2amp(utf8ToFsCharset(utf8file)),"r");
+	if(!fh) {
+		unblockSignals();
+		return NULL;
+	}
+
+	cb = malloc(sizeof(mp4ff_callback_t));
+	cb->read = mp4ReadCallback;
+	cb->seek = mp4SeekCallback;
+	cb->user_data = fh;
+
+	mp4fh = mp4ff_open_read(cb);
+	if(!mp4fh) {
+		free(cb);
+		fclose(fh);
+		unblockSignals();
+		return NULL;
+	}
+
+	track = mp4GetAACTrack(mp4fh);
+	if(track < 0) {
+		mp4ff_close(mp4fh);
+		fclose(fh);
+		free(cb);
+		unblockSignals();
+		return NULL;
+	}
+
+	ret = newMpdTag();
+	time = mp4ff_get_track_duration_use_offsets(mp4fh,track);
+	scale = mp4ff_time_scale(mp4fh,track);
+	if(scale < 0) {
+		mp4ff_close(mp4fh);
+		fclose(fh);
+		free(cb);
+		freeMpdTag(ret);
+		unblockSignals();
+		return NULL;
+	}
+	ret->time = ((float)time)/scale+0.5;
+
+	if(!mp4ff_meta_get_artist(mp4fh,&ret->artist)) {
+		*mp4MetadataFound = 1;
+	}
+
+	if(!mp4ff_meta_get_album(mp4fh,&ret->album)) {
+		*mp4MetadataFound = 1;
+	}
+
+	if(!mp4ff_meta_get_title(mp4fh,&ret->title)) {
+		*mp4MetadataFound = 1;
+	}
+
+	if(!mp4ff_meta_get_track(mp4fh,&ret->track)) {
+		*mp4MetadataFound = 1;
+	}
+
+	mp4ff_close(mp4fh);
+	fclose(fh);
+	free(cb);
+	unblockSignals();
+
+	return ret;
+}
+
 MpdTag * mp4TagDup(char * utf8file) {
 	MpdTag * ret = NULL;
-	int time;
+	int mp4MetadataFound = 0;
 
-#warning implement mp4 tag parsing, this includes using mp4v2 and id3
-#warning getMp4TotalTime needs implementing
-	//time = getMp4TotalTime(rmp2amp(utf8ToFsCharset(utf8file)));
-	time = 0;
-
-	if(time>=0) {
-		if(!ret) ret = newMpdTag();
-		ret->time = time;
+	ret = mp4DataDup(utf8file,&mp4MetadataFound);
+	if(!mp4MetadataFound) {
+		MpdTag * temp = id3Dup(utf8file);
+		if(temp) {
+			temp->time = ret->time;
+			freeMpdTag(ret);
+			ret = temp;
+		}
 	}
 
 	return ret;
