@@ -4,9 +4,6 @@
 		quit in the middle of an update
 	k) when bg-update, have parent print out new old stuff to log on 
 		reading db, not the child
-	m) MOST IMPORTANT: update needs to deal better with directories/files
-		that don't exist in the db, but do exit in the fs (i.e.
-		calling updated on a newly created file).
 	n) mpd command for rereading db
 	o) rewrite update functions to indicate if something was updated, then
 	 	when update process returns, indicate wheater db was updated

@@ -20,6 +20,7 @@
 #include "log.h"
 #include "charConv.h"
 #include "conf.h"
+#include "utf8.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -201,4 +202,42 @@ char * parentPath(char * path) {
 	}
 
 	return parentPath;
+}
+
+char * sanitizePathDup(char * path) {
+	int len = strlen(path)+1;
+	char * ret = malloc(len);
+	char * cp = ret;
+
+	memset(ret,0,len);
+
+	len = 0;
+
+	/* illeminate more than one '/' in a row, like "///" */
+	while(*path) {
+		while(*path=='/') path++;
+		if(*path=='.') {
+			/* we dont want to have hidden directoires, or '.' or
+			   ".." in our path */
+			free(ret);
+			return NULL;
+		}
+		while(*path && *path!='/') {
+			*(cp++) = *(path++);
+			len++;
+		}
+		if(*path=='/') {
+			*(cp++) = *(path++);
+			len++;
+		}
+	}
+
+	if(len && ret[len-1]=='/') {
+		len--;
+		ret[len] = '\0';
+	}
+
+	printf("sanitized: %s\n", ret);
+
+	return realloc(ret,len+1);
 }

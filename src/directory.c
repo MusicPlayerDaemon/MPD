@@ -94,7 +94,7 @@ void deleteEmptyDirectoriesInDirectory(Directory * directory);
 
 void removeSongFromDirectory(Directory * directory, char * shortname);
 
-int addSubDirectoryToDirectory(Directory * directory, char * shortname, 
+Directory * addSubDirectoryToDirectory(Directory * directory, char * shortname, 
 				char * name);
 
 Directory * getDirectoryDetails(char * name, char ** shortname, 
@@ -106,6 +106,8 @@ Song * getSongDetails(char * file, char ** shortnameRet,
 		Directory ** directoryRet);
 
 void updatePath(char * utf8path);
+
+void sortDirectory(Directory * directory);
 
 void clearUpdatePid() {
 	directory_updatePid = 0;
@@ -312,15 +314,12 @@ int removeDeletedFromDirectory(Directory * directory) {
 
 		if(!utf8) continue;
 
-		utf8 = strdup(utf8);
-
 		if(directory->utf8name) {
 			s = malloc(strlen(directory->utf8name)+strlen(utf8)+2);
 			sprintf(s,"%s/%s",directory->utf8name,utf8);
 		}
 		else s= strdup(utf8);
 		insertInList(entList,utf8,s);
-		free(utf8);
 	}
 
 	closedir(dir);
@@ -331,11 +330,14 @@ int removeDeletedFromDirectory(Directory * directory) {
 		if(findInList(entList,node->key,&name)) {
 			if(!isDir((char *)name,NULL)) {
 				LOG("removing directory: %s\n",(char*)name);
-				deleteFromList(directory->subDirectories,node->key);
+				deleteFromList(directory->subDirectories,
+						node->key);
 			}
 		}
 		else {
-			LOG("removing directory: %s\n",(char*)name);
+			LOG("removing directory: ");
+			if(directory->utf8name) LOG("%s/",directory->utf8name);
+			LOG("%s\n",node->key);
 			deleteFromList(directory->subDirectories,node->key);
 		}
 		node = tmpNode;
@@ -360,39 +362,104 @@ int removeDeletedFromDirectory(Directory * directory) {
 	return 0;
 }
 
+Directory * addDirectoryPathToDB(char * utf8path, char ** shortname) {
+	char * parent;
+	Directory * parentDirectory;
+	void * directory;
+
+	parent = strdup(parentPath(utf8path));
+
+	if(strlen(parent)==0) parentDirectory = (void *)mp3rootDirectory;
+	else parentDirectory = addDirectoryPathToDB(parent,shortname);
+
+	*shortname = utf8path+strlen(parent);
+	while(*(*shortname) && *(*shortname)=='/') (*shortname)++;
+
+	if(!findInList(parentDirectory->subDirectories,*shortname, &directory))
+	{
+		directory = (void *)addSubDirectoryToDirectory(parentDirectory,
+				*shortname,utf8path);
+	}
+
+	/* if we're adding directory paths, make sure to delete filenames
+           with potentially the same name*/
+	removeSongFromDirectory(parentDirectory,*shortname);
+
+	free(parent);
+
+	return (Directory *)parentDirectory;
+}
+
+Directory * addParentPathToDB(char * utf8path, char ** shortname) {
+	char * parent;
+	Directory * parentDirectory;
+
+	parent = strdup(parentPath(utf8path));
+
+	if(strlen(parent)==0) parentDirectory = (void *)mp3rootDirectory;
+	else parentDirectory = addDirectoryPathToDB(parent,shortname);
+
+	*shortname = utf8path+strlen(parent);
+	while(*(*shortname) && *(*shortname)=='/') (*shortname)++;
+
+	free(parent);
+
+	return (Directory *)parentDirectory;
+}
+
 void updatePath(char * utf8path) {
 	Directory * directory;
 	Directory * parentDirectory;
 	Song * song;
 	char * shortname;
-	DIR * dir;
+	char * path = sanitizePathDup(utf8path);
+
+	if(NULL==path) return;
 
 	/* if path is in the DB try to update it, or else delete it */
-	if((directory = getDirectoryDetails(utf8path,&shortname,
+	if((directory = getDirectoryDetails(path,&shortname,
 			&parentDirectory))) 
 	{
-		/* if updateDirectory fials, means we should delete it */
-		if(updateDirectory(directory)<0 && directory!=mp3rootDirectory)
+		/* if this update directory is successfull, we are done */
+		if(updateDirectory(directory)==0)
 		{
+			free(path);
+			sortDirectory(directory);
+			return;
+		}
+		/* we don't want to delete the root directory */
+		else if(directory == mp3rootDirectory) {
+			free(path);
+			return;
+		}
+		/* if updateDirectory fials, means we should delete it */
+		else {
+			LOG("removing directory: %s\n",path);
 			deleteFromList(parentDirectory->subDirectories,
 					shortname);
 		}
 	}
-	else if((song = getSongDetails(utf8path,&shortname,&parentDirectory))) {
-		if(song && updateSongInfo(song)<0) {
-			removeSongFromDirectory(parentDirectory,shortname);
+	else if((song = getSongDetails(path,&shortname,&parentDirectory))) {
+		/* if this song update is successfull, we are done */
+		if(song && updateSongInfo(song)==0) {
+			free(path);
+			return;
 		}
+		/* if updateDirectory fials, means we should delete it */
+		else removeSongFromDirectory(parentDirectory,shortname);
 	}
-	/* apth not found in the db, see if it actually exists on the fs */
-	else if(isDir(utf8path,NULL)) {
-		/* create parent/get parent directory */
-		/* create new directory and add to parent */
-		/* explore direcotry */
+
+	/* path not found in the db, see if it actually exists on the fs.
+	 * Also, if by chance a directory was replaced by a file of the same
+         * name or vice versa, we need to add it to the db
+         */
+	if(isDir(path,NULL) || isMusic(path,NULL)) {
+		parentDirectory = addParentPathToDB(path,&shortname);
+		addToDirectory(parentDirectory,shortname,path);
+		sortDirectory(parentDirectory);
 	}
-	else if((isMusic(utf8path,NULL))) {
-		/* create parent/get parent directory */
-		/* add song to directory */
-	}
+
+	free(path);
 }
 
 int updateDirectory(Directory * directory) {
@@ -479,7 +546,7 @@ int exploreDirectory(Directory * directory) {
 	return 0;
 }
 
-int addSubDirectoryToDirectory(Directory * directory, char * shortname, 
+Directory * addSubDirectoryToDirectory(Directory * directory, char * shortname, 
 	char * name) 
 {
 	Directory * subDirectory = newDirectory(name,-1);
@@ -487,12 +554,13 @@ int addSubDirectoryToDirectory(Directory * directory, char * shortname,
 	insertInList(directory->subDirectories,shortname,subDirectory);
 	exploreDirectory(subDirectory);
 
-	return 0;
+	return subDirectory;
 }
 
 int addToDirectory(Directory * directory, char * shortname, char * name) {
 	if(isDir(name,NULL)) {
-		return addSubDirectoryToDirectory(directory,shortname,name);
+		addSubDirectoryToDirectory(directory,shortname,name);
+		return 0;
 	}
 	else if(isMusic(name,NULL)) {
 		Song * song;

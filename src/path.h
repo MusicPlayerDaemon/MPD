@@ -49,4 +49,7 @@ char * rpp2app(char * file);
 /* static char * returned */
 char * parentPath(char * path);
 
+/* strips extra "///" and leading "/" and trailing "/" */
+char * sanitizePathDup(char * path);
+
 #endif
