@@ -29,6 +29,8 @@
 /* Added 4/14/2004 by AliasMrJones */
 static int replayGainState = REPLAYGAIN_OFF;
 
+static float replayGainPreamp = 1.0;
+
 void initReplayGainState() {
 	if(!getConf()[CONF_REPLAYGAIN]) return;
 
@@ -43,17 +45,38 @@ void initReplayGainState() {
 				getConf()[CONF_REPLAYGAIN]);
 		exit(EXIT_FAILURE);
 	}
+
+	if(getConf()[CONF_REPLAYGAIN_PREAMP]) {
+		char * test;
+		float f = strtod(getConf()[CONF_REPLAYGAIN_PREAMP], &test);
+
+		if(*test != '\0') {
+			ERROR("Replaygain preamp \"%s\" is not a number\n",
+					getConf()[CONF_REPLAYGAIN_PREAMP]);
+			exit(EXIT_FAILURE);
+		}
+
+		if(f < -15 || f > 15) {
+			ERROR("Replaygain preamp \"%s\" is not between -15 and"
+					"15\n", 
+					getConf()[CONF_REPLAYGAIN_PREAMP]);
+			exit(EXIT_FAILURE);
+		}
+
+		replayGainPreamp = pow(10, f/20.0);
+	}
 }
 
 int getReplayGainState() {
 	return replayGainState;
 }
 
-float computeReplayGainScale(float gain, float peak){
+float computeReplayGainScale(float gain, float peak) {
 	float scale;
 
 	if(gain == 0.0) return(1);
 	scale = pow(10.0, gain/20.0);
+	scale*= replayGainPreamp;
 	if(scale > 15.0) scale = 15.0;
 
 	if (scale * peak > 1.0) {

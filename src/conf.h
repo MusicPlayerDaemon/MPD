@@ -54,6 +54,7 @@
 #define CONF_HTTP_PROXY_PORT                    30
 #define CONF_HTTP_PROXY_USER			31
 #define CONF_HTTP_PROXY_PASSWORD		32
+#define CONF_REPLAYGAIN_PREAMP			33
 
 #define CONF_CAT_CHAR				"\n"
 
