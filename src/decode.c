@@ -114,7 +114,7 @@ int calculateCrossFadeChunks(PlayerControl * pc, AudioFormat * af) {
 
 #define handleDecodeStart() \
         if(decodeWaitedOn && dc->state==DECODE_STATE_DECODE) { \
-                decodeWaitedOn = 1; \
+                decodeWaitedOn = 0; \
 	        if(openAudioDevice(&(cb->audioFormat))<0) { \
 		        strncpy(pc->erroredFile,pc->file,MAXPATHLEN); \
 		        pc->erroredFile[MAXPATHLEN] = '\0'; \
@@ -127,7 +127,7 @@ int calculateCrossFadeChunks(PlayerControl * pc, AudioFormat * af) {
 	        pc->bits = dc->audioFormat.bits; \
 	        pc->channels = dc->audioFormat.channels; \
         } \
-        else { \
+        else if(decodeWaitedOn) { \
                 my_usleep(10); \
                 continue; \
         }

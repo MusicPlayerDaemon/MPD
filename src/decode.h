@@ -46,6 +46,7 @@
 #define DECODE_SUFFIX_WAVE      6
 
 typedef struct _DecoderControl {
+	volatile mpd_sint8 seekable;
 	volatile mpd_sint8 state;
 	volatile mpd_sint8 stop;
 	volatile mpd_sint8 start;

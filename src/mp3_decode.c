@@ -189,7 +189,7 @@ int fillMp3InputBuffer(mp3DecodeData * data) {
 			readSize);
 	if(readed <= 0 && inputStreamAtEOF(data->inStream)) return -1;
 	/* sleep for a fraction of a second! */
-	else if(readed == 0) my_usleep(10);
+	else if(readed <= 0) my_usleep(10000);
 
 	mad_stream_buffer(&data->stream,data->readBuffer,readed+remaining);
 	(data->stream).error = 0;
