@@ -17,9 +17,6 @@
 
 *) add error codes for status->error
 
-*) add a method for clearling the audio device's buffer.  This isn't possible 
-	with libao api.
-
 *) allowing "pausing" of audio output devices
 
 *) add support so that audioOutput plugins can modify the output audio format.
