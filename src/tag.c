@@ -20,6 +20,8 @@
 #include "path.h"
 #include "myfprintf.h"
 #include "sig_handlers.h"
+#include "mp3_decode.h"
+#include "audiofile_decode.h"
 #include "utils.h"
 
 #include <sys/stat.h>
@@ -48,6 +50,7 @@ void printMpdTag(FILE * fp, MpdTag * tag) {
 	if(tag->album) myfprintf(fp,"Album: %s\n",tag->album);
 	if(tag->track) myfprintf(fp,"Track: %s\n",tag->track);
 	if(tag->title) myfprintf(fp,"Title: %s\n",tag->title);
+	if(tag->time>=0) myfprintf(fp,"Time: %i\n",tag->time);
 }
 
 #ifdef HAVE_ID3TAG
@@ -135,7 +138,13 @@ MpdTag * id3Dup(char * utf8filename) {
 #ifdef HAVE_AUDIOFILE
 MpdTag * audiofileTagDup(char * utf8file) {
 	MpdTag * ret = NULL;
+	int time = getAudiofileTotalTime(rmp2amp(utf8ToFsCharset(utf8file)));
 	
+	if (time>=0) {
+		if(!ret) ret = newMpdTag();
+		ret->time = time;
+	}
+
 	return ret;
 }
 #endif
@@ -143,8 +152,16 @@ MpdTag * audiofileTagDup(char * utf8file) {
 #ifdef HAVE_MAD
 MpdTag * mp3TagDup(char * utf8file) {
 	MpdTag * ret = NULL;
+	int time;
 
 	ret = id3Dup(utf8file);
+
+	time = getMp3TotalTime(rmp2amp(utf8ToFsCharset(utf8file)));
+
+	if(time>=0) {
+		if(!ret) ret = newMpdTag();
+		ret->time = time;
+	}
 
 	return ret;
 }
@@ -171,6 +188,7 @@ MpdTag * oggTagDup(char * utf8file) {
 	}
 
 	ret = newMpdTag();
+	ret->time = (int)(ov_time_total(&vf,-1)+0.5);
 
 	comments = ov_comment(&vf,-1)->user_comments;
 
@@ -297,6 +315,10 @@ MpdTag * flacMetadataDup(char * utf8file, int * vorbisCommentFound) {
 		}
 		else if(block->type == FLAC__METADATA_TYPE_STREAMINFO) {
 			if(!ret) ret = newMpdTag();
+			ret->time = ((float)block->data.stream_info.
+					total_samples) /
+					block->data.stream_info.sample_rate +
+					0.5;
 		}
 		FLAC__metadata_object_delete(block);
 	} while(FLAC__metadata_simple_iterator_next(it));
@@ -311,9 +333,14 @@ MpdTag * flacTagDup(char * utf8file) {
 	int foundVorbisComment = 0;
 
 	ret = flacMetadataDup(utf8file,&foundVorbisComment);
+	if(!ret) return NULL;
 	if(!foundVorbisComment) {
-		if(ret) freeMpdTag(ret);
-		ret = id3Dup(utf8file);
+		MpdTag * temp = id3Dup(utf8file);
+		if(temp) {
+			temp->time = ret->time;
+			freeMpdTag(ret);
+			ret = temp;
+		}
 	}
 
 	return ret;
@@ -326,6 +353,7 @@ MpdTag * newMpdTag() {
 	ret->artist = NULL;
 	ret->title = NULL;
 	ret->track = NULL;
+	ret->time = -1;
 	return ret;
 }
 
@@ -346,6 +374,7 @@ MpdTag * mpdTagDup(MpdTag * tag) {
 		ret->album = strdup(tag->album);
 		ret->title = strdup(tag->title);
 		ret->track = strdup(tag->track);
+		ret->time = tag->time;
 	}
 
 	return ret;

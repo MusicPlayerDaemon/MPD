@@ -108,9 +108,9 @@ int playerInit() {
 		sigaction(SIGTERM,&sa,NULL);
 
 		close(listenSocket);
-		finishPlaylist();
 		freeAllInterfaces();
 		closeMp3Directory();
+		finishPlaylist();
 		closeTables();
 		finishPaths();
 		finishPermissions();

@@ -803,7 +803,7 @@ int directoryPrintSongInfo(FILE * fp, Song * song, void * data) {
 int sumSongTime(FILE * fp, Song * song, void * data) {
 	unsigned long * time = (unsigned long *)data;
 
-	if(song->time>=0) *time+=song->time;
+	if(song->tag && song->tag->time>=0) *time+=song->tag->time;
 
 	return 0;
 }

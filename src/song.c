@@ -48,7 +48,6 @@ Song * newNullSong() {
 
 	song->tag = NULL;
 	song->utf8file = NULL;
-	song->time = -1;
 
 	return song;
 }
@@ -61,34 +60,26 @@ Song * newSong(char * utf8file) {
 	if(0);
 #ifdef HAVE_OGG
 	else if(isOgg(utf8file,&(song->mtime))) {
-		song->time = getOggTotalTime(
-				rmp2amp(utf8ToFsCharset(utf8file)));
-		if(song->time>=0) song->tag = oggTagDup(utf8file);
+		song->tag = oggTagDup(utf8file);
 	}
 #endif
 #ifdef HAVE_FLAC
 	else if((isFlac(utf8file,&(song->mtime)))) {
-		song->time = getFlacTotalTime(
-				rmp2amp(utf8ToFsCharset(utf8file)));
-		if(song->time>=0) song->tag = flacTagDup(utf8file);
+		song->tag = flacTagDup(utf8file);
 	}
 #endif
 #ifdef HAVE_MAD
 	else if(isMp3(utf8file,&(song->mtime))) {
-		song->time = getMp3TotalTime(
-				rmp2amp(utf8ToFsCharset(utf8file)));
-		if(song->time>=0) song->tag = mp3TagDup(utf8file);
+		song->tag = mp3TagDup(utf8file);
 	}
 #endif
 #ifdef HAVE_AUDIOFILE
 	else if(isWave(utf8file,&(song->mtime))) {
-		song->time = getAudiofileTotalTime(
-				rmp2amp(utf8ToFsCharset(utf8file)));
-		if(song->time>=0) song->tag = audiofileTagDup(utf8file);
+		song->tag = audiofileTagDup(utf8file);
 	}
 #endif
 
-	if(song->time<0) {
+	if(!song->tag || song->tag->time<0) {
 		freeSong(song);
 		song = NULL;
 	}
@@ -129,8 +120,6 @@ void freeSongList(SongList * list) {
 
 int printSongInfo(FILE * fp, Song * song) {
 	myfprintf(fp,"%s%s\n",SONG_FILE,song->utf8file);
-
-	if(song->time>=0) myfprintf(fp,"%s%i\n",SONG_TIME,song->time);
 
 	if(song->tag) printMpdTag(fp,song->tag);
 
@@ -203,7 +192,8 @@ void readSongInfoIntoList(FILE * fp, SongList * list) {
 			song->tag->title = strdup(&(buffer[strlen(SONG_TITLE)]));
 		}
 		else if(0==strncmp(SONG_TIME,buffer,strlen(SONG_TIME))) {
-			song->time = atoi(&(buffer[strlen(SONG_TIME)]));
+			if(!song->tag) song->tag = newMpdTag();
+			song->tag->time = atoi(&(buffer[strlen(SONG_TIME)]));
 		}
 		else if(0==strncmp(SONG_MTIME,buffer,strlen(SONG_MTIME))) {
 			song->mtime = atoi(&(buffer[strlen(SONG_TITLE)]));
@@ -227,40 +217,31 @@ int updateSongInfo(Song * song) {
 	removeASongFromTables(song);
 	if(song->tag) freeMpdTag(song->tag);
 
-	song->time = -1;
 	song->tag = NULL;
 
 	if(0);
 #ifdef HAVE_OGG
 	else if(isOgg(utf8file,&(song->mtime))) {
-		song->time = getOggTotalTime(
-				rmp2amp(utf8ToFsCharset(utf8file)));
-		if(song->time>=0) song->tag = oggTagDup(utf8file);
+		song->tag = oggTagDup(utf8file);
 	}
 #endif
 #ifdef HAVE_FLAC
 	else if((isFlac(utf8file,&(song->mtime)))) {
-		song->time = getFlacTotalTime(
-				rmp2amp(utf8ToFsCharset(utf8file)));
-		if(song->time>=0) song->tag = flacTagDup(utf8file);
+		song->tag = flacTagDup(utf8file);
 	}
 #endif
 #ifdef HAVE_MAD
 	else if(isMp3(utf8file,&(song->mtime))) {
-		song->time = getMp3TotalTime(
-				rmp2amp(utf8ToFsCharset(utf8file)));
-		if(song->time>=0) song->tag = mp3TagDup(utf8file);
+		song->tag = mp3TagDup(utf8file);
 	}
 #endif
 #ifdef HAVE_AUDIOFILE
 	else if(isWave(utf8file,&(song->mtime))) {
-		song->time = getAudiofileTotalTime(
-				rmp2amp(utf8ToFsCharset(utf8file)));
-		if(song->time>=0) song->tag = audiofileTagDup(utf8file);
+		song->tag = audiofileTagDup(utf8file);
 	}
 #endif
 
-	if(song->time<0) return -1;
+	if(!song->tag || song->tag->time<0) return -1;
 	else addSongToTables(song);
 
 	return 0;
