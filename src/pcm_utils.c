@@ -255,17 +255,36 @@ size_t pcm_sizeOfOutputBufferForAudioFormatConversion(AudioFormat * inFormat,
 		char * inBuffer, size_t inSize, AudioFormat * outFormat)
 {
 	const int shift = sizeof(mpd_sint16);
-	mpd_uint32 nlen = (((inSize >> shift) * 
-				(mpd_uint32)(outFormat->sampleRate)) / 
+	size_t outSize = inSize;
+
+	switch(inFormat->bits) {
+	case 8:
+		outSize = outSize << 1;
+		break;
+	case 16:
+		break;
+	default:
+		ERROR("only 8 or 16 bits are supported for conversion!\n");
+		exit(EXIT_FAILURE);
+	}
+
+	switch(inFormat->channels) {
+	case 1:
+		outSize = (outSize >> 1) << 2;
+		break;
+	case 2:
+		break;
+	default:
+		ERROR("only 1 or 2 channels are supported for conversion!\n");
+		exit(EXIT_FAILURE);
+	}
+	
+	outSize = (((outSize >> shift) * (mpd_uint32)(outFormat->sampleRate)) /
 				inFormat->sampleRate);
 
-	nlen <<= shift;
+	outSize <<= shift;
 
-
-	assert(outFormat->bits==16);
-	assert(outFormat->channels==2);
-
-	return nlen;
+	return outSize;
 }
 
 /* vim:set shiftwidth=8 tabstop=8 expandtab: */
