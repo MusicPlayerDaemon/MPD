@@ -19,15 +19,17 @@
 #ifndef AUDIO_H
 #define AUDIO_H
 
+#include "mpd_types.h"
+
 #include <stdio.h>
 #include <ao/ao.h>
 
 #define AUDIO_AO_DRIVER_DEFAULT	"default"
 
 typedef struct _AudioFormat {
-	int channels;
-	int sampleRate;
-	int bits;
+	mpd_sint8 channels;
+	mpd_uint32 sampleRate;
+	mpd_sint8 bits;
 } AudioFormat;
 
 extern int audio_ao_driver_id;

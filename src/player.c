@@ -414,3 +414,21 @@ double getPlayerTotalPlayTime() {
 
 	return pc->totalPlayTime+pc->elapsedTime-pc->beginTime;
 }
+
+unsigned int getPlayerSampleRate() {
+	PlayerControl * pc = &(getPlayerData()->playerControl);
+
+	return pc->sampleRate;
+}
+
+int getPlayerBits() {
+	PlayerControl * pc = &(getPlayerData()->playerControl);
+
+	return pc->bits;
+}
+
+int getPlayerChannels() {
+	PlayerControl * pc = &(getPlayerData()->playerControl);
+
+	return pc->channels;
+}

@@ -52,6 +52,7 @@ int audiofile_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc)
 {
 	int fs, frame_count;
 	AFfilehandle af_fp;
+	int bits;
 		
 	af_fp = afOpenFile(dc->file,"r", NULL);
 	if(af_fp == AF_NULL_FILEHANDLE) {
@@ -59,8 +60,9 @@ int audiofile_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc)
 		return -1;
 	}
 
-	afGetSampleFormat(af_fp, AF_DEFAULT_TRACK, &fs, &af->bits);
-	af->sampleRate = (int)afGetRate(af_fp, AF_DEFAULT_TRACK);
+	afGetSampleFormat(af_fp, AF_DEFAULT_TRACK, &fs, &bits);
+	af->bits = bits;
+	af->sampleRate = afGetRate(af_fp, AF_DEFAULT_TRACK);
 	af->channels = afGetChannels(af_fp,AF_DEFAULT_TRACK);
 	
 	frame_count = afGetFrameCount(af_fp,AF_DEFAULT_TRACK);

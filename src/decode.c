@@ -17,6 +17,7 @@
  */
 
 #include "decode.h"
+
 #include "player.h"
 #include "playerData.h"
 #include "utils.h"
@@ -123,6 +124,9 @@ int waitOnDecode(PlayerControl * pc, AudioFormat * af, DecoderControl * dc,
 
 	pc->elapsedTime = 0;
 	pc->bitRate = 0;
+	pc->sampleRate = af->sampleRate;
+	pc->bits = af->bits;
+	pc->channels = af->channels;
 	pc->totalTime = cb->totalTime;
 
 	return 0;

@@ -29,6 +29,7 @@
 #include "list.h"
 #include "conf.h"
 #include "permission.h"
+#include "audio.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -81,6 +82,8 @@
 #define COMMAND_STATUS_TIME             "time"
 #define COMMAND_STATUS_BITRATE          "bitrate"
 #define COMMAND_STATUS_ERROR            "error"
+#define COMMAND_STATUS_CROSSFADE	"xfade"
+#define COMMAND_STATUS_AUDIO		"audio"
 
 typedef int (* CommandHandlerFunction)(FILE *, unsigned int *, int, char **);
 
@@ -186,6 +189,8 @@ int commandStatus(FILE * fp, unsigned int * permission, int argArrayLength,
                 myfprintf(fp,"%s: %i\n",COMMAND_STATUS_SONG,getPlaylistCurrentSong());
                 myfprintf(fp,"%s: %i:%i\n",COMMAND_STATUS_TIME,getPlayerElapsedTime(),getPlayerTotalTime());
                 myfprintf(fp,"%s: %li\n",COMMAND_STATUS_BITRATE,getPlayerBitRate(),getPlayerTotalTime());
+                myfprintf(fp,"%s: %i\n",COMMAND_STATUS_CROSSFADE,(int)getPlayerCrossFade());
+                myfprintf(fp,"%s: %u:%i:%i\n",COMMAND_STATUS_AUDIO,getPlayerSampleRate(),getPlayerBits(),getPlayerChannels());
         }
 
         if(getPlayerError()!=PLAYER_ERROR_NOERROR) {
@@ -512,11 +517,6 @@ int handleCrossfade(FILE * fp, unsigned int * permission, int argArrayLength,
         int time;
         char * test;
 
-	if(argArrayLength==1) {
-		myfprintf(fp,"crossfade: %i\n",(int)(getPlayerCrossFade()));
-		return 0;
-	}
-
         time = strtol(argArray[1],&test,10);
         if(*test!='\0' || time<0) {
                 myfprintf(fp,"%s \"%s\" is not a integer >= 0\n",
@@ -567,7 +567,7 @@ void initCommands() {
         addCommand(COMMAND_PING        ,0,                  0, 0,handlePing);
         addCommand(COMMAND_SETVOL      ,PERMISSION_CONTROL, 1, 1,handleSetVol);
         addCommand(COMMAND_PASSWORD    ,0,                  1, 1,handlePassword);
-        addCommand(COMMAND_CROSSFADE   ,PERMISSION_CONTROL, 0, 1,handleCrossfade);
+        addCommand(COMMAND_CROSSFADE   ,PERMISSION_CONTROL, 1, 1,handleCrossfade);
 
         sortList(commandList);
 }

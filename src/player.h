@@ -19,6 +19,8 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
+#include "mpd_types.h"
+
 #include <stdio.h>
 #include <sys/param.h>
 
@@ -47,27 +49,30 @@
 #define PLAYER_QUEUE_LOCKED	1
 
 typedef struct _PlayerControl {
-	int decodeType;
-	int stop;
-	int play;
-	int pause;
-	int state;
-	int closeAudio;
-	int error;
-	unsigned long bitRate;
+	mpd_sint8 decodeType;
+	mpd_sint8 stop;
+	mpd_sint8 play;
+	mpd_sint8 pause;
+	mpd_sint8 state;
+	mpd_sint8 closeAudio;
+	mpd_sint8 error;
+	mpd_uint16 bitRate;
+	mpd_sint8 bits;
+	mpd_sint8 channels;
+	mpd_uint32 sampleRate;
 	float beginTime;
 	float totalTime;
 	float elapsedTime;
 	char file[MAXPATHLEN+1];
 	char erroredFile[MAXPATHLEN+1];
-	int queueState;
-	int queueLockState;
-	int lockQueue;
-	int unlockQueue;
-	int seek;
+	mpd_sint8 queueState;
+	mpd_sint8 queueLockState;
+	mpd_sint8 lockQueue;
+	mpd_sint8 unlockQueue;
+	mpd_sint8 seek;
 	double seekWhere;
 	float crossFade;
-	int softwareVolume;
+	mpd_sint8 softwareVolume;
 	double totalPlayTime;
 } PlayerControl;
 
@@ -124,5 +129,11 @@ int getPlayerSoftwareVolume();
 void setPlayerSoftwareVolume(int volume);
 
 double getPlayerTotalPlayTime();
+
+unsigned int getPlayerSampleRate();
+
+int getPlayerBits();
+
+int getPlayerChannels();
 
 #endif
