@@ -232,11 +232,25 @@ char ** readConf(char * file) {
 			if(conf_params[conf_absolutePaths[i]][1]=='/' ||
 				conf_params[conf_absolutePaths[i]][1]=='\0') 
 			{
-				uid_t uid = geteuid();
-				if((pwd = getpwuid(uid)) == NULL) {
-					ERROR("problems getting passwd entry "
-						"for current user\n");
-					exit(EXIT_FAILURE);
+				if(conf_params[CONF_USER] && 
+						strlen(conf_params[CONF_USER]))
+				{
+					pwd = getpwnam(
+						conf_params[CONF_USER]);
+					if(!pwd) {
+						ERROR("no such user: %s\n",
+							conf_params[CONF_USER]);
+						exit(EXIT_FAILURE);
+					}
+				}
+				else {
+					uid_t uid = geteuid();
+					if((pwd = getpwuid(uid)) == NULL) {
+						ERROR("problems getting passwd "
+							"entry "
+							"for current user\n");
+						exit(EXIT_FAILURE);
+					}
 				}
 			}
 			else {
