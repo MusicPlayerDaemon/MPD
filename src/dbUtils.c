@@ -66,7 +66,7 @@ int printDirectoryInDirectory(FILE * fp, Directory * directory, void * data) {
 }
 
 int printSongInDirectory(FILE * fp, Song * song, void * data) {
-        myfprintf(fp,"file: %s\n",song->utf8url);
+	printSongUrl(fp, song);
         return 0;
 }
 

@@ -40,11 +40,12 @@ Song * newNullSong() {
 	song->tag = NULL;
 	song->utf8url = NULL;
 	song->type = SONG_TYPE_FILE;
+	song->parentDir = NULL;
 
 	return song;
 }
 
-Song * newSong(char * utf8url, SONG_TYPE type) {
+Song * newSong(char * url, int type, Directory * parentDir) {
 	Song * song = NULL;
 
         if(strchr(utf8url, '\n')) return NULL;
@@ -53,6 +54,9 @@ Song * newSong(char * utf8url, SONG_TYPE type) {
 
 	song->utf8url = strdup(utf8url);
 	song->type = type;
+	song->parentDir = parentDir;
+
+	assert(type == SONG_TYPE_URL || parentDir);
 
 	if(song->type == SONG_TYPE_FILE) {
                 InputPlugin * plugin;
@@ -86,25 +90,25 @@ SongList * newSongList() {
 	return makeList((ListFreeDataFunc *)freeSong);
 }
 
-Song * addSongToList(SongList * list, char * key, char * utf8url, 
-		SONG_TYPE type) 
+Song * addSongToList(SongList * list, char * url, int songType, 
+		Directory * parentDirectory)
 {
 	Song * song = NULL;
 
 	switch(type) {
 	case SONG_TYPE_FILE:
 		if(isMusic(utf8url,NULL)) {
-			song = newSong(utf8url,type);
+			song = newSong(url, type, parentDirectory);
 		}
 		break;
 	case SONG_TYPE_URL:
-		song = newSong(utf8url,type);
+		song = newSong(utf8url, type, parentDirectory);
 		break;
 	}
 
 	if(song==NULL) return NULL;
 	
-	insertInList(list,key,(void *)song);
+	insertInList(list, url, (void *)song);
 
 	return song;
 }
@@ -113,8 +117,18 @@ void freeSongList(SongList * list) {
 	freeList(list);
 }
 
+void printSongUrl(FILE * fp, Song * song) {
+	if(song->parentDir) {
+		myfprintf(fp, "%s%s%s\n", SONG_FILE, song->parentDir->utf8name,
+				song->url);
+	}
+	else {
+		myfprintf(fp, "%s%s\n", SONG_FILE, song->url);
+	}
+}
+
 int printSongInfo(FILE * fp, Song * song) {
-	myfprintf(fp,"%s%s\n",SONG_FILE,song->utf8url);
+	printSongUrl(fp, song);
 
 	if(song->tag) printMpdTag(fp,song->tag);
 

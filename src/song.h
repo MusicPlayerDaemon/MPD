@@ -21,24 +21,23 @@
 
 #include "../config.h"
 
-#define SONG_BEGIN	"songList begin"
-#define SONG_END	"songList end"
-
 #include <sys/param.h>
 #include <time.h>
 
 #include "tag.h"
 #include "list.h"
 
-typedef enum {
-	SONG_TYPE_FILE = 1,
-	SONG_TYPE_URL = 2
-} SONG_TYPE;
+#define SONG_BEGIN	"songList begin"
+#define SONG_END	"songList end"
+
+#define SONG_TYPE_FILE 1
+#define SONG_TYPE_URL 2
 
 typedef struct _Song {
-	char * utf8url;
-	SONG_TYPE type;
+	char * url;
+	mpd_sint8 type;
 	MpdTag * tag;
+	struct _Directory * parentDir;
 	time_t mtime;
 } Song;
 
@@ -46,7 +45,7 @@ typedef List SongList;
 
 Song * newNullSong();
 
-Song * newSong(char * utf8url, SONG_TYPE type);
+Song * newSong(char * utf8url, int songType, struct _Directory * parentDir);
 
 void freeSong(Song *);
 
@@ -57,7 +56,7 @@ SongList * newSongList();
 void freeSongList(SongList * list);
 
 Song * addSongToList(SongList * list, char * key, char * utf8file, 
-		SONG_TYPE type);
+		int songType, struct _Directory * parentDir);
 
 int printSongInfo(FILE * fp, Song * song);
 
@@ -70,5 +69,7 @@ void readSongInfoIntoList(FILE * fp, SongList * list);
 int updateSongInfo(Song * song);
 
 Song * songDup(Song * song);
+
+void printSongUrl(FILE * fp, Song * song);
 
 #endif
