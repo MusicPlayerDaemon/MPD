@@ -225,6 +225,7 @@ static void alsa_dropBufferedAudio(AudioOutput * audioOutput) {
 	AlsaData * ad = audioOutput->data;
 
 	snd_pcm_drop(ad->pcm_handle);
+	snd_pcm_prepare(ad->pcm_handle);
 }
 
 inline static int alsa_errorRecovery(AlsaData * ad, int err) {
