@@ -283,14 +283,14 @@ char * prependCwdToPathDup(char * path) {
                 len = strlen(ret);
                 if(ret[len-1]!='/') {
                         strncat(ret,"/",MAXPATHLEN-len);
-                        len = strlen(path);
+                        len = strlen(ret);
                 }
                 strncat(ret,path,MAXPATHLEN-len);
                 len = strlen(ret);
         }
         if(ret[len-1]!='/') {
                 strncat(ret,"/",MAXPATHLEN-len);
-                len = strlen(path);
+                len = strlen(ret);
         }
 
         return realloc(ret,len+1);
