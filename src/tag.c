@@ -224,7 +224,7 @@ MpdTag * oggTagDup(char * utf8file) {
 #endif
 
 #ifdef HAVE_FLAC
-MpdTag * flacMetadataDup(char * file, int * vorbisCommentFound) {
+MpdTag * flacMetadataDup(char * utf8file, int * vorbisCommentFound) {
 	MpdTag * ret = NULL;
 	FLAC__Metadata_SimpleIterator * it;
 	FLAC__StreamMetadata * block = NULL;
@@ -235,7 +235,7 @@ MpdTag * flacMetadataDup(char * file, int * vorbisCommentFound) {
 
 	blockSignals();
 	it = FLAC__metadata_simple_iterator_new();
-	if(!FLAC__metadata_simple_iterator_init(it,rmp2amp(file),1,0)) {
+	if(!FLAC__metadata_simple_iterator_init(it,rmp2amp(utf8ToFsCharset(utf8file)),1,0)) {
 		FLAC__metadata_simple_iterator_delete(it);
 		unblockSignals();
 		return ret;
