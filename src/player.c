@@ -480,7 +480,6 @@ Song * playerCurrentDecodeSong() {
 		memcpy(prev, &(pc->metadataChunk), sizeof(MetadataChunk));
                 if(song) freeJustSong(song);
                 song = newNullSong();
-                if(song->utf8url) free(song->utf8url);
                 song->utf8url = strdup(pc->currentUrl);
 		song->tag = metadataChunkToMpdTagDup(prev);
                 validateUtf8Tag(song->tag);
