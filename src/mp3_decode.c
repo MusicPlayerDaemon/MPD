@@ -181,8 +181,8 @@ int fillMp3InputBuffer(mp3DecodeData * data, long offset) {
 
         readed = 0;
         while(readed == 0 && !inputStreamAtEOF(data->inStream)) {	
-	        readed = readFromInputStream(data->inStream, readStart, 1,
-                                        readSize);
+	        readed = readFromInputStream(data->inStream, readStart,
+                                        (size_t)1, readSize);
         }
 	if(readed<=0) return -1;
 
@@ -362,10 +362,16 @@ int decodeFirstFrame(mp3DecodeData * data) {
 		else {
 			offset-= data->stream.bufend-data->stream.buffer;
 		}
-		data->totalTime = ((data->inStream->size-offset)*8.0)/
+		if(data->inStream->size >= offset) {
+			data->totalTime = ((data->inStream->size-offset)*8.0)/
 					(data->frame).header.bitrate;
-                if(data->totalTime < 0) data->totalTime = 0;
-		data->maxFrames = data->totalTime/frameTime+FRAMES_CUSHION;
+			data->maxFrames = 
+				data->totalTime/frameTime+FRAMES_CUSHION;
+		}
+		else {
+			data->maxFrames = FRAMES_CUSHION;
+			data->totalTime = 0;
+		}
 	}
 
 	data->frameOffset = malloc(sizeof(long)*data->maxFrames);
@@ -415,11 +421,13 @@ int mp3Read(mp3DecodeData * data, OutputBuffer * cb, DecoderControl * dc) {
 	static struct audio_dither dither;
 	static int skip;
 
-	if(data->currentFrame>=data->highestFrame && 
-			data->highestFrame<data->maxFrames) 
-	{
+	if(data->currentFrame>=data->highestFrame) { 
 		mad_timer_add(&data->timer,(data->frame).header.duration);
 		data->bitRate = (data->frame).header.bitrate;
+		if(data->currentFrame>=data->maxFrames) {
+			data->currentFrame = data->maxFrames - 1;
+		}
+		else data->highestFrame++;
 		data->frameOffset[data->currentFrame] = data->inStream->offset;
 		if(data->stream.this_frame!=NULL) {
 			data->frameOffset[data->currentFrame]-= 
@@ -431,7 +439,6 @@ int mp3Read(mp3DecodeData * data, OutputBuffer * cb, DecoderControl * dc) {
 					data->stream.bufend-data->stream.buffer;
 		}
 		data->times[data->currentFrame] = data->timer;
-		data->highestFrame++;
 	}
 	else data->timer = data->times[data->currentFrame];
 	data->currentFrame++;
