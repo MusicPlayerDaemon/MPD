@@ -449,14 +449,29 @@ Directory * addDirectoryPathToDB(char * utf8path, char ** shortname) {
 	if(strlen(parent)==0) parentDirectory = (void *)mp3rootDirectory;
 	else parentDirectory = addDirectoryPathToDB(parent,shortname);
 
+	if(!parentDirectory) {
+		free(parent);
+		return NULL;
+	}
+
 	*shortname = utf8path+strlen(parent);
 	while(*(*shortname) && *(*shortname)=='/') (*shortname)++;
 
 	if(!findInList(parentDirectory->subDirectories,*shortname, &directory))
 	{
-                directory = newDirectory(utf8path, parentDirectory);
-                insertInList(parentDirectory->subDirectories,*shortname,
-                                directory);
+		struct stat st;
+		if(myStat(utf8path, &st) < 0 || 
+				inodeFoundInParent(parentDirectory, 
+				st.st_ino, st.st_dev)) 
+		{
+			free(parent);
+			return NULL;
+		}
+		else {
+                	directory = newDirectory(utf8path, parentDirectory);
+                	insertInList(parentDirectory->subDirectories,*shortname,
+                                	directory);
+		}
 	}
 
 	/* if we're adding directory paths, make sure to delete filenames
@@ -465,7 +480,7 @@ Directory * addDirectoryPathToDB(char * utf8path, char ** shortname) {
 
 	free(parent);
 
-	return (Directory *)parentDirectory;
+	return (Directory *)directory;
 }
 
 Directory * addParentPathToDB(char * utf8path, char ** shortname) {
@@ -476,6 +491,11 @@ Directory * addParentPathToDB(char * utf8path, char ** shortname) {
 
 	if(strlen(parent)==0) parentDirectory = (void *)mp3rootDirectory;
 	else parentDirectory = addDirectoryPathToDB(parent,shortname);
+
+	if(!parentDirectory) {
+		free(parent);
+		return NULL;
+	}
 
 	*shortname = utf8path+strlen(parent);
 	while(*(*shortname) && *(*shortname)=='/') (*shortname)++;
@@ -562,15 +582,17 @@ int updatePath(char * utf8path) {
          */
 	if(isDir(path) || isMusic(path,NULL)) {
 		parentDirectory = addParentPathToDB(path,&shortname);
-		if(!parentDirectory->stat && statDirectory(parentDirectory) < 0)
+		if(!parentDirectory || (
+				!parentDirectory->stat && 
+				statDirectory(parentDirectory) < 0))
 		{
 		}
-		else if(inodeFoundInParent(parentDirectory->parent,
+		else if(0 == inodeFoundInParent(parentDirectory->parent,
 				parentDirectory->stat->inode,
-				parentDirectory->stat->device))
+				parentDirectory->stat->device) &&
+		 		addToDirectory(parentDirectory, shortname, path)
+				>0) 
 		{
-		}
-		else if(addToDirectory(parentDirectory,shortname,path)>0) {
 			ret = 1;
 		}
 	}
