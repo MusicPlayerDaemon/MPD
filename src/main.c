@@ -205,17 +205,9 @@ void parseOptions(int argc, char ** argv, Options * options) {
 
 void closeAllFDs() {
         int i;
+	int fds = getdtablesize();
 
-        for(i=0;i<FD_SETSIZE;i++) {
-                switch(i) {
-                        case STDIN_FILENO:
-                        case STDOUT_FILENO:
-                        case STDERR_FILENO:
-                                break;
-                        default:
-                                close(i);
-                }
-        }
+        for(i = 3; i < fds; i++) close(i);
 }
 
 void establishListen(Options * options) {
