@@ -2,13 +2,9 @@
 
 *) Fix charset errors so they don't goto stderr/out
 
-*) Add a timeout for streams (how long? 1 minutes?)
-
 *) compute time of vorbis from actual number of samples played
 
 *) remove previous hack for streams
-
-*) add "plversion" and "currentsong" commands
 
 Post-1.0
 --------
