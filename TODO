@@ -4,7 +4,7 @@
 
 *) remove changes made to linked list for TagTracker
 
-*) parsing of lame tags (including getting replaygain info)
+*) parsing of lame tags (including getting replaygain and gapless info)
 
 *) put more debugging info for:
 	*) failing to read/write db 
