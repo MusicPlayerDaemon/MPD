@@ -419,6 +419,7 @@ void playerQueueUnlock() {
 }
 
 int playerSeek(FILE * fp, Song * song, float time) {
+        printf("seek called\n");
 	PlayerControl * pc = &(getPlayerData()->playerControl);
 	char * file;
 	int decodeType;

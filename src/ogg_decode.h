@@ -22,10 +22,11 @@
 #include "../config.h"
 
 #include "playerData.h"
+#include "inputStream.h"
 
 #include <stdio.h>
 
-int ogg_decode(OutputBuffer * cb, DecoderControl * dc);
+int ogg_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream);
 
 int getOggTotalTime(char * file);
 

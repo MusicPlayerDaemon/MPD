@@ -42,6 +42,11 @@
 #define OGG_DECODE_USE_BIGENDIAN	0
 #endif
 
+typedef struct _OggCallbackData {
+        InputStream * inStream;
+        DecoderControl * dc;
+} OggCallbackData;
+
 /* this is just for tag parsing for db import! */
 int getOggTotalTime(char * file) {
 	OggVorbis_File vf;
@@ -62,26 +67,42 @@ int getOggTotalTime(char * file) {
 	return totalTime;
 }
 
-size_t ogg_read_cb(void * ptr, size_t size, size_t nmemb, void * inStream)
+size_t ogg_read_cb(void * ptr, size_t size, size_t nmemb, void * vdata)
 {
-	size_t ret;
-	ret = readFromInputStream((InputStream *)inStream,ptr,size,nmemb);
+	size_t ret = 0;
+        OggCallbackData * data = (OggCallbackData *)vdata;
 
-	if(ret<0) errno = ((InputStream *)inStream)->error;
+        while(1) {
+	        ret = readFromInputStream(data->inStream,ptr,size,nmemb);
+                if(ret == 0 && !inputStreamAtEOF(data->inStream) && 
+                                !data->dc->stop) 
+                {
+                        my_usleep(10000);
+                }
+                else break;
+        }
+        errno = 0;
+	/*if(ret<0) errno = ((InputStream *)inStream)->error;*/
 
 	return ret;
 }
 
-int ogg_seek_cb(void * inStream, ogg_int64_t offset, int whence) {
-	return seekInputStream((InputStream *)inStream,offset,whence);
+int ogg_seek_cb(void * vdata, ogg_int64_t offset, int whence) {
+        OggCallbackData * data = (OggCallbackData *)vdata;
+
+	return seekInputStream(data->inStream,offset,whence);
 }
 
-int ogg_close_cb(void * inStream) {
-	return closeInputStream((InputStream *)inStream);
+int ogg_close_cb(void * vdata) {
+        OggCallbackData * data = (OggCallbackData *)vdata;
+
+	return closeInputStream(data->inStream);
 }
 
-long ogg_tell_cb(void * inStream) {
-	return ((InputStream *)inStream)->offset;
+long ogg_tell_cb(void * vdata) {
+        OggCallbackData * data = (OggCallbackData *)vdata;
+
+	return (long)(data->inStream->offset);
 }
 
 char * ogg_parseComment(char * comment, char * needle) {
@@ -142,27 +163,27 @@ float ogg_getReplayGainScale(char ** comments) {
         return 1.0;
 }
 
-int ogg_decode(OutputBuffer * cb, DecoderControl * dc)
+int ogg_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream)
 {
 	OggVorbis_File vf;
 	ov_callbacks callbacks;
-	InputStream inStream;
-        
+        OggCallbackData data;
+
+        data.inStream = inStream;
+        data.dc = dc;
 
 	callbacks.read_func = ogg_read_cb;
 	callbacks.seek_func = ogg_seek_cb;
 	callbacks.close_func = ogg_close_cb;
 	callbacks.tell_func = ogg_tell_cb;
 	
-	if(openInputStream(&inStream,dc->file)<0) {
-		ERROR("failed to open ogg\n");
-		return -1;
-	}
-		
-	if(ov_open_callbacks(&inStream, &vf, NULL, 0, callbacks) < 0) {
-		ERROR("Input does not appear to be an Ogg bit stream.\n");
-		closeInputStream(&inStream);
-		return -1;
+	if(ov_open_callbacks(&data, &vf, NULL, 0, callbacks) < 0) {
+		closeInputStream(inStream);
+		if(!dc->stop) {
+		        ERROR("Input does not appear to be an Ogg Vorbis stream.\n");
+                        return -1;
+                }
+                return 0;
 	}
 	
 	{
@@ -190,20 +211,23 @@ int ogg_decode(OutputBuffer * cb, DecoderControl * dc)
 
 		while(!eof) {
 			if(dc->seek) {
-                                clearOutputBuffer(cb);
-				chunkpos = 0;
-                                dc->seekChunk = cb->end;
-				ov_time_seek_page(&vf,dc->seekWhere);
+				if(0 == ov_time_seek_page(&vf,dc->seekWhere)) {
+                                        clearOutputBuffer(cb);
+				        chunkpos = 0;
+                                        dc->seekChunk = cb->end;
+                                }
 				dc->seek = 0;
 			}
 			ret = ov_read(&vf, chunk+chunkpos, 
 					OGG_CHUNK_SIZE-chunkpos,
 					OGG_DECODE_USE_BIGENDIAN,
 					2, 1, &current_section);
-			if(ret<=0) {
+
+			if(ret <= 0 && ret != OV_HOLE) {
 				eof = 1;
 				break;
 			}
+                        if(ret == OV_HOLE) ret = 0;
 
 			chunkpos+=ret;
 

@@ -89,6 +89,7 @@ void stopDecode(DecoderControl * dc) {
 void quitDecode(PlayerControl * pc, DecoderControl * dc) {
 	stopDecode(dc);
 	pc->state = PLAYER_STATE_STOP;
+        dc->seek = 0;
 	pc->play = 0;
 	pc->stop = 0;
 	pc->pause = 0;
@@ -113,23 +114,34 @@ int calculateCrossFadeChunks(PlayerControl * pc, AudioFormat * af) {
 }
 
 #define handleDecodeStart() \
-        if(decodeWaitedOn && dc->state==DECODE_STATE_DECODE) { \
-                decodeWaitedOn = 0; \
-	        if(openAudioDevice(&(cb->audioFormat))<0) { \
+        if(decodeWaitedOn) { \
+                if(dc->state!=DECODE_STATE_START &&  *decode_pid > 0 && \
+                                dc->error==DECODE_ERROR_NOERROR) \
+                { \
+                        decodeWaitedOn = 0; \
+	                if(openAudioDevice(&(cb->audioFormat))<0) { \
+		                strncpy(pc->erroredFile,pc->file,MAXPATHLEN); \
+		                pc->erroredFile[MAXPATHLEN] = '\0'; \
+		                pc->error = PLAYER_ERROR_AUDIO; \
+		                quitDecode(pc,dc); \
+		                return; \
+	                } \
+	                pc->totalTime = dc->totalTime; \
+	                pc->sampleRate = dc->audioFormat.sampleRate; \
+	                pc->bits = dc->audioFormat.bits; \
+	                pc->channels = dc->audioFormat.channels; \
+                } \
+                else if(dc->state!=DECODE_STATE_START || *decode_pid <= 0) { \
 		        strncpy(pc->erroredFile,pc->file,MAXPATHLEN); \
 		        pc->erroredFile[MAXPATHLEN] = '\0'; \
-		        pc->error = PLAYER_ERROR_AUDIO; \
+		        pc->error = PLAYER_ERROR_FILE; \
 		        quitDecode(pc,dc); \
 		        return; \
-	        } \
-	        pc->totalTime = dc->totalTime; \
-	        pc->sampleRate = dc->audioFormat.sampleRate; \
-	        pc->bits = dc->audioFormat.bits; \
-	        pc->channels = dc->audioFormat.channels; \
-        } \
-        else if(decodeWaitedOn) { \
-                my_usleep(10000); \
-                continue; \
+                } \
+                else { \
+                        my_usleep(10000); \
+                        continue; \
+                } \
         }
 
 int waitOnDecode(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb,
@@ -226,7 +238,7 @@ int decodeSeek(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb,
 		if(decodeSeek(pc,dc,cb,&decodeWaitedOn) == 0) { \
 		        doCrossFade = 0; \
 		        nextChunk =  -1; \
-		        bbp = 0; \
+                        bbp = 0; \
                         seeking = 1; \
                 } \
 	} \
@@ -255,7 +267,7 @@ void decodeStart(PlayerControl * pc, OutputBuffer * cb, DecoderControl * dc) {
 	dc->start = 0;
 
         while(!inputStreamAtEOF(&inStream) && bufferInputStream(&inStream) < 0
-                        && !dc->stop);
+                        && !pc->stop);
 
         if(dc->stop) {
                 dc->state = DECODE_STATE_STOP;
@@ -265,6 +277,14 @@ void decodeStart(PlayerControl * pc, OutputBuffer * cb, DecoderControl * dc) {
 
 	switch(pc->decodeType) {
 	case DECODE_TYPE_URL:
+#ifdef HAVE_OGG
+                if(pc->fileSuffix == DECODE_SUFFIX_OGG || (inStream.mime &&
+                                0 == strcmp(inStream.mime, "application/ogg")))
+                {
+		        ret = ogg_decode(cb, dc, &inStream);
+		        break;
+                }
+#endif
 #ifdef HAVE_MAD
                 /*if(pc->fileSuffix == DECODE_SUFFIX_MP3 || (inStream.mime &&
                                 0 == strcmp(inStream.mime, "audio/mpeg")))*/
@@ -281,6 +301,12 @@ void decodeStart(PlayerControl * pc, OutputBuffer * cb, DecoderControl * dc) {
                         break;
                 }
 #endif
+#ifdef HAVE_OGG
+                if(pc->fileSuffix == DECODE_SUFFIX_OGG) {
+		        ret = ogg_decode(cb, dc, &inStream);
+		        break;
+                }
+#endif
 #ifdef HAVE_FAAD
                 if(pc->fileSuffix == DECODE_SUFFIX_AAC) {
                         closeInputStream(&inStream);
@@ -290,13 +316,6 @@ void decodeStart(PlayerControl * pc, OutputBuffer * cb, DecoderControl * dc) {
                 if(pc->fileSuffix == DECODE_SUFFIX_MP4) {
                         closeInputStream(&inStream);
 		        ret = mp4_decode(cb,dc);
-		        break;
-                }
-#endif
-#ifdef HAVE_OGG
-                if(pc->fileSuffix == DECODE_SUFFIX_OGG) {
-                        closeInputStream(&inStream);
-		        ret = ogg_decode(cb,dc);
 		        break;
                 }
 #endif
@@ -321,8 +340,10 @@ void decodeStart(PlayerControl * pc, OutputBuffer * cb, DecoderControl * dc) {
 		strncpy(pc->erroredFile, dc->file, MAXPATHLEN);
 		pc->erroredFile[MAXPATHLEN] = '\0';
 		if(ret != DECODE_ERROR_UNKTYPE) dc->error = DECODE_ERROR_FILE;
-                else closeInputStream(&inStream);
-		dc->start = 0;
+                else {
+                        dc->error = DECODE_ERROR_UNKTYPE;
+                        closeInputStream(&inStream);
+                }
 		dc->stop = 0;
 		dc->state = DECODE_STATE_STOP;
 	}
@@ -341,16 +362,15 @@ int decoderInit(PlayerControl * pc, OutputBuffer * cb, DecoderControl * dc) {
 		unblockSignals();
 
 		while(1) {
-			if(dc->start) decodeStart(pc, cb, dc);
-			else if(dc->stop) {
-				dc->state = DECODE_STATE_STOP;
-				dc->stop = 0;
-			}
-			else if(dc->seek) dc->start = 1;
                         if(dc->cycleLogFiles) {
                                 myfprintfCloseAndOpenLogFile();
                                 dc->cycleLogFiles = 0;
                         }
+			else if(dc->start) decodeStart(pc, cb, dc);
+			else if(dc->stop) {
+				dc->state = DECODE_STATE_STOP;
+				dc->stop = 0;
+			}
 			else my_usleep(10000);
 		}
 
@@ -392,7 +412,7 @@ void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb) {
 	pc->play = 0;
 	pc->beginTime = pc->elapsedTime;
 	kill(getppid(),SIGUSR1);
-	
+
 	while(*decode_pid>0 && !cb->wrap && cb->end-cb->begin<bbp && 
 				dc->state!=DECODE_STATE_STOP) 
 	{
@@ -578,8 +598,10 @@ void decode() {
 	pc = &(getPlayerData()->playerControl);
 	dc = &(getPlayerData()->decoderControl);
 	dc->error = 0;
-	dc->start = 1;
 	cb->next = -1;
+        dc->seek = 0;
+        dc->stop = 0;
+	dc->start = 1;
 
 	if(decode_pid==NULL || *decode_pid<=0) {
 		if(decoderInit(pc,cb,dc)<0) return;
