@@ -117,25 +117,7 @@ fi
 AC_CHECK_HEADER(sys/soundcard.h,[enable_oss=yes;AC_DEFINE(HAVE_OSS,1,[Define to enable OSS])],[AC_MSG_WARN(Soundcard headers not found -- disabling OSS support);enable_oss=no])
 
 if test x$enable_alsa = xyes; then
-	AC_MSG_CHECKING(for alsa)
-	AC_EGREP_CPP([AP_maGiC_VALUE],
-	[
-#include <alsa/asoundlib.h>
-#if defined(SND_LIB_MAJOR) && defined(SND_LIB_MINOR)
-#if SND_LIB_MAJOR>0 || (SND_LIB_MAJOR==0 && SND_LIB_MINOR>=6)
-AP_maGiC_VALUE
-#endif
-#endif
-	],
-	enable_alsa=yes
-	AC_MSG_RESULT([yes]),
-	enable_alsa=no
-	AC_MSG_RESULT([no])
-	)
-fi
-
-if test x$enable_alsa = xyes; then
-	AC_CHECK_LIB(asound,main,[MPD_LIBS="$MPD_LIBS -lasound";AC_DEFINE(HAVE_ALSA,1,[Define if alsa support is present])],enable_alsa=no)
+	AM_PATH_ALSA(0.9.0, , enable_alsa=no)
 fi
 
 if test x$enable_iconv = xyes; then

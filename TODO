@@ -40,13 +40,16 @@
 *) Handle mp1 and mp2 files (including mp2's that are disguised as mp3's with 
 	a mp3 suffix)
 
-*) use alsa aclocal/m4 stuff
-
 *) choose id3v2 over id3v1 tags when both are present
 
 *) add error codes for status->error
 
-*) add support fore mousepack/mpc files
+*) add support for mousepack/mpc files
+
+*) add alsa audioOutput plugin
+
+*) add a method for closing the audio device immediatly w/o waiting for an
+   empty audio device buffer.  This isn't possible via libao api.
 
 0.13
 ----
