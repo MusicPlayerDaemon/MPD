@@ -81,15 +81,15 @@ error_file 		"~/mpd.error"
 # if you start mpd as root, its recmmoned
 #     you specify a a user for mpd to run.
 #user 		"nobody"
-#
+
 # to only allow connections from localhost
 #bind_to_address 	"localhost"
-#
+
 # Specify one or more passwords required to
 #     access mpd:
 #password 		"password1@read,add,control,admin"
 #password 		"password2@read"
-#
+
 # Specify permissions used by default when no password is 
 #     given by for a connection/client.
 #default_permissions	"read,add,control,admin"
@@ -103,7 +103,7 @@ error_file 		"~/mpd.error"
 #max_command_list_size 	"2048"
 #max_output_buffer_size 	"2048"
 #save_absolute_paths_in_playlists "no"
-#
+
 # log_level can be "default", "secure", "verbose"
 #log_level		"default"
 #########################################
