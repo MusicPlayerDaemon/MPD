@@ -51,6 +51,8 @@ InputPlugin * getInputPluginFromMimeType(char * mimeType) {
 	ListNode * node = inputPlugin_list->firstNode;
 	InputPlugin * plugin = NULL;
 
+	if(mimeType == NULL) return NULL;
+
 	while(node != NULL) {
 		plugin = node->data;
 		if(stringFoundInStringArray(plugin->mimeTypes, mimeType)) {
