@@ -215,7 +215,7 @@ int findNodeInList(List * list, char * key, ListNode ** node) {
 			cmp = strcmp(tmpNode->key,key);
 			*node = tmpNode;
 			if( 0 == cmp ) return 1;
-			else if( cmp < 0) return 0;
+			else if( cmp > 0) return 0;
 			else {
 				*node = NULL;
 				return 0;
