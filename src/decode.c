@@ -127,6 +127,9 @@ int calculateCrossFadeChunks(PlayerControl * pc, AudioFormat * af) {
 	                pc->sampleRate = dc->audioFormat.sampleRate; \
 	                pc->bits = dc->audioFormat.bits; \
 	                pc->channels = dc->audioFormat.channels; \
+			sizeToTime = 8.0/cb->audioFormat.bits/ \
+					cb->audioFormat.channels/ \
+					cb->audioFormat.sampleRate; \
                 } \
                 else if(dc->state!=DECODE_STATE_START || *decode_pid <= 0) { \
 		        strncpy(pc->erroredUrl, pc->utf8url, MAXPATHLEN); \
@@ -198,7 +201,6 @@ int decodeSeek(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb,
                         while(*decode_pid>0 && dc->seek) my_usleep(10000);
                         if(!dc->seekError) {
                                 pc->elapsedTime = dc->seekWhere;
-		                pc->beginTime = pc->elapsedTime;
                                 ret = 0;
                         }
 		}
@@ -240,7 +242,6 @@ int decodeSeek(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb,
 		if(pause) closeAudioDevice(); \
 	} \
 	if(pc->seek) { \
-		pc->totalPlayTime+= pc->elapsedTime-pc->beginTime; \
 		if(decodeSeek(pc,dc,cb,&decodeWaitedOn) == 0) { \
 		        doCrossFade = 0; \
 		        nextChunk =  -1; \
@@ -248,7 +249,6 @@ int decodeSeek(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb,
                 } \
 	} \
 	if(pc->stop) { \
-		pc->totalPlayTime+= pc->elapsedTime-pc->beginTime; \
 		quitDecode(pc,dc); \
 		return; \
 	}
@@ -410,6 +410,7 @@ void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb) {
 	int test;
         int decodeWaitedOn = 0;
 	char silence[CHUNK_SIZE];
+	double sizeToTime = 0.0;
 
 	memset(silence,0,CHUNK_SIZE);
 
@@ -417,7 +418,6 @@ void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb) {
 
 	pc->state = PLAYER_STATE_PLAY;
 	pc->play = 0;
-	pc->beginTime = pc->elapsedTime;
 	kill(getppid(),SIGUSR1);
 
 	while(*decode_pid>0 && !cb->wrap && cb->end-cb->begin<bbp && 
@@ -517,6 +517,7 @@ void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb) {
 			{
 				quit = 1;
 			}
+			pc->totalPlayTime+= sizeToTime*cb->chunkSize[cb->begin];
 			cb->begin++;
 			if(cb->begin>=buffered_chunks) {
 				cb->begin = 0;
@@ -524,8 +525,6 @@ void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb) {
 			}
 		}
 		else if(cb->next==cb->begin) {
-			pc->totalPlayTime+= pc->elapsedTime-
-						pc->beginTime;
 			if(doCrossFade==1 && nextChunk>=0) {
 				nextChunk = cb->begin+crossFadeChunks;
 				test = cb->end;
@@ -563,7 +562,6 @@ void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb) {
 				pc->queueState = PLAYER_QUEUE_EMPTY;
 				kill(getppid(),SIGUSR1);
 			}
-			pc->beginTime = cb->times[cb->begin];
 		}
 		else if(*decode_pid<=0 || 
 				(dc->state==DECODE_STATE_STOP && !dc->start)) 
@@ -576,7 +574,6 @@ void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb) {
 		}
 	}
 
-	pc->totalPlayTime+= pc->elapsedTime-pc->beginTime; \
 	quitDecode(pc,dc);
 }
 

@@ -442,11 +442,7 @@ int getPlayerSoftwareVolume() {
 double getPlayerTotalPlayTime() {
 	PlayerControl * pc = &(getPlayerData()->playerControl);
 
-	if(pc->state==PLAYER_STATE_STOP) {
-		return pc->totalPlayTime;
-	}
-
-	return pc->totalPlayTime+pc->elapsedTime-pc->beginTime;
+	return pc->totalPlayTime;
 }
 
 unsigned int getPlayerSampleRate() {

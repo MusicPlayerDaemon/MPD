@@ -66,7 +66,6 @@ typedef struct _PlayerControl {
 	volatile mpd_sint8 bits;
 	volatile mpd_sint8 channels;
 	volatile mpd_uint32 sampleRate;
-	volatile float beginTime;
 	volatile float totalTime;
 	volatile float elapsedTime;
         volatile float fileTime;
