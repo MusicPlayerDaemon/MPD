@@ -259,7 +259,7 @@ void savePlaylistState() {
 		if(!fp) {
 			ERROR("problems opening state file \"%s\" for "
 				"writing: %s\n", playlist_stateFile,
-				sterror(errno));
+				strerror(errno));
 			return;
 		}
 
