@@ -205,7 +205,7 @@ int mpdTagStringsAreEqual(char * s1, char * s2) {
 
 int mpdTagsAreEqual(MpdTag * tag1, MpdTag * tag2) {
         if(tag1 == NULL && tag2 == NULL) return 1;
-        else if(!tag1 || ! !tag2) return 0;
+        else if(!tag1 || !tag2) return 0;
 
         if(tag1->time != tag2->time) return 0;
 

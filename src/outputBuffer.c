@@ -158,23 +158,27 @@ int copyMpdTagToOutputBuffer(OutputBuffer * cb, MpdTag * tag) {
 		return 0;
 	}
 
+	if(!last) printf("OH SHIT\n");
+
 	if(last && mpdTagsAreEqual(last, tag)) {
 		printf("same as last\n");
 		return 0;
 	}
 
-	sendMetaChunk = 1;
+	if(last) freeMpdTag(last);
+	last = NULL;
+
 	nextChunk = currentMetaChunk+1;
 	if(nextChunk >= BUFFERED_METACHUNKS) nextChunk = 0;
 
 	if(cb->metaChunkSet[nextChunk]) return -1;
 
+	sendMetaChunk = 1;
 	currentMetaChunk = nextChunk;
 
-	printMpdTag(stdout, tag);
-
-	if(last) freeMpdTag(last);
 	last = mpdTagDup(tag);
+
+	printMpdTag(stdout, last);
 
 	copyMpdTagToMetadataChunk(tag, &(cb->metadataChunks[currentMetaChunk]));
 
