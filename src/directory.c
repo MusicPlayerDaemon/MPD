@@ -150,6 +150,8 @@ int updateInit(FILE * fp, List * pathList) {
 	directory_updatePid = fork();
        	if(directory_updatePid==0) {
               	/* child */
+		struct sigaction sa;
+		
 		clearPlayerPid();
 	
 		unblockSignals();
@@ -186,6 +188,8 @@ int updateInit(FILE * fp, List * pathList) {
 			}
 		}
 		else if(updateDirectory(mp3rootDirectory)<0) exit(EXIT_FAILURE);
+		/* ignore signals since we don't want them to corrupt the db*/
+		ignoreSignals();
 		if(writeDirectoryDB()<0) {
 			ERROR("problems writing music db file, \"%s\"\n",
 					directorydb);
@@ -684,6 +688,7 @@ int writeDirectoryDB() {
 	while(!(fp=fopen(directorydb,"w")) && errno==EINTR);
 	if(!fp) return -1;
 
+	/* block signals when writing the db so we don't get a corrupted db*/
 	myfprintf(fp,"%s\n",DIRECTORY_INFO_BEGIN);
 	myfprintf(fp,"%s%s\n",DIRECTORY_MPD_VERSION,VERSION);
 	myfprintf(fp,"%s%s\n",DIRECTORY_FS_CHARSET,getFsCharset());

@@ -27,6 +27,8 @@ void initSigHandlers();
 
 void finishSigHandlers();
 
+void ignoreSignals();
+
 void blockSignals();
 
 void unblockSignals();

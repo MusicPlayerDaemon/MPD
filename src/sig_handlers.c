@@ -83,6 +83,20 @@ void finishSigHandlers() {
         signal_unhandle(SIGHUP);
 }
 
+void ignoreSignals() {
+	struct sigaction sa;
+
+	sa.sa_flags = 0;
+	sigemptyset(&sa.sa_mask);
+	sa.sa_handler = SIG_IGN;
+	while(sigaction(SIGPIPE,&sa,NULL)<0 && errno==EINTR);
+	while(sigaction(SIGCHLD,&sa,NULL)<0 && errno==EINTR);
+	while(sigaction(SIGUSR1,&sa,NULL)<0 && errno==EINTR);
+	while(sigaction(SIGINT,&sa,NULL)<0 && errno==EINTR);
+	while(sigaction(SIGTERM,&sa,NULL)<0 && errno==EINTR);
+	while(sigaction(SIGHUP,&sa,NULL)<0 && errno==EINTR);
+}
+
 void blockSignals() {
 	sigset_t sset;
 
