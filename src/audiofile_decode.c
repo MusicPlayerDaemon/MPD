@@ -115,7 +115,7 @@ int audiofile_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc)
 				
 				++cb->end;
 				
-				if(cb->end>=BUFFERED_CHUNKS) {
+				if(cb->end>=buffered_chunks) {
 					cb->end = 0;
 					cb->wrap = 1;
 				}

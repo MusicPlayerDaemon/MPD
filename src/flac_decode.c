@@ -192,7 +192,7 @@ int flacSendChunk(FlacData * data) {
 	data->cb->bitRate[data->cb->end] = 0;
 
 	data->cb->end++;
-	if(data->cb->end>=BUFFERED_CHUNKS) {
+	if(data->cb->end>=buffered_chunks) {
 		data->cb->end = 0;
 		data->cb->wrap = 1;
 	}

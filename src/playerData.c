@@ -28,7 +28,7 @@
 #include <string.h>
 
 int buffered_before_play;
-int BUFFERED_CHUNKS;
+int buffered_chunks;
 
 PlayerData * playerData_pd;
 
@@ -49,7 +49,7 @@ void initPlayerData() {
 	}
 	bufferSize*=1024;
 
-	BUFFERED_CHUNKS = bufferSize/CHUNK_SIZE;
+	buffered_chunks = bufferSize/CHUNK_SIZE;
 
 	perc = strtod((getConf())[CONF_BUFFER_BEFORE_PLAY],&test);
 	if(*test!='%' || perc<0 || perc>100) {
@@ -58,16 +58,16 @@ void initPlayerData() {
 				(getConf())[CONF_BUFFER_BEFORE_PLAY]);
 		exit(-1);
 	}
-	buffered_before_play = (perc/100)*BUFFERED_CHUNKS;
-	if(buffered_before_play>BUFFERED_CHUNKS) {
-		buffered_before_play = BUFFERED_CHUNKS;
+	buffered_before_play = (perc/100)*buffered_chunks;
+	if(buffered_before_play>buffered_chunks) {
+		buffered_before_play = buffered_chunks;
 	}
 	else if(buffered_before_play<0) buffered_before_play = 0;
 
-	allocationSize = BUFFERED_CHUNKS*CHUNK_SIZE; /*actual buffer*/
-	allocationSize+= BUFFERED_CHUNKS*sizeof(float); /*for times*/
-	allocationSize+= BUFFERED_CHUNKS*sizeof(mpd_sint16); /*for chunkSize*/
-	allocationSize+= BUFFERED_CHUNKS*sizeof(mpd_sint16); /*for bitRate*/
+	allocationSize = buffered_chunks*CHUNK_SIZE; /*actual buffer*/
+	allocationSize+= buffered_chunks*sizeof(float); /*for times*/
+	allocationSize+= buffered_chunks*sizeof(mpd_sint16); /*for chunkSize*/
+	allocationSize+= buffered_chunks*sizeof(mpd_sint16); /*for bitRate*/
 	allocationSize+= sizeof(PlayerData); /*for playerData struct*/
 
 	if((shmid = shmget(IPC_PRIVATE,allocationSize,IPC_CREAT|0600))<0) {
@@ -87,11 +87,11 @@ void initPlayerData() {
 
 	buffer->chunks = ((char *)playerData_pd)+sizeof(PlayerData);
 	buffer->chunkSize = (mpd_sint16 *)(((char *)buffer->chunks)+
-				BUFFERED_CHUNKS*CHUNK_SIZE);
+				buffered_chunks*CHUNK_SIZE);
 	buffer->bitRate = (mpd_sint16 *)(((char *)buffer->chunkSize)+
-				BUFFERED_CHUNKS*sizeof(mpd_sint16));
+				buffered_chunks*sizeof(mpd_sint16));
 	buffer->times = (float *)(((char *)buffer->bitRate)+
-				BUFFERED_CHUNKS*sizeof(mpd_sint16));
+				buffered_chunks*sizeof(mpd_sint16));
 
 	playerData_pd->playerControl.stop = 0;
 	playerData_pd->playerControl.pause = 0;

@@ -27,7 +27,7 @@
 #define CHUNK_SIZE		1024
 
 extern int buffered_before_play;
-extern int BUFFERED_CHUNKS;
+extern int buffered_chunks;
 
 typedef struct _Buffer {
 	char * chunks;

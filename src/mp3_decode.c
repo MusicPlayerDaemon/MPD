@@ -374,7 +374,7 @@ int mp3ChildSendData(mp3DecodeData * data, Buffer * cb, DecoderControl * dc) {
 	cb->times[cb->end] = data->elapsedTime;
 
 	cb->end++;
-	if(cb->end>=BUFFERED_CHUNKS) {
+	if(cb->end>=buffered_chunks) {
 		cb->end = 0;
 		cb->wrap = 1;
 	}

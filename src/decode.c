@@ -93,8 +93,8 @@ int calculateCrossFadeChunks(PlayerControl * pc, AudioFormat * af) {
 	chunks = (af->sampleRate*af->bits*af->channels/8.0/CHUNK_SIZE);
 	chunks = (chunks*pc->crossFade+0.5);
 
-	if(chunks>(BUFFERED_CHUNKS-buffered_before_play)) {
-		chunks = BUFFERED_CHUNKS-buffered_before_play;
+	if(chunks>(buffered_chunks-buffered_before_play)) {
+		chunks = buffered_chunks-buffered_before_play;
 	}
 
 	if(chunks<0) chunks = 0;
@@ -338,19 +338,19 @@ void decode() {
 					<=crossFadeChunks) || 
 					(cb->begin>cb->next &&
 					(fadePosition=cb->next-cb->begin+
-					BUFFERED_CHUNKS)<=crossFadeChunks)))
+					buffered_chunks)<=crossFadeChunks)))
 				{
 					if(nextChunk<0) {
 						crossFadeChunks = fadePosition;
 					}
 					nextChunk = cb->begin+crossFadeChunks;
 					test = cb->end;
-					if(cb->wrap) test+=BUFFERED_CHUNKS;
+					if(cb->wrap) test+=buffered_chunks;
 					if(nextChunk<test) {
-						if(nextChunk>=BUFFERED_CHUNKS)
+						if(nextChunk>=buffered_chunks)
 						{
 							nextChunk-=
-								BUFFERED_CHUNKS;
+								buffered_chunks;
 						}
 						pcm_mix(cb->chunks+cb->begin*
 							CHUNK_SIZE,
@@ -393,7 +393,7 @@ void decode() {
 				playAudio(cb->chunks+cb->begin*CHUNK_SIZE,
 					cb->chunkSize[cb->begin]);
 				cb->begin++;
-				if(cb->begin>=BUFFERED_CHUNKS) {
+				if(cb->begin>=buffered_chunks) {
 					cb->begin = 0;
 					cb->wrap = 0;
 				}
@@ -404,12 +404,12 @@ void decode() {
 				if(doCrossFade==1 && nextChunk>=0) {
 					nextChunk = cb->begin+crossFadeChunks;
 					test = cb->end;
-					if(cb->wrap) test+=BUFFERED_CHUNKS;
+					if(cb->wrap) test+=buffered_chunks;
 					if(nextChunk<test) {
-						if(nextChunk>=BUFFERED_CHUNKS)
+						if(nextChunk>=buffered_chunks)
 						{
 							nextChunk-=
-								BUFFERED_CHUNKS;
+								buffered_chunks;
 						}
 						cb->begin = nextChunk;
 					}	

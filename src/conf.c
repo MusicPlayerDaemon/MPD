@@ -216,13 +216,16 @@ char ** readConf(char * file) {
 					conf_params[conf_absolutePaths[i]]);
 			exit(-1);
 		}
+		/* Parse ~ in path */
 		else if(conf_params[conf_absolutePaths[i]] &&
 			conf_params[conf_absolutePaths[i]][0]=='~') 
 		{
 			struct passwd * pwd = NULL;
 			char * path;
 			int pos = 1;
-			if(conf_params[conf_absolutePaths[i]][1]=='/') {
+			if(conf_params[conf_absolutePaths[i]][1]=='/' ||
+				conf_params[conf_absolutePaths[i]][1]=='\0') 
+			{
 				uid_t uid = geteuid();
 				if((pwd = getpwuid(uid)) == NULL) {
 					ERROR("problems getting passwd entry "
@@ -251,7 +254,7 @@ char ** readConf(char * file) {
 				if(foundSlash) *ch = '/';
 			}
 			path = malloc(strlen(pwd->pw_dir)+strlen(
-				&(conf_params[conf_absolutePaths[i]][pos])));
+				&(conf_params[conf_absolutePaths[i]][pos]))+1);
 			strcpy(path,pwd->pw_dir);
 			strcat(path,&(conf_params[conf_absolutePaths[i]][pos]));
 			free(conf_params[conf_absolutePaths[i]]);

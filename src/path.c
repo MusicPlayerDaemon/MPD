@@ -134,7 +134,7 @@ char * rmp2amp(char * relativePath) {
 
 	memset(absolutePath,0,MAXPATHLEN+1);
 
-	strcpy(absolutePath,musicDir);
+	strncpy(absolutePath,musicDir,MAXPATHLEN);
 	strncat(absolutePath,relativePath,MAXPATHLEN-strlen(musicDir));
 
 	return absolutePath;
@@ -145,7 +145,7 @@ char * rpp2app(char * relativePath) {
 
 	memset(absolutePath,0,MAXPATHLEN+1);
 
-	strcpy(absolutePath,playlistDir);
+	strncpy(absolutePath,playlistDir,MAXPATHLEN);
 	strncat(absolutePath,relativePath,MAXPATHLEN-strlen(musicDir));
 
 	return absolutePath;

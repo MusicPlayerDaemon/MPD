@@ -130,7 +130,7 @@ void initPlaylist() {
 	playlist.songs = malloc(sizeof(Song *)*playlist_max_length);
 	playlist.order = malloc(sizeof(Song *)*playlist_max_length);
 
-	memset(playlist.songs,(int)NULL,sizeof(char *)*playlist_max_length);
+	memset(playlist.songs,0,sizeof(char *)*playlist_max_length);
 
 	srand(time(NULL));
 

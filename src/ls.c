@@ -32,7 +32,7 @@
 #include <stdlib.h>
 
 char * dupAndStripPlaylistSuffix(char * file) {
-	int size = strlen(file)-strlen(PLAYLIST_FILE_SUFFIX)-1;
+	size_t size = strlen(file)-strlen(PLAYLIST_FILE_SUFFIX)-1;
 	char * ret = malloc(size+1);
 
 	strncpy(ret,file,size);
