@@ -23,6 +23,7 @@ typedef struct tagTrackerItem {
 
 char * getTagItemString(int type, char * string) {
 	ListNode * node;
+	int pos;
 
 	/*if(type == TAG_ITEM_TITLE) return strdup(string);*/
 
@@ -31,15 +32,16 @@ char * getTagItemString(int type, char * string) {
 		sortList(tagLists[type]);
 	}
 
-	if(findNodeInList(tagLists[type], string, &node)) {
+	if(findNodeInList(tagLists[type], string, &node, &pos)) {
 		((TagTrackerItem *)node->data)->count++;
 	}
 	else {
 		TagTrackerItem * item = malloc(sizeof(TagTrackerItem));
 		item->count = 1;
 		item->visited = 0;
-		node = insertInListBeforeNode(tagLists[type], node, string, 
-				item);
+		node = insertInListBeforeNode(tagLists[type], node, pos, 
+				string, item);
+				
 	}
 
 	return node->key;
@@ -47,6 +49,7 @@ char * getTagItemString(int type, char * string) {
 
 void removeTagItemString(int type, char * string) {
 	ListNode * node;
+	int pos;
 
 	assert(string);
 
@@ -58,7 +61,7 @@ void removeTagItemString(int type, char * string) {
 		return;
 	}*/
 
-	if(findNodeInList(tagLists[type], string, &node)) {
+	if(findNodeInList(tagLists[type], string, &node, &pos)) {
 		TagTrackerItem * item = node->data;
 		item->count--;
 		if(item->count <= 0) deleteNodeFromList(tagLists[type], node);
@@ -126,23 +129,23 @@ void resetVisitedFlagsInTagTracker(int type) {
 }
 
 int wasVisitedInTagTracker(int type, char * str) {
-	ListNode * node;
+	TagTrackerItem * item;
 
 	if(!tagLists[type]) return 0;
 
-	if(!findNodeInList(tagLists[type], str, &node)) return 0;
+	if(!findInList(tagLists[type], str, &item)) return 0;
 
-	return ((TagTrackerItem *)node->data)->visited;
+	return item->visited;
 }
 
 void visitInTagTracker(int type, char * str) {
-	ListNode * node;
+	TagTrackerItem * item;
 
 	if(!tagLists[type]) return;
 
-	if(!findNodeInList(tagLists[type], str, &node)) return;
+	if(!findInList(tagLists[type], str, &item)) return;
 
-	((TagTrackerItem *)node->data)->visited = 1;
+	item->visited = 1;
 }
 
 void printVisitedInTagTracker(FILE * fp, int type) {

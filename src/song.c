@@ -189,7 +189,7 @@ void insertSongIntoList(SongList * list, ListNode ** nextSongNode, char * key,
 		*nextSongNode = (*nextSongNode)->nextNode;
 	}
 	else {
-		insertInListBeforeNode(list, *nextSongNode, song->url, 
+		insertInListBeforeNode(list, *nextSongNode, -1, song->url, 
 					(void *)song);
 	}
 }

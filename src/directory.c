@@ -938,6 +938,7 @@ void readDirectoryInfo(FILE * fp,Directory * directory) {
 				insertInListBeforeNode(
 						directory->subDirectories,
 						nextDirNode,
+						-1,
 						key,
 						(void *)subDirectory);
 			}

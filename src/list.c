@@ -61,7 +61,7 @@ List * makeList(ListFreeDataFunc * freeDataFunc, int strdupKeys) {
 	return list;
 }
 
-ListNode * insertInListBeforeNode(List * list, ListNode * beforeNode, 				char * key, void * data) 
+ListNode * insertInListBeforeNode(List * list, ListNode * beforeNode, 				int pos, char * key, void * data) 
 {
 	ListNode * node;
 
@@ -105,8 +105,20 @@ ListNode * insertInListBeforeNode(List * list, ListNode * beforeNode, 				char *
 
 	list->numberOfNodes++;
 	
-	/*freeListNodesArray(list);*/
-	if(list->sorted) makeListNodesArray(list);
+	if(list->sorted) {
+		list->nodesArray = realloc(list->nodesArray,
+				list->numberOfNodes*sizeof(ListNode *));
+		if(node == list->lastNode) {
+			list->nodesArray[list->numberOfNodes-1] = node;
+		}
+		else if(pos < 0) makeListNodesArray(list);
+		else {
+			memmove(list->nodesArray+pos+1, list->nodesArray+pos,
+					sizeof(ListNode *)*
+					(list->numberOfNodes-pos-1));
+			list->nodesArray[pos] = node;
+		}
+	}
 
 	return node;
 }
@@ -180,12 +192,12 @@ int insertInListWithoutKey(List * list, void * data) {
 	return 1;
 }
 
-int findNodeInList(List * list, char * key, ListNode ** node) {
-	static long high;
-	static long low;
-	static long cur;
-	static ListNode * tmpNode;
-	static int cmp;
+int findNodeInList(List * list, char * key, ListNode ** node, int * pos) {
+	long high;
+	long low;
+	long cur;
+	ListNode * tmpNode;
+	int cmp;
 
 	assert(list!=NULL);
 
@@ -200,6 +212,7 @@ int findNodeInList(List * list, char * key, ListNode ** node) {
 			cmp = strcmp(tmpNode->key,key);
 			if(cmp==0) {
 				*node = tmpNode;
+				*pos = cur;
 				return 1;
 			}
 			else if(cmp>0) high = cur;
@@ -212,16 +225,19 @@ int findNodeInList(List * list, char * key, ListNode ** node) {
 		cur = high;
 		if(cur>=0) {
 			tmpNode = list->nodesArray[cur];
-			cmp = strcmp(tmpNode->key,key);
 			*node = tmpNode;
+			*pos = high;
+			cmp = tmpNode ? strcmp(tmpNode->key,key) : -1;
 			if( 0 == cmp ) return 1;
 			else if( cmp > 0) return 0;
 			else {
+				*pos = -1;
 				*node = NULL;
 				return 0;
 			}
 		}
 		else {
+			*pos = 0;
 			*node = list->firstNode;
 			return 0;
 		}
@@ -242,8 +258,9 @@ int findNodeInList(List * list, char * key, ListNode ** node) {
 
 int findInList(List * list, char * key, void ** data) {
 	ListNode * node;
+	int pos;
 	
-	if(findNodeInList(list, key, &node)) {
+	if(findNodeInList(list, key, &node, &pos)) {
 		if(data) *data = node->data;
 		return 1;
 	}
