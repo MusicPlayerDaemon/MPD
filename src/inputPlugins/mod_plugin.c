@@ -95,16 +95,21 @@ static int mod_mikModInitiated = 0;
 static int mod_mikModInitError = 0;
 
 static int mod_initMikMod() {
-	if(mod_mikModInitiated) return 0;
 	if(mod_mikModInitError) return -1;
 
-	mod_mikModInitiated = 1;
+	if(!mod_mikModInitiated) {
+		mod_mikModInitiated = 1;
 
-	MikMod_RegisterDriver(&drv_mpd);
-	MikMod_RegisterAllLoaders();
+		md_device = 0;
+		md_reverb = 0;
 
-	md_reverb = 0;
-	md_mode = (DMODE_SOFT_MUSIC | DMODE_SOFT_SNDFX | DMODE_STEREO |
+		MikMod_RegisterDriver(&drv_mpd);
+		MikMod_RegisterAllLoaders();
+	}
+
+	md_pansep = 64;
+	md_mixfreq = 44100;
+	md_mode = (DMODE_SOFT_MUSIC | DMODE_INTERP | DMODE_STEREO |
 			DMODE_16BITS);
 
 	if(MikMod_Init("")) {
@@ -130,7 +135,7 @@ static mod_Data * mod_open(char * path) {
 	MODULE * moduleHandle;
 	mod_Data * data;
 
-	if(!(moduleHandle = Player_Load(path, 255, 0))) return NULL;
+	if(!(moduleHandle = Player_Load(path, 128, 0))) return NULL;
 
 	data = malloc(sizeof(mod_Data));
 
@@ -159,6 +164,7 @@ int mod_decode(OutputBuffer * cb, DecoderControl * dc, char * path) {
 
 	if(!(data = mod_open(path))) {
 		ERROR("failed to open mod: %s\n", path);
+		MikMod_Exit();
 		return -1;
 	}
 	
@@ -192,6 +198,8 @@ int mod_decode(OutputBuffer * cb, DecoderControl * dc, char * path) {
 
 	mod_close(data);
 
+	MikMod_Exit();
+
 	if(dc->stop) {
 		dc->state = DECODE_STATE_STOP;
 		dc->stop = 0;
@@ -207,7 +215,7 @@ MpdTag * modTagDup(char * file) {
 
 	if(mod_initMikMod() < 0) return NULL;
 
-	if(!(moduleHandle = Player_Load(file, 255, 0))) return NULL;
+	if(!(moduleHandle = Player_Load(file, 128, 0))) goto fail;
 
 	Player_Free(moduleHandle);
 
@@ -215,6 +223,9 @@ MpdTag * modTagDup(char * file) {
 
 	ret->time = 0;
 	ret->title = Player_LoadTitle(file);
+
+fail:
+	MikMod_Exit();
 
 	return ret;
 }

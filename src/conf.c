@@ -37,7 +37,7 @@
 
 #define CONF_COMMENT	'#'
 
-#define CONF_NUMBER_OF_PARAMS		34
+#define CONF_NUMBER_OF_PARAMS		41
 #define CONF_NUMBER_OF_PATHS		6
 #define CONF_NUMBER_OF_REQUIRED		5
 #define CONF_NUMBER_OF_ALLOW_CATS	1
@@ -130,7 +130,14 @@ char ** readConf(char * file) {
                 "http_proxy_port",
 		"http_proxy_user",
 		"http_proxy_password",
-		"replaygain_preamp"
+		"replaygain_preamp",
+		"shout_host",
+		"shout_port",
+		"shout_password",
+		"shout_mount",
+		"shout_name",
+		"shout_user",
+		"shout_quality"
 	};
 
 	int conf_absolutePaths[CONF_NUMBER_OF_PATHS] = {
