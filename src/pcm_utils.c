@@ -220,6 +220,7 @@ void pcm_convertAudioFormat(AudioFormat * inFormat, char * inBuffer, size_t
 		/* only works if outFormat is 16-bit stereo! */
 		/* resampling code blatantly ripped from XMMS */
 		const int shift = sizeof(mpd_sint16);
+		int x1 = 0, frac;
 		mpd_sint32 i, in_samples, out_samples, x, delta;
 		mpd_sint16 * inptr = (mpd_sint16 *)dataChannelConv;
 		mpd_sint16 * outptr = (mpd_sint16 *)outBuffer;
@@ -229,11 +230,17 @@ void pcm_convertAudioFormat(AudioFormat * inFormat, char * inBuffer, size_t
 		nlen <<= shift;
 		in_samples = dataChannelLen >> shift;
 		out_samples = nlen >> shift;
-		delta = (in_samples << 12) / out_samples;
+                //printf("in_samples=%i out_samples=%i\n",in_samples,out_samples);
+		delta = ((in_samples-1) << 12) / (out_samples-1);
 		for(x = 0, i = 0; i < out_samples; i++) {
-			int x1, frac;
+                        //int i1,i2,i3,i4;
 			x1 = (x >> 12) << 12;
 			frac = x - x1;
+                        /*        i1 = (x1 >> 12) << 1;
+                                i2 = ((x1 >> 12) + 1) << 1;
+                                i3 = ((x1 >> 12) << 1) + 1;
+                                i4 = (((x1 >> 12) + 1) << 1) + 1;
+                                printf("%i,%i,%i,%i\n",i1,i2,i3,i4);*/
 			*outptr++ = 
 				((inptr[(x1 >> 12) << 1] * 
 				((1<<12) - frac) +

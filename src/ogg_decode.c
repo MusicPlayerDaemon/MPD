@@ -181,7 +181,7 @@ int ogg_decode(OutputBuffer * cb, DecoderControl * dc)
 		int current_section;
 		int eof = 0;
 		long ret;
-#define OGG_CHUNK_SIZE	2048
+#define OGG_CHUNK_SIZE	64
 		char chunk[OGG_CHUNK_SIZE];
 		int chunkpos = 0;
 		long bitRate = 0;
