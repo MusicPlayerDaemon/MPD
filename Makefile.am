@@ -1,3 +1,5 @@
+AUTOMAKE_OPTIONS = foreign 1.6 dist-zip
+
 SUBDIRS = src doc
 docdir = $(prefix)/share/doc/$(PACKAGE)
 doc_DATA = README UPGRADING 
