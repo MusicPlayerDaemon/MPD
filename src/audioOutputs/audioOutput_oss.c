@@ -106,9 +106,10 @@ static void oss_finishDriver(AudioOutput * audioOutput) {
 	freeOssData(od);
 }
 
-static int oss_openDevice(AudioOutput * audioOutput, AudioFormat * audioFormat) 
+static int oss_openDevice(AudioOutput * audioOutput) 
 {
 	OssData * od = audioOutput->data;
+	AudioFormat * audioFormat = &audioOutput->outAudioFormat;
 #ifdef WORDS_BIGENDIAN
 	int i = AFMT_S16_BE;
 #else

@@ -604,9 +604,10 @@ static int getHTTPHello(InputStream * inStream) {
                                 return 0;
                         }
                 }
-        case 404:
         case 400:
         case 401:
+	case 403:
+        case 404:
         default:
                 close(data->sock);
                 data->connState = HTTP_CONN_STATE_CLOSED;
