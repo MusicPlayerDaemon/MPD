@@ -186,11 +186,15 @@ static ConfigParam * readConfigBlock(FILE * fp, int * count, char * string) {
 
 		argsMinusComment = i;
 
-		if(0 == argsMinusComment) continue;
+		if(0 == argsMinusComment) {
+			freeArgArray(array, numberOfArgs);
+			continue;
+		}
 
 		if(1 == argsMinusComment && 
 				0 == strcmp(array[0], CONF_BLOCK_END))
 		{
+			freeArgArray(array, numberOfArgs);
 			break;
 		}
 
@@ -248,7 +252,10 @@ void readConf(char * file) {
 
 		argsMinusComment = i;
 
-		if(0 == argsMinusComment) continue;
+		if(0 == argsMinusComment) {
+			freeArgArray(array, numberOfArgs);
+			continue;
+		}
 
 		if(2 != argsMinusComment) {
 			ERROR("improperly formatted config file at line %i:"
