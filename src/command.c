@@ -86,6 +86,7 @@
 #define COMMAND_ENABLE_DEV	"enabledevice"
 #define COMMAND_DISABLE_DEV	"disabledevice"
 #define COMMAND_DEVICES		"devices"
+#define COMMAND_COMMANDS	"commands"
 
 #define COMMAND_STATUS_VOLUME           "volume"
 #define COMMAND_STATUS_STATE            "state"
@@ -806,6 +807,26 @@ int handleDevices(FILE * fp, unsigned int * permission, int argArrayLength,
 	return 0;
 }
 
+/* don't be fooled, this is the command handler for "commands" command */
+int handleCommands(FILE * fp, unsigned int * permission, int argArrayLength,
+		char ** argArray)
+{
+	ListNode * node = commandList->firstNode;
+	CommandEntry * cmd;
+
+	while(node != NULL) {
+		cmd = (CommandEntry *) node->data;
+
+		if(*permission & cmd->reqPermission) {
+			myfprintf(fp, "command: %s\n", cmd->cmd);
+		}
+
+		node = node->nextNode;
+	}
+
+	return 0;
+}
+
 void initCommands() {
         commandList = makeList(free);
 
@@ -858,6 +879,7 @@ void initCommands() {
         addCommand(COMMAND_ENABLE_DEV  ,PERMISSION_ADMIN,   1, 1,handleEnableDevice,NULL);
         addCommand(COMMAND_DISABLE_DEV ,PERMISSION_ADMIN,   1, 1,handleDisableDevice,NULL);
         addCommand(COMMAND_DEVICES     ,PERMISSION_ADMIN,   0, 0,handleDevices,NULL);
+        addCommand(COMMAND_COMMANDS    ,0,                  0, 0,handleCommands,NULL);
 
         sortList(commandList);
 }
