@@ -61,15 +61,12 @@ int printRemoteUrlHandlers(FILE * fp) {
 
 int isValidRemoteUtf8Url(char * utf8url) {
         int ret = 0;
-        char * lat1 = utf8StrToLatin1Dup(utf8url);
         char * temp;
 
-        if(!lat1) return 0;
-
-        switch(isRemoteUrl(lat1)) {
+        switch(isRemoteUrl(utf8url)) {
         case 1:
                 ret = 1;
-                temp = lat1;
+                temp = utf8url;
                 while(*temp) {
                         if((*temp >= 'a' && *temp <= 'z') || 
                                         (*temp >= 'A' && *temp <= 'z') ||
@@ -102,8 +99,6 @@ int isValidRemoteUtf8Url(char * utf8url) {
                 break;
         }
 
-        free(lat1);
-        
         return ret;
 }
 
