@@ -230,7 +230,10 @@ static MpdTag * mp3_parseId3Tag(mp3DecodeData * data, signed long tagsize) {
 			else count += len;
 		}
 
-		if(count != tagsize) goto fail;
+		if(count != tagsize) {
+			DEBUG("mp3_decode: error parsing ID3 tag\n");
+			goto fail;
+		}
 
 		id3_data = allocated;
 	}
@@ -262,7 +265,9 @@ int decodeNextFrameHeader(mp3DecodeData * data, MpdTag ** tag) {
 					(data->stream).this_frame);
 
 			if(tagsize>0) {
-				if(tag) *tag =mp3_parseId3Tag(data, tagsize);
+				if(tag && !(*tag)) {
+					*tag =mp3_parseId3Tag(data, tagsize);
+				}
 				else {
 					mad_stream_skip(&(data->stream),
 							tagsize);
