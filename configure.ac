@@ -150,7 +150,7 @@ if test x$enable_iconv = xyes; then
 	CPPFLAGS=$CFLAGS
 	AC_CHECK_HEADER(iconv.h,MPD_CFLAGS="$MPD_CFLAGS $ICONV_CFLAGS",enable_iconv=no)
 	if test x$enable_iconv = xyes; then
-		AC_CHECK_LIB(iconv,iconv_open,MPD_LIBS="$MPD_LIBS $ICONV_LIBS",)
+		AC_CHECK_LIB(iconv,main,MPD_LIBS="$MPD_LIBS $ICONV_LIBS",)
 		AC_DEFINE(HAVE_ICONV,1,[Define to use iconv])
 	fi
 	CFLAGS=$oldcflags
