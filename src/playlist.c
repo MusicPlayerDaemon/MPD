@@ -954,7 +954,10 @@ int previousSongInPlaylist(FILE * fp) {
 
 	syncPlaylistWithQueue(0);
 
-   	if (getPlayerElapsedTime()>PLAYLIST_PREV_UNLESS_ELAPSED) {
+   	if (getPlayerElapsedTime()>PLAYLIST_PREV_UNLESS_ELAPSED &&
+                        playlist.songs[playlist.order[playlist.current]]->type
+                        != SONG_TYPE_URL) 
+        {
 		return playPlaylistOrderNumber(fp,playlist.current);
    	}
    	else {
