@@ -462,6 +462,7 @@ void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb) {
 				dc->state!=DECODE_STATE_STOP) 
 	{
 		processDecodeInput();
+                handleDecodeStart();
 		if(quit) return;
 		my_usleep(10000);
 	}
@@ -561,10 +562,10 @@ void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb) {
 				quit = 1;
 			}
 			pc->totalPlayTime+= sizeToTime*cb->chunkSize[cb->begin];
-			cb->begin++;
-			if(cb->begin>=buffered_chunks) {
+			if( cb->begin+1 >= buffered_chunks ) {
 				cb->begin = 0;
 			}
+			else cb->begin++;
 		}
 		else if(next==cb->begin) {
 			if(doCrossFade==1 && nextChunk>=0) {
