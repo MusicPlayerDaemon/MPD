@@ -295,7 +295,7 @@ static int proccessLineOfInput(Interface * interface) {
 }
 
 static int processBytesRead(Interface * interface, int bytesRead) {
-	int ret = 1;
+	int ret = 0;
 
 	while(bytesRead > 0) {
 		interface->bufferLength++;
@@ -321,7 +321,7 @@ static int processBytesRead(Interface * interface, int bytesRead) {
 		}
 	}
 
-	return 0;
+	return ret;
 }
 
 int interfaceReadInput(Interface * interface) {
