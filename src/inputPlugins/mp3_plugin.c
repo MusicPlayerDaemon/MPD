@@ -196,7 +196,56 @@ int fillMp3InputBuffer(mp3DecodeData * data) {
 	return 0;
 }
 
-int decodeNextFrameHeader(mp3DecodeData * data) {
+#ifdef HAVE_ID3TAG
+static MpdTag * mp3_parseId3Tag(mp3DecodeData * data, signed long tagsize) {
+	MpdTag * ret = NULL;
+	struct id3_tag * id3Tag = NULL;
+	id3_length_t count;
+	id3_byte_t const *id3_data;
+	id3_byte_t * allocated = NULL;
+
+	count = data->stream.bufend - data->stream.this_frame;
+
+	if(tagsize <= count) {
+		id3_data = data->stream.this_frame;
+		mad_stream_skip(&(data->stream), tagsize);
+	}
+	else {
+		allocated = malloc(tagsize);
+		if(!allocated) goto fail;
+
+		memcpy(allocated, data->stream.this_frame, count);
+		mad_stream_skip(&(data->stream), count);
+
+		while(count < tagsize) {
+			int len;
+
+			len = readFromInputStream(data->inStream, 
+				allocated+count, (size_t)1, 
+				tagsize-count);
+			if(len <= 0 && inputStreamAtEOF(data->inStream))				{
+				break;
+			}
+			else if(len <= 0) my_usleep(10000);
+			else count += len;
+		}
+
+		if(count != tagsize) goto fail;
+
+		id3_data = allocated;
+	}
+
+	id3Tag = id3_tag_parse(id3_data, tagsize);
+ 
+	ret = parseId3Tag(id3Tag);
+
+fail:
+	if(allocated) free(allocated);
+	return ret;
+}
+#endif
+
+int decodeNextFrameHeader(mp3DecodeData * data, MpdTag ** tag) {
 	if((data->stream).buffer==NULL || (data->stream).error==MAD_ERROR_BUFLEN) {
 		if(fillMp3InputBuffer(data) < 0) {
 			return DECODE_BREAK;
@@ -211,13 +260,23 @@ int decodeNextFrameHeader(mp3DecodeData * data) {
 					(data->stream).this_frame,
 					(data->stream).bufend-
 					(data->stream).this_frame);
+
+			printf("HERE 1\n");
 			if(tagsize>0) {
-				mad_stream_skip(&(data->stream),tagsize);
+				printf("HERE 1-1\n");
+				if(tag) *tag =mp3_parseId3Tag(data, tagsize);
+				else {
+					mad_stream_skip(&(data->stream),
+							tagsize);
+				}
+				printf("HERE 1-2\n");
 				return DECODE_CONT;
 			}
+			printf("HERE 2\n");
 		}
 #endif
 		if(MAD_RECOVERABLE((data->stream).error)) {
+			if(tag) printf("AHHH\n");
 			return DECODE_SKIP;
 		}
 		else {
@@ -331,7 +390,9 @@ fail:
   	return 0;
 }
 
-int decodeFirstFrame(mp3DecodeData * data, DecoderControl * dc) {
+int decodeFirstFrame(mp3DecodeData * data, DecoderControl * dc,
+		MpdTag ** tag) 
+{
 	struct xing xing;
 	int ret;
 	int skip;
@@ -341,7 +402,7 @@ int decodeFirstFrame(mp3DecodeData * data, DecoderControl * dc) {
 
 	while(1) {
 		skip = 0;
-		while((ret = decodeNextFrameHeader(data))==DECODE_CONT && 
+		while((ret = decodeNextFrameHeader(data, tag))==DECODE_CONT && 
 				(!dc || !dc->stop));
 		if(ret==DECODE_SKIP) skip = 1;
 		else if(ret==DECODE_BREAK || (dc && dc->stop)) return -1;
@@ -409,7 +470,7 @@ int getMp3TotalTime(char * file) {
         if(openInputStream(&inStream, file) < 0) return -1;
 	initMp3DecodeData(&data,&inStream);
         data.stream.options |= MAD_OPTION_IGNORECRC;
-	if(decodeFirstFrame(&data, NULL)<0) ret = -1;
+	if(decodeFirstFrame(&data, NULL, NULL)<0) ret = -1;
 	else ret = data.totalTime+0.5;
 	mp3DecodeDataFinalize(&data);
 
@@ -417,12 +478,14 @@ int getMp3TotalTime(char * file) {
 }
 
 int openMp3FromInputStream(InputStream * inStream, mp3DecodeData * data,
-		DecoderControl * dc) 
+		DecoderControl * dc, MpdTag ** tag) 
 {
 	initMp3DecodeData(data, inStream);
         data->stream.options |= MAD_OPTION_IGNORECRC;
-	if(decodeFirstFrame(data, dc)<0) {
+	*tag = NULL;
+	if(decodeFirstFrame(data, dc, tag)<0) {
 		mp3DecodeDataFinalize(data);
+		if(tag && *tag) freeMpdTag(*tag);
 		return -1;
 	}
 
@@ -540,7 +603,7 @@ int mp3Read(mp3DecodeData * data, OutputBuffer * cb, DecoderControl * dc) {
 
 	while(1) {
 		skip = 0;
-		while((ret = decodeNextFrameHeader(data))==DECODE_CONT &&
+		while((ret = decodeNextFrameHeader(data, NULL))==DECODE_CONT &&
 				!dc->stop && !dc->seek);
 		if(ret==DECODE_BREAK || dc->stop || dc->seek) break;
 		else if(ret==DECODE_SKIP) skip = 1;
@@ -565,8 +628,9 @@ void initAudioFormatFromMp3DecodeData(mp3DecodeData * data, AudioFormat * af) {
 
 int mp3_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream) {
 	mp3DecodeData data;
+	MpdTag * tag;
 
-	if(openMp3FromInputStream(inStream, &data, dc) < 0) {
+	if(openMp3FromInputStream(inStream, &data, dc, &tag) < 0) {
                 closeInputStream(inStream);
 		if(!dc->stop) {
                         ERROR("Input does not appear to be a mp3 bit stream.\n");
@@ -583,6 +647,12 @@ int mp3_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream) {
         getOutputAudioFormat(&(dc->audioFormat), &(cb->audioFormat));
         
 	dc->totalTime = data.totalTime;
+
+	if(tag) {
+		copyMpdTagToDecoderControlMetadata(dc, tag);
+		freeMpdTag(tag);
+	}
+
 	dc->state = DECODE_STATE_DECODE;
 
 	while(mp3Read(&data,cb,dc)!=DECODE_BREAK);

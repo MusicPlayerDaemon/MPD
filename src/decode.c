@@ -608,7 +608,7 @@ void decode() {
 		strncpy(dc->metadata+pos, string, \
                                 DECODE_METADATA_LENGTH-1-pos); \
 		element = pos; \
-		pos += slen; \
+		pos += slen+1; \
 	} \
 }
 

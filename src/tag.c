@@ -37,13 +37,6 @@
 #include <FLAC/file_decoder.h>
 #include <FLAC/metadata.h>
 #endif
-#ifdef HAVE_ID3TAG
-#ifdef USE_MPD_ID3TAG
-#include "libid3tag/id3tag.h"
-#else
-#include <id3tag.h>
-#endif
-#endif
 
 void printMpdTag(FILE * fp, MpdTag * tag) {
 	if(tag->artist) myfprintf(fp,"Artist: %s\n",tag->artist);
@@ -95,24 +88,10 @@ char * getID3Info(struct id3_tag * tag, char * id) {
 }
 #endif
 
-MpdTag * id3Dup(char * file) {
-	MpdTag * ret = NULL;
 #ifdef HAVE_ID3TAG
-	struct id3_file * id3_file;
-	struct id3_tag * tag;
+MpdTag * parseId3Tag(struct id3_tag * tag) {
+	MpdTag * ret = NULL;
 	char * str;
-
-	id3_file = id3_file_open(file, ID3_FILE_MODE_READONLY);
-			
-	if(!id3_file) {
-		return NULL;
-	}
-
-	tag = id3_file_tag(id3_file);
-	if(!tag) {
-		id3_file_close(id3_file);
-		return NULL;
-	}
 
 	str = getID3Info(tag,ID3_FRAME_ARTIST);
 	if(str) {
@@ -141,6 +120,30 @@ MpdTag * id3Dup(char * file) {
 		stripReturnChar(str);
 		ret->track = str;
 	}
+
+	return ret;
+}
+#endif
+
+MpdTag * id3Dup(char * file) {
+	MpdTag * ret = NULL;
+#ifdef HAVE_ID3TAG
+	struct id3_file * id3_file;
+	struct id3_tag * tag;
+
+	id3_file = id3_file_open(file, ID3_FILE_MODE_READONLY);
+			
+	if(!id3_file) {
+		return NULL;
+	}
+
+	tag = id3_file_tag(id3_file);
+	if(!tag) {
+		id3_file_close(id3_file);
+		return NULL;
+	}
+
+	ret = parseId3Tag(tag);
 
 	id3_file_close(id3_file);
 

@@ -22,6 +22,13 @@
 #include "../config.h"
 
 #include <stdio.h>
+#ifdef HAVE_ID3TAG
+#ifdef USE_MPD_ID3TAG
+#include "libid3tag/id3tag.h"
+#else
+#include <id3tag.h>
+#endif
+#endif
 
 typedef struct _MpdTag {
 	char * artist;
@@ -30,6 +37,10 @@ typedef struct _MpdTag {
 	char * title;
 	int time;
 } MpdTag;
+
+#ifdef HAVE_ID3TAG
+MpdTag * parseId3Tag(struct id3_tag *);
+#endif
 
 MpdTag * id3Dup(char * file);
 
