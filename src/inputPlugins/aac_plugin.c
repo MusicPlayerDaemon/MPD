@@ -16,18 +16,17 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "aac_decode.h"
+#include "../inputPlugin.h"
 
 #ifdef HAVE_FAAD
 
 #define AAC_MAX_CHANNELS	6
 
-#include "command.h"
-#include "utils.h"
-#include "audio.h"
-#include "log.h"
-#include "inputStream.h"
-#include "outputBuffer.h"
+#include "../utils.h"
+#include "../audio.h"
+#include "../log.h"
+#include "../inputStream.h"
+#include "../outputBuffer.h"
 
 #include <stdio.h>
 #include <unistd.h>
@@ -396,5 +395,44 @@ int aac_decode(OutputBuffer * cb, DecoderControl * dc) {
 	return 0;
 }
 
+MpdTag * aacTagDup(char * file) {
+	MpdTag * ret = NULL;
+	int time;
+
+	time = getAacTotalTime(file);
+
+	if(time>=0) {
+		if((ret = id3Dup(file))==NULL) ret = newMpdTag();
+		ret->time = time;
+	}
+
+	return ret;
+}
+
+char * aacSuffixes[] = {"aac", NULL};
+
+InputPlugin aacPlugin =
+{
+        "aac",
+        NULL,
+        aac_decode,
+        aacTagDup,
+        INPUT_PLUGIN_STREAM_FILE,
+        aacSuffixes,
+        NULL
+};
+
+#else
+
+InputPlugin aacPlugin =
+{
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        0,
+        NULL,
+        NULL,
+};
+
 #endif /* HAVE_FAAD */
-/* vim:set shiftwidth=4 tabstop=8 expandtab: */

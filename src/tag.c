@@ -148,24 +148,6 @@ MpdTag * id3Dup(char * file) {
 	return ret;	
 }
 
-#ifdef HAVE_FAAD
-MpdTag * aacTagDup(char * utf8file) {
-	MpdTag * ret = NULL;
-	int time;
-
-	time = getAacTotalTime(rmp2amp(utf8ToFsCharset(utf8file)));
-
-	if(time>=0) {
-		if((ret = id3Dup(utf8file))==NULL) ret = newMpdTag();
-		ret->time = time;
-	}
-
-	if(ret) validateUtf8Tag(ret);
-
-	return ret;
-}
-#endif
-
 MpdTag * newMpdTag() {
 	MpdTag * ret = malloc(sizeof(MpdTag));
 	ret->album = NULL;
