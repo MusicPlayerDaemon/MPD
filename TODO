@@ -27,10 +27,23 @@
 *) make libao optional during configure, but check that some form of audioOutput
 	is enabled (either oss, shout, or ao)
 
-*) support for dynamically loading plugins
-
 *) Fix id3v1 encoding
 
 *) Cleanup Config File Code
 
 *) Optimize read() on clients
+
+
+0.13
+----
+*) support for dynamically loading plugins
+
+*) rewrite metadata/db handling
+	*) store all metadata entries in table
+	*) each contains a counter reference
+	*) new MpdDBTag, which instead of strings allocated for each metadata 
+		entry, store a char * string to the metadata entry in the table
+	*) multiple artist support
+	*) multiple genre support {char *, int pairs for each metadata entry 
+		indicating the type of metadata and its value)
+	*) MpdDBTag <-> MpdTag interface
