@@ -31,7 +31,7 @@ int buffered_before_play;
 int buffered_chunks;
 
 #define DEFAULT_BUFFER_SIZE		2048
-#define DEFAULT_BUFFER_BEFORE_PLAY	25
+#define DEFAULT_BUFFER_BEFORE_PLAY	0
 
 PlayerData * playerData_pd;
 
