@@ -1,7 +1,4 @@
-1) make play while paused simply unpause and pressing play while playing
-	does nothing!
-
-2) play streams
+1) play streams
 	a) put some sort of error reporting for streaming/inputStream!
 	b) fetch metadata and store in DecoderControl and pass to 
 		PlayerControl
@@ -10,6 +7,8 @@
 	c) command for dealing with the changing metadata, currentsonginfo
 		or something
 	d) in songinfo add a metadata tag item for indicating stream
+
+2) have --no-daemon still output to log files, and add option --no-log-files
 
 3) resampling audio for compatibility, and better gapless/crossfading
 	a) use resampling from oggenc (is it fast enough for realtime?)
@@ -27,7 +26,7 @@ decoding has stopped.
 
 8) compute average replaygain to use for non-replaygain songs
 
-9) pid file
+9) change default port to 6600
 
 
 Post-1.0
