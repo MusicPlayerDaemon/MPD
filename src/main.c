@@ -62,8 +62,7 @@ typedef struct _Options {
         int daemon;
         int stdOutput;
         int createDB;
-	int onlyCreateDB;
-	int onlyUpdateDB;
+	int updateDB;
 } Options;
 
 void usage(char * argv[]) {
@@ -78,9 +77,8 @@ void usage(char * argv[]) {
         ERROR("   --help             this usage statement\n");
         ERROR("   --no-daemon        don't detach from console\n");
         ERROR("   --stdout           print msgs to stdout and stderr\n");
-        ERROR("   --create-db        force (re)creation database\n");
-        ERROR("   --only-create-db   create database and exit\n");
-        ERROR("   --only-update-db   create database and exit\n");
+        ERROR("   --create-db        force (re)creation database and exit\n");
+        ERROR("   --update-db        create database and exit\n");
         ERROR("   --no-create-db     don't create database\n");
         ERROR("   --verbose          verbose logging\n");
         ERROR("   --version          prints version information\n");
@@ -120,8 +118,7 @@ void parseOptions(int argc, char ** argv, Options * options) {
         options->daemon = 1;
         options->stdOutput = 0;
         options->createDB = 0;
-        options->onlyCreateDB = 0;
-        options->onlyUpdateDB = 0;
+        options->updateDB = 0;
         options->dbFile = NULL;
 
         if(argc>1) {
@@ -144,12 +141,8 @@ void parseOptions(int argc, char ** argv, Options * options) {
                                         options->createDB = 1;
                                         argcLeft--;
                                 }
-                                else if(strcmp(argv[i],"--only-create-db")==0) {
-                                        options->onlyCreateDB = 1;
-                                        argcLeft--;
-                                }
-                                else if(strcmp(argv[i],"--only-update-db")==0) {
-                                        options->onlyUpdateDB = 1;
+                                else if(strcmp(argv[i],"--update-db")==0) {
+                                        options->updateDB = 1;
                                         argcLeft--;
                                 }
                                 else if(strcmp(argv[i],"--no-create-db")==0) {
@@ -252,7 +245,7 @@ int main(int argc, char * argv[]) {
                 return EXIT_FAILURE;
         }
 
-        if(!options.onlyCreateDB && !options.onlyUpdateDB &&
+        if(!options.createDB && !options.updateDB &&
 			(listenSocket = establish(port))<0) 
 	{
                 ERROR("error binding port\n");
@@ -340,8 +333,7 @@ int main(int argc, char * argv[]) {
         if(!options.dbFile) directory_db = strdup(rpp2app(".mpddb"));
         else directory_db = strdup(options.dbFile);
 
-        if(options.createDB>0 || options.onlyCreateDB || readDirectoryDB()<0) 
-	{
+        if(options.createDB>0 || readDirectoryDB()<0) {
                 if(options.createDB<0) {
                         ERROR("can't open db file and using \"--no-create-db\""
                                         " command line option\n");
@@ -354,9 +346,9 @@ int main(int argc, char * argv[]) {
                         ERROR("problem opening db for reading or writing\n");
                         exit(EXIT_FAILURE);
                 }
-		if(options.onlyCreateDB) exit(EXIT_SUCCESS);
+		if(options.createDB) exit(EXIT_SUCCESS);
         }
-	if(options.onlyUpdateDB) {
+	if(options.updateDB) {
 		if(updateMp3Directory(stderr)<0) exit(EXIT_FAILURE);
 		exit(EXIT_SUCCESS);
 	}
