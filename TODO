@@ -8,6 +8,14 @@
 
 *) Optimize db update
 
+0.12
+----
+*) add command that only takes file's or url's (no directory's) and returns the songid of the added song
+
+*) allow add commands to specify position to be inserted
+
+*) saved playlist commands for getting the contents of a playlist and appending to a playlist
+
 Post-1.0
 --------
 1) crosslink "list" stuff, for example, artists are crosslinked to alubms and 
