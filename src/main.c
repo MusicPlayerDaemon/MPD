@@ -329,6 +329,7 @@ int main(int argc, char * argv[]) {
         }
 
         initTables();
+        initPlaylist();
 
         if(!options.dbFile) {	
                 strncpy(directorydb,playlistDir,MAXPATHLEN);
@@ -353,7 +354,6 @@ int main(int argc, char * argv[]) {
         initPlayerData();
         initVolume();
         initInterfaces();
-        initPlaylist();
 
         close(STDIN_FILENO);
         if(options.daemon) {

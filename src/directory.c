@@ -20,13 +20,12 @@
 
 #include "ls.h"
 #include "command.h"
-#include "tables.h"
 #include "utils.h"
 #include "path.h"
 #include "log.h"
-#include "playlist.h"
 #include "conf.h"
 #include "stats.h"
+#include "playlist.h"
 
 #include <string.h>
 #include <sys/types.h>
@@ -98,8 +97,6 @@ Directory * newDirectory(Directory * parentDirectory, char * dirname, time_t mti
 
 void freeDirectory(Directory * directory) {
 	freeDirectoryList(directory->subDirectories);
-	removeSongsFromTables(directory->songs);
-	deleteSongsFromPlaylist(directory->songs);
 	freeSongList(directory->songs);
 	if(directory->utf8name) free(directory->utf8name);
 	free(directory);
@@ -118,8 +115,6 @@ void removeSongFromDirectory(Directory * directory, char * shortname) {
 	
 	if(findInList(directory->songs,shortname,&song)) {
 		LOG("removing: %s\n",((Song *)song)->utf8file);
-		removeASongFromTables((Song *)song);
-		deleteASongFromPlaylist((Song *)song);
 		deleteFromList(directory->songs,shortname);
 	}
 }
@@ -153,7 +148,9 @@ int updateInDirectory(Directory * directory, char * shortname, char * name) {
 		}
 		else if(mtime!=((Song *)song)->mtime) {
 			LOG("updating %s\n",name);
-			updateSongInfo((Song *)song);
+			if(updateSongInfo((Song *)song)<0) {
+				removeSongFromDirectory(directory,shortname);
+			}
 		}
 	}
 	else if(isDir(name,&mtime)) {
@@ -331,7 +328,6 @@ int addToDirectory(Directory * directory, char * shortname, char * name) {
 		song = addSongToList(directory->songs,shortname,name);
 		if(!song) return -1;
 		LOG("added %s\n",name);
-		addSongToTables(song);
 		return 0;
 	}
 

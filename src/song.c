@@ -28,6 +28,8 @@
 #include "ogg_decode.h"
 #include "flac_decode.h"
 #include "path.h"
+#include "playlist.h"
+#include "tables.h"
 
 #define SONG_KEY	"key: "
 #define SONG_FILE	"file: "
@@ -41,9 +43,18 @@
 #include <stdlib.h>
 #include <string.h>
 
-Song * newSong(char * utf8file) {
+Song * newNullSong() {
 	Song * song = malloc(sizeof(Song));
+
+	song->tag = NULL;
+	song->utf8file = NULL;
 	song->time = -1;
+
+	return song;
+}
+
+Song * newSong(char * utf8file) {
+	Song * song = newNullSong();
 
 	song->utf8file = strdup(utf8file);
 
@@ -81,11 +92,14 @@ Song * newSong(char * utf8file) {
 		freeSong(song);
 		song = NULL;
 	}
+	else addSongToTables(song);
 
 	return song;
 }
 
 void freeSong(Song * song) {
+	deleteASongFromPlaylist(song);
+	removeASongFromTables(song);
 	free(song->utf8file);
 	if(song->tag) freeMpdTag(song->tag);
 	free(song);
@@ -163,9 +177,7 @@ void readSongInfoIntoList(FILE * fp, SongList * list) {
 				free(key);
 			}
 			key = strdup(&(buffer[strlen(SONG_KEY)]));
-			song = malloc(sizeof(Song));
-			song->tag = NULL;
-			song->utf8file = NULL;
+			song = newNullSong();
 		}
 		else if(0==strncmp(SONG_FILE,buffer,strlen(SONG_FILE))) {
 			if(!song || song->utf8file) {
@@ -210,32 +222,48 @@ void readSongInfoIntoList(FILE * fp, SongList * list) {
 }
 
 int updateSongInfo(Song * song) {
+	char * utf8file = song->utf8file;
+
+	removeASongFromTables(song);
 	if(song->tag) freeMpdTag(song->tag);
-#ifdef HAVE_MAD
-	if(isMp3(song->utf8file,&(song->mtime))) {
-		song->tag = mp3TagDup(song->utf8file);
-		return 0;
-	}
-#endif
+
+	song->time = -1;
+	song->tag = NULL;
+
+	if(0);
 #ifdef HAVE_OGG
-	if(isOgg(song->utf8file,&(song->mtime))) {
-		song->tag = oggTagDup(song->utf8file);
-		return 0;
+	else if(isOgg(utf8file,&(song->mtime))) {
+		song->time = getOggTotalTime(
+				rmp2amp(utf8ToFsCharset(utf8file)));
+		if(song->time>=0) song->tag = oggTagDup(utf8file);
 	}
 #endif
 #ifdef HAVE_FLAC
-	if(isFlac(song->utf8file,&(song->mtime))) {
-		song->tag = flacTagDup(song->utf8file);
-		return 0;
+	else if((isFlac(utf8file,&(song->mtime)))) {
+		song->time = getFlacTotalTime(
+				rmp2amp(utf8ToFsCharset(utf8file)));
+		if(song->time>=0) song->tag = flacTagDup(utf8file);
+	}
+#endif
+#ifdef HAVE_MAD
+	else if(isMp3(utf8file,&(song->mtime))) {
+		song->time = getMp3TotalTime(
+				rmp2amp(utf8ToFsCharset(utf8file)));
+		if(song->time>=0) song->tag = mp3TagDup(utf8file);
 	}
 #endif
 #ifdef HAVE_AUDIOFILE
-	if(isWave(song->utf8file,&(song->mtime))) {
-		song->tag = audiofileTagDup(song->utf8file);
-		return 0;
+	else if(isWave(utf8file,&(song->mtime))) {
+		song->time = getAudiofileTotalTime(
+				rmp2amp(utf8ToFsCharset(utf8file)));
+		if(song->time>=0) song->tag = audiofileTagDup(utf8file);
 	}
 #endif
-	return -1;
+
+	if(song->time<0) return -1;
+	else addSongToTables(song);
+
+	return 0;
 }
 
 Song * songDup(Song * song) {
