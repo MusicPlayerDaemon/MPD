@@ -259,8 +259,8 @@ static int parseUrl(InputStreamHTTPData * data, char * url) {
 		}
 		else {
 			user = malloc(at-temp+1);
-			strncpy(user, temp, colon-temp);
-			user[colon-temp] = '\0';
+			strncpy(user, temp, at-temp);
+			user[at-temp] = '\0';
 
 			passwd = strdup("");
 		}
