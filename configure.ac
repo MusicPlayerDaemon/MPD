@@ -31,7 +31,7 @@ MPD_LIBS=""
 AC_ARG_ENABLE(audio,[  --disable-audio    disable support for playing],,enable_ao=yes)
 AC_ARG_ENABLE(iconv,[  --disable-iconv     disable iconv support],,enable_iconv=yes)
 AC_ARG_ENABLE(ipv6,[  --disable-ipv6     disable IPv6 support],,enable_ipv6=yes)
-AC_ARG_ENABLE(alsa,[  --disable-alsa     disable Alsa Mixer support],,enable_alsa=yes)
+AC_ARG_ENABLE(alsa,[  --disable-alsa     disable ALSA Mixer support],,enable_alsa=yes)
 AC_ARG_ENABLE(ogg,[  --disable-ogg     disable ogg support],,enable_ogg=yes)
 AC_ARG_ENABLE(flac,[  --disable-flac    disable flac support],,enable_flac=yes)
 AC_ARG_ENABLE(mp3,[  --disable-mp3     disable mp3 support],,enable_mp3=yes)
@@ -483,9 +483,9 @@ else
 fi
 
 if test x$enable_alsa = xyes; then
-	echo "Alsa mixer support ............enabled"
+	echo "ALSA mixer support ............enabled"
 else
-	echo "Alsa mixer support ............disabled"
+	echo "ALSA mixer support ............disabled"
 fi
 
 echo ""
