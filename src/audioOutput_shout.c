@@ -242,12 +242,12 @@ static void shout_handleError(ShoutData * sd, int err) {
 static void write_page(ShoutData * sd) {
 	if(!sd->og.header_len || !sd->og.body_len) return;
 
-	/*shout_sync(sd->shoutConn);*/
+	shout_sync(sd->shoutConn);
 	int err = shout_send(sd->shoutConn, sd->og.header, sd->og.header_len);
 	shout_handleError(sd, err);
 	err = shout_send(sd->shoutConn, sd->og.body, sd->og.body_len);
 	shout_handleError(sd, err);
-	shout_sync(sd->shoutConn);
+	/*shout_sync(sd->shoutConn);*/
 }
 
 static int shout_openDevice(AudioOutput * audioOutput,
