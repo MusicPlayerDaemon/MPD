@@ -11,13 +11,21 @@ void initMetadataChunk(MetadataChunk * chunk) {
 	chunk->title = -1;
 }
 
+#define dupElementToTag(string, element) { \
+	if(element >= 0 && element < METADATA_BUFFER_LENGTH) { \
+		string = strdup(chunk->buffer+element); \
+	} \
+}
+
 MpdTag * metadataChunkToMpdTagDup(MetadataChunk * chunk) {
 	MpdTag * ret = newMpdTag();
 
-	if(chunk->name >= 0) ret->name = strdup(chunk->buffer+chunk->name);
-	if(chunk->artist >= 0) ret->artist = strdup(chunk->buffer+chunk->artist);
-	if(chunk->album >= 0) ret->album = strdup(chunk->buffer+chunk->album);
-	if(chunk->title >= 0) ret->title = strdup(chunk->buffer+chunk->title);
+	chunk->buffer[METADATA_BUFFER_LENGTH] = '\0';
+
+	dupElementToTag(ret->name, chunk->name);
+	dupElementToTag(ret->title, chunk->title);
+	dupElementToTag(ret->artist, chunk->artist);
+	dupElementToTag(ret->album, chunk->album);
 
 	return ret;
 }

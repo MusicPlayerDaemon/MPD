@@ -478,16 +478,16 @@ Song * playerCurrentDecodeSong() {
 			sizeof(MetadataChunk))))) 
         {
 		printf("metadata in the PLAYER!\n");
-                if(song) freeJustSong(song);
-                song = newNullSong();
-                if(song->utf8url) free(song->utf8url);
-                song->utf8url = strdup(pc->currentUrl);
-		song->tag = metadataChunkToMpdTagDup(&(pc->metadataChunk));
-                validateUtf8Tag(song->tag);
                 if(prev) free(prev);
                 prev = malloc(sizeof(MetadataChunk));
 		memcpy(prev, &(pc->metadataChunk), sizeof(MetadataChunk));
                 resetPlayerMetadata();
+                if(song) freeJustSong(song);
+                song = newNullSong();
+                if(song->utf8url) free(song->utf8url);
+                song->utf8url = strdup(pc->currentUrl);
+		song->tag = metadataChunkToMpdTagDup(prev);
+                validateUtf8Tag(song->tag);
                 return song;
         }
 
