@@ -397,12 +397,11 @@ FLAC__StreamDecoderWriteStatus flacWrite(const FLAC__SeekableStreamDecoder *dec,
 {
 	FlacData * data = (FlacData *)vdata;
 	FLAC__uint32 samples = frame->header.blocksize;
-	FLAC__uint16 u16;
-	unsigned char * uc;
-	int c_samp, c_chan, d_samp;
-	int i;
+	int c_samp;
+	int c_chan;
 	float timeChange;
 	FLAC__uint64 newPosition = 0;
+	int bytesPerSample = data->dc->audioFormat.bits/8;
 	
 	timeChange = ((float)samples)/frame->header.sample_rate;
 	data->time+= timeChange;
@@ -414,22 +413,20 @@ FLAC__StreamDecoderWriteStatus flacWrite(const FLAC__SeekableStreamDecoder *dec,
 	}
 	data->position = newPosition;
 
-	for(c_samp = d_samp = 0; c_samp < frame->header.blocksize; c_samp++) {
-		for(c_chan = 0; c_chan < frame->header.channels; 
-				c_chan++, d_samp++) {
-			u16 = buf[c_chan][c_samp];
-			uc = (unsigned char *)&u16;
-			for(i=0;i<(data->dc->audioFormat.bits/8);i++) {
-				if(data->chunk_length>=FLAC_CHUNK_SIZE) {
-					if(flacSendChunk(data)<0) {
-						return FLAC__STREAM_DECODER_WRITE_STATUS_ABORT;
-					}
-					data->chunk_length = 0;
-					if(data->dc->seek) {
-						return FLAC__STREAM_DECODER_WRITE_STATUS_CONTINUE;
-					}
+	for(c_samp = 0; c_samp < frame->header.blocksize; c_samp++) {
+		for(c_chan = 0; c_chan < frame->header.channels; c_chan++) {
+			memcpy(data->chunk+data->chunk_length,
+			       &buf[c_chan][c_samp], bytesPerSample);
+			data->chunk_length++;
+			if(FLAC_CHUNK_SIZE-data->chunk_length < bytesPerSample) 
+			{
+				if(flacSendChunk(data)<0) {
+					return FLAC__STREAM_DECODER_WRITE_STATUS_ABORT;
 				}
-				data->chunk[data->chunk_length++] = *(uc++);
+				data->chunk_length = 0;
+				if(data->dc->seek) {
+					return FLAC__STREAM_DECODER_WRITE_STATUS_CONTINUE;
+				}
 			}
 		}
 	}
