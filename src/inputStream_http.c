@@ -121,8 +121,8 @@ void inputStream_initHttp() {
 static char * base64Dup(char * s) {
 	int i;
 	int len = strlen(s);
-	char * ret = malloc(BASE64_LENGTH(len)+1);
-	char * p = ret;
+	char * ret = calloc(BASE64_LENGTH(len)+1, 1);
+	unsigned char * p = (unsigned char *)ret;
 
 	char tbl[64] = {
 		'A','B','C','D','E','F','G','H',
