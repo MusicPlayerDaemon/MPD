@@ -134,6 +134,7 @@ typedef struct _mp3DecodeData {
 	int flush;
 	unsigned long bitRate;
 	InputStream * inStream;
+	int bufferReset;
 } mp3DecodeData;
 
 void initMp3DecodeData(mp3DecodeData * data, InputStream * inStream) {
@@ -147,6 +148,7 @@ void initMp3DecodeData(mp3DecodeData * data, InputStream * inStream) {
 	data->currentFrame = 0;
 	data->flush = 1;
         data->inStream = inStream;
+	data->bufferReset = 0;
 
 	mad_stream_init(&data->stream);
 	data->stream.options |= MAD_OPTION_IGNORECRC;
@@ -155,19 +157,22 @@ void initMp3DecodeData(mp3DecodeData * data, InputStream * inStream) {
 	mad_timer_reset(&data->timer);
 }
 
-int fillMp3InputBuffer(mp3DecodeData * data, long offset) {
+int seekMp3InputBuffer(mp3DecodeData * data, long offset) {
+	if(seekInputStream(data->inStream,offset,SEEK_SET) < 0) {
+                return -1;
+        }
+	data->bufferReset = 1;
+
+	return 0;
+}
+
+int fillMp3InputBuffer(mp3DecodeData * data) {
 	size_t readSize;
 	size_t remaining;
         size_t readed;
 	unsigned char * readStart;
 
-	if(offset>=0) {
-		if(seekInputStream(data->inStream,offset,SEEK_SET) < 0) {
-                        return -1;
-                }
-	}
-
-	if(offset==-1 && (data->stream).next_frame!=NULL) {
+	if(!data->bufferReset && (data->stream).next_frame!=NULL) {
 		remaining = (data->stream).bufend-(data->stream).next_frame;
 		memmove(data->readBuffer,(data->stream).next_frame,remaining);
 		readStart = (data->readBuffer)+remaining;
@@ -177,14 +182,14 @@ int fillMp3InputBuffer(mp3DecodeData * data, long offset) {
 		readSize = READ_BUFFER_SIZE;
 		readStart = data->readBuffer,
 		remaining = 0;
+		data->bufferReset = 0;
 	}
 
-        readed = 0;
-        while(readed == 0 && !inputStreamAtEOF(data->inStream)) {	
-	        readed = readFromInputStream(data->inStream, readStart,
-                                        (size_t)1, readSize);
-        }
-	if(readed<=0) return -1;
+	readed = readFromInputStream(data->inStream, readStart, (size_t)1, 
+			readSize);
+	if(readed <= 0 && inputStreamAtEOF(data->inStream)) return -1;
+	/* sleep for a fraction of a second! */
+	else if(readed == 0) my_usleep(10);
 
 	mad_stream_buffer(&data->stream,data->readBuffer,readed+remaining);
 	(data->stream).error = 0;
@@ -194,7 +199,7 @@ int fillMp3InputBuffer(mp3DecodeData * data, long offset) {
 
 int decodeNextFrameHeader(mp3DecodeData * data) {
 	if((data->stream).buffer==NULL || (data->stream).error==MAD_ERROR_BUFLEN) {
-		if(fillMp3InputBuffer(data,/*data->currentOffset*/-1) < 0) {
+		if(fillMp3InputBuffer(data) < 0) {
 			return DECODE_BREAK;
 		}
 	}
@@ -234,7 +239,7 @@ int decodeNextFrameHeader(mp3DecodeData * data) {
 
 int decodeNextFrame(mp3DecodeData * data) {
 	if((data->stream).buffer==NULL || (data->stream).error==MAD_ERROR_BUFLEN) {
-		if(fillMp3InputBuffer(data,/*data->currentOffset*/-1) < 0) {
+		if(fillMp3InputBuffer(data) < 0) {
 			return DECODE_BREAK;
 		}
 	}
@@ -504,8 +509,8 @@ int mp3Read(mp3DecodeData * data, OutputBuffer * cb, DecoderControl * dc) {
 				i++;
 			}
 			if(i<data->highestFrame) {
-				if(fillMp3InputBuffer(data,
-                                                data->frameOffset[i]) == 0)
+				if(seekMp3InputBuffer(data,
+						data->frameOffset[i]) == 0)
                                 {
                                         clearOutputBuffer(cb);
 				        data->currentFrame = i;
@@ -519,15 +524,19 @@ int mp3Read(mp3DecodeData * data, OutputBuffer * cb, DecoderControl * dc) {
 
 	while(1) {
 		skip = 0;
-		while((ret = decodeNextFrameHeader(data))==DECODE_CONT);
+		while((ret = decodeNextFrameHeader(data))==DECODE_CONT &&
+				!dc->seek && !dc->stop);
 		if(ret==DECODE_SKIP) skip = 1;
 		else if(ret==DECODE_BREAK) break;
 		if(!data->muteFrame) {
-			while((ret = decodeNextFrame(data))==DECODE_CONT);
+			while((ret = decodeNextFrame(data))==DECODE_CONT &&
+					!dc->seek && !dc->stop);
 			if(ret==DECODE_BREAK) break;
 		}
 		if(!skip && ret==DECODE_OK) break;
 	}
+
+	if(dc->stop) return DECODE_BREAK;
 
 	return ret;
 }
