@@ -21,6 +21,8 @@
 
 #include "../config.h"
 
+#include "list.h"
+
 #include <stdio.h>
 
 #define COMMAND_RETURN_KILL	10
@@ -30,7 +32,7 @@
 #define COMMAND_RESPOND_OK	"OK"
 
 int processCommand(FILE * fp, unsigned int * permission, int argArrayLength, 
-		char ** argArray);
+		char ** argArray, ListNode * commandNode);
 
 void initCommands();
 

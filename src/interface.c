@@ -233,6 +233,7 @@ int interfaceReadInput(Interface * interface) {
 				if(argArrayLength==0);
 				else if(strcmp(argArray[0],INTERFACE_LIST_MODE_END)==0) {
 					ListNode * node = interface->commandList->firstNode;
+					ListNode * tempNode;
 					ret = 0;
 
 					while(node!=NULL) {
@@ -240,12 +241,16 @@ int interfaceReadInput(Interface * interface) {
 						int argArrayLength;
 						argArrayLength = buffer2array((char *)node->data,&argArray);
 						DEBUG("interface %i: process command \"%s\"\n",interface->num,node->data);
-						ret = processCommand(interface->fp,&(interface->permission),argArrayLength,argArray);
+						ret = processCommand(interface->fp,&(interface->permission),argArrayLength,argArray,node);
 						DEBUG("interface %i: command returned %i\n",interface->num,ret);
 						freeArgArray(argArray,argArrayLength);
-						node = node->nextNode;
-						if(ret!=0 || 
-							interface->expired) {
+						tempNode = node->nextNode;
+						deleteNodeFromList(
+							interface->commandList,
+							node);
+						node = tempNode;
+						if(ret!=0 || interface->expired)
+						{
 							node = NULL;
 						}
 					}
@@ -295,7 +300,7 @@ int interfaceReadInput(Interface * interface) {
 					}
 					else {
 						DEBUG("interface %i: process command \"%s\"\n",interface->num,interface->buffer);
-						ret = processCommand(interface->fp,&(interface->permission),argArrayLength,argArray);
+						ret = processCommand(interface->fp,&(interface->permission),argArrayLength,argArray,NULL);
 						DEBUG("interface %i: command returned %i\n",interface->num,ret);
 					}
 					if(ret==0) {

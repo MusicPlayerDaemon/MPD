@@ -30,6 +30,7 @@
 #include "conf.h"
 #include "permission.h"
 #include "audio.h"
+#include "buffer2array.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -86,17 +87,24 @@
 #define COMMAND_STATUS_AUDIO		"audio"
 #define COMMAND_STATUS_UPDATING_DB	"updating_db"
 
+typedef struct _CommandEntry CommandEntry;
+
 typedef int (* CommandHandlerFunction)(FILE *, unsigned int *, int, char **);
+typedef int (* CommandListHandlerFunction)(FILE *, unsigned int *, int, char **,
+		ListNode *, CommandEntry *);
 
 /* if min: -1 don't check args *
  * if max: -1 no max args      */
-typedef struct _CommandEntry {
+struct _CommandEntry {
         char * cmd;
         int min;
         int max;
 	unsigned int reqPermission;
         CommandHandlerFunction handler;
-} CommandEntry;
+	CommandListHandlerFunction listHandler;
+};
+
+CommandEntry * getCommandEntryFromString(char * string, int * permission);
 
 List * commandList;
 
@@ -106,18 +114,21 @@ CommandEntry * newCommandEntry() {
         cmd->min = 0;
         cmd->max = 0;
         cmd->handler = NULL;
+        cmd->listHandler = NULL;
 	cmd->reqPermission = 0;
         return cmd;
 }
 
 void addCommand(char * name, unsigned int reqPermission, int minargs,
-                 int maxargs, CommandHandlerFunction handler_func) 
+                int maxargs, CommandHandlerFunction handler_func,
+		CommandListHandlerFunction listHandler_func) 
 {
         CommandEntry * cmd = newCommandEntry();
         cmd->cmd = name;
         cmd->min = minargs;
         cmd->max = maxargs;
         cmd->handler = handler_func;
+        cmd->listHandler = listHandler_func;
 	cmd->reqPermission = reqPermission;
 
         insertInList(commandList, cmd->cmd, cmd);
@@ -320,10 +331,45 @@ int handleSearch(FILE * fp, unsigned int * permission, int argArrayLength,
         return searchForSongsIn(fp,NULL,argArray[1],argArray[2]);
 }
 
+int listHandleUpdate(FILE * fp, unsigned int * permission, int argArrayLength, 
+		char ** argArray, ListNode * commandNode, CommandEntry * cmd) 
+{
+	static List * pathList = NULL;
+	CommandEntry * nextCmd = NULL;
+	ListNode * nextNode = commandNode->nextNode;;
+
+	if(!pathList) pathList = makeList(NULL);
+
+	if(argArrayLength==2) insertInList(pathList,argArray[1],NULL);
+	else insertInList(pathList,"",NULL);
+
+	if(nextNode) {
+		nextCmd = getCommandEntryFromString((void *)nextNode->data,
+				permission);
+	}
+
+	if(cmd!=nextCmd) {
+		int ret = updateInit(fp,pathList);
+		freeList(pathList);
+		pathList = NULL;
+		return ret;
+	}
+
+	return 0;
+}
+
 int handleUpdate(FILE * fp, unsigned int * permission, int argArrayLength, 
 		char ** argArray) 
 {
-        return updateInit(fp);
+	if(argArrayLength==2) {
+		int ret;
+		List * pathList = makeList(NULL);
+		insertInList(pathList,argArray[1],NULL);
+		ret = updateInit(fp,pathList);
+		freeList(pathList);
+		return ret;
+	}
+        return updateInit(fp,NULL);
 }
 
 int handleNext(FILE * fp, unsigned int * permission, int argArrayLength, 
@@ -538,42 +584,42 @@ int handleCrossfade(FILE * fp, unsigned int * permission, int argArrayLength,
 void initCommands() {
         commandList = makeList(free);
 
-        addCommand(COMMAND_PLAY        ,PERMISSION_CONTROL, 0, 1,handlePlay);
-        addCommand(COMMAND_STOP        ,PERMISSION_CONTROL, 0, 0,handleStop);
-        addCommand(COMMAND_PAUSE       ,PERMISSION_CONTROL, 0, 1,handlePause);
-        addCommand(COMMAND_STATUS      ,PERMISSION_READ,    0, 0,commandStatus);
-        addCommand(COMMAND_KILL        ,PERMISSION_ADMIN,  -1,-1,handleKill);
-        addCommand(COMMAND_CLOSE       ,0,                 -1,-1,handleClose);
-        addCommand(COMMAND_ADD         ,PERMISSION_ADD,     0, 1,handleAdd);
-        addCommand(COMMAND_DELETE      ,PERMISSION_CONTROL, 1, 1,handleDelete);
-        addCommand(COMMAND_PLAYLIST    ,PERMISSION_READ,    0, 0,handlePlaylist);
-        addCommand(COMMAND_SHUFFLE     ,PERMISSION_CONTROL, 0, 0,handleShuffle);
-        addCommand(COMMAND_CLEAR       ,PERMISSION_CONTROL, 0, 0,handleClear);
-        addCommand(COMMAND_SAVE        ,PERMISSION_CONTROL, 1, 1,handleSave);
-        addCommand(COMMAND_LOAD        ,PERMISSION_ADD,     1, 1,handleLoad);
-        addCommand(COMMAND_LSINFO      ,PERMISSION_READ,    0, 1,handleLsInfo);
-        addCommand(COMMAND_RM          ,PERMISSION_CONTROL, 1, 1,handleRm);
-        addCommand(COMMAND_PLAYLISTINFO,PERMISSION_READ,    0, 1,handlePlaylistInfo);
-        addCommand(COMMAND_FIND        ,PERMISSION_READ,    2, 2,handleFind);
-        addCommand(COMMAND_SEARCH      ,PERMISSION_READ,    2, 2,handleSearch);
-        addCommand(COMMAND_UPDATE      ,PERMISSION_ADMIN,   0, 0,handleUpdate);
-        addCommand(COMMAND_NEXT        ,PERMISSION_CONTROL, 0, 0,handleNext);
-        addCommand(COMMAND_PREVIOUS    ,PERMISSION_CONTROL, 0, 0,handlePrevious);
-        addCommand(COMMAND_LISTALL     ,PERMISSION_READ,    0, 1,handleListAll);
-        addCommand(COMMAND_VOLUME      ,PERMISSION_CONTROL, 1, 1,handleVolume);
-        addCommand(COMMAND_REPEAT      ,PERMISSION_CONTROL, 1, 1,handleRepeat);
-        addCommand(COMMAND_RANDOM      ,PERMISSION_CONTROL, 1, 1,handleRandom);
-        addCommand(COMMAND_STATS       ,PERMISSION_READ,    0, 0,handleStats);
-        addCommand(COMMAND_CLEAR_ERROR ,PERMISSION_CONTROL, 0, 0,handleClearError);
-        addCommand(COMMAND_LIST        ,PERMISSION_READ,    1, 2,handleList);
-        addCommand(COMMAND_MOVE        ,PERMISSION_CONTROL, 2, 2,handleMove);
-        addCommand(COMMAND_SWAP        ,PERMISSION_CONTROL, 2, 2,handleSwap);
-        addCommand(COMMAND_SEEK        ,PERMISSION_CONTROL, 2, 2,handleSeek);
-        addCommand(COMMAND_LISTALLINFO ,PERMISSION_READ,    0, 1,handleListAllInfo);
-        addCommand(COMMAND_PING        ,0,                  0, 0,handlePing);
-        addCommand(COMMAND_SETVOL      ,PERMISSION_CONTROL, 1, 1,handleSetVol);
-        addCommand(COMMAND_PASSWORD    ,0,                  1, 1,handlePassword);
-        addCommand(COMMAND_CROSSFADE   ,PERMISSION_CONTROL, 1, 1,handleCrossfade);
+        addCommand(COMMAND_PLAY        ,PERMISSION_CONTROL, 0, 1,handlePlay,NULL);
+        addCommand(COMMAND_STOP        ,PERMISSION_CONTROL, 0, 0,handleStop,NULL);
+        addCommand(COMMAND_PAUSE       ,PERMISSION_CONTROL, 0, 1,handlePause,NULL);
+        addCommand(COMMAND_STATUS      ,PERMISSION_READ,    0, 0,commandStatus,NULL);
+        addCommand(COMMAND_KILL        ,PERMISSION_ADMIN,  -1,-1,handleKill,NULL);
+        addCommand(COMMAND_CLOSE       ,0,                 -1,-1,handleClose,NULL);
+        addCommand(COMMAND_ADD         ,PERMISSION_ADD,     0, 1,handleAdd,NULL);
+        addCommand(COMMAND_DELETE      ,PERMISSION_CONTROL, 1, 1,handleDelete,NULL);
+        addCommand(COMMAND_PLAYLIST    ,PERMISSION_READ,    0, 0,handlePlaylist,NULL);
+        addCommand(COMMAND_SHUFFLE     ,PERMISSION_CONTROL, 0, 0,handleShuffle,NULL);
+        addCommand(COMMAND_CLEAR       ,PERMISSION_CONTROL, 0, 0,handleClear,NULL);
+        addCommand(COMMAND_SAVE        ,PERMISSION_CONTROL, 1, 1,handleSave,NULL);
+        addCommand(COMMAND_LOAD        ,PERMISSION_ADD,     1, 1,handleLoad,NULL);
+        addCommand(COMMAND_LSINFO      ,PERMISSION_READ,    0, 1,handleLsInfo,NULL);
+        addCommand(COMMAND_RM          ,PERMISSION_CONTROL, 1, 1,handleRm,NULL);
+        addCommand(COMMAND_PLAYLISTINFO,PERMISSION_READ,    0, 1,handlePlaylistInfo,NULL);
+        addCommand(COMMAND_FIND        ,PERMISSION_READ,    2, 2,handleFind,NULL);
+        addCommand(COMMAND_SEARCH      ,PERMISSION_READ,    2, 2,handleSearch,NULL);
+        addCommand(COMMAND_UPDATE      ,PERMISSION_ADMIN,   0, 1,handleUpdate,listHandleUpdate);
+        addCommand(COMMAND_NEXT        ,PERMISSION_CONTROL, 0, 0,handleNext,NULL);
+        addCommand(COMMAND_PREVIOUS    ,PERMISSION_CONTROL, 0, 0,handlePrevious,NULL);
+        addCommand(COMMAND_LISTALL     ,PERMISSION_READ,    0, 1,handleListAll,NULL);
+        addCommand(COMMAND_VOLUME      ,PERMISSION_CONTROL, 1, 1,handleVolume,NULL);
+        addCommand(COMMAND_REPEAT      ,PERMISSION_CONTROL, 1, 1,handleRepeat,NULL);
+        addCommand(COMMAND_RANDOM      ,PERMISSION_CONTROL, 1, 1,handleRandom,NULL);
+        addCommand(COMMAND_STATS       ,PERMISSION_READ,    0, 0,handleStats,NULL);
+        addCommand(COMMAND_CLEAR_ERROR ,PERMISSION_CONTROL, 0, 0,handleClearError,NULL);
+        addCommand(COMMAND_LIST        ,PERMISSION_READ,    1, 2,handleList,NULL);
+        addCommand(COMMAND_MOVE        ,PERMISSION_CONTROL, 2, 2,handleMove,NULL);
+        addCommand(COMMAND_SWAP        ,PERMISSION_CONTROL, 2, 2,handleSwap,NULL);
+        addCommand(COMMAND_SEEK        ,PERMISSION_CONTROL, 2, 2,handleSeek,NULL);
+        addCommand(COMMAND_LISTALLINFO ,PERMISSION_READ,    0, 1,handleListAllInfo,NULL);
+        addCommand(COMMAND_PING        ,0,                  0, 0,handlePing,NULL);
+        addCommand(COMMAND_SETVOL      ,PERMISSION_CONTROL, 1, 1,handleSetVol,NULL);
+        addCommand(COMMAND_PASSWORD    ,0,                  1, 1,handlePassword,NULL);
+        addCommand(COMMAND_CROSSFADE   ,PERMISSION_CONTROL, 1, 1,handleCrossfade,NULL);
 
         sortList(commandList);
 }
@@ -589,45 +635,98 @@ int checkArgcAndPermission(CommandEntry * cmd, FILE *fp,
         int max = cmd->max + 1;
 
 	if (cmd->reqPermission != (permission & cmd->reqPermission)) {
-                myfprintf(fp,"%s You don't have permission for \"%s\"\n",COMMAND_RESPOND_ERROR,cmd->cmd);
+		if(fp) {
+                	myfprintf(fp,"%s You don't have permission for "
+					"\"%s\"\n",COMMAND_RESPOND_ERROR,
+					cmd->cmd);
+		}
                 return -1;
 	}
 
         if (min == 0) return 0;
 
         if (min == max && max != argc) {
-                myfprintf(fp,"%s Wrong number of arguments for \"%s\"\n",COMMAND_RESPOND_ERROR,argArray[0]);
+                if(fp) {
+			myfprintf(fp,"%s Wrong number of arguments for "
+					"\"%s\"\n",COMMAND_RESPOND_ERROR,
+					argArray[0]);
+		}
                 return -1;
         }
         else if (argc < min) {
-                myfprintf(fp,"%s too few arguments for \"%s\"\n",COMMAND_RESPOND_ERROR,argArray[0]);
+                if(fp) {
+                	myfprintf(fp,"%s too few arguments for \"%s\"\n",
+					COMMAND_RESPOND_ERROR,argArray[0]);
+		}
                 return -1;
         }
         else if (argc > max && max /* != 0 */) {
-                myfprintf(fp,"%s too many arguments for \"%s\"\n",COMMAND_RESPOND_ERROR,argArray[0]);
+		if(fp) {
+                	myfprintf(fp,"%s too many arguments for \"%s\"\n",
+					COMMAND_RESPOND_ERROR,argArray[0]);
+		}
                 return -1;
         }
         else return 0;
 }
 
-int processCommand(FILE * fp, unsigned int * permission, int argArrayLength, 
-		char ** argArray) 
+CommandEntry * getCommandEntryAndCheckArgcAndPermission(FILE * fp, 
+		unsigned int * permission, int argArrayLength, char ** argArray)
 {
         CommandEntry * cmd;
 
-        if(argArrayLength == 0) return 0;
+        if(argArrayLength == 0) return NULL;
 
         if(!findInList(commandList, argArray[0],(void *)&cmd)) {
-                myfprintf(fp,"%s Unknown command \"%s\"\n",COMMAND_RESPOND_ERROR,
-                                argArray[0]);
-                return -1;
+                if(fp) {
+			myfprintf(fp,"%s Unknown command \"%s\"\n",
+                                COMMAND_RESPOND_ERROR,argArray[0]);
+		}
+                return NULL;
         }
 
         if(checkArgcAndPermission(cmd, fp, *permission, argArrayLength, 
 			argArray) < 0) 
 	{
+		return NULL;
+	}
+
+	return cmd;
+}
+
+CommandEntry * getCommandEntryFromString(char * string, int * permission) {
+	CommandEntry * cmd = NULL;
+	char ** argArray;
+	int argArrayLength = buffer2array(string,&argArray);
+
+	if(0==argArrayLength) return NULL;
+
+	cmd = getCommandEntryAndCheckArgcAndPermission(NULL,permission,
+			argArrayLength,argArray);
+	freeArgArray(argArray,argArrayLength);
+
+	return cmd;
+}
+
+int processCommand(FILE * fp, unsigned int * permission, int argArrayLength, 
+		char ** argArray, ListNode * commandNode) 
+{
+        CommandEntry * cmd;
+
+        if(argArrayLength == 0) return 0;
+
+	if(NULL==(cmd = getCommandEntryAndCheckArgcAndPermission(fp,permission,
+			argArrayLength,argArray))) 
+	{
 		return -1;
 	}
 
-        return cmd->handler(fp, permission, argArrayLength, argArray);
+        if(NULL==commandNode || NULL==cmd->listHandler) {
+		return cmd->handler(fp, permission, argArrayLength, argArray);
+	}
+	else {
+		return cmd->listHandler(fp, permission, argArrayLength,
+				argArray, commandNode, cmd);
+	}
 }
+

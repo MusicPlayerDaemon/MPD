@@ -22,6 +22,7 @@
 #include "../config.h"
 
 #include "song.h"
+#include "list.h"
 
 #include <stdio.h>
 #include <sys/param.h>
@@ -32,7 +33,7 @@ int isUpdatingDB();
 
 void directory_sigChldHandler(int pid, int status);
 
-int updateInit(FILE * fp);
+int updateInit(FILE * fp, List * pathList);
 
 void initMp3Directory();
 

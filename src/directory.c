@@ -90,7 +90,14 @@ int updateDirectory(Directory * directory);
 
 void deleteEmptyDirectoriesInDirectory(Directory * directory);
 
+void removeSongFromDirectory(Directory * directory, char * shortname);
+
 int addSubDirectoryToDirectory(Directory * directory, char * shortname, char * name);
+
+Directory * getDirectory(char * name);
+
+Song * getSongDetails(char * file, char ** shortnameRet, 
+		Directory ** directoryRet);
 
 int isUpdatingDB() {
 	if(directory_updatePid>0) return directory_updateJobId;
@@ -114,7 +121,7 @@ void directory_sigChldHandler(int pid, int status) {
 	}
 }
 
-int updateInit(FILE * fp) {
+int updateInit(FILE * fp, List * pathList) {
 	if(directory_updatePid > 0) {
 		myfprintf(fp,"%s already updating\n",COMMAND_RESPOND_ERROR);
 		return -1;
@@ -137,7 +144,41 @@ int updateInit(FILE * fp) {
                	finishPlaylist();
 		finishVolume();
 
-		if(updateMp3Directory(stderr)) exit(EXIT_FAILURE);
+		if(pathList) {
+			ListNode * node = pathList->firstNode;
+			Directory * directory;
+			Song * song;
+			char * shortname;
+
+			while(node) {
+				if(NULL==(directory = getDirectory(node->key)))
+				{
+					song = getSongDetails(node->key,
+							&shortname,&directory);
+					if(song && updateSongInfo(song)<0) {
+						removeSongFromDirectory(
+							directory,
+							shortname);
+					}
+				}
+				else {
+					if(updateDirectory(directory)<0)  {
+						ERROR("problems updating music "
+							"db\n");
+						exit(EXIT_FAILURE);
+					}
+				}
+				node = node->nextNode;
+			}
+		}
+		else if(updateDirectory(mp3rootDirectory)<0) exit(EXIT_FAILURE);
+		if(writeDirectoryDB()<0) {
+			ERROR("problems writing music db file, \"%s\"\n",
+					directorydb);
+			myfprintf(fp,"%s problems writing music db\n",
+					COMMAND_RESPOND_ERROR);
+			exit(EXIT_FAILURE);
+		}
 		exit(EXIT_SUCCESS);
 	}
 	else if(directory_updatePid < 0) {
@@ -950,7 +991,9 @@ void initMp3Directory() {
 	exploreDirectory(mp3rootDirectory);
 }
 
-Song * getSong(char * file) {
+Song * getSongDetails(char * file, char ** shortnameRet, 
+		Directory ** directoryRet)
+{
 	void * song;
 	Directory * directory;
 	char * dir = NULL;
@@ -983,7 +1026,13 @@ Song * getSong(char * file) {
 	}
 
 	free(dup);
+	if(shortnameRet) *shortnameRet = shortname;
+	if(directoryRet) *directoryRet = directory;
 	return (Song *)song;
+}
+
+Song * getSong(char * file) {
+	return getSongDetails(file,NULL,NULL);
 }
 
 time_t getDbModTime() {

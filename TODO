@@ -1,15 +1,7 @@
 1) non-blocking (for other clients) update
-	a) have two commands, one that blocks and returns updated info and another command that doesn't block
-	b) allow incremental updating, either a directory recursively or a specific song
-	c) fork on update
-	d) have a special case where if a update is in a command list, it only forks at the beginning of the list, and writes at the end of the command list
-	e) add an element to status stating the "update state"
-	f) store stuff to updated in a linked list prior to update fork
-	g) update child writes db file, parents reads db file when done (the msells/sbh alogrithm)
-	h) when reading directory db and checking for deleted, new, or changed stuff, assume all info is sorted (so we can deterimine if its new very quickly without searching through lists of stuff every time).  Also, for new stuff, insert it with insertInListBeforeNode() function, to keep lists sorted.
 	j) when reading new directory db, we should block some signals when manipulating the directorydb, so we don't receive a signal to quit in the middle of an update
 	k) when bg-update, have parent print out new old stuff to log on reading db, not the child
-	l) return a job-id for each update-job, the job id can be polled in status
+	l) IMPORTANT: look over new command list shiznit and make it much cleaner, please! (in particular, move buffer2array code from interface.c to command.c, and have command stuff do buffer2array)
 
 2) rewrite interface stuff, specifically command list handling etc so its less of a hack and deals with the above update stuff better
 
