@@ -1,7 +1,6 @@
 0.12
 ----
 *) AudioOutput
-	*) intigrate np's oss shit
 	*) have "format" as a default config option for all audioOutputs
 	*) don't automatically close audioOutput devices on openDevice(),
 		instead, let the plugins determine if they should be closed
@@ -11,6 +10,8 @@
 *) Fix id3v1 encoding
 
 *) Cleanup Config File Code
+
+*) Steal resampling code from ices (i think this code works only for 16-bit)
 
 *) Rewrite replaygain stuff:
 	*) Replay gain struct with album and track gain's and peak's
@@ -38,7 +39,7 @@
 	*) command for displaying playlist contents
 	*) command for appending to playlist
 
-*) abstract out input buffering from inputStream_http to inputStream
+*) max http buffering configurable
 
 *) use getaddrinfo instead of gethostbyname (check libshout)
 
