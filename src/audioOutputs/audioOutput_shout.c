@@ -361,7 +361,7 @@ static void myShout_finishDriver(AudioOutput * audioOutput) {
 	if(shoutInitCount == 0) shout_shutdown();
 }
 
-static void myShout_dropBufferedAudioDevice(AudioOutput * audioOutput) {
+static void myShout_dropBufferedAudio(AudioOutput * audioOutput) {
 	// needs to be implemented
 }
 
@@ -601,6 +601,7 @@ AudioOutputPlugin shoutPlugin =
 	myShout_finishDriver,
 	myShout_openDevice,
 	myShout_play,
+	myShout_dropBufferedAudio,
 	myShout_closeDevice,
 	myShout_setTag
 };
@@ -609,6 +610,7 @@ AudioOutputPlugin shoutPlugin =
 
 AudioOutputPlugin shoutPlugin = 
 {
+	NULL,
 	NULL,
 	NULL,
 	NULL,
