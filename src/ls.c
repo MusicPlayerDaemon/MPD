@@ -42,11 +42,13 @@ char * dupAndStripPlaylistSuffix(char * file) {
 }
 
 int isRemoteUrl(char * url) {
-	char * urlPrefixes[] = 	{
+	char * prefixes[] = 	{
 					"http://",
 					"ftp://",
 					NULL
 				};
+
+	char ** urlPrefixes = prefixes;
 
 	while(*urlPrefixes) {
 		if(strncmp(*urlPrefixes,url,strlen(*urlPrefixes)) == 0) {
@@ -58,6 +60,7 @@ int isRemoteUrl(char * url) {
 			return 0;
 #endif
 		}
+		urlPrefixes++;
 	}
 
 	return 0;
