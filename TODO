@@ -1,26 +1,10 @@
-1) Construct a small metadata buffer
-	a) MetadataChunk struct
-		1) functions for converting between block and MpdTag
-		2) char * buffer
-		3) positions ints for name, title, artist, album
-	b) MetadataChunk buffer in OutputBuffer
-		1) deal with incrementing and finding a free buffer Chunk
-			the decoder element
-		2) corresponding metachunk # for each audio chunk
-	c) player proccess
-		1) if not metachunk be sure to clear the current metadata
-			in playerControl
-		2) if it is, if WRITE, then write do pc->metadataChunk
+1) put some sort of error reporting for streaming/inputStream!
 
-2) Parse icymetadata
+2) Fix charset errors so they don't goto stderr/out
 
-3) Put a new metadata entry for icyName for Song's
+3) Add a timeout for streams (how long? 1 minutes?)
 
-4) put some sort of error reporting for streaming/inputStream!
-
-5) Fix charset errors so they don't goto stderr/out
-
-6) Add a timeout for streams (how long? 1 minutes?)
+4) (?) Allow loading of remote playlists
 
 
 Post-1.0
