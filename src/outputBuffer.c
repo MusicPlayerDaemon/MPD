@@ -38,10 +38,32 @@ void flushOutputBuffer(OutputBuffer * cb) {
 }
 
 int sendDataToOutputBuffer(OutputBuffer * cb, DecoderControl * dc, 
-                char * data, long datalen, float time, mpd_uint16 bitRate)
+                char * dataIn, long dataInLen, float time, mpd_uint16 bitRate)
 {
         mpd_uint16 dataToSend;
 	mpd_uint16 chunkLeft;
+	char * data;
+	size_t datalen;
+	static char * convBuffer = NULL;
+	static long convBufferLen = 0;
+
+	if(memcmp(&(cb->audioFormat),&(dc->audioFormat),sizeof(AudioFormat))==0)
+	{
+		data = dataIn;
+		datalen = dataInLen;
+	}
+	else {
+		datalen = pcm_sizeOfOutputBufferForAudioFormatConversion(
+				&(dc->audioFormat), dataIn, dataInLen,
+				&(cb->audioFormat));
+		if(datalen > convBufferLen) {
+			convBuffer = realloc(convBuffer,datalen);
+			convBufferLen = datalen;
+		}
+		data = convBuffer;
+		pcm_convertAudioFormat(&(dc->audioFormat), dataIn, dataInLen,
+				&(cb->audioFormat),data);
+	}
 
         while(datalen) {
 		if(currentChunk != cb->end) {

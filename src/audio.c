@@ -167,7 +167,6 @@ void initAudioConfig() {
         }
 
         switch(audio_configFormat->bits) {
-        case 8:
         case 16:
                 break;
         default:
@@ -184,7 +183,6 @@ void initAudioConfig() {
         }
 
         switch(audio_configFormat->channels) {
-        case 1:
         case 2:
                 break;
         default:

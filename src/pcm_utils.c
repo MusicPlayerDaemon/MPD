@@ -136,4 +136,21 @@ void pcm_mix(char * buffer1, char * buffer2, size_t bufferSize1,
 
 	pcm_add(buffer1,buffer2,bufferSize1,bufferSize2,vol1,1000-vol1,format);
 }
-/* vim:set shiftwidth=4 tabstop=8 expandtab: */
+
+void pcm_convertAudioFormat(AudioFormat * inFormat, char * inBuffer, size_t
+                inSize, AudioFormat * outFormat, char * outBuffer)
+{
+	abort();
+
+	return;
+}
+
+size_t pcm_sizeOfOutputBufferForAudioFormatConversion(AudioFormat * inFormat,
+		char * inBuffer, size_t inSize, AudioFormat * outFormat)
+{
+	abort();
+
+	return 0;
+}
+
+/* vim:set shiftwidth=8 tabstop=8 expandtab: */
