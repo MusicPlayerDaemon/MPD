@@ -94,11 +94,6 @@ if test "$DIE" -eq 1; then
         exit 1
 fi
 
-if test -z "$*"; then
-        echo "I am going to run ./configure with no arguments - if you wish "
-        echo "to pass any to it, please specify them on the $0 command line."
-fi
-
 echo "Generating configuration files for $package, please wait...."
 
 if [ -d /usr/local/share/aclocal ]; then
@@ -122,6 +117,8 @@ autoconf
 cd src/libid3tag
 echo "  [src/libid3tag] $ACLOCAL $ACLOCAL_FLAGS"
 $ACLOCAL $ACLOCAL_FLAGS
+echo "  [src/libid3tag] autoheader"
+autoheader
 echo "  [src/libid3tag] $AUTOMAKE --add-missing $AUTOMAKE_FLAGS"
 $AUTOMAKE --add-missing $AUTOMAKE_FLAGS 
 echo "  [src/libid3tag] autoconf"
@@ -131,6 +128,8 @@ cd ../..
 cd src/libmad
 echo "  [src/libmad] $ACLOCAL $ACLOCAL_FLAGS"
 $ACLOCAL $ACLOCAL_FLAGS
+echo "  [src/libmad] autoheader"
+autoheader
 echo "  [src/libmad] $AUTOMAKE --add-missing $AUTOMAKE_FLAGS"
 $AUTOMAKE --add-missing $AUTOMAKE_FLAGS 
 echo "  [src/libmad] autoconf"
