@@ -76,11 +76,11 @@ void myfprintf(FILE * fp, char * format, ... ) {
 	}
 	else {
 		vsnprintf(buffer,BUFFER_LENGTH,format,arglist);
-		if((fcntlret & O_NONBLOCK) && 
-				interfacePrintWithFD(fd,buffer)==0) 
+		if(!(fcntlret & O_NONBLOCK) || 
+				interfacePrintWithFD(fd,buffer)<0) 
 		{
+			blockingWrite(fd,buffer);
 		}
-		else blockingWrite(fd,buffer);
 	}
 
 	va_end(arglist);
