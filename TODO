@@ -34,8 +34,6 @@
 
 *) only use libid3tag for id3v2 tags, use internal implementation for id3v1 tags
 
-*) add support for composer, performer metadata
-
 0.13
 ----
 
