@@ -190,14 +190,19 @@ int lsPlaylists(FILE * fp, char * utf8path) {
 	return 0;
 }
 
-int isFile(char * utf8file, time_t * mtime) {
-	struct stat st;
+int myStat(char * utf8file, struct stat * st) {
 	char * file = utf8ToFsCharset(utf8file);
 	char * actualFile = file;
 
 	if(actualFile[0]!='/') actualFile = rmp2amp(file);
 
-	if(stat(actualFile,&st)==0) {
+	return stat(actualFile,st);
+}
+
+int isFile(char * utf8file, time_t * mtime) {
+	struct stat st;
+
+	if(myStat(utf8file,&st)) {
 		if(S_ISREG(st.st_mode)) {
 			if(mtime) *mtime = st.st_mtime;
 			return 1;
@@ -233,57 +238,31 @@ int isPlaylist(char * utf8file) {
 	return 0;
 }
 
-int hasWaveSuffix(char * utf8file) {
-	return hasSuffix(utf8file,"wav");
-}
-
-int hasFlacSuffix(char * utf8file) {
-	return hasSuffix(utf8file,"flac");
-}
-
-int hasOggSuffix(char * utf8file) {
-	return hasSuffix(utf8file,"ogg");
-}
-
-int hasAacSuffix(char * utf8file) {
-	return hasSuffix(utf8file,"aac");
-}
-
-int hasMp4Suffix(char * utf8file) {
-	if(hasSuffix(utf8file,"mp4")) return 1;
-	if(hasSuffix(utf8file,"m4a")) return 1;
-	return 0;
-}
-
-int hasMp3Suffix(char * utf8file) {
-	return hasSuffix(utf8file,"mp3");
-}
-
 int isDir(char * utf8name) {
 	struct stat st;
 
-	if(stat(rmp2amp(utf8ToFsCharset(utf8name)),&st)==0) {
+	if(myStat(utf8name,&st)==0) {
 		if(S_ISDIR(st.st_mode)) {
 			return 1;
 		}
 	}
-	else {
-		DEBUG("isDir: unable to stat: %s (%s)\n",utf8name,
-				rmp2amp(utf8ToFsCharset(utf8name)));
-	}
 
 	return 0;
 }
 
-InputPlugin * isMusic(char * utf8file, time_t * mtime) {
+InputPlugin * hasMusicSuffix(char * utf8file) {
         InputPlugin * ret = NULL;
         
-	if(isFile(utf8file,mtime)) {
-                char * s = getSuffix(utf8file);
-                if(s) ret = getInputPluginFromSuffix(s);
-	}
+        char * s = getSuffix(utf8file);
+        if(s) ret = getInputPluginFromSuffix(s);
 
 	return ret;
 }
 
-/* vim:set shiftwidth=4 tabstop=8 expandtab: */
+InputPlugin * isMusic(char * utf8file, time_t * mtime) {
+	if(isFile(utf8file,mtime)) {
+		return hasMusicSuffix(utf8file);
+	}
+
+	return NULL;
+}

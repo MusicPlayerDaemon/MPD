@@ -24,6 +24,9 @@
 #include "inputPlugin.h" 
 
 #include <stdio.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 #include <time.h>
 
 int lsPlaylists(FILE * fp, char * utf8path);
@@ -34,11 +37,15 @@ int isValidRemoteUtf8Url(char * utf8url);
 
 int isRemoteUrl(char * url);
 
+int myStat(char * utf8file, struct stat * st);
+
 int isFile(char * utf8file, time_t * mtime);
 
 int isDir(char * utf8name);
 
 int isPlaylist(char * utf8file);
+
+InputPlugin * hasMusicSuffix(char * utf8file);
 
 InputPlugin * isMusic(char * utf8file, time_t * mtime);
 
@@ -47,4 +54,3 @@ char * dupAndStripPlaylistSuffix(char * file);
 int printRemoteUrlHandlers(FILE * fp);
 
 #endif
-/* vim:set shiftwidth=4 tabstop=8 expandtab: */
