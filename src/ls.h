@@ -44,5 +44,7 @@ InputPlugin * isMusic(char * utf8file, time_t * mtime);
 
 char * dupAndStripPlaylistSuffix(char * file);
 
+int printRemoteUrlHandlers(FILE * fp);
+
 #endif
 /* vim:set shiftwidth=4 tabstop=8 expandtab: */

@@ -48,6 +48,17 @@ static char * remoteUrlPrefixes[] =
 	NULL
 };
 
+int printRemoteUrlHandlers(FILE * fp) {
+        char ** prefixes = remoteUrlPrefixes;
+
+        while (*prefixes) {
+                myfprintf(fp,"handler: %s\n", *prefixes);
+                prefixes++;
+        }
+
+        return 0;
+}
+
 int isValidRemoteUtf8Url(char * utf8url) {
         int ret = 0;
         char * lat1 = utf8StrToLatin1Dup(utf8url);

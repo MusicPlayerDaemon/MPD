@@ -73,6 +73,7 @@
 #define COMMAND_SETVOL		"setvol"
 #define COMMAND_PASSWORD	"password"
 #define COMMAND_CROSSFADE	"crossfade"
+#define COMMAND_URL_HANDLERS    "urlhandlers" 
 
 #define COMMAND_STATUS_VOLUME           "volume"
 #define COMMAND_STATUS_STATE            "state"
@@ -133,6 +134,12 @@ void addCommand(char * name, unsigned int reqPermission, int minargs,
 	cmd->reqPermission = reqPermission;
 
         insertInList(commandList, cmd->cmd, cmd);
+}
+
+int handleUrlHandlers(FILE * fp, unsigned int * permission, int argArrayLength, 
+		char ** argArray) 
+{
+        return printRemoteUrlHandlers(fp);
 }
 
 int handlePlay(FILE * fp, unsigned int * permission, int argArrayLength, 
@@ -628,6 +635,7 @@ void initCommands() {
         addCommand(COMMAND_SETVOL      ,PERMISSION_CONTROL, 1, 1,handleSetVol,NULL);
         addCommand(COMMAND_PASSWORD    ,0,                  1, 1,handlePassword,NULL);
         addCommand(COMMAND_CROSSFADE   ,PERMISSION_CONTROL, 1, 1,handleCrossfade,NULL);
+        addCommand(COMMAND_URL_HANDLERS,PERMISSION_READ,    0, 0,handleUrlHandlers,NULL);
 
         sortList(commandList);
 }

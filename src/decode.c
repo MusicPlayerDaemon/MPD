@@ -27,6 +27,7 @@
 #include "log.h"
 #include "sig_handlers.h"
 #include "ls.h"
+#include "utf8.h"
 
 #include <signal.h>
 #include <sys/types.h>
