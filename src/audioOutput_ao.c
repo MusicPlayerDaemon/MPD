@@ -150,6 +150,7 @@ static void audioOutputAo_closeDevice(AudioOutput * audioOutput) {
 	if(ad->device) {
 		blockSignals();
 		ao_close(ad->device);
+		audioOutput->open = 0;
 		ad->device = NULL;
 		unblockSignals();
 	}
@@ -175,6 +176,8 @@ static int audioOutputAo_openDevice(AudioOutput * audioOutput,
 	unblockSignals();
 
 	if(ad->device==NULL) return -1;
+
+	audioOutput->open = 1;
 
 	return 0;
 }

@@ -32,6 +32,7 @@ AudioOutput * newAudioOutput(char * name) {
 		ret->openDeviceFunc = plugin->openDeviceFunc;
 		ret->playFunc = plugin->playFunc;
 		ret->closeDeviceFunc = plugin->closeDeviceFunc;
+		ret->open = 0;
 
 		plugin->initDriverFunc(ret);
 	}
