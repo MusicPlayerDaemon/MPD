@@ -660,7 +660,7 @@ int mp3_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream) {
         
 	dc->totalTime = data.totalTime;
 
-	if(inStream->metaTitle) {
+	/*if(inStream->metaTitle) {
 		if(tag) freeMpdTag(tag);
 		tag = newMpdTag();
 		tag->title = strdup(inStream->metaTitle);
@@ -687,7 +687,7 @@ int mp3_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream) {
 		}
 		copyMpdTagToOutputBuffer(cb, tag);
 		freeMpdTag(tag);
-	}
+	}*/
 
 	dc->state = DECODE_STATE_DECODE;
 
