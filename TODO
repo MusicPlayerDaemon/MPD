@@ -34,8 +34,6 @@
 *) make libao optional during configure, but check that some form of audioOutput
 	is enabled (either oss, shout, or ao)
 
-*) Fix id3v1 encoding
-
 *) Cleanup Config File Code
 
 *) Optimize read() on clients
