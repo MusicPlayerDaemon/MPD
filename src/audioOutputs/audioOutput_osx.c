@@ -26,7 +26,7 @@
 
 #include "../log.h"
 
-#define BUFFER_SIZE 8192
+#define BUFFER_SIZE 4096
 
 typedef struct _OsxData {
 	AudioUnit au;
@@ -98,31 +98,36 @@ static void osx_finishDriver(AudioOutput * audioOutput) {
 }
 
 static void osx_dropBufferedAudio(AudioOutput * audioOutput) {
-	/* not implemented yet */
+	OsxData * od = (OsxData *)audioOutput->data;
+
+	pthread_mutex_lock(&od->mutex);
+	od->go = 0;
+	od->len = 0;
+	pthread_mutex_unlock(&od->mutex);
+
+	/*if(od->started) {
+		AudioOutputUnitStop(od->au);
+		od->started = 0;
+	}*/
 }
 
 static void osx_closeDevice(AudioOutput * audioOutput) {
 	OsxData * od = (OsxData *) audioOutput->data;
 
-	DEBUG("entering osx_closeDevice\n");
-
 	pthread_mutex_lock(&od->mutex);
 	od->go = 0;
 	while(od->len) {
-		DEBUG("osx_closeDevice: cond_wait\n");
 		pthread_cond_wait(&od->condition, &od->mutex);
 	}
 	pthread_mutex_unlock(&od->mutex);
 
-	DEBUG("stopping au\n");
+	if(od->started) {
+		AudioOutputUnitStop(od->au);
+		od->started = 0;
+	}
 
-	AudioOutputUnitStop(od->au);
-
-	DEBUG("closing au\n");
 	CloseComponent(od->au);
 	AudioUnitUninitialize(od->au);
-
-	DEBUG("Leaving osx_closeDevice\n");
 
 	audioOutput->open = 0;
 }
@@ -161,7 +166,6 @@ static OSStatus osx_render(void * vdata,
 			bytesToCopy -= bytes;
 		}
 
-		assert(bytesToCopy);
 		memcpy(buffer->mData+curpos, od->buffer+od->pos, bytesToCopy);
 		od->pos += bytesToCopy;
 		curpos += bytesToCopy;
@@ -193,21 +197,17 @@ static int osx_openDevice(AudioOutput * audioOutput) {
 	desc.componentFlags = 0;
 	desc.componentFlagsMask = 0;
 
-	DEBUG("finding component\n");
-
 	comp = FindNextComponent(NULL, &desc);
 	if(comp == 0) {
 		ERROR("Error finding OS X component\n");
 		return -1;
 	}
 
-	DEBUG("opening component\n");
 	if(OpenAComponent(comp, &od->au) != noErr) {
 		ERROR("Unable to open OS X component\n");
 		return -1;
 	}
 
-	DEBUG("initializing au\n");
 	if(AudioUnitInitialize(od->au) != 0) {
 		CloseComponent(od->au);
 		ERROR("Unable to initialuze OS X audio unit\n");
@@ -217,7 +217,6 @@ static int osx_openDevice(AudioOutput * audioOutput) {
 	callback.inputProc = osx_render;
 	callback.inputProcRefCon = od;
 
-	DEBUG("set callback\n");
 	if(AudioUnitSetProperty(od->au, kAudioUnitProperty_SetRenderCallback,
 				kAudioUnitScope_Input, 0,
 				&callback, sizeof(callback)) != 0)
@@ -238,7 +237,6 @@ static int osx_openDevice(AudioOutput * audioOutput) {
 	streamDesc.mChannelsPerFrame = audioFormat->channels;
 	streamDesc.mBitsPerChannel = audioFormat->bits;
 
-	DEBUG("set format\n");
 	if(AudioUnitSetProperty(od->au, kAudioUnitProperty_StreamFormat,
 				kAudioUnitScope_Input, 0,
 				&streamDesc, sizeof(streamDesc)) != 0)
@@ -249,20 +247,11 @@ static int osx_openDevice(AudioOutput * audioOutput) {
 		return -1;
 	}
 
-	DEBUG("start\n");
-	int err = AudioOutputUnitStart(od->au);
-	if(err) {
-		ERROR("unable to start audio output: %i\n", err);
-		return -1;
-	}
-
-	od->go = 1;
 	od->pos = 0;
 	od->len = 0;
 
 	audioOutput->open = 1;
 
-	DEBUG("opened OS X device\n");
 	return 0;
 }
 
@@ -271,6 +260,16 @@ static int osx_play(AudioOutput * audioOutput, char * playChunk, int size) {
 	int bytesToCopy;
 	int curpos;
 
+	if(!od->started) {
+		od->go = 1;
+		od->started = 1;
+		int err = AudioOutputUnitStart(od->au);
+		if(err) {
+			ERROR("unable to start audio output: %i\n", err);
+			return -1;
+		}
+	}
+
 	pthread_mutex_lock(&od->mutex);
 
 	curpos = od->pos+od->len;
@@ -278,10 +277,6 @@ static int osx_play(AudioOutput * audioOutput, char * playChunk, int size) {
 
 	while(size) {
 		while(od->len >= BUFFER_SIZE) {
-			if(curpos!=od->pos) {
-				DEBUG("%i != %i\n", curpos, od->pos);
-				abort();
-			}
 			pthread_cond_signal(&od->condition);
 			pthread_cond_wait(&od->condition, &od->mutex);
 		}
@@ -299,7 +294,6 @@ static int osx_play(AudioOutput * audioOutput, char * playChunk, int size) {
 			bytesToCopy -= bytes;
 		}
 
-		assert(bytesToCopy);
 		memcpy(od->buffer+curpos, playChunk, bytesToCopy);
 		curpos += bytesToCopy;
 		playChunk += bytesToCopy;
