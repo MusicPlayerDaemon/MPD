@@ -145,6 +145,7 @@ int isCurrentAudioFormat(AudioFormat * audioFormat) {
 
 int openAudioDevice(AudioFormat * audioFormat) {
 	if(!aoOutput->open || !isCurrentAudioFormat(audioFormat)) {
+		copyAudioFormat(&audio_format, audioFormat);
 		return openAudioOutput(aoOutput, audioFormat);
 	}
 

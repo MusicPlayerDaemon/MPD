@@ -190,7 +190,7 @@ static int audioOutputAo_play(AudioOutput * audioOutput, char * playChunk,
 	AoData * ad = (AoData *)audioOutput->data;
 
 	if(ad->device==NULL) {
-		ERROR("trying to play w/o the audio device being open!\n");
+		ERROR("trying to play w/o the ao device being open!\n");
 		return -1;
 	}
 	
