@@ -82,7 +82,7 @@ void stopDecode(DecoderControl * dc) {
 			(dc->start || dc->state!=DECODE_STATE_STOP)) 
 	{
 		dc->stop = 1;
-		while(decode_pid && *decode_pid>0 && dc->stop) my_usleep(1000);
+		while(decode_pid && *decode_pid>0 && dc->stop) my_usleep(10000);
 	}
 }
 
@@ -135,7 +135,7 @@ int calculateCrossFadeChunks(PlayerControl * pc, AudioFormat * af) {
 int waitOnDecode(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb,
                 int * decodeWaitedOn) 
 {
-	while(decode_pid && *decode_pid>0 && dc->start) my_usleep(1000);
+	while(decode_pid && *decode_pid>0 && dc->start) my_usleep(10000);
 
 	if(dc->start || dc->error!=DECODE_ERROR_NOERROR) {
 		strncpy(pc->erroredFile,pc->file,MAXPATHLEN);
@@ -526,7 +526,7 @@ void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb) {
 					quitDecode(pc,dc);
 					return;
 				}
-				my_usleep(1000);
+				my_usleep(10000);
 			}
 			if(pc->queueState!=PLAYER_QUEUE_PLAY) {
 				quit = 1;
