@@ -129,23 +129,23 @@ void resetVisitedFlagsInTagTracker(int type) {
 }
 
 int wasVisitedInTagTracker(int type, char * str) {
-	TagTrackerItem * item;
+	void * item;
 
 	if(!tagLists[type]) return 0;
 
 	if(!findInList(tagLists[type], str, &item)) return 0;
 
-	return item->visited;
+	return ((TagTrackerItem *)item)->visited;
 }
 
 void visitInTagTracker(int type, char * str) {
-	TagTrackerItem * item;
+	void * item;
 
 	if(!tagLists[type]) return;
 
 	if(!findInList(tagLists[type], str, &item)) return;
 
-	item->visited = 1;
+	((TagTrackerItem *)item)->visited = 1;
 }
 
 void printVisitedInTagTracker(FILE * fp, int type) {
