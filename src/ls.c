@@ -239,8 +239,8 @@ int isMusic(char * utf8file, time_t * mtime) {
 #ifdef HAVE_FAAD
 		if(hasMp4Suffix(utf8file)) return 1;
 		if(hasAacSuffix(utf8file)) return 1;
-	}
 #endif
+	}
 
 	return 0;
 }
