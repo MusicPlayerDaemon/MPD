@@ -1,5 +1,6 @@
 1) seek needs to be rethought! as it is, it hangs near end of songs!
 	a) prolly need to make it blocking again, argh!
+		1) in decodeInit(), if (dc->seek) decodeStart();
 	b) for sure, setting wrap = 0 in decode.c is not good!
 
 2) play streams
