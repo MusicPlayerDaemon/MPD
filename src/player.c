@@ -172,8 +172,9 @@ int playerGetDecodeType(char * utf8file) {
 
 int playerPlay(FILE * fp, char * utf8file) {
 	PlayerControl * pc = &(getPlayerData()->playerControl);
-	if(fp==NULL) fp = stderr;
 	int decodeType;
+
+	if(fp==NULL) fp = stderr;
 
 	if(playerStop(fp)<0) return -1;
 

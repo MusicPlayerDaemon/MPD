@@ -130,10 +130,12 @@ int isFile(char * utf8file, time_t * mtime) {
 
 int hasSuffix(char * utf8file, char * suffix) {
 	char * file = utf8ToFsCharset(utf8file);
-	char * dup = strdup(file);;
+	char * dup = strdup(file);
 	char * cLast;
-	char * cNext = cLast = strtok(dup,".");
+	char * cNext;
 	int ret = 0;
+ 
+	cNext = cLast = strtok(dup,".");
 
 	while((cNext = strtok(NULL,"."))) cLast = cNext;
 	if(cLast && 0==strcasecmp(cLast,suffix)) ret = 1;
