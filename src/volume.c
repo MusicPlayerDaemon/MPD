@@ -43,7 +43,7 @@
 #define VOLUME_MIXER_SOFTWARE_DEFAULT		""
 #define VOLUME_MIXER_OSS_DEFAULT		"/dev/mixer"
 #define VOLUME_MIXER_ALSA_DEFAULT		"default"
-#define VOLUME_MIXER_ALSA_CONTROL_DEFAULT	"Master"
+#define VOLUME_MIXER_ALSA_CONTROL_DEFAULT	"PCM"
 
 #ifdef HAVE_OSS
 #define VOLUME_MIXER_TYPE_DEFAULT               VOLUME_MIXER_TYPE_OSS
@@ -65,7 +65,7 @@ int volume_softwareSet = 100;
 
 #ifdef HAVE_OSS
 int volume_ossFd;
-int volume_ossControl = SOUND_MIXER_VOLUME;
+int volume_ossControl = SOUND_MIXER_PCM;
 #endif
 
 #ifdef HAVE_ALSA
