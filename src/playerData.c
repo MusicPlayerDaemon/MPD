@@ -110,10 +110,16 @@ void initPlayerData() {
 	playerData_pd->playerControl.seek = 0;
 	memset(playerData_pd->playerControl.utf8url, 0, MAXPATHLEN+1);
 	memset(playerData_pd->playerControl.erroredUrl, 0, MAXPATHLEN+1);
+	memset(playerData_pd->playerControl.currentUrl, 0, MAXPATHLEN+1);
+	memset(playerData_pd->playerControl.metadata, 0, 
+                        DECODE_METADATA_LENGTH);
 	playerData_pd->playerControl.crossFade = crossfade;
 	playerData_pd->playerControl.softwareVolume = 1000;
 	playerData_pd->playerControl.totalPlayTime = 0;
 	playerData_pd->playerControl.decode_pid = 0;
+	playerData_pd->playerControl.title = -1;
+	playerData_pd->playerControl.metadataState = 
+                        PLAYER_METADATA_STATE_WRITE;
 
 	playerData_pd->decoderControl.stop = 0;
 	playerData_pd->decoderControl.start = 0;
@@ -122,7 +128,7 @@ void initPlayerData() {
 	playerData_pd->decoderControl.error = DECODE_ERROR_NOERROR;
 	memset(playerData_pd->decoderControl.utf8url, 0, MAXPATHLEN+1);
 	memset(playerData_pd->decoderControl.metadata, 0, 
-                DECODE_METADATA_LENGTH);
+                        DECODE_METADATA_LENGTH);
 	playerData_pd->decoderControl.title = -1;
 	playerData_pd->decoderControl.metadataSet = 0;
 }

@@ -157,6 +157,8 @@ InputPlugin audiofilePlugin =
 {
         "audiofile",
         NULL,
+	NULL,
+	NULL,
         audiofile_decode,
         audiofileTagDup,
         INPUT_PLUGIN_STREAM_FILE,
@@ -172,6 +174,8 @@ InputPlugin audiofilePlugin =
         NULL,
         NULL,
         NULL,
+	NULL,
+	NULL,
         0,
         NULL,
         NULL

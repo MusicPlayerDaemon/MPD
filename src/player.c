@@ -50,6 +50,15 @@ void clearPlayerPid() {
 	player_pid = 0;
 }
 
+static void resetPlayerMetadata() {
+        PlayerControl * pc = &(getPlayerData()->playerControl);
+
+        if(pc->metadataState == PLAYER_METADATA_STATE_READ) {
+                pc->metadataState = PLAYER_METADATA_STATE_WRITE;
+                pc->title = -1;
+        }
+}
+
 void resetPlayer() {
 	int pid;
 
@@ -62,6 +71,9 @@ void resetPlayer() {
 	getPlayerData()->playerControl.state = PLAYER_STATE_STOP;
 	getPlayerData()->playerControl.queueState = PLAYER_QUEUE_UNLOCKED;
 	getPlayerData()->playerControl.seek = 0;
+        getPlayerData()->playerControl.metadataState = 
+                        PLAYER_METADATA_STATE_WRITE;
+        getPlayerData()->playerControl.title = -1;
 	/* kill decode process if it got left running */
 	pid = getPlayerData()->playerControl.decode_pid;
 	if(pid>0) kill(pid,SIGTERM);
@@ -187,6 +199,7 @@ int playerPlay(FILE * fp, Song * song) {
 		return -1;
 	}
 	
+        resetPlayerMetadata();
 	while(player_pid>0 && pc->play) my_usleep(1000);
 	
 	return 0;
@@ -385,6 +398,7 @@ int playerSeek(FILE * fp, Song * song, float time) {
 	}
 
 	if(pc->error==PLAYER_ERROR_NOERROR) {
+                resetPlayerMetadata();
 		pc->seekWhere = time;
 		pc->seek = 1;
 		while(player_pid>0 && pc->seek) my_usleep(1000);
@@ -461,20 +475,21 @@ void playerCycleLogFiles() {
 
 /* this actually creates a dupe of the current metadata */
 Song * playerCurrentDecodeSong() {
-        static Song * song;
-	DecoderControl * dc = &(getPlayerData()->decoderControl);
+        static Song * song = NULL;
+	PlayerControl * pc = &(getPlayerData()->playerControl);
 
-        if(dc->metadataSet && (!song || strcmp(song->utf8url, dc->utf8url))) {
+        if(pc->metadataState == PLAYER_METADATA_STATE_READ && 
+                        (!song || strcmp(song->utf8url, pc->currentUrl))) 
+        {
                 if(song) freeJustSong(song);
                 song = newNullSong();
                 song->tag = newMpdTag();
                 if(song->utf8url) free(song->utf8url);
-                song->utf8url = strdup(dc->utf8url);
-                if(dc->title >= 0) {
-                        song->tag->title = dc->title + dc->metadata;
+                song->utf8url = strdup(pc->currentUrl);
+                if(pc->title >= 0) {
+                        song->tag->title = strdup(pc->title + pc->metadata);
                 }
-                else song->tag->title = NULL;
-
+                resetPlayerMetadata();
                 return song;
         }
 

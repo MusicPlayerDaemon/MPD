@@ -21,6 +21,7 @@
 
 #include "../config.h"
 
+#include "decode.h"
 #include "mpd_types.h"
 #include "song.h"
 
@@ -51,6 +52,9 @@
 #define PLAYER_QUEUE_UNLOCKED	0
 #define PLAYER_QUEUE_LOCKED	1
 
+#define PLAYER_METADATA_STATE_READ      1
+#define PLAYER_METADATA_STATE_WRITE     2
+
 typedef struct _PlayerControl {
 	volatile mpd_sint8 stop;
 	volatile mpd_sint8 play;
@@ -67,6 +71,7 @@ typedef struct _PlayerControl {
 	volatile float elapsedTime;
         volatile float fileTime;
 	char utf8url[MAXPATHLEN+1];
+	char currentUrl[MAXPATHLEN+1];
 	char erroredUrl[MAXPATHLEN+1];
 	volatile mpd_sint8 queueState;
 	volatile mpd_sint8 queueLockState;
@@ -79,6 +84,9 @@ typedef struct _PlayerControl {
 	volatile double totalPlayTime;
 	volatile int decode_pid;
 	volatile mpd_sint8 cycleLogFiles;
+        volatile mpd_sint8 metadataState;
+        char metadata[DECODE_METADATA_LENGTH];
+        volatile mpd_sint16 title;
 } PlayerControl;
 
 void clearPlayerPid();

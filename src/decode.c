@@ -71,6 +71,7 @@ void stopDecode(DecoderControl * dc) {
 
 void quitDecode(PlayerControl * pc, DecoderControl * dc) {
 	stopDecode(dc);
+        pc->metadataState = PLAYER_METADATA_STATE_READ;
 	pc->state = PLAYER_STATE_STOP;
         dc->seek = 0;
 	pc->play = 0;
@@ -110,6 +111,15 @@ int calculateCrossFadeChunks(PlayerControl * pc, AudioFormat * af) {
 		                quitDecode(pc,dc); \
 		                return; \
 	                } \
+                        if(pc->metadataState == PLAYER_METADATA_STATE_WRITE && \
+                                        dc->metadataSet) \
+                        { \
+                                memcpy(pc->metadata, dc->metadata, \
+                                                DECODE_METADATA_LENGTH); \
+                                pc->metadata[DECODE_METADATA_LENGTH-1] = '\0'; \
+                                pc->title = dc->title; \
+                        } \
+                        pc->metadataState = PLAYER_METADATA_STATE_READ; \
 	                pc->totalTime = dc->totalTime; \
 	                pc->sampleRate = dc->audioFormat.sampleRate; \
 	                pc->bits = dc->audioFormat.bits; \
@@ -131,6 +141,9 @@ int calculateCrossFadeChunks(PlayerControl * pc, AudioFormat * af) {
 int waitOnDecode(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb,
                 int * decodeWaitedOn) 
 {
+        strncpy(pc->currentUrl, pc->utf8url, MAXPATHLEN);
+        pc->currentUrl[MAXPATHLEN] = '\0';
+
 	while(decode_pid && *decode_pid>0 && dc->start) my_usleep(10000);
 
 	if(dc->start || dc->error!=DECODE_ERROR_NOERROR) {
@@ -570,7 +583,7 @@ void decode() {
         dc->seek = 0;
         dc->stop = 0;
 	dc->start = 1;
-
+        
 	if(decode_pid==NULL || *decode_pid<=0) {
 		if(decoderInit(pc,cb,dc)<0) return;
 	}
