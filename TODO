@@ -1,5 +1,7 @@
 0.12
 ----
+*) permissions command to print out permissions info
+
 *) rewrite saved playlist code
 	*) abstract out saved playlists from playlist.c
 	*) command for displaying playlist contents
