@@ -1,9 +1,9 @@
 Developer -> Warren Dukes <shank@mercury.chem.pitt.edu>
 Developer -> tw-nym
-wave File Support -> normalperson
+audiofile support and command.c cleanup -> normalperson
 setuid patch -> Nagilum
 'next' and 'previous' patch -> Niklas Hofer
-command.c cleanup -> mackstann
+command.c and signal handling cleanup -> mackstann
 replayGain -> AliasMrJones
 
 libid3tag and libmad copyrighted by Robert Leslie, http://www.underbit.com/products/mad
