@@ -353,6 +353,7 @@ InputPlugin oggPlugin =
 
 InputPlugin oggPlugin = 
 {
+	NULL,
         NULL,
         NULL,
         NULL,

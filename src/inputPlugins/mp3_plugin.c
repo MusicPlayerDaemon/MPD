@@ -651,6 +651,7 @@ InputPlugin mp3Plugin =
 	NULL,
 	NULL,
 	NULL,
+	NULL,
 	0,
 	NULL,
 	NULL

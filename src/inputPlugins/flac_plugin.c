@@ -16,17 +16,18 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "flac_decode.h"
+#include "../inputPlugin.h"
 
 #ifdef HAVE_FLAC
 
-#include "utils.h"
-#include "log.h"
-#include "pcm_utils.h"
-#include "inputStream.h"
-#include "outputBuffer.h"
-#include "replayGain.h"
-#include "audio.h"
+#include "../utils.h"
+#include "../log.h"
+#include "../pcm_utils.h"
+#include "../inputStream.h"
+#include "../outputBuffer.h"
+#include "../replayGain.h"
+#include "../audio.h"
+#include "../path.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -436,6 +437,144 @@ FLAC__StreamDecoderWriteStatus flacWrite(const FLAC__SeekableStreamDecoder *dec,
 
 	return FLAC__STREAM_DECODER_WRITE_STATUS_CONTINUE;
 }
+
+MpdTag * flacMetadataDup(char * utf8file, int * vorbisCommentFound) {
+	MpdTag * ret = NULL;
+	FLAC__Metadata_SimpleIterator * it;
+	FLAC__StreamMetadata * block = NULL;
+	int offset;
+	int len, pos;
+
+	*vorbisCommentFound = 0;
+
+	it = FLAC__metadata_simple_iterator_new();
+	if(!FLAC__metadata_simple_iterator_init(it,rmp2amp(utf8ToFsCharset(utf8file)),1,0)) {
+		FLAC__metadata_simple_iterator_delete(it);
+		return ret;
+	}
+	
+	do {
+		block = FLAC__metadata_simple_iterator_get_block(it);
+		if(!block) break;
+		if(block->type == FLAC__METADATA_TYPE_VORBIS_COMMENT) {
+			char * dup;
+
+			offset = FLAC__metadata_object_vorbiscomment_find_entry_from(block,0,"artist");
+			if(offset>=0) {
+				*vorbisCommentFound = 1;
+				if(!ret) ret = newMpdTag();
+				pos = strlen("artist=");
+				len = block->data.vorbis_comment.comments[offset].length-pos;
+				if(len>0) {
+					dup = malloc(len+1);
+					memcpy(dup,&(block->data.vorbis_comment.comments[offset].entry[pos]),len);
+					dup[len] = '\0';
+					stripReturnChar(dup);
+					ret->artist = dup;
+				}
+			}
+			offset = FLAC__metadata_object_vorbiscomment_find_entry_from(block,0,"album");
+			if(offset>=0) {
+				*vorbisCommentFound = 1;
+				if(!ret) ret = newMpdTag();
+				pos = strlen("album=");
+				len = block->data.vorbis_comment.comments[offset].length-pos;
+				if(len>0) {
+					dup = malloc(len+1);
+					memcpy(dup,&(block->data.vorbis_comment.comments[offset].entry[pos]),len);
+					dup[len] = '\0';
+					stripReturnChar(dup);
+					ret->album = dup;
+				}
+			}
+			offset = FLAC__metadata_object_vorbiscomment_find_entry_from(block,0,"title");
+			if(offset>=0) {
+				*vorbisCommentFound = 1;
+				if(!ret) ret = newMpdTag();
+				pos = strlen("title=");
+				len = block->data.vorbis_comment.comments[offset].length-pos;
+				if(len>0) {
+					dup = malloc(len+1);
+					memcpy(dup,&(block->data.vorbis_comment.comments[offset].entry[pos]),len);
+					dup[len] = '\0';
+					stripReturnChar(dup);
+					ret->title = dup;
+				}
+			}
+			offset = FLAC__metadata_object_vorbiscomment_find_entry_from(block,0,"tracknumber");
+			if(offset>=0) {
+				*vorbisCommentFound = 1;
+				if(!ret) ret = newMpdTag();
+				pos = strlen("tracknumber=");
+				len = block->data.vorbis_comment.comments[offset].length-pos;
+				if(len>0) {
+					dup = malloc(len+1);
+					memcpy(dup,&(block->data.vorbis_comment.comments[offset].entry[pos]),len);
+					dup[len] = '\0';
+					stripReturnChar(dup);
+					ret->track = dup;
+				}
+			}
+		}
+		else if(block->type == FLAC__METADATA_TYPE_STREAMINFO) {
+			if(!ret) ret = newMpdTag();
+			ret->time = ((float)block->data.stream_info.
+					total_samples) /
+					block->data.stream_info.sample_rate +
+					0.5;
+		}
+		FLAC__metadata_object_delete(block);
+	} while(FLAC__metadata_simple_iterator_next(it));
+
+	FLAC__metadata_simple_iterator_delete(it);
+	return ret;
+}
+
+MpdTag * flacTagDup(char * utf8file) {
+	MpdTag * ret = NULL;
+	int foundVorbisComment = 0;
+
+	ret = flacMetadataDup(utf8file,&foundVorbisComment);
+	if(!ret) return NULL;
+	if(!foundVorbisComment) {
+		MpdTag * temp = id3Dup(utf8file);
+		if(temp) {
+			temp->time = ret->time;
+			freeMpdTag(ret);
+			ret = temp;
+		}
+	}
+
+	if(ret) validateUtf8Tag(ret);
+
+	return ret;
+}
+
+char * flacSuffixes[] = {"flac", NULL};
+
+InputPlugin flacPlugin = 
+{
+        "flac",
+        NULL,
+        flac_decode,
+        flacTagDup,
+        INPUT_PLUGIN_STREAM_FILE,
+        flacSuffixes,
+        NULL
+};
+
+#else
+
+InputPlugin flacPlugin =
+{       
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        0,
+        NULL,
+        NULL,
+};
 
 #endif
 /* vim:set shiftwidth=8 tabstop=8 expandtab: */
