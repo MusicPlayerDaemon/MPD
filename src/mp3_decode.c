@@ -38,6 +38,7 @@
 
 #define READ_BUFFER_SIZE	40960
 
+#define DECODE_SKIP		-3
 #define DECODE_BREAK		-2
 #define DECODE_CONT		-1
 #define DECODE_OK		0
@@ -180,6 +181,7 @@ int decodeNextFrameHeader(mp3DecodeData * data) {
 		}
 	}
 	if(mad_header_decode(&data->frame.header,&data->stream)) {
+		if((data->stream).error==MAD_ERROR_LOSTSYNC) return DECODE_SKIP;
 		if(MAD_RECOVERABLE((data->stream).error)) return DECODE_CONT;
 		else {
 			if((data->stream).error==MAD_ERROR_BUFLEN) return DECODE_CONT;
@@ -204,6 +206,7 @@ int decodeNextFrame(mp3DecodeData * data) {
 		}
 	}
 	if(mad_frame_decode(&data->frame,&data->stream)) {
+		if((data->stream).error==MAD_ERROR_LOSTSYNC) return DECODE_SKIP;
 		if(MAD_RECOVERABLE((data->stream).error)) return DECODE_CONT;
 		else {
 			if((data->stream).error==MAD_ERROR_BUFLEN) return DECODE_CONT;
@@ -282,14 +285,23 @@ int decodeFirstFrame(mp3DecodeData * data) {
 	struct stat filestat;
 	struct xing xing;
 	int ret;
+	int skip;
 
 	memset(&xing,0,sizeof(struct xing));
 	xing.flags = 0;
 
-	while((ret = decodeNextFrameHeader(data))==DECODE_CONT);
-	if(ret!=DECODE_OK) return -1;
-	while((ret = decodeNextFrame(data))==DECODE_CONT);
-	if(ret!=DECODE_OK) return -1;
+	skip = 0;
+	while(1) {
+		printf("HERE 1\n");
+		while((ret = decodeNextFrameHeader(data))==DECODE_CONT);
+		if(ret==DECODE_SKIP) skip = 1;
+		if(ret==DECODE_BREAK) return -1;
+		while((ret = decodeNextFrame(data))==DECODE_CONT);
+		if(ret==DECODE_BREAK) return -1;
+		if(ret==DECODE_SKIP) skip = 1;
+		else if(skip && ret==DECODE_OK) skip = 0;
+		else if(!skip && ret==DECODE_OK) break;
+	}
 
 	if(parse_xing(&xing,data->stream.anc_ptr,data->stream.anc_bitlen)) {
 		if(xing.flags & XING_FRAMES) {
@@ -464,9 +476,11 @@ int mp3Read(mp3DecodeData * data, Buffer * cb, DecoderControl * dc) {
 	}
 
 	if(data->muteFrame) {
-		while((ret=decodeNextFrameHeader(data))==DECODE_CONT);
+		while((ret=decodeNextFrameHeader(data))==DECODE_CONT || 
+				ret==DECODE_SKIP);
 	}
-	else while((ret=decodeNextFrame(data))==DECODE_CONT);
+	else while((ret=decodeNextFrame(data))==DECODE_CONT || 
+			ret==DECODE_SKIP);
 	
 	return ret;
 }

@@ -96,8 +96,7 @@ void pcm_add(char * buffer1, char * buffer2, size_t bufferSize1,
 	switch(format->bits) {
 	case 16:
 		while(bufferSize1>0 && bufferSize2>0) {
-			temp32 = *buffer16_1;
-			temp32+= *buffer16_2;
+			temp32 = *buffer16_1+*buffer16_2;
 			*buffer16_1 = temp32>32767 ? 32767 : 
 					(temp32<-32768 ? -32768 : temp32);
 			buffer16_1++;
@@ -105,12 +104,11 @@ void pcm_add(char * buffer1, char * buffer2, size_t bufferSize1,
 			bufferSize1-=2;
 			bufferSize2-=2;
 		}
-		if(bufferSize2>0) memcpy(buffer8_1,buffer8_2,bufferSize2);
+		if(bufferSize2>0) memcpy(buffer16_1,buffer16_2,bufferSize2);
 		break;
 	case 8:
 		while(bufferSize1>0 && bufferSize2>0) {
-			temp32 = *buffer8_1;
-			temp32+= *buffer8_2;
+			temp32 = *buffer8_1+*buffer8_2;
 			*buffer8_1 = temp32>127 ? 127 : 
 					(temp32<-128 ? -128 : temp32);
 			buffer8_1++;
