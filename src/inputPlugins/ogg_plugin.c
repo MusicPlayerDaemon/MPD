@@ -174,28 +174,24 @@ MpdTag * oggCommentsParse(char ** comments) {
 			if(!ret) ret = newMpdTag();
 			if(!ret->artist) {
 				ret->artist = strdup(temp);
-				stripReturnChar(ret->artist);
 			}
 		} 
                 else if((temp = ogg_parseComment(*comments,"title"))) {
 			if(!ret) ret = newMpdTag();
 			if(!ret->title) {
 				ret->title = strdup(temp);
-				stripReturnChar(ret->title);
 			}
 		}
                 else if((temp = ogg_parseComment(*comments,"album"))) {
 			if(!ret) ret = newMpdTag();
 			if(!ret->album) {
 				ret->album = strdup(temp);
-				stripReturnChar(ret->album);
 			}
 		}
                 else if((temp = ogg_parseComment(*comments,"tracknumber"))) {
 			if(!ret) ret = newMpdTag();
 			if(!ret->track) {
 				ret->track = strdup(temp);
-				stripReturnChar(ret->track);
 			}
 		}
 

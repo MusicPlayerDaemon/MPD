@@ -356,6 +356,7 @@ int removeDeletedFromDirectory(Directory * directory) {
 
 	while((ent = readdir(dir))) {
 		if(ent->d_name[0]=='.') continue; /* hide hidden stuff */
+                if(strchr(ent->d_name, '\n')) continue;
 
 		utf8 = fsCharsetToUtf8(ent->d_name);
 
@@ -558,6 +559,7 @@ int updateDirectory(Directory * directory) {
 
 	while((ent = readdir(dir))) {
 		if(ent->d_name[0]=='.') continue; /* hide hidden stuff */
+                if(strchr(ent->d_name, '\n')) continue;
 
 		utf8 = fsCharsetToUtf8(ent->d_name);
 
@@ -604,6 +606,7 @@ int exploreDirectory(Directory * directory) {
 	DEBUG("explore: %s\n",dirname);
 	while((ent = readdir(dir))) {
 		if(ent->d_name[0]=='.') continue; /* hide hidden stuff */
+                if(strchr(ent->d_name, '\n')) continue;
 
 		utf8 = fsCharsetToUtf8(ent->d_name);
 

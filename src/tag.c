@@ -53,6 +53,7 @@ void printMpdTag(FILE * fp, MpdTag * tag) {
 		temp = latin1StrToUtf8Dup(str); \
 		free(str); \
 		str = temp; \
+		stripReturnChar(str); \
 	} \
 }
 

@@ -172,7 +172,9 @@ int lsPlaylists(FILE * fp, char * utf8path) {
 
 		node = list->firstNode;
 		while(node!=NULL) {
-			myfprintf(fp,"playlist: %s%s\n",dup,node->key);
+                        if(!strchr(node->key, '\n')) {
+			        myfprintf(fp,"playlist: %s%s\n",dup,node->key);
+                        }
 			node = node->nextNode;
 		}
 

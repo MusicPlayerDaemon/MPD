@@ -470,7 +470,6 @@ MpdTag * flacMetadataDup(char * file, int * vorbisCommentFound) {
 					dup = malloc(len+1);
 					memcpy(dup,&(block->data.vorbis_comment.comments[offset].entry[pos]),len);
 					dup[len] = '\0';
-					stripReturnChar(dup);
 					ret->artist = dup;
 				}
 			}
@@ -484,7 +483,6 @@ MpdTag * flacMetadataDup(char * file, int * vorbisCommentFound) {
 					dup = malloc(len+1);
 					memcpy(dup,&(block->data.vorbis_comment.comments[offset].entry[pos]),len);
 					dup[len] = '\0';
-					stripReturnChar(dup);
 					ret->album = dup;
 				}
 			}
@@ -498,7 +496,6 @@ MpdTag * flacMetadataDup(char * file, int * vorbisCommentFound) {
 					dup = malloc(len+1);
 					memcpy(dup,&(block->data.vorbis_comment.comments[offset].entry[pos]),len);
 					dup[len] = '\0';
-					stripReturnChar(dup);
 					ret->title = dup;
 				}
 			}
@@ -512,7 +509,6 @@ MpdTag * flacMetadataDup(char * file, int * vorbisCommentFound) {
 					dup = malloc(len+1);
 					memcpy(dup,&(block->data.vorbis_comment.comments[offset].entry[pos]),len);
 					dup[len] = '\0';
-					stripReturnChar(dup);
 					ret->track = dup;
 				}
 			}

@@ -51,7 +51,11 @@ Song * newNullSong() {
 }
 
 Song * newSong(char * utf8url, SONG_TYPE type) {
-	Song * song = newNullSong();
+	Song * song = NULL;
+
+        if(strchr(utf8url, '\n')) return NULL;
+
+        song  = newNullSong();
 
 	song->utf8url = strdup(utf8url);
 	song->type = type;
