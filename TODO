@@ -1,11 +1,7 @@
-1) decoder interface
-	a) write a fake decoder plugin interface, to this point we will not
-		actually do any loading and such of plugins
-
-2) make play while paused simply unpause and pressing play while playing
+1) make play while paused simply unpause and pressing play while playing
 	does nothing!
 
-3) play streams
+2) play streams
 	a) put some sort of error reporting for streaming/inputStream!
 	b) fetch metadata and store in DecoderControl and pass to 
 		PlayerControl
@@ -15,23 +11,23 @@
 		or something
 	d) in songinfo add a metadata tag item for indicating stream
 
-4) resampling audio for compatibility, and better gapless/crossfading
+3) resampling audio for compatibility, and better gapless/crossfading
 	a) use resampling from oggenc (is it fast enough for realtime?)
 
-5) when writing combined interface for all decodes to use, be sure to add a 
+4) when writing combined interface for all decodes to use, be sure to add a 
 common function and abstrct dealing with DecoderControl * and put
 cycleLogFiles in there, so we cycleLogFiles while decoding, not just when 
 decoding has stopped.
 
-6) ACK error codes
+5) ACK error codes
 
-7) cleanup main()
+6) cleanup main()
 
-8) handle '\n' in filenames
+7) handle '\n' in filenames
 
-9) compute average replaygain to use for non-replaygain songs
+8) compute average replaygain to use for non-replaygain songs
 
-10) pid file
+9) pid file
 
 
 Post-1.0
