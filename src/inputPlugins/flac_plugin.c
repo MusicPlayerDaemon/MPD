@@ -401,7 +401,7 @@ FLAC__StreamDecoderWriteStatus flacWrite(const FLAC__SeekableStreamDecoder *dec,
 	int c_chan;
 	float timeChange;
 	FLAC__uint64 newPosition = 0;
-	int bytesPerSample = data->dc->audioFormat.bits/8;
+	const int bytesPerSample = data->dc->audioFormat.bits/8;
 	
 	timeChange = ((float)samples)/frame->header.sample_rate;
 	data->time+= timeChange;
@@ -415,9 +415,16 @@ FLAC__StreamDecoderWriteStatus flacWrite(const FLAC__SeekableStreamDecoder *dec,
 
 	for(c_samp = 0; c_samp < frame->header.blocksize; c_samp++) {
 		for(c_chan = 0; c_chan < frame->header.channels; c_chan++) {
+#ifdef WORDS_BIGENDIAN
+			memcpy(data->chunk+data->chunk_length,
+			       &buf[c_chan][c_samp]+4-bytesPerSample, 
+			       bytesPerSample);
+			data->chunk_length+=bytesPerSample;
+#else
 			memcpy(data->chunk+data->chunk_length,
 			       &buf[c_chan][c_samp], bytesPerSample);
 			data->chunk_length+=bytesPerSample;
+#endif
 			if(FLAC_CHUNK_SIZE-data->chunk_length < bytesPerSample) 
 			{
 				if(flacSendChunk(data)<0) {
