@@ -242,9 +242,9 @@ static int osx_openDevice(AudioOutput * audioOutput) {
 		return -1;
 	}
 
-	/* create a buffer of 0.5s */
-	od->bufferSize = (audioFormat->sampleRate >> 1) *
-                         (audioFormat->bits>>3) * (audioFormat->channels);
+	/* create a buffer of 1s */
+	od->bufferSize = (audioFormat->sampleRate) *
+                         (audioFormat->bits >> 3) * (audioFormat->channels);
 	od->buffer = realloc(od->buffer, od->bufferSize);
 
 	od->pos = 0;
