@@ -137,7 +137,6 @@ typedef struct _mp3DecodeData {
 	int flush;
 	unsigned long bitRate;
 	InputStream * inStream;
-	int bufferReset;
 } mp3DecodeData;
 
 void initMp3DecodeData(mp3DecodeData * data, InputStream * inStream) {
@@ -151,7 +150,6 @@ void initMp3DecodeData(mp3DecodeData * data, InputStream * inStream) {
 	data->currentFrame = 0;
 	data->flush = 1;
         data->inStream = inStream;
-	data->bufferReset = 0;
 
 	mad_stream_init(&data->stream);
 	data->stream.options |= MAD_OPTION_IGNORECRC;
@@ -164,7 +162,9 @@ int seekMp3InputBuffer(mp3DecodeData * data, long offset) {
 	if(seekInputStream(data->inStream,offset,SEEK_SET) < 0) {
                 return -1;
         }
-	data->bufferReset = 1;
+
+	mad_stream_buffer(&data->stream,data->readBuffer,0);
+	(data->stream).error = 0;
 
 	return 0;
 }
@@ -175,7 +175,7 @@ int fillMp3InputBuffer(mp3DecodeData * data) {
         size_t readed;
 	unsigned char * readStart;
 
-	if(!data->bufferReset && (data->stream).next_frame!=NULL) {
+	if((data->stream).next_frame!=NULL) {
 		remaining = (data->stream).bufend-(data->stream).next_frame;
 		memmove(data->readBuffer,(data->stream).next_frame,remaining);
 		readStart = (data->readBuffer)+remaining;
@@ -185,7 +185,6 @@ int fillMp3InputBuffer(mp3DecodeData * data) {
 		readSize = READ_BUFFER_SIZE;
 		readStart = data->readBuffer,
 		remaining = 0;
-		data->bufferReset = 0;
 	}
 
 	readed = readFromInputStream(data->inStream, readStart, (size_t)1, 
@@ -466,6 +465,7 @@ int mp3Read(mp3DecodeData * data, OutputBuffer * cb, DecoderControl * dc) {
                 break;
         case MUTEFRAME_SEEK:
 		if(dc->seekWhere<=data->elapsedTime) {
+                        data->outputPtr = data->outputBuffer;
                         clearOutputBuffer(cb);
                         dc->seekChunk = cb->end;
 			data->muteFrame = 0;
@@ -522,6 +522,7 @@ int mp3Read(mp3DecodeData * data, OutputBuffer * cb, DecoderControl * dc) {
 				if(seekMp3InputBuffer(data,
 						data->frameOffset[i]) == 0)
                                 {
+                                        data->outputPtr = data->outputBuffer;
                                         clearOutputBuffer(cb);
                                         dc->seekChunk = cb->end;
 				        data->currentFrame = i;
