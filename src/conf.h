@@ -57,7 +57,6 @@
 #define CONF_HTTP_PROXY_PASSWORD	"http_proxy_password"
 #define CONF_HTTP_BUFFER_SIZE		"http_buffer_size"
 #define CONF_HTTP_PREBUFFER_SIZE	"http_prebuffer_size"
-#define CONF_ID3V1_ENCODING		"id3v1_encoding"
 #define CONF_METADATA_TO_USE		"metadata_to_use"
 
 typedef struct _BlockParam {
