@@ -157,12 +157,16 @@ float ogg_getReplayGainScale(char ** comments) {
                 if(albumGainFound) {
                         return computeReplayGainScale(albumGain,albumPeak);
                 }
-                return computeReplayGainScale(trackGain,trackPeak);
+		else if(trackGainFound) {
+                	return computeReplayGainScale(trackGain,trackPeak);
+		}
         case REPLAYGAIN_TRACK:
                 if(trackGainFound) {
                 	return computeReplayGainScale(trackGain,trackPeak);
                 }
-                return computeReplayGainScale(albumGain,albumPeak);
+		else if(albumGainFound) {
+                	return computeReplayGainScale(albumGain,albumPeak);
+		}
         }
 
         return 1.0;

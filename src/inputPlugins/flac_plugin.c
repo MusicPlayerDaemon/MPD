@@ -352,16 +352,16 @@ void flacParseReplayGain(const FLAC__StreamMetadata *block, FlacData * data) {
         }
 
         if(!found || state == REPLAYGAIN_TRACK) {
-                if(flacFindVorbisCommentFloat(block,"replaygain_track_gain",
-                                &gain))
-                {
+                found = flacFindVorbisCommentFloat(block,
+				"replaygain_track_gain", &gain);
+                if(found) {
                         peak = 0.0;
                         flacFindVorbisCommentFloat(block,
                                         "replaygain_track_peak",&peak);
                 }
         }
 
-        data->replayGainScale = computeReplayGainScale(gain,peak);
+        if(found) data->replayGainScale = computeReplayGainScale(gain,peak);
 }
 
 void flacMetadata(const FLAC__SeekableStreamDecoder *dec, 
