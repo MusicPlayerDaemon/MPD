@@ -1,8 +1,5 @@
 1) play streams
 	a) put some sort of error reporting for streaming/inputStream!
-	b) in songinfo add a metadata tag item for indicating stream
-	c) add an element to status indicating what playlist version
-		and what song was updated
 
 2) http stuff
 	a) allow http proxy
