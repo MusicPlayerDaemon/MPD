@@ -64,7 +64,8 @@ void flushOutputBuffer(OutputBuffer * cb) {
 
 int sendDataToOutputBuffer(OutputBuffer * cb, InputStream * inStream,  
                 DecoderControl * dc, int seekable, char * dataIn, 
-                long dataInLen, float time, mpd_uint16 bitRate)
+                long dataInLen, float time, mpd_uint16 bitRate,
+		ReplayGainInfo * replayGainInfo)
 {
         mpd_uint16 dataToSend;
 	mpd_uint16 chunkLeft;
@@ -90,6 +91,8 @@ int sendDataToOutputBuffer(OutputBuffer * cb, InputStream * inStream,
 		pcm_convertAudioFormat(&(dc->audioFormat), dataIn, dataInLen,
 				&(cb->audioFormat),data);
 	}
+
+	doReplayGain(replayGainInfo, data, datalen, &cb->audioFormat);
 
         while(datalen) {
 		if(currentChunk != cb->end) {

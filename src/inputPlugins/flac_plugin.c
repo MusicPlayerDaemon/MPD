@@ -44,8 +44,8 @@ typedef struct {
 	OutputBuffer * cb;
 	DecoderControl * dc;
         InputStream inStream;
-        float replayGainScale;
         char * path;
+	ReplayGainInfo * replayGainInfo;
 } FlacData;
 
 /* this code is based on flac123, from flac-tools */
@@ -82,7 +82,7 @@ int flac_decode(OutputBuffer * cb, DecoderControl *dc, char * path) {
 	data.bitRate = 0;
 	data.cb = cb;
 	data.dc = dc;
-        data.replayGainScale = 1.0;
+	data.replayGainInfo = NULL;
         data.path = path;
 
         if(openInputStream(&(data.inStream), path)<0) {
@@ -195,6 +195,8 @@ int flac_decode(OutputBuffer * cb, DecoderControl *dc, char * path) {
 	else dc->state = DECODE_STATE_STOP;
 
 fail:
+	if(data.replayGainInfo) freeReplayGainInfo(data.replayGainInfo);
+
         if(streamOpen) closeInputStream(&(data.inStream));
 
 	if(flacDec) FLAC__seekable_stream_decoder_delete(flacDec);
@@ -338,30 +340,28 @@ int flacFindVorbisCommentFloat(const FLAC__StreamMetadata * block, char * cmnt,
 
 /* replaygain stuff by AliasMrJones */
 void flacParseReplayGain(const FLAC__StreamMetadata *block, FlacData * data) {
-        int found;
-        float gain = 0.0;
-        float peak = 0.0;
-        int state = getReplayGainState();
+	if(NULL == data->replayGainInfo) {
+		freeReplayGainInfo(data->replayGainInfo);
+		data->replayGainInfo = NULL;
+	}
 
-        if(state == REPLAYGAIN_OFF) return;
+	data->replayGainInfo = newReplayGainInfo();
 
-        found = flacFindVorbisCommentFloat(block,"replaygain_album_gain",&gain);
-        if(found) {
-                flacFindVorbisCommentFloat(block,"replaygain_album_peak",
-                                &peak);
-        }
+	int found = 0;
 
-        if(!found || state == REPLAYGAIN_TRACK) {
-                found = flacFindVorbisCommentFloat(block,
-				"replaygain_track_gain", &gain);
-                if(found) {
-                        peak = 0.0;
-                        flacFindVorbisCommentFloat(block,
-                                        "replaygain_track_peak",&peak);
-                }
-        }
+        found &= flacFindVorbisCommentFloat(block,"replaygain_album_gain",
+					&data->replayGainInfo->albumGain);
+        found &= flacFindVorbisCommentFloat(block,"replaygain_album_peak",
+                                	&data->replayGainInfo->albumPeak);
+        found &= flacFindVorbisCommentFloat(block,"replaygain_track_gain",
+					&data->replayGainInfo->trackGain);
+        found &= flacFindVorbisCommentFloat(block,"replaygain_track_peak",
+                                	&data->replayGainInfo->trackPeak);
 
-        if(found) data->replayGainScale = computeReplayGainScale(gain,peak);
+	if(!found) {
+		freeReplayGainInfo(data->replayGainInfo);
+		data->replayGainInfo = NULL;
+	}
 }
 
 void flacMetadata(const FLAC__SeekableStreamDecoder *dec, 
@@ -391,11 +391,9 @@ void flacMetadata(const FLAC__SeekableStreamDecoder *dec,
 }
 
 int flacSendChunk(FlacData * data) {
-        doReplayGain(data->chunk,data->chunk_length,&(data->dc->audioFormat),
-                        data->replayGainScale);
-
 	switch(sendDataToOutputBuffer(data->cb, NULL, data->dc, 1, data->chunk,
-			data->chunk_length, data->time, data->bitRate)) 
+			data->chunk_length, data->time, data->bitRate,
+			data->replayGainInfo)) 
 	{
 	case OUTPUT_BUFFER_DC_STOP:
 		return -1;

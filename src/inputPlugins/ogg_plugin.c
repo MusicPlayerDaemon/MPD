@@ -114,62 +114,45 @@ char * ogg_parseComment(char * comment, char * needle) {
         return NULL;
 }
 
-float ogg_getReplayGainScale(char ** comments) {
-        int trackGainFound = 0;
-        int albumGainFound = 0;
-        float trackGain = 1.0;
-        float albumGain = 1.0;
-        float trackPeak = 0.0;
-        float albumPeak = 0.0;
+void ogg_getReplayGainInfo(char ** comments, ReplayGainInfo ** infoPtr) {
         char * temp;
-        int replayGainState = getReplayGainState();
+	int found = 0;
 
-        if(replayGainState == REPLAYGAIN_OFF) return 1.0;
+	if(*infoPtr) freeReplayGainInfo(*infoPtr);
+	*infoPtr = newReplayGainInfo();
 
         while(*comments) {
                 if((temp = ogg_parseComment(*comments,"replaygain_track_gain"))) 
                 {
-                        trackGain = atof(temp);
-                        trackGainFound = 1;
+                        (*infoPtr)->trackGain = atof(temp);
+			found = 1;
                 }
                 else if((temp = ogg_parseComment(*comments,
                                         "replaygain_album_gain"))) 
                 {
-                        albumGain = atof(temp);
-                        albumGainFound = 1;
+                        (*infoPtr)->albumGain = atof(temp);
+			found = 1;
                 }
                 else if((temp = ogg_parseComment(*comments,
                                         "replaygain_track_peak"))) 
                 {
-                        trackPeak = atof(temp);
+                        (*infoPtr)->trackPeak = atof(temp);
+			found = 1;
                 }
                 else if((temp = ogg_parseComment(*comments,
                                         "replaygain_album_peak"))) 
                 {
-                        albumPeak = atof(temp);
+                        (*infoPtr)->albumPeak = atof(temp);
+			found = 1;
                 }
 
                 comments++;
         }
 
-        switch(replayGainState) {
-        case REPLAYGAIN_ALBUM:
-                if(albumGainFound) {
-                        return computeReplayGainScale(albumGain,albumPeak);
-                }
-		else if(trackGainFound) {
-                	return computeReplayGainScale(trackGain,trackPeak);
-		}
-        case REPLAYGAIN_TRACK:
-                if(trackGainFound) {
-                	return computeReplayGainScale(trackGain,trackPeak);
-                }
-		else if(albumGainFound) {
-                	return computeReplayGainScale(albumGain,albumPeak);
-		}
-        }
-
-        return 1.0;
+	if(!found) {
+		freeReplayGainInfo(*infoPtr);
+		*infoPtr = NULL;
+	}
 }
 
 MpdTag * oggCommentsParse(char ** comments) {
@@ -248,7 +231,7 @@ int ogg_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream)
 	int chunkpos = 0;
 	long bitRate = 0;
 	long test;
-        float replayGainScale = 1.0;
+        ReplayGainInfo * replayGainInfo = NULL;
 	char ** comments;
 
         data.inStream = inStream;
@@ -304,7 +287,7 @@ int ogg_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream)
 			comments = ov_comment(&vf, -1)->user_comments;
 			putOggCommentsIntoOutputBuffer(cb, inStream->metaName,
 					comments);
-        		replayGainScale = ogg_getReplayGainScale(comments);
+        		ogg_getReplayGainInfo(comments, &replayGainInfo);
 		}
 
 		prev_section = current_section;
@@ -321,14 +304,13 @@ int ogg_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream)
 			if((test = ov_bitrate_instant(&vf))>0) {
 				bitRate = test/1000;
 			}
-                	doReplayGain(chunk,chunkpos,&(dc->audioFormat), 
-					replayGainScale);
 			sendDataToOutputBuffer(cb, inStream, dc, 
 						inStream->seekable,  
                                         	chunk, chunkpos, 
 						ov_pcm_tell(&vf)/
 						dc->audioFormat.sampleRate,
-						bitRate);
+						bitRate,
+						replayGainInfo);
 			chunkpos = 0;
 			if(dc->stop) break;
 		}
@@ -337,8 +319,10 @@ int ogg_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream)
 	if(!dc->stop && chunkpos > 0) {
 		sendDataToOutputBuffer(cb, NULL, dc, inStream->seekable,
 				chunk, chunkpos,
-				ov_time_tell(&vf), bitRate);
+				ov_time_tell(&vf), bitRate, replayGainInfo);
 	}
+
+	if(replayGainInfo) freeReplayGainInfo(replayGainInfo);
 
 	ov_clear(&vf);
 

@@ -26,13 +26,23 @@
 #define REPLAYGAIN_TRACK	1
 #define REPLAYGAIN_ALBUM	2
 
+typedef struct _ReplayGainInfo {
+	float albumGain;
+	float albumPeak;
+	float trackGain;
+	float trackPeak;
+
+	/* used internally by mpd, to mess with it*/
+	float scale;
+} ReplayGainInfo;
+
+ReplayGainInfo * newReplayGainInfo();
+
+void freeReplayGainInfo(ReplayGainInfo * info);
+
 void initReplayGainState();
 
-int getReplayGainState();
-
-float computeReplayGainScale(float gain, float peak);
-
-void doReplayGain(char * buffer, int bufferSize, AudioFormat * format, 
-		float scale);
+void doReplayGain(ReplayGainInfo * info, char * buffer, int bufferSize, 
+		AudioFormat * format);
 
 #endif

@@ -7,10 +7,6 @@
 *) Steal resampling code from ices (i think this code works only for 16-bit)
 
 *) Rewrite replaygain stuff:
-	*) Replay gain struct with album and track gain's and peak's
-	*) Pass these to replaygain function
-	*) Don't have deocder plugins inquire weather or not to use replaygain,
-		they should just parse tags and pass these to replaygain func
 	*) If replaygain tag info present, average the replaygain gain's
 		and peak's on the fly
 	*) If NULL replaygain struct, then use the average replaygain gains

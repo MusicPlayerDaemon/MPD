@@ -191,7 +191,7 @@ int mod_decode(OutputBuffer * cb, DecoderControl * dc, char * path) {
 		time += ret*secPerByte;
 		sendDataToOutputBuffer(cb, NULL, dc, 0, 
 					(char *)data->audio_buffer, ret, time,
-					0);
+					0, NULL);
 	}
 
 	flushOutputBuffer(cb);

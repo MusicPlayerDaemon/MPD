@@ -585,7 +585,8 @@ int mp3Read(mp3DecodeData * data, OutputBuffer * cb, DecoderControl * dc) {
                                                 data->outputPtr-
 						data->outputBuffer,
                                                 data->elapsedTime,
-                                                data->bitRate/1000);
+                                                data->bitRate/1000,
+						NULL);
                                 if(ret == OUTPUT_BUFFER_DC_STOP) {
 					data->flush = 0;
                                         return DECODE_BREAK;
@@ -710,7 +711,8 @@ int mp3_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream) {
                                 data.inStream->seekable,
                                 data.outputBuffer,
                                 data.outputPtr-data.outputBuffer,
-                                data.elapsedTime,data.bitRate/1000);
+                                data.elapsedTime,data.bitRate/1000,
+				NULL);
 	}
 
 	closeInputStream(inStream);

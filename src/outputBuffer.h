@@ -24,6 +24,7 @@
 #include "audio.h"
 #include "inputStream.h"
 #include "metadataChunk.h"
+#include "replayGain.h"
 
 #define OUTPUT_BUFFER_DC_STOP   -1
 #define OUTPUT_BUFFER_DC_SEEK   -2
@@ -50,9 +51,16 @@ void flushOutputBuffer(OutputBuffer * cb);
 
 /* we send inStream for buffering the inputStream while waiting to
    send the next chunk */
-int sendDataToOutputBuffer(OutputBuffer * cb, InputStream * inStream,
-                DecoderControl * dc, int seekable, char * data, long datalen, 
-                float time, mpd_uint16 bitRate);
+int sendDataToOutputBuffer(
+		OutputBuffer * cb, 
+		InputStream * inStream,
+                DecoderControl * dc, 
+		int seekable, 
+		char * data, 
+		long datalen, 
+                float time, 
+		mpd_uint16 bitRate, 
+		ReplayGainInfo * replayGainInfo);
 
 int copyMpdTagToOutputBuffer(OutputBuffer * cb, MpdTag * tag);
 

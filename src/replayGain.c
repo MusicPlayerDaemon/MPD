@@ -71,11 +71,7 @@ void initReplayGainState() {
 	}
 }
 
-int getReplayGainState() {
-	return replayGainState;
-}
-
-float computeReplayGainScale(float gain, float peak) {
+static float computeReplayGainScale(float gain, float peak) {
 	float scale;
 
 	if(gain == 0.0) return(1);
@@ -89,14 +85,55 @@ float computeReplayGainScale(float gain, float peak) {
 	return(scale);
 }
 
-void doReplayGain(char * buffer, int bufferSize, AudioFormat * format, 
-		float scale) 
-{
-	mpd_sint16 * buffer16 = (mpd_sint16 *)buffer;
-	mpd_sint8 * buffer8 = (mpd_sint8 *)buffer;
-	mpd_sint32 temp32;
+ReplayGainInfo * newReplayGainInfo() {
+	ReplayGainInfo * ret = malloc(sizeof(ReplayGainInfo));
 
-	if(scale == 1.0) return;
+	ret->albumGain = 0.0;
+	ret->albumPeak = 1.0;
+
+	ret->trackGain = 0.0;
+	ret->trackPeak = 1.0;
+
+	/* set to -1 so that we know in doReplayGain to compute the scale */
+	ret->scale = -1.0;
+
+	return ret;
+}
+
+void freeReplayGainInfo(ReplayGainInfo * info) {
+	free(info);
+}
+
+void doReplayGain(ReplayGainInfo * info, char * buffer, int bufferSize, 
+		AudioFormat * format)
+{
+	mpd_sint16 * buffer16;
+	mpd_sint8 * buffer8;
+	mpd_sint32 temp32;
+	float scale;
+
+	if(replayGainState == REPLAYGAIN_OFF || !info) return;
+
+	if(info->scale < 0) {
+		switch(replayGainState) {
+		case REPLAYGAIN_TRACK:
+			info->scale = computeReplayGainScale(info->trackGain,
+							info->trackPeak);
+			break;
+		default:
+			info->scale = computeReplayGainScale(info->albumGain,
+							info->albumPeak);
+			break;
+		}
+	}
+
+	if(info->scale <= 1.01 && info->scale >= 0.99) return;
+
+	buffer16 = (mpd_sint16 *)buffer;
+	buffer8 = (mpd_sint8 *)buffer;
+
+	scale = info->scale;
+
 	switch(format->bits) {
 		case 16:
 			while(bufferSize > 0){
@@ -122,4 +159,3 @@ void doReplayGain(char * buffer, int bufferSize, AudioFormat * format,
 			ERROR("%i bits not supported by doReplaygain!\n", format->bits);
 	}
 }
-/* End of added code */

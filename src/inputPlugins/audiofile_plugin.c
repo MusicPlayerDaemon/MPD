@@ -116,7 +116,8 @@ int audiofile_decode(OutputBuffer * cb, DecoderControl * dc, char * path) {
                                         ret*fs,
 					(float)current /
 					(float)dc->audioFormat.sampleRate,
-					bitRate);
+					bitRate,
+					NULL);
 				if(dc->stop) break;
 			}
 		}
