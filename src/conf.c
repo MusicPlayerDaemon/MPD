@@ -168,7 +168,7 @@ char ** readConf(char * file) {
 		numberOfArgs = buffer2array(string,&array);
 		if(numberOfArgs==0) continue;
 		if(2!=numberOfArgs) {
-			ERROR("need two args in conf at: %s\n",string);
+			ERROR("improperly formated config line: %s\n",string);
 			exit(-1);
 		}
 		i = 0;
