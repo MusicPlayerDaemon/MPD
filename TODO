@@ -18,6 +18,13 @@
 *) Optimize read() on clients
 
 *) Add libshout && vorbis encoding support
+	*) clean up code to make more robust (only works for 16-bits)
+	*) check for memory leaks and such
+	*) add option for keeping audio devices alive (i.e. send silence even
+		when stopped/paused), this should also force a consistant
+		audio format
+	*) need some way to send metadata through shout plugin
+	*) cleanup configure script stuff (shout needs vorbisenc)
 
 *) add command
 	*) command that takes file/url's (no directory's) and returns the songid
