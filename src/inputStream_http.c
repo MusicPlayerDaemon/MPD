@@ -570,7 +570,9 @@ static int getHTTPHello(InputStream * inStream) {
                 else if(0 == strncmp(cur, "\r\nicy-metaint:", 14)) {
                         data->icyMetaint = atoi(cur+14);
                 }
-                else if(0 == strncmp(cur, "\r\nicy-name:", 11)) {
+                else if(0 == strncmp(cur, "\r\nicy-name:", 11) ||
+			0 == strncmp(cur, "\r\nice-name:", 11)) 
+		{
                         int incr = 11;
                         char * temp = strstr(cur+incr,"\r\n");
                         if(!temp) break;
