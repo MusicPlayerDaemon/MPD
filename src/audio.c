@@ -131,12 +131,11 @@ int isCurrentAudioFormat(AudioFormat * audioFormat) {
 int initAudio(AudioFormat * audioFormat) {
 	ao_sample_format format;
 
-	if(!audio_device) {
-		if(!isCurrentAudioFormat(audioFormat)) {
-			finishAudio();
-			return 0;
-		}
+	if(audio_device && !isCurrentAudioFormat(audioFormat)) {
+		finishAudio();
+	}
 
+	if(!audio_device) {
 		format.bits = audioFormat->bits;
 		format.rate = audioFormat->sampleRate;
 		format.byte_format = AO_FMT_NATIVE;
@@ -157,24 +156,29 @@ int initAudio(AudioFormat * audioFormat) {
 }
 
 
-void playAudio(char * playChunk, int size) {
+int playAudio(char * playChunk, int size) {
 	int send;
 
-	if(audio_device==NULL) return 0;
+	if(audio_device==NULL) {
+		ERROR("trying to play w/ the audio device being open!\n");
+		return -1;
+	}
 	
 	while(size>0) {
 		send = audio_write_size>size?size:audio_write_size;
 		
-		if(!ao_play(audio_device,playChunk,send)) {
+		if(ao_play(audio_device,playChunk,send)==0) {
 			audioError();
 			ERROR("closing audio device due to write error\n");
 			finishAudio();
-			return;
+			return -1;
 		}
 
 		playChunk+=send;
 		size-=send;
 	}
+
+	return 0;
 }
 
 void finishAudio() {

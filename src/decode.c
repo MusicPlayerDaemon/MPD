@@ -337,7 +337,9 @@ void decode() {
 				}
 				else doCrossFade = -1;
 			}
-			if(pause) playAudio(silence,CHUNK_SIZE);
+			if(pause) {
+				if(playAudio(silence,CHUNK_SIZE)<0) quit = 1;
+			}
 			else if((cb->begin!=cb->end || cb->wrap) && 
 				cb->begin!=cb->next)
 			{
@@ -399,8 +401,11 @@ void decode() {
 					cb->chunkSize[cb->begin],
 					af,
 					pc->softwareVolume);
-				playAudio(cb->chunks+cb->begin*CHUNK_SIZE,
-					cb->chunkSize[cb->begin]);
+				if(playAudio(cb->chunks+cb->begin*CHUNK_SIZE,
+					cb->chunkSize[cb->begin])<0) 
+				{
+					quit = 1;
+				}
 				cb->begin++;
 				if(cb->begin>=buffered_chunks) {
 					cb->begin = 0;

@@ -41,7 +41,7 @@ void finishAudioDriver();
 
 int initAudio(AudioFormat * audioFormat);
 
-void playAudio(char * playChunk,int size);
+int playAudio(char * playChunk,int size);
 
 void finishAudio();
 
