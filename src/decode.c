@@ -234,13 +234,13 @@ void decodeStart(PlayerControl * pc, OutputBuffer * cb, DecoderControl * dc) {
 	switch(pc->decodeType) {
 	case DECODE_TYPE_URL:
 #ifdef HAVE_MAD
-                if(pc->fileSuffix == DECODE_SUFFIX_MP3 || (inStream.mime &&
-                                0 == strcmp(inStream.mime, "audio/mpeg")))
+                /*if(pc->fileSuffix == DECODE_SUFFIX_MP3 || (inStream.mime &&
+                                0 == strcmp(inStream.mime, "audio/mpeg")))*/
                 {
 		        ret = mp3_decode(cb,dc,&inStream);
                         break;
                 }
-		else ret = DECODE_ERROR_UNKTYPE;
+		/*else ret = DECODE_ERROR_UNKTYPE;*/
 #endif
         case DECODE_TYPE_FILE:
 #ifdef HAVE_MAD
@@ -374,6 +374,9 @@ void decode() {
 		int fadePosition;
 		int nextChunk = -1;
 		int test;
+		char silence[CHUNK_SIZE];
+
+		memset(silence,0,CHUNK_SIZE);
 
 		if(waitOnDecode(pc,dc,cb)<0) return;
 
@@ -533,7 +536,11 @@ void decode() {
 				quit = 1;
 				break;
 			}
-			else my_usleep(1000);
+			else {
+				if(playAudio(silence, CHUNK_SIZE) < 0) {
+					quit = 1;
+				}
+			}
 		}
 
 		pc->totalPlayTime+= pc->elapsedTime-pc->beginTime; \

@@ -249,9 +249,9 @@ void playerKill() {
 	int pid;
 	PlayerControl * pc = &(getPlayerData()->playerControl);
 
-	playerStop(stderr);
+	/*playerStop(stderr);
 	playerCloseAudio(stderr);
-	if(player_pid>0 && pc->closeAudio) sleep(1);
+	if(player_pid>0 && pc->closeAudio) sleep(1);*/
 
 	pid = player_pid;
 	if(pid>0) kill(pid,SIGTERM);

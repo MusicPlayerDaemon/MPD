@@ -40,6 +40,7 @@
 #define HTTP_CONN_STATE_REOPEN  4
 
 #define HTTP_BUFFER_SIZE        524289
+#define HTTP_PREBUFFER_SIZE	(HTTP_BUFFER_SIZE >> 2)
 
 #define HTTP_REDIRECT_MAX    10
 
@@ -50,10 +51,11 @@ typedef struct _InputStreemHTTPData {
         int sock;
         int connState;
         char buffer[HTTP_BUFFER_SIZE];
-        int buflen;
+        size_t buflen;
         int timesRedirected;
         int icyMetaint;
         char * icyName;
+	int prebuffer;
 } InputStreamHTTPData;
 
 static InputStreamHTTPData * newInputStreamHTTPData() {
@@ -66,6 +68,7 @@ static InputStreamHTTPData * newInputStreamHTTPData() {
         ret->timesRedirected = 0;
         ret->icyName = NULL;
         ret->icyMetaint = 0;
+	ret->prebuffer = 0;
 
         return ret;
 }
@@ -223,12 +226,13 @@ static int finishHTTPInit(InputStream * inStream) {
         }
 
         memset(request, 0, 2049);
+	/* deal with ICY metadata later, for now its fucking up stuff! */
         snprintf(request, 2048, "GET %s HTTP/1.1\r\n"
                              "Host: %s\r\n"
                              "Connection: close\r\n"
                              "User-Agent: %s/%s\r\n"
                              "Range: bytes=%ld-\r\n"
-                             "Icy-Metadata:1\r\n"
+                             /*"Icy-Metadata:1\r\n"*/
                              "\r\n",
                              data->path, data->host, "httpTest", "0.0.0",
                              inStream->offset);
@@ -253,7 +257,7 @@ static int getHTTPHello(InputStream * inStream) {
         char * needle;
         char * cur = data->buffer;
         int rc;
-        int readed;
+        long readed;
 
         FD_ZERO(&readSet);
         FD_SET(data->sock, &readSet);
@@ -381,13 +385,11 @@ static int getHTTPHello(InputStream * inStream) {
                         *temp = '\r';
                 }
                 else if(0 == strncmp(cur, "\r\nContent-Type:", 15)) {
-                        char * temp2 = cur+15;
-                        char * temp = strstr(temp2,"\r\n");
+                        char * temp = strstr(cur+15,"\r\n");
                         if(!temp) break;
-                        while(*temp2 && *temp2==' ') temp2++;
                         *temp = '\0';
                         if(inStream->mime) free(inStream->mime);
-                        inStream->mime = strdup(temp2);
+                        inStream->mime = strdup(cur+15);
                         *temp = '\r';
                 }
 
@@ -397,11 +399,13 @@ static int getHTTPHello(InputStream * inStream) {
         if(inStream->size <= 0) inStream->seekable = 0;
 
         needle += 4; /* 4 == strlen("\r\n\r\n") */
-        data->buflen -= data->buffer+data->buflen-needle;
+        data->buflen -= (needle-data->buffer);
         /*fwrite(data->buffer, 1, data->buflen, stdout);*/
         memmove(data->buffer, needle, data->buflen);
 
         data->connState = HTTP_CONN_STATE_OPEN;
+
+	data->prebuffer = 1;
 
         return 0;
 }
@@ -444,8 +448,8 @@ size_t inputStream_httpRead(InputStream * inStream, void * ptr, size_t size,
 		size_t nmemb)
 {
         InputStreamHTTPData * data = (InputStreamHTTPData *)inStream->data;
-        int readed = 0;
-        int inlen = size*nmemb;
+        long tosend = 0;
+        long inlen = size*nmemb;
 
         inputStream_httpBuffer(inStream);
 
@@ -457,17 +461,22 @@ size_t inputStream_httpRead(InputStream * inStream, void * ptr, size_t size,
                 return 0;
         }
 
-        if(data->buflen > 0) {
-                readed = inlen > data->buflen ? data->buflen : inlen;
-        
-                memcpy(ptr, data->buffer, readed);
-                data->buflen -= readed;
-                memmove(data->buffer, data->buffer+readed, data->buflen);
+	if(data->prebuffer) return 0;
 
-                inStream->offset+= readed;
+        if(data->buflen > 0) {
+                tosend = inlen > data->buflen ? data->buflen : inlen;
+		tosend = (tosend/size)*size;
+       
+                memcpy(ptr, data->buffer, tosend);
+		/*fwrite(ptr,1,readed,stdout);*/
+                data->buflen -= tosend;
+		/*fwrite(data->buffer,1,readed,stdout);*/
+                memmove(data->buffer, data->buffer+tosend, data->buflen);
+
+                inStream->offset += tosend;
         }
 
-	return readed;
+	return tosend/size;
 }
 
 int inputStream_httpClose(InputStream * inStream) {
@@ -498,10 +507,7 @@ int inputStream_httpAtEOF(InputStream * inStream) {
 
 int inputStream_httpBuffer(InputStream * inStream) {
         InputStreamHTTPData * data = (InputStreamHTTPData *)inStream->data;
-        int readed = 0;
-        fd_set readSet;
-        struct timeval tv;
-        int ret;
+        ssize_t readed = 0;
 
         if(data->connState == HTTP_CONN_STATE_REOPEN) {
                 if(initHTTPConnection(inStream) < 0) return -1;
@@ -523,35 +529,28 @@ int inputStream_httpBuffer(InputStream * inStream) {
                 return -1;
         }
 
+	if(data->buflen == 0) data->prebuffer = 1;
+	else if(data->buflen > HTTP_PREBUFFER_SIZE) data->prebuffer = 0;
+
         if(data->connState == HTTP_CONN_STATE_OPEN &&
                                 data->buflen < HTTP_BUFFER_SIZE-1) 
         {
-                FD_ZERO(&readSet);
-                FD_SET(data->sock, &readSet);
-
-                tv.tv_sec = 0;
-                tv.tv_usec = 0;
-
-                ret = select(data->sock+1,&readSet,NULL,NULL,&tv);
-                if(ret == 0 || (ret < 0 && errno == EINTR)) ret = 0;
-                else if(ret < 0) {
-                        data->connState = HTTP_CONN_STATE_CLOSED;
-                        close(data->sock);
-                        return 0;
-                }
-
-                if(ret == 0) return 0;
-
-                readed = recv(data->sock, data->buffer+data->buflen,
-                                HTTP_BUFFER_SIZE-1-data->buflen, 0);
+                readed = read(data->sock, data->buffer+data->buflen, 
+                                (size_t)(HTTP_BUFFER_SIZE-1-data->buflen));
 
                 if(readed < 0 && (errno == EAGAIN || errno == EINTR));
                 else if(readed <= 0) {
                         close(data->sock);
                         data->connState = HTTP_CONN_STATE_CLOSED;
                 }
-                else data->buflen += readed;
+                else {
+			/*fwrite(data->buffer+data->buflen,1,readed,stdout);*/
+			data->buflen += readed;
+		}
+
         }
+
+	if(data->buflen > HTTP_PREBUFFER_SIZE) data->prebuffer = 0;
 
         return 0;
 }

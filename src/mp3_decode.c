@@ -213,7 +213,9 @@ int decodeNextFrameHeader(mp3DecodeData * data) {
 			}
 		}
 #endif
-		if(MAD_RECOVERABLE((data->stream).error)) return DECODE_SKIP;
+		if(MAD_RECOVERABLE((data->stream).error)) {
+			return DECODE_SKIP;
+		}
 		else {
 			if((data->stream).error==MAD_ERROR_BUFLEN) return DECODE_CONT;
 			else
@@ -249,7 +251,9 @@ int decodeNextFrame(mp3DecodeData * data) {
 			}
 		}
 #endif
-		if(MAD_RECOVERABLE((data->stream).error)) return DECODE_SKIP;
+		if(MAD_RECOVERABLE((data->stream).error)) {
+			return DECODE_SKIP;
+		}
 		else {
 			if((data->stream).error==MAD_ERROR_BUFLEN) return DECODE_CONT;
 			else
