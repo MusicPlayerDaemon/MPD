@@ -187,6 +187,10 @@ int fillMp3InputBuffer(mp3DecodeData * data) {
 		remaining = 0;
 	}
 
+	/* we've exhausted the read buffer, so give up!, these potential
+	 * mp3 frames are way too big, and thus unlikely to be mp3 frames */
+	if(readSize == 0) return -1;
+
 	readed = readFromInputStream(data->inStream, readStart, (size_t)1, 
 			readSize);
 	if(readed <= 0 && inputStreamAtEOF(data->inStream)) return -1;
