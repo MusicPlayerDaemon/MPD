@@ -18,11 +18,7 @@
 	*) allowing "pausing" of audio output devices
 	*) while pausing, play silence for the devices that don't support 
 	   "pausing"
-	*) pick a default type depending on what we detect at compile time
-		*) don't attempt to autodetect, i think this will just cause
-			problems
-		*) output default audio device at the end of the configure
-			script
+	*) add support for autodetect ao devices
 	*) write a mac os X native audioOutput
 	*) write a esd native audioOutput
 	*) need better resampling code
