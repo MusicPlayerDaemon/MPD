@@ -601,7 +601,7 @@ static int getHTTPHello(InputStream * inStream) {
                         *temp = '\0';
                         if(inStream->mime) free(inStream->mime);
                         while(*(incr+cur) == ' ') incr++;
-                        inStream->mime = strdup(cur+15);
+                        inStream->mime = strdup(cur+incr);
                         *temp = '\r';
                 }
 
