@@ -110,6 +110,8 @@ int flac_decode(OutputBuffer * cb, DecoderControl *dc, char * path) {
                         flacWrite);
 	status&=FLAC__seekable_stream_decoder_set_metadata_callback(flacDec,
                         flacMetadata);
+        status&=FLAC__seekable_stream_decoder_set_metadata_respond(flacDec,
+			FLAC__METADATA_TYPE_VORBIS_COMMENT);
 	status&=FLAC__seekable_stream_decoder_set_error_callback(flacDec,
                         flacError);
 	status&=FLAC__seekable_stream_decoder_set_client_data(flacDec,
