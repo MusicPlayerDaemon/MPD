@@ -246,6 +246,7 @@ int decodeSeek(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb,
 		if(pause) closeAudioDevice(); \
 	} \
 	if(pc->seek) { \
+		dropBufferedAudio(); \
 		if(decodeSeek(pc,dc,cb,&decodeWaitedOn,&next) == 0) { \
 		        doCrossFade = 0; \
 		        nextChunk =  -1; \
