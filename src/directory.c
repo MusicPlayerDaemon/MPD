@@ -151,7 +151,7 @@ int updateInDirectory(Directory * directory, char * shortname, char * name) {
 		if(0==findInList(directory->songs,shortname,&song)) {
 			addToDirectory(directory,shortname,name);
 		}
-		else if(mtime>((Song *)song)->mtime) {
+		else if(mtime!=((Song *)song)->mtime) {
 			LOG("updating %s\n",name);
 			updateSongInfo((Song *)song);
 		}
