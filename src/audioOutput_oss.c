@@ -46,29 +46,58 @@
 #endif /* !(defined(__OpenBSD__) || defined(__NetBSD__) */
 
 static typedef struct _OssData {
-	int device;
+	int fd;
+	char * device;
 } OssData;
 
 static OssData * newOssData() {
 	OssData * ret = malloc(sizeof(OssData));
 
-	ret->device = 0;
+	ret->device = NULL;
+	ret->fd = -1;
 
 	return ret;
 }
 
 static void freeOssData(OssData * od) {
+	if(od->device) free(od->device);
+
 	free(od);
 }
 
 static void oss_initDriver(AudioOutput * audioOutput, ConfigParam * param) {
 	char * test;
-	audio_write_size = strtol((getConf())[CONF_AUDIO_WRITE_SIZE],&test,10);
-	if (*test!='\0') {
-		ERROR("\"%s\" is not a valid write size",
-			(getConf())[CONF_AUDIO_WRITE_SIZE]);
-		exit(EXIT_FAILURE);
+	BlockParam * bp = getBlockParam(param, "device");
+	OssData * od = newOssData():
+	
+	audioOutput->data = od;
+
+	if(!bp) {
+		int fd;
+
+		if(0 <= (fd = fopen("/dev/sound/dsp", O_WRONLY | O_NONBLOCK))) {
+			od->device = strdup("/dev/sound/dsp");
+		}
+		else if(0 <= (fd = fopen("/dev/dsp", O_WRONLY | O_NONBLOCK))) {
+			od->device = strdup("/dev/dsp");
+		}
+		else {
+			ERROR("Error trying to open default OSS device "
+				"specified at line %i\n", param->line);
+			ERROR("Specify a OSS device and/or check your "
+				"permissions\n");
+			exit(EXIT_FAILURE);
+		}
+
+		close(od->fd);
+		od->fd = -1;
+
+		return;
 	}
+
+	od->device = strdup(bp->value);
+
+	return;
 }
 
 static void oss_finishDriver(AudioOutput * audioOutput) {
