@@ -58,11 +58,6 @@ listall <string directory>
 load <string name>
 	loads the playlist _name_.m3u from the playlist directory
 
-ls <string directory>
-	list files in _directory_.  _directory_ is optional.
-	NOTE: us this only for debugging, not meant to be used by a client.
-	instead use 'lsinfo'
-
 lsinfo <string directory>
 	list contents of _directory_, from the db.  _directory_ is optional
 
@@ -108,6 +103,9 @@ seek <int song> <int time>
 	seeks to the position _time_ (in seconds) of entry _song_ in the 
 	playlist
 
+setvol <int vol>
+	set volume to _vol_
+
 shuffle
 	shuffles the current playlist
 
@@ -144,6 +142,7 @@ update
 
 volume <int change>
 	change volume by amount _change_
+	NOTE: volume command is deprecated, use setvol instead
 
 COMMAND LIST
 ------------
