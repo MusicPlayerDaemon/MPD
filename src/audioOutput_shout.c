@@ -370,7 +370,7 @@ static int shout_openShoutConn(AudioOutput * audioOutput) {
 
 	if(initEncoder(sd) < 0) {
 		shout_close(sd->shoutConn);
-		audioOutput->open = 1;
+		audioOutput->open = 0;
 		return -1;
 	}
 
