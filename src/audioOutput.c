@@ -65,6 +65,6 @@ void finishAudioOutput(AudioOutput * audioOutput) {
 }
 
 void sendMetadataToAudioOutput(AudioOutput * audioOutput, MpdTag * tag) {
-	if(!audioOutput->open || !audioOutput->sendMetdataFunc) return;
+	if(!audioOutput->sendMetdataFunc) return;
 	audioOutput->sendMetdataFunc(audioOutput, tag);
 }
