@@ -287,12 +287,12 @@ void decodeStart(PlayerControl * pc, OutputBuffer * cb, DecoderControl * dc) {
                 return;
         }
 
-        if(inStream.metaTitle) {
+        /*if(inStream.metaName) {
 		MpdTag * tag = newMpdTag();
-		tag->name = strdup(inStream.metaTitle);
+		tag->name = strdup(inStream.metaName);
 		copyMpdTagToOutputBuffer(cb, tag);
 		freeMpdTag(tag);
-        }
+        }*/
 
 	/* reset Metadata in OutputBuffer */
 

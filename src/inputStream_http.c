@@ -57,6 +57,7 @@ typedef struct _InputStreemHTTPData {
         int timesRedirected;
         int icyMetaint;
 	int prebuffer;
+	int icyOffset;
 } InputStreamHTTPData;
 
 static InputStreamHTTPData * newInputStreamHTTPData() {
@@ -69,6 +70,7 @@ static InputStreamHTTPData * newInputStreamHTTPData() {
         ret->timesRedirected = 0;
         ret->icyMetaint = 0;
 	ret->prebuffer = 0;
+	ret->icyOffset = 0;
 
         return ret;
 }
@@ -231,7 +233,7 @@ static int finishHTTPInit(InputStream * inStream) {
                              "Connection: close\r\n"
                              "User-Agent: %s/%s\r\n"
                              "Range: bytes=%ld-\r\n"
-                             /*"Icy-Metadata:1\r\n"*/
+                             "Icy-Metadata:1\r\n"
                              "\r\n",
                              data->path, data->host, "httpTest", "0.0.0",
                              inStream->offset);
@@ -366,15 +368,16 @@ static int getHTTPHello(InputStream * inStream) {
                 }
                 else if(0 == strncmp(cur, "\r\nicy-metaint:", 14)) {
                         data->icyMetaint = atoi(cur+14);
+                        printf("icyMetaint: %i\n", data->icyMetaint);
                 }
                 else if(0 == strncmp(cur, "\r\nicy-name:", 11)) {
                         int incr = 11;
                         char * temp = strstr(cur+incr,"\r\n");
                         if(!temp) break;
                         *temp = '\0';
-                        if(inStream->metaTitle) free(inStream->metaTitle);
+                        if(inStream->metaName) free(inStream->metaName);
                         while(*(incr+cur) == ' ') incr++;
-                        inStream->metaTitle = strdup(cur+incr);
+                        inStream->metaName = strdup(cur+incr);
                         *temp = '\r';
                 }
                 else if(0 == strncmp(cur, "\r\nx-audiocast-name:", 19)) {
@@ -382,9 +385,9 @@ static int getHTTPHello(InputStream * inStream) {
                         char * temp = strstr(cur+incr,"\r\n");
                         if(!temp) break;
                         *temp = '\0';
-                        if(inStream->metaTitle) free(inStream->metaTitle);
+                        if(inStream->metaName) free(inStream->metaName);
                         while(*(incr+cur) == ' ') incr++;
-                        inStream->metaTitle = strdup(cur+incr);
+                        inStream->metaName = strdup(cur+incr);
                         *temp = '\r';
                 }
                 else if(0 == strncmp(cur, "\r\nContent-Type:", 15)) {
@@ -439,18 +442,31 @@ int inputStream_httpOpen(InputStream * inStream, char * url) {
         inStream->atEOFFunc = inputStream_httpAtEOF;
         inStream->bufferFunc = inputStream_httpBuffer;
 
-        inStream->offset = 0;
-        inStream->size = 0;
-        inStream->error = 0;
-        inStream->mime = NULL;
-        inStream->seekable = 0;
-        inStream->metaTitle = NULL;
-
 	return 0;
 }
 
 int inputStream_httpSeek(InputStream * inStream, long offset, int whence) {
 	return -1;
+}
+
+static void parseIcyMetadata(InputStream * inStream, char * metadata,
+		int size) 
+{
+	char * r;
+	char * s;
+	char * temp = malloc(size+1);
+	memcpy(temp, metadata, size);
+	temp[size] = '\0';
+	s = strtok_r(temp, ";", &r);
+	while(s) {
+		if(0 == strncmp(s, "StreamTitle=", 12)) {
+			printf("StreamTitle: %s\n", s+12);
+			if(inStream->metaTitle) free(inStream->metaTitle);
+			inStream->metaTitle = strdup(s+12);
+		}
+		s = strtok_r(NULL, ";", &r);
+	}
+	free(temp);
 }
 
 size_t inputStream_httpRead(InputStream * inStream, void * ptr, size_t size, 
@@ -459,6 +475,7 @@ size_t inputStream_httpRead(InputStream * inStream, void * ptr, size_t size,
         InputStreamHTTPData * data = (InputStreamHTTPData *)inStream->data;
         long tosend = 0;
         long inlen = size*nmemb;
+	long maxToSend = data->buflen;
 
         inputStream_httpBuffer(inStream);
 
@@ -470,15 +487,44 @@ size_t inputStream_httpRead(InputStream * inStream, void * ptr, size_t size,
                 return 0;
         }
 
-	if(data->prebuffer) return 0;
+	if(data->prebuffer || data->buflen < data->icyMetaint) return 0;
+
+	if(data->icyMetaint > 0) {
+		if(data->icyOffset >= data->icyMetaint) {
+			int metalen = *(data->buffer);
+			metalen <<= 4;
+			if(metalen < 0) metalen = 0;
+			if(metalen+1 > data->buflen) {
+				/* damn that's some fucking big metadata! */
+				if(HTTP_BUFFER_SIZE < metalen+1) {
+                        		data->connState = 
+							HTTP_CONN_STATE_CLOSED;
+                        		close(data->sock);
+					data->buflen = 0;
+				}
+				return 0;
+			}
+			if(metalen > 0) {
+				parseIcyMetadata(inStream, data->buffer+1,
+						metalen);
+			}
+			data->buflen -= metalen+1;
+			memmove(data->buffer, data->buffer+metalen+1, 
+					data->buflen);
+			data->icyOffset = 0;
+		}
+		maxToSend = data->icyMetaint-data->icyOffset;
+		maxToSend = maxToSend > data->buflen ? data->buflen : maxToSend;
+	}
 
         if(data->buflen > 0) {
-                tosend = inlen > data->buflen ? data->buflen : inlen;
+                tosend = inlen > maxToSend ? maxToSend : inlen;
 		tosend = (tosend/size)*size;
        
                 memcpy(ptr, data->buffer, tosend);
 		/*fwrite(ptr,1,readed,stdout);*/
                 data->buflen -= tosend;
+		data->icyOffset+= tosend;
 		/*fwrite(data->buffer,1,readed,stdout);*/
                 memmove(data->buffer, data->buffer+tosend, data->buflen);
 
@@ -498,7 +544,6 @@ int inputStream_httpClose(InputStream * inStream) {
                 close(data->sock);
         }
 
-        if(inStream->mime) free(inStream->mime);
         freeInputStreamHTTPData(data);
 
         return 0;
@@ -538,7 +583,9 @@ int inputStream_httpBuffer(InputStream * inStream) {
                 return -1;
         }
 
-	if(data->buflen == 0) data->prebuffer = 1;
+	if(data->buflen == 0 || data->buflen < data->icyMetaint) {
+		data->prebuffer = 1;
+	}
 	else if(data->buflen > HTTP_PREBUFFER_SIZE) data->prebuffer = 0;
 
         if(data->connState == HTTP_CONN_STATE_OPEN &&
@@ -563,4 +610,3 @@ int inputStream_httpBuffer(InputStream * inStream) {
 
         return (readed ? 1 : 0);
 }
-/* vim:set shiftwidth=8 tabstop=8 expandtab: */

@@ -291,7 +291,7 @@ int ogg_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream)
 				dc->state = DECODE_STATE_DECODE;
 			}
 			comments = ov_comment(&vf, -1)->user_comments;
-			putOggCommentsIntoOutputBuffer(cb, inStream->metaTitle,
+			putOggCommentsIntoOutputBuffer(cb, inStream->metaName,
 					comments);
         		replayGainScale = ogg_getReplayGainScale(comments);
 		}

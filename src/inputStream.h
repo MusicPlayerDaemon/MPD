@@ -45,6 +45,7 @@ struct _InputStream {
         InputStreamAtEOFFunc atEOFFunc;
         InputStreamBufferFunc bufferFunc;
         void * data;
+        char * metaName;
         char * metaTitle;
 };
 

@@ -32,10 +32,7 @@ int inputStream_fileOpen(InputStream * inStream, char * filename) {
 		return -1;
 	}
 
-	inStream->offset = 0;
         inStream->seekable = 1;
-        inStream->mime = NULL;
-        inStream->metaTitle = NULL;
 
 	fseek(fp,0,SEEK_END);
 	inStream->size = ftell(fp);

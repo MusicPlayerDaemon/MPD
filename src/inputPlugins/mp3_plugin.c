@@ -531,6 +531,18 @@ int mp3Read(mp3DecodeData * data, OutputBuffer * cb, DecoderControl * dc) {
         default:
 		mad_synth_frame(&data->synth,&data->frame);
 
+		if(data->inStream->metaTitle) {
+			MpdTag * tag = newMpdTag();
+			if(data->inStream->metaName) {
+				tag->name = strdup(data->inStream->metaName);
+			}
+			tag->title = strdup(data->inStream->metaTitle);
+			free(data->inStream->metaTitle);
+			data->inStream->metaTitle = NULL;
+			copyMpdTagToOutputBuffer(cb, tag);
+			freeMpdTag(tag);
+		}
+
 		for(i=0;i<(data->synth).pcm.length;i++) {
 			mpd_sint16 * sample;
 
@@ -643,10 +655,31 @@ int mp3_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream) {
         
 	dc->totalTime = data.totalTime;
 
-	if(tag) {
-		if(inStream->metaTitle) {
+	if(inStream->metaTitle) {
+		if(tag) freeMpdTag(tag);
+		tag = newMpdTag();
+		tag->title = strdup(inStream->metaTitle);
+		/* free ths now, so we know we are done with it */
+		free(inStream->metaTitle);
+		inStream->metaTitle = NULL;
+		if(inStream->metaName) {
+			tag->name = strdup(inStream->metaName);
+		}
+		copyMpdTagToOutputBuffer(cb, tag);
+		freeMpdTag(tag);
+	}
+	else if(tag) {
+		if(inStream->metaName) {
 			if(tag->name) free(tag->name);
-			tag->name = strdup(inStream->metaTitle);
+			tag->name = strdup(inStream->metaName);
+		}
+		copyMpdTagToOutputBuffer(cb, tag);
+		freeMpdTag(tag);
+	}
+	else if(inStream->metaName) {
+		tag = newMpdTag();
+		if(inStream->metaName) {
+			tag->name = strdup(inStream->metaName);
 		}
 		copyMpdTagToOutputBuffer(cb, tag);
 		freeMpdTag(tag);

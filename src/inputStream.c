@@ -26,6 +26,14 @@
 #include <unistd.h>
 
 int openInputStream(InputStream * inStream, char * url) {
+        inStream->offset = 0;
+        inStream->size = 0;
+        inStream->error = 0;
+        inStream->mime = NULL;
+        inStream->seekable = 0;
+        inStream->metaName = NULL;
+        inStream->metaTitle = NULL;
+
         if(inputStream_fileOpen(inStream,url) == 0) return 0;
         if(inputStream_httpOpen(inStream,url) == 0) return 0;
 
@@ -43,6 +51,10 @@ size_t readFromInputStream(InputStream * inStream, void * ptr, size_t size,
 }
 
 int closeInputStream(InputStream * inStream) {
+        if(inStream->mime) free(inStream->mime);
+        if(inStream->metaName) free(inStream->metaName);
+        if(inStream->metaTitle) free(inStream->metaTitle);
+
         return inStream->closeFunc(inStream);
 }
 
@@ -53,4 +65,3 @@ int inputStreamAtEOF(InputStream * inStream) {
 int bufferInputStream(InputStream * inStream) {
         return inStream->bufferFunc(inStream);
 }
-/* vim:set shiftwidth=8 tabstop=8 expandtab: */
