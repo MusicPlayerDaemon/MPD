@@ -1,8 +1,4 @@
 1) non-blocking (for other clients) update
-	n) mpd command for rereading db
-	o) rewrite update functions to indicate if something was updated, then
-	 	when update process returns, indicate wheater db was updated
-		and should be reread by parent process
 	p) set error: in status when an error occurs during update
 
 2) cleanup main()

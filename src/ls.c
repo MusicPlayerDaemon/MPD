@@ -179,12 +179,11 @@ int hasMp3Suffix(char * utf8file) {
 	return hasSuffix(utf8file,"mp3");
 }
 
-int isDir(char * utf8name, time_t * mtime) {
+int isDir(char * utf8name) {
 	struct stat st;
 
 	if(stat(rmp2amp(utf8ToFsCharset(utf8name)),&st)==0) {
 		if(S_ISDIR(st.st_mode)) {
-			if(mtime) *mtime = st.st_mtime;
 			return 1;
 		}
 	}

@@ -28,7 +28,7 @@ int lsPlaylists(FILE * fp, char * utf8path);
 
 int isFile(char * utf8file, time_t * mtime);
 
-int isDir(char * utf8name, time_t * mtime);
+int isDir(char * utf8name);
 
 int isPlaylist(char * utf8file);
 
