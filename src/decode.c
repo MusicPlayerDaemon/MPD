@@ -388,17 +388,6 @@ int decoderInit(PlayerControl * pc, OutputBuffer * cb, DecoderControl * dc) {
 	return 0;
 }
 
-#define copyMetadata() { \
-	memcpy(pc->metadata, metadata, DECODE_METADATA_LENGTH); \
-	pc->name = name; \
-	pc->title = title; \
-	pc->artist = artist; \
-	pc->album = album; \
-	gotMetadata = 0; \
-	pc->metadataState = PLAYER_METADATA_STATE_READ; \
-	kill(getppid(), SIGUSR1); \
-}
-
 void handleMetadata(OutputBuffer * cb, PlayerControl * pc, int * previous,
 		int * currentChunkSent, MetadataChunk * currentChunk) 
 {

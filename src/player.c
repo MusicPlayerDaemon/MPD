@@ -470,6 +470,7 @@ void playerCycleLogFiles() {
 Song * playerCurrentDecodeSong() {
         static Song * song = NULL;
         static MetadataChunk * prev = NULL;
+	Song * ret = NULL;
 	PlayerControl * pc = &(getPlayerData()->playerControl);
 
         if(pc->metadataState == PLAYER_METADATA_STATE_READ && 
@@ -477,19 +478,19 @@ Song * playerCurrentDecodeSong() {
                         || (!prev || memcmp(prev, &(pc->metadataChunk), 
 			sizeof(MetadataChunk))))) 
         {
-		printf("metadata in the PLAYER!\n");
                 if(prev) free(prev);
                 prev = malloc(sizeof(MetadataChunk));
 		memcpy(prev, &(pc->metadataChunk), sizeof(MetadataChunk));
-                resetPlayerMetadata();
                 if(song) freeJustSong(song);
                 song = newNullSong();
                 if(song->utf8url) free(song->utf8url);
                 song->utf8url = strdup(pc->currentUrl);
 		song->tag = metadataChunkToMpdTagDup(prev);
                 validateUtf8Tag(song->tag);
-                return song;
+                ret =  song;
         }
 
-        return NULL;
+        resetPlayerMetadata();
+
+        return ret;
 }

@@ -147,11 +147,19 @@ int sendDataToOutputBuffer(OutputBuffer * cb, InputStream * inStream,
 
 int copyMpdTagToOutputBuffer(OutputBuffer * cb, MpdTag * tag) {
 	int nextChunk;
+	static MpdTag * last = NULL;
 
 	printf("copyMpdTagToOB called\n");
 
         if(!cb->acceptMetadata || !tag) {
 		sendMetaChunk = 0;
+		if(last) free(last);
+		last = NULL;
+		return 0;
+	}
+
+	if(last && mpdTagsAreEqual(last, tag)) {
+		printf("same as last\n");
 		return 0;
 	}
 
@@ -164,6 +172,9 @@ int copyMpdTagToOutputBuffer(OutputBuffer * cb, MpdTag * tag) {
 	currentMetaChunk = nextChunk;
 
 	printMpdTag(stdout, tag);
+
+	if(last) freeMpdTag(last);
+	last = mpdTagDup(tag);
 
 	copyMpdTagToMetadataChunk(tag, &(cb->metadataChunks[currentMetaChunk]));
 
