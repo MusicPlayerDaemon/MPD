@@ -2,6 +2,8 @@
 ----
 *) better handle streams so they don't use TagTracker
 
+*) parsing of lame tags (including getting replaygain info)
+
 *) implement listener socket protocol as documented here:
 	http://www.musicpd.org/wiki/moin.cgi/MpdListenerProtocol
 
