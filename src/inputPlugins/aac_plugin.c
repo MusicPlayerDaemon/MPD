@@ -371,7 +371,7 @@ int aac_decode(OutputBuffer * cb, DecoderControl * dc, char * path) {
 			eof = 1;
 			break;
 		}
-	} while (!eof);
+	};
 
 	flushOutputBuffer(cb);
 
