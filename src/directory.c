@@ -88,6 +88,11 @@ void deleteEmptyDirectoriesInDirectory(Directory * directory);
 
 int addSubDirectoryToDirectory(Directory * directory, char * shortname, char * name);
 
+int isUpdatingDB() {
+	if(directory_updatePid>0) return 1;
+	return 0;
+}
+
 void directory_sigChldHandler(int pid, int status) {
 	if(directory_updatePid==pid) {
 		if(WIFSIGNALED(status) && WTERMSIG(status)!=SIGTERM) {

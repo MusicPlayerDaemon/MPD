@@ -84,6 +84,7 @@
 #define COMMAND_STATUS_ERROR            "error"
 #define COMMAND_STATUS_CROSSFADE	"xfade"
 #define COMMAND_STATUS_AUDIO		"audio"
+#define COMMAND_STATUS_UPDATING_DB	"updating_db"
 
 typedef int (* CommandHandlerFunction)(FILE *, unsigned int *, int, char **);
 
@@ -192,6 +193,8 @@ int commandStatus(FILE * fp, unsigned int * permission, int argArrayLength,
                 myfprintf(fp,"%s: %li\n",COMMAND_STATUS_BITRATE,getPlayerBitRate(),getPlayerTotalTime());
                 myfprintf(fp,"%s: %u:%i:%i\n",COMMAND_STATUS_AUDIO,getPlayerSampleRate(),getPlayerBits(),getPlayerChannels());
         }
+
+	if(isUpdatingDB()) myfprintf(fp,"%s: 1\n",COMMAND_STATUS_UPDATING_DB);
 
         if(getPlayerError()!=PLAYER_ERROR_NOERROR) {
                 myfprintf(fp,"%s: %s\n",COMMAND_STATUS_ERROR,getPlayerErrorStr());

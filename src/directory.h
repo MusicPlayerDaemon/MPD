@@ -28,6 +28,8 @@
 
 extern char directorydb[MAXPATHLEN+1];
 
+int isUpdatingDB();
+
 void directory_sigChldHandler(int pid, int status);
 
 int updateInit(FILE * fp);
