@@ -20,6 +20,10 @@
 	*) more accurate time reporting by determing how much of audio_device
                 buffer has been played
 
+*) mixer
+	*) add sun support
+	*) add OS X support
+
 *) Add support for 24-bit audio
 
 0.13
