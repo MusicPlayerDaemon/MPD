@@ -1,8 +1,10 @@
 1) non-blocking (for other clients) update
 	a) have two commands, one that blocks and returns updated info and another command that doesn't block
 	b) allow incremental updating, either a directory recursively or a specific song
-	c) haven another command for updating that blocks, but doesn't write the db file
-	d) add a command for flushing the db, and flush the db and SIGTERM/SIGINT
-	e) spawn a update process in the beginning (this will be faster for simple updates, involving only a few songs or directories).
+	c) fork on update
+	d) have a special case where if a update is in a command list, it only forks at the beginning of the list, and writes at the end of the command list
+	e) add an element to status stating the "update state"
 	f) only pass back changed info to parent
 	g) only pass mtimes and paths to child
+
+2) rewrite interface stuff, specifically command list handling etc so its less of a hack and deals with the above update stuff better
