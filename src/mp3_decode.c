@@ -347,10 +347,10 @@ int decodeFirstFrame(mp3DecodeData * data, DecoderControl * dc) {
 		while((ret = decodeNextFrameHeader(data))==DECODE_CONT && 
 				(!dc || !dc->stop));
 		if(ret==DECODE_SKIP) skip = 1;
-		else if(ret==DECODE_BREAK || dc->stop) return -1;
+		else if(ret==DECODE_BREAK || (dc && dc->stop)) return -1;
 		while((ret = decodeNextFrame(data))==DECODE_CONT && 
 				(!dc || !dc->stop));
-		if(ret==DECODE_BREAK || dc->stop) return -1;
+		if(ret==DECODE_BREAK || (dc && dc->stop)) return -1;
 		if(!skip && ret==DECODE_OK) break;
 	}
 
