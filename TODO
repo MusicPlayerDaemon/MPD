@@ -10,9 +10,6 @@
 
 6) add "plversion" and "currentsong" commands
 
-7) in libmpdclient, buffer all stuff going out for playlist command,
-	should make it much faster
-
 
 Post-1.0
 --------
