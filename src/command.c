@@ -197,7 +197,9 @@ int commandStatus(FILE * fp, unsigned int * permission, int argArrayLength,
         myfprintf(fp,"%s: %i\n",COMMAND_STATUS_RANDOM,getPlaylistRandomStatus());
         myfprintf(fp,"%s: %li\n",COMMAND_STATUS_PLAYLIST,getPlaylistVersion());
         myfprintf(fp,"%s: %i\n",COMMAND_STATUS_PLAYLIST_LENGTH,getPlaylistLength());
-        myfprintf(fp,"%s: %i\n",COMMAND_STATUS_CROSSFADE,(int)getPlayerCrossFade());
+	myfprintf(fp,"%s: %i\n",COMMAND_STATUS_CROSSFADE,
+			(int)(getPlayerCrossFade()+0.5));
+
         myfprintf(fp,"%s: %s\n",COMMAND_STATUS_STATE,state);
 
         if(getPlayerState()!=PLAYER_STATE_STOP) {
