@@ -393,7 +393,9 @@ void handleMetadata(OutputBuffer * cb, PlayerControl * pc, int * previous,
 	if(cb->begin!=cb->end) {
 		int meta = cb->metaChunk[cb->begin];
 		if( meta != *previous ) {
+			DEBUG("player: metadata change\n");
 			if( meta >= 0 && cb->metaChunkSet[meta]) {
+				DEBUG("player: new metadata from decoder!\n");
 				memcpy(currentChunk, 
 					cb->metadataChunks+meta,
 					sizeof(MetadataChunk));
@@ -625,6 +627,7 @@ void decode() {
 
 	cb = &(getPlayerData()->buffer);
 
+	clearAllMetaChunkSets(cb);
 	cb->begin = 0;
 	cb->end = 0;
 	pc = &(getPlayerData()->playerControl);
@@ -634,7 +637,6 @@ void decode() {
         dc->seek = 0;
         dc->stop = 0;
 	dc->start = 1;
-	clearAllMetaChunkSets(cb);
         
 	if(decode_pid==NULL || *decode_pid<=0) {
 		if(decoderInit(pc,cb,dc)<0) return;

@@ -206,6 +206,9 @@ void putOggCommentsIntoOutputBuffer(OutputBuffer * cb, char * streamName,
 	MpdTag * tag;
 
 	tag = oggCommentsParse(comments);
+	if(!tag && streamName) {
+		tag = newMpdTag();
+	}
 	if(!tag) return;
 
 	/*if(tag->artist) printf("Artist: %s\n", tag->artist);

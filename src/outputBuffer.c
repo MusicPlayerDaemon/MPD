@@ -21,6 +21,7 @@
 #include "pcm_utils.h"
 #include "playerData.h"
 #include "utils.h"
+#include "log.h"
 
 #include <string.h>
 
@@ -154,10 +155,12 @@ int copyMpdTagToOutputBuffer(OutputBuffer * cb, MpdTag * tag) {
 		sendMetaChunk = 0;
 		if(last) free(last);
 		last = NULL;
+		DEBUG("copyMpdTagToOB: !acceptMetadata || !tag\n");
 		return 0;
 	}
 
 	if(last && mpdTagsAreEqual(last, tag)) {
+		DEBUG("copyMpdTagToOB: same as last\n");
 		return 0;
 	}
 
@@ -167,7 +170,11 @@ int copyMpdTagToOutputBuffer(OutputBuffer * cb, MpdTag * tag) {
 	nextChunk = currentMetaChunk+1;
 	if(nextChunk >= BUFFERED_METACHUNKS) nextChunk = 0;
 
-	if(cb->metaChunkSet[nextChunk]) return -1;
+	if(cb->metaChunkSet[nextChunk]) {
+		sendMetaChunk = 0;
+		DEBUG("copyMpdTagToOB: metachunk in use!\n");
+		return -1;
+	}
 
 	sendMetaChunk = 1;
 	currentMetaChunk = nextChunk;
@@ -177,6 +184,8 @@ int copyMpdTagToOutputBuffer(OutputBuffer * cb, MpdTag * tag) {
 	copyMpdTagToMetadataChunk(tag, &(cb->metadataChunks[currentMetaChunk]));
 
 	cb->metaChunkSet[nextChunk] = 1;
+
+	DEBUG("copyMpdTagToOB: copiedTag\n");
 
 	return 0;
 }

@@ -473,11 +473,8 @@ Song * playerCurrentDecodeSong() {
 	Song * ret = NULL;
 	PlayerControl * pc = &(getPlayerData()->playerControl);
 
-        if(pc->metadataState == PLAYER_METADATA_STATE_READ && 
-                        ((!song || strcmp(song->utf8url, pc->currentUrl))
-                        || (!prev || memcmp(prev, &(pc->metadataChunk), 
-			sizeof(MetadataChunk))))) 
-        {
+        if(pc->metadataState == PLAYER_METADATA_STATE_READ) {
+		DEBUG("playerCurrentDecodeSong: caught new metadata!\n");
                 if(prev) free(prev);
                 prev = malloc(sizeof(MetadataChunk));
 		memcpy(prev, &(pc->metadataChunk), sizeof(MetadataChunk));
@@ -488,9 +485,8 @@ Song * playerCurrentDecodeSong() {
 		song->tag = metadataChunkToMpdTagDup(prev);
                 validateUtf8Tag(song->tag);
                 ret =  song;
+        	resetPlayerMetadata();
         }
-
-        resetPlayerMetadata();
 
         return ret;
 }
