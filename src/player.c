@@ -149,9 +149,31 @@ int playerInit() {
 	return 0;
 }
 
+int playerGetDecodeType(char * utf8file) {
+	if(0);
+#ifdef HAVE_MAD
+	if(isMp3(utf8file,NULL)) return DECODE_TYPE_MP3;
+#endif
+#ifdef HAVE_OGG	
+	if(isOgg(utf8file,NULL)) return DECODE_TYPE_OGG;
+#endif
+#ifdef HAVE_FLAC	
+	if(isFlac(utf8file,NULL)) return DECODE_TYPE_FLAC;
+#endif
+#ifdef HAVE_AUDIOFILE
+	if(isWave(utf8file,NULL)) return DECODE_TYPE_AUDIOFILE;
+#endif
+#ifdef HAVE_FAAD
+	if(isAac(utf8file,NULL)) return DECODE_TYPE_AAC;
+	if(isMp4(utf8file,NULL)) return DECODE_TYPE_MP4;
+#endif
+	return -1;
+}
+
 int playerPlay(FILE * fp, char * utf8file) {
 	PlayerControl * pc = &(getPlayerData()->playerControl);
 	if(fp==NULL) fp = stderr;
+	int decodeType;
 
 	if(playerStop(fp)<0) return -1;
 
@@ -163,29 +185,14 @@ int playerPlay(FILE * fp, char * utf8file) {
 			return 0;
 		}
 	}
-
-	if(0);
-#ifdef HAVE_MAD
-	else if(isMp3(utf8file,NULL)) pc->decodeType = DECODE_TYPE_MP3;
-#endif
-#ifdef HAVE_OGG	
-	else if(isOgg(utf8file,NULL)) pc->decodeType = DECODE_TYPE_OGG;
-#endif
-#ifdef HAVE_FLAC	
-	else if(isFlac(utf8file,NULL)) pc->decodeType = DECODE_TYPE_FLAC;
-#endif
-#ifdef HAVE_AUDIOFILE
-	else if(isWave(utf8file,NULL)) pc->decodeType = DECODE_TYPE_AUDIOFILE;
-#endif
-#ifdef HAVE_FAAD
-	else if(isAac(utf8file,NULL)) pc->decodeType = DECODE_TYPE_AAC;
-	else if(isMp4(utf8file,NULL)) pc->decodeType = DECODE_TYPE_MP4;
-#endif
-	else {
+	
+	decodeType = playerGetDecodeType(utf8file);
+	if(decodeType < 0) {
 		strncpy(pc->erroredFile,pc->file,MAXPATHLEN);
 		pc->error = PLAYER_ERROR_UNKTYPE;
 		return 0;
 	}
+	pc->decodeType = decodeType;
 
 	strncpy(pc->file,rmp2amp(utf8ToFsCharset(utf8file)),MAXPATHLEN);
 
@@ -315,36 +322,15 @@ void playerCloseAudio() {
 
 int queueSong(char * utf8file) {
 	PlayerControl * pc = &(getPlayerData()->playerControl);
+	int decodeType;
 
 	if(pc->queueState==PLAYER_QUEUE_BLANK) {
 		strncpy(pc->file,rmp2amp(utf8ToFsCharset(utf8file)),MAXPATHLEN);
 
-		if(0);
-#ifdef HAVE_MAD
-		else if(isMp3(utf8file,NULL)) pc->decodeType = DECODE_TYPE_MP3;
-#endif
-#ifdef HAVE_OGG	
-		else if(isOgg(utf8file,NULL)) pc->decodeType = DECODE_TYPE_OGG;
-#endif
-#ifdef HAVE_FLAC	
-		else if(isFlac(utf8file,NULL)) {
-			pc->decodeType = DECODE_TYPE_FLAC;
-		}
-#endif
-#ifdef HAVE_AUDIOFILE
-		else if(isWave(utf8file,NULL)) {
-			pc->decodeType = DECODE_TYPE_AUDIOFILE;
-		}
-#endif
-#ifdef HAVE_AUDIOFILE
-		else if(isAac(utf8file,NULL)) {
-			pc->decodeType = DECODE_TYPE_AAC;
-		}
-		else if(isMp4(utf8file,NULL)) {
-			pc->decodeType = DECODE_TYPE_MP4;
-		}
-#endif
-		else return -1;
+		decodeType = playerGetDecodeType(utf8file);
+		if(decodeType < 0) return -1;
+		pc->decodeType = decodeType;
+
 		pc->queueState = PLAYER_QUEUE_FULL;
 		return 0;
 	}
@@ -387,6 +373,7 @@ void playerQueueUnlock() {
 int playerSeek(FILE * fp, char * utf8file, float time) {
 	PlayerControl * pc = &(getPlayerData()->playerControl);
 	char * file;
+	int decodeType;
 
 	if(pc->state==PLAYER_STATE_STOP) {
 		myfprintf(fp,"%s player not currently playing\n",
@@ -395,10 +382,17 @@ int playerSeek(FILE * fp, char * utf8file, float time) {
 	}
 
 	file = rmp2amp(utf8ToFsCharset(utf8file));
-	if(strcmp(pc->file,file)!=0) strncpy(pc->file,file,MAXPATHLEN);
-		/*if(playerStop(fp)<0) return -1;
-		if(playerPlay(stderr,file)<0) return -1;*/
-	/*}*/
+	if(strcmp(pc->file,file)!=0) {
+		decodeType = playerGetDecodeType(utf8file);
+		if(decodeType < 0) {
+			printf("%s unknown file type: %s\n",
+				COMMAND_RESPOND_ERROR, utf8file);
+			return -1;
+		}
+		pc->decodeType = decodeType;
+
+		strncpy(pc->file,file,MAXPATHLEN);
+	}
 
 	if(pc->error==PLAYER_ERROR_NOERROR) {
 		pc->seekWhere = time;

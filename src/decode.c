@@ -128,12 +128,12 @@ int waitOnDecode(PlayerControl * pc, AudioFormat * af, DecoderControl * dc,
 		return -1;
 	}
 
+	pc->totalTime = cb->totalTime;
 	pc->elapsedTime = 0;
 	pc->bitRate = 0;
 	pc->sampleRate = af->sampleRate;
 	pc->bits = af->bits;
 	pc->channels = af->channels;
-	pc->totalTime = cb->totalTime;
 
 	return 0;
 }
@@ -147,10 +147,11 @@ void decodeSeek(PlayerControl * pc, AudioFormat * af, DecoderControl * dc,
 				strcmp(dc->file,pc->file)!=0) 
 		{
 			stopDecode(dc);
+			cb->begin = 0;
 			cb->end = 0;
+			cb->wrap = 0;
 			dc->error = 0;
 			dc->start = 1;
-			dc->error = 0;
 			waitOnDecode(pc,af,dc,cb);
 		}
 		if(*decode_pid>0 && dc->state==DECODE_STATE_DECODE) {

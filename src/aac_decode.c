@@ -173,7 +173,7 @@ void initAacBuffer(FILE * fp, AacBuffer * b, float * length,
 	if(retFileread) *retFileread = fileread;
 	if(retTagsize) *retTagsize = tagsize;
 
-	if(!length) return;
+	if(length==NULL) return;
 
 	if((b->buffer[0] == 0xFF) && ((b->buffer[1] & 0xF6) == 0xF0)) {
 		adtsParse(b, length);
@@ -308,14 +308,15 @@ int aac_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc) {
 	time = 0.0;
 
 	advanceAacBuffer(&b,bread);
-	fillAacBuffer(&b);
 
-	do {
-		if(dc->seek) {
-			dc->seekError = 1;
-			dc->seek = 0;
+	while(!eof) {
+		fillAacBuffer(&b);
+
+		if(b.bytesIntoBuffer==0) {
+			eof = 1;
+			break;
 		}
-		
+
 		sampleBuffer = faacDecDecode(decoder,&frameInfo,b.buffer,
 						b.bytesIntoBuffer);
 
@@ -348,7 +349,7 @@ int aac_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc) {
 			
 		sampleBufferLen = sampleCount*2;
 
-		while(sampleBufferLen>0 && !dc->seek) {
+		while(sampleBufferLen>0) {
 			size_t size = sampleBufferLen>CHUNK_SIZE-chunkLen ? 
 							CHUNK_SIZE-chunkLen:
 							sampleBufferLen;
@@ -357,11 +358,15 @@ int aac_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc) {
 			{
 					usleep(10000);
 			}
-			if(dc->stop) {
+			if(dc->seek) {
+				dc->seekError = 1;
+				dc->seek = 0;
+			}
+			else if(dc->stop) {
 				eof = 1;
 				break;
 			}
-			else if(!dc->seek) {
+			else {
 				sampleBufferLen-=size;
 				memcpy(cb->chunks+cb->end*CHUNK_SIZE+chunkLen,
 						sampleBuffer,size);
@@ -381,10 +386,6 @@ int aac_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc) {
 				}
 			}
 		}
-
-		fillAacBuffer(&b);
-
-		if(b.bytesIntoBuffer==0) eof = 1;
 	} while (!eof);
 
 	faacDecClose(decoder);
