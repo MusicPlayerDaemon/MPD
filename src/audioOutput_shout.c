@@ -64,6 +64,8 @@ typedef struct _ShoutData {
 	long convBufferLen;
 	/* shoud we convert the audio to a different format? */
 	int audioFormatConvert;
+
+	int opened;
 } ShoutData;
 
 static ShoutData * newShoutData() {
@@ -73,6 +75,7 @@ static ShoutData * newShoutData() {
 	ret->serialno = rand();
 	ret->convBuffer = NULL;
 	ret->convBufferLen = 0;
+	ret->opened = 0;
 
 	return ret;
 }
@@ -187,8 +190,27 @@ static int shout_initDriver(AudioOutput * audioOutput) {
 	return 0;
 }
 
+static void shout_closeShoutConn(ShoutData * sd) {
+	if(sd->opened) {
+		if(shout_close(sd->shoutConn) != SHOUTERR_SUCCESS) {
+			ERROR("problem closing connection to shout server: "
+				"%s\n", shout_get_error(sd->shoutConn));
+		}
+
+		ogg_stream_clear(&(sd->os));
+		vorbis_block_clear(&(sd->vb));
+		vorbis_dsp_clear(&(sd->vd));
+		vorbis_comment_clear(&(sd->vc));
+		vorbis_info_clear(&(sd->vi));
+	}
+
+	sd->opened = 0;
+}
+
 static void shout_finishDriver(AudioOutput * audioOutput) {
 	ShoutData * sd = (ShoutData *)audioOutput->data;
+
+	shout_closeShoutConn(sd);
 
 	freeShoutData(sd);
 
@@ -198,29 +220,33 @@ static void shout_finishDriver(AudioOutput * audioOutput) {
 }
 
 static void shout_closeDevice(AudioOutput * audioOutput) {
-	ShoutData * sd = (ShoutData *) audioOutput->data;
-
-	if(shout_close(sd->shoutConn) != SHOUTERR_SUCCESS)
-	{
-		ERROR("problem closing connection to shout server: %s\n",
-				shout_get_error(sd->shoutConn));
-	}
-
-	ogg_stream_clear(&(sd->os));
-	vorbis_block_clear(&(sd->vb));
-	vorbis_dsp_clear(&(sd->vd));
-	vorbis_comment_clear(&(sd->vc));
-	vorbis_info_clear(&(sd->vi));
-
 	audioOutput->open = 0;
+}
+
+static void shout_handleError(ShoutData * sd, int err) {
+	switch(err) {
+	case SHOUTERR_SUCCESS:
+		break;
+	case SHOUTERR_UNCONNECTED:
+	case SHOUTERR_SOCKET:
+		ERROR("Lost shout connection, attempting to reconnect\n");
+		shout_close(sd->shoutConn);
+		shout_open(sd->shoutConn);
+		break;
+	default:
+		ERROR("shout: error: %s\n", shout_get_error(sd->shoutConn));
+		break;
+	}
 }
 
 static void write_page(ShoutData * sd) {
 	if(!sd->og.header_len || !sd->og.body_len) return;
 
-	shout_sync(sd->shoutConn);
-	shout_send(sd->shoutConn, sd->og.header, sd->og.header_len);
-	shout_send(sd->shoutConn, sd->og.body, sd->og.body_len);
+	/*shout_sync(sd->shoutConn);*/
+	int err = shout_send(sd->shoutConn, sd->og.header, sd->og.header_len);
+	shout_handleError(sd, err);
+	err = shout_send(sd->shoutConn, sd->og.body, sd->og.body_len);
+	shout_handleError(sd, err);
 	shout_sync(sd->shoutConn);
 }
 
@@ -229,10 +255,25 @@ static int shout_openDevice(AudioOutput * audioOutput,
 {
 	ShoutData * sd = (ShoutData *)audioOutput->data;
 
+	memcpy(&(sd->inAudioFormat), audioFormat, sizeof(AudioFormat));
+
+	if(0 == memcmp(&(sd->inAudioFormat), &(sd->outAudioFormat), 
+			sizeof(AudioFormat))) 
+	{
+		sd->audioFormatConvert = 0;
+	}
+	else sd->audioFormatConvert = 1;
+
+	audioOutput->open = 1;
+
+	if(sd->opened) return 0;
+
 	if(shout_open(sd->shoutConn) != SHOUTERR_SUCCESS)
 	{
 		ERROR("problem opening connection to shout server: %s\n",
 				shout_get_error(sd->shoutConn));
+
+		audioOutput->open = 0;
 		return -1;
 	}
 
@@ -243,6 +284,8 @@ static int shout_openDevice(AudioOutput * audioOutput,
 	{
 		ERROR("problem seting up vorbis encoder for shout\n");
 		vorbis_info_clear(&(sd->vi));
+		shout_close(sd->shoutConn);
+		audioOutput->open = 0;
 		return -1;
 	}
 
@@ -259,21 +302,12 @@ static int shout_openDevice(AudioOutput * audioOutput,
 	ogg_stream_packetin(&(sd->os), &(sd->header_comments));
 	ogg_stream_packetin(&(sd->os), &(sd->header_codebooks));
 
-	audioOutput->open = 1;
-
 	while(ogg_stream_flush(&(sd->os), &(sd->og)))
 	{
 		write_page(sd);
 	}
 
-	memcpy(&(sd->inAudioFormat), audioFormat, sizeof(AudioFormat));
-
-	if(0 == memcmp(&(sd->inAudioFormat), &(sd->outAudioFormat), 
-			sizeof(AudioFormat))) 
-	{
-		sd->audioFormatConvert = 0;
-	}
-	else sd->audioFormatConvert = 1;
+	sd->opened = 1;
 
 	return 0;
 }
