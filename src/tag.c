@@ -63,7 +63,7 @@ void printMpdTag(FILE * fp, MpdTag * tag) {
 	if(str && !validUtf8String(str)) { \
 		char * temp; \
 		DEBUG("not valid utf8 in tag: %s\n",str); \
-		temp = asciiStrToUtf8Dup(str); \
+		temp = latin1StrToUtf8Dup(str); \
 		free(str); \
 		str = temp; \
 	} \

@@ -20,7 +20,6 @@
 #include "log.h"
 #include "charConv.h"
 #include "conf.h"
-#include "utf8.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -59,9 +58,6 @@ char * fsCharsetToUtf8(char * str) {
 		free(ret);
 		ret = NULL;
 	}
-	/*if(!ret) ret = asciiStrToUtf8Dup(str);*/
-
-	/* if all else fails, just strdup */
 
 	return ret;
 }

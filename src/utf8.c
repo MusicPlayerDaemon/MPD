@@ -4,7 +4,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-unsigned char * asciiToUtf8(unsigned char c) {
+unsigned char * latin1ToUtf8(unsigned char c) {
 	static unsigned char utf8[3];
 
 	memset(utf8,0,3);
@@ -22,9 +22,9 @@ unsigned char * asciiToUtf8(unsigned char c) {
 	return utf8;
 }
 
-unsigned char * asciiStrToUtf8Dup(unsigned char * ascii) {
-	/* utf8 should have at most two char's per ascii char */
-	int len = strlen(ascii)*2+1;
+unsigned char * latin1StrToUtf8Dup(unsigned char * latin1) {
+	/* utf8 should have at most two char's per latin1 char */
+	int len = strlen(latin1)*2+1;
 	unsigned char * ret = malloc(len);
 	unsigned char * cp = ret;
 	unsigned char * utf8;
@@ -33,19 +33,19 @@ unsigned char * asciiStrToUtf8Dup(unsigned char * ascii) {
 
 	len = 0;
 
-	while(*ascii) {
-		utf8 = asciiToUtf8(*ascii);
+	while(*latin1) {
+		utf8 = latin1ToUtf8(*latin1);
 		while(*utf8) {
 			*(cp++) = *(utf8++);
 			len++;
 		}
-		ascii++;
+		latin1++;
 	}
 
 	return realloc(ret,len+1);
 }
 
-unsigned char utf8ToAscii(unsigned char * utf8) {
+unsigned char utf8ToLatin1(unsigned char * utf8) {
 	unsigned char c = 0;
 
 	if(utf8[0]<128) return utf8[0];
@@ -86,8 +86,8 @@ int validUtf8String(unsigned char * string) {
 	return 1;
 }
 
-unsigned char * utf8StrToAsciiDup(unsigned char * utf8) {
-	/* utf8 should have at most two char's per ascii char */
+unsigned char * utf8StrToLatin1Dup(unsigned char * utf8) {
+	/* utf8 should have at most two char's per latin1 char */
 	int len = strlen(utf8)+1;
 	unsigned char * ret = malloc(len);
 	unsigned char * cp = ret;
@@ -103,7 +103,7 @@ unsigned char * utf8StrToAsciiDup(unsigned char * utf8) {
 			free(ret);
 			return NULL;
 		}
-		*(cp++) = utf8ToAscii(utf8);
+		*(cp++) = utf8ToLatin1(utf8);
 		utf8+= count;
 		len++;
 	}

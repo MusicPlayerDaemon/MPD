@@ -34,10 +34,10 @@ char * char_conv_from = NULL;
 mpd_sint8 char_conv_same = 0;
 mpd_sint8 char_conv_use_iconv = 0;
 
-/* 1 is to use asciiToUtf8
-   0 is not to use ascii/utf8 converter
-  -1 is to use utf8ToAscii*/	
-mpd_sint8 char_conv_asciiToUtf8 = 0;
+/* 1 is to use latin1ToUtf8
+   0 is not to use latin1/utf8 converter
+  -1 is to use utf8ToLatin1*/	
+mpd_sint8 char_conv_latin1ToUtf8 = 0;
 
 #define BUFFER_SIZE	1024
 
@@ -58,13 +58,13 @@ int setCharSetConversion(char * to, char * from) {
 	}
 
 	if(strcmp(to,"UTF-8")==0 && strcmp(from,"ISO-8859-1")==0) {
-		char_conv_asciiToUtf8 = 1;
+		char_conv_latin1ToUtf8 = 1;
 	}
 	else if(strcmp(to,"ISO-8859-1")==0 && strcmp(from,"UTF-8")==0) {
-		char_conv_asciiToUtf8 = -1;
+		char_conv_latin1ToUtf8 = -1;
 	}
 
-	if(char_conv_asciiToUtf8!=0) {
+	if(char_conv_latin1ToUtf8!=0) {
 		char_conv_to = strdup(to);
 		char_conv_from = strdup(from);
 		return 0;
@@ -121,12 +121,12 @@ char * convStrDup(char * string) {
 	}
 #endif
 
-	switch(char_conv_asciiToUtf8) {
+	switch(char_conv_latin1ToUtf8) {
 	case 1: 
-		return asciiStrToUtf8Dup(string);
+		return latin1StrToUtf8Dup(string);
 		break;
 	case -1:
-		return utf8StrToAsciiDup(string);
+		return utf8StrToLatin1Dup(string);
 		break;
 	}
 
@@ -143,7 +143,7 @@ void closeCharSetConversion() {
 		char_conv_to = NULL;
 		char_conv_from = NULL;
 		char_conv_same = 0;
-		char_conv_asciiToUtf8 = 0;
+		char_conv_latin1ToUtf8 = 0;
 		char_conv_use_iconv = 0;
 	}
 }
