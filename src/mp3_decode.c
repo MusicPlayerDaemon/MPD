@@ -560,7 +560,6 @@ int mp3_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream) {
         getOutputAudioFormat(&(dc->audioFormat), &(cb->audioFormat));
         
 	dc->totalTime = data.totalTime;
-	dc->start = 0;
 	dc->state = DECODE_STATE_DECODE;
 
 	while(mp3Read(&data,cb,dc)!=DECODE_BREAK);

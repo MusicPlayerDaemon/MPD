@@ -341,13 +341,12 @@ int aac_decode(OutputBuffer * cb, DecoderControl * dc) {
 		sampleRate = frameInfo.samplerate;
 #endif
 
-		if(dc->start) {
+		if(dc->state != DECODE_STATE_DECODE) {
 			dc->audioFormat.channels = frameInfo.channels;
 			dc->audioFormat.sampleRate = sampleRate;
                         getOutputAudioFormat(&(dc->audioFormat),
                                         &(cb->audioFormat));
 			dc->state = DECODE_STATE_DECODE;
-			dc->start = 0;
 		}
 
 		advanceAacBuffer(&b,frameInfo.bytesconsumed);
@@ -382,7 +381,7 @@ int aac_decode(OutputBuffer * cb, DecoderControl * dc) {
 	closeInputStream(b.inStream);
 	if(b.buffer) free(b.buffer);
 
-	if(dc->start) return -1;
+	if(dc->state != DECODE_STATE_DECODE) return -1;
 
 	if(!dc->stop && !dc->seek && chunkLen>0) {
 		cb->chunkSize[cb->end] = chunkLen;

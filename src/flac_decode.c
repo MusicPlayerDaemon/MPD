@@ -135,7 +135,6 @@ int flac_decode(OutputBuffer * cb, DecoderControl *dc) {
 	}
 
 	dc->state = DECODE_STATE_DECODE;
-	dc->start = 0;
 
 	while(1) {
 		FLAC__seekable_stream_decoder_process_single(flacDec);

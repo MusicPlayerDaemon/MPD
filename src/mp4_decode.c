@@ -249,7 +249,7 @@ int mp4_decode(OutputBuffer * cb, DecoderControl * dc) {
 			break;
 		}
 
-		if(dc->start) {
+		if(dc->state != DECODE_STATE_DECODE) {
 			channels = frameInfo.channels;
 #ifdef HAVE_FAACDECFRAMEINFO_SAMPLERATE
 			scale = frameInfo.samplerate;
@@ -259,7 +259,6 @@ int mp4_decode(OutputBuffer * cb, DecoderControl * dc) {
                         getOutputAudioFormat(&(dc->audioFormat),
                                         &(cb->audioFormat));
 			dc->state = DECODE_STATE_DECODE;
-			dc->start = 0;
 		}
 
 		if(channels*(dur+offset) > frameInfo.samples) {
@@ -297,7 +296,7 @@ int mp4_decode(OutputBuffer * cb, DecoderControl * dc) {
 	closeInputStream(&inStream);
 	free(mp4cb);
 
-	if(dc->start) return -1;
+	if(dc->state != DECODE_STATE_DECODE) return -1;
 
 	if(!dc->stop && !dc->seek && chunkLen>0) {
 		cb->chunkSize[cb->end] = chunkLen;

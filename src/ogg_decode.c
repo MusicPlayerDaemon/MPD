@@ -175,7 +175,6 @@ int ogg_decode(OutputBuffer * cb, DecoderControl * dc)
 
 	dc->totalTime = ov_time_total(&vf,-1);
 	dc->state = DECODE_STATE_DECODE;
-	dc->start = 0;
 
 	{
 		int current_section;

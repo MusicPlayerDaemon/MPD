@@ -79,7 +79,7 @@ void decodeSigHandler(int sig) {
 
 void stopDecode(DecoderControl * dc) {
 	if(decode_pid && *decode_pid>0 && 
-			(dc->start || dc->state==DECODE_STATE_DECODE)) 
+			(dc->start || dc->state!=DECODE_STATE_STOP)) 
 	{
 		dc->stop = 1;
 		while(decode_pid && *decode_pid>0 && dc->stop) my_usleep(1000);
@@ -112,7 +112,29 @@ int calculateCrossFadeChunks(PlayerControl * pc, AudioFormat * af) {
 	return (int)chunks;
 }
 
-int waitOnDecode(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb) {
+#define handleDecodeStart() \
+        if(decodeWaitedOn && dc->state==DECODE_STATE_DECODE) { \
+                decodeWaitedOn = 1; \
+	        if(openAudioDevice(&(cb->audioFormat))<0) { \
+		        strncpy(pc->erroredFile,pc->file,MAXPATHLEN); \
+		        pc->erroredFile[MAXPATHLEN] = '\0'; \
+		        pc->error = PLAYER_ERROR_AUDIO; \
+		        quitDecode(pc,dc); \
+		        return; \
+	        } \
+	        pc->totalTime = dc->totalTime; \
+	        pc->sampleRate = dc->audioFormat.sampleRate; \
+	        pc->bits = dc->audioFormat.bits; \
+	        pc->channels = dc->audioFormat.channels; \
+        } \
+        else { \
+                my_usleep(10); \
+                continue; \
+        }
+
+int waitOnDecode(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb,
+                int * decodeWaitedOn) 
+{
 	while(decode_pid && *decode_pid>0 && dc->start) my_usleep(1000);
 
 	if(dc->start || dc->error!=DECODE_ERROR_NOERROR) {
@@ -123,28 +145,25 @@ int waitOnDecode(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb) {
 		return -1;
 	}
 
-	if(openAudioDevice(&(cb->audioFormat))<0) {
-		strncpy(pc->erroredFile,pc->file,MAXPATHLEN);
-		pc->erroredFile[MAXPATHLEN] = '\0';
-		pc->error = PLAYER_ERROR_AUDIO;
-		quitDecode(pc,dc);
-		return -1;
-	}
-
-	pc->totalTime = dc->totalTime;
-	pc->elapsedTime = 0;
-	pc->bitRate = 0;
-	pc->sampleRate = dc->audioFormat.sampleRate;
-	pc->bits = dc->audioFormat.bits;
-	pc->channels = dc->audioFormat.channels;
+        pc->totalTime = pc->fileTime;
+        pc->elapsedTime = 0;
+        pc->bitRate = 0;
+        pc->sampleRate = 0;
+        pc->bits = 0;
+        pc->channels = 0;
+        *decodeWaitedOn = 1;
 
 	return 0;
 }
 
-void decodeSeek(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb) {
+int decodeSeek(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb,
+                int * decodeWaitedOn) 
+{
+        int ret = -1;
+
 	if(decode_pid && *decode_pid>0) {
 		cb->next = -1;
-		if(dc->state!=DECODE_STATE_DECODE || dc->error || 
+		if(dc->state==DECODE_STATE_STOP || dc->error || 
 				strcmp(dc->file,pc->file)!=0) 
 		{
 			stopDecode(dc);
@@ -153,9 +172,9 @@ void decodeSeek(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb) {
 			cb->wrap = 0;
 			dc->error = 0;
 			dc->start = 1;
-			waitOnDecode(pc,dc,cb);
+			waitOnDecode(pc,dc,cb,decodeWaitedOn);
 		}
-		if(*decode_pid>0 && dc->state==DECODE_STATE_DECODE) {
+		if(*decode_pid>0 && dc->state!=DECODE_STATE_STOP) {
 			dc->seekWhere = pc->seekWhere > pc->totalTime-0.1 ?
 						pc->totalTime-0.1 : 
 						pc->seekWhere;
@@ -164,10 +183,15 @@ void decodeSeek(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb) {
 			dc->seek = 1;
 			pc->bitRate = 0;
 			while(*decode_pid>0 && dc->seek) my_usleep(1000);
-			if(!dc->seekError) pc->elapsedTime = dc->seekWhere;
+			if(!dc->seekError) {
+                                ret = 0;
+                                pc->elapsedTime = dc->seekWhere;
+                        }
 		}
 	}
 	pc->seek = 0;
+
+        return ret;
 }
 
 #define processDecodeInput() \
@@ -202,11 +226,12 @@ void decodeSeek(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb) {
 	} \
 	if(pc->seek) { \
 		pc->totalPlayTime+= pc->elapsedTime-pc->beginTime; \
-		decodeSeek(pc,dc,cb); \
-		pc->beginTime = pc->elapsedTime; \
-		doCrossFade = 0; \
-		nextChunk =  -1; \
-		bbp = 0; \
+		if(decodeSeek(pc,dc,cb,&decodeWaitedOn) == 0) { \
+		        pc->beginTime = pc->elapsedTime; \
+		        doCrossFade = 0; \
+		        nextChunk =  -1; \
+		        bbp = 0; \
+                } \
 	} \
 	if(pc->stop) { \
 		pc->totalPlayTime+= pc->elapsedTime-pc->beginTime; \
@@ -229,7 +254,17 @@ void decodeStart(PlayerControl * pc, OutputBuffer * cb, DecoderControl * dc) {
                 return;
         }
 
-        while(!inputStreamAtEOF(&inStream) && bufferInputStream(&inStream) < 0);
+        dc->state = DECODE_STATE_START;
+	dc->start = 0;
+
+        while(!inputStreamAtEOF(&inStream) && bufferInputStream(&inStream) < 0
+                        && !dc->stop);
+
+        if(dc->stop) {
+                dc->state = DECODE_STATE_STOP;
+                dc->stop = 0;
+                return;
+        }
 
 	switch(pc->decodeType) {
 	case DECODE_TYPE_URL:
@@ -339,6 +374,187 @@ int decoderInit(PlayerControl * pc, OutputBuffer * cb, DecoderControl * dc) {
 	return 0;
 }
 
+void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb) {
+	int pause = 0;
+	int quit = 0;
+	int bbp = buffered_before_play;
+	int doCrossFade = 0;
+	int crossFadeChunks = 0;
+	int fadePosition;
+	int nextChunk = -1;
+	int test;
+        int decodeWaitedOn = 0;
+	char silence[CHUNK_SIZE];
+
+	memset(silence,0,CHUNK_SIZE);
+
+	if(waitOnDecode(pc,dc,cb,&decodeWaitedOn)<0) return;
+
+	pc->state = PLAYER_STATE_PLAY;
+	pc->play = 0;
+	pc->beginTime = pc->elapsedTime;
+	kill(getppid(),SIGUSR1);
+	
+	while(*decode_pid>0 && !cb->wrap && cb->end-cb->begin<bbp && 
+				dc->state!=DECODE_STATE_STOP) 
+	{
+		processDecodeInput();
+		if(quit) return;
+		my_usleep(10000);
+	}
+
+	while(!quit) {
+		processDecodeInput();
+                handleDecodeStart();
+		if(dc->state==DECODE_STATE_STOP && 
+			pc->queueState==PLAYER_QUEUE_FULL &&
+			pc->queueLockState==PLAYER_QUEUE_UNLOCKED) 
+		{
+			cb->next = cb->end;
+			dc->start = 1;
+			pc->queueState = PLAYER_QUEUE_DECODE;
+			kill(getppid(),SIGUSR1);
+		}
+		if(cb->next>=0 && doCrossFade==0 && !dc->start) {
+			nextChunk = -1;
+			if(isCurrentAudioFormat(&(cb->audioFormat))) {
+				doCrossFade = 1;
+				crossFadeChunks = 
+				calculateCrossFadeChunks(pc,
+                                        &(cb->audioFormat));
+				if(!crossFadeChunks ||
+						pc->crossFade>=dc->totalTime) 
+				{
+					doCrossFade = -1;
+				}
+			}
+			else doCrossFade = -1;
+		}
+		if(pause) my_usleep(10000);
+		else if((cb->begin!=cb->end || cb->wrap) && 
+				cb->begin!=cb->next)
+		{
+			if(doCrossFade==1 && cb->next>=0 &&
+					((cb->next>cb->begin && 
+					(fadePosition=cb->next-cb->begin)
+					<=crossFadeChunks) || 
+					(cb->begin>cb->next &&
+					(fadePosition=cb->next-cb->begin+
+					buffered_chunks)<=crossFadeChunks)))
+			{
+				if(nextChunk<0) {
+					crossFadeChunks = fadePosition;
+				}
+				test = cb->end;
+				if(cb->wrap) test+=buffered_chunks;
+				nextChunk = cb->begin+crossFadeChunks;
+				if(nextChunk<test) {
+					if(nextChunk>=buffered_chunks)
+					{
+						nextChunk -=  buffered_chunks;  
+					}
+					pcm_mix(cb->chunks+cb->begin*CHUNK_SIZE,
+							cb->chunks+nextChunk*
+							CHUNK_SIZE,
+							cb->chunkSize[
+								cb->begin],
+							cb->chunkSize[
+								nextChunk],
+							&(cb->audioFormat),
+							((float)fadePosition)/
+							crossFadeChunks);
+					if(cb->chunkSize[nextChunk]>
+							cb->chunkSize[cb->begin]
+							)
+					{
+						cb->chunkSize[cb->begin]
+								= cb->chunkSize
+								[nextChunk];
+					}
+				}
+				else {
+					if(dc->state==DECODE_STATE_STOP)
+					{
+						doCrossFade = -1;
+					}
+					else continue;
+				}
+			}
+			pc->elapsedTime = cb->times[cb->begin];
+			pc->bitRate = cb->bitRate[cb->begin];
+			pcm_volumeChange(cb->chunks+cb->begin*
+				CHUNK_SIZE,
+				cb->chunkSize[cb->begin],
+				&(cb->audioFormat),
+				pc->softwareVolume);
+			if(playAudio(cb->chunks+cb->begin*CHUNK_SIZE,
+				cb->chunkSize[cb->begin])<0) 
+			{
+				quit = 1;
+			}
+			cb->begin++;
+			if(cb->begin>=buffered_chunks) {
+				cb->begin = 0;
+				cb->wrap = 0;
+			}
+		}
+		else if(cb->next==cb->begin) {
+			pc->totalPlayTime+= pc->elapsedTime-
+						pc->beginTime;
+			if(doCrossFade==1 && nextChunk>=0) {
+				nextChunk = cb->begin+crossFadeChunks;
+				test = cb->end;
+				if(cb->wrap) test+=buffered_chunks;
+				if(nextChunk<test) {
+					if(nextChunk>=buffered_chunks)
+					{
+						nextChunk -= buffered_chunks;
+					}
+					cb->begin = nextChunk;
+				}	
+			}
+			while(pc->queueState==PLAYER_QUEUE_DECODE ||
+					pc->queueLockState==PLAYER_QUEUE_LOCKED)
+			{
+				processDecodeInput();
+				if(quit) {
+					quitDecode(pc,dc);
+					return;
+				}
+				my_usleep(1000);
+			}
+			if(pc->queueState!=PLAYER_QUEUE_PLAY) {
+				quit = 1;
+				break;
+			}
+			else {
+				cb->next = -1;
+				if(waitOnDecode(pc,dc,cb,&decodeWaitedOn)<0) {
+                                        return;
+                                }
+				nextChunk = -1;
+				doCrossFade = 0;
+				crossFadeChunks = 0;
+				pc->queueState = PLAYER_QUEUE_EMPTY;
+				kill(getppid(),SIGUSR1);
+			}
+			pc->beginTime = cb->times[cb->begin];
+		}
+		else if(*decode_pid<=0 || 
+				(dc->state==DECODE_STATE_STOP && !dc->start)) 
+		{
+			quit = 1;
+			break;
+		}
+		else {
+			if(playAudio(silence, CHUNK_SIZE) < 0) quit = 1;
+		}
+	}
+
+	pc->totalPlayTime+= pc->elapsedTime-pc->beginTime; \
+	quitDecode(pc,dc);
+}
+
 /* decode w/ buffering
  * this will fork another process
  * child process does decoding
@@ -364,191 +580,6 @@ void decode() {
 		if(decoderInit(pc,cb,dc)<0) return;
 	}
 
-	{
-		/* PARENT */
-		int pause = 0;
-		int quit = 0;
-		int bbp = buffered_before_play;
-		int doCrossFade = 0;
-		int crossFadeChunks = 0;
-		int fadePosition;
-		int nextChunk = -1;
-		int test;
-		char silence[CHUNK_SIZE];
-
-		memset(silence,0,CHUNK_SIZE);
-
-		if(waitOnDecode(pc,dc,cb)<0) return;
-
-		pc->state = PLAYER_STATE_PLAY;
-		pc->play = 0;
-		pc->beginTime = pc->elapsedTime;
-		kill(getppid(),SIGUSR1);
-	
-		while(*decode_pid>0 && !cb->wrap && cb->end-cb->begin<bbp && 
-				dc->state==DECODE_STATE_DECODE) 
-		{
-			processDecodeInput();
-			if(quit) return;
-			my_usleep(1000);
-		}
-
-		while(!quit) {
-			processDecodeInput();
-			if(dc->state==DECODE_STATE_STOP && 
-				pc->queueState==PLAYER_QUEUE_FULL &&
-				pc->queueLockState==PLAYER_QUEUE_UNLOCKED) 
-			{
-				cb->next = cb->end;
-				dc->start = 1;
-				pc->queueState = PLAYER_QUEUE_DECODE;
-				kill(getppid(),SIGUSR1);
-			}
-			if(cb->next>=0 && doCrossFade==0 && !dc->start) {
-				nextChunk = -1;
-				if(isCurrentAudioFormat(&(cb->audioFormat))) {
-					doCrossFade = 1;
-					crossFadeChunks = 
-						calculateCrossFadeChunks(pc,
-                                                        &(cb->audioFormat));
-					if(!crossFadeChunks ||
-						pc->crossFade>=dc->totalTime) 
-					{
-						doCrossFade = -1;
-					}
-				}
-				else doCrossFade = -1;
-			}
-			if(pause) my_usleep(10000);
-			else if((cb->begin!=cb->end || cb->wrap) && 
-				cb->begin!=cb->next)
-			{
-				if(doCrossFade==1 && cb->next>=0 &&
-					((cb->next>cb->begin && 
-					(fadePosition=cb->next-cb->begin)
-					<=crossFadeChunks) || 
-					(cb->begin>cb->next &&
-					(fadePosition=cb->next-cb->begin+
-					buffered_chunks)<=crossFadeChunks)))
-				{
-					if(nextChunk<0) {
-						crossFadeChunks = fadePosition;
-					}
-					test = cb->end;
-					if(cb->wrap) test+=buffered_chunks;
-					nextChunk = cb->begin+crossFadeChunks;
-					if(nextChunk<test) {
-						if(nextChunk>=buffered_chunks)
-						{
-							nextChunk-=
-								buffered_chunks;
-						}
-						pcm_mix(cb->chunks+cb->begin*
-							CHUNK_SIZE,
-							cb->chunks+nextChunk*
-							CHUNK_SIZE,
-							cb->chunkSize[
-								cb->begin],
-							cb->chunkSize[
-								nextChunk],
-							&(cb->audioFormat),
-							((float)fadePosition)/
-							crossFadeChunks);
-						if(cb->chunkSize[nextChunk]>
-							cb->chunkSize[cb->begin]
-							)
-						{
-							cb->chunkSize[cb->begin]
-								= cb->chunkSize
-								[nextChunk];
-						}
-					}
-					else {
-						if(dc->state==DECODE_STATE_STOP)
-						{
-							doCrossFade = -1;
-						}
-						else continue;
-					}
-				}
-				pc->elapsedTime = cb->times[cb->begin];
-				pc->bitRate = cb->bitRate[cb->begin];
-				pcm_volumeChange(cb->chunks+cb->begin*
-					CHUNK_SIZE,
-					cb->chunkSize[cb->begin],
-					&(cb->audioFormat),
-					pc->softwareVolume);
-				if(playAudio(cb->chunks+cb->begin*CHUNK_SIZE,
-					cb->chunkSize[cb->begin])<0) 
-				{
-					quit = 1;
-				}
-				cb->begin++;
-				if(cb->begin>=buffered_chunks) {
-					cb->begin = 0;
-					cb->wrap = 0;
-				}
-			}
-			else if(cb->next==cb->begin) {
-				pc->totalPlayTime+= pc->elapsedTime-
-							pc->beginTime;
-				if(doCrossFade==1 && nextChunk>=0) {
-					nextChunk = cb->begin+crossFadeChunks;
-					test = cb->end;
-					if(cb->wrap) test+=buffered_chunks;
-					if(nextChunk<test) {
-						if(nextChunk>=buffered_chunks)
-						{
-							nextChunk-=
-								buffered_chunks;
-						}
-						cb->begin = nextChunk;
-					}	
-				}
-				while(pc->queueState==PLAYER_QUEUE_DECODE ||
-					pc->queueLockState==PLAYER_QUEUE_LOCKED)
-				{
-					processDecodeInput();
-					if(quit) {
-						quitDecode(pc,dc);
-						return;
-					}
-					my_usleep(1000);
-				}
-				if(pc->queueState!=PLAYER_QUEUE_PLAY) {
-					quit = 1;
-					break;
-				}
-				else {
-					cb->next = -1;
-					if(waitOnDecode(pc,dc,cb)<0) return;
-					nextChunk = -1;
-					doCrossFade = 0;
-					crossFadeChunks = 0;
-					pc->queueState = PLAYER_QUEUE_EMPTY;
-					kill(getppid(),SIGUSR1);
-				}
-				pc->beginTime = cb->times[cb->begin];
-			}
-			else if(*decode_pid<=0 || 
-				(dc->state==DECODE_STATE_STOP && !dc->start)) 
-			{
-				quit = 1;
-				break;
-			}
-			else {
-				if(playAudio(silence, CHUNK_SIZE) < 0) {
-					quit = 1;
-				}
-			}
-		}
-
-		pc->totalPlayTime+= pc->elapsedTime-pc->beginTime; \
-		quitDecode(pc,dc);
-
-		/* END OF PARENT */
-	}
-
-	return;
+        decodeParent(pc, dc, cb);
 }
-/* vim:set shiftwidth=4 tabstop=8 expandtab: */
+/* vim:set shiftwidth=8 tabstop=8 expandtab: */

@@ -91,7 +91,6 @@ int audiofile_decode(OutputBuffer * cb, DecoderControl * dc) {
 	fs = (int)afGetFrameSize(af_fp, AF_DEFAULT_TRACK,1);
 
 	dc->state = DECODE_STATE_DECODE;
-	dc->start = 0;
 	{
 		int ret, eof = 0, current = 0;
 		unsigned char chunk[CHUNK_SIZE];
