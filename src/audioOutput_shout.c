@@ -56,6 +56,7 @@ typedef struct _ShoutData {
 	vorbis_comment vc;
 
 	float quality;
+	int bitrate;
 	AudioFormat outAudioFormat;
 	AudioFormat inAudioFormat;
 
@@ -77,6 +78,8 @@ static ShoutData * newShoutData() {
 	ret->convBufferLen = 0;
 	ret->opened = 0;
 	ret->tag = NULL;
+	ret->bitrate = -1;
+	ret->quality = -1.0;
 
 	return ret;
 }
@@ -135,15 +138,45 @@ static int shout_initDriver(AudioOutput * audioOutput, ConfigParam * param) {
 	checkBlockParam("user");
 	user = blockParam->value;
 
-	checkBlockParam("quality");
+	blockParam = getBlockParam(param, "quality");
 
-	sd->quality = strtod(blockParam->value, &test);
+	if(blockParam) {
+		int line = blockParam->line;
 
-	if(*test != '\0' || sd->quality < 0.0 || sd->quality > 10.0) {
-		ERROR("shout quality \"%s\" is not a number in the range "
-				"0-10, line %i\n", blockParam->value,
+		sd->quality = strtod(blockParam->value, &test);
+
+		if(*test != '\0' || sd->quality < 0.0 || sd->quality > 10.0) {
+			ERROR("shout quality \"%s\" is not a number in the "
+				"rage 0-10, line %i\n", blockParam->value,
 				blockParam->line);
-		exit(EXIT_FAILURE);
+			exit(EXIT_FAILURE);
+		}
+
+		blockParam = getBlockParam(param, "bitrate");
+
+		if(blockParam) {
+			ERROR("quality (line %i) and bitrate (line %i) are "
+				"both defined for shout output\n", line,
+				blockParam->line);
+			exit(EXIT_FAILURE);
+		}
+	}
+	else {
+		blockParam = getBlockParam(param, "bitrate");
+
+		if(!blockParam) {
+			ERROR("neither bitrate nor quality defined for shout "
+				"output at line %i\n", param->line);
+			exit(EXIT_FAILURE);
+		}
+
+		sd->bitrate = strtol(blockParam->value, &test, 10);
+
+		if(*test != '\0' || sd->bitrate <= 0) {
+			ERROR("bitrate at line %i should be a positve integer "
+				"\n", blockParam->line);
+			exit(EXIT_FAILURE);
+		}
 	}
 
 	checkBlockParam("format");
@@ -162,11 +195,35 @@ static int shout_initDriver(AudioOutput * audioOutput, ConfigParam * param) {
 		shout_set_format(sd->shoutConn, SHOUT_FORMAT_VORBIS) 
 			!= SHOUTERR_SUCCESS ||
 		shout_set_protocol(sd->shoutConn, SHOUT_PROTOCOL_HTTP)
-			!= SHOUTERR_SUCCESS)
+			!= SHOUTERR_SUCCESS ||
+		shout_set_agent(sd->shoutConn, "MPD") != SHOUTERR_SUCCESS)
 	{
 		ERROR("error configuring shout: %s\n", 
 				shout_get_error(sd->shoutConn));
 		exit(EXIT_FAILURE);
+	}
+
+	{
+		char temp[11];
+		memset(temp, 0, sizeof(temp));
+	
+		snprintf(temp, sizeof(temp), "%d", sd->outAudioFormat.channels);
+		shout_set_audio_info(sd->shoutConn, SHOUT_AI_CHANNELS, temp);
+
+		snprintf(temp, sizeof(temp), "%d", 
+				sd->outAudioFormat.sampleRate);
+		shout_set_audio_info(sd->shoutConn, SHOUT_AI_SAMPLERATE, temp);
+
+		if(sd->quality >= 0) {
+			snprintf(temp, sizeof(temp), "%2.2f", sd->quality);
+			shout_set_audio_info(sd->shoutConn, SHOUT_AI_QUALITY,
+					temp);
+		}
+		else {
+			snprintf(temp, sizeof(temp), "%d", sd->bitrate);
+			shout_set_audio_info(sd->shoutConn, SHOUT_AI_BITRATE,
+					temp);
+		}
 	}
 
 	audioOutput->data = sd;
@@ -261,9 +318,29 @@ static void copyTagToVorbisComment(ShoutData * sd) {
 static int initEncoder(ShoutData * sd) {
 	vorbis_info_init(&(sd->vi));
 
-	if( 0 != vorbis_encode_init_vbr(&(sd->vi), sd->outAudioFormat.channels,
-			sd->outAudioFormat.sampleRate, sd->quality/10.0) )
-	{
+	if(sd->quality >= 0) {
+		if( 0 != vorbis_encode_init_vbr(&(sd->vi),
+			sd->outAudioFormat.channels, 
+			sd->outAudioFormat.sampleRate, sd->quality*0.1) )
+		{
+			ERROR("problem seting up vorbis encoder for shout\n");
+			vorbis_info_clear(&(sd->vi));
+			return -1;
+		}
+	}
+	else {
+		if( 0 != vorbis_encode_setup_managed(&(sd->vi), 
+			sd->outAudioFormat.channels, 
+			sd->outAudioFormat.sampleRate, -1.0,
+			sd->bitrate*1000, -1.0) )
+		{
+			ERROR("problem seting up vorbis encoder for shout\n");
+			vorbis_info_clear(&(sd->vi));
+			return -1;
+		}
+	}
+
+	if(0 != vorbis_encode_setup_init(&(sd->vi))) {
 		ERROR("problem seting up vorbis encoder for shout\n");
 		vorbis_info_clear(&(sd->vi));
 		return -1;
