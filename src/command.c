@@ -327,7 +327,7 @@ int handleDeleteId(FILE * fp, unsigned int * permission, int argArrayLength,
 				"need a positive integer");
                 return -1;
         }
-        return deleteFromPlaylist(fp, id); 
+        return deleteFromPlaylistById(fp, id); 
 }
 
 int handlePlaylist(FILE * fp, unsigned int * permission, int argArrayLength, 
@@ -664,7 +664,7 @@ int handleSwapId(FILE * fp, unsigned int * permission, int argArrayLength,
 				argArray[2]);
                 return -1;
         }
-        return swapSongsInPlaylist(fp, id1, id2);
+        return swapSongsInPlaylistById(fp, id1, id2);
 }
 
 int handleSeek(FILE * fp, unsigned int * permission, int argArrayLength,
