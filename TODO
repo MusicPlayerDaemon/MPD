@@ -4,17 +4,11 @@
 	*) add 2-3 tree for sorted data structures
 	*) remove changes made to linked list for TagTracker
 
-*) add error codes for status->error
-
-*) Cleanup Config File Code
-
-*) aduio output
+*) audio output
 	*) allowing "pausing" of audio output devices
 	*) while pausing, play silence for the devices that don't support 
 	   "pausing"
-	*) write a esd native audioOutput
 	*) write a sun native audioOutput
-	*) need better resampling code
 	*) add support for saving and restoring audioOutput state to the 
 		state_file
 	*) more accurate time reporting by determing how much of audio_device
@@ -23,8 +17,6 @@
 *) mixer
 	*) add sun support
 	*) add OS X support
-
-*) Add support for 24-bit audio
 
 0.13
 ----
@@ -41,6 +33,34 @@
 	*) add support for playing aac streams (gee, thanks icecast)
 	*) parsing of lame tags (including getting replaygain and gapless info)
 	*) read replaygain info from id3 tag
+
+*) Add support for 24-bit audio
+
+*) add error codes for status->error
+
+*) Cleanup Config File Code
+
+*) rewrite audio pipe
+	*) use pthreads/clone
+		*) try to constrain the use of pthread mutex's and condition's
+			to specific output plugins
+	*) use pull model for audio_output
+	*) threads
+		0) managing thread
+			*) recieves commands
+			*) manages state
+			*) handles time/metadata sending
+		1) decoding thread
+		2) effects thread
+			*) crossfading
+			*) *command* resampling/conversions
+		3) audio_output thread
+			*) thread for each audio_output device
+
+*) audio output
+	*) write a esd native audioOutput
+	*) write a nas native audioOutput
+	*) need better resampling code
 
 0.14
 ----
