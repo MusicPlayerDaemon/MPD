@@ -553,7 +553,6 @@ int printDirectoryInfo(FILE * fp, char * name) {
 	return 0;
 }
 
-/* DON'T BLOCK SIGNALS IN THIS FUNCTION, called by writeDirectoryDB() */
 void writeDirectoryInfo(FILE * fp, Directory * directory) {
 	ListNode * node = (directory->subDirectories)->firstNode;
 	Directory * subDirectory;
@@ -685,17 +684,12 @@ int writeDirectoryDB() {
 	while(!(fp=fopen(directorydb,"w")) && errno==EINTR);
 	if(!fp) return -1;
 
-	/* block signals so we ensure the db doesn't get corrupted */
-	/* no functions that writeDirectoryInfoCalls should mess with
-	   signals or signal blocking! */
-	blockSignals();
 	myfprintf(fp,"%s\n",DIRECTORY_INFO_BEGIN);
 	myfprintf(fp,"%s%s\n",DIRECTORY_MPD_VERSION,VERSION);
 	myfprintf(fp,"%s%s\n",DIRECTORY_FS_CHARSET,getFsCharset());
 	myfprintf(fp,"%s\n",DIRECTORY_INFO_END);
 
 	writeDirectoryInfo(fp,mp3rootDirectory);
-	unblockSignals();
 
 	while(fclose(fp) && errno==EINTR);
 

@@ -4,10 +4,6 @@
 		quit in the middle of an update
 	k) when bg-update, have parent print out new old stuff to log on 
 		reading db, not the child
-	l) IMPORTANT: look over new command list shiznit and make it much 
-		cleaner, please! (in particular, move buffer2array code from 
-		interface.c to command.c, and have command stuff 
-		do buffer2array)
 	m) MOST IMPORTANT: update needs to deal better with directories/files
 		that don't exist in the db, but do exit in the fs (i.e.
 		calling updated on a newly created file).

@@ -501,12 +501,12 @@ int swapSongsInPlaylist(FILE * fp, int song1, int song2) {
 	int currentSong = -1;
 
 	if(song1<0 || song1>=playlist.length) {
-		fprintf(fp,"%s \"%i\" is not in the playlist\n",
+		myfprintf(fp,"%s \"%i\" is not in the playlist\n",
 				COMMAND_RESPOND_ERROR,song1);
 		return -1;
 	}
 	if(song2<0 || song2>=playlist.length) {
-		fprintf(fp,"%s \"%i\" is not in the playlist\n",
+		myfprintf(fp,"%s \"%i\" is not in the playlist\n",
 				COMMAND_RESPOND_ERROR,song2);
 		return -1;
 	}
@@ -796,13 +796,13 @@ int moveSongInPlaylist(FILE * fp, int from, int to) {
 	int currentSong = -1;
 
 	if(from<0 || from>=playlist.length) {
-		fprintf(fp,"%s \"%i\" is not a song in the playlist\n",
+		myfprintf(fp,"%s \"%i\" is not a song in the playlist\n",
 				COMMAND_RESPOND_ERROR,from);
 		return -1;
 	}
 
 	if(to<0 || to>=playlist.length) {
-		fprintf(fp,"%s \"%i\" is not a song in the playlist\n",
+		myfprintf(fp,"%s \"%i\" is not a song in the playlist\n",
 				COMMAND_RESPOND_ERROR,to);
 		return -1;
 	}

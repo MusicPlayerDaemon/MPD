@@ -84,14 +84,13 @@ void openInterface(Interface * interface, int fd) {
 	
 	assert(interface->open==0);
 
-	blockSignals();
 	interface->bufferLength = 0;
 	interface->fd = fd;
 	/* fcntl(interface->fd,F_SETOWN,(int)getpid()); */
-	flags = fcntl(fd,F_GETFL);
+	while((flags = fcntl(fd,F_GETFL))<0 && errno==EINTR);
 	flags|=O_NONBLOCK;
-	fcntl(interface->fd,F_SETFL,flags);
-	interface->fp = fdopen(fd,"rw");
+	while(fcntl(interface->fd,F_SETFL,flags)<0 && errno==EINTR);
+	while((interface->fp = fdopen(fd,"rw"))==NULL && errno==EINTR);
 	interface->open = 1;
 	interface->lastTime = time(NULL);
 	interface->commandList = NULL;
@@ -121,8 +120,6 @@ void openInterface(Interface * interface, int fd) {
 #endif
 	interface->outBuffer = malloc(interface->outBufSize);
 	
-	unblockSignals();
-
 	myfprintf(interface->fp,"%s %s %s\n",COMMAND_RESPOND_OK,GREETING,
 			VERSION);
 	printInterfaceOutBuffer(interface);

@@ -33,6 +33,21 @@ int myfprintf_stdLogMode = 0;
 FILE * myfprintf_out;
 FILE * myfprintf_err;
 
+void blockingWrite(int fd, char * string) {
+	int len = strlen(string);
+	int ret;
+
+	while(len) {
+		ret = write(fd,string,len);
+		if(ret<0) {
+			if(errno==EAGAIN || errno==EINTR) continue;
+			return;
+		}
+		len-= ret;
+		string+= ret;
+	}
+}
+
 void myfprintfStdLogMode(FILE * out, FILE * err) {
 	myfprintf_stdLogMode = 1;
 	myfprintf_out = out;
@@ -40,31 +55,33 @@ void myfprintfStdLogMode(FILE * out, FILE * err) {
 }
 
 void myfprintf(FILE * fp, char * format, ... ) {
+	char buffer[BUFFER_LENGTH+1];
 	va_list arglist;
 	int fd = fileno(fp);
 	int fcntlret;
 
+	memset(buffer,0,BUFFER_LENGTH+1);
+
 	va_start(arglist,format);
 	while((fcntlret=fcntl(fd,F_GETFL))==-1 && errno==EINTR);
 	if(myfprintf_stdLogMode && (fd==1 || fd==2)) {
-		char str[15];
 		time_t t = time(NULL);
 		if(fd==1) fp = myfprintf_out;
 		else fp = myfprintf_err;
-		strftime(str,14,"%b %e %R",localtime(&t));
-		fprintf(fp,"%s : ",str);
-		vfprintf(fp,format,arglist);
-	}
-	else if(fcntlret & O_NONBLOCK) {
-		char buffer[BUFFER_LENGTH+1];
+		strftime(buffer,14,"%b %e %R",localtime(&t));
+		blockingWrite(fd,buffer);
+		blockingWrite(fd," : ");
 		vsnprintf(buffer,BUFFER_LENGTH,format,arglist);
-		if(interfacePrintWithFD(fd,buffer)<0) {
-			/* not a fd from a interface */
-			vfprintf(fp,format,arglist);
-		}
+		blockingWrite(fd,buffer);
 	}
-	else vfprintf(fp,format,arglist);
-	fflush(fp);
+	else {
+		vsnprintf(buffer,BUFFER_LENGTH,format,arglist);
+		if((fcntlret & O_NONBLOCK) && 
+				interfacePrintWithFD(fd,buffer)==0) 
+		{
+		}
+		else blockingWrite(fd,buffer);
+	}
 
 	va_end(arglist);
 }
