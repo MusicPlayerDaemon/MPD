@@ -384,13 +384,12 @@ void updatePath(char * utf8path) {
 		}
 	}
 	/* apth not found in the db, see if it actually exists on the fs */
-	else if((dir = opendir(utf8path))) {
-		closedir(dir);
+	else if(isDir(utf8path,NULL)) {
 		/* create parent/get parent directory */
 		/* create new directory and add to parent */
 		/* explore direcotry */
 	}
-	else if((song = newSong(utf8path))) {
+	else if((isMusic(utf8path,NULL))) {
 		/* create parent/get parent directory */
 		/* add song to directory */
 	}
