@@ -29,6 +29,9 @@ decoding has stopped.
 
 8) handle '\n' in filenames
 
+9) allow "add" command to load playlists, then depricate "load" command, this 
+	will be benneficial for adding m3u url's
+
 
 Post-1.0
 --------
