@@ -74,6 +74,7 @@ typedef struct _PlayerControl {
 	float crossFade;
 	mpd_sint8 softwareVolume;
 	double totalPlayTime;
+	int decode_pid;
 } PlayerControl;
 
 void player_sigHandler(int signal);

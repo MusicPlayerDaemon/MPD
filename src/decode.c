@@ -49,31 +49,35 @@
 
 #define FADE_CHUNKS	1024
 
-int decode_pid = 0;
+int * decode_pid = NULL;
 
 void decodeSigHandler(int sig) {
 	if(sig==SIGCHLD) {
 		int status;
-		if(decode_pid==wait3(&status,WNOHANG,NULL)) {
+		if(decode_pid && *decode_pid==wait3(&status,WNOHANG,NULL)) {
 			if(WIFSIGNALED(status) && WTERMSIG(status)!=SIGTERM) {
 				ERROR("decode process died from a "
 						"non-TERM signal: %i\n",
 						WTERMSIG(status));
 			}
-			decode_pid = 0;
+			*decode_pid = 0;
 		}
 	}
 	else if(sig==SIGTERM) {
-		int pid = decode_pid;
-		if(pid>0) kill(pid,SIGTERM);
+		if(decode_pid) {
+			int pid = *decode_pid;
+			if(pid>0) kill(pid,SIGTERM);
+		}
 		exit(0);
 	}
 }
 
 void stopDecode(DecoderControl * dc) {
-	if(decode_pid>0 && (dc->start || dc->state==DECODE_STATE_DECODE)) {
+	if(decode_pid && *decode_pid>0 && 
+			(dc->start || dc->state==DECODE_STATE_DECODE)) 
+	{
 		dc->stop = 1;
-		while(decode_pid>0 && dc->stop) usleep(10);
+		while(decode_pid && *decode_pid>0 && dc->stop) usleep(10);
 	}
 }
 
@@ -106,7 +110,7 @@ int calculateCrossFadeChunks(PlayerControl * pc, AudioFormat * af) {
 int waitOnDecode(PlayerControl * pc, AudioFormat * af, DecoderControl * dc,
 		Buffer * cb) 
 {
-	while(decode_pid>0 && dc->start) usleep(10);
+	while(decode_pid && *decode_pid>0 && dc->start) usleep(10);
 
 	if(dc->start || dc->error!=DECODE_ERROR_NOERROR) {
 		strncpy(pc->erroredFile,pc->file,MAXPATHLEN);
@@ -135,7 +139,7 @@ int waitOnDecode(PlayerControl * pc, AudioFormat * af, DecoderControl * dc,
 void decodeSeek(PlayerControl * pc, AudioFormat * af, DecoderControl * dc, 
 		Buffer * cb) 
 {
-	if(decode_pid>0) {
+	if(decode_pid && *decode_pid>0) {
 		cb->next = -1;
 		if(dc->state!=DECODE_STATE_DECODE || dc->error || 
 				strcmp(dc->file,pc->file)!=0) 
@@ -147,7 +151,7 @@ void decodeSeek(PlayerControl * pc, AudioFormat * af, DecoderControl * dc,
 			dc->error = 0;
 			waitOnDecode(pc,af,dc,cb);
 		}
-		if(decode_pid>0 && dc->state==DECODE_STATE_DECODE) {
+		if(*decode_pid>0 && dc->state==DECODE_STATE_DECODE) {
 			dc->seekWhere = pc->seekWhere > pc->totalTime-1 ?
 						pc->totalTime-1 : pc->seekWhere;
 			dc->seekWhere = 1 > dc->seekWhere ? 1 : dc->seekWhere;
@@ -155,7 +159,7 @@ void decodeSeek(PlayerControl * pc, AudioFormat * af, DecoderControl * dc,
 			dc->seek = 1;
 			pc->elapsedTime = dc->seekWhere;
 			pc->bitRate = 0;
-			while(decode_pid>0 && dc->seek) usleep(10);
+			while(*decode_pid>0 && dc->seek) usleep(10);
 		}
 	}
 	pc->seek = 0;
@@ -193,9 +197,10 @@ void decodeSeek(PlayerControl * pc, AudioFormat * af, DecoderControl * dc,
 
 int decoderInit(PlayerControl * pc, Buffer * cb, AudioFormat *af, 
 			DecoderControl * dc) {
-	decode_pid = fork();
+	decode_pid = &(pc->decode_pid);
+	*decode_pid = fork();
 
-	if(decode_pid==0) {
+	if(*decode_pid==0) {
 		/* CHILD */
 
 		while(1) {
@@ -242,7 +247,7 @@ int decoderInit(PlayerControl * pc, Buffer * cb, AudioFormat *af,
 		exit(0);
 		/* END OF CHILD */
 	}
-	else if(decode_pid<0) {
+	else if(*decode_pid<0) {
 		strncpy(pc->erroredFile,pc->file,MAXPATHLEN);
 		pc->error = PLAYER_ERROR_SYSTEM;
 		return -1;
@@ -274,7 +279,7 @@ void decode() {
 	dc->start = 1;
 	cb->next = -1;
 
-	if(decode_pid<=0) {
+	if(decode_pid==NULL || *decode_pid<=0) {
 		if(decoderInit(pc,cb,af,dc)<0) return;
 	}
 
@@ -299,7 +304,7 @@ void decode() {
 		pc->beginTime = pc->elapsedTime;
 		kill(getppid(),SIGUSR1);
 	
-		while(decode_pid>0 && !cb->wrap && cb->end-cb->begin<bbp && 
+		while(*decode_pid>0 && !cb->wrap && cb->end-cb->begin<bbp && 
 				dc->state==DECODE_STATE_DECODE) 
 		{
 			processDecodeInput();
@@ -443,7 +448,7 @@ void decode() {
 				}
 				pc->beginTime = cb->times[cb->begin];
 			}
-			else if(decode_pid<=0 || 
+			else if(*decode_pid<=0 || 
 				(dc->state==DECODE_STATE_STOP && !dc->start)) 
 			{
 				quit = 1;

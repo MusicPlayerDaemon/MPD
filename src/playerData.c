@@ -107,6 +107,7 @@ void initPlayerData() {
 	playerData_pd->playerControl.crossFade = crossfade;
 	playerData_pd->playerControl.softwareVolume = 100;
 	playerData_pd->playerControl.totalPlayTime = 0;
+	playerData_pd->playerControl.decode_pid = 0;
 
 	playerData_pd->decoderControl.stop = 0;
 	playerData_pd->decoderControl.start = 0;

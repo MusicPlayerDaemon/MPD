@@ -48,6 +48,8 @@ int player_pid = 0;
 int player_termSent = 0;
 
 void resetPlayer() {
+	int pid;
+
 	player_pid = 0;
 	player_termSent = 0;
 	getPlayerData()->playerControl.stop = 0;
@@ -58,18 +60,34 @@ void resetPlayer() {
 	getPlayerData()->playerControl.state = PLAYER_STATE_STOP;
 	getPlayerData()->playerControl.queueState = PLAYER_QUEUE_UNLOCKED;
 	getPlayerData()->playerControl.seek = 0;
+	/* kill decode process if it got left running */
+	pid = getPlayerData()->playerControl.decode_pid;
+	if(pid>0) kill(pid,SIGTERM);
+	getPlayerData()->playerControl.decode_pid = 0;
 }
 
 void player_sigHandler(int signal) {
 	if(signal==SIGCHLD) {
 		int status;
-		if(player_pid==wait3(&status,WNOHANG,NULL)) {
+		int pid = wait3(&status,WNOHANG,NULL);
+		if(player_pid==pid) {
 			if(WIFSIGNALED(status) && WTERMSIG(status)!=SIGTERM) {
 				ERROR("player process died from a "
 						"non-TERM signal: %i\n",
 						WTERMSIG(status));
 			}
 			resetPlayer();
+		}
+		else if(pid==getPlayerData()->playerControl.decode_pid &&
+				player_pid<=0) 
+		{
+			if(WIFSIGNALED(status) && WTERMSIG(status)!=SIGTERM) {
+				ERROR("(caught by master parent) "
+						"decode process died from a "
+						"non-TERM signal: %i\n",
+						WTERMSIG(status));
+			}
+			getPlayerData()->playerControl.decode_pid = 0;
 		}
 	}
 }
