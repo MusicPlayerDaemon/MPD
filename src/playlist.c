@@ -1177,8 +1177,8 @@ int savePlaylist(FILE * fp, char * utf8file) {
 	free(rfile);
 
 	if(0==stat(actualFile,&st)) {
-		myfprintf(fp, "a file or directory already exists with the name"
-                                " \"%s\"", utf8file);
+		commandError(fp, ACK_ERROR_EXIST, "a file or directory already " 
+                                "exists with the name \"%s\"", utf8file);
 		return -1;
 	}
 
