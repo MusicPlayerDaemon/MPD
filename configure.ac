@@ -375,9 +375,9 @@ echo "########### MPD CONFIGURATION ############"
 if test x$enable_id3 = xyes; then
 	echo "ID3 tag support ...............enabled"
 	if test x$use_mpd_id3tag = xyes; then
-		echo "  using MPD's libid3tag"
+		echo "  using MPD's libid3tag........yes"
 	else
-		echo "  not using MPD's libid3tag"
+		echo "  using MPD's libid3tag........no"
 	fi
 else
 	echo "ID3 tag support ...............disabled"
@@ -386,9 +386,9 @@ fi
 if test x$enable_mp3 = xyes; then
 	echo "mp3 support ...................enabled"
 	if test x$use_mpd_mad = xyes; then
-		echo "  using MPD's libmad"
+		echo "  using MPD's libmad...........yes"
 	else
-		echo "  not using MPD's libmad"
+		echo "  using MPD's libmad...........no"
 	fi
 else
 	echo "mp3 support ...................disabled"
