@@ -63,7 +63,6 @@ typedef struct _Options {
 
 void usage(char * argv[]) {
         ERROR("usage:\n");
-        ERROR("   %s [options] <port> <music dir> <playlist dir> <log file> <error file>\n",argv[0]);
         ERROR("   %s [options] <conf file>\n",argv[0]);
         ERROR("   %s [options]   (searches for ~%s then %s)\n",
                         argv[0],USER_CONFIG_FILE_LOCATION,
