@@ -767,11 +767,11 @@ int deleteFromPlaylist(FILE * fp, int song) {
 		playlist_noGoToNext = 1;
 	}
 
-	if(playlist.current>=playlist.length) {
-		incrPlaylistCurrent();
-	}
-	else if(playlist.current>songOrder) {
+	if(playlist.current>songOrder) {
 		playlist.current--;
+	}
+	else if(playlist.current>=playlist.length) {
+		incrPlaylistCurrent();
 	}
 
 	if(playlist.queued>songOrder) {
