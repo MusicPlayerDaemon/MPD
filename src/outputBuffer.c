@@ -74,8 +74,7 @@ int sendDataToOutputBuffer(OutputBuffer * cb, InputStream * inStream,
 
         while(datalen) {
 		if(currentChunk != cb->end) {
-	        	while(cb->begin==cb->end && cb->wrap && !dc->stop &&
-                                        !dc->seek)
+	        	while(cb->begin==cb->end && cb->wrap && !dc->stop)
 			{
                                 if(!inStream || 
                                         bufferInputStream(inStream) <= 0)
@@ -84,7 +83,6 @@ int sendDataToOutputBuffer(OutputBuffer * cb, InputStream * inStream,
                                 }
 			}
 	        	if(dc->stop) return OUTPUT_BUFFER_DC_STOP;
-	        	if(dc->seek) return OUTPUT_BUFFER_DC_SEEK;
 
 			currentChunk = cb->end;
 			cb->chunkSize[currentChunk] = 0;
