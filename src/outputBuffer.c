@@ -73,13 +73,11 @@ int sendDataToOutputBuffer(OutputBuffer * cb, DecoderControl * dc,
 
         while(datalen) {
 		if(currentChunk != cb->end) {
-	        	while(cb->begin==cb->end && cb->wrap && !dc->stop && 
-					!dc->seek)
+	        	while(cb->begin==cb->end && cb->wrap && !dc->stop)
 			{
 		        	my_usleep(10000);
 			}
 	        	if(dc->stop) return OUTPUT_BUFFER_DC_STOP;
-	        	if(dc->seek) return OUTPUT_BUFFER_DC_SEEK;
 
 			currentChunk = cb->end;
 			cb->chunkSize[currentChunk] = 0;

@@ -461,6 +461,7 @@ int mp3Read(mp3DecodeData * data, OutputBuffer * cb, DecoderControl * dc) {
 		if(!dc->seek) data->muteFrame = 0;
 		else if(dc->seekWhere<=data->elapsedTime) {
                         clearOutputBuffer(cb);
+                        dc->seekChunk = cb->end;
 			data->muteFrame = 0;
 			dc->seek = 0;
 		}
@@ -517,6 +518,7 @@ int mp3Read(mp3DecodeData * data, OutputBuffer * cb, DecoderControl * dc) {
 						data->frameOffset[i]) == 0)
                                 {
                                         clearOutputBuffer(cb);
+                                        dc->seekChunk = cb->end;
 				        data->currentFrame = i;
 				        data->muteFrame = 0;
                                 }
@@ -529,13 +531,13 @@ int mp3Read(mp3DecodeData * data, OutputBuffer * cb, DecoderControl * dc) {
 	while(1) {
 		skip = 0;
 		while((ret = decodeNextFrameHeader(data))==DECODE_CONT &&
-				!dc->seek && !dc->stop);
+				!dc->stop);
 		if(ret==DECODE_SKIP) skip = 1;
-		else if(ret==DECODE_BREAK || dc->stop || dc->seek) break;
+		else if(ret==DECODE_BREAK || dc->stop) break;
 		if(!data->muteFrame) {
 			while((ret = decodeNextFrame(data))==DECODE_CONT &&
-					!dc->seek && !dc->stop);
-			if(ret==DECODE_BREAK || dc->seek || dc->stop) break;
+					!dc->stop);
+			if(ret==DECODE_BREAK || dc->stop) break;
 		}
 		if(!skip && ret==DECODE_OK) break;
 	}

@@ -221,6 +221,7 @@ int mp4_decode(OutputBuffer * cb, DecoderControl * dc) {
 			seekPositionFound = 0;
 			chunkLen = 0;
                         clearOutputBuffer(cb);
+                        dc->seekChunk = cb->end;
 			dc->seek = 0;
 		}
 

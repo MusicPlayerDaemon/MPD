@@ -383,7 +383,7 @@ int aac_decode(OutputBuffer * cb, DecoderControl * dc) {
 
 	if(dc->state != DECODE_STATE_DECODE) return -1;
 
-	if(!dc->stop && !dc->seek && chunkLen>0) {
+	if(!dc->stop && chunkLen>0) {
 		cb->chunkSize[cb->end] = chunkLen;
 		++cb->end;
 	

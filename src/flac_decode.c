@@ -154,6 +154,7 @@ int flac_decode(OutputBuffer * cb, DecoderControl *dc) {
 					dc->audioFormat.sampleRate;
 				data.position = 0;
 			}
+                        dc->seekChunk = cb->end;
 			dc->seek = 0;
 		}
 	}

@@ -192,6 +192,7 @@ int ogg_decode(OutputBuffer * cb, DecoderControl * dc)
 			if(dc->seek) {
                                 clearOutputBuffer(cb);
 				chunkpos = 0;
+                                dc->seekChunk = cb->end;
 				ov_time_seek_page(&vf,dc->seekWhere);
 				dc->seek = 0;
 			}

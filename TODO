@@ -2,17 +2,9 @@
 	a) make seekings non-blocking:
 		1) player:
 			a) first check that seekWhere isn't already buffered
-			b) if not current song, stop it and play the song to 
-				seek
-			c) set dc->seek and dc->seekWhere if not already set
-				and set elapsed time to seekWhere and
-				then set pc->seek = 0
-			d) while seeking just continue to play buffer
-				until seek is done
-		2) decoder:
-			a) seek no longer blocks so don't worry about checking
-				seek in blocking portions, only check stop!
-			b) yay, less code mess!
+		2) check that stream is seekable before seeking forward!
+		3) deal with seeking forward better by calling seek function 
+			(for mp3 and mp4)!
 	b) bufferInput in outputBuffer waiting!
 		1) implement some sort of callback mechanism for this
 			for abstraction sake
