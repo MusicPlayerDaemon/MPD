@@ -43,8 +43,7 @@ typedef struct {
 	FLAC__uint64 position;
 	OutputBuffer * cb;
 	DecoderControl * dc;
-        InputStream inStream;
-        char * path;
+        InputStream * inStream;
 	ReplayGainInfo * replayGainInfo;
 } FlacData;
 
@@ -53,7 +52,7 @@ typedef struct {
 int flacSendChunk(FlacData * data);
 void flacError(const FLAC__SeekableStreamDecoder *, 
                 FLAC__StreamDecoderErrorStatus, void *);
-void flacPrintErroredState(FLAC__SeekableStreamDecoderState state, char * file);
+void flacPrintErroredState(FLAC__SeekableStreamDecoderState state);
 void flacMetadata(const FLAC__SeekableStreamDecoder *, 
                 const FLAC__StreamMetadata *, void *);
 FLAC__StreamDecoderWriteStatus flacWrite(const FLAC__SeekableStreamDecoder *,
@@ -69,12 +68,12 @@ FLAC__SeekableStreamDecoderLengthStatus flacLength(
                 const FLAC__SeekableStreamDecoder *, FLAC__uint64 *, void *);
 FLAC__bool flacEOF(const FLAC__SeekableStreamDecoder *, void *);
 
-int flac_decode(OutputBuffer * cb, DecoderControl *dc, char * path) {
+int flac_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream)
+{
 	FLAC__SeekableStreamDecoder * flacDec = NULL;
 	FlacData data;
 	int status = 1;
         int ret =0;
-        int streamOpen = 0;
 
 	data.chunk_length = 0;
 	data.time = 0;
@@ -82,16 +81,9 @@ int flac_decode(OutputBuffer * cb, DecoderControl *dc, char * path) {
 	data.bitRate = 0;
 	data.cb = cb;
 	data.dc = dc;
+	data.inStream = inStream;
 	data.replayGainInfo = NULL;
-        data.path = path;
 
-        if(openInputStream(&(data.inStream), path)<0) {
-                ERROR("unable to open flac: %s\n", path);
-                ret = -1;
-                goto fail;
-        }
-        streamOpen = 1;
-	
 	if(!(flacDec = FLAC__seekable_stream_decoder_new())) {
                 ret = -1;
                 goto fail;
@@ -117,10 +109,9 @@ int flac_decode(OutputBuffer * cb, DecoderControl *dc, char * path) {
 	status&=FLAC__seekable_stream_decoder_set_client_data(flacDec,
                         (void *)&data);
 	if(!status) {
-		ERROR("flac problem before init(): %s\n", path);
+		ERROR("flac problem before init()\n");
 		flacPrintErroredState(
-                        FLAC__seekable_stream_decoder_get_state(flacDec),
-                                        path);
+                        FLAC__seekable_stream_decoder_get_state(flacDec));
 		ret = -1;
                 goto fail;
 	}
@@ -128,19 +119,17 @@ int flac_decode(OutputBuffer * cb, DecoderControl *dc, char * path) {
 	if(FLAC__seekable_stream_decoder_init(flacDec)!=
 			FLAC__STREAM_DECODER_SEARCH_FOR_METADATA) 
 	{
-		ERROR("flac problem doing init(): %s\n", path);
+		ERROR("flac problem doing init()\n");
 		flacPrintErroredState(
-                        FLAC__seekable_stream_decoder_get_state(flacDec),
-                                        path);
+                        FLAC__seekable_stream_decoder_get_state(flacDec));
                 ret = -1;
                 goto fail;
 	}
 
 	if(!FLAC__seekable_stream_decoder_process_until_end_of_metadata(flacDec)) {
-		ERROR("flac problem reading metadata: %s\n", path);
+		ERROR("flac problem reading metadata\n");
 		flacPrintErroredState(
-                        FLAC__seekable_stream_decoder_get_state(flacDec), 
-                                        path);
+                        FLAC__seekable_stream_decoder_get_state(flacDec));
 		ret = -1;
                 goto fail;
 	}
@@ -173,8 +162,7 @@ int flac_decode(OutputBuffer * cb, DecoderControl *dc, char * path) {
 	/*FLAC__file_decoder_process_until_end_of_file(flacDec);*/
 	if(!dc->stop) {
 		flacPrintErroredState(
-                        FLAC__seekable_stream_decoder_get_state(flacDec), 
-                                        path);
+                        FLAC__seekable_stream_decoder_get_state(flacDec));
 		FLAC__seekable_stream_decoder_finish(flacDec);
 	}
 	/* send last little bit */
@@ -197,8 +185,8 @@ int flac_decode(OutputBuffer * cb, DecoderControl *dc, char * path) {
 fail:
 	if(data.replayGainInfo) freeReplayGainInfo(data.replayGainInfo);
 
-        if(streamOpen) closeInputStream(&(data.inStream));
-
+	closeInputStream(inStream);
+	
 	if(flacDec) FLAC__seekable_stream_decoder_delete(flacDec);
 
 	return ret;
@@ -209,7 +197,7 @@ FLAC__SeekableStreamDecoderReadStatus flacRead(
                 unsigned * bytes, void * fdata) {
 	FlacData * data = (FlacData *) fdata;
 
-        *bytes = readFromInputStream(&(data->inStream),(void *)buf,1,*bytes);
+        *bytes = readFromInputStream(data->inStream,(void *)buf,1,*bytes);
 
         if(*bytes==0) return FLAC__SEEKABLE_STREAM_DECODER_READ_STATUS_ERROR;
         
@@ -222,7 +210,7 @@ FLAC__SeekableStreamDecoderSeekStatus flacSeek(
 {
 	FlacData * data = (FlacData *) fdata;
 
-        if(seekInputStream(&(data->inStream),offset,SEEK_SET)<0) {
+        if(seekInputStream(data->inStream,offset,SEEK_SET)<0) {
                 return FLAC__SEEKABLE_STREAM_DECODER_SEEK_STATUS_ERROR;
         }
 
@@ -235,7 +223,7 @@ FLAC__SeekableStreamDecoderTellStatus flacTell(
 {
 	FlacData * data = (FlacData *) fdata;
 
-        *offset = data->inStream.offset;
+        *offset = (long)(data->inStream->offset);
 
         return FLAC__SEEKABLE_STREAM_DECODER_TELL_STATUS_OK;
 }
@@ -246,7 +234,7 @@ FLAC__SeekableStreamDecoderLengthStatus flacLength(
 {
 	FlacData * data = (FlacData *) fdata;
 
-        *length = data->inStream.size;
+        *length = (size_t)(data->inStream->size);
 
         return FLAC__SEEKABLE_STREAM_DECODER_LENGTH_STATUS_OK;
 }
@@ -254,7 +242,7 @@ FLAC__SeekableStreamDecoderLengthStatus flacLength(
 FLAC__bool flacEOF(const FLAC__SeekableStreamDecoder * flacDec, void * fdata) {
 	FlacData * data = (FlacData *) fdata;
 
-        switch(inputStreamAtEOF(&(data->inStream))) {
+        switch(inputStreamAtEOF(data->inStream)) {
         case 1:
                 return true;
         default:
@@ -270,43 +258,42 @@ void flacError(const FLAC__SeekableStreamDecoder *dec,
 
 	switch(status) {
 	case FLAC__STREAM_DECODER_ERROR_STATUS_LOST_SYNC:
-		ERROR("flac lost sync: %s\n", data->path);
+		ERROR("flac lost sync\n");
 		break;
 	case FLAC__STREAM_DECODER_ERROR_STATUS_BAD_HEADER:
-		ERROR("bad header %s\n", data->path);
+		ERROR("bad header\n");
 		break;
 	case FLAC__STREAM_DECODER_ERROR_STATUS_FRAME_CRC_MISMATCH:
-		ERROR("crc mismatch %s\n", data->path);
+		ERROR("crc mismatch\n");
 		break;
 	default:
-		ERROR("unknown flac error %s\n", data->path);
+		ERROR("unknown flac error\n");
 	}
 }
 
-void flacPrintErroredState(FLAC__SeekableStreamDecoderState state, 
-                char * file) 
+void flacPrintErroredState(FLAC__SeekableStreamDecoderState state) 
 {
 	switch(state) {
 	case FLAC__SEEKABLE_STREAM_DECODER_MEMORY_ALLOCATION_ERROR:
 		ERROR("flac allocation error\n");
 		break;
 	case FLAC__SEEKABLE_STREAM_DECODER_READ_ERROR:
-		ERROR("flac read error: %s\n",file);
+		ERROR("flac read error\n");
 		break;
 	case FLAC__SEEKABLE_STREAM_DECODER_SEEK_ERROR:
-		ERROR("flac seek error: %s\n",file);
+		ERROR("flac seek error\n");
 		break;
 	case FLAC__SEEKABLE_STREAM_DECODER_STREAM_DECODER_ERROR:
-		ERROR("flac seekable stream error: %s\n",file);
+		ERROR("flac seekable stream error\n");
 		break;
 	case FLAC__SEEKABLE_STREAM_DECODER_ALREADY_INITIALIZED:
-		ERROR("flac decoder already initialized: %s\n",file);
+		ERROR("flac decoder already initialized\n");
 		break;
 	case FLAC__SEEKABLE_STREAM_DECODER_INVALID_CALLBACK:
 		ERROR("invalid flac callback\n");
 		break;
 	case FLAC__SEEKABLE_STREAM_DECODER_UNINITIALIZED:
-		ERROR("flac decoder uninitialized: %s\n",file);
+		ERROR("flac decoder uninitialized\n");
 		break;
 	case FLAC__SEEKABLE_STREAM_DECODER_OK:
 	case FLAC__SEEKABLE_STREAM_DECODER_SEEKING:
@@ -567,18 +554,19 @@ MpdTag * flacTagDup(char * file) {
 }
 
 char * flacSuffixes[] = {"flac", NULL};
+char * flac_mime_types[] = {"application/x-flac", NULL};
 
 InputPlugin flacPlugin = 
 {
         "flac",
         NULL,
 	NULL,
-	NULL,
         flac_decode,
+	NULL,
         flacTagDup,
-        INPUT_PLUGIN_STREAM_FILE,
+        INPUT_PLUGIN_STREAM_URL | INPUT_PLUGIN_STREAM_FILE,
         flacSuffixes,
-        NULL
+        flac_mime_types
 };
 
 #else
