@@ -52,11 +52,11 @@
 
 typedef struct _PlayerControl {
 	mpd_sint8 decodeType;
-	mpd_sint8 stop;
-	mpd_sint8 play;
-	mpd_sint8 pause;
-	mpd_sint8 state;
-	mpd_sint8 closeAudio;
+	mpd_sint8 volatile stop;
+	mpd_sint8 volatile play;
+	mpd_sint8 volatile pause;
+	mpd_sint8 volatile state;
+	mpd_sint8 volatile closeAudio;
 	mpd_sint8 error;
 	mpd_uint16 bitRate;
 	mpd_sint8 bits;
@@ -67,16 +67,16 @@ typedef struct _PlayerControl {
 	float elapsedTime;
 	char file[MAXPATHLEN+1];
 	char erroredFile[MAXPATHLEN+1];
-	mpd_sint8 queueState;
-	mpd_sint8 queueLockState;
-	mpd_sint8 lockQueue;
-	mpd_sint8 unlockQueue;
-	mpd_sint8 seek;
+	mpd_sint8 volatile queueState;
+	mpd_sint8 volatile queueLockState;
+	mpd_sint8 volatile lockQueue;
+	mpd_sint8 volatile unlockQueue;
+	mpd_sint8 volatile seek;
 	double seekWhere;
 	float crossFade;
 	mpd_uint16 softwareVolume;
 	double totalPlayTime;
-	int decode_pid;
+	int volatile decode_pid;
 } PlayerControl;
 
 void player_sigChldHandler(int pid, int status);

@@ -52,7 +52,7 @@
 #include <unistd.h>
 #include <string.h>
 
-int * decode_pid = NULL;
+int volatile * decode_pid = NULL;
 
 void decodeSigHandler(int sig) {
 	if(sig==SIGCHLD) {

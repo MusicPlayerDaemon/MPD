@@ -33,14 +33,14 @@ extern int buffered_before_play;
 extern int buffered_chunks;
 
 typedef struct _Buffer {
-	char * chunks;
-	mpd_uint16 * chunkSize;
-	mpd_uint16 * bitRate;
-	float * times;
-	mpd_sint16 begin;
-	mpd_sint16 end;
-	mpd_sint16 next;
-	mpd_sint8 wrap;
+	char * volatile chunks;
+	mpd_uint16 * volatile chunkSize;
+	mpd_uint16 * volatile bitRate;
+	float * volatile times;
+	mpd_sint16 volatile begin;
+	mpd_sint16 volatile end;
+	mpd_sint16 volatile next;
+	mpd_sint8 volatile wrap;
 	float totalTime;
 } Buffer;
 
