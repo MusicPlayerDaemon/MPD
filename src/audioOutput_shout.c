@@ -201,12 +201,12 @@ static void clearEncoder(ShoutData * sd) {
 
 static void shout_closeShoutConn(ShoutData * sd) {
 	if(sd->opened) {
+		clearEncoder(sd);
+
 		if(shout_close(sd->shoutConn) != SHOUTERR_SUCCESS) {
 			ERROR("problem closing connection to shout server: "
 				"%s\n", shout_get_error(sd->shoutConn));
 		}
-
-		clearEncoder(sd);
 	}
 
 	sd->opened = 0;
@@ -259,6 +259,18 @@ fail:
 	return -1;
 }
 
+#define addTag(name, value) { \
+	if(value) vorbis_comment_add_tag(&(sd->vc), name, value); \
+}
+
+static void copyTagToVorbisComment(ShoutData * sd) {
+	if(sd->tag) {
+		addTag("ARTIST", sd->tag->artist);
+		addTag("ALBUM", sd->tag->album);
+		addTag("TITLE", sd->tag->title);
+	}
+}
+
 static int initEncoder(ShoutData * sd) {
 	vorbis_info_init(&(sd->vi));
 
@@ -280,23 +292,8 @@ static int initEncoder(ShoutData * sd) {
 	return 0;
 }
 
-static int shout_openDevice(AudioOutput * audioOutput,
-		AudioFormat * audioFormat) 
-{
+static int shout_openShoutConn(AudioOutput * audioOutput) {
 	ShoutData * sd = (ShoutData *)audioOutput->data;
-
-	memmove(&(sd->inAudioFormat), audioFormat, sizeof(AudioFormat));
-
-	if(0 == memcmp(&(sd->inAudioFormat), &(sd->outAudioFormat), 
-			sizeof(AudioFormat))) 
-	{
-		sd->audioFormatConvert = 0;
-	}
-	else sd->audioFormatConvert = 1;
-
-	audioOutput->open = 1;
-
-	if(sd->opened) return 0;
 
 	if(shout_open(sd->shoutConn) != SHOUTERR_SUCCESS)
 	{
@@ -313,6 +310,8 @@ static int shout_openDevice(AudioOutput * audioOutput,
 		return -1;
 	}
 
+	copyTagToVorbisComment(sd);
+
 	vorbis_analysis_headerout(&(sd->vd), &(sd->vc), &(sd->header_main),
 			&(sd->header_comments), &(sd->header_codebooks));
 
@@ -325,9 +324,33 @@ static int shout_openDevice(AudioOutput * audioOutput,
 		if(write_page(sd) < 0) return -1;
 	}
 
+	if(sd->tag) freeMpdTag(sd->tag);
+	sd->tag = NULL;
+
 	sd->opened = 1;
 
 	return 0;
+}
+
+static int shout_openDevice(AudioOutput * audioOutput,
+		AudioFormat * audioFormat) 
+{
+	ShoutData * sd = (ShoutData *)audioOutput->data;
+
+	memcpy(&(sd->inAudioFormat), audioFormat, sizeof(AudioFormat));
+
+	if(0 == memcmp(&(sd->inAudioFormat), &(sd->outAudioFormat), 
+			sizeof(AudioFormat))) 
+	{
+		sd->audioFormatConvert = 0;
+	}
+	else sd->audioFormatConvert = 1;
+
+	audioOutput->open = 1;
+
+	if(sd->opened) return 0;
+
+	return shout_openShoutConn(audioOutput);
 }
 
 static void shout_convertAudioFormat(ShoutData * sd, char ** chunkArgPtr,
@@ -349,25 +372,17 @@ static void shout_convertAudioFormat(ShoutData * sd, char ** chunkArgPtr,
 	*chunkArgPtr = sd->convBuffer;
 }
 
-#define addTag(name, value) { \
-	if(value) vorbis_comment_add_tag(&(sd->vc), name, value); \
-}
-
 static void shout_sendMetadata(ShoutData * sd) {
 	ogg_int64_t granulepos = sd->vd.granulepos;
 
-	if(!sd->opened) return;
+	if(!sd->opened || !sd->tag) return;
 
 	clearEncoder(sd);
 	if(initEncoder(sd) < 0) return;
 
 	sd->vd.granulepos = granulepos;
 
-	if(sd->tag) {
-		addTag("ARTIST", sd->tag->artist);
-		addTag("ALBUM", sd->tag->album);
-		addTag("TITLE", sd->tag->title);
-	}
+	copyTagToVorbisComment(sd);
 
 	vorbis_analysis_headerout(&(sd->vd), &(sd->vc), &(sd->header_main),
 			&(sd->header_comments), &(sd->header_codebooks));
@@ -376,15 +391,12 @@ static void shout_sendMetadata(ShoutData * sd) {
 	ogg_stream_packetin(&(sd->os), &(sd->header_comments));
 	ogg_stream_packetin(&(sd->os), &(sd->header_codebooks));
 
-	/*vorbis_commentheader_out(&(sd->vc), &(sd->header_comments));
-	ogg_stream_packetin(&(sd->os), &(sd->header_comments));*/
-
 	while(ogg_stream_flush(&(sd->os), &(sd->og)))
 	{
 		if(write_page(sd) < 0) return;
 	}
 
-	freeMpdTag(sd->tag);
+	if(sd->tag) freeMpdTag(sd->tag);
 	sd->tag = NULL;
 }
 
@@ -395,13 +407,13 @@ static int shout_play(AudioOutput * audioOutput, char * playChunk, int size) {
 	int samples;
 	int bytes = sd->outAudioFormat.bits/8;
 
+	if(sd->opened && sd->tag) shout_sendMetadata(sd);
+
 	if(!sd->opened) {
-		if(shout_openDevice(audioOutput, &(sd->inAudioFormat)) < 0) {
+		if(shout_openShoutConn(audioOutput) < 0) {
 			return -1;
 		}
 	}
-
-	if(sd->tag) shout_sendMetadata(sd);
 
 	if(sd->audioFormatConvert) {
 		shout_convertAudioFormat(sd, &playChunk, &size);
