@@ -52,6 +52,8 @@ typedef struct _List {
 	long numberOfNodes;
 	/* array for searching when list is sorted */
 	ListNode ** nodesArray;
+	/* sorted */
+	int sorted;
 	/* weather to strdup() key's on insertion */
 	int strdupKeys;
 } List;
@@ -71,8 +73,8 @@ List * makeList(ListFreeDataFunc * freeDataFunc, int strdupKeys);
  */ 
 ListNode * insertInList(List * list,char * key,void * data);
 
-int insertInListBeforeNode(List * list, ListNode * beforeNode, char * key,
-		void * data);
+ListNode * insertInListBeforeNode(List * list, ListNode * beforeNode, 
+		char * key, void * data);
  
 int insertInListWithoutKey(List * list,void * data);
 
@@ -95,7 +97,9 @@ void deleteNodeFromList(List * list,ListNode * node);
  */
 int findInList(List * list, char * key, void ** data);
 
-ListNode * findNodeInList(List * list, char * key);
+/* if _key_ is not found, *_node_ is assigned to the node before which
+	the info would be found */
+int findNodeInList(List * list, char * key, ListNode ** node);
 
 /* frees memory malloc'd for list and its nodes
  *  _list_ -> List to be free'd

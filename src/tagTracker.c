@@ -28,18 +28,23 @@ char * getTagItemString(int type, char * string) {
 
 	if(tagLists[type] == NULL) {
 		tagLists[type] = makeList(free, 1);
+		sortList(tagLists[type]);
 	}
 
-	if((node = findNodeInList(tagLists[type], string))) {
+	if(findNodeInList(tagLists[type], string, &node)) {
+		DEBUG("found\n");
 		((TagTrackerItem *)node->data)->count++;
 	}
 	else {
+		DEBUG("not found\n");
 		TagTrackerItem * item = malloc(sizeof(TagTrackerItem));
 		item->count = 1;
 		item->visited = 0;
-		node = insertInList(tagLists[type], string, item);
+		node = insertInListBeforeNode(tagLists[type], node, string, 
+				item);
 	}
 
+	DEBUG("key: %s:%s\n", string, node->key);
 	return node->key;
 }
 
@@ -51,15 +56,12 @@ void removeTagItemString(int type, char * string) {
 	assert(tagLists[type]);
 	if(tagLists[type] == NULL) return;
 
-	node = findNodeInList(tagLists[type], string);
-	assert(node);
-
 	/*if(!node) {
 		free(string);
 		return;
 	}*/
 
-	if(node) {
+	if(findNodeInList(tagLists[type], string, &node)) {
 		TagTrackerItem * item = node->data;
 		item->count--;
 		if(item->count <= 0) deleteNodeFromList(tagLists[type], node);
@@ -131,9 +133,7 @@ int wasVisitedInTagTracker(int type, char * str) {
 
 	if(!tagLists[type]) return 0;
 
-	node = findNodeInList(tagLists[type], str);
-
-	if(!node) return 0;
+	if(!findNodeInList(tagLists[type], str, &node)) return 0;
 
 	return ((TagTrackerItem *)node->data)->visited;
 }
@@ -143,9 +143,7 @@ void visitInTagTracker(int type, char * str) {
 
 	if(!tagLists[type]) return;
 
-	node = findNodeInList(tagLists[type], str);
-
-	if(!node) return;
+	if(!findNodeInList(tagLists[type], str, &node)) return;
 
 	((TagTrackerItem *)node->data)->visited = 1;
 }

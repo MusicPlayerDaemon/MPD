@@ -29,6 +29,8 @@ void makeListNodesArray(List * list) {
 	ListNode * node = list->firstNode;
 	long i;
 
+	if(!list->numberOfNodes) return;
+
 	list->nodesArray = malloc(sizeof(ListNode *)*list->numberOfNodes);
 
 	for(i=0;i<list->numberOfNodes;i++) {
@@ -38,6 +40,7 @@ void makeListNodesArray(List * list) {
 }
 
 void freeListNodesArray(List * list) {
+	if(!list->nodesArray) return;
 	free(list->nodesArray);
 	list->nodesArray = NULL;
 }
@@ -57,8 +60,7 @@ List * makeList(ListFreeDataFunc * freeDataFunc, int strdupKeys) {
 	return list;
 }
 
-int insertInListBeforeNode(List * list, ListNode * beforeNode, char * key,
-		void * data) 
+ListNode * insertInListBeforeNode(List * list, ListNode * beforeNode, 				char * key, void * data) 
 {
 	ListNode * node;
 
@@ -69,42 +71,44 @@ int insertInListBeforeNode(List * list, ListNode * beforeNode, char * key,
 	node = malloc(sizeof(ListNode));
 	assert(node!=NULL);
 
-	if(list->nodesArray) freeListNodesArray(list);
-
-	if(beforeNode==NULL) beforeNode = list->firstNode;
-
-	node->nextNode = beforeNode;
-	if(beforeNode==list->firstNode) {
-		if(list->firstNode==NULL) {
-			assert(list->lastNode==NULL);
-			list->lastNode = node;
+	if(beforeNode==NULL) node = insertInList(list, key, data);
+	else {
+		node->nextNode = beforeNode;
+		if(beforeNode==list->firstNode) {
+			if(list->firstNode==NULL) {
+				assert(list->lastNode==NULL);
+				list->lastNode = node;
+			}
+			else {
+				assert(list->lastNode!=NULL);
+				assert(list->lastNode->nextNode==NULL);
+				list->firstNode->prevNode = node;
+			}
+			node->prevNode = NULL;
+			list->firstNode = node;
 		}
 		else {
-			assert(list->lastNode!=NULL);
-			assert(list->lastNode->nextNode==NULL);
-			list->firstNode->prevNode = node;
+			node->prevNode = beforeNode->prevNode;
+			if(node->prevNode) {
+				node->prevNode->nextNode = node;
+			}
+			beforeNode->prevNode = node;
 		}
-		node->prevNode = NULL;
-		list->firstNode = node;
-	}
-	else {
-		node->prevNode = beforeNode->prevNode;
-		if(node->prevNode) {
-			node->prevNode->nextNode = node;
-		}
-		beforeNode->prevNode = node;
-	}
 
-	if(list->strdupKeys) node->key = strdup(key);
-	else node->key = key;
+		if(list->strdupKeys) node->key = strdup(key);
+		else node->key = key;
 
-	assert(node->key!=NULL);
+		assert(node->key!=NULL);
 
-	node->data = data;
-
-	list->numberOfNodes++;
+		node->data = data;
 	
-	return 1;
+		list->numberOfNodes++;
+	}
+	
+	freeListNodesArray(list);
+	if(list->sorted) makeListNodesArray(list);
+
+	return node;
 }
 
 ListNode * insertInList(List * list, char * key, void * data) {
@@ -176,7 +180,7 @@ int insertInListWithoutKey(List * list, void * data) {
 	return 1;
 }
 
-ListNode * findNodeInList(List * list, char * key) {
+int findNodeInList(List * list, char * key, ListNode ** node) {
 	static long high;
 	static long low;
 	static long cur;
@@ -185,7 +189,7 @@ ListNode * findNodeInList(List * list, char * key) {
 
 	assert(list!=NULL);
 
-	if(list->nodesArray) {
+	if(list->sorted && list->nodesArray) {
 		high = list->numberOfNodes-1;
 		low = 0;
 		cur = high;
@@ -194,7 +198,10 @@ ListNode * findNodeInList(List * list, char * key) {
 			cur = (high+low)/2;
 			tmpNode = list->nodesArray[cur];
 			cmp = strcmp(tmpNode->key,key);
-			if(cmp==0) return tmpNode;
+			if(cmp==0) {
+				*node = tmpNode;
+				return 1;
+			}
 			else if(cmp>0) high = cur;
 			else {
 				if(low==cur) break;
@@ -205,7 +212,18 @@ ListNode * findNodeInList(List * list, char * key) {
 		cur = high;
 		if(cur>=0) {
 			tmpNode = list->nodesArray[cur];
-			if(strcmp(tmpNode->key,key)==0) return tmpNode;
+			cmp = strcmp(tmpNode->key,key);
+			*node = tmpNode;
+			if( 0 == cmp ) return 1;
+			else if( cmp < 0) return 0;
+			else {
+				*node = NULL;
+				return 0;
+			}
+		}
+		else {
+			*node = list->firstNode;
+			return 0;
 		}
 	}
 	else {
@@ -215,16 +233,17 @@ ListNode * findNodeInList(List * list, char * key) {
 			tmpNode = tmpNode->nextNode;
 		}
 	
-		return tmpNode;
+		*node =  tmpNode;
+		if(tmpNode) return 1;
 	}
 
-	return NULL;
+	return 0;
 }
 
 int findInList(List * list, char * key, void ** data) {
-	ListNode * node = findNodeInList(list, key);
+	ListNode * node;
 	
-	if(node) {
+	if(findNodeInList(list, key, &node)) {
 		if(data) *data = node->data;
 		return 1;
 	}
@@ -277,7 +296,7 @@ void deleteNodeFromList(List * list,ListNode * node) {
 
 	if(list->nodesArray) {
 		freeListNodesArray(list);
-		makeListNodesArray(list);
+		if(list->sorted) makeListNodesArray(list);
 	}
 
 }
@@ -480,6 +499,8 @@ void quickSort(ListNode ** nodesArray, long start, long end) {
 
 void sortList(List * list) {
 	assert(list!=NULL);
+
+	list->sorted = 1;
 
 	if(list->numberOfNodes<2) return;
 	

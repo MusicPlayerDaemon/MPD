@@ -1,6 +1,6 @@
 0.12
 ----
-*) better handle streams so they don't use TagTracker
+*) cleanup list code and sorting
 
 *) parsing of lame tags (including getting replaygain info)
 
