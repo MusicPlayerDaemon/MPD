@@ -59,7 +59,7 @@ typedef struct _Directory {
 	time_t mtime; /* modification time */
 } Directory;
 
-Directory * mp3rootDirectory;
+Directory * mp3rootDirectory = NULL;
 
 char directorydb[MAXPATHLEN+1];
 
@@ -438,6 +438,9 @@ void readDirectoryInfo(FILE * fp,Directory * directory) {
 	Directory * subDirectory;
 	char * name;
 	time_t mtime;
+	int strcmpRet;
+	ListNode * nextDirNode = directory->subDirectories->firstNode;
+	ListNode * nodeTemp;
 
 	while(myFgets(buffer,bufferSize,fp) && 0!=strncmp(DIRECTORY_END,buffer,strlen(DIRECTORY_END))) {
 		if(0==strncmp(DIRECTORY_DIR,buffer,strlen(DIRECTORY_DIR))) {
@@ -461,8 +464,36 @@ void readDirectoryInfo(FILE * fp,Directory * directory) {
 				exit(EXIT_FAILURE);
 			}
 			name = strdup(&(buffer[strlen(DIRECTORY_BEGIN)]));
-			subDirectory = newDirectory(directory,name,mtime);
-			insertInList(directory->subDirectories,key,(void *)subDirectory);
+
+			while(nextDirNode && (strcmpRet = 
+					strcmp(key,nextDirNode->key)) > 0) {
+				nodeTemp = nextDirNode->nextNode;
+				deleteNodeFromList(directory->subDirectories,
+						nextDirNode);
+				nextDirNode = nodeTemp;
+			}
+
+			if(!nextDirNode) {
+				subDirectory = newDirectory(directory,name,
+						mtime);
+				insertInList(directory->subDirectories,key,
+						(void *)subDirectory);
+			}
+			else if(strcmpRet == 0) {
+				subDirectory = (Directory *)nextDirNode->data;
+				subDirectory->mtime = mtime;
+				nextDirNode = nextDirNode->nextNode;
+			}
+			else {
+				subDirectory = newDirectory(directory,name,
+						mtime);
+				insertInListBeforeNode(
+						directory->subDirectories,
+						nextDirNode,
+						key,
+						(void *)subDirectory);
+			}
+
 			free(key);
 			free(name);
 			readDirectoryInfo(fp,subDirectory);
@@ -474,6 +505,12 @@ void readDirectoryInfo(FILE * fp,Directory * directory) {
 			ERROR("Unknown line in db: %s\n",buffer);
 			exit(EXIT_FAILURE);
 		}
+	}
+
+	while(nextDirNode) {
+		nodeTemp = nextDirNode->nextNode;
+		deleteNodeFromList(directory->subDirectories,nextDirNode);
+		nextDirNode = nodeTemp;
 	}
 }
 
@@ -516,7 +553,7 @@ int writeDirectoryDB() {
 int readDirectoryDB() {
 	FILE * fp;
 
-	mp3rootDirectory = newDirectory(NULL,NULL,0);
+	if(!mp3rootDirectory) mp3rootDirectory = newDirectory(NULL,NULL,0);
 	while(!(fp=fopen(directorydb,"r")) && errno==EINTR);
 	if(!fp) return -1;
 

@@ -104,6 +104,12 @@ void freeSong(Song * song) {
 	free(song);
 }
 
+void freeJustSong(Song * song) {
+	free(song->utf8file);
+	if(song->tag) freeMpdTag(song->tag);
+	free(song);
+}
+
 SongList * newSongList() {
 	return makeList((ListFreeDataFunc *)freeSong);
 }
@@ -160,19 +166,58 @@ void writeSongInfoFromList(FILE * fp, SongList * list) {
 	myfprintf(fp,"%s\n",SONG_END);
 }
 
+void insertSongIntoList(SongList * list, ListNode ** nextSongNode, char * key,
+		Song * song)
+{
+	ListNode * nodeTemp;
+	int cmpRet= 0;
+
+	while(*nextSongNode && (cmpRet = strcmp(key,(*nextSongNode)->key)) > 0) 
+	{
+		nodeTemp = (*nextSongNode)->nextNode;
+		deleteNodeFromList(list,*nextSongNode);
+		*nextSongNode = nodeTemp;
+	}
+
+	if(!(*nextSongNode)) {
+		insertInList(list,key,(void *)song);
+		addSongToTables(song);
+	}
+	else if(cmpRet == 0) {
+		Song * tempSong = (Song *)((*nextSongNode)->data);
+		if(tempSong->mtime != song->mtime) {
+			removeASongFromTables(tempSong);
+			freeMpdTag(tempSong->tag);
+			tempSong->tag = song->tag;
+			tempSong->mtime = song->mtime;
+			song->tag = NULL;
+			freeJustSong(song);
+			addSongToTables(tempSong);
+		}
+		*nextSongNode = (*nextSongNode)->nextNode;
+	}
+	else {
+		addSongToTables(song);
+		insertInListBeforeNode(list,*nextSongNode,key,(void *)song);
+	}
+}
+
 void readSongInfoIntoList(FILE * fp, SongList * list) {
 	char buffer[MAXPATHLEN+1024];
 	int bufferSize = MAXPATHLEN+1024;
 	Song * song = NULL;
 	char * key = NULL;
+	ListNode * nextSongNode = list->firstNode;
+	ListNode * nodeTemp;
 
 	while(myFgets(buffer,bufferSize,fp) && 0!=strcmp(SONG_END,buffer)) {
 		if(0==strncmp(SONG_KEY,buffer,strlen(SONG_KEY))) {
 			if(song) {
-				insertInList(list,key,(void *)song);
-				addSongToTables(song);
+				insertSongIntoList(list,&nextSongNode,key,song);
+				song = NULL;
 				free(key);
 			}
+
 			key = strdup(&(buffer[strlen(SONG_KEY)]));
 			song = newNullSong();
 		}
@@ -213,9 +258,15 @@ void readSongInfoIntoList(FILE * fp, SongList * list) {
 	}
 	
 	if(song) {
-		insertInList(list,key,(void *)song);
-		addSongToTables(song);
+		insertSongIntoList(list,&nextSongNode,key,song);
+		song = NULL;
 		free(key);
+	}
+
+	while(nextSongNode) {
+		nodeTemp = nextSongNode->nextNode;
+		deleteNodeFromList(list,nextSongNode);
+		nextSongNode = nodeTemp;
 	}
 }
 
