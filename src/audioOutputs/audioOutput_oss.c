@@ -489,13 +489,15 @@ static int oss_openDevice(AudioOutput * audioOutput)
 	return ret;
 }
 
+static void oss_close(OssData * od) {
+	if(od->fd >= 0) close(od->fd);
+	od->fd = -1;
+}
+
 static void oss_closeDevice(AudioOutput * audioOutput) {
 	OssData * od = audioOutput->data;
 
-	if(od->fd >= 0) {
-		close(od->fd);
-		od->fd = -1;
-	}
+	oss_close(od);
 
 	audioOutput->open = 0;
 }
@@ -505,7 +507,7 @@ static void oss_dropBufferedAudio(AudioOutput * audioOutput) {
 
 	if(od->fd >= 0) {
 		ioctl(od->fd, SNDCTL_DSP_RESET, 0);
-		oss_closeDevice(audioOutput);
+		oss_close(od);
 	}
 
 	/*oss_open(audioOutput);*/
@@ -516,6 +518,9 @@ static int oss_playAudio(AudioOutput * audioOutput, char * playChunk,
 {
 	OssData * od = audioOutput->data;
 	int ret;
+
+	/* reopen the device since it was closed by dropBufferedAudio */
+	if(od->fd < 0) oss_open(audioOutput);
 
 	while (size > 0) {
 		ret = write(od->fd, playChunk, size);
