@@ -63,7 +63,8 @@ char * convStrDup(char * string) {
 
 	if(!char_conv_to) return NULL;
 
-	ret = strdup("");
+	ret = malloc(1);
+	ret[0] = '\0';
 
 	while(inleft) {
 		bufferPtr = buffer;
@@ -76,7 +77,7 @@ char * convStrDup(char * string) {
 		}
 
 		ret = realloc(ret,retlen+BUFFER_SIZE-outleft+1);
-		memcpy(&(ret[retlen]),buffer,BUFFER_SIZE-outleft);
+		memcpy(ret+retlen,buffer,BUFFER_SIZE-outleft);
 		retlen+=BUFFER_SIZE-outleft;
 		ret[retlen] = '\0';
 	}
