@@ -403,6 +403,8 @@ InputPlugin mp4Plugin =
 {
         "mp4",
         NULL,
+	NULL,
+	NULL,
         mp4_decode,
         mp4TagDup,
         INPUT_PLUGIN_STREAM_FILE,
@@ -417,6 +419,8 @@ InputPlugin mp4Plugin =
         NULL,
         NULL,
         NULL,
+	NULL,
+	NULL,
         NULL,
         0,
         NULL,

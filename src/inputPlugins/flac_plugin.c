@@ -555,6 +555,8 @@ InputPlugin flacPlugin =
 {
         "flac",
         NULL,
+	NULL,
+	NULL,
         flac_decode,
         flacTagDup,
         INPUT_PLUGIN_STREAM_FILE,
@@ -570,6 +572,8 @@ InputPlugin flacPlugin =
         NULL,
         NULL,
         NULL,
+	NULL,
+	NULL,
         0,
         NULL,
         NULL,

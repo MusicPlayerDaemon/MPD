@@ -40,8 +40,9 @@ AC_ARG_ENABLE(flac,[  --disable-flac    disable flac support],,enable_flac=yes)
 AC_ARG_ENABLE(mp3,[  --disable-mp3     disable mp3 support],,enable_mp3=yes)
 AC_ARG_ENABLE(aac,[  --disable-aac     disable AAC support],,enable_aac=yes)
 AC_ARG_ENABLE(audiofile,[  --disable-audiofile disable audiofile support, disables wave support],,enable_audiofile=yes)
-AC_ARG_ENABLE(mpd_mad,[  --enable-mpd-mad     use mpd libmad],use_mpd_mad=yes,)
+AC_ARG_ENABLE(mod,[  --disable-mod     disable MOD support],,enable_mod=yes)
 AC_ARG_ENABLE(id3,[  --disable-id3     disable id3 support],,enable_id3=yes)
+AC_ARG_ENABLE(mpd_mad,[  --enable-mpd-mad     use mpd libmad],use_mpd_mad=yes,)
 AC_ARG_ENABLE(mpd_id3tag,[  --enable-mpd-id3tag    use mpd libid3tag],use_mpd_id3tag=yes,)
 
 AC_ARG_WITH(iconv,[  --with-iconv=PFX   Prefix where iconv is installed (optional)], iconv_prefix="$withval", iconv_prefix="")
@@ -473,6 +474,14 @@ if test x$enable_audiofile = xyes; then
 	AC_DEFINE(HAVE_AUDIOFILE,1,[Define for audiofile support])
 fi
 
+if test x$enable_mod = xyes; then
+	AM_PATH_LIBMIKMOD(3.1.7, MPD_CFLAGS="$MPD_CFLAGS $LIBMIKMOD_CFLAGS"
+		MPD_LIBS="$MPD_LIBS $LIBMIKMOD_LIBS", enable_mod=no)
+	if test x$enable_mod = xyes; then
+		AC_DEFINE(HAVE_MIKMOD, 1, [Define for mikmod support])
+	fi
+fi
+
 AC_OUTPUT(src/mp4ff/Makefile doc/Makefile src/Makefile Makefile )
 
 echo ""
@@ -563,6 +572,12 @@ if test x$enable_aac = xyes; then
 	echo "MP4/AAC support ...............enabled"
 else
 	echo "MP4/AAC support ...............disabled"
+fi
+
+if test x$enable_mod = xyes; then
+	echo "MOD support ...................enabled"
+else
+	echo "MOD support ...................disabled"
 fi
 
 echo ""

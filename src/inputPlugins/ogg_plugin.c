@@ -335,6 +335,8 @@ char * oggMimeTypes[] = {"application/ogg", NULL};
 InputPlugin oggPlugin =
 {
         "ogg",
+	NULL,
+	NULL,
         ogg_decode,
         NULL,
         oggTagDup,
@@ -347,6 +349,8 @@ InputPlugin oggPlugin =
 
 InputPlugin oggPlugin = 
 {
+	NULL,
+	NULL,
 	NULL,
         NULL,
         NULL,

@@ -415,6 +415,8 @@ InputPlugin aacPlugin =
 {
         "aac",
         NULL,
+	NULL,
+	NULL,
         aac_decode,
         aacTagDup,
         INPUT_PLUGIN_STREAM_FILE,
@@ -430,6 +432,8 @@ InputPlugin aacPlugin =
         NULL,
         NULL,
         NULL,
+	NULL,
+	NULL,
         0,
         NULL,
         NULL,

@@ -10,6 +10,10 @@
 #define INPUT_PLUGIN_STREAM_FILE	0x01
 #define INPUT_PLUGIN_STREAM_URL		0x02
 
+typedef int (* InputPlugin_initFunc) ();
+
+typedef void (* InputPlugin_finishFunc) ();
+
 typedef int (* InputPlugin_streamDecodeFunc) (OutputBuffer *, DecoderControl *,
 		InputStream *);
 
@@ -21,6 +25,8 @@ typedef MpdTag * (* InputPlugin_tagDupFunc) (char * file);
 
 typedef struct _InputPlugin {
 	char * name;
+	InputPlugin_initFunc initFunc;
+	InputPlugin_finishFunc finishFunc;
 	InputPlugin_streamDecodeFunc streamDecodeFunc;
 	InputPlugin_fileDecodeFunc fileDecodeFunc;
 	InputPlugin_tagDupFunc tagDupFunc;

@@ -3,7 +3,8 @@ SUBDIRS = $(ID3_SUBDIR) $(MAD_SUBDIR) $(MP4FF_SUBDIR)
 
 mpd_inputPlugins = inputPlugins/mp3_plugin.c inputPlugins/ogg_plugin.c \
 	inputPlugins/flac_plugin.c inputPlugins/audiofile_plugin.c \
-	inputPlugins/mp4_plugin.c inputPlugins/aac_plugin.c
+	inputPlugins/mp4_plugin.c inputPlugins/aac_plugin.c \
+	inputPlugins/mod_plugin.c
 
 mpd_headers = buffer2array.h interface.h command.h playlist.h ls.h \
 	song.h list.h directory.h tables.h utils.h path.h \

@@ -11,10 +11,13 @@ void loadInputPlugin(InputPlugin * inputPlugin) {
 	if(!inputPlugin) return;
 	if(!inputPlugin->name) return;
 
+	if(inputPlugin->initFunc && inputPlugin->initFunc() < 0) return;
+
 	insertInList(inputPlugin_list, inputPlugin->name, (void *)inputPlugin);
 }
 
 void unloadInputPlugin(InputPlugin * inputPlugin) {
+	if(inputPlugin->finishFunc) inputPlugin->finishFunc();
 	deleteFromList(inputPlugin_list, inputPlugin->name);
 }
 
@@ -73,6 +76,7 @@ extern InputPlugin flacPlugin;
 extern InputPlugin audiofilePlugin;
 extern InputPlugin mp4Plugin;
 extern InputPlugin aacPlugin;
+extern InputPlugin modPlugin;
 
 void initInputPlugins() {
 	inputPlugin_list = makeList(NULL);
@@ -83,7 +87,7 @@ void initInputPlugins() {
 	loadInputPlugin(&flacPlugin);
 	loadInputPlugin(&audiofilePlugin);
 	loadInputPlugin(&mp4Plugin);
-	loadInputPlugin(&aacPlugin);
+	loadInputPlugin(&modPlugin);
 }
 
 void finishInputPlugins() {
