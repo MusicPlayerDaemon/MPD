@@ -131,8 +131,10 @@ if test x$enable_iconv = xyes; then
 
 	oldcflags=$CFLAGS
 	oldlibs=$LIBS
+	oldcppflags=$CPPFLAGS
 	CFLAGS="$CFLAGS $MPD_CFLAGS $ICONV_CFLAGS"
 	LIBS="$LIBS $MPD_LIBS $ICONV_LIBS"
+	CPPFLAGS=$CFLAGS
 	AC_CHECK_HEADER(iconv.h,MPD_CFLAGS="$MPD_CFLAGS $ICONV_CFLAGS",enable_iconv=no)
 	if test x$enable_iconv = xyes; then
 		AC_CHECK_LIB(iconv,iconv_open,MPD_LIBS="$MPD_LIBS $ICONV_LIBS",)
@@ -140,6 +142,7 @@ if test x$enable_iconv = xyes; then
 	fi
 	CFLAGS=$oldcflags
 	LIBS=$oldlibs
+	CPPFLAGS=$oldcppflags
 fi
 
 ID3_SUBDIR=""
@@ -170,14 +173,17 @@ if test x$enable_id3 = xyes; then
 
 		oldcflags=$CFLAGS
 		oldlibs=$LIBS
+		oldcppflags=$CPPFLAGS
 		CFLAGS="$CFLAGS $MPD_CFLAGS $ID3TAG_CFLAGS"
 		LIBS="$LIBS $MPD_LIBS $ID3TAG_LIBS"
+		CPPFLAGS=$CFLAGS
 		AC_CHECK_LIB(id3tag,id3_file_open,[ID3_LIB="$ID3TAG_LIBS";
      			MPD_CFLAGS="$MPD_CFLAGS $ID3TAG_CFLAGS";
 			use_libid3tag=yes],
 			[use_libid3tag=no;use_mpd_id3tag=yes])
 		CFLAGS=$oldcflags
 		LIBS=$oldlibs
+		CPPFLAGS=$oldcppflags
 	fi
 	if test x$use_mpd_id3tag = xyes; then
 		AC_DEFINE(USE_MPD_ID3TAG,1,[Define to use mpd libid3tag])
@@ -214,13 +220,16 @@ if test x$enable_mp3 = xyes; then
 
 		oldcflags=$CFLAGS
 		oldlibs=$LIBS
+		oldcppflags=$CPPFLAGS
 		CFLAGS="$CFLAGS $MPD_CFLAGS $MAD_CFLAGS"
 		LIBS="$LIBS $MPD_LIBS $MAD_LIBS"
+		CPPFLAGS=$CFLAGS
 		AC_CHECK_LIB(mad,mad_stream_init,[MAD_LIB="$MAD_LIBS";
 			MPD_CFLAGS="$MPD_CFLAGS $MAD_CFLAGS";use_libmad=yes],
      			[use_libmad=no;use_mpd_mad=yes])
 		CFLAGS=$oldcflags
 		LIBS=$oldlibs
+		CPPFLAGS=$oldcppflags
 	fi
 	if test x$use_mpd_mad = xyes; then
 		AC_DEFINE(USE_MPD_MAD,1,[Define to use mpd libmad])
@@ -254,8 +263,10 @@ if test x$enable_aac = xyes; then
 
 	oldcflags=$CFLAGS
 	oldlibs=$LIBS
+	oldcppflags=$CPPFLAGS
 	CFLAGS="$CFLAGS $MPD_CFLAGS $FAAD_CFLAGS -I."
 	LIBS="$LIBS $MPD_LIBS $FAAD_LIBS"
+	CPPFLAGS=$CFLAGS
 	AC_CHECK_HEADER(faad.h,,enable_aac=no)
 	if test x$enable_aac = xyes; then
 		AC_CHECK_DECL(faacDecInit2,,enable_aac=no,[#include <faad.h>])
@@ -271,6 +282,7 @@ if test x$enable_aac = xyes; then
 	fi
 	CFLAGS=$oldcflags
 	LIBS=$oldlibs
+	CPPFLAGS=$oldcppflags
 fi
 
 if test x$enable_ogg = xyes; then
