@@ -49,6 +49,8 @@ struct _InputStream {
         char * metaTitle;
 };
 
+void initInputStream();
+
 int isUrlSaneForInputStream(char * url);
 
 /* if an error occurs for these 3 functions, then -1 is returned and errno

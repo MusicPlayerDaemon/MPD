@@ -60,6 +60,9 @@ typedef struct _InputStreemHTTPData {
         int icyMetaint;
 	int prebuffer;
 	int icyOffset;
+	char * proxyHost;
+	int proxyPort;
+	char * proxyAuth;
 } InputStreamHTTPData;
 
 void inputStream_initHttp() {
@@ -114,7 +117,21 @@ void inputStream_initHttp() {
 static InputStreamHTTPData * newInputStreamHTTPData() {
         InputStreamHTTPData * ret = malloc(sizeof(InputStreamHTTPData));
 
-        ret->host = NULL;
+	if(getConf()[CONF_HTTP_PROXY_HOST]) {
+		ret->proxyHost = getConf()[CONF_HTTP_PROXY_HOST];
+		DEBUG(__FILE__ ": Proxy host %s\n", ret->proxyHost);
+		ret->proxyPort = atoi(getConf()[CONF_HTTP_PROXY_PORT]);
+		DEBUG(__FILE__ ": Proxy port %i\n", ret->proxyPort);
+		ret->proxyAuth = /*proxyAuthString(
+				getConf()[CONF_HTTP_PROXY_USER],
+				getConf()[CONF_HTTP_PROXY_PASSWORD])*/ NULL;
+	}
+        else {
+		ret->proxyHost = NULL;
+		ret->proxyAuth = NULL;
+	}
+
+	ret->host = NULL;
         ret->path = NULL;
         ret->port = 80;
         ret->connState = HTTP_CONN_STATE_CLOSED;
@@ -129,6 +146,7 @@ static InputStreamHTTPData * newInputStreamHTTPData() {
 static void freeInputStreamHTTPData(InputStreamHTTPData * data) {
         if(data->host) free(data->host);
         if(data->path) free(data->path);
+	if(data->proxyAuth) free(data->proxyAuth);
 
         free(data);
 }
@@ -170,7 +188,8 @@ static int parseUrl(InputStreamHTTPData * data, char * url) {
         }
 
         /* fetch the path */
-        data->path = strdup(slash ? slash : "/");
+	if(data->proxyHost) data->path = strdup(url);
+        else data->path = strdup(slash ? slash : "/");
 
         return 0;
 }
@@ -183,17 +202,29 @@ static int initHTTPConnection(InputStream * inStream) {
         InputStreamHTTPData * data = (InputStreamHTTPData *)inStream->data;
         int flags;
         int ret;
+	char * connHost;
+	int connPort;
 #ifdef HAVE_IPV6
         struct sockaddr_in6 sin6;
 #endif
 
-        if(!(he = gethostbyname(data->host))) {
+	if(data->proxyHost) {
+		connHost = data->proxyHost;
+		connPort = data->proxyPort;
+	}
+	else {
+		connHost = data->host;
+		connPort = data->port;
+	}
+
+        if(!(he = gethostbyname(connHost))) {
+		DEBUG(__FILE__ ": failure to lookup host \"%s\"\n",connHost);
                 return -1;
         }
 
         memset(&sin,0,sizeof(struct sockaddr_in));
         sin.sin_family = AF_INET;
-        sin.sin_port = htons(data->port);
+        sin.sin_port = htons(connPort);
 #ifdef HAVE_IPV6
         memset(&sin6,0,sizeof(struct sockaddr_in6));
         sin6.sin6_family = AF_INET6;
@@ -231,6 +262,7 @@ static int initHTTPConnection(InputStream * inStream) {
 
         ret = connect(data->sock,dest,destlen);
         if(ret < 0 && errno!=EINPROGRESS) {
+		DEBUG(__FILE__ ": unable to connect: %s\n", strerror(errno));
                 close(data->sock);
                 return -1;
         }
@@ -265,6 +297,7 @@ static int finishHTTPInit(InputStream * inStream) {
         if(ret == 0 || (ret < 0 && errno==EINTR))  return 0;
 
         if(ret < 0) {
+		DEBUG(__FILE__ ": problem select'ing: %s\n",strerror(errno));
                 close(data->sock);
                 data->connState = HTTP_CONN_STATE_CLOSED;
                 return -1;
@@ -279,15 +312,15 @@ static int finishHTTPInit(InputStream * inStream) {
 
         memset(request, 0, 2049);
 	/* deal with ICY metadata later, for now its fucking up stuff! */
-        snprintf(request, 2048, "GET %s HTTP/1.1\r\n"
+        snprintf(request, 2048, "GET %s HTTP/1.0\r\n"
                              "Host: %s\r\n"
-                             "Connection: close\r\n"
+                             /*"Connection: close\r\n"*/
                              "User-Agent: %s/%s\r\n"
-                             "Range: bytes=%ld-\r\n"
+                             /*"Range: bytes=%ld-\r\n"*/
                              "Icy-Metadata:1\r\n"
                              "\r\n",
-                             data->path, data->host, "httpTest", "0.0.0",
-                             inStream->offset);
+                             data->path, data->host, "httpTest", "0.0.0"/*,
+                             inStream->offset*/);
 
         ret = write(data->sock, request, strlen(request));
         if(ret!=strlen(request)) {

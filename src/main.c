@@ -34,6 +34,7 @@
 #include "permission.h"
 #include "replayGain.h"
 #include "inputPlugin.h"
+#include "inputStream.h"
 #include "../config.h"
 
 #include <stdio.h>
@@ -420,9 +421,6 @@ int main(int argc, char * argv[]) {
 
         establishListen(&options);
 
-        /*
-         * lose privileges as early as possible
-         */
         changeToUser(&options);
 
         openLogFiles(&options, &out, &err);
@@ -443,6 +441,7 @@ int main(int argc, char * argv[]) {
         initPlayerData();
         initVolume();
         initInterfaces();
+	initInputStream();
 
         daemonize(&options);
 
