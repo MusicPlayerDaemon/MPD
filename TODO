@@ -19,6 +19,13 @@ common function and abstrct dealing with DecoderControl * and put
 cycleLogFiles in there, so we cycleLogFiles while decoding, not just when 
 decoding has stopped.
 
-5) crosslink "list" stuff, for example, artists are crosslinked to alubms and 
+
+Post-1.0
+--------
+1) crosslink "list" stuff, for example, artists are crosslinked to alubms and 
 vice versa, this way you can do list album artists or list artist albums, this 
 will make life easier when we add genre and other metadata
+
+2) rewrite linked list impelmentation to be more flexible
+	a) remove "key" stuff
+	b) allow assigning a compare function for a list
