@@ -229,7 +229,8 @@ int interfaceReadInput(Interface * interface) {
 			argArrayLength = buffer2array(interface->buffer,&argArray);
 
 			if(interface->commandList) {
-				if(strcmp(argArray[0],INTERFACE_LIST_MODE_END)==0) {
+				if(argArrayLength==0);
+				else if(strcmp(argArray[0],INTERFACE_LIST_MODE_END)==0) {
 					ListNode * node = interface->commandList->firstNode;
 					ret = 0;
 
@@ -273,14 +274,21 @@ int interfaceReadInput(Interface * interface) {
 				}
 			}
 			else {
-				if(strcmp(argArray[0],INTERFACE_LIST_MODE_BEGIN)==0) {
+				if(argArrayLength &&
+						strcmp(argArray[0],
+						INTERFACE_LIST_MODE_BEGIN)==0) 
+				{
 					interface->commandList = makeList(free);
 					interface->commandListSize = 
 						sizeof(List);
 					ret = 1;
 				}
 				else {
-					if(strcmp(argArray[0],INTERFACE_LIST_MODE_END)==0) {
+					if(argArrayLength==0) ret = 0;
+					else if(strcmp(argArray[0],
+							INTERFACE_LIST_MODE_END)
+							==0) 
+					{
 						myfprintf(interface->fp,"%s not in command list mode\n",COMMAND_RESPOND_ERROR);
 						ret = -1;
 					}

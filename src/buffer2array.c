@@ -61,6 +61,12 @@ int buffer2array(char * origBuffer, char *** array) {
 	}
 	markArray[bufferLength] = '\0';
 
+	if(!count) {
+		free(buffer);
+		free(markArray);
+		return count;
+	}
+
 	beginArray = malloc(sizeof(int)*count);
 	(*array) = malloc(sizeof(char *)*count);
 
@@ -106,6 +112,8 @@ int buffer2array(char * origBuffer, char *** array) {
 
 void freeArgArray(char ** array, int argArrayLength) {
 	int i;
+
+	if(argArrayLength==0) return;
 
 	for(i=0;i<argArrayLength;i++) {
 		free(array[i]);
