@@ -106,6 +106,9 @@ static int audioOutputAo_initDriver(AudioOutput * audioOutput,
 		exit(EXIT_FAILURE);
 	}
 
+	DEBUG("using ao driver \"%s\" for \"%s\"\n", ai->short_name, 
+			audioOutput->name); 
+
 	blockParam = getBlockParam(param, "options");
 
 	if(blockParam) {
