@@ -42,6 +42,8 @@
 
 *) use alsa aclocal/m4 stuff
 
+*) choose id3v2 over id3v1 tags when both are present
+
 0.13
 ----
 *) support for dynamically loading plugins
