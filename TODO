@@ -6,9 +6,6 @@
 	e) abitility to disable resampling and audio format conversion
 
 2) non-blocking (for other clients) update
-	j) when reading new directory db, we should block some signals when 
-		manipulating the directorydb, so we don't receive a signal to 
-		quit in the middle of an update
 	k) when bg-update, have parent print out new old stuff to log on 
 		reading db, not the child
 	n) mpd command for rereading db
@@ -17,14 +14,12 @@
 		and should be reread by parent process
 	p) set error: in status when an error occurs during update
 
-3) have children close all logging stuff, and redirect stdout and stderr to
-/dev/null, and set error bits in the shared log for the parent process
-to check when it receives a SIGUSR1, and print logs and then reset values of
-error bits. (don't redirect children's stdout and stderr to /dev/null if mpd is
-run with --no-daemon)
+3) cleanup main()
 
-4) cleanup main()
-
-5) crosslink "list" stuff, for example, artists are crosslinked to alubms and 
+4) crosslink "list" stuff, for example, artists are crosslinked to alubms and 
 vice versa, this way you can do list album artists or list artist albums, this 
 will make life easier when we add genre and other metadata
+
+5) when writing combined interface for all decodes to use, be sure to add a 
+common function and abstrct dealing with DecoderControl * and put
+cycleLogFiles in there, so we cycleLogFiles while decoding, not just when decoding has stopped.

@@ -174,6 +174,10 @@ void decodeSeek(PlayerControl * pc, AudioFormat * af, DecoderControl * dc,
 }
 
 #define processDecodeInput() \
+        if(pc->cycleLogFiles) { \
+                myfprintfCloseAndOpenLogFile(); \
+                pc->cycleLogFiles = 0; \
+        } \
 	if(pc->lockQueue) { \
 		pc->queueLockState = PLAYER_QUEUE_LOCKED; \
 		pc->lockQueue = 0; \
@@ -277,6 +281,10 @@ int decoderInit(PlayerControl * pc, Buffer * cb, AudioFormat *af,
 				dc->stop = 0;
 			}
 			else if(dc->seek) dc->start = 1;
+                        if(dc->cycleLogFiles) {
+                                myfprintfCloseAndOpenLogFile();
+                                dc->cycleLogFiles = 0;
+                        }
 			else my_usleep(10000);
 		}
 

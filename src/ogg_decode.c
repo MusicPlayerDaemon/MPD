@@ -116,6 +116,7 @@ int ogg_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc)
 				}
 				if(dc->stop) break;
 				else if(dc->seek) continue;
+        
 				memcpy(cb->chunks+cb->end*CHUNK_SIZE,
 						chunk,chunkpos);
 				cb->chunkSize[cb->end] = chunkpos;

@@ -139,6 +139,10 @@ int playerInit() {
 				pc->queueLockState = PLAYER_QUEUE_UNLOCKED;
 				pc->unlockQueue = 0;
 			}
+                        else if(pc->cycleLogFiles) {
+                                myfprintfCloseAndOpenLogFile();
+                                pc->cycleLogFiles = 0;
+                        }
 			else my_usleep(10000);
 		}
 
@@ -474,4 +478,13 @@ int getPlayerChannels() {
 
 	return pc->channels;
 }
+
+void playerCycleLogFiles() {
+	PlayerControl * pc = &(getPlayerData()->playerControl);
+	DecoderControl * dc = &(getPlayerData()->decoderControl);
+
+	pc->cycleLogFiles = 1;
+	dc->cycleLogFiles = 1;
+}
+
 /* vim:set shiftwidth=4 tabstop=8 expandtab: */

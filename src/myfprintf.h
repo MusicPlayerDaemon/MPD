@@ -23,9 +23,12 @@
 
 #include <stdio.h>
 
-void myfprintfStdLogMode(FILE * out, FILE * err);
+void myfprintfStdLogMode(FILE * out, FILE * err, char * outFilename,
+                char * errFilename);
 
 void myfprintf(FILE * fp, char * format, ... );
+
+int myfprintfCloseAndOpenLogFile();
 
 #endif
 /* vim:set shiftwidth=4 tabstop=8 expandtab: */

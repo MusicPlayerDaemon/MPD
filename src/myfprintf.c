@@ -18,6 +18,8 @@
 
 #include "myfprintf.h"
 #include "interface.h"
+#include "path.h"
+#include "log.h"
 
 #include <stdarg.h>
 #include <sys/param.h>
@@ -32,6 +34,8 @@
 int myfprintf_stdLogMode = 0;
 FILE * myfprintf_out;
 FILE * myfprintf_err;
+char * myfprintf_outFilename;
+char * myfprintf_errFilename;
 
 void blockingWrite(int fd, char * string) {
 	int len = strlen(string);
@@ -48,10 +52,14 @@ void blockingWrite(int fd, char * string) {
 	}
 }
 
-void myfprintfStdLogMode(FILE * out, FILE * err) {
+void myfprintfStdLogMode(FILE * out, FILE * err, char * outFilename,
+                char * errFilename) 
+{
 	myfprintf_stdLogMode = 1;
 	myfprintf_out = out;
 	myfprintf_err = err;
+        myfprintf_outFilename = prependCwdToPathDup(outFilename);
+        myfprintf_errFilename = prependCwdToPathDup(errFilename);
 }
 
 void myfprintf(FILE * fp, char * format, ... ) {
@@ -84,5 +92,30 @@ void myfprintf(FILE * fp, char * format, ... ) {
 	}
 
 	va_end(arglist);
+}
+
+int myfprintfCloseAndOpenLogFile() {
+        if(myfprintf_stdLogMode) {
+                while(fclose(myfprintf_out)<0 && errno==EINTR);
+                while(fclose(myfprintf_err)<0 && errno==EINTR);
+                while((myfprintf_out = fopen(myfprintf_outFilename,"a+"))==NULL
+                                && errno==EINTR);
+                if(!myfprintf_out) {
+                        ERROR("error re-opening log file: %s\n",
+                                myfprintf_out);
+                        return -1;
+                }
+                while((myfprintf_err = fopen(myfprintf_errFilename,"a+"))==NULL
+                                && errno==EINTR);
+                if(!myfprintf_out) {
+                        ERROR("error re-opening log file: %s\n",
+                                myfprintf_out);
+                        return -1;
+                }
+                while(dup2(fileno(myfprintf_out),1)<0 && errno==EINTR);
+                while(dup2(fileno(myfprintf_err),2)<0 && errno==EINTR);
+        }
+
+        return 0;
 }
 /* vim:set shiftwidth=4 tabstop=8 expandtab: */

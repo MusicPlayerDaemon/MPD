@@ -23,6 +23,7 @@
 #include "command.h"
 #include "signal_check.h"
 #include "log.h"
+#include "player.h"
 
 #include <signal.h>
 #include <sys/types.h>
@@ -44,6 +45,8 @@ int handlePendingSignals() {
                         readDirectoryDB();
 		        incrPlaylistVersion();
                 }
+                if(myfprintfCloseAndOpenLogFile()<0) return COMMAND_RETURN_KILL;
+                playerCycleLogFiles();
 	}
 
 	return 0;

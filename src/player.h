@@ -77,6 +77,7 @@ typedef struct _PlayerControl {
 	volatile mpd_uint16 softwareVolume;
 	volatile double totalPlayTime;
 	volatile int decode_pid;
+	volatile mpd_sint8 cycleLogFiles;
 } PlayerControl;
 
 void clearPlayerPid();

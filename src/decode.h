@@ -41,12 +41,13 @@
 #define DECODE_ERROR_FILE	2
 
 typedef struct _DecoderControl {
-	mpd_sint8 state;
-	mpd_sint8 stop;
-	mpd_sint8 start;
-	mpd_uint16 error;
-	mpd_sint8 seek;
-	mpd_sint8 seekError;
+	volatile mpd_sint8 state;
+	volatile mpd_sint8 stop;
+	volatile mpd_sint8 start;
+	volatile mpd_uint16 error;
+	volatile mpd_sint8 seek;
+	volatile mpd_sint8 seekError;
+	volatile mpd_sint8 cycleLogFiles;
 	double seekWhere;
 	char file[MAXPATHLEN+1];
 } DecoderControl;

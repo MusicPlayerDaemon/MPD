@@ -356,31 +356,19 @@ int main(int argc, char * argv[]) {
                         exit(EXIT_FAILURE);
                 }
 
-                if(close(STDOUT_FILENO)) {
-                        fprintf(err,"problems closing stdout : %s\n",
-                                        strerror(errno));
-                        exit(EXIT_FAILURE);
-                }
-
-                if(close(STDERR_FILENO)) {
-                        fprintf(err,"problems closing stderr : %s\n",
-                                        strerror(errno));
-                        exit(EXIT_FAILURE);
-                }
-
                 if(dup2(fileno(out),STDOUT_FILENO)<0) {
-                        fprintf(err,"problems dup2 stdout : %s\n",
+                        myfprintf(err,"problems dup2 stdout : %s\n",
                                         strerror(errno));
                         exit(EXIT_FAILURE);
                 }
 
                 if(dup2(fileno(err),STDERR_FILENO)<0) {
-                        fprintf(err,"problems dup2 stderr : %s\n",
+                        myfprintf(err,"problems dup2 stderr : %s\n",
                                         strerror(errno));
                         exit(EXIT_FAILURE);
                 }
 
-                myfprintfStdLogMode(out,err);
+                myfprintfStdLogMode(out,err,options.logFile,options.errorFile);
 
                 fflush(NULL);
                 pid = fork();
