@@ -18,8 +18,10 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#include "../config.h"
+#include "audioOutput.h"
 
-#include "audio.h"
+#include <stdlib.h>
 
 #ifdef HAVE_OSS
 
@@ -30,7 +32,6 @@
 #include <string.h>
 #include <assert.h>
 #include <signal.h>
-#include <stdlib.h>
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -45,7 +46,7 @@
 # include <sys/soundcard.h>
 #endif /* !(defined(__OpenBSD__) || defined(__NetBSD__) */
 
-static typedef struct _OssData {
+typedef struct _OssData {
 	int fd;
 	char * device;
 } OssData;
@@ -65,20 +66,19 @@ static void freeOssData(OssData * od) {
 	free(od);
 }
 
-static void oss_initDriver(AudioOutput * audioOutput, ConfigParam * param) {
-	char * test;
+static int oss_initDriver(AudioOutput * audioOutput, ConfigParam * param) {
 	BlockParam * bp = getBlockParam(param, "device");
-	OssData * od = newOssData():
+	OssData * od = newOssData();
 	
 	audioOutput->data = od;
 
 	if(!bp) {
 		int fd;
 
-		if(0 <= (fd = fopen("/dev/sound/dsp", O_WRONLY | O_NONBLOCK))) {
+		if(0 <= (fd = open("/dev/sound/dsp", O_WRONLY | O_NONBLOCK))) {
 			od->device = strdup("/dev/sound/dsp");
 		}
-		else if(0 <= (fd = fopen("/dev/dsp", O_WRONLY | O_NONBLOCK))) {
+		else if(0 <= (fd = open("/dev/dsp", O_WRONLY | O_NONBLOCK))) {
 			od->device = strdup("/dev/dsp");
 		}
 		else {
@@ -92,12 +92,12 @@ static void oss_initDriver(AudioOutput * audioOutput, ConfigParam * param) {
 		close(od->fd);
 		od->fd = -1;
 
-		return;
+		return 0;
 	}
 
 	od->device = strdup(bp->value);
 
-	return;
+	return 0;
 }
 
 static void oss_finishDriver(AudioOutput * audioOutput) {
@@ -106,79 +106,71 @@ static void oss_finishDriver(AudioOutput * audioOutput) {
 	freeOssData(od);
 }
 
-static int oss_openDevice(AudioOutput * audioOutput,
-		AudioFormat * audioFormat) 
+static int oss_openDevice(AudioOutput * audioOutput, AudioFormat * audioFormat) 
 {
-	int i = AFMT_S16_LE, err = 0;
-	if (audio_device && !isCurrentAudioFormat(audioFormat)) 
-		closeAudioDevice();
-	if (audio_device!=0)
-		return 0;
+	OssData * od = audioOutput->data;
+#ifdef WORDS_BIGENDIAN
+	int i = AFMT_S16_BE;
+#else
+	int i = AFMT_S16_LE;
+#endif
 	
-	if (audioFormat)
-		copyAudioFormat(&audio_format,audioFormat);
+	if((od->fd = open(od->device, O_WRONLY)) < 0)
+		goto fail;
+	if(ioctl(od->fd, SNDCTL_DSP_SETFMT, &i))
+		goto fail;
+	if(ioctl(od->fd, SNDCTL_DSP_CHANNELS, &audioFormat->channels))
+		goto fail;
+	if(ioctl(od->fd, SNDCTL_DSP_SPEED, &audioFormat->sampleRate))
+		goto fail;
+	if(ioctl(od->fd, SNDCTL_DSP_SAMPLESIZE, &audioFormat->bits))
+		goto fail;
+	/*i = 1; if (ioctl(od->fd,SNDCTL_DSP_STEREO,&i)) err != 32; */
 
-	blockSignals();
-	audio_device = open("/dev/dsp", O_WRONLY);
-	
-	if (audio_device < 0) err |= 1;
-	
-	if (ioctl(audio_device,SNDCTL_DSP_SETFMT,&i))
-		err |= 2;
-	if (ioctl(audio_device,SNDCTL_DSP_CHANNELS, &audio_format.channels))
-		err |= 4;
-	if (ioctl(audio_device,SNDCTL_DSP_SPEED,&audio_format.sampleRate))
-		err |= 8;
-	if (ioctl(audio_device,SNDCTL_DSP_SAMPLESIZE,&audio_format.bits))
-		err |= 16;
-	/*i = 1; if (ioctl(audio_device,SNDCTL_DSP_STEREO,&i)) err != 32; */
-	
-	unblockSignals();
-	
-	if (err)
-		ERROR("Error opening /dev/dsp: 0x%x\n");
-	if (!audio_device)
-		return -1;
+	audioOutput->open = 1;
 
 	return 0;
+
+fail:
+	if(od->fd >= 0) close(od->fd);
+	audioOutput->open = 0;
+	ERROR("Error opening OSS device \"%s\": %s\n", od->device, 
+			strerror(errno));
+	return -1;
+}
+
+static void oss_closeDevice(AudioOutput * audioOutput) {
+	OssData * od = audioOutput->data;
+
+	if(od->fd >= 0) {
+		close(od->fd);
+		od->fd = -1;
+	}
+
+	audioOutput->open = 0;
 }
 
 static int oss_playAudio(AudioOutput * audioOutput, char * playChunk, 
 		int size) 
 {
-	int send;
+	OssData * od = audioOutput->data;
 	int ret;
 
-	if(audio_device==0) {
-		ERROR("trying to play w/o the audio device being open!\n");
-		return -1;
-	}
-	send = audio_write_size>size?size:audio_write_size;
 	while (size > 0) {
-		ret = write(audio_device,playChunk,send);
+		ret = write(od->fd, playChunk, size);
 		if(ret<0) {
-			audioError();
 			ERROR("closing audio device due to write error\n");
-			closeAudioDevice();
+			oss_closeDevice(audioOutput);
 			return -1;
 		}
-		playChunk+=ret;
-		size-=ret;
+		playChunk += ret;
+		size -= ret;
 	}
 
 	return 0;
 }
 
-static void oss_closeDevice(AudioOutput * audioOutput) {
-	if(audio_device) {
-		blockSignals();
-		close(audio_device);
-		audio_device = 0;
-		unblockSignals();
-	}
-}
-
-AudioOutput ossPlugin =
+AudioOutputPlugin ossPlugin =
 {
 	"oss",
 	oss_initDriver,
@@ -191,7 +183,7 @@ AudioOutput ossPlugin =
 
 #else /* HAVE OSS */
 
-AudioOutput ossPlugin =
+AudioOutputPlugin ossPlugin =
 {
 	NULL,
 	NULL,

@@ -29,7 +29,7 @@
 #include <sys/ioctl.h>
 #include <fcntl.h>
 #include <errno.h>
-#ifndef NO_OSS_MIXER
+#ifdef HAVE_OSS
 #include <sys/soundcard.h>
 #endif
 #ifdef HAVE_ALSA
@@ -45,7 +45,7 @@
 #define VOLUME_MIXER_ALSA_DEFAULT		"default"
 #define VOLUME_MIXER_ALSA_CONTROL_DEFAULT	"Master"
 
-#ifndef NO_OSS_MIXER
+#ifdef HAVE_OSS
 #define VOLUME_MIXER_TYPE_DEFAULT               VOLUME_MIXER_TYPE_OSS
 #define VOLUME_MIXER_DEVICE_DEFAULT             VOLUME_MIXER_OSS_DEFAULT
 #else
@@ -63,7 +63,7 @@ char * volume_mixerDevice = VOLUME_MIXER_DEVICE_DEFAULT;
 
 int volume_softwareSet = 100;
 
-#ifndef NO_OSS_MIXER
+#ifdef HAVE_OSS
 int volume_ossFd;
 int volume_ossControl = SOUND_MIXER_VOLUME;
 #endif
@@ -76,7 +76,7 @@ long volume_alsaMax;
 int volume_alsaSet = -1;
 #endif
 
-#ifndef NO_OSS_MIXER
+#ifdef HAVE_OSS
 int prepOssMixer(char * device) {
 	int devmask = 0;
         ConfigParam * param;
@@ -335,7 +335,7 @@ int prepMixer(char * device) {
 	case VOLUME_MIXER_TYPE_ALSA:
 		return prepAlsaMixer(device);
 #endif
-#ifndef NO_OSS_MIXER
+#ifdef HAVE_OSS
 	case VOLUME_MIXER_TYPE_OSS:
 		return prepOssMixer(device);
 #endif
@@ -351,7 +351,7 @@ void finishVolume() {
 		closeAlsaMixer();
 		break;
 #endif
-#ifndef NO_OSS_MIXER
+#ifndef HAVE_OSS
 	case VOLUME_MIXER_TYPE_OSS:
 		closeOssMixer();
 		break;
@@ -370,7 +370,7 @@ void initVolume() {
 			volume_mixerDevice = VOLUME_MIXER_ALSA_DEFAULT;
 		}
 #endif
-#ifndef NO_OSS_MIXER
+#ifndef HAVE_OSS
 		else if(strcmp(param->value, VOLUME_MIXER_OSS)==0) {
 			volume_mixerType = VOLUME_MIXER_TYPE_OSS;
 			volume_mixerDevice = VOLUME_MIXER_OSS_DEFAULT;
@@ -411,7 +411,7 @@ int getVolumeLevel() {
 	case VOLUME_MIXER_TYPE_ALSA:
 		return getAlsaVolumeLevel();
 #endif
-#ifndef NO_OSS_MIXER
+#ifndef HAVE_OSS
 	case VOLUME_MIXER_TYPE_OSS:
 		return getOssVolumeLevel();
 #endif
@@ -448,7 +448,7 @@ int changeVolumeLevel(FILE * fp, int change, int rel) {
 	case VOLUME_MIXER_TYPE_ALSA:
 		return changeAlsaVolumeLevel(fp,change,rel);
 #endif
-#ifndef NO_OSS_MIXER
+#ifndef HAVE_OSS
 	case VOLUME_MIXER_TYPE_OSS:
 		return changeOssVolumeLevel(fp,change,rel);
 #endif
