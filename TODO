@@ -1,9 +1,9 @@
-*) Optimize read() on cleints
-
-*) directory.c needs some serious cleanup
-
 0.12
 ----
+*) Optimize read() on cleints
+
+*) Add libshout && vorbis encoding support
+
 *) add command that only takes file's or url's (no directory's) and returns the songid of the added song
 
 *) allow add commands to specify position to be inserted
