@@ -240,7 +240,7 @@ void decodeStart(PlayerControl * pc, OutputBuffer * cb, DecoderControl * dc) {
 		        ret = mp3_decode(cb,dc,&inStream);
                         break;
                 }
-		/*else ret = DECODE_ERROR_UNKTYPE;*/
+		ret = DECODE_ERROR_UNKTYPE;
 #endif
         case DECODE_TYPE_FILE:
 #ifdef HAVE_MAD
