@@ -238,7 +238,7 @@ char * modSuffixes[] = {"amf",
 
 InputPlugin modPlugin = 
 {
-        "audiofile",
+        "mod",
         NULL,
 	mod_finishMikMod,
 	NULL,

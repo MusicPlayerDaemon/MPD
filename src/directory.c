@@ -151,11 +151,11 @@ void directory_sigChldHandler(int pid, int status) {
 		        {
                         case DIRECTORY_UPDATE_EXIT_UPDATE:
 			        directory_reReadDB = 1;
-			        DEBUG("direcotry_sigChldHandler: "
+			        DEBUG("directory_sigChldHandler: "
 					"updated db\n");
                         case DIRECTORY_UPDATE_EXIT_NOUPDATE:
-			        DEBUG("direcotry_sigChldHandler: "
-					"update exitted succesffully\n");
+			        DEBUG("directory_sigChldHandler: "
+					"update exited succesffully\n");
                                 break;
                         default:
                                 ERROR("error updating db\n");
