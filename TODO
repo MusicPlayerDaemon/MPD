@@ -1,3 +1,5 @@
+*) Automatic preamp of vorbis/replaygain-ed files by a user set amount (just like Foobar2000). 
+
 0.12
 ----
 *) Optimize read() on cleints
