@@ -43,6 +43,7 @@ AC_ARG_ENABLE(mp3,[  --disable-mp3     disable mp3 support],,enable_mp3=yes)
 AC_ARG_ENABLE(aac,[  --disable-aac     disable AAC support],,enable_aac=yes)
 AC_ARG_ENABLE(audiofile,[  --disable-audiofile disable audiofile support, disables wave support],,enable_audiofile=yes)
 AC_ARG_ENABLE(mod,[  --enable-mod     enable MOD support],enable_mod=yes,)
+AC_ARG_ENABLE(mpc,[  --disable-mpc     disable MPC support],,enable_mpc=yes)
 AC_ARG_ENABLE(id3,[  --disable-id3     disable id3 support],,enable_id3=yes)
 AC_ARG_ENABLE(mpd_mad,[  --enable-mpd-mad     use mpd libmad],use_mpd_mad=yes,)
 AC_ARG_ENABLE(mpd_id3tag,[  --enable-mpd-id3tag    use mpd libid3tag],use_mpd_id3tag=yes,)
@@ -257,6 +258,45 @@ if test x$enable_mp3 = xyes; then
 		AC_CONFIG_SUBDIRS(src/libmad)
 	fi
 	AC_DEFINE(HAVE_MAD,1,[Define to use libmad])
+fi
+
+if test x$enable_mpc = xyes; then
+  	if test "x$musepack_libraries" != "x" ; then
+  		MUSEPACK_LIBS="-L$musepack_libraries"
+  	elif test "x$musepack_prefix" != "x" ; then
+    		MUSEPACK_LIBS="-L$faad_prefix/lib"
+  	elif test "x$prefix" != "xNONE"; then
+    		MUSEPACK_LIBS="-L$libdir"
+  	fi
+
+ 	MUSEPACK_LIBS="$MUSEPACK_LIBS -lmusepack"
+
+  	if test "x$musepack_includes" != "x" ; then
+  		MUSEPACK_CFLAGS="-I$musepack_includes"
+  	elif test "x$musepack_prefix" != "x" ; then
+    		MUSEPACK_CFLAGS="-I$musepack_prefix/include"
+  	elif test "x$prefix" != "xNONE"; then
+    		MUSEPACK_CFLAGS="-I$includedir"
+  	fi
+
+	oldcflags=$CFLAGS
+	oldlibs=$LIBS
+	oldcppflags=$CPPFLAGS
+	CFLAGS="$CFLAGS $MPD_CFLAGS $MUSEPACK_CFLAGS -I."
+	LIBS="$LIBS $MPD_LIBS $MUSEPACK_LIBS"
+	CPPFLAGS=$CFLAGS
+	AC_CHECK_HEADER(musepack/musepack.h,,enable_mpc=no)
+	if test x$enable_mpc = xyes; then
+		AC_CHECK_LIB(musepack,main,[MPD_LIBS="$MPD_LIBS $MUSEPACK_LIBS";MPD_CFLAGS="$MPD_CFLAGS $MUSEPACK_CFLAGS";],enable_mpc=no)
+	fi
+	if test x$enable_mpc = xyes; then
+		AC_DEFINE(HAVE_MUSEPACK,1,[Define to use libmusepack for MPC decoding])
+	else
+		AC_MSG_WARN([musepack lib needed for MPC support -- disabling MPC support])
+	fi
+	CFLAGS=$oldcflags
+	LIBS=$oldlibs
+	CPPFLAGS=$oldcppflags
 fi
 
 MP4FF_SUBDIR=""
@@ -576,6 +616,12 @@ if test x$enable_aac = xyes; then
 	echo "MP4/AAC support ...............enabled"
 else
 	echo "MP4/AAC support ...............disabled"
+fi
+
+if test x$enable_mpc = xyes; then
+	echo "MPC support ...................enabled"
+else
+	echo "MPC support ...................disabled"
 fi
 
 if test x$enable_mod = xyes; then
