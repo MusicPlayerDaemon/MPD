@@ -348,7 +348,7 @@ static int initEncoder(ShoutData * sd) {
 		}
 	}
 	else {
-		if( 0 != vorbis_encode_setup_managed(&(sd->vi), 
+		if( 0 != vorbis_encode_init(&(sd->vi), 
 			sd->outAudioFormat.channels, 
 			sd->outAudioFormat.sampleRate, -1.0,
 			sd->bitrate*1000, -1.0) )
