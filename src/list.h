@@ -103,4 +103,3 @@ void clearList(List * list);
 void sortList(List * list);
 
 #endif
-/* vim:set shiftwidth=4 tabstop=8 expandtab: */

@@ -54,4 +54,3 @@ char * sanitizePathDup(char * path);
 char * prependCwdToPathDup(char * path);
 
 #endif
-/* vim:set shiftwidth=4 tabstop=8 expandtab: */

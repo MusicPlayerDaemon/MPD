@@ -37,4 +37,3 @@ int inputStream_fileAtEOF(InputStream * inStream);
 int inputStream_fileBuffer(InputStream * inStream);
 
 #endif
-/* vim:set shiftwidth=8 tabstop=8 expandtab: */

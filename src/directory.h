@@ -70,4 +70,3 @@ Song * getSongFromDB(char * file);
 time_t getDbModTime();
 
 #endif
-/* vim:set shiftwidth=4 tabstop=8 expandtab: */

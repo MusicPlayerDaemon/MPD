@@ -28,5 +28,3 @@ int signal_is_pending(int sig);
 void signal_clear(int sig);
 
 #endif /* SIGNAL_CHECK_H */
-
-/* vim:set shiftwidth=4 tabstop=8 expandtab: */

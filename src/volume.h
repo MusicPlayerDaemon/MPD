@@ -38,4 +38,3 @@ int getVolumeLevel();
 int changeVolumeLevel(FILE * fp, int change, int rel);
 
 #endif
-/* vim:set shiftwidth=4 tabstop=8 expandtab: */
