@@ -149,14 +149,14 @@ The default is 2048 kilobytes.
 .TP
 .B ao_driver <ao plug-in>
 This specifies the ao plug-in to use for audio output.  Typical values for
-Linux include "oss" and "alsa09".  The default value is "default".
+Linux include "oss" and "alsa".  The default value is "default".
 .TP
 .B ao_driver_options <ao plug-in options>
 This specifies the options to use for the selected ao_driver.  For oss, the
-only option available is "dsp".  For alsa09, the available options are:
+only option available is "dsp".  For alsa, the available options are:
 "dev", "buf_size", and "periods".  Options are assigned using "=" and ";" is
 used to separate options.  An example for oss: "dsp=/dev/dsp".  An example for
-alsa09: "dev=hw:0,0;buf_size=4096".  The default value is "".
+alsa: "dev=hw:0,0;buf_size=4096".  The default value is "".
 .TP
 .B audio_write_size <size in bytes>
 This specifies how many bytes mpd writes to the audio device at once. The
@@ -214,7 +214,7 @@ mixer_device            "/dev/mixer"
 .br
 #mixer_control          "PCM"
 .br
-# ao_driver is typically "oss" or "alsa09"
+# ao_driver is typically "oss" or "alsa"
 .br
 #ao_driver              "oss"
 .br
