@@ -1,7 +1,5 @@
 *) add songids
-	a) make hash space 4*max_playlist_size
-	b) deprecate playlistinfo, move, swap, delete, play, seek
-	c) add playlist, mvid, swapid, delid, playid, seekid
+	a) add playlistid, moveid, swapid, deleteid, playid, seekid
 
 *) put some sort of error reporting for streaming/inputStream!
 

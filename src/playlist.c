@@ -58,11 +58,15 @@
 
 #define PLAYLIST_BUFFER_SIZE	2*MAXPATHLEN
 
+#define PLAYLIST_HASH_MULT	4
+
 typedef struct _Playlist {
 	Song ** songs;
 	/* holds version a song was modified on */
 	mpd_uint32 * songMod;
 	int * order;
+	int * numToId;
+	int * idToNum;
 	int length;
 	int current;
 	int queued;
@@ -123,6 +127,7 @@ static void incrPlaylistCurrent() {
 
 void initPlaylist() {
 	char * test;
+	int i;
 
 	playlist.length = 0;
 	playlist.repeat = 0;
@@ -156,6 +161,9 @@ void initPlaylist() {
 	playlist.songs = malloc(sizeof(Song *)*playlist_max_length);
 	playlist.songMod = malloc(sizeof(mpd_uint32)*playlist_max_length);
 	playlist.order = malloc(sizeof(int)*playlist_max_length);
+	playlist.idToNum = malloc(sizeof(int)*playlist_max_length*
+					PLAYLIST_HASH_MULT);
+	playlist.numToId = malloc(sizeof(int)*playlist_max_length);
 
 	memset(playlist.songs,0,sizeof(char *)*playlist_max_length);
 
@@ -165,6 +173,22 @@ void initPlaylist() {
 		playlist_stateFile = getConf()[CONF_STATE_FILE];
 	}
 
+	for(i=0; i<playlist_max_length*PLAYLIST_HASH_MULT; i++) {
+		playlist.idToNum[i] = -1;
+	}
+}
+
+static int getNextId() {
+	static int cur = 0;
+
+	while(playlist.idToNum[cur] != -1) {
+		cur++;
+		if(cur >= playlist_max_length*PLAYLIST_HASH_MULT) {
+			cur = 0;
+		}
+	}
+
+	return cur;
 }
 
 void finishPlaylist() {
@@ -183,6 +207,10 @@ void finishPlaylist() {
 	playlist.songMod = NULL;
 	free(playlist.order);
 	playlist.order = NULL;
+	free(playlist.idToNum);
+	playlist.idToNum = NULL;
+	free(playlist.numToId);
+	playlist.numToId = NULL;
 }
 
 int clearPlaylist(FILE * fp) {
@@ -194,6 +222,7 @@ int clearPlaylist(FILE * fp) {
 		if(playlist.songs[i]->type == SONG_TYPE_URL) {
 			freeJustSong(playlist.songs[i]);
 		}
+		playlist.idToNum[playlist.numToId[i]] = -1;
 		playlist.songs[i] = NULL;
 	}
 	playlist.length = 0;
@@ -396,6 +425,7 @@ void printPlaylistSongInfo(FILE * fp, int song) {
 		printMpdTag(fp, tag);
 	}
 	myfprintf(fp, "Num: %i\n", song);
+	myfprintf(fp, "Id: %i\n", playlist.numToId[song]);
 }
 
 int playlistChanges(FILE * fp, mpd_uint32 version) {
@@ -434,13 +464,22 @@ int playlistInfo(FILE * fp, int song) {
 }
 
 void swapSongs(int song1, int song2) {
-	Song * temp;
+	Song * sTemp;
+	int iTemp;
 	
-	temp = playlist.songs[song1];
+	sTemp = playlist.songs[song1];
 	playlist.songs[song1] = playlist.songs[song2];
-	playlist.songs[song2] = temp;
+	playlist.songs[song2] = sTemp;
+
 	playlist.songMod[song1] = playlist.version;
 	playlist.songMod[song2] = playlist.version;
+
+	playlist.idToNum[playlist.numToId[song1]] = song2;
+	playlist.idToNum[playlist.numToId[song2]] = song1;
+
+	iTemp = playlist.numToId[song1];
+	playlist.numToId[song1] = playlist.numToId[song2];
+	playlist.numToId[song2] = iTemp;
 }
 
 void queueNextSongInPlaylist() {
@@ -559,6 +598,8 @@ int addSongToPlaylist(FILE * fp, Song * song) {
 	playlist.songs[playlist.length] = song;
 	playlist.songMod[playlist.length] = playlist.version;
 	playlist.order[playlist.length] = playlist.length;
+	playlist.numToId[playlist.length] = getNextId();
+	playlist.idToNum[playlist.numToId[playlist.length]] = playlist.length;
 	playlist.length++;
 
 	if(playlist.random) {
@@ -632,6 +673,13 @@ int swapSongsInPlaylist(FILE * fp, int song1, int song2) {
 	return 0;
 }
 
+#define moveSongFromTo(from, to) { \
+	playlist.idToNum[playlist.numToId[from]] = to; \
+	playlist.numToId[to] = playlist.numToId[from]; \
+	playlist.songs[to] = playlist.songs[from]; \
+	playlist.songMod[to] = playlist.version; \
+}
+
 int deleteFromPlaylist(FILE * fp, int song) {
 	int i;
 	int songOrder;
@@ -656,10 +704,11 @@ int deleteFromPlaylist(FILE * fp, int song) {
 		freeJustSong(playlist.songs[song]);
 	}
 
+	playlist.idToNum[playlist.numToId[song]] = -1;
+
 	/* delete song from songs array */
 	for(i=song;i<playlist.length-1;i++) {
-		playlist.songs[i] = playlist.songs[i+1];
-		playlist.songMod[i] = playlist.version;
+		moveSongFromTo(i+1, i);
 	}
 	/* now find it in the order array */
 	for(i=0;i<playlist.length-1;i++) {
@@ -909,6 +958,7 @@ int setPlaylistRepeatStatus(FILE * fp, int status) {
 int moveSongInPlaylist(FILE * fp, int from, int to) {
 	int i;
 	Song * tmpSong;
+	int tmpId;
 	int queuedSong = -1;
 	int currentSong = -1;
 
@@ -940,17 +990,18 @@ int moveSongInPlaylist(FILE * fp, int from, int to) {
 	}
 
 	tmpSong = playlist.songs[from];
+	tmpId = playlist.numToId[from];
 	/* move songs to one less in from->to */
 	for(i=from;i<to;i++) {
-		playlist.songs[i] = playlist.songs[i+1];
-		playlist.songMod[i] = playlist.version;
+		moveSongFromTo(i+1, i);
 	}
 	/* move songs to one more in to->from */
 	for(i=from;i>to;i--) {
-		playlist.songs[i] = playlist.songs[i-1];
-		playlist.songMod[i] = playlist.version;
+		moveSongFromTo(i-1, i);
 	}
 	/* put song at _to_ */
+	playlist.idToNum[playlist.numToId[tmpId]] = to;
+	playlist.numToId[to] = tmpId;
 	playlist.songs[to] = tmpSong;
 	playlist.songMod[to] = playlist.version;
 	/* now deal with order */
