@@ -30,8 +30,6 @@
 	*) command for displaying playlist contents
 	*) command for appending to playlist
 
-*) max http buffering configurable
-
 *) use getaddrinfo instead of gethostbyname (check libshout)
 
 Post-1.0
