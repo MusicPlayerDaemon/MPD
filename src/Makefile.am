@@ -14,6 +14,7 @@ mpd_inputPlugins = \
 mpd_headers = \
 	ack.h \
 	audio.h \
+	audioOutput.h \
 	buffer2array.h \
 	charConv.h \
 	command.h \
@@ -55,6 +56,8 @@ mpd_SOURCES = \
 	$(mpd_headers) \
 	$(mpd_inputPlugins) \
 	audio.c \
+	audioOutput.c \
+	audioOutput_ao.c \
 	buffer2array.c \
 	charConv.c \
 	command.c \

@@ -28,16 +28,30 @@ AudioOutput * newAudioOutput(char * name) {
 	if(findInList(audioOutputPluginList, name, &data)) {
 		AudioOutputPlugin * plugin = (AudioOutputPlugin *) data;
 		ret = malloc(sizeof(AudioOutput));
-		ret->initConfigFunc = plugin->initConfigFunc;
-		ret->finishConfigFunc = plugin->finishConfigFunc;
-		ret->initDriverFunc = plugin->initDriverFunc;
 		ret->finishDriverFunc = plugin->initDriverFunc;
 		ret->openDeviceFunc = plugin->openDeviceFunc;
 		ret->playFunc = plugin->playFunc;
 		ret->closeDeviceFunc = plugin->closeDeviceFunc;
+
+		plugin->initDriverFunc(ret);
 	}
 
 	return ret;
 }
 
-void closeAudioOutput(AudioOutput * audioOutput);
+int openAudioOutput(AudioOutput * audioOutput, AudioFormat * audioFormat) {
+	return audioOutput->openDeviceFunc(audioOutput, audioFormat);
+}
+
+int playAudioOutput(AudioOutput * audioOutput, char * playChunk, int size) {
+	return audioOutput->playFunc(audioOutput, playChunk, size);
+}
+
+void closeAudioOutput(AudioOutput * audioOutput) {
+	audioOutput->closeDeviceFunc(audioOutput);
+}
+
+void finishAudioOutput(AudioOutput * audioOutput) {
+	audioOutput->finishDriverFunc(audioOutput);
+	free(audioOutput);
+}

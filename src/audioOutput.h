@@ -28,10 +28,6 @@
 
 typedef struct _AudioOutput AudioOutput;
 
-typedef void (* AudioOutputInitConfigFunc) (AudioOutput * audioOutput);
-
-typedef void (* AudioOutputFinishConfigFunc) (AudioOutput * audioOutput);
-
 typedef void (* AudioOutputInitDriverFunc) (AudioOutput * audioOutput);
 
 typedef void (* AudioOutputFinishDriverFunc) (AudioOutput * audioOutput);
@@ -47,32 +43,30 @@ typedef void (* AudioOutputCloseDeviceFunc) (AudioOutput * audioOutput);
 struct _AudioOutput {
         int error;
 
-        AudioOutputInitConfigFunc initConfigFunc;
-        AudioOutputFinishConfigFunc finishConfigFunc;
-        AudioOutputInitDriverFunc initDriverFunc;
         AudioOutputFinishDriverFunc finishDriverFunc;
         AudioOutputOpenDeviceFunc openDeviceFunc;
         AudioOutputPlayFunc playFunc;
-        AudioOutputCloseDevicFunc closeDeviceFunc;
+        AudioOutputCloseDeviceFunc closeDeviceFunc;
 
         void * data;
 };
 
 typedef struct _AudioOutputPlugin {
 	char * name;
-        AudioOutputInitConfigFunc initConfigFunc;
-        AudioOutputFinishConfigFunc finishConfigFunc;
         AudioOutputInitDriverFunc initDriverFunc;
         AudioOutputFinishDriverFunc finishDriverFunc;
         AudioOutputOpenDeviceFunc openDeviceFunc;
         AudioOutputPlayFunc playFunc;
-        AudioOutputCloseDevicFunc closeDeviceFunc;
+        AudioOutputCloseDeviceFunc closeDeviceFunc;
 } AudioOutputPlugin;
 
 void loadAudioOutputPlugin(AudioOutputPlugin * audioOutputPlugin);
 void unloadAudioOutputPlugin(AudioOutputPlugin * audioOutputPlugin);
 
 AudioOutput * newAudioOutput(char * name);
+int openAudioOutput(AudioOutput * audioOutput, AudioFormat * audioFormat);
+int audioOutputPlay(AudioOutput * audioOutput, char * playChunk, int size);
 void closeAudioOutput(AudioOutput * audioOutput);
+void finishAudioOutput(AudioOutput * audioOutput);
 
 #endif
