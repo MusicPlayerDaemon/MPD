@@ -156,4 +156,4 @@ void printVisitedInTagTracker(FILE * fp, int type) {
 		}
 		node = node->nextNode;
 	}
-
+}
