@@ -4,3 +4,6 @@ wave File Support -> normalperson
 setuid patch -> Nagilum
 'next' and 'previous' patch -> Niklas Hofer
 command.c cleanup -> mackstann
+
+libid3tag and libmad copyrighted by Robert Leslie, http://www.underbit.com/products/mad
+mp4ff copyrighted by M. Bakker, Ahead Software AG, http://www.nero.com

@@ -1,3 +1,12 @@
+ver 0.10.2 (2004/3/25)
+1) Add suport for AAC
+2) Substitute '\n' with ' ' int tag info
+3) Remove empty directories from db
+4) Resume from current position in song when using state file
+5) Pause now closes the music device, and reopens it on resuming
+6) Fix unnecessary big endian byte swapping
+7) If locale is "C" or "POSIX", then use ISO-8859-1 as the fs charset
+
 ver 0.10.1 (2004/3/7)
 1) Check to see if we need to add "-lm" when linking mpd
 2) Fix issues with skipping bad frames in an mp3 (this way we get the correct samplerate and such)
