@@ -1,3 +1,8 @@
+ver 0.10.1 (2004/3/8)
+1) Check to see if we need to add "-lm" when linking mpd
+2) Fix issues with skipping bad frames in an mp3 (this way we get the correct samplerate and such)
+3) Fix crossfading bug with ogg's
+
 ver 0.10.0 (2004/3/3)
 1) Use UTF-8 for all client communications
 2) Crossfading support
