@@ -334,6 +334,8 @@ int main(int argc, char * argv[]) {
                 if(options.createDB<0) {
                         ERROR("can't open db file and using \"--no-create-db\""
                                         " command line option\n");
+			ERROR("try running \"%s --only-create-db\"\n",
+					argv[0]);
                         exit(EXIT_FAILURE);
                 }
                 initMp3Directory();
