@@ -323,6 +323,9 @@ void addItemToMpdTagWithLen(MpdTag * tag, int itemType, char * value, int len) {
 	if(ignoreTagItems[itemType]) return;
 
 	if(!value || !len) return;
+
+	/* we can't hold more than 255 items */
+	if(tag->numOfItems == 255) return;
 			
 	appendToTagItems(tag, itemType, value, len);
 }
