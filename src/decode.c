@@ -155,9 +155,10 @@ void decodeSeek(PlayerControl * pc, AudioFormat * af, DecoderControl * dc,
 			waitOnDecode(pc,af,dc,cb);
 		}
 		if(*decode_pid>0 && dc->state==DECODE_STATE_DECODE) {
-			dc->seekWhere = pc->seekWhere > pc->totalTime-1 ?
-						pc->totalTime-1 : pc->seekWhere;
-			dc->seekWhere = 1 > dc->seekWhere ? 1 : dc->seekWhere;
+			dc->seekWhere = pc->seekWhere > pc->totalTime-0.1 ?
+						pc->totalTime-0.1 : 
+						pc->seekWhere;
+			dc->seekWhere = 0 > dc->seekWhere ? 0 : dc->seekWhere;
 			cb->begin = 0;
 			dc->seek = 1;
 			pc->elapsedTime = dc->seekWhere;

@@ -88,14 +88,15 @@ int mp4_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc) {
 	long sampleId;
 	long numSamples;
 	int eof = 0;
-	int rc;
 	long dur;
 	unsigned int sampleCount;
 	char * sampleBuffer;
 	size_t sampleBufferLen;
 	unsigned int initial = 1;
 	int chunkLen = 0;
-		
+	float * seekTable;
+	long seekTableEnd = -1;
+	int seekPositionFound = 0;
 
 	fh = fopen(dc->file,"r");
 	if(!fh) {
@@ -173,19 +174,46 @@ int mp4_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc) {
 	dc->start = 0;
 	time = 0.0;
 
+	seekTable = malloc(sizeof(float)*numSamples);
+
 	for(sampleId=0; sampleId<numSamples && !eof; sampleId++) {
-		if(dc->seek) {
+		if(dc->seek && seekTableEnd>1 && 
+				seekTable[seekTableEnd]>=dc->seekWhere)
+		{
+			int i = 2;
+			while(seekTable[i]<dc->seekWhere) i++;
+			sampleId = i-1;
+			time = seekTable[sampleId];
+		}
+
+		if((dur=mp4ff_get_sample_duration(mp4fh,track,sampleId))==0) {
+			eof = 1;
+			break;
+		}
+
+		if(sampleId>seekTableEnd) {
+			seekTable[sampleId] = time;
+			seekTableEnd = sampleId;
+		}
+
+		if(sampleId==0) dur = 0;
+		time+=((float)dur)/scale;
+
+		if(dc->seek && time>dc->seekWhere) seekPositionFound = 1;
+
+		if(dc->seek && seekPositionFound) {
+			seekPositionFound = 0;
+			chunkLen = 0;
 			cb->end = 0;
 			cb->wrap = 0;
-#warning implement seeking here!
 			dc->seek = 0;
 		}
 
-		dur = mp4ff_get_sample_duration(mp4fh,track,sampleId);
-		rc = mp4ff_read_sample(mp4fh,track,sampleId,&mp4Buffer,
-				&mp4BufferSize);
-
-		if(rc==0) {
+		if(dc->seek) continue;
+		
+		if(mp4ff_read_sample(mp4fh,track,sampleId,&mp4Buffer,
+				&mp4BufferSize) == 0)
+		{
 			eof = 1;
 			break;
 		}
@@ -193,13 +221,12 @@ int mp4_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc) {
 		sampleBuffer = faacDecDecode(decoder,&frameInfo,mp4Buffer,
 						mp4BufferSize);
 		if(mp4Buffer) free(mp4Buffer);
-		if(sampleId==0) dur = 0;
-		time+=((float)dur)/scale;
 		sampleCount = (unsigned long)(dur*channels);
 
 		if(sampleCount>0) initial =0;
 		sampleBufferLen = sampleCount*2;
-		while(sampleBufferLen > 0) {
+	
+		while(sampleBufferLen>0 && !dc->seek) {
 			size_t size = sampleBufferLen>CHUNK_SIZE-chunkLen ? 
 							CHUNK_SIZE-chunkLen:
 							sampleBufferLen;
@@ -255,6 +282,7 @@ int mp4_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc) {
 	}
 	else dc->state = DECODE_STATE_STOP;
 
+	free(seekTable);
 	faacDecClose(decoder);
 	mp4ff_close(mp4fh);
 	fclose(fh);
