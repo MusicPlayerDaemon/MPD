@@ -230,21 +230,18 @@ char * rpp2app(char * relativePath) {
 
 char * parentPath(char * path) {
 	static char parentPath[MAXPATHLEN+1];
-	int i;
+	char * c;
 
 	memset(parentPath,0,MAXPATHLEN+1);
-
 	strncpy(parentPath,path,MAXPATHLEN);
-	while(strlen(parentPath) && parentPath[strlen(parentPath)-1]=='/') {
-		parentPath[strlen(parentPath)-1] = '\0';
-	}
-	for(i=strlen(parentPath);i>=0;i--) {
-		if(parentPath[i]=='/') break;
-		parentPath[i] = '\0';
-	}
-	while(strlen(parentPath) && parentPath[strlen(parentPath)-1]=='/') {
-		parentPath[strlen(parentPath)-1] = '\0';
-	}
+	
+	c = strrchr(parentPath,'/');
+	if (c == NULL)
+		parentPath[0] = '\0';
+	else {
+		while ((parentPath <= c) && *(--c) == '/') /* nothing */;
+		c[1] = '\0';
+ 	}
 
 	return parentPath;
 }
