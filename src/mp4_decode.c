@@ -2,8 +2,6 @@
  * (c)2003-2004 by Warren Dukes (shank@mercury.chem.pitt.edu)
  * This project's homepage is: http://www.musicpd.org
  * 
- * libaudiofile (wave) support added by Eric Wong <normalperson@yhbt.net>
- * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -149,7 +147,7 @@ int mp4_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc) {
 	if(faacDecInit2(decoder,mp4Buffer,mp4BufferSize,&sampleRate,&channels)
 			< 0)
 	{
-		ERROR("Error initializing AAC decoder library.\n");
+		ERROR("Error not a AAC stream.\n");
 		faacDecClose(decoder);
 		mp4ff_close(mp4fh);
 		free(mp4cb);
@@ -210,7 +208,7 @@ int mp4_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc) {
 		if(dc->seek && seekPositionFound) {
 			seekPositionFound = 0;
 			chunkLen = 0;
-			cb->end = 0;
+			cb->end = cb->begin;
 			cb->wrap = 0;
 			dc->seek = 0;
 		}
@@ -233,7 +231,7 @@ int mp4_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc) {
 		}
 
 		if(channels*(dur+offset) > frameInfo.samples) {
-			dur = frameInfo.samples;
+			dur = frameInfo.samples/channels;
 			offset = 0;
 		}
 

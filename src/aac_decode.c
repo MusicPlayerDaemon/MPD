@@ -2,8 +2,6 @@
  * (c)2003-2004 by Warren Dukes (shank@mercury.chem.pitt.edu)
  * This project's homepage is: http://www.musicpd.org
  * 
- * libaudiofile (wave) support added by Eric Wong <normalperson@yhbt.net>
- * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -196,7 +194,11 @@ int initAacBuffer(char * file, AacBuffer * b, float * length) {
 		if(*length!=0 && bitRate!=0) *length = *length*8.0/bitRate;
 	}
 
-	if(*length<0) return -1;
+	if(*length<0) {
+		fclose(b->infile);
+		if(b->buffer) free(b->buffer);
+		return -1;
+	}
 
 	return 0;
 }
@@ -215,59 +217,29 @@ int getAacTotalTime(char * file) {
 
 
 int aac_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc) {
-	/*FILE * fh;
-	mp4ff_t * mp4fh;
-	mp4ff_callback_t * mp4cb; 
-	int32_t track;
 	float time;
-	int32_t scale;
+	float totalTime;
 	faacDecHandle decoder;
 	faacDecFrameInfo frameInfo;
 	faacDecConfigurationPtr config;
-	unsigned char * mp4Buffer;
-	int mp4BufferSize;
+	size_t bread;
 	unsigned long sampleRate;
 	unsigned char channels;
-	long sampleId;
-	long numSamples;
 	int eof = 0;
-	long dur;
 	unsigned int sampleCount;
 	char * sampleBuffer;
 	size_t sampleBufferLen;
-	unsigned int initial = 1;
 	int chunkLen = 0;
-	float * seekTable;
+	/*float * seekTable;
 	long seekTableEnd = -1;
-	int seekPositionFound = 0;
-	long offset;
+	int seekPositionFound = 0;*/
 	mpd_uint16 bitRate = 0;
+	AacBuffer b;
 
-	fh = fopen(dc->file,"r");
-	if(!fh) {
-		ERROR("failed to open %s\n",dc->file);
-		return -1;
-	}
+	printf("aac_decode!\n");
 
-	mp4cb = malloc(sizeof(mp4ff_callback_t));
-	mp4cb->read = mp4_readCallback;
-	mp4cb->seek = mp4_seekCallback;
-	mp4cb->user_data = fh;
-
-	mp4fh = mp4ff_open_read(mp4cb);
-	if(!mp4fh) {
-		ERROR("Input does not appear to be a mp4 stream.\n");
-		free(mp4cb);
-		fclose(fh);
-		return -1;
-	}
-
-	track = mp4_getAACTrack(mp4fh);
-	if(track < 0) {
-		ERROR("No AAC track found in mp4 stream.\n");
-		mp4ff_close(mp4fh);
-		fclose(fh);
-		free(mp4cb);
+	if(initAacBuffer(dc->file,&b,&totalTime) < 0) {
+		ERROR("Not AAC file no ADTS or ADIF headers found.\n");
 		return -1;
 	}
 
@@ -285,48 +257,33 @@ int aac_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc) {
 
 	af->bits = 16;
 
-	mp4Buffer = NULL;
-	mp4BufferSize = 0;
-	mp4ff_get_decoder_config(mp4fh,track,&mp4Buffer,&mp4BufferSize);
-
-	if(faacDecInit2(decoder,mp4Buffer,mp4BufferSize,&sampleRate,&channels)
-			< 0)
+	fillAacBuffer(&b);
+	if((bread = faacDecInit(decoder,b.buffer,b.bytesIntoBuffer,
+			&sampleRate,&channels)) < 0)
 	{
-		ERROR("Error initializing AAC decoder library.\n");
+		ERROR("Error not a AAC stream.\n");
 		faacDecClose(decoder);
-		mp4ff_close(mp4fh);
-		free(mp4cb);
-		fclose(fh);
+		fclose(b.infile);
+		if(b.buffer) free(b.buffer);
 		return -1;
 	}
 
 	af->sampleRate = sampleRate;
 	af->channels = channels;
-	time = mp4ff_get_track_duration_use_offsets(mp4fh,track);
-	scale = mp4ff_time_scale(mp4fh,track);
 
-	if(mp4Buffer) free(mp4Buffer);
-
-	if(scale < 0) {
-		ERROR("Error getting audio format of mp4 AAC track.\n");
-		faacDecClose(decoder);
-		mp4ff_close(mp4fh);
-		fclose(fh);
-		free(mp4cb);
-		return -1;
-	}
-	cb->totalTime = ((float)time)/scale;
-
-	numSamples = mp4ff_num_samples(mp4fh,track);
+	cb->totalTime = totalTime+0.5;
 
 	dc->state = DECODE_STATE_DECODE;
 	dc->start = 0;
 	time = 0.0;
 
-	seekTable = malloc(sizeof(float)*numSamples);
+	advanceAacBuffer(&b,bread);
+	fillAacBuffer(&b);
 
-	for(sampleId=0; sampleId<numSamples && !eof; sampleId++) {
-		if(dc->seek && seekTableEnd>1 && 
+	/*seekTable = malloc(sizeof(float)*numSamples);*/
+
+	do {
+		/*if(dc->seek && seekTableEnd>1 && 
 				seekTable[seekTableEnd]>=dc->seekWhere)
 		{
 			int i = 2;
@@ -334,9 +291,6 @@ int aac_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc) {
 			sampleId = i-1;
 			time = seekTable[sampleId];
 		}
-
-		dur = mp4ff_get_sample_duration(mp4fh,track,sampleId);
-		offset = mp4ff_get_sample_offset(mp4fh,track,sampleId);
 
 		if(sampleId>seekTableEnd) {
 			seekTable[sampleId] = time;
@@ -358,41 +312,35 @@ int aac_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc) {
 			dc->seek = 0;
 		}
 
-		if(dc->seek) continue;
-		
-		if(mp4ff_read_sample(mp4fh,track,sampleId,&mp4Buffer,
-				&mp4BufferSize) == 0)
-		{
-			eof = 1;
-			continue;
-		}
+		if(dc->seek) continue;*/
 
-		sampleBuffer = faacDecDecode(decoder,&frameInfo,mp4Buffer,
-						mp4BufferSize);
-		if(mp4Buffer) free(mp4Buffer);
+		if(dc->seek) {
+			/*chunkLen = 0;
+			cb->wrap = 0;
+			cb->end = 0;*/
+			dc->seekError = 1;
+			dc->seek = 0;
+		}
+		
+		sampleBuffer = faacDecDecode(decoder,&frameInfo,b.buffer,
+						b.bytesIntoBuffer);
+		advanceAacBuffer(&b,frameInfo.bytesconsumed);
+
 		if(frameInfo.error > 0) {
 			eof = 1;
 			break;
 		}
 
-		if(channels*(dur+offset) > frameInfo.samples) {
-			dur = frameInfo.samples;
-			offset = 0;
-		}
-
-		sampleCount = (unsigned long)(dur*channels);
+		sampleCount = (unsigned long)(frameInfo.samples);
 
 		if(sampleCount>0) {
-			initial =0;
 			bitRate = frameInfo.bytesconsumed*8.0*
-				frameInfo.channels*scale/
+				frameInfo.channels*sampleRate/
 				frameInfo.samples/1024+0.5;
+			time+= (float)(frameInfo.samples)/channels/sampleRate;
 		}
 			
-
 		sampleBufferLen = sampleCount*2;
-
-		sampleBuffer+=offset*channels*2;
 
 		while(sampleBufferLen>0 && !dc->seek) {
 			size_t size = sampleBufferLen>CHUNK_SIZE-chunkLen ? 
@@ -427,7 +375,11 @@ int aac_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc) {
 				}
 			}
 		}
-	}
+
+		fillAacBuffer(&b);
+
+		if(b.bytesIntoBuffer==0) eof = 1;
+	} while (!eof);
 
 	if(!dc->stop && !dc->seek && chunkLen>0) {
 		cb->chunkSize[cb->end] = chunkLen;
@@ -440,11 +392,10 @@ int aac_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc) {
 		chunkLen = 0;
 	}
 
-	free(seekTable);
+	/*free(seekTable);*/
 	faacDecClose(decoder);
-	mp4ff_close(mp4fh);
-	fclose(fh);
-	free(mp4cb);
+	fclose(b.infile);
+	if(b.buffer) free(b.buffer);
 
 	if(dc->seek) dc->seek = 0;
 
@@ -452,7 +403,7 @@ int aac_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc) {
 		dc->state = DECODE_STATE_STOP;
 		dc->stop = 0;
 	}
-	else dc->state = DECODE_STATE_STOP;*/
+	else dc->state = DECODE_STATE_STOP;
 
 	return 0;
 }

@@ -104,7 +104,7 @@ void flacPlayFile(char *file, Buffer * cb, AudioFormat * af,
 		if(dc->seek) {
 			FLAC__uint64 sampleToSeek = dc->seekWhere*
 					af->sampleRate+0.5;
-			cb->end = 0;
+			cb->end = cb->begin;
 			cb->wrap = 0;
 			if(FLAC__file_decoder_seek_absolute(flacDec,
 						sampleToSeek))

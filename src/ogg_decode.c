@@ -95,7 +95,7 @@ int ogg_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc)
 
 		while(!eof) {
 			if(dc->seek) {
-				cb->end = 0;
+				cb->end = cb->begin;
 				cb->wrap = 0;
 				chunkpos = 0;
 				ov_time_seek_page(&vf,dc->seekWhere);

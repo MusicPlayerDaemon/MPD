@@ -86,7 +86,7 @@ int audiofile_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc)
 
 		while(!eof) {
 			if(dc->seek) {
-				cb->end = 0;
+				cb->end = cb->begin;
 				cb->wrap = 0;
 				current = dc->seekWhere * af->sampleRate;
 				afSeekFrame(af_fp, AF_DEFAULT_TRACK,current);

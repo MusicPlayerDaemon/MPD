@@ -487,7 +487,7 @@ int mp3Read(mp3DecodeData * data, Buffer * cb, DecoderControl * dc) {
 		if(dc->seek) {
 			long i = 0;
 			cb->wrap = 0;
-			cb->end = 0;
+			cb->end = cb->begin;
 			data->muteFrame = 1;
 			while(i<data->highestFrame && dc->seekWhere >
 					((float)mad_timer_count(data->times[i],

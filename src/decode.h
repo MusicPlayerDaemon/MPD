@@ -21,6 +21,8 @@
 
 #include "../config.h"
 
+#include "mpd_types.h"
+
 #include <stdio.h>
 #include <sys/param.h>
 
@@ -38,11 +40,12 @@
 #define DECODE_ERROR_UNKTYPE	1
 
 typedef struct _DecoderControl {
-	int state;
-	int stop;
-	int start;
-	int error;
-	int seek;
+	mpd_sint8 state;
+	mpd_sint8 stop;
+	mpd_sint8 start;
+	mpd_uint16 error;
+	mpd_sint8 seek;
+	mpd_sint8 seekError;
 	double seekWhere;
 	char file[MAXPATHLEN+1];
 } DecoderControl;

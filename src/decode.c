@@ -40,6 +40,7 @@
 #endif
 #ifdef HAVE_FAAD
 #include "mp4_decode.h"
+#include "aac_decode.h"
 #endif
 
 #include <signal.h>
@@ -159,11 +160,11 @@ void decodeSeek(PlayerControl * pc, AudioFormat * af, DecoderControl * dc,
 						pc->totalTime-0.1 : 
 						pc->seekWhere;
 			dc->seekWhere = 0 > dc->seekWhere ? 0 : dc->seekWhere;
-			cb->begin = 0;
+			dc->seekError = 0;
 			dc->seek = 1;
-			pc->elapsedTime = dc->seekWhere;
 			pc->bitRate = 0;
 			while(*decode_pid>0 && dc->seek) usleep(1000);
+			if(dc->seekError) pc->elapsedTime = dc->seekWhere;
 		}
 	}
 	pc->seek = 0;
@@ -229,6 +230,9 @@ int decoderInit(PlayerControl * pc, Buffer * cb, AudioFormat *af,
 					break;
 #endif
 #ifdef HAVE_FAAD
+				case DECODE_TYPE_AAC:
+					dc->error = aac_decode(cb,af,dc);
+					break;
 				case DECODE_TYPE_MP4:
 					dc->error = mp4_decode(cb,af,dc);
 					break;
