@@ -1049,7 +1049,7 @@ int moveSongInPlaylist(FILE * fp, int from, int to) {
 		moveSongFromTo(i-1, i);
 	}
 	/* put song at _to_ */
-	playlist.idToNum[playlist.numToId[tmpId]] = to;
+	playlist.idToNum[tmpId] = to;
 	playlist.numToId[to] = tmpId;
 	playlist.songs[to] = tmpSong;
 	playlist.songMod[to] = playlist.version;
