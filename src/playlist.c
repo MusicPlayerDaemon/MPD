@@ -258,7 +258,8 @@ void savePlaylistState() {
 		while(!(fp = fopen(playlist_stateFile,"w")) && errno==EINTR);
 		if(!fp) {
 			ERROR("problems opening state file \"%s\" for "
-				"writing\n",playlist_stateFile);
+				"writing: %s\n", playlist_stateFile,
+				sterror(errno));
 			return;
 		}
 
@@ -353,7 +354,8 @@ void readPlaylistState() {
 		fp = fopen(playlist_stateFile,"r");
 		if(!fp) {
 			ERROR("problems opening state file \"%s\" for "
-				"reading\n",playlist_stateFile);
+				"reading: %s\n", playlist_stateFile,
+				strerror(errno));
 			exit(EXIT_FAILURE);
 		}
 

@@ -56,5 +56,3 @@ void signal_clear(int sig)
 {
         __caught_signals[sig] = 0;
 }
-
-/* vim:set shiftwidth=4 tabstop=8 expandtab: */

@@ -31,6 +31,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <pwd.h>
+#include <errno.h>
 
 #define MAX_STRING_SIZE	MAXPATHLEN+80
 
@@ -228,7 +229,8 @@ void readConf(char * file) {
 	ConfigParam * param;
 
 	if(!(fp=fopen(file,"r"))) {
-		ERROR("problems opening file %s for reading\n",file);
+		ERROR("problems opening file %s for reading: %s\n", file,
+			strerror(errno));
 		exit(EXIT_FAILURE);
 	}
 
