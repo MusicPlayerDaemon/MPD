@@ -497,7 +497,10 @@ void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb) {
 	{
 		processDecodeInput();
 		if(quit) return;
-		playSilenceOrSleep();
+		/*playSilenceOrSleep();*/
+		/* instead we want to pause audio and play silence for
+		 * devices that don't support pausing */
+		my_usleep(1000);
 	}
 
 	while(!quit) {
@@ -652,6 +655,8 @@ void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb) {
 			break;
 		}
 		else {
+			/* instead we want to pause audio and play silence for
+			 * devices that don't support pausing */
 			if(playAudio(silence, CHUNK_SIZE) < 0) quit = 1;
 		}
 	}
