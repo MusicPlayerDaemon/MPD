@@ -68,4 +68,3 @@ size_t readFromInputStream(InputStream * inStream, void * ptr, size_t size,
 		size_t nmemb);
 
 #endif
-/* vim:set shiftwidth=4 tabstop=8 expandtab: */

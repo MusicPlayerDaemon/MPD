@@ -10,6 +10,10 @@
 	*) abstract out saved playlists from playlist.c
 	*) command for displaying playlist contents
 	*) command for appending to playlist
+	*) new commands
+		*) clear <playlist> /* synonym for rm */
+		*) add <playlist> <path>
+		*) playlist <playlist> /* displays saved playlist */
 
 *) state
 	*) abstract out state code from playlist.c
