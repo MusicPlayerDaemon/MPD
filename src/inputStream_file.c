@@ -69,7 +69,7 @@ size_t inputStream_fileRead(InputStream * inStream, void * ptr, size_t size,
 
 	readSize = fread(ptr,size,nmemb,(FILE *)inStream->data);
 
-	if(readSize>0) inStream->offset+=readSize*size;
+	inStream->offset = ftell((FILE *)inStream->data);
 
 	return readSize;
 }
