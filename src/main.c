@@ -384,7 +384,7 @@ void cleanUpPidFile() {
 	unlink(pidFileParam->value);
 }
 
-void killMpdFromPidFile(char * cmd, int killOption) {
+void killFromPidFile(char * cmd, int killOption) {
 	struct stat st_cmd;
 	struct stat st_exe;
 	ConfigParam * pidFileParam = parseConfigFilePath(CONF_PID_FILE, 1);
@@ -395,7 +395,7 @@ void killMpdFromPidFile(char * cmd, int killOption) {
 	if(!fp) {
 		ERROR("unable to open %s \"%s\": %s\n", 
 				CONF_PID_FILE, pidFileParam->value,
-				pidFileParam->line, strerror(errno));
+				strerror(errno));
 		exit(EXIT_FAILURE);
 	}
 	if(fscanf(fp, "%i",  &pid) != 1) {
@@ -450,7 +450,7 @@ int main(int argc, char * argv[]) {
 
         parseOptions(argc, argv, &options);
 
-	if(options.kill) killMpdFromPidFile(argv[0], options.kill);
+	if(options.kill) killFromPidFile(argv[0], options.kill);
 
         initStats();
 	initTagConfig();
