@@ -47,3 +47,4 @@
 	*) multiple genre support {char *, int pairs for each metadata entry 
 		indicating the type of metadata and its value)
 	*) MpdDBTag <-> MpdTag interface
+	*) support for date (maybe composer as well)
