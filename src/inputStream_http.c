@@ -166,7 +166,8 @@ static char * proxyAuthString(char * user, char * password) {
 
 	templen = strlen(user) + strlen(password) + 2;
 	temp = calloc(templen, 1);
-	snprintf(temp, templen-1, "%s:%s", user, password);
+	snprintf(temp, templen, "%s:%s", user, password);
+	temp[templen-1] = '\0';
 	temp64 = base64Dup(temp);
 	free(temp);
 
