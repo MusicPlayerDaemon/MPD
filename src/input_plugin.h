@@ -45,4 +45,12 @@ InputPlugin * getInputPluginFromName(char * name);
 	and don't have a suffix in the url! */
 InputPlugin * getDefaultInputPlugin();
 
+/* this is where we "load" all the "plugins" ;-) */
+void initInputPlugins();
+
+/* this is where we "unload" all the "plugins" */
+void finishInputPlugins();
+
+void unloadInputPlugin(InputPlugin * inputPlugin);
+
 #endif
