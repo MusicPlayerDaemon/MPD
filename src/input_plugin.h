@@ -1,6 +1,11 @@
 #ifndef INPUT_PLUGIN_H
 #define INPUT_PLUGIN_H
 
+#include "inputStream.h"
+#include "decode.h"
+#include "outputBuffer.h"
+#include "tag.h"
+
 #define INPUT_PLUGIN_STREAM_FILE	0x01
 #define INPUT_PLUGIN_STREAM_URL		0x02
 
