@@ -882,8 +882,7 @@ int handleCommands(FILE * fp, unsigned int * permission, int argArrayLength,
 
 	while(node != NULL) {
 		cmd = (CommandEntry *) node->data;
-
-		if(*permission || *permission & cmd->reqPermission) {
+		if(cmd->reqPermission == (*permission & cmd->reqPermission)) {
 			myfprintf(fp, "command: %s\n", cmd->cmd);
 		}
 
@@ -902,7 +901,7 @@ int handleNotcommands(FILE * fp, unsigned int * permission, int argArrayLength,
 	while(node != NULL) {
 		cmd = (CommandEntry *) node->data;
 
-		if(!(*permission || *permission & cmd->reqPermission)) {
+		if(cmd->reqPermission != (*permission & cmd->reqPermission)) {
 			myfprintf(fp, "command: %s\n", cmd->cmd);
 		}
 
