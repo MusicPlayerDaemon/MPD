@@ -39,13 +39,6 @@ typedef struct _MpcCallbackData {
         DecoderControl * dc;
 } MpcCallbackData;
 
-/* this is just for tag parsing for db import! */
-int getMpcTotalTime(char * file) {
-	int totalTime = 0;
-	
-	return totalTime;
-}
-
 mpc_int32_t mpc_read_cb(void * vdata, void * ptr, mpc_int32_t size) {
 	mpc_int32_t ret = 0;
         MpcCallbackData * data = (MpcCallbackData *)vdata;
@@ -263,7 +256,7 @@ MpdTag * mpcTagDup(char * file) {
 	/* get tag info here */
 
 	if(!ret) ret = newMpdTag();
-	ret->time = getMpcTotalTime(file);
+	ret->time = 0;
 
 	return ret;	
 }

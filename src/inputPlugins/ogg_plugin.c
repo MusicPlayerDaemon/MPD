@@ -46,26 +46,6 @@ typedef struct _OggCallbackData {
         DecoderControl * dc;
 } OggCallbackData;
 
-/* this is just for tag parsing for db import! */
-int getOggTotalTime(char * file) {
-	OggVorbis_File vf;
-	FILE * oggfp;
-	int totalTime;
-	
-	if(!(oggfp = fopen(file,"r"))) return -1;
-		
-	if(ov_open(oggfp, &vf, NULL, 0) < 0) {
-		fclose(oggfp);
-		return -1;
-	}
-	
-	totalTime = ov_time_total(&vf,-1)+0.5;
-
-	ov_clear(&vf);
-
-	return totalTime;
-}
-
 size_t ogg_read_cb(void * ptr, size_t size, size_t nmemb, void * vdata)
 {
 	size_t ret = 0;
