@@ -35,7 +35,8 @@
 #include <FLAC/metadata.h>
 
 typedef struct {
-	unsigned char chunk[CHUNK_SIZE];
+#define FLAC_CHUNK_SIZE 4080
+	unsigned char chunk[FLAC_CHUNK_SIZE];
 	int chunk_length;
 	float time;
 	int bitRate;
@@ -417,7 +418,7 @@ FLAC__StreamDecoderWriteStatus flacWrite(const FLAC__SeekableStreamDecoder *dec,
 			u16 = buf[c_chan][c_samp];
 			uc = (unsigned char *)&u16;
 			for(i=0;i<(data->dc->audioFormat.bits/8);i++) {
-				if(data->chunk_length>=CHUNK_SIZE) {
+				if(data->chunk_length>=FLAC_CHUNK_SIZE) {
 					if(flacSendChunk(data)<0) {
 						return FLAC__STREAM_DECODER_WRITE_STATUS_ABORT;
 					}

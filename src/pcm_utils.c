@@ -218,41 +218,29 @@ void pcm_convertAudioFormat(AudioFormat * inFormat, char * inBuffer, size_t
 	}
 	else {
 		/* only works if outFormat is 16-bit stereo! */
-		/* resampling code blatantly ripped from XMMS */
-		const int shift = sizeof(mpd_sint16);
-		int x1 = 0, frac;
-		mpd_sint32 i, in_samples, out_samples, x, delta;
-		mpd_sint16 * inptr = (mpd_sint16 *)dataChannelConv;
-		mpd_sint16 * outptr = (mpd_sint16 *)outBuffer;
-		mpd_uint32 nlen = (((dataChannelLen >> shift) * 
-				(outFormat->sampleRate)) / 
+		/* resampling code blatantly ripped from ESD */
+                mpd_sint32 rd_dat = 0;
+                mpd_uint32 wr_dat = 0;
+                mpd_sint16 lsample, rsample;
+                register mpd_sint16 * out = (mpd_sint16 *)outBuffer;
+                register mpd_sint16 * in = (mpd_sint16 *)dataChannelConv;
+                const int shift = sizeof(mpd_sint16);
+	        mpd_uint32 nlen = ((( dataChannelLen >> shift) * 
+                                (mpd_uint32)(outFormat->sampleRate)) /
 				inFormat->sampleRate);
-		nlen <<= shift;
-		in_samples = dataChannelLen >> shift;
-		out_samples = nlen >> shift;
-                //printf("in_samples=%i out_samples=%i\n",in_samples,out_samples);
-		delta = ((in_samples-1) << 12) / (out_samples-1);
-		for(x = 0, i = 0; i < out_samples; i++) {
-                        //int i1,i2,i3,i4;
-			x1 = (x >> 12) << 12;
-			frac = x - x1;
-                        /*        i1 = (x1 >> 12) << 1;
-                                i2 = ((x1 >> 12) + 1) << 1;
-                                i3 = ((x1 >> 12) << 1) + 1;
-                                i4 = (((x1 >> 12) + 1) << 1) + 1;
-                                printf("%i,%i,%i,%i\n",i1,i2,i3,i4);*/
-			*outptr++ = 
-				((inptr[(x1 >> 12) << 1] * 
-				((1<<12) - frac) +
-				inptr[((x1 >> 12) + 1) << 1 ] *
-				frac) >> 12);
-			*outptr++ =
-				((inptr[((x1 >> 12) << 1) + 1] *
-				((1<<12) - frac) +
-				inptr[(((x1 >> 12) + 1) << 1) + 1] *
-				frac) >> 12);
-			x += delta;
-		}
+                nlen <<= shift;
+
+                while( wr_dat < nlen / shift) {
+                        rd_dat = wr_dat * inFormat->sampleRate / 
+                                outFormat->sampleRate;
+                        rd_dat &= ~1;
+
+                        lsample = in[ rd_dat++ ];
+                        rsample = in[ rd_dat++ ];
+
+                        out[ wr_dat++ ] = lsample;
+                        out[ wr_dat++ ] = rsample;
+                }
 	}
 
 	return;

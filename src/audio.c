@@ -152,6 +152,8 @@ void initAudioConfig() {
         switch(audio_configFormat->sampleRate) {
         case 48000:
         case 44100:
+        case 32000:
+        case 16000:
                 break;
         default:
                 ERROR("sample rate %i can not be used for audio output\n",
