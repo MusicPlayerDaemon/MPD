@@ -1,3 +1,2 @@
 1) 24-bit pcm-tools (this may just wait since almost no one uses it)
-2) put software mixer settings in state file
-3) finish modifying man page, commands, and example config file
+2?) put software mixer settings in state file
