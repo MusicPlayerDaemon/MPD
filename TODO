@@ -16,7 +16,7 @@
 *) aduio output
 	*) allowing "pausing" of audio output devices
 	*) add support for automagically detecting the current output device
-	*) add support for allowing oss plugin to detect output
+	*) need better resampling code
 
 0.13
 ----
