@@ -138,6 +138,12 @@ void initPlaylist() {
 }
 
 void finishPlaylist() {
+        int i;
+        for(i=0;i<playlist.length;i++) {
+		if(playlist.songs[i]->type == SONG_TYPE_URL) {
+			/*freeJustSong(playlist.songs[i]);*/
+		}
+        }
 	free(playlist.songs);
 	playlist.songs = NULL;
 	free(playlist.order);
@@ -151,7 +157,7 @@ int clearPlaylist(FILE * fp) {
 
 	for(i=0;i<playlist.length;i++) {
 		if(playlist.songs[i]->type == SONG_TYPE_URL) {
-			free(playlist.songs[i]);
+			/*freeJustSong(playlist.songs[i]);*/
 		}
 		playlist.songs[i] = NULL;
 	}
@@ -584,6 +590,10 @@ int deleteFromPlaylist(FILE * fp, int song) {
 		}
 	}
 
+	if(playlist.songs[song]->type == SONG_TYPE_URL) {
+		freeJustSong(playlist.songs[song]);
+	}
+
 	/* delete song from songs array */
 	for(i=song;i<playlist.length-1;i++) {
 		playlist.songs[i] = playlist.songs[i+1];
@@ -600,9 +610,6 @@ int deleteFromPlaylist(FILE * fp, int song) {
 		if(playlist.order[i]>song) playlist.order[i]--;
 	}
 	/* now take care of other misc stuff */
-	if(playlist.songs[playlist.length-1]->type == SONG_TYPE_URL) {
-		freeJustSong(playlist.songs[playlist.length-1]);
-	}
 	playlist.songs[playlist.length-1] = NULL;
 	playlist.length--;
 

@@ -1229,7 +1229,7 @@ void initMp3Directory() {
 Song * getSongDetails(char * file, char ** shortnameRet, 
 		Directory ** directoryRet)
 {
-	void * song;
+	void * song = NULL;
 	Directory * directory;
 	char * dir = NULL;
 	char * dup = strdup(file);

@@ -31,8 +31,8 @@
 #include "list.h"
 
 typedef enum {
-	SONG_TYPE_FILE,
-	SONG_TYPE_URL
+	SONG_TYPE_FILE = 1,
+	SONG_TYPE_URL = 2
 } SONG_TYPE;
 
 typedef struct _Song {
