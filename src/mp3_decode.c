@@ -424,6 +424,7 @@ int mp3Read(mp3DecodeData * data, Buffer * cb, DecoderControl * dc) {
 	static int i;
 	static int ret;
 	static struct audio_dither dither;
+	static int skip;
 
 	if(data->currentFrame>=data->highestFrame && 
 			data->highestFrame<data->maxFrames) 
@@ -501,15 +502,18 @@ int mp3Read(mp3DecodeData * data, Buffer * cb, DecoderControl * dc) {
 		}
 	}
 
-	if(data->muteFrame) {
-		while((ret=decodeNextFrameHeader(data))==DECODE_CONT || 
-				ret==DECODE_SKIP);
+	while(1) {
+		skip = 0;
+		while((ret = decodeNextFrameHeader(data))==DECODE_CONT);
+		if(ret==DECODE_SKIP) skip = 1;
+		else if(ret==DECODE_BREAK) return -1;
+		if(data->muteFrame) {
+			while((ret = decodeNextFrame(data))==DECODE_CONT);
+			if(ret==DECODE_BREAK) return -1;
+		}
+		if(!skip && ret==DECODE_OK) break;
 	}
-	else {
-		while((ret=decodeNextFrame(data))==DECODE_CONT || 
-				ret==DECODE_SKIP);
-	}
-	
+
 	return ret;
 }
 
