@@ -1,5 +1,3 @@
-*) Automatic preamp of vorbis/replaygain-ed files by a user set amount (just like Foobar2000). 
-
 0.12
 ----
 *) Optimize read() on cleints
@@ -15,6 +13,8 @@
 *) have listallinfo return directories
 
 *) allow find/search commands take arbitrary search pairs
+
+*) abstract out input buffering from inputStream_http to inputStream
 
 Post-1.0
 --------
