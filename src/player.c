@@ -161,7 +161,8 @@ int playerInit() {
 }
 
 int playerGetDecodeType(char * utf8file) {
-	if(!isRemoteUrl(utf8file) && !isFile(utf8file,NULL)) return -1;
+	if(isRemoteUrl(utf8file)) return DECODE_TYPE_MP3;
+	if(!isFile(utf8file,NULL)) return -1;
 #ifdef HAVE_MAD
 	if(hasMp3Suffix(utf8file)) return DECODE_TYPE_MP3;
 #endif

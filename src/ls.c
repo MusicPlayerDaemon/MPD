@@ -51,13 +51,7 @@ int isRemoteUrl(char * url) {
 
 	while(*urlPrefixes) {
 		if(strncmp(*urlPrefixes,url,strlen(*urlPrefixes)) == 0) {
-#ifdef HAVE_MAD
-			if(hasMp3Suffix(url)) return 1;
-#endif
-#ifdef HAVE_OGG
-			if(hasOggSuffix(url)) return 1;
-#endif
-			return 0;
+                        return 1;
 		}
 		urlPrefixes++;
 	}
