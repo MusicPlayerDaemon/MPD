@@ -363,24 +363,36 @@ int removeDeletedFromDirectory(Directory * directory) {
 void updatePath(char * utf8path) {
 	Directory * directory;
 	Directory * parentDirectory;
+	Song * song;
 	char * shortname;
+	DIR * dir;
 
-	/* if path is already in the DB */
-	if(NULL==(directory = getDirectoryDetails(utf8path,&shortname,
+	/* if path is in the DB try to update it, or else delete it */
+	if((directory = getDirectoryDetails(utf8path,&shortname,
 			&parentDirectory))) 
 	{
-		Song * song = getSongDetails(utf8path,&shortname,&directory);
-		if(song && updateSongInfo(song)<0) {
-			removeSongFromDirectory(directory,shortname);
-		}
-	}
-	else {
 		/* if updateDirectory fials, means we should delete it */
 		if(updateDirectory(directory)<0 && directory!=mp3rootDirectory)
 		{
 			deleteFromList(parentDirectory->subDirectories,
 					shortname);
 		}
+	}
+	else if((song = getSongDetails(utf8path,&shortname,&parentDirectory))) {
+		if(song && updateSongInfo(song)<0) {
+			removeSongFromDirectory(parentDirectory,shortname);
+		}
+	}
+	/* apth not found in the db, see if it actually exists on the fs */
+	else if((dir = opendir(utf8path))) {
+		closedir(dir);
+		/* create parent/get parent directory */
+		/* create new directory and add to parent */
+		/* explore direcotry */
+	}
+	else if((song = newSong(utf8path))) {
+		/* create parent/get parent directory */
+		/* add song to directory */
 	}
 }
 
