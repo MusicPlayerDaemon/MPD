@@ -201,11 +201,7 @@ void parseOptions(int argc, char ** argv, Options * options) {
         exit(EXIT_FAILURE);
 }
 
-int main(int argc, char * argv[]) {
-        int port, uid, gid;
-        FILE * out;
-        FILE * err;
-        Options options;
+void closeAllFDs() {
         int i;
 
         for(i=0;i<FD_SETSIZE;i++) {
@@ -218,113 +214,106 @@ int main(int argc, char * argv[]) {
                                 close(i);
                 }
         }
+}
 
-        initConf();
+void establishListen(Options * options) {
+        int port;
 
-        parseOptions(argc,argv,&options);
-
-        initStats();
-        initLog();
-
-        if((port = atoi(options.portStr))<0) {
+        if((port = atoi(options->portStr))<0) {
                 ERROR("problem with port number\n");
-                return EXIT_FAILURE;
+                exit(EXIT_FAILURE);
         }
 
-        if(!options.createDB && !options.updateDB &&
+        if(!options->createDB && !options->updateDB &&
 			(listenSocket = establish(port))<0) 
 	{
                 ERROR("error binding port\n");
-                return EXIT_FAILURE;
+                exit(EXIT_FAILURE);
         }
+}
 
-        /*
-         * lose privileges as early as possible
-         */
-
-        /* change uid */
-        if (options.usr && strlen(options.usr)) {
+void changeToUser(Options * options) {
+        if (options->usr && strlen(options->usr)) {
+                int uid, gid;
 #ifdef _BSD_SOURCE
                 gid_t gid_list[NGROUPS_MAX];
 #endif
 
                 /* get uid */
                 struct passwd * userpwd;
-                if ((userpwd = getpwnam(options.usr)) == NULL) {
-                        ERROR("no such user: %s\n", options.usr);
-                        return EXIT_FAILURE;
+                if ((userpwd = getpwnam(options->usr)) == NULL) {
+                        ERROR("no such user: %s\n", options->usr);
+                        exit(EXIT_FAILURE);
                 }
                 uid = userpwd->pw_uid;
                 gid = userpwd->pw_gid;
 
                 if(setgid(gid) == -1) {
-                        ERROR("cannot setgid of user %s: %s\n", options.usr,
+                        ERROR("cannot setgid of user %s: %s\n", options->usr,
                                         strerror(errno));
-                        return EXIT_FAILURE;
+                        exit(EXIT_FAILURE);
                 }
 
 #ifdef _BSD_SOURCE
                 /* init suplementary groups 
                  * (must be done before we change our uid)
                  */
-                if (initgroups(options.usr, gid) == -1) {
+                if (initgroups(options->usr, gid) == -1) {
                         ERROR("cannot init suplementary groups "
-                                        "of user %s: %s\n", options.usr, 
+                                        "of user %s: %s\n", options->usr, 
                                         strerror(errno));
                 }
                 else if(getgroups(NGROUPS_MAX, gid_list) == -1) {
                         ERROR("cannot get groups "
-                                        "of user %s: %s\n", options.usr, 
+                                        "of user %s: %s\n", options->usr, 
                                         strerror(errno));
-                        return EXIT_FAILURE;
+                        exit(EXIT_FAILURE);
                 }
                 else if(setgroups(NGROUPS_MAX, gid_list) == -1) {
                         ERROR("cannot set groups "
-                                        "of user %s: %s\n", options.usr, 
+                                        "of user %s: %s\n", options->usr, 
                                         strerror(errno));
-                        return EXIT_FAILURE;
+                        exit(EXIT_FAILURE);
                 }
 #endif
 
                 /* set uid */
                 if (setuid(uid) == -1) {
                         ERROR("cannot change to uid of user "
-                                        "%s: %s\n", options.usr, 
+                                        "%s: %s\n", options->usr, 
                                         strerror(errno));
-                        return EXIT_FAILURE;
+                        exit(EXIT_FAILURE);
                 }
 
         }
+}
 
-        if(NULL==(out=fopen(options.logFile,"a"))) {
+void openLogFiles(Options * options, FILE ** out, FILE ** err) {
+        if(options->stdOutput) return;
+
+        if(NULL==(*out=fopen(options->logFile,"a"))) {
                 ERROR("problem opening file \"%s\" for writing\n",
-                                options.logFile);
-                return EXIT_FAILURE;
+                                options->logFile);
+                exit(EXIT_FAILURE);
         }
 
-        if(NULL==(err=fopen(options.errorFile,"a"))) {
+        if(NULL==(*err=fopen(options->errorFile,"a"))) {
                 ERROR("problem opening file \"%s\" for writing\n",
-                                options.errorFile);
-                return EXIT_FAILURE;
+                                options->errorFile);
+                exit(EXIT_FAILURE);
         }
+}
 
-	initPaths(options.playlistDirArg,options.musicDirArg);
-	initPermissions();
-        initReplayGainState();
+void openDB(Options * options, char * argv0) {
+        if(!options->dbFile) directory_db = strdup(rpp2app(".mpddb"));
+        else directory_db = strdup(options->dbFile);
 
-        initTables();
-        initPlaylist();
-        initInputPlugins();
-
-        if(!options.dbFile) directory_db = strdup(rpp2app(".mpddb"));
-        else directory_db = strdup(options.dbFile);
-
-        if(options.createDB>0 || readDirectoryDB()<0) {
-                if(options.createDB<0) {
+        if(options->createDB>0 || readDirectoryDB()<0) {
+                if(options->createDB<0) {
                         ERROR("can't open db file and using \"--no-create-db\""
                                         " command line option\n");
-			ERROR("try running \"%s --only-create-db\"\n",
-					argv[0]);
+			ERROR("try running \"%s --create-db\"\n",
+					argv0);
                         exit(EXIT_FAILURE);
                 }
                 initMp3Directory();
@@ -332,21 +321,16 @@ int main(int argc, char * argv[]) {
                         ERROR("problem opening db for reading or writing\n");
                         exit(EXIT_FAILURE);
                 }
-		if(options.createDB) exit(EXIT_SUCCESS);
+		if(options->createDB) exit(EXIT_SUCCESS);
         }
-	if(options.updateDB) {
+	if(options->updateDB) {
 		if(updateMp3Directory(stderr)<0) exit(EXIT_FAILURE);
 		exit(EXIT_SUCCESS);
 	}
+}
 
-        initCommands();
-        initAudioConfig();
-        initAudioDriver();
-        initPlayerData();
-        initVolume();
-        initInterfaces();
-
-        if(options.daemon) {
+void daemonize(Options * options) {
+        if(options->daemon) {
                 int pid;
 
                 fflush(NULL);
@@ -375,12 +359,10 @@ int main(int argc, char * argv[]) {
                         exit(EXIT_FAILURE);
                 }
         }
+}
 
-        if(options.stdOutput) {
-                fclose(out);
-                fclose(err);
-        }
-        else {
+void setupLogOutput(Options * options, FILE * out, FILE * err) {
+        if(!options->stdOutput) {
                 fflush(NULL);
 
                 if(dup2(fileno(out),STDOUT_FILENO)<0) {
@@ -395,7 +377,8 @@ int main(int argc, char * argv[]) {
                         exit(EXIT_FAILURE);
                 }
 
-                myfprintfStdLogMode(out,err,options.logFile,options.errorFile);
+                myfprintfStdLogMode(out, err, options->logFile,
+                                options->errorFile);
         }
 
         /* lets redirect stdin to dev null as a work around for libao bug */
@@ -412,6 +395,51 @@ int main(int argc, char * argv[]) {
                         exit(EXIT_FAILURE);
                 }
         }
+}
+
+int main(int argc, char * argv[]) {
+        FILE * out;
+        FILE * err;
+        Options options;
+
+        closeAllFDs();
+
+        initConf();
+
+        parseOptions(argc, argv, &options);
+
+        initStats();
+        initLog();
+
+        establishListen(&options);
+
+        /*
+         * lose privileges as early as possible
+         */
+        changeToUser(&options);
+
+        openLogFiles(&options, &out, &err);
+
+	initPaths(options.playlistDirArg,options.musicDirArg);
+	initPermissions();
+        initReplayGainState();
+
+        initTables();
+        initPlaylist();
+        initInputPlugins();
+
+        openDB(&options, argv[0]);
+
+        initCommands();
+        initAudioConfig();
+        initAudioDriver();
+        initPlayerData();
+        initVolume();
+        initInterfaces();
+
+        daemonize(&options);
+
+        setupLogOutput(&options, out, err);
 
         openVolumeDevice();
         initSigHandlers();
