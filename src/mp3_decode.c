@@ -507,7 +507,7 @@ int mp3Read(mp3DecodeData * data, Buffer * cb, DecoderControl * dc) {
 		while((ret = decodeNextFrameHeader(data))==DECODE_CONT);
 		if(ret==DECODE_SKIP) skip = 1;
 		else if(ret==DECODE_BREAK) break;
-		if(data->muteFrame) {
+		if(!data->muteFrame) {
 			while((ret = decodeNextFrame(data))==DECODE_CONT);
 			if(ret==DECODE_BREAK) break;
 		}
