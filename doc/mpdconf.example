@@ -79,6 +79,14 @@ error_file 		"~/.mpd/mpd.error"
 ##################################
 
 
+############ HTTP PROXY ################
+# http_proxy_host	"proxy.isp.com"
+# http_proxy_port	"8080"
+# http_proxy_user	"user"
+# http_proxy_password	"password"
+########################################
+
+
 ########### SECURITY SETTINGS ############
 # if you start mpd as root, its recommended
 #     you specify a a user for mpd to run.

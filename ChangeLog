@@ -1,3 +1,11 @@
+ver 0.11.1 (2004/6/24)
+1) Fix a bug that caused "popping" at the beginning of mp3's
+2) Fix playlistid command
+3) Fix move commands so they don't mess up the song id's
+4) Added support for HTTP Proxy
+5) Detect and skip recursive links in the music directory
+6) Fix addPathToDB() so updating on a specific path doesn't exist correctly adds the parent directories to the DB
+
 ver 0.11.0 (2004/6/18)
 1) Support for playing mp3 and Ogg Vorbis streams
 2) Non-blocking Update

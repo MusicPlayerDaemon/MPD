@@ -159,6 +159,18 @@ of libao on sound cards with very small buffers.
 .B save_absolute_paths_in_playlists <yes or no>
 This specifies whether relative or absolute paths for song filenames are
 used when saving playlists.  The default value is "no".
+.TP
+.B http_proxy_host <string>
+Use to specify the proxy host used for http connections.
+.TP
+.B http_proxy_port <port>
+The port that the http proxy host uses.
+.TP
+.B http_proxy_user <string>
+If the http proxy server requires authentication, this specifies the user.
+.TP
+.B http_proxy_password <string>
+If the http proxy server requires authentication, this specifies the password.
 .SH EXAMPLES
 .TP
 Below is an example config file. (Note: '#' at the beginning of a line denotes a comment.  The '#' must be the first character/symbol on that line.)
@@ -240,5 +252,13 @@ bind_to_address         "any"
 #filesystem_charset     "UTF-8"
 .br
 #replaygain		"album"
+.br
+#http_proxy_host	"proxy.isp.com"
+.br
+#http_proxy_port	"8080"
+.br
+#http_proxy_user	"user"
+.br
+#http_proxy_password	"password"
 .SH SEE ALSO
 mpc(1)
