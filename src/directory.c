@@ -32,7 +32,6 @@
 #include "mpd_types.h"
 #include "sig_handlers.h"
 #include "player.h"
-#include "tagTracker.h"
 #include "list.h"
 #include "dbUtils.h"
 
@@ -1001,8 +1000,6 @@ int writeDirectoryDB() {
 
 	while(fclose(fp) && errno==EINTR);
 
-	sortTagTrackerInfo();
-
 	return 0;
 }
 
@@ -1092,8 +1089,6 @@ int readDirectoryDB() {
 	stats.dbPlayTime = sumSongTimesIn(stderr,NULL);
 
 	if(stat(directory_db,&st)==0) directory_dbModTime = st.st_mtime;
-
-	sortTagTrackerInfo();
 
 	return 0;
 }
