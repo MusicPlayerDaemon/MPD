@@ -113,7 +113,7 @@ void playerQueueLock();
 
 void playerQueueUnlock();
 
-int playerSeek(FILE * fp, char * file, float time);
+int playerSeek(FILE * fp, char * utf8file, float time);
 
 void setPlayerCrossFade(float crossFadeInSeconds);
 

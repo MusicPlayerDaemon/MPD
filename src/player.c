@@ -165,7 +165,7 @@ int playerPlay(FILE * fp, char * utf8file) {
 		return 0;
 	}
 
-	strcpy(pc->file,rmp2amp(utf8ToFsCharset(utf8file)));
+	strncpy(pc->file,rmp2amp(utf8ToFsCharset(utf8file)),MAXPATHLEN);
 
 	pc->play = 1;
 	if(player_pid==0 && playerInit()<0) {
@@ -295,7 +295,7 @@ int queueSong(char * utf8file) {
 	PlayerControl * pc = &(getPlayerData()->playerControl);
 
 	if(pc->queueState==PLAYER_QUEUE_BLANK) {
-		strcpy(pc->file,rmp2amp(utf8ToFsCharset(utf8file)));
+		strncpy(pc->file,rmp2amp(utf8ToFsCharset(utf8file)),MAXPATHLEN);
 
 		if(0);
 #ifdef HAVE_MAD
@@ -352,8 +352,9 @@ void playerQueueUnlock() {
 	}
 }
 
-int playerSeek(FILE * fp, char * file, float time) {
+int playerSeek(FILE * fp, char * utf8file, float time) {
 	PlayerControl * pc = &(getPlayerData()->playerControl);
+	char * file;
 
 	if(pc->state==PLAYER_STATE_STOP) {
 		myfprintf(fp,"%s player not currently playing\n",
@@ -361,7 +362,8 @@ int playerSeek(FILE * fp, char * file, float time) {
 		return -1;
 	}
 
-	if(strcmp(pc->file,rmp2amp(file))!=0) strcpy(pc->file,rmp2amp(file));
+	file = rmp2amp(utf8ToFsCharset(utf8file));
+	if(strcmp(pc->file,file)!=0) strncpy(pc->file,file,MAXPATHLEN);
 		/*if(playerStop(fp)<0) return -1;
 		if(playerPlay(stderr,file)<0) return -1;*/
 	/*}*/
