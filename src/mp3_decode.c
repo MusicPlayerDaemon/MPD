@@ -152,7 +152,6 @@ void initMp3DecodeData(mp3DecodeData * data, InputStream * inStream) {
         data->inStream = inStream;
 
 	mad_stream_init(&data->stream);
-	data->stream.options |= MAD_OPTION_IGNORECRC;
 	mad_frame_init(&data->frame);
 	mad_synth_init(&data->synth);
 	mad_timer_reset(&data->timer);
@@ -411,6 +410,7 @@ int getMp3TotalTime(char * file) {
 
         if(openInputStream(&inStream, file) < 0) return -1;
 	initMp3DecodeData(&data,&inStream);
+        data.stream.options |= MAD_OPTION_IGNORECRC;
 	if(decodeFirstFrame(&data, NULL)<0) ret = -1;
 	else ret = data.totalTime+0.5;
 	mp3DecodeDataFinalize(&data);
@@ -419,9 +419,10 @@ int getMp3TotalTime(char * file) {
 }
 
 int openMp3FromInputStream(InputStream * inStream, mp3DecodeData * data,
-		DecoderControl * dc) 
+		DecoderControl * dc, int ignoreCrc) 
 {
 	initMp3DecodeData(data, inStream);
+        if(ignoreCrc) data->stream.options |= MAD_OPTION_IGNORECRC;
 	if(decodeFirstFrame(data, dc)<0) {
 		mp3DecodeDataFinalize(data);
 		return -1;
@@ -561,10 +562,12 @@ void initAudioFormatFromMp3DecodeData(mp3DecodeData * data, AudioFormat * af) {
 	af->channels = MAD_NCHANNELS(&(data->frame).header);
 }
 
-int mp3_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream) {
+int mp3_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream,
+                int ignoreCrc) 
+{
 	mp3DecodeData data;
 
-	if(openMp3FromInputStream(inStream, &data, dc) < 0) {
+	if(openMp3FromInputStream(inStream, &data, dc, ignoreCrc) < 0) {
                 closeInputStream(inStream);
 		if(!dc->stop) {
                         ERROR("Input does not appear to be a mp3 bit stream.\n");

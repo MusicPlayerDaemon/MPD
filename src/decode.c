@@ -291,7 +291,7 @@ void decodeStart(PlayerControl * pc, OutputBuffer * cb, DecoderControl * dc) {
                 /*if(fileSuffix == DECODE_SUFFIX_MP3 || (inStream.mime &&
                                 0 == strcmp(inStream.mime, "audio/mpeg")))*/
                 {
-		        ret = mp3_decode(cb,dc,&inStream);
+		        ret = mp3_decode(cb, dc, &inStream, 0);
                         break;
                 }
 		ret = DECODE_ERROR_UNKTYPE;
@@ -299,7 +299,7 @@ void decodeStart(PlayerControl * pc, OutputBuffer * cb, DecoderControl * dc) {
         case DECODE_TYPE_FILE:
 #ifdef HAVE_MAD
                 if(suffix == DECODE_SUFFIX_MP3) {
-		        ret = mp3_decode(cb, dc, &inStream);
+		        ret = mp3_decode(cb, dc, &inStream, 1);
                         break;
                 }
 #endif

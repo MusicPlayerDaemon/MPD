@@ -29,7 +29,8 @@
 /* this is primarily used in tag.c */
 int getMp3TotalTime(char * file);
 
-int mp3_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream);
+int mp3_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream,
+                int ignoreCrc);
 
 #endif
 
