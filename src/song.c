@@ -132,6 +132,7 @@ void freeSongList(SongList * list) {
 	freeList(list);
 }
 
+/* DON'T BLOCK SIGNALS IN THIS FUNCTION, called by writeDirectoryDB() */
 int printSongInfo(FILE * fp, Song * song) {
 	myfprintf(fp,"%s%s\n",SONG_FILE,song->utf8file);
 
@@ -151,6 +152,7 @@ int printSongInfoFromList(FILE * fp, SongList * list) {
 	return 0;
 }
 
+/* DON'T BLOCK SIGNALS IN THIS FUNCTION, called by writeDirectoryDB() */
 void writeSongInfoFromList(FILE * fp, SongList * list) {
 	ListNode * tempNode = list->firstNode;
 

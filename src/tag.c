@@ -51,6 +51,7 @@
 #include "mp4ff/mp4ff.h"
 #endif
 
+/* DON'T BLOCK SIGNALS IN THIS FUNCTION, called by writeDirectoryDB() */
 void printMpdTag(FILE * fp, MpdTag * tag) {
 	if(tag->artist) myfprintf(fp,"Artist: %s\n",tag->artist);
 	if(tag->album) myfprintf(fp,"Album: %s\n",tag->album);

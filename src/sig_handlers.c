@@ -90,6 +90,8 @@ void blockSignals() {
 	sigaddset(&sset,SIGCHLD);
 	sigaddset(&sset,SIGUSR1);
 	sigaddset(&sset,SIGHUP);
+	sigaddset(&sset,SIGINT);
+	sigaddset(&sset,SIGTERM);
 	while(sigprocmask(SIG_BLOCK,&sset,NULL)<0 && errno==EINTR);
 }
 
@@ -100,5 +102,7 @@ void unblockSignals() {
 	sigaddset(&sset,SIGCHLD);
 	sigaddset(&sset,SIGUSR1);
 	sigaddset(&sset,SIGHUP);
+	sigaddset(&sset,SIGINT);
+	sigaddset(&sset,SIGTERM);
 	while(sigprocmask(SIG_UNBLOCK,&sset,NULL)<0 && errno==EINTR);
 }
