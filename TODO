@@ -28,6 +28,7 @@
 
 *) Add libshout && vorbis encoding support
 	*) clean up code to make more robust (only works for 16-bits)
+	*) flush buffer on clearEncoder, it produces a little hiccup currently
 	*) cleanup configure script stuff (shout needs vorbisenc)
 
 *) add command
