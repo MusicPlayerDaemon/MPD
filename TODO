@@ -1,12 +1,6 @@
-*) deal with recursive symlinks
-	*) only check symbolic links when updating adding!
-	*) don't keep track of inodes or devices in db
-	*) use inodes and devices for checking for recursive symlinks on the fly
-		*) implement this in updateDirectoryDb and exploreDirectory
-
 *) Optimize read() on cleints
 
-*) Optimize db update
+*) directory.c needs some serious cleanup
 
 0.12
 ----
