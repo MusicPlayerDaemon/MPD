@@ -32,6 +32,8 @@
 
 *) use getaddrinfo instead of gethostbyname (check libshout)
 
+*) have children ignore SIGHUP
+
 Post-1.0
 --------
 *) crosslink "list" stuff, for example, artists are crosslinked to alubms and 
