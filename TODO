@@ -1,35 +1,34 @@
 0.12
 ----
-*) add 2-3 tree for sorted data structures
+*) data structures
+	*) add 2-3 tree for sorted data structures
+	*) remove changes made to linked list for TagTracker
 
-*) remove changes made to linked list for TagTracker
+*) debugging/errors
+	*) more info for failing to read/write db 
+	*) more info for stat'ing errors for music and playlist directory
+	*) add error codes for status->error
 
-*) parsing of lame tags (including getting replaygain and gapless info)
+*) config
+	*) make db_file required and port optional in the config file
+	*) remove command line config options, and require a config file
+	*) Cleanup Config File Code
 
-*) put more debugging info for:
-	*) failing to read/write db 
-	*) stat'ing errors for music and playlist directory
+*) metadata todo
+	*) parsing of lame tags (including getting replaygain and gapless info)
+	*) implement apev2 and id3v1 tag reader from xmms-musepack plugin
+	*) only use libid3tag for id3v2 tags, use internal impl for id3v1 tags
 
-*) Cleanup Config File Code
+*) input plugins
+	*) Handle mp1 and mp2 files (including files with mp3 suffixes) 
+	*) add support for playing aac streams (gee, thanks icecast)
 
-*) Handle mp1 and mp2 files (including mp2's that are disguised as mp3's with 
-	a mp3 suffix)
-
-*) add error codes for status->error
-
-*) allowing "pausing" of audio output devices
-
-*) add support so that audioOutput plugins can modify the output audio format.
-	(This way, alsa's _near functions can be used to adjust for output
-	 devices on the fly: for channels, bits, and rate)
-
-*) add support for automagically detecting the current output device
-
-*) add support for playing aac streams (gee, thanks icecast)
-
-*) implement apev2 and id3v1 tag reader from xmms-musepack plugin
-
-*) only use libid3tag for id3v2 tags, use internal implementation for id3v1 tags
+*) aduio output
+	*) allowing "pausing" of audio output devices
+	*) add support so that audioOutput plugins can modify the output format.
+		(This way, alsa's _near functions can be used to adjust output
+		format devices on the fly: for channels, bits, and rate)
+	*) add support for automagically detecting the current output device
 
 0.13
 ----
