@@ -706,14 +706,15 @@ int mp3_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream) {
                                 data.elapsedTime,data.bitRate/1000);
 	}
 
-	flushOutputBuffer(cb);
-	mp3DecodeDataFinalize(&data);
 	closeInputStream(inStream);
 
-	/*if(dc->seek) {
-                dc->seekError = 1;
+	if(dc->seek && data.muteFrame == MUTEFRAME_SEEK) {
+                clearOutputBuffer(cb);
                 dc->seek = 0;
-        }*/
+        }
+
+	flushOutputBuffer(cb);
+	mp3DecodeDataFinalize(&data);
 
 	if(dc->stop) {
 		dc->state = DECODE_STATE_STOP;
