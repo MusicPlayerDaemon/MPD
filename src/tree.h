@@ -48,4 +48,6 @@ TreeIterator * newTreeIterator(Tree * tree, TreeIteratorType type);
  */
 TreeIterator * nextTreeIterator(TreeIterator * iter);
 
+void freeTreeIterator(TreeIterator * iter);
+
 #endif // TREE_H
