@@ -25,6 +25,7 @@
 #include "audio.h"
 #include "log.h"
 #include "pcm_utils.h"
+#include "inputStream.h"
 
 #include "mp4ff/mp4ff.h"
 
@@ -72,17 +73,18 @@ int mp4_getAACTrack(mp4ff_t *infile) {
 	return -1;
 }
 
-uint32_t mp4_readCallback(void *user_data, void *buffer, uint32_t length) {
-	return fread(buffer, 1, length, (FILE*)user_data);
+uint32_t mp4_inputStreamReadCallback(void *inStream, void *buffer, 
+		uint32_t length) 
+{
+	return readFromInputStream((InputStream*) inStream, buffer, 1, length);
 }
             
-uint32_t mp4_seekCallback(void *user_data, uint64_t position) {
-	return fseek((FILE*)user_data, position, SEEK_SET);
+uint32_t mp4_inputStreamSeekCallback(void *inStream, uint64_t position) {
+	return seekInputStream((InputStream *) inStream, position, SEEK_SET);
 }       
 		    
 
 int mp4_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc) {
-	FILE * fh;
 	mp4ff_t * mp4fh;
 	mp4ff_callback_t * mp4cb; 
 	int32_t track;
@@ -109,23 +111,23 @@ int mp4_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc) {
 	int seekPositionFound = 0;
 	long offset;
 	mpd_uint16 bitRate = 0;
+	InputStream inStream;
 
-	fh = fopen(dc->file,"r");
-	if(!fh) {
+	if(openInputStreamFromFile(&inStream,dc->file) < 0) {
 		ERROR("failed to open %s\n",dc->file);
 		return -1;
 	}
 
 	mp4cb = malloc(sizeof(mp4ff_callback_t));
-	mp4cb->read = mp4_readCallback;
-	mp4cb->seek = mp4_seekCallback;
-	mp4cb->user_data = fh;
+	mp4cb->read = mp4_inputStreamReadCallback;
+	mp4cb->seek = mp4_inputStreamSeekCallback;
+	mp4cb->user_data = &inStream;
 
 	mp4fh = mp4ff_open_read(mp4cb);
 	if(!mp4fh) {
 		ERROR("Input does not appear to be a mp4 stream.\n");
 		free(mp4cb);
-		fclose(fh);
+		closeInputStream(&inStream);
 		return -1;
 	}
 
@@ -133,7 +135,7 @@ int mp4_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc) {
 	if(track < 0) {
 		ERROR("No AAC track found in mp4 stream.\n");
 		mp4ff_close(mp4fh);
-		fclose(fh);
+		closeInputStream(&inStream);
 		free(mp4cb);
 		return -1;
 	}
@@ -163,7 +165,7 @@ int mp4_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc) {
 		faacDecClose(decoder);
 		mp4ff_close(mp4fh);
 		free(mp4cb);
-		fclose(fh);
+		closeInputStream(&inStream);
 		return -1;
 	}
 
@@ -178,7 +180,7 @@ int mp4_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc) {
 		ERROR("Error getting audio format of mp4 AAC track.\n");
 		faacDecClose(decoder);
 		mp4ff_close(mp4fh);
-		fclose(fh);
+		closeInputStream(&inStream);
 		free(mp4cb);
 		return -1;
 	}
@@ -316,7 +318,7 @@ int mp4_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc) {
 	free(seekTable);
 	faacDecClose(decoder);
 	mp4ff_close(mp4fh);
-	fclose(fh);
+	closeInputStream(&inStream);
 	free(mp4cb);
 
 	if(dc->start) return -1;

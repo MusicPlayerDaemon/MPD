@@ -29,11 +29,13 @@
 
 int mp4_getAACTrack(mp4ff_t *infile);
 
-uint32_t mp4_readCallback(void *user_data, void *buffer, uint32_t length);
-            
-uint32_t mp4_seekCallback(void *user_data, uint64_t position);
-		    
 int mp4_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc);
+
+uint32_t mp4_inputStreamReadCallback(void *inStream, void *buffer, 
+	uint32_t length);
+
+uint32_t mp4_inputStreamSeekCallback(void *inStream, uint64_t position);
+
 
 #endif /* HAVE_FAAD */
 

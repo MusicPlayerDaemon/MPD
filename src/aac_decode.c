@@ -26,6 +26,7 @@
 #include "utils.h"
 #include "audio.h"
 #include "log.h"
+#include "inputStream.h"
 
 #include <stdio.h>
 #include <unistd.h>
@@ -35,12 +36,12 @@
 
 /* all code here is either based on or copied from FAAD2's frontend code */
 typedef struct {
+	InputStream * inStream;
 	long bytesIntoBuffer;
 	long bytesConsumed;
 	long fileOffset;
 	unsigned char *buffer;
 	int atEof;
-	FILE *infile;
 } AacBuffer;
 
 void fillAacBuffer(AacBuffer *b) {
@@ -53,8 +54,9 @@ void fillAacBuffer(AacBuffer *b) {
 		}
 
 		if(!b->atEof) {
-			bread = fread((void *)(b->buffer+b->bytesIntoBuffer),1,
-					b->bytesConsumed,b->infile);
+			bread = readFromInputStream(b->inStream,
+					(void *)(b->buffer+b->bytesIntoBuffer),
+					1,b->bytesConsumed);
 			if(bread!=b->bytesConsumed) b->atEof = 1;
 			b->bytesIntoBuffer+=bread;
 		}
@@ -132,7 +134,7 @@ int adtsParse(AacBuffer * b, float * length) {
 	return 1;
 }
 
-void initAacBuffer(FILE * fp, AacBuffer * b, float * length, 
+void initAacBuffer(InputStream * inStream, AacBuffer * b, float * length, 
 		size_t * retFileread, size_t * retTagsize)
 {
 	size_t fileread;
@@ -143,17 +145,15 @@ void initAacBuffer(FILE * fp, AacBuffer * b, float * length,
 
 	memset(b,0,sizeof(AacBuffer));
 
-	b->infile = fp;
+	b->inStream = inStream;
 
-	fseek(b->infile,0,SEEK_END);
-	fileread = ftell(b->infile);
-	fseek(b->infile,0,SEEK_SET);
+	fileread = inStream->size;
 
 	b->buffer = malloc(FAAD_MIN_STREAMSIZE*AAC_MAX_CHANNELS);
 	memset(b->buffer,0,FAAD_MIN_STREAMSIZE*AAC_MAX_CHANNELS);
 
-	bread = fread(b->buffer,1,FAAD_MIN_STREAMSIZE*AAC_MAX_CHANNELS,
-			b->infile);
+	bread = readFromInputStream(inStream,b->buffer,1,
+			FAAD_MIN_STREAMSIZE*AAC_MAX_CHANNELS);
 	b->bytesIntoBuffer = bread;
 	b->bytesConsumed = 0;
 	b->fileOffset = 0;
@@ -177,11 +177,10 @@ void initAacBuffer(FILE * fp, AacBuffer * b, float * length,
 
 	if((b->buffer[0] == 0xFF) && ((b->buffer[1] & 0xF6) == 0xF0)) {
 		adtsParse(b, length);
-		fseek(b->infile, tagsize, SEEK_SET);
+		seekInputStream(b->inStream, tagsize, SEEK_SET);
 
-		bread = fread(b->buffer, 1, 
-				FAAD_MIN_STREAMSIZE*AAC_MAX_CHANNELS,
-				b->infile);
+		bread = readFromInputStream(b->inStream, b->buffer, 1, 
+				FAAD_MIN_STREAMSIZE*AAC_MAX_CHANNELS);
 		if(bread != FAAD_MIN_STREAMSIZE*AAC_MAX_CHANNELS) b->atEof = 1;
 		else b->atEof = 0;
 		b->bytesIntoBuffer = bread;
@@ -209,12 +208,12 @@ float getAacFloatTotalTime(char * file) {
 	faacDecConfigurationPtr config;
 	unsigned long sampleRate;
 	unsigned char channels;
-	FILE * fp = fopen(file,"r");
+	InputStream inStream;
 	size_t bread;
 
-	if(fp==NULL) return -1;
+	if(openInputStreamFromFile(&inStream,file) < 0) return -1;
 
-	initAacBuffer(fp,&b,&length,&fileread,&tagsize);
+	initAacBuffer(&inStream,&b,&length,&fileread,&tagsize);
 
 	if(length < 0) {
 		decoder = faacDecOpen();
@@ -236,7 +235,7 @@ float getAacFloatTotalTime(char * file) {
 	}
 
 	if(b.buffer) free(b.buffer);
-	fclose(b.infile);
+	closeInputStream(&inStream);
 
 	return length;
 }
@@ -270,15 +269,13 @@ int aac_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc) {
 	int seekPositionFound = 0;*/
 	mpd_uint16 bitRate = 0;
 	AacBuffer b;
-	FILE * fp;
+	InputStream inStream;
 
 	if((totalTime = getAacFloatTotalTime(dc->file)) < 0) return -1;
 
-	fp = fopen(dc->file,"r");
+	if(openInputStreamFromFile(&inStream,dc->file) < 0) return -1;
 
-	if(fp==NULL) return -1;
-
-	initAacBuffer(fp,&b,NULL,NULL,NULL);
+	initAacBuffer(&inStream,&b,NULL,NULL,NULL);
 
 	decoder = faacDecOpen();
 
@@ -303,7 +300,7 @@ int aac_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc) {
 	if(bread < 0) {
 		ERROR("Error not a AAC stream.\n");
 		faacDecClose(decoder);
-		fclose(b.infile);
+		closeInputStream(b.inStream);
 		if(b.buffer) free(b.buffer);
 		return -1;
 	}
@@ -404,7 +401,7 @@ int aac_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc) {
 	} while (!eof);
 
 	faacDecClose(decoder);
-	fclose(b.infile);
+	closeInputStream(b.inStream);
 	if(b.buffer) free(b.buffer);
 
 	if(dc->start) return -1;

@@ -26,6 +26,7 @@
 #include "utils.h"
 #include "utf8.h"
 #include "log.h"
+#include "inputStream.h"
 
 #include <sys/stat.h>
 #include <stdlib.h>
@@ -209,7 +210,7 @@ MpdTag * aacTagDup(char * utf8file) {
 
 MpdTag * mp4DataDup(char * utf8file, int * mp4MetadataFound) {
 	MpdTag * ret = NULL;
-	FILE * fh;
+	InputStream inStream;
 	mp4ff_t * mp4fh;
 	mp4ff_callback_t * cb; 
 	int32_t track;
@@ -217,28 +218,29 @@ MpdTag * mp4DataDup(char * utf8file, int * mp4MetadataFound) {
 	int32_t scale;
 
 	*mp4MetadataFound = 0;
-
-	fh = fopen(rmp2amp(utf8ToFsCharset(utf8file)),"r");
-	if(!fh) {
+	
+	if(openInputStreamFromFile(&inStream,rmp2amp(utf8ToFsCharset(utf8file)))
+			< 0)
+	{
 		return NULL;
 	}
 
 	cb = malloc(sizeof(mp4ff_callback_t));
-	cb->read = mp4_readCallback;
-	cb->seek = mp4_seekCallback;
-	cb->user_data = fh;
+	cb->read = mp4_inputStreamReadCallback;
+	cb->seek = mp4_inputStreamSeekCallback;
+	cb->user_data = &inStream;
 
 	mp4fh = mp4ff_open_read(cb);
 	if(!mp4fh) {
 		free(cb);
-		fclose(fh);
+		closeInputStream(&inStream);
 		return NULL;
 	}
 
 	track = mp4_getAACTrack(mp4fh);
 	if(track < 0) {
 		mp4ff_close(mp4fh);
-		fclose(fh);
+		closeInputStream(&inStream);
 		free(cb);
 		return NULL;
 	}
@@ -248,7 +250,7 @@ MpdTag * mp4DataDup(char * utf8file, int * mp4MetadataFound) {
 	scale = mp4ff_time_scale(mp4fh,track);
 	if(scale < 0) {
 		mp4ff_close(mp4fh);
-		fclose(fh);
+		closeInputStream(&inStream);
 		free(cb);
 		freeMpdTag(ret);
 		return NULL;
@@ -272,7 +274,7 @@ MpdTag * mp4DataDup(char * utf8file, int * mp4MetadataFound) {
 	}
 
 	mp4ff_close(mp4fh);
-	fclose(fh);
+	closeInputStream(&inStream);
 	free(cb);
 
 	return ret;
