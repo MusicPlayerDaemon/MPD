@@ -489,6 +489,7 @@ Song * playerCurrentDecodeSong() {
                 if(pc->title >= 0) {
                         song->tag->title = strdup(pc->title + pc->metadata);
                 }
+                validateUtf8Tag(song->tag);
                 resetPlayerMetadata();
                 return song;
         }
