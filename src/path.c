@@ -29,7 +29,7 @@
 #include <unistd.h>
 
 #ifdef HAVE_LOCALE
-#ifdef HAVE_LANGINFO
+#ifdef HAVE_LANGINFO_CODESET
 #include <locale.h>
 #include <langinfo.h>
 #endif
@@ -138,7 +138,7 @@ void initPaths(char * playlistDirArg, char * musicDirArg) {
 		charset = strdup(getConf()[CONF_FS_CHARSET]);
 	}
 #ifdef HAVE_LOCALE
-#ifdef HAVE_LANGINFO
+#ifdef HAVE_LANGINFO_CODESET
 	else if((originalLocale = setlocale(LC_CTYPE,NULL))) {
 		char * temp;
 		char * currentLocale;

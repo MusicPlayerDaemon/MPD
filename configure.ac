@@ -70,7 +70,9 @@ AC_CHECK_LIB(nsl,gethostbyname,MPD_LIBS="$MPD_LIBS -lnsl",)
 
 AC_CHECK_LIB(m,exp,MPD_LIBS="$MPD_LIBS -lm",)
 
-AC_CHECK_HEADER(langinfo.h,[enable_langinfo=yes;AC_DEFINE(HAVE_LANGINFO,1,[Define if nl_langinfo.h is present])],enable_langinfo=no)
+dnl doesn't work for systems that don't have CODESET like OpenBSD
+dnl AC_CHECK_HEADER(langinfo.h,[enable_langinfo=yes;AC_DEFINE(HAVE_LANGINFO,1,[Define if nl_langinfo.h is present])],enable_langinfo=no)
+AM_LANGINFO_CODESET
 AC_CHECK_HEADER(locale.h,[enable_locale=yes;AC_DEFINE(HAVE_LOCALE,1,[Define if locale.h is present])],enable_locale=no)
 
 if test x$enable_ipv6 = xyes; then
@@ -499,7 +501,7 @@ else
 	echo "locale support ................disabled"
 fi
 
-if test x$enable_langinfo = xyes; then
+if test x$am_cv_langinfo_codeset = xyes; then
 	echo "langinfo support ..............enabled"
 else
 	echo "langinfo support ..............disabled"
