@@ -132,17 +132,18 @@ int adtsParse(AacBuffer * b, float * length) {
 	return 1;
 }
 
-int initAacBuffer(char * file, AacBuffer * b, float * length) {
+void initAacBuffer(FILE * fp, AacBuffer * b, float * length, 
+		size_t * retFileread, size_t * retTagsize)
+{
 	size_t fileread;
 	size_t bread;
 	size_t tagsize;
 
-	*length = -1;
+	if(length) *length = -1;
 
 	memset(b,0,sizeof(AacBuffer));
 
-	b->infile = fopen(file,"r");
-	if(b->infile == NULL) return -1;
+	b->infile = fp;
 
 	fseek(b->infile,0,SEEK_END);
 	fileread = ftell(b->infile);
@@ -169,6 +170,11 @@ int initAacBuffer(char * file, AacBuffer * b, float * length) {
 		fillAacBuffer(b);
 	}
 
+	if(retFileread) *retFileread = fileread;
+	if(retTagsize) *retTagsize = tagsize;
+
+	if(!length) return;
+
 	if((b->buffer[0] == 0xFF) && ((b->buffer[1] & 0xF6) == 0xF0)) {
 		adtsParse(b, length);
 		fseek(b->infile, tagsize, SEEK_SET);
@@ -193,26 +199,53 @@ int initAacBuffer(char * file, AacBuffer * b, float * length) {
 		*length = fileread;
 		if(*length!=0 && bitRate!=0) *length = *length*8.0/bitRate;
 	}
-
-	if(*length<0) {
-		fclose(b->infile);
-		if(b->buffer) free(b->buffer);
-		return -1;
-	}
-
-	return 0;
 }
 
-int getAacTotalTime(char * file) {
+float getAacFloatTotalTime(char * file) {
 	AacBuffer b;
 	float length;
+	size_t fileread, tagsize;
+	faacDecHandle decoder;
+	faacDecConfigurationPtr config;
+	unsigned long sampleRate;
+	unsigned char channels;
+	FILE * fp = fopen(file,"r");
 
-	if(initAacBuffer(file,&b,&length) < 0) return -1;
+	if(fp==NULL) return -1;
+
+	initAacBuffer(fp,&b,&length,&fileread,&tagsize);
+
+	if(length < 0) {
+		decoder = faacDecOpen();
+
+		config = faacDecGetCurrentConfiguration(decoder);
+		config->outputFormat = FAAD_FMT_16BIT;
+		faacDecSetConfiguration(decoder,config);
+
+		fillAacBuffer(&b);
+		if(faacDecInit(decoder,b.buffer,b.bytesIntoBuffer,
+				&sampleRate,&channels) >= 0 &&
+				sampleRate > 0 && channels > 0)
+		{
+			length = 0;
+		}
+
+		faacDecClose(decoder);
+	}
 
 	if(b.buffer) free(b.buffer);
 	fclose(b.infile);
 
-	return (int)(length+0.5);
+	return length;
+}
+
+int getAacTotalTime(char * file) {
+	int time = -1;
+	float length;
+
+	if((length = getAacFloatTotalTime(file))>=0) time = length+0.5;
+
+	return time;
 }
 
 
@@ -235,13 +268,15 @@ int aac_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc) {
 	int seekPositionFound = 0;*/
 	mpd_uint16 bitRate = 0;
 	AacBuffer b;
+	FILE * fp;
 
-	printf("aac_decode!\n");
+	if((totalTime = getAacFloatTotalTime(dc->file)) < 0) return -1;
 
-	if(initAacBuffer(dc->file,&b,&totalTime) < 0) {
-		ERROR("Not AAC file no ADTS or ADIF headers found.\n");
-		return -1;
-	}
+	fp = fopen(dc->file,"r");
+
+	if(fp==NULL) return -1;
+
+	initAacBuffer(fp,&b,NULL,NULL,NULL);
 
 	decoder = faacDecOpen();
 
@@ -254,8 +289,6 @@ int aac_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc) {
 	config->dontUpSampleImplicitSBR = 0;
 #endif
 	faacDecSetConfiguration(decoder,config);
-
-	af->bits = 16;
 
 	fillAacBuffer(&b);
 	if((bread = faacDecInit(decoder,b.buffer,b.bytesIntoBuffer,
@@ -270,8 +303,9 @@ int aac_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc) {
 
 	af->sampleRate = sampleRate;
 	af->channels = channels;
+	af->bits = 16;
 
-	cb->totalTime = totalTime+0.5;
+	cb->totalTime = totalTime;
 
 	dc->state = DECODE_STATE_DECODE;
 	dc->start = 0;
@@ -280,44 +314,8 @@ int aac_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc) {
 	advanceAacBuffer(&b,bread);
 	fillAacBuffer(&b);
 
-	/*seekTable = malloc(sizeof(float)*numSamples);*/
-
 	do {
-		/*if(dc->seek && seekTableEnd>1 && 
-				seekTable[seekTableEnd]>=dc->seekWhere)
-		{
-			int i = 2;
-			while(seekTable[i]<dc->seekWhere) i++;
-			sampleId = i-1;
-			time = seekTable[sampleId];
-		}
-
-		if(sampleId>seekTableEnd) {
-			seekTable[sampleId] = time;
-			seekTableEnd = sampleId;
-		}
-
-		if(sampleId==0) dur = 0;
-		if(offset>dur) dur = 0;
-		else dur-=offset;
-		time+=((float)dur)/scale;
-
-		if(dc->seek && time>dc->seekWhere) seekPositionFound = 1;
-
-		if(dc->seek && seekPositionFound) {
-			seekPositionFound = 0;
-			chunkLen = 0;
-			cb->end = 0;
-			cb->wrap = 0;
-			dc->seek = 0;
-		}
-
-		if(dc->seek) continue;*/
-
 		if(dc->seek) {
-			/*chunkLen = 0;
-			cb->wrap = 0;
-			cb->end = 0;*/
 			dc->seekError = 1;
 			dc->seek = 0;
 		}
@@ -335,9 +333,10 @@ int aac_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc) {
 
 		if(sampleCount>0) {
 			bitRate = frameInfo.bytesconsumed*8.0*
-				frameInfo.channels*sampleRate/
+				frameInfo.channels*frameInfo.samplerate/
 				frameInfo.samples/1024+0.5;
-			time+= (float)(frameInfo.samples)/channels/sampleRate;
+			time+= (float)(frameInfo.samples)/frameInfo.channels/
+				frameInfo.samplerate;
 		}
 			
 		sampleBufferLen = sampleCount*2;
@@ -392,7 +391,6 @@ int aac_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc) {
 		chunkLen = 0;
 	}
 
-	/*free(seekTable);*/
 	faacDecClose(decoder);
 	fclose(b.infile);
 	if(b.buffer) free(b.buffer);
