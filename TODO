@@ -27,6 +27,7 @@
 *) dynamic metadata
 	*) implment by recording the ftell positions of entries
 	*) buffer changes and flush them once every 60 seconds
+	*) buffer changes while doing an update
 	*) be sure to check that the metadata "header" is what we expect
 	   before writing at the position
 	*) add support for:
