@@ -31,8 +31,10 @@
 #define COMMAND_RESPOND_ERROR	"ACK"
 #define COMMAND_RESPOND_OK	"OK"
 
-int processCommand(FILE * fp, unsigned int * permission, int argArrayLength, 
-		char ** argArray, ListNode * commandNode);
+int proccessListOfCommands(FILE * fp, int * permission, int * expired, 
+		List * list);
+
+int processCommand(FILE * fp, unsigned int * permission, char * commandString);
 
 void initCommands();
 

@@ -31,6 +31,7 @@
 #include "permission.h"
 #include "audio.h"
 #include "buffer2array.h"
+#include "log.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -708,25 +709,59 @@ CommandEntry * getCommandEntryFromString(char * string, int * permission) {
 	return cmd;
 }
 
-int processCommand(FILE * fp, unsigned int * permission, int argArrayLength, 
-		char ** argArray, ListNode * commandNode) 
+int processCommandInternal(FILE * fp, unsigned int * permission, 
+		char * commandString,
+		ListNode * commandNode) 
 {
+	int argArrayLength;
+	char ** argArray;
         CommandEntry * cmd;
+	int ret = -1;
+
+	argArrayLength = buffer2array(commandString,&argArray);
 
         if(argArrayLength == 0) return 0;
 
-	if(NULL==(cmd = getCommandEntryAndCheckArgcAndPermission(fp,permission,
+	if((cmd = getCommandEntryAndCheckArgcAndPermission(fp,permission,
 			argArrayLength,argArray))) 
 	{
-		return -1;
+        	if(NULL==commandNode || NULL==cmd->listHandler) {
+			ret = cmd->handler(fp, permission, argArrayLength, 
+					argArray);
+		}
+		else {
+			ret = cmd->listHandler(fp, permission, argArrayLength,
+					argArray, commandNode, cmd);
+		}
 	}
 
-        if(NULL==commandNode || NULL==cmd->listHandler) {
-		return cmd->handler(fp, permission, argArrayLength, argArray);
-	}
-	else {
-		return cmd->listHandler(fp, permission, argArrayLength,
-				argArray, commandNode, cmd);
-	}
+	freeArgArray(argArray,argArrayLength);
+
+	return ret;
 }
 
+int proccessListOfCommands(FILE * fp, int * permission, int * expired, 
+		List * list) 
+{
+	ListNode * node = list->firstNode;
+	ListNode * tempNode;
+	int ret = 0;
+
+	while(node!=NULL) {
+		DEBUG("proccesListOfCommands: process command \"%s\"\n",
+				node->data);
+		ret = processCommandInternal(fp,permission,(char *)node->data,
+				node);
+		DEBUG("proccessListOfCommands: command returned %i\n",ret);
+		tempNode = node->nextNode;
+		deleteNodeFromList(list,node);
+		node = tempNode;
+		if(ret!=0 || (*expired)!=0) node = NULL;
+	}
+	
+	return ret;
+}
+
+int processCommand(FILE * fp, unsigned int * permission, char * commandString) {
+	return processCommandInternal(fp,permission,commandString,NULL);
+}

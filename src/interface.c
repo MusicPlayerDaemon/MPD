@@ -17,7 +17,6 @@
  */
 
 #include "interface.h"
-#include "buffer2array.h"
 #include "command.h"
 #include "conf.h"
 #include "list.h"
@@ -222,40 +221,28 @@ int interfaceReadInput(Interface * interface) {
 			closeInterface(interface);
 		}
 		else if(interface->buffer[interface->bufferLength-1]=='\n') {
-			char ** argArray;
-			int argArrayLength;
-
 			interface->buffer[interface->bufferLength-1] = '\0';
 			interface->bufferLength = 0;
-			argArrayLength = buffer2array(interface->buffer,&argArray);
 
 			if(interface->commandList) {
-				if(argArrayLength==0);
-				else if(strcmp(argArray[0],INTERFACE_LIST_MODE_END)==0) {
-					ListNode * node = interface->commandList->firstNode;
-					ListNode * tempNode;
-					ret = 0;
-
-					while(node!=NULL) {
-						char ** argArray;
-						int argArrayLength;
-						argArrayLength = buffer2array((char *)node->data,&argArray);
-						DEBUG("interface %i: process command \"%s\"\n",interface->num,node->data);
-						ret = processCommand(interface->fp,&(interface->permission),argArrayLength,argArray,node);
-						DEBUG("interface %i: command returned %i\n",interface->num,ret);
-						freeArgArray(argArray,argArrayLength);
-						tempNode = node->nextNode;
-						deleteNodeFromList(
-							interface->commandList,
-							node);
-						node = tempNode;
-						if(ret!=0 || interface->expired)
-						{
-							node = NULL;
-						}
-					}
+				if(strcmp(interface->buffer,
+						INTERFACE_LIST_MODE_END)==0) 
+				{
+					DEBUG("interface %i: process command "
+						"list\n",interface->num);
+					ret = proccessListOfCommands(
+						interface->fp,
+						&(interface->permission),
+						&(interface->expired),
+						interface->commandList);
+					DEBUG("interface %i: process command "
+						"list returned %i\n",
+						interface->num,
+						ret);
 					if(ret==0) {
-						myfprintf(interface->fp,"%s\n",COMMAND_RESPOND_OK);
+						myfprintf(interface->fp,
+							"%s\n",
+							COMMAND_RESPOND_OK);
 					}
 					else if(ret==COMMAND_RETURN_CLOSE ||
 							interface->expired) {
@@ -267,21 +254,34 @@ int interfaceReadInput(Interface * interface) {
 					interface->commandList = NULL;
 				}
 				else {
-					interface->commandListSize+=sizeof(ListNode);
-					interface->commandListSize+=strlen(interface->buffer)+1;
-					if(interface->commandListSize>interface_max_command_list_size) {
-						ERROR("interface %i: command list size (%lli) is larger than the max (%lli)\n",interface->num,interface->commandListSize,interface_max_command_list_size);
+					interface->commandListSize+=
+						sizeof(ListNode);
+					interface->commandListSize+=
+						strlen(interface->buffer)+1;
+					if(interface->commandListSize > 
+						interface_max_command_list_size)
+					{
+						ERROR("interface %i: command "
+							"list size (%lli) is "
+							"larger than the max "
+							"(%lli)\n",
+							interface->num,
+							interface->
+							commandListSize,
+							interface_max_command_list_size);
 						closeInterface(interface);
 						
 					}
 					else {
-						insertInListWithoutKey(interface->commandList,strdup(interface->buffer));
+						insertInListWithoutKey(
+							interface->commandList,
+							strdup(interface->
+							buffer));
 					}
 				}
 			}
 			else {
-				if(argArrayLength &&
-						strcmp(argArray[0],
+				if(strcmp(interface->buffer,
 						INTERFACE_LIST_MODE_BEGIN)==0) 
 				{
 					interface->commandList = makeList(free);
@@ -290,8 +290,7 @@ int interfaceReadInput(Interface * interface) {
 					ret = 1;
 				}
 				else {
-					if(argArrayLength==0) ret = 0;
-					else if(strcmp(argArray[0],
+					if(strcmp(interface->buffer,
 							INTERFACE_LIST_MODE_END)
 							==0) 
 					{
@@ -300,7 +299,11 @@ int interfaceReadInput(Interface * interface) {
 					}
 					else {
 						DEBUG("interface %i: process command \"%s\"\n",interface->num,interface->buffer);
-						ret = processCommand(interface->fp,&(interface->permission),argArrayLength,argArray,NULL);
+						ret = processCommand(
+							interface->fp,
+							&(interface->
+								permission),
+							interface->buffer);
 						DEBUG("interface %i: command returned %i\n",interface->num,ret);
 					}
 					if(ret==0) {
@@ -313,7 +316,6 @@ int interfaceReadInput(Interface * interface) {
 					printInterfaceOutBuffer(interface);
 				}
 			}
-			freeArgArray(argArray,argArrayLength);
 		}
 		return ret;
 	}
