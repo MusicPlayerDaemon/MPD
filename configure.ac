@@ -102,6 +102,12 @@ AP_maGiC_VALUE
 fi
 
 if test x$enable_ao = xyes; then
+	if test x$enable_ogg = xno; then
+		AC_MSG_WARN("disabling shout streaming support since vorbis was not found")
+	fi
+fi
+
+if test x$enable_ao = xyes; then
 	XIPH_PATH_AO(MPD_LIBS="$MPD_LIBS $AO_LIBS" MPD_CFLAGS="$MPD_CFLAGS $AO_CFLAGS",AC_MSG_ERROR(Must have libao installed!!!))
 	AC_DEFINE(HAVE_AUDIO, 1, [Define to play audio])
 fi
