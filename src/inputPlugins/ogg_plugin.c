@@ -242,10 +242,30 @@ int ogg_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream)
 	callbacks.close_func = ogg_close_cb;
 	callbacks.tell_func = ogg_tell_cb;
 	
-	if(ov_open_callbacks(&data, &vf, NULL, 0, callbacks) < 0) {
+	if((ret = ov_open_callbacks(&data, &vf, NULL, 0, callbacks)) < 0) {
 		closeInputStream(inStream);
 		if(!dc->stop) {
-		        ERROR("Input does not appear to be an Ogg Vorbis stream.\n");
+		        ERROR("Error decoding Ogg Vorbis stream: ");
+			switch(ret) {
+			case OV_EREAD:
+				ERROR("read error\n");
+				break;
+			case OV_ENOTVORBIS:
+				ERROR("not vorbis stream\n");
+				break;
+			case OV_EVERSION:
+				ERROR("vorbis version mismatch\n");
+				break;
+			case OV_EBADHEADER:
+				ERROR("invalid vorbis header\n");
+				break;
+			case OV_EFAULT:
+				ERROR("internal logic error\n");
+				break;
+			default:
+				ERROR("unknown error\n");
+				break;
+			}
                         return -1;
                 }
                 else {
