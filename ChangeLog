@@ -1,4 +1,4 @@
-ver 0.10.0 (2004/3/2)
+ver 0.10.0 (2004/3/3)
 1) Use UTF-8 for all client communications
 2) Crossfading support
 3) Password Authentication (all in plaintext)
@@ -15,6 +15,8 @@ ver 0.10.0 (2004/3/2)
 14) Fix a segfault with flac vorbis comments simply being "="
 15) Fix a segfault/bug in queueNextSong with repeat+random
 16) Fix a bug, where one process may segfault, and cause more processes to spawn w/o killing ones that lost their parent.
+17) Fix a bug when the OSS device was unable to fetch the current volume,
+it would close the device (when it maybe previously closed by the exact same code)
 
 ver 0.9.4 (2004/1/21)
 1) Fix a bug where updated tag info wasn't being detected
