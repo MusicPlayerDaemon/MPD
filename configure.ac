@@ -35,6 +35,7 @@ AC_ARG_ENABLE(audio,[  --disable-audio    disable support for playing],,enable_a
 AC_ARG_ENABLE(shout,[  --disable-shout    disable support for streaming through shout],,enable_shout=yes)
 AC_ARG_ENABLE(iconv,[  --disable-iconv     disable iconv support],,enable_iconv=yes)
 AC_ARG_ENABLE(ipv6,[  --disable-ipv6     disable IPv6 support],,enable_ipv6=yes)
+AC_ARG_ENABLE(alsa,[  --disable-oss     disable OSS support],,enable_oss=yes)
 AC_ARG_ENABLE(alsa,[  --disable-alsa     disable ALSA Mixer support],,enable_alsa=yes)
 AC_ARG_ENABLE(ogg,[  --disable-ogg     disable ogg support],,enable_ogg=yes)
 AC_ARG_ENABLE(flac,[  --disable-flac    disable flac support],,enable_flac=yes)
@@ -109,7 +110,7 @@ if test x$enable_shout = xyes; then
 	XIPH_PATH_SHOUT([AC_DEFINE(HAVE_SHOUT, 1, [Define to enable libshout support]) MPD_LIBS="$MPD_LIBS $SHOUT_LIBS" MPD_CFLAGS="$MPD_CFLAGS $SHOUT_CFLAGS"], enable_shout=no)
 fi
 
-AC_CHECK_HEADER(sys/soundcard.h,enable_oss=yes,[AC_MSG_WARN(Soundcard headers not found -- disabling OSS mixer);enable_oss=no;AC_DEFINE(NO_OSS_MIXER,1,[Define to disable OSS mixer support])])
+AC_CHECK_HEADER(sys/soundcard.h,[enable_oss=yes;AC_DEFINE(HAVE_OSS,1,[Define to enable OSS])],[AC_MSG_WARN(Soundcard headers not found -- disabling OSS support);enable_oss=no])
 
 if test x$enable_alsa = xyes; then
 	AC_MSG_CHECKING(for alsa)
