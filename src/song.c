@@ -180,6 +180,7 @@ void readSongInfoIntoList(FILE * fp, SongList * list) {
 		}
 		else {
 			ERROR("songinfo: unknown line in db: %s\n",buffer);
+			exit(-1);
 		}
 	}
 	
