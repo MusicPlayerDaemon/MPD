@@ -179,6 +179,7 @@ int playerPlay(FILE * fp, char * utf8file) {
 #endif
 #ifdef HAVE_FAAD
 	else if(isAac(utf8file,NULL)) pc->decodeType = DECODE_TYPE_AAC;
+	else if(isMp4(utf8file,NULL)) pc->decodeType = DECODE_TYPE_MP4;
 #endif
 	else {
 		strncpy(pc->erroredFile,pc->file,MAXPATHLEN);

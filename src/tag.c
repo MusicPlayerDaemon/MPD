@@ -168,13 +168,27 @@ MpdTag * mp3TagDup(char * utf8file) {
 #endif
 
 #ifdef HAVE_FAAD
+MpdTag * mp4TagDup(char * utf8file) {
+	MpdTag * ret = NULL;
+	int time = -1;
+
+#warning implement mp4 tag parsing, this includes using mp4v2 and id3
+#warning getMp4TotalTime needs implementing
+	//time = getMp4TotalTime(rmp2amp(utf8ToFsCharset(utf8file)));
+
+	if(time>=0) {
+		if(!ret) ret = newMpdTag();
+		ret->time = time;
+	}
+
+	return ret;
+}
+
 MpdTag * aacTagDup(char * utf8file) {
 	MpdTag * ret = NULL;
-	int time;
+	int time = -1;
 
-	ret = id3Dup(utf8file);
-
-#warning getAacTotalTime needs implementing
+#warning getMp4TotalTime needs implementing
 	//time = getAacTotalTime(rmp2amp(utf8ToFsCharset(utf8file)));
 
 	if(time>=0) {
