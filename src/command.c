@@ -185,7 +185,7 @@ int handlePlayId(FILE * fp, unsigned int * permission, int argArrayLength,
                         return -1;
                 }
         }
-        return playPlaylist(fp, id, 0);
+        return playPlaylistById(fp, id, 0);
 }
 
 int handleStop(FILE * fp, unsigned int * permission, int argArrayLength, 
