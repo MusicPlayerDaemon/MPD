@@ -8,12 +8,6 @@
 
 *) Cleanup Config File Code
 
-*) input plugins
-	*) Handle mp1 and mp2 files (including files with mp3 suffixes) 
-	*) add support for playing aac streams (gee, thanks icecast)
-	*) parsing of lame tags (including getting replaygain and gapless info)
-	*) read replaygain info from id3 tag
-
 *) aduio output
 	*) allowing "pausing" of audio output devices
 	*) while pausing, play silence for the devices that don't support 
@@ -24,18 +18,6 @@
 	*) add support for saving and restoring audioOutput state to the 
 		state_file
 
-*) dynamic metadata
-	*) implment by recording the ftell positions of entries
-	*) buffer changes and flush them once every 60 seconds
-	*) buffer changes while doing an update
-	*) be sure to check that the metadata "header" is what we expect
-	   before writing at the position
-	*) add support for:
-		*) last time played
-		*) times played
-		*) times skipped
-		*) ranking
-
 0.13
 ----
 
@@ -43,6 +25,17 @@
 
 *) implement listener socket protocol as documented here:
 	http://www.musicpd.org/wiki/moin.cgi/MpdListenerProtocol
+
+*) support for dynamically loading plugins
+
+*) input plugins
+	*) Handle mp1 and mp2 files (including files with mp3 suffixes) 
+	*) add support for playing aac streams (gee, thanks icecast)
+	*) parsing of lame tags (including getting replaygain and gapless info)
+	*) read replaygain info from id3 tag
+
+0.14
+----
 
 *) rewrite saved playlist code
 	*) abstract out saved playlists from playlist.c
@@ -63,6 +56,17 @@
 
 *) add command for inserting songs in a specific position
 
-0.14
+0.15
 ----
-*) support for dynamically loading plugins
+
+*) dynamic metadata
+	*) implment by recording the ftell positions of entries
+	*) buffer changes and flush them once every 60 seconds
+	*) buffer changes while doing an update
+	*) be sure to check that the metadata "header" is what we expect
+	   before writing at the position
+	*) add support for:
+		*) last time played
+		*) times played
+		*) times skipped
+		*) ranking
