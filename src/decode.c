@@ -186,7 +186,7 @@ void decodeSeek(PlayerControl * pc, AudioFormat * af, DecoderControl * dc,
 		else { \
 			if(initAudio(NULL)<0) { \
 				strncpy(pc->erroredFile,pc->file,MAXPATHLEN); \
-				pc->erroredFile[MAXPATHLEN] = '\0' \
+				pc->erroredFile[MAXPATHLEN] = '\0'; \
 				pc->error = PLAYER_ERROR_AUDIO; \
 				quitDecode(pc,dc); \
 				return; \
