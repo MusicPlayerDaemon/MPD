@@ -63,6 +63,7 @@ int ogg_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc)
 		int eof = 0;
 		long ret;
 		char chunk[CHUNK_SIZE];
+		int chunkpos = 0;
 		long bitRate = 0;
 		long test;
 
@@ -70,13 +71,17 @@ int ogg_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc)
 			if(dc->seek) {
 				cb->end = 0;
 				cb->wrap = 0;
+				chunkpos = 0;
 				ov_time_seek_page(&vf,dc->seekWhere);
 				dc->seek = 0;
 			}
-			ret = ov_read(&vf,chunk,CHUNK_SIZE,0,2,1,
+			ret = ov_read(&vf,chunk+chunkpos,
+					CHUNK_SIZE-chunkpos,
+					0,2,1,
 					&current_section);
 			if(ret<=0) eof = 1;
-			else {
+			else chunkpos+=ret;
+			if(chunkpos>=CHUNK_SIZE || eof) {
 				while(cb->begin==cb->end && cb->wrap &&
 						!dc->stop && !dc->seek)
 				{
@@ -89,8 +94,9 @@ int ogg_decode(Buffer * cb, AudioFormat * af, DecoderControl * dc)
 						af->bits);
 #endif
 				memcpy(cb->chunks+cb->end*CHUNK_SIZE,
-						chunk,CHUNK_SIZE);
-				cb->chunkSize[cb->end] = ret;
+						chunk,chunkpos);
+				cb->chunkSize[cb->end] = chunkpos;
+				chunkpos = 0;
 				cb->times[cb->end] = ov_time_tell(&vf);
 				if((test = ov_bitrate_instant(&vf))>0) {
 					bitRate = test/1000;

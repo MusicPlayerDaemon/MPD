@@ -345,7 +345,7 @@ void decode() {
 			else if((cb->begin!=cb->end || cb->wrap) && 
 				cb->begin!=cb->next)
 			{
-				if(doCrossFade==1 && cb->next>=0 && 
+				if(doCrossFade==1 && cb->next>=0 &&
 					((cb->next>cb->begin && 
 					(fadePosition=cb->next-cb->begin)
 					<=crossFadeChunks) || 
@@ -356,9 +356,9 @@ void decode() {
 					if(nextChunk<0) {
 						crossFadeChunks = fadePosition;
 					}
-					nextChunk = cb->begin+crossFadeChunks;
 					test = cb->end;
 					if(cb->wrap) test+=buffered_chunks;
+					nextChunk = cb->begin+crossFadeChunks;
 					if(nextChunk<test) {
 						if(nextChunk>=buffered_chunks)
 						{
@@ -390,10 +390,7 @@ void decode() {
 						{
 							doCrossFade = -1;
 						}
-						else {
-							usleep(10);
-							continue;
-						}
+						else continue;
 					}
 				}
 				pc->elapsedTime = cb->times[cb->begin];
