@@ -18,7 +18,10 @@
 
 #include "inputStream_file.h"
 
+#include "log.h"
+
 #include <stdio.h>
+#include <string.h>
 #include <sys/types.h>
 #include <unistd.h>
 #include <errno.h>
@@ -71,6 +74,8 @@ size_t inputStream_fileRead(InputStream * inStream, void * ptr, size_t size,
 	readSize = fread(ptr,size,nmemb,(FILE *)inStream->data);
         if(readSize <=0 && ferror((FILE *)inStream->data)) {
                 inStream->error = errno;
+		DEBUG("inputStream_fileRead: error reading: %s",  
+				strerror(inStream->error));
         }
 
 	inStream->offset = ftell((FILE *)inStream->data);
