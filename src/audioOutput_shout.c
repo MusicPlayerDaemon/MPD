@@ -255,23 +255,20 @@ static void flushEncoder(ShoutData * sd) {
 }*/
 
 static void clearEncoder(ShoutData * sd) {
-	/*finishEncoder(sd);*/
-	/*flushEncoder(sd);*/
+	/*finishEncoder(sd);
+	flushEncoder(sd);*/
 
-	ogg_stream_clear(&(sd->os));
-	vorbis_block_clear(&(sd->vb));
-	vorbis_dsp_clear(&(sd->vd));
-	vorbis_comment_clear(&(sd->vc));
-	vorbis_info_clear(&(sd->vi));
+	vorbis_comment_clear(&sd->vc);
+	ogg_stream_clear(&sd->os);
+	vorbis_block_clear(&sd->vb);
+	vorbis_dsp_clear(&sd->vd);
+	vorbis_info_clear(&sd->vi);
 }
 
 static void shout_closeShoutConn(ShoutData * sd) {
-	DEBUG("closeShoutConn called\n");
-
 	if(sd->opened) {
 		clearEncoder(sd);
 
-		shout_sync(sd->shoutConn);
 		if(shout_close(sd->shoutConn) != SHOUTERR_SUCCESS) {
 			ERROR("problem closing connection to shout server: "
 				"%s\n", shout_get_error(sd->shoutConn));
@@ -294,10 +291,6 @@ static void shout_finishDriver(AudioOutput * audioOutput) {
 }
 
 static void shout_closeDevice(AudioOutput * audioOutput) {
-	ShoutData * sd = (ShoutData *)audioOutput->data;
-
-	if(sd->opened) shout_sync(sd->shoutConn);
-
 	audioOutput->open = 0;
 }
 
@@ -388,8 +381,6 @@ static int initEncoder(ShoutData * sd) {
 static int shout_openShoutConn(AudioOutput * audioOutput) {
 	ShoutData * sd = (ShoutData *)audioOutput->data;
 
-	DEBUG("openShoutConn called\n");
-
 	if(shout_open(sd->shoutConn) != SHOUTERR_SUCCESS)
 	{
 		ERROR("problem opening connection to shout server: %s\n",
@@ -455,7 +446,7 @@ static int shout_openDevice(AudioOutput * audioOutput,
 static void shout_convertAudioFormat(ShoutData * sd, char ** chunkArgPtr,
 		int * sizeArgPtr)
 {
-	size_t size = pcm_sizeOfOutputBufferForAudioFormatConversion(
+	int size = pcm_sizeOfOutputBufferForAudioFormatConversion(
 			&(sd->inAudioFormat), *sizeArgPtr, 
 			&(sd->outAudioFormat));
 
@@ -540,13 +531,12 @@ static int shout_play(AudioOutput * audioOutput, char * playChunk, int size) {
 
 		while(vorbis_bitrate_flushpacket(&(sd->vd), &(sd->op))) {
 			ogg_stream_packetin(&(sd->os), &(sd->op));
-			do {
-				if(ogg_stream_pageout(&(sd->os), &(sd->og)) == 0) {
-					break;
-				}
-				if(write_page(sd) < 0) return -1;
-			} while(ogg_page_eos(&(sd->og)));
 		}
+	}
+
+
+	while(ogg_stream_pageout(&(sd->os), &(sd->og)) != 0) {
+		if(write_page(sd) < 0) return -1;
 	}
 
 	return 0;
