@@ -67,9 +67,9 @@ void initSigHandlers() {
 	sa.sa_flags = 0;
 	sigemptyset(&sa.sa_mask);
 	sa.sa_handler = SIG_IGN;
-	sigaction(SIGPIPE,&sa,NULL);
+	while(sigaction(SIGPIPE,&sa,NULL)<0 && errno==EINTR);
 	sa.sa_handler = chldSigHandler;
-	sigaction(SIGCHLD,&sa,NULL);
+	while(sigaction(SIGCHLD,&sa,NULL)<0 && errno==EINTR);
         signal_handle(SIGUSR1);
         signal_handle(SIGINT);
         signal_handle(SIGTERM);
@@ -90,7 +90,7 @@ void blockSignals() {
 	sigaddset(&sset,SIGCHLD);
 	sigaddset(&sset,SIGUSR1);
 	sigaddset(&sset,SIGHUP);
-	sigprocmask(SIG_BLOCK,&sset,NULL);
+	while(sigprocmask(SIG_BLOCK,&sset,NULL)<0 && errno==EINTR);
 }
 
 void unblockSignals() {
@@ -100,5 +100,5 @@ void unblockSignals() {
 	sigaddset(&sset,SIGCHLD);
 	sigaddset(&sset,SIGUSR1);
 	sigaddset(&sset,SIGHUP);
-	sigprocmask(SIG_UNBLOCK,&sset,NULL);
+	while(sigprocmask(SIG_UNBLOCK,&sset,NULL)<0 && errno==EINTR);
 }

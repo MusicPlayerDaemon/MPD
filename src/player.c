@@ -46,13 +46,15 @@
 #include <fcntl.h>
 
 volatile int player_pid = 0;
-volatile int player_termSent = 0;
+
+void clearPlayerPid() {
+	player_pid = 0;
+}
 
 void resetPlayer() {
 	int pid;
 
-	player_pid = 0;
-	player_termSent = 0;
+	clearPlayerPid();
 	getPlayerData()->playerControl.stop = 0;
 	getPlayerData()->playerControl.play = 0;
 	getPlayerData()->playerControl.pause = 0;
@@ -97,6 +99,8 @@ int playerInit() {
 		PlayerControl * pc = &(getPlayerData()->playerControl);
 		struct sigaction sa;
 
+		clearUpdatePid();
+
 		unblockSignals();
 
 		sa.sa_flags = 0;
@@ -104,11 +108,11 @@ int playerInit() {
 
 		finishSigHandlers();
 		sa.sa_handler = decodeSigHandler;
-		sigaction(SIGCHLD,&sa,NULL);
-		sigaction(SIGTERM,&sa,NULL);
-		sigaction(SIGINT,&sa,NULL);
+		while(sigaction(SIGCHLD,&sa,NULL)<0 && errno==EINTR);
+		while(sigaction(SIGTERM,&sa,NULL)<0 && errno==EINTR);
+		while(sigaction(SIGINT,&sa,NULL)<0 && errno==EINTR);
 
-		close(listenSocket);
+		while(close(listenSocket)<0 && errno==EINTR);
 		freeAllInterfaces();
 		closeMp3Directory();
 		finishPlaylist();

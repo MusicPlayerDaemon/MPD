@@ -31,6 +31,7 @@
 #include "volume.h"
 #include "mpd_types.h"
 #include "sig_handlers.h"
+#include "player.h"
 
 #include <string.h>
 #include <sys/types.h>
@@ -101,6 +102,10 @@ Directory * getDirectory(char * name);
 Song * getSongDetails(char * file, char ** shortnameRet, 
 		Directory ** directoryRet);
 
+void clearUpdatePid() {
+	directory_updatePid = 0;
+}
+
 int isUpdatingDB() {
 	if(directory_updatePid>0 || directory_reReadDB) {
 		return directory_updateJobId;
@@ -120,7 +125,7 @@ void directory_sigChldHandler(int pid, int status) {
 					"updated db succesffully\n");
 			directory_reReadDB = 1;
 		}
-		directory_updatePid = 0;
+		clearUpdatePid();
 	}
 }
 
@@ -144,8 +149,10 @@ int updateInit(FILE * fp, List * pathList) {
 	blockSignals();	
 	directory_updatePid = fork();
        	if(directory_updatePid==0) {
-		unblockSignals();
               	/* child */
+		clearPlayerPid();
+	
+		unblockSignals();
 
 		finishSigHandlers();
                	close(listenSocket);

@@ -79,6 +79,8 @@ typedef struct _PlayerControl {
 	volatile int decode_pid;
 } PlayerControl;
 
+void clearPlayerPid();
+
 void player_sigChldHandler(int pid, int status);
 
 int playerPlay(FILE * fp, char * utf8file);
