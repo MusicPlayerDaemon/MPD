@@ -53,7 +53,8 @@
 #define INTERFACE_MAX_COMMAND_LIST_DEFAULT		(2048*1024)
 #define INTERFACE_MAX_OUTPUT_BUFFER_SIZE_DEFAULT	(2048*1024)
 
-static int interface_max_connections = INTERFACE_MAX_CONNECTIONS_DEFAULT;
+/* set this to zero to indicate we have no possible interfaces */
+static int interface_max_connections = 0; /*INTERFACE_MAX_CONNECTIONS_DEFAULT;*/
 static int interface_timeout = INTERFACE_TIMEOUT_DEFAULT;
 static size_t interface_max_command_list_size = 
 		INTERFACE_MAX_COMMAND_LIST_DEFAULT;
@@ -450,6 +451,7 @@ void initInterfaces() {
 			exit(EXIT_FAILURE);
 		}
 	}
+	else interface_max_connections = INTERFACE_MAX_CONNECTIONS_DEFAULT;
 
 	param = getConfigParam(CONF_MAX_COMMAND_LIST_SIZE);
 
