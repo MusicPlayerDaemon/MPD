@@ -8,9 +8,6 @@
 
 *) Optimize read() on clients
 
-*) add command
-	*) allow to specify position in playlist where to insert song(s)
-
 *) rewrite saved playlist code
 	*) abstract out saved playlists from playlist.c
 	*) command for displaying playlist contents
