@@ -1,8 +1,8 @@
 0.12
 ----
-*) rewrite linked list code!
+*) add 2-3 tree for sorted data structures
 
-*) add sortedArray data structure for tagTracker
+*) cleanup linked list code!
 
 *) parsing of lame tags (including getting replaygain info)
 

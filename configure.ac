@@ -124,7 +124,7 @@ if test x$enable_ao = xno && test x$enable_oss = xno && test x$enable_shout = xn
 fi
 
 if test x$enable_alsa = xyes; then
-	AM_PATH_ALSA(0.9.0, , enable_alsa=no)
+	AM_PATH_ALSA(0.9.0,AC_DEFINE(HAVE_ALSA,1,[Define to enable ALSA support]),enable_alsa=no)
 fi
 
 if test x$enable_iconv = xyes; then
