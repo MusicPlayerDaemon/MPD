@@ -222,7 +222,7 @@ MpdTag * modTagDup(char * file) {
 
 	ret->time = 0;
 	title = strdup(Player_LoadTitle(file));
-	if(title) mpdItemToMpdTag(ret, TAG_ITEM_TITLE, title);
+	if(title) addItemToMpdTag(ret, TAG_ITEM_TITLE, title);
 
 fail:
 	MikMod_Exit();
