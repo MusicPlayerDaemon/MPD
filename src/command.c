@@ -191,7 +191,8 @@ int commandStatus(FILE * fp, unsigned int * permission, int argArrayLength,
 	int updateJobId;
         int song;
 
-        playPlaylistIfPlayerStopped();
+        /*syncPlayerAndPlaylist();*/
+	playPlaylistIfPlayerStopped();
         switch(getPlayerState()) {
                 case PLAYER_STATE_STOP:
                         state = strdup(COMMAND_STOP);

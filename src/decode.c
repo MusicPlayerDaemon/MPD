@@ -399,25 +399,46 @@ int decoderInit(PlayerControl * pc, OutputBuffer * cb, DecoderControl * dc) {
 	kill(getppid(), SIGUSR1); \
 }
 
-void handleMetadata(OutputBuffer * cb, PlayerControl * pc) {
-	static int previous = -1;
-
+void handleMetadata(OutputBuffer * cb, PlayerControl * pc, int * previous,
+		int * currentChunkSent, MetadataChunk * currentChunk) 
+{
 	if(cb->begin!=cb->end || cb->wrap) {
 		int meta = cb->metaChunk[cb->begin];
-		if( meta != previous ) {
-			if( meta >= 0 && pc->metadataState ==
-					PLAYER_METADATA_STATE_WRITE &&
-					cb->metaChunkSet[meta]) 
-			{
+		if( meta != *previous ) {
+			if( meta >= 0 && cb->metaChunkSet[meta]) {
 				printf("METADATA!, copying it.\n");
-				memcpy(&(pc->metadataChunk), 
+				memcpy(currentChunk, 
 					cb->metadataChunks+meta,
 					sizeof(MetadataChunk));
-				pc->metadataState = 
-					PLAYER_METADATA_STATE_READ;
+				*currentChunkSent = 0;
 				cb->metaChunkSet[meta] = 0;
-				previous = meta;
 			}
+		}
+		*previous = meta;
+	}
+	if(!(*currentChunkSent) && pc->metadataState == 
+			PLAYER_METADATA_STATE_WRITE)
+	{
+		printf("copy metadata to player\n");
+		*currentChunkSent = 1;
+		memcpy(&(pc->metadataChunk), currentChunk, 
+				sizeof(MetadataChunk));
+		pc->metadataState = PLAYER_METADATA_STATE_READ;
+		kill(getppid(), SIGUSR1);
+	}
+}
+
+void advanceOutputBufferTo(OutputBuffer * cb, PlayerControl * pc, 
+	int * previous, int * currentChunkSent, MetadataChunk * currentChunk,
+	int to) 
+{
+	while(cb->begin!=to) {
+		handleMetadata(cb, pc, previous, currentChunkSent, 
+				currentChunk);
+		cb->begin++;
+		if(cb->begin>=buffered_chunks) {
+			cb->begin = 0;
+			cb->wrap = 0;
 		}
 	}
 }
@@ -434,6 +455,9 @@ void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb) {
         int decodeWaitedOn = 0;
 	char silence[CHUNK_SIZE];
 	double sizeToTime = 0.0;
+	int previousMetadataChunk = -1;
+	MetadataChunk currentMetadataChunk;
+	int currentChunkSent = 1;
 
 	memset(silence,0,CHUNK_SIZE);
 
@@ -454,7 +478,8 @@ void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb) {
 	while(!quit) {
 		processDecodeInput();
                 handleDecodeStart();
-		handleMetadata(cb, pc);
+		handleMetadata(cb, pc, &previousMetadataChunk, 
+				&currentChunkSent, &currentMetadataChunk);
 		if(dc->state==DECODE_STATE_STOP && 
 			pc->queueState==PLAYER_QUEUE_FULL &&
 			pc->queueLockState==PLAYER_QUEUE_UNLOCKED) 
@@ -558,7 +583,11 @@ void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb) {
 					{
 						nextChunk -= buffered_chunks;
 					}
-					cb->begin = nextChunk;
+					advanceOutputBufferTo(cb, pc, 
+						&previousMetadataChunk,
+						&currentChunkSent, 
+						&currentMetadataChunk, 
+						nextChunk);
 				}	
 			}
 			while(pc->queueState==PLAYER_QUEUE_DECODE ||
