@@ -13,17 +13,10 @@
 		calling updated on a newly created file).
 	n) mpd command for rereading db
 
-2) rewrite interface stuff, specifically command list handling etc so its less 
-of a hack and deals with the above update stuff better
-
-3) crosslink "list" stuff, for example, artists are crosslinked to alubms and 
+2) crosslink "list" stuff, for example, artists are crosslinked to alubms and 
 vice versa, this way you can do list album artists or list artist albums, this 
 will make life easier when we add genre and other metadata
 
-4) thourougly rewrite and check signal blocking and unblocking
+3) thourougly rewrite and check signal blocking and unblocking
 
-5) add a --update-only, like --only-create-db, only just for updating
-
-6) Add fallback for our new utf8 routines when iconv isn't around, and check
-that filenames stored in db are valid utf8, and use utf8 routines whenever 
-iconv is broked
+4) add a --update-only, like --only-create-db, only just for updating
