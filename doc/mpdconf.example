@@ -77,11 +77,15 @@ audio_output {
 #	host		"hostname"
 #	port		"8000"
 #	mount		"/mpd.ogg"
-#	user		"source"
 #	password	"hackme"
 #	quality		"5.0"	
 #	bitrate		"128"
 #	format		"44100:16:1"
+#
+# Optional Paramters
+#	user		"source"
+#	description	"here's my long descriptiion"
+#       genre		"jazz"
 #} # end of audio_output
 #
 ##########################################################

@@ -224,6 +224,25 @@ static int myShout_initDriver(AudioOutput * audioOutput, ConfigParam * param) {
 		exit(EXIT_FAILURE);
 	}
 
+	/* optional paramters */
+	blockParam = getBlockParam(param, "genre");
+	if(blockParam && shout_set_genre(sd->shoutConn, blockParam->value)) {
+		ERROR("error configuring shout defined at line %i: %s\n",
+				param->line,
+				shout_get_error(sd->shoutConn));
+		exit(EXIT_FAILURE);
+	}
+
+	blockParam = getBlockParam(param, "description");
+	if(blockParam && shout_set_description(sd->shoutConn, 
+				blockParam->value)) 
+	{
+		ERROR("error configuring shout defined at line %i: %s\n",
+				param->line,
+				shout_get_error(sd->shoutConn));
+		exit(EXIT_FAILURE);
+	}
+
 	{
 		char temp[11];
 		memset(temp, 0, sizeof(temp));
