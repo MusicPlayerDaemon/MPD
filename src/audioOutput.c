@@ -48,55 +48,87 @@ AudioOutput * newAudioOutput(ConfigParam * param) {
 	char * name = NULL;
 	char * format = NULL;
 	char * type = NULL;
-	BlockParam * bp;
+	BlockParam * bp = NULL;
+	AudioOutputPlugin * plugin = NULL;
 
-	getBlockParam(AUDIO_OUTPUT_NAME, name, 1);
-	getBlockParam(AUDIO_OUTPUT_TYPE, type, 1);
+	if(param) {
+		getBlockParam(AUDIO_OUTPUT_NAME, name, 1);
+		getBlockParam(AUDIO_OUTPUT_TYPE, type, 1);
 
-	if(findInList(audioOutputPluginList, type, &data)) {
-		AudioOutputPlugin * plugin = (AudioOutputPlugin *) data;
-		ret = malloc(sizeof(AudioOutput));
-		ret->name = strdup(name);
-		ret->type = strdup(type);
-		ret->finishDriverFunc = plugin->finishDriverFunc;
-		ret->openDeviceFunc = plugin->openDeviceFunc;
-		ret->playFunc = plugin->playFunc;
-		ret->dropBufferedAudioFunc = plugin->dropBufferedAudioFunc;
-		ret->closeDeviceFunc = plugin->closeDeviceFunc;
-		ret->sendMetdataFunc = plugin->sendMetdataFunc;
-		ret->open = 0;
+		if(!findInList(audioOutputPluginList, type, &data)) {
+			ERROR("couldn't find audio output plugin for type "
+					"\"%s\" at line %i\n", type, 
+					param->line);
+			exit(EXIT_FAILURE);
+		}
 
-		ret->convertAudioFormat = 0;
-		ret->sameInAndOutFormats = 0;
-		ret->convBuffer = NULL;
-		ret->convBufferLen = 0;
-
-		memset(&ret->inAudioFormat, 0, sizeof(AudioFormat));
-		memset(&ret->outAudioFormat, 0, sizeof(AudioFormat));
-		memset(&ret->reqAudioFormat, 0, sizeof(AudioFormat));
-
-		getBlockParam(AUDIO_OUTPUT_FORMAT, format, 0);
-
+		plugin = (AudioOutputPlugin *) data;
+	
 		if(format) {
 			ret->convertAudioFormat = 1;
 
 			if(0 != parseAudioConfig(&ret->reqAudioFormat, format))
 			{
-		        	ERROR("error parsing format at line %i\n", 
+	        		ERROR("error parsing format at line %i\n", 
 						bp->line);
-		        	exit(EXIT_FAILURE);
-		        }
-		}
-
-		if(plugin->initDriverFunc(ret, param) != 0) {
-			free(ret);
-			ret = NULL;
+	        		exit(EXIT_FAILURE);
+	        	}
 		}
 	}
 	else {
-		ERROR("couldn't find audio output plugin for type \"%s\" at "
-				"line %i\n", type, param->line);
-		exit(EXIT_FAILURE);
+		ListNode * node = audioOutputPluginList->firstNode;
+
+		WARNING("No \"%s\" defined in config file\n", 
+				CONF_AUDIO_OUTPUT);
+		WARNING("Attempt to detect audio output device\n");
+
+		while(node) {
+			plugin = (AudioOutputPlugin *) node->data;
+			if(plugin->testDefaultDeviceFunc) {
+				WARNING("Attempting to detect a %s audio "
+						"device\n", plugin->name);
+				if(plugin->testDefaultDeviceFunc() == 0) {
+					WARNING("Successfully detected a %s "
+							"audio device\n",
+							plugin->name);
+					break;
+				}
+			}
+			node = node->nextNode;
+		}
+
+		if(!node) {
+			WARNING("Unable to detect an audio device\n");
+			return NULL;
+		}
+
+		name = "default detected output";
+		type = plugin->name;
+	}
+
+	ret = malloc(sizeof(AudioOutput));
+	ret->name = strdup(name);
+	ret->type = strdup(type);
+	ret->finishDriverFunc = plugin->finishDriverFunc;
+	ret->openDeviceFunc = plugin->openDeviceFunc;
+	ret->playFunc = plugin->playFunc;
+	ret->dropBufferedAudioFunc = plugin->dropBufferedAudioFunc;
+	ret->closeDeviceFunc = plugin->closeDeviceFunc;
+	ret->sendMetdataFunc = plugin->sendMetdataFunc;
+	ret->open = 0;
+
+	ret->convertAudioFormat = 0;
+	ret->sameInAndOutFormats = 0;
+	ret->convBuffer = NULL;
+	ret->convBufferLen = 0;
+
+	memset(&ret->inAudioFormat, 0, sizeof(AudioFormat));
+	memset(&ret->outAudioFormat, 0, sizeof(AudioFormat));
+	memset(&ret->reqAudioFormat, 0, sizeof(AudioFormat));
+
+	if(plugin->initDriverFunc(ret, param) != 0) {
+		free(ret);
+		ret = NULL;
 	}
 
 	return ret;

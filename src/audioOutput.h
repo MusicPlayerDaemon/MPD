@@ -28,6 +28,8 @@
 
 typedef struct _AudioOutput AudioOutput;
 
+typedef int (* AudioOutputTestDefaultDeviceFunc) ();
+
 typedef int (* AudioOutputInitDriverFunc) (AudioOutput * audioOutput, 
 		ConfigParam * param);
 
@@ -71,6 +73,7 @@ struct _AudioOutput {
 typedef struct _AudioOutputPlugin {
 	char * name;
 
+	AudioOutputTestDefaultDeviceFunc testDefaultDeviceFunc;
         AudioOutputInitDriverFunc initDriverFunc;
         AudioOutputFinishDriverFunc finishDriverFunc;
         AudioOutputOpenDeviceFunc openDeviceFunc;

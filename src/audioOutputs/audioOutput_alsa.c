@@ -69,7 +69,10 @@ static void freeAlsaData(AlsaData * ad) {
 }
 
 static int alsa_initDriver(AudioOutput * audioOutput, ConfigParam * param) {
-	BlockParam * bp = getBlockParam(param, "device");
+	BlockParam * bp = NULL;
+
+	if(param) bp = getBlockParam(param, "device");
+
 	AlsaData * ad = newAlsaData();
 	
 	audioOutput->data = ad;
@@ -83,6 +86,23 @@ static void alsa_finishDriver(AudioOutput * audioOutput) {
 	AlsaData * ad = audioOutput->data;
 
 	freeAlsaData(ad);
+}
+
+static int alsa_testDefault()
+{
+	snd_pcm_t * handle;
+
+	int ret = snd_pcm_open(&handle, "default", SND_PCM_STREAM_PLAYBACK, 
+					           SND_PCM_NONBLOCK);
+	
+	if(ret) {
+		WARNING("Error opening default alsa device: %s\n",
+				snd_strerror(-ret));
+		return -1;
+	}
+	else snd_pcm_close(handle);
+
+	return 0;
 }
 
 static int alsa_openDevice(AudioOutput * audioOutput) 
@@ -313,6 +333,7 @@ static int alsa_playAudio(AudioOutput * audioOutput, char * playChunk,
 AudioOutputPlugin alsaPlugin =
 {
 	"alsa",
+	alsa_testDefault,
 	alsa_initDriver,
 	alsa_finishDriver,
 	alsa_openDevice,
@@ -326,6 +347,7 @@ AudioOutputPlugin alsaPlugin =
 
 AudioOutputPlugin alsaPlugin =
 {
+	NULL,
 	NULL,
 	NULL,
 	NULL,

@@ -357,8 +357,8 @@ void setupLogOutput(Options * options, FILE * out, FILE * err) {
                 }
 
                 myfprintfStdLogMode(out, err);
-                flushWarningLog();
         }
+        flushWarningLog();
 
         /* lets redirect stdin to dev null as a work around for libao bug */
         {

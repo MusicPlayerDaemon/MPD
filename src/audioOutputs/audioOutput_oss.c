@@ -291,10 +291,38 @@ static int oss_statDevice(char * device, int * stErrno) {
 	return 0;
 }
 
+static int oss_testDefault() {
+	int fd;
+
+	fd = open("/dev/sound/dsp", O_WRONLY);
+
+	if(fd) {
+		close(fd);
+		return 0;
+	}
+
+	WARNING("Error opening OSS device \"/dev/sound/dsp\": %s\n",
+			strerror(errno));
+
+	fd = open("/dev/dsp", O_WRONLY);
+
+	if(fd) {
+		close(fd);
+		return 0;
+	}
+
+	WARNING("Error opening OSS device \"/dev/dsp\": %s\n",
+			strerror(errno));
+
+	return -1;
+}
+
 static int oss_initDriver(AudioOutput * audioOutput, ConfigParam * param) {
-	BlockParam * bp = getBlockParam(param, "device");
+	BlockParam * bp = NULL;
+
+	if(param) bp = getBlockParam(param, "device");
+
 	OssData * od = newOssData();
-	
 	audioOutput->data = od;
 
 	if(!bp) {
@@ -307,8 +335,14 @@ static int oss_initDriver(AudioOutput * audioOutput, ConfigParam * param) {
 		if(ret[0] == 0) od->device = strdup("/dev/sound/dsp");
 		else if(ret[1] == 0) od->device = strdup("/dev/dsp");
 		else {
-			ERROR("Error trying to open default OSS device "
-				"specified at line %i\n", param->line);
+			if(param) {
+				ERROR("Error trying to open default OSS device "
+					"specified at line %i\n", param->line);
+			}
+			else {
+				ERROR("Error trying to open default OSS "
+						"device\n");
+			}
 
 			if(ret[0] == ret[1] == OSS_STAT_DOESN_T_EXIST) {
 				ERROR("Neither /dev/dsp nor /dev/sound/dsp "
@@ -501,6 +535,7 @@ static int oss_playAudio(AudioOutput * audioOutput, char * playChunk,
 AudioOutputPlugin ossPlugin =
 {
 	"oss",
+	oss_testDefault,
 	oss_initDriver,
 	oss_finishDriver,
 	oss_openDevice,
@@ -514,6 +549,7 @@ AudioOutputPlugin ossPlugin =
 
 AudioOutputPlugin ossPlugin =
 {
+	NULL,
 	NULL,
 	NULL,
 	NULL,

@@ -237,6 +237,7 @@ static int audioOutputAo_play(AudioOutput * audioOutput, char * playChunk,
 AudioOutputPlugin aoPlugin = 
 {
 	"ao",
+	NULL,
 	audioOutputAo_initDriver,
 	audioOutputAo_finishDriver,
 	audioOutputAo_openDevice,
@@ -252,6 +253,7 @@ AudioOutputPlugin aoPlugin =
 
 AudioOutputPlugin aoPlugin = 
 {
+	NULL,
 	NULL,
 	NULL,
 	NULL,

@@ -597,6 +597,7 @@ static void myShout_setTag(AudioOutput * audioOutput, MpdTag * tag) {
 AudioOutputPlugin shoutPlugin = 
 {
 	"shout",
+	NULL,
 	myShout_initDriver,
 	myShout_finishDriver,
 	myShout_openDevice,
@@ -610,6 +611,7 @@ AudioOutputPlugin shoutPlugin =
 
 AudioOutputPlugin shoutPlugin = 
 {
+	NULL,
 	NULL,
 	NULL,
 	NULL,

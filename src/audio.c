@@ -79,7 +79,9 @@ void initAudioDriver() {
 		myAudioDevicesEnabled[i] = 1;
 	}
 
-	while((param = getNextConfigParam(CONF_AUDIO_OUTPUT, param))) {
+	param = getNextConfigParam(CONF_AUDIO_OUTPUT, param);
+
+	do {
 		if(audioOutputArraySize == AUDIO_MAX_DEVICES) {
 			ERROR("only up to 255 audio output devices are "
 					"supported");
@@ -93,12 +95,12 @@ void initAudioDriver() {
 	
 		audioOutputArray[i] = newAudioOutput(param);
 
-		if(!audioOutputArray[i]) {
+		if(!audioOutputArray[i] && param) {
 			ERROR("problems configuring output device defined at "
 					"line %i\n", param->line);
 			exit(EXIT_FAILURE);
 		}
-	}
+	} while((param = getNextConfigParam(CONF_AUDIO_OUTPUT, param)));
 }
 
 void getOutputAudioFormat(AudioFormat * inAudioFormat, 

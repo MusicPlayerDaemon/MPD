@@ -68,8 +68,11 @@ void bufferWarning(char * format, ... ) {
 
 	va_end(arglist);
 }
+
 void flushWarningLog() {
 	char * s;
+
+	DEBUG("flushing warning messages\n");
 
 	if(warningBuffer == NULL) return;
 
