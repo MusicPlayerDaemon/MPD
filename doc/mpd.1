@@ -116,10 +116,16 @@ This specifies which mixer control to use (sometimes referred to as the "device"
 .B max_playlist_length <int>
 This specifies the maximum number of songs that can be in the playlist. The default is 4096 songs.
 .TP
-.B buffer_size <size in KB>
-This specifies the size of the buffer that mpd uses.  The default is 2048 kilobytes.
+.B audio_buffer_size <size in KB>
+This specifies the size of the audio output buffer that mpd uses.  The default is 2048 kilobytes.
 .B buffer_before play <0-100%>
-This specifies the amount of buffer that will be filled before a song begins playing. The default is 25%.
+This specifies the amount of the audio buffer that will be filled before a song begins playing. The default is 25%.
+.TP
+.B audio_output_format <sample_rate:bits:channels>
+This specifies the format all decoded audio should be converted to for playing.  This options is useful if your sound card only supports a limited number of sample rates and if you want to ensure all transitions between songs are crossfaded/gapless.  This option is not recommended for all users because it can cause a reduction in sound quality. The two most common formats are "48000:16:2" and "44100:16:2".
+.TP
+.B replaygain <album or track>
+This specifies whether to use replaygain tags (currently only supported for FLAC and Ogg Vorbis formats).
 .TP
 .B max_command_list_size <size in KB>
 This specifies the maximum size a command list can be (in kilobytes). The default is 2048 kilobytes.
@@ -195,7 +201,7 @@ max_playlist_length     "4096"
 .br
 buffer_before_play      "25%"
 .br
-buffer_size             "2048"
+audio_buffer_size       "2048"
 .br
 #db_file                "~/playlists/.mpddb"
 .br
@@ -226,5 +232,7 @@ bind_to_address         "any"
 #default_permissions    "read,add,control,admin"
 .br
 #filesystem_charset     "UTF-8"
+.br
+#replaygain		"album"
 .SH SEE ALSO
 mpc(1)

@@ -123,7 +123,7 @@ char ** readConf(char * file) {
 		"filesystem_charset",
 		"password",
 		"default_permissions",
-		"buffer_size",
+		"audio_buffer_size",
                 "replaygain",
                 "audio_output_format"
 	};

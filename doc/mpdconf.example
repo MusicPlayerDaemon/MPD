@@ -68,11 +68,13 @@ error_file 		"~/.mpd/mpd.error"
 
 # misc audio output options
 #audio_write_size	"1024"
+# use track or album replaygain
+#replaygain		"album"
 ##################################
 
 
 #### OUTPUT BUFFER SETTINGS ######
-#buffer_size		"2048"
+#audio_buffer_size	"2048"
 #buffer_before_play 	"25%"
 ##################################
 
