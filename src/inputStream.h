@@ -53,6 +53,9 @@ int openInputStream(InputStream * inStream, char * url);
 int seekInputStream(InputStream * inStream, long offset, int whence);
 int closeInputStream(InputStream * inStream);
 int inputStreamAtEOF(InputStream * inStream);
+
+/* return value: -1 is error, 1 inidicates stuff was buffered, 0 means nothing
+   was buffered */
 int bufferInputStream(InputStream * inStream);
 
 size_t readFromInputStream(InputStream * inStream, void * ptr, size_t size,

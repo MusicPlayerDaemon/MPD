@@ -109,7 +109,11 @@ int audiofile_decode(OutputBuffer * cb, DecoderControl * dc) {
 			if(ret<=0) eof = 1;
 			else {
 				current += ret;
-				sendDataToOutputBuffer(cb,dc,chunk,ret*fs,
+				sendDataToOutputBuffer(cb, 
+                                        NULL,
+                                        dc,
+                                        chunk,
+                                        ret*fs,
 					(float)current /
 					(float)dc->audioFormat.sampleRate,
 					bitRate);

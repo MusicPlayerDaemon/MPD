@@ -376,8 +376,8 @@ int flacSendChunk(FlacData * data) {
         doReplayGain(data->chunk,data->chunk_length,&(data->dc->audioFormat),
                         data->replayGainScale);
 
-	switch(sendDataToOutputBuffer(data->cb,data->dc,data->chunk,
-			data->chunk_length,data->time,data->bitRate)) 
+	switch(sendDataToOutputBuffer(data->cb, NULL, data->dc, data->chunk,
+			data->chunk_length, data->time, data->bitRate)) 
 	{
 	case OUTPUT_BUFFER_DC_STOP:
 		return -1;

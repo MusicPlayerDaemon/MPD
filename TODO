@@ -1,21 +1,16 @@
 1) play streams
-	a) make seekings non-blocking:
-		1) player: first check that seekWhere isn't already buffered
-	b) bufferInput in outputBuffer waiting!
-		1) implement some sort of callback mechanism for this
-			for abstraction sake
-	c) deal with pausing better
+	a) deal with pausing better
 		1) seekable, on resuming pause, check if we need to reconnect,
 			jumping to offset
 		2) if seekable, at some point after init, mark this!
 		3) if not seekable, reset buffer, and elapsedTime when
 			unpaused
-	d) put some sort of error reporting for streaming/inputStream!
-	e) fetch metadata and store in DecoderControl and pass to 
+	b) put some sort of error reporting for streaming/inputStream!
+	c) fetch metadata and store in DecoderControl and pass to 
 		PlayerControl
 		1) eventually deal with icy-metadata
 		2) parse metadata on the fly in decoders
-	f) command for dealing with the changing metadata, currentsonginfo
+	d) command for dealing with the changing metadata, currentsonginfo
 		or something
 
 2) how to deal with streams and the db

@@ -22,6 +22,7 @@
 #include "mpd_types.h"
 #include "decode.h"
 #include "audio.h"
+#include "inputStream.h"
 
 #define OUTPUT_BUFFER_DC_STOP   -1
 #define OUTPUT_BUFFER_DC_SEEK   -2
@@ -42,8 +43,11 @@ void clearOutputBuffer(OutputBuffer * cb);
 
 void flushOutputBuffer(OutputBuffer * cb);
 
-int sendDataToOutputBuffer(OutputBuffer * cb, DecoderControl * dc, 
-               char * data, long datalen, float time, mpd_uint16 bitRate);
+/* we send inStream where for buffering the inputStream while waiting to
+   send the next chunk */
+int sendDataToOutputBuffer(OutputBuffer * cb, InputStream * inStream,
+                DecoderControl * dc, char * data, long datalen, float time,
+                mpd_uint16 bitRate);
 
 #endif
 /* vim:set shiftwidth=4 tabstop=8 expandtab: */

@@ -542,20 +542,20 @@ int inputStream_httpBuffer(InputStream * inStream) {
                 readed = read(data->sock, data->buffer+data->buflen, 
                                 (size_t)(HTTP_BUFFER_SIZE-1-data->buflen));
 
-                if(readed < 0 && (errno == EAGAIN || errno == EINTR));
+                if(readed < 0 && (errno == EAGAIN || errno == EINTR)) {
+                        readed = 0;
+                }
                 else if(readed <= 0) {
                         close(data->sock);
                         data->connState = HTTP_CONN_STATE_CLOSED;
+                        readed = 0;
                 }
-                else {
-			/*fwrite(data->buffer+data->buflen,1,readed,stdout);*/
-			data->buflen += readed;
-		}
-
+		/*fwrite(data->buffer+data->buflen,1,readed,stdout);*/
+		data->buflen += readed;
         }
 
 	if(data->buflen > HTTP_PREBUFFER_SIZE) data->prebuffer = 0;
 
-        return 0;
+        return (readed ? 1 : 0);
 }
 /* vim:set shiftwidth=8 tabstop=8 expandtab: */
