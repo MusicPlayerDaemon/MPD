@@ -468,21 +468,15 @@ int mp3Read(mp3DecodeData * data, OutputBuffer * cb, DecoderControl * dc) {
 
 			if(data->outputPtr==data->outputBufferEnd) {
                                 ret = sendDataToOutputBuffer(cb,dc,
-                                                0,data->outputBuffer,
+                                                data->outputBuffer,
                                                 MP3_DATA_OUTPUT_BUFFER_SIZE,
                                                 data->elapsedTime,
                                                 data->bitRate/1000);
                                 if(ret == OUTPUT_BUFFER_DC_STOP) {
                                         return DECODE_BREAK;
                                 }
-                                if(ret >= 0) {
-                                        memmove(data->outputBuffer,
-                                                data->outputBuffer+ret,
-                                                MP3_DATA_OUTPUT_BUFFER_SIZE-
-                                                ret);
-                                        data->outputPtr-=ret;
-                                }
-                                else data->outputPtr = data->outputBuffer;
+
+                                data->outputPtr = data->outputBuffer;
 
                                 if(ret == OUTPUT_BUFFER_DC_SEEK) break;
 			}
@@ -545,9 +539,12 @@ int mp3_decode(OutputBuffer * cb, AudioFormat * af, DecoderControl * dc) {
 	while(mp3Read(&data,cb,dc)!=DECODE_BREAK);
 	/* send last little bit if not dc->stop */
 	if(data.outputPtr!=data.outputBuffer && data.flush)  {
-        	sendDataToOutputBuffer(cb,dc,1,data.outputBuffer,
+        	if(sendDataToOutputBuffer(cb,dc,data.outputBuffer,
                                 data.outputPtr-data.outputBuffer,
-                                data.elapsedTime,data.bitRate/1000);
+                                data.elapsedTime,data.bitRate/1000) == 0)
+		{
+			flushOutputBuffer(cb);
+		}
 	}
 
 	mp3DecodeDataFinalize(&data);

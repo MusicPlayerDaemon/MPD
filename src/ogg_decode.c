@@ -26,6 +26,7 @@
 #include "log.h"
 #include "pcm_utils.h"
 #include "inputStream.h"
+#include "outputBuffer.h"
 
 #include <stdio.h>
 #include <unistd.h>
@@ -132,40 +133,23 @@ int ogg_decode(OutputBuffer * cb, AudioFormat * af, DecoderControl * dc)
 				ov_time_seek_page(&vf,dc->seekWhere);
 				dc->seek = 0;
 			}
-			ret = ov_read(&vf,chunk+chunkpos,
-					CHUNK_SIZE-chunkpos,
+			ret = ov_read(&vf, chunk, CHUNK_SIZE,
 					OGG_DECODE_USE_BIGENDIAN,
-					2,1,
-					&current_section);
+					2, 1, &current_section);
 			if(ret<=0) eof = 1;
-			else chunkpos+=ret;
-			if(chunkpos>=CHUNK_SIZE || eof) {
-				while(cb->begin==cb->end && cb->wrap &&
-						!dc->stop && !dc->seek)
-				{
-					my_usleep(10000);
-				}
-				if(dc->stop) break;
-				else if(dc->seek) continue;
-        
-				memcpy(cb->chunks+cb->end*CHUNK_SIZE,
-						chunk,chunkpos);
-				cb->chunkSize[cb->end] = chunkpos;
-				chunkpos = 0;
-				cb->times[cb->end] = ov_time_tell(&vf);
+			else {
 				if((test = ov_bitrate_instant(&vf))>0) {
 					bitRate = test/1000;
 				}
-				cb->bitRate[cb->end] = bitRate;
-				cb->end++;
-				if(cb->end>=buffered_chunks) {
-					cb->end = 0;
-					cb->wrap = 1;
-				}
+				sendDataToOutputBuffer(cb,dc,chunk,ret,
+					ov_time_tell(&vf),bitRate);
+				if(dc->stop) break;
 			}
 		}
 
 		ov_clear(&vf);
+
+		flushOutputBuffer(cb);
 
 		if(dc->seek) dc->seek = 0;
 

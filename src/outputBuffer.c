@@ -24,39 +24,57 @@
 
 #include <string.h>
 
-long sendDataToOutputBuffer(OutputBuffer * cb, DecoderControl * dc, 
-                int flushAllData, char * data, long datalen, float time, 
-		mpd_uint16 bitRate)
-{
-        long dataSent = 0;
-        long dataToSend;
+static mpd_sint16 currentChunk = -1;
 
-        while(datalen >= CHUNK_SIZE || (flushAllData && datalen)) {
-                dataToSend = datalen > CHUNK_SIZE ? CHUNK_SIZE : datalen;
-
-	        while(cb->begin==cb->end && cb->wrap && !dc->stop && !dc->seek) 
-		        my_usleep(10000);
-	        if(dc->stop) return OUTPUT_BUFFER_DC_STOP;
-	        /* just for now, so it doesn't hang */
-	        if(dc->seek) return OUTPUT_BUFFER_DC_SEEK;
-	        /* be sure to remove this! */
-
-	        memcpy(cb->chunks+cb->end*CHUNK_SIZE,data,dataToSend);
-	        cb->chunkSize[cb->end] = dataToSend;
-	        cb->bitRate[cb->end] = bitRate;
-	        cb->times[cb->end] = time;
-
+void flushOutputBuffer(OutputBuffer * cb) {
+	if(currentChunk == cb->end) {
 	        cb->end++;
 	        if(cb->end>=buffered_chunks) {
-		        cb->end = 0;
-		        cb->wrap = 1;
+		       	cb->end = 0;
+		       	cb->wrap = 1;
 	        }
+		currentChunk = -1;
+	}
+}
+
+int sendDataToOutputBuffer(OutputBuffer * cb, DecoderControl * dc, 
+                char * data, long datalen, float time, mpd_uint16 bitRate)
+{
+        mpd_uint16 dataToSend;
+	mpd_uint16 chunkLeft;
+
+        while(datalen) {
+		if(currentChunk != cb->end) {
+	        	while(cb->begin==cb->end && cb->wrap && !dc->stop && 
+					!dc->seek)
+			{
+		        	my_usleep(10000);
+			}
+	        	if(dc->stop) return OUTPUT_BUFFER_DC_STOP;
+	        	if(dc->seek) return OUTPUT_BUFFER_DC_SEEK;
+
+			currentChunk = cb->end;
+			cb->chunkSize[currentChunk] = 0;
+		}
+
+		chunkLeft = CHUNK_SIZE-cb->chunkSize[currentChunk];
+                dataToSend = datalen > chunkLeft ? chunkLeft : datalen;
+
+	        memcpy(cb->chunks+currentChunk*CHUNK_SIZE+
+			cb->chunkSize[currentChunk],
+			data, dataToSend);
+	        cb->chunkSize[currentChunk]+= dataToSend;
+	        cb->bitRate[currentChunk] = bitRate;
+	        cb->times[currentChunk] = time;
 
                 datalen-= dataToSend;
-                dataSent+= dataToSend;
                 data+= dataToSend;
+
+		if(cb->chunkSize[currentChunk] == CHUNK_SIZE) {
+			flushOutputBuffer(cb);
+		}
         }
 
-	return dataSent;
+	return 0;
 }
 /* vim:set shiftwidth=4 tabstop=8 expandtab: */
