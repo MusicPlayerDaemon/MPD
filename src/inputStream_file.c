@@ -74,7 +74,7 @@ size_t inputStream_fileRead(InputStream * inStream, void * ptr, size_t size,
 	readSize = fread(ptr,size,nmemb,(FILE *)inStream->data);
         if(readSize <=0 && ferror((FILE *)inStream->data)) {
                 inStream->error = errno;
-		DEBUG("inputStream_fileRead: error reading: %s",  
+		DEBUG("inputStream_fileRead: error reading: %s\n",  
 				strerror(inStream->error));
         }
 
