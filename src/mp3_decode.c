@@ -432,12 +432,12 @@ int mp3Read(mp3DecodeData * data, Buffer * cb, DecoderControl * dc) {
 		data->frameOffset[data->currentFrame] = 
 				data->currentOffset;
 		if(data->stream.this_frame!=NULL) {
-			data->frameOffset[data->currentFrame]+= 
-					data->stream.this_frame-
-					data->stream.buffer;
+			data->frameOffset[data->currentFrame]-= 
+					data->stream.bufend-
+					data->stream.this_frame;
 		}
 		else {
-			data->frameOffset[data->currentFrame]+= 
+			data->frameOffset[data->currentFrame]-= 
 					data->stream.bufend-data->stream.buffer;
 		}
 		data->times[data->currentFrame] = data->timer;
