@@ -192,10 +192,8 @@ int mpc_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream)
 			dc->seek = 0;
 		}
 
-		DEBUG("HERE 1\n");
 		ret = mpc_decoder_decode(&decoder, sample_buffer,
 				         &vbrUpdateAcc, &vbrUpdateBits);
-		DEBUG("HERE 2\n");
 
 		if(ret <= 0 || dc->stop ) {
 			eof = 1;
