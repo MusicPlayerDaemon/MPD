@@ -1,7 +1,8 @@
 1) resampling audio for compatibility, and better gapless/crossfading
 	a) write bit conversion stuff (8->16 and 24->16)
 	b) mono to stereo conversion
-	c) default is 44.1khz, 16-bit stereo, if 44.1khz fails, try 48khz
+	c) if not able to open with a format, try default formats:
+		16-bit, stereo, 44.1 or 48khz
 	d) option to set default sampling frequency
 	e) abitility to disable resampling and audio format conversion
 
