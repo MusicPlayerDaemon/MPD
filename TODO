@@ -1,12 +1,5 @@
 0.12
 ----
-*) AudioOutput
-	*) have "format" as a default config option for all audioOutputs
-	*) don't automatically close audioOutput devices on openDevice(),
-		instead, let the plugins determine if they should be closed
-		or not, so that they can just leave the device open,
-		like if they are using a constant audioFormat
-
 *) Fix id3v1 encoding
 
 *) Cleanup Config File Code
