@@ -20,10 +20,16 @@
 
 #include "conf.h"
 #include "myfprintf.h"
+#include "utils.h"
 
+#include <stdlib.h>
 #include <string.h>
+#include <stdarg.h>
 
 int logLevel = LOG_LEVEL_LOW;
+short warningFlushed = 0;
+
+static char * warningBuffer = NULL;
 
 void initLog() {
 	if(strcmp(getConf()[CONF_LOG_LEVEL],"default")==0) {
@@ -37,4 +43,37 @@ void initLog() {
 	}
 	else ERROR("unknown log level \"%s\"\n",getConf()[CONF_LOG_LEVEL]);
 }
-/* vim:set shiftwidth=4 tabstop=8 expandtab: */
+
+#define BUFFER_LENGTH	4096
+
+void bufferWarning(char * format, ... ) {
+	va_list arglist;
+	char temp[BUFFER_LENGTH+1];
+
+	memset(temp, 0, BUFFER_LENGTH+1);
+
+	va_start(arglist, format);
+
+	vsnprintf(temp, BUFFER_LENGTH, format, arglist);
+
+	warningBuffer = appendToString(warningBuffer, temp);
+
+	va_end(arglist);
+}
+void flushWarningLog() {
+	char * s;
+
+	if(warningBuffer == NULL) return;
+
+	s = strtok(warningBuffer, "\n");
+	while ( s != NULL ) {
+		myfprintf(stderr, "%s\n", s);
+
+		s = strtok(NULL, "\n");
+	}
+
+	free(warningBuffer);
+	warningBuffer = NULL;
+
+	warningFlushed = 1;
+}

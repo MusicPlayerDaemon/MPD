@@ -70,4 +70,22 @@ int ipv6Supported() {
         return 0;
 }
 
-/* vim:set shiftwidth=4 tabstop=8 expandtab: */
+char * appendToString(char * dest, const char * src) {
+        int destlen;
+        int srclen = strlen(src);
+                                                                                
+        if(dest == NULL) {
+                dest = malloc(srclen+1);
+                memset(dest, 0, srclen+1);
+                destlen = 0;
+        }
+        else {
+                destlen = strlen(dest);
+                dest = realloc(dest, destlen+srclen+1);
+        }
+                                                                                
+        memcpy(dest+destlen, src, srclen);
+        dest[destlen+srclen] = '\0';
+                                                                                
+        return dest;
+}

@@ -256,7 +256,7 @@ int playAudio(char * playChunk, int size) {
 	int send;
 
 	if(audio_device==NULL) {
-		ERROR("trying to play w/ the audio device being open!\n");
+		ERROR("trying to play w/o the audio device being open!\n");
 		return -1;
 	}
 	
@@ -302,4 +302,3 @@ void audioError() {
 	}
 #endif
 }
-/* vim:set shiftwidth=4 tabstop=8 expandtab: */

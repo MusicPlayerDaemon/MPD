@@ -1,7 +1,5 @@
 *) put some sort of error reporting for streaming/inputStream!
 
-*) Fix charset errors so they don't goto stderr/out
-
 Post-1.0
 --------
 1) crosslink "list" stuff, for example, artists are crosslinked to alubms and 

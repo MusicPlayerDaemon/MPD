@@ -289,7 +289,10 @@ void changeToUser(Options * options) {
 }
 
 void openLogFiles(Options * options, FILE ** out, FILE ** err) {
-        if(options->stdOutput) return;
+        if(options->stdOutput) {
+                flushWarningLog();
+                return;
+        }
 
         if(NULL==(*out=fopen(options->logFile,"a"))) {
                 ERROR("problem opening file \"%s\" for writing\n",
@@ -316,6 +319,7 @@ void openDB(Options * options, char * argv0) {
 					argv0);
                         exit(EXIT_FAILURE);
                 }
+                flushWarningLog();
                 initMp3Directory();
                 if(writeDirectoryDB()<0) {
                         ERROR("problem opening db for reading or writing\n");
@@ -324,6 +328,7 @@ void openDB(Options * options, char * argv0) {
 		if(options->createDB) exit(EXIT_SUCCESS);
         }
 	if(options->updateDB) {
+                flushWarningLog();
 		updateMp3Directory();
 		exit(EXIT_SUCCESS);
 	}
@@ -379,6 +384,7 @@ void setupLogOutput(Options * options, FILE * out, FILE * err) {
 
                 myfprintfStdLogMode(out, err, options->logFile,
                                 options->errorFile);
+                flushWarningLog();
         }
 
         /* lets redirect stdin to dev null as a work around for libao bug */

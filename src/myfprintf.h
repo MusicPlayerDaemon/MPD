@@ -31,4 +31,3 @@ void myfprintf(FILE * fp, char * format, ... );
 int myfprintfCloseAndOpenLogFile();
 
 #endif
-/* vim:set shiftwidth=4 tabstop=8 expandtab: */

@@ -68,7 +68,7 @@ int prepOssMixer(char * device) {
 	int devmask = 0;
 
 	if((volume_ossFd = open(device,O_RDONLY))<0) {
-		ERROR("unable to open oss mixer \"%s\"\n",device);
+		WARNING("unable to open oss mixer \"%s\"\n",device);
 		return -1;
 	}
 
@@ -78,7 +78,7 @@ int prepOssMixer(char * device) {
 		int i,j;
 
 		if(ioctl(volume_ossFd,SOUND_MIXER_READ_DEVMASK,&devmask)<0) {
-			ERROR("errors getting read_devmask for oss mixer\n");
+			WARNING("errors getting read_devmask for oss mixer\n");
 			close(volume_ossFd);
 			return -1;
 		}
@@ -96,13 +96,13 @@ int prepOssMixer(char * device) {
 		}
 
 		if(i>=SOUND_MIXER_NRDEVICES) {
-			ERROR("mixer control \"%s\" not found\n",
+			WARNING("mixer control \"%s\" not found\n",
 					getConf()[CONF_MIXER_CONTROL]);
 			close(volume_ossFd);
 			return -1;
 		}
 		else if(!( ( 1 << i ) & devmask )) {
-			ERROR("mixer control \"%s\" not usable\n",
+			WARNING("mixer control \"%s\" not usable\n",
 					getConf()[CONF_MIXER_CONTROL]);
 			close(volume_ossFd);
 			return -1;
@@ -122,7 +122,7 @@ int getOssVolumeLevel() {
 	int left, right, level;
 
 	if(ioctl(volume_ossFd,MIXER_READ(volume_ossControl),&level) < 0) {
-		ERROR("unable to read volume\n");
+		WARNING("unable to read volume\n");
 		return -1;
 	}
 
@@ -130,7 +130,7 @@ int getOssVolumeLevel() {
 	right = (level & 0xff00) >> 8;
 
 	if(left!=right) {
-		ERROR("volume for left and right is not the same, \"%i\" and "
+		WARNING("volume for left and right is not the same, \"%i\" and "
 			"\"%i\"\n",left,right);
 	}
 
@@ -174,27 +174,27 @@ int prepAlsaMixer(char * card) {
 	char * controlName = VOLUME_MIXER_ALSA_CONTROL_DEFAULT;
 
 	if((err = snd_mixer_open(&volume_alsaMixerHandle,0))<0) {
-		ERROR("problems opening alsa mixer: %s\n",snd_strerror(err));
+		WARNING("problems opening alsa mixer: %s\n",snd_strerror(err));
 		return -1;
 	}
 	
 	if((err = snd_mixer_attach(volume_alsaMixerHandle,card))<0) {
 		snd_mixer_close(volume_alsaMixerHandle);
-		ERROR("problems problems attaching alsa mixer: %s\n",
+		WARNING("problems problems attaching alsa mixer: %s\n",
 			snd_strerror(err));
 		return -1;
 	}
 	
 	if((err = snd_mixer_selem_register(volume_alsaMixerHandle,NULL,NULL))<0) {
 		snd_mixer_close(volume_alsaMixerHandle);
-		ERROR("problems snd_mixer_selem_register'ing: %s\n",
+		WARNING("problems snd_mixer_selem_register'ing: %s\n",
 			snd_strerror(err));
 		return -1;
 	}
 	
 	if((err = snd_mixer_load(volume_alsaMixerHandle))<0) {
 		snd_mixer_close(volume_alsaMixerHandle);
-		ERROR("problems snd_mixer_selem_register'ing: %s\n",
+		WARNING("problems snd_mixer_selem_register'ing: %s\n",
 			snd_strerror(err));
 		return -1;
 	}
@@ -223,7 +223,7 @@ int prepAlsaMixer(char * card) {
 		return 0;
 	}
 
-	ERROR("can't find alsa mixer_control \"%s\"\n",controlName);
+	WARNING("can't find alsa mixer_control \"%s\"\n",controlName);
 
 	snd_mixer_close(volume_alsaMixerHandle);
 	return -1;
@@ -244,7 +244,7 @@ int getAlsaVolumeLevel() {
 
 	if((err = snd_mixer_selem_get_playback_volume(volume_alsaElem,
 		SND_MIXER_SCHN_FRONT_LEFT,&level))<0) {
-		ERROR("problems getting alsa volume: %s\n",snd_strerror(err));
+		WARNING("problems getting alsa volume: %s\n",snd_strerror(err));
 		return -1;
 	}
 
@@ -272,7 +272,7 @@ int changeAlsaVolumeLevel(FILE * fp, int change, int rel) {
 	if((err = snd_mixer_selem_get_playback_volume(volume_alsaElem,
 		SND_MIXER_SCHN_FRONT_LEFT,&level))<0) {
 		commandError(fp, ACK_ERROR_SYSTEM, "problems getting volume");
-		ERROR("problems getting alsa volume: %s\n",snd_strerror(err));
+		WARNING("problems getting alsa volume: %s\n",snd_strerror(err));
 		return -1;
 	}
 
@@ -298,7 +298,7 @@ int changeAlsaVolumeLevel(FILE * fp, int change, int rel) {
 	if((err = snd_mixer_selem_set_playback_volume_all(
 				volume_alsaElem,level))<0) {
 		commandError(fp, ACK_ERROR_SYSTEM, "problems setting volume");
-		ERROR("problems setting alsa volume: %s\n",snd_strerror(err));
+		WARNING("problems setting alsa volume: %s\n",snd_strerror(err));
 		return -1;
 	}
 
@@ -365,7 +365,7 @@ void initVolume() {
 
 void openVolumeDevice() {
 	if(prepMixer(volume_mixerDevice)<0) {
-		ERROR("using software volume\n");
+		WARNING("using software volume\n");
 		volume_mixerType = VOLUME_MIXER_TYPE_SOFTWARE;
 	}
 }

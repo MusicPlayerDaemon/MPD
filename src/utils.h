@@ -33,5 +33,6 @@ void my_usleep(long usec);
 
 int ipv6Supported();
 
+char * appendToString(char * dest, const char * src);
+
 #endif
-/* vim:set shiftwidth=4 tabstop=8 expandtab: */

@@ -931,7 +931,7 @@ int readDirectoryDB() {
 					char * tempCharset; 
 
 					if(foundFsCharset) {
-						ERROR("already found "
+						WARNING("already found "
 							"fs charset in db\n");
 						exit(EXIT_FAILURE);
 					}
@@ -944,11 +944,11 @@ int readDirectoryDB() {
 						getConf()[CONF_FS_CHARSET]) && 
 						strcmp(fsCharset,tempCharset))
 					{
-						ERROR("Using \"%s\" for the "
+						WARNING("Using \"%s\" for the "
 							"filesystem charset "
 							"instead of \"%s\"\n",
 							fsCharset,tempCharset);
-						ERROR("maybe you need to "
+						WARNING("maybe you need to "
 							"recreate the db?\n");
 						setFsCharset(fsCharset);
 					}
@@ -1275,4 +1275,3 @@ Song * getSongFromDB(char * file) {
 time_t getDbModTime() {
 	return directory_dbModTime;
 }
-/* vim:set shiftwidth=4 tabstop=8 expandtab: */

@@ -28,6 +28,7 @@
 #define LOG_LEVEL_DEBUG		2
 
 extern int logLevel;
+extern short warningFlushed;
 
 #define ERROR(...) myfprintf(stderr, __VA_ARGS__)
 
@@ -40,7 +41,15 @@ extern int logLevel;
 #define DEBUG(...) if(logLevel>=LOG_LEVEL_DEBUG) \
 				myfprintf(stdout, __VA_ARGS__)
 
+#define WARNING(...) { \
+	if(warningFlushed) myfprintf(stderr, __VA_ARGS__); \
+	else bufferWarning(__VA_ARGS__); \
+}
+
 void initLog();
 
+void bufferWarning(char * format, ... );
+
+void flushWarningLog();
+
 #endif
-/* vim:set shiftwidth=4 tabstop=8 expandtab: */

@@ -86,13 +86,13 @@ void setFsCharset(char * charset) {
 	DEBUG("setFsCharset: fs charset is: %s\n",fsCharset);
 	
 	if(setCharSetConversion("UTF-8",fsCharset)!=0) {
-		ERROR("fs charset conversion problem: "
+		WARNING("fs charset conversion problem: "
 			"not able to convert from \"%s\" to \"%s\"\n",
 			fsCharset,"UTF-8");
 		error = 1;
 	}
 	if(setCharSetConversion(fsCharset,"UTF-8")!=0) {
-		ERROR("fs charset conversion problem: "
+		WARNING("fs charset conversion problem: "
 			"not able to convert from \"%s\" to \"%s\"\n",
 			"UTF-8",fsCharset);
 		error = 1;
@@ -100,7 +100,7 @@ void setFsCharset(char * charset) {
 	
 	if(error) {
 		free(fsCharset);
-		ERROR("setting fs charset to ISO-8859-1!\n");
+		WARNING("setting fs charset to ISO-8859-1!\n");
 		fsCharset = strdup("ISO-8859-1");
 	}
 }
@@ -145,28 +145,28 @@ void initPaths(char * playlistDirArg, char * musicDirArg) {
 		originalLocale = strdup(originalLocale);
 
 		if(!(currentLocale = setlocale(LC_CTYPE,""))) {
-			ERROR("problems setting current locale with "
+			WARNING("problems setting current locale with "
 					"setlocale()\n");
 		}
 		else {
 			if(strcmp(currentLocale,"C")==0 ||
 					strcmp(currentLocale,"POSIX")==0) 
 			{
-				ERROR("current locale is \"%s\"\n",
+				WARNING("current locale is \"%s\"\n",
 						currentLocale);
 			}
 			else if((temp = nl_langinfo(CODESET))) {
 				charset = strdup(temp);
 			}
-			else ERROR("problems getting charset for locale\n");
+			else WARNING("problems getting charset for locale\n");
 			if(!setlocale(LC_CTYPE,originalLocale)) {
-				ERROR("problems resetting locale with setlocale()\n");
+				WARNING("problems resetting locale with setlocale()\n");
 			}
 		}
 
 		free(originalLocale);
 	}
-	else ERROR("problems getting locale with setlocale()\n");
+	else WARNING("problems getting locale with setlocale()\n");
 #endif
 #endif
 
@@ -175,7 +175,7 @@ void initPaths(char * playlistDirArg, char * musicDirArg) {
 		free(charset);
 	}
 	else {
-		ERROR("setting filesystem charset to ISO-8859-1\n");
+		WARNING("setting filesystem charset to ISO-8859-1\n");
 		setFsCharset("ISO-8859-1");
 	}
 }
