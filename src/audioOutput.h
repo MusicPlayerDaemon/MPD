@@ -60,6 +60,7 @@ struct _AudioOutput {
 	int convertAudioFormat;
 	AudioFormat inAudioFormat;
 	AudioFormat outAudioFormat;
+	AudioFormat reqAudioFormat;
 	char * convBuffer;
 	int convBufferLen;
 	int sameInAndOutFormats;

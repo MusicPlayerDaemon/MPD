@@ -93,6 +93,7 @@ static int alsa_openDevice(AudioOutput * audioOutput)
 	snd_pcm_hw_params_t * hwparams;
 	snd_pcm_sw_params_t * swparams;
 	unsigned int sampleRate = audioFormat->sampleRate;
+	unsigned int channels = audioFormat->channels;
 	snd_pcm_uframes_t alsa_buffer_size;
 	snd_pcm_uframes_t alsa_period_size;
 	unsigned int alsa_buffer_time = MPD_ALSA_BUFFER_TIME;
@@ -107,10 +108,10 @@ static int alsa_openDevice(AudioOutput * audioOutput)
 		bitformat = SND_PCM_FORMAT_S16;
 		break;
 	case 24:
-		bitformat = SND_PCM_FORMAT_S16;
+		bitformat = SND_PCM_FORMAT_S24;
 		break;
 	case 32:
-		bitformat = SND_PCM_FORMAT_S16;
+		bitformat = SND_PCM_FORMAT_S32;
 		break;
 	default:
 		ERROR("Alsa device \"%s\" doesn't support %i bit audio\n",
@@ -162,14 +163,15 @@ static int alsa_openDevice(AudioOutput * audioOutput)
 		goto fail;
 	}
 
-	err = snd_pcm_hw_params_set_channels(ad->pcmHandle, hwparams, 
-			audioFormat->channels);
+	err = snd_pcm_hw_params_set_channels_near(ad->pcmHandle, hwparams, 
+			&channels);
 	if(err < 0) {
 		ERROR("Alsa device \"%s\" does not support %i channels: "
 				"%s\n", ad->device, (int)audioFormat->channels, 
 				snd_strerror(-err));
 		goto fail;
 	}
+	audioFormat->channels = channels;
 
 	err = snd_pcm_hw_params_set_rate_near(ad->pcmHandle, hwparams, 
 			&sampleRate, 0);
@@ -178,6 +180,7 @@ static int alsa_openDevice(AudioOutput * audioOutput)
 				ad->device, (int)audioFormat->sampleRate);
 		goto fail;
 	}
+	audioFormat->sampleRate = sampleRate;
 
 	err = snd_pcm_hw_params_set_buffer_time_near(ad->pcmHandle, hwparams,
 			&alsa_buffer_time, 0);
@@ -213,6 +216,9 @@ static int alsa_openDevice(AudioOutput * audioOutput)
 	ad->sampleSize = (audioFormat->bits/8)*audioFormat->channels;
 
 	audioOutput->open = 1;
+
+	DEBUG("alsa device \"%s\" will be playing %i channel audio at %i Hz\n",
+			ad->device, channels, sampleRate);
 
 	return 0;
 

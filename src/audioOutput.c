@@ -73,13 +73,14 @@ AudioOutput * newAudioOutput(ConfigParam * param) {
 
 		memset(&ret->inAudioFormat, 0, sizeof(AudioFormat));
 		memset(&ret->outAudioFormat, 0, sizeof(AudioFormat));
+		memset(&ret->reqAudioFormat, 0, sizeof(AudioFormat));
 
 		getBlockParam(AUDIO_OUTPUT_FORMAT, format, 0);
 
 		if(format) {
 			ret->convertAudioFormat = 1;
 
-			if(0 != parseAudioConfig(&ret->outAudioFormat, format))
+			if(0 != parseAudioConfig(&ret->reqAudioFormat, format))
 			{
 		        	ERROR("error parsing format at line %i\n", 
 						bp->line);
@@ -102,6 +103,8 @@ AudioOutput * newAudioOutput(ConfigParam * param) {
 }
 
 int openAudioOutput(AudioOutput * audioOutput, AudioFormat * audioFormat) {
+	int ret;
+	
 	if(audioOutput->open) {
 		if(cmpAudioFormat(audioFormat, &audioOutput->inAudioFormat) 
 				== 0) 
@@ -114,20 +117,24 @@ int openAudioOutput(AudioOutput * audioOutput, AudioFormat * audioFormat) {
 	copyAudioFormat(&audioOutput->inAudioFormat, audioFormat);
 
 	if(audioOutput->convertAudioFormat) {
-		if(cmpAudioFormat(&audioOutput->inAudioFormat, 
-				&audioOutput->outAudioFormat) == 0) 
-		{
-			audioOutput->sameInAndOutFormats = 1;
-		}
-		else audioOutput->sameInAndOutFormats = 0;
+		copyAudioFormat(&audioOutput->outAudioFormat,
+				&audioOutput->reqAudioFormat);
 	}
 	else {
-		audioOutput->sameInAndOutFormats = 1;
 		copyAudioFormat(&audioOutput->outAudioFormat, 
 				&audioOutput->inAudioFormat);
 	}
 
-	return audioOutput->openDeviceFunc(audioOutput);
+	ret = audioOutput->openDeviceFunc(audioOutput);
+
+	if(cmpAudioFormat(&audioOutput->inAudioFormat, 
+			  &audioOutput->outAudioFormat) == 0)
+	{
+		audioOutput->sameInAndOutFormats = 1;
+	}
+	else audioOutput->sameInAndOutFormats = 0;
+
+	return ret;
 }
 
 static void convertAudioFormat(AudioOutput * audioOutput, char ** chunkArgPtr,
