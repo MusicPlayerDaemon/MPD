@@ -28,11 +28,14 @@ audio_output {
 #	type		"oss"
 #	name		"my OSS sound card"
 #	device	 	"/dev/dsp" # optional
+#	format		"44100:16:2" #optional
 #
 # use this if you want to use ALSA audio output
 #	type		"alsa"
 #	name		"my ALSA device"
 #	device		"hw:0,0" # optional
+#	format		"44100:16:2" #optional
+#
 } # end of audio_output "ao"
 #
 # Set this if you have problems 
