@@ -250,6 +250,19 @@ int openAudioDevice(AudioFormat * audioFormat) {
 	return 0;
 }
 
+void audioError() {
+#ifdef HAVE_AUDIO
+	if(errno==AO_ENOTLIVE) {
+		ERROR("not a live ao device\n");
+	}
+	else if(errno==AO_EOPENDEVICE) {
+		ERROR("not able to open audio device\n");
+	}
+	else if(errno==AO_EBADOPTION) {
+		ERROR("bad driver option\n");
+	}
+#endif
+}
 
 int playAudio(char * playChunk, int size) {
 #ifdef HAVE_AUDIO
@@ -290,20 +303,6 @@ void closeAudioDevice() {
 		ao_close(audio_device);
 		audio_device = NULL;
 		unblockSignals();
-	}
-#endif
-}
-
-void audioError() {
-#ifdef HAVE_AUDIO
-	if(errno==AO_ENOTLIVE) {
-		ERROR("not a live ao device\n");
-	}
-	else if(errno==AO_EOPENDEVICE) {
-		ERROR("not able to open audio device\n");
-	}
-	else if(errno==AO_EBADOPTION) {
-		ERROR("bad driver option\n");
 	}
 #endif
 }

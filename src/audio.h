@@ -51,8 +51,6 @@ void closeAudioDevice();
 
 int isAudioDeviceOpen();
 
-void audioError();
-
 int isCurrentAudioFormat(AudioFormat * audioFormat);
 
 #endif

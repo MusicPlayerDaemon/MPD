@@ -44,6 +44,18 @@ static AoData * newAoData() {
 	return ret;
 }
 
+static void audioOutputAo_error() {
+	if(errno==AO_ENOTLIVE) {
+		ERROR("not a live ao device\n");
+	}
+	else if(errno==AO_EOPENDEVICE) {
+		ERROR("not able to open audio device\n");
+	}
+	else if(errno==AO_EBADOPTION) {
+		ERROR("bad driver option\n");
+	}
+}
+
 static void audioOutputAo_initDriver(AudioOutput * audioOutput) {
 	ao_info * ai;
 	char * dup;
@@ -183,7 +195,7 @@ static int audioOutputAo_play(AudioOutput * audioOutput, char * playChunk,
 		send = ad->writeSize > size ? size : ad->writeSize;
 		
 		if(ao_play(ad->device, playChunk, send)==0) {
-			audioError();
+			audioOutputAo_error();
 			ERROR("closing audio device due to write error\n");
 			audioOutputAo_closeDevice(audioOutput);
 			return -1;
