@@ -1,8 +1,6 @@
-1) rewrite outputBuffer to be nonBlocking-esqe to handle seek better
-	while paused
-	a) pass sendToBuffer() a argument indicating seekability, whether
-		or not to exit on a dc->seek
-	b) if not seekable, then set dc->seekError and dc->seek = 0
+1) seek needs to be rethought! as it is, it hangs near end of songs!
+	a) prolly need to make it blocking again, argh!
+	b) for sure, setting wrap = 0 in decode.c is not good!
 
 2) play streams
 	a) put some sort of error reporting for streaming/inputStream!
