@@ -256,7 +256,7 @@ int decodeSeek(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb,
 void decodeStart(PlayerControl * pc, OutputBuffer * cb, DecoderControl * dc) {
         int ret;
         InputStream inStream;
-        InputPlugin * plugin;
+        InputPlugin * plugin = NULL;
         char * path;
 
         if(isRemoteUrl(pc->utf8url)) {
@@ -311,7 +311,9 @@ void decodeStart(PlayerControl * pc, OutputBuffer * cb, DecoderControl * dc) {
 
         ret = DECODE_ERROR_UNKTYPE;
 	if(isRemoteUrl(pc->utf8url)) {
-                plugin = getInputPluginFromMimeType(inStream.mime);
+                if(inStream.mime) {
+			plugin = getInputPluginFromMimeType(inStream.mime);
+		}
                 if(plugin == NULL) {
                         plugin = getInputPluginFromSuffix(
                                         getSuffix(dc->utf8url));

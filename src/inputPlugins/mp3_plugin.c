@@ -451,7 +451,6 @@ void mp3DecodeDataFinalize(mp3DecodeData * data) {
 	mad_frame_finish(&data->frame);
 	mad_stream_finish(&data->stream);
 
-	closeInputStream(data->inStream);
 	if(data->frameOffset) free(data->frameOffset);
 	if(data->times) free(data->times);
 }
@@ -468,6 +467,7 @@ int getMp3TotalTime(char * file) {
 	if(decodeFirstFrame(&data, NULL, NULL)<0) ret = -1;
 	else ret = data.totalTime+0.5;
 	mp3DecodeDataFinalize(&data);
+	closeInputStream(&inStream);
 
 	return ret;
 }
@@ -626,7 +626,7 @@ int mp3_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream) {
 	MpdTag * tag;
 
 	if(openMp3FromInputStream(inStream, &data, dc, &tag) < 0) {
-                closeInputStream(inStream);
+		closeInputStream(inStream);
 		if(!dc->stop) {
                         ERROR("Input does not appear to be a mp3 bit stream.\n");
 		        return -1;
@@ -662,6 +662,7 @@ int mp3_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream) {
 
 	flushOutputBuffer(cb);
 	mp3DecodeDataFinalize(&data);
+	closeInputStream(inStream);
 
 	/*if(dc->seek) {
                 dc->seekError = 1;

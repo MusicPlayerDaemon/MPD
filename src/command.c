@@ -155,7 +155,7 @@ int handlePlay(FILE * fp, unsigned int * permission, int argArrayLength,
                         return -1;
                 }
         }
-        return playPlaylist(fp,song,1);
+        return playPlaylist(fp,song,0);
 }
 
 int handleStop(FILE * fp, unsigned int * permission, int argArrayLength, 

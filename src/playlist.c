@@ -825,16 +825,21 @@ void playPlaylistIfPlayerStopped() {
 		if(error==PLAYER_ERROR_NOERROR) playlist_errorCount = 0;
 		else playlist_errorCount++;
 
+                printf("HERE 1\n");
 		if(playlist_state==PLAYLIST_STATE_PLAY && (
 				(playlist_stopOnError && 
 				error!=PLAYER_ERROR_NOERROR) ||
 				error==PLAYER_ERROR_AUDIO ||
 				error==PLAYER_ERROR_SYSTEM ||
 				playlist_errorCount>=playlist.length)) {
+                        printf("HERE 1-1\n");
+                        printf("playlist_stopOnError: %i\n", playlist_stopOnError);
 			stopPlaylist(stderr);
+                        printf("HERE 1-2\n");
 		}
 		else if(playlist_noGoToNext) currentSongInPlaylist(stderr);
 		else nextSongInPlaylist(stderr);
+                printf("HERE 2\n");
 	}
 }
 
