@@ -144,6 +144,16 @@ int handleStop(FILE * fp, unsigned int * permission, int argArrayLength,
 int handlePause(FILE * fp, unsigned int * permission, 
 		int argArrayLength, char ** argArray) 
 {
+        if(argArrayLength==2) {
+		char * test;
+                int pause = strtol(argArray[1],&test,10);
+                if(*test!='\0' || (pause!=0 && pause!=1)) {
+                        myfprintf(fp,"%s \%s\" is not 0 or 1\n",
+					COMMAND_RESPOND_ERROR,pause);
+                        return -1;
+                }
+		return playerSetPause(fp,pause);
+        }
         return playerPause(fp);
 }
 
@@ -524,7 +534,7 @@ void initCommands() {
 
         addCommand(COMMAND_PLAY        ,PERMISSION_CONTROL, 0, 1,handlePlay);
         addCommand(COMMAND_STOP        ,PERMISSION_CONTROL, 0, 0,handleStop);
-        addCommand(COMMAND_PAUSE       ,PERMISSION_CONTROL, 0, 0,handlePause);
+        addCommand(COMMAND_PAUSE       ,PERMISSION_CONTROL, 0, 1,handlePause);
         addCommand(COMMAND_STATUS      ,PERMISSION_READ,    0, 0,commandStatus);
         addCommand(COMMAND_KILL        ,PERMISSION_ADMIN,  -1,-1,handleKill);
         addCommand(COMMAND_CLOSE       ,0,                 -1,-1,handleClose);

@@ -215,6 +215,23 @@ int playerPause(FILE * fp) {
 	return 0;
 }
 
+int playerSetPause(FILE * fp, int pause) {
+	PlayerControl * pc = &(getPlayerData()->playerControl);
+
+	if(player_pid<=0) return 0;
+
+	switch(pc->state) {
+	case PLAYER_STATE_PLAY:
+		if(pause) playerPause(fp);
+		break;
+	case PLAYER_STATE_PAUSE:
+		if(!pause) playerPause(fp);
+		break;
+	}
+
+	return 0;
+}
+
 int getPlayerElapsedTime() {
 	return (int)(getPlayerData()->playerControl.elapsedTime+0.5);
 }

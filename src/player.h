@@ -75,6 +75,8 @@ void player_sigHandler(int signal);
 
 int playerPlay(FILE * fp, char * utf8file);
 
+int playerSetPause(FILE * fp, int pause);
+
 int playerPause(FILE * fp);
 
 int playerStop(FILE * fp);
