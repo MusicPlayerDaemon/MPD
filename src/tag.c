@@ -44,9 +44,6 @@
 #include <id3tag.h>
 #endif
 #endif
-#ifdef HAVE_FAAD
-#include "mp4ff/mp4ff.h"
-#endif
 
 void printMpdTag(FILE * fp, MpdTag * tag) {
 	if(tag->artist) myfprintf(fp,"Artist: %s\n",tag->artist);
@@ -161,97 +158,6 @@ MpdTag * aacTagDup(char * utf8file) {
 	if(time>=0) {
 		if((ret = id3Dup(utf8file))==NULL) ret = newMpdTag();
 		ret->time = time;
-	}
-
-	if(ret) validateUtf8Tag(ret);
-
-	return ret;
-}
-
-MpdTag * mp4DataDup(char * utf8file, int * mp4MetadataFound) {
-	MpdTag * ret = NULL;
-	InputStream inStream;
-	mp4ff_t * mp4fh;
-	mp4ff_callback_t * cb; 
-	int32_t track;
-	int32_t time;
-	int32_t scale;
-
-	*mp4MetadataFound = 0;
-	
-	if(openInputStream(&inStream,rmp2amp(utf8ToFsCharset(utf8file))) < 0)
-	{
-		return NULL;
-	}
-
-	cb = malloc(sizeof(mp4ff_callback_t));
-	cb->read = mp4_inputStreamReadCallback;
-	cb->seek = mp4_inputStreamSeekCallback;
-	cb->user_data = &inStream;
-
-	mp4fh = mp4ff_open_read(cb);
-	if(!mp4fh) {
-		free(cb);
-		closeInputStream(&inStream);
-		return NULL;
-	}
-
-	track = mp4_getAACTrack(mp4fh);
-	if(track < 0) {
-		mp4ff_close(mp4fh);
-		closeInputStream(&inStream);
-		free(cb);
-		return NULL;
-	}
-
-	ret = newMpdTag();
-	time = mp4ff_get_track_duration_use_offsets(mp4fh,track);
-	scale = mp4ff_time_scale(mp4fh,track);
-	if(scale < 0) {
-		mp4ff_close(mp4fh);
-		closeInputStream(&inStream);
-		free(cb);
-		freeMpdTag(ret);
-		return NULL;
-	}
-	ret->time = ((float)time)/scale+0.5;
-
-	if(!mp4ff_meta_get_artist(mp4fh,&ret->artist)) {
-		*mp4MetadataFound = 1;
-	}
-
-	if(!mp4ff_meta_get_album(mp4fh,&ret->album)) {
-		*mp4MetadataFound = 1;
-	}
-
-	if(!mp4ff_meta_get_title(mp4fh,&ret->title)) {
-		*mp4MetadataFound = 1;
-	}
-
-	if(!mp4ff_meta_get_track(mp4fh,&ret->track)) {
-		*mp4MetadataFound = 1;
-	}
-
-	mp4ff_close(mp4fh);
-	closeInputStream(&inStream);
-	free(cb);
-
-	return ret;
-}
-
-MpdTag * mp4TagDup(char * utf8file) {
-	MpdTag * ret = NULL;
-	int mp4MetadataFound = 0;
-
-	ret = mp4DataDup(utf8file,&mp4MetadataFound);
-        if(!ret) return NULL;
-	if(!mp4MetadataFound) {
-		MpdTag * temp = id3Dup(utf8file);
-		if(temp) {
-			temp->time = ret->time;
-			freeMpdTag(ret);
-			ret = temp;
-		}
 	}
 
 	if(ret) validateUtf8Tag(ret);

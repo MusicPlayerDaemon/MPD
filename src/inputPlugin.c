@@ -71,6 +71,7 @@ extern InputPlugin mp3Plugin;
 extern InputPlugin oggPlugin;
 extern InputPlugin flacPlugin;
 extern InputPlugin audiofilePlugin;
+extern InputPlugin mp4Plugin;
 
 void initInputPlugins() {
 	inputPlugin_list = makeList(NULL);
@@ -80,6 +81,7 @@ void initInputPlugins() {
 	loadInputPlugin(&oggPlugin);
 	loadInputPlugin(&flacPlugin);
 	loadInputPlugin(&audiofilePlugin);
+	loadInputPlugin(&mp4Plugin);
 }
 
 void finishInputPlugins() {

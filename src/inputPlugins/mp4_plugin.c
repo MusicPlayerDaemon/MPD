@@ -16,20 +16,19 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "mp4_decode.h"
+#include "../inputPlugin.h"
 
 #ifdef HAVE_FAAD
 
-#include "command.h"
-#include "utils.h"
-#include "audio.h"
-#include "log.h"
-#include "pcm_utils.h"
-#include "inputStream.h"
-#include "outputBuffer.h"
-#include "decode.h"
+#include "../utils.h"
+#include "../audio.h"
+#include "../log.h"
+#include "../pcm_utils.h"
+#include "../inputStream.h"
+#include "../outputBuffer.h"
+#include "../decode.h"
 
-#include "mp4ff/mp4ff.h"
+#include "../mp4ff/mp4ff.h"
 
 #include <stdio.h>
 #include <unistd.h>
@@ -312,5 +311,116 @@ int mp4_decode(OutputBuffer * cb, DecoderControl * dc) {
 	return 0;
 }
 
+MpdTag * mp4DataDup(char * file, int * mp4MetadataFound) {
+	MpdTag * ret = NULL;
+	InputStream inStream;
+	mp4ff_t * mp4fh;
+	mp4ff_callback_t * cb; 
+	int32_t track;
+	int32_t time;
+	int32_t scale;
+
+	*mp4MetadataFound = 0;
+	
+	if(openInputStream(file) < 0) return NULL;
+
+	cb = malloc(sizeof(mp4ff_callback_t));
+	cb->read = mp4_inputStreamReadCallback;
+	cb->seek = mp4_inputStreamSeekCallback;
+	cb->user_data = &inStream;
+
+	mp4fh = mp4ff_open_read(cb);
+	if(!mp4fh) {
+		free(cb);
+		closeInputStream(&inStream);
+		return NULL;
+	}
+
+	track = mp4_getAACTrack(mp4fh);
+	if(track < 0) {
+		mp4ff_close(mp4fh);
+		closeInputStream(&inStream);
+		free(cb);
+		return NULL;
+	}
+
+	ret = newMpdTag();
+	time = mp4ff_get_track_duration_use_offsets(mp4fh,track);
+	scale = mp4ff_time_scale(mp4fh,track);
+	if(scale < 0) {
+		mp4ff_close(mp4fh);
+		closeInputStream(&inStream);
+		free(cb);
+		freeMpdTag(ret);
+		return NULL;
+	}
+	ret->time = ((float)time)/scale+0.5;
+
+	if(!mp4ff_meta_get_artist(mp4fh,&ret->artist)) {
+		*mp4MetadataFound = 1;
+	}
+
+	if(!mp4ff_meta_get_album(mp4fh,&ret->album)) {
+		*mp4MetadataFound = 1;
+	}
+
+	if(!mp4ff_meta_get_title(mp4fh,&ret->title)) {
+		*mp4MetadataFound = 1;
+	}
+
+	if(!mp4ff_meta_get_track(mp4fh,&ret->track)) {
+		*mp4MetadataFound = 1;
+	}
+
+	mp4ff_close(mp4fh);
+	closeInputStream(&inStream);
+	free(cb);
+
+	return ret;
+}
+
+MpdTag * mp4TagDup(char * file) {
+	MpdTag * ret = NULL;
+	int mp4MetadataFound = 0;
+
+	ret = mp4DataDup(file, &mp4MetadataFound);
+        if(!ret) return NULL;
+	if(!mp4MetadataFound) {
+		MpdTag * temp = id3Dup(file);
+		if(temp) {
+			temp->time = ret->time;
+			freeMpdTag(ret);
+			ret = temp;
+		}
+	}
+
+	return ret;
+}
+
+char * mp4Suffixes[] = {"m4a", "mp4", NULL};
+
+InputPlugin mp4Plugin =
+{
+        "mp4",
+        NULL,
+        mp4_decode,
+        mp4TagDup,
+        INPUT_PLUGIN_STREAM_FILE,
+        mp4Suffixes,
+        NULL
+};
+
+#else
+
+InputPlugin mp4Plugin =
+{
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        0,
+        NULL,
+        NULL
+};
+
 #endif /* HAVE_FAAD */
-/* vim:set shiftwidth=4 tabstop=8 expandtab: */
