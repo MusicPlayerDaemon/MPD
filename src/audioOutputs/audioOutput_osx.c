@@ -104,17 +104,25 @@ static void osx_dropBufferedAudio(AudioOutput * audioOutput) {
 static void osx_closeDevice(AudioOutput * audioOutput) {
 	OsxData * od = (OsxData *) audioOutput->data;
 
+	DEBUG("entering osx_closeDevice\n");
+
 	pthread_mutex_lock(&od->mutex);
+	od->go = 0;
 	while(od->len) {
+		DEBUG("osx_closeDevice: cond_wait\n");
 		pthread_cond_wait(&od->condition, &od->mutex);
 	}
-	od->go = 0;
 	pthread_mutex_unlock(&od->mutex);
+
+	DEBUG("stopping au\n");
 
 	AudioOutputUnitStop(od->au);
 
+	DEBUG("closing au\n");
 	CloseComponent(od->au);
 	AudioUnitUninitialize(od->au);
+
+	DEBUG("Leaving osx_closeDevice\n");
 
 	audioOutput->open = 0;
 }
