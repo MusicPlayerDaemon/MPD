@@ -1,21 +1,36 @@
 0.12
 ----
-*) add genre,  date, composer metadata
-
-*) rewrite metadata/db handling
-	*) rewrite search and find to be more flexible and elegant
-	*) implemnt list command
-		*) for each TagTrackerItem, include a temp varaible for storing
-			if it has been printed already
-		*) reset this variable before list command processing
+*) rewrite search, find, locate to tag LocateTagItem pairs
 
 *) rewrite filename handling
 	*) use memory more efficiently, by iteratively constructing filename
 	*) create a function for creating directory names:
-		*) returns a static string
 		*) when creating the string, check that the same directory
 		 	string wasn't just created (store last Directory * ptr)
 		*) this should be very fast! and save memory
+		*) static char * buffer, that only grows in size during life 
+				span
+		*) implement like:
+			static char * buffer = NULL;
+			static int bufferSize = 0;
+			static int lastDirectory * last = NULL;
+			static int pos;
+
+			if(last == thisOne) return buffer[pos];
+		
+			pos = bufferSIze;
+			for(parentDir; !rootDir; parent = parent->parent) {
+				pos -= strlen(parent);
+				if(pos < 0) i{
+					realloc(-pos bytes);
+					pos = 0;
+				}
+				/* we don't want to append a '\0', so use
+					strncpy */
+				strncpy(buffer[pos], parent, strlen(parent));
+			}
+
+			return buffer;
 
 *) implement listener socket protocol as documented here:
 	http://www.musicpd.org/wiki/moin.cgi/MpdListenerProtocol
