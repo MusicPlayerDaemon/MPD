@@ -368,7 +368,6 @@ static int getHTTPHello(InputStream * inStream) {
                 }
                 else if(0 == strncmp(cur, "\r\nicy-metaint:", 14)) {
                         data->icyMetaint = atoi(cur+14);
-                        printf("icyMetaint: %i\n", data->icyMetaint);
                 }
                 else if(0 == strncmp(cur, "\r\nicy-name:", 11)) {
                         int incr = 11;
@@ -461,7 +460,6 @@ static void parseIcyMetadata(InputStream * inStream, char * metadata,
 	while(s) {
 		if(0 == strncmp(s, "StreamTitle=", 12)) {
 			int cur = 12;
-			printf("StreamTitle: %s\n", s+cur);
 			if(inStream->metaTitle) free(inStream->metaTitle);
 			if(*(s+cur) == '\'') cur++;
 			if(s[strlen(s)-1] == '\'') {

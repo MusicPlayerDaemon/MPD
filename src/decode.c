@@ -395,7 +395,6 @@ void handleMetadata(OutputBuffer * cb, PlayerControl * pc, int * previous,
 		int meta = cb->metaChunk[cb->begin];
 		if( meta != *previous ) {
 			if( meta >= 0 && cb->metaChunkSet[meta]) {
-				printf("METADATA!, copying it.\n");
 				memcpy(currentChunk, 
 					cb->metadataChunks+meta,
 					sizeof(MetadataChunk));
@@ -408,7 +407,6 @@ void handleMetadata(OutputBuffer * cb, PlayerControl * pc, int * previous,
 	if(!(*currentChunkSent) && pc->metadataState == 
 			PLAYER_METADATA_STATE_WRITE)
 	{
-		printf("copy metadata to player\n");
 		*currentChunkSent = 1;
 		memcpy(&(pc->metadataChunk), currentChunk, 
 				sizeof(MetadataChunk));
