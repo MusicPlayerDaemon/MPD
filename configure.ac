@@ -177,10 +177,15 @@ if test x$enable_id3 = xyes; then
 		CFLAGS="$CFLAGS $MPD_CFLAGS $ID3TAG_CFLAGS"
 		LIBS="$LIBS $MPD_LIBS $ID3TAG_LIBS"
 		CPPFLAGS=$CFLAGS
-		AC_CHECK_LIB(id3tag,id3_file_open,[ID3_LIB="$ID3TAG_LIBS";
-     			MPD_CFLAGS="$MPD_CFLAGS $ID3TAG_CFLAGS";
-			use_libid3tag=yes],
+		AC_CHECK_HEADERS(id3tag.h,use_libid3tag=yes,
 			[use_libid3tag=no;use_mpd_id3tag=yes])
+		if test x$use_libid3tag = xyes; then
+			AC_CHECK_LIB(id3tag,id3_file_open,
+				[ID3_LIB="$ID3TAG_LIBS";
+     				MPD_CFLAGS="$MPD_CFLAGS $ID3TAG_CFLAGS";
+				use_libid3tag=yes],
+				[use_libid3tag=no;use_mpd_id3tag=yes])
+		fi
 		CFLAGS=$oldcflags
 		LIBS=$oldlibs
 		CPPFLAGS=$oldcppflags
@@ -224,9 +229,13 @@ if test x$enable_mp3 = xyes; then
 		CFLAGS="$CFLAGS $MPD_CFLAGS $MAD_CFLAGS"
 		LIBS="$LIBS $MPD_LIBS $MAD_LIBS"
 		CPPFLAGS=$CFLAGS
-		AC_CHECK_LIB(mad,mad_stream_init,[MAD_LIB="$MAD_LIBS";
-			MPD_CFLAGS="$MPD_CFLAGS $MAD_CFLAGS";use_libmad=yes],
-     			[use_libmad=no;use_mpd_mad=yes])
+		AC_CHECK_HEADERS(mad.h,use_libmad=yes,
+			[use_libmad=no;use_mpd_mad=yes])
+		if test x$use_libmad = xyes; then
+			AC_CHECK_LIB(mad,mad_stream_init,[MAD_LIB="$MAD_LIBS";
+				MPD_CFLAGS="$MPD_CFLAGS $MAD_CFLAGS";
+     				use_libmad=yes],[use_libmad=no;use_mpd_mad=yes])
+		fi
 		CFLAGS=$oldcflags
 		LIBS=$oldlibs
 		CPPFLAGS=$oldcppflags
