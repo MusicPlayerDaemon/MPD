@@ -254,8 +254,10 @@ static int oss_playAudio(AudioOutput * audioOutput, char * playChunk,
 
 	while (size > 0) {
 		ret = write(od->fd, playChunk, size);
+		if(errno == EINTR) continue;
 		if(ret<0) {
-			ERROR("closing audio device due to write error\n");
+			ERROR("closing oss device \"%s\" due to write error: "
+					"%s\n", od->device, strerror(errno));
 			oss_closeDevice(audioOutput);
 			return -1;
 		}

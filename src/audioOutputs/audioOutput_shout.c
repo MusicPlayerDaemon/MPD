@@ -320,7 +320,7 @@ static void finishEncoder(ShoutData * sd) {
 }
 
 static int flushEncoder(ShoutData * sd) {
-	return !(ogg_stream_pageout(&sd->os, &sd->og) <= 0 );
+	return (ogg_stream_pageout(&sd->os, &sd->og) > 0);
 }
 
 static void clearEncoder(ShoutData * sd) {
