@@ -135,9 +135,14 @@ static void audioOutputAo_initDriver(AudioOutput * audioOutput) {
 	free(dup);
 }
 
+static void freeAoData(AoData * ad) {
+	ao_free_options(ad->options);
+	free(ad);
+}
+
 static void audioOutputAo_finishDriver(AudioOutput * audioOutput) {
 	AoData * ad = (AoData *)audioOutput->data;
-	ao_free_options(ad->options);
+	freeAoData(ad);
 
 	driverInitCount--;
 
