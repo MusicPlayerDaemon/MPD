@@ -35,6 +35,7 @@
 #endif
 #include "playerData.h"
 #include "log.h"
+#include "utils.h"
 
 #include <stdio.h>
 #include <string.h>
