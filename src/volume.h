@@ -37,8 +37,4 @@ int getVolumeLevel();
 
 int changeVolumeLevel(FILE * fp, int change, int rel);
 
-int getVolumeMuteStatus();
-
-int setVolumeMuteStatus(FILE * fp, int status);
-
 #endif

@@ -25,12 +25,8 @@
 	*) add support for saving and restoring audioOutput state to the 
 		state_file
 
-*) fix killall mpd
-	*) have it determine if SIGTERM received from parent pid, if not
-		then it doesn't exit with EXIT_SUCCESS, but EXIT_FAILURE
-	*) if player died w/ EXIT FAILURE, then store the  current
-		state somewhere in case we a SIGTERM was received by the
-		parent
+*) on resetPlayer(), store last state info, so that a killall mpd will
+	properlly save the state, even if the player process dies first
 
 0.13
 ----
