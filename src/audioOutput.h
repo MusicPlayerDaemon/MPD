@@ -55,6 +55,13 @@ struct _AudioOutput {
         AudioOutputCloseDeviceFunc closeDeviceFunc;
 	AudioOutputSendMetadataFunc sendMetdataFunc;
 
+	int convertAudioFormat;
+	AudioFormat inAudioFormat;
+	AudioFormat outAudioFormat;
+	char * convBuffer;
+	int convBufferLen;
+	int sameInAndOutFormats;
+
         void * data;
 };
 

@@ -34,9 +34,11 @@ static AudioFormat * audio_configFormat = NULL;
 void copyAudioFormat(AudioFormat * dest, AudioFormat * src) {
 	if(!src) return;
 
-        dest->sampleRate = src->sampleRate;
-        dest->bits = src->bits;
-        dest->channels = src->channels;
+	memcpy(dest, src, sizeof(AudioFormat));
+}
+
+int cmpAudioFormat(AudioFormat * f1, AudioFormat * f2) {
+	return memcmp(f1, f2, sizeof(AudioFormat));
 }
 
 static AudioOutput ** audioOutputArray = NULL;
@@ -179,7 +181,7 @@ void finishAudioDriver() {
 int isCurrentAudioFormat(AudioFormat * audioFormat) {
 	if(!audioFormat) return 1;
 
-	if(memcmp(audioFormat,&audio_format,sizeof(AudioFormat)) != 0) return 0;
+	if(cmpAudioFormat(audioFormat, &audio_format) != 0) return 0;
 
 	return 1;
 }

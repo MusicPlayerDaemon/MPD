@@ -36,6 +36,8 @@ typedef struct _AudioFormat {
 
 void copyAudioFormat(AudioFormat * dest, AudioFormat * src);
 
+int cmpAudioFormat(AudioFormat * dest, AudioFormat * src);
+
 void getOutputAudioFormat(AudioFormat * inFormat, AudioFormat * outFormat);
 
 int parseAudioConfig(AudioFormat * audioFormat, char * conf);

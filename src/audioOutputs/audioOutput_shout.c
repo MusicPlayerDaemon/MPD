@@ -59,13 +59,6 @@ typedef struct _ShoutData {
 
 	float quality;
 	int bitrate;
-	AudioFormat outAudioFormat;
-	AudioFormat inAudioFormat;
-
-	char * convBuffer;
-	size_t convBufferLen;
-	/* shoud we convert the audio to a different format? */
-	int audioFormatConvert;
 
 	int opened;
 
@@ -74,14 +67,15 @@ typedef struct _ShoutData {
 
 	int connAttempts;
 	time_t lastAttempt;
+
+	/* just a pointer to audioOutput->outAudioFormat */
+	AudioFormat * audioFormat;
 } ShoutData;
 
 static ShoutData * newShoutData() {
 	ShoutData * ret = malloc(sizeof(ShoutData));
 
 	ret->shoutConn = shout_new();
-	ret->convBuffer = NULL;
-	ret->convBufferLen = 0;
 	ret->opened = 0;
 	ret->tag = NULL;
 	ret->tagToSend = 0;
@@ -89,6 +83,7 @@ static ShoutData * newShoutData() {
 	ret->quality = -1.0;
 	ret->connAttempts = 0;
 	ret->lastAttempt = 0;
+	ret->audioFormat = NULL;
 
 	return ret;
 }
@@ -96,7 +91,6 @@ static ShoutData * newShoutData() {
 static void freeShoutData(ShoutData * sd) {
 	if(sd->shoutConn) shout_free(sd->shoutConn);
 	if(sd->tag) freeMpdTag(sd->tag);
-	if(sd->convBuffer) free(sd->convBuffer);
 
 	free(sd);
 }
@@ -194,11 +188,7 @@ static int myShout_initDriver(AudioOutput * audioOutput, ConfigParam * param) {
 	}
 
 	checkBlockParam("format");
-
-	if(0 != parseAudioConfig(&(sd->outAudioFormat), blockParam->value)) {
-		ERROR("error parsing format at line %i\n", blockParam->line);
-		exit(EXIT_FAILURE);
-	}
+	sd->audioFormat = &audioOutput->outAudioFormat;
 
 	if(shout_set_host(sd->shoutConn, host) !=  SHOUTERR_SUCCESS ||
 		shout_set_port(sd->shoutConn, port) != SHOUTERR_SUCCESS ||
@@ -222,11 +212,11 @@ static int myShout_initDriver(AudioOutput * audioOutput, ConfigParam * param) {
 		char temp[11];
 		memset(temp, 0, sizeof(temp));
 	
-		snprintf(temp, sizeof(temp), "%d", sd->outAudioFormat.channels);
+		snprintf(temp, sizeof(temp), "%d", sd->audioFormat->channels);
 		shout_set_audio_info(sd->shoutConn, SHOUT_AI_CHANNELS, temp);
 
-		snprintf(temp, sizeof(temp), "%d", 
-				sd->outAudioFormat.sampleRate);
+		snprintf(temp, sizeof(temp), "%d", sd->audioFormat->sampleRate);
+				
 		shout_set_audio_info(sd->shoutConn, SHOUT_AI_SAMPLERATE, temp);
 
 		if(sd->quality >= 0) {
@@ -352,8 +342,8 @@ static int initEncoder(ShoutData * sd) {
 
 	if(sd->quality >= 0) {
 		if( 0 != vorbis_encode_init_vbr(&(sd->vi),
-			sd->outAudioFormat.channels, 
-			sd->outAudioFormat.sampleRate, sd->quality*0.1) )
+			sd->audioFormat->channels, 
+			sd->audioFormat->sampleRate, sd->quality*0.1) )
 		{
 			ERROR("problem seting up vorbis encoder for shout\n");
 			vorbis_info_clear(&(sd->vi));
@@ -362,8 +352,8 @@ static int initEncoder(ShoutData * sd) {
 	}
 	else {
 		if( 0 != vorbis_encode_init(&(sd->vi), 
-			sd->outAudioFormat.channels, 
-			sd->outAudioFormat.sampleRate, -1.0,
+			sd->audioFormat->channels, 
+			sd->audioFormat->sampleRate, -1.0,
 			sd->bitrate*1000, -1.0) )
 		{
 			ERROR("problem seting up vorbis encoder for shout\n");
@@ -439,15 +429,6 @@ static int myShout_openDevice(AudioOutput * audioOutput,
 {
 	ShoutData * sd = (ShoutData *)audioOutput->data;
 
-	memcpy(&(sd->inAudioFormat), audioFormat, sizeof(AudioFormat));
-
-	if(0 == memcmp(&(sd->inAudioFormat), &(sd->outAudioFormat), 
-			sizeof(AudioFormat))) 
-	{
-		sd->audioFormatConvert = 0;
-	}
-	else sd->audioFormatConvert = 1;
-
 	audioOutput->open = 1;
 
 	if(sd->opened) return 0;
@@ -458,25 +439,6 @@ static int myShout_openDevice(AudioOutput * audioOutput,
 	}
 
 	return 0;
-}
-
-static void myShout_convertAudioFormat(ShoutData * sd, char ** chunkArgPtr,
-		int * sizeArgPtr)
-{
-	int size = pcm_sizeOfOutputBufferForAudioFormatConversion(
-			&(sd->inAudioFormat), *sizeArgPtr, 
-			&(sd->outAudioFormat));
-
-	if(size > sd->convBufferLen) {
-		sd->convBuffer = realloc(sd->convBuffer, size);
-		sd->convBufferLen = size;
-	}
-
-	pcm_convertAudioFormat(&(sd->inAudioFormat), *chunkArgPtr, *sizeArgPtr,
-			&(sd->outAudioFormat), sd->convBuffer);
-	
-	*sizeArgPtr = size;
-	*chunkArgPtr = sd->convBuffer;
 }
 
 static void myShout_sendMetadata(ShoutData * sd) {
@@ -516,7 +478,7 @@ static int myShout_play(AudioOutput * audioOutput, char * playChunk, int size) {
 	ShoutData * sd = (ShoutData *)audioOutput->data;
 	float ** vorbbuf;
 	int samples;
-	int bytes = sd->outAudioFormat.bits/8;
+	int bytes = sd->audioFormat->bits/8;
 
 	if(sd->opened && sd->tagToSend) myShout_sendMetadata(sd);
 
@@ -526,18 +488,14 @@ static int myShout_play(AudioOutput * audioOutput, char * playChunk, int size) {
 		}
 	}
 
-	if(sd->audioFormatConvert) {
-		myShout_convertAudioFormat(sd, &playChunk, &size);
-	}
-
-	samples = size/(bytes*sd->outAudioFormat.channels);
+	samples = size/(bytes*sd->audioFormat->channels);
 
 	/* this is for only 16-bit audio */
 
 	vorbbuf = vorbis_analysis_buffer(&(sd->vd), samples);
 
 	for(i=0; i<samples; i++) {
-		for(j=0; j<sd->outAudioFormat.channels; j++) {
+		for(j=0; j<sd->audioFormat->channels; j++) {
 			vorbbuf[j][i] = (*((mpd_sint16 *)playChunk)) / 32768.0;
 			playChunk += bytes;
 		}
