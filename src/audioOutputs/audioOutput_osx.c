@@ -93,9 +93,9 @@ static int osx_initDriver(AudioOutput * audioOutput, ConfigParam * param) {
 
 static void freeOsxData(OsxData * od) {
 	if(od->buffer) free(od->buffer);
-	pthread_mutex_destroy(&ret->mutex);
-	pthread_cond_destroy(&ret->conditionFull);
-	pthread_cond_destroy(&ret->conditionEmpty);
+	pthread_mutex_destroy(&od->mutex);
+	pthread_cond_destroy(&od->conditionFull);
+	pthread_cond_destroy(&od->conditionEmpty);
 	free(od);
 }
 
