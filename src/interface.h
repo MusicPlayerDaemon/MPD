@@ -38,4 +38,3 @@ int interfacePrintWithFD(int fd, char * buffer, int len);
 int doIOForInterfaces();
 
 #endif
-/* vim:set shiftwidth=4 tabstop=8 expandtab: */

@@ -1,15 +1,8 @@
-*) Implement HTTP proxy
+*) deal with recursive symlinks
 
 *) Optimize read() on cleints
 
 *) Optimize db update
-
-*) deal with recursive symbolic link
-	1) track st_ino and st_dev for each directory
-	2) when adding a directory, be sure its st_ino and st_dev aren't
-		the same as a parent
-	3) need to sore parent directory in directory struct
-	4) ~12 bytes per directory entry
 
 Post-1.0
 --------
