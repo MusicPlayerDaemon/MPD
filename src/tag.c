@@ -61,13 +61,13 @@ void validateUtf8Tag(MpdTag * tag) {
 	fixUtf8(tag->artist);
 	stripReturnChar(tag->artist);
 	fixUtf8(tag->album);
-	stripReturnChar(tag->artist);
+	stripReturnChar(tag->album);
 	fixUtf8(tag->track);
-	stripReturnChar(tag->artist);
+	stripReturnChar(tag->track);
 	fixUtf8(tag->title);
-	stripReturnChar(tag->artist);
+	stripReturnChar(tag->title);
 	fixUtf8(tag->name);
-	stripReturnChar(tag->artist);
+	stripReturnChar(tag->name);
 }
 
 #ifdef HAVE_ID3TAG
