@@ -69,7 +69,7 @@ AudioOutput * newAudioOutput(ConfigParam * param) {
 	}
 	else {
 		ERROR("couldn't find audio output plugin for type \"%s\" at "
-				"line %i", type, param->line);
+				"line %i\n", type, param->line);
 		exit(EXIT_FAILURE);
 	}
 

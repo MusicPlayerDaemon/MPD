@@ -44,6 +44,7 @@ static int audioOutputArraySize = 0;
 
 extern AudioOutputPlugin aoPlugin;
 extern AudioOutputPlugin shoutPlugin;
+extern AudioOutputPlugin ossPlugin;
 
 void initAudioDriver() {
 	ConfigParam * param = NULL;
@@ -52,6 +53,7 @@ void initAudioDriver() {
 	initAudioOutputPlugins();
 	loadAudioOutputPlugin(&aoPlugin);
 	loadAudioOutputPlugin(&shoutPlugin);
+	loadAudioOutputPlugin(&ossPlugin);
 
 	while((param = getNextConfigParam(CONF_AUDIO_OUTPUT, param))) {
 		i = audioOutputArraySize++;

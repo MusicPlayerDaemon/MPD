@@ -75,11 +75,13 @@ static int oss_initDriver(AudioOutput * audioOutput, ConfigParam * param) {
 	if(!bp) {
 		int fd;
 
-		if(0 <= (fd = open("/dev/sound/dsp", O_WRONLY | O_NONBLOCK))) {
+		if(0 <= (fd = open("/dev/sound/dsp", O_WRONLY))) {
 			od->device = strdup("/dev/sound/dsp");
+			close(fd);
 		}
-		else if(0 <= (fd = open("/dev/dsp", O_WRONLY | O_NONBLOCK))) {
+		else if(0 <= (fd = open("/dev/dsp", O_WRONLY))) {
 			od->device = strdup("/dev/dsp");
+			close(fd);
 		}
 		else {
 			ERROR("Error trying to open default OSS device "
@@ -89,7 +91,6 @@ static int oss_initDriver(AudioOutput * audioOutput, ConfigParam * param) {
 			exit(EXIT_FAILURE);
 		}
 
-		close(od->fd);
 		od->fd = -1;
 
 		return 0;
