@@ -35,6 +35,8 @@ static AudioOutput * aoOutput = NULL;
 static AudioOutput * shoutOutput = NULL;
 
 static void copyAudioFormat(AudioFormat * dest, AudioFormat * src) {
+	if(!src) return;
+
         dest->sampleRate = src->sampleRate;
         dest->bits = src->bits;
         dest->channels = src->channels;
@@ -150,10 +152,9 @@ int isCurrentAudioFormat(AudioFormat * audioFormat) {
 
 int openAudioDevice(AudioFormat * audioFormat) {
 	if(!aoOutput->open || !isCurrentAudioFormat(audioFormat)) {
-		if(!audioFormat) return -1;
-		copyAudioFormat(&audio_format, audioFormat);
-		if(shoutOutput) openAudioOutput(shoutOutput, audioFormat);
-		return openAudioOutput(aoOutput, audioFormat);
+		if(audioFormat) copyAudioFormat(&audio_format, audioFormat);
+		if(shoutOutput) openAudioOutput(shoutOutput, &audio_format);
+		return openAudioOutput(aoOutput, &audio_format);
 	}
 
 	return 0;
