@@ -118,6 +118,8 @@ void initPlayerData() {
 	playerData_pd->playerControl.totalPlayTime = 0;
 	playerData_pd->playerControl.decode_pid = 0;
 	playerData_pd->playerControl.title = -1;
+	playerData_pd->playerControl.artist = -1;
+	playerData_pd->playerControl.album = -1;
 	playerData_pd->playerControl.metadataState = 
                         PLAYER_METADATA_STATE_WRITE;
 
@@ -130,6 +132,8 @@ void initPlayerData() {
 	memset(playerData_pd->decoderControl.metadata, 0, 
                         DECODE_METADATA_LENGTH);
 	playerData_pd->decoderControl.title = -1;
+	playerData_pd->decoderControl.artist = -1;
+	playerData_pd->decoderControl.album = -1;
 	playerData_pd->decoderControl.metadataSet = 0;
 }
 

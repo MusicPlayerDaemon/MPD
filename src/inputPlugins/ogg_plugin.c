@@ -165,6 +165,61 @@ float ogg_getReplayGainScale(char ** comments) {
         return 1.0;
 }
 
+MpdTag * oggCommentsParse(char ** comments) {
+	MpdTag * ret = NULL;
+	char * temp;
+
+	while(*comments) {
+                if((temp = ogg_parseComment(*comments,"artist"))) {
+			if(!ret) ret = newMpdTag();
+			if(!ret->artist) {
+				ret->artist = strdup(temp);
+				stripReturnChar(ret->artist);
+			}
+		} 
+                else if((temp = ogg_parseComment(*comments,"title"))) {
+			if(!ret) ret = newMpdTag();
+			if(!ret->title) {
+				ret->title = strdup(temp);
+				stripReturnChar(ret->title);
+			}
+		}
+                else if((temp = ogg_parseComment(*comments,"album"))) {
+			if(!ret) ret = newMpdTag();
+			if(!ret->album) {
+				ret->album = strdup(temp);
+				stripReturnChar(ret->album);
+			}
+		}
+                else if((temp = ogg_parseComment(*comments,"tracknumber"))) {
+			if(!ret) ret = newMpdTag();
+			if(!ret->track) {
+				ret->track = strdup(temp);
+				stripReturnChar(ret->track);
+			}
+		}
+
+		comments++;
+	}
+
+	return ret;
+}
+
+void putOggCommentsIntoDecoderControlMetadata(DecoderControl * dc,
+		char ** comments)
+{
+	MpdTag * tag;
+
+	if(dc->metadataSet) return;
+
+	tag = oggCommentsParse(comments);
+	if(!tag) return;
+
+	copyMpdTagToDecoderControlMetadata(dc, tag);
+
+	freeMpdTag(tag);
+}
+
 int ogg_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream)
 {
 	OggVorbis_File vf;
@@ -214,6 +269,8 @@ int ogg_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream)
         if(dc->totalTime < 0) dc->totalTime = 0;
 
 	comments = ov_comment(&vf, -1)->user_comments;
+
+	putOggCommentsIntoDecoderControlMetadata(dc, comments);
 
 	dc->state = DECODE_STATE_DECODE;
 
@@ -281,8 +338,6 @@ MpdTag * oggTagDup(char * file) {
 	MpdTag * ret = NULL;
 	FILE * fp;
 	OggVorbis_File vf;
-	char ** comments;
-	char * temp;
 
 	fp = fopen(file,"r"); 
 	if(!fp) return NULL;
@@ -291,39 +346,10 @@ MpdTag * oggTagDup(char * file) {
 		return NULL;
 	}
 
-	ret = newMpdTag();
+	ret = oggCommentsParse(ov_comment(&vf,-1)->user_comments);
+
+	if(!ret) ret = newMpdTag();
 	ret->time = (int)(ov_time_total(&vf,-1)+0.5);
-
-	comments = ov_comment(&vf,-1)->user_comments;
-
-	while(*comments) {
-                if((temp = ogg_parseComment(*comments,"artist"))) {
-			if(!ret->artist) {
-				ret->artist = strdup(temp);
-				stripReturnChar(ret->artist);
-			}
-		} 
-                else if((temp = ogg_parseComment(*comments,"title"))) {
-			if(!ret->title) {
-				ret->title = strdup(temp);
-				stripReturnChar(ret->title);
-			}
-		}
-                else if((temp = ogg_parseComment(*comments,"album"))) {
-			if(!ret->album) {
-				ret->album = strdup(temp);
-				stripReturnChar(ret->album);
-			}
-		}
-                else if((temp = ogg_parseComment(*comments,"tracknumber"))) {
-			if(!ret->track) {
-				ret->track = strdup(temp);
-				stripReturnChar(ret->track);
-			}
-		}
-
-		comments++;
-	}
 
 	ov_clear(&vf);
 

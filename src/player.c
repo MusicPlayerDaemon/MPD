@@ -56,6 +56,8 @@ static void resetPlayerMetadata() {
         if(pc->metadataState == PLAYER_METADATA_STATE_READ) {
                 pc->metadataState = PLAYER_METADATA_STATE_WRITE;
                 pc->title = -1;
+                pc->artist = -1;
+                pc->album = -1;
         }
 }
 
@@ -488,6 +490,12 @@ Song * playerCurrentDecodeSong() {
                 song->utf8url = strdup(pc->currentUrl);
                 if(pc->title >= 0) {
                         song->tag->title = strdup(pc->title + pc->metadata);
+                }
+                if(pc->artist >= 0) {
+                        song->tag->artist = strdup(pc->artist + pc->metadata);
+                }
+                if(pc->album >= 0) {
+                        song->tag->album = strdup(pc->album + pc->metadata);
                 }
                 validateUtf8Tag(song->tag);
                 resetPlayerMetadata();

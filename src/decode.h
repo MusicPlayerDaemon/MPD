@@ -20,6 +20,7 @@
 #define DECODE_H
 
 #include "../config.h"
+#include "tag.h"
 
 #include "mpd_types.h"
 #include "audio.h"
@@ -63,11 +64,15 @@ typedef struct _DecoderControl {
         volatile mpd_sint8 metadataSet;
         char metadata[DECODE_METADATA_LENGTH];
         volatile mpd_sint16 title;
+        volatile mpd_sint16 artist;
+        volatile mpd_sint16 album;
 } DecoderControl;
 
 void decodeSigHandler(int sig);
 
 void decode();
+
+void copyMpdTagToDecoderControlMetadata(DecoderControl * dc, MpdTag * tag);
 
 #endif
 /* vim:set shiftwidth=4 tabstop=8 expandtab: */

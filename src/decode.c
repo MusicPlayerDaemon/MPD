@@ -118,6 +118,8 @@ int calculateCrossFadeChunks(PlayerControl * pc, AudioFormat * af) {
                                                 DECODE_METADATA_LENGTH); \
                                 pc->metadata[DECODE_METADATA_LENGTH-1] = '\0'; \
                                 pc->title = dc->title; \
+                                pc->artist = dc->artist; \
+                                pc->album = dc->album; \
                         } \
                         pc->metadataState = PLAYER_METADATA_STATE_READ; \
 	                pc->totalTime = dc->totalTime; \
@@ -265,6 +267,8 @@ void decodeStart(PlayerControl * pc, OutputBuffer * cb, DecoderControl * dc) {
         dc->metadataSet = 0;
         memset(dc->metadata, 0, DECODE_METADATA_LENGTH);
         dc->title = -1;
+        dc->album = -1;
+        dc->artist = -1;
 
         strncpy(dc->utf8url, pc->utf8url, MAXPATHLEN);
 	dc->utf8url[MAXPATHLEN] = '\0';
@@ -595,4 +599,31 @@ void decode() {
 
         decodeParent(pc, dc, cb);
 }
-/* vim:set shiftwidth=8 tabstop=8 expandtab: */
+
+/* this is stuff for inputPlugins to use! */
+#define copyStringToMetadata(string, element) { \
+	if(string && (slen = strlen(string)) && \
+                        pos < DECODE_METADATA_LENGTH-1) \
+        { \
+		strncpy(dc->metadata+pos, string, \
+                                DECODE_METADATA_LENGTH-1-pos); \
+		element = pos; \
+		pos += slen; \
+	} \
+}
+
+void copyMpdTagToDecoderControlMetadata(DecoderControl * dc, MpdTag * tag) {
+	int pos = 0;
+	int slen;
+
+        if(dc->metadataSet) return;
+        if(!tag) return;
+
+	memset(dc->metadata, 0, DECODE_METADATA_LENGTH);
+	
+	copyStringToMetadata(tag->title, dc->title);
+	copyStringToMetadata(tag->artist, dc->artist);
+	copyStringToMetadata(tag->album, dc->album);
+
+	dc->metadataSet = 1;
+}
