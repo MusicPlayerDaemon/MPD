@@ -1,37 +1,102 @@
-# required
+########## REQUIRED ###############
 port 			"2100"
 music_directory 	"~/mp3"
 playlist_directory 	"~/playlists"
 log_file 		"~/mpd.log"
 error_file 		"~/mpd.error"
+###################################
 
-# optional
-mixer_type		"oss"
-mixer_device 		"/dev/mixer"
+
+###################################
+# EVERYTHING ELSE IS OPTIONAL
+###################################
+
+
+######### FILESYSTEM SETTINGS ###########
+# If filenames or directory names don't
+#     display correctly, set the character
+#     set for the filesystem here.
+#     The fileystem character set is 
+#     typically "ISO-8859-1" or "UTF-8".
+#     After changing fileystem_charset,
+#     recreate the db: mpd --create-db
+#filesystem_charset "ISO-8859-1"
+#########################################
+
+
+########### OPTIONAL FILES ##############
+# Location of DB file 
+#db_file		"~/playlists/.mpddb"
+#
+# State file for storing state of mpd 
+#     when it is shutdown.  MPD will restore
+#     the state (i.e. load playlist, start
+#     playing, etc) upon restart.
+#state_file		"~/.mpdstate"
+##########################################
+
+
+######### VOLUME MIXER ############
+# for OSS Mixer
+#mixer_type		"oss"
+#mixer_device 		"/dev/mixer"
 #mixer_control		"Pcm"
-# mixer_type is typically "oss", "alsa", or "software"
+
+# for Alsa Mixer 
 #mixer_type		"alsa"
 #mixer_device		"default"
 #mixer_control		"PCM"
-# ao_driver is typically "oss" or "alsa09"
+
+# for Software Mixer
+#mixer_type		"software"
+##################################
+
+
+######### AUDIO OUTPUT ###########
+# for OSS Audio Output
 #ao_driver 		"oss"
 #ao_driver_options 	"dsp=/dev/dsp"
+
+# for ALSA Audio Output
+#ao_driver		"alsa09"
+#ao_driver_options	"dev=hw:0,0"
+
+# misc audio output options
 #audio_write_size	"1024"
-max_playlist_length 	"4096"
-buffer_before_play 	"25%"
-buffer_size		"2048"
-#db_file		"~/playlists/.mpddb"
-#state_file		"~/playlists/.mpdstate"
-#user			"shank"
-connection_timeout 	"60"
-max_connections 	"5"
-max_command_list_size 	"2048"
-max_output_buffer_size 	"2048"
-save_absolute_paths_in_playlists "no"
-# log_level can be "default", "secure", "verbose"
-log_level		"default"
-# when bind_to_address is set to "any", MPD binds all available addresses
-bind_to_address 	"any"
-#password 		"password@read,add,control,admin"
+##################################
+
+#### OUTPUT BUFFER SETTINGS ######
+#buffer_size		"2048"
+#buffer_before_play 	"25%"
+##################################
+
+########### SECURITY SETTINGS ############
+# if you start mpd as root, its recmmoned you specify
+#     a user for mpd to run as (running mpd as root
+#     is not recommended).
+#user 		"nobody"
+#
+# to only allow connections from localhost
+#bind_to_address 	"localhost"
+#
+# Specify one or more passwords required to
+#     access mpd:
+#password 		"password1@read,add,control,admin"
+#password 		"password2@read"
+#
+# Specify permissions used by default when no password is 
+#     given by for a connection/client.
 #default_permissions	"read,add,control,admin"
-#filesystem_charset	"UTF-8"
+##########################################
+
+########### MISC OPTIONS #################
+#max_playlist_length 	"4096"
+#connection_timeout 	"60"
+#max_connections 	"5"
+#max_command_list_size 	"2048"
+#max_output_buffer_size 	"2048"
+#save_absolute_paths_in_playlists "no"
+#
+# log_level can be "default", "secure", "verbose"
+#log_level		"default"
+#########################################
