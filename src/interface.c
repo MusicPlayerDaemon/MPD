@@ -22,7 +22,6 @@
 #include "list.h"
 #include "log.h"
 #include "listen.h"
-#include "sig_handlers.h"
 #include "playlist.h"
 #include "permission.h"
 
