@@ -311,12 +311,13 @@ static int myShout_handleError(ShoutData * sd, int err) {
 }
 
 static int write_page(ShoutData * sd) {
+	int err = 0;
+
 	shout_sync(sd->shoutConn);
-	int err = shout_send(sd->shoutConn, sd->og.header, sd->og.header_len);
+	err = shout_send(sd->shoutConn, sd->og.header, sd->og.header_len);
 	if(myShout_handleError(sd, err) < 0) return -1;
 	err = shout_send(sd->shoutConn, sd->og.body, sd->og.body_len);
 	if(myShout_handleError(sd, err) < 0) return -1;
-	/*shout_sync(sd->shoutConn);*/
 
 	return 0;
 }
@@ -356,12 +357,6 @@ static int initEncoder(ShoutData * sd) {
 			vorbis_info_clear(&(sd->vi));
 			return -1;
 		}
-	}
-
-	if(0 != vorbis_encode_setup_init(&(sd->vi))) {
-		ERROR("problem seting up vorbis encoder for shout\n");
-		vorbis_info_clear(&(sd->vi));
-		return -1;
 	}
 
 	vorbis_analysis_init(&(sd->vd), &(sd->vi));
