@@ -720,7 +720,6 @@ int playPlaylist(FILE * fp, int song, int stopOnError) {
 	else if(song<0 || song>=playlist.length) {
 		commandError(fp, ACK_ERROR_NO_EXIST,
                                 "song doesn't exist: \"%i\"", song);
-		playlist_state = PLAYLIST_STATE_STOP;
 		return -1;
 	}
 
