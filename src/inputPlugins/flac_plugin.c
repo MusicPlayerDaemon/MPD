@@ -277,7 +277,7 @@ void flacError(const FLAC__SeekableStreamDecoder *dec,
 		ERROR("crc mismatch %s\n", data->path);
 		break;
 	default:
-		ERROR("unknow flac error %s\n", data->path);
+		ERROR("unknown flac error %s\n", data->path);
 	}
 }
 
@@ -298,7 +298,7 @@ void flacPrintErroredState(FLAC__SeekableStreamDecoderState state,
 		ERROR("flac seekable stream error: %s\n",file);
 		break;
 	case FLAC__SEEKABLE_STREAM_DECODER_ALREADY_INITIALIZED:
-		ERROR("flac decoder already initilaized: %s\n",file);
+		ERROR("flac decoder already initialized: %s\n",file);
 		break;
 	case FLAC__SEEKABLE_STREAM_DECODER_INVALID_CALLBACK:
 		ERROR("invalid flac callback\n");
