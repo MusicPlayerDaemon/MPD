@@ -1,5 +1,9 @@
 0.12
 ----
+*) Abstract audio stuff into a plugin oriented thing
+	*) audio_ao & audio_oss & audio_shout
+	*) allow for sending to multiple audio devices
+
 *) Rewrite replaygain stuff:
 	*) Replay gain struct with album and track gain's and peak's
 	*) Pass these to replaygain function
