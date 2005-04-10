@@ -4,19 +4,22 @@
 	*) add 2-3 tree for sorted data structures
 	*) remove changes made to linked list for TagTracker
 
+*) input plugins
+	*) parsing of lame tags for gapless info
+	*) add support for playing aac streams
+	*) implement id3v1 parser
+	*) use libid3tag for only id3v2 tags
+	*) add back id3v1_encoding option
+
 *) audio output
-	*) allowing "pausing" of audio output devices
-	*) while pausing, play silence for the devices that don't support 
-	   "pausing"
-	*) write a sun native audioOutput
 	*) add support for saving and restoring audioOutput state to the 
 		state_file
-	*) more accurate time reporting by determing how much of audio_device
-                buffer has been played
 
 *) mixer
 	*) add sun support
 	*) add OS X support
+
+*) Add support for 24-bit audio
 
 0.13
 ----
@@ -30,11 +33,7 @@
 
 *) input plugins
 	*) Handle mp1 and mp2 files (including files with mp3 suffixes) 
-	*) add support for playing aac streams (gee, thanks icecast)
-	*) parsing of lame tags (including getting replaygain and gapless info)
 	*) read replaygain info from id3 tag
-
-*) Add support for 24-bit audio
 
 *) add error codes for status->error
 
@@ -61,6 +60,12 @@
 	*) write a esd native audioOutput
 	*) write a nas native audioOutput
 	*) need better resampling code
+	*) allowing "pausing" of audio output devices
+	*) while pausing, play silence for the devices that don't support 
+	   "pausing"
+	*) write a sun native audioOutput
+	*) more accurate time reporting by determing how much of audio_device
+                buffer has been played
 
 0.14
 ----
