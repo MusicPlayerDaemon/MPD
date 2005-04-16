@@ -30,6 +30,8 @@
 	http://www.musicpd.org/wiki/moin.cgi/MpdListenerProtocol
 
 *) support for dynamically loading plugins
+	*) cleanup input plugins "API"
+	*) cleanup output plugins "API"
 
 *) input plugins
 	*) Handle mp1 and mp2 files (including files with mp3 suffixes) 
@@ -38,6 +40,44 @@
 *) add error codes for status->error
 
 *) Cleanup Config File Code
+
+*) audio output
+	*) write a esd native audioOutput
+	*) write a nas native audioOutput
+	*) need better resampling code
+	*) allowing "pausing" of audio output devices
+	*) while pausing, play silence for the devices that don't support 
+	   "pausing"
+	*) write a sun native audioOutput
+	*) more accurate time reporting by determing how much of audio_device
+                buffer has been played
+
+*) state
+	*) abstract out state code from playlist.c
+	*) save states of audioOutput devices
+	*) put MPD Version in statefile
+
+*) rewrite saved playlist code
+	*) abstract out saved playlists from playlist.c
+	*) command for displaying playlist contents
+	*) command for appending to playlist
+	*) new commands
+		*) clear <playlist> /* synonym for rm */
+		*) add <playlist> <path>
+		*) playlist <playlist> /* displays saved playlist */
+		*) replace <playlist> /* replace current playlist
+						with saved playlist and
+						keep playing */
+
+*) add command for inserting songs in a specific position
+
+1.0
+---
+
+*) bug fixes
+
+post-1.0
+----
 
 *) rewrite audio pipe
 	*) use pthreads/clone
@@ -55,42 +95,6 @@
 			*) *command* resampling/conversions
 		3) audio_output thread
 			*) thread for each audio_output device
-
-*) audio output
-	*) write a esd native audioOutput
-	*) write a nas native audioOutput
-	*) need better resampling code
-	*) allowing "pausing" of audio output devices
-	*) while pausing, play silence for the devices that don't support 
-	   "pausing"
-	*) write a sun native audioOutput
-	*) more accurate time reporting by determing how much of audio_device
-                buffer has been played
-
-0.14
-----
-
-*) rewrite saved playlist code
-	*) abstract out saved playlists from playlist.c
-	*) command for displaying playlist contents
-	*) command for appending to playlist
-	*) new commands
-		*) clear <playlist> /* synonym for rm */
-		*) add <playlist> <path>
-		*) playlist <playlist> /* displays saved playlist */
-		*) replace <playlist> /* replace current playlist
-						with saved playlist and
-						keep playing */
-
-*) state
-	*) abstract out state code from playlist.c
-	*) save states of audioOutput devices
-	*) put MPD Version in statefile
-
-*) add command for inserting songs in a specific position
-
-0.15
-----
 
 *) dynamic metadata
 	*) implment by recording the ftell positions of entries
