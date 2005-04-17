@@ -159,7 +159,7 @@ void inputStream_initHttp() {
 	if(param) {
 		prebufferSize = strtol(param->value, &test, 10);
 		
-		if(bufferSize <= 0 || *test != '\0') {
+		if(prebufferSize <= 0 || *test != '\0') {
 			ERROR("\"%s\" specified for %s at line %i is not a "
 				"positivie intenger\n",
 				param->value, CONF_HTTP_PREBUFFER_SIZE,
@@ -168,9 +168,9 @@ void inputStream_initHttp() {
 		}
 
 		prebufferSize *= 1024;
-
-		if(prebufferSize > bufferSize) bufferSize = prebufferSize;
 	}
+
+	if(prebufferSize > bufferSize) prebufferSize = bufferSize;
 }
 
 /* base64 code taken from xmms */
