@@ -97,7 +97,7 @@ a password.  The format of permissions is specified n the description of the
 "read,add,control,admin", otherwise it is "" (no permissions).
 .TP
 .B state_file <file>
-This specifies if a state file is used and where it is located.  The file path should be an absolute path.  The state of mpd will be saved to this file when mpd is terminated by a TERM signal or by the "kill" command.
+This specifies if a state file is used and where it is located.  The file path should be an absolute path.  The state of mpd will be saved to this file when mpd is terminated by a TERM signal or by the "kill" command.  When mpd is restarted, it will read the state file and restore the state of MPD (including the playlist).
 .TP
 .B connection_timeout <seconds>
 If a client does not send any new data in this time period, the connection is closed. The default is 60 seconds.
