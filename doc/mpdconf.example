@@ -222,7 +222,7 @@ pid_file 		"~/.mpd/mpd.pid"
 # No need to change these unless you know better.
 #
 #max_command_list_size 	"2048"
-#max_output_buffer_size "2048"
+#max_output_buffer_size "8192"
 #
 # This will make playlists compatible with normal music
 # players.

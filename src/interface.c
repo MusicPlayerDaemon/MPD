@@ -51,7 +51,7 @@
 #define INTERFACE_TIMEOUT_DEFAULT			(60)
 #define INTERFACE_MAX_CONNECTIONS_DEFAULT		(10)
 #define INTERFACE_MAX_COMMAND_LIST_DEFAULT		(2048*1024)
-#define INTERFACE_MAX_OUTPUT_BUFFER_SIZE_DEFAULT	(2048*1024)
+#define INTERFACE_MAX_OUTPUT_BUFFER_SIZE_DEFAULT	(8192*1024)
 
 /* set this to zero to indicate we have no possible interfaces */
 static int interface_max_connections = 0; /*INTERFACE_MAX_CONNECTIONS_DEFAULT;*/
