@@ -48,7 +48,7 @@ char * strDupToUpper(char * str) {
 }
 
 void stripReturnChar(char * string) {
-	while(string && (string = strstr(string,"\n"))) {
+	while(string && (string = strchr(string,'\n'))) {
 		*string = ' ';
 	}
 }

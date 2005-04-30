@@ -430,13 +430,13 @@ inline static void appendToTagItems(MpdTag * tag, int type, char * value,
 	dup[len] = '\0';
 
 	fixUtf8(dup);
+	stripReturnChar(dup);
 
 	tag->numOfItems++;
 	tag->items = realloc(tag->items, tag->numOfItems*sizeof(MpdTagItem));
 
 	tag->items[i].type = type;
 	tag->items[i].value = getTagItemString(type, dup);
-	//tag->items[i].value = strdup(dup);
 
 	free(dup);
 }
