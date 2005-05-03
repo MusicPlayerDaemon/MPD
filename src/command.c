@@ -297,12 +297,10 @@ int handleClose(FILE * fp, unsigned int * permission, int argArrayLength,
 int handleAdd(FILE * fp, unsigned int * permission, int argArrayLength, 
 		char ** argArray) 
 {
-        char * path = NULL;
+        char * path = argArray[1];
 
-        if(argArrayLength == 2) {
-		path = argArray[1];
-		if(isRemoteUrl(path)) return addToPlaylist(fp, path, 0);
-	}
+	if(isRemoteUrl(path)) return addToPlaylist(fp, path, 0);
+
         return addAllIn(fp,path);
 }
 
@@ -922,7 +920,7 @@ void initCommands() {
         addCommand(COMMAND_STATUS      ,PERMISSION_READ,    0, 0,commandStatus,NULL);
         addCommand(COMMAND_KILL        ,PERMISSION_ADMIN,  -1,-1,handleKill,NULL);
         addCommand(COMMAND_CLOSE       ,0,                 -1,-1,handleClose,NULL);
-        addCommand(COMMAND_ADD         ,PERMISSION_ADD,     0, 1,handleAdd,NULL);
+        addCommand(COMMAND_ADD         ,PERMISSION_ADD,     1, 1,handleAdd,NULL);
         addCommand(COMMAND_ADDID       ,PERMISSION_ADD,     0, 1,handleAddId,NULL);
         addCommand(COMMAND_DELETE      ,PERMISSION_CONTROL, 1, 1,handleDelete,NULL);
         addCommand(COMMAND_DELETEID    ,PERMISSION_CONTROL, 1, 1,handleDeleteId,NULL);
