@@ -469,7 +469,7 @@ int handleSearch(FILE * fp, unsigned int * permission, int argArrayLength,
 			argArrayLength-1, &items);
 
 	if(numItems <= 0) {
-		commandError(fp, ACK_ERROR_ARG, "incorrect ags", NULL); 
+		commandError(fp, ACK_ERROR_ARG, "incorrect arguments", NULL); 
 		return -1;
 	}
 
