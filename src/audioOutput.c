@@ -54,6 +54,7 @@ AudioOutput * newAudioOutput(ConfigParam * param) {
 	if(param) {
 		getBlockParam(AUDIO_OUTPUT_NAME, name, 1);
 		getBlockParam(AUDIO_OUTPUT_TYPE, type, 1);
+		getBlockParam(AUDIO_OUTPUT_FORMAT, format, 1);
 
 		if(!findInList(audioOutputPluginList, type, &data)) {
 			ERROR("couldn't find audio output plugin for type "
@@ -63,17 +64,6 @@ AudioOutput * newAudioOutput(ConfigParam * param) {
 		}
 
 		plugin = (AudioOutputPlugin *) data;
-	
-		if(format) {
-			ret->convertAudioFormat = 1;
-
-			if(0 != parseAudioConfig(&ret->reqAudioFormat, format))
-			{
-	        		ERROR("error parsing format at line %i\n", 
-						bp->line);
-	        		exit(EXIT_FAILURE);
-	        	}
-		}
 	}
 	else {
 		ListNode * node = audioOutputPluginList->firstNode;
@@ -125,6 +115,19 @@ AudioOutput * newAudioOutput(ConfigParam * param) {
 	memset(&ret->inAudioFormat, 0, sizeof(AudioFormat));
 	memset(&ret->outAudioFormat, 0, sizeof(AudioFormat));
 	memset(&ret->reqAudioFormat, 0, sizeof(AudioFormat));
+
+	if(format) {
+		ret->convertAudioFormat = 1;
+
+		if(0 != parseAudioConfig(&ret->reqAudioFormat, format))
+		{
+			ERROR("error parsing format at line %i\n", 
+					bp->line);
+			exit(EXIT_FAILURE);
+		}
+
+		copyAudioFormat(&ret->outAudioFormat, &ret->reqAudioFormat);
+	}
 
 	if(plugin->initDriverFunc(ret, param) != 0) {
 		free(ret);
