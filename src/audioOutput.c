@@ -54,7 +54,7 @@ AudioOutput * newAudioOutput(ConfigParam * param) {
 	if(param) {
 		getBlockParam(AUDIO_OUTPUT_NAME, name, 1);
 		getBlockParam(AUDIO_OUTPUT_TYPE, type, 1);
-		getBlockParam(AUDIO_OUTPUT_FORMAT, format, 1);
+		getBlockParam(AUDIO_OUTPUT_FORMAT, format, 0);
 
 		if(!findInList(audioOutputPluginList, type, &data)) {
 			ERROR("couldn't find audio output plugin for type "
