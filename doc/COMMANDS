@@ -134,11 +134,11 @@ playlist
 
 playlistinfo <int song>
 	displays list of songs in the playlist
-	_song_ is optional and species a single song to displa info for
+	_song_ is optional and specifies a single song to display info for
 
 playlistid <int songid>
 	displays list of songs in the playlist
-	_songid_ is optional and species a single song to display info for
+	_songid_ is optional and specifies a single song to display info for
 
 plchanges <playlist version>
 	displays changed songs currently in the playlist since 
