@@ -113,6 +113,7 @@ esac
 
 if test x$enable_ogg = xno; then
 	AC_MSG_WARN("disabling shout streaming support since vorbis was not found")
+	enable_shout=no
 fi
 
 if test x$enable_ao = xyes; then
