@@ -18,7 +18,7 @@
 
 #include "../inputPlugin.h"
 
-#ifdef HAVE_MUSEPACK
+#ifdef HAVE_MPCDEC
 
 #include "../utils.h"
 #include "../audio.h"
@@ -32,7 +32,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
-#include <musepack/musepack.h>
+#include <mpcdec/mpcdec.h>
 #include <errno.h>
 #include <math.h>
 
@@ -58,7 +58,7 @@ static mpc_int32_t mpc_read_cb(void * vdata, void * ptr, mpc_int32_t size) {
 	return ret;
 }
 
-static BOOL mpc_seek_cb(void * vdata, mpc_int32_t offset) {
+static mpc_bool_t mpc_seek_cb(void * vdata, mpc_int32_t offset) {
         MpcCallbackData * data = (MpcCallbackData *)vdata;
 
 	return seekInputStream(data->inStream , offset, SEEK_SET) < 0 ? 0 : 1;
@@ -70,7 +70,7 @@ static mpc_int32_t mpc_tell_cb(void * vdata) {
 	return (long)(data->inStream->offset);
 }
 
-static BOOL mpc_canseek_cb(void * vdata) {
+static mpc_bool_t mpc_canseek_cb(void * vdata) {
         MpcCallbackData * data = (MpcCallbackData *)vdata;
 
 	return data->inStream->seekable;

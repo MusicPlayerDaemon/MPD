@@ -276,38 +276,38 @@ if test x$enable_mp3 = xyes; then
 fi
 
 if test x$enable_mpc = xyes; then
-  	if test "x$musepack_libraries" != "x" ; then
-  		MUSEPACK_LIBS="-L$musepack_libraries"
-  	elif test "x$musepack_prefix" != "x" ; then
-    		MUSEPACK_LIBS="-L$faad_prefix/lib"
+  	if test "x$mpcdec_libraries" != "x" ; then
+  		MPCDEC_LIBS="-L$mpcdec_libraries"
+  	elif test "x$mpcdec_prefix" != "x" ; then
+    		MPCDEC_LIBS="-L$faad_prefix/lib"
   	elif test "x$prefix" != "xNONE"; then
-    		MUSEPACK_LIBS="-L$libdir"
+    		MPCDEC_LIBS="-L$libdir"
   	fi
 
- 	MUSEPACK_LIBS="$MUSEPACK_LIBS -lmusepack"
+ 	MPCDEC_LIBS="$MPCDEC_LIBS -lmpcdec"
 
-  	if test "x$musepack_includes" != "x" ; then
-  		MUSEPACK_CFLAGS="-I$musepack_includes"
-  	elif test "x$musepack_prefix" != "x" ; then
-    		MUSEPACK_CFLAGS="-I$musepack_prefix/include"
+  	if test "x$mpcdec_includes" != "x" ; then
+  		MPCDEC_CFLAGS="-I$mpcdec_includes"
+  	elif test "x$mpcdec_prefix" != "x" ; then
+    		MPCDEC_CFLAGS="-I$mpcdec_prefix/include"
   	elif test "x$prefix" != "xNONE"; then
-    		MUSEPACK_CFLAGS="-I$includedir"
+    		MPCDEC_CFLAGS="-I$includedir"
   	fi
 
 	oldcflags=$CFLAGS
 	oldlibs=$LIBS
 	oldcppflags=$CPPFLAGS
-	CFLAGS="$CFLAGS $MPD_CFLAGS $MUSEPACK_CFLAGS -I."
-	LIBS="$LIBS $MPD_LIBS $MUSEPACK_LIBS"
+	CFLAGS="$CFLAGS $MPD_CFLAGS $MPCDEC_CFLAGS -I."
+	LIBS="$LIBS $MPD_LIBS $MPCDEC_LIBS"
 	CPPFLAGS=$CFLAGS
-	AC_CHECK_HEADER(musepack/musepack.h,,enable_mpc=no)
+	AC_CHECK_HEADER(mpcdec/mpcdec.h,,enable_mpc=no)
 	if test x$enable_mpc = xyes; then
-		AC_CHECK_LIB(musepack,main,[MPD_LIBS="$MPD_LIBS $MUSEPACK_LIBS";MPD_CFLAGS="$MPD_CFLAGS $MUSEPACK_CFLAGS";],enable_mpc=no)
+		AC_CHECK_LIB(mpcdec,main,[MPD_LIBS="$MPD_LIBS $MPCDEC_LIBS";MPD_CFLAGS="$MPD_CFLAGS $MPCDEC_CFLAGS";],enable_mpc=no)
 	fi
 	if test x$enable_mpc = xyes; then
-		AC_DEFINE(HAVE_MUSEPACK,1,[Define to use libmusepack for MPC decoding])
+		AC_DEFINE(HAVE_MPCDEC,1,[Define to use libmpcdec for MPC decoding])
 	else
-		AC_MSG_WARN([musepack lib needed for MPC support -- disabling MPC support])
+		AC_MSG_WARN([mpcdec lib needed for MPC support -- disabling MPC support])
 	fi
 	CFLAGS=$oldcflags
 	LIBS=$oldlibs
