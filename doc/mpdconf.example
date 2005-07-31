@@ -201,7 +201,7 @@ pid_file 		"~/.mpd/mpd.pid"
 #port	"6600"
 #
 # This sets the metadata mpd will use, to disable all metadata, set to "none"
-# NOTE: comment's are disabled by default
+# NOTE: comments are disabled by default
 #
 #metadata_to_use "artist,album,title,genre,date,track,composer,performer,comment"
 #
