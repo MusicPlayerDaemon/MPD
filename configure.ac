@@ -31,7 +31,7 @@ if test x$CC = xgcc; then
 fi
 MPD_LIBS=""
 
-AC_ARG_ENABLE(ao,[  --enable-ao    disable support for libao],,enable_ao=no)
+AC_ARG_ENABLE(ao,[  --enable-ao    enable support for libao],,enable_ao=no)
 AC_ARG_ENABLE(shout,[  --disable-shout    disable support for streaming through shout],,enable_shout=yes)
 AC_ARG_ENABLE(iconv,[  --disable-iconv     disable iconv support],,enable_iconv=yes)
 AC_ARG_ENABLE(ipv6,[  --disable-ipv6     disable IPv6 support],,enable_ipv6=yes)
