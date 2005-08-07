@@ -307,7 +307,7 @@ int handleAdd(FILE * fp, unsigned int * permission, int argArrayLength,
 int handleAddId(FILE * fp, unsigned int * permission, int argArrayLength,
 		char ** argArray)
 {
-	return addToPlaylist(fp, argArray[0], 1);
+	return addToPlaylist(fp, argArray[1], 1);
 }
 
 int handleDelete(FILE * fp, unsigned int * permission, int argArrayLength, 
