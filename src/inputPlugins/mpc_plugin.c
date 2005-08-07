@@ -201,6 +201,8 @@ static int mpc_decode(OutputBuffer * cb, DecoderControl * dc,
 			dc->seek = 0;
 		}
 
+		vbrUpdateAcc = 0;
+		vbrUpdateBits = 0;
 		ret = mpc_decoder_decode(&decoder, sample_buffer,
 				         &vbrUpdateAcc, &vbrUpdateBits);
 
@@ -226,7 +228,7 @@ static int mpc_decode(OutputBuffer * cb, DecoderControl * dc,
 
 				bitRate = vbrUpdateBits * 
 					  dc->audioFormat.sampleRate / 
-					  (MPC_CHUNK_SIZE);
+					  1152 / 1000;
 				
 				sendDataToOutputBuffer(cb, inStream, dc, 
 						inStream->seekable,  
@@ -248,8 +250,7 @@ static int mpc_decode(OutputBuffer * cb, DecoderControl * dc,
 	if(!dc->stop && chunkpos > 0) {
                 time = ((float)samplePos) / dc->audioFormat.sampleRate;
 
-		bitRate = vbrUpdateBits * dc->audioFormat.sampleRate /
-			  chunkpos;
+		bitRate = vbrUpdateBits * dc->audioFormat.sampleRate / 1152 / 1000;
 
 		sendDataToOutputBuffer(cb, NULL, dc, inStream->seekable,
 				       chunk, chunkpos, time, bitRate, 
