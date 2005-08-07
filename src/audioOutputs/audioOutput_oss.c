@@ -344,7 +344,8 @@ static int oss_initDriver(AudioOutput * audioOutput, ConfigParam * param) {
 						"device\n");
 			}
 
-			if(ret[0] == ret[1] == OSS_STAT_DOESN_T_EXIST) {
+			if((ret[0] == OSS_STAT_DOESN_T_EXIST) &&
+					(ret[1] == OSS_STAT_DOESN_T_EXIST)) {
 				ERROR("Neither /dev/dsp nor /dev/sound/dsp "
 						"were found\n");
 			}
