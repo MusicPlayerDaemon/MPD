@@ -60,6 +60,7 @@ extern AudioOutputPlugin alsaPlugin;
 extern AudioOutputPlugin aoPlugin;
 extern AudioOutputPlugin ossPlugin;
 extern AudioOutputPlugin osxPlugin;
+extern AudioOutputPlugin mvpPlugin;
 extern AudioOutputPlugin shoutPlugin;
 
 /* make sure initPlayerData is called before this function!! */
@@ -72,6 +73,7 @@ void initAudioDriver() {
 	loadAudioOutputPlugin(&aoPlugin);
 	loadAudioOutputPlugin(&ossPlugin);
 	loadAudioOutputPlugin(&osxPlugin);
+	loadAudioOutputPlugin(&mvpPlugin);
 	loadAudioOutputPlugin(&shoutPlugin);
 
 	pdAudioDevicesEnabled = (getPlayerData())->audioDeviceEnabled;

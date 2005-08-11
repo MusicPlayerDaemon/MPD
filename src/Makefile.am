@@ -6,6 +6,7 @@ mpd_audioOutputs = \
 	audioOutputs/audioOutput_ao.c \
 	audioOutputs/audioOutput_oss.c \
 	audioOutputs/audioOutput_osx.c \
+	audioOutputs/audioOutput_mvp.c \
 	audioOutputs/audioOutput_shout.c
 
 mpd_inputPlugins = \
