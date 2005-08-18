@@ -319,6 +319,11 @@ static int processBytesRead(Interface * interface, int bytesRead) {
 					interface->bufferLength);
 			interface->bufferPos = 0;
 		}
+		if(ret == COMMAND_RETURN_KILL || ret == COMMAND_RETURN_CLOSE)
+		{
+		    break;
+		}
+
 	}
 
 	return ret;
