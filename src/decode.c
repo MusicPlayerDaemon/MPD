@@ -339,7 +339,7 @@ void decodeStart(PlayerControl * pc, OutputBuffer * cb, DecoderControl * dc) {
         else {
 		cb->acceptMetadata = 0;
                 plugin = getInputPluginFromSuffix(getSuffix(dc->utf8url));
-                if(plugin && (plugin->streamTypes && INPUT_PLUGIN_STREAM_FILE))
+                if(plugin && (plugin->streamTypes & INPUT_PLUGIN_STREAM_FILE))
                 {
                         if(plugin->streamDecodeFunc) {
                                 ret = plugin->streamDecodeFunc(cb, dc, 
