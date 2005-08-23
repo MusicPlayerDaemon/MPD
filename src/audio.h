@@ -75,4 +75,8 @@ int disableAudioDevice(FILE * fp, int device);
 
 void printAudioDevices(FILE * fp);
 
+/* qball's crappy code */
+void readAudioDevicesState();
+void saveAudioDevicesState();
+
 #endif

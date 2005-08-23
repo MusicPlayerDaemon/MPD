@@ -23,11 +23,29 @@
 #include "sig_handlers.h"
 #include "command.h"
 #include "playerData.h"
+#include "utils.h"
 
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
 #include <signal.h>
+#include <sys/stat.h>
+#include <sys/param.h>
+#include <errno.h>
+#include <unistd.h>
+
+
+/* crappy code by qball */
+#define AUDIO_STATE_FILE_DEVICE_START		"audio_device_start"
+#define AUDIO_STATE_FILE_DEVICE_ID		"audio_device_id: "
+#define AUDIO_STATE_FILE_DEVICE_ENABLED		"audio_device_enabled: "
+#define AUDIO_STATE_FILE_DEVICE_NAME		"audio_device_name: "
+#define AUDIO_STATE_FILE_DEVICE_END		"audio_device_end"
+
+#define AUDIO_BUFFER_SIZE	2*MAXPATHLEN
+/* /crappy code */
+
+
 
 static AudioFormat audio_format;
 
@@ -396,3 +414,116 @@ void printAudioDevices(FILE * fp) {
 				(int)pdAudioDevicesEnabled[i]);
 	}
 }
+
+
+/* more qball crappy code */
+
+static char * getStateFile() {
+	ConfigParam * param = parseConfigFilePath(CONF_STATE_FILE, 0);
+	
+	if(!param) return NULL;
+
+	return param->value;
+}
+
+
+
+void saveAudioDevicesState() {
+	int i;
+	char * stateFile = getStateFile();
+	
+	if(stateFile) {
+		FILE * fp;
+
+		while(!(fp = fopen(stateFile,"a")) && errno==EINTR);
+		if(!fp) {
+			ERROR("problems opening state file \"%s\" for "
+				"writing: %s\n", stateFile,
+				strerror(errno));
+			return;
+		}
+		for(i = 0; i < audioOutputArraySize; i++) {
+			myfprintf(fp, "%s\n", AUDIO_STATE_FILE_DEVICE_START);
+			myfprintf(fp, "%s%i\n", AUDIO_STATE_FILE_DEVICE_ID,	i);
+			myfprintf(fp, "%s%s\n", AUDIO_STATE_FILE_DEVICE_NAME,	audioOutputArray[i]->name);
+			myfprintf(fp, "%s%i\n", AUDIO_STATE_FILE_DEVICE_ENABLED,(int)pdAudioDevicesEnabled[i]);
+			myfprintf(fp, "%s\n", AUDIO_STATE_FILE_DEVICE_END);
+		}                                                                    		
+		while(fclose(fp) && errno==EINTR);
+	}
+}
+
+void readAudioDevicesState() {
+	char * stateFile = getStateFile();
+	FILE *fp;
+	struct stat st;
+	if(stateFile) {
+		char buffer[AUDIO_BUFFER_SIZE];
+
+
+
+
+		if(stat(stateFile,&st)<0) {
+			DEBUG("failed to stat state file\n");
+			return;
+		}
+		if(!S_ISREG(st.st_mode)) {
+			ERROR("state file \"%s\" is not a regular "
+				"file\n",stateFile);
+			exit(EXIT_FAILURE);
+		}
+
+		fp = fopen(stateFile,"r");
+		if(!fp) {
+			ERROR("problems opening state file \"%s\" for "
+				"reading: %s\n", stateFile,
+				strerror(errno));
+			exit(EXIT_FAILURE);
+		}
+
+		while(myFgets(buffer,AUDIO_BUFFER_SIZE,fp)) {
+			if(strncmp(buffer,AUDIO_STATE_FILE_DEVICE_START, strlen(AUDIO_STATE_FILE_DEVICE_START))==0) {
+				char *name = NULL;
+				int id = -1;
+				int enabled = 1;				
+				if(!myFgets(buffer,AUDIO_BUFFER_SIZE,fp)) {
+					ERROR("error parsing state file \"%s\"\n", stateFile);
+					exit(EXIT_FAILURE);
+				}
+				while(strcmp(buffer,AUDIO_STATE_FILE_DEVICE_END)) {
+					if(strncmp(buffer,AUDIO_STATE_FILE_DEVICE_ID, strlen(AUDIO_STATE_FILE_DEVICE_ID)) == 0 ) {
+						if(strlen(buffer) > strlen(AUDIO_STATE_FILE_DEVICE_ID))
+						{
+							id = atoi(&buffer[strlen(AUDIO_STATE_FILE_DEVICE_ID)]);
+						}
+					}
+					if(strncmp(buffer,AUDIO_STATE_FILE_DEVICE_ENABLED, strlen(AUDIO_STATE_FILE_DEVICE_ENABLED)) == 0 ) {
+						if(strlen(buffer) > strlen(AUDIO_STATE_FILE_DEVICE_ENABLED))
+						{
+							enabled = atoi(&buffer[strlen(AUDIO_STATE_FILE_DEVICE_ENABLED)]);
+						} 
+					}                     
+					if(!myFgets(buffer,AUDIO_BUFFER_SIZE,fp)) {
+						ERROR("error parsing state file \"%s\"\n", stateFile);
+						exit(EXIT_FAILURE);
+					}
+				}
+				if(id != -1)
+				{
+					/* search for same name here, can we trust id? */
+					if(id < audioOutputArraySize)
+					{
+						pdAudioDevicesEnabled[id] = enabled;
+					}	
+				}
+				if(name != NULL)
+				{
+					free(name);
+				}
+			}
+		}
+
+		fclose(fp);
+	}
+}
+

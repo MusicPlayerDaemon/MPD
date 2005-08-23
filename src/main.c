@@ -491,6 +491,9 @@ int main(int argc, char * argv[]) {
         initSigHandlers();
         readPlaylistState();
 
+	/* qball crappy code */
+	readAudioDevicesState();
+
         while(COMMAND_RETURN_KILL!=doIOForInterfaces()) {
 		if(COMMAND_RETURN_KILL==handlePendingSignals()) break;
                 syncPlayerAndPlaylist();
@@ -499,6 +502,10 @@ int main(int argc, char * argv[]) {
         }
 
         savePlaylistState();
+	/* qball crappy code */
+	saveAudioDevicesState();
+
+	
         playerKill();
 
         freeAllInterfaces();
