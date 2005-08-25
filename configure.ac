@@ -38,6 +38,7 @@ AC_ARG_ENABLE(ipv6,[  --disable-ipv6     disable IPv6 support],,enable_ipv6=yes)
 AC_ARG_ENABLE(sun,[  --disable-sun     disable sun support],,enable_sun=yes)
 AC_ARG_ENABLE(oss,[  --disable-oss     disable OSS support],,enable_oss=yes)
 AC_ARG_ENABLE(alsa,[  --disable-alsa     disable ALSA support],,enable_alsa=yes)
+AC_ARG_ENABLE(mvp,[  --enable-mvp    enable support for Hauppauge Media MVP],,enable_mvp=no)
 AC_ARG_ENABLE(ogg,[  --disable-ogg     disable ogg support],,enable_ogg=yes)
 AC_ARG_ENABLE(flac,[  --disable-flac    disable flac support],,enable_flac=yes)
 AC_ARG_ENABLE(mp3,[  --disable-mp3     disable mp3 support],,enable_mp3=yes)
@@ -130,6 +131,10 @@ fi
 
 if test x$enable_oss = xyes; then
 	AC_CHECK_HEADER(sys/soundcard.h,[enable_oss=yes;AC_DEFINE(HAVE_OSS,1,[Define to enable OSS])],[AC_MSG_WARN(Soundcard headers not found -- disabling OSS support);enable_oss=no])
+fi
+
+if test x$enable_mvp = xyes; then
+   AC_DEFINE(HAVE_MVP,1,[Define to enable Hauppauge Media MVP support])
 fi
 
 if test x$enable_alsa = xyes; then
@@ -566,6 +571,12 @@ else
 	echo " OS X support ..................disabled"
 fi
 
+if test x$enable_mvp = xyes; then
+	echo " Media MVP support .............enabled"
+else
+	echo " Media MVP support .............disabled"
+fi
+
 if test x$enable_shout = xyes; then
 	echo " Shout streaming support .......enabled"
 else
@@ -579,7 +590,8 @@ if test x$enable_ao = xno &&
    test x$enable_shout = xno &&
    test x$enable_sun = xno &&
    test x$enable_alsa = xno &&
-   test x$enable_osx = xno; then
+   test x$enable_osx = xno &&
+   test x$enable_mvp = xno; then
 	AC_MSG_ERROR("No Audio Output types configured!")
 fi
 
