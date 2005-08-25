@@ -32,7 +32,22 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
+
+#ifndef HAVE_TREMOR
 #include <vorbis/vorbisfile.h>
+#else
+#include <tremor/ivorbisfile.h>
+/* Macros to make Tremor's API look like libogg. Tremor always
+   returns host-byte-order 16-bit signed data, and uses integer
+   milliseconds where libogg uses double seconds. 
+*/
+#define ov_read(VF, BUFFER, LENGTH, BIGENDIANP, WORD, SGNED, BITSTREAM) \
+        ov_read(VF, BUFFER, LENGTH, BITSTREAM)
+#define ov_time_total(VF, I) ((double)ov_time_total(VF, I)/1000)
+#define ov_time_tell(VF) ((double)ov_time_tell(VF)/1000)
+#define ov_time_seek_page(VF, S) (ov_time_seek_page(VF, (S)*1000))
+#endif /* HAVE_TREMOR */
+
 #include <errno.h>
 
 #ifdef WORDS_BIGENDIAN

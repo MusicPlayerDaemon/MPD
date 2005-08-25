@@ -50,6 +50,10 @@ AC_ARG_ENABLE(id3,[  --disable-id3     disable id3 support],,enable_id3=yes)
 AC_ARG_ENABLE(mpd_mad,[  --enable-mpd-mad     use mpd libmad],use_mpd_mad=yes,)
 AC_ARG_ENABLE(mpd_id3tag,[  --enable-mpd-id3tag    use mpd libid3tag],use_mpd_id3tag=yes,)
 
+AC_ARG_WITH(tremor,[[  --with-tremor[=PFX]   Use Tremor(vorbisidec) integer Ogg-Vorbis decoder (with optional prefix)]], use_tremor=yes; test x$withval != xyes && tremor_prefix="$withval",)
+AC_ARG_WITH(tremor-libraries,[  --with-tremor-libraries=DIR   Directory where Tremor library is installed (optional)], tremor_libraries="$withval", tremor_libraries="")
+AC_ARG_WITH(tremor-includes,[  --with-tremor-includes=DIR   Directory where Tremor header files are installed (optional)], tremor_includes="$withval", tremor_includes="")
+
 AC_ARG_WITH(iconv,[  --with-iconv=PFX   Prefix where iconv is installed (optional)], iconv_prefix="$withval", iconv_prefix="")
 AC_ARG_WITH(iconv-libraries,[  --with-iconv-libraries=DIR   Directory where libiconv library is installed (optional)], iconv_libraries="$withval", iconv_libraries="")
 AC_ARG_WITH(iconv-includes,[  --with-iconv-includes=DIR   Directory where libiconv header files are installed (optional)], iconv_includes="$withval", iconv_includes="")
@@ -428,13 +432,43 @@ int main() {
 	CPPFLAGS=$oldcppflags
 fi
 
-if test x$enable_ogg = xyes; then
+if test x$enable_ogg = xyes && test x$use_tremor != xyes; then
 	XIPH_PATH_OGG(MPD_LIBS="$MPD_LIBS $OGG_LIBS" MPD_CFLAGS="$MPD_CFLAGS $OGG_CFLAGS",enable_ogg=no)
 fi
 
+if test x$use_tremor = xyes; then
+     	if test "x$tremor_libraries" != "x" ; then
+  		TREMOR_LIBS="-L$tremor_libraries"
+  	elif test "x$tremor_prefix" != "x" ; then
+    		TREMOR_LIBS="-L$tremor_prefix/lib"
+  	elif test "x$prefix" != "xNONE"; then
+    		TREMOR_LIBS="-L$libdir"
+  	fi
+ 	TREMOR_LIBS="$TREMOR_LIBS -lvorbisidec"
+  	if test "x$tremor_includes" != "x" ; then
+  		TREMOR_CFLAGS="-I$tremor_includes"
+  	elif test "x$tremor_prefix" != "x" ; then
+    		TREMOR_CFLAGS="-I$tremor_prefix/include"
+  	elif test "x$prefix" != "xNONE"; then
+    		TREMOR_CFLAGS="-I$includedir"
+  	fi
+	ac_save_CFLAGS="$CFLAGS"
+	ac_save_LIBS="$LIBS"
+	CFLAGS="$CFLAGS $TREMOR_CFLAGS"
+	LIBS="$LIBS $TREMOR_LIBS"
+	AC_CHECK_LIB(vorbisidec,ov_read,,enable_ogg=no;AC_MSG_WARN([vorbisidec lib needed for ogg support with tremor -- disabling ogg support]))
+	CFLAGS="$ac_save_CFLAGS"
+	LIBS="$ac_save_LIBS"
+fi
+
 if test x$enable_ogg = xyes; then
-	enable_vorbistest=no
-	XIPH_PATH_VORBIS(,enable_ogg=no)
+	if test x$use_tremor = xyes; then
+		VORBIS_LIBS="$TREMOR_LIBS"
+		VORBIS_CFLAGS="$TREMOR_CFLAGS"
+	else
+		enable_vorbistest=no
+		XIPH_PATH_VORBIS(,enable_ogg=no)
+	fi
 	if test x$enable_ogg = xyes; then
 
 dnl
@@ -443,20 +477,29 @@ dnl vorbistest in XIPH_PATH_OGG is broken on my debian system
 dnl so here i used my own hacked up version till i get vorbis-dev gets
 dnl upgraded in debian (hopefully when 1.0.1 comes out)
 dnl
+dnl This version also tests Tremor, which has no vorbistest of its own.
+dnl
 		
   		AC_MSG_CHECKING(that Vorbis is usable)
 
     		ac_save_CFLAGS="$CFLAGS"
     		ac_save_LIBS="$LIBS"
     		CFLAGS="$CFLAGS $VORBIS_CFLAGS $OGG_CFLAGS"
+		if test x$use_tremor = xyes; then
+		   CFLAGS="$CFLAGS -DTREMOR"
+		fi
     		LIBS="$LIBS $VORBIS_LIBS $VORBISENC_LIBS $OGG_LIBS"
 
       		AC_TRY_RUN([
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifdef TREMOR
+#include <tremor/ivorbisfile.h>
+#else
 #include <vorbis/codec.h>
 #include <vorbis/vorbisenc.h>
+#endif
 
 int main ()
 {
@@ -465,7 +508,9 @@ int main ()
     vorbis_info		vi;
 
     vorbis_info_init (&vi);
+#ifndef TREMOR
     vorbis_encode_init (&vi, 2, 44100, -1, 128, -1);
+#endif
     /*vorbis_analysis_init (&vd, &vi);
     vorbis_block_init (&vd, &vb);*/
     /* this function was added in 1.0rc3, so this is what we're testing for */
@@ -474,7 +519,7 @@ int main ()
     return 0;
 }
 
-], AC_MSG_RESULT(yes), AC_MSG_RESULT(no) enable_ogg=no,[echo $ac_n "cross compiling; assumed OK... $ac_c"])
+], AC_MSG_RESULT(yes), AC_MSG_RESULT(no); enable_ogg=no,[echo $ac_n "cross compiling; assumed OK... $ac_c"])
        		CFLAGS="$ac_save_CFLAGS"
        		LIBS="$ac_save_LIBS"
 	fi
@@ -490,6 +535,10 @@ fi
 if test x$enable_ogg = xyes; then
 	AC_DEFINE(HAVE_OGG,1,[Define for ogg vorbis support])
 fi
+
+if test x$use_tremor = xyes; then
+	AC_DEFINE(HAVE_TREMOR,1,[Define to use tremor (libvorbisidec) for ogg support])
+fi	
 
 if test x$enable_flac = xyes; then
 	oldmpdcflags="$MPD_CFLAGS"
@@ -621,6 +670,11 @@ fi
 
 if test x$enable_ogg = xyes; then
 	echo " Ogg Vorbis support ............enabled"
+	if test x$use_tremor = xyes; then
+		echo "   using tremor.................yes"
+	else
+		echo "   using tremor.................no"
+	fi
 else
 	echo " Ogg Vorbis support ............disabled"
 fi
