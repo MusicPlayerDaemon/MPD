@@ -117,7 +117,10 @@ case $host in
 esac
 
 if test x$enable_ogg = xno; then
-	AC_MSG_WARN("disabling shout streaming support since vorbis was not found")
+	AC_MSG_WARN("disabling shout streaming support because vorbis encoder was not found")
+	enable_shout=no
+elif test x$use_tremor = xyes; then
+	AC_MSG_WARN("disabling shout streaming support because tremor does not support vorbis encoding")
 	enable_shout=no
 fi
 
