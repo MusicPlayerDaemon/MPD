@@ -145,7 +145,7 @@ static int establishListen(unsigned int port, ConfigParam * param) {
 	if(setsockopt(sock,SOL_SOCKET,SO_REUSEADDR,(char *)&allowReuse,
 			sizeof(allowReuse))<0) 
 	{
-		ERROR("problems setsockopt'ing\n");
+		ERROR("problems setsockopt'ing: %s\n", strerror(errno));
 		exit(EXIT_FAILURE);
 	}
 
