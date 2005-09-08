@@ -47,8 +47,9 @@ AC_ARG_ENABLE(audiofile,[  --disable-audiofile disable audiofile support, disabl
 AC_ARG_ENABLE(mod,[  --enable-mod     enable MOD support],enable_mod=yes,)
 AC_ARG_ENABLE(mpc,[  --disable-mpc     disable musepack (MPC) support],,enable_mpc=yes)
 AC_ARG_ENABLE(id3,[  --disable-id3     disable id3 support],,enable_id3=yes)
-AC_ARG_ENABLE(mpd_mad,[  --enable-mpd-mad     use mpd libmad],use_mpd_mad=yes,)
-AC_ARG_ENABLE(mpd_id3tag,[  --enable-mpd-id3tag    use mpd libid3tag],use_mpd_id3tag=yes,)
+
+AC_ARG_ENABLE(mpd_mad,[  --enable-mpd-mad     use mpd libmad],[use_mpd_mad=$enableval],[use_mpd_mad=no])
+AC_ARG_ENABLE(mpd_id3tag,[  --enable-mpd-id3tag    use mpd libid3tag],[use_mpd_id3tag=$enableval],[use_mpd_id3tag=no])
 
 AC_ARG_WITH(tremor,[[  --with-tremor[=PFX]   Use Tremor(vorbisidec) integer Ogg-Vorbis decoder (with optional prefix)]], use_tremor=yes; test x$withval != xyes && tremor_prefix="$withval",)
 AC_ARG_WITH(tremor-libraries,[  --with-tremor-libraries=DIR   Directory where Tremor library is installed (optional)], tremor_libraries="$withval", tremor_libraries="")

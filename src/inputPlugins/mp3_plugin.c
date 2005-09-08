@@ -756,6 +756,9 @@ MpdTag * mp3_tagDup(char * file) {
 		if(!ret) ret = newMpdTag();
 		ret->time = time;
 	}
+	else {
+		DEBUG("mp3_tagDup: Failed to get total song time from: %s\n", file);
+	}
 
 	return ret;
 }

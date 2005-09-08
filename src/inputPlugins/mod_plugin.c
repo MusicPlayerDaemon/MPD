@@ -212,10 +212,17 @@ MpdTag * modTagDup(char * file) {
 	MODULE * moduleHandle;
 	char * title;
 
-	if(mod_initMikMod() < 0) return NULL;
+	if(mod_initMikMod() < 0) {
+		DEBUG("modTagDup: Failed to initialize MikMod\n");
+		return NULL;
+	}
 
-	if(!(moduleHandle = Player_Load(file, 128, 0))) goto fail;
+	if(!(moduleHandle = Player_Load(file, 128, 0))) {
+		DEBUG("modTagDup: Failed to open file: %s\n",file);
+		MikMod_Exit();
+		return NULL;
 
+	}
 	Player_Free(moduleHandle);
 
 	ret = newMpdTag();
@@ -224,7 +231,6 @@ MpdTag * modTagDup(char * file) {
 	title = strdup(Player_LoadTitle(file));
 	if(title) addItemToMpdTag(ret, TAG_ITEM_TITLE, title);
 
-fail:
 	MikMod_Exit();
 
 	return ret;

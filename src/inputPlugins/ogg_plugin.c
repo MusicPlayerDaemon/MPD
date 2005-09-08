@@ -366,7 +366,11 @@ MpdTag * oggTagDup(char * file) {
 	OggVorbis_File vf;
 
 	fp = fopen(file,"r"); 
-	if(!fp) return NULL;
+	if(!fp)
+	{
+		DEBUG("oggTagDup: Failed to open file: '%s', %s\n", file, strerror(errno));
+		 return NULL;
+	}
 	if(ov_open(fp,&vf,NULL,0)<0) {
 		fclose(fp);
 		return NULL;

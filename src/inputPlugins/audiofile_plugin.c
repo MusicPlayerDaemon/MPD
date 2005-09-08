@@ -148,6 +148,9 @@ MpdTag * audiofileTagDup(char * file) {
 		if(!ret) ret = newMpdTag();
 		ret->time = time;
 	}
+	else {
+		DEBUG("audiofileTagDup: Failed to get total song time from: %s\n", file);
+	}
 
 	return ret;
 }

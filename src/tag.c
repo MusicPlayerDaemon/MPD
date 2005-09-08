@@ -185,6 +185,7 @@ MpdTag * id3Dup(char * file) {
 	id3_file = id3_file_open(file, ID3_FILE_MODE_READONLY);
 			
 	if(!id3_file) {
+		DEBUG("id3Dup: Failed to open file: '%s', %s\n",file, strerror(errno));
 		return NULL;
 	}
 

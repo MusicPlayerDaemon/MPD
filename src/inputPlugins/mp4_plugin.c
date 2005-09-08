@@ -326,7 +326,10 @@ MpdTag * mp4DataDup(char * file, int * mp4MetadataFound) {
 
 	*mp4MetadataFound = 0;
 	
-	if(openInputStream(&inStream, file) < 0) return NULL;
+	if(openInputStream(&inStream, file) < 0) {
+		DEBUG("mp4DataDup: Failed to open file: %s\n", file);
+		return NULL;
+	}
 
 	cb = malloc(sizeof(mp4ff_callback_t));
 	cb->read = mp4_inputStreamReadCallback;

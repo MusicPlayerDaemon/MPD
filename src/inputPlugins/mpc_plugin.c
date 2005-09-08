@@ -294,7 +294,10 @@ static float mpcGetTime(char * file) {
 
 	mpc_streaminfo_init(&info);
 
-	if(openInputStream(&inStream, file) < 0) return -1;
+	if(openInputStream(&inStream, file) < 0) {
+		DEBUG("mpcGetTime: Failed to open file: %s\n", file);
+		return -1;
+	}
 	
 	if(mpc_streaminfo_read(&info, &reader) != ERROR_CODE_OK) {
 		closeInputStream(&inStream);
@@ -312,7 +315,10 @@ static MpdTag * mpcTagDup(char * file) {
 	MpdTag * ret = NULL;
 	float time = mpcGetTime(file);
 
-	if(time < 0) return NULL;
+	if(time < 0) {
+		DEBUG("mpcTagDup: Failed to get Songlength of file: %s\n",file);
+	 	return NULL;
+	}
 
 	ret = apeDup(file);
 	if(!ret) ret = id3Dup(file);

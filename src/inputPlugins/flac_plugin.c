@@ -533,6 +533,19 @@ MpdTag * flacMetadataDup(char * file, int * vorbisCommentFound) {
 
 	it = FLAC__metadata_simple_iterator_new();
 	if(!FLAC__metadata_simple_iterator_init(it, file ,1,0)) {
+		switch(FLAC__metadata_simple_iterator_status(it)) {
+			case FLAC__METADATA_SIMPLE_ITERATOR_STATUS_ILLEGAL_INPUT:
+				DEBUG("flacMetadataDup: Reading '%s' metadata gave the following error: Illegal Input\n",file);
+				break;
+			case FLAC__METADATA_SIMPLE_ITERATOR_STATUS_ERROR_OPENING_FILE:
+				DEBUG("flacMetadataDup: Reading '%s' metadata gave the following error: Error Opening File\n",file);
+				break;
+			case FLAC__METADATA_SIMPLE_ITERATOR_STATUS_NOT_A_FLAC_FILE:
+				DEBUG("flacMetadataDup: Reading '%s' metadata gave the following error: Not A Flac File\n",file);
+				break;
+			default:
+				DEBUG("flacMetadataDup: Reading '%s' metadata failed\n",file);
+		}
 		FLAC__metadata_simple_iterator_delete(it);
 		return ret;
 	}
@@ -564,7 +577,10 @@ MpdTag * flacTagDup(char * file) {
 	int foundVorbisComment = 0;
 
 	ret = flacMetadataDup(file, &foundVorbisComment);
-	if(!ret) return NULL;
+	if(!ret) {
+		DEBUG("flacTagDup: Failed to grab information from: %s\n", file);
+		return NULL;
+	}
 	if(!foundVorbisComment) {
 		MpdTag * temp = id3Dup(file);
 		if(temp) {

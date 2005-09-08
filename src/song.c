@@ -49,7 +49,10 @@ Song * newNullSong() {
 Song * newSong(char * url, int type, Directory * parentDir) {
 	Song * song = NULL;
 
-        if(strchr(url, '\n')) return NULL;
+        if(strchr(url, '\n')) {
+		DEBUG("newSong: '%s' is not a valid uri\n");
+		return NULL;
+	}
 
         song  = newNullSong();
 
@@ -104,6 +107,8 @@ Song * addSongToList(SongList * list, char * url, char * utf8path,
 	case SONG_TYPE_URL:
 		song = newSong(url, songType, parentDirectory);
 		break;
+	default:
+		DEBUG("addSongToList: Trying to add an invalid song type\n"); 
 	}
 
 	if(song==NULL) return NULL;

@@ -30,6 +30,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <errno.h>
+extern int errno;
 
 char * dupAndStripPlaylistSuffix(char * file) {
 	size_t size = strlen(file)-strlen(PLAYLIST_FILE_SUFFIX)-1;
@@ -210,7 +212,14 @@ int isFile(char * utf8file, time_t * mtime) {
 			if(mtime) *mtime = st.st_mtime;
 			return 1;
 		}
-		else return 0;
+		else
+		{
+		 DEBUG("isFile: %s is not a regular file\n",utf8file);
+		 return 0;
+		}
+	}
+	else {
+		DEBUG("isFile: failed to stat: %s: %s\n", utf8file, strerror(errno));
 	}
 
 	return 0;
@@ -257,15 +266,24 @@ InputPlugin * hasMusicSuffix(char * utf8file) {
         InputPlugin * ret = NULL;
         
         char * s = getSuffix(utf8file);
-        if(s) ret = getInputPluginFromSuffix(s);
+        if(s) {
+		 ret = getInputPluginFromSuffix(s);
+	}	
+	else {
+		DEBUG("hasMusicSuffix: The file: %s has no valid suffix\n",utf8file);
+	}
 
 	return ret;
 }
 
 InputPlugin * isMusic(char * utf8file, time_t * mtime) {
 	if(isFile(utf8file,mtime)) {
-		return hasMusicSuffix(utf8file);
+		InputPlugin *plugin = hasMusicSuffix(utf8file);
+		if (plugin == NULL) {
+			DEBUG("isMusic: %s is not a supported music file\n");
+		}
+		return plugin;
 	}
-
+	DEBUG("isMusic: %s is not a valid file\n",utf8file);
 	return NULL;
 }

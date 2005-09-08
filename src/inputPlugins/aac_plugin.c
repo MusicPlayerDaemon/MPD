@@ -405,6 +405,9 @@ MpdTag * aacTagDup(char * file) {
 		if((ret = id3Dup(file))==NULL) ret = newMpdTag();
 		ret->time = time;
 	}
+	else {
+		DEBUG("aacTagDup: Failed to get total song time from: %s\n", file);
+	}
 
 	return ret;
 }
