@@ -24,6 +24,7 @@
 
 *) Add better error logging when updating the db and a file/directory isn't 
 	added
+	(More debug output added, needs to be unified a bit, maybe overkill atm)
 
 0.13
 ----
