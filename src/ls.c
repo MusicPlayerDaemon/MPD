@@ -278,11 +278,9 @@ InputPlugin * hasMusicSuffix(char * utf8file) {
 
 InputPlugin * isMusic(char * utf8file, time_t * mtime) {
 	if(isFile(utf8file,mtime)) {
-		InputPlugin *plugin = hasMusicSuffix(utf8file);
-		if (plugin == NULL) {
-			DEBUG("isMusic: %s is not a supported music file\n");
-		}
-		return plugin;
+		InputPlugin * plugin = hasMusicSuffix(utf8file);
+		if (plugin != NULL)
+			return plugin;
 	}
 	DEBUG("isMusic: %s is not a valid file\n",utf8file);
 	return NULL;

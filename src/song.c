@@ -50,7 +50,7 @@ Song * newSong(char * url, int type, Directory * parentDir) {
 	Song * song = NULL;
 
         if(strchr(url, '\n')) {
-		DEBUG("newSong: '%s' is not a valid uri\n");
+		DEBUG("newSong: '%s' is not a valid uri\n",url);
 		return NULL;
 	}
 
