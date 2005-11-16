@@ -178,7 +178,7 @@ int updateInit(FILE * fp, List * pathList) {
        	if(directory_updatePid==0) {
               	/* child */
                 int dbUpdated = 0;
-		clearPlayerPid();
+		//clearPlayerPid();
 	
 		unblockSignals();
 
@@ -784,6 +784,7 @@ int addToDirectory(Directory * directory, char * shortname, char * name) {
 
 void closeMp3Directory() {
 	freeDirectory(mp3rootDirectory);
+	destroyTagTracker();
 }
 
 Directory * findSubDirectory(Directory * directory,char * name) {

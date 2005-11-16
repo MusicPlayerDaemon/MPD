@@ -33,6 +33,7 @@ void getConnections(fd_set * fds);
 int isAListenSocket(int sock);
 
 void closeAllListenSockets();
+void freeAllListenSockets();
 
 /* fdmax should be initialized to something */
 void addListenSocketsToFdSet(fd_set * fds, int * fdmax);

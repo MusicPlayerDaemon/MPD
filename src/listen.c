@@ -213,7 +213,10 @@ void closeAllListenSockets() {
 		DEBUG("closing listen socket %i\n", i);
 		while(close(listenSockets[i]) < 0 && errno==EINTR);
 	}
+	freeAllListenSockets();
+}
 
+void freeAllListenSockets() {
 	numberOfListenSockets = 0;
 	free(listenSockets);
 	listenSockets = NULL;

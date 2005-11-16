@@ -54,6 +54,9 @@
 #define SYSTEM_CONFIG_FILE_LOCATION	"/etc/mpd.conf"
 #define USER_CONFIG_FILE_LOCATION	"/.mpdconf"
 
+volatile int masterPid = 0;
+volatile int mainPid = 0;
+
 typedef struct _Options {
 	int kill;
         int daemon;
@@ -288,6 +291,45 @@ void openDB(Options * options, char * argv0) {
 	}
 }
 
+void startMainProcess() {
+	int pid;
+	fflush(0);
+	pid = fork();
+        if(pid>0) {
+		initInputStream(); 
+	        initReplayGainState();
+		/* qball crappy code */
+		readAudioDevicesState();
+
+		/* free stuff we don't need */
+		freeAllListenSockets();
+		
+		mainPid = pid;
+		masterInitSigHandlers();
+		while (masterHandlePendingSignals()!=COMMAND_RETURN_KILL)
+			waitOnSignals();
+		/* we're killed */
+		playerKill();
+		
+		finishAudioConfig();
+		finishAudioDriver();
+	
+		/* qball crappy code */
+		saveAudioDevicesState();
+	
+		finishPaths();
+
+		kill(mainPid, SIGTERM);
+		exit(EXIT_SUCCESS);
+
+	} else if(pid<0) {
+        	ERROR("problems fork'ing main process!\n");
+                exit(EXIT_FAILURE);
+	}
+
+	DEBUG("main process started!\n");
+}
+
 void daemonize(Options * options) {
 	FILE * fp;
 	ConfigParam * pidFileParam = parseConfigFilePath(CONF_PID_FILE, 1);
@@ -338,6 +380,7 @@ void daemonize(Options * options) {
 	DEBUG("writing pid file\n");
 	fprintf(fp, "%lu\n", (unsigned long)getpid());
 	fclose(fp);
+	masterPid = getpid();
 }
 
 void setupLogOutput(Options * options, FILE * out, FILE * err) {
@@ -451,6 +494,7 @@ int main(int argc, char * argv[]) {
         parseOptions(argc, argv, &options);
 
 	if(options.kill) killFromPidFile(argv[0], options.kill);
+        
 
         initStats();
 	initTagConfig();
@@ -459,31 +503,39 @@ int main(int argc, char * argv[]) {
         if(options.createDB <= 0 && !options.updateDB) listenOnPort();
 
         changeToUser();
-
+	
         openLogFiles(&options, &out, &err);
 
+        initPlayerData();
+	
+	daemonize(&options);
+       
+        initInputPlugins();
 	initPaths();
+	initAudioConfig();
+        initAudioDriver();
+
+	startMainProcess();
+	/* This is the main process which has
+	 * been forked from the master process.
+	 */
+	
+
+	
 	initPermissions();
-        initReplayGainState();
 
         initPlaylist();
-        initInputPlugins();
 
         openDB(&options, argv[0]);
 
         initCommands();
-        initPlayerData();
-        initAudioConfig();
-        initAudioDriver();
         initVolume();
         initInterfaces();
-	initInputStream(); 
 
 	printMemorySavedByTagTracker();
 	printSavedMemoryFromFilenames();
 	/*printSavedMemoryFromDirectoryNames();*/
 	
-        daemonize(&options);
 
         setupLogOutput(&options, out, err);
 
@@ -491,8 +543,6 @@ int main(int argc, char * argv[]) {
         initSigHandlers();
         readPlaylistState();
 
-	/* qball crappy code */
-	readAudioDevicesState();
 
         while(COMMAND_RETURN_KILL!=doIOForInterfaces()) {
 		if(COMMAND_RETURN_KILL==handlePendingSignals()) break;
@@ -502,12 +552,8 @@ int main(int argc, char * argv[]) {
         }
 
         savePlaylistState();
-	/* qball crappy code */
-	saveAudioDevicesState();
 
 	
-        playerKill();
-
         freeAllInterfaces();
 	closeAllListenSockets();
         closeMp3Directory();

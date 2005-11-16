@@ -43,11 +43,7 @@
 #include <errno.h>
 #include <fcntl.h>
 
-volatile int player_pid = 0;
-
-void clearPlayerPid() {
-	player_pid = 0;
-}
+extern int masterPid;
 
 static void resetPlayerMetadata() {
         PlayerControl * pc = &(getPlayerData()->playerControl);
@@ -60,7 +56,7 @@ static void resetPlayerMetadata() {
 void resetPlayer() {
 	int pid;
 
-	clearPlayerPid();
+	setPlayerPid(0);
 	getPlayerData()->playerControl.stop = 0;
 	getPlayerData()->playerControl.play = 0;
 	getPlayerData()->playerControl.pause = 0;
@@ -77,7 +73,7 @@ void resetPlayer() {
 }
 
 void player_sigChldHandler(int pid, int status) {
-	if(player_pid==pid) {
+	if(getPlayerPid()==pid) {
 		DEBUG("SIGCHLD caused by player process\n");
 		if(WIFSIGNALED(status) && WTERMSIG(status)!=SIGTERM &&
 				WTERMSIG(status)!=SIGINT) 
@@ -87,7 +83,7 @@ void player_sigChldHandler(int pid, int status) {
 		}
 		resetPlayer();
 	}
-	else if(pid==getPlayerData()->playerControl.decode_pid && player_pid<=0)
+	else if(pid==getPlayerData()->playerControl.decode_pid && getPlayerPid()<=0)
 	{
 		if(WIFSIGNALED(status) && WTERMSIG(status)!=SIGTERM) {
 			ERROR("(caught by master parent) "
@@ -100,24 +96,31 @@ void player_sigChldHandler(int pid, int status) {
 }
 
 int playerInit() {
+	kill(masterPid, SIGUSR2);
+	while (getPlayerPid()==0) my_usleep(10000); //we need to wait for the signal to take effect
+	return 0;
+}
+
+int playerInitReal() {
+	int player_pid;
 	blockSignals();
 	player_pid = fork();
 	if(player_pid==0) {
 		PlayerControl * pc = &(getPlayerData()->playerControl);
 
-		clearUpdatePid();
+		//clearUpdatePid();
 
 		unblockSignals();
 
 		setSigHandlersForDecoder();
 
-		closeAllListenSockets();
-		freeAllInterfaces();
-		closeMp3Directory();
-		finishPlaylist();
-		finishPermissions();
-		finishCommands();
-		finishVolume();
+		//closeAllListenSockets();
+		//freeAllInterfaces();
+		//closeMp3Directory();
+		//finishPlaylist();
+		//finishPermissions();
+		//finishCommands();
+		//finishVolume();
 
 		while(1) {
 			if(pc->play) decode();
@@ -148,10 +151,13 @@ int playerInit() {
 	else if(player_pid<0) {
 		unblockSignals();
 		ERROR("player Problems fork()'ing\n");
+		setPlayerPid(0);
 		player_pid = 0;
-
 		return -1;
 	}
+	else 
+		setPlayerPid(player_pid);
+
 	unblockSignals();
 
 	return 0;
@@ -183,13 +189,13 @@ int playerPlay(FILE * fp, Song * song) {
 	pc->utf8url[MAXPATHLEN] = '\0';
 
 	pc->play = 1;
-	if(player_pid==0 && playerInit()<0) {
+	if(getPlayerPid()==0 && playerInit()<0) {
 		pc->play = 0;
 		return -1;
 	}
 	
         resetPlayerMetadata();
-	while(player_pid>0 && pc->play) my_usleep(1000);
+	while(getPlayerPid()>0 && pc->play) my_usleep(1000);
 	
 	return 0;
 }
@@ -197,9 +203,9 @@ int playerPlay(FILE * fp, Song * song) {
 int playerStop(FILE * fp) {
 	PlayerControl * pc = &(getPlayerData()->playerControl);
 
-	if(player_pid>0 && pc->state!=PLAYER_STATE_STOP) {
+	if(getPlayerPid()>0 && pc->state!=PLAYER_STATE_STOP) {
 		pc->stop = 1;
-		while(player_pid>0 && pc->stop) my_usleep(1000);
+		while(getPlayerPid()>0 && pc->stop) my_usleep(1000);
 	}
 
 	pc->queueState = PLAYER_QUEUE_BLANK;
@@ -216,16 +222,16 @@ void playerKill() {
 	playerCloseAudio(stderr);
 	if(player_pid>0 && pc->closeAudio) sleep(1);*/
 
-	pid = player_pid;
+	pid = getPlayerPid();
 	if(pid>0) kill(pid,SIGTERM);
 }
 
 int playerPause(FILE * fp) {
 	PlayerControl * pc = &(getPlayerData()->playerControl);
 
-	if(player_pid>0 && pc->state!=PLAYER_STATE_STOP) {
+	if(getPlayerPid()>0 && pc->state!=PLAYER_STATE_STOP) {
 		pc->pause = 1;
-		while(player_pid>0 && pc->pause) my_usleep(1000);
+		while(getPlayerPid()>0 && pc->pause) my_usleep(1000);
 	}
 
 	return 0;
@@ -234,7 +240,7 @@ int playerPause(FILE * fp) {
 int playerSetPause(FILE * fp, int pause) {
 	PlayerControl * pc = &(getPlayerData()->playerControl);
 
-	if(player_pid<=0) return 0;
+	if(getPlayerPid()<=0) return 0;
 
 	switch(pc->state) {
 	case PLAYER_STATE_PLAY:
@@ -314,7 +320,7 @@ char * getPlayerErrorStr() {
 void playerCloseAudio() {
 	PlayerControl * pc = &(getPlayerData()->playerControl);
 
-	if(player_pid>0) {
+	if(getPlayerPid()>0) {
 		if(playerStop(stderr)<0) return;
 		pc->closeAudio = 1;
 	}
@@ -354,20 +360,20 @@ void setQueueState(int queueState) {
 void playerQueueLock() {
 	PlayerControl * pc = &(getPlayerData()->playerControl);
 
-	if(player_pid>0 && pc->queueLockState==PLAYER_QUEUE_UNLOCKED)
+	if(getPlayerPid()>0 && pc->queueLockState==PLAYER_QUEUE_UNLOCKED)
 	{
 		pc->lockQueue = 1;
-		while(player_pid>0 && pc->lockQueue) my_usleep(1000);
+		while(getPlayerPid()>0 && pc->lockQueue) my_usleep(1000);
 	}
 }
 
 void playerQueueUnlock() {
 	PlayerControl * pc = &(getPlayerData()->playerControl);
 
-	if(player_pid>0 && pc->queueLockState==PLAYER_QUEUE_LOCKED)
+	if(getPlayerPid()>0 && pc->queueLockState==PLAYER_QUEUE_LOCKED)
 	{
 		pc->unlockQueue = 1;
-		while(player_pid>0 && pc->unlockQueue) my_usleep(1000);
+		while(getPlayerPid()>0 && pc->unlockQueue) my_usleep(1000);
 	}
 }
 
@@ -394,7 +400,7 @@ int playerSeek(FILE * fp, Song * song, float time) {
                 resetPlayerMetadata();
 		pc->seekWhere = time;
 		pc->seek = 1;
-		while(player_pid>0 && pc->seek) my_usleep(1000);
+		while(getPlayerPid()>0 && pc->seek) my_usleep(1000);
 	}
 
 	return 0;

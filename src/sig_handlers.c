@@ -19,6 +19,7 @@
 
 #include "sig_handlers.h"
 #include "player.h"
+#include "playerData.h"
 #include "playlist.h"
 #include "directory.h"
 #include "command.h"
@@ -33,10 +34,30 @@
 #include <sys/resource.h>
 #include <sys/wait.h>
 #include <errno.h>
+#include <unistd.h>
+
+extern volatile int masterPid;
+extern volatile int mainPid;
+
+int masterHandlePendingSignals() {
+        if(signal_is_pending(SIGINT) || signal_is_pending(SIGTERM)) {
+                DEBUG("master process got SIGINT or SIGTERM, exiting\n");
+		return COMMAND_RETURN_KILL;
+        }
+
+	if(signal_is_pending(SIGHUP)) {
+		signal_clear(SIGHUP);
+		/* Forward it to the main process, which will update the DB */
+		kill(mainPid, SIGHUP); 
+	}
+
+
+	return 0;
+}
 
 int handlePendingSignals() {
         if(signal_is_pending(SIGINT) || signal_is_pending(SIGTERM)) {
-                DEBUG("got SIGINT or SIGTERM, exiting\n");
+                DEBUG("main process got SIGINT or SIGTERM, exiting\n");
 		return COMMAND_RETURN_KILL;
         }
 
@@ -57,15 +78,53 @@ int handlePendingSignals() {
 void chldSigHandler(int signal) {
 	int status;
 	int pid;
-	DEBUG("got SIGCHLD\n");
+	DEBUG("main process got SIGCHLD\n");
 	while(0 != (pid = wait3(&status,WNOHANG,NULL))) {
 		if(pid<0) {
 			if(errno==EINTR) continue;
 			else break;
 		}
-		player_sigChldHandler(pid,status);
 		directory_sigChldHandler(pid,status);
 	}
+}
+
+void masterChldSigHandler(int signal) {
+	int status;
+	int pid;
+	DEBUG("master process got SIGCHLD\n");
+	while(0 != (pid = wait3(&status,WNOHANG,NULL))) {
+		if(pid<0) {
+			if(errno==EINTR) continue;
+			else break;
+		}
+		DEBUG("PID: %d\n",pid);
+		if (pid == mainPid) kill(getpid(), SIGTERM); 
+		player_sigChldHandler(pid,status);
+	}
+}
+
+int playerInitReal();
+
+void masterSigUsr2Handler(int signal) {
+	DEBUG("Master process got SIGUSR2 starting a new player process\n");
+	if (getPlayerPid() <= 0)
+		playerInitReal();
+}
+
+void masterInitSigHandlers() {
+	struct sigaction sa;
+
+	sa.sa_flags = 0;
+	sa.sa_handler = SIG_IGN;
+	while(sigaction(SIGPIPE,&sa,NULL)<0 && errno==EINTR);
+	sa.sa_handler = masterChldSigHandler;
+	while(sigaction(SIGCHLD,&sa,NULL)<0 && errno==EINTR);
+	sa.sa_handler = masterSigUsr2Handler;
+	while(sigaction(SIGUSR2,&sa,NULL)<0 && errno==EINTR);
+	signal_handle(SIGUSR1);
+        signal_handle(SIGINT);
+        signal_handle(SIGTERM);
+        signal_handle(SIGHUP);
 }
 
 void initSigHandlers() {
@@ -114,9 +173,23 @@ void ignoreSignals() {
 	while(sigaction(SIGPIPE,&sa,NULL)<0 && errno==EINTR);
 	while(sigaction(SIGCHLD,&sa,NULL)<0 && errno==EINTR);
 	while(sigaction(SIGUSR1,&sa,NULL)<0 && errno==EINTR);
+	while(sigaction(SIGUSR2,&sa,NULL)<0 && errno==EINTR);
 	while(sigaction(SIGINT,&sa,NULL)<0 && errno==EINTR);
 	while(sigaction(SIGTERM,&sa,NULL)<0 && errno==EINTR);
 	while(sigaction(SIGHUP,&sa,NULL)<0 && errno==EINTR);
+}
+
+void waitOnSignals() {
+	sigset_t sset;
+
+	sigfillset(&sset);
+	sigdelset(&sset,SIGCHLD);
+	sigdelset(&sset,SIGUSR1);
+	sigdelset(&sset,SIGUSR2);
+	sigdelset(&sset,SIGHUP);
+	sigdelset(&sset,SIGINT);
+	sigdelset(&sset,SIGTERM);
+	sigsuspend(&sset);
 }
 
 void blockSignals() {
@@ -125,6 +198,7 @@ void blockSignals() {
 	sigemptyset(&sset);
 	sigaddset(&sset,SIGCHLD);
 	sigaddset(&sset,SIGUSR1);
+	sigaddset(&sset,SIGUSR2);
 	sigaddset(&sset,SIGHUP);
 	sigaddset(&sset,SIGINT);
 	sigaddset(&sset,SIGTERM);
@@ -137,6 +211,7 @@ void unblockSignals() {
 	sigemptyset(&sset);
 	sigaddset(&sset,SIGCHLD);
 	sigaddset(&sset,SIGUSR1);
+	sigaddset(&sset,SIGUSR2);
 	sigaddset(&sset,SIGHUP);
 	sigaddset(&sset,SIGINT);
 	sigaddset(&sset,SIGTERM);

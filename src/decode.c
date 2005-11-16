@@ -399,7 +399,7 @@ int decoderInit(PlayerControl * pc, OutputBuffer * cb, DecoderControl * dc) {
 		pc->error = PLAYER_ERROR_SYSTEM;
 		return -1;
 	}
-
+	DEBUG("decoder PID: %d\n", decode_pid);
 	getPlayerData()->playerControl.decode_pid = decode_pid;
 	unblockSignals();
 
