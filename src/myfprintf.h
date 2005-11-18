@@ -29,4 +29,5 @@ void myfprintf(FILE * fp, char * format, ... );
 
 int myfprintfCloseAndOpenLogFile();
 
+void myfprintfCloseLogFile();
 #endif

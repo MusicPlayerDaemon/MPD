@@ -122,3 +122,10 @@ int myfprintfCloseAndOpenLogFile() {
 
         return 0;
 }
+
+void myfprintfCloseLogFile() {
+        if(myfprintf_stdLogMode) {
+                while(fclose(myfprintf_out)<0 && errno==EINTR);
+                while(fclose(myfprintf_err)<0 && errno==EINTR);
+	}
+}

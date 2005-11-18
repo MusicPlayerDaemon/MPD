@@ -42,6 +42,7 @@
 #include <stdio.h>
 #include <sys/select.h>
 #include <sys/types.h>
+#include <sys/wait.h>
 #include <sys/stat.h>
 #include <stdlib.h>
 #include <string.h>
@@ -306,6 +307,7 @@ void startMainProcess() {
 		
 		mainPid = pid;
 		masterInitSigHandlers();
+		kill(mainPid, SIGUSR1);
 		while (masterHandlePendingSignals()!=COMMAND_RETURN_KILL)
 			waitOnSignals();
 		/* we're killed */
@@ -320,6 +322,9 @@ void startMainProcess() {
 		finishPaths();
 
 		kill(mainPid, SIGTERM);
+		waitpid(mainPid,NULL,0);
+		finishConf();
+		myfprintfCloseLogFile();
 		exit(EXIT_SUCCESS);
 
 	} else if(pid<0) {
@@ -483,8 +488,8 @@ void killFromPidFile(char * cmd, int killOption) {
 }
 
 int main(int argc, char * argv[]) {
-        FILE * out;
-        FILE * err;
+        FILE * out = NULL;
+        FILE * err = NULL;
         Options options;
 
         closeAllFDs();
@@ -519,8 +524,7 @@ int main(int argc, char * argv[]) {
 	/* This is the main process which has
 	 * been forked from the master process.
 	 */
-	
-
+        initSigHandlers();
 	
 	initPermissions();
 
@@ -539,8 +543,12 @@ int main(int argc, char * argv[]) {
 
         setupLogOutput(&options, out, err);
 
-        openVolumeDevice();
-        initSigHandlers();
+	/* wait for the master process to get ready so we can start 
+	 * playing if readPlaylistState thinks we should*/
+	while (COMMAND_MASTER_READY != handlePendingSignals()) 
+		my_usleep(1);
+
+	openVolumeDevice();
         readPlaylistState();
 
 
@@ -567,6 +575,8 @@ int main(int argc, char * argv[]) {
         finishCommands();
         finishInputPlugins();
 	cleanUpPidFile();
-
+	finishConf();
+	
+	myfprintfCloseLogFile();
         return EXIT_SUCCESS;
 }

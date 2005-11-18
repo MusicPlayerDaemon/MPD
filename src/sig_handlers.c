@@ -56,7 +56,17 @@ int masterHandlePendingSignals() {
 }
 
 int handlePendingSignals() {
-        if(signal_is_pending(SIGINT) || signal_is_pending(SIGTERM)) {
+	/* this SIGUSR1 signal comes before the KILL signals, because there if the process is 
+	 * looping, waiting for this signal, it will not respond to the KILL signal. This might be
+	 * better implemented by using bit-wise defines and or'ing of the COMMAND_FOO as return.
+	 */
+       	if (signal_is_pending(SIGUSR1)) {
+		signal_clear(SIGUSR1);
+		DEBUG("The master process is ready to receive signals\n");
+		return COMMAND_MASTER_READY;
+	}
+	
+	if(signal_is_pending(SIGINT) || signal_is_pending(SIGTERM)) {
                 DEBUG("main process got SIGINT or SIGTERM, exiting\n");
 		return COMMAND_RETURN_KILL;
         }
@@ -135,6 +145,7 @@ void initSigHandlers() {
 	while(sigaction(SIGPIPE,&sa,NULL)<0 && errno==EINTR);
 	sa.sa_handler = chldSigHandler;
 	while(sigaction(SIGCHLD,&sa,NULL)<0 && errno==EINTR);
+        signal_handle(SIGUSR2);
         signal_handle(SIGUSR1);
         signal_handle(SIGINT);
         signal_handle(SIGTERM);

@@ -73,6 +73,7 @@ typedef struct _ConfigParam {
 } ConfigParam;
 
 void initConf();
+void finishConf();
 
 void readConf(char * file);
 

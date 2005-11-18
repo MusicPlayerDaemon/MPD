@@ -112,6 +112,10 @@ void registerConfigParam(char * name, int repeatable, int block) {
 	insertInList(configEntriesList, name, entry);
 }
 
+void finishConf() {
+	freeList(configEntriesList);
+}
+
 void initConf() {
 	configEntriesList = makeList((ListFreeDataFunc *)freeConfigEntry, 1);
 
@@ -295,6 +299,7 @@ void readConf(char * file) {
 
 		freeArgArray(array, numberOfArgs);
 	}
+	fclose(fp);
 }
 
 ConfigParam * getNextConfigParam(char * name, ConfigParam * last) {
