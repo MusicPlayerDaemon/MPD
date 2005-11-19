@@ -187,6 +187,7 @@ static int mvp_setPcmParams(MvpData *md, unsigned long rate, int channels, int b
 static int mvp_openDevice(AudioOutput * audioOutput) 
 {
    int ret = -1;
+   long long int stc = 0;
    MvpData * md = audioOutput->data;
    AudioFormat * audioFormat = &audioOutput->outAudioFormat;
    int mix[5] = { 0, 2, 7, 1, 0 };
@@ -208,7 +209,6 @@ static int mvp_openDevice(AudioOutput * audioOutput)
       ERROR("Error setting audio format: %s\n", strerror(errno));
       return -1;
    }
-   long long int stc = 0;
    ioctl(md->fd, MVP_SET_AUD_STC, &stc);
    if (ioctl(md->fd, MVP_SET_AUD_BYPASS, 1) < 0){
       ERROR("Error setting audio streamtype: %s\n", strerror(errno));

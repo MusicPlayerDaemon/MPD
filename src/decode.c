@@ -145,9 +145,9 @@ int calculateCrossFadeChunks(PlayerControl * pc, AudioFormat * af) {
 int waitOnDecode(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb,
                 int * decodeWaitedOn) 
 {
+	MpdTag * tag = NULL;
         strncpy(pc->currentUrl, pc->utf8url, MAXPATHLEN);
         pc->currentUrl[MAXPATHLEN] = '\0';
-	MpdTag * tag = NULL;
 
 	while(decode_pid>0 && dc->start) my_usleep(10000);
 

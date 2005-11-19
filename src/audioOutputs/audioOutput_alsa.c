@@ -70,10 +70,11 @@ static void freeAlsaData(AlsaData * ad) {
 
 static int alsa_initDriver(AudioOutput * audioOutput, ConfigParam * param) {
 	BlockParam * bp = NULL;
-
+	AlsaData * ad;
+	
 	if(param) bp = getBlockParam(param, "device");
 
-	AlsaData * ad = newAlsaData();
+	ad = newAlsaData();
 	
 	audioOutput->data = ad;
 

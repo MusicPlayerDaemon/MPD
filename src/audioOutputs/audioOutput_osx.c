@@ -291,8 +291,9 @@ static int osx_play(AudioOutput * audioOutput, char * playChunk, int size) {
 	//DEBUG("osx_play: enter\n");
 
 	if(!od->started) {
+		int err;
 		od->started = 1;
-		int err = AudioOutputUnitStart(od->au);
+		err = AudioOutputUnitStart(od->au);
 		if(err) {
 			ERROR("unable to start audio output: %i\n", err);
 			return -1;

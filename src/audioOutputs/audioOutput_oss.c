@@ -319,10 +319,11 @@ static int oss_testDefault() {
 
 static int oss_initDriver(AudioOutput * audioOutput, ConfigParam * param) {
 	BlockParam * bp = NULL;
+	OssData * od;
 
 	if(param) bp = getBlockParam(param, "device");
 
-	OssData * od = newOssData();
+	od = newOssData();
 	audioOutput->data = od;
 
 	if(!bp) {
