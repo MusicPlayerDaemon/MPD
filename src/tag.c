@@ -324,7 +324,7 @@ static void deleteItem(MpdTag * tag, int index) {
 	assert(index < tag->numOfItems);
 
 	removeTagItemString(tag->items[index].type, tag->items[index].value);
-	//free(tag->items[index].value);
+	/* free(tag->items[index].value); */
 
 	if(tag->numOfItems-index > 0) {
 		memmove(tag->items+index, tag->items+index+1, 
@@ -358,7 +358,7 @@ void clearMpdTag(MpdTag * tag) {
 
 	for(i = 0; i < tag->numOfItems; i++) {
 		removeTagItemString(tag->items[i].type, tag->items[i].value);
-		//free(tag->items[i].value);
+		/* free(tag->items[i].value); */
 	}
 
 	if(tag->items) free(tag->items);

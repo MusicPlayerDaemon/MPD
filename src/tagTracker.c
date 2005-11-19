@@ -90,7 +90,7 @@ int getNumberOfTagItems(int type) {
 	return g_tree_nnodes(tagLists[type]);
 }
 int calcSavedMemory(char *key, TagTrackerItem* value, int* sum) {
-	*sum -= sizeof(int) + 4*sizeof(void*); //sizeof(_GTreeNode)
+	*sum -= sizeof(int) + 4*sizeof(void*); /* sizeof(_GTreeNode) */
 	*sum -= sizeof(TagTrackerItem);
 	*sum += (strlen(key)+1)*value->count;
 	return FALSE;
@@ -103,7 +103,7 @@ void printMemorySavedByTagTracker() {
 	for(i = 0; i < TAG_NUM_OF_ITEM_TYPES; i++) {
 		if(!tagLists[i]) continue;
 
-		sum -= 5*sizeof(void*);//sizeof(_GTree)
+		sum -= 5*sizeof(void*);/* sizeof(_GTree) */
 		g_tree_foreach(tagLists[i], (GTraverseFunc)calcSavedMemory, &sum);
 	}
 

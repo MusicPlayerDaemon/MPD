@@ -50,4 +50,4 @@ data * nextTreeIterator(TreeIterator * iter);
 
 void freeTreeIterator(TreeIterator * iter);
 
-#endif // TREE_H
+#endif /* TREE_H */

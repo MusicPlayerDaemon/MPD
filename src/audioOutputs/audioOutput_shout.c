@@ -363,7 +363,7 @@ static void myShout_finishDriver(AudioOutput * audioOutput) {
 }
 
 static void myShout_dropBufferedAudio(AudioOutput * audioOutput) {
-	// needs to be implemented
+	/* needs to be implemented */
 }
 
 static void myShout_closeDevice(AudioOutput * audioOutput) {

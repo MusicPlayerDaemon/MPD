@@ -172,7 +172,7 @@ static void audioOutputAo_finishDriver(AudioOutput * audioOutput) {
 }
 
 static void audioOutputAo_dropBufferedAudio(AudioOutput * audioOutput) {
-	// not supported by libao
+	/* not supported by libao */
 }
 
 static void audioOutputAo_closeDevice(AudioOutput * audioOutput) {

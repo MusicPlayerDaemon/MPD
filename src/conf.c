@@ -384,7 +384,7 @@ ConfigParam * parseConfigFilePath(char * name, int force) {
 				param->value, param->line);
 		exit(EXIT_FAILURE);
 	}
-	// Parse ~ in path 
+	/* Parse ~ in path */
 	else if(path[0] == '~') {
 		struct passwd * pwd = NULL;
 		char * newPath;

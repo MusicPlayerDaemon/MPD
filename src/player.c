@@ -97,7 +97,8 @@ void player_sigChldHandler(int pid, int status) {
 
 int playerInit() {
 	kill(masterPid, SIGUSR2);
-	while (getPlayerPid()==0) my_usleep(10000); //we need to wait for the signal to take effect
+	/* we need to wait for the signal to take effect: */
+	while (getPlayerPid()==0) my_usleep(10000);
 	return 0;
 }
 
@@ -108,19 +109,21 @@ int playerInitReal() {
 	if(player_pid==0) {
 		PlayerControl * pc = &(getPlayerData()->playerControl);
 
-		//clearUpdatePid();
+		/* clearUpdatePid(); */
 
 		unblockSignals();
 
 		setSigHandlersForDecoder();
-
-		//closeAllListenSockets();
-		//freeAllInterfaces();
-		//closeMp3Directory();
-		//finishPlaylist();
-		//finishPermissions();
-		//finishCommands();
-		//finishVolume();
+		
+		/* 
+		closeAllListenSockets();
+		freeAllInterfaces();
+		closeMp3Directory();
+		finishPlaylist();
+		finishPermissions();
+		finishCommands();
+		finishVolume();
+		*/
 
 		while(1) {
 			if(pc->play) decode();

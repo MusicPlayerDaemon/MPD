@@ -178,7 +178,7 @@ int updateInit(FILE * fp, List * pathList) {
        	if(directory_updatePid==0) {
               	/* child */
                 int dbUpdated = 0;
-		//clearPlayerPid();
+		/* clearPlayerPid(); */
 	
 		unblockSignals();
 

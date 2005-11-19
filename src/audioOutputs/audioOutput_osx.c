@@ -163,16 +163,18 @@ static OSStatus osx_render(void * vdata,
 		}
 	}*/
 
-	//while(bufferSize) {
-		//DEBUG("osx_render: lock\n");
+	/* while(bufferSize) {
+		DEBUG("osx_render: lock\n"); */
 		pthread_mutex_lock(&od->mutex);
-		//DEBUG("%i:%i\n", bufferSize, od->len);
-		//while(od->go && od->len < bufferSize && 
-		//		od->len < od->bufferSize)
-		//{
-		//	DEBUG("osx_render: wait\n");
-		//	pthread_cond_wait(&od->condition, &od->mutex);
-		//}
+		/*
+		DEBUG("%i:%i\n", bufferSize, od->len);
+		while(od->go && od->len < bufferSize && 
+				od->len < od->bufferSize)
+		{
+			DEBUG("osx_render: wait\n");
+			pthread_cond_wait(&od->condition, &od->mutex);
+		}
+		*/
 
 		bytesToCopy = od->len < bufferSize ? od->len : bufferSize;
 		bufferSize = bytesToCopy;
@@ -191,10 +193,10 @@ static OSStatus osx_render(void * vdata,
 		curpos += bytesToCopy;
 
 		if(od->pos >= od->bufferSize) od->pos = 0;
-		//DEBUG("osx_render: unlock\n");
+		/* DEBUG("osx_render: unlock\n"); */
 		pthread_mutex_unlock(&od->mutex);
 		pthread_cond_signal(&od->condition);
-	//}
+	/* } */
 
 	buffer->mDataByteSize = bufferSize;
 
@@ -202,7 +204,7 @@ static OSStatus osx_render(void * vdata,
 		my_usleep(1000);
 	}
 
-	//DEBUG("osx_render: leave\n");
+	/* DEBUG("osx_render: leave\n"); */
 	return 0;
 }
 
@@ -288,7 +290,7 @@ static int osx_play(AudioOutput * audioOutput, char * playChunk, int size) {
 	int bytesToCopy;
 	int curpos;
 
-	//DEBUG("osx_play: enter\n");
+	/* DEBUG("osx_play: enter\n"); */
 
 	if(!od->started) {
 		int err;
@@ -303,14 +305,14 @@ static int osx_play(AudioOutput * audioOutput, char * playChunk, int size) {
 	pthread_mutex_lock(&od->mutex);
 
 	while(size) {
-		//DEBUG("osx_play: lock\n");
+		/* DEBUG("osx_play: lock\n"); */
 		curpos = od->pos+od->len;
 		if(curpos >= od->bufferSize) curpos -= od->bufferSize;
 
 		bytesToCopy = od->bufferSize < size ? od->bufferSize : size;
 
 		while(od->len > od->bufferSize-bytesToCopy) {
-			//DEBUG("osx_play: wait\n");
+			/* DEBUG("osx_play: wait\n"); */
 			pthread_cond_wait(&od->condition, &od->mutex);
 		}
 
@@ -332,10 +334,10 @@ static int osx_play(AudioOutput * audioOutput, char * playChunk, int size) {
 		playChunk += bytesToCopy;
 
 	}
-	//DEBUG("osx_play: unlock\n");
+	/* DEBUG("osx_play: unlock\n"); */
 	pthread_mutex_unlock(&od->mutex);
 
-	//DEBUG("osx_play: leave\n");
+	/* DEBUG("osx_play: leave\n"); */
 	return 0;
 }
 
