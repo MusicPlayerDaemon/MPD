@@ -282,12 +282,6 @@ fail:
 	return -1;
 }
 
-static void alsa_dropBufferedAudio(AudioOutput * audioOutput) {
-	AlsaData * ad = audioOutput->data;
-
-	snd_pcm_drop(ad->pcmHandle);
-}
-
 inline static int alsa_errorRecovery(AlsaData * ad, int err) {
 	if(err == -EPIPE) {
 		DEBUG("Underrun on alsa device \"%s\"\n", ad->device);
@@ -315,6 +309,12 @@ inline static int alsa_errorRecovery(AlsaData * ad, int err) {
 	}
 
 	return err;
+}
+
+static void alsa_dropBufferedAudio(AudioOutput * audioOutput) {
+	AlsaData * ad = audioOutput->data;
+
+	alsa_errorRecovery( ad, snd_pcm_drop(ad->pcmHandle) );
 }
 
 static void alsa_closeDevice(AudioOutput * audioOutput) {
