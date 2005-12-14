@@ -520,11 +520,11 @@ int main(int argc, char * argv[]) {
 	initAudioConfig();
         initAudioDriver();
 
+        initSigHandlers();
 	startMainProcess();
 	/* This is the main process which has
 	 * been forked from the master process.
 	 */
-        initSigHandlers();
 	
 	initPermissions();
 
