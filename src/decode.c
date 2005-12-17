@@ -243,7 +243,10 @@ int decodeSeek(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb,
 		} \
 		pc->pause = 0; \
 		kill(getppid(),SIGUSR1); \
-		if(pause) closeAudioDevice(); \
+		if(pause) { \
+			dropBufferedAudio(); \
+			closeAudioDevice(); \
+		} \
 	} \
 	if(pc->seek) { \
 		dropBufferedAudio(); \
