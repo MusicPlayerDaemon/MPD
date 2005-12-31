@@ -38,6 +38,7 @@
 #include "tagTracker.h"
 #include "dbUtils.h"
 #include "../config.h"
+#include "utils.h"
 
 #include <stdio.h>
 #include <sys/select.h>

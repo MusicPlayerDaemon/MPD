@@ -34,6 +34,7 @@
 #include "player.h"
 #include "list.h"
 #include "dbUtils.h"
+#include "tagTracker.h"
 
 #include <string.h>
 #include <sys/types.h>
