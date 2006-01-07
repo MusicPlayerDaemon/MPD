@@ -921,7 +921,7 @@ void initCommands() {
         addCommand(COMMAND_KILL        ,PERMISSION_ADMIN,  -1,-1,handleKill,NULL);
         addCommand(COMMAND_CLOSE       ,0,                 -1,-1,handleClose,NULL);
         addCommand(COMMAND_ADD         ,PERMISSION_ADD,     1, 1,handleAdd,NULL);
-        addCommand(COMMAND_ADDID       ,PERMISSION_ADD,     0, 1,handleAddId,NULL);
+        addCommand(COMMAND_ADDID       ,PERMISSION_ADD,     1, 1,handleAddId,NULL);
         addCommand(COMMAND_DELETE      ,PERMISSION_CONTROL, 1, 1,handleDelete,NULL);
         addCommand(COMMAND_DELETEID    ,PERMISSION_CONTROL, 1, 1,handleDeleteId,NULL);
         addCommand(COMMAND_PLAYLIST    ,PERMISSION_READ,    0, 0,handlePlaylist,NULL);
