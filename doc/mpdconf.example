@@ -128,7 +128,7 @@ pid_file 		"~/.mpd/mpd.pid"
 
 ################# REPLAYGAIN #############################
 #
-# Use Replay Gain (album or title)
+# Use Replay Gain (album or track)
 #	http://www.replaygain.org
 #
 #replaygain		"album"
