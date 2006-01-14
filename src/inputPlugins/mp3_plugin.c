@@ -35,9 +35,11 @@
 #endif
 #include "../log.h"
 #include "../utils.h"
+#include "../replayGain.h"
 #include "../tag.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -207,12 +209,60 @@ int fillMp3InputBuffer(mp3DecodeData * data) {
 }
 
 #ifdef HAVE_ID3TAG
-static MpdTag * mp3_parseId3Tag(mp3DecodeData * data, signed long tagsize) {
-	MpdTag * ret = NULL;
+void mp3_getReplayGainInfo(struct id3_tag * tag, ReplayGainInfo ** infoPtr) {
+	int i;
+	char * key;
+	char * value;
+	struct id3_frame * frame;
+	int found = 0;
+
+	if(*infoPtr) freeReplayGainInfo(*infoPtr);
+	*infoPtr = newReplayGainInfo();
+
+	frame = id3_tag_findframe(tag, "TXXX", 0);
+
+	for(i=1;frame;i++) {
+		if(frame->nfields < 3) continue;
+
+		key = (char *) id3_ucs4_latin1duplicate(id3_field_getstring(&frame->fields[1]));
+		value = (char *) id3_ucs4_latin1duplicate(id3_field_getstring(&frame->fields[2]));
+
+		if(strcmp(key, "replaygain_track_gain") == 0) {
+			(*infoPtr)->trackGain = atof(value);
+			found = 1;
+		}
+		else if(strcmp(key, "replaygain_album_gain") == 0) {
+			(*infoPtr)->albumGain = atof(value);
+			found = 1;
+		}
+		else if(strcmp(key, "replaygain_track_peak") == 0) {
+			(*infoPtr)->trackPeak = atof(value);
+			found = 1;
+		}
+		else if(strcmp(key, "replaygain_album_peak") == 0) {
+			(*infoPtr)->albumPeak = atof(value);
+			found = 1;
+		}
+
+		free(key);
+		free(value);
+
+		frame = id3_tag_findframe(tag, "TXXX", i);
+	}
+
+	if(!found) {
+		freeReplayGainInfo(*infoPtr);
+		*infoPtr = NULL;
+	}
+}
+
+static void mp3_parseId3Tag(mp3DecodeData * data, signed long tagsize, MpdTag ** mpdTag, ReplayGainInfo ** replayGainInfo) {
 	struct id3_tag * id3Tag = NULL;
 	id3_length_t count;
 	id3_byte_t const *id3_data;
 	id3_byte_t * allocated = NULL;
+
+	if(mpdTag) *mpdTag = NULL;
 
 	count = data->stream.bufend - data->stream.this_frame;
 
@@ -251,17 +301,17 @@ static MpdTag * mp3_parseId3Tag(mp3DecodeData * data, signed long tagsize) {
 	id3Tag = id3_tag_parse(id3_data, tagsize);
  
 	if(id3Tag) {
-		ret = parseId3Tag(id3Tag);
+		if(mpdTag) *mpdTag = parseId3Tag(id3Tag);
+		if(replayGainInfo) mp3_getReplayGainInfo(id3Tag, replayGainInfo);
 		id3_tag_delete(id3Tag);
 	}
 
 fail:
 	if(allocated) free(allocated);
-	return ret;
 }
 #endif
 
-int decodeNextFrameHeader(mp3DecodeData * data, MpdTag ** tag) {
+int decodeNextFrameHeader(mp3DecodeData * data, MpdTag ** tag, ReplayGainInfo ** replayGainInfo) {
 	if((data->stream).buffer==NULL || (data->stream).error==MAD_ERROR_BUFLEN) {
 		if(fillMp3InputBuffer(data) < 0) {
 			return DECODE_BREAK;
@@ -279,8 +329,7 @@ int decodeNextFrameHeader(mp3DecodeData * data, MpdTag ** tag) {
 
 			if(tagsize>0) {
 				if(tag && !(*tag)) {
-					*tag = mp3_parseId3Tag(data, tagsize);
-					
+					mp3_parseId3Tag(data, tagsize, tag, replayGainInfo);
 				}
 				else {
 					mad_stream_skip(&(data->stream),
@@ -408,7 +457,7 @@ fail:
 }
 
 int decodeFirstFrame(mp3DecodeData * data, DecoderControl * dc,
-		MpdTag ** tag) 
+		MpdTag ** tag, ReplayGainInfo ** replayGainInfo) 
 {
 	struct xing xing;
 	int ret;
@@ -419,7 +468,7 @@ int decodeFirstFrame(mp3DecodeData * data, DecoderControl * dc,
 
 	while(1) {
 		skip = 0;
-		while((ret = decodeNextFrameHeader(data, tag))==DECODE_CONT && 
+		while((ret = decodeNextFrameHeader(data, tag, replayGainInfo))==DECODE_CONT && 
 				(!dc || !dc->stop));
 		if(ret==DECODE_SKIP) skip = 1;
 		else if(ret==DECODE_BREAK || (dc && dc->stop)) return -1;
@@ -485,7 +534,7 @@ int getMp3TotalTime(char * file) {
 
         if(openInputStream(&inStream, file) < 0) return -1;
 	initMp3DecodeData(&data,&inStream);
-	if(decodeFirstFrame(&data, NULL, NULL)<0) ret = -1;
+	if(decodeFirstFrame(&data, NULL, NULL,NULL)<0) ret = -1;
 	else ret = data.totalTime+0.5;
 	mp3DecodeDataFinalize(&data);
 	closeInputStream(&inStream);
@@ -494,11 +543,11 @@ int getMp3TotalTime(char * file) {
 }
 
 int openMp3FromInputStream(InputStream * inStream, mp3DecodeData * data,
-		DecoderControl * dc, MpdTag ** tag) 
+		DecoderControl * dc, MpdTag ** tag, ReplayGainInfo ** replayGainInfo) 
 {
 	initMp3DecodeData(data, inStream);
 	*tag = NULL;
-	if(decodeFirstFrame(data, dc, tag)<0) {
+	if(decodeFirstFrame(data, dc, tag, replayGainInfo)<0) {
 		mp3DecodeDataFinalize(data);
 		if(tag && *tag) freeMpdTag(*tag);
 		return -1;
@@ -507,7 +556,7 @@ int openMp3FromInputStream(InputStream * inStream, mp3DecodeData * data,
 	return 0;
 }
 
-int mp3Read(mp3DecodeData * data, OutputBuffer * cb, DecoderControl * dc) {
+int mp3Read(mp3DecodeData * data, OutputBuffer * cb, DecoderControl * dc, ReplayGainInfo ** replayGainInfo) {
 	int i;
 	int ret;
 	int skip;
@@ -593,7 +642,7 @@ int mp3Read(mp3DecodeData * data, OutputBuffer * cb, DecoderControl * dc) {
 						data->outputBuffer,
                                                 data->elapsedTime,
                                                 data->bitRate/1000,
-						NULL);
+						(replayGainInfo != NULL) ? *replayGainInfo : NULL);
                                 if(ret == OUTPUT_BUFFER_DC_STOP) {
 					data->flush = 0;
                                         return DECODE_BREAK;
@@ -635,7 +684,7 @@ int mp3Read(mp3DecodeData * data, OutputBuffer * cb, DecoderControl * dc) {
 
 	while(1) {
 		skip = 0;
-		while((ret = decodeNextFrameHeader(data, NULL))==DECODE_CONT &&
+		while((ret = decodeNextFrameHeader(data, NULL, replayGainInfo))==DECODE_CONT &&
 				!dc->stop && !dc->seek);
 		if(ret==DECODE_BREAK || dc->stop || dc->seek) break;
 		else if(ret==DECODE_SKIP) skip = 1;
@@ -661,8 +710,9 @@ void initAudioFormatFromMp3DecodeData(mp3DecodeData * data, AudioFormat * af) {
 int mp3_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream) {
 	mp3DecodeData data;
 	MpdTag * tag = NULL;
+	ReplayGainInfo * replayGainInfo = NULL;
 
-	if(openMp3FromInputStream(inStream, &data, dc, &tag) < 0) {
+	if(openMp3FromInputStream(inStream, &data, dc, &tag, &replayGainInfo) < 0) {
 		closeInputStream(inStream);
 		if(!dc->stop) {
                         ERROR("Input does not appear to be a mp3 bit stream.\n");
@@ -714,7 +764,7 @@ int mp3_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream) {
 
 	dc->state = DECODE_STATE_DECODE;
 
-	while(mp3Read(&data,cb,dc)!=DECODE_BREAK);
+	while(mp3Read(&data,cb,dc, &replayGainInfo)!=DECODE_BREAK);
 	/* send last little bit if not dc->stop */
 	if(!dc->stop && data.outputPtr!=data.outputBuffer && data.flush)  {
         	sendDataToOutputBuffer(cb, NULL, dc, 
@@ -722,8 +772,10 @@ int mp3_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream) {
                                 data.outputBuffer,
                                 data.outputPtr-data.outputBuffer,
                                 data.elapsedTime,data.bitRate/1000,
-				NULL);
+				replayGainInfo);
 	}
+
+	if (replayGainInfo) freeReplayGainInfo(replayGainInfo);
 
 	closeInputStream(inStream);
 
