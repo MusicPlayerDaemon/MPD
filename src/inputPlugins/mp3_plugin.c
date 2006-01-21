@@ -219,9 +219,7 @@ void mp3_getReplayGainInfo(struct id3_tag * tag, ReplayGainInfo ** infoPtr) {
 	if(*infoPtr) freeReplayGainInfo(*infoPtr);
 	*infoPtr = newReplayGainInfo();
 
-	frame = id3_tag_findframe(tag, "TXXX", 0);
-
-	for(i=1;frame;i++) {
+	for(i=0;(frame = id3_tag_findframe(tag, "TXXX", i));i++) {
 		if(frame->nfields < 3) continue;
 
 		key = (char *) id3_ucs4_latin1duplicate(id3_field_getstring(&frame->fields[1]));
@@ -247,7 +245,6 @@ void mp3_getReplayGainInfo(struct id3_tag * tag, ReplayGainInfo ** infoPtr) {
 		free(key);
 		free(value);
 
-		frame = id3_tag_findframe(tag, "TXXX", i);
 	}
 
 	if(!found) {
