@@ -42,17 +42,10 @@ mpd_sint8 char_conv_latin1ToUtf8 = 0;
 #define BUFFER_SIZE	1024
 
 int setCharSetConversion(char * to, char * from) {
-	if(char_conv_to && char_conv_from) {
-		if (strcmp(from,char_conv_to)==0 &&
-					strcmp(to,char_conv_from)==0) { 
-			char * swap = char_conv_from;
-			char_conv_from = char_conv_to;
-			char_conv_to = swap;
-			return 0;
-		} else if (strcmp(to,char_conv_to)==0 &&
-					strcmp(from,char_conv_from)==0) { 
-			return 0;
-		}
+	if(char_conv_to && char_conv_from &&
+	   strcmp(to,char_conv_to)==0 && strcmp(from,char_conv_from)==0) 
+	{
+		return 0;
 	}
 
 	closeCharSetConversion();
