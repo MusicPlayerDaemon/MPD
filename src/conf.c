@@ -215,7 +215,7 @@ static ConfigParam * readConfigBlock(FILE * fp, int * count, char * string) {
 		{
 			ERROR("improperly formatted config file at line %i:"
 					" %s\n", count, string);
-			ERROR("in block begging at line %i\n", ret->line);
+			ERROR("in block begining at line %i\n", ret->line);
 			exit(EXIT_FAILURE);
 		}
 
@@ -268,7 +268,7 @@ void readConf(char * file) {
 		}
 
 		if(!findInList(configEntriesList, array[0], &voidPtr)) {
-			ERROR("unrecognized paramater in config file at line "
+			ERROR("unrecognized parameter in config file at line "
 					"%i: %s\n", count, string);
 			exit(EXIT_FAILURE);
 		}
@@ -279,7 +279,7 @@ void readConf(char * file) {
 			entry->configParamList->numberOfNodes)
 		{
 			param = entry->configParamList->firstNode->data;
-			ERROR("config paramter \"%s\" is first defined on line "
+			ERROR("config parameter \"%s\" is first defined on line "
 					"%i and redefined on line %i\n",
 					array[0], param->line, count);
 			exit(EXIT_FAILURE);
