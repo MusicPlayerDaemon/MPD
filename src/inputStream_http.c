@@ -100,7 +100,7 @@ void inputStream_initHttp() {
 			param = getConfigParam(CONF_HTTP_PROXY_PASSWORD);
 
 			if(!param) {
-				ERROR("%s specifid but not %s\n",
+				ERROR("%s specified but not %s\n",
 						CONF_HTTP_PROXY_USER,
 						CONF_HTTP_PROXY_PASSWORD);
 				exit(EXIT_FAILURE);
@@ -112,7 +112,7 @@ void inputStream_initHttp() {
 		param = getConfigParam(CONF_HTTP_PROXY_PASSWORD);
 
 		if(param) {
-			ERROR("%s specifid but not %s\n",
+			ERROR("%s specified but not %s\n",
 				CONF_HTTP_PROXY_PASSWORD, CONF_HTTP_PROXY_USER);
 			exit(EXIT_FAILURE);
 		}
@@ -143,7 +143,7 @@ void inputStream_initHttp() {
 		
 		if(bufferSize <= 0 || *test != '\0') {
 			ERROR("\"%s\" specified for %s at line %i is not a "
-				"positivie intenger\n",
+				"positive integer\n",
 				param->value, CONF_HTTP_BUFFER_SIZE,
 				param->line);
 			exit(EXIT_FAILURE);
@@ -161,7 +161,7 @@ void inputStream_initHttp() {
 		
 		if(prebufferSize <= 0 || *test != '\0') {
 			ERROR("\"%s\" specified for %s at line %i is not a "
-				"positivie intenger\n",
+				"positive integer\n",
 				param->value, CONF_HTTP_PREBUFFER_SIZE,
 				param->line);
 			exit(EXIT_FAILURE);
