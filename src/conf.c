@@ -416,7 +416,7 @@ ConfigParam * parseConfigFilePath(char * name, int force) {
 			for(;*ch!='\0' && *ch!='/';ch++);
 			if(*ch=='/') foundSlash = 1;
 			* ch = '\0';
-			pos+= ch-path+1;
+			pos+= ch-path-1;
 			if((pwd = getpwnam(path+1)) == NULL) {
 				ERROR("user \"%s\" not found at line %i\n",
 						path+1, param->line);
