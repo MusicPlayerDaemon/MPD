@@ -131,6 +131,7 @@ void initPlayerData() {
 				buffered_chunks*sizeof(mpd_sint16));
 	buffer->times = (float *)(((char *)buffer->metaChunk)+
 				buffered_chunks*sizeof(mpd_sint8));
+	buffer->acceptMetadata = 0;
 
 	playerData_pd->playerControl.stop = 0;
 	playerData_pd->playerControl.pause = 0;
@@ -142,6 +143,7 @@ void initPlayerData() {
 	playerData_pd->playerControl.queueState = PLAYER_QUEUE_BLANK;
 	playerData_pd->playerControl.queueLockState = PLAYER_QUEUE_UNLOCKED;
 	playerData_pd->playerControl.seek = 0;
+	playerData_pd->playerControl.closeAudio = 0;
 	memset(playerData_pd->playerControl.utf8url, 0, MAXPATHLEN+1);
 	memset(playerData_pd->playerControl.erroredUrl, 0, MAXPATHLEN+1);
 	memset(playerData_pd->playerControl.currentUrl, 0, MAXPATHLEN+1);

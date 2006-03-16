@@ -51,6 +51,7 @@ List * makeList(ListFreeDataFunc * freeDataFunc, int strdupKeys) {
 
 	assert(list!=NULL);
 
+	list->sorted = 0;
 	list->firstNode = NULL;
 	list->lastNode = NULL;
 	list->freeDataFunc = freeDataFunc;
