@@ -170,7 +170,7 @@ static int myShout_initDriver(AudioOutput * audioOutput, ConfigParam * param) {
 
 		if(*test != '\0' || sd->quality < 0.0 || sd->quality > 10.0) {
 			ERROR("shout quality \"%s\" is not a number in the "
-				"rage 0-10, line %i\n", blockParam->value,
+				"range 0-10, line %i\n", blockParam->value,
 				blockParam->line);
 			exit(EXIT_FAILURE);
 		}
@@ -196,7 +196,7 @@ static int myShout_initDriver(AudioOutput * audioOutput, ConfigParam * param) {
 		sd->bitrate = strtol(blockParam->value, &test, 10);
 
 		if(*test != '\0' || sd->bitrate <= 0) {
-			ERROR("bitrate at line %i should be a positve integer "
+			ERROR("bitrate at line %i should be a positive integer "
 				"\n", blockParam->line);
 			exit(EXIT_FAILURE);
 		}

@@ -113,7 +113,7 @@ next
 pause	<bool pause>
 	toggle pause/resume playing
 	_pause_ is required and should be 0 or 1
-	NOTE: use of pause command w/o the _pause_ argument is depricated
+	NOTE: use of pause command w/o the _pause_ argument is deprecated
 
 password <string password>
 	this is used for authentication with the server.

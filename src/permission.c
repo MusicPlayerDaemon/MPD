@@ -58,7 +58,7 @@ unsigned int parsePermissions(char * string) {
 			permission |= PERMISSION_ADMIN;
 		}
 		else {
-			ERROR("uknown permission \"%s\"\n",temp);
+			ERROR("unknown permission \"%s\"\n",temp);
 			exit(EXIT_FAILURE);
 		}
 
@@ -97,7 +97,7 @@ void initPermissions() {
 
 		        if(!(temp = strtok_r(param->value,
                                         PERMISSION_PASSWORD_CHAR,&cp2))) {
-			        ERROR("something weird just happend in permission.c\n");
+			        ERROR("something weird just happened in permission.c\n");
 			        exit(EXIT_FAILURE);
 		        }
 
