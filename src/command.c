@@ -237,13 +237,13 @@ int commandStatus(FILE * fp, unsigned int * permission, int argArrayLength,
 	playPlaylistIfPlayerStopped();
         switch(getPlayerState()) {
                 case PLAYER_STATE_STOP:
-                        state = strdup(COMMAND_STOP);
+                        state = COMMAND_STOP;
                         break;
                 case PLAYER_STATE_PAUSE:
-                        state = strdup(COMMAND_PAUSE);
+                        state = COMMAND_PAUSE;
                         break;
                 case PLAYER_STATE_PLAY:
-                        state = strdup(COMMAND_PLAY);
+                        state = COMMAND_PLAY;
                         break;
         }
 
@@ -276,8 +276,6 @@ int commandStatus(FILE * fp, unsigned int * permission, int argArrayLength,
         if(getPlayerError()!=PLAYER_ERROR_NOERROR) {
                 myfprintf(fp,"%s: %s\n",COMMAND_STATUS_ERROR,getPlayerErrorStr());
         }
-
-        free(state);
 
         return 0;
 }
