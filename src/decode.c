@@ -322,37 +322,76 @@ void decodeStart(PlayerControl * pc, OutputBuffer * cb, DecoderControl * dc) {
 
         ret = DECODE_ERROR_UNKTYPE;
 	if(isRemoteUrl(dc->utf8url)) {
+		unsigned int next = 0;
 		cb->acceptMetadata = 1;
-		plugin = getInputPluginFromMimeType(inStream.mime);
+
+		/* first we try mime types: */
+		while(ret && (plugin = getInputPluginFromMimeType(
+						inStream.mime, next++))) {
+			if (!plugin->streamDecodeFunc)
+				continue;
+			if (!(plugin->streamTypes & INPUT_PLUGIN_STREAM_URL))
+				continue;
+			if(plugin->tryDecodeFunc && !plugin->tryDecodeFunc(
+								&inStream))
+				continue;
+			ret = plugin->streamDecodeFunc(cb, dc, &inStream);
+			break;
+		}
+
+		/* if that fails, try suffix matching the URL: */
                 if(plugin == NULL) {
-                        plugin = getInputPluginFromSuffix(
-                                        getSuffix(dc->utf8url));
+			char * s = getSuffix(dc->utf8url);
+			next = 0;
+			while(ret && (plugin = getInputPluginFromSuffix(
+								s, next++))) {
+				if (!plugin->streamDecodeFunc)
+					continue;
+				if(!(plugin->streamTypes &
+						INPUT_PLUGIN_STREAM_URL))
+					continue;
+				if(plugin->tryDecodeFunc &&
+						!plugin->tryDecodeFunc(
+								&inStream))
+					continue;
+				ret = plugin->streamDecodeFunc(
+							cb, dc, &inStream);
+				break;
+			}
                 }
+		/* fallback to mp3: */
                 /* this is needed for bastard streams that don't have a suffix
                                 or set the mimeType */
                 if(plugin == NULL) {
-                        plugin = getInputPluginFromName("mp3");
-                }
-                if(plugin && (plugin->streamTypes & INPUT_PLUGIN_STREAM_URL) &&
-                                plugin->streamDecodeFunc) 
-                {
-                        ret = plugin->streamDecodeFunc(cb, dc, &inStream);
+			/* we already know our mp3Plugin supports streams, no
+			 * need to check for stream{Types,DecodeFunc} */
+                        if ((plugin = getInputPluginFromName("mp3")))
+				ret = plugin->streamDecodeFunc(cb, dc,
+								&inStream);
                 }
 	}
         else {
+		unsigned int next = 0;
+		char * s = getSuffix(dc->utf8url);
 		cb->acceptMetadata = 0;
-                plugin = getInputPluginFromSuffix(getSuffix(dc->utf8url));
-                if(plugin && (plugin->streamTypes & INPUT_PLUGIN_STREAM_FILE))
-                {
-                        if(plugin->streamDecodeFunc) {
-                                ret = plugin->streamDecodeFunc(cb, dc, 
-                                                &inStream);
-                        }
-                        else if(plugin->fileDecodeFunc) {
-                                closeInputStream(&inStream);
-                                ret = plugin->fileDecodeFunc(cb, dc, path);
-                        }
-                }
+		while (ret && (plugin = getInputPluginFromSuffix(s, next++))) {
+			if(!plugin->streamTypes & INPUT_PLUGIN_STREAM_FILE)
+				continue;
+			if(plugin->tryDecodeFunc && !plugin->tryDecodeFunc(
+								&inStream))
+				continue;
+				
+			if(plugin->streamDecodeFunc) {
+				ret = plugin->streamDecodeFunc(
+						cb, dc, &inStream);
+				break;
+			}
+			else if(plugin->fileDecodeFunc) {
+				closeInputStream(&inStream);
+				ret = plugin->fileDecodeFunc(
+						cb, dc, path);
+			}
+		}
         }
 
 	if(ret<0 || ret == DECODE_ERROR_UNKTYPE) {

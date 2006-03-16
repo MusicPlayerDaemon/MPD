@@ -10,14 +10,17 @@ mpd_audioOutputs = \
 	audioOutputs/audioOutput_shout.c
 
 mpd_inputPlugins = \
+	inputPlugins/_flac_common.c \
+	inputPlugins/_ogg_common.c \
+	inputPlugins/oggflac_plugin.c \
+	inputPlugins/oggvorbis_plugin.c \
 	inputPlugins/aac_plugin.c \
 	inputPlugins/audiofile_plugin.c \
 	inputPlugins/flac_plugin.c \
 	inputPlugins/mod_plugin.c \
 	inputPlugins/mp3_plugin.c \
 	inputPlugins/mp4_plugin.c \
-	inputPlugins/mpc_plugin.c \
-	inputPlugins/ogg_plugin.c
+	inputPlugins/mpc_plugin.c
 
 
 mpd_headers = \
@@ -32,6 +35,8 @@ mpd_headers = \
 	decode.h \
 	directory.h \
 	inputPlugin.h \
+	inputPlugins/_flac_common.h \
+	inputPlugins/_ogg_common.h \
 	inputStream.h \
 	inputStream_file.h \
 	inputStream_http.h \

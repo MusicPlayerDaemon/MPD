@@ -49,15 +49,23 @@ static int stringFoundInStringArray(char ** array, char * suffix) {
 	return 0;
 }
 
-InputPlugin * getInputPluginFromSuffix(char * suffix) {
-	ListNode * node = inputPlugin_list->firstNode;
-	InputPlugin * plugin = NULL;
+InputPlugin * getInputPluginFromSuffix(char * suffix, unsigned int next) {
+	static ListNode * pos = NULL;
+	ListNode * node;
+	InputPlugin * plugin;
 
 	if(suffix == NULL) return NULL;
+	
+	if (next) {
+		if (pos) node = pos;
+		else return NULL;
+	} else
+		node = inputPlugin_list->firstNode;
 
 	while(node != NULL) {
 		plugin = node->data;
 		if(stringFoundInStringArray(plugin->suffixes, suffix)) {
+			pos = node->nextNode;
 			return plugin;
 		}
 		node = node->nextNode;
@@ -66,15 +74,19 @@ InputPlugin * getInputPluginFromSuffix(char * suffix) {
 	return NULL;
 }
 
-InputPlugin * getInputPluginFromMimeType(char * mimeType) {
-	ListNode * node = inputPlugin_list->firstNode;
-	InputPlugin * plugin = NULL;
+InputPlugin * getInputPluginFromMimeType(char * mimeType, unsigned int next) {
+	static ListNode * pos = NULL;
+	ListNode * node;
+	InputPlugin * plugin;
 
 	if(mimeType == NULL) return NULL;
+	
+	node = (next && pos) ? pos : inputPlugin_list->firstNode;
 
 	while(node != NULL) {
 		plugin = node->data;
 		if(stringFoundInStringArray(plugin->mimeTypes, mimeType)) {
+			pos = node->nextNode;
 			return plugin;
 		}
 		node = node->nextNode;
@@ -109,8 +121,9 @@ void printAllInputPluginSuffixes(FILE * fp) {
 }
 
 extern InputPlugin mp3Plugin;
-extern InputPlugin oggPlugin;
+extern InputPlugin oggvorbisPlugin;
 extern InputPlugin flacPlugin;
+extern InputPlugin oggflacPlugin;
 extern InputPlugin audiofilePlugin;
 extern InputPlugin mp4Plugin;
 extern InputPlugin mpcPlugin;
@@ -122,7 +135,8 @@ void initInputPlugins() {
 
 	/* load plugins here */
 	loadInputPlugin(&mp3Plugin);
-	loadInputPlugin(&oggPlugin);
+	loadInputPlugin(&oggvorbisPlugin);
+	loadInputPlugin(&oggflacPlugin);
 	loadInputPlugin(&flacPlugin);
 	loadInputPlugin(&audiofilePlugin);
 	loadInputPlugin(&mp4Plugin);

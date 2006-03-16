@@ -39,7 +39,8 @@ AC_ARG_ENABLE(sun,[  --disable-sun     disable sun support (default: enable)],[e
 AC_ARG_ENABLE(oss,[  --disable-oss     disable OSS support (default: enable)],[enable_oss=$enableval],[enable_oss=yes])
 AC_ARG_ENABLE(alsa,[  --disable-alsa     disable ALSA support (default: enable)],[enable_alsa=$enableval],[enable_alsa=yes])
 AC_ARG_ENABLE(mvp,[  --enable-mvp    enable support for Hauppauge Media MVP (default: disable)],[enable_mvp=$enableval],[enable_mvp=no])
-AC_ARG_ENABLE(ogg,[  --disable-ogg     disable ogg support (default: enable)],[enable_ogg=$enableval],[enable_ogg=yes])
+AC_ARG_ENABLE(oggvorbis,[  --disable-oggvorbis     disable Ogg Vorbis support (default: enable)],[enable_oggvorbis=$enableval],enable_oggvorbis=yes)
+AC_ARG_ENABLE(oggflac,[  --disable-oggflac     disable OggFLAC support (default: enable)],[enable_oggflac=$enableval],enable_oggflac=yes)
 AC_ARG_ENABLE(flac,[  --disable-flac    disable flac support (default: enable)],[enable_flac=$enableval],[enable_flac=yes])
 AC_ARG_ENABLE(mp3,[  --disable-mp3     disable mp3 support (default: enable)],[enable_mp3=$enableval],[enable_mp3=yes])
 AC_ARG_ENABLE(aac,[  --disable-aac     disable AAC support (default: enable)],[enable_aac=$enableval],[enable_aac=yes])
@@ -120,7 +121,7 @@ case $host in
 		enable_osx=yes ;;
 esac
 
-if test x$enable_ogg = xno; then
+if test x$enable_oggvorbis = xno; then
 	AC_MSG_WARN("disabling shout streaming support because vorbis encoder was not found")
 	enable_shout=no
 elif test x$use_tremor = xyes; then
@@ -439,8 +440,8 @@ int main() {
 	CPPFLAGS=$oldcppflags
 fi
 
-if test x$enable_ogg = xyes && test x$use_tremor != xyes; then
-	XIPH_PATH_OGG(MPD_LIBS="$MPD_LIBS $OGG_LIBS" MPD_CFLAGS="$MPD_CFLAGS $OGG_CFLAGS",enable_ogg=no)
+if test x$enable_oggvorbis = xyes && test x$use_tremor != xyes; then
+	XIPH_PATH_OGG(MPD_LIBS="$MPD_LIBS $OGG_LIBS" MPD_CFLAGS="$MPD_CFLAGS $OGG_CFLAGS",enable_oggvorbis=no)
 fi
 
 if test x$use_tremor = xyes; then
@@ -463,20 +464,20 @@ if test x$use_tremor = xyes; then
 	ac_save_LIBS="$LIBS"
 	CFLAGS="$CFLAGS $TREMOR_CFLAGS"
 	LIBS="$LIBS $TREMOR_LIBS"
-	AC_CHECK_LIB(vorbisidec,ov_read,,enable_ogg=no;AC_MSG_WARN([vorbisidec lib needed for ogg support with tremor -- disabling ogg support]))
+	AC_CHECK_LIB(vorbisidec,ov_read,,enable_oggvorbis=no;AC_MSG_WARN([vorbisidec lib needed for ogg support with tremor -- disabling ogg support]))
 	CFLAGS="$ac_save_CFLAGS"
 	LIBS="$ac_save_LIBS"
 fi
 
-if test x$enable_ogg = xyes; then
+if test x$enable_oggvorbis = xyes; then
 	if test x$use_tremor = xyes; then
 		VORBIS_LIBS="$TREMOR_LIBS"
 		VORBIS_CFLAGS="$TREMOR_CFLAGS"
 	else
 		enable_vorbistest=no
-		XIPH_PATH_VORBIS(,enable_ogg=no)
+		XIPH_PATH_VORBIS(,enable_oggvorbis=no)
 	fi
-	if test x$enable_ogg = xyes; then
+	if test x$enable_oggvorbis = xyes; then
 
 dnl
 dnl Vorbis Test
@@ -526,21 +527,21 @@ int main ()
     return 0;
 }
 
-], AC_MSG_RESULT(yes), AC_MSG_RESULT(no); enable_ogg=no,[echo $ac_n "cross compiling; assumed OK... $ac_c"])
+], AC_MSG_RESULT(yes), AC_MSG_RESULT(no) enable_oggvorbis=no,[echo $ac_n "cross compiling; assumed OK... $ac_c"])
        		CFLAGS="$ac_save_CFLAGS"
        		LIBS="$ac_save_LIBS"
 	fi
 dnl 
 dnl End of Vorbis Test
 dnl
-	if test x$enable_ogg = xyes; then
+	if test x$enable_oggvorbis = xyes; then
 		MPD_LIBS="$MPD_LIBS $VORBIS_LIBS $VORBISFILE_LIBS $VORBISENC_LIBS" 
 		MPD_CFLAGS="$MPD_CFLAGS $VORBIS_CFLAGS $VORBISFILE_CFLAGS $VORBISENC_CFLAGS"
 	fi
 fi
 
-if test x$enable_ogg = xyes; then
-	AC_DEFINE(HAVE_OGG,1,[Define for ogg vorbis support])
+if test x$enable_oggvorbis = xyes; then
+	AC_DEFINE(HAVE_OGGVORBIS,1,[Define for Ogg Vorbis support])
 fi
 
 if test x$use_tremor = xyes; then
@@ -552,6 +553,7 @@ if test x$enable_flac = xyes; then
 	oldmpdlibs="$MPD_LIBS"
 	AM_PATH_LIBFLAC(MPD_LIBS="$MPD_LIBS $LIBFLAC_LIBS" MPD_CFLAGS="$MPD_CFLAGS $LIBFLAC_CFLAGS",enable_flac=no)
 fi
+
 
 if test x$enable_flac = xyes; then
 	oldcflags="$CFLAGS"
@@ -572,6 +574,18 @@ fi
 if test x$enable_flac = xyes; then
 	AC_DEFINE(HAVE_FLAC,1,[Define for FLAC support])
 fi
+
+
+if test x$enable_oggflac = xyes; then
+	oldmpdcflags="$MPD_CFLAGS"
+	oldmpdlibs="$MPD_LIBS"
+	AM_PATH_LIBOGGFLAC(MPD_LIBS="$MPD_LIBS $LIBOGGFLAC_LIBS" MPD_CFLAGS="$MPD_CFLAGS $LIBOGGFLAC_CFLAGS",enable_oggflac=no)
+fi
+
+if test x$enable_oggflac = xyes; then
+	AC_DEFINE(HAVE_OGGFLAC,1,[Define for OggFLAC support])
+fi
+
 
 if test x$enable_audiofile = xyes; then
 	AM_PATH_AUDIOFILE(0.1.7, MPD_LIBS="$MPD_LIBS $AUDIOFILE_LIBS" MPD_CFLAGS="$MPD_CFLAGS $AUDIOFILE_CFLAGS",
@@ -675,7 +689,7 @@ else
 	echo " mp3 support ...................disabled"
 fi
 
-if test x$enable_ogg = xyes; then
+if test x$enable_oggvorbis = xyes; then
 	echo " Ogg Vorbis support ............enabled"
 	if test x$use_tremor = xyes; then
 		echo "   using tremor.................yes"
@@ -690,6 +704,12 @@ if test x$enable_flac = xyes; then
 	echo " FLAC support ..................enabled"
 else
 	echo " FLAC support ..................disabled"
+fi
+
+if test x$enable_oggflac = xyes; then
+	echo " OggFLAC support ...............enabled"
+else
+	echo " OggFLAC support ...............disabled"
 fi
 
 if test x$enable_audiofile = xyes; then

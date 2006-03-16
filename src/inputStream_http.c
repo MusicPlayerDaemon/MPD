@@ -708,6 +708,20 @@ int inputStream_httpOpen(InputStream * inStream, char * url) {
 }
 
 int inputStream_httpSeek(InputStream * inStream, long offset, int whence) {
+	/* hack to reopen an HTTP stream if we're trying to seek to
+	 * the beginning */
+	if ((whence == SEEK_SET) && (offset == 0)) {
+		InputStreamHTTPData * data;
+
+		data = (InputStreamHTTPData*)inStream->data;
+		close(data->sock);
+		data->connState = HTTP_CONN_STATE_REOPEN;
+		data->buflen = 0;
+		inStream->offset = 0;
+		return 0;
+	}
+	
+	/* otherwise, we don't know how to seek in HTTP yet */
 	return -1;
 }
 

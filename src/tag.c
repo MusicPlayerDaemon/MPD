@@ -34,7 +34,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include <errno.h>
-#ifdef HAVE_OGG
+#ifdef HAVE_OGGVORBIS
 #include <vorbis/vorbisfile.h>
 #endif
 #ifdef HAVE_FLAC

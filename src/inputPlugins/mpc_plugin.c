@@ -336,6 +336,7 @@ InputPlugin mpcPlugin =
         "mpc",
 	NULL,
 	NULL,
+	NULL,
         mpc_decode,
         NULL,
         mpcTagDup,
@@ -348,6 +349,7 @@ InputPlugin mpcPlugin =
 
 InputPlugin mpcPlugin = 
 {
+	NULL,
 	NULL,
 	NULL,
 	NULL,

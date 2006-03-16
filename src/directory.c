@@ -323,7 +323,7 @@ int updateInDirectory(Directory * directory, char * shortname, char * name) {
 
 	if(myStat(name, &st)) return -1;
 
-	if(S_ISREG(st.st_mode) && hasMusicSuffix(name)) {
+	if(S_ISREG(st.st_mode) && hasMusicSuffix(name, 0)) {
 		if(0==findInList(directory->songs,shortname,&song)) {
 			addToDirectory(directory, shortname, name);
                         return DIRECTORY_RETURN_UPDATE;
@@ -414,7 +414,7 @@ int removeDeletedFromDirectory(Directory * directory, DIR * dir) {
 	while(node) {
 		tmpNode = node->nextNode;
 		if(findInList(entList,node->key,(void **)&name)) {
-			if(!isMusic(name,NULL)) {
+			if(!isMusic(name,NULL,0)) {
 				removeSongFromDirectory(directory,node->key);
                                 ret = 1;
 			}
@@ -550,7 +550,7 @@ int updatePath(char * utf8path) {
 				parentDirectory->parent,
 				parentDirectory->stat->inode,
 				parentDirectory->stat->device) && 
-				song && isMusic(getSongUrl(song), &mtime)) 
+				song && isMusic(getSongUrl(song), &mtime, 0)) 
 		{
 			free(path);
                         if(song->mtime==mtime) return 0;
@@ -573,7 +573,7 @@ int updatePath(char * utf8path) {
 	 * Also, if by chance a directory was replaced by a file of the same
          * name or vice versa, we need to add it to the db
          */
-	if(isDir(path) || isMusic(path,NULL)) {
+	if(isDir(path) || isMusic(path,NULL,0)) {
 		parentDirectory = addParentPathToDB(path,&shortname);
 		if(!parentDirectory || (
 				!parentDirectory->stat && 
@@ -765,7 +765,7 @@ int addToDirectory(Directory * directory, char * shortname, char * name) {
 		return -1;
 	}
 
-	if(S_ISREG(st.st_mode) && hasMusicSuffix(name)) {
+	if(S_ISREG(st.st_mode) && hasMusicSuffix(name, 0)) {
 		Song * song;
 		song = addSongToList(directory->songs, shortname, name,
 				SONG_TYPE_FILE, directory);

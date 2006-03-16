@@ -16,9 +16,13 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+/* TODO 'ogg' should probably be replaced with 'oggvorbis' in all instances */
+
 #include "../inputPlugin.h"
 
-#ifdef HAVE_OGG
+#ifdef HAVE_OGGVORBIS
+
+#include "_ogg_common.h"
 
 #include "../utils.h"
 #include "../audio.h"
@@ -99,7 +103,7 @@ long ogg_tell_cb(void * vdata) {
 	return (long)(data->inStream->offset);
 }
 
-char * ogg_parseComment(char * comment, char * needle) {
+static inline char * ogg_parseComment(char * comment, char * needle) {
         int len = strlen(needle);
 
         if(strncasecmp(comment, needle, len) == 0 && *(comment+len) == '=') {
@@ -150,48 +154,40 @@ void ogg_getReplayGainInfo(char ** comments, ReplayGainInfo ** infoPtr) {
 	}
 }
 
-MpdTag * oggCommentsParse(char ** comments) {
-	MpdTag * ret = NULL;
-	char * temp;
+static const char * VORBIS_COMMENT_TRACK_KEY = "tracknumber";
 
+static inline unsigned int ogg_parseCommentAddToTag(char * comment,
+		unsigned int itemType, MpdTag ** tag)
+{
+	const char * needle = (itemType == TAG_ITEM_TRACK) ?
+			VORBIS_COMMENT_TRACK_KEY : mpdTagItemKeys[itemType];
+	unsigned int len = strlen(needle);
+	
+	if(strncasecmp(comment, needle, len) == 0 && *(comment+len) == '=') {
+		if (!*tag)
+			*tag = newMpdTag();
+		
+		addItemToMpdTag(*tag, itemType, comment+len+1);
+		
+		return 1;
+	}
+	
+	return 0;
+}
+
+static MpdTag * oggCommentsParse(char ** comments) {
+	MpdTag * tag = NULL;
+	
 	while(*comments) {
-                if((temp = ogg_parseComment(*comments,"artist"))) {
-			if(!ret) ret = newMpdTag();
-			addItemToMpdTag(ret, TAG_ITEM_ARTIST, temp);
-		} 
-                else if((temp = ogg_parseComment(*comments,"title"))) {
-			if(!ret) ret = newMpdTag();
-			addItemToMpdTag(ret, TAG_ITEM_TITLE, temp);
+		unsigned int j;
+		for (j = TAG_NUM_OF_ITEM_TYPES; j--; ) {
+			if (ogg_parseCommentAddToTag(*comments, j, &tag))
+				break;
 		}
-                else if((temp = ogg_parseComment(*comments,"album"))) {
-			if(!ret) ret = newMpdTag();
-			addItemToMpdTag(ret, TAG_ITEM_ALBUM, temp);
-		}
-                else if((temp = ogg_parseComment(*comments,"tracknumber"))) {
-			if(!ret) ret = newMpdTag();
-			addItemToMpdTag(ret, TAG_ITEM_TRACK, temp);
-		}
-                else if((temp = ogg_parseComment(*comments,"genre"))) {
-			if(!ret) ret = newMpdTag();
-			addItemToMpdTag(ret, TAG_ITEM_GENRE, temp);
-		}
-                else if((temp = ogg_parseComment(*comments,"date"))) {
-			if(!ret) ret = newMpdTag();
-			addItemToMpdTag(ret, TAG_ITEM_DATE, temp);
-		}
-                else if((temp = ogg_parseComment(*comments,"composer"))) {
-			if(!ret) ret = newMpdTag();
-			addItemToMpdTag(ret, TAG_ITEM_COMPOSER, temp);
-		}
-                else if((temp = ogg_parseComment(*comments,"performer"))) {
-			if(!ret) ret = newMpdTag();
-			addItemToMpdTag(ret, TAG_ITEM_PERFORMER, temp);
-		}
-
 		comments++;
 	}
-
-	return ret;
+	
+	return tag;
 }
 
 void putOggCommentsIntoOutputBuffer(OutputBuffer * cb, char * streamName,
@@ -220,7 +216,9 @@ void putOggCommentsIntoOutputBuffer(OutputBuffer * cb, char * streamName,
 	freeMpdTag(tag);
 }
 
-int ogg_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream)
+/* public */
+int oggvorbis_decode(OutputBuffer * cb, DecoderControl * dc,
+		InputStream * inStream)
 {
 	OggVorbis_File vf;
 	ov_callbacks callbacks;
@@ -360,7 +358,7 @@ int ogg_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream)
 	return 0;
 }
 
-MpdTag * oggTagDup(char * file) {
+MpdTag * oggvorbis_TagDup(char * file) {
 	MpdTag * ret = NULL;
 	FILE * fp;
 	OggVorbis_File vf;
@@ -386,35 +384,43 @@ MpdTag * oggTagDup(char * file) {
 	return ret;	
 }
 
-char * oggSuffixes[] = {"ogg", NULL};
-char * oggMimeTypes[] = {"application/ogg", NULL};
-
-InputPlugin oggPlugin =
+static unsigned int oggvorbis_try_decode(InputStream * inStream)
 {
-        "ogg",
+	return (ogg_stream_type_detect(inStream) == VORBIS) ? 1 : 0;
+}
+
+
+static char * oggvorbis_Suffixes[] = {"ogg", NULL};
+static char * oggvorbis_MimeTypes[] = {"application/ogg", NULL};
+
+InputPlugin oggvorbisPlugin =
+{
+	"oggvorbis",
 	NULL,
 	NULL,
-        ogg_decode,
-        NULL,
-        oggTagDup,
-        INPUT_PLUGIN_STREAM_URL | INPUT_PLUGIN_STREAM_FILE,
-        oggSuffixes,
-        oggMimeTypes
+	oggvorbis_try_decode,
+	oggvorbis_decode,
+	NULL,
+	oggvorbis_TagDup,
+	INPUT_PLUGIN_STREAM_URL | INPUT_PLUGIN_STREAM_FILE,
+	oggvorbis_Suffixes,
+	oggvorbis_MimeTypes
 };
 
-#else
+#else /* !HAVE_OGGVORBIS */
 
-InputPlugin oggPlugin = 
+InputPlugin oggvorbisPlugin =
 {
 	NULL,
 	NULL,
 	NULL,
-        NULL,
-        NULL,
-        NULL,
-        0,
-        NULL,
-        NULL
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	0,
+	NULL,
+	NULL,
 };
 
-#endif
+#endif /* HAVE_OGGVORBIS */

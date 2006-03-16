@@ -418,6 +418,7 @@ InputPlugin aacPlugin =
 {
         "aac",
         NULL,
+        NULL,
 	NULL,
 	NULL,
         aac_decode,
@@ -431,6 +432,7 @@ InputPlugin aacPlugin =
 
 InputPlugin aacPlugin =
 {
+        NULL,
         NULL,
         NULL,
         NULL,

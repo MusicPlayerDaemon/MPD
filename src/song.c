@@ -64,9 +64,12 @@ Song * newSong(char * url, int type, Directory * parentDir) {
 
 	if(song->type == SONG_TYPE_FILE) {
                 InputPlugin * plugin;
-		if((plugin = isMusic(getSongUrl(song), &(song->mtime)))) {
-		        song->tag = plugin->tagDupFunc(
-				rmp2amp(utf8ToFsCharset(getSongUrl(song))));
+		unsigned int next = 0;
+		char * song_url = getSongUrl(song);
+		char * abs_path = rmp2amp(utf8ToFsCharset(song_url));
+		while(!song->tag && (plugin = isMusic(song_url,
+						&(song->mtime), next++))) {
+		        song->tag = plugin->tagDupFunc(abs_path);
                 }
 		if(!song->tag || song->tag->time<0) {
 			freeSong(song);
@@ -100,7 +103,7 @@ Song * addSongToList(SongList * list, char * url, char * utf8path,
 
 	switch(songType) {
 	case SONG_TYPE_FILE:
-		if(isMusic(utf8path, NULL)) {
+		if(isMusic(utf8path, NULL, 0)) {
 			song = newSong(url, songType, parentDirectory);
 		}
 		break;
@@ -278,14 +281,17 @@ void readSongInfoIntoList(FILE * fp, SongList * list, Directory * parentDir) {
 int updateSongInfo(Song * song) {
 	if(song->type == SONG_TYPE_FILE) {
                 InputPlugin * plugin;
+		unsigned int next = 0;
+		char * song_url = getSongUrl(song);
+		char * abs_path = rmp2amp(song_url);
 
 		if(song->tag) freeMpdTag(song->tag);
 
 		song->tag = NULL;
 
-		if((plugin = isMusic(getSongUrl(song),&(song->mtime)))) {
-		        song->tag = plugin->tagDupFunc(
-                                        rmp2amp(getSongUrl(song)));
+		while(!song->tag && (plugin = isMusic(song_url,
+						&(song->mtime), next++))) {
+		        song->tag = plugin->tagDupFunc(abs_path);
                 }
 		if(!song->tag || song->tag->time<0) return -1;
 	}

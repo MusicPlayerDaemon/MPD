@@ -2,6 +2,9 @@
  * (c)2003-2004 by Warren Dukes (shank@mercury.chem.pitt.edu)
  * This project's homepage is: http://www.musicpd.org
  *
+ * Common functions used for Ogg data streams (Ogg-Vorbis and OggFLAC)
+ * (c) 2005 by Eric Wong <normalperson@yhbt.net>
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -16,41 +19,17 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef LS_H
-#define LS_H
+#ifndef _OGG_COMMON_H
+#define _OGG_COMMON_H
 
-#include "../config.h"
+#include "../inputPlugin.h"
 
-#include "inputPlugin.h" 
+#if defined(HAVE_OGGFLAC) || defined(HAVE_OGGVORBIS)
 
-#include <stdio.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
-#include <time.h>
+typedef enum _ogg_stream_type { VORBIS, FLAC } ogg_stream_type;
 
-int lsPlaylists(FILE * fp, char * utf8path);
+ogg_stream_type ogg_stream_type_detect(InputStream * inStream);
 
-char * getSuffix(char * utf8file);
+#endif /* defined(HAVE_OGGFLAC || defined(HAVE_OGGVORBIS) */
 
-int isValidRemoteUtf8Url(char * utf8url);
-
-int isRemoteUrl(char * url);
-
-int myStat(char * utf8file, struct stat * st);
-
-int isFile(char * utf8file, time_t * mtime);
-
-int isDir(char * utf8name);
-
-int isPlaylist(char * utf8file);
-
-InputPlugin * hasMusicSuffix(char * utf8file, unsigned int next);
-
-InputPlugin * isMusic(char * utf8file, time_t * mtime, unsigned int next);
-
-char * dupAndStripPlaylistSuffix(char * file);
-
-int printRemoteUrlHandlers(FILE * fp);
-
-#endif
+#endif /* _OGG_COMMON_H */

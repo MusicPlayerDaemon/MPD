@@ -262,12 +262,12 @@ int isDir(char * utf8name) {
 	return 0;
 }
 
-InputPlugin * hasMusicSuffix(char * utf8file) {
+InputPlugin * hasMusicSuffix(char * utf8file, unsigned int next) {
         InputPlugin * ret = NULL;
         
         char * s = getSuffix(utf8file);
-        if(s) {
-		 ret = getInputPluginFromSuffix(s);
+	if(s) {
+		 ret = getInputPluginFromSuffix(s, next);
 	}	
 	else {
 		DEBUG("hasMusicSuffix: The file: %s has no valid suffix\n",utf8file);
@@ -276,9 +276,9 @@ InputPlugin * hasMusicSuffix(char * utf8file) {
 	return ret;
 }
 
-InputPlugin * isMusic(char * utf8file, time_t * mtime) {
+InputPlugin * isMusic(char * utf8file, time_t * mtime, unsigned int next) {
 	if(isFile(utf8file,mtime)) {
-		InputPlugin * plugin = hasMusicSuffix(utf8file);
+		InputPlugin * plugin = hasMusicSuffix(utf8file, next);
 		if (plugin != NULL)
 			return plugin;
 	}
