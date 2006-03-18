@@ -300,7 +300,6 @@ void startMainProcess() {
         if(pid>0) {
 		initInputStream(); 
 	        initReplayGainState();
-		/* qball crappy code */
 		readAudioDevicesState();
 
 		/* free stuff we don't need */
@@ -316,9 +315,6 @@ void startMainProcess() {
 		
 		finishAudioConfig();
 		finishAudioDriver();
-	
-		/* qball crappy code */
-		saveAudioDevicesState();
 	
 		finishPaths();
 
