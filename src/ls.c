@@ -155,12 +155,10 @@ int lsPlaylists(FILE * fp, char * utf8path) {
 			if(stat(s,&st)==0) {
 				if(S_ISREG(st.st_mode)) {
 					if(list==NULL) list = makeList(NULL, 1);
-					dup = strdup(ent->d_name);
 					dup[suff] = '\0';
 					if((utf8 = fsCharsetToUtf8(dup))) {
 						insertInList(list,utf8,NULL);
 					}
-					free(dup);
 				}
 			}
 		}
