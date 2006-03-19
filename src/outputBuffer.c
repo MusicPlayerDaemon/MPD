@@ -155,7 +155,7 @@ int copyMpdTagToOutputBuffer(OutputBuffer * cb, MpdTag * tag) {
 
         if(!cb->acceptMetadata || !tag) {
 		sendMetaChunk = 0;
-		if(last) free(last);
+		if(last) freeMpdTag(last);
 		last = NULL;
 		DEBUG("copyMpdTagToOB: !acceptMetadata || !tag\n");
 		return 0;
