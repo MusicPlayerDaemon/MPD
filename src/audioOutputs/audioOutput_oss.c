@@ -45,6 +45,12 @@
 # include <sys/soundcard.h>
 #endif /* !(defined(__OpenBSD__) || defined(__NetBSD__) */
 
+#ifdef WORDS_BIGENDIAN
+# define	AFMT_S16_MPD	 AFMT_S16_BE
+#else
+# define	AFMT_S16_MPD	 AFMT_S16_LE
+#endif /* WORDS_BIGENDIAN */
+
 typedef struct _OssData {
 	int fd;
 	char * device;
@@ -415,17 +421,11 @@ static int setParam(OssData * od, int param, int * value) {
 }
 
 static int oss_open(AudioOutput * audioOutput) {
+	int tmp;
 	OssData * od = audioOutput->data;
 
 	if((od->fd = open(od->device, O_WRONLY)) < 0) {
 		ERROR("Error opening OSS device \"%s\": %s\n", od->device, 
-				strerror(errno));
-		goto fail;
-	}
-
-	if(ioctl(od->fd, SNDCTL_DSP_SETFMT, &od->bitFormat)) {
-		ERROR("Error setting bitformat on OSS device \"%s\": %s\n", 
-				od->device, 
 				strerror(errno));
 		goto fail;
 	}
@@ -446,10 +446,18 @@ static int oss_open(AudioOutput * audioOutput) {
 		goto fail;
 	}
 
-	if(setParam(od, SNDCTL_DSP_SAMPLESIZE, &od->bits)) {
+	switch(od->bits) {
+	case 8:
+		tmp = AFMT_S8;
+		break;
+	case 16:
+		tmp = AFMT_S16_MPD;
+	}
+
+	if(setParam(od, SNDCTL_DSP_SAMPLESIZE, &tmp)) {
 		ERROR("OSS device \"%s\" does not support %i bit audio: %s\n", 
 				od->device,
-				od->bits,
+				tmp,
 				strerror(errno));
 		goto fail;
 	}
@@ -469,12 +477,8 @@ static int oss_openDevice(AudioOutput * audioOutput)
 	int ret = -1;
 	OssData * od = audioOutput->data;
 	AudioFormat * audioFormat = &audioOutput->outAudioFormat;
-#ifdef WORDS_BIGENDIAN
-	od->bitFormat = AFMT_S16_BE;
-#else
-	od->bitFormat = AFMT_S16_LE;
-#endif
-	od->channels = audioFormat->channels;	
+
+	od->channels = audioFormat->channels;
 	od->sampleRate = audioFormat->sampleRate;
 	od->bits = audioFormat->bits;
 
