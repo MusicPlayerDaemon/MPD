@@ -1501,11 +1501,11 @@ static void PlaylistInfoPrintInfo(FILE *fp, char *utf8file, char **erroredfile) 
 		printSongInfo(fp, song);       	
 	}
 	else {
-		myfprintf(fp,"file:%s\n",utf8file);
+		myfprintf(fp,"file: %s\n",utf8file);
 	}                                  	
 }
 static void PlaylistInfoPrint(FILE *fp, char *utf8file, char **erroredfile) {
-	myfprintf(fp,"file:%s\n",utf8file);
+	myfprintf(fp,"file: %s\n",utf8file);
 }
 
 static void PlaylistLoadIterFunc(FILE *fp, char *temp, char **erroredFile) {
