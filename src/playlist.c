@@ -1337,120 +1337,6 @@ int savePlaylist(FILE * fp, char * utf8file) {
 	return 0;
 }
 
-int loadPlaylist(FILE * fp, char * utf8file) {
-	FILE * fileP;
-	char s[MAXPATHLEN+1];
-	int slength = 0;
-	char * temp = strdup(utf8ToFsCharset(utf8file));
-	char * rfile = malloc(strlen(temp)+strlen(".")+
-			strlen(PLAYLIST_FILE_SUFFIX)+1);
-	char * actualFile;
-	char * parent = parentPath(temp);
-	int parentlen = strlen(parent);
-	char * erroredFile = NULL;
-	int tempInt;
-	int commentCharFound = 0;
-
-	strcpy(rfile,temp);
-	strcat(rfile,".");
-	strcat(rfile,PLAYLIST_FILE_SUFFIX);
-
-	free(temp);
-
-	if((actualFile = rpp2app(rfile)) && isPlaylist(actualFile)) free(rfile);
-	else {
-		free(rfile);
-		commandError(fp, ACK_ERROR_NO_EXIST,
-                                "playlist \"%s\" not found", utf8file);
-		return -1;
-	}
-
-	while(!(fileP = fopen(actualFile,"r")) && errno==EINTR);
-	if(fileP==NULL) {
-		commandError(fp, ACK_ERROR_SYSTEM,
-                                "problems opening file \"%s\"", utf8file);
-		return -1;
-	}
-
-	while((tempInt = fgetc(fileP))!=EOF) {
-		s[slength] = tempInt;
-		if(s[slength]=='\n' || s[slength]=='\0') {
-			commentCharFound = 0;
-			s[slength] = '\0';
-			if(s[0]==PLAYLIST_COMMENT) {
-				commentCharFound = 1;
-			}
-			if(strncmp(s,musicDir,strlen(musicDir))==0) {
-				strcpy(s,&(s[strlen(musicDir)]));
-			}
-			else if(parentlen) {
-				temp = strdup(s);
-				memset(s,0,MAXPATHLEN+1);
-				strcpy(s,parent);
-				strncat(s,"/",MAXPATHLEN-parentlen);
-				strncat(s,temp,MAXPATHLEN-parentlen-1);
-				if(strlen(s)>=MAXPATHLEN) {
-					commandError(fp, 
-                                                        ACK_ERROR_PLAYLIST_LOAD,
-                                                        "\"%s\" too long",
-                                                        temp);
-					free(temp);
-					while(fclose(fileP) && errno==EINTR);
-					if(erroredFile) free(erroredFile);
-					return -1;
-				}
-				free(temp);
-			}
-			slength = 0;
-			temp = fsCharsetToUtf8(s);
-			if(!temp) continue;
-			temp = strdup(temp);
-			if(commentCharFound && !getSongFromDB(temp)
-					&& !isRemoteUrl(temp)) 
-			{
-			}
-			else if((addToPlaylist(stderr, temp, 0))<0) {
-				/* for windows compatibilit, convert slashes */
-				char * temp2 = strdup(temp);
-				char * p = temp2;
-				while(*p) {
-					if(*p=='\\') *p = '/';
-					p++;
-				}
-				if((addToPlaylist(stderr, temp2, 0))<0) {
-					if(!erroredFile) {
-						erroredFile = strdup(temp);
-					}
-				}
-				free(temp2);
-			}
-			free(temp);
-		}
-		else if(slength==MAXPATHLEN) {
-			s[slength] = '\0';
-			commandError(fp, ACK_ERROR_PLAYLIST_LOAD,
-                                        "line in \"%s\" is too long", utf8file);
-			ERROR("line \"%s\" in playlist \"%s\" is too long\n",
-				s, utf8file);
-			while(fclose(fileP) && errno==EINTR);
-			if(erroredFile) free(erroredFile);
-			return -1;
-		}
-		else if(s[slength]!='\r') slength++;
-	}
-
-	while(fclose(fileP) && errno==EINTR);
-
-	if(erroredFile) {
-		commandError(fp, ACK_ERROR_PLAYLIST_LOAD,
-                                "can't add file \"%s\"", erroredFile);
-		free(erroredFile);
-		return -1;
-	}
-
-	return 0;
-}
-
 int getPlaylistCurrentSong() {
 	if(playlist.current >= 0 && playlist.current < playlist.length) {
                 return playlist.order[playlist.current];
@@ -1506,4 +1392,151 @@ int seekSongInPlaylistById(FILE * fp, int id, float time) {
 
 int getPlaylistSongId(int song) {
 	return playlist.positionToId[song];
+}
+
+static int PlaylistIterFunc(FILE * fp, char * utf8file, void (*IterFunc)(FILE *fp, char *utf8_file, char **errored_File)) {
+	FILE * fileP;
+	char s[MAXPATHLEN+1];
+	int slength = 0;
+	char * temp = strdup(utf8ToFsCharset(utf8file));
+	char * rfile = malloc(strlen(temp)+strlen(".")+
+			strlen(PLAYLIST_FILE_SUFFIX)+1);
+	char * actualFile;
+	char * parent = parentPath(temp);
+	int parentlen = strlen(parent);
+	char * erroredFile = NULL;
+	int tempInt;
+	int commentCharFound = 0;
+
+	strcpy(rfile,temp);
+	strcat(rfile,".");
+	strcat(rfile,PLAYLIST_FILE_SUFFIX);
+
+	free(temp);
+
+	if((actualFile = rpp2app(rfile)) && isPlaylist(actualFile)) free(rfile);
+	else {
+		free(rfile);
+		commandError(fp, ACK_ERROR_NO_EXIST,
+				"playlist \"%s\" not found", utf8file);
+		return -1;
+	}
+
+	while(!(fileP = fopen(actualFile,"r")) && errno==EINTR);
+	if(fileP==NULL) {
+		commandError(fp, ACK_ERROR_SYSTEM,
+				"problems opening file \"%s\"", utf8file);
+		return -1;
+	}
+
+	while((tempInt = fgetc(fileP))!=EOF) {
+		s[slength] = tempInt;
+		if(s[slength]=='\n' || s[slength]=='\0') {
+			commentCharFound = 0;
+			s[slength] = '\0';
+			if(s[0]==PLAYLIST_COMMENT) {
+				commentCharFound = 1;
+			}
+			if(strncmp(s,musicDir,strlen(musicDir))==0) {
+				strcpy(s,&(s[strlen(musicDir)]));
+			}
+			else if(parentlen) {
+				temp = strdup(s);
+				memset(s,0,MAXPATHLEN+1);
+				strcpy(s,parent);
+				strncat(s,"/",MAXPATHLEN-parentlen);
+				strncat(s,temp,MAXPATHLEN-parentlen-1);
+				if(strlen(s)>=MAXPATHLEN) {
+					commandError(fp, 
+							ACK_ERROR_PLAYLIST_LOAD,
+							"\"%s\" too long",
+							temp);
+					free(temp);
+					while(fclose(fileP) && errno==EINTR);
+					if(erroredFile) free(erroredFile);
+					return -1;
+				}
+				free(temp);
+			}
+			slength = 0;
+			temp = fsCharsetToUtf8(s);
+			if(!temp) continue;
+			/* Needed to make a copy? */
+			if(!commentCharFound)
+			{
+				temp = strdup(temp);
+				IterFunc(fp, temp, &erroredFile);
+				free(temp);
+			}
+		}
+		else if(slength==MAXPATHLEN) {
+			s[slength] = '\0';
+			commandError(fp, ACK_ERROR_PLAYLIST_LOAD,
+					"line in \"%s\" is too long", utf8file);
+			ERROR("line \"%s\" in playlist \"%s\" is too long\n",
+					s, utf8file);
+			while(fclose(fileP) && errno==EINTR);
+			if(erroredFile) free(erroredFile);
+			return -1;
+		}
+		else if(s[slength]!='\r') slength++;
+	}
+
+	while(fclose(fileP) && errno==EINTR);
+
+	if(erroredFile) {
+		commandError(fp, ACK_ERROR_PLAYLIST_LOAD,
+				"can't add file \"%s\"", erroredFile);
+		free(erroredFile);
+		return -1;
+	}
+
+	return 0;
+}
+
+
+static void PlaylistInfoPrintInfo(FILE *fp, char *utf8file, char **erroredfile) {
+	Song * song = getSongFromDB(utf8file);
+	if(song) {
+		printSongInfo(fp, song);       	
+	}
+	else {
+		myfprintf(fp,"file:%s\n",utf8file);
+	}                                  	
+}
+static void PlaylistInfoPrint(FILE *fp, char *utf8file, char **erroredfile) {
+	myfprintf(fp,"file:%s\n",utf8file);
+}
+
+static void PlaylistLoadIterFunc(FILE *fp, char *temp, char **erroredFile) {
+	if(!getSongFromDB(temp)	&& !isRemoteUrl(temp)) 
+	{
+		
+	}
+	else if((addToPlaylist(stderr, temp, 0))<0) {
+		/* for windows compatibilit, convert slashes */
+		char * temp2 = strdup(temp);
+		char * p = temp2;
+		while(*p) {
+			if(*p=='\\') *p = '/';
+			p++;
+		}
+		if((addToPlaylist(stderr, temp2, 0))<0) {
+			if(!*erroredFile) {
+				*erroredFile = strdup(temp);
+			}
+		}
+		free(temp2);
+	}
+}
+
+int PlaylistInfo(FILE * fp, char * utf8file, int detail) {
+	if(detail) {
+		return PlaylistIterFunc(fp, utf8file, PlaylistInfoPrintInfo);
+	}
+	return PlaylistIterFunc(fp, utf8file, PlaylistInfoPrint) ;
+}
+
+int loadPlaylist(FILE * fp, char * utf8file) {
+	return PlaylistIterFunc(fp, utf8file, PlaylistLoadIterFunc);
 }

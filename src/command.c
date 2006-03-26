@@ -53,6 +53,8 @@
 #define COMMAND_CLEAR          	"clear"
 #define COMMAND_SAVE           	"save"
 #define COMMAND_LOAD           	"load"
+#define COMMAND_LISTPLAYLIST   	"listPlaylist"
+#define COMMAND_LISTPLAYLISTINFO   	"listPlaylistInfo"
 #define COMMAND_LSINFO         	"lsinfo"
 #define COMMAND_RM             	"rm"
 #define COMMAND_PLAYLISTINFO   	"playlistinfo"
@@ -366,6 +368,16 @@ int handleLoad(FILE * fp, unsigned int * permission, int argArrayLength,
 		char ** argArray) 
 {
         return loadPlaylist(fp,argArray[1]);
+}
+int handleListPlaylist(FILE * fp, unsigned int * permission, int argArrayLength, 
+		char ** argArray) 
+{
+        return PlaylistInfo(fp,argArray[1],0);
+}
+int handleListPlaylistInfo(FILE * fp, unsigned int * permission, int argArrayLength, 
+		char ** argArray) 
+{
+        return PlaylistInfo(fp,argArray[1], 1);
 }
 
 int handleLsInfo(FILE * fp, unsigned int * permission, int argArrayLength, 
@@ -928,6 +940,8 @@ void initCommands() {
         addCommand(COMMAND_CLEAR       ,PERMISSION_CONTROL, 0, 0,handleClear,NULL);
         addCommand(COMMAND_SAVE        ,PERMISSION_CONTROL, 1, 1,handleSave,NULL);
         addCommand(COMMAND_LOAD        ,PERMISSION_ADD,     1, 1,handleLoad,NULL);
+        addCommand(COMMAND_LISTPLAYLIST,PERMISSION_READ,     1, 1,handleListPlaylist,NULL);
+        addCommand(COMMAND_LISTPLAYLISTINFO,PERMISSION_READ,     1, 1,handleListPlaylistInfo,NULL);
         addCommand(COMMAND_LSINFO      ,PERMISSION_READ,    0, 1,handleLsInfo,NULL);
         addCommand(COMMAND_RM          ,PERMISSION_CONTROL, 1, 1,handleRm,NULL);
         addCommand(COMMAND_PLAYLISTINFO,PERMISSION_READ,    0, 1,handlePlaylistInfo,NULL);
