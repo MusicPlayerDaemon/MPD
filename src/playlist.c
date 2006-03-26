@@ -1461,12 +1461,13 @@ static int PlaylistIterFunc(FILE * fp, char * utf8file, void (*IterFunc)(FILE *f
 			slength = 0;
 			temp = fsCharsetToUtf8(s);
 			if(!temp) continue;
-			/* Needed to make a copy? */
 			if(!commentCharFound)
 			{
-				temp = strdup(temp);
-				IterFunc(fp, temp, &erroredFile);
-				free(temp);
+				/* using temp directly should be safe,
+				 * for our current IterFunction set
+				 * but just in case, we copy to s */
+				strcpy(s, temp);
+				IterFunc(fp, s, &erroredFile);
 			}
 		}
 		else if(slength==MAXPATHLEN) {
