@@ -67,11 +67,9 @@ void myfprintfStdLogMode(FILE * out, FILE * err) {
 }
 
 void myfprintf(FILE * fp, char * format, ... ) {
-	char buffer[BUFFER_LENGTH+1];
+	static char buffer[BUFFER_LENGTH+1];
 	va_list arglist;
 	int fd = fileno(fp);
-
-	memset(buffer,0,BUFFER_LENGTH+1);
 
 	va_start(arglist,format);
 	if(fd==1 || fd==2) {
