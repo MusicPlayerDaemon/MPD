@@ -74,7 +74,7 @@ int sendDataToOutputBuffer(OutputBuffer * cb, InputStream * inStream,
 	static char * convBuffer = NULL;
 	static long convBufferLen = 0;
 
-	if(memcmp(&(cb->audioFormat),&(dc->audioFormat),sizeof(AudioFormat))==0)
+	if(cmpAudioFormat(&(cb->audioFormat),&(dc->audioFormat))==0)
 	{
 		data = dataIn;
 		datalen = dataInLen;
