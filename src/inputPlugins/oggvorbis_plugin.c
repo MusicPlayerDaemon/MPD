@@ -180,7 +180,7 @@ static MpdTag * oggCommentsParse(char ** comments) {
 	
 	while(*comments) {
 		int j;
-		for (j = TAG_NUM_OF_ITEM_TYPES - 1; --j >= 0; ) {
+		for (j = TAG_NUM_OF_ITEM_TYPES; --j >= 0; ) {
 			if (ogg_parseCommentAddToTag(*comments, j, &tag))
 				break;
 		}
