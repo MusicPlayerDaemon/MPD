@@ -179,8 +179,8 @@ static MpdTag * oggCommentsParse(char ** comments) {
 	MpdTag * tag = NULL;
 	
 	while(*comments) {
-		unsigned int j;
-		for (j = TAG_NUM_OF_ITEM_TYPES; j--; ) {
+		int j;
+		for (j = TAG_NUM_OF_ITEM_TYPES - 1; --j >= 0; ) {
 			if (ogg_parseCommentAddToTag(*comments, j, &tag))
 				break;
 		}
