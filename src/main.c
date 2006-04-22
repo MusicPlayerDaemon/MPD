@@ -67,6 +67,18 @@ typedef struct _Options {
 	int updateDB;
 } Options;
 
+/* Solaris has been reported to have no setenv
+ * putenv() will automatically overwrite, so
+ * the overwrite macro will go unused
+ */
+#ifndef setenv
+#define setenv(name,value,overwrite) { \
+        char * tmp = NULL; \
+        sprintf(tmp,"%s=%s",name,value); \
+        putenv(tmp); \
+}
+#endif /* setenv */
+
 void usage(char * argv[]) {
         ERROR("usage:\n");
         ERROR("   %s [options] <conf file>\n",argv[0]);
