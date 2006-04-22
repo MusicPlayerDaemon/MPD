@@ -80,7 +80,7 @@ void copyMpdTagToMetadataChunk(MpdTag * tag, MetadataChunk * chunk) {
 			copyStringToChunk(tag->items[i].value, chunk->artist);
 			break;
 		case TAG_ITEM_ALBUM:
-			copyStringToChunk(tag->items[i].value, chunk->artist);
+			copyStringToChunk(tag->items[i].value, chunk->album);
 			break;
 		}
 	}
