@@ -67,17 +67,43 @@ typedef struct _Options {
 	int updateDB;
 } Options;
 
-/* Solaris has been reported to have no setenv
- * putenv() will automatically overwrite, so
- * the overwrite macro will go unused
+/* 
+ * from git-1.3.0, needed for solaris
  */
 #ifndef setenv
-#define setenv(name,value,overwrite) { \
-        char * tmp = NULL; \
-        sprintf(tmp,"%s=%s",name,value); \
-        putenv(tmp); \
+int setenv(const char *name, const char *value, int replace)
+{
+	int out;
+	size_t namelen, valuelen;
+	char *envstr;
+
+	if (!name || !value) return -1;
+	if (!replace) {
+		char *oldval = NULL;
+		oldval = getenv(name);
+		if (oldval) return 0;
+	}
+
+	namelen = strlen(name);
+	valuelen = strlen(value);
+	envstr = malloc((namelen + valuelen + 2));
+	if (!envstr) return -1;
+
+	memcpy(envstr, name, namelen);
+	envstr[namelen] = '=';
+	memcpy(envstr + namelen + 1, value, valuelen);
+	envstr[namelen + valuelen + 1] = 0;
+
+	out = putenv(envstr);
+	/* putenv(3) makes the argument string part of the environment,
+	 * and changing that string modifies the environment --- which
+	 * means we do not own that storage anymore.  Do not free
+	 * envstr.
+	 */
+
+	return out;
 }
-#endif /* setenv */
+#endif
 
 void usage(char * argv[]) {
         ERROR("usage:\n");
