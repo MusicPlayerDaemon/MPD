@@ -114,6 +114,8 @@ void playlistVersionChange();
 
 int playlistChanges(FILE * fp, mpd_uint32 version);
 
+int playlistChangesPosId(FILE * fp, mpd_uint32 version);
+
 int PlaylistInfo(FILE * fp, char * utf8file, int detail);
 
 

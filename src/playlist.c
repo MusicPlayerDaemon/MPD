@@ -458,6 +458,26 @@ int playlistChanges(FILE * fp, mpd_uint32 version) {
 	return 0;
 }
 
+int playlistChangesPosId(FILE * fp, mpd_uint32 version) {
+	int i;
+	
+	for(i=0; i<playlist.length; i++) {
+		if(version > playlist.version ||
+				playlist.songMod[i] >= version ||
+				playlist.songMod[i] == 0)
+		{
+			myfprintf(fp, "cpos: %i\n", i);
+			myfprintf(fp, "Id: %i\n", playlist.positionToId[i]);
+		}
+	}
+
+	return 0;
+}
+
+
+
+
+
 int playlistInfo(FILE * fp, int song) {
 	int i;
 	int begin = 0;
