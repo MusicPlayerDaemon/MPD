@@ -146,6 +146,22 @@ plchanges <playlist version>
 	NOTE: to detect songs that were deleted at the end of the playlist,
 	use playlistlength returned by status command.
 
+plchangesposid <playlist version>
+	displays changed songs currently in the playlist since 
+	_playlist version_
+	This function only returns the position and the id of the changed song, not the complete metadata. This is more bandwidth efficient.
+	NOTE: to detect songs that were deleted at the end of the playlist,
+	use playlistlength returned by status command.
+
+
+
+
+
+
+
+
+
+
 previous
 	plays previous song in playlist
 
