@@ -989,7 +989,7 @@ void initCommands() {
         addCommand(COMMAND_PLCHANGESPOSID   ,PERMISSION_READ,    1, 1,handlePlaylistChangesPosId,NULL);
         addCommand(COMMAND_ENABLE_DEV  ,PERMISSION_ADMIN,   1, 1,handleEnableDevice,NULL);
         addCommand(COMMAND_DISABLE_DEV ,PERMISSION_ADMIN,   1, 1,handleDisableDevice,NULL);
-        addCommand(COMMAND_DEVICES     ,PERMISSION_ADMIN,   0, 0,handleDevices,NULL);
+        addCommand(COMMAND_DEVICES     ,PERMISSION_READ,   0, 0,handleDevices,NULL);
         addCommand(COMMAND_COMMANDS    ,0,                  0, 0,handleCommands,NULL);
         addCommand(COMMAND_NOTCOMMANDS ,0,                  0, 0,handleNotcommands,NULL);
 
