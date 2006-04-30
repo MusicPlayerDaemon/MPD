@@ -114,11 +114,11 @@ void usage(char * argv[]) {
         ERROR("\n");
         ERROR("options:\n");
         ERROR("   --help             this usage statement\n");
-        ERROR("   --create-db        force (re)creation database and exit\n");
-        ERROR("   --kill             kill mpd\n");
-        ERROR("   --no-create-db     don't create database\n");
+        ERROR("   --kill             kill the currently running mpd session\n");
+        ERROR("   --create-db        force (re)creation of database and exit\n");
+        ERROR("   --no-create-db     don't create database, even if it doesn't exist\n");
         ERROR("   --no-daemon        don't detach from console\n");
-        ERROR("   --stdout           print msgs to stdout and stderr\n");
+        ERROR("   --stdout           print messages to stdout and stderr\n");
         /*ERROR("   --update-db        create database and exit\n");*/
         ERROR("   --verbose          verbose logging\n");
         ERROR("   --version          prints version information\n");
