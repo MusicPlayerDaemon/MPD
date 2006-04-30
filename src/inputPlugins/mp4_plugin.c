@@ -385,6 +385,10 @@ MpdTag * mp4DataDup(char * file, int * mp4MetadataFound) {
 			addItemToMpdTag(ret, TAG_ITEM_TRACK, value);
 			*mp4MetadataFound = 1;
 		}
+		else if(0 == strcasecmp("disc", item)) { /* Is that the correct id? */
+			addItemToMpdTag(ret, TAG_ITEM_DISC, value);
+			*mp4MetadataFound = 1;
+		}
 		else if(0 == strcasecmp("genre", item)) {
 			addItemToMpdTag(ret, TAG_ITEM_GENRE, value);
 			*mp4MetadataFound = 1;

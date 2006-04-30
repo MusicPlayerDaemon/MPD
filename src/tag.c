@@ -46,6 +46,9 @@
 #ifndef ID3_FRAME_COMPOSER
 #define ID3_FRAME_COMPOSER "TCOM"
 #endif
+#ifndef ID3_FRAME_DISC
+#define ID3_FRAME_DISC "TPOS"
+#endif
 #endif
 
 char * mpdTagItemKeys[TAG_NUM_OF_ITEM_TYPES] =
@@ -59,7 +62,8 @@ char * mpdTagItemKeys[TAG_NUM_OF_ITEM_TYPES] =
 	"Date",
 	"Composer",
 	"Performer",
-	"Comment"
+	"Comment",
+	"Disc"
 };
 
 static mpd_sint8 ignoreTagItems[TAG_NUM_OF_ITEM_TYPES];
@@ -171,6 +175,7 @@ MpdTag * parseId3Tag(struct id3_tag * tag) {
 	ret = getID3Info(tag, ID3_FRAME_GENRE, TAG_ITEM_GENRE, ret);
 	ret = getID3Info(tag, ID3_FRAME_COMPOSER, TAG_ITEM_COMPOSER, ret);
 	ret = getID3Info(tag, ID3_FRAME_COMMENT, TAG_ITEM_COMMENT, ret);
+	ret = getID3Info(tag, ID3_FRAME_DISC, TAG_ITEM_DISC, ret);
 
 	return ret;
 }

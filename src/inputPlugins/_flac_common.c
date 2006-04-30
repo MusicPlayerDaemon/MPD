@@ -106,14 +106,19 @@ static void flacParseReplayGain(const FLAC__StreamMetadata *block,
 /* tracknumber is used in VCs, MPD uses "track" ..., all the other
  * tag names match */
 static const char * VORBIS_COMMENT_TRACK_KEY = "tracknumber";
+static const char * VORBIS_COMMENT_DISC_KEY  = "discnumber";
 
 static unsigned int commentMatchesAddToTag(
 		const FLAC__StreamMetadata_VorbisComment_Entry * entry,
 		unsigned int itemType,
 		MpdTag ** tag)
 {
-	const char * str = (itemType == TAG_ITEM_TRACK) ?
-			VORBIS_COMMENT_TRACK_KEY : mpdTagItemKeys[itemType];
+	const char * str;
+	switch (itemType) {
+	case TAG_ITEM_TRACK: str = VORBIS_COMMENT_TRACK_KEY; break;
+	case TAG_ITEM_DISC:  str = VORBIS_COMMENT_DISC_KEY;  break;
+	default:             str = mpdTagItemKeys[itemType];
+	}
 	size_t slen = strlen(str);
 	int vlen = entry->length - slen - 1;
 

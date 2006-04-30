@@ -44,8 +44,9 @@
 #define TAG_ITEM_COMPOSER	7
 #define TAG_ITEM_PERFORMER	8
 #define TAG_ITEM_COMMENT	9
+#define TAG_ITEM_DISC      10
 
-#define TAG_NUM_OF_ITEM_TYPES	10
+#define TAG_NUM_OF_ITEM_TYPES	11
 
 extern char * mpdTagItemKeys[];
 

@@ -155,12 +155,17 @@ void ogg_getReplayGainInfo(char ** comments, ReplayGainInfo ** infoPtr) {
 }
 
 static const char * VORBIS_COMMENT_TRACK_KEY = "tracknumber";
+static const char * VORBIS_COMMENT_DISC_KEY  = "discnumber";
 
 static inline unsigned int ogg_parseCommentAddToTag(char * comment,
 		unsigned int itemType, MpdTag ** tag)
 {
-	const char * needle = (itemType == TAG_ITEM_TRACK) ?
-			VORBIS_COMMENT_TRACK_KEY : mpdTagItemKeys[itemType];
+	const char * needle;
+	switch (itemType) {
+	case TAG_ITEM_TRACK: needle = VORBIS_COMMENT_TRACK_KEY; break;
+	case TAG_ITEM_DISC:  needle = VORBIS_COMMENT_DISC_KEY;  break;
+	default:             needle = mpdTagItemKeys[itemType];
+	}
 	unsigned int len = strlen(needle);
 	
 	if(strncasecmp(comment, needle, len) == 0 && *(comment+len) == '=') {
