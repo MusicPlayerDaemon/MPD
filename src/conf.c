@@ -141,7 +141,6 @@ void initConf() {
 	registerConfigParam(CONF_DB_FILE,			0,	0);
 	registerConfigParam(CONF_LOG_LEVEL,			0,	0);
 	registerConfigParam(CONF_MIXER_CONTROL,			0,	0);
-	registerConfigParam(CONF_AUDIO_WRITE_SIZE,		0,	0);
 	registerConfigParam(CONF_FS_CHARSET,			0,	0);
 	registerConfigParam(CONF_PASSWORD,			1,	0);
 	registerConfigParam(CONF_DEFAULT_PERMS,			0,	0);

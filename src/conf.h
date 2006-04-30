@@ -43,7 +43,6 @@
 #define CONF_DB_FILE			"db_file"
 #define CONF_LOG_LEVEL			"log_level"
 #define CONF_MIXER_CONTROL		"mixer_control"
-#define CONF_AUDIO_WRITE_SIZE		"audio_write_size"
 #define CONF_FS_CHARSET			"filesystem_charset"
 #define CONF_PASSWORD			"password"
 #define CONF_DEFAULT_PERMS		"default_permissions"
