@@ -988,6 +988,18 @@ void sortDirectory(Directory * directory) {
 	}
 }
 
+int checkDirectoryDB() {
+	char * dbFile = getDbFile();
+
+	if(access(dbFile, R_OK|W_OK)) {
+		ERROR("db file \"%s\" cannot be opened for reading/writing: %s",
+				dbFile, strerror(errno));
+		return -1;
+	}
+	
+	return 0;
+}
+
 int writeDirectoryDB() {
 	FILE * fp;
 	char * dbFile = getDbFile();

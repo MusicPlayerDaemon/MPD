@@ -58,6 +58,8 @@ void closeMp3Directory();
 
 int printDirectoryInfo(FILE * fp, char * dirname);
 
+int checkDirectoryDB();
+
 int writeDirectoryDB();
 
 int readDirectoryDB();

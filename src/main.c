@@ -320,6 +320,7 @@ void openDB(Options * options, char * argv0) {
                         exit(EXIT_FAILURE);
                 }
                 flushWarningLog();
+                if(checkDirectoryDB()<0) exit(EXIT_FAILURE);
                 initMp3Directory();
                 if(writeDirectoryDB()<0) exit(EXIT_FAILURE);
 		if(options->createDB) exit(EXIT_SUCCESS);
