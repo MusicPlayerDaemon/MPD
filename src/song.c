@@ -260,7 +260,8 @@ void readSongInfoIntoList(FILE * fp, SongList * list, Directory * parentDir) {
 		else if(0==strncmp(SONG_MTIME,buffer,strlen(SONG_MTIME))) {
 			song->mtime = atoi(&(buffer[strlen(SONG_MTIME)]));
 		}
-		else {
+		/* ignore empty lines (starting with '\0') */
+		else if(*buffer){
 			ERROR("songinfo: unknown line in db: %s\n",buffer);
 			exit(EXIT_FAILURE);
 		}
