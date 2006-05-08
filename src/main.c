@@ -595,6 +595,7 @@ int main(int argc, char * argv[]) {
         }
 
         savePlaylistState();
+        saveAudioDevicesState();
 
 	
         freeAllInterfaces();

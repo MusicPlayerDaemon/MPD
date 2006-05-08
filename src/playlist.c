@@ -92,7 +92,7 @@ static void swapOrder(int a, int b);
 static int playPlaylistOrderNumber(FILE * fp, int orderNum);
 static void randomizeOrder(int start, int end);
 
-static char * getStateFile() {
+char * getStateFile() {
 	ConfigParam * param = parseConfigFilePath(CONF_STATE_FILE, 0);
 	
 	if(!param) return NULL;

@@ -77,4 +77,6 @@ void printAudioDevices(FILE * fp);
 
 void readAudioDevicesState();
 
+void saveAudioDevicesState();
+
 #endif

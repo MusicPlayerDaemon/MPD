@@ -24,6 +24,7 @@
 #include "command.h"
 #include "playerData.h"
 #include "utils.h"
+#include "playlist.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -37,7 +38,6 @@
 #define AUDIO_DEVICE_STATE	"audio_device_state:"
 #define AUDIO_DEVICE_STATE_LEN	19	/* strlen(AUDIO_DEVICE_STATE) */
 #define AUDIO_BUFFER_SIZE	2*MAXPATHLEN
-static void saveAudioDevicesState();
 
 static AudioFormat audio_format;
 
@@ -232,7 +232,6 @@ void finishAudioConfig() {
 void finishAudioDriver() {
 	int i;
 
-	saveAudioDevicesState();
 	for(i = 0; i < audioOutputArraySize; i++) {
 		finishAudioOutput(audioOutputArray[i]);
 	}
@@ -427,15 +426,7 @@ void printAudioDevices(FILE * fp) {
 	}
 }
 
-static char * getStateFile() {
-	ConfigParam * param = parseConfigFilePath(CONF_STATE_FILE, 0);
-
-	if(!param) return NULL;
-
-	return param->value;
-}
-
-static void saveAudioDevicesState() {
+void saveAudioDevicesState() {
 	char *stateFile;
 	FILE *fp;
 	int i;

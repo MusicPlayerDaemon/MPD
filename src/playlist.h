@@ -118,5 +118,6 @@ int playlistChangesPosId(FILE * fp, mpd_uint32 version);
 
 int PlaylistInfo(FILE * fp, char * utf8file, int detail);
 
+char * getStateFile();
 
 #endif
