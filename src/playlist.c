@@ -191,14 +191,14 @@ void initPlaylist() {
 }
 
 static int getNextId() {
-	static int cur = 0;
+	static int cur = -1;
 
-	while(playlist.idToPosition[cur] != -1) {
+	do {
 		cur++;
 		if(cur >= playlist_max_length*PLAYLIST_HASH_MULT) {
 			cur = 0;
 		}
-	}
+	} while(playlist.idToPosition[cur] != -1);
 
 	return cur;
 }
