@@ -136,7 +136,7 @@ void openInterface(Interface * interface, int fd) {
 }
 
 void closeInterface(Interface * interface) {
-	assert(interface->open);
+	if (!interface->open) return;
 
 	interface->open = 0;
 
@@ -254,6 +254,7 @@ static int proccessLineOfInput(Interface * interface) {
 						interface_max_command_list_size)
 					;
 				closeInterface(interface);
+				ret = COMMAND_RETURN_CLOSE;
 			}
 			else {
 				insertInListWithoutKey(interface->commandList,
