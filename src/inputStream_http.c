@@ -48,7 +48,7 @@
 #define HTTP_REDIRECT_MAX    10
 
 static char * proxyHost = NULL;
-static int proxyPort = 0;
+static char * proxyPort =  NULL;
 static char * proxyUser = NULL;
 static char * proxyPassword = NULL;
 static int bufferSize = HTTP_BUFFER_SIZE_DEFAULT;
@@ -57,7 +57,7 @@ static int prebufferSize = HTTP_PREBUFFER_SIZE_DEFAULT;
 typedef struct _InputStreemHTTPData {
         char * host;
         char * path;
-        int port;
+	char *port;
         int sock;
         int connState;
         char * buffer;
@@ -84,13 +84,7 @@ void inputStream_initHttp() {
 					CONF_HTTP_PROXY_PORT);
 			exit(EXIT_FAILURE);
 		}
-
-		proxyPort = strtol(param->value, &test, 10);
-		if(proxyPort <= 0 || *test != '\0') {
-			ERROR("%s \"%s\" is not a positive integer, line %i\n"
-				CONF_HTTP_PROXY_PORT, param->value, 
-				param->line);
-		}
+		proxyPort = param->value;
 
 		param = getConfigParam(CONF_HTTP_PROXY_USER);
 
@@ -255,7 +249,7 @@ static InputStreamHTTPData * newInputStreamHTTPData() {
 	ret->httpAuth = NULL;
 	ret->host = NULL;
         ret->path = NULL;
-        ret->port = 80;
+	ret->port = NULL;
         ret->connState = HTTP_CONN_STATE_CLOSED;
         ret->timesRedirected = 0;
         ret->icyMetaint = 0;
@@ -269,6 +263,7 @@ static InputStreamHTTPData * newInputStreamHTTPData() {
 static void freeInputStreamHTTPData(InputStreamHTTPData * data) {
         if(data->host) free(data->host);
         if(data->path) free(data->path);
+	if(data->port) free(data->port);
 	if(data->proxyAuth) free(data->proxyAuth);
 	if(data->httpAuth) free(data->httpAuth);
 
@@ -340,17 +335,19 @@ static int parseUrl(InputStreamHTTPData * data, char * url) {
         data->host = malloc(len);
         strncpy(data->host,temp,len-1);
         data->host[len-1] = '\0';
-
         /* fetch the port */
         if(colon && (!slash || slash != colon+1)) {
-                char * test;
-                data->port = strtol(colon+1,&test,10);
-
-                if(data->port <= 0 || (*test != '\0' && *test != '/')) {
-                        return -1;
-                }
-        }
-
+		len = strlen(colon)-1;
+		if(slash) len -= strlen(slash);
+                data->port = malloc(len+1);
+                strncpy(data->port, colon+1, len);
+                data->port[len] = '\0';
+		printf("Port: %s\n", data->port);
+	} 
+	else {
+		data->port = strdup("80");
+	}
+        
         /* fetch the path */
 	if(proxyHost) data->path = strdup(url);
         else data->path = strdup(slash ? slash : "/");
@@ -359,19 +356,28 @@ static int parseUrl(InputStreamHTTPData * data, char * url) {
 }
 
 static int initHTTPConnection(InputStream * inStream) {
-        struct hostent * he;
-        struct sockaddr * dest;
-        socklen_t destlen;
-        struct sockaddr_in sin;
-        InputStreamHTTPData * data = (InputStreamHTTPData *)inStream->data;
-        int flags;
-        int ret;
-	char * connHost;
-	int connPort;
-#ifdef HAVE_IPV6
-        struct sockaddr_in6 sin6;
-#endif
+	char *connHost;
+	char *connPort;
+	struct addrinfo *ans = NULL;
+	struct addrinfo *ap = NULL;
+	struct addrinfo hints;
+	int error, flags;
+	InputStreamHTTPData * data = (InputStreamHTTPData *)inStream->data;
+	/**
+	 * Setup hints
+	 */
+	hints.ai_flags          = 0;
+	hints.ai_family         = PF_UNSPEC;
+	hints.ai_socktype       = SOCK_STREAM;
+	hints.ai_protocol       = IPPROTO_TCP;
+	hints.ai_addrlen        = 0;
+	hints.ai_addr           = NULL;
+	hints.ai_canonname      = NULL;
+	hints.ai_next           = NULL;
 
+
+
+	
 	if(proxyHost) {
 		connHost = proxyHost;
 		connPort = proxyPort;
@@ -381,61 +387,41 @@ static int initHTTPConnection(InputStream * inStream) {
 		connPort = data->port;
 	}
 
-        if(!(he = gethostbyname(connHost))) {
-		DEBUG(__FILE__ ": failure to lookup host \"%s\"\n",connHost);
-                return -1;
-        }
-
-        memset(&sin,0,sizeof(struct sockaddr_in));
-        sin.sin_family = AF_INET;
-        sin.sin_port = htons(connPort);
-#ifdef HAVE_IPV6
-        memset(&sin6,0,sizeof(struct sockaddr_in6));
-        sin6.sin6_family = AF_INET6;
-        sin6.sin6_port = sin.sin_port;
-#endif
-
-        switch(he->h_addrtype) {
-        case AF_INET:
-                memcpy((char *)&sin.sin_addr.s_addr,(char *)he->h_addr,
-                                he->h_length);
-                dest = (struct sockaddr *)&sin;
-                destlen = sizeof(struct sockaddr_in);
-                break;
-#ifdef HAVE_IPV6
-        case AF_INET6:
-                if(!ipv6Supported()) {
-                        return -1;
-                }
-                memcpy((char *)&sin6.sin6_addr.s6_addr,(char *)he->h_addr,
-                                he->h_length);
-                dest = (struct sockaddr *)&sin6;
-                destlen = sizeof(struct sockaddr_in6);
-                break;
-#endif
-        default:
-                return -1;
-        }
-
-        if((data->sock = socket(dest->sa_family,SOCK_STREAM,0)) < 0) {
-                return -1;
-        }
-
-        flags = fcntl(data->sock, F_GETFL, 0);
-        fcntl(data->sock, F_SETFL, flags | O_NONBLOCK);
-
-        ret = connect(data->sock,dest,destlen);
-        if(ret < 0 && errno!=EINPROGRESS) {
+	error = getaddrinfo(connHost, connPort, &hints, &ans);
+	if(error) {
+		DEBUG(__FILE__ ": Error getting address info: %s\n", gai_strerror(error));
+		return -1;
+	}
+ 
+	/* loop through possible addresses */
+	for(ap = ans; ap != NULL; ap = ap->ai_next) {
+		if((data->sock = socket(ap->ai_family, ap->ai_socktype,
+					ap->ai_protocol)) < 0) {
+			DEBUG(__FILE__ ": unable to connect: %s\n", strerror(errno));
+			freeaddrinfo(ans);
+			return -1;
+		}
+		
+		flags = fcntl(data->sock, F_GETFL, 0);
+		fcntl(data->sock, F_SETFL, flags | O_NONBLOCK);
+		
+		if(connect(data->sock, ap->ai_addr, ap->ai_addrlen) >= 0
+			|| errno == EINPROGRESS
+		) {
+			data->connState = HTTP_CONN_STATE_INIT;
+			data->buflen = 0;
+			freeaddrinfo(ans);
+			return 0; /* success */
+		}
+		
+		/* failed, get the next one */
+	
 		DEBUG(__FILE__ ": unable to connect: %s\n", strerror(errno));
                 close(data->sock);
-                return -1;
         }
 
-        data->connState = HTTP_CONN_STATE_INIT;
-
-        data->buflen = 0;
-
-        return 0;
+	freeaddrinfo(ans);
+	return -1; /* failed */
 }
 
 static int finishHTTPInit(InputStream * inStream) {
@@ -444,7 +430,7 @@ static int finishHTTPInit(InputStream * inStream) {
         fd_set writeSet;
         fd_set errorSet;
         int error;
-        int error_len = sizeof(int);
+        socklen_t error_len = sizeof(int);
         int ret;
         char request[2049];
 
