@@ -401,9 +401,8 @@ int removeDeletedFromDirectory(Directory * directory, DIR * dir) {
 			}
 		}
 		else {
-			LOG("removing directory: ");
-			LOG("%s/",getDirectoryPath(directory));
-			LOG("%s\n",node->key);
+			LOG("removing directory: %s/%s\n",
+				getDirectoryPath(directory), node->key);
 			deleteFromList(directory->subDirectories, node->key);
                         ret = 1;
 		}
