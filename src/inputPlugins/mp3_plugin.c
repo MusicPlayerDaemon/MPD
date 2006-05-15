@@ -154,7 +154,7 @@ void initMp3DecodeData(mp3DecodeData * data, InputStream * inStream) {
 	memset(&(data->dither), 0, sizeof(struct audio_dither));
 
 	mad_stream_init(&data->stream);
-        data->stream.options |= MAD_OPTION_IGNORECRC;
+	mad_stream_options(&data->stream, MAD_OPTION_IGNORECRC);
 	mad_frame_init(&data->frame);
 	mad_synth_init(&data->synth);
 	mad_timer_reset(&data->timer);
@@ -397,7 +397,8 @@ int decodeNextFrame(mp3DecodeData * data) {
 }
 
 /* xing stuff stolen from alsaplayer */
-# define XING_MAGIC	(('X' << 24) | ('i' << 16) | ('n' << 8) | 'g')
+#define XI_MAGIC (('X' << 8) | 'i')
+#define NG_MAGIC (('n' << 8) | 'g')
 
 struct xing {
   	long flags;			/* valid fields (see below) */
@@ -416,10 +417,22 @@ enum {
 
 int parse_xing(struct xing *xing, struct mad_bitptr ptr, unsigned int bitlen)
 {
-  	if (bitlen < 64 || mad_bit_read(&ptr, 32) != XING_MAGIC) goto fail;
+  	unsigned long bits;
 
+  	if (bitlen < 16) goto fail;
+  	bits = mad_bit_read(&ptr, 16);
+	bitlen -= 16;
+
+  	if (bits == XI_MAGIC) {
+    		if (bitlen < 16) goto fail;
+    		if (mad_bit_read(&ptr, 16) != NG_MAGIC) goto fail;
+    		bitlen -= 16;
+  	}
+  	else if (bits != NG_MAGIC) goto fail;
+
+  	if (bitlen < 32) goto fail;
   	xing->flags = mad_bit_read(&ptr, 32);
-  	bitlen -= 64;
+  	bitlen -= 32;
 
   	if (xing->flags & XING_FRAMES) {
     		if (bitlen < 32) goto fail;
