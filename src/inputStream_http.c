@@ -342,7 +342,7 @@ static int parseUrl(InputStreamHTTPData * data, char * url) {
                 data->port = malloc(len+1);
                 strncpy(data->port, colon+1, len);
                 data->port[len] = '\0';
-		printf("Port: %s\n", data->port);
+		DEBUG(__FILE__ ": Port: %s\n", data->port);
 	} 
 	else {
 		data->port = strdup("80");
