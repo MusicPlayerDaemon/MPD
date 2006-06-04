@@ -527,7 +527,7 @@ int main ()
     return 0;
 }
 
-], AC_MSG_RESULT(yes), AC_MSG_RESULT(no) enable_oggvorbis=no,[echo $ac_n "cross compiling; assumed OK... $ac_c"])
+], AC_MSG_RESULT(yes), [AC_MSG_RESULT(no);enable_oggvorbis=no],[echo $ac_n "cross compiling; assumed OK... $ac_c"])
        		CFLAGS="$ac_save_CFLAGS"
        		LIBS="$ac_save_LIBS"
 	fi
