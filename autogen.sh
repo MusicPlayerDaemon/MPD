@@ -138,4 +138,6 @@ autoconf
 cd ../..
 
 cd $olddir
-$srcdir/configure "$@" && echo
+if test x$NOCONFIGURE = x; then
+	$srcdir/configure "$@" && echo
+fi
