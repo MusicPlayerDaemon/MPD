@@ -86,8 +86,8 @@ size_t inputStream_fileRead(InputStream * inStream, void * ptr, size_t size,
 int inputStream_fileClose(InputStream * inStream) {
 	if(fclose((FILE *)inStream->data)<0) {
 		inStream->error = errno;
+		return -1;
 	}
-	else return -1;
 
 	return 0;
 }
