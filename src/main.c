@@ -70,7 +70,7 @@ typedef struct _Options {
 /* 
  * from git-1.3.0, needed for solaris
  */
-#ifndef setenv
+#ifndef HAVE_SETENV
 int setenv(const char *name, const char *value, int replace)
 {
 	int out;
@@ -103,7 +103,7 @@ int setenv(const char *name, const char *value, int replace)
 
 	return out;
 }
-#endif
+#endif /* HAVE_SETENV */
 
 void usage(char * argv[]) {
         ERROR("usage:\n");

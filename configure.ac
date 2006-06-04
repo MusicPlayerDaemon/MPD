@@ -84,6 +84,7 @@ AC_CHECK_LIB(socket,socket,MPD_LIBS="$MPD_LIBS -lsocket",)
 AC_CHECK_LIB(nsl,gethostbyname,MPD_LIBS="$MPD_LIBS -lnsl",)
 
 AC_CHECK_LIB(m,exp,MPD_LIBS="$MPD_LIBS -lm",)
+AC_CHECK_FUNCS(setenv)
 
 PKG_CHECK_MODULES(GLIB, glib-2.0 >= 2.0, [MPD_LIBS="$MPD_LIBS $GLIB_LIBS" MPD_CFLAGS="$MPD_CFLAGS $GLIB_CFLAGS"],[echo "";echo "** ERROR:Unable to find glib-2.0 of version 2.0 or above **" ; exit 1])
 
