@@ -114,13 +114,16 @@ static unsigned int commentMatchesAddToTag(
 		MpdTag ** tag)
 {
 	const char * str;
+	size_t slen;
+	int vlen;
+
 	switch (itemType) {
 	case TAG_ITEM_TRACK: str = VORBIS_COMMENT_TRACK_KEY; break;
 	case TAG_ITEM_DISC:  str = VORBIS_COMMENT_DISC_KEY;  break;
 	default:             str = mpdTagItemKeys[itemType];
 	}
-	size_t slen = strlen(str);
-	int vlen = entry->length - slen - 1;
+	slen = strlen(str);
+	vlen = entry->length - slen - 1;
 
 	if ((vlen > 0) && (0 == strncasecmp(str,(char *)entry->entry, slen))
 				&& (*(entry->entry + slen) == '=')) {

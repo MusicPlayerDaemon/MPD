@@ -161,13 +161,14 @@ static inline unsigned int ogg_parseCommentAddToTag(char * comment,
 		unsigned int itemType, MpdTag ** tag)
 {
 	const char * needle;
+	unsigned int len;
 	switch (itemType) {
 	case TAG_ITEM_TRACK: needle = VORBIS_COMMENT_TRACK_KEY; break;
 	case TAG_ITEM_DISC:  needle = VORBIS_COMMENT_DISC_KEY;  break;
 	default:             needle = mpdTagItemKeys[itemType];
 	}
-	unsigned int len = strlen(needle);
-	
+	len = strlen(needle);
+
 	if(strncasecmp(comment, needle, len) == 0 && *(comment+len) == '=') {
 		if (!*tag)
 			*tag = newMpdTag();
