@@ -372,18 +372,20 @@ void startMainProcess() {
 }
 
 void daemonize(Options * options) {
-	FILE * fp;
-	ConfigParam * pidFileParam = parseConfigFilePath(CONF_PID_FILE, 1);
+	FILE * fp = NULL;
+	ConfigParam * pidFileParam = parseConfigFilePath(CONF_PID_FILE, 0);
 	
-	/* do this before daemon'izing so we can fail gracefully if we can't
-	 * write to the pid file */
-	DEBUG("opening pid file\n");
-	fp = fopen(pidFileParam->value, "w+");
-	if(!fp) {
-		ERROR("could not open %s \"%s\" (at line %i) for writing: %s\n",
-				CONF_PID_FILE, pidFileParam->value,
-				pidFileParam->line, strerror(errno));
-		exit(EXIT_FAILURE);
+	if (pidFileParam) {
+		/* do this before daemon'izing so we can fail gracefully if we can't
+		 * write to the pid file */
+		DEBUG("opening pid file\n");
+		fp = fopen(pidFileParam->value, "w+");
+		if(!fp) {
+			ERROR("could not open %s \"%s\" (at line %i) for writing: %s\n",
+					CONF_PID_FILE, pidFileParam->value,
+					pidFileParam->line, strerror(errno));
+			exit(EXIT_FAILURE);
+		}
 	}
 
         if(options->daemon) {
@@ -418,10 +420,12 @@ void daemonize(Options * options) {
 		DEBUG("daemonized!\n");
         }
 
-	DEBUG("writing pid file\n");
-	fprintf(fp, "%lu\n", (unsigned long)getpid());
-	fclose(fp);
-	masterPid = getpid();
+	if (pidFileParam) {
+		DEBUG("writing pid file\n");
+		fprintf(fp, "%lu\n", (unsigned long)getpid());
+		fclose(fp);
+		masterPid = getpid();
+	}
 }
 
 void setupLogOutput(Options * options, FILE * out, FILE * err) {
@@ -461,7 +465,9 @@ void setupLogOutput(Options * options, FILE * out, FILE * err) {
 }
 
 void cleanUpPidFile() {
-	ConfigParam * pidFileParam = parseConfigFilePath(CONF_PID_FILE, 1);
+	ConfigParam * pidFileParam = parseConfigFilePath(CONF_PID_FILE, 0);
+
+	if (!pidFileParam) return;
 
 	DEBUG("cleaning up pid file\n");
 	
@@ -472,8 +478,13 @@ void killFromPidFile(char * cmd, int killOption) {
 	/*char buf[32];
 	struct stat st_cmd;
 	struct stat st_exe;*/
-	ConfigParam * pidFileParam = parseConfigFilePath(CONF_PID_FILE, 1);
+	ConfigParam * pidFileParam = parseConfigFilePath(CONF_PID_FILE, 0);
 	int pid;
+
+	if (!pidFileParam) {
+		ERROR("no pid_file specified in the config file\n");
+		exit(EXIT_FAILURE);
+	}
 
 	FILE * fp = fopen(pidFileParam->value,"r");
 	if(!fp) {
