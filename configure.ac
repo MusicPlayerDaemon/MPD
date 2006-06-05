@@ -26,7 +26,8 @@ AC_PROG_MAKE_SET
 AM_CONFIG_HEADER(config.h)
 
 MPD_CFLAGS=""
-if test x$CC = xgcc; then
+if echo "$CC" | grep gcc >/dev/null
+then
 	MPD_CFLAGS="-Wall"
 fi
 MPD_LIBS=""
