@@ -478,6 +478,7 @@ void killFromPidFile(char * cmd, int killOption) {
 	/*char buf[32];
 	struct stat st_cmd;
 	struct stat st_exe;*/
+	FILE * fp;
 	ConfigParam * pidFileParam = parseConfigFilePath(CONF_PID_FILE, 0);
 	int pid;
 
@@ -486,7 +487,7 @@ void killFromPidFile(char * cmd, int killOption) {
 		exit(EXIT_FAILURE);
 	}
 
-	FILE * fp = fopen(pidFileParam->value,"r");
+	fp = fopen(pidFileParam->value,"r");
 	if(!fp) {
 		ERROR("unable to open %s \"%s\": %s\n", 
 				CONF_PID_FILE, pidFileParam->value,
