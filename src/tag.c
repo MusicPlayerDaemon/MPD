@@ -140,24 +140,21 @@ MpdTag * getID3Info(struct id3_tag * tag, char * id, int type, MpdTag * mpdTag)
 	int i;
 
 	frame = id3_tag_findframe(tag, id, 0);
-	if(!frame) return mpdTag;
+	if(!frame || frame->nfields < 2) return mpdTag;
 
 	field = &frame->fields[1];
 	nstrings = id3_field_getnstrings(field);
 
 	for(i = 0; i < nstrings; i++) {
 		ucs4 = id3_field_getstrings(field, i);
-		assert(ucs4);
+		if(!ucs4) continue;
 
-		if(type == TAG_ITEM_GENRE) {
-			ucs4 = id3_genre_name(ucs4);
-		}
+		if(type == TAG_ITEM_GENRE) ucs4 = id3_genre_name(ucs4);
 
 		utf8 = id3_ucs4_utf8duplicate(ucs4);
-
 		if(!utf8) continue;
 
-		if( NULL == mpdTag ) mpdTag = newMpdTag();
+		if(mpdTag == NULL) mpdTag = newMpdTag();
 		addItemToMpdTag(mpdTag, type, utf8);
 
 		free(utf8);
