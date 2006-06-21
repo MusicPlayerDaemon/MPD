@@ -260,8 +260,7 @@ static void mp3_parseId3Tag(mp3DecodeData * data, signed long tagsize, MpdTag **
 	id3_length_t count;
 	id3_byte_t const *id3_data;
 	id3_byte_t * allocated = NULL;
-
-	if(mpdTag) *mpdTag = NULL;
+	MpdTag * newMpdTag;
 
 	count = data->stream.bufend - data->stream.this_frame;
 
@@ -298,13 +297,18 @@ static void mp3_parseId3Tag(mp3DecodeData * data, signed long tagsize, MpdTag **
 	}
 
 	id3Tag = id3_tag_parse(id3_data, tagsize);
- 
-	if(id3Tag) {
-		if(mpdTag) *mpdTag = parseId3Tag(id3Tag);
-		if(replayGainInfo) mp3_getReplayGainInfo(id3Tag, replayGainInfo);
-		id3_tag_delete(id3Tag);
+	if(!id3Tag) goto fail;
+
+	if(mpdTag) {
+		newMpdTag = parseId3Tag(id3Tag);
+		if(newMpdTag) {
+			if(*mpdTag) freeMpdTag(*mpdTag);
+			*mpdTag = newMpdTag;
+		}
 	}
 
+	if(replayGainInfo) mp3_getReplayGainInfo(id3Tag, replayGainInfo);
+	id3_tag_delete(id3Tag);
 fail:
 	if(allocated) free(allocated);
 }
