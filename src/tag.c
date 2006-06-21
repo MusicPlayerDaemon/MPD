@@ -43,6 +43,10 @@
 #endif
 
 #ifdef HAVE_ID3TAG
+#define isId3v1(tag) (id3_tag_options(tag, 0, 0) & ID3_TAG_OPTION_ID3V1)
+/* Size of the buffer to use for peeking at tag headers.  We reuse this buffer
+   if the whole tag fits in it, so make it big to avoid a malloc(). */
+#define ID3_TAG_BUFLEN 1024
 #ifndef ID3_FRAME_COMPOSER
 #define ID3_FRAME_COMPOSER "TCOM"
 #endif
@@ -181,29 +185,149 @@ MpdTag * parseId3Tag(struct id3_tag * tag) {
 }
 #endif
 
+#ifdef HAVE_ID3TAG
+static int fillBuffer(void *buf, size_t size, FILE *stream,
+                      long offset, int whence)
+{
+	if (fseek(stream, offset, whence) != 0) return 0;
+	return fread(buf, 1, size, stream);
+}
+#endif
+
+#ifdef HAVE_ID3TAG
+static int getId3v2FooterSize(FILE * stream, long offset, int whence)
+{
+	id3_byte_t buf[ID3_TAG_QUERYSIZE];
+	int bufsize;
+
+	bufsize = fillBuffer(buf, ID3_TAG_QUERYSIZE, stream, offset, whence);
+	if (bufsize <= 0) return 0;
+	return id3_tag_query(buf, bufsize);
+}
+#endif
+
+#ifdef HAVE_ID3TAG
+static struct id3_tag * getId3Tag(FILE * stream, long offset, int whence)
+{
+	struct id3_tag * tag;
+	id3_byte_t * buf[ID3_TAG_BUFLEN];
+	id3_byte_t * mbuf;
+	int tagsize;
+	int bufsize;
+	int mbufsize;
+
+	/* It's ok if we get less than we asked for */
+	bufsize = fillBuffer(buf, ID3_TAG_BUFLEN, stream, offset, whence);
+	if (bufsize <= 0) return NULL;
+
+	/* Look for a tag header */
+	tagsize = id3_tag_query((const id3_byte_t *)buf, bufsize);
+	if (tagsize <= 0) return NULL;
+
+	if (tagsize <= bufsize) {
+		/* Got an id3 tag, and it fits in buf */
+		tag = id3_tag_parse((const id3_byte_t *)buf, tagsize);
+	} else {
+		/* Got an id3tag that overflows buf, so get a new one */
+		mbuf = malloc(tagsize);
+		if (!mbuf) return NULL;
+
+		mbufsize = fillBuffer(mbuf, tagsize, stream, offset, whence);
+		if (mbufsize < tagsize) {
+			free(mbuf);
+			return NULL;
+		}
+
+		tag = id3_tag_parse((const id3_byte_t *)mbuf, tagsize);
+
+		free(mbuf);
+	}
+
+	return tag;
+}
+#endif
+
+#ifdef HAVE_ID3TAG
+static struct id3_tag * findId3TagFromBeginning(FILE * stream)
+{
+	struct id3_tag * tag;
+	struct id3_tag * seektag;
+	struct id3_frame * frame;
+	int seek;
+
+	tag = getId3Tag(stream, 0, SEEK_SET);
+	if (!tag) {
+		return NULL;
+	} else if (isId3v1(tag)) {
+		/* id3v1 tags don't belong here */
+		id3_tag_delete(tag);
+		return NULL;
+	}
+
+	/* We have an id3v2 tag, so let's look for SEEK frames */
+	while ((frame = id3_tag_findframe(tag, "SEEK", 0))) {
+		/* Found a SEEK frame, get it's value */
+		seek = id3_field_getint(id3_frame_field(frame, 0));
+		if (seek < 0) break;
+
+		/* Get the tag specified by the SEEK frame */
+		seektag = getId3Tag(stream, seek, SEEK_CUR);
+		if (!seektag || isId3v1(seektag)) break;
+
+		/* Replace the old tag with the new one */
+		id3_tag_delete(tag);
+		tag = seektag;
+	}
+
+	return tag;
+}
+#endif
+
+#ifdef HAVE_ID3TAG
+static struct id3_tag * findId3TagFromEnd(FILE * stream)
+{
+	struct id3_tag * tag;
+	struct id3_tag * v1tag;
+	int tagsize;
+
+	/* Get an id3v1 tag from the end of file for later use */
+	v1tag = getId3Tag(stream, -128, SEEK_END);
+
+	/* Get the id3v2 tag size from the footer (located before v1tag) */
+	tagsize = getId3v2FooterSize(stream, (v1tag ? -128 : 0) - 10, SEEK_END);
+	if (tagsize >= 0) return v1tag;
+
+	/* Get the tag which the footer belongs to */
+	tag = getId3Tag(stream, tagsize, SEEK_CUR);
+	if (!tag) return v1tag;
+
+	/* We have an id3v2 tag, so ditch v1tag */
+	id3_tag_delete(v1tag);
+	
+	return tag;
+}
+#endif
+
 MpdTag * id3Dup(char * file) {
 	MpdTag * ret = NULL;
 #ifdef HAVE_ID3TAG
-	struct id3_file * id3_file;
 	struct id3_tag * tag;
+	FILE * stream;
 
-	id3_file = id3_file_open(file, ID3_FILE_MODE_READONLY);
-			
-	if(!id3_file) {
+	stream = fopen(file, "r");
+	if (!stream) {
 		DEBUG("id3Dup: Failed to open file: '%s', %s\n",file, strerror(errno));
 		return NULL;
 	}
 
-	tag = id3_file_tag(id3_file);
-	if(!tag) {
-		id3_file_close(id3_file);
-		return NULL;
-	}
+	tag = findId3TagFromBeginning(stream);
+	if (!tag) tag = findId3TagFromEnd(stream);
 
+	fclose(stream);
+
+	if (!tag) return NULL;
 	ret = parseId3Tag(tag);
-
-	id3_file_close(id3_file);
-
+	id3_tag_delete(tag);
 #endif
 	return ret;	
 }

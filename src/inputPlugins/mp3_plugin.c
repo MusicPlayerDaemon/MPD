@@ -252,7 +252,9 @@ void mp3_getReplayGainInfo(struct id3_tag * tag, ReplayGainInfo ** infoPtr) {
 		*infoPtr = NULL;
 	}
 }
+#endif
 
+#ifdef HAVE_ID3TAG
 static void mp3_parseId3Tag(mp3DecodeData * data, signed long tagsize, MpdTag ** mpdTag, ReplayGainInfo ** replayGainInfo) {
 	struct id3_tag * id3Tag = NULL;
 	id3_length_t count;
