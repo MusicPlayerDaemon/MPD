@@ -209,15 +209,15 @@ int fillMp3InputBuffer(mp3DecodeData * data) {
 }
 
 #ifdef HAVE_ID3TAG
-void mp3_getReplayGainInfo(struct id3_tag * tag, ReplayGainInfo ** infoPtr) {
+static ReplayGainInfo * parseId3ReplayGainInfo(struct id3_tag * tag) {
 	int i;
 	char * key;
 	char * value;
 	struct id3_frame * frame;
 	int found = 0;
+	ReplayGainInfo * replayGainInfo;
 
-	if(*infoPtr) freeReplayGainInfo(*infoPtr);
-	*infoPtr = newReplayGainInfo();
+	replayGainInfo = newReplayGainInfo();
 
 	for(i=0;(frame = id3_tag_findframe(tag, "TXXX", i));i++) {
 		if(frame->nfields < 3) continue;
@@ -226,31 +226,29 @@ void mp3_getReplayGainInfo(struct id3_tag * tag, ReplayGainInfo ** infoPtr) {
 		value = (char *) id3_ucs4_latin1duplicate(id3_field_getstring(&frame->fields[2]));
 
 		if(strcmp(key, "replaygain_track_gain") == 0) {
-			(*infoPtr)->trackGain = atof(value);
+			replayGainInfo->trackGain = atof(value);
 			found = 1;
 		}
 		else if(strcmp(key, "replaygain_album_gain") == 0) {
-			(*infoPtr)->albumGain = atof(value);
+			replayGainInfo->albumGain = atof(value);
 			found = 1;
 		}
 		else if(strcmp(key, "replaygain_track_peak") == 0) {
-			(*infoPtr)->trackPeak = atof(value);
+			replayGainInfo->trackPeak = atof(value);
 			found = 1;
 		}
 		else if(strcmp(key, "replaygain_album_peak") == 0) {
-			(*infoPtr)->albumPeak = atof(value);
+			replayGainInfo->albumPeak = atof(value);
 			found = 1;
 		}
 
 		free(key);
 		free(value);
-
 	}
 
-	if(!found) {
-		freeReplayGainInfo(*infoPtr);
-		*infoPtr = NULL;
-	}
+	if(found) return replayGainInfo;
+	freeReplayGainInfo(replayGainInfo);
+	return NULL;
 }
 #endif
 
@@ -261,6 +259,7 @@ static void mp3_parseId3Tag(mp3DecodeData * data, signed long tagsize, MpdTag **
 	id3_byte_t const *id3_data;
 	id3_byte_t * allocated = NULL;
 	MpdTag * tmpMpdTag;
+	ReplayGainInfo * tmpReplayGainInfo;
 
 	count = data->stream.bufend - data->stream.this_frame;
 
@@ -307,7 +306,14 @@ static void mp3_parseId3Tag(mp3DecodeData * data, signed long tagsize, MpdTag **
 		}
 	}
 
-	if(replayGainInfo) mp3_getReplayGainInfo(id3Tag, replayGainInfo);
+	if(replayGainInfo) {
+		tmpReplayGainInfo = parseId3ReplayGainInfo(id3Tag);
+		if(tmpReplayGainInfo) {
+			if(*replayGainInfo) freeReplayGainInfo(*replayGainInfo);
+			*replayGainInfo = tmpReplayGainInfo;
+		}
+	}
+
 	id3_tag_delete(id3Tag);
 fail:
 	if(allocated) free(allocated);
