@@ -138,6 +138,8 @@ MpdTag * getID3Info(struct id3_tag * tag, char * id, int type, MpdTag * mpdTag)
 	union id3_field const * field;
 	unsigned int nstrings;
 	int i;
+	char * isostr;
+	char * encoding;
 
 	frame = id3_tag_findframe(tag, id, 0);
 	if(!frame || frame->nfields < 2) return mpdTag;
@@ -153,6 +155,18 @@ MpdTag * getID3Info(struct id3_tag * tag, char * id, int type, MpdTag * mpdTag)
 
 		utf8 = id3_ucs4_utf8duplicate(ucs4);
 		if(!utf8) continue;
+
+		if(isId3v1(tag)) {
+			encoding = getConfigParamValue(CONF_ID3V1_ENCODING);
+			if(encoding) {
+				setCharSetConversion("ISO-8859-1", "UTF-8");
+				isostr = convStrDup(utf8);
+				free(utf8);
+				setCharSetConversion("UTF-8", encoding);
+				utf8 = convStrDup(isostr);
+				free(isostr);
+			}
+		}
 
 		if(mpdTag == NULL) mpdTag = newMpdTag();
 		addItemToMpdTag(mpdTag, type, utf8);

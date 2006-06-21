@@ -200,6 +200,10 @@ pid_file 		"~/.mpd/mpd.pid"
 #
 #port	"6600"
 #
+# This determines what encoding ID3v1 tags should be converted from.
+#
+#id3v1_encoding         "ISO-8859-1"
+#
 # This sets the metadata mpd will use, to disable all metadata, set to "none"
 # NOTE: comments are disabled by default
 #
