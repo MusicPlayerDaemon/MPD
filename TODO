@@ -5,26 +5,13 @@
 	*) remove changes made to linked list for TagTracker
 
 *) input plugins
-	*) parsing of lame tags for gapless info
 	*) add support for playing aac streams
-	*) implement id3v1 parser
-	*) use libid3tag for only id3v2 tags
-	*) add back id3v1_encoding option
-
-*) audio output
-	*) add support for saving and restoring audioOutput state to the 
-		state_file
-	(solution implemented by Qball)
 
 *) mixer
 	*) add sun support
 	*) add OS X support
 
 *) Add support for 24-bit audio
-
-*) Add better error logging when updating the db and a file/directory isn't 
-	added
-	(More debug output added, needs to be unified a bit, maybe overkill atm)
 
 0.13
 ----
@@ -40,7 +27,6 @@
 
 *) input plugins
 	*) Handle mp1 and mp2 files (including files with mp3 suffixes) 
-	*) read replaygain info from id3 tag
 
 *) add error codes for status->error
 
@@ -59,7 +45,6 @@
 
 *) state
 	*) abstract out state code from playlist.c
-	*) save states of audioOutput devices
 	*) put MPD Version in statefile
 
 *) rewrite saved playlist code
