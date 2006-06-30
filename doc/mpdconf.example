@@ -87,7 +87,7 @@ pid_file 		"~/.mpd/mpd.pid"
 #
 # Optional Paramters
 #	user		"source"
-#	description	"here's my long descriptiion"
+#	description	"here's my long description"
 #       genre		"jazz"
 #} # end of audio_output
 #
