@@ -369,6 +369,10 @@ if test x$enable_aac = xyes; then
 	fi
 	if test x$enable_aac = xyes; then
 		AC_CHECK_LIB(faad,faacDecInit2,[MPD_LIBS="$MPD_LIBS $FAAD_LIBS";MPD_CFLAGS="$MPD_CFLAGS $FAAD_CFLAGS";MP4FF_SUBDIR="mp4ff";MP4FF_LIB="mp4ff/libmp4ff.la"],enable_aac=no)
+		if test x$enable_aac = xno; then
+			enable_aac=yes
+			AC_CHECK_LIB(faad,NeAACDecInit2,[MPD_LIBS="$MPD_LIBS $FAAD_LIBS";MPD_CFLAGS="$MPD_CFLAGS $FAAD_CFLAGS";MP4FF_SUBDIR="mp4ff";MP4FF_LIB="mp4ff/libmp4ff.la"],enable_aac=no)
+		fi
 	fi
 	if test x$enable_aac = xyes; then
   		AC_MSG_CHECKING(that FAAD2 uses buffer and bufferlen)
