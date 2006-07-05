@@ -34,7 +34,6 @@
 
 #include <shout/shout.h>
 #include <vorbis/vorbisenc.h>
-#include <vorbis/codec.h>
 
 #define CONN_ATTEMPT_INTERVAL	60
 
