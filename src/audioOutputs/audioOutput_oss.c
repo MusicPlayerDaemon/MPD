@@ -2,7 +2,8 @@
  * (c)2003-2004 by Warren Dukes (shank@mercury.chem.pitt.edu)
  * This project's homepage is: http://www.musicpd.org
  *
- * OSS audio output (c) 2004 by Eric Wong <eric@petta-tech.com>
+ * OSS audio output (c) 2004, 2005, 2006 by Eric Wong <eric@petta-tech.com>
+ *                   and Warren Dukes <warren.dukes@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -302,7 +303,7 @@ static int oss_testDefault() {
 
 	fd = open("/dev/sound/dsp", O_WRONLY);
 
-	if(fd) {
+	if(fd >= 0) {
 		close(fd);
 		return 0;
 	}
@@ -312,7 +313,7 @@ static int oss_testDefault() {
 
 	fd = open("/dev/dsp", O_WRONLY);
 
-	if(fd) {
+	if(fd >= 0) {
 		close(fd);
 		return 0;
 	}
