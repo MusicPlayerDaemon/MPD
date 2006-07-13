@@ -75,6 +75,7 @@ extern AudioOutputPlugin alsaPlugin;
 extern AudioOutputPlugin aoPlugin;
 extern AudioOutputPlugin ossPlugin;
 extern AudioOutputPlugin osxPlugin;
+extern AudioOutputPlugin pulsePlugin;
 extern AudioOutputPlugin mvpPlugin;
 extern AudioOutputPlugin shoutPlugin;
 
@@ -88,6 +89,7 @@ void initAudioDriver() {
 	loadAudioOutputPlugin(&aoPlugin);
 	loadAudioOutputPlugin(&ossPlugin);
 	loadAudioOutputPlugin(&osxPlugin);
+	loadAudioOutputPlugin(&pulsePlugin);
 	loadAudioOutputPlugin(&mvpPlugin);
 	loadAudioOutputPlugin(&shoutPlugin);
 
