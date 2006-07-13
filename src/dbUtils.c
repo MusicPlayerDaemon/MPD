@@ -409,4 +409,11 @@ static int sumSavedFilenameMemoryInSong(FILE * fp, Song * song, void * data) {
 	return 0;
 }
 
+void printSavedMemoryFromFilenames() {
+	int sum = 0;
 
+	traverseAllIn(stderr, NULL, sumSavedFilenameMemoryInSong,
+		sumSavedFilenameMemoryInDirectory, (void *)&sum);
+
+	DEBUG("saved memory from filenames: %i\n", sum);
+}
