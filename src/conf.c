@@ -338,17 +338,6 @@ char * getConfigParamValue(char * name) {
 	return param->value;
 }
 
-char * forceAndGetConfigParamValue(char * name) {
-	ConfigParam * param = getConfigParam(name);
-
-	if(!param) {
-		ERROR("\"%s\" not found in config file\n", name);
-		exit(EXIT_FAILURE);
-	}
-
-	return param->value;
-}
-
 BlockParam * getBlockParam(ConfigParam * param, char * name) {
 	BlockParam * ret = NULL;
 	int i;
