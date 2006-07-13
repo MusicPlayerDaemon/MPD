@@ -42,23 +42,16 @@ char * playlistDir;
 
 char * fsCharset = NULL;
 
-char * pathConvCharset(char * to, char * from, char * str, char * ret) {
-	if(ret) {
-		free(ret);
-		ret = NULL;
-	}
-
+static char * pathConvCharset(char * to, char * from, char * str) {
 	if(setCharSetConversion(to,from)==0) {
-		ret = convStrDup(str);
+		return convStrDup(str);
 	}
 
-	return ret;
+	return NULL;
 }
 
 char * fsCharsetToUtf8(char * str) {
-	static char * ret = NULL;
-
-	ret = pathConvCharset("UTF-8",fsCharset,str,ret);
+	char * ret = pathConvCharset("UTF-8",fsCharset,str);
 
 	if(ret && !validUtf8String(ret)) {
 		free(ret);
@@ -69,9 +62,7 @@ char * fsCharsetToUtf8(char * str) {
 }
 
 char * utf8ToFsCharset(char * str) {
-	static char * ret = NULL;
-
-	ret = pathConvCharset(fsCharset,"UTF-8",str,ret);
+	char * ret = pathConvCharset(fsCharset,"UTF-8",str);
 
 	if(!ret) ret = strdup(str);
 

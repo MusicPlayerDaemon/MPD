@@ -22,7 +22,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-unsigned char * latin1ToUtf8(unsigned char c) {
+static unsigned char * latin1ToUtf8(unsigned char c) {
 	static unsigned char utf8[3];
 
 	memset(utf8,0,3);
@@ -63,7 +63,7 @@ unsigned char * latin1StrToUtf8Dup(unsigned char * latin1) {
 	return realloc(ret,len+1);
 }
 
-unsigned char utf8ToLatin1(unsigned char * utf8) {
+static unsigned char utf8ToLatin1(unsigned char * utf8) {
 	unsigned char c = 0;
 
 	if(utf8[0]<128) return utf8[0];
@@ -72,7 +72,7 @@ unsigned char utf8ToLatin1(unsigned char * utf8) {
 	return c+utf8[1];
 }
 
-int validateUtf8Char(unsigned char * utf8Char) {
+static int validateUtf8Char(unsigned char * utf8Char) {
 	if(utf8Char[0]<0x80) return 1;
 	
 	if(utf8Char[0]>=0xC0 && utf8Char[0]<=0xFD) {

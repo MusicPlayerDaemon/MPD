@@ -51,6 +51,4 @@ char * parentPath(char * path);
 /* strips extra "///" and leading "/" and trailing "/" */
 char * sanitizePathDup(char * path);
 
-char * prependCwdToPathDup(char * path);
-
 #endif
