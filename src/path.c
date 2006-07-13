@@ -275,32 +275,3 @@ char * sanitizePathDup(char * path) {
 	return realloc(ret,len+1);
 }
 
-char * prependCwdToPathDup(char * path) {
-        int len = MAXPATHLEN+1;
-        char * ret = malloc(len);
-
-        memset(ret,0,len);
-
-        len = 0;
-
-        if(path[0]=='/') {
-                strncpy(ret,path,MAXPATHLEN);
-                len = strlen(ret);
-        }
-        else {
-                getcwd(ret,MAXPATHLEN);
-                len = strlen(ret);
-                if(ret[len-1]!='/') {
-                        strncat(ret,"/",MAXPATHLEN-len);
-                        len = strlen(ret);
-                }
-                strncat(ret,path,MAXPATHLEN-len);
-                len = strlen(ret);
-        }
-        if(ret[len-1]!='/') {
-                strncat(ret,"/",MAXPATHLEN-len);
-                len = strlen(ret);
-        }
-
-        return realloc(ret,len+1);
-}
