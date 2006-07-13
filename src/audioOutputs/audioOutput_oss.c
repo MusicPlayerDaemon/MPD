@@ -1,5 +1,5 @@
 /* the Music Player Daemon (MPD)
- * (c)2003-2004 by Warren Dukes (shank@mercury.chem.pitt.edu)
+ * (c)2003-2006 by Warren Dukes (shank@mercury.chem.pitt.edu)
  * This project's homepage is: http://www.musicpd.org
  *
  * OSS audio output (c) 2004, 2005, 2006 by Eric Wong <eric@petta-tech.com>

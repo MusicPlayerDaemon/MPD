@@ -1,5 +1,5 @@
 /* the Music Player Daemon (MPD)
- * (c)2003-2004 by Warren Dukes (shank@mercury.chem.pitt.edu
+ * (c)2003-2006 by Warren Dukes (shank@mercury.chem.pitt.edu
  * (c)2004 by mackstann
  * This project's homepage is: http://www.musicpd.org
  *
