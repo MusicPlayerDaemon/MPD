@@ -586,8 +586,6 @@ int main(int argc, char * argv[]) {
 
 	printMemorySavedByTagTracker();
 	printSavedMemoryFromFilenames();
-	/*printSavedMemoryFromDirectoryNames();*/
-	
 
         setupLogOutput(&options, out, err);
 

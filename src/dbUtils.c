@@ -109,7 +109,7 @@ void freeLocateTagItem(LocateTagItem * item) {
 	free(item);
 }
 
-int countSongsInDirectory(FILE * fp, Directory * directory, void * data) {
+static int countSongsInDirectory(FILE * fp, Directory * directory, void * data) {
 	int * count = (int *)data;
 
 	*count+=directory->songs->numberOfNodes;
@@ -117,14 +117,14 @@ int countSongsInDirectory(FILE * fp, Directory * directory, void * data) {
         return 0;
 }
 
-int printDirectoryInDirectory(FILE * fp, Directory * directory, void * data) {
+static int printDirectoryInDirectory(FILE * fp, Directory * directory, void * data) {
         if(directory->path) {
 		myfprintf(fp,"directory: %s\n", getDirectoryPath(directory));
 	}
         return 0;
 }
 
-int printSongInDirectory(FILE * fp, Song * song, void * data) {
+static int printSongInDirectory(FILE * fp, Song * song, void * data) {
 	printSongUrl(fp, song);
         return 0;
 }
@@ -160,7 +160,7 @@ static inline int strstrSearchTag(Song * song, int type, char * str) {
 	return ret;
 }
 
-int searchInDirectory(FILE * fp, Song * song, void * data) {
+static int searchInDirectory(FILE * fp, Song * song, void * data) {
 	LocateTagItemArray * array = data;
 	int i;
 
@@ -224,7 +224,7 @@ static inline int tagItemFoundAndMatches(Song * song, int type, char * str) {
 	return 0;
 }
 
-int findInDirectory(FILE * fp, Song * song, void * data) {
+static int findInDirectory(FILE * fp, Song * song, void * data) {
 	LocateTagItemArray * array = data;
 	int i;
 
@@ -256,7 +256,7 @@ int printAllIn(FILE * fp, char * name) {
 				printDirectoryInDirectory,NULL);
 }
 
-int directoryAddSongToPlaylist(FILE * fp, Song * song, void * data) {
+static int directoryAddSongToPlaylist(FILE * fp, Song * song, void * data) {
 	return addSongToPlaylist(fp, song, 0);
 }
 
@@ -264,11 +264,11 @@ int addAllIn(FILE * fp, char * name) {
 	return traverseAllIn(fp,name,directoryAddSongToPlaylist,NULL,NULL);
 }
 
-int directoryPrintSongInfo(FILE * fp, Song * song, void * data) {
+static int directoryPrintSongInfo(FILE * fp, Song * song, void * data) {
 	return printSongInfo(fp,song);
 }
 
-int sumSongTime(FILE * fp, Song * song, void * data) {
+static int sumSongTime(FILE * fp, Song * song, void * data) {
 	unsigned long * time = (unsigned long *)data;
 
 	if(song->tag && song->tag->time>=0) *time+=song->tag->time;
@@ -298,7 +298,7 @@ unsigned long sumSongTimesIn(FILE * fp, char * name) {
 	return dbPlayTime;
 }
 
-ListCommandItem * newListCommandItem(int tagType, int numConditionals,
+static ListCommandItem * newListCommandItem(int tagType, int numConditionals,
 		LocateTagItem * conditionals)
 {
 	ListCommandItem * item = malloc(sizeof(ListCommandItem));
@@ -310,11 +310,11 @@ ListCommandItem * newListCommandItem(int tagType, int numConditionals,
 	return item;
 }
 
-void freeListCommandItem(ListCommandItem * item) {
+static void freeListCommandItem(ListCommandItem * item) {
 	free(item);
 }
 
-void visitTag(FILE * fp, Song * song, int tagType) {
+static void visitTag(FILE * fp, Song * song, int tagType) {
 	int i;
 	MpdTag * tag = song->tag;
 
@@ -332,7 +332,7 @@ void visitTag(FILE * fp, Song * song, int tagType) {
 	}
 }
 
-int listUniqueTagsInDirectory(FILE * fp, Song * song, void * data) {
+static int listUniqueTagsInDirectory(FILE * fp, Song * song, void * data) {
 	ListCommandItem * item = data;
 	int i;
 
@@ -372,7 +372,7 @@ int listAllUniqueTags(FILE * fp, int type, int numConditionals,
 	return ret;
 }
 
-int sumSavedFilenameMemoryInDirectory(FILE * fp, Directory * dir, void * data) {
+static int sumSavedFilenameMemoryInDirectory(FILE * fp, Directory * dir, void * data) {
 	int * sum = data;
 
 	if(!dir->path) return 0;
@@ -383,7 +383,7 @@ int sumSavedFilenameMemoryInDirectory(FILE * fp, Directory * dir, void * data) {
 	return 0;
 }
 
-int sumSavedFilenameMemoryInSong(FILE * fp, Song * song, void * data) {
+static int sumSavedFilenameMemoryInSong(FILE * fp, Song * song, void * data) {
 	int * sum = data;
 
 	*sum += strlen(song->url)+1;
@@ -400,7 +400,7 @@ void printSavedMemoryFromFilenames() {
 	DEBUG("saved memory from filenames: %i\n", sum);
 }
 
-int sumSavedDirectoryNameMemoryInDirectory(FILE * fp, Directory * dir, void * data) {
+static int sumSavedDirectoryNameMemoryInDirectory(FILE * fp, Directory * dir, void * data) {
 	int * sum = data;
 
 	if(!dir->path) return 0;
@@ -413,7 +413,7 @@ int sumSavedDirectoryNameMemoryInDirectory(FILE * fp, Directory * dir, void * da
 	return 0;
 }
 
-void printSavedMemoryFromDirectoryNames() {
+static void printSavedMemoryFromDirectoryNames() {
 	int sum = 0;
 	
 	traverseAllIn(stderr, NULL, NULL, 
