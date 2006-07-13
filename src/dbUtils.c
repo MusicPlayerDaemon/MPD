@@ -400,24 +400,4 @@ void printSavedMemoryFromFilenames() {
 	DEBUG("saved memory from filenames: %i\n", sum);
 }
 
-static int sumSavedDirectoryNameMemoryInDirectory(FILE * fp, Directory * dir, void * data) {
-	int * sum = data;
 
-	if(!dir->path) return 0;
-
-	*sum += (strlen(getDirectoryPath(dir))+1)*
-				dir->subDirectories->numberOfNodes;
-
-	*sum += strlen(dir->path)+1;
-
-	return 0;
-}
-
-static void printSavedMemoryFromDirectoryNames() {
-	int sum = 0;
-	
-	traverseAllIn(stderr, NULL, NULL, 
-			sumSavedDirectoryNameMemoryInDirectory, (void *)&sum);
-
-	DEBUG("saved memory from directory names: %i\n", sum);
-}
