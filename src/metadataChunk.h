@@ -31,8 +31,6 @@ typedef struct _MetadataChunk {
 	char buffer[METADATA_BUFFER_LENGTH];
 } MetadataChunk;
 
-void initMetadataChunk(MetadataChunk *);
-
 MpdTag * metadataChunkToMpdTagDup(MetadataChunk * chunk);
 
 void copyMpdTagToMetadataChunk(MpdTag * tag, MetadataChunk * chunk);

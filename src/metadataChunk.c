@@ -20,7 +20,7 @@
 
 #include <string.h>
 
-void initMetadataChunk(MetadataChunk * chunk) {
+static void initMetadataChunk(MetadataChunk * chunk) {
 	memset(chunk, 0, sizeof(MetadataChunk));
 	
 	chunk->name = -1;
