@@ -97,16 +97,11 @@ void deleteNodeFromList(List * list,ListNode * node);
  */
 int findInList(List * list, char * key, void ** data);
 
-/* if _key_ is not found, *_node_ is assigned to the node before which
-	the info would be found */
-int findNodeInList(List * list, char * key, ListNode ** node, int * pos);
 
 /* frees memory malloc'd for list and its nodes
  *  _list_ -> List to be free'd
  */
 void freeList(void * list);
-
-void clearList(List * list);
 
 void sortList(List * list);
 

@@ -25,7 +25,7 @@
 #include <time.h>
 #include <stdio.h>
 
-void makeListNodesArray(List * list) {
+static void makeListNodesArray(List * list) {
 	ListNode * node = list->firstNode;
 	long i;
 
@@ -40,7 +40,7 @@ void makeListNodesArray(List * list) {
 	}
 }
 
-void freeListNodesArray(List * list) {
+static void freeListNodesArray(List * list) {
 	if(!list->nodesArray) return;
 	free(list->nodesArray);
 	list->nodesArray = NULL;
@@ -193,7 +193,9 @@ int insertInListWithoutKey(List * list, void * data) {
 	return 1;
 }
 
-int findNodeInList(List * list, char * key, ListNode ** node, int * pos) {
+/* if _key_ is not found, *_node_ is assigned to the node before which
+	the info would be found */
+static int findNodeInList(List * list, char * key, ListNode ** node, int * pos) {
 	long high;
 	long low;
 	long cur;
@@ -342,32 +344,7 @@ void freeList(void * list) {
 	free(list);
 }
 
-void clearList(List * list) {
-	ListNode * tmpNode;
-	ListNode * tmpNode2;
-
-	assert(list!=NULL);
-
-	tmpNode = ((List *)list)->firstNode;
-
-	while(tmpNode!=NULL) {
-		tmpNode2 = tmpNode->nextNode;
-		if(list->strdupKeys) free(tmpNode->key);
-		if(((List *)list)->freeDataFunc) {
-			((List *)list)->freeDataFunc(tmpNode->data);
-		}
-		free(tmpNode);
-		tmpNode = tmpNode2;
-	}
-
-	if(list->nodesArray) freeListNodesArray(list);
-
-	list->firstNode = NULL;
-	list->lastNode = NULL;
-	list->numberOfNodes = 0;
-}
-
-void swapNodes(ListNode * nodeA, ListNode * nodeB) {
+static void swapNodes(ListNode * nodeA, ListNode * nodeB) {
 	char * key;
 	void * data;
 	
@@ -384,37 +361,7 @@ void swapNodes(ListNode * nodeA, ListNode * nodeB) {
 	nodeA->data = data;
 }
 
-void moveNodeAfter(List * list, ListNode * moveNode, ListNode * beforeNode) {
-	ListNode * prev;
-	ListNode * next;
-
-	assert(moveNode!=NULL);
-
-	prev = moveNode->prevNode;
-	next = moveNode->nextNode;
-
-	if(prev) prev->nextNode = next;
-	else list->firstNode = next;
-	if(next) next->prevNode = prev;
-	else list->lastNode = prev;
-
-	if(beforeNode) {
-		next = beforeNode->nextNode;
-		moveNode->nextNode = next;
-		moveNode->prevNode = beforeNode;
-		next->prevNode = moveNode;
-		beforeNode->nextNode = moveNode;
-		if(beforeNode==list->lastNode) list->lastNode = moveNode;
-	}
-	else {
-		moveNode->prevNode = NULL;
-		moveNode->nextNode = list->firstNode;
-		list->firstNode = moveNode;
-		if(list->lastNode==NULL) list->lastNode = moveNode;
-	}
-}
-
-void bubbleSort(ListNode ** nodesArray, long start, long end) {
+static void bubbleSort(ListNode ** nodesArray, long start, long end) {
 	long i;
 	long j;
 	ListNode * node;
@@ -431,7 +378,7 @@ void bubbleSort(ListNode ** nodesArray, long start, long end) {
 	}
 }
 
-void quickSort(ListNode ** nodesArray, long start, long end) {
+static void quickSort(ListNode ** nodesArray, long start, long end) {
 	if(start>=end) return;
 	else if(end-start<5) bubbleSort(nodesArray,start,end);
 	else {
