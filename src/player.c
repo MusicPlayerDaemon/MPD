@@ -102,7 +102,7 @@ int playerInit() {
 	return 0;
 }
 
-static int playerInitReal() {
+int playerInitReal() {
 	int player_pid;
 	blockSignals();
 	player_pid = fork();

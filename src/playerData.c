@@ -33,7 +33,7 @@ int buffered_chunks;
 #define DEFAULT_BUFFER_SIZE		2048
 #define DEFAULT_BUFFER_BEFORE_PLAY	0
 
-PlayerData * playerData_pd;
+static PlayerData * playerData_pd;
 int * player_pid;
 
 void initPlayerData() {
@@ -152,7 +152,7 @@ void initPlayerData() {
 	playerData_pd->playerControl.totalPlayTime = 0;
 	playerData_pd->playerControl.decode_pid = 0;
 	playerData_pd->playerControl.metadataState = 
-                        PLAYER_METADATA_STATE_WRITE;
+		PLAYER_METADATA_STATE_WRITE;
 
 	playerData_pd->decoderControl.stop = 0;
 	playerData_pd->decoderControl.start = 0;
