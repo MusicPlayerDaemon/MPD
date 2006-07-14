@@ -89,8 +89,6 @@ typedef struct _PlayerControl {
         MetadataChunk fileMetadataChunk;
 } PlayerControl;
 
-void clearPlayerPid();
-
 void player_sigChldHandler(int pid, int status);
 
 int playerPlay(FILE * fp, Song * song);
@@ -104,8 +102,6 @@ int playerStop(FILE * fp);
 void playerCloseAudio();
 
 void playerKill();
-
-void playerProcessMessages();
 
 int getPlayerTotalTime();
 
@@ -138,8 +134,6 @@ int playerSeek(FILE * fp, Song * song, float time);
 void setPlayerCrossFade(float crossFadeInSeconds);
 
 float getPlayerCrossFade();
-
-int getPlayerSoftwareVolume();
 
 void setPlayerSoftwareVolume(int volume);
 

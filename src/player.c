@@ -46,11 +46,11 @@
 extern int masterPid;
 
 static void resetPlayerMetadata() {
-        PlayerControl * pc = &(getPlayerData()->playerControl);
+	PlayerControl * pc = &(getPlayerData()->playerControl);
 
-        if(pc->metadataState == PLAYER_METADATA_STATE_READ) {
-                pc->metadataState = PLAYER_METADATA_STATE_WRITE;
-        }
+	if(pc->metadataState == PLAYER_METADATA_STATE_READ) {
+		pc->metadataState = PLAYER_METADATA_STATE_WRITE;
+	}
 }
 
 void resetPlayer() {
@@ -65,8 +65,8 @@ void resetPlayer() {
 	getPlayerData()->playerControl.state = PLAYER_STATE_STOP;
 	getPlayerData()->playerControl.queueState = PLAYER_QUEUE_UNLOCKED;
 	getPlayerData()->playerControl.seek = 0;
-        getPlayerData()->playerControl.metadataState = 
-                        PLAYER_METADATA_STATE_WRITE;
+	getPlayerData()->playerControl.metadataState = 
+		PLAYER_METADATA_STATE_WRITE;
 	pid = getPlayerData()->playerControl.decode_pid;
 	if(pid>0) kill(pid,SIGTERM);
 	getPlayerData()->playerControl.decode_pid = 0;
@@ -102,28 +102,16 @@ int playerInit() {
 	return 0;
 }
 
-int playerInitReal() {
+static int playerInitReal() {
 	int player_pid;
 	blockSignals();
 	player_pid = fork();
 	if(player_pid==0) {
 		PlayerControl * pc = &(getPlayerData()->playerControl);
 
-		/* clearUpdatePid(); */
-
 		unblockSignals();
 
 		setSigHandlersForDecoder();
-		
-		/* 
-		closeAllListenSockets();
-		freeAllInterfaces();
-		closeMp3Directory();
-		finishPlaylist();
-		finishPermissions();
-		finishCommands();
-		finishVolume();
-		*/
 
 		while(1) {
 			if(pc->play) decode();
@@ -142,10 +130,10 @@ int playerInitReal() {
 				pc->queueLockState = PLAYER_QUEUE_UNLOCKED;
 				pc->unlockQueue = 0;
 			}
-                        else if(pc->cycleLogFiles) {
-                                myfprintfCloseAndOpenLogFile();
-                                pc->cycleLogFiles = 0;
-                        }
+			else if(pc->cycleLogFiles) {
+				myfprintfCloseAndOpenLogFile();
+				pc->cycleLogFiles = 0;
+			}
 			else my_usleep(10000);
 		}
 
@@ -173,22 +161,12 @@ int playerPlay(FILE * fp, Song * song) {
 
 	if(playerStop(fp)<0) return -1;
 
-	/*{
-		struct stat st;
-		if(stat(rmp2amp(utf8ToFsCharset(utf8file)),&st)<0) {
-			strncpy(pc->erroredFile,pc->file,MAXPATHLEN);
-			pc->erroredFile[MAXPATHLEN] = '\0';
-			pc->error = PLAYER_ERROR_FILENOTFOUND;
-			return 0;
-		}
-	}*/
-	
-        if(song->tag) pc->fileTime = song->tag->time;
-        else pc->fileTime = 0;
+	if(song->tag) pc->fileTime = song->tag->time;
+	else pc->fileTime = 0;
 
 	copyMpdTagToMetadataChunk(song->tag, &(pc->fileMetadataChunk));
 
-        strncpy(pc->utf8url, getSongUrl(song), MAXPATHLEN);
+	strncpy(pc->utf8url, getSongUrl(song), MAXPATHLEN);
 	pc->utf8url[MAXPATHLEN] = '\0';
 
 	pc->play = 1;
@@ -336,8 +314,8 @@ int queueSong(Song * song) {
                 strncpy(pc->utf8url, getSongUrl(song), MAXPATHLEN);
 		pc->utf8url[MAXPATHLEN] = '\0';
 
-                if(song->tag) pc->fileTime = song->tag->time;
-                else pc->fileTime = 0;
+		if(song->tag) pc->fileTime = song->tag->time;
+		else pc->fileTime = 0;
 
 		copyMpdTagToMetadataChunk(song->tag, &(pc->fileMetadataChunk));
 
@@ -433,12 +411,6 @@ void setPlayerSoftwareVolume(int volume) {
 	pc->softwareVolume = volume;
 }
 
-int getPlayerSoftwareVolume() {
-	PlayerControl * pc = &(getPlayerData()->playerControl);
-
-	return pc->softwareVolume;
-}
-
 double getPlayerTotalPlayTime() {
 	PlayerControl * pc = &(getPlayerData()->playerControl);
 
@@ -473,23 +445,23 @@ void playerCycleLogFiles() {
 
 /* this actually creates a dupe of the current metadata */
 Song * playerCurrentDecodeSong() {
-        static Song * song = NULL;
-        static MetadataChunk * prev = NULL;
+	static Song * song = NULL;
+	static MetadataChunk * prev = NULL;
 	Song * ret = NULL;
 	PlayerControl * pc = &(getPlayerData()->playerControl);
 
         if(pc->metadataState == PLAYER_METADATA_STATE_READ) {
 		DEBUG("playerCurrentDecodeSong: caught new metadata!\n");
-                if(prev) free(prev);
-                prev = malloc(sizeof(MetadataChunk));
+		if(prev) free(prev);
+		prev = malloc(sizeof(MetadataChunk));
 		memcpy(prev, &(pc->metadataChunk), sizeof(MetadataChunk));
                 if(song) freeJustSong(song);
-                song = newNullSong();
-                song->url = strdup(pc->currentUrl);
+		song = newNullSong();
+		song->url = strdup(pc->currentUrl);
 		song->tag = metadataChunkToMpdTagDup(prev);
-                ret =  song;
-        	resetPlayerMetadata();
-        }
+		ret =  song;
+		resetPlayerMetadata();
+	}
 
-        return ret;
+	return ret;
 }
