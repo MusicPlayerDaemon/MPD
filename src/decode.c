@@ -65,25 +65,25 @@ void decodeSigHandler(int sig, siginfo_t * si, void * v) {
 	}
 }
 
-void stopDecode(DecoderControl * dc) {
+static void stopDecode(DecoderControl * dc) {
 	if(decode_pid>0 && (dc->start || dc->state!=DECODE_STATE_STOP)) {
 		dc->stop = 1;
 		while(decode_pid>0 && dc->stop) my_usleep(10000);
 	}
 }
 
-void quitDecode(PlayerControl * pc, DecoderControl * dc) {
+static void quitDecode(PlayerControl * pc, DecoderControl * dc) {
 	stopDecode(dc);
-        pc->metadataState = PLAYER_METADATA_STATE_READ;
+	pc->metadataState = PLAYER_METADATA_STATE_READ;
 	pc->state = PLAYER_STATE_STOP;
-        dc->seek = 0;
+	dc->seek = 0;
 	pc->play = 0;
 	pc->stop = 0;
 	pc->pause = 0;
 	kill(getppid(),SIGUSR1);
 }
 
-int calculateCrossFadeChunks(PlayerControl * pc, AudioFormat * af) {
+static int calculateCrossFadeChunks(PlayerControl * pc, AudioFormat * af) {
 	long chunks;
 
 	if(pc->crossFade<=0) return 0;
@@ -101,24 +101,24 @@ int calculateCrossFadeChunks(PlayerControl * pc, AudioFormat * af) {
 }
 
 #define handleDecodeStart() \
-        if(decodeWaitedOn) { \
-                if(dc->state!=DECODE_STATE_START &&  decode_pid > 0 && \
-                                dc->error==DECODE_ERROR_NOERROR) \
-                { \
-                        decodeWaitedOn = 0; \
-	                if(openAudioDevice(&(cb->audioFormat))<0) { \
-		                strncpy(pc->erroredUrl, pc->utf8url, \
+	if(decodeWaitedOn) { \
+		if(dc->state!=DECODE_STATE_START &&  decode_pid > 0 && \
+				dc->error==DECODE_ERROR_NOERROR) \
+		{ \
+			decodeWaitedOn = 0; \
+			if(openAudioDevice(&(cb->audioFormat))<0) { \
+				strncpy(pc->erroredUrl, pc->utf8url, \
                                                 MAXPATHLEN); \
-		                pc->erroredUrl[MAXPATHLEN] = '\0'; \
-		                pc->error = PLAYER_ERROR_AUDIO; \
+				pc->erroredUrl[MAXPATHLEN] = '\0'; \
+				pc->error = PLAYER_ERROR_AUDIO; \
 				ERROR("problems opening audio device while playing \"%s\"\n", pc->utf8url); \
-		                quitDecode(pc,dc); \
-		                return; \
+				quitDecode(pc,dc); \
+				return; \
 	                } \
-	                pc->totalTime = dc->totalTime; \
-	                pc->sampleRate = dc->audioFormat.sampleRate; \
-	                pc->bits = dc->audioFormat.bits; \
-	                pc->channels = dc->audioFormat.channels; \
+			pc->totalTime = dc->totalTime; \
+			pc->sampleRate = dc->audioFormat.sampleRate; \
+			pc->bits = dc->audioFormat.bits; \
+			pc->channels = dc->audioFormat.channels; \
 			sizeToTime = 8.0/cb->audioFormat.bits/ \
 					cb->audioFormat.channels/ \
 					cb->audioFormat.sampleRate; \
@@ -133,15 +133,15 @@ int calculateCrossFadeChunks(PlayerControl * pc, AudioFormat * af) {
                 else { \
 			my_usleep(10000); \
                         continue; \
-                } \
-        }
+		} \
+	}
 
-int waitOnDecode(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb,
-                int * decodeWaitedOn) 
+static int waitOnDecode(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb,
+		int * decodeWaitedOn) 
 {
 	MpdTag * tag = NULL;
-        strncpy(pc->currentUrl, pc->utf8url, MAXPATHLEN);
-        pc->currentUrl[MAXPATHLEN] = '\0';
+	strncpy(pc->currentUrl, pc->utf8url, MAXPATHLEN);
+	pc->currentUrl[MAXPATHLEN] = '\0';
 
 	while(decode_pid>0 && dc->start) my_usleep(10000);
 
@@ -158,20 +158,20 @@ int waitOnDecode(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb,
 		freeMpdTag(tag);
 	}
 
-        pc->totalTime = pc->fileTime;
-        pc->bitRate = 0;
-        pc->sampleRate = 0;
-        pc->bits = 0;
-        pc->channels = 0;
-        *decodeWaitedOn = 1;
+	pc->totalTime = pc->fileTime;
+	pc->bitRate = 0;
+	pc->sampleRate = 0;
+	pc->bits = 0;
+	pc->channels = 0;
+	*decodeWaitedOn = 1;
 
 	return 0;
 }
 
-int decodeSeek(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb,
-                int * decodeWaitedOn, int * next) 
+static int decodeSeek(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb,
+		int * decodeWaitedOn, int * next) 
 {
-        int ret = -1;
+	int ret = -1;
 
 	if(decode_pid>0) {
 		if(dc->state==DECODE_STATE_STOP || dc->error || 
@@ -186,25 +186,25 @@ int decodeSeek(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb,
 			waitOnDecode(pc,dc,cb,decodeWaitedOn);
 		}
 		if(decode_pid>0 && dc->state!=DECODE_STATE_STOP && 
-                                dc->seekable) 
-                {
+			dc->seekable)
+		{
 			*next = -1;
 			dc->seekWhere = pc->seekWhere > pc->totalTime-0.1 ?
 						pc->totalTime-0.1 : 
 						pc->seekWhere;
 			dc->seekWhere = 0 > dc->seekWhere ? 0 : dc->seekWhere;
-                        dc->seekError = 0;
+			dc->seekError = 0;
 			dc->seek = 1;
-                        while(decode_pid>0 && dc->seek) my_usleep(10000);
-                        if(!dc->seekError) {
-                                pc->elapsedTime = dc->seekWhere;
-                                ret = 0;
-                        }
+			while(decode_pid>0 && dc->seek) my_usleep(10000);
+			if(!dc->seekError) {
+				pc->elapsedTime = dc->seekWhere;
+				ret = 0;
+			}
 		}
 	}
 	pc->seek = 0;
 
-        return ret;
+	return ret;
 }
 
 #define processDecodeInput() \
@@ -256,27 +256,27 @@ int decodeSeek(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb,
 		return; \
 	}
 
-void decodeStart(PlayerControl * pc, OutputBuffer * cb, DecoderControl * dc) {
-        int ret;
-        InputStream inStream;
-        InputPlugin * plugin = NULL;
-        char * path;
+static void decodeStart(PlayerControl * pc, OutputBuffer * cb, DecoderControl * dc) {
+	int ret;
+	InputStream inStream;
+	InputPlugin * plugin = NULL;
+	char * path;
 
-        if(isRemoteUrl(pc->utf8url)) {
-                path = utf8StrToLatin1Dup(pc->utf8url);
-        }
+	if(isRemoteUrl(pc->utf8url)) {
+		path = utf8StrToLatin1Dup(pc->utf8url);
+	}
 	else path = strdup(rmp2amp(utf8ToFsCharset(pc->utf8url)));
 
 	if(!path) {
 		dc->error = DECODE_ERROR_FILE;
 		dc->state = DECODE_STATE_STOP;
 		dc->start = 0;
-                return;
+		return;
 	}
 
 	copyMpdTagToOutputBuffer(cb, NULL);
 
-        strncpy(dc->utf8url, pc->utf8url, MAXPATHLEN);
+	strncpy(dc->utf8url, pc->utf8url, MAXPATHLEN);
 	dc->utf8url[MAXPATHLEN] = '\0';
 
         if(openInputStream(&inStream, path) < 0) {
@@ -284,11 +284,11 @@ void decodeStart(PlayerControl * pc, OutputBuffer * cb, DecoderControl * dc) {
 		dc->state = DECODE_STATE_STOP;
 		dc->start = 0;
 		free(path);
-                return;
-        }
+		return;
+	}
 
-        dc->seekable = inStream.seekable;
-        dc->state = DECODE_STATE_START;
+	dc->seekable = inStream.seekable;
+	dc->state = DECODE_STATE_START;
 	dc->start = 0;
 
         while(!inputStreamAtEOF(&inStream) && bufferInputStream(&inStream) < 0
@@ -298,12 +298,12 @@ void decodeStart(PlayerControl * pc, OutputBuffer * cb, DecoderControl * dc) {
 		my_usleep(1000);
 	}
 
-        if(dc->stop) {
-                dc->state = DECODE_STATE_STOP;
-                dc->stop = 0;
+	if(dc->stop) {
+		dc->state = DECODE_STATE_STOP;
+		dc->stop = 0;
 		free(path);
-                return;
-        }
+		return;
+	}
 
         /*if(inStream.metaName) {
 		MpdTag * tag = newMpdTag();
@@ -352,19 +352,19 @@ void decodeStart(PlayerControl * pc, OutputBuffer * cb, DecoderControl * dc) {
 							cb, dc, &inStream);
 				break;
 			}
-                }
+		}
 		/* fallback to mp3: */
-                /* this is needed for bastard streams that don't have a suffix
-                                or set the mimeType */
-                if(plugin == NULL) {
+		/* this is needed for bastard streams that don't have a suffix
+			or set the mimeType */
+		if(plugin == NULL) {
 			/* we already know our mp3Plugin supports streams, no
 			 * need to check for stream{Types,DecodeFunc} */
-                        if ((plugin = getInputPluginFromName("mp3")))
+			if ((plugin = getInputPluginFromName("mp3")))
 				ret = plugin->streamDecodeFunc(cb, dc,
 								&inStream);
-                }
+		}
 	}
-        else {
+	else {
 		unsigned int next = 0;
 		char * s = getSuffix(dc->utf8url);
 		cb->acceptMetadata = 0;
@@ -392,10 +392,10 @@ void decodeStart(PlayerControl * pc, OutputBuffer * cb, DecoderControl * dc) {
 		strncpy(pc->erroredUrl, dc->utf8url, MAXPATHLEN);
 		pc->erroredUrl[MAXPATHLEN] = '\0';
 		if(ret != DECODE_ERROR_UNKTYPE) dc->error = DECODE_ERROR_FILE;
-                else {
-                        dc->error = DECODE_ERROR_UNKTYPE;
-                        closeInputStream(&inStream);
-                }
+		else {
+			dc->error = DECODE_ERROR_UNKTYPE;
+			closeInputStream(&inStream);
+		}
 		dc->stop = 0;
 		dc->state = DECODE_STATE_STOP;
 	}
@@ -403,7 +403,7 @@ void decodeStart(PlayerControl * pc, OutputBuffer * cb, DecoderControl * dc) {
 	free(path);
 }
 
-int decoderInit(PlayerControl * pc, OutputBuffer * cb, DecoderControl * dc) {
+static int decoderInit(PlayerControl * pc, OutputBuffer * cb, DecoderControl * dc) {
 	blockSignals();
 	getPlayerData()->playerControl.decode_pid = 0;
 	decode_pid = fork();
@@ -413,10 +413,10 @@ int decoderInit(PlayerControl * pc, OutputBuffer * cb, DecoderControl * dc) {
 		unblockSignals();
 
 		while(1) {
-                        if(dc->cycleLogFiles) {
-                                myfprintfCloseAndOpenLogFile();
-                                dc->cycleLogFiles = 0;
-                        }
+			if(dc->cycleLogFiles) {
+				myfprintfCloseAndOpenLogFile();
+				dc->cycleLogFiles = 0;
+			}
 			else if(dc->start || dc->seek) decodeStart(pc, cb, dc);
 			else if(dc->stop) {
 				dc->state = DECODE_STATE_STOP;
@@ -442,7 +442,7 @@ int decoderInit(PlayerControl * pc, OutputBuffer * cb, DecoderControl * dc) {
 	return 0;
 }
 
-void handleMetadata(OutputBuffer * cb, PlayerControl * pc, int * previous,
+static void handleMetadata(OutputBuffer * cb, PlayerControl * pc, int * previous,
 		int * currentChunkSent, MetadataChunk * currentChunk) 
 {
 	if(cb->begin!=cb->end) {
@@ -479,7 +479,7 @@ void handleMetadata(OutputBuffer * cb, PlayerControl * pc, int * previous,
 	}
 }
 
-void advanceOutputBufferTo(OutputBuffer * cb, PlayerControl * pc, 
+static void advanceOutputBufferTo(OutputBuffer * cb, PlayerControl * pc, 
 	int * previous, int * currentChunkSent, MetadataChunk * currentChunk,
 	int to) 
 {
@@ -664,8 +664,8 @@ void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb) {
 			else {
 				next = -1;
 				if(waitOnDecode(pc,dc,cb,&decodeWaitedOn)<0) {
-                                        return;
-                                }
+					return;
+				}
 				nextChunk = -1;
 				doCrossFade = 0;
 				crossFadeChunks = 0;
@@ -705,13 +705,13 @@ void decode() {
 	pc = &(getPlayerData()->playerControl);
 	dc = &(getPlayerData()->decoderControl);
 	dc->error = 0;
-        dc->seek = 0;
-        dc->stop = 0;
+	dc->seek = 0;
+	dc->stop = 0;
 	dc->start = 1;
-        
+
 	if(decode_pid<=0) {
 		if(decoderInit(pc,cb,dc)<0) return;
 	}
 
-        decodeParent(pc, dc, cb);
+	decodeParent(pc, dc, cb);
 }
