@@ -2,7 +2,7 @@ dnl AC_INIT(src/main.c)
 dnl AM_INIT_AUTOMAKE(mpd, 0.10.0)
 
 AC_PREREQ(2.52)
-AC_INIT(mpd, 0.12.0, shank@mercury.chem.pitt.edu)
+AC_INIT(mpd, 0.12.0, warren.dukes@gmail.com)
 AM_INIT_AUTOMAKE($PACKAGE_NAME, $PACKAGE_VERSION)
 
 dnl MAD wants this stuff

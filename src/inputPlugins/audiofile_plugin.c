@@ -1,5 +1,5 @@
 /* the Music Player Daemon (MPD)
- * (c)2003-2006 by Warren Dukes (shank@mercury.chem.pitt.edu)
+ * (c)2003-2006 by Warren Dukes (warren.dukes@gmail.com)
  * This project's homepage is: http://www.musicpd.org
  * 
  * libaudiofile (wave) support added by Eric Wong <normalperson@yhbt.net>
