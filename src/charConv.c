@@ -36,10 +36,12 @@ mpd_sint8 char_conv_use_iconv = 0;
 
 /* 1 is to use latin1ToUtf8
    0 is not to use latin1/utf8 converter
-  -1 is to use utf8ToLatin1*/	
+  -1 is to use utf8ToLatin1*/
 mpd_sint8 char_conv_latin1ToUtf8 = 0;
 
 #define BUFFER_SIZE	1024
+
+static void closeCharSetConversion();
 
 int setCharSetConversion(char * to, char * from) {
 	if(char_conv_to && char_conv_from &&
@@ -133,7 +135,7 @@ char * convStrDup(char * string) {
 	return NULL;
 }
 
-void closeCharSetConversion() {
+static void closeCharSetConversion() {
 	if(char_conv_to) {
 #ifdef HAVE_ICONV
 		if(char_conv_use_iconv) iconv_close(char_conv_iconv);

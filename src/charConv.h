@@ -25,6 +25,4 @@ int setCharSetConversion(char * to, char * from);
 
 char * convStrDup(char * string);
 
-void closeCharSetConversion();
-
 #endif
