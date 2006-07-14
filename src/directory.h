@@ -24,9 +24,6 @@
 #include "song.h"
 #include "list.h"
 
-#include <stdio.h>
-#include <sys/param.h>
-
 typedef List DirectoryList;
 
 typedef struct _DirectoryStat {
@@ -43,8 +40,6 @@ typedef struct _Directory {
 } Directory;
 
 void readDirectoryDBIfUpdateIsFinished();
-
-void clearUpdatePid();
 
 int isUpdatingDB();
 
@@ -75,11 +70,6 @@ int traverseAllIn(FILE * fp, char * name,
 			int (*forEachDir)(FILE *, Directory *, void *),
 			void * data);
 
-/* don't free this */
-/*char * getDirectoryPath(Directory * dir);*/
 #define getDirectoryPath(dir) ((dir && dir->path) ? dir->path : "")
-
-/* free the string that is returned */
-char * catDirAndFileName(Directory * dir, char * filename);
 
 #endif

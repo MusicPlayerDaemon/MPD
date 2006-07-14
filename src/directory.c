@@ -31,22 +31,13 @@
 #include "volume.h"
 #include "mpd_types.h"
 #include "sig_handlers.h"
-#include "player.h"
 #include "list.h"
 #include "dbUtils.h"
 #include "tagTracker.h"
 
-#include <string.h>
-#include <sys/types.h>
-#include <sys/time.h>
-#include <sys/resource.h>
 #include <sys/wait.h>
-#include <sys/stat.h>
 #include <dirent.h>
-#include <unistd.h>
-#include <stdio.h>
 #include <errno.h>
-#include <signal.h>
 #include <assert.h>
 #include <libgen.h>
 
@@ -77,39 +68,39 @@ volatile int directory_reReadDB = 0;
 
 volatile mpd_uint16 directory_updateJobId = 0;
 
-DirectoryList * newDirectoryList();
+static DirectoryList * newDirectoryList();
 
-int addToDirectory(Directory * directory, char * shortname, char * name);
+static int addToDirectory(Directory * directory, char * shortname, char * name);
 
-void freeDirectoryList(DirectoryList * list);
+static void freeDirectoryList(DirectoryList * list);
 
-void freeDirectory(Directory * directory);
+static void freeDirectory(Directory * directory);
 
-int exploreDirectory(Directory * directory);
+static int exploreDirectory(Directory * directory);
 
-int updateDirectory(Directory * directory);
+static int updateDirectory(Directory * directory);
 
-void deleteEmptyDirectoriesInDirectory(Directory * directory);
+static void deleteEmptyDirectoriesInDirectory(Directory * directory);
 
-void removeSongFromDirectory(Directory * directory, char * shortname);
+static void removeSongFromDirectory(Directory * directory, char * shortname);
 
-int addSubDirectoryToDirectory(Directory * directory, char * shortname, 
+static int addSubDirectoryToDirectory(Directory * directory, char * shortname, 
 				char * name, struct stat * st);
 
-Directory * getDirectoryDetails(char * name, char ** shortname);
+static Directory * getDirectoryDetails(char * name, char ** shortname);
 
-Directory * getDirectory(char * name);
+static Directory * getDirectory(char * name);
 
-Song * getSongDetails(char * file, char ** shortnameRet, 
+static Song * getSongDetails(char * file, char ** shortnameRet, 
 		Directory ** directoryRet);
 
-int updatePath(char * utf8path);
+static int updatePath(char * utf8path);
 
-void sortDirectory(Directory * directory);
+static void sortDirectory(Directory * directory);
 
-int inodeFoundInParent(Directory * parent, ino_t inode, dev_t device);
+static int inodeFoundInParent(Directory * parent, ino_t inode, dev_t device);
 
-int statDirectory(Directory * dir);
+static int statDirectory(Directory * dir);
 
 static char * getDbFile() {
 	ConfigParam * param = parseConfigFilePath(CONF_DB_FILE, 1);
@@ -120,7 +111,7 @@ static char * getDbFile() {
 	return param->value;
 }
 
-void clearUpdatePid() {
+static void clearUpdatePid() {
 	directory_updatePid = 0;
 }
 
@@ -177,17 +168,17 @@ int updateInit(FILE * fp, List * pathList) {
 		even get a chance to assign directory_updatePID */
 	blockSignals();	
 	directory_updatePid = fork();
-       	if(directory_updatePid==0) {
-              	/* child */
-                int dbUpdated = 0;
+	if(directory_updatePid==0) {
+		/* child */
+		int dbUpdated = 0;
 		/* clearPlayerPid(); */
-	
+
 		unblockSignals();
 
 		finishSigHandlers();
-               	closeAllListenSockets();
-               	freeAllInterfaces();
-               	finishPlaylist();
+		closeAllListenSockets();
+		freeAllInterfaces();
+		finishPlaylist();
 		finishVolume();
 
 		if(pathList) {
@@ -195,7 +186,7 @@ int updateInit(FILE * fp, List * pathList) {
 
 			while(node) {
 				switch(updatePath(node->key)) {
-                                case 1:
+				case 1:
                                         dbUpdated = 1;
                                         break;
                                 case 0:
@@ -240,19 +231,19 @@ int updateInit(FILE * fp, List * pathList) {
 	return 0;
 }
 
-DirectoryStat * newDirectoryStat(struct stat * st) {
+static DirectoryStat * newDirectoryStat(struct stat * st) {
 	DirectoryStat * ret = malloc(sizeof(DirectoryStat));
 	ret->inode = st->st_ino;
 	ret->device = st->st_dev;
 	return ret;
 }
 
-void freeDirectoryStatFromDirectory(Directory * dir) {
+static void freeDirectoryStatFromDirectory(Directory * dir) {
 	if(dir->stat) free(dir->stat);
 	dir->stat = NULL;
 }
 
-Directory * newDirectory(char * dirname, Directory * parent) {
+static Directory * newDirectory(char * dirname, Directory * parent) {
 	Directory * directory;
 
 	directory = malloc(sizeof(Directory));
@@ -267,7 +258,7 @@ Directory * newDirectory(char * dirname, Directory * parent) {
 	return directory;
 }
 
-void freeDirectory(Directory * directory) {
+static void freeDirectory(Directory * directory) {
 	freeDirectoryList(directory->subDirectories);
 	freeSongList(directory->songs);
 	if(directory->path) free(directory->path);
@@ -277,15 +268,15 @@ void freeDirectory(Directory * directory) {
 	/*getDirectoryPath(NULL);*/
 }
 
-DirectoryList * newDirectoryList() {
+static DirectoryList * newDirectoryList() {
 	return makeList((ListFreeDataFunc *)freeDirectory, 1);
 }
 
-void freeDirectoryList(DirectoryList * directoryList) {
+static void freeDirectoryList(DirectoryList * directoryList) {
 	freeList(directoryList);
 }
 
-void removeSongFromDirectory(Directory * directory, char * shortname) {
+static void removeSongFromDirectory(Directory * directory, char * shortname) {
 	void * song;
 	
 	if(findInList(directory->songs,shortname,&song)) {
@@ -294,7 +285,7 @@ void removeSongFromDirectory(Directory * directory, char * shortname) {
 	}
 }
 
-void deleteEmptyDirectoriesInDirectory(Directory * directory) {
+static void deleteEmptyDirectoriesInDirectory(Directory * directory) {
 	ListNode * node = directory->subDirectories->firstNode;
 	ListNode * nextNode;
 	Directory * subDir;
@@ -317,7 +308,7 @@ void deleteEmptyDirectoriesInDirectory(Directory * directory) {
     0 -> no error, but nothing updated
     1 -> no error, and stuff updated
  */
-int updateInDirectory(Directory * directory, char * shortname, char * name) {
+static int updateInDirectory(Directory * directory, char * shortname, char * name) {
 	void * song;
 	void * subDir;
 	struct stat st;
@@ -357,7 +348,7 @@ int updateInDirectory(Directory * directory, char * shortname, char * name) {
     0 -> no error, but nothing removed
     1 -> no error, and stuff removed
  */
-int removeDeletedFromDirectory(Directory * directory, DIR * dir) {
+static int removeDeletedFromDirectory(Directory * directory, DIR * dir) {
 	char cwd[2];
 	struct dirent * ent;
 	char * dirname = getDirectoryPath(directory);
@@ -431,7 +422,7 @@ int removeDeletedFromDirectory(Directory * directory, DIR * dir) {
 	return ret;
 }
 
-Directory * addDirectoryPathToDB(char * utf8path, char ** shortname) {
+static Directory * addDirectoryPathToDB(char * utf8path, char ** shortname) {
 	char * parent;
 	Directory * parentDirectory;
 	void * directory;
@@ -476,7 +467,7 @@ Directory * addDirectoryPathToDB(char * utf8path, char ** shortname) {
 	return (Directory *)directory;
 }
 
-Directory * addParentPathToDB(char * utf8path, char ** shortname) {
+static Directory * addParentPathToDB(char * utf8path, char ** shortname) {
 	char * parent;
 	Directory * parentDirectory;
 
@@ -503,7 +494,7 @@ Directory * addParentPathToDB(char * utf8path, char ** shortname) {
     0 -> no error, but nothing updated
     1 -> no error, and stuff updated
  */
-int updatePath(char * utf8path) {
+static int updatePath(char * utf8path) {
 	Directory * directory;
 	Directory * parentDirectory;
 	Song * song;
@@ -600,7 +591,7 @@ int updatePath(char * utf8path) {
     0 -> no error, but nothing updated
     1 -> no error, and stuff updated
  */
-int updateDirectory(Directory * directory) {
+static int updateDirectory(Directory * directory) {
 	DIR * dir;
 	char cwd[2];
 	struct dirent * ent;
@@ -662,7 +653,7 @@ int updateDirectory(Directory * directory) {
     0 -> no error, but nothing found
     1 -> no error, and stuff found
  */
-int exploreDirectory(Directory * directory) {
+static int exploreDirectory(Directory * directory) {
 	DIR * dir;
 	char cwd[2];
 	struct dirent * ent;
@@ -707,7 +698,7 @@ int exploreDirectory(Directory * directory) {
 	return ret;
 }
 
-int statDirectory(Directory * dir) {
+static int statDirectory(Directory * dir) {
 	struct stat st;
 
 	if(myStat(getDirectoryPath(dir) ? getDirectoryPath(dir) : "", &st) < 0) 	{
@@ -719,7 +710,7 @@ int statDirectory(Directory * dir) {
 	return 0;
 }
 
-int inodeFoundInParent(Directory * parent, ino_t inode, dev_t device) {
+static int inodeFoundInParent(Directory * parent, ino_t inode, dev_t device) {
 	while(parent) {
 		if(!parent->stat) {
 			if(statDirectory(parent) < 0) return -1;
@@ -736,7 +727,7 @@ int inodeFoundInParent(Directory * parent, ino_t inode, dev_t device) {
 	return 0;
 }
 
-int addSubDirectoryToDirectory(Directory * directory, char * shortname, 
+static int addSubDirectoryToDirectory(Directory * directory, char * shortname, 
 	char * name, struct stat * st) 
 {
 	Directory * subDirectory;
@@ -757,7 +748,7 @@ int addSubDirectoryToDirectory(Directory * directory, char * shortname,
 	return 1;
 }
 
-int addToDirectory(Directory * directory, char * shortname, char * name) {
+static int addToDirectory(Directory * directory, char * shortname, char * name) {
 	struct stat st;
 
 	if(myStat(name, &st)) {
@@ -788,7 +779,7 @@ void closeMp3Directory() {
 	destroyTagTracker();
 }
 
-Directory * findSubDirectory(Directory * directory,char * name) {
+static Directory * findSubDirectory(Directory * directory,char * name) {
 	void * subDirectory;
 	char * dup = strdup(name);
 	char * key;
@@ -808,7 +799,7 @@ Directory * findSubDirectory(Directory * directory,char * name) {
 	return NULL;
 }
 
-Directory * getSubDirectory(Directory * directory, char * name, 
+static Directory * getSubDirectory(Directory * directory, char * name, 
 		char ** shortname) 
 {
 	Directory * subDirectory;
@@ -829,19 +820,19 @@ Directory * getSubDirectory(Directory * directory, char * name,
 	return getSubDirectory(subDirectory,&(name[len]),shortname);
 }
 
-Directory * getDirectoryDetails(char * name, char ** shortname) {
+static Directory * getDirectoryDetails(char * name, char ** shortname) {
 	*shortname = NULL;
 
 	return getSubDirectory(mp3rootDirectory,name,shortname);
 }
 
-Directory * getDirectory(char * name) {
+static Directory * getDirectory(char * name) {
 	char * shortname;
 
 	return getSubDirectory(mp3rootDirectory,name,&shortname);
 }
 
-int printDirectoryList(FILE * fp, DirectoryList * directoryList) {
+static int printDirectoryList(FILE * fp, DirectoryList * directoryList) {
 	ListNode * node = directoryList->firstNode;
 	Directory * directory;
 
@@ -870,7 +861,7 @@ int printDirectoryInfo(FILE * fp, char * name) {
 	return 0;
 }
 
-void writeDirectoryInfo(FILE * fp, Directory * directory) {
+static void writeDirectoryInfo(FILE * fp, Directory * directory) {
 	ListNode * node = (directory->subDirectories)->firstNode;
 	Directory * subDirectory;
 
@@ -894,7 +885,7 @@ void writeDirectoryInfo(FILE * fp, Directory * directory) {
 	}
 }
 
-void readDirectoryInfo(FILE * fp,Directory * directory) {
+static void readDirectoryInfo(FILE * fp,Directory * directory) {
 	char buffer[MAXPATHLEN*2];
 	int bufferSize = MAXPATHLEN*2;
 	char * key;
@@ -974,7 +965,7 @@ void readDirectoryInfo(FILE * fp,Directory * directory) {
 	}
 }
 
-void sortDirectory(Directory * directory) {
+static void sortDirectory(Directory * directory) {
 	ListNode * node = directory->subDirectories->firstNode;
 	Directory * subDir;
 	
@@ -1176,7 +1167,7 @@ void updateMp3Directory() {
 	return;
 }
 
-int traverseAllInSubDirectory(FILE * fp, Directory * directory,
+static int traverseAllInSubDirectory(FILE * fp, Directory * directory,
                                 int (*forEachSong)(FILE *, Song *, void *),
                                 int (*forEachDir)(FILE *, Directory *, void *),
 				void * data)
@@ -1232,7 +1223,7 @@ int traverseAllIn(FILE * fp, char * name,
 			data);
 }
 
-void freeAllDirectoryStats(Directory * directory) {
+static void freeAllDirectoryStats(Directory * directory) {
 	ListNode * node = directory->subDirectories->firstNode;
 
 	while(node != NULL) {
@@ -1255,7 +1246,7 @@ void initMp3Directory() {
 	if(stat(getDbFile(),&st)==0) directory_dbModTime = st.st_mtime;
 }
 
-Song * getSongDetails(char * file, char ** shortnameRet, 
+static Song * getSongDetails(char * file, char ** shortnameRet, 
 		Directory ** directoryRet)
 {
 	void * song = NULL;
@@ -1302,45 +1293,3 @@ Song * getSongFromDB(char * file) {
 time_t getDbModTime() {
 	return directory_dbModTime;
 }
-
-/* pass a NULL to this function to clear the static lastDir, this way
- * 	if a directory is freed, and then realloced, the wrong name isn't
- * 	output */
-/*char * getDirectoryPath(Directory * dir) {
-	static char * buffer = NULL;
-	static int bufferSize = 0;
-	static Directory * lastDir = NULL;
-	static int pos = 0;
-	int dlen;
-
-	if(!dir || !dir->name) {
-		lastDir = NULL;
-		return "";
-	}
-
-	if(lastDir == dir) return buffer+pos+1;
-	
-	pos = bufferSize-1;
-
-	while(dir && dir->name) {
-		dlen = strlen(dir->name);
-		// add one for the '/'
-		pos -= dlen+1;
-		if(pos < 0) {
-			buffer = realloc(buffer, bufferSize-pos);
-			if(bufferSize) {
-				memmove(buffer-pos, buffer, bufferSize);
-			}
-			bufferSize += -pos;
-			buffer[bufferSize-1] = '\0';
-			pos = 0;
-		}
-		strncpy(buffer+pos+1, dir->name, dlen);
-		buffer[pos] = '/';
-		dir = dir->parent;
-	}
-
-	lastDir = dir;
-
-	return buffer+pos+1;
-}*/
