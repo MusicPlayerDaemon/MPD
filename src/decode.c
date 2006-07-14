@@ -525,7 +525,6 @@ void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb) {
 				dc->state!=DECODE_STATE_STOP) 
 	{
 		processDecodeInput();
-		if(quit) return;
 		my_usleep(1000);
 	}
 
