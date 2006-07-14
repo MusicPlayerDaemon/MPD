@@ -532,9 +532,6 @@ void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb) {
 	{
 		processDecodeInput();
 		if(quit) return;
-		/*playSilenceOrSleep();*/
-		/* instead we want to pause audio and play silence for
-		 * devices that don't support pausing */
 		my_usleep(1000);
 	}
 
@@ -570,7 +567,7 @@ void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb) {
 			else doCrossFade = -1;
 		}
 
-		/* copy thse to locale variables to prevent any potential
+		/* copy these to local variables to prevent any potential
 			race conditions and weirdness */
 		end = cb->end;
 
@@ -690,8 +687,6 @@ void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb) {
 			break;
 		}
 		else {
-			/* instead we want to pause audio and play silence for
-			 * devices that don't support pausing */
 			if(playAudio(silence, CHUNK_SIZE) < 0) quit = 1;
 		}
 	}
