@@ -28,11 +28,8 @@
 
 void initInterfaces();
 void openAInterface(int fd, struct sockaddr * addr);
-void closeAllInterfaces();
 void freeAllInterfaces();
 void closeOldInterfaces();
-void closeInterfaceWithFD(int fd);
-void flushAllInterfaceBuffers();
 int interfacePrintWithFD(int fd, char * buffer, int len);
 
 int doIOForInterfaces();

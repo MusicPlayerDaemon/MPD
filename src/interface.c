@@ -83,13 +83,13 @@ typedef struct _Interface {
 	int outBufSize;
 } Interface;
 
-Interface * interfaces = NULL;
+static Interface * interfaces = NULL;
 
-void flushInterfaceBuffer(Interface * interface);
+static void flushInterfaceBuffer(Interface * interface);
 
-void printInterfaceOutBuffer(Interface * interface);
+static void printInterfaceOutBuffer(Interface * interface);
 
-void openInterface(Interface * interface, int fd) {
+static void openInterface(Interface * interface, int fd) {
 	int flags;
 	
 	assert(interface->open==0);
@@ -135,7 +135,7 @@ void openInterface(Interface * interface, int fd) {
 	printInterfaceOutBuffer(interface);
 }
 
-void closeInterface(Interface * interface) {
+static void closeInterface(Interface * interface) {
 	if (!interface->open) return;
 
 	interface->open = 0;
@@ -330,7 +330,7 @@ static int processBytesRead(Interface * interface, int bytesRead) {
 	return ret;
 }
 
-int interfaceReadInput(Interface * interface) {
+static int interfaceReadInput(Interface * interface) {
 	int bytesRead;
 
 	bytesRead = read(interface->fd, 
@@ -346,7 +346,7 @@ int interfaceReadInput(Interface * interface) {
 	return 1;
 }
 
-void addInterfacesReadyToReadAndListenSocketToFdSet(fd_set * fds, int * fdmax) {
+static void addInterfacesReadyToReadAndListenSocketToFdSet(fd_set * fds, int * fdmax) {
 	int i;
 
 	FD_ZERO(fds);
@@ -360,7 +360,7 @@ void addInterfacesReadyToReadAndListenSocketToFdSet(fd_set * fds, int * fdmax) {
 	}
 }
 
-void addInterfacesForBufferFlushToFdSet(fd_set * fds, int * fdmax) {
+static void addInterfacesForBufferFlushToFdSet(fd_set * fds, int * fdmax) {
 	int i;
 
 	FD_ZERO(fds);
@@ -373,7 +373,7 @@ void addInterfacesForBufferFlushToFdSet(fd_set * fds, int * fdmax) {
 	}
 }
 
-void closeNextErroredInterface() {
+static void closeNextErroredInterface() {
 	fd_set fds;
 	struct timeval tv;
 	int i;
@@ -506,7 +506,7 @@ void initInterfaces() {
 	}
 }
 
-void closeAllInterfaces() {
+static void closeAllInterfaces() {
 	int i;
 
 	fflush(NULL);
@@ -545,17 +545,7 @@ void closeOldInterfaces() {
 	}
 }
 
-void closeInterfaceWithFD(int fd) {
-	int i;
-
-	for(i=0;i<interface_max_connections;i++) {
-		if(interfaces[i].fd==fd) {
-			closeInterface(&(interfaces[i]));
-		}
-	}
-}
-
-void flushInterfaceBuffer(Interface * interface) {
+static void flushInterfaceBuffer(Interface * interface) {
 	ListNode * node = NULL;
 	char * str;
 	int ret = 0;
@@ -589,16 +579,6 @@ void flushInterfaceBuffer(Interface * interface) {
 		freeList(interface->bufferList);
 		interface->bufferList = NULL;
 		interface->expired = 1;
-	}
-}
-
-void flushAllInterfaceBuffers() {
-	int i;
-
-	for(i=0;i<interface_max_connections;i++) {
-		if(interfaces[i].open && !interfaces[i].expired && interfaces[i].bufferList) {
-			flushInterfaceBuffer(&interfaces[i]);
-		}
 	}
 }
 
@@ -639,7 +619,7 @@ int interfacePrintWithFD(int fd, char * buffer, int buflen) {
 	return 0;
 }
 
-void printInterfaceOutBuffer(Interface * interface) {
+static void printInterfaceOutBuffer(Interface * interface) {
 	char * buffer;
 	int ret;
 
