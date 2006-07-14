@@ -222,14 +222,6 @@ void freeAllListenSockets() {
 	listenSockets = NULL;
 }
 
-int isAListenSocket(int socket) {
-	int i;
-
-	for(i=0; listenSockets[i] != socket && i<numberOfListenSockets; i++);
-
-	return (i < numberOfListenSockets);
-}
-
 void getConnections(fd_set * fds) {
 	int i;
 	int fd = 0;

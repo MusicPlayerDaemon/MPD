@@ -30,8 +30,6 @@ void listenOnPort();
 
 void getConnections(fd_set * fds);
 
-int isAListenSocket(int sock);
-
 void closeAllListenSockets();
 void freeAllListenSockets();
 
