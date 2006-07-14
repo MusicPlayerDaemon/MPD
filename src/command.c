@@ -22,13 +22,10 @@
 #include "ls.h"
 #include "directory.h"
 #include "volume.h"
-#include "path.h"
 #include "stats.h"
 #include "myfprintf.h"
 #include "list.h"
-#include "conf.h"
 #include "permission.h"
-#include "audio.h"
 #include "buffer2array.h"
 #include "log.h"
 #include "dbUtils.h"
@@ -127,7 +124,7 @@ struct _CommandEntry {
 char * current_command = NULL;
 int command_listNum = 0;
 
-CommandEntry * getCommandEntryFromString(char * string, int * permission);
+static CommandEntry * getCommandEntryFromString(char * string, int * permission);
 
 List * commandList;
 
@@ -142,7 +139,7 @@ CommandEntry * newCommandEntry() {
         return cmd;
 }
 
-void addCommand(char * name, unsigned int reqPermission, int minargs,
+static void addCommand(char * name, unsigned int reqPermission, int minargs,
                 int maxargs, CommandHandlerFunction handler_func,
 		CommandListHandlerFunction listHandler_func) 
 {
@@ -157,13 +154,13 @@ void addCommand(char * name, unsigned int reqPermission, int minargs,
         insertInList(commandList, cmd->cmd, cmd);
 }
 
-int handleUrlHandlers(FILE * fp, unsigned int * permission, int argArrayLength, 
+static int handleUrlHandlers(FILE * fp, unsigned int * permission, int argArrayLength, 
 		char ** argArray) 
 {
         return printRemoteUrlHandlers(fp);
 }
 
-int handlePlay(FILE * fp, unsigned int * permission, int argArrayLength, 
+static int handlePlay(FILE * fp, unsigned int * permission, int argArrayLength, 
 		char ** argArray) 
 {
         int song = -1;
@@ -180,7 +177,7 @@ int handlePlay(FILE * fp, unsigned int * permission, int argArrayLength,
         return playPlaylist(fp,song,0);
 }
 
-int handlePlayId(FILE * fp, unsigned int * permission, int argArrayLength, 
+static int handlePlayId(FILE * fp, unsigned int * permission, int argArrayLength, 
 		char ** argArray) 
 {
         int id = -1;
@@ -197,13 +194,13 @@ int handlePlayId(FILE * fp, unsigned int * permission, int argArrayLength,
         return playPlaylistById(fp, id, 0);
 }
 
-int handleStop(FILE * fp, unsigned int * permission, int argArrayLength, 
+static int handleStop(FILE * fp, unsigned int * permission, int argArrayLength, 
 		char ** argArray) 
 {
         return stopPlaylist(fp);
 }
 
-int handleCurrentSong(FILE * fp, unsigned int * permission, int argArrayLength, 
+static int handleCurrentSong(FILE * fp, unsigned int * permission, int argArrayLength, 
 		char ** argArray) 
 {
         int song = getPlaylistCurrentSong();
@@ -214,7 +211,7 @@ int handleCurrentSong(FILE * fp, unsigned int * permission, int argArrayLength,
 	else return 0;
 }
 
-int handlePause(FILE * fp, unsigned int * permission, 
+static int handlePause(FILE * fp, unsigned int * permission, 
 		int argArrayLength, char ** argArray) 
 {
         if(argArrayLength==2) {
@@ -229,7 +226,7 @@ int handlePause(FILE * fp, unsigned int * permission,
         return playerPause(fp);
 }
 
-int commandStatus(FILE * fp, unsigned int * permission, int argArrayLength, 
+static int commandStatus(FILE * fp, unsigned int * permission, int argArrayLength, 
 		char ** argArray) 
 {
         char * state = NULL;
@@ -283,19 +280,19 @@ int commandStatus(FILE * fp, unsigned int * permission, int argArrayLength,
         return 0;
 }
 
-int handleKill(FILE * fp, unsigned int * permission, int argArrayLength, 
+static int handleKill(FILE * fp, unsigned int * permission, int argArrayLength, 
 		char ** argArray) 
 {
         return COMMAND_RETURN_KILL;
 }
 
-int handleClose(FILE * fp, unsigned int * permission, int argArrayLength, 
+static int handleClose(FILE * fp, unsigned int * permission, int argArrayLength, 
 		char ** argArray) 
 {
         return COMMAND_RETURN_CLOSE;
 }
 
-int handleAdd(FILE * fp, unsigned int * permission, int argArrayLength, 
+static int handleAdd(FILE * fp, unsigned int * permission, int argArrayLength, 
 		char ** argArray) 
 {
         char * path = argArray[1];
@@ -305,13 +302,13 @@ int handleAdd(FILE * fp, unsigned int * permission, int argArrayLength,
         return addAllIn(fp,path);
 }
 
-int handleAddId(FILE * fp, unsigned int * permission, int argArrayLength,
+static int handleAddId(FILE * fp, unsigned int * permission, int argArrayLength,
 		char ** argArray)
 {
 	return addToPlaylist(fp, argArray[1], 1);
 }
 
-int handleDelete(FILE * fp, unsigned int * permission, int argArrayLength, 
+static int handleDelete(FILE * fp, unsigned int * permission, int argArrayLength, 
 		char ** argArray) 
 {
         int song;
@@ -326,7 +323,7 @@ int handleDelete(FILE * fp, unsigned int * permission, int argArrayLength,
         return deleteFromPlaylist(fp,song); 
 }
 
-int handleDeleteId(FILE * fp, unsigned int * permission, int argArrayLength, 
+static int handleDeleteId(FILE * fp, unsigned int * permission, int argArrayLength, 
 		char ** argArray) 
 {
         int id;
@@ -341,47 +338,49 @@ int handleDeleteId(FILE * fp, unsigned int * permission, int argArrayLength,
         return deleteFromPlaylistById(fp, id); 
 }
 
-int handlePlaylist(FILE * fp, unsigned int * permission, int argArrayLength, 
+static int handlePlaylist(FILE * fp, unsigned int * permission, int argArrayLength, 
 		char ** argArray) 
 {
         return showPlaylist(fp);
 }
 
-int handleShuffle(FILE * fp, unsigned int * permission, int argArrayLength, 
+static int handleShuffle(FILE * fp, unsigned int * permission, int argArrayLength, 
 		char ** argArray) 
 {
         return shufflePlaylist(fp);
 }
 
-int handleClear(FILE * fp, unsigned int * permission, int argArrayLength, 
+static int handleClear(FILE * fp, unsigned int * permission, int argArrayLength, 
 		char ** argArray) 
 {
         return clearPlaylist(fp);
 }
 
-int handleSave(FILE * fp, unsigned int * permission, int argArrayLength, 
+static int handleSave(FILE * fp, unsigned int * permission, int argArrayLength, 
 		char ** argArray) 
 {
         return savePlaylist(fp,argArray[1]);
 }
 
-int handleLoad(FILE * fp, unsigned int * permission, int argArrayLength, 
+static int handleLoad(FILE * fp, unsigned int * permission, int argArrayLength, 
 		char ** argArray) 
 {
         return loadPlaylist(fp,argArray[1]);
 }
-int handleListPlaylist(FILE * fp, unsigned int * permission, int argArrayLength, 
+
+static int handleListPlaylist(FILE * fp, unsigned int * permission, int argArrayLength, 
 		char ** argArray) 
 {
         return PlaylistInfo(fp,argArray[1],0);
 }
-int handleListPlaylistInfo(FILE * fp, unsigned int * permission, int argArrayLength, 
+
+static int handleListPlaylistInfo(FILE * fp, unsigned int * permission, int argArrayLength, 
 		char ** argArray) 
 {
         return PlaylistInfo(fp,argArray[1], 1);
 }
 
-int handleLsInfo(FILE * fp, unsigned int * permission, int argArrayLength, 
+static int handleLsInfo(FILE * fp, unsigned int * permission, int argArrayLength, 
 		char ** argArray) 
 {
         if(argArrayLength==1) {
@@ -394,13 +393,13 @@ int handleLsInfo(FILE * fp, unsigned int * permission, int argArrayLength,
         }
 }
 
-int handleRm(FILE * fp, unsigned int * permission, int argArrayLength, 
+static int handleRm(FILE * fp, unsigned int * permission, int argArrayLength, 
 		char ** argArray) 
 {
         return deletePlaylist(fp,argArray[1]);
 }
 
-int handlePlaylistChanges(FILE * fp, unsigned int * permission, 
+static int handlePlaylistChanges(FILE * fp, unsigned int * permission, 
 		int argArrayLength, char ** argArray) 
 {
         unsigned long version;
@@ -415,7 +414,7 @@ int handlePlaylistChanges(FILE * fp, unsigned int * permission,
         return playlistChanges(fp, version);
 }
 
-int handlePlaylistChangesPosId(FILE * fp, unsigned int * permission, 
+static int handlePlaylistChangesPosId(FILE * fp, unsigned int * permission, 
 		int argArrayLength, char ** argArray) 
 {
         unsigned long version;
@@ -430,7 +429,7 @@ int handlePlaylistChangesPosId(FILE * fp, unsigned int * permission,
         return playlistChangesPosId(fp, version);
 }
 
-int handlePlaylistInfo(FILE * fp, unsigned int * permission, 
+static int handlePlaylistInfo(FILE * fp, unsigned int * permission, 
 		int argArrayLength, char ** argArray) 
 {
         int song = -1;
@@ -447,7 +446,7 @@ int handlePlaylistInfo(FILE * fp, unsigned int * permission,
         return playlistInfo(fp,song);
 }
 
-int handlePlaylistId(FILE * fp, unsigned int * permission, 
+static int handlePlaylistId(FILE * fp, unsigned int * permission, 
 		int argArrayLength, char ** argArray) 
 {
         int id = -1;
@@ -464,7 +463,7 @@ int handlePlaylistId(FILE * fp, unsigned int * permission,
         return playlistId(fp, id);
 }
 
-int handleFind(FILE * fp, unsigned int * permission, int argArrayLength, 
+static int handleFind(FILE * fp, unsigned int * permission, int argArrayLength, 
 		char ** argArray) 
 {
 	int ret;
@@ -485,7 +484,7 @@ int handleFind(FILE * fp, unsigned int * permission, int argArrayLength,
 	return ret;
 }
 
-int handleSearch(FILE * fp, unsigned int * permission, int argArrayLength, 
+static int handleSearch(FILE * fp, unsigned int * permission, int argArrayLength, 
 		char ** argArray) 
 {
 	int ret;
@@ -506,7 +505,7 @@ int handleSearch(FILE * fp, unsigned int * permission, int argArrayLength,
 	return ret;
 }
 
-int listHandleUpdate(FILE * fp, unsigned int * permission, int argArrayLength, 
+static int listHandleUpdate(FILE * fp, unsigned int * permission, int argArrayLength, 
 		char ** argArray, ListNode * commandNode, CommandEntry * cmd) 
 {
 	static List * pathList = NULL;
@@ -533,7 +532,7 @@ int listHandleUpdate(FILE * fp, unsigned int * permission, int argArrayLength,
 	return 0;
 }
 
-int handleUpdate(FILE * fp, unsigned int * permission, int argArrayLength, 
+static int handleUpdate(FILE * fp, unsigned int * permission, int argArrayLength, 
 		char ** argArray) 
 {
 	if(argArrayLength==2) {
@@ -547,19 +546,19 @@ int handleUpdate(FILE * fp, unsigned int * permission, int argArrayLength,
         return updateInit(fp,NULL);
 }
 
-int handleNext(FILE * fp, unsigned int * permission, int argArrayLength, 
+static int handleNext(FILE * fp, unsigned int * permission, int argArrayLength, 
 		char ** argArray) 
 {
         return nextSongInPlaylist(fp);
 }
 
-int handlePrevious(FILE * fp, unsigned int * permission, int argArrayLength, 
+static int handlePrevious(FILE * fp, unsigned int * permission, int argArrayLength, 
 		char ** argArray) 
 {
         return previousSongInPlaylist(fp);
 }
 
-int handleListAll(FILE * fp, unsigned int * permission, int argArrayLength, 
+static int handleListAll(FILE * fp, unsigned int * permission, int argArrayLength, 
 		char ** argArray) 
 {
         char * directory = NULL;
@@ -568,7 +567,7 @@ int handleListAll(FILE * fp, unsigned int * permission, int argArrayLength,
         return printAllIn(fp,directory);
 }
 
-int handleVolume(FILE * fp, unsigned int * permission, int argArrayLength, 
+static int handleVolume(FILE * fp, unsigned int * permission, int argArrayLength, 
 		char ** argArray) 
 {
         int change;
@@ -582,7 +581,7 @@ int handleVolume(FILE * fp, unsigned int * permission, int argArrayLength,
         return changeVolumeLevel(fp,change,1);
 }
 
-int handleSetVol(FILE * fp, unsigned int * permission, int argArrayLength, 
+static int handleSetVol(FILE * fp, unsigned int * permission, int argArrayLength, 
 		char ** argArray) 
 {
         int level;
@@ -596,7 +595,7 @@ int handleSetVol(FILE * fp, unsigned int * permission, int argArrayLength,
         return changeVolumeLevel(fp,level,0);
 }
 
-int handleRepeat(FILE * fp, unsigned int * permission, int argArrayLength, 
+static int handleRepeat(FILE * fp, unsigned int * permission, int argArrayLength, 
 		char ** argArray) 
 {
         int status;
@@ -610,7 +609,7 @@ int handleRepeat(FILE * fp, unsigned int * permission, int argArrayLength,
         return setPlaylistRepeatStatus(fp,status);
 }
 
-int handleRandom(FILE * fp, unsigned int * permission, int argArrayLength, 
+static int handleRandom(FILE * fp, unsigned int * permission, int argArrayLength, 
 		char ** argArray) 
 {
         int status;
@@ -624,20 +623,20 @@ int handleRandom(FILE * fp, unsigned int * permission, int argArrayLength,
         return setPlaylistRandomStatus(fp,status);
 }
 
-int handleStats(FILE * fp, unsigned int * permission, int argArrayLength, 
+static int handleStats(FILE * fp, unsigned int * permission, int argArrayLength, 
 		char ** argArray) 
 {
         return printStats(fp);
 }
 
-int handleClearError(FILE * fp, unsigned int * permission, int argArrayLength, 
+static int handleClearError(FILE * fp, unsigned int * permission, int argArrayLength, 
 		char ** argArray) 
 {
         clearPlayerError();
         return 0;
 }
 
-int handleList(FILE * fp, unsigned int * permission, int argArrayLength, 
+static int handleList(FILE * fp, unsigned int * permission, int argArrayLength, 
 		char ** argArray) 
 {
 	int numConditionals = 0;
@@ -673,7 +672,7 @@ int handleList(FILE * fp, unsigned int * permission, int argArrayLength,
 			return -1;
 		}
 	}
-        
+
 	ret = listAllUniqueTags(fp, tagType, numConditionals,conditionals);
 
 	if(conditionals) freeLocateTagItemArray(numConditionals, conditionals);
@@ -681,7 +680,7 @@ int handleList(FILE * fp, unsigned int * permission, int argArrayLength,
 	return ret;
 }
 
-int handleMove(FILE * fp, unsigned int * permission, int argArrayLength, 
+static int handleMove(FILE * fp, unsigned int * permission, int argArrayLength, 
 		char ** argArray) 
 {
         int from;
@@ -703,7 +702,7 @@ int handleMove(FILE * fp, unsigned int * permission, int argArrayLength,
         return moveSongInPlaylist(fp,from,to);
 }
 
-int handleMoveId(FILE * fp, unsigned int * permission, int argArrayLength, 
+static int handleMoveId(FILE * fp, unsigned int * permission, int argArrayLength, 
 		char ** argArray) 
 {
         int id;
@@ -725,7 +724,7 @@ int handleMoveId(FILE * fp, unsigned int * permission, int argArrayLength,
         return moveSongInPlaylistById(fp, id, to);
 }
 
-int handleSwap(FILE * fp, unsigned int * permission, int argArrayLength, 
+static int handleSwap(FILE * fp, unsigned int * permission, int argArrayLength, 
 		char ** argArray) 
 {
         int song1;
@@ -747,7 +746,7 @@ int handleSwap(FILE * fp, unsigned int * permission, int argArrayLength,
         return swapSongsInPlaylist(fp,song1,song2);
 }
 
-int handleSwapId(FILE * fp, unsigned int * permission, int argArrayLength, 
+static int handleSwapId(FILE * fp, unsigned int * permission, int argArrayLength, 
 		char ** argArray) 
 {
         int id1;
@@ -769,7 +768,7 @@ int handleSwapId(FILE * fp, unsigned int * permission, int argArrayLength,
         return swapSongsInPlaylistById(fp, id1, id2);
 }
 
-int handleSeek(FILE * fp, unsigned int * permission, int argArrayLength,
+static int handleSeek(FILE * fp, unsigned int * permission, int argArrayLength,
 		char ** argArray) 
 {
         int song;
@@ -791,7 +790,7 @@ int handleSeek(FILE * fp, unsigned int * permission, int argArrayLength,
         return seekSongInPlaylist(fp,song,time);
 }
 
-int handleSeekId(FILE * fp, unsigned int * permission, int argArrayLength,
+static int handleSeekId(FILE * fp, unsigned int * permission, int argArrayLength,
 		char ** argArray) 
 {
         int id;
@@ -813,7 +812,7 @@ int handleSeekId(FILE * fp, unsigned int * permission, int argArrayLength,
         return seekSongInPlaylistById(fp, id, time);
 }
 
-int handleListAllInfo(FILE * fp, unsigned int * permission, int argArrayLength,
+static int handleListAllInfo(FILE * fp, unsigned int * permission, int argArrayLength,
 		char ** argArray) 
 {
         char * directory = NULL;
@@ -822,13 +821,13 @@ int handleListAllInfo(FILE * fp, unsigned int * permission, int argArrayLength,
         return printInfoForAllIn(fp,directory);
 }
 
-int handlePing(FILE * fp, unsigned int * permission, int argArrayLength, 
+static int handlePing(FILE * fp, unsigned int * permission, int argArrayLength, 
 		char ** argArray) 
 {
         return 0;
 }
 
-int handlePassword(FILE * fp, unsigned int * permission, int argArrayLength, 
+static int handlePassword(FILE * fp, unsigned int * permission, int argArrayLength, 
 		char ** argArray) 
 {
 	if(getPermissionFromPassword(argArray[1],permission)<0) {
@@ -839,7 +838,7 @@ int handlePassword(FILE * fp, unsigned int * permission, int argArrayLength,
 	return 0;
 }
 
-int handleCrossfade(FILE * fp, unsigned int * permission, int argArrayLength, 
+static int handleCrossfade(FILE * fp, unsigned int * permission, int argArrayLength, 
 		char ** argArray) 
 {
         int time;
@@ -857,7 +856,7 @@ int handleCrossfade(FILE * fp, unsigned int * permission, int argArrayLength,
 	return 0;
 }
 
-int handleEnableDevice(FILE * fp, unsigned int * permission, int argArrayLength,
+static int handleEnableDevice(FILE * fp, unsigned int * permission, int argArrayLength,
 		char ** argArray) 
 {
         int device;
@@ -873,7 +872,7 @@ int handleEnableDevice(FILE * fp, unsigned int * permission, int argArrayLength,
 	return enableAudioDevice(fp, device);
 }
 
-int handleDisableDevice(FILE * fp, unsigned int * permission, 
+static int handleDisableDevice(FILE * fp, unsigned int * permission, 
 		int argArrayLength, char ** argArray) 
 {
         int device;
@@ -889,7 +888,7 @@ int handleDisableDevice(FILE * fp, unsigned int * permission,
 	return disableAudioDevice(fp, device);
 }
 
-int handleDevices(FILE * fp, unsigned int * permission, int argArrayLength,
+static int handleDevices(FILE * fp, unsigned int * permission, int argArrayLength,
 		char ** argArray)
 {
 	printAudioDevices(fp);
@@ -898,7 +897,7 @@ int handleDevices(FILE * fp, unsigned int * permission, int argArrayLength,
 }
 
 /* don't be fooled, this is the command handler for "commands" command */
-int handleCommands(FILE * fp, unsigned int * permission, int argArrayLength,
+static int handleCommands(FILE * fp, unsigned int * permission, int argArrayLength,
 		char ** argArray)
 {
 	ListNode * node = commandList->firstNode;
@@ -916,7 +915,7 @@ int handleCommands(FILE * fp, unsigned int * permission, int argArrayLength,
 	return 0;
 }
 
-int handleNotcommands(FILE * fp, unsigned int * permission, int argArrayLength,
+static int handleNotcommands(FILE * fp, unsigned int * permission, int argArrayLength,
 		char ** argArray)
 {
 	ListNode * node = commandList->firstNode;
@@ -1000,7 +999,7 @@ void finishCommands() {
         freeList(commandList);
 }
 
-int checkArgcAndPermission(CommandEntry * cmd, FILE *fp, 
+static int checkArgcAndPermission(CommandEntry * cmd, FILE *fp, 
 		unsigned int permission, int argc, char** argArray)
 {
         int min = cmd->min + 1;
@@ -1044,7 +1043,7 @@ int checkArgcAndPermission(CommandEntry * cmd, FILE *fp,
         else return 0;
 }
 
-CommandEntry * getCommandEntryAndCheckArgcAndPermission(FILE * fp, 
+static CommandEntry * getCommandEntryAndCheckArgcAndPermission(FILE * fp, 
 		unsigned int * permission, int argArrayLength, char ** argArray)
 {
 	static char unknown[] = "";
@@ -1073,7 +1072,7 @@ CommandEntry * getCommandEntryAndCheckArgcAndPermission(FILE * fp,
 	return cmd;
 }
 
-CommandEntry * getCommandEntryFromString(char * string, int * permission) {
+static CommandEntry * getCommandEntryFromString(char * string, int * permission) {
 	CommandEntry * cmd = NULL;
 	char ** argArray;
 	int argArrayLength = buffer2array(string,&argArray);
@@ -1087,7 +1086,7 @@ CommandEntry * getCommandEntryFromString(char * string, int * permission) {
 	return cmd;
 }
 
-int processCommandInternal(FILE * fp, unsigned int * permission, 
+static int processCommandInternal(FILE * fp, unsigned int * permission, 
 		char * commandString,
 		ListNode * commandNode) 
 {
@@ -1120,7 +1119,7 @@ int processCommandInternal(FILE * fp, unsigned int * permission,
 	return ret;
 }
 
-int proccessListOfCommands(FILE * fp, int * permission, int * expired, 
+int processListOfCommands(FILE * fp, int * permission, int * expired, 
 		int listOK, List * list) 
 {
 	ListNode * node = list->firstNode;
@@ -1130,11 +1129,11 @@ int proccessListOfCommands(FILE * fp, int * permission, int * expired,
 	command_listNum = 0;
 
 	while(node!=NULL) {
-		DEBUG("proccesListOfCommands: process command \"%s\"\n",
+		DEBUG("processListOfCommands: process command \"%s\"\n",
 				node->data);
 		ret = processCommandInternal(fp,permission,(char *)node->data,
 				node);
-		DEBUG("proccessListOfCommands: command returned %i\n",ret);
+		DEBUG("processListOfCommands: command returned %i\n",ret);
 		tempNode = node->nextNode;
 		deleteNodeFromList(list,node);
 		node = tempNode;

@@ -35,7 +35,7 @@
 extern char * current_command;
 extern int command_listNum;
 
-int proccessListOfCommands(FILE * fp, int * permission, int * expired, 
+int processListOfCommands(FILE * fp, int * permission, int * expired, 
 		int listOK, List * list);
 
 int processCommand(FILE * fp, unsigned int * permission, char * commandString);

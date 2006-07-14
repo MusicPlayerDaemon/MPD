@@ -202,7 +202,7 @@ void openAInterface(int fd, struct sockaddr * addr) {
 	}
 }
 
-static int proccessLineOfInput(Interface * interface) {
+static int processLineOfInput(Interface * interface) {
 	int ret = 1;
 	char * line = interface->buffer+interface->bufferPos;
 
@@ -216,7 +216,7 @@ static int proccessLineOfInput(Interface * interface) {
 		if(strcmp(line, INTERFACE_LIST_MODE_END)==0) {
 			DEBUG("interface %i: process command "
 					"list\n",interface->num);
-			ret = proccessListOfCommands(
+			ret = processListOfCommands(
 					interface->fp,
 					&(interface->permission),
 					&(interface->expired),
@@ -303,7 +303,7 @@ static int processBytesRead(Interface * interface, int bytesRead) {
 		bytesRead--;
 		if(interface->buffer[interface->bufferLength-1]=='\n') {
 			interface->buffer[interface->bufferLength-1] = '\0';
-			ret = proccessLineOfInput(interface);
+			ret = processLineOfInput(interface);
 			interface->bufferPos = interface->bufferLength;
 		}
 		if(interface->bufferLength==INTERFACE_MAX_BUFFER_LENGTH)
