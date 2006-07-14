@@ -32,13 +32,13 @@
 
 #define BUFFER_LENGTH	MAXPATHLEN+1024
 
-int myfprintf_stdLogMode = 0;
-FILE * myfprintf_out;
-FILE * myfprintf_err;
-char * myfprintf_outFilename;
-char * myfprintf_errFilename;
+static int myfprintf_stdLogMode = 0;
+static FILE * myfprintf_out;
+static FILE * myfprintf_err;
+static char * myfprintf_outFilename;
+static char * myfprintf_errFilename;
 
-void blockingWrite(int fd, char * string, int len) {
+static void blockingWrite(int fd, char * string, int len) {
 	int ret;
 
 	while(len) {
