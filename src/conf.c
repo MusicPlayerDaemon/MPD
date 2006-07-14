@@ -99,7 +99,7 @@ void freeConfigEntry(ConfigEntry * entry) {
 	free(entry);
 }
 
-void registerConfigParam(char * name, int repeatable, int block) {
+static void registerConfigParam(char * name, int repeatable, int block) {
 	ConfigEntry * entry;
 
 	if(findInList(configEntriesList, name, NULL)) {
