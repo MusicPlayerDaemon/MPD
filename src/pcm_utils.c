@@ -26,21 +26,6 @@
 #include <math.h>
 #include <assert.h>
 
-void pcm_changeBufferEndianness(char * buffer, int bufferSize, int bits) {
-	char temp;
-
-	switch(bits) {
-	case 16:
-		while(bufferSize) {
-			temp = *buffer;
-			*buffer = *(buffer+1);
-			*(buffer+1) = temp;
-			bufferSize-=2;
-		}
-		break;
-	}
-}
-
 void pcm_volumeChange(char * buffer, int bufferSize, AudioFormat * format,
 		int volume)
 {
@@ -85,7 +70,7 @@ void pcm_volumeChange(char * buffer, int bufferSize, AudioFormat * format,
 	}
 }
 
-void pcm_add(char * buffer1, char * buffer2, size_t bufferSize1, 
+static void pcm_add(char * buffer1, char * buffer2, size_t bufferSize1, 
 		size_t bufferSize2, int vol1, int vol2, AudioFormat * format)
 {
 	mpd_sint32 temp32;
@@ -242,40 +227,40 @@ void pcm_convertAudioFormat(AudioFormat * inFormat, char * inBuffer, size_t
 	else {
 		/* only works if outFormat is 16-bit stereo! */
 		/* resampling code blatantly ripped from ESD */
-                mpd_uint32 rd_dat = 0;
-                mpd_uint32 wr_dat = 0;
-                mpd_sint16 lsample, rsample;
-                mpd_sint16 * out = (mpd_sint16 *)outBuffer;
-                mpd_sint16 * in = (mpd_sint16 *)dataChannelConv;
-                const int shift = sizeof(mpd_sint16)*outFormat->channels;
-	        mpd_uint32 nlen = ((( dataChannelLen / shift) * 
-                                (mpd_uint32)(outFormat->sampleRate)) /
+		mpd_uint32 rd_dat = 0;
+		mpd_uint32 wr_dat = 0;
+		mpd_sint16 lsample, rsample;
+		mpd_sint16 * out = (mpd_sint16 *)outBuffer;
+		mpd_sint16 * in = (mpd_sint16 *)dataChannelConv;
+		const int shift = sizeof(mpd_sint16)*outFormat->channels;
+		mpd_uint32 nlen = ((( dataChannelLen / shift) * 
+				(mpd_uint32)(outFormat->sampleRate)) /
 				inFormat->sampleRate);
 		nlen *= outFormat->channels;
 
 		switch(outFormat->channels) {
 		case 1:
-                	while( wr_dat < nlen) {
-                        	rd_dat = wr_dat * inFormat->sampleRate / 
-                        	        outFormat->sampleRate;
+			while( wr_dat < nlen) {
+				rd_dat = wr_dat * inFormat->sampleRate / 
+				outFormat->sampleRate;
 
-                        	lsample = in[ rd_dat++ ];
+				lsample = in[ rd_dat++ ];
 
-                        	out[ wr_dat++ ] = lsample;
-                	}
+				out[ wr_dat++ ] = lsample;
+			}
 			break;
 		case 2:
-                	while( wr_dat < nlen) {
-                        	rd_dat = wr_dat * inFormat->sampleRate / 
-                        	        outFormat->sampleRate;
-                        	rd_dat &= ~1;
+			while( wr_dat < nlen) {
+				rd_dat = wr_dat * inFormat->sampleRate / 
+				outFormat->sampleRate;
+				rd_dat &= ~1;
 
-                        	lsample = in[ rd_dat++ ];
-                        	rsample = in[ rd_dat++ ];
+				lsample = in[ rd_dat++ ];
+				rsample = in[ rd_dat++ ];
 
-                        	out[ wr_dat++ ] = lsample;
-                        	out[ wr_dat++ ] = rsample;
-                	}
+				out[ wr_dat++ ] = lsample;
+				out[ wr_dat++ ] = rsample;
+			}
 			break;
 		}
 	}

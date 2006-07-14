@@ -25,8 +25,6 @@
 
 #include <stdlib.h>
 
-void pcm_changeBufferEndianness(char * buffer, int bufferSize, int bits);
-
 void pcm_volumeChange(char * buffer, int bufferSize, AudioFormat * format,
 		int volume);
 
