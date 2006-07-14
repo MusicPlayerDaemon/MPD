@@ -39,8 +39,6 @@ int isRemoteUrl(char * url);
 
 int myStat(char * utf8file, struct stat * st);
 
-int isFile(char * utf8file, time_t * mtime);
-
 int isDir(char * utf8name);
 
 int isPlaylist(char * utf8file);
@@ -48,8 +46,6 @@ int isPlaylist(char * utf8file);
 InputPlugin * hasMusicSuffix(char * utf8file, unsigned int next);
 
 InputPlugin * isMusic(char * utf8file, time_t * mtime, unsigned int next);
-
-char * dupAndStripPlaylistSuffix(char * file);
 
 int printRemoteUrlHandlers(FILE * fp);
 

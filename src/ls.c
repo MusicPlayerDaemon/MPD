@@ -23,25 +23,9 @@
 #include "log.h"
 #include "utf8.h"
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/param.h>
 #include <dirent.h>
 #include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
 #include <errno.h>
-extern int errno;
-
-char * dupAndStripPlaylistSuffix(char * file) {
-	size_t size = strlen(file)-strlen(PLAYLIST_FILE_SUFFIX)-1;
-	char * ret = malloc(size+1);
-
-	strncpy(ret,file,size);
-	ret[size] = '\0';
-
-	return ret;
-}
 
 static char * remoteUrlPrefixes[] = 	
 {
@@ -202,7 +186,7 @@ int myStat(char * utf8file, struct stat * st) {
 	return stat(actualFile,st);
 }
 
-int isFile(char * utf8file, time_t * mtime) {
+static int isFile(char * utf8file, time_t * mtime) {
 	struct stat st;
 
 	if(myStat(utf8file,&st)==0) {
@@ -226,7 +210,7 @@ int isFile(char * utf8file, time_t * mtime) {
 /* suffixes should be ascii only characters */
 char * getSuffix(char * utf8file) {
         char * ret = NULL;
-        
+
         while(*utf8file) {
                 if(*utf8file == '.') ret = utf8file+1;
                 utf8file++;
@@ -262,7 +246,7 @@ int isDir(char * utf8name) {
 
 InputPlugin * hasMusicSuffix(char * utf8file, unsigned int next) {
         InputPlugin * ret = NULL;
-        
+
         char * s = getSuffix(utf8file);
 	if(s) {
 		 ret = getInputPluginFromSuffix(s, next);
