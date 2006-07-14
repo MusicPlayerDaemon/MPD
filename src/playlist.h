@@ -34,8 +34,6 @@ void initPlaylist();
 
 void finishPlaylist();
 
-void initPlaylist();
-
 void readPlaylistState();
 
 void savePlaylistState();
