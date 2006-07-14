@@ -32,11 +32,11 @@
 #define PERMISSION_CONTROL_STRING	"control"
 #define PERMISSION_ADMIN_STRING		"admin"
 
-List * permission_passwords;
+static List * permission_passwords;
 
-unsigned int permission_default;
+static unsigned int permission_default;
 
-unsigned int parsePermissions(char * string) {
+static unsigned int parsePermissions(char * string) {
 	unsigned int permission = 0;
 	char * temp;
 	char * tok;
@@ -73,45 +73,45 @@ void initPermissions() {
 	char * cp2;
 	char * password;
 	unsigned int * permission;
-        ConfigParam * param;
+	ConfigParam * param;
 
 	permission_passwords = makeList(free, 1);
 
 	permission_default = PERMISSION_READ | PERMISSION_ADD | 
 				PERMISSION_CONTROL | PERMISSION_ADMIN;
 
-        param = getNextConfigParam(CONF_PASSWORD, NULL);
+	param = getNextConfigParam(CONF_PASSWORD, NULL);
 
-        if(param) {
+	if(param) {
 	        permission_default = 0;
 
-                do {
-		        if(!strstr(param->value, PERMISSION_PASSWORD_CHAR)) {
-			        ERROR("\"%s\" not found in password string "
-                                        "\"%s\", line %i\n",
+		do {
+			if(!strstr(param->value, PERMISSION_PASSWORD_CHAR)) {
+				ERROR("\"%s\" not found in password string "
+					"\"%s\", line %i\n",
 					PERMISSION_PASSWORD_CHAR,
 					param->value,
-                                        param->line);
-			        exit(EXIT_FAILURE);
-		        }
+					param->line);
+				exit(EXIT_FAILURE);
+			}
 
-		        if(!(temp = strtok_r(param->value,
-                                        PERMISSION_PASSWORD_CHAR,&cp2))) {
-			        ERROR("something weird just happened in permission.c\n");
-			        exit(EXIT_FAILURE);
-		        }
+			if(!(temp = strtok_r(param->value,
+				PERMISSION_PASSWORD_CHAR,&cp2))) {
+				ERROR("something weird just happened in permission.c\n");
+				exit(EXIT_FAILURE);
+			}
 
-                
-		        password = temp;
 
-		        permission = malloc(sizeof(unsigned int));
-		        *permission = parsePermissions(strtok_r(NULL,"",&cp2));
+			password = temp;
 
-		        insertInList(permission_passwords,password,permission);
-                } while((param = getNextConfigParam(CONF_PASSWORD, param)));
+			permission = malloc(sizeof(unsigned int));
+			*permission = parsePermissions(strtok_r(NULL,"",&cp2));
+
+			insertInList(permission_passwords,password,permission);
+		} while((param = getNextConfigParam(CONF_PASSWORD, param)));
 	}
 
-        param = getConfigParam(CONF_DEFAULT_PERMS);
+	param = getConfigParam(CONF_DEFAULT_PERMS);
 
 	if(param) permission_default = parsePermissions(param->value);
 
