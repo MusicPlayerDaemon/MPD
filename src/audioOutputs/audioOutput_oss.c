@@ -555,24 +555,11 @@ AudioOutputPlugin ossPlugin =
 	oss_playAudio,
 	oss_dropBufferedAudio,
 	oss_closeDevice,
-	NULL /* sendMetadataFunc */
+	NULL, /* sendMetadataFunc */
 };
 
 #else /* HAVE OSS */
 
-AudioOutputPlugin ossPlugin =
-{
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	NULL /* sendMetadataFunc */
-};
+DISABLED_AUDIO_OUTPUT_PLUGIN(ossPlugin)
 
 #endif /* HAVE_OSS */
-
-

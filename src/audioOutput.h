@@ -26,6 +26,18 @@
 #include "tag.h"
 #include "conf.h"
 
+#define DISABLED_AUDIO_OUTPUT_PLUGIN(plugin) \
+	AudioOutputPlugin plugin = { \
+		NULL, \
+		NULL, \
+		NULL, \
+		NULL, \
+		NULL, \
+		NULL, \
+		NULL, \
+		NULL, \
+	};
+
 typedef struct _AudioOutput AudioOutput;
 
 typedef int (* AudioOutputTestDefaultDeviceFunc) ();
@@ -80,7 +92,7 @@ typedef struct _AudioOutputPlugin {
         AudioOutputPlayFunc playFunc;
         AudioOutputDropBufferedAudioFunc dropBufferedAudioFunc;
         AudioOutputCloseDeviceFunc closeDeviceFunc;
-	AudioOutputSendMetadataFunc sendMetdataFunc;
+        AudioOutputSendMetadataFunc sendMetdataFunc;
 } AudioOutputPlugin;
 
 void initAudioOutputPlugins();

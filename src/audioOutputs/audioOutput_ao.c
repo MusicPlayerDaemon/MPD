@@ -244,24 +244,13 @@ AudioOutputPlugin aoPlugin =
 	audioOutputAo_play,
 	audioOutputAo_dropBufferedAudio,
 	audioOutputAo_closeDevice,
-	NULL /* sendMetadataFunc */
+	NULL, /* sendMetadataFunc */
 };
 
 #else
 
 #include <stdio.h>
 
-AudioOutputPlugin aoPlugin = 
-{
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	NULL
-};
+DISABLED_AUDIO_OUTPUT_PLUGIN(aoPlugin)
 
 #endif

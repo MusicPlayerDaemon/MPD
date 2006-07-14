@@ -196,16 +196,6 @@ AudioOutputPlugin pulsePlugin = {
 
 #else /* HAVE_PULSE */
 
-AudioOutputPlugin pulsePlugin =
-{
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-};
+DISABLED_AUDIO_OUTPUT_PLUGIN(pulsePlugin)
 
 #endif /* HAVE_PULSE */

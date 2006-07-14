@@ -274,23 +274,11 @@ AudioOutputPlugin mvpPlugin =
    mvp_playAudio,
    mvp_dropBufferedAudio,
    mvp_closeDevice,
-   NULL /* sendMetadataFunc */
+   NULL, /* sendMetadataFunc */
 };
 
 #else /* HAVE_MVP */
 
-AudioOutputPlugin mvpPlugin =
-{
-       NULL,
-       NULL,
-       NULL,
-       NULL,
-       NULL,
-       NULL,
-       NULL,
-       NULL,
-       NULL /* sendMetadataFunc */
-};     
+DISABLED_AUDIO_OUTPUT_PLUGIN(mvpPlugin)
 
 #endif /* HAVE_MVP */
-

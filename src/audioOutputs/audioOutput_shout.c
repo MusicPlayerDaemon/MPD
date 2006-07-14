@@ -604,22 +604,11 @@ AudioOutputPlugin shoutPlugin =
 	myShout_play,
 	myShout_dropBufferedAudio,
 	myShout_closeDevice,
-	myShout_setTag
+	myShout_setTag,
 };
 
 #else
 
-AudioOutputPlugin shoutPlugin = 
-{
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	NULL
-};
+DISABLED_AUDIO_OUTPUT_PLUGIN(shoutPlugin)
 
 #endif

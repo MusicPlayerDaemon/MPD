@@ -351,24 +351,13 @@ AudioOutputPlugin osxPlugin =
 	osx_play,
 	osx_dropBufferedAudio,
 	osx_closeDevice,
-	NULL /* sendMetadataFunc */
+	NULL, /* sendMetadataFunc */
 };
 
 #else
 
 #include <stdio.h>
 
-AudioOutputPlugin osxPlugin = 
-{
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	NULL
-};
+DISABLED_AUDIO_OUTPUT_PLUGIN(osxPlugin)
 
 #endif

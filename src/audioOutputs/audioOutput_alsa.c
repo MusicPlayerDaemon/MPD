@@ -371,23 +371,11 @@ AudioOutputPlugin alsaPlugin =
 	alsa_playAudio,
 	alsa_dropBufferedAudio,
 	alsa_closeDevice,
-	NULL /* sendMetadataFunc */
+	NULL, /* sendMetadataFunc */
 };
 
 #else /* HAVE ALSA */
 
-AudioOutputPlugin alsaPlugin =
-{
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	NULL /* sendMetadataFunc */
-};
+DISABLED_AUDIO_OUTPUT_PLUGIN(alsaPlugin)
 
 #endif /* HAVE_ALSA */
-
-
