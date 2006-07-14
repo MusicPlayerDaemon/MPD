@@ -23,7 +23,6 @@
 #ifdef HAVE_PULSE
 
 #define MPD_PULSE_NAME "mpd"
-#define MPD_PULSE_STREAM_NAME "mpd"
 
 #include "../conf.h"
 #include "../log.h"
@@ -34,6 +33,7 @@
 typedef struct _PulseData {
 	char * server;
 	char * sink;
+	char * name;
 	pa_simple * s;
 } PulseData;
 
@@ -44,6 +44,7 @@ static PulseData * newPulseData()
 	ret = malloc(sizeof(PulseData));
 	ret->server = NULL;
 	ret->sink = NULL;
+	ret->name = NULL;
 	ret->s = NULL;
 	return ret;
 }
@@ -52,6 +53,7 @@ static void freePulseData(PulseData * ad)
 {
 	if (ad->server) free(ad->server);
 	if (ad->sink) free(ad->sink);
+	if (ad->name) free(ad->name);
 	free(ad);
 }
 
@@ -59,16 +61,19 @@ static int pulse_initDriver(AudioOutput * audioOutput, ConfigParam * param)
 {
 	BlockParam * server = NULL;
 	BlockParam * sink = NULL;
+	BlockParam * name = NULL;
 	PulseData * ad;
 
 	if (param) {
 		server = getBlockParam(param, "server");
 		sink = getBlockParam(param, "sink");
+		name = getBlockParam(param, "name");
 	}
 
 	ad = newPulseData();
 	ad->server = server ? strdup(server->value) : NULL;
 	ad->sink = sink ? strdup(sink->value) : NULL;
+	ad->name = strdup(name->value);
 	audioOutput->data = ad;
 
 	return 0;
@@ -90,7 +95,7 @@ static int pulse_testDefault()
 	ss.channels = 2;
 
 	s = pa_simple_new(NULL, MPD_PULSE_NAME, PA_STREAM_PLAYBACK, NULL,
-	                  MPD_PULSE_STREAM_NAME, &ss, NULL, NULL, &error);
+	                  MPD_PULSE_NAME, &ss, NULL, NULL, &error);
 	if (!s) {
 		WARNING("Cannot connect to default PulseAudio server: %s\n",
 		        pa_strerror(error));
@@ -123,8 +128,7 @@ static int pulse_openDevice(AudioOutput * audioOutput)
 	ss.channels = audioFormat->channels;
 
 	ad->s = pa_simple_new(ad->server, MPD_PULSE_NAME, PA_STREAM_PLAYBACK,
-	                       ad->sink, MPD_PULSE_STREAM_NAME, &ss,
-	                       NULL, NULL, &error);
+	                       ad->sink, ad->name, &ss, NULL, NULL, &error);
 	if (!ad->s) {
 		ERROR("Cannot connect to server in PulseAudio output " \
 		      "\"%s\": %s\n", audioOutput->name, pa_strerror(error));
