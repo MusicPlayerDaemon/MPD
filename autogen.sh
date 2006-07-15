@@ -40,7 +40,7 @@ versioned_bins ()
 		i_int=`echo $i | $VERSIONMKINT`
 		if test $i_int -ge $VERNEEDED
 		then
-			echo $bin-$i $bin$i
+			echo $bin-$i $bin$i $bin-$i_int $bin$i_int
 		fi
 	done
 	echo $bin
