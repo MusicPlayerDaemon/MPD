@@ -218,7 +218,7 @@ static int handlePause(FILE * fp, unsigned int * permission,
 		char * test;
                 int pause = strtol(argArray[1],&test,10);
                 if(*test!='\0' || (pause!=0 && pause!=1)) {
-                        commandError(fp, ACK_ERROR_ARG, "\%s\" is not 0 or 1", argArray[1]);
+                        commandError(fp, ACK_ERROR_ARG, "\"%s\" is not 0 or 1", argArray[1]);
                         return -1;
                 }
 		return playerSetPause(fp,pause);
