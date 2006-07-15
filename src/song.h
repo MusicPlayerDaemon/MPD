@@ -69,8 +69,6 @@ void readSongInfoIntoList(FILE * fp, SongList * list,
 
 int updateSongInfo(Song * song);
 
-Song * songDup(Song * song);
-
 void printSongUrl(FILE * fp, Song * song);
 
 char * getSongUrl(Song * song);

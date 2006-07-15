@@ -31,8 +31,6 @@ Stats stats;
 void initStats() {
 	stats.daemonStart = time(NULL);
 	stats.numberOfSongs = 0;
-	/*stats.playTime = 0;
-	stats.songsPlayed = 0;*/
 }
 
 int printStats(FILE * fp) {
@@ -42,7 +40,6 @@ int printStats(FILE * fp) {
 	myfprintf(fp,"uptime: %li\n",time(NULL)-stats.daemonStart);
 	myfprintf(fp,"playtime: %li\n",(long)(getPlayerTotalPlayTime()+0.5));
 	myfprintf(fp,"db_playtime: %li\n",stats.dbPlayTime);
-	/*myfprintf(fp,"songs_played: %li\n",stats.songsPlayed);*/
 	myfprintf(fp,"db_update: %li\n",getDbModTime());
 	return 0;
 }

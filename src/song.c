@@ -63,7 +63,7 @@ Song * newSong(char * url, int type, Directory * parentDir) {
 	assert(type == SONG_TYPE_URL || parentDir);
 
 	if(song->type == SONG_TYPE_FILE) {
-                InputPlugin * plugin;
+		InputPlugin * plugin;
 		unsigned int next = 0;
 		char * song_url = getSongUrl(song);
 		char * abs_path = rmp2amp(utf8ToFsCharset(song_url));
@@ -115,7 +115,7 @@ Song * addSongToList(SongList * list, char * url, char * utf8path,
 	}
 
 	if(song==NULL) return NULL;
-	
+
 	insertInList(list, song->url, (void *)song);
 
 	return song;
@@ -169,7 +169,7 @@ void writeSongInfoFromList(FILE * fp, SongList * list) {
 	myfprintf(fp,"%s\n",SONG_END);
 }
 
-void insertSongIntoList(SongList * list, ListNode ** nextSongNode, char * key,
+static void insertSongIntoList(SongList * list, ListNode ** nextSongNode, char * key,
 		Song * song)
 {
 	ListNode * nodeTemp;
@@ -266,7 +266,7 @@ void readSongInfoIntoList(FILE * fp, SongList * list, Directory * parentDir) {
 			exit(EXIT_FAILURE);
 		}
 	}
-	
+
 	if(song) {
 		insertSongIntoList(list, &nextSongNode, song->url, song);
 		song = NULL;
@@ -281,7 +281,7 @@ void readSongInfoIntoList(FILE * fp, SongList * list, Directory * parentDir) {
 
 int updateSongInfo(Song * song) {
 	if(song->type == SONG_TYPE_FILE) {
-                InputPlugin * plugin;
+		InputPlugin * plugin;
 		unsigned int next = 0;
 		char * song_url = getSongUrl(song);
 		char * abs_path = rmp2amp(song_url);
@@ -292,24 +292,12 @@ int updateSongInfo(Song * song) {
 
 		while(!song->tag && (plugin = isMusic(song_url,
 						&(song->mtime), next++))) {
-		        song->tag = plugin->tagDupFunc(abs_path);
-                }
+			song->tag = plugin->tagDupFunc(abs_path);
+		}
 		if(!song->tag || song->tag->time<0) return -1;
 	}
 
 	return 0;
-}
-
-Song * songDup(Song * song) {
-	Song * ret = malloc(sizeof(Song));
-
-	ret->url = strdup(song->url);
-	ret->mtime = song->mtime;
-	ret->tag = mpdTagDup(song->tag);
-	ret->type = song->type;
-	ret->parentDir = song->parentDir;
-
-	return ret;
 }
 
 /* pass song = NULL to reset, we do this freeJustSong(), so that if
