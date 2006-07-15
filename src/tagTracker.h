@@ -30,11 +30,7 @@ int getNumberOfTagItems(int type);
 
 void printMemorySavedByTagTracker();
 
-void sortTagTrackerInfo();
-
 void resetVisitedFlagsInTagTracker(int type);
- 
-int wasVisitedInTagTracker(int type, char * str);
 
 void visitInTagTracker(int type, char * str);
 

@@ -41,9 +41,9 @@ char * myFgets(char * buffer, int bufferSize, FILE * fp) {
 char * strDupToUpper(char * str) {
 	char * ret = strdup(str);
 	int i;
-	
+
 	for(i=0;i<strlen(str);i++) ret[i] = toupper((int)ret[i]);
-	
+
 	return ret;
 }
 
@@ -74,29 +74,28 @@ int ipv6Supported() {
 }
 
 char * appendToString(char * dest, const char * src) {
-        int destlen;
-        int srclen = strlen(src);
-                                                                                
-        if(dest == NULL) {
-                dest = malloc(srclen+1);
-                memset(dest, 0, srclen+1);
-                destlen = 0;
-        }
-        else {
-                destlen = strlen(dest);
-                dest = realloc(dest, destlen+srclen+1);
-        }
-                                                                                
-        memcpy(dest+destlen, src, srclen);
-        dest[destlen+srclen] = '\0';
-                                                                                
-        return dest;
+	int destlen;
+	int srclen = strlen(src);
+
+	if(dest == NULL) {
+		dest = malloc(srclen+1);
+		memset(dest, 0, srclen+1);
+		destlen = 0;
+	}
+	else {
+		destlen = strlen(dest);
+		dest = realloc(dest, destlen+srclen+1);
+	}
+
+	memcpy(dest+destlen, src, srclen);
+	dest[destlen+srclen] = '\0';
+
+	return dest;
 }
 
 unsigned long readLEuint32(const unsigned char *p)
 {
 	return ((unsigned long) p[0] << 0) |
-        	((unsigned long) p[1] << 8) |
-        	((unsigned long) p[2] << 16) | ((unsigned long) p[3] << 24);
+		((unsigned long) p[1] << 8) |
+		((unsigned long) p[2] << 16) | ((unsigned long) p[3] << 24);
 }
-

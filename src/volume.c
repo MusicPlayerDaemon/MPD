@@ -58,28 +58,28 @@
 #endif
 #endif
 
-int volume_mixerType = VOLUME_MIXER_TYPE_DEFAULT;
-char * volume_mixerDevice = VOLUME_MIXER_DEVICE_DEFAULT;
+static int volume_mixerType = VOLUME_MIXER_TYPE_DEFAULT;
+static char * volume_mixerDevice = VOLUME_MIXER_DEVICE_DEFAULT;
 
-int volume_softwareSet = 100;
+static int volume_softwareSet = 100;
 
 #ifdef HAVE_OSS
-int volume_ossFd;
-int volume_ossControl = SOUND_MIXER_PCM;
+static int volume_ossFd;
+static int volume_ossControl = SOUND_MIXER_PCM;
 #endif
 
 #ifdef HAVE_ALSA
-snd_mixer_t * volume_alsaMixerHandle = NULL;
-snd_mixer_elem_t * volume_alsaElem;
-long volume_alsaMin;
-long volume_alsaMax;
-int volume_alsaSet = -1;
+static snd_mixer_t * volume_alsaMixerHandle = NULL;
+static snd_mixer_elem_t * volume_alsaElem;
+static long volume_alsaMin;
+static long volume_alsaMax;
+static int volume_alsaSet = -1;
 #endif
 
 #ifdef HAVE_OSS
-int prepOssMixer(char * device) {
+static int prepOssMixer(char * device) {
 	int devmask = 0;
-        ConfigParam * param;
+	ConfigParam * param;
 
 	if((volume_ossFd = open(device,O_RDONLY))<0) {
 		WARNING("unable to open oss mixer \"%s\"\n",device);
@@ -130,11 +130,11 @@ int prepOssMixer(char * device) {
 	return 0;
 }
 
-void closeOssMixer() {
+static void closeOssMixer() {
 	close(volume_ossFd);
 }
 
-int getOssVolumeLevel() {
+static int getOssVolumeLevel() {
 	int left, right, level;
 
 	if(ioctl(volume_ossFd,MIXER_READ(volume_ossControl),&level) < 0) {
@@ -153,7 +153,7 @@ int getOssVolumeLevel() {
 	return left;
 }
 
-int changeOssVolumeLevel(FILE * fp, int change, int rel) {
+static int changeOssVolumeLevel(FILE * fp, int change, int rel) {
 	int current;
 	int new;
 	int level;
@@ -185,7 +185,7 @@ int changeOssVolumeLevel(FILE * fp, int change, int rel) {
 #endif
 
 #ifdef HAVE_ALSA
-int prepAlsaMixer(char * card) {
+static int prepAlsaMixer(char * card) {
 	int err;
 	snd_mixer_elem_t * elem;
 	char * controlName = VOLUME_MIXER_ALSA_CONTROL_DEFAULT;
@@ -195,14 +195,14 @@ int prepAlsaMixer(char * card) {
 		WARNING("problems opening alsa mixer: %s\n",snd_strerror(err));
 		return -1;
 	}
-	
+
 	if((err = snd_mixer_attach(volume_alsaMixerHandle,card))<0) {
 		snd_mixer_close(volume_alsaMixerHandle);
 		WARNING("problems problems attaching alsa mixer: %s\n",
 			snd_strerror(err));
 		return -1;
 	}
-	
+
 	if((err = snd_mixer_selem_register(volume_alsaMixerHandle,NULL,NULL))<0) {
 		snd_mixer_close(volume_alsaMixerHandle);
 		WARNING("problems snd_mixer_selem_register'ing: %s\n",
@@ -219,7 +219,7 @@ int prepAlsaMixer(char * card) {
 
 	elem = snd_mixer_first_elem(volume_alsaMixerHandle);
 
-        param = getConfigParam(CONF_MIXER_CONTROL);
+	param = getConfigParam(CONF_MIXER_CONTROL);
 
 	if(param) {
 		controlName = param->value;
@@ -250,11 +250,11 @@ int prepAlsaMixer(char * card) {
 	return -1;
 }
 
-void closeAlsaMixer() {
+static void closeAlsaMixer() {
 	snd_mixer_close(volume_alsaMixerHandle);
 }
 
-int getAlsaVolumeLevel() {
+static int getAlsaVolumeLevel() {
 	int ret;
 	long level;
 	long max = volume_alsaMax;
@@ -280,7 +280,7 @@ int getAlsaVolumeLevel() {
 	return ret;
 }
 
-int changeAlsaVolumeLevel(FILE * fp, int change, int rel) {
+static int changeAlsaVolumeLevel(FILE * fp, int change, int rel) {
 	float vol;
 	long level;
 	long test;
@@ -329,7 +329,7 @@ int changeAlsaVolumeLevel(FILE * fp, int change, int rel) {
 }
 #endif
 
-int prepMixer(char * device) {
+static int prepMixer(char * device) {
 	switch(volume_mixerType) {
 #ifdef HAVE_ALSA
 	case VOLUME_MIXER_TYPE_ALSA:
@@ -360,9 +360,9 @@ void finishVolume() {
 }
 
 void initVolume() {
-        ConfigParam * param = getConfigParam(CONF_MIXER_TYPE);
+	ConfigParam * param = getConfigParam(CONF_MIXER_TYPE);
 
-        if(param) {
+	if(param) {
 	        if(0);
 #ifdef HAVE_ALSA
 		else if(strcmp(param->value, VOLUME_MIXER_ALSA)==0) {
@@ -388,7 +388,7 @@ void initVolume() {
 	}
 
 	param = getConfigParam(CONF_MIXER_DEVICE);
-	
+
 	if(param) {
 		volume_mixerDevice = param->value;
 	}
@@ -401,7 +401,7 @@ void openVolumeDevice() {
 	}
 }
 
-int getSoftwareVolume() {
+static int getSoftwareVolume() {
 	return volume_softwareSet;
 }
 
@@ -422,7 +422,7 @@ int getVolumeLevel() {
 	}
 }
 
-int changeSoftwareVolume(FILE * fp, int change, int rel) {
+static int changeSoftwareVolume(FILE * fp, int change, int rel) {
 	int new = change;
 
 	if(rel) new+=volume_softwareSet;
@@ -455,7 +455,7 @@ int changeVolumeLevel(FILE * fp, int change, int rel) {
 	case VOLUME_MIXER_TYPE_SOFTWARE:
 		return changeSoftwareVolume(fp,change,rel);
 	default:
-                return 0;
-                break;
+		return 0;
+		break;
 	}
 }

@@ -40,7 +40,7 @@ typedef struct tagTrackerItem {
 	mpd_sint8 visited;
 } TagTrackerItem;
 
-int keyCompare(const void *a, const void *b, void *data) {
+static int keyCompare(const void *a, const void *b, void *data) {
 	return strcmp(a,b);
 }
 
@@ -49,9 +49,6 @@ char * getTagItemString(int type, char * string) {
 	TagTrackerItem ** itemPointer = &item;
 	char *key;
 	char **keyPointer = &key;
-	
-
-	/*if(type == TAG_ITEM_TITLE) return strdup(string);*/
 
 	if(tagLists[type] == NULL) {
 		tagLists[type] = g_tree_new_full(keyCompare, NULL, free, free);
@@ -66,8 +63,6 @@ char * getTagItemString(int type, char * string) {
 		item->visited = 0;
 		key = strdup(string);
 		g_tree_insert(tagLists[type], key, item);
-		
-				
 	}
 
 	return key;
@@ -97,7 +92,7 @@ void removeTagItemString(int type, char * string) {
 
 void destroyTagTracker() {
 	int type;
-	for (type=0; type < TAG_NUM_OF_ITEM_TYPES; type ++) 
+	for (type=0; type < TAG_NUM_OF_ITEM_TYPES; type ++)
 		if (tagLists[type])
 			g_tree_destroy(tagLists[type]);
 }
@@ -107,7 +102,8 @@ int getNumberOfTagItems(int type) {
 
 	return g_tree_nnodes(tagLists[type]);
 }
-int calcSavedMemory(char *key, TagTrackerItem* value, int* sum) {
+
+static int calcSavedMemory(char *key, TagTrackerItem* value, int* sum) {
 	*sum -= sizeof(int) + 4*sizeof(void*); /* sizeof(_GTreeNode) */
 	*sum -= sizeof(TagTrackerItem);
 	*sum += (strlen(key)+1)*value->count;
@@ -128,38 +124,16 @@ void printMemorySavedByTagTracker() {
 	DEBUG("saved memory from tags: %li\n", (long)sum);
 }
 
-void sortTagTrackerInfo() {
-	/* implicit sorting
-	int i;
-
-	for(i = 0; i < TAG_NUM_OF_ITEM_TYPES; i++) {
-		if(!tagLists[i]) continue;
-
-		DEBUG("sorting %s info\n", mpdTagItemKeys[i]);
-
-		sortList(tagLists[i]);
-	}*/
-}
-
-int resetVisitedFlag(char *key, TagTrackerItem *value, void *data) {
+static int resetVisitedFlag(char *key, TagTrackerItem *value, void *data) {
 	value->visited = 0;
 	return FALSE;
 }
+
 void resetVisitedFlagsInTagTracker(int type) {
 
 	if(!tagLists[type]) return;
 
 	g_tree_foreach(tagLists[type], (GTraverseFunc)resetVisitedFlag, NULL);
-}
-
-int wasVisitedInTagTracker(int type, char * str) {
-	TagTrackerItem * item;
-
-	if(!tagLists[type]) return 0;
-
-	if(!(item = g_tree_lookup(tagLists[type], str))) return 0;
-
-	return item->visited;
 }
 
 void visitInTagTracker(int type, char * str) {
@@ -177,7 +151,7 @@ struct _PrintVisitedUserdata {
 	char *type;
 };
 
-int printVisitedFlag(char *key, TagTrackerItem* value, struct _PrintVisitedUserdata *data) {
+static int printVisitedFlag(char *key, TagTrackerItem* value, struct _PrintVisitedUserdata *data) {
 	if(value->visited) myfprintf(data->fp, "%s: %s\n", data->type, key);
 	return FALSE;
 }
