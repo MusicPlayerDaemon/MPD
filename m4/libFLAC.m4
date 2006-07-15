@@ -4,7 +4,7 @@
 dnl AM_PATH_LIBFLAC([ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND]])
 dnl Test for libFLAC, and define LIBFLAC_CFLAGS and LIBFLAC_LIBS
 dnl
-AC_DEFUN(AM_PATH_LIBFLAC,
+AC_DEFUN([AM_PATH_LIBFLAC],
 [dnl 
 dnl Get the cflags and libraries
 dnl
