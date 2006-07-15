@@ -71,7 +71,7 @@ typedef struct _Options {
  * from git-1.3.0, needed for solaris
  */
 #ifndef HAVE_SETENV
-int setenv(const char *name, const char *value, int replace)
+static int setenv(const char *name, const char *value, int replace)
 {
 	int out;
 	size_t namelen, valuelen;
@@ -105,7 +105,7 @@ int setenv(const char *name, const char *value, int replace)
 }
 #endif /* HAVE_SETENV */
 
-void usage(char * argv[]) {
+static void usage(char * argv[]) {
         ERROR("usage:\n");
         ERROR("   %s [options] <conf file>\n",argv[0]);
         ERROR("   %s [options]   (searches for ~%s then %s)\n",
@@ -124,7 +124,7 @@ void usage(char * argv[]) {
         ERROR("   --version          prints version information\n");
 }
 
-void version() {
+static void version(void) {
         LOG("mpd (MPD: Music Player Daemon) %s\n",VERSION);
         LOG("\n");
         LOG("Copyright (C) 2003-2006 Warren Dukes <warren.dukes@gmail.com>\n");
@@ -137,7 +137,7 @@ void version() {
         printAllInputPluginSuffixes(stdout);
 }
 
-void parseOptions(int argc, char ** argv, Options * options) {
+static void parseOptions(int argc, char ** argv, Options * options) {
         int argcLeft = argc;
 
         options->daemon = 1;
@@ -228,14 +228,14 @@ void parseOptions(int argc, char ** argv, Options * options) {
         exit(EXIT_FAILURE);
 }
 
-void closeAllFDs() {
+static void closeAllFDs(void) {
         int i;
 	int fds = getdtablesize();
 
         for(i = 3; i < fds; i++) close(i);
 }
 
-void changeToUser() {
+static void changeToUser(void) {
 	ConfigParam * param = getConfigParam(CONF_USER);
 	
         if (param && strlen(param->value)) {
@@ -281,7 +281,7 @@ void changeToUser() {
         }
 }
 
-void openLogFiles(Options * options, FILE ** out, FILE ** err) {
+static void openLogFiles(Options * options, FILE ** out, FILE ** err) {
 	ConfigParam * logParam = parseConfigFilePath(CONF_LOG_FILE, 1);
 	ConfigParam * errorParam = parseConfigFilePath(CONF_ERROR_FILE, 1);
 	
@@ -311,7 +311,7 @@ void openLogFiles(Options * options, FILE ** out, FILE ** err) {
         umask(prev);
 }
 
-void openDB(Options * options, char * argv0) {
+static void openDB(Options * options, char * argv0) {
         if(options->createDB>0 || readDirectoryDB()<0) {
                 if(options->createDB<0) {
                         ERROR("can't open db file and using \"--no-create-db\""
@@ -332,7 +332,7 @@ void openDB(Options * options, char * argv0) {
 	}
 }
 
-void startMainProcess() {
+static void startMainProcess(void) {
 	int pid;
 	fflush(0);
 	pid = fork();
@@ -371,7 +371,7 @@ void startMainProcess() {
 	DEBUG("main process started!\n");
 }
 
-void daemonize(Options * options) {
+static void daemonize(Options * options) {
 	FILE * fp = NULL;
 	ConfigParam * pidFileParam = parseConfigFilePath(CONF_PID_FILE, 0);
 	
@@ -428,7 +428,7 @@ void daemonize(Options * options) {
 	}
 }
 
-void setupLogOutput(Options * options, FILE * out, FILE * err) {
+static void setupLogOutput(Options * options, FILE * out, FILE * err) {
         if(!options->stdOutput) {
                 fflush(NULL);
 
@@ -464,7 +464,7 @@ void setupLogOutput(Options * options, FILE * out, FILE * err) {
         }
 }
 
-void cleanUpPidFile() {
+static void cleanUpPidFile(void) {
 	ConfigParam * pidFileParam = parseConfigFilePath(CONF_PID_FILE, 0);
 
 	if (!pidFileParam) return;
@@ -474,7 +474,7 @@ void cleanUpPidFile() {
 	unlink(pidFileParam->value);
 }
 
-void killFromPidFile(char * cmd, int killOption) {
+static void killFromPidFile(char * cmd, int killOption) {
 	/*char buf[32];
 	struct stat st_cmd;
 	struct stat st_exe;*/
