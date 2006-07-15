@@ -283,7 +283,7 @@ fail:
 	return -1;
 }
 
-inline static int alsa_errorRecovery(AlsaData * ad, int err) {
+static int alsa_errorRecovery(AlsaData * ad, int err) {
 	if(err == -EPIPE) {
 		DEBUG("Underrun on alsa device \"%s\"\n", ad->device);
 	}

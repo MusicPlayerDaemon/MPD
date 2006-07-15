@@ -147,7 +147,7 @@ static int printSongInDirectory(FILE * fp, Song * song, void * data) {
         return 0;
 }
 
-static inline int strstrSearchTag(Song * song, int type, char * str) {
+static int strstrSearchTag(Song * song, int type, char * str) {
 	int i;
 	char * dup;
 	int ret = 0;
@@ -224,7 +224,7 @@ int searchForSongsIn(FILE * fp, char * name, int numItems,
 	return ret;
 }
 
-static inline int tagItemFoundAndMatches(Song * song, int type, char * str) {
+static int tagItemFoundAndMatches(Song * song, int type, char * str) {
 	int i;
 
 	if(type == LOCATE_TAG_FILE_TYPE) {

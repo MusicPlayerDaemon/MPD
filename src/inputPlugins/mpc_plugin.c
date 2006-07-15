@@ -82,7 +82,8 @@ static mpc_int32_t mpc_getsize_cb(void * vdata) {
 	return data->inStream->size;
 }
 
-inline mpd_sint16 convertSample(MPC_SAMPLE_FORMAT sample) {
+/* this _looks_ performance-critical, don't de-inline -- eric */
+static inline mpd_sint16 convertSample(MPC_SAMPLE_FORMAT sample) {
 	/* only doing 16-bit audio for now */
 	mpd_sint32 val;
 

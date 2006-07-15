@@ -103,7 +103,7 @@ long ogg_tell_cb(void * vdata) {
 	return (long)(data->inStream->offset);
 }
 
-static inline char * ogg_parseComment(char * comment, char * needle) {
+static char * ogg_parseComment(char * comment, char * needle) {
         int len = strlen(needle);
 
         if(strncasecmp(comment, needle, len) == 0 && *(comment+len) == '=') {

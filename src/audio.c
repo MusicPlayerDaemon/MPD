@@ -251,7 +251,7 @@ int isCurrentAudioFormat(AudioFormat * audioFormat) {
 	return 1;
 }
 
-inline void syncAudioDevicesEnabledArrays() {
+static void syncAudioDevicesEnabledArrays(void) {
 	int i;
 
 	memcpy(myAudioDevicesEnabled, pdAudioDevicesEnabled,AUDIO_MAX_DEVICES);

@@ -560,7 +560,7 @@ int mpdTagsAreEqual(MpdTag * tag1, MpdTag * tag2) {
 	} \
 }
 
-inline static void appendToTagItems(MpdTag * tag, int type, char * value, 
+static void appendToTagItems(MpdTag * tag, int type, char * value,
 			int len) 
 {
 	int i = tag->numOfItems;
