@@ -569,6 +569,7 @@ int main(int argc, char * argv[]) {
         initAudioDriver();
 
         initSigHandlers();
+        setupLogOutput(&options, out, err);
 	startMainProcess();
 	/* This is the main process which has
 	 * been forked from the master process.
@@ -586,8 +587,6 @@ int main(int argc, char * argv[]) {
 
 	printMemorySavedByTagTracker();
 	printSavedMemoryFromFilenames();
-
-        setupLogOutput(&options, out, err);
 
 	/* wait for the master process to get ready so we can start 
 	 * playing if readPlaylistState thinks we should*/
