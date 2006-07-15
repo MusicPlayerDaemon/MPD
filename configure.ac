@@ -26,10 +26,11 @@ AC_PROG_MAKE_SET
 AM_CONFIG_HEADER(config.h)
 
 MPD_CFLAGS=""
-if echo "$CC" | grep gcc >/dev/null
-then
+case "$CC" in
+*gcc*)
 	MPD_CFLAGS="-Wall"
-fi
+	;;
+esac
 MPD_LIBS=""
 
 AC_ARG_ENABLE(ao,[  --enable-ao    enable support for libao (default: disable)],[enable_ao=$enableval],[enable_ao=no])
