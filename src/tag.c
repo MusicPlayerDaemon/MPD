@@ -493,7 +493,7 @@ void clearItemsFromMpdTag(MpdTag * tag, int type) {
 	}
 }
 
-void clearMpdTag(MpdTag * tag) {
+static void clearMpdTag(MpdTag * tag) {
 	int i;
 
 	for(i = 0; i < tag->numOfItems; i++) {
@@ -591,20 +591,4 @@ void addItemToMpdTagWithLen(MpdTag * tag, int itemType, char * value, int len) {
 	if(tag->numOfItems == 255) return;
 			
 	appendToTagItems(tag, itemType, value, len);
-}
-
-char * getNextItemFromMpdTag(MpdTag * tag, int itemType, int * last) {
-	int i = 0;
-
-	if(last && *last >=0) i = *last+1;
-
-	for(i = 0; i < tag->numOfItems; i++) {
-		if(itemType == tag->items[i].type) {
-			if(last) *last = i;
-			return tag->items[i].value;
-		}
-		i++;
-	}
-
-	return NULL;
 }

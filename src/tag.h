@@ -75,8 +75,6 @@ void initTagConfig();
 
 void clearItemsFromMpdTag(MpdTag * tag, int itemType);
 
-void clearMpdTag(MpdTag * tag);
-
 void freeMpdTag(MpdTag * tag);
 
 void addItemToMpdTagWithLen(MpdTag * tag, int itemType, char * value, int len);
@@ -89,8 +87,5 @@ void printMpdTag(FILE * fp, MpdTag * tag);
 MpdTag * mpdTagDup(MpdTag * tag);
 
 int mpdTagsAreEqual(MpdTag * tag1, MpdTag * tag2);
-
-/* *last shoudl be initialzed to -1 before calling this function */
-char * getNextItemFromMpdTag(MpdTag * tag, int itemType, int * last);
 
 #endif
