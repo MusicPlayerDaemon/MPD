@@ -22,7 +22,30 @@ echo "checking for autoconf... "
 
 VERSIONGREP="sed -e s/.*[^0-9\.]\([0-9]\.[0-9]\).*/\1/"
 VERSIONMKINT="sed -e s/[^0-9]//"
-                                                                                
+
+# define AM_FORCE_VERSION if you want to force a particular version of
+# automake and aclocal
+if test -n "$AM_FORCE_VERSION"
+then
+	AM_VERSIONS="$AM_FORCE_VERSION"
+else
+	AM_VERSIONS='1.6 1.7 1.8 1.9'
+fi
+
+versioned_bins ()
+{
+	bin="$1"
+	for i in $AM_VERSIONS
+	do
+		i_int=`echo $i | $VERSIONMKINT`
+		if test $i_int -ge $VERNEEDED
+		then
+			echo $bin-$i $bin$i
+		fi
+	done
+	echo $bin
+}
+
 # do we need automake?
 if test -r Makefile.am; then
   AM_NEEDED=`fgrep AUTOMAKE_OPTIONS Makefile.am | $VERSIONGREP`
@@ -38,11 +61,11 @@ if test -r Makefile.am; then
     fi
   else
     echo -n "checking for automake $AM_NEEDED or later... "
-    for am in automake-$AM_NEEDED automake$AM_NEEDED automake; do
+    VERNEEDED=`echo $AM_NEEDED | $VERSIONMKINT`
+    for am in `versioned_bins automake`; do
       ($am --version < /dev/null > /dev/null 2>&1) || continue
       ver=`$am --version < /dev/null | head -n 1 | $VERSIONGREP | $VERSIONMKINT`
-      verneeded=`echo $AM_NEEDED | $VERSIONMKINT`
-      if test $ver -ge $verneeded; then
+      if test $ver -ge $VERNEEDED; then
         AUTOMAKE=$am
         echo $AUTOMAKE
         break
@@ -50,11 +73,10 @@ if test -r Makefile.am; then
     done
     test -z $AUTOMAKE &&  echo "no"
     echo -n "checking for aclocal $AM_NEEDED or later... "
-    for ac in aclocal-$AM_NEEDED aclocal$AM_NEEDED aclocal; do
+    for ac in `versioned_bins aclocal`; do
       ($ac --version < /dev/null > /dev/null 2>&1) || continue
       ver=`$ac --version < /dev/null | head -n 1 | $VERSIONGREP | $VERSIONMKINT`
-      verneeded=`echo $AM_NEEDED | $VERSIONMKINT`
-      if test $ver -ge $verneeded; then
+      if test $ver -ge $VERNEEDED; then
         ACLOCAL=$ac
         echo $ACLOCAL
         break
