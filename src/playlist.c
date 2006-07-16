@@ -1310,7 +1310,7 @@ int savePlaylist(FILE * fp, char * utf8file) {
 		return -1;
 	}
 
-	file = strdup(utf8ToFsCharset(utf8file));
+	file = utf8ToFsCharset(utf8file);
 
 	rfile = malloc(strlen(file)+strlen(".")+
 			strlen(PLAYLIST_FILE_SUFFIX)+1);
@@ -1415,7 +1415,7 @@ static int PlaylistIterFunc(FILE * fp, char * utf8file, void (*IterFunc)(FILE *f
 	FILE * fileP;
 	char s[MAXPATHLEN+1];
 	int slength = 0;
-	char * temp = strdup(utf8ToFsCharset(utf8file));
+	char * temp = utf8ToFsCharset(utf8file);
 	char * rfile = malloc(strlen(temp)+strlen(".")+
 			strlen(PLAYLIST_FILE_SUFFIX)+1);
 	char * actualFile;

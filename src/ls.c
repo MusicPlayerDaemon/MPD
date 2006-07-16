@@ -111,7 +111,7 @@ int lsPlaylists(FILE * fp, char * utf8path) {
 	char s[MAXPATHLEN+1];
 	List * list = NULL;
 	ListNode * node = NULL;
-	char * path = strdup(utf8ToFsCharset(utf8path));
+	char * path = utf8ToFsCharset(utf8path);
 	char * actualPath = rpp2app(path);
 	int actlen = strlen(actualPath)+1;
 	int maxlen = MAXPATHLEN-actlen;
