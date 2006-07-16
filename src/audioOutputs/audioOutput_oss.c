@@ -421,6 +421,12 @@ static int setParam(OssData * od, int param, int * value) {
 	return 0;
 }
 
+static void oss_close(OssData * od)
+{
+	if(od->fd >= 0) while (close(od->fd) && errno == EINTR);
+	od->fd = -1;
+}
+
 static int oss_open(AudioOutput * audioOutput) {
 	int tmp;
 	OssData * od = audioOutput->data;
@@ -468,7 +474,7 @@ static int oss_open(AudioOutput * audioOutput) {
 	return 0;
 
 fail:
-	if(od->fd >= 0) close(od->fd);
+	oss_close(od);
 	audioOutput->open = 0;
 	return -1;
 }
@@ -483,7 +489,8 @@ static int oss_openDevice(AudioOutput * audioOutput)
 	od->sampleRate = audioFormat->sampleRate;
 	od->bits = audioFormat->bits;
 
-	ret = oss_open(audioOutput);
+	if ((ret = oss_open(audioOutput)) < 0)
+		return ret;
 
 	audioFormat->channels = od->channels;
 	audioFormat->sampleRate = od->sampleRate;
@@ -494,11 +501,6 @@ static int oss_openDevice(AudioOutput * audioOutput)
 			od->channels, od->sampleRate);
 
 	return ret;
-}
-
-static void oss_close(OssData * od) {
-	if(od->fd >= 0) close(od->fd);
-	od->fd = -1;
 }
 
 static void oss_closeDevice(AudioOutput * audioOutput) {
@@ -516,8 +518,6 @@ static void oss_dropBufferedAudio(AudioOutput * audioOutput) {
 		ioctl(od->fd, SNDCTL_DSP_RESET, 0);
 		oss_close(od);
 	}
-
-	/*oss_open(audioOutput);*/
 }
 
 static int oss_playAudio(AudioOutput * audioOutput, char * playChunk, 
@@ -527,7 +527,8 @@ static int oss_playAudio(AudioOutput * audioOutput, char * playChunk,
 	int ret;
 
 	/* reopen the device since it was closed by dropBufferedAudio */
-	if(od->fd < 0) oss_open(audioOutput);
+	if(od->fd < 0 && oss_open(audioOutput) < 0)
+		return -1;
 
 	while (size > 0) {
 		ret = write(od->fd, playChunk, size);

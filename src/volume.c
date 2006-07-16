@@ -64,7 +64,7 @@ static char * volume_mixerDevice = VOLUME_MIXER_DEVICE_DEFAULT;
 static int volume_softwareSet = 100;
 
 #ifdef HAVE_OSS
-static int volume_ossFd;
+static int volume_ossFd = -1;
 static int volume_ossControl = SOUND_MIXER_PCM;
 #endif
 
@@ -77,8 +77,14 @@ static int volume_alsaSet = -1;
 #endif
 
 #ifdef HAVE_OSS
+
+static void closeOssMixer(void)
+{
+	while (close(volume_ossFd) && errno == EINTR);
+	volume_ossFd = -1;
+}
+
 static int prepOssMixer(char * device) {
-	int devmask = 0;
 	ConfigParam * param;
 
 	if((volume_ossFd = open(device,O_RDONLY))<0) {
@@ -92,10 +98,11 @@ static int prepOssMixer(char * device) {
 		char * labels[SOUND_MIXER_NRDEVICES] = SOUND_DEVICE_LABELS;
 		char * dup;
 		int i,j;
+		int devmask = 0;
 
 		if(ioctl(volume_ossFd,SOUND_MIXER_READ_DEVMASK,&devmask)<0) {
 			WARNING("errors getting read_devmask for oss mixer\n");
-			close(volume_ossFd);
+			closeOssMixer();
 			return -1;
 		}
 
@@ -114,13 +121,13 @@ static int prepOssMixer(char * device) {
 		if(i>=SOUND_MIXER_NRDEVICES) {
 			WARNING("mixer control \"%s\" not found at line %i\n",
 					        param->value, param->line);
-			close(volume_ossFd);
+			closeOssMixer();
 			return -1;
 		}
 		else if(!( ( 1 << i ) & devmask )) {
 			WARNING("mixer control \"%s\" not usable at line %i\n",
 					        param->value, param->line);
-			close(volume_ossFd);
+			closeOssMixer();
 			return -1;
 		}
 
@@ -130,14 +137,21 @@ static int prepOssMixer(char * device) {
 	return 0;
 }
 
-static void closeOssMixer() {
-	close(volume_ossFd);
+static int ensure_oss_open(void)
+{
+	if ((volume_ossFd < 0 && prepOssMixer(volume_mixerDevice) < 0))
+		return -1;
+	return 0;
 }
 
 static int getOssVolumeLevel() {
 	int left, right, level;
 
+	if (ensure_oss_open() < 0)
+		return -1;
+
 	if(ioctl(volume_ossFd,MIXER_READ(volume_ossControl),&level) < 0) {
+		closeOssMixer();
 		WARNING("unable to read volume\n");
 		return -1;
 	}
@@ -166,8 +180,11 @@ static int changeOssVolumeLevel(FILE * fp, int change, int rel) {
 		}
 
 		new = current+change;
+	} else {
+		if (ensure_oss_open() < 0)
+			return -1;
+		new = change;
 	}
-	else new = change;
 
 	if(new<0) new = 0;
 	else if(new>100) new = 100;
@@ -175,6 +192,7 @@ static int changeOssVolumeLevel(FILE * fp, int change, int rel) {
 	level = (new << 8) + new;
 
 	if(ioctl(volume_ossFd,MIXER_WRITE(volume_ossControl),&level) < 0) {
+		closeOssMixer();
 		commandError(fp, ACK_ERROR_SYSTEM, "problems setting volume",
 				NULL);
 		return -1;
