@@ -1302,6 +1302,7 @@ int savePlaylist(FILE * fp, char * utf8file) {
 	char * file;
 	char * rfile;
 	char * actualFile;
+	char * url;
 
 	if(strstr(utf8file,"/")) {
 		commandError(fp, ACK_ERROR_ARG,
@@ -1345,8 +1346,12 @@ int savePlaylist(FILE * fp, char * utf8file) {
 			myfprintf(fileP,"%s\n",rmp2amp(utf8ToFsCharset((
 				        getSongUrl(playlist.songs[i])))));
 		}
-		else myfprintf(fileP,"%s\n",
-				utf8ToFsCharset(getSongUrl(playlist.songs[i])));
+		else {
+			url = utf8ToFsCharset(getSongUrl(playlist.songs[i]));
+			myfprintf(fileP, "%s\n", url);
+			free(url);
+				
+		}
 	}
 
 	while(fclose(fileP) && errno==EINTR);
