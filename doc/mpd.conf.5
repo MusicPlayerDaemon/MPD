@@ -55,8 +55,7 @@ the "kill" command.  When mpd is restarted, it will read the state file and
 restore the state of mpd (including the playlist).
 .TP
 .B audio_output
-See \fBREQUIRED AUDIO OUTPUT PARAMETERS\fP and \fBOPTIONAL AUDIO OUTPUT
-PARAMETERS\fP.
+See the various \fBAUDIO OUTPUT PARAMETERS\fP sections below.
 .TP
 .B audio_output_format <sample_rate:bits:channels>
 This specifies the sample rate, bits per sample, and number of channels of
@@ -187,10 +186,8 @@ when saving playlists.  The default is "no".
 .SH REQUIRED AUDIO OUTPUT PARAMETERS
 .TP
 .B type <type>
-This specifies the audio output type.  Depending on what audio output support
-mpd was built with possible values could be "alsa", "oss", "osx", "pulse",
-"mvp", "ao", or "shout" (see \fBREQUIRED SHOUT OUTPUT PARAMETERS\fP and
-\fBOPTIONAL SHOUT OUTPUT PARAMETERS\fP).
+This specifies the audio output type.  See the list of supported outputs in mpd
+--version for possible values.
 .TP
 .B name <name>
 This specifies a unique name for the audio output.
@@ -201,61 +198,62 @@ This specifies the sample rate, bits per sample, and number of channels of
 audio that is sent to the audio output device.  See documentation for the
 \fBaudio_output_format\fP parameter for more details.  The default is to use
 whatever audio format is passed to the audio output.
-.TP
-.B device <dev>
-This specifies the device to use for audio output.  Used by the alsa and oss
-output types.  The default for oss is "/dev/dsp"; the default for alsa is
-"hw:0,0".
-.TP
-.B server <server list>
-A space separated list of servers to try to connect to.  Used only by the pulse
-audio output.  See <\fBhttp://www.pulseaudio.org/wiki/ServerStrings\fP> for
-more details.  The default is to let PulseAudio choose a server.
-.TP
-.B sink <sink>
-The sink to output to. Used only by the pulse audio output.  The default is to
-let PulseAudio choose a sink.
-.TP
-.B driver <driver>
-This specifies the libao driver to use for audio output.  Used only by the ao
-output type.  Possible values depend on what libao drivers are available.  See
-<\fBhttp://www.xiph.org/ao/doc/drivers.html\fP> for information on some
-commonly used drivers.  Typical values for Linux include "oss" and "alsa09".
-The default is "default", which causes libao to select an appropriate plugin.
-.TP
-.B options <opts>
-This specifies the options to use for the selected libao driver.  Used only by
-the ao output type.  For oss, the only option available is "dsp".  For alsa09,
-the available options are: "dev", "buf_size", and "periods".  See
-<\fBhttp://www.xiph.org/ao/doc/drivers.html\fP> for available options for some
-commonly used drivers.  Options are assigned using "=", and ";" is used to
-separate options.  An example for oss: "dsp=/dev/dsp".  An example for alsa09:
-"dev=hw:0,0;buf_size=4096".  The default is "".
-.TP
-.B write_size <size in bytes>
-This specifies how many bytes to write to the audio device at once.  Used only
-by the ao output type.  This parameter is to work around a bug in older
-versions of libao on sound cards with very small buffers.  The default is 1024.
 .SH OPTIONAL ALSA OUTPUT PARAMETERS
 .TP
+.B device <dev>
+This specifies the device to use for audio output.  The default is "hw:0,0".
+.TP
 .B use_mmap <yes or no>
-Setting this allows you to use memory-mapped I/O.  Certain hardware setups
-may benefit from this, but most do not.
-Most users do not need to set this.
+Setting this allows you to use memory-mapped I/O.  Certain hardware setups may
+benefit from this, but most do not.  Most users do not need to set this.
 .TP
 .B buffer_time <time in microseconds>
-This sets the length of the hardware sample buffer in microseconds.
-Increasing it may help to reduce or eliminate skipping on certain setups.
-Most users do not need to change this.
-The default is 500000 microseconds (0.5 seconds).
+This sets the length of the hardware sample buffer in microseconds.  Increasing
+it may help to reduce or eliminate skipping on certain setups.  Most users do
+not need to change this.  The default is 500000 microseconds (0.5 seconds).
 .TP
 .B period_time <time in microseconds>
 This sets the time between hardware sample transfers in microseconds.
 Increasing this can reduce CPU usage while lowering it can reduce underrun
 errors on bandwidth-limited devices.  Some users have reported good results
-with this set to 50000, but not all devices support values this high.
-Most users do not need to change this.
-The default is 256000000 / sample_rate(kHz), or 5804us for CD-quality audio.
+with this set to 50000, but not all devices support values this high.  Most
+users do not need to change this.  The default is 256000000 / sample_rate(kHz),
+or 5804 microseconds for CD-quality audio.
+.SH OPTIONAL OSS OUTPUT PARAMETERS
+.TP
+.B device <dev>
+This specifies the device to use for audio output.  The default is "/dev/dsp".
+.SH OPTIONAL PULSE OUTPUT PARAMETERS
+.TP
+.B server <server list>
+A space separated list of servers to try to connect to.  See
+<\fBhttp://www.pulseaudio.org/wiki/ServerStrings\fP> for more details.  The
+default is to let PulseAudio choose a server.
+.TP
+.B sink <sink>
+The sink to output to.  The default is to let PulseAudio choose a sink.
+.SH OPTIONAL AO OUTPUT PARAMETERS
+.TP
+.B driver <driver>
+This specifies the libao driver to use for audio output.  Possible values
+depend on what libao drivers are available.  See
+<\fBhttp://www.xiph.org/ao/doc/drivers.html\fP> for information on some
+commonly used drivers.  Typical values for Linux include "oss" and "alsa09".
+The default is "default", which causes libao to select an appropriate plugin.
+.TP
+.B options <opts>
+This specifies the options to use for the selected libao driver.  For oss, the
+only option available is "dsp".  For alsa09, the available options are: "dev",
+"buf_size", and "periods".  See <\fBhttp://www.xiph.org/ao/doc/drivers.html\fP>
+for available options for some commonly used drivers.  Options are assigned
+using "=", and ";" is used to separate options.  An example for oss:
+"dsp=/dev/dsp".  An example for alsa09: "dev=hw:0,0;buf_size=4096".  The
+default is "".
+.TP
+.B write_size <size in bytes>
+This specifies how many bytes to write to the audio device at once.  This
+parameter is to work around a bug in older versions of libao on sound cards
+with very small buffers.  The default is 1024.
 .SH REQUIRED SHOUT OUTPUT PARAMETERS
 .TP
 .B name <name>
