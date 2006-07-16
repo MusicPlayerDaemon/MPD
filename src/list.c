@@ -195,7 +195,7 @@ int insertInListWithoutKey(List * list, void * data) {
 
 /* if _key_ is not found, *_node_ is assigned to the node before which
 	the info would be found */
-static int findNodeInList(List * list, char * key, ListNode ** node, int * pos) {
+int findNodeInList(List * list, char * key, ListNode ** node, int * pos) {
 	long high;
 	long low;
 	long cur;

@@ -775,7 +775,6 @@ static int addToDirectory(Directory * directory, char * shortname, char * name) 
 
 void closeMp3Directory() {
 	freeDirectory(mp3rootDirectory);
-	destroyTagTracker();
 }
 
 static Directory * findSubDirectory(Directory * directory,char * name) {

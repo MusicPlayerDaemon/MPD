@@ -18,13 +18,12 @@
 
 #include "tagTracker.h"
 
+#include "list.h"
 #include "log.h"
 
-#include <glib/gtree.h>
 #include <assert.h>
-#include <stdlib.h>
 
-static GTree * tagLists[TAG_NUM_OF_ITEM_TYPES] =
+static List * tagLists[TAG_NUM_OF_ITEM_TYPES] =
 {
 	NULL,
 	NULL,
@@ -40,124 +39,117 @@ typedef struct tagTrackerItem {
 	mpd_sint8 visited;
 } TagTrackerItem;
 
-static int keyCompare(const void *a, const void *b, void *data) {
-	return strcmp(a,b);
-}
-
 char * getTagItemString(int type, char * string) {
-	TagTrackerItem * item;
-	TagTrackerItem ** itemPointer = &item;
-	char *key;
-	char **keyPointer = &key;
+	ListNode * node;
+	int pos;
 
 	if(tagLists[type] == NULL) {
-		tagLists[type] = g_tree_new_full(keyCompare, NULL, free, free);
+		tagLists[type] = makeList(free, 1);
+		sortList(tagLists[type]);
 	}
 
-	if((TagTrackerItem *)g_tree_lookup_extended(tagLists[type], string, (void**)keyPointer, (void**)itemPointer )) {
-		item->count++;
+	if(findNodeInList(tagLists[type], string, &node, &pos)) {
+		((TagTrackerItem *)node->data)->count++;
 	}
 	else {
-		item = malloc(sizeof(TagTrackerItem));
+		TagTrackerItem * item = malloc(sizeof(TagTrackerItem));
 		item->count = 1;
 		item->visited = 0;
-		key = strdup(string);
-		g_tree_insert(tagLists[type], key, item);
+		node = insertInListBeforeNode(tagLists[type], node, pos,
+				string, item);
 	}
 
-	return key;
+	return node->key;
 }
 
-
 void removeTagItemString(int type, char * string) {
-	TagTrackerItem *item;
+	ListNode * node;
+	int pos;
 
 	assert(string);
 
 	assert(tagLists[type]);
 	if(tagLists[type] == NULL) return;
 
-	if((item = g_tree_lookup(tagLists[type], string))) {
+	if(findNodeInList(tagLists[type], string, &node, &pos)) {
+		TagTrackerItem * item = node->data;
 		item->count--;
-		if(item->count <= 0) g_tree_remove(tagLists[type], string);
+		if(item->count <= 0) deleteNodeFromList(tagLists[type], node);
 	}
 
-/* why would this be done??? free it when mpd quits...
- 	if(tagLists[type]->numberOfNodes == 0) {
+	if(tagLists[type]->numberOfNodes == 0) {
 		freeList(tagLists[type]);
 		tagLists[type] = NULL;
 	}
-*/
-}
-
-void destroyTagTracker() {
-	int type;
-	for (type=0; type < TAG_NUM_OF_ITEM_TYPES; type ++)
-		if (tagLists[type])
-			g_tree_destroy(tagLists[type]);
 }
 
 int getNumberOfTagItems(int type) {
 	if(tagLists[type] == NULL) return 0;
 
-	return g_tree_nnodes(tagLists[type]);
+	return tagLists[type]->numberOfNodes;
 }
 
-static int calcSavedMemory(char *key, TagTrackerItem* value, int* sum) {
-	*sum -= sizeof(int) + 4*sizeof(void*); /* sizeof(_GTreeNode) */
-	*sum -= sizeof(TagTrackerItem);
-	*sum += (strlen(key)+1)*value->count;
-	return FALSE;
-}
-	
 void printMemorySavedByTagTracker() {
 	int i;
+	ListNode * node;
 	size_t sum = 0;
 
 	for(i = 0; i < TAG_NUM_OF_ITEM_TYPES; i++) {
 		if(!tagLists[i]) continue;
 
-		sum -= 5*sizeof(void*);/* sizeof(_GTree) */
-		g_tree_foreach(tagLists[i], (GTraverseFunc)calcSavedMemory, &sum);
+		sum -= sizeof(List);
+
+		node = tagLists[i]->firstNode;
+
+		while(node != NULL) {
+			sum -= sizeof(ListNode);
+			sum -= sizeof(TagTrackerItem);
+			sum -= sizeof(node->key);
+			sum += (strlen(node->key)+1)*(*((int *)node->data));
+			node = node->nextNode;
+		}
 	}
 
 	DEBUG("saved memory from tags: %li\n", (long)sum);
 }
 
-static int resetVisitedFlag(char *key, TagTrackerItem *value, void *data) {
-	value->visited = 0;
-	return FALSE;
-}
-
 void resetVisitedFlagsInTagTracker(int type) {
+	ListNode * node;
 
 	if(!tagLists[type]) return;
 
-	g_tree_foreach(tagLists[type], (GTraverseFunc)resetVisitedFlag, NULL);
+	node = tagLists[type]->firstNode;
+
+	while(node) {
+		((TagTrackerItem *)node->data)->visited = 0;
+		node = node->nextNode;
+	}
 }
 
 void visitInTagTracker(int type, char * str) {
+	void * item;
+
+	if(!tagLists[type]) return;
+
+	if(!findInList(tagLists[type], str, &item)) return;
+
+	((TagTrackerItem *)item)->visited = 1;
+}
+
+void printVisitedInTagTracker(FILE * fp, int type) {
+	ListNode * node;
 	TagTrackerItem * item;
 
 	if(!tagLists[type]) return;
 
-	if(!(item = g_tree_lookup(tagLists[type], str))) return;
+	node = tagLists[type]->firstNode;
 
-	item->visited = 1;
-}
-
-struct _PrintVisitedUserdata {
-	FILE *fp;
-	char *type;
-};
-
-static int printVisitedFlag(char *key, TagTrackerItem* value, struct _PrintVisitedUserdata *data) {
-	if(value->visited) myfprintf(data->fp, "%s: %s\n", data->type, key);
-	return FALSE;
-}
-
-void printVisitedInTagTracker(FILE * fp, int type) {
-	struct _PrintVisitedUserdata data = {fp, mpdTagItemKeys[type]};
-	if(!tagLists[type]) return;
-	g_tree_foreach( tagLists[type], (GTraverseFunc)printVisitedFlag, (void*)&data);
+	while(node) {
+		item = node->data;
+		if(item->visited) {
+			myfprintf(fp, "%s: %s\n", mpdTagItemKeys[type],
+					node->key);
+		}
+		node = node->nextNode;
+	}
 }
