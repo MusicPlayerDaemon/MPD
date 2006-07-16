@@ -85,7 +85,7 @@ pid_file 		"~/.mpd/mpd.pid"
 #	bitrate		"128"
 #	format		"44100:16:1"
 #
-# Optional Paramters
+# Optional Parameters
 #	user		"source"
 #	description	"here's my long description"
 #       genre		"jazz"
@@ -172,7 +172,7 @@ pid_file 		"~/.mpd/mpd.pid"
 # It is encouraged to run MPD as 
 # non-superuser.  If you start mpd as root
 # (for example, in an init script), set
-# this value, then  mpd will drop root priveleges
+# this value, then mpd will drop root privileges
 # and runs as the user specified.
 #
 #user 		"nobody"
