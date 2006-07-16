@@ -722,6 +722,18 @@ else
 	echo " MOD support ...................disabled"
 fi
 
+if
+	test x$enable_mp3 = xno &&
+	test x$enable_oggvorbis = xno &&
+	test x$enable_flac = xno && 
+	test x$enable_oggflac = xno &&
+	test x$enable_audiofile = xno && 
+	test x$enable_aac = xno &&
+	test x$enable_mpc = xno &&
+	test x$enable_mod = xno; then
+	AC_MSG_ERROR("No input plugins supported!")
+fi
+
 echo ""
 echo "##########################################"
 echo ""
