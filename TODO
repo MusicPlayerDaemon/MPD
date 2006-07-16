@@ -1,5 +1,6 @@
-0.12
+0.13
 ----
+
 *) data structures
 	*) add 2-3 tree for sorted data structures
 	*) remove changes made to linked list for TagTracker
@@ -12,9 +13,6 @@
 	*) add OS X support
 
 *) Add support for 24-bit audio
-
-0.13
-----
 
 *) cleanup linked list code!
 
