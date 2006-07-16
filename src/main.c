@@ -33,6 +33,7 @@
 #include "permission.h"
 #include "replayGain.h"
 #include "inputPlugin.h"
+#include "audioOutput.h"
 #include "inputStream.h"
 #include "tag.h"
 #include "tagTracker.h"
@@ -135,6 +136,11 @@ static void version(void) {
 
         initInputPlugins();
         printAllInputPluginSuffixes(stdout);
+
+        LOG("\n");
+        LOG("Supported outputs:\n");
+        loadAudioDrivers();
+        printAllOutputPluginTypes(stdout);
 }
 
 static void parseOptions(int argc, char ** argv, Options * options) {

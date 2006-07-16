@@ -79,4 +79,5 @@ void readAudioDevicesState();
 
 void saveAudioDevicesState();
 
+void loadAudioDrivers();
 #endif

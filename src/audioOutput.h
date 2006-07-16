@@ -110,4 +110,5 @@ void finishAudioOutput(AudioOutput * audioOutput);
 int keepAudioOutputAlive(AudioOutput * audioOutput, int ms);
 void sendMetadataToAudioOutput(AudioOutput * audioOutput, MpdTag * tag);
 
+void printAllOutputPluginTypes(FILE *fp);
 #endif

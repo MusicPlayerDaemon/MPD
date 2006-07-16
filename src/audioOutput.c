@@ -247,3 +247,15 @@ void sendMetadataToAudioOutput(AudioOutput * audioOutput, MpdTag * tag) {
 	if(!audioOutput->sendMetdataFunc) return;
 	audioOutput->sendMetdataFunc(audioOutput, tag);
 }
+
+void printAllOutputPluginTypes(FILE *fp) {
+	ListNode *node = audioOutputPluginList->firstNode;
+	AudioOutputPlugin *plugin;
+		
+	while(node) {
+		plugin = (AudioOutputPlugin *)node->data;
+		myfprintf(fp, "%s ", plugin->name);	
+		node = node->nextNode;
+	}
+	myfprintf(fp, "\n");
+}

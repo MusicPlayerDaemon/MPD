@@ -79,11 +79,8 @@ extern AudioOutputPlugin pulsePlugin;
 extern AudioOutputPlugin mvpPlugin;
 extern AudioOutputPlugin shoutPlugin;
 
-/* make sure initPlayerData is called before this function!! */
-void initAudioDriver() {
-	ConfigParam * param = NULL;
-	int i;
 
+void loadAudioDrivers() {
 	initAudioOutputPlugins();
 	loadAudioOutputPlugin(&alsaPlugin);
 	loadAudioOutputPlugin(&aoPlugin);
@@ -92,6 +89,14 @@ void initAudioDriver() {
 	loadAudioOutputPlugin(&pulsePlugin);
 	loadAudioOutputPlugin(&mvpPlugin);
 	loadAudioOutputPlugin(&shoutPlugin);
+}
+
+/* make sure initPlayerData is called before this function!! */
+void initAudioDriver() {
+	ConfigParam * param = NULL;
+	int i;
+
+	loadAudioDrivers();
 
 	pdAudioDevicesEnabled = (getPlayerData())->audioDeviceEnabled;
 
