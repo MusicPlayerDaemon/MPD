@@ -26,7 +26,8 @@
 #define ALSA_PCM_NEW_SW_PARAMS_API
 
 #define MPD_ALSA_BUFFER_TIME 500000
-#define MPD_ALSA_PERIOD_TIME 50000
+#define MPD_ALSA_PERIOD_TIME 0
+#define MPD_ALSA_SAMPLE_XFER 256
 
 #include "../conf.h"
 #include "../log.h"
@@ -211,7 +212,9 @@ static int alsa_openDevice(AudioOutput * audioOutput)
 	err = snd_pcm_hw_params_set_buffer_time_near(ad->pcmHandle, hwparams,
 			&alsa_buffer_time, 0);
 	if(err < 0) goto error;
-	
+
+	if (!alsa_period_time && sampleRate > 0)
+		alsa_period_time = 1000000 * MPD_ALSA_SAMPLE_XFER / sampleRate;
 	cmd = "snd_pcm_hw_params_set_period_time_near";
 	err = snd_pcm_hw_params_set_period_time_near(ad->pcmHandle, hwparams,
 			&alsa_period_time, 0);
