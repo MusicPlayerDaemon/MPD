@@ -315,6 +315,11 @@ static int alsa_errorRecovery(AlsaData * ad, int err) {
 	case SND_PCM_STATE_XRUN:
 		err = snd_pcm_prepare(ad->pcmHandle);
 		break;
+	case SND_PCM_STATE_DISCONNECTED:
+		/* so alsa_closeDevice won't try to drain: */
+		snd_pcm_close(ad->pcmHandle);
+		ad->pcmHandle = NULL;
+		break;
 	default:
 		/* unknown state, do nothing */
 		break;

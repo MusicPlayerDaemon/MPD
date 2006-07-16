@@ -274,7 +274,7 @@ static void syncAudioDevicesEnabledArrays(void) {
 
 static int flushAudioBuffer() {
 	int ret = -1;
-	int i;
+	int i, err;
 
 	if(audioBufferPos == 0) return 0;
 
@@ -286,11 +286,14 @@ static int flushAudioBuffer() {
 
 	for(i = 0; i < audioOutputArraySize; i++) {
 		if(!myAudioDevicesEnabled[i]) continue;
-		if(0 == playAudioOutput(audioOutputArray[i], audioBuffer, 
-					audioBufferPos)) 
-		{
+		err = playAudioOutput(audioOutputArray[i], audioBuffer,
+							audioBufferPos);
+		if (!err)
 			ret = 0;
-		}
+		else if (err < 0)
+			/* device should already be closed if the play func
+			 * returned an error */
+			myAudioDevicesEnabled[i] = 0;
 	}
 
 	audioBufferPos = 0;
