@@ -27,11 +27,7 @@
 
 #include <stdio.h>
 #ifdef HAVE_ID3TAG
-#ifdef USE_MPD_ID3TAG
-#include "libid3tag/id3tag.h"
-#else
 #include <id3tag.h>
-#endif
 #endif
 
 #define TAG_ITEM_ARTIST		0

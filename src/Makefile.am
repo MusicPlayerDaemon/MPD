@@ -1,5 +1,5 @@
 bin_PROGRAMS = mpd
-SUBDIRS = $(ID3_SUBDIR) $(MAD_SUBDIR) $(MP4FF_SUBDIR)
+SUBDIRS = $(MP4FF_SUBDIR)
 
 mpd_audioOutputs = \
 	audioOutputs/audioOutput_alsa.c \
@@ -115,4 +115,4 @@ mpd_SOURCES = \
 mpd_CFLAGS = $(MPD_CFLAGS)
 mpd_LDADD = $(MPD_LIBS) $(ID3_LIB) $(MAD_LIB) $(MP4FF_LIB)
 
-DIST_SUBDIRS = mp4ff $(ID3_SUBDIR) $(MAD_SUBDIR)
+DIST_SUBDIRS = mp4ff

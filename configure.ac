@@ -1,5 +1,5 @@
 dnl AC_INIT(src/main.c)
-dnl AM_INIT_AUTOMAKE(mpd, 0.10.0)
+dnl AM_INIT_AUTOMAKE(mpd, 0.12.0)
 
 AC_PREREQ(2.52)
 AC_INIT(mpd, 0.12.0, warren.dukes@gmail.com)
@@ -51,8 +51,6 @@ AC_ARG_ENABLE(audiofile,[  --disable-audiofile disable audiofile support, disabl
 AC_ARG_ENABLE(mod,[  --enable-mod     enable MOD support (default: disable],[enable_mod=$enableval],[enable_mod=yes])
 AC_ARG_ENABLE(mpc,[  --disable-mpc     disable musepack (MPC) support (default: enable)],[enable_mpc=$enableval],[enable_mpc=yes])
 AC_ARG_ENABLE(id3,[  --disable-id3     disable id3 support (default: enable)],[enable_id3=$enableval],[enable_id3=yes])
-AC_ARG_ENABLE(mpd_mad,[  --enable-mpd-mad     use mpd libmad (default: disable)],[use_mpd_mad=$enableval],[use_mpd_mad=no])
-AC_ARG_ENABLE(mpd_id3tag,[  --enable-mpd-id3tag    use mpd libid3tag (default: disable)],[use_mpd_id3tag=$enableval],[use_mpd_id3tag=no])
 
 AC_ARG_WITH(tremor,[[  --with-tremor[=PFX]   Use Tremor(vorbisidec) integer Ogg-Vorbis decoder (with optional prefix)]], use_tremor=yes; test x$withval != xyes && tremor_prefix="$withval",)
 AC_ARG_WITH(tremor-libraries,[  --with-tremor-libraries=DIR   Directory where Tremor library is installed (optional)], tremor_libraries="$withval", tremor_libraries="")
@@ -198,104 +196,84 @@ fi
 ID3_SUBDIR=""
 
 if test x$enable_id3 = xyes; then
-	if test x$use_mpd_id3tag = xyes; then
-		ID3_SUBDIR="libid3tag"
-	else
-  		if test "x$id3tag_libraries" != "x" ; then
-  			ID3TAG_LIBS="-L$id3tag_libraries"
-  		elif test "x$id3tag_prefix" != "x" ; then
-    			ID3TAG_LIBS="-L$id3tag_prefix/lib"
-  		elif test "x$prefix" != "xNONE"; then
-    			ID3TAG_LIBS="-L$libdir"
-  		fi
-
-  		ID3TAG_LIBS="$ID3TAG_LIBS -lid3tag -lz"
-
-  		if test "x$id3tag_includes" != "x" ; then
-  			ID3TAG_CFLAGS="-I$id3tag_includes"
-  		elif test "x$id3tag_prefix" != "x" ; then
-    			ID3TAG_CFLAGS="-I$id3tag_prefix/include"
-  		elif test "x$prefix" != "xNONE"; then
-    			ID3TAG_CFLAGS="-I$includedir"
-  		fi
-
-  		ID3TAG_CFLAGS="$ID3TAG_CFLAGS"
-
-		oldcflags=$CFLAGS
-		oldlibs=$LIBS
-		oldcppflags=$CPPFLAGS
-		CFLAGS="$CFLAGS $MPD_CFLAGS $ID3TAG_CFLAGS"
-		LIBS="$LIBS $MPD_LIBS $ID3TAG_LIBS"
-		CPPFLAGS=$CFLAGS
-		AC_CHECK_HEADERS(id3tag.h,use_libid3tag=yes,
-			[use_libid3tag=no;use_mpd_id3tag=yes])
-		if test x$use_libid3tag = xyes; then
-			AC_CHECK_LIB(id3tag,id3_file_open,
-				[ID3_LIB="$ID3TAG_LIBS";
-     				MPD_CFLAGS="$MPD_CFLAGS $ID3TAG_CFLAGS";
-				use_libid3tag=yes],
-				[use_libid3tag=no;use_mpd_id3tag=yes])
-		fi
-		CFLAGS=$oldcflags
-		LIBS=$oldlibs
-		CPPFLAGS=$oldcppflags
+	if test "x$id3tag_libraries" != "x" ; then
+		ID3TAG_LIBS="-L$id3tag_libraries"
+	elif test "x$id3tag_prefix" != "x" ; then
+		ID3TAG_LIBS="-L$id3tag_prefix/lib"
+	elif test "x$prefix" != "xNONE"; then
+		ID3TAG_LIBS="-L$libdir"
 	fi
-	if test x$use_mpd_id3tag = xyes; then
-		AC_DEFINE(USE_MPD_ID3TAG,1,[Define to use mpd libid3tag])
-		ID3_LIB="libid3tag/libid3tag.la"
-		ID3_SUBDIR="libid3tag"
-		AC_CONFIG_SUBDIRS(src/libid3tag)
+
+	ID3TAG_LIBS="$ID3TAG_LIBS -lid3tag -lz"
+
+	if test "x$id3tag_includes" != "x" ; then
+		ID3TAG_CFLAGS="-I$id3tag_includes"
+	elif test "x$id3tag_prefix" != "x" ; then
+		ID3TAG_CFLAGS="-I$id3tag_prefix/include"
+	elif test "x$prefix" != "xNONE"; then
+		ID3TAG_CFLAGS="-I$includedir"
 	fi
+
+	ID3TAG_CFLAGS="$ID3TAG_CFLAGS"
+
+	oldcflags=$CFLAGS
+	oldlibs=$LIBS
+	oldcppflags=$CPPFLAGS
+	CFLAGS="$CFLAGS $MPD_CFLAGS $ID3TAG_CFLAGS"
+	LIBS="$LIBS $MPD_LIBS $ID3TAG_LIBS"
+	CPPFLAGS=$CFLAGS
+	AC_CHECK_HEADERS(id3tag.h,use_libid3tag=yes,
+		[use_libid3tag=no])
+	if test x$use_libid3tag = xyes; then
+		AC_CHECK_LIB(id3tag,id3_file_open,
+			[ID3_LIB="$ID3TAG_LIBS";
+			MPD_CFLAGS="$MPD_CFLAGS $ID3TAG_CFLAGS";
+			use_libid3tag=yes],
+			[use_libid3tag=no])
+	fi
+	CFLAGS=$oldcflags
+	LIBS=$oldlibs
+	CPPFLAGS=$oldcppflags
 	AC_DEFINE(HAVE_ID3TAG,1,[Define to use id3tag])
 fi
 
 MAD_SUBDIR=""
 
 if test x$enable_mp3 = xyes; then
-	if test x$use_mpd_mad = xyes; then
-		MAD_SUBDIR="libmad"
-	else
-  		if test "x$mad_libraries" != "x" ; then
-  			MAD_LIBS="-L$mad_libraries"
-  		elif test "x$mad_prefix" != "x" ; then
-    			MAD_LIBS="-L$mad_prefix/lib"
-  		elif test "x$prefix" != "xNONE"; then
-    			MAD_LIBS="-L$libdir"
-  		fi
-
-  		MAD_LIBS="$MAD_LIBS -lmad"
-
-  		if test "x$mad_includes" != "x" ; then
-  			MAD_CFLAGS="-I$mad_includes"
-  		elif test "x$mad_prefix" != "x" ; then
-    			MAD_CFLAGS="-I$mad_prefix/include"
-  		elif test "x$prefix" != "xNONE"; then
-    			MAD_CFLAGS="-I$includedir"
-  		fi
-
-		oldcflags=$CFLAGS
-		oldlibs=$LIBS
-		oldcppflags=$CPPFLAGS
-		CFLAGS="$CFLAGS $MPD_CFLAGS $MAD_CFLAGS"
-		LIBS="$LIBS $MPD_LIBS $MAD_LIBS"
-		CPPFLAGS=$CFLAGS
-		AC_CHECK_HEADERS(mad.h,use_libmad=yes,
-			[use_libmad=no;use_mpd_mad=yes])
-		if test x$use_libmad = xyes; then
-			AC_CHECK_LIB(mad,mad_stream_init,[MAD_LIB="$MAD_LIBS";
-				MPD_CFLAGS="$MPD_CFLAGS $MAD_CFLAGS";
-     				use_libmad=yes],[use_libmad=no;use_mpd_mad=yes])
-		fi
-		CFLAGS=$oldcflags
-		LIBS=$oldlibs
-		CPPFLAGS=$oldcppflags
+	if test "x$mad_libraries" != "x" ; then
+		MAD_LIBS="-L$mad_libraries"
+	elif test "x$mad_prefix" != "x" ; then
+		MAD_LIBS="-L$mad_prefix/lib"
+	elif test "x$prefix" != "xNONE"; then
+		MAD_LIBS="-L$libdir"
 	fi
-	if test x$use_mpd_mad = xyes; then
-		AC_DEFINE(USE_MPD_MAD,1,[Define to use mpd libmad])
-		MAD_LIB="libmad/libmad.la"
-		MAD_SUBDIR="libmad"
-		AC_CONFIG_SUBDIRS(src/libmad)
+
+	MAD_LIBS="$MAD_LIBS -lmad"
+
+	if test "x$mad_includes" != "x" ; then
+		MAD_CFLAGS="-I$mad_includes"
+	elif test "x$mad_prefix" != "x" ; then
+		MAD_CFLAGS="-I$mad_prefix/include"
+	elif test "x$prefix" != "xNONE"; then
+		MAD_CFLAGS="-I$includedir"
 	fi
+
+	oldcflags=$CFLAGS
+	oldlibs=$LIBS
+	oldcppflags=$CPPFLAGS
+	CFLAGS="$CFLAGS $MPD_CFLAGS $MAD_CFLAGS"
+	LIBS="$LIBS $MPD_LIBS $MAD_LIBS"
+	CPPFLAGS=$CFLAGS
+	AC_CHECK_HEADERS(mad.h,use_libmad=yes,
+		[use_libmad=no])
+	if test x$use_libmad = xyes; then
+		AC_CHECK_LIB(mad,mad_stream_init,[MAD_LIB="$MAD_LIBS";
+			MPD_CFLAGS="$MPD_CFLAGS $MAD_CFLAGS";
+			use_libmad=yes],[use_libmad=no])
+	fi
+	CFLAGS=$oldcflags
+	LIBS=$oldlibs
+	CPPFLAGS=$oldcppflags
 	AC_DEFINE(HAVE_MAD,1,[Define to use libmad])
 fi
 
@@ -687,22 +665,12 @@ echo " File Format Support:"
 
 if test x$enable_id3 = xyes; then
 	echo " ID3 tag support ...............enabled"
-	if test x$use_mpd_id3tag = xyes; then
-		echo "   using MPD's libid3tag........yes"
-	else
-		echo "   using MPD's libid3tag........no"
-	fi
 else
 	echo " ID3 tag support ...............disabled"
 fi
 
 if test x$enable_mp3 = xyes; then
 	echo " mp3 support ...................enabled"
-	if test x$use_mpd_mad = xyes; then
-		echo "   using MPD's libmad...........yes"
-	else
-		echo "   using MPD's libmad...........no"
-	fi
 else
 	echo " mp3 support ...................disabled"
 fi

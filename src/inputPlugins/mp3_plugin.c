@@ -21,18 +21,12 @@
 #ifdef HAVE_MAD
 
 #include "../pcm_utils.h"
-#ifdef USE_MPD_MAD
-#include "../libmad/mad.h"
-#else
 #include <mad.h>
-#endif
+
 #ifdef HAVE_ID3TAG
-#ifdef USE_MPD_ID3TAG
-#include "../libid3tag/id3tag.h"
-#else
 #include <id3tag.h>
 #endif
-#endif
+
 #include "../log.h"
 #include "../utils.h"
 #include "../replayGain.h"

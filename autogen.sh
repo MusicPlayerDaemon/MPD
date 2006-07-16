@@ -137,28 +137,6 @@ $AUTOMAKE --add-missing $AUTOMAKE_FLAGS
 echo "  autoconf"
 autoconf
 
-cd src/libid3tag
-echo "  [src/libid3tag] $ACLOCAL $ACLOCAL_FLAGS"
-$ACLOCAL $ACLOCAL_FLAGS
-echo "  [src/libid3tag] autoheader"
-autoheader
-echo "  [src/libid3tag] $AUTOMAKE --add-missing $AUTOMAKE_FLAGS"
-$AUTOMAKE --add-missing $AUTOMAKE_FLAGS 
-echo "  [src/libid3tag] autoconf"
-autoconf
-cd ../..
-
-cd src/libmad
-echo "  [src/libmad] $ACLOCAL $ACLOCAL_FLAGS"
-$ACLOCAL $ACLOCAL_FLAGS
-echo "  [src/libmad] autoheader"
-autoheader
-echo "  [src/libmad] $AUTOMAKE --add-missing $AUTOMAKE_FLAGS"
-$AUTOMAKE --add-missing $AUTOMAKE_FLAGS 
-echo "  [src/libmad] autoconf"
-autoconf
-cd ../..
-
 cd $olddir
 if test x$NOCONFIGURE = x; then
 	$srcdir/configure "$@" && echo
