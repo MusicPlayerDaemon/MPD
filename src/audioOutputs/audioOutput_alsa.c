@@ -46,6 +46,8 @@ typedef struct _AlsaData {
 	char * device;
 	snd_pcm_t * pcmHandle;
 	alsa_writei_t * writei;
+	unsigned int buffer_time;
+	unsigned int period_time;
 	int sampleSize;
 	int useMmap;
 	int canPause;
@@ -59,6 +61,8 @@ static AlsaData * newAlsaData() {
 	ret->pcmHandle = NULL;
 	ret->writei = snd_pcm_writei;
 	ret->useMmap = 0;
+	ret->buffer_time = MPD_ALSA_BUFFER_TIME;
+	ret->period_time = MPD_ALSA_PERIOD_TIME;
 
 	return ret;
 }
@@ -70,16 +74,22 @@ static void freeAlsaData(AlsaData * ad) {
 }
 
 static int alsa_initDriver(AudioOutput * audioOutput, ConfigParam * param) {
-	BlockParam * bp = NULL;
-	AlsaData * ad;
-	
-	if(param) bp = getBlockParam(param, "device");
+	AlsaData * ad = newAlsaData();
 
-	ad = newAlsaData();
-	
+	if (param) {
+		BlockParam * bp = getBlockParam(param, "device");
+		ad->device = bp ? strdup(bp->value) : strdup("default");
+
+		if ((bp = getBlockParam(param, "use_mmap")) &&
+					(!strcasecmp(bp->value, "yes") ||
+					 !strcasecmp(bp->value, "true")))
+			ad->useMmap = 1;
+		if ((bp = getBlockParam(param, "buffer_time")))
+			ad->buffer_time = atoi(bp->value);
+		if ((bp = getBlockParam(param, "period_time")))
+			ad->period_time = atoi(bp->value);
+	}
 	audioOutput->data = ad;
-
-	ad->device = bp ? strdup(bp->value) : strdup("default");
 
 	return 0;
 }
@@ -118,8 +128,6 @@ static int alsa_openDevice(AudioOutput * audioOutput)
 	unsigned int channels = audioFormat->channels;
 	snd_pcm_uframes_t alsa_buffer_size;
 	snd_pcm_uframes_t alsa_period_size;
-	unsigned int alsa_buffer_time = MPD_ALSA_BUFFER_TIME;
-	unsigned int alsa_period_time = MPD_ALSA_PERIOD_TIME;
 	int err;
 	char * cmd = NULL;
 
@@ -210,14 +218,14 @@ static int alsa_openDevice(AudioOutput * audioOutput)
 
 	cmd = "snd_pcm_hw_params_set_buffer_time_near";
 	err = snd_pcm_hw_params_set_buffer_time_near(ad->pcmHandle, hwparams,
-			&alsa_buffer_time, 0);
+			&ad->buffer_time, 0);
 	if(err < 0) goto error;
 
-	if (!alsa_period_time && sampleRate > 0)
-		alsa_period_time = 1000000 * MPD_ALSA_SAMPLE_XFER / sampleRate;
+	if (!ad->period_time && sampleRate > 0)
+		ad->period_time = 1000000 * MPD_ALSA_SAMPLE_XFER / sampleRate;
 	cmd = "snd_pcm_hw_params_set_period_time_near";
 	err = snd_pcm_hw_params_set_period_time_near(ad->pcmHandle, hwparams,
-			&alsa_period_time, 0);
+			&ad->period_time, 0);
 	if(err < 0) goto error;
 
 	cmd = "snd_pcm_hw_params";

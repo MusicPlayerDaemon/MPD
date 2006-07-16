@@ -236,6 +236,26 @@ separate options.  An example for oss: "dsp=/dev/dsp".  An example for alsa09:
 This specifies how many bytes to write to the audio device at once.  Used only
 by the ao output type.  This parameter is to work around a bug in older
 versions of libao on sound cards with very small buffers.  The default is 1024.
+.SH OPTIONAL ALSA OUTPUT PARAMETERS
+.TP
+.B use_mmap <yes or no>
+Setting this allows you to use memory-mapped I/O.  Certain hardware setups
+may benefit from this, but most do not.
+Most users do not need to set this.
+.TP
+.B buffer_time <time in microseconds>
+This sets the length of the hardware sample buffer in microseconds.
+Increasing it may help to reduce or eliminate skipping on certain setups.
+Most users do not need to change this.
+The default is 500000 microseconds (0.5 seconds).
+.TP
+.B period_time <time in microseconds>
+This sets the time between hardware sample transfers in microseconds.
+Increasing this can reduce CPU usage while lowering it can reduce underrun
+errors on bandwidth-limited devices.  Some users have reported good results
+with this set to 50000, but not all devices support values this high.
+Most users do not need to change this.
+The default is 256000000 / sample_rate(kHz), or 5804us for CD-quality audio.
 .SH REQUIRED SHOUT OUTPUT PARAMETERS
 .TP
 .B name <name>
