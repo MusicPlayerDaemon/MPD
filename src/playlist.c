@@ -1486,6 +1486,7 @@ static int PlaylistIterFunc(FILE * fp, char * utf8file, void (*IterFunc)(FILE *f
 				strcpy(s, temp);
 				IterFunc(fp, s, &erroredFile);
 			}
+			free(temp);
 		}
 		else if(slength==MAXPATHLEN) {
 			s[slength] = '\0';
