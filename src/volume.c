@@ -185,6 +185,11 @@ static int changeOssVolumeLevel(FILE * fp, int change, int rel) {
 #endif
 
 #ifdef HAVE_ALSA
+static void closeAlsaMixer(void) {
+	snd_mixer_close(volume_alsaMixerHandle);
+	volume_alsaMixerHandle = NULL;
+}
+
 static int prepAlsaMixer(char * card) {
 	int err;
 	snd_mixer_elem_t * elem;
@@ -197,21 +202,21 @@ static int prepAlsaMixer(char * card) {
 	}
 
 	if((err = snd_mixer_attach(volume_alsaMixerHandle,card))<0) {
-		snd_mixer_close(volume_alsaMixerHandle);
+		closeAlsaMixer();
 		WARNING("problems problems attaching alsa mixer: %s\n",
 			snd_strerror(err));
 		return -1;
 	}
 
 	if((err = snd_mixer_selem_register(volume_alsaMixerHandle,NULL,NULL))<0) {
-		snd_mixer_close(volume_alsaMixerHandle);
+		closeAlsaMixer();
 		WARNING("problems snd_mixer_selem_register'ing: %s\n",
 			snd_strerror(err));
 		return -1;
 	}
-	
+
 	if((err = snd_mixer_load(volume_alsaMixerHandle))<0) {
-		snd_mixer_close(volume_alsaMixerHandle);
+		closeAlsaMixer();
 		WARNING("problems snd_mixer_selem_register'ing: %s\n",
 			snd_strerror(err));
 		return -1;
@@ -246,12 +251,33 @@ static int prepAlsaMixer(char * card) {
 
 	WARNING("can't find alsa mixer_control \"%s\"\n",controlName);
 
-	snd_mixer_close(volume_alsaMixerHandle);
+	closeAlsaMixer();
 	return -1;
 }
 
-static void closeAlsaMixer() {
-	snd_mixer_close(volume_alsaMixerHandle);
+static int prep_alsa_get_level(long *level)
+{
+	const char *cmd;
+	int err;
+
+	if (!volume_alsaMixerHandle && prepAlsaMixer(volume_mixerDevice)<0)
+		return -1;
+
+	if ((err = snd_mixer_handle_events(volume_alsaMixerHandle)) < 0) {
+		cmd = "handle_events";
+		goto error;
+	}
+	if((err = snd_mixer_selem_get_playback_volume(volume_alsaElem,
+			SND_MIXER_SCHN_FRONT_LEFT, level)) < 0) {
+		cmd = "selem_get_playback_volume";
+		goto error;
+	}
+	return 0;
+error:
+	WARNING("problems getting alsa volume: %s (snd_mixer_%s)\n",
+						snd_strerror(err), cmd);
+	closeAlsaMixer();
+	return -1;
 }
 
 static int getAlsaVolumeLevel() {
@@ -259,18 +285,10 @@ static int getAlsaVolumeLevel() {
 	long level;
 	long max = volume_alsaMax;
 	long min = volume_alsaMin;
-	int err;
 
-	snd_mixer_handle_events(volume_alsaMixerHandle);
-
-	if((err = snd_mixer_selem_get_playback_volume(volume_alsaElem,
-		SND_MIXER_SCHN_FRONT_LEFT,&level))<0) {
-		WARNING("problems getting alsa volume: %s\n",snd_strerror(err));
+	if (prep_alsa_get_level(&level) < 0)
 		return -1;
-	}
 
-	snd_mixer_selem_get_playback_volume(volume_alsaElem,
-			SND_MIXER_SCHN_FRONT_LEFT,&level);
 	ret = ((volume_alsaSet/100.0)*(max-min)+min)+0.5;
 	if(volume_alsaSet>0 && ret==level) {
 		ret = volume_alsaSet;
@@ -288,15 +306,8 @@ static int changeAlsaVolumeLevel(FILE * fp, int change, int rel) {
 	long min = volume_alsaMin;
 	int err;
 
-	snd_mixer_handle_events(volume_alsaMixerHandle);
-
-	if((err = snd_mixer_selem_get_playback_volume(volume_alsaElem,
-		SND_MIXER_SCHN_FRONT_LEFT,&level))<0) {
-		commandError(fp, ACK_ERROR_SYSTEM, "problems getting volume",
-				NULL);
-		WARNING("problems getting alsa volume: %s\n",snd_strerror(err));
+	if (prep_alsa_get_level(&level) < 0)
 		return -1;
-	}
 
 	if (rel) {
 		test = ((volume_alsaSet/100.0)*(max-min)+min)+0.5;
@@ -322,6 +333,7 @@ static int changeAlsaVolumeLevel(FILE * fp, int change, int rel) {
 		commandError(fp, ACK_ERROR_SYSTEM, "problems setting volume",
 				NULL);
 		WARNING("problems setting alsa volume: %s\n",snd_strerror(err));
+		closeAlsaMixer();
 		return -1;
 	}
 
