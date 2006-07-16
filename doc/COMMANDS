@@ -1,5 +1,14 @@
                          Music Player Daemon - Commands
 
+                                    WARNING
+	This document has not been updated to reflect recent changes in
+	the MPD protocol.  It does not contain all supported commands,
+	and some commands may now take additional arguments.  However,
+	clients conforming to this specification should still be
+	compatible with the latest release of MPD.  For more up to date
+	documentation, please see the protocol reference on the wiki at
+	<http://mpd.wikia.com/wiki/Protocol_Reference>.
+
 This document is intended for client developers, not end users.
 
 Format:
@@ -152,15 +161,6 @@ plchangesposid <playlist version>
 	This function only returns the position and the id of the changed song, not the complete metadata. This is more bandwidth efficient.
 	NOTE: to detect songs that were deleted at the end of the playlist,
 	use playlistlength returned by status command.
-
-
-
-
-
-
-
-
-
 
 previous
 	plays previous song in playlist
