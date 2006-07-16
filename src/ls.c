@@ -181,10 +181,15 @@ int lsPlaylists(FILE * fp, char * utf8path) {
 int myStat(char * utf8file, struct stat * st) {
 	char * file = utf8ToFsCharset(utf8file);
 	char * actualFile = file;
+	int ret;
 
 	if(actualFile[0]!='/') actualFile = rmp2amp(file);
 
-	return stat(actualFile,st);
+	ret = stat(actualFile,st);
+
+	free(file);
+
+	return ret;
 }
 
 static int isFile(char * utf8file, time_t * mtime) {
