@@ -142,6 +142,7 @@ int lsPlaylists(FILE * fp, char * utf8path) {
 					dup[suff] = '\0';
 					if((utf8 = fsCharsetToUtf8(dup))) {
 						insertInList(list,utf8,NULL);
+						free(utf8);
 					}
 				}
 			}
