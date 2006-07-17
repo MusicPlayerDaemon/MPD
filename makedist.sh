@@ -1,4 +1,8 @@
-make distclean
-./autogen.sh --enable-mpd-mad --enable-mpd-id3tag --disable-aac
-make 
+#!/bin/sh
+if test -e Makefile
+then
+	make distclean
+fi
+./autogen.sh --disable-aac
+make
 make dist
