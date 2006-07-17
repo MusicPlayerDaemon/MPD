@@ -106,6 +106,7 @@ static int alsa_testDefault(void)
 
 	int ret = snd_pcm_open(&handle, "default", SND_PCM_STREAM_PLAYBACK, 
 					           SND_PCM_NONBLOCK);
+	snd_config_update_free_global();
 	
 	if(ret) {
 		WARNING("Error opening default alsa device: %s\n",
@@ -152,6 +153,7 @@ static int alsa_openDevice(AudioOutput * audioOutput)
 
 	err = snd_pcm_open(&ad->pcmHandle, ad->device, 
 			SND_PCM_STREAM_PLAYBACK, SND_PCM_NONBLOCK);
+	snd_config_update_free_global();
 	if(err < 0) {
 		ad->pcmHandle = NULL;
 		goto error;

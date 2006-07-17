@@ -214,7 +214,9 @@ static int prepAlsaMixer(char * card) {
 	char * controlName = VOLUME_MIXER_ALSA_CONTROL_DEFAULT;
         ConfigParam * param;
 
-	if((err = snd_mixer_open(&volume_alsaMixerHandle,0))<0) {
+	err = snd_mixer_open(&volume_alsaMixerHandle,0);
+	snd_config_update_free_global();
+	if (err < 0) {
 		WARNING("problems opening alsa mixer: %s\n",snd_strerror(err));
 		return -1;
 	}
