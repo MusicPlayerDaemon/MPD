@@ -234,7 +234,7 @@ if test x$enable_id3 = xyes; then
 	CFLAGS=$oldcflags
 	LIBS=$oldlibs
 	CPPFLAGS=$oldcppflags
-	if $use_libid3tag = xyes; then
+	if test x$use_libid3tag = xyes; then
 		AC_DEFINE(HAVE_ID3TAG,1,[Define to use id3tag])
 	else
 		enable_id3=no
