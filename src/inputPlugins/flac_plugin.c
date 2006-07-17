@@ -98,7 +98,7 @@ int flac_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream)
 	}
 
 	if(FLAC__seekable_stream_decoder_init(flacDec)!=
-			FLAC__STREAM_DECODER_SEARCH_FOR_METADATA) 
+			FLAC__SEEKABLE_STREAM_DECODER_OK)
 	{
 		ERROR("flac problem doing init()\n");
 		flacPrintErroredState(
