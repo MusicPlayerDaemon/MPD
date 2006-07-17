@@ -116,3 +116,14 @@ mpd_CFLAGS = $(MPD_CFLAGS)
 mpd_LDADD = $(MPD_LIBS) $(ID3_LIB) $(MAD_LIB) $(MP4FF_LIB)
 
 DIST_SUBDIRS = mp4ff
+
+# sparse is a semantic parser
+# URL: git://www.kernel.org/pub/scm/devel/sparse/sparse.git
+SPARSE = sparse
+SPARSE_FLAGS =
+sparse-check:
+	for i in $(mpd_SOURCES); \
+	do \
+		$(SPARSE) -I. $(mpd_CFLAGS) $(SPARSE_FLAGS) $(srcdir)/$$i || exit; \
+	done
+
