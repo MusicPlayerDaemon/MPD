@@ -187,7 +187,6 @@ static int mvp_setPcmParams(MvpData * md, unsigned long rate, int channels,
 
 static int mvp_openDevice(AudioOutput * audioOutput)
 {
-	int ret = -1;
 	long long int stc = 0;
 	MvpData *md = audioOutput->data;
 	AudioFormat *audioFormat = &audioOutput->outAudioFormat;
