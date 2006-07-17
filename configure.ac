@@ -1,7 +1,7 @@
 dnl AC_INIT(src/main.c)
 dnl AM_INIT_AUTOMAKE(mpd, 0.12.0)
 
-AC_PREREQ(2.52)
+AC_PREREQ(2.58)
 AC_INIT(mpd, 0.12.0, warren.dukes@gmail.com)
 AM_INIT_AUTOMAKE($PACKAGE_NAME, $PACKAGE_VERSION)
 
@@ -234,7 +234,11 @@ if test x$enable_id3 = xyes; then
 	CFLAGS=$oldcflags
 	LIBS=$oldlibs
 	CPPFLAGS=$oldcppflags
-	AC_DEFINE(HAVE_ID3TAG,1,[Define to use id3tag])
+	if $use_libid3tag = xyes; then
+		AC_DEFINE(HAVE_ID3TAG,1,[Define to use id3tag])
+	else
+		enable_id3=no
+	fi
 fi
 
 MAD_SUBDIR=""
@@ -274,7 +278,11 @@ if test x$enable_mp3 = xyes; then
 	CFLAGS=$oldcflags
 	LIBS=$oldlibs
 	CPPFLAGS=$oldcppflags
-	AC_DEFINE(HAVE_MAD,1,[Define to use libmad])
+	if test x$use_libmad = xyes; then
+		AC_DEFINE(HAVE_MAD,1,[Define to use libmad])
+	else
+		enable_mp3=no
+	fi
 fi
 
 if test x$enable_mpc = xyes; then

@@ -1,44 +1,38 @@
 #!/bin/sh
 # Run this to set up the build system: configure, makefiles, etc.
-# (based on the version in enlightenment's cvs)
+# (at one point this was based on the version in enlightenment's cvs)
 
 package="mpd"
 
-olddir=`pwd`
-srcdir=`dirname $0`
+olddir="`pwd`"
+srcdir="`dirname $0`"
 test -z "$srcdir" && srcdir=.
-
 cd "$srcdir"
-DIE=0
-
-echo "checking for autoconf... "
-(autoconf --version) < /dev/null > /dev/null 2>&1 || {
-        echo
-        echo "You must have autoconf installed to compile $package."
-        echo "Download the appropriate package for your distribution,"
-        echo "or get the source tarball at ftp://ftp.gnu.org/pub/gnu/"
-        DIE=1
-}
-
-VERSIONGREP="sed -e s/.*[^0-9\.]\([0-9]\.[0-9]\).*/\1/"
+DIE=
+AM_VERSIONGREP="sed -e s/.*[^0-9\.]\([0-9]\.[0-9]\).*/\1/"
+AC_VERSIONGREP="sed -e s/.*[^0-9\.]\([0-9]\.[0-9][0-9]\).*/\1/"
 VERSIONMKINT="sed -e s/[^0-9]//"
-
-# define AM_FORCE_VERSION if you want to force a particular version of
-# automake and aclocal
 if test -n "$AM_FORCE_VERSION"
 then
 	AM_VERSIONS="$AM_FORCE_VERSION"
 else
 	AM_VERSIONS='1.6 1.7 1.8 1.9'
 fi
+if test -n "$AC_FORCE_VERSION"
+then
+	AC_VERSIONS="$AC_FORCE_VERSION"
+else
+	AC_VERSIONS='2.58 2.59'
+fi
 
 versioned_bins ()
 {
 	bin="$1"
-	for i in $AM_VERSIONS
+	needed_int=`echo $VERNEEDED | $VERSIONMKINT`
+	for i in $VERSIONS
 	do
 		i_int=`echo $i | $VERSIONMKINT`
-		if test $i_int -ge $VERNEEDED
+		if test $i_int -ge $needed_int
 		then
 			echo $bin-$i $bin$i $bin-$i_int $bin$i_int
 		fi
@@ -46,73 +40,84 @@ versioned_bins ()
 	echo $bin
 }
 
-# do we need automake?
-if test -r Makefile.am; then
-  AM_NEEDED=`fgrep AUTOMAKE_OPTIONS Makefile.am | $VERSIONGREP`
-  if test -z $AM_NEEDED; then
-    echo -n "checking for automake... "
-    AUTOMAKE=automake
-    ACLOCAL=aclocal
-    if ($AUTOMAKE --version < /dev/null > /dev/null 2>&1); then
-      echo "no"
-      AUTOMAKE=
-    else
-      echo "yes"
-    fi
-  else
-    echo -n "checking for automake $AM_NEEDED or later... "
-    VERNEEDED=`echo $AM_NEEDED | $VERSIONMKINT`
-    for am in `versioned_bins automake`; do
-      ($am --version < /dev/null > /dev/null 2>&1) || continue
-      ver=`$am --version < /dev/null | head -n 1 | $VERSIONGREP | $VERSIONMKINT`
-      if test $ver -ge $VERNEEDED; then
-        AUTOMAKE=$am
-        echo $AUTOMAKE
-        break
-      fi
-    done
-    test -z $AUTOMAKE &&  echo "no"
-    echo -n "checking for aclocal $AM_NEEDED or later... "
-    for ac in `versioned_bins aclocal`; do
-      ($ac --version < /dev/null > /dev/null 2>&1) || continue
-      ver=`$ac --version < /dev/null | head -n 1 | $VERSIONGREP | $VERSIONMKINT`
-      if test $ver -ge $VERNEEDED; then
-        ACLOCAL=$ac
-        echo $ACLOCAL
-        break
-      fi
-    done
-    test -z $ACLOCAL && echo "no"
-  fi
-  test -z $AUTOMAKE || test -z $ACLOCAL && {
-        echo
-        echo "You must have automake installed to compile $package."
-        echo "Download the appropriate package for your distribution,"
-        echo "or get the source tarball at ftp://ftp.gnu.org/pub/gnu/"
-        exit 1
-  }
+for c in autoconf autoheader automake aclocal
+do
+	uc=`echo $c | tr a-z A-Z`
+	eval "val=`echo '$'$uc`"
+	if test -n "$val"
+	then
+		echo "$uc=$val in environment, will not attempt to auto-detect"
+		continue
+	fi
+
+	case "$c" in
+	autoconf|autoheader)
+		VERNEEDED=`fgrep AC_PREREQ configure.ac | $AC_VERSIONGREP`
+		VERSIONS="$AC_VERSIONS"
+		pkg=autoconf
+		;;
+	automake|aclocal)
+		VERNEEDED=`fgrep AUTOMAKE_OPTIONS Makefile.am | $AM_VERSIONGREP`
+		VERSIONS="$AM_VERSIONS"
+		pkg=automake
+		;;
+	esac
+	printf "checking for $c ... "
+	for x in `versioned_bins $c`; do
+		($x --version < /dev/null > /dev/null 2>&1) > /dev/null 2>&1
+		if test $? -eq 0
+		then
+			echo $x
+			eval $uc=$x
+			break
+		fi
+	done
+	eval "val=`echo '$'$uc`"
+	if test -z "$val"
+	then
+		if test $c = $pkg
+		then
+			DIE="$DIE $c=$VERNEEDED"
+		else
+			DIE="$DIE $c($pkg)=$VERNEEDED"
+		fi
+	fi
+done
+
+if test -n "$LIBTOOLIZE"
+then
+	echo "LIBTOOLIZE=$LIBTOOLIZE in environment," \
+			"will not attempt to auto-detect"
+else
+	printf "checking for libtoolize ... "
+	for x in libtoolize glibtoolize
+	do
+		($x --version < /dev/null > /dev/null 2>&1) > /dev/null 2>&1
+		if test $? -eq 0
+		then
+			echo $x
+			LIBTOOLIZE=$x
+			break
+		fi
+	done
 fi
 
-echo -n "checking for libtool... "
-for LIBTOOLIZE in libtoolize glibtoolize nope; do
-  (which $LIBTOOLIZE) > /dev/null 2>&1 && break
-done
-if test x$LIBTOOLIZE = xnope; then
-  echo "nope."
-  LIBTOOLIZE=libtoolize
-else
-  echo $LIBTOOLIZE
+if test -z "$LIBTOOLIZE"
+then
+	DIE="$DIE libtoolize(libtool)"
 fi
-($LIBTOOLIZE --version) < /dev/null > /dev/null 2>&1 || {
-	echo
-	echo "You must have libtool installed to compile $package."
-	echo "Download the appropriate package for your system,"
+
+if test -n "$DIE"
+then
+	echo "You must have the following installed to compile $package:"
+	for i in $DIE
+	do
+		printf '  '
+		echo $i | sed -e 's/(/ (from /' -e 's/=\(.*\)/ (>= \1)/'
+	done
+	echo "Download the appropriate package(s) for your system,"
 	echo "or get the source from one of the GNU ftp sites"
 	echo "listed in http://www.gnu.org/order/ftp.html"
-	DIE=1
-}
-
-if test "$DIE" -eq 1; then
         exit 1
 fi
 
@@ -122,22 +127,27 @@ ACLOCAL_FLAGS="$ACLOCAL_FLAGS -I $PWD/m4"
 if [ -d /usr/local/share/aclocal ]; then
 	ACLOCAL_FLAGS="$ACLOCAL_FLAGS -I /usr/local/share/aclocal"
 fi
+
+# if [ -d "/usr/local/share/`basename $ACLOCAL`" ]; then
+	# ACLOCAL_FLAGS="$ACLOCAL_FLAGS -I /usr/local/share/`basename $ACLOCAL`"
+# fi
+
 echo "  $ACLOCAL $ACLOCAL_FLAGS"
 $ACLOCAL $ACLOCAL_FLAGS
 
-echo "  autoheader"
-autoheader
+echo "  $AUTOHEADER"
+$AUTOHEADER
 
 echo "  $LIBTOOLIZE --automake"
 $LIBTOOLIZE --automake
 
 echo "  $AUTOMAKE --add-missing $AUTOMAKE_FLAGS"
-$AUTOMAKE --add-missing $AUTOMAKE_FLAGS 
+$AUTOMAKE --add-missing $AUTOMAKE_FLAGS
 
-echo "  autoconf"
-autoconf
+echo "  $AUTOCONF"
+$AUTOCONF
 
-cd $olddir
+cd "$olddir"
 if test x$NOCONFIGURE = x; then
-	$srcdir/configure "$@" && echo
+	"$srcdir"/configure "$@" && echo
 fi
