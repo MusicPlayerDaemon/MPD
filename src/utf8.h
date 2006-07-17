@@ -19,10 +19,10 @@
 #ifndef UTF_8_H
 #define UTF_8_H
 
-unsigned char * latin1StrToUtf8Dup(unsigned char * latin1);
+char * latin1StrToUtf8Dup(char * latin1);
 
-unsigned char * utf8StrToLatin1Dup(unsigned char * utf8);
+char * utf8StrToLatin1Dup(char * utf8);
 
-int validUtf8String(unsigned char * string);
+int validUtf8String(char * string);
 
 #endif

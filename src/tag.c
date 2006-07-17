@@ -347,13 +347,13 @@ MpdTag * apeDup(char * file) {
 	MpdTag * ret = NULL;
 	FILE * fp = NULL;
 	int tagCount;
-	unsigned char * buffer = NULL;
-	unsigned char * p;
+	char * buffer = NULL;
+	char * p;
 	int tagLen;
 	int size;
 	unsigned long flags;
 	int i;
-	unsigned char * key;
+	char * key;
 
 	struct {
 		unsigned char id[8];
@@ -411,10 +411,10 @@ MpdTag * apeDup(char * file) {
 	tagCount = readLEuint32(footer.tagCount);
 	p = buffer;
 	while(tagCount-- && tagLen > 10) {
-		size = readLEuint32(p);
+		size = readLEuint32((unsigned char *)p);
 		p += 4;
 		tagLen -= 4;
-		flags = readLEuint32(p);
+		flags = readLEuint32((unsigned char *)p);
 		p += 4;
 		tagLen -= 4;
 

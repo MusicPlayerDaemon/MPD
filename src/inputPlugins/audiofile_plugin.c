@@ -93,7 +93,7 @@ static int audiofile_decode(OutputBuffer * cb, DecoderControl * dc, char * path)
 	dc->state = DECODE_STATE_DECODE;
 	{
 		int ret, eof = 0, current = 0;
-		unsigned char chunk[CHUNK_SIZE];
+		char chunk[CHUNK_SIZE];
 
 		while(!eof) {
 			if(dc->seek) {

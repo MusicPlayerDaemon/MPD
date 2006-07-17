@@ -34,10 +34,10 @@
 
 static List * permission_passwords;
 
-static unsigned int permission_default;
+static int permission_default;
 
-static unsigned int parsePermissions(char * string) {
-	unsigned int permission = 0;
+static int parsePermissions(char * string) {
+	int permission = 0;
 	char * temp;
 	char * tok;
 
@@ -72,7 +72,7 @@ void initPermissions(void) {
 	char * temp;
 	char * cp2;
 	char * password;
-	unsigned int * permission;
+	int * permission;
 	ConfigParam * param;
 
 	permission_passwords = makeList(free, 1);
@@ -104,7 +104,7 @@ void initPermissions(void) {
 
 			password = temp;
 
-			permission = malloc(sizeof(unsigned int));
+			permission = malloc(sizeof(int));
 			*permission = parsePermissions(strtok_r(NULL,"",&cp2));
 
 			insertInList(permission_passwords,password,permission);
@@ -118,11 +118,11 @@ void initPermissions(void) {
 	sortList(permission_passwords);
 }
 
-int getPermissionFromPassword(char * password, unsigned int * permission) {
+int getPermissionFromPassword(char * password, int * permission) {
 	void * foundPermission;
 
 	if(findInList(permission_passwords,password,&foundPermission)) {
-		*permission = *((unsigned int *)foundPermission);
+		*permission = *((int *)foundPermission);
 		return 0;
 	}
 
@@ -133,6 +133,6 @@ void finishPermissions(void) {
 	freeList(permission_passwords);
 }
 
-unsigned int getDefaultPermissions(void) {
+int getDefaultPermissions(void) {
 	return permission_default;
 }

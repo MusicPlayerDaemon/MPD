@@ -68,7 +68,7 @@ typedef struct _Interface {
 	int fd; /* file descriptor */
 	FILE * fp; /* file pointer */
 	int open; /* open/used */
-	unsigned int permission;
+	int permission;
 	time_t lastTime;
 	List * commandList; /* for when in list mode */
         int commandListOK; /* print OK after each command execution */
@@ -116,7 +116,7 @@ static void openInterface(Interface * interface, int fd) {
 #ifdef SO_SNDBUF
 	{
 		int getSize;
-		int sockOptLen = sizeof(int);
+		unsigned int sockOptLen = sizeof(int);
 
 		if(getsockopt(interface->fd,SOL_SOCKET,SO_SNDBUF,
 					(char *)&getSize,&sockOptLen) < 0)

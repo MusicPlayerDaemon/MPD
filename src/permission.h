@@ -28,10 +28,10 @@
 
 void initPermissions();
 
-int getPermissionFromPassword(char * password, unsigned int * permission);
+int getPermissionFromPassword(char * password, int * permission);
 
 void finishPermissions();
 
-unsigned int getDefaultPermissions();
+int getDefaultPermissions();
 
 #endif
