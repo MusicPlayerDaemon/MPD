@@ -44,7 +44,7 @@ typedef struct {
 	int atEof;
 } AacBuffer;
 
-void fillAacBuffer(AacBuffer *b) {
+static void fillAacBuffer(AacBuffer *b) {
 	if(b->bytesConsumed > 0) {
 		int bread;
 
@@ -79,7 +79,7 @@ void fillAacBuffer(AacBuffer *b) {
 	}
 }
 
-void advanceAacBuffer(AacBuffer * b, int bytes) {
+static void advanceAacBuffer(AacBuffer * b, int bytes) {
 	b->fileOffset+=bytes;
 	b->bytesConsumed = bytes;
 	b->bytesIntoBuffer-=bytes;
@@ -88,7 +88,7 @@ void advanceAacBuffer(AacBuffer * b, int bytes) {
 static int adtsSampleRates[] = {96000,88200,64000,48000,44100,32000,24000,22050,
 				16000,12000,11025,8000,7350,0,0,0};
 
-int adtsParse(AacBuffer * b, float * length) {
+static int adtsParse(AacBuffer * b, float * length) {
 	int frames, frameLength;
 	int tFrameLength = 0;
 	int sampleRate = 0;
@@ -134,7 +134,7 @@ int adtsParse(AacBuffer * b, float * length) {
 	return 1;
 }
 
-void initAacBuffer(InputStream * inStream, AacBuffer * b, float * length, 
+static void initAacBuffer(InputStream * inStream, AacBuffer * b, float * length,
 		size_t * retFileread, size_t * retTagsize)
 {
 	size_t fileread;
@@ -200,7 +200,7 @@ void initAacBuffer(InputStream * inStream, AacBuffer * b, float * length,
 	}
 }
 
-float getAacFloatTotalTime(char * file) {
+static float getAacFloatTotalTime(char * file) {
 	AacBuffer b;
 	float length;
 	size_t fileread, tagsize;
@@ -240,7 +240,7 @@ float getAacFloatTotalTime(char * file) {
 	return length;
 }
 
-int getAacTotalTime(char * file) {
+static int getAacTotalTime(char * file) {
 	int time = -1;
 	float length;
 
@@ -250,7 +250,7 @@ int getAacTotalTime(char * file) {
 }
 
 
-int aac_decode(OutputBuffer * cb, DecoderControl * dc, char * path) {
+static int aac_decode(OutputBuffer * cb, DecoderControl * dc, char * path) {
 	float time;
 	float totalTime;
 	faacDecHandle decoder;
@@ -395,7 +395,7 @@ int aac_decode(OutputBuffer * cb, DecoderControl * dc, char * path) {
 	return 0;
 }
 
-MpdTag * aacTagDup(char * file) {
+static MpdTag * aacTagDup(char * file) {
 	MpdTag * ret = NULL;
 	int time;
 
@@ -412,7 +412,7 @@ MpdTag * aacTagDup(char * file) {
 	return ret;
 }
 
-char * aacSuffixes[] = {"aac", NULL};
+static char * aacSuffixes[] = {"aac", NULL};
 
 InputPlugin aacPlugin =
 {

@@ -58,11 +58,11 @@ struct audio_dither {
 	mad_fixed_t random;
 };
 
-unsigned long prng(unsigned long state) {
+static unsigned long prng(unsigned long state) {
 	return (state * 0x0019660dL + 0x3c6ef35fL) & 0xffffffffL;
 }
 
-signed long audio_linear_dither(unsigned int bits, mad_fixed_t sample, struct audio_dither *dither) {
+static signed long audio_linear_dither(unsigned int bits, mad_fixed_t sample, struct audio_dither *dither) {
 	unsigned int scalebits;
 	mad_fixed_t output, mask, random;
 
@@ -134,7 +134,7 @@ typedef struct _mp3DecodeData {
 	struct audio_dither dither;
 } mp3DecodeData;
 
-void initMp3DecodeData(mp3DecodeData * data, InputStream * inStream) {
+static void initMp3DecodeData(mp3DecodeData * data, InputStream * inStream) {
 	data->outputPtr = data->outputBuffer;
 	data->outputBufferEnd = data->outputBuffer+MP3_DATA_OUTPUT_BUFFER_SIZE;
 	data->muteFrame = 0;
@@ -154,7 +154,7 @@ void initMp3DecodeData(mp3DecodeData * data, InputStream * inStream) {
 	mad_timer_reset(&data->timer);
 }
 
-int seekMp3InputBuffer(mp3DecodeData * data, long offset) {
+static int seekMp3InputBuffer(mp3DecodeData * data, long offset) {
 	if(seekInputStream(data->inStream,offset,SEEK_SET) < 0) {
                 return -1;
         }
@@ -165,7 +165,7 @@ int seekMp3InputBuffer(mp3DecodeData * data, long offset) {
 	return 0;
 }
 
-int fillMp3InputBuffer(mp3DecodeData * data) {
+static int fillMp3InputBuffer(mp3DecodeData * data) {
 	size_t readSize;
 	size_t remaining;
         size_t readed;
@@ -314,7 +314,7 @@ fail:
 }
 #endif
 
-int decodeNextFrameHeader(mp3DecodeData * data, MpdTag ** tag, ReplayGainInfo ** replayGainInfo) {
+static int decodeNextFrameHeader(mp3DecodeData * data, MpdTag ** tag, ReplayGainInfo ** replayGainInfo) {
 	if((data->stream).buffer==NULL || (data->stream).error==MAD_ERROR_BUFLEN) {
 		if(fillMp3InputBuffer(data) < 0) {
 			return DECODE_BREAK;
@@ -364,7 +364,7 @@ int decodeNextFrameHeader(mp3DecodeData * data, MpdTag ** tag, ReplayGainInfo **
 	return DECODE_OK;
 }
 
-int decodeNextFrame(mp3DecodeData * data) {
+static int decodeNextFrame(mp3DecodeData * data) {
 	if((data->stream).buffer==NULL || (data->stream).error==MAD_ERROR_BUFLEN) {
 		if(fillMp3InputBuffer(data) < 0) {
 			return DECODE_BREAK;
@@ -421,7 +421,7 @@ enum {
   	XING_SCALE  = 0x00000008L
 };
 
-int parse_xing(struct xing *xing, struct mad_bitptr ptr, unsigned int bitlen)
+static int parse_xing(struct xing *xing, struct mad_bitptr ptr, unsigned int bitlen)
 {
   	unsigned long bits;
 
@@ -472,7 +472,7 @@ fail:
   	return 0;
 }
 
-int decodeFirstFrame(mp3DecodeData * data, DecoderControl * dc,
+static int decodeFirstFrame(mp3DecodeData * data, DecoderControl * dc,
 		MpdTag ** tag, ReplayGainInfo ** replayGainInfo) 
 {
 	struct xing xing;
@@ -533,7 +533,7 @@ int decodeFirstFrame(mp3DecodeData * data, DecoderControl * dc,
 	return 0;
 }
 
-void mp3DecodeDataFinalize(mp3DecodeData * data) {
+static void mp3DecodeDataFinalize(mp3DecodeData * data) {
 	mad_synth_finish(&data->synth);
 	mad_frame_finish(&data->frame);
 	mad_stream_finish(&data->stream);
@@ -543,7 +543,7 @@ void mp3DecodeDataFinalize(mp3DecodeData * data) {
 }
 
 /* this is primarily used for getting total time for tags */
-int getMp3TotalTime(char * file) {
+static int getMp3TotalTime(char * file) {
         InputStream inStream;
 	mp3DecodeData data;
 	int ret;
@@ -558,7 +558,7 @@ int getMp3TotalTime(char * file) {
 	return ret;
 }
 
-int openMp3FromInputStream(InputStream * inStream, mp3DecodeData * data,
+static int openMp3FromInputStream(InputStream * inStream, mp3DecodeData * data,
 		DecoderControl * dc, MpdTag ** tag, ReplayGainInfo ** replayGainInfo) 
 {
 	initMp3DecodeData(data, inStream);
@@ -572,7 +572,7 @@ int openMp3FromInputStream(InputStream * inStream, mp3DecodeData * data,
 	return 0;
 }
 
-int mp3Read(mp3DecodeData * data, OutputBuffer * cb, DecoderControl * dc, ReplayGainInfo ** replayGainInfo) {
+static int mp3Read(mp3DecodeData * data, OutputBuffer * cb, DecoderControl * dc, ReplayGainInfo ** replayGainInfo) {
 	int i;
 	int ret;
 	int skip;
@@ -717,13 +717,13 @@ int mp3Read(mp3DecodeData * data, OutputBuffer * cb, DecoderControl * dc, Replay
 	return ret;
 }
 
-void initAudioFormatFromMp3DecodeData(mp3DecodeData * data, AudioFormat * af) {
+static void initAudioFormatFromMp3DecodeData(mp3DecodeData * data, AudioFormat * af) {
 	af->bits = 16;
 	af->sampleRate = (data->frame).header.samplerate;
 	af->channels = MAD_NCHANNELS(&(data->frame).header);
 }
 
-int mp3_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream) {
+static int mp3_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream) {
 	mp3DecodeData data;
 	MpdTag * tag = NULL;
 	ReplayGainInfo * replayGainInfo = NULL;
@@ -812,7 +812,7 @@ int mp3_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream) {
 	return 0;
 }
 
-MpdTag * mp3_tagDup(char * file) {
+static MpdTag * mp3_tagDup(char * file) {
 	MpdTag * ret = NULL;
 	int time;
 
@@ -831,8 +831,8 @@ MpdTag * mp3_tagDup(char * file) {
 	return ret;
 }
 
-char * mp3_suffixes[] = {"mp3", NULL};
-char * mp3_mimeTypes[] = {"audio/mpeg", NULL};
+static char * mp3_suffixes[] = {"mp3", NULL};
+static char * mp3_mimeTypes[] = {"audio/mpeg", NULL};
 
 InputPlugin mp3Plugin = 
 {

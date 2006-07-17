@@ -37,7 +37,7 @@
 #include <unistd.h>
 #include <audiofile.h>
 
-int getAudiofileTotalTime(char * file)
+static int getAudiofileTotalTime(char * file)
 {
 	int time;
 	AFfilehandle af_fp = afOpenFile(file, "r", NULL);
@@ -51,7 +51,7 @@ int getAudiofileTotalTime(char * file)
 	return time;
 }
 
-int audiofile_decode(OutputBuffer * cb, DecoderControl * dc, char * path) {
+static int audiofile_decode(OutputBuffer * cb, DecoderControl * dc, char * path) {
 	int fs, frame_count;
 	AFfilehandle af_fp;
 	int bits;
@@ -140,7 +140,7 @@ int audiofile_decode(OutputBuffer * cb, DecoderControl * dc, char * path) {
 	return 0;
 }
 
-MpdTag * audiofileTagDup(char * file) {
+static MpdTag * audiofileTagDup(char * file) {
 	MpdTag * ret = NULL;
 	int time = getAudiofileTotalTime(file);
 	
@@ -155,7 +155,7 @@ MpdTag * audiofileTagDup(char * file) {
 	return ret;
 }
 
-char * audiofileSuffixes[] = {"wav", "au", "aiff", "aif",  NULL};
+static char * audiofileSuffixes[] = {"wav", "au", "aiff", "aif",  NULL};
 
 InputPlugin audiofilePlugin = 
 {

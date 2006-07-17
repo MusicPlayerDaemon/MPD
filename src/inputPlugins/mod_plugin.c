@@ -54,7 +54,7 @@ static BOOL mod_mpd_IsThere(void) {
 	return 1;
 }
 
-MDRIVER drv_mpd =
+static MDRIVER drv_mpd =
 {
 	NULL,
 	"MPD",
@@ -120,7 +120,7 @@ static int mod_initMikMod(void) {
 	return 0;
 }
 
-void mod_finishMikMod(void) {
+static void mod_finishMikMod(void) {
 	MikMod_Exit();
 }
 
@@ -152,7 +152,7 @@ static void mod_close(mod_Data * data) {
 	free(data);
 }
 
-int mod_decode(OutputBuffer * cb, DecoderControl * dc, char * path) {
+static int mod_decode(OutputBuffer * cb, DecoderControl * dc, char * path) {
 	mod_Data * data;
 	float time = 0.0;
 	int ret;
@@ -207,7 +207,7 @@ int mod_decode(OutputBuffer * cb, DecoderControl * dc, char * path) {
 	return 0;
 }
 
-MpdTag * modTagDup(char * file) {
+static MpdTag * modTagDup(char * file) {
 	MpdTag * ret = NULL;
 	MODULE * moduleHandle;
 	char * title;
@@ -236,7 +236,7 @@ MpdTag * modTagDup(char * file) {
 	return ret;
 }
 
-char * modSuffixes[] = {"amf",
+static char * modSuffixes[] = {"amf",
 			"dsm",
 			"far",
 			"gdm",

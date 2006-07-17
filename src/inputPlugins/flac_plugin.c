@@ -38,25 +38,25 @@
 
 /* this code is based on flac123, from flac-tools */
 
-void flacError(const FLAC__SeekableStreamDecoder *, 
+static void flacError(const FLAC__SeekableStreamDecoder *,
                 FLAC__StreamDecoderErrorStatus, void *);
-void flacPrintErroredState(FLAC__SeekableStreamDecoderState state);
-void flacMetadata(const FLAC__SeekableStreamDecoder *, 
+static void flacPrintErroredState(FLAC__SeekableStreamDecoderState state);
+static void flacMetadata(const FLAC__SeekableStreamDecoder *,
                 const FLAC__StreamMetadata *, void *);
-FLAC__StreamDecoderWriteStatus flacWrite(const FLAC__SeekableStreamDecoder *,
+static FLAC__StreamDecoderWriteStatus flacWrite(const FLAC__SeekableStreamDecoder *,
                 const FLAC__Frame *, const FLAC__int32 * const buf[], void *);
-FLAC__SeekableStreamDecoderReadStatus flacRead(
+static FLAC__SeekableStreamDecoderReadStatus flacRead(
                 const FLAC__SeekableStreamDecoder *, FLAC__byte buf[],
                 unsigned *, void *);
-FLAC__SeekableStreamDecoderSeekStatus flacSeek(
+static FLAC__SeekableStreamDecoderSeekStatus flacSeek(
                 const FLAC__SeekableStreamDecoder *, FLAC__uint64, void *);
-FLAC__SeekableStreamDecoderTellStatus flacTell(
+static FLAC__SeekableStreamDecoderTellStatus flacTell(
                 const FLAC__SeekableStreamDecoder *, FLAC__uint64 *, void *);
-FLAC__SeekableStreamDecoderLengthStatus flacLength(
+static FLAC__SeekableStreamDecoderLengthStatus flacLength(
                 const FLAC__SeekableStreamDecoder *, FLAC__uint64 *, void *);
-FLAC__bool flacEOF(const FLAC__SeekableStreamDecoder *, void *);
+static FLAC__bool flacEOF(const FLAC__SeekableStreamDecoder *, void *);
 
-int flac_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream)
+static int flac_decode(OutputBuffer * cb, DecoderControl * dc, InputStream * inStream)
 {
 	FLAC__SeekableStreamDecoder * flacDec = NULL;
 	FlacData data;
@@ -170,7 +170,7 @@ fail:
 	return ret;
 }
 
-FLAC__SeekableStreamDecoderReadStatus flacRead(
+static FLAC__SeekableStreamDecoderReadStatus flacRead(
                 const FLAC__SeekableStreamDecoder * flacDec, FLAC__byte buf[],
                 unsigned * bytes, void * fdata) {
 	FlacData * data = (FlacData *) fdata;
@@ -192,7 +192,7 @@ FLAC__SeekableStreamDecoderReadStatus flacRead(
         return FLAC__SEEKABLE_STREAM_DECODER_READ_STATUS_OK;
 }
 
-FLAC__SeekableStreamDecoderSeekStatus flacSeek(
+static FLAC__SeekableStreamDecoderSeekStatus flacSeek(
                 const FLAC__SeekableStreamDecoder * flacDec, 
                 FLAC__uint64 offset, void * fdata) 
 {
@@ -205,7 +205,7 @@ FLAC__SeekableStreamDecoderSeekStatus flacSeek(
         return FLAC__SEEKABLE_STREAM_DECODER_SEEK_STATUS_OK;
 }
 
-FLAC__SeekableStreamDecoderTellStatus flacTell(
+static FLAC__SeekableStreamDecoderTellStatus flacTell(
                 const FLAC__SeekableStreamDecoder * flacDec, 
                 FLAC__uint64 * offset, void * fdata) 
 {
@@ -216,7 +216,7 @@ FLAC__SeekableStreamDecoderTellStatus flacTell(
         return FLAC__SEEKABLE_STREAM_DECODER_TELL_STATUS_OK;
 }
 
-FLAC__SeekableStreamDecoderLengthStatus flacLength(
+static FLAC__SeekableStreamDecoderLengthStatus flacLength(
                 const FLAC__SeekableStreamDecoder * flacDec, 
                 FLAC__uint64 * length, void * fdata)
 {
@@ -227,7 +227,7 @@ FLAC__SeekableStreamDecoderLengthStatus flacLength(
         return FLAC__SEEKABLE_STREAM_DECODER_LENGTH_STATUS_OK;
 }
 
-FLAC__bool flacEOF(const FLAC__SeekableStreamDecoder * flacDec, void * fdata) {
+static FLAC__bool flacEOF(const FLAC__SeekableStreamDecoder * flacDec, void * fdata) {
  	FlacData * data = (FlacData *) fdata;
 	
 	if (inputStreamAtEOF(data->inStream) == 1)
@@ -235,13 +235,13 @@ FLAC__bool flacEOF(const FLAC__SeekableStreamDecoder * flacDec, void * fdata) {
 	return false;
 }
 
-void flacError(const FLAC__SeekableStreamDecoder *dec, 
+static void flacError(const FLAC__SeekableStreamDecoder *dec,
                 FLAC__StreamDecoderErrorStatus status, void *fdata) 
 {
 	flac_error_common_cb("flac",status,(FlacData *) fdata);
 }
 
-void flacPrintErroredState(FLAC__SeekableStreamDecoderState state) 
+static void flacPrintErroredState(FLAC__SeekableStreamDecoderState state)
 {
 	switch(state) {
 	case FLAC__SEEKABLE_STREAM_DECODER_MEMORY_ALLOCATION_ERROR:
@@ -272,13 +272,13 @@ void flacPrintErroredState(FLAC__SeekableStreamDecoderState state)
 	}
 }
 
-void flacMetadata(const FLAC__SeekableStreamDecoder *dec, 
+static void flacMetadata(const FLAC__SeekableStreamDecoder *dec,
                 const FLAC__StreamMetadata *block, void *vdata) 
 {
 	flac_metadata_common_cb(block, (FlacData *)vdata);
 }
 
-FLAC__StreamDecoderWriteStatus flacWrite(const FLAC__SeekableStreamDecoder *dec,
+static FLAC__StreamDecoderWriteStatus flacWrite(const FLAC__SeekableStreamDecoder *dec,
                 const FLAC__Frame *frame, const FLAC__int32 * const buf[], 
                 void * vdata) 
 {
@@ -324,7 +324,7 @@ FLAC__StreamDecoderWriteStatus flacWrite(const FLAC__SeekableStreamDecoder *dec,
 	return FLAC__STREAM_DECODER_WRITE_STATUS_CONTINUE;
 }
 
-MpdTag * flacMetadataDup(char * file, int * vorbisCommentFound) {
+static MpdTag * flacMetadataDup(char * file, int * vorbisCommentFound) {
 	MpdTag * ret = NULL;
 	FLAC__Metadata_SimpleIterator * it;
 	FLAC__StreamMetadata * block = NULL;
@@ -372,7 +372,7 @@ MpdTag * flacMetadataDup(char * file, int * vorbisCommentFound) {
 	return ret;
 }
 
-MpdTag * flacTagDup(char * file) {
+static MpdTag * flacTagDup(char * file) {
 	MpdTag * ret = NULL;
 	int foundVorbisComment = 0;
 
@@ -393,8 +393,8 @@ MpdTag * flacTagDup(char * file) {
 	return ret;
 }
 
-char * flacSuffixes[] = {"flac", NULL};
-char * flac_mime_types[] = {"application/x-flac", NULL};
+static char * flacSuffixes[] = {"flac", NULL};
+static char * flac_mime_types[] = {"application/x-flac", NULL};
 
 InputPlugin flacPlugin = 
 {

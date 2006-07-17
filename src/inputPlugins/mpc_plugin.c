@@ -329,8 +329,8 @@ static MpdTag * mpcTagDup(char * file) {
 	return ret;	
 }
 
-char * mpcSuffixes[] = {"mpc", NULL};
-char * mpcMimeTypes[] = {NULL};
+static char * mpcSuffixes[] = {"mpc", NULL};
+static char * mpcMimeTypes[] = {NULL};
 
 InputPlugin mpcPlugin =
 {

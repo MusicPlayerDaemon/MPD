@@ -38,7 +38,7 @@
 
 /* all code here is either based on or copied from FAAD2's frontend code */
 
-int mp4_getAACTrack(mp4ff_t *infile) {
+static int mp4_getAACTrack(mp4ff_t *infile) {
 	/* find AAC track */
 	int i, rc;
 	int numTracks = mp4ff_total_tracks(infile);
@@ -74,18 +74,18 @@ int mp4_getAACTrack(mp4ff_t *infile) {
 	return -1;
 }
 
-uint32_t mp4_inputStreamReadCallback(void *inStream, void *buffer, 
+static uint32_t mp4_inputStreamReadCallback(void *inStream, void *buffer,
 		uint32_t length) 
 {
 	return readFromInputStream((InputStream*) inStream, buffer, 1, length);
 }
             
-uint32_t mp4_inputStreamSeekCallback(void *inStream, uint64_t position) {
+static uint32_t mp4_inputStreamSeekCallback(void *inStream, uint64_t position) {
 	return seekInputStream((InputStream *) inStream, position, SEEK_SET);
 }       
 		    
 
-int mp4_decode(OutputBuffer * cb, DecoderControl * dc, char * path) {
+static int mp4_decode(OutputBuffer * cb, DecoderControl * dc, char * path) {
 	mp4ff_t * mp4fh;
 	mp4ff_callback_t * mp4cb; 
 	int32_t track;
@@ -314,7 +314,7 @@ int mp4_decode(OutputBuffer * cb, DecoderControl * dc, char * path) {
 	return 0;
 }
 
-MpdTag * mp4DataDup(char * file, int * mp4MetadataFound) {
+static MpdTag * mp4DataDup(char * file, int * mp4MetadataFound) {
 	MpdTag * ret = NULL;
 	InputStream inStream;
 	mp4ff_t * mp4fh;
@@ -409,7 +409,7 @@ MpdTag * mp4DataDup(char * file, int * mp4MetadataFound) {
 	return ret;
 }
 
-MpdTag * mp4TagDup(char * file) {
+static MpdTag * mp4TagDup(char * file) {
 	MpdTag * ret = NULL;
 	int mp4MetadataFound = 0;
 
@@ -427,7 +427,7 @@ MpdTag * mp4TagDup(char * file) {
 	return ret;
 }
 
-char * mp4Suffixes[] = {"m4a", "mp4", NULL};
+static char * mp4Suffixes[] = {"m4a", "mp4", NULL};
 
 InputPlugin mp4Plugin =
 {

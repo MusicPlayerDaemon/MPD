@@ -65,7 +65,7 @@ typedef struct _OggCallbackData {
         DecoderControl * dc;
 } OggCallbackData;
 
-size_t ogg_read_cb(void * ptr, size_t size, size_t nmemb, void * vdata)
+static size_t ogg_read_cb(void * ptr, size_t size, size_t nmemb, void * vdata)
 {
 	size_t ret = 0;
         OggCallbackData * data = (OggCallbackData *)vdata;
@@ -85,19 +85,19 @@ size_t ogg_read_cb(void * ptr, size_t size, size_t nmemb, void * vdata)
 	return ret;
 }
 
-int ogg_seek_cb(void * vdata, ogg_int64_t offset, int whence) {
+static int ogg_seek_cb(void * vdata, ogg_int64_t offset, int whence) {
         OggCallbackData * data = (OggCallbackData *)vdata;
 
 	return seekInputStream(data->inStream,offset,whence);
 }
 
-int ogg_close_cb(void * vdata) {
+static int ogg_close_cb(void * vdata) {
         OggCallbackData * data = (OggCallbackData *)vdata;
 
 	return closeInputStream(data->inStream);
 }
 
-long ogg_tell_cb(void * vdata) {
+static long ogg_tell_cb(void * vdata) {
         OggCallbackData * data = (OggCallbackData *)vdata;
 
 	return (long)(data->inStream->offset);
@@ -113,7 +113,7 @@ static char * ogg_parseComment(char * comment, char * needle) {
         return NULL;
 }
 
-void ogg_getReplayGainInfo(char ** comments, ReplayGainInfo ** infoPtr) {
+static void ogg_getReplayGainInfo(char ** comments, ReplayGainInfo ** infoPtr) {
         char * temp;
 	int found = 0;
 
@@ -157,7 +157,7 @@ void ogg_getReplayGainInfo(char ** comments, ReplayGainInfo ** infoPtr) {
 static const char * VORBIS_COMMENT_TRACK_KEY = "tracknumber";
 static const char * VORBIS_COMMENT_DISC_KEY  = "discnumber";
 
-static inline unsigned int ogg_parseCommentAddToTag(char * comment,
+static unsigned int ogg_parseCommentAddToTag(char * comment,
 		unsigned int itemType, MpdTag ** tag)
 {
 	const char * needle;
@@ -196,7 +196,7 @@ static MpdTag * oggCommentsParse(char ** comments) {
 	return tag;
 }
 
-void putOggCommentsIntoOutputBuffer(OutputBuffer * cb, char * streamName,
+static void putOggCommentsIntoOutputBuffer(OutputBuffer * cb, char * streamName,
 		char ** comments) 
 {
 	MpdTag * tag;
@@ -223,7 +223,7 @@ void putOggCommentsIntoOutputBuffer(OutputBuffer * cb, char * streamName,
 }
 
 /* public */
-int oggvorbis_decode(OutputBuffer * cb, DecoderControl * dc,
+static int oggvorbis_decode(OutputBuffer * cb, DecoderControl * dc,
 		InputStream * inStream)
 {
 	OggVorbis_File vf;
@@ -364,7 +364,7 @@ int oggvorbis_decode(OutputBuffer * cb, DecoderControl * dc,
 	return 0;
 }
 
-MpdTag * oggvorbis_TagDup(char * file) {
+static MpdTag * oggvorbis_TagDup(char * file) {
 	MpdTag * ret = NULL;
 	FILE * fp;
 	OggVorbis_File vf;
