@@ -144,7 +144,7 @@ static int ensure_oss_open(void)
 	return 0;
 }
 
-static int getOssVolumeLevel() {
+static int getOssVolumeLevel(void) {
 	int left, right, level;
 
 	if (ensure_oss_open() < 0)
@@ -298,7 +298,7 @@ error:
 	return -1;
 }
 
-static int getAlsaVolumeLevel() {
+static int getAlsaVolumeLevel(void) {
 	int ret;
 	long level;
 	long max = volume_alsaMax;
@@ -374,7 +374,7 @@ static int prepMixer(char * device) {
 	return 0;
 }
 
-void finishVolume() {
+void finishVolume(void) {
 	switch(volume_mixerType) {
 #ifdef HAVE_ALSA
 	case VOLUME_MIXER_TYPE_ALSA:
@@ -389,7 +389,7 @@ void finishVolume() {
 	}
 }
 
-void initVolume() {
+void initVolume(void) {
 	ConfigParam * param = getConfigParam(CONF_MIXER_TYPE);
 
 	if(param) {
@@ -424,18 +424,18 @@ void initVolume() {
 	}
 }
 
-void openVolumeDevice() {
+void openVolumeDevice(void) {
 	if(prepMixer(volume_mixerDevice)<0) {
 		WARNING("using software volume\n");
 		volume_mixerType = VOLUME_MIXER_TYPE_SOFTWARE;
 	}
 }
 
-static int getSoftwareVolume() {
+static int getSoftwareVolume(void) {
 	return volume_softwareSet;
 }
 
-int getVolumeLevel() {
+int getVolumeLevel(void) {
 	switch(volume_mixerType) {
 #ifdef HAVE_ALSA
 	case VOLUME_MIXER_TYPE_ALSA:

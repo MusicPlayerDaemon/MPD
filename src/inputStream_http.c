@@ -70,7 +70,7 @@ typedef struct _InputStreemHTTPData {
 	char * httpAuth;
 } InputStreamHTTPData;
 
-void inputStream_initHttp() {
+void inputStream_initHttp(void) {
 	ConfigParam * param = getConfigParam(CONF_HTTP_PROXY_HOST);
 	char * test;
 
@@ -238,7 +238,7 @@ static char * authString(char * header, char * user, char * password) {
 #define proxyAuthString(x, y)	authString(PROXY_AUTH_HEADER, x, y)
 #define httpAuthString(x, y)	authString(HTTP_AUTH_HEADER, x, y)
 
-static InputStreamHTTPData * newInputStreamHTTPData() {
+static InputStreamHTTPData * newInputStreamHTTPData(void) {
         InputStreamHTTPData * ret = malloc(sizeof(InputStreamHTTPData));
 
 	if(proxyHost) {

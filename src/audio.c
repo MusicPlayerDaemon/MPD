@@ -80,7 +80,7 @@ extern AudioOutputPlugin mvpPlugin;
 extern AudioOutputPlugin shoutPlugin;
 
 
-void loadAudioDrivers() {
+void loadAudioDrivers(void) {
 	initAudioOutputPlugins();
 	loadAudioOutputPlugin(&alsaPlugin);
 	loadAudioOutputPlugin(&aoPlugin);
@@ -92,7 +92,7 @@ void loadAudioDrivers() {
 }
 
 /* make sure initPlayerData is called before this function!! */
-void initAudioDriver() {
+void initAudioDriver(void) {
 	ConfigParam * param = NULL;
 	int i;
 
@@ -152,7 +152,7 @@ void getOutputAudioFormat(AudioFormat * inAudioFormat,
         else copyAudioFormat(outAudioFormat,inAudioFormat);
 }
 
-void initAudioConfig() {
+void initAudioConfig(void) {
         ConfigParam * param = getConfigParam(CONF_AUDIO_OUTPUT_FORMAT);
 
         if(NULL == param || NULL == param->value) return;
@@ -232,11 +232,11 @@ int parseAudioConfig(AudioFormat * audioFormat, char * conf) {
 	return 0;
 }
 
-void finishAudioConfig() {
+void finishAudioConfig(void) {
         if(audio_configFormat) free(audio_configFormat);
 }
 
-void finishAudioDriver() {
+void finishAudioDriver(void) {
 	int i;
 
 	for(i = 0; i < audioOutputArraySize; i++) {
@@ -272,7 +272,7 @@ static void syncAudioDevicesEnabledArrays(void) {
 	}
 }
 
-static int flushAudioBuffer() {
+static int flushAudioBuffer(void) {
 	int ret = -1;
 	int i, err;
 
@@ -356,11 +356,11 @@ int playAudio(char * playChunk, int size) {
 	return 0;
 }
 
-int isAudioDeviceOpen() {
+int isAudioDeviceOpen(void) {
 	return audioOpened;
 }
 
-void dropBufferedAudio() {
+void dropBufferedAudio(void) {
 	int i;
 
 	if(0 != memcmp(pdAudioDevicesEnabled, myAudioDevicesEnabled,
@@ -377,7 +377,7 @@ void dropBufferedAudio() {
 	}
 }
 
-void closeAudioDevice() {
+void closeAudioDevice(void) {
 	int i;
 
 	flushAudioBuffer();
@@ -436,7 +436,7 @@ void printAudioDevices(FILE * fp) {
 	}
 }
 
-void saveAudioDevicesState() {
+void saveAudioDevicesState(void) {
 	char *stateFile;
 	FILE *fp;
 	int i;
@@ -494,7 +494,7 @@ errline:
 	}
 }
 
-void readAudioDevicesState() {
+void readAudioDevicesState(void) {
 	char *stateFile;
 	FILE *fp;
 	struct stat st;

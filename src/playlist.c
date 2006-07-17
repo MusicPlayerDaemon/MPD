@@ -92,7 +92,7 @@ static void swapOrder(int a, int b);
 static int playPlaylistOrderNumber(FILE * fp, int orderNum);
 static void randomizeOrder(int start, int end);
 
-char * getStateFile() {
+char * getStateFile(void) {
 	ConfigParam * param = parseConfigFilePath(CONF_STATE_FILE, 0);
 	
 	if(!param) return NULL;
@@ -100,7 +100,7 @@ char * getStateFile() {
 	return param->value;
 }
 
-static void incrPlaylistVersion() {
+static void incrPlaylistVersion(void) {
 	static unsigned long max = ((mpd_uint32)1<<31)-1;
 	playlist.version++;
 	if(playlist.version>=max) {
@@ -114,7 +114,7 @@ static void incrPlaylistVersion() {
 	}
 }
 
-void playlistVersionChange() {
+void playlistVersionChange(void) {
 	int i = 0;
 
 	for(i=0; i<playlist.length; i++) {
@@ -124,7 +124,7 @@ void playlistVersionChange() {
 	incrPlaylistVersion();
 }
 
-static void incrPlaylistCurrent() {
+static void incrPlaylistCurrent(void) {
 	if(playlist.current < 0) return;
 
 	if(playlist.current >= playlist.length-1) {
@@ -134,7 +134,7 @@ static void incrPlaylistCurrent() {
 	else playlist.current++;
 }
 
-void initPlaylist() {
+void initPlaylist(void) {
 	char * test;
 	int i;
 	ConfigParam * param;
@@ -190,7 +190,7 @@ void initPlaylist() {
 	}
 }
 
-static int getNextId() {
+static int getNextId(void) {
 	static int cur = -1;
 
 	do {
@@ -203,7 +203,7 @@ static int getNextId() {
 	return cur;
 }
 
-void finishPlaylist() {
+void finishPlaylist(void) {
 	int i;
 	for(i=0;i<playlist.length;i++) {
 		if(playlist.songs[i]->type == SONG_TYPE_URL) {
@@ -255,7 +255,7 @@ int showPlaylist(FILE * fp) {
 	return 0;
 }
 
-void savePlaylistState() {
+void savePlaylistState(void) {
 	char * stateFile = getStateFile();
 	
 	if(stateFile) {
@@ -340,7 +340,7 @@ void loadPlaylistFromStateFile(FILE * fp, char * buffer, int state, int current,
 	}
 }
 
-void readPlaylistState() {
+void readPlaylistState(void) {
 	char * stateFile = getStateFile();
 	
 	if(stateFile) {
@@ -543,7 +543,7 @@ void swapSongs(int song1, int song2) {
 	playlist.positionToId[song2] = iTemp;
 }
 
-void queueNextSongInPlaylist() {
+void queueNextSongInPlaylist(void) {
 	if(playlist.current<playlist.length-1) {
 		playlist.queued = playlist.current+1;
 		DEBUG("playlist: queue song %i:\"%s\"\n",
@@ -594,7 +594,7 @@ void syncPlaylistWithQueue(int queue) {
 	}
 }
 
-void lockPlaylistInteraction() {
+void lockPlaylistInteraction(void) {
 	if(getPlayerQueueState()==PLAYER_QUEUE_PLAY || 
 		getPlayerQueueState()==PLAYER_QUEUE_FULL) {
 		playerQueueLock();
@@ -602,11 +602,11 @@ void lockPlaylistInteraction() {
 	}
 }
 
-static void unlockPlaylistInteraction() {
+static void unlockPlaylistInteraction(void) {
 	playerQueueUnlock();
 }
 
-void clearPlayerQueue() {
+void clearPlayerQueue(void) {
 	playlist.queued = -1;
 	switch(getPlayerQueueState()) {
 	case PLAYER_QUEUE_FULL:
@@ -926,7 +926,7 @@ int playPlaylistById(FILE * fp, int id, int stopOnError) {
 	return playPlaylist(fp, playlist.idToPosition[id], stopOnError);
 }
 
-void syncCurrentPlayerDecodeMetadata() {
+void syncCurrentPlayerDecodeMetadata(void) {
 	Song * songPlayer = playerCurrentDecodeSong();
 	Song * song;
 	int songNum;
@@ -949,7 +949,7 @@ void syncCurrentPlayerDecodeMetadata() {
 	}
 }
 
-void syncPlayerAndPlaylist() {
+void syncPlayerAndPlaylist(void) {
 	if(playlist_state!=PLAYLIST_STATE_PLAY) return;
 
 	if(getPlayerState()==PLAYER_STATE_STOP) playPlaylistIfPlayerStopped();
@@ -995,7 +995,7 @@ int nextSongInPlaylist(FILE * fp) {
 	return 0;
 }
 
-void playPlaylistIfPlayerStopped() {
+void playPlaylistIfPlayerStopped(void) {
 	if(getPlayerState()==PLAYER_STATE_STOP) {
 		int error = getPlayerError();
 
@@ -1015,11 +1015,11 @@ void playPlaylistIfPlayerStopped() {
 	}
 }
 
-int getPlaylistRepeatStatus() {
+int getPlaylistRepeatStatus(void) {
 	return playlist.repeat;
 }
 
-int getPlaylistRandomStatus() {
+int getPlaylistRandomStatus(void) {
 	return playlist.random;
 }
 
@@ -1125,7 +1125,7 @@ int moveSongInPlaylistById(FILE * fp, int id1, int to) {
 	return moveSongInPlaylist(fp, playlist.idToPosition[id1], to);
 }
 
-static void orderPlaylist() {
+static void orderPlaylist(void) {
 	int i;
 
 	if(playlist.current >= 0 && playlist.current < playlist.length) {
@@ -1359,7 +1359,7 @@ int savePlaylist(FILE * fp, char * utf8file) {
 	return 0;
 }
 
-int getPlaylistCurrentSong() {
+int getPlaylistCurrentSong(void) {
 	if(playlist.current >= 0 && playlist.current < playlist.length) {
                 return playlist.order[playlist.current];
         }
@@ -1367,11 +1367,11 @@ int getPlaylistCurrentSong() {
         return -1;
 }
 
-unsigned long getPlaylistVersion() {
+unsigned long getPlaylistVersion(void) {
 	return playlist.version;
 }
 
-int getPlaylistLength() {
+int getPlaylistLength(void) {
 	return playlist.length;
 }
 

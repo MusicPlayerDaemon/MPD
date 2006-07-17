@@ -35,7 +35,7 @@
 #include <string.h>
 #include <assert.h>
 
-Song * newNullSong() {
+Song * newNullSong(void) {
 	Song * song = malloc(sizeof(Song));
 
 	song->tag = NULL;
@@ -92,7 +92,7 @@ void freeJustSong(Song * song) {
 	getSongUrl(NULL);
 }
 
-SongList * newSongList() {
+SongList * newSongList(void) {
 	return makeList((ListFreeDataFunc *)freeSong, 0);
 }
 

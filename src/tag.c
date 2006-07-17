@@ -72,7 +72,7 @@ char * mpdTagItemKeys[TAG_NUM_OF_ITEM_TYPES] =
 
 static mpd_sint8 ignoreTagItems[TAG_NUM_OF_ITEM_TYPES];
 
-void initTagConfig() {
+void initTagConfig(void) {
 	int quit = 0;
 	char * temp;
 	char * s;
@@ -450,7 +450,7 @@ fail:
 	return ret;
 }
 
-MpdTag * newMpdTag() {
+MpdTag * newMpdTag(void) {
 	MpdTag * ret = malloc(sizeof(MpdTag));
 	ret->items = NULL;
 	ret->time = -1;

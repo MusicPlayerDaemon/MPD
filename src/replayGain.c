@@ -31,7 +31,7 @@ static int replayGainState = REPLAYGAIN_OFF;
 
 static float replayGainPreamp = 1.0;
 
-void initReplayGainState() {
+void initReplayGainState(void) {
 	ConfigParam * param = getConfigParam(CONF_REPLAYGAIN);
 
 	if(!param) return;
@@ -85,7 +85,7 @@ static float computeReplayGainScale(float gain, float peak) {
 	return(scale);
 }
 
-ReplayGainInfo * newReplayGainInfo() {
+ReplayGainInfo * newReplayGainInfo(void) {
 	ReplayGainInfo * ret = malloc(sizeof(ReplayGainInfo));
 
 	ret->albumGain = 0.0;

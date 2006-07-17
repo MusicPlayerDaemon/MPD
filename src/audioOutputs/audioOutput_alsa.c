@@ -54,7 +54,7 @@ typedef struct _AlsaData {
 	int canResume;
 } AlsaData;
 
-static AlsaData * newAlsaData() {
+static AlsaData * newAlsaData(void) {
 	AlsaData * ret = malloc(sizeof(AlsaData));
 
 	ret->device = NULL;
@@ -100,7 +100,7 @@ static void alsa_finishDriver(AudioOutput * audioOutput) {
 	freeAlsaData(ad);
 }
 
-static int alsa_testDefault()
+static int alsa_testDefault(void)
 {
 	snd_pcm_t * handle;
 

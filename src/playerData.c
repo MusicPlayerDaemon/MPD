@@ -36,7 +36,7 @@ int buffered_chunks;
 static PlayerData * playerData_pd;
 int * player_pid;
 
-void initPlayerData() {
+void initPlayerData(void) {
 	float perc = DEFAULT_BUFFER_BEFORE_PLAY;
 	char * test;
 	int shmid;
@@ -162,11 +162,11 @@ void initPlayerData() {
 	memset(playerData_pd->decoderControl.utf8url, 0, MAXPATHLEN+1);
 }
 
-PlayerData * getPlayerData() {
+PlayerData * getPlayerData(void) {
 	return playerData_pd;
 }
 
-int getPlayerPid() {
+int getPlayerPid(void) {
 	return *player_pid;
 }
 
@@ -174,7 +174,7 @@ void setPlayerPid(int pid) {
 	*player_pid = pid;
 }
 
-void freePlayerData() {
+void freePlayerData(void) {
 	shmdt(playerData_pd);
 	shmdt(player_pid);
 }

@@ -39,18 +39,18 @@
 
 #define MIKMOD_FRAME_SIZE	4096
 
-static BOOL mod_mpd_Init() {
+static BOOL mod_mpd_Init(void) {
 	return VC_Init();
 }
 
-static void mod_mpd_Exit() {
+static void mod_mpd_Exit(void) {
 	VC_Exit();
 }
 
-static void mod_mpd_Update() {
+static void mod_mpd_Update(void) {
 }
 
-static BOOL mod_mpd_IsThere() {
+static BOOL mod_mpd_IsThere(void) {
 	return 1;
 }
 
@@ -92,7 +92,7 @@ MDRIVER drv_mpd =
 static int mod_mikModInitiated = 0;
 static int mod_mikModInitError = 0;
 
-static int mod_initMikMod() {
+static int mod_initMikMod(void) {
 	if(mod_mikModInitError) return -1;
 
 	if(!mod_mikModInitiated) {
@@ -120,7 +120,7 @@ static int mod_initMikMod() {
 	return 0;
 }
 
-void mod_finishMikMod() {
+void mod_finishMikMod(void) {
 	MikMod_Exit();
 }
 

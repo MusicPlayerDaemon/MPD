@@ -72,7 +72,7 @@ typedef struct _ShoutData {
 	AudioFormat * audioFormat;
 } ShoutData;
 
-static ShoutData * newShoutData() {
+static ShoutData * newShoutData(void) {
 	ShoutData * ret = malloc(sizeof(ShoutData));
 
 	ret->shoutConn = shout_new();

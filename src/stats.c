@@ -28,7 +28,7 @@
 
 Stats stats;
 
-void initStats() {
+void initStats(void) {
 	stats.daemonStart = time(NULL);
 	stats.numberOfSongs = 0;
 }

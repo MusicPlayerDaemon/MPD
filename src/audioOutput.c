@@ -41,11 +41,11 @@ void unloadAudioOutputPlugin(AudioOutputPlugin * audioOutputPlugin) {
 	deleteFromList(audioOutputPluginList, audioOutputPlugin->name);
 }
 
-void initAudioOutputPlugins() {
+void initAudioOutputPlugins(void) {
 	audioOutputPluginList = makeList(NULL, 0);
 }
 
-void finishAudioOutputPlugins() {
+void finishAudioOutputPlugins(void) {
 	freeList(audioOutputPluginList);
 }
 

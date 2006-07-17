@@ -62,7 +62,7 @@ void my_usleep(long usec) {
 	select(0,NULL,NULL,NULL,&tv);
 }
 
-int ipv6Supported() {
+int ipv6Supported(void) {
 #ifdef HAVE_IPV6
 	int s;
 	s = socket(AF_INET6,SOCK_STREAM,0);

@@ -112,11 +112,11 @@ static void registerConfigParam(char * name, int repeatable, int block) {
 	insertInList(configEntriesList, name, entry);
 }
 
-void finishConf() {
+void finishConf(void) {
 	freeList(configEntriesList);
 }
 
-void initConf() {
+void initConf(void) {
 	configEntriesList = makeList((ListFreeDataFunc *)freeConfigEntry, 1);
 
 	/* registerConfigParam(name,                   repeatable,  block); */

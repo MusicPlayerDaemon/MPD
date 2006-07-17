@@ -130,7 +130,7 @@ extern InputPlugin mpcPlugin;
 extern InputPlugin aacPlugin;
 extern InputPlugin modPlugin;
 
-void initInputPlugins() {
+void initInputPlugins(void) {
 	inputPlugin_list = makeList(NULL, 1);
 
 	/* load plugins here */
@@ -144,6 +144,6 @@ void initInputPlugins() {
 	loadInputPlugin(&modPlugin);
 }
 
-void finishInputPlugins() {
+void finishInputPlugins(void) {
 	freeList(inputPlugin_list);
 }

@@ -98,7 +98,7 @@ void setFsCharset(char * charset) {
 	}
 }
 
-char * getFsCharset() {
+char * getFsCharset(void) {
 	return fsCharset;
 }
 
@@ -118,7 +118,7 @@ static char * appendSlash(char ** path) {
 	return temp;
 }
 
-void initPaths() {
+void initPaths(void) {
 	ConfigParam * musicParam = parseConfigFilePath(CONF_MUSIC_DIR, 1);
 	ConfigParam * playlistParam = parseConfigFilePath(CONF_PLAYLIST_DIR, 1);
         ConfigParam * fsCharsetParam = getConfigParam(CONF_FS_CHARSET);
@@ -192,7 +192,7 @@ void initPaths() {
 	}
 }
 
-void finishPaths() {
+void finishPaths(void) {
 	free(fsCharset);
 	fsCharset = NULL;
 }

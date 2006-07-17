@@ -128,7 +128,7 @@ static CommandEntry * getCommandEntryFromString(char * string, int * permission)
 
 List * commandList;
 
-CommandEntry * newCommandEntry() {
+CommandEntry * newCommandEntry(void) {
         CommandEntry * cmd = malloc(sizeof(CommandEntry));
         cmd->cmd = NULL;
         cmd->min = 0;
@@ -934,7 +934,7 @@ static int handleNotcommands(FILE * fp, unsigned int * permission, int argArrayL
 	return 0;
 }
 
-void initCommands() {
+void initCommands(void) {
         commandList = makeList(free, 1);
 
         addCommand(COMMAND_PLAY        ,PERMISSION_CONTROL, 0, 1,handlePlay,NULL);
@@ -995,7 +995,7 @@ void initCommands() {
         sortList(commandList);
 }
 
-void finishCommands() {
+void finishCommands(void) {
         freeList(commandList);
 }
 

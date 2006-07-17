@@ -226,7 +226,7 @@ static void unsupportParam(OssData * od, int param, int val) {
 	addUnsupportedParam(od, param, val);
 }
 
-static OssData * newOssData() {
+static OssData * newOssData(void) {
 	OssData * ret = malloc(sizeof(OssData));
 
 	ret->device = NULL;
@@ -298,7 +298,7 @@ static int oss_statDevice(char * device, int * stErrno) {
 	return 0;
 }
 
-static int oss_testDefault() {
+static int oss_testDefault(void) {
 	int fd;
 
 	fd = open("/dev/sound/dsp", O_WRONLY);

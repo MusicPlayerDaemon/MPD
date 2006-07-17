@@ -25,7 +25,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-void initInputStream() {
+void initInputStream(void) {
 	inputStream_initFile();
 	inputStream_initHttp();
 }

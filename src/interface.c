@@ -373,7 +373,7 @@ static void addInterfacesForBufferFlushToFdSet(fd_set * fds, int * fdmax) {
 	}
 }
 
-static void closeNextErroredInterface() {
+static void closeNextErroredInterface(void) {
 	fd_set fds;
 	struct timeval tv;
 	int i;
@@ -393,7 +393,7 @@ static void closeNextErroredInterface() {
 	}
 }
 
-int doIOForInterfaces() {
+int doIOForInterfaces(void) {
 	fd_set rfds;
 	fd_set wfds;
 	struct timeval tv;
@@ -441,7 +441,7 @@ int doIOForInterfaces() {
 	return 1;
 }
 
-void initInterfaces() {
+void initInterfaces(void) {
 	int i;
 	char * test;
 	ConfigParam * param;
@@ -506,7 +506,7 @@ void initInterfaces() {
 	}
 }
 
-static void closeAllInterfaces() {
+static void closeAllInterfaces(void) {
 	int i;
 
 	fflush(NULL);
@@ -518,7 +518,7 @@ static void closeAllInterfaces() {
 	}
 }
 
-void freeAllInterfaces() {
+void freeAllInterfaces(void) {
 	closeAllInterfaces();
 
 	free(interfaces);
@@ -526,7 +526,7 @@ void freeAllInterfaces() {
 	interface_max_connections = 0;
 }
 
-void closeOldInterfaces() {
+void closeOldInterfaces(void) {
 	int i;
 
 	for(i=0;i<interface_max_connections;i++) {

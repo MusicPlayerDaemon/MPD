@@ -89,7 +89,7 @@ int getNumberOfTagItems(int type) {
 	return tagLists[type]->numberOfNodes;
 }
 
-void printMemorySavedByTagTracker() {
+void printMemorySavedByTagTracker(void) {
 	int i;
 	ListNode * node;
 	size_t sum = 0;

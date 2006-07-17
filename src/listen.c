@@ -165,7 +165,7 @@ static int establishListen(unsigned int port, ConfigParam * param) {
 	return sock;
 }
 
-void listenOnPort() {
+void listenOnPort(void) {
 	int port = DEFAULT_PORT;
 	ConfigParam * param = getNextConfigParam(CONF_BIND_TO_ADDRESS,NULL);
 
@@ -204,7 +204,7 @@ void addListenSocketsToFdSet(fd_set * fds, int * fdmax) {
 	}
 }
 
-void closeAllListenSockets() {
+void closeAllListenSockets(void) {
 	int i;
 
 	DEBUG("closeAllListenSockets called\n");
@@ -216,7 +216,7 @@ void closeAllListenSockets() {
 	freeAllListenSockets();
 }
 
-void freeAllListenSockets() {
+void freeAllListenSockets(void) {
 	numberOfListenSockets = 0;
 	free(listenSockets);
 	listenSockets = NULL;

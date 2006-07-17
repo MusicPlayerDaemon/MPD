@@ -135,7 +135,7 @@ char * convStrDup(char * string) {
 	return NULL;
 }
 
-static void closeCharSetConversion() {
+static void closeCharSetConversion(void) {
 	if(char_conv_to) {
 #ifdef HAVE_ICONV
 		if(char_conv_use_iconv) iconv_close(char_conv_iconv);

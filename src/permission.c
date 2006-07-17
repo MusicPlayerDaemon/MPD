@@ -68,7 +68,7 @@ static unsigned int parsePermissions(char * string) {
 	return permission;
 }
 
-void initPermissions() {
+void initPermissions(void) {
 	char * temp;
 	char * cp2;
 	char * password;
@@ -129,10 +129,10 @@ int getPermissionFromPassword(char * password, unsigned int * permission) {
 	return -1;
 }
 
-void finishPermissions() {
+void finishPermissions(void) {
 	freeList(permission_passwords);
 }
 
-unsigned int getDefaultPermissions() {
+unsigned int getDefaultPermissions(void) {
 	return permission_default;
 }

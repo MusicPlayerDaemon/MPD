@@ -31,7 +31,7 @@ short warningFlushed = 0;
 
 static char * warningBuffer = NULL;
 
-void initLog() {
+void initLog(void) {
 	ConfigParam * param = getConfigParam(CONF_LOG_LEVEL);
 
 	if(!param) return;
@@ -69,7 +69,7 @@ void bufferWarning(char * format, ... ) {
 	va_end(arglist);
 }
 
-void flushWarningLog() {
+void flushWarningLog(void) {
 	char * s;
 
 	DEBUG("flushing warning messages\n");
