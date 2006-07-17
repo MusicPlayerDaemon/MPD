@@ -99,7 +99,7 @@ void initPlayerData(void) {
 		ERROR("problems shmat'ing\n");
 		exit(EXIT_FAILURE);
 	}
-	if (shmctl(shmid, IPC_RMID, 0)<0) {
+	if (shmctl(shmid, IPC_RMID, NULL)<0) {
 		ERROR("problems shmctl'ing\n");
 		exit(EXIT_FAILURE);
 	}
@@ -115,7 +115,7 @@ void initPlayerData(void) {
 		ERROR("problems shmat'ing\n");
 		exit(EXIT_FAILURE);
 	}
-	if (shmctl(shmid, IPC_RMID, 0)<0) {
+	if (shmctl(shmid, IPC_RMID, NULL)<0) {
 		ERROR("problems shmctl'ing\n");
 		exit(EXIT_FAILURE);
 	}

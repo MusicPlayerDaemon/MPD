@@ -208,7 +208,7 @@ static int alsa_openDevice(AudioOutput * audioOutput)
 	audioFormat->channels = channels;
 
 	err = snd_pcm_hw_params_set_rate_near(ad->pcmHandle, hwparams, 
-			&sampleRate, 0);
+			&sampleRate, NULL);
 	if(err < 0 || sampleRate == 0) {
 		ERROR("Alsa device \"%s\" does not support %i Hz audio\n",
 				ad->device, (int)audioFormat->sampleRate);
@@ -218,14 +218,14 @@ static int alsa_openDevice(AudioOutput * audioOutput)
 
 	cmd = "snd_pcm_hw_params_set_buffer_time_near";
 	err = snd_pcm_hw_params_set_buffer_time_near(ad->pcmHandle, hwparams,
-			&ad->buffer_time, 0);
+			&ad->buffer_time, NULL);
 	if(err < 0) goto error;
 
 	if (!ad->period_time && sampleRate > 0)
 		ad->period_time = 1000000 * MPD_ALSA_SAMPLE_XFER / sampleRate;
 	cmd = "snd_pcm_hw_params_set_period_time_near";
 	err = snd_pcm_hw_params_set_period_time_near(ad->pcmHandle, hwparams,
-			&ad->period_time, 0);
+			&ad->period_time, NULL);
 	if(err < 0) goto error;
 
 	cmd = "snd_pcm_hw_params";
@@ -237,7 +237,8 @@ static int alsa_openDevice(AudioOutput * audioOutput)
 	if(err < 0) goto error;
 
 	cmd = "snd_pcm_hw_params_get_period_size";
-	err = snd_pcm_hw_params_get_period_size(hwparams, &alsa_period_size, 0);
+	err = snd_pcm_hw_params_get_period_size(hwparams, &alsa_period_size,
+	                                        NULL);
 	if(err < 0) goto error;
 
 	ad->canPause = snd_pcm_hw_params_can_pause(hwparams);
