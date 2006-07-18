@@ -423,53 +423,52 @@ enum {
 
 static int parse_xing(struct xing *xing, struct mad_bitptr ptr, unsigned int bitlen)
 {
-  	unsigned long bits;
+	unsigned long bits;
 
-  	if (bitlen < 16) goto fail;
-  	bits = mad_bit_read(&ptr, 16);
+	if (bitlen < 16) goto fail;
+	bits = mad_bit_read(&ptr, 16);
 	bitlen -= 16;
 
-  	if (bits == XI_MAGIC) {
-    		if (bitlen < 16) goto fail;
-    		if (mad_bit_read(&ptr, 16) != NG_MAGIC) goto fail;
-    		bitlen -= 16;
-  	}
-  	else if (bits != NG_MAGIC) goto fail;
+	if (bits == XI_MAGIC) {
+		if (bitlen < 16) goto fail;
+		if (mad_bit_read(&ptr, 16) != NG_MAGIC) goto fail;
+		bitlen -= 16;
+	}
+	else if (bits != NG_MAGIC) goto fail;
 
-  	if (bitlen < 32) goto fail;
-  	xing->flags = mad_bit_read(&ptr, 32);
-  	bitlen -= 32;
+	if (bitlen < 32) goto fail;
+	xing->flags = mad_bit_read(&ptr, 32);
+	bitlen -= 32;
 
-  	if (xing->flags & XING_FRAMES) {
-    		if (bitlen < 32) goto fail;
-    		xing->frames = mad_bit_read(&ptr, 32);
-    		bitlen -= 32;
-  	}
+	if (xing->flags & XING_FRAMES) {
+		if (bitlen < 32) goto fail;
+		xing->frames = mad_bit_read(&ptr, 32);
+		bitlen -= 32;
+	}
 
-  	if (xing->flags & XING_BYTES) {
-    		if (bitlen < 32) goto fail;
-    		xing->bytes = mad_bit_read(&ptr, 32);
-    		bitlen -= 32;
-  	}
+	if (xing->flags & XING_BYTES) {
+		if (bitlen < 32) goto fail;
+		xing->bytes = mad_bit_read(&ptr, 32);
+		bitlen -= 32;
+	}
 
-  	if (xing->flags & XING_TOC) {
-    		int i;
-    		if (bitlen < 800) goto fail;
-      		for (i = 0; i < 100; ++i) xing->toc[i] = mad_bit_read(&ptr, 8);
-    		bitlen -= 800;
-  	}
+	if (xing->flags & XING_TOC) {
+		int i;
+		if (bitlen < 800) goto fail;
+		for (i = 0; i < 100; ++i) xing->toc[i] = mad_bit_read(&ptr, 8);
+		bitlen -= 800;
+	}
 
-  	if (xing->flags & XING_SCALE) {
-    		if (bitlen < 32) goto fail;
-    		xing->scale = mad_bit_read(&ptr, 32);
-    		bitlen -= 32;
-  	}
+	if (xing->flags & XING_SCALE) {
+		if (bitlen < 32) goto fail;
+		xing->scale = mad_bit_read(&ptr, 32);
+		bitlen -= 32;
+	}
 
- 	 return 1;
-
+	return 1;
 fail:
-  	xing->flags = 0;
-  	return 0;
+	xing->flags = 0;
+	return 0;
 }
 
 static int decodeFirstFrame(mp3DecodeData * data, DecoderControl * dc,
