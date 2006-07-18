@@ -166,7 +166,6 @@ static FLAC__StreamDecoderWriteStatus oggflacWrite(
 	int c_samp, c_chan, d_samp;
 	int i;
 	float timeChange;
-	const int bytesPerSample = data->dc->audioFormat.bits/8;
 	
 	timeChange = ((float)samples)/frame->header.sample_rate;
 	data->time+= timeChange;
