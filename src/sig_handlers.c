@@ -125,6 +125,7 @@ void masterInitSigHandlers() {
 	struct sigaction sa;
 
 	sa.sa_flags = 0;
+	sigemptyset(&sa.sa_mask);
 	sa.sa_handler = SIG_IGN;
 	while(sigaction(SIGPIPE,&sa,NULL)<0 && errno==EINTR);
 	sa.sa_handler = masterChldSigHandler;
@@ -141,6 +142,7 @@ void initSigHandlers() {
 	struct sigaction sa;
 
 	sa.sa_flags = 0;
+	sigemptyset(&sa.sa_mask);
 	sa.sa_handler = SIG_IGN;
 	while(sigaction(SIGPIPE,&sa,NULL)<0 && errno==EINTR);
 	sa.sa_handler = chldSigHandler;
@@ -165,6 +167,7 @@ void setSigHandlersForDecoder() {
 	finishSigHandlers();
 
 	sa.sa_flags = 0;
+	sigemptyset(&sa.sa_mask);
 	sa.sa_handler = SIG_IGN;
 	while(sigaction(SIGHUP,&sa,NULL)<0 && errno==EINTR);
 	while(sigaction(SIGINT,&sa,NULL)<0 && errno==EINTR);

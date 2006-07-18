@@ -33,6 +33,7 @@ static void __set_signal_handler(int sig, void (* handler)(int))
 {
         struct sigaction act;
         act.sa_flags = 0;
+        sigemptyset(&act.sa_mask);
         act.sa_handler = handler;
         while(sigaction(sig, &act, NULL) && errno==EINTR);
 }
