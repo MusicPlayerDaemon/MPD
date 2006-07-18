@@ -402,16 +402,24 @@ static int decodeNextFrame(mp3DecodeData * data) {
 	return DECODE_OK;
 }
 
-/* xing stuff stolen from alsaplayer */
+/* xing stuff stolen from alsaplayer, and heavily modified by jat */
 #define XI_MAGIC (('X' << 8) | 'i')
 #define NG_MAGIC (('n' << 8) | 'g')
+#define IN_MAGIC (('I' << 8) | 'n')
+#define FO_MAGIC (('f' << 8) | 'o')
+
+enum xing_magic {
+	XING_MAGIC_XING, /* VBR */
+	XING_MAGIC_INFO, /* CBR */
+};
 
 struct xing {
   	long flags;			/* valid fields (see below) */
   	unsigned long frames;		/* total number of frames */
   	unsigned long bytes;		/* total number of bytes */
   	unsigned char toc[100];		/* 100-point seek table */
-  	long scale;			/* ?? */
+  	long scale;			/* VBR quality */
+	enum xing_magic magic;          /* header magic */
 };
 
 enum {
@@ -421,54 +429,84 @@ enum {
   	XING_SCALE  = 0x00000008L
 };
 
-static int parse_xing(struct xing *xing, struct mad_bitptr ptr, unsigned int bitlen)
+static int parse_xing(struct xing *xing, struct mad_bitptr *ptr, int bitlen)
 {
 	unsigned long bits;
+	int oldbitlen;
+	int bitsleft;
+	int i;
+
+	oldbitlen = bitlen;
 
 	if (bitlen < 16) goto fail;
-	bits = mad_bit_read(&ptr, 16);
+	bits = mad_bit_read(ptr, 16);
 	bitlen -= 16;
 
 	if (bits == XI_MAGIC) {
 		if (bitlen < 16) goto fail;
-		if (mad_bit_read(&ptr, 16) != NG_MAGIC) goto fail;
+		if (mad_bit_read(ptr, 16) != NG_MAGIC) goto fail;
 		bitlen -= 16;
+		xing->magic = XING_MAGIC_XING;
+	} else if (bits == IN_MAGIC) {
+		if (bitlen < 16) goto fail;
+		if (mad_bit_read(ptr, 16) != FO_MAGIC) goto fail;
+		bitlen -= 16;
+		xing->magic = XING_MAGIC_INFO;
 	}
-	else if (bits != NG_MAGIC) goto fail;
+	else if (bits == NG_MAGIC) xing->magic = XING_MAGIC_XING;
+	else if (bits == FO_MAGIC) xing->magic = XING_MAGIC_INFO;
+	else goto fail;
 
 	if (bitlen < 32) goto fail;
-	xing->flags = mad_bit_read(&ptr, 32);
+	xing->flags = mad_bit_read(ptr, 32);
 	bitlen -= 32;
 
 	if (xing->flags & XING_FRAMES) {
 		if (bitlen < 32) goto fail;
-		xing->frames = mad_bit_read(&ptr, 32);
+		xing->frames = mad_bit_read(ptr, 32);
 		bitlen -= 32;
 	}
 
 	if (xing->flags & XING_BYTES) {
 		if (bitlen < 32) goto fail;
-		xing->bytes = mad_bit_read(&ptr, 32);
+		xing->bytes = mad_bit_read(ptr, 32);
 		bitlen -= 32;
 	}
 
 	if (xing->flags & XING_TOC) {
-		int i;
 		if (bitlen < 800) goto fail;
-		for (i = 0; i < 100; ++i) xing->toc[i] = mad_bit_read(&ptr, 8);
+		for (i = 0; i < 100; ++i) xing->toc[i] = mad_bit_read(ptr, 8);
 		bitlen -= 800;
 	}
 
 	if (xing->flags & XING_SCALE) {
 		if (bitlen < 32) goto fail;
-		xing->scale = mad_bit_read(&ptr, 32);
+		xing->scale = mad_bit_read(ptr, 32);
 		bitlen -= 32;
 	}
 
-	return 1;
+	/* Make sure we consume no less than 120 bytes (960 bits) in hopes that
+	 * the LAME tag is found there, and not right after the Xing header */
+	bitsleft = 960-(oldbitlen-bitlen);
+	if (bitsleft < 0) goto fail;
+	else if (bitsleft > 0) {
+		mad_bit_read(ptr, bitsleft);
+		bitlen -= bitsleft;
+	}
+
+	return bitlen;
 fail:
 	xing->flags = 0;
-	return 0;
+	return -1;
+}
+
+static int parse_extension_headers(struct xing *xing, struct mad_bitptr ptr,
+                                   int bitlen)
+{
+	bitlen = parse_xing(xing, &ptr, bitlen);
+	if (bitlen < 0) return 0;
+
+	return 1;
 }
 
 static int decodeFirstFrame(mp3DecodeData * data, DecoderControl * dc,
@@ -493,7 +531,8 @@ static int decodeFirstFrame(mp3DecodeData * data, DecoderControl * dc,
 		if(!skip && ret==DECODE_OK) break;
 	}
 
-	if(parse_xing(&xing,data->stream.anc_ptr,data->stream.anc_bitlen)) {
+	if(parse_extension_headers(&xing, data->stream.anc_ptr,
+	                           (int)data->stream.anc_bitlen)) {
 		if(xing.flags & XING_FRAMES) {
 			mad_timer_t duration = data->frame.header.duration;
 			mad_timer_multiply(&duration,xing.frames);
