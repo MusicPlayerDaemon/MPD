@@ -53,6 +53,17 @@ then
   ac_save_CPPFLAGS="$CPPFLAGS"
   ac_save_CFLAGS="$CFLAGS"
   ac_save_LIBS="$LIBS"
+
+  # freebsd 6.1 + shout 2.2 port seems to leave pthread out
+  case "$host_os" in
+  freebsd*)
+	case "$SHOUT_CFLAGS$SHOUT_CPPFLAGS" in
+	*-D_THREAD_SAFE*)
+		SHOUT_LIBS="$SHOUT_LIBS -lpthread"
+		;;
+	esac
+	;;
+  esac
   CPPFLAGS="$CPPFLAGS $SHOUT_CPPFLAGS"
   CFLAGS="$CFLAGS $SHOUT_CFLAGS"
   LIBS="$SHOUT_LIBS $LIBS"

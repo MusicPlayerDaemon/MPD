@@ -25,13 +25,41 @@ AC_PROG_MAKE_SET
 
 AM_CONFIG_HEADER(config.h)
 
+MPD_LIBS=""
 MPD_CFLAGS=""
 case "$CC" in
 *gcc*)
 	MPD_CFLAGS="-Wall"
 	;;
 esac
-MPD_LIBS=""
+
+local_lib=
+local_include=
+
+# aren't autotools supposed to be smart enough to figure this out?
+# oh well, the git-core Makefile managed to do some of the work for us :)
+case "$host_os" in
+darwin*)
+	local_lib='/sw/lib /opt/local/lib'
+	local_include='/sw/include /opt/local/include'
+	;;
+freebsd* | openbsd*)
+	local_lib=/usr/local/lib
+	local_include=/usr/local/include
+	;;
+netbsd*)
+	local_lib=/usr/pkg/lib
+	local_include=/usr/pkg/include
+	LDFLAGS="$LDFLAGS -Wl,-rpath,/usr/pkg/lib"
+	;;
+esac
+
+for d in $local_lib; do
+	test -d "$d" && LDFLAGS="$LDFLAGS -L$d"
+done
+for d in $local_include; do
+	test -d "$d" && CFLAGS="$CFLAGS -I$d"
+done
 
 AC_ARG_ENABLE(ao,[  --enable-ao    enable support for libao (default: disable)],[enable_ao=$enableval],[enable_ao=no])
 AC_ARG_ENABLE(shout,[  --disable-shout    disable support for streaming through shout (default: enable)],[enable_shout=$enableval],[enable_shout=yes])
