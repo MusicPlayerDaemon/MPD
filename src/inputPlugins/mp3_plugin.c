@@ -739,7 +739,7 @@ static int mp3Read(mp3DecodeData * data, OutputBuffer * cb, DecoderControl * dc,
 	while(1) {
 		skip = 0;
 		while((ret = decodeNextFrameHeader(data, NULL, replayGainInfo))==DECODE_CONT &&
-				!dc->stop && !dc->seek);
+				!dc->stop);
 		if(ret==DECODE_BREAK || dc->stop || dc->seek) break;
 		else if(ret==DECODE_SKIP) skip = 1;
 		if(!data->muteFrame) {
