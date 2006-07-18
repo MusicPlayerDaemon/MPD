@@ -613,10 +613,13 @@ int main(int argc, char * argv[]) {
         savePlaylistState();
         saveAudioDevicesState();
 
-	
         freeAllInterfaces();
-	closeAllListenSockets();
-        closeMp3Directory();
+        closeAllListenSockets();
+
+        /* This slows shutdown immensely, and doesn't really accomplish
+         * anything.  Uncomment when we rewrite tagTracker to use a tree. */
+        /*closeMp3Directory();*/
+
         finishPlaylist();
         freePlayerData();
         finishAudioDriver();
