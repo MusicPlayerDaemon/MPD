@@ -22,18 +22,23 @@
 
 #ifdef HAVE_PULSE
 
-#define MPD_PULSE_NAME "mpd"
-
 #include "../conf.h"
 #include "../log.h"
+
+#include <time.h>
 
 #include <pulse/simple.h>
 #include <pulse/error.h>
 
+#define MPD_PULSE_NAME "mpd"
+#define CONN_ATTEMPT_INTERVAL 60
+
 typedef struct _PulseData {
+	pa_simple * s;
 	char * server;
 	char * sink;
-	pa_simple * s;
+	int connAttempts;
+	time_t lastAttempt;
 } PulseData;
 
 static PulseData * newPulseData()
@@ -41,9 +46,13 @@ static PulseData * newPulseData()
 	PulseData * ret;
 	
 	ret = malloc(sizeof(PulseData));
+
+	ret->s = NULL;
 	ret->server = NULL;
 	ret->sink = NULL;
-	ret->s = NULL;
+	ret->connAttempts = 0;
+	ret->lastAttempt = 0;
+
 	return ret;
 }
 
@@ -106,10 +115,18 @@ static int pulse_openDevice(AudioOutput * audioOutput)
 	PulseData * ad;
 	AudioFormat * audioFormat;
 	pa_sample_spec ss;
+	time_t t;
 	int error;
 
+	t = time(NULL);
 	ad = audioOutput->data;
 	audioFormat = &audioOutput->outAudioFormat;
+
+	if (ad->connAttempts != 0 &&
+	    (t - ad->lastAttempt) < CONN_ATTEMPT_INTERVAL) return -1;
+
+	ad->connAttempts++;
+	ad->lastAttempt = t;
 
 	if (audioFormat->bits != 16) {
 		ERROR("PulseAudio doesn't support %i bit audio\n",
@@ -126,10 +143,12 @@ static int pulse_openDevice(AudioOutput * audioOutput)
 	                      &error);
 	if (!ad->s) {
 		ERROR("Cannot connect to server in PulseAudio output " \
-		      "\"%s\": %s\n", audioOutput->name, pa_strerror(error));
+		      "\"%s\" (attempt %i): %s\n", audioOutput->name,
+		      ad->connAttempts, pa_strerror(error));
 		return -1;
 	}
 
+	ad->connAttempts = 0;
 	audioOutput->open = 1;
 
 	DEBUG("PulseAudio output \"%s\" connected and playing %i bit, %i " \
