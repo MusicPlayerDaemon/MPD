@@ -53,11 +53,11 @@ static int mp4_getAACTrack(mp4ff_t *infile) {
 				dummy7_8, dummy8_8;
 #endif
 	
-		mp4ff_get_decoder_config(infile, i, &buff, &buff_size);
+		mp4ff_get_decoder_config(infile, i, &buff, buff_size);
 
 		if (buff) {
 #ifdef HAVE_MP4AUDIOSPECIFICCONFIG
-			rc = AudioSpecificConfig(buff, buff_size, &mp4ASC);
+			rc = AudioSpecificConfig(buff, *buff_size, &mp4ASC);
 #else
 			rc = AudioSpecificConfig(buff, &dummy1_32, &dummy2_8,
 					&dummy3_8, &dummy4_8, &dummy5_8, 
@@ -109,8 +109,8 @@ static int mp4_decode(OutputBuffer * cb, DecoderControl * dc, char * path) {
 	faacDecHandle * decoder;
 	faacDecFrameInfo frameInfo;
 	unsigned char * mp4Buffer;
-	int mp4BufferSize;
-	unsigned long sampleRate;
+	unsigned int mp4BufferSize;
+	uint32_t sampleRate;
 	unsigned char channels;
 	long sampleId;
 	long numSamples;
