@@ -240,6 +240,7 @@ static int oggvorbis_decode(OutputBuffer * cb, DecoderControl * dc,
 	long test;
         ReplayGainInfo * replayGainInfo = NULL;
 	char ** comments;
+	char * errorStr;
 
         data.inStream = inStream;
         data.dc = dc;
@@ -252,27 +253,28 @@ static int oggvorbis_decode(OutputBuffer * cb, DecoderControl * dc,
 	if((ret = ov_open_callbacks(&data, &vf, NULL, 0, callbacks)) < 0) {
 		closeInputStream(inStream);
 		if(!dc->stop) {
-		        ERROR("Error decoding Ogg Vorbis stream: ");
 			switch(ret) {
 			case OV_EREAD:
-				ERROR("read error\n");
+				errorStr = "read error";
 				break;
 			case OV_ENOTVORBIS:
-				ERROR("not vorbis stream\n");
+				errorStr = "not vorbis stream";
 				break;
 			case OV_EVERSION:
-				ERROR("vorbis version mismatch\n");
+				errorStr = "vorbis version mismatch";
 				break;
 			case OV_EBADHEADER:
-				ERROR("invalid vorbis header\n");
+				errorStr = "invalid vorbis header";
 				break;
 			case OV_EFAULT:
-				ERROR("internal logic error\n");
+				errorStr = "internal logic error";
 				break;
 			default:
-				ERROR("unknown error\n");
+				errorStr = "unknown error";
 				break;
 			}
+		        ERROR("Error decoding Ogg Vorbis stream: %s\n",
+			      errorStr);
                         return -1;
                 }
                 else {
