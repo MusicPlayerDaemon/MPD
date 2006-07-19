@@ -3,6 +3,6 @@ if test -e Makefile
 then
 	make distclean
 fi
-./autogen.sh --disable-aac
+./autogen.sh
 make
 make dist

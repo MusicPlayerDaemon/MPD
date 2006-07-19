@@ -1,5 +1,4 @@
 bin_PROGRAMS = mpd
-SUBDIRS = $(MP4FF_SUBDIR)
 
 mpd_audioOutputs = \
 	audioOutputs/audioOutput_alsa.c \
@@ -113,9 +112,7 @@ mpd_SOURCES = \
 
 
 mpd_CFLAGS = $(MPD_CFLAGS)
-mpd_LDADD = $(MPD_LIBS) $(ID3_LIB) $(MAD_LIB) $(MP4FF_LIB)
-
-DIST_SUBDIRS = mp4ff
+mpd_LDADD = $(MPD_LIBS) $(ID3_LIB) $(MAD_LIB)
 
 # sparse is a semantic parser
 # URL: git://www.kernel.org/pub/scm/devel/sparse/sparse.git
