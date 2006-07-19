@@ -43,76 +43,13 @@
 int * listenSockets = NULL;
 int numberOfListenSockets = 0;
 
-static int establishListen(unsigned int port, ConfigParam * param) {
-	int allowReuse = ALLOW_REUSE;
-	int sock;
-	struct sockaddr * addrp;
-	socklen_t addrlen;
-	struct sockaddr_in sin;
+static void establishListen(unsigned int port,
+			    struct sockaddr * addrp, 
+			    socklen_t addrlen) 
+{
 	int pf;
-#ifdef HAVE_IPV6
-	struct sockaddr_in6 sin6;
-
-	memset(&sin6, 0, sizeof(struct sockaddr_in6));
-	sin6.sin6_port = htons(port);
-	sin6.sin6_family = AF_INET6;
-#endif
-	memset(&sin, 0, sizeof(struct sockaddr_in));
-	sin.sin_port = htons(port);
-	sin.sin_family = AF_INET;
-
-	if(!param || 0==strcmp(param->value, "any")) {
-		DEBUG("binding to any address\n");
-#ifdef HAVE_IPV6
-		if(ipv6Supported()) {
-			sin6.sin6_addr = in6addr_any;
-			addrp = (struct sockaddr *) &sin6;
-			addrlen = sizeof(struct sockaddr_in6);
-		}
-		else 
-#endif
-		{
-			sin.sin_addr.s_addr = INADDR_ANY;
-			addrp = (struct sockaddr *) &sin;
-			addrlen = sizeof(struct sockaddr_in);
-		}
-	}
-	else {
-		struct hostent * he;
-		DEBUG("binding to address for %s\n", param->value);
-		if(!(he = gethostbyname(param->value))) {
-			ERROR("can't lookup host \"%s\" at line %i\n",
-                                        param->value, param->line);
-			exit(EXIT_FAILURE);
-		}
-		switch(he->h_addrtype) {
-#ifdef HAVE_IPV6
-		case AF_INET6:
-			if(!ipv6Supported()) {
-				ERROR("no IPv6 support, but a IPv6 address "
-					"found for \"%s\" at line %i\n",
-					param->value, param->line);
-				exit(EXIT_FAILURE);
-			}
-			bcopy((char *)he->h_addr,(char *)
-					&sin6.sin6_addr.s6_addr,he->h_length);
-			addrp = (struct sockaddr *) &sin6;
-			addrlen = sizeof(struct sockaddr_in6);
-			break;
-#endif
-		case AF_INET:
-			bcopy((char *)he->h_addr,(char *)&sin.sin_addr.s_addr,
-				he->h_length);
-			addrp = (struct sockaddr *) &sin;
-			addrlen = sizeof(struct sockaddr_in);
-			break;
-		default:
-			ERROR("address type for \"%s\" is not IPv4 or IPv6 "
-                                        "at line %i\n",
-					param->value, param->line);
-			exit(EXIT_FAILURE);
-		}
-	}
+	int sock;
+	int allowReuse = ALLOW_REUSE;
 
 	switch(addrp->sa_family) {
 	case AF_INET:
@@ -151,7 +88,6 @@ static int establishListen(unsigned int port, ConfigParam * param) {
 
 	if(bind(sock,addrp,addrlen)<0) {
 		ERROR("unable to bind port %u", port);
-		if(param) ERROR(" (for address at line %i)", param->line);
 		ERROR(": %s\n", strerror(errno));
 		ERROR("maybe MPD is still running?\n");
 		exit(EXIT_FAILURE);
@@ -162,7 +98,81 @@ static int establishListen(unsigned int port, ConfigParam * param) {
 		exit(EXIT_FAILURE);
 	}
 
-	return sock;
+	numberOfListenSockets++;
+	listenSockets = 
+	    realloc(listenSockets,sizeof(int)*numberOfListenSockets);
+
+	listenSockets[numberOfListenSockets-1] = sock;
+}
+
+static void parseListenConfigParam(unsigned int port, ConfigParam * param) {
+	struct sockaddr * addrp;
+	socklen_t addrlen;
+	struct sockaddr_in sin;
+#ifdef HAVE_IPV6
+	struct sockaddr_in6 sin6;
+
+	memset(&sin6, 0, sizeof(struct sockaddr_in6));
+	sin6.sin6_port = htons(port);
+	sin6.sin6_family = AF_INET6;
+#endif
+	memset(&sin, 0, sizeof(struct sockaddr_in));
+	sin.sin_port = htons(port);
+	sin.sin_family = AF_INET;
+
+	if(!param || 0==strcmp(param->value, "any")) {
+		DEBUG("binding to any address\n");
+#ifdef HAVE_IPV6
+		if(ipv6Supported()) {
+			sin6.sin6_addr = in6addr_any;
+			addrp = (struct sockaddr *) &sin6;
+			addrlen = sizeof(struct sockaddr_in6);
+			establishListen(port, addrp, addrlen);
+		}
+#endif
+		sin.sin_addr.s_addr = INADDR_ANY;
+		addrp = (struct sockaddr *) &sin;
+		addrlen = sizeof(struct sockaddr_in);
+		establishListen(port, addrp, addrlen);
+	}
+	else {
+		struct hostent * he;
+		DEBUG("binding to address for %s\n", param->value);
+		if(!(he = gethostbyname(param->value))) {
+			ERROR("can't lookup host \"%s\" at line %i\n",
+                                        param->value, param->line);
+			exit(EXIT_FAILURE);
+		}
+		switch(he->h_addrtype) {
+#ifdef HAVE_IPV6
+		case AF_INET6:
+			if(!ipv6Supported()) {
+				ERROR("no IPv6 support, but a IPv6 address "
+					"found for \"%s\" at line %i\n",
+					param->value, param->line);
+				exit(EXIT_FAILURE);
+			}
+			bcopy((char *)he->h_addr,(char *)
+					&sin6.sin6_addr.s6_addr,he->h_length);
+			addrp = (struct sockaddr *) &sin6;
+			addrlen = sizeof(struct sockaddr_in6);
+			break;
+#endif
+		case AF_INET:
+			bcopy((char *)he->h_addr,(char *)&sin.sin_addr.s_addr,
+				he->h_length);
+			addrp = (struct sockaddr *) &sin;
+			addrlen = sizeof(struct sockaddr_in);
+			break;
+		default:
+			ERROR("address type for \"%s\" is not IPv4 or IPv6 "
+                                        "at line %i\n",
+					param->value, param->line);
+			exit(EXIT_FAILURE);
+		}
+
+		establishListen(port, addrp, addrlen);
+	}
 }
 
 void listenOnPort(void) {
@@ -186,12 +196,7 @@ void listenOnPort(void) {
 	}
 
 	do {
-		numberOfListenSockets++;
-		listenSockets = realloc(listenSockets,
-					sizeof(int)*numberOfListenSockets);
-
-		listenSockets[numberOfListenSockets-1] = 
-				establishListen(port, param);
+	    parseListenConfigParam(port, param);
 	} while ((param = getNextConfigParam(CONF_BIND_TO_ADDRESS, param)));
 }
 
