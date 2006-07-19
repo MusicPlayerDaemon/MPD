@@ -63,7 +63,7 @@ void flushOutputBuffer(OutputBuffer * cb) {
 }
 
 int sendDataToOutputBuffer(OutputBuffer * cb, InputStream * inStream,  
-                DecoderControl * dc, int seekable, char * dataIn, 
+                DecoderControl * dc, int seekable, void * dataIn, 
                 long dataInLen, float time, mpd_uint16 bitRate,
 		ReplayGainInfo * replayGainInfo)
 {

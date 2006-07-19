@@ -56,7 +56,7 @@ int sendDataToOutputBuffer(
 		InputStream * inStream,
                 DecoderControl * dc, 
 		int seekable, 
-		char * data, 
+		void * data, 
 		long datalen, 
                 float time, 
 		mpd_uint16 bitRate, 
