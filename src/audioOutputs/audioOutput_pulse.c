@@ -56,28 +56,28 @@ static PulseData * newPulseData()
 	return ret;
 }
 
-static void freePulseData(PulseData * ad)
+static void freePulseData(PulseData * pd)
 {
-	if (ad->server) free(ad->server);
-	if (ad->sink) free(ad->sink);
-	free(ad);
+	if (pd->server) free(pd->server);
+	if (pd->sink) free(pd->sink);
+	free(pd);
 }
 
 static int pulse_initDriver(AudioOutput * audioOutput, ConfigParam * param)
 {
 	BlockParam * server = NULL;
 	BlockParam * sink = NULL;
-	PulseData * ad;
+	PulseData * pd;
 
 	if (param) {
 		server = getBlockParam(param, "server");
 		sink = getBlockParam(param, "sink");
 	}
 
-	ad = newPulseData();
-	ad->server = server ? strdup(server->value) : NULL;
-	ad->sink = sink ? strdup(sink->value) : NULL;
-	audioOutput->data = ad;
+	pd = newPulseData();
+	pd->server = server ? strdup(server->value) : NULL;
+	pd->sink = sink ? strdup(sink->value) : NULL;
+	audioOutput->data = pd;
 
 	return 0;
 }
@@ -112,21 +112,21 @@ static int pulse_testDefault()
 
 static int pulse_openDevice(AudioOutput * audioOutput)
 {
-	PulseData * ad;
+	PulseData * pd;
 	AudioFormat * audioFormat;
 	pa_sample_spec ss;
 	time_t t;
 	int error;
 
 	t = time(NULL);
-	ad = audioOutput->data;
+	pd = audioOutput->data;
 	audioFormat = &audioOutput->outAudioFormat;
 
-	if (ad->connAttempts != 0 &&
-	    (t - ad->lastAttempt) < CONN_ATTEMPT_INTERVAL) return -1;
+	if (pd->connAttempts != 0 &&
+	    (t - pd->lastAttempt) < CONN_ATTEMPT_INTERVAL) return -1;
 
-	ad->connAttempts++;
-	ad->lastAttempt = t;
+	pd->connAttempts++;
+	pd->lastAttempt = t;
 
 	if (audioFormat->bits != 16) {
 		ERROR("PulseAudio doesn't support %i bit audio\n",
@@ -138,17 +138,17 @@ static int pulse_openDevice(AudioOutput * audioOutput)
 	ss.rate = audioFormat->sampleRate;
 	ss.channels = audioFormat->channels;
 
-	ad->s = pa_simple_new(ad->server, MPD_PULSE_NAME, PA_STREAM_PLAYBACK,
-	                      ad->sink, audioOutput->name, &ss, NULL, NULL,
+	pd->s = pa_simple_new(pd->server, MPD_PULSE_NAME, PA_STREAM_PLAYBACK,
+	                      pd->sink, audioOutput->name, &ss, NULL, NULL,
 	                      &error);
-	if (!ad->s) {
+	if (!pd->s) {
 		ERROR("Cannot connect to server in PulseAudio output " \
 		      "\"%s\" (attempt %i): %s\n", audioOutput->name,
-		      ad->connAttempts, pa_strerror(error));
+		      pd->connAttempts, pa_strerror(error));
 		return -1;
 	}
 
-	ad->connAttempts = 0;
+	pd->connAttempts = 0;
 	audioOutput->open = 1;
 
 	DEBUG("PulseAudio output \"%s\" connected and playing %i bit, %i " \
@@ -160,23 +160,23 @@ static int pulse_openDevice(AudioOutput * audioOutput)
 
 static void pulse_dropBufferedAudio(AudioOutput * audioOutput)
 {
-	PulseData * ad;
+	PulseData * pd;
 	int error;
 
-	ad = audioOutput->data;
-	if (pa_simple_flush(ad->s, &error) < 0) 
+	pd = audioOutput->data;
+	if (pa_simple_flush(pd->s, &error) < 0) 
 		WARNING("Flush failed in PulseAudio output \"%s\": %s\n",
 		        audioOutput->name, pa_strerror(error));
 }
 
 static void pulse_closeDevice(AudioOutput * audioOutput)
 {
-	PulseData * ad;
+	PulseData * pd;
 
-	ad = audioOutput->data;
-	if (ad->s) {
-		pa_simple_drain(ad->s, NULL);
-		pa_simple_free(ad->s);
+	pd = audioOutput->data;
+	if (pd->s) {
+		pa_simple_drain(pd->s, NULL);
+		pa_simple_free(pd->s);
 	}
 
 	audioOutput->open = 0;
@@ -185,12 +185,12 @@ static void pulse_closeDevice(AudioOutput * audioOutput)
 static int pulse_playAudio(AudioOutput * audioOutput, char * playChunk,
                            int size)
 {
-	PulseData * ad;
+	PulseData * pd;
 	int error;
 
-	ad = audioOutput->data;
+	pd = audioOutput->data;
 
-	if (pa_simple_write(ad->s, playChunk, size, &error) < 0) {
+	if (pa_simple_write(pd->s, playChunk, size, &error) < 0) {
 		ERROR("PulseAudio output \"%s\" disconnecting due to write " \
 		      "error: %s\n", audioOutput->name, pa_strerror(error));
 		pulse_closeDevice(audioOutput);
