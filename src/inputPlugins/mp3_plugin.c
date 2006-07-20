@@ -225,12 +225,10 @@ static ReplayGainInfo *parseId3ReplayGainInfo(struct id3_tag *tag)
 		if (frame->nfields < 3)
 			continue;
 
-		key =
-		    (char *)
+		key = (char *)
 		    id3_ucs4_latin1duplicate(id3_field_getstring
 					     (&frame->fields[1]));
-		value =
-		    (char *)
+		value = (char *)
 		    id3_ucs4_latin1duplicate(id3_field_getstring
 					     (&frame->fields[2]));
 
@@ -440,11 +438,11 @@ enum xing_magic {
 };
 
 struct xing {
-	long flags;		/* valid fields (see below) */
+	long flags;	/* valid fields (see below) */
 	unsigned long frames;	/* total number of frames */
 	unsigned long bytes;	/* total number of bytes */
 	unsigned char toc[100];	/* 100-point seek table */
-	long scale;		/* VBR quality */
+	long scale;	/* VBR quality */
 	enum xing_magic magic;	/* header magic */
 };
 

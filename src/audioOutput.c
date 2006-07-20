@@ -197,7 +197,7 @@ static void convertAudioFormat(AudioOutput * audioOutput, char **chunkArgPtr,
 	    pcm_sizeOfOutputBufferForAudioFormatConversion(&
 							   (audioOutput->
 							    inAudioFormat),
-							   *sizeArgPtr,
+*sizeArgPtr,
 &(audioOutput->outAudioFormat));
 
 	if (size > audioOutput->convBufferLen) {

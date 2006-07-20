@@ -208,4 +208,4 @@ void flac_error_common_cb(const char *plugin,
 	}
 }
 
-#endif				/* HAVE_FLAC || HAVE_OGGFLAC */
+#endif /* HAVE_FLAC || HAVE_OGGFLAC */

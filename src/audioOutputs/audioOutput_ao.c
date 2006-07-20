@@ -248,7 +248,7 @@ AudioOutputPlugin aoPlugin = {
 	audioOutputAo_play,
 	audioOutputAo_dropBufferedAudio,
 	audioOutputAo_closeDevice,
-	NULL,			/* sendMetadataFunc */
+	NULL,	/* sendMetadataFunc */
 };
 
 #else

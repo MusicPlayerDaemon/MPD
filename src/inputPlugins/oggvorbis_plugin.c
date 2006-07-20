@@ -50,7 +50,7 @@
 #define ov_time_total(VF, I) ((double)ov_time_total(VF, I)/1000)
 #define ov_time_tell(VF) ((double)ov_time_tell(VF)/1000)
 #define ov_time_seek_page(VF, S) (ov_time_seek_page(VF, (S)*1000))
-#endif				/* HAVE_TREMOR */
+#endif /* HAVE_TREMOR */
 
 #include <errno.h>
 
@@ -424,7 +424,7 @@ InputPlugin oggvorbisPlugin = {
 	oggvorbis_MimeTypes
 };
 
-#else				/* !HAVE_OGGVORBIS */
+#else /* !HAVE_OGGVORBIS */
 
 InputPlugin oggvorbisPlugin = {
 	NULL,
@@ -439,4 +439,4 @@ InputPlugin oggvorbisPlugin = {
 	NULL,
 };
 
-#endif				/* HAVE_OGGVORBIS */
+#endif /* HAVE_OGGVORBIS */

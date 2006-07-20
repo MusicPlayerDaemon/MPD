@@ -251,8 +251,8 @@ static void of_metadata_decode_cb(const OggFLAC__SeekableStreamDecoder * dec,
 }
 
 static OggFLAC__SeekableStreamDecoder
-    *full_decoder_init_and_read_metadata(FlacData * data,
-					 unsigned int metadata_only)
+    * full_decoder_init_and_read_metadata(FlacData * data,
+					  unsigned int metadata_only)
 {
 	OggFLAC__SeekableStreamDecoder *decoder = NULL;
 	unsigned int s = 1;
@@ -416,7 +416,7 @@ InputPlugin oggflacPlugin = {
 	oggflac_mime_types
 };
 
-#else				/* !HAVE_FLAC */
+#else /* !HAVE_FLAC */
 
 InputPlugin oggflacPlugin = {
 	NULL,
@@ -431,4 +431,4 @@ InputPlugin oggflacPlugin = {
 	NULL,
 };
 
-#endif				/* HAVE_OGGFLAC */
+#endif /* HAVE_OGGFLAC */

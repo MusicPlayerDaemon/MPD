@@ -65,9 +65,9 @@ typedef struct _Interface {
 	char buffer[INTERFACE_MAX_BUFFER_LENGTH];
 	int bufferLength;
 	int bufferPos;
-	int fd;			/* file descriptor */
-	FILE *fp;		/* file pointer */
-	int open;		/* open/used */
+	int fd;	/* file descriptor */
+	FILE *fp;	/* file pointer */
+	int open;	/* open/used */
 	int permission;
 	time_t lastTime;
 	List *commandList;	/* for when in list mode */
@@ -75,9 +75,9 @@ typedef struct _Interface {
 	size_t commandListSize;	/* mem commandList consumes */
 	List *bufferList;	/* for output if client is slow */
 	size_t outputBufferSize;	/* mem bufferList consumes */
-	int expired;		/* set whether this interface should be closed on next
-				   check of old interfaces */
-	int num;		/* interface number */
+	int expired;	/* set whether this interface should be closed on next
+			   check of old interfaces */
+	int num;	/* interface number */
 	char *outBuffer;
 	int outBuflen;
 	int outBufSize;

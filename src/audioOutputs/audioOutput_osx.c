@@ -361,7 +361,7 @@ AudioOutputPlugin osxPlugin = {
 	osx_play,
 	osx_dropBufferedAudio,
 	osx_closeDevice,
-	NULL,			/* sendMetadataFunc */
+	NULL,	/* sendMetadataFunc */
 };
 
 #else

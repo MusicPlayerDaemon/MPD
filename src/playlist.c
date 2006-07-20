@@ -1071,7 +1071,11 @@ void playPlaylistIfPlayerStopped(void)
 		else
 			playlist_errorCount++;
 
-		if (playlist_state == PLAYLIST_STATE_PLAY && ((playlist_stopOnError && error != PLAYER_ERROR_NOERROR) || error == PLAYER_ERROR_AUDIO || error == PLAYER_ERROR_SYSTEM || playlist_errorCount >= playlist.length)) {
+		if (playlist_state == PLAYLIST_STATE_PLAY
+		    && ((playlist_stopOnError && error != PLAYER_ERROR_NOERROR)
+			|| error == PLAYER_ERROR_AUDIO
+			|| error == PLAYER_ERROR_SYSTEM
+			|| playlist_errorCount >= playlist.length)) {
 			stopPlaylist(stderr);
 		} else if (playlist_noGoToNext)
 			currentSongInPlaylist(stderr);

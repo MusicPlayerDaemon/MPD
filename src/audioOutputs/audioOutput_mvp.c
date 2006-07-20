@@ -143,7 +143,7 @@ static int mvp_setPcmParams(MvpData * md, unsigned long rate, int channels,
 	else
 		return -1;
 
-	mix[3] = 0;		/* stream type? */
+	mix[3] = 0;	/* stream type? */
 
 	if (big_endian == 1)
 		mix[4] = 1;
@@ -278,10 +278,10 @@ AudioOutputPlugin mvpPlugin = {
 	mvp_playAudio,
 	mvp_dropBufferedAudio,
 	mvp_closeDevice,
-	NULL,			/* sendMetadataFunc */
+	NULL,	/* sendMetadataFunc */
 };
 
-#else				/* HAVE_MVP */
+#else /* HAVE_MVP */
 
 DISABLED_AUDIO_OUTPUT_PLUGIN(mvpPlugin)
-#endif				/* HAVE_MVP */
+#endif /* HAVE_MVP */

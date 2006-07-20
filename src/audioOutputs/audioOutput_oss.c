@@ -42,15 +42,15 @@
 
 #if defined(__OpenBSD__) || defined(__NetBSD__)
 # include <soundcard.h>
-#else				/* !(defined(__OpenBSD__) || defined(__NetBSD__) */
+#else /* !(defined(__OpenBSD__) || defined(__NetBSD__) */
 # include <sys/soundcard.h>
-#endif				/* !(defined(__OpenBSD__) || defined(__NetBSD__) */
+#endif /* !(defined(__OpenBSD__) || defined(__NetBSD__) */
 
 #ifdef WORDS_BIGENDIAN
 # define	AFMT_S16_MPD	 AFMT_S16_BE
 #else
 # define	AFMT_S16_MPD	 AFMT_S16_LE
-#endif				/* WORDS_BIGENDIAN */
+#endif /* WORDS_BIGENDIAN */
 
 typedef struct _OssData {
 	int fd;
@@ -585,10 +585,10 @@ AudioOutputPlugin ossPlugin = {
 	oss_playAudio,
 	oss_dropBufferedAudio,
 	oss_closeDevice,
-	NULL,			/* sendMetadataFunc */
+	NULL,	/* sendMetadataFunc */
 };
 
-#else				/* HAVE OSS */
+#else /* HAVE OSS */
 
 DISABLED_AUDIO_OUTPUT_PLUGIN(ossPlugin)
-#endif				/* HAVE_OSS */
+#endif /* HAVE_OSS */

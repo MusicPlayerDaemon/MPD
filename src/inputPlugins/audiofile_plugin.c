@@ -194,4 +194,4 @@ InputPlugin audiofilePlugin = {
 	NULL
 };
 
-#endif				/* HAVE_AUDIOFILE */
+#endif /* HAVE_AUDIOFILE */

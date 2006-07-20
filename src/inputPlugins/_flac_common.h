@@ -73,6 +73,6 @@ static inline int flacSendChunk(FlacData * data)
 	return 0;
 }
 
-#endif				/* HAVE_FLAC || HAVE_OGGFLAC */
+#endif /* HAVE_FLAC || HAVE_OGGFLAC */
 
-#endif				/* _FLAC_COMMON_H */
+#endif /* _FLAC_COMMON_H */

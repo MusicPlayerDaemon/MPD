@@ -211,10 +211,10 @@ AudioOutputPlugin pulsePlugin = {
 	pulse_playAudio,
 	pulse_dropBufferedAudio,
 	pulse_closeDevice,
-	NULL,			/* sendMetadataFunc */
+	NULL,	/* sendMetadataFunc */
 };
 
-#else				/* HAVE_PULSE */
+#else /* HAVE_PULSE */
 
 DISABLED_AUDIO_OUTPUT_PLUGIN(pulsePlugin)
-#endif				/* HAVE_PULSE */
+#endif /* HAVE_PULSE */

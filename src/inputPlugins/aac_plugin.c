@@ -482,4 +482,4 @@ InputPlugin aacPlugin = {
 	NULL,
 };
 
-#endif				/* HAVE_FAAD */
+#endif /* HAVE_FAAD */

@@ -454,7 +454,7 @@ InputPlugin flacPlugin = {
 	flac_mime_types
 };
 
-#else				/* !HAVE_FLAC */
+#else /* !HAVE_FLAC */
 
 InputPlugin flacPlugin = {
 	NULL,
@@ -469,4 +469,4 @@ InputPlugin flacPlugin = {
 	NULL,
 };
 
-#endif				/* HAVE_FLAC */
+#endif /* HAVE_FLAC */

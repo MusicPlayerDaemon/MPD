@@ -107,7 +107,7 @@ static int setenv(const char *name, const char *value, int replace)
 
 	return out;
 }
-#endif				/* HAVE_SETENV */
+#endif /* HAVE_SETENV */
 
 static void usage(char *argv[])
 {

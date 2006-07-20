@@ -434,7 +434,7 @@ static int initHTTPConnection(InputStream * inStream)
 	}
 
 	freeaddrinfo(ans);
-	return -1;		/* failed */
+	return -1;	/* failed */
 }
 
 static int finishHTTPInit(InputStream * inStream)
@@ -481,7 +481,7 @@ static int finishHTTPInit(InputStream * inStream)
 		 /*"Connection: close\r\n" */
 		 "User-Agent: %s/%s\r\n"
 		 /*"Range: bytes=%ld-\r\n" */
-		 "%s"		/* authorization */
+		 "%s"	/* authorization */
 		 "Icy-Metadata:1\r\n"
 		 "\r\n", data->path, data->host, PACKAGE_NAME, PACKAGE_VERSION,
 		 /*inStream->offset, */
@@ -672,7 +672,7 @@ static int getHTTPHello(InputStream * inStream)
 	if (inStream->size <= 0)
 		inStream->seekable = 0;
 
-	needle += 4;		/* 4 == strlen("\r\n\r\n") */
+	needle += 4;	/* 4 == strlen("\r\n\r\n") */
 	data->buflen -= (needle - data->buffer);
 	/*fwrite(data->buffer, 1, data->buflen, stdout); */
 	memmove(data->buffer, needle, data->buflen);

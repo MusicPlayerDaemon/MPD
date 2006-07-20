@@ -70,4 +70,4 @@ ogg_stream_type ogg_stream_type_detect(InputStream * inStream)
 	return VORBIS;
 }
 
-#endif				/* defined(HAVE_OGGFLAC || defined(HAVE_OGGVORBIS) */
+#endif /* defined(HAVE_OGGFLAC || defined(HAVE_OGGVORBIS) */

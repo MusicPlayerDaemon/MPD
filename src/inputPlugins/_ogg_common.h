@@ -30,6 +30,6 @@ typedef enum _ogg_stream_type { VORBIS, FLAC } ogg_stream_type;
 
 ogg_stream_type ogg_stream_type_detect(InputStream * inStream);
 
-#endif				/* defined(HAVE_OGGFLAC || defined(HAVE_OGGVORBIS) */
+#endif /* defined(HAVE_OGGFLAC || defined(HAVE_OGGVORBIS) */
 
-#endif				/* _OGG_COMMON_H */
+#endif /* _OGG_COMMON_H */
