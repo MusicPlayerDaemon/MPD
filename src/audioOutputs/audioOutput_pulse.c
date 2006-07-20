@@ -25,6 +25,7 @@
 #include "../conf.h"
 #include "../log.h"
 
+#include <string.h>
 #include <time.h>
 
 #include <pulse/simple.h>
