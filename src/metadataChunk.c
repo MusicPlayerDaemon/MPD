@@ -20,9 +20,10 @@
 
 #include <string.h>
 
-static void initMetadataChunk(MetadataChunk * chunk) {
+static void initMetadataChunk(MetadataChunk * chunk)
+{
 	memset(chunk, 0, sizeof(MetadataChunk));
-	
+
 	chunk->name = -1;
 	chunk->artist = -1;
 	chunk->album = -1;
@@ -35,10 +36,11 @@ static void initMetadataChunk(MetadataChunk * chunk) {
 	} \
 }
 
-MpdTag * metadataChunkToMpdTagDup(MetadataChunk * chunk) {
-	MpdTag * ret = newMpdTag();
+MpdTag *metadataChunkToMpdTagDup(MetadataChunk * chunk)
+{
+	MpdTag *ret = newMpdTag();
 
-	chunk->buffer[METADATA_BUFFER_LENGTH-1] = '\0';
+	chunk->buffer[METADATA_BUFFER_LENGTH - 1] = '\0';
 
 	dupElementToTag(TAG_ITEM_NAME, chunk->name);
 	dupElementToTag(TAG_ITEM_TITLE, chunk->title);
@@ -59,17 +61,19 @@ MpdTag * metadataChunkToMpdTagDup(MetadataChunk * chunk) {
 	} \
 }
 
-void copyMpdTagToMetadataChunk(MpdTag * tag, MetadataChunk * chunk) {
+void copyMpdTagToMetadataChunk(MpdTag * tag, MetadataChunk * chunk)
+{
 	int pos = 0;
 	int slen;
 	int i;
 
 	initMetadataChunk(chunk);
 
-	if(!tag) return;
+	if (!tag)
+		return;
 
-	for(i = 0; i < tag->numOfItems; i++) {
-		switch(tag->items[i].type) {
+	for (i = 0; i < tag->numOfItems; i++) {
+		switch (tag->items[i].type) {
 		case TAG_ITEM_NAME:
 			copyStringToChunk(tag->items[i].value, chunk->name);
 			break;

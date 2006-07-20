@@ -33,19 +33,21 @@
 #define BUFFER_LENGTH	MAXPATHLEN+1024
 
 static int myfprintf_stdLogMode = 0;
-static FILE * myfprintf_out;
-static FILE * myfprintf_err;
-static char * myfprintf_outFilename;
-static char * myfprintf_errFilename;
+static FILE *myfprintf_out;
+static FILE *myfprintf_err;
+static char *myfprintf_outFilename;
+static char *myfprintf_errFilename;
 
-static void blockingWrite(int fd, char * string, int len) {
+static void blockingWrite(int fd, char *string, int len)
+{
 	int ret;
 
-	while(len) {
-		ret = write(fd,string,len);
-		if(ret==0) return;
-		if(ret<0) {
-			switch(errno) {
+	while (len) {
+		ret = write(fd, string, len);
+		if (ret == 0)
+			return;
+		if (ret < 0) {
+			switch (errno) {
 			case EAGAIN:
 			case EINTR:
 				continue;
@@ -53,77 +55,82 @@ static void blockingWrite(int fd, char * string, int len) {
 				return;
 			}
 		}
-		len-= ret;
-		string+= ret;
+		len -= ret;
+		string += ret;
 	}
 }
 
-void myfprintfStdLogMode(FILE * out, FILE * err) {
+void myfprintfStdLogMode(FILE * out, FILE * err)
+{
 	myfprintf_stdLogMode = 1;
 	myfprintf_out = out;
 	myfprintf_err = err;
-        myfprintf_outFilename = getConfigParamValue(CONF_LOG_FILE);
-        myfprintf_errFilename = getConfigParamValue(CONF_ERROR_FILE);
+	myfprintf_outFilename = getConfigParamValue(CONF_LOG_FILE);
+	myfprintf_errFilename = getConfigParamValue(CONF_ERROR_FILE);
 }
 
-void myfprintf(FILE * fp, char * format, ... ) {
-	static char buffer[BUFFER_LENGTH+1];
+void myfprintf(FILE * fp, char *format, ...)
+{
+	static char buffer[BUFFER_LENGTH + 1];
 	va_list arglist;
 	int fd = fileno(fp);
 
-	va_start(arglist,format);
-	if(fd==1 || fd==2) {
-		if(myfprintf_stdLogMode) {
+	va_start(arglist, format);
+	if (fd == 1 || fd == 2) {
+		if (myfprintf_stdLogMode) {
 			time_t t = time(NULL);
-			if(fd==1) fp = myfprintf_out;
-			else fp = myfprintf_err;
-			strftime(buffer,14,"%b %e %R",localtime(&t));
-			blockingWrite(fd,buffer,strlen(buffer));
-			blockingWrite(fd," : ",3);
+			if (fd == 1)
+				fp = myfprintf_out;
+			else
+				fp = myfprintf_err;
+			strftime(buffer, 14, "%b %e %R", localtime(&t));
+			blockingWrite(fd, buffer, strlen(buffer));
+			blockingWrite(fd, " : ", 3);
 		}
-		vsnprintf(buffer,BUFFER_LENGTH,format,arglist);
-		blockingWrite(fd,buffer,strlen(buffer));
-	}
-	else {
+		vsnprintf(buffer, BUFFER_LENGTH, format, arglist);
+		blockingWrite(fd, buffer, strlen(buffer));
+	} else {
 		int len;
-		vsnprintf(buffer,BUFFER_LENGTH,format,arglist);
+		vsnprintf(buffer, BUFFER_LENGTH, format, arglist);
 		len = strlen(buffer);
-		if(interfacePrintWithFD(fd,buffer,len)<0) {
-			blockingWrite(fd,buffer,len);
+		if (interfacePrintWithFD(fd, buffer, len) < 0) {
+			blockingWrite(fd, buffer, len);
 		}
 	}
 
 	va_end(arglist);
 }
 
-int myfprintfCloseAndOpenLogFile(void) {
-        if(myfprintf_stdLogMode) {
-                while(fclose(myfprintf_out)<0 && errno==EINTR);
-                while(fclose(myfprintf_err)<0 && errno==EINTR);
-                while((myfprintf_out = fopen(myfprintf_outFilename,"a+"))==NULL
-                                && errno==EINTR);
-                if(!myfprintf_out) {
-                        ERROR("error re-opening log file: %s\n",
-                                myfprintf_out);
-                        return -1;
-                }
-                while((myfprintf_err = fopen(myfprintf_errFilename,"a+"))==NULL
-                                && errno==EINTR);
-                if(!myfprintf_out) {
-                        ERROR("error re-opening log file: %s\n",
-                                myfprintf_out);
-                        return -1;
-                }
-                while(dup2(fileno(myfprintf_out),1)<0 && errno==EINTR);
-                while(dup2(fileno(myfprintf_err),2)<0 && errno==EINTR);
-        }
+int myfprintfCloseAndOpenLogFile(void)
+{
+	if (myfprintf_stdLogMode) {
+		while (fclose(myfprintf_out) < 0 && errno == EINTR) ;
+		while (fclose(myfprintf_err) < 0 && errno == EINTR) ;
+		while ((myfprintf_out =
+			fopen(myfprintf_outFilename, "a+")) == NULL
+		       && errno == EINTR) ;
+		if (!myfprintf_out) {
+			ERROR("error re-opening log file: %s\n", myfprintf_out);
+			return -1;
+		}
+		while ((myfprintf_err =
+			fopen(myfprintf_errFilename, "a+")) == NULL
+		       && errno == EINTR) ;
+		if (!myfprintf_out) {
+			ERROR("error re-opening log file: %s\n", myfprintf_out);
+			return -1;
+		}
+		while (dup2(fileno(myfprintf_out), 1) < 0 && errno == EINTR) ;
+		while (dup2(fileno(myfprintf_err), 2) < 0 && errno == EINTR) ;
+	}
 
-        return 0;
+	return 0;
 }
 
-void myfprintfCloseLogFile(void) {
-        if(myfprintf_stdLogMode) {
-                while(fclose(myfprintf_out)<0 && errno==EINTR);
-                while(fclose(myfprintf_err)<0 && errno==EINTR);
+void myfprintfCloseLogFile(void)
+{
+	if (myfprintf_stdLogMode) {
+		while (fclose(myfprintf_out) < 0 && errno == EINTR) ;
+		while (fclose(myfprintf_err) < 0 && errno == EINTR) ;
 	}
 }

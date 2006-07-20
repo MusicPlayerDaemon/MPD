@@ -44,16 +44,19 @@
 
 typedef struct _configEntry {
 	unsigned char mask;
-	List * configParamList;
+	List *configParamList;
 } ConfigEntry;
 
-static List * configEntriesList = NULL;
+static List *configEntriesList = NULL;
 
-static ConfigParam * newConfigParam(char * value, int line) {
-	ConfigParam * ret = malloc(sizeof(ConfigParam));
+static ConfigParam *newConfigParam(char *value, int line)
+{
+	ConfigParam *ret = malloc(sizeof(ConfigParam));
 
-	if(!value) ret->value = NULL;
-	else ret->value = strdup(value);
+	if (!value)
+		ret->value = NULL;
+	else
+		ret->value = strdup(value);
 
 	ret->line = line;
 
@@ -63,46 +66,55 @@ static ConfigParam * newConfigParam(char * value, int line) {
 	return ret;
 }
 
-static void freeConfigParam(ConfigParam * param) {
+static void freeConfigParam(ConfigParam * param)
+{
 	int i;
 
-	if(param->value) free(param->value);
+	if (param->value)
+		free(param->value);
 
-	for(i=0; i<param->numberOfBlockParams; i++) {
-		if(param->blockParams[i].name) {
+	for (i = 0; i < param->numberOfBlockParams; i++) {
+		if (param->blockParams[i].name) {
 			free(param->blockParams[i].name);
 		}
-		if(param->blockParams[i].value) {
+		if (param->blockParams[i].value) {
 			free(param->blockParams[i].value);
 		}
 	}
 
-	if(param->numberOfBlockParams) free(param->blockParams);
+	if (param->numberOfBlockParams)
+		free(param->blockParams);
 
 	free(param);
 }
 
-ConfigEntry * newConfigEntry(int repeatable, int block) {
-	ConfigEntry * ret =  malloc(sizeof(ConfigEntry));
+ConfigEntry *newConfigEntry(int repeatable, int block)
+{
+	ConfigEntry *ret = malloc(sizeof(ConfigEntry));
 
 	ret->mask = 0;
-	ret->configParamList = makeList((ListFreeDataFunc *)freeConfigParam, 1);
+	ret->configParamList =
+	    makeList((ListFreeDataFunc *) freeConfigParam, 1);
 
-	if(repeatable) ret->mask |= CONF_REPEATABLE_MASK;
-	if(block) ret->mask |= CONF_BLOCK_MASK;
+	if (repeatable)
+		ret->mask |= CONF_REPEATABLE_MASK;
+	if (block)
+		ret->mask |= CONF_BLOCK_MASK;
 
 	return ret;
 }
 
-void freeConfigEntry(ConfigEntry * entry) {
+void freeConfigEntry(ConfigEntry * entry)
+{
 	freeList(entry->configParamList);
 	free(entry);
 }
 
-static void registerConfigParam(char * name, int repeatable, int block) {
-	ConfigEntry * entry;
+static void registerConfigParam(char *name, int repeatable, int block)
+{
+	ConfigEntry *entry;
 
-	if(findInList(configEntriesList, name, NULL)) {
+	if (findInList(configEntriesList, name, NULL)) {
 		ERROR("config parameter \"%s\" already registered\n", name);
 		exit(EXIT_FAILURE);
 	}
@@ -112,110 +124,114 @@ static void registerConfigParam(char * name, int repeatable, int block) {
 	insertInList(configEntriesList, name, entry);
 }
 
-void finishConf(void) {
+void finishConf(void)
+{
 	freeList(configEntriesList);
 }
 
-void initConf(void) {
-	configEntriesList = makeList((ListFreeDataFunc *)freeConfigEntry, 1);
+void initConf(void)
+{
+	configEntriesList = makeList((ListFreeDataFunc *) freeConfigEntry, 1);
 
 	/* registerConfigParam(name,                   repeatable,  block); */
-	registerConfigParam(CONF_PORT, 				0,	0);
-	registerConfigParam(CONF_PID_FILE, 			0,	0);
-	registerConfigParam(CONF_MUSIC_DIR,			0,	0);
-	registerConfigParam(CONF_PLAYLIST_DIR,			0,	0);
-	registerConfigParam(CONF_LOG_FILE,			0,	0);
-	registerConfigParam(CONF_ERROR_FILE,			0,	0);
-	registerConfigParam(CONF_CONN_TIMEOUT,			0,	0);
-	registerConfigParam(CONF_MIXER_DEVICE,			0,	0);
-	registerConfigParam(CONF_MAX_CONN,			0,	0);
-	registerConfigParam(CONF_MAX_PLAYLIST_LENGTH,		0,	0);
-	registerConfigParam(CONF_BUFFER_BEFORE_PLAY,		0,	0);
-	registerConfigParam(CONF_MAX_COMMAND_LIST_SIZE,		0,	0);
-	registerConfigParam(CONF_MAX_OUTPUT_BUFFER_SIZE,	0,	0);
-	registerConfigParam(CONF_AUDIO_OUTPUT,			1,	1);
-	registerConfigParam(CONF_SAVE_ABSOLUTE_PATHS,		0,	0);
-	registerConfigParam(CONF_BIND_TO_ADDRESS,		1,	0);
-	registerConfigParam(CONF_MIXER_TYPE,			0,	0);
-	registerConfigParam(CONF_STATE_FILE,			0,	0);
-	registerConfigParam(CONF_USER,				0,	0);
-	registerConfigParam(CONF_DB_FILE,			0,	0);
-	registerConfigParam(CONF_LOG_LEVEL,			0,	0);
-	registerConfigParam(CONF_MIXER_CONTROL,			0,	0);
-	registerConfigParam(CONF_FS_CHARSET,			0,	0);
-	registerConfigParam(CONF_PASSWORD,			1,	0);
-	registerConfigParam(CONF_DEFAULT_PERMS,			0,	0);
-	registerConfigParam(CONF_AUDIO_BUFFER_SIZE,		0,	0);
-	registerConfigParam(CONF_REPLAYGAIN,			0,	0);
-	registerConfigParam(CONF_AUDIO_OUTPUT_FORMAT,		0,	0);
-	registerConfigParam(CONF_HTTP_PROXY_HOST,		0,	0);
-	registerConfigParam(CONF_HTTP_PROXY_PORT,		0,	0);
-	registerConfigParam(CONF_HTTP_PROXY_USER,		0,	0);
-	registerConfigParam(CONF_HTTP_PROXY_PASSWORD,		0,	0);
-	registerConfigParam(CONF_HTTP_BUFFER_SIZE,		0,	0);
-	registerConfigParam(CONF_HTTP_PREBUFFER_SIZE,		0,	0);
-	registerConfigParam(CONF_REPLAYGAIN_PREAMP,		0,	0);
-	registerConfigParam(CONF_METADATA_TO_USE,		0,	0);
-	registerConfigParam(CONF_ID3V1_ENCODING,                0,      0);
+	registerConfigParam(CONF_PORT, 0, 0);
+	registerConfigParam(CONF_PID_FILE, 0, 0);
+	registerConfigParam(CONF_MUSIC_DIR, 0, 0);
+	registerConfigParam(CONF_PLAYLIST_DIR, 0, 0);
+	registerConfigParam(CONF_LOG_FILE, 0, 0);
+	registerConfigParam(CONF_ERROR_FILE, 0, 0);
+	registerConfigParam(CONF_CONN_TIMEOUT, 0, 0);
+	registerConfigParam(CONF_MIXER_DEVICE, 0, 0);
+	registerConfigParam(CONF_MAX_CONN, 0, 0);
+	registerConfigParam(CONF_MAX_PLAYLIST_LENGTH, 0, 0);
+	registerConfigParam(CONF_BUFFER_BEFORE_PLAY, 0, 0);
+	registerConfigParam(CONF_MAX_COMMAND_LIST_SIZE, 0, 0);
+	registerConfigParam(CONF_MAX_OUTPUT_BUFFER_SIZE, 0, 0);
+	registerConfigParam(CONF_AUDIO_OUTPUT, 1, 1);
+	registerConfigParam(CONF_SAVE_ABSOLUTE_PATHS, 0, 0);
+	registerConfigParam(CONF_BIND_TO_ADDRESS, 1, 0);
+	registerConfigParam(CONF_MIXER_TYPE, 0, 0);
+	registerConfigParam(CONF_STATE_FILE, 0, 0);
+	registerConfigParam(CONF_USER, 0, 0);
+	registerConfigParam(CONF_DB_FILE, 0, 0);
+	registerConfigParam(CONF_LOG_LEVEL, 0, 0);
+	registerConfigParam(CONF_MIXER_CONTROL, 0, 0);
+	registerConfigParam(CONF_FS_CHARSET, 0, 0);
+	registerConfigParam(CONF_PASSWORD, 1, 0);
+	registerConfigParam(CONF_DEFAULT_PERMS, 0, 0);
+	registerConfigParam(CONF_AUDIO_BUFFER_SIZE, 0, 0);
+	registerConfigParam(CONF_REPLAYGAIN, 0, 0);
+	registerConfigParam(CONF_AUDIO_OUTPUT_FORMAT, 0, 0);
+	registerConfigParam(CONF_HTTP_PROXY_HOST, 0, 0);
+	registerConfigParam(CONF_HTTP_PROXY_PORT, 0, 0);
+	registerConfigParam(CONF_HTTP_PROXY_USER, 0, 0);
+	registerConfigParam(CONF_HTTP_PROXY_PASSWORD, 0, 0);
+	registerConfigParam(CONF_HTTP_BUFFER_SIZE, 0, 0);
+	registerConfigParam(CONF_HTTP_PREBUFFER_SIZE, 0, 0);
+	registerConfigParam(CONF_REPLAYGAIN_PREAMP, 0, 0);
+	registerConfigParam(CONF_METADATA_TO_USE, 0, 0);
+	registerConfigParam(CONF_ID3V1_ENCODING, 0, 0);
 }
 
-static void addBlockParam(ConfigParam * param, char * name, char * value,
-		int line) 
+static void addBlockParam(ConfigParam * param, char *name, char *value,
+			  int line)
 {
 	param->numberOfBlockParams++;
 
-	param->blockParams = realloc(param->blockParams, 
-			param->numberOfBlockParams*sizeof(BlockParam));
-	
-	param->blockParams[param->numberOfBlockParams-1].name = strdup(name);
-	param->blockParams[param->numberOfBlockParams-1].value = strdup(value);
-	param->blockParams[param->numberOfBlockParams-1].line = line;
+	param->blockParams = realloc(param->blockParams,
+				     param->numberOfBlockParams *
+				     sizeof(BlockParam));
+
+	param->blockParams[param->numberOfBlockParams - 1].name = strdup(name);
+	param->blockParams[param->numberOfBlockParams - 1].value =
+	    strdup(value);
+	param->blockParams[param->numberOfBlockParams - 1].line = line;
 }
 
-static ConfigParam * readConfigBlock(FILE * fp, int * count, char * string) {
-	ConfigParam * ret = newConfigParam(NULL, *count);
+static ConfigParam *readConfigBlock(FILE * fp, int *count, char *string)
+{
+	ConfigParam *ret = newConfigParam(NULL, *count);
 
-	char ** array;
+	char **array;
 	int i;
 	int numberOfArgs;
 	int argsMinusComment;
 
-	while(myFgets(string, MAX_STRING_SIZE ,fp)) {
+	while (myFgets(string, MAX_STRING_SIZE, fp)) {
 		(*count)++;
 
 		numberOfArgs = buffer2array(string, &array);
 
-		for(i=0; i<numberOfArgs; i++) {
-			if(array[i][0] == CONF_COMMENT) break;
+		for (i = 0; i < numberOfArgs; i++) {
+			if (array[i][0] == CONF_COMMENT)
+				break;
 		}
 
 		argsMinusComment = i;
 
-		if(0 == argsMinusComment) {
+		if (0 == argsMinusComment) {
 			freeArgArray(array, numberOfArgs);
 			continue;
 		}
 
-		if(1 == argsMinusComment && 
-				0 == strcmp(array[0], CONF_BLOCK_END))
-		{
+		if (1 == argsMinusComment &&
+		    0 == strcmp(array[0], CONF_BLOCK_END)) {
 			freeArgArray(array, numberOfArgs);
 			break;
 		}
 
-		if(2 != argsMinusComment) {
+		if (2 != argsMinusComment) {
 			ERROR("improperly formatted config file at line %i:"
-					" %s\n", *count, string);
+			      " %s\n", *count, string);
 			exit(EXIT_FAILURE);
 		}
 
-		if(0 == strcmp(array[0], CONF_BLOCK_BEGIN) ||
-				0 == strcmp(array[1], CONF_BLOCK_BEGIN) ||
-				0 == strcmp(array[0], CONF_BLOCK_END) ||
-				0 == strcmp(array[1], CONF_BLOCK_END))
-		{
+		if (0 == strcmp(array[0], CONF_BLOCK_BEGIN) ||
+		    0 == strcmp(array[1], CONF_BLOCK_BEGIN) ||
+		    0 == strcmp(array[0], CONF_BLOCK_END) ||
+		    0 == strcmp(array[1], CONF_BLOCK_END)) {
 			ERROR("improperly formatted config file at line %i:"
-					" %s\n", count, string);
+			      " %s\n", count, string);
 			ERROR("in block begining at line %i\n", ret->line);
 			exit(EXIT_FAILURE);
 		}
@@ -228,73 +244,75 @@ static ConfigParam * readConfigBlock(FILE * fp, int * count, char * string) {
 	return ret;
 }
 
-void readConf(char * file) {
-	FILE * fp;
-	char string[MAX_STRING_SIZE+1];
-	char ** array;
+void readConf(char *file)
+{
+	FILE *fp;
+	char string[MAX_STRING_SIZE + 1];
+	char **array;
 	int i;
 	int numberOfArgs;
 	int argsMinusComment;
 	int count = 0;
-	ConfigEntry * entry;
-	void * voidPtr;
-	ConfigParam * param;
+	ConfigEntry *entry;
+	void *voidPtr;
+	ConfigParam *param;
 
-	if(!(fp=fopen(file,"r"))) {
+	if (!(fp = fopen(file, "r"))) {
 		ERROR("problems opening file %s for reading: %s\n", file,
-			strerror(errno));
+		      strerror(errno));
 		exit(EXIT_FAILURE);
 	}
 
-	while(myFgets(string, MAX_STRING_SIZE, fp)) {
+	while (myFgets(string, MAX_STRING_SIZE, fp)) {
 		count++;
 
 		numberOfArgs = buffer2array(string, &array);
 
-		for(i=0; i<numberOfArgs; i++) {
-			if(array[i][0] == CONF_COMMENT) break;
+		for (i = 0; i < numberOfArgs; i++) {
+			if (array[i][0] == CONF_COMMENT)
+				break;
 		}
 
 		argsMinusComment = i;
 
-		if(0 == argsMinusComment) {
+		if (0 == argsMinusComment) {
 			freeArgArray(array, numberOfArgs);
 			continue;
 		}
 
-		if(2 != argsMinusComment) {
+		if (2 != argsMinusComment) {
 			ERROR("improperly formatted config file at line %i:"
-					" %s\n", count, string);
+			      " %s\n", count, string);
 			exit(EXIT_FAILURE);
 		}
 
-		if(!findInList(configEntriesList, array[0], &voidPtr)) {
+		if (!findInList(configEntriesList, array[0], &voidPtr)) {
 			ERROR("unrecognized parameter in config file at line "
-					"%i: %s\n", count, string);
+			      "%i: %s\n", count, string);
 			exit(EXIT_FAILURE);
 		}
 
 		entry = (ConfigEntry *) voidPtr;
 
-		if( !(entry->mask & CONF_REPEATABLE_MASK) &&
-			entry->configParamList->numberOfNodes)
-		{
+		if (!(entry->mask & CONF_REPEATABLE_MASK) &&
+		    entry->configParamList->numberOfNodes) {
 			param = entry->configParamList->firstNode->data;
-			ERROR("config parameter \"%s\" is first defined on line "
-					"%i and redefined on line %i\n",
-					array[0], param->line, count);
+			ERROR
+			    ("config parameter \"%s\" is first defined on line "
+			     "%i and redefined on line %i\n", array[0],
+			     param->line, count);
 			exit(EXIT_FAILURE);
 		}
 
-		if(entry->mask & CONF_BLOCK_MASK) {
-			if(0 != strcmp(array[1], CONF_BLOCK_BEGIN)) {
+		if (entry->mask & CONF_BLOCK_MASK) {
+			if (0 != strcmp(array[1], CONF_BLOCK_BEGIN)) {
 				ERROR("improperly formatted config file at "
-					"line %i: %s\n", count, string);
+				      "line %i: %s\n", count, string);
 				exit(EXIT_FAILURE);
 			}
 			param = readConfigBlock(fp, &count, string);
-		}
-		else param = newConfigParam(array[1], count);
+		} else
+			param = newConfigParam(array[1], count);
 
 		insertInListWithoutKey(entry->configParamList, param);
 
@@ -303,120 +321,129 @@ void readConf(char * file) {
 	fclose(fp);
 }
 
-ConfigParam * getNextConfigParam(char * name, ConfigParam * last) {
-	void * voidPtr;
-	ConfigEntry * entry;
-	ListNode * node;
-	ConfigParam * param;
+ConfigParam *getNextConfigParam(char *name, ConfigParam * last)
+{
+	void *voidPtr;
+	ConfigEntry *entry;
+	ListNode *node;
+	ConfigParam *param;
 
-	if(!findInList(configEntriesList, name, &voidPtr)) return NULL;
+	if (!findInList(configEntriesList, name, &voidPtr))
+		return NULL;
 
 	entry = voidPtr;
 
 	node = entry->configParamList->firstNode;
 
-	if(last) {
-		while(node!=NULL) {
+	if (last) {
+		while (node != NULL) {
 			param = node->data;
 			node = node->nextNode;
-			if(param == last) break;
+			if (param == last)
+				break;
 		}
 	}
 
-	if(node == NULL)  return NULL;
+	if (node == NULL)
+		return NULL;
 
 	param = node->data;
 
 	return param;
 }
 
-char * getConfigParamValue(char * name) {
-	ConfigParam * param = getConfigParam(name);
+char *getConfigParamValue(char *name)
+{
+	ConfigParam *param = getConfigParam(name);
 
-	if(!param) return NULL;
+	if (!param)
+		return NULL;
 
 	return param->value;
 }
 
-BlockParam * getBlockParam(ConfigParam * param, char * name) {
-	BlockParam * ret = NULL;
+BlockParam *getBlockParam(ConfigParam * param, char *name)
+{
+	BlockParam *ret = NULL;
 	int i;
 
-	for(i = 0; i < param->numberOfBlockParams; i++) {
-		if(0 == strcmp(name, param->blockParams[i].name)) {
-			if(ret) {
+	for (i = 0; i < param->numberOfBlockParams; i++) {
+		if (0 == strcmp(name, param->blockParams[i].name)) {
+			if (ret) {
 				ERROR("\"%s\" first defined on line %i, and "
-					"redefined on line %i\n", name, 
-					ret->line, param->blockParams[i].line);
+				      "redefined on line %i\n", name,
+				      ret->line, param->blockParams[i].line);
 			}
-			ret = param->blockParams+i;
+			ret = param->blockParams + i;
 		}
 	}
 
 	return ret;
 }
 
-ConfigParam * parseConfigFilePath(char * name, int force) {
-	ConfigParam * param = getConfigParam(name);
-	char * path;
+ConfigParam *parseConfigFilePath(char *name, int force)
+{
+	ConfigParam *param = getConfigParam(name);
+	char *path;
 
-	if(!param && force) {
+	if (!param && force) {
 		ERROR("config parameter \"%s\" not found\n", name);
 		exit(EXIT_FAILURE);
 	}
 
-	if(!param) return NULL;
+	if (!param)
+		return NULL;
 
 	path = param->value;
 
-	if(path[0] != '/' && path[0] != '~') {
+	if (path[0] != '/' && path[0] != '~') {
 		ERROR("\"%s\" is not an absolute path at line %i\n",
-				param->value, param->line);
+		      param->value, param->line);
 		exit(EXIT_FAILURE);
 	}
 	/* Parse ~ in path */
-	else if(path[0] == '~') {
-		struct passwd * pwd = NULL;
-		char * newPath;
+	else if (path[0] == '~') {
+		struct passwd *pwd = NULL;
+		char *newPath;
 		int pos = 1;
-		if(path[1]=='/' || path[1] == '\0') {
-			ConfigParam * userParam = getConfigParam(CONF_USER);
+		if (path[1] == '/' || path[1] == '\0') {
+			ConfigParam *userParam = getConfigParam(CONF_USER);
 
-			if(userParam) {
+			if (userParam) {
 				pwd = getpwnam(userParam->value);
-				if(!pwd) {
+				if (!pwd) {
 					ERROR("no such user %s at line %i\n",
-							userParam->value, 
-							userParam->line);
+					      userParam->value,
+					      userParam->line);
 					exit(EXIT_FAILURE);
 				}
-			}
-			else {
+			} else {
 				uid_t uid = geteuid();
-				if((pwd = getpwuid(uid)) == NULL) {
+				if ((pwd = getpwuid(uid)) == NULL) {
 					ERROR("problems getting passwd entry "
-							"for current user\n");
+					      "for current user\n");
 					exit(EXIT_FAILURE);
 				}
 			}
-		}
-		else {
+		} else {
 			int foundSlash = 0;
-			char * ch = path+1;
-			for(;*ch!='\0' && *ch!='/';ch++);
-			if(*ch=='/') foundSlash = 1;
-			* ch = '\0';
-			pos+= ch-path-1;
-			if((pwd = getpwnam(path+1)) == NULL) {
+			char *ch = path + 1;
+			for (; *ch != '\0' && *ch != '/'; ch++) ;
+			if (*ch == '/')
+				foundSlash = 1;
+			*ch = '\0';
+			pos += ch - path - 1;
+			if ((pwd = getpwnam(path + 1)) == NULL) {
 				ERROR("user \"%s\" not found at line %i\n",
-						path+1, param->line);
+				      path + 1, param->line);
 				exit(EXIT_FAILURE);
 			}
-			if(foundSlash) *ch = '/';
+			if (foundSlash)
+				*ch = '/';
 		}
-		newPath = malloc(strlen(pwd->pw_dir)+strlen(path+pos)+1);
+		newPath = malloc(strlen(pwd->pw_dir) + strlen(path + pos) + 1);
 		strcpy(newPath, pwd->pw_dir);
-		strcat(newPath, path+pos);
+		strcat(newPath, path + pos);
 		free(param->value);
 		param->value = newPath;
 	}

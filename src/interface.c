@@ -54,54 +54,55 @@
 #define INTERFACE_MAX_OUTPUT_BUFFER_SIZE_DEFAULT	(8192*1024)
 
 /* set this to zero to indicate we have no possible interfaces */
-static int interface_max_connections = 0; /*INTERFACE_MAX_CONNECTIONS_DEFAULT;*/
+static int interface_max_connections = 0;	/*INTERFACE_MAX_CONNECTIONS_DEFAULT; */
 static int interface_timeout = INTERFACE_TIMEOUT_DEFAULT;
-static size_t interface_max_command_list_size = 
-		INTERFACE_MAX_COMMAND_LIST_DEFAULT;
+static size_t interface_max_command_list_size =
+    INTERFACE_MAX_COMMAND_LIST_DEFAULT;
 static size_t interface_max_output_buffer_size =
-		INTERFACE_MAX_OUTPUT_BUFFER_SIZE_DEFAULT;
+    INTERFACE_MAX_OUTPUT_BUFFER_SIZE_DEFAULT;
 
 typedef struct _Interface {
 	char buffer[INTERFACE_MAX_BUFFER_LENGTH];
 	int bufferLength;
 	int bufferPos;
-	int fd; /* file descriptor */
-	FILE * fp; /* file pointer */
-	int open; /* open/used */
+	int fd;			/* file descriptor */
+	FILE *fp;		/* file pointer */
+	int open;		/* open/used */
 	int permission;
 	time_t lastTime;
-	List * commandList; /* for when in list mode */
-        int commandListOK; /* print OK after each command execution */
-	size_t commandListSize; /* mem commandList consumes */
-	List * bufferList; /* for output if client is slow */
-	size_t outputBufferSize; /* mem bufferList consumes */
-	int expired; /* set whether this interface should be closed on next
-			check of old interfaces */
-	int num; /* interface number */
-	char * outBuffer;
+	List *commandList;	/* for when in list mode */
+	int commandListOK;	/* print OK after each command execution */
+	size_t commandListSize;	/* mem commandList consumes */
+	List *bufferList;	/* for output if client is slow */
+	size_t outputBufferSize;	/* mem bufferList consumes */
+	int expired;		/* set whether this interface should be closed on next
+				   check of old interfaces */
+	int num;		/* interface number */
+	char *outBuffer;
 	int outBuflen;
 	int outBufSize;
 } Interface;
 
-static Interface * interfaces = NULL;
+static Interface *interfaces = NULL;
 
 static void flushInterfaceBuffer(Interface * interface);
 
 static void printInterfaceOutBuffer(Interface * interface);
 
-static void openInterface(Interface * interface, int fd) {
+static void openInterface(Interface * interface, int fd)
+{
 	int flags;
-	
-	assert(interface->open==0);
+
+	assert(interface->open == 0);
 
 	interface->bufferLength = 0;
 	interface->bufferPos = 0;
 	interface->fd = fd;
 	/* fcntl(interface->fd,F_SETOWN,(int)getpid()); */
-	while((flags = fcntl(fd,F_GETFL))<0 && errno==EINTR);
-	flags|=O_NONBLOCK;
-	while(fcntl(interface->fd,F_SETFL,flags)<0 && errno==EINTR);
-	while((interface->fp = fdopen(fd,"rw"))==NULL && errno==EINTR);
+	while ((flags = fcntl(fd, F_GETFL)) < 0 && errno == EINTR) ;
+	flags |= O_NONBLOCK;
+	while (fcntl(interface->fd, F_SETFL, flags) < 0 && errno == EINTR) ;
+	while ((interface->fp = fdopen(fd, "rw")) == NULL && errno == EINTR) ;
 	interface->open = 1;
 	interface->lastTime = time(NULL);
 	interface->commandList = NULL;
@@ -118,59 +119,59 @@ static void openInterface(Interface * interface, int fd) {
 		int getSize;
 		unsigned int sockOptLen = sizeof(int);
 
-		if(getsockopt(interface->fd,SOL_SOCKET,SO_SNDBUF,
-					(char *)&getSize,&sockOptLen) < 0)
-		{
+		if (getsockopt(interface->fd, SOL_SOCKET, SO_SNDBUF,
+			       (char *)&getSize, &sockOptLen) < 0) {
 			DEBUG("problem getting sockets send buffer size\n");
-		}
-		else if(getSize<=0) {
+		} else if (getSize <= 0) {
 			DEBUG("sockets send buffer size is not positive\n");
-		}
-		else interface->outBufSize = getSize;
+		} else
+			interface->outBufSize = getSize;
 	}
 #endif
 	interface->outBuffer = malloc(interface->outBufSize);
-	
+
 	myfprintf(interface->fp, "%s %s\n", GREETING, VERSION);
 	printInterfaceOutBuffer(interface);
 }
 
-static void closeInterface(Interface * interface) {
-	if (!interface->open) return;
+static void closeInterface(Interface * interface)
+{
+	if (!interface->open)
+		return;
 
 	interface->open = 0;
 
-	while(fclose(interface->fp) && errno==EINTR);
+	while (fclose(interface->fp) && errno == EINTR) ;
 
-	if(interface->commandList) freeList(interface->commandList);
-	if(interface->bufferList) freeList(interface->bufferList);
+	if (interface->commandList)
+		freeList(interface->commandList);
+	if (interface->bufferList)
+		freeList(interface->bufferList);
 
 	free(interface->outBuffer);
 
-	SECURE("interface %i: closed\n",interface->num);
+	SECURE("interface %i: closed\n", interface->num);
 }
 
-void openAInterface(int fd, struct sockaddr * addr) {
+void openAInterface(int fd, struct sockaddr *addr)
+{
 	int i;
 
-	for(i=0;i<interface_max_connections && interfaces[i].open;i++);
+	for (i = 0; i < interface_max_connections && interfaces[i].open; i++) ;
 
-	if(i==interface_max_connections) {
+	if (i == interface_max_connections) {
 		ERROR("Max Connections Reached!\n");
-		while(close(fd) && errno==EINTR);
-	}
-	else {
-		SECURE("interface %i: opened from ",i);
-		switch(addr->sa_family) {
+		while (close(fd) && errno == EINTR) ;
+	} else {
+		SECURE("interface %i: opened from ", i);
+		switch (addr->sa_family) {
 		case AF_INET:
 			{
-				char * host = inet_ntoa(
-					((struct sockaddr_in *)addr)->
-					sin_addr);
-				if(host) { 
-					SECURE("%s\n",host);
-				}
-				else {
+				char *host = inet_ntoa(((struct sockaddr_in *)
+							addr)->sin_addr);
+				if (host) {
+					SECURE("%s\n", host);
+				} else {
 					SECURE("error getting ipv4 address\n");
 				}
 			}
@@ -178,15 +179,14 @@ void openAInterface(int fd, struct sockaddr * addr) {
 #ifdef HAVE_IPV6
 		case AF_INET6:
 			{
-				char host[INET6_ADDRSTRLEN+1];
-				memset(host,0,INET6_ADDRSTRLEN+1);
-				if(inet_ntop(AF_INET6,(void *)
-					&(((struct sockaddr_in6 *)addr)->
-					sin6_addr),host,INET6_ADDRSTRLEN)) 
-				{
-					SECURE("%s\n",host);
-				}
-				else {
+				char host[INET6_ADDRSTRLEN + 1];
+				memset(host, 0, INET6_ADDRSTRLEN + 1);
+				if (inet_ntop(AF_INET6, (void *)
+					      &(((struct sockaddr_in6 *)addr)->
+						sin6_addr), host,
+					      INET6_ADDRSTRLEN)) {
+					SECURE("%s\n", host);
+				} else {
 					SECURE("error getting ipv6 address\n");
 				}
 			}
@@ -198,94 +198,85 @@ void openAInterface(int fd, struct sockaddr * addr) {
 		default:
 			SECURE("unknown\n");
 		}
-		openInterface(&(interfaces[i]),fd);
+		openInterface(&(interfaces[i]), fd);
 	}
 }
 
-static int processLineOfInput(Interface * interface) {
+static int processLineOfInput(Interface * interface)
+{
 	int ret = 1;
-	char * line = interface->buffer+interface->bufferPos;
+	char *line = interface->buffer + interface->bufferPos;
 
-	if(interface->bufferLength - interface->bufferPos > 1) {
-		if(interface->buffer[interface->bufferLength-2] == '\r') {
-			interface->buffer[interface->bufferLength-2] = '\0';
+	if (interface->bufferLength - interface->bufferPos > 1) {
+		if (interface->buffer[interface->bufferLength - 2] == '\r') {
+			interface->buffer[interface->bufferLength - 2] = '\0';
 		}
 	}
 
-	if(interface->commandList) {
-		if(strcmp(line, INTERFACE_LIST_MODE_END)==0) {
+	if (interface->commandList) {
+		if (strcmp(line, INTERFACE_LIST_MODE_END) == 0) {
 			DEBUG("interface %i: process command "
-					"list\n",interface->num);
-			ret = processListOfCommands(
-					interface->fp,
-					&(interface->permission),
-					&(interface->expired),
-                                        interface->commandListOK,
-					interface->commandList);
+			      "list\n", interface->num);
+			ret = processListOfCommands(interface->fp,
+						    &(interface->permission),
+						    &(interface->expired),
+						    interface->commandListOK,
+						    interface->commandList);
 			DEBUG("interface %i: process command "
-					"list returned %i\n",
-					interface->num,
-					ret);
-			if(ret==0) commandSuccess(interface->fp);
-			else if(ret==COMMAND_RETURN_CLOSE || interface->expired)
-			{
-						
+			      "list returned %i\n", interface->num, ret);
+			if (ret == 0)
+				commandSuccess(interface->fp);
+			else if (ret == COMMAND_RETURN_CLOSE
+				 || interface->expired) {
+
 				closeInterface(interface);
 			}
 			printInterfaceOutBuffer(interface);
 
 			freeList(interface->commandList);
 			interface->commandList = NULL;
-		}
-		else {
-			interface->commandListSize+= sizeof(ListNode);
-			interface->commandListSize+= strlen(line)+1;
-			if(interface->commandListSize > 
-					interface_max_command_list_size)
-			{
+		} else {
+			interface->commandListSize += sizeof(ListNode);
+			interface->commandListSize += strlen(line) + 1;
+			if (interface->commandListSize >
+			    interface_max_command_list_size) {
 				ERROR("interface %i: command "
-						"list size (%lli) is "
-						"larger than the max "
-						"(%lli)\n",
-						interface->num,
-						(long long)interface->
-						commandListSize,
-						(long long)
-						interface_max_command_list_size)
-					;
+				      "list size (%lli) is "
+				      "larger than the max "
+				      "(%lli)\n",
+				      interface->num,
+				      (long long)interface->
+				      commandListSize, (long long)
+				      interface_max_command_list_size);
 				closeInterface(interface);
 				ret = COMMAND_RETURN_CLOSE;
-			}
-			else {
+			} else {
 				insertInListWithoutKey(interface->commandList,
-						strdup(line));
+						       strdup(line));
 			}
 		}
-	}
-	else {
-		if(strcmp(line, INTERFACE_LIST_MODE_BEGIN) == 0) {
+	} else {
+		if (strcmp(line, INTERFACE_LIST_MODE_BEGIN) == 0) {
 			interface->commandList = makeList(free, 1);
 			interface->commandListSize = sizeof(List);
-                        interface->commandListOK = 0;
+			interface->commandListOK = 0;
 			ret = 1;
-		}
-		else if(strcmp(line, INTERFACE_LIST_OK_MODE_BEGIN) == 0) {
+		} else if (strcmp(line, INTERFACE_LIST_OK_MODE_BEGIN) == 0) {
 			interface->commandList = makeList(free, 1);
 			interface->commandListSize = sizeof(List);
-                        interface->commandListOK = 1;
+			interface->commandListOK = 1;
 			ret = 1;
-		}
-		else {
+		} else {
 			DEBUG("interface %i: process command \"%s\"\n",
-					interface->num, line);
+			      interface->num, line);
 			ret = processCommand(interface->fp,
-						&(interface->permission),
-						line);
+					     &(interface->permission), line);
 			DEBUG("interface %i: command returned %i\n",
-						interface->num, ret);
-			if(ret==0) commandSuccess(interface->fp);
-			else if(ret==COMMAND_RETURN_CLOSE || interface->expired)
-			{
+			      interface->num, ret);
+			if (ret == 0)
+				commandSuccess(interface->fp);
+			else if (ret == COMMAND_RETURN_CLOSE
+				 || interface->expired) {
 				closeInterface(interface);
 			}
 			printInterfaceOutBuffer(interface);
@@ -295,34 +286,33 @@ static int processLineOfInput(Interface * interface) {
 	return ret;
 }
 
-static int processBytesRead(Interface * interface, int bytesRead) {
+static int processBytesRead(Interface * interface, int bytesRead)
+{
 	int ret = 0;
 
-	while(bytesRead > 0) {
+	while (bytesRead > 0) {
 		interface->bufferLength++;
 		bytesRead--;
-		if(interface->buffer[interface->bufferLength-1]=='\n') {
-			interface->buffer[interface->bufferLength-1] = '\0';
+		if (interface->buffer[interface->bufferLength - 1] == '\n') {
+			interface->buffer[interface->bufferLength - 1] = '\0';
 			ret = processLineOfInput(interface);
 			interface->bufferPos = interface->bufferLength;
 		}
-		if(interface->bufferLength==INTERFACE_MAX_BUFFER_LENGTH)
-		{
-			if(interface->bufferPos == 0) {
+		if (interface->bufferLength == INTERFACE_MAX_BUFFER_LENGTH) {
+			if (interface->bufferPos == 0) {
 				ERROR("interface %i: buffer overflow\n",
-						interface->num);
+				      interface->num);
 				closeInterface(interface);
 				return 1;
 			}
-			interface->bufferLength-= interface->bufferPos;
-			memmove(interface->buffer, 
-					interface->buffer+interface->bufferPos,
-					interface->bufferLength);
+			interface->bufferLength -= interface->bufferPos;
+			memmove(interface->buffer,
+				interface->buffer + interface->bufferPos,
+				interface->bufferLength);
 			interface->bufferPos = 0;
 		}
-		if(ret == COMMAND_RETURN_KILL || ret == COMMAND_RETURN_CLOSE)
-		{
-		    return ret;
+		if (ret == COMMAND_RETURN_KILL || ret == COMMAND_RETURN_CLOSE) {
+			return ret;
 		}
 
 	}
@@ -330,50 +320,60 @@ static int processBytesRead(Interface * interface, int bytesRead) {
 	return ret;
 }
 
-static int interfaceReadInput(Interface * interface) {
+static int interfaceReadInput(Interface * interface)
+{
 	int bytesRead;
 
-	bytesRead = read(interface->fd, 
-			interface->buffer+interface->bufferLength, 
-			INTERFACE_MAX_BUFFER_LENGTH-interface->bufferLength);
+	bytesRead = read(interface->fd,
+			 interface->buffer + interface->bufferLength,
+			 INTERFACE_MAX_BUFFER_LENGTH - interface->bufferLength);
 
-	if(bytesRead > 0) return processBytesRead(interface, bytesRead);
-	else if(bytesRead == 0 || (bytesRead < 0 && errno != EINTR)) {
+	if (bytesRead > 0)
+		return processBytesRead(interface, bytesRead);
+	else if (bytesRead == 0 || (bytesRead < 0 && errno != EINTR)) {
 		closeInterface(interface);
-	}
-	else return 0;
+	} else
+		return 0;
 
 	return 1;
 }
 
-static void addInterfacesReadyToReadAndListenSocketToFdSet(fd_set * fds, int * fdmax) {
+static void addInterfacesReadyToReadAndListenSocketToFdSet(fd_set * fds,
+							   int *fdmax)
+{
 	int i;
 
 	FD_ZERO(fds);
 	addListenSocketsToFdSet(fds, fdmax);
 
-	for(i=0;i<interface_max_connections;i++) {
-		if(interfaces[i].open && !interfaces[i].expired && !interfaces[i].bufferList) {
-			FD_SET(interfaces[i].fd,fds);
-			if(*fdmax<interfaces[i].fd) *fdmax = interfaces[i].fd;
+	for (i = 0; i < interface_max_connections; i++) {
+		if (interfaces[i].open && !interfaces[i].expired
+		    && !interfaces[i].bufferList) {
+			FD_SET(interfaces[i].fd, fds);
+			if (*fdmax < interfaces[i].fd)
+				*fdmax = interfaces[i].fd;
 		}
 	}
 }
 
-static void addInterfacesForBufferFlushToFdSet(fd_set * fds, int * fdmax) {
+static void addInterfacesForBufferFlushToFdSet(fd_set * fds, int *fdmax)
+{
 	int i;
 
 	FD_ZERO(fds);
 
-	for(i=0;i<interface_max_connections;i++) {
-		if(interfaces[i].open && !interfaces[i].expired && interfaces[i].bufferList) {
-			FD_SET(interfaces[i].fd,fds);
-			if(*fdmax<interfaces[i].fd) *fdmax = interfaces[i].fd;
+	for (i = 0; i < interface_max_connections; i++) {
+		if (interfaces[i].open && !interfaces[i].expired
+		    && interfaces[i].bufferList) {
+			FD_SET(interfaces[i].fd, fds);
+			if (*fdmax < interfaces[i].fd)
+				*fdmax = interfaces[i].fd;
 		}
 	}
 }
 
-static void closeNextErroredInterface(void) {
+static void closeNextErroredInterface(void)
+{
 	fd_set fds;
 	struct timeval tv;
 	int i;
@@ -381,11 +381,11 @@ static void closeNextErroredInterface(void) {
 	tv.tv_sec = 0;
 	tv.tv_usec = 0;
 
-	for(i=0;i<interface_max_connections;i++) {
-		if(interfaces[i].open) {
+	for (i = 0; i < interface_max_connections; i++) {
+		if (interfaces[i].open) {
 			FD_ZERO(&fds);
-			FD_SET(interfaces[i].fd,&fds);
-			if(select(FD_SETSIZE,&fds,NULL,NULL,&tv)<0) {
+			FD_SET(interfaces[i].fd, &fds);
+			if (select(FD_SETSIZE, &fds, NULL, NULL, &tv) < 0) {
 				closeInterface(&interfaces[i]);
 				return;
 			}
@@ -393,7 +393,8 @@ static void closeNextErroredInterface(void) {
 	}
 }
 
-int doIOForInterfaces(void) {
+int doIOForInterfaces(void)
+{
 	fd_set rfds;
 	fd_set wfds;
 	struct timeval tv;
@@ -404,31 +405,35 @@ int doIOForInterfaces(void) {
 	tv.tv_sec = 1;
 	tv.tv_usec = 0;
 
-	while(1) {
+	while (1) {
 		fdmax = 0;
 
-		addInterfacesReadyToReadAndListenSocketToFdSet(&rfds,&fdmax);
-		addInterfacesForBufferFlushToFdSet(&wfds,&fdmax);
+		addInterfacesReadyToReadAndListenSocketToFdSet(&rfds, &fdmax);
+		addInterfacesForBufferFlushToFdSet(&wfds, &fdmax);
 
-		selret = select(fdmax+1,&rfds,&wfds,NULL,&tv);
+		selret = select(fdmax + 1, &rfds, &wfds, NULL, &tv);
 
-		if(selret == 0 || (selret<0 && errno==EINTR)) break;
+		if (selret == 0 || (selret < 0 && errno == EINTR))
+			break;
 
-		if(selret<0) {
+		if (selret < 0) {
 			closeNextErroredInterface();
 			continue;
 		}
 
 		getConnections(&rfds);
 
-		for(i=0;i<interface_max_connections;i++) {
-			if(interfaces[i].open && FD_ISSET(interfaces[i].fd,&rfds)) {
-				if(COMMAND_RETURN_KILL==interfaceReadInput(&(interfaces[i]))) {
+		for (i = 0; i < interface_max_connections; i++) {
+			if (interfaces[i].open
+			    && FD_ISSET(interfaces[i].fd, &rfds)) {
+				if (COMMAND_RETURN_KILL ==
+				    interfaceReadInput(&(interfaces[i]))) {
 					return COMMAND_RETURN_KILL;
 				}
 				interfaces[i].lastTime = time(NULL);
 			}
-			if(interfaces[i].open && FD_ISSET(interfaces[i].fd,&wfds)) {
+			if (interfaces[i].open
+			    && FD_ISSET(interfaces[i].fd, &wfds)) {
 				flushInterfaceBuffer(&interfaces[i]);
 				interfaces[i].lastTime = time(NULL);
 			}
@@ -441,84 +446,85 @@ int doIOForInterfaces(void) {
 	return 1;
 }
 
-void initInterfaces(void) {
+void initInterfaces(void)
+{
 	int i;
-	char * test;
-	ConfigParam * param;
+	char *test;
+	ConfigParam *param;
 
 	param = getConfigParam(CONF_CONN_TIMEOUT);
 
-	if(param) {
-		interface_timeout = strtol(param->value,&test,10);
-		if(*test!='\0' || interface_timeout<=0) {
+	if (param) {
+		interface_timeout = strtol(param->value, &test, 10);
+		if (*test != '\0' || interface_timeout <= 0) {
 			ERROR("connection timeout \"%s\" is not a positive "
-				"integer, line %i\n", CONF_CONN_TIMEOUT,
-				param->line);
+			      "integer, line %i\n", CONF_CONN_TIMEOUT,
+			      param->line);
 			exit(EXIT_FAILURE);
 		}
 	}
 
 	param = getConfigParam(CONF_MAX_CONN);
 
-	if(param) {
+	if (param) {
 		interface_max_connections = strtol(param->value, &test, 10);
-		if(*test!='\0' || interface_max_connections<=0) {
+		if (*test != '\0' || interface_max_connections <= 0) {
 			ERROR("max connections \"%s\" is not a positive integer"
-				", line %i\n", param->value, param->line);
+			      ", line %i\n", param->value, param->line);
 			exit(EXIT_FAILURE);
 		}
-	}
-	else interface_max_connections = INTERFACE_MAX_CONNECTIONS_DEFAULT;
+	} else
+		interface_max_connections = INTERFACE_MAX_CONNECTIONS_DEFAULT;
 
 	param = getConfigParam(CONF_MAX_COMMAND_LIST_SIZE);
 
-	if(param) {
-		interface_max_command_list_size = strtoll(param->value, 
-				&test, 10);
-		if(*test!='\0' || interface_max_command_list_size<=0) {
+	if (param) {
+		interface_max_command_list_size = strtoll(param->value,
+							  &test, 10);
+		if (*test != '\0' || interface_max_command_list_size <= 0) {
 			ERROR("max command list size \"%s\" is not a positive "
-				"integer, line %i\n", param->value, 
-				param->line);
+			      "integer, line %i\n", param->value, param->line);
 			exit(EXIT_FAILURE);
 		}
-		interface_max_command_list_size*=1024;
+		interface_max_command_list_size *= 1024;
 	}
 
 	param = getConfigParam(CONF_MAX_OUTPUT_BUFFER_SIZE);
 
-	if(param) {
+	if (param) {
 		interface_max_output_buffer_size = strtoll(param->value, &test,
-				10);
-		if(*test!='\0' || interface_max_output_buffer_size<=0) {
+							   10);
+		if (*test != '\0' || interface_max_output_buffer_size <= 0) {
 			ERROR("max output buffer size \"%s\" is not a positive "
-				"integer, line %i\n", param->value, 
-				param->line);
+			      "integer, line %i\n", param->value, param->line);
 			exit(EXIT_FAILURE);
 		}
-		interface_max_output_buffer_size*=1024;
+		interface_max_output_buffer_size *= 1024;
 	}
 
-	interfaces = malloc(sizeof(Interface)*interface_max_connections);
+	interfaces = malloc(sizeof(Interface) * interface_max_connections);
 
-	for(i=0;i<interface_max_connections;i++) {
+	for (i = 0; i < interface_max_connections; i++) {
 		interfaces[i].open = 0;
 		interfaces[i].num = i;
 	}
 }
 
-static void closeAllInterfaces(void) {
+static void closeAllInterfaces(void)
+{
 	int i;
 
 	fflush(NULL);
 
-	for(i=0;i<interface_max_connections;i++) {
-		if(interfaces[i].open) {
+	for (i = 0; i < interface_max_connections; i++) {
+		if (interfaces[i].open) {
 			closeInterface(&(interfaces[i]));
 		}
 	}
 }
 
-void freeAllInterfaces(void) {
+void freeAllInterfaces(void)
+{
 	closeAllInterfaces();
 
 	free(interfaces);
@@ -526,92 +532,93 @@ void freeAllInterfaces(void) {
 	interface_max_connections = 0;
 }
 
-void closeOldInterfaces(void) {
+void closeOldInterfaces(void)
+{
 	int i;
 
-	for(i=0;i<interface_max_connections;i++) {
-		if(interfaces[i].open) {
-			if(interfaces[i].expired) {
-				DEBUG("interface %i: expired\n",i);
+	for (i = 0; i < interface_max_connections; i++) {
+		if (interfaces[i].open) {
+			if (interfaces[i].expired) {
+				DEBUG("interface %i: expired\n", i);
 				closeInterface(&(interfaces[i]));
-			}
-			else if(time(NULL)-interfaces[i].lastTime > 
-					interface_timeout) 
-			{
-				DEBUG("interface %i: timeout\n",i);
+			} else if (time(NULL) - interfaces[i].lastTime >
+				   interface_timeout) {
+				DEBUG("interface %i: timeout\n", i);
 				closeInterface(&(interfaces[i]));
 			}
 		}
 	}
 }
 
-static void flushInterfaceBuffer(Interface * interface) {
-	ListNode * node = NULL;
-	char * str;
+static void flushInterfaceBuffer(Interface * interface)
+{
+	ListNode *node = NULL;
+	char *str;
 	int ret = 0;
 
-	while((node = interface->bufferList->firstNode)) {
+	while ((node = interface->bufferList->firstNode)) {
 		str = (char *)node->data;
-		if((ret = write(interface->fd,str,strlen(str)))<0) break;
-		else if(ret<strlen(str)) {
-			interface->outputBufferSize-=ret;
+		if ((ret = write(interface->fd, str, strlen(str))) < 0)
+			break;
+		else if (ret < strlen(str)) {
+			interface->outputBufferSize -= ret;
 			str = strdup(&str[ret]);
 			free(node->data);
 			node->data = str;
-		}
-		else {
-			interface->outputBufferSize-= strlen(str)+1;
-			interface->outputBufferSize-= sizeof(ListNode);
-			deleteNodeFromList(interface->bufferList,node);
+		} else {
+			interface->outputBufferSize -= strlen(str) + 1;
+			interface->outputBufferSize -= sizeof(ListNode);
+			deleteNodeFromList(interface->bufferList, node);
 		}
 		interface->lastTime = time(NULL);
 	}
 
-	if(!interface->bufferList->firstNode) {
-		DEBUG("interface %i: buffer empty\n",interface->num);
+	if (!interface->bufferList->firstNode) {
+		DEBUG("interface %i: buffer empty\n", interface->num);
 		freeList(interface->bufferList);
 		interface->bufferList = NULL;
-	}
-	else if(ret<0 && errno!=EAGAIN && errno!=EINTR) {
+	} else if (ret < 0 && errno != EAGAIN && errno != EINTR) {
 		/* cause interface to close */
 		DEBUG("interface %i: problems flushing buffer\n",
-			interface->num);
+		      interface->num);
 		freeList(interface->bufferList);
 		interface->bufferList = NULL;
 		interface->expired = 1;
 	}
 }
 
-int interfacePrintWithFD(int fd, char * buffer, int buflen) {
+int interfacePrintWithFD(int fd, char *buffer, int buflen)
+{
 	static int i = 0;
 	int copylen;
-	Interface * interface;
+	Interface *interface;
 
-	if(i>=interface_max_connections || 
-			!interfaces[i].open || interfaces[i].fd!=fd) 
-	{
-		for(i=0;i<interface_max_connections;i++) {
-			if(interfaces[i].open && interfaces[i].fd==fd) break;
+	if (i >= interface_max_connections ||
+	    !interfaces[i].open || interfaces[i].fd != fd) {
+		for (i = 0; i < interface_max_connections; i++) {
+			if (interfaces[i].open && interfaces[i].fd == fd)
+				break;
 		}
-		if(i==interface_max_connections) return -1;
+		if (i == interface_max_connections)
+			return -1;
 	}
 
 	/* if fd isn't found or interfaces is going to be closed, do nothing */
-	if(interfaces[i].expired) return 0;
+	if (interfaces[i].expired)
+		return 0;
 
-	interface = interfaces+i;
+	interface = interfaces + i;
 
-	while(buflen>0 && !interface->expired) {
-		copylen = buflen>
-			interface->outBufSize-interface->outBuflen?
-			interface->outBufSize-interface->outBuflen:
-			buflen;
-		memcpy(interface->outBuffer+interface->outBuflen,buffer,
-			copylen);
-		buflen-=copylen;
-		interface->outBuflen+=copylen;
-		buffer+=copylen;
-		if(interface->outBuflen>=interface->outBufSize) {
+	while (buflen > 0 && !interface->expired) {
+		copylen = buflen >
+		    interface->outBufSize - interface->outBuflen ?
+		    interface->outBufSize - interface->outBuflen : buflen;
+		memcpy(interface->outBuffer + interface->outBuflen, buffer,
+		       copylen);
+		buflen -= copylen;
+		interface->outBuflen += copylen;
+		buffer += copylen;
+		if (interface->outBuflen >= interface->outBufSize) {
 			printInterfaceOutBuffer(interface);
 		}
 	}
@@ -619,74 +626,73 @@ int interfacePrintWithFD(int fd, char * buffer, int buflen) {
 	return 0;
 }
 
-static void printInterfaceOutBuffer(Interface * interface) {
-	char * buffer;
+static void printInterfaceOutBuffer(Interface * interface)
+{
+	char *buffer;
 	int ret;
 
-	if(!interface->open || interface->expired || !interface->outBuflen) {
+	if (!interface->open || interface->expired || !interface->outBuflen) {
 		return;
 	}
 
-	if(interface->bufferList) {
-		interface->outputBufferSize+=sizeof(ListNode);
-		interface->outputBufferSize+=interface->outBuflen+1;
-		if(interface->outputBufferSize>
-				interface_max_output_buffer_size)
- 		{
+	if (interface->bufferList) {
+		interface->outputBufferSize += sizeof(ListNode);
+		interface->outputBufferSize += interface->outBuflen + 1;
+		if (interface->outputBufferSize >
+		    interface_max_output_buffer_size) {
 			ERROR("interface %i: output buffer size (%lli) is "
-					"larger than the max (%lli)\n",
-					interface->num,
-					(long long)interface->outputBufferSize,
-					(long long)interface_max_output_buffer_size);
+			      "larger than the max (%lli)\n",
+			      interface->num,
+			      (long long)interface->outputBufferSize,
+			      (long long)interface_max_output_buffer_size);
 			/* cause interface to close */
 			freeList(interface->bufferList);
 			interface->bufferList = NULL;
 			interface->expired = 1;
-		}
-		else {
-			buffer = malloc(interface->outBuflen+1);
-			memcpy(buffer,interface->outBuffer,interface->outBuflen);
+		} else {
+			buffer = malloc(interface->outBuflen + 1);
+			memcpy(buffer, interface->outBuffer,
+			       interface->outBuflen);
 			buffer[interface->outBuflen] = '\0';
-			insertInListWithoutKey(interface->bufferList,(void *)buffer);
+			insertInListWithoutKey(interface->bufferList,
+					       (void *)buffer);
 			flushInterfaceBuffer(interface);
 		}
-	}
-	else {
-		if((ret = write(interface->fd,interface->outBuffer,
-				interface->outBuflen))<0) 
-		{
-			if(errno==EAGAIN || errno==EINTR) {
-				buffer = malloc(interface->outBuflen+1);
-				memcpy(buffer,interface->outBuffer,
-						interface->outBuflen);
+	} else {
+		if ((ret = write(interface->fd, interface->outBuffer,
+				 interface->outBuflen)) < 0) {
+			if (errno == EAGAIN || errno == EINTR) {
+				buffer = malloc(interface->outBuflen + 1);
+				memcpy(buffer, interface->outBuffer,
+				       interface->outBuflen);
 				buffer[interface->outBuflen] = '\0';
 				interface->bufferList = makeList(free, 1);
 				insertInListWithoutKey(interface->bufferList,
-						(void *)buffer);
-			}
-			else {
+						       (void *)buffer);
+			} else {
 				DEBUG("interface %i: problems writing\n",
-						interface->num);
+				      interface->num);
 				interface->expired = 1;
 				return;
 			}
-		}
-		else if(ret<interface->outBuflen) {
-			buffer = malloc(interface->outBuflen-ret+1);
-			memcpy(buffer,interface->outBuffer+ret,
-					interface->outBuflen-ret);
-			buffer[interface->outBuflen-ret] = '\0';
+		} else if (ret < interface->outBuflen) {
+			buffer = malloc(interface->outBuflen - ret + 1);
+			memcpy(buffer, interface->outBuffer + ret,
+			       interface->outBuflen - ret);
+			buffer[interface->outBuflen - ret] = '\0';
 			interface->bufferList = makeList(free, 1);
-			insertInListWithoutKey(interface->bufferList,buffer);
+			insertInListWithoutKey(interface->bufferList, buffer);
 		}
 		/* if we needed to create buffer, initialize bufferSize info */
-		if(interface->bufferList) {
-			DEBUG("interface %i: buffer created\n",interface->num);
+		if (interface->bufferList) {
+			DEBUG("interface %i: buffer created\n", interface->num);
 			interface->outputBufferSize = sizeof(List);
-			interface->outputBufferSize+=sizeof(ListNode);
-			interface->outputBufferSize+=strlen(
-					(char *)interface->bufferList->
-					firstNode->data)+1;
+			interface->outputBufferSize += sizeof(ListNode);
+			interface->outputBufferSize += strlen((char *)
+							      interface->
+							      bufferList->
+							      firstNode->data) +
+			    1;
 		}
 	}
 

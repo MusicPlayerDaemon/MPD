@@ -57,12 +57,12 @@ typedef struct _DecoderControl {
 	volatile mpd_sint8 seekable;
 	volatile mpd_sint8 cycleLogFiles;
 	volatile double seekWhere;
-        AudioFormat audioFormat;
-        char utf8url[MAXPATHLEN+1];
-        volatile float totalTime;
+	AudioFormat audioFormat;
+	char utf8url[MAXPATHLEN + 1];
+	volatile float totalTime;
 } DecoderControl;
 
-void decodeSigHandler(int sig, siginfo_t * siginfo, void * v);
+void decodeSigHandler(int sig, siginfo_t * siginfo, void *v);
 
 void decode();
 

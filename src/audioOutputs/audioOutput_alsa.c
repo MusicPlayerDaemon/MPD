@@ -39,13 +39,13 @@
 
 #include <alsa/asoundlib.h>
 
-typedef snd_pcm_sframes_t alsa_writei_t(snd_pcm_t *pcm, const void *buffer,
-                                                snd_pcm_uframes_t size);
+typedef snd_pcm_sframes_t alsa_writei_t(snd_pcm_t * pcm, const void *buffer,
+					snd_pcm_uframes_t size);
 
 typedef struct _AlsaData {
-	char * device;
-	snd_pcm_t * pcmHandle;
-	alsa_writei_t * writei;
+	char *device;
+	snd_pcm_t *pcmHandle;
+	alsa_writei_t *writei;
 	unsigned int buffer_time;
 	unsigned int period_time;
 	int sampleSize;
@@ -54,8 +54,9 @@ typedef struct _AlsaData {
 	int canResume;
 } AlsaData;
 
-static AlsaData * newAlsaData(void) {
-	AlsaData * ret = malloc(sizeof(AlsaData));
+static AlsaData *newAlsaData(void)
+{
+	AlsaData *ret = malloc(sizeof(AlsaData));
 
 	ret->device = NULL;
 	ret->pcmHandle = NULL;
@@ -67,22 +68,25 @@ static AlsaData * newAlsaData(void) {
 	return ret;
 }
 
-static void freeAlsaData(AlsaData * ad) {
-	if(ad->device) free(ad->device);
+static void freeAlsaData(AlsaData * ad)
+{
+	if (ad->device)
+		free(ad->device);
 
 	free(ad);
 }
 
-static int alsa_initDriver(AudioOutput * audioOutput, ConfigParam * param) {
-	AlsaData * ad = newAlsaData();
+static int alsa_initDriver(AudioOutput * audioOutput, ConfigParam * param)
+{
+	AlsaData *ad = newAlsaData();
 
 	if (param) {
-		BlockParam * bp = getBlockParam(param, "device");
+		BlockParam *bp = getBlockParam(param, "device");
 		ad->device = bp ? strdup(bp->value) : strdup("default");
 
 		if ((bp = getBlockParam(param, "use_mmap")) &&
-					(!strcasecmp(bp->value, "yes") ||
-					 !strcasecmp(bp->value, "true")))
+		    (!strcasecmp(bp->value, "yes") ||
+		     !strcasecmp(bp->value, "true")))
 			ad->useMmap = 1;
 		if ((bp = getBlockParam(param, "buffer_time")))
 			ad->buffer_time = atoi(bp->value);
@@ -94,45 +98,46 @@ static int alsa_initDriver(AudioOutput * audioOutput, ConfigParam * param) {
 	return 0;
 }
 
-static void alsa_finishDriver(AudioOutput * audioOutput) {
-	AlsaData * ad = audioOutput->data;
+static void alsa_finishDriver(AudioOutput * audioOutput)
+{
+	AlsaData *ad = audioOutput->data;
 
 	freeAlsaData(ad);
 }
 
 static int alsa_testDefault(void)
 {
-	snd_pcm_t * handle;
+	snd_pcm_t *handle;
 
-	int ret = snd_pcm_open(&handle, "default", SND_PCM_STREAM_PLAYBACK, 
-					           SND_PCM_NONBLOCK);
+	int ret = snd_pcm_open(&handle, "default", SND_PCM_STREAM_PLAYBACK,
+			       SND_PCM_NONBLOCK);
 	snd_config_update_free_global();
-	
-	if(ret) {
+
+	if (ret) {
 		WARNING("Error opening default alsa device: %s\n",
-				snd_strerror(-ret));
+			snd_strerror(-ret));
 		return -1;
-	}
-	else snd_pcm_close(handle);
+	} else
+		snd_pcm_close(handle);
 
 	return 0;
 }
 
-static int alsa_openDevice(AudioOutput * audioOutput) 
+static int alsa_openDevice(AudioOutput * audioOutput)
 {
-	AlsaData * ad = audioOutput->data;
-	AudioFormat * audioFormat = &audioOutput->outAudioFormat;
+	AlsaData *ad = audioOutput->data;
+	AudioFormat *audioFormat = &audioOutput->outAudioFormat;
 	snd_pcm_format_t bitformat;
-	snd_pcm_hw_params_t * hwparams;
-	snd_pcm_sw_params_t * swparams;
+	snd_pcm_hw_params_t *hwparams;
+	snd_pcm_sw_params_t *swparams;
 	unsigned int sampleRate = audioFormat->sampleRate;
 	unsigned int channels = audioFormat->channels;
 	snd_pcm_uframes_t alsa_buffer_size;
 	snd_pcm_uframes_t alsa_period_size;
 	int err;
-	char * cmd = NULL;
+	char *cmd = NULL;
 
-	switch(audioFormat->bits) {
+	switch (audioFormat->bits) {
 	case 8:
 		bitformat = SND_PCM_FORMAT_S8;
 		break;
@@ -147,101 +152,107 @@ static int alsa_openDevice(AudioOutput * audioOutput)
 		break;
 	default:
 		ERROR("Alsa device \"%s\" doesn't support %i bit audio\n",
-				ad->device, audioFormat->bits);
+		      ad->device, audioFormat->bits);
 		return -1;
 	}
 
-	err = snd_pcm_open(&ad->pcmHandle, ad->device, 
-			SND_PCM_STREAM_PLAYBACK, SND_PCM_NONBLOCK);
+	err = snd_pcm_open(&ad->pcmHandle, ad->device,
+			   SND_PCM_STREAM_PLAYBACK, SND_PCM_NONBLOCK);
 	snd_config_update_free_global();
-	if(err < 0) {
+	if (err < 0) {
 		ad->pcmHandle = NULL;
 		goto error;
 	}
 
 	cmd = "snd_pcm_nonblock";
 	err = snd_pcm_nonblock(ad->pcmHandle, 0);
-	if(err < 0) goto error;
+	if (err < 0)
+		goto error;
 
 	/* configure HW params */
 	snd_pcm_hw_params_alloca(&hwparams);
 
 	cmd = "snd_pcm_hw_params_any";
 	err = snd_pcm_hw_params_any(ad->pcmHandle, hwparams);
-	if(err < 0) goto error;
+	if (err < 0)
+		goto error;
 
-	if(ad->useMmap) {
+	if (ad->useMmap) {
 		err = snd_pcm_hw_params_set_access(ad->pcmHandle, hwparams,
-				SND_PCM_ACCESS_MMAP_INTERLEAVED);
-		if(err < 0) {
+						   SND_PCM_ACCESS_MMAP_INTERLEAVED);
+		if (err < 0) {
 			ERROR("Cannot set mmap'ed mode on alsa device \"%s\": "
-					" %s\n", ad->device, 
-					snd_strerror(-err));
+			      " %s\n", ad->device, snd_strerror(-err));
 			ERROR("Falling back to direct write mode\n");
 			ad->useMmap = 0;
-		}
-		else ad->writei = snd_pcm_mmap_writei;
+		} else
+			ad->writei = snd_pcm_mmap_writei;
 	}
 
-	if(!ad->useMmap) {
+	if (!ad->useMmap) {
 		cmd = "snd_pcm_hw_params_set_access";
 		err = snd_pcm_hw_params_set_access(ad->pcmHandle, hwparams,
-				SND_PCM_ACCESS_RW_INTERLEAVED);
-		if(err < 0) goto error;
+						   SND_PCM_ACCESS_RW_INTERLEAVED);
+		if (err < 0)
+			goto error;
 		ad->writei = snd_pcm_writei;
 	}
 
 	err = snd_pcm_hw_params_set_format(ad->pcmHandle, hwparams, bitformat);
-	if(err < 0) {
+	if (err < 0) {
 		ERROR("Alsa device \"%s\" does not support %i bit audio: "
-				"%s\n", ad->device, (int)bitformat, 
-				snd_strerror(-err));
+		      "%s\n", ad->device, (int)bitformat, snd_strerror(-err));
 		goto fail;
 	}
 
-	err = snd_pcm_hw_params_set_channels_near(ad->pcmHandle, hwparams, 
-			&channels);
-	if(err < 0) {
+	err = snd_pcm_hw_params_set_channels_near(ad->pcmHandle, hwparams,
+						  &channels);
+	if (err < 0) {
 		ERROR("Alsa device \"%s\" does not support %i channels: "
-				"%s\n", ad->device, (int)audioFormat->channels, 
-				snd_strerror(-err));
+		      "%s\n", ad->device, (int)audioFormat->channels,
+		      snd_strerror(-err));
 		goto fail;
 	}
 	audioFormat->channels = channels;
 
-	err = snd_pcm_hw_params_set_rate_near(ad->pcmHandle, hwparams, 
-			&sampleRate, NULL);
-	if(err < 0 || sampleRate == 0) {
+	err = snd_pcm_hw_params_set_rate_near(ad->pcmHandle, hwparams,
+					      &sampleRate, NULL);
+	if (err < 0 || sampleRate == 0) {
 		ERROR("Alsa device \"%s\" does not support %i Hz audio\n",
-				ad->device, (int)audioFormat->sampleRate);
+		      ad->device, (int)audioFormat->sampleRate);
 		goto fail;
 	}
 	audioFormat->sampleRate = sampleRate;
 
 	cmd = "snd_pcm_hw_params_set_buffer_time_near";
 	err = snd_pcm_hw_params_set_buffer_time_near(ad->pcmHandle, hwparams,
-			&ad->buffer_time, NULL);
-	if(err < 0) goto error;
+						     &ad->buffer_time, NULL);
+	if (err < 0)
+		goto error;
 
 	if (!ad->period_time && sampleRate > 0)
 		ad->period_time = 1000000 * MPD_ALSA_SAMPLE_XFER / sampleRate;
 	cmd = "snd_pcm_hw_params_set_period_time_near";
 	err = snd_pcm_hw_params_set_period_time_near(ad->pcmHandle, hwparams,
-			&ad->period_time, NULL);
-	if(err < 0) goto error;
+						     &ad->period_time, NULL);
+	if (err < 0)
+		goto error;
 
 	cmd = "snd_pcm_hw_params";
 	err = snd_pcm_hw_params(ad->pcmHandle, hwparams);
-	if(err < 0) goto error;
+	if (err < 0)
+		goto error;
 
 	cmd = "snd_pcm_hw_params_get_buffer_size";
 	err = snd_pcm_hw_params_get_buffer_size(hwparams, &alsa_buffer_size);
-	if(err < 0) goto error;
+	if (err < 0)
+		goto error;
 
 	cmd = "snd_pcm_hw_params_get_period_size";
 	err = snd_pcm_hw_params_get_period_size(hwparams, &alsa_period_size,
-	                                        NULL);
-	if(err < 0) goto error;
+						NULL);
+	if (err < 0)
+		goto error;
 
 	ad->canPause = snd_pcm_hw_params_can_pause(hwparams);
 	ad->canResume = snd_pcm_hw_params_can_resume(hwparams);
@@ -251,68 +262,74 @@ static int alsa_openDevice(AudioOutput * audioOutput)
 
 	cmd = "snd_pcm_sw_params_current";
 	err = snd_pcm_sw_params_current(ad->pcmHandle, swparams);
-	if(err < 0) goto error;
+	if (err < 0)
+		goto error;
 
 	cmd = "snd_pcm_sw_params_set_start_threshold";
 	err = snd_pcm_sw_params_set_start_threshold(ad->pcmHandle, swparams,
-			alsa_buffer_size - alsa_period_size);
-	if(err < 0) goto error;
+						    alsa_buffer_size -
+						    alsa_period_size);
+	if (err < 0)
+		goto error;
 
 	cmd = "snd_pcm_sw_params_set_avail_min";
-	err = snd_pcm_sw_params_set_avail_min(ad->pcmHandle, swparams, 
-			alsa_period_size);
-	if(err < 0) goto error;
+	err = snd_pcm_sw_params_set_avail_min(ad->pcmHandle, swparams,
+					      alsa_period_size);
+	if (err < 0)
+		goto error;
 
 	cmd = "snd_pcm_sw_params_set_xfer_align";
 	err = snd_pcm_sw_params_set_xfer_align(ad->pcmHandle, swparams, 1);
-	if(err < 0) goto error;
+	if (err < 0)
+		goto error;
 
 	cmd = "snd_pcm_sw_params";
 	err = snd_pcm_sw_params(ad->pcmHandle, swparams);
-	if(err < 0) goto error;
-	
-	ad->sampleSize = (audioFormat->bits/8)*audioFormat->channels;
+	if (err < 0)
+		goto error;
+
+	ad->sampleSize = (audioFormat->bits / 8) * audioFormat->channels;
 
 	audioOutput->open = 1;
 
 	DEBUG("alsa device \"%s\" will be playing %i bit, %i channel audio at "
-			"%i Hz\n", ad->device, (int)audioFormat->bits,
-			channels, sampleRate);
+	      "%i Hz\n", ad->device, (int)audioFormat->bits,
+	      channels, sampleRate);
 
 	return 0;
 
-error:
-	if(cmd) {
-		ERROR("Error opening alsa device \"%s\" (%s): %s\n",  
-				ad->device, cmd, snd_strerror(-err));
+      error:
+	if (cmd) {
+		ERROR("Error opening alsa device \"%s\" (%s): %s\n",
+		      ad->device, cmd, snd_strerror(-err));
+	} else {
+		ERROR("Error opening alsa device \"%s\": %s\n", ad->device,
+		      snd_strerror(-err));
 	}
-	else {
-		ERROR("Error opening alsa device \"%s\": %s\n", ad->device, 
-				snd_strerror(-err));
-	}
-fail:
-	if(ad->pcmHandle) snd_pcm_close(ad->pcmHandle);
+      fail:
+	if (ad->pcmHandle)
+		snd_pcm_close(ad->pcmHandle);
 	ad->pcmHandle = NULL;
 	audioOutput->open = 0;
 	return -1;
 }
 
-static int alsa_errorRecovery(AlsaData * ad, int err) {
-	if(err == -EPIPE) {
+static int alsa_errorRecovery(AlsaData * ad, int err)
+{
+	if (err == -EPIPE) {
 		DEBUG("Underrun on alsa device \"%s\"\n", ad->device);
-	}
-	else if(err == -ESTRPIPE) {
+	} else if (err == -ESTRPIPE) {
 		DEBUG("alsa device \"%s\" was suspended\n", ad->device);
 	}
 
-	switch(snd_pcm_state(ad->pcmHandle)) {
+	switch (snd_pcm_state(ad->pcmHandle)) {
 	case SND_PCM_STATE_PAUSED:
 		err = snd_pcm_pause(ad->pcmHandle, /* disable */ 0);
 		break;
 	case SND_PCM_STATE_SUSPENDED:
 		err = ad->canResume ?
-			snd_pcm_resume(ad->pcmHandle) :
-			snd_pcm_prepare(ad->pcmHandle);
+		    snd_pcm_resume(ad->pcmHandle) :
+		    snd_pcm_prepare(ad->pcmHandle);
 		break;
 	case SND_PCM_STATE_SETUP:
 	case SND_PCM_STATE_XRUN:
@@ -331,16 +348,18 @@ static int alsa_errorRecovery(AlsaData * ad, int err) {
 	return err;
 }
 
-static void alsa_dropBufferedAudio(AudioOutput * audioOutput) {
-	AlsaData * ad = audioOutput->data;
+static void alsa_dropBufferedAudio(AudioOutput * audioOutput)
+{
+	AlsaData *ad = audioOutput->data;
 
-	alsa_errorRecovery( ad, snd_pcm_drop(ad->pcmHandle) );
+	alsa_errorRecovery(ad, snd_pcm_drop(ad->pcmHandle));
 }
 
-static void alsa_closeDevice(AudioOutput * audioOutput) {
-	AlsaData * ad = audioOutput->data;
+static void alsa_closeDevice(AudioOutput * audioOutput)
+{
+	AlsaData *ad = audioOutput->data;
 
-	if(ad->pcmHandle) {
+	if (ad->pcmHandle) {
 		snd_pcm_drain(ad->pcmHandle);
 		snd_pcm_close(ad->pcmHandle);
 		ad->pcmHandle = NULL;
@@ -349,10 +368,9 @@ static void alsa_closeDevice(AudioOutput * audioOutput) {
 	audioOutput->open = 0;
 }
 
-static int alsa_playAudio(AudioOutput * audioOutput, char * playChunk, 
-		int size) 
+static int alsa_playAudio(AudioOutput * audioOutput, char *playChunk, int size)
 {
-	AlsaData * ad = audioOutput->data;
+	AlsaData *ad = audioOutput->data;
 	int ret;
 
 	size /= ad->sampleSize;
@@ -360,13 +378,14 @@ static int alsa_playAudio(AudioOutput * audioOutput, char * playChunk,
 	while (size > 0) {
 		ret = ad->writei(ad->pcmHandle, playChunk, size);
 
-		if(ret == -EAGAIN || ret == -EINTR) continue;
-		
-		if(ret < 0) {
-			if( alsa_errorRecovery(ad, ret) < 0) {
+		if (ret == -EAGAIN || ret == -EINTR)
+			continue;
+
+		if (ret < 0) {
+			if (alsa_errorRecovery(ad, ret) < 0) {
 				ERROR("closing alsa device \"%s\" due to write "
-						"error: %s\n", ad->device, 
-						snd_strerror(-errno));
+				      "error: %s\n", ad->device,
+				      snd_strerror(-errno));
 				alsa_closeDevice(audioOutput);
 				return -1;
 			}
@@ -380,8 +399,7 @@ static int alsa_playAudio(AudioOutput * audioOutput, char * playChunk,
 	return 0;
 }
 
-AudioOutputPlugin alsaPlugin =
-{
+AudioOutputPlugin alsaPlugin = {
 	"alsa",
 	alsa_testDefault,
 	alsa_initDriver,
@@ -390,11 +408,10 @@ AudioOutputPlugin alsaPlugin =
 	alsa_playAudio,
 	alsa_dropBufferedAudio,
 	alsa_closeDevice,
-	NULL, /* sendMetadataFunc */
+	NULL,			/* sendMetadataFunc */
 };
 
-#else /* HAVE ALSA */
+#else				/* HAVE ALSA */
 
 DISABLED_AUDIO_OUTPUT_PLUGIN(alsaPlugin)
-
-#endif /* HAVE_ALSA */
+#endif				/* HAVE_ALSA */

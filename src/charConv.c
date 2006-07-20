@@ -29,8 +29,8 @@
 iconv_t char_conv_iconv;
 #endif
 
-char * char_conv_to = NULL;
-char * char_conv_from = NULL;
+char *char_conv_to = NULL;
+char *char_conv_from = NULL;
 mpd_sint8 char_conv_same = 0;
 mpd_sint8 char_conv_use_iconv = 0;
 
@@ -43,37 +43,37 @@ mpd_sint8 char_conv_latin1ToUtf8 = 0;
 
 static void closeCharSetConversion();
 
-int setCharSetConversion(char * to, char * from) {
-	if(char_conv_to && char_conv_from &&
-	   strcmp(to,char_conv_to)==0 && strcmp(from,char_conv_from)==0) 
+int setCharSetConversion(char *to, char *from)
+{
+	if (char_conv_to && char_conv_from &&
+	    strcmp(to, char_conv_to) == 0 && strcmp(from, char_conv_from) == 0)
 	{
 		return 0;
 	}
 
 	closeCharSetConversion();
 
-	if(0==strcmp(to,from)) {
+	if (0 == strcmp(to, from)) {
 		char_conv_same = 1;
 		char_conv_to = strdup(to);
 		char_conv_from = strdup(from);
 		return 0;
 	}
 
-	if(strcmp(to,"UTF-8")==0 && strcmp(from,"ISO-8859-1")==0) {
+	if (strcmp(to, "UTF-8") == 0 && strcmp(from, "ISO-8859-1") == 0) {
 		char_conv_latin1ToUtf8 = 1;
-	}
-	else if(strcmp(to,"ISO-8859-1")==0 && strcmp(from,"UTF-8")==0) {
+	} else if (strcmp(to, "ISO-8859-1") == 0 && strcmp(from, "UTF-8") == 0) {
 		char_conv_latin1ToUtf8 = -1;
 	}
 
-	if(char_conv_latin1ToUtf8!=0) {
+	if (char_conv_latin1ToUtf8 != 0) {
 		char_conv_to = strdup(to);
 		char_conv_from = strdup(from);
 		return 0;
 	}
-
 #ifdef HAVE_ICONV
-	if((char_conv_iconv = iconv_open(to,from))==(iconv_t)(-1)) return -1;
+	if ((char_conv_iconv = iconv_open(to, from)) == (iconv_t) (-1))
+		return -1;
 
 	char_conv_to = strdup(to);
 	char_conv_from = strdup(from);
@@ -85,37 +85,42 @@ int setCharSetConversion(char * to, char * from) {
 	return -1;
 }
 
-char * convStrDup(char * string) {
-	if(!char_conv_to) return NULL;
+char *convStrDup(char *string)
+{
+	if (!char_conv_to)
+		return NULL;
 
-	if(char_conv_same) return strdup(string);
+	if (char_conv_same)
+		return strdup(string);
 
 #ifdef HAVE_ICONV
-	if(char_conv_use_iconv) {
+	if (char_conv_use_iconv) {
 		char buffer[BUFFER_SIZE];
 		size_t inleft = strlen(string);
-		char * ret;
+		char *ret;
 		size_t outleft;
 		size_t retlen = 0;
 		size_t err;
-		char * bufferPtr;
+		char *bufferPtr;
 
 		ret = malloc(1);
 		ret[0] = '\0';
 
-		while(inleft) {
+		while (inleft) {
 			bufferPtr = buffer;
 			outleft = BUFFER_SIZE;
-			err = iconv(char_conv_iconv,&string,&inleft,&bufferPtr,
-					&outleft);
-			if(outleft==BUFFER_SIZE || (err<0 && errno!=E2BIG)) {
+			err =
+			    iconv(char_conv_iconv, &string, &inleft, &bufferPtr,
+				  &outleft);
+			if (outleft == BUFFER_SIZE
+			    || (err < 0 && errno != E2BIG)) {
 				free(ret);
 				return NULL;
 			}
 
-			ret = realloc(ret,retlen+BUFFER_SIZE-outleft+1);
-			memcpy(ret+retlen,buffer,BUFFER_SIZE-outleft);
-			retlen+=BUFFER_SIZE-outleft;
+			ret = realloc(ret, retlen + BUFFER_SIZE - outleft + 1);
+			memcpy(ret + retlen, buffer, BUFFER_SIZE - outleft);
+			retlen += BUFFER_SIZE - outleft;
 			ret[retlen] = '\0';
 		}
 
@@ -123,8 +128,8 @@ char * convStrDup(char * string) {
 	}
 #endif
 
-	switch(char_conv_latin1ToUtf8) {
-	case 1: 
+	switch (char_conv_latin1ToUtf8) {
+	case 1:
 		return latin1StrToUtf8Dup(string);
 		break;
 	case -1:
@@ -135,10 +140,12 @@ char * convStrDup(char * string) {
 	return NULL;
 }
 
-static void closeCharSetConversion(void) {
-	if(char_conv_to) {
+static void closeCharSetConversion(void)
+{
+	if (char_conv_to) {
 #ifdef HAVE_ICONV
-		if(char_conv_use_iconv) iconv_close(char_conv_iconv);
+		if (char_conv_use_iconv)
+			iconv_close(char_conv_iconv);
 #endif
 		free(char_conv_to);
 		free(char_conv_from);

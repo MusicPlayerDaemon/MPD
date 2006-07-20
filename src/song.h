@@ -34,29 +34,29 @@
 #define SONG_TYPE_URL 2
 
 typedef struct _Song {
-	char * url;
+	char *url;
 	mpd_sint8 type;
-	MpdTag * tag;
-	struct _Directory * parentDir;
+	MpdTag *tag;
+	struct _Directory *parentDir;
 	time_t mtime;
 } Song;
 
 typedef List SongList;
 
-Song * newNullSong();
+Song *newNullSong();
 
-Song * newSong(char * url, int songType, struct _Directory * parentDir);
+Song *newSong(char *url, int songType, struct _Directory *parentDir);
 
 void freeSong(Song *);
 
 void freeJustSong(Song *);
 
-SongList * newSongList();
+SongList *newSongList();
 
 void freeSongList(SongList * list);
 
-Song * addSongToList(SongList * list, char * url, char * utf8path,
-		int songType, struct _Directory * parentDir);
+Song *addSongToList(SongList * list, char *url, char *utf8path,
+		    int songType, struct _Directory *parentDir);
 
 int printSongInfo(FILE * fp, Song * song);
 
@@ -64,13 +64,13 @@ int printSongInfoFromList(FILE * fp, SongList * list);
 
 void writeSongInfoFromList(FILE * fp, SongList * list);
 
-void readSongInfoIntoList(FILE * fp, SongList * list, 
-		struct _Directory * parent);
+void readSongInfoIntoList(FILE * fp, SongList * list,
+			  struct _Directory *parent);
 
 int updateSongInfo(Song * song);
 
 void printSongUrl(FILE * fp, Song * song);
 
-char * getSongUrl(Song * song);
+char *getSongUrl(Song * song);
 
 #endif

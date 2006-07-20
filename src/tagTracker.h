@@ -21,9 +21,9 @@
 
 #include "tag.h"
 
-char * getTagItemString(int type, char * string);
+char *getTagItemString(int type, char *string);
 
-void removeTagItemString(int type, char * string);
+void removeTagItemString(int type, char *string);
 
 int getNumberOfTagItems(int type);
 
@@ -31,7 +31,7 @@ void printMemorySavedByTagTracker();
 
 void resetVisitedFlagsInTagTracker(int type);
 
-void visitInTagTracker(int type, char * str);
+void visitInTagTracker(int type, char *str);
 
 void printVisitedInTagTracker(FILE * fp, int type);
 

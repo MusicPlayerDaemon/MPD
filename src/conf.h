@@ -60,33 +60,33 @@
 #define CONF_ID3V1_ENCODING		"id3v1_encoding"
 
 typedef struct _BlockParam {
-	char * name;
-	char * value;
+	char *name;
+	char *value;
 	int line;
 } BlockParam;
 
 typedef struct _ConfigParam {
-	char * value;
+	char *value;
 	unsigned int line;
-	BlockParam * blockParams;
+	BlockParam *blockParams;
 	int numberOfBlockParams;
 } ConfigParam;
 
 void initConf();
 void finishConf();
 
-void readConf(char * file);
+void readConf(char *file);
 
 /* don't free the returned value
    set _last_ to NULL to get first entry */
-ConfigParam * getNextConfigParam(char * name, ConfigParam * last);
+ConfigParam *getNextConfigParam(char *name, ConfigParam * last);
 
 #define getConfigParam(name) 	getNextConfigParam(name, NULL)
 
-char * getConfigParamValue(char * name);
+char *getConfigParamValue(char *name);
 
-BlockParam * getBlockParam(ConfigParam * param, char * name);
+BlockParam *getBlockParam(ConfigParam * param, char *name);
 
-ConfigParam * parseConfigFilePath(char * name, int force);
+ConfigParam *parseConfigFilePath(char *name, int force);
 
 #endif

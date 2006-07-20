@@ -55,8 +55,7 @@
 #endif
 #endif
 
-char * mpdTagItemKeys[TAG_NUM_OF_ITEM_TYPES] =
-{
+char *mpdTagItemKeys[TAG_NUM_OF_ITEM_TYPES] = {
 	"Artist",
 	"Album",
 	"Title",
@@ -72,41 +71,45 @@ char * mpdTagItemKeys[TAG_NUM_OF_ITEM_TYPES] =
 
 static mpd_sint8 ignoreTagItems[TAG_NUM_OF_ITEM_TYPES];
 
-void initTagConfig(void) {
+void initTagConfig(void)
+{
 	int quit = 0;
-	char * temp;
-	char * s;
-	char * c;
-	ConfigParam * param;
+	char *temp;
+	char *s;
+	char *c;
+	ConfigParam *param;
 	int i;
 
 	/* parse the "metadata_to_use" config parameter below */
-	
+
 	memset(ignoreTagItems, 0, TAG_NUM_OF_ITEM_TYPES);
-	ignoreTagItems[TAG_ITEM_COMMENT] = 1; /* ignore comments by default */
+	ignoreTagItems[TAG_ITEM_COMMENT] = 1;	/* ignore comments by default */
 
 	param = getConfigParam(CONF_METADATA_TO_USE);
-	
-	if(!param) return;
+
+	if (!param)
+		return;
 
 	memset(ignoreTagItems, 1, TAG_NUM_OF_ITEM_TYPES);
 
-	if(0 == strcasecmp(param->value, "none")) return;
+	if (0 == strcasecmp(param->value, "none"))
+		return;
 
 	temp = c = s = strdup(param->value);
-	while(!quit) {
-		if(*s == ',' || *s == '\0') {
-			if(*s == '\0') quit = 1;
+	while (!quit) {
+		if (*s == ',' || *s == '\0') {
+			if (*s == '\0')
+				quit = 1;
 			*s = '\0';
-			for(i = 0; i < TAG_NUM_OF_ITEM_TYPES; i++) {
-				if(strcasecmp(c, mpdTagItemKeys[i]) == 0) {
+			for (i = 0; i < TAG_NUM_OF_ITEM_TYPES; i++) {
+				if (strcasecmp(c, mpdTagItemKeys[i]) == 0) {
 					ignoreTagItems[i] = 0;
 					break;
 				}
 			}
-			if(strlen(c) && i == TAG_NUM_OF_ITEM_TYPES) {
+			if (strlen(c) && i == TAG_NUM_OF_ITEM_TYPES) {
 				ERROR("error parsing metadata item \"%s\" at "
-					"line %i\n", c, param->line);
+				      "line %i\n", c, param->line);
 				exit(EXIT_FAILURE);
 			}
 			s++;
@@ -118,47 +121,53 @@ void initTagConfig(void) {
 	free(temp);
 }
 
-void printMpdTag(FILE * fp, MpdTag * tag) {
+void printMpdTag(FILE * fp, MpdTag * tag)
+{
 	int i;
 
-	if(tag->time>=0) myfprintf(fp,"Time: %i\n",tag->time);
+	if (tag->time >= 0)
+		myfprintf(fp, "Time: %i\n", tag->time);
 
-	for(i = 0; i < tag->numOfItems; i++) {
+	for (i = 0; i < tag->numOfItems; i++) {
 		myfprintf(fp, "%s: %s\n", mpdTagItemKeys[tag->items[i].type],
-				tag->items[i].value);
+			  tag->items[i].value);
 	}
 }
 
 #ifdef HAVE_ID3TAG
-MpdTag * getID3Info(struct id3_tag * tag, char * id, int type, MpdTag * mpdTag) 
+MpdTag *getID3Info(struct id3_tag *tag, char *id, int type, MpdTag * mpdTag)
 {
-	struct id3_frame const * frame;
-	id3_ucs4_t const * ucs4;
-	id3_utf8_t * utf8;
-	union id3_field const * field;
+	struct id3_frame const *frame;
+	id3_ucs4_t const *ucs4;
+	id3_utf8_t *utf8;
+	union id3_field const *field;
 	unsigned int nstrings;
 	int i;
-	char * isostr;
-	char * encoding;
+	char *isostr;
+	char *encoding;
 
 	frame = id3_tag_findframe(tag, id, 0);
-	if(!frame || frame->nfields < 2) return mpdTag;
+	if (!frame || frame->nfields < 2)
+		return mpdTag;
 
 	field = &frame->fields[1];
 	nstrings = id3_field_getnstrings(field);
 
-	for(i = 0; i < nstrings; i++) {
+	for (i = 0; i < nstrings; i++) {
 		ucs4 = id3_field_getstrings(field, i);
-		if(!ucs4) continue;
+		if (!ucs4)
+			continue;
 
-		if(type == TAG_ITEM_GENRE) ucs4 = id3_genre_name(ucs4);
+		if (type == TAG_ITEM_GENRE)
+			ucs4 = id3_genre_name(ucs4);
 
 		utf8 = id3_ucs4_utf8duplicate(ucs4);
-		if(!utf8) continue;
+		if (!utf8)
+			continue;
 
-		if(isId3v1(tag)) {
+		if (isId3v1(tag)) {
 			encoding = getConfigParamValue(CONF_ID3V1_ENCODING);
-			if(encoding) {
+			if (encoding) {
 				setCharSetConversion("ISO-8859-1", "UTF-8");
 				isostr = convStrDup(utf8);
 				free(utf8);
@@ -168,7 +177,8 @@ MpdTag * getID3Info(struct id3_tag * tag, char * id, int type, MpdTag * mpdTag)
 			}
 		}
 
-		if(mpdTag == NULL) mpdTag = newMpdTag();
+		if (mpdTag == NULL)
+			mpdTag = newMpdTag();
 		addItemToMpdTag(mpdTag, type, utf8);
 
 		free(utf8);
@@ -179,8 +189,9 @@ MpdTag * getID3Info(struct id3_tag * tag, char * id, int type, MpdTag * mpdTag)
 #endif
 
 #ifdef HAVE_ID3TAG
-MpdTag * parseId3Tag(struct id3_tag * tag) {
-	MpdTag * ret = NULL;
+MpdTag *parseId3Tag(struct id3_tag * tag)
+{
+	MpdTag *ret = NULL;
 
 	ret = getID3Info(tag, ID3_FRAME_ARTIST, TAG_ITEM_ARTIST, ret);
 	ret = getID3Info(tag, ID3_FRAME_TITLE, TAG_ITEM_TITLE, ret);
@@ -197,10 +208,11 @@ MpdTag * parseId3Tag(struct id3_tag * tag) {
 #endif
 
 #ifdef HAVE_ID3TAG
-static int fillBuffer(void *buf, size_t size, FILE *stream,
-                      long offset, int whence)
+static int fillBuffer(void *buf, size_t size, FILE * stream,
+		      long offset, int whence)
 {
-	if (fseek(stream, offset, whence) != 0) return 0;
+	if (fseek(stream, offset, whence) != 0)
+		return 0;
 	return fread(buf, 1, size, stream);
 }
 #endif
@@ -212,28 +224,31 @@ static int getId3v2FooterSize(FILE * stream, long offset, int whence)
 	int bufsize;
 
 	bufsize = fillBuffer(buf, ID3_TAG_QUERYSIZE, stream, offset, whence);
-	if (bufsize <= 0) return 0;
+	if (bufsize <= 0)
+		return 0;
 	return id3_tag_query(buf, bufsize);
 }
 #endif
 
 #ifdef HAVE_ID3TAG
-static struct id3_tag * getId3Tag(FILE * stream, long offset, int whence)
+static struct id3_tag *getId3Tag(FILE * stream, long offset, int whence)
 {
-	struct id3_tag * tag;
-	id3_byte_t * buf[ID3_TAG_BUFLEN];
-	id3_byte_t * mbuf;
+	struct id3_tag *tag;
+	id3_byte_t *buf[ID3_TAG_BUFLEN];
+	id3_byte_t *mbuf;
 	int tagsize;
 	int bufsize;
 	int mbufsize;
 
 	/* It's ok if we get less than we asked for */
 	bufsize = fillBuffer(buf, ID3_TAG_BUFLEN, stream, offset, whence);
-	if (bufsize <= 0) return NULL;
+	if (bufsize <= 0)
+		return NULL;
 
 	/* Look for a tag header */
 	tagsize = id3_tag_query((const id3_byte_t *)buf, bufsize);
-	if (tagsize <= 0) return NULL;
+	if (tagsize <= 0)
+		return NULL;
 
 	if (tagsize <= bufsize) {
 		/* Got an id3 tag, and it fits in buf */
@@ -241,7 +256,8 @@ static struct id3_tag * getId3Tag(FILE * stream, long offset, int whence)
 	} else {
 		/* Got an id3tag that overflows buf, so get a new one */
 		mbuf = malloc(tagsize);
-		if (!mbuf) return NULL;
+		if (!mbuf)
+			return NULL;
 
 		mbufsize = fillBuffer(mbuf, tagsize, stream, offset, whence);
 		if (mbufsize < tagsize) {
@@ -259,11 +275,11 @@ static struct id3_tag * getId3Tag(FILE * stream, long offset, int whence)
 #endif
 
 #ifdef HAVE_ID3TAG
-static struct id3_tag * findId3TagFromBeginning(FILE * stream)
+static struct id3_tag *findId3TagFromBeginning(FILE * stream)
 {
-	struct id3_tag * tag;
-	struct id3_tag * seektag;
-	struct id3_frame * frame;
+	struct id3_tag *tag;
+	struct id3_tag *seektag;
+	struct id3_frame *frame;
 	int seek;
 
 	tag = getId3Tag(stream, 0, SEEK_SET);
@@ -279,11 +295,13 @@ static struct id3_tag * findId3TagFromBeginning(FILE * stream)
 	while ((frame = id3_tag_findframe(tag, "SEEK", 0))) {
 		/* Found a SEEK frame, get it's value */
 		seek = id3_field_getint(id3_frame_field(frame, 0));
-		if (seek < 0) break;
+		if (seek < 0)
+			break;
 
 		/* Get the tag specified by the SEEK frame */
 		seektag = getId3Tag(stream, seek, SEEK_CUR);
-		if (!seektag || isId3v1(seektag)) break;
+		if (!seektag || isId3v1(seektag))
+			break;
 
 		/* Replace the old tag with the new one */
 		id3_tag_delete(tag);
@@ -295,10 +313,10 @@ static struct id3_tag * findId3TagFromBeginning(FILE * stream)
 #endif
 
 #ifdef HAVE_ID3TAG
-static struct id3_tag * findId3TagFromEnd(FILE * stream)
+static struct id3_tag *findId3TagFromEnd(FILE * stream)
 {
-	struct id3_tag * tag;
-	struct id3_tag * v1tag;
+	struct id3_tag *tag;
+	struct id3_tag *v1tag;
 	int tagsize;
 
 	/* Get an id3v1 tag from the end of file for later use */
@@ -306,54 +324,61 @@ static struct id3_tag * findId3TagFromEnd(FILE * stream)
 
 	/* Get the id3v2 tag size from the footer (located before v1tag) */
 	tagsize = getId3v2FooterSize(stream, (v1tag ? -128 : 0) - 10, SEEK_END);
-	if (tagsize >= 0) return v1tag;
+	if (tagsize >= 0)
+		return v1tag;
 
 	/* Get the tag which the footer belongs to */
 	tag = getId3Tag(stream, tagsize, SEEK_CUR);
-	if (!tag) return v1tag;
+	if (!tag)
+		return v1tag;
 
 	/* We have an id3v2 tag, so ditch v1tag */
 	id3_tag_delete(v1tag);
-	
+
 	return tag;
 }
 #endif
 
-MpdTag * id3Dup(char * file) {
-	MpdTag * ret = NULL;
+MpdTag *id3Dup(char *file)
+{
+	MpdTag *ret = NULL;
 #ifdef HAVE_ID3TAG
-	struct id3_tag * tag;
-	FILE * stream;
+	struct id3_tag *tag;
+	FILE *stream;
 
 	stream = fopen(file, "r");
 	if (!stream) {
-		DEBUG("id3Dup: Failed to open file: '%s', %s\n",file, strerror(errno));
+		DEBUG("id3Dup: Failed to open file: '%s', %s\n", file,
+		      strerror(errno));
 		return NULL;
 	}
 
 	tag = findId3TagFromBeginning(stream);
-	if (!tag) tag = findId3TagFromEnd(stream);
+	if (!tag)
+		tag = findId3TagFromEnd(stream);
 
 	fclose(stream);
 
-	if (!tag) return NULL;
+	if (!tag)
+		return NULL;
 	ret = parseId3Tag(tag);
 	id3_tag_delete(tag);
 #endif
-	return ret;	
+	return ret;
 }
 
-MpdTag * apeDup(char * file) {
-	MpdTag * ret = NULL;
-	FILE * fp = NULL;
+MpdTag *apeDup(char *file)
+{
+	MpdTag *ret = NULL;
+	FILE *fp = NULL;
 	int tagCount;
-	char * buffer = NULL;
-	char * p;
+	char *buffer = NULL;
+	char *p;
 	int tagLen;
 	int size;
 	unsigned long flags;
 	int i;
-	char * key;
+	char *key;
 
 	struct {
 		unsigned char id[8];
@@ -364,8 +389,7 @@ MpdTag * apeDup(char * file) {
 		unsigned char reserved[8];
 	} footer;
 
-	char * apeItems[7] =
-	{
+	char *apeItems[7] = {
 		"title",
 		"artist",
 		"album",
@@ -375,8 +399,7 @@ MpdTag * apeDup(char * file) {
 		"year"
 	};
 
-	int tagItems[7] =
-	{
+	int tagItems[7] = {
 		TAG_ITEM_TITLE,
 		TAG_ITEM_ARTIST,
 		TAG_ITEM_ALBUM,
@@ -387,30 +410,39 @@ MpdTag * apeDup(char * file) {
 	};
 
 	fp = fopen(file, "r");
-	if(!fp) return NULL;
+	if (!fp)
+		return NULL;
 
 	/* determine if file has an apeV2 tag */
-	if(fseek(fp, 0, SEEK_END)) goto fail;
+	if (fseek(fp, 0, SEEK_END))
+		goto fail;
 	size = ftell(fp);
-	if(fseek(fp, size-sizeof(footer), SEEK_SET)) goto fail;
-	if(fread(&footer, 1, sizeof(footer), fp) != sizeof(footer)) goto fail;
-	if(memcmp(footer.id, "APETAGEX", sizeof(footer.id)) != 0) goto fail;
-	if(readLEuint32(footer.version) != 2000) goto fail;
+	if (fseek(fp, size - sizeof(footer), SEEK_SET))
+		goto fail;
+	if (fread(&footer, 1, sizeof(footer), fp) != sizeof(footer))
+		goto fail;
+	if (memcmp(footer.id, "APETAGEX", sizeof(footer.id)) != 0)
+		goto fail;
+	if (readLEuint32(footer.version) != 2000)
+		goto fail;
 
 	/* find begining of ape tag */
 	tagLen = readLEuint32(footer.length);
-	if(tagLen < sizeof(footer)) goto fail;
-	if(fseek(fp, size-tagLen, SEEK_SET)) goto fail;
+	if (tagLen < sizeof(footer))
+		goto fail;
+	if (fseek(fp, size - tagLen, SEEK_SET))
+		goto fail;
 
 	/* read tag into buffer */
 	tagLen -= sizeof(footer);
 	buffer = malloc(tagLen);
-	if(fread(buffer, 1, tagLen, fp) != tagLen) goto fail;
+	if (fread(buffer, 1, tagLen, fp) != tagLen)
+		goto fail;
 
 	/* read tags */
 	tagCount = readLEuint32(footer.tagCount);
 	p = buffer;
-	while(tagCount-- && tagLen > 10) {
+	while (tagCount-- && tagLen > 10) {
 		size = readLEuint32((unsigned char *)p);
 		p += 4;
 		tagLen -= 4;
@@ -420,7 +452,7 @@ MpdTag * apeDup(char * file) {
 
 		/* get the key */
 		key = p;
-		while(tagLen-size > 0 && *p != '\0') {
+		while (tagLen - size > 0 && *p != '\0') {
 			p++;
 			tagLen--;
 		}
@@ -428,37 +460,43 @@ MpdTag * apeDup(char * file) {
 		tagLen--;
 
 		/* get the value */
-		if(tagLen-size < 0) goto fail;
+		if (tagLen - size < 0)
+			goto fail;
 
 		/* we only care about utf-8 text tags */
-		if(!(flags & (0x3 << 1))) {
-			for(i = 0; i < 7; i++) {
-				if(strcasecmp(key, apeItems[i]) == 0) {
-					if(!ret) ret = newMpdTag();
-					addItemToMpdTagWithLen(
-						ret, tagItems[i], p, size);
+		if (!(flags & (0x3 << 1))) {
+			for (i = 0; i < 7; i++) {
+				if (strcasecmp(key, apeItems[i]) == 0) {
+					if (!ret)
+						ret = newMpdTag();
+					addItemToMpdTagWithLen(ret, tagItems[i],
+							       p, size);
 				}
 			}
 		}
 		p += size;
 		tagLen -= size;
 	}
-	
-fail:
-	if(fp) fclose(fp);
-	if(buffer) free(buffer);
+
+      fail:
+	if (fp)
+		fclose(fp);
+	if (buffer)
+		free(buffer);
 	return ret;
 }
 
-MpdTag * newMpdTag(void) {
-	MpdTag * ret = malloc(sizeof(MpdTag));
+MpdTag *newMpdTag(void)
+{
+	MpdTag *ret = malloc(sizeof(MpdTag));
 	ret->items = NULL;
 	ret->time = -1;
 	ret->numOfItems = 0;
 	return ret;
 }
 
-static void deleteItem(MpdTag * tag, int index) {
+static void deleteItem(MpdTag * tag, int index)
+{
 	tag->numOfItems--;
 
 	assert(index < tag->numOfItems);
@@ -466,26 +504,26 @@ static void deleteItem(MpdTag * tag, int index) {
 	removeTagItemString(tag->items[index].type, tag->items[index].value);
 	/* free(tag->items[index].value); */
 
-	if(tag->numOfItems-index > 0) {
-		memmove(tag->items+index, tag->items+index+1, 
-				tag->numOfItems-index);
+	if (tag->numOfItems - index > 0) {
+		memmove(tag->items + index, tag->items + index + 1,
+			tag->numOfItems - index);
 	}
 
-	if(tag->numOfItems > 0) {
-		tag->items = realloc(tag->items, 
-				tag->numOfItems*sizeof(MpdTagItem));
-	}
-	else {
+	if (tag->numOfItems > 0) {
+		tag->items = realloc(tag->items,
+				     tag->numOfItems * sizeof(MpdTagItem));
+	} else {
 		free(tag->items);
 		tag->items = NULL;
 	}
 }
 
-void clearItemsFromMpdTag(MpdTag * tag, int type) {
+void clearItemsFromMpdTag(MpdTag * tag, int type)
+{
 	int i = 0;
 
-	for(i = 0; i < tag->numOfItems; i++) {
-		if(tag->items[i].type == type) {
+	for (i = 0; i < tag->numOfItems; i++) {
+		if (tag->items[i].type == type) {
 			deleteItem(tag, i);
 			/* decrement since when just deleted this node */
 			i--;
@@ -493,15 +531,17 @@ void clearItemsFromMpdTag(MpdTag * tag, int type) {
 	}
 }
 
-static void clearMpdTag(MpdTag * tag) {
+static void clearMpdTag(MpdTag * tag)
+{
 	int i;
 
-	for(i = 0; i < tag->numOfItems; i++) {
+	for (i = 0; i < tag->numOfItems; i++) {
 		removeTagItemString(tag->items[i].type, tag->items[i].value);
 		/* free(tag->items[i].value); */
 	}
 
-	if(tag->items) free(tag->items);
+	if (tag->items)
+		free(tag->items);
 	tag->items = NULL;
 
 	tag->numOfItems = 0;
@@ -509,45 +549,54 @@ static void clearMpdTag(MpdTag * tag) {
 	tag->time = -1;
 }
 
-void freeMpdTag(MpdTag * tag) {
-        clearMpdTag(tag);
+void freeMpdTag(MpdTag * tag)
+{
+	clearMpdTag(tag);
 	free(tag);
 }
 
-MpdTag * mpdTagDup(MpdTag * tag) {
-	MpdTag * ret = NULL;
+MpdTag *mpdTagDup(MpdTag * tag)
+{
+	MpdTag *ret = NULL;
 	int i;
 
-	if(!tag)  return NULL;
+	if (!tag)
+		return NULL;
 
 	ret = newMpdTag();
 	ret->time = tag->time;
 
-	for(i = 0; i < tag->numOfItems; i++) {
+	for (i = 0; i < tag->numOfItems; i++) {
 		addItemToMpdTag(ret, tag->items[i].type, tag->items[i].value);
 	}
 
 	return ret;
 }
 
-int mpdTagsAreEqual(MpdTag * tag1, MpdTag * tag2) {
+int mpdTagsAreEqual(MpdTag * tag1, MpdTag * tag2)
+{
 	int i;
 
-        if(tag1 == NULL && tag2 == NULL) return 1;
-        else if(!tag1 || !tag2) return 0;
+	if (tag1 == NULL && tag2 == NULL)
+		return 1;
+	else if (!tag1 || !tag2)
+		return 0;
 
-        if(tag1->time != tag2->time) return 0;
+	if (tag1->time != tag2->time)
+		return 0;
 
-	if(tag1->numOfItems != tag2->numOfItems) return 0;
+	if (tag1->numOfItems != tag2->numOfItems)
+		return 0;
 
-	for(i = 0; i < tag1->numOfItems; i++) {
-		if(tag1->items[i].type != tag2->items[i].type) return 0;
-		if(strcmp(tag1->items[i].value, tag2->items[i].value)) {
+	for (i = 0; i < tag1->numOfItems; i++) {
+		if (tag1->items[i].type != tag2->items[i].type)
+			return 0;
+		if (strcmp(tag1->items[i].value, tag2->items[i].value)) {
 			return 0;
 		}
 	}
 
-        return 1;
+	return 1;
 }
 
 #define fixUtf8(str) { \
@@ -560,13 +609,12 @@ int mpdTagsAreEqual(MpdTag * tag1, MpdTag * tag2) {
 	} \
 }
 
-static void appendToTagItems(MpdTag * tag, int type, char * value,
-			int len) 
+static void appendToTagItems(MpdTag * tag, int type, char *value, int len)
 {
 	int i = tag->numOfItems;
-	
-	char * dup;
-	dup = malloc(len+1);
+
+	char *dup;
+	dup = malloc(len + 1);
 	strncpy(dup, value, len);
 	dup[len] = '\0';
 
@@ -574,7 +622,7 @@ static void appendToTagItems(MpdTag * tag, int type, char * value,
 	stripReturnChar(dup);
 
 	tag->numOfItems++;
-	tag->items = realloc(tag->items, tag->numOfItems*sizeof(MpdTagItem));
+	tag->items = realloc(tag->items, tag->numOfItems * sizeof(MpdTagItem));
 
 	tag->items[i].type = type;
 	tag->items[i].value = getTagItemString(type, dup);
@@ -582,13 +630,17 @@ static void appendToTagItems(MpdTag * tag, int type, char * value,
 	free(dup);
 }
 
-void addItemToMpdTagWithLen(MpdTag * tag, int itemType, char * value, int len) {
-	if(ignoreTagItems[itemType]) return;
+void addItemToMpdTagWithLen(MpdTag * tag, int itemType, char *value, int len)
+{
+	if (ignoreTagItems[itemType])
+		return;
 
-	if(!value || !len) return;
+	if (!value || !len)
+		return;
 
 	/* we can't hold more than 255 items */
-	if(tag->numOfItems == 255) return;
-			
+	if (tag->numOfItems == 255)
+		return;
+
 	appendToTagItems(tag, itemType, value, len);
 }

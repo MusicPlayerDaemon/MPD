@@ -69,10 +69,10 @@ typedef struct _PlayerControl {
 	volatile mpd_uint32 sampleRate;
 	volatile float totalTime;
 	volatile float elapsedTime;
-        volatile float fileTime;
-	char utf8url[MAXPATHLEN+1];
-	char currentUrl[MAXPATHLEN+1];
-	char erroredUrl[MAXPATHLEN+1];
+	volatile float fileTime;
+	char utf8url[MAXPATHLEN + 1];
+	char currentUrl[MAXPATHLEN + 1];
+	char erroredUrl[MAXPATHLEN + 1];
 	volatile mpd_sint8 queueState;
 	volatile mpd_sint8 queueLockState;
 	volatile mpd_sint8 lockQueue;
@@ -84,9 +84,9 @@ typedef struct _PlayerControl {
 	volatile double totalPlayTime;
 	volatile int decode_pid;
 	volatile mpd_sint8 cycleLogFiles;
-        volatile mpd_sint8 metadataState;
-        MetadataChunk metadataChunk;
-        MetadataChunk fileMetadataChunk;
+	volatile mpd_sint8 metadataState;
+	MetadataChunk metadataChunk;
+	MetadataChunk fileMetadataChunk;
 } PlayerControl;
 
 int playerInitReal();
@@ -115,7 +115,7 @@ int getPlayerState();
 
 void clearPlayerError();
 
-char * getPlayerErrorStr();
+char *getPlayerErrorStr();
 
 int getPlayerError();
 
@@ -149,6 +149,6 @@ int getPlayerChannels();
 
 void playerCycleLogFiles();
 
-Song * playerCurrentDecodeSong();
+Song *playerCurrentDecodeSong();
 
 #endif

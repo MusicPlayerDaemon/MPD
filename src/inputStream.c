@@ -25,48 +25,59 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-void initInputStream(void) {
+void initInputStream(void)
+{
 	inputStream_initFile();
 	inputStream_initHttp();
 }
 
-int openInputStream(InputStream * inStream, char * url) {
-        inStream->offset = 0;
-        inStream->size = 0;
-        inStream->error = 0;
-        inStream->mime = NULL;
-        inStream->seekable = 0;
-        inStream->metaName = NULL;
-        inStream->metaTitle = NULL;
-
-        if(inputStream_fileOpen(inStream,url) == 0) return 0;
-        if(inputStream_httpOpen(inStream,url) == 0) return 0;
-
-        return -1;
-}
-
-int seekInputStream(InputStream * inStream, long offset, int whence) {
-        return inStream->seekFunc(inStream,offset,whence);
-}
-
-size_t readFromInputStream(InputStream * inStream, void * ptr, size_t size, 
-		size_t nmemb)
+int openInputStream(InputStream * inStream, char *url)
 {
-        return inStream->readFunc(inStream,ptr,size,nmemb);
+	inStream->offset = 0;
+	inStream->size = 0;
+	inStream->error = 0;
+	inStream->mime = NULL;
+	inStream->seekable = 0;
+	inStream->metaName = NULL;
+	inStream->metaTitle = NULL;
+
+	if (inputStream_fileOpen(inStream, url) == 0)
+		return 0;
+	if (inputStream_httpOpen(inStream, url) == 0)
+		return 0;
+
+	return -1;
 }
 
-int closeInputStream(InputStream * inStream) {
-        if(inStream->mime) free(inStream->mime);
-        if(inStream->metaName) free(inStream->metaName);
-        if(inStream->metaTitle) free(inStream->metaTitle);
-
-        return inStream->closeFunc(inStream);
+int seekInputStream(InputStream * inStream, long offset, int whence)
+{
+	return inStream->seekFunc(inStream, offset, whence);
 }
 
-int inputStreamAtEOF(InputStream * inStream) {
-        return inStream->atEOFFunc(inStream);
+size_t readFromInputStream(InputStream * inStream, void *ptr, size_t size,
+			   size_t nmemb)
+{
+	return inStream->readFunc(inStream, ptr, size, nmemb);
 }
 
-int bufferInputStream(InputStream * inStream) {
-        return inStream->bufferFunc(inStream);
+int closeInputStream(InputStream * inStream)
+{
+	if (inStream->mime)
+		free(inStream->mime);
+	if (inStream->metaName)
+		free(inStream->metaName);
+	if (inStream->metaTitle)
+		free(inStream->metaTitle);
+
+	return inStream->closeFunc(inStream);
+}
+
+int inputStreamAtEOF(InputStream * inStream)
+{
+	return inStream->atEOFFunc(inStream);
+}
+
+int bufferInputStream(InputStream * inStream)
+{
+	return inStream->bufferFunc(inStream);
 }

@@ -32,96 +32,99 @@
 #define PERMISSION_CONTROL_STRING	"control"
 #define PERMISSION_ADMIN_STRING		"admin"
 
-static List * permission_passwords;
+static List *permission_passwords;
 
 static int permission_default;
 
-static int parsePermissions(char * string) {
+static int parsePermissions(char *string)
+{
 	int permission = 0;
-	char * temp;
-	char * tok;
+	char *temp;
+	char *tok;
 
-	if(!string) return 0;
+	if (!string)
+		return 0;
 
-	temp = strtok_r(string,PERMISSION_SEPERATOR,&tok);
-	while(temp) {
-		if(strcmp(temp,PERMISSION_READ_STRING)==0) {
+	temp = strtok_r(string, PERMISSION_SEPERATOR, &tok);
+	while (temp) {
+		if (strcmp(temp, PERMISSION_READ_STRING) == 0) {
 			permission |= PERMISSION_READ;
-		}
-		else if(strcmp(temp,PERMISSION_ADD_STRING)==0) {
+		} else if (strcmp(temp, PERMISSION_ADD_STRING) == 0) {
 			permission |= PERMISSION_ADD;
-		}
-		else if(strcmp(temp,PERMISSION_CONTROL_STRING)==0) {
+		} else if (strcmp(temp, PERMISSION_CONTROL_STRING) == 0) {
 			permission |= PERMISSION_CONTROL;
-		}
-		else if(strcmp(temp,PERMISSION_ADMIN_STRING)==0) {
+		} else if (strcmp(temp, PERMISSION_ADMIN_STRING) == 0) {
 			permission |= PERMISSION_ADMIN;
-		}
-		else {
-			ERROR("unknown permission \"%s\"\n",temp);
+		} else {
+			ERROR("unknown permission \"%s\"\n", temp);
 			exit(EXIT_FAILURE);
 		}
 
-		temp = strtok_r(NULL,PERMISSION_SEPERATOR,&tok);
+		temp = strtok_r(NULL, PERMISSION_SEPERATOR, &tok);
 	}
 
 	return permission;
 }
 
-void initPermissions(void) {
-	char * temp;
-	char * cp2;
-	char * password;
-	int * permission;
-	ConfigParam * param;
+void initPermissions(void)
+{
+	char *temp;
+	char *cp2;
+	char *password;
+	int *permission;
+	ConfigParam *param;
 
 	permission_passwords = makeList(free, 1);
 
-	permission_default = PERMISSION_READ | PERMISSION_ADD | 
-				PERMISSION_CONTROL | PERMISSION_ADMIN;
+	permission_default = PERMISSION_READ | PERMISSION_ADD |
+	    PERMISSION_CONTROL | PERMISSION_ADMIN;
 
 	param = getNextConfigParam(CONF_PASSWORD, NULL);
 
-	if(param) {
-	        permission_default = 0;
+	if (param) {
+		permission_default = 0;
 
 		do {
-			if(!strstr(param->value, PERMISSION_PASSWORD_CHAR)) {
+			if (!strstr(param->value, PERMISSION_PASSWORD_CHAR)) {
 				ERROR("\"%s\" not found in password string "
-					"\"%s\", line %i\n",
-					PERMISSION_PASSWORD_CHAR,
-					param->value,
-					param->line);
+				      "\"%s\", line %i\n",
+				      PERMISSION_PASSWORD_CHAR,
+				      param->value, param->line);
 				exit(EXIT_FAILURE);
 			}
 
-			if(!(temp = strtok_r(param->value,
-				PERMISSION_PASSWORD_CHAR,&cp2))) {
-				ERROR("something weird just happened in permission.c\n");
+			if (!(temp = strtok_r(param->value,
+					      PERMISSION_PASSWORD_CHAR,
+					      &cp2))) {
+				ERROR
+				    ("something weird just happened in permission.c\n");
 				exit(EXIT_FAILURE);
 			}
-
 
 			password = temp;
 
 			permission = malloc(sizeof(int));
-			*permission = parsePermissions(strtok_r(NULL,"",&cp2));
+			*permission =
+			    parsePermissions(strtok_r(NULL, "", &cp2));
 
-			insertInList(permission_passwords,password,permission);
-		} while((param = getNextConfigParam(CONF_PASSWORD, param)));
+			insertInList(permission_passwords, password,
+				     permission);
+		} while ((param = getNextConfigParam(CONF_PASSWORD, param)));
 	}
 
 	param = getConfigParam(CONF_DEFAULT_PERMS);
 
-	if(param) permission_default = parsePermissions(param->value);
+	if (param)
+		permission_default = parsePermissions(param->value);
 
 	sortList(permission_passwords);
 }
 
-int getPermissionFromPassword(char * password, int * permission) {
-	void * foundPermission;
+int getPermissionFromPassword(char *password, int *permission)
+{
+	void *foundPermission;
 
-	if(findInList(permission_passwords,password,&foundPermission)) {
+	if (findInList(permission_passwords, password, &foundPermission)) {
 		*permission = *((int *)foundPermission);
 		return 0;
 	}
@@ -129,10 +132,12 @@ int getPermissionFromPassword(char * password, int * permission) {
 	return -1;
 }
 
-void finishPermissions(void) {
+void finishPermissions(void)
+{
 	freeList(permission_passwords);
 }
 
-int getDefaultPermissions(void) {
+int getDefaultPermissions(void)
+{
 	return permission_default;
 }

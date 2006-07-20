@@ -32,11 +32,11 @@ typedef struct _DirectoryStat {
 } DirectoryStat;
 
 typedef struct _Directory {
-	char * path;
-	DirectoryList * subDirectories;
-	SongList * songs;
-	struct _Directory * parent;
-	DirectoryStat * stat;
+	char *path;
+	DirectoryList *subDirectories;
+	SongList *songs;
+	struct _Directory *parent;
+	DirectoryStat *stat;
 } Directory;
 
 void readDirectoryDBIfUpdateIsFinished();
@@ -51,7 +51,7 @@ void initMp3Directory();
 
 void closeMp3Directory();
 
-int printDirectoryInfo(FILE * fp, char * dirname);
+int printDirectoryInfo(FILE * fp, char *dirname);
 
 int checkDirectoryDB();
 
@@ -61,14 +61,13 @@ int readDirectoryDB();
 
 void updateMp3Directory();
 
-Song * getSongFromDB(char * file);
+Song *getSongFromDB(char *file);
 
 time_t getDbModTime();
 
-int traverseAllIn(FILE * fp, char * name, 
-			int (*forEachSong)(FILE *, Song *, void *),
-			int (*forEachDir)(FILE *, Directory *, void *),
-			void * data);
+int traverseAllIn(FILE * fp, char *name,
+		  int (*forEachSong) (FILE *, Song *, void *),
+		  int (*forEachDir) (FILE *, Directory *, void *), void *data);
 
 #define getDirectoryPath(dir) ((dir && dir->path) ? dir->path : "")
 

@@ -22,113 +22,126 @@
 #include <string.h>
 #include <stdlib.h>
 
-static char * latin1ToUtf8(char c) {
+static char *latin1ToUtf8(char c)
+{
 	static unsigned char utf8[3];
 	unsigned char uc = c;
 
-	memset(utf8,0,3);
+	memset(utf8, 0, 3);
 
-	if(uc < 128) utf8[0] = uc;
-	else if(uc<192) {
+	if (uc < 128)
+		utf8[0] = uc;
+	else if (uc < 192) {
 		utf8[0] = 194;
 		utf8[1] = uc;
-	}
-	else {
+	} else {
 		utf8[0] = 195;
-		utf8[1] = uc-64;
+		utf8[1] = uc - 64;
 	}
 
 	return (char *)utf8;
 }
 
-char * latin1StrToUtf8Dup(char * latin1) {
+char *latin1StrToUtf8Dup(char *latin1)
+{
 	/* utf8 should have at most two char's per latin1 char */
-	int len = strlen(latin1)*2+1;
-	char * ret = malloc(len);
-	char * cp = ret;
-	char * utf8;
+	int len = strlen(latin1) * 2 + 1;
+	char *ret = malloc(len);
+	char *cp = ret;
+	char *utf8;
 
-	memset(ret,0,len);
+	memset(ret, 0, len);
 
 	len = 0;
 
-	while(*latin1) {
+	while (*latin1) {
 		utf8 = latin1ToUtf8(*latin1);
-		while(*utf8) {
+		while (*utf8) {
 			*(cp++) = *(utf8++);
 			len++;
 		}
 		latin1++;
 	}
 
-	return realloc(ret,len+1);
+	return realloc(ret, len + 1);
 }
 
-static char utf8ToLatin1(char * inUtf8) {
+static char utf8ToLatin1(char *inUtf8)
+{
 	unsigned char c = 0;
-	unsigned char * utf8 = (unsigned char *)inUtf8;
+	unsigned char *utf8 = (unsigned char *)inUtf8;
 
-	if(utf8[0]<128) return utf8[0];
-	else if(utf8[0]==195) c+=64;
-	else if(utf8[0]!=194) return '?';
-	return (char)(c+utf8[1]);
+	if (utf8[0] < 128)
+		return utf8[0];
+	else if (utf8[0] == 195)
+		c += 64;
+	else if (utf8[0] != 194)
+		return '?';
+	return (char)(c + utf8[1]);
 }
 
-static int validateUtf8Char(char * inUtf8Char) {
-	unsigned char * utf8Char = (unsigned char *)inUtf8Char;
+static int validateUtf8Char(char *inUtf8Char)
+{
+	unsigned char *utf8Char = (unsigned char *)inUtf8Char;
 
-	if(utf8Char[0]<0x80) return 1;
-	
-	if(utf8Char[0]>=0xC0 && utf8Char[0]<=0xFD) {
+	if (utf8Char[0] < 0x80)
+		return 1;
+
+	if (utf8Char[0] >= 0xC0 && utf8Char[0] <= 0xFD) {
 		int count = 1;
 		char t = 1 << 5;
 		int i;
-		while(count < 6 && (t & utf8Char[0])) {
+		while (count < 6 && (t & utf8Char[0])) {
 			t = (t >> 1);
 			count++;
 		}
-		if(count > 5) return 0;
-		for(i=1;i<=count;i++) {
-			if(utf8Char[i] < 0x80 || utf8Char[i] > 0xBF) return 0;
+		if (count > 5)
+			return 0;
+		for (i = 1; i <= count; i++) {
+			if (utf8Char[i] < 0x80 || utf8Char[i] > 0xBF)
+				return 0;
 		}
-		return count+1;
-	}
-	else return 0;
+		return count + 1;
+	} else
+		return 0;
 }
 
-int validUtf8String(char * string) {
+int validUtf8String(char *string)
+{
 	int ret;
 
-	while(*string) {
+	while (*string) {
 		ret = validateUtf8Char(string);
-		if(0==ret) return 0;
-		string+= ret;
+		if (0 == ret)
+			return 0;
+		string += ret;
 	}
 
 	return 1;
 }
 
-char * utf8StrToLatin1Dup(char * utf8) {
+char *utf8StrToLatin1Dup(char *utf8)
+{
 	/* utf8 should have at most two char's per latin1 char */
-	int len = strlen(utf8)+1;
-	char * ret = malloc(len);
-	char * cp = ret;
+	int len = strlen(utf8) + 1;
+	char *ret = malloc(len);
+	char *cp = ret;
 	int count;
 
-	memset(ret,0,len);
+	memset(ret, 0, len);
 
 	len = 0;
 
-	while(*utf8) {
+	while (*utf8) {
 		count = validateUtf8Char(utf8);
-		if(!count) {
+		if (!count) {
 			free(ret);
 			return NULL;
 		}
 		*(cp++) = utf8ToLatin1(utf8);
-		utf8+= count;
+		utf8 += count;
 		len++;
 	}
 
-	return realloc(ret,len+1);
+	return realloc(ret, len + 1);
 }

@@ -36,7 +36,6 @@ extern short warningFlushed;
 
 #define SECURE(...) if(logLevel>=LOG_LEVEL_SECURE) \
 				myfprintf(stdout, __VA_ARGS__)
-		
 
 #define DEBUG(...) if(logLevel>=LOG_LEVEL_DEBUG) \
 				myfprintf(stdout, __VA_ARGS__)
@@ -48,7 +47,7 @@ extern short warningFlushed;
 
 void initLog();
 
-void bufferWarning(char * format, ... );
+void bufferWarning(char *format, ...);
 
 void flushWarningLog();
 

@@ -40,59 +40,59 @@
 
 typedef struct _AudioOutput AudioOutput;
 
-typedef int (* AudioOutputTestDefaultDeviceFunc) ();
+typedef int (*AudioOutputTestDefaultDeviceFunc) ();
 
-typedef int (* AudioOutputInitDriverFunc) (AudioOutput * audioOutput, 
-		ConfigParam * param);
+typedef int (*AudioOutputInitDriverFunc) (AudioOutput * audioOutput,
+					  ConfigParam * param);
 
-typedef void (* AudioOutputFinishDriverFunc) (AudioOutput * audioOutput);
+typedef void (*AudioOutputFinishDriverFunc) (AudioOutput * audioOutput);
 
-typedef int (* AudioOutputOpenDeviceFunc) (AudioOutput * audioOutput);
+typedef int (*AudioOutputOpenDeviceFunc) (AudioOutput * audioOutput);
 
-typedef int (* AudioOutputPlayFunc) (AudioOutput * audioOutput,
-                char * playChunk, int size);
+typedef int (*AudioOutputPlayFunc) (AudioOutput * audioOutput,
+				    char *playChunk, int size);
 
-typedef void (* AudioOutputDropBufferedAudioFunc) (AudioOutput * audioOutput);
+typedef void (*AudioOutputDropBufferedAudioFunc) (AudioOutput * audioOutput);
 
-typedef void (* AudioOutputCloseDeviceFunc) (AudioOutput * audioOutput);
+typedef void (*AudioOutputCloseDeviceFunc) (AudioOutput * audioOutput);
 
-typedef void (* AudioOutputSendMetadataFunc) (AudioOutput * audioOutput,
-		MpdTag * tag);
+typedef void (*AudioOutputSendMetadataFunc) (AudioOutput * audioOutput,
+					     MpdTag * tag);
 
 struct _AudioOutput {
 	int open;
-	char * name;
-	char * type;
+	char *name;
+	char *type;
 
-        AudioOutputFinishDriverFunc finishDriverFunc;
-        AudioOutputOpenDeviceFunc openDeviceFunc;
-        AudioOutputPlayFunc playFunc;
-        AudioOutputDropBufferedAudioFunc dropBufferedAudioFunc;
-        AudioOutputCloseDeviceFunc closeDeviceFunc;
+	AudioOutputFinishDriverFunc finishDriverFunc;
+	AudioOutputOpenDeviceFunc openDeviceFunc;
+	AudioOutputPlayFunc playFunc;
+	AudioOutputDropBufferedAudioFunc dropBufferedAudioFunc;
+	AudioOutputCloseDeviceFunc closeDeviceFunc;
 	AudioOutputSendMetadataFunc sendMetdataFunc;
 
 	int convertAudioFormat;
 	AudioFormat inAudioFormat;
 	AudioFormat outAudioFormat;
 	AudioFormat reqAudioFormat;
-	char * convBuffer;
+	char *convBuffer;
 	int convBufferLen;
 	int sameInAndOutFormats;
 
-        void * data;
+	void *data;
 };
 
 typedef struct _AudioOutputPlugin {
-	char * name;
+	char *name;
 
 	AudioOutputTestDefaultDeviceFunc testDefaultDeviceFunc;
-        AudioOutputInitDriverFunc initDriverFunc;
-        AudioOutputFinishDriverFunc finishDriverFunc;
-        AudioOutputOpenDeviceFunc openDeviceFunc;
-        AudioOutputPlayFunc playFunc;
-        AudioOutputDropBufferedAudioFunc dropBufferedAudioFunc;
-        AudioOutputCloseDeviceFunc closeDeviceFunc;
-        AudioOutputSendMetadataFunc sendMetdataFunc;
+	AudioOutputInitDriverFunc initDriverFunc;
+	AudioOutputFinishDriverFunc finishDriverFunc;
+	AudioOutputOpenDeviceFunc openDeviceFunc;
+	AudioOutputPlayFunc playFunc;
+	AudioOutputDropBufferedAudioFunc dropBufferedAudioFunc;
+	AudioOutputCloseDeviceFunc closeDeviceFunc;
+	AudioOutputSendMetadataFunc sendMetdataFunc;
 } AudioOutputPlugin;
 
 void initAudioOutputPlugins();
@@ -101,14 +101,14 @@ void finishAudioOutputPlugins();
 void loadAudioOutputPlugin(AudioOutputPlugin * audioOutputPlugin);
 void unloadAudioOutputPlugin(AudioOutputPlugin * audioOutputPlugin);
 
-AudioOutput * newAudioOutput(ConfigParam * param);
+AudioOutput *newAudioOutput(ConfigParam * param);
 int openAudioOutput(AudioOutput * audioOutput, AudioFormat * audioFormat);
-int playAudioOutput(AudioOutput * audioOutput, char * playChunk, int size);
+int playAudioOutput(AudioOutput * audioOutput, char *playChunk, int size);
 void dropBufferedAudioOutput(AudioOutput * audioOutput);
 void closeAudioOutput(AudioOutput * audioOutput);
 void finishAudioOutput(AudioOutput * audioOutput);
 int keepAudioOutputAlive(AudioOutput * audioOutput, int ms);
 void sendMetadataToAudioOutput(AudioOutput * audioOutput, MpdTag * tag);
 
-void printAllOutputPluginTypes(FILE *fp);
+void printAllOutputPluginTypes(FILE * fp);
 #endif

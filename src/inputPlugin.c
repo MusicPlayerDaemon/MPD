@@ -24,47 +24,59 @@
 #include <stdlib.h>
 #include <string.h>
 
-static List * inputPlugin_list = NULL;
+static List *inputPlugin_list = NULL;
 
-void loadInputPlugin(InputPlugin * inputPlugin) {
-	if(!inputPlugin) return;
-	if(!inputPlugin->name) return;
+void loadInputPlugin(InputPlugin * inputPlugin)
+{
+	if (!inputPlugin)
+		return;
+	if (!inputPlugin->name)
+		return;
 
-	if(inputPlugin->initFunc && inputPlugin->initFunc() < 0) return;
+	if (inputPlugin->initFunc && inputPlugin->initFunc() < 0)
+		return;
 
 	insertInList(inputPlugin_list, inputPlugin->name, (void *)inputPlugin);
 }
 
-void unloadInputPlugin(InputPlugin * inputPlugin) {
-	if(inputPlugin->finishFunc) inputPlugin->finishFunc();
+void unloadInputPlugin(InputPlugin * inputPlugin)
+{
+	if (inputPlugin->finishFunc)
+		inputPlugin->finishFunc();
 	deleteFromList(inputPlugin_list, inputPlugin->name);
 }
 
-static int stringFoundInStringArray(char ** array, char * suffix) {
-	while(array && *array) {
-		if(strcasecmp(*array, suffix) == 0) return 1;
+static int stringFoundInStringArray(char **array, char *suffix)
+{
+	while (array && *array) {
+		if (strcasecmp(*array, suffix) == 0)
+			return 1;
 		array++;
 	}
-	
+
 	return 0;
 }
 
-InputPlugin * getInputPluginFromSuffix(char * suffix, unsigned int next) {
-	static ListNode * pos = NULL;
-	ListNode * node;
-	InputPlugin * plugin;
+InputPlugin *getInputPluginFromSuffix(char *suffix, unsigned int next)
+{
+	static ListNode *pos = NULL;
+	ListNode *node;
+	InputPlugin *plugin;
 
-	if(suffix == NULL) return NULL;
-	
+	if (suffix == NULL)
+		return NULL;
+
 	if (next) {
-		if (pos) node = pos;
-		else return NULL;
+		if (pos)
+			node = pos;
+		else
+			return NULL;
 	} else
 		node = inputPlugin_list->firstNode;
 
-	while(node != NULL) {
+	while (node != NULL) {
 		plugin = node->data;
-		if(stringFoundInStringArray(plugin->suffixes, suffix)) {
+		if (stringFoundInStringArray(plugin->suffixes, suffix)) {
 			pos = node->nextNode;
 			return plugin;
 		}
@@ -74,18 +86,20 @@ InputPlugin * getInputPluginFromSuffix(char * suffix, unsigned int next) {
 	return NULL;
 }
 
-InputPlugin * getInputPluginFromMimeType(char * mimeType, unsigned int next) {
-	static ListNode * pos = NULL;
-	ListNode * node;
-	InputPlugin * plugin;
+InputPlugin *getInputPluginFromMimeType(char *mimeType, unsigned int next)
+{
+	static ListNode *pos = NULL;
+	ListNode *node;
+	InputPlugin *plugin;
 
-	if(mimeType == NULL) return NULL;
-	
+	if (mimeType == NULL)
+		return NULL;
+
 	node = (next && pos) ? pos : inputPlugin_list->firstNode;
 
-	while(node != NULL) {
+	while (node != NULL) {
 		plugin = node->data;
-		if(stringFoundInStringArray(plugin->mimeTypes, mimeType)) {
+		if (stringFoundInStringArray(plugin->mimeTypes, mimeType)) {
 			pos = node->nextNode;
 			return plugin;
 		}
@@ -95,23 +109,25 @@ InputPlugin * getInputPluginFromMimeType(char * mimeType, unsigned int next) {
 	return NULL;
 }
 
-InputPlugin * getInputPluginFromName(char * name) {
-	void * plugin = NULL;
+InputPlugin *getInputPluginFromName(char *name)
+{
+	void *plugin = NULL;
 
 	findInList(inputPlugin_list, name, &plugin);
 
-	return (InputPlugin *)plugin;
+	return (InputPlugin *) plugin;
 }
 
-void printAllInputPluginSuffixes(FILE * fp) {
-	ListNode * node = inputPlugin_list->firstNode;
-	InputPlugin * plugin;
-	char ** suffixes;
+void printAllInputPluginSuffixes(FILE * fp)
+{
+	ListNode *node = inputPlugin_list->firstNode;
+	InputPlugin *plugin;
+	char **suffixes;
 
-	while(node) {
-		plugin = (InputPlugin *)node->data;
+	while (node) {
+		plugin = (InputPlugin *) node->data;
 		suffixes = plugin->suffixes;
-		while(suffixes && *suffixes) {
+		while (suffixes && *suffixes) {
 			myfprintf(fp, "%s ", *suffixes);
 			suffixes++;
 		}
@@ -130,7 +146,8 @@ extern InputPlugin mpcPlugin;
 extern InputPlugin aacPlugin;
 extern InputPlugin modPlugin;
 
-void initInputPlugins(void) {
+void initInputPlugins(void)
+{
 	inputPlugin_list = makeList(NULL, 1);
 
 	/* load plugins here */
@@ -144,6 +161,7 @@ void initInputPlugins(void) {
 	loadInputPlugin(&modPlugin);
 }
 
-void finishInputPlugins(void) {
+void finishInputPlugins(void)
+{
 	freeList(inputPlugin_list);
 }

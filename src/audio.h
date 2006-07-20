@@ -42,7 +42,7 @@ int cmpAudioFormat(AudioFormat * dest, AudioFormat * src);
 
 void getOutputAudioFormat(AudioFormat * inFormat, AudioFormat * outFormat);
 
-int parseAudioConfig(AudioFormat * audioFormat, char * conf);
+int parseAudioConfig(AudioFormat * audioFormat, char *conf);
 
 /* make sure initPlayerData is called before this function!! */
 void initAudioConfig();
@@ -55,7 +55,7 @@ void finishAudioDriver();
 
 int openAudioDevice(AudioFormat * audioFormat);
 
-int playAudio(char * playChunk,int size);
+int playAudio(char *playChunk, int size);
 
 void dropBufferedAudio();
 

@@ -28,18 +28,21 @@
 
 Stats stats;
 
-void initStats(void) {
+void initStats(void)
+{
 	stats.daemonStart = time(NULL);
 	stats.numberOfSongs = 0;
 }
 
-int printStats(FILE * fp) {
-	myfprintf(fp,"artists: %li\n", getNumberOfTagItems(TAG_ITEM_ARTIST));
-	myfprintf(fp,"albums: %li\n", getNumberOfTagItems(TAG_ITEM_ALBUM));
-	myfprintf(fp,"songs: %i\n",stats.numberOfSongs);
-	myfprintf(fp,"uptime: %li\n",time(NULL)-stats.daemonStart);
-	myfprintf(fp,"playtime: %li\n",(long)(getPlayerTotalPlayTime()+0.5));
-	myfprintf(fp,"db_playtime: %li\n",stats.dbPlayTime);
-	myfprintf(fp,"db_update: %li\n",getDbModTime());
+int printStats(FILE * fp)
+{
+	myfprintf(fp, "artists: %li\n", getNumberOfTagItems(TAG_ITEM_ARTIST));
+	myfprintf(fp, "albums: %li\n", getNumberOfTagItems(TAG_ITEM_ALBUM));
+	myfprintf(fp, "songs: %i\n", stats.numberOfSongs);
+	myfprintf(fp, "uptime: %li\n", time(NULL) - stats.daemonStart);
+	myfprintf(fp, "playtime: %li\n",
+		  (long)(getPlayerTotalPlayTime() + 0.5));
+	myfprintf(fp, "db_playtime: %li\n", stats.dbPlayTime);
+	myfprintf(fp, "db_update: %li\n", getDbModTime());
 	return 0;
 }

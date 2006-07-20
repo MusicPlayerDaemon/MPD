@@ -34,17 +34,17 @@
 #define CONN_ATTEMPT_INTERVAL 60
 
 typedef struct _PulseData {
-	pa_simple * s;
-	char * server;
-	char * sink;
+	pa_simple *s;
+	char *server;
+	char *sink;
 	int connAttempts;
 	time_t lastAttempt;
 } PulseData;
 
-static PulseData * newPulseData()
+static PulseData *newPulseData()
 {
-	PulseData * ret;
-	
+	PulseData *ret;
+
 	ret = malloc(sizeof(PulseData));
 
 	ret->s = NULL;
@@ -58,16 +58,18 @@ static PulseData * newPulseData()
 
 static void freePulseData(PulseData * pd)
 {
-	if (pd->server) free(pd->server);
-	if (pd->sink) free(pd->sink);
+	if (pd->server)
+		free(pd->server);
+	if (pd->sink)
+		free(pd->sink);
 	free(pd);
 }
 
 static int pulse_initDriver(AudioOutput * audioOutput, ConfigParam * param)
 {
-	BlockParam * server = NULL;
-	BlockParam * sink = NULL;
-	PulseData * pd;
+	BlockParam *server = NULL;
+	BlockParam *sink = NULL;
+	PulseData *pd;
 
 	if (param) {
 		server = getBlockParam(param, "server");
@@ -89,7 +91,7 @@ static void pulse_finishDriver(AudioOutput * audioOutput)
 
 static int pulse_testDefault()
 {
-	pa_simple * s;
+	pa_simple *s;
 	pa_sample_spec ss;
 	int error;
 
@@ -98,10 +100,10 @@ static int pulse_testDefault()
 	ss.channels = 2;
 
 	s = pa_simple_new(NULL, MPD_PULSE_NAME, PA_STREAM_PLAYBACK, NULL,
-	                  MPD_PULSE_NAME, &ss, NULL, NULL, &error);
+			  MPD_PULSE_NAME, &ss, NULL, NULL, &error);
 	if (!s) {
 		WARNING("Cannot connect to default PulseAudio server: %s\n",
-		        pa_strerror(error));
+			pa_strerror(error));
 		return -1;
 	}
 
@@ -112,8 +114,8 @@ static int pulse_testDefault()
 
 static int pulse_openDevice(AudioOutput * audioOutput)
 {
-	PulseData * pd;
-	AudioFormat * audioFormat;
+	PulseData *pd;
+	AudioFormat *audioFormat;
 	pa_sample_spec ss;
 	time_t t;
 	int error;
@@ -123,7 +125,8 @@ static int pulse_openDevice(AudioOutput * audioOutput)
 	audioFormat = &audioOutput->outAudioFormat;
 
 	if (pd->connAttempts != 0 &&
-	    (t - pd->lastAttempt) < CONN_ATTEMPT_INTERVAL) return -1;
+	    (t - pd->lastAttempt) < CONN_ATTEMPT_INTERVAL)
+		return -1;
 
 	pd->connAttempts++;
 	pd->lastAttempt = t;
@@ -139,10 +142,10 @@ static int pulse_openDevice(AudioOutput * audioOutput)
 	ss.channels = audioFormat->channels;
 
 	pd->s = pa_simple_new(pd->server, MPD_PULSE_NAME, PA_STREAM_PLAYBACK,
-	                      pd->sink, audioOutput->name, &ss, NULL, NULL,
-	                      &error);
+			      pd->sink, audioOutput->name, &ss, NULL, NULL,
+			      &error);
 	if (!pd->s) {
-		ERROR("Cannot connect to server in PulseAudio output " \
+		ERROR("Cannot connect to server in PulseAudio output "
 		      "\"%s\" (attempt %i): %s\n", audioOutput->name,
 		      pd->connAttempts, pa_strerror(error));
 		return -1;
@@ -151,7 +154,7 @@ static int pulse_openDevice(AudioOutput * audioOutput)
 	pd->connAttempts = 0;
 	audioOutput->open = 1;
 
-	DEBUG("PulseAudio output \"%s\" connected and playing %i bit, %i " \
+	DEBUG("PulseAudio output \"%s\" connected and playing %i bit, %i "
 	      "channel audio at %i Hz\n", audioOutput->name, audioFormat->bits,
 	      audioFormat->channels, audioFormat->sampleRate);
 
@@ -160,18 +163,18 @@ static int pulse_openDevice(AudioOutput * audioOutput)
 
 static void pulse_dropBufferedAudio(AudioOutput * audioOutput)
 {
-	PulseData * pd;
+	PulseData *pd;
 	int error;
 
 	pd = audioOutput->data;
-	if (pa_simple_flush(pd->s, &error) < 0) 
+	if (pa_simple_flush(pd->s, &error) < 0)
 		WARNING("Flush failed in PulseAudio output \"%s\": %s\n",
-		        audioOutput->name, pa_strerror(error));
+			audioOutput->name, pa_strerror(error));
 }
 
 static void pulse_closeDevice(AudioOutput * audioOutput)
 {
-	PulseData * pd;
+	PulseData *pd;
 
 	pd = audioOutput->data;
 	if (pd->s) {
@@ -182,16 +185,15 @@ static void pulse_closeDevice(AudioOutput * audioOutput)
 	audioOutput->open = 0;
 }
 
-static int pulse_playAudio(AudioOutput * audioOutput, char * playChunk,
-                           int size)
+static int pulse_playAudio(AudioOutput * audioOutput, char *playChunk, int size)
 {
-	PulseData * pd;
+	PulseData *pd;
 	int error;
 
 	pd = audioOutput->data;
 
 	if (pa_simple_write(pd->s, playChunk, size, &error) < 0) {
-		ERROR("PulseAudio output \"%s\" disconnecting due to write " \
+		ERROR("PulseAudio output \"%s\" disconnecting due to write "
 		      "error: %s\n", audioOutput->name, pa_strerror(error));
 		pulse_closeDevice(audioOutput);
 		return -1;
@@ -209,11 +211,10 @@ AudioOutputPlugin pulsePlugin = {
 	pulse_playAudio,
 	pulse_dropBufferedAudio,
 	pulse_closeDevice,
-	NULL, /* sendMetadataFunc */
+	NULL,			/* sendMetadataFunc */
 };
 
-#else /* HAVE_PULSE */
+#else				/* HAVE_PULSE */
 
 DISABLED_AUDIO_OUTPUT_PLUGIN(pulsePlugin)
-
-#endif /* HAVE_PULSE */
+#endif				/* HAVE_PULSE */

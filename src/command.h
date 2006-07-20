@@ -32,13 +32,13 @@
 #define COMMAND_RETURN_CLOSE	20
 #define COMMAND_MASTER_READY	30
 
-extern char * current_command;
+extern char *current_command;
 extern int command_listNum;
 
-int processListOfCommands(FILE * fp, int * permission, int * expired, 
-		int listOK, List * list);
+int processListOfCommands(FILE * fp, int *permission, int *expired,
+			  int listOK, List * list);
 
-int processCommand(FILE * fp, int * permission, char * commandString);
+int processCommand(FILE * fp, int *permission, char *commandString);
 
 void initCommands();
 

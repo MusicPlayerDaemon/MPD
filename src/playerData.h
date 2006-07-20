@@ -42,7 +42,7 @@ typedef struct _PlayerData {
 
 void initPlayerData();
 
-PlayerData * getPlayerData();
+PlayerData *getPlayerData();
 int getPlayerPid();
 void setPlayerPid(int pid);
 

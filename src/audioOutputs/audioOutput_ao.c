@@ -34,122 +34,120 @@ static int driverInitCount = 0;
 typedef struct _AoData {
 	int writeSize;
 	int driverId;
-	ao_option * options;
-	ao_device * device;
+	ao_option *options;
+	ao_device *device;
 } AoData;
 
-static AoData * newAoData() {
-	AoData * ret = malloc(sizeof(AoData));
+static AoData *newAoData()
+{
+	AoData *ret = malloc(sizeof(AoData));
 	ret->device = NULL;
 	ret->options = NULL;
 
 	return ret;
 }
 
-static void audioOutputAo_error() {
-	if(errno==AO_ENOTLIVE) {
+static void audioOutputAo_error()
+{
+	if (errno == AO_ENOTLIVE) {
 		ERROR("not a live ao device\n");
-	}
-	else if(errno==AO_EOPENDEVICE) {
+	} else if (errno == AO_EOPENDEVICE) {
 		ERROR("not able to open audio device\n");
-	}
-	else if(errno==AO_EBADOPTION) {
+	} else if (errno == AO_EBADOPTION) {
 		ERROR("bad driver option\n");
 	}
 }
 
 static int audioOutputAo_initDriver(AudioOutput * audioOutput,
-		ConfigParam * param)
+				    ConfigParam * param)
 {
-	ao_info * ai;
-	char * dup;
-	char * stk1;
-	char * stk2;
-	char * n1;
-	char * key;
-	char * value;
-	char * test;
-	AoData * ad  = newAoData();
-	BlockParam * blockParam;
+	ao_info *ai;
+	char *dup;
+	char *stk1;
+	char *stk2;
+	char *n1;
+	char *key;
+	char *value;
+	char *test;
+	AoData *ad = newAoData();
+	BlockParam *blockParam;
 
 	audioOutput->data = ad;
 
-	if((blockParam = getBlockParam(param, "write_size"))) {
+	if ((blockParam = getBlockParam(param, "write_size"))) {
 		ad->writeSize = strtol(blockParam->value, &test, 10);
-		if (*test!='\0') {
+		if (*test != '\0') {
 			ERROR("\"%s\" is not a valid write size at line %i\n",
-				blockParam->value, blockParam->line);
+			      blockParam->value, blockParam->line);
 			exit(EXIT_FAILURE);
 		}
-	}
-	else ad->writeSize = 1024;
+	} else
+		ad->writeSize = 1024;
 
-	if(driverInitCount == 0) {
+	if (driverInitCount == 0) {
 		ao_initialize();
 	}
 	driverInitCount++;
 
 	blockParam = getBlockParam(param, "driver");
 
-	if(!blockParam || 0 == strcmp(blockParam->value,"default")) {
+	if (!blockParam || 0 == strcmp(blockParam->value, "default")) {
 		ad->driverId = ao_default_driver_id();
-	}
-	else if((ad->driverId = 
-		ao_driver_id(blockParam->value))<0) {
+	} else if ((ad->driverId = ao_driver_id(blockParam->value)) < 0) {
 		ERROR("\"%s\" is not a valid ao driver at line %i\n",
-			blockParam->value, blockParam->line);
+		      blockParam->value, blockParam->line);
 		exit(EXIT_FAILURE);
 	}
-	
-	if((ai = ao_driver_info(ad->driverId))==NULL) {
+
+	if ((ai = ao_driver_info(ad->driverId)) == NULL) {
 		ERROR("problems getting driver info for device defined at "
-				"line %i\n", param->line);
+		      "line %i\n", param->line);
 		ERROR("you may not have permission to the audio device\n");
 		exit(EXIT_FAILURE);
 	}
 
-	DEBUG("using ao driver \"%s\" for \"%s\"\n", ai->short_name, 
-			audioOutput->name); 
+	DEBUG("using ao driver \"%s\" for \"%s\"\n", ai->short_name,
+	      audioOutput->name);
 
 	blockParam = getBlockParam(param, "options");
 
-	if(blockParam) {
+	if (blockParam) {
 		dup = strdup(blockParam->value);
-	}
-	else dup = strdup("");
+	} else
+		dup = strdup("");
 
-	if(strlen(dup)) {
+	if (strlen(dup)) {
 		stk1 = NULL;
-		n1 = strtok_r(dup,";",&stk1);
-		while(n1) {
+		n1 = strtok_r(dup, ";", &stk1);
+		while (n1) {
 			stk2 = NULL;
-			key = strtok_r(n1,"=",&stk2);
-			if(!key) {
+			key = strtok_r(n1, "=", &stk2);
+			if (!key) {
 				ERROR("problems parsing "
-					"ao_driver_options \"%s\"\n", n1);
+				      "ao_driver_options \"%s\"\n", n1);
 				exit(EXIT_FAILURE);
 			}
 			/*found = 0;
-			for(i=0;i<ai->option_count;i++) {
-				if(strcmp(ai->options[i],key)==0) {
-					found = 1;
-					break;
-				}
-			}
-			if(!found) {
-				ERROR("\"%s\" is not an option for "
-					 "\"%s\" ao driver\n",key,
-					 ai->short_name);
-				exit(EXIT_FAILURE);
-			}*/
-			value = strtok_r(NULL,"",&stk2);
-			if(!value) {
+			   for(i=0;i<ai->option_count;i++) {
+			   if(strcmp(ai->options[i],key)==0) {
+			   found = 1;
+			   break;
+			   }
+			   }
+			   if(!found) {
+			   ERROR("\"%s\" is not an option for "
+			   "\"%s\" ao driver\n",key,
+			   ai->short_name);
+			   exit(EXIT_FAILURE);
+			   } */
+			value = strtok_r(NULL, "", &stk2);
+			if (!value) {
 				ERROR("problems parsing "
-					"ao_driver_options \"%s\"\n", n1);
+				      "ao_driver_options \"%s\"\n", n1);
 				exit(EXIT_FAILURE);
 			}
-			ao_append_option(&ad->options,key,value);
-			n1 = strtok_r(NULL,";",&stk1);
+			ao_append_option(&ad->options, key, value);
+			n1 = strtok_r(NULL, ";", &stk1);
 		}
 	}
 	free(dup);
@@ -157,28 +155,33 @@ static int audioOutputAo_initDriver(AudioOutput * audioOutput,
 	return 0;
 }
 
-static void freeAoData(AoData * ad) {
+static void freeAoData(AoData * ad)
+{
 	ao_free_options(ad->options);
 	free(ad);
 }
 
-static void audioOutputAo_finishDriver(AudioOutput * audioOutput) {
-	AoData * ad = (AoData *)audioOutput->data;
+static void audioOutputAo_finishDriver(AudioOutput * audioOutput)
+{
+	AoData *ad = (AoData *) audioOutput->data;
 	freeAoData(ad);
 
 	driverInitCount--;
 
-	if(driverInitCount == 0) ao_shutdown();
+	if (driverInitCount == 0)
+		ao_shutdown();
 }
 
-static void audioOutputAo_dropBufferedAudio(AudioOutput * audioOutput) {
+static void audioOutputAo_dropBufferedAudio(AudioOutput * audioOutput)
+{
 	/* not supported by libao */
 }
 
-static void audioOutputAo_closeDevice(AudioOutput * audioOutput) {
-	AoData * ad = (AoData *) audioOutput->data;
+static void audioOutputAo_closeDevice(AudioOutput * audioOutput)
+{
+	AoData *ad = (AoData *) audioOutput->data;
 
-	if(ad->device) {
+	if (ad->device) {
 		ao_close(ad->device);
 		ad->device = NULL;
 	}
@@ -186,11 +189,12 @@ static void audioOutputAo_closeDevice(AudioOutput * audioOutput) {
 	audioOutput->open = 0;
 }
 
-static int audioOutputAo_openDevice(AudioOutput * audioOutput) {
+static int audioOutputAo_openDevice(AudioOutput * audioOutput)
+{
 	ao_sample_format format;
-	AoData * ad = (AoData *)audioOutput->data;
+	AoData *ad = (AoData *) audioOutput->data;
 
-	if(ad->device) {
+	if (ad->device) {
 		audioOutputAo_closeDevice(audioOutput);
 	}
 
@@ -201,41 +205,41 @@ static int audioOutputAo_openDevice(AudioOutput * audioOutput) {
 
 	ad->device = ao_open_live(ad->driverId, &format, ad->options);
 
-	if(ad->device==NULL) return -1;
+	if (ad->device == NULL)
+		return -1;
 
 	audioOutput->open = 1;
 
 	return 0;
 }
 
-
-static int audioOutputAo_play(AudioOutput * audioOutput, char * playChunk, 
-		int size) 
+static int audioOutputAo_play(AudioOutput * audioOutput, char *playChunk,
+			      int size)
 {
 	int send;
-	AoData * ad = (AoData *)audioOutput->data;
+	AoData *ad = (AoData *) audioOutput->data;
 
-	if(ad->device==NULL) return -1;
-	
-	while(size>0) {
+	if (ad->device == NULL)
+		return -1;
+
+	while (size > 0) {
 		send = ad->writeSize > size ? size : ad->writeSize;
-		
-		if(ao_play(ad->device, playChunk, send)==0) {
+
+		if (ao_play(ad->device, playChunk, send) == 0) {
 			audioOutputAo_error();
 			ERROR("closing audio device due to write error\n");
 			audioOutputAo_closeDevice(audioOutput);
 			return -1;
 		}
 
-		playChunk+=send;
-		size-=send;
+		playChunk += send;
+		size -= send;
 	}
 
 	return 0;
 }
 
-AudioOutputPlugin aoPlugin = 
-{
+AudioOutputPlugin aoPlugin = {
 	"ao",
 	NULL,
 	audioOutputAo_initDriver,
@@ -244,7 +248,7 @@ AudioOutputPlugin aoPlugin =
 	audioOutputAo_play,
 	audioOutputAo_dropBufferedAudio,
 	audioOutputAo_closeDevice,
-	NULL, /* sendMetadataFunc */
+	NULL,			/* sendMetadataFunc */
 };
 
 #else
@@ -252,5 +256,4 @@ AudioOutputPlugin aoPlugin =
 #include <stdio.h>
 
 DISABLED_AUDIO_OUTPUT_PLUGIN(aoPlugin)
-
 #endif

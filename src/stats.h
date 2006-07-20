@@ -28,7 +28,7 @@ typedef struct _Stats {
 	int numberOfSongs;
 	unsigned long dbPlayTime;
 	/*unsigned long playTime;
-	unsigned long songsPlayed;*/
+	   unsigned long songsPlayed; */
 } Stats;
 
 extern Stats stats;

@@ -39,23 +39,26 @@
 
 #define MIKMOD_FRAME_SIZE	4096
 
-static BOOL mod_mpd_Init(void) {
+static BOOL mod_mpd_Init(void)
+{
 	return VC_Init();
 }
 
-static void mod_mpd_Exit(void) {
+static void mod_mpd_Exit(void)
+{
 	VC_Exit();
 }
 
-static void mod_mpd_Update(void) {
+static void mod_mpd_Update(void)
+{
 }
 
-static BOOL mod_mpd_IsThere(void) {
+static BOOL mod_mpd_IsThere(void)
+{
 	return 1;
 }
 
-static MDRIVER drv_mpd =
-{
+static MDRIVER drv_mpd = {
 	NULL,
 	"MPD",
 	"MPD Output Driver v0.1",
@@ -92,10 +95,12 @@ static MDRIVER drv_mpd =
 static int mod_mikModInitiated = 0;
 static int mod_mikModInitError = 0;
 
-static int mod_initMikMod(void) {
-	if(mod_mikModInitError) return -1;
+static int mod_initMikMod(void)
+{
+	if (mod_mikModInitError)
+		return -1;
 
-	if(!mod_mikModInitiated) {
+	if (!mod_mikModInitiated) {
 		mod_mikModInitiated = 1;
 
 		md_device = 0;
@@ -108,11 +113,11 @@ static int mod_initMikMod(void) {
 	md_pansep = 64;
 	md_mixfreq = 44100;
 	md_mode = (DMODE_SOFT_MUSIC | DMODE_INTERP | DMODE_STEREO |
-			DMODE_16BITS);
+		   DMODE_16BITS);
 
-	if(MikMod_Init("")) {
-		ERROR("Could not init MikMod: %s\n", 
-			MikMod_strerror(MikMod_errno));
+	if (MikMod_Init("")) {
+		ERROR("Could not init MikMod: %s\n",
+		      MikMod_strerror(MikMod_errno));
 		mod_mikModInitError = 1;
 		return -1;
 	}
@@ -120,20 +125,23 @@ static int mod_initMikMod(void) {
 	return 0;
 }
 
-static void mod_finishMikMod(void) {
+static void mod_finishMikMod(void)
+{
 	MikMod_Exit();
 }
 
 typedef struct _mod_Data {
-	MODULE * moduleHandle;
-	SBYTE * audio_buffer;
-} mod_Data; 
+	MODULE *moduleHandle;
+	SBYTE *audio_buffer;
+} mod_Data;
 
-static mod_Data * mod_open(char * path) {
-	MODULE * moduleHandle;
-	mod_Data * data;
+static mod_Data *mod_open(char *path)
+{
+	MODULE *moduleHandle;
+	mod_Data *data;
 
-	if(!(moduleHandle = Player_Load(path, 128, 0))) return NULL;
+	if (!(moduleHandle = Player_Load(path, 128, 0)))
+		return NULL;
 
 	data = malloc(sizeof(mod_Data));
 
@@ -145,51 +153,57 @@ static mod_Data * mod_open(char * path) {
 	return data;
 }
 
-static void mod_close(mod_Data * data) {
+static void mod_close(mod_Data * data)
+{
 	Player_Stop();
 	Player_Free(data->moduleHandle);
 	free(data->audio_buffer);
 	free(data);
 }
 
-static int mod_decode(OutputBuffer * cb, DecoderControl * dc, char * path) {
-	mod_Data * data;
+static int mod_decode(OutputBuffer * cb, DecoderControl * dc, char *path)
+{
+	mod_Data *data;
 	float time = 0.0;
 	int ret;
 	float secPerByte;
 
-	if(mod_initMikMod() < 0) return -1;
+	if (mod_initMikMod() < 0)
+		return -1;
 
-	if(!(data = mod_open(path))) {
+	if (!(data = mod_open(path))) {
 		ERROR("failed to open mod: %s\n", path);
 		MikMod_Exit();
 		return -1;
 	}
-	
+
 	dc->audioFormat.bits = 16;
 	dc->audioFormat.sampleRate = 44100;
 	dc->audioFormat.channels = 2;
-        getOutputAudioFormat(&(dc->audioFormat),&(cb->audioFormat));
+	getOutputAudioFormat(&(dc->audioFormat), &(cb->audioFormat));
 
-	secPerByte = 1.0/((dc->audioFormat.bits*dc->audioFormat.channels/8.0)*
-				(float)dc->audioFormat.sampleRate);
-	
+	secPerByte =
+	    1.0 / ((dc->audioFormat.bits * dc->audioFormat.channels / 8.0) *
+		   (float)dc->audioFormat.sampleRate);
+
 	dc->state = DECODE_STATE_DECODE;
-	while(1) {
-		if(dc->seek) {
+	while (1) {
+		if (dc->seek) {
 			dc->seekError = 1;
 			dc->seek = 0;
 		}
 
-		if(dc->stop) break;
+		if (dc->stop)
+			break;
 
-		if(!Player_Active()) break;
+		if (!Player_Active())
+			break;
 
 		ret = VC_WriteBytes(data->audio_buffer, MIKMOD_FRAME_SIZE);
-		time += ret*secPerByte;
-		sendDataToOutputBuffer(cb, NULL, dc, 0, 
-					(char *)data->audio_buffer, ret, time,
-					0, NULL);
+		time += ret * secPerByte;
+		sendDataToOutputBuffer(cb, NULL, dc, 0,
+				       (char *)data->audio_buffer, ret, time,
+				       0, NULL);
 	}
 
 	flushOutputBuffer(cb);
@@ -198,27 +212,28 @@ static int mod_decode(OutputBuffer * cb, DecoderControl * dc, char * path) {
 
 	MikMod_Exit();
 
-	if(dc->stop) {
+	if (dc->stop) {
 		dc->state = DECODE_STATE_STOP;
 		dc->stop = 0;
-	}
-	else dc->state = DECODE_STATE_STOP;
+	} else
+		dc->state = DECODE_STATE_STOP;
 
 	return 0;
 }
 
-static MpdTag * modTagDup(char * file) {
-	MpdTag * ret = NULL;
-	MODULE * moduleHandle;
-	char * title;
+static MpdTag *modTagDup(char *file)
+{
+	MpdTag *ret = NULL;
+	MODULE *moduleHandle;
+	char *title;
 
-	if(mod_initMikMod() < 0) {
+	if (mod_initMikMod() < 0) {
 		DEBUG("modTagDup: Failed to initialize MikMod\n");
 		return NULL;
 	}
 
-	if(!(moduleHandle = Player_Load(file, 128, 0))) {
-		DEBUG("modTagDup: Failed to open file: %s\n",file);
+	if (!(moduleHandle = Player_Load(file, 128, 0))) {
+		DEBUG("modTagDup: Failed to open file: %s\n", file);
 		MikMod_Exit();
 		return NULL;
 
@@ -229,58 +244,58 @@ static MpdTag * modTagDup(char * file) {
 
 	ret->time = 0;
 	title = strdup(Player_LoadTitle(file));
-	if(title) addItemToMpdTag(ret, TAG_ITEM_TITLE, title);
+	if (title)
+		addItemToMpdTag(ret, TAG_ITEM_TITLE, title);
 
 	MikMod_Exit();
 
 	return ret;
 }
 
-static char * modSuffixes[] = {"amf",
-			"dsm",
-			"far",
-			"gdm",
-			"imf",
-			"it",
-			"med",
-			"mod",
-			"mtm",
-			"s3m",
-			"stm",
-			"stx",
-			"ult",
-			"uni",
-			"xm",
-			NULL};
+static char *modSuffixes[] = { "amf",
+	"dsm",
+	"far",
+	"gdm",
+	"imf",
+	"it",
+	"med",
+	"mod",
+	"mtm",
+	"s3m",
+	"stm",
+	"stx",
+	"ult",
+	"uni",
+	"xm",
+	NULL
+};
 
-InputPlugin modPlugin = 
-{
-        "mod",
-        NULL,
+InputPlugin modPlugin = {
+	"mod",
+	NULL,
 	mod_finishMikMod,
 	NULL,
 	NULL,
-        mod_decode,
-        modTagDup,
-        INPUT_PLUGIN_STREAM_FILE,
-        modSuffixes,
-        NULL
+	mod_decode,
+	modTagDup,
+	INPUT_PLUGIN_STREAM_FILE,
+	modSuffixes,
+	NULL
 };
 
 #else
 
-InputPlugin modPlugin =
-{
-        NULL,
-        NULL,
-        NULL,
-	NULL,
-        NULL,
+InputPlugin modPlugin = {
 	NULL,
 	NULL,
-        0,
-        NULL,
-        NULL
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	0,
+	NULL,
+	NULL
 };
 
-#endif /* HAVE_AUDIOFILE */
+#endif				/* HAVE_AUDIOFILE */

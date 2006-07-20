@@ -32,16 +32,16 @@
 #define BUFFERED_METACHUNKS	25
 
 typedef struct _OutputBuffer {
-	char * volatile chunks;
-	mpd_uint16 * volatile chunkSize;
-	mpd_uint16 * volatile bitRate;
-	float * volatile times;
+	char *volatile chunks;
+	mpd_uint16 *volatile chunkSize;
+	mpd_uint16 *volatile bitRate;
+	float *volatile times;
 	mpd_sint16 volatile begin;
 	mpd_sint16 volatile end;
-        AudioFormat audioFormat;
+	AudioFormat audioFormat;
 	MetadataChunk metadataChunks[BUFFERED_METACHUNKS];
 	mpd_sint8 metaChunkSet[BUFFERED_METACHUNKS];
-	mpd_sint8 * volatile metaChunk;
+	mpd_sint8 *volatile metaChunk;
 	volatile mpd_sint8 acceptMetadata;
 } OutputBuffer;
 
@@ -51,16 +51,14 @@ void flushOutputBuffer(OutputBuffer * cb);
 
 /* we send inStream for buffering the inputStream while waiting to
    send the next chunk */
-int sendDataToOutputBuffer(
-		OutputBuffer * cb, 
-		InputStream * inStream,
-                DecoderControl * dc, 
-		int seekable, 
-		void * data, 
-		long datalen, 
-                float time, 
-		mpd_uint16 bitRate, 
-		ReplayGainInfo * replayGainInfo);
+int sendDataToOutputBuffer(OutputBuffer * cb,
+			   InputStream * inStream,
+			   DecoderControl * dc,
+			   int seekable,
+			   void *data,
+			   long datalen,
+			   float time,
+			   mpd_uint16 bitRate, ReplayGainInfo * replayGainInfo);
 
 int copyMpdTagToOutputBuffer(OutputBuffer * cb, MpdTag * tag);
 

@@ -40,7 +40,7 @@ void savePlaylistState();
 
 int clearPlaylist(FILE * fp);
 
-int addToPlaylist(FILE * fp, char * file, int printId);
+int addToPlaylist(FILE * fp, char *file, int printId);
 
 int addSongToPlaylist(FILE * fp, Song * song, int printId);
 
@@ -68,11 +68,11 @@ int previousSongInPlaylist(FILE * fp);
 
 int shufflePlaylist(FILE * fp);
 
-int savePlaylist(FILE * fp, char * utf8file);
+int savePlaylist(FILE * fp, char *utf8file);
 
-int deletePlaylist(FILE * fp, char * utf8file);
+int deletePlaylist(FILE * fp, char *utf8file);
 
-int deletePlaylistById(FILE * fp, char * utf8file);
+int deletePlaylistById(FILE * fp, char *utf8file);
 
 void deleteASongFromPlaylist(Song * song);
 
@@ -84,7 +84,7 @@ int swapSongsInPlaylist(FILE * fp, int song1, int song2);
 
 int swapSongsInPlaylistById(FILE * fp, int id1, int id2);
 
-int loadPlaylist(FILE * fp, char * utf8file);
+int loadPlaylist(FILE * fp, char *utf8file);
 
 int getPlaylistRepeatStatus();
 
@@ -114,8 +114,8 @@ int playlistChanges(FILE * fp, mpd_uint32 version);
 
 int playlistChangesPosId(FILE * fp, mpd_uint32 version);
 
-int PlaylistInfo(FILE * fp, char * utf8file, int detail);
+int PlaylistInfo(FILE * fp, char *utf8file, int detail);
 
-char * getStateFile();
+char *getStateFile();
 
 #endif

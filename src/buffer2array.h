@@ -21,8 +21,8 @@
 
 #include "../config.h"
 
-int buffer2array(char * buffer, char *** array);
+int buffer2array(char *buffer, char ***array);
 
-void freeArgArray(char ** array, int argArrayLength);
+void freeArgArray(char **array, int argArrayLength);
 
 #endif

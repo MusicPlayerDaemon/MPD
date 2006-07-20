@@ -40,18 +40,17 @@
 
 #define DEFAULT_PORT	6600
 
-int * listenSockets = NULL;
+int *listenSockets = NULL;
 int numberOfListenSockets = 0;
 
 static void establishListen(unsigned int port,
-			    struct sockaddr * addrp, 
-			    socklen_t addrlen) 
+			    struct sockaddr *addrp, socklen_t addrlen)
 {
 	int pf;
 	int sock;
 	int allowReuse = ALLOW_REUSE;
 
-	switch(addrp->sa_family) {
+	switch (addrp->sa_family) {
 	case AF_INET:
 		pf = PF_INET;
 		break;
@@ -64,49 +63,49 @@ static void establishListen(unsigned int port,
 		pf = PF_UNIX;
 		break;
 	default:
-		ERROR("unknown address family: %i\n",addrp->sa_family);
+		ERROR("unknown address family: %i\n", addrp->sa_family);
 		exit(EXIT_FAILURE);
 	}
 
-	if((sock = socket(pf,SOCK_STREAM,0)) < 0) {
+	if ((sock = socket(pf, SOCK_STREAM, 0)) < 0) {
 		ERROR("socket < 0\n");
 		exit(EXIT_FAILURE);
 	}
 
-	if(fcntl(sock, F_SETFL ,fcntl(sock, F_GETFL) | O_NONBLOCK) < 0) {
+	if (fcntl(sock, F_SETFL, fcntl(sock, F_GETFL) | O_NONBLOCK) < 0) {
 		ERROR("problems setting nonblocking on listen socket: %s\n",
-				strerror(errno));
+		      strerror(errno));
 		exit(EXIT_FAILURE);
 	}
 
-	if(setsockopt(sock,SOL_SOCKET,SO_REUSEADDR,(char *)&allowReuse,
-			sizeof(allowReuse))<0) 
-	{
+	if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (char *)&allowReuse,
+		       sizeof(allowReuse)) < 0) {
 		ERROR("problems setsockopt'ing: %s\n", strerror(errno));
 		exit(EXIT_FAILURE);
 	}
 
-	if(bind(sock,addrp,addrlen)<0) {
+	if (bind(sock, addrp, addrlen) < 0) {
 		ERROR("unable to bind port %u", port);
 		ERROR(": %s\n", strerror(errno));
 		ERROR("maybe MPD is still running?\n");
 		exit(EXIT_FAILURE);
 	}
-	
-	if(listen(sock,5)<0) {
+
+	if (listen(sock, 5) < 0) {
 		ERROR("problems listen'ing: %s\n", strerror(errno));
 		exit(EXIT_FAILURE);
 	}
 
 	numberOfListenSockets++;
-	listenSockets = 
-	    realloc(listenSockets,sizeof(int)*numberOfListenSockets);
+	listenSockets =
+	    realloc(listenSockets, sizeof(int) * numberOfListenSockets);
 
-	listenSockets[numberOfListenSockets-1] = sock;
+	listenSockets[numberOfListenSockets - 1] = sock;
 }
 
-static void parseListenConfigParam(unsigned int port, ConfigParam * param) {
-	struct sockaddr * addrp;
+static void parseListenConfigParam(unsigned int port, ConfigParam * param)
+{
+	struct sockaddr *addrp;
 	socklen_t addrlen;
 	struct sockaddr_in sin;
 #ifdef HAVE_IPV6
@@ -120,54 +119,52 @@ static void parseListenConfigParam(unsigned int port, ConfigParam * param) {
 	sin.sin_port = htons(port);
 	sin.sin_family = AF_INET;
 
-	if(!param || 0==strcmp(param->value, "any")) {
+	if (!param || 0 == strcmp(param->value, "any")) {
 		DEBUG("binding to any address\n");
 #ifdef HAVE_IPV6
-		if(ipv6Supported()) {
+		if (ipv6Supported()) {
 			sin6.sin6_addr = in6addr_any;
-			addrp = (struct sockaddr *) &sin6;
+			addrp = (struct sockaddr *)&sin6;
 			addrlen = sizeof(struct sockaddr_in6);
 			establishListen(port, addrp, addrlen);
 		}
 #endif
 		sin.sin_addr.s_addr = INADDR_ANY;
-		addrp = (struct sockaddr *) &sin;
+		addrp = (struct sockaddr *)&sin;
 		addrlen = sizeof(struct sockaddr_in);
 		establishListen(port, addrp, addrlen);
-	}
-	else {
-		struct hostent * he;
+	} else {
+		struct hostent *he;
 		DEBUG("binding to address for %s\n", param->value);
-		if(!(he = gethostbyname(param->value))) {
+		if (!(he = gethostbyname(param->value))) {
 			ERROR("can't lookup host \"%s\" at line %i\n",
-                                        param->value, param->line);
+			      param->value, param->line);
 			exit(EXIT_FAILURE);
 		}
-		switch(he->h_addrtype) {
+		switch (he->h_addrtype) {
 #ifdef HAVE_IPV6
 		case AF_INET6:
-			if(!ipv6Supported()) {
+			if (!ipv6Supported()) {
 				ERROR("no IPv6 support, but a IPv6 address "
-					"found for \"%s\" at line %i\n",
-					param->value, param->line);
+				      "found for \"%s\" at line %i\n",
+				      param->value, param->line);
 				exit(EXIT_FAILURE);
 			}
-			bcopy((char *)he->h_addr,(char *)
-					&sin6.sin6_addr.s6_addr,he->h_length);
-			addrp = (struct sockaddr *) &sin6;
+			bcopy((char *)he->h_addr, (char *)
+			      &sin6.sin6_addr.s6_addr, he->h_length);
+			addrp = (struct sockaddr *)&sin6;
 			addrlen = sizeof(struct sockaddr_in6);
 			break;
 #endif
 		case AF_INET:
-			bcopy((char *)he->h_addr,(char *)&sin.sin_addr.s_addr,
-				he->h_length);
-			addrp = (struct sockaddr *) &sin;
+			bcopy((char *)he->h_addr, (char *)&sin.sin_addr.s_addr,
+			      he->h_length);
+			addrp = (struct sockaddr *)&sin;
 			addrlen = sizeof(struct sockaddr_in);
 			break;
 		default:
 			ERROR("address type for \"%s\" is not IPv4 or IPv6 "
-                                        "at line %i\n",
-					param->value, param->line);
+			      "at line %i\n", param->value, param->line);
 			exit(EXIT_FAILURE);
 		}
 
@@ -175,73 +172,77 @@ static void parseListenConfigParam(unsigned int port, ConfigParam * param) {
 	}
 }
 
-void listenOnPort(void) {
+void listenOnPort(void)
+{
 	int port = DEFAULT_PORT;
-	ConfigParam * param = getNextConfigParam(CONF_BIND_TO_ADDRESS,NULL);
+	ConfigParam *param = getNextConfigParam(CONF_BIND_TO_ADDRESS, NULL);
 
 	{
-		ConfigParam * portParam = getConfigParam(CONF_PORT);
+		ConfigParam *portParam = getConfigParam(CONF_PORT);
 
-		if(portParam) {
-			char * test;
+		if (portParam) {
+			char *test;
 			port = strtol(portParam->value, &test, 10);
-			if(port <= 0 || *test != '\0') {
+			if (port <= 0 || *test != '\0') {
 				ERROR("%s \"%s\" specified at line %i is not a "
-						"positive integer", CONF_PORT,
-						portParam->value, 
-						portParam->line);
+				      "positive integer", CONF_PORT,
+				      portParam->value, portParam->line);
 				exit(EXIT_FAILURE);
 			}
 		}
 	}
 
 	do {
-	    parseListenConfigParam(port, param);
+		parseListenConfigParam(port, param);
 	} while ((param = getNextConfigParam(CONF_BIND_TO_ADDRESS, param)));
 }
 
-void addListenSocketsToFdSet(fd_set * fds, int * fdmax) {
+void addListenSocketsToFdSet(fd_set * fds, int *fdmax)
+{
 	int i;
 
-	for(i=0; i<numberOfListenSockets; i++) {
+	for (i = 0; i < numberOfListenSockets; i++) {
 		FD_SET(listenSockets[i], fds);
-		if(listenSockets[i] > *fdmax) *fdmax = listenSockets[i];
+		if (listenSockets[i] > *fdmax)
+			*fdmax = listenSockets[i];
 	}
 }
 
-void closeAllListenSockets(void) {
+void closeAllListenSockets(void)
+{
 	int i;
 
 	DEBUG("closeAllListenSockets called\n");
 
-	for(i=0; i<numberOfListenSockets; i++) {
+	for (i = 0; i < numberOfListenSockets; i++) {
 		DEBUG("closing listen socket %i\n", i);
-		while(close(listenSockets[i]) < 0 && errno==EINTR);
+		while (close(listenSockets[i]) < 0 && errno == EINTR) ;
 	}
 	freeAllListenSockets();
 }
 
-void freeAllListenSockets(void) {
+void freeAllListenSockets(void)
+{
 	numberOfListenSockets = 0;
 	free(listenSockets);
 	listenSockets = NULL;
 }
 
-void getConnections(fd_set * fds) {
+void getConnections(fd_set * fds)
+{
 	int i;
 	int fd = 0;
 	struct sockaddr sockAddr;
 	socklen_t socklen = sizeof(sockAddr);
 
-	for(i=0; i<numberOfListenSockets; i++) {
-		if(FD_ISSET(listenSockets[i], fds)) {
-			if((fd = accept(listenSockets[i], &sockAddr, &socklen)) 
-					>= 0) 
-			{
-				openAInterface(fd,&sockAddr);
-			}
-			else if(fd<0 && (errno!=EAGAIN && errno!=EINTR)) {
-				 ERROR("Problems accept()'ing\n");
+	for (i = 0; i < numberOfListenSockets; i++) {
+		if (FD_ISSET(listenSockets[i], fds)) {
+			if ((fd = accept(listenSockets[i], &sockAddr, &socklen))
+			    >= 0) {
+				openAInterface(fd, &sockAddr);
+			} else if (fd < 0
+				   && (errno != EAGAIN && errno != EINTR)) {
+				ERROR("Problems accept()'ing\n");
 			}
 		}
 	}

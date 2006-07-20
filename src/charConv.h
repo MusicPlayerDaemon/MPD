@@ -21,8 +21,8 @@
 
 #include "../config.h"
 
-int setCharSetConversion(char * to, char * from);
+int setCharSetConversion(char *to, char *from);
 
-char * convStrDup(char * string);
+char *convStrDup(char *string);
 
 #endif

@@ -23,18 +23,18 @@
 
 #include <stdio.h>
 
-char * myFgets(char * buffer, int bufferSize, FILE * fp);
+char *myFgets(char *buffer, int bufferSize, FILE * fp);
 
-char * strDupToUpper(char * str);
+char *strDupToUpper(char *str);
 
-void stripReturnChar(char * string);
+void stripReturnChar(char *string);
 
 void my_usleep(long usec);
 
 int ipv6Supported();
 
-char * appendToString(char * dest, const char * src);
+char *appendToString(char *dest, const char *src);
 
-unsigned long readLEuint32(const unsigned char * p);
+unsigned long readLEuint32(const unsigned char *p);
 
 #endif

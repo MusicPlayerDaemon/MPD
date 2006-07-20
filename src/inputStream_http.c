@@ -47,173 +47,173 @@
 
 #define HTTP_REDIRECT_MAX    10
 
-static char * proxyHost = NULL;
-static char * proxyPort =  NULL;
-static char * proxyUser = NULL;
-static char * proxyPassword = NULL;
+static char *proxyHost = NULL;
+static char *proxyPort = NULL;
+static char *proxyUser = NULL;
+static char *proxyPassword = NULL;
 static int bufferSize = HTTP_BUFFER_SIZE_DEFAULT;
 static int prebufferSize = HTTP_PREBUFFER_SIZE_DEFAULT;
 
 typedef struct _InputStreemHTTPData {
-        char * host;
-        char * path;
+	char *host;
+	char *path;
 	char *port;
-        int sock;
-        int connState;
-        char * buffer;
-        size_t buflen;
-        int timesRedirected;
-        int icyMetaint;
+	int sock;
+	int connState;
+	char *buffer;
+	size_t buflen;
+	int timesRedirected;
+	int icyMetaint;
 	int prebuffer;
 	int icyOffset;
-	char * proxyAuth;
-	char * httpAuth;
+	char *proxyAuth;
+	char *httpAuth;
 } InputStreamHTTPData;
 
-void inputStream_initHttp(void) {
-	ConfigParam * param = getConfigParam(CONF_HTTP_PROXY_HOST);
-	char * test;
+void inputStream_initHttp(void)
+{
+	ConfigParam *param = getConfigParam(CONF_HTTP_PROXY_HOST);
+	char *test;
 
-	if(param) {
+	if (param) {
 		proxyHost = param->value;
 
 		param = getConfigParam(CONF_HTTP_PROXY_PORT);
 
-		if(!param) {
+		if (!param) {
 			ERROR("%s specified but not %s", CONF_HTTP_PROXY_HOST,
-					CONF_HTTP_PROXY_PORT);
+			      CONF_HTTP_PROXY_PORT);
 			exit(EXIT_FAILURE);
 		}
 		proxyPort = param->value;
 
 		param = getConfigParam(CONF_HTTP_PROXY_USER);
 
-		if(param) {
+		if (param) {
 			proxyUser = param->value;
-		
+
 			param = getConfigParam(CONF_HTTP_PROXY_PASSWORD);
 
-			if(!param) {
+			if (!param) {
 				ERROR("%s specified but not %s\n",
-						CONF_HTTP_PROXY_USER,
-						CONF_HTTP_PROXY_PASSWORD);
+				      CONF_HTTP_PROXY_USER,
+				      CONF_HTTP_PROXY_PASSWORD);
 				exit(EXIT_FAILURE);
 			}
 
-			proxyPassword = param->value;	
+			proxyPassword = param->value;
 		}
 
 		param = getConfigParam(CONF_HTTP_PROXY_PASSWORD);
 
-		if(param) {
+		if (param) {
 			ERROR("%s specified but not %s\n",
-				CONF_HTTP_PROXY_PASSWORD, CONF_HTTP_PROXY_USER);
+			      CONF_HTTP_PROXY_PASSWORD, CONF_HTTP_PROXY_USER);
 			exit(EXIT_FAILURE);
 		}
-	}
-	else if((param = getConfigParam(CONF_HTTP_PROXY_PORT))) {
-		ERROR("%s specified but not %s, line %i\n", 
-				CONF_HTTP_PROXY_PORT, CONF_HTTP_PROXY_HOST,
-				param->line);
+	} else if ((param = getConfigParam(CONF_HTTP_PROXY_PORT))) {
+		ERROR("%s specified but not %s, line %i\n",
+		      CONF_HTTP_PROXY_PORT, CONF_HTTP_PROXY_HOST, param->line);
 		exit(EXIT_FAILURE);
-	}
-	else if((param = getConfigParam(CONF_HTTP_PROXY_USER))) {
-		ERROR("%s specified but not %s, line %i\n", 
-				CONF_HTTP_PROXY_USER, CONF_HTTP_PROXY_HOST,
-				param->line);
+	} else if ((param = getConfigParam(CONF_HTTP_PROXY_USER))) {
+		ERROR("%s specified but not %s, line %i\n",
+		      CONF_HTTP_PROXY_USER, CONF_HTTP_PROXY_HOST, param->line);
 		exit(EXIT_FAILURE);
-	}
-	else if((param = getConfigParam(CONF_HTTP_PROXY_PASSWORD))) {
-		ERROR("%s specified but not %s, line %i\n", 
-				CONF_HTTP_PROXY_PASSWORD, CONF_HTTP_PROXY_HOST,
-				param->line);
+	} else if ((param = getConfigParam(CONF_HTTP_PROXY_PASSWORD))) {
+		ERROR("%s specified but not %s, line %i\n",
+		      CONF_HTTP_PROXY_PASSWORD, CONF_HTTP_PROXY_HOST,
+		      param->line);
 		exit(EXIT_FAILURE);
 	}
 
 	param = getConfigParam(CONF_HTTP_BUFFER_SIZE);
 
-	if(param) {
+	if (param) {
 		bufferSize = strtol(param->value, &test, 10);
-		
-		if(bufferSize <= 0 || *test != '\0') {
+
+		if (bufferSize <= 0 || *test != '\0') {
 			ERROR("\"%s\" specified for %s at line %i is not a "
-				"positive integer\n",
-				param->value, CONF_HTTP_BUFFER_SIZE,
-				param->line);
+			      "positive integer\n",
+			      param->value, CONF_HTTP_BUFFER_SIZE, param->line);
 			exit(EXIT_FAILURE);
 		}
 
 		bufferSize *= 1024;
 
-		if(prebufferSize > bufferSize) prebufferSize = bufferSize;
+		if (prebufferSize > bufferSize)
+			prebufferSize = bufferSize;
 	}
 
 	param = getConfigParam(CONF_HTTP_PREBUFFER_SIZE);
 
-	if(param) {
+	if (param) {
 		prebufferSize = strtol(param->value, &test, 10);
-		
-		if(prebufferSize <= 0 || *test != '\0') {
+
+		if (prebufferSize <= 0 || *test != '\0') {
 			ERROR("\"%s\" specified for %s at line %i is not a "
-				"positive integer\n",
-				param->value, CONF_HTTP_PREBUFFER_SIZE,
-				param->line);
+			      "positive integer\n",
+			      param->value, CONF_HTTP_PREBUFFER_SIZE,
+			      param->line);
 			exit(EXIT_FAILURE);
 		}
 
 		prebufferSize *= 1024;
 	}
 
-	if(prebufferSize > bufferSize) prebufferSize = bufferSize;
+	if (prebufferSize > bufferSize)
+		prebufferSize = bufferSize;
 }
 
 /* base64 code taken from xmms */
 
 #define BASE64_LENGTH(len) (4 * (((len) + 2) / 3))
 
-static char * base64Dup(char * s) {
+static char *base64Dup(char *s)
+{
 	int i;
 	int len = strlen(s);
-	char * ret = calloc(BASE64_LENGTH(len)+1, 1);
-	unsigned char * p = (unsigned char *)ret;
+	char *ret = calloc(BASE64_LENGTH(len) + 1, 1);
+	unsigned char *p = (unsigned char *)ret;
 
 	char tbl[64] = {
-		'A','B','C','D','E','F','G','H',
-                'I','J','K','L','M','N','O','P',
-                'Q','R','S','T','U','V','W','X',
-                'Y','Z','a','b','c','d','e','f',
-                'g','h','i','j','k','l','m','n',
-                'o','p','q','r','s','t','u','v',
-                'w','x','y','z','0','1','2','3',
-                '4','5','6','7','8','9','+','/'
+		'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
+		'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
+		'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
+		'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f',
+		'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n',
+		'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
+		'w', 'x', 'y', 'z', '0', '1', '2', '3',
+		'4', '5', '6', '7', '8', '9', '+', '/'
 	};
 
 	/* Transform the 3x8 bits to 4x6 bits, as required by base64.  */
-	for(i = 0; i < len; i += 3) {
+	for (i = 0; i < len; i += 3) {
 		*p++ = tbl[s[0] >> 2];
-                *p++ = tbl[((s[0] & 3) << 4) + (s[1] >> 4)];
-                *p++ = tbl[((s[1] & 0xf) << 2) + (s[2] >> 6)];
-                *p++ = tbl[s[2] & 0x3f];
-                s += 3;
+		*p++ = tbl[((s[0] & 3) << 4) + (s[1] >> 4)];
+		*p++ = tbl[((s[1] & 0xf) << 2) + (s[2] >> 6)];
+		*p++ = tbl[s[2] & 0x3f];
+		s += 3;
 	}
 	/* Pad the result if necessary...  */
-        if (i == len + 1)
-                *(p - 1) = '=';
-        else if (i == len + 2)
-                *(p - 1) = *(p - 2) = '=';
-        /* ...and zero-terminate it.  */
-        *p = '\0';
+	if (i == len + 1)
+		*(p - 1) = '=';
+	else if (i == len + 2)
+		*(p - 1) = *(p - 2) = '=';
+	/* ...and zero-terminate it.  */
+	*p = '\0';
 
 	return ret;
 }
 
-static char * authString(char * header, char * user, char * password) {
-	char * ret = NULL;
+static char *authString(char *header, char *user, char *password)
+{
+	char *ret = NULL;
 	int templen;
-	char * temp;
-	char * temp64;
+	char *temp;
+	char *temp64;
 
-	if(!user || !password) return NULL;
+	if (!user || !password)
+		return NULL;
 
 	templen = strlen(user) + strlen(password) + 2;
 	temp = malloc(templen);
@@ -223,7 +223,7 @@ static char * authString(char * header, char * user, char * password) {
 	temp64 = base64Dup(temp);
 	free(temp);
 
-	ret = malloc(strlen(temp64)+strlen(header)+3);
+	ret = malloc(strlen(temp64) + strlen(header) + 3);
 	strcpy(ret, header);
 	strcat(ret, temp64);
 	strcat(ret, "\r\n");
@@ -238,76 +238,84 @@ static char * authString(char * header, char * user, char * password) {
 #define proxyAuthString(x, y)	authString(PROXY_AUTH_HEADER, x, y)
 #define httpAuthString(x, y)	authString(HTTP_AUTH_HEADER, x, y)
 
-static InputStreamHTTPData * newInputStreamHTTPData(void) {
-        InputStreamHTTPData * ret = malloc(sizeof(InputStreamHTTPData));
+static InputStreamHTTPData *newInputStreamHTTPData(void)
+{
+	InputStreamHTTPData *ret = malloc(sizeof(InputStreamHTTPData));
 
-	if(proxyHost) {
+	if (proxyHost) {
 		ret->proxyAuth = proxyAuthString(proxyUser, proxyPassword);
-	}
-	else ret->proxyAuth = NULL;
+	} else
+		ret->proxyAuth = NULL;
 
 	ret->httpAuth = NULL;
 	ret->host = NULL;
-        ret->path = NULL;
+	ret->path = NULL;
 	ret->port = NULL;
-        ret->connState = HTTP_CONN_STATE_CLOSED;
-        ret->timesRedirected = 0;
-        ret->icyMetaint = 0;
+	ret->connState = HTTP_CONN_STATE_CLOSED;
+	ret->timesRedirected = 0;
+	ret->icyMetaint = 0;
 	ret->prebuffer = 0;
 	ret->icyOffset = 0;
 	ret->buffer = malloc(bufferSize);
 
-        return ret;
+	return ret;
 }
 
-static void freeInputStreamHTTPData(InputStreamHTTPData * data) {
-        if(data->host) free(data->host);
-        if(data->path) free(data->path);
-	if(data->port) free(data->port);
-	if(data->proxyAuth) free(data->proxyAuth);
-	if(data->httpAuth) free(data->httpAuth);
+static void freeInputStreamHTTPData(InputStreamHTTPData * data)
+{
+	if (data->host)
+		free(data->host);
+	if (data->path)
+		free(data->path);
+	if (data->port)
+		free(data->port);
+	if (data->proxyAuth)
+		free(data->proxyAuth);
+	if (data->httpAuth)
+		free(data->httpAuth);
 
 	free(data->buffer);
 
-        free(data);
+	free(data);
 }
 
-static int parseUrl(InputStreamHTTPData * data, char * url) {
-        char * temp;
-        char * colon;
-        char * slash;
-	char * at;
-        int len;
+static int parseUrl(InputStreamHTTPData * data, char *url)
+{
+	char *temp;
+	char *colon;
+	char *slash;
+	char *at;
+	int len;
 
-        if(strncmp("http://",url,strlen("http://"))!=0) return -1;
+	if (strncmp("http://", url, strlen("http://")) != 0)
+		return -1;
 
-        temp = url+strlen("http://");
+	temp = url + strlen("http://");
 
-        colon = strchr(temp, ':');
+	colon = strchr(temp, ':');
 	at = strchr(temp, '@');
 
-	if(data->httpAuth) {
+	if (data->httpAuth) {
 		free(data->httpAuth);
 		data->httpAuth = NULL;
 	}
-	
-	if(at) {
-		char * user;
-		char * passwd;
 
-		if(colon && colon < at) {
-			user = malloc(colon-temp+1);
-			strncpy(user, temp, colon-temp);
-			user[colon-temp] = '\0';
+	if (at) {
+		char *user;
+		char *passwd;
 
-			passwd = malloc(at-colon);
-			strncpy(passwd, colon+1, at-colon-1);
-			passwd[at-colon-1] = '\0';
-		}
-		else {
-			user = malloc(at-temp+1);
-			strncpy(user, temp, at-temp);
-			user[at-temp] = '\0';
+		if (colon && colon < at) {
+			user = malloc(colon - temp + 1);
+			strncpy(user, temp, colon - temp);
+			user[colon - temp] = '\0';
+
+			passwd = malloc(at - colon);
+			strncpy(passwd, colon + 1, at - colon - 1);
+			passwd[at - colon - 1] = '\0';
+		} else {
+			user = malloc(at - temp + 1);
+			strncpy(user, temp, at - temp);
+			user[at - temp] = '\0';
 
 			passwd = strdup("");
 		}
@@ -317,565 +325,587 @@ static int parseUrl(InputStreamHTTPData * data, char * url) {
 		free(user);
 		free(passwd);
 
-		temp = at+1;
-        	colon = strchr(temp, ':');
+		temp = at + 1;
+		colon = strchr(temp, ':');
 	}
 
-        slash = strchr(temp, '/');
+	slash = strchr(temp, '/');
 
-        if(slash && colon && slash <= colon) return -1;
+	if (slash && colon && slash <= colon)
+		return -1;
 
-        /* fetch the host portion */
-        if(colon) len = colon-temp+1;
-        else if(slash) len = slash-temp+1;
-        else len = strlen(temp)+1;
+	/* fetch the host portion */
+	if (colon)
+		len = colon - temp + 1;
+	else if (slash)
+		len = slash - temp + 1;
+	else
+		len = strlen(temp) + 1;
 
-        if(len<=1) return -1;
+	if (len <= 1)
+		return -1;
 
-        data->host = malloc(len);
-        strncpy(data->host,temp,len-1);
-        data->host[len-1] = '\0';
-        /* fetch the port */
-        if(colon && (!slash || slash != colon+1)) {
-		len = strlen(colon)-1;
-		if(slash) len -= strlen(slash);
-                data->port = malloc(len+1);
-                strncpy(data->port, colon+1, len);
-                data->port[len] = '\0';
+	data->host = malloc(len);
+	strncpy(data->host, temp, len - 1);
+	data->host[len - 1] = '\0';
+	/* fetch the port */
+	if (colon && (!slash || slash != colon + 1)) {
+		len = strlen(colon) - 1;
+		if (slash)
+			len -= strlen(slash);
+		data->port = malloc(len + 1);
+		strncpy(data->port, colon + 1, len);
+		data->port[len] = '\0';
 		DEBUG(__FILE__ ": Port: %s\n", data->port);
-	} 
-	else {
+	} else {
 		data->port = strdup("80");
 	}
-        
-        /* fetch the path */
-	if(proxyHost) data->path = strdup(url);
-        else data->path = strdup(slash ? slash : "/");
 
-        return 0;
+	/* fetch the path */
+	if (proxyHost)
+		data->path = strdup(url);
+	else
+		data->path = strdup(slash ? slash : "/");
+
+	return 0;
 }
 
-static int initHTTPConnection(InputStream * inStream) {
+static int initHTTPConnection(InputStream * inStream)
+{
 	char *connHost;
 	char *connPort;
 	struct addrinfo *ans = NULL;
 	struct addrinfo *ap = NULL;
 	struct addrinfo hints;
 	int error, flags;
-	InputStreamHTTPData * data = (InputStreamHTTPData *)inStream->data;
+	InputStreamHTTPData *data = (InputStreamHTTPData *) inStream->data;
 	/**
 	 * Setup hints
 	 */
-	hints.ai_flags          = 0;
-	hints.ai_family         = PF_UNSPEC;
-	hints.ai_socktype       = SOCK_STREAM;
-	hints.ai_protocol       = IPPROTO_TCP;
-	hints.ai_addrlen        = 0;
-	hints.ai_addr           = NULL;
-	hints.ai_canonname      = NULL;
-	hints.ai_next           = NULL;
+	hints.ai_flags = 0;
+	hints.ai_family = PF_UNSPEC;
+	hints.ai_socktype = SOCK_STREAM;
+	hints.ai_protocol = IPPROTO_TCP;
+	hints.ai_addrlen = 0;
+	hints.ai_addr = NULL;
+	hints.ai_canonname = NULL;
+	hints.ai_next = NULL;
 
-
-
-	
-	if(proxyHost) {
+	if (proxyHost) {
 		connHost = proxyHost;
 		connPort = proxyPort;
-	}
-	else {
+	} else {
 		connHost = data->host;
 		connPort = data->port;
 	}
 
 	error = getaddrinfo(connHost, connPort, &hints, &ans);
-	if(error) {
-		DEBUG(__FILE__ ": Error getting address info: %s\n", gai_strerror(error));
+	if (error) {
+		DEBUG(__FILE__ ": Error getting address info: %s\n",
+		      gai_strerror(error));
 		return -1;
 	}
- 
+
 	/* loop through possible addresses */
-	for(ap = ans; ap != NULL; ap = ap->ai_next) {
-		if((data->sock = socket(ap->ai_family, ap->ai_socktype,
-					ap->ai_protocol)) < 0) {
-			DEBUG(__FILE__ ": unable to connect: %s\n", strerror(errno));
+	for (ap = ans; ap != NULL; ap = ap->ai_next) {
+		if ((data->sock = socket(ap->ai_family, ap->ai_socktype,
+					 ap->ai_protocol)) < 0) {
+			DEBUG(__FILE__ ": unable to connect: %s\n",
+			      strerror(errno));
 			freeaddrinfo(ans);
 			return -1;
 		}
-		
+
 		flags = fcntl(data->sock, F_GETFL, 0);
 		fcntl(data->sock, F_SETFL, flags | O_NONBLOCK);
-		
-		if(connect(data->sock, ap->ai_addr, ap->ai_addrlen) >= 0
-			|| errno == EINPROGRESS
-		) {
+
+		if (connect(data->sock, ap->ai_addr, ap->ai_addrlen) >= 0
+		    || errno == EINPROGRESS) {
 			data->connState = HTTP_CONN_STATE_INIT;
 			data->buflen = 0;
 			freeaddrinfo(ans);
-			return 0; /* success */
+			return 0;	/* success */
 		}
-		
+
 		/* failed, get the next one */
-	
+
 		DEBUG(__FILE__ ": unable to connect: %s\n", strerror(errno));
-                close(data->sock);
-        }
+		close(data->sock);
+	}
 
 	freeaddrinfo(ans);
-	return -1; /* failed */
+	return -1;		/* failed */
 }
 
-static int finishHTTPInit(InputStream * inStream) {
-        InputStreamHTTPData * data = (InputStreamHTTPData *)inStream->data;
-        struct timeval tv;
-        fd_set writeSet;
-        fd_set errorSet;
-        int error;
-        socklen_t error_len = sizeof(int);
-        int ret;
-        char request[2049];
+static int finishHTTPInit(InputStream * inStream)
+{
+	InputStreamHTTPData *data = (InputStreamHTTPData *) inStream->data;
+	struct timeval tv;
+	fd_set writeSet;
+	fd_set errorSet;
+	int error;
+	socklen_t error_len = sizeof(int);
+	int ret;
+	char request[2049];
 
-        tv.tv_sec = 0;
-        tv.tv_usec = 0;
+	tv.tv_sec = 0;
+	tv.tv_usec = 0;
 
-        FD_ZERO(&writeSet);
-        FD_ZERO(&errorSet);
-        FD_SET(data->sock, &writeSet);
-        FD_SET(data->sock, &errorSet);
+	FD_ZERO(&writeSet);
+	FD_ZERO(&errorSet);
+	FD_SET(data->sock, &writeSet);
+	FD_SET(data->sock, &errorSet);
 
-        ret = select(data->sock+1, NULL, &writeSet, &errorSet, &tv);
+	ret = select(data->sock + 1, NULL, &writeSet, &errorSet, &tv);
 
-        if(ret == 0 || (ret < 0 && errno==EINTR))  return 0;
+	if (ret == 0 || (ret < 0 && errno == EINTR))
+		return 0;
 
-        if(ret < 0) {
-		DEBUG(__FILE__ ": problem select'ing: %s\n",strerror(errno));
-                close(data->sock);
-                data->connState = HTTP_CONN_STATE_CLOSED;
-                return -1;
-        }
+	if (ret < 0) {
+		DEBUG(__FILE__ ": problem select'ing: %s\n", strerror(errno));
+		close(data->sock);
+		data->connState = HTTP_CONN_STATE_CLOSED;
+		return -1;
+	}
 
-        getsockopt(data->sock, SOL_SOCKET, SO_ERROR, &error, &error_len);
-        if(error) {
-                close(data->sock);
-                data->connState = HTTP_CONN_STATE_CLOSED;
-                return -1;
-        }
+	getsockopt(data->sock, SOL_SOCKET, SO_ERROR, &error, &error_len);
+	if (error) {
+		close(data->sock);
+		data->connState = HTTP_CONN_STATE_CLOSED;
+		return -1;
+	}
 
-        memset(request, 0, 2049);
+	memset(request, 0, 2049);
 	/* deal with ICY metadata later, for now its fucking up stuff! */
-        snprintf(request, 2048, "GET %s HTTP/1.0\r\n"
-                             	"Host: %s\r\n"
-                             	/*"Connection: close\r\n"*/
-                             	"User-Agent: %s/%s\r\n"
-                             	/*"Range: bytes=%ld-\r\n"*/
-				"%s" /* authorization */	
-                             	"Icy-Metadata:1\r\n"
-                             	"\r\n",
-                             	data->path, 
-				data->host, 
-				PACKAGE_NAME, 
-				PACKAGE_VERSION,
-				
-                             	/*inStream->offset,*/
-				data->proxyAuth ? data->proxyAuth : 
-					(data->httpAuth ? data->httpAuth : "")
-				);
+	snprintf(request, 2048, "GET %s HTTP/1.0\r\n" "Host: %s\r\n"
+		 /*"Connection: close\r\n" */
+		 "User-Agent: %s/%s\r\n"
+		 /*"Range: bytes=%ld-\r\n" */
+		 "%s"		/* authorization */
+		 "Icy-Metadata:1\r\n"
+		 "\r\n", data->path, data->host, PACKAGE_NAME, PACKAGE_VERSION,
+		 /*inStream->offset, */
+		 data->proxyAuth ? data->proxyAuth :
+		 (data->httpAuth ? data->httpAuth : "")
+	    );
 
-        ret = write(data->sock, request, strlen(request));
-        if(ret!=strlen(request)) {
-                close(data->sock);
-                data->connState = HTTP_CONN_STATE_CLOSED;
-                return -1;
-        }
+	ret = write(data->sock, request, strlen(request));
+	if (ret != strlen(request)) {
+		close(data->sock);
+		data->connState = HTTP_CONN_STATE_CLOSED;
+		return -1;
+	}
 
-        data->connState = HTTP_CONN_STATE_HELLO;
-
-        return 0;
-}
-
-static int getHTTPHello(InputStream * inStream) {
-        InputStreamHTTPData * data = (InputStreamHTTPData *)inStream->data;
-        fd_set readSet;
-        struct timeval tv;
-        int ret;
-        char * needle;
-        char * cur = data->buffer;
-        int rc;
-        long readed;
-
-        FD_ZERO(&readSet);
-        FD_SET(data->sock, &readSet);
-        
-        tv.tv_sec = 0;
-        tv.tv_usec = 0;
-
-        ret = select(data->sock+1,&readSet,NULL,NULL,&tv);
-        
-        if(ret == 0 || (ret < 0 && errno==EINTR)) return 0;
-
-        if(ret < 0) {
-                data->connState = HTTP_CONN_STATE_CLOSED;
-                close(data->sock);
-                data->buflen = 0;
-                return -1;
-        }
-
-        if(data->buflen >= bufferSize-1) {
-                data->connState = HTTP_CONN_STATE_CLOSED;
-                close(data->sock);
-                return -1;
-        }
-
-        readed = recv(data->sock, data->buffer+data->buflen,
-                        bufferSize-1-data->buflen, 0);
-        
-        if(readed < 0 && (errno == EAGAIN || errno == EINTR)) return 0;
-
-        if(readed <= 0) {
-                data->connState = HTTP_CONN_STATE_CLOSED;
-                close(data->sock);
-                data->buflen = 0;
-                return -1;
-        }
-
-        data->buffer[data->buflen+readed] = '\0';
-        data->buflen += readed;
-
-        needle = strstr(data->buffer,"\r\n\r\n");
-
-        if(!needle) return 0;
-
-        if(0 == strncmp(cur, "HTTP/1.0 ", 9)) {
-                inStream->seekable = 0;
-                rc = atoi(cur+9);
-        }
-        else if(0 == strncmp(cur, "HTTP/1.1 ", 9)) {
-                inStream->seekable = 1;
-                rc = atoi(cur+9);
-        }
-        else if(0 == strncmp(cur, "ICY 200 OK", 10)) {
-                inStream->seekable = 0;
-                rc = 200;
-        }
-        else if(0 == strncmp(cur, "ICY 400 Server Full", 19)) rc = 400;
-        else if(0 == strncmp(cur, "ICY 404", 7)) rc = 404;
-        else {
-                close(data->sock);
-                data->connState = HTTP_CONN_STATE_CLOSED;
-                return -1;
-        }
-
-        switch(rc) {
-        case 200:
-        case 206:
-                break;
-        case 301:
-        case 302:
-                cur = strstr(cur, "Location: ");
-                if(cur) {
-                        char * url;
-                        int curlen = 0;
-                        cur+= strlen("Location: ");
-                        while(*(cur+curlen)!='\0' && *(cur+curlen)!='\r') {
-                                curlen++;
-                        }
-                        url = malloc(curlen+1);
-                        memcpy(url,cur,curlen);
-                        url[curlen] = '\0';
-                        ret = parseUrl(data,url);
-                        free(url);
-                        if(ret == 0 && data->timesRedirected < 
-                                        HTTP_REDIRECT_MAX) 
-                        {
-                                data->timesRedirected++;
-                                close(data->sock);
-                                data->connState = HTTP_CONN_STATE_REOPEN;
-                                data->buflen = 0;
-                                return 0;
-                        }
-                }
-        case 400:
-        case 401:
-	case 403:
-        case 404:
-        default:
-                close(data->sock);
-                data->connState = HTTP_CONN_STATE_CLOSED;
-                data->buflen = 0;
-                return -1;
-        }
-
-        cur = strstr(data->buffer,"\r\n");
-        while(cur && cur!=needle) {
-                if(0 == strncmp(cur,"\r\nContent-Length: ",18)) {
-                        if(!inStream->size) inStream->size = atol(cur+18);
-                }
-                else if(0 == strncmp(cur, "\r\nicy-metaint:", 14)) {
-                        data->icyMetaint = atoi(cur+14);
-                }
-                else if(0 == strncmp(cur, "\r\nicy-name:", 11) ||
-			0 == strncmp(cur, "\r\nice-name:", 11)) 
-		{
-                        int incr = 11;
-                        char * temp = strstr(cur+incr,"\r\n");
-                        if(!temp) break;
-                        *temp = '\0';
-                        if(inStream->metaName) free(inStream->metaName);
-                        while(*(incr+cur) == ' ') incr++;
-                        inStream->metaName = strdup(cur+incr);
-                        *temp = '\r';
-			DEBUG("inputStream_http: metaName: %s\n", 
-					inStream->metaName);
-                }
-                else if(0 == strncmp(cur, "\r\nx-audiocast-name:", 19)) {
-                        int incr = 19;
-                        char * temp = strstr(cur+incr,"\r\n");
-                        if(!temp) break;
-                        *temp = '\0';
-                        if(inStream->metaName) free(inStream->metaName);
-                        while(*(incr+cur) == ' ') incr++;
-                        inStream->metaName = strdup(cur+incr);
-                        *temp = '\r';
-			DEBUG("inputStream_http: metaName: %s\n", 
-					inStream->metaName);
-                }
-                else if(0 == strncmp(cur, "\r\nContent-Type:", 15)) {
-                        int incr = 15;
-                        char * temp = strstr(cur+incr,"\r\n");
-                        if(!temp) break;
-                        *temp = '\0';
-                        if(inStream->mime) free(inStream->mime);
-                        while(*(incr+cur) == ' ') incr++;
-                        inStream->mime = strdup(cur+incr);
-                        *temp = '\r';
-                }
-
-                cur = strstr(cur+2,"\r\n");
-        }
-
-        if(inStream->size <= 0) inStream->seekable = 0;
-
-        needle += 4; /* 4 == strlen("\r\n\r\n") */
-        data->buflen -= (needle-data->buffer);
-        /*fwrite(data->buffer, 1, data->buflen, stdout);*/
-        memmove(data->buffer, needle, data->buflen);
-
-        data->connState = HTTP_CONN_STATE_OPEN;
-
-	data->prebuffer = 1;
-
-	/*mark as unseekable till we actually implement seeking*/
-	inStream->seekable = 0;
-
-        return 0;
-}
-
-int inputStream_httpOpen(InputStream * inStream, char * url) {
-        InputStreamHTTPData * data = newInputStreamHTTPData();
-
-        inStream->data = data;
-
-        if(parseUrl(data,url) < 0) {
-                freeInputStreamHTTPData(data);
-                return -1;
-        }
-
-        if(initHTTPConnection(inStream) < 0) {
-                freeInputStreamHTTPData(data);
-                return -1;
-        }
-
-        inStream->seekFunc = inputStream_httpSeek;
-        inStream->closeFunc = inputStream_httpClose;
-        inStream->readFunc = inputStream_httpRead;
-        inStream->atEOFFunc = inputStream_httpAtEOF;
-        inStream->bufferFunc = inputStream_httpBuffer;
+	data->connState = HTTP_CONN_STATE_HELLO;
 
 	return 0;
 }
 
-int inputStream_httpSeek(InputStream * inStream, long offset, int whence) {
+static int getHTTPHello(InputStream * inStream)
+{
+	InputStreamHTTPData *data = (InputStreamHTTPData *) inStream->data;
+	fd_set readSet;
+	struct timeval tv;
+	int ret;
+	char *needle;
+	char *cur = data->buffer;
+	int rc;
+	long readed;
+
+	FD_ZERO(&readSet);
+	FD_SET(data->sock, &readSet);
+
+	tv.tv_sec = 0;
+	tv.tv_usec = 0;
+
+	ret = select(data->sock + 1, &readSet, NULL, NULL, &tv);
+
+	if (ret == 0 || (ret < 0 && errno == EINTR))
+		return 0;
+
+	if (ret < 0) {
+		data->connState = HTTP_CONN_STATE_CLOSED;
+		close(data->sock);
+		data->buflen = 0;
+		return -1;
+	}
+
+	if (data->buflen >= bufferSize - 1) {
+		data->connState = HTTP_CONN_STATE_CLOSED;
+		close(data->sock);
+		return -1;
+	}
+
+	readed = recv(data->sock, data->buffer + data->buflen,
+		      bufferSize - 1 - data->buflen, 0);
+
+	if (readed < 0 && (errno == EAGAIN || errno == EINTR))
+		return 0;
+
+	if (readed <= 0) {
+		data->connState = HTTP_CONN_STATE_CLOSED;
+		close(data->sock);
+		data->buflen = 0;
+		return -1;
+	}
+
+	data->buffer[data->buflen + readed] = '\0';
+	data->buflen += readed;
+
+	needle = strstr(data->buffer, "\r\n\r\n");
+
+	if (!needle)
+		return 0;
+
+	if (0 == strncmp(cur, "HTTP/1.0 ", 9)) {
+		inStream->seekable = 0;
+		rc = atoi(cur + 9);
+	} else if (0 == strncmp(cur, "HTTP/1.1 ", 9)) {
+		inStream->seekable = 1;
+		rc = atoi(cur + 9);
+	} else if (0 == strncmp(cur, "ICY 200 OK", 10)) {
+		inStream->seekable = 0;
+		rc = 200;
+	} else if (0 == strncmp(cur, "ICY 400 Server Full", 19))
+		rc = 400;
+	else if (0 == strncmp(cur, "ICY 404", 7))
+		rc = 404;
+	else {
+		close(data->sock);
+		data->connState = HTTP_CONN_STATE_CLOSED;
+		return -1;
+	}
+
+	switch (rc) {
+	case 200:
+	case 206:
+		break;
+	case 301:
+	case 302:
+		cur = strstr(cur, "Location: ");
+		if (cur) {
+			char *url;
+			int curlen = 0;
+			cur += strlen("Location: ");
+			while (*(cur + curlen) != '\0'
+			       && *(cur + curlen) != '\r') {
+				curlen++;
+			}
+			url = malloc(curlen + 1);
+			memcpy(url, cur, curlen);
+			url[curlen] = '\0';
+			ret = parseUrl(data, url);
+			free(url);
+			if (ret == 0 && data->timesRedirected <
+			    HTTP_REDIRECT_MAX) {
+				data->timesRedirected++;
+				close(data->sock);
+				data->connState = HTTP_CONN_STATE_REOPEN;
+				data->buflen = 0;
+				return 0;
+			}
+		}
+	case 400:
+	case 401:
+	case 403:
+	case 404:
+	default:
+		close(data->sock);
+		data->connState = HTTP_CONN_STATE_CLOSED;
+		data->buflen = 0;
+		return -1;
+	}
+
+	cur = strstr(data->buffer, "\r\n");
+	while (cur && cur != needle) {
+		if (0 == strncmp(cur, "\r\nContent-Length: ", 18)) {
+			if (!inStream->size)
+				inStream->size = atol(cur + 18);
+		} else if (0 == strncmp(cur, "\r\nicy-metaint:", 14)) {
+			data->icyMetaint = atoi(cur + 14);
+		} else if (0 == strncmp(cur, "\r\nicy-name:", 11) ||
+			   0 == strncmp(cur, "\r\nice-name:", 11)) {
+			int incr = 11;
+			char *temp = strstr(cur + incr, "\r\n");
+			if (!temp)
+				break;
+			*temp = '\0';
+			if (inStream->metaName)
+				free(inStream->metaName);
+			while (*(incr + cur) == ' ')
+				incr++;
+			inStream->metaName = strdup(cur + incr);
+			*temp = '\r';
+			DEBUG("inputStream_http: metaName: %s\n",
+			      inStream->metaName);
+		} else if (0 == strncmp(cur, "\r\nx-audiocast-name:", 19)) {
+			int incr = 19;
+			char *temp = strstr(cur + incr, "\r\n");
+			if (!temp)
+				break;
+			*temp = '\0';
+			if (inStream->metaName)
+				free(inStream->metaName);
+			while (*(incr + cur) == ' ')
+				incr++;
+			inStream->metaName = strdup(cur + incr);
+			*temp = '\r';
+			DEBUG("inputStream_http: metaName: %s\n",
+			      inStream->metaName);
+		} else if (0 == strncmp(cur, "\r\nContent-Type:", 15)) {
+			int incr = 15;
+			char *temp = strstr(cur + incr, "\r\n");
+			if (!temp)
+				break;
+			*temp = '\0';
+			if (inStream->mime)
+				free(inStream->mime);
+			while (*(incr + cur) == ' ')
+				incr++;
+			inStream->mime = strdup(cur + incr);
+			*temp = '\r';
+		}
+
+		cur = strstr(cur + 2, "\r\n");
+	}
+
+	if (inStream->size <= 0)
+		inStream->seekable = 0;
+
+	needle += 4;		/* 4 == strlen("\r\n\r\n") */
+	data->buflen -= (needle - data->buffer);
+	/*fwrite(data->buffer, 1, data->buflen, stdout); */
+	memmove(data->buffer, needle, data->buflen);
+
+	data->connState = HTTP_CONN_STATE_OPEN;
+
+	data->prebuffer = 1;
+
+	/*mark as unseekable till we actually implement seeking */
+	inStream->seekable = 0;
+
+	return 0;
+}
+
+int inputStream_httpOpen(InputStream * inStream, char *url)
+{
+	InputStreamHTTPData *data = newInputStreamHTTPData();
+
+	inStream->data = data;
+
+	if (parseUrl(data, url) < 0) {
+		freeInputStreamHTTPData(data);
+		return -1;
+	}
+
+	if (initHTTPConnection(inStream) < 0) {
+		freeInputStreamHTTPData(data);
+		return -1;
+	}
+
+	inStream->seekFunc = inputStream_httpSeek;
+	inStream->closeFunc = inputStream_httpClose;
+	inStream->readFunc = inputStream_httpRead;
+	inStream->atEOFFunc = inputStream_httpAtEOF;
+	inStream->bufferFunc = inputStream_httpBuffer;
+
+	return 0;
+}
+
+int inputStream_httpSeek(InputStream * inStream, long offset, int whence)
+{
 	/* hack to reopen an HTTP stream if we're trying to seek to
 	 * the beginning */
 	if ((whence == SEEK_SET) && (offset == 0)) {
-		InputStreamHTTPData * data;
+		InputStreamHTTPData *data;
 
-		data = (InputStreamHTTPData*)inStream->data;
+		data = (InputStreamHTTPData *) inStream->data;
 		close(data->sock);
 		data->connState = HTTP_CONN_STATE_REOPEN;
 		data->buflen = 0;
 		inStream->offset = 0;
 		return 0;
 	}
-	
+
 	/* otherwise, we don't know how to seek in HTTP yet */
 	return -1;
 }
 
-static void parseIcyMetadata(InputStream * inStream, char * metadata,
-		int size) 
+static void parseIcyMetadata(InputStream * inStream, char *metadata, int size)
 {
-	char * r;
-	char * s;
-	char * temp = malloc(size+1);
+	char *r;
+	char *s;
+	char *temp = malloc(size + 1);
 	memcpy(temp, metadata, size);
 	temp[size] = '\0';
 	s = strtok_r(temp, ";", &r);
-	while(s) {
-		if(0 == strncmp(s, "StreamTitle=", 12)) {
+	while (s) {
+		if (0 == strncmp(s, "StreamTitle=", 12)) {
 			int cur = 12;
-			if(inStream->metaTitle) free(inStream->metaTitle);
-			if(*(s+cur) == '\'') cur++;
-			if(s[strlen(s)-1] == '\'') {
-				s[strlen(s)-1] = '\0';
+			if (inStream->metaTitle)
+				free(inStream->metaTitle);
+			if (*(s + cur) == '\'')
+				cur++;
+			if (s[strlen(s) - 1] == '\'') {
+				s[strlen(s) - 1] = '\0';
 			}
-			inStream->metaTitle = strdup(s+cur);
-			DEBUG("inputStream_http: metaTitle: %s\n", 
-						inStream->metaTitle);
+			inStream->metaTitle = strdup(s + cur);
+			DEBUG("inputStream_http: metaTitle: %s\n",
+			      inStream->metaTitle);
 		}
 		s = strtok_r(NULL, ";", &r);
 	}
 	free(temp);
 }
 
-size_t inputStream_httpRead(InputStream * inStream, void * ptr, size_t size, 
-		size_t nmemb)
+size_t inputStream_httpRead(InputStream * inStream, void *ptr, size_t size,
+			    size_t nmemb)
 {
-        InputStreamHTTPData * data = (InputStreamHTTPData *)inStream->data;
-        long tosend = 0;
-        long inlen = size*nmemb;
+	InputStreamHTTPData *data = (InputStreamHTTPData *) inStream->data;
+	long tosend = 0;
+	long inlen = size * nmemb;
 	long maxToSend = data->buflen;
 
-        inputStream_httpBuffer(inStream);
+	inputStream_httpBuffer(inStream);
 
-        switch(data->connState) {
-        case HTTP_CONN_STATE_OPEN:
-		if(data->prebuffer || data->buflen < data->icyMetaint) return 0;
+	switch (data->connState) {
+	case HTTP_CONN_STATE_OPEN:
+		if (data->prebuffer || data->buflen < data->icyMetaint)
+			return 0;
 
 		break;
-        case HTTP_CONN_STATE_CLOSED:
-		if(data->buflen) break;
-        default:
-                return 0;
-        }
+	case HTTP_CONN_STATE_CLOSED:
+		if (data->buflen)
+			break;
+	default:
+		return 0;
+	}
 
-	if(data->icyMetaint > 0) {
-		if(data->icyOffset >= data->icyMetaint) {
+	if (data->icyMetaint > 0) {
+		if (data->icyOffset >= data->icyMetaint) {
 			int metalen = *(data->buffer);
 			metalen <<= 4;
-			if(metalen < 0) metalen = 0;
-			if(metalen+1 > data->buflen) {
+			if (metalen < 0)
+				metalen = 0;
+			if (metalen + 1 > data->buflen) {
 				/* damn that's some fucking big metadata! */
-				if(bufferSize < metalen+1) {
-                        		data->connState = 
-							HTTP_CONN_STATE_CLOSED;
-                        		close(data->sock);
+				if (bufferSize < metalen + 1) {
+					data->connState =
+					    HTTP_CONN_STATE_CLOSED;
+					close(data->sock);
 					data->buflen = 0;
 				}
 				return 0;
 			}
-			if(metalen > 0) {
-				parseIcyMetadata(inStream, data->buffer+1,
-						metalen);
+			if (metalen > 0) {
+				parseIcyMetadata(inStream, data->buffer + 1,
+						 metalen);
 			}
-			data->buflen -= metalen+1;
-			memmove(data->buffer, data->buffer+metalen+1, 
-					data->buflen);
+			data->buflen -= metalen + 1;
+			memmove(data->buffer, data->buffer + metalen + 1,
+				data->buflen);
 			data->icyOffset = 0;
 		}
-		maxToSend = data->icyMetaint-data->icyOffset;
+		maxToSend = data->icyMetaint - data->icyOffset;
 		maxToSend = maxToSend > data->buflen ? data->buflen : maxToSend;
 	}
 
-        if(data->buflen > 0) {
-                tosend = inlen > maxToSend ? maxToSend : inlen;
-		tosend = (tosend/size)*size;
-       
-                memcpy(ptr, data->buffer, tosend);
-		/*fwrite(ptr,1,readed,stdout);*/
-                data->buflen -= tosend;
-		data->icyOffset+= tosend;
-		/*fwrite(data->buffer,1,readed,stdout);*/
-                memmove(data->buffer, data->buffer+tosend, data->buflen);
+	if (data->buflen > 0) {
+		tosend = inlen > maxToSend ? maxToSend : inlen;
+		tosend = (tosend / size) * size;
 
-                inStream->offset += tosend;
-        }
+		memcpy(ptr, data->buffer, tosend);
+		/*fwrite(ptr,1,readed,stdout); */
+		data->buflen -= tosend;
+		data->icyOffset += tosend;
+		/*fwrite(data->buffer,1,readed,stdout); */
+		memmove(data->buffer, data->buffer + tosend, data->buflen);
 
-	return tosend/size;
-}
-
-int inputStream_httpClose(InputStream * inStream) {
-        InputStreamHTTPData * data = (InputStreamHTTPData *)inStream->data;
-
-        switch(data->connState) {
-        case HTTP_CONN_STATE_CLOSED:
-                break;
-        default:
-                close(data->sock);
-        }
-
-        freeInputStreamHTTPData(data);
-
-        return 0;
-}
-
-int inputStream_httpAtEOF(InputStream * inStream) {
-        InputStreamHTTPData * data = (InputStreamHTTPData *)inStream->data;
-        switch(data->connState) {
-        case HTTP_CONN_STATE_CLOSED:
-                if(data->buflen == 0) return 1;
-        default:
-                return 0;
-        }
-}
-
-int inputStream_httpBuffer(InputStream * inStream) {
-        InputStreamHTTPData * data = (InputStreamHTTPData *)inStream->data;
-        ssize_t readed = 0;
-
-        if(data->connState == HTTP_CONN_STATE_REOPEN) {
-                if(initHTTPConnection(inStream) < 0) return -1;
-        }
-
-        if(data->connState == HTTP_CONN_STATE_INIT) {
-                if(finishHTTPInit(inStream) < 0) return -1;
-        }
-
-        if(data->connState == HTTP_CONN_STATE_HELLO) {
-                if(getHTTPHello(inStream) < 0) return -1;
-        }
-
-        switch(data->connState) {
-        case HTTP_CONN_STATE_OPEN:
-        case HTTP_CONN_STATE_CLOSED:
-                break;
-        default:
-                return -1;
-        }
-
-	if(data->buflen == 0 || data->buflen < data->icyMetaint) {
-		data->prebuffer = 1;
+		inStream->offset += tosend;
 	}
-	else if(data->buflen > prebufferSize) data->prebuffer = 0;
 
-        if(data->connState == HTTP_CONN_STATE_OPEN &&
-                                data->buflen < bufferSize-1) 
-        {
-                readed = read(data->sock, data->buffer+data->buflen, 
-                                (size_t)(bufferSize-1-data->buflen));
+	return tosend / size;
+}
 
-                if(readed < 0 && (errno == EAGAIN || errno == EINTR)) {
-                        readed = 0;
-                }
-                else if(readed <= 0) {
-                        close(data->sock);
-                        data->connState = HTTP_CONN_STATE_CLOSED;
-                        readed = 0;
-                }
-		/*fwrite(data->buffer+data->buflen,1,readed,stdout);*/
+int inputStream_httpClose(InputStream * inStream)
+{
+	InputStreamHTTPData *data = (InputStreamHTTPData *) inStream->data;
+
+	switch (data->connState) {
+	case HTTP_CONN_STATE_CLOSED:
+		break;
+	default:
+		close(data->sock);
+	}
+
+	freeInputStreamHTTPData(data);
+
+	return 0;
+}
+
+int inputStream_httpAtEOF(InputStream * inStream)
+{
+	InputStreamHTTPData *data = (InputStreamHTTPData *) inStream->data;
+	switch (data->connState) {
+	case HTTP_CONN_STATE_CLOSED:
+		if (data->buflen == 0)
+			return 1;
+	default:
+		return 0;
+	}
+}
+
+int inputStream_httpBuffer(InputStream * inStream)
+{
+	InputStreamHTTPData *data = (InputStreamHTTPData *) inStream->data;
+	ssize_t readed = 0;
+
+	if (data->connState == HTTP_CONN_STATE_REOPEN) {
+		if (initHTTPConnection(inStream) < 0)
+			return -1;
+	}
+
+	if (data->connState == HTTP_CONN_STATE_INIT) {
+		if (finishHTTPInit(inStream) < 0)
+			return -1;
+	}
+
+	if (data->connState == HTTP_CONN_STATE_HELLO) {
+		if (getHTTPHello(inStream) < 0)
+			return -1;
+	}
+
+	switch (data->connState) {
+	case HTTP_CONN_STATE_OPEN:
+	case HTTP_CONN_STATE_CLOSED:
+		break;
+	default:
+		return -1;
+	}
+
+	if (data->buflen == 0 || data->buflen < data->icyMetaint) {
+		data->prebuffer = 1;
+	} else if (data->buflen > prebufferSize)
+		data->prebuffer = 0;
+
+	if (data->connState == HTTP_CONN_STATE_OPEN &&
+	    data->buflen < bufferSize - 1) {
+		readed = read(data->sock, data->buffer + data->buflen,
+			      (size_t) (bufferSize - 1 - data->buflen));
+
+		if (readed < 0 && (errno == EAGAIN || errno == EINTR)) {
+			readed = 0;
+		} else if (readed <= 0) {
+			close(data->sock);
+			data->connState = HTTP_CONN_STATE_CLOSED;
+			readed = 0;
+		}
+		/*fwrite(data->buffer+data->buflen,1,readed,stdout); */
 		data->buflen += readed;
-        }
+	}
 
-	if(data->buflen > prebufferSize) data->prebuffer = 0;
+	if (data->buflen > prebufferSize)
+		data->prebuffer = 0;
 
-        return (readed ? 1 : 0);
+	return (readed ? 1 : 0);
 }

@@ -22,79 +22,74 @@
 #include <stdlib.h>
 #include <string.h>
 
-int buffer2array(char * origBuffer, char *** array) {
+int buffer2array(char *origBuffer, char ***array)
+{
 	int quotes = 0;
 	int count = 0;
 	int i;
 	int curr;
-	int * beginArray;
-	char * buffer = strdup(origBuffer);
+	int *beginArray;
+	char *buffer = strdup(origBuffer);
 	int bufferLength = strlen(buffer);
-	char * markArray = malloc(sizeof(char)*(bufferLength+1));
+	char *markArray = malloc(sizeof(char) * (bufferLength + 1));
 
-	for(curr=0;curr<bufferLength;curr++) {
-		if(!quotes && (buffer[curr]==' ' || buffer[curr]=='\t') ) {
+	for (curr = 0; curr < bufferLength; curr++) {
+		if (!quotes && (buffer[curr] == ' ' || buffer[curr] == '\t')) {
 			markArray[curr] = '0';
-		}
-		else if(buffer[curr] == '\"') {
-			if(curr>0 && buffer[curr-1]!='\\') {
-				quotes = quotes?0:1;
+		} else if (buffer[curr] == '\"') {
+			if (curr > 0 && buffer[curr - 1] != '\\') {
+				quotes = quotes ? 0 : 1;
 				markArray[curr] = '0';
-			}
-			else {
+			} else {
 				markArray[curr] = '1';
 			}
-		}
-		else {
+		} else {
 			markArray[curr] = '1';
 		}
-		if(markArray[curr]=='1') {
-			if(curr>0) {
-				if(markArray[curr-1]=='0') {
+		if (markArray[curr] == '1') {
+			if (curr > 0) {
+				if (markArray[curr - 1] == '0') {
 					count++;
 				}
-			}
-			else {
+			} else {
 				count++;
 			}
 		}
 	}
 	markArray[bufferLength] = '\0';
 
-	if(!count) {
+	if (!count) {
 		free(buffer);
 		free(markArray);
 		return count;
 	}
 
-	beginArray = malloc(sizeof(int)*count);
-	(*array) = malloc(sizeof(char *)*count);
+	beginArray = malloc(sizeof(int) * count);
+	(*array) = malloc(sizeof(char *) * count);
 
 	count = 0;
-	
-	for(curr=0;curr<bufferLength;curr++) {
-		if(markArray[curr]=='1') {
-			if(curr>0) {
-				if(markArray[curr-1]=='0') {
+
+	for (curr = 0; curr < bufferLength; curr++) {
+		if (markArray[curr] == '1') {
+			if (curr > 0) {
+				if (markArray[curr - 1] == '0') {
 					beginArray[count++] = curr;
 				}
-			}
-			else {
+			} else {
 				beginArray[count++] = curr;
 			}
-		}
-		else {
+		} else {
 			buffer[curr] = '\0';
 		}
 	}
 
-	for(i=0;i<count;i++) {
-		int len = strlen(buffer+beginArray[i])+1;
+	for (i = 0; i < count; i++) {
+		int len = strlen(buffer + beginArray[i]) + 1;
 		int arrayCurr = 0;
-		(*array)[i] = malloc(sizeof(char)*len);
-		for(curr=beginArray[i];buffer[curr]!='\0';curr++) {
-			if(buffer[curr]=='\\') {
-				if(buffer[curr+1]!='\0') {
+		(*array)[i] = malloc(sizeof(char) * len);
+		for (curr = beginArray[i]; buffer[curr] != '\0'; curr++) {
+			if (buffer[curr] == '\\') {
+				if (buffer[curr + 1] != '\0') {
 					curr++;
 				}
 			}
@@ -110,12 +105,14 @@ int buffer2array(char * origBuffer, char *** array) {
 	return count;
 }
 
-void freeArgArray(char ** array, int argArrayLength) {
+void freeArgArray(char **array, int argArrayLength)
+{
 	int i;
 
-	if(argArrayLength==0) return;
+	if (argArrayLength == 0)
+		return;
 
-	for(i=0;i<argArrayLength;i++) {
+	for (i = 0; i < argArrayLength; i++) {
 		free(array[i]);
 	}
 	free(array);

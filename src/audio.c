@@ -41,23 +41,25 @@
 
 static AudioFormat audio_format;
 
-static AudioFormat * audio_configFormat = NULL;
+static AudioFormat *audio_configFormat = NULL;
 
-static AudioOutput ** audioOutputArray = NULL;
+static AudioOutput **audioOutputArray = NULL;
 static mpd_uint8 audioOutputArraySize = 0;
 /* the audioEnabledArray should be stuck into shared memory, and then disable
    and enable in playAudio() routine */
-static mpd_sint8 * pdAudioDevicesEnabled = NULL;
+static mpd_sint8 *pdAudioDevicesEnabled = NULL;
 static mpd_sint8 myAudioDevicesEnabled[AUDIO_MAX_DEVICES];
 
 static mpd_uint8 audioOpened = 0;
 
 static mpd_sint32 audioBufferSize = 0;
-static char * audioBuffer = NULL;
+static char *audioBuffer = NULL;
 static mpd_sint32 audioBufferPos = 0;
 
-void copyAudioFormat(AudioFormat * dest, AudioFormat * src) {
-	if(!src) return;
+void copyAudioFormat(AudioFormat * dest, AudioFormat * src)
+{
+	if (!src)
+		return;
 
 	memcpy(dest, src, sizeof(AudioFormat));
 }
@@ -65,8 +67,7 @@ void copyAudioFormat(AudioFormat * dest, AudioFormat * src) {
 int cmpAudioFormat(AudioFormat * f1, AudioFormat * f2)
 {
 	if (f1 && f2 && (f1->sampleRate == f2->sampleRate) &&
-			(f1->bits == f2->bits) &&
-			(f1->channels == f2->channels))
+	    (f1->bits == f2->bits) && (f1->channels == f2->channels))
 		return 0;
 	return 1;
 }
@@ -79,8 +80,8 @@ extern AudioOutputPlugin pulsePlugin;
 extern AudioOutputPlugin mvpPlugin;
 extern AudioOutputPlugin shoutPlugin;
 
-
-void loadAudioDrivers(void) {
+void loadAudioDrivers(void)
+{
 	initAudioOutputPlugins();
 	loadAudioOutputPlugin(&alsaPlugin);
 	loadAudioOutputPlugin(&aoPlugin);
@@ -92,15 +93,16 @@ void loadAudioDrivers(void) {
 }
 
 /* make sure initPlayerData is called before this function!! */
-void initAudioDriver(void) {
-	ConfigParam * param = NULL;
+void initAudioDriver(void)
+{
+	ConfigParam *param = NULL;
 	int i;
 
 	loadAudioDrivers();
 
 	pdAudioDevicesEnabled = (getPlayerData())->audioDeviceEnabled;
 
-	for(i = 0; i < AUDIO_MAX_DEVICES; i++) {
+	for (i = 0; i < AUDIO_MAX_DEVICES; i++) {
 		pdAudioDevicesEnabled[i] = 1;
 		myAudioDevicesEnabled[i] = 1;
 	}
@@ -111,135 +113,140 @@ void initAudioDriver(void) {
 		AudioOutput *output;
 		int j;
 
-		if(audioOutputArraySize == AUDIO_MAX_DEVICES) {
+		if (audioOutputArraySize == AUDIO_MAX_DEVICES) {
 			ERROR("only up to 255 audio output devices are "
-					"supported");
+			      "supported");
 			exit(EXIT_FAILURE);
 		}
 
 		i = audioOutputArraySize++;
 
 		audioOutputArray = realloc(audioOutputArray,
-				audioOutputArraySize*sizeof(AudioOutput *));
+					   audioOutputArraySize *
+					   sizeof(AudioOutput *));
 
 		output = newAudioOutput(param);
-		if(!output && param) {
+		if (!output && param) {
 			ERROR("problems configuring output device defined at "
-					"line %i\n", param->line);
+			      "line %i\n", param->line);
 			exit(EXIT_FAILURE);
 		}
 
 		/* require output names to be unique: */
 		for (j = i - 1; j >= 0; --j) {
-			if ( !strcmp( output->name,
-					audioOutputArray[j]->name) ) {
+			if (!strcmp(output->name, audioOutputArray[j]->name)) {
 				ERROR("output devices with identical "
-						"names: %s\n",
-						output->name);
+				      "names: %s\n", output->name);
 				exit(EXIT_FAILURE);
 			}
 		}
 		audioOutputArray[i] = output;
-	} while((param = getNextConfigParam(CONF_AUDIO_OUTPUT, param)));
+	} while ((param = getNextConfigParam(CONF_AUDIO_OUTPUT, param)));
 }
 
-void getOutputAudioFormat(AudioFormat * inAudioFormat, 
-                AudioFormat * outAudioFormat)
+void getOutputAudioFormat(AudioFormat * inAudioFormat,
+			  AudioFormat * outAudioFormat)
 {
-        if(audio_configFormat) {
-                copyAudioFormat(outAudioFormat,audio_configFormat);
-        }
-        else copyAudioFormat(outAudioFormat,inAudioFormat);
+	if (audio_configFormat) {
+		copyAudioFormat(outAudioFormat, audio_configFormat);
+	} else
+		copyAudioFormat(outAudioFormat, inAudioFormat);
 }
 
-void initAudioConfig(void) {
-        ConfigParam * param = getConfigParam(CONF_AUDIO_OUTPUT_FORMAT);
+void initAudioConfig(void)
+{
+	ConfigParam *param = getConfigParam(CONF_AUDIO_OUTPUT_FORMAT);
 
-        if(NULL == param || NULL == param->value) return;
+	if (NULL == param || NULL == param->value)
+		return;
 
-        audio_configFormat = malloc(sizeof(AudioFormat));
+	audio_configFormat = malloc(sizeof(AudioFormat));
 
-	if(0 != parseAudioConfig(audio_configFormat, param->value)) {
-		ERROR("error parsing \"%s\" at line %i\n", 
-				CONF_AUDIO_OUTPUT_FORMAT, param->line);
+	if (0 != parseAudioConfig(audio_configFormat, param->value)) {
+		ERROR("error parsing \"%s\" at line %i\n",
+		      CONF_AUDIO_OUTPUT_FORMAT, param->line);
 		exit(EXIT_FAILURE);
 	}
 }
 
-int parseAudioConfig(AudioFormat * audioFormat, char * conf) {
-        char * test;
+int parseAudioConfig(AudioFormat * audioFormat, char *conf)
+{
+	char *test;
 
-        memset(audioFormat,0,sizeof(AudioFormat));
+	memset(audioFormat, 0, sizeof(AudioFormat));
 
-        audioFormat->sampleRate = strtol(conf,&test,10);
-       
-        if(*test!=':') {
-                ERROR("error parsing audio output format: %s\n",conf);
+	audioFormat->sampleRate = strtol(conf, &test, 10);
+
+	if (*test != ':') {
+		ERROR("error parsing audio output format: %s\n", conf);
 		return -1;
-        }
- 
-        /*switch(audioFormat->sampleRate) {
-        case 48000:
-        case 44100:
-        case 32000:
-        case 16000:
-                break;
-        default:
-                ERROR("sample rate %i can not be used for audio output\n",
-                        (int)audioFormat->sampleRate);
-		return -1
-        }*/
+	}
 
-        if(audioFormat->sampleRate <= 0) {
-                ERROR("sample rate %i is not >= 0\n",
-                                (int)audioFormat->sampleRate);
+	/*switch(audioFormat->sampleRate) {
+	   case 48000:
+	   case 44100:
+	   case 32000:
+	   case 16000:
+	   break;
+	   default:
+	   ERROR("sample rate %i can not be used for audio output\n",
+	   (int)audioFormat->sampleRate);
+	   return -1
+	   } */
+
+	if (audioFormat->sampleRate <= 0) {
+		ERROR("sample rate %i is not >= 0\n",
+		      (int)audioFormat->sampleRate);
 		return -1;
-        }
+	}
 
-        audioFormat->bits = strtol(test+1,&test,10);
-        
-        if(*test!=':') {
-                ERROR("error parsing audio output format: %s\n",conf);
+	audioFormat->bits = strtol(test + 1, &test, 10);
+
+	if (*test != ':') {
+		ERROR("error parsing audio output format: %s\n", conf);
 		return -1;
-        }
+	}
 
-        switch(audioFormat->bits) {
-        case 16:
-                break;
-        default:
-                ERROR("bits %i can not be used for audio output\n",
-                        (int)audioFormat->bits);
+	switch (audioFormat->bits) {
+	case 16:
+		break;
+	default:
+		ERROR("bits %i can not be used for audio output\n",
+		      (int)audioFormat->bits);
 		return -1;
-        }
+	}
 
-        audioFormat->channels = strtol(test+1,&test,10);
-        
-        if(*test!='\0') {
-                ERROR("error parsing audio output format: %s\n",conf);
+	audioFormat->channels = strtol(test + 1, &test, 10);
+
+	if (*test != '\0') {
+		ERROR("error parsing audio output format: %s\n", conf);
 		return -1;
-        }
+	}
 
-        switch(audioFormat->channels) {
+	switch (audioFormat->channels) {
 	case 1:
-        case 2:
-                break;
-        default:
-                ERROR("channels %i can not be used for audio output\n",
-                        (int)audioFormat->channels);
+	case 2:
+		break;
+	default:
+		ERROR("channels %i can not be used for audio output\n",
+		      (int)audioFormat->channels);
 		return -1;
-        }
+	}
 
 	return 0;
 }
 
-void finishAudioConfig(void) {
-        if(audio_configFormat) free(audio_configFormat);
+void finishAudioConfig(void)
+{
+	if (audio_configFormat)
+		free(audio_configFormat);
 }
 
-void finishAudioDriver(void) {
+void finishAudioDriver(void)
+{
 	int i;
 
-	for(i = 0; i < audioOutputArraySize; i++) {
+	for (i = 0; i < audioOutputArraySize; i++) {
 		finishAudioOutput(audioOutputArray[i]);
 	}
 
@@ -248,46 +255,51 @@ void finishAudioDriver(void) {
 	audioOutputArraySize = 0;
 }
 
-int isCurrentAudioFormat(AudioFormat * audioFormat) {
-	if(!audioFormat) return 1;
+int isCurrentAudioFormat(AudioFormat * audioFormat)
+{
+	if (!audioFormat)
+		return 1;
 
-	if(cmpAudioFormat(audioFormat, &audio_format) != 0) return 0;
+	if (cmpAudioFormat(audioFormat, &audio_format) != 0)
+		return 0;
 
 	return 1;
 }
 
-static void syncAudioDevicesEnabledArrays(void) {
+static void syncAudioDevicesEnabledArrays(void)
+{
 	int i;
 
-	memcpy(myAudioDevicesEnabled, pdAudioDevicesEnabled,AUDIO_MAX_DEVICES);
-			
-	for(i = 0; i < audioOutputArraySize; i++) {
-		if(myAudioDevicesEnabled[i]) {
+	memcpy(myAudioDevicesEnabled, pdAudioDevicesEnabled, AUDIO_MAX_DEVICES);
+
+	for (i = 0; i < audioOutputArraySize; i++) {
+		if (myAudioDevicesEnabled[i]) {
 			openAudioOutput(audioOutputArray[i], &audio_format);
-		}
-		else {
+		} else {
 			dropBufferedAudioOutput(audioOutputArray[i]);
 			closeAudioOutput(audioOutputArray[i]);
 		}
 	}
 }
 
-static int flushAudioBuffer(void) {
+static int flushAudioBuffer(void)
+{
 	int ret = -1;
 	int i, err;
 
-	if(audioBufferPos == 0) return 0;
+	if (audioBufferPos == 0)
+		return 0;
 
-	if(0 != memcmp(pdAudioDevicesEnabled, myAudioDevicesEnabled,
-			AUDIO_MAX_DEVICES)) 
-	{
+	if (0 != memcmp(pdAudioDevicesEnabled, myAudioDevicesEnabled,
+			AUDIO_MAX_DEVICES)) {
 		syncAudioDevicesEnabledArrays();
 	}
 
-	for(i = 0; i < audioOutputArraySize; i++) {
-		if(!myAudioDevicesEnabled[i]) continue;
+	for (i = 0; i < audioOutputArraySize; i++) {
+		if (!myAudioDevicesEnabled[i])
+			continue;
 		err = playAudioOutput(audioOutputArray[i], audioBuffer,
-							audioBufferPos);
+				      audioBufferPos);
 		if (!err)
 			ret = 0;
 		else if (err < 0)
@@ -301,32 +313,36 @@ static int flushAudioBuffer(void) {
 	return ret;
 }
 
-int openAudioDevice(AudioFormat * audioFormat) {
+int openAudioDevice(AudioFormat * audioFormat)
+{
 	int isCurrentFormat = isCurrentAudioFormat(audioFormat);
 	int ret = -1;
 	int i;
 
-	if(!audioOutputArray) return -1;
+	if (!audioOutputArray)
+		return -1;
 
-	if(!audioOpened || !isCurrentFormat) {
+	if (!audioOpened || !isCurrentFormat) {
 		flushAudioBuffer();
 		copyAudioFormat(&audio_format, audioFormat);
-		audioBufferSize = (audio_format.bits >> 3)*
-					audio_format.channels;
-		audioBufferSize*= audio_format.sampleRate >> 5;
+		audioBufferSize = (audio_format.bits >> 3) *
+		    audio_format.channels;
+		audioBufferSize *= audio_format.sampleRate >> 5;
 		audioBuffer = realloc(audioBuffer, audioBufferSize);
 	}
 
 	syncAudioDevicesEnabledArrays();
-	
-	for(i = 0; i < audioOutputArraySize; i++) {
-		if(audioOutputArray[i]->open) ret = 0;
+
+	for (i = 0; i < audioOutputArraySize; i++) {
+		if (audioOutputArray[i]->open)
+			ret = 0;
 	}
 
-	if(ret == 0) audioOpened = 1;
+	if (ret == 0)
+		audioOpened = 1;
 	else {
 		/* close all devices if there was an error */
-		for(i = 0; i < audioOutputArraySize; i++) {
+		for (i = 0; i < audioOutputArraySize; i++) {
 			closeAudioOutput(audioOutputArray[i]);
 		}
 
@@ -336,48 +352,53 @@ int openAudioDevice(AudioFormat * audioFormat) {
 	return ret;
 }
 
-int playAudio(char * playChunk, int size) {
+int playAudio(char *playChunk, int size)
+{
 	int send;
-	
-	while(size > 0) {
-		send = audioBufferSize-audioBufferPos;
+
+	while (size > 0) {
+		send = audioBufferSize - audioBufferPos;
 		send = send < size ? send : size;
 
-		memcpy(audioBuffer+audioBufferPos, playChunk, send);
+		memcpy(audioBuffer + audioBufferPos, playChunk, send);
 		audioBufferPos += send;
 		size -= send;
-		playChunk+= send;
+		playChunk += send;
 
-		if(audioBufferPos == audioBufferSize) {
-			if( flushAudioBuffer() < 0 ) return -1;
+		if (audioBufferPos == audioBufferSize) {
+			if (flushAudioBuffer() < 0)
+				return -1;
 		}
 	}
 
 	return 0;
 }
 
-int isAudioDeviceOpen(void) {
+int isAudioDeviceOpen(void)
+{
 	return audioOpened;
 }
 
-void dropBufferedAudio(void) {
+void dropBufferedAudio(void)
+{
 	int i;
 
-	if(0 != memcmp(pdAudioDevicesEnabled, myAudioDevicesEnabled,
-			AUDIO_MAX_DEVICES)) 
-	{
+	if (0 != memcmp(pdAudioDevicesEnabled, myAudioDevicesEnabled,
+			AUDIO_MAX_DEVICES)) {
 		syncAudioDevicesEnabledArrays();
 	}
 
 	audioBufferPos = 0;
 
-	for(i = 0; i < audioOutputArraySize; i++) {
-		if(!myAudioDevicesEnabled[i]) continue;
+	for (i = 0; i < audioOutputArraySize; i++) {
+		if (!myAudioDevicesEnabled[i])
+			continue;
 		dropBufferedAudioOutput(audioOutputArray[i]);
 	}
 }
 
-void closeAudioDevice(void) {
+void closeAudioDevice(void)
+{
 	int i;
 
 	flushAudioBuffer();
@@ -386,25 +407,27 @@ void closeAudioDevice(void) {
 	audioBuffer = NULL;
 	audioBufferSize = 0;
 
-	for(i = 0; i < audioOutputArraySize; i++) {
+	for (i = 0; i < audioOutputArraySize; i++) {
 		closeAudioOutput(audioOutputArray[i]);
 	}
 
 	audioOpened = 0;
 }
 
-void sendMetadataToAudioDevice(MpdTag * tag) {
+void sendMetadataToAudioDevice(MpdTag * tag)
+{
 	int i;
 
-	for(i = 0; i < audioOutputArraySize; i++) {
+	for (i = 0; i < audioOutputArraySize; i++) {
 		sendMetadataToAudioOutput(audioOutputArray[i], tag);
 	}
 }
 
-int enableAudioDevice(FILE * fp, int device) {
-	if(device < 0 || device >= audioOutputArraySize) {
+int enableAudioDevice(FILE * fp, int device)
+{
+	if (device < 0 || device >= audioOutputArraySize) {
 		commandError(fp, ACK_ERROR_ARG, "audio output device id %i "
-				"doesn't exist\n", device);
+			     "doesn't exist\n", device);
 		return -1;
 	}
 
@@ -413,10 +436,11 @@ int enableAudioDevice(FILE * fp, int device) {
 	return 0;
 }
 
-int disableAudioDevice(FILE * fp, int device) {
-	if(device < 0 || device >= audioOutputArraySize) {
+int disableAudioDevice(FILE * fp, int device)
+{
+	if (device < 0 || device >= audioOutputArraySize) {
 		commandError(fp, ACK_ERROR_ARG, "audio output device id %i "
-				"doesn't exist\n", device);
+			     "doesn't exist\n", device);
 		return -1;
 	}
 
@@ -425,18 +449,20 @@ int disableAudioDevice(FILE * fp, int device) {
 	return 0;
 }
 
-void printAudioDevices(FILE * fp) {
+void printAudioDevices(FILE * fp)
+{
 	int i;
 
-	for(i = 0; i < audioOutputArraySize; i++) {
+	for (i = 0; i < audioOutputArraySize; i++) {
 		myfprintf(fp, "outputid: %i\n", i);
 		myfprintf(fp, "outputname: %s\n", audioOutputArray[i]->name);
-		myfprintf(fp, "outputenabled: %i\n", 
-				(int)pdAudioDevicesEnabled[i]);
+		myfprintf(fp, "outputenabled: %i\n",
+			  (int)pdAudioDevicesEnabled[i]);
 	}
 }
 
-void saveAudioDevicesState(void) {
+void saveAudioDevicesState(void)
+{
 	char *stateFile;
 	FILE *fp;
 	int i;
@@ -444,40 +470,40 @@ void saveAudioDevicesState(void) {
 	if (!(stateFile = getStateFile()))
 		return;
 
-	while(!(fp = fopen(stateFile,"a")) && errno==EINTR);
-	if(!fp) {
+	while (!(fp = fopen(stateFile, "a")) && errno == EINTR) ;
+	if (!fp) {
 		ERROR("problems opening state file \"%s\" for "
-			"writing: %s\n", stateFile, strerror(errno));
+		      "writing: %s\n", stateFile, strerror(errno));
 		return;
 	}
 
 	assert(audioOutputArraySize != 0);
 	for (i = 0; i < audioOutputArraySize; i++) {
 		myfprintf(fp, AUDIO_DEVICE_STATE "%d:%s\n",
-					(int)pdAudioDevicesEnabled[i],
-					audioOutputArray[i]->name);
+			  (int)pdAudioDevicesEnabled[i],
+			  audioOutputArray[i]->name);
 	}
-	while(fclose(fp) && errno==EINTR);
+	while (fclose(fp) && errno == EINTR) ;
 }
 
-static void parse_audio_device_state(FILE *fp)
+static void parse_audio_device_state(FILE * fp)
 {
 	char buffer[AUDIO_BUFFER_SIZE];
 	int i;
 
 	assert(audioOutputArraySize != 0);
 
-	while (myFgets(buffer,AUDIO_BUFFER_SIZE,fp)) {
+	while (myFgets(buffer, AUDIO_BUFFER_SIZE, fp)) {
 		char *c, *name;
 
-		if (strncmp(buffer,AUDIO_DEVICE_STATE,AUDIO_DEVICE_STATE_LEN))
+		if (strncmp(buffer, AUDIO_DEVICE_STATE, AUDIO_DEVICE_STATE_LEN))
 			continue;
 
-		c = strchr(buffer,':');
+		c = strchr(buffer, ':');
 		if (!c || !(++c))
 			goto errline;
 
-		name = strchr(c,':');
+		name = strchr(c, ':');
 		if (!name || !(++name))
 			goto errline;
 
@@ -488,37 +514,35 @@ static void parse_audio_device_state(FILE *fp)
 			}
 		}
 		continue;
-errline:
+	      errline:
 		/* nonfatal */
 		ERROR("invalid line in state_file: %s\n", buffer);
 	}
 }
 
-void readAudioDevicesState(void) {
+void readAudioDevicesState(void)
+{
 	char *stateFile;
 	FILE *fp;
 	struct stat st;
 
 	if (!(stateFile = getStateFile()))
 		return;
-	if(stat(stateFile,&st)<0) {
+	if (stat(stateFile, &st) < 0) {
 		DEBUG("failed to stat state file\n");
 		return;
 	}
-	if(!S_ISREG(st.st_mode)) {
-		ERROR("state file \"%s\" is not a regular file\n",
-							stateFile);
+	if (!S_ISREG(st.st_mode)) {
+		ERROR("state file \"%s\" is not a regular file\n", stateFile);
 		exit(EXIT_FAILURE);
 	}
 
-	fp = fopen(stateFile,"r");
-	if(!fp) {
+	fp = fopen(stateFile, "r");
+	if (!fp) {
 		ERROR("problems opening state file \"%s\" for "
-			"reading: %s\n", stateFile,
-			strerror(errno));
+		      "reading: %s\n", stateFile, strerror(errno));
 		exit(EXIT_FAILURE);
 	}
 	parse_audio_device_state(fp);
 	fclose(fp);
 }
-

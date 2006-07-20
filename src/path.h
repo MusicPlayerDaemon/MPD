@@ -23,32 +23,32 @@
 
 #include <sys/param.h>
 
-extern char * musicDir;
+extern char *musicDir;
 
 void initPaths();
 
 void finishPaths();
 
-char * utf8ToFsCharset(char * str);
+char *utf8ToFsCharset(char *str);
 
-char * fsCharsetToUtf8(char * str);
+char *fsCharsetToUtf8(char *str);
 
-void setFsCharset(char * charset);
+void setFsCharset(char *charset);
 
-char * getFsCharset();
+char *getFsCharset();
 
 /* relative music path to absolute music path
  * char * passed is a static variable, so don't free it
  */
-char * rmp2amp(char * file);
+char *rmp2amp(char *file);
 
 /* static char * returned */
-char * rpp2app(char * file);
+char *rpp2app(char *file);
 
 /* static char * returned */
-char * parentPath(char * path);
+char *parentPath(char *path);
 
 /* strips extra "///" and leading "/" and trailing "/" */
-char * sanitizePathDup(char * path);
+char *sanitizePathDup(char *path);
 
 #endif

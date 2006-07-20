@@ -25,15 +25,16 @@
 
 #include <stdlib.h>
 
-void pcm_volumeChange(char * buffer, int bufferSize, AudioFormat * format,
-		int volume);
+void pcm_volumeChange(char *buffer, int bufferSize, AudioFormat * format,
+		      int volume);
 
-void pcm_mix(char * buffer1, char * buffer2, size_t bufferSize1, 
-		size_t bufferSize2, AudioFormat * format, float portion1);
+void pcm_mix(char *buffer1, char *buffer2, size_t bufferSize1,
+	     size_t bufferSize2, AudioFormat * format, float portion1);
 
-void pcm_convertAudioFormat(AudioFormat * inFormat, char * inBuffer, size_t
-                inSize, AudioFormat * outFormat, char * outBuffer);
+void pcm_convertAudioFormat(AudioFormat * inFormat, char *inBuffer, size_t
+			    inSize, AudioFormat * outFormat, char *outBuffer);
 
 size_t pcm_sizeOfOutputBufferForAudioFormatConversion(AudioFormat * inFormat,
-		size_t inSize, AudioFormat * outFormat);
+						      size_t inSize,
+						      AudioFormat * outFormat);
 #endif

@@ -41,38 +41,38 @@ typedef struct {
 	float time;
 	int bitRate;
 	FLAC__uint64 position;
-	OutputBuffer * cb;
-	DecoderControl * dc;
-	InputStream * inStream;
-	ReplayGainInfo * replayGainInfo;
-	MpdTag * tag;
+	OutputBuffer *cb;
+	DecoderControl *dc;
+	InputStream *inStream;
+	ReplayGainInfo *replayGainInfo;
+	MpdTag *tag;
 } FlacData;
 
 /* initializes a given FlacData struct */
-void init_FlacData (FlacData * data, OutputBuffer * cb,
-		DecoderControl * dc, InputStream * inStream);
-void flac_metadata_common_cb(	const FLAC__StreamMetadata *block,
-				FlacData *data);
-void flac_error_common_cb(	const char * plugin,
-				FLAC__StreamDecoderErrorStatus status,
-				FlacData *data);
+void init_FlacData(FlacData * data, OutputBuffer * cb,
+		   DecoderControl * dc, InputStream * inStream);
+void flac_metadata_common_cb(const FLAC__StreamMetadata * block,
+			     FlacData * data);
+void flac_error_common_cb(const char *plugin,
+			  FLAC__StreamDecoderErrorStatus status,
+			  FlacData * data);
 
-MpdTag * copyVorbisCommentBlockToMpdTag(const FLAC__StreamMetadata * block, 
-		MpdTag * tag);
+MpdTag *copyVorbisCommentBlockToMpdTag(const FLAC__StreamMetadata * block,
+				       MpdTag * tag);
 
 /* keep this inlined, this is just macro but prettier :) */
 static inline int flacSendChunk(FlacData * data)
 {
 	if (sendDataToOutputBuffer(data->cb, NULL, data->dc, 1, data->chunk,
-			data->chunk_length, data->time, data->bitRate,
-			data->replayGainInfo) == OUTPUT_BUFFER_DC_STOP)
+				   data->chunk_length, data->time,
+				   data->bitRate,
+				   data->replayGainInfo) ==
+	    OUTPUT_BUFFER_DC_STOP)
 		return -1;
 
 	return 0;
 }
 
+#endif				/* HAVE_FLAC || HAVE_OGGFLAC */
 
-#endif /* HAVE_FLAC || HAVE_OGGFLAC */
-
-#endif /* _FLAC_COMMON_H */
-
+#endif				/* _FLAC_COMMON_H */

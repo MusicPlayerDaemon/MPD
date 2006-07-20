@@ -16,7 +16,6 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-
 #ifndef LIST_H
 #define LIST_H
 
@@ -32,26 +31,26 @@ typedef void ListFreeDataFunc(void *);
 
 typedef struct _ListNode {
 	/* used to identify node (ie. when using findInList) */
-	char * key;
+	char *key;
 	/* data store in node */
-	void * data;
+	void *data;
 	/* next node in list */
-	struct _ListNode * nextNode;
+	struct _ListNode *nextNode;
 	/* previous node in list */
-	struct _ListNode * prevNode;
+	struct _ListNode *prevNode;
 } ListNode;
 
 typedef struct _List {
 	/* first node in list */
-	ListNode * firstNode;
+	ListNode *firstNode;
 	/* last node in list */
-	ListNode * lastNode;
+	ListNode *lastNode;
 	/* function used to free data stored in nodes of the list */
-	ListFreeDataFunc * freeDataFunc;
+	ListFreeDataFunc *freeDataFunc;
 	/* number of nodes */
 	long numberOfNodes;
 	/* array for searching when list is sorted */
-	ListNode ** nodesArray;
+	ListNode **nodesArray;
 	/* sorted */
 	int sorted;
 	/* weather to strdup() key's on insertion */
@@ -63,29 +62,29 @@ typedef struct _List {
  *                    DEFAULT_FREE_DATAFUNC to use free()
  * returns pointer to new list if successful, NULL otherwise
  */
-List * makeList(ListFreeDataFunc * freeDataFunc, int strdupKeys);
+List *makeList(ListFreeDataFunc * freeDataFunc, int strdupKeys);
 
 /* inserts a node into _list_ with _key_ and _data_
  *  _list_ -> list the data will be inserted in
  *  _key_ -> identifier for node/data to be inserted into list
  *  _data_ -> data to be inserted in list
  * returns 1 if successful, 0 otherwise
- */ 
-ListNode * insertInList(List * list,char * key,void * data);
+ */
+ListNode *insertInList(List * list, char *key, void *data);
 
-ListNode * insertInListBeforeNode(List * list, ListNode * beforeNode, 
-		int pos, char * key, void * data);
- 
-int insertInListWithoutKey(List * list,void * data);
+ListNode *insertInListBeforeNode(List * list, ListNode * beforeNode,
+				 int pos, char *key, void *data);
+
+int insertInListWithoutKey(List * list, void *data);
 
 /* deletes the first node in the list with the key _key_
  *  _list_ -> list the node will be deleted from
  *  _key_ -> key used to identify node to delete
  *  returns 1 if node is found and deleted, 0 otherwise
  */
-int deleteFromList(List * list,char * key);
+int deleteFromList(List * list, char *key);
 
-void deleteNodeFromList(List * list,ListNode * node);
+void deleteNodeFromList(List * list, ListNode * node);
 
 /* finds data in a list based on key
  *  _list_ -> list to search for _key_ in
@@ -95,16 +94,16 @@ void deleteNodeFromList(List * list,ListNode * node);
  *      _data_ can be NULL
  * returns 1 if successful, 0 otherwise
  */
-int findInList(List * list, char * key, void ** data);
+int findInList(List * list, char *key, void **data);
 
 /* if _key_ is not found, *_node_ is assigned to the node before which
 	the info would be found */
-int findNodeInList(List * list, char * key, ListNode ** node, int * pos);
+int findNodeInList(List * list, char *key, ListNode ** node, int *pos);
 
 /* frees memory malloc'd for list and its nodes
  *  _list_ -> List to be free'd
  */
-void freeList(void * list);
+void freeList(void *list);
 
 void sortList(List * list);
 

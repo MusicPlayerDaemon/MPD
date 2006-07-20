@@ -38,8 +38,8 @@
 #include <FLAC/format.h>
 #include <FLAC/metadata.h>
 
-void init_FlacData (FlacData * data, OutputBuffer * cb,
-		DecoderControl * dc, InputStream * inStream)
+void init_FlacData(FlacData * data, OutputBuffer * cb,
+		   DecoderControl * dc, InputStream * inStream)
 {
 	data->chunk_length = 0;
 	data->time = 0;
@@ -53,24 +53,24 @@ void init_FlacData (FlacData * data, OutputBuffer * cb,
 }
 
 static int flacFindVorbisCommentFloat(const FLAC__StreamMetadata * block,
-		char * cmnt, float * fl)
+				      char *cmnt, float *fl)
 {
-	int offset = FLAC__metadata_object_vorbiscomment_find_entry_from(
-			block,0,cmnt);
+	int offset =
+	    FLAC__metadata_object_vorbiscomment_find_entry_from(block, 0, cmnt);
 
-	if(offset >= 0) {
-		size_t pos = strlen(cmnt)+1; /* 1 is for '=' */
+	if (offset >= 0) {
+		size_t pos = strlen(cmnt) + 1;	/* 1 is for '=' */
 		int len = block->data.vorbis_comment.comments[offset].length
-				-pos;
-		if(len > 0) {
+		    - pos;
+		if (len > 0) {
 			unsigned char tmp;
-			unsigned char * dup = &(block->data.vorbis_comment.
-						comments[offset].entry[pos]);
+			unsigned char *dup = &(block->data.vorbis_comment.
+					       comments[offset].entry[pos]);
 			tmp = dup[len];
 			dup[len] = '\0';
 			*fl = atof((char *)dup);
 			dup[len] = tmp;
-			
+
 			return 1;
 		}
 	}
@@ -79,8 +79,9 @@ static int flacFindVorbisCommentFloat(const FLAC__StreamMetadata * block,
 }
 
 /* replaygain stuff by AliasMrJones */
-static void flacParseReplayGain(const FLAC__StreamMetadata *block,
-				FlacData * data) {
+static void flacParseReplayGain(const FLAC__StreamMetadata * block,
+				FlacData * data)
+{
 	unsigned int found = 0;
 
 	if (data->replayGainInfo)
@@ -88,14 +89,14 @@ static void flacParseReplayGain(const FLAC__StreamMetadata *block,
 
 	data->replayGainInfo = newReplayGainInfo();
 
-	found &= flacFindVorbisCommentFloat(block,"replaygain_album_gain",
-					&data->replayGainInfo->albumGain);
-	found &= flacFindVorbisCommentFloat(block,"replaygain_album_peak",
-					&data->replayGainInfo->albumPeak);
-	found &= flacFindVorbisCommentFloat(block,"replaygain_track_gain",
-					&data->replayGainInfo->trackGain);
-	found &= flacFindVorbisCommentFloat(block,"replaygain_track_peak",
-					&data->replayGainInfo->trackPeak);
+	found &= flacFindVorbisCommentFloat(block, "replaygain_album_gain",
+					    &data->replayGainInfo->albumGain);
+	found &= flacFindVorbisCommentFloat(block, "replaygain_album_peak",
+					    &data->replayGainInfo->albumPeak);
+	found &= flacFindVorbisCommentFloat(block, "replaygain_track_gain",
+					    &data->replayGainInfo->trackGain);
+	found &= flacFindVorbisCommentFloat(block, "replaygain_track_peak",
+					    &data->replayGainInfo->trackPeak);
 
 	if (!found) {
 		freeReplayGainInfo(data->replayGainInfo);
@@ -105,50 +106,55 @@ static void flacParseReplayGain(const FLAC__StreamMetadata *block,
 
 /* tracknumber is used in VCs, MPD uses "track" ..., all the other
  * tag names match */
-static const char * VORBIS_COMMENT_TRACK_KEY = "tracknumber";
-static const char * VORBIS_COMMENT_DISC_KEY  = "discnumber";
+static const char *VORBIS_COMMENT_TRACK_KEY = "tracknumber";
+static const char *VORBIS_COMMENT_DISC_KEY = "discnumber";
 
-static unsigned int commentMatchesAddToTag(
-		const FLAC__StreamMetadata_VorbisComment_Entry * entry,
-		unsigned int itemType,
-		MpdTag ** tag)
+static unsigned int commentMatchesAddToTag(const
+					   FLAC__StreamMetadata_VorbisComment_Entry
+					   * entry, unsigned int itemType,
+					   MpdTag ** tag)
 {
-	const char * str;
+	const char *str;
 	size_t slen;
 	int vlen;
 
 	switch (itemType) {
-	case TAG_ITEM_TRACK: str = VORBIS_COMMENT_TRACK_KEY; break;
-	case TAG_ITEM_DISC:  str = VORBIS_COMMENT_DISC_KEY;  break;
-	default:             str = mpdTagItemKeys[itemType];
+	case TAG_ITEM_TRACK:
+		str = VORBIS_COMMENT_TRACK_KEY;
+		break;
+	case TAG_ITEM_DISC:
+		str = VORBIS_COMMENT_DISC_KEY;
+		break;
+	default:
+		str = mpdTagItemKeys[itemType];
 	}
 	slen = strlen(str);
 	vlen = entry->length - slen - 1;
 
-	if ((vlen > 0) && (0 == strncasecmp(str,(char *)entry->entry, slen))
-				&& (*(entry->entry + slen) == '=')) {
+	if ((vlen > 0) && (0 == strncasecmp(str, (char *)entry->entry, slen))
+	    && (*(entry->entry + slen) == '=')) {
 		if (!*tag)
 			*tag = newMpdTag();
-		
-		addItemToMpdTagWithLen(*tag, itemType, 
-				(char *)(entry->entry+slen + 1), vlen);
-		
+
+		addItemToMpdTagWithLen(*tag, itemType,
+				       (char *)(entry->entry + slen + 1), vlen);
+
 		return 1;
 	}
-	
+
 	return 0;
 }
-		
-MpdTag * copyVorbisCommentBlockToMpdTag(const FLAC__StreamMetadata * block, 
-		MpdTag * tag)
+
+MpdTag *copyVorbisCommentBlockToMpdTag(const FLAC__StreamMetadata * block,
+				       MpdTag * tag)
 {
 	unsigned int i, j;
 	FLAC__StreamMetadata_VorbisComment_Entry *comments;
-	
+
 	comments = block->data.vorbis_comment.comments;
-	
+
 	for (i = block->data.vorbis_comment.num_comments; i != 0; --i) {
-		for (j = TAG_NUM_OF_ITEM_TYPES; j--; ) {
+		for (j = TAG_NUM_OF_ITEM_TYPES; j--;) {
 			if (commentMatchesAddToTag(comments, j, &tag))
 				break;
 		}
@@ -158,34 +164,36 @@ MpdTag * copyVorbisCommentBlockToMpdTag(const FLAC__StreamMetadata * block,
 	return tag;
 }
 
-void flac_metadata_common_cb(const FLAC__StreamMetadata *block, FlacData *data)
+void flac_metadata_common_cb(const FLAC__StreamMetadata * block,
+			     FlacData * data)
 {
 	DecoderControl *dc = data->dc;
 	const FLAC__StreamMetadata_StreamInfo *si = &(block->data.stream_info);
 
-	switch(block->type) {
+	switch (block->type) {
 	case FLAC__METADATA_TYPE_STREAMINFO:
 		dc->audioFormat.bits = si->bits_per_sample;
 		dc->audioFormat.sampleRate = si->sample_rate;
 		dc->audioFormat.channels = si->channels;
 		dc->totalTime = ((float)si->total_samples) / (si->sample_rate);
 		getOutputAudioFormat(&(dc->audioFormat),
-				&(data->cb->audioFormat));
+				     &(data->cb->audioFormat));
 		break;
 	case FLAC__METADATA_TYPE_VORBIS_COMMENT:
-		flacParseReplayGain(block,data);
-        default:
-                break;
+		flacParseReplayGain(block, data);
+	default:
+		break;
 	}
 }
 
-void flac_error_common_cb(	const char * plugin,
-				const FLAC__StreamDecoderErrorStatus status,
-				FlacData *data)
+void flac_error_common_cb(const char *plugin,
+			  const FLAC__StreamDecoderErrorStatus status,
+			  FlacData * data)
 {
-	if(data->dc->stop) return;
+	if (data->dc->stop)
+		return;
 
-	switch(status) {
+	switch (status) {
 	case FLAC__STREAM_DECODER_ERROR_STATUS_LOST_SYNC:
 		ERROR("%s lost sync\n", plugin);
 		break;
@@ -196,8 +204,8 @@ void flac_error_common_cb(	const char * plugin,
 		ERROR("%s crc mismatch\n", plugin);
 		break;
 	default:
-		ERROR("unknown %s error\n",plugin);
+		ERROR("unknown %s error\n", plugin);
 	}
 }
 
-#endif /* HAVE_FLAC || HAVE_OGGFLAC */
+#endif				/* HAVE_FLAC || HAVE_OGGFLAC */

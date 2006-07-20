@@ -28,7 +28,7 @@
 
 void initPermissions();
 
-int getPermissionFromPassword(char * password, int * permission);
+int getPermissionFromPassword(char *password, int *permission);
 
 void finishPermissions();
 

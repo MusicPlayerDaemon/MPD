@@ -27,4 +27,4 @@ void signal_unhandle(int sig);
 int signal_is_pending(int sig);
 void signal_clear(int sig);
 
-#endif /* SIGNAL_CHECK_H */
+#endif				/* SIGNAL_CHECK_H */

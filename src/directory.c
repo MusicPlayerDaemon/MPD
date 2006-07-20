@@ -58,7 +58,7 @@
 #define DIRECTORY_RETURN_UPDATE         1
 #define DIRECTORY_RETURN_ERROR         -1
 
-Directory * mp3rootDirectory = NULL;
+Directory *mp3rootDirectory = NULL;
 
 time_t directory_dbModTime = 0;
 
@@ -68,9 +68,9 @@ volatile int directory_reReadDB = 0;
 
 volatile mpd_uint16 directory_updateJobId = 0;
 
-static DirectoryList * newDirectoryList();
+static DirectoryList *newDirectoryList();
 
-static int addToDirectory(Directory * directory, char * shortname, char * name);
+static int addToDirectory(Directory * directory, char *shortname, char *name);
 
 static void freeDirectoryList(DirectoryList * list);
 
@@ -82,19 +82,19 @@ static int updateDirectory(Directory * directory);
 
 static void deleteEmptyDirectoriesInDirectory(Directory * directory);
 
-static void removeSongFromDirectory(Directory * directory, char * shortname);
+static void removeSongFromDirectory(Directory * directory, char *shortname);
 
-static int addSubDirectoryToDirectory(Directory * directory, char * shortname, 
-				char * name, struct stat * st);
+static int addSubDirectoryToDirectory(Directory * directory, char *shortname,
+				      char *name, struct stat *st);
 
-static Directory * getDirectoryDetails(char * name, char ** shortname);
+static Directory *getDirectoryDetails(char *name, char **shortname);
 
-static Directory * getDirectory(char * name);
+static Directory *getDirectory(char *name);
 
-static Song * getSongDetails(char * file, char ** shortnameRet, 
-		Directory ** directoryRet);
+static Song *getSongDetails(char *file, char **shortnameRet,
+			    Directory ** directoryRet);
 
-static int updatePath(char * utf8path);
+static int updatePath(char *utf8path);
 
 static void sortDirectory(Directory * directory);
 
@@ -102,8 +102,9 @@ static int inodeFoundInParent(Directory * parent, ino_t inode, dev_t device);
 
 static int statDirectory(Directory * dir);
 
-static char * getDbFile() {
-	ConfigParam * param = parseConfigFilePath(CONF_DB_FILE, 1);
+static char *getDbFile()
+{
+	ConfigParam *param = parseConfigFilePath(CONF_DB_FILE, 1);
 
 	assert(param);
 	assert(param->value);
@@ -111,45 +112,46 @@ static char * getDbFile() {
 	return param->value;
 }
 
-static void clearUpdatePid() {
+static void clearUpdatePid()
+{
 	directory_updatePid = 0;
 }
 
-int isUpdatingDB() {
-	if(directory_updatePid>0 || directory_reReadDB) {
+int isUpdatingDB()
+{
+	if (directory_updatePid > 0 || directory_reReadDB) {
 		return directory_updateJobId;
 	}
 	return 0;
 }
 
-void directory_sigChldHandler(int pid, int status) {
-	if(directory_updatePid==pid) {
-		if(WIFSIGNALED(status) && WTERMSIG(status)!=SIGTERM) {
-                        ERROR("update process died from a "
-                                        "non-TERM signal: %i\n",
-                                        WTERMSIG(status));
-                }
-		else if(!WIFSIGNALED(status)) {
-			switch(WEXITSTATUS(status)) 
-		        {
-                        case DIRECTORY_UPDATE_EXIT_UPDATE:
-			        directory_reReadDB = 1;
-			        DEBUG("directory_sigChldHandler: "
-					"updated db\n");
-                        case DIRECTORY_UPDATE_EXIT_NOUPDATE:
-			        DEBUG("directory_sigChldHandler: "
-					"update exited succesffully\n");
-                                break;
-                        default:
-                                ERROR("error updating db\n");
-                        }
+void directory_sigChldHandler(int pid, int status)
+{
+	if (directory_updatePid == pid) {
+		if (WIFSIGNALED(status) && WTERMSIG(status) != SIGTERM) {
+			ERROR("update process died from a "
+			      "non-TERM signal: %i\n", WTERMSIG(status));
+		} else if (!WIFSIGNALED(status)) {
+			switch (WEXITSTATUS(status)) {
+			case DIRECTORY_UPDATE_EXIT_UPDATE:
+				directory_reReadDB = 1;
+				DEBUG("directory_sigChldHandler: "
+				      "updated db\n");
+			case DIRECTORY_UPDATE_EXIT_NOUPDATE:
+				DEBUG("directory_sigChldHandler: "
+				      "update exited succesffully\n");
+				break;
+			default:
+				ERROR("error updating db\n");
+			}
 		}
 		clearUpdatePid();
 	}
 }
 
-void readDirectoryDBIfUpdateIsFinished() {
-	if(directory_reReadDB && 0==directory_updatePid) {
+void readDirectoryDBIfUpdateIsFinished()
+{
+	if (directory_reReadDB && 0 == directory_updatePid) {
 		DEBUG("readDirectoryDB since update finished successfully\n");
 		readDirectoryDB();
 		playlistVersionChange();
@@ -157,18 +159,19 @@ void readDirectoryDBIfUpdateIsFinished() {
 	}
 }
 
-int updateInit(FILE * fp, List * pathList) {
-	if(directory_updatePid > 0) {
+int updateInit(FILE * fp, List * pathList)
+{
+	if (directory_updatePid > 0) {
 		commandError(fp, ACK_ERROR_UPDATE_ALREADY, "already updating",
-				NULL);
+			     NULL);
 		return -1;
 	}
 
 	/* need to block CHLD signal, cause it can exit before we
-		even get a chance to assign directory_updatePID */
-	blockSignals();	
+	   even get a chance to assign directory_updatePID */
+	blockSignals();
 	directory_updatePid = fork();
-	if(directory_updatePid==0) {
+	if (directory_updatePid == 0) {
 		/* child */
 		int dbUpdated = 0;
 
@@ -180,75 +183,81 @@ int updateInit(FILE * fp, List * pathList) {
 		finishPlaylist();
 		finishVolume();
 
-		if(pathList) {
-			ListNode * node = pathList->firstNode;
+		if (pathList) {
+			ListNode *node = pathList->firstNode;
 
-			while(node) {
-				switch(updatePath(node->key)) {
+			while (node) {
+				switch (updatePath(node->key)) {
 				case 1:
-                                        dbUpdated = 1;
-                                        break;
-                                case 0:
-                                        break;
-                                default:
-                                        exit(DIRECTORY_UPDATE_EXIT_ERROR);
-                                }
+					dbUpdated = 1;
+					break;
+				case 0:
+					break;
+				default:
+					exit(DIRECTORY_UPDATE_EXIT_ERROR);
+				}
 				node = node->nextNode;
 			}
+		} else {
+			if ((dbUpdated = updateDirectory(mp3rootDirectory)) < 0) {
+				exit(DIRECTORY_UPDATE_EXIT_ERROR);
+			}
 		}
-		else {
-                        if((dbUpdated = updateDirectory(mp3rootDirectory))<0) {
-                                exit(DIRECTORY_UPDATE_EXIT_ERROR);
-                        }
-                }
 
-                if(!dbUpdated) exit(DIRECTORY_UPDATE_EXIT_NOUPDATE);
+		if (!dbUpdated)
+			exit(DIRECTORY_UPDATE_EXIT_NOUPDATE);
 
-		/* ignore signals since we don't want them to corrupt the db*/
+		/* ignore signals since we don't want them to corrupt the db */
 		ignoreSignals();
-		if(writeDirectoryDB()<0) {
+		if (writeDirectoryDB() < 0) {
 			exit(DIRECTORY_UPDATE_EXIT_ERROR);
 		}
 		exit(DIRECTORY_UPDATE_EXIT_UPDATE);
-	}
-	else if(directory_updatePid < 0) {
+	} else if (directory_updatePid < 0) {
 		unblockSignals();
 		ERROR("updateInit: Problems forking()'ing\n");
 		commandError(fp, ACK_ERROR_SYSTEM,
-                                "problems trying to update", NULL);
+			     "problems trying to update", NULL);
 		directory_updatePid = 0;
 		return -1;
 	}
 	unblockSignals();
 
 	directory_updateJobId++;
-	if(directory_updateJobId > 1<<15) directory_updateJobId = 1;
+	if (directory_updateJobId > 1 << 15)
+		directory_updateJobId = 1;
 	DEBUG("updateInit: fork()'d update child for update job id %i\n",
-			(int)directory_updateJobId);
-	myfprintf(fp,"updating_db: %i\n",(int)directory_updateJobId);
+	      (int)directory_updateJobId);
+	myfprintf(fp, "updating_db: %i\n", (int)directory_updateJobId);
 
 	return 0;
 }
 
-static DirectoryStat * newDirectoryStat(struct stat * st) {
-	DirectoryStat * ret = malloc(sizeof(DirectoryStat));
+static DirectoryStat *newDirectoryStat(struct stat *st)
+{
+	DirectoryStat *ret = malloc(sizeof(DirectoryStat));
 	ret->inode = st->st_ino;
 	ret->device = st->st_dev;
 	return ret;
 }
 
-static void freeDirectoryStatFromDirectory(Directory * dir) {
-	if(dir->stat) free(dir->stat);
+static void freeDirectoryStatFromDirectory(Directory * dir)
+{
+	if (dir->stat)
+		free(dir->stat);
 	dir->stat = NULL;
 }
 
-static Directory * newDirectory(char * dirname, Directory * parent) {
-	Directory * directory;
+static Directory *newDirectory(char *dirname, Directory * parent)
+{
+	Directory *directory;
 
 	directory = malloc(sizeof(Directory));
 
-	if(dirname && strlen(dirname)) directory->path = strdup(dirname);
-	else directory->path = NULL;
+	if (dirname && strlen(dirname))
+		directory->path = strdup(dirname);
+	else
+		directory->path = NULL;
 	directory->subDirectories = newDirectoryList();
 	directory->songs = newSongList();
 	directory->stat = NULL;
@@ -257,46 +266,51 @@ static Directory * newDirectory(char * dirname, Directory * parent) {
 	return directory;
 }
 
-static void freeDirectory(Directory * directory) {
+static void freeDirectory(Directory * directory)
+{
 	freeDirectoryList(directory->subDirectories);
 	freeSongList(directory->songs);
-	if(directory->path) free(directory->path);
+	if (directory->path)
+		free(directory->path);
 	freeDirectoryStatFromDirectory(directory);
 	free(directory);
 	/* this resets last dir returned */
-	/*getDirectoryPath(NULL);*/
+	/*getDirectoryPath(NULL); */
 }
 
-static DirectoryList * newDirectoryList() {
-	return makeList((ListFreeDataFunc *)freeDirectory, 1);
+static DirectoryList *newDirectoryList()
+{
+	return makeList((ListFreeDataFunc *) freeDirectory, 1);
 }
 
-static void freeDirectoryList(DirectoryList * directoryList) {
+static void freeDirectoryList(DirectoryList * directoryList)
+{
 	freeList(directoryList);
 }
 
-static void removeSongFromDirectory(Directory * directory, char * shortname) {
-	void * song;
-	
-	if(findInList(directory->songs,shortname,&song)) {
-		LOG("removing: %s\n", getSongUrl((Song *)song));
+static void removeSongFromDirectory(Directory * directory, char *shortname)
+{
+	void *song;
+
+	if (findInList(directory->songs, shortname, &song)) {
+		LOG("removing: %s\n", getSongUrl((Song *) song));
 		deleteFromList(directory->songs, shortname);
 	}
 }
 
-static void deleteEmptyDirectoriesInDirectory(Directory * directory) {
-	ListNode * node = directory->subDirectories->firstNode;
-	ListNode * nextNode;
-	Directory * subDir;
+static void deleteEmptyDirectoriesInDirectory(Directory * directory)
+{
+	ListNode *node = directory->subDirectories->firstNode;
+	ListNode *nextNode;
+	Directory *subDir;
 
-	while(node) {
-		subDir = (Directory *)node->data;
+	while (node) {
+		subDir = (Directory *) node->data;
 		deleteEmptyDirectoriesInDirectory(subDir);
 		nextNode = node->nextNode;
-		if(subDir->subDirectories->numberOfNodes==0 &&
-				subDir->songs->numberOfNodes==0) 
-		{
-			deleteNodeFromList(directory->subDirectories,node);
+		if (subDir->subDirectories->numberOfNodes == 0 &&
+		    subDir->songs->numberOfNodes == 0) {
+			deleteNodeFromList(directory->subDirectories, node);
 		}
 		node = nextNode;
 	}
@@ -307,36 +321,36 @@ static void deleteEmptyDirectoriesInDirectory(Directory * directory) {
     0 -> no error, but nothing updated
     1 -> no error, and stuff updated
  */
-static int updateInDirectory(Directory * directory, char * shortname, char * name) {
-	void * song;
-	void * subDir;
+static int updateInDirectory(Directory * directory, char *shortname, char *name)
+{
+	void *song;
+	void *subDir;
 	struct stat st;
 
-	if(myStat(name, &st)) return -1;
+	if (myStat(name, &st))
+		return -1;
 
-	if(S_ISREG(st.st_mode) && hasMusicSuffix(name, 0)) {
-		if(0==findInList(directory->songs,shortname,&song)) {
+	if (S_ISREG(st.st_mode) && hasMusicSuffix(name, 0)) {
+		if (0 == findInList(directory->songs, shortname, &song)) {
 			addToDirectory(directory, shortname, name);
-                        return DIRECTORY_RETURN_UPDATE;
-		}
-		else if(st.st_mtime!=((Song *)song)->mtime) {
-			LOG("updating %s\n",name);
-			if(updateSongInfo((Song *)song)<0) {
-				removeSongFromDirectory(directory,shortname);
+			return DIRECTORY_RETURN_UPDATE;
+		} else if (st.st_mtime != ((Song *) song)->mtime) {
+			LOG("updating %s\n", name);
+			if (updateSongInfo((Song *) song) < 0) {
+				removeSongFromDirectory(directory, shortname);
 			}
-                        return 1;
+			return 1;
 		}
-	}
-	else if(S_ISDIR(st.st_mode)) {
-		if(findInList(directory->subDirectories,shortname,(void **)&subDir)) {
+	} else if (S_ISDIR(st.st_mode)) {
+		if (findInList
+		    (directory->subDirectories, shortname, (void **)&subDir)) {
 			freeDirectoryStatFromDirectory(subDir);
-			((Directory *)subDir)->stat = newDirectoryStat(&st);
-			return updateDirectory((Directory *)subDir);
+			((Directory *) subDir)->stat = newDirectoryStat(&st);
+			return updateDirectory((Directory *) subDir);
+		} else {
+			return addSubDirectoryToDirectory(directory, shortname,
+							  name, &st);
 		}
-		else {
-                        return addSubDirectoryToDirectory(directory,shortname,
-                                        name, &st);
-                }
 	}
 
 	return 0;
@@ -347,71 +361,74 @@ static int updateInDirectory(Directory * directory, char * shortname, char * nam
     0 -> no error, but nothing removed
     1 -> no error, and stuff removed
  */
-static int removeDeletedFromDirectory(Directory * directory, DIR * dir) {
+static int removeDeletedFromDirectory(Directory * directory, DIR * dir)
+{
 	char cwd[2];
-	struct dirent * ent;
-	char * dirname = getDirectoryPath(directory);
-	List * entList = makeList(free, 1);
-	void * name;
-	char * s;
-	char * utf8;
-	ListNode * node;
-	ListNode * tmpNode;
-        int ret = 0;
+	struct dirent *ent;
+	char *dirname = getDirectoryPath(directory);
+	List *entList = makeList(free, 1);
+	void *name;
+	char *s;
+	char *utf8;
+	ListNode *node;
+	ListNode *tmpNode;
+	int ret = 0;
 
 	cwd[0] = '.';
 	cwd[1] = '\0';
-	if(dirname==NULL) dirname=cwd;
+	if (dirname == NULL)
+		dirname = cwd;
 
-	while((ent = readdir(dir))) {
-		if(ent->d_name[0]=='.') continue; /* hide hidden stuff */
-                if(strchr(ent->d_name, '\n')) continue;
+	while ((ent = readdir(dir))) {
+		if (ent->d_name[0] == '.')
+			continue;	/* hide hidden stuff */
+		if (strchr(ent->d_name, '\n'))
+			continue;
 
 		utf8 = fsCharsetToUtf8(ent->d_name);
 
-		if(!utf8) continue;
+		if (!utf8)
+			continue;
 
-		if(directory->path) {
+		if (directory->path) {
 			s = malloc(strlen(getDirectoryPath(directory))
-					+strlen(utf8)+2);
-			sprintf(s,"%s/%s", getDirectoryPath(directory), utf8);
-		}
-		else s= strdup(utf8);
+				   + strlen(utf8) + 2);
+			sprintf(s, "%s/%s", getDirectoryPath(directory), utf8);
+		} else
+			s = strdup(utf8);
 		insertInList(entList, utf8, s);
 	}
 
 	node = directory->subDirectories->firstNode;
-	while(node) {
+	while (node) {
 		tmpNode = node->nextNode;
-		if(findInList(entList,node->key,&name)) {
-			if(!isDir((char *)name)) {
-				LOG("removing directory: %s\n",(char*)name);
+		if (findInList(entList, node->key, &name)) {
+			if (!isDir((char *)name)) {
+				LOG("removing directory: %s\n", (char *)name);
 				deleteFromList(directory->subDirectories,
-						node->key);
-                                ret = 1;
+					       node->key);
+				ret = 1;
 			}
-		}
-		else {
+		} else {
 			LOG("removing directory: %s/%s\n",
-				getDirectoryPath(directory), node->key);
+			    getDirectoryPath(directory), node->key);
 			deleteFromList(directory->subDirectories, node->key);
-                        ret = 1;
+			ret = 1;
 		}
 		node = tmpNode;
 	}
 
 	node = directory->songs->firstNode;
-	while(node) {
+	while (node) {
 		tmpNode = node->nextNode;
-		if(findInList(entList,node->key,(void **)&name)) {
-			if(!isMusic(name,NULL,0)) {
-				removeSongFromDirectory(directory,node->key);
-                                ret = 1;
+		if (findInList(entList, node->key, (void **)&name)) {
+			if (!isMusic(name, NULL, 0)) {
+				removeSongFromDirectory(directory, node->key);
+				ret = 1;
 			}
-		}
-		else {
-			removeSongFromDirectory(directory,node->key);
-                        ret = 1;
+		} else {
+			removeSongFromDirectory(directory, node->key);
+			ret = 1;
 		}
 		node = tmpNode;
 	}
@@ -421,71 +438,75 @@ static int removeDeletedFromDirectory(Directory * directory, DIR * dir) {
 	return ret;
 }
 
-static Directory * addDirectoryPathToDB(char * utf8path, char ** shortname) {
-	char * parent;
-	Directory * parentDirectory;
-	void * directory;
+static Directory *addDirectoryPathToDB(char *utf8path, char **shortname)
+{
+	char *parent;
+	Directory *parentDirectory;
+	void *directory;
 
 	parent = strdup(parentPath(utf8path));
 
-	if(strlen(parent)==0) parentDirectory = (void *)mp3rootDirectory;
-	else parentDirectory = addDirectoryPathToDB(parent,shortname);
+	if (strlen(parent) == 0)
+		parentDirectory = (void *)mp3rootDirectory;
+	else
+		parentDirectory = addDirectoryPathToDB(parent, shortname);
 
-	if(!parentDirectory) {
+	if (!parentDirectory) {
 		free(parent);
 		return NULL;
 	}
 
-	*shortname = utf8path+strlen(parent);
-	while(*(*shortname) && *(*shortname)=='/') (*shortname)++;
+	*shortname = utf8path + strlen(parent);
+	while (*(*shortname) && *(*shortname) == '/')
+		(*shortname)++;
 
-	if(!findInList(parentDirectory->subDirectories,*shortname, &directory))
-	{
+	if (!findInList
+	    (parentDirectory->subDirectories, *shortname, &directory)) {
 		struct stat st;
-		if(myStat(utf8path, &st) < 0 || 
-				inodeFoundInParent(parentDirectory, 
-				st.st_ino, st.st_dev)) 
-		{
+		if (myStat(utf8path, &st) < 0 ||
+		    inodeFoundInParent(parentDirectory, st.st_ino, st.st_dev)) {
 			free(parent);
 			return NULL;
-		}
-		else {
-                	directory = newDirectory(utf8path, parentDirectory);
-                	insertInList(parentDirectory->subDirectories,
-					*shortname,
-                                	directory);
+		} else {
+			directory = newDirectory(utf8path, parentDirectory);
+			insertInList(parentDirectory->subDirectories,
+				     *shortname, directory);
 		}
 	}
 
 	/* if we're adding directory paths, make sure to delete filenames
-           with potentially the same name*/
-	removeSongFromDirectory(parentDirectory,*shortname);
+	   with potentially the same name */
+	removeSongFromDirectory(parentDirectory, *shortname);
 
 	free(parent);
 
-	return (Directory *)directory;
+	return (Directory *) directory;
 }
 
-static Directory * addParentPathToDB(char * utf8path, char ** shortname) {
-	char * parent;
-	Directory * parentDirectory;
+static Directory *addParentPathToDB(char *utf8path, char **shortname)
+{
+	char *parent;
+	Directory *parentDirectory;
 
 	parent = strdup(parentPath(utf8path));
 
-	if(strlen(parent)==0) parentDirectory = (void *)mp3rootDirectory;
-	else parentDirectory = addDirectoryPathToDB(parent,shortname);
+	if (strlen(parent) == 0)
+		parentDirectory = (void *)mp3rootDirectory;
+	else
+		parentDirectory = addDirectoryPathToDB(parent, shortname);
 
-	if(!parentDirectory) {
+	if (!parentDirectory) {
 		free(parent);
 		return NULL;
 	}
 
-	*shortname = utf8path+strlen(parent);
-	while(*(*shortname) && *(*shortname)=='/') (*shortname)++;
+	*shortname = utf8path + strlen(parent);
+	while (*(*shortname) && *(*shortname) == '/')
+		(*shortname)++;
 
 	free(parent);
 
-	return (Directory *)parentDirectory;
+	return (Directory *) parentDirectory;
 }
 
 /* return values:
@@ -493,96 +514,93 @@ static Directory * addParentPathToDB(char * utf8path, char ** shortname) {
     0 -> no error, but nothing updated
     1 -> no error, and stuff updated
  */
-static int updatePath(char * utf8path) {
-	Directory * directory;
-	Directory * parentDirectory;
-	Song * song;
-	char * shortname;
-	char * path = sanitizePathDup(utf8path);
-        time_t mtime;
-        int ret = 0;
+static int updatePath(char *utf8path)
+{
+	Directory *directory;
+	Directory *parentDirectory;
+	Song *song;
+	char *shortname;
+	char *path = sanitizePathDup(utf8path);
+	time_t mtime;
+	int ret = 0;
 
-	if(NULL==path) return -1;
+	if (NULL == path)
+		return -1;
 
 	/* if path is in the DB try to update it, or else delete it */
-	if((directory = getDirectoryDetails(path,&shortname))) {
+	if ((directory = getDirectoryDetails(path, &shortname))) {
 		parentDirectory = directory->parent;
 
 		/* if this update directory is successfull, we are done */
-		if((ret = updateDirectory(directory))>=0)
-		{
+		if ((ret = updateDirectory(directory)) >= 0) {
 			free(path);
 			sortDirectory(directory);
 			return ret;
 		}
 		/* we don't want to delete the root directory */
-		else if(directory == mp3rootDirectory) {
+		else if (directory == mp3rootDirectory) {
 			free(path);
 			return 0;
 		}
 		/* if updateDirectory fials, means we should delete it */
 		else {
-			LOG("removing directory: %s\n",path);
+			LOG("removing directory: %s\n", path);
 			deleteFromList(parentDirectory->subDirectories,
-					shortname);
-                        ret = 1;
-                        /* don't return, path maybe a song now*/
+				       shortname);
+			ret = 1;
+			/* don't return, path maybe a song now */
 		}
-	}
-	else if((song = getSongDetails(path,&shortname,&parentDirectory))) {
-		if(!parentDirectory->stat && statDirectory(parentDirectory) < 0)
-		{
+	} else if ((song = getSongDetails(path, &shortname, &parentDirectory))) {
+		if (!parentDirectory->stat
+		    && statDirectory(parentDirectory) < 0) {
 			free(path);
 			return 0;
 		}
 		/* if this song update is successfull, we are done */
-		else if(0 == inodeFoundInParent(
-				parentDirectory->parent,
-				parentDirectory->stat->inode,
-				parentDirectory->stat->device) && 
-				song && isMusic(getSongUrl(song), &mtime, 0)) 
-		{
+		else if (0 == inodeFoundInParent(parentDirectory->parent,
+						 parentDirectory->stat->inode,
+						 parentDirectory->stat->device)
+			 && song && isMusic(getSongUrl(song), &mtime, 0)) {
 			free(path);
-                        if(song->mtime==mtime) return 0;
-                        else if(updateSongInfo(song)==0) return 1;
-                        else {
-                                removeSongFromDirectory(parentDirectory,
-                                                shortname);
-                                return 1;
-                        }
+			if (song->mtime == mtime)
+				return 0;
+			else if (updateSongInfo(song) == 0)
+				return 1;
+			else {
+				removeSongFromDirectory(parentDirectory,
+							shortname);
+				return 1;
+			}
 		}
 		/* if updateDirectory fials, means we should delete it */
 		else {
-                        removeSongFromDirectory(parentDirectory, shortname);
-                        ret = 1;
-                        /* don't return, path maybe a directory now*/
-                }
+			removeSongFromDirectory(parentDirectory, shortname);
+			ret = 1;
+			/* don't return, path maybe a directory now */
+		}
 	}
 
 	/* path not found in the db, see if it actually exists on the fs.
 	 * Also, if by chance a directory was replaced by a file of the same
-         * name or vice versa, we need to add it to the db
-         */
-	if(isDir(path) || isMusic(path,NULL,0)) {
-		parentDirectory = addParentPathToDB(path,&shortname);
-		if(!parentDirectory || (
-				!parentDirectory->stat && 
-				statDirectory(parentDirectory) < 0))
-		{
-		}
-		else if(0 == inodeFoundInParent(parentDirectory->parent,
-				parentDirectory->stat->inode,
-				parentDirectory->stat->device) &&
-		 		addToDirectory(parentDirectory, shortname, path)
-				>0) 
-		{
+	 * name or vice versa, we need to add it to the db
+	 */
+	if (isDir(path) || isMusic(path, NULL, 0)) {
+		parentDirectory = addParentPathToDB(path, &shortname);
+		if (!parentDirectory || (!parentDirectory->stat &&
+					 statDirectory(parentDirectory) < 0)) {
+		} else if (0 == inodeFoundInParent(parentDirectory->parent,
+						   parentDirectory->stat->inode,
+						   parentDirectory->stat->
+						   device)
+			   && addToDirectory(parentDirectory, shortname, path)
+			   > 0) {
 			ret = 1;
 		}
 	}
 
 	free(path);
 
-        return ret;
+	return ret;
 }
 
 /* return values:
@@ -590,58 +608,64 @@ static int updatePath(char * utf8path) {
     0 -> no error, but nothing updated
     1 -> no error, and stuff updated
  */
-static int updateDirectory(Directory * directory) {
-	DIR * dir;
+static int updateDirectory(Directory * directory)
+{
+	DIR *dir;
 	char cwd[2];
-	struct dirent * ent;
-	char * s;
-	char * utf8;
-	char * dirname = getDirectoryPath(directory);
-        int ret = 0;
+	struct dirent *ent;
+	char *s;
+	char *utf8;
+	char *dirname = getDirectoryPath(directory);
+	int ret = 0;
 
 	{
-		if(!directory->stat && statDirectory(directory) < 0) {
+		if (!directory->stat && statDirectory(directory) < 0) {
 			return -1;
-		}
-		else if(inodeFoundInParent(directory->parent, 
-				directory->stat->inode,
-				directory->stat->device))
-		{
+		} else if (inodeFoundInParent(directory->parent,
+					      directory->stat->inode,
+					      directory->stat->device)) {
 			return -1;
 		}
 	}
 
 	cwd[0] = '.';
 	cwd[1] = '\0';
-	if(dirname==NULL) dirname=cwd;
+	if (dirname == NULL)
+		dirname = cwd;
 
-	if((dir = opendir(rmp2amp(utf8ToFsCharset(dirname))))==NULL) return -1;
+	if ((dir = opendir(rmp2amp(utf8ToFsCharset(dirname)))) == NULL)
+		return -1;
 
-	if(removeDeletedFromDirectory(directory, dir)>0) ret = 1;
+	if (removeDeletedFromDirectory(directory, dir) > 0)
+		ret = 1;
 
 	rewinddir(dir);
 
-	while((ent = readdir(dir))) {
-		if(ent->d_name[0]=='.') continue; /* hide hidden stuff */
-                if(strchr(ent->d_name, '\n')) continue;
+	while ((ent = readdir(dir))) {
+		if (ent->d_name[0] == '.')
+			continue;	/* hide hidden stuff */
+		if (strchr(ent->d_name, '\n'))
+			continue;
 
 		utf8 = fsCharsetToUtf8(ent->d_name);
 
-		if(!utf8) continue;
+		if (!utf8)
+			continue;
 
 		utf8 = strdup(utf8);
 
-		if(directory->path) {
-			s = malloc(strlen(getDirectoryPath(directory))+
-					strlen(utf8)+2);
-			sprintf(s,"%s/%s", getDirectoryPath(directory), utf8);
-		}
-		else s = strdup(utf8);
-		if(updateInDirectory(directory,utf8,s)>0) ret = 1;
+		if (directory->path) {
+			s = malloc(strlen(getDirectoryPath(directory)) +
+				   strlen(utf8) + 2);
+			sprintf(s, "%s/%s", getDirectoryPath(directory), utf8);
+		} else
+			s = strdup(utf8);
+		if (updateInDirectory(directory, utf8, s) > 0)
+			ret = 1;
 		free(utf8);
 		free(s);
 	}
-	
+
 	closedir(dir);
 
 	return ret;
@@ -652,55 +676,63 @@ static int updateDirectory(Directory * directory) {
     0 -> no error, but nothing found
     1 -> no error, and stuff found
  */
-static int exploreDirectory(Directory * directory) {
-	DIR * dir;
+static int exploreDirectory(Directory * directory)
+{
+	DIR *dir;
 	char cwd[2];
-	struct dirent * ent;
-	char * s;
-	char * utf8;
-	char * dirname = getDirectoryPath(directory);
-        int ret = 0;
+	struct dirent *ent;
+	char *s;
+	char *utf8;
+	char *dirname = getDirectoryPath(directory);
+	int ret = 0;
 
 	cwd[0] = '.';
 	cwd[1] = '\0';
-	if(dirname==NULL) dirname=cwd;
+	if (dirname == NULL)
+		dirname = cwd;
 
-	DEBUG("explore: attempting to opendir: %s\n",dirname);
-	if((dir = opendir(rmp2amp(utf8ToFsCharset(dirname))))==NULL) return -1;
+	DEBUG("explore: attempting to opendir: %s\n", dirname);
+	if ((dir = opendir(rmp2amp(utf8ToFsCharset(dirname)))) == NULL)
+		return -1;
 
-	DEBUG("explore: %s\n",dirname);
-	while((ent = readdir(dir))) {
-		if(ent->d_name[0]=='.') continue; /* hide hidden stuff */
-                if(strchr(ent->d_name, '\n')) continue;
+	DEBUG("explore: %s\n", dirname);
+	while ((ent = readdir(dir))) {
+		if (ent->d_name[0] == '.')
+			continue;	/* hide hidden stuff */
+		if (strchr(ent->d_name, '\n'))
+			continue;
 
 		utf8 = fsCharsetToUtf8(ent->d_name);
 
-		if(!utf8) continue;
+		if (!utf8)
+			continue;
 
 		utf8 = strdup(utf8);
 
-		DEBUG("explore: found: %s (%s)\n",ent->d_name,utf8);
+		DEBUG("explore: found: %s (%s)\n", ent->d_name, utf8);
 
-		if(directory->path) {
-			s = malloc(strlen(getDirectoryPath(directory))+
-					strlen(utf8)+2);
-			sprintf(s,"%s/%s", getDirectoryPath(directory) ,utf8);
-		}
-		else s = strdup(utf8);
-		if(addToDirectory(directory,utf8,s)>0) ret = 1;
+		if (directory->path) {
+			s = malloc(strlen(getDirectoryPath(directory)) +
+				   strlen(utf8) + 2);
+			sprintf(s, "%s/%s", getDirectoryPath(directory), utf8);
+		} else
+			s = strdup(utf8);
+		if (addToDirectory(directory, utf8, s) > 0)
+			ret = 1;
 		free(utf8);
 		free(s);
 	}
-	
+
 	closedir(dir);
 
 	return ret;
 }
 
-static int statDirectory(Directory * dir) {
+static int statDirectory(Directory * dir)
+{
 	struct stat st;
 
-	if(myStat(getDirectoryPath(dir) ? getDirectoryPath(dir) : "", &st) < 0) 	{
+	if (myStat(getDirectoryPath(dir) ? getDirectoryPath(dir) : "", &st) < 0) {
 		return -1;
 	}
 
@@ -709,14 +741,15 @@ static int statDirectory(Directory * dir) {
 	return 0;
 }
 
-static int inodeFoundInParent(Directory * parent, ino_t inode, dev_t device) {
-	while(parent) {
-		if(!parent->stat) {
-			if(statDirectory(parent) < 0) return -1;
+static int inodeFoundInParent(Directory * parent, ino_t inode, dev_t device)
+{
+	while (parent) {
+		if (!parent->stat) {
+			if (statDirectory(parent) < 0)
+				return -1;
 		}
-		if(parent->stat->inode == inode && 
-				parent->stat->device == device)
-		{
+		if (parent->stat->inode == inode &&
+		    parent->stat->device == device) {
 			DEBUG("recursive directory found\n");
 			return 1;
 		}
@@ -726,263 +759,273 @@ static int inodeFoundInParent(Directory * parent, ino_t inode, dev_t device) {
 	return 0;
 }
 
-static int addSubDirectoryToDirectory(Directory * directory, char * shortname, 
-	char * name, struct stat * st) 
+static int addSubDirectoryToDirectory(Directory * directory, char *shortname,
+				      char *name, struct stat *st)
 {
-	Directory * subDirectory;
+	Directory *subDirectory;
 
-	if(inodeFoundInParent(directory, st->st_ino, st->st_dev)) return 0;
+	if (inodeFoundInParent(directory, st->st_ino, st->st_dev))
+		return 0;
 
 	subDirectory = newDirectory(name, directory);
 	subDirectory->stat = newDirectoryStat(st);
-	
-	if(exploreDirectory(subDirectory)<1) {
-                freeDirectory(subDirectory);
-                return 0;
-        }
 
-	insertInList(directory->subDirectories, shortname, 
-			subDirectory);
+	if (exploreDirectory(subDirectory) < 1) {
+		freeDirectory(subDirectory);
+		return 0;
+	}
+
+	insertInList(directory->subDirectories, shortname, subDirectory);
 
 	return 1;
 }
 
-static int addToDirectory(Directory * directory, char * shortname, char * name) {
+static int addToDirectory(Directory * directory, char *shortname, char *name)
+{
 	struct stat st;
 
-	if(myStat(name, &st)) {
+	if (myStat(name, &st)) {
 		DEBUG("failed to stat %s: %s\n", name, strerror(errno));
 		return -1;
 	}
 
-	if(S_ISREG(st.st_mode) && hasMusicSuffix(name, 0)) {
-		Song * song;
+	if (S_ISREG(st.st_mode) && hasMusicSuffix(name, 0)) {
+		Song *song;
 		song = addSongToList(directory->songs, shortname, name,
-				SONG_TYPE_FILE, directory);
-		if(!song) return -1;
+				     SONG_TYPE_FILE, directory);
+		if (!song)
+			return -1;
 		LOG("added %s\n", name);
 		return 1;
-	}
-	else if(S_ISDIR(st.st_mode)) {
+	} else if (S_ISDIR(st.st_mode)) {
 		return addSubDirectoryToDirectory(directory, shortname, name,
-				&st);
+						  &st);
 	}
 
-	DEBUG("addToDirectory: %s is not a directory or music\n",name);
+	DEBUG("addToDirectory: %s is not a directory or music\n", name);
 
 	return -1;
 }
 
-void closeMp3Directory() {
+void closeMp3Directory()
+{
 	freeDirectory(mp3rootDirectory);
 }
 
-static Directory * findSubDirectory(Directory * directory,char * name) {
-	void * subDirectory;
-	char * dup = strdup(name);
-	char * key;
+static Directory *findSubDirectory(Directory * directory, char *name)
+{
+	void *subDirectory;
+	char *dup = strdup(name);
+	char *key;
 
-	key = strtok(dup,"/");
-	if(!key) {
+	key = strtok(dup, "/");
+	if (!key) {
 		free(dup);
 		return NULL;
 	}
-	
-	if(findInList(directory->subDirectories,key,&subDirectory)) {
+
+	if (findInList(directory->subDirectories, key, &subDirectory)) {
 		free(dup);
-		return (Directory *)subDirectory;
+		return (Directory *) subDirectory;
 	}
 
 	free(dup);
 	return NULL;
 }
 
-static Directory * getSubDirectory(Directory * directory, char * name, 
-		char ** shortname) 
+static Directory *getSubDirectory(Directory * directory, char *name,
+				  char **shortname)
 {
-	Directory * subDirectory;
+	Directory *subDirectory;
 	int len;
 
-	if(name==NULL || name[0]=='\0' || strcmp(name,"/")==0) {
+	if (name == NULL || name[0] == '\0' || strcmp(name, "/") == 0) {
 		return directory;
 	}
 
-	if((subDirectory = findSubDirectory(directory,name))==NULL) return NULL;
+	if ((subDirectory = findSubDirectory(directory, name)) == NULL)
+		return NULL;
 
 	*shortname = name;
 
 	len = 0;
-	while(name[len]!='/' && name[len]!='\0') len++;
-	while(name[len]=='/') len++;
+	while (name[len] != '/' && name[len] != '\0')
+		len++;
+	while (name[len] == '/')
+		len++;
 
-	return getSubDirectory(subDirectory,&(name[len]),shortname);
+	return getSubDirectory(subDirectory, &(name[len]), shortname);
 }
 
-static Directory * getDirectoryDetails(char * name, char ** shortname) {
+static Directory *getDirectoryDetails(char *name, char **shortname)
+{
 	*shortname = NULL;
 
-	return getSubDirectory(mp3rootDirectory,name,shortname);
+	return getSubDirectory(mp3rootDirectory, name, shortname);
 }
 
-static Directory * getDirectory(char * name) {
-	char * shortname;
+static Directory *getDirectory(char *name)
+{
+	char *shortname;
 
-	return getSubDirectory(mp3rootDirectory,name,&shortname);
+	return getSubDirectory(mp3rootDirectory, name, &shortname);
 }
 
-static int printDirectoryList(FILE * fp, DirectoryList * directoryList) {
-	ListNode * node = directoryList->firstNode;
-	Directory * directory;
+static int printDirectoryList(FILE * fp, DirectoryList * directoryList)
+{
+	ListNode *node = directoryList->firstNode;
+	Directory *directory;
 
-	while(node!=NULL) {
-		directory = (Directory *)node->data;
-		myfprintf(fp,"%s%s\n", DIRECTORY_DIR, 
-				getDirectoryPath(directory));
+	while (node != NULL) {
+		directory = (Directory *) node->data;
+		myfprintf(fp, "%s%s\n", DIRECTORY_DIR,
+			  getDirectoryPath(directory));
 		node = node->nextNode;
 	}
 
 	return 0;
 }
 
-int printDirectoryInfo(FILE * fp, char * name) {
-	Directory * directory;
-	
-	if((directory = getDirectory(name))==NULL) {
+int printDirectoryInfo(FILE * fp, char *name)
+{
+	Directory *directory;
+
+	if ((directory = getDirectory(name)) == NULL) {
 		commandError(fp, ACK_ERROR_NO_EXIST, "directory not found",
-				NULL);
+			     NULL);
 		return -1;
 	}
 
-	printDirectoryList(fp,directory->subDirectories);
-	printSongInfoFromList(fp,directory->songs);
+	printDirectoryList(fp, directory->subDirectories);
+	printSongInfoFromList(fp, directory->songs);
 
 	return 0;
 }
 
-static void writeDirectoryInfo(FILE * fp, Directory * directory) {
-	ListNode * node = (directory->subDirectories)->firstNode;
-	Directory * subDirectory;
+static void writeDirectoryInfo(FILE * fp, Directory * directory)
+{
+	ListNode *node = (directory->subDirectories)->firstNode;
+	Directory *subDirectory;
 
-	if(directory->path) {
-		myfprintf(fp,"%s%s\n", DIRECTORY_BEGIN,
-				getDirectoryPath(directory));
+	if (directory->path) {
+		myfprintf(fp, "%s%s\n", DIRECTORY_BEGIN,
+			  getDirectoryPath(directory));
 	}
-			
-	while(node!=NULL) {
-		subDirectory = (Directory *)node->data;
-		myfprintf(fp,"%s%s\n",DIRECTORY_DIR,node->key);
-		writeDirectoryInfo(fp,subDirectory);
+
+	while (node != NULL) {
+		subDirectory = (Directory *) node->data;
+		myfprintf(fp, "%s%s\n", DIRECTORY_DIR, node->key);
+		writeDirectoryInfo(fp, subDirectory);
 		node = node->nextNode;
 	}
 
-	writeSongInfoFromList(fp,directory->songs);
+	writeSongInfoFromList(fp, directory->songs);
 
-	if(directory->path) {
-		myfprintf(fp,"%s%s\n", DIRECTORY_END,
-				getDirectoryPath(directory));
+	if (directory->path) {
+		myfprintf(fp, "%s%s\n", DIRECTORY_END,
+			  getDirectoryPath(directory));
 	}
 }
 
-static void readDirectoryInfo(FILE * fp,Directory * directory) {
-	char buffer[MAXPATHLEN*2];
-	int bufferSize = MAXPATHLEN*2;
-	char * key;
-	Directory * subDirectory;
+static void readDirectoryInfo(FILE * fp, Directory * directory)
+{
+	char buffer[MAXPATHLEN * 2];
+	int bufferSize = MAXPATHLEN * 2;
+	char *key;
+	Directory *subDirectory;
 	int strcmpRet;
-	char * name;
-	ListNode * nextDirNode = directory->subDirectories->firstNode;
-	ListNode * nodeTemp;
+	char *name;
+	ListNode *nextDirNode = directory->subDirectories->firstNode;
+	ListNode *nodeTemp;
 
-	while(myFgets(buffer,bufferSize,fp) && 0!=strncmp(DIRECTORY_END,buffer,strlen(DIRECTORY_END))) {
-		if(0==strncmp(DIRECTORY_DIR,buffer,strlen(DIRECTORY_DIR))) {
+	while (myFgets(buffer, bufferSize, fp)
+	       && 0 != strncmp(DIRECTORY_END, buffer, strlen(DIRECTORY_END))) {
+		if (0 == strncmp(DIRECTORY_DIR, buffer, strlen(DIRECTORY_DIR))) {
 			key = strdup(&(buffer[strlen(DIRECTORY_DIR)]));
-			if(myFgets(buffer,bufferSize,fp)<0) {
-				        ERROR("Error reading db, fgets\n");
+			if (myFgets(buffer, bufferSize, fp) < 0) {
+				ERROR("Error reading db, fgets\n");
 				exit(EXIT_FAILURE);
 			}
-                        /* for compatibility with db's prior to 0.11 */
-			if(0==strncmp(DIRECTORY_MTIME,buffer,
-                                        strlen(DIRECTORY_MTIME))) 
-                        {
-			        if(myFgets(buffer,bufferSize,fp)<0) {
-				        ERROR("Error reading db, fgets\n");
-				        exit(EXIT_FAILURE);
-			        }
-                        }
-			if(strncmp(DIRECTORY_BEGIN,buffer,strlen(DIRECTORY_BEGIN))) {
-				ERROR("Error reading db at line: %s\n",buffer);
+			/* for compatibility with db's prior to 0.11 */
+			if (0 == strncmp(DIRECTORY_MTIME, buffer,
+					 strlen(DIRECTORY_MTIME))) {
+				if (myFgets(buffer, bufferSize, fp) < 0) {
+					ERROR("Error reading db, fgets\n");
+					exit(EXIT_FAILURE);
+				}
+			}
+			if (strncmp
+			    (DIRECTORY_BEGIN, buffer,
+			     strlen(DIRECTORY_BEGIN))) {
+				ERROR("Error reading db at line: %s\n", buffer);
 				exit(EXIT_FAILURE);
 			}
 			name = strdup(&(buffer[strlen(DIRECTORY_BEGIN)]));
 
-			while(nextDirNode && (strcmpRet = 
-					strcmp(key,nextDirNode->key)) > 0) {
+			while (nextDirNode && (strcmpRet =
+					       strcmp(key,
+						      nextDirNode->key)) > 0) {
 				nodeTemp = nextDirNode->nextNode;
 				deleteNodeFromList(directory->subDirectories,
-						nextDirNode);
+						   nextDirNode);
 				nextDirNode = nodeTemp;
 			}
 
-			if(NULL==nextDirNode) {
+			if (NULL == nextDirNode) {
 				subDirectory = newDirectory(name, directory);
 				insertInList(directory->subDirectories,
-						key,
-						(void *)subDirectory);
-			}
-			else if(strcmpRet == 0) {
-				subDirectory = (Directory *)nextDirNode->data;
+					     key, (void *)subDirectory);
+			} else if (strcmpRet == 0) {
+				subDirectory = (Directory *) nextDirNode->data;
 				nextDirNode = nextDirNode->nextNode;
-			}
-			else {
+			} else {
 				subDirectory = newDirectory(name, directory);
-				insertInListBeforeNode(
-						directory->subDirectories,
-						nextDirNode,
-						-1,
-						key,
-						(void *)subDirectory);
+				insertInListBeforeNode(directory->
+						       subDirectories,
+						       nextDirNode, -1, key,
+						       (void *)subDirectory);
 			}
 
 			free(name);
 			free(key);
-			readDirectoryInfo(fp,subDirectory);
-		}
-		else if(0==strncmp(SONG_BEGIN,buffer,strlen(SONG_BEGIN))) {
+			readDirectoryInfo(fp, subDirectory);
+		} else if (0 == strncmp(SONG_BEGIN, buffer, strlen(SONG_BEGIN))) {
 			readSongInfoIntoList(fp, directory->songs, directory);
-		}
-		else {
-			ERROR("Unknown line in db: %s\n",buffer);
+		} else {
+			ERROR("Unknown line in db: %s\n", buffer);
 			exit(EXIT_FAILURE);
 		}
 	}
 
-	while(nextDirNode) {
+	while (nextDirNode) {
 		nodeTemp = nextDirNode->nextNode;
-		deleteNodeFromList(directory->subDirectories,nextDirNode);
+		deleteNodeFromList(directory->subDirectories, nextDirNode);
 		nextDirNode = nodeTemp;
 	}
 }
 
-static void sortDirectory(Directory * directory) {
-	ListNode * node = directory->subDirectories->firstNode;
-	Directory * subDir;
-	
+static void sortDirectory(Directory * directory)
+{
+	ListNode *node = directory->subDirectories->firstNode;
+	Directory *subDir;
+
 	sortList(directory->subDirectories);
 	sortList(directory->songs);
 
-	while(node!=NULL) {
-		subDir = (Directory *)node->data;
+	while (node != NULL) {
+		subDir = (Directory *) node->data;
 		sortDirectory(subDir);
 		node = node->nextNode;
 	}
 }
 
-int checkDirectoryDB() {
-	char * dbFile = getDbFile();
+int checkDirectoryDB()
+{
+	char *dbFile = getDbFile();
 	/**
 	 * Check if the file exists 
 	 */
-	if(access(dbFile, F_OK)) {
+	if (access(dbFile, F_OK)) {
 		char *dirPath = NULL;
 		char *dbPath = strdup(dbFile);
 
@@ -991,13 +1034,13 @@ int checkDirectoryDB() {
 		 * so we are going to try to get the directory path, and see if we can write a file in that
 		 */
 		dirPath = dirname(dbPath);
-	
+
 		/** 
 		 * Check if we can write to the directory 
 		 */
-		if(access(dirPath, R_OK|W_OK))
-		{
-			ERROR("Can't create db file in \"%s\": %s", dirPath, strerror(errno));
+		if (access(dirPath, R_OK | W_OK)) {
+			ERROR("Can't create db file in \"%s\": %s", dirPath,
+			      strerror(errno));
 			free(dbPath);
 			return -1;
 
@@ -1009,18 +1052,19 @@ int checkDirectoryDB() {
 	/**
 	 * File exists, now check if we can write it
 	 */
-	if(access(dbFile, R_OK|W_OK)) {
+	if (access(dbFile, R_OK | W_OK)) {
 		ERROR("db file \"%s\" cannot be opened for reading/writing: %s",
-				dbFile, strerror(errno));
+		      dbFile, strerror(errno));
 		return -1;
 	}
-	
+
 	return 0;
 }
 
-int writeDirectoryDB() {
-	FILE * fp;
-	char * dbFile = getDbFile();
+int writeDirectoryDB()
+{
+	FILE *fp;
+	char *dbFile = getDbFile();
 
 	DEBUG("removing empty directories from DB\n");
 	deleteEmptyDirectoriesInDirectory(mp3rootDirectory);
@@ -1031,36 +1075,38 @@ int writeDirectoryDB() {
 
 	DEBUG("writing DB\n");
 
-	while(!(fp=fopen(dbFile,"w")) && errno==EINTR);
-	if(!fp) {
+	while (!(fp = fopen(dbFile, "w")) && errno == EINTR) ;
+	if (!fp) {
 		ERROR("unable to write to db file \"%s\": %s\n",
-				dbFile, strerror(errno));
+		      dbFile, strerror(errno));
 		return -1;
 	}
 
-	/* block signals when writing the db so we don't get a corrupted db*/
-	myfprintf(fp,"%s\n",DIRECTORY_INFO_BEGIN);
-	myfprintf(fp,"%s%s\n",DIRECTORY_MPD_VERSION,VERSION);
-	myfprintf(fp,"%s%s\n",DIRECTORY_FS_CHARSET,getFsCharset());
-	myfprintf(fp,"%s\n",DIRECTORY_INFO_END);
+	/* block signals when writing the db so we don't get a corrupted db */
+	myfprintf(fp, "%s\n", DIRECTORY_INFO_BEGIN);
+	myfprintf(fp, "%s%s\n", DIRECTORY_MPD_VERSION, VERSION);
+	myfprintf(fp, "%s%s\n", DIRECTORY_FS_CHARSET, getFsCharset());
+	myfprintf(fp, "%s\n", DIRECTORY_INFO_END);
 
-	writeDirectoryInfo(fp,mp3rootDirectory);
+	writeDirectoryInfo(fp, mp3rootDirectory);
 
-	while(fclose(fp) && errno==EINTR);
+	while (fclose(fp) && errno == EINTR) ;
 
 	return 0;
 }
 
-int readDirectoryDB() {
-	FILE * fp = NULL;
-	char * dbFile = getDbFile();
-        struct stat st;
+int readDirectoryDB()
+{
+	FILE *fp = NULL;
+	char *dbFile = getDbFile();
+	struct stat st;
 
-	if(!mp3rootDirectory) mp3rootDirectory = newDirectory(NULL, NULL);
-	while(!(fp=fopen(dbFile,"r")) && errno==EINTR);
-	if(fp == NULL) {
-		ERROR("unable open db file \"%s\": %s\n", 
-				dbFile, strerror(errno));
+	if (!mp3rootDirectory)
+		mp3rootDirectory = newDirectory(NULL, NULL);
+	while (!(fp = fopen(dbFile, "r")) && errno == EINTR) ;
+	if (fp == NULL) {
+		ERROR("unable open db file \"%s\": %s\n",
+		      dbFile, strerror(errno));
 		return -1;
 	}
 
@@ -1071,31 +1117,30 @@ int readDirectoryDB() {
 		int foundFsCharset = 0;
 		int foundVersion = 0;
 
-		if(myFgets(buffer,bufferSize,fp)<0) {
+		if (myFgets(buffer, bufferSize, fp) < 0) {
 			ERROR("Error reading db, fgets\n");
 			exit(EXIT_FAILURE);
 		}
-		if(0==strcmp(DIRECTORY_INFO_BEGIN,buffer)) {
-			while(myFgets(buffer,bufferSize,fp) && 
-					0!=strcmp(DIRECTORY_INFO_END,buffer)) 
-			{
-				if(0==strncmp(DIRECTORY_MPD_VERSION,buffer,
-						strlen(DIRECTORY_MPD_VERSION)))
+		if (0 == strcmp(DIRECTORY_INFO_BEGIN, buffer)) {
+			while (myFgets(buffer, bufferSize, fp) &&
+			       0 != strcmp(DIRECTORY_INFO_END, buffer)) {
+				if (0 == strncmp(DIRECTORY_MPD_VERSION, buffer,
+						 strlen(DIRECTORY_MPD_VERSION)))
 				{
-					if(foundVersion) {
+					if (foundVersion) {
 						ERROR("already found "
-							"version in db\n");
+						      "version in db\n");
 						exit(EXIT_FAILURE);
 					}
 					foundVersion = 1;
-				}
-				else if(0==strncmp(DIRECTORY_FS_CHARSET,buffer,
-						strlen(DIRECTORY_FS_CHARSET)))
-				{
-					char * fsCharset;
-					char * tempCharset; 
+				} else if (0 ==
+					   strncmp(DIRECTORY_FS_CHARSET, buffer,
+						   strlen
+						   (DIRECTORY_FS_CHARSET))) {
+					char *fsCharset;
+					char *tempCharset;
 
-					if(foundFsCharset) {
+					if (foundFsCharset) {
 						WARNING("already found "
 							"fs charset in db\n");
 						exit(EXIT_FAILURE);
@@ -1103,191 +1148,203 @@ int readDirectoryDB() {
 
 					foundFsCharset = 1;
 
-					fsCharset = &(buffer[strlen(
-							DIRECTORY_FS_CHARSET)]);
-					if((tempCharset = 
-						getConfigParamValue(
-							CONF_FS_CHARSET)) && 
-						strcmp(fsCharset,tempCharset))
-					{
+					fsCharset =
+					    &(buffer
+					      [strlen(DIRECTORY_FS_CHARSET)]);
+					if ((tempCharset =
+					     getConfigParamValue
+					     (CONF_FS_CHARSET))
+					    && strcmp(fsCharset, tempCharset)) {
 						WARNING("Using \"%s\" for the "
 							"filesystem charset "
 							"instead of \"%s\"\n",
-							fsCharset,tempCharset);
+							fsCharset, tempCharset);
 						WARNING("maybe you need to "
 							"recreate the db?\n");
 						setFsCharset(fsCharset);
 					}
-				}
-				else {
-					ERROR("directory: unknown line in db info: %s\n",
-						buffer);
+				} else {
+					ERROR
+					    ("directory: unknown line in db info: %s\n",
+					     buffer);
 					exit(EXIT_FAILURE);
 				}
 			}
-		}
-		else {
+		} else {
 			ERROR("db info not found in db file\n");
 			ERROR("you should recreate the db using --create-db\n");
-			fseek(fp,0,SEEK_SET);
+			fseek(fp, 0, SEEK_SET);
 		}
 	}
 
 	DEBUG("reading DB\n");
 
-	readDirectoryInfo(fp,mp3rootDirectory);
-	while(fclose(fp) && errno==EINTR);
+	readDirectoryInfo(fp, mp3rootDirectory);
+	while (fclose(fp) && errno == EINTR) ;
 
-	stats.numberOfSongs = countSongsIn(stderr,NULL);
-	stats.dbPlayTime = sumSongTimesIn(stderr,NULL);
+	stats.numberOfSongs = countSongsIn(stderr, NULL);
+	stats.dbPlayTime = sumSongTimesIn(stderr, NULL);
 
-	if(stat(dbFile,&st)==0) directory_dbModTime = st.st_mtime;
+	if (stat(dbFile, &st) == 0)
+		directory_dbModTime = st.st_mtime;
 
 	return 0;
 }
 
-void updateMp3Directory() {
-	switch(updateDirectory(mp3rootDirectory)) {
-        case 0:
-                /* nothing updated */
-                return;
-        case 1:
-	        if(writeDirectoryDB()<0) {
-                        exit(EXIT_FAILURE);
-	        }
-                break;
-        default:
-                /* something was updated and db should be written */
+void updateMp3Directory()
+{
+	switch (updateDirectory(mp3rootDirectory)) {
+	case 0:
+		/* nothing updated */
+		return;
+	case 1:
+		if (writeDirectoryDB() < 0) {
+			exit(EXIT_FAILURE);
+		}
+		break;
+	default:
+		/* something was updated and db should be written */
 		ERROR("problems updating music db\n");
-                exit(EXIT_FAILURE);
+		exit(EXIT_FAILURE);
 	}
 
 	return;
 }
 
 static int traverseAllInSubDirectory(FILE * fp, Directory * directory,
-                                int (*forEachSong)(FILE *, Song *, void *),
-                                int (*forEachDir)(FILE *, Directory *, void *),
-				void * data)
+				     int (*forEachSong) (FILE *, Song *,
+							 void *),
+				     int (*forEachDir) (FILE *, Directory *,
+							void *), void *data)
 {
-        ListNode * node = directory->songs->firstNode;
-        Song * song;
-        Directory * dir;
-        int errFlag = 0;
+	ListNode *node = directory->songs->firstNode;
+	Song *song;
+	Directory *dir;
+	int errFlag = 0;
 
-        if(forEachDir) {
-                errFlag = forEachDir(fp,directory,data);
-                if(errFlag) return errFlag;
-        }
+	if (forEachDir) {
+		errFlag = forEachDir(fp, directory, data);
+		if (errFlag)
+			return errFlag;
+	}
 
-        if(forEachSong) {
-                while(node!=NULL && !errFlag) {
-                        song = (Song *)node->data;
-                        errFlag = forEachSong(fp,song,data);
-                        node = node->nextNode;
-                }
-                if(errFlag) return errFlag;
-        }
+	if (forEachSong) {
+		while (node != NULL && !errFlag) {
+			song = (Song *) node->data;
+			errFlag = forEachSong(fp, song, data);
+			node = node->nextNode;
+		}
+		if (errFlag)
+			return errFlag;
+	}
 
-        node = directory->subDirectories->firstNode;
+	node = directory->subDirectories->firstNode;
 
-        while(node!=NULL && !errFlag) {
-                dir = (Directory *)node->data;
-                errFlag = traverseAllInSubDirectory(fp,dir,forEachSong,
-                                                        forEachDir,data);
-                node = node->nextNode;
-        }
+	while (node != NULL && !errFlag) {
+		dir = (Directory *) node->data;
+		errFlag = traverseAllInSubDirectory(fp, dir, forEachSong,
+						    forEachDir, data);
+		node = node->nextNode;
+	}
 
-        return errFlag;
+	return errFlag;
 }
 
-int traverseAllIn(FILE * fp, char * name, 
-			int (*forEachSong)(FILE *, Song *, void *),
-			int (*forEachDir)(FILE *, Directory *, void *),
-			void * data) {
-	Directory * directory;
+int traverseAllIn(FILE * fp, char *name,
+		  int (*forEachSong) (FILE *, Song *, void *),
+		  int (*forEachDir) (FILE *, Directory *, void *), void *data)
+{
+	Directory *directory;
 
-	if((directory = getDirectory(name))==NULL) {
-		Song * song;
-		if((song = getSongFromDB(name)) && forEachSong) {
+	if ((directory = getDirectory(name)) == NULL) {
+		Song *song;
+		if ((song = getSongFromDB(name)) && forEachSong) {
 			return forEachSong(fp, song, data);
 		}
 		commandError(fp, ACK_ERROR_NO_EXIST,
-                                "directory or file not found", NULL);
+			     "directory or file not found", NULL);
 		return -1;
 	}
 
-	return traverseAllInSubDirectory(fp,directory,forEachSong,forEachDir,
-			data);
+	return traverseAllInSubDirectory(fp, directory, forEachSong, forEachDir,
+					 data);
 }
 
-static void freeAllDirectoryStats(Directory * directory) {
-	ListNode * node = directory->subDirectories->firstNode;
+static void freeAllDirectoryStats(Directory * directory)
+{
+	ListNode *node = directory->subDirectories->firstNode;
 
-	while(node != NULL) {
-		freeAllDirectoryStats((Directory *)node->data);
+	while (node != NULL) {
+		freeAllDirectoryStats((Directory *) node->data);
 		node = node->nextNode;
 	}
 
 	freeDirectoryStatFromDirectory(directory);
 }
 
-void initMp3Directory() {
+void initMp3Directory()
+{
 	struct stat st;
 
 	mp3rootDirectory = newDirectory(NULL, NULL);
 	exploreDirectory(mp3rootDirectory);
 	freeAllDirectoryStats(mp3rootDirectory);
-	stats.numberOfSongs = countSongsIn(stderr,NULL);
-	stats.dbPlayTime = sumSongTimesIn(stderr,NULL);
+	stats.numberOfSongs = countSongsIn(stderr, NULL);
+	stats.dbPlayTime = sumSongTimesIn(stderr, NULL);
 
-	if(stat(getDbFile(),&st)==0) directory_dbModTime = st.st_mtime;
+	if (stat(getDbFile(), &st) == 0)
+		directory_dbModTime = st.st_mtime;
 }
 
-static Song * getSongDetails(char * file, char ** shortnameRet, 
-		Directory ** directoryRet)
+static Song *getSongDetails(char *file, char **shortnameRet,
+			    Directory ** directoryRet)
 {
-	void * song = NULL;
-	Directory * directory;
-	char * dir = NULL;
-	char * dup = strdup(file);
-	char * shortname = dup;
-	char * c = strtok(dup,"/");
+	void *song = NULL;
+	Directory *directory;
+	char *dir = NULL;
+	char *dup = strdup(file);
+	char *shortname = dup;
+	char *c = strtok(dup, "/");
 
-	DEBUG("get song: %s\n",file);
+	DEBUG("get song: %s\n", file);
 
-	while(c) {
+	while (c) {
 		shortname = c;
-		c = strtok(NULL,"/");
+		c = strtok(NULL, "/");
 	}
 
-	if(shortname!=dup) {
-		for(c = dup; c < shortname-1; c++) {
-			if(*c=='\0') *c = '/';
+	if (shortname != dup) {
+		for (c = dup; c < shortname - 1; c++) {
+			if (*c == '\0')
+				*c = '/';
 		}
 		dir = dup;
 	}
 
-	if(!(directory = getDirectory(dir))) {
+	if (!(directory = getDirectory(dir))) {
 		free(dup);
 		return NULL;
 	}
 
-	if(!findInList(directory->songs,shortname,&song)) {
+	if (!findInList(directory->songs, shortname, &song)) {
 		free(dup);
 		return NULL;
 	}
 
 	free(dup);
-	if(shortnameRet) *shortnameRet = shortname;
-	if(directoryRet) *directoryRet = directory;
-	return (Song *)song;
+	if (shortnameRet)
+		*shortnameRet = shortname;
+	if (directoryRet)
+		*directoryRet = directory;
+	return (Song *) song;
 }
 
-Song * getSongFromDB(char * file) {
-	return getSongDetails(file,NULL,NULL);
+Song *getSongFromDB(char *file)
+{
+	return getSongDetails(file, NULL, NULL);
 }
 
-time_t getDbModTime() {
+time_t getDbModTime()
+{
 	return directory_dbModTime;
 }

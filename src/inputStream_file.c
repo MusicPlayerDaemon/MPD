@@ -26,39 +26,41 @@
 #include <unistd.h>
 #include <errno.h>
 
-void inputStream_initFile(void) {
+void inputStream_initFile(void)
+{
 }
 
-int inputStream_fileOpen(InputStream * inStream, char * filename) {
-        FILE * fp;
+int inputStream_fileOpen(InputStream * inStream, char *filename)
+{
+	FILE *fp;
 
-	fp = fopen(filename,"r");
-	if(!fp) {
+	fp = fopen(filename, "r");
+	if (!fp) {
 		inStream->error = errno;
 		return -1;
 	}
 
-        inStream->seekable = 1;
+	inStream->seekable = 1;
 
-	fseek(fp,0,SEEK_END);
+	fseek(fp, 0, SEEK_END);
 	inStream->size = ftell(fp);
-	fseek(fp,0,SEEK_SET);
+	fseek(fp, 0, SEEK_SET);
 
-        inStream->data = fp;
-        inStream->seekFunc = inputStream_fileSeek;
-        inStream->closeFunc = inputStream_fileClose;
-        inStream->readFunc = inputStream_fileRead;
-        inStream->atEOFFunc = inputStream_fileAtEOF;
-        inStream->bufferFunc = inputStream_fileBuffer;
+	inStream->data = fp;
+	inStream->seekFunc = inputStream_fileSeek;
+	inStream->closeFunc = inputStream_fileClose;
+	inStream->readFunc = inputStream_fileRead;
+	inStream->atEOFFunc = inputStream_fileAtEOF;
+	inStream->bufferFunc = inputStream_fileBuffer;
 
 	return 0;
 }
 
-int inputStream_fileSeek(InputStream * inStream, long offset, int whence) {
-	if(fseek((FILE *)inStream->data,offset,whence)==0) {
-		inStream->offset = ftell((FILE *)inStream->data);
-	}
-	else {
+int inputStream_fileSeek(InputStream * inStream, long offset, int whence)
+{
+	if (fseek((FILE *) inStream->data, offset, whence) == 0) {
+		inStream->offset = ftell((FILE *) inStream->data);
+	} else {
 		inStream->error = errno;
 		return -1;
 	}
@@ -66,25 +68,26 @@ int inputStream_fileSeek(InputStream * inStream, long offset, int whence) {
 	return 0;
 }
 
-size_t inputStream_fileRead(InputStream * inStream, void * ptr, size_t size, 
-		size_t nmemb)
+size_t inputStream_fileRead(InputStream * inStream, void *ptr, size_t size,
+			    size_t nmemb)
 {
 	size_t readSize;
 
-	readSize = fread(ptr,size,nmemb,(FILE *)inStream->data);
-        if(readSize <=0 && ferror((FILE *)inStream->data)) {
-                inStream->error = errno;
-		DEBUG("inputStream_fileRead: error reading: %s\n",  
-				strerror(inStream->error));
-        }
+	readSize = fread(ptr, size, nmemb, (FILE *) inStream->data);
+	if (readSize <= 0 && ferror((FILE *) inStream->data)) {
+		inStream->error = errno;
+		DEBUG("inputStream_fileRead: error reading: %s\n",
+		      strerror(inStream->error));
+	}
 
-	inStream->offset = ftell((FILE *)inStream->data);
+	inStream->offset = ftell((FILE *) inStream->data);
 
 	return readSize;
 }
 
-int inputStream_fileClose(InputStream * inStream) {
-	if(fclose((FILE *)inStream->data)<0) {
+int inputStream_fileClose(InputStream * inStream)
+{
+	if (fclose((FILE *) inStream->data) < 0) {
 		inStream->error = errno;
 		return -1;
 	}
@@ -92,16 +95,19 @@ int inputStream_fileClose(InputStream * inStream) {
 	return 0;
 }
 
-int inputStream_fileAtEOF(InputStream * inStream) {
-	if(feof((FILE *)inStream->data)) return 1;
+int inputStream_fileAtEOF(InputStream * inStream)
+{
+	if (feof((FILE *) inStream->data))
+		return 1;
 
-        if(ferror((FILE *)inStream->data) && inStream->error != EINTR)  {
-                return 1;
-        }
+	if (ferror((FILE *) inStream->data) && inStream->error != EINTR) {
+		return 1;
+	}
 
-        return 0;
+	return 0;
 }
 
-int inputStream_fileBuffer(InputStream * inStream) {
-        return 0;
+int inputStream_fileBuffer(InputStream * inStream)
+{
+	return 0;
 }

@@ -27,10 +27,10 @@
 #include <sys/socket.h>
 
 void initInterfaces();
-void openAInterface(int fd, struct sockaddr * addr);
+void openAInterface(int fd, struct sockaddr *addr);
 void freeAllInterfaces();
 void closeOldInterfaces();
-int interfacePrintWithFD(int fd, char * buffer, int len);
+int interfacePrintWithFD(int fd, char *buffer, int len);
 
 int doIOForInterfaces();
 

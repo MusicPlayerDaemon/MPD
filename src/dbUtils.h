@@ -27,41 +27,39 @@
 typedef struct _LocateTagItem {
 	mpd_sint8 tagType;
 	/* what we are looking for */
-	char * needle;
+	char *needle;
 } LocateTagItem;
 
-int getLocateTagItemType(char * str);
+int getLocateTagItemType(char *str);
 
 /* returns NULL if not a known type */
-LocateTagItem * newLocateTagItem(char * typeString, char * needle);
+LocateTagItem *newLocateTagItem(char *typeString, char *needle);
 
 /* return number of items or -1 on error */
-int newLocateTagItemArrayFromArgArray(char * argArray[], int numArgs,
-					LocateTagItem ** arrayRet);
-						
+int newLocateTagItemArrayFromArgArray(char *argArray[], int numArgs,
+				      LocateTagItem ** arrayRet);
 
 void freeLocateTagItemArray(int count, LocateTagItem * array);
 
 void freeLocateTagItem(LocateTagItem * item);
 
-int printAllIn(FILE * fp, char * name);
+int printAllIn(FILE * fp, char *name);
 
-int addAllIn(FILE * fp, char * name);
+int addAllIn(FILE * fp, char *name);
 
-int printInfoForAllIn(FILE * fp, char * name);
+int printInfoForAllIn(FILE * fp, char *name);
 
-int searchForSongsIn(FILE * fp, char * name, int numItems,
-				LocateTagItem * items);
+int searchForSongsIn(FILE * fp, char *name, int numItems,
+		     LocateTagItem * items);
 
-int findSongsIn(FILE * fp, char * name, int numItems, 
-				LocateTagItem * items);
+int findSongsIn(FILE * fp, char *name, int numItems, LocateTagItem * items);
 
-int countSongsIn(FILE * fp, char * name);
+int countSongsIn(FILE * fp, char *name);
 
-unsigned long sumSongTimesIn(FILE * fp, char * name);
+unsigned long sumSongTimesIn(FILE * fp, char *name);
 
-int listAllUniqueTags(FILE * fp, int type, int numConditiionals, 
-		LocateTagItem * conditionals);
+int listAllUniqueTags(FILE * fp, int type, int numConditiionals,
+		      LocateTagItem * conditionals);
 
 void printSavedMemoryFromFilenames();
 

@@ -30,149 +30,156 @@ static mpd_sint16 currentChunk = -1;
 static mpd_sint8 currentMetaChunk = -1;
 static mpd_sint8 sendMetaChunk = 0;
 
-void clearAllMetaChunkSets(OutputBuffer * cb) {
+void clearAllMetaChunkSets(OutputBuffer * cb)
+{
 	memset(cb->metaChunkSet, 0, BUFFERED_METACHUNKS);
 }
 
-void clearOutputBuffer(OutputBuffer * cb) {
+void clearOutputBuffer(OutputBuffer * cb)
+{
 	int currentSet = 1;
 
-        currentChunk = -1;
-        cb->end = cb->begin;
+	currentChunk = -1;
+	cb->end = cb->begin;
 
 	/* be sure to reset metaChunkSets cause we are skipping over audio
-         * audio chunks, and thus skipping over metadata */
-	if(sendMetaChunk == 0 && currentMetaChunk >= 0) {
+	 * audio chunks, and thus skipping over metadata */
+	if (sendMetaChunk == 0 && currentMetaChunk >= 0) {
 		currentSet = cb->metaChunkSet[currentChunk];
 	}
 	clearAllMetaChunkSets(cb);
-	if(sendMetaChunk == 0 && currentMetaChunk >= 0) {
+	if (sendMetaChunk == 0 && currentMetaChunk >= 0) {
 		cb->metaChunkSet[currentChunk] = currentSet;
 	}
 }
 
-void flushOutputBuffer(OutputBuffer * cb) {
-	if(currentChunk == cb->end) {
-	        int next = cb->end+1;
-	        if(next>=buffered_chunks) {
-		       	next = 0;
-	        }
+void flushOutputBuffer(OutputBuffer * cb)
+{
+	if (currentChunk == cb->end) {
+		int next = cb->end + 1;
+		if (next >= buffered_chunks) {
+			next = 0;
+		}
 		cb->end = next;
 		currentChunk = -1;
 	}
 }
 
-int sendDataToOutputBuffer(OutputBuffer * cb, InputStream * inStream,  
-                DecoderControl * dc, int seekable, void * dataIn, 
-                long dataInLen, float time, mpd_uint16 bitRate,
-		ReplayGainInfo * replayGainInfo)
+int sendDataToOutputBuffer(OutputBuffer * cb, InputStream * inStream,
+			   DecoderControl * dc, int seekable, void *dataIn,
+			   long dataInLen, float time, mpd_uint16 bitRate,
+			   ReplayGainInfo * replayGainInfo)
 {
-        mpd_uint16 dataToSend;
+	mpd_uint16 dataToSend;
 	mpd_uint16 chunkLeft;
-	char * data;
+	char *data;
 	size_t datalen;
-	static char * convBuffer = NULL;
+	static char *convBuffer = NULL;
 	static long convBufferLen = 0;
 
-	if(cmpAudioFormat(&(cb->audioFormat),&(dc->audioFormat))==0)
-	{
+	if (cmpAudioFormat(&(cb->audioFormat), &(dc->audioFormat)) == 0) {
 		data = dataIn;
 		datalen = dataInLen;
-	}
-	else {
-		datalen = pcm_sizeOfOutputBufferForAudioFormatConversion(
-				&(dc->audioFormat), dataInLen,
-				&(cb->audioFormat));
-		if(datalen > convBufferLen) {
-			convBuffer = realloc(convBuffer,datalen);
+	} else {
+		datalen =
+		    pcm_sizeOfOutputBufferForAudioFormatConversion(&
+								   (dc->
+								    audioFormat),
+								   dataInLen,
+								   &(cb->
+								     audioFormat));
+		if (datalen > convBufferLen) {
+			convBuffer = realloc(convBuffer, datalen);
 			convBufferLen = datalen;
 		}
 		data = convBuffer;
 		pcm_convertAudioFormat(&(dc->audioFormat), dataIn, dataInLen,
-				&(cb->audioFormat),data);
+				       &(cb->audioFormat), data);
 	}
 
-	if(replayGainInfo) {
+	if (replayGainInfo) {
 		doReplayGain(replayGainInfo, data, datalen, &cb->audioFormat);
 	}
 
-        while(datalen) {
-		if(currentChunk != cb->end) {
-	        	int next = cb->end+1;
-	        	if(next>=buffered_chunks) {
-		       		next = 0;
-	        	}
-	        	while(cb->begin==next && !dc->stop) {
-                                if(dc->seek) {
-                                        if(seekable) {
-                                                return OUTPUT_BUFFER_DC_SEEK;
-                                        }
-                                        else {
-                                                dc->seekError = 1;
-                                                dc->seek = 0;
-                                        }
-                                }
-                                if(!inStream || 
-                                        bufferInputStream(inStream) <= 0)
-                                {
-		        	        my_usleep(10000);
-                                }
+	while (datalen) {
+		if (currentChunk != cb->end) {
+			int next = cb->end + 1;
+			if (next >= buffered_chunks) {
+				next = 0;
 			}
-	        	if(dc->stop) return OUTPUT_BUFFER_DC_STOP;
+			while (cb->begin == next && !dc->stop) {
+				if (dc->seek) {
+					if (seekable) {
+						return OUTPUT_BUFFER_DC_SEEK;
+					} else {
+						dc->seekError = 1;
+						dc->seek = 0;
+					}
+				}
+				if (!inStream ||
+				    bufferInputStream(inStream) <= 0) {
+					my_usleep(10000);
+				}
+			}
+			if (dc->stop)
+				return OUTPUT_BUFFER_DC_STOP;
 
 			currentChunk = cb->end;
 			cb->chunkSize[currentChunk] = 0;
 
-			if(sendMetaChunk) {
+			if (sendMetaChunk) {
 				cb->metaChunk[currentChunk] = currentMetaChunk;
-			}
-			else cb->metaChunk[currentChunk] = -1;
-	        	cb->bitRate[currentChunk] = bitRate;
-	        	cb->times[currentChunk] = time;
+			} else
+				cb->metaChunk[currentChunk] = -1;
+			cb->bitRate[currentChunk] = bitRate;
+			cb->times[currentChunk] = time;
 		}
 
-		chunkLeft = CHUNK_SIZE-cb->chunkSize[currentChunk];
-                dataToSend = datalen > chunkLeft ? chunkLeft : datalen;
+		chunkLeft = CHUNK_SIZE - cb->chunkSize[currentChunk];
+		dataToSend = datalen > chunkLeft ? chunkLeft : datalen;
 
-	        memcpy(cb->chunks+currentChunk*CHUNK_SIZE+
-			cb->chunkSize[currentChunk],
-			data, dataToSend);
-	        cb->chunkSize[currentChunk]+= dataToSend;
-                datalen-= dataToSend;
-                data+= dataToSend;
+		memcpy(cb->chunks + currentChunk * CHUNK_SIZE +
+		       cb->chunkSize[currentChunk], data, dataToSend);
+		cb->chunkSize[currentChunk] += dataToSend;
+		datalen -= dataToSend;
+		data += dataToSend;
 
-		if(cb->chunkSize[currentChunk] == CHUNK_SIZE) {
+		if (cb->chunkSize[currentChunk] == CHUNK_SIZE) {
 			flushOutputBuffer(cb);
 		}
-        }
+	}
 
 	return 0;
 }
 
-int copyMpdTagToOutputBuffer(OutputBuffer * cb, MpdTag * tag) {
+int copyMpdTagToOutputBuffer(OutputBuffer * cb, MpdTag * tag)
+{
 	int nextChunk;
-	static MpdTag * last = NULL;
+	static MpdTag *last = NULL;
 
-        if(!cb->acceptMetadata || !tag) {
+	if (!cb->acceptMetadata || !tag) {
 		sendMetaChunk = 0;
-		if(last) freeMpdTag(last);
+		if (last)
+			freeMpdTag(last);
 		last = NULL;
 		DEBUG("copyMpdTagToOB: !acceptMetadata || !tag\n");
 		return 0;
 	}
 
-	if(last && mpdTagsAreEqual(last, tag)) {
+	if (last && mpdTagsAreEqual(last, tag)) {
 		DEBUG("copyMpdTagToOB: same as last\n");
 		return 0;
 	}
 
-	if(last) freeMpdTag(last);
+	if (last)
+		freeMpdTag(last);
 	last = NULL;
 
-	nextChunk = currentMetaChunk+1;
-	if(nextChunk >= BUFFERED_METACHUNKS) nextChunk = 0;
+	nextChunk = currentMetaChunk + 1;
+	if (nextChunk >= BUFFERED_METACHUNKS)
+		nextChunk = 0;
 
-	if(cb->metaChunkSet[nextChunk]) {
+	if (cb->metaChunkSet[nextChunk]) {
 		sendMetaChunk = 0;
 		DEBUG("copyMpdTagToOB: metachunk in use!\n");
 		return -1;

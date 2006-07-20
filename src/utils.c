@@ -27,75 +27,82 @@
 #include <sys/time.h>
 #include <unistd.h>
 
-char * myFgets(char * buffer, int bufferSize, FILE * fp) {
-	char * ret = fgets(buffer,bufferSize,fp);
-	if(ret && strlen(buffer)>0 && buffer[strlen(buffer)-1]=='\n') {
-		buffer[strlen(buffer)-1] = '\0';
+char *myFgets(char *buffer, int bufferSize, FILE * fp)
+{
+	char *ret = fgets(buffer, bufferSize, fp);
+	if (ret && strlen(buffer) > 0 && buffer[strlen(buffer) - 1] == '\n') {
+		buffer[strlen(buffer) - 1] = '\0';
 	}
-	if(ret && strlen(buffer)>0 && buffer[strlen(buffer)-1]=='\r') {
-		buffer[strlen(buffer)-1] = '\0';
+	if (ret && strlen(buffer) > 0 && buffer[strlen(buffer) - 1] == '\r') {
+		buffer[strlen(buffer) - 1] = '\0';
 	}
 	return ret;
 }
 
-char * strDupToUpper(char * str) {
-	char * ret = strdup(str);
+char *strDupToUpper(char *str)
+{
+	char *ret = strdup(str);
 	int i;
 
-	for(i=0;i<strlen(str);i++) ret[i] = toupper((int)ret[i]);
+	for (i = 0; i < strlen(str); i++)
+		ret[i] = toupper((int)ret[i]);
 
 	return ret;
 }
 
-void stripReturnChar(char * string) {
-	while(string && (string = strchr(string,'\n'))) {
+void stripReturnChar(char *string)
+{
+	while (string && (string = strchr(string, '\n'))) {
 		*string = ' ';
 	}
 }
 
-void my_usleep(long usec) {
+void my_usleep(long usec)
+{
 	struct timeval tv;
 
 	tv.tv_sec = 0;
 	tv.tv_usec = usec;
 
-	select(0,NULL,NULL,NULL,&tv);
+	select(0, NULL, NULL, NULL, &tv);
 }
 
-int ipv6Supported(void) {
+int ipv6Supported(void)
+{
 #ifdef HAVE_IPV6
 	int s;
-	s = socket(AF_INET6,SOCK_STREAM,0);
-	if(s == -1) return 0;
+	s = socket(AF_INET6, SOCK_STREAM, 0);
+	if (s == -1)
+		return 0;
 	close(s);
 	return 1;
 #endif
-        return 0;
+	return 0;
 }
 
-char * appendToString(char * dest, const char * src) {
+char *appendToString(char *dest, const char *src)
+{
 	int destlen;
 	int srclen = strlen(src);
 
-	if(dest == NULL) {
-		dest = malloc(srclen+1);
-		memset(dest, 0, srclen+1);
+	if (dest == NULL) {
+		dest = malloc(srclen + 1);
+		memset(dest, 0, srclen + 1);
 		destlen = 0;
-	}
-	else {
+	} else {
 		destlen = strlen(dest);
-		dest = realloc(dest, destlen+srclen+1);
+		dest = realloc(dest, destlen + srclen + 1);
 	}
 
-	memcpy(dest+destlen, src, srclen);
-	dest[destlen+srclen] = '\0';
+	memcpy(dest + destlen, src, srclen);
+	dest[destlen + srclen] = '\0';
 
 	return dest;
 }
 
 unsigned long readLEuint32(const unsigned char *p)
 {
-	return ((unsigned long) p[0] << 0) |
-		((unsigned long) p[1] << 8) |
-		((unsigned long) p[2] << 16) | ((unsigned long) p[3] << 24);
+	return ((unsigned long)p[0] << 0) |
+	    ((unsigned long)p[1] << 8) |
+	    ((unsigned long)p[2] << 16) | ((unsigned long)p[3] << 24);
 }

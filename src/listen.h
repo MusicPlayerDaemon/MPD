@@ -34,6 +34,6 @@ void closeAllListenSockets();
 void freeAllListenSockets();
 
 /* fdmax should be initialized to something */
-void addListenSocketsToFdSet(fd_set * fds, int * fdmax);
+void addListenSocketsToFdSet(fd_set * fds, int *fdmax);
 
 #endif

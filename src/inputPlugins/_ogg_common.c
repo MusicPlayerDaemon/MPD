@@ -37,29 +37,37 @@ ogg_stream_type ogg_stream_type_detect(InputStream * inStream)
 	size_t r, to_read = 41;
 
 	seekInputStream(inStream, 0, SEEK_SET);
-	
+
 	while (to_read) {
 		r = readFromInputStream(inStream, buf, 1, to_read);
 		if (r < 0)
 			break;
 		to_read -= r;
-		if (!r && !inputStreamAtEOF(inStream)) 
+		if (!r && !inputStreamAtEOF(inStream))
 			my_usleep(10000);
 		else
 			break;
 	}
-	
+
 	seekInputStream(inStream, 0, SEEK_SET);
-	
-	if (r >= 32 && memcmp(buf, "OggS", 4) == 0 && (
-				(memcmp(buf+29, "FLAC", 4) == 0
-					&& memcmp(buf+37, "fLaC", 4) == 0)
-				|| (memcmp(buf+28, "FLAC", 4) == 0)
-				|| (memcmp(buf+28, "fLaC", 4) == 0))) {
+
+	if (r >= 32 && memcmp(buf, "OggS", 4) == 0 && ((memcmp
+							(buf + 29, "FLAC",
+							 4) == 0
+							&& memcmp(buf + 37,
+								  "fLaC",
+								  4) == 0)
+						       ||
+						       (memcmp
+							(buf + 28, "FLAC",
+							 4) == 0)
+						       ||
+						       (memcmp
+							(buf + 28, "fLaC",
+							 4) == 0))) {
 		return FLAC;
 	}
 	return VORBIS;
 }
 
-#endif /* defined(HAVE_OGGFLAC || defined(HAVE_OGGVORBIS) */
-
+#endif				/* defined(HAVE_OGGFLAC || defined(HAVE_OGGVORBIS) */

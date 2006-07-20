@@ -23,12 +23,12 @@
 
 void inputStream_initFile();
 
-int inputStream_fileOpen(InputStream * inStream, char * filename);
+int inputStream_fileOpen(InputStream * inStream, char *filename);
 
 int inputStream_fileSeek(InputStream * inStream, long offset, int whence);
 
-size_t inputStream_fileRead(InputStream * inStream, void * ptr, size_t size, 
-		size_t nmemb);
+size_t inputStream_fileRead(InputStream * inStream, void *ptr, size_t size,
+			    size_t nmemb);
 
 int inputStream_fileClose(InputStream * inStream);
 

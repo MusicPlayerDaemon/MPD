@@ -32,17 +32,17 @@ typedef struct _ReplayGainInfo {
 	float trackGain;
 	float trackPeak;
 
-	/* used internally by mpd, to mess with it*/
+	/* used internally by mpd, to mess with it */
 	float scale;
 } ReplayGainInfo;
 
-ReplayGainInfo * newReplayGainInfo();
+ReplayGainInfo *newReplayGainInfo();
 
 void freeReplayGainInfo(ReplayGainInfo * info);
 
 void initReplayGainState();
 
-void doReplayGain(ReplayGainInfo * info, char * buffer, int bufferSize, 
-		AudioFormat * format);
+void doReplayGain(ReplayGainInfo * info, char *buffer, int bufferSize,
+		  AudioFormat * format);
 
 #endif

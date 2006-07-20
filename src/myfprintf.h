@@ -25,7 +25,7 @@
 
 void myfprintfStdLogMode(FILE * out, FILE * err);
 
-void myfprintf(FILE * fp, char * format, ... );
+void myfprintf(FILE * fp, char *format, ...);
 
 int myfprintfCloseAndOpenLogFile();
 

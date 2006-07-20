@@ -37,7 +37,8 @@
 
 /* all code here is either based on or copied from FAAD2's frontend code */
 
-static int mp4_getAACTrack(mp4ff_t *infile) {
+static int mp4_getAACTrack(mp4ff_t * infile)
+{
 	/* find AAC track */
 	int i, rc;
 	int numTracks = mp4ff_total_tracks(infile);
@@ -50,9 +51,9 @@ static int mp4_getAACTrack(mp4ff_t *infile) {
 #else
 		unsigned long dummy1_32;
 		unsigned char dummy2_8, dummy3_8, dummy4_8, dummy5_8, dummy6_8,
-				dummy7_8, dummy8_8;
+		    dummy7_8, dummy8_8;
 #endif
-	
+
 		mp4ff_get_decoder_config(infile, i, &buff, buff_size);
 
 		if (buff) {
@@ -60,11 +61,13 @@ static int mp4_getAACTrack(mp4ff_t *infile) {
 			rc = AudioSpecificConfig(buff, *buff_size, &mp4ASC);
 #else
 			rc = AudioSpecificConfig(buff, &dummy1_32, &dummy2_8,
-					&dummy3_8, &dummy4_8, &dummy5_8, 
-					&dummy6_8, &dummy7_8, &dummy8_8);
+						 &dummy3_8, &dummy4_8,
+						 &dummy5_8, &dummy6_8,
+						 &dummy7_8, &dummy8_8);
 #endif
 			free(buff);
-			if (rc < 0) continue;
+			if (rc < 0)
+				continue;
 			return i;
 		}
 	}
@@ -74,16 +77,18 @@ static int mp4_getAACTrack(mp4ff_t *infile) {
 }
 
 static uint32_t mp4_inputStreamReadCallback(void *inStream, void *buffer,
-		uint32_t length) 
+					    uint32_t length)
 {
-	return readFromInputStream((InputStream*) inStream, buffer, 1, length);
+	return readFromInputStream((InputStream *) inStream, buffer, 1, length);
 }
 
-static uint32_t mp4_inputStreamSeekCallback(void *inStream, uint64_t position) {
+static uint32_t mp4_inputStreamSeekCallback(void *inStream, uint64_t position)
+{
 	return seekInputStream((InputStream *) inStream, position, SEEK_SET);
 }
 
-static faacDecHandle * openConfigureFaad() {
+static faacDecHandle *openConfigureFaad()
+{
 	faacDecConfigurationPtr config;
 	faacDecHandle decoder = faacDecOpen();
 
@@ -95,20 +100,21 @@ static faacDecHandle * openConfigureFaad() {
 #ifdef HAVE_FAACDECCONFIGURATION_DONTUPSAMPLEIMPLICITSBR
 	config->dontUpSampleImplicitSBR = 0;
 #endif
-	faacDecSetConfiguration(decoder,config);
+	faacDecSetConfiguration(decoder, config);
 
 	return decoder;
 }
 
-static int mp4_decode(OutputBuffer * cb, DecoderControl * dc, char * path) {
-	mp4ff_t * mp4fh;
-	mp4ff_callback_t * mp4cb;
+static int mp4_decode(OutputBuffer * cb, DecoderControl * dc, char *path)
+{
+	mp4ff_t *mp4fh;
+	mp4ff_callback_t *mp4cb;
 	int32_t track;
 	float time;
 	int32_t scale;
-	faacDecHandle * decoder;
+	faacDecHandle *decoder;
 	faacDecFrameInfo frameInfo;
-	unsigned char * mp4Buffer;
+	unsigned char *mp4Buffer;
 	unsigned int mp4BufferSize;
 	uint32_t sampleRate;
 	unsigned char channels;
@@ -117,10 +123,10 @@ static int mp4_decode(OutputBuffer * cb, DecoderControl * dc, char * path) {
 	int eof = 0;
 	long dur;
 	unsigned int sampleCount;
-	char * sampleBuffer;
+	char *sampleBuffer;
 	size_t sampleBufferLen;
 	unsigned int initial = 1;
-	float * seekTable;
+	float *seekTable;
 	long seekTableEnd = -1;
 	int seekPositionFound = 0;
 	long offset;
@@ -128,7 +134,7 @@ static int mp4_decode(OutputBuffer * cb, DecoderControl * dc, char * path) {
 	InputStream inStream;
 	int seeking = 0;
 
-	if(openInputStream(&inStream, path) < 0) {
+	if (openInputStream(&inStream, path) < 0) {
 		ERROR("failed to open %s\n", path);
 		return -1;
 	}
@@ -139,7 +145,7 @@ static int mp4_decode(OutputBuffer * cb, DecoderControl * dc, char * path) {
 	mp4cb->user_data = &inStream;
 
 	mp4fh = mp4ff_open_read(mp4cb);
-	if(!mp4fh) {
+	if (!mp4fh) {
 		ERROR("Input does not appear to be a mp4 stream.\n");
 		free(mp4cb);
 		closeInputStream(&inStream);
@@ -147,7 +153,7 @@ static int mp4_decode(OutputBuffer * cb, DecoderControl * dc, char * path) {
 	}
 
 	track = mp4_getAACTrack(mp4fh);
-	if(track < 0) {
+	if (track < 0) {
 		ERROR("No AAC track found in mp4 stream.\n");
 		mp4ff_close(mp4fh);
 		closeInputStream(&inStream);
@@ -161,11 +167,11 @@ static int mp4_decode(OutputBuffer * cb, DecoderControl * dc, char * path) {
 
 	mp4Buffer = NULL;
 	mp4BufferSize = 0;
-	mp4ff_get_decoder_config(mp4fh,track,&mp4Buffer,&mp4BufferSize);
+	mp4ff_get_decoder_config(mp4fh, track, &mp4Buffer, &mp4BufferSize);
 
-	if(faacDecInit2(decoder,mp4Buffer,mp4BufferSize,&sampleRate,&channels)
-			< 0)
-	{
+	if (faacDecInit2
+	    (decoder, mp4Buffer, mp4BufferSize, &sampleRate, &channels)
+	    < 0) {
 		ERROR("Error not a AAC stream.\n");
 		faacDecClose(decoder);
 		mp4ff_close(mp4fh);
@@ -176,12 +182,13 @@ static int mp4_decode(OutputBuffer * cb, DecoderControl * dc, char * path) {
 
 	dc->audioFormat.sampleRate = sampleRate;
 	dc->audioFormat.channels = channels;
-	time = mp4ff_get_track_duration_use_offsets(mp4fh,track);
-	scale = mp4ff_time_scale(mp4fh,track);
+	time = mp4ff_get_track_duration_use_offsets(mp4fh, track);
+	scale = mp4ff_time_scale(mp4fh, track);
 
-	if(mp4Buffer) free(mp4Buffer);
+	if (mp4Buffer)
+		free(mp4Buffer);
 
-	if(scale < 0) {
+	if (scale < 0) {
 		ERROR("Error getting audio format of mp4 AAC track.\n");
 		faacDecClose(decoder);
 		mp4ff_close(mp4fh);
@@ -189,107 +196,111 @@ static int mp4_decode(OutputBuffer * cb, DecoderControl * dc, char * path) {
 		free(mp4cb);
 		return -1;
 	}
-	dc->totalTime = ((float)time)/scale;
+	dc->totalTime = ((float)time) / scale;
 
-	numSamples = mp4ff_num_samples(mp4fh,track);
+	numSamples = mp4ff_num_samples(mp4fh, track);
 
 	time = 0.0;
 
-	seekTable = malloc(sizeof(float)*numSamples);
+	seekTable = malloc(sizeof(float) * numSamples);
 
-	for(sampleId=0; sampleId<numSamples && !eof; sampleId++) {
-		if(dc->seek) seeking = 1;
+	for (sampleId = 0; sampleId < numSamples && !eof; sampleId++) {
+		if (dc->seek)
+			seeking = 1;
 
-		if(seeking && seekTableEnd>1 && 
-				seekTable[seekTableEnd]>=dc->seekWhere)
-		{
+		if (seeking && seekTableEnd > 1 &&
+		    seekTable[seekTableEnd] >= dc->seekWhere) {
 			int i = 2;
-			while(seekTable[i]<dc->seekWhere) i++;
-			sampleId = i-1;
+			while (seekTable[i] < dc->seekWhere)
+				i++;
+			sampleId = i - 1;
 			time = seekTable[sampleId];
 		}
 
-		dur = mp4ff_get_sample_duration(mp4fh,track,sampleId);
-		offset = mp4ff_get_sample_offset(mp4fh,track,sampleId);
+		dur = mp4ff_get_sample_duration(mp4fh, track, sampleId);
+		offset = mp4ff_get_sample_offset(mp4fh, track, sampleId);
 
-		if(sampleId>seekTableEnd) {
+		if (sampleId > seekTableEnd) {
 			seekTable[sampleId] = time;
 			seekTableEnd = sampleId;
 		}
 
-		if(sampleId==0) dur = 0;
-		if(offset>dur) dur = 0;
-		else dur-=offset;
-		time+=((float)dur)/scale;
+		if (sampleId == 0)
+			dur = 0;
+		if (offset > dur)
+			dur = 0;
+		else
+			dur -= offset;
+		time += ((float)dur) / scale;
 
-		if(seeking && time>dc->seekWhere) seekPositionFound = 1;
+		if (seeking && time > dc->seekWhere)
+			seekPositionFound = 1;
 
-		if(seeking && seekPositionFound) {
+		if (seeking && seekPositionFound) {
 			seekPositionFound = 0;
-                        clearOutputBuffer(cb);
+			clearOutputBuffer(cb);
 			seeking = 0;
 			dc->seek = 0;
 		}
 
-		if(seeking) continue;
-		
-		if(mp4ff_read_sample(mp4fh,track,sampleId,&mp4Buffer,
-				&mp4BufferSize) == 0)
-		{
+		if (seeking)
+			continue;
+
+		if (mp4ff_read_sample(mp4fh, track, sampleId, &mp4Buffer,
+				      &mp4BufferSize) == 0) {
 			eof = 1;
 			continue;
 		}
-
 #ifdef HAVE_FAAD_BUFLEN_FUNCS
-		sampleBuffer = faacDecDecode(decoder,&frameInfo,mp4Buffer,
-						mp4BufferSize);
+		sampleBuffer = faacDecDecode(decoder, &frameInfo, mp4Buffer,
+					     mp4BufferSize);
 #else
-		sampleBuffer = faacDecDecode(decoder,&frameInfo,mp4Buffer);
+		sampleBuffer = faacDecDecode(decoder, &frameInfo, mp4Buffer);
 #endif
 
-		if(mp4Buffer) free(mp4Buffer);
-		if(frameInfo.error > 0) {
+		if (mp4Buffer)
+			free(mp4Buffer);
+		if (frameInfo.error > 0) {
 			ERROR("error decoding MP4 file: %s\n", path);
 			ERROR("faad2 error: %s\n",
-				faacDecGetErrorMessage(frameInfo.error));
+			      faacDecGetErrorMessage(frameInfo.error));
 			eof = 1;
 			break;
 		}
 
-		if(dc->state != DECODE_STATE_DECODE) {
+		if (dc->state != DECODE_STATE_DECODE) {
 			channels = frameInfo.channels;
 #ifdef HAVE_FAACDECFRAMEINFO_SAMPLERATE
 			scale = frameInfo.samplerate;
 #endif
 			dc->audioFormat.sampleRate = scale;
 			dc->audioFormat.channels = frameInfo.channels;
-                        getOutputAudioFormat(&(dc->audioFormat),
-                                        &(cb->audioFormat));
+			getOutputAudioFormat(&(dc->audioFormat),
+					     &(cb->audioFormat));
 			dc->state = DECODE_STATE_DECODE;
 		}
 
-		if(channels*(dur+offset) > frameInfo.samples) {
-			dur = frameInfo.samples/channels;
+		if (channels * (dur + offset) > frameInfo.samples) {
+			dur = frameInfo.samples / channels;
 			offset = 0;
 		}
 
-		sampleCount = (unsigned long)(dur*channels);
+		sampleCount = (unsigned long)(dur * channels);
 
-		if(sampleCount>0) {
-			initial =0;
-			bitRate = frameInfo.bytesconsumed*8.0*
-				frameInfo.channels*scale/
-				frameInfo.samples/1000+0.5;
+		if (sampleCount > 0) {
+			initial = 0;
+			bitRate = frameInfo.bytesconsumed * 8.0 *
+			    frameInfo.channels * scale /
+			    frameInfo.samples / 1000 + 0.5;
 		}
-			
 
-		sampleBufferLen = sampleCount*2;
+		sampleBufferLen = sampleCount * 2;
 
-		sampleBuffer+=offset*channels*2;
+		sampleBuffer += offset * channels * 2;
 
 		sendDataToOutputBuffer(cb, NULL, dc, 1, sampleBuffer,
-				sampleBufferLen, time, bitRate, NULL);
-		if(dc->stop) {
+				       sampleBufferLen, time, bitRate, NULL);
+		if (dc->stop) {
 			eof = 1;
 			break;
 		}
@@ -301,33 +312,36 @@ static int mp4_decode(OutputBuffer * cb, DecoderControl * dc, char * path) {
 	closeInputStream(&inStream);
 	free(mp4cb);
 
-	if(dc->state != DECODE_STATE_DECODE) return -1;
+	if (dc->state != DECODE_STATE_DECODE)
+		return -1;
 
-	if(dc->seek && seeking) {
-                clearOutputBuffer(cb);
-                dc->seek = 0;
-        }
+	if (dc->seek && seeking) {
+		clearOutputBuffer(cb);
+		dc->seek = 0;
+	}
 	flushOutputBuffer(cb);
 
-	if(dc->stop) dc->stop = 0;
+	if (dc->stop)
+		dc->stop = 0;
 	dc->state = DECODE_STATE_STOP;
 
 	return 0;
 }
 
-static MpdTag * mp4DataDup(char * file, int * mp4MetadataFound) {
-	MpdTag * ret = NULL;
+static MpdTag *mp4DataDup(char *file, int *mp4MetadataFound)
+{
+	MpdTag *ret = NULL;
 	InputStream inStream;
-	mp4ff_t * mp4fh;
-	mp4ff_callback_t * cb; 
+	mp4ff_t *mp4fh;
+	mp4ff_callback_t *cb;
 	int32_t track;
 	int32_t time;
 	int32_t scale;
 	int i;
 
 	*mp4MetadataFound = 0;
-	
-	if(openInputStream(&inStream, file) < 0) {
+
+	if (openInputStream(&inStream, file) < 0) {
 		DEBUG("mp4DataDup: Failed to open file: %s\n", file);
 		return NULL;
 	}
@@ -338,14 +352,14 @@ static MpdTag * mp4DataDup(char * file, int * mp4MetadataFound) {
 	cb->user_data = &inStream;
 
 	mp4fh = mp4ff_open_read(cb);
-	if(!mp4fh) {
+	if (!mp4fh) {
 		free(cb);
 		closeInputStream(&inStream);
 		return NULL;
 	}
 
 	track = mp4_getAACTrack(mp4fh);
-	if(track < 0) {
+	if (track < 0) {
 		mp4ff_close(mp4fh);
 		closeInputStream(&inStream);
 		free(cb);
@@ -353,48 +367,42 @@ static MpdTag * mp4DataDup(char * file, int * mp4MetadataFound) {
 	}
 
 	ret = newMpdTag();
-	time = mp4ff_get_track_duration_use_offsets(mp4fh,track);
-	scale = mp4ff_time_scale(mp4fh,track);
-	if(scale < 0) {
+	time = mp4ff_get_track_duration_use_offsets(mp4fh, track);
+	scale = mp4ff_time_scale(mp4fh, track);
+	if (scale < 0) {
 		mp4ff_close(mp4fh);
 		closeInputStream(&inStream);
 		free(cb);
 		freeMpdTag(ret);
 		return NULL;
 	}
-	ret->time = ((float)time)/scale+0.5;
+	ret->time = ((float)time) / scale + 0.5;
 
-	for(i = 0; i < mp4ff_meta_get_num_items(mp4fh); i++) {
-		char * item;
-		char * value;
+	for (i = 0; i < mp4ff_meta_get_num_items(mp4fh); i++) {
+		char *item;
+		char *value;
 
 		mp4ff_meta_get_by_index(mp4fh, i, &item, &value);
 
-		if(0 == strcasecmp("artist", item)) {
+		if (0 == strcasecmp("artist", item)) {
 			addItemToMpdTag(ret, TAG_ITEM_ARTIST, value);
 			*mp4MetadataFound = 1;
-		}
-		else if(0 == strcasecmp("title", item)) {
+		} else if (0 == strcasecmp("title", item)) {
 			addItemToMpdTag(ret, TAG_ITEM_TITLE, value);
 			*mp4MetadataFound = 1;
-		}
-		else if(0 == strcasecmp("album", item)) {
+		} else if (0 == strcasecmp("album", item)) {
 			addItemToMpdTag(ret, TAG_ITEM_ALBUM, value);
 			*mp4MetadataFound = 1;
-		}
-		else if(0 == strcasecmp("track", item)) {
+		} else if (0 == strcasecmp("track", item)) {
 			addItemToMpdTag(ret, TAG_ITEM_TRACK, value);
 			*mp4MetadataFound = 1;
-		}
-		else if(0 == strcasecmp("disc", item)) { /* Is that the correct id? */
+		} else if (0 == strcasecmp("disc", item)) {	/* Is that the correct id? */
 			addItemToMpdTag(ret, TAG_ITEM_DISC, value);
 			*mp4MetadataFound = 1;
-		}
-		else if(0 == strcasecmp("genre", item)) {
+		} else if (0 == strcasecmp("genre", item)) {
 			addItemToMpdTag(ret, TAG_ITEM_GENRE, value);
 			*mp4MetadataFound = 1;
-		}
-		else if(0 == strcasecmp("date", item)) {
+		} else if (0 == strcasecmp("date", item)) {
 			addItemToMpdTag(ret, TAG_ITEM_DATE, value);
 			*mp4MetadataFound = 1;
 		}
@@ -410,15 +418,17 @@ static MpdTag * mp4DataDup(char * file, int * mp4MetadataFound) {
 	return ret;
 }
 
-static MpdTag * mp4TagDup(char * file) {
-	MpdTag * ret = NULL;
+static MpdTag *mp4TagDup(char *file)
+{
+	MpdTag *ret = NULL;
 	int mp4MetadataFound = 0;
 
 	ret = mp4DataDup(file, &mp4MetadataFound);
-        if(!ret) return NULL;
-	if(!mp4MetadataFound) {
-		MpdTag * temp = id3Dup(file);
-		if(temp) {
+	if (!ret)
+		return NULL;
+	if (!mp4MetadataFound) {
+		MpdTag *temp = id3Dup(file);
+		if (temp) {
 			temp->time = ret->time;
 			freeMpdTag(ret);
 			ret = temp;
@@ -428,10 +438,9 @@ static MpdTag * mp4TagDup(char * file) {
 	return ret;
 }
 
-static char * mp4Suffixes[] = {"m4a", "mp4", NULL};
+static char *mp4Suffixes[] = { "m4a", "mp4", NULL };
 
-InputPlugin mp4Plugin =
-{
+InputPlugin mp4Plugin = {
 	"mp4",
 	NULL,
 	NULL,
@@ -446,8 +455,7 @@ InputPlugin mp4Plugin =
 
 #else
 
-InputPlugin mp4Plugin =
-{
+InputPlugin mp4Plugin = {
 	NULL,
 	NULL,
 	NULL,
@@ -460,4 +468,4 @@ InputPlugin mp4Plugin =
 	NULL
 };
 
-#endif /* HAVE_FAAD */
+#endif				/* HAVE_FAAD */

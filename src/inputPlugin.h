@@ -31,36 +31,36 @@
 
 /* optional, set this to NULL if the InputPlugin doesn't have/need one
  * this must return < 0 if there is an error and >= 0 otherwise */
-typedef int (* InputPlugin_initFunc) ();
+typedef int (*InputPlugin_initFunc) ();
 
 /* optional, set this to NULL if the InputPlugin doesn't have/need one */
-typedef void (* InputPlugin_finishFunc) ();
+typedef void (*InputPlugin_finishFunc) ();
 
 /* boolean return value, returns 1 if the InputStream is decodable by
  * the InputPlugin, 0 if not */
-typedef unsigned int (* InputPlugin_tryDecodeFunc) (InputStream *);
+typedef unsigned int (*InputPlugin_tryDecodeFunc) (InputStream *);
 
 /* this will be used to decode InputStreams, and is recommended for files
  * and networked (HTTP) connections.
  *
  * returns -1 on error, 0 on success */
-typedef int (* InputPlugin_streamDecodeFunc) (OutputBuffer *, DecoderControl *,
-		InputStream *);
+typedef int (*InputPlugin_streamDecodeFunc) (OutputBuffer *, DecoderControl *,
+					     InputStream *);
 
 /* use this if and only if your InputPlugin can only be passed a filename or
  * handle as input, and will not allow callbacks to be set (like Ogg-Vorbis
  * and FLAC libraries allow)
  *
  * returns -1 on error, 0 on success */
-typedef int (* InputPlugin_fileDecodeFunc) (OutputBuffer *, DecoderControl *,
-		char * path);
+typedef int (*InputPlugin_fileDecodeFunc) (OutputBuffer *, DecoderControl *,
+					   char *path);
 
 /* file should be the full path!  Returns NULL if a tag cannot be found
  * or read */
-typedef MpdTag * (* InputPlugin_tagDupFunc) (char * file);
+typedef MpdTag *(*InputPlugin_tagDupFunc) (char *file);
 
 typedef struct _InputPlugin {
-	char * name;
+	char *name;
 	InputPlugin_initFunc initFunc;
 	InputPlugin_finishFunc finishFunc;
 	InputPlugin_tryDecodeFunc tryDecodeFunc;
@@ -72,8 +72,8 @@ typedef struct _InputPlugin {
 	unsigned char streamTypes;
 
 	/* last element in these arrays must always be a NULL: */
-	char ** suffixes;
-	char ** mimeTypes;
+	char **suffixes;
+	char **mimeTypes;
 } InputPlugin;
 
 /* individual functions to load/unload plugins */
@@ -82,11 +82,11 @@ void unloadInputPlugin(InputPlugin * inputPlugin);
 
 /* interface for using plugins */
 
-InputPlugin * getInputPluginFromSuffix(char * suffix, unsigned int next);
+InputPlugin *getInputPluginFromSuffix(char *suffix, unsigned int next);
 
-InputPlugin * getInputPluginFromMimeType(char * mimeType, unsigned int next);
+InputPlugin *getInputPluginFromMimeType(char *mimeType, unsigned int next);
 
-InputPlugin * getInputPluginFromName(char * name);
+InputPlugin *getInputPluginFromName(char *name);
 
 void printAllInputPluginSuffixes(FILE * fp);
 

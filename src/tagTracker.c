@@ -23,8 +23,7 @@
 
 #include <assert.h>
 
-static List * tagLists[TAG_NUM_OF_ITEM_TYPES] =
-{
+static List *tagLists[TAG_NUM_OF_ITEM_TYPES] = {
 	NULL,
 	NULL,
 	NULL,
@@ -39,73 +38,80 @@ typedef struct tagTrackerItem {
 	mpd_sint8 visited;
 } TagTrackerItem;
 
-char * getTagItemString(int type, char * string) {
-	ListNode * node;
+char *getTagItemString(int type, char *string)
+{
+	ListNode *node;
 	int pos;
 
-	if(tagLists[type] == NULL) {
+	if (tagLists[type] == NULL) {
 		tagLists[type] = makeList(free, 1);
 		sortList(tagLists[type]);
 	}
 
-	if(findNodeInList(tagLists[type], string, &node, &pos)) {
-		((TagTrackerItem *)node->data)->count++;
-	}
-	else {
-		TagTrackerItem * item = malloc(sizeof(TagTrackerItem));
+	if (findNodeInList(tagLists[type], string, &node, &pos)) {
+		((TagTrackerItem *) node->data)->count++;
+	} else {
+		TagTrackerItem *item = malloc(sizeof(TagTrackerItem));
 		item->count = 1;
 		item->visited = 0;
 		node = insertInListBeforeNode(tagLists[type], node, pos,
-				string, item);
+					      string, item);
 	}
 
 	return node->key;
 }
 
-void removeTagItemString(int type, char * string) {
-	ListNode * node;
+void removeTagItemString(int type, char *string)
+{
+	ListNode *node;
 	int pos;
 
 	assert(string);
 
 	assert(tagLists[type]);
-	if(tagLists[type] == NULL) return;
+	if (tagLists[type] == NULL)
+		return;
 
-	if(findNodeInList(tagLists[type], string, &node, &pos)) {
-		TagTrackerItem * item = node->data;
+	if (findNodeInList(tagLists[type], string, &node, &pos)) {
+		TagTrackerItem *item = node->data;
 		item->count--;
-		if(item->count <= 0) deleteNodeFromList(tagLists[type], node);
+		if (item->count <= 0)
+			deleteNodeFromList(tagLists[type], node);
 	}
 
-	if(tagLists[type]->numberOfNodes == 0) {
+	if (tagLists[type]->numberOfNodes == 0) {
 		freeList(tagLists[type]);
 		tagLists[type] = NULL;
 	}
 }
 
-int getNumberOfTagItems(int type) {
-	if(tagLists[type] == NULL) return 0;
+int getNumberOfTagItems(int type)
+{
+	if (tagLists[type] == NULL)
+		return 0;
 
 	return tagLists[type]->numberOfNodes;
 }
 
-void printMemorySavedByTagTracker(void) {
+void printMemorySavedByTagTracker(void)
+{
 	int i;
-	ListNode * node;
+	ListNode *node;
 	size_t sum = 0;
 
-	for(i = 0; i < TAG_NUM_OF_ITEM_TYPES; i++) {
-		if(!tagLists[i]) continue;
+	for (i = 0; i < TAG_NUM_OF_ITEM_TYPES; i++) {
+		if (!tagLists[i])
+			continue;
 
 		sum -= sizeof(List);
 
 		node = tagLists[i]->firstNode;
 
-		while(node != NULL) {
+		while (node != NULL) {
 			sum -= sizeof(ListNode);
 			sum -= sizeof(TagTrackerItem);
 			sum -= sizeof(node->key);
-			sum += (strlen(node->key)+1)*(*((int *)node->data));
+			sum += (strlen(node->key) + 1) * (*((int *)node->data));
 			node = node->nextNode;
 		}
 	}
@@ -113,42 +119,49 @@ void printMemorySavedByTagTracker(void) {
 	DEBUG("saved memory from tags: %li\n", (long)sum);
 }
 
-void resetVisitedFlagsInTagTracker(int type) {
-	ListNode * node;
+void resetVisitedFlagsInTagTracker(int type)
+{
+	ListNode *node;
 
-	if(!tagLists[type]) return;
+	if (!tagLists[type])
+		return;
 
 	node = tagLists[type]->firstNode;
 
-	while(node) {
-		((TagTrackerItem *)node->data)->visited = 0;
+	while (node) {
+		((TagTrackerItem *) node->data)->visited = 0;
 		node = node->nextNode;
 	}
 }
 
-void visitInTagTracker(int type, char * str) {
-	void * item;
+void visitInTagTracker(int type, char *str)
+{
+	void *item;
 
-	if(!tagLists[type]) return;
+	if (!tagLists[type])
+		return;
 
-	if(!findInList(tagLists[type], str, &item)) return;
+	if (!findInList(tagLists[type], str, &item))
+		return;
 
-	((TagTrackerItem *)item)->visited = 1;
+	((TagTrackerItem *) item)->visited = 1;
 }
 
-void printVisitedInTagTracker(FILE * fp, int type) {
-	ListNode * node;
-	TagTrackerItem * item;
+void printVisitedInTagTracker(FILE * fp, int type)
+{
+	ListNode *node;
+	TagTrackerItem *item;
 
-	if(!tagLists[type]) return;
+	if (!tagLists[type])
+		return;
 
 	node = tagLists[type]->firstNode;
 
-	while(node) {
+	while (node) {
 		item = node->data;
-		if(item->visited) {
+		if (item->visited) {
 			myfprintf(fp, "%s: %s\n", mpdTagItemKeys[type],
-					node->key);
+				  node->key);
 		}
 		node = node->nextNode;
 	}

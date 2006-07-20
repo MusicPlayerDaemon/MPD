@@ -37,34 +37,35 @@
 #include <unistd.h>
 #include <audiofile.h>
 
-static int getAudiofileTotalTime(char * file)
+static int getAudiofileTotalTime(char *file)
 {
 	int time;
 	AFfilehandle af_fp = afOpenFile(file, "r", NULL);
-	if(af_fp == AF_NULL_FILEHANDLE) {
+	if (af_fp == AF_NULL_FILEHANDLE) {
 		return -1;
 	}
 	time = (int)
-		((double)afGetFrameCount(af_fp,AF_DEFAULT_TRACK)
-		 /afGetRate(af_fp,AF_DEFAULT_TRACK));
+	    ((double)afGetFrameCount(af_fp, AF_DEFAULT_TRACK)
+	     / afGetRate(af_fp, AF_DEFAULT_TRACK));
 	afCloseFile(af_fp);
 	return time;
 }
 
-static int audiofile_decode(OutputBuffer * cb, DecoderControl * dc, char * path) {
+static int audiofile_decode(OutputBuffer * cb, DecoderControl * dc, char *path)
+{
 	int fs, frame_count;
 	AFfilehandle af_fp;
 	int bits;
 	mpd_uint16 bitRate;
 	struct stat st;
 
-	if(stat(path, &st) < 0) {
+	if (stat(path, &st) < 0) {
 		ERROR("failed to stat: %s\n", path);
 		return -1;
 	}
 
 	af_fp = afOpenFile(path, "r", NULL);
-	if(af_fp == AF_NULL_FILEHANDLE) {
+	if (af_fp == AF_NULL_FILEHANDLE) {
 		ERROR("failed to open: %s\n", path);
 		return -1;
 	}
@@ -72,119 +73,125 @@ static int audiofile_decode(OutputBuffer * cb, DecoderControl * dc, char * path)
 	afGetSampleFormat(af_fp, AF_DEFAULT_TRACK, &fs, &bits);
 	dc->audioFormat.bits = bits;
 	dc->audioFormat.sampleRate = afGetRate(af_fp, AF_DEFAULT_TRACK);
-	dc->audioFormat.channels = afGetChannels(af_fp,AF_DEFAULT_TRACK);
-        getOutputAudioFormat(&(dc->audioFormat),&(cb->audioFormat));
-	
-	frame_count = afGetFrameCount(af_fp,AF_DEFAULT_TRACK);
-	
-	dc->totalTime = ((float)frame_count/(float)dc->audioFormat.sampleRate);
+	dc->audioFormat.channels = afGetChannels(af_fp, AF_DEFAULT_TRACK);
+	getOutputAudioFormat(&(dc->audioFormat), &(cb->audioFormat));
 
-	bitRate = st.st_size*8.0/dc->totalTime/1000.0+0.5;
-	
+	frame_count = afGetFrameCount(af_fp, AF_DEFAULT_TRACK);
+
+	dc->totalTime =
+	    ((float)frame_count / (float)dc->audioFormat.sampleRate);
+
+	bitRate = st.st_size * 8.0 / dc->totalTime / 1000.0 + 0.5;
+
 	if (dc->audioFormat.bits != 8 && dc->audioFormat.bits != 16) {
 		ERROR("Only 8 and 16-bit files are supported. %s is %i-bit\n",
-			path, dc->audioFormat.bits);
+		      path, dc->audioFormat.bits);
 		afCloseFile(af_fp);
 		return -1;
 	}
-	
-	fs = (int)afGetFrameSize(af_fp, AF_DEFAULT_TRACK,1);
+
+	fs = (int)afGetFrameSize(af_fp, AF_DEFAULT_TRACK, 1);
 
 	dc->state = DECODE_STATE_DECODE;
 	{
 		int ret, eof = 0, current = 0;
 		char chunk[CHUNK_SIZE];
 
-		while(!eof) {
-			if(dc->seek) {
-                                clearOutputBuffer(cb);
-				current = dc->seekWhere * 
-                                                dc->audioFormat.sampleRate;
-				afSeekFrame(af_fp, AF_DEFAULT_TRACK,current);
+		while (!eof) {
+			if (dc->seek) {
+				clearOutputBuffer(cb);
+				current = dc->seekWhere *
+				    dc->audioFormat.sampleRate;
+				afSeekFrame(af_fp, AF_DEFAULT_TRACK, current);
 				dc->seek = 0;
 			}
 
-			ret = afReadFrames(af_fp, AF_DEFAULT_TRACK, chunk, CHUNK_SIZE/fs);
-			if(ret<=0) eof = 1;
+			ret =
+			    afReadFrames(af_fp, AF_DEFAULT_TRACK, chunk,
+					 CHUNK_SIZE / fs);
+			if (ret <= 0)
+				eof = 1;
 			else {
 				current += ret;
-				sendDataToOutputBuffer(cb, 
-                                        NULL,
-                                        dc,
-                                        1,
-                                        chunk,
-                                        ret*fs,
-					(float)current /
-					(float)dc->audioFormat.sampleRate,
-					bitRate,
-					NULL);
-				if(dc->stop) break;
+				sendDataToOutputBuffer(cb,
+						       NULL,
+						       dc,
+						       1,
+						       chunk,
+						       ret * fs,
+						       (float)current /
+						       (float)dc->audioFormat.
+						       sampleRate, bitRate,
+						       NULL);
+				if (dc->stop)
+					break;
 			}
 		}
 
 		flushOutputBuffer(cb);
 
 		/*if(dc->seek) {
-                        dc->seekError = 1;
-                        dc->seek = 0;
-                }*/
+		   dc->seekError = 1;
+		   dc->seek = 0;
+		   } */
 
-		if(dc->stop) {
+		if (dc->stop) {
 			dc->state = DECODE_STATE_STOP;
 			dc->stop = 0;
-		}
-		else dc->state = DECODE_STATE_STOP;
+		} else
+			dc->state = DECODE_STATE_STOP;
 	}
 	afCloseFile(af_fp);
 
 	return 0;
 }
 
-static MpdTag * audiofileTagDup(char * file) {
-	MpdTag * ret = NULL;
+static MpdTag *audiofileTagDup(char *file)
+{
+	MpdTag *ret = NULL;
 	int time = getAudiofileTotalTime(file);
-	
-	if (time>=0) {
-		if(!ret) ret = newMpdTag();
+
+	if (time >= 0) {
+		if (!ret)
+			ret = newMpdTag();
 		ret->time = time;
-	}
-	else {
-		DEBUG("audiofileTagDup: Failed to get total song time from: %s\n", file);
+	} else {
+		DEBUG
+		    ("audiofileTagDup: Failed to get total song time from: %s\n",
+		     file);
 	}
 
 	return ret;
 }
 
-static char * audiofileSuffixes[] = {"wav", "au", "aiff", "aif",  NULL};
+static char *audiofileSuffixes[] = { "wav", "au", "aiff", "aif", NULL };
 
-InputPlugin audiofilePlugin = 
-{
-        "audiofile",
-        NULL,
+InputPlugin audiofilePlugin = {
+	"audiofile",
 	NULL,
 	NULL,
 	NULL,
-        audiofile_decode,
-        audiofileTagDup,
-        INPUT_PLUGIN_STREAM_FILE,
-        audiofileSuffixes,
-        NULL
+	NULL,
+	audiofile_decode,
+	audiofileTagDup,
+	INPUT_PLUGIN_STREAM_FILE,
+	audiofileSuffixes,
+	NULL
 };
 
 #else
 
-InputPlugin audiofilePlugin =
-{
-        NULL,
-        NULL,
-	NULL,
-        NULL,
-        NULL,
+InputPlugin audiofilePlugin = {
 	NULL,
 	NULL,
-        0,
-        NULL,
-        NULL
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	0,
+	NULL,
+	NULL
 };
 
-#endif /* HAVE_AUDIOFILE */
+#endif				/* HAVE_AUDIOFILE */

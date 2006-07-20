@@ -21,7 +21,7 @@
 
 #include "../config.h"
 
-#include "inputPlugin.h" 
+#include "inputPlugin.h"
 
 #include <stdio.h>
 #include <sys/types.h>
@@ -29,23 +29,23 @@
 #include <unistd.h>
 #include <time.h>
 
-int lsPlaylists(FILE * fp, char * utf8path);
+int lsPlaylists(FILE * fp, char *utf8path);
 
-char * getSuffix(char * utf8file);
+char *getSuffix(char *utf8file);
 
-int isValidRemoteUtf8Url(char * utf8url);
+int isValidRemoteUtf8Url(char *utf8url);
 
-int isRemoteUrl(char * url);
+int isRemoteUrl(char *url);
 
-int myStat(char * utf8file, struct stat * st);
+int myStat(char *utf8file, struct stat *st);
 
-int isDir(char * utf8name);
+int isDir(char *utf8name);
 
-int isPlaylist(char * utf8file);
+int isPlaylist(char *utf8file);
 
-InputPlugin * hasMusicSuffix(char * utf8file, unsigned int next);
+InputPlugin *hasMusicSuffix(char *utf8file, unsigned int next);
 
-InputPlugin * isMusic(char * utf8file, time_t * mtime, unsigned int next);
+InputPlugin *isMusic(char *utf8file, time_t * mtime, unsigned int next);
 
 int printRemoteUrlHandlers(FILE * fp);
 
