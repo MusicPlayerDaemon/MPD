@@ -543,15 +543,10 @@ int main(int argc, char *argv[])
 	changeToUser();
 
 	openLogFiles(&options, &out, &err);
-	/* Redirect only stdout, so fatal errors are spit out to console */
-	setupLogOutput(&options, out, stderr);
 
 	initPlayerData();
 
 	daemonize(&options);
-
-	/* Now that we're daemonized, redirect errors to the error log */
-	setupLogOutput(&options, out, err);
 
 	initInputPlugins();
 	initPaths();
@@ -559,6 +554,7 @@ int main(int argc, char *argv[])
 	initAudioDriver();
 
 	initSigHandlers();
+	setupLogOutput(&options, out, err);
 	startMainProcess();
 	/* This is the main process which has
 	 * been forked from the master process.
