@@ -85,6 +85,8 @@ ConfigParam *getNextConfigParam(char *name, ConfigParam * last);
 
 char *getConfigParamValue(char *name);
 
+int getBoolConfigParam(char *name);
+
 BlockParam *getBlockParam(ConfigParam * param, char *name);
 
 ConfigParam *parseConfigFilePath(char *name, int force);

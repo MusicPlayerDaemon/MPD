@@ -362,6 +362,19 @@ char *getConfigParamValue(char *name)
 	return param->value;
 }
 
+int getBoolConfigParam(char *name)
+{
+	ConfigParam *param;
+	
+	param = getConfigParam(name);
+	if (!param) return -1;
+
+	if (strcmp("yes", param->value) == 0) return 1;
+	else if (strcmp("no", param->value) == 0) return 0;
+
+	return -1;
+}
+
 BlockParam *getBlockParam(ConfigParam * param, char *name)
 {
 	BlockParam *ret = NULL;
