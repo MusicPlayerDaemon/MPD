@@ -92,7 +92,8 @@ static int alsa_initDriver(AudioOutput * audioOutput, ConfigParam * param)
 			ad->buffer_time = atoi(bp->value);
 		if ((bp = getBlockParam(param, "period_time")))
 			ad->period_time = atoi(bp->value);
-	}
+	} else
+		ad->device = strdup("default");
 	audioOutput->data = ad;
 
 	return 0;
