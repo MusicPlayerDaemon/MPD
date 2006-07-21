@@ -167,12 +167,13 @@ void initPlaylist(void)
 	}
 
 	playlist_saveAbsolutePaths = getBoolConfigParam(CONF_SAVE_ABSOLUTE_PATHS);
-	if (playlist_saveAbsolutePaths == -1) playlist_saveAbsolutePaths = 0;
-	else if (playlist_saveAbsolutePaths < 0) {
+	if (playlist_saveAbsolutePaths == -1) {
+		/* not set */
+		playlist_saveAbsolutePaths = 0;
+	} else if (playlist_saveAbsolutePaths < 0) {
 		param = getConfigParam(CONF_SAVE_ABSOLUTE_PATHS);
-		ERROR("%s is not \"yes\" or \"no\" on line %i\n"
-		      CONF_SAVE_ABSOLUTE_PATHS,
-		      param->value, param->line);
+		ERROR("%s is not \"yes\" or \"no\" on line %i\n",
+		      CONF_SAVE_ABSOLUTE_PATHS, param->line);
 		exit(EXIT_FAILURE);
 	}
 
