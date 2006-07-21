@@ -166,20 +166,8 @@ void initPlaylist(void)
 		}
 	}
 
-	param = getConfigParam(CONF_SAVE_ABSOLUTE_PATHS);
-
-	if (param) {
-		if (0 == strcmp("yes", param->value)) {
-			playlist_saveAbsolutePaths = 1;
-		} else if (0 == strcmp("no", param->value)) {
-			playlist_saveAbsolutePaths = 0;
-		} else {
-			ERROR("%s \"%s\" is not yes or no, line %i"
-			      CONF_SAVE_ABSOLUTE_PATHS,
-			      param->value, param->line);
-			exit(EXIT_FAILURE);
-		}
-	}
+	playlist_saveAbsolutePaths = getBoolConfigParam(CONF_SAVE_ABSOLUTE_PATHS);
+	playlist_saveAbsolutePaths = playlist_saveAbsolutePaths < 0 ? 0 : playlist_saveAbsolutePaths;
 
 	playlist.songs = malloc(sizeof(Song *) * playlist_max_length);
 	playlist.songMod = malloc(sizeof(mpd_uint32) * playlist_max_length);
