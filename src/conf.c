@@ -372,7 +372,7 @@ int getBoolConfigParam(char *name)
 	if (strcmp("yes", param->value) == 0) return 1;
 	else if (strcmp("no", param->value) == 0) return 0;
 
-	return -1;
+	return -2;
 }
 
 BlockParam *getBlockParam(ConfigParam * param, char *name)
