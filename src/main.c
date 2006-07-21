@@ -358,6 +358,8 @@ static void startMainProcess(void)
 		/* we're killed */
 		playerKill();
 
+		finishPlaylist();
+
 		finishAudioConfig();
 		finishAudioDriver();
 
@@ -546,12 +548,13 @@ int main(int argc, char *argv[])
 
 	initPlayerData();
 
-	daemonize(&options);
-
 	initInputPlugins();
 	initPaths();
 	initAudioConfig();
 	initAudioDriver();
+	initPlaylist();
+
+	daemonize(&options);
 
 	initSigHandlers();
 	setupLogOutput(&options, out, err);
@@ -561,8 +564,6 @@ int main(int argc, char *argv[])
 	 */
 
 	initPermissions();
-
-	initPlaylist();
 
 	openDB(&options, argv[0]);
 
