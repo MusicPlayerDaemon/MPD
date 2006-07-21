@@ -1349,6 +1349,8 @@ int deletePlaylist(FILE * fp, char *utf8file)
 	strcat(rfile, ".");
 	strcat(rfile, PLAYLIST_FILE_SUFFIX);
 
+	free(file);
+
 	if ((actualFile = rpp2app(rfile)) && isPlaylist(actualFile))
 		free(rfile);
 	else {
