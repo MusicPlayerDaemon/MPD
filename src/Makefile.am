@@ -49,6 +49,7 @@ mpd_headers = \
 	metadataChunk.h \
 	mpd_types.h \
 	myfprintf.h \
+	normalize.h \
 	outputBuffer.h \
 	path.h \
 	pcm_utils.h \
@@ -93,6 +94,7 @@ mpd_SOURCES = \
 	main.c \
 	metadataChunk.c \
 	myfprintf.c \
+	normalize.c \
 	outputBuffer.c \
 	path.c \
 	pcm_utils.c \

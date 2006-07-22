@@ -92,6 +92,9 @@ Musepack, and MP3 (through ID3v2 replaygain tags, not APEv2) are supported.
 .B replaygain_preamp <-15 to 15>
 This is the gain (in dB) applied to songs with replaygain tags.
 .TP
+.B volume_normalization <yes or no>
+If yes, mpd will normalize the volume of songs as they play.  Default is no.
+.TP
 .B audio_buffer_size <size in KiB>
 This specifies the size of the audio output buffer that mpd uses.  The default
 is 2048.

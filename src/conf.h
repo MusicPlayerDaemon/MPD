@@ -58,6 +58,7 @@
 #define CONF_HTTP_PREBUFFER_SIZE	"http_prebuffer_size"
 #define CONF_METADATA_TO_USE		"metadata_to_use"
 #define CONF_ID3V1_ENCODING		"id3v1_encoding"
+#define CONF_VOLUME_NORMALIZATION	"volume_normalization"
 
 typedef struct _BlockParam {
 	char *name;

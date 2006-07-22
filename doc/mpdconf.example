@@ -126,7 +126,7 @@ pid_file 		"~/.mpd/mpd.pid"
 ##########################################################
 
 
-################# REPLAYGAIN #############################
+################# Normalization ##########################
 #
 # Use Replay Gain (album or track)
 #	http://www.replaygain.org
@@ -138,6 +138,13 @@ pid_file 		"~/.mpd/mpd.pid"
 #
 #replaygain_preamp	"0"
 #
+# Normalization increases the amplitude of the audio
+# waveform to the maximum level without introducing any 
+# distortion into the recording. This option will 
+# normalize when replaygain is not on, utilizing the 
+# CPU for calculation.
+#
+#volume_normalization	"yes"
 ##########################################################
 
 
