@@ -40,11 +40,16 @@
 
 #define DEFAULT_PORT	6600
 
+#define BINDERROR() do { \
+	ERROR("unable to bind port %u: %s\n", port, strerror(errno)); \
+	ERROR("maybe MPD is still running?\n"); \
+} while (0);
+
 int *listenSockets = NULL;
 int numberOfListenSockets = 0;
 
-static void establishListen(unsigned int port,
-			    struct sockaddr *addrp, socklen_t addrlen)
+static int establishListen(unsigned int port,
+                           struct sockaddr *addrp, socklen_t addrlen)
 {
 	int pf;
 	int sock;
@@ -85,10 +90,8 @@ static void establishListen(unsigned int port,
 	}
 
 	if (bind(sock, addrp, addrlen) < 0) {
-		ERROR("unable to bind port %u", port);
-		ERROR(": %s\n", strerror(errno));
-		ERROR("maybe MPD is still running?\n");
-		exit(EXIT_FAILURE);
+		close(sock);
+		return -1;
 	}
 
 	if (listen(sock, 5) < 0) {
@@ -101,6 +104,8 @@ static void establishListen(unsigned int port,
 	    realloc(listenSockets, sizeof(int) * numberOfListenSockets);
 
 	listenSockets[numberOfListenSockets - 1] = sock;
+
+	return 0;
 }
 
 static void parseListenConfigParam(unsigned int port, ConfigParam * param)
@@ -121,6 +126,15 @@ static void parseListenConfigParam(unsigned int port, ConfigParam * param)
 
 	if (!param || 0 == strcmp(param->value, "any")) {
 		DEBUG("binding to any address\n");
+		sin.sin_addr.s_addr = INADDR_ANY;
+		addrp = (struct sockaddr *)&sin;
+		addrlen = sizeof(struct sockaddr_in);
+
+		if (establishListen(port, addrp, addrlen) < 0) {
+			BINDERROR();
+			exit(EXIT_FAILURE);
+		}
+
 #ifdef HAVE_IPV6
 		if (ipv6Supported()) {
 			sin6.sin6_addr = in6addr_any;
@@ -129,10 +143,6 @@ static void parseListenConfigParam(unsigned int port, ConfigParam * param)
 			establishListen(port, addrp, addrlen);
 		}
 #endif
-		sin.sin_addr.s_addr = INADDR_ANY;
-		addrp = (struct sockaddr *)&sin;
-		addrlen = sizeof(struct sockaddr_in);
-		establishListen(port, addrp, addrlen);
 	} else {
 		struct hostent *he;
 		DEBUG("binding to address for %s\n", param->value);
@@ -168,7 +178,10 @@ static void parseListenConfigParam(unsigned int port, ConfigParam * param)
 			exit(EXIT_FAILURE);
 		}
 
-		establishListen(port, addrp, addrlen);
+		if (establishListen(port, addrp, addrlen) < 0) {
+			BINDERROR();
+			exit(EXIT_FAILURE);
+		}
 	}
 }
 
