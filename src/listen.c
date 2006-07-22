@@ -115,6 +115,7 @@ static void parseListenConfigParam(unsigned int port, ConfigParam * param)
 	struct sockaddr_in sin;
 #ifdef HAVE_IPV6
 	struct sockaddr_in6 sin6;
+	int useIpv6 = ipv6Supported();
 
 	memset(&sin6, 0, sizeof(struct sockaddr_in6));
 	sin6.sin6_port = htons(port);
@@ -126,23 +127,28 @@ static void parseListenConfigParam(unsigned int port, ConfigParam * param)
 
 	if (!param || 0 == strcmp(param->value, "any")) {
 		DEBUG("binding to any address\n");
-		sin.sin_addr.s_addr = INADDR_ANY;
-		addrp = (struct sockaddr *)&sin;
-		addrlen = sizeof(struct sockaddr_in);
-
-		if (establishListen(port, addrp, addrlen) < 0) {
-			BINDERROR();
-			exit(EXIT_FAILURE);
-		}
-
 #ifdef HAVE_IPV6
-		if (ipv6Supported()) {
+		if (useIpv6) {
 			sin6.sin6_addr = in6addr_any;
 			addrp = (struct sockaddr *)&sin6;
 			addrlen = sizeof(struct sockaddr_in6);
-			establishListen(port, addrp, addrlen);
+			if (establishListen(port, addrp, addrlen) < 0) {
+				BINDERROR();
+				exit(EXIT_FAILURE);
+			}
 		}
 #endif
+		sin.sin_addr.s_addr = INADDR_ANY;
+		addrp = (struct sockaddr *)&sin;
+		addrlen = sizeof(struct sockaddr_in);
+#ifdef HAVE_IPV6
+		if ((establishListen(port, addrp, addrlen) < 0) && !useIpv6) {
+#else
+		if (establishListen(port, addrp, addrlen) < 0) {
+#endif
+			BINDERROR();
+			exit(EXIT_FAILURE);
+		}
 	} else {
 		struct hostent *he;
 		DEBUG("binding to address for %s\n", param->value);
@@ -154,7 +160,7 @@ static void parseListenConfigParam(unsigned int port, ConfigParam * param)
 		switch (he->h_addrtype) {
 #ifdef HAVE_IPV6
 		case AF_INET6:
-			if (!ipv6Supported()) {
+			if (!useIpv6) {
 				ERROR("no IPv6 support, but a IPv6 address "
 				      "found for \"%s\" at line %i\n",
 				      param->value, param->line);
