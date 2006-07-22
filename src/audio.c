@@ -77,6 +77,7 @@ extern AudioOutputPlugin aoPlugin;
 extern AudioOutputPlugin ossPlugin;
 extern AudioOutputPlugin osxPlugin;
 extern AudioOutputPlugin pulsePlugin;
+extern AudioOutputPlugin fifoPlugin;
 extern AudioOutputPlugin mvpPlugin;
 extern AudioOutputPlugin shoutPlugin;
 
@@ -88,6 +89,7 @@ void loadAudioDrivers(void)
 	loadAudioOutputPlugin(&ossPlugin);
 	loadAudioOutputPlugin(&osxPlugin);
 	loadAudioOutputPlugin(&pulsePlugin);
+	loadAudioOutputPlugin(&fifoPlugin);
 	loadAudioOutputPlugin(&mvpPlugin);
 	loadAudioOutputPlugin(&shoutPlugin);
 }
