@@ -4,9 +4,9 @@ PWD=`pwd`
 
 ## If we're not in the scripts directory 
 ## assume the base directory.
-if test "`basename $PWD`" != "scripts" && \
-	test -d scripts; then
-	cd scripts
+if test "`basename $PWD`" != "scripts"; then
+	MYOLDPWD=`pwd`
+	cd `dirname $0`
 fi
 
 ./makedist.sh
@@ -25,5 +25,5 @@ then
 fi
 
 if test "`basename $PWD`" != "scripts"; then
-	cd ..
+	cd $MYOLDPWD
 fi
