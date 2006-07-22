@@ -5,14 +5,6 @@ AC_PREREQ(2.58)
 AC_INIT(mpd, 0.12.0, warren.dukes@gmail.com)
 AM_INIT_AUTOMAKE($PACKAGE_NAME, $PACKAGE_VERSION)
 
-dnl MAD wants this stuff
-AC_SUBST(CCAS)
-AC_SUBST(CCASFLAGS)
-
-AC_SUBST(MAD_SUBDIR)
-AC_SUBST(MAD_LIB)
-AC_SUBST(ID3_SUBDIR)
-AC_SUBST(ID3_LIB)
 AC_SUBST(MPD_LIBS)
 AC_SUBST(MPD_CFLAGS)
 
@@ -259,7 +251,7 @@ if test x$enable_id3 = xyes; then
 		[use_libid3tag=no])
 	if test x$use_libid3tag = xyes; then
 		AC_CHECK_LIB(id3tag,id3_file_open,
-			[ID3_LIB="$ID3TAG_LIBS";
+			[MPD_LIBS="$MPD_LIBS $ID3TAG_LIBS";
 			MPD_CFLAGS="$MPD_CFLAGS $ID3TAG_CFLAGS";
 			use_libid3tag=yes],
 			[use_libid3tag=no])
@@ -304,7 +296,7 @@ if test x$enable_mp3 = xyes; then
 	AC_CHECK_HEADERS(mad.h,use_libmad=yes,
 		[use_libmad=no])
 	if test x$use_libmad = xyes; then
-		AC_CHECK_LIB(mad,mad_stream_init,[MAD_LIB="$MAD_LIBS";
+		AC_CHECK_LIB(mad,mad_stream_init,[MPD_LIBS="$MPD_LIBS $MAD_LIBS";
 			MPD_CFLAGS="$MPD_CFLAGS $MAD_CFLAGS";
 			use_libmad=yes],[use_libmad=no])
 	fi

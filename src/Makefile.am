@@ -115,7 +115,7 @@ mpd_SOURCES = \
 
 
 mpd_CFLAGS = $(MPD_CFLAGS)
-mpd_LDADD = $(MPD_LIBS) $(ID3_LIB) $(MAD_LIB)
+mpd_LDADD = $(MPD_LIBS)
 
 # sparse is a semantic parser
 # URL: git://www.kernel.org/pub/scm/devel/sparse/sparse.git
