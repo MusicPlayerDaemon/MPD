@@ -1021,6 +1021,7 @@ static void sortDirectory(Directory * directory)
 
 int checkDirectoryDB()
 {
+	struct stat st;
 	char *dbFile;
 	char *dirPath;
 	char *dbPath;
@@ -1029,11 +1030,10 @@ int checkDirectoryDB()
 
 	/* Check if the file exists */
 	if (access(dbFile, F_OK)) {
-		dbPath = strdup(dbFile);
-
 		/* If the file doesn't exist, we can't check if we can write
 		 * it, so we are going to try to get the directory path, and
 		 * see if we can write a file in that */
+		dbPath = strdup(dbFile);
 		dirPath = dirname(dbPath);
 
 		/* Check if we can write to the directory */
@@ -1049,7 +1049,19 @@ int checkDirectoryDB()
 		return 0;
 	}
 
-	/* File exists, now check if we can write it */
+	/* Path exists, now check if it's a regular file */
+	if (stat(dbFile, &st) < 0) {
+		ERROR("Error stat'ing db file \"%s\": %s\n", dbFile,
+		      strerror(errno));
+		return -1;
+	}
+
+	if (!S_ISREG(st.st_mode)) {
+		ERROR("db file \"%s\" is not a regular file\n", dbFile);
+		return -1;
+	}
+
+	/* And check that we can write to it */
 	if (access(dbFile, R_OK | W_OK)) {
 		ERROR("Can't open db file \"%s\" for reading/writing: %s\n",
 		      dbFile, strerror(errno));
@@ -1172,6 +1184,7 @@ int readDirectoryDB()
 			ERROR("db info not found in db file\n");
 			ERROR("you should recreate the db using --create-db\n");
 			fseek(fp, 0, SEEK_SET);
+			return -1;
 		}
 	}
 
