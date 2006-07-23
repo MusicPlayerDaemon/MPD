@@ -1021,39 +1021,37 @@ static void sortDirectory(Directory * directory)
 
 int checkDirectoryDB()
 {
-	char *dbFile = getDbFile();
-	/**
-	 * Check if the file exists 
-	 */
-	if (access(dbFile, F_OK)) {
-		char *dirPath = NULL;
-		char *dbPath = strdup(dbFile);
+	char *dbFile;
+	char *dirPath;
+	char *dbPath;
 
-		/** 
-		 * If the file doesn't exits, we can't check if we can write it, 
-		 * so we are going to try to get the directory path, and see if we can write a file in that
-		 */
+	dbFile = getDbFile();
+
+	/* Check if the file exists */
+	if (access(dbFile, F_OK)) {
+		dbPath = strdup(dbFile);
+
+		/* If the file doesn't exist, we can't check if we can write
+		 * it, so we are going to try to get the directory path, and
+		 * see if we can write a file in that */
 		dirPath = dirname(dbPath);
 
-		/** 
-		 * Check if we can write to the directory 
-		 */
+		/* Check if we can write to the directory */
 		if (access(dirPath, R_OK | W_OK)) {
-			ERROR("Can't create db file in \"%s\": %s", dirPath,
+			ERROR("Can't create db file in \"%s\": %s\n", dirPath,
 			      strerror(errno));
 			free(dbPath);
 			return -1;
 
 		}
+
 		free(dbPath);
 		return 0;
-
 	}
-	/**
-	 * File exists, now check if we can write it
-	 */
+
+	/* File exists, now check if we can write it */
 	if (access(dbFile, R_OK | W_OK)) {
-		ERROR("db file \"%s\" cannot be opened for reading/writing: %s",
+		ERROR("Can't open db file \"%s\" for reading/writing: %s\n",
 		      dbFile, strerror(errno));
 		return -1;
 	}
