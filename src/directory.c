@@ -1036,6 +1036,21 @@ int checkDirectoryDB()
 		dbPath = strdup(dbFile);
 		dirPath = dirname(dbPath);
 
+		/* Check that the parent part of the path is a directory */
+		if (stat(dirPath, &st) < 0) {
+			ERROR("Couldn't stat parent directory of db file "
+			      "\"%s\": %s\n", dbFile, strerror(errno));
+			free(dbPath);
+			return -1;
+		}
+
+		if (!S_ISDIR(st.st_mode)) {
+			ERROR("Couldn't create db file \"%s\" because the "
+			      "parent path is not a directory\n", dbFile);
+			free(dbPath);
+			return -1;
+		}
+
 		/* Check if we can write to the directory */
 		if (access(dirPath, R_OK | W_OK)) {
 			ERROR("Can't create db file in \"%s\": %s\n", dirPath,
@@ -1051,7 +1066,7 @@ int checkDirectoryDB()
 
 	/* Path exists, now check if it's a regular file */
 	if (stat(dbFile, &st) < 0) {
-		ERROR("Error stat'ing db file \"%s\": %s\n", dbFile,
+		ERROR("Couldn't stat db file \"%s\": %s\n", dbFile,
 		      strerror(errno));
 		return -1;
 	}
