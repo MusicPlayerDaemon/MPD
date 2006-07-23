@@ -75,9 +75,9 @@ static int makeFifo(FifoData *fd)
 
 static int checkFifo(FifoData *fd)
 {
-	struct stat info;
+	struct stat st;
 
-	if (stat(fd->path, &info) < 0) {
+	if (stat(fd->path, &st) < 0) {
 		if (errno == ENOENT) {
 			/* Path doesn't exist */
 			return makeFifo(fd);
@@ -88,7 +88,7 @@ static int checkFifo(FifoData *fd)
 		return -1;
 	}
 
-	if (!S_ISFIFO(info.st_mode)) {
+	if (!S_ISFIFO(st.st_mode)) {
 		ERROR("\"%s\" already exists, but is not a FIFO\n", fd->path);
 		return -1;
 	}
@@ -131,11 +131,11 @@ static void removeFifo(FifoData *fd)
 
 static void closeFifo(FifoData *fd)
 {
-	struct stat info;
+	struct stat st;
 
 	if (fd->input >= 0) close(fd->input);
 	if (fd->output >= 0) close(fd->output);
-	if (fd->created && (stat(fd->path, &info) == 0)) removeFifo(fd);
+	if (fd->created && (stat(fd->path, &st) == 0)) removeFifo(fd);
 }
 
 static int fifo_initDriver(AudioOutput *audioOutput, ConfigParam *param)
