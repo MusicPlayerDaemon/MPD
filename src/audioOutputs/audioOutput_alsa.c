@@ -26,7 +26,10 @@
 #define ALSA_PCM_NEW_SW_PARAMS_API
 
 #define MPD_ALSA_BUFFER_TIME 500000
-#define MPD_ALSA_PERIOD_TIME 0
+/* the default period time of xmms is 50 ms, so let's use that as well.
+ * a user can tweak this parameter via the "period_time" config parameter.
+ */
+#define MPD_ALSA_PERIOD_TIME 50000
 #define MPD_ALSA_SAMPLE_XFER 256
 
 #include "../conf.h"
