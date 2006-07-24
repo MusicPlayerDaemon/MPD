@@ -27,7 +27,7 @@
 #include <stdlib.h>
 
 /* Added 4/14/2004 by AliasMrJones */
-static int replayGainState = REPLAYGAIN_OFF;
+int replayGainState = REPLAYGAIN_OFF;
 
 static float replayGainPreamp = 1.0;
 

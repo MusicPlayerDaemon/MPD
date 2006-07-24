@@ -115,7 +115,7 @@ int sendDataToOutputBuffer(OutputBuffer * cb, InputStream * inStream,
 				       &(cb->audioFormat), data);
 	}
 
-	if (replayGainInfo) {
+	if (replayGainInfo && (replayGainState != REPLAYGAIN_OFF)) {
 		doReplayGain(replayGainInfo, data, datalen, &cb->audioFormat);
 	} else if (normalEnable) {
 		normalizeData(data, datalen, &cb->audioFormat);

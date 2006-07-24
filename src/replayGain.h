@@ -26,6 +26,8 @@
 #define REPLAYGAIN_TRACK	1
 #define REPLAYGAIN_ALBUM	2
 
+extern int replayGainState;
+
 typedef struct _ReplayGainInfo {
 	float albumGain;
 	float albumPeak;
