@@ -553,6 +553,7 @@ int main(int argc, char *argv[])
 	initAudioConfig();
 	initAudioDriver();
 	initPlaylist();
+	openDB(&options, argv[0]);
 
 	daemonize(&options);
 
@@ -564,8 +565,6 @@ int main(int argc, char *argv[])
 	 */
 
 	initPermissions();
-
-	openDB(&options, argv[0]);
 
 	initCommands();
 	initVolume();
