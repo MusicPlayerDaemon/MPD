@@ -25,12 +25,12 @@
 #define ALSA_PCM_NEW_HW_PARAMS_API
 #define ALSA_PCM_NEW_SW_PARAMS_API
 
-#define MPD_ALSA_BUFFER_TIME 500000
+#define MPD_ALSA_BUFFER_TIME_US 500000
 /* the default period time of xmms is 50 ms, so let's use that as well.
  * a user can tweak this parameter via the "period_time" config parameter.
  */
-#define MPD_ALSA_PERIOD_TIME 50000
-#define MPD_ALSA_SAMPLE_XFER 256
+#define MPD_ALSA_PERIOD_TIME_US 50000
+#define MPD_ALSA_RETRY_NR 5
 
 #include "../conf.h"
 #include "../log.h"
@@ -65,8 +65,8 @@ static AlsaData *newAlsaData(void)
 	ret->pcmHandle = NULL;
 	ret->writei = snd_pcm_writei;
 	ret->useMmap = 0;
-	ret->buffer_time = MPD_ALSA_BUFFER_TIME;
-	ret->period_time = MPD_ALSA_PERIOD_TIME;
+	ret->buffer_time = MPD_ALSA_BUFFER_TIME_US;
+	ret->period_time = MPD_ALSA_PERIOD_TIME_US;
 
 	return ret;
 }
@@ -139,7 +139,9 @@ static int alsa_openDevice(AudioOutput * audioOutput)
 	snd_pcm_uframes_t alsa_buffer_size;
 	snd_pcm_uframes_t alsa_period_size;
 	int err;
-	char *cmd = NULL;
+	const char *cmd = NULL;
+	unsigned int period_time;
+	int retry = MPD_ALSA_RETRY_NR;
 
 	switch (audioFormat->bits) {
 	case 8:
@@ -155,7 +157,7 @@ static int alsa_openDevice(AudioOutput * audioOutput)
 		bitformat = SND_PCM_FORMAT_S32;
 		break;
 	default:
-		ERROR("Alsa device \"%s\" doesn't support %i bit audio\n",
+		ERROR("ALSA device \"%s\" doesn't support %i bit audio\n",
 		      ad->device, audioFormat->bits);
 		return -1;
 	}
@@ -173,6 +175,7 @@ static int alsa_openDevice(AudioOutput * audioOutput)
 	if (err < 0)
 		goto error;
 
+configure_hw:
 	/* configure HW params */
 	snd_pcm_hw_params_alloca(&hwparams);
 
@@ -204,7 +207,7 @@ static int alsa_openDevice(AudioOutput * audioOutput)
 
 	err = snd_pcm_hw_params_set_format(ad->pcmHandle, hwparams, bitformat);
 	if (err < 0) {
-		ERROR("Alsa device \"%s\" does not support %i bit audio: "
+		ERROR("ALSA device \"%s\" does not support %i bit audio: "
 		      "%s\n", ad->device, (int)bitformat, snd_strerror(-err));
 		goto fail;
 	}
@@ -212,7 +215,7 @@ static int alsa_openDevice(AudioOutput * audioOutput)
 	err = snd_pcm_hw_params_set_channels_near(ad->pcmHandle, hwparams,
 						  &channels);
 	if (err < 0) {
-		ERROR("Alsa device \"%s\" does not support %i channels: "
+		ERROR("ALSA device \"%s\" does not support %i channels: "
 		      "%s\n", ad->device, (int)audioFormat->channels,
 		      snd_strerror(-err));
 		goto fail;
@@ -222,7 +225,7 @@ static int alsa_openDevice(AudioOutput * audioOutput)
 	err = snd_pcm_hw_params_set_rate_near(ad->pcmHandle, hwparams,
 					      &sampleRate, NULL);
 	if (err < 0 || sampleRate == 0) {
-		ERROR("Alsa device \"%s\" does not support %i Hz audio\n",
+		ERROR("ALSA device \"%s\" does not support %i Hz audio\n",
 		      ad->device, (int)audioFormat->sampleRate);
 		goto fail;
 	}
@@ -234,8 +237,7 @@ static int alsa_openDevice(AudioOutput * audioOutput)
 	if (err < 0)
 		goto error;
 
-	if (!ad->period_time && sampleRate > 0)
-		ad->period_time = 1000000 * MPD_ALSA_SAMPLE_XFER / sampleRate;
+	period_time = ad->period_time;
 	cmd = "snd_pcm_hw_params_set_period_time_near";
 	err = snd_pcm_hw_params_set_period_time_near(ad->pcmHandle, hwparams,
 						     &ad->period_time, NULL);
@@ -244,8 +246,13 @@ static int alsa_openDevice(AudioOutput * audioOutput)
 
 	cmd = "snd_pcm_hw_params";
 	err = snd_pcm_hw_params(ad->pcmHandle, hwparams);
-	if (err < 0)
+	if (err == -EPIPE && --retry > 0) {
+		ad->period_time = period_time >> 1;
+		goto configure_hw;
+	} else if (err < 0)
 		goto error;
+	if (retry != MPD_ALSA_RETRY_NR)
+		DEBUG("ALSA period_time set to %d\n", ad->period_time);
 
 	cmd = "snd_pcm_hw_params_get_buffer_size";
 	err = snd_pcm_hw_params_get_buffer_size(hwparams, &alsa_buffer_size);
