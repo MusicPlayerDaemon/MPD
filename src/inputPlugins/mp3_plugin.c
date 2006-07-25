@@ -433,24 +433,24 @@ static int decodeNextFrame(mp3DecodeData * data)
 #define FO_MAGIC (('f' << 8) | 'o')
 
 enum xing_magic {
-	XING_MAGIC_XING,	/* VBR */
-	XING_MAGIC_INFO,	/* CBR */
+	XING_MAGIC_XING, /* VBR */
+	XING_MAGIC_INFO, /* CBR */
 };
 
 struct xing {
-	long flags;	/* valid fields (see below) */
-	unsigned long frames;	/* total number of frames */
-	unsigned long bytes;	/* total number of bytes */
-	unsigned char toc[100];	/* 100-point seek table */
-	long scale;	/* VBR quality */
-	enum xing_magic magic;	/* header magic */
+	long flags;             /* valid fields (see below) */
+	unsigned long frames;   /* total number of frames */
+	unsigned long bytes;    /* total number of bytes */
+	unsigned char toc[100]; /* 100-point seek table */
+	long scale;             /* VBR quality */
+	enum xing_magic magic;  /* header magic */
 };
 
 enum {
 	XING_FRAMES = 0x00000001L,
-	XING_BYTES = 0x00000002L,
-	XING_TOC = 0x00000004L,
-	XING_SCALE = 0x00000008L
+	XING_BYTES  = 0x00000002L,
+	XING_TOC    = 0x00000004L,
+	XING_SCALE  = 0x00000008L,
 };
 
 static int parse_xing(struct xing *xing, struct mad_bitptr *ptr, int bitlen)
@@ -462,62 +462,49 @@ static int parse_xing(struct xing *xing, struct mad_bitptr *ptr, int bitlen)
 
 	oldbitlen = bitlen;
 
-	if (bitlen < 16)
-		goto fail;
+	if (bitlen < 16) goto fail;
 	bits = mad_bit_read(ptr, 16);
 	bitlen -= 16;
 
 	if (bits == XI_MAGIC) {
-		if (bitlen < 16)
-			goto fail;
-		if (mad_bit_read(ptr, 16) != NG_MAGIC)
-			goto fail;
+		if (bitlen < 16) goto fail;
+		if (mad_bit_read(ptr, 16) != NG_MAGIC) goto fail;
 		bitlen -= 16;
 		xing->magic = XING_MAGIC_XING;
 	} else if (bits == IN_MAGIC) {
-		if (bitlen < 16)
-			goto fail;
-		if (mad_bit_read(ptr, 16) != FO_MAGIC)
-			goto fail;
+		if (bitlen < 16) goto fail;
+		if (mad_bit_read(ptr, 16) != FO_MAGIC) goto fail;
 		bitlen -= 16;
 		xing->magic = XING_MAGIC_INFO;
-	} else if (bits == NG_MAGIC)
-		xing->magic = XING_MAGIC_XING;
-	else if (bits == FO_MAGIC)
-		xing->magic = XING_MAGIC_INFO;
-	else
-		goto fail;
+	}
+	else if (bits == NG_MAGIC) xing->magic = XING_MAGIC_XING;
+	else if (bits == FO_MAGIC) xing->magic = XING_MAGIC_INFO;
+	else goto fail;
 
-	if (bitlen < 32)
-		goto fail;
+	if (bitlen < 32) goto fail;
 	xing->flags = mad_bit_read(ptr, 32);
 	bitlen -= 32;
 
 	if (xing->flags & XING_FRAMES) {
-		if (bitlen < 32)
-			goto fail;
+		if (bitlen < 32) goto fail;
 		xing->frames = mad_bit_read(ptr, 32);
 		bitlen -= 32;
 	}
 
 	if (xing->flags & XING_BYTES) {
-		if (bitlen < 32)
-			goto fail;
+		if (bitlen < 32) goto fail;
 		xing->bytes = mad_bit_read(ptr, 32);
 		bitlen -= 32;
 	}
 
 	if (xing->flags & XING_TOC) {
-		if (bitlen < 800)
-			goto fail;
-		for (i = 0; i < 100; ++i)
-			xing->toc[i] = mad_bit_read(ptr, 8);
+		if (bitlen < 800) goto fail;
+		for (i = 0; i < 100; ++i) xing->toc[i] = mad_bit_read(ptr, 8);
 		bitlen -= 800;
 	}
 
 	if (xing->flags & XING_SCALE) {
-		if (bitlen < 32)
-			goto fail;
+		if (bitlen < 32) goto fail;
 		xing->scale = mad_bit_read(ptr, 32);
 		bitlen -= 32;
 	}
@@ -525,8 +512,7 @@ static int parse_xing(struct xing *xing, struct mad_bitptr *ptr, int bitlen)
 	/* Make sure we consume no less than 120 bytes (960 bits) in hopes that
 	 * the LAME tag is found there, and not right after the Xing header */
 	bitsleft = 960 - (oldbitlen - bitlen);
-	if (bitsleft < 0)
-		goto fail;
+	if (bitsleft < 0) goto fail;
 	else if (bitsleft > 0) {
 		mad_bit_read(ptr, bitsleft);
 		bitlen -= bitsleft;
@@ -538,18 +524,17 @@ static int parse_xing(struct xing *xing, struct mad_bitptr *ptr, int bitlen)
 	return -1;
 }
 
-static int parse_extension_headers(struct xing *xing, struct mad_bitptr ptr,
-				   int bitlen)
+static int parse_extensions(struct xing *xing, struct mad_bitptr ptr,
+                            int bitlen)
 {
 	bitlen = parse_xing(xing, &ptr, bitlen);
-	if (bitlen < 0)
-		return 0;
+	if (bitlen < 0) return 0;
 
 	return 1;
 }
 
 static int decodeFirstFrame(mp3DecodeData * data, DecoderControl * dc,
-			    MpdTag ** tag, ReplayGainInfo ** replayGainInfo)
+                            MpdTag ** tag, ReplayGainInfo ** replayGainInfo)
 {
 	struct xing xing;
 	int ret;
@@ -560,55 +545,46 @@ static int decodeFirstFrame(mp3DecodeData * data, DecoderControl * dc,
 
 	while (1) {
 		skip = 0;
-		while ((ret =
-			decodeNextFrameHeader(data, tag,
-					      replayGainInfo)) == DECODE_CONT
-		       && (!dc || !dc->stop)) ;
-		if (ret == DECODE_SKIP)
-			skip = 1;
-		else if (ret == DECODE_BREAK || (dc && dc->stop))
-			return -1;
+		while ((ret = decodeNextFrameHeader(data, tag, replayGainInfo)) == DECODE_CONT &&
+		       (!dc || !dc->stop));
+
+		if (ret == DECODE_SKIP) skip = 1;
+		else if (ret == DECODE_BREAK || (dc && dc->stop)) return -1;
+
 		while ((ret = decodeNextFrame(data)) == DECODE_CONT &&
-		       (!dc || !dc->stop)) ;
-		if (ret == DECODE_BREAK || (dc && dc->stop))
-			return -1;
-		if (!skip && ret == DECODE_OK)
-			break;
+		       (!dc || !dc->stop));
+
+		if (ret == DECODE_BREAK || (dc && dc->stop)) return -1;
+		if (!skip && ret == DECODE_OK) break;
 	}
 
-	if (parse_extension_headers(&xing, data->stream.anc_ptr,
-				    (int)data->stream.anc_bitlen)) {
+	if (parse_extensions(&xing, data->stream.anc_ptr,
+	                     (int)data->stream.anc_bitlen)) {
 		if (xing.flags & XING_FRAMES) {
 			mad_timer_t duration = data->frame.header.duration;
 			mad_timer_multiply(&duration, xing.frames);
 			data->muteFrame = MUTEFRAME_SKIP;
-			data->totalTime = ((float)mad_timer_count(duration,
-								  MAD_UNITS_MILLISECONDS))
-			    / 1000;
+			data->totalTime = ((float)mad_timer_count(duration, MAD_UNITS_MILLISECONDS)) / 1000;
 			data->maxFrames = xing.frames;
 		}
 	} else {
 		size_t offset = data->inStream->offset;
 		mad_timer_t duration = data->frame.header.duration;
-		float frameTime = ((float)mad_timer_count(duration,
-							  MAD_UNITS_MILLISECONDS))
-		    / 1000;
-		if (data->stream.this_frame != NULL) {
+		float frameTime = ((float)mad_timer_count(duration, MAD_UNITS_MILLISECONDS)) / 1000;
+
+		if (data->stream.this_frame != NULL)
 			offset -= data->stream.bufend - data->stream.this_frame;
-		} else {
+		else
 			offset -= data->stream.bufend - data->stream.buffer;
-		}
+
 		if (data->inStream->size >= offset) {
-			data->totalTime =
-			    ((data->inStream->size -
-			      offset) * 8.0) / (data->frame).header.bitrate;
-			data->maxFrames =
-			    data->totalTime / frameTime + FRAMES_CUSHION;
+			data->totalTime = ((data->inStream->size - offset) * 8.0) / (data->frame).header.bitrate;
+			data->maxFrames = data->totalTime / frameTime + FRAMES_CUSHION;
 		} else {
 			data->maxFrames = FRAMES_CUSHION;
 			data->totalTime = 0;
 		}
-	}
+	} 
 
 	data->frameOffset = malloc(sizeof(long) * data->maxFrames);
 	data->times = malloc(sizeof(mad_timer_t) * data->maxFrames);
@@ -622,10 +598,8 @@ static void mp3DecodeDataFinalize(mp3DecodeData * data)
 	mad_frame_finish(&data->frame);
 	mad_stream_finish(&data->stream);
 
-	if (data->frameOffset)
-		free(data->frameOffset);
-	if (data->times)
-		free(data->times);
+	if (data->frameOffset) free(data->frameOffset);
+	if (data->times) free(data->times);
 }
 
 /* this is primarily used for getting total time for tags */
