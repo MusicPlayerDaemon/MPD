@@ -455,6 +455,18 @@ enum {
 	XING_SCALE  = 0x00000008L,
 };
 
+struct lame {
+	char encoder[10];   /* 9 byte encoder name/version ("LAME3.97b") */
+#if 0
+	/* See related comment in parse_lame() */
+	float peak;         /* replaygain peak */
+	float trackGain;    /* replaygain track gain */
+	float albumGain;    /* replaygain album gain */
+#endif
+	int encoderDelay;   /* # of added samples at start of mp3 */
+	int encoderPadding; /* # of added samples at end of mp3 */
+};
+
 static int parse_xing(struct xing *xing, struct mad_bitptr *ptr, int *oldbitlen)
 {
 	unsigned long bits;
@@ -528,13 +540,67 @@ static int parse_xing(struct xing *xing, struct mad_bitptr *ptr, int *oldbitlen)
 	return 0;
 }
 
+static int parse_lame(struct lame *lame, struct mad_bitptr *ptr, int *bitlen)
+{
+	int i;
+
+	/* Unlike the xing header, the lame tag has a fixed length.  Fail if
+	 * not all 36 bytes (288 bits) are there. */
+	if (*bitlen < 288) return 0;
+
+	for (i = 0; i < 9; i++) lame->encoder[i] = (char)mad_bit_read(ptr, 8);
+	lame->encoder[9] = '\0';
+
+	/* This is technically incorrect, since the encoder might not be lame.
+	 * But there's no other way to determine if this is a lame tag, and we
+	 * wouldn't want to go reading a tag that's not there. */
+	if (strncmp(lame->encoder, "LAME", 4) != 0) return 0;
+
+#if 0
+	/* Apparently lame versions <3.97b1 do not calculate replaygain.  I'm
+	 * using lame 3.97b2, and while it does calculate replaygain, it's
+	 * setting the values to 0.  Using --replaygain-(fast|accurate) doesn't
+	 * make any difference.  Leaving this code unused until we have a way
+	 * of testing it. -- jat */
+
+	mad_bit_read(ptr, 16);
+
+	mad_bit_read(ptr, 32); /* peak */
+
+	mad_bit_read(ptr, 6); /* header */
+	bits = mad_bit_read(ptr, 1); /* sign bit */
+	lame->trackGain = mad_bit_read(ptr, 9); /* gain*10 */
+	lame->trackGain = (bits ? -lame->trackGain : lame->trackGain) / 10;
+
+	mad_bit_read(ptr, 6); /* header */
+	bits = mad_bit_read(ptr, 1); /* sign bit */
+	lame->albumGain = mad_bit_read(ptr, 9); /* gain*10 */
+	lame->albumGain = (bits ? -lame->albumGain : lame->albumGain) / 10;
+
+	mad_bit_read(ptr, 16);
+#else
+	mad_bit_read(ptr, 96);
+#endif
+
+	lame->encoderDelay = mad_bit_read(ptr, 12);
+	lame->encoderPadding = mad_bit_read(ptr, 12);
+
+	mad_bit_read(ptr, 96);
+
+	*bitlen -= 288;
+
+	return 1;
+}
+
 static int decodeFirstFrame(mp3DecodeData * data, DecoderControl * dc,
                             MpdTag ** tag, ReplayGainInfo ** replayGainInfo)
 {
 	struct xing xing;
+	struct lame lame;
 	struct mad_bitptr ptr;
 	int bitlen;
 	int found_xing;
+	int found_lame;
 	int ret;
 	int skip;
 
@@ -557,6 +623,7 @@ static int decodeFirstFrame(mp3DecodeData * data, DecoderControl * dc,
 	bitlen = data->stream.anc_bitlen;
 
 	found_xing = parse_xing(&xing, &ptr, &bitlen);
+	found_lame = (found_xing ? parse_lame(&lame, &ptr, &bitlen) : 0);
 
 	if (found_xing) {
 		if (xing.flags & XING_FRAMES) {
