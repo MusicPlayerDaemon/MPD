@@ -378,7 +378,10 @@ static int decodeNextFrameHeader(mp3DecodeData * data, MpdTag ** tag,
 			}
 		}
 	}
-	if (data->frame.header.layer != MAD_LAYER_III) {
+	if ((data->frame.header.layer != MAD_LAYER_III) &&
+	    (data->frame.header.layer != MAD_LAYER_II) &&
+	    (data->frame.header.layer != MAD_LAYER_I)) {
+		DEBUG("HERE 1\n");
 		return DECODE_SKIP;
 	}
 
@@ -923,7 +926,7 @@ static MpdTag *mp3_tagDup(char *file)
 	return ret;
 }
 
-static char *mp3_suffixes[] = { "mp3", NULL };
+static char *mp3_suffixes[] = { "mp3", "mp2", NULL };
 static char *mp3_mimeTypes[] = { "audio/mpeg", NULL };
 
 InputPlugin mp3Plugin = {
