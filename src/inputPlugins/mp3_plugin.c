@@ -557,9 +557,7 @@ static int decodeFirstFrame(mp3DecodeData * data, DecoderControl * dc,
 	found_xing = parse_xing(&xing, &ptr, &bitlen);
 
 	if (found_xing) {
-		DEBUG("yay xing works!\n");
 		if (xing.flags & XING_FRAMES) {
-			DEBUG("yay we got frames from xing!\n");
 			mad_timer_t duration = data->frame.header.duration;
 			mad_timer_multiply(&duration, xing.frames);
 			data->muteFrame = MUTEFRAME_SKIP;
