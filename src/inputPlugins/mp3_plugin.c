@@ -453,14 +453,14 @@ enum {
 	XING_SCALE  = 0x00000008L,
 };
 
-static int parse_xing(struct xing *xing, struct mad_bitptr *ptr, int bitlen)
+static int parse_xing(struct xing *xing, struct mad_bitptr *ptr, int *oldbitlen)
 {
 	unsigned long bits;
-	int oldbitlen;
+	int bitlen;
 	int bitsleft;
 	int i;
 
-	oldbitlen = bitlen;
+	bitlen = *oldbitlen;
 
 	if (bitlen < 16) goto fail;
 	bits = mad_bit_read(ptr, 16);
@@ -511,37 +511,30 @@ static int parse_xing(struct xing *xing, struct mad_bitptr *ptr, int bitlen)
 
 	/* Make sure we consume no less than 120 bytes (960 bits) in hopes that
 	 * the LAME tag is found there, and not right after the Xing header */
-	bitsleft = 960 - (oldbitlen - bitlen);
+	bitsleft = 960 - ((*oldbitlen) - bitlen);
 	if (bitsleft < 0) goto fail;
 	else if (bitsleft > 0) {
 		mad_bit_read(ptr, bitsleft);
 		bitlen -= bitsleft;
 	}
 
-	return bitlen;
-      fail:
-	xing->flags = 0;
-	return -1;
-}
-
-static int parse_extensions(struct xing *xing, struct mad_bitptr ptr,
-                            int bitlen)
-{
-	bitlen = parse_xing(xing, &ptr, bitlen);
-	if (bitlen < 0) return 0;
+	*oldbitlen = bitlen;
 
 	return 1;
+      fail:
+	xing->flags = 0;
+	return 0;
 }
 
 static int decodeFirstFrame(mp3DecodeData * data, DecoderControl * dc,
                             MpdTag ** tag, ReplayGainInfo ** replayGainInfo)
 {
 	struct xing xing;
+	struct mad_bitptr ptr;
+	int bitlen;
+	int found_xing;
 	int ret;
 	int skip;
-
-	memset(&xing, 0, sizeof(struct xing));
-	xing.flags = 0;
 
 	while (1) {
 		skip = 0;
@@ -558,9 +551,15 @@ static int decodeFirstFrame(mp3DecodeData * data, DecoderControl * dc,
 		if (!skip && ret == DECODE_OK) break;
 	}
 
-	if (parse_extensions(&xing, data->stream.anc_ptr,
-	                     (int)data->stream.anc_bitlen)) {
+	ptr = data->stream.anc_ptr;
+	bitlen = data->stream.anc_bitlen;
+
+	found_xing = parse_xing(&xing, &ptr, &bitlen);
+
+	if (found_xing) {
+		DEBUG("yay xing works!\n");
 		if (xing.flags & XING_FRAMES) {
+			DEBUG("yay we got frames from xing!\n");
 			mad_timer_t duration = data->frame.header.duration;
 			mad_timer_multiply(&duration, xing.frames);
 			data->muteFrame = MUTEFRAME_SKIP;
