@@ -381,7 +381,6 @@ static int decodeNextFrameHeader(mp3DecodeData * data, MpdTag ** tag,
 	if ((data->frame.header.layer != MAD_LAYER_III) &&
 	    (data->frame.header.layer != MAD_LAYER_II) &&
 	    (data->frame.header.layer != MAD_LAYER_I)) {
-		DEBUG("HERE 1\n");
 		return DECODE_SKIP;
 	}
 
