@@ -17,7 +17,7 @@
  */
 
 #ifndef PCM_UTILS_H
-#define PMC_UTILS_H
+#define PCM_UTILS_H
 
 #include "../config.h"
 
