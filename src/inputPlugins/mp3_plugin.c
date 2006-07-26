@@ -52,6 +52,9 @@
 #define MUTEFRAME_SKIP          1
 #define MUTEFRAME_SEEK          2
 
+/* the number of samples of silence the decoder inserts at start */
+#define DECODERDELAY 529
+
 /* this is stolen from mpg321! */
 struct audio_dither {
 	mad_fixed_t error[3];
@@ -131,6 +134,12 @@ typedef struct _mp3DecodeData {
 	long highestFrame;
 	long maxFrames;
 	long currentFrame;
+	int dropFramesAtStart;
+	int dropFramesAtEnd;
+	int dropSamplesAtStart;
+	int dropSamplesAtEnd;
+	int foundFirstFrame;
+	int decodedFirstFrame;
 	int flush;
 	unsigned long bitRate;
 	InputStream *inStream;
@@ -148,6 +157,12 @@ static void initMp3DecodeData(mp3DecodeData * data, InputStream * inStream)
 	data->frameOffset = NULL;
 	data->times = NULL;
 	data->currentFrame = 0;
+	data->dropFramesAtStart = 0;
+	data->dropFramesAtEnd = 0;
+	data->dropSamplesAtStart = 0;
+	data->dropSamplesAtEnd = 0;
+	data->foundFirstFrame = 0;
+	data->decodedFirstFrame = 0;
 	data->flush = 1;
 	data->inStream = inStream;
 	memset(&(data->dither), 0, sizeof(struct audio_dither));
@@ -625,6 +640,11 @@ static int decodeFirstFrame(mp3DecodeData * data, DecoderControl * dc,
 	found_xing = parse_xing(&xing, &ptr, &bitlen);
 	found_lame = (found_xing ? parse_lame(&lame, &ptr, &bitlen) : 0);
 
+	if (found_lame) {
+		data->dropSamplesAtStart = lame.encoderDelay + DECODERDELAY;
+		data->dropSamplesAtEnd = lame.encoderPadding;
+	}
+
 	if (found_xing) {
 		if (xing.flags & XING_FRAMES) {
 			mad_timer_t duration = data->frame.header.duration;
@@ -707,6 +727,8 @@ static int openMp3FromInputStream(InputStream * inStream, mp3DecodeData * data,
 static int mp3Read(mp3DecodeData * data, OutputBuffer * cb, DecoderControl * dc,
 		   ReplayGainInfo ** replayGainInfo)
 {
+	int samplesPerFrame;
+	int samplesLeft;
 	int i;
 	int ret;
 	int skip;
@@ -749,6 +771,24 @@ static int mp3Read(mp3DecodeData * data, OutputBuffer * cb, DecoderControl * dc,
 	default:
 		mad_synth_frame(&data->synth, &data->frame);
 
+		if (!data->foundFirstFrame) {
+			samplesPerFrame = (data->synth).pcm.length;
+			data->dropFramesAtStart = data->dropSamplesAtStart / samplesPerFrame;
+			data->dropFramesAtEnd = data->dropSamplesAtEnd / samplesPerFrame;
+			data->dropSamplesAtStart = data->dropSamplesAtStart % samplesPerFrame;
+			data->dropSamplesAtEnd = data->dropSamplesAtEnd % samplesPerFrame;
+			data->foundFirstFrame = 1;
+		}
+
+		if (data->dropFramesAtStart > 0) {
+			data->dropFramesAtStart--;
+			break;
+		} else if ((data->dropFramesAtEnd > 0) && 
+		           (data->currentFrame == (data->maxFrames + 1 - data->dropFramesAtEnd))) {
+			data->dropFramesAtEnd--;
+			break;
+		}
+
 		if (data->inStream->metaTitle) {
 			MpdTag *tag = newMpdTag();
 			if (data->inStream->metaName) {
@@ -764,8 +804,19 @@ static int mp3Read(mp3DecodeData * data, OutputBuffer * cb, DecoderControl * dc,
 			freeMpdTag(tag);
 		}
 
+		samplesLeft = (data->synth).pcm.length;
+
 		for (i = 0; i < (data->synth).pcm.length; i++) {
 			mpd_sint16 *sample;
+
+			if (!data->decodedFirstFrame &&
+			    (i < data->dropSamplesAtStart)) {
+				continue;
+			} else if (data->dropSamplesAtEnd &&
+			           (data->currentFrame == (data->maxFrames - data->dropFramesAtEnd))) {
+				samplesLeft--;
+				if (samplesLeft < data->dropSamplesAtEnd) break;
+			}
 
 			sample = (mpd_sint16 *) data->outputPtr;
 			*sample = (mpd_sint16) audio_linear_dither(16,
@@ -820,6 +871,8 @@ static int mp3Read(mp3DecodeData * data, OutputBuffer * cb, DecoderControl * dc,
 					break;
 			}
 		}
+
+		data->decodedFirstFrame = 1;
 
 		if (dc->seek && data->inStream->seekable) {
 			long i = 0;
