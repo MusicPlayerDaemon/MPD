@@ -617,7 +617,9 @@ static int decodeFirstFrame(mp3DecodeData * data, DecoderControl * dc,
 	int ret;
 	int skip;
 
-	xing.flags = 0; /* stfu gcc */
+	/* stfu gcc */
+	memset(&xing, 0, sizeof(struct xing));
+	xing.flags = 0;
 
 	while (1) {
 		skip = 0;
