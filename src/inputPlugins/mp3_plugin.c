@@ -617,6 +617,8 @@ static int decodeFirstFrame(mp3DecodeData * data, DecoderControl * dc,
 	int ret;
 	int skip;
 
+	xing.flags = 0; /* stfu gcc */
+
 	while (1) {
 		skip = 0;
 		while ((ret = decodeNextFrameHeader(data, tag, replayGainInfo)) == DECODE_CONT &&
