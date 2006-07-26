@@ -28,12 +28,13 @@
 #include "../outputBuffer.h"
 #include "../decode.h"
 
+#include "../mp4ff/mp4ff.h"
+
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
 #include <faad.h>
-#include <mp4ff.h>
 
 /* all code here is either based on or copied from FAAD2's frontend code */
 
@@ -45,7 +46,7 @@ static int mp4_getAACTrack(mp4ff_t * infile)
 
 	for (i = 0; i < numTracks; i++) {
 		unsigned char *buff = NULL;
-		unsigned int *buff_size = 0;
+		int buff_size = 0;
 #ifdef HAVE_MP4AUDIOSPECIFICCONFIG
 		mp4AudioSpecificConfig mp4ASC;
 #else
@@ -54,11 +55,11 @@ static int mp4_getAACTrack(mp4ff_t * infile)
 		    dummy7_8, dummy8_8;
 #endif
 
-		mp4ff_get_decoder_config(infile, i, &buff, buff_size);
+		mp4ff_get_decoder_config(infile, i, &buff, &buff_size);
 
 		if (buff) {
 #ifdef HAVE_MP4AUDIOSPECIFICCONFIG
-			rc = AudioSpecificConfig(buff, *buff_size, &mp4ASC);
+			rc = AudioSpecificConfig(buff, buff_size, &mp4ASC);
 #else
 			rc = AudioSpecificConfig(buff, &dummy1_32, &dummy2_8,
 						 &dummy3_8, &dummy4_8,
@@ -87,24 +88,6 @@ static uint32_t mp4_inputStreamSeekCallback(void *inStream, uint64_t position)
 	return seekInputStream((InputStream *) inStream, position, SEEK_SET);
 }
 
-static faacDecHandle *openConfigureFaad()
-{
-	faacDecConfigurationPtr config;
-	faacDecHandle decoder = faacDecOpen();
-
-	config = faacDecGetCurrentConfiguration(decoder);
-	config->outputFormat = FAAD_FMT_16BIT;
-#ifdef HAVE_FAACDECCONFIGURATION_DOWNMATRIX
-	config->downMatrix = 1;
-#endif
-#ifdef HAVE_FAACDECCONFIGURATION_DONTUPSAMPLEIMPLICITSBR
-	config->dontUpSampleImplicitSBR = 0;
-#endif
-	faacDecSetConfiguration(decoder, config);
-
-	return decoder;
-}
-
 static int mp4_decode(OutputBuffer * cb, DecoderControl * dc, char *path)
 {
 	mp4ff_t *mp4fh;
@@ -112,11 +95,12 @@ static int mp4_decode(OutputBuffer * cb, DecoderControl * dc, char *path)
 	int32_t track;
 	float time;
 	int32_t scale;
-	faacDecHandle *decoder;
+	faacDecHandle decoder;
 	faacDecFrameInfo frameInfo;
+	faacDecConfigurationPtr config;
 	unsigned char *mp4Buffer;
-	unsigned int mp4BufferSize;
-	uint32_t sampleRate;
+	int mp4BufferSize;
+	unsigned long sampleRate;
 	unsigned char channels;
 	long sampleId;
 	long numSamples;
@@ -161,7 +145,17 @@ static int mp4_decode(OutputBuffer * cb, DecoderControl * dc, char *path)
 		return -1;
 	}
 
-	decoder = openConfigureFaad();
+	decoder = faacDecOpen();
+
+	config = faacDecGetCurrentConfiguration(decoder);
+	config->outputFormat = FAAD_FMT_16BIT;
+#ifdef HAVE_FAACDECCONFIGURATION_DOWNMATRIX
+	config->downMatrix = 1;
+#endif
+#ifdef HAVE_FAACDECCONFIGURATION_DONTUPSAMPLEIMPLICITSBR
+	config->dontUpSampleImplicitSBR = 0;
+#endif
+	faacDecSetConfiguration(decoder, config);
 
 	dc->audioFormat.bits = 16;
 
@@ -170,8 +164,7 @@ static int mp4_decode(OutputBuffer * cb, DecoderControl * dc, char *path)
 	mp4ff_get_decoder_config(mp4fh, track, &mp4Buffer, &mp4BufferSize);
 
 	if (faacDecInit2
-	    (decoder, mp4Buffer, mp4BufferSize, &sampleRate, &channels)
-	    < 0) {
+	    (decoder, mp4Buffer, mp4BufferSize, &sampleRate, &channels) < 0) {
 		ERROR("Error not a AAC stream.\n");
 		faacDecClose(decoder);
 		mp4ff_close(mp4fh);
@@ -321,9 +314,11 @@ static int mp4_decode(OutputBuffer * cb, DecoderControl * dc, char *path)
 	}
 	flushOutputBuffer(cb);
 
-	if (dc->stop)
+	if (dc->stop) {
+		dc->state = DECODE_STATE_STOP;
 		dc->stop = 0;
-	dc->state = DECODE_STATE_STOP;
+	} else
+		dc->state = DECODE_STATE_STOP;
 
 	return 0;
 }
