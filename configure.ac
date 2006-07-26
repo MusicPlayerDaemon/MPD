@@ -69,7 +69,6 @@ AC_ARG_ENABLE(sun,[  --disable-sun           disable sun support (default: enabl
 AC_ARG_ENABLE(oss,[  --disable-oss           disable OSS support (default: enable)],[enable_oss=$enableval],[enable_oss=yes])
 AC_ARG_ENABLE(alsa,[  --disable-alsa          disable ALSA support (default: enable)],[enable_alsa=$enableval],[enable_alsa=yes])
 AC_ARG_ENABLE(pulse,[  --disable-pulse         disable support for the PulseAudio sound server (default: enable)],[enable_pulse=$enableval],[enable_pulse=yes])
-AC_ARG_ENABLE(fifo,[  --enable-fifo           enable support for writing audio to a FIFO (default: disable)],[enable_fifo=$enableval],[enable_fifo=no])
 AC_ARG_ENABLE(mvp,[  --enable-mvp            enable support for Hauppauge Media MVP (default: disable)],[enable_mvp=$enableval],[enable_mvp=no])
 AC_ARG_ENABLE(oggvorbis,[  --disable-oggvorbis     disable Ogg Vorbis support (default: enable)],[enable_oggvorbis=$enableval],enable_oggvorbis=yes)
 AC_ARG_ENABLE(oggflac,[  --disable-oggflac       disable OggFLAC support (default: enable)],[enable_oggflac=$enableval],enable_oggflac=yes)
@@ -177,12 +176,6 @@ if test x$enable_pulse = xyes; then
 	PKG_CHECK_MODULES([PULSE], [libpulse-simple],
 	                  [enable_pulse=yes;AC_DEFINE([HAVE_PULSE], 1, [Define to enable PulseAudio])] MPD_LIBS="$MPD_LIBS $PULSE_LIBS" MPD_CFLAGS="$MPD_CFLAGS $PULSE_CFLAGS",
 	                  [enable_pulse=no;AC_MSG_WARN([PulseAudio not found -- disabling])])
-fi
-
-if test x$enable_fifo = xyes; then
-	AC_CHECK_FUNC([mkfifo],
-	              [enable_fifo=yes;AC_DEFINE([HAVE_FIFO], 1, [Define to enable support for writing audio to a FIFO])],
-		      [enable_fifo=no;AC_MSG_WARN([mkfifo not found -- disabling support for writing audio to a FIFO])])
 fi
 
 if test x$enable_mvp = xyes; then
@@ -679,12 +672,6 @@ else
 	echo " PulseAudio support ............disabled"
 fi
 
-if test x$enable_fifo = xyes; then
-	echo " FIFO support ..................enabled"
-else
-	echo " FIFO support ..................disabled"
-fi
-
 if test x$enable_mvp = xyes; then
 	echo " Media MVP support .............enabled"
 else
@@ -706,7 +693,6 @@ if test x$enable_ao = xno &&
    test x$enable_alsa = xno &&
    test x$enable_osx = xno &&
    test x$enable_pulse = xno &&
-   test x$enable_fifo = xno &&
    test x$enable_mvp = xno; then
 	AC_MSG_ERROR("No Audio Output types configured!")
 fi
