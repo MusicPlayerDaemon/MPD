@@ -646,10 +646,11 @@ static int decodeFirstFrame(mp3DecodeData * data, DecoderControl * dc,
 	}
 
 	if (found_xing) {
+		data->muteFrame = MUTEFRAME_SKIP;
+
 		if (xing.flags & XING_FRAMES) {
 			mad_timer_t duration = data->frame.header.duration;
 			mad_timer_multiply(&duration, xing.frames);
-			data->muteFrame = MUTEFRAME_SKIP;
 			data->totalTime = ((float)mad_timer_count(duration, MAD_UNITS_MILLISECONDS)) / 1000;
 			data->maxFrames = xing.frames;
 		}
