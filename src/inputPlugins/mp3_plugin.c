@@ -614,8 +614,6 @@ static int decodeFirstFrame(mp3DecodeData * data, DecoderControl * dc,
 	struct lame lame;
 	struct mad_bitptr ptr;
 	int bitlen;
-	int found_xing;
-	int found_lame;
 	int ret;
 	int skip;
 
@@ -637,16 +635,13 @@ static int decodeFirstFrame(mp3DecodeData * data, DecoderControl * dc,
 	ptr = data->stream.anc_ptr;
 	bitlen = data->stream.anc_bitlen;
 
-	found_xing = parse_xing(&xing, &ptr, &bitlen);
-	found_lame = (found_xing ? parse_lame(&lame, &ptr, &bitlen) : 0);
-
-	if (found_lame) {
-		data->dropSamplesAtStart = lame.encoderDelay + DECODERDELAY;
-		data->dropSamplesAtEnd = lame.encoderPadding;
-	}
-
-	if (found_xing) {
+	if (parse_xing(&xing, &ptr, &bitlen)) {
 		data->muteFrame = MUTEFRAME_SKIP;
+
+		if (parse_lame(&lame, &ptr, &bitlen) : 0)
+			data->dropSamplesAtStart = lame.encoderDelay + DECODERDELAY;
+			data->dropSamplesAtEnd = lame.encoderPadding;
+		}
 
 		if (xing.flags & XING_FRAMES) {
 			mad_timer_t duration = data->frame.header.duration;
