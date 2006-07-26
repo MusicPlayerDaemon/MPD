@@ -638,7 +638,7 @@ static int decodeFirstFrame(mp3DecodeData * data, DecoderControl * dc,
 	if (parse_xing(&xing, &ptr, &bitlen)) {
 		data->muteFrame = MUTEFRAME_SKIP;
 
-		if (parse_lame(&lame, &ptr, &bitlen) : 0)
+		if (parse_lame(&lame, &ptr, &bitlen)) {
 			data->dropSamplesAtStart = lame.encoderDelay + DECODERDELAY;
 			data->dropSamplesAtEnd = lame.encoderPadding;
 		}
