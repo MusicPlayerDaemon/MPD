@@ -1,4 +1,4 @@
-ver 0.11.5 (2004/11/1a
+ver 0.11.5 (2004/11/1)
 1) New id3v1_ecnoding config option to configure the id3v1 tag encoding (patch from dottemag)
 2) Strip '\r' from m3u playlists (thank you windows)
 3) Use random() instead of rand() for playlist randomizing
