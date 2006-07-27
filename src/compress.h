@@ -1,13 +1,15 @@
 /* compress.h
-** interface to audio compression
-*/
+ * interface to audio compression
+ *
+ * (c)2003-6 fluffy@beesbuzz.biz
+ */
 
 #ifndef COMPRESS_H
 #define COMPRESS_H
 
 /* These are copied from the AudioCompress config.h, mainly because CompressDo
  * needs GAINSHIFT defined.  The rest are here so they can be used as defaults
- * to pass to CompressCfg. */
+ * to pass to CompressCfg(). -- jat */
 #define ANTICLIP 0		/* Strict clipping protection */
 #define TARGET 25000		/* Target level */
 #define GAINMAX 32		/* The maximum amount to amplify by */

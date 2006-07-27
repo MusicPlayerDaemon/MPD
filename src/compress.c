@@ -1,6 +1,8 @@
 /* compress.c
-** Compressor logic
-*/
+ * Compressor logic
+ *
+ * (c)2003-6 fluffy@beesbuzz.biz
+ */
 
 #include <stdio.h>
 #include <stdlib.h>
