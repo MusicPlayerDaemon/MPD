@@ -55,7 +55,9 @@ the "kill" command.  When mpd is restarted, it will read the state file and
 restore the state of mpd (including the playlist).
 .TP
 .B audio_output
-See the various \fBAUDIO OUTPUT PARAMETERS\fP sections below.
+See \fBDESCRIPTION\fP and the various \fBAUDIO OUTPUT PARAMETERS\fP sections
+for the format of this parameter.  Multiple audio_output parameters may be
+specified.
 .TP
 .B audio_output_format <sample_rate:bits:channels>
 This specifies the sample rate, bits per sample, and number of channels of
@@ -127,8 +129,9 @@ If the HTTP proxy server requires authentication, this specifies the password.
 This specifies the user that mpd will run as, if set.
 .TP
 .B bind_to_address <ip address or hostname or any>
-This specifies which address mpd binds to and listens on.  The default is
-"any", which binds to all available addresses.
+This specifies which address mpd binds to and listens on.  Multiple
+bind_to_address parameters may be specified.  The default is "any", which binds
+to all available addresses.
 .TP
 .B port <port>
 This specifies the port that mpd listens on.  The default is 6600.
@@ -140,8 +143,8 @@ of "read", "add", "control", and/or "admin".  "read" allows for reading of the
 database, displaying the current playlist, and current status of mpd.  "add"
 allows for adding songs and loading playlists.  "control" allows for all other
 player and playlist manipulations.  "admin" allows the db to be updated and for
-the client to kill mpd.  More than one password can be specified.  An example
-value is "somePassword@read,add".
+the client to kill mpd.  An example value is "somePassword@read,add".  Multiple
+password parameters may be specified.
 .TP
 .B default_permissions <permissions>
 This specifies the permissions of a client that has not been authenticated
