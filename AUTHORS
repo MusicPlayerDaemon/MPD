@@ -7,3 +7,4 @@ command.c and signal handling cleanup -> mackstann
 replayGain -> AliasMrJones
 
 mp4ff copyrighted by M. Bakker, Ahead Software AG, http://www.nero.com
+compress.[ch] copyrighted by M. Hari Nezumi <magenta@trikuare.cx>

@@ -16,85 +16,32 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include <math.h>
-#include <limits.h>
-
+#include "compress.h"
 #include "conf.h"
 #include "normalize.h"
-#include "playlist.h"
 
-/* silence level, apparently this is Wrong (tm) */
-#define SILENCE_LEVEL (SHRT_MAX * 0.01)
-/* not sure what this is :) */
-#define MID           (SHRT_MAX * 0.25)
+#include <stdlib.h>
 
-#define MUL_MIN 0.1
-#define MUL_MAX 5.0
-#define NSAMPLES 128
-#define MIN_SAMPLE_SIZE 32000
+int normalizationEnabled;
 
-#define clamp(a,min,max) (((a)>(max))?(max):(((a)<(min))?(min):(a)))
+void initNormalization()
+{
+	normalizationEnabled = getBoolConfigParam(CONF_VOLUME_NORMALIZATION);
+	if (normalizationEnabled == -1) normalizationEnabled = 0;
+	else if (normalizationEnabled < 0) exit(EXIT_FAILURE);
+
+	if (normalizationEnabled)
+		CompressCfg(0, ANTICLIP, TARGET, GAINMAX, GAINSMOOTH, BUCKETS);
+}
+
+void finishNormalization()
+{
+	if (normalizationEnabled) CompressFree();
+}
 
 void normalizeData(char *buffer, int bufferSize, AudioFormat *format)
 {
-	static float multiplier = 1.0;
-	static int current_id = 0;
-	float average = 0.0;
-	static int old_song = 0;
-	int new_song = 0;
-	int total_length = 0;
-	int temp = 0;
-	int i = 0;
-	float root_mean_square = 0.0; /* the rms of the data */
-	mpd_sint16 *data = (mpd_sint16 *) buffer; /* the audio data */
-	int length = bufferSize / 2; /* the number of samples */
-	static struct {
-		float avg; /* average sample 'level' */
-		int len;   /* sample size (used to weigh sample) */
-	} mem[NSAMPLES];
+	if ((format->bits != 16) || (format->channels != 2)) return;
 
-	/* operate only on 16 bit, 2 channel audio */
-	if (format->bits != 16 && format->channels != 2) return;
-
-	/* calculate the root mean square of the data */
-	for (i = 0; i < length; i++)
-		root_mean_square += (float)(data[i] * data[i]);
-
-	root_mean_square = sqrt(root_mean_square / (float)length);
-
-	/* reset the multiplier if the song has changed */
-	if (old_song != (new_song = getPlaylistCurrentSong())) {
-		old_song = new_song;
-		/* re-zero 'mem' */
-		for (i = 0; i < NSAMPLES; i++) {
-			mem[i].avg = 0.0;
-			mem[i].len = 0;
-		}
-		current_id = 0;
-	}
-
-	/* and now do magic tricks */
-	for (i = 0; i < NSAMPLES; i++) {
-		average += mem[i].avg * (float)mem[i].len;
-		total_length += mem[i].len;
-	}
-
-	if (total_length > MIN_SAMPLE_SIZE) {
-		average /= (float) total_length;
-		if (average >= SILENCE_LEVEL) {
-			multiplier = MID / average;
-			/* clamp multiplier */
-			multiplier = clamp(multiplier, MUL_MIN, MUL_MAX);
-		}
-	}
-
-	/* scale and clamp the samples */
-	for (i = 0; i < length; i++) {
-		temp = data[i] * multiplier;
-		data[i] = clamp(temp, SHRT_MIN, SHRT_MAX);
-	}
-
-	mem[current_id].len = bufferSize / 2;
-	mem[current_id].avg = multiplier * root_mean_square;
-	current_id = (current_id + 1) % NSAMPLES; /* increment current_id */
+	CompressDo(buffer, bufferSize);
 }

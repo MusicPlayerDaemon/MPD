@@ -78,22 +78,6 @@ int sendDataToOutputBuffer(OutputBuffer * cb, InputStream * inStream,
 	size_t datalen;
 	static char *convBuffer = NULL;
 	static long convBufferLen = 0;
-	static int normalEnable = -1;
-	ConfigParam *param;
-
-	if (normalEnable == -1) {
-		normalEnable = getBoolConfigParam(CONF_VOLUME_NORMALIZATION);
-		if (normalEnable == -1) {
-			/* not set */
-			normalEnable = 0;
-		} else if (normalEnable < 0) {
-			param = getConfigParam(CONF_VOLUME_NORMALIZATION);
-			WARNING("%s is not \"yes\" or \"no\" on line %i, "
-			        "disabling\n", CONF_VOLUME_NORMALIZATION,
-			        param->line);
-			normalEnable = 0;
-		}
-	}
 
 	if (cmpAudioFormat(&(cb->audioFormat), &(dc->audioFormat)) == 0) {
 		data = dataIn;
@@ -115,11 +99,10 @@ int sendDataToOutputBuffer(OutputBuffer * cb, InputStream * inStream,
 				       &(cb->audioFormat), data);
 	}
 
-	if (replayGainInfo && (replayGainState != REPLAYGAIN_OFF)) {
+	if (replayGainInfo && (replayGainState != REPLAYGAIN_OFF))
 		doReplayGain(replayGainInfo, data, datalen, &cb->audioFormat);
-	} else if (normalEnable) {
+	else if (normalizationEnabled)
 		normalizeData(data, datalen, &cb->audioFormat);
-	}
 
 	while (datalen) {
 		if (currentChunk != cb->end) {

@@ -16,6 +16,17 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#ifndef NORMALIZE_H
+#define NORMALIZE_H
+
 #include "audio.h"
 
+extern int normalizationEnabled;
+
+void initNormalization();
+
+void finishNormalization();
+
 void normalizeData(char *buffer, int bufferSize, AudioFormat *format);
+
+#endif /* !NORMALIZE_H */

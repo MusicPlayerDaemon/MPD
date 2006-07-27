@@ -50,6 +50,7 @@ mpd_headers = \
 	mpd_types.h \
 	myfprintf.h \
 	normalize.h \
+	compress.h \
 	outputBuffer.h \
 	path.h \
 	pcm_utils.h \
@@ -95,6 +96,7 @@ mpd_SOURCES = \
 	metadataChunk.c \
 	myfprintf.c \
 	normalize.c \
+	compress.c \
 	outputBuffer.c \
 	path.c \
 	pcm_utils.c \

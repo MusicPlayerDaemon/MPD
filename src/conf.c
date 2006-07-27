@@ -373,6 +373,8 @@ int getBoolConfigParam(char *name)
 	if (strcmp("yes", param->value) == 0) return 1;
 	else if (strcmp("no", param->value) == 0) return 0;
 
+	ERROR("%s is not \"yes\" or \"no\" on line %i\n", name, param->line);
+
 	return -2;
 }
 

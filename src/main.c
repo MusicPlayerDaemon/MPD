@@ -40,6 +40,7 @@
 #include "dbUtils.h"
 #include "../config.h"
 #include "utils.h"
+#include "normalize.h"
 
 #include <stdio.h>
 #include <sys/select.h>
@@ -552,6 +553,7 @@ int main(int argc, char *argv[])
 	initPaths();
 	initAudioConfig();
 	initAudioDriver();
+	initNormalization();
 	initPlaylist();
 	openDB(&options, argv[0]);
 
@@ -601,6 +603,7 @@ int main(int argc, char *argv[])
 
 	finishPlaylist();
 	freePlayerData();
+	finishNormalization();
 	finishAudioDriver();
 	finishAudioConfig();
 	finishVolume();
