@@ -104,6 +104,11 @@
 #define COMMAND_STATUS_AUDIO		"audio"
 #define COMMAND_STATUS_UPDATING_DB	"updating_db"
 
+/* the most we ever use is argv[2], so argv[] has (at most)
+ * 3 usable elements. This means we tokenize up to 4 elements to
+ * detect errors clients may send us */
+#define COMMAND_ARGV_MAX	4
+
 typedef struct _CommandEntry CommandEntry;
 
 typedef int (*CommandHandlerFunction) (FILE *, int *, int, char **);
@@ -1138,16 +1143,14 @@ static CommandEntry *getCommandEntryAndCheckArgcAndPermission(FILE * fp,
 static CommandEntry *getCommandEntryFromString(char *string, int *permission)
 {
 	CommandEntry *cmd = NULL;
-	char **argv;
-	int argc = buffer2array(string, &argv);
+	char *argv[COMMAND_ARGV_MAX] = { 0 };
+	int argc = cstrtok(string, argv, COMMAND_ARGV_MAX);
 
 	if (0 == argc)
 		return NULL;
 
 	cmd = getCommandEntryAndCheckArgcAndPermission(NULL, permission,
-						       argc,
-						       argv);
-	freeArgArray(argv, argc);
+						       argc, argv);
 
 	return cmd;
 }
@@ -1156,28 +1159,24 @@ static int processCommandInternal(FILE * fp, int *permission,
 				  char *commandString, ListNode * commandNode)
 {
 	int argc;
-	char **argv;
+	char *argv[COMMAND_ARGV_MAX] = { 0 };
 	CommandEntry *cmd;
 	int ret = -1;
 
-	argc = buffer2array(commandString, &argv);
+	argc = cstrtok(commandString, argv, COMMAND_ARGV_MAX);
 
 	if (argc == 0)
 		return 0;
 
 	if ((cmd = getCommandEntryAndCheckArgcAndPermission(fp, permission,
-							    argc,
-							    argv))) {
+							    argc, argv))) {
 		if (NULL == commandNode || NULL == cmd->listHandler) {
-			ret = cmd->handler(fp, permission, argc,
-					   argv);
+			ret = cmd->handler(fp, permission, argc, argv);
 		} else {
-			ret = cmd->listHandler(fp, permission, argc,
-					       argv, commandNode, cmd);
+			ret = cmd->listHandler(fp, permission, argc, argv,
+			                       commandNode, cmd);
 		}
 	}
-
-	freeArgArray(argv, argc);
 
 	current_command = NULL;
 
