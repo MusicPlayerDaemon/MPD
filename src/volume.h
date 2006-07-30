@@ -35,6 +35,6 @@ void finishVolume();
 
 int getVolumeLevel();
 
-int changeVolumeLevel(FILE * fp, int change, int rel);
+int changeVolumeLevel(int fd, int change, int rel);
 
 #endif

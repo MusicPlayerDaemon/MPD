@@ -134,7 +134,7 @@ void freeLocateTagItem(LocateTagItem * item)
 	free(item);
 }
 
-static int countSongsInDirectory(FILE * fp, Directory * directory, void *data)
+static int countSongsInDirectory(int fd, Directory * directory, void *data)
 {
 	int *count = (int *)data;
 
@@ -143,18 +143,18 @@ static int countSongsInDirectory(FILE * fp, Directory * directory, void *data)
 	return 0;
 }
 
-static int printDirectoryInDirectory(FILE * fp, Directory * directory,
+static int printDirectoryInDirectory(int fd, Directory * directory,
 				     void *data)
 {
 	if (directory->path) {
-		myfprintf(fp, "directory: %s\n", getDirectoryPath(directory));
+		fdprintf(fd, "directory: %s\n", getDirectoryPath(directory));
 	}
 	return 0;
 }
 
-static int printSongInDirectory(FILE * fp, Song * song, void *data)
+static int printSongInDirectory(int fd, Song * song, void *data)
 {
-	printSongUrl(fp, song);
+	printSongUrl(fd, song);
 	return 0;
 }
 
@@ -192,7 +192,7 @@ static int strstrSearchTag(Song * song, int type, char *str)
 	return ret;
 }
 
-static int searchInDirectory(FILE * fp, Song * song, void *data)
+static int searchInDirectory(int fd, Song * song, void *data)
 {
 	LocateTagItemArray *array = data;
 	int i;
@@ -204,12 +204,12 @@ static int searchInDirectory(FILE * fp, Song * song, void *data)
 		}
 	}
 
-	printSongInfo(fp, song);
+	printSongInfo(fd, song);
 
 	return 0;
 }
 
-int searchForSongsIn(FILE * fp, char *name, int numItems, LocateTagItem * items)
+int searchForSongsIn(int fd, char *name, int numItems, LocateTagItem * items)
 {
 	int ret = -1;
 	int i;
@@ -225,7 +225,7 @@ int searchForSongsIn(FILE * fp, char *name, int numItems, LocateTagItem * items)
 	array.numItems = numItems;
 	array.items = items;
 
-	ret = traverseAllIn(fp, name, searchInDirectory, NULL, &array);
+	ret = traverseAllIn(fd, name, searchInDirectory, NULL, &array);
 
 	for (i = 0; i < numItems; i++) {
 		free(items[i].needle);
@@ -260,7 +260,7 @@ static int tagItemFoundAndMatches(Song * song, int type, char *str)
 	return 0;
 }
 
-static int findInDirectory(FILE * fp, Song * song, void *data)
+static int findInDirectory(int fd, Song * song, void *data)
 {
 	LocateTagItemArray *array = data;
 	int i;
@@ -272,43 +272,43 @@ static int findInDirectory(FILE * fp, Song * song, void *data)
 		}
 	}
 
-	printSongInfo(fp, song);
+	printSongInfo(fd, song);
 
 	return 0;
 }
 
-int findSongsIn(FILE * fp, char *name, int numItems, LocateTagItem * items)
+int findSongsIn(int fd, char *name, int numItems, LocateTagItem * items)
 {
 	LocateTagItemArray array;
 
 	array.numItems = numItems;
 	array.items = items;
 
-	return traverseAllIn(fp, name, findInDirectory, NULL, (void *)&array);
+	return traverseAllIn(fd, name, findInDirectory, NULL, (void *)&array);
 }
 
-int printAllIn(FILE * fp, char *name)
+int printAllIn(int fd, char *name)
 {
-	return traverseAllIn(fp, name, printSongInDirectory,
+	return traverseAllIn(fd, name, printSongInDirectory,
 			     printDirectoryInDirectory, NULL);
 }
 
-static int directoryAddSongToPlaylist(FILE * fp, Song * song, void *data)
+static int directoryAddSongToPlaylist(int fd, Song * song, void *data)
 {
-	return addSongToPlaylist(fp, song, 0);
+	return addSongToPlaylist(fd, song, 0);
 }
 
-int addAllIn(FILE * fp, char *name)
+int addAllIn(int fd, char *name)
 {
-	return traverseAllIn(fp, name, directoryAddSongToPlaylist, NULL, NULL);
+	return traverseAllIn(fd, name, directoryAddSongToPlaylist, NULL, NULL);
 }
 
-static int directoryPrintSongInfo(FILE * fp, Song * song, void *data)
+static int directoryPrintSongInfo(int fd, Song * song, void *data)
 {
-	return printSongInfo(fp, song);
+	return printSongInfo(fd, song);
 }
 
-static int sumSongTime(FILE * fp, Song * song, void *data)
+static int sumSongTime(int fd, Song * song, void *data)
 {
 	unsigned long *time = (unsigned long *)data;
 
@@ -318,28 +318,28 @@ static int sumSongTime(FILE * fp, Song * song, void *data)
 	return 0;
 }
 
-int printInfoForAllIn(FILE * fp, char *name)
+int printInfoForAllIn(int fd, char *name)
 {
-	return traverseAllIn(fp, name, directoryPrintSongInfo,
+	return traverseAllIn(fd, name, directoryPrintSongInfo,
 			     printDirectoryInDirectory, NULL);
 }
 
-int countSongsIn(FILE * fp, char *name)
+int countSongsIn(int fd, char *name)
 {
 	int count = 0;
 	void *ptr = (void *)&count;
 
-	traverseAllIn(fp, name, NULL, countSongsInDirectory, ptr);
+	traverseAllIn(fd, name, NULL, countSongsInDirectory, ptr);
 
 	return count;
 }
 
-unsigned long sumSongTimesIn(FILE * fp, char *name)
+unsigned long sumSongTimesIn(int fd, char *name)
 {
 	unsigned long dbPlayTime = 0;
 	void *ptr = (void *)&dbPlayTime;
 
-	traverseAllIn(fp, name, sumSongTime, NULL, ptr);
+	traverseAllIn(fd, name, sumSongTime, NULL, ptr);
 
 	return dbPlayTime;
 }
@@ -361,13 +361,13 @@ static void freeListCommandItem(ListCommandItem * item)
 	free(item);
 }
 
-static void visitTag(FILE * fp, Song * song, int tagType)
+static void visitTag(int fd, Song * song, int tagType)
 {
 	int i;
 	MpdTag *tag = song->tag;
 
 	if (tagType == LOCATE_TAG_FILE_TYPE) {
-		printSongUrl(fp, song);
+		printSongUrl(fd, song);
 		return;
 	}
 
@@ -381,7 +381,7 @@ static void visitTag(FILE * fp, Song * song, int tagType)
 	}
 }
 
-static int listUniqueTagsInDirectory(FILE * fp, Song * song, void *data)
+static int listUniqueTagsInDirectory(int fd, Song * song, void *data)
 {
 	ListCommandItem *item = data;
 	int i;
@@ -393,12 +393,12 @@ static int listUniqueTagsInDirectory(FILE * fp, Song * song, void *data)
 		}
 	}
 
-	visitTag(fp, song, item->tagType);
+	visitTag(fd, song, item->tagType);
 
 	return 0;
 }
 
-int listAllUniqueTags(FILE * fp, int type, int numConditionals,
+int listAllUniqueTags(int fd, int type, int numConditionals,
 		      LocateTagItem * conditionals)
 {
 	int ret;
@@ -409,11 +409,11 @@ int listAllUniqueTags(FILE * fp, int type, int numConditionals,
 		resetVisitedFlagsInTagTracker(type);
 	}
 
-	ret = traverseAllIn(fp, NULL, listUniqueTagsInDirectory, NULL,
+	ret = traverseAllIn(fd, NULL, listUniqueTagsInDirectory, NULL,
 			    (void *)item);
 
 	if (type >= 0 && type <= TAG_NUM_OF_ITEM_TYPES) {
-		printVisitedInTagTracker(fp, type);
+		printVisitedInTagTracker(fd, type);
 	}
 
 	freeListCommandItem(item);
@@ -421,7 +421,7 @@ int listAllUniqueTags(FILE * fp, int type, int numConditionals,
 	return ret;
 }
 
-static int sumSavedFilenameMemoryInDirectory(FILE * fp, Directory * dir,
+static int sumSavedFilenameMemoryInDirectory(int fd, Directory * dir,
 					     void *data)
 {
 	int *sum = data;
@@ -435,7 +435,7 @@ static int sumSavedFilenameMemoryInDirectory(FILE * fp, Directory * dir,
 	return 0;
 }
 
-static int sumSavedFilenameMemoryInSong(FILE * fp, Song * song, void *data)
+static int sumSavedFilenameMemoryInSong(int fd, Song * song, void *data)
 {
 	int *sum = data;
 
@@ -448,7 +448,7 @@ void printSavedMemoryFromFilenames(void)
 {
 	int sum = 0;
 
-	traverseAllIn(stderr, NULL, sumSavedFilenameMemoryInSong,
+	traverseAllIn(STDERR_FILENO, NULL, sumSavedFilenameMemoryInSong,
 		      sumSavedFilenameMemoryInDirectory, (void *)&sum);
 
 	DEBUG("saved memory from filenames: %i\n", sum);

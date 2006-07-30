@@ -121,15 +121,15 @@ void initTagConfig(void)
 	free(temp);
 }
 
-void printMpdTag(FILE * fp, MpdTag * tag)
+void printMpdTag(int fd, MpdTag * tag)
 {
 	int i;
 
 	if (tag->time >= 0)
-		myfprintf(fp, "Time: %i\n", tag->time);
+		fdprintf(fd, "Time: %i\n", tag->time);
 
 	for (i = 0; i < tag->numOfItems; i++) {
-		myfprintf(fp, "%s: %s\n", mpdTagItemKeys[tag->items[i].type],
+		fdprintf(fd, "%s: %s\n", mpdTagItemKeys[tag->items[i].type],
 			  tag->items[i].value);
 	}
 }

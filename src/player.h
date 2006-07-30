@@ -93,13 +93,13 @@ int playerInitReal();
 
 void player_sigChldHandler(int pid, int status);
 
-int playerPlay(FILE * fp, Song * song);
+int playerPlay(int fd, Song * song);
 
-int playerSetPause(FILE * fp, int pause);
+int playerSetPause(int fd, int pause);
 
-int playerPause(FILE * fp);
+int playerPause(int fd);
 
-int playerStop(FILE * fp);
+int playerStop(int fd);
 
 void playerCloseAudio();
 
@@ -131,7 +131,7 @@ void playerQueueLock();
 
 void playerQueueUnlock();
 
-int playerSeek(FILE * fp, Song * song, float time);
+int playerSeek(int fd, Song * song, float time);
 
 void setPlayerCrossFade(float crossFadeInSeconds);
 

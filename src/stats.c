@@ -34,15 +34,15 @@ void initStats(void)
 	stats.numberOfSongs = 0;
 }
 
-int printStats(FILE * fp)
+int printStats(int fd)
 {
-	myfprintf(fp, "artists: %li\n", getNumberOfTagItems(TAG_ITEM_ARTIST));
-	myfprintf(fp, "albums: %li\n", getNumberOfTagItems(TAG_ITEM_ALBUM));
-	myfprintf(fp, "songs: %i\n", stats.numberOfSongs);
-	myfprintf(fp, "uptime: %li\n", time(NULL) - stats.daemonStart);
-	myfprintf(fp, "playtime: %li\n",
+	fdprintf(fd, "artists: %li\n", getNumberOfTagItems(TAG_ITEM_ARTIST));
+	fdprintf(fd, "albums: %li\n", getNumberOfTagItems(TAG_ITEM_ALBUM));
+	fdprintf(fd, "songs: %i\n", stats.numberOfSongs);
+	fdprintf(fd, "uptime: %li\n", time(NULL) - stats.daemonStart);
+	fdprintf(fd, "playtime: %li\n",
 		  (long)(getPlayerTotalPlayTime() + 0.5));
-	myfprintf(fp, "db_playtime: %li\n", stats.dbPlayTime);
-	myfprintf(fp, "db_update: %li\n", getDbModTime());
+	fdprintf(fd, "db_playtime: %li\n", stats.dbPlayTime);
+	fdprintf(fd, "db_update: %li\n", getDbModTime());
 	return 0;
 }

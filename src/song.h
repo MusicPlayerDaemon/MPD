@@ -58,9 +58,9 @@ void freeSongList(SongList * list);
 Song *addSongToList(SongList * list, char *url, char *utf8path,
 		    int songType, struct _Directory *parentDir);
 
-int printSongInfo(FILE * fp, Song * song);
+int printSongInfo(int fd, Song * song);
 
-int printSongInfoFromList(FILE * fp, SongList * list);
+int printSongInfoFromList(int fd, SongList * list);
 
 void writeSongInfoFromList(FILE * fp, SongList * list);
 
@@ -69,7 +69,7 @@ void readSongInfoIntoList(FILE * fp, SongList * list,
 
 int updateSongInfo(Song * song);
 
-void printSongUrl(FILE * fp, Song * song);
+void printSongUrl(int fd, Song * song);
 
 char *getSongUrl(Song * song);
 

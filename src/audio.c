@@ -423,10 +423,10 @@ void sendMetadataToAudioDevice(MpdTag * tag)
 	}
 }
 
-int enableAudioDevice(FILE * fp, int device)
+int enableAudioDevice(int fd, int device)
 {
 	if (device < 0 || device >= audioOutputArraySize) {
-		commandError(fp, ACK_ERROR_ARG, "audio output device id %i "
+		commandError(fd, ACK_ERROR_ARG, "audio output device id %i "
 			     "doesn't exist\n", device);
 		return -1;
 	}
@@ -436,10 +436,10 @@ int enableAudioDevice(FILE * fp, int device)
 	return 0;
 }
 
-int disableAudioDevice(FILE * fp, int device)
+int disableAudioDevice(int fd, int device)
 {
 	if (device < 0 || device >= audioOutputArraySize) {
-		commandError(fp, ACK_ERROR_ARG, "audio output device id %i "
+		commandError(fd, ACK_ERROR_ARG, "audio output device id %i "
 			     "doesn't exist\n", device);
 		return -1;
 	}
@@ -449,15 +449,16 @@ int disableAudioDevice(FILE * fp, int device)
 	return 0;
 }
 
-void printAudioDevices(FILE * fp)
+void printAudioDevices(int fd)
 {
 	int i;
 
 	for (i = 0; i < audioOutputArraySize; i++) {
-		myfprintf(fp, "outputid: %i\n", i);
-		myfprintf(fp, "outputname: %s\n", audioOutputArray[i]->name);
-		myfprintf(fp, "outputenabled: %i\n",
-			  (int)pdAudioDevicesEnabled[i]);
+		fdprintf(fd,
+		         "outputid: %i\noutputname: %s\noutputenabled: %i\n",
+			 i,
+			 audioOutputArray[i]->name,
+			 (int)pdAudioDevicesEnabled[i]);
 	}
 }
 

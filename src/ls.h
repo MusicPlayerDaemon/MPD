@@ -29,7 +29,7 @@
 #include <unistd.h>
 #include <time.h>
 
-int lsPlaylists(FILE * fp, char *utf8path);
+int lsPlaylists(int fd, char *utf8path);
 
 char *getSuffix(char *utf8file);
 
@@ -47,6 +47,6 @@ InputPlugin *hasMusicSuffix(char *utf8file, unsigned int next);
 
 InputPlugin *isMusic(char *utf8file, time_t * mtime, unsigned int next);
 
-int printRemoteUrlHandlers(FILE * fp);
+int printRemoteUrlHandlers(int fd);
 
 #endif

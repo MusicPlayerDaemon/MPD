@@ -134,32 +134,32 @@ void freeSongList(SongList * list)
 	freeList(list);
 }
 
-void printSongUrl(FILE * fp, Song * song)
+void printSongUrl(int fd, Song * song)
 {
 	if (song->parentDir && song->parentDir->path) {
-		myfprintf(fp, "%s%s/%s\n", SONG_FILE,
+		fdprintf(fd, "%s%s/%s\n", SONG_FILE,
 			  getDirectoryPath(song->parentDir), song->url);
 	} else {
-		myfprintf(fp, "%s%s\n", SONG_FILE, song->url);
+		fdprintf(fd, "%s%s\n", SONG_FILE, song->url);
 	}
 }
 
-int printSongInfo(FILE * fp, Song * song)
+int printSongInfo(int fd, Song * song)
 {
-	printSongUrl(fp, song);
+	printSongUrl(fd, song);
 
 	if (song->tag)
-		printMpdTag(fp, song->tag);
+		printMpdTag(fd, song->tag);
 
 	return 0;
 }
 
-int printSongInfoFromList(FILE * fp, SongList * list)
+int printSongInfoFromList(int fd, SongList * list)
 {
 	ListNode *tempNode = list->firstNode;
 
 	while (tempNode != NULL) {
-		printSongInfo(fp, (Song *) tempNode->data);
+		printSongInfo(fd, (Song *) tempNode->data);
 		tempNode = tempNode->nextNode;
 	}
 
@@ -174,7 +174,7 @@ void writeSongInfoFromList(FILE * fp, SongList * list)
 
 	while (tempNode != NULL) {
 		myfprintf(fp, "%s%s\n", SONG_KEY, tempNode->key);
-		printSongInfo(fp, (Song *) tempNode->data);
+		printSongInfo(fileno(fp), (Song *) tempNode->data);
 		myfprintf(fp, "%s%li\n", SONG_MTIME,
 			  (long)((Song *) tempNode->data)->mtime);
 		tempNode = tempNode->nextNode;

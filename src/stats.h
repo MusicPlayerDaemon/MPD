@@ -35,6 +35,6 @@ extern Stats stats;
 
 void initStats();
 
-int printStats(FILE * fp);
+int printStats(int fd);
 
 #endif

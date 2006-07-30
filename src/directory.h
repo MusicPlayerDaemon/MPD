@@ -45,13 +45,13 @@ int isUpdatingDB();
 
 void directory_sigChldHandler(int pid, int status);
 
-int updateInit(FILE * fp, List * pathList);
+int updateInit(int fd, List * pathList);
 
 void initMp3Directory();
 
 void closeMp3Directory();
 
-int printDirectoryInfo(FILE * fp, char *dirname);
+int printDirectoryInfo(int fd, char *dirname);
 
 int checkDirectoryDB();
 
@@ -65,9 +65,9 @@ Song *getSongFromDB(char *file);
 
 time_t getDbModTime();
 
-int traverseAllIn(FILE * fp, char *name,
-		  int (*forEachSong) (FILE *, Song *, void *),
-		  int (*forEachDir) (FILE *, Directory *, void *), void *data);
+int traverseAllIn(int fd, char *name,
+		  int (*forEachSong) (int, Song *, void *),
+		  int (*forEachDir) (int, Directory *, void *), void *data);
 
 #define getDirectoryPath(dir) ((dir && dir->path) ? dir->path : "")
 

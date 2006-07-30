@@ -159,10 +159,10 @@ void readDirectoryDBIfUpdateIsFinished()
 	}
 }
 
-int updateInit(FILE * fp, List * pathList)
+int updateInit(int fd, List * pathList)
 {
 	if (directory_updatePid > 0) {
-		commandError(fp, ACK_ERROR_UPDATE_ALREADY, "already updating",
+		commandError(fd, ACK_ERROR_UPDATE_ALREADY, "already updating",
 			     NULL);
 		return -1;
 	}
@@ -216,7 +216,7 @@ int updateInit(FILE * fp, List * pathList)
 	} else if (directory_updatePid < 0) {
 		unblockSignals();
 		ERROR("updateInit: Problems forking()'ing\n");
-		commandError(fp, ACK_ERROR_SYSTEM,
+		commandError(fd, ACK_ERROR_SYSTEM,
 			     "problems trying to update", NULL);
 		directory_updatePid = 0;
 		return -1;
@@ -228,7 +228,7 @@ int updateInit(FILE * fp, List * pathList)
 		directory_updateJobId = 1;
 	DEBUG("updateInit: fork()'d update child for update job id %i\n",
 	      (int)directory_updateJobId);
-	myfprintf(fp, "updating_db: %i\n", (int)directory_updateJobId);
+	fdprintf(fd, "updating_db: %i\n", (int)directory_updateJobId);
 
 	return 0;
 }
@@ -871,33 +871,33 @@ static Directory *getDirectory(char *name)
 	return getSubDirectory(mp3rootDirectory, name, &shortname);
 }
 
-static int printDirectoryList(FILE * fp, DirectoryList * directoryList)
+static int printDirectoryList(int fd, DirectoryList * directoryList)
 {
 	ListNode *node = directoryList->firstNode;
 	Directory *directory;
 
 	while (node != NULL) {
 		directory = (Directory *) node->data;
-		myfprintf(fp, "%s%s\n", DIRECTORY_DIR,
-			  getDirectoryPath(directory));
+		fdprintf(fd, "%s%s\n", DIRECTORY_DIR,
+			 getDirectoryPath(directory));
 		node = node->nextNode;
 	}
 
 	return 0;
 }
 
-int printDirectoryInfo(FILE * fp, char *name)
+int printDirectoryInfo(int fd, char *name)
 {
 	Directory *directory;
 
 	if ((directory = getDirectory(name)) == NULL) {
-		commandError(fp, ACK_ERROR_NO_EXIST, "directory not found",
+		commandError(fd, ACK_ERROR_NO_EXIST, "directory not found",
 			     NULL);
 		return -1;
 	}
 
-	printDirectoryList(fp, directory->subDirectories);
-	printSongInfoFromList(fp, directory->songs);
+	printDirectoryList(fd, directory->subDirectories);
+	printSongInfoFromList(fd, directory->songs);
 
 	return 0;
 }
@@ -1208,8 +1208,8 @@ int readDirectoryDB()
 	readDirectoryInfo(fp, mp3rootDirectory);
 	while (fclose(fp) && errno == EINTR) ;
 
-	stats.numberOfSongs = countSongsIn(stderr, NULL);
-	stats.dbPlayTime = sumSongTimesIn(stderr, NULL);
+	stats.numberOfSongs = countSongsIn(STDERR_FILENO, NULL);
+	stats.dbPlayTime = sumSongTimesIn(STDERR_FILENO, NULL);
 
 	if (stat(dbFile, &st) == 0)
 		directory_dbModTime = st.st_mtime;
@@ -1237,10 +1237,10 @@ void updateMp3Directory()
 	return;
 }
 
-static int traverseAllInSubDirectory(FILE * fp, Directory * directory,
-				     int (*forEachSong) (FILE *, Song *,
+static int traverseAllInSubDirectory(int fd, Directory * directory,
+				     int (*forEachSong) (int, Song *,
 							 void *),
-				     int (*forEachDir) (FILE *, Directory *,
+				     int (*forEachDir) (int, Directory *,
 							void *), void *data)
 {
 	ListNode *node = directory->songs->firstNode;
@@ -1249,7 +1249,7 @@ static int traverseAllInSubDirectory(FILE * fp, Directory * directory,
 	int errFlag = 0;
 
 	if (forEachDir) {
-		errFlag = forEachDir(fp, directory, data);
+		errFlag = forEachDir(fd, directory, data);
 		if (errFlag)
 			return errFlag;
 	}
@@ -1257,7 +1257,7 @@ static int traverseAllInSubDirectory(FILE * fp, Directory * directory,
 	if (forEachSong) {
 		while (node != NULL && !errFlag) {
 			song = (Song *) node->data;
-			errFlag = forEachSong(fp, song, data);
+			errFlag = forEachSong(fd, song, data);
 			node = node->nextNode;
 		}
 		if (errFlag)
@@ -1268,7 +1268,7 @@ static int traverseAllInSubDirectory(FILE * fp, Directory * directory,
 
 	while (node != NULL && !errFlag) {
 		dir = (Directory *) node->data;
-		errFlag = traverseAllInSubDirectory(fp, dir, forEachSong,
+		errFlag = traverseAllInSubDirectory(fd, dir, forEachSong,
 						    forEachDir, data);
 		node = node->nextNode;
 	}
@@ -1276,23 +1276,23 @@ static int traverseAllInSubDirectory(FILE * fp, Directory * directory,
 	return errFlag;
 }
 
-int traverseAllIn(FILE * fp, char *name,
-		  int (*forEachSong) (FILE *, Song *, void *),
-		  int (*forEachDir) (FILE *, Directory *, void *), void *data)
+int traverseAllIn(int fd, char *name,
+		  int (*forEachSong) (int, Song *, void *),
+		  int (*forEachDir) (int, Directory *, void *), void *data)
 {
 	Directory *directory;
 
 	if ((directory = getDirectory(name)) == NULL) {
 		Song *song;
 		if ((song = getSongFromDB(name)) && forEachSong) {
-			return forEachSong(fp, song, data);
+			return forEachSong(fd, song, data);
 		}
-		commandError(fp, ACK_ERROR_NO_EXIST,
+		commandError(fd, ACK_ERROR_NO_EXIST,
 			     "directory or file not found", NULL);
 		return -1;
 	}
 
-	return traverseAllInSubDirectory(fp, directory, forEachSong, forEachDir,
+	return traverseAllInSubDirectory(fd, directory, forEachSong, forEachDir,
 					 data);
 }
 
@@ -1315,8 +1315,8 @@ void initMp3Directory()
 	mp3rootDirectory = newDirectory(NULL, NULL);
 	exploreDirectory(mp3rootDirectory);
 	freeAllDirectoryStats(mp3rootDirectory);
-	stats.numberOfSongs = countSongsIn(stderr, NULL);
-	stats.dbPlayTime = sumSongTimesIn(stderr, NULL);
+	stats.numberOfSongs = countSongsIn(STDERR_FILENO, NULL);
+	stats.dbPlayTime = sumSongTimesIn(STDERR_FILENO, NULL);
 
 	if (stat(getDbFile(), &st) == 0)
 		directory_dbModTime = st.st_mtime;

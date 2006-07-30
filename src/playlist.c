@@ -89,7 +89,7 @@ static int playlist_noGoToNext = 0;
 static int playlist_saveAbsolutePaths = DEFAULT_PLAYLIST_SAVE_ABSOLUTE_PATHS;
 
 static void swapOrder(int a, int b);
-static int playPlaylistOrderNumber(FILE * fp, int orderNum);
+static int playPlaylistOrderNumber(int fd, int orderNum);
 static void randomizeOrder(int start, int end);
 
 char *getStateFile(void)
@@ -223,11 +223,11 @@ void finishPlaylist(void)
 	playlist.positionToId = NULL;
 }
 
-int clearPlaylist(FILE * fp)
+int clearPlaylist(int fd)
 {
 	int i;
 
-	if (stopPlaylist(fp) < 0)
+	if (stopPlaylist(fd) < 0)
 		return -1;
 
 	for (i = 0; i < playlist.length; i++) {
@@ -245,12 +245,12 @@ int clearPlaylist(FILE * fp)
 	return 0;
 }
 
-int showPlaylist(FILE * fp)
+int showPlaylist(int fd)
 {
 	int i;
 
 	for (i = 0; i < playlist.length; i++) {
-		myfprintf(fp, "%i:%s\n", i, getSongUrl(playlist.songs[i]));
+		fdprintf(fd, "%i:%s\n", i, getSongUrl(playlist.songs[i]));
 	}
 
 	return 0;
@@ -298,14 +298,14 @@ void savePlaylistState(void)
 		myfprintf(fp, "%s%i\n", PLAYLIST_STATE_FILE_CROSSFADE,
 			  (int)(getPlayerCrossFade()));
 		myfprintf(fp, "%s\n", PLAYLIST_STATE_FILE_PLAYLIST_BEGIN);
-		showPlaylist(fp);
+		showPlaylist(fileno(fp));
 		myfprintf(fp, "%s\n", PLAYLIST_STATE_FILE_PLAYLIST_END);
 
 		while (fclose(fp) && errno == EINTR) ;
 	}
 }
 
-void loadPlaylistFromStateFile(FILE * fp, char *buffer, int state, int current,
+void loadPlaylistFromStateFile(FILE *fp, char *buffer, int state, int current,
 			       int time)
 {
 	char *temp;
@@ -322,15 +322,17 @@ void loadPlaylistFromStateFile(FILE * fp, char *buffer, int state, int current,
 			ERROR("error parsing state file \"%s\"\n", stateFile);
 			exit(EXIT_FAILURE);
 		}
-		if (addToPlaylist(stderr, temp, 0) == 0 && current == song) {
+		if (!addToPlaylist(STDERR_FILENO, temp, 0) && current == song) {
 			if (state != PLAYER_STATE_STOP) {
-				playPlaylist(stderr, playlist.length - 1, 0);
+				playPlaylist(STDERR_FILENO,
+				             playlist.length - 1, 0);
 			}
 			if (state == PLAYER_STATE_PAUSE) {
-				playerPause(stderr);
+				playerPause(STDERR_FILENO);
 			}
 			if (state != PLAYER_STATE_STOP) {
-				seekSongInPlaylist(stderr, playlist.length - 1,
+				seekSongInPlaylist(STDERR_FILENO,
+				                   playlist.length - 1,
 						   time);
 			}
 		}
@@ -402,9 +404,11 @@ void readPlaylistState(void)
 				     (buffer
 				      [strlen(PLAYLIST_STATE_FILE_REPEAT)]),
 				     "1") == 0) {
-					setPlaylistRepeatStatus(stderr, 1);
+					setPlaylistRepeatStatus(STDERR_FILENO,
+					                        1);
 				} else
-					setPlaylistRepeatStatus(stderr, 0);
+					setPlaylistRepeatStatus(STDERR_FILENO,
+					                        0);
 			} else
 			    if (strncmp
 				(buffer, PLAYLIST_STATE_FILE_CROSSFADE,
@@ -423,9 +427,11 @@ void readPlaylistState(void)
 				     (buffer
 				      [strlen(PLAYLIST_STATE_FILE_RANDOM)]),
 				     "1") == 0) {
-					setPlaylistRandomStatus(stderr, 1);
+					setPlaylistRandomStatus(STDERR_FILENO,
+					                        1);
 				} else
-					setPlaylistRandomStatus(stderr, 0);
+					setPlaylistRandomStatus(STDERR_FILENO,
+					                        0);
 			} else if (strncmp(buffer, PLAYLIST_STATE_FILE_CURRENT,
 					   strlen(PLAYLIST_STATE_FILE_CURRENT))
 				   == 0) {
@@ -454,29 +460,13 @@ void readPlaylistState(void)
 	}
 }
 
-void printPlaylistSongInfo(FILE * fp, int song)
+void printPlaylistSongInfo(int fd, int song)
 {
-	printSongInfo(fp, playlist.songs[song]);
-	myfprintf(fp, "Pos: %i\n", song);
-	myfprintf(fp, "Id: %i\n", playlist.positionToId[song]);
+	printSongInfo(fd, playlist.songs[song]);
+	fdprintf(fd, "Pos: %i\nId: %i\n", song, playlist.positionToId[song]);
 }
 
-int playlistChanges(FILE * fp, mpd_uint32 version)
-{
-	int i;
-
-	for (i = 0; i < playlist.length; i++) {
-		if (version > playlist.version ||
-		    playlist.songMod[i] >= version ||
-		    playlist.songMod[i] == 0) {
-			printPlaylistSongInfo(fp, i);
-		}
-	}
-
-	return 0;
-}
-
-int playlistChangesPosId(FILE * fp, mpd_uint32 version)
+int playlistChanges(int fd, mpd_uint32 version)
 {
 	int i;
 
@@ -484,15 +474,30 @@ int playlistChangesPosId(FILE * fp, mpd_uint32 version)
 		if (version > playlist.version ||
 		    playlist.songMod[i] >= version ||
 		    playlist.songMod[i] == 0) {
-			myfprintf(fp, "cpos: %i\n", i);
-			myfprintf(fp, "Id: %i\n", playlist.positionToId[i]);
+			printPlaylistSongInfo(fd, i);
 		}
 	}
 
 	return 0;
 }
 
-int playlistInfo(FILE * fp, int song)
+int playlistChangesPosId(int fd, mpd_uint32 version)
+{
+	int i;
+
+	for (i = 0; i < playlist.length; i++) {
+		if (version > playlist.version ||
+		    playlist.songMod[i] >= version ||
+		    playlist.songMod[i] == 0) {
+			fdprintf(fd, "cpos: %i\nId: %i\n",
+			         i, playlist.positionToId[i]);
+		}
+	}
+
+	return 0;
+}
+
+int playlistInfo(int fd, int song)
 {
 	int i;
 	int begin = 0;
@@ -503,13 +508,13 @@ int playlistInfo(FILE * fp, int song)
 		end = song + 1;
 	}
 	if (song >= playlist.length) {
-		commandError(fp, ACK_ERROR_NO_EXIST,
+		commandError(fd, ACK_ERROR_NO_EXIST,
 			     "song doesn't exist: \"%i\"", song);
 		return -1;
 	}
 
 	for (i = begin; i < end; i++)
-		printPlaylistSongInfo(fp, i);
+		printPlaylistSongInfo(fd, i);
 
 	return 0;
 }
@@ -518,13 +523,13 @@ int playlistInfo(FILE * fp, int song)
 	if(id < 0 || id >= PLAYLIST_HASH_MULT*playlist_max_length || \
 			playlist.idToPosition[id] == -1 ) \
 	{ \
-		commandError(fp, ACK_ERROR_NO_EXIST, \
+		commandError(fd, ACK_ERROR_NO_EXIST, \
 			"song id doesn't exist: \"%i\"", id); \
 		return -1; \
 	} \
 }
 
-int playlistId(FILE * fp, int id)
+int playlistId(int fd, int id)
 {
 	int i;
 	int begin = 0;
@@ -537,7 +542,7 @@ int playlistId(FILE * fp, int id)
 	}
 
 	for (i = begin; i < end; i++)
-		printPlaylistSongInfo(fp, i);
+		printPlaylistSongInfo(fd, i);
 
 	return 0;
 }
@@ -642,7 +647,7 @@ void clearPlayerQueue(void)
 	}
 }
 
-int addToPlaylist(FILE * fp, char *url, int printId)
+int addToPlaylist(int fd, char *url, int printId)
 {
 	Song *song;
 
@@ -651,21 +656,21 @@ int addToPlaylist(FILE * fp, char *url, int printId)
 	if ((song = getSongFromDB(url))) {
 	} else if (!(isValidRemoteUtf8Url(url) &&
 		     (song = newSong(url, SONG_TYPE_URL, NULL)))) {
-		commandError(fp, ACK_ERROR_NO_EXIST,
+		commandError(fd, ACK_ERROR_NO_EXIST,
 			     "\"%s\" is not in the music db or is "
 			     "not a valid url", url);
 		return -1;
 	}
 
-	return addSongToPlaylist(fp, song, printId);
+	return addSongToPlaylist(fd, song, printId);
 }
 
-int addSongToPlaylist(FILE * fp, Song * song, int printId)
+int addSongToPlaylist(int fd, Song * song, int printId)
 {
 	int id;
 
 	if (playlist.length == playlist_max_length) {
-		commandError(fp, ACK_ERROR_PLAYLIST_MAX,
+		commandError(fd, ACK_ERROR_PLAYLIST_MAX,
 			     "playlist is at the max size", NULL);
 		return -1;
 	}
@@ -707,23 +712,23 @@ int addSongToPlaylist(FILE * fp, Song * song, int printId)
 	incrPlaylistVersion();
 
 	if (printId)
-		myfprintf(fp, "Id: %i\n", id);
+		fdprintf(fd, "Id: %i\n", id);
 
 	return 0;
 }
 
-int swapSongsInPlaylist(FILE * fp, int song1, int song2)
+int swapSongsInPlaylist(int fd, int song1, int song2)
 {
 	int queuedSong = -1;
 	int currentSong = -1;
 
 	if (song1 < 0 || song1 >= playlist.length) {
-		commandError(fp, ACK_ERROR_NO_EXIST,
+		commandError(fd, ACK_ERROR_NO_EXIST,
 			     "song doesn't exist: \"%i\"", song1);
 		return -1;
 	}
 	if (song2 < 0 || song2 >= playlist.length) {
-		commandError(fp, ACK_ERROR_NO_EXIST,
+		commandError(fd, ACK_ERROR_NO_EXIST,
 			     "song doesn't exist: \"%i\"", song2);
 		return -1;
 	}
@@ -768,12 +773,12 @@ int swapSongsInPlaylist(FILE * fp, int song1, int song2)
 	return 0;
 }
 
-int swapSongsInPlaylistById(FILE * fp, int id1, int id2)
+int swapSongsInPlaylistById(int fd, int id1, int id2)
 {
 	checkSongId(id1);
 	checkSongId(id2);
 
-	return swapSongsInPlaylist(fp, playlist.idToPosition[id1],
+	return swapSongsInPlaylist(fd, playlist.idToPosition[id1],
 				   playlist.idToPosition[id2]);
 }
 
@@ -784,13 +789,13 @@ int swapSongsInPlaylistById(FILE * fp, int id1, int id2)
 	playlist.songMod[to] = playlist.version; \
 }
 
-int deleteFromPlaylist(FILE * fp, int song)
+int deleteFromPlaylist(int fd, int song)
 {
 	int i;
 	int songOrder;
 
 	if (song < 0 || song >= playlist.length) {
-		commandError(fp, ACK_ERROR_NO_EXIST,
+		commandError(fd, ACK_ERROR_NO_EXIST,
 			     "song doesn't exist: \"%i\"", song);
 		return -1;
 	}
@@ -837,9 +842,9 @@ int deleteFromPlaylist(FILE * fp, int song)
 
 	if (playlist_state != PLAYLIST_STATE_STOP
 	    && playlist.current == songOrder) {
-		/*if(playlist.current>=playlist.length) return playerStop(fp);
-		   else return playPlaylistOrderNumber(fp,playlist.current); */
-		playerStop(stderr);
+		/*if(playlist.current>=playlist.length) return playerStop(fd);
+		   else return playPlaylistOrderNumber(fd,playlist.current); */
+		playerStop(STDERR_FILENO);
 		playlist_noGoToNext = 1;
 	}
 
@@ -856,11 +861,11 @@ int deleteFromPlaylist(FILE * fp, int song)
 	return 0;
 }
 
-int deleteFromPlaylistById(FILE * fp, int id)
+int deleteFromPlaylistById(int fd, int id)
 {
 	checkSongId(id);
 
-	return deleteFromPlaylist(fp, playlist.idToPosition[id]);
+	return deleteFromPlaylist(fd, playlist.idToPosition[id]);
 }
 
 void deleteASongFromPlaylist(Song * song)
@@ -872,15 +877,15 @@ void deleteASongFromPlaylist(Song * song)
 
 	for (i = 0; i < playlist.length; i++) {
 		if (song == playlist.songs[i]) {
-			deleteFromPlaylist(stderr, i);
+			deleteFromPlaylist(STDERR_FILENO, i);
 		}
 	}
 }
 
-int stopPlaylist(FILE * fp)
+int stopPlaylist(int fd)
 {
 	DEBUG("playlist: stop\n");
-	if (playerStop(fp) < 0)
+	if (playerStop(fd) < 0)
 		return -1;
 	playerCloseAudio();
 	playlist.queued = -1;
@@ -891,10 +896,10 @@ int stopPlaylist(FILE * fp)
 	return 0;
 }
 
-int playPlaylistOrderNumber(FILE * fp, int orderNum)
+int playPlaylistOrderNumber(int fd, int orderNum)
 {
 
-	if (playerStop(fp) < 0)
+	if (playerStop(fd) < 0)
 		return -1;
 
 	playlist_state = PLAYLIST_STATE_PLAY;
@@ -905,8 +910,8 @@ int playPlaylistOrderNumber(FILE * fp, int orderNum)
 	DEBUG("playlist: play %i:\"%s\"\n", orderNum,
 	      getSongUrl(playlist.songs[playlist.order[orderNum]]));
 
-	if (playerPlay(fp, (playlist.songs[playlist.order[orderNum]])) < 0) {
-		stopPlaylist(fp);
+	if (playerPlay(fd, (playlist.songs[playlist.order[orderNum]])) < 0) {
+		stopPlaylist(fd);
 		return -1;
 	} else
 		playlist.current++;
@@ -916,7 +921,7 @@ int playPlaylistOrderNumber(FILE * fp, int orderNum)
 	return 0;
 }
 
-int playPlaylist(FILE * fp, int song, int stopOnError)
+int playPlaylist(int fd, int song, int stopOnError)
 {
 	int i = song;
 
@@ -927,7 +932,7 @@ int playPlaylist(FILE * fp, int song, int stopOnError)
 			return 0;
 
 		if (playlist_state == PLAYLIST_STATE_PLAY) {
-			return playerSetPause(fp, 0);
+			return playerSetPause(fd, 0);
 		}
 		if (playlist.current >= 0 && playlist.current < playlist.length) {
 			i = playlist.current;
@@ -935,7 +940,7 @@ int playPlaylist(FILE * fp, int song, int stopOnError)
 			i = 0;
 		}
 	} else if (song < 0 || song >= playlist.length) {
-		commandError(fp, ACK_ERROR_NO_EXIST,
+		commandError(fd, ACK_ERROR_NO_EXIST,
 			     "song doesn't exist: \"%i\"", song);
 		return -1;
 	}
@@ -957,18 +962,18 @@ int playPlaylist(FILE * fp, int song, int stopOnError)
 	playlist_stopOnError = stopOnError;
 	playlist_errorCount = 0;
 
-	return playPlaylistOrderNumber(fp, i);
+	return playPlaylistOrderNumber(fd, i);
 }
 
-int playPlaylistById(FILE * fp, int id, int stopOnError)
+int playPlaylistById(int fd, int id, int stopOnError)
 {
 	if (id == -1) {
-		return playPlaylist(fp, id, stopOnError);
+		return playPlaylist(fd, id, stopOnError);
 	}
 
 	checkSongId(id);
 
-	return playPlaylist(fp, playlist.idToPosition[id], stopOnError);
+	return playPlaylist(fd, playlist.idToPosition[id], stopOnError);
 }
 
 void syncCurrentPlayerDecodeMetadata(void)
@@ -1010,7 +1015,7 @@ void syncPlayerAndPlaylist(void)
 	syncCurrentPlayerDecodeMetadata();
 }
 
-int currentSongInPlaylist(FILE * fp)
+int currentSongInPlaylist(int fd)
 {
 	if (playlist_state != PLAYLIST_STATE_PLAY)
 		return 0;
@@ -1020,14 +1025,14 @@ int currentSongInPlaylist(FILE * fp)
 	syncPlaylistWithQueue(0);
 
 	if (playlist.current >= 0 && playlist.current < playlist.length) {
-		return playPlaylistOrderNumber(fp, playlist.current);
+		return playPlaylistOrderNumber(fd, playlist.current);
 	} else
-		return stopPlaylist(fp);;
+		return stopPlaylist(fd);
 
 	return 0;
 }
 
-int nextSongInPlaylist(FILE * fp)
+int nextSongInPlaylist(int fd)
 {
 	if (playlist_state != PLAYLIST_STATE_PLAY)
 		return 0;
@@ -1037,14 +1042,14 @@ int nextSongInPlaylist(FILE * fp)
 	playlist_stopOnError = 0;
 
 	if (playlist.current < playlist.length - 1) {
-		return playPlaylistOrderNumber(fp, playlist.current + 1);
+		return playPlaylistOrderNumber(fd, playlist.current + 1);
 	} else if (playlist.length && playlist.repeat) {
 		if (playlist.random)
 			randomizeOrder(0, playlist.length - 1);
-		return playPlaylistOrderNumber(fp, 0);
+		return playPlaylistOrderNumber(fd, 0);
 	} else {
 		incrPlaylistCurrent();
-		return stopPlaylist(fp);;
+		return stopPlaylist(fd);
 	}
 
 	return 0;
@@ -1065,11 +1070,11 @@ void playPlaylistIfPlayerStopped(void)
 			|| error == PLAYER_ERROR_AUDIO
 			|| error == PLAYER_ERROR_SYSTEM
 			|| playlist_errorCount >= playlist.length)) {
-			stopPlaylist(stderr);
+			stopPlaylist(STDERR_FILENO);
 		} else if (playlist_noGoToNext)
-			currentSongInPlaylist(stderr);
+			currentSongInPlaylist(STDERR_FILENO);
 		else
-			nextSongInPlaylist(stderr);
+			nextSongInPlaylist(STDERR_FILENO);
 	}
 }
 
@@ -1083,10 +1088,10 @@ int getPlaylistRandomStatus(void)
 	return playlist.random;
 }
 
-int setPlaylistRepeatStatus(FILE * fp, int status)
+int setPlaylistRepeatStatus(int fd, int status)
 {
 	if (status != 0 && status != 1) {
-		commandError(fp, ACK_ERROR_ARG, "\"%i\" is not 0 or 1", status);
+		commandError(fd, ACK_ERROR_ARG, "\"%i\" is not 0 or 1", status);
 		return -1;
 	}
 
@@ -1103,7 +1108,7 @@ int setPlaylistRepeatStatus(FILE * fp, int status)
 	return 0;
 }
 
-int moveSongInPlaylist(FILE * fp, int from, int to)
+int moveSongInPlaylist(int fd, int from, int to)
 {
 	int i;
 	Song *tmpSong;
@@ -1112,13 +1117,13 @@ int moveSongInPlaylist(FILE * fp, int from, int to)
 	int currentSong = -1;
 
 	if (from < 0 || from >= playlist.length) {
-		commandError(fp, ACK_ERROR_NO_EXIST,
+		commandError(fd, ACK_ERROR_NO_EXIST,
 			     "song doesn't exist: \"%i\"", from);
 		return -1;
 	}
 
 	if (to < 0 || to >= playlist.length) {
-		commandError(fp, ACK_ERROR_NO_EXIST,
+		commandError(fd, ACK_ERROR_NO_EXIST,
 			     "song doesn't exist: \"%i\"", to);
 		return -1;
 	}
@@ -1176,11 +1181,11 @@ int moveSongInPlaylist(FILE * fp, int from, int to)
 	return 0;
 }
 
-int moveSongInPlaylistById(FILE * fp, int id1, int to)
+int moveSongInPlaylistById(int fd, int id1, int to)
 {
 	checkSongId(id1);
 
-	return moveSongInPlaylist(fp, playlist.idToPosition[id1], to);
+	return moveSongInPlaylist(fd, playlist.idToPosition[id1], to);
 }
 
 static void orderPlaylist(void)
@@ -1238,12 +1243,12 @@ static void randomizeOrder(int start, int end)
 
 }
 
-int setPlaylistRandomStatus(FILE * fp, int status)
+int setPlaylistRandomStatus(int fd, int status)
 {
 	int statusWas = playlist.random;
 
 	if (status != 0 && status != 1) {
-		commandError(fp, ACK_ERROR_ARG, "\"%i\" is not 0 or 1", status);
+		commandError(fd, ACK_ERROR_ARG, "\"%i\" is not 0 or 1", status);
 		return -1;
 	}
 
@@ -1268,7 +1273,7 @@ int setPlaylistRandomStatus(FILE * fp, int status)
 	return 0;
 }
 
-int previousSongInPlaylist(FILE * fp)
+int previousSongInPlaylist(int fd)
 {
 	static time_t lastTime = 0;
 	time_t diff = time(NULL) - lastTime;
@@ -1281,22 +1286,22 @@ int previousSongInPlaylist(FILE * fp)
 	syncPlaylistWithQueue(0);
 
 	if (diff && getPlayerElapsedTime() > PLAYLIST_PREV_UNLESS_ELAPSED) {
-		return playPlaylistOrderNumber(fp, playlist.current);
+		return playPlaylistOrderNumber(fd, playlist.current);
 	} else {
 		if (playlist.current > 0) {
-			return playPlaylistOrderNumber(fp,
+			return playPlaylistOrderNumber(fd,
 						       playlist.current - 1);
 		} else if (playlist.repeat) {
-			return playPlaylistOrderNumber(fp, playlist.length - 1);
+			return playPlaylistOrderNumber(fd, playlist.length - 1);
 		} else {
-			return playPlaylistOrderNumber(fp, playlist.current);
+			return playPlaylistOrderNumber(fd, playlist.current);
 		}
 	}
 
 	return 0;
 }
 
-int shufflePlaylist(FILE * fp)
+int shufflePlaylist(int fd)
 {
 	int i;
 	int ri;
@@ -1331,7 +1336,7 @@ int shufflePlaylist(FILE * fp)
 	return 0;
 }
 
-int deletePlaylist(FILE * fp, char *utf8file)
+int deletePlaylist(int fd, char *utf8file)
 {
 	char *file = utf8ToFsCharset(utf8file);
 	char *rfile = malloc(strlen(file) + strlen(".") +
@@ -1348,13 +1353,13 @@ int deletePlaylist(FILE * fp, char *utf8file)
 		free(rfile);
 	else {
 		free(rfile);
-		commandError(fp, ACK_ERROR_NO_EXIST,
+		commandError(fd, ACK_ERROR_NO_EXIST,
 			     "playlist \"%s\" not found", utf8file);
 		return -1;
 	}
 
 	if (unlink(actualFile) < 0) {
-		commandError(fp, ACK_ERROR_SYSTEM,
+		commandError(fd, ACK_ERROR_SYSTEM,
 			     "problems deleting file", NULL);
 		return -1;
 	}
@@ -1362,7 +1367,7 @@ int deletePlaylist(FILE * fp, char *utf8file)
 	return 0;
 }
 
-int savePlaylist(FILE * fp, char *utf8file)
+int savePlaylist(int fd, char *utf8file)
 {
 	FILE *fileP;
 	int i;
@@ -1373,7 +1378,7 @@ int savePlaylist(FILE * fp, char *utf8file)
 	char *url;
 
 	if (strstr(utf8file, "/")) {
-		commandError(fp, ACK_ERROR_ARG,
+		commandError(fd, ACK_ERROR_ARG,
 			     "cannot save \"%s\", saving playlists to "
 			     "subdirectories is not supported", utf8file);
 		return -1;
@@ -1395,14 +1400,14 @@ int savePlaylist(FILE * fp, char *utf8file)
 	free(rfile);
 
 	if (0 == stat(actualFile, &st)) {
-		commandError(fp, ACK_ERROR_EXIST, "a file or directory already "
+		commandError(fd, ACK_ERROR_EXIST, "a file or directory already "
 			     "exists with the name \"%s\"", utf8file);
 		return -1;
 	}
 
 	while (!(fileP = fopen(actualFile, "w")) && errno == EINTR) ;
 	if (fileP == NULL) {
-		commandError(fp, ACK_ERROR_SYSTEM, "problems opening file",
+		commandError(fd, ACK_ERROR_SYSTEM, "problems opening file",
 			     NULL);
 		return -1;
 	}
@@ -1445,12 +1450,12 @@ int getPlaylistLength(void)
 	return playlist.length;
 }
 
-int seekSongInPlaylist(FILE * fp, int song, float time)
+int seekSongInPlaylist(int fd, int song, float time)
 {
 	int i = song;
 
 	if (song < 0 || song >= playlist.length) {
-		commandError(fp, ACK_ERROR_NO_EXIST,
+		commandError(fd, ACK_ERROR_NO_EXIST,
 			     "song doesn't exist: \"%i\"", song);
 		return -1;
 	}
@@ -1468,22 +1473,22 @@ int seekSongInPlaylist(FILE * fp, int song, float time)
 			clearPlayerQueue();
 			unlockPlaylistInteraction();
 		}
-	} else if (playPlaylistOrderNumber(fp, i) < 0)
+	} else if (playPlaylistOrderNumber(fd, i) < 0)
 		return -1;
 
 	if (playlist.current != i) {
-		if (playPlaylistOrderNumber(fp, i) < 0)
+		if (playPlaylistOrderNumber(fd, i) < 0)
 			return -1;
 	}
 
-	return playerSeek(fp, playlist.songs[playlist.order[i]], time);
+	return playerSeek(fd, playlist.songs[playlist.order[i]], time);
 }
 
-int seekSongInPlaylistById(FILE * fp, int id, float time)
+int seekSongInPlaylistById(int fd, int id, float time)
 {
 	checkSongId(id);
 
-	return seekSongInPlaylist(fp, playlist.idToPosition[id], time);
+	return seekSongInPlaylist(fd, playlist.idToPosition[id], time);
 }
 
 int getPlaylistSongId(int song)
@@ -1491,8 +1496,8 @@ int getPlaylistSongId(int song)
 	return playlist.positionToId[song];
 }
 
-static int PlaylistIterFunc(FILE * fp, char *utf8file,
-			    void (*IterFunc) (FILE * fp, char *utf8_file,
+static int PlaylistIterFunc(int fd, char *utf8file,
+			    void (*IterFunc) (int fd, char *utf8_file,
 					      char **errored_File))
 {
 	FILE *fileP;
@@ -1518,14 +1523,14 @@ static int PlaylistIterFunc(FILE * fp, char *utf8file,
 		free(rfile);
 	else {
 		free(rfile);
-		commandError(fp, ACK_ERROR_NO_EXIST,
+		commandError(fd, ACK_ERROR_NO_EXIST,
 			     "playlist \"%s\" not found", utf8file);
 		return -1;
 	}
 
 	while (!(fileP = fopen(actualFile, "r")) && errno == EINTR) ;
 	if (fileP == NULL) {
-		commandError(fp, ACK_ERROR_SYSTEM,
+		commandError(fd, ACK_ERROR_SYSTEM,
 			     "problems opening file \"%s\"", utf8file);
 		return -1;
 	}
@@ -1547,7 +1552,7 @@ static int PlaylistIterFunc(FILE * fp, char *utf8file,
 				strncat(s, "/", MAXPATHLEN - parentlen);
 				strncat(s, temp, MAXPATHLEN - parentlen - 1);
 				if (strlen(s) >= MAXPATHLEN) {
-					commandError(fp,
+					commandError(fd,
 						     ACK_ERROR_PLAYLIST_LOAD,
 						     "\"%s\" too long", temp);
 					free(temp);
@@ -1568,12 +1573,12 @@ static int PlaylistIterFunc(FILE * fp, char *utf8file,
 				 * for our current IterFunction set
 				 * but just in case, we copy to s */
 				strcpy(s, temp);
-				IterFunc(fp, s, &erroredFile);
+				IterFunc(fd, s, &erroredFile);
 			}
 			free(temp);
 		} else if (slength == MAXPATHLEN) {
 			s[slength] = '\0';
-			commandError(fp, ACK_ERROR_PLAYLIST_LOAD,
+			commandError(fd, ACK_ERROR_PLAYLIST_LOAD,
 				     "line in \"%s\" is too long", utf8file);
 			ERROR("line \"%s\" in playlist \"%s\" is too long\n",
 			      s, utf8file);
@@ -1588,7 +1593,7 @@ static int PlaylistIterFunc(FILE * fp, char *utf8file,
 	while (fclose(fileP) && errno == EINTR) ;
 
 	if (erroredFile) {
-		commandError(fp, ACK_ERROR_PLAYLIST_LOAD,
+		commandError(fd, ACK_ERROR_PLAYLIST_LOAD,
 			     "can't add file \"%s\"", erroredFile);
 		free(erroredFile);
 		return -1;
@@ -1597,25 +1602,25 @@ static int PlaylistIterFunc(FILE * fp, char *utf8file,
 	return 0;
 }
 
-static void PlaylistInfoPrintInfo(FILE * fp, char *utf8file, char **erroredfile)
+static void PlaylistInfoPrintInfo(int fd, char *utf8file, char **erroredfile)
 {
 	Song *song = getSongFromDB(utf8file);
 	if (song) {
-		printSongInfo(fp, song);
+		printSongInfo(fd, song);
 	} else {
-		myfprintf(fp, "file: %s\n", utf8file);
+		fdprintf(fd, "file: %s\n", utf8file);
 	}
 }
-static void PlaylistInfoPrint(FILE * fp, char *utf8file, char **erroredfile)
+static void PlaylistInfoPrint(int fd, char *utf8file, char **erroredfile)
 {
-	myfprintf(fp, "file: %s\n", utf8file);
+	fdprintf(fd, "file: %s\n", utf8file);
 }
 
-static void PlaylistLoadIterFunc(FILE * fp, char *temp, char **erroredFile)
+static void PlaylistLoadIterFunc(int fd, char *temp, char **erroredFile)
 {
 	if (!getSongFromDB(temp) && !isRemoteUrl(temp)) {
 
-	} else if ((addToPlaylist(stderr, temp, 0)) < 0) {
+	} else if ((addToPlaylist(STDERR_FILENO, temp, 0)) < 0) {
 		/* for windows compatibilit, convert slashes */
 		char *temp2 = strdup(temp);
 		char *p = temp2;
@@ -1624,7 +1629,7 @@ static void PlaylistLoadIterFunc(FILE * fp, char *temp, char **erroredFile)
 				*p = '/';
 			p++;
 		}
-		if ((addToPlaylist(stderr, temp2, 0)) < 0) {
+		if ((addToPlaylist(STDERR_FILENO, temp2, 0)) < 0) {
 			if (!*erroredFile) {
 				*erroredFile = strdup(temp);
 			}
@@ -1633,15 +1638,15 @@ static void PlaylistLoadIterFunc(FILE * fp, char *temp, char **erroredFile)
 	}
 }
 
-int PlaylistInfo(FILE * fp, char *utf8file, int detail)
+int PlaylistInfo(int fd, char *utf8file, int detail)
 {
 	if (detail) {
-		return PlaylistIterFunc(fp, utf8file, PlaylistInfoPrintInfo);
+		return PlaylistIterFunc(fd, utf8file, PlaylistInfoPrintInfo);
 	}
-	return PlaylistIterFunc(fp, utf8file, PlaylistInfoPrint);
+	return PlaylistIterFunc(fd, utf8file, PlaylistInfoPrint);
 }
 
-int loadPlaylist(FILE * fp, char *utf8file)
+int loadPlaylist(int fd, char *utf8file)
 {
-	return PlaylistIterFunc(fp, utf8file, PlaylistLoadIterFunc);
+	return PlaylistIterFunc(fd, utf8file, PlaylistLoadIterFunc);
 }

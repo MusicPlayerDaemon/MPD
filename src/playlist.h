@@ -38,61 +38,61 @@ void readPlaylistState();
 
 void savePlaylistState();
 
-int clearPlaylist(FILE * fp);
+int clearPlaylist(int fd);
 
-int addToPlaylist(FILE * fp, char *file, int printId);
+int addToPlaylist(int fd, char *file, int printId);
 
-int addSongToPlaylist(FILE * fp, Song * song, int printId);
+int addSongToPlaylist(int fd, Song * song, int printId);
 
-int showPlaylist(FILE * fp);
+int showPlaylist(int fd);
 
-int deleteFromPlaylist(FILE * fp, int song);
+int deleteFromPlaylist(int fd, int song);
 
-int deleteFromPlaylistById(FILE * fp, int song);
+int deleteFromPlaylistById(int fd, int song);
 
-int playlistInfo(FILE * fp, int song);
+int playlistInfo(int fd, int song);
 
-int playlistId(FILE * fp, int song);
+int playlistId(int fd, int song);
 
-int stopPlaylist(FILE * fp);
+int stopPlaylist(int fd);
 
-int playPlaylist(FILE * fp, int song, int stopOnError);
+int playPlaylist(int fd, int song, int stopOnError);
 
-int playPlaylistById(FILE * fp, int song, int stopOnError);
+int playPlaylistById(int fd, int song, int stopOnError);
 
-int nextSongInPlaylist(FILE * fp);
+int nextSongInPlaylist(int fd);
 
 void syncPlayerAndPlaylist();
 
-int previousSongInPlaylist(FILE * fp);
+int previousSongInPlaylist(int fd);
 
-int shufflePlaylist(FILE * fp);
+int shufflePlaylist(int fd);
 
-int savePlaylist(FILE * fp, char *utf8file);
+int savePlaylist(int fd, char *utf8file);
 
-int deletePlaylist(FILE * fp, char *utf8file);
+int deletePlaylist(int fd, char *utf8file);
 
-int deletePlaylistById(FILE * fp, char *utf8file);
+int deletePlaylistById(int fd, char *utf8file);
 
 void deleteASongFromPlaylist(Song * song);
 
-int moveSongInPlaylist(FILE * fp, int from, int to);
+int moveSongInPlaylist(int fd, int from, int to);
 
-int moveSongInPlaylistById(FILE * fp, int id, int to);
+int moveSongInPlaylistById(int fd, int id, int to);
 
-int swapSongsInPlaylist(FILE * fp, int song1, int song2);
+int swapSongsInPlaylist(int fd, int song1, int song2);
 
-int swapSongsInPlaylistById(FILE * fp, int id1, int id2);
+int swapSongsInPlaylistById(int fd, int id1, int id2);
 
-int loadPlaylist(FILE * fp, char *utf8file);
+int loadPlaylist(int fd, char *utf8file);
 
 int getPlaylistRepeatStatus();
 
-int setPlaylistRepeatStatus(FILE * fp, int status);
+int setPlaylistRepeatStatus(int fd, int status);
 
 int getPlaylistRandomStatus();
 
-int setPlaylistRandomStatus(FILE * fp, int status);
+int setPlaylistRandomStatus(int fd, int status);
 
 int getPlaylistCurrentSong();
 
@@ -104,17 +104,17 @@ unsigned long getPlaylistVersion();
 
 void playPlaylistIfPlayerStopped();
 
-int seekSongInPlaylist(FILE * fp, int song, float time);
+int seekSongInPlaylist(int fd, int song, float time);
 
-int seekSongInPlaylistById(FILE * fp, int id, float time);
+int seekSongInPlaylistById(int fd, int id, float time);
 
 void playlistVersionChange();
 
-int playlistChanges(FILE * fp, mpd_uint32 version);
+int playlistChanges(int fd, mpd_uint32 version);
 
-int playlistChangesPosId(FILE * fp, mpd_uint32 version);
+int playlistChangesPosId(int fd, mpd_uint32 version);
 
-int PlaylistInfo(FILE * fp, char *utf8file, int detail);
+int PlaylistInfo(int fd, char *utf8file, int detail);
 
 char *getStateFile();
 

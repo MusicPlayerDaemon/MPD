@@ -111,9 +111,9 @@
 
 typedef struct _CommandEntry CommandEntry;
 
-typedef int (*CommandHandlerFunction) (FILE *, int *, int, char **);
+typedef int (*CommandHandlerFunction) (int, int *, int, char **);
 typedef int (*CommandListHandlerFunction)
- (FILE *, int *, int, char **, ListNode *, CommandEntry *);
+ (int, int *, int, char **, struct strnode *, CommandEntry *);
 
 /* if min: -1 don't check args *
  * if max: -1 no max args      */
@@ -131,7 +131,7 @@ int command_listNum = 0;
 
 static CommandEntry *getCommandEntryFromString(char *string, int *permission);
 
-List *commandList;
+static List *commandList;
 
 CommandEntry *newCommandEntry(void)
 {
@@ -163,14 +163,14 @@ static void addCommand(char *name,
 	insertInList(commandList, cmd->cmd, cmd);
 }
 
-static int handleUrlHandlers(FILE * fp, int *permission, int argc,
-			     char **argv)
+static int handleUrlHandlers(int fd, int *permission, int argc,
+			     char *argv[])
 {
-	return printRemoteUrlHandlers(fp);
+	return printRemoteUrlHandlers(fd);
 }
 
-static int handlePlay(FILE * fp, int *permission, int argc,
-		      char **argv)
+static int handlePlay(int fd, int *permission, int argc,
+		      char *argv[])
 {
 	int song = -1;
 	char *test;
@@ -178,16 +178,16 @@ static int handlePlay(FILE * fp, int *permission, int argc,
 	if (argc == 2) {
 		song = strtol(argv[1], &test, 10);
 		if (*test != '\0') {
-			commandError(fp, ACK_ERROR_ARG,
+			commandError(fd, ACK_ERROR_ARG,
 				     "need a positive integer", NULL);
 			return -1;
 		}
 	}
-	return playPlaylist(fp, song, 0);
+	return playPlaylist(fd, song, 0);
 }
 
-static int handlePlayId(FILE * fp, int *permission, int argc,
-			char **argv)
+static int handlePlayId(int fd, int *permission, int argc,
+			char *argv[])
 {
 	int id = -1;
 	char *test;
@@ -195,49 +195,49 @@ static int handlePlayId(FILE * fp, int *permission, int argc,
 	if (argc == 2) {
 		id = strtol(argv[1], &test, 10);
 		if (*test != '\0') {
-			commandError(fp, ACK_ERROR_ARG,
+			commandError(fd, ACK_ERROR_ARG,
 				     "need a positive integer", NULL);
 			return -1;
 		}
 	}
-	return playPlaylistById(fp, id, 0);
+	return playPlaylistById(fd, id, 0);
 }
 
-static int handleStop(FILE * fp, int *permission, int argc,
-		      char **argv)
+static int handleStop(int fd, int *permission, int argc,
+		      char *argv[])
 {
-	return stopPlaylist(fp);
+	return stopPlaylist(fd);
 }
 
-static int handleCurrentSong(FILE * fp, int *permission, int argc,
-			     char **argv)
+static int handleCurrentSong(int fd, int *permission, int argc,
+			     char *argv[])
 {
 	int song = getPlaylistCurrentSong();
 
 	if (song >= 0) {
-		return playlistInfo(fp, song);
+		return playlistInfo(fd, song);
 	} else
 		return 0;
 }
 
-static int handlePause(FILE * fp, int *permission,
-		       int argc, char **argv)
+static int handlePause(int fd, int *permission,
+		       int argc, char *argv[])
 {
 	if (argc == 2) {
 		char *test;
 		int pause = strtol(argv[1], &test, 10);
 		if (*test != '\0' || (pause != 0 && pause != 1)) {
-			commandError(fp, ACK_ERROR_ARG, "\"%s\" is not 0 or 1",
+			commandError(fd, ACK_ERROR_ARG, "\"%s\" is not 0 or 1",
 				     argv[1]);
 			return -1;
 		}
-		return playerSetPause(fp, pause);
+		return playerSetPause(fd, pause);
 	}
-	return playerPause(fp);
+	return playerPause(fd);
 }
 
-static int commandStatus(FILE * fp, int *permission, int argc,
-			 char **argv)
+static int commandStatus(int fd, int *permission, int argc,
+			 char *argv[])
 {
 	char *state = NULL;
 	int updateJobId;
@@ -257,204 +257,204 @@ static int commandStatus(FILE * fp, int *permission, int argc,
 		break;
 	}
 
-	myfprintf(fp, "%s: %i\n", COMMAND_STATUS_VOLUME, getVolumeLevel());
-	myfprintf(fp, "%s: %i\n", COMMAND_STATUS_REPEAT,
+	fdprintf(fd, "%s: %i\n", COMMAND_STATUS_VOLUME, getVolumeLevel());
+	fdprintf(fd, "%s: %i\n", COMMAND_STATUS_REPEAT,
 		  getPlaylistRepeatStatus());
-	myfprintf(fp, "%s: %i\n", COMMAND_STATUS_RANDOM,
+	fdprintf(fd, "%s: %i\n", COMMAND_STATUS_RANDOM,
 		  getPlaylistRandomStatus());
-	myfprintf(fp, "%s: %li\n", COMMAND_STATUS_PLAYLIST,
+	fdprintf(fd, "%s: %li\n", COMMAND_STATUS_PLAYLIST,
 		  getPlaylistVersion());
-	myfprintf(fp, "%s: %i\n", COMMAND_STATUS_PLAYLIST_LENGTH,
+	fdprintf(fd, "%s: %i\n", COMMAND_STATUS_PLAYLIST_LENGTH,
 		  getPlaylistLength());
-	myfprintf(fp, "%s: %i\n", COMMAND_STATUS_CROSSFADE,
+	fdprintf(fd, "%s: %i\n", COMMAND_STATUS_CROSSFADE,
 		  (int)(getPlayerCrossFade() + 0.5));
 
-	myfprintf(fp, "%s: %s\n", COMMAND_STATUS_STATE, state);
+	fdprintf(fd, "%s: %s\n", COMMAND_STATUS_STATE, state);
 
 	song = getPlaylistCurrentSong();
 	if (song >= 0) {
-		myfprintf(fp, "%s: %i\n", COMMAND_STATUS_SONG, song);
-		myfprintf(fp, "%s: %i\n", COMMAND_STATUS_SONGID,
+		fdprintf(fd, "%s: %i\n", COMMAND_STATUS_SONG, song);
+		fdprintf(fd, "%s: %i\n", COMMAND_STATUS_SONGID,
 			  getPlaylistSongId(song));
 	}
 	if (getPlayerState() != PLAYER_STATE_STOP) {
-		myfprintf(fp, "%s: %i:%i\n", COMMAND_STATUS_TIME,
+		fdprintf(fd, "%s: %i:%i\n", COMMAND_STATUS_TIME,
 			  getPlayerElapsedTime(), getPlayerTotalTime());
-		myfprintf(fp, "%s: %li\n", COMMAND_STATUS_BITRATE,
+		fdprintf(fd, "%s: %li\n", COMMAND_STATUS_BITRATE,
 			  getPlayerBitRate(), getPlayerTotalTime());
-		myfprintf(fp, "%s: %u:%i:%i\n", COMMAND_STATUS_AUDIO,
+		fdprintf(fd, "%s: %u:%i:%i\n", COMMAND_STATUS_AUDIO,
 			  getPlayerSampleRate(), getPlayerBits(),
 			  getPlayerChannels());
 	}
 
 	if ((updateJobId = isUpdatingDB())) {
-		myfprintf(fp, "%s: %i\n", COMMAND_STATUS_UPDATING_DB,
+		fdprintf(fd, "%s: %i\n", COMMAND_STATUS_UPDATING_DB,
 			  updateJobId);
 	}
 
 	if (getPlayerError() != PLAYER_ERROR_NOERROR) {
-		myfprintf(fp, "%s: %s\n", COMMAND_STATUS_ERROR,
+		fdprintf(fd, "%s: %s\n", COMMAND_STATUS_ERROR,
 			  getPlayerErrorStr());
 	}
 
 	return 0;
 }
 
-static int handleKill(FILE * fp, int *permission, int argc,
-		      char **argv)
+static int handleKill(int fd, int *permission, int argc,
+		      char *argv[])
 {
 	return COMMAND_RETURN_KILL;
 }
 
-static int handleClose(FILE * fp, int *permission, int argc,
-		       char **argv)
+static int handleClose(int fd, int *permission, int argc,
+		       char *argv[])
 {
 	return COMMAND_RETURN_CLOSE;
 }
 
-static int handleAdd(FILE * fp, int *permission, int argc,
-		     char **argv)
+static int handleAdd(int fd, int *permission, int argc,
+		     char *argv[])
 {
 	char *path = argv[1];
 
 	if (isRemoteUrl(path))
-		return addToPlaylist(fp, path, 0);
+		return addToPlaylist(fd, path, 0);
 
-	return addAllIn(fp, path);
+	return addAllIn(fd, path);
 }
 
-static int handleAddId(FILE * fp, int *permission, int argc,
-		       char **argv)
+static int handleAddId(int fd, int *permission, int argc,
+		       char *argv[])
 {
-	return addToPlaylist(fp, argv[1], 1);
+	return addToPlaylist(fd, argv[1], 1);
 }
 
-static int handleDelete(FILE * fp, int *permission, int argc,
-			char **argv)
+static int handleDelete(int fd, int *permission, int argc,
+			char *argv[])
 {
 	int song;
 	char *test;
 
 	song = strtol(argv[1], &test, 10);
 	if (*test != '\0') {
-		commandError(fp, ACK_ERROR_ARG,
+		commandError(fd, ACK_ERROR_ARG,
 			     "need a positive integer", NULL);
 		return -1;
 	}
-	return deleteFromPlaylist(fp, song);
+	return deleteFromPlaylist(fd, song);
 }
 
-static int handleDeleteId(FILE * fp, int *permission, int argc,
-			  char **argv)
+static int handleDeleteId(int fd, int *permission, int argc,
+			  char *argv[])
 {
 	int id;
 	char *test;
 
 	id = strtol(argv[1], &test, 10);
 	if (*test != '\0') {
-		commandError(fp, ACK_ERROR_ARG,
+		commandError(fd, ACK_ERROR_ARG,
 			     "need a positive integer", NULL);
 		return -1;
 	}
-	return deleteFromPlaylistById(fp, id);
+	return deleteFromPlaylistById(fd, id);
 }
 
-static int handlePlaylist(FILE * fp, int *permission, int argc,
-			  char **argv)
+static int handlePlaylist(int fd, int *permission, int argc,
+			  char *argv[])
 {
-	return showPlaylist(fp);
+	return showPlaylist(fd);
 }
 
-static int handleShuffle(FILE * fp, int *permission, int argc,
-			 char **argv)
+static int handleShuffle(int fd, int *permission, int argc,
+			 char *argv[])
 {
-	return shufflePlaylist(fp);
+	return shufflePlaylist(fd);
 }
 
-static int handleClear(FILE * fp, int *permission, int argc,
-		       char **argv)
+static int handleClear(int fd, int *permission, int argc,
+		       char *argv[])
 {
-	return clearPlaylist(fp);
+	return clearPlaylist(fd);
 }
 
-static int handleSave(FILE * fp, int *permission, int argc,
-		      char **argv)
+static int handleSave(int fd, int *permission, int argc,
+		      char *argv[])
 {
-	return savePlaylist(fp, argv[1]);
+	return savePlaylist(fd, argv[1]);
 }
 
-static int handleLoad(FILE * fp, int *permission, int argc,
-		      char **argv)
+static int handleLoad(int fd, int *permission, int argc,
+		      char *argv[])
 {
-	return loadPlaylist(fp, argv[1]);
+	return loadPlaylist(fd, argv[1]);
 }
 
-static int handleListPlaylist(FILE * fp, int *permission, int argc,
-			      char **argv)
+static int handleListPlaylist(int fd, int *permission, int argc,
+			      char *argv[])
 {
-	return PlaylistInfo(fp, argv[1], 0);
+	return PlaylistInfo(fd, argv[1], 0);
 }
 
-static int handleListPlaylistInfo(FILE * fp, int *permission,
-				  int argc, char **argv)
+static int handleListPlaylistInfo(int fd, int *permission,
+				  int argc, char *argv[])
 {
-	return PlaylistInfo(fp, argv[1], 1);
+	return PlaylistInfo(fd, argv[1], 1);
 }
 
-static int handleLsInfo(FILE * fp, int *permission, int argc,
-			char **argv)
+static int handleLsInfo(int fd, int *permission, int argc,
+			char *argv[])
 {
 	if (argc == 1) {
-		if (printDirectoryInfo(fp, NULL) < 0)
+		if (printDirectoryInfo(fd, NULL) < 0)
 			return -1;
 		else
-			return lsPlaylists(fp, "");
+			return lsPlaylists(fd, "");
 	} else {
-		if (printDirectoryInfo(fp, argv[1]) < 0)
+		if (printDirectoryInfo(fd, argv[1]) < 0)
 			return -1;
 		else
-			return lsPlaylists(fp, argv[1]);
+			return lsPlaylists(fd, argv[1]);
 	}
 }
 
-static int handleRm(FILE * fp, int *permission, int argc,
-		    char **argv)
+static int handleRm(int fd, int *permission, int argc,
+		    char *argv[])
 {
-	return deletePlaylist(fp, argv[1]);
+	return deletePlaylist(fd, argv[1]);
 }
 
-static int handlePlaylistChanges(FILE * fp, int *permission,
-				 int argc, char **argv)
-{
-	unsigned long version;
-	char *test;
-
-	version = strtoul(argv[1], &test, 10);
-	if (*test != '\0') {
-		commandError(fp, ACK_ERROR_ARG, "need a positive integer",
-			     NULL);
-		return -1;
-	}
-	return playlistChanges(fp, version);
-}
-
-static int handlePlaylistChangesPosId(FILE * fp, int *permission,
-				      int argc, char **argv)
+static int handlePlaylistChanges(int fd, int *permission,
+				 int argc, char *argv[])
 {
 	unsigned long version;
 	char *test;
 
 	version = strtoul(argv[1], &test, 10);
 	if (*test != '\0') {
-		commandError(fp, ACK_ERROR_ARG, "need a positive integer",
+		commandError(fd, ACK_ERROR_ARG, "need a positive integer",
 			     NULL);
 		return -1;
 	}
-	return playlistChangesPosId(fp, version);
+	return playlistChanges(fd, version);
 }
 
-static int handlePlaylistInfo(FILE * fp, int *permission,
-			      int argc, char **argv)
+static int handlePlaylistChangesPosId(int fd, int *permission,
+				      int argc, char *argv[])
+{
+	unsigned long version;
+	char *test;
+
+	version = strtoul(argv[1], &test, 10);
+	if (*test != '\0') {
+		commandError(fd, ACK_ERROR_ARG, "need a positive integer",
+			     NULL);
+		return -1;
+	}
+	return playlistChangesPosId(fd, version);
+}
+
+static int handlePlaylistInfo(int fd, int *permission,
+			      int argc, char *argv[])
 {
 	int song = -1;
 	char *test;
@@ -462,16 +462,16 @@ static int handlePlaylistInfo(FILE * fp, int *permission,
 	if (argc == 2) {
 		song = strtol(argv[1], &test, 10);
 		if (*test != '\0') {
-			commandError(fp, ACK_ERROR_ARG,
+			commandError(fd, ACK_ERROR_ARG,
 				     "need a positive integer", NULL);
 			return -1;
 		}
 	}
-	return playlistInfo(fp, song);
+	return playlistInfo(fd, song);
 }
 
-static int handlePlaylistId(FILE * fp, int *permission,
-			    int argc, char **argv)
+static int handlePlaylistId(int fd, int *permission,
+			    int argc, char *argv[])
 {
 	int id = -1;
 	char *test;
@@ -479,16 +479,16 @@ static int handlePlaylistId(FILE * fp, int *permission,
 	if (argc == 2) {
 		id = strtol(argv[1], &test, 10);
 		if (*test != '\0') {
-			commandError(fp, ACK_ERROR_ARG,
+			commandError(fd, ACK_ERROR_ARG,
 				     "need a positive integer", NULL);
 			return -1;
 		}
 	}
-	return playlistId(fp, id);
+	return playlistId(fd, id);
 }
 
-static int handleFind(FILE * fp, int *permission, int argc,
-		      char **argv)
+static int handleFind(int fd, int *permission, int argc,
+		      char *argv[])
 {
 	int ret;
 
@@ -498,19 +498,19 @@ static int handleFind(FILE * fp, int *permission, int argc,
 							 &items);
 
 	if (numItems <= 0) {
-		commandError(fp, ACK_ERROR_ARG, "incorrect arguments", NULL);
+		commandError(fd, ACK_ERROR_ARG, "incorrect arguments", NULL);
 		return -1;
 	}
 
-	ret = findSongsIn(fp, NULL, numItems, items);
+	ret = findSongsIn(fd, NULL, numItems, items);
 
 	freeLocateTagItemArray(numItems, items);
 
 	return ret;
 }
 
-static int handleSearch(FILE * fp, int *permission, int argc,
-			char **argv)
+static int handleSearch(int fd, int *permission, int argc,
+			char *argv[])
 {
 	int ret;
 
@@ -520,26 +520,26 @@ static int handleSearch(FILE * fp, int *permission, int argc,
 							 &items);
 
 	if (numItems <= 0) {
-		commandError(fp, ACK_ERROR_ARG, "incorrect arguments", NULL);
+		commandError(fd, ACK_ERROR_ARG, "incorrect arguments", NULL);
 		return -1;
 	}
 
-	ret = searchForSongsIn(fp, NULL, numItems, items);
+	ret = searchForSongsIn(fd, NULL, numItems, items);
 
 	freeLocateTagItemArray(numItems, items);
 
 	return ret;
 }
 
-static int listHandleUpdate(FILE * fp,
+static int listHandleUpdate(int fd,
 			    int *permission,
 			    int argc,
-			    char **argv,
-			    ListNode * commandNode, CommandEntry * cmd)
+			    char *argv[],
+			    struct strnode *cmdnode, CommandEntry *cmd)
 {
 	static List *pathList = NULL;
 	CommandEntry *nextCmd = NULL;
-	ListNode *nextNode = commandNode->nextNode;;
+	struct strnode *next = cmdnode->next;
 
 	if (!pathList)
 		pathList = makeList(NULL, 1);
@@ -549,13 +549,11 @@ static int listHandleUpdate(FILE * fp,
 	else
 		insertInList(pathList, "", NULL);
 
-	if (nextNode) {
-		nextCmd = getCommandEntryFromString((void *)nextNode->data,
-						    permission);
-	}
+	if(next)
+		nextCmd = getCommandEntryFromString(next->data, permission);
 
 	if (cmd != nextCmd) {
-		int ret = updateInit(fp, pathList);
+		int ret = updateInit(fd, pathList);
 		freeList(pathList);
 		pathList = NULL;
 		return ret;
@@ -564,113 +562,113 @@ static int listHandleUpdate(FILE * fp,
 	return 0;
 }
 
-static int handleUpdate(FILE * fp, int *permission, int argc,
-			char **argv)
+static int handleUpdate(int fd, int *permission, int argc,
+			char *argv[])
 {
 	if (argc == 2) {
 		int ret;
 		List *pathList = makeList(NULL, 1);
 		insertInList(pathList, argv[1], NULL);
-		ret = updateInit(fp, pathList);
+		ret = updateInit(fd, pathList);
 		freeList(pathList);
 		return ret;
 	}
-	return updateInit(fp, NULL);
+	return updateInit(fd, NULL);
 }
 
-static int handleNext(FILE * fp, int *permission, int argc,
-		      char **argv)
+static int handleNext(int fd, int *permission, int argc,
+		      char *argv[])
 {
-	return nextSongInPlaylist(fp);
+	return nextSongInPlaylist(fd);
 }
 
-static int handlePrevious(FILE * fp, int *permission, int argc,
-			  char **argv)
+static int handlePrevious(int fd, int *permission, int argc,
+			  char *argv[])
 {
-	return previousSongInPlaylist(fp);
+	return previousSongInPlaylist(fd);
 }
 
-static int handleListAll(FILE * fp, int *permission, int argc,
-			 char **argv)
+static int handleListAll(int fd, int *permission, int argc,
+			 char *argv[])
 {
 	char *directory = NULL;
 
 	if (argc == 2)
 		directory = argv[1];
-	return printAllIn(fp, directory);
+	return printAllIn(fd, directory);
 }
 
-static int handleVolume(FILE * fp, int *permission, int argc,
-			char **argv)
+static int handleVolume(int fd, int *permission, int argc,
+			char *argv[])
 {
 	int change;
 	char *test;
 
 	change = strtol(argv[1], &test, 10);
 	if (*test != '\0') {
-		commandError(fp, ACK_ERROR_ARG, "need an integer", NULL);
+		commandError(fd, ACK_ERROR_ARG, "need an integer", NULL);
 		return -1;
 	}
-	return changeVolumeLevel(fp, change, 1);
+	return changeVolumeLevel(fd, change, 1);
 }
 
-static int handleSetVol(FILE * fp, int *permission, int argc,
-			char **argv)
+static int handleSetVol(int fd, int *permission, int argc,
+			char *argv[])
 {
 	int level;
 	char *test;
 
 	level = strtol(argv[1], &test, 10);
 	if (*test != '\0') {
-		commandError(fp, ACK_ERROR_ARG, "need an integer", NULL);
+		commandError(fd, ACK_ERROR_ARG, "need an integer", NULL);
 		return -1;
 	}
-	return changeVolumeLevel(fp, level, 0);
+	return changeVolumeLevel(fd, level, 0);
 }
 
-static int handleRepeat(FILE * fp, int *permission, int argc,
-			char **argv)
+static int handleRepeat(int fd, int *permission, int argc,
+			char *argv[])
 {
 	int status;
 	char *test;
 
 	status = strtol(argv[1], &test, 10);
 	if (*test != '\0') {
-		commandError(fp, ACK_ERROR_ARG, "need an integer", NULL);
+		commandError(fd, ACK_ERROR_ARG, "need an integer", NULL);
 		return -1;
 	}
-	return setPlaylistRepeatStatus(fp, status);
+	return setPlaylistRepeatStatus(fd, status);
 }
 
-static int handleRandom(FILE * fp, int *permission, int argc,
-			char **argv)
+static int handleRandom(int fd, int *permission, int argc,
+			char *argv[])
 {
 	int status;
 	char *test;
 
 	status = strtol(argv[1], &test, 10);
 	if (*test != '\0') {
-		commandError(fp, ACK_ERROR_ARG, "need an integer", NULL);
+		commandError(fd, ACK_ERROR_ARG, "need an integer", NULL);
 		return -1;
 	}
-	return setPlaylistRandomStatus(fp, status);
+	return setPlaylistRandomStatus(fd, status);
 }
 
-static int handleStats(FILE * fp, int *permission, int argc,
-		       char **argv)
+static int handleStats(int fd, int *permission, int argc,
+		       char *argv[])
 {
-	return printStats(fp);
+	return printStats(fd);
 }
 
-static int handleClearError(FILE * fp, int *permission, int argc,
-			    char **argv)
+static int handleClearError(int fd, int *permission, int argc,
+			    char *argv[])
 {
 	clearPlayerError();
 	return 0;
 }
 
-static int handleList(FILE * fp, int *permission, int argc,
-		      char **argv)
+static int handleList(int fd, int *permission, int argc,
+		      char *argv[])
 {
 	int numConditionals = 0;
 	LocateTagItem *conditionals = NULL;
@@ -678,7 +676,7 @@ static int handleList(FILE * fp, int *permission, int argc,
 	int ret;
 
 	if (tagType < 0) {
-		commandError(fp, ACK_ERROR_ARG,
+		commandError(fd, ACK_ERROR_ARG,
 			     "\"%s\" is not known", argv[1]);
 		return -1;
 	}
@@ -686,7 +684,7 @@ static int handleList(FILE * fp, int *permission, int argc,
 	/* for compatibility with < 0.12.0 */
 	if (argc == 3) {
 		if (tagType != TAG_ITEM_ALBUM) {
-			commandError(fp, ACK_ERROR_ARG,
+			commandError(fd, ACK_ERROR_ARG,
 				     "should be \"%s\" for 3 arguments",
 				     mpdTagItemKeys[TAG_ITEM_ALBUM]);
 			return -1;
@@ -701,13 +699,13 @@ static int handleList(FILE * fp, int *permission, int argc,
 						      &conditionals);
 
 		if (numConditionals < 0) {
-			commandError(fp, ACK_ERROR_ARG,
+			commandError(fd, ACK_ERROR_ARG,
 				     "not able to parse args", NULL);
 			return -1;
 		}
 	}
 
-	ret = listAllUniqueTags(fp, tagType, numConditionals, conditionals);
+	ret = listAllUniqueTags(fd, tagType, numConditionals, conditionals);
 
 	if (conditionals)
 		freeLocateTagItemArray(numConditionals, conditionals);
@@ -715,8 +713,8 @@ static int handleList(FILE * fp, int *permission, int argc,
 	return ret;
 }
 
-static int handleMove(FILE * fp, int *permission, int argc,
-		      char **argv)
+static int handleMove(int fd, int *permission, int argc,
+		      char *argv[])
 {
 	int from;
 	int to;
@@ -724,21 +722,21 @@ static int handleMove(FILE * fp, int *permission, int argc,
 
 	from = strtol(argv[1], &test, 10);
 	if (*test != '\0') {
-		commandError(fp, ACK_ERROR_ARG,
+		commandError(fd, ACK_ERROR_ARG,
 			     "\"%s\" is not a integer", argv[1]);
 		return -1;
 	}
 	to = strtol(argv[2], &test, 10);
 	if (*test != '\0') {
-		commandError(fp, ACK_ERROR_ARG,
+		commandError(fd, ACK_ERROR_ARG,
 			     "\"%s\" is not a integer", argv[2]);
 		return -1;
 	}
-	return moveSongInPlaylist(fp, from, to);
+	return moveSongInPlaylist(fd, from, to);
 }
 
-static int handleMoveId(FILE * fp, int *permission, int argc,
-			char **argv)
+static int handleMoveId(int fd, int *permission, int argc,
+			char *argv[])
 {
 	int id;
 	int to;
@@ -746,21 +744,21 @@ static int handleMoveId(FILE * fp, int *permission, int argc,
 
 	id = strtol(argv[1], &test, 10);
 	if (*test != '\0') {
-		commandError(fp, ACK_ERROR_ARG,
+		commandError(fd, ACK_ERROR_ARG,
 			     "\"%s\" is not a integer", argv[1]);
 		return -1;
 	}
 	to = strtol(argv[2], &test, 10);
 	if (*test != '\0') {
-		commandError(fp, ACK_ERROR_ARG,
+		commandError(fd, ACK_ERROR_ARG,
 			     "\"%s\" is not a integer", argv[2]);
 		return -1;
 	}
-	return moveSongInPlaylistById(fp, id, to);
+	return moveSongInPlaylistById(fd, id, to);
 }
 
-static int handleSwap(FILE * fp, int *permission, int argc,
-		      char **argv)
+static int handleSwap(int fd, int *permission, int argc,
+		      char *argv[])
 {
 	int song1;
 	int song2;
@@ -768,21 +766,21 @@ static int handleSwap(FILE * fp, int *permission, int argc,
 
 	song1 = strtol(argv[1], &test, 10);
 	if (*test != '\0') {
-		commandError(fp, ACK_ERROR_ARG,
+		commandError(fd, ACK_ERROR_ARG,
 			     "\"%s\" is not a integer", argv[1]);
 		return -1;
 	}
 	song2 = strtol(argv[2], &test, 10);
 	if (*test != '\0') {
-		commandError(fp, ACK_ERROR_ARG, "\"%s\" is not a integer",
+		commandError(fd, ACK_ERROR_ARG, "\"%s\" is not a integer",
 			     argv[2]);
 		return -1;
 	}
-	return swapSongsInPlaylist(fp, song1, song2);
+	return swapSongsInPlaylist(fd, song1, song2);
 }
 
-static int handleSwapId(FILE * fp, int *permission, int argc,
-			char **argv)
+static int handleSwapId(int fd, int *permission, int argc,
+			char *argv[])
 {
 	int id1;
 	int id2;
@@ -790,21 +788,21 @@ static int handleSwapId(FILE * fp, int *permission, int argc,
 
 	id1 = strtol(argv[1], &test, 10);
 	if (*test != '\0') {
-		commandError(fp, ACK_ERROR_ARG,
+		commandError(fd, ACK_ERROR_ARG,
 			     "\"%s\" is not a integer", argv[1]);
 		return -1;
 	}
 	id2 = strtol(argv[2], &test, 10);
 	if (*test != '\0') {
-		commandError(fp, ACK_ERROR_ARG, "\"%s\" is not a integer",
+		commandError(fd, ACK_ERROR_ARG, "\"%s\" is not a integer",
 			     argv[2]);
 		return -1;
 	}
-	return swapSongsInPlaylistById(fp, id1, id2);
+	return swapSongsInPlaylistById(fd, id1, id2);
 }
 
-static int handleSeek(FILE * fp, int *permission, int argc,
-		      char **argv)
+static int handleSeek(int fd, int *permission, int argc,
+		      char *argv[])
 {
 	int song;
 	int time;
@@ -812,21 +810,21 @@ static int handleSeek(FILE * fp, int *permission, int argc,
 
 	song = strtol(argv[1], &test, 10);
 	if (*test != '\0') {
-		commandError(fp, ACK_ERROR_ARG,
+		commandError(fd, ACK_ERROR_ARG,
 			     "\"%s\" is not a integer", argv[1]);
 		return -1;
 	}
 	time = strtol(argv[2], &test, 10);
 	if (*test != '\0') {
-		commandError(fp, ACK_ERROR_ARG,
+		commandError(fd, ACK_ERROR_ARG,
 			     "\"%s\" is not a integer", argv[2]);
 		return -1;
 	}
-	return seekSongInPlaylist(fp, song, time);
+	return seekSongInPlaylist(fd, song, time);
 }
 
-static int handleSeekId(FILE * fp, int *permission, int argc,
-			char **argv)
+static int handleSeekId(int fd, int *permission, int argc,
+			char *argv[])
 {
 	int id;
 	int time;
@@ -834,40 +832,40 @@ static int handleSeekId(FILE * fp, int *permission, int argc,
 
 	id = strtol(argv[1], &test, 10);
 	if (*test != '\0') {
-		commandError(fp, ACK_ERROR_ARG,
+		commandError(fd, ACK_ERROR_ARG,
 			     "\"%s\" is not a integer", argv[1]);
 		return -1;
 	}
 	time = strtol(argv[2], &test, 10);
 	if (*test != '\0') {
-		commandError(fp, ACK_ERROR_ARG,
+		commandError(fd, ACK_ERROR_ARG,
 			     "\"%s\" is not a integer", argv[2]);
 		return -1;
 	}
-	return seekSongInPlaylistById(fp, id, time);
+	return seekSongInPlaylistById(fd, id, time);
 }
 
-static int handleListAllInfo(FILE * fp, int *permission, int argc,
-			     char **argv)
+static int handleListAllInfo(int fd, int *permission, int argc,
+			     char *argv[])
 {
 	char *directory = NULL;
 
 	if (argc == 2)
 		directory = argv[1];
-	return printInfoForAllIn(fp, directory);
+	return printInfoForAllIn(fd, directory);
 }
 
-static int handlePing(FILE * fp, int *permission, int argc,
-		      char **argv)
+static int handlePing(int fd, int *permission, int argc,
+		      char *argv[])
 {
 	return 0;
 }
 
-static int handlePassword(FILE * fp, int *permission, int argc,
-			  char **argv)
+static int handlePassword(int fd, int *permission, int argc,
+			  char *argv[])
 {
 	if (getPermissionFromPassword(argv[1], permission) < 0) {
-		commandError(fp, ACK_ERROR_PASSWORD, "incorrect password",
+		commandError(fd, ACK_ERROR_PASSWORD, "incorrect password",
 			     NULL);
 		return -1;
 	}
@@ -875,15 +873,15 @@ static int handlePassword(FILE * fp, int *permission, int argc,
 	return 0;
 }
 
-static int handleCrossfade(FILE * fp, int *permission, int argc,
-			   char **argv)
+static int handleCrossfade(int fd, int *permission, int argc,
+			   char *argv[])
 {
 	int time;
 	char *test;
 
 	time = strtol(argv[1], &test, 10);
 	if (*test != '\0' || time < 0) {
-		commandError(fp, ACK_ERROR_ARG,
+		commandError(fd, ACK_ERROR_ARG,
 			     "\"%s\" is not a integer >= 0", argv[1]);
 		return -1;
 	}
@@ -893,49 +891,49 @@ static int handleCrossfade(FILE * fp, int *permission, int argc,
 	return 0;
 }
 
-static int handleEnableDevice(FILE * fp, int *permission, int argc,
-			      char **argv)
+static int handleEnableDevice(int fd, int *permission, int argc,
+			      char *argv[])
 {
 	int device;
 	char *test;
 
 	device = strtol(argv[1], &test, 10);
 	if (*test != '\0' || device < 0) {
-		commandError(fp, ACK_ERROR_ARG,
+		commandError(fd, ACK_ERROR_ARG,
 			     "\"%s\" is not a integer >= 0", argv[1]);
 		return -1;
 	}
 
-	return enableAudioDevice(fp, device);
+	return enableAudioDevice(fd, device);
 }
 
-static int handleDisableDevice(FILE * fp, int *permission,
-			       int argc, char **argv)
+static int handleDisableDevice(int fd, int *permission,
+			       int argc, char *argv[])
 {
 	int device;
 	char *test;
 
 	device = strtol(argv[1], &test, 10);
 	if (*test != '\0' || device < 0) {
-		commandError(fp, ACK_ERROR_ARG,
+		commandError(fd, ACK_ERROR_ARG,
 			     "\"%s\" is not a integer >= 0", argv[1]);
 		return -1;
 	}
 
-	return disableAudioDevice(fp, device);
+	return disableAudioDevice(fd, device);
 }
 
-static int handleDevices(FILE * fp, int *permission, int argc,
-			 char **argv)
+static int handleDevices(int fd, int *permission, int argc,
+			 char *argv[])
 {
-	printAudioDevices(fp);
+	printAudioDevices(fd);
 
 	return 0;
 }
 
 /* don't be fooled, this is the command handler for "commands" command */
-static int handleCommands(FILE * fp, int *permission, int argc,
-			  char **argv)
+static int handleCommands(int fd, int *permission, int argc,
+			  char *argv[])
 {
 	ListNode *node = commandList->firstNode;
 	CommandEntry *cmd;
@@ -943,7 +941,7 @@ static int handleCommands(FILE * fp, int *permission, int argc,
 	while (node != NULL) {
 		cmd = (CommandEntry *) node->data;
 		if (cmd->reqPermission == (*permission & cmd->reqPermission)) {
-			myfprintf(fp, "command: %s\n", cmd->cmd);
+			fdprintf(fd, "command: %s\n", cmd->cmd);
 		}
 
 		node = node->nextNode;
@@ -952,8 +950,8 @@ static int handleCommands(FILE * fp, int *permission, int argc,
 	return 0;
 }
 
-static int handleNotcommands(FILE * fp, int *permission, int argc,
-			     char **argv)
+static int handleNotcommands(int fd, int *permission, int argc,
+			     char *argv[])
 {
 	ListNode *node = commandList->firstNode;
 	CommandEntry *cmd;
@@ -962,7 +960,7 @@ static int handleNotcommands(FILE * fp, int *permission, int argc,
 		cmd = (CommandEntry *) node->data;
 
 		if (cmd->reqPermission != (*permission & cmd->reqPermission)) {
-			myfprintf(fp, "command: %s\n", cmd->cmd);
+			fdprintf(fd, "command: %s\n", cmd->cmd);
 		}
 
 		node = node->nextNode;
@@ -1065,15 +1063,15 @@ void finishCommands(void)
 	freeList(commandList);
 }
 
-static int checkArgcAndPermission(CommandEntry * cmd, FILE * fp,
-				  int permission, int argc, char **argv)
+static int checkArgcAndPermission(CommandEntry * cmd, int fd,
+				  int permission, int argc, char *argv[])
 {
 	int min = cmd->min + 1;
 	int max = cmd->max + 1;
 
 	if (cmd->reqPermission != (permission & cmd->reqPermission)) {
-		if (fp) {
-			commandError(fp, ACK_ERROR_PERMISSION,
+		if (fd) {
+			commandError(fd, ACK_ERROR_PERMISSION,
 				     "you don't have permission for \"%s\"",
 				     cmd->cmd);
 		}
@@ -1084,22 +1082,22 @@ static int checkArgcAndPermission(CommandEntry * cmd, FILE * fp,
 		return 0;
 
 	if (min == max && max != argc) {
-		if (fp) {
-			commandError(fp, ACK_ERROR_ARG,
+		if (fd) {
+			commandError(fd, ACK_ERROR_ARG,
 				     "wrong number of arguments for \"%s\"",
 				     argv[0]);
 		}
 		return -1;
 	} else if (argc < min) {
-		if (fp) {
-			commandError(fp, ACK_ERROR_ARG,
+		if (fd) {
+			commandError(fd, ACK_ERROR_ARG,
 				     "too few arguments for \"%s\"",
 				     argv[0]);
 		}
 		return -1;
 	} else if (argc > max && max /* != 0 */ ) {
-		if (fp) {
-			commandError(fp, ACK_ERROR_ARG,
+		if (fd) {
+			commandError(fd, ACK_ERROR_ARG,
 				     "too many arguments for \"%s\"",
 				     argv[0]);
 		}
@@ -1108,11 +1106,10 @@ static int checkArgcAndPermission(CommandEntry * cmd, FILE * fp,
 		return 0;
 }
 
-static CommandEntry *getCommandEntryAndCheckArgcAndPermission(FILE * fp,
+static CommandEntry *getCommandEntryAndCheckArgcAndPermission(int fd,
 							      int *permission,
-							      int
-							      argc,
-							      char **argv)
+							      int argc,
+							      char *argv[])
 {
 	static char unknown[] = "";
 	CommandEntry *cmd;
@@ -1123,8 +1120,8 @@ static CommandEntry *getCommandEntryAndCheckArgcAndPermission(FILE * fp,
 		return NULL;
 
 	if (!findInList(commandList, argv[0], (void *)&cmd)) {
-		if (fp) {
-			commandError(fp, ACK_ERROR_UNKNOWN,
+		if (fd) {
+			commandError(fd, ACK_ERROR_UNKNOWN,
 				     "unknown command \"%s\"", argv[0]);
 		}
 		return NULL;
@@ -1132,7 +1129,7 @@ static CommandEntry *getCommandEntryAndCheckArgcAndPermission(FILE * fp,
 
 	current_command = cmd->cmd;
 
-	if (checkArgcAndPermission(cmd, fp, *permission, argc,
+	if (checkArgcAndPermission(cmd, fd, *permission, argc,
 				   argv) < 0) {
 		return NULL;
 	}
@@ -1149,14 +1146,14 @@ static CommandEntry *getCommandEntryFromString(char *string, int *permission)
 	if (0 == argc)
 		return NULL;
 
-	cmd = getCommandEntryAndCheckArgcAndPermission(NULL, permission,
+	cmd = getCommandEntryAndCheckArgcAndPermission(0, permission,
 						       argc, argv);
 
 	return cmd;
 }
 
-static int processCommandInternal(FILE * fp, int *permission,
-				  char *commandString, ListNode * commandNode)
+static int processCommandInternal(int fd, int *permission,
+				  char *commandString, struct strnode *cmdnode)
 {
 	int argc;
 	char *argv[COMMAND_ARGV_MAX] = { 0 };
@@ -1168,13 +1165,13 @@ static int processCommandInternal(FILE * fp, int *permission,
 	if (argc == 0)
 		return 0;
 
-	if ((cmd = getCommandEntryAndCheckArgcAndPermission(fp, permission,
+	if ((cmd = getCommandEntryAndCheckArgcAndPermission(fd, permission,
 							    argc, argv))) {
-		if (NULL == commandNode || NULL == cmd->listHandler) {
-			ret = cmd->handler(fp, permission, argc, argv);
+		if (!cmdnode || !cmd->listHandler) {
+			ret = cmd->handler(fd, permission, argc, argv);
 		} else {
-			ret = cmd->listHandler(fp, permission, argc, argv,
-			                       commandNode, cmd);
+			ret = cmd->listHandler(fd, permission, argc, argv,
+			                       cmdnode, cmd);
 		}
 	}
 
@@ -1183,37 +1180,32 @@ static int processCommandInternal(FILE * fp, int *permission,
 	return ret;
 }
 
-int processListOfCommands(FILE * fp, int *permission, int *expired,
-			  int listOK, List * list)
+int processListOfCommands(int fd, int *permission, int *expired,
+			  int listOK, struct strnode *list)
 {
-	ListNode *node = list->firstNode;
-	ListNode *tempNode;
+	struct strnode *cur = list;
 	int ret = 0;
 
 	command_listNum = 0;
 
-	while (node != NULL) {
+	while (cur) {
 		DEBUG("processListOfCommands: process command \"%s\"\n",
-		      node->data);
-		ret = processCommandInternal(fp, permission, (char *)node->data,
-					     node);
+		      cur->data);
+		ret = processCommandInternal(fd, permission, cur->data, cur);
 		DEBUG("processListOfCommands: command returned %i\n", ret);
-		tempNode = node->nextNode;
-		deleteNodeFromList(list, node);
-		node = tempNode;
 		if (ret != 0 || (*expired) != 0)
-			node = NULL;
+			goto out;
 		else if (listOK)
-			myfprintf(fp, "list_OK\n");
+			fdprintf(fd, "list_OK\n");
 		command_listNum++;
+		cur = cur->next;
 	}
-
+out:
 	command_listNum = 0;
-
 	return ret;
 }
 
-int processCommand(FILE * fp, int *permission, char *commandString)
+int processCommand(int fd, int *permission, char *commandString)
 {
-	return processCommandInternal(fp, permission, commandString, NULL);
+	return processCommandInternal(fd, permission, commandString, NULL);
 }

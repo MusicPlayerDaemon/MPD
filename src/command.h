@@ -25,7 +25,9 @@
 #include "myfprintf.h"
 #include "log.h"
 #include "ack.h"
+#include "sllist.h"
 
+#include <unistd.h>
 #include <stdio.h>
 
 #define COMMAND_RETURN_KILL	10
@@ -35,30 +37,29 @@
 extern char *current_command;
 extern int command_listNum;
 
-int processListOfCommands(FILE * fp, int *permission, int *expired,
-			  int listOK, List * list);
+int processListOfCommands(int fd, int *permission, int *expired,
+			  int listOK, struct strnode *list);
 
-int processCommand(FILE * fp, int *permission, char *commandString);
+int processCommand(int fd, int *permission, char *commandString);
 
 void initCommands();
 
 void finishCommands();
 
-#define commandSuccess(fp)              myfprintf(fp, "OK\n")
+#define commandSuccess(fd)              fdprintf(fd, "OK\n")
 
-#define commandError(fp, error, format, ... )  \
+#define commandError(fd, error, format, ... ) do \
 	{\
-		if(current_command) { \
-			myfprintf(fp, "ACK [%i@%i] {%s} " format "\n", \
+		if (current_command) { \
+			fdprintf(fd, "ACK [%i@%i] {%s} " format "\n", \
 					(int)error, command_listNum, \
 					current_command, __VA_ARGS__); \
 			current_command = NULL; \
 		} \
 		else { \
-			myfprintf(stderr, "ACK [%i@%i] " format "\n", \
+			fdprintf(STDERR_FILENO, "ACK [%i@%i] " format "\n", \
 					(int)error, command_listNum, \
 					__VA_ARGS__); \
 		} \
-	}
-
+	} while (0)
 #endif

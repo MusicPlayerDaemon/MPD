@@ -69,11 +69,11 @@ void sendMetadataToAudioDevice(MpdTag * tag);
 
 /* these functions are called in the main parent process while the child
 	process is busy playing to the audio */
-int enableAudioDevice(FILE * fp, int device);
+int enableAudioDevice(int fd, int device);
 
-int disableAudioDevice(FILE * fp, int device);
+int disableAudioDevice(int fd, int device);
 
-void printAudioDevices(FILE * fp);
+void printAudioDevices(int fd);
 
 void readAudioDevicesState();
 

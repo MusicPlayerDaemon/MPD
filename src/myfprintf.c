@@ -21,6 +21,7 @@
 #include "path.h"
 #include "log.h"
 #include "conf.h"
+#include "utils.h"
 
 #include <stdarg.h>
 #include <sys/param.h>
@@ -38,26 +39,39 @@ static FILE *myfprintf_err;
 static char *myfprintf_outFilename;
 static char *myfprintf_errFilename;
 
-static void blockingWrite(int fd, char *string, int len)
+static void blockingWrite(const int fd, const char *string, size_t len)
 {
-	int ret;
-
 	while (len) {
-		ret = write(fd, string, len);
-		if (ret == 0)
+		size_t ret = xwrite(fd, string, len);
+		if (ret == len)
 			return;
-		if (ret < 0) {
-			switch (errno) {
-			case EAGAIN:
-			case EINTR:
-				continue;
-			default:
-				return;
-			}
+		if (ret >= 0) {
+			len -= ret;
+			string += ret;
+			continue;
 		}
-		len -= ret;
-		string += ret;
+		return; /* error */
 	}
+}
+
+void vfdprintf(const int fd, const char *fmt, va_list args)
+{
+	static char buffer[BUFFER_LENGTH + 1];
+	char *buf = buffer;
+	size_t len;
+
+	vsnprintf(buf, BUFFER_LENGTH, fmt, args);
+	len = strlen(buf);
+	if (interfacePrintWithFD(fd, buf, len) < 0)
+		blockingWrite(fd, buf, len);
+}
+
+mpd_fprintf void fdprintf(const int fd, const char *fmt, ...)
+{
+	va_list args;
+	va_start(args, fmt);
+	vfdprintf(fd, fmt, args);
+	va_end(args);
 }
 
 void myfprintfStdLogMode(FILE * out, FILE * err)
@@ -67,38 +81,6 @@ void myfprintfStdLogMode(FILE * out, FILE * err)
 	myfprintf_err = err;
 	myfprintf_outFilename = getConfigParamValue(CONF_LOG_FILE);
 	myfprintf_errFilename = getConfigParamValue(CONF_ERROR_FILE);
-}
-
-void myfprintf(FILE * fp, char *format, ...)
-{
-	static char buffer[BUFFER_LENGTH + 1];
-	va_list arglist;
-	int fd = fileno(fp);
-
-	va_start(arglist, format);
-	if (fd == 1 || fd == 2) {
-		if (myfprintf_stdLogMode) {
-			time_t t = time(NULL);
-			if (fd == 1)
-				fp = myfprintf_out;
-			else
-				fp = myfprintf_err;
-			strftime(buffer, 14, "%b %e %R", localtime(&t));
-			blockingWrite(fd, buffer, strlen(buffer));
-			blockingWrite(fd, " : ", 3);
-		}
-		vsnprintf(buffer, BUFFER_LENGTH, format, arglist);
-		blockingWrite(fd, buffer, strlen(buffer));
-	} else {
-		int len;
-		vsnprintf(buffer, BUFFER_LENGTH, format, arglist);
-		len = strlen(buffer);
-		if (interfacePrintWithFD(fd, buffer, len) < 0) {
-			blockingWrite(fd, buffer, len);
-		}
-	}
-
-	va_end(arglist);
 }
 
 int myfprintfCloseAndOpenLogFile(void)

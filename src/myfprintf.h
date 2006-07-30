@@ -20,12 +20,20 @@
 #define MYFPRINTF_H
 
 #include "../config.h"
+#include "gcc.h"
 
+#include <stdarg.h>
 #include <stdio.h>
 
 void myfprintfStdLogMode(FILE * out, FILE * err);
 
-void myfprintf(FILE * fp, char *format, ...);
+mpd_fprintf void fdprintf(const int fd, const char *fmt, ...);
+void vfdprintf(const int fd, const char *fmt, va_list arglist);
+
+#define myfprintf(fp, ...) do { \
+		fprintf(fp, __VA_ARGS__); \
+		fflush(fp); \
+	} while (0)
 
 int myfprintfCloseAndOpenLogFile();
 

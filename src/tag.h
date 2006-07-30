@@ -78,7 +78,7 @@ void addItemToMpdTagWithLen(MpdTag * tag, int itemType, char *value, int len);
 #define addItemToMpdTag(tag, itemType, value) \
 		addItemToMpdTagWithLen(tag, itemType, value, strlen(value))
 
-void printMpdTag(FILE * fp, MpdTag * tag);
+void printMpdTag(int fd, MpdTag * tag);
 
 MpdTag *mpdTagDup(MpdTag * tag);
 

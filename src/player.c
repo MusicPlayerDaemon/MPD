@@ -156,14 +156,11 @@ int playerInitReal()
 	return 0;
 }
 
-int playerPlay(FILE * fp, Song * song)
+int playerPlay(int fd, Song * song)
 {
 	PlayerControl *pc = &(getPlayerData()->playerControl);
 
-	if (fp == NULL)
-		fp = stderr;
-
-	if (playerStop(fp) < 0)
+	if (playerStop(fd) < 0)
 		return -1;
 
 	if (song->tag)
@@ -189,7 +186,7 @@ int playerPlay(FILE * fp, Song * song)
 	return 0;
 }
 
-int playerStop(FILE * fp)
+int playerStop(int fd)
 {
 	PlayerControl *pc = &(getPlayerData()->playerControl);
 
@@ -219,7 +216,7 @@ void playerKill()
 		kill(pid, SIGTERM);
 }
 
-int playerPause(FILE * fp)
+int playerPause(int fd)
 {
 	PlayerControl *pc = &(getPlayerData()->playerControl);
 
@@ -232,7 +229,7 @@ int playerPause(FILE * fp)
 	return 0;
 }
 
-int playerSetPause(FILE * fp, int pause)
+int playerSetPause(int fd, int pause)
 {
 	PlayerControl *pc = &(getPlayerData()->playerControl);
 
@@ -242,11 +239,11 @@ int playerSetPause(FILE * fp, int pause)
 	switch (pc->state) {
 	case PLAYER_STATE_PLAY:
 		if (pause)
-			playerPause(fp);
+			playerPause(fd);
 		break;
 	case PLAYER_STATE_PAUSE:
 		if (!pause)
-			playerPause(fp);
+			playerPause(fd);
 		break;
 	}
 
@@ -329,7 +326,7 @@ void playerCloseAudio()
 	PlayerControl *pc = &(getPlayerData()->playerControl);
 
 	if (getPlayerPid() > 0) {
-		if (playerStop(stderr) < 0)
+		if (playerStop(STDERR_FILENO) < 0)
 			return;
 		pc->closeAudio = 1;
 	}
@@ -393,12 +390,12 @@ void playerQueueUnlock()
 	}
 }
 
-int playerSeek(FILE * fp, Song * song, float time)
+int playerSeek(int fd, Song * song, float time)
 {
 	PlayerControl *pc = &(getPlayerData()->playerControl);
 
 	if (pc->state == PLAYER_STATE_STOP) {
-		commandError(fp, ACK_ERROR_PLAYER_SYNC,
+		commandError(fd, ACK_ERROR_PLAYER_SYNC,
 			     "player not currently playing", NULL);
 		return -1;
 	}

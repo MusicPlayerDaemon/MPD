@@ -43,22 +43,22 @@ void freeLocateTagItemArray(int count, LocateTagItem * array);
 
 void freeLocateTagItem(LocateTagItem * item);
 
-int printAllIn(FILE * fp, char *name);
+int printAllIn(int fd, char *name);
 
-int addAllIn(FILE * fp, char *name);
+int addAllIn(int fd, char *name);
 
-int printInfoForAllIn(FILE * fp, char *name);
+int printInfoForAllIn(int fd, char *name);
 
-int searchForSongsIn(FILE * fp, char *name, int numItems,
+int searchForSongsIn(int fd, char *name, int numItems,
 		     LocateTagItem * items);
 
-int findSongsIn(FILE * fp, char *name, int numItems, LocateTagItem * items);
+int findSongsIn(int fd, char *name, int numItems, LocateTagItem * items);
 
-int countSongsIn(FILE * fp, char *name);
+int countSongsIn(int fd, char *name);
 
-unsigned long sumSongTimesIn(FILE * fp, char *name);
+unsigned long sumSongTimesIn(int fd, char *name);
 
-int listAllUniqueTags(FILE * fp, int type, int numConditiionals,
+int listAllUniqueTags(int fd, int type, int numConditiionals,
 		      LocateTagItem * conditionals);
 
 void printSavedMemoryFromFilenames();

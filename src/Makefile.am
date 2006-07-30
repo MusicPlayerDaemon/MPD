@@ -35,6 +35,7 @@ mpd_headers = \
 	dbUtils.h \
 	decode.h \
 	directory.h \
+	gcc.h \
 	inputPlugin.h \
 	inputPlugins/_flac_common.h \
 	inputPlugins/_ogg_common.h \
@@ -61,6 +62,7 @@ mpd_headers = \
 	replayGain.h \
 	signal_check.h \
 	sig_handlers.h \
+	sllist.h \
 	song.h \
 	stats.h \
 	tag.h \
@@ -107,6 +109,7 @@ mpd_SOURCES = \
 	replayGain.c \
 	sig_handlers.c \
 	signal_check.c \
+	sllist.c \
 	song.c \
 	stats.c \
 	tag.c \

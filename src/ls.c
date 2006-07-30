@@ -32,12 +32,12 @@ static char *remoteUrlPrefixes[] = {
 	NULL
 };
 
-int printRemoteUrlHandlers(FILE * fp)
+int printRemoteUrlHandlers(int fd)
 {
 	char **prefixes = remoteUrlPrefixes;
 
 	while (*prefixes) {
-		myfprintf(fp, "handler: %s\n", *prefixes);
+		fdprintf(fd, "handler: %s\n", *prefixes);
 		prefixes++;
 	}
 
@@ -100,7 +100,7 @@ int isRemoteUrl(char *url)
 	return 0;
 }
 
-int lsPlaylists(FILE * fp, char *utf8path)
+int lsPlaylists(int fd, char *utf8path)
 {
 	DIR *dir;
 	struct stat st;
@@ -166,7 +166,7 @@ int lsPlaylists(FILE * fp, char *utf8path)
 		node = list->firstNode;
 		while (node != NULL) {
 			if (!strchr(node->key, '\n')) {
-				myfprintf(fp, "playlist: %s%s\n", dup,
+				fdprintf(fd, "playlist: %s%s\n", dup,
 					  node->key);
 			}
 			node = node->nextNode;

@@ -33,6 +33,6 @@ void resetVisitedFlagsInTagTracker(int type);
 
 void visitInTagTracker(int type, char *str);
 
-void printVisitedInTagTracker(FILE * fp, int type);
+void printVisitedInTagTracker(int fd, int type);
 
 #endif

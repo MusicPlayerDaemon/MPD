@@ -147,7 +147,7 @@ void visitInTagTracker(int type, char *str)
 	((TagTrackerItem *) item)->visited = 1;
 }
 
-void printVisitedInTagTracker(FILE * fp, int type)
+void printVisitedInTagTracker(int fd, int type)
 {
 	ListNode *node;
 	TagTrackerItem *item;
@@ -160,8 +160,8 @@ void printVisitedInTagTracker(FILE * fp, int type)
 	while (node) {
 		item = node->data;
 		if (item->visited) {
-			myfprintf(fp, "%s: %s\n", mpdTagItemKeys[type],
-				  node->key);
+			fdprintf(fd, "%s: %s\n", mpdTagItemKeys[type],
+				 node->key);
 		}
 		node = node->nextNode;
 	}
