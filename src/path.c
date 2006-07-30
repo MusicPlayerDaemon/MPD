@@ -37,10 +37,9 @@
 #endif
 #endif
 
-char *musicDir;
-char *playlistDir;
-
-char *fsCharset = NULL;
+const char *musicDir;
+static const char *playlistDir;
+static char *fsCharset = NULL;
 
 static char *pathConvCharset(char *to, char *from, char *str)
 {
@@ -205,39 +204,59 @@ void finishPaths(void)
 	fsCharset = NULL;
 }
 
+static char *pfx_path(const char *path, const char *pfx, const size_t pfx_len)
+{
+	static char ret[MAXPATHLEN+1];
+	size_t rp_len = strlen(path);
+
+	/* check for the likely condition first: */
+	if (mpd_likely((pfx_len + rp_len) < MAXPATHLEN)) {
+		memcpy(ret, pfx, pfx_len);
+		memcpy(ret + pfx_len, path, rp_len + 1);
+		return ret;
+	}
+
+	/* unlikely, return an empty string because truncating would
+	 * also be wrong... break early and break loudly (the system
+	 * headers are likely screwed, not mpd) */
+	ERROR("Cannot prefix '%s' to '%s', max: %d", pfx, path, MAXPATHLEN);
+	ret[0] = '\0';
+	return ret;
+}
+
 char *rmp2amp(char *relativePath)
 {
-	static char absolutePath[MAXPATHLEN + 1];
-
-	memset(absolutePath, 0, MAXPATHLEN + 1);
-
-	strncpy(absolutePath, musicDir, MAXPATHLEN);
-	strncat(absolutePath, relativePath, MAXPATHLEN - strlen(musicDir));
-
-	return absolutePath;
+	size_t pfx_len = strlen(musicDir);
+	return pfx_path(relativePath, musicDir, pfx_len);
 }
 
 char *rpp2app(char *relativePath)
 {
-	static char absolutePath[MAXPATHLEN + 1];
+	size_t pfx_len = strlen(playlistDir);
+	return pfx_path(relativePath, playlistDir, pfx_len);
+}
 
-	memset(absolutePath, 0, MAXPATHLEN + 1);
+/* this is actually like strlcpy (OpenBSD), but we don't actually want to
+ * blindly use it everywhere, only for paths that are OK to truncate (for
+ * error reporting and such */
+void pathcpy_trunc(char *dest, const char *src)
+{
+	size_t len = strlen(src);
 
-	strncpy(absolutePath, playlistDir, MAXPATHLEN);
-	strncat(absolutePath, relativePath, MAXPATHLEN - strlen(musicDir));
-
-	return absolutePath;
+	if (mpd_unlikely(len > MAXPATHLEN))
+		len = MAXPATHLEN;
+	memcpy(dest, src, len);
+	dest[len] = '\0';
 }
 
 char *parentPath(char *path)
 {
-	static char parentPath[MAXPATHLEN + 1];
+	static char parentPath[MAXPATHLEN+1];
 	char *c;
 
-	memset(parentPath, 0, MAXPATHLEN + 1);
-	strncpy(parentPath, path, MAXPATHLEN);
+	pathcpy_trunc(parentPath, path);
+	c = strrchr(parentPath,'/');
 
-	c = strrchr(parentPath, '/');
 	if (c == NULL)
 		parentPath[0] = '\0';
 	else {

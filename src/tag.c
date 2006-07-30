@@ -612,10 +612,9 @@ int mpdTagsAreEqual(MpdTag * tag1, MpdTag * tag2)
 static void appendToTagItems(MpdTag * tag, int type, char *value, int len)
 {
 	int i = tag->numOfItems;
+	char *dup = malloc(len + 1);
 
-	char *dup;
-	dup = malloc(len + 1);
-	strncpy(dup, value, len);
+	memcpy(dup, value, len);
 	dup[len] = '\0';
 
 	fixUtf8(dup);

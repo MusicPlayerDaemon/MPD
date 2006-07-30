@@ -112,9 +112,7 @@ static int calculateCrossFadeChunks(PlayerControl * pc, AudioFormat * af)
 		{ \
 			decodeWaitedOn = 0; \
 			if(openAudioDevice(&(cb->audioFormat))<0) { \
-				strncpy(pc->erroredUrl, pc->utf8url, \
-                                                MAXPATHLEN); \
-				pc->erroredUrl[MAXPATHLEN] = '\0'; \
+				pathcpy_trunc(pc->erroredUrl, pc->utf8url); \
 				pc->error = PLAYER_ERROR_AUDIO; \
 				ERROR("problems opening audio device while playing \"%s\"\n", pc->utf8url); \
 				quitDecode(pc,dc); \
@@ -129,8 +127,7 @@ static int calculateCrossFadeChunks(PlayerControl * pc, AudioFormat * af)
 					cb->audioFormat.sampleRate; \
                 } \
                 else if(dc->state!=DECODE_STATE_START || decode_pid <= 0) { \
-		        strncpy(pc->erroredUrl, pc->utf8url, MAXPATHLEN); \
-		        pc->erroredUrl[MAXPATHLEN] = '\0'; \
+			pathcpy_trunc(pc->erroredUrl, pc->utf8url); \
 		        pc->error = PLAYER_ERROR_FILE; \
 		        quitDecode(pc,dc); \
 		        return; \
@@ -145,15 +142,13 @@ static int waitOnDecode(PlayerControl * pc, DecoderControl * dc,
 			OutputBuffer * cb, int *decodeWaitedOn)
 {
 	MpdTag *tag = NULL;
-	strncpy(pc->currentUrl, pc->utf8url, MAXPATHLEN);
-	pc->currentUrl[MAXPATHLEN] = '\0';
+	pathcpy_trunc(pc->currentUrl, pc->utf8url);
 
 	while (decode_pid > 0 && dc->start)
 		my_usleep(10000);
 
 	if (dc->start || dc->error != DECODE_ERROR_NOERROR) {
-		strncpy(pc->erroredUrl, pc->utf8url, MAXPATHLEN);
-		pc->erroredUrl[MAXPATHLEN] = '\0';
+		pathcpy_trunc(pc->erroredUrl, pc->utf8url);
 		pc->error = PLAYER_ERROR_FILE;
 		quitDecode(pc, dc);
 		return -1;
@@ -229,9 +224,7 @@ static int decodeSeek(PlayerControl * pc, DecoderControl * dc,
 		if(pause) pc->state = PLAYER_STATE_PAUSE; \
 		else { \
 			if(openAudioDevice(NULL)<0) { \
-				strncpy(pc->erroredUrl, pc->utf8url, \
-                                                MAXPATHLEN); \
-				pc->erroredUrl[MAXPATHLEN] = '\0'; \
+				pathcpy_trunc(pc->erroredUrl, pc->utf8url); \
 				pc->error = PLAYER_ERROR_AUDIO; \
 				ERROR("problems opening audio device while playing \"%s\"\n", pc->utf8url); \
 				quitDecode(pc,dc); \
@@ -286,8 +279,7 @@ static void decodeStart(PlayerControl * pc, OutputBuffer * cb,
 
 	copyMpdTagToOutputBuffer(cb, NULL);
 
-	strncpy(dc->utf8url, pc->utf8url, MAXPATHLEN);
-	dc->utf8url[MAXPATHLEN] = '\0';
+	pathcpy_trunc(dc->utf8url, pc->utf8url);
 
 	if (openInputStream(&inStream, path) < 0) {
 		dc->error = DECODE_ERROR_FILE;
@@ -396,8 +388,7 @@ static void decodeStart(PlayerControl * pc, OutputBuffer * cb,
 	}
 
 	if (ret < 0 || ret == DECODE_ERROR_UNKTYPE) {
-		strncpy(pc->erroredUrl, dc->utf8url, MAXPATHLEN);
-		pc->erroredUrl[MAXPATHLEN] = '\0';
+		pathcpy_trunc(pc->erroredUrl, dc->utf8url);
 		if (ret != DECODE_ERROR_UNKTYPE)
 			dc->error = DECODE_ERROR_FILE;
 		else {
@@ -439,8 +430,7 @@ static int decoderInit(PlayerControl * pc, OutputBuffer * cb,
 		/* END OF CHILD */
 	} else if (decode_pid < 0) {
 		unblockSignals();
-		strncpy(pc->erroredUrl, pc->utf8url, MAXPATHLEN);
-		pc->erroredUrl[MAXPATHLEN] = '\0';
+		pathcpy_trunc(pc->erroredUrl, pc->utf8url);
 		pc->error = PLAYER_ERROR_SYSTEM;
 		return -1;
 	}

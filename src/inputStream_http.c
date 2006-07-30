@@ -306,15 +306,15 @@ static int parseUrl(InputStreamHTTPData * data, char *url)
 
 		if (colon && colon < at) {
 			user = malloc(colon - temp + 1);
-			strncpy(user, temp, colon - temp);
+			memcpy(user, temp, colon - temp);
 			user[colon - temp] = '\0';
 
 			passwd = malloc(at - colon);
-			strncpy(passwd, colon + 1, at - colon - 1);
+			memcpy(passwd, colon + 1, at - colon - 1);
 			passwd[at - colon - 1] = '\0';
 		} else {
 			user = malloc(at - temp + 1);
-			strncpy(user, temp, at - temp);
+			memcpy(user, temp, at - temp);
 			user[at - temp] = '\0';
 
 			passwd = strdup("");
@@ -346,7 +346,7 @@ static int parseUrl(InputStreamHTTPData * data, char *url)
 		return -1;
 
 	data->host = malloc(len);
-	strncpy(data->host, temp, len - 1);
+	memcpy(data->host, temp, len - 1);
 	data->host[len - 1] = '\0';
 	/* fetch the port */
 	if (colon && (!slash || slash != colon + 1)) {
@@ -354,7 +354,7 @@ static int parseUrl(InputStreamHTTPData * data, char *url)
 		if (slash)
 			len -= strlen(slash);
 		data->port = malloc(len + 1);
-		strncpy(data->port, colon + 1, len);
+		memcpy(data->port, colon + 1, len);
 		data->port[len] = '\0';
 		DEBUG(__FILE__ ": Port: %s\n", data->port);
 	} else {

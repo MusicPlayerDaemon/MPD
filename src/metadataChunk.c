@@ -17,13 +17,12 @@
  */
 
 #include "metadataChunk.h"
+#include "gcc.h"
 
 #include <string.h>
 
 static void initMetadataChunk(MetadataChunk * chunk)
 {
-	memset(chunk, 0, sizeof(MetadataChunk));
-
 	chunk->name = -1;
 	chunk->artist = -1;
 	chunk->album = -1;
@@ -54,8 +53,12 @@ MpdTag *metadataChunkToMpdTagDup(MetadataChunk * chunk)
 	if(element < 0 && string && (slen = strlen(string)) && \
                         pos < METADATA_BUFFER_LENGTH-1) \
         { \
-		strncpy(chunk->buffer+pos, string, \
-                                METADATA_BUFFER_LENGTH-1-pos); \
+		size_t len = slen; \
+		size_t max = METADATA_BUFFER_LENGTH - 1 - pos; \
+		if (mpd_unlikely(len > max)) \
+			len = max; \
+		memcpy(chunk->buffer+pos, string, len); \
+		*(chunk->buffer+pos+len) = '\0'; \
 		element = pos; \
 		pos += slen+1; \
 	} \

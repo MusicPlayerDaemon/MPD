@@ -128,12 +128,14 @@ int lsPlaylists(int fd, char *utf8path)
 	strcat(s, "/");
 
 	while ((ent = readdir(dir))) {
+		size_t len = strlen(ent->d_name) + 1;
 		dup = ent->d_name;
-		if (dup[0] != '.' &&
+		if (mpd_likely(len <= maxlen) &&
+		    dup[0] != '.' &&
 		    (suff = strlen(dup) - suflen) > 0 &&
 		    dup[suff] == '.' &&
 		    strcmp(dup + suff + 1, PLAYLIST_FILE_SUFFIX) == 0) {
-			strncpy(s + actlen, ent->d_name, maxlen);
+			memcpy(s + actlen, ent->d_name, len);
 			if (stat(s, &st) == 0) {
 				if (S_ISREG(st.st_mode)) {
 					if (list == NULL)

@@ -17,6 +17,7 @@
  */
 
 #include "player.h"
+#include "path.h"
 #include "decode.h"
 #include "command.h"
 #include "interface.h"
@@ -170,8 +171,7 @@ int playerPlay(int fd, Song * song)
 
 	copyMpdTagToMetadataChunk(song->tag, &(pc->fileMetadataChunk));
 
-	strncpy(pc->utf8url, getSongUrl(song), MAXPATHLEN);
-	pc->utf8url[MAXPATHLEN] = '\0';
+	pathcpy_trunc(pc->utf8url, getSongUrl(song));
 
 	pc->play = 1;
 	if (getPlayerPid() == 0 && playerInit() < 0) {
@@ -337,8 +337,7 @@ int queueSong(Song * song)
 	PlayerControl *pc = &(getPlayerData()->playerControl);
 
 	if (pc->queueState == PLAYER_QUEUE_BLANK) {
-		strncpy(pc->utf8url, getSongUrl(song), MAXPATHLEN);
-		pc->utf8url[MAXPATHLEN] = '\0';
+		pathcpy_trunc(pc->utf8url, getSongUrl(song));
 
 		if (song->tag)
 			pc->fileTime = song->tag->time;
@@ -408,8 +407,7 @@ int playerSeek(int fd, Song * song, float time)
 
 		copyMpdTagToMetadataChunk(song->tag, &(pc->fileMetadataChunk));
 
-		strncpy(pc->utf8url, getSongUrl(song), MAXPATHLEN);
-		pc->utf8url[MAXPATHLEN] = '\0';
+		pathcpy_trunc(pc->utf8url, getSongUrl(song));
 	}
 
 	if (pc->error == PLAYER_ERROR_NOERROR) {
