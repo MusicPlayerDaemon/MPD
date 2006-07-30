@@ -36,8 +36,8 @@ void initStats(void)
 
 int printStats(int fd)
 {
-	fdprintf(fd, "artists: %li\n", getNumberOfTagItems(TAG_ITEM_ARTIST));
-	fdprintf(fd, "albums: %li\n", getNumberOfTagItems(TAG_ITEM_ALBUM));
+	fdprintf(fd, "artists: %i\n", getNumberOfTagItems(TAG_ITEM_ARTIST));
+	fdprintf(fd, "albums: %i\n", getNumberOfTagItems(TAG_ITEM_ALBUM));
 	fdprintf(fd, "songs: %i\n", stats.numberOfSongs);
 	fdprintf(fd, "uptime: %li\n", time(NULL) - stats.daemonStart);
 	fdprintf(fd, "playtime: %li\n",

@@ -396,7 +396,7 @@ int playerSeek(int fd, Song * song, float time)
 
 	if (pc->state == PLAYER_STATE_STOP) {
 		commandError(fd, ACK_ERROR_PLAYER_SYNC,
-			     "player not currently playing", NULL);
+			     "player not currently playing");
 		return -1;
 	}
 

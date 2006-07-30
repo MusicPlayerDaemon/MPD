@@ -162,8 +162,7 @@ void readDirectoryDBIfUpdateIsFinished()
 int updateInit(int fd, List * pathList)
 {
 	if (directory_updatePid > 0) {
-		commandError(fd, ACK_ERROR_UPDATE_ALREADY, "already updating",
-			     NULL);
+		commandError(fd, ACK_ERROR_UPDATE_ALREADY, "already updating");
 		return -1;
 	}
 
@@ -217,7 +216,7 @@ int updateInit(int fd, List * pathList)
 		unblockSignals();
 		ERROR("updateInit: Problems forking()'ing\n");
 		commandError(fd, ACK_ERROR_SYSTEM,
-			     "problems trying to update", NULL);
+			     "problems trying to update");
 		directory_updatePid = 0;
 		return -1;
 	}
@@ -891,8 +890,7 @@ int printDirectoryInfo(int fd, char *name)
 	Directory *directory;
 
 	if ((directory = getDirectory(name)) == NULL) {
-		commandError(fd, ACK_ERROR_NO_EXIST, "directory not found",
-			     NULL);
+		commandError(fd, ACK_ERROR_NO_EXIST, "directory not found");
 		return -1;
 	}
 
@@ -1288,7 +1286,7 @@ int traverseAllIn(int fd, char *name,
 			return forEachSong(fd, song, data);
 		}
 		commandError(fd, ACK_ERROR_NO_EXIST,
-			     "directory or file not found", NULL);
+			     "directory or file not found");
 		return -1;
 	}
 

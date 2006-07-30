@@ -178,7 +178,7 @@ static int changeOssVolumeLevel(int fd, int change, int rel)
 	if (rel) {
 		if ((current = getOssVolumeLevel()) < 0) {
 			commandError(fd, ACK_ERROR_SYSTEM,
-				     "problem getting current volume", NULL);
+				     "problem getting current volume");
 			return -1;
 		}
 
@@ -198,8 +198,7 @@ static int changeOssVolumeLevel(int fd, int change, int rel)
 
 	if (ioctl(volume_ossFd, MIXER_WRITE(volume_ossControl), &level) < 0) {
 		closeOssMixer();
-		commandError(fd, ACK_ERROR_SYSTEM, "problems setting volume",
-			     NULL);
+		commandError(fd, ACK_ERROR_SYSTEM, "problems setting volume");
 		return -1;
 	}
 
@@ -361,8 +360,7 @@ static int changeAlsaVolumeLevel(int fd, int change, int rel)
 	if ((err =
 	     snd_mixer_selem_set_playback_volume_all(volume_alsaElem,
 						     level)) < 0) {
-		commandError(fd, ACK_ERROR_SYSTEM, "problems setting volume",
-			     NULL);
+		commandError(fd, ACK_ERROR_SYSTEM, "problems setting volume");
 		WARNING("problems setting alsa volume: %s\n",
 			snd_strerror(err));
 		closeAlsaMixer();

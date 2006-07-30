@@ -8,7 +8,7 @@
  */
 
 /* disabled (0) until I fix all the warnings :) */
-#if (0 && __GNUC__ >= 3)
+#if __GNUC__ >= 3
 #  define mpd_const		__attribute__ ((const))
 #  define mpd_deprecated	__attribute__ ((deprecated))
 #  define mpd_malloc		__attribute__ ((malloc))
@@ -25,8 +25,8 @@
 #  define mpd_used		__attribute__ ((used))
 /* #  define inline	inline __attribute__ ((always_inline)) */
 #  define mpd_noinline		__attribute__ ((noinline))
-#  define likely(x)		__builtin_expect (!!(x), 1)
-#  define unlikely(x)		__builtin_expect (!!(x), 0)
+#  define mpd_likely(x)		__builtin_expect (!!(x), 1)
+#  define mpd_unlikely(x)	__builtin_expect (!!(x), 0)
 #else
 #  define mpd_const
 #  define mpd_deprecated
@@ -43,8 +43,8 @@
 #  define mpd_used
 /* #  define inline */
 #  define mpd_noinline
-#  define likely(x)	(x)
-#  define unlikely(x)	(x)
+#  define mpd_likely(x)		(x)
+#  define mpd_unlikely(x)	(x)
 #endif
 
 #endif /* MPD_GCC_H */

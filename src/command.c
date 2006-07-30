@@ -31,6 +31,7 @@
 #include "dbUtils.h"
 #include "tag.h"
 
+#include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -182,7 +183,7 @@ static int handlePlay(int fd, int *permission, int argc,
 		song = strtol(argv[1], &test, 10);
 		if (*test != '\0') {
 			commandError(fd, ACK_ERROR_ARG,
-				     "need a positive integer", NULL);
+				     "need a positive integer");
 			return -1;
 		}
 	}
@@ -199,7 +200,7 @@ static int handlePlayId(int fd, int *permission, int argc,
 		id = strtol(argv[1], &test, 10);
 		if (*test != '\0') {
 			commandError(fd, ACK_ERROR_ARG,
-				     "need a positive integer", NULL);
+				     "need a positive integer");
 			return -1;
 		}
 	}
@@ -284,7 +285,7 @@ static int commandStatus(int fd, int *permission, int argc,
 		fdprintf(fd, "%s: %i:%i\n", COMMAND_STATUS_TIME,
 			  getPlayerElapsedTime(), getPlayerTotalTime());
 		fdprintf(fd, "%s: %li\n", COMMAND_STATUS_BITRATE,
-			  getPlayerBitRate(), getPlayerTotalTime());
+			  getPlayerBitRate());
 		fdprintf(fd, "%s: %u:%i:%i\n", COMMAND_STATUS_AUDIO,
 			  getPlayerSampleRate(), getPlayerBits(),
 			  getPlayerChannels());
@@ -341,7 +342,7 @@ static int handleDelete(int fd, int *permission, int argc,
 	song = strtol(argv[1], &test, 10);
 	if (*test != '\0') {
 		commandError(fd, ACK_ERROR_ARG,
-			     "need a positive integer", NULL);
+			     "need a positive integer");
 		return -1;
 	}
 	return deleteFromPlaylist(fd, song);
@@ -356,7 +357,7 @@ static int handleDeleteId(int fd, int *permission, int argc,
 	id = strtol(argv[1], &test, 10);
 	if (*test != '\0') {
 		commandError(fd, ACK_ERROR_ARG,
-			     "need a positive integer", NULL);
+			     "need a positive integer");
 		return -1;
 	}
 	return deleteFromPlaylistById(fd, id);
@@ -434,8 +435,7 @@ static int handlePlaylistChanges(int fd, int *permission,
 
 	version = strtoul(argv[1], &test, 10);
 	if (*test != '\0') {
-		commandError(fd, ACK_ERROR_ARG, "need a positive integer",
-			     NULL);
+		commandError(fd, ACK_ERROR_ARG, "need a positive integer");
 		return -1;
 	}
 	return playlistChanges(fd, version);
@@ -449,8 +449,7 @@ static int handlePlaylistChangesPosId(int fd, int *permission,
 
 	version = strtoul(argv[1], &test, 10);
 	if (*test != '\0') {
-		commandError(fd, ACK_ERROR_ARG, "need a positive integer",
-			     NULL);
+		commandError(fd, ACK_ERROR_ARG, "need a positive integer");
 		return -1;
 	}
 	return playlistChangesPosId(fd, version);
@@ -466,7 +465,7 @@ static int handlePlaylistInfo(int fd, int *permission,
 		song = strtol(argv[1], &test, 10);
 		if (*test != '\0') {
 			commandError(fd, ACK_ERROR_ARG,
-				     "need a positive integer", NULL);
+				     "need a positive integer");
 			return -1;
 		}
 	}
@@ -483,7 +482,7 @@ static int handlePlaylistId(int fd, int *permission,
 		id = strtol(argv[1], &test, 10);
 		if (*test != '\0') {
 			commandError(fd, ACK_ERROR_ARG,
-				     "need a positive integer", NULL);
+				     "need a positive integer");
 			return -1;
 		}
 	}
@@ -501,7 +500,7 @@ static int handleFind(int fd, int *permission, int argc,
 							 &items);
 
 	if (numItems <= 0) {
-		commandError(fd, ACK_ERROR_ARG, "incorrect arguments", NULL);
+		commandError(fd, ACK_ERROR_ARG, "incorrect arguments");
 		return -1;
 	}
 
@@ -523,7 +522,7 @@ static int handleSearch(int fd, int *permission, int argc,
 							 &items);
 
 	if (numItems <= 0) {
-		commandError(fd, ACK_ERROR_ARG, "incorrect arguments", NULL);
+		commandError(fd, ACK_ERROR_ARG, "incorrect arguments");
 		return -1;
 	}
 
@@ -609,7 +608,7 @@ static int handleVolume(int fd, int *permission, int argc,
 
 	change = strtol(argv[1], &test, 10);
 	if (*test != '\0') {
-		commandError(fd, ACK_ERROR_ARG, "need an integer", NULL);
+		commandError(fd, ACK_ERROR_ARG, "need an integer");
 		return -1;
 	}
 	return changeVolumeLevel(fd, change, 1);
@@ -623,7 +622,7 @@ static int handleSetVol(int fd, int *permission, int argc,
 
 	level = strtol(argv[1], &test, 10);
 	if (*test != '\0') {
-		commandError(fd, ACK_ERROR_ARG, "need an integer", NULL);
+		commandError(fd, ACK_ERROR_ARG, "need an integer");
 		return -1;
 	}
 	return changeVolumeLevel(fd, level, 0);
@@ -637,7 +636,7 @@ static int handleRepeat(int fd, int *permission, int argc,
 
 	status = strtol(argv[1], &test, 10);
 	if (*test != '\0') {
-		commandError(fd, ACK_ERROR_ARG, "need an integer", NULL);
+		commandError(fd, ACK_ERROR_ARG, "need an integer");
 		return -1;
 	}
 	return setPlaylistRepeatStatus(fd, status);
@@ -651,7 +650,7 @@ static int handleRandom(int fd, int *permission, int argc,
 
 	status = strtol(argv[1], &test, 10);
 	if (*test != '\0') {
-		commandError(fd, ACK_ERROR_ARG, "need an integer", NULL);
+		commandError(fd, ACK_ERROR_ARG, "need an integer");
 		return -1;
 	}
 	return setPlaylistRandomStatus(fd, status);
@@ -703,7 +702,7 @@ static int handleList(int fd, int *permission, int argc,
 
 		if (numConditionals < 0) {
 			commandError(fd, ACK_ERROR_ARG,
-				     "not able to parse args", NULL);
+				     "not able to parse args");
 			return -1;
 		}
 	}
@@ -868,8 +867,7 @@ static int handlePassword(int fd, int *permission, int argc,
 			  char *argv[])
 {
 	if (getPermissionFromPassword(argv[1], permission) < 0) {
-		commandError(fd, ACK_ERROR_PASSWORD, "incorrect password",
-			     NULL);
+		commandError(fd, ACK_ERROR_PASSWORD, "incorrect password");
 		return -1;
 	}
 
@@ -1212,3 +1210,23 @@ int processCommand(int fd, int *permission, char *commandString)
 {
 	return processCommandInternal(fd, permission, commandString, NULL);
 }
+
+mpd_fprintf_ void commandError(int fd, int error, const char *fmt, ...)
+{
+	va_list args;
+	va_start(args, fmt);
+
+	if (current_command) {
+		fdprintf(fd, "ACK [%i@%i] {%s} ",
+				(int)error, command_listNum, current_command);
+		current_command = NULL;
+	} else
+		fdprintf(STDERR_FILENO, "ACK [%i@%i] ",
+				(int)error, command_listNum);
+
+	vfdprintf(fd, fmt, args);
+	va_end(args);
+	fdprintf(fd,"\n");
+}
+
+

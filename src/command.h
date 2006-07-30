@@ -48,18 +48,6 @@ void finishCommands();
 
 #define commandSuccess(fd)              fdprintf(fd, "OK\n")
 
-#define commandError(fd, error, format, ... ) do \
-	{\
-		if (current_command) { \
-			fdprintf(fd, "ACK [%i@%i] {%s} " format "\n", \
-					(int)error, command_listNum, \
-					current_command, __VA_ARGS__); \
-			current_command = NULL; \
-		} \
-		else { \
-			fdprintf(STDERR_FILENO, "ACK [%i@%i] " format "\n", \
-					(int)error, command_listNum, \
-					__VA_ARGS__); \
-		} \
-	} while (0)
+mpd_fprintf_ void commandError(int fd, int error, const char *fmt, ...);
+
 #endif

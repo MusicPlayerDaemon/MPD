@@ -671,7 +671,7 @@ int addSongToPlaylist(int fd, Song * song, int printId)
 
 	if (playlist.length == playlist_max_length) {
 		commandError(fd, ACK_ERROR_PLAYLIST_MAX,
-			     "playlist is at the max size", NULL);
+			     "playlist is at the max size");
 		return -1;
 	}
 
@@ -1360,7 +1360,7 @@ int deletePlaylist(int fd, char *utf8file)
 
 	if (unlink(actualFile) < 0) {
 		commandError(fd, ACK_ERROR_SYSTEM,
-			     "problems deleting file", NULL);
+			     "problems deleting file");
 		return -1;
 	}
 
@@ -1407,8 +1407,7 @@ int savePlaylist(int fd, char *utf8file)
 
 	while (!(fileP = fopen(actualFile, "w")) && errno == EINTR) ;
 	if (fileP == NULL) {
-		commandError(fd, ACK_ERROR_SYSTEM, "problems opening file",
-			     NULL);
+		commandError(fd, ACK_ERROR_SYSTEM, "problems opening file");
 		return -1;
 	}
 
