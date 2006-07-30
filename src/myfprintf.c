@@ -79,8 +79,8 @@ void myfprintfStdLogMode(FILE * out, FILE * err)
 	myfprintf_stdLogMode = 1;
 	myfprintf_out = out;
 	myfprintf_err = err;
-	myfprintf_outFilename = getConfigParamValue(CONF_LOG_FILE);
-	myfprintf_errFilename = getConfigParamValue(CONF_ERROR_FILE);
+	myfprintf_outFilename = parseConfigFilePath(CONF_LOG_FILE, 1)->value;
+	myfprintf_errFilename = parseConfigFilePath(CONF_ERROR_FILE, 1)->value;
 }
 
 int myfprintfCloseAndOpenLogFile(void)
