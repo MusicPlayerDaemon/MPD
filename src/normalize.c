@@ -24,7 +24,7 @@
 
 int normalizationEnabled;
 
-void initNormalization()
+void initNormalization(void)
 {
 	normalizationEnabled = getBoolConfigParam(CONF_VOLUME_NORMALIZATION);
 	if (normalizationEnabled == -1) normalizationEnabled = 0;
@@ -34,7 +34,7 @@ void initNormalization()
 		CompressCfg(0, ANTICLIP, TARGET, GAINMAX, GAINSMOOTH, BUCKETS);
 }
 
-void finishNormalization()
+void finishNormalization(void)
 {
 	if (normalizationEnabled) CompressFree();
 }

@@ -169,17 +169,17 @@ MpdTag *getID3Info(struct id3_tag *tag, char *id, int type, MpdTag * mpdTag)
 			encoding = getConfigParamValue(CONF_ID3V1_ENCODING);
 			if (encoding) {
 				setCharSetConversion("ISO-8859-1", "UTF-8");
-				isostr = convStrDup(utf8);
+				isostr = convStrDup((char *)utf8);
 				free(utf8);
 				setCharSetConversion("UTF-8", encoding);
-				utf8 = convStrDup(isostr);
+				utf8 = (id3_utf8_t *)convStrDup(isostr);
 				free(isostr);
 			}
 		}
 
 		if (mpdTag == NULL)
 			mpdTag = newMpdTag();
-		addItemToMpdTag(mpdTag, type, utf8);
+		addItemToMpdTag(mpdTag, type, (char *)utf8);
 
 		free(utf8);
 	}

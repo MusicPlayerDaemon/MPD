@@ -199,7 +199,7 @@ static ConfigParam *readConfigBlock(FILE * fp, int *count, char *string)
 	int argsMinusComment;
 
 	while (myFgets(string, MAX_STRING_SIZE, fp)) {
-		char *array[CONF_LINE_TOKEN_MAX] = { 0 };
+		char *array[CONF_LINE_TOKEN_MAX] = { NULL };
 
 		(*count)++;
 
@@ -262,7 +262,7 @@ void readConf(char *file)
 	}
 
 	while (myFgets(string, MAX_STRING_SIZE, fp)) {
-		char *array[CONF_LINE_TOKEN_MAX] = { 0 };
+		char *array[CONF_LINE_TOKEN_MAX] = { NULL };
 		count++;
 
 		numberOfArgs = cstrtok(string, array, CONF_LINE_TOKEN_MAX);

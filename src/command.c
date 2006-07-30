@@ -1141,7 +1141,7 @@ static CommandEntry *getCommandEntryAndCheckArgcAndPermission(int fd,
 static CommandEntry *getCommandEntryFromString(char *string, int *permission)
 {
 	CommandEntry *cmd = NULL;
-	char *argv[COMMAND_ARGV_MAX] = { 0 };
+	char *argv[COMMAND_ARGV_MAX] = { NULL };
 	int argc = cstrtok(string, argv, COMMAND_ARGV_MAX);
 
 	if (0 == argc)
@@ -1157,7 +1157,7 @@ static int processCommandInternal(int fd, int *permission,
 				  char *commandString, struct strnode *cmdnode)
 {
 	int argc;
-	char *argv[COMMAND_ARGV_MAX] = { 0 };
+	char *argv[COMMAND_ARGV_MAX] = { NULL };
 	CommandEntry *cmd;
 	int ret = -1;
 
