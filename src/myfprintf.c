@@ -92,14 +92,16 @@ int myfprintfCloseAndOpenLogFile(void)
 			fopen(myfprintf_outFilename, "a+")) == NULL
 		       && errno == EINTR) ;
 		if (!myfprintf_out) {
-			ERROR("error re-opening log file: %s\n", myfprintf_out);
+			ERROR("error re-opening log file: %s\n",
+			      myfprintf_outFilename);
 			return -1;
 		}
 		while ((myfprintf_err =
 			fopen(myfprintf_errFilename, "a+")) == NULL
 		       && errno == EINTR) ;
-		if (!myfprintf_out) {
-			ERROR("error re-opening log file: %s\n", myfprintf_out);
+		if (!myfprintf_err) {
+			ERROR("error re-opening error file: %s\n",
+			      myfprintf_errFilename);
 			return -1;
 		}
 		while (dup2(fileno(myfprintf_out), 1) < 0 && errno == EINTR) ;

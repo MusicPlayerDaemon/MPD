@@ -3,8 +3,6 @@
 #ifndef SLLIST_H
 #define SLLIST_H
 
-#include "utils.h"
-
 /* just free the entire structure if it's free-able, the 'data' member
  * should _NEVER_ be explicitly freed
  *

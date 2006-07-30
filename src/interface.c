@@ -25,6 +25,7 @@
 #include "playlist.h"
 #include "permission.h"
 #include "sllist.h"
+#include "utils.h"
 
 #include <stdio.h>
 #include <stdlib.h>
