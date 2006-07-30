@@ -24,6 +24,7 @@
 #include "audio.h"
 #include "playlist.h"
 #include "utils.h"
+#include "volume.h"
 
 #include <errno.h>
 #include <stdlib.h>
@@ -35,6 +36,7 @@ static struct _sf_cb {
 	void (*reader)(FILE *);
 	void (*writer)(FILE *);
 } sf_callbacks [] = {
+	{ read_sw_volume_state, save_sw_volume_state },
 	{ readAudioDevicesState, saveAudioDevicesState },
 	{ readPlaylistState, savePlaylistState },
 };

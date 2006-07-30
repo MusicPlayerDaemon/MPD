@@ -21,6 +21,9 @@
 #include "conf.h"
 #include "log.h"
 #include "player.h"
+#include "state_file.h"
+#include "gcc.h"
+#include "utils.h"
 
 #include <math.h>
 #include <stdlib.h>
@@ -44,6 +47,7 @@
 #define VOLUME_MIXER_OSS_DEFAULT		"/dev/mixer"
 #define VOLUME_MIXER_ALSA_DEFAULT		"default"
 #define VOLUME_MIXER_ALSA_CONTROL_DEFAULT	"PCM"
+#define SW_VOLUME_STATE                         "sw_volume: "
 
 #ifdef HAVE_OSS
 #define VOLUME_MIXER_TYPE_DEFAULT               VOLUME_MIXER_TYPE_OSS
@@ -515,3 +519,34 @@ int changeVolumeLevel(int fd, int change, int rel)
 		break;
 	}
 }
+
+void read_sw_volume_state(FILE *fp)
+{
+	/* strlen(SW_VOLUME_STATE) + strlen('100') + '\0' */
+	#define bufsize 16
+	char buf[bufsize];
+	const size_t len = strlen(SW_VOLUME_STATE);
+	char *end = NULL;
+	long int sv;
+
+	if (volume_mixerType != VOLUME_MIXER_TYPE_SOFTWARE)
+		return;
+	while (myFgets(buf, bufsize, fp)) {
+		if (strncmp(buf, SW_VOLUME_STATE, len))
+			continue;
+		sv = strtol(buf + len, &end, 10);
+		if (mpd_likely(!*end))
+			changeSoftwareVolume(STDERR_FILENO, sv, 0);
+		else
+			ERROR("Can't parse software volume: %s\n", buf);
+		return;
+	}
+	#undef bufsize
+}
+
+void save_sw_volume_state(FILE *fp)
+{
+	if (volume_mixerType == VOLUME_MIXER_TYPE_SOFTWARE)
+		fprintf(fp, SW_VOLUME_STATE "%d\n", volume_softwareSet);
+}
+
