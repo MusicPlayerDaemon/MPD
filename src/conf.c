@@ -232,7 +232,7 @@ static ConfigParam *readConfigBlock(FILE * fp, int *count, char *string)
 		    0 == strcmp(array[0], CONF_BLOCK_END) ||
 		    0 == strcmp(array[1], CONF_BLOCK_END)) {
 			ERROR("improperly formatted config file at line %i:"
-			      " %s\n", count, string);
+			      " %s\n", *count, string);
 			ERROR("in block begining at line %i\n", ret->line);
 			exit(EXIT_FAILURE);
 		}
