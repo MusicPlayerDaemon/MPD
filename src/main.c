@@ -35,6 +35,7 @@
 #include "inputPlugin.h"
 #include "audioOutput.h"
 #include "inputStream.h"
+#include "state_file.h"
 #include "tag.h"
 #include "tagTracker.h"
 #include "dbUtils.h"
@@ -346,7 +347,6 @@ static void startMainProcess(void)
 	if (pid > 0) {
 		initInputStream();
 		initReplayGainState();
-		readAudioDevicesState();
 
 		/* free stuff we don't need */
 		freeAllListenSockets();
@@ -581,7 +581,7 @@ int main(int argc, char *argv[])
 		my_usleep(1);
 
 	openVolumeDevice();
-	readPlaylistState();
+	read_state_file();
 
 	while (COMMAND_RETURN_KILL != doIOForInterfaces()) {
 		if (COMMAND_RETURN_KILL == handlePendingSignals())
@@ -591,8 +591,7 @@ int main(int argc, char *argv[])
 		readDirectoryDBIfUpdateIsFinished();
 	}
 
-	savePlaylistState();
-	saveAudioDevicesState();
+	write_state_file();
 
 	freeAllInterfaces();
 	closeAllListenSockets();

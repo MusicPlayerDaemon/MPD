@@ -27,6 +27,7 @@
 #include "path.h"
 #include "utils.h"
 #include "sig_handlers.h"
+#include "state_file.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -91,16 +92,6 @@ static int playlist_saveAbsolutePaths = DEFAULT_PLAYLIST_SAVE_ABSOLUTE_PATHS;
 static void swapOrder(int a, int b);
 static int playPlaylistOrderNumber(int fd, int orderNum);
 static void randomizeOrder(int start, int end);
-
-char *getStateFile(void)
-{
-	ConfigParam *param = parseConfigFilePath(CONF_STATE_FILE, 0);
-
-	if (!param)
-		return NULL;
-
-	return param->value;
-}
 
 static void incrPlaylistVersion(void)
 {
@@ -256,208 +247,141 @@ int showPlaylist(int fd)
 	return 0;
 }
 
-void savePlaylistState(void)
+void savePlaylistState(FILE *fp)
 {
-	char *stateFile = getStateFile();
-
-	if (stateFile) {
-		FILE *fp;
-
-		while (!(fp = fopen(stateFile, "w")) && errno == EINTR) ;
-		if (!fp) {
-			ERROR("problems opening state file \"%s\" for "
-			      "writing: %s\n", stateFile, strerror(errno));
-			return;
-		}
-
-		fprintf(fp, "%s", PLAYLIST_STATE_FILE_STATE);
-		switch (playlist_state) {
-		case PLAYLIST_STATE_PLAY:
-			switch (getPlayerState()) {
-			case PLAYER_STATE_PAUSE:
-				fprintf(fp, "%s\n",
-					  PLAYLIST_STATE_FILE_STATE_PAUSE);
-				break;
-			default:
-				fprintf(fp, "%s\n",
-					  PLAYLIST_STATE_FILE_STATE_PLAY);
-			}
-			fprintf(fp, "%s%i\n", PLAYLIST_STATE_FILE_CURRENT,
-				  playlist.order[playlist.current]);
-			fprintf(fp, "%s%i\n", PLAYLIST_STATE_FILE_TIME,
-				  getPlayerElapsedTime());
+	fprintf(fp, "%s", PLAYLIST_STATE_FILE_STATE);
+	switch (playlist_state) {
+	case PLAYLIST_STATE_PLAY:
+		switch (getPlayerState()) {
+		case PLAYER_STATE_PAUSE:
+			fprintf(fp, "%s\n", PLAYLIST_STATE_FILE_STATE_PAUSE);
 			break;
 		default:
-			fprintf(fp, "%s\n", PLAYLIST_STATE_FILE_STATE_STOP);
-			break;
+			fprintf(fp, "%s\n", PLAYLIST_STATE_FILE_STATE_PLAY);
 		}
-		fprintf(fp, "%s%i\n", PLAYLIST_STATE_FILE_RANDOM,
-			  playlist.random);
-		fprintf(fp, "%s%i\n", PLAYLIST_STATE_FILE_REPEAT,
-			  playlist.repeat);
-		fprintf(fp, "%s%i\n", PLAYLIST_STATE_FILE_CROSSFADE,
-			  (int)(getPlayerCrossFade()));
-		fprintf(fp, "%s\n", PLAYLIST_STATE_FILE_PLAYLIST_BEGIN);
-		fflush(fp);
-		showPlaylist(fileno(fp));
-		fprintf(fp, "%s\n", PLAYLIST_STATE_FILE_PLAYLIST_END);
-
-		while (fclose(fp) && errno == EINTR) ;
+		fprintf(fp, "%s%i\n", PLAYLIST_STATE_FILE_CURRENT,
+		        playlist.order[playlist.current]);
+		fprintf(fp, "%s%i\n", PLAYLIST_STATE_FILE_TIME,
+		        getPlayerElapsedTime());
+		break;
+	default:
+		fprintf(fp, "%s\n", PLAYLIST_STATE_FILE_STATE_STOP);
+		break;
 	}
+	fprintf(fp, "%s%i\n", PLAYLIST_STATE_FILE_RANDOM, playlist.random);
+	fprintf(fp, "%s%i\n", PLAYLIST_STATE_FILE_REPEAT, playlist.repeat);
+	fprintf(fp, "%s%i\n", PLAYLIST_STATE_FILE_CROSSFADE,
+	        (int)(getPlayerCrossFade()));
+	fprintf(fp, "%s\n", PLAYLIST_STATE_FILE_PLAYLIST_BEGIN);
+	fflush(fp);
+	showPlaylist(fileno(fp));
+	fprintf(fp, "%s\n", PLAYLIST_STATE_FILE_PLAYLIST_END);
 }
 
-void loadPlaylistFromStateFile(FILE *fp, char *buffer, int state, int current,
-			       int time)
+static void loadPlaylistFromStateFile(FILE *fp, char *buffer,
+				      int state, int current, int time)
 {
 	char *temp;
 	int song;
-	char *stateFile = getStateFile();
 
-	if (!myFgets(buffer, PLAYLIST_BUFFER_SIZE, fp)) {
-		ERROR("error parsing state file \"%s\"\n", stateFile);
-		exit(EXIT_FAILURE);
-	}
+	if (!myFgets(buffer, PLAYLIST_BUFFER_SIZE, fp))
+		state_file_fatal();
 	while (strcmp(buffer, PLAYLIST_STATE_FILE_PLAYLIST_END)) {
 		song = atoi(strtok(buffer, ":"));
-		if (!(temp = strtok(NULL, ""))) {
-			ERROR("error parsing state file \"%s\"\n", stateFile);
-			exit(EXIT_FAILURE);
-		}
+		if (!(temp = strtok(NULL, "")))
+			state_file_fatal();
 		if (!addToPlaylist(STDERR_FILENO, temp, 0) && current == song) {
 			if (state != PLAYER_STATE_STOP) {
 				playPlaylist(STDERR_FILENO,
-				             playlist.length - 1, 0);
+					     playlist.length - 1, 0);
 			}
 			if (state == PLAYER_STATE_PAUSE) {
 				playerPause(STDERR_FILENO);
 			}
 			if (state != PLAYER_STATE_STOP) {
 				seekSongInPlaylist(STDERR_FILENO,
-				                   playlist.length - 1,
-						   time);
+						   playlist.length - 1, time);
 			}
 		}
-		if (!myFgets(buffer, PLAYLIST_BUFFER_SIZE, fp)) {
-			ERROR("error parsing state file \"%s\"\n", stateFile);
-			exit(EXIT_FAILURE);
-		}
+		if (!myFgets(buffer, PLAYLIST_BUFFER_SIZE, fp))
+			state_file_fatal();
 	}
 }
 
-void readPlaylistState(void)
+void readPlaylistState(FILE *fp)
 {
-	char *stateFile = getStateFile();
+	int current = -1;
+	int time = 0;
+	int state = PLAYER_STATE_STOP;
+	char buffer[PLAYLIST_BUFFER_SIZE];
 
-	if (stateFile) {
-		FILE *fp;
-		struct stat st;
-		int current = -1;
-		int time = 0;
-		int state = PLAYER_STATE_STOP;
-		char buffer[PLAYLIST_BUFFER_SIZE];
-
-		if (stat(stateFile, &st) < 0) {
-			DEBUG("failed to stat state file\n");
-			return;
-		}
-		if (!S_ISREG(st.st_mode)) {
-			ERROR("state file \"%s\" is not a regular "
-			      "file\n", stateFile);
-			exit(EXIT_FAILURE);
-		}
-
-		fp = fopen(stateFile, "r");
-		if (!fp) {
-			ERROR("problems opening state file \"%s\" for "
-			      "reading: %s\n", stateFile, strerror(errno));
-			exit(EXIT_FAILURE);
-		}
-
-		while (myFgets(buffer, PLAYLIST_BUFFER_SIZE, fp)) {
-			if (strncmp(buffer, PLAYLIST_STATE_FILE_STATE,
-				    strlen(PLAYLIST_STATE_FILE_STATE)) == 0) {
-				if (strcmp(&(buffer
-					     [strlen
-					      (PLAYLIST_STATE_FILE_STATE)]),
-					   PLAYLIST_STATE_FILE_STATE_PLAY) ==
-				    0) {
-					state = PLAYER_STATE_PLAY;
-				} else if (strcmp(&(buffer
-						    [strlen
-						     (PLAYLIST_STATE_FILE_STATE)]),
-						  PLAYLIST_STATE_FILE_STATE_PAUSE)
-					   == 0) {
-					state = PLAYER_STATE_PAUSE;
-				}
-			} else if (strncmp(buffer, PLAYLIST_STATE_FILE_TIME,
-					   strlen(PLAYLIST_STATE_FILE_TIME)) ==
-				   0) {
-				time =
-				    atoi(&
-					 (buffer
-					  [strlen(PLAYLIST_STATE_FILE_TIME)]));
+	while (myFgets(buffer, PLAYLIST_BUFFER_SIZE, fp)) {
+		if (strncmp(buffer, PLAYLIST_STATE_FILE_STATE,
+			    strlen(PLAYLIST_STATE_FILE_STATE)) == 0) {
+			if (strcmp(&(buffer[strlen(PLAYLIST_STATE_FILE_STATE)]),
+				   PLAYLIST_STATE_FILE_STATE_PLAY) == 0) {
+				state = PLAYER_STATE_PLAY;
 			} else
-			    if (strncmp
-				(buffer, PLAYLIST_STATE_FILE_REPEAT,
-				 strlen(PLAYLIST_STATE_FILE_REPEAT)) == 0) {
-				if (strcmp
-				    (&
-				     (buffer
-				      [strlen(PLAYLIST_STATE_FILE_REPEAT)]),
-				     "1") == 0) {
-					setPlaylistRepeatStatus(STDERR_FILENO,
-					                        1);
-				} else
-					setPlaylistRepeatStatus(STDERR_FILENO,
-					                        0);
-			} else
-			    if (strncmp
-				(buffer, PLAYLIST_STATE_FILE_CROSSFADE,
-				 strlen(PLAYLIST_STATE_FILE_CROSSFADE)) == 0) {
-				setPlayerCrossFade(atoi
-						   (&
-						    (buffer
-						     [strlen
-						      (PLAYLIST_STATE_FILE_CROSSFADE)])));
-			} else
-			    if (strncmp
-				(buffer, PLAYLIST_STATE_FILE_RANDOM,
-				 strlen(PLAYLIST_STATE_FILE_RANDOM)) == 0) {
-				if (strcmp
-				    (&
-				     (buffer
-				      [strlen(PLAYLIST_STATE_FILE_RANDOM)]),
-				     "1") == 0) {
-					setPlaylistRandomStatus(STDERR_FILENO,
-					                        1);
-				} else
-					setPlaylistRandomStatus(STDERR_FILENO,
-					                        0);
-			} else if (strncmp(buffer, PLAYLIST_STATE_FILE_CURRENT,
-					   strlen(PLAYLIST_STATE_FILE_CURRENT))
-				   == 0) {
-				if (strlen(buffer) ==
-				    strlen(PLAYLIST_STATE_FILE_CURRENT)) {
-					ERROR("error parsing state "
-					      "file \"%s\"\n", stateFile);
-					exit(EXIT_FAILURE);
-				}
-				current = atoi(&(buffer
-						 [strlen
-						  (PLAYLIST_STATE_FILE_CURRENT)]));
-			} else
-			    if (strncmp
-				(buffer, PLAYLIST_STATE_FILE_PLAYLIST_BEGIN,
-				 strlen(PLAYLIST_STATE_FILE_PLAYLIST_BEGIN)
-				) == 0) {
-				if (state == PLAYER_STATE_STOP)
-					current = -1;
-				loadPlaylistFromStateFile(fp, buffer, state,
-							  current, time);
+			    if (strcmp
+				(&(buffer[strlen(PLAYLIST_STATE_FILE_STATE)]),
+				 PLAYLIST_STATE_FILE_STATE_PAUSE)
+				== 0) {
+				state = PLAYER_STATE_PAUSE;
 			}
+		} else if (strncmp(buffer, PLAYLIST_STATE_FILE_TIME,
+				   strlen(PLAYLIST_STATE_FILE_TIME)) == 0) {
+			time =
+			    atoi(&(buffer[strlen(PLAYLIST_STATE_FILE_TIME)]));
+		} else
+		    if (strncmp
+			(buffer, PLAYLIST_STATE_FILE_REPEAT,
+			 strlen(PLAYLIST_STATE_FILE_REPEAT)) == 0) {
+			if (strcmp
+			    (&(buffer[strlen(PLAYLIST_STATE_FILE_REPEAT)]),
+			     "1") == 0) {
+				setPlaylistRepeatStatus(STDERR_FILENO, 1);
+			} else
+				setPlaylistRepeatStatus(STDERR_FILENO, 0);
+		} else
+		    if (strncmp
+			(buffer, PLAYLIST_STATE_FILE_CROSSFADE,
+			 strlen(PLAYLIST_STATE_FILE_CROSSFADE)) == 0) {
+			setPlayerCrossFade(atoi
+					   (&
+					    (buffer
+					     [strlen
+					      (PLAYLIST_STATE_FILE_CROSSFADE)])));
+		} else
+		    if (strncmp
+			(buffer, PLAYLIST_STATE_FILE_RANDOM,
+			 strlen(PLAYLIST_STATE_FILE_RANDOM)) == 0) {
+			if (strcmp
+			    (&
+			     (buffer
+			      [strlen(PLAYLIST_STATE_FILE_RANDOM)]),
+			     "1") == 0) {
+				setPlaylistRandomStatus(STDERR_FILENO, 1);
+			} else
+				setPlaylistRandomStatus(STDERR_FILENO, 0);
+		} else if (strncmp(buffer, PLAYLIST_STATE_FILE_CURRENT,
+				   strlen(PLAYLIST_STATE_FILE_CURRENT))
+			   == 0) {
+			if (strlen(buffer) ==
+			    strlen(PLAYLIST_STATE_FILE_CURRENT))
+				state_file_fatal();
+			current = atoi(&(buffer
+					 [strlen
+					  (PLAYLIST_STATE_FILE_CURRENT)]));
+		} else
+		    if (strncmp
+			(buffer, PLAYLIST_STATE_FILE_PLAYLIST_BEGIN,
+			 strlen(PLAYLIST_STATE_FILE_PLAYLIST_BEGIN)
+			) == 0) {
+			if (state == PLAYER_STATE_STOP)
+				current = -1;
+			loadPlaylistFromStateFile(fp, buffer, state,
+						  current, time);
 		}
-
-		fclose(fp);
 	}
 }
 

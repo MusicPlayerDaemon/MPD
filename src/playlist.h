@@ -34,9 +34,9 @@ void initPlaylist();
 
 void finishPlaylist();
 
-void readPlaylistState();
+void readPlaylistState(FILE *);
 
-void savePlaylistState();
+void savePlaylistState(FILE *);
 
 int clearPlaylist(int fd);
 
@@ -115,7 +115,5 @@ int playlistChanges(int fd, mpd_uint32 version);
 int playlistChangesPosId(int fd, mpd_uint32 version);
 
 int PlaylistInfo(int fd, char *utf8file, int detail);
-
-char *getStateFile();
 
 #endif

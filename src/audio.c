@@ -25,6 +25,7 @@
 #include "playerData.h"
 #include "utils.h"
 #include "playlist.h"
+#include "state_file.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -462,32 +463,19 @@ void printAudioDevices(int fd)
 	}
 }
 
-void saveAudioDevicesState(void)
+void saveAudioDevicesState(FILE *fp)
 {
-	char *stateFile;
-	FILE *fp;
 	int i;
-
-	if (!(stateFile = getStateFile()))
-		return;
-
-	while (!(fp = fopen(stateFile, "a")) && errno == EINTR) ;
-	if (!fp) {
-		ERROR("problems opening state file \"%s\" for "
-		      "writing: %s\n", stateFile, strerror(errno));
-		return;
-	}
 
 	assert(audioOutputArraySize != 0);
 	for (i = 0; i < audioOutputArraySize; i++) {
 		fprintf(fp, AUDIO_DEVICE_STATE "%d:%s\n",
-			  (int)pdAudioDevicesEnabled[i],
-			  audioOutputArray[i]->name);
+			(int)pdAudioDevicesEnabled[i],
+		        audioOutputArray[i]->name);
 	}
-	while (fclose(fp) && errno == EINTR) ;
 }
 
-static void parse_audio_device_state(FILE * fp)
+void readAudioDevicesState(FILE *fp)
 {
 	char buffer[AUDIO_BUFFER_SIZE];
 	int i;
@@ -521,29 +509,3 @@ static void parse_audio_device_state(FILE * fp)
 	}
 }
 
-void readAudioDevicesState(void)
-{
-	char *stateFile;
-	FILE *fp;
-	struct stat st;
-
-	if (!(stateFile = getStateFile()))
-		return;
-	if (stat(stateFile, &st) < 0) {
-		DEBUG("failed to stat state file\n");
-		return;
-	}
-	if (!S_ISREG(st.st_mode)) {
-		ERROR("state file \"%s\" is not a regular file\n", stateFile);
-		exit(EXIT_FAILURE);
-	}
-
-	fp = fopen(stateFile, "r");
-	if (!fp) {
-		ERROR("problems opening state file \"%s\" for "
-		      "reading: %s\n", stateFile, strerror(errno));
-		exit(EXIT_FAILURE);
-	}
-	parse_audio_device_state(fp);
-	fclose(fp);
-}

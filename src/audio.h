@@ -75,9 +75,9 @@ int disableAudioDevice(int fd, int device);
 
 void printAudioDevices(int fd);
 
-void readAudioDevicesState();
+void readAudioDevicesState(FILE *fp);
 
-void saveAudioDevicesState();
+void saveAudioDevicesState(FILE *fp);
 
 void loadAudioDrivers();
 #endif

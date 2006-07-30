@@ -29,6 +29,8 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
+#define ARRAY_SIZE(x) (sizeof(x)/sizeof(x[0]))
+
 char *myFgets(char *buffer, int bufferSize, FILE * fp);
 
 char *strDupToUpper(char *str);
