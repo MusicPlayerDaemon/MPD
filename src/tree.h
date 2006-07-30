@@ -1,36 +1,31 @@
-#define CHILDREN_PER_NODE 3
-#define DATA_PER_NODE 2
+#ifndef TREE_H
+#define TREE_H
 
-typedef struct _TreeNode
-{
-	void * data[DATA_PER_NODE];
-	struct _TreeNode * parent;
-	struct _TreeNode * children[CHILDREN_PER_NODE];
-	unsigned dataCount;
-} TreeNode;
+typedef struct _Tree Tree;
+typedef struct _TreeNode TreeNode;
+typedef struct _TreeIterator TreeIterator;
 
-typedef int (*TreeCompareDataFunction)(void * data1, void * data2);
-typedef void (*TreeFreeDataFunction)(void * data);
-
-typedef struct _Tree
-{
-	TreeCompareDataFunction compareData;
-	TreeFreeDataFunction freeData;
-	TreeNode * rootNode;
-} Tree;
-
-typedef struct _TreeIterator
+struct _TreeIterator
 {
 	Tree * tree;
 	TreeNode * node;
-	unsigned which;
-} TreeIterator;
+	int which;
+};
+
+typedef int (*TreeCompareDataFunction)(const void * data1, const void * data2);
+typedef void (*TreeFreeDataFunction)(void * data);
 
 Tree * MakeTree(TreeCompareDataFunction compareFunc, 
 		TreeFreeDataFunction freeData);
 
-void SetIteratorToBegin(TreeIterator * iter, Tree * tree);
+void SetTreeIteratorToBegin(TreeIterator * iter, Tree * tree);
+int IsTreeIteratorAtEnd(const TreeIterator * iter);
+void IncrementTreeIterator(TreeIterator * iter);
+
+void * GetDataFromTreeIterator(TreeIterator * iter);
 
 int InsertIntoTree(Tree * tree, void * data);
 
 void DeleteFromTree(Tree * tree, void * data);
+
+#endif
