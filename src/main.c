@@ -191,8 +191,8 @@ static void parseOptions(int argc, char **argv, Options * options)
 					version();
 					exit(EXIT_SUCCESS);
 				} else {
-					myfprintf(stderr,
-						  "unknown command line option: %s\n",
+					fprintf(stderr,
+					          "unknown command line option: %s\n",
 						  argv[i]);
 					exit(EXIT_FAILURE);
 				}
@@ -447,13 +447,13 @@ static void setupLogOutput(Options * options, FILE * out, FILE * err)
 		fflush(NULL);
 
 		if (dup2(fileno(out), STDOUT_FILENO) < 0) {
-			myfprintf(err, "problems dup2 stdout : %s\n",
+			fprintf(err, "problems dup2 stdout : %s\n",
 				  strerror(errno));
 			exit(EXIT_FAILURE);
 		}
 
 		if (dup2(fileno(err), STDERR_FILENO) < 0) {
-			myfprintf(err, "problems dup2 stderr : %s\n",
+			fprintf(err, "problems dup2 stderr : %s\n",
 				  strerror(errno));
 			exit(EXIT_FAILURE);
 		}

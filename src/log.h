@@ -23,6 +23,8 @@
 
 #include "myfprintf.h"
 
+#include <unistd.h>
+
 #define LOG_LEVEL_LOW		0
 #define LOG_LEVEL_SECURE	1
 #define LOG_LEVEL_DEBUG		2
@@ -30,18 +32,18 @@
 extern int logLevel;
 extern short warningFlushed;
 
-#define ERROR(...) myfprintf(stderr, __VA_ARGS__)
+#define ERROR(...) fdprintf(STDERR_FILENO, __VA_ARGS__)
 
-#define LOG(...) myfprintf(stdout,  __VA_ARGS__)
+#define LOG(...) fdprintf(STDOUT_FILENO,  __VA_ARGS__)
 
 #define SECURE(...) if(logLevel>=LOG_LEVEL_SECURE) \
-				myfprintf(stdout, __VA_ARGS__)
+				fdprintf(STDOUT_FILENO, __VA_ARGS__)
 
 #define DEBUG(...) if(logLevel>=LOG_LEVEL_DEBUG) \
-				myfprintf(stdout, __VA_ARGS__)
+				fdprintf(STDOUT_FILENO, __VA_ARGS__)
 
 #define WARNING(...) { \
-	if(warningFlushed) myfprintf(stderr, __VA_ARGS__); \
+	if(warningFlushed) fdprintf(STDERR_FILENO, __VA_ARGS__); \
 	else bufferWarning(__VA_ARGS__); \
 }
 

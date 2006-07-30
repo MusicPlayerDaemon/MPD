@@ -270,36 +270,37 @@ void savePlaylistState(void)
 			return;
 		}
 
-		myfprintf(fp, "%s", PLAYLIST_STATE_FILE_STATE);
+		fprintf(fp, "%s", PLAYLIST_STATE_FILE_STATE);
 		switch (playlist_state) {
 		case PLAYLIST_STATE_PLAY:
 			switch (getPlayerState()) {
 			case PLAYER_STATE_PAUSE:
-				myfprintf(fp, "%s\n",
+				fprintf(fp, "%s\n",
 					  PLAYLIST_STATE_FILE_STATE_PAUSE);
 				break;
 			default:
-				myfprintf(fp, "%s\n",
+				fprintf(fp, "%s\n",
 					  PLAYLIST_STATE_FILE_STATE_PLAY);
 			}
-			myfprintf(fp, "%s%i\n", PLAYLIST_STATE_FILE_CURRENT,
+			fprintf(fp, "%s%i\n", PLAYLIST_STATE_FILE_CURRENT,
 				  playlist.order[playlist.current]);
-			myfprintf(fp, "%s%i\n", PLAYLIST_STATE_FILE_TIME,
+			fprintf(fp, "%s%i\n", PLAYLIST_STATE_FILE_TIME,
 				  getPlayerElapsedTime());
 			break;
 		default:
-			myfprintf(fp, "%s\n", PLAYLIST_STATE_FILE_STATE_STOP);
+			fprintf(fp, "%s\n", PLAYLIST_STATE_FILE_STATE_STOP);
 			break;
 		}
-		myfprintf(fp, "%s%i\n", PLAYLIST_STATE_FILE_RANDOM,
+		fprintf(fp, "%s%i\n", PLAYLIST_STATE_FILE_RANDOM,
 			  playlist.random);
-		myfprintf(fp, "%s%i\n", PLAYLIST_STATE_FILE_REPEAT,
+		fprintf(fp, "%s%i\n", PLAYLIST_STATE_FILE_REPEAT,
 			  playlist.repeat);
-		myfprintf(fp, "%s%i\n", PLAYLIST_STATE_FILE_CROSSFADE,
+		fprintf(fp, "%s%i\n", PLAYLIST_STATE_FILE_CROSSFADE,
 			  (int)(getPlayerCrossFade()));
-		myfprintf(fp, "%s\n", PLAYLIST_STATE_FILE_PLAYLIST_BEGIN);
+		fprintf(fp, "%s\n", PLAYLIST_STATE_FILE_PLAYLIST_BEGIN);
+		fflush(fp);
 		showPlaylist(fileno(fp));
-		myfprintf(fp, "%s\n", PLAYLIST_STATE_FILE_PLAYLIST_END);
+		fprintf(fp, "%s\n", PLAYLIST_STATE_FILE_PLAYLIST_END);
 
 		while (fclose(fp) && errno == EINTR) ;
 	}
@@ -1414,12 +1415,12 @@ int savePlaylist(int fd, char *utf8file)
 	for (i = 0; i < playlist.length; i++) {
 		if (playlist_saveAbsolutePaths &&
 		    playlist.songs[i]->type == SONG_TYPE_FILE) {
-			myfprintf(fileP, "%s\n",
+			fprintf(fileP, "%s\n",
 				  rmp2amp(utf8ToFsCharset
 					  ((getSongUrl(playlist.songs[i])))));
 		} else {
 			url = utf8ToFsCharset(getSongUrl(playlist.songs[i]));
-			myfprintf(fileP, "%s\n", url);
+			fprintf(fileP, "%s\n", url);
 			free(url);
 
 		}

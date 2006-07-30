@@ -906,13 +906,13 @@ static void writeDirectoryInfo(FILE * fp, Directory * directory)
 	Directory *subDirectory;
 
 	if (directory->path) {
-		myfprintf(fp, "%s%s\n", DIRECTORY_BEGIN,
+		fprintf(fp, "%s%s\n", DIRECTORY_BEGIN,
 			  getDirectoryPath(directory));
 	}
 
 	while (node != NULL) {
 		subDirectory = (Directory *) node->data;
-		myfprintf(fp, "%s%s\n", DIRECTORY_DIR, node->key);
+		fprintf(fp, "%s%s\n", DIRECTORY_DIR, node->key);
 		writeDirectoryInfo(fp, subDirectory);
 		node = node->nextNode;
 	}
@@ -920,7 +920,7 @@ static void writeDirectoryInfo(FILE * fp, Directory * directory)
 	writeSongInfoFromList(fp, directory->songs);
 
 	if (directory->path) {
-		myfprintf(fp, "%s%s\n", DIRECTORY_END,
+		fprintf(fp, "%s%s\n", DIRECTORY_END,
 			  getDirectoryPath(directory));
 	}
 }
@@ -1106,10 +1106,10 @@ int writeDirectoryDB()
 	}
 
 	/* block signals when writing the db so we don't get a corrupted db */
-	myfprintf(fp, "%s\n", DIRECTORY_INFO_BEGIN);
-	myfprintf(fp, "%s%s\n", DIRECTORY_MPD_VERSION, VERSION);
-	myfprintf(fp, "%s%s\n", DIRECTORY_FS_CHARSET, getFsCharset());
-	myfprintf(fp, "%s\n", DIRECTORY_INFO_END);
+	fprintf(fp, "%s\n", DIRECTORY_INFO_BEGIN);
+	fprintf(fp, "%s%s\n", DIRECTORY_MPD_VERSION, VERSION);
+	fprintf(fp, "%s%s\n", DIRECTORY_FS_CHARSET, getFsCharset());
+	fprintf(fp, "%s\n", DIRECTORY_INFO_END);
 
 	writeDirectoryInfo(fp, mp3rootDirectory);
 

@@ -267,8 +267,9 @@ void printAllOutputPluginTypes(FILE * fp)
 
 	while (node) {
 		plugin = (AudioOutputPlugin *) node->data;
-		myfprintf(fp, "%s ", plugin->name);
+		fprintf(fp, "%s ", plugin->name);
 		node = node->nextNode;
 	}
-	myfprintf(fp, "\n");
+	fprintf(fp, "\n");
+	fflush(fp);
 }

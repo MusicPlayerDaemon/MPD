@@ -128,12 +128,13 @@ void printAllInputPluginSuffixes(FILE * fp)
 		plugin = (InputPlugin *) node->data;
 		suffixes = plugin->suffixes;
 		while (suffixes && *suffixes) {
-			myfprintf(fp, "%s ", *suffixes);
+			fprintf(fp, "%s ", *suffixes);
 			suffixes++;
 		}
 		node = node->nextNode;
 	}
-	myfprintf(fp, "\n");
+	fprintf(fp, "\n");
+	fflush(fp);
 }
 
 extern InputPlugin mp3Plugin;

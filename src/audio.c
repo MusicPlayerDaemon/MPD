@@ -480,7 +480,7 @@ void saveAudioDevicesState(void)
 
 	assert(audioOutputArraySize != 0);
 	for (i = 0; i < audioOutputArraySize; i++) {
-		myfprintf(fp, AUDIO_DEVICE_STATE "%d:%s\n",
+		fprintf(fp, AUDIO_DEVICE_STATE "%d:%s\n",
 			  (int)pdAudioDevicesEnabled[i],
 			  audioOutputArray[i]->name);
 	}

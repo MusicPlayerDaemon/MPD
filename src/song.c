@@ -170,17 +170,18 @@ void writeSongInfoFromList(FILE * fp, SongList * list)
 {
 	ListNode *tempNode = list->firstNode;
 
-	myfprintf(fp, "%s\n", SONG_BEGIN);
+	fprintf(fp, "%s\n", SONG_BEGIN);
 
 	while (tempNode != NULL) {
-		myfprintf(fp, "%s%s\n", SONG_KEY, tempNode->key);
+		fprintf(fp, "%s%s\n", SONG_KEY, tempNode->key);
+		fflush(fp);
 		printSongInfo(fileno(fp), (Song *) tempNode->data);
-		myfprintf(fp, "%s%li\n", SONG_MTIME,
+		fprintf(fp, "%s%li\n", SONG_MTIME,
 			  (long)((Song *) tempNode->data)->mtime);
 		tempNode = tempNode->nextNode;
 	}
 
-	myfprintf(fp, "%s\n", SONG_END);
+	fprintf(fp, "%s\n", SONG_END);
 }
 
 static void insertSongIntoList(SongList * list, ListNode ** nextSongNode,
