@@ -46,7 +46,7 @@ static int mp4_getAACTrack(mp4ff_t * infile)
 
 	for (i = 0; i < numTracks; i++) {
 		unsigned char *buff = NULL;
-		int buff_size = 0;
+		unsigned int buff_size = 0;
 #ifdef HAVE_MP4AUDIOSPECIFICCONFIG
 		mp4AudioSpecificConfig mp4ASC;
 #else
@@ -99,8 +99,8 @@ static int mp4_decode(OutputBuffer * cb, DecoderControl * dc, char *path)
 	faacDecFrameInfo frameInfo;
 	faacDecConfigurationPtr config;
 	unsigned char *mp4Buffer;
-	int mp4BufferSize;
-	unsigned long sampleRate;
+	unsigned int mp4BufferSize;
+	uint32_t sampleRate;
 	unsigned char channels;
 	long sampleId;
 	long numSamples;
