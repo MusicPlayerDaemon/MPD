@@ -29,6 +29,7 @@
 #include "buffer2array.h"
 #include "log.h"
 #include "dbUtils.h"
+#include "tag.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -104,10 +105,12 @@
 #define COMMAND_STATUS_AUDIO		"audio"
 #define COMMAND_STATUS_UPDATING_DB	"updating_db"
 
-/* the most we ever use is argv[2], so argv[] has (at most)
- * 3 usable elements. This means we tokenize up to 4 elements to
- * detect errors clients may send us */
-#define COMMAND_ARGV_MAX	4
+/*
+ * The most we ever use is for search/find, and that limits it to the
+ * number of tags we can have.  Add one for the command, and one extra
+ * to catch errors clients may send us
+ */
+#define COMMAND_ARGV_MAX	(2+(TAG_NUM_OF_ITEM_TYPES*2))
 
 typedef struct _CommandEntry CommandEntry;
 
