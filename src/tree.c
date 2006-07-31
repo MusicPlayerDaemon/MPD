@@ -1,9 +1,26 @@
+/* the Music Player Daemon (MPD)
+ * (c)2006 by Warren Dukes (warren.dukes@gmail.com)
+ * This project's homepage is: http://www.musicpd.org
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
 #include "tree.h"
 
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
 
 #ifndef CHILDREN_PER_NODE
 #define CHILDREN_PER_NODE 3
@@ -109,6 +126,13 @@ _Find(TreeIterator * iter, void * data)
 			return 0;
 		}
 	}
+}
+
+static void _SetTreeIteratorToRoot(TreeIterator * iter, Tree * tree)
+{
+	iter->tree = tree;
+	iter->node = tree->rootNode;
+	iter->which = 0;
 }
 
 static
@@ -313,15 +337,201 @@ _InsertAt(TreeIterator * iter, void * data)
 			node = NULL;
 		}
 	}
-
-	return;
 }
 
-static void _SetTreeIteratorToRoot(TreeIterator * iter, Tree * tree)
+static
+void
+_MergeNodes(TreeNode * lessNode, TreeNode * moreNode)
 {
-	iter->tree = tree;
-	iter->node = tree->rootNode;
-	iter->which = 0;
+	int i = 0;
+	int j = lessNode->dataCount;
+
+	assert((lessNode->dataCount + moreNode->dataCount) <= DATA_PER_NODE);
+
+	for(; i < moreNode->dataCount; i++,j++)
+	{
+		lessNode->data[j] = moreNode->data[i];
+		lessNode->children[j] = moreNode->children[i];
+		lessNode->children[j]->parent = lessNode;
+	}
+	lessNode->children[j] = moreNode->children[i];
+	lessNode->children[j]->parent = lessNode;
+	lessNode->dataCount = j;
+
+	free(moreNode);
+}
+
+static
+void
+_DeleteAt(TreeIterator * iter)
+{
+	TreeNode * node = iter->node;
+	void ** data = &(node->data[iter->which]);
+	void * dataToFree = *data;
+
+	// perculate up data to fill the whole!
+	while (1)
+	{
+		TreeNode ** child = &(node->children[iter->which+1]);
+		void ** childData = NULL;
+
+		if (*child)
+		{
+			assert((*child)->dataCount);
+			childData = &((*child)->data[0]);
+		}
+		else if (*(--child))
+		{
+			assert((*child)->dataCount);
+			childData = &((*child)->data[(*child)->dataCount-1]);
+		}
+		else
+		{
+			// no children!
+			break;
+		}
+
+		// move childData up to parent node
+		*data = *childData;
+
+		// set data and node for next iteration
+		data = childData;
+		node  = *child;
+	}
+
+	void * tempData = *data;
+
+	// move data nodes over, we're at a leaf node, so we can ignore
+	// children
+	void ** leftData = node->data[node->dataCount-1];
+	while (data != leftData)
+	{
+		*(leftData-1) = *leftData;
+		leftData--;
+	}
+	node->data[--(node->dataCount)] = NULL;
+
+	// merge the nodes from the bottom up which have too few data
+	while (node->dataCount < (CHILDREN_PER_NODE/2))
+	{
+		// if we're not the root
+		if (node->parent)
+		{
+			TreeNode ** child;
+			int pos;
+			_FindPositionInNode(iter->tree, 
+					    node->parent, 
+					    tempData, 
+					    &pos);
+			assert(node->parent->children[pos] == node);
+			child = &(node->parent->children[pos]);
+
+			// check siblings for superfulous data
+			if (pos < node->parent->dataCount &&
+			    (*(child+1))->dataCount > (CHILDREN_PER_NODE/2))
+			{
+				child++;
+				node->data[node->dataCount++] = 
+					node->parent->data[pos];
+				node->children[node->dataCount] =
+					(*child)->children[0];
+				node->children[node->dataCount]->parent = node;
+				node->parent->data[pos] =
+					(*child)->data[0];
+				int i = 0;
+				for(; i < (*child)->dataCount-1; i++)
+				{
+					(*child)->data[i] = (*child)->data[i+1];
+					(*child)->children[i+1] =
+						(*child)->children[i+2];
+				}
+				(*child)->children[(*child)->dataCount--] =NULL;
+				(*child)->data[(*child)->dataCount] = NULL;
+			}
+			else if (pos > 0 &&
+				 (*(child-1))->dataCount>(CHILDREN_PER_NODE/2))
+			{
+				child--;
+				int i = node->dataCount++;
+				for(; i > 0; i--)
+				{
+					node->data[i] = node->data[i-1];
+					node->children[i+1] = node->children[i];
+				}
+				node->data[0] = node->parent->data[pos-1];
+				node->children[0] = 
+					(*child)->children[(*child)->dataCount];
+				node->children[0]->parent = node;
+				node->parent->data[pos-1] = 
+					(*child)->data[(*child)->dataCount-1];
+				(*child)->children[(*child)->dataCount--] =NULL;
+				(*child)->data[(*child)->dataCount] = NULL;
+			}
+			else
+			{
+				// merge with one of our siblings
+				if(pos < node->parent->dataCount-1)
+				{
+					child++;
+					assert(*child);
+					pos--;
+
+					tempData = node->parent->data[pos];
+					node->data[node->dataCount++] = 
+						tempData;
+
+					_MergeNodes(node, *child);
+				}
+				else
+				{
+					assert(pos > 0);
+					child--;
+					assert(*child);
+
+					tempData = node->parent->data[pos];
+					(*child)->data[(*child)->dataCount++] = 
+						tempData;
+
+					_MergeNodes(*child, node);
+				}
+
+				int i = pos;
+				for(; i < node->parent->dataCount-1; i++)
+				{
+					node->parent->data[i] =
+						node->parent->data[i+1];
+					node->parent->children[i+1] =
+						node->parent->children[i+2];
+				}
+				node->parent->data[i] = NULL;
+				node->parent->children[i+1] = NULL;
+
+				node = node->parent;
+			}
+		}
+		// this is a root node
+		else 
+		{
+			if (node->dataCount == 0)
+			{
+				if (node->children[0])
+				{
+					node->children[0]->parent = NULL;
+				}
+
+				iter->tree->rootNode = node->children[0];
+
+				free(node);
+			}
+
+			break;
+		}
+	}
+
+	if (iter->tree->freeData)
+	{
+		iter->tree->freeData(dataToFree);
+	}
 }
 
 /************************* PUBLIC METHODS ***********************************/
@@ -410,4 +620,16 @@ InsertIntoTree(Tree * tree, void * data)
 	_InsertAt(&iter, data);
 
 	return 1;
+}
+
+void
+DeleteFromTree(Tree * tree, void * data)
+{
+	TreeIterator iter;
+	_SetTreeIteratorToRoot(&iter, tree);
+
+	if (_Find(&iter, data))
+	{
+		_DeleteAt(&iter);
+	}
 }
