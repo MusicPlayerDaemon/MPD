@@ -355,6 +355,7 @@ _MergeNodes(TreeNode * lessNode, TreeNode * moreNode)
 	int j = lessNode->dataCount;
 
 	assert((lessNode->dataCount + moreNode->dataCount) <= DATA_PER_NODE);
+	assert(lessNode->children[j] == NULL);
 
 	for(; i < moreNode->dataCount; i++,j++)
 	{
@@ -444,6 +445,7 @@ _DeleteAt(TreeIterator * iter)
 		{
 			TreeNode ** child;
 			int pos;
+			// XXX : this find is unneccesary!
 			if (_FindPositionInNode(iter->tree,
 					    	node->parent, 
 						tempData, 
@@ -477,11 +479,13 @@ _DeleteAt(TreeIterator * iter)
 				for(; i < (*child)->dataCount-1; i++)
 				{
 					(*child)->data[i] = (*child)->data[i+1];
-					(*child)->children[i+1] =
-						(*child)->children[i+2];
+					(*child)->children[i] =
+						(*child)->children[i+1];
 				}
-				(*child)->children[(*child)->dataCount--] =NULL;
-				(*child)->data[(*child)->dataCount] = NULL;
+				(*child)->children[i] = (*child)->children[i+1];
+				(*child)->children[i+1] =NULL;
+				(*child)->data[i] = NULL;
+				(*child)->dataCount--;
 			}
 			else if (pos > 0 &&
 				 (*(child-1))->dataCount>(CHILDREN_PER_NODE/2))
@@ -493,6 +497,7 @@ _DeleteAt(TreeIterator * iter)
 					node->data[i] = node->data[i-1];
 					node->children[i+1] = node->children[i];
 				}
+				node->children[1] = node->children[0];
 				node->data[0] = node->parent->data[pos-1];
 				node->children[0] = 
 					(*child)->children[(*child)->dataCount];
@@ -663,7 +668,7 @@ InsertIntoTree(Tree * tree, void * data)
 	return 1;
 }
 
-void
+int
 DeleteFromTree(Tree * tree, void * data)
 {
 	TreeIterator iter;
@@ -672,5 +677,8 @@ DeleteFromTree(Tree * tree, void * data)
 	if (_Find(&iter, data))
 	{
 		_DeleteAt(&iter);
+		return 1;
 	}
+
+	return 0;
 }

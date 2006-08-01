@@ -44,6 +44,6 @@ void * GetDataFromTreeIterator(TreeIterator * iter);
 
 int InsertIntoTree(Tree * tree, void * data);
 
-void DeleteFromTree(Tree * tree, void * data);
+int DeleteFromTree(Tree * tree, void * data);
 
 #endif
