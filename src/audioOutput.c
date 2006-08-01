@@ -66,9 +66,8 @@ void finishAudioOutputPlugins(void)
 	if(bp) str = bp->value; \
 }
 
-AudioOutput *newAudioOutput(ConfigParam * param)
+int initAudioOutput(AudioOutput *ao, ConfigParam * param)
 {
-	AudioOutput *ret = NULL;
 	void *data = NULL;
 	char *name = NULL;
 	char *format = NULL;
@@ -111,50 +110,47 @@ AudioOutput *newAudioOutput(ConfigParam * param)
 
 		if (!node) {
 			WARNING("Unable to detect an audio device\n");
-			return NULL;
+			return 0;
 		}
 
 		name = "default detected output";
 		type = plugin->name;
 	}
 
-	ret = malloc(sizeof(AudioOutput));
-	ret->name = strdup(name);
-	ret->type = strdup(type);
-	ret->finishDriverFunc = plugin->finishDriverFunc;
-	ret->openDeviceFunc = plugin->openDeviceFunc;
-	ret->playFunc = plugin->playFunc;
-	ret->dropBufferedAudioFunc = plugin->dropBufferedAudioFunc;
-	ret->closeDeviceFunc = plugin->closeDeviceFunc;
-	ret->sendMetdataFunc = plugin->sendMetdataFunc;
-	ret->open = 0;
+	ao->name = name;
+	ao->type = type;
+	ao->finishDriverFunc = plugin->finishDriverFunc;
+	ao->openDeviceFunc = plugin->openDeviceFunc;
+	ao->playFunc = plugin->playFunc;
+	ao->dropBufferedAudioFunc = plugin->dropBufferedAudioFunc;
+	ao->closeDeviceFunc = plugin->closeDeviceFunc;
+	ao->sendMetdataFunc = plugin->sendMetdataFunc;
+	ao->open = 0;
 
-	ret->convertAudioFormat = 0;
-	ret->sameInAndOutFormats = 0;
-	ret->convBuffer = NULL;
-	ret->convBufferLen = 0;
+	ao->convertAudioFormat = 0;
+	ao->sameInAndOutFormats = 0;
+	ao->convBuffer = NULL;
+	ao->convBufferLen = 0;
 
-	memset(&ret->inAudioFormat, 0, sizeof(AudioFormat));
-	memset(&ret->outAudioFormat, 0, sizeof(AudioFormat));
-	memset(&ret->reqAudioFormat, 0, sizeof(AudioFormat));
+	memset(&ao->inAudioFormat, 0, sizeof(AudioFormat));
+	memset(&ao->outAudioFormat, 0, sizeof(AudioFormat));
+	memset(&ao->reqAudioFormat, 0, sizeof(AudioFormat));
 
 	if (format) {
-		ret->convertAudioFormat = 1;
+		ao->convertAudioFormat = 1;
 
-		if (0 != parseAudioConfig(&ret->reqAudioFormat, format)) {
+		if (0 != parseAudioConfig(&ao->reqAudioFormat, format)) {
 			ERROR("error parsing format at line %i\n", bp->line);
 			exit(EXIT_FAILURE);
 		}
 
-		copyAudioFormat(&ret->outAudioFormat, &ret->reqAudioFormat);
+		copyAudioFormat(&ao->outAudioFormat, &ao->reqAudioFormat);
 	}
 
-	if (plugin->initDriverFunc(ret, param) != 0) {
-		free(ret);
-		ret = NULL;
-	}
+	if (plugin->initDriverFunc(ao, param) != 0)
+		return 0;
 
-	return ret;
+	return 1;
 }
 
 int openAudioOutput(AudioOutput * audioOutput, AudioFormat * audioFormat)
@@ -248,9 +244,6 @@ void finishAudioOutput(AudioOutput * audioOutput)
 	audioOutput->finishDriverFunc(audioOutput);
 	if (audioOutput->convBuffer)
 		free(audioOutput->convBuffer);
-	free(audioOutput->type);
-	free(audioOutput->name);
-	free(audioOutput);
 }
 
 void sendMetadataToAudioOutput(AudioOutput * audioOutput, MpdTag * tag)

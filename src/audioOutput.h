@@ -101,7 +101,7 @@ void finishAudioOutputPlugins();
 void loadAudioOutputPlugin(AudioOutputPlugin * audioOutputPlugin);
 void unloadAudioOutputPlugin(AudioOutputPlugin * audioOutputPlugin);
 
-AudioOutput *newAudioOutput(ConfigParam * param);
+int initAudioOutput(AudioOutput *, ConfigParam * param);
 int openAudioOutput(AudioOutput * audioOutput, AudioFormat * audioFormat);
 int playAudioOutput(AudioOutput * audioOutput, char *playChunk, int size);
 void dropBufferedAudioOutput(AudioOutput * audioOutput);
