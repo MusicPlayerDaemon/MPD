@@ -166,15 +166,15 @@ static void parseListenConfigParam(unsigned int port, ConfigParam * param)
 				      param->value, param->line);
 				exit(EXIT_FAILURE);
 			}
-			bcopy((char *)he->h_addr, (char *)
-			      &sin6.sin6_addr.s6_addr, he->h_length);
+			memcpy((char *)&sin6.sin6_addr.s6_addr,
+			       (char *)he->h_addr, he->h_length);
 			addrp = (struct sockaddr *)&sin6;
 			addrlen = sizeof(struct sockaddr_in6);
 			break;
 #endif
 		case AF_INET:
-			bcopy((char *)he->h_addr, (char *)&sin.sin_addr.s_addr,
-			      he->h_length);
+			memcpy((char *)&sin.sin_addr.s_addr,
+			       (char *)he->h_addr, he->h_length);
 			addrp = (struct sockaddr *)&sin;
 			addrlen = sizeof(struct sockaddr_in);
 			break;
