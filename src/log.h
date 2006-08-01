@@ -29,28 +29,28 @@
 #define LOG_LEVEL_SECURE	1
 #define LOG_LEVEL_DEBUG		2
 
-extern int logLevel;
-extern short warningFlushed;
+#ifndef NDEBUG
+  mpd_printf void DEBUG(const char *fmt, ...);
+#else
+  static inline void DEBUG(const char *fmt, ...) { }
+#endif
 
-#define ERROR(...) fdprintf(STDERR_FILENO, __VA_ARGS__)
+mpd_printf void ERROR(const char *fmt, ...);
+mpd_printf void LOG(const char *fmt, ...);
+mpd_printf void SECURE(const char *fmt, ...);
+mpd_printf void WARNING(const char *fmt, ...);
+mpd_printf void FATAL(const char *fmt, ...);
 
-#define LOG(...) fdprintf(STDOUT_FILENO,  __VA_ARGS__)
+void initLog(const int verbose);
 
-#define SECURE(...) if(logLevel>=LOG_LEVEL_SECURE) \
-				fdprintf(STDOUT_FILENO, __VA_ARGS__)
+void setup_log_output(const int use_stdout);
 
-#define DEBUG(...) if(logLevel>=LOG_LEVEL_DEBUG) \
-				fdprintf(STDOUT_FILENO, __VA_ARGS__)
+void open_log_files(const int use_stdout);
 
-#define WARNING(...) { \
-	if(warningFlushed) fdprintf(STDERR_FILENO, __VA_ARGS__); \
-	else bufferWarning(__VA_ARGS__); \
-}
+int cycle_log_files(void);
 
-void initLog();
-
-void bufferWarning(char *format, ...);
+void close_log_files(void);
 
 void flushWarningLog();
 
-#endif
+#endif /* LOG_H */

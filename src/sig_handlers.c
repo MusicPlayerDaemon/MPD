@@ -79,7 +79,7 @@ int handlePendingSignals()
 			readDirectoryDB();
 			playlistVersionChange();
 		}
-		if (myfprintfCloseAndOpenLogFile() < 0)
+		if (cycle_log_files() < 0)
 			return COMMAND_RETURN_KILL;
 		playerCycleLogFiles();
 	}

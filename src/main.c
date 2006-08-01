@@ -68,6 +68,7 @@ typedef struct _Options {
 	int stdOutput;
 	int createDB;
 	int updateDB;
+	int verbose;
 } Options;
 
 /* 
@@ -186,7 +187,7 @@ static void parseOptions(int argc, char **argv, Options * options)
 					options->createDB = -1;
 					argcLeft--;
 				} else if (strcmp(argv[i], "--verbose") == 0) {
-					logLevel = LOG_LEVEL_DEBUG;
+					options->verbose = 1;
 					argcLeft--;
 				} else if (strcmp(argv[i], "--version") == 0) {
 					version();
@@ -284,36 +285,6 @@ static void changeToUser(void)
 	}
 }
 
-static void openLogFiles(Options * options, FILE ** out, FILE ** err)
-{
-	ConfigParam *logParam = parseConfigFilePath(CONF_LOG_FILE, 1);
-	ConfigParam *errorParam = parseConfigFilePath(CONF_ERROR_FILE, 1);
-
-	mode_t prev;
-
-	if (options->stdOutput) {
-		flushWarningLog();
-		return;
-	}
-
-	/* be sure to create log files w/ rw permissions */
-	prev = umask(0066);
-
-	if (NULL == (*out = fopen(logParam->value, "a"))) {
-		ERROR("problem opening log file \"%s\" (config line %i) for "
-		      "writing\n", logParam->value, logParam->line);
-		exit(EXIT_FAILURE);
-	}
-
-	if (NULL == (*err = fopen(errorParam->value, "a"))) {
-		ERROR("problem opening error file \"%s\" (config line %i) for "
-		      "writing\n", errorParam->value, errorParam->line);
-		exit(EXIT_FAILURE);
-	}
-
-	umask(prev);
-}
-
 static void openDB(Options * options, char *argv0)
 {
 	if (options->createDB > 0 || readDirectoryDB() < 0) {
@@ -369,7 +340,7 @@ static void startMainProcess(void)
 		kill(mainPid, SIGTERM);
 		waitpid(mainPid, NULL, 0);
 		finishConf();
-		myfprintfCloseLogFile();
+		close_log_files();
 		exit(EXIT_SUCCESS);
 
 	} else if (pid < 0) {
@@ -441,43 +412,6 @@ static void daemonize(Options * options)
 	}
 }
 
-static void setupLogOutput(Options * options, FILE * out, FILE * err)
-{
-	if (!options->stdOutput) {
-		fflush(NULL);
-
-		if (dup2(fileno(out), STDOUT_FILENO) < 0) {
-			fprintf(err, "problems dup2 stdout : %s\n",
-				  strerror(errno));
-			exit(EXIT_FAILURE);
-		}
-
-		if (dup2(fileno(err), STDERR_FILENO) < 0) {
-			fprintf(err, "problems dup2 stderr : %s\n",
-				  strerror(errno));
-			exit(EXIT_FAILURE);
-		}
-
-		myfprintfStdLogMode(out, err);
-	}
-	flushWarningLog();
-
-	/* lets redirect stdin to dev null as a work around for libao bug */
-	{
-		int fd = open("/dev/null", O_RDONLY);
-		if (fd < 0) {
-			ERROR("not able to open /dev/null to redirect stdin: "
-			      "%s\n", strerror(errno));
-			exit(EXIT_FAILURE);
-		}
-		if (dup2(fd, STDIN_FILENO) < 0) {
-			ERROR("problems dup2's stdin for redirection: "
-			      "%s\n", strerror(errno));
-			exit(EXIT_FAILURE);
-		}
-	}
-}
-
 static void cleanUpPidFile(void)
 {
 	ConfigParam *pidFileParam = parseConfigFilePath(CONF_PID_FILE, 0);
@@ -523,8 +457,6 @@ static void killFromPidFile(char *cmd, int killOption)
 
 int main(int argc, char *argv[])
 {
-	FILE *out = NULL;
-	FILE *err = NULL;
 	Options options;
 
 	closeAllFDs();
@@ -538,14 +470,14 @@ int main(int argc, char *argv[])
 
 	initStats();
 	initTagConfig();
-	initLog();
+	initLog(options.verbose);
 
 	if (options.createDB <= 0 && !options.updateDB)
 		listenOnPort();
 
 	changeToUser();
 
-	openLogFiles(&options, &out, &err);
+	open_log_files(options.stdOutput);
 
 	initPlayerData();
 
@@ -560,7 +492,7 @@ int main(int argc, char *argv[])
 	daemonize(&options);
 
 	initSigHandlers();
-	setupLogOutput(&options, out, err);
+	setup_log_output(options.stdOutput);
 	startMainProcess();
 	/* This is the main process which has
 	 * been forked from the master process.
@@ -613,6 +545,6 @@ int main(int argc, char *argv[])
 	cleanUpPidFile();
 	finishConf();
 
-	myfprintfCloseLogFile();
+	close_log_files();
 	return EXIT_SUCCESS;
 }

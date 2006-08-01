@@ -208,7 +208,7 @@ static int decodeSeek(PlayerControl * pc, DecoderControl * dc,
 
 #define processDecodeInput() \
         if(pc->cycleLogFiles) { \
-                myfprintfCloseAndOpenLogFile(); \
+                cycle_log_files(); \
                 pc->cycleLogFiles = 0; \
         } \
 	if(pc->lockQueue) { \
@@ -415,7 +415,7 @@ static int decoderInit(PlayerControl * pc, OutputBuffer * cb,
 
 		while (1) {
 			if (dc->cycleLogFiles) {
-				myfprintfCloseAndOpenLogFile();
+				cycle_log_files();
 				dc->cycleLogFiles = 0;
 			} else if (dc->start || dc->seek)
 				decodeStart(pc, cb, dc);

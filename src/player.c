@@ -136,7 +136,7 @@ int playerInitReal()
 				pc->queueLockState = PLAYER_QUEUE_UNLOCKED;
 				pc->unlockQueue = 0;
 			} else if (pc->cycleLogFiles) {
-				myfprintfCloseAndOpenLogFile();
+				cycle_log_files();
 				pc->cycleLogFiles = 0;
 			} else
 				my_usleep(10000);

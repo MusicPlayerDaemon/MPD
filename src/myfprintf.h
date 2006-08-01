@@ -25,12 +25,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 
-void myfprintfStdLogMode(FILE * out, FILE * err);
-
 mpd_fprintf void fdprintf(const int fd, const char *fmt, ...);
 void vfdprintf(const int fd, const char *fmt, va_list arglist);
 
-int myfprintfCloseAndOpenLogFile();
-
-void myfprintfCloseLogFile();
 #endif

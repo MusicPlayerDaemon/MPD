@@ -33,12 +33,6 @@
 
 #define BUFFER_LENGTH	MAXPATHLEN+1024
 
-static int myfprintf_stdLogMode = 0;
-static FILE *myfprintf_out;
-static FILE *myfprintf_err;
-static char *myfprintf_outFilename;
-static char *myfprintf_errFilename;
-
 static void blockingWrite(const int fd, const char *string, size_t len)
 {
 	while (len) {
@@ -62,7 +56,9 @@ void vfdprintf(const int fd, const char *fmt, va_list args)
 
 	vsnprintf(buf, BUFFER_LENGTH, fmt, args);
 	len = strlen(buf);
-	if (interfacePrintWithFD(fd, buf, len) < 0)
+	if (fd == STDERR_FILENO ||
+	    fd == STDOUT_FILENO ||
+	    interfacePrintWithFD(fd, buf, len) < 0)
 		blockingWrite(fd, buf, len);
 }
 
@@ -74,47 +70,3 @@ mpd_fprintf void fdprintf(const int fd, const char *fmt, ...)
 	va_end(args);
 }
 
-void myfprintfStdLogMode(FILE * out, FILE * err)
-{
-	myfprintf_stdLogMode = 1;
-	myfprintf_out = out;
-	myfprintf_err = err;
-	myfprintf_outFilename = parseConfigFilePath(CONF_LOG_FILE, 1)->value;
-	myfprintf_errFilename = parseConfigFilePath(CONF_ERROR_FILE, 1)->value;
-}
-
-int myfprintfCloseAndOpenLogFile(void)
-{
-	if (myfprintf_stdLogMode) {
-		while (fclose(myfprintf_out) < 0 && errno == EINTR) ;
-		while (fclose(myfprintf_err) < 0 && errno == EINTR) ;
-		while ((myfprintf_out =
-			fopen(myfprintf_outFilename, "a+")) == NULL
-		       && errno == EINTR) ;
-		if (!myfprintf_out) {
-			ERROR("error re-opening log file: %s\n",
-			      myfprintf_outFilename);
-			return -1;
-		}
-		while ((myfprintf_err =
-			fopen(myfprintf_errFilename, "a+")) == NULL
-		       && errno == EINTR) ;
-		if (!myfprintf_err) {
-			ERROR("error re-opening error file: %s\n",
-			      myfprintf_errFilename);
-			return -1;
-		}
-		while (dup2(fileno(myfprintf_out), 1) < 0 && errno == EINTR) ;
-		while (dup2(fileno(myfprintf_err), 2) < 0 && errno == EINTR) ;
-	}
-
-	return 0;
-}
-
-void myfprintfCloseLogFile(void)
-{
-	if (myfprintf_stdLogMode) {
-		while (fclose(myfprintf_out) < 0 && errno == EINTR) ;
-		while (fclose(myfprintf_err) < 0 && errno == EINTR) ;
-	}
-}

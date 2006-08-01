@@ -22,54 +22,73 @@
 #include "myfprintf.h"
 #include "utils.h"
 
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
+#include <time.h>
 
-int logLevel = LOG_LEVEL_LOW;
-short warningFlushed = 0;
-
+static unsigned int logLevel = LOG_LEVEL_LOW;
+static int warningFlushed = 0;
+static int stdout_mode = 1;
 static char *warningBuffer = NULL;
+static int out_fd = -1;
+static int err_fd = -1;
+static const char *out_filename = NULL;
+static const char *err_filename = NULL;
 
-void initLog(void)
+/* redirect stdin to /dev/null to work around a libao bug */
+static void redirect_stdin(void)
 {
-	ConfigParam *param = getConfigParam(CONF_LOG_LEVEL);
+	int fd;
+	if ((fd = open("/dev/null", O_RDONLY)) < 0)
+		FATAL("failed to open /dev/null %s\n", strerror(errno));
+	if (dup2(fd, STDIN_FILENO) < 0)
+		FATAL("dup2 stdin: %s\n", strerror(errno));
+}
 
-	if (!param)
-		return;
+static void redirect_logs(void)
+{
+	assert(out_fd > 0);
+	assert(err_fd > 0);
+	if (dup2(out_fd, STDOUT_FILENO) < 0)
+		FATAL("problems dup2 stdout : %s\n", strerror(errno));
+	if (dup2(err_fd, STDERR_FILENO) < 0)
+		FATAL("problems dup2 stderr : %s\n", strerror(errno));
+}
 
-	if (0 == strcmp(param->value, "default")) {
-		if (logLevel < LOG_LEVEL_LOW)
-			logLevel = LOG_LEVEL_LOW;
-	} else if (0 == strcmp(param->value, "secure")) {
-		if (logLevel < LOG_LEVEL_SECURE)
-			logLevel = LOG_LEVEL_SECURE;
-	} else if (0 == strcmp(param->value, "verbose")) {
-		if (logLevel < LOG_LEVEL_DEBUG)
-			logLevel = LOG_LEVEL_DEBUG;
-	} else {
-		ERROR("unknown log level \"%s\" at line %i\n",
-		      param->value, param->line);
-		exit(EXIT_FAILURE);
-	}
+static const char *log_date(void)
+{
+	static char buf[16] = { '\0' };
+	time_t t = time(NULL);
+	strftime(buf, 16, "%b %d %H:%M : ", localtime(&t));
+	return buf;
 }
 
 #define BUFFER_LENGTH	4096
-
-void bufferWarning(char *format, ...)
+static void buffer_warning(const char *fmt, va_list args)
 {
-	va_list arglist;
-	char temp[BUFFER_LENGTH + 1];
+	char buffer[BUFFER_LENGTH + 1];
+	char *tmp = buffer;
+	size_t len = BUFFER_LENGTH;
 
-	memset(temp, 0, BUFFER_LENGTH + 1);
+	if (!stdout_mode) {
+		memcpy(buffer, log_date(), 15);
+		tmp += 15;
+		len -= 15;
+	}
 
-	va_start(arglist, format);
+	vsnprintf(tmp, len, fmt, args);
+	warningBuffer = appendToString(warningBuffer, buffer);
 
-	vsnprintf(temp, BUFFER_LENGTH, format, arglist);
+	va_end(args);
+}
 
-	warningBuffer = appendToString(warningBuffer, temp);
-
-	va_end(arglist);
+static void do_log(const int fd, const char *fmt, va_list args)
+{
+	if (!stdout_mode)
+		xwrite(fd, log_date(), 15);
+	vfdprintf(fd, fmt, args);
 }
 
 void flushWarningLog(void)
@@ -84,12 +103,155 @@ void flushWarningLog(void)
 	s = strtok(warningBuffer, "\n");
 	while (s != NULL) {
 		fdprintf(STDERR_FILENO, "%s\n", s);
-
 		s = strtok(NULL, "\n");
 	}
 
 	free(warningBuffer);
 	warningBuffer = NULL;
-
 	warningFlushed = 1;
 }
+
+void initLog(const int verbose)
+{
+	ConfigParam *param;
+
+	if (verbose) {
+		logLevel = LOG_LEVEL_DEBUG;
+		return;
+	}
+	if (!(param = getConfigParam(CONF_LOG_LEVEL)))
+		return;
+	if (0 == strcmp(param->value, "default")) {
+		logLevel = LOG_LEVEL_LOW;
+	} else if (0 == strcmp(param->value, "secure")) {
+		logLevel = LOG_LEVEL_SECURE;
+	} else if (0 == strcmp(param->value, "verbose")) {
+		logLevel = LOG_LEVEL_DEBUG;
+	} else {
+		FATAL("unknown log level \"%s\" at line %i\n",
+		      param->value, param->line);
+	}
+}
+
+void open_log_files(const int use_stdout)
+{
+	mode_t prev;
+	ConfigParam *param;
+
+	if (use_stdout) {
+		flushWarningLog();
+		return;
+	}
+
+	prev = umask(0066);
+	param = parseConfigFilePath(CONF_LOG_FILE, 1);
+	out_filename = param->value;
+	out_fd = xopen(out_filename, O_CREAT | O_WRONLY | O_APPEND, 0666);
+	if (out_fd < 0)
+		FATAL("problem opening log file \"%s\" (config line %i) for "
+		      "writing\n", param->value, param->line);
+
+	param = parseConfigFilePath(CONF_ERROR_FILE, 1);
+	err_filename = param->value;
+	err_fd = xopen(err_filename, O_CREAT | O_WRONLY | O_APPEND, 0666);
+	if (err_fd < 0)
+		FATAL("problem opening error file \"%s\" (config line %i) for "
+		      "writing\n", param->value, param->line);
+
+	umask(prev);
+}
+
+void setup_log_output(const int use_stdout)
+{
+	fflush(NULL);
+	if (!use_stdout) {
+		redirect_logs();
+		stdout_mode = 0;
+	}
+	redirect_stdin();
+}
+
+#define log_func(func,level,fd) \
+mpd_printf void func(const char *fmt, ...) \
+{ \
+	if (logLevel >= level) { \
+		va_list args; \
+		va_start(args, fmt); \
+		do_log(fd, fmt, args); \
+		va_end(args); \
+	} \
+}
+
+log_func(ERROR, 0, STDERR_FILENO)
+log_func(LOG, 0, STDOUT_FILENO)
+log_func(SECURE, LOG_LEVEL_SECURE, STDOUT_FILENO)
+
+#ifndef NDEBUG
+log_func(DEBUG, LOG_LEVEL_DEBUG, STDOUT_FILENO)
+#endif /* NDEBUG */
+
+#undef log_func
+
+void WARNING(const char *fmt, ...)
+{
+	va_list args;
+	va_start(args, fmt);
+	if (warningFlushed) {
+		do_log(STDERR_FILENO, fmt, args);
+	} else
+		buffer_warning(fmt, args);
+	va_end(args);
+}
+
+mpd_printf mpd_noreturn void FATAL(const char *fmt, ...)
+{
+	va_list args;
+	va_start(args, fmt);
+	do_log(STDERR_FILENO, fmt, args);
+	va_end(args);
+	exit(EXIT_FAILURE);
+}
+
+int cycle_log_files(void)
+{
+	mode_t prev;
+
+	if (stdout_mode)
+		return 0;
+	assert(out_filename);
+	assert(err_filename);
+
+	DEBUG("Cycling log files...\n");
+	close_log_files();
+
+	prev = umask(0066);
+
+	out_fd = xopen(out_filename, O_CREAT | O_WRONLY | O_APPEND, 0666);
+	if (out_fd < 0) {
+		ERROR("error re-opening log file: %s\n", out_filename);
+		return -1;
+	}
+
+	err_fd = xopen(err_filename, O_CREAT | O_WRONLY | O_APPEND, 0666);
+	if (err_fd < 0) {
+		ERROR("error re-opening error file: %s\n", err_filename);
+		return -1;
+	}
+
+	umask(prev);
+
+	redirect_logs();
+	DEBUG("Done cycling log files\n");
+	return 0;
+}
+
+void close_log_files(void)
+{
+	if (stdout_mode)
+		return;
+	assert(out_fd > 0);
+	assert(err_fd > 0);
+	xclose(out_fd);
+	xclose(err_fd);
+}
+
