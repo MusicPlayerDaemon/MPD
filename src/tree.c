@@ -384,12 +384,10 @@ _DeleteAt(TreeIterator * iter)
 	void * dataToFree = *data;
 
 	{
-		TreeNode * child = NULL;
-
 		// find the least greater than data to fill the whole!
 		if (node->children[pos+1])
 		{
-			child = node->children[++pos];
+			TreeNode * child = node->children[++pos];
 			while (child->children[0])
 			{
 				pos = 0;
@@ -403,7 +401,7 @@ _DeleteAt(TreeIterator * iter)
 		// or the greatest lesser than data to fill the whole!
 		else if (node->children[pos])
 		{
-			child = node->children[pos];
+			TreeNode * child = node->children[pos];
 			while (child->children[child->dataCount])
 			{
 				pos = child->dataCount;
@@ -427,12 +425,12 @@ _DeleteAt(TreeIterator * iter)
 
 	// move data nodes over, we're at a leaf node, so we can ignore
 	// children
-	int i = --node->dataCount;
-	for (; data != &(node->data[i]); i--)
+	int i = data - node->data;;
+	for (; i < node->dataCount-1; i++)
 	{
-		node->data[i-1] = node->data[i];
+		node->data[i] = node->data[i+1];
 	}
-	node->data[node->dataCount] = NULL;
+	node->data[--node->dataCount] = NULL;
 
 	// merge the nodes from the bottom up which have too few data
 	while (node->dataCount < (CHILDREN_PER_NODE/2))
