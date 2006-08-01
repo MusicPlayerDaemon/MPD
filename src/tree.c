@@ -63,7 +63,7 @@ _MakeNode()
 
 static
 int
-_FindPositionInNode(Tree * tree, TreeNode * node, void * data, int * pos)
+_FindPosition(Tree * tree, TreeNode * node, void * data, int * pos)
 {
 #ifdef USE_BINARY_SEARCH
 	int low = 0;
@@ -109,10 +109,7 @@ _Find(TreeIterator * iter, void * data)
 {
 	while (1)
 	{
-		if (_FindPositionInNode(iter->tree,
-					iter->node, 
-					data, 
-					&iter->which))
+		if (_FindPosition(iter->tree, iter->node, data, &iter->which))
 		{
 			return 1;
 		}
@@ -195,7 +192,7 @@ _InsertNodeAndData(Tree * tree,
 	}
 
 	int i = 0;
-	_FindPositionInNode(tree, node, data, &i);
+	_FindPosition(tree, node, data, &i);
 
 #ifdef USE_MEM_FUNC
 	memmove(&(node->data[i+1]), 
@@ -257,7 +254,7 @@ _AddDataToSplitNodes(Tree * tree,
 		}
 
 		int i = 0;
-		_FindPositionInNode(tree, moreNode, data, &i);
+		_FindPosition(tree, moreNode, data, &i);
 
 		if (i == 0)
 		{
@@ -382,41 +379,20 @@ void
 _DeleteAt(TreeIterator * iter)
 {
 	TreeNode * node = iter->node;
-	void ** data = &(node->data[iter->which]);
+	int pos = iter->which;
+	void ** data = &(node->data[pos]);
 	void * dataToFree = *data;
 
 	{
-		int dir = 0;
 		TreeNode * child = NULL;
 
 		// find the least greater than data to fill the whole!
-		if (node->children[iter->which+1])
+		if (node->children[pos+1])
 		{
-			dir = -1;
-			child = node->children[iter->which+1];
-		}
-		// or the greatest lesser than data to fill the whole!
-		else if (node->children[iter->which])
-		{
-			dir = 1;
-			child = node->children[iter->which];
-		}
-
-		if (dir > 0)
-		{
-			while (child->children[child->dataCount])
-			{
-				child = child->children[child->dataCount];
-			}
-
-			*data = child->data[child->dataCount-1];
-			data = &(child->data[child->dataCount-1]);
-			node = child;
-		}
-		else if (dir < 0)
-		{
+			child = node->children[++pos];
 			while (child->children[0])
 			{
+				pos = 0;
 				child = child->children[0];
 			}
 
@@ -424,9 +400,30 @@ _DeleteAt(TreeIterator * iter)
 			data = &(child->data[0]);
 			node = child;
 		}
-	}
+		// or the greatest lesser than data to fill the whole!
+		else if (node->children[pos])
+		{
+			child = node->children[pos];
+			while (child->children[child->dataCount])
+			{
+				pos = child->dataCount;
+				child = child->children[child->dataCount];
+			}
 
-	void * tempData = *data;
+			*data = child->data[child->dataCount-1];
+			data = &(child->data[child->dataCount-1]);
+			node = child;
+		}
+		else if (node->parent)
+		{
+			// if there are no children, we need to set _pos_
+			// to the correct node of the parent
+			_FindPosition(iter->tree,
+				      node->parent,
+				      node->data[0],
+				      &pos);
+		}
+	}
 
 	// move data nodes over, we're at a leaf node, so we can ignore
 	// children
@@ -443,23 +440,10 @@ _DeleteAt(TreeIterator * iter)
 		// if we're not the root
 		if (node->parent)
 		{
-			TreeNode ** child;
-			int pos;
-			// XXX : this find is unneccesary!
-			if (_FindPositionInNode(iter->tree,
-					    	node->parent, 
-						tempData, 
-						&pos))
-			{
-				if (node->parent->children[pos] != node)
-				{
-					pos++;
-				}
-			}
+			TreeNode ** child = &(node->parent->children[pos]);
 			assert(node->parent->children[pos] == node);
-			child = &(node->parent->children[pos]);
 
-			// check siblings for superfulous data
+			// check siblings for extra data
 			if (pos < node->parent->dataCount &&
 			    (*(child+1))->dataCount > (CHILDREN_PER_NODE/2))
 			{
@@ -511,17 +495,16 @@ _DeleteAt(TreeIterator * iter)
 					NULL;
 				(*child)->data[(*child)->dataCount] = NULL;
 			}
+			// merge with one of our siblings
 			else
 			{
-				// merge with one of our siblings
 				if (pos < node->parent->dataCount)
 				{
 					child++;
 					assert(*child);
 
-					tempData = node->parent->data[pos];
-					node->data[node->dataCount++] = 
-						tempData;
+					node->data[node->dataCount++] =
+						node->parent->data[pos];
 
 					_MergeNodes(node, *child);
 				}
@@ -532,9 +515,8 @@ _DeleteAt(TreeIterator * iter)
 					assert(*child);
 					pos--;
 
-					tempData = node->parent->data[pos];
 					(*child)->data[(*child)->dataCount++] = 
-						tempData;
+						node->parent->data[pos];
 
 					_MergeNodes(*child, node);
 					node = *child;
@@ -552,6 +534,13 @@ _DeleteAt(TreeIterator * iter)
 				node->parent->children[i+1] = NULL;
 				node->parent->dataCount--;
 
+				if (node->parent->parent)
+				{
+					_FindPosition(iter->tree,
+						      node->parent->parent,
+						      node->data[0],
+						      &pos);
+				}
 				node = node->parent;
 			}
 		}
