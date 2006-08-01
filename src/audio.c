@@ -46,10 +46,15 @@ static AudioFormat *audio_configFormat = NULL;
 
 static AudioOutput **audioOutputArray = NULL;
 static mpd_uint8 audioOutputArraySize = 0;
+
+#define	DEVICE_OFF        0x00
+#define DEVICE_ENABLE	  0x01   /* currently off, but to be turned on */
+#define	DEVICE_ON         0x03
+#define DEVICE_DISABLE    0x04   /* currently on, but to be turned off */
+
 /* the audioEnabledArray should be stuck into shared memory, and then disable
    and enable in playAudio() routine */
-static mpd_sint8 *pdAudioDevicesEnabled = NULL;
-static mpd_sint8 *myAudioDevicesEnabled = NULL;
+static mpd_uint8 *audioDeviceStates = NULL;
 
 static mpd_uint8 audioOpened = 0;
 
@@ -114,12 +119,9 @@ void initAudioDriver(void)
 	loadAudioDrivers();
 
 	audioOutputArraySize = audio_device_count();
-	pdAudioDevicesEnabled = (getPlayerData())->audioDeviceEnabled;
+	audioDeviceStates = (getPlayerData())->audioDeviceStates;
 	audioOutputArray = malloc(sizeof(AudioOutput *) * audioOutputArraySize);
-	myAudioDevicesEnabled = malloc(sizeof(mpd_sint8)*audioOutputArraySize);
 
-	for (i = 0; i < audioOutputArraySize; i++)
-		myAudioDevicesEnabled[i] = pdAudioDevicesEnabled[i] = 1;
 
 	i = 0;
 	param = getNextConfigParam(CONF_AUDIO_OUTPUT, param);
@@ -143,6 +145,7 @@ void initAudioDriver(void)
 				exit(EXIT_FAILURE);
 			}
 		}
+		audioDeviceStates[i] = DEVICE_ENABLE;
 		audioOutputArray[i++] = output;
 	} while ((param = getNextConfigParam(CONF_AUDIO_OUTPUT, param)));
 }
@@ -269,23 +272,6 @@ int isCurrentAudioFormat(AudioFormat * audioFormat)
 	return 1;
 }
 
-static void syncAudioDevicesEnabledArrays(void)
-{
-	int i;
-
-	memcpy(myAudioDevicesEnabled, pdAudioDevicesEnabled,
-	       audioOutputArraySize);
-
-	for (i = 0; i < audioOutputArraySize; i++) {
-		if (myAudioDevicesEnabled[i]) {
-			openAudioOutput(audioOutputArray[i], &audio_format);
-		} else {
-			dropBufferedAudioOutput(audioOutputArray[i]);
-			closeAudioOutput(audioOutputArray[i]);
-		}
-	}
-}
-
 static int flushAudioBuffer(void)
 {
 	int ret = -1;
@@ -294,22 +280,28 @@ static int flushAudioBuffer(void)
 	if (audioBufferPos == 0)
 		return 0;
 
-	if (0 != memcmp(pdAudioDevicesEnabled, myAudioDevicesEnabled,
-			audioOutputArraySize)) {
-		syncAudioDevicesEnabledArrays();
-	}
-
-	for (i = 0; i < audioOutputArraySize; i++) {
-		if (!myAudioDevicesEnabled[i])
-			continue;
-		err = playAudioOutput(audioOutputArray[i], audioBuffer,
-				      audioBufferPos);
-		if (!err)
-			ret = 0;
-		else if (err < 0)
-			/* device should already be closed if the play func
-			 * returned an error */
-			myAudioDevicesEnabled[i] = 0;
+	for (i = audioOutputArraySize; --i >= 0; ) {
+		switch (audioDeviceStates[i]) {
+		case DEVICE_ENABLE:
+			openAudioOutput(audioOutputArray[i], &audio_format);
+			audioDeviceStates[i] = DEVICE_ON;
+			/* fall-through */
+		case DEVICE_ON:
+			err = playAudioOutput(audioOutputArray[i], audioBuffer,
+					      audioBufferPos);
+			if (!err)
+				ret = 0;
+			else if (err < 0)
+				/* device should already be closed if the play
+				 * func returned an error */
+				audioDeviceStates[i] = DEVICE_OFF;
+			break;
+		case DEVICE_DISABLE:
+			dropBufferedAudioOutput(audioOutputArray[i]);
+			closeAudioOutput(audioOutputArray[i]);
+			audioDeviceStates[i] = DEVICE_OFF;
+			break;
+		}
 	}
 
 	audioBufferPos = 0;
@@ -335,18 +327,28 @@ int openAudioDevice(AudioFormat * audioFormat)
 		audioBuffer = realloc(audioBuffer, audioBufferSize);
 	}
 
-	syncAudioDevicesEnabledArrays();
-
-	for (i = 0; i < audioOutputArraySize; i++) {
-		if (audioOutputArray[i]->open)
+	for (i = audioOutputArraySize; --i >= 0; ) {
+		switch (audioDeviceStates[i]) {
+		case DEVICE_ENABLE:
+			openAudioOutput(audioOutputArray[i], &audio_format);
+			audioDeviceStates[i] = DEVICE_ON;
+			/* fall-through */
+		case DEVICE_ON:
 			ret = 0;
+			break;
+		case DEVICE_DISABLE:
+			dropBufferedAudioOutput(audioOutputArray[i]);
+			closeAudioOutput(audioOutputArray[i]);
+			audioDeviceStates[i] = DEVICE_OFF;
+			break;
+		}
 	}
 
 	if (ret == 0)
 		audioOpened = 1;
 	else {
 		/* close all devices if there was an error */
-		for (i = 0; i < audioOutputArraySize; i++) {
+		for (i = audioOutputArraySize; --i >= 0; ) {
 			closeAudioOutput(audioOutputArray[i]);
 		}
 
@@ -387,17 +389,24 @@ void dropBufferedAudio(void)
 {
 	int i;
 
-	if (0 != memcmp(pdAudioDevicesEnabled, myAudioDevicesEnabled,
-			audioOutputArraySize)) {
-		syncAudioDevicesEnabledArrays();
-	}
-
 	audioBufferPos = 0;
-
-	for (i = 0; i < audioOutputArraySize; i++) {
-		if (!myAudioDevicesEnabled[i])
-			continue;
-		dropBufferedAudioOutput(audioOutputArray[i]);
+	for (i = audioOutputArraySize; --i >= 0; ) {
+		switch (audioDeviceStates[i]) {
+		case DEVICE_ON:
+			dropBufferedAudioOutput(audioOutputArray[i]);
+			break;
+		case DEVICE_ENABLE:
+			openAudioOutput(audioOutputArray[i], &audio_format);
+			audioDeviceStates[i] = DEVICE_ON;
+			/* there's no point in dropping audio for something
+			 * we just enabled */
+			break;
+		case DEVICE_DISABLE:
+			dropBufferedAudioOutput(audioOutputArray[i]);
+			closeAudioOutput(audioOutputArray[i]);
+			audioDeviceStates[i] = DEVICE_OFF;
+			break;
+		}
 	}
 }
 
@@ -411,7 +420,7 @@ void closeAudioDevice(void)
 	audioBuffer = NULL;
 	audioBufferSize = 0;
 
-	for (i = 0; i < audioOutputArraySize; i++) {
+	for (i = audioOutputArraySize; --i >= 0; ) {
 		closeAudioOutput(audioOutputArray[i]);
 	}
 
@@ -422,7 +431,7 @@ void sendMetadataToAudioDevice(MpdTag * tag)
 {
 	int i;
 
-	for (i = 0; i < audioOutputArraySize; i++) {
+	for (i = audioOutputArraySize; --i >= 0; ) {
 		sendMetadataToAudioOutput(audioOutputArray[i], tag);
 	}
 }
@@ -435,7 +444,8 @@ int enableAudioDevice(int fd, int device)
 		return -1;
 	}
 
-	pdAudioDevicesEnabled[device] = 1;
+	if (!(audioDeviceStates[device] & 0x01))
+		audioDeviceStates[device] = DEVICE_ENABLE;
 
 	return 0;
 }
@@ -447,8 +457,8 @@ int disableAudioDevice(int fd, int device)
 			     "doesn't exist\n", device);
 		return -1;
 	}
-
-	pdAudioDevicesEnabled[device] = 0;
+	if (audioDeviceStates[device] & 0x01)
+		audioDeviceStates[device] = DEVICE_DISABLE;
 
 	return 0;
 }
@@ -462,7 +472,7 @@ void printAudioDevices(int fd)
 		         "outputid: %i\noutputname: %s\noutputenabled: %i\n",
 			 i,
 			 audioOutputArray[i]->name,
-			 (int)pdAudioDevicesEnabled[i]);
+			 audioDeviceStates[i] & 0x01);
 	}
 }
 
@@ -473,7 +483,7 @@ void saveAudioDevicesState(FILE *fp)
 	assert(audioOutputArraySize != 0);
 	for (i = 0; i < audioOutputArraySize; i++) {
 		fprintf(fp, AUDIO_DEVICE_STATE "%d:%s\n",
-			(int)pdAudioDevicesEnabled[i],
+			audioDeviceStates[i] & 0x01,
 		        audioOutputArray[i]->name);
 	}
 }
@@ -499,9 +509,11 @@ void readAudioDevicesState(FILE *fp)
 		if (!name || !(++name))
 			goto errline;
 
-		for (i = audioOutputArraySize - 1; i >= 0; --i) {
+		for (i = audioOutputArraySize; --i >= 0; ) {
 			if (!strcmp(name, audioOutputArray[i]->name)) {
-				pdAudioDevicesEnabled[i] = atoi(c);
+				/* devices default to on */
+				if (!atoi(c))
+					audioDeviceStates[i] = DEVICE_DISABLE;
 				break;
 			}
 		}

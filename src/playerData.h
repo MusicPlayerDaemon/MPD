@@ -37,7 +37,7 @@ typedef struct _PlayerData {
 	OutputBuffer buffer;
 	PlayerControl playerControl;
 	DecoderControl decoderControl;
-	mpd_sint8 *audioDeviceEnabled;
+	mpd_uint8 *audioDeviceStates;
 	int pid;
 } PlayerData;
 
