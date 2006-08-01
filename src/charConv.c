@@ -45,10 +45,19 @@ static void closeCharSetConversion();
 
 int setCharSetConversion(char *to, char *from)
 {
-	if (char_conv_to && char_conv_from &&
-	    strcmp(to, char_conv_to) == 0 && strcmp(from, char_conv_from) == 0)
-	{
-		return 0;
+	if (char_conv_to && char_conv_from) {
+		if (char_conv_latin1ToUtf8 &&
+		    !strcmp(from, char_conv_to) &&
+		    !strcmp(to, char_conv_from)) {
+			char *swap = char_conv_from;
+			char_conv_from = char_conv_to;
+			char_conv_to = swap;
+			char_conv_latin1ToUtf8 *= -1;
+			return 0;
+		} else if (!strcmp(to, char_conv_to) &&
+		           !strcmp(from,char_conv_from)) {
+			return 0;
+		}
 	}
 
 	closeCharSetConversion();
