@@ -38,6 +38,7 @@ typedef struct _PlayerData {
 	PlayerControl playerControl;
 	DecoderControl decoderControl;
 	mpd_sint8 audioDeviceEnabled[AUDIO_MAX_DEVICES];
+	int pid;
 } PlayerData;
 
 void initPlayerData();

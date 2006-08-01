@@ -34,7 +34,6 @@ int buffered_chunks;
 #define DEFAULT_BUFFER_BEFORE_PLAY	0
 
 static PlayerData *playerData_pd;
-int *player_pid;
 
 void initPlayerData(void)
 {
@@ -104,22 +103,6 @@ void initPlayerData(void)
 		ERROR("problems shmctl'ing\n");
 		exit(EXIT_FAILURE);
 	}
-	/* maybe the following should be put in the same shm block as the previous
-	 * or maybe even made a part of the playerData struct
-	 */
-	allocationSize = sizeof(int);
-	if ((shmid = shmget(IPC_PRIVATE, allocationSize, IPC_CREAT | 0600)) < 0) {
-		ERROR("problems shmget'ing\n");
-		exit(EXIT_FAILURE);
-	}
-	if (!(player_pid = shmat(shmid, NULL, 0))) {
-		ERROR("problems shmat'ing\n");
-		exit(EXIT_FAILURE);
-	}
-	if (shmctl(shmid, IPC_RMID, NULL) < 0) {
-		ERROR("problems shmctl'ing\n");
-		exit(EXIT_FAILURE);
-	}
 
 	buffer = &(playerData_pd->buffer);
 
@@ -172,16 +155,15 @@ PlayerData *getPlayerData(void)
 
 int getPlayerPid(void)
 {
-	return *player_pid;
+	return playerData_pd->pid;
 }
 
 void setPlayerPid(int pid)
 {
-	*player_pid = pid;
+	playerData_pd->pid = pid;
 }
 
 void freePlayerData(void)
 {
 	shmdt(playerData_pd);
-	shmdt(player_pid);
 }
