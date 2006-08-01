@@ -40,7 +40,7 @@
 #define AUDIO_DEVICE_STATE_LEN	19	/* strlen(AUDIO_DEVICE_STATE) */
 #define AUDIO_BUFFER_SIZE	2*MAXPATHLEN
 
-static AudioFormat audio_format;
+static AudioFormat audio_format = { 0, 0, 0 };
 
 static AudioFormat *audio_configFormat = NULL;
 
@@ -269,6 +269,27 @@ int isCurrentAudioFormat(AudioFormat * audioFormat)
 	return 1;
 }
 
+static void syncAudioDeviceStates(void)
+{
+	int i;
+
+	if (!audio_format.channels)
+		return;
+	for (i = audioOutputArraySize; --i >= 0; ) {
+		switch (audioDeviceStates[i]) {
+		case DEVICE_ENABLE:
+			openAudioOutput(&audioOutputArray[i], &audio_format);
+			audioDeviceStates[i] = DEVICE_ON;
+			break;
+		case DEVICE_DISABLE:
+			dropBufferedAudioOutput(&audioOutputArray[i]);
+			closeAudioOutput(&audioOutputArray[i]);
+			audioDeviceStates[i] = DEVICE_OFF;
+			break;
+		}
+	}
+}
+
 static int flushAudioBuffer(void)
 {
 	int ret = -1;
@@ -277,28 +298,19 @@ static int flushAudioBuffer(void)
 	if (audioBufferPos == 0)
 		return 0;
 
+	syncAudioDeviceStates();
+
 	for (i = audioOutputArraySize; --i >= 0; ) {
-		switch (audioDeviceStates[i]) {
-		case DEVICE_ENABLE:
-			openAudioOutput(&audioOutputArray[i], &audio_format);
-			audioDeviceStates[i] = DEVICE_ON;
-			/* fall-through */
-		case DEVICE_ON:
-			err = playAudioOutput(&audioOutputArray[i], audioBuffer,
-					      audioBufferPos);
-			if (!err)
-				ret = 0;
-			else if (err < 0)
-				/* device should already be closed if the play
-				 * func returned an error */
-				audioDeviceStates[i] = DEVICE_OFF;
-			break;
-		case DEVICE_DISABLE:
-			dropBufferedAudioOutput(&audioOutputArray[i]);
-			closeAudioOutput(&audioOutputArray[i]);
-			audioDeviceStates[i] = DEVICE_OFF;
-			break;
-		}
+		if (audioDeviceStates[i] != DEVICE_ON)
+			continue;
+		err = playAudioOutput(&audioOutputArray[i], audioBuffer,
+				      audioBufferPos);
+		if (!err)
+			ret = 0;
+		else if (err < 0)
+			/* device should already be closed if the play
+			 * func returned an error */
+			audioDeviceStates[i] = DEVICE_ENABLE;
 	}
 
 	audioBufferPos = 0;
@@ -324,21 +336,11 @@ int openAudioDevice(AudioFormat * audioFormat)
 		audioBuffer = realloc(audioBuffer, audioBufferSize);
 	}
 
+	syncAudioDeviceStates();
+
 	for (i = audioOutputArraySize; --i >= 0; ) {
-		switch (audioDeviceStates[i]) {
-		case DEVICE_ENABLE:
-			openAudioOutput(&audioOutputArray[i], &audio_format);
-			audioDeviceStates[i] = DEVICE_ON;
-			/* fall-through */
-		case DEVICE_ON:
+		if (audioOutputArray[i].open)
 			ret = 0;
-			break;
-		case DEVICE_DISABLE:
-			dropBufferedAudioOutput(&audioOutputArray[i]);
-			closeAudioOutput(&audioOutputArray[i]);
-			audioDeviceStates[i] = DEVICE_OFF;
-			break;
-		}
 	}
 
 	if (ret == 0)
@@ -386,24 +388,12 @@ void dropBufferedAudio(void)
 {
 	int i;
 
+	syncAudioDeviceStates();
 	audioBufferPos = 0;
+
 	for (i = audioOutputArraySize; --i >= 0; ) {
-		switch (audioDeviceStates[i]) {
-		case DEVICE_ON:
+		if (audioDeviceStates[i] == DEVICE_ON)
 			dropBufferedAudioOutput(&audioOutputArray[i]);
-			break;
-		case DEVICE_ENABLE:
-			openAudioOutput(&audioOutputArray[i], &audio_format);
-			audioDeviceStates[i] = DEVICE_ON;
-			/* there's no point in dropping audio for something
-			 * we just enabled */
-			break;
-		case DEVICE_DISABLE:
-			dropBufferedAudioOutput(&audioOutputArray[i]);
-			closeAudioOutput(&audioOutputArray[i]);
-			audioDeviceStates[i] = DEVICE_OFF;
-			break;
-		}
 	}
 }
 
@@ -418,6 +408,8 @@ void closeAudioDevice(void)
 	audioBufferSize = 0;
 
 	for (i = audioOutputArraySize; --i >= 0; ) {
+		if (audioDeviceStates[i] == DEVICE_ON)
+			audioDeviceStates[i] = DEVICE_ENABLE;
 		closeAudioOutput(&audioOutputArray[i]);
 	}
 
