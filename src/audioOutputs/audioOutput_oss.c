@@ -25,6 +25,7 @@
 
 #ifdef HAVE_OSS
 
+#include "../utils.h"
 #include "../conf.h"
 #include "../log.h"
 #include "../sig_handlers.h"
@@ -54,7 +55,7 @@
 
 typedef struct _OssData {
 	int fd;
-	char *device;
+	const char *device;
 	int channels;
 	int sampleRate;
 	int bitFormat;
@@ -282,9 +283,6 @@ static OssData *newOssData(void)
 
 static void freeOssData(OssData * od)
 {
-	if (od->device)
-		free(od->device);
-
 	if (od->supported[OSS_RATE])
 		free(od->supported[OSS_RATE]);
 	if (od->supported[OSS_CHANNELS])
@@ -307,7 +305,7 @@ static void freeOssData(OssData * od)
 #define OSS_STAT_DOESN_T_EXIST	-3
 #define OSS_STAT_OTHER		-4
 
-static int oss_statDevice(char *device, int *stErrno)
+static int oss_statDevice(const char *device, int *stErrno)
 {
 	struct stat st;
 
@@ -332,89 +330,76 @@ static int oss_statDevice(char *device, int *stErrno)
 	return 0;
 }
 
+static const char *default_devices[] = { "/dev/sound/dsp", "/dev/dsp" };
+
 static int oss_testDefault(void)
 {
-	int fd;
+	int fd, i;
 
-	fd = open("/dev/sound/dsp", O_WRONLY);
-
-	if (fd >= 0) {
-		close(fd);
-		return 0;
+	for (i = ARRAY_SIZE(default_devices); --i >= 0; ) {
+		if ((fd = open(default_devices[i], O_WRONLY)) >= 0) {
+			xclose(fd);
+			return 0;
+		}
+		WARNING("Error opening OSS device \"%s\": %s\n",
+		        default_devices[i], strerror(errno));
 	}
-
-	WARNING("Error opening OSS device \"/dev/sound/dsp\": %s\n",
-		strerror(errno));
-
-	fd = open("/dev/dsp", O_WRONLY);
-
-	if (fd >= 0) {
-		close(fd);
-		return 0;
-	}
-
-	WARNING("Error opening OSS device \"/dev/dsp\": %s\n", strerror(errno));
 
 	return -1;
 }
 
-static int oss_initDriver(AudioOutput * audioOutput, ConfigParam * param)
+static int oss_open_default(AudioOutput *ao, ConfigParam *param, OssData *od)
 {
-	BlockParam *bp = NULL;
-	OssData *od;
+	int i;
+	int err[ARRAY_SIZE(default_devices)];
+	int ret[ARRAY_SIZE(default_devices)];
+
+	for (i = ARRAY_SIZE(default_devices); --i >= 0; ) {
+		ret[i] = oss_statDevice(default_devices[i], &err[i]);
+		if (ret[i] == 0) {
+			od->device = default_devices[i];
+			return 0;
+		}
+	}
 
 	if (param)
-		bp = getBlockParam(param, "device");
+		ERROR("Error trying to open specified OSS device"
+	              " at line %i\n", param->line);
+	else
+		ERROR("error trying to open default OSS device\n");
 
-	od = newOssData();
-	audioOutput->data = od;
-
-	if (!bp) {
-		int err[2];
-		int ret[2];
-
-		ret[0] = oss_statDevice("/dev/sound/dsp", err);
-		ret[1] = oss_statDevice("/dev/dsp", err + 1);
-
-		if (ret[0] == 0)
-			od->device = strdup("/dev/sound/dsp");
-		else if (ret[1] == 0)
-			od->device = strdup("/dev/dsp");
-		else {
-			if (param) {
-				ERROR("Error trying to open default OSS device "
-				      "specified at line %i\n", param->line);
-			} else {
-				ERROR("Error trying to open default OSS "
-				      "device\n");
-			}
-
-			if ((ret[0] == OSS_STAT_DOESN_T_EXIST) &&
-			    (ret[1] == OSS_STAT_DOESN_T_EXIST)) {
-				ERROR("Neither /dev/dsp nor /dev/sound/dsp "
-				      "were found\n");
-			} else if (ret[0] == OSS_STAT_NOT_CHAR_DEV) {
-				ERROR("/dev/sound/dsp is not a char device");
-			} else if (ret[1] == OSS_STAT_NOT_CHAR_DEV) {
-				ERROR("/dev/dsp is not a char device");
-			} else if (ret[0] == OSS_STAT_NO_PERMS) {
-				ERROR("no permission to access /dev/sound/dsp");
-			} else if (ret[1] == OSS_STAT_NO_PERMS) {
-				ERROR("no permission to access /dev/dsp");
-			} else if (ret[0] == OSS_STAT_OTHER) {
-				ERROR("Error accessing /dev/sound/dsp: %s",
-				      strerror(err[0]));
-			} else if (ret[1] == OSS_STAT_OTHER) {
-				ERROR("Error accessing /dev/dsp: %s",
-				      strerror(err[1]));
-			}
-
-			exit(EXIT_FAILURE);
+	for (i = ARRAY_SIZE(default_devices) - 1; i >= 0; --i) {
+		const char *dev = default_devices[i];
+		switch(ret[i]) {
+		case OSS_STAT_DOESN_T_EXIST:
+			ERROR("%s not found\n", dev);
+			break;
+		case OSS_STAT_NOT_CHAR_DEV:
+			ERROR("%s is not a character device\n", dev);
+			break;
+		case OSS_STAT_NO_PERMS:
+			ERROR("%s: permission denied\n", dev);
+			break;
+		default:
+			ERROR("Error accessing %s: %s", dev, strerror(err[i]));
 		}
-	} else
-		od->device = strdup(bp->value);
+	}
+	exit(EXIT_FAILURE);
+	return 0; /* some compilers can be dumb... */
+}
 
-	return 0;
+static int oss_initDriver(AudioOutput * audioOutput, ConfigParam * param)
+{
+	OssData *od = newOssData();
+	audioOutput->data = od;
+	if (param) {
+		BlockParam *bp = getBlockParam(param, "device");
+		if (bp) {
+			od->device = bp->value;
+			return 0;
+		}
+	}
+	return oss_open_default(audioOutput, param, od);
 }
 
 static void oss_finishDriver(AudioOutput * audioOutput)
