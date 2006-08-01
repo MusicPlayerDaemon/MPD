@@ -28,13 +28,13 @@
 
 #define AUDIO_AO_DRIVER_DEFAULT	"default"
 
-#define AUDIO_MAX_DEVICES	8
-
 typedef struct _AudioFormat {
 	volatile mpd_sint8 channels;
 	volatile mpd_uint32 sampleRate;
 	volatile mpd_sint8 bits;
 } AudioFormat;
+
+size_t audio_device_count(void);
 
 void copyAudioFormat(AudioFormat * dest, AudioFormat * src);
 

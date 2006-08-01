@@ -45,6 +45,7 @@ void initPlayerData(void)
 	size_t allocationSize;
 	OutputBuffer *buffer;
 	ConfigParam *param;
+	size_t device_array_size = audio_device_count() * sizeof(mpd_sint8);
 
 	param = getConfigParam(CONF_AUDIO_BUFFER_SIZE);
 
@@ -91,6 +92,9 @@ void initPlayerData(void)
 	allocationSize += buffered_chunks * sizeof(mpd_sint8);	/*for metaChunk */
 	allocationSize += sizeof(PlayerData);	/*for playerData struct */
 
+	/* for audioDeviceEnabled[] */
+	allocationSize += device_array_size;
+
 	if ((shmid = shmget(IPC_PRIVATE, allocationSize, IPC_CREAT | 0600)) < 0) {
 		ERROR("problems shmget'ing\n");
 		exit(EXIT_FAILURE);
@@ -104,6 +108,8 @@ void initPlayerData(void)
 		exit(EXIT_FAILURE);
 	}
 
+	playerData_pd->audioDeviceEnabled = (char *)playerData_pd +
+	                                    allocationSize - device_array_size;
 	buffer = &(playerData_pd->buffer);
 
 	buffer->chunks = ((char *)playerData_pd) + sizeof(PlayerData);

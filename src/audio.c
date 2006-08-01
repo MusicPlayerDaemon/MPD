@@ -49,13 +49,25 @@ static mpd_uint8 audioOutputArraySize = 0;
 /* the audioEnabledArray should be stuck into shared memory, and then disable
    and enable in playAudio() routine */
 static mpd_sint8 *pdAudioDevicesEnabled = NULL;
-static mpd_sint8 myAudioDevicesEnabled[AUDIO_MAX_DEVICES];
+static mpd_sint8 *myAudioDevicesEnabled = NULL;
 
 static mpd_uint8 audioOpened = 0;
 
 static mpd_sint32 audioBufferSize = 0;
 static char *audioBuffer = NULL;
 static mpd_sint32 audioBufferPos = 0;
+
+size_t audio_device_count(void)
+{
+	size_t nr = 0;
+	ConfigParam *param = NULL;
+
+	while ((param = getNextConfigParam(CONF_AUDIO_OUTPUT, param)))
+		nr++;
+	if (!nr)
+		nr = 1; /* we'll always have at least one device  */
+	return nr;
+}
 
 void copyAudioFormat(AudioFormat * dest, AudioFormat * src)
 {
@@ -101,30 +113,20 @@ void initAudioDriver(void)
 
 	loadAudioDrivers();
 
+	audioOutputArraySize = audio_device_count();
 	pdAudioDevicesEnabled = (getPlayerData())->audioDeviceEnabled;
+	audioOutputArray = malloc(sizeof(AudioOutput *) * audioOutputArraySize);
+	myAudioDevicesEnabled = malloc(sizeof(mpd_sint8)*audioOutputArraySize);
 
-	for (i = 0; i < AUDIO_MAX_DEVICES; i++) {
-		pdAudioDevicesEnabled[i] = 1;
-		myAudioDevicesEnabled[i] = 1;
-	}
+	for (i = 0; i < audioOutputArraySize; i++)
+		myAudioDevicesEnabled[i] = pdAudioDevicesEnabled[i] = 1;
 
+	i = 0;
 	param = getNextConfigParam(CONF_AUDIO_OUTPUT, param);
 
 	do {
 		AudioOutput *output;
 		int j;
-
-		if (audioOutputArraySize == AUDIO_MAX_DEVICES) {
-			ERROR("only up to 255 audio output devices are "
-			      "supported");
-			exit(EXIT_FAILURE);
-		}
-
-		i = audioOutputArraySize++;
-
-		audioOutputArray = realloc(audioOutputArray,
-					   audioOutputArraySize *
-					   sizeof(AudioOutput *));
 
 		output = newAudioOutput(param);
 		if (!output && param) {
@@ -141,7 +143,7 @@ void initAudioDriver(void)
 				exit(EXIT_FAILURE);
 			}
 		}
-		audioOutputArray[i] = output;
+		audioOutputArray[i++] = output;
 	} while ((param = getNextConfigParam(CONF_AUDIO_OUTPUT, param)));
 }
 
@@ -271,7 +273,8 @@ static void syncAudioDevicesEnabledArrays(void)
 {
 	int i;
 
-	memcpy(myAudioDevicesEnabled, pdAudioDevicesEnabled, AUDIO_MAX_DEVICES);
+	memcpy(myAudioDevicesEnabled, pdAudioDevicesEnabled,
+	       audioOutputArraySize);
 
 	for (i = 0; i < audioOutputArraySize; i++) {
 		if (myAudioDevicesEnabled[i]) {
@@ -292,7 +295,7 @@ static int flushAudioBuffer(void)
 		return 0;
 
 	if (0 != memcmp(pdAudioDevicesEnabled, myAudioDevicesEnabled,
-			AUDIO_MAX_DEVICES)) {
+			audioOutputArraySize)) {
 		syncAudioDevicesEnabledArrays();
 	}
 
@@ -385,7 +388,7 @@ void dropBufferedAudio(void)
 	int i;
 
 	if (0 != memcmp(pdAudioDevicesEnabled, myAudioDevicesEnabled,
-			AUDIO_MAX_DEVICES)) {
+			audioOutputArraySize)) {
 		syncAudioDevicesEnabledArrays();
 	}
 
