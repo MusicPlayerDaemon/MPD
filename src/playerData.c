@@ -96,7 +96,7 @@ void initPlayerData(void)
 		ERROR("problems shmget'ing\n");
 		exit(EXIT_FAILURE);
 	}
-	if ((playerData_pd = shmat(shmid, NULL, 0)) < 0) {
+	if (!(playerData_pd = shmat(shmid, NULL, 0))) {
 		ERROR("problems shmat'ing\n");
 		exit(EXIT_FAILURE);
 	}
@@ -112,7 +112,7 @@ void initPlayerData(void)
 		ERROR("problems shmget'ing\n");
 		exit(EXIT_FAILURE);
 	}
-	if ((player_pid = shmat(shmid, NULL, 0)) < 0) {
+	if (!(player_pid = shmat(shmid, NULL, 0))) {
 		ERROR("problems shmat'ing\n");
 		exit(EXIT_FAILURE);
 	}

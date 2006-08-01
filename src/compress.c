@@ -253,10 +253,10 @@ void CompressDo(void *data, unsigned int length)
 				  127);
 		clipped = 0;
 
-		// target line
-		//XDrawPoint(display, window, redGC,
-		//         pn, 127 - TARGET/256);
-		// amplification edge
+		/* target line */
+		/* XDrawPoint(display, window, redGC, */
+		/*         pn, 127 - TARGET/256); */
+		/* amplification edge */
 		XDrawLine(display, window, dkyellowGC,
 			  pn,
 			  127 - (peaks[pn]*gainCurrent
@@ -311,7 +311,7 @@ void CompressDo(void *data, unsigned int length)
 			   127 - (peak*gainCurrent
 				  >> (GAINSHIFT + 8)));
 
-		// gain indicator
+		/* gain indicator */
 		XFillRectangle(display, window, whiteGC, 0, 128,
 			       prefs.buckets, 8);
 		x = (gainTarget - (1 << GAINSHIFT))*prefs.buckets
@@ -326,7 +326,7 @@ void CompressDo(void *data, unsigned int length)
 			  x, 132 - 1,
 			  x, 132 + 1);
 
-		// blue peak line
+		/* blue peak line */
 		XDrawLine(display, window, blueGC,
 			  0, 127 - (peak >> 8), prefs.buckets,
 			  127 - (peak >> 8));

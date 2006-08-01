@@ -39,7 +39,7 @@ struct strnode *new_strnode_dup(char *s, const size_t size)
 {
 	struct strnode *x = malloc(sizeof(struct strnode) + size);
 	x->next = NULL;
-	x->data = ((void *)x + sizeof(struct strnode));
+	x->data = ((char *)x + sizeof(struct strnode));
 	memcpy((void *)x->data, (void*)s, size);
 	return x;
 }
@@ -49,7 +49,7 @@ struct sllnode *new_sllnode(void *s, const size_t size)
 	struct sllnode *x = malloc(sizeof(struct sllnode) + size);
 	x->next = NULL;
 	x->size = size;
-	x->data = ((void *)x + sizeof(struct sllnode));
+	x->data = ((char *)x + sizeof(struct sllnode));
 	memcpy(x->data, (void *)s, size);
 	return x;
 }

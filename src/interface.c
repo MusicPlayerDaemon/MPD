@@ -570,8 +570,8 @@ void initInterfaces(void)
 	param = getConfigParam(CONF_MAX_COMMAND_LIST_SIZE);
 
 	if (param) {
-		interface_max_command_list_size = strtoll(param->value,
-							  &test, 10);
+		interface_max_command_list_size = strtol(param->value,
+							 &test, 10);
 		if (*test != '\0' || interface_max_command_list_size <= 0) {
 			ERROR("max command list size \"%s\" is not a positive "
 			      "integer, line %i\n", param->value, param->line);
@@ -583,8 +583,8 @@ void initInterfaces(void)
 	param = getConfigParam(CONF_MAX_OUTPUT_BUFFER_SIZE);
 
 	if (param) {
-		interface_max_output_buffer_size = strtoll(param->value, &test,
-							   10);
+		interface_max_output_buffer_size = strtol(param->value,
+		                                          &test, 10);
 		if (*test != '\0' || interface_max_output_buffer_size <= 0) {
 			ERROR("max output buffer size \"%s\" is not a positive "
 			      "integer, line %i\n", param->value, param->line);
@@ -660,7 +660,7 @@ static void flushInterfaceBuffer(Interface * interface)
 			break;
 		else if (ret < buf->size) {
 			interface->deferred_bytes -= ret;
-			buf->data += ret;
+			buf->data = (char *)buf->data + ret;
 			buf->size -= ret;
 		} else {
 			struct sllnode *tmp = buf;

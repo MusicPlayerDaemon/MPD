@@ -451,7 +451,7 @@ static int decodeNextFrame(mp3DecodeData * data)
 
 enum xing_magic {
 	XING_MAGIC_XING, /* VBR */
-	XING_MAGIC_INFO, /* CBR */
+	XING_MAGIC_INFO  /* CBR */
 };
 
 struct xing {
@@ -467,7 +467,7 @@ enum {
 	XING_FRAMES = 0x00000001L,
 	XING_BYTES  = 0x00000002L,
 	XING_TOC    = 0x00000004L,
-	XING_SCALE  = 0x00000008L,
+	XING_SCALE  = 0x00000008L
 };
 
 struct lame {

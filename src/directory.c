@@ -940,14 +940,14 @@ static void readDirectoryInfo(FILE * fp, Directory * directory)
 	       && 0 != strncmp(DIRECTORY_END, buffer, strlen(DIRECTORY_END))) {
 		if (0 == strncmp(DIRECTORY_DIR, buffer, strlen(DIRECTORY_DIR))) {
 			key = strdup(&(buffer[strlen(DIRECTORY_DIR)]));
-			if (myFgets(buffer, bufferSize, fp) < 0) {
+			if (!myFgets(buffer, bufferSize, fp)) {
 				ERROR("Error reading db, fgets\n");
 				exit(EXIT_FAILURE);
 			}
 			/* for compatibility with db's prior to 0.11 */
 			if (0 == strncmp(DIRECTORY_MTIME, buffer,
 					 strlen(DIRECTORY_MTIME))) {
-				if (myFgets(buffer, bufferSize, fp) < 0) {
+				if (!myFgets(buffer, bufferSize, fp)) {
 					ERROR("Error reading db, fgets\n");
 					exit(EXIT_FAILURE);
 				}
@@ -1140,7 +1140,7 @@ int readDirectoryDB()
 		int foundFsCharset = 0;
 		int foundVersion = 0;
 
-		if (myFgets(buffer, bufferSize, fp) < 0) {
+		if (!myFgets(buffer, bufferSize, fp)) {
 			ERROR("Error reading db, fgets\n");
 			exit(EXIT_FAILURE);
 		}
