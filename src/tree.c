@@ -433,7 +433,7 @@ _DeleteAt(TreeIterator * iter)
 	node->data[--node->dataCount] = NULL;
 
 	// merge the nodes from the bottom up which have too few data
-	while (node->dataCount < (CHILDREN_PER_NODE/2))
+	while (node->dataCount < (DATA_PER_NODE/2))
 	{
 		// if we're not the root
 		if (node->parent)
@@ -443,7 +443,7 @@ _DeleteAt(TreeIterator * iter)
 
 			// check siblings for extra data
 			if (pos < node->parent->dataCount &&
-			    (*(child+1))->dataCount > (CHILDREN_PER_NODE/2))
+			    (*(child+1))->dataCount > (DATA_PER_NODE/2))
 			{
 				child++;
 				node->data[node->dataCount++] = 
@@ -470,7 +470,7 @@ _DeleteAt(TreeIterator * iter)
 				(*child)->dataCount--;
 			}
 			else if (pos > 0 &&
-				 (*(child-1))->dataCount>(CHILDREN_PER_NODE/2))
+				 (*(child-1))->dataCount>(DATA_PER_NODE/2))
 			{
 				child--;
 				int i = node->dataCount++;
