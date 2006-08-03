@@ -102,7 +102,7 @@ void flushWarningLog(void)
 
 	s = strtok(warningBuffer, "\n");
 	while (s != NULL) {
-		vfprintf(stderr, "%s\n", s);
+		fprintf(stderr, "%s\n", s);
 		s = strtok(NULL, "\n");
 	}
 
