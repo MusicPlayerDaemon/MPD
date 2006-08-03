@@ -84,11 +84,11 @@ static void buffer_warning(const char *fmt, va_list args)
 	va_end(args);
 }
 
-static void do_log(const int fd, const char *fmt, va_list args)
+static void do_log(FILE *fp, const char *fmt, va_list args)
 {
 	if (!stdout_mode)
-		xwrite(fd, log_date(), 15);
-	vfdprintf(fd, fmt, args);
+		fwrite(log_date(), 15, 1, fp);
+	vfprintf(fp, fmt, args);
 }
 
 void flushWarningLog(void)
@@ -102,7 +102,7 @@ void flushWarningLog(void)
 
 	s = strtok(warningBuffer, "\n");
 	while (s != NULL) {
-		fdprintf(STDERR_FILENO, "%s\n", s);
+		vfprintf(stderr, "%s\n", s);
 		s = strtok(NULL, "\n");
 	}
 
@@ -114,6 +114,9 @@ void flushWarningLog(void)
 void initLog(const int verbose)
 {
 	ConfigParam *param;
+
+	/* unbuffer stdout, stderr is unbuffered by default, leave it */
+	setvbuf(stdout, (char *)NULL, _IONBF, 0);
 
 	if (verbose) {
 		logLevel = LOG_LEVEL_DEBUG;
@@ -171,23 +174,23 @@ void setup_log_output(const int use_stdout)
 	redirect_stdin();
 }
 
-#define log_func(func,level,fd) \
+#define log_func(func,level,fp) \
 mpd_printf void func(const char *fmt, ...) \
 { \
 	if (logLevel >= level) { \
 		va_list args; \
 		va_start(args, fmt); \
-		do_log(fd, fmt, args); \
+		do_log(fp, fmt, args); \
 		va_end(args); \
 	} \
 }
 
-log_func(ERROR, 0, STDERR_FILENO)
-log_func(LOG, 0, STDOUT_FILENO)
-log_func(SECURE, LOG_LEVEL_SECURE, STDOUT_FILENO)
+log_func(ERROR, 0, stderr)
+log_func(LOG, 0, stdout)
+log_func(SECURE, LOG_LEVEL_SECURE, stdout)
 
 #ifndef NDEBUG
-log_func(DEBUG, LOG_LEVEL_DEBUG, STDOUT_FILENO)
+log_func(DEBUG, LOG_LEVEL_DEBUG, stdout)
 #endif /* NDEBUG */
 
 #undef log_func
@@ -197,7 +200,7 @@ void WARNING(const char *fmt, ...)
 	va_list args;
 	va_start(args, fmt);
 	if (warningFlushed) {
-		do_log(STDERR_FILENO, fmt, args);
+		do_log(stderr, fmt, args);
 	} else
 		buffer_warning(fmt, args);
 	va_end(args);
@@ -207,7 +210,7 @@ mpd_printf mpd_noreturn void FATAL(const char *fmt, ...)
 {
 	va_list args;
 	va_start(args, fmt);
-	do_log(STDERR_FILENO, fmt, args);
+	do_log(stderr, fmt, args);
 	va_end(args);
 	exit(EXIT_FAILURE);
 }
