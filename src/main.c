@@ -156,6 +156,7 @@ static void parseOptions(int argc, char **argv, Options * options)
 {
 	int argcLeft = argc;
 
+	options->verbose = 0;
 	options->daemon = 1;
 	options->stdOutput = 0;
 	options->createDB = 0;
