@@ -41,7 +41,8 @@ int cstrtok(char *buffer, char *array[], const int max)
 						*(c++) = '\0';
 						break;
 					}
-				}
+				} else if (*c == '\\' && escape)
+					memmove(c - 1, c, strlen(c) + 1);
 				escape = (*(c++) != '\\') ? 0 : !escape;
 			}
 		} else {
