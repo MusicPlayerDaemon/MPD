@@ -233,7 +233,7 @@ static int getId3v2FooterSize(FILE * stream, long offset, int whence)
 static struct id3_tag *getId3Tag(FILE * stream, long offset, int whence)
 {
 	struct id3_tag *tag;
-	id3_byte_t *buf[ID3_TAG_BUFLEN];
+	id3_byte_t buf[ID3_TAG_BUFLEN];
 	id3_byte_t *mbuf;
 	int tagsize;
 	int bufsize;
@@ -244,12 +244,12 @@ static struct id3_tag *getId3Tag(FILE * stream, long offset, int whence)
 	if (bufsize <= 0) return NULL;
 
 	/* Look for a tag header */
-	tagsize = id3_tag_query((const id3_byte_t *)buf, bufsize);
+	tagsize = id3_tag_query(buf, bufsize);
 	if (tagsize <= 0) return NULL;
 
 	if (tagsize <= bufsize) {
 		/* Got an id3 tag, and it fits in buf */
-		tag = id3_tag_parse((const id3_byte_t *)buf, tagsize);
+		tag = id3_tag_parse(buf, tagsize);
 	} else {
 		/* Got an id3tag that overflows buf, so get a new one */
 		mbuf = malloc(tagsize);
@@ -261,7 +261,7 @@ static struct id3_tag *getId3Tag(FILE * stream, long offset, int whence)
 			return NULL;
 		}
 
-		tag = id3_tag_parse((const id3_byte_t *)mbuf, tagsize);
+		tag = id3_tag_parse(mbuf, tagsize);
 
 		free(mbuf);
 	}
