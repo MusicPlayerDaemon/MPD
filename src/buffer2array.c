@@ -81,16 +81,37 @@ int main()
 	max = cstrtok(b, a, 4);
 	assert( !strcmp("lsinfo", a[0]) );
 	assert( !strcmp("/some/dir/name \"test\"", a[1]) );
+	assert( !a[2] );
 
 	b = strdup("lsinfo \"/some/dir/name \\\"test\\\" something else\"");
 	max = cstrtok(b, a, 4);
 	assert( !strcmp("lsinfo", a[0]) );
 	assert( !strcmp("/some/dir/name \"test\" something else", a[1]) );
+	assert( !a[2] );
 
 	b = strdup("lsinfo \"/some/dir\\\\name\"");
 	max = cstrtok(b, a, 4);
 	assert( !strcmp("lsinfo", a[0]) );
 	assert( !strcmp("/some/dir\\name", a[1]) );
+	assert( !a[2] );
+
+	b = strdup("lsinfo \"/some/dir name\"");
+	max = cstrtok(b, a, 4);
+	assert( !strcmp("lsinfo", a[0]) );
+	assert( !strcmp("/some/dir name", a[1]) );
+	assert( !a[2] );
+
+	b = strdup("lsinfo \"\\\"/some/dir\\\"\"");
+	max = cstrtok(b, a, 4);
+	assert( !strcmp("lsinfo", a[0]) );
+	assert( !strcmp("\"/some/dir\"", a[1]) );
+	assert( !a[2] );
+
+	b = strdup("lsinfo \"\\\"/some/dir\\\" x\"");
+	max = cstrtok(b, a, 4);
+	assert( !strcmp("lsinfo", a[0]) );
+	assert( !strcmp("\"/some/dir\" x", a[1]) );
+	assert( !a[2] );
 
 	return 0;
 }
