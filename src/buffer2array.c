@@ -34,10 +34,12 @@ int cstrtok(char *buffer, char *array[], const int max)
 			array[i++] = ++c;
 			while (*c != '\0') {
 				if (*c == '\"') {
-					if (escape)
+					if (escape) {
 						memmove(c - 1, c,
 							strlen(c) + 1);
-					else {
+						if (*c == '"')
+							break;
+					} else {
 						*(c++) = '\0';
 						break;
 					}
@@ -62,3 +64,35 @@ int cstrtok(char *buffer, char *array[], const int max)
 	}
 	return i;
 }
+
+#ifdef UNIT_TEST
+
+#include <stdio.h>
+#include <string.h>
+#include <assert.h>
+
+int main()
+{
+	char *a[4] = { NULL };
+	char *b;
+	int i, max;
+
+	b = strdup("lsinfo \"/some/dir/name \\\"test\\\"\"");
+	max = cstrtok(b, a, 4);
+	assert( !strcmp("lsinfo", a[0]) );
+	assert( !strcmp("/some/dir/name \"test\"", a[1]) );
+
+	b = strdup("lsinfo \"/some/dir/name \\\"test\\\" something else\"");
+	max = cstrtok(b, a, 4);
+	assert( !strcmp("lsinfo", a[0]) );
+	assert( !strcmp("/some/dir/name \"test\" something else", a[1]) );
+
+	b = strdup("lsinfo \"/some/dir\\\\name\"");
+	max = cstrtok(b, a, 4);
+	assert( !strcmp("lsinfo", a[0]) );
+	assert( !strcmp("/some/dir\\name", a[1]) );
+
+	return 0;
+}
+
+#endif
