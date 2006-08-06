@@ -165,9 +165,6 @@ static void addCommand(char *name,
 	cmd->listHandler = listHandler_func;
 	cmd->reqPermission = reqPermission;
 
-	assert(minargs <= maxargs);
-	assert(maxargs <= COMMAND_ARGV_MAX);
-
 	insertInList(commandList, cmd->cmd, cmd);
 }
 
