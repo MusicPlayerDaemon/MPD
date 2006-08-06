@@ -54,13 +54,11 @@
 #include <fcntl.h>
 #include <pwd.h>
 #include <grp.h>
+#include <time.h>
 #include <unistd.h>
 
 #define SYSTEM_CONFIG_FILE_LOCATION	"/etc/mpd.conf"
 #define USER_CONFIG_FILE_LOCATION	"/.mpdconf"
-
-volatile int masterPid = 0;
-volatile int mainPid = 0;
 
 typedef struct _Options {
 	int kill;
@@ -311,47 +309,6 @@ static void openDB(Options * options, char *argv0)
 	}
 }
 
-static void startMainProcess(void)
-{
-	int pid;
-	fflush(0);
-	pid = fork();
-	if (pid > 0) {
-		initInputStream();
-		initReplayGainState();
-
-		/* free stuff we don't need */
-		freeAllListenSockets();
-
-		mainPid = pid;
-		masterInitSigHandlers();
-		kill(mainPid, SIGUSR1);
-		while (masterHandlePendingSignals() != COMMAND_RETURN_KILL)
-			waitOnSignals();
-		/* we're killed */
-		playerKill();
-
-		finishPlaylist();
-
-		finishAudioConfig();
-		finishAudioDriver();
-
-		finishPaths();
-
-		kill(mainPid, SIGTERM);
-		waitpid(mainPid, NULL, 0);
-		finishConf();
-		close_log_files();
-		exit(EXIT_SUCCESS);
-
-	} else if (pid < 0) {
-		ERROR("problems fork'ing main process!\n");
-		exit(EXIT_FAILURE);
-	}
-
-	DEBUG("main process started!\n");
-}
-
 static void daemonize(Options * options)
 {
 	FILE *fp = NULL;
@@ -409,7 +366,6 @@ static void daemonize(Options * options)
 		DEBUG("writing pid file\n");
 		fprintf(fp, "%lu\n", (unsigned long)getpid());
 		fclose(fp);
-		masterPid = getpid();
 	}
 }
 
@@ -480,38 +436,30 @@ int main(int argc, char *argv[])
 
 	open_log_files(options.stdOutput);
 
-	initPlayerData();
-
-	initInputPlugins();
 	initPaths();
+	initPermissions();
+	initPlaylist();
+	initInputPlugins();
+
+	openDB(&options, argv[0]);
+
+	initCommands();
+	initPlayerData();
 	initAudioConfig();
 	initAudioDriver();
+	initVolume();
+	initInterfaces();
+	initReplayGainState();
 	initNormalization();
-	initPlaylist();
-	openDB(&options, argv[0]);
+	initInputStream();
 
 	daemonize(&options);
 
-	initSigHandlers();
 	setup_log_output(options.stdOutput);
-	startMainProcess();
-	/* This is the main process which has
-	 * been forked from the master process.
-	 */
 
-	initPermissions();
 
-	initCommands();
-	initVolume();
-	initInterfaces();
 
-	printMemorySavedByTagTracker();
-	printSavedMemoryFromFilenames();
-
-	/* wait for the master process to get ready so we can start 
-	 * playing if readPlaylistState thinks we should*/
-	while (COMMAND_MASTER_READY != handlePendingSignals())
-		my_usleep(1);
+	initSigHandlers();
 
 	openVolumeDevice();
 	read_state_file();
@@ -525,13 +473,14 @@ int main(int argc, char *argv[])
 	}
 
 	write_state_file();
-
+	playerKill();
 	freeAllInterfaces();
 	closeAllListenSockets();
 
-	/* This slows shutdown immensely, and doesn't really accomplish
-	 * anything.  Uncomment when we rewrite tagTracker to use a tree. */
-	/*closeMp3Directory(); */
+	clock_t start = clock();
+	closeMp3Directory();
+	DEBUG("closeMp3Directory took %f seconds\n", 
+	      ((float)(clock()-start))/CLOCKS_PER_SEC);
 
 	finishPlaylist();
 	freePlayerData();

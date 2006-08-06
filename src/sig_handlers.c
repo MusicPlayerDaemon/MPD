@@ -39,34 +39,8 @@
 extern volatile int masterPid;
 extern volatile int mainPid;
 
-int masterHandlePendingSignals()
-{
-	if (signal_is_pending(SIGINT) || signal_is_pending(SIGTERM)) {
-		DEBUG("master process got SIGINT or SIGTERM, exiting\n");
-		return COMMAND_RETURN_KILL;
-	}
-
-	if (signal_is_pending(SIGHUP)) {
-		signal_clear(SIGHUP);
-		/* Forward it to the main process, which will update the DB */
-		kill(mainPid, SIGHUP);
-	}
-
-	return 0;
-}
-
 int handlePendingSignals()
 {
-	/* this SIGUSR1 signal comes before the KILL signals, because there if the process is 
-	 * looping, waiting for this signal, it will not respond to the KILL signal. This might be
-	 * better implemented by using bit-wise defines and or'ing of the COMMAND_FOO as return.
-	 */
-	if (signal_is_pending(SIGUSR1)) {
-		signal_clear(SIGUSR1);
-		DEBUG("The master process is ready to receive signals\n");
-		return COMMAND_MASTER_READY;
-	}
-
 	if (signal_is_pending(SIGINT) || signal_is_pending(SIGTERM)) {
 		DEBUG("main process got SIGINT or SIGTERM, exiting\n");
 		return COMMAND_RETURN_KILL;
@@ -99,54 +73,9 @@ void chldSigHandler(int signal)
 			else
 				break;
 		}
+		player_sigChldHandler(pid, status);
 		directory_sigChldHandler(pid, status);
 	}
-}
-
-void masterChldSigHandler(int signal)
-{
-	int status;
-	int pid;
-	DEBUG("master process got SIGCHLD\n");
-	while (0 != (pid = wait3(&status, WNOHANG, NULL))) {
-		if (pid < 0) {
-			if (errno == EINTR)
-				continue;
-			else
-				break;
-		}
-		DEBUG("PID: %d\n", pid);
-		if (pid == mainPid)
-			kill(getpid(), SIGTERM);
-		player_sigChldHandler(pid, status);
-	}
-}
-
-int playerInitReal();
-
-void masterSigUsr2Handler(int signal)
-{
-	DEBUG("Master process got SIGUSR2 starting a new player process\n");
-	if (getPlayerPid() <= 0)
-		playerInitReal();
-}
-
-void masterInitSigHandlers()
-{
-	struct sigaction sa;
-
-	sa.sa_flags = 0;
-	sigemptyset(&sa.sa_mask);
-	sa.sa_handler = SIG_IGN;
-	while (sigaction(SIGPIPE, &sa, NULL) < 0 && errno == EINTR) ;
-	sa.sa_handler = masterChldSigHandler;
-	while (sigaction(SIGCHLD, &sa, NULL) < 0 && errno == EINTR) ;
-	sa.sa_handler = masterSigUsr2Handler;
-	while (sigaction(SIGUSR2, &sa, NULL) < 0 && errno == EINTR) ;
-	signal_handle(SIGUSR1);
-	signal_handle(SIGINT);
-	signal_handle(SIGTERM);
-	signal_handle(SIGHUP);
 }
 
 void initSigHandlers()
@@ -159,7 +88,6 @@ void initSigHandlers()
 	while (sigaction(SIGPIPE, &sa, NULL) < 0 && errno == EINTR) ;
 	sa.sa_handler = chldSigHandler;
 	while (sigaction(SIGCHLD, &sa, NULL) < 0 && errno == EINTR) ;
-	signal_handle(SIGUSR2);
 	signal_handle(SIGUSR1);
 	signal_handle(SIGINT);
 	signal_handle(SIGTERM);
@@ -202,24 +130,9 @@ void ignoreSignals()
 	while (sigaction(SIGPIPE, &sa, NULL) < 0 && errno == EINTR) ;
 	while (sigaction(SIGCHLD, &sa, NULL) < 0 && errno == EINTR) ;
 	while (sigaction(SIGUSR1, &sa, NULL) < 0 && errno == EINTR) ;
-	while (sigaction(SIGUSR2, &sa, NULL) < 0 && errno == EINTR) ;
 	while (sigaction(SIGINT, &sa, NULL) < 0 && errno == EINTR) ;
 	while (sigaction(SIGTERM, &sa, NULL) < 0 && errno == EINTR) ;
 	while (sigaction(SIGHUP, &sa, NULL) < 0 && errno == EINTR) ;
-}
-
-void waitOnSignals()
-{
-	sigset_t sset;
-
-	sigfillset(&sset);
-	sigdelset(&sset, SIGCHLD);
-	sigdelset(&sset, SIGUSR1);
-	sigdelset(&sset, SIGUSR2);
-	sigdelset(&sset, SIGHUP);
-	sigdelset(&sset, SIGINT);
-	sigdelset(&sset, SIGTERM);
-	sigsuspend(&sset);
 }
 
 void blockSignals()
@@ -229,7 +142,6 @@ void blockSignals()
 	sigemptyset(&sset);
 	sigaddset(&sset, SIGCHLD);
 	sigaddset(&sset, SIGUSR1);
-	sigaddset(&sset, SIGUSR2);
 	sigaddset(&sset, SIGHUP);
 	sigaddset(&sset, SIGINT);
 	sigaddset(&sset, SIGTERM);
@@ -243,7 +155,6 @@ void unblockSignals()
 	sigemptyset(&sset);
 	sigaddset(&sset, SIGCHLD);
 	sigaddset(&sset, SIGUSR1);
-	sigaddset(&sset, SIGUSR2);
 	sigaddset(&sset, SIGHUP);
 	sigaddset(&sset, SIGINT);
 	sigaddset(&sset, SIGTERM);

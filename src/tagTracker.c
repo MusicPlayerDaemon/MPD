@@ -18,12 +18,13 @@
 
 #include "tagTracker.h"
 
-#include "list.h"
+#include "tree.h"
 #include "log.h"
 
 #include <assert.h>
+#include <stdlib.h>
 
-static List *tagLists[TAG_NUM_OF_ITEM_TYPES] = {
+static Tree *tagTrees[TAG_NUM_OF_ITEM_TYPES] = {
 	NULL,
 	NULL,
 	NULL,
@@ -40,129 +41,113 @@ typedef struct tagTrackerItem {
 
 char *getTagItemString(int type, char *string)
 {
-	ListNode *node;
-	int pos;
-
-	if (tagLists[type] == NULL) {
-		tagLists[type] = makeList(free, 1);
-		sortList(tagLists[type]);
+	TreeIterator iter;
+	
+	if (tagTrees[type] == NULL) 
+	{
+		tagTrees[type] = MakeTree((TreeCompareKeyFunction)strcmp, 
+					  (TreeFreeFunction)free, 
+					  (TreeFreeFunction)free);
 	}
 
-	if (findNodeInList(tagLists[type], string, &node, &pos)) {
-		((TagTrackerItem *) node->data)->count++;
-	} else {
+	if (FindInTree(tagTrees[type], string, &iter)) 
+	{
+		((TagTrackerItem *)GetTreeKeyData(&iter).data)->count++;
+		return (char *)GetTreeKeyData(&iter).key;
+	} 
+	else 
+	{
 		TagTrackerItem *item = malloc(sizeof(TagTrackerItem));
 		item->count = 1;
 		item->visited = 0;
-		node = insertInListBeforeNode(tagLists[type], node, pos,
-					      string, item);
+		char * key= strdup(string);
+		InsertInTree(tagTrees[type], key, item);
+		return key;
 	}
-
-	return node->key;
 }
 
 void removeTagItemString(int type, char *string)
 {
-	ListNode *node;
-	int pos;
-
+	TreeIterator iter;
+	
 	assert(string);
 
-	assert(tagLists[type]);
-	if (tagLists[type] == NULL)
+	assert(tagTrees[type]);
+	if (tagTrees[type] == NULL)
 		return;
 
-	if (findNodeInList(tagLists[type], string, &node, &pos)) {
-		TagTrackerItem *item = node->data;
+	if (FindInTree(tagTrees[type], string, &iter)) 
+	{
+		TagTrackerItem * item = 
+			(TagTrackerItem *)GetTreeKeyData(&iter).data;
 		item->count--;
 		if (item->count <= 0)
-			deleteNodeFromList(tagLists[type], node);
+			RemoveFromTreeByIterator(tagTrees[type], &iter);
 	}
 
-	if (tagLists[type]->numberOfNodes == 0) {
-		freeList(tagLists[type]);
-		tagLists[type] = NULL;
+	if (GetTreeSize(tagTrees[type]) == 0) 
+	{
+		FreeTree(tagTrees[type]);
+		tagTrees[type] = NULL;
 	}
 }
 
 int getNumberOfTagItems(int type)
 {
-	if (tagLists[type] == NULL)
+	if (tagTrees[type] == NULL)
 		return 0;
 
-	return tagLists[type]->numberOfNodes;
-}
-
-void printMemorySavedByTagTracker(void)
-{
-	int i;
-	ListNode *node;
-	size_t sum = 0;
-
-	for (i = 0; i < TAG_NUM_OF_ITEM_TYPES; i++) {
-		if (!tagLists[i])
-			continue;
-
-		sum -= sizeof(List);
-
-		node = tagLists[i]->firstNode;
-
-		while (node != NULL) {
-			sum -= sizeof(ListNode);
-			sum -= sizeof(TagTrackerItem);
-			sum -= sizeof(node->key);
-			sum += (strlen(node->key) + 1) * (*((int *)node->data));
-			node = node->nextNode;
-		}
-	}
-
-	DEBUG("saved memory from tags: %li\n", (long)sum);
+	return GetTreeSize(tagTrees[type]);
 }
 
 void resetVisitedFlagsInTagTracker(int type)
 {
-	ListNode *node;
+	TreeIterator iter;
 
-	if (!tagLists[type])
+	if (!tagTrees[type])
 		return;
 
-	node = tagLists[type]->firstNode;
-
-	while (node) {
-		((TagTrackerItem *) node->data)->visited = 0;
-		node = node->nextNode;
+	for (SetTreeIteratorToBegin(tagTrees[type], &iter);
+	     !IsTreeIteratorAtEnd(&iter);
+	     IncrementTreeIterator(&iter))
+	{
+		((TagTrackerItem *)GetTreeKeyData(&iter).data)->visited = 0;
 	}
 }
 
 void visitInTagTracker(int type, char *str)
 {
-	void *item;
+	TreeIterator iter;
 
-	if (!tagLists[type])
+	if (!tagTrees[type])
 		return;
 
-	if (!findInList(tagLists[type], str, &item))
+	if (!FindInTree(tagTrees[type], str, &iter))
 		return;
 
-	((TagTrackerItem *) item)->visited = 1;
+	((TagTrackerItem *)GetTreeKeyData(&iter).data)->visited = 1;
 }
 
 void printVisitedInTagTracker(int fd, int type)
 {
-	ListNode *node;
-	TagTrackerItem *item;
+	TreeIterator iter;
+	TagTrackerItem * item;
 
-	if (!tagLists[type])
+	if (!tagTrees[type])
 		return;
 
-	node = tagLists[type]->firstNode;
+	for (SetTreeIteratorToBegin(tagTrees[type], &iter);
+	     !IsTreeIteratorAtEnd(&iter);
+	     IncrementTreeIterator(&iter))
+	{
+		item = ((TagTrackerItem *)GetTreeKeyData(&iter).data);
 
-	while (node) {
-		item = node->data;
-		if (item->visited) {
-			fdprintf(fd, "%s: %s\n", mpdTagItemKeys[type],
-				 node->key);
+		if (item->visited) 
+		{
+			fdprintf(fd, 
+				 "%s: %s\n", 
+				 mpdTagItemKeys[type],
+				 (char *)GetTreeKeyData(&iter).key);
 		}
-		node = node->nextNode;
 	}
 }

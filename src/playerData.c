@@ -95,15 +95,18 @@ void initPlayerData(void)
 	/* for audioDeviceStates[] */
 	allocationSize += device_array_size;
 
-	if ((shmid = shmget(IPC_PRIVATE, allocationSize, IPC_CREAT | 0600)) < 0) {
+	if ((shmid = shmget(IPC_PRIVATE, allocationSize, IPC_CREAT | 0600)) < 0)
+	{
 		ERROR("problems shmget'ing\n");
 		exit(EXIT_FAILURE);
 	}
-	if (!(playerData_pd = shmat(shmid, NULL, 0))) {
+	if (!(playerData_pd = shmat(shmid, NULL, 0))) 
+	{
 		ERROR("problems shmat'ing\n");
 		exit(EXIT_FAILURE);
 	}
-	if (shmctl(shmid, IPC_RMID, NULL) < 0) {
+	if (shmctl(shmid, IPC_RMID, NULL) < 0) 
+	{
 		ERROR("problems shmctl'ing\n");
 		exit(EXIT_FAILURE);
 	}
@@ -157,16 +160,6 @@ void initPlayerData(void)
 PlayerData *getPlayerData(void)
 {
 	return playerData_pd;
-}
-
-int getPlayerPid(void)
-{
-	return playerData_pd->pid;
-}
-
-void setPlayerPid(int pid)
-{
-	playerData_pd->pid = pid;
 }
 
 void freePlayerData(void)

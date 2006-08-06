@@ -38,14 +38,11 @@ typedef struct _PlayerData {
 	PlayerControl playerControl;
 	DecoderControl decoderControl;
 	mpd_uint8 *audioDeviceStates;
-	int pid;
 } PlayerData;
 
 void initPlayerData();
 
 PlayerData *getPlayerData();
-int getPlayerPid();
-void setPlayerPid(int pid);
 
 void freePlayerData();
 

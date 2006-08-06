@@ -22,18 +22,14 @@
 #include "../config.h"
 
 int handlePendingSignals();
-int masterHandlePendingSignals();
 
 void initSigHandlers();
-void masterInitSigHandlers();
 
 void finishSigHandlers();
 
 void setSigHandlersForDecoder();
 
 void ignoreSignals();
-
-void waitOnSignals();
 
 void blockSignals();
 
