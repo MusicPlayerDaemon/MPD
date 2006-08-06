@@ -89,6 +89,8 @@ typedef struct _PlayerControl {
 	MetadataChunk fileMetadataChunk;
 } PlayerControl;
 
+void clearPlayerPid();
+
 void player_sigChldHandler(int pid, int status);
 
 int playerPlay(int fd, Song * song);

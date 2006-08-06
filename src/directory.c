@@ -18,22 +18,23 @@
 
 #include "directory.h"
 
-#include "ls.h"
 #include "command.h"
-#include "utils.h"
-#include "path.h"
-#include "log.h"
 #include "conf.h"
-#include "stats.h"
-#include "playlist.h"
-#include "listen.h"
-#include "interface.h"
-#include "volume.h"
-#include "mpd_types.h"
-#include "sig_handlers.h"
-#include "list.h"
 #include "dbUtils.h"
+#include "interface.h"
+#include "list.h"
+#include "listen.h"
+#include "log.h"
+#include "ls.h"
+#include "mpd_types.h"
+#include "path.h"
+#include "player.h"
+#include "playlist.h"
+#include "sig_handlers.h"
+#include "stats.h"
 #include "tagTracker.h"
+#include "utils.h"
+#include "volume.h"
 
 #include <sys/wait.h>
 #include <dirent.h>
@@ -732,7 +733,8 @@ static int statDirectory(Directory * dir)
 {
 	struct stat st;
 
-	if (myStat(getDirectoryPath(dir) ? getDirectoryPath(dir) : "", &st) < 0) {
+	if (myStat(getDirectoryPath(dir) ? getDirectoryPath(dir) : "", &st) < 0)
+	{
 		return -1;
 	}
 

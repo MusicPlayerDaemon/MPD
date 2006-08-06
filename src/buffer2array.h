@@ -27,6 +27,6 @@
  * The arguments buffer and array are modified.
  * Returns the number of elements tokenized.
  */
-int cstrtok(char *buffer, char *array[], const int max);
+int buffer2array(char *buffer, char *array[], const int max);
 
 #endif

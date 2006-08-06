@@ -203,7 +203,7 @@ static ConfigParam *readConfigBlock(FILE * fp, int *count, char *string)
 
 		(*count)++;
 
-		numberOfArgs = cstrtok(string, array, CONF_LINE_TOKEN_MAX);
+		numberOfArgs = buffer2array(string, array, CONF_LINE_TOKEN_MAX);
 
 		for (i = 0; i < numberOfArgs; i++) {
 			if (array[i][0] == CONF_COMMENT)
@@ -265,7 +265,7 @@ void readConf(char *file)
 		char *array[CONF_LINE_TOKEN_MAX] = { NULL };
 		count++;
 
-		numberOfArgs = cstrtok(string, array, CONF_LINE_TOKEN_MAX);
+		numberOfArgs = buffer2array(string, array, CONF_LINE_TOKEN_MAX);
 
 		for (i = 0; i < numberOfArgs; i++) {
 			if (array[i][0] == CONF_COMMENT)

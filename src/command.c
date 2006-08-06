@@ -31,6 +31,7 @@
 #include "dbUtils.h"
 #include "tag.h"
 
+#include <assert.h>
 #include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
@@ -163,6 +164,9 @@ static void addCommand(char *name,
 	cmd->handler = handler_func;
 	cmd->listHandler = listHandler_func;
 	cmd->reqPermission = reqPermission;
+
+	assert(minargs <= maxargs);
+	assert(maxargs <= COMMAND_ARGV_MAX);
 
 	insertInList(commandList, cmd->cmd, cmd);
 }
@@ -1142,7 +1146,7 @@ static CommandEntry *getCommandEntryFromString(char *string, int *permission)
 {
 	CommandEntry *cmd = NULL;
 	char *argv[COMMAND_ARGV_MAX] = { NULL };
-	int argc = cstrtok(string, argv, COMMAND_ARGV_MAX);
+	int argc = buffer2array(string, argv, COMMAND_ARGV_MAX);
 
 	if (0 == argc)
 		return NULL;
@@ -1161,7 +1165,7 @@ static int processCommandInternal(int fd, int *permission,
 	CommandEntry *cmd;
 	int ret = -1;
 
-	argc = cstrtok(commandString, argv, COMMAND_ARGV_MAX);
+	argc = buffer2array(commandString, argv, COMMAND_ARGV_MAX);
 
 	if (argc == 0)
 		return 0;

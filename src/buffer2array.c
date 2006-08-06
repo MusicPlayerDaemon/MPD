@@ -23,7 +23,15 @@
 #include <string.h>
 #include <ctype.h>
 
-int cstrtok(char *buffer, char *array[], const int max)
+
+inline static
+int
+isWhiteSpace(char c)
+{
+	return (c == ' ' || c == '\t');
+}
+
+int buffer2array(char *buffer, char *array[], const int max)
 {
 	int i = 0;
 	char *c = buffer;
@@ -48,18 +56,18 @@ int cstrtok(char *buffer, char *array[], const int max)
 				escape = (*(c++) != '\\') ? 0 : !escape;
 			}
 		} else {
-			while (isspace(*c))
+			while (isWhiteSpace(*c))
 				++c;
 			array[i++] = c++;
 			if (*c == '\0')
 				return i;
-			while (!isspace(*c) && *c != '\0')
+			while (!isWhiteSpace(*c) && *c != '\0')
 				++c;
 		}
 		if (*c == '\0')
 			return i;
 		*(c++) = '\0';
-		while (isspace(*c))
+		while (isWhiteSpace(*c))
 			++c;
 	}
 	return i;
@@ -78,37 +86,37 @@ int main()
 	int i, max;
 
 	b = strdup("lsinfo \"/some/dir/name \\\"test\\\"\"");
-	max = cstrtok(b, a, 4);
+	max = buffer2array(b, a, 4);
 	assert( !strcmp("lsinfo", a[0]) );
 	assert( !strcmp("/some/dir/name \"test\"", a[1]) );
 	assert( !a[2] );
 
 	b = strdup("lsinfo \"/some/dir/name \\\"test\\\" something else\"");
-	max = cstrtok(b, a, 4);
+	max = buffer2array(b, a, 4);
 	assert( !strcmp("lsinfo", a[0]) );
 	assert( !strcmp("/some/dir/name \"test\" something else", a[1]) );
 	assert( !a[2] );
 
 	b = strdup("lsinfo \"/some/dir\\\\name\"");
-	max = cstrtok(b, a, 4);
+	max = buffer2array(b, a, 4);
 	assert( !strcmp("lsinfo", a[0]) );
 	assert( !strcmp("/some/dir\\name", a[1]) );
 	assert( !a[2] );
 
 	b = strdup("lsinfo \"/some/dir name\"");
-	max = cstrtok(b, a, 4);
+	max = buffer2array(b, a, 4);
 	assert( !strcmp("lsinfo", a[0]) );
 	assert( !strcmp("/some/dir name", a[1]) );
 	assert( !a[2] );
 
 	b = strdup("lsinfo \"\\\"/some/dir\\\"\"");
-	max = cstrtok(b, a, 4);
+	max = buffer2array(b, a, 4);
 	assert( !strcmp("lsinfo", a[0]) );
 	assert( !strcmp("\"/some/dir\"", a[1]) );
 	assert( !a[2] );
 
 	b = strdup("lsinfo \"\\\"/some/dir\\\" x\"");
-	max = cstrtok(b, a, 4);
+	max = buffer2array(b, a, 4);
 	assert( !strcmp("lsinfo", a[0]) );
 	assert( !strcmp("\"/some/dir\" x", a[1]) );
 	assert( !a[2] );
