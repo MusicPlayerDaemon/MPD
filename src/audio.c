@@ -84,7 +84,8 @@ void copyAudioFormat(AudioFormat * dest, AudioFormat * src)
 
 int cmpAudioFormat(AudioFormat * f1, AudioFormat * f2)
 {
-	if (f1 && f2 && (0 == memcmp(f1, f2, sizeof(AudioFormat))))
+	if (f1 && f2 && (f1->sampleRate == f2->sampleRate) &&
+	    (f1->bits == f2->bits) && (f1->channels == f2->channels))
 		return 0;
 	return 1;
 }
