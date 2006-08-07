@@ -98,7 +98,7 @@ static inline mpd_sint16 convertSample(MPC_SAMPLE_FORMAT sample)
 #ifdef MPC_FIXED_POINT
 	const int shift = 16 - MPC_FIXED_POINT_SCALE_SHIFT;
 
-	if (ssample > 0) {
+	if (sample > 0) {
 		sample <<= shift;
 	} else if (shift < 0) {
 		sample >>= -shift;
