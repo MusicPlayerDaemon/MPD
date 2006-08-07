@@ -44,9 +44,6 @@
 
 #ifdef HAVE_ID3TAG
 #  define isId3v1(tag) (id3_tag_options(tag, 0, 0) & ID3_TAG_OPTION_ID3V1)
-/* Size of the buffer to use for peeking at tag headers.  We reuse this buffer
-   if the whole tag fits in it, so make it big to avoid a malloc(). */
-#  define ID3_TAG_BUFLEN 1024
 #  ifndef ID3_FRAME_COMPOSER
 #    define ID3_FRAME_COMPOSER "TCOM"
 #  endif
@@ -232,38 +229,34 @@ static int getId3v2FooterSize(FILE * stream, long offset, int whence)
 static struct id3_tag *getId3Tag(FILE * stream, long offset, int whence)
 {
 	struct id3_tag *tag;
-	id3_byte_t buf[ID3_TAG_BUFLEN];
-	id3_byte_t *mbuf;
-	int tagsize;
-	int bufsize;
-	int mbufsize;
+	id3_byte_t queryBuf[ID3_TAG_QUERYSIZE];
+	id3_byte_t *tagBuf;
+	int tagSize;
+	int queryBufSize;
+	int tagBufSize;
 
 	/* It's ok if we get less than we asked for */
-	bufsize = fillBuffer(buf, ID3_TAG_BUFLEN, stream, offset, whence);
-	if (bufsize <= 0) return NULL;
+	queryBufSize = fillBuffer(queryBuf, ID3_TAG_QUERYSIZE,
+	                          stream, offset, whence);
+	if (queryBufSize <= 0) return NULL;
 
 	/* Look for a tag header */
-	tagsize = id3_tag_query(buf, bufsize);
-	if (tagsize <= 0) return NULL;
+	tagSize = id3_tag_query(queryBuf, queryBufSize);
+	if (tagSize <= 0) return NULL;
 
-	if (tagsize <= bufsize) {
-		/* Got an id3 tag, and it fits in buf */
-		tag = id3_tag_parse(buf, tagsize);
-	} else {
-		/* Got an id3tag that overflows buf, so get a new one */
-		mbuf = malloc(tagsize);
-		if (!mbuf) return NULL;
+	/* Found a tag.  Allocate a buffer and read it in. */
+	tagBuf = malloc(tagSize);
+	if (!tagBuf) return NULL;
 
-		mbufsize = fillBuffer(mbuf, tagsize, stream, offset, whence);
-		if (mbufsize < tagsize) {
-			free(mbuf);
-			return NULL;
-		}
-
-		tag = id3_tag_parse(mbuf, tagsize);
-
-		free(mbuf);
+	tagBufSize = fillBuffer(tagBuf, tagSize, stream, offset, whence);
+	if (tagBufSize < tagSize) {
+		free(tagBuf);
+		return NULL;
 	}
+
+	tag = id3_tag_parse(tagBuf, tagBufSize);
+
+	free(tagBuf);
 
 	return tag;
 }
