@@ -277,6 +277,10 @@ static void syncAudioDeviceStates(void)
 		return;
 	for (i = audioOutputArraySize; --i >= 0; ) {
 		switch (audioDeviceStates[i]) {
+		case DEVICE_ON:
+			/* This will reopen only if the audio format changed */
+			openAudioOutput(&audioOutputArray[i], &audio_format);
+			break;
 		case DEVICE_ENABLE:
 			openAudioOutput(&audioOutputArray[i], &audio_format);
 			audioDeviceStates[i] = DEVICE_ON;
