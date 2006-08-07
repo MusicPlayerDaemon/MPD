@@ -975,87 +975,61 @@ void initCommands(void)
 {
 	commandList = makeList(free, 1);
 
-	addCommand(COMMAND_PLAY, PERMISSION_CONTROL, 0, 1, handlePlay, NULL);
-	addCommand(COMMAND_PLAYID, PERMISSION_CONTROL, 0, 1, handlePlayId,
-		   NULL);
-	addCommand(COMMAND_STOP, PERMISSION_CONTROL, 0, 0, handleStop, NULL);
-	addCommand(COMMAND_CURRENTSONG, PERMISSION_READ, 0, 0,
-		   handleCurrentSong, NULL);
-	addCommand(COMMAND_PAUSE, PERMISSION_CONTROL, 0, 1, handlePause, NULL);
-	addCommand(COMMAND_STATUS, PERMISSION_READ, 0, 0, commandStatus, NULL);
-	addCommand(COMMAND_KILL, PERMISSION_ADMIN, -1, -1, handleKill, NULL);
-	addCommand(COMMAND_CLOSE, 0, -1, -1, handleClose, NULL);
-	addCommand(COMMAND_ADD, PERMISSION_ADD, 1, 1, handleAdd, NULL);
-	addCommand(COMMAND_ADDID, PERMISSION_ADD, 1, 1, handleAddId, NULL);
-	addCommand(COMMAND_DELETE, PERMISSION_CONTROL, 1, 1, handleDelete,
-		   NULL);
-	addCommand(COMMAND_DELETEID, PERMISSION_CONTROL, 1, 1, handleDeleteId,
-		   NULL);
-	addCommand(COMMAND_PLAYLIST, PERMISSION_READ, 0, 0, handlePlaylist,
-		   NULL);
-	addCommand(COMMAND_PLAYLISTID, PERMISSION_READ, 0, 1, handlePlaylistId,
-		   NULL);
-	addCommand(COMMAND_SHUFFLE, PERMISSION_CONTROL, 0, 0, handleShuffle,
-		   NULL);
-	addCommand(COMMAND_CLEAR, PERMISSION_CONTROL, 0, 0, handleClear, NULL);
-	addCommand(COMMAND_SAVE, PERMISSION_CONTROL, 1, 1, handleSave, NULL);
-	addCommand(COMMAND_LOAD, PERMISSION_ADD, 1, 1, handleLoad, NULL);
-	addCommand(COMMAND_LISTPLAYLIST, PERMISSION_READ, 1, 1,
-		   handleListPlaylist, NULL);
-	addCommand(COMMAND_LISTPLAYLISTINFO, PERMISSION_READ, 1, 1,
-		   handleListPlaylistInfo, NULL);
-	addCommand(COMMAND_LSINFO, PERMISSION_READ, 0, 1, handleLsInfo, NULL);
-	addCommand(COMMAND_RM, PERMISSION_CONTROL, 1, 1, handleRm, NULL);
-	addCommand(COMMAND_PLAYLISTINFO, PERMISSION_READ, 0, 1,
-		   handlePlaylistInfo, NULL);
-	addCommand(COMMAND_FIND, PERMISSION_READ, 2, -1, handleFind, NULL);
-	addCommand(COMMAND_SEARCH, PERMISSION_READ, 2, -1, handleSearch, NULL);
-	addCommand(COMMAND_UPDATE, PERMISSION_ADMIN, 0, 1, handleUpdate,
-		   listHandleUpdate);
-	addCommand(COMMAND_NEXT, PERMISSION_CONTROL, 0, 0, handleNext, NULL);
-	addCommand(COMMAND_PREVIOUS, PERMISSION_CONTROL, 0, 0, handlePrevious,
-		   NULL);
-	addCommand(COMMAND_LISTALL, PERMISSION_READ, 0, 1, handleListAll, NULL);
-	addCommand(COMMAND_VOLUME, PERMISSION_CONTROL, 1, 1, handleVolume,
-		   NULL);
-	addCommand(COMMAND_REPEAT, PERMISSION_CONTROL, 1, 1, handleRepeat,
-		   NULL);
-	addCommand(COMMAND_RANDOM, PERMISSION_CONTROL, 1, 1, handleRandom,
-		   NULL);
-	addCommand(COMMAND_STATS, PERMISSION_READ, 0, 0, handleStats, NULL);
-	addCommand(COMMAND_CLEAR_ERROR, PERMISSION_CONTROL, 0, 0,
-		   handleClearError, NULL);
-	addCommand(COMMAND_LIST, PERMISSION_READ, 1, -1, handleList, NULL);
-	addCommand(COMMAND_MOVE, PERMISSION_CONTROL, 2, 2, handleMove, NULL);
-	addCommand(COMMAND_MOVEID, PERMISSION_CONTROL, 2, 2, handleMoveId,
-		   NULL);
-	addCommand(COMMAND_SWAP, PERMISSION_CONTROL, 2, 2, handleSwap, NULL);
-	addCommand(COMMAND_SWAPID, PERMISSION_CONTROL, 2, 2, handleSwapId,
-		   NULL);
-	addCommand(COMMAND_SEEK, PERMISSION_CONTROL, 2, 2, handleSeek, NULL);
-	addCommand(COMMAND_SEEKID, PERMISSION_CONTROL, 2, 2, handleSeekId,
-		   NULL);
-	addCommand(COMMAND_LISTALLINFO, PERMISSION_READ, 0, 1,
-		   handleListAllInfo, NULL);
-	addCommand(COMMAND_PING, 0, 0, 0, handlePing, NULL);
-	addCommand(COMMAND_SETVOL, PERMISSION_CONTROL, 1, 1, handleSetVol,
-		   NULL);
-	addCommand(COMMAND_PASSWORD, 0, 1, 1, handlePassword, NULL);
-	addCommand(COMMAND_CROSSFADE, PERMISSION_CONTROL, 1, 1, handleCrossfade,
-		   NULL);
-	addCommand(COMMAND_URL_HANDLERS, PERMISSION_READ, 0, 0,
-		   handleUrlHandlers, NULL);
-	addCommand(COMMAND_PLCHANGES, PERMISSION_READ, 1, 1,
-		   handlePlaylistChanges, NULL);
-	addCommand(COMMAND_PLCHANGESPOSID, PERMISSION_READ, 1, 1,
-		   handlePlaylistChangesPosId, NULL);
-	addCommand(COMMAND_ENABLE_DEV, PERMISSION_ADMIN, 1, 1,
-		   handleEnableDevice, NULL);
-	addCommand(COMMAND_DISABLE_DEV, PERMISSION_ADMIN, 1, 1,
-		   handleDisableDevice, NULL);
-	addCommand(COMMAND_DEVICES, PERMISSION_READ, 0, 0, handleDevices, NULL);
-	addCommand(COMMAND_COMMANDS, 0, 0, 0, handleCommands, NULL);
-	addCommand(COMMAND_NOTCOMMANDS, 0, 0, 0, handleNotcommands, NULL);
+	/* addCommand(name,                  permission,         min, max, handler,                    list handler); */
+	addCommand(COMMAND_PLAY,             PERMISSION_CONTROL, 0,   1,   handlePlay,                 NULL);
+	addCommand(COMMAND_PLAYID,           PERMISSION_CONTROL, 0,   1,   handlePlayId,               NULL);
+	addCommand(COMMAND_STOP,             PERMISSION_CONTROL, 0,   0,   handleStop,                 NULL);
+	addCommand(COMMAND_CURRENTSONG,      PERMISSION_READ,    0,   0,   handleCurrentSong,          NULL);
+	addCommand(COMMAND_PAUSE,            PERMISSION_CONTROL, 0,   1,   handlePause,                NULL);
+	addCommand(COMMAND_STATUS,           PERMISSION_READ,    0,   0,   commandStatus,              NULL);
+	addCommand(COMMAND_KILL,             PERMISSION_ADMIN,   -1,  -1,  handleKill,                 NULL);
+	addCommand(COMMAND_CLOSE,            0,                  -1,  -1,  handleClose,                NULL);
+	addCommand(COMMAND_ADD,              PERMISSION_ADD,     1,   1,   handleAdd,                  NULL);
+	addCommand(COMMAND_ADDID,            PERMISSION_ADD,     1,   1,   handleAddId,                NULL);
+	addCommand(COMMAND_DELETE,           PERMISSION_CONTROL, 1,   1,   handleDelete,               NULL);
+	addCommand(COMMAND_DELETEID,         PERMISSION_CONTROL, 1,   1,   handleDeleteId,             NULL);
+	addCommand(COMMAND_PLAYLIST,         PERMISSION_READ,    0,   0,   handlePlaylist,             NULL);
+	addCommand(COMMAND_PLAYLISTID,       PERMISSION_READ,    0,   1,   handlePlaylistId,           NULL);
+	addCommand(COMMAND_SHUFFLE,          PERMISSION_CONTROL, 0,   0,   handleShuffle,              NULL);
+	addCommand(COMMAND_CLEAR,            PERMISSION_CONTROL, 0,   0,   handleClear,                NULL);
+	addCommand(COMMAND_SAVE,             PERMISSION_CONTROL, 1,   1,   handleSave,                 NULL);
+	addCommand(COMMAND_LOAD,             PERMISSION_ADD,     1,   1,   handleLoad,                 NULL);
+	addCommand(COMMAND_LISTPLAYLIST,     PERMISSION_READ,    1,   1,   handleListPlaylist,         NULL);
+	addCommand(COMMAND_LISTPLAYLISTINFO, PERMISSION_READ,    1,   1,   handleListPlaylistInfo,     NULL);
+	addCommand(COMMAND_LSINFO,           PERMISSION_READ,    0,   1,   handleLsInfo,               NULL);
+	addCommand(COMMAND_RM,               PERMISSION_CONTROL, 1,   1,   handleRm,                   NULL);
+	addCommand(COMMAND_PLAYLISTINFO,     PERMISSION_READ,    0,   1,   handlePlaylistInfo,         NULL);
+	addCommand(COMMAND_FIND,             PERMISSION_READ,    2,   -1,  handleFind,                 NULL);
+	addCommand(COMMAND_SEARCH,           PERMISSION_READ,    2,   -1,  handleSearch,               NULL);
+	addCommand(COMMAND_UPDATE,           PERMISSION_ADMIN,   0,   1,   handleUpdate,               listHandleUpdate);
+	addCommand(COMMAND_NEXT,             PERMISSION_CONTROL, 0,   0,   handleNext,                 NULL);
+	addCommand(COMMAND_PREVIOUS,         PERMISSION_CONTROL, 0,   0,   handlePrevious,             NULL);
+	addCommand(COMMAND_LISTALL,          PERMISSION_READ,    0,   1,   handleListAll,              NULL);
+	addCommand(COMMAND_VOLUME,           PERMISSION_CONTROL, 1,   1,   handleVolume,               NULL);
+	addCommand(COMMAND_REPEAT,           PERMISSION_CONTROL, 1,   1,   handleRepeat,               NULL);
+	addCommand(COMMAND_RANDOM,           PERMISSION_CONTROL, 1,   1,   handleRandom,               NULL);
+	addCommand(COMMAND_STATS,            PERMISSION_READ,    0,   0,   handleStats,                NULL);
+	addCommand(COMMAND_CLEAR_ERROR,      PERMISSION_CONTROL, 0,   0,   handleClearError,           NULL);
+	addCommand(COMMAND_LIST,             PERMISSION_READ,    1,   -1,  handleList,                 NULL);
+	addCommand(COMMAND_MOVE,             PERMISSION_CONTROL, 2,   2,   handleMove,                 NULL);
+	addCommand(COMMAND_MOVEID,           PERMISSION_CONTROL, 2,   2,   handleMoveId,               NULL);
+	addCommand(COMMAND_SWAP,             PERMISSION_CONTROL, 2,   2,   handleSwap,                 NULL);
+	addCommand(COMMAND_SWAPID,           PERMISSION_CONTROL, 2,   2,   handleSwapId,               NULL);
+	addCommand(COMMAND_SEEK,             PERMISSION_CONTROL, 2,   2,   handleSeek,                 NULL);
+	addCommand(COMMAND_SEEKID,           PERMISSION_CONTROL, 2,   2,   handleSeekId,               NULL);
+	addCommand(COMMAND_LISTALLINFO,      PERMISSION_READ,    0,   1,   handleListAllInfo,          NULL);
+	addCommand(COMMAND_PING,             0,                  0,   0,   handlePing,                 NULL);
+	addCommand(COMMAND_SETVOL,           PERMISSION_CONTROL, 1,   1,   handleSetVol,               NULL);
+	addCommand(COMMAND_PASSWORD,         0,                  1,   1,   handlePassword,             NULL);
+	addCommand(COMMAND_CROSSFADE,        PERMISSION_CONTROL, 1,   1,   handleCrossfade,            NULL);
+	addCommand(COMMAND_URL_HANDLERS,     PERMISSION_READ,    0,   0,   handleUrlHandlers,          NULL);
+	addCommand(COMMAND_PLCHANGES,        PERMISSION_READ,    1,   1,   handlePlaylistChanges,      NULL);
+	addCommand(COMMAND_PLCHANGESPOSID,   PERMISSION_READ,    1,   1,   handlePlaylistChangesPosId, NULL);
+	addCommand(COMMAND_ENABLE_DEV,       PERMISSION_ADMIN,   1,   1,   handleEnableDevice,         NULL);
+	addCommand(COMMAND_DISABLE_DEV,      PERMISSION_ADMIN,   1,   1,   handleDisableDevice,        NULL);
+	addCommand(COMMAND_DEVICES,          PERMISSION_READ,    0,   0,   handleDevices,              NULL);
+	addCommand(COMMAND_COMMANDS,         0,                  0,   0,   handleCommands,             NULL);
+	addCommand(COMMAND_NOTCOMMANDS,      0,                  0,   0,   handleNotcommands,          NULL);
 
 	sortList(commandList);
 }

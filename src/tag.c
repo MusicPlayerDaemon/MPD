@@ -211,8 +211,7 @@ MpdTag *parseId3Tag(struct id3_tag * tag)
 static int fillBuffer(void *buf, size_t size, FILE * stream,
 		      long offset, int whence)
 {
-	if (fseek(stream, offset, whence) != 0)
-		return 0;
+	if (fseek(stream, offset, whence) != 0) return 0;
 	return fread(buf, 1, size, stream);
 }
 #endif
