@@ -131,8 +131,8 @@ struct _CommandEntry {
 	CommandListHandlerFunction listHandler;
 };
 
-char *current_command = NULL;
-int command_listNum = 0;
+static char *current_command = NULL;
+static int command_listNum = 0;
 
 static CommandEntry *getCommandEntryFromString(char *string, int *permission);
 

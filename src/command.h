@@ -34,9 +34,6 @@
 #define COMMAND_RETURN_CLOSE	20
 #define COMMAND_MASTER_READY	30
 
-extern char *current_command;
-extern int command_listNum;
-
 int processListOfCommands(int fd, int *permission, int *expired,
 			  int listOK, struct strnode *list);
 
