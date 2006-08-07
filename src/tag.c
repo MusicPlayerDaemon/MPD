@@ -43,16 +43,16 @@
 #endif
 
 #ifdef HAVE_ID3TAG
-#define isId3v1(tag) (id3_tag_options(tag, 0, 0) & ID3_TAG_OPTION_ID3V1)
+#  define isId3v1(tag) (id3_tag_options(tag, 0, 0) & ID3_TAG_OPTION_ID3V1)
 /* Size of the buffer to use for peeking at tag headers.  We reuse this buffer
    if the whole tag fits in it, so make it big to avoid a malloc(). */
-#define ID3_TAG_BUFLEN 1024
-#ifndef ID3_FRAME_COMPOSER
-#define ID3_FRAME_COMPOSER "TCOM"
-#endif
-#ifndef ID3_FRAME_DISC
-#define ID3_FRAME_DISC "TPOS"
-#endif
+#  define ID3_TAG_BUFLEN 1024
+#  ifndef ID3_FRAME_COMPOSER
+#    define ID3_FRAME_COMPOSER "TCOM"
+#  endif
+#  ifndef ID3_FRAME_DISC
+#    define ID3_FRAME_DISC "TPOS"
+#  endif
 #endif
 
 char *mpdTagItemKeys[TAG_NUM_OF_ITEM_TYPES] = {
