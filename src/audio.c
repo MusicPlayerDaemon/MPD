@@ -323,14 +323,13 @@ static int flushAudioBuffer(void)
 
 int openAudioDevice(AudioFormat * audioFormat)
 {
-	int isCurrentFormat = isCurrentAudioFormat(audioFormat);
 	int ret = -1;
 	int i;
 
 	if (!audioOutputArray)
 		return -1;
 
-	if (!audioOpened || !isCurrentFormat) {
+	if (!audioOpened || !isCurrentAudioFormat(audioFormat)) {
 		flushAudioBuffer();
 		copyAudioFormat(&audio_format, audioFormat);
 		audioBufferSize = (audio_format.bits >> 3) *
