@@ -58,9 +58,9 @@ char *getTagItemString(int type, char *string)
 	else 
 	{
 		TagTrackerItem *item = malloc(sizeof(TagTrackerItem));
+		char *key = strdup(string);
 		item->count = 1;
 		item->visited = 0;
-		char * key= strdup(string);
 		InsertInTree(tagTrees[type], key, item);
 		return key;
 	}

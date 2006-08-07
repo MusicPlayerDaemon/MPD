@@ -415,6 +415,7 @@ static void killFromPidFile(char *cmd, int killOption)
 int main(int argc, char *argv[])
 {
 	Options options;
+	clock_t start;
 
 	closeAllFDs();
 
@@ -477,7 +478,7 @@ int main(int argc, char *argv[])
 	freeAllInterfaces();
 	closeAllListenSockets();
 
-	clock_t start = clock();
+	start = clock();
 	closeMp3Directory();
 	DEBUG("closeMp3Directory took %f seconds\n", 
 	      ((float)(clock()-start))/CLOCKS_PER_SEC);
