@@ -21,10 +21,11 @@
 
 #include "../config.h"
 
-#define PERMISSION_READ		1
-#define PERMISSION_ADD		2
-#define PERMISSION_CONTROL	4
-#define PERMISSION_ADMIN	8
+#define PERMISSION_NONE    0
+#define PERMISSION_READ    1
+#define PERMISSION_ADD     2
+#define PERMISSION_CONTROL 4
+#define PERMISSION_ADMIN   8
 
 void initPermissions();
 

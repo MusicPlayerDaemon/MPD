@@ -983,7 +983,7 @@ void initCommands(void)
 	addCommand(COMMAND_PAUSE,            PERMISSION_CONTROL, 0,   1,   handlePause,                NULL);
 	addCommand(COMMAND_STATUS,           PERMISSION_READ,    0,   0,   commandStatus,              NULL);
 	addCommand(COMMAND_KILL,             PERMISSION_ADMIN,   -1,  -1,  handleKill,                 NULL);
-	addCommand(COMMAND_CLOSE,            0,                  -1,  -1,  handleClose,                NULL);
+	addCommand(COMMAND_CLOSE,            PERMISSION_NONE,    -1,  -1,  handleClose,                NULL);
 	addCommand(COMMAND_ADD,              PERMISSION_ADD,     1,   1,   handleAdd,                  NULL);
 	addCommand(COMMAND_ADDID,            PERMISSION_ADD,     1,   1,   handleAddId,                NULL);
 	addCommand(COMMAND_DELETE,           PERMISSION_CONTROL, 1,   1,   handleDelete,               NULL);
@@ -1018,9 +1018,9 @@ void initCommands(void)
 	addCommand(COMMAND_SEEK,             PERMISSION_CONTROL, 2,   2,   handleSeek,                 NULL);
 	addCommand(COMMAND_SEEKID,           PERMISSION_CONTROL, 2,   2,   handleSeekId,               NULL);
 	addCommand(COMMAND_LISTALLINFO,      PERMISSION_READ,    0,   1,   handleListAllInfo,          NULL);
-	addCommand(COMMAND_PING,             0,                  0,   0,   handlePing,                 NULL);
+	addCommand(COMMAND_PING,             PERMISSION_NONE,    0,   0,   handlePing,                 NULL);
 	addCommand(COMMAND_SETVOL,           PERMISSION_CONTROL, 1,   1,   handleSetVol,               NULL);
-	addCommand(COMMAND_PASSWORD,         0,                  1,   1,   handlePassword,             NULL);
+	addCommand(COMMAND_PASSWORD,         PERMISSION_NONE,    1,   1,   handlePassword,             NULL);
 	addCommand(COMMAND_CROSSFADE,        PERMISSION_CONTROL, 1,   1,   handleCrossfade,            NULL);
 	addCommand(COMMAND_URL_HANDLERS,     PERMISSION_READ,    0,   0,   handleUrlHandlers,          NULL);
 	addCommand(COMMAND_PLCHANGES,        PERMISSION_READ,    1,   1,   handlePlaylistChanges,      NULL);
@@ -1028,8 +1028,8 @@ void initCommands(void)
 	addCommand(COMMAND_ENABLE_DEV,       PERMISSION_ADMIN,   1,   1,   handleEnableDevice,         NULL);
 	addCommand(COMMAND_DISABLE_DEV,      PERMISSION_ADMIN,   1,   1,   handleDisableDevice,        NULL);
 	addCommand(COMMAND_DEVICES,          PERMISSION_READ,    0,   0,   handleDevices,              NULL);
-	addCommand(COMMAND_COMMANDS,         0,                  0,   0,   handleCommands,             NULL);
-	addCommand(COMMAND_NOTCOMMANDS,      0,                  0,   0,   handleNotcommands,          NULL);
+	addCommand(COMMAND_COMMANDS,         PERMISSION_NONE,    0,   0,   handleCommands,             NULL);
+	addCommand(COMMAND_NOTCOMMANDS,      PERMISSION_NONE,    0,   0,   handleNotcommands,          NULL);
 
 	sortList(commandList);
 }
