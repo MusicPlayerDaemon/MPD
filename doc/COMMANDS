@@ -244,7 +244,7 @@ update <string path>
 	in status, while the requested update is happening
 	increments playlist version by 1
 	NOTE: To update a number of paths/songs at once, use command_list,
-	it will be much more faster/effecient.  Also, if you use a 
+	it will be much more faster/efficient.  Also, if you use a 
 	command_list for updating, only one update_db job id will be returned
 	per sequence of updates.
 

@@ -38,7 +38,7 @@
 	*) while pausing, play silence for the devices that don't support 
 	   "pausing"
 	*) write a sun native audioOutput
-	*) more accurate time reporting by determing how much of audio_device
+	*) more accurate time reporting by determining how much of audio_device
                 buffer has been played
 
 *) state
@@ -74,7 +74,7 @@ post-1.0
 	*) use pull model for audio_output
 	*) threads
 		0) managing thread
-			*) recieves commands
+			*) receives commands
 			*) manages state
 			*) handles time/metadata sending
 		1) decoding thread
@@ -85,7 +85,7 @@ post-1.0
 			*) thread for each audio_output device
 
 *) dynamic metadata
-	*) implment by recording the ftell positions of entries
+	*) implement by recording the ftell positions of entries
 	*) buffer changes and flush them once every 60 seconds
 	*) buffer changes while doing an update
 	*) be sure to check that the metadata "header" is what we expect
