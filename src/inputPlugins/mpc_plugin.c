@@ -200,6 +200,7 @@ static int mpc_decode(OutputBuffer * cb, DecoderControl * dc,
 			samplePos = dc->seekWhere * dc->audioFormat.sampleRate;
 			if (mpc_decoder_seek_sample(&decoder, samplePos)) {
 				clearOutputBuffer(cb);
+				s16 = (mpd_sint16 *) chunk;
 				chunkpos = 0;
 			} else
 				dc->seekError = 1;
