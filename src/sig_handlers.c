@@ -36,10 +36,7 @@
 #include <errno.h>
 #include <unistd.h>
 
-extern volatile int masterPid;
-extern volatile int mainPid;
-
-int handlePendingSignals()
+int handlePendingSignals(void)
 {
 	if (signal_is_pending(SIGINT) || signal_is_pending(SIGTERM)) {
 		DEBUG("main process got SIGINT or SIGTERM, exiting\n");
@@ -78,7 +75,7 @@ void chldSigHandler(int signal)
 	}
 }
 
-void initSigHandlers()
+void initSigHandlers(void)
 {
 	struct sigaction sa;
 
@@ -94,7 +91,7 @@ void initSigHandlers()
 	signal_handle(SIGHUP);
 }
 
-void finishSigHandlers()
+void finishSigHandlers(void)
 {
 	signal_unhandle(SIGINT);
 	signal_unhandle(SIGUSR1);
@@ -102,7 +99,7 @@ void finishSigHandlers()
 	signal_unhandle(SIGHUP);
 }
 
-void setSigHandlersForDecoder()
+void setSigHandlersForDecoder(void)
 {
 	struct sigaction sa;
 
@@ -119,7 +116,7 @@ void setSigHandlersForDecoder()
 	while (sigaction(SIGTERM, &sa, NULL) < 0 && errno == EINTR) ;
 }
 
-void ignoreSignals()
+void ignoreSignals(void)
 {
 	struct sigaction sa;
 
@@ -135,7 +132,7 @@ void ignoreSignals()
 	while (sigaction(SIGHUP, &sa, NULL) < 0 && errno == EINTR) ;
 }
 
-void blockSignals()
+void blockSignals(void)
 {
 	sigset_t sset;
 
@@ -148,7 +145,7 @@ void blockSignals()
 	while (sigprocmask(SIG_BLOCK, &sset, NULL) < 0 && errno == EINTR) ;
 }
 
-void unblockSignals()
+void unblockSignals(void)
 {
 	sigset_t sset;
 

@@ -680,7 +680,7 @@ void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb)
  * child process does decoding
  * parent process does playing audio
  */
-void decode()
+void decode(void)
 {
 	OutputBuffer *cb;
 	PlayerControl *pc;

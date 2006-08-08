@@ -103,7 +103,7 @@ static int inodeFoundInParent(Directory * parent, ino_t inode, dev_t device);
 
 static int statDirectory(Directory * dir);
 
-static char *getDbFile()
+static char *getDbFile(void)
 {
 	ConfigParam *param = parseConfigFilePath(CONF_DB_FILE, 1);
 
@@ -113,12 +113,12 @@ static char *getDbFile()
 	return param->value;
 }
 
-static void clearUpdatePid()
+static void clearUpdatePid(void)
 {
 	directory_updatePid = 0;
 }
 
-int isUpdatingDB()
+int isUpdatingDB(void)
 {
 	if (directory_updatePid > 0 || directory_reReadDB) {
 		return directory_updateJobId;
@@ -150,7 +150,7 @@ void directory_sigChldHandler(int pid, int status)
 	}
 }
 
-void readDirectoryDBIfUpdateIsFinished()
+void readDirectoryDBIfUpdateIsFinished(void)
 {
 	if (directory_reReadDB && 0 == directory_updatePid) {
 		DEBUG("readDirectoryDB since update finished successfully\n");
@@ -279,7 +279,7 @@ static void freeDirectory(Directory * directory)
 	/*getDirectoryPath(NULL); */
 }
 
-static DirectoryList *newDirectoryList()
+static DirectoryList *newDirectoryList(void)
 {
 	return makeList((ListFreeDataFunc *) freeDirectory, 1);
 }
@@ -809,7 +809,7 @@ static int addToDirectory(Directory * directory, char *shortname, char *name)
 	return -1;
 }
 
-void closeMp3Directory()
+void closeMp3Directory(void)
 {
 	freeDirectory(mp3rootDirectory);
 }
@@ -1020,7 +1020,7 @@ static void sortDirectory(Directory * directory)
 	}
 }
 
-int checkDirectoryDB()
+int checkDirectoryDB(void)
 {
 	struct stat st;
 	char *dbFile;
@@ -1087,7 +1087,7 @@ int checkDirectoryDB()
 	return 0;
 }
 
-int writeDirectoryDB()
+int writeDirectoryDB(void)
 {
 	FILE *fp;
 	char *dbFile = getDbFile();
@@ -1121,7 +1121,7 @@ int writeDirectoryDB()
 	return 0;
 }
 
-int readDirectoryDB()
+int readDirectoryDB(void)
 {
 	FILE *fp = NULL;
 	char *dbFile = getDbFile();
@@ -1218,7 +1218,7 @@ int readDirectoryDB()
 	return 0;
 }
 
-void updateMp3Directory()
+void updateMp3Directory(void)
 {
 	switch (updateDirectory(mp3rootDirectory)) {
 	case 0:
@@ -1309,7 +1309,7 @@ static void freeAllDirectoryStats(Directory * directory)
 	freeDirectoryStatFromDirectory(directory);
 }
 
-void initMp3Directory()
+void initMp3Directory(void)
 {
 	struct stat st;
 
@@ -1371,7 +1371,7 @@ Song *getSongFromDB(char *file)
 	return getSongDetails(file, NULL, NULL);
 }
 
-time_t getDbModTime()
+time_t getDbModTime(void)
 {
 	return directory_dbModTime;
 }

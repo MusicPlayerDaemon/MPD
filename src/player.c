@@ -46,12 +46,12 @@
 
 volatile int player_pid = 0;
 
-void clearPlayerPid()
+void clearPlayerPid(void)
 {
 	player_pid = 0;
 }
 
-static void resetPlayerMetadata()
+static void resetPlayerMetadata(void)
 {
 	PlayerControl *pc = &(getPlayerData()->playerControl);
 
@@ -60,7 +60,7 @@ static void resetPlayerMetadata()
 	}
 }
 
-void resetPlayer()
+void resetPlayer(void)
 {
 	int pid;
 
@@ -108,7 +108,7 @@ void player_sigChldHandler(int pid, int status)
 	}
 }
 
-int playerInit()
+int playerInit(void)
 {
 	blockSignals();
 	player_pid = fork();
@@ -217,7 +217,7 @@ int playerStop(int fd)
 	return 0;
 }
 
-void playerKill()
+void playerKill(void)
 {
 	int pid;
 	/*PlayerControl * pc = &(getPlayerData()->playerControl);
@@ -265,37 +265,37 @@ int playerSetPause(int fd, int pause)
 	return 0;
 }
 
-int getPlayerElapsedTime()
+int getPlayerElapsedTime(void)
 {
 	return (int)(getPlayerData()->playerControl.elapsedTime + 0.5);
 }
 
-unsigned long getPlayerBitRate()
+unsigned long getPlayerBitRate(void)
 {
 	return getPlayerData()->playerControl.bitRate;
 }
 
-int getPlayerTotalTime()
+int getPlayerTotalTime(void)
 {
 	return (int)(getPlayerData()->playerControl.totalTime + 0.5);
 }
 
-int getPlayerState()
+int getPlayerState(void)
 {
 	return getPlayerData()->playerControl.state;
 }
 
-void clearPlayerError()
+void clearPlayerError(void)
 {
 	getPlayerData()->playerControl.error = 0;
 }
 
-int getPlayerError()
+int getPlayerError(void)
 {
 	return getPlayerData()->playerControl.error;
 }
 
-char *getPlayerErrorStr()
+char *getPlayerErrorStr(void)
 {
 	static char *error = NULL;
 	int errorlen = MAXPATHLEN + 1024;
@@ -336,7 +336,7 @@ char *getPlayerErrorStr()
 	return NULL;
 }
 
-void playerCloseAudio()
+void playerCloseAudio(void)
 {
 	PlayerControl *pc = &(getPlayerData()->playerControl);
 
@@ -368,7 +368,7 @@ int queueSong(Song * song)
 	return -1;
 }
 
-int getPlayerQueueState()
+int getPlayerQueueState(void)
 {
 	PlayerControl *pc = &(getPlayerData()->playerControl);
 
@@ -382,7 +382,7 @@ void setQueueState(int queueState)
 	pc->queueState = queueState;
 }
 
-void playerQueueLock()
+void playerQueueLock(void)
 {
 	PlayerControl *pc = &(getPlayerData()->playerControl);
 
@@ -393,7 +393,7 @@ void playerQueueLock()
 	}
 }
 
-void playerQueueUnlock()
+void playerQueueUnlock(void)
 {
 	PlayerControl *pc = &(getPlayerData()->playerControl);
 
@@ -436,7 +436,7 @@ int playerSeek(int fd, Song * song, float time)
 	return 0;
 }
 
-float getPlayerCrossFade()
+float getPlayerCrossFade(void)
 {
 	PlayerControl *pc = &(getPlayerData()->playerControl);
 
@@ -464,35 +464,35 @@ void setPlayerSoftwareVolume(int volume)
 	pc->softwareVolume = volume;
 }
 
-double getPlayerTotalPlayTime()
+double getPlayerTotalPlayTime(void)
 {
 	PlayerControl *pc = &(getPlayerData()->playerControl);
 
 	return pc->totalPlayTime;
 }
 
-unsigned int getPlayerSampleRate()
+unsigned int getPlayerSampleRate(void)
 {
 	PlayerControl *pc = &(getPlayerData()->playerControl);
 
 	return pc->sampleRate;
 }
 
-int getPlayerBits()
+int getPlayerBits(void)
 {
 	PlayerControl *pc = &(getPlayerData()->playerControl);
 
 	return pc->bits;
 }
 
-int getPlayerChannels()
+int getPlayerChannels(void)
 {
 	PlayerControl *pc = &(getPlayerData()->playerControl);
 
 	return pc->channels;
 }
 
-void playerCycleLogFiles()
+void playerCycleLogFiles(void)
 {
 	PlayerControl *pc = &(getPlayerData()->playerControl);
 	DecoderControl *dc = &(getPlayerData()->decoderControl);
@@ -502,7 +502,7 @@ void playerCycleLogFiles()
 }
 
 /* this actually creates a dupe of the current metadata */
-Song *playerCurrentDecodeSong()
+Song *playerCurrentDecodeSong(void)
 {
 	static Song *song = NULL;
 	static MetadataChunk *prev = NULL;

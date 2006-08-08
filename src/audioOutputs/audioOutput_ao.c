@@ -38,7 +38,7 @@ typedef struct _AoData {
 	ao_device *device;
 } AoData;
 
-static AoData *newAoData()
+static AoData *newAoData(void)
 {
 	AoData *ret = malloc(sizeof(AoData));
 	ret->device = NULL;
@@ -47,7 +47,7 @@ static AoData *newAoData()
 	return ret;
 }
 
-static void audioOutputAo_error()
+static void audioOutputAo_error(void)
 {
 	if (errno == AO_ENOTLIVE) {
 		ERROR("not a live ao device\n");

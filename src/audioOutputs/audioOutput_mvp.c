@@ -90,7 +90,7 @@ static int pcmfrequencies[][3] = {
 
 static int numfrequencies = sizeof(pcmfrequencies) / 12;
 
-static int mvp_testDefault()
+static int mvp_testDefault(void)
 {
 	int fd;
 
