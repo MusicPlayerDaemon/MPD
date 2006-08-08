@@ -42,7 +42,7 @@ typedef struct _PulseData {
 	time_t lastAttempt;
 } PulseData;
 
-static PulseData *newPulseData()
+static PulseData *newPulseData(void)
 {
 	PulseData *ret;
 
@@ -90,7 +90,7 @@ static void pulse_finishDriver(AudioOutput * audioOutput)
 	freePulseData((PulseData *) audioOutput->data);
 }
 
-static int pulse_testDefault()
+static int pulse_testDefault(void)
 {
 	pa_simple *s;
 	pa_sample_spec ss;
