@@ -118,7 +118,7 @@ int newLocateTagItemArrayFromArgArray(char *argArray[],
 
 	return numArgs / 2;
 
-      fail:
+fail:
 	for (j = 0; j < i; j++) {
 		free((*arrayRet)[j].needle);
 	}

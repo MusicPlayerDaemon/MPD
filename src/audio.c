@@ -510,7 +510,7 @@ void readAudioDevicesState(FILE *fp)
 			}
 		}
 		continue;
-	      errline:
+errline:
 		/* nonfatal */
 		ERROR("invalid line in state_file: %s\n", buffer);
 	}

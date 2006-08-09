@@ -466,7 +466,7 @@ MpdTag *apeDup(char *file)
 		tagLen -= size;
 	}
 
-      fail:
+fail:
 	if (fp)
 		fclose(fp);
 	if (buffer)

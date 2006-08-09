@@ -305,7 +305,8 @@ static int prep_alsa_get_level(long *level)
 		goto error;
 	}
 	return 0;
-      error:
+
+error:
 	WARNING("problems getting alsa volume: %s (snd_mixer_%s)\n",
 		snd_strerror(err), cmd);
 	closeAlsaMixer();
