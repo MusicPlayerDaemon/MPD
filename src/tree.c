@@ -621,20 +621,8 @@ void IncrementTreeIterator(TreeIterator * iter)
 
 		while (iter->node && iter->which > iter->node->count)
 		{
-			TreeNode * childNode = iter->node;
-			iter->node = childNode->parent;
-			if (iter->node)
-			{
-				for (iter->which = 0;
-				     childNode != 
-				     iter->node->children[iter->which];
-				     iter->which++)
-				{
-					assert(iter->which <= 
-					       iter->node->count);
-				}
-				iter->which++;
-			}
+			iter->which = iter->node->parentPos + 1;
+			iter->node = iter->node->parent;
 		}
 
 		if (iter->node &&
