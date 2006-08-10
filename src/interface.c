@@ -42,7 +42,7 @@
 #include <errno.h>
 #include <signal.h>
 
-#define GREETING					"OK MPD " VERSION "\n"
+#define GREETING				"OK MPD " PROTOCOL_VERSION "\n"
 
 #define INTERFACE_MAX_BUFFER_LENGTH			(40960)
 #define INTERFACE_LIST_MODE_BEGIN			"command_list_begin"
