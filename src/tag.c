@@ -414,7 +414,7 @@ MpdTag *apeDup(char *file)
 	if (readLEuint32(footer.version) != 2000)
 		goto fail;
 
-	/* find begining of ape tag */
+	/* find beginning of ape tag */
 	tagLen = readLEuint32(footer.length);
 	if (tagLen < sizeof(footer))
 		goto fail;

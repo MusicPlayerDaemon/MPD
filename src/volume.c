@@ -233,7 +233,7 @@ static int prepAlsaMixer(char *card)
 
 	if ((err = snd_mixer_attach(volume_alsaMixerHandle, card)) < 0) {
 		closeAlsaMixer();
-		WARNING("problems problems attaching alsa mixer: %s\n",
+		WARNING("problems attaching alsa mixer: %s\n",
 			snd_strerror(err));
 		return -1;
 	}

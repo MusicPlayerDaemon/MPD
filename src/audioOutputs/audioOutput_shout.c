@@ -423,7 +423,7 @@ static int initEncoder(ShoutData * sd)
 						sd->audioFormat->channels,
 						sd->audioFormat->sampleRate,
 						sd->quality * 0.1)) {
-			ERROR("problem seting up vorbis encoder for shout\n");
+			ERROR("problem setting up vorbis encoder for shout\n");
 			vorbis_info_clear(&(sd->vi));
 			return -1;
 		}
@@ -432,7 +432,7 @@ static int initEncoder(ShoutData * sd)
 					    sd->audioFormat->channels,
 					    sd->audioFormat->sampleRate, -1.0,
 					    sd->bitrate * 1000, -1.0)) {
-			ERROR("problem seting up vorbis encoder for shout\n");
+			ERROR("problem setting up vorbis encoder for shout\n");
 			vorbis_info_clear(&(sd->vi));
 			return -1;
 		}

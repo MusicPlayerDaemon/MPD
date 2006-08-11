@@ -307,7 +307,7 @@ char *getPlayerErrorStr(void)
 	switch (pc->error) {
 	case PLAYER_ERROR_FILENOTFOUND:
 		snprintf(error, errorlen,
-			 "file \"%s\" does not exist or is inaccesible",
+			 "file \"%s\" does not exist or is inaccessible",
 			 pc->erroredUrl);
 		break;
 	case PLAYER_ERROR_FILE:

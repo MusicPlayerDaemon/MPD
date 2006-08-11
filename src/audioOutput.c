@@ -59,7 +59,7 @@ void finishAudioOutputPlugins(void)
 	bp = getBlockParam(param, name); \
 	if(force && bp == NULL) { \
 		ERROR("couldn't find parameter \"%s\" in audio output " \
-				"definition begining at %i\n", \
+				"definition beginning at %i\n", \
 				name, param->line); \
 		exit(EXIT_FAILURE); \
 	} \

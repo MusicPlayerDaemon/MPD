@@ -245,7 +245,7 @@ static int osx_openDevice(AudioOutput * audioOutput)
 
 	if (AudioUnitInitialize(od->au) != 0) {
 		CloseComponent(od->au);
-		ERROR("Unable to initialuze OS X audio unit\n");
+		ERROR("Unable to initialize OS X audio unit\n");
 		return -1;
 	}
 
@@ -257,7 +257,7 @@ static int osx_openDevice(AudioOutput * audioOutput)
 				 &callback, sizeof(callback)) != 0) {
 		AudioUnitUninitialize(od->au);
 		CloseComponent(od->au);
-		ERROR("unable to set callbak for OS X audio unit\n");
+		ERROR("unable to set callback for OS X audio unit\n");
 		return -1;
 	}
 
