@@ -29,15 +29,10 @@
 #define LOG_LEVEL_SECURE	1
 #define LOG_LEVEL_DEBUG		2
 
-#ifndef NDEBUG
-  mpd_printf void DEBUG(const char *fmt, ...);
-#else
-  static inline void DEBUG(const char *fmt, ...) { }
-#endif
-
 mpd_printf void ERROR(const char *fmt, ...);
 mpd_printf void LOG(const char *fmt, ...);
 mpd_printf void SECURE(const char *fmt, ...);
+mpd_printf void DEBUG(const char *fmt, ...);
 mpd_printf void WARNING(const char *fmt, ...);
 mpd_printf void FATAL(const char *fmt, ...);
 

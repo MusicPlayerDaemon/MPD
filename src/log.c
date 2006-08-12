@@ -188,10 +188,7 @@ mpd_printf void func(const char *fmt, ...) \
 log_func(ERROR, 0, stderr)
 log_func(LOG, 0, stdout)
 log_func(SECURE, LOG_LEVEL_SECURE, stdout)
-
-#ifndef NDEBUG
 log_func(DEBUG, LOG_LEVEL_DEBUG, stdout)
-#endif /* NDEBUG */
 
 #undef log_func
 
