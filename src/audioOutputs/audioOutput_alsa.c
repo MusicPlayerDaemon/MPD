@@ -140,8 +140,9 @@ static int alsa_openDevice(AudioOutput * audioOutput)
 	snd_pcm_uframes_t alsa_period_size;
 	int err;
 	const char *cmd = NULL;
-	unsigned int period_time;
 	int retry = MPD_ALSA_RETRY_NR;
+	unsigned int period_time, period_time_ro;
+	unsigned int buffer_time;
 
 	switch (audioFormat->bits) {
 	case 8:
@@ -175,6 +176,7 @@ static int alsa_openDevice(AudioOutput * audioOutput)
 	if (err < 0)
 		goto error;
 
+	period_time_ro = period_time = ad->period_time;
 configure_hw:
 	/* configure HW params */
 	snd_pcm_hw_params_alloca(&hwparams);
@@ -231,28 +233,29 @@ configure_hw:
 	}
 	audioFormat->sampleRate = sampleRate;
 
+	buffer_time = ad->buffer_time;
 	cmd = "snd_pcm_hw_params_set_buffer_time_near";
 	err = snd_pcm_hw_params_set_buffer_time_near(ad->pcmHandle, hwparams,
-						     &ad->buffer_time, NULL);
+						     &buffer_time, NULL);
 	if (err < 0)
 		goto error;
 
-	period_time = ad->period_time;
+	period_time = period_time_ro;
 	cmd = "snd_pcm_hw_params_set_period_time_near";
 	err = snd_pcm_hw_params_set_period_time_near(ad->pcmHandle, hwparams,
-						     &ad->period_time, NULL);
+						     &period_time, NULL);
 	if (err < 0)
 		goto error;
 
 	cmd = "snd_pcm_hw_params";
 	err = snd_pcm_hw_params(ad->pcmHandle, hwparams);
 	if (err == -EPIPE && --retry > 0) {
-		ad->period_time = period_time >> 1;
+		period_time_ro = period_time_ro >> 1;
 		goto configure_hw;
 	} else if (err < 0)
 		goto error;
 	if (retry != MPD_ALSA_RETRY_NR)
-		DEBUG("ALSA period_time set to %d\n", ad->period_time);
+		DEBUG("ALSA period_time set to %d\n", period_time);
 
 	cmd = "snd_pcm_hw_params_get_buffer_size";
 	err = snd_pcm_hw_params_get_buffer_size(hwparams, &alsa_buffer_size);
