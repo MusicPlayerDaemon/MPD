@@ -138,6 +138,7 @@ typedef struct _mp3DecodeData {
 	int dropFramesAtEnd;
 	int dropSamplesAtStart;
 	int dropSamplesAtEnd;
+	int foundXing;
 	int foundFirstFrame;
 	int decodedFirstFrame;
 	int flush;
@@ -161,6 +162,7 @@ static void initMp3DecodeData(mp3DecodeData * data, InputStream * inStream)
 	data->dropFramesAtEnd = 0;
 	data->dropSamplesAtStart = 0;
 	data->dropSamplesAtEnd = 0;
+	data->foundXing = 0;
 	data->foundFirstFrame = 0;
 	data->decodedFirstFrame = 0;
 	data->flush = 1;
@@ -640,6 +642,7 @@ static int decodeFirstFrame(mp3DecodeData * data, DecoderControl * dc,
 	bitlen = data->stream.anc_bitlen;
 
 	if (parse_xing(&xing, &ptr, &bitlen)) {
+		data->foundXing = 1;
 		data->muteFrame = MUTEFRAME_SKIP;
 
 		if (parse_lame(&lame, &ptr, &bitlen)) {
@@ -737,9 +740,12 @@ static int mp3Read(mp3DecodeData * data, OutputBuffer * cb, DecoderControl * dc,
 		mad_timer_add(&data->timer, (data->frame).header.duration);
 		data->bitRate = (data->frame).header.bitrate;
 		if (data->currentFrame >= data->maxFrames) {
+			/* stop decoding, since Xing maxFrames is accurate */
+			if (data->foundXing) return DECODE_BREAK;
 			data->currentFrame = data->maxFrames - 1;
-		} else
+		} else {
 			data->highestFrame++;
+		}
 		data->frameOffset[data->currentFrame] = data->inStream->offset;
 		if (data->stream.this_frame != NULL) {
 			data->frameOffset[data->currentFrame] -=
@@ -749,8 +755,9 @@ static int mp3Read(mp3DecodeData * data, OutputBuffer * cb, DecoderControl * dc,
 			    data->stream.bufend - data->stream.buffer;
 		}
 		data->times[data->currentFrame] = data->timer;
-	} else
+	} else {
 		data->timer = data->times[data->currentFrame];
+	}
 	data->currentFrame++;
 	data->elapsedTime =
 	    ((float)mad_timer_count(data->timer, MAD_UNITS_MILLISECONDS)) /
