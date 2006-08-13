@@ -822,7 +822,9 @@ static int mp3Read(mp3DecodeData * data, OutputBuffer * cb, DecoderControl * dc,
 			} else if (data->dropSamplesAtEnd &&
 			           (data->currentFrame == (data->maxFrames - data->dropFramesAtEnd))) {
 				samplesLeft--;
-				if (samplesLeft < data->dropSamplesAtEnd) break;
+				/* stop decoding, since samples were dropped */
+				if (samplesLeft < data->dropSamplesAtEnd)
+					return DECODE_BREAK;
 			}
 
 			sample = (mpd_sint16 *) data->outputPtr;
