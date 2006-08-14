@@ -124,8 +124,8 @@ int playerInit(void)
 
 		closeAllListenSockets();
 		freeAllInterfaces();
-		closeMp3Directory();
 		finishPlaylist();
+		closeMp3Directory();
 		finishPermissions();
 		finishCommands();
 		finishVolume();

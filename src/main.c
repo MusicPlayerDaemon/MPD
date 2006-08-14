@@ -477,14 +477,13 @@ int main(int argc, char *argv[])
 	playerKill();
 	freeAllInterfaces();
 	closeAllListenSockets();
+	finishPlaylist();
 
 	start = clock();
 	closeMp3Directory();
 	DEBUG("closeMp3Directory took %f seconds\n", 
 	      ((float)(clock()-start))/CLOCKS_PER_SEC);
 
-	finishPlaylist();
-	freePlayerData();
 	finishNormalization();
 	finishAudioDriver();
 	finishAudioConfig();
@@ -495,6 +494,7 @@ int main(int argc, char *argv[])
 	finishInputPlugins();
 	cleanUpPidFile();
 	finishConf();
+	freePlayerData();
 
 	close_log_files();
 	return EXIT_SUCCESS;

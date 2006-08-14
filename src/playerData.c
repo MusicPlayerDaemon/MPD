@@ -21,6 +21,7 @@
 #include "log.h"
 
 #include <sys/types.h>
+#include <sys/wait.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #include <stdio.h>
@@ -164,5 +165,9 @@ PlayerData *getPlayerData(void)
 
 void freePlayerData(void)
 {
+	/* We don't want to release this memory until we know our player and
+	 * decoder have exited.  Otherwise, their signal handlers will want to
+	 * access playerData_pd and we need to keep it available for them */
+	waitpid(-1, NULL, 0);
 	shmdt(playerData_pd);
 }
