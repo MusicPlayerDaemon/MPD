@@ -1272,8 +1272,6 @@ int deletePlaylist(int fd, char *utf8file)
 	strcat(rfile, ".");
 	strcat(rfile, PLAYLIST_FILE_SUFFIX);
 
-	free(file);
-
 	if ((actualFile = rpp2app(rfile)) && isPlaylist(actualFile))
 		free(rfile);
 	else {
@@ -1300,7 +1298,6 @@ int savePlaylist(int fd, char *utf8file)
 	char *file;
 	char *rfile;
 	char *actualFile;
-	char *url;
 
 	if (strstr(utf8file, "/")) {
 		commandError(fd, ACK_ERROR_ARG,
@@ -1317,8 +1314,6 @@ int savePlaylist(int fd, char *utf8file)
 	strcpy(rfile, file);
 	strcat(rfile, ".");
 	strcat(rfile, PLAYLIST_FILE_SUFFIX);
-
-	free(file);
 
 	actualFile = rpp2app(rfile);
 
@@ -1343,10 +1338,8 @@ int savePlaylist(int fd, char *utf8file)
 				  rmp2amp(utf8ToFsCharset
 					  ((getSongUrl(playlist.songs[i])))));
 		} else {
-			url = utf8ToFsCharset(getSongUrl(playlist.songs[i]));
-			fprintf(fileP, "%s\n", url);
-			free(url);
-
+			fprintf(fileP, "%s\n",
+			        utf8ToFsCharset(getSongUrl(playlist.songs[i])));
 		}
 	}
 
@@ -1441,8 +1434,6 @@ static int PlaylistIterFunc(int fd, char *utf8file,
 	strcat(rfile, ".");
 	strcat(rfile, PLAYLIST_FILE_SUFFIX);
 
-	free(temp);
-
 	if ((actualFile = rpp2app(rfile)) && isPlaylist(actualFile))
 		free(rfile);
 	else {
@@ -1499,7 +1490,6 @@ static int PlaylistIterFunc(int fd, char *utf8file,
 				strcpy(s, temp);
 				IterFunc(fd, s, &erroredFile);
 			}
-			free(temp);
 		} else if (slength == MAXPATHLEN) {
 			s[slength] = '\0';
 			commandError(fd, ACK_ERROR_PLAYLIST_LOAD,

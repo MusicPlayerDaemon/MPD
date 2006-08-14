@@ -29,8 +29,17 @@ void initPaths();
 
 void finishPaths();
 
+/* utf8ToFsCharset() and fsCharsetToUtf8()
+ * Each returns a static pointer to a dynamically allocated buffer
+ * which means:
+ * - Do not manually free the return value of these functions, it'll be
+ *   automatically freed the next time it is called.
+ * - They are not reentrant, strdup the return value immediately if
+ *   you expect to call one of these functions again, but still need the
+ *   previous result.
+ * - The static pointer is unique to each function.
+ */
 char *utf8ToFsCharset(char *str);
-
 char *fsCharsetToUtf8(char *str);
 
 void setFsCharset(char *charset);

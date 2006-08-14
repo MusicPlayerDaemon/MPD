@@ -260,15 +260,11 @@ static void decodeStart(PlayerControl * pc, OutputBuffer * cb,
 	InputStream inStream;
 	InputPlugin *plugin = NULL;
 	char *path;
-	char *relativePath;
 
-	if (isRemoteUrl(pc->utf8url)) {
+	if (isRemoteUrl(pc->utf8url))
 		path = utf8StrToLatin1Dup(pc->utf8url);
-	} else {
-		relativePath = utf8ToFsCharset(pc->utf8url);
-		path = strdup(rmp2amp(relativePath));
-		free(relativePath);
-	}
+	else
+		path = strdup(rmp2amp(utf8ToFsCharset(pc->utf8url)));
 
 	if (!path) {
 		dc->error = DECODE_ERROR_FILE;

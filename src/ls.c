@@ -118,7 +118,6 @@ int lsPlaylists(int fd, char *utf8path)
 	int suff;
 
 	if (actlen > MAXPATHLEN - 1 || (dir = opendir(actualPath)) == NULL) {
-		free(path);
 		return 0;
 	}
 
@@ -143,7 +142,6 @@ int lsPlaylists(int fd, char *utf8path)
 					dup[suff] = '\0';
 					if ((utf8 = fsCharsetToUtf8(dup))) {
 						insertInList(list, utf8, NULL);
-						free(utf8);
 					}
 				}
 			}
@@ -151,7 +149,6 @@ int lsPlaylists(int fd, char *utf8path)
 	}
 
 	closedir(dir);
-	free(path);
 
 	if (list) {
 		int i;
@@ -185,16 +182,11 @@ int myStat(char *utf8file, struct stat *st)
 {
 	char *file = utf8ToFsCharset(utf8file);
 	char *actualFile = file;
-	int ret;
 
 	if (actualFile[0] != '/')
 		actualFile = rmp2amp(file);
 
-	ret = stat(actualFile, st);
-
-	free(file);
-
-	return ret;
+	return stat(actualFile, st);
 }
 
 static int isFile(char *utf8file, time_t * mtime)
