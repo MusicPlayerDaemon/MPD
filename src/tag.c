@@ -133,7 +133,7 @@ void printMpdTag(int fd, MpdTag * tag)
 }
 
 #ifdef HAVE_ID3TAG
-MpdTag *getID3Info(struct id3_tag *tag, char *id, int type, MpdTag * mpdTag)
+static MpdTag *getID3Info(struct id3_tag *tag, char *id, int type, MpdTag * mpdTag)
 {
 	struct id3_frame const *frame;
 	id3_ucs4_t const *ucs4;
@@ -159,29 +159,24 @@ MpdTag *getID3Info(struct id3_tag *tag, char *id, int type, MpdTag * mpdTag)
 		if (type == TAG_ITEM_GENRE)
 			ucs4 = id3_genre_name(ucs4);
 
-		utf8 = id3_ucs4_utf8duplicate(ucs4);
-		if (!utf8)
-			continue;
-
-		if (isId3v1(tag)) {
-			encoding = getConfigParamValue(CONF_ID3V1_ENCODING);
-			if (encoding) {
-				setCharSetConversion("ISO-8859-1", "UTF-8");
-				isostr = convStrDup((char *)utf8);
-				free(utf8);
-				if (mpd_unlikely(!isostr))
-					continue;
-				setCharSetConversion("UTF-8", encoding);
-				utf8 = (id3_utf8_t *)convStrDup(isostr);
-				if (!utf8) {
-					DEBUG("Unable to convert %s string to "
-					      "UTF-8: '%s'\n",
-					      encoding, isostr);
-					free(isostr);
-					continue;
-				}
+		if (isId3v1(tag) &&
+		    (encoding = getConfigParamValue(CONF_ID3V1_ENCODING))) {
+			isostr = id3_ucs4_latin1duplicate(ucs4);
+			if (mpd_unlikely(!isostr))
+				continue;
+			setCharSetConversion("UTF-8", encoding);
+			utf8 = (id3_utf8_t *)convStrDup(isostr);
+			if (!utf8) {
+				DEBUG("Unable to convert %s string to UTF-8: "
+				      "'%s'\n", encoding, isostr);
 				free(isostr);
+				continue;
 			}
+			free(isostr);
+		} else {
+			utf8 = id3_ucs4_utf8duplicate(ucs4);
+			if (mpd_unlikely(!utf8))
+				continue;
 		}
 
 		if (mpdTag == NULL)
