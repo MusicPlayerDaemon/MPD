@@ -27,6 +27,7 @@
 #include "charConv.h"
 #include "tagTracker.h"
 #include "mpd_types.h"
+#include "gcc.h"
 
 #include <sys/stat.h>
 #include <stdlib.h>
@@ -168,8 +169,17 @@ MpdTag *getID3Info(struct id3_tag *tag, char *id, int type, MpdTag * mpdTag)
 				setCharSetConversion("ISO-8859-1", "UTF-8");
 				isostr = convStrDup((char *)utf8);
 				free(utf8);
+				if (mpd_unlikely(!isostr))
+					continue;
 				setCharSetConversion("UTF-8", encoding);
 				utf8 = (id3_utf8_t *)convStrDup(isostr);
+				if (!utf8) {
+					DEBUG("Unable to convert %s string to "
+					      "UTF-8: '%s'\n",
+					      encoding, isostr);
+					free(isostr);
+					continue;
+				}
 				free(isostr);
 			}
 		}
