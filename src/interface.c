@@ -332,10 +332,10 @@ static int processLineOfInput(Interface * interface)
 				ERROR("interface %i: command "
 				      "list size (%i) is "
 				      "larger than the max "
-				      "(%i)\n",
+				      "(%li)\n",
 				      interface->num,
 				      interface->cmd_list_size,
-				      interface_max_command_list_size);
+				      (long)interface_max_command_list_size);
 				closeInterface(interface);
 				ret = COMMAND_RETURN_CLOSE;
 			} else

@@ -64,7 +64,7 @@ void initPlayerData(void)
 	buffered_chunks = bufferSize / CHUNK_SIZE;
 
 	if (buffered_chunks >= 1 << 15) {
-		ERROR("buffer size \"%i\" is too big\n", bufferSize);
+		ERROR("buffer size \"%li\" is too big\n", (long)bufferSize);
 		exit(EXIT_FAILURE);
 	}
 
