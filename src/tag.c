@@ -138,10 +138,10 @@ static MpdTag *getID3Info(struct id3_tag *tag, char *id, int type, MpdTag * mpdT
 	struct id3_frame const *frame;
 	id3_ucs4_t const *ucs4;
 	id3_utf8_t *utf8;
+	id3_latin1_t *isostr;
 	union id3_field const *field;
 	unsigned int nstrings;
 	int i;
-	char *isostr;
 	char *encoding;
 
 	frame = id3_tag_findframe(tag, id, 0);
