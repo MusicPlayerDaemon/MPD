@@ -165,7 +165,7 @@ static MpdTag *getID3Info(struct id3_tag *tag, char *id, int type, MpdTag * mpdT
 			if (mpd_unlikely(!isostr))
 				continue;
 			setCharSetConversion("UTF-8", encoding);
-			utf8 = (id3_utf8_t *)convStrDup(isostr);
+			utf8 = (id3_utf8_t *)convStrDup((char *)isostr);
 			if (!utf8) {
 				DEBUG("Unable to convert %s string to UTF-8: "
 				      "'%s'\n", encoding, isostr);
