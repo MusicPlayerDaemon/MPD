@@ -89,7 +89,7 @@ static void freeConfigParam(ConfigParam * param)
 	free(param);
 }
 
-ConfigEntry *newConfigEntry(int repeatable, int block)
+static ConfigEntry *newConfigEntry(int repeatable, int block)
 {
 	ConfigEntry *ret = malloc(sizeof(ConfigEntry));
 
@@ -105,7 +105,7 @@ ConfigEntry *newConfigEntry(int repeatable, int block)
 	return ret;
 }
 
-void freeConfigEntry(ConfigEntry * entry)
+static void freeConfigEntry(ConfigEntry * entry)
 {
 	freeList(entry->configParamList);
 	free(entry);

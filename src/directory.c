@@ -249,6 +249,11 @@ static void freeDirectoryStatFromDirectory(Directory * dir)
 	dir->stat = NULL;
 }
 
+static DirectoryList *newDirectoryList(void)
+{
+	return makeList((ListFreeDataFunc *) freeDirectory, 1);
+}
+
 static Directory *newDirectory(char *dirname, Directory * parent)
 {
 	Directory *directory;
@@ -277,11 +282,6 @@ static void freeDirectory(Directory * directory)
 	free(directory);
 	/* this resets last dir returned */
 	/*getDirectoryPath(NULL); */
-}
-
-static DirectoryList *newDirectoryList(void)
-{
-	return makeList((ListFreeDataFunc *) freeDirectory, 1);
 }
 
 static void freeDirectoryList(DirectoryList * directoryList)

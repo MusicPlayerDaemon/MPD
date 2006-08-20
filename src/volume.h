@@ -27,13 +27,13 @@
 #define VOLUME_MIXER_ALSA	"alsa"
 #define VOLUME_MIXER_SOFTWARE	"software"
 
-void initVolume();
+void initVolume(void);
 
-void openVolumeDevice();
+void openVolumeDevice(void);
 
-void finishVolume();
+void finishVolume(void);
 
-int getVolumeLevel();
+int getVolumeLevel(void);
 
 int changeVolumeLevel(int fd, int change, int rel);
 

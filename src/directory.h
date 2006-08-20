@@ -39,31 +39,31 @@ typedef struct _Directory {
 	DirectoryStat *stat;
 } Directory;
 
-void readDirectoryDBIfUpdateIsFinished();
+void readDirectoryDBIfUpdateIsFinished(void);
 
-int isUpdatingDB();
+int isUpdatingDB(void);
 
 void directory_sigChldHandler(int pid, int status);
 
 int updateInit(int fd, List * pathList);
 
-void initMp3Directory();
+void initMp3Directory(void);
 
-void closeMp3Directory();
+void closeMp3Directory(void);
 
 int printDirectoryInfo(int fd, char *dirname);
 
-int checkDirectoryDB();
+int checkDirectoryDB(void);
 
-int writeDirectoryDB();
+int writeDirectoryDB(void);
 
-int readDirectoryDB();
+int readDirectoryDB(void);
 
-void updateMp3Directory();
+void updateMp3Directory(void);
 
 Song *getSongFromDB(char *file);
 
-time_t getDbModTime();
+time_t getDbModTime(void);
 
 int traverseAllIn(int fd, char *name,
 		  int (*forEachSong) (int, Song *, void *),

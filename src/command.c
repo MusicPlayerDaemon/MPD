@@ -138,7 +138,7 @@ static CommandEntry *getCommandEntryFromString(char *string, int *permission);
 
 static List *commandList;
 
-CommandEntry *newCommandEntry(void)
+static CommandEntry *newCommandEntry(void)
 {
 	CommandEntry *cmd = malloc(sizeof(CommandEntry));
 	cmd->cmd = NULL;

@@ -73,8 +73,8 @@ typedef struct _ConfigParam {
 	int numberOfBlockParams;
 } ConfigParam;
 
-void initConf();
-void finishConf();
+void initConf(void);
+void finishConf(void);
 
 void readConf(char *file);
 

@@ -45,23 +45,23 @@ void getOutputAudioFormat(AudioFormat * inFormat, AudioFormat * outFormat);
 int parseAudioConfig(AudioFormat * audioFormat, char *conf);
 
 /* make sure initPlayerData is called before this function!! */
-void initAudioConfig();
+void initAudioConfig(void);
 
-void finishAudioConfig();
+void finishAudioConfig(void);
 
-void initAudioDriver();
+void initAudioDriver(void);
 
-void finishAudioDriver();
+void finishAudioDriver(void);
 
 int openAudioDevice(AudioFormat * audioFormat);
 
 int playAudio(char *playChunk, int size);
 
-void dropBufferedAudio();
+void dropBufferedAudio(void);
 
-void closeAudioDevice();
+void closeAudioDevice(void);
 
-int isAudioDeviceOpen();
+int isAudioDeviceOpen(void);
 
 int isCurrentAudioFormat(AudioFormat * audioFormat);
 
@@ -79,5 +79,5 @@ void readAudioDevicesState(FILE *fp);
 
 void saveAudioDevicesState(FILE *fp);
 
-void loadAudioDrivers();
+void loadAudioDrivers(void);
 #endif

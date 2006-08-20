@@ -23,9 +23,9 @@
 
 extern int normalizationEnabled;
 
-void initNormalization();
+void initNormalization(void);
 
-void finishNormalization();
+void finishNormalization(void);
 
 void normalizeData(char *buffer, int bufferSize, AudioFormat *format);
 

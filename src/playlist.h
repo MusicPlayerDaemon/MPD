@@ -30,9 +30,9 @@
 
 #define PLAYLIST_FILE_SUFFIX 	"m3u"
 
-void initPlaylist();
+void initPlaylist(void);
 
-void finishPlaylist();
+void finishPlaylist(void);
 
 void readPlaylistState(FILE *);
 
@@ -62,7 +62,7 @@ int playPlaylistById(int fd, int song, int stopOnError);
 
 int nextSongInPlaylist(int fd);
 
-void syncPlayerAndPlaylist();
+void syncPlayerAndPlaylist(void);
 
 int previousSongInPlaylist(int fd);
 
@@ -86,29 +86,29 @@ int swapSongsInPlaylistById(int fd, int id1, int id2);
 
 int loadPlaylist(int fd, char *utf8file);
 
-int getPlaylistRepeatStatus();
+int getPlaylistRepeatStatus(void);
 
 int setPlaylistRepeatStatus(int fd, int status);
 
-int getPlaylistRandomStatus();
+int getPlaylistRandomStatus(void);
 
 int setPlaylistRandomStatus(int fd, int status);
 
-int getPlaylistCurrentSong();
+int getPlaylistCurrentSong(void);
 
 int getPlaylistSongId(int song);
 
-int getPlaylistLength();
+int getPlaylistLength(void);
 
-unsigned long getPlaylistVersion();
+unsigned long getPlaylistVersion(void);
 
-void playPlaylistIfPlayerStopped();
+void playPlaylistIfPlayerStopped(void);
 
 int seekSongInPlaylist(int fd, int song, float time);
 
 int seekSongInPlaylistById(int fd, int id, float time);
 
-void playlistVersionChange();
+void playlistVersionChange(void);
 
 int playlistChanges(int fd, mpd_uint32 version);
 

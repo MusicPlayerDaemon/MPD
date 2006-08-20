@@ -58,7 +58,7 @@ int handlePendingSignals(void)
 	return 0;
 }
 
-void chldSigHandler(int signal)
+static void chldSigHandler(int signal)
 {
 	int status;
 	int pid;

@@ -21,7 +21,7 @@
 
 #include "inputStream.h"
 
-void inputStream_initHttp();
+void inputStream_initHttp(void);
 
 int inputStream_httpOpen(InputStream * inStream, char *filename);
 

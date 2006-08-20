@@ -41,7 +41,7 @@ mpd_sint8 char_conv_latin1ToUtf8 = 0;
 
 #define BUFFER_SIZE	1024
 
-static void closeCharSetConversion();
+static void closeCharSetConversion(void);
 
 int setCharSetConversion(char *to, char *from)
 {

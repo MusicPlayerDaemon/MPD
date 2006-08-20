@@ -95,8 +95,8 @@ typedef struct _AudioOutputPlugin {
 	AudioOutputSendMetadataFunc sendMetdataFunc;
 } AudioOutputPlugin;
 
-void initAudioOutputPlugins();
-void finishAudioOutputPlugins();
+void initAudioOutputPlugins(void);
+void finishAudioOutputPlugins(void);
 
 void loadAudioOutputPlugin(AudioOutputPlugin * audioOutputPlugin);
 void unloadAudioOutputPlugin(AudioOutputPlugin * audioOutputPlugin);

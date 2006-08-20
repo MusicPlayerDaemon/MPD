@@ -91,9 +91,9 @@ InputPlugin *getInputPluginFromName(char *name);
 void printAllInputPluginSuffixes(FILE * fp);
 
 /* this is where we "load" all the "plugins" ;-) */
-void initInputPlugins();
+void initInputPlugins(void);
 
 /* this is where we "unload" all the "plugins" */
-void finishInputPlugins();
+void finishInputPlugins(void);
 
 #endif

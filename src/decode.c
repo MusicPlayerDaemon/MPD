@@ -487,7 +487,7 @@ static void advanceOutputBufferTo(OutputBuffer * cb, PlayerControl * pc,
 	}
 }
 
-void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb)
+static void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb)
 {
 	int pause = 0;
 	int quit = 0;

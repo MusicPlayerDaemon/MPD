@@ -224,7 +224,7 @@ char *getSuffix(char *utf8file)
 	return ret;
 }
 
-int hasSuffix(char *utf8file, char *suffix)
+static int hasSuffix(char *utf8file, char *suffix)
 {
 	char *s = getSuffix(utf8file);
 	if (s && 0 == strcmp(s, suffix))

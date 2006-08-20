@@ -22,7 +22,7 @@ MPD_LIBS=""
 MPD_CFLAGS=""
 case "$CC" in
 *gcc*)
-	MPD_CFLAGS="-Wall"
+	MPD_CFLAGS="-Wall -Wmissing-prototypes"
 	;;
 esac
 

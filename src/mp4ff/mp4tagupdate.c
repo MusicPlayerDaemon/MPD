@@ -43,7 +43,7 @@ typedef struct
 	unsigned error;
 } membuffer;
 
-unsigned membuffer_write(membuffer * buf,const void * ptr,unsigned bytes)
+static unsigned membuffer_write(membuffer * buf,const void * ptr,unsigned bytes)
 {
 	unsigned dest_size = buf->written + bytes;
 
@@ -75,64 +75,64 @@ unsigned membuffer_write(membuffer * buf,const void * ptr,unsigned bytes)
 
 #define membuffer_write_data membuffer_write
 
-unsigned membuffer_write_int32(membuffer * buf,uint32_t data)
+static unsigned membuffer_write_int32(membuffer * buf,uint32_t data)
 {
 	uint8_t temp[4] = {(uint8_t)(data>>24),(uint8_t)(data>>16),(uint8_t)(data>>8),(uint8_t)data};	
 	return membuffer_write_data(buf,temp,4);
 }
 
-unsigned membuffer_write_int24(membuffer * buf,uint32_t data)
+static unsigned membuffer_write_int24(membuffer * buf,uint32_t data)
 {
 	uint8_t temp[3] = {(uint8_t)(data>>16),(uint8_t)(data>>8),(uint8_t)data};
 	return membuffer_write_data(buf,temp,3);
 }
 
-unsigned membuffer_write_int16(membuffer * buf,uint16_t data)
+static unsigned membuffer_write_int16(membuffer * buf,uint16_t data)
 {
 	uint8_t temp[2] = {(uint8_t)(data>>8),(uint8_t)data};
 	return membuffer_write_data(buf,temp,2);
 }
 
-unsigned membuffer_write_atom_name(membuffer * buf,const char * data)
+static unsigned membuffer_write_atom_name(membuffer * buf,const char * data)
 {
 	return membuffer_write_data(buf,data,4)==4 ? 1 : 0;
 }
 
-void membuffer_write_atom(membuffer * buf,const char * name,unsigned size,const void * data)
+static void membuffer_write_atom(membuffer * buf,const char * name,unsigned size,const void * data)
 {
 	membuffer_write_int32(buf,size + 8);
 	membuffer_write_atom_name(buf,name);
 	membuffer_write_data(buf,data,size);
 }
 
-unsigned membuffer_write_string(membuffer * buf,const char * data)
+static unsigned membuffer_write_string(membuffer * buf,const char * data)
 {
 	return membuffer_write_data(buf,data,strlen(data));
 }
 
-unsigned membuffer_write_int8(membuffer * buf,uint8_t data)
+static unsigned membuffer_write_int8(membuffer * buf,uint8_t data)
 {
 	return membuffer_write_data(buf,&data,1);
 }
 
-void * membuffer_get_ptr(const membuffer * buf)
+static void * membuffer_get_ptr(const membuffer * buf)
 {
 	return buf->data;
 }
 
-unsigned membuffer_get_size(const membuffer * buf)
+static unsigned membuffer_get_size(const membuffer * buf)
 {
 	return buf->written;
 }
 
-unsigned membuffer_error(const membuffer * buf)
+static unsigned membuffer_error(const membuffer * buf)
 {
 	return buf->error;
 }
 
-void membuffer_set_error(membuffer * buf) {buf->error = 1;}
+static void membuffer_set_error(membuffer * buf) {buf->error = 1;}
 
-unsigned membuffer_transfer_from_file(membuffer * buf,mp4ff_t * src,unsigned bytes)
+static unsigned membuffer_transfer_from_file(membuffer * buf,mp4ff_t * src,unsigned bytes)
 {
 	unsigned oldsize;
 	void * bufptr;
@@ -153,7 +153,7 @@ unsigned membuffer_transfer_from_file(membuffer * buf,mp4ff_t * src,unsigned byt
 }
 
 
-membuffer * membuffer_create()
+static membuffer * membuffer_create()
 {
 	const unsigned initial_size = 256;
 
@@ -166,13 +166,13 @@ membuffer * membuffer_create()
 	return buf;
 }
 
-void membuffer_free(membuffer * buf)
+static void membuffer_free(membuffer * buf)
 {
 	if (buf->data) free(buf->data);
 	free(buf);
 }
 
-void * membuffer_detach(membuffer * buf)
+static void * membuffer_detach(membuffer * buf)
 {
 	void * ret;
 
@@ -595,7 +595,7 @@ static uint32_t modify_moov(mp4ff_t * f,const mp4ff_metadata_t * data,void ** ou
 
 }
 
-int32_t mp4ff_meta_update(mp4ff_callback_t *f,const mp4ff_metadata_t * data)
+static int32_t mp4ff_meta_update(mp4ff_callback_t *f,const mp4ff_metadata_t * data)
 {
 	void * new_moov_data;
 	uint32_t new_moov_size;

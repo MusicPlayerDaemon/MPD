@@ -60,7 +60,7 @@ static void resetPlayerMetadata(void)
 	}
 }
 
-void resetPlayer(void)
+static void resetPlayer(void)
 {
 	int pid;
 

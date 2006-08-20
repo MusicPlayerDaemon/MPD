@@ -33,7 +33,7 @@ typedef struct _Stats {
 
 extern Stats stats;
 
-void initStats();
+void initStats(void);
 
 int printStats(int fd);
 

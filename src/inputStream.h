@@ -49,7 +49,7 @@ struct _InputStream {
 	char *metaTitle;
 };
 
-void initInputStream();
+void initInputStream(void);
 
 int isUrlSaneForInputStream(char *url);
 

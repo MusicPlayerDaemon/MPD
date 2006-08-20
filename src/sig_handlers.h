@@ -21,22 +21,22 @@
 
 #include "../config.h"
 
-int handlePendingSignals();
+int handlePendingSignals(void);
 
-void initSigHandlers();
+void initSigHandlers(void);
 
-void finishSigHandlers();
+void finishSigHandlers(void);
 
-void setSigHandlersForDecoder();
+void setSigHandlersForDecoder(void);
 
-void ignoreSignals();
+void ignoreSignals(void);
 
-void blockSignals();
+void blockSignals(void);
 
-void unblockSignals();
+void unblockSignals(void);
 
-void blockTermSignal();
+void blockTermSignal(void);
 
-void unblockTermSignal();
+void unblockTermSignal(void);
 
 #endif

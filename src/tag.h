@@ -65,9 +65,9 @@ MpdTag *apeDup(char *file);
 
 MpdTag *id3Dup(char *file);
 
-MpdTag *newMpdTag();
+MpdTag *newMpdTag(void);
 
-void initTagConfig();
+void initTagConfig(void);
 
 void clearItemsFromMpdTag(MpdTag * tag, int itemType);
 

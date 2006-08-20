@@ -64,6 +64,6 @@ typedef struct _DecoderControl {
 
 void decodeSigHandler(int sig, siginfo_t * siginfo, void *v);
 
-void decode();
+void decode(void);
 
 #endif

@@ -26,12 +26,12 @@
 #include <unistd.h>
 #include <sys/select.h>
 
-void listenOnPort();
+void listenOnPort(void);
 
 void getConnections(fd_set * fds);
 
-void closeAllListenSockets();
-void freeAllListenSockets();
+void closeAllListenSockets(void);
+void freeAllListenSockets(void);
 
 /* fdmax should be initialized to something */
 void addListenSocketsToFdSet(fd_set * fds, int *fdmax);

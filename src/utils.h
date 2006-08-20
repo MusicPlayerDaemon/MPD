@@ -39,7 +39,7 @@ void stripReturnChar(char *string);
 
 void my_usleep(long usec);
 
-int ipv6Supported();
+int ipv6Supported(void);
 
 char *appendToString(char *dest, const char *src);
 

@@ -350,8 +350,7 @@ _MergeNodes(TreeNode * lessNode, TreeNode * moreNode)
 	free(moreNode);
 }
 
-void
-_DeleteAt(TreeIterator * iter)
+static void _DeleteAt(TreeIterator * iter)
 {
 	TreeNode * node = iter->node;
 	int pos = iter->which - 1;

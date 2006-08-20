@@ -26,12 +26,12 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 
-void initInterfaces();
+void initInterfaces(void);
 void openAInterface(int fd, struct sockaddr *addr);
-void freeAllInterfaces();
-void closeOldInterfaces();
+void freeAllInterfaces(void);
+void closeOldInterfaces(void);
 int interfacePrintWithFD(int fd, char *buffer, int len);
 
-int doIOForInterfaces();
+int doIOForInterfaces(void);
 
 #endif

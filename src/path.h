@@ -25,9 +25,9 @@
 
 extern const char *musicDir;
 
-void initPaths();
+void initPaths(void);
 
-void finishPaths();
+void finishPaths(void);
 
 /* utf8ToFsCharset() and fsCharsetToUtf8()
  * Each returns a static pointer to a dynamically allocated buffer
@@ -44,7 +44,7 @@ char *fsCharsetToUtf8(char *str);
 
 void setFsCharset(char *charset);
 
-char *getFsCharset();
+char *getFsCharset(void);
 
 /* relative music path to absolute music path
  * char * passed is a static variable, so don't free it

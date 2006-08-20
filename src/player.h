@@ -89,7 +89,7 @@ typedef struct _PlayerControl {
 	MetadataChunk fileMetadataChunk;
 } PlayerControl;
 
-void clearPlayerPid();
+void clearPlayerPid(void);
 
 void player_sigChldHandler(int pid, int status);
 
@@ -101,54 +101,54 @@ int playerPause(int fd);
 
 int playerStop(int fd);
 
-void playerCloseAudio();
+void playerCloseAudio(void);
 
-void playerKill();
+void playerKill(void);
 
-int getPlayerTotalTime();
+int getPlayerTotalTime(void);
 
-int getPlayerElapsedTime();
+int getPlayerElapsedTime(void);
 
-unsigned long getPlayerBitRate();
+unsigned long getPlayerBitRate(void);
 
-int getPlayerState();
+int getPlayerState(void);
 
-void clearPlayerError();
+void clearPlayerError(void);
 
-char *getPlayerErrorStr();
+char *getPlayerErrorStr(void);
 
-int getPlayerError();
+int getPlayerError(void);
 
-int playerInit();
+int playerInit(void);
 
 int queueSong(Song * song);
 
-int getPlayerQueueState();
+int getPlayerQueueState(void);
 
 void setQueueState(int queueState);
 
-void playerQueueLock();
+void playerQueueLock(void);
 
-void playerQueueUnlock();
+void playerQueueUnlock(void);
 
 int playerSeek(int fd, Song * song, float time);
 
 void setPlayerCrossFade(float crossFadeInSeconds);
 
-float getPlayerCrossFade();
+float getPlayerCrossFade(void);
 
 void setPlayerSoftwareVolume(int volume);
 
-double getPlayerTotalPlayTime();
+double getPlayerTotalPlayTime(void);
 
-unsigned int getPlayerSampleRate();
+unsigned int getPlayerSampleRate(void);
 
-int getPlayerBits();
+int getPlayerBits(void);
 
-int getPlayerChannels();
+int getPlayerChannels(void);
 
-void playerCycleLogFiles();
+void playerCycleLogFiles(void);
 
-Song *playerCurrentDecodeSong();
+Song *playerCurrentDecodeSong(void);
 
 #endif

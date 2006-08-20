@@ -38,11 +38,11 @@ typedef struct _ReplayGainInfo {
 	float scale;
 } ReplayGainInfo;
 
-ReplayGainInfo *newReplayGainInfo();
+ReplayGainInfo *newReplayGainInfo(void);
 
 void freeReplayGainInfo(ReplayGainInfo * info);
 
-void initReplayGainState();
+void initReplayGainState(void);
 
 void doReplayGain(ReplayGainInfo * info, char *buffer, int bufferSize,
 		  AudioFormat * format);

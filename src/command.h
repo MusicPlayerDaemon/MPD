@@ -39,9 +39,9 @@ int processListOfCommands(int fd, int *permission, int *expired,
 
 int processCommand(int fd, int *permission, char *commandString);
 
-void initCommands();
+void initCommands(void);
 
-void finishCommands();
+void finishCommands(void);
 
 #define commandSuccess(fd)              fdprintf(fd, "OK\n")
 

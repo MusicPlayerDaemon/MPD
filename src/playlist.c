@@ -385,7 +385,7 @@ void readPlaylistState(FILE *fp)
 	}
 }
 
-void printPlaylistSongInfo(int fd, int song)
+static void printPlaylistSongInfo(int fd, int song)
 {
 	printSongInfo(fd, playlist.songs[song]);
 	fdprintf(fd, "Pos: %i\nId: %i\n", song, playlist.positionToId[song]);
@@ -472,7 +472,7 @@ int playlistId(int fd, int id)
 	return 0;
 }
 
-void swapSongs(int song1, int song2)
+static void swapSongs(int song1, int song2)
 {
 	Song *sTemp;
 	int iTemp;
@@ -492,7 +492,7 @@ void swapSongs(int song1, int song2)
 	playlist.positionToId[song2] = iTemp;
 }
 
-void queueNextSongInPlaylist(void)
+static void queueNextSongInPlaylist(void)
 {
 	if (playlist.current < playlist.length - 1) {
 		playlist.queued = playlist.current + 1;
@@ -522,7 +522,7 @@ void queueNextSongInPlaylist(void)
 	}
 }
 
-void syncPlaylistWithQueue(int queue)
+static void syncPlaylistWithQueue(int queue)
 {
 	if (queue && getPlayerQueueState() == PLAYER_QUEUE_BLANK) {
 		queueNextSongInPlaylist();
@@ -543,7 +543,7 @@ void syncPlaylistWithQueue(int queue)
 	}
 }
 
-void lockPlaylistInteraction(void)
+static void lockPlaylistInteraction(void)
 {
 	if (getPlayerQueueState() == PLAYER_QUEUE_PLAY ||
 	    getPlayerQueueState() == PLAYER_QUEUE_FULL) {
@@ -557,7 +557,7 @@ static void unlockPlaylistInteraction(void)
 	playerQueueUnlock();
 }
 
-void clearPlayerQueue(void)
+static void clearPlayerQueue(void)
 {
 	playlist.queued = -1;
 	switch (getPlayerQueueState()) {
@@ -901,7 +901,7 @@ int playPlaylistById(int fd, int id, int stopOnError)
 	return playPlaylist(fd, playlist.idToPosition[id], stopOnError);
 }
 
-void syncCurrentPlayerDecodeMetadata(void)
+static void syncCurrentPlayerDecodeMetadata(void)
 {
 	Song *songPlayer = playerCurrentDecodeSong();
 	Song *song;
@@ -940,7 +940,7 @@ void syncPlayerAndPlaylist(void)
 	syncCurrentPlayerDecodeMetadata();
 }
 
-int currentSongInPlaylist(int fd)
+static int currentSongInPlaylist(int fd)
 {
 	if (playlist_state != PLAYLIST_STATE_PLAY)
 		return 0;

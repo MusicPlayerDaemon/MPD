@@ -27,12 +27,13 @@
 #define PERMISSION_CONTROL 4
 #define PERMISSION_ADMIN   8
 
-void initPermissions();
 
 int getPermissionFromPassword(char *password, int *permission);
 
-void finishPermissions();
+void finishPermissions(void);
 
-int getDefaultPermissions();
+int getDefaultPermissions(void);
+
+void initPermissions(void);
 
 #endif

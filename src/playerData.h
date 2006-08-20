@@ -40,10 +40,10 @@ typedef struct _PlayerData {
 	mpd_uint8 *audioDeviceStates;
 } PlayerData;
 
-void initPlayerData();
+void initPlayerData(void);
 
-PlayerData *getPlayerData();
+PlayerData *getPlayerData(void);
 
-void freePlayerData();
+void freePlayerData(void);
 
 #endif
