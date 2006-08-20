@@ -40,7 +40,7 @@ ogg_stream_type ogg_stream_type_detect(InputStream * inStream)
 
 	while (to_read) {
 		r = readFromInputStream(inStream, buf, 1, to_read);
-		if (r < inStream->error)
+		if (inStream->error)
 			break;
 		to_read -= r;
 		if (!r && !inputStreamAtEOF(inStream))
