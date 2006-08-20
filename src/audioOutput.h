@@ -36,6 +36,7 @@
 		NULL, \
 		NULL, \
 		NULL, \
+		NULL \
 	};
 
 typedef struct _AudioOutput AudioOutput;
