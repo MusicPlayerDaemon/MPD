@@ -487,7 +487,7 @@ static int oss_open(AudioOutput * audioOutput)
 
 	return 0;
 
-      fail:
+fail:
 	oss_close(od);
 	audioOutput->open = 0;
 	return -1;

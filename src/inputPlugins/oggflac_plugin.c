@@ -306,7 +306,7 @@ static OggFLAC__SeekableStreamDecoder
 
 	return decoder;
 
-      fail:
+fail:
 	oggflacPrintErroredState(OggFLAC__seekable_stream_decoder_get_state
 				 (decoder));
 	OggFLAC__seekable_stream_decoder_delete(decoder);
@@ -394,7 +394,7 @@ static int oggflac_decode(OutputBuffer * cb, DecoderControl * dc,
 	dc->state = DECODE_STATE_STOP;
 	dc->stop = 0;
 
-      fail:
+fail:
 	oggflac_cleanup(inStream, &data, decoder);
 
 	return ret;

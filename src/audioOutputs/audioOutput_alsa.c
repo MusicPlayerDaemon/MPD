@@ -312,7 +312,7 @@ configure_hw:
 
 	return 0;
 
-      error:
+error:
 	if (cmd) {
 		ERROR("Error opening alsa device \"%s\" (%s): %s\n",
 		      ad->device, cmd, snd_strerror(-err));
@@ -320,7 +320,7 @@ configure_hw:
 		ERROR("Error opening alsa device \"%s\": %s\n", ad->device,
 		      snd_strerror(-err));
 	}
-      fail:
+fail:
 	if (ad->pcmHandle)
 		snd_pcm_close(ad->pcmHandle);
 	ad->pcmHandle = NULL;

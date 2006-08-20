@@ -175,7 +175,7 @@ static int flac_decode(OutputBuffer * cb, DecoderControl * dc,
 	dc->state = DECODE_STATE_STOP;
 	dc->stop = 0;
 
-      fail:
+fail:
 	if (data.replayGainInfo)
 		freeReplayGainInfo(data.replayGainInfo);
 

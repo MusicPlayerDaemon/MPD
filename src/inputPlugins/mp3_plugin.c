@@ -343,7 +343,7 @@ static void mp3_parseId3Tag(mp3DecodeData * data, signed long tagsize,
 	}
 
 	id3_tag_delete(id3Tag);
-      fail:
+fail:
 	if (allocated)
 		free(allocated);
 }
@@ -552,7 +552,7 @@ static int parse_xing(struct xing *xing, struct mad_bitptr *ptr, int *oldbitlen)
 	*oldbitlen = bitlen;
 
 	return 1;
-      fail:
+fail:
 	xing->flags = 0;
 	return 0;
 }
