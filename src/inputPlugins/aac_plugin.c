@@ -239,7 +239,7 @@ static float getAacFloatTotalTime(char *file)
 	unsigned int sampleRate;
 	unsigned char channels;
 	InputStream inStream;
-	size_t bread;
+	long bread;
 
 	if (openInputStream(&inStream, file) < 0)
 		return -1;
@@ -291,7 +291,7 @@ static int aac_decode(OutputBuffer * cb, DecoderControl * dc, char *path)
 	faacDecHandle decoder;
 	faacDecFrameInfo frameInfo;
 	faacDecConfigurationPtr config;
-	size_t bread;
+	long bread;
 	unsigned int sampleRate;
 	unsigned char channels;
 	int eof = 0;

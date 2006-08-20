@@ -122,7 +122,7 @@ char *convStrDup(char *string)
 			    iconv(char_conv_iconv, &string, &inleft, &bufferPtr,
 				  &outleft);
 			if (outleft == BUFFER_SIZE
-			    || (err < 0 && errno != E2BIG)) {
+			    || (err == -1L && errno != E2BIG)) {
 				free(ret);
 				return NULL;
 			}
