@@ -383,8 +383,8 @@ static MpdTag *oggvorbis_TagDup(char *file)
 
 	fp = fopen(file, "r");
 	if (!fp) {
-		DEBUG("oggTagDup: Failed to open file: '%s', %s\n", file,
-		      strerror(errno));
+		DEBUG("oggvorbis_TagDup: Failed to open file: '%s', %s\n",
+		      file, strerror(errno));
 		return NULL;
 	}
 	if (ov_open(fp, &vf, NULL, 0) < 0) {
