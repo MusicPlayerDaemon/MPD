@@ -53,7 +53,7 @@ void init_FlacData(FlacData * data, OutputBuffer * cb,
 }
 
 static int flacFindVorbisCommentFloat(const FLAC__StreamMetadata * block,
-				      char *cmnt, float *fl)
+				      const char *cmnt, float *fl)
 {
 	int offset =
 	    FLAC__metadata_object_vorbiscomment_find_entry_from(block, 0, cmnt);
@@ -82,20 +82,20 @@ static int flacFindVorbisCommentFloat(const FLAC__StreamMetadata * block,
 static void flacParseReplayGain(const FLAC__StreamMetadata * block,
 				FlacData * data)
 {
-	unsigned int found = 0;
+	int found = 0;
 
 	if (data->replayGainInfo)
 		freeReplayGainInfo(data->replayGainInfo);
 
 	data->replayGainInfo = newReplayGainInfo();
 
-	found &= flacFindVorbisCommentFloat(block, "replaygain_album_gain",
+	found |= flacFindVorbisCommentFloat(block, "replaygain_album_gain",
 					    &data->replayGainInfo->albumGain);
-	found &= flacFindVorbisCommentFloat(block, "replaygain_album_peak",
+	found |= flacFindVorbisCommentFloat(block, "replaygain_album_peak",
 					    &data->replayGainInfo->albumPeak);
-	found &= flacFindVorbisCommentFloat(block, "replaygain_track_gain",
+	found |= flacFindVorbisCommentFloat(block, "replaygain_track_gain",
 					    &data->replayGainInfo->trackGain);
-	found &= flacFindVorbisCommentFloat(block, "replaygain_track_peak",
+	found |= flacFindVorbisCommentFloat(block, "replaygain_track_peak",
 					    &data->replayGainInfo->trackPeak);
 
 	if (!found) {
