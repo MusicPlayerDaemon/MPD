@@ -46,13 +46,6 @@ char *appendToString(char *dest, const char *src);
 unsigned long readLEuint32(const unsigned char *p);
 
 /* trivial functions, keep them inlined */
-static inline int xopen(const char *path, int flags, mode_t mode)
-{
-	int fd;
-	while(0>(fd = open(path,flags,mode)) && errno == EINTR);
-	return fd;
-}
-
 static inline void xclose(int fd)
 {
 	while (close(fd) && errno == EINTR);

@@ -149,14 +149,14 @@ void open_log_files(const int use_stdout)
 	prev = umask(0066);
 	param = parseConfigFilePath(CONF_LOG_FILE, 1);
 	out_filename = param->value;
-	out_fd = xopen(out_filename, O_CREAT | O_WRONLY | O_APPEND, 0666);
+	out_fd = open(out_filename, O_CREAT | O_WRONLY | O_APPEND, 0666);
 	if (out_fd < 0)
 		FATAL("problem opening log file \"%s\" (config line %i) for "
 		      "writing\n", param->value, param->line);
 
 	param = parseConfigFilePath(CONF_ERROR_FILE, 1);
 	err_filename = param->value;
-	err_fd = xopen(err_filename, O_CREAT | O_WRONLY | O_APPEND, 0666);
+	err_fd = open(err_filename, O_CREAT | O_WRONLY | O_APPEND, 0666);
 	if (err_fd < 0)
 		FATAL("problem opening error file \"%s\" (config line %i) for "
 		      "writing\n", param->value, param->line);
@@ -226,13 +226,13 @@ int cycle_log_files(void)
 
 	prev = umask(0066);
 
-	out_fd = xopen(out_filename, O_CREAT | O_WRONLY | O_APPEND, 0666);
+	out_fd = open(out_filename, O_CREAT | O_WRONLY | O_APPEND, 0666);
 	if (out_fd < 0) {
 		ERROR("error re-opening log file: %s\n", out_filename);
 		return -1;
 	}
 
-	err_fd = xopen(err_filename, O_CREAT | O_WRONLY | O_APPEND, 0666);
+	err_fd = open(err_filename, O_CREAT | O_WRONLY | O_APPEND, 0666);
 	if (err_fd < 0) {
 		ERROR("error re-opening error file: %s\n", err_filename);
 		return -1;
