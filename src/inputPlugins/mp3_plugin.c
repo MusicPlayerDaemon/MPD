@@ -629,25 +629,21 @@ static int decodeFirstFrame(mp3DecodeData * data, DecoderControl * dc,
 	struct mad_bitptr ptr;
 	int bitlen;
 	int ret;
-	int skip;
 
 	/* stfu gcc */
 	memset(&xing, 0, sizeof(struct xing));
 	xing.flags = 0;
 
 	while (1) {
-		skip = 0;
 		while ((ret = decodeNextFrameHeader(data, tag, replayGainInfo)) == DECODE_CONT &&
 		       (!dc || !dc->stop));
-
-		if (ret == DECODE_SKIP) skip = 1;
-		else if (ret == DECODE_BREAK || (dc && dc->stop)) return -1;
+		if (ret == DECODE_BREAK || (dc && dc->stop)) return -1;
+		if (ret == DECODE_SKIP) continue;
 
 		while ((ret = decodeNextFrame(data)) == DECODE_CONT &&
 		       (!dc || !dc->stop));
-
 		if (ret == DECODE_BREAK || (dc && dc->stop)) return -1;
-		if (!skip && ret == DECODE_OK) break;
+		if (ret == DECODE_OK) break;
 	}
 
 	ptr = data->stream.anc_ptr;
