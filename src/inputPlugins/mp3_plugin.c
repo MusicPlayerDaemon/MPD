@@ -251,16 +251,16 @@ static ReplayGainInfo *parseId3ReplayGainInfo(struct id3_tag *tag)
 		    id3_ucs4_latin1duplicate(id3_field_getstring
 					     (&frame->fields[2]));
 
-		if (strcmp(key, "replaygain_track_gain") == 0) {
+		if (strcasecmp(key, "replaygain_track_gain") == 0) {
 			replayGainInfo->trackGain = atof(value);
 			found = 1;
-		} else if (strcmp(key, "replaygain_album_gain") == 0) {
+		} else if (strcasecmp(key, "replaygain_album_gain") == 0) {
 			replayGainInfo->albumGain = atof(value);
 			found = 1;
-		} else if (strcmp(key, "replaygain_track_peak") == 0) {
+		} else if (strcasecmp(key, "replaygain_track_peak") == 0) {
 			replayGainInfo->trackPeak = atof(value);
 			found = 1;
-		} else if (strcmp(key, "replaygain_album_peak") == 0) {
+		} else if (strcasecmp(key, "replaygain_album_peak") == 0) {
 			replayGainInfo->albumPeak = atof(value);
 			found = 1;
 		}
