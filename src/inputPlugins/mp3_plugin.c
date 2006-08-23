@@ -145,6 +145,7 @@ typedef struct _mp3DecodeData {
 	unsigned long bitRate;
 	InputStream *inStream;
 	struct audio_dither dither;
+	enum mad_layer layer;
 } mp3DecodeData;
 
 static void initMp3DecodeData(mp3DecodeData * data, InputStream * inStream)
@@ -167,6 +168,7 @@ static void initMp3DecodeData(mp3DecodeData * data, InputStream * inStream)
 	data->decodedFirstFrame = 0;
 	data->flush = 1;
 	data->inStream = inStream;
+	data->layer = 0;
 	memset(&(data->dither), 0, sizeof(struct audio_dither));
 
 	mad_stream_init(&data->stream);
@@ -352,6 +354,8 @@ fail:
 static int decodeNextFrameHeader(mp3DecodeData * data, MpdTag ** tag,
 				 ReplayGainInfo ** replayGainInfo)
 {
+	enum mad_layer layer;
+
 	if ((data->stream).buffer == NULL
 	    || (data->stream).error == MAD_ERROR_BUFLEN) {
 		if (fillMp3InputBuffer(data) < 0) {
@@ -395,9 +399,17 @@ static int decodeNextFrameHeader(mp3DecodeData * data, MpdTag ** tag,
 			}
 		}
 	}
-	if ((data->frame.header.layer != MAD_LAYER_III) &&
-	    (data->frame.header.layer != MAD_LAYER_II) &&
-	    (data->frame.header.layer != MAD_LAYER_I)) {
+
+	layer = data->frame.header.layer;
+	if (!data->layer) {
+		if (layer != MAD_LAYER_II && layer != MAD_LAYER_III) {
+			/* Only layer 2 and 3 have been tested to work */
+			DEBUG("MPEG audio file is not layer 2 or 3\n");
+			return DECODE_BREAK;
+		}
+		data->layer = layer;
+	} else if (layer != data->layer) {
+		/* Don't decode frames with a different layer than the first */
 		return DECODE_SKIP;
 	}
 
