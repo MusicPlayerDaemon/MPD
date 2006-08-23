@@ -404,8 +404,7 @@ static int decodeNextFrameHeader(mp3DecodeData * data, MpdTag ** tag,
 	if (!data->layer) {
 		if (layer != MAD_LAYER_II && layer != MAD_LAYER_III) {
 			/* Only layer 2 and 3 have been tested to work */
-			DEBUG("MPEG audio file is not layer 2 or 3\n");
-			return DECODE_BREAK;
+			return DECODE_SKIP;
 		}
 		data->layer = layer;
 	} else if (layer != data->layer) {
