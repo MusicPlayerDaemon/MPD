@@ -70,10 +70,10 @@ static int audiofile_decode(OutputBuffer * cb, DecoderControl * dc, char *path)
 		return -1;
 	}
 
-	afGetSampleFormat(af_fp, AF_DEFAULT_TRACK, &fs, &bits);
+	afGetVirtualSampleFormat(af_fp, AF_DEFAULT_TRACK, &fs, &bits);
 	dc->audioFormat.bits = bits;
 	dc->audioFormat.sampleRate = afGetRate(af_fp, AF_DEFAULT_TRACK);
-	dc->audioFormat.channels = afGetChannels(af_fp, AF_DEFAULT_TRACK);
+	dc->audioFormat.channels = afGetVirtualChannels(af_fp, AF_DEFAULT_TRACK);
 	getOutputAudioFormat(&(dc->audioFormat), &(cb->audioFormat));
 
 	frame_count = afGetFrameCount(af_fp, AF_DEFAULT_TRACK);
@@ -90,7 +90,7 @@ static int audiofile_decode(OutputBuffer * cb, DecoderControl * dc, char *path)
 		return -1;
 	}
 
-	fs = (int)afGetFrameSize(af_fp, AF_DEFAULT_TRACK, 1);
+	fs = (int)afGetVirtualFrameSize(af_fp, AF_DEFAULT_TRACK, 1);
 
 	dc->state = DECODE_STATE_DECODE;
 	{
