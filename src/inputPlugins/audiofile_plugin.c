@@ -70,6 +70,8 @@ static int audiofile_decode(OutputBuffer * cb, DecoderControl * dc, char *path)
 		return -1;
 	}
 
+	afSetVirtualSampleFormat(af_fp, AF_DEFAULT_TRACK,
+	                         AF_SAMPFMT_TWOSCOMP, 16);
 	afGetVirtualSampleFormat(af_fp, AF_DEFAULT_TRACK, &fs, &bits);
 	dc->audioFormat.bits = bits;
 	dc->audioFormat.sampleRate = afGetRate(af_fp, AF_DEFAULT_TRACK);
