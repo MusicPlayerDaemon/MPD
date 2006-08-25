@@ -223,9 +223,10 @@ static void initAacBuffer(InputStream * inStream, AacBuffer * b, float *length,
 									   skipSize]
 						   & 0xE0);
 
-		*length = fileread;
-		if (*length != 0 && bitRate != 0)
-			*length = *length * 8.0 / bitRate;
+		if (fileread != 0 && bitRate != 0)
+			*length = fileread * 8.0 / bitRate;
+		else
+			*length = fileread;
 	}
 }
 
