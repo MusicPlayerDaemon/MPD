@@ -293,7 +293,7 @@ static void mp3_parseId3Tag(mp3DecodeData * data, signed long tagsize,
 		id3_data = data->stream.this_frame;
 		mad_stream_skip(&(data->stream), tagsize);
 	} else {
-		allocated = malloc(tagsize);
+		allocated = xmalloc(tagsize);
 		if (!allocated)
 			goto fail;
 
@@ -682,8 +682,8 @@ static int decodeFirstFrame(mp3DecodeData * data, DecoderControl * dc,
 		}
 	} 
 
-	data->frameOffset = malloc(sizeof(long) * data->maxFrames);
-	data->times = malloc(sizeof(mad_timer_t) * data->maxFrames);
+	data->frameOffset = xmalloc(sizeof(long) * data->maxFrames);
+	data->times = xmalloc(sizeof(mad_timer_t) * data->maxFrames);
 
 	return 0;
 }

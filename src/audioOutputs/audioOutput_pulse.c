@@ -46,7 +46,7 @@ static PulseData *newPulseData(void)
 {
 	PulseData *ret;
 
-	ret = malloc(sizeof(PulseData));
+	ret = xmalloc(sizeof(PulseData));
 
 	ret->s = NULL;
 	ret->server = NULL;
@@ -78,8 +78,8 @@ static int pulse_initDriver(AudioOutput * audioOutput, ConfigParam * param)
 	}
 
 	pd = newPulseData();
-	pd->server = server ? strdup(server->value) : NULL;
-	pd->sink = sink ? strdup(sink->value) : NULL;
+	pd->server = server ? xstrdup(server->value) : NULL;
+	pd->sink = sink ? xstrdup(sink->value) : NULL;
 	audioOutput->data = pd;
 
 	return 0;

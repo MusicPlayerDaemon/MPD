@@ -20,6 +20,7 @@
 #define UTILS_H
 
 #include "../config.h"
+#include "gcc.h"
 
 #include <unistd.h>
 #include <stdlib.h>
@@ -72,5 +73,13 @@ static inline ssize_t xwrite(int fd, const void *buf, size_t len)
 		return nr;
 	}
 }
+
+mpd_malloc char *xstrdup(const char *s);
+
+mpd_malloc void *xmalloc(size_t size);
+
+mpd_malloc void *xrealloc(void *ptr, size_t size);
+
+mpd_malloc void *xcalloc(size_t nmemb, size_t size);
 
 #endif

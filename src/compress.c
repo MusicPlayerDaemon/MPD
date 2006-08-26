@@ -26,6 +26,7 @@
 #include <sys/types.h>
 
 #include "compress.h"
+#include "utils.h"
 
 #ifdef USE_X
 #include <X11/Xlib.h>
@@ -67,7 +68,7 @@ void CompressCfg(int show_mon, int anticlip, int target, int gainmax,
 	prefs.buckets = buckets;
 
 	/* Allocate the peak structure */
-	peaks = realloc(peaks, sizeof(int)*prefs.buckets);
+	peaks = xrealloc(peaks, sizeof(int)*prefs.buckets);
 
 	if (prefs.buckets > lastsize)
 		memset(peaks + lastsize, 0, sizeof(int)*(prefs.buckets

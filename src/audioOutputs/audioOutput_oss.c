@@ -164,7 +164,7 @@ static void addSupportedParam(OssData * od, int param, int val)
 	int index = getIndexForParam(param);
 
 	od->numSupported[index]++;
-	od->supported[index] = realloc(od->supported[index],
+	od->supported[index] = xrealloc(od->supported[index],
 				       od->numSupported[index] * sizeof(int));
 	od->supported[index][od->numSupported[index] - 1] = val;
 }
@@ -174,7 +174,7 @@ static void addUnsupportedParam(OssData * od, int param, int val)
 	int index = getIndexForParam(param);
 
 	od->numUnsupported[index]++;
-	od->unsupported[index] = realloc(od->unsupported[index],
+	od->unsupported[index] = xrealloc(od->unsupported[index],
 					 od->numUnsupported[index] *
 					 sizeof(int));
 	od->unsupported[index][od->numUnsupported[index] - 1] = val;
@@ -193,7 +193,7 @@ static void removeSupportedParam(OssData * od, int param, int val)
 	}
 
 	od->numSupported[index]--;
-	od->supported[index] = realloc(od->supported[index],
+	od->supported[index] = xrealloc(od->supported[index],
 				       od->numSupported[index] * sizeof(int));
 }
 
@@ -210,7 +210,7 @@ static void removeUnsupportedParam(OssData * od, int param, int val)
 	}
 
 	od->numUnsupported[index]--;
-	od->unsupported[index] = realloc(od->unsupported[index],
+	od->unsupported[index] = xrealloc(od->unsupported[index],
 					 od->numUnsupported[index] *
 					 sizeof(int));
 }
@@ -254,7 +254,7 @@ static void unsupportParam(OssData * od, int param, int val)
 
 static OssData *newOssData(void)
 {
-	OssData *ret = malloc(sizeof(OssData));
+	OssData *ret = xmalloc(sizeof(OssData));
 
 	ret->device = NULL;
 	ret->fd = -1;

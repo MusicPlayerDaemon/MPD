@@ -27,7 +27,7 @@
  * should _NEVER_ be explicitly freed
  *
  * there's no free command, iterate through them yourself and just
- * call free() on it iff you malloc'd them */
+ * call free() on it iff you xmalloc'd them */
 
 struct strnode {
 	struct strnode *next;

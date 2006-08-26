@@ -17,6 +17,7 @@
  */
 
 #include "list.h"
+#include "utils.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -32,7 +33,7 @@ static void makeListNodesArray(List * list)
 	if (!list->numberOfNodes)
 		return;
 
-	list->nodesArray = realloc(list->nodesArray,
+	list->nodesArray = xrealloc(list->nodesArray,
 				   sizeof(ListNode *) * list->numberOfNodes);
 
 	for (i = 0; i < list->numberOfNodes; i++) {
@@ -51,7 +52,7 @@ static void freeListNodesArray(List * list)
 
 List *makeList(ListFreeDataFunc * freeDataFunc, int strdupKeys)
 {
-	List *list = malloc(sizeof(List));
+	List *list = xmalloc(sizeof(List));
 
 	assert(list != NULL);
 
@@ -75,7 +76,7 @@ ListNode *insertInListBeforeNode(List * list, ListNode * beforeNode, int pos,
 	assert(key != NULL);
 	/*assert(data!=NULL); */
 
-	node = malloc(sizeof(ListNode));
+	node = xmalloc(sizeof(ListNode));
 	assert(node != NULL);
 
 	node->nextNode = beforeNode;
@@ -102,7 +103,7 @@ ListNode *insertInListBeforeNode(List * list, ListNode * beforeNode, int pos,
 	}
 
 	if (list->strdupKeys)
-		node->key = strdup(key);
+		node->key = xstrdup(key);
 	else
 		node->key = key;
 
@@ -111,7 +112,7 @@ ListNode *insertInListBeforeNode(List * list, ListNode * beforeNode, int pos,
 	list->numberOfNodes++;
 
 	if (list->sorted) {
-		list->nodesArray = realloc(list->nodesArray,
+		list->nodesArray = xrealloc(list->nodesArray,
 					   list->numberOfNodes *
 					   sizeof(ListNode *));
 		if (node == list->lastNode) {
@@ -138,7 +139,7 @@ ListNode *insertInList(List * list, char *key, void *data)
 	assert(key != NULL);
 	/*assert(data!=NULL); */
 
-	node = malloc(sizeof(ListNode));
+	node = xmalloc(sizeof(ListNode));
 	assert(node != NULL);
 
 	if (list->nodesArray)
@@ -154,7 +155,7 @@ ListNode *insertInList(List * list, char *key, void *data)
 	}
 
 	if (list->strdupKeys)
-		node->key = strdup(key);
+		node->key = xstrdup(key);
 	else
 		node->key = key;
 
@@ -176,7 +177,7 @@ int insertInListWithoutKey(List * list, void *data)
 	assert(list != NULL);
 	assert(data != NULL);
 
-	node = malloc(sizeof(ListNode));
+	node = xmalloc(sizeof(ListNode));
 	assert(node != NULL);
 
 	if (list->nodesArray)
@@ -416,8 +417,8 @@ static void quickSort(ListNode ** nodesArray, long start, long end)
 
 		List *startList = makeList(free, 0);
 		List *endList = makeList(free, 0);
-		long *startPtr = malloc(sizeof(long));
-		long *endPtr = malloc(sizeof(long));
+		long *startPtr = xmalloc(sizeof(long));
+		long *endPtr = xmalloc(sizeof(long));
 		*startPtr = start;
 		*endPtr = end;
 		insertInListWithoutKey(startList, (void *)startPtr);
@@ -471,8 +472,8 @@ static void quickSort(ListNode ** nodesArray, long start, long end)
 				deleteNodeFromList(endList, endList->lastNode);
 
 				if (pivot - 1 - start > 0) {
-					startPtr = malloc(sizeof(long));
-					endPtr = malloc(sizeof(long));
+					startPtr = xmalloc(sizeof(long));
+					endPtr = xmalloc(sizeof(long));
 					*startPtr = start;
 					*endPtr = pivot - 1;
 					insertInListWithoutKey(startList,
@@ -483,8 +484,8 @@ static void quickSort(ListNode ** nodesArray, long start, long end)
 				}
 
 				if (end - pivot - 1 > 0) {
-					startPtr = malloc(sizeof(long));
-					endPtr = malloc(sizeof(long));
+					startPtr = xmalloc(sizeof(long));
+					endPtr = xmalloc(sizeof(long));
 					*startPtr = pivot + 1;
 					*endPtr = end;
 					insertInListWithoutKey(startList,

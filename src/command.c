@@ -30,6 +30,7 @@
 #include "log.h"
 #include "dbUtils.h"
 #include "tag.h"
+#include "utils.h"
 
 #include <assert.h>
 #include <stdarg.h>
@@ -140,7 +141,7 @@ static List *commandList;
 
 static CommandEntry *newCommandEntry(void)
 {
-	CommandEntry *cmd = malloc(sizeof(CommandEntry));
+	CommandEntry *cmd = xmalloc(sizeof(CommandEntry));
 	cmd->cmd = NULL;
 	cmd->min = 0;
 	cmd->max = 0;

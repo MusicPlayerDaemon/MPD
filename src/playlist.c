@@ -161,12 +161,12 @@ void initPlaylist(void)
 	if (playlist_saveAbsolutePaths == -1) playlist_saveAbsolutePaths = 0;
 	else if (playlist_saveAbsolutePaths < 0) exit(EXIT_FAILURE);
 
-	playlist.songs = malloc(sizeof(Song *) * playlist_max_length);
-	playlist.songMod = malloc(sizeof(mpd_uint32) * playlist_max_length);
-	playlist.order = malloc(sizeof(int) * playlist_max_length);
-	playlist.idToPosition = malloc(sizeof(int) * playlist_max_length *
+	playlist.songs = xmalloc(sizeof(Song *) * playlist_max_length);
+	playlist.songMod = xmalloc(sizeof(mpd_uint32) * playlist_max_length);
+	playlist.order = xmalloc(sizeof(int) * playlist_max_length);
+	playlist.idToPosition = xmalloc(sizeof(int) * playlist_max_length *
 				       PLAYLIST_HASH_MULT);
-	playlist.positionToId = malloc(sizeof(int) * playlist_max_length);
+	playlist.positionToId = xmalloc(sizeof(int) * playlist_max_length);
 
 	memset(playlist.songs, 0, sizeof(char *) * playlist_max_length);
 
@@ -1264,7 +1264,7 @@ int shufflePlaylist(int fd)
 int deletePlaylist(int fd, char *utf8file)
 {
 	char *file = utf8ToFsCharset(utf8file);
-	char *rfile = malloc(strlen(file) + strlen(".") +
+	char *rfile = xmalloc(strlen(file) + strlen(".") +
 			     strlen(PLAYLIST_FILE_SUFFIX) + 1);
 	char *actualFile;
 
@@ -1308,7 +1308,7 @@ int savePlaylist(int fd, char *utf8file)
 
 	file = utf8ToFsCharset(utf8file);
 
-	rfile = malloc(strlen(file) + strlen(".") +
+	rfile = xmalloc(strlen(file) + strlen(".") +
 		       strlen(PLAYLIST_FILE_SUFFIX) + 1);
 
 	strcpy(rfile, file);
@@ -1421,7 +1421,7 @@ static int PlaylistIterFunc(int fd, char *utf8file,
 	char s[MAXPATHLEN + 1];
 	int slength = 0;
 	char *temp = utf8ToFsCharset(utf8file);
-	char *rfile = malloc(strlen(temp) + strlen(".") +
+	char *rfile = xmalloc(strlen(temp) + strlen(".") +
 			     strlen(PLAYLIST_FILE_SUFFIX) + 1);
 	char *actualFile;
 	char *parent = parentPath(temp);
@@ -1461,7 +1461,7 @@ static int PlaylistIterFunc(int fd, char *utf8file,
 			if (strncmp(s, musicDir, strlen(musicDir)) == 0) {
 				strcpy(s, &(s[strlen(musicDir)]));
 			} else if (parentlen) {
-				temp = strdup(s);
+				temp = xstrdup(s);
 				memset(s, 0, MAXPATHLEN + 1);
 				strcpy(s, parent);
 				strncat(s, "/", MAXPATHLEN - parentlen);
@@ -1536,7 +1536,7 @@ static void PlaylistLoadIterFunc(int fd, char *temp, char **erroredFile)
 
 	} else if ((addToPlaylist(STDERR_FILENO, temp, 0)) < 0) {
 		/* for windows compatibilit, convert slashes */
-		char *temp2 = strdup(temp);
+		char *temp2 = xstrdup(temp);
 		char *p = temp2;
 		while (*p) {
 			if (*p == '\\')
@@ -1545,7 +1545,7 @@ static void PlaylistLoadIterFunc(int fd, char *temp, char **erroredFile)
 		}
 		if ((addToPlaylist(STDERR_FILENO, temp2, 0)) < 0) {
 			if (!*erroredFile) {
-				*erroredFile = strdup(temp);
+				*erroredFile = xstrdup(temp);
 			}
 		}
 		free(temp2);

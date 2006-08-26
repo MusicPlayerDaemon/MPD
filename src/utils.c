@@ -17,6 +17,7 @@
  */
 
 #include "utils.h"
+#include "log.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -26,6 +27,7 @@
 #include <sys/select.h>
 #include <sys/time.h>
 #include <unistd.h>
+#include <assert.h>
 
 char *myFgets(char *buffer, int bufferSize, FILE * fp)
 {
@@ -41,7 +43,7 @@ char *myFgets(char *buffer, int bufferSize, FILE * fp)
 
 char *strDupToUpper(char *str)
 {
-	char *ret = strdup(str);
+	char *ret = xstrdup(str);
 	int i;
 
 	for (i = 0; i < strlen(str); i++)
@@ -86,12 +88,12 @@ char *appendToString(char *dest, const char *src)
 	int srclen = strlen(src);
 
 	if (dest == NULL) {
-		dest = malloc(srclen + 1);
+		dest = xmalloc(srclen + 1);
 		memset(dest, 0, srclen + 1);
 		destlen = 0;
 	} else {
 		destlen = strlen(dest);
-		dest = realloc(dest, destlen + srclen + 1);
+		dest = xrealloc(dest, destlen + srclen + 1);
 	}
 
 	memcpy(dest + destlen, src, srclen);
@@ -106,3 +108,53 @@ unsigned long readLEuint32(const unsigned char *p)
 	    ((unsigned long)p[1] << 8) |
 	    ((unsigned long)p[2] << 16) | ((unsigned long)p[3] << 24);
 }
+
+mpd_malloc char *xstrdup(const char *s)
+{
+	char *ret = strdup(s);
+	if (mpd_unlikely(!ret))
+		FATAL("OOM: strdup\n");
+	return ret;
+}
+
+/* borrowed from git :) */
+
+mpd_malloc void *xmalloc(size_t size)
+{
+	void *ret;
+
+	assert(mpd_likely(size));
+
+	ret = malloc(size);
+	if (mpd_unlikely(!ret))
+		FATAL("OOM: malloc\n");
+	return ret;
+}
+
+mpd_malloc void *xrealloc(void *ptr, size_t size)
+{
+	void *ret;
+
+	/* hmm... realloc to 0 isn't uncommon..., is it? this check
+	 * may be too extreme... (eric) */
+	assert((mpd_likely(size)));
+
+	ret = realloc(ptr, size);
+	if (mpd_unlikely(!ret))
+		FATAL("OOM: realloc\n");
+	return ret;
+}
+
+mpd_malloc void *xcalloc(size_t nmemb, size_t size)
+{
+	void *ret;
+
+	assert(mpd_likely(nmemb && size));
+
+	ret = calloc(nmemb, size);
+	if (mpd_unlikely(!ret))
+		FATAL("OOM: calloc\n");
+	return ret;
+}
+
+

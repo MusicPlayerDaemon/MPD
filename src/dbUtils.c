@@ -69,14 +69,14 @@ static int initLocateTagItem(LocateTagItem * item, char *typeStr, char *needle)
 	if (item->tagType < 0)
 		return -1;
 
-	item->needle = strdup(needle);
+	item->needle = xstrdup(needle);
 
 	return 0;
 }
 
 LocateTagItem *newLocateTagItem(char *typeStr, char *needle)
 {
-	LocateTagItem *ret = malloc(sizeof(LocateTagItem));
+	LocateTagItem *ret = xmalloc(sizeof(LocateTagItem));
 
 	if (initLocateTagItem(ret, typeStr, needle) < 0) {
 		free(ret);
@@ -108,7 +108,7 @@ int newLocateTagItemArrayFromArgArray(char *argArray[],
 	if (numArgs % 2 != 0)
 		return -1;
 
-	*arrayRet = malloc(sizeof(LocateTagItem) * numArgs / 2);
+	*arrayRet = xmalloc(sizeof(LocateTagItem) * numArgs / 2);
 
 	for (i = 0, item = *arrayRet; i < numArgs / 2; i++, item++) {
 		if (initLocateTagItem
@@ -214,7 +214,7 @@ int searchForSongsIn(int fd, char *name, int numItems, LocateTagItem * items)
 	int ret = -1;
 	int i;
 
-	char **originalNeedles = malloc(numItems * sizeof(char *));
+	char **originalNeedles = xmalloc(numItems * sizeof(char *));
 	LocateTagItemArray array;
 
 	for (i = 0; i < numItems; i++) {
@@ -347,7 +347,7 @@ unsigned long sumSongTimesIn(int fd, char *name)
 static ListCommandItem *newListCommandItem(int tagType, int numConditionals,
 					   LocateTagItem * conditionals)
 {
-	ListCommandItem *item = malloc(sizeof(ListCommandItem));
+	ListCommandItem *item = xmalloc(sizeof(ListCommandItem));
 
 	item->tagType = tagType;
 	item->numConditionals = numConditionals;

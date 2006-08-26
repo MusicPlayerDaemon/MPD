@@ -101,7 +101,7 @@ static int establishListen(unsigned int port,
 
 	numberOfListenSockets++;
 	listenSockets =
-	    realloc(listenSockets, sizeof(int) * numberOfListenSockets);
+	    xrealloc(listenSockets, sizeof(int) * numberOfListenSockets);
 
 	listenSockets[numberOfListenSockets - 1] = sock;
 

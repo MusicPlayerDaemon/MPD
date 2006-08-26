@@ -25,7 +25,6 @@
  * example taken from: http://rlove.org/log/2005102601
  */
 
-/* disabled (0) until I fix all the warnings :) */
 #if __GNUC__ >= 3
 #  define mpd_const		__attribute__ ((const))
 #  define mpd_deprecated	__attribute__ ((deprecated))

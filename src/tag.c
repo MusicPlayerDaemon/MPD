@@ -93,7 +93,7 @@ void initTagConfig(void)
 	if (0 == strcasecmp(param->value, "none"))
 		return;
 
-	temp = c = s = strdup(param->value);
+	temp = c = s = xstrdup(param->value);
 	while (!quit) {
 		if (*s == ',' || *s == '\0') {
 			if (*s == '\0')
@@ -250,7 +250,7 @@ static struct id3_tag *getId3Tag(FILE * stream, long offset, int whence)
 	if (tagSize <= 0) return NULL;
 
 	/* Found a tag.  Allocate a buffer and read it in. */
-	tagBuf = malloc(tagSize);
+	tagBuf = xmalloc(tagSize);
 	if (!tagBuf) return NULL;
 
 	tagBufSize = fillBuffer(tagBuf, tagSize, stream, offset, whence);
@@ -428,7 +428,7 @@ MpdTag *apeDup(char *file)
 
 	/* read tag into buffer */
 	tagLen -= sizeof(footer);
-	buffer = malloc(tagLen);
+	buffer = xmalloc(tagLen);
 	if (fread(buffer, 1, tagLen, fp) != tagLen)
 		goto fail;
 
@@ -481,7 +481,7 @@ fail:
 
 MpdTag *newMpdTag(void)
 {
-	MpdTag *ret = malloc(sizeof(MpdTag));
+	MpdTag *ret = xmalloc(sizeof(MpdTag));
 	ret->items = NULL;
 	ret->time = -1;
 	ret->numOfItems = 0;
@@ -503,7 +503,7 @@ static void deleteItem(MpdTag * tag, int index)
 	}
 
 	if (tag->numOfItems > 0) {
-		tag->items = realloc(tag->items,
+		tag->items = xrealloc(tag->items,
 				     tag->numOfItems * sizeof(MpdTagItem));
 	} else {
 		free(tag->items);
@@ -605,7 +605,7 @@ int mpdTagsAreEqual(MpdTag * tag1, MpdTag * tag2)
 static void appendToTagItems(MpdTag * tag, int type, char *value, int len)
 {
 	int i = tag->numOfItems;
-	char *dup = malloc(len + 1);
+	char *dup = xmalloc(len + 1);
 
 	memcpy(dup, value, len);
 	dup[len] = '\0';
@@ -614,7 +614,7 @@ static void appendToTagItems(MpdTag * tag, int type, char *value, int len)
 	stripReturnChar(dup);
 
 	tag->numOfItems++;
-	tag->items = realloc(tag->items, tag->numOfItems * sizeof(MpdTagItem));
+	tag->items = xrealloc(tag->items, tag->numOfItems * sizeof(MpdTagItem));
 
 	tag->items[i].type = type;
 	tag->items[i].value = getTagItemString(type, dup);

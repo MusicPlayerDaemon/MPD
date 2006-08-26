@@ -20,6 +20,7 @@
 
 #include "mpd_types.h"
 #include "log.h"
+#include "utils.h"
 
 #include <string.h>
 #include <math.h>
@@ -153,7 +154,7 @@ void pcm_convertAudioFormat(AudioFormat * inFormat, char *inBuffer, size_t
 	case 8:
 		dataBitLen = inSize << 1;
 		if (dataBitLen > bitConvBufferLength) {
-			bitConvBuffer = realloc(bitConvBuffer, dataBitLen);
+			bitConvBuffer = xrealloc(bitConvBuffer, dataBitLen);
 			bitConvBufferLength = dataBitLen;
 		}
 		dataBitConv = bitConvBuffer;
@@ -187,7 +188,7 @@ void pcm_convertAudioFormat(AudioFormat * inFormat, char *inBuffer, size_t
 		case 1:
 			dataChannelLen = (dataBitLen >> 1) << 2;
 			if (dataChannelLen > channelConvBufferLength) {
-				channelConvBuffer = realloc(channelConvBuffer,
+				channelConvBuffer = xrealloc(channelConvBuffer,
 							    dataChannelLen);
 				channelConvBufferLength = dataChannelLen;
 			}
@@ -207,7 +208,7 @@ void pcm_convertAudioFormat(AudioFormat * inFormat, char *inBuffer, size_t
 		case 2:
 			dataChannelLen = dataBitLen >> 1;
 			if (dataChannelLen > channelConvBufferLength) {
-				channelConvBuffer = realloc(channelConvBuffer,
+				channelConvBuffer = xrealloc(channelConvBuffer,
 							    dataChannelLen);
 				channelConvBufferLength = dataChannelLen;
 			}

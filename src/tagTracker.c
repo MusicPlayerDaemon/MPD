@@ -20,6 +20,8 @@
 
 #include "tree.h"
 #include "log.h"
+#include "utils.h"
+#include "myfprintf.h"
 
 #include <assert.h>
 #include <stdlib.h>
@@ -57,8 +59,8 @@ char *getTagItemString(int type, char *string)
 	} 
 	else 
 	{
-		TagTrackerItem *item = malloc(sizeof(TagTrackerItem));
-		char *key = strdup(string);
+		TagTrackerItem *item = xmalloc(sizeof(TagTrackerItem));
+		char *key = xstrdup(string);
 		item->count = 1;
 		item->visited = 0;
 		InsertInTree(tagTrees[type], key, item);

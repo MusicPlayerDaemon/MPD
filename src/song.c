@@ -25,6 +25,7 @@
 #include "path.h"
 #include "playlist.h"
 #include "inputPlugin.h"
+#include "myfprintf.h"
 
 #define SONG_KEY	"key: "
 #define SONG_FILE	"file: "
@@ -37,7 +38,7 @@
 
 Song *newNullSong(void)
 {
-	Song *song = malloc(sizeof(Song));
+	Song *song = xmalloc(sizeof(Song));
 
 	song->tag = NULL;
 	song->url = NULL;
@@ -58,7 +59,7 @@ Song *newSong(char *url, int type, Directory * parentDir)
 
 	song = newNullSong();
 
-	song->url = strdup(url);
+	song->url = xstrdup(url);
 	song->type = type;
 	song->parentDir = parentDir;
 
@@ -248,7 +249,7 @@ void readSongInfoIntoList(FILE * fp, SongList * list, Directory * parentDir)
 			}
 
 			song = newNullSong();
-			song->url = strdup(buffer + strlen(SONG_KEY));
+			song->url = xstrdup(buffer + strlen(SONG_KEY));
 			song->type = SONG_TYPE_FILE;
 			song->parentDir = parentDir;
 		} else if (0 == strncmp(SONG_FILE, buffer, strlen(SONG_FILE))) {
@@ -257,7 +258,7 @@ void readSongInfoIntoList(FILE * fp, SongList * list, Directory * parentDir)
 				exit(EXIT_FAILURE);
 			}
 			/* we don't need this info anymore
-			   song->url = strdup(&(buffer[strlen(SONG_FILE)]));
+			   song->url = xstrdup(&(buffer[strlen(SONG_FILE)]));
 			 */
 		} else if (matchesAnMpdTagItemKey(buffer, &itemType)) {
 			if (!song->tag)
@@ -346,7 +347,7 @@ char *getSongUrl(Song * song)
 	size = slen + dlen + 2;
 
 	if (size > bufferSize) {
-		buffer = realloc(buffer, size);
+		buffer = xrealloc(buffer, size);
 		bufferSize = size;
 	}
 

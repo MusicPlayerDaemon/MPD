@@ -17,6 +17,7 @@
  */
 
 #include "tree.h"
+#include "utils.h"
 
 #include <assert.h>
 #include <stdlib.h>
@@ -59,7 +60,7 @@ static
 TreeNode *
 _MakeNode(void)
 {
-	TreeNode * ret = malloc(sizeof(TreeNode));
+	TreeNode * ret = xmalloc(sizeof(TreeNode));
 	memset(ret, 0, sizeof(TreeNode));
 	return ret;
 }
@@ -571,7 +572,7 @@ MakeTree(TreeCompareKeyFunction compareKey,
 	 TreeFreeFunction freeKey,
 	 TreeFreeFunction freeData)
 {
-	Tree * ret = malloc(sizeof(Tree));
+	Tree * ret = xmalloc(sizeof(Tree));
 	ret->compareKey = compareKey;
 	ret->freeKey = freeKey;
 	ret->freeData = freeData;

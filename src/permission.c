@@ -21,6 +21,7 @@
 #include "conf.h"
 #include "list.h"
 #include "log.h"
+#include "utils.h"
 
 #include <string.h>
 
@@ -103,7 +104,7 @@ void initPermissions(void)
 
 			password = temp;
 
-			permission = malloc(sizeof(int));
+			permission = xmalloc(sizeof(int));
 			*permission =
 			    parsePermissions(strtok_r(NULL, "", &cp2));
 

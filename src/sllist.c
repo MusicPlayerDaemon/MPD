@@ -30,14 +30,14 @@ static void init_strnode(struct strnode *x, char *s)
 
 struct strnode *new_strnode(char *s)
 {
-	struct strnode *x = malloc(sizeof(struct strnode));
+	struct strnode *x = xmalloc(sizeof(struct strnode));
 	init_strnode(x, s);
 	return x;
 }
 
 struct strnode *new_strnode_dup(char *s, const size_t size)
 {
-	struct strnode *x = malloc(sizeof(struct strnode) + size);
+	struct strnode *x = xmalloc(sizeof(struct strnode) + size);
 	x->next = NULL;
 	x->data = ((char *)x + sizeof(struct strnode));
 	memcpy((void *)x->data, (void*)s, size);
@@ -46,7 +46,7 @@ struct strnode *new_strnode_dup(char *s, const size_t size)
 
 struct sllnode *new_sllnode(void *s, const size_t size)
 {
-	struct sllnode *x = malloc(sizeof(struct sllnode) + size);
+	struct sllnode *x = xmalloc(sizeof(struct sllnode) + size);
 	x->next = NULL;
 	x->size = size;
 	x->data = ((char *)x + sizeof(struct sllnode));

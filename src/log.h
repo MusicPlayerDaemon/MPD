@@ -20,8 +20,7 @@
 #define LOG_H
 
 #include "../config.h"
-
-#include "myfprintf.h"
+#include "gcc.h"
 
 #include <unistd.h>
 

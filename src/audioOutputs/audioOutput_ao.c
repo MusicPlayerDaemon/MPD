@@ -40,7 +40,7 @@ typedef struct _AoData {
 
 static AoData *newAoData(void)
 {
-	AoData *ret = malloc(sizeof(AoData));
+	AoData *ret = xmalloc(sizeof(AoData));
 	ret->device = NULL;
 	ret->options = NULL;
 
@@ -112,9 +112,9 @@ static int audioOutputAo_initDriver(AudioOutput * audioOutput,
 	blockParam = getBlockParam(param, "options");
 
 	if (blockParam) {
-		dup = strdup(blockParam->value);
+		dup = xstrdup(blockParam->value);
 	} else
-		dup = strdup("");
+		dup = xstrdup("");
 
 	if (strlen(dup)) {
 		stk1 = NULL;

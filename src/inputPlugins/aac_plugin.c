@@ -162,7 +162,7 @@ static void initAacBuffer(InputStream * inStream, AacBuffer * b, float *length,
 
 	fileread = inStream->size;
 
-	b->buffer = malloc(FAAD_MIN_STREAMSIZE * AAC_MAX_CHANNELS);
+	b->buffer = xmalloc(FAAD_MIN_STREAMSIZE * AAC_MAX_CHANNELS);
 	memset(b->buffer, 0, FAAD_MIN_STREAMSIZE * AAC_MAX_CHANNELS);
 
 	bread = readFromInputStream(inStream, b->buffer, 1,

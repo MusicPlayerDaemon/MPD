@@ -112,7 +112,7 @@ static int prepOssMixer(char *device)
 		}
 
 		for (i = 0; i < SOUND_MIXER_NRDEVICES; i++) {
-			dup = strdup(labels[i]);
+			dup = xstrdup(labels[i]);
 			/* eliminate spaces at the end */
 			j = strlen(dup) - 1;
 			while (j >= 0 && dup[j] == ' ')

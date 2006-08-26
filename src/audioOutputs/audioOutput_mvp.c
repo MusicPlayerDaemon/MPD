@@ -109,7 +109,7 @@ static int mvp_testDefault(void)
 
 static int mvp_initDriver(AudioOutput * audioOutput, ConfigParam * param)
 {
-	MvpData *md = malloc(sizeof(MvpData));
+	MvpData *md = xmalloc(sizeof(MvpData));
 	md->fd = -1;
 	audioOutput->data = md;
 

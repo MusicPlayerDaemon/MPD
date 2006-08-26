@@ -18,6 +18,7 @@
  */
 
 #include "replayGain.h"
+#include "utils.h"
 
 #include "log.h"
 #include "conf.h"
@@ -89,7 +90,7 @@ static float computeReplayGainScale(float gain, float peak)
 
 ReplayGainInfo *newReplayGainInfo(void)
 {
-	ReplayGainInfo *ret = malloc(sizeof(ReplayGainInfo));
+	ReplayGainInfo *ret = xmalloc(sizeof(ReplayGainInfo));
 
 	ret->albumGain = 0.0;
 	ret->albumPeak = 0.0;

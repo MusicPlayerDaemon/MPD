@@ -52,12 +52,12 @@ static List *configEntriesList = NULL;
 
 static ConfigParam *newConfigParam(char *value, int line)
 {
-	ConfigParam *ret = malloc(sizeof(ConfigParam));
+	ConfigParam *ret = xmalloc(sizeof(ConfigParam));
 
 	if (!value)
 		ret->value = NULL;
 	else
-		ret->value = strdup(value);
+		ret->value = xstrdup(value);
 
 	ret->line = line;
 
@@ -91,7 +91,7 @@ static void freeConfigParam(ConfigParam * param)
 
 static ConfigEntry *newConfigEntry(int repeatable, int block)
 {
-	ConfigEntry *ret = malloc(sizeof(ConfigEntry));
+	ConfigEntry *ret = xmalloc(sizeof(ConfigEntry));
 
 	ret->mask = 0;
 	ret->configParamList =
@@ -180,13 +180,13 @@ static void addBlockParam(ConfigParam * param, char *name, char *value,
 {
 	param->numberOfBlockParams++;
 
-	param->blockParams = realloc(param->blockParams,
+	param->blockParams = xrealloc(param->blockParams,
 				     param->numberOfBlockParams *
 				     sizeof(BlockParam));
 
-	param->blockParams[param->numberOfBlockParams - 1].name = strdup(name);
+	param->blockParams[param->numberOfBlockParams - 1].name = xstrdup(name);
 	param->blockParams[param->numberOfBlockParams - 1].value =
-	    strdup(value);
+	    xstrdup(value);
 	param->blockParams[param->numberOfBlockParams - 1].line = line;
 }
 
@@ -452,7 +452,7 @@ ConfigParam *parseConfigFilePath(char *name, int force)
 			if (foundSlash)
 				*ch = '/';
 		}
-		newPath = malloc(strlen(pwd->pw_dir) + strlen(path + pos) + 1);
+		newPath = xmalloc(strlen(pwd->pw_dir) + strlen(path + pos) + 1);
 		strcpy(newPath, pwd->pw_dir);
 		strcat(newPath, path + pos);
 		free(param->value);

@@ -17,6 +17,7 @@
  */
 
 #include "utf8.h"
+#include "utils.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -46,7 +47,7 @@ char *latin1StrToUtf8Dup(char *latin1)
 {
 	/* utf8 should have at most two char's per latin1 char */
 	int len = strlen(latin1) * 2 + 1;
-	char *ret = malloc(len);
+	char *ret = xmalloc(len);
 	char *cp = ret;
 	char *utf8;
 
@@ -63,7 +64,7 @@ char *latin1StrToUtf8Dup(char *latin1)
 		latin1++;
 	}
 
-	return realloc(ret, len + 1);
+	return xrealloc(ret, len + 1);
 }
 
 static char utf8ToLatin1(char *inUtf8)
@@ -124,7 +125,7 @@ char *utf8StrToLatin1Dup(char *utf8)
 {
 	/* utf8 should have at most two char's per latin1 char */
 	int len = strlen(utf8) + 1;
-	char *ret = malloc(len);
+	char *ret = xmalloc(len);
 	char *cp = ret;
 	int count;
 
@@ -143,5 +144,5 @@ char *utf8StrToLatin1Dup(char *utf8)
 		len++;
 	}
 
-	return realloc(ret, len + 1);
+	return xrealloc(ret, len + 1);
 }

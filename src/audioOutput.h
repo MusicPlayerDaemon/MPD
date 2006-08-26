@@ -25,6 +25,7 @@
 #include "audio.h"
 #include "tag.h"
 #include "conf.h"
+#include "utils.h"
 
 #define DISABLED_AUDIO_OUTPUT_PLUGIN(plugin) \
 	AudioOutputPlugin plugin = { \

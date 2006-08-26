@@ -119,7 +119,7 @@ void initAudioDriver(void)
 
 	audioOutputArraySize = audio_device_count();
 	audioDeviceStates = (getPlayerData())->audioDeviceStates;
-	audioOutputArray = malloc(sizeof(AudioOutput) * audioOutputArraySize);
+	audioOutputArray = xmalloc(sizeof(AudioOutput) * audioOutputArraySize);
 
 	i = 0;
 	param = getNextConfigParam(CONF_AUDIO_OUTPUT, param);
@@ -162,7 +162,7 @@ void initAudioConfig(void)
 	if (NULL == param || NULL == param->value)
 		return;
 
-	audio_configFormat = malloc(sizeof(AudioFormat));
+	audio_configFormat = xmalloc(sizeof(AudioFormat));
 
 	if (0 != parseAudioConfig(audio_configFormat, param->value)) {
 		ERROR("error parsing \"%s\" at line %i\n",
@@ -335,7 +335,7 @@ int openAudioDevice(AudioFormat * audioFormat)
 		audioBufferSize = (audio_format.bits >> 3) *
 		    audio_format.channels;
 		audioBufferSize *= audio_format.sampleRate >> 5;
-		audioBuffer = realloc(audioBuffer, audioBufferSize);
+		audioBuffer = xrealloc(audioBuffer, audioBufferSize);
 	}
 
 	syncAudioDeviceStates();

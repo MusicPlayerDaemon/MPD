@@ -143,9 +143,9 @@ static mod_Data *mod_open(char *path)
 	if (!(moduleHandle = Player_Load(path, 128, 0)))
 		return NULL;
 
-	data = malloc(sizeof(mod_Data));
+	data = xmalloc(sizeof(mod_Data));
 
-	data->audio_buffer = malloc(MIKMOD_FRAME_SIZE);
+	data->audio_buffer = xmalloc(MIKMOD_FRAME_SIZE);
 	data->moduleHandle = moduleHandle;
 
 	Player_Start(data->moduleHandle);
@@ -243,7 +243,7 @@ static MpdTag *modTagDup(char *file)
 	ret = newMpdTag();
 
 	ret->time = 0;
-	title = strdup(Player_LoadTitle(file));
+	title = xstrdup(Player_LoadTitle(file));
 	if (title)
 		addItemToMpdTag(ret, TAG_ITEM_TITLE, title);
 

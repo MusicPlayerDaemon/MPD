@@ -22,6 +22,7 @@
 #include "myfprintf.h"
 #include "log.h"
 #include "utf8.h"
+#include "utils.h"
 
 #include <dirent.h>
 #include <stdio.h>
@@ -154,7 +155,7 @@ int lsPlaylists(int fd, char *utf8path)
 		int i;
 		sortList(list);
 
-		dup = malloc(strlen(utf8path) + 2);
+		dup = xmalloc(strlen(utf8path) + 2);
 		strcpy(dup, utf8path);
 		for (i = strlen(dup) - 1; i >= 0 && dup[i] == '/'; i--) {
 			dup[i] = '\0';

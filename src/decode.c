@@ -264,7 +264,7 @@ static void decodeStart(PlayerControl * pc, OutputBuffer * cb,
 	if (isRemoteUrl(pc->utf8url))
 		path = utf8StrToLatin1Dup(pc->utf8url);
 	else
-		path = strdup(rmp2amp(utf8ToFsCharset(pc->utf8url)));
+		path = xstrdup(rmp2amp(utf8ToFsCharset(pc->utf8url)));
 
 	if (!path) {
 		dc->error = DECODE_ERROR_FILE;
@@ -304,7 +304,7 @@ static void decodeStart(PlayerControl * pc, OutputBuffer * cb,
 
 	/*if(inStream.metaName) {
 	   MpdTag * tag = newMpdTag();
-	   tag->name = strdup(inStream.metaName);
+	   tag->name = xstrdup(inStream.metaName);
 	   copyMpdTagToOutputBuffer(cb, tag);
 	   freeMpdTag(tag);
 	   } */

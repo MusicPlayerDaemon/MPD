@@ -90,7 +90,7 @@ static int setenv(const char *name, const char *value, int replace)
 
 	namelen = strlen(name);
 	valuelen = strlen(value);
-	envstr = malloc((namelen + valuelen + 2));
+	envstr = xmalloc((namelen + valuelen + 2));
 	if (!envstr)
 		return -1;
 

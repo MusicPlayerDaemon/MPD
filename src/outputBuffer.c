@@ -91,7 +91,7 @@ int sendDataToOutputBuffer(OutputBuffer * cb, InputStream * inStream,
 								   &(cb->
 								     audioFormat));
 		if (datalen > convBufferLen) {
-			convBuffer = realloc(convBuffer, datalen);
+			convBuffer = xrealloc(convBuffer, datalen);
 			convBufferLen = datalen;
 		}
 		data = convBuffer;

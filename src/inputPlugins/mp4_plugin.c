@@ -123,7 +123,7 @@ static int mp4_decode(OutputBuffer * cb, DecoderControl * dc, char *path)
 		return -1;
 	}
 
-	mp4cb = malloc(sizeof(mp4ff_callback_t));
+	mp4cb = xmalloc(sizeof(mp4ff_callback_t));
 	mp4cb->read = mp4_inputStreamReadCallback;
 	mp4cb->seek = mp4_inputStreamSeekCallback;
 	mp4cb->user_data = &inStream;
@@ -195,7 +195,7 @@ static int mp4_decode(OutputBuffer * cb, DecoderControl * dc, char *path)
 
 	time = 0.0;
 
-	seekTable = malloc(sizeof(float) * numSamples);
+	seekTable = xmalloc(sizeof(float) * numSamples);
 
 	for (sampleId = 0; sampleId < numSamples && !eof; sampleId++) {
 		if (dc->seek)
@@ -341,7 +341,7 @@ static MpdTag *mp4DataDup(char *file, int *mp4MetadataFound)
 		return NULL;
 	}
 
-	cb = malloc(sizeof(mp4ff_callback_t));
+	cb = xmalloc(sizeof(mp4ff_callback_t));
 	cb->read = mp4_inputStreamReadCallback;
 	cb->seek = mp4_inputStreamSeekCallback;
 	cb->user_data = &inStream;

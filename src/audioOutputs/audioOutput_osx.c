@@ -40,7 +40,7 @@ typedef struct _OsxData {
 
 static OsxData *newOsxData()
 {
-	OsxData *ret = malloc(sizeof(OsxData));
+	OsxData *ret = xmalloc(sizeof(OsxData));
 
 	pthread_mutex_init(&ret->mutex, NULL);
 	pthread_cond_init(&ret->condition, NULL);
@@ -284,7 +284,7 @@ static int osx_openDevice(AudioOutput * audioOutput)
 	/* create a buffer of 1s */
 	od->bufferSize = (audioFormat->sampleRate) *
 	    (audioFormat->bits >> 3) * (audioFormat->channels);
-	od->buffer = realloc(od->buffer, od->bufferSize);
+	od->buffer = xrealloc(od->buffer, od->bufferSize);
 
 	od->pos = 0;
 	od->len = 0;

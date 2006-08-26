@@ -301,7 +301,7 @@ char *getPlayerErrorStr(void)
 	int errorlen = MAXPATHLEN + 1024;
 	PlayerControl *pc = &(getPlayerData()->playerControl);
 
-	error = realloc(error, errorlen + 1);
+	error = xrealloc(error, errorlen + 1);
 	memset(error, 0, errorlen + 1);
 
 	switch (pc->error) {
@@ -328,7 +328,7 @@ char *getPlayerErrorStr(void)
 	}
 
 	errorlen = strlen(error);
-	error = realloc(error, errorlen + 1);
+	error = xrealloc(error, errorlen + 1);
 
 	if (errorlen)
 		return error;
@@ -513,12 +513,12 @@ Song *playerCurrentDecodeSong(void)
 		DEBUG("playerCurrentDecodeSong: caught new metadata!\n");
 		if (prev)
 			free(prev);
-		prev = malloc(sizeof(MetadataChunk));
+		prev = xmalloc(sizeof(MetadataChunk));
 		memcpy(prev, &(pc->metadataChunk), sizeof(MetadataChunk));
 		if (song)
 			freeJustSong(song);
 		song = newNullSong();
-		song->url = strdup(pc->currentUrl);
+		song->url = xstrdup(pc->currentUrl);
 		song->tag = metadataChunkToMpdTagDup(prev);
 		ret = song;
 		resetPlayerMetadata();

@@ -85,37 +85,37 @@ int main()
 	char *b;
 	int i, max;
 
-	b = strdup("lsinfo \"/some/dir/name \\\"test\\\"\"");
+	b = xstrdup("lsinfo \"/some/dir/name \\\"test\\\"\"");
 	max = buffer2array(b, a, 4);
 	assert( !strcmp("lsinfo", a[0]) );
 	assert( !strcmp("/some/dir/name \"test\"", a[1]) );
 	assert( !a[2] );
 
-	b = strdup("lsinfo \"/some/dir/name \\\"test\\\" something else\"");
+	b = xstrdup("lsinfo \"/some/dir/name \\\"test\\\" something else\"");
 	max = buffer2array(b, a, 4);
 	assert( !strcmp("lsinfo", a[0]) );
 	assert( !strcmp("/some/dir/name \"test\" something else", a[1]) );
 	assert( !a[2] );
 
-	b = strdup("lsinfo \"/some/dir\\\\name\"");
+	b = xstrdup("lsinfo \"/some/dir\\\\name\"");
 	max = buffer2array(b, a, 4);
 	assert( !strcmp("lsinfo", a[0]) );
 	assert( !strcmp("/some/dir\\name", a[1]) );
 	assert( !a[2] );
 
-	b = strdup("lsinfo \"/some/dir name\"");
+	b = xstrdup("lsinfo \"/some/dir name\"");
 	max = buffer2array(b, a, 4);
 	assert( !strcmp("lsinfo", a[0]) );
 	assert( !strcmp("/some/dir name", a[1]) );
 	assert( !a[2] );
 
-	b = strdup("lsinfo \"\\\"/some/dir\\\"\"");
+	b = xstrdup("lsinfo \"\\\"/some/dir\\\"\"");
 	max = buffer2array(b, a, 4);
 	assert( !strcmp("lsinfo", a[0]) );
 	assert( !strcmp("\"/some/dir\"", a[1]) );
 	assert( !a[2] );
 
-	b = strdup("lsinfo \"\\\"/some/dir\\\" x\"");
+	b = xstrdup("lsinfo \"\\\"/some/dir\\\" x\"");
 	max = buffer2array(b, a, 4);
 	assert( !strcmp("lsinfo", a[0]) );
 	assert( !strcmp("\"/some/dir\" x", a[1]) );

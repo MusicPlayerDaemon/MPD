@@ -172,7 +172,7 @@ static char *base64Dup(char *s)
 {
 	int i;
 	int len = strlen(s);
-	char *ret = calloc(BASE64_LENGTH(len) + 1, 1);
+	char *ret = xcalloc(BASE64_LENGTH(len) + 1, 1);
 	unsigned char *p = (unsigned char *)ret;
 
 	char tbl[64] = {
@@ -216,14 +216,14 @@ static char *authString(char *header, char *user, char *password)
 		return NULL;
 
 	templen = strlen(user) + strlen(password) + 2;
-	temp = malloc(templen);
+	temp = xmalloc(templen);
 	strcpy(temp, user);
 	strcat(temp, ":");
 	strcat(temp, password);
 	temp64 = base64Dup(temp);
 	free(temp);
 
-	ret = malloc(strlen(temp64) + strlen(header) + 3);
+	ret = xmalloc(strlen(temp64) + strlen(header) + 3);
 	strcpy(ret, header);
 	strcat(ret, temp64);
 	strcat(ret, "\r\n");
@@ -240,7 +240,7 @@ static char *authString(char *header, char *user, char *password)
 
 static InputStreamHTTPData *newInputStreamHTTPData(void)
 {
-	InputStreamHTTPData *ret = malloc(sizeof(InputStreamHTTPData));
+	InputStreamHTTPData *ret = xmalloc(sizeof(InputStreamHTTPData));
 
 	if (proxyHost) {
 		ret->proxyAuth = proxyAuthString(proxyUser, proxyPassword);
@@ -256,7 +256,7 @@ static InputStreamHTTPData *newInputStreamHTTPData(void)
 	ret->icyMetaint = 0;
 	ret->prebuffer = 0;
 	ret->icyOffset = 0;
-	ret->buffer = malloc(bufferSize);
+	ret->buffer = xmalloc(bufferSize);
 
 	return ret;
 }
@@ -305,19 +305,19 @@ static int parseUrl(InputStreamHTTPData * data, char *url)
 		char *passwd;
 
 		if (colon && colon < at) {
-			user = malloc(colon - temp + 1);
+			user = xmalloc(colon - temp + 1);
 			memcpy(user, temp, colon - temp);
 			user[colon - temp] = '\0';
 
-			passwd = malloc(at - colon);
+			passwd = xmalloc(at - colon);
 			memcpy(passwd, colon + 1, at - colon - 1);
 			passwd[at - colon - 1] = '\0';
 		} else {
-			user = malloc(at - temp + 1);
+			user = xmalloc(at - temp + 1);
 			memcpy(user, temp, at - temp);
 			user[at - temp] = '\0';
 
-			passwd = strdup("");
+			passwd = xstrdup("");
 		}
 
 		data->httpAuth = httpAuthString(user, passwd);
@@ -345,7 +345,7 @@ static int parseUrl(InputStreamHTTPData * data, char *url)
 	if (len <= 1)
 		return -1;
 
-	data->host = malloc(len);
+	data->host = xmalloc(len);
 	memcpy(data->host, temp, len - 1);
 	data->host[len - 1] = '\0';
 	/* fetch the port */
@@ -353,19 +353,19 @@ static int parseUrl(InputStreamHTTPData * data, char *url)
 		len = strlen(colon) - 1;
 		if (slash)
 			len -= strlen(slash);
-		data->port = malloc(len + 1);
+		data->port = xmalloc(len + 1);
 		memcpy(data->port, colon + 1, len);
 		data->port[len] = '\0';
 		DEBUG(__FILE__ ": Port: %s\n", data->port);
 	} else {
-		data->port = strdup("80");
+		data->port = xstrdup("80");
 	}
 
 	/* fetch the path */
 	if (proxyHost)
-		data->path = strdup(url);
+		data->path = xstrdup(url);
 	else
-		data->path = strdup(slash ? slash : "/");
+		data->path = xstrdup(slash ? slash : "/");
 
 	return 0;
 }
@@ -591,7 +591,7 @@ static int getHTTPHello(InputStream * inStream)
 			       && *(cur + curlen) != '\r') {
 				curlen++;
 			}
-			url = malloc(curlen + 1);
+			url = xmalloc(curlen + 1);
 			memcpy(url, cur, curlen);
 			url[curlen] = '\0';
 			ret = parseUrl(data, url);
@@ -634,7 +634,7 @@ static int getHTTPHello(InputStream * inStream)
 				free(inStream->metaName);
 			while (*(incr + cur) == ' ')
 				incr++;
-			inStream->metaName = strdup(cur + incr);
+			inStream->metaName = xstrdup(cur + incr);
 			*temp = '\r';
 			DEBUG("inputStream_http: metaName: %s\n",
 			      inStream->metaName);
@@ -648,7 +648,7 @@ static int getHTTPHello(InputStream * inStream)
 				free(inStream->metaName);
 			while (*(incr + cur) == ' ')
 				incr++;
-			inStream->metaName = strdup(cur + incr);
+			inStream->metaName = xstrdup(cur + incr);
 			*temp = '\r';
 			DEBUG("inputStream_http: metaName: %s\n",
 			      inStream->metaName);
@@ -662,7 +662,7 @@ static int getHTTPHello(InputStream * inStream)
 				free(inStream->mime);
 			while (*(incr + cur) == ' ')
 				incr++;
-			inStream->mime = strdup(cur + incr);
+			inStream->mime = xstrdup(cur + incr);
 			*temp = '\r';
 		}
 
@@ -735,7 +735,7 @@ static void parseIcyMetadata(InputStream * inStream, char *metadata, int size)
 {
 	char *r;
 	char *s;
-	char *temp = malloc(size + 1);
+	char *temp = xmalloc(size + 1);
 	memcpy(temp, metadata, size);
 	temp[size] = '\0';
 	s = strtok_r(temp, ";", &r);
@@ -749,7 +749,7 @@ static void parseIcyMetadata(InputStream * inStream, char *metadata, int size)
 			if (s[strlen(s) - 1] == '\'') {
 				s[strlen(s) - 1] = '\0';
 			}
-			inStream->metaTitle = strdup(s + cur);
+			inStream->metaTitle = xstrdup(s + cur);
 			DEBUG("inputStream_http: metaTitle: %s\n",
 			      inStream->metaTitle);
 		}

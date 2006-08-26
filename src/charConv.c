@@ -19,6 +19,7 @@
 #include "charConv.h"
 #include "mpd_types.h"
 #include "utf8.h"
+#include "utils.h"
 
 #include <stdlib.h>
 #include <errno.h>
@@ -64,8 +65,8 @@ int setCharSetConversion(char *to, char *from)
 
 	if (0 == strcmp(to, from)) {
 		char_conv_same = 1;
-		char_conv_to = strdup(to);
-		char_conv_from = strdup(from);
+		char_conv_to = xstrdup(to);
+		char_conv_from = xstrdup(from);
 		return 0;
 	}
 
@@ -76,16 +77,16 @@ int setCharSetConversion(char *to, char *from)
 	}
 
 	if (char_conv_latin1ToUtf8 != 0) {
-		char_conv_to = strdup(to);
-		char_conv_from = strdup(from);
+		char_conv_to = xstrdup(to);
+		char_conv_from = xstrdup(from);
 		return 0;
 	}
 #ifdef HAVE_ICONV
 	if ((char_conv_iconv = iconv_open(to, from)) == (iconv_t) (-1))
 		return -1;
 
-	char_conv_to = strdup(to);
-	char_conv_from = strdup(from);
+	char_conv_to = xstrdup(to);
+	char_conv_from = xstrdup(from);
 	char_conv_use_iconv = 1;
 
 	return 0;
@@ -100,7 +101,7 @@ char *convStrDup(char *string)
 		return NULL;
 
 	if (char_conv_same)
-		return strdup(string);
+		return xstrdup(string);
 
 #ifdef HAVE_ICONV
 	if (char_conv_use_iconv) {
@@ -112,7 +113,7 @@ char *convStrDup(char *string)
 		size_t err;
 		char *bufferPtr;
 
-		ret = malloc(1);
+		ret = xmalloc(1);
 		ret[0] = '\0';
 
 		while (inleft) {
@@ -127,7 +128,7 @@ char *convStrDup(char *string)
 				return NULL;
 			}
 
-			ret = realloc(ret, retlen + BUFFER_SIZE - outleft + 1);
+			ret = xrealloc(ret, retlen + BUFFER_SIZE - outleft + 1);
 			memcpy(ret + retlen, buffer, BUFFER_SIZE - outleft);
 			retlen += BUFFER_SIZE - outleft;
 			ret[retlen] = '\0';

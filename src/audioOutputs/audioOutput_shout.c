@@ -74,7 +74,7 @@ typedef struct _ShoutData {
 
 static ShoutData *newShoutData(void)
 {
-	ShoutData *ret = malloc(sizeof(ShoutData));
+	ShoutData *ret = xmalloc(sizeof(ShoutData));
 
 	ret->shoutConn = shout_new();
 	ret->opened = 0;

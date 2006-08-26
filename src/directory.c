@@ -236,7 +236,7 @@ int updateInit(int fd, List * pathList)
 
 static DirectoryStat *newDirectoryStat(struct stat *st)
 {
-	DirectoryStat *ret = malloc(sizeof(DirectoryStat));
+	DirectoryStat *ret = xmalloc(sizeof(DirectoryStat));
 	ret->inode = st->st_ino;
 	ret->device = st->st_dev;
 	return ret;
@@ -258,10 +258,10 @@ static Directory *newDirectory(char *dirname, Directory * parent)
 {
 	Directory *directory;
 
-	directory = malloc(sizeof(Directory));
+	directory = xmalloc(sizeof(Directory));
 
 	if (dirname && strlen(dirname))
-		directory->path = strdup(dirname);
+		directory->path = xstrdup(dirname);
 	else
 		directory->path = NULL;
 	directory->subDirectories = newDirectoryList();
@@ -392,11 +392,11 @@ static int removeDeletedFromDirectory(Directory * directory, DIR * dir)
 			continue;
 
 		if (directory->path) {
-			s = malloc(strlen(getDirectoryPath(directory))
+			s = xmalloc(strlen(getDirectoryPath(directory))
 				   + strlen(utf8) + 2);
 			sprintf(s, "%s/%s", getDirectoryPath(directory), utf8);
 		} else
-			s = strdup(utf8);
+			s = xstrdup(utf8);
 		insertInList(entList, utf8, s);
 	}
 
@@ -445,7 +445,7 @@ static Directory *addDirectoryPathToDB(char *utf8path, char **shortname)
 	Directory *parentDirectory;
 	void *directory;
 
-	parent = strdup(parentPath(utf8path));
+	parent = xstrdup(parentPath(utf8path));
 
 	if (strlen(parent) == 0)
 		parentDirectory = (void *)mp3rootDirectory;
@@ -489,7 +489,7 @@ static Directory *addParentPathToDB(char *utf8path, char **shortname)
 	char *parent;
 	Directory *parentDirectory;
 
-	parent = strdup(parentPath(utf8path));
+	parent = xstrdup(parentPath(utf8path));
 
 	if (strlen(parent) == 0)
 		parentDirectory = (void *)mp3rootDirectory;
@@ -653,14 +653,14 @@ static int updateDirectory(Directory * directory)
 		if (!utf8)
 			continue;
 
-		utf8 = strdup(utf8);
+		utf8 = xstrdup(utf8);
 
 		if (directory->path) {
-			s = malloc(strlen(getDirectoryPath(directory)) +
+			s = xmalloc(strlen(getDirectoryPath(directory)) +
 				   strlen(utf8) + 2);
 			sprintf(s, "%s/%s", getDirectoryPath(directory), utf8);
 		} else
-			s = strdup(utf8);
+			s = xstrdup(utf8);
 		if (updateInDirectory(directory, utf8, s) > 0)
 			ret = 1;
 		free(utf8);
@@ -708,16 +708,16 @@ static int exploreDirectory(Directory * directory)
 		if (!utf8)
 			continue;
 
-		utf8 = strdup(utf8);
+		utf8 = xstrdup(utf8);
 
 		DEBUG("explore: found: %s (%s)\n", ent->d_name, utf8);
 
 		if (directory->path) {
-			s = malloc(strlen(getDirectoryPath(directory)) +
+			s = xmalloc(strlen(getDirectoryPath(directory)) +
 				   strlen(utf8) + 2);
 			sprintf(s, "%s/%s", getDirectoryPath(directory), utf8);
 		} else
-			s = strdup(utf8);
+			s = xstrdup(utf8);
 		if (addToDirectory(directory, utf8, s) > 0)
 			ret = 1;
 		free(utf8);
@@ -817,7 +817,7 @@ void closeMp3Directory(void)
 static Directory *findSubDirectory(Directory * directory, char *name)
 {
 	void *subDirectory;
-	char *dup = strdup(name);
+	char *dup = xstrdup(name);
 	char *key;
 
 	key = strtok(dup, "/");
@@ -942,7 +942,7 @@ static void readDirectoryInfo(FILE * fp, Directory * directory)
 	while (myFgets(buffer, bufferSize, fp)
 	       && 0 != strncmp(DIRECTORY_END, buffer, strlen(DIRECTORY_END))) {
 		if (0 == strncmp(DIRECTORY_DIR, buffer, strlen(DIRECTORY_DIR))) {
-			key = strdup(&(buffer[strlen(DIRECTORY_DIR)]));
+			key = xstrdup(&(buffer[strlen(DIRECTORY_DIR)]));
 			if (!myFgets(buffer, bufferSize, fp)) {
 				ERROR("Error reading db, fgets\n");
 				exit(EXIT_FAILURE);
@@ -961,7 +961,7 @@ static void readDirectoryInfo(FILE * fp, Directory * directory)
 				ERROR("Error reading db at line: %s\n", buffer);
 				exit(EXIT_FAILURE);
 			}
-			name = strdup(&(buffer[strlen(DIRECTORY_BEGIN)]));
+			name = xstrdup(&(buffer[strlen(DIRECTORY_BEGIN)]));
 
 			while (nextDirNode && (strcmpRet =
 					       strcmp(key,
@@ -1034,7 +1034,7 @@ int checkDirectoryDB(void)
 		/* If the file doesn't exist, we can't check if we can write
 		 * it, so we are going to try to get the directory path, and
 		 * see if we can write a file in that */
-		dbPath = strdup(dbFile);
+		dbPath = xstrdup(dbFile);
 		dirPath = dirname(dbPath);
 
 		/* Check that the parent part of the path is a directory */
@@ -1329,7 +1329,7 @@ static Song *getSongDetails(char *file, char **shortnameRet,
 	void *song = NULL;
 	Directory *directory;
 	char *dir = NULL;
-	char *dup = strdup(file);
+	char *dup = xstrdup(file);
 	char *shortname = dup;
 	char *c = strtok(dup, "/");
 

@@ -21,6 +21,7 @@
 #include "charConv.h"
 #include "conf.h"
 #include "utf8.h"
+#include "utils.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -69,7 +70,7 @@ char *utf8ToFsCharset(char *str)
 	ret = pathConvCharset(fsCharset, "UTF-8", str, ret);
 
 	if (!ret)
-		ret = strdup(str);
+		ret = xstrdup(str);
 
 	return ret;
 }
@@ -81,7 +82,7 @@ void setFsCharset(char *charset)
 	if (fsCharset)
 		free(fsCharset);
 
-	fsCharset = strdup(charset);
+	fsCharset = xstrdup(charset);
 
 	DEBUG("setFsCharset: fs charset is: %s\n", fsCharset);
 
@@ -101,7 +102,7 @@ void setFsCharset(char *charset)
 	if (error) {
 		free(fsCharset);
 		WARNING("setting fs charset to ISO-8859-1!\n");
-		fsCharset = strdup("ISO-8859-1");
+		fsCharset = xstrdup("ISO-8859-1");
 	}
 }
 
@@ -116,7 +117,7 @@ static char *appendSlash(char **path)
 	int len = strlen(temp);
 
 	if (temp[len - 1] != '/') {
-		temp = malloc(len + 2);
+		temp = xmalloc(len + 2);
 		memset(temp, 0, len + 2);
 		memcpy(temp, *path, len);
 		temp[len] = '/';
@@ -157,14 +158,14 @@ void initPaths(void)
 	closedir(dir);
 
 	if (fsCharsetParam) {
-		charset = strdup(fsCharsetParam->value);
+		charset = xstrdup(fsCharsetParam->value);
 	}
 #ifdef HAVE_LOCALE
 #ifdef HAVE_LANGINFO_CODESET
 	else if ((originalLocale = setlocale(LC_CTYPE, NULL))) {
 		char *temp;
 		char *currentLocale;
-		originalLocale = strdup(originalLocale);
+		originalLocale = xstrdup(originalLocale);
 
 		if (!(currentLocale = setlocale(LC_CTYPE, ""))) {
 			WARNING("problems setting current locale with "
@@ -175,7 +176,7 @@ void initPaths(void)
 				WARNING("current locale is \"%s\"\n",
 					currentLocale);
 			} else if ((temp = nl_langinfo(CODESET))) {
-				charset = strdup(temp);
+				charset = xstrdup(temp);
 			} else
 				WARNING
 				    ("problems getting charset for locale\n");
@@ -273,7 +274,7 @@ char *parentPath(char *path)
 char *sanitizePathDup(char *path)
 {
 	int len = strlen(path) + 1;
-	char *ret = malloc(len);
+	char *ret = xmalloc(len);
 	char *cp = ret;
 
 	memset(ret, 0, len);
@@ -307,5 +308,5 @@ char *sanitizePathDup(char *path)
 
 	DEBUG("sanitized: %s\n", ret);
 
-	return realloc(ret, len + 1);
+	return xrealloc(ret, len + 1);
 }

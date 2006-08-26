@@ -198,7 +198,7 @@ static void convertAudioFormat(AudioOutput * audioOutput, char **chunkArgPtr,
 
 	if (size > audioOutput->convBufferLen) {
 		audioOutput->convBuffer =
-		    realloc(audioOutput->convBuffer, size);
+		    xrealloc(audioOutput->convBuffer, size);
 		audioOutput->convBufferLen = size;
 	}
 

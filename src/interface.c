@@ -132,7 +132,7 @@ static void set_send_buf_size(Interface * interface)
 		if (interface->send_buf_alloc < new_size) {
 			if (interface->send_buf)
 				free(interface->send_buf);
-			interface->send_buf = malloc(new_size);
+			interface->send_buf = xmalloc(new_size);
 			interface->send_buf_alloc = new_size;
 		}
 	}
@@ -593,9 +593,9 @@ void initInterfaces(void)
 		interface_max_output_buffer_size *= 1024;
 	}
 
-	interfaces = malloc(sizeof(Interface) * interface_max_connections);
+	interfaces = xmalloc(sizeof(Interface) * interface_max_connections);
 
-	list_cache = calloc(interface_list_cache_size, sizeof(struct strnode));
+	list_cache = xcalloc(interface_list_cache_size, sizeof(struct strnode));
 	list_cache_head = &(list_cache[0]);
 	list_cache_tail = &(list_cache[interface_list_cache_size - 1]);
 

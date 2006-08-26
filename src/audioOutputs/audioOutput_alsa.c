@@ -59,7 +59,7 @@ typedef struct _AlsaData {
 
 static AlsaData *newAlsaData(void)
 {
-	AlsaData *ret = malloc(sizeof(AlsaData));
+	AlsaData *ret = xmalloc(sizeof(AlsaData));
 
 	ret->device = NULL;
 	ret->pcmHandle = NULL;
@@ -85,7 +85,7 @@ static int alsa_initDriver(AudioOutput * audioOutput, ConfigParam * param)
 
 	if (param) {
 		BlockParam *bp = getBlockParam(param, "device");
-		ad->device = bp ? strdup(bp->value) : strdup("default");
+		ad->device = bp ? xstrdup(bp->value) : xstrdup("default");
 
 		if ((bp = getBlockParam(param, "use_mmap")) &&
 		    (!strcasecmp(bp->value, "yes") ||
@@ -96,7 +96,7 @@ static int alsa_initDriver(AudioOutput * audioOutput, ConfigParam * param)
 		if ((bp = getBlockParam(param, "period_time")))
 			ad->period_time = atoi(bp->value);
 	} else
-		ad->device = strdup("default");
+		ad->device = xstrdup("default");
 	audioOutput->data = ad;
 
 	return 0;
