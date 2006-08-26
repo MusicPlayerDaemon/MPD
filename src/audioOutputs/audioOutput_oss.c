@@ -368,7 +368,7 @@ static int oss_open_default(AudioOutput *ao, ConfigParam *param, OssData *od)
 	else
 		ERROR("error trying to open default OSS device\n");
 
-	for (i = ARRAY_SIZE(default_devices) - 1; i >= 0; --i) {
+	for (i = ARRAY_SIZE(default_devices); --i >= 0; ) {
 		const char *dev = default_devices[i];
 		switch(ret[i]) {
 		case OSS_STAT_DOESN_T_EXIST:
