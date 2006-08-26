@@ -24,7 +24,6 @@
 #include "command.h"
 #include "playerData.h"
 #include "utils.h"
-#include "playlist.h"
 #include "state_file.h"
 
 #include <stdlib.h>
