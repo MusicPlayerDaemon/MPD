@@ -23,8 +23,7 @@ ver 0.12.0 (2006/??/??)
 * New plchangesposid command for a stripped down version of plchanges
 * New addid command for adding to the playlist and returning a song ID
 * New commands and notcommands commands for checking available commands
-* Can specify any supported metadata type in search, find, and list
-* Can specify "any" as the metadata type in search, find, and list
+* Can now specify any supported metadata type or "any" in search, find, and list
 * New volume_normalization parameter for enabling Audio Compress normalization
 * New metadata_to_use parameter for choosing supported metadata types
 * New pid_file parameter for saving the MPD process ID to the specified file
