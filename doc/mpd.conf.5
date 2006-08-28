@@ -54,6 +54,39 @@ mpd will be saved to this file when mpd is terminated by a TERM signal or by
 the "kill" command.  When mpd is restarted, it will read the state file and
 restore the state of mpd (including the playlist).
 .TP
+.B user <username>
+This specifies the user that mpd will run as, if set.
+.TP
+.B bind_to_address <ip address or hostname or any>
+This specifies which address mpd binds to and listens on.  Multiple
+bind_to_address parameters may be specified.  The default is "any", which binds
+to all available addresses.
+.TP
+.B port <port>
+This specifies the port that mpd listens on.  The default is 6600.
+.TP
+.B log_level <default, secure, or verbose>
+This specifies how verbose logs are.  "default" is minimal logging, "secure"
+reports from what address a connection is opened, and when it is closed, and
+"verbose" records excessive amounts of information for debugging purposes.  The
+default is "default".
+.TP
+.B password <password@permissions>
+This specifies a password for access to mpd.  The format is
+"password@permissions" where permissions is a comma delimited list composed
+of "read", "add", "control", and/or "admin".  "read" allows for reading of the
+database, displaying the current playlist, and current status of mpd.  "add"
+allows for adding songs and loading playlists.  "control" allows for all other
+player and playlist manipulations.  "admin" allows the db to be updated and for
+the client to kill mpd.  An example value is "somePassword@read,add".  Multiple
+password parameters may be specified.
+.TP
+.B default_permissions <permissions>
+This specifies the permissions of a client that has not been authenticated
+using a password.  The format of permissions is specified in the description of
+the "password" config parameter.  If no passwords are specified, the default is
+"read,add,control,admin", otherwise it is "" (no permissions).
+.TP
 .B audio_output
 See \fBDESCRIPTION\fP and the various \fBAUDIO OUTPUT PARAMETERS\fP sections
 for the format of this parameter.  Multiple audio_output parameters may be
@@ -78,17 +111,6 @@ default for alsa is "default".
 This specifies which mixer control to use (sometimes referred to as the
 "device").  Examples of mixer controls are PCM, Line1, Master, etc.  An example
 for OSS is "Pcm", and an example for alsa is "PCM".
-.TP
-.B filesystem_charset <charset>
-This specifies the character set used for the filesystem.  A list of supported
-character sets can be obtained by running "iconv -l".  The default is
-determined from the locale when the db was originally created.
-.TP
-.B id3v1_encoding <charset>
-This specifies the character set which ID3v1 tags are encoded in.  A list of
-supported character sets can be obtained by running "iconv -l".  The default is
-to let libid3tag convert them (from ISO-8859-1, as the standard specifies) and
-do no additional conversion.
 .TP
 .B replaygain <album or track>
 If specified, mpd will adjust the volume of songs played using replaygain tags
@@ -131,32 +153,35 @@ If the HTTP proxy server requires authentication, this specifies the username.
 .B http_proxy_password <password>
 If the HTTP proxy server requires authentication, this specifies the password.
 .TP
-.B user <username>
-This specifies the user that mpd will run as, if set.
+.B connection_timeout <seconds>
+If a client does not send any new data in this time period, the connection is
+closed.  The default is 60.
 .TP
-.B bind_to_address <ip address or hostname or any>
-This specifies which address mpd binds to and listens on.  Multiple
-bind_to_address parameters may be specified.  The default is "any", which binds
-to all available addresses.
+.B max_connections <number>
+This specifies the maximum number of clients that can be connected to mpd.  The
+default is 5.
 .TP
-.B port <port>
-This specifies the port that mpd listens on.  The default is 6600.
+.B max_playlist_length <number>
+This specifies the maximum number of songs that can be in the playlist.  The
+default is 4096.
 .TP
-.B password <password@permissions>
-This specifies a password for access to mpd.  The format is
-"password@permissions" where permissions is a comma delimited list composed
-of "read", "add", "control", and/or "admin".  "read" allows for reading of the
-database, displaying the current playlist, and current status of mpd.  "add"
-allows for adding songs and loading playlists.  "control" allows for all other
-player and playlist manipulations.  "admin" allows the db to be updated and for
-the client to kill mpd.  An example value is "somePassword@read,add".  Multiple
-password parameters may be specified.
+.B max_command_list_size <size in KiB>
+This specifies the maximum size a command list can be.  The default is 2048.
 .TP
-.B default_permissions <permissions>
-This specifies the permissions of a client that has not been authenticated
-using a password.  The format of permissions is specified in the description of
-the "password" config parameter.  If no passwords are specified, the default is
-"read,add,control,admin", otherwise it is "" (no permissions).
+.B max_output_buffer_size <size in KiB>
+This specifies the maximum size of the output buffer to a client.  The default
+is 8192.
+.TP
+.B filesystem_charset <charset>
+This specifies the character set used for the filesystem.  A list of supported
+character sets can be obtained by running "iconv -l".  The default is
+determined from the locale when the db was originally created.
+.TP
+.B id3v1_encoding <charset>
+This specifies the character set which ID3v1 tags are encoded in.  A list of
+supported character sets can be obtained by running "iconv -l".  The default is
+to let libid3tag convert them (from ISO-8859-1, as the standard specifies) and
+do no additional conversion.
 .TP
 .B metadata_to_use <tags>
 This specifies the song metadata that will be scanned and made available to
@@ -167,31 +192,6 @@ tags may be specified as a comma separated list.  An example value is
 "artist,album,title,track".  The special value "none" may be used alone to
 disable all metadata.  The default is to use all known tag types except for
 comments.
-.TP
-.B max_playlist_length <number>
-This specifies the maximum number of songs that can be in the playlist.  The
-default is 4096.
-.TP
-.B log_level <default, secure, or verbose>
-This specifies how verbose logs are.  "default" is minimal logging, "secure"
-reports from what address a connection is opened, and when it is closed, and
-"verbose" records excessive amounts of information for debugging purposes.  The
-default is "default".
-.TP
-.B connection_timeout <seconds>
-If a client does not send any new data in this time period, the connection is
-closed.  The default is 60.
-.TP
-.B max_connections <number>
-This specifies the maximum number of clients that can be connected to mpd.  The
-default is 5.
-.TP
-.B max_command_list_size <size in KiB>
-This specifies the maximum size a command list can be.  The default is 2048.
-.TP
-.B max_output_buffer_size <size in KiB>
-This specifies the maximum size of the output buffer to a client.  The default
-is 8192.
 .TP
 .B save_absolute_paths_in_playlists <yes or no>
 This specifies whether relative or absolute paths for song filenames are used

@@ -135,44 +135,44 @@ void initConf(void)
 	configEntriesList = makeList((ListFreeDataFunc *) freeConfigEntry, 1);
 
 	/* registerConfigParam(name,                   repeatable, block); */
-	registerConfigParam(CONF_PORT,                          0,     0);
-	registerConfigParam(CONF_PID_FILE,                      0,     0);
 	registerConfigParam(CONF_MUSIC_DIR,                     0,     0);
 	registerConfigParam(CONF_PLAYLIST_DIR,                  0,     0);
+	registerConfigParam(CONF_DB_FILE,                       0,     0);
 	registerConfigParam(CONF_LOG_FILE,                      0,     0);
 	registerConfigParam(CONF_ERROR_FILE,                    0,     0);
-	registerConfigParam(CONF_CONN_TIMEOUT,                  0,     0);
-	registerConfigParam(CONF_MIXER_DEVICE,                  0,     0);
-	registerConfigParam(CONF_MAX_CONN,                      0,     0);
-	registerConfigParam(CONF_MAX_PLAYLIST_LENGTH,           0,     0);
-	registerConfigParam(CONF_BUFFER_BEFORE_PLAY,            0,     0);
-	registerConfigParam(CONF_MAX_COMMAND_LIST_SIZE,         0,     0);
-	registerConfigParam(CONF_MAX_OUTPUT_BUFFER_SIZE,        0,     0);
-	registerConfigParam(CONF_AUDIO_OUTPUT,                  1,     1);
-	registerConfigParam(CONF_SAVE_ABSOLUTE_PATHS,           0,     0);
-	registerConfigParam(CONF_BIND_TO_ADDRESS,               1,     0);
-	registerConfigParam(CONF_MIXER_TYPE,                    0,     0);
+	registerConfigParam(CONF_PID_FILE,                      0,     0);
 	registerConfigParam(CONF_STATE_FILE,                    0,     0);
 	registerConfigParam(CONF_USER,                          0,     0);
-	registerConfigParam(CONF_DB_FILE,                       0,     0);
+	registerConfigParam(CONF_BIND_TO_ADDRESS,               1,     0);
+	registerConfigParam(CONF_PORT,                          0,     0);
 	registerConfigParam(CONF_LOG_LEVEL,                     0,     0);
-	registerConfigParam(CONF_MIXER_CONTROL,                 0,     0);
-	registerConfigParam(CONF_FS_CHARSET,                    0,     0);
 	registerConfigParam(CONF_PASSWORD,                      1,     0);
 	registerConfigParam(CONF_DEFAULT_PERMS,                 0,     0);
-	registerConfigParam(CONF_AUDIO_BUFFER_SIZE,             0,     0);
-	registerConfigParam(CONF_REPLAYGAIN,                    0,     0);
+	registerConfigParam(CONF_AUDIO_OUTPUT,                  1,     1);
 	registerConfigParam(CONF_AUDIO_OUTPUT_FORMAT,           0,     0);
+	registerConfigParam(CONF_MIXER_TYPE,                    0,     0);
+	registerConfigParam(CONF_MIXER_DEVICE,                  0,     0);
+	registerConfigParam(CONF_MIXER_CONTROL,                 0,     0);
+	registerConfigParam(CONF_REPLAYGAIN,                    0,     0);
+	registerConfigParam(CONF_REPLAYGAIN_PREAMP,             0,     0);
+	registerConfigParam(CONF_VOLUME_NORMALIZATION,          0,     0);
+	registerConfigParam(CONF_AUDIO_BUFFER_SIZE,             0,     0);
+	registerConfigParam(CONF_BUFFER_BEFORE_PLAY,            0,     0);
+	registerConfigParam(CONF_HTTP_BUFFER_SIZE,              0,     0);
+	registerConfigParam(CONF_HTTP_PREBUFFER_SIZE,           0,     0);
 	registerConfigParam(CONF_HTTP_PROXY_HOST,               0,     0);
 	registerConfigParam(CONF_HTTP_PROXY_PORT,               0,     0);
 	registerConfigParam(CONF_HTTP_PROXY_USER,               0,     0);
 	registerConfigParam(CONF_HTTP_PROXY_PASSWORD,           0,     0);
-	registerConfigParam(CONF_HTTP_BUFFER_SIZE,              0,     0);
-	registerConfigParam(CONF_HTTP_PREBUFFER_SIZE,           0,     0);
-	registerConfigParam(CONF_REPLAYGAIN_PREAMP,             0,     0);
-	registerConfigParam(CONF_METADATA_TO_USE,               0,     0);
+	registerConfigParam(CONF_CONN_TIMEOUT,                  0,     0);
+	registerConfigParam(CONF_MAX_CONN,                      0,     0);
+	registerConfigParam(CONF_MAX_PLAYLIST_LENGTH,           0,     0);
+	registerConfigParam(CONF_MAX_COMMAND_LIST_SIZE,         0,     0);
+	registerConfigParam(CONF_MAX_OUTPUT_BUFFER_SIZE,        0,     0);
+	registerConfigParam(CONF_FS_CHARSET,                    0,     0);
 	registerConfigParam(CONF_ID3V1_ENCODING,                0,     0);
-	registerConfigParam(CONF_VOLUME_NORMALIZATION,          0,     0);
+	registerConfigParam(CONF_METADATA_TO_USE,               0,     0);
+	registerConfigParam(CONF_SAVE_ABSOLUTE_PATHS,           0,     0);
 }
 
 static void addBlockParam(ConfigParam * param, char *name, char *value,
