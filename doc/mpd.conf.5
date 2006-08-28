@@ -84,6 +84,12 @@ This specifies the character set used for the filesystem.  A list of supported
 character sets can be obtained by running "iconv -l".  The default is
 determined from the locale when the db was originally created.
 .TP
+.B id3v1_encoding <charset>
+This specifies the character set which ID3v1 tags are encoded in.  A list of
+supported character sets can be obtained by running "iconv -l".  The default is
+to let libid3tag convert them (from ISO-8859-1, as the standard specifies) and
+do no additional conversion.
+.TP
 .B replaygain <album or track>
 If specified, mpd will adjust the volume of songs played using replaygain tags
 (see <\fBhttp://www.replaygain.org/\fP>).  Setting this to "album" will adjust
