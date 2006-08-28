@@ -1,3 +1,44 @@
+ver 0.12.0 (2006/??/??)
+* New audio output code which supports:
+  * A plugin-like architecture
+  * Non-libao ("native") outputs:
+    * ALSA
+    * OSS
+    * OS X
+    * Sun
+    * Media MVP
+    * PulseAudio
+    * Shout (Icecast or Shoutcast)
+  * Playing through multiple outputs at once
+  * Enabling/disabling outputs while MPD is running
+  * Saving output state (enabled/disabled) to the state_file
+* OggFLAC support
+* Musepack support
+* Gapless MP3 playback
+* MP3 ReplayGain support (using ID3v2 tags only)
+* Support for MP2 files if MP3 support is enabled
+* Composer, Performer, Comment, and Disc metadata support
+* New outputs command for listing available audio outputs
+* New enableoutput and disableoutput commands for enabling/disabling outputs
+* New plchangesposid command for a stripped down version of plchanges
+* New addid command for adding to the playlist and returning a song ID
+* New commands and notcommands commands for checking available commands
+* Can specify any supported metadata type in search, find, and list
+* Can specify "any" as the metadata type in search, find, and list
+* New volume_normalization parameter for enabling Audio Compress normalization
+* New id3v1_encoding parameter for converting the encoding of ID3v1 tags
+* New metadata_to_use parameter for choosing supported metadata types
+* New pid_file parameter for saving the MPD process ID to the specified file
+* The db_file parameter is now required
+* The port parameter is now optional (defaults to 6600)
+* Can specify bind_to_address multiple times
+* New --kill argument for killing MPD if pid_file is specified
+* Removed --update-db argument (use the update function in your client instead)
+* New mpdconf.example
+* New mpd.conf man page 
+* Removed bundled libmad and libid3tag
+* Lots of bug fixes, cleaned up code, and performance improvements
+
 ver 0.11.5 (2004/11/1)
 1) New id3v1_ecnoding config option to configure the id3v1 tag encoding (patch from dottemag)
 2) Strip '\r' from m3u playlists (thank you windows)
