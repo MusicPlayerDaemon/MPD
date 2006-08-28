@@ -26,7 +26,6 @@ ver 0.12.0 (2006/??/??)
 * Can specify any supported metadata type in search, find, and list
 * Can specify "any" as the metadata type in search, find, and list
 * New volume_normalization parameter for enabling Audio Compress normalization
-* New id3v1_encoding parameter for converting the encoding of ID3v1 tags
 * New metadata_to_use parameter for choosing supported metadata types
 * New pid_file parameter for saving the MPD process ID to the specified file
 * The db_file parameter is now required
@@ -40,7 +39,7 @@ ver 0.12.0 (2006/??/??)
 * Lots of bug fixes, cleaned up code, and performance improvements
 
 ver 0.11.5 (2004/11/1)
-1) New id3v1_ecnoding config option to configure the id3v1 tag encoding (patch from dottemag)
+1) New id3v1_encoding config option to configure the id3v1 tag encoding (patch from dottedmag)
 2) Strip '\r' from m3u playlists (thank you windows)
 3) Use random() instead of rand() for playlist randomizing
 4) Fix a bug trying skipping some commented lines in m3u playlist files
