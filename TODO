@@ -23,9 +23,6 @@
 	*) cleanup input plugins "API"
 	*) cleanup output plugins "API"
 
-*) input plugins
-	*) Handle mp1 and mp2 files (including files with mp3 suffixes) 
-
 *) add error codes for status->error
 
 *) Cleanup Config File Code
