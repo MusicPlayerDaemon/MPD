@@ -318,7 +318,7 @@ if test x$enable_mpc = xyes; then
   	if test "x$mpcdec_libraries" != "x" ; then
   		MPCDEC_LIBS="-L$mpcdec_libraries"
   	elif test "x$mpcdec_prefix" != "x" ; then
-    		MPCDEC_LIBS="-L$faad_prefix/lib"
+		MPCDEC_LIBS="-L$mpcdec_prefix/lib"
   	elif test "x$prefix" != "xNONE"; then
     		MPCDEC_LIBS="-L$libdir"
   	fi
