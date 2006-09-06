@@ -1,2 +1,0 @@
-. bs/bs-lib.sh
-
