@@ -133,13 +133,14 @@ mpd_malloc void *xmalloc(size_t size)
 
 mpd_malloc void *xrealloc(void *ptr, size_t size)
 {
-	void *ret;
+	void *ret = realloc(ptr, size);
 
-	/* hmm... realloc to 0 isn't uncommon..., is it? this check
-	 * may be too extreme... (eric) */
-	assert((mpd_likely(size)));
+	/* some C libraries return NULL when size == 0,
+	 * make sure we get a free()-able pointer (free(NULL)
+	 * doesn't work with all C libraries, either) */
+	if (mpd_unlikely(!ret && !size))
+		ret = realloc(ptr, 1);
 
-	ret = realloc(ptr, size);
 	if (mpd_unlikely(!ret))
 		FATAL("OOM: realloc\n");
 	return ret;
