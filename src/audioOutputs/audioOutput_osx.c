@@ -263,8 +263,11 @@ static int osx_openDevice(AudioOutput * audioOutput)
 
 	streamDesc.mSampleRate = audioFormat->sampleRate;
 	streamDesc.mFormatID = kAudioFormatLinearPCM;
-	streamDesc.mFormatFlags = kLinearPCMFormatFlagIsSignedInteger |
-	    kLinearPCMFormatFlagIsBigEndian;
+	streamDesc.mFormatFlags = kLinearPCMFormatFlagIsSignedInteger;
+#ifdef WORDS_BIGENDIAN
+	streamDesc.mFormatFlags |= kLinearPCMFormatFlagIsBigEndian;
+#endif
+
 	streamDesc.mBytesPerPacket =
 	    audioFormat->channels * audioFormat->bits / 8;
 	streamDesc.mFramesPerPacket = 1;
