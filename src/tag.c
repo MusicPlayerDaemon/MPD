@@ -35,13 +35,6 @@
 #include <stdio.h>
 #include <assert.h>
 #include <errno.h>
-#ifdef HAVE_OGGVORBIS
-#include <vorbis/vorbisfile.h>
-#endif
-#ifdef HAVE_FLAC
-#include <FLAC/file_decoder.h>
-#include <FLAC/metadata.h>
-#endif
 
 #ifdef HAVE_ID3TAG
 #  define isId3v1(tag) (id3_tag_options(tag, 0, 0) & ID3_TAG_OPTION_ID3V1)
