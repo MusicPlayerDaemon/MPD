@@ -149,12 +149,15 @@ case $host in
 		enable_osx=yes ;;
 esac
 
-if test x$enable_oggvorbis = xno; then
-	AC_MSG_WARN("disabling shout streaming support because vorbis encoder was not found")
-	enable_shout=no
-elif test x$use_tremor = xyes; then
-	AC_MSG_WARN("disabling shout streaming support because tremor does not support vorbis encoding")
-	enable_shout=no
+if test x$enable_shout = xyes; then
+	if test x$enable_oggvorbis = xno; then
+		AC_MSG_WARN([disabling shout streaming support because vorbis is not enabled])
+		enable_shout=no
+	fi
+	if test x$use_tremor = xyes; then
+		AC_MSG_WARN([disabling shout streaming support because tremor does not support vorbis encoding])
+		enable_shout=no
+	fi
 fi
 
 if test x$enable_ao = xyes; then
@@ -466,10 +469,6 @@ int main() {
 	CPPFLAGS=$oldcppflags
 fi
 
-if test x$enable_oggvorbis = xyes && test x$use_tremor != xyes; then
-	XIPH_PATH_OGG(MPD_LIBS="$MPD_LIBS $OGG_LIBS" MPD_CFLAGS="$MPD_CFLAGS $OGG_CFLAGS",enable_oggvorbis=no)
-fi
-
 if test x$use_tremor = xyes; then
 	if test "x$tremor_libraries" != "x" ; then
 		TREMOR_LIBS="-L$tremor_libraries"
@@ -490,79 +489,22 @@ if test x$use_tremor = xyes; then
 	ac_save_LIBS="$LIBS"
 	CFLAGS="$CFLAGS $TREMOR_CFLAGS"
 	LIBS="$LIBS $TREMOR_LIBS"
-	AC_CHECK_LIB(vorbisidec,ov_read,,enable_oggvorbis=no;AC_MSG_WARN([vorbisidec lib needed for ogg support with tremor -- disabling ogg support]))
-	CFLAGS="$ac_save_CFLAGS"
-	LIBS="$ac_save_LIBS"
-fi
-
-if test x$enable_oggvorbis = xyes; then
-	if test x$use_tremor = xyes; then
-		VORBIS_LIBS="$TREMOR_LIBS"
-		VORBIS_CFLAGS="$TREMOR_CFLAGS"
-	else
-		enable_vorbistest=no
-		XIPH_PATH_VORBIS(,enable_oggvorbis=no)
+	AC_CHECK_LIB(vorbisidec,ov_read,enable_oggvorbis=yes,enable_oggvorbis=no;AC_MSG_WARN([vorbisidec lib needed for ogg support with tremor -- disabling ogg support]))
+	if test x$enable_oggvorbis = xno; then
+		CFLAGS="$ac_save_CFLAGS"
+		LIBS="$ac_save_LIBS"
 	fi
+elif test x$enable_oggvorbis = xyes; then
+	XIPH_PATH_OGG(,enable_oggvorbis=no)
+	XIPH_PATH_VORBIS(,enable_oggvorbis=no)
 	if test x$enable_oggvorbis = xyes; then
+		MPD_LIBS="$MPD_LIBS $OGG_LIBS $VORBIS_LIBS $VORBISFILE_LIBS"
+		MPD_CFLAGS="$MPD_CFLAGS $OGG_CFLAGS $VORBIS_CFLAGS"
 
-dnl
-dnl Vorbis Test
-dnl vorbistest in XIPH_PATH_OGG is broken on my debian system
-dnl so here i used my own hacked up version till i get vorbis-dev gets
-dnl upgraded in debian (hopefully when 1.0.1 comes out)
-dnl
-dnl This version also tests Tremor, which has no vorbistest of its own.
-dnl
-		
-  		AC_MSG_CHECKING(that Vorbis is usable)
-
-    		ac_save_CFLAGS="$CFLAGS"
-    		ac_save_LIBS="$LIBS"
-    		CFLAGS="$CFLAGS $VORBIS_CFLAGS $OGG_CFLAGS"
-		if test x$use_tremor = xyes; then
-		   CFLAGS="$CFLAGS -DTREMOR"
+		if test x$enable_shout = xyes; then
+			MPD_LIBS="$MPD_LIBS $VORBISENC_LIBS"
+			MPD_CFLAGS="$VORBISFILE_CFLAGS $VORBISENC_CFLAGS"
 		fi
-    		LIBS="$LIBS $VORBIS_LIBS $VORBISENC_LIBS $OGG_LIBS"
-
-      		AC_TRY_RUN([
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#ifdef TREMOR
-#include <tremor/ivorbisfile.h>
-#else
-#include <vorbis/codec.h>
-#include <vorbis/vorbisenc.h>
-#endif
-
-int main ()
-{
-    vorbis_block 	vb;
-    vorbis_dsp_state	vd;
-    vorbis_info		vi;
-
-    vorbis_info_init (&vi);
-#ifndef TREMOR
-    vorbis_encode_init (&vi, 2, 44100, -1, 128, -1);
-#endif
-    /*vorbis_analysis_init (&vd, &vi);
-    vorbis_block_init (&vd, &vb);*/
-    /* this function was added in 1.0rc3, so this is what we're testing for */
-    /*vorbis_bitrate_addblock (&vb);*/
-
-    return 0;
-}
-
-], AC_MSG_RESULT(yes), [AC_MSG_RESULT(no);enable_oggvorbis=no],[echo $ac_n "cross compiling; assumed OK... $ac_c"])
-       		CFLAGS="$ac_save_CFLAGS"
-       		LIBS="$ac_save_LIBS"
-	fi
-dnl 
-dnl End of Vorbis Test
-dnl
-	if test x$enable_oggvorbis = xyes; then
-		MPD_LIBS="$MPD_LIBS $VORBIS_LIBS $VORBISFILE_LIBS $VORBISENC_LIBS" 
-		MPD_CFLAGS="$MPD_CFLAGS $VORBIS_CFLAGS $VORBISFILE_CFLAGS $VORBISENC_CFLAGS"
 	fi
 fi
 
@@ -572,7 +514,11 @@ fi
 
 if test x$use_tremor = xyes; then
 	AC_DEFINE(HAVE_TREMOR,1,[Define to use tremor (libvorbisidec) for ogg support])
-fi	
+	if test x$enable_oggflac = xyes; then
+		AC_MSG_WARN([disabling OggFLAC support because it is incompatible with tremor])
+		enable_oggflac=no
+	fi
+fi
 
 if test x$enable_flac = xyes; then
 	oldmpdcflags="$MPD_CFLAGS"
