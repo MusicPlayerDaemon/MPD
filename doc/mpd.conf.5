@@ -89,8 +89,9 @@ the "password" config parameter.  If no passwords are specified, the default is
 .TP
 .B audio_output
 See \fBDESCRIPTION\fP and the various \fBAUDIO OUTPUT PARAMETERS\fP sections
-for the format of this parameter.  Multiple audio_output parameters may be
-specified.
+for the format of this parameter.  Multiple audio_output sections may be
+specified.  If no audio_output section is specified, then MPD will scan for a
+usable audio output.
 .TP
 .B audio_output_format <sample_rate:bits:channels>
 This specifies the sample rate, bits per sample, and number of channels of
