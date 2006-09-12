@@ -1,243 +1,245 @@
-# MPD CONFIG FILE
-# For a full description of all config parameters,
-# Check the mpd man page, "man mpd".
+# An example configuration file for MPD
+# See the mpd.conf man page for a more detailed description of each paramaeter.
 
-##################### REQUIRED ###########################
-music_directory 	"~/music"
-playlist_directory 	"~/music"
-db_file 		"~/.mpd/mpd.db"
-log_file 		"~/.mpd/mpd.log"
-error_file 		"~/.mpd/mpd.error"
-pid_file 		"~/.mpd/mpd.pid"
-##########################################################
+######################## REQUIRED PATHS ########################
+music_directory                 "~/music"
+playlist_directory              "~/.mpd/playlists"
+db_file                         "~/.mpd/mpd.db"
+log_file                        "~/.mpd/mpd.log"
+error_file                      "~/.mpd/mpd.error"
+################################################################
 
-##########################################################
-# EVERYTHING ELSE IS OPTIONAL
-##########################################################
 
-################## AUDIO OUTPUT ##########################
+######################## OPTIONAL PATHS ########################
 #
-# use this if you want to use OSS audio output
+# If you wish to use mpd --kill to stop MPD, then you must
+# specify a file here in which to store MPD's process ID.
+#
+#pid_file                        "~/.mpd/mpd.pid"
+#
+# If specified, MPD will save its current state (playlist,
+# current song, playing/paused, etc.) at exit.  This will be
+# used to restore the session the next time it is run.
+#
+#state_file                      "~/.mpd/mpdstate"
+#
+################################################################
+
+
+######################## DAEMON OPTIONS ########################
+#
+# If started as root, MPD will drop root privileges and run as
+# this user instead.  Otherwise, MPD will run as the user it was
+# started by.  If left unspecified, MPD will not drop root
+# privileges at all (not recommended).
+#
+#user                            "nobody"
+#
+# The address and port to listen on.
+#
+#bind_to_address                 "any"
+#port                            "6600"
+#
+# Controls the amount of information that is logged.  Can be
+# "default", "secure", or "verbose".
+#
+#log_level                       "default"
+#
+################################################################
+
+
+########################## PERMISSIONS #########################
+#
+# MPD can require that users specify a password before using it.
+# You may specify one ore more here, along with what users who
+# log in with that password are allowed to do.
+#
+#password                        "password@read,add,control,admin"
+#
+# Specifies what permissions a user who has not logged in with a
+# password has.  By default, all users have full access to MPD
+# if no password is specified above, or no access if one or
+# more passwords are specified.
+#
+#default_permissions             "read,add,control,admin"
+#
+################################################################
+
+
+########################## AUDIO OUTPUT ########################
+#
+# MPD supports many audio output types, as well as playing
+# through multiple audio outputs at the same time.  You can
+# specify one or more here.  If you don't specify any, MPD will
+# automatically scan for a usable audio output.
+#
+# See <http://mpd.wikia.com/...> for examples of other audio
+# outputs, such as PulseAudio, libao, etc.
+#
+# An example of an ALSA output:
+#
 #audio_output {
-#	type		"oss"
-#	name		"my OSS sound card"
-#	device	 	"/dev/dsp" # optional
-#	format		"44100:16:2" #optional
-#} 
+#        type                    "alsa"
+#        name                    "My ALSA Device"
+#        device                  "hw:0,0"     # optional
+#        format                  "44100:16:2" # optional
+#}
 #
-# use this if you want to use ALSA audio output
-#audio_output {
-#	type		"alsa"
-#	name		"my ALSA device"
-#	device		"hw:0,0" # optional
-#	format		"44100:16:2" #optional
-#} 
-#
-# as a last resort, try using libao
-#audio_output {
-#	type		"ao"
-#	name		"default ao output"
-#} 
-#
-#
-# Set this if you have problems 
-# playing audio files.
-# This will resample your music so
-# that it comes out at the set rate. 
-#
-#audio_output_format	"44100:16:2"
-#
-##########################################################
-
-
-################### VOLUME MIXER #########################
-#
-# Examples:
-# ALSA Mixer 
-#mixer_type		"alsa"
-#mixer_device		"default"
-#mixer_control		"PCM"
-#
-# OSS Mixer
-#mixer_type		"oss"
-#mixer_device 		"/dev/mixer"
-#mixer_control		"PCM"
-#
-# Software Mixer
-#mixer_type		"software"
-#
-##########################################################
-
-
-################# SHOUT STREAMING ########################
-#
-# Set this to allow mpd to stream its output to icecast2
-# (i.e. mpd is a icecast2 source)
+# An example of an OSS output:
 #
 #audio_output {
-#	type		"shout"
-#	name		"my cool stream"
-#	host		"hostname"
-#	port		"8000"
-#	mount		"/mpd.ogg"
-#	password	"hackme"
-#	quality		"5.0"	
-#	bitrate		"128"
-#	format		"44100:16:1"
+#        type                    "oss"
+#        name                    "My OSS Device"
+#        device                  "/dev/dsp"   # optional
+#        format                  "44100:16:2" # optional
+#}
 #
-# Optional Parameters
-#	user		"source"
-#	description	"here's my long description"
-#       genre		"jazz"
-#} # end of audio_output
+# An example of a shout output (for streaming to Icecast):
 #
-##########################################################
+#audio_output {
+#        type                    "shout"
+#        name                    "My Shout Stream"
+#        host                    "localhost"
+#        port                    "8000"
+#        mount                   "/mpd.ogg"
+#        password                "hackme"
+#        quality                 "5.0"
+#        bitrate                 "128"
+#        format                  "44100:16:1"
+#        user                    "source"                # optional
+#        description             "My Stream Description" # optional
+#        genre                   "jazz"                  # optional
+#        public                  "no"                    # optional
+#}
+#
+# Force all decoded audio to be converted to this format before
+# being passed to the audio outputs.
+#
+#audio_output_format             "44100:16:2"
+#
+################################################################
 
 
-################# FILESYSTEM SETTINGS ####################
+############################# MIXER ############################
 #
-# If the names of files or directories are 
-# not correctly displayed then set the 
-# following to the filesystem coding. 
+# MPD needs to know what mixer settings to change when you
+# adjust the volume.  If you don't specify one here, MPD will
+# pick one based on which ones it was compile with support for.
 #
-#	Usually this is either:
-#	ISO-8859-1 or UTF-8
+# An example for controlling an ALSA mixer:
 #
-# After changing the filesystem_charset
-# you will need to recreate the db:
-#	mpd --create-db
+#mixer_type                      "alsa"
+#mixer_device                    "default"
+#mixer_control                   "PCM"
 #
-#filesystem_charset "ISO-8859-1"
+# An example for controlling an OSS mixer:
 #
-##########################################################
+#mixer_type                      "oss"
+#mixer_device                    "/dev/mixer"
+#mixer_control                   "PCM"
+#
+# If you want MPD to adjust the volume of audio sent to the
+# audio outputs, you can tell it to use the software mixer:
+#
+#mixer_type                      "software"
+#
+################################################################
 
 
-#################### OPTIONAL FILES ######################
+######################### NORMALIZATION ########################
 #
-# The state file (if set) will be a file
-# for storing all current information 
-# (playlist, playing/paused, etc...) from
-# the last MPD session. This will be used
-# to recreate your last MPD session after
-# restart.
+# Specifies the type of ReplayGain to use.  Can be "album" or
+# "track".  ReplayGain will not be used if not specified.  See
+# <http://www.replaygain.org> for more details.
 #
-#state_file		"~/.mpd/mpdstate"
+#replaygain                      "album"
 #
-##########################################################
+# Sets the pre-amp used for files that have ReplayGain tags.
+#
+#replaygain_preamp               "0"
+#
+# Enable on the fly volume normalization.  This will cause the
+# volume of all songs played to be adjusted so that they sound
+# as though they are of equal loudness.
+#
+#volume_normalization            "no"
+#
+################################################################
 
 
-################# Normalization ##########################
+########################### BUFFERING ##########################
 #
-# Use Replay Gain (album or track)
-#	http://www.replaygain.org
+# The size of the buffer containing decoded audio.  You probably
+# shouldn't change this.
 #
-#replaygain		"album"
+#audio_buffer_size               "2048"
 #
-# Sets the pre-amp used for files that have replaygain
-# info.  Valid values are between -15 to 15 (in dB).
+# How much of the buffer to fill before beginning to play.
 #
-#replaygain_preamp	"0"
+#buffer_before_play              "0%"
 #
-# Normalization increases the amplitude of the audio
-# waveform to the maximum level without introducing any 
-# distortion into the recording. This option will 
-# normalize when replaygain is not on, utilizing the 
-# CPU for calculation.
+# Similar options for the HTTP stream buffer.  If you hear
+# skipping while playing HTTP streams, you may wish to increase
+# these.
 #
-#volume_normalization	"yes"
-##########################################################
+#http_buffer_size                "128"
+#http_prebuffer_size             "25%"
+#
+################################################################
 
 
-################ OUTPUT BUFFER SETTINGS ##################
+########################### HTTP PROXY #########################
 #
-# You should not need to mess with this
-# unless you know what you're doing.
+# Specifies the HTTP proxy to use for playing HTTP streams.
 #
-#audio_buffer_size	"2048"
+#http_proxy_host                 "proxy.isp.com"
+#http_proxy_port                 "8080"
+#http_proxy_user                 "user"
+#http_proxy_password             "password"
 #
-# This means exactly what it says, it will
-# buffer your file up to the percentage of
-# the buffer before it begins playing.
-#
-#buffer_before_play 	"25%"
-#
-##########################################################
+################################################################
 
 
-################### HTTP PROXY ###########################
+############################# LIMITS ###########################
 #
-# http_proxy_host	"proxy.isp.com"
-# http_proxy_port	"8080"
-# http_proxy_user	"user"
-# http_proxy_password	"password"
+# These are various limits to prevent MPD from using too many
+# resources.  You should only change them if they start
+# restricting your usage of MPD.
 #
-##########################################################
+#connection_timeout              "60"
+#max_connections                 "5"
+#max_playlist_length             "16384"
+#max_command_list_size           "2048"
+#max_output_buffer_size          "8192"
+#
+################################################################
 
 
-################# SECURITY SETTINGS ######################
+###################### CHARACTER ENCODINGS #####################
 #
-# It is encouraged to run MPD as 
-# non-superuser.  If you start mpd as root
-# (for example, in an init script), set
-# this value, then mpd will drop root privileges
-# and runs as the user specified.
+# If file or directory names do not display correctly, then you
+# may need to change this.  In most cases it should be either
+# "ISO-8859-1" or "UTF-8".  You must recreate your database
+# after changing this (use mpd --create-db).
 #
-#user 		"nobody"
+#filesystem_charset              "ISO-8859-1"
 #
-# Set this value if you only have one 
-# address you want to allow connection to. 
+# The encoding that ID3v1 tags should be converted from.
 #
-#bind_to_address 	"localhost"
+#id3v1_encoding                  "ISO-8859-1"
 #
-# If you want to setup MPD to use 
-# passwords set them here
-#
-#password 		"password1@read,add,control,admin"
-#password 		"password2@read"
-#
-# Specify permissions used by default when no password is 
-# given by for a connection/client.
-#
-#default_permissions	"read,add,control,admin"
-#
-##########################################
+################################################################
 
 
-################ MISCELLANEOUS OPTIONS ###################
+######################### OTHER OPTIONS ########################
 #
-#port	"6600"
+# The metadata types MPD will recognize.
 #
-# This determines what encoding ID3v1 tags should be converted from.
+#metadata_to_use                  "artist,album,title,track,name,genre,date,composer,performer,disc"
 #
-#id3v1_encoding         "ISO-8859-1"
-#
-# This sets the metadata mpd will use, to disable all metadata, set to "none"
-# NOTE: comments are disabled by default
-#
-#metadata_to_use "artist,album,title,genre,date,track,composer,performer,comment"
-#
-# This setting exists as precaution against attacks.
-#
-#max_playlist_length 	"16384"
-#
-# Valid options are "default", "secure" or "verbose".
-#log_level		"default"
-#
-#connection_timeout 	"60"
-#
-# This should be fine for 2-3 people using clients 
-# at the same time.
-#
-#max_connections 	"5"
-#
-# No need to change these unless you know better.
-#
-#max_command_list_size 	"2048"
-#max_output_buffer_size "8192"
-#
-# This will make playlists compatible with normal music
-# players.
+# Enable this if you wish to use your MPD created playlists in
+# other music players.
 #
 #save_absolute_paths_in_playlists "no"
 #
-##########################################################
+################################################################
