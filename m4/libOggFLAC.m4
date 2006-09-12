@@ -27,7 +27,7 @@ AC_ARG_ENABLE(libOggFLACtest, [  --disable-libOggFLACtest       Do not try to co
     LIBOGGFLAC_CFLAGS="-I$libOggFLAC_includes"
   elif test "x$libOggFLAC_prefix" != "x" ; then
     LIBOGGFLAC_CFLAGS="-I$libOggFLAC_prefix/include"
-  elif test "$prefix" != "xNONE"; then
+  elif test "x$prefix" != "xNONE"; then
     LIBOGGFLAC_CFLAGS="-I$prefix/include"
   fi
 
