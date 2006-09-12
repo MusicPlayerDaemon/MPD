@@ -114,14 +114,14 @@ This specifies which mixer control to use (sometimes referred to as the
 for OSS is "Pcm", and an example for alsa is "PCM".
 .TP
 .B replaygain <album or track>
-If specified, mpd will adjust the volume of songs played using replaygain tags
+If specified, mpd will adjust the volume of songs played using ReplayGain tags
 (see <\fBhttp://www.replaygain.org/\fP>).  Setting this to "album" will adjust
-volume using the album's replaygain tags, while setting it to "track" will
-adjust it using the track replaygain tags.  Currently only FLAC, Ogg Vorbis,
-Musepack, and MP3 (through ID3v2 replaygain tags, not APEv2) are supported.
+volume using the album's ReplayGain tags, while setting it to "track" will
+adjust it using the track ReplayGain tags.  Currently only FLAC, Ogg Vorbis,
+Musepack, and MP3 (through ID3v2 ReplayGain tags, not APEv2) are supported.
 .TP
 .B replaygain_preamp <-15 to 15>
-This is the gain (in dB) applied to songs with replaygain tags.
+This is the gain (in dB) applied to songs with ReplayGain tags.
 .TP
 .B volume_normalization <yes or no>
 If yes, mpd will normalize the volume of songs as they play.  Default is no.
