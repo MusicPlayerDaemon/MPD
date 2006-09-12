@@ -124,7 +124,7 @@ error_file                      "~/.mpd/mpd.error"
 #
 # MPD needs to know what mixer settings to change when you
 # adjust the volume.  If you don't specify one here, MPD will
-# pick one based on which ones it was compile with support for.
+# pick one based on which ones it was compiled with support for.
 #
 # An example for controlling an ALSA mixer:
 #
