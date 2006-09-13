@@ -143,21 +143,21 @@ for i in $ac_local_paths; do
 done
 
 echo "  $ACLOCAL $ACLOCAL_FLAGS"
-$ACLOCAL $ACLOCAL_FLAGS
+$ACLOCAL $ACLOCAL_FLAGS || exit 1
 
 echo "  $AUTOHEADER"
-$AUTOHEADER
+$AUTOHEADER || exit 1
 
 echo "  $LIBTOOLIZE --automake"
-$LIBTOOLIZE --automake
+$LIBTOOLIZE --automake || exit 1
 
 echo "  $AUTOMAKE --add-missing $AUTOMAKE_FLAGS"
-$AUTOMAKE --add-missing $AUTOMAKE_FLAGS
+$AUTOMAKE --add-missing $AUTOMAKE_FLAGS || exit 1
 
 echo "  $AUTOCONF"
-$AUTOCONF
+$AUTOCONF || exit 1
 
 cd "$olddir"
 if test x$NOCONFIGURE = x; then
-	"$srcdir"/configure "$@" && echo
+	"$srcdir"/configure "$@" || exit 1
 fi
