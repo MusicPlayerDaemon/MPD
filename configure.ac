@@ -641,7 +641,7 @@ if test x$enable_ao = xno &&
    test x$enable_osx = xno &&
    test x$enable_pulse = xno &&
    test x$enable_mvp = xno; then
-	AC_MSG_ERROR("No Audio Output types configured!")
+	AC_MSG_ERROR([No Audio Output types configured!])
 fi
 
 echo " File Format Support:"
@@ -714,7 +714,7 @@ if
 	test x$enable_aac = xno &&
 	test x$enable_mpc = xno &&
 	test x$enable_mod = xno; then
-	AC_MSG_ERROR("No input plugins supported!")
+	AC_MSG_ERROR([No input plugins supported!])
 fi
 
 echo ""
