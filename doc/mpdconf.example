@@ -1,5 +1,5 @@
 # An example configuration file for MPD
-# See the mpd.conf man page for a more detailed description of each paramaeter.
+# See the mpd.conf man page for a more detailed description of each parameter.
 
 ######################## REQUIRED PATHS ########################
 music_directory                 "~/music"
