@@ -22,7 +22,7 @@
 #include <errno.h>
 #include <stddef.h>
 
-volatile sig_atomic_t __caught_signals[NSIG];
+static volatile sig_atomic_t __caught_signals[NSIG];
 
 static void __signal_handler(int sig)
 {
