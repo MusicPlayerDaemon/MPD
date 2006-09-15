@@ -73,8 +73,8 @@ error_file                      "~/.mpd/mpd.error"
 # specify one or more here.  If you don't specify any, MPD will
 # automatically scan for a usable audio output.
 #
-# See <http://mpd.wikia.com/...> for examples of other audio
-# outputs, such as PulseAudio, libao, etc.
+# See <http://mpd.wikia.com/wiki/Configuration#Audio_Outputs>
+# for examples of other audio outputs.
 #
 # An example of an ALSA output:
 #
