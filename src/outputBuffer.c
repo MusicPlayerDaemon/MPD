@@ -41,18 +41,18 @@ void clearOutputBuffer(OutputBuffer * cb)
 {
 	int currentSet = 1;
 
-	currentChunk = -1;
 	cb->end = cb->begin;
 
 	/* be sure to reset metaChunkSets cause we are skipping over audio
 	 * audio chunks, and thus skipping over metadata */
-	if (sendMetaChunk == 0 && currentMetaChunk >= 0) {
+	if (currentChunk >= 0 && sendMetaChunk == 0 && currentMetaChunk >= 0) {
 		currentSet = cb->metaChunkSet[currentChunk];
 	}
 	clearAllMetaChunkSets(cb);
-	if (sendMetaChunk == 0 && currentMetaChunk >= 0) {
+	if (currentChunk >= 0 && sendMetaChunk == 0 && currentMetaChunk >= 0) {
 		cb->metaChunkSet[currentChunk] = currentSet;
 	}
+	currentChunk = -1;
 }
 
 void flushOutputBuffer(OutputBuffer * cb)
