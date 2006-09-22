@@ -1,4 +1,4 @@
-ver 0.12.0 (2006/??/??)
+ver 0.12.0 (2006/9/22)
 * New audio output code which supports:
   * A plugin-like architecture
   * Non-libao ("native") outputs:
