@@ -128,6 +128,9 @@ void initAudioDriver(void)
 
 		param = getNextConfigParam(CONF_AUDIO_OUTPUT, param);
 
+		/* only allow param to be NULL if there just one audioOutput */
+		assert(param || (audioOutputArraySize == 1));
+
 		if (!initAudioOutput(output, param)) {
 			if (param)
 			{
