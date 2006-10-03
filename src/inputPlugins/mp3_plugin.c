@@ -648,6 +648,29 @@ static int decodeFirstFrame(mp3DecodeData * data, DecoderControl * dc,
 	ptr = data->stream.anc_ptr;
 	bitlen = data->stream.anc_bitlen;
 
+	/*
+	 * Attempt to calulcate the length of the song from filesize
+	 */
+	size_t offset = data->inStream->offset;
+	mad_timer_t duration = data->frame.header.duration;
+	float frameTime = ((float)mad_timer_count(duration, MAD_UNITS_MILLISECONDS)) / 1000;
+
+	if (data->stream.this_frame != NULL)
+		offset -= data->stream.bufend - data->stream.this_frame;
+	else
+		offset -= data->stream.bufend - data->stream.buffer;
+
+	if (data->inStream->size >= offset) {
+		data->totalTime = ((data->inStream->size - offset) * 8.0) / (data->frame).header.bitrate;
+		data->maxFrames = data->totalTime / frameTime + FRAMES_CUSHION;
+	} else {
+		data->maxFrames = FRAMES_CUSHION;
+		data->totalTime = 0;
+	}
+
+	/*
+	 * if an xing tag exists, use that!
+	 */
 	if (parse_xing(&xing, &ptr, &bitlen)) {
 		data->foundXing = 1;
 		data->muteFrame = MUTEFRAME_SKIP;
@@ -657,30 +680,15 @@ static int decodeFirstFrame(mp3DecodeData * data, DecoderControl * dc,
 			data->dropSamplesAtEnd = lame.encoderPadding;
 		}
 
-		if (xing.flags & XING_FRAMES) {
+		if ((xing.flags & XING_FRAMES) && xing.frames) {
 			mad_timer_t duration = data->frame.header.duration;
 			mad_timer_multiply(&duration, xing.frames);
 			data->totalTime = ((float)mad_timer_count(duration, MAD_UNITS_MILLISECONDS)) / 1000;
 			data->maxFrames = xing.frames;
 		}
-	} else {
-		size_t offset = data->inStream->offset;
-		mad_timer_t duration = data->frame.header.duration;
-		float frameTime = ((float)mad_timer_count(duration, MAD_UNITS_MILLISECONDS)) / 1000;
-
-		if (data->stream.this_frame != NULL)
-			offset -= data->stream.bufend - data->stream.this_frame;
-		else
-			offset -= data->stream.bufend - data->stream.buffer;
-
-		if (data->inStream->size >= offset) {
-			data->totalTime = ((data->inStream->size - offset) * 8.0) / (data->frame).header.bitrate;
-			data->maxFrames = data->totalTime / frameTime + FRAMES_CUSHION;
-		} else {
-			data->maxFrames = FRAMES_CUSHION;
-			data->totalTime = 0;
-		}
 	} 
+
+	if (!data->maxFrames) return -1;
 
 	data->frameOffset = xmalloc(sizeof(long) * data->maxFrames);
 	data->times = xmalloc(sizeof(mad_timer_t) * data->maxFrames);
