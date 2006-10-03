@@ -93,22 +93,28 @@ static void do_log(FILE *fp, const char *fmt, va_list args)
 
 void flushWarningLog(void)
 {
-	char *s;
+	char *s = warningBuffer;
 
 	DEBUG("flushing warning messages\n");
 
-	if (warningBuffer == NULL)
-		return;
+	if (warningBuffer != NULL)
+	{
+		while (s != NULL) {
+			char * next = strchr(s, '\n');
+			if (next != NULL) {
+				*next = '\0';
+				next++;
+			}
+			fprintf(stderr, "%s\n", s);
+			s = next;
+		}
 
-	s = strtok(warningBuffer, "\n");
-	while (s != NULL) {
-		fprintf(stderr, "%s\n", s);
-		s = strtok(NULL, "\n");
+		warningBuffer = NULL;
 	}
 
-	free(warningBuffer);
-	warningBuffer = NULL;
 	warningFlushed = 1;
+
+	DEBUG("done flushing warning messages\n");
 }
 
 void initLog(const int verbose)

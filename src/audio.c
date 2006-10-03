@@ -274,7 +274,7 @@ static void syncAudioDeviceStates(void)
 
 	if (!audio_format.channels)
 		return;
-	for (i = audioOutputArraySize; --i >= 0; ) {
+	for (i = 0; i < audioOutputArraySize; ++i ) {
 		switch (audioDeviceStates[i]) {
 		case DEVICE_ON:
 			/* This will reopen only if the audio format changed */
@@ -303,7 +303,7 @@ static int flushAudioBuffer(void)
 
 	syncAudioDeviceStates();
 
-	for (i = audioOutputArraySize; --i >= 0; ) {
+	for (i = 0; i < audioOutputArraySize; ++i) {
 		if (audioDeviceStates[i] != DEVICE_ON)
 			continue;
 		err = playAudioOutput(&audioOutputArray[i], audioBuffer,
@@ -340,7 +340,7 @@ int openAudioDevice(AudioFormat * audioFormat)
 
 	syncAudioDeviceStates();
 
-	for (i = audioOutputArraySize; --i >= 0; ) {
+	for (i = 0; i < audioOutputArraySize; ++i) {
 		if (audioOutputArray[i].open)
 			ret = 0;
 	}
@@ -349,7 +349,7 @@ int openAudioDevice(AudioFormat * audioFormat)
 		audioOpened = 1;
 	else {
 		/* close all devices if there was an error */
-		for (i = audioOutputArraySize; --i >= 0; ) {
+		for (i = 0; i < audioOutputArraySize; ++i) {
 			closeAudioOutput(&audioOutputArray[i]);
 		}
 
@@ -393,7 +393,7 @@ void dropBufferedAudio(void)
 	syncAudioDeviceStates();
 	audioBufferPos = 0;
 
-	for (i = audioOutputArraySize; --i >= 0; ) {
+	for (i = 0; i < audioOutputArraySize; ++i) {
 		if (audioDeviceStates[i] == DEVICE_ON)
 			dropBufferedAudioOutput(&audioOutputArray[i]);
 	}
@@ -409,7 +409,7 @@ void closeAudioDevice(void)
 	audioBuffer = NULL;
 	audioBufferSize = 0;
 
-	for (i = audioOutputArraySize; --i >= 0; ) {
+	for (i = 0; i < audioOutputArraySize; ++i) {
 		if (audioDeviceStates[i] == DEVICE_ON)
 			audioDeviceStates[i] = DEVICE_ENABLE;
 		closeAudioOutput(&audioOutputArray[i]);
@@ -422,7 +422,7 @@ void sendMetadataToAudioDevice(MpdTag * tag)
 {
 	int i;
 
-	for (i = audioOutputArraySize; --i >= 0; ) {
+	for (i = 0; i < audioOutputArraySize; ++i) {
 		sendMetadataToAudioOutput(&audioOutputArray[i], tag);
 	}
 }
@@ -500,7 +500,7 @@ void readAudioDevicesState(FILE *fp)
 		if (!name || !(++name))
 			goto errline;
 
-		for (i = audioOutputArraySize; --i >= 0; ) {
+		for (i = 0; i < audioOutputArraySize; ++i) {
 			if (!strcmp(name, audioOutputArray[i].name)) {
 				/* devices default to on */
 				if (!atoi(c))
