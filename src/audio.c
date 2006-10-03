@@ -121,29 +121,37 @@ void initAudioDriver(void)
 	audioDeviceStates = (getPlayerData())->audioDeviceStates;
 	audioOutputArray = xmalloc(sizeof(AudioOutput) * audioOutputArraySize);
 
-	i = 0;
-	param = getNextConfigParam(CONF_AUDIO_OUTPUT, param);
-
-	do {
+	for (i = 0; i < audioOutputArraySize; i++)
+	{
 		AudioOutput *output = &audioOutputArray[i];
 		int j;
 
-		if (!initAudioOutput(output, param) && param) {
-			ERROR("problems configuring output device defined at "
-			      "line %i\n", param->line);
+		param = getNextConfigParam(CONF_AUDIO_OUTPUT, param);
+
+		if (!initAudioOutput(output, param)) {
+			if (param)
+			{
+				ERROR("problems configuring output device "
+				      "defined at line %i\n", param->line);
+			}
+			else
+			{
+				ERROR("No audio_output specified and unable to "
+				      "detect a default audio output device\n");
+			}
 			exit(EXIT_FAILURE);
 		}
 
 		/* require output names to be unique: */
-		for (j = i; --j >= 0; ) {
+		for (j = 0; j < i; j++) {
 			if (!strcmp(output->name, audioOutputArray[j].name)) {
 				ERROR("output devices with identical "
 				      "names: %s\n", output->name);
 				exit(EXIT_FAILURE);
 			}
 		}
-		audioDeviceStates[i++] = DEVICE_ENABLE;
-	} while ((param = getNextConfigParam(CONF_AUDIO_OUTPUT, param)));
+		audioDeviceStates[i] = DEVICE_ENABLE;
+	}
 }
 
 void getOutputAudioFormat(AudioFormat * inAudioFormat,
