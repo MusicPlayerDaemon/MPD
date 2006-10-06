@@ -38,22 +38,16 @@ int buffer2array(char *buffer, char *array[], const int max)
 
 	while (*c != '\0' && i < max) {
 		if (*c == '\"') {
-			int escape = 0;
 			array[i++] = ++c;
 			while (*c != '\0') {
 				if (*c == '\"') {
-					if (escape) {
-						memmove(c - 1, c,
-							strlen(c) + 1);
-						if (*c == '"')
-							break;
-					} else {
-						*(c++) = '\0';
-						break;
-					}
-				} else if (*c == '\\' && escape)
+					*(c++) = '\0';
+					break;
+				} 
+				else if (*(c++) == '\\') {
 					memmove(c - 1, c, strlen(c) + 1);
-				escape = (*(c++) != '\\') ? 0 : !escape;
+					++c;
+				}
 			}
 		} else {
 			while (isWhiteSpace(*c))
