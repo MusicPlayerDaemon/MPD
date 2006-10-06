@@ -108,6 +108,13 @@
 #define COMMAND_STATUS_AUDIO		"audio"
 #define COMMAND_STATUS_UPDATING_DB	"updating_db"
 
+/*
+ * The most we ever use is for search/find, and that limits it to the
+ * number of tags we can have.  Add one for the command, and one extra
+ * to catch errors clients may send us
+ */
+#define COMMAND_ARGV_MAX	(2+(TAG_NUM_OF_ITEM_TYPES*2))
+
 typedef struct _CommandEntry CommandEntry;
 
 typedef int (*CommandHandlerFunction) (int, int *, int, char **);
@@ -1052,26 +1059,27 @@ static CommandEntry *getCommandEntryAndCheckArgcAndPermission(int fd,
 static CommandEntry *getCommandEntryFromString(char *string, int *permission)
 {
 	CommandEntry *cmd = NULL;
-	char **argv;
-	int argc = buffer2array(string, &argv);
+	char *argv[COMMAND_ARGV_MAX] = { NULL };
+	int argc = buffer2array(string, argv, COMMAND_ARGV_MAX);
 
 	if (0 == argc)
 		return NULL;
 
 	cmd = getCommandEntryAndCheckArgcAndPermission(0, permission,
 						       argc, argv);
-	freeArgArray(argv, argc);
 
 	return cmd;
 }
 
 static int processCommandInternal(int fd, int *permission,
-				  char *string, struct strnode *cmdnode)
+				  char *commandString, struct strnode *cmdnode)
 {
-	char **argv;
-	int argc = buffer2array(string, &argv);
+	int argc;
+	char *argv[COMMAND_ARGV_MAX] = { NULL };
 	CommandEntry *cmd;
 	int ret = -1;
+
+	argc = buffer2array(commandString, argv, COMMAND_ARGV_MAX);
 
 	if (argc == 0)
 		return 0;
@@ -1085,8 +1093,6 @@ static int processCommandInternal(int fd, int *permission,
 					       cmdnode, cmd);
 		}
 	}
-
-	freeArgArray(argv, argc);
 
 	current_command = NULL;
 

@@ -17,111 +17,53 @@
  */
 
 #include "buffer2array.h"
-#ifdef UNIT_TEST
-#  define xstrdup(x) strdup(x)
-#  define xmalloc(x) malloc(x)
-#else
-#  include "utils.h"
-#endif
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
-int buffer2array(char *origBuffer, char ***array)
+
+inline static
+int
+isWhiteSpace(char c)
 {
-	int quotes = 0;
-	int count = 0;
-	int i;
-	int curr;
-	int *beginArray;
-	char *buffer = xstrdup(origBuffer);
-	int bufferLength = strlen(buffer);
-	char *markArray = xmalloc(sizeof(char) * (bufferLength + 1));
-
-	for (curr = 0; curr < bufferLength; curr++) {
-		if (!quotes && (buffer[curr] == ' ' || buffer[curr] == '\t')) {
-			markArray[curr] = '0';
-		} else if (buffer[curr] == '\"') {
-			if (curr > 0 && buffer[curr - 1] != '\\') {
-				quotes = quotes ? 0 : 1;
-				markArray[curr] = '0';
-			} else {
-				markArray[curr] = '1';
-			}
-		} else {
-			markArray[curr] = '1';
-		}
-		if (markArray[curr] == '1') {
-			if (curr > 0) {
-				if (markArray[curr - 1] == '0') {
-					count++;
-				}
-			} else {
-				count++;
-			}
-		}
-	}
-	markArray[bufferLength] = '\0';
-
-	if (!count) {
-		free(buffer);
-		free(markArray);
-		return count;
-	}
-
-	beginArray = xmalloc(sizeof(int) * count);
-	(*array) = xmalloc(sizeof(char *) * count);
-
-	count = 0;
-
-	for (curr = 0; curr < bufferLength; curr++) {
-		if (markArray[curr] == '1') {
-			if (curr > 0) {
-				if (markArray[curr - 1] == '0') {
-					beginArray[count++] = curr;
-				}
-			} else {
-				beginArray[count++] = curr;
-			}
-		} else {
-			buffer[curr] = '\0';
-		}
-	}
-
-	for (i = 0; i < count; i++) {
-		int len = strlen(buffer + beginArray[i]) + 1;
-		int arrayCurr = 0;
-		(*array)[i] = xmalloc(sizeof(char) * len);
-		for (curr = beginArray[i]; buffer[curr] != '\0'; curr++) {
-			if (buffer[curr] == '\\') {
-				if (buffer[curr + 1] != '\0') {
-					curr++;
-				}
-			}
-			(*array)[i][arrayCurr++] = buffer[curr];
-		}
-		(*array)[i][arrayCurr] = '\0';
-	}
-
-	free(markArray);
-	free(beginArray);
-	free(buffer);
-
-	return count;
+	return (c == ' ' || c == '\t');
 }
 
-void freeArgArray(char **array, int argArrayLength)
+int buffer2array(char *buffer, char *array[], const int max)
 {
-	int i;
+	int i = 0;
+	char *c = buffer;
 
-	if (argArrayLength == 0)
-		return;
-
-	for (i = 0; i < argArrayLength; i++) {
-		free(array[i]);
+	while (*c != '\0' && i < max) {
+		if (*c == '\"') {
+			array[i++] = ++c;
+			while (*c != '\0') {
+				if (*c == '\"') {
+					*(c++) = '\0';
+					break;
+				} 
+				else if (*(c++) == '\\' && *c != '\0') {
+					memmove(c - 1, c, strlen(c) + 1);
+				}
+			}
+		} else {
+			while (isWhiteSpace(*c))
+				++c;
+			array[i++] = c++;
+			if (*c == '\0')
+				return i;
+			while (!isWhiteSpace(*c) && *c != '\0')
+				++c;
+		}
+		if (*c == '\0')
+			return i;
+		*(c++) = '\0';
+		while (isWhiteSpace(*c))
+			++c;
 	}
-	free(array);
+	return i;
 }
 
 #ifdef UNIT_TEST
@@ -132,42 +74,42 @@ void freeArgArray(char **array, int argArrayLength)
 
 int main()
 {
-	char **a;
+	char *a[4] = { NULL };
 	char *b;
 	int i, max;
 
 	b = xstrdup("lsinfo \"/some/dir/name \\\"test\\\"\"");
-	max = buffer2array(b, &a);
+	max = buffer2array(b, a, 4);
 	assert( !strcmp("lsinfo", a[0]) );
 	assert( !strcmp("/some/dir/name \"test\"", a[1]) );
 	assert( !a[2] );
 
 	b = xstrdup("lsinfo \"/some/dir/name \\\"test\\\" something else\"");
-	max = buffer2array(b, &a);
+	max = buffer2array(b, a, 4);
 	assert( !strcmp("lsinfo", a[0]) );
 	assert( !strcmp("/some/dir/name \"test\" something else", a[1]) );
 	assert( !a[2] );
 
 	b = xstrdup("lsinfo \"/some/dir\\\\name\"");
-	max = buffer2array(b, &a);
+	max = buffer2array(b, a, 4);
 	assert( !strcmp("lsinfo", a[0]) );
 	assert( !strcmp("/some/dir\\name", a[1]) );
 	assert( !a[2] );
 
 	b = xstrdup("lsinfo \"/some/dir name\"");
-	max = buffer2array(b, &a);
+	max = buffer2array(b, a, 4);
 	assert( !strcmp("lsinfo", a[0]) );
 	assert( !strcmp("/some/dir name", a[1]) );
 	assert( !a[2] );
 
 	b = xstrdup("lsinfo \"\\\"/some/dir\\\"\"");
-	max = buffer2array(b, &a);
+	max = buffer2array(b, a, 4);
 	assert( !strcmp("lsinfo", a[0]) );
 	assert( !strcmp("\"/some/dir\"", a[1]) );
 	assert( !a[2] );
 
 	b = xstrdup("lsinfo \"\\\"/some/dir\\\" x\"");
-	max = buffer2array(b, &a);
+	max = buffer2array(b, a, 4);
 	assert( !strcmp("lsinfo", a[0]) );
 	assert( !strcmp("\"/some/dir\" x", a[1]) );
 	assert( !a[2] );
