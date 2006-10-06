@@ -21,12 +21,8 @@
 
 #include "../config.h"
 
-/* tokenizes up to max elements in buffer (a null-terminated string) and
- * stores the result in array (which must be capable of holding up to
- * max elements).  Tokenization is based on C string quoting rules.
- * The arguments buffer and array are modified.
- * Returns the number of elements tokenized.
- */
-int buffer2array(char *buffer, char *array[], const int max);
+int buffer2array(char *buffer, char ***array);
+
+void freeArgArray(char **array, int argArrayLength);
 
 #endif

@@ -41,7 +41,6 @@
 
 #define CONF_REPEATABLE_MASK	0x01
 #define CONF_BLOCK_MASK		0x02
-#define CONF_LINE_TOKEN_MAX	3
 
 typedef struct _configEntry {
 	unsigned char mask;
@@ -194,16 +193,15 @@ static ConfigParam *readConfigBlock(FILE * fp, int *count, char *string)
 {
 	ConfigParam *ret = newConfigParam(NULL, *count);
 
+	char **array;
 	int i;
 	int numberOfArgs;
 	int argsMinusComment;
 
 	while (myFgets(string, MAX_STRING_SIZE, fp)) {
-		char *array[CONF_LINE_TOKEN_MAX] = { NULL };
-
 		(*count)++;
 
-		numberOfArgs = buffer2array(string, array, CONF_LINE_TOKEN_MAX);
+		numberOfArgs = buffer2array(string, &array);
 
 		for (i = 0; i < numberOfArgs; i++) {
 			if (array[i][0] == CONF_COMMENT)
@@ -213,11 +211,13 @@ static ConfigParam *readConfigBlock(FILE * fp, int *count, char *string)
 		argsMinusComment = i;
 
 		if (0 == argsMinusComment) {
+			freeArgArray(array, numberOfArgs);
 			continue;
 		}
 
 		if (1 == argsMinusComment &&
 		    0 == strcmp(array[0], CONF_BLOCK_END)) {
+			freeArgArray(array, numberOfArgs);
 			break;
 		}
 
@@ -238,6 +238,8 @@ static ConfigParam *readConfigBlock(FILE * fp, int *count, char *string)
 		}
 
 		addBlockParam(ret, array[0], array[1], *count);
+
+		freeArgArray(array, numberOfArgs);
 	}
 
 	return ret;
@@ -254,6 +256,7 @@ void readConf(char *file)
 	ConfigEntry *entry;
 	void *voidPtr;
 	ConfigParam *param;
+	char **array;
 
 	if (!(fp = fopen(file, "r"))) {
 		ERROR("problems opening file %s for reading: %s\n", file,
@@ -262,10 +265,9 @@ void readConf(char *file)
 	}
 
 	while (myFgets(string, MAX_STRING_SIZE, fp)) {
-		char *array[CONF_LINE_TOKEN_MAX] = { NULL };
 		count++;
 
-		numberOfArgs = buffer2array(string, array, CONF_LINE_TOKEN_MAX);
+		numberOfArgs = buffer2array(string, &array);
 
 		for (i = 0; i < numberOfArgs; i++) {
 			if (array[i][0] == CONF_COMMENT)
@@ -275,6 +277,7 @@ void readConf(char *file)
 		argsMinusComment = i;
 
 		if (0 == argsMinusComment) {
+			freeArgArray(array, numberOfArgs);
 			continue;
 		}
 
@@ -313,6 +316,8 @@ void readConf(char *file)
 			param = newConfigParam(array[1], count);
 
 		insertInListWithoutKey(entry->configParamList, param);
+
+		freeArgArray(array, numberOfArgs);
 	}
 	fclose(fp);
 }
