@@ -651,23 +651,27 @@ static int decodeFirstFrame(mp3DecodeData * data, DecoderControl * dc,
 	/*
 	 * Attempt to calulcate the length of the song from filesize
 	 */
-	size_t offset = data->inStream->offset;
-	mad_timer_t duration = data->frame.header.duration;
-	float frameTime = ((float)mad_timer_count(duration, MAD_UNITS_MILLISECONDS)) / 1000;
+	{
+		size_t offset = data->inStream->offset;
+		mad_timer_t duration = data->frame.header.duration;
+		float frameTime = ((float)mad_timer_count(duration,
+		                   MAD_UNITS_MILLISECONDS)) / 1000;
 
-	if (data->stream.this_frame != NULL)
-		offset -= data->stream.bufend - data->stream.this_frame;
-	else
-		offset -= data->stream.bufend - data->stream.buffer;
+		if (data->stream.this_frame != NULL)
+			offset -= data->stream.bufend - data->stream.this_frame;
+		else
+			offset -= data->stream.bufend - data->stream.buffer;
 
-	if (data->inStream->size >= offset) {
-		data->totalTime = ((data->inStream->size - offset) * 8.0) / (data->frame).header.bitrate;
-		data->maxFrames = data->totalTime / frameTime + FRAMES_CUSHION;
-	} else {
-		data->maxFrames = FRAMES_CUSHION;
-		data->totalTime = 0;
+		if (data->inStream->size >= offset) {
+			data->totalTime = ((data->inStream->size - offset) *
+			                   8.0) / (data->frame).header.bitrate;
+			data->maxFrames = data->totalTime / frameTime +
+			                  FRAMES_CUSHION;
+		} else {
+			data->maxFrames = FRAMES_CUSHION;
+			data->totalTime = 0;
+		}
 	}
-
 	/*
 	 * if an xing tag exists, use that!
 	 */
