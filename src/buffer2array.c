@@ -24,7 +24,7 @@
 #include <ctype.h>
 
 
-inline static
+static inline
 int
 isWhiteSpace(char c)
 {
@@ -43,7 +43,7 @@ int buffer2array(char *buffer, char *array[], const int max)
 				if (*c == '\"') {
 					*(c++) = '\0';
 					break;
-				} 
+				}
 				else if (*(c++) == '\\' && *c != '\0') {
 					memmove(c - 1, c, strlen(c) + 1);
 				}
@@ -76,42 +76,54 @@ int main()
 {
 	char *a[4] = { NULL };
 	char *b;
-	int i, max;
+	int max;
 
-	b = xstrdup("lsinfo \"/some/dir/name \\\"test\\\"\"");
+	b = strdup("lsinfo \"/some/dir/name \\\"test\\\"\"");
 	max = buffer2array(b, a, 4);
 	assert( !strcmp("lsinfo", a[0]) );
 	assert( !strcmp("/some/dir/name \"test\"", a[1]) );
 	assert( !a[2] );
 
-	b = xstrdup("lsinfo \"/some/dir/name \\\"test\\\" something else\"");
+	b = strdup("lsinfo \"/some/dir/name \\\"test\\\" something else\"");
 	max = buffer2array(b, a, 4);
 	assert( !strcmp("lsinfo", a[0]) );
 	assert( !strcmp("/some/dir/name \"test\" something else", a[1]) );
 	assert( !a[2] );
 
-	b = xstrdup("lsinfo \"/some/dir\\\\name\"");
+	b = strdup("lsinfo \"/some/dir\\\\name\"");
 	max = buffer2array(b, a, 4);
 	assert( !strcmp("lsinfo", a[0]) );
 	assert( !strcmp("/some/dir\\name", a[1]) );
 	assert( !a[2] );
 
-	b = xstrdup("lsinfo \"/some/dir name\"");
+	b = strdup("lsinfo \"/some/dir name\"");
 	max = buffer2array(b, a, 4);
 	assert( !strcmp("lsinfo", a[0]) );
 	assert( !strcmp("/some/dir name", a[1]) );
 	assert( !a[2] );
 
-	b = xstrdup("lsinfo \"\\\"/some/dir\\\"\"");
+	b = strdup("lsinfo \"\\\"/some/dir\\\"\"");
 	max = buffer2array(b, a, 4);
 	assert( !strcmp("lsinfo", a[0]) );
 	assert( !strcmp("\"/some/dir\"", a[1]) );
 	assert( !a[2] );
 
-	b = xstrdup("lsinfo \"\\\"/some/dir\\\" x\"");
+	b = strdup("lsinfo \"\\\"/some/dir\\\" x\"");
 	max = buffer2array(b, a, 4);
 	assert( !strcmp("lsinfo", a[0]) );
 	assert( !strcmp("\"/some/dir\" x", a[1]) );
+	assert( !a[2] );
+
+	b = strdup("lsinfo \"single quote\\'d from php magicquotes\"");
+	max = buffer2array(b, a, 4);
+	assert( !strcmp("lsinfo", a[0]) );
+	assert( !strcmp("single quote\'d from php magicquotes", a[1]) );
+	assert( !a[2] );
+
+	b = strdup("lsinfo \"double quote\\\"d from php magicquotes\"");
+	max = buffer2array(b, a, 4);
+	assert( !strcmp("lsinfo", a[0]) );
+	assert( !strcmp("double quote\"d from php magicquotes", a[1]) );
 	assert( !a[2] );
 
 	return 0;
