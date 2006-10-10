@@ -81,7 +81,7 @@ static ShoutData *newShoutData(void)
 	ret->tag = NULL;
 	ret->tagToSend = 0;
 	ret->bitrate = -1;
-	ret->quality = -1.0;
+	ret->quality = -2.0;
 	ret->connAttempts = 0;
 	ret->lastAttempt = 0;
 	ret->audioFormat = NULL;
@@ -177,9 +177,9 @@ static int myShout_initDriver(AudioOutput * audioOutput, ConfigParam * param)
 
 		sd->quality = strtod(blockParam->value, &test);
 
-		if (*test != '\0' || sd->quality < 0.0 || sd->quality > 10.0) {
+		if (*test != '\0' || sd->quality < -1.0 || sd->quality > 10.0) {
 			ERROR("shout quality \"%s\" is not a number in the "
-			      "range 0-10, line %i\n", blockParam->value,
+			      "range -1 to 10, line %i\n", blockParam->value,
 			      blockParam->line);
 			exit(EXIT_FAILURE);
 		}
@@ -257,7 +257,7 @@ static int myShout_initDriver(AudioOutput * audioOutput, ConfigParam * param)
 
 		shout_set_audio_info(sd->shoutConn, SHOUT_AI_SAMPLERATE, temp);
 
-		if (sd->quality >= 0) {
+		if (sd->quality >= -1.0) {
 			snprintf(temp, sizeof(temp), "%2.2f", sd->quality);
 			shout_set_audio_info(sd->shoutConn, SHOUT_AI_QUALITY,
 					     temp);
@@ -418,7 +418,7 @@ static int initEncoder(ShoutData * sd)
 {
 	vorbis_info_init(&(sd->vi));
 
-	if (sd->quality >= 0) {
+	if (sd->quality >= -1.0) {
 		if (0 != vorbis_encode_init_vbr(&(sd->vi),
 						sd->audioFormat->channels,
 						sd->audioFormat->sampleRate,
