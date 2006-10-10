@@ -1,3 +1,10 @@
+ver 0.12.1 (2006/10/??)
+* Fix segfault when scanning an MP3 that has a Xing tag with 0 frames
+* Fix segfault when there's no audio output specified and one can't be detected
+* Fix handling of escaping in quotes
+* Allow a quality of -1 to be specified for shout outputs
+* A few minor cleanups
+
 ver 0.12.0 (2006/9/22)
 * New audio output code which supports:
   * A plugin-like architecture
