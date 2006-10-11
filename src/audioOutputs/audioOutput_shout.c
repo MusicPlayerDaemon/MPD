@@ -67,6 +67,7 @@ typedef struct _ShoutData {
 
 	int connAttempts;
 	time_t lastAttempt;
+	int last_err;
 
 	/* just a pointer to audioOutput->outAudioFormat */
 	AudioFormat *audioFormat;
@@ -85,6 +86,7 @@ static ShoutData *newShoutData(void)
 	ret->connAttempts = 0;
 	ret->lastAttempt = 0;
 	ret->audioFormat = NULL;
+	ret->last_err = SHOUTERR_UNCONNECTED;
 
 	return ret;
 }
@@ -220,6 +222,7 @@ static int myShout_initDriver(AudioOutput * audioOutput, ConfigParam * param)
 	    shout_set_name(sd->shoutConn, name) != SHOUTERR_SUCCESS ||
 	    shout_set_user(sd->shoutConn, user) != SHOUTERR_SUCCESS ||
 	    shout_set_public(sd->shoutConn, public) != SHOUTERR_SUCCESS ||
+	    shout_set_nonblocking(sd->shoutConn, 1) != SHOUTERR_SUCCESS ||
 	    shout_set_format(sd->shoutConn, SHOUT_FORMAT_VORBIS)
 	    != SHOUTERR_SUCCESS ||
 	    shout_set_protocol(sd->shoutConn, SHOUT_PROTOCOL_HTTP)
@@ -358,6 +361,7 @@ static void myShout_closeShoutConn(ShoutData * sd)
 		}
 	}
 
+	sd->last_err = SHOUTERR_UNCONNECTED;
 	sd->opened = 0;
 }
 
@@ -460,9 +464,19 @@ static int myShout_openShoutConn(AudioOutput * audioOutput)
 
 	sd->connAttempts++;
 
-	sd->lastAttempt = t;
-
-	if (shout_open(sd->shoutConn) != SHOUTERR_SUCCESS) {
+	if (sd->last_err == SHOUTERR_UNCONNECTED)
+		sd->last_err = shout_open(sd->shoutConn);
+	switch (sd->last_err) {
+	case SHOUTERR_SUCCESS:
+	case SHOUTERR_CONNECTED:
+		break;
+	case SHOUTERR_BUSY:
+		sd->last_err = shout_get_connected(sd->shoutConn);
+		if (sd->last_err == SHOUTERR_CONNECTED)
+			break;
+		return -1;
+	default:
+		sd->lastAttempt = t;
 		ERROR("problem opening connection to shout server %s:%i "
 		      "(attempt %i): %s\n",
 		      shout_get_host(sd->shoutConn),
