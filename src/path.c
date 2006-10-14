@@ -281,12 +281,12 @@ char *sanitizePathDup(char *path)
 
 	len = 0;
 
-	/* illeminate more than one '/' in a row, like "///" */
+	/* eliminate more than one '/' in a row, like "///" */
 	while (*path) {
 		while (*path == '/')
 			path++;
 		if (*path == '.') {
-			/* we dont want to have hidden directoires, or '.' or
+			/* we don't want to have hidden directories, or '.' or
 			   ".." in our path */
 			free(ret);
 			return NULL;
