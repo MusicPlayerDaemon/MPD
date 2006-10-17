@@ -155,33 +155,38 @@ int initAudioOutput(AudioOutput *ao, ConfigParam * param)
 
 int openAudioOutput(AudioOutput * audioOutput, AudioFormat * audioFormat)
 {
-	int ret;
+	int ret = 0;
 
-	if (audioOutput->open) {
-		if (cmpAudioFormat(audioFormat, &audioOutput->inAudioFormat)
-		    == 0) {
+	if (audioOutput->open) 
+	{
+		if (0==cmpAudioFormat(audioFormat, &audioOutput->inAudioFormat))
+		{
 			return 0;
 		}
-		closeAudioOutput(audioOutput);
 	}
 
 	copyAudioFormat(&audioOutput->inAudioFormat, audioFormat);
 
-	if (audioOutput->convertAudioFormat) {
+	if (audioOutput->convertAudioFormat) 
+	{
 		copyAudioFormat(&audioOutput->outAudioFormat,
 				&audioOutput->reqAudioFormat);
-	} else {
+	} 
+	else 
+	{
 		copyAudioFormat(&audioOutput->outAudioFormat,
 				&audioOutput->inAudioFormat);
+		if (audioOutput->open) closeAudioOutput(audioOutput);
 	}
 
-	ret = audioOutput->openDeviceFunc(audioOutput);
+	if (!audioOutput->open)
+	{
+		ret = audioOutput->openDeviceFunc(audioOutput);
+	}
 
-	if (cmpAudioFormat(&audioOutput->inAudioFormat,
-			   &audioOutput->outAudioFormat) == 0) {
-		audioOutput->sameInAndOutFormats = 1;
-	} else
-		audioOutput->sameInAndOutFormats = 0;
+	audioOutput->sameInAndOutFormats =
+		!cmpAudioFormat(&audioOutput->inAudioFormat,
+			   	&audioOutput->outAudioFormat);
 
 	return ret;
 }
@@ -190,11 +195,10 @@ static void convertAudioFormat(AudioOutput * audioOutput, char **chunkArgPtr,
 			       int *sizeArgPtr)
 {
 	int size =
-	    pcm_sizeOfOutputBufferForAudioFormatConversion(&
-							   (audioOutput->
-							    inAudioFormat),
-*sizeArgPtr,
-&(audioOutput->outAudioFormat));
+		pcm_sizeOfOutputBufferForAudioFormatConversion(
+				&(audioOutput->inAudioFormat),
+				*sizeArgPtr,
+				&(audioOutput->outAudioFormat));
 
 	if (size > audioOutput->convBufferLen) {
 		audioOutput->convBuffer =
@@ -202,8 +206,10 @@ static void convertAudioFormat(AudioOutput * audioOutput, char **chunkArgPtr,
 		audioOutput->convBufferLen = size;
 	}
 
-	pcm_convertAudioFormat(&(audioOutput->inAudioFormat), *chunkArgPtr,
-			       *sizeArgPtr, &(audioOutput->outAudioFormat),
+	pcm_convertAudioFormat(&(audioOutput->inAudioFormat), 
+			       *chunkArgPtr,
+			       *sizeArgPtr, 
+			       &(audioOutput->outAudioFormat),
 			       audioOutput->convBuffer);
 
 	*sizeArgPtr = size;
