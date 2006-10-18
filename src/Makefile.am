@@ -8,7 +8,8 @@ mpd_audioOutputs = \
 	audioOutputs/audioOutput_osx.c \
 	audioOutputs/audioOutput_pulse.c \
 	audioOutputs/audioOutput_mvp.c \
-	audioOutputs/audioOutput_shout.c
+	audioOutputs/audioOutput_shout.c \
+	audioOutputs/audioOutput_jack.c
 
 mpd_inputPlugins = \
 	inputPlugins/_flac_common.c \

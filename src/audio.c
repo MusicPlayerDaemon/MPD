@@ -96,6 +96,7 @@ extern AudioOutputPlugin osxPlugin;
 extern AudioOutputPlugin pulsePlugin;
 extern AudioOutputPlugin mvpPlugin;
 extern AudioOutputPlugin shoutPlugin;
+extern AudioOutputPlugin jackPlugin;
 
 void loadAudioDrivers(void)
 {
@@ -107,6 +108,7 @@ void loadAudioDrivers(void)
 	loadAudioOutputPlugin(&pulsePlugin);
 	loadAudioOutputPlugin(&mvpPlugin);
 	loadAudioOutputPlugin(&shoutPlugin);
+	loadAudioOutputPlugin(&jackPlugin);
 }
 
 /* make sure initPlayerData is called before this function!! */

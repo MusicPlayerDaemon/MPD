@@ -69,6 +69,7 @@ AC_ARG_ENABLE(ipv6,[  --disable-ipv6          disable IPv6 support (default: ena
 AC_ARG_ENABLE(sun,[  --disable-sun           disable sun support (default: enable)],[enable_sun=$enableval],[enable_sun=yes])
 AC_ARG_ENABLE(oss,[  --disable-oss           disable OSS support (default: enable)],[enable_oss=$enableval],[enable_oss=yes])
 AC_ARG_ENABLE(alsa,[  --disable-alsa          disable ALSA support (default: enable)],[enable_alsa=$enableval],[enable_alsa=yes])
+AC_ARG_ENABLE(jack,[  --disable-jack          disable jack support (default: enable)],[enable_jack=$enableval],[enable_jack=yes])
 AC_ARG_ENABLE(pulse,[  --disable-pulse         disable support for the PulseAudio sound server (default: enable)],[enable_pulse=$enableval],[enable_pulse=yes])
 AC_ARG_ENABLE(mvp,[  --enable-mvp            enable support for Hauppauge Media MVP (default: disable)],[enable_mvp=$enableval],[enable_mvp=no])
 AC_ARG_ENABLE(oggvorbis,[  --disable-oggvorbis     disable Ogg Vorbis support (default: enable)],[enable_oggvorbis=$enableval],enable_oggvorbis=yes)
@@ -188,6 +189,14 @@ fi
 
 if test x$enable_alsa = xyes; then
 	AM_PATH_ALSA(0.9.0,[AC_DEFINE(HAVE_ALSA,1,[Define to enable ALSA support]) MPD_LIBS="$MPD_LIBS $ALSA_LIBS" MPD_CFLAGS="$MPD_CFLAGS $ALSA_CFLAGS"],enable_alsa=no)
+fi
+
+if test "x$enable_jack" = "xyes"; then
+	PKG_CHECK_MODULES(JACK, [jack >= 0.4],
+			  [AC_DEFINE(HAVE_JACK,1,[Define to enable JACK support])
+			   MPD_LIBS="$MPD_LIBS $JACK_LIBS"
+			   MPD_CFLAGS="$MPD_CFLAGS $JACK_CFLAGS"],
+			  [enable_jack=no])
 fi
 
 if test x$enable_iconv = xyes; then
@@ -601,6 +610,12 @@ else
 	echo " ALSA support ..................disabled"
 fi
 
+if test x$enable_jack = xyes; then
+	echo " JACK support ..................enabled"
+else
+	echo " JACK support ..................disabled"
+fi
+
 if test x$enable_sun = xyes; then
 	echo " Sun support ...................enabled"
 else
@@ -640,6 +655,7 @@ if test x$enable_ao = xno &&
    test x$enable_alsa = xno &&
    test x$enable_osx = xno &&
    test x$enable_pulse = xno &&
+   test x$enable_jack = xno &&
    test x$enable_mvp = xno; then
 	AC_MSG_ERROR([No Audio Output types configured!])
 fi
