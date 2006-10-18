@@ -25,13 +25,8 @@
 
 #include "../conf.h"
 #include "../log.h"
-#include "../sig_handlers.h"
 
-#include <sys/types.h>
 #include <string.h>
-#include <assert.h>
-#include <signal.h>
-#include <unistd.h>
 
 #include <jack/jack.h>
 #include <jack/types.h>

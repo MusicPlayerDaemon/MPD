@@ -25,7 +25,6 @@
 #include <pthread.h>
 
 #include "../log.h"
-#include "../utils.h"
 
 typedef struct _OsxData {
 	AudioUnit au;

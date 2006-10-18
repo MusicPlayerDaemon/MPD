@@ -25,14 +25,10 @@
 
 #ifdef HAVE_OSS
 
-#include "../utils.h"
 #include "../conf.h"
 #include "../log.h"
-#include "../sig_handlers.h"
 
 #include <string.h>
-#include <assert.h>
-#include <signal.h>
 
 #include <sys/types.h>
 #include <sys/stat.h>

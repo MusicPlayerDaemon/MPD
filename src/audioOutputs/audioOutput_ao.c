@@ -24,8 +24,6 @@
 #include "../log.h"
 
 #include <string.h>
-#include <assert.h>
-#include <signal.h>
 
 #include <ao/ao.h>
 

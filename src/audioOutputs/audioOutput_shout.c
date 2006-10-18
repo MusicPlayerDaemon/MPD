@@ -24,12 +24,9 @@
 
 #include "../conf.h"
 #include "../log.h"
-#include "../sig_handlers.h"
 #include "../pcm_utils.h"
 
 #include <string.h>
-#include <assert.h>
-#include <signal.h>
 #include <time.h>
 
 #include <shout/shout.h>

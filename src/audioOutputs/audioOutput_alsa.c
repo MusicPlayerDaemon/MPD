@@ -34,11 +34,8 @@
 
 #include "../conf.h"
 #include "../log.h"
-#include "../sig_handlers.h"
 
 #include <string.h>
-#include <assert.h>
-#include <signal.h>
 
 #include <alsa/asoundlib.h>
 
