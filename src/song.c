@@ -28,8 +28,6 @@
 #include "myfprintf.h"
 
 #define SONG_KEY	"key: "
-#define SONG_FILE	"file: "
-#define SONG_TIME	"Time: "
 #define SONG_MTIME	"mtime: "
 
 #include <stdlib.h>

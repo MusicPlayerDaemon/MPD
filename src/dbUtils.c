@@ -22,12 +22,14 @@
 #include "myfprintf.h"
 #include "utils.h"
 #include "playlist.h"
+#include "song.h"
 #include "tag.h"
 #include "tagTracker.h"
 #include "log.h"
 
 #define LOCATE_TAG_FILE_TYPE	TAG_NUM_OF_ITEM_TYPES+10
-#define LOCATE_TAG_FILE_KEY	"filename"
+#define LOCATE_TAG_FILE_KEY	SONG_FILE
+#define LOCATE_TAG_FILE_KEY_OLD	"filename"
 #define LOCATE_TAG_ANY_TYPE     TAG_NUM_OF_ITEM_TYPES+20
 #define LOCATE_TAG_ANY_KEY      "any"
 
@@ -46,15 +48,19 @@ int getLocateTagItemType(char *str)
 {
 	int i;
 
-	if (0 == strcasecmp(str, LOCATE_TAG_FILE_KEY)) {
+	if (0 == strcasecmp(str, LOCATE_TAG_FILE_KEY) ||
+	    0 == strcasecmp(str, LOCATE_TAG_FILE_KEY_OLD)) 
+	{
 		return LOCATE_TAG_FILE_TYPE;
 	}
 
-	if (0 == strcasecmp(str, LOCATE_TAG_ANY_KEY)) {
+	if (0 == strcasecmp(str, LOCATE_TAG_ANY_KEY)) 
+	{
 		return LOCATE_TAG_ANY_TYPE;
 	}
 
-	for (i = 0; i < TAG_NUM_OF_ITEM_TYPES; i++) {
+	for (i = 0; i < TAG_NUM_OF_ITEM_TYPES; i++) 
+	{
 		if (0 == strcasecmp(str, mpdTagItemKeys[i]))
 			return i;
 	}
