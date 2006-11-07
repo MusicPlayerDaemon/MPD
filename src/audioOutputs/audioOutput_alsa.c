@@ -207,7 +207,7 @@ configure_hw:
 	err = snd_pcm_hw_params_set_format(ad->pcmHandle, hwparams, bitformat);
 	if (err < 0) {
 		ERROR("ALSA device \"%s\" does not support %i bit audio: "
-		      "%s\n", ad->device, (int)bitformat, snd_strerror(-err));
+		      "%s\n", ad->device, audioFormat->bits, snd_strerror(-err));
 		goto fail;
 	}
 
