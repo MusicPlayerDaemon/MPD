@@ -236,6 +236,44 @@ int clearPlaylist(int fd)
 	return 0;
 }
 
+int clearStoredPlaylist(int fd, char *utf8file)
+{
+	int fileD;
+	char *file;
+	char *rfile;
+	char *actualFile;
+
+	if (strstr(utf8file, "/")) {
+		commandError(fd, ACK_ERROR_ARG,
+		             "cannot clear \"%s\", saving playlists to "
+		             "subdirectories is not supported", utf8file);
+		return -1;
+	}
+
+	file = utf8ToFsCharset(utf8file);
+
+	rfile = xmalloc(strlen(file) + strlen(".") +
+	                strlen(PLAYLIST_FILE_SUFFIX) + 1);
+
+	strcpy(rfile, file);
+	strcat(rfile, ".");
+	strcat(rfile, PLAYLIST_FILE_SUFFIX);
+
+	actualFile = rpp2app(rfile);
+
+	free(rfile);
+
+	while ((fileD = open(actualFile, O_WRONLY | O_TRUNC | O_CREAT)) == -1
+	       && errno == EINTR);
+	if (fileD == -1) {
+		commandError(fd, ACK_ERROR_SYSTEM, "problems opening file");
+		return -1;
+	}
+	while (close(fileD) == -1 && errno == EINTR);
+
+	return 0;
+}
+
 int showPlaylist(int fd)
 {
 	int i;
@@ -590,6 +628,24 @@ int addToPlaylist(int fd, char *url, int printId)
 	return addSongToPlaylist(fd, song, printId);
 }
 
+int addToStoredPlaylist(int fd, char *url, char *utf8file)
+{
+	Song *song;
+
+	DEBUG("add to stored playlist: %s\n", url);
+
+	if ((song = getSongFromDB(url))) {
+	} else if (!(isValidRemoteUtf8Url(url) &&
+	             (song = newSong(url, SONG_TYPE_URL, NULL)))) {
+		commandError(fd, ACK_ERROR_NO_EXIST,
+		             "\"%s\" is not in the music db or is "
+		             "not a valid url", url);
+		return -1;
+	}
+
+	return addSongToStoredPlaylist(fd, song, utf8file);
+}
+
 int addSongToPlaylist(int fd, Song * song, int printId)
 {
 	int id;
@@ -638,6 +694,52 @@ int addSongToPlaylist(int fd, Song * song, int printId)
 
 	if (printId)
 		fdprintf(fd, "Id: %i\n", id);
+
+	return 0;
+}
+
+int addSongToStoredPlaylist(int fd, Song *song, char *utf8file)
+{
+	FILE *fileP;
+	char *file;
+	char *rfile;
+	char *actualFile;
+	char *url;
+
+	if (strstr(utf8file, "/")) {
+		commandError(fd, ACK_ERROR_ARG,
+		             "cannot add to \"%s\", saving playlists to "
+		             "subdirectories is not supported", utf8file);
+		return -1;
+	}
+
+	file = utf8ToFsCharset(utf8file);
+
+	rfile = xmalloc(strlen(file) + strlen(".") +
+	                strlen(PLAYLIST_FILE_SUFFIX) + 1);
+
+	strcpy(rfile, file);
+	strcat(rfile, ".");
+	strcat(rfile, PLAYLIST_FILE_SUFFIX);
+
+	actualFile = rpp2app(rfile);
+
+	free(rfile);
+
+	while (!(fileP = fopen(actualFile, "a")) && errno == EINTR);
+	if (fileP == NULL) {
+		commandError(fd, ACK_ERROR_SYSTEM, "problems opening file");
+		return -1;
+	}
+
+	url = utf8ToFsCharset(getSongUrl(song));
+
+	if (playlist_saveAbsolutePaths && song->type == SONG_TYPE_FILE)
+		fprintf(fileP, "%s\n", rmp2amp(url));
+	else
+		fprintf(fileP, "%s\n", url);
+
+	while (fclose(fileP) && errno == EINTR);
 
 	return 0;
 }

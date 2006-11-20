@@ -304,9 +304,20 @@ static int directoryAddSongToPlaylist(int fd, Song * song, void *data)
 	return addSongToPlaylist(fd, song, 0);
 }
 
+static int directoryAddSongToStoredPlaylist(int fd, Song *song, void *data)
+{
+	return addSongToStoredPlaylist(fd, song, (char *)data);
+}
+
 int addAllIn(int fd, char *name)
 {
 	return traverseAllIn(fd, name, directoryAddSongToPlaylist, NULL, NULL);
+}
+
+int addAllInToStoredPlaylist(int fd, char *name, char *utf8file)
+{
+	return traverseAllIn(fd, name, directoryAddSongToStoredPlaylist, NULL,
+	                     (void *)utf8file);
 }
 
 static int directoryPrintSongInfo(int fd, Song * song, void *data)

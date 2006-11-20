@@ -47,6 +47,8 @@ int printAllIn(int fd, char *name);
 
 int addAllIn(int fd, char *name);
 
+int addAllInToStoredPlaylist(int fd, char *name, char *utf8file);
+
 int printInfoForAllIn(int fd, char *name);
 
 int searchForSongsIn(int fd, char *name, int numItems,
