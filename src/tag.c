@@ -421,6 +421,8 @@ MpdTag *apeDup(char *file)
 
 	/* read tag into buffer */
 	tagLen -= sizeof(footer);
+	if (tagLen <= 0)
+		goto fail;
 	buffer = xmalloc(tagLen);
 	if (fread(buffer, 1, tagLen, fp) != tagLen)
 		goto fail;
