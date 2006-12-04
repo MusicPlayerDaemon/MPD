@@ -19,11 +19,10 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "../inputPlugin.h"
+#include "_flac_common.h"
 
 #ifdef HAVE_OGGFLAC
 
-#include "_flac_common.h"
 #include "_ogg_common.h"
 
 #include "../utils.h"
@@ -37,8 +36,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
-#include <OggFLAC/seekable_stream_decoder.h>
-#include <FLAC/metadata.h>
 
 static void oggflac_cleanup(InputStream * inStream,
 			    FlacData * data,
