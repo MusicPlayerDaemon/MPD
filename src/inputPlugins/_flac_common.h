@@ -36,6 +36,8 @@
 #  define flac_decoder           FLAC__SeekableStreamDecoder
 #  define flac_new(x)            FLAC__seekable_stream_decoder_new(x)
 
+#  define flac_ogg_init(a,b,c,d,e,f,g,h,i,j) (0)
+
 #  define flac_get_decode_position(x,y) \
                  FLAC__seekable_stream_decoder_get_decode_position(x,y)
 #  define flac_get_state(x)      FLAC__seekable_stream_decoder_get_state(x)
@@ -78,18 +80,26 @@
 #    include <OggFLAC/seekable_stream_decoder.h>
 #  endif
 #else /* FLAC_API_VERSION_CURRENT >= 7 */
-   /* OggFLAC support is handled by our flac_plugin already */
-#  ifdef HAVE_OGGFLAC
-#    undef HAVE_OGGFLAC
+
+   /* OggFLAC support is handled by our flac_plugin already, and
+    * thus we *can* always have it if libFLAC was compiled with it */
+#  ifndef HAVE_OGGFLAC
+#    define HAVE_OGGFLAC 1
 #  endif
-#  include <FLAC/stream_decoder.h>
 #  include "_ogg_common.h"
+#  undef HAVE_OGGFLAC /* we don't need this defined anymore */
+
+#  include <FLAC/stream_decoder.h>
 #  define flac_decoder           FLAC__StreamDecoder
 #  define flac_new(x)            FLAC__stream_decoder_new(x)
 
 #  define flac_init(a,b,c,d,e,f,g,h,i,j) \
         (FLAC__stream_decoder_init_stream(a,b,c,d,e,f,g,h,i,j) \
          == FLAC__STREAM_DECODER_INIT_STATUS_OK)
+#  define flac_ogg_init(a,b,c,d,e,f,g,h,i,j) \
+        (FLAC__stream_decoder_init_ogg_stream(a,b,c,d,e,f,g,h,i,j) \
+         == FLAC__STREAM_DECODER_INIT_STATUS_OK)
+
 #  define flac_get_decode_position(x,y) \
                  FLAC__stream_decoder_get_decode_position(x,y)
 #  define flac_get_state(x)      FLAC__stream_decoder_get_state(x)

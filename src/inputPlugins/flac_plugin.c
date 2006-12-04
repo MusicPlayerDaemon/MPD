@@ -31,6 +31,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <assert.h>
 
 /* this code was based on flac123, from flac-tools */
 
@@ -339,30 +340,34 @@ static MpdTag *flacTagDup(char *file)
 	return ret;
 }
 
-static int flac_decode(OutputBuffer * cb, DecoderControl * dc,
-		       InputStream * inStream)
+static int flac_decode_internal(OutputBuffer * cb, DecoderControl * dc,
+                               InputStream * inStream, int is_ogg)
 {
 	flac_decoder *flacDec;
 	FlacData data;
-	int ret = 0;
+	const char *err = NULL;
 
 	if (!(flacDec = flac_new()))
 		return -1;
 	init_FlacData(&data, cb, dc, inStream);
-	if (!flac_init(flacDec, flacRead, flacSeek, flacTell, flacLength,
-	               flacEOF, flacWrite, flacMetadata, flacError,
-		       (void *)&data)) {
-		ERROR("flac problem doing init()\n");
-		flacPrintErroredState(flac_get_state(flacDec));
-		ret = -1;
-		goto fail;
-	}
-
-	if (!flac_process_metadata(flacDec)) {
-		ERROR("flac problem reading metadata\n");
-		flacPrintErroredState(flac_get_state(flacDec));
-		ret = -1;
-		goto fail;
+	if (is_ogg) {
+		if (!flac_ogg_init(flacDec, flacRead, flacSeek, flacTell,
+		                   flacLength, flacEOF, flacWrite, flacMetadata,
+			           flacError, (void *)&data)) {
+			err = "doing Ogg init()";
+			goto fail;
+		}
+	} else {
+		if (!flac_init(flacDec, flacRead, flacSeek, flacTell,
+		               flacLength, flacEOF, flacWrite, flacMetadata,
+			       flacError, (void *)&data)) {
+			err = "doing init()";
+			goto fail;
+		}
+		if (!flac_process_metadata(flacDec)) {
+			err = "problem reading metadata";
+			goto fail;
+		}
 	}
 
 	dc->state = DECODE_STATE_DECODE;
@@ -412,15 +417,97 @@ fail:
 
 	closeInputStream(inStream);
 
+	if (err) {
+		ERROR("flac %s\n", err);
+		return -1;
+	}
+	return 0;
+}
+
+static int flac_decode(OutputBuffer * cb, DecoderControl * dc,
+                       InputStream * inStream)
+{
+	return flac_decode_internal(cb, dc, inStream, 0);
+}
+
+#if !defined(FLAC_API_VERSION_CURRENT) || FLAC_API_VERSION_CURRENT <= 7
+#  define flac_plugin_init NULL
+#else /* FLAC_API_VERSION_CURRENT >= 7 */
+/* some of this stuff is duplicated from oggflac_plugin.c */
+extern InputPlugin oggflacPlugin;
+
+static MpdTag *oggflac_tag_dup(char *file)
+{
+	MpdTag *ret = NULL;
+	FLAC__Metadata_Iterator *it;
+	FLAC__StreamMetadata *block;
+	FLAC__Metadata_Chain *chain = FLAC__metadata_chain_new();
+
+	if (!(FLAC__metadata_chain_read_ogg(chain, file)))
+		goto out;
+	it = FLAC__metadata_iterator_new();
+	FLAC__metadata_iterator_init(it, chain);
+	do {
+		if (!(block = FLAC__metadata_iterator_get_block(it)))
+			break;
+		if (block->type == FLAC__METADATA_TYPE_VORBIS_COMMENT) {
+			ret = copyVorbisCommentBlockToMpdTag(block, ret);
+		} else if (block->type == FLAC__METADATA_TYPE_STREAMINFO) {
+			if (!ret)
+				ret = newMpdTag();
+			ret->time = ((float)block->data.stream_info.
+				     total_samples) /
+			    block->data.stream_info.sample_rate + 0.5;
+		}
+	} while (FLAC__metadata_iterator_next(it));
+	FLAC__metadata_iterator_delete(it);
+out:
+	FLAC__metadata_chain_delete(chain);
 	return ret;
 }
+
+static int oggflac_decode(OutputBuffer * cb, DecoderControl * dc,
+		          InputStream * inStream)
+{
+	return flac_decode_internal(cb, dc, inStream, 1);
+}
+
+static unsigned int oggflac_try_decode(InputStream * inStream)
+{
+	return (ogg_stream_type_detect(inStream) == FLAC) ? 1 : 0;
+}
+
+static char *oggflac_suffixes[] = { "ogg", NULL };
+static char *oggflac_mime_types[] = { "application/ogg", NULL };
+
+static int flac_plugin_init(void)
+{
+	if (!FLAC_API_SUPPORTS_OGG_FLAC) {
+		DEBUG("libFLAC does not support OggFLAC\n");
+		return 1;
+	}
+	DEBUG("libFLAC supports OggFLAC, initializing OggFLAC support\n");
+	assert(oggflacPlugin.name == NULL);
+	oggflacPlugin.name = "oggflac";
+	oggflacPlugin.tryDecodeFunc = oggflac_try_decode;
+	oggflacPlugin.streamDecodeFunc = oggflac_decode;
+	oggflacPlugin.tagDupFunc = oggflac_tag_dup;
+	oggflacPlugin.streamTypes = INPUT_PLUGIN_STREAM_URL |
+	                            INPUT_PLUGIN_STREAM_FILE;
+	oggflacPlugin.suffixes = oggflac_suffixes;
+	oggflacPlugin.mimeTypes = oggflac_mime_types;
+	loadInputPlugin(&oggflacPlugin);
+	return 1;
+}
+
+#endif /* FLAC_API_VERSION_CURRENT >= 7 */
 
 static char *flacSuffixes[] = { "flac", NULL };
 static char *flac_mime_types[] = { "application/x-flac", NULL };
 
 InputPlugin flacPlugin = {
 	"flac",
-	NULL,
+	flac_plugin_init,
 	NULL,
 	NULL,
 	flac_decode,
