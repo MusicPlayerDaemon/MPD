@@ -46,8 +46,6 @@
 	*) command for displaying playlist contents
 	*) command for appending to playlist
 	*) new commands
-		*) clear <playlist> /* synonym for rm */
-		*) add <playlist> <path>
 		*) playlist <playlist> /* displays saved playlist */
 		*) replace <playlist> /* replace current playlist
 						with saved playlist and
