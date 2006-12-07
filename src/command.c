@@ -92,6 +92,8 @@
 #define COMMAND_DEVICES		"outputs"
 #define COMMAND_COMMANDS	"commands"
 #define COMMAND_NOTCOMMANDS	"notcommands"
+#define COMMAND_PLAYLISTCLEAR   "playlistclear"
+#define COMMAND_PLAYLISTADD	"playlistadd"
 
 #define COMMAND_STATUS_VOLUME           "volume"
 #define COMMAND_STATUS_STATE            "state"
@@ -917,6 +919,22 @@ static int handleNotcommands(int fd, int *permission, int argc, char *argv[])
 	return 0;
 }
 
+static int handlePlaylistClear(int fd, int *permission, int argc, char *argv[])
+{
+	return clearStoredPlaylist(fd, argv[1]);
+}
+
+static int handlePlaylistAdd(int fd, int *permission, int argc, char *argv[])
+{
+	char *playlist = argv[1];
+	char *path = argv[2];
+
+	if (isRemoteUrl(path))
+		return addToStoredPlaylist(fd, path, playlist);
+
+	return addAllInToStoredPlaylist(fd, path, playlist);
+}
+
 void initCommands(void)
 {
 	commandList = makeList(free, 1);
@@ -976,6 +994,8 @@ void initCommands(void)
 	addCommand(COMMAND_DEVICES,          PERMISSION_READ,    0,   0,   handleDevices,              NULL);
 	addCommand(COMMAND_COMMANDS,         PERMISSION_NONE,    0,   0,   handleCommands,             NULL);
 	addCommand(COMMAND_NOTCOMMANDS,      PERMISSION_NONE,    0,   0,   handleNotcommands,          NULL);
+	addCommand(COMMAND_PLAYLISTCLEAR,    PERMISSION_CONTROL, 1,   1,   handlePlaylistClear,        NULL);
+	addCommand(COMMAND_PLAYLISTADD,      PERMISSION_CONTROL, 2,   2,   handlePlaylistAdd,          NULL);
 
 	sortList(commandList);
 }
