@@ -27,10 +27,8 @@
 #include "tagTracker.h"
 #include "log.h"
 
-#define LOCATE_TAG_FILE_TYPE	TAG_NUM_OF_ITEM_TYPES+10
 #define LOCATE_TAG_FILE_KEY	SONG_FILE
 #define LOCATE_TAG_FILE_KEY_OLD	"filename"
-#define LOCATE_TAG_ANY_TYPE     TAG_NUM_OF_ITEM_TYPES+20
 #define LOCATE_TAG_ANY_KEY      "any"
 
 typedef struct _ListCommandItem {
