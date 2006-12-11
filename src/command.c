@@ -648,6 +648,12 @@ static int handleList(int fd, int *permission, int argc, char *argv[])
 		return -1;
 	}
 
+	if (tagType == LOCATE_TAG_ANY_TYPE) {
+		commandError(fd, ACK_ERROR_ARG,
+		             "\"any\" is not a valid return tag type");
+		return -1;
+	}
+
 	/* for compatibility with < 0.12.0 */
 	if (argc == 3) {
 		if (tagType != TAG_ITEM_ALBUM) {
