@@ -247,17 +247,21 @@ static int tagItemFoundAndMatches(Song * song, int type, char *str)
 {
 	int i;
 
-	if (type == LOCATE_TAG_FILE_TYPE) {
+	if (type == LOCATE_TAG_FILE_TYPE || type == LOCATE_TAG_ANY_TYPE) {
 		if (0 == strcmp(str, getSongUrl(song)))
 			return 1;
+		if (type == LOCATE_TAG_FILE_TYPE)
+			return 0;
 	}
 
 	if (!song->tag)
 		return 0;
 
 	for (i = 0; i < song->tag->numOfItems; i++) {
-		if (song->tag->items[i].type != type)
+		if (type != LOCATE_TAG_ANY_TYPE &&
+		    song->tag->items[i].type != type) {
 			continue;
+		}
 
 		if (0 == strcmp(str, song->tag->items[i].value))
 			return 1;
