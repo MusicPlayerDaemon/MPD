@@ -177,6 +177,10 @@ if test x$enable_oss = xyes; then
 	AC_CHECK_HEADER(sys/soundcard.h,[enable_oss=yes;AC_DEFINE(HAVE_OSS,1,[Define to enable OSS])],[AC_MSG_WARN(Soundcard headers not found -- disabling OSS support);enable_oss=no])
 fi
 
+if test x$enable_pulse = xyes || test x$enable_jack = xyes; then
+	PKG_PROG_PKG_CONFIG
+fi
+
 if test x$enable_pulse = xyes; then
 	PKG_CHECK_MODULES([PULSE], [libpulse-simple],
 	                  [enable_pulse=yes;AC_DEFINE([HAVE_PULSE], 1, [Define to enable PulseAudio support])] MPD_LIBS="$MPD_LIBS $PULSE_LIBS" MPD_CFLAGS="$MPD_CFLAGS $PULSE_CFLAGS",
