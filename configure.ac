@@ -179,7 +179,7 @@ fi
 
 if test x$enable_pulse = xyes; then
 	PKG_CHECK_MODULES([PULSE], [libpulse-simple],
-	                  [enable_pulse=yes;AC_DEFINE([HAVE_PULSE], 1, [Define to enable PulseAudio])] MPD_LIBS="$MPD_LIBS $PULSE_LIBS" MPD_CFLAGS="$MPD_CFLAGS $PULSE_CFLAGS",
+	                  [enable_pulse=yes;AC_DEFINE([HAVE_PULSE], 1, [Define to enable PulseAudio support])] MPD_LIBS="$MPD_LIBS $PULSE_LIBS" MPD_CFLAGS="$MPD_CFLAGS $PULSE_CFLAGS",
 	                  [enable_pulse=no;AC_MSG_WARN([PulseAudio not found -- disabling])])
 fi
 
@@ -191,12 +191,10 @@ if test x$enable_alsa = xyes; then
 	AM_PATH_ALSA(0.9.0,[AC_DEFINE(HAVE_ALSA,1,[Define to enable ALSA support]) MPD_LIBS="$MPD_LIBS $ALSA_LIBS" MPD_CFLAGS="$MPD_CFLAGS $ALSA_CFLAGS"],enable_alsa=no)
 fi
 
-if test "x$enable_jack" = "xyes"; then
-	PKG_CHECK_MODULES(JACK, [jack >= 0.4],
-			  [AC_DEFINE(HAVE_JACK,1,[Define to enable JACK support])
-			   MPD_LIBS="$MPD_LIBS $JACK_LIBS"
-			   MPD_CFLAGS="$MPD_CFLAGS $JACK_CFLAGS"],
-			  [enable_jack=no])
+if test x$enable_jack = xyes; then
+	PKG_CHECK_MODULES([JACK], [jack >= 0.4],
+	                  [enable_jack=yes;AC_DEFINE([HAVE_JACK], 1, [Define to enable JACK support])] MPD_LIBS="$MPD_LIBS $JACK_LIBS" MPD_CFLAGS="$MPD_CFLAGS $JACK_CFLAGS",
+	                  [enable_jack=no;AC_MSG_WARN([JACK not found -- disabling])])
 fi
 
 if test x$enable_iconv = xyes; then
