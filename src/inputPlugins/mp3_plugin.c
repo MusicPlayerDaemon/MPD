@@ -835,15 +835,17 @@ static int mp3Read(mp3DecodeData * data, OutputBuffer * cb, DecoderControl * dc,
 		for (i = 0; i < (data->synth).pcm.length; i++) {
 			mpd_sint16 *sample;
 
+			samplesLeft--;
+
 			if (!data->decodedFirstFrame &&
 			    (i < data->dropSamplesAtStart)) {
 				continue;
 			} else if (data->dropSamplesAtEnd &&
-			           (data->currentFrame == (data->maxFrames - data->dropFramesAtEnd))) {
-				samplesLeft--;
-				/* stop decoding, since samples were dropped */
-				if (samplesLeft < data->dropSamplesAtEnd)
-					return DECODE_BREAK;
+			           (data->currentFrame == (data->maxFrames - data->dropFramesAtEnd)) &&
+				   (samplesLeft < data->dropSamplesAtEnd)) {
+				/* stop decoding, effectively dropping
+				 * all remaining samples */
+				return DECODE_BREAK;
 			}
 
 			sample = (mpd_sint16 *) data->outputPtr;
