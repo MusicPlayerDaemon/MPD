@@ -184,6 +184,17 @@ supported character sets can be obtained by running "iconv -l".  The default is
 to let libid3tag convert them (from ISO-8859-1, as the standard specifies) and
 do no additional conversion.
 .TP
+.B gapless_mp3_playback <yes or no>
+This specifies whether to support gapless playback of MP3s which have the
+necessary headers.  Useful if your MP3s have headers with incorrect
+information.  If you have such MP3s, it is highly recommended that you fix them
+using vbrfix (available from <http://www.willwap.co.uk/Programs/vbrfix.php>)
+instead of disabling gapless MP3 playback.
+.TP
+.B save_absolute_paths_in_playlists <yes or no>
+This specifies whether relative or absolute paths for song filenames are used
+when saving playlists.  The default is "no".
+.TP
 .B metadata_to_use <tags>
 This specifies the song metadata that will be scanned and made available to
 clients.  Note that you must recreate (not update) your database for changes to
@@ -193,10 +204,6 @@ tags may be specified as a comma separated list.  An example value is
 "artist,album,title,track".  The special value "none" may be used alone to
 disable all metadata.  The default is to use all known tag types except for
 comments.
-.TP
-.B save_absolute_paths_in_playlists <yes or no>
-This specifies whether relative or absolute paths for song filenames are used
-when saving playlists.  The default is "no".
 .SH REQUIRED AUDIO OUTPUT PARAMETERS
 .TP
 .B type <type>
