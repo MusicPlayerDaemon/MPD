@@ -759,8 +759,6 @@ static int mp3Read(mp3DecodeData * data, OutputBuffer * cb, DecoderControl * dc,
 		mad_timer_add(&data->timer, (data->frame).header.duration);
 		data->bitRate = (data->frame).header.bitrate;
 		if (data->currentFrame >= data->maxFrames) {
-			/* stop decoding, since Xing maxFrames is accurate */
-			if (data->foundXing) return DECODE_BREAK;
 			data->currentFrame = data->maxFrames - 1;
 		} else {
 			data->highestFrame++;
@@ -811,8 +809,9 @@ static int mp3Read(mp3DecodeData * data, OutputBuffer * cb, DecoderControl * dc,
 			break;
 		} else if ((data->dropFramesAtEnd > 0) && 
 		           (data->currentFrame == (data->maxFrames + 1 - data->dropFramesAtEnd))) {
-			data->dropFramesAtEnd--;
-			break;
+			/* stop decoding, effectively dropping all remaining
+			 * frames */
+			return DECODE_BREAK;
 		}
 
 		if (data->inStream->metaTitle) {
