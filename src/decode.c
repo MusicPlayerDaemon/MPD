@@ -285,7 +285,6 @@ static void decodeStart(PlayerControl * pc, OutputBuffer * cb,
 		return;
 	}
 
-	dc->seekable = inStream.seekable;
 	dc->state = DECODE_STATE_START;
 	dc->start = 0;
 
@@ -295,6 +294,9 @@ static void decodeStart(PlayerControl * pc, OutputBuffer * cb,
 		my_usleep(1000);
 	}
 
+	/* for http streams, seekable is determined in bufferInputStream */
+	dc->seekable = inStream.seekable;
+        
 	if (dc->stop) {
 		dc->state = DECODE_STATE_STOP;
 		dc->stop = 0;

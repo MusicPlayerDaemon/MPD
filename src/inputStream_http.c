@@ -480,11 +480,11 @@ static int finishHTTPInit(InputStream * inStream)
 	snprintf(request, 2048, "GET %s HTTP/1.0\r\n" "Host: %s\r\n"
 		 /*"Connection: close\r\n" */
 		 "User-Agent: %s/%s\r\n"
-		 /*"Range: bytes=%ld-\r\n" */
+		 "Range: bytes=%ld-\r\n"
 		 "%s"	/* authorization */
 		 "Icy-Metadata:1\r\n"
 		 "\r\n", data->path, data->host, PACKAGE_NAME, PACKAGE_VERSION,
-		 /*inStream->offset, */
+                 inStream->offset,
 		 data->proxyAuth ? data->proxyAuth :
 		 (data->httpAuth ? data->httpAuth : "")
 	    );
@@ -681,9 +681,6 @@ static int getHTTPHello(InputStream * inStream)
 
 	data->prebuffer = 1;
 
-	/*mark as unseekable till we actually implement seeking */
-	inStream->seekable = 0;
-
 	return 0;
 }
 
@@ -714,21 +711,31 @@ int inputStream_httpOpen(InputStream * inStream, char *url)
 
 int inputStream_httpSeek(InputStream * inStream, long offset, int whence)
 {
-	/* hack to reopen an HTTP stream if we're trying to seek to
-	 * the beginning */
-	if ((whence == SEEK_SET) && (offset == 0)) {
-		InputStreamHTTPData *data;
+	if (!inStream->seekable)
+		return -1;
 
-		data = (InputStreamHTTPData *) inStream->data;
-		close(data->sock);
-		data->connState = HTTP_CONN_STATE_REOPEN;
-		data->buflen = 0;
-		inStream->offset = 0;
-		return 0;
+	switch (whence) {
+	case SEEK_SET:
+		inStream->offset = offset;
+		break;
+	case SEEK_CUR:
+		inStream->offset += offset;
+		break;
+	case SEEK_END:
+		inStream->offset = inStream->size + offset;
+		break;
+	default:
+		return -1;
 	}
 
-	/* otherwise, we don't know how to seek in HTTP yet */
-	return -1;
+	InputStreamHTTPData *data = (InputStreamHTTPData *)inStream->data;
+	close(data->sock);
+	data->connState = HTTP_CONN_STATE_REOPEN;
+	data->buflen = 0;
+
+	inputStream_httpBuffer(inStream);
+
+	return 0;
 }
 
 static void parseIcyMetadata(InputStream * inStream, char *metadata, int size)
