@@ -173,6 +173,7 @@ void initConf(void)
 	registerConfigParam(CONF_ID3V1_ENCODING,                0,     0);
 	registerConfigParam(CONF_METADATA_TO_USE,               0,     0);
 	registerConfigParam(CONF_SAVE_ABSOLUTE_PATHS,           0,     0);
+	registerConfigParam(CONF_GAPLESS_MP3_PLAYBACK,          0,     0);
 }
 
 static void addBlockParam(ConfigParam * param, char *name, char *value,

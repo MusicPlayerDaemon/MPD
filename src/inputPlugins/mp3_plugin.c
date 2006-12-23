@@ -31,6 +31,7 @@
 #include "../utils.h"
 #include "../replayGain.h"
 #include "../tag.h"
+#include "../conf.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -54,6 +55,10 @@
 
 /* the number of samples of silence the decoder inserts at start */
 #define DECODERDELAY 529
+
+#define DEFAULT_GAPLESS_MP3_PLAYBACK 1
+
+static int gaplessPlayback;
 
 /* this is stolen from mpg321! */
 struct audio_dither {
@@ -112,6 +117,14 @@ static signed long audio_linear_dither(unsigned int bits, mad_fixed_t sample,
 }
 
 /* end of stolen stuff from mpg321 */
+
+static int mp3_plugin_init(void)
+{
+	gaplessPlayback = getBoolConfigParam(CONF_GAPLESS_MP3_PLAYBACK);
+	if (gaplessPlayback == -1) gaplessPlayback = DEFAULT_GAPLESS_MP3_PLAYBACK;
+	else if (gaplessPlayback < 0) exit(EXIT_FAILURE);
+	return 1;
+}
 
 /* decoder stuff is based on madlld */
 
@@ -679,7 +692,7 @@ static int decodeFirstFrame(mp3DecodeData * data, DecoderControl * dc,
 		data->foundXing = 1;
 		data->muteFrame = MUTEFRAME_SKIP;
 
-		if (data->inStream->seekable &&
+		if (gaplessPlayback && data->inStream->seekable &&
 		    parse_lame(&lame, &ptr, &bitlen)) {
 			data->dropSamplesAtStart = lame.encoderDelay + DECODERDELAY;
 			data->dropSamplesAtEnd = lame.encoderPadding;
@@ -1063,7 +1076,7 @@ static char *mp3_mimeTypes[] = { "audio/mpeg", NULL };
 
 InputPlugin mp3Plugin = {
 	"mp3",
-	NULL,
+	mp3_plugin_init,
 	NULL,
 	NULL,
 	mp3_decode,
