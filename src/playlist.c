@@ -158,7 +158,7 @@ void initPlaylist(void)
 	}
 
 	playlist_saveAbsolutePaths = getBoolConfigParam(CONF_SAVE_ABSOLUTE_PATHS);
-	if (playlist_saveAbsolutePaths == -1) playlist_saveAbsolutePaths = 0;
+	if (playlist_saveAbsolutePaths == -1) playlist_saveAbsolutePaths = DEFAULT_PLAYLIST_SAVE_ABSOLUTE_PATHS;
 	else if (playlist_saveAbsolutePaths < 0) exit(EXIT_FAILURE);
 
 	playlist.songs = xmalloc(sizeof(Song *) * playlist_max_length);
