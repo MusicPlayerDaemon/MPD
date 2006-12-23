@@ -850,26 +850,15 @@ static int mp3Read(mp3DecodeData * data, OutputBuffer * cb, DecoderControl * dc,
 
 			sample = (mpd_sint16 *) data->outputPtr;
 			*sample = (mpd_sint16) audio_linear_dither(16,
-								   (data->
-								    synth).pcm.
-								   samples[0]
-								   [i],
-								   &(data->
-								     dither));
+								   (data->synth).pcm.samples[0][i],
+								   &(data->dither));
 			data->outputPtr += 2;
 
 			if (MAD_NCHANNELS(&(data->frame).header) == 2) {
 				sample = (mpd_sint16 *) data->outputPtr;
 				*sample = (mpd_sint16) audio_linear_dither(16,
-									   (data->
-									    synth).
-									   pcm.
-									   samples
-									   [1]
-									   [i],
-									   &
-									   (data->
-									    dither));
+									   (data->synth).pcm.samples[1][i],
+									   &(data->dither));
 				data->outputPtr += 2;
 			}
 
@@ -878,18 +867,12 @@ static int mp3Read(mp3DecodeData * data, OutputBuffer * cb, DecoderControl * dc,
 				ret = sendDataToOutputBuffer(cb,
 							     data->inStream,
 							     dc,
-							     data->inStream->
-							     seekable,
+							     data->inStream->seekable,
 							     data->outputBuffer,
-							     data->outputPtr -
-							     data->outputBuffer,
+							     data->outputPtr - data->outputBuffer,
 							     data->elapsedTime,
-							     data->bitRate /
-							     1000,
-							     (replayGainInfo !=
-							      NULL) ?
-							     *replayGainInfo :
-							     NULL);
+							     data->bitRate / 1000,
+							     (replayGainInfo != NULL) ? *replayGainInfo : NULL);
 				if (ret == OUTPUT_BUFFER_DC_STOP) {
 					data->flush = 0;
 					return DECODE_BREAK;
