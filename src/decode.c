@@ -76,7 +76,6 @@ static void stopDecode(DecoderControl * dc)
 static void quitDecode(PlayerControl * pc, DecoderControl * dc)
 {
 	stopDecode(dc);
-	pc->metadataState = PLAYER_METADATA_STATE_READ;
 	pc->state = PLAYER_STATE_STOP;
 	dc->seek = 0;
 	pc->play = 0;
