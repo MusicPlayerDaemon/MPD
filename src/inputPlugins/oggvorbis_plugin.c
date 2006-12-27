@@ -409,7 +409,7 @@ static unsigned int oggvorbis_try_decode(InputStream * inStream)
 }
 
 static char *oggvorbis_Suffixes[] = { "ogg", NULL };
-static char *oggvorbis_MimeTypes[] = { "application/ogg", NULL };
+static char *oggvorbis_MimeTypes[] = { "application/ogg", "application/x-ogg",NULL };
 
 InputPlugin oggvorbisPlugin = {
 	"oggvorbis",
