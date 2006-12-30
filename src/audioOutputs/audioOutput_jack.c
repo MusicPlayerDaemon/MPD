@@ -203,7 +203,7 @@ static int jack_testDefault(void)
 static int connect_jack(AudioOutput *audioOutput)
 {
 	JackData *jd = audioOutput->data;
-	const char **jports;
+	char **jports;
 	char *port_name;
 
 	if ( (jd->client = jack_client_new(name)) == NULL ) {
@@ -239,9 +239,10 @@ static int connect_jack(AudioOutput *audioOutput)
 	}
 
 	/*  hay que buscar que hay  */
-	if ( !output_ports[1] && (jports = jack_get_ports(jd->client, NULL, NULL,
-							  JackPortIsPhysical|
-							  JackPortIsInput)) ) {
+	if ( !output_ports[1]
+	     && (jports = (char **)jack_get_ports(jd->client, NULL, NULL,
+							JackPortIsPhysical|
+							JackPortIsInput)) ) {
 		output_ports[0] = jports[0];
 		output_ports[1] = jports[1] ? jports[1] : jports[0];
 		ERROR("output_ports: %s %s\n", output_ports[0], output_ports[1]);
