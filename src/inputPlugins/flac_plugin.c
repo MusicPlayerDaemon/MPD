@@ -478,7 +478,7 @@ static unsigned int oggflac_try_decode(InputStream * inStream)
 }
 
 static char *oggflac_suffixes[] = { "ogg", NULL };
-static char *oggflac_mime_types[] = { "application/ogg", NULL };
+static char *oggflac_mime_types[] = { "audio/x-flac+ogg", NULL };
 
 static int flac_plugin_init(void)
 {
@@ -503,7 +503,7 @@ static int flac_plugin_init(void)
 #endif /* FLAC_API_VERSION_CURRENT >= 7 */
 
 static char *flacSuffixes[] = { "flac", NULL };
-static char *flac_mime_types[] = { "application/x-flac", NULL };
+static char *flac_mime_types[] = { "audio/x-flac", NULL };
 
 InputPlugin flacPlugin = {
 	"flac",
