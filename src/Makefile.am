@@ -72,7 +72,8 @@ mpd_headers = \
 	tree.h \
 	utf8.h \
 	utils.h \
-	volume.h
+	volume.h \
+	localization.h
 
 
 mpd_SOURCES = \
@@ -121,7 +122,8 @@ mpd_SOURCES = \
 	tree.c \
 	utils.c \
 	volume.c \
-	utf8.c
+	utf8.c \
+	localization.c
 
 
 mpd_CFLAGS = $(MPD_CFLAGS)

@@ -42,6 +42,7 @@
 #include "../config.h"
 #include "utils.h"
 #include "normalize.h"
+#include "localization.h"
 
 #include <stdio.h>
 #include <sys/select.h>
@@ -437,6 +438,7 @@ int main(int argc, char *argv[])
 
 	open_log_files(options.stdOutput);
 
+	initLocalization();
 	initPaths();
 	initPermissions();
 	initPlaylist();
@@ -489,6 +491,7 @@ int main(int argc, char *argv[])
 	finishAudioConfig();
 	finishVolume();
 	finishPaths();
+	finishLocalization();
 	finishPermissions();
 	finishCommands();
 	finishInputPlugins();
