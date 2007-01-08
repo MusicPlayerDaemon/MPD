@@ -113,7 +113,10 @@ void flushWarningLog(void)
 			if (next == NULL) break;
 			*next = '\0';
 			next++;
-			fprintf(stderr, "%s\n", s);
+			if (stdout_mode)
+				fprintf(stderr, "%s\n", utf8ToLocaleCharset(s));
+			else
+				fprintf(stderr, "%s\n", s);
 			s = next;
 		}
 
