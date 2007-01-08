@@ -109,11 +109,10 @@ void flushWarningLog(void)
 	if (warningBuffer != NULL)
 	{
 		while (s != NULL) {
-			char * next = strchr(s, '\n');
-			if (next != NULL) {
-				*next = '\0';
-				next++;
-			}
+			char *next = strchr(s, '\n');
+			if (next == NULL) break;
+			*next = '\0';
+			next++;
 			fprintf(stderr, "%s\n", s);
 			s = next;
 		}
