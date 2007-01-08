@@ -429,6 +429,7 @@ int main(int argc, char *argv[])
 
 	initStats();
 	initTagConfig();
+	initLocalization();
 	initLog(options.verbose);
 
 	if (options.createDB <= 0 && !options.updateDB)
@@ -438,7 +439,6 @@ int main(int argc, char *argv[])
 
 	open_log_files(options.stdOutput);
 
-	initLocalization();
 	initPaths();
 	initPermissions();
 	initPlaylist();

@@ -17,6 +17,7 @@
  */
 
 #include "localization.h"
+#include "charConv.h"
 #include "utils.h"
 
 #include <stdlib.h>
@@ -29,6 +30,19 @@
 #endif
 
 static char *localeCharset = NULL;
+
+char *utf8ToLocaleCharset(char *str)
+{
+	static char *ret = NULL;
+
+	if (localeCharset)
+		ret = convCharset(localeCharset, "UTF-8", str, ret);
+
+	if (!ret)
+		ret = xstrdup(str);
+
+	return ret;
+}
 
 void setLocaleCharset(char *charset)
 {
@@ -63,7 +77,7 @@ void initLocalization(void)
 			    strcmp(currentLocale, "POSIX") == 0) {
 				WARNING("current locale is \"%s\"\n",
 				        currentLocale);
-				setLocaleCharset(xstrdup(""));
+				setLocaleCharset(xstrdup("ISO-8859-1"));
 			} else if ((temp = nl_langinfo(CODESET))) {
 				setLocaleCharset(xstrdup(temp));
 			} else {

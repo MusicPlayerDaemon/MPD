@@ -143,14 +143,10 @@ void initPaths(void)
 	}
 	closedir(dir);
 
-	if (fsCharsetParam) {
+	if (fsCharsetParam)
 		charset = xstrdup(fsCharsetParam->value);
-	} else if ((charset = getLocaleCharset())) {
-		if (*charset == '\0')
-			charset = NULL;
-		else
-			charset = xstrdup(charset);
-	}
+	else if ((charset = getLocaleCharset()))
+		charset = xstrdup(charset);
 
 	if (charset) {
 		setFsCharset(charset);
