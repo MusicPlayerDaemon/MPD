@@ -36,18 +36,11 @@ const char *musicDir;
 static const char *playlistDir;
 static char *fsCharset = NULL;
 
-static char *pathConvCharset(char *to, char *from, char *str, char *ret)
-{
-	if (ret)
-		free(ret);
-	return setCharSetConversion(to, from) ? NULL : convStrDup(str);
-}
-
 char *fsCharsetToUtf8(char *str)
 {
 	static char *ret = NULL;
 
-	ret = pathConvCharset("UTF-8", fsCharset, str, ret);
+	ret = convCharset("UTF-8", fsCharset, str, ret);
 
 	if (ret && !validUtf8String(ret)) {
 		free(ret);
@@ -61,7 +54,7 @@ char *utf8ToFsCharset(char *str)
 {
 	static char *ret = NULL;
 
-	ret = pathConvCharset(fsCharset, "UTF-8", str, ret);
+	ret = convCharset(fsCharset, "UTF-8", str, ret);
 
 	if (!ret)
 		ret = xstrdup(str);
