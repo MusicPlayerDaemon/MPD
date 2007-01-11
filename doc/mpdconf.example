@@ -45,6 +45,12 @@ error_file                      "~/.mpd/mpd.error"
 #
 #log_level                       "default"
 #
+# If Zeroconf is configured, the service name to publish.  This
+# should be unique on your local network, but name collisions
+# will be taken care of for you.
+#
+#zeroconf_name                   "Music Player"
+#
 ################################################################
 
 

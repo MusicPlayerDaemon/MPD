@@ -16,26 +16,12 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef LISTEN_H
-#define LISTEN_H
+#ifndef ZEROCONF_H
+#define ZEROCONF_H
 
 #include "../config.h"
 
-#include <sys/time.h>
-#include <sys/types.h>
-#include <unistd.h>
-#include <sys/select.h>
-
-void listenOnPort(void);
-
-void getConnections(fd_set * fds);
-
-void closeAllListenSockets(void);
-void freeAllListenSockets(void);
-
-/* fdmax should be initialized to something */
-void addListenSocketsToFdSet(fd_set * fds, int *fdmax);
-
-int getBoundPort(void);
+void initZeroconf(void);
+void finishZeroconf(void);
 
 #endif

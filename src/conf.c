@@ -146,6 +146,7 @@ void initConf(void)
 	registerConfigParam(CONF_BIND_TO_ADDRESS,               1,     0);
 	registerConfigParam(CONF_PORT,                          0,     0);
 	registerConfigParam(CONF_LOG_LEVEL,                     0,     0);
+	registerConfigParam(CONF_ZEROCONF_NAME,                 0,     0);
 	registerConfigParam(CONF_PASSWORD,                      1,     0);
 	registerConfigParam(CONF_DEFAULT_PERMS,                 0,     0);
 	registerConfigParam(CONF_AUDIO_OUTPUT,                  1,     1);

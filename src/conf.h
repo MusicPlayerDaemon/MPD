@@ -32,6 +32,7 @@
 #define CONF_BIND_TO_ADDRESS            "bind_to_address"
 #define CONF_PORT                       "port"
 #define CONF_LOG_LEVEL                  "log_level"
+#define CONF_ZEROCONF_NAME              "zeroconf_name"
 #define CONF_PASSWORD                   "password"
 #define CONF_DEFAULT_PERMS              "default_permissions"
 #define CONF_AUDIO_OUTPUT               "audio_output"

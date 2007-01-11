@@ -101,6 +101,7 @@ AC_ARG_WITH(mad-includes,[  --with-mad-includes=DIR     Directory where mad head
 AC_ARG_WITH(faad,[  --with-faad=PFX             Prefix where faad2 is installed], faad_prefix="$withval", faad_prefix="")
 AC_ARG_WITH(faad-libraries,[  --with-faad-libraries=DIR   Directory where faad2 library is installed (optional)], faad_libraries="$withval", faad_libraries="")
 AC_ARG_WITH(faad-includes,[  --with-faad-includes=DIR    Directory where faad2 header files are installed (optional)], faad_includes="$withval", faad_includes="")
+AC_ARG_WITH(zeroconf,[[  --with-zeroconf=[auto|avahi|bonjour|no]    Enable zeroconf backend (default=auto)]], with_zeroconf="$withval", with_zeroconf="auto")
 
 AC_C_BIGENDIAN
 
@@ -587,6 +588,36 @@ if test x$enable_mod = xyes; then
 	fi
 fi
 
+if test x$with_zeroconf != xno -a \
+	x$with_zeroconf != xavahi -a \
+	x$with_zeroconf != xbonjour; then
+	with_zeroconf=auto
+fi
+
+if test x$with_zeroconf != xno; then
+	if test x$with_zeroconf = xauto; then
+		PKG_CHECK_MODULES([AVAHI], [avahi-client],
+	                  [with_zeroconf=avahi;AC_DEFINE([HAVE_AVAHI], 1, [Define to enable Avahi Zeroconf support])] MPD_LIBS="$MPD_LIBS $AVAHI_LIBS" MPD_CFLAGS="$MPD_CFLAGS $AVAHI_CFLAGS",
+	                  [with_zeroconf=auto])
+	elif test x$with_zeroconf = xavahi; then
+		PKG_CHECK_MODULES([AVAHI], [avahi-client],
+	                  [with_zeroconf=avahi;AC_DEFINE([HAVE_AVAHI], 1, [Define to enable Avahi Zeroconf support])] MPD_LIBS="$MPD_LIBS $AVAHI_LIBS" MPD_CFLAGS="$MPD_CFLAGS $AVAHI_CFLAGS")
+	fi
+
+	# In the future, should add bonjour support (for OSX) and check at autodetect
+	# time
+	#if test x$with_zeroconf = xbonjour -o x$with_zeroconf = xauto; then
+	if test x$with_zeroconf = xbonjour; then
+		AC_MSG_WARN([Bonjour support has not been implemented yet, disabling Zeroconf])
+		with_zeroconf=no
+	fi
+
+	if test x$with_zeroconf = xauto; then
+		AC_MSG_WARN([No supported Zeroconf backend found, disabling Zeroconf])
+		with_zeroconf=no
+	fi
+fi
+
 AC_OUTPUT(src/mp4ff/Makefile doc/Makefile src/Makefile Makefile )
 
 echo ""
@@ -733,6 +764,15 @@ if
 	test x$enable_mpc = xno &&
 	test x$enable_mod = xno; then
 	AC_MSG_ERROR([No input plugins supported!])
+fi
+
+echo ""
+
+echo " Other features:"
+if test x$with_zeroconf != xno; then
+	echo " Zeroconf support ..............$with_zeroconf"
+else
+	echo " Zeroconf support ..............disabled"
 fi
 
 echo ""

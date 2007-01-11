@@ -47,6 +47,7 @@
 
 int *listenSockets = NULL;
 int numberOfListenSockets = 0;
+static int boundPort = 0;
 
 static int establishListen(unsigned int port,
                            struct sockaddr *addrp, socklen_t addrlen)
@@ -211,6 +212,8 @@ void listenOnPort(void)
 		}
 	}
 
+	boundPort = port;
+
 	do {
 		parseListenConfigParam(port, param);
 	} while ((param = getNextConfigParam(CONF_BIND_TO_ADDRESS, param)));
@@ -265,4 +268,9 @@ void getConnections(fd_set * fds)
 			}
 		}
 	}
+}
+
+int getBoundPort()
+{
+	return boundPort;
 }

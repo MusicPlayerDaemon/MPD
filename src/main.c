@@ -42,6 +42,7 @@
 #include "../config.h"
 #include "utils.h"
 #include "normalize.h"
+#include "zeroconf.h"
 #include "localization.h"
 
 #include <stdio.h>
@@ -452,6 +453,7 @@ int main(int argc, char *argv[])
 	initAudioDriver();
 	initVolume();
 	initInterfaces();
+	initZeroconf();
 	initReplayGainState();
 	initNormalization();
 	initInputStream();
@@ -477,6 +479,7 @@ int main(int argc, char *argv[])
 
 	write_state_file();
 	playerKill();
+	finishZeroconf();
 	freeAllInterfaces();
 	closeAllListenSockets();
 	finishPlaylist();
