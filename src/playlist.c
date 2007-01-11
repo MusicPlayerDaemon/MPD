@@ -940,8 +940,7 @@ int playPlaylistOrderNumber(int fd, int orderNum)
 	if (playerPlay(fd, (playlist.songs[playlist.order[orderNum]])) < 0) {
 		stopPlaylist(fd);
 		return -1;
-	} else
-		playlist.current++;
+	} 
 
 	playlist.current = orderNum;
 
