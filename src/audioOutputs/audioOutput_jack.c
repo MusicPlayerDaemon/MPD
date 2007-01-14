@@ -203,8 +203,8 @@ static int jack_initDriver(AudioOutput *audioOutput, ConfigParam *param)
 
 		if (strchr(cp,','))
 			FATAL("Only %d values are supported for '%s' "
-			      "at line %d\n",
-			      ARRAY_SIZE(output_ports), bp->name, bp->line);
+			      "at line %d\n", (int)ARRAY_SIZE(output_ports),
+			      bp->name, bp->line);
 	}
 
 	if ( (bp = getBlockParam(param, "ringbuffer_size")) ) {
