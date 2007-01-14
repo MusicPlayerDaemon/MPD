@@ -65,19 +65,28 @@ static void jack_finishDriver(AudioOutput * audioOutput)
 {
 	JackData *jd = audioOutput->data;
 
-	jack_deactivate(jd->client);
-	jack_client_close(jd->client);
+	if (jd && jd->client) {
+		jack_deactivate(jd->client);
+		jack_client_close(jd->client);
+	}
 	ERROR("disconnect_jack (pid=%d)\n", getpid ());
 
 	if ( strcmp(name, "mpd") ) free(name);
 	if ( output_ports[0] ) free(output_ports[0]);
 	if ( output_ports[1] ) free(output_ports[1]);
 
-	jack_ringbuffer_free(jd->ringbuffer[0]);
-	jack_ringbuffer_free(jd->ringbuffer[1]);
-	free(jd->samples1);
-	free(jd->samples2);
-	free(jd);
+	if (jd) {
+		if (jd->ringbuffer[0])
+			jack_ringbuffer_free(jd->ringbuffer[0]);
+		if (jd->ringbuffer[1])
+			jack_ringbuffer_free(jd->ringbuffer[1]);
+		if (jd->samples1)
+			free(jd->samples1);
+		if (jd->samples2)
+			free(jd->samples2);
+		free(jd);
+		audioOutput->data = NULL;
+	}
 }
 
 static int srate(jack_nframes_t rate, void *data)
@@ -289,7 +298,7 @@ static int jack_openDevice(AudioOutput *audioOutput)
 		jd = newJackData();
 		audioOutput->data = jd;
 
-		if ( !connect_jack(audioOutput) ) {
+		if (connect_jack(audioOutput) < 0) {
 			jack_finishDriver(audioOutput);
 			return -1;
 		}
