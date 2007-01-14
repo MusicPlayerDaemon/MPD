@@ -588,11 +588,13 @@ if test x$enable_mod = xyes; then
 	fi
 fi
 
-if test x$with_zeroconf != xno -a \
-	x$with_zeroconf != xavahi -a \
-	x$with_zeroconf != xbonjour; then
+case $with_zeroconf in
+no|avahi|bonjour)
+	;;
+*)
 	with_zeroconf=auto
-fi
+	;;
+esac
 
 if test x$with_zeroconf != xno; then
 	if test x$with_zeroconf = xauto; then
