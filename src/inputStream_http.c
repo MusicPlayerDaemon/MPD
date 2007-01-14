@@ -711,6 +711,8 @@ int inputStream_httpOpen(InputStream * inStream, char *url)
 
 int inputStream_httpSeek(InputStream * inStream, long offset, int whence)
 {
+	InputStreamHTTPData *data;
+
 	if (!inStream->seekable)
 		return -1;
 
@@ -728,7 +730,7 @@ int inputStream_httpSeek(InputStream * inStream, long offset, int whence)
 		return -1;
 	}
 
-	InputStreamHTTPData *data = (InputStreamHTTPData *)inStream->data;
+	data = (InputStreamHTTPData *)inStream->data;
 	close(data->sock);
 	data->connState = HTTP_CONN_STATE_REOPEN;
 	data->buflen = 0;
