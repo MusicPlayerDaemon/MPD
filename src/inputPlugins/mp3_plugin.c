@@ -876,7 +876,6 @@ static int mp3Read(mp3DecodeData * data, OutputBuffer * cb, DecoderControl * dc,
 			}
 
 			if (data->outputPtr >= data->outputBufferEnd) {
-				long ret;
 				ret = sendDataToOutputBuffer(cb,
 							     data->inStream,
 							     dc,
@@ -901,21 +900,21 @@ static int mp3Read(mp3DecodeData * data, OutputBuffer * cb, DecoderControl * dc,
 		data->decodedFirstFrame = 1;
 
 		if (dc->seek && data->inStream->seekable) {
-			long i = 0;
+			long j = 0;
 			data->muteFrame = MUTEFRAME_SEEK;
-			while (i < data->highestFrame && dc->seekWhere >
-			       ((float)mad_timer_count(data->times[i],
+			while (j < data->highestFrame && dc->seekWhere >
+			       ((float)mad_timer_count(data->times[j],
 						       MAD_UNITS_MILLISECONDS))
 			       / 1000) {
-				i++;
+				j++;
 			}
-			if (i < data->highestFrame) {
+			if (j < data->highestFrame) {
 				if (seekMp3InputBuffer(data,
-						       data->frameOffset[i]) ==
+						       data->frameOffset[j]) ==
 				    0) {
 					data->outputPtr = data->outputBuffer;
 					clearOutputBuffer(cb);
-					data->currentFrame = i;
+					data->currentFrame = j;
 				} else
 					dc->seekError = 1;
 				data->muteFrame = 0;
