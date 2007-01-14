@@ -19,8 +19,10 @@
 #include "localization.h"
 #include "charConv.h"
 #include "utils.h"
+#include "log.h"
 
 #include <stdlib.h>
+#include <string.h>
 
 #ifdef HAVE_LOCALE
 #ifdef HAVE_LANGINFO_CODESET
