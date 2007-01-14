@@ -51,6 +51,7 @@
 
 #  define flac_decoder_eof       FLAC__SEEKABLE_STREAM_DECODER_END_OF_STREAM
 
+typedef unsigned flac_read_status_size_t;
 #  define flac_read_status       FLAC__SeekableStreamDecoderReadStatus
 #  define flac_read_status_continue \
                                  FLAC__SEEKABLE_STREAM_DECODER_READ_STATUS_OK
@@ -112,6 +113,7 @@
 
 #  define flac_decoder_eof       FLAC__STREAM_DECODER_END_OF_STREAM
 
+typedef size_t flac_read_status_size_t;
 #  define flac_read_status       FLAC__StreamDecoderReadStatus
 #  define flac_read_status_continue \
                                  FLAC__STREAM_DECODER_READ_STATUS_CONTINUE

@@ -37,7 +37,7 @@
 
 static flac_read_status flacRead(const flac_decoder * flacDec,
                                   FLAC__byte buf[],
-				  unsigned *bytes,
+				  flac_read_status_size_t *bytes,
 				  void *fdata)
 {
 	FlacData *data = (FlacData *) fdata;
