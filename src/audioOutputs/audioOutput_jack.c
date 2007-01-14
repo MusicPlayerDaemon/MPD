@@ -64,6 +64,7 @@ static JackData *newJackData(void)
 static void jack_finishDriver(AudioOutput * audioOutput)
 {
 	JackData *jd = audioOutput->data;
+	int i;
 
 	if (jd && jd->client) {
 		jack_deactivate(jd->client);
@@ -71,9 +72,17 @@ static void jack_finishDriver(AudioOutput * audioOutput)
 	}
 	ERROR("disconnect_jack (pid=%d)\n", getpid ());
 
-	if ( strcmp(name, "mpd") ) free(name);
-	if ( output_ports[0] ) free(output_ports[0]);
-	if ( output_ports[1] ) free(output_ports[1]);
+	if (strcmp(name, "mpd")) {
+		free(name);
+		name = "mpd";
+	}
+
+	for (i = ARRAY_SIZE(output_ports); --i >= 0; ) {
+		if (!output_ports[i])
+			continue;
+		free(output_ports[i]);
+		output_ports[i] = NULL;
+	}
 
 	if (jd) {
 		if (jd->ringbuffer[0])
