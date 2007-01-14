@@ -450,17 +450,6 @@ InputPlugin mp4Plugin = {
 
 #else
 
-InputPlugin mp4Plugin = {
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	0,
-	NULL,
-	NULL
-};
+InputPlugin mp4Plugin;
 
 #endif /* HAVE_FAAD */

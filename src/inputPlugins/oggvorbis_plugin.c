@@ -429,17 +429,6 @@ InputPlugin oggvorbisPlugin = {
 
 #else /* !HAVE_OGGVORBIS */
 
-InputPlugin oggvorbisPlugin = {
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	0,
-	NULL,
-	NULL,
-};
+InputPlugin oggvorbisPlugin;
 
 #endif /* HAVE_OGGVORBIS */

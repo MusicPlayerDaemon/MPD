@@ -34,7 +34,7 @@
 
 #define CONN_ATTEMPT_INTERVAL	60
 
-static int shoutInitCount = 0;
+static int shoutInitCount;
 
 /* lots of this code blatantly stolent from bossogg/bossao2 */
 

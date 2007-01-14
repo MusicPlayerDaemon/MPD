@@ -83,9 +83,9 @@ static Playlist playlist;
 static int playlist_state = PLAYLIST_STATE_STOP;
 static int playlist_max_length = DEFAULT_PLAYLIST_MAX_LENGTH;
 static int playlist_stopOnError;
-static int playlist_errorCount = 0;
+static int playlist_errorCount;
 static int playlist_queueError;
-static int playlist_noGoToNext = 0;
+static int playlist_noGoToNext;
 
 static int playlist_saveAbsolutePaths = DEFAULT_PLAYLIST_SAVE_ABSOLUTE_PATHS;
 
@@ -1301,7 +1301,7 @@ int setPlaylistRandomStatus(int fd, int status)
 
 int previousSongInPlaylist(int fd)
 {
-	static time_t lastTime = 0;
+	static time_t lastTime;
 	time_t diff = time(NULL) - lastTime;
 
 	lastTime += diff;

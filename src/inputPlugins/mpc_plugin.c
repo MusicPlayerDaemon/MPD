@@ -355,17 +355,6 @@ InputPlugin mpcPlugin = {
 
 #else
 
-InputPlugin mpcPlugin = {
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	0,
-	NULL,
-	NULL
-};
+InputPlugin mpcPlugin;
 
 #endif

@@ -418,17 +418,6 @@ InputPlugin oggflacPlugin = {
 
 #else /* !HAVE_FLAC */
 
-InputPlugin oggflacPlugin = {
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	0,
-	NULL,
-	NULL,
-};
+InputPlugin oggflacPlugin;
 
 #endif /* HAVE_OGGFLAC */

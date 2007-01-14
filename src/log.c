@@ -30,13 +30,13 @@
 #include <time.h>
 
 static unsigned int logLevel = LOG_LEVEL_LOW;
-static int warningFlushed = 0;
+static int warningFlushed;
 static int stdout_mode = 1;
-static char *warningBuffer = NULL;
+static char *warningBuffer;
 static int out_fd = -1;
 static int err_fd = -1;
-static const char *out_filename = NULL;
-static const char *err_filename = NULL;
+static const char *out_filename;
+static const char *err_filename;
 
 /* redirect stdin to /dev/null to work around a libao bug */
 static void redirect_stdin(void)
@@ -60,7 +60,7 @@ static void redirect_logs(void)
 
 static const char *log_date(void)
 {
-	static char buf[16] = { '\0' };
+	static char buf[16];
 	time_t t = time(NULL);
 	strftime(buf, 16, "%b %d %H:%M : ", localtime(&t));
 	return buf;

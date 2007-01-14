@@ -41,7 +41,7 @@ static struct _sf_cb {
 	{ readPlaylistState, savePlaylistState },
 };
 
-static const char *sfpath = NULL;
+static const char *sfpath;
 
 static void get_state_file_path(void)
 {

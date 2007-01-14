@@ -37,7 +37,7 @@
 #include <unistd.h>
 #include <string.h>
 
-static int decode_pid = 0;
+static int decode_pid;
 
 void decodeSigHandler(int sig, siginfo_t * si, void *v)
 {

@@ -137,10 +137,10 @@ void pcm_mix(char *buffer1, char *buffer2, size_t bufferSize1,
 void pcm_convertAudioFormat(AudioFormat * inFormat, char *inBuffer, size_t
 			    inSize, AudioFormat * outFormat, char *outBuffer)
 {
-	static char *bitConvBuffer = NULL;
-	static int bitConvBufferLength = 0;
-	static char *channelConvBuffer = NULL;
-	static int channelConvBufferLength = 0;
+	static char *bitConvBuffer;
+	static int bitConvBufferLength;
+	static char *channelConvBuffer;
+	static int channelConvBufferLength;
 	char *dataChannelConv;
 	int dataChannelLen;
 	char *dataBitConv;

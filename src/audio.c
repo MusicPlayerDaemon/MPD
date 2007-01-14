@@ -39,12 +39,12 @@
 #define AUDIO_DEVICE_STATE_LEN	19	/* strlen(AUDIO_DEVICE_STATE) */
 #define AUDIO_BUFFER_SIZE	2*MAXPATHLEN
 
-static AudioFormat audio_format = { 0, 0, 0 };
+static AudioFormat audio_format;
 
-static AudioFormat *audio_configFormat = NULL;
+static AudioFormat *audio_configFormat;
 
-static AudioOutput *audioOutputArray = NULL;
-static mpd_uint8 audioOutputArraySize = 0;
+static AudioOutput *audioOutputArray;
+static mpd_uint8 audioOutputArraySize;
 
 #define	DEVICE_OFF        0x00
 #define DEVICE_ENABLE	  0x01   /* currently off, but to be turned on */
@@ -53,13 +53,13 @@ static mpd_uint8 audioOutputArraySize = 0;
 
 /* the audioEnabledArray should be stuck into shared memory, and then disable
    and enable in playAudio() routine */
-static mpd_uint8 *audioDeviceStates = NULL;
+static mpd_uint8 *audioDeviceStates;
 
-static mpd_uint8 audioOpened = 0;
+static mpd_uint8 audioOpened;
 
-static mpd_sint32 audioBufferSize = 0;
-static char *audioBuffer = NULL;
-static mpd_sint32 audioBufferPos = 0;
+static mpd_sint32 audioBufferSize;
+static char *audioBuffer;
+static mpd_sint32 audioBufferPos;
 
 size_t audio_device_count(void)
 {

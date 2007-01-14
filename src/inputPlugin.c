@@ -24,7 +24,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-static List *inputPlugin_list = NULL;
+static List *inputPlugin_list;
 
 void loadInputPlugin(InputPlugin * inputPlugin)
 {
@@ -59,7 +59,7 @@ static int stringFoundInStringArray(char **array, char *suffix)
 
 InputPlugin *getInputPluginFromSuffix(char *suffix, unsigned int next)
 {
-	static ListNode *pos = NULL;
+	static ListNode *pos;
 	ListNode *node;
 	InputPlugin *plugin;
 
@@ -88,7 +88,7 @@ InputPlugin *getInputPluginFromSuffix(char *suffix, unsigned int next)
 
 InputPlugin *getInputPluginFromMimeType(char *mimeType, unsigned int next)
 {
-	static ListNode *pos = NULL;
+	static ListNode *pos;
 	ListNode *node;
 	InputPlugin *plugin;
 

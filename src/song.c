@@ -320,9 +320,9 @@ int updateSongInfo(Song * song)
  * 	we free and recreate this memory we make sure to print it correctly*/
 char *getSongUrl(Song * song)
 {
-	static char *buffer = NULL;
-	static int bufferSize = 0;
-	static Song *lastSong = NULL;
+	static char *buffer;
+	static int bufferSize;
+	static Song *lastSong;
 	int slen;
 	int dlen;
 	int size;

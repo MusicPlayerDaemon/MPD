@@ -46,11 +46,11 @@
 #include <avahi-common/error.h>
 
 /* Static avahi data */
-static AvahiEntryGroup *avahiGroup = NULL;
-static char *avahiName = NULL;
-static AvahiClient* avahiClient = NULL;
+static AvahiEntryGroup *avahiGroup;
+static char *avahiName;
+static AvahiClient* avahiClient;
 static AvahiPoll avahiPoll;
-static int avahiRunning = 0;
+static int avahiRunning;
 
 static int avahiFdset( fd_set* rfds, fd_set* wfds, fd_set* efds );
 static int avahiFdconsume( int fdCount, fd_set* rfds, fd_set* wfds, fd_set* efds );

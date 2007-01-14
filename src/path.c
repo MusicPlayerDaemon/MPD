@@ -34,11 +34,11 @@
 
 const char *musicDir;
 static const char *playlistDir;
-static char *fsCharset = NULL;
+static char *fsCharset;
 
 char *fsCharsetToUtf8(char *str)
 {
-	static char *ret = NULL;
+	static char *ret;
 
 	ret = convCharset("UTF-8", fsCharset, str, ret);
 
@@ -52,7 +52,7 @@ char *fsCharsetToUtf8(char *str)
 
 char *utf8ToFsCharset(char *str)
 {
-	static char *ret = NULL;
+	static char *ret;
 
 	ret = convCharset(fsCharset, "UTF-8", str, ret);
 

@@ -134,8 +134,8 @@ struct _CommandEntry {
 	CommandListHandlerFunction listHandler;
 };
 
-static char *current_command = NULL;
-static int command_listNum = 0;
+static char *current_command;
+static int command_listNum;
 
 static CommandEntry *getCommandEntryFromString(char *string, int *permission);
 
@@ -516,7 +516,7 @@ static int listHandleUpdate(int fd,
 			    char *argv[],
 			    struct strnode *cmdnode, CommandEntry * cmd)
 {
-	static List *pathList = NULL;
+	static List *pathList;
 	CommandEntry *nextCmd = NULL;
 	struct strnode *next = cmdnode->next;
 

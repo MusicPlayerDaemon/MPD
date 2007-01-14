@@ -45,9 +45,9 @@
 	ERROR("maybe MPD is still running?\n"); \
 } while (0);
 
-int *listenSockets = NULL;
-int numberOfListenSockets = 0;
-static int boundPort = 0;
+static int *listenSockets;
+static int numberOfListenSockets;
+static int boundPort;
 
 static int establishListen(unsigned int port,
                            struct sockaddr *addrp, socklen_t addrlen)

@@ -92,8 +92,8 @@ static MDRIVER drv_mpd = {
 	VC_VoiceRealVolume
 };
 
-static int mod_mikModInitiated = 0;
-static int mod_mikModInitError = 0;
+static int mod_mikModInitiated;
+static int mod_mikModInitError;
 
 static int mod_initMikMod(void)
 {
@@ -285,17 +285,6 @@ InputPlugin modPlugin = {
 
 #else
 
-InputPlugin modPlugin = {
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	0,
-	NULL,
-	NULL
-};
+InputPlugin modPlugin;
 
 #endif /* HAVE_AUDIOFILE */

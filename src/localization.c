@@ -31,11 +31,11 @@
 #endif
 #endif
 
-static char *localeCharset = NULL;
+static char *localeCharset;
 
 char *utf8ToLocaleCharset(char *str)
 {
-	static char *ret = NULL;
+	static char *ret;
 
 	if (localeCharset)
 		ret = convCharset(localeCharset, "UTF-8", str, ret);

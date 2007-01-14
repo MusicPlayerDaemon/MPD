@@ -47,10 +47,10 @@
 
 #define HTTP_REDIRECT_MAX    10
 
-static char *proxyHost = NULL;
-static char *proxyPort = NULL;
-static char *proxyUser = NULL;
-static char *proxyPassword = NULL;
+static char *proxyHost;
+static char *proxyPort;
+static char *proxyUser;
+static char *proxyPassword;
 static int bufferSize = HTTP_BUFFER_SIZE_DEFAULT;
 static int prebufferSize = HTTP_PREBUFFER_SIZE_DEFAULT;
 

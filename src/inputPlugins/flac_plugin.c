@@ -525,17 +525,6 @@ InputPlugin flacPlugin = {
 
 #else /* !HAVE_FLAC */
 
-InputPlugin flacPlugin = {
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	0,
-	NULL,
-	NULL,
-};
+InputPlugin flacPlugin;
 
 #endif /* HAVE_FLAC */

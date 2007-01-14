@@ -56,7 +56,7 @@
 #define INTERFACE_MAX_OUTPUT_BUFFER_SIZE_DEFAULT	(8192*1024)
 
 /* set this to zero to indicate we have no possible interfaces */
-static int interface_max_connections = 0;	/*INTERFACE_MAX_CONNECTIONS_DEFAULT; */
+static int interface_max_connections;	/*INTERFACE_MAX_CONNECTIONS_DEFAULT; */
 static int interface_timeout = INTERFACE_TIMEOUT_DEFAULT;
 static size_t interface_max_command_list_size =
     INTERFACE_MAX_COMMAND_LIST_DEFAULT;
@@ -70,9 +70,9 @@ static struct ioOps *ioList;
 static long int interface_list_cache_size = 32;
 
 /* shared globally between all interfaces: */
-static struct strnode *list_cache = NULL;
-static struct strnode *list_cache_head = NULL;
-static struct strnode *list_cache_tail = NULL;
+static struct strnode *list_cache;
+static struct strnode *list_cache_head;
+static struct strnode *list_cache_tail;
 
 typedef struct _Interface {
 	char buffer[INTERFACE_MAX_BUFFER_LENGTH];
@@ -98,7 +98,7 @@ typedef struct _Interface {
 	int send_buf_alloc;	/* bytes actually allocated */
 } Interface;
 
-static Interface *interfaces = NULL;
+static Interface *interfaces;
 
 static void flushInterfaceBuffer(Interface * interface);
 
@@ -731,7 +731,7 @@ static void flushInterfaceBuffer(Interface * interface)
 
 int interfacePrintWithFD(int fd, char *buffer, int buflen)
 {
-	static int i = 0;
+	static int i;
 	int copylen;
 	Interface *interface;
 

@@ -183,17 +183,6 @@ InputPlugin audiofilePlugin = {
 
 #else
 
-InputPlugin audiofilePlugin = {
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	0,
-	NULL,
-	NULL
-};
+InputPlugin audiofilePlugin;
 
 #endif /* HAVE_AUDIOFILE */

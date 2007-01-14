@@ -297,7 +297,7 @@ int getPlayerError(void)
 
 char *getPlayerErrorStr(void)
 {
-	static char *error = NULL;
+	static char *error;
 	int errorlen = MAXPATHLEN + 1024;
 	PlayerControl *pc = &(getPlayerData()->playerControl);
 
@@ -504,8 +504,8 @@ void playerCycleLogFiles(void)
 /* this actually creates a dupe of the current metadata */
 Song *playerCurrentDecodeSong(void)
 {
-	static Song *song = NULL;
-	static MetadataChunk *prev = NULL;
+	static Song *song;
+	static MetadataChunk *prev;
 	Song *ret = NULL;
 	PlayerControl *pc = &(getPlayerData()->playerControl);
 

@@ -48,7 +48,7 @@ typedef struct _configEntry {
 	List *configParamList;
 } ConfigEntry;
 
-static List *configEntriesList = NULL;
+static List *configEntriesList;
 
 static ConfigParam *newConfigParam(char *value, int line)
 {

@@ -27,7 +27,7 @@
 
 #include <ao/ao.h>
 
-static int driverInitCount = 0;
+static int driverInitCount;
 
 typedef struct _AoData {
 	int writeSize;

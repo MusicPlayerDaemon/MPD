@@ -1087,17 +1087,6 @@ InputPlugin mp3Plugin = {
 };
 #else
 
-InputPlugin mp3Plugin = {
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	0,
-	NULL,
-	NULL
-};
+InputPlugin mp3Plugin;
 
 #endif

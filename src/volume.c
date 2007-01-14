@@ -73,7 +73,7 @@ static int volume_ossControl = SOUND_MIXER_PCM;
 #endif
 
 #ifdef HAVE_ALSA
-static snd_mixer_t *volume_alsaMixerHandle = NULL;
+static snd_mixer_t *volume_alsaMixerHandle;
 static snd_mixer_elem_t *volume_alsaElem;
 static long volume_alsaMin;
 static long volume_alsaMax;

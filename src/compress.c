@@ -39,7 +39,7 @@ static int screen;
 static GC blackGC, whiteGC, blueGC, yellowGC, dkyellowGC, redGC;
 #endif
 
-static int *peaks = NULL;
+static int *peaks;
 static int gainCurrent, gainTarget;
 
 static struct {
@@ -52,13 +52,13 @@ static struct {
 } prefs;
 
 #ifdef USE_X
-static int mon_init = 0;
+static int mon_init;
 #endif
 
 void CompressCfg(int show_mon, int anticlip, int target, int gainmax,
 		 int gainsmooth, int buckets)
 {
-	static int lastsize = 0;
+	static int lastsize;
 
 	prefs.show_mon = show_mon;
 	prefs.anticlip = anticlip;
@@ -179,9 +179,9 @@ void CompressDo(void *data, unsigned int length)
 	int gr, gf, gn;
 	static int pn = -1;
 #ifdef STATS
-	static int clip = 0;
+	static int clip;
 #endif
-	static int clipped = 0;
+	static int clipped;
 
 	if (!peaks)
 		return;

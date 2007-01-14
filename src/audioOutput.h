@@ -27,18 +27,7 @@
 #include "conf.h"
 #include "utils.h"
 
-#define DISABLED_AUDIO_OUTPUT_PLUGIN(plugin) \
-	AudioOutputPlugin plugin = { \
-		NULL, \
-		NULL, \
-		NULL, \
-		NULL, \
-		NULL, \
-		NULL, \
-		NULL, \
-		NULL, \
-		NULL \
-	};
+#define DISABLED_AUDIO_OUTPUT_PLUGIN(plugin) AudioOutputPlugin plugin;
 
 typedef struct _AudioOutput AudioOutput;
 

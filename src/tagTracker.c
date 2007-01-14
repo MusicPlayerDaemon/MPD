@@ -26,15 +26,7 @@
 #include <assert.h>
 #include <stdlib.h>
 
-static Tree *tagTrees[TAG_NUM_OF_ITEM_TYPES] = {
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	NULL
-};
+static Tree *tagTrees[TAG_NUM_OF_ITEM_TYPES];
 
 typedef struct tagTrackerItem {
 	int count;

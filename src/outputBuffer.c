@@ -30,7 +30,7 @@
 static mpd_sint16 currentChunk = -1;
 
 static mpd_sint8 currentMetaChunk = -1;
-static mpd_sint8 sendMetaChunk = 0;
+static mpd_sint8 sendMetaChunk;
 
 void clearAllMetaChunkSets(OutputBuffer * cb)
 {
@@ -76,8 +76,8 @@ int sendDataToOutputBuffer(OutputBuffer * cb, InputStream * inStream,
 	mpd_uint16 chunkLeft;
 	char *data;
 	size_t datalen;
-	static char *convBuffer = NULL;
-	static long convBufferLen = 0;
+	static char *convBuffer;
+	static long convBufferLen;
 
 	if (cmpAudioFormat(&(cb->audioFormat), &(dc->audioFormat)) == 0) {
 		data = dataIn;
@@ -158,7 +158,7 @@ int sendDataToOutputBuffer(OutputBuffer * cb, InputStream * inStream,
 int copyMpdTagToOutputBuffer(OutputBuffer * cb, MpdTag * tag)
 {
 	int nextChunk;
-	static MpdTag *last = NULL;
+	static MpdTag *last;
 
 	if (!cb->acceptMetadata || !tag) {
 		sendMetaChunk = 0;
