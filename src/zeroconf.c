@@ -35,7 +35,7 @@
 #define SERVICE_NAME		"Music Player"
 
 /* Here is the implementation for Avahi (http://avahi.org) Zeroconf support */
-#if HAVE_AVAHI
+#ifdef HAVE_AVAHI
 
 #include <avahi-client/client.h>
 #include <avahi-client/publish.h>
@@ -477,7 +477,7 @@ void initZeroconf(void)
 
 void finishZeroconf(void)
 {
-#if HAVE_AVAHI
+#ifdef HAVE_AVAHI
 	DEBUG( "Avahi: Shutting down interface\n" );
 	deregisterIO( &avahiIo );
 
