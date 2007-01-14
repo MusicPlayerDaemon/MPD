@@ -372,8 +372,9 @@ static int avahiFdset( fd_set* rfds, fd_set* wfds, fd_set* efds )
 static int avahiFdconsume( int fdCount, fd_set* rfds, fd_set* wfds, fd_set* efds )
 {
 	int retval = fdCount;
-
+	AvahiTimeout* t;
 	AvahiWatch* w = avahiWatchList;
+
 	while( w != NULL && retval > 0 ) {
 		AvahiWatch* current = w;
 		current->observedEvent = 0;
@@ -404,7 +405,7 @@ static int avahiFdconsume( int fdCount, fd_set* rfds, fd_set* wfds, fd_set* efds
 		}
 	}
 
-	AvahiTimeout* t = avahiTimeoutList;
+	t = avahiTimeoutList;
 	while( t != NULL && avahiRunning ) {
 		AvahiTimeout* current = t;
 
@@ -418,19 +419,8 @@ static int avahiFdconsume( int fdCount, fd_set* rfds, fd_set* wfds, fd_set* efds
 	return retval;
 }
 
-#endif // HAVE_AVAHI
-
-void initZeroconf(void)
+static void init_avahi(const char *serviceName)
 {
-	const char* serviceName = SERVICE_NAME;
-	ConfigParam *param;
-
-	param = getConfigParam(CONF_ZEROCONF_NAME);
-
-	if (param && strlen(param->value) > 0)
-		serviceName = param->value;
-
-#if HAVE_AVAHI
 	int error;
 	DEBUG( "Avahi: Initializing interface\n" );
 
@@ -468,7 +458,21 @@ void initZeroconf(void)
 
 fail:
 	finishZeroconf();
-#endif // HAVE_AVAHI
+}
+#else  /* !HAVE_AVAHI */
+static void init_avahi(const char *serviceName) { }
+#endif /* HAVE_AVAHI */
+
+void initZeroconf(void)
+{
+	const char* serviceName = SERVICE_NAME;
+	ConfigParam *param;
+
+	param = getConfigParam(CONF_ZEROCONF_NAME);
+
+	if (param && strlen(param->value) > 0)
+		serviceName = param->value;
+	init_avahi(serviceName);
 }
 
 void finishZeroconf(void)
