@@ -20,11 +20,9 @@ AC_DEFINE(PROTOCOL_VERSION, "0.12.1", [The mpd protocol version])
 
 MPD_LIBS=""
 MPD_CFLAGS=""
-case "$CC" in
-*gcc*)
+if test x$GCC = xyes; then
 	MPD_CFLAGS="-Wall -Wmissing-prototypes"
-	;;
-esac
+fi
 
 if test -z "$prefix" || test "x$prefix" = xNONE; then
 	local_lib=
@@ -515,7 +513,7 @@ elif test x$enable_oggvorbis = xyes; then
 
 		if test x$enable_shout = xyes; then
 			MPD_LIBS="$MPD_LIBS $VORBISENC_LIBS"
-			MPD_CFLAGS="$VORBISFILE_CFLAGS $VORBISENC_CFLAGS"
+			MPD_CFLAGS="$MPD_CFLAGS $VORBISFILE_CFLAGS $VORBISENC_CFLAGS"
 		fi
 	fi
 fi
