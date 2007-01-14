@@ -512,15 +512,15 @@ int doIOForInterfaces(void)
 
 		// Add fds for all registered IO handlers
 		if( ioList ) {
-			struct ioOps *i = ioList;
-			while( i ) {
-				struct ioOps *current = i;
+			struct ioOps *o = ioList;
+			while( o ) {
+				struct ioOps *current = o;
 				int fdnum;
 				assert( current->fdset );
 				fdnum = current->fdset( &rfds, &wfds, &efds );
 				if( fdmax < fdnum )
 					fdmax = fdnum;
-				i = i->next;
+				o = o->next;
 			}
 		}
 
@@ -531,12 +531,12 @@ int doIOForInterfaces(void)
 
 		// Consume fds for all registered IO handlers
 		if( ioList ) {
-			struct ioOps *i = ioList;
-			while( i ) {
-				struct ioOps *current = i;
+			struct ioOps *o = ioList;
+			while( o ) {
+				struct ioOps *current = o;
 				assert( current->consume );
 				selret = current->consume( selret, &rfds, &wfds, &efds );
-				i = i->next;
+				o = o->next;
 			}
 		}
 

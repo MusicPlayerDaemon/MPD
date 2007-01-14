@@ -270,7 +270,7 @@ void getConnections(fd_set * fds)
 	}
 }
 
-int getBoundPort()
+int getBoundPort(void)
 {
 	return boundPort;
 }
