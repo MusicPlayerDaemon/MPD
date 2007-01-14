@@ -72,7 +72,7 @@ static flac_seek_status flacSeek(const flac_decoder * flacDec,
 		return flac_seek_status_error;
 	}
 
-	return flac_tell_status_ok;
+	return flac_seek_status_ok;
 }
 
 static flac_tell_status flacTell(const flac_decoder * flacDec,
