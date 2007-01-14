@@ -175,11 +175,27 @@ static int jack_initDriver(AudioOutput *audioOutput, ConfigParam *param)
 	if ( ! param ) return 0;
 
 	if ( (bp = getBlockParam(param, "ports")) ) {
-		cp = xstrdup(bp->value);
-		ERROR("output_ports=%s\n", cp);
-		output_ports[0] = xstrdup(strtok (cp, ","));
-		output_ports[1] = xstrdup(strtok (NULL, ","));
-		free(cp);
+		DEBUG("output_ports=%s\n", bp->value);
+
+		if (!(cp = strchr(bp->value, ',')))
+			FATAL("expected comma and a second value for '%s' "
+			      "at line %d: %s\n",
+			      bp->name, bp->line, bp->value);
+
+		*cp = '\0';
+		output_ports[0] = xstrdup(bp->value);
+		*cp++ = ',';
+
+		if (!*cp)
+			FATAL("expected a second value for '%s' at line %d: "
+			      "%s\n", bp->name, bp->line, bp->value);
+
+		output_ports[1] = xstrdup(cp);
+
+		if (strchr(cp,','))
+			FATAL("Only %d values are supported for '%s' "
+			      "at line %d\n",
+			      ARRAY_SIZE(output_ports), bp->name, bp->line);
 	}
 
 	if ( (bp = getBlockParam(param, "ringbuffer_size")) ) {
