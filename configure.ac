@@ -549,6 +549,10 @@ if test x$enable_flac = xyes; then
 	if test x$enable_flac = xno; then
 		MPD_CFLAGS="$oldmpdcflags"
 		MPD_LIBS="$oldmpdlibs"
+	else
+		AC_CHECK_DECL(FLAC_API_SUPPORTS_OGG_FLAC,
+		              [enable_oggflac=flac], [],
+			      [#include <FLAC/export.h>])
 	fi
 	CFLAGS="$oldcflags"
 	LIBS="$oldlibs"
@@ -726,11 +730,17 @@ else
 	echo " FLAC support ..................disabled"
 fi
 
-if test x$enable_oggflac = xyes; then
+case $enable_oggflac in
+yes)
 	echo " OggFLAC support ...............enabled"
-else
+	;;
+flac)
+	echo " OggFLAC support ...............enabled(FLAC 1.1.3)"
+	;;
+*)
 	echo " OggFLAC support ...............disabled"
-fi
+	;;
+esac
 
 if test x$enable_audiofile = xyes; then
 	echo " Wave file support .............enabled"
