@@ -34,7 +34,7 @@
 #if !defined(FLAC_API_VERSION_CURRENT) || FLAC_API_VERSION_CURRENT <= 7
 #  include <FLAC/seekable_stream_decoder.h>
 #  define flac_decoder           FLAC__SeekableStreamDecoder
-#  define flac_new(x)            FLAC__seekable_stream_decoder_new(x)
+#  define flac_new()             FLAC__seekable_stream_decoder_new()
 
 #  define flac_ogg_init(a,b,c,d,e,f,g,h,i,j) (0)
 
@@ -91,7 +91,7 @@
 
 #  include <FLAC/stream_decoder.h>
 #  define flac_decoder           FLAC__StreamDecoder
-#  define flac_new(x)            FLAC__stream_decoder_new(x)
+#  define flac_new()             FLAC__stream_decoder_new()
 
 #  define flac_init(a,b,c,d,e,f,g,h,i,j) \
         (FLAC__stream_decoder_init_stream(a,b,c,d,e,f,g,h,i,j) \
