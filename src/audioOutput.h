@@ -102,4 +102,14 @@ int keepAudioOutputAlive(AudioOutput * audioOutput, int ms);
 void sendMetadataToAudioOutput(AudioOutput * audioOutput, MpdTag * tag);
 
 void printAllOutputPluginTypes(FILE * fp);
+
+extern AudioOutputPlugin alsaPlugin;
+extern AudioOutputPlugin aoPlugin;
+extern AudioOutputPlugin ossPlugin;
+extern AudioOutputPlugin osxPlugin;
+extern AudioOutputPlugin pulsePlugin;
+extern AudioOutputPlugin mvpPlugin;
+extern AudioOutputPlugin shoutPlugin;
+extern AudioOutputPlugin jackPlugin;
+
 #endif

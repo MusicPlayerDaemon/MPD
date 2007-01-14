@@ -137,16 +137,6 @@ void printAllInputPluginSuffixes(FILE * fp)
 	fflush(fp);
 }
 
-extern InputPlugin mp3Plugin;
-extern InputPlugin oggvorbisPlugin;
-extern InputPlugin flacPlugin;
-extern InputPlugin oggflacPlugin;
-extern InputPlugin audiofilePlugin;
-extern InputPlugin mp4Plugin;
-extern InputPlugin mpcPlugin;
-extern InputPlugin aacPlugin;
-extern InputPlugin modPlugin;
-
 void initInputPlugins(void)
 {
 	inputPlugin_list = makeList(NULL, 1);

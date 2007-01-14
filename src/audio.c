@@ -89,15 +89,6 @@ int cmpAudioFormat(AudioFormat * f1, AudioFormat * f2)
 	return 1;
 }
 
-extern AudioOutputPlugin alsaPlugin;
-extern AudioOutputPlugin aoPlugin;
-extern AudioOutputPlugin ossPlugin;
-extern AudioOutputPlugin osxPlugin;
-extern AudioOutputPlugin pulsePlugin;
-extern AudioOutputPlugin mvpPlugin;
-extern AudioOutputPlugin shoutPlugin;
-extern AudioOutputPlugin jackPlugin;
-
 void loadAudioDrivers(void)
 {
 	initAudioOutputPlugins();
