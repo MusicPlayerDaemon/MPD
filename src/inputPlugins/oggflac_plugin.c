@@ -398,7 +398,10 @@ fail:
 }
 
 static char *oggflac_Suffixes[] = { "ogg", NULL };
-static char *oggflac_mime_types[] = { "audio/x-flac+ogg", NULL };
+static char *oggflac_mime_types[] = { "audio/x-flac+ogg",
+                                      "application/ogg",
+                                      "application/x-ogg",
+                                      NULL };
 
 InputPlugin oggflacPlugin = {
 	"oggflac",
