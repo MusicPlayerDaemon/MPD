@@ -36,9 +36,9 @@
 
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 
-char *name = "mpd";
-char *output_ports[2] = {NULL, NULL};
-int ringbuf_sz = 32768;
+static char *name = "mpd";
+static char *output_ports[2];
+static int ringbuf_sz = 32768;
 
 typedef struct _JackData {
 	jack_port_t *ports[2];
