@@ -923,7 +923,7 @@ int stopPlaylist(int fd)
 	return 0;
 }
 
-int playPlaylistOrderNumber(int fd, int orderNum)
+static int playPlaylistOrderNumber(int fd, int orderNum)
 {
 
 	if (playerStop(fd) < 0)

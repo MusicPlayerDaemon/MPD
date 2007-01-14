@@ -27,18 +27,18 @@
 
 #ifdef HAVE_ICONV
 #include <iconv.h>
-iconv_t char_conv_iconv;
+static iconv_t char_conv_iconv;
 #endif
 
-char *char_conv_to = NULL;
-char *char_conv_from = NULL;
-mpd_sint8 char_conv_same = 0;
-mpd_sint8 char_conv_use_iconv = 0;
+static char *char_conv_to;
+static char *char_conv_from;
+static mpd_sint8 char_conv_same;
+static mpd_sint8 char_conv_use_iconv;
 
 /* 1 is to use latin1ToUtf8
    0 is not to use latin1/utf8 converter
   -1 is to use utf8ToLatin1*/
-mpd_sint8 char_conv_latin1ToUtf8 = 0;
+static mpd_sint8 char_conv_latin1ToUtf8 = 0;
 
 #define BUFFER_SIZE	1024
 
