@@ -25,6 +25,7 @@
 #include "log.h"
 #include "listen.h"
 #include "ioops.h"
+#include "utils.h"
 
 /* The dns-sd service type qualifier to publish */
 #define SERVICE_TYPE		"_mpd._tcp"
@@ -86,7 +87,7 @@ static AvahiTimeout* avahiTimeoutList;
 
 static AvahiWatch* avahiWatchNew( const AvahiPoll *api, int fd, AvahiWatchEvent event, AvahiWatchCallback callback, void *userdata )
 {
-	struct AvahiWatch* newWatch = malloc( sizeof(struct AvahiWatch) );
+	struct AvahiWatch* newWatch = xmalloc( sizeof(struct AvahiWatch) );
 
 	newWatch->fd = fd;
 	newWatch->requestedEvent = event;
@@ -167,7 +168,7 @@ static void avahiTimeoutFree( AvahiTimeout *t )
 
 static AvahiTimeout* avahiTimeoutNew( const AvahiPoll *api, const struct timeval *tv, AvahiTimeoutCallback callback, void *userdata )
 {
-	struct AvahiTimeout* newTimeout = malloc( sizeof(struct AvahiTimeout) );
+	struct AvahiTimeout* newTimeout = xmalloc( sizeof(struct AvahiTimeout) );
 
 	newTimeout->callback = callback;
 	newTimeout->userdata = userdata;
