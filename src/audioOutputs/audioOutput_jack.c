@@ -166,10 +166,10 @@ static int jack_initDriver(AudioOutput *audioOutput, ConfigParam *param)
 	if ( ! param ) return 0;
 
 	if ( (bp = getBlockParam(param, "ports")) ) {
-		cp = strdup(bp->value);
+		cp = xstrdup(bp->value);
 		ERROR("output_ports=%s\n", cp);
-		output_ports[0] = strdup(strtok (cp, ","));
-		output_ports[1] = strdup(strtok (NULL, ","));
+		output_ports[0] = xstrdup(strtok (cp, ","));
+		output_ports[1] = xstrdup(strtok (NULL, ","));
 		free(cp);
 	}
 
@@ -188,7 +188,7 @@ static int jack_initDriver(AudioOutput *audioOutput, ConfigParam *param)
 
 	if ( (bp = getBlockParam(param, "name"))
 	     && (strcmp(bp->value, "mpd") != 0) ) {
-		name = strdup(bp->value);
+		name = xstrdup(bp->value);
 		ERROR("name=%s\n", name);
 	}
 
