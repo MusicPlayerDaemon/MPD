@@ -421,6 +421,7 @@ int main(int argc, char *argv[])
 
 	closeAllFDs();
 
+	initLocalization();
 	initConf();
 
 	parseOptions(argc, argv, &options);
@@ -430,7 +431,6 @@ int main(int argc, char *argv[])
 
 	initStats();
 	initTagConfig();
-	initLocalization();
 	initLog(options.verbose);
 
 	if (options.createDB <= 0 && !options.updateDB)
