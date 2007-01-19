@@ -25,6 +25,8 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <errno.h>
+#define _XOPEN_SOURCE 600
+#include <fcntl.h>
 
 void inputStream_initFile(void)
 {
@@ -45,6 +47,10 @@ int inputStream_fileOpen(InputStream * inStream, char *filename)
 	fseek(fp, 0, SEEK_END);
 	inStream->size = ftell(fp);
 	fseek(fp, 0, SEEK_SET);
+
+#ifdef POSIX_FADV_SEQUENTIAL
+	posix_fadvise(fileno(fp), (off_t)0, inStream->size, POSIX_FADV_SEQUENTIAL);
+#endif
 
 	inStream->data = fp;
 	inStream->seekFunc = inputStream_fileSeek;
