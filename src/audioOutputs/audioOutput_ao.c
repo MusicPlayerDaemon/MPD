@@ -122,7 +122,7 @@ static int audioOutputAo_initDriver(AudioOutput * audioOutput,
 			key = strtok_r(n1, "=", &stk2);
 			if (!key) {
 				ERROR("problems parsing "
-				      "ao_driver_options \"%s\"\n", n1);
+				      "options \"%s\"\n", n1);
 				exit(EXIT_FAILURE);
 			}
 			/*found = 0;
@@ -141,7 +141,7 @@ static int audioOutputAo_initDriver(AudioOutput * audioOutput,
 			value = strtok_r(NULL, "", &stk2);
 			if (!value) {
 				ERROR("problems parsing "
-				      "ao_driver_options \"%s\"\n", n1);
+				      "options \"%s\"\n", n1);
 				exit(EXIT_FAILURE);
 			}
 			ao_append_option(&ad->options, key, value);
