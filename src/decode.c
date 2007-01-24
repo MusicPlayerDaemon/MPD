@@ -664,6 +664,7 @@ static void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer *
 			quit = 1;
 			break;
 		} else {
+			DEBUG("waiting for decoded audio, playing silence\n");
 			if (playAudio(silence, CHUNK_SIZE) < 0)
 				quit = 1;
 		}
