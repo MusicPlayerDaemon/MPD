@@ -21,10 +21,15 @@
 #include "mpd_types.h"
 #include "log.h"
 #include "utils.h"
+#include "conf.h"
 
 #include <string.h>
 #include <math.h>
 #include <assert.h>
+
+#ifdef HAVE_LIBSAMPLERATE
+#include <samplerate.h>
+#endif
 
 void pcm_volumeChange(char *buffer, int bufferSize, AudioFormat * format,
 		      int volume)
@@ -46,6 +51,9 @@ void pcm_volumeChange(char *buffer, int bufferSize, AudioFormat * format,
 		while (bufferSize > 0) {
 			temp32 = *buffer16;
 			temp32 *= volume;
+			temp32 += rand() & 511;
+			temp32 -= rand() & 511;
+			temp32 += 500;
 			temp32 /= 1000;
 			*buffer16 = temp32 > 32767 ? 32767 :
 			    (temp32 < -32768 ? -32768 : temp32);
@@ -57,6 +65,9 @@ void pcm_volumeChange(char *buffer, int bufferSize, AudioFormat * format,
 		while (bufferSize > 0) {
 			temp32 = *buffer8;
 			temp32 *= volume;
+			temp32 += rand() & 511;
+			temp32 -= rand() & 511;
+			temp32 += 500;
 			temp32 /= 1000;
 			*buffer8 = temp32 > 127 ? 127 :
 			    (temp32 < -128 ? -128 : temp32);
@@ -86,7 +97,11 @@ static void pcm_add(char *buffer1, char *buffer2, size_t bufferSize1,
 		while (bufferSize1 > 0 && bufferSize2 > 0) {
 			temp32 =
 			    (vol1 * (*buffer16_1) +
-			     vol2 * (*buffer16_2)) / 1000;
+			     vol2 * (*buffer16_2));
+			temp32 += rand() & 511;
+			temp32 -= rand() & 511;
+			temp32 += 500;
+			temp32 /= 1000;
 			*buffer16_1 =
 			    temp32 > 32767 ? 32767 : (temp32 <
 						      -32768 ? -32768 : temp32);
@@ -101,7 +116,11 @@ static void pcm_add(char *buffer1, char *buffer2, size_t bufferSize1,
 	case 8:
 		while (bufferSize1 > 0 && bufferSize2 > 0) {
 			temp32 =
-			    (vol1 * (*buffer8_1) + vol2 * (*buffer8_2)) / 1000;
+			    (vol1 * (*buffer8_1) + vol2 * (*buffer8_2));
+			temp32 += rand() & 511;
+			temp32 -= rand() & 511;
+			temp32 += 500;
+			temp32 /= 1000;
 			*buffer8_1 =
 			    temp32 > 127 ? 127 : (temp32 <
 						  -128 ? -128 : temp32);
@@ -132,6 +151,38 @@ void pcm_mix(char *buffer1, char *buffer2, size_t bufferSize1,
 	pcm_add(buffer1, buffer2, bufferSize1, bufferSize2, vol1, 1000 - vol1,
 		format);
 }
+
+#ifdef HAVE_LIBSAMPLERATE
+static int pcm_getSamplerateConverter(void) {
+	const char *conf, *test;
+	int convalgo = SRC_SINC_FASTEST;
+	int newalgo;
+	size_t len;
+ 
+	conf = getConfigParamValue(CONF_SAMPLERATE_CONVERTER);
+	if(conf) {
+		newalgo = strtol(conf, (char **)&test, 10);
+		if(*test) {
+			len = strlen(conf);
+			for(newalgo = 0; ; newalgo++) {
+				test = src_get_name(newalgo);
+				if(!test)
+					break; /* FAIL */
+				if(!strncasecmp(test, conf, len)) {
+					convalgo = newalgo;
+					break;
+				}
+			}
+		} else {
+			if(src_get_name(newalgo))
+				convalgo = newalgo;
+			/* else FAIL */
+		}
+	}
+	DEBUG("Selecting samplerate converter '%s'\n", src_get_name(convalgo));
+	return convalgo;
+}
+#endif
 
 /* outFormat bits must be 16 and channels must be 2! */
 void pcm_convertAudioFormat(AudioFormat * inFormat, char *inBuffer, size_t
@@ -234,6 +285,47 @@ void pcm_convertAudioFormat(AudioFormat * inFormat, char *inBuffer, size_t
 	if (inFormat->sampleRate == outFormat->sampleRate) {
 		memcpy(outBuffer, dataChannelConv, dataChannelLen);
 	} else {
+#ifdef HAVE_LIBSAMPLERATE
+		static SRC_STATE *state = NULL;
+		static SRC_DATA data;
+		int error;
+		static double ratio = 0;
+		double newratio;
+
+		if(!state) {
+			state = src_new(pcm_getSamplerateConverter(), outFormat->channels, &error);
+			if(!state) {
+				ERROR("Cannot create new samplerate state: %s\n", src_strerror(error));
+				exit(EXIT_FAILURE);
+			} else {
+				DEBUG("Samplerate converter initialized\n");
+			}
+		}
+
+		newratio = (double)outFormat->sampleRate / (double)inFormat->sampleRate;
+		if(newratio != ratio) {
+			src_set_ratio(state, ratio = newratio);
+			DEBUG("Setting samplerate conversion ratio to %.2lf\n", ratio);
+		}
+
+		data.input_frames = dataChannelLen / 2 / outFormat->channels;
+		data.output_frames = pcm_sizeOfOutputBufferForAudioFormatConversion(inFormat, dataChannelLen, outFormat) / 2 / outFormat->channels;
+		data.src_ratio = (double)data.output_frames / (double)data.input_frames;
+
+		float conversionInBuffer[data.input_frames * outFormat->channels];
+		float conversionOutBuffer[data.output_frames * outFormat->channels];
+		data.data_in = conversionInBuffer;
+		data.data_out = conversionOutBuffer;
+
+		src_short_to_float_array((short *)dataChannelConv, data.data_in, data.input_frames * outFormat->channels);
+		error = src_process(state, &data);
+		if(error) {
+			ERROR("Cannot process samples: %s\n", src_strerror(error));
+			exit(EXIT_FAILURE);
+		}
+
+		src_float_to_short_array(data.data_out, (short *)outBuffer, data.output_frames * outFormat->channels);
+#else
 		/* only works if outFormat is 16-bit stereo! */
 		/* resampling code blatantly ripped from ESD */
 		mpd_uint32 rd_dat = 0;
@@ -241,11 +333,7 @@ void pcm_convertAudioFormat(AudioFormat * inFormat, char *inBuffer, size_t
 		mpd_sint16 lsample, rsample;
 		mpd_sint16 *out = (mpd_sint16 *) outBuffer;
 		mpd_sint16 *in = (mpd_sint16 *) dataChannelConv;
-		const int shift = sizeof(mpd_sint16) * outFormat->channels;
-		mpd_uint32 nlen = (((dataChannelLen / shift) *
-				    (mpd_uint32) (outFormat->sampleRate)) /
-				   inFormat->sampleRate);
-		nlen *= outFormat->channels;
+		mpd_uint32 nlen = pcm_sizeOfOutputBufferForAudioFormatConversion(inFormat, inSize, outFormat) / sizeof(mpd_sint16);
 
 		switch (outFormat->channels) {
 		case 1:
@@ -272,6 +360,7 @@ void pcm_convertAudioFormat(AudioFormat * inFormat, char *inBuffer, size_t
 			}
 			break;
 		}
+#endif
 	}
 
 	return;
@@ -306,9 +395,9 @@ size_t pcm_sizeOfOutputBufferForAudioFormatConversion(AudioFormat * inFormat,
 		}
 	}
 
-	outSize = (((outSize / shift) * (mpd_uint32) (outFormat->sampleRate)) /
-		   inFormat->sampleRate);
-
+	outSize /=  shift;
+	outSize = floor(0.5 + (double)outSize *
+		((double)outFormat->sampleRate / (double)inFormat->sampleRate));
 	outSize *= shift;
 
 	return outSize;

@@ -123,6 +123,12 @@ error_file                      "~/.mpd/mpd.error"
 #
 #audio_output_format             "44100:16:2"
 #
+# Specifies the libsamplerate converter to use (if compiled in),
+# see man 5 mpd.conf for more information.
+#
+#samplerate_converter <integer or prefix>
+#
+
 ################################################################
 
 

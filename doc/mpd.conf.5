@@ -126,6 +126,35 @@ This is the gain (in dB) applied to songs with ReplayGain tags.
 .B volume_normalization <yes or no>
 If yes, mpd will normalize the volume of songs as they play.  Default is no.
 .TP
+.B samplerate_converter <integer or prefix>
+Specifies the libsamplerate converter to use.
+The supplied value should either be an integer or a prefix of the name of a converter.
+The list of available converters at the time of writing is below.
+More converters may exist, consult the
+documentation of the Secret Rabbit Code libsamplerate (at http://www.mega-nerd.com/SRC/) for details.
+.RS
+.HP
+Best Sinc Interpolator (0)
+
+Band limited sinc interpolation, best quality, 97dB SNR, 96% BW.
+.HP
+Medium Sinc Interpolator (1)
+
+Band limited sinc interpolation, medium quality, 97dB SNR, 90% BW.
+.HP
+Fastest Sinc Interpolator (2, default)
+
+Band limited sinc interpolation, fastest, 97dB SNR, 80% BW.
+.HP
+ZOH Interpolator (3)
+
+Zero order hold interpolator, very fast, very poor quality with audible distortions.
+.HP
+Linear Interpolator (4)
+
+Linear interpolator, very fast, poor quality.
+.RE
+.TP
 .B audio_buffer_size <size in KiB>
 This specifies the size of the audio output buffer that mpd uses.  The default
 is 2048.

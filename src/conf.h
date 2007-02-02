@@ -43,6 +43,7 @@
 #define CONF_REPLAYGAIN                 "replaygain"
 #define CONF_REPLAYGAIN_PREAMP          "replaygain_preamp"
 #define CONF_VOLUME_NORMALIZATION       "volume_normalization"
+#define CONF_SAMPLERATE_CONVERTER       "samplerate_converter"
 #define CONF_AUDIO_BUFFER_SIZE          "audio_buffer_size"
 #define CONF_BUFFER_BEFORE_PLAY         "buffer_before_play"
 #define CONF_HTTP_BUFFER_SIZE           "http_buffer_size"

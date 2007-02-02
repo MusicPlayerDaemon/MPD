@@ -11,6 +11,7 @@ AC_SUBST(MP4FF_LIB)
 AC_SUBST(MP4FF_SUBDIR)
 
 AC_PROG_CC
+AM_PROG_CC_C_O
 AC_PROG_INSTALL
 AC_PROG_LIBTOOL
 AC_PROG_MAKE_SET
@@ -79,6 +80,7 @@ AC_ARG_ENABLE(audiofile,[  --disable-audiofile     disable audiofile support, di
 AC_ARG_ENABLE(mod,[  --enable-mod            enable MOD support (default: disable],[enable_mod=$enableval],[enable_mod=yes])
 AC_ARG_ENABLE(mpc,[  --disable-mpc           disable musepack (MPC) support (default: enable)],[enable_mpc=$enableval],[enable_mpc=yes])
 AC_ARG_ENABLE(id3,[  --disable-id3           disable id3 support (default: enable)],[enable_id3=$enableval],[enable_id3=yes])
+AC_ARG_ENABLE(lsr,[  --disable-lsr           disable libsamplerate support (default: enable)],[enable_lsr=$enableval],[enable_lsr=yes])
 
 AC_ARG_WITH(tremor,[[  --with-tremor[=PFX]         Use Tremor(vorbisidec) integer Ogg-Vorbis decoder (with optional prefix)]], use_tremor=yes; test x$withval != xyes && tremor_prefix="$withval",)
 AC_ARG_WITH(tremor-libraries,[  --with-tremor-libraries=DIR Directory where Tremor library is installed (optional)], tremor_libraries="$withval", tremor_libraries="")
@@ -100,6 +102,10 @@ AC_ARG_WITH(faad,[  --with-faad=PFX             Prefix where faad2 is installed]
 AC_ARG_WITH(faad-libraries,[  --with-faad-libraries=DIR   Directory where faad2 library is installed (optional)], faad_libraries="$withval", faad_libraries="")
 AC_ARG_WITH(faad-includes,[  --with-faad-includes=DIR    Directory where faad2 header files are installed (optional)], faad_includes="$withval", faad_includes="")
 AC_ARG_WITH(zeroconf,[[  --with-zeroconf=[auto|avahi|bonjour|no]    Enable zeroconf backend (default=auto)]], with_zeroconf="$withval", with_zeroconf="auto")
+
+AC_ARG_WITH(lsr,[  --with-src=PFX             Prefix where libsamplerate is installed], src_prefix="$withval", src_prefix="")
+AC_ARG_WITH(lsr-libraries,[  --with-lsr-libraries=DIR   Directory where libsamplerate library is installed (optional)], lsr_libraries="$withval", lsr_libraries="")
+AC_ARG_WITH(lsr-includes,[  --with-lsr-includes=DIR    Directory where libsamplerate header files are installed (optional)], lsr_includes="$withval", lsr_includes="")
 
 AC_C_BIGENDIAN
 
@@ -184,6 +190,12 @@ if test x$enable_pulse = xyes; then
 	PKG_CHECK_MODULES([PULSE], [libpulse-simple],
 	                  [enable_pulse=yes;AC_DEFINE([HAVE_PULSE], 1, [Define to enable PulseAudio support])] MPD_LIBS="$MPD_LIBS $PULSE_LIBS" MPD_CFLAGS="$MPD_CFLAGS $PULSE_CFLAGS",
 	                  [enable_pulse=no;AC_MSG_WARN([PulseAudio not found -- disabling])])
+fi
+
+if test x$enable_lsr = xyes; then
+	PKG_CHECK_MODULES([SAMPLERATE], [samplerate >= 0.0.15],
+	                  [enable_lsr=yes;AC_DEFINE([HAVE_LIBSAMPLERATE], 1, [Define to enable libsamplerate])] MPD_LIBS="$MPD_LIBS $SAMPLERATE_LIBS" MPD_CFLAGS="$MPD_CFLAGS $SAMPLERATE_CFLAGS",
+	                  [enable_lsr=no;AC_MSG_WARN([libsamplerate not found -- disabling])])
 fi
 
 if test x$enable_mvp = xyes; then
@@ -777,8 +789,15 @@ if
 fi
 
 echo ""
-
 echo " Other features:"
+
+if test x$enable_lsr = xyes; then
+        echo " libsamplerate support .........enabled"
+else
+	echo " libsamplerate support .........disabled"
+fi
+                
+
 if test x$with_zeroconf != xno; then
 	echo " Zeroconf support ..............$with_zeroconf"
 else
