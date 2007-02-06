@@ -102,14 +102,14 @@ void inputStream_initHttp(void)
 			}
 
 			proxyPassword = param->value;
-		}
+		} else {
+			param = getConfigParam(CONF_HTTP_PROXY_PASSWORD);
 
-		param = getConfigParam(CONF_HTTP_PROXY_PASSWORD);
-
-		if (param) {
-			ERROR("%s specified but not %s\n",
-			      CONF_HTTP_PROXY_PASSWORD, CONF_HTTP_PROXY_USER);
-			exit(EXIT_FAILURE);
+			if (param) {
+				ERROR("%s specified but not %s\n",
+				      CONF_HTTP_PROXY_PASSWORD, CONF_HTTP_PROXY_USER);
+				exit(EXIT_FAILURE);
+			}
 		}
 	} else if ((param = getConfigParam(CONF_HTTP_PROXY_PORT))) {
 		ERROR("%s specified but not %s, line %i\n",
