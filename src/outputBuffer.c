@@ -58,11 +58,10 @@ void clearOutputBuffer(OutputBuffer * cb)
 void flushOutputBuffer(OutputBuffer * cb)
 {
 	if (currentChunk == cb->end) {
-		int next = cb->end + 1;
-		if (next >= buffered_chunks) {
-			next = 0;
+		if ((cb->end + 1) >= buffered_chunks) {
+			cb->end = 0;
 		}
-		cb->end = next;
+		else cb->end++;
 		currentChunk = -1;
 	}
 }

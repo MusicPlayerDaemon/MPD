@@ -138,6 +138,8 @@ int playerInit(void)
 				decode();
 			else if (pc->stop)
 				pc->stop = 0;
+			else if (pc->seek)
+				pc->seek = 0;
 			else if (pc->pause)
 				pc->pause = 0;
 			else if (pc->closeAudio) {

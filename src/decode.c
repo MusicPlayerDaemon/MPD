@@ -481,10 +481,10 @@ static void advanceOutputBufferTo(OutputBuffer * cb, PlayerControl * pc,
 	while (cb->begin != to) {
 		handleMetadata(cb, pc, previous, currentChunkSent,
 			       currentChunk);
-		cb->begin++;
-		if (cb->begin >= buffered_chunks) {
+		if (cb->begin + 1 >= buffered_chunks) {
 			cb->begin = 0;
 		}
+		else cb->begin++;
 	}
 }
 
@@ -517,7 +517,8 @@ static void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer *
 	pc->play = 0;
 	kill(getppid(), SIGUSR1);
 
-	while (decode_pid > 0 && cb->end - cb->begin < bbp &&
+	while (decode_pid > 0 && 
+	       cb->end - cb->begin < bbp &&
 	       cb->end != buffered_chunks - 1 &&
 	       dc->state != DECODE_STATE_STOP) {
 		processDecodeInput();
@@ -618,10 +619,10 @@ static void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer *
 				cb->begin = 0;
 			} else
 				cb->begin++;
-		} else if (next == cb->begin) {
+		} else if (cb->begin != end && cb->begin == next) {
 			if (doCrossFade == 1 && nextChunk >= 0) {
 				nextChunk = cb->begin + crossFadeChunks;
-				test = cb->end;
+				test = end;
 				if (end < cb->begin)
 					test += buffered_chunks;
 				if (nextChunk < test) {
