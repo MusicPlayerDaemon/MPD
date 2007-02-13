@@ -304,8 +304,9 @@ void pcm_convertAudioFormat(AudioFormat * inFormat, char *inBuffer, size_t
 
 		newratio = (double)outFormat->sampleRate / (double)inFormat->sampleRate;
 		if(newratio != ratio) {
-			src_set_ratio(state, ratio = newratio);
-			DEBUG("Setting samplerate conversion ratio to %.2lf\n", ratio);
+			DEBUG("Setting samplerate conversion ratio to %.2lf\n", newratio);
+			src_set_ratio(state, newratio);
+			ratio = newratio;
 		}
 
 		data.input_frames = dataChannelLen / 2 / outFormat->channels;
