@@ -123,12 +123,13 @@ error_file                      "~/.mpd/mpd.error"
 #
 #audio_output_format             "44100:16:2"
 #
-# Specifies the libsamplerate converter to use (if compiled in),
-# see man 5 mpd.conf for more information.
+# If MPD has been compiled with libsamplerate support, this
+# specifies the sample rate converter to use.  Possible
+# values can be found in the mpd.conf man page or the
+# libsamplerate documentation.
 #
-#samplerate_converter <integer or prefix>
+#samplerate_converter            "Fastest Sinc Interpolator"
 #
-
 ################################################################
 
 
