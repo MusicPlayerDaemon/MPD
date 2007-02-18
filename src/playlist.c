@@ -1194,12 +1194,26 @@ int moveSongInPlaylist(int fd, int from, int to)
 				playlist.order[i] = to;
 			}
 		}
-	} else if (playlist.current == from)
-		playlist.current = to;
-	else if (playlist.current > from && playlist.current <= to) {
-		playlist.current--;
-	} else if (playlist.current >= to && playlist.current < from) {
-		playlist.current++;
+	}
+	else
+	{
+		if (playlist.current == from)
+			playlist.current = to;
+		else if (playlist.current > from && playlist.current <= to) {
+			playlist.current--;
+		} else if (playlist.current >= to && playlist.current < from) {
+			playlist.current++;
+		}
+
+		/* this first if statement isn't necessary since the queue
+		 * would have been cleared out if queued == from */
+		if (playlist.queued == from)
+			playlist.queued = to;
+		else if (playlist.queued > from && playlist.queued <= to) {
+			playlist.queued--;
+		} else if (playlist.queued>= to && playlist.queued < from) {
+			playlist.queued++;
+		}
 	}
 
 	incrPlaylistVersion();
