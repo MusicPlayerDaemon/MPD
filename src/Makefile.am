@@ -73,7 +73,6 @@ mpd_headers = \
 	utf8.h \
 	utils.h \
 	volume.h \
-	localization.h \
 	zeroconf.h
 
 
@@ -124,7 +123,6 @@ mpd_SOURCES = \
 	utils.c \
 	volume.c \
 	utf8.c \
-	localization.c \
 	zeroconf.c
 
 

@@ -150,13 +150,6 @@ char *convStrDup(char *string)
 	return NULL;
 }
 
-char *convCharset(char *to, char *from, char *str, char *ret)
-{
-	if (ret)
-		free(ret);
-	return setCharSetConversion(to, from) ? NULL : convStrDup(str);
-}
-
 static void closeCharSetConversion(void)
 {
 	if (char_conv_to) {

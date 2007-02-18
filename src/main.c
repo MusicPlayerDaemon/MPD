@@ -43,7 +43,6 @@
 #include "utils.h"
 #include "normalize.h"
 #include "zeroconf.h"
-#include "localization.h"
 
 #include <stdio.h>
 #include <sys/select.h>
@@ -421,7 +420,6 @@ int main(int argc, char *argv[])
 
 	closeAllFDs();
 
-	initLocalization();
 	initConf();
 
 	parseOptions(argc, argv, &options);
@@ -494,7 +492,6 @@ int main(int argc, char *argv[])
 	finishAudioConfig();
 	finishVolume();
 	finishPaths();
-	finishLocalization();
 	finishPermissions();
 	finishCommands();
 	finishInputPlugins();

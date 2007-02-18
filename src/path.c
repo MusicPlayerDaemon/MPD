@@ -22,7 +22,6 @@
 #include "conf.h"
 #include "utf8.h"
 #include "utils.h"
-#include "localization.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -32,15 +31,29 @@
 #include <errno.h>
 #include <dirent.h>
 
+#ifdef HAVE_LOCALE
+#ifdef HAVE_LANGINFO_CODESET
+#include <locale.h>
+#include <langinfo.h>
+#endif
+#endif
+
 const char *musicDir;
 static const char *playlistDir;
 static char *fsCharset;
+
+static char *pathConvCharset(char *to, char *from, char *str, char *ret)
+{
+	if (ret)
+		free(ret);
+	return setCharSetConversion(to, from) ? NULL : convStrDup(str);
+}
 
 char *fsCharsetToUtf8(char *str)
 {
 	static char *ret;
 
-	ret = convCharset("UTF-8", fsCharset, str, ret);
+	ret = pathConvCharset("UTF-8", fsCharset, str, ret);
 
 	if (ret && !validUtf8String(ret)) {
 		free(ret);
@@ -54,7 +67,7 @@ char *utf8ToFsCharset(char *str)
 {
 	static char *ret;
 
-	ret = convCharset(fsCharset, "UTF-8", str, ret);
+	ret = pathConvCharset(fsCharset, "UTF-8", str, ret);
 
 	if (!ret)
 		ret = xstrdup(str);
@@ -122,6 +135,7 @@ void initPaths(void)
 	ConfigParam *fsCharsetParam = getConfigParam(CONF_FS_CHARSET);
 
 	char *charset = NULL;
+	char *originalLocale;
 	DIR *dir;
 
 	musicDir = appendSlash(&(musicParam->value));
@@ -143,10 +157,40 @@ void initPaths(void)
 	}
 	closedir(dir);
 
-	if (fsCharsetParam)
+	if (fsCharsetParam) {
 		charset = xstrdup(fsCharsetParam->value);
-	else if ((charset = getLocaleCharset()))
-		charset = xstrdup(charset);
+	}
+#ifdef HAVE_LOCALE
+#ifdef HAVE_LANGINFO_CODESET
+	else if ((originalLocale = setlocale(LC_CTYPE, NULL))) {
+		char *temp;
+		char *currentLocale;
+		originalLocale = xstrdup(originalLocale);
+
+		if (!(currentLocale = setlocale(LC_CTYPE, ""))) {
+			WARNING("problems setting current locale with "
+				"setlocale()\n");
+		} else {
+			if (strcmp(currentLocale, "C") == 0 ||
+			    strcmp(currentLocale, "POSIX") == 0) {
+				WARNING("current locale is \"%s\"\n",
+					currentLocale);
+			} else if ((temp = nl_langinfo(CODESET))) {
+				charset = xstrdup(temp);
+			} else
+				WARNING
+				    ("problems getting charset for locale\n");
+			if (!setlocale(LC_CTYPE, originalLocale)) {
+				WARNING
+				    ("problems resetting locale with setlocale()\n");
+			}
+		}
+
+		free(originalLocale);
+	} else
+		WARNING("problems getting locale with setlocale()\n");
+#endif
+#endif
 
 	if (charset) {
 		setFsCharset(charset);

@@ -21,7 +21,6 @@
 #include "conf.h"
 #include "myfprintf.h"
 #include "utils.h"
-#include "localization.h"
 
 #include <assert.h>
 #include <stdlib.h>
@@ -87,17 +86,9 @@ static void buffer_warning(const char *fmt, va_list args)
 
 static void do_log(FILE *fp, const char *fmt, va_list args)
 {
-	char buffer[BUFFER_LENGTH + 1];
-	char *localized;
-
-	if (!stdout_mode) {
+	if (!stdout_mode)
 		fwrite(log_date(), 15, 1, fp);
-		vfprintf(fp, fmt, args);
-	} else {
-		vsnprintf(buffer, BUFFER_LENGTH, fmt, args);
-		localized = utf8ToLocaleCharset(buffer);
-		fputs(localized, fp);
-	}
+	vfprintf(fp, fmt, args);
 }
 
 void flushWarningLog(void)
@@ -109,14 +100,12 @@ void flushWarningLog(void)
 	if (warningBuffer != NULL)
 	{
 		while (s != NULL) {
-			char *next = strchr(s, '\n');
-			if (next == NULL) break;
-			*next = '\0';
-			next++;
-			if (stdout_mode)
-				fprintf(stderr, "%s\n", utf8ToLocaleCharset(s));
-			else
-				fprintf(stderr, "%s\n", s);
+			char * next = strchr(s, '\n');
+			if (next != NULL) {
+				*next = '\0';
+				next++;
+			}
+			fprintf(stderr, "%s\n", s);
 			s = next;
 		}
 
