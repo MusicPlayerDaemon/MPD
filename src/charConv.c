@@ -38,7 +38,7 @@ static mpd_sint8 char_conv_use_iconv;
 /* 1 is to use latin1ToUtf8
    0 is not to use latin1/utf8 converter
   -1 is to use utf8ToLatin1*/
-static mpd_sint8 char_conv_latin1ToUtf8 = 0;
+static mpd_sint8 char_conv_latin1ToUtf8;
 
 #define BUFFER_SIZE	1024
 
