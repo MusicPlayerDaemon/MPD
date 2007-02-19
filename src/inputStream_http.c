@@ -446,7 +446,8 @@ static int finishHTTPInit(InputStream * inStream)
 	int error;
 	socklen_t error_len = sizeof(int);
 	int ret;
-	char request[2049];
+	int length;
+	char request[2048];
 
 	tv.tv_sec = 0;
 	tv.tv_usec = 0;
@@ -463,42 +464,41 @@ static int finishHTTPInit(InputStream * inStream)
 
 	if (ret < 0) {
 		DEBUG(__FILE__ ": problem select'ing: %s\n", strerror(errno));
-		close(data->sock);
-		data->connState = HTTP_CONN_STATE_CLOSED;
-		return -1;
+		goto close_err;
 	}
 
 	getsockopt(data->sock, SOL_SOCKET, SO_ERROR, &error, &error_len);
-	if (error) {
-		close(data->sock);
-		data->connState = HTTP_CONN_STATE_CLOSED;
-		return -1;
-	}
+	if (error)
+		goto close_err;
 
-	memset(request, 0, 2049);
 	/* deal with ICY metadata later, for now its fucking up stuff! */
-	snprintf(request, 2048, "GET %s HTTP/1.1\r\n" "Host: %s\r\n"
-		 /*"Connection: close\r\n" */
-		 "User-Agent: %s/%s\r\n"
-		 "Range: bytes=%ld-\r\n"
-		 "%s"	/* authorization */
-		 "Icy-Metadata:1\r\n"
-		 "\r\n", data->path, data->host, PACKAGE_NAME, PACKAGE_VERSION,
-                 inStream->offset,
-		 data->proxyAuth ? data->proxyAuth :
-		 (data->httpAuth ? data->httpAuth : "")
-	    );
+	length = snprintf(request, sizeof(request),
+	                 "GET %s HTTP/1.1\r\n" "Host: %s\r\n"
+			 /*"Connection: close\r\n" */
+			 "User-Agent: %s/%s\r\n"
+			 "Range: bytes=%ld-\r\n"
+			 "%s"	/* authorization */
+			 "Icy-Metadata:1\r\n"
+			 "\r\n",
+			 data->path, data->host,
+			 PACKAGE_NAME, PACKAGE_VERSION,
+			 inStream->offset,
+			 data->proxyAuth ? data->proxyAuth :
+			  (data->httpAuth ? data->httpAuth : ""));
 
-	ret = write(data->sock, request, strlen(request));
-	if (ret != strlen(request)) {
-		close(data->sock);
-		data->connState = HTTP_CONN_STATE_CLOSED;
-		return -1;
-	}
+	if (length >= sizeof(request))
+		goto close_err;
+	ret = write(data->sock, request, length);
+	if (ret != length)
+		goto close_err;
 
 	data->connState = HTTP_CONN_STATE_HELLO;
-
 	return 0;
+
+close_err:
+	close(data->sock);
+	data->connState = HTTP_CONN_STATE_CLOSED;
+	return -1;
 }
 
 static int getHTTPHello(InputStream * inStream)
