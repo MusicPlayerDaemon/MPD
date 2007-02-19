@@ -288,6 +288,7 @@ void pcm_convertAudioFormat(AudioFormat * inFormat, char *inBuffer, size_t
 #ifdef HAVE_LIBSAMPLERATE
 		static SRC_STATE *state = NULL;
 		static SRC_DATA data;
+		static size_t data_in_size, data_out_size;
 		int error;
 		static double ratio = 0;
 		double newratio;
@@ -313,10 +314,17 @@ void pcm_convertAudioFormat(AudioFormat * inFormat, char *inBuffer, size_t
 		data.output_frames = pcm_sizeOfOutputBufferForAudioFormatConversion(inFormat, dataChannelLen, outFormat) / 2 / outFormat->channels;
 		data.src_ratio = (double)data.output_frames / (double)data.input_frames;
 
-		float conversionInBuffer[data.input_frames * outFormat->channels];
-		float conversionOutBuffer[data.output_frames * outFormat->channels];
-		data.data_in = conversionInBuffer;
-		data.data_out = conversionOutBuffer;
+		if (data_in_size != (data.input_frames *
+		                     outFormat->channels)) {
+			data_in_size = data.input_frames * outFormat->channels;
+			data.data_in = xrealloc(data.data_in, data_in_size);
+		}
+		if (data_out_size != (data.output_frames *
+		                      outFormat->channels)) {
+			data_out_size = data.output_frames *
+			                outFormat->channels;
+			data.data_out = xrealloc(data.data_out, data_out_size);
+		}
 
 		src_short_to_float_array((short *)dataChannelConv, data.data_in, data.input_frames * outFormat->channels);
 		error = src_process(state, &data);
