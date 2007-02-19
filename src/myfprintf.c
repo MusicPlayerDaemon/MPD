@@ -50,7 +50,7 @@ static void blockingWrite(const int fd, const char *string, size_t len)
 
 void vfdprintf(const int fd, const char *fmt, va_list args)
 {
-	static char buffer[BUFFER_LENGTH + 1];
+	static char buffer[BUFFER_LENGTH];
 	char *buf = buffer;
 	size_t len;
 

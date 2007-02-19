@@ -303,8 +303,8 @@ char *getPlayerErrorStr(void)
 	int errorlen = MAXPATHLEN + 1024;
 	PlayerControl *pc = &(getPlayerData()->playerControl);
 
-	error = xrealloc(error, errorlen + 1);
-	memset(error, 0, errorlen + 1);
+	error = xrealloc(error, errorlen);
+	error[0] = '\0';
 
 	switch (pc->error) {
 	case PLAYER_ERROR_FILENOTFOUND:

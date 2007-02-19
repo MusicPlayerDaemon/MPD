@@ -68,7 +68,7 @@ static const char *log_date(void)
 #define BUFFER_LENGTH	4096
 static void buffer_warning(const char *fmt, va_list args)
 {
-	char buffer[BUFFER_LENGTH + 1];
+	char buffer[BUFFER_LENGTH];
 	char *tmp = buffer;
 	size_t len = BUFFER_LENGTH;
 
