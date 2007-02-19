@@ -477,7 +477,7 @@ static int finishHTTPInit(InputStream * inStream)
 
 	memset(request, 0, 2049);
 	/* deal with ICY metadata later, for now its fucking up stuff! */
-	snprintf(request, 2048, "GET %s HTTP/1.0\r\n" "Host: %s\r\n"
+	snprintf(request, 2048, "GET %s HTTP/1.1\r\n" "Host: %s\r\n"
 		 /*"Connection: close\r\n" */
 		 "User-Agent: %s/%s\r\n"
 		 "Range: bytes=%ld-\r\n"
