@@ -41,6 +41,9 @@
 #  ifndef ID3_FRAME_COMPOSER
 #    define ID3_FRAME_COMPOSER "TCOM"
 #  endif
+#  ifndef ID3_FRAME_PERFORMER
+#    define ID3_FRAME_PERFORMER "TOPE"
+#  endif
 #  ifndef ID3_FRAME_DISC
 #    define ID3_FRAME_DISC "TPOS"
 #  endif
@@ -195,6 +198,7 @@ MpdTag *parseId3Tag(struct id3_tag * tag)
 	ret = getID3Info(tag, ID3_FRAME_YEAR, TAG_ITEM_DATE, ret);
 	ret = getID3Info(tag, ID3_FRAME_GENRE, TAG_ITEM_GENRE, ret);
 	ret = getID3Info(tag, ID3_FRAME_COMPOSER, TAG_ITEM_COMPOSER, ret);
+	ret = getID3Info(tag, ID3_FRAME_PERFORMER, TAG_ITEM_PERFORMER, ret);
 	ret = getID3Info(tag, ID3_FRAME_COMMENT, TAG_ITEM_COMMENT, ret);
 	ret = getID3Info(tag, ID3_FRAME_DISC, TAG_ITEM_DISC, ret);
 
