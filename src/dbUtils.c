@@ -27,10 +27,6 @@
 #include "tagTracker.h"
 #include "log.h"
 
-#define LOCATE_TAG_FILE_KEY	SONG_FILE
-#define LOCATE_TAG_FILE_KEY_OLD	"filename"
-#define LOCATE_TAG_ANY_KEY      "any"
-
 typedef struct _ListCommandItem {
 	mpd_sint8 tagType;
 	int numConditionals;
@@ -41,102 +37,6 @@ typedef struct _LocateTagItemArray {
 	int numItems;
 	LocateTagItem *items;
 } LocateTagItemArray;
-
-int getLocateTagItemType(char *str)
-{
-	int i;
-
-	if (0 == strcasecmp(str, LOCATE_TAG_FILE_KEY) ||
-	    0 == strcasecmp(str, LOCATE_TAG_FILE_KEY_OLD)) 
-	{
-		return LOCATE_TAG_FILE_TYPE;
-	}
-
-	if (0 == strcasecmp(str, LOCATE_TAG_ANY_KEY)) 
-	{
-		return LOCATE_TAG_ANY_TYPE;
-	}
-
-	for (i = 0; i < TAG_NUM_OF_ITEM_TYPES; i++) 
-	{
-		if (0 == strcasecmp(str, mpdTagItemKeys[i]))
-			return i;
-	}
-
-	return -1;
-}
-
-static int initLocateTagItem(LocateTagItem * item, char *typeStr, char *needle)
-{
-	item->tagType = getLocateTagItemType(typeStr);
-
-	if (item->tagType < 0)
-		return -1;
-
-	item->needle = xstrdup(needle);
-
-	return 0;
-}
-
-LocateTagItem *newLocateTagItem(char *typeStr, char *needle)
-{
-	LocateTagItem *ret = xmalloc(sizeof(LocateTagItem));
-
-	if (initLocateTagItem(ret, typeStr, needle) < 0) {
-		free(ret);
-		ret = NULL;
-	}
-
-	return ret;
-}
-
-void freeLocateTagItemArray(int count, LocateTagItem * array)
-{
-	int i;
-
-	for (i = 0; i < count; i++)
-		free(array[i].needle);
-
-	free(array);
-}
-
-int newLocateTagItemArrayFromArgArray(char *argArray[],
-				      int numArgs, LocateTagItem ** arrayRet)
-{
-	int i, j;
-	LocateTagItem *item;
-
-	if (numArgs == 0)
-		return 0;
-
-	if (numArgs % 2 != 0)
-		return -1;
-
-	*arrayRet = xmalloc(sizeof(LocateTagItem) * numArgs / 2);
-
-	for (i = 0, item = *arrayRet; i < numArgs / 2; i++, item++) {
-		if (initLocateTagItem
-		    (item, argArray[i * 2], argArray[i * 2 + 1]) < 0)
-			goto fail;
-	}
-
-	return numArgs / 2;
-
-fail:
-	for (j = 0; j < i; j++) {
-		free((*arrayRet)[j].needle);
-	}
-
-	free(*arrayRet);
-	*arrayRet = NULL;
-	return -1;
-}
-
-void freeLocateTagItem(LocateTagItem * item)
-{
-	free(item->needle);
-	free(item);
-}
 
 static int countSongsInDirectory(int fd, Directory * directory, void *data)
 {
@@ -162,53 +62,12 @@ static int printSongInDirectory(int fd, Song * song, void *data)
 	return 0;
 }
 
-static int strstrSearchTag(Song * song, int type, char *str)
-{
-	int i;
-	char *dup;
-	int ret = 0;
-
-	if (type == LOCATE_TAG_FILE_TYPE || type == LOCATE_TAG_ANY_TYPE) {
-		dup = strDupToUpper(getSongUrl(song));
-		if (strstr(dup, str))
-			ret = 1;
-		free(dup);
-		if (ret == 1 || type == LOCATE_TAG_FILE_TYPE) {
-			return ret;
-		}
-	}
-
-	if (!song->tag)
-		return 0;
-
-	for (i = 0; i < song->tag->numOfItems && !ret; i++) {
-		if (type != LOCATE_TAG_ANY_TYPE &&
-		    song->tag->items[i].type != type) {
-			continue;
-		}
-
-		dup = strDupToUpper(song->tag->items[i].value);
-		if (strstr(dup, str))
-			ret = 1;
-		free(dup);
-	}
-
-	return ret;
-}
-
 static int searchInDirectory(int fd, Song * song, void *data)
 {
 	LocateTagItemArray *array = data;
-	int i;
 
-	for (i = 0; i < array->numItems; i++) {
-		if (!strstrSearchTag(song, array->items[i].tagType,
-				     array->items[i].needle)) {
-			return 0;
-		}
-	}
-
-	printSongInfo(fd, song);
+	if (strstrSearchTags(song, array->numItems, array->items))
+		printSongInfo(fd, song);
 
 	return 0;
 }
@@ -241,46 +100,12 @@ int searchForSongsIn(int fd, char *name, int numItems, LocateTagItem * items)
 	return ret;
 }
 
-static int tagItemFoundAndMatches(Song * song, int type, char *str)
-{
-	int i;
-
-	if (type == LOCATE_TAG_FILE_TYPE || type == LOCATE_TAG_ANY_TYPE) {
-		if (0 == strcmp(str, getSongUrl(song)))
-			return 1;
-		if (type == LOCATE_TAG_FILE_TYPE)
-			return 0;
-	}
-
-	if (!song->tag)
-		return 0;
-
-	for (i = 0; i < song->tag->numOfItems; i++) {
-		if (type != LOCATE_TAG_ANY_TYPE &&
-		    song->tag->items[i].type != type) {
-			continue;
-		}
-
-		if (0 == strcmp(str, song->tag->items[i].value))
-			return 1;
-	}
-
-	return 0;
-}
-
 static int findInDirectory(int fd, Song * song, void *data)
 {
 	LocateTagItemArray *array = data;
-	int i;
 
-	for (i = 0; i < array->numItems; i++) {
-		if (!tagItemFoundAndMatches(song, array->items[i].tagType,
-					    array->items[i].needle)) {
-			return 0;
-		}
-	}
-
-	printSongInfo(fd, song);
+	if (tagItemsFoundAndMatches(song, array->numItems, array->items))
+		printSongInfo(fd, song);
 
 	return 0;
 }
@@ -403,16 +228,11 @@ static void visitTag(int fd, Song * song, int tagType)
 static int listUniqueTagsInDirectory(int fd, Song * song, void *data)
 {
 	ListCommandItem *item = data;
-	int i;
 
-	for (i = 0; i < item->numConditionals; i++) {
-		if (!tagItemFoundAndMatches(song, item->conditionals[i].tagType,
-					    item->conditionals[i].needle)) {
-			return 0;
-		}
+	if (tagItemsFoundAndMatches(song, item->numConditionals,
+	                            item->conditionals)) {
+		visitTag(fd, song, item->tagType);
 	}
-
-	visitTag(fd, song, item->tagType);
 
 	return 0;
 }
