@@ -1679,3 +1679,36 @@ int loadPlaylist(int fd, char *utf8file)
 {
 	return PlaylistIterFunc(fd, utf8file, PlaylistLoadIterFunc);
 }
+
+void searchForSongsInPlaylist(int fd, int numItems, LocateTagItem * items)
+{
+	int i;
+	char **originalNeedles = xmalloc(numItems * sizeof(char *));
+
+	for (i = 0; i < numItems; i++) {
+		originalNeedles[i] = items[i].needle;
+		items[i].needle = strDupToUpper(originalNeedles[i]);
+	}
+
+	for (i = 0; i < playlist.length; i++) {
+		if (strstrSearchTags(playlist.songs[i], numItems, items))
+			printPlaylistSongInfo(fd, i);
+	}
+
+	for (i = 0; i < numItems; i++) {
+		free(items[i].needle);
+		items[i].needle = originalNeedles[i];
+	}
+
+	free(originalNeedles);
+}
+
+void findSongsInPlaylist(int fd, int numItems, LocateTagItem * items)
+{
+	int i;
+
+	for (i = 0; i < playlist.length; i++) {
+		if (tagItemsFoundAndMatches(playlist.songs[i], numItems, items))
+			printPlaylistSongInfo(fd, i);
+	}
+}

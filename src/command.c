@@ -28,7 +28,6 @@
 #include "permission.h"
 #include "buffer2array.h"
 #include "log.h"
-#include "dbUtils.h"
 #include "tag.h"
 #include "utils.h"
 
@@ -94,6 +93,8 @@
 #define COMMAND_NOTCOMMANDS	"notcommands"
 #define COMMAND_PLAYLISTCLEAR   "playlistclear"
 #define COMMAND_PLAYLISTADD	"playlistadd"
+#define COMMAND_PLAYLISTFIND	"playlistfind"
+#define COMMAND_PLAYLISTSEARCH	"playlistsearch"
 
 #define COMMAND_STATUS_VOLUME           "volume"
 #define COMMAND_STATUS_STATE            "state"
@@ -508,6 +509,44 @@ static int handleSearch(int fd, int *permission, int argc, char *argv[])
 	freeLocateTagItemArray(numItems, items);
 
 	return ret;
+}
+
+static int handlePlaylistFind(int fd, int *permission, int argc, char *argv[])
+{
+	LocateTagItem *items;
+	int numItems = newLocateTagItemArrayFromArgArray(argv + 1,
+							 argc - 1,
+							 &items);
+
+	if (numItems <= 0) {
+		commandError(fd, ACK_ERROR_ARG, "incorrect arguments");
+		return -1;
+	}
+
+	findSongsInPlaylist(fd, numItems, items);
+
+	freeLocateTagItemArray(numItems, items);
+
+	return 0;
+}
+
+static int handlePlaylistSearch(int fd, int *permission, int argc, char *argv[])
+{
+	LocateTagItem *items;
+	int numItems = newLocateTagItemArrayFromArgArray(argv + 1,
+							 argc - 1,
+							 &items);
+
+	if (numItems <= 0) {
+		commandError(fd, ACK_ERROR_ARG, "incorrect arguments");
+		return -1;
+	}
+
+	searchForSongsInPlaylist(fd, numItems, items);
+
+	freeLocateTagItemArray(numItems, items);
+
+	return 0;
 }
 
 static int listHandleUpdate(int fd,
@@ -1002,6 +1041,8 @@ void initCommands(void)
 	addCommand(COMMAND_NOTCOMMANDS,      PERMISSION_NONE,    0,   0,   handleNotcommands,          NULL);
 	addCommand(COMMAND_PLAYLISTCLEAR,    PERMISSION_CONTROL, 1,   1,   handlePlaylistClear,        NULL);
 	addCommand(COMMAND_PLAYLISTADD,      PERMISSION_CONTROL, 2,   2,   handlePlaylistAdd,          NULL);
+	addCommand(COMMAND_PLAYLISTFIND,     PERMISSION_READ,    2,   -1,  handlePlaylistFind,         NULL);
+	addCommand(COMMAND_PLAYLISTSEARCH,   PERMISSION_READ,    2,   -1,  handlePlaylistSearch,       NULL);
 
 	sortList(commandList);
 }

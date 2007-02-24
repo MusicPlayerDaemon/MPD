@@ -21,8 +21,7 @@
 
 #include "../config.h"
 
-#include "song.h"
-#include "mpd_types.h"
+#include "dbUtils.h"
 
 #include <stdio.h>
 #include <sys/param.h>
@@ -121,5 +120,9 @@ int playlistChanges(int fd, mpd_uint32 version);
 int playlistChangesPosId(int fd, mpd_uint32 version);
 
 int PlaylistInfo(int fd, char *utf8file, int detail);
+
+void searchForSongsInPlaylist(int fd, int numItems, LocateTagItem * items);
+
+void findSongsInPlaylist(int fd, int numItems, LocateTagItem * items);
 
 #endif
