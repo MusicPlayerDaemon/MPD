@@ -182,7 +182,7 @@ if test x$enable_oss = xyes; then
 	AC_CHECK_HEADER(sys/soundcard.h,[enable_oss=yes;AC_DEFINE(HAVE_OSS,1,[Define to enable OSS])],[AC_MSG_WARN(Soundcard headers not found -- disabling OSS support);enable_oss=no])
 fi
 
-if test x$enable_pulse = xyes || test x$enable_jack = xyes
+if test x$enable_pulse = xyes || test x$enable_jack = xyes ||
    test x$enable_lsr = xyes || test x$with_zeroconf != xno; then
 	PKG_PROG_PKG_CONFIG
 fi
