@@ -196,19 +196,16 @@ void listenOnPort(void)
 {
 	int port = DEFAULT_PORT;
 	ConfigParam *param = getNextConfigParam(CONF_BIND_TO_ADDRESS, NULL);
+	ConfigParam *portParam = getConfigParam(CONF_PORT);
 
-	{
-		ConfigParam *portParam = getConfigParam(CONF_PORT);
-
-		if (portParam) {
-			char *test;
-			port = strtol(portParam->value, &test, 10);
-			if (port <= 0 || *test != '\0') {
-				ERROR("%s \"%s\" specified at line %i is not a "
-				      "positive integer", CONF_PORT,
-				      portParam->value, portParam->line);
-				exit(EXIT_FAILURE);
-			}
+	if (portParam) {
+		char *test;
+		port = strtol(portParam->value, &test, 10);
+		if (port <= 0 || *test != '\0') {
+			ERROR("%s \"%s\" specified at line %i is not a "
+			      "positive integer", CONF_PORT,
+			      portParam->value, portParam->line);
+			exit(EXIT_FAILURE);
 		}
 	}
 
