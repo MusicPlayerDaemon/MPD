@@ -64,8 +64,13 @@ static MDRIVER drv_mpd = {
 	"MPD Output Driver v0.1",
 	0,
 	255,
-	"mpd",
-	NULL,
+#if (LIBMIKMOD_VERSION > 0x030106)
+	"mpd", /* Alias */
+#if (LIBMIKMOD_VERSION > 0x030200)
+	NULL,  /* CmdLineHelp */
+#endif
+	NULL,  /* CommandLine */
+#endif
 	mod_mpd_IsThere,
 	VC_SampleLoad,
 	VC_SampleUnload,
