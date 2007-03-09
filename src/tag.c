@@ -489,9 +489,8 @@ MpdTag *newMpdTag(void)
 
 static void deleteItem(MpdTag * tag, int index)
 {
-	tag->numOfItems--;
-
 	assert(index < tag->numOfItems);
+	tag->numOfItems--;
 
 	removeTagItemString(tag->items[index].type, tag->items[index].value);
 	/* free(tag->items[index].value); */
