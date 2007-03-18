@@ -398,6 +398,7 @@ static int processBytesRead(Interface * interface, int bytesRead)
 				return 1;
 			}
 			if (interface->cmd_list_OK >= 0 &&
+			    interface->cmd_list &&
 			    !interface->cmd_list_dup)
 				cmd_list_clone(interface);
 			interface->bufferLength -= interface->bufferPos;
