@@ -20,8 +20,8 @@
 
 #include "utils.h"
 
-#define LOCATE_TAG_FILE_KEY	SONG_FILE
-#define LOCATE_TAG_FILE_KEY_OLD	"filename"
+#define LOCATE_TAG_FILE_KEY     "file"
+#define LOCATE_TAG_FILE_KEY_OLD "filename"
 #define LOCATE_TAG_ANY_KEY      "any"
 
 int getLocateTagItemType(char *str)
