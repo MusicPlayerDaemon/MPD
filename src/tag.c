@@ -28,6 +28,7 @@
 #include "tagTracker.h"
 #include "mpd_types.h"
 #include "gcc.h"
+#include "song.h"
 
 #include <sys/stat.h>
 #include <stdlib.h>
@@ -120,7 +121,7 @@ void printMpdTag(int fd, MpdTag * tag)
 	int i;
 
 	if (tag->time >= 0)
-		fdprintf(fd, "Time: %i\n", tag->time);
+		fdprintf(fd, "%s%i\n", SONG_TIME, tag->time);
 
 	for (i = 0; i < tag->numOfItems; i++) {
 		fdprintf(fd, "%s: %s\n", mpdTagItemKeys[tag->items[i].type],
