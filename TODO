@@ -16,7 +16,7 @@
 *) cleanup linked list code!
 
 *) implement listener socket protocol as documented here:
-	http://www.musicpd.org/wiki/moin.cgi/MpdListenerProtocol
+	http://mpd.wikia.com/wiki/MusicPlayerDaemonListenerProtocol
 
 *) support for dynamically loading plugins
 	*) cleanup input plugins "API"
@@ -43,8 +43,6 @@
 
 *) rewrite saved playlist code
 	*) abstract out saved playlists from playlist.c
-	*) command for displaying playlist contents
-	*) command for appending to playlist
 	*) new commands
 		*) replace <playlist> /* replace current playlist
 						with saved playlist and
@@ -58,7 +56,7 @@
 *) bug fixes
 
 post-1.0
-----
+--------
 
 *) rewrite audio pipe
 	*) use pthreads/clone
