@@ -1,3 +1,21 @@
+ver 0.13.0 (????/??/??)
+* New JACK audio output
+* Support for "file" as an alternative to "filename" in search, find, and list
+* FLAC 1.1.3 support
+* New playlistadd command for adding to stored playlists
+* New playlistclear command for clearing stored playlists
+* Fix a bug where "find any" and "list <type> any" wouldn't return any results
+* Make "list any" return an error instead of no results and an OK
+* New gapless_mp3_playback option to disable gapless MP3 playback
+* Support for seeking HTTP streams
+* Zeroconf support using Avahi
+* libsamplerate support for high quality audio resampling
+* ID3v2 "Original Artist/Performer" tag support
+* New playlistsearch command for searching the playlist (similar to "search")
+* New playlistfind command for finding songs in the playlist (similar to "find")
+* libmikmod 3.2.0 beta support
+* Lots of bug fixes, cleaned up code, and performance improvements
+
 ver 0.12.2 (2007/3/20)
 * Fix a bug where clients could cause MPD to segfault
 
