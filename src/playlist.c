@@ -1637,12 +1637,12 @@ static void PlaylistInfoPrintInfo(int fd, char *utf8file, char **erroredfile)
 	if (song) {
 		printSongInfo(fd, song);
 	} else {
-		fdprintf(fd, "file: %s\n", utf8file);
+		fdprintf(fd, "%s%s\n", SONG_FILE, utf8file);
 	}
 }
 static void PlaylistInfoPrint(int fd, char *utf8file, char **erroredfile)
 {
-	fdprintf(fd, "file: %s\n", utf8file);
+	fdprintf(fd, "%s%s\n", SONG_FILE, utf8file);
 }
 
 static void PlaylistLoadIterFunc(int fd, char *temp, char **erroredFile)
