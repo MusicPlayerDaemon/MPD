@@ -1,3 +1,6 @@
+ver 0.12.2 (2007/3/20)
+* Fix a bug where clients could cause MPD to segfault
+
 ver 0.12.1 (2006/10/10)
 * Fix segfault when scanning an MP3 that has a Xing tag with 0 frames
 * Fix segfault when there's no audio output specified and one can't be detected
