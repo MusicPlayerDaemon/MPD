@@ -121,7 +121,7 @@ void printMpdTag(int fd, MpdTag * tag)
 	int i;
 
 	if (tag->time >= 0)
-		fdprintf(fd, "%s%i\n", SONG_TIME, tag->time);
+		fdprintf(fd, SONG_TIME "%i\n", tag->time);
 
 	for (i = 0; i < tag->numOfItems; i++) {
 		fdprintf(fd, "%s: %s\n", mpdTagItemKeys[tag->items[i].type],
