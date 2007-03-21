@@ -29,7 +29,6 @@
 *) audio output
 	*) write a esd native audioOutput
 	*) write a nas native audioOutput
-	*) need better resampling code
 	*) allowing "pausing" of audio output devices
 	*) while pausing, play silence for the devices that don't support 
 	   "pausing"
