@@ -37,7 +37,7 @@
 
 static char *name = "mpd";
 static char *output_ports[2];
-static int ringbuf_sz = 32768;
+static int ringbuf_sz = 65536;
 
 typedef struct _JackData {
 	jack_port_t *ports[2];
@@ -201,7 +201,7 @@ static void set_audioformat(AudioOutput *audioOutput)
 	audioFormat->channels = 2;
 	audioFormat->bits = 16;
 	jd->bps = audioFormat->channels
-		* sizeof(jack_default_audio_sample_t)*8
+		* sizeof(jack_default_audio_sample_t)
 		* audioFormat->sampleRate;
 }
 
@@ -249,7 +249,7 @@ static int jack_initDriver(AudioOutput *audioOutput, ConfigParam *param)
 		val = strtol(bp->value, &endptr, 10);
 
 		if ( errno == 0 && endptr != bp->value) {
-			ringbuf_sz = val < 32768 ? 32768 : val;
+			ringbuf_sz = val < 65536 ? 65536 : val;
 			ERROR("ringbuffer_size=%d\n", ringbuf_sz);
 		} else {
 			ERROR("%s is not a number; ringbuf_size=%d\n",
@@ -397,10 +397,10 @@ static int jack_playAudio(AudioOutput * audioOutput, char *buff, int size)
 {
 	JackData *jd = audioOutput->data;
 	size_t space;
-	char *samples1;
-	char *samples2;
 	int i;
 	short *buffer = (short *) buff;
+	jack_default_audio_sample_t sample;
+	size_t samples = size/4;
 
 	ERROR("jack_playAudio: (pid=%d)!\n", getpid());
 
@@ -411,60 +411,39 @@ static int jack_playAudio(AudioOutput * audioOutput, char *buff, int size)
 		return 0;
 	}
 
-	/*jd->can_process=0;*/
-	/* if ( jd->our_xrun ) { */
-/* 		ERROR("xrun\n"); */
-/* 		jd->our_xrun = 0; */
-/* 	} */
-
 	/*ERROR("jack_playAudio: size=%d\n", size/4);*/
 	/*ERROR("jack_playAudio - INICIO\n");*/
 
-	if ( ! jd->samples1 ) {
-		ERROR("jd->samples1=xmalloc\n");
-		jd->samples1 = (jack_default_audio_sample_t *)
-			xmalloc(size*sizeof(jack_default_audio_sample_t));
-	}
-	if ( ! jd->samples2 ) {
-		ERROR("jd->samples2=xmalloc\n");
-		jd->samples2 = (jack_default_audio_sample_t *)
-			xmalloc(size*sizeof(jack_default_audio_sample_t));
-	}
-
-	/* primero convierto todo el buffer al formato que usa jack */
-	for (i=0; i<size; i++) {
-		*(jd->samples1 + i) =
-			(jack_default_audio_sample_t) *(buffer++) / 32768;
-		*(jd->samples2 + i) =
-			(jack_default_audio_sample_t) *(buffer++) / 32768;
-		/*
-		*(jd->samples1 + i) =
-			(jack_default_audio_sample_t) *(buff + i) / 32768;
-		*(jd->samples2 + i) =
-			(jack_default_audio_sample_t) *(buff + i) / 32768;
-		*/
-	}
-
-	samples1 = (char *)jd->samples1;
-	samples2 = (char *)jd->samples2;
-	while ( size && !jd->shutdown ) {
+	while ( samples && !jd->shutdown ) {
+		/*ERROR("\t samples=%d\n", samples);*/
  		if ( (space = jack_ringbuffer_write_space(jd->ringbuffer[0]))
- 		     >= size ) {
- 			/*ERROR("\t size=%d space=%d\n", size, space);*/
- 			space = MIN(space, size);
- 			jack_ringbuffer_write(jd->ringbuffer[0],samples1,space);
- 			jack_ringbuffer_write(jd->ringbuffer[1],samples2,space);
- 			size -= space;
- 			samples1 += space;
- 			samples2 += space;
+ 		     >= samples*sizeof(jack_default_audio_sample_t) ) {
+ 			/*ERROR("\t samples_b=%d space=%d\n", samples*sizeof(jack_default_audio_sample_t), space);*/
+
+ 			space = MIN(space, samples*sizeof(jack_default_audio_sample_t));
+
+			for(i=0; i<space/sizeof(jack_default_audio_sample_t); i++) {
+				sample = (jack_default_audio_sample_t) *(buffer++)/32768.0;
+
+				jack_ringbuffer_write(jd->ringbuffer[0], (void*)&sample,
+						      sizeof(jack_default_audio_sample_t));
+
+				sample = (jack_default_audio_sample_t) *(buffer++)/32768.0;
+
+				jack_ringbuffer_write(jd->ringbuffer[1], (void*)&sample,
+						      sizeof(jack_default_audio_sample_t));
+
+				samples--;
+			}
+
  		} else {
- 		    /* ERROR("\t space=%d\n", space); */
- 		    /* ERROR("\t size=%d\n", size); */
+/* 		    ERROR("\t space=%d\n", space); */
+/* 		    ERROR("\t size=%d\n", size); */
 		    usleep((unsigned long)
- 		 	   ((size-space)/jd->bps) * 1000000.0);
+ 		 	   ((samples*sizeof(jack_default_audio_sample_t)
+			     - space)/jd->bps) * 1000000.0);
   	 	}
  	}
-/* 	jd->can_process=1; */
 
 	/*ERROR("jack_playAudio - FIN\n");*/
 
