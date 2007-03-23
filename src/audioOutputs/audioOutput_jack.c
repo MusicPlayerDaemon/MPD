@@ -45,6 +45,7 @@ typedef struct _JackData {
 	jack_ringbuffer_t *ringbuffer[2];
 	jack_default_audio_sample_t *samples1;
 	jack_default_audio_sample_t *samples2;
+	int can_process;
 	int bps;
 	int shutdown;
 	int our_xrun;
@@ -128,9 +129,35 @@ static int process(jack_nframes_t nframes, void *arg)
 	out[0] = jack_port_get_buffer(jd->ports[0], nframes);
 	out[1] = jack_port_get_buffer(jd->ports[1], nframes);
 
-	avail_data = jack_ringbuffer_read_space(jd->ringbuffer[1]);
+	/*if ( jd->can_process ) {*/
+	while ( nframes ) {
+		avail_data = jack_ringbuffer_read_space(jd->ringbuffer[1]);
 
+		if ( avail_data > 0 ) {
+		    avail_frames = avail_data / sizeof(jack_default_audio_sample_t);
+
+		    if (avail_frames > nframes) {
+			avail_frames = nframes;
+			avail_data = nframes*sizeof(jack_default_audio_sample_t);
+		    }
+
+		    jack_ringbuffer_read(jd->ringbuffer[0], (char *)out[0],
+					 avail_data);
+		    jack_ringbuffer_read(jd->ringbuffer[1], (char *)out[1],
+					 avail_data);
+
+		    nframes -= avail_frames;
+		    out[0] += avail_data;
+		    out[1] += avail_data;
+		} else {
+		    for (i = 0; i < nframes; i++)
+  			out[0][i] = out[1][i] = 0.0;
+		    nframes = 0;
+		}
+	}
+	/*
 	if ( avail_data > 0 ) {
+
 		avail_frames = avail_data / sizeof(jack_default_audio_sample_t);
 		if (avail_frames > nframes) {
 			avail_frames = nframes;
@@ -148,11 +175,11 @@ static int process(jack_nframes_t nframes, void *arg)
 				out[0][i] = out[1][i] = 0.0;
 			}
 		}
-	} else {
-		//ERROR ("avail_data=%d, no play (pid=%d)!\n", avail_data, getpid ());
-		for (i = 0; i < nframes; i++)
- 			out[0][i] = out[1][i] = 0.0;
-	}
+	}  else {
+ 		//ERROR ("avail_data=%d, no play (pid=%d)!\n", avail_data, getpid ());
+ 		for (i = 0; i < nframes; i++)
+  			out[0][i] = out[1][i] = 0.0;
+			} */
 
 	/*ERROR("process (pid=%d)\n", getpid());*/
 	return 0;
@@ -358,7 +385,7 @@ static void jack_closeDevice(AudioOutput * audioOutput)
 {
 	/*jack_finishDriver(audioOutput);*/
 	audioOutput->open = 0;
-	ERROR("jack_closeDevice (pid=%d)!\n", getpid());
+	ERROR("jack_closeDevice (pid=%d)\n", getpid());
 }
 
 static void jack_dropBufferedAudio (AudioOutput * audioOutput)
@@ -375,6 +402,8 @@ static int jack_playAudio(AudioOutput * audioOutput, char *buff, int size)
 	int i;
 	short *buffer = (short *) buff;
 
+	ERROR("jack_playAudio: (pid=%d)!\n", getpid());
+
 	if ( jd->shutdown ) {
 		ERROR("Refusing to play, because there is no client thread.\n");
 		freeJackData(audioOutput);
@@ -382,49 +411,60 @@ static int jack_playAudio(AudioOutput * audioOutput, char *buff, int size)
 		return 0;
 	}
 
-	if ( jd->our_xrun ) {
-		ERROR("xrun\n");
-		jd->our_xrun = 0;
-	}
+	/*jd->can_process=0;*/
+	/* if ( jd->our_xrun ) { */
+/* 		ERROR("xrun\n"); */
+/* 		jd->our_xrun = 0; */
+/* 	} */
 
 	/*ERROR("jack_playAudio: size=%d\n", size/4);*/
 	/*ERROR("jack_playAudio - INICIO\n");*/
 
 	if ( ! jd->samples1 ) {
 		ERROR("jd->samples1=xmalloc\n");
-		jd->samples1 = (jack_default_audio_sample_t *)xmalloc(size);
+		jd->samples1 = (jack_default_audio_sample_t *)
+			xmalloc(size*sizeof(jack_default_audio_sample_t));
 	}
 	if ( ! jd->samples2 ) {
 		ERROR("jd->samples2=xmalloc\n");
-		jd->samples2 = (jack_default_audio_sample_t *)xmalloc(size);
+		jd->samples2 = (jack_default_audio_sample_t *)
+			xmalloc(size*sizeof(jack_default_audio_sample_t));
 	}
 
 	/* primero convierto todo el buffer al formato que usa jack */
-	for (i=0; i<size/4; i++) {
+	for (i=0; i<size; i++) {
 		*(jd->samples1 + i) =
 			(jack_default_audio_sample_t) *(buffer++) / 32768;
 		*(jd->samples2 + i) =
 			(jack_default_audio_sample_t) *(buffer++) / 32768;
+		/*
+		*(jd->samples1 + i) =
+			(jack_default_audio_sample_t) *(buff + i) / 32768;
+		*(jd->samples2 + i) =
+			(jack_default_audio_sample_t) *(buff + i) / 32768;
+		*/
 	}
 
-	samples1=(char *)jd->samples1;
-	samples2=(char *)jd->samples2;
+	samples1 = (char *)jd->samples1;
+	samples2 = (char *)jd->samples2;
 	while ( size && !jd->shutdown ) {
-		if ( (space = jack_ringbuffer_write_space(jd->ringbuffer[0])) >
-		     sizeof(jack_default_audio_sample_t) ) {
-			/*ERROR("\t size=%d space=%d\n", size, space);*/
-			space = MIN(space, size);
-			jack_ringbuffer_write(jd->ringbuffer[0],samples1,space);
-			jack_ringbuffer_write(jd->ringbuffer[1],samples2,space);
-			size -= space;
-			samples1 += space;
-			samples2 += space;
-		} else {
-			/*ERROR("\t space=%d\n", space);*/
-			usleep(3*(ringbuf_sz-space)/((float)(jd->bps))
-			       * 1000000.0);
-		}
-	}
+ 		if ( (space = jack_ringbuffer_write_space(jd->ringbuffer[0]))
+ 		     >= size ) {
+ 			/*ERROR("\t size=%d space=%d\n", size, space);*/
+ 			space = MIN(space, size);
+ 			jack_ringbuffer_write(jd->ringbuffer[0],samples1,space);
+ 			jack_ringbuffer_write(jd->ringbuffer[1],samples2,space);
+ 			size -= space;
+ 			samples1 += space;
+ 			samples2 += space;
+ 		} else {
+ 		    /* ERROR("\t space=%d\n", space); */
+ 		    /* ERROR("\t size=%d\n", size); */
+		    usleep((unsigned long)
+ 		 	   ((size-space)/jd->bps) * 1000000.0);
+  	 	}
+ 	}
+/* 	jd->can_process=1; */
 
 	/*ERROR("jack_playAudio - FIN\n");*/
 
