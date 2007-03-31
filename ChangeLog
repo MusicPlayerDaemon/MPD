@@ -1,7 +1,7 @@
-ver 0.13.0 (????/??/??)
+ver 0.13.0 (2007/??/??)
 * New JACK audio output
 * Support for "file" as an alternative to "filename" in search, find, and list
-* FLAC 1.1.3 support
+* FLAC 1.1.3 API support
 * New playlistadd command for adding to stored playlists
 * New playlistclear command for clearing stored playlists
 * Fix a bug where "find any" and "list <type> any" wouldn't return any results

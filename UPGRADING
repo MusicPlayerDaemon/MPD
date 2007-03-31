@@ -1,5 +1,13 @@
                        Music Player Daemon (MPD) - UPGRADING
 
+Upgrading to 0.13.0
+-------------------
+
+JACK and libsamplerate have been added as optional dependencies (see 
+zeroconf_name and samplerate_converter, respectively). Added 
+gapless_mp3_playback, update to the latest mpdconf.example in the docs 
+directory. FLAC/OggFLAC now supports the 1.1.13 API.
+
 Upgrading to 0.12.0
 -------------------
 

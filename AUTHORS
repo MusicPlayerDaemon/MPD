@@ -1,10 +1,41 @@
-Developer -> Warren Dukes <warren.dukes@gmail.com>
-Developer -> tw-nym
-audiofile support and command.c cleanup -> normalperson
-setuid patch -> Nagilum
-'next' and 'previous' patch -> Niklas Hofer
-command.c and signal handling cleanup -> mackstann
-replayGain -> AliasMrJones
+Current Developers
+------------------
+Warren Dukes <warren.dukes@gmail.com>
+	general
+
+J. Alexander Treuman <jat@spatialrift.net>
+	general, mp3, id3tag, pulseaudio
+
+Eric Wong <normalperson@yhbt.net>
+	general, FLAC, mpd-ke branch
+
+José Anarch <anarchsss@gmail.com>
+	JACK plugin
+
+Guus Sliepen <guus@sliepen.eu.org>
+	libsamplerate code
+
+Jim Ramsay <i.am@jimramsay.com>
+	Zerconf/avahi support
+
+Qball Cow <qballcow@gmail.com>
+	Playlist commands
+
+Former Developers
+------------------
+tw-nym
+
+Nagilum
+	setuid
+
+Niklas Hofer
+	'next' and 'previous' patch
+
+mackstann
+	command.c and signal handling cleanup
+
+AliasMrJones
+	replayGain
 
 mp4ff copyrighted by M. Bakker, Ahead Software AG, http://www.nero.com
 compress.[ch] copyrighted by fluffy <fluffy@beesbuzz.biz>
