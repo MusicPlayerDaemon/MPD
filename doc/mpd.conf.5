@@ -71,6 +71,11 @@ reports from what address a connection is opened, and when it is closed, and
 "verbose" records excessive amounts of information for debugging purposes.  The
 default is "default".
 .TP
+.B zeroconf_name <name>
+If Zerconf is compiled into MPD, this is the service name to publish.  This
+should be unique to your local network, but name collisions will be properly
+dealt with.
+.TP
 .B password <password@permissions>
 This specifies a password for access to mpd.  The format is
 "password@permissions" where permissions is a comma delimited list composed
@@ -99,32 +104,6 @@ audio that is sent to each audio output.  Note that audio outputs may specify
 their own audio format which will be used for actual output to the audio
 device.  An example is "44100:16:2" for 44100Hz, 16 bits, and 2 channels.  The
 default is to use the audio format of the input file.
-.TP
-.B mixer_type <oss, alsa or software>
-This specifies which mixer to use.  The default depends on what audio output
-support mpd was built with.
-.TP
-.B mixer_device <mixer dev>
-This specifies which mixer to use.  The default for oss is "/dev/mixer"; the
-default for alsa is "default".
-.TP
-.B mixer_control <mixer ctrl>
-This specifies which mixer control to use (sometimes referred to as the
-"device").  Examples of mixer controls are PCM, Line1, Master, etc.  An example
-for OSS is "Pcm", and an example for alsa is "PCM".
-.TP
-.B replaygain <album or track>
-If specified, mpd will adjust the volume of songs played using ReplayGain tags
-(see <\fBhttp://www.replaygain.org/\fP>).  Setting this to "album" will adjust
-volume using the album's ReplayGain tags, while setting it to "track" will
-adjust it using the track ReplayGain tags.  Currently only FLAC, Ogg Vorbis,
-Musepack, and MP3 (through ID3v2 ReplayGain tags, not APEv2) are supported.
-.TP
-.B replaygain_preamp <-15 to 15>
-This is the gain (in dB) applied to songs with ReplayGain tags.
-.TP
-.B volume_normalization <yes or no>
-If yes, mpd will normalize the volume of songs as they play.  The default is no.
 .TP
 .B samplerate_converter <integer or prefix>
 This specifies the libsamplerate converter to use.  The supplied value should
@@ -158,6 +137,32 @@ Linear interpolator, very fast, poor quality.
 .IP
 For an up-to-date list of available converters, please see the libsamplerate
 documentation (available online at <\fBhttp://www.mega-nerd.com/SRC/\fP>).
+.TP
+.B mixer_type <oss, alsa or software>
+This specifies which mixer to use.  The default depends on what audio output
+support mpd was built with.
+.TP
+.B mixer_device <mixer dev>
+This specifies which mixer to use.  The default for oss is "/dev/mixer"; the
+default for alsa is "default".
+.TP
+.B mixer_control <mixer ctrl>
+This specifies which mixer control to use (sometimes referred to as the
+"device").  Examples of mixer controls are PCM, Line1, Master, etc.  An example
+for OSS is "Pcm", and an example for alsa is "PCM".
+.TP
+.B replaygain <album or track>
+If specified, mpd will adjust the volume of songs played using ReplayGain tags
+(see <\fBhttp://www.replaygain.org/\fP>).  Setting this to "album" will adjust
+volume using the album's ReplayGain tags, while setting it to "track" will
+adjust it using the track ReplayGain tags.  Currently only FLAC, Ogg Vorbis,
+Musepack, and MP3 (through ID3v2 ReplayGain tags, not APEv2) are supported.
+.TP
+.B replaygain_preamp <-15 to 15>
+This is the gain (in dB) applied to songs with ReplayGain tags.
+.TP
+.B volume_normalization <yes or no>
+If yes, mpd will normalize the volume of songs as they play.  The default is no.
 .TP
 .B audio_buffer_size <size in KiB>
 This specifies the size of the audio output buffer that mpd uses.  The default
@@ -237,11 +242,6 @@ tags may be specified as a comma separated list.  An example value is
 "artist,album,title,track".  The special value "none" may be used alone to
 disable all metadata.  The default is to use all known tag types except for
 comments.
-.TP
-.B zeroconf_name <name>
-If Zerconf is compiled into MPD, this is the service name to publish.  This
-should be unique to your local network, but name collisions will be properly
-dealt with.
 .SH REQUIRED AUDIO OUTPUT PARAMETERS
 .TP
 .B type <type>
