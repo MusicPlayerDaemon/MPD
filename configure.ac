@@ -218,8 +218,6 @@ if test x$enable_iconv = xyes; then
   		ICONV_LIBS="-L$iconv_libraries"
   	elif test "x$iconv_prefix" != "x" ; then
     		ICONV_LIBS="-L$iconv_prefix/lib"
-  	elif test "x$prefix" != "xNONE"; then
-    		ICONV_LIBS="-L$libdir"
   	fi
 
   	ICONV_LIBS="$ICONV_LIBS -liconv"
@@ -228,8 +226,6 @@ if test x$enable_iconv = xyes; then
   		ICONV_CFLAGS="-I$iconv_includes"
   	elif test "x$iconv_prefix" != "x" ; then
     		ICONV_CFLAGS="-I$iconv_prefix/include"
-  	elif test "x$prefix" != "xNONE"; then
-    		ICONV_CFLAGS="-I$includedir"
   	fi
 
 	oldcflags=$CFLAGS
@@ -255,8 +251,6 @@ if test x$enable_id3 = xyes; then
 		ID3TAG_LIBS="-L$id3tag_libraries"
 	elif test "x$id3tag_prefix" != "x" ; then
 		ID3TAG_LIBS="-L$id3tag_prefix/lib"
-	elif test "x$prefix" != "xNONE"; then
-		ID3TAG_LIBS="-L$libdir"
 	fi
 
 	ID3TAG_LIBS="$ID3TAG_LIBS -lid3tag -lz"
@@ -265,8 +259,6 @@ if test x$enable_id3 = xyes; then
 		ID3TAG_CFLAGS="-I$id3tag_includes"
 	elif test "x$id3tag_prefix" != "x" ; then
 		ID3TAG_CFLAGS="-I$id3tag_prefix/include"
-	elif test "x$prefix" != "xNONE"; then
-		ID3TAG_CFLAGS="-I$includedir"
 	fi
 
 	ID3TAG_CFLAGS="$ID3TAG_CFLAGS"
@@ -303,8 +295,6 @@ if test x$enable_mp3 = xyes; then
 		MAD_LIBS="-L$mad_libraries"
 	elif test "x$mad_prefix" != "x" ; then
 		MAD_LIBS="-L$mad_prefix/lib"
-	elif test "x$prefix" != "xNONE"; then
-		MAD_LIBS="-L$libdir"
 	fi
 
 	MAD_LIBS="$MAD_LIBS -lmad"
@@ -313,8 +303,6 @@ if test x$enable_mp3 = xyes; then
 		MAD_CFLAGS="-I$mad_includes"
 	elif test "x$mad_prefix" != "x" ; then
 		MAD_CFLAGS="-I$mad_prefix/include"
-	elif test "x$prefix" != "xNONE"; then
-		MAD_CFLAGS="-I$includedir"
 	fi
 
 	oldcflags=$CFLAGS
@@ -345,8 +333,6 @@ if test x$enable_mpc = xyes; then
   		MPCDEC_LIBS="-L$mpcdec_libraries"
   	elif test "x$mpcdec_prefix" != "x" ; then
 		MPCDEC_LIBS="-L$mpcdec_prefix/lib"
-  	elif test "x$prefix" != "xNONE"; then
-    		MPCDEC_LIBS="-L$libdir"
   	fi
 
  	MPCDEC_LIBS="$MPCDEC_LIBS -lmpcdec"
@@ -355,8 +341,6 @@ if test x$enable_mpc = xyes; then
   		MPCDEC_CFLAGS="-I$mpcdec_includes"
   	elif test "x$mpcdec_prefix" != "x" ; then
     		MPCDEC_CFLAGS="-I$mpcdec_prefix/include"
-  	elif test "x$prefix" != "xNONE"; then
-    		MPCDEC_CFLAGS="-I$includedir"
   	fi
 
 	oldcflags=$CFLAGS
@@ -386,8 +370,6 @@ if test x$enable_aac = xyes; then
 		FAAD_LIBS="-L$faad_libraries"
 	elif test "x$faad_prefix" != "x" ; then
 		FAAD_LIBS="-L$faad_prefix/lib"
-	elif test "x$prefix" != "xNONE"; then
-		FAAD_LIBS="-L$libdir"
 	fi
 
 	FAAD_LIBS="$FAAD_LIBS -lfaad"
@@ -396,8 +378,6 @@ if test x$enable_aac = xyes; then
 		FAAD_CFLAGS="-I$faad_includes"
 	elif test "x$faad_prefix" != "x" ; then
 		FAAD_CFLAGS="-I$faad_prefix/include"
-	elif test "x$prefix" != "xNONE"; then
-		FAAD_CFLAGS="-I$includedir"
 	fi
 
 	oldcflags=$CFLAGS
@@ -497,16 +477,12 @@ if test x$use_tremor = xyes; then
 		TREMOR_LIBS="-L$tremor_libraries"
 	elif test "x$tremor_prefix" != "x" ; then
 		TREMOR_LIBS="-L$tremor_prefix/lib"
-	elif test "x$prefix" != "xNONE"; then
-		TREMOR_LIBS="-L$libdir"
 	fi
 	TREMOR_LIBS="$TREMOR_LIBS -lvorbisidec"
 	if test "x$tremor_includes" != "x" ; then
 		TREMOR_CFLAGS="-I$tremor_includes"
 	elif test "x$tremor_prefix" != "x" ; then
 		TREMOR_CFLAGS="-I$tremor_prefix/include"
-	elif test "x$prefix" != "xNONE"; then
-		TREMOR_CFLAGS="-I$includedir"
 	fi
 	ac_save_CFLAGS="$CFLAGS"
 	ac_save_LIBS="$LIBS"
