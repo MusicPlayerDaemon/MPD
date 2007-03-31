@@ -116,6 +116,16 @@ void initTagConfig(void)
 	free(temp);
 }
 
+void printTagTypes(int fd)
+{
+	int i;
+
+	for (i = 0; i < TAG_NUM_OF_ITEM_TYPES; i++) {
+		if (ignoreTagItems[i] == 0)
+			fdprintf(fd, "tagtype: %s\n", mpdTagItemKeys[i]);
+	}
+}
+
 void printMpdTag(int fd, MpdTag * tag)
 {
 	int i;

@@ -95,6 +95,7 @@
 #define COMMAND_PLAYLISTADD	"playlistadd"
 #define COMMAND_PLAYLISTFIND	"playlistfind"
 #define COMMAND_PLAYLISTSEARCH	"playlistsearch"
+#define COMMAND_TAGTYPES	"tagtypes"
 
 #define COMMAND_STATUS_VOLUME           "volume"
 #define COMMAND_STATUS_STATE            "state"
@@ -175,6 +176,12 @@ static void addCommand(char *name,
 static int handleUrlHandlers(int fd, int *permission, int argc, char *argv[])
 {
 	return printRemoteUrlHandlers(fd);
+}
+
+static int handleTagTypes(int fd, int *permission, int argc, char *argv[])
+{
+	printTagTypes(fd);
+	return 0;
 }
 
 static int handlePlay(int fd, int *permission, int argc, char *argv[])
@@ -1043,6 +1050,7 @@ void initCommands(void)
 	addCommand(COMMAND_PLAYLISTADD,      PERMISSION_CONTROL, 2,   2,   handlePlaylistAdd,          NULL);
 	addCommand(COMMAND_PLAYLISTFIND,     PERMISSION_READ,    2,   -1,  handlePlaylistFind,         NULL);
 	addCommand(COMMAND_PLAYLISTSEARCH,   PERMISSION_READ,    2,   -1,  handlePlaylistSearch,       NULL);
+	addCommand(COMMAND_TAGTYPES,         PERMISSION_READ,    0,   0,   handleTagTypes,             NULL);
 
 	sortList(commandList);
 }
