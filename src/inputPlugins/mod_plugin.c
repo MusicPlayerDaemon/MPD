@@ -185,6 +185,7 @@ static int mod_decode(OutputBuffer * cb, DecoderControl * dc, char *path)
 		return -1;
 	}
 
+	dc->totalTime = 0;
 	dc->audioFormat.bits = 16;
 	dc->audioFormat.sampleRate = 44100;
 	dc->audioFormat.channels = 2;
