@@ -259,7 +259,8 @@ error_file                      "~/.mpd/mpd.error"
 #
 #save_absolute_paths_in_playlists "no"
 #
-# The metadata types MPD will recognize.
+# A list of tag types that MPD will scan for and make available
+# to clients.
 #
 #metadata_to_use                  "artist,album,title,track,name,genre,date,composer,performer,disc"
 #
