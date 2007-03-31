@@ -3,10 +3,12 @@
 Upgrading to 0.13.0
 -------------------
 
-JACK and libsamplerate have been added as optional dependencies (see 
-zeroconf_name and samplerate_converter, respectively). Added 
-gapless_mp3_playback, update to the latest mpdconf.example in the docs 
-directory. FLAC/OggFLAC now supports the 1.1.13 API.
+JACK, Avahi, and libsamplerate have been added as optional dependencies.
+FLAC/OggFLAC now supports the 1.1.3 API.
+
+New mpd.conf parameters include zeroconf_name, samplerate_converter, and
+gapless_mp3_playback.  See the mpd.conf man page or updated mpconf.example for
+more information on these parameters.
 
 Upgrading to 0.12.0
 -------------------
