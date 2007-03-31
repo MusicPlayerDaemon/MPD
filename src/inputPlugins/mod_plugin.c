@@ -148,6 +148,9 @@ static mod_Data *mod_open(char *path)
 	if (!(moduleHandle = Player_Load(path, 128, 0)))
 		return NULL;
 
+	/* Prevent module from looping forever */
+	moduleHandle->loop = 0;
+
 	data = xmalloc(sizeof(mod_Data));
 
 	data->audio_buffer = xmalloc(MIKMOD_FRAME_SIZE);
