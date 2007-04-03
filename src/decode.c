@@ -220,20 +220,20 @@ static int decodeSeek(PlayerControl * pc, DecoderControl * dc,
 	} \
 	if(pc->pause) { \
 		pause = !pause; \
-		if(pause) pc->state = PLAYER_STATE_PAUSE; \
+		if (pause) pc->state = PLAYER_STATE_PAUSE; \
 		else { \
-			if(openAudioDevice(NULL)<0) { \
+			if (openAudioDevice(NULL) < 0) { \
 				pathcpy_trunc(pc->erroredUrl, pc->utf8url); \
 				pc->error = PLAYER_ERROR_AUDIO; \
 				ERROR("problems opening audio device while playing \"%s\"\n", pc->utf8url); \
-				quitDecode(pc,dc); \
+				quitDecode(pc, dc); \
 				return; \
 			} \
 			pc->state = PLAYER_STATE_PLAY; \
 		} \
 		pc->pause = 0; \
-		kill(getppid(),SIGUSR1); \
-		if(pause) { \
+		kill(getppid(), SIGUSR1); \
+		if (pause) { \
 			dropBufferedAudio(); \
 			closeAudioDevice(); \
 		} \
