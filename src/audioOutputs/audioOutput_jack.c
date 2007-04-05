@@ -1,5 +1,5 @@
 /* jack plug in for the Music Player Daemon (MPD)
- * (c)2006 by anarch(anarchsss@gmail.com)
+ * Copyright (C) 2006-2007 by José Anarch <anarchsss@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

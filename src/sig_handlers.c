@@ -1,5 +1,5 @@
 /* the Music Player Daemon (MPD)
- * (c)2003-2006 by Warren Dukes (warren.dukes@gmail.com)
+ * Copyright (C) 2003-2007 by Warren Dukes (warren.dukes@gmail.com)
  * (c) 2004 Nick Welch (mack@incise.org)
  * This project's homepage is: http://www.musicpd.org
  *
