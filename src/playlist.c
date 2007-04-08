@@ -1650,7 +1650,7 @@ static void PlaylistLoadIterFunc(int fd, char *temp, char **erroredFile)
 	if (!getSongFromDB(temp) && !isRemoteUrl(temp)) {
 
 	} else if ((addToPlaylist(STDERR_FILENO, temp, 0)) < 0) {
-		/* for windows compatibilit, convert slashes */
+		/* for windows compatibility, convert slashes */
 		char *temp2 = xstrdup(temp);
 		char *p = temp2;
 		while (*p) {
