@@ -1211,13 +1211,16 @@ mpd_fprintf_ void commandError(int fd, int error, const char *fmt, ...)
 
 	if (current_command) {
 		fdprintf(fd, "ACK [%i@%i] {%s} ",
-			 (int)error, command_listNum, current_command);
+		         (int)error, command_listNum, current_command);
+		vfdprintf(fd, fmt, args);
+		fdprintf(fd, "\n");
 		current_command = NULL;
-	} else
+	} else {
 		fdprintf(STDERR_FILENO, "ACK [%i@%i] ",
-			 (int)error, command_listNum);
+		         (int)error, command_listNum);
+		vfdprintf(STDERR_FILENO, fmt, args);
+		fdprintf(STDERR_FILENO, "\n");
+	}
 
-	vfdprintf(fd, fmt, args);
 	va_end(args);
-	fdprintf(fd, "\n");
 }
