@@ -1209,7 +1209,7 @@ mpd_fprintf_ void commandError(int fd, int error, const char *fmt, ...)
 	va_list args;
 	va_start(args, fmt);
 
-	if (current_command) {
+	if (current_command && fd != STDERR_FILENO) {
 		fdprintf(fd, "ACK [%i@%i] {%s} ",
 		         (int)error, command_listNum, current_command);
 		vfdprintf(fd, fmt, args);
