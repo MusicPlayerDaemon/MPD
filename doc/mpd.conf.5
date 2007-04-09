@@ -227,7 +227,8 @@ This specifies whether to support gapless playback of MP3s which have the
 necessary headers.  Useful if your MP3s have headers with incorrect
 information.  If you have such MP3s, it is highly recommended that you fix them
 using vbrfix (available from <http://www.willwap.co.uk/Programs/vbrfix.php>)
-instead of disabling gapless MP3 playback.
+instead of disabling gapless MP3 playback.  The default is to support gapless
+MP3 playback.
 .TP
 .B save_absolute_paths_in_playlists <yes or no>
 This specifies whether relative or absolute paths for song filenames are used
@@ -264,7 +265,8 @@ This specifies the device to use for audio output.  The default is "hw:0,0".
 .TP
 .B use_mmap <yes or no>
 Setting this allows you to use memory-mapped I/O.  Certain hardware setups may
-benefit from this, but most do not.  Most users do not need to set this.
+benefit from this, but most do not.  Most users do not need to set this.  The
+default is to not use memory-mapped I/O.
 .TP
 .B buffer_time <time in microseconds>
 This sets the length of the hardware sample buffer in microseconds.  Increasing
