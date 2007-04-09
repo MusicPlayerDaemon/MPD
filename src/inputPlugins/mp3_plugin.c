@@ -1089,4 +1089,4 @@ InputPlugin mp3Plugin = {
 
 InputPlugin mp3Plugin;
 
-#endif
+#endif /* HAVE_MAD */

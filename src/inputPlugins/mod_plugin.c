@@ -296,4 +296,4 @@ InputPlugin modPlugin = {
 
 InputPlugin modPlugin;
 
-#endif /* HAVE_AUDIOFILE */
+#endif /* HAVE_MIKMOD */

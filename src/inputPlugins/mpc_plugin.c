@@ -357,4 +357,4 @@ InputPlugin mpcPlugin = {
 
 InputPlugin mpcPlugin;
 
-#endif
+#endif /* HAVE_MPCDEC */
