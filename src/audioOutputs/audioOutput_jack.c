@@ -38,10 +38,13 @@ pthread_cond_t  play_audio = PTHREAD_COND_INITIALIZER;
 /*#include "dmalloc.h"*/
 
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
+/*#define SAMPLE_SIZE  sizeof(jack_default_audio_sample_t);*/
+
 
 static char *name = "mpd";
 static char *output_ports[2];
 static int ringbuf_sz = 32768;
+size_t sample_size = sizeof(jack_default_audio_sample_t);
 
 typedef struct _JackData {
 	jack_port_t *ports[2];
@@ -129,11 +132,11 @@ static int process(jack_nframes_t nframes, void *arg)
 		avail_data = jack_ringbuffer_read_space(jd->ringbuffer[1]);
 
 		if ( avail_data > 0 ) {
-		    avail_frames = avail_data / sizeof(jack_default_audio_sample_t);
+		    avail_frames = avail_data / sample_size;
 
 		    if (avail_frames > nframes) {
 			avail_frames = nframes;
-			avail_data = nframes*sizeof(jack_default_audio_sample_t);
+			avail_data = nframes*sample_size;
 		    }
 
 		    jack_ringbuffer_read(jd->ringbuffer[0], (char *)out[0],
@@ -390,29 +393,32 @@ static int jack_playAudio(AudioOutput * audioOutput, char *buff, int size)
 	while ( samples && !jd->shutdown ) {
 
  		if ( (space = jack_ringbuffer_write_space(jd->ringbuffer[0]))
- 		     >= samples*sizeof(jack_default_audio_sample_t) ) {
+ 		     >= samples*sample_size ) {
 
+			/*space = MIN(space, samples*sample_size);*/
+			/*space = samples*sample_size;*/
 
- 			space = MIN(space, samples*sizeof(jack_default_audio_sample_t));
-
-			for(i=0; i<space/sizeof(jack_default_audio_sample_t); i++) {
+			/*for(i=0; i<space/sample_size; i++) {*/
+			for(i=0; i<samples; i++) {
 				sample = (jack_default_audio_sample_t) *(buffer++)/32768.0;
 
 				jack_ringbuffer_write(jd->ringbuffer[0], (void*)&sample,
-						      sizeof(jack_default_audio_sample_t));
+						      sample_size);
 
 				sample = (jack_default_audio_sample_t) *(buffer++)/32768.0;
 
 				jack_ringbuffer_write(jd->ringbuffer[1], (void*)&sample,
-						      sizeof(jack_default_audio_sample_t));
+						      sample_size);
 
-				samples--;
+				/*samples--;*/
 			}
+			samples=0;
 
- 		}
-		pthread_mutex_lock(&play_audio_lock);
-		pthread_cond_wait(&play_audio, &play_audio_lock);
-		pthread_mutex_unlock(&play_audio_lock);
+ 		} else {
+			pthread_mutex_lock(&play_audio_lock);
+			pthread_cond_wait(&play_audio, &play_audio_lock);
+			pthread_mutex_unlock(&play_audio_lock);
+		}
 
 	}
 	return 0;
