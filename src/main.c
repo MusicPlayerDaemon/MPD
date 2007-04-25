@@ -66,7 +66,6 @@ typedef struct _Options {
 	int daemon;
 	int stdOutput;
 	int createDB;
-	int updateDB;
 	int verbose;
 } Options;
 
@@ -127,7 +126,6 @@ static void usage(char *argv[])
 	    ("   --no-create-db     don't create database, even if it doesn't exist\n");
 	ERROR("   --no-daemon        don't detach from console\n");
 	ERROR("   --stdout           print messages to stdout and stderr\n");
-	/*ERROR("   --update-db        create database and exit\n"); */
 	ERROR("   --verbose          verbose logging\n");
 	ERROR("   --version          prints version information\n");
 }
@@ -159,7 +157,6 @@ static void parseOptions(int argc, char **argv, Options * options)
 	options->daemon = 1;
 	options->stdOutput = 0;
 	options->createDB = 0;
-	options->updateDB = 0;
 	options->kill = 0;
 
 	if (argc > 1) {
@@ -303,11 +300,6 @@ static void openDB(Options * options, char *argv0)
 		if (options->createDB)
 			exit(EXIT_SUCCESS);
 	}
-	if (options->updateDB) {
-		flushWarningLog();
-		updateMp3Directory();
-		exit(EXIT_SUCCESS);
-	}
 }
 
 static void daemonize(Options * options)
@@ -431,7 +423,7 @@ int main(int argc, char *argv[])
 	initTagConfig();
 	initLog(options.verbose);
 
-	if (options.createDB <= 0 && !options.updateDB)
+	if (options.createDB <= 0)
 		listenOnPort();
 
 	changeToUser();
