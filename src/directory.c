@@ -1318,9 +1318,6 @@ void initMp3Directory(void)
 	freeAllDirectoryStats(mp3rootDirectory);
 	stats.numberOfSongs = countSongsIn(STDERR_FILENO, NULL);
 	stats.dbPlayTime = sumSongTimesIn(STDERR_FILENO, NULL);
-
-	if (stat(getDbFile(), &st) == 0)
-		directory_dbModTime = st.st_mtime;
 }
 
 static Song *getSongDetails(char *file, char **shortnameRet,
