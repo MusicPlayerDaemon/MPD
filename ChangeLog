@@ -16,6 +16,7 @@ ver 0.13.0 (2007/??/??)
 * libmikmod 3.2.0 beta support
 * New tagtypes command for retrieving a list of available tag types
 * Fix a bug where no ACK was returned if loading a playlist failed
+* Fix a bug where db_update in stats would be 0 after initial database creation
 * Lots of bug fixes, cleaned up code, and performance improvements
 
 ver 0.12.2 (2007/3/20)
