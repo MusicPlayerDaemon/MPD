@@ -96,6 +96,7 @@
 #define COMMAND_PLAYLISTFIND	"playlistfind"
 #define COMMAND_PLAYLISTSEARCH	"playlistsearch"
 #define COMMAND_TAGTYPES	"tagtypes"
+#define COMMAND_COUNT		"count"
 
 #define COMMAND_STATUS_VOLUME           "volume"
 #define COMMAND_STATUS_STATE            "state"
@@ -512,6 +513,27 @@ static int handleSearch(int fd, int *permission, int argc, char *argv[])
 	}
 
 	ret = searchForSongsIn(fd, NULL, numItems, items);
+
+	freeLocateTagItemArray(numItems, items);
+
+	return ret;
+}
+
+static int handleCount(int fd, int *permission, int argc, char *argv[])
+{
+	int ret;
+
+	LocateTagItem *items;
+	int numItems = newLocateTagItemArrayFromArgArray(argv + 1,
+							 argc - 1,
+							 &items);
+
+	if (numItems <= 0) {
+		commandError(fd, ACK_ERROR_ARG, "incorrect arguments");
+		return -1;
+	}
+
+	ret = searchStatsForSongsIn(fd, NULL, numItems, items);
 
 	freeLocateTagItemArray(numItems, items);
 
@@ -1051,6 +1073,7 @@ void initCommands(void)
 	addCommand(COMMAND_PLAYLISTFIND,     PERMISSION_READ,    2,   -1,  handlePlaylistFind,         NULL);
 	addCommand(COMMAND_PLAYLISTSEARCH,   PERMISSION_READ,    2,   -1,  handlePlaylistSearch,       NULL);
 	addCommand(COMMAND_TAGTYPES,         PERMISSION_READ,    0,   0,   handleTagTypes,             NULL);
+	addCommand(COMMAND_COUNT,            PERMISSION_READ,    2,   -1,  handleCount,                NULL);
 
 	sortList(commandList);
 }

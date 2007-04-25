@@ -32,9 +32,12 @@ int addAllInToStoredPlaylist(int fd, char *name, char *utf8file);
 int printInfoForAllIn(int fd, char *name);
 
 int searchForSongsIn(int fd, char *name, int numItems,
-		     LocateTagItem * items);
+                     LocateTagItem * items);
 
 int findSongsIn(int fd, char *name, int numItems, LocateTagItem * items);
+
+int searchStatsForSongsIn(int fd, char *name, int numItems,
+                          LocateTagItem * items);
 
 int countSongsIn(int fd, char *name);
 

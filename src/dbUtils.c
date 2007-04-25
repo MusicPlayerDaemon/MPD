@@ -38,6 +38,12 @@ typedef struct _LocateTagItemArray {
 	LocateTagItem *items;
 } LocateTagItemArray;
 
+typedef struct _SearchStats {
+	LocateTagItemArray locateArray;
+	int numberOfSongs;
+	int playTime;
+} SearchStats;
+
 static int countSongsInDirectory(int fd, Directory * directory, void *data)
 {
 	int *count = (int *)data;
@@ -118,6 +124,44 @@ int findSongsIn(int fd, char *name, int numItems, LocateTagItem * items)
 	array.items = items;
 
 	return traverseAllIn(fd, name, findInDirectory, NULL, (void *)&array);
+}
+
+static void printSearchStats(int fd, SearchStats *stats)
+{
+	fdprintf(fd, "songs: %i\n", stats->numberOfSongs);
+	fdprintf(fd, "playtime: %i\n", stats->playTime);
+}
+
+static int searchStatsInDirectory(int fd, Song * song, void *data)
+{
+	SearchStats *stats = data;
+
+	if (tagItemsFoundAndMatches(song, stats->locateArray.numItems,
+	                                  stats->locateArray.items)) {
+		stats->numberOfSongs++;
+		if (song->tag->time > 0)
+			stats->playTime += song->tag->time;
+	}
+
+	return 0;
+}
+
+int searchStatsForSongsIn(int fd, char *name, int numItems,
+                          LocateTagItem * items)
+{
+	SearchStats stats;
+	int ret;
+
+	stats.locateArray.numItems = numItems;
+	stats.locateArray.items = items;
+	stats.numberOfSongs = 0;
+	stats.playTime = 0;
+
+	ret = traverseAllIn(fd, name, searchStatsInDirectory, NULL, &stats);
+	if (ret == 0)
+		printSearchStats(fd, &stats);
+
+	return ret;
 }
 
 int printAllIn(int fd, char *name)
