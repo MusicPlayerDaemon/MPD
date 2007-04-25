@@ -543,7 +543,7 @@ static int updatePath(char *utf8path)
 			free(path);
 			return 0;
 		}
-		/* if updateDirectory fials, means we should delete it */
+		/* if updateDirectory fails, means we should delete it */
 		else {
 			LOG("removing directory: %s\n", path);
 			deleteFromList(parentDirectory->subDirectories,
@@ -573,7 +573,7 @@ static int updatePath(char *utf8path)
 				return 1;
 			}
 		}
-		/* if updateDirectory fials, means we should delete it */
+		/* if updateDirectory fails, means we should delete it */
 		else {
 			removeSongFromDirectory(parentDirectory, shortname);
 			ret = 1;
