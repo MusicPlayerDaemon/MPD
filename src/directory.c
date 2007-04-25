@@ -1311,8 +1311,6 @@ static void freeAllDirectoryStats(Directory * directory)
 
 void initMp3Directory(void)
 {
-	struct stat st;
-
 	mp3rootDirectory = newDirectory(NULL, NULL);
 	exploreDirectory(mp3rootDirectory);
 	freeAllDirectoryStats(mp3rootDirectory);
