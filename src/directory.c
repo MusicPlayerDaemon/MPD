@@ -1091,6 +1091,7 @@ int writeDirectoryDB(void)
 {
 	FILE *fp;
 	char *dbFile = getDbFile();
+	struct stat st;
 
 	DEBUG("removing empty directories from DB\n");
 	deleteEmptyDirectoriesInDirectory(mp3rootDirectory);
@@ -1101,7 +1102,7 @@ int writeDirectoryDB(void)
 
 	DEBUG("writing DB\n");
 
-	while (!(fp = fopen(dbFile, "w")) && errno == EINTR) ;
+	while (!(fp = fopen(dbFile, "w")) && errno == EINTR);
 	if (!fp) {
 		ERROR("unable to write to db file \"%s\": %s\n",
 		      dbFile, strerror(errno));
@@ -1116,7 +1117,10 @@ int writeDirectoryDB(void)
 
 	writeDirectoryInfo(fp, mp3rootDirectory);
 
-	while (fclose(fp) && errno == EINTR) ;
+	while (fclose(fp) && errno == EINTR);
+
+	if (stat(dbFile, &st) == 0)
+		directory_dbModTime = st.st_mtime;
 
 	return 0;
 }
