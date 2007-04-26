@@ -41,7 +41,7 @@ typedef struct _LocateTagItemArray {
 typedef struct _SearchStats {
 	LocateTagItemArray locateArray;
 	int numberOfSongs;
-	int playTime;
+	unsigned long playTime;
 } SearchStats;
 
 static int countSongsInDirectory(int fd, Directory * directory, void *data)
