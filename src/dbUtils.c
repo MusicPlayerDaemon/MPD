@@ -129,7 +129,7 @@ int findSongsIn(int fd, char *name, int numItems, LocateTagItem * items)
 static void printSearchStats(int fd, SearchStats *stats)
 {
 	fdprintf(fd, "songs: %i\n", stats->numberOfSongs);
-	fdprintf(fd, "playtime: %i\n", stats->playTime);
+	fdprintf(fd, "playtime: %li\n", stats->playTime);
 }
 
 static int searchStatsInDirectory(int fd, Song * song, void *data)
