@@ -1178,12 +1178,8 @@ int readDirectoryDB(void)
 
 					foundFsCharset = 1;
 
-					fsCharset =
-					    &(buffer
-					      [strlen(DIRECTORY_FS_CHARSET)]);
-					if ((tempCharset =
-					     getConfigParamValue
-					     (CONF_FS_CHARSET))
+					fsCharset = &(buffer[strlen(DIRECTORY_FS_CHARSET)]);
+					if ((tempCharset = getConfigParamValue(CONF_FS_CHARSET))
 					    && strcmp(fsCharset, tempCharset)) {
 						WARNING("Using \"%s\" for the "
 							"filesystem charset "
