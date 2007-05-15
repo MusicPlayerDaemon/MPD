@@ -511,7 +511,7 @@ int doIOForInterfaces(void)
 		addInterfacesReadyToReadAndListenSocketToFdSet(&rfds, &fdmax);
 		addInterfacesForBufferFlushToFdSet(&wfds, &fdmax);
 
-		// Add fds for all registered IO handlers
+		/* Add fds for all registered IO handlers */
 		if( ioList ) {
 			struct ioOps *o = ioList;
 			while( o ) {
@@ -530,7 +530,7 @@ int doIOForInterfaces(void)
 		if (selret < 0 && errno == EINTR)
 			break;
 
-		// Consume fds for all registered IO handlers
+		/* Consume fds for all registered IO handlers */
 		if( ioList ) {
 			struct ioOps *o = ioList;
 			while( o ) {
@@ -832,7 +832,7 @@ static void printInterfaceOutBuffer(Interface * interface)
 	interface->send_buf_used = 0;
 }
 
-// From ioops.h:
+/* From ioops.h: */
 void registerIO( struct ioOps *ops )
 {
 	assert( ops != NULL );

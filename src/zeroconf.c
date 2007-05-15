@@ -494,5 +494,5 @@ void finishZeroconf(void)
 
 	avahi_free( avahiName );
 	avahiName = NULL;
-#endif // HAVE_AVAHI
+#endif /* HAVE_AVAHI */
 }

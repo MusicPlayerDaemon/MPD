@@ -24,24 +24,28 @@
 struct ioOps {
 	struct ioOps *prev, *next;
 
-	// Called before each 'select' statement.
-	//   To register for IO, call FD_SET for each required queue
-	// Return the highest fd number you registered
+	/*
+	 * Called before each 'select' statement.
+	 *   To register for IO, call FD_SET for each required queue
+	 * Return the highest fd number you registered
+	 */
 	int (*fdset) ( fd_set *rfds, fd_set *wfds, fd_set *efds );
 
-	// Called after each 'select' statement.
-	//   fdCount is the number of fds total in all sets.  It may be 0.
-	//   For each fd you registered for in (fdset), you should FD_CLR it from the
-	//   appropriate queue(s).
-	// Return the total number of fds left in all sets (Ie, return fdCount
-	//   minus the number of times you called FD_CLR).
+	/*
+	 * Called after each 'select' statement.
+	 *   fdCount is the number of fds total in all sets.  It may be 0.
+	 *   For each fd you registered for in (fdset), you should FD_CLR it from the
+	 *   appropriate queue(s).
+	 * Return the total number of fds left in all sets (Ie, return fdCount
+	 *   minus the number of times you called FD_CLR).
+	 */
 	int (*consume) ( int fdCount, fd_set *rfds, fd_set *wfds, fd_set *efds );
 };
 
-// Call this to register your io operation handler struct
+/* Call this to register your io operation handler struct */
 void registerIO( struct ioOps *ops );
 
-// Call this to deregister your io operation handler struct
+/* Call this to deregister your io operation handler struct */
 void deregisterIO( struct ioOps *ops );
 
 #endif
