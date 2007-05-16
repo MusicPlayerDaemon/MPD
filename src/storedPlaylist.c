@@ -192,6 +192,8 @@ StoredPlaylist *loadStoredPlaylist(const char *utf8path, int fd)
 
 					ERROR("\"%s\" too long", temp);
 					free(temp);
+					freeStoredPlaylist(sp);
+					sp = NULL;
 					goto out;
 				}
 				free(temp);
@@ -211,6 +213,8 @@ StoredPlaylist *loadStoredPlaylist(const char *utf8path, int fd)
 						s, utf8path);
 			}
 			ERROR("line \"%s\" in playlist \"%s\" is too long\n", s, utf8path);
+			freeStoredPlaylist(sp);
+			sp = NULL;
 			goto out;
 		} else if (s[slength] != '\r')
 			slength++;
