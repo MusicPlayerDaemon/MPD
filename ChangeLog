@@ -18,6 +18,8 @@ ver 0.13.0 (2007/??/??)
 * Fix a bug where no ACK was returned if loading a playlist failed
 * Fix a bug where db_update in stats would be 0 after initial database creation
 * New count command for getting stats on found songs (similar to "find")
+* New playlistmove command for moving songs in stored playlists
+* New playlistdelete command for deleting songs from stored playlists
 * Lots of bug fixes, cleaned up code, and performance improvements
 
 ver 0.12.2 (2007/3/20)

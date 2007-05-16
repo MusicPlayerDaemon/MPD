@@ -74,7 +74,8 @@ mpd_headers = \
 	utils.h \
 	volume.h \
 	zeroconf.h \
-	locate.h
+	locate.h \
+	storedPlaylist.h
 
 
 mpd_SOURCES = \
@@ -125,7 +126,8 @@ mpd_SOURCES = \
 	volume.c \
 	utf8.c \
 	zeroconf.c \
-	locate.c
+	locate.c \
+	storedPlaylist.c
 
 
 mpd_CFLAGS = $(MPD_CFLAGS)

@@ -28,6 +28,24 @@
 #include <time.h>
 
 #define PLAYLIST_FILE_SUFFIX 	"m3u"
+#define PLAYLIST_COMMENT	'#'
+
+typedef struct _Playlist {
+	Song **songs;
+	/* holds version a song was modified on */
+	mpd_uint32 *songMod;
+	int *order;
+	int *positionToId;
+	int *idToPosition;
+	int length;
+	int current;
+	int queued;
+	int repeat;
+	int random;
+	mpd_uint32 version;
+} Playlist;
+
+extern int playlist_saveAbsolutePaths;
 
 void initPlaylist(void);
 
@@ -46,8 +64,6 @@ int addToPlaylist(int fd, char *file, int printId);
 int addToStoredPlaylist(int fd, char *file, char *utf8file);
 
 int addSongToPlaylist(int fd, Song * song, int printId);
-
-int addSongToStoredPlaylist(int fd, Song *song, char *utf8file);
 
 int showPlaylist(int fd);
 

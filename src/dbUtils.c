@@ -26,6 +26,7 @@
 #include "tag.h"
 #include "tagTracker.h"
 #include "log.h"
+#include "storedPlaylist.h"
 
 typedef struct _ListCommandItem {
 	mpd_sint8 tagType;
@@ -177,7 +178,9 @@ static int directoryAddSongToPlaylist(int fd, Song * song, void *data)
 
 static int directoryAddSongToStoredPlaylist(int fd, Song *song, void *data)
 {
-	return addSongToStoredPlaylist(fd, song, (char *)data);
+	if (appendSongToStoredPlaylistByPath(fd, (char *)data, song) != 0)
+		return -1;
+	return 0;
 }
 
 int addAllIn(int fd, char *name)

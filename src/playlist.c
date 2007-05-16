@@ -28,6 +28,7 @@
 #include "utils.h"
 #include "sig_handlers.h"
 #include "state_file.h"
+#include "storedPlaylist.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -36,8 +37,6 @@
 #include <errno.h>
 #include <unistd.h>
 #include <time.h>
-
-#define PLAYLIST_COMMENT	'#'
 
 #define PLAYLIST_STATE_STOP		0
 #define PLAYLIST_STATE_PLAY		1
@@ -64,21 +63,6 @@
 #define DEFAULT_PLAYLIST_MAX_LENGTH		(1024*16)
 #define DEFAULT_PLAYLIST_SAVE_ABSOLUTE_PATHS	0
 
-typedef struct _Playlist {
-	Song **songs;
-	/* holds version a song was modified on */
-	mpd_uint32 *songMod;
-	int *order;
-	int *positionToId;
-	int *idToPosition;
-	int length;
-	int current;
-	int queued;
-	int repeat;
-	int random;
-	mpd_uint32 version;
-} Playlist;
-
 static Playlist playlist;
 static int playlist_state = PLAYLIST_STATE_STOP;
 static int playlist_max_length = DEFAULT_PLAYLIST_MAX_LENGTH;
@@ -87,7 +71,7 @@ static int playlist_errorCount;
 static int playlist_queueError;
 static int playlist_noGoToNext;
 
-static int playlist_saveAbsolutePaths = DEFAULT_PLAYLIST_SAVE_ABSOLUTE_PATHS;
+int playlist_saveAbsolutePaths = DEFAULT_PLAYLIST_SAVE_ABSOLUTE_PATHS;
 
 static void swapOrder(int a, int b);
 static int playPlaylistOrderNumber(int fd, int orderNum);
@@ -238,39 +222,7 @@ int clearPlaylist(int fd)
 
 int clearStoredPlaylist(int fd, char *utf8file)
 {
-	int fileD;
-	char *file;
-	char *rfile;
-	char *actualFile;
-
-	if (strstr(utf8file, "/")) {
-		commandError(fd, ACK_ERROR_ARG,
-		             "cannot clear \"%s\", saving playlists to "
-		             "subdirectories is not supported", utf8file);
-		return -1;
-	}
-
-	file = utf8ToFsCharset(utf8file);
-
-	rfile = xmalloc(strlen(file) + strlen(".") +
-	                strlen(PLAYLIST_FILE_SUFFIX) + 1);
-
-	strcpy(rfile, file);
-	strcat(rfile, ".");
-	strcat(rfile, PLAYLIST_FILE_SUFFIX);
-
-	actualFile = rpp2app(rfile);
-
-	free(rfile);
-
-	while ((fileD = open(actualFile, O_WRONLY | O_TRUNC | O_CREAT)) == -1
-	       && errno == EINTR);
-	if (fileD == -1) {
-		commandError(fd, ACK_ERROR_SYSTEM, "problems opening file");
-		return -1;
-	}
-	while (close(fileD) == -1 && errno == EINTR);
-
+	removeAllFromStoredPlaylistByPath(fd, utf8file);
 	return 0;
 }
 
@@ -643,7 +595,8 @@ int addToStoredPlaylist(int fd, char *url, char *utf8file)
 		return -1;
 	}
 
-	return addSongToStoredPlaylist(fd, song, utf8file);
+	appendSongToStoredPlaylistByPath(fd, utf8file, song);
+	return 0;
 }
 
 int addSongToPlaylist(int fd, Song * song, int printId)
@@ -694,52 +647,6 @@ int addSongToPlaylist(int fd, Song * song, int printId)
 
 	if (printId)
 		fdprintf(fd, "Id: %i\n", id);
-
-	return 0;
-}
-
-int addSongToStoredPlaylist(int fd, Song *song, char *utf8file)
-{
-	FILE *fileP;
-	char *file;
-	char *rfile;
-	char *actualFile;
-	char *url;
-
-	if (strstr(utf8file, "/")) {
-		commandError(fd, ACK_ERROR_ARG,
-		             "cannot add to \"%s\", saving playlists to "
-		             "subdirectories is not supported", utf8file);
-		return -1;
-	}
-
-	file = utf8ToFsCharset(utf8file);
-
-	rfile = xmalloc(strlen(file) + strlen(".") +
-	                strlen(PLAYLIST_FILE_SUFFIX) + 1);
-
-	strcpy(rfile, file);
-	strcat(rfile, ".");
-	strcat(rfile, PLAYLIST_FILE_SUFFIX);
-
-	actualFile = rpp2app(rfile);
-
-	free(rfile);
-
-	while (!(fileP = fopen(actualFile, "a")) && errno == EINTR);
-	if (fileP == NULL) {
-		commandError(fd, ACK_ERROR_SYSTEM, "problems opening file");
-		return -1;
-	}
-
-	url = utf8ToFsCharset(getSongUrl(song));
-
-	if (playlist_saveAbsolutePaths && song->type == SONG_TYPE_FILE)
-		fprintf(fileP, "%s\n", rmp2amp(url));
-	else
-		fprintf(fileP, "%s\n", url);
-
-	while (fclose(fileP) && errno == EINTR);
 
 	return 0;
 }
@@ -1407,59 +1314,17 @@ int deletePlaylist(int fd, char *utf8file)
 
 int savePlaylist(int fd, char *utf8file)
 {
-	FILE *fileP;
-	int i;
-	struct stat st;
-	char *file;
-	char *rfile;
-	char *actualFile;
+	StoredPlaylist *sp = newStoredPlaylist(utf8file, fd, 0);
+	if (!sp)
+		return -1;
 
-	if (strstr(utf8file, "/")) {
-		commandError(fd, ACK_ERROR_ARG,
-			     "cannot save \"%s\", saving playlists to "
-			     "subdirectories is not supported", utf8file);
+	appendPlaylistToStoredPlaylist(sp, &playlist);
+	if (writeStoredPlaylist(sp) != 0) {
+		freeStoredPlaylist(sp);
 		return -1;
 	}
 
-	file = utf8ToFsCharset(utf8file);
-
-	rfile = xmalloc(strlen(file) + strlen(".") +
-		       strlen(PLAYLIST_FILE_SUFFIX) + 1);
-
-	strcpy(rfile, file);
-	strcat(rfile, ".");
-	strcat(rfile, PLAYLIST_FILE_SUFFIX);
-
-	actualFile = rpp2app(rfile);
-
-	free(rfile);
-
-	if (0 == stat(actualFile, &st)) {
-		commandError(fd, ACK_ERROR_EXIST, "a file or directory already "
-			     "exists with the name \"%s\"", utf8file);
-		return -1;
-	}
-
-	while (!(fileP = fopen(actualFile, "w")) && errno == EINTR) ;
-	if (fileP == NULL) {
-		commandError(fd, ACK_ERROR_SYSTEM, "problems opening file");
-		return -1;
-	}
-
-	for (i = 0; i < playlist.length; i++) {
-		if (playlist_saveAbsolutePaths &&
-		    playlist.songs[i]->type == SONG_TYPE_FILE) {
-			fprintf(fileP, "%s\n",
-				  rmp2amp(utf8ToFsCharset
-					  ((getSongUrl(playlist.songs[i])))));
-		} else {
-			fprintf(fileP, "%s\n",
-			        utf8ToFsCharset(getSongUrl(playlist.songs[i])));
-		}
-	}
-
-	while (fclose(fileP) && errno == EINTR) ;
-
+	freeStoredPlaylist(sp);
 	return 0;
 }
 
@@ -1528,156 +1393,70 @@ int getPlaylistSongId(int song)
 	return playlist.positionToId[song];
 }
 
-static int PlaylistIterFunc(int fd, char *utf8file,
-			    void (*IterFunc) (int fd, char *utf8_file,
-					      char **errored_File))
-{
-	FILE *fileP;
-	char s[MAXPATHLEN + 1];
-	int slength = 0;
-	char *temp = utf8ToFsCharset(utf8file);
-	char *rfile = xmalloc(strlen(temp) + strlen(".") +
-			     strlen(PLAYLIST_FILE_SUFFIX) + 1);
-	char *actualFile;
-	char *parent = parentPath(temp);
-	int parentlen = strlen(parent);
-	char *erroredFile = NULL;
-	int tempInt;
-	int commentCharFound = 0;
-
-	strcpy(rfile, temp);
-	strcat(rfile, ".");
-	strcat(rfile, PLAYLIST_FILE_SUFFIX);
-
-	if ((actualFile = rpp2app(rfile)) && isPlaylist(actualFile))
-		free(rfile);
-	else {
-		free(rfile);
-		commandError(fd, ACK_ERROR_NO_EXIST,
-			     "playlist \"%s\" not found", utf8file);
-		return -1;
-	}
-
-	while (!(fileP = fopen(actualFile, "r")) && errno == EINTR) ;
-	if (fileP == NULL) {
-		commandError(fd, ACK_ERROR_SYSTEM,
-			     "problems opening file \"%s\"", utf8file);
-		return -1;
-	}
-
-	while ((tempInt = fgetc(fileP)) != EOF) {
-		s[slength] = tempInt;
-		if (s[slength] == '\n' || s[slength] == '\0') {
-			commentCharFound = 0;
-			s[slength] = '\0';
-			if (s[0] == PLAYLIST_COMMENT) {
-				commentCharFound = 1;
-			}
-			if (strncmp(s, musicDir, strlen(musicDir)) == 0) {
-				strcpy(s, &(s[strlen(musicDir)]));
-			} else if (parentlen) {
-				temp = xstrdup(s);
-				memset(s, 0, MAXPATHLEN + 1);
-				strcpy(s, parent);
-				strncat(s, "/", MAXPATHLEN - parentlen);
-				strncat(s, temp, MAXPATHLEN - parentlen - 1);
-				if (strlen(s) >= MAXPATHLEN) {
-					commandError(fd,
-						     ACK_ERROR_PLAYLIST_LOAD,
-						     "\"%s\" too long", temp);
-					free(temp);
-					while (fclose(fileP)
-					       && errno == EINTR) ;
-					if (erroredFile)
-						free(erroredFile);
-					return -1;
-				}
-				free(temp);
-			}
-			slength = 0;
-			temp = fsCharsetToUtf8(s);
-			if (!temp)
-				continue;
-			if (!commentCharFound) {
-				/* using temp directly should be safe,
-				 * for our current IterFunction set
-				 * but just in case, we copy to s */
-				strcpy(s, temp);
-				IterFunc(fd, s, &erroredFile);
-			}
-		} else if (slength == MAXPATHLEN) {
-			s[slength] = '\0';
-			commandError(fd, ACK_ERROR_PLAYLIST_LOAD,
-				     "line in \"%s\" is too long", utf8file);
-			ERROR("line \"%s\" in playlist \"%s\" is too long\n",
-			      s, utf8file);
-			while (fclose(fileP) && errno == EINTR) ;
-			if (erroredFile)
-				free(erroredFile);
-			return -1;
-		} else if (s[slength] != '\r')
-			slength++;
-	}
-
-	while (fclose(fileP) && errno == EINTR) ;
-
-	if (erroredFile) {
-		commandError(fd, ACK_ERROR_PLAYLIST_LOAD,
-			     "can't add file \"%s\"", erroredFile);
-		free(erroredFile);
-		return -1;
-	}
-
-	return 0;
-}
-
-static void PlaylistInfoPrintInfo(int fd, char *utf8file, char **erroredfile)
-{
-	Song *song = getSongFromDB(utf8file);
-	if (song) {
-		printSongInfo(fd, song);
-	} else {
-		fdprintf(fd, SONG_FILE "%s\n", utf8file);
-	}
-}
-static void PlaylistInfoPrint(int fd, char *utf8file, char **erroredfile)
-{
-	fdprintf(fd, SONG_FILE "%s\n", utf8file);
-}
-
-static void PlaylistLoadIterFunc(int fd, char *temp, char **erroredFile)
-{
-	if (!getSongFromDB(temp) && !isRemoteUrl(temp)) {
-
-	} else if ((addToPlaylist(STDERR_FILENO, temp, 0)) < 0) {
-		/* for windows compatibility, convert slashes */
-		char *temp2 = xstrdup(temp);
-		char *p = temp2;
-		while (*p) {
-			if (*p == '\\')
-				*p = '/';
-			p++;
-		}
-		if ((addToPlaylist(STDERR_FILENO, temp2, 0)) < 0) {
-			if (!*erroredFile) {
-				*erroredFile = xstrdup(temp);
-			}
-		}
-		free(temp2);
-	}
-}
-
 int PlaylistInfo(int fd, char *utf8file, int detail)
 {
-	if (detail) {
-		return PlaylistIterFunc(fd, utf8file, PlaylistInfoPrintInfo);
+	ListNode *node;
+	StoredPlaylist *sp = loadStoredPlaylist(utf8file, fd);
+	if (sp == NULL)
+		return -1;
+
+	node = sp->list->firstNode;
+	while (node != NULL) {
+		char *temp = node->data;
+		int wrote = 0;
+
+		if (detail) {
+			Song *song = getSongFromDB(temp);
+			if (song) {
+				printSongInfo(fd, song);
+				wrote = 1;
+			}
+		}
+
+		if (!wrote) {
+			fdprintf(fd, SONG_FILE "%s\n", temp);
+		}
+
+		node = node->nextNode;
 	}
-	return PlaylistIterFunc(fd, utf8file, PlaylistInfoPrint);
+
+	freeStoredPlaylist(sp);
+	return 0;
 }
 
 int loadPlaylist(int fd, char *utf8file)
 {
-	return PlaylistIterFunc(fd, utf8file, PlaylistLoadIterFunc);
+	ListNode *node;
+	StoredPlaylist *sp = loadStoredPlaylist(utf8file, fd);
+	if (sp == NULL)
+		return -1;
+
+	node = sp->list->firstNode;
+	while (node != NULL) {
+		char *temp = node->data;
+		if (!getSongFromDB(temp) && !isRemoteUrl(temp)) {
+
+		} else if ((addToPlaylist(STDERR_FILENO, temp, 0)) < 0) {
+			/* for windows compatibility, convert slashes */
+			char *temp2 = xstrdup(temp);
+			char *p = temp2;
+			while (*p) {
+				if (*p == '\\')
+					*p = '/';
+				p++;
+			}
+			if ((addToPlaylist(STDERR_FILENO, temp2, 0)) < 0) {
+				commandError(fd, ACK_ERROR_PLAYLIST_LOAD,
+							"can't add file \"%s\"", temp2);
+			}
+			free(temp2);
+		}
+
+		node = node->nextNode;
+	}
+
+	freeStoredPlaylist(sp);
+	return 0;
 }
 
 void searchForSongsInPlaylist(int fd, int numItems, LocateTagItem * items)

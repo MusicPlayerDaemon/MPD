@@ -30,6 +30,7 @@
 #include "log.h"
 #include "tag.h"
 #include "utils.h"
+#include "storedPlaylist.h"
 
 #include <assert.h>
 #include <stdarg.h>
@@ -95,6 +96,8 @@
 #define COMMAND_PLAYLISTADD	"playlistadd"
 #define COMMAND_PLAYLISTFIND	"playlistfind"
 #define COMMAND_PLAYLISTSEARCH	"playlistsearch"
+#define COMMAND_PLAYLISTMOVE	"playlistmove"
+#define COMMAND_PLAYLISTDELETE	"playlistdelete"
 #define COMMAND_TAGTYPES	"tagtypes"
 #define COMMAND_COUNT		"count"
 
@@ -576,6 +579,43 @@ static int handlePlaylistSearch(int fd, int *permission, int argc, char *argv[])
 	freeLocateTagItemArray(numItems, items);
 
 	return 0;
+}
+
+static int handlePlaylistDelete(int fd, int *permission, int argc, char *argv[]) {
+	char *playlist = argv[1];
+	int from;
+	char *test;
+
+	from = strtol(argv[2], &test, 10);
+	if (*test != '\0') {
+		commandError(fd, ACK_ERROR_ARG,
+			     "\"%s\" is not a integer", argv[2]);
+		return -1;
+	}
+
+	return removeOneSongFromStoredPlaylistByPath(fd, playlist, from);
+}
+
+static int handlePlaylistMove(int fd, int *permission, int argc, char *argv[])
+{
+	char *playlist = argv[1];
+	int from, to;
+	char *test;
+
+	from = strtol(argv[2], &test, 10);
+	if (*test != '\0') {
+		commandError(fd, ACK_ERROR_ARG,
+			     "\"%s\" is not a integer", argv[2]);
+		return -1;
+	}
+	to = strtol(argv[3], &test, 10);
+	if (*test != '\0') {
+		commandError(fd, ACK_ERROR_ARG,
+			     "\"%s\" is not a integer", argv[3]);
+		return -1;
+	}
+
+	return moveSongInStoredPlaylistByPath(fd, playlist, from, to);
 }
 
 static int listHandleUpdate(int fd,
@@ -1072,6 +1112,8 @@ void initCommands(void)
 	addCommand(COMMAND_PLAYLISTADD,      PERMISSION_CONTROL, 2,   2,   handlePlaylistAdd,          NULL);
 	addCommand(COMMAND_PLAYLISTFIND,     PERMISSION_READ,    2,   -1,  handlePlaylistFind,         NULL);
 	addCommand(COMMAND_PLAYLISTSEARCH,   PERMISSION_READ,    2,   -1,  handlePlaylistSearch,       NULL);
+	addCommand(COMMAND_PLAYLISTMOVE,     PERMISSION_CONTROL, 3,   3,   handlePlaylistMove,         NULL);
+	addCommand(COMMAND_PLAYLISTDELETE,   PERMISSION_CONTROL, 2,   2,   handlePlaylistDelete,       NULL);
 	addCommand(COMMAND_TAGTYPES,         PERMISSION_READ,    0,   0,   handleTagTypes,             NULL);
 	addCommand(COMMAND_COUNT,            PERMISSION_READ,    2,   -1,  handleCount,                NULL);
 

@@ -40,12 +40,8 @@
 	*) abstract out state code from playlist.c
 	*) put MPD Version in statefile
 
-*) rewrite saved playlist code
-	*) abstract out saved playlists from playlist.c
-	*) new commands
-		*) replace <playlist> /* replace current playlist
-						with saved playlist and
-						keep playing */
+*) add playlistreplace command (replace current playlist with saved playlist
+                                and keep playing)
 
 *) add command for inserting songs in a specific position
 
