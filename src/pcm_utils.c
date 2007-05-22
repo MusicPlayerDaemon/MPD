@@ -32,7 +32,7 @@
 #endif
 
 void pcm_volumeChange(char *buffer, int bufferSize, AudioFormat * format,
-		      int volume)
+                      int volume)
 {
 	mpd_sint32 temp32;
 	mpd_sint8 *buffer8 = (mpd_sint8 *) buffer;
@@ -83,8 +83,8 @@ void pcm_volumeChange(char *buffer, int bufferSize, AudioFormat * format,
 }
 
 static void pcm_add(char *buffer1, char *buffer2, size_t bufferSize1,
-		    size_t bufferSize2, int vol1, int vol2,
-		    AudioFormat * format)
+                    size_t bufferSize2, int vol1, int vol2,
+                    AudioFormat * format)
 {
 	mpd_sint32 temp32;
 	mpd_sint8 *buffer8_1 = (mpd_sint8 *) buffer1;
@@ -139,7 +139,7 @@ static void pcm_add(char *buffer1, char *buffer2, size_t bufferSize1,
 }
 
 void pcm_mix(char *buffer1, char *buffer2, size_t bufferSize1,
-	     size_t bufferSize2, AudioFormat * format, float portion1)
+             size_t bufferSize2, AudioFormat * format, float portion1)
 {
 	int vol1;
 	float s = sin(M_PI_2 * portion1);
@@ -153,7 +153,8 @@ void pcm_mix(char *buffer1, char *buffer2, size_t bufferSize1,
 }
 
 #ifdef HAVE_LIBSAMPLERATE
-static int pcm_getSamplerateConverter(void) {
+static int pcm_getSamplerateConverter(void)
+{
 	const char *conf, *test;
 	int convalgo = SRC_SINC_FASTEST;
 	int newalgo;
@@ -185,8 +186,9 @@ static int pcm_getSamplerateConverter(void) {
 #endif
 
 /* outFormat bits must be 16 and channels must be 2! */
-void pcm_convertAudioFormat(AudioFormat * inFormat, char *inBuffer, size_t
-			    inSize, AudioFormat * outFormat, char *outBuffer)
+void pcm_convertAudioFormat(AudioFormat * inFormat, char *inBuffer,
+                            size_t inSize, AudioFormat * outFormat,
+                            char *outBuffer)
 {
 	static char *bitConvBuffer;
 	static int bitConvBufferLength;
@@ -376,8 +378,8 @@ void pcm_convertAudioFormat(AudioFormat * inFormat, char *inBuffer, size_t
 }
 
 size_t pcm_sizeOfOutputBufferForAudioFormatConversion(AudioFormat * inFormat,
-						      size_t inSize,
-						      AudioFormat * outFormat)
+                                                      size_t inSize,
+                                                      AudioFormat * outFormat)
 {
 	const int shift = sizeof(mpd_sint16) * outFormat->channels;
 	size_t outSize = inSize;
@@ -404,7 +406,7 @@ size_t pcm_sizeOfOutputBufferForAudioFormatConversion(AudioFormat * inFormat,
 		}
 	}
 
-	outSize /=  shift;
+	outSize /= shift;
 	outSize = floor(0.5 + (double)outSize *
 		((double)outFormat->sampleRate / (double)inFormat->sampleRate));
 	outSize *= shift;
