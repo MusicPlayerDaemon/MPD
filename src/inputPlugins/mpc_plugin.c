@@ -338,7 +338,6 @@ static MpdTag *mpcTagDup(char *file)
 }
 
 static char *mpcSuffixes[] = { "mpc", NULL };
-static char *mpcMimeTypes[] = { NULL };
 
 InputPlugin mpcPlugin = {
 	"mpc",
@@ -350,7 +349,7 @@ InputPlugin mpcPlugin = {
 	mpcTagDup,
 	INPUT_PLUGIN_STREAM_URL | INPUT_PLUGIN_STREAM_FILE,
 	mpcSuffixes,
-	mpcMimeTypes
+	NULL
 };
 
 #else
