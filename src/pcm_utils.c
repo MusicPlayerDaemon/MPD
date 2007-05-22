@@ -185,7 +185,7 @@ static int pcm_getSamplerateConverter(void)
 }
 #endif
 
-/* outFormat bits must be 16 and channels must be 2! */
+/* outFormat bits must be 16 and channels must be 1 or 2! */
 void pcm_convertAudioFormat(AudioFormat * inFormat, char *inBuffer,
                             size_t inSize, AudioFormat * outFormat,
                             char *outBuffer)
@@ -202,7 +202,7 @@ void pcm_convertAudioFormat(AudioFormat * inFormat, char *inBuffer,
 	assert(outFormat->bits == 16);
 	assert(outFormat->channels == 2 || outFormat->channels == 1);
 
-	/* converts */
+	/* convert to 16 bit audio */
 	switch (inFormat->bits) {
 	case 8:
 		dataBitLen = inSize << 1;
@@ -231,14 +231,13 @@ void pcm_convertAudioFormat(AudioFormat * inFormat, char *inBuffer,
 		exit(EXIT_FAILURE);
 	}
 
-	/* converts only between 16 bit audio between mono and stereo */
+	/* convert audio between mono and stereo */
 	if (inFormat->channels == outFormat->channels) {
 		dataChannelConv = dataBitConv;
 		dataChannelLen = dataBitLen;
 	} else {
 		switch (inFormat->channels) {
-			/* convert from 1 -> 2 channels */
-		case 1:
+		case 1: /* convert from 1 -> 2 channels */
 			dataChannelLen = (dataBitLen >> 1) << 2;
 			if (dataChannelLen > channelConvBufferLength) {
 				channelConvBuffer = xrealloc(channelConvBuffer,
@@ -257,8 +256,7 @@ void pcm_convertAudioFormat(AudioFormat * inFormat, char *inBuffer,
 				}
 			}
 			break;
-			/* convert from 2 -> 1 channels */
-		case 2:
+		case 2: /* convert from 2 -> 1 channels */
 			dataChannelLen = dataBitLen >> 1;
 			if (dataChannelLen > channelConvBufferLength) {
 				channelConvBuffer = xrealloc(channelConvBuffer,
@@ -278,8 +276,8 @@ void pcm_convertAudioFormat(AudioFormat * inFormat, char *inBuffer,
 			}
 			break;
 		default:
-			ERROR
-			    ("only 1 or 2 channels are supported for conversion!\n");
+			ERROR("only 1 or 2 channels are supported for "
+			      "conversion!\n");
 			exit(EXIT_FAILURE);
 		}
 	}
@@ -337,7 +335,6 @@ void pcm_convertAudioFormat(AudioFormat * inFormat, char *inBuffer,
 
 		src_float_to_short_array(data.data_out, (short *)outBuffer, data.output_frames * outFormat->channels);
 #else
-		/* only works if outFormat is 16-bit stereo! */
 		/* resampling code blatantly ripped from ESD */
 		mpd_uint32 rd_dat = 0;
 		mpd_uint32 wr_dat = 0;
