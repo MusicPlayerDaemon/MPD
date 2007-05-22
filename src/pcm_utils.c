@@ -153,7 +153,7 @@ void pcm_mix(char *buffer1, char *buffer2, size_t bufferSize1,
 }
 
 #ifdef HAVE_LIBSAMPLERATE
-static int pcm_getSamplerateConverter(void)
+static int pcm_getSampleRateConverter(void)
 {
 	const char *conf, *test;
 	int convalgo = SRC_SINC_FASTEST;
@@ -185,198 +185,237 @@ static int pcm_getSamplerateConverter(void)
 }
 #endif
 
-/* outFormat bits must be 16 and channels must be 1 or 2! */
-void pcm_convertAudioFormat(AudioFormat * inFormat, char *inBuffer,
-                            size_t inSize, AudioFormat * outFormat,
-                            char *outBuffer)
+#ifdef HAVE_LIBSAMPLERATE
+static int pcm_convertSampleRate(mpd_sint8 channels, mpd_uint32 inSampleRate,
+                                 char *inBuffer, size_t inSize,
+                                 mpd_uint32 outSampleRate, char *outBuffer,
+                                 size_t outSize)
 {
-	static char *bitConvBuffer;
-	static int bitConvBufferLength;
-	static char *channelConvBuffer;
-	static int channelConvBufferLength;
-	char *dataChannelConv;
-	int dataChannelLen;
-	char *dataBitConv;
-	int dataBitLen;
+	static SRC_STATE *state;
+	static SRC_DATA data;
+	static size_t dataInSize;
+	static size_t dataOutSize;
+	size_t curDataInSize;
+	size_t curDataOutSize;
+	double ratio;
+	int error;
 
-	assert(outFormat->bits == 16);
-	assert(outFormat->channels == 2 || outFormat->channels == 1);
-
-	/* convert to 16 bit audio */
-	switch (inFormat->bits) {
-	case 8:
-		dataBitLen = inSize << 1;
-		if (dataBitLen > bitConvBufferLength) {
-			bitConvBuffer = xrealloc(bitConvBuffer, dataBitLen);
-			bitConvBufferLength = dataBitLen;
+	if (!state) {
+		state = src_new(pcm_getSampleRateConverter(), channels, &error);
+		if (!state) {
+			ERROR("Cannot create new samplerate state: %s\n",
+			      src_strerror(error));
+			return 0;
 		}
-		dataBitConv = bitConvBuffer;
-		{
-			mpd_sint8 *in = (mpd_sint8 *) inBuffer;
-			mpd_sint16 *out = (mpd_sint16 *) dataBitConv;
-			int i;
-			for (i = 0; i < inSize; i++) {
-				*out++ = (*in++) << 8;
-			}
+		DEBUG("Samplerate converter initialized\n");
+	}
+
+	ratio = (double)outSampleRate / (double)inSampleRate;
+	if (ratio != data.src_ratio) {
+		DEBUG("Setting samplerate conversion ratio to %.2lf\n", ratio);
+		src_set_ratio(state, ratio);
+		data.src_ratio = ratio;
+	}
+
+	data.input_frames = inSize / 2 / channels;
+	curDataInSize = data.input_frames * sizeof(float) * channels;
+	if (curDataInSize > dataInSize) {
+		dataInSize = curDataInSize;
+		data.data_in = xrealloc(data.data_in, dataInSize);
+	}
+
+	data.output_frames = outSize / 2 / channels;
+	curDataOutSize = data.output_frames * sizeof(float) * channels;
+	if (curDataOutSize > dataOutSize) {
+		dataOutSize = curDataOutSize;
+		data.data_out = xrealloc(data.data_out, dataOutSize);
+	}
+
+	src_short_to_float_array((short *)inBuffer, data.data_in,
+	                         data.input_frames * channels);
+
+	error = src_process(state, &data);
+	if (error) {
+		ERROR("Cannot process samples: %s\n", src_strerror(error));
+		return 0;
+	}
+
+	src_float_to_short_array(data.data_out, (short *)outBuffer,
+	                         data.output_frames_gen * channels);
+
+	return 1;
+}
+#else /* !HAVE_LIBSAMPLERATE */
+/* resampling code blatantly ripped from ESD */
+static int pcm_convertSampleRate(mpd_sint8 channels, mpd_uint32 inSampleRate,
+                                 char *inBuffer, size_t inSize,
+                                 mpd_uint32 outSampleRate, char *outBuffer,
+                                 size_t outSize)
+{
+	mpd_uint32 rd_dat = 0;
+	mpd_uint32 wr_dat = 0;
+	mpd_sint16 *in = (mpd_sint16 *)inBuffer;
+	mpd_sint16 *out = (mpd_sint16 *)outBuffer;
+	mpd_uint32 nlen = outSize / 2;
+	mpd_sint16 lsample, rsample;
+
+	switch (channels) {
+	case 1:
+		while (wr_dat < nlen) {
+			rd_dat = wr_dat * inSampleRate / outSampleRate;
+
+			lsample = in[rd_dat++];
+
+			out[wr_dat++] = lsample;
 		}
 		break;
+	case 2:
+		while (wr_dat < nlen) {
+			rd_dat = wr_dat * inSampleRate / outSampleRate;
+			rd_dat &= ~1;
+
+			lsample = in[rd_dat++];
+			rsample = in[rd_dat++];
+
+			out[wr_dat++] = lsample;
+			out[wr_dat++] = rsample;
+		}
+		break;
+	}
+
+	return 1;
+}
+#endif /* !HAVE_LIBSAMPLERATE */
+
+static char *pcm_convertChannels(mpd_sint8 inChannels, char *inBuffer,
+                                 size_t inSize, size_t *outSize)
+{
+	static char *buf;
+	static size_t len;
+	char *outBuffer = NULL;;
+	mpd_sint16 *in;
+	mpd_sint16 *out;
+	int inSamples, i;
+
+	switch (inChannels) {
+	/* convert from 1 -> 2 channels */
+	case 1:
+		*outSize = (inSize >> 1) << 2;
+		if (*outSize > len) {
+			len = *outSize;
+			buf = xrealloc(buf, len);
+		}
+		outBuffer = buf;
+
+		inSamples = inSize >> 1;
+		in = (mpd_sint16 *)inBuffer;
+		out = (mpd_sint16 *)outBuffer;
+		for (i = 0; i < inSamples; i++) {
+			*out++ = *in;
+			*out++ = *in++;
+		}
+
+		break;
+	/* convert from 2 -> 1 channels */
+	case 2:
+		*outSize = inSize >> 1;
+		if (*outSize > len) {
+			len = *outSize;
+			buf = xrealloc(buf, len);
+		}
+		outBuffer = buf;
+
+		inSamples = inSize >> 2;
+		in = (mpd_sint16 *)inBuffer;
+		out = (mpd_sint16 *)outBuffer;
+		for (i = 0; i < inSamples; i++) {
+			*out = (*in++) / 2;
+			*out++ += (*in++) / 2;
+		}
+
+		break;
+	default:
+		ERROR("only 1 or 2 channels are supported for conversion!\n");
+	}
+
+	return outBuffer;
+}
+
+static char *pcm_convertTo16bit(mpd_sint8 inBits, char *inBuffer, size_t inSize,
+                                size_t *outSize)
+{
+	static char *buf;
+	static size_t len;
+	char *outBuffer = NULL;
+	mpd_sint8 *in;
+	mpd_sint16 *out;
+	int i;
+
+	switch (inBits) {
+	case 8:
+		*outSize = inSize << 1;
+		if (*outSize > len) {
+			len = *outSize;
+			buf = xrealloc(buf, len);
+		}
+		outBuffer = buf;
+
+		in = (mpd_sint8 *)inBuffer;
+		out = (mpd_sint16 *)outBuffer;
+		for (i = 0; i < inSize; i++)
+			*out++ = (*in++) << 8;
+
+		break;
 	case 16:
-		dataBitConv = inBuffer;
-		dataBitLen = inSize;
+		*outSize = inSize;
+		outBuffer = inBuffer;
 		break;
 	case 24:
 		/* put dithering code from mp3_decode here */
 	default:
 		ERROR("only 8 or 16 bits are supported for conversion!\n");
-		exit(EXIT_FAILURE);
 	}
 
-	/* convert audio between mono and stereo */
-	if (inFormat->channels == outFormat->channels) {
-		dataChannelConv = dataBitConv;
-		dataChannelLen = dataBitLen;
-	} else {
-		switch (inFormat->channels) {
-		case 1: /* convert from 1 -> 2 channels */
-			dataChannelLen = (dataBitLen >> 1) << 2;
-			if (dataChannelLen > channelConvBufferLength) {
-				channelConvBuffer = xrealloc(channelConvBuffer,
-							    dataChannelLen);
-				channelConvBufferLength = dataChannelLen;
-			}
-			dataChannelConv = channelConvBuffer;
-			{
-				mpd_sint16 *in = (mpd_sint16 *) dataBitConv;
-				mpd_sint16 *out =
-				    (mpd_sint16 *) dataChannelConv;
-				int i, inSamples = dataBitLen >> 1;
-				for (i = 0; i < inSamples; i++) {
-					*out++ = *in;
-					*out++ = *in++;
-				}
-			}
-			break;
-		case 2: /* convert from 2 -> 1 channels */
-			dataChannelLen = dataBitLen >> 1;
-			if (dataChannelLen > channelConvBufferLength) {
-				channelConvBuffer = xrealloc(channelConvBuffer,
-							    dataChannelLen);
-				channelConvBufferLength = dataChannelLen;
-			}
-			dataChannelConv = channelConvBuffer;
-			{
-				mpd_sint16 *in = (mpd_sint16 *) dataBitConv;
-				mpd_sint16 *out =
-				    (mpd_sint16 *) dataChannelConv;
-				int i, inSamples = dataBitLen >> 2;
-				for (i = 0; i < inSamples; i++) {
-					*out = (*in++) / 2;
-					*out++ += (*in++) / 2;
-				}
-			}
-			break;
-		default:
-			ERROR("only 1 or 2 channels are supported for "
-			      "conversion!\n");
+	return outBuffer;
+}
+
+/* outFormat bits must be 16 and channels must be 1 or 2! */
+void pcm_convertAudioFormat(AudioFormat * inFormat, char *inBuffer,
+                            size_t inSize, AudioFormat * outFormat,
+                            char *outBuffer)
+{
+	char *buf;
+	size_t len;
+	size_t outSize = pcm_sizeOfConvBuffer(inFormat, inSize, outFormat);
+
+	assert(outFormat->bits == 16);
+	assert(outFormat->channels == 2 || outFormat->channels == 1);
+
+	/* everything else supports 16 bit only, so convert to that first */
+	buf = pcm_convertTo16bit(inFormat->bits, inBuffer, inSize, &len);
+	if (!buf)
+		exit(EXIT_FAILURE);
+
+	if (inFormat->channels != outFormat->channels) {
+		buf = pcm_convertChannels(inFormat->channels, buf, len, &len);
+		if (!buf)
 			exit(EXIT_FAILURE);
-		}
 	}
 
 	if (inFormat->sampleRate == outFormat->sampleRate) {
-		memcpy(outBuffer, dataChannelConv, dataChannelLen);
+		assert(outSize >= len);
+		memcpy(outBuffer, buf, len);
 	} else {
-#ifdef HAVE_LIBSAMPLERATE
-		static SRC_STATE *state = NULL;
-		static SRC_DATA data;
-		static size_t data_in_size, data_out_size;
-		int error;
-		static double ratio = 0;
-		double newratio;
-
-		if(!state) {
-			state = src_new(pcm_getSamplerateConverter(), outFormat->channels, &error);
-			if(!state) {
-				ERROR("Cannot create new samplerate state: %s\n", src_strerror(error));
-				exit(EXIT_FAILURE);
-			} else {
-				DEBUG("Samplerate converter initialized\n");
-			}
-		}
-
-		newratio = (double)outFormat->sampleRate / (double)inFormat->sampleRate;
-		if(newratio != ratio) {
-			DEBUG("Setting samplerate conversion ratio to %.2lf\n", newratio);
-			src_set_ratio(state, newratio);
-			ratio = newratio;
-		}
-
-		data.input_frames = dataChannelLen / 2 / outFormat->channels;
-		data.output_frames = pcm_sizeOfOutputBufferForAudioFormatConversion(inFormat, dataChannelLen, outFormat) / 2 / outFormat->channels;
-		data.src_ratio = (double)data.output_frames / (double)data.input_frames;
-
-		if (data_in_size != (data.input_frames *
-		                     outFormat->channels)) {
-			data_in_size = data.input_frames * outFormat->channels;
-			data.data_in = xrealloc(data.data_in, data_in_size);
-		}
-		if (data_out_size != (data.output_frames *
-		                      outFormat->channels)) {
-			data_out_size = data.output_frames *
-			                outFormat->channels;
-			data.data_out = xrealloc(data.data_out, data_out_size);
-		}
-
-		src_short_to_float_array((short *)dataChannelConv, data.data_in, data.input_frames * outFormat->channels);
-		error = src_process(state, &data);
-		if(error) {
-			ERROR("Cannot process samples: %s\n", src_strerror(error));
+		if (!pcm_convertSampleRate(outFormat->channels,
+		                           inFormat->sampleRate, buf, len,
+		                           outFormat->sampleRate, outBuffer,
+		                           outSize))
 			exit(EXIT_FAILURE);
-		}
-
-		src_float_to_short_array(data.data_out, (short *)outBuffer, data.output_frames * outFormat->channels);
-#else
-		/* resampling code blatantly ripped from ESD */
-		mpd_uint32 rd_dat = 0;
-		mpd_uint32 wr_dat = 0;
-		mpd_sint16 lsample, rsample;
-		mpd_sint16 *out = (mpd_sint16 *) outBuffer;
-		mpd_sint16 *in = (mpd_sint16 *) dataChannelConv;
-		mpd_uint32 nlen = pcm_sizeOfOutputBufferForAudioFormatConversion(inFormat, inSize, outFormat) / sizeof(mpd_sint16);
-
-		switch (outFormat->channels) {
-		case 1:
-			while (wr_dat < nlen) {
-				rd_dat = wr_dat * inFormat->sampleRate /
-				    outFormat->sampleRate;
-
-				lsample = in[rd_dat++];
-
-				out[wr_dat++] = lsample;
-			}
-			break;
-		case 2:
-			while (wr_dat < nlen) {
-				rd_dat = wr_dat * inFormat->sampleRate /
-				    outFormat->sampleRate;
-				rd_dat &= ~1;
-
-				lsample = in[rd_dat++];
-				rsample = in[rd_dat++];
-
-				out[wr_dat++] = lsample;
-				out[wr_dat++] = rsample;
-			}
-			break;
-		}
-#endif
 	}
-
-	return;
 }
 
-size_t pcm_sizeOfOutputBufferForAudioFormatConversion(AudioFormat * inFormat,
-                                                      size_t inSize,
-                                                      AudioFormat * outFormat)
+size_t pcm_sizeOfConvBuffer(AudioFormat * inFormat, size_t inSize,
+                            AudioFormat * outFormat)
 {
 	const int shift = sizeof(mpd_sint16) * outFormat->channels;
 	size_t outSize = inSize;
