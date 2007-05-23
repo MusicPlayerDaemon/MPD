@@ -293,6 +293,20 @@ default is to let PulseAudio choose a server.
 .TP
 .B sink <sink>
 The sink to output to.  The default is to let PulseAudio choose a sink.
+.SH REQUIRED JACK OUTPUT PARAMETERS
+.TP
+.B name <name>
+The client name to use when connecting to JACK.  The output ports <name>:left
+and <name>:right will also be created for the left and right channels,
+respectively.
+.SH OPTIONAL JACK OUTPUT PARAMETERS
+.TP
+.B ports <left_port,right_port>
+This specifies the left and right ports to connect to for the left and right
+channels, respectively.  The default is to let JACK choose a pair of ports.
+.TP
+.B ringbuffer_size <size in bytes>
+This specifies the size of the ringbuffer in bytes.  The default is 32768.
 .SH OPTIONAL AO OUTPUT PARAMETERS
 .TP
 .B driver <driver>
