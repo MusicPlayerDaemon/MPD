@@ -75,9 +75,7 @@ static void freeJackData(AudioOutput *audioOutput)
 		free(jd);
 		audioOutput->data = NULL;
 	}
-
 }
-
 
 static void jack_finishDriver(AudioOutput *audioOutput)
 {
@@ -88,7 +86,7 @@ static void jack_finishDriver(AudioOutput *audioOutput)
 		jack_deactivate(jd->client);
 		jack_client_close(jd->client);
 	}
-	ERROR("disconnect_jack (pid=%d)\n", getpid ());
+	DEBUG("disconnect_jack (pid=%d)\n", getpid ());
 
  	if ( strcmp(name, "mpd") ) {
  		free(name);
@@ -160,7 +158,7 @@ static int process(jack_nframes_t nframes, void *arg)
 	}
 
 
-	/*ERROR("process (pid=%d)\n", getpid());*/
+	/*DEBUG("process (pid=%d)\n", getpid());*/
 	return 0;
 }
 
@@ -176,7 +174,7 @@ static void set_audioformat(AudioOutput *audioOutput)
 	AudioFormat *audioFormat = &audioOutput->outAudioFormat;
 
 	audioFormat->sampleRate = (int) jack_get_sample_rate(jd->client);
-	ERROR ("samplerate = %d\n", audioFormat->sampleRate);
+	DEBUG("samplerate = %d\n", audioFormat->sampleRate);
 	audioFormat->channels = 2;
 	audioFormat->bits = 16;
 	jd->bps = audioFormat->channels
@@ -196,7 +194,7 @@ static int jack_initDriver(AudioOutput *audioOutput, ConfigParam *param)
 	int val;
  	char *cp = NULL;
 
-	ERROR("jack_initDriver (pid=%d)\n", getpid());
+	DEBUG("jack_initDriver (pid=%d)\n", getpid());
 	if ( ! param ) return 0;
 
 	if ( (bp = getBlockParam(param, "ports")) ) {
@@ -229,9 +227,9 @@ static int jack_initDriver(AudioOutput *audioOutput, ConfigParam *param)
 
 		if ( errno == 0 && endptr != bp->value) {
 			ringbuf_sz = val < 32768 ? 32768 : val;
-			ERROR("ringbuffer_size=%d\n", ringbuf_sz);
+			DEBUG("ringbuffer_size=%d\n", ringbuf_sz);
 		} else {
-			ERROR("%s is not a number; ringbuf_size=%d\n",
+			FATAL("%s is not a number; ringbuf_size=%d\n",
 			      bp->value, ringbuf_sz);
 		}
 	}
@@ -239,7 +237,7 @@ static int jack_initDriver(AudioOutput *audioOutput, ConfigParam *param)
 	if ( (bp = getBlockParam(param, "name"))
 	     && (strcmp(bp->value, "mpd") != 0) ) {
 		name = xstrdup(bp->value);
-		ERROR("name=%s\n", name);
+		DEBUG("name=%s\n", name);
 	}
 
  	return 0;
@@ -299,7 +297,7 @@ static int connect_jack(AudioOutput *audioOutput)
 							JackPortIsInput)) ) {
 		output_ports[0] = jports[0];
 		output_ports[1] = jports[1] ? jports[1] : jports[0];
-		ERROR("output_ports: %s %s\n", output_ports[0], output_ports[1]);
+		DEBUG("output_ports: %s %s\n", output_ports[0], output_ports[1]);
 		free(jports);
 	}
 
@@ -332,7 +330,7 @@ static int connect_jack(AudioOutput *audioOutput)
 		free(port_name);
 	}
 
-	ERROR("connect_jack (pid=%d)\n", getpid());
+	DEBUG("connect_jack (pid=%d)\n", getpid());
 	return 1;
 }
 
@@ -341,7 +339,7 @@ static int jack_openDevice(AudioOutput *audioOutput)
 	JackData *jd = audioOutput->data;
 
 	if ( !jd ) {
-		ERROR("connect!\n");
+		DEBUG("connect!\n");
 		jd = newJackData();
 		audioOutput->data = jd;
 
@@ -355,7 +353,7 @@ static int jack_openDevice(AudioOutput *audioOutput)
 	set_audioformat(audioOutput);
 	audioOutput->open = 1;
 
-	ERROR("jack_openDevice (pid=%d)!\n", getpid ());
+	DEBUG("jack_openDevice (pid=%d)!\n", getpid ());
 	return 0;
 }
 
@@ -364,12 +362,11 @@ static void jack_closeDevice(AudioOutput * audioOutput)
 {
 	/*jack_finishDriver(audioOutput);*/
 	audioOutput->open = 0;
-	ERROR("jack_closeDevice (pid=%d)\n", getpid());
+	DEBUG("jack_closeDevice (pid=%d)\n", getpid());
 }
 
 static void jack_dropBufferedAudio (AudioOutput * audioOutput)
 {
-
 }
 
 static int jack_playAudio(AudioOutput * audioOutput, char *buff, int size)
@@ -381,7 +378,7 @@ static int jack_playAudio(AudioOutput * audioOutput, char *buff, int size)
 	jack_default_audio_sample_t sample;
 	size_t samples = size/4;
 
-	/*ERROR("jack_playAudio: (pid=%d)!\n", getpid());*/
+	/*DEBUG("jack_playAudio: (pid=%d)!\n", getpid());*/
 
 	if ( jd->shutdown ) {
 		ERROR("Refusing to play, because there is no client thread.\n");
@@ -422,7 +419,6 @@ static int jack_playAudio(AudioOutput * audioOutput, char *buff, int size)
 
 	}
 	return 0;
-
 }
 
 AudioOutputPlugin jackPlugin = {
@@ -436,7 +432,6 @@ AudioOutputPlugin jackPlugin = {
 	jack_closeDevice,
 	NULL,	/* sendMetadataFunc */
 };
-
 
 #else /* HAVE JACK */
 
