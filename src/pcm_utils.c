@@ -275,7 +275,7 @@ static int pcm_convertSampleRate(mpd_sint8 channels, mpd_uint32 inSampleRate,
 }
 #endif /* !HAVE_LIBSAMPLERATE */
 
-static char *pcm_convertChannels(mpd_sint8 inChannels, char *inBuffer,
+static char *pcm_convertChannels(mpd_sint8 channels, char *inBuffer,
                                  size_t inSize, size_t *outSize)
 {
 	static char *buf;
@@ -285,7 +285,7 @@ static char *pcm_convertChannels(mpd_sint8 inChannels, char *inBuffer,
 	mpd_sint16 *out;
 	int inSamples, i;
 
-	switch (inChannels) {
+	switch (channels) {
 	/* convert from 1 -> 2 channels */
 	case 1:
 		*outSize = (inSize >> 1) << 2;
@@ -329,7 +329,7 @@ static char *pcm_convertChannels(mpd_sint8 inChannels, char *inBuffer,
 	return outBuffer;
 }
 
-static char *pcm_convertTo16bit(mpd_sint8 inBits, char *inBuffer, size_t inSize,
+static char *pcm_convertTo16bit(mpd_sint8 bits, char *inBuffer, size_t inSize,
                                 size_t *outSize)
 {
 	static char *buf;
@@ -339,7 +339,7 @@ static char *pcm_convertTo16bit(mpd_sint8 inBits, char *inBuffer, size_t inSize,
 	mpd_sint16 *out;
 	int i;
 
-	switch (inBits) {
+	switch (bits) {
 	case 8:
 		*outSize = inSize << 1;
 		if (*outSize > len) {
@@ -405,12 +405,14 @@ void pcm_convertAudioFormat(AudioFormat * inFormat, char *inBuffer,
 size_t pcm_sizeOfConvBuffer(AudioFormat * inFormat, size_t inSize,
                             AudioFormat * outFormat)
 {
-	const int shift = sizeof(mpd_sint16) * outFormat->channels;
+	const double ratio = (double)outFormat->sampleRate /
+	                     (double)inFormat->sampleRate;
+	const int shift = 2 * outFormat->channels;
 	size_t outSize = inSize;
 
 	switch (inFormat->bits) {
 	case 8:
-		outSize = outSize << 1;
+		outSize <<= 1;
 		break;
 	case 16:
 		break;
@@ -431,8 +433,7 @@ size_t pcm_sizeOfConvBuffer(AudioFormat * inFormat, size_t inSize,
 	}
 
 	outSize /= shift;
-	outSize = floor(0.5 + (double)outSize *
-		((double)outFormat->sampleRate / (double)inFormat->sampleRate));
+	outSize = floor(0.5 + (double)outSize * ratio);
 	outSize *= shift;
 
 	return outSize;
