@@ -188,6 +188,7 @@ error_file                      "~/.mpd/mpd.error"
 #audio_buffer_size               "2048"
 #
 # How much of the buffer to fill before beginning to play.
+# Increase this if you hear skipping when changing songs.
 #
 #buffer_before_play              "0%"
 #
