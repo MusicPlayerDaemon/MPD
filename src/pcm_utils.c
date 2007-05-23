@@ -191,31 +191,18 @@ static int pcm_convertSampleRate(mpd_sint8 channels, mpd_uint32 inSampleRate,
                                  mpd_uint32 outSampleRate, char *outBuffer,
                                  size_t outSize)
 {
-	static SRC_STATE *state;
+	static int convalgo = -1;
 	static SRC_DATA data;
 	static size_t dataInSize;
 	static size_t dataOutSize;
 	size_t curDataInSize;
 	size_t curDataOutSize;
-	double ratio;
 	int error;
 
-	if (!state) {
-		state = src_new(pcm_getSampleRateConverter(), channels, &error);
-		if (!state) {
-			ERROR("Cannot create new samplerate state: %s\n",
-			      src_strerror(error));
-			return 0;
-		}
-		DEBUG("Samplerate converter initialized\n");
-	}
+	if (convalgo < 0)
+		convalgo = pcm_getSampleRateConverter();
 
-	ratio = (double)outSampleRate / (double)inSampleRate;
-	if (ratio != data.src_ratio) {
-		DEBUG("Setting samplerate conversion ratio to %.2lf\n", ratio);
-		src_set_ratio(state, ratio);
-		data.src_ratio = ratio;
-	}
+	data.src_ratio = (double)outSampleRate / (double)inSampleRate;
 
 	data.input_frames = inSize / 2 / channels;
 	curDataInSize = data.input_frames * sizeof(float) * channels;
@@ -234,9 +221,10 @@ static int pcm_convertSampleRate(mpd_sint8 channels, mpd_uint32 inSampleRate,
 	src_short_to_float_array((short *)inBuffer, data.data_in,
 	                         data.input_frames * channels);
 
-	error = src_process(state, &data);
+	error = src_simple(&data, convalgo, channels);
 	if (error) {
-		ERROR("Cannot process samples: %s\n", src_strerror(error));
+		ERROR("error processing samples with libsamplerate: %s\n",
+		      src_strerror(error));
 		return 0;
 	}
 
