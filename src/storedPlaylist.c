@@ -35,13 +35,14 @@ static char *utf8pathToFsPathInStoredPlaylist(const char *utf8path, int fd)
 
 	if (strstr(utf8path, "/")) {
 		if (fd != -1) {
-			commandError(fd, ACK_ERROR_ARG,
-					"Cannot clear \"%s\", saving playlists to "
-					"subdirectories is not supported", utf8path);
+			commandError(fd, ACK_ERROR_ARG, "playlist name \"%s\" "
+			             "is invalid: playlist names may not "
+			             "contain slashes", utf8path);
 		}
 
-		ERROR("Cannot clear \"%s\", saving playlists to "
-			  "subdirectories is not supported", utf8path);
+		ERROR("playlist name \"%s\" is invalid: playlist names may not "
+		      "contain slashes\n", utf8path);
+
 		return NULL;
 	}
 
@@ -115,11 +116,12 @@ StoredPlaylist *newStoredPlaylist(const char *utf8name, int fd, int ignoreExisti
 		if (filename && stat(filename, &buf) == 0 && ignoreExisting == 0) {
 			if (fd != -1)
 				commandError(fd, ACK_ERROR_EXIST,
-						"a file or directory already "
-						"exists with the name \"%s\"", utf8name);
+				             "a file or directory already "
+				             "exists with the name \"%s\"",
+				             utf8name);
 
-			ERROR("a file or directory already "
-					"exists with the name \"%s\"", utf8name);
+			ERROR("a file or directory already exists with the "
+			      "name \"%s\"\n", utf8name);
 
 			free(sp);
 			return NULL;
@@ -156,10 +158,13 @@ StoredPlaylist *loadStoredPlaylist(const char *utf8path, int fd)
 	if (file == NULL) {
 		if (fd != -1) {
 			commandError(fd, ACK_ERROR_NO_EXIST,
-					"Could not open file \"%s\": %s", filename, strerror(errno));
+			             "could not open file \"%s\": %s", filename,
+			             strerror(errno));
 		}
 
-		ERROR("Could not open file \"%s\": %s", filename, strerror(errno));
+		ERROR("could not open file \"%s\": %s\n", filename,
+		      strerror(errno));
+
 		return NULL;
 	}
 
@@ -187,10 +192,10 @@ StoredPlaylist *loadStoredPlaylist(const char *utf8path, int fd)
 				if (strlen(s) >= MAXPATHLEN) {
 					if (sp->fd != -1) {
 						commandError(sp->fd, ACK_ERROR_PLAYLIST_LOAD,
-								"\"%s\" too long", temp);
+								"\"%s\" is too long", temp);
 					}
 
-					ERROR("\"%s\" too long", temp);
+					ERROR("\"%s\" is too long\n", temp);
 					free(temp);
 					freeStoredPlaylist(sp);
 					sp = NULL;
@@ -209,10 +214,11 @@ StoredPlaylist *loadStoredPlaylist(const char *utf8path, int fd)
 			s[slength] = '\0';
 			if (sp->fd != -1) {
 				commandError(sp->fd, ACK_ERROR_PLAYLIST_LOAD,
-						"line \"%s\" in playlist \"%s\" is too long\n",
-						s, utf8path);
+				             "line \"%s\" in playlist \"%s\" "
+				             "is too long", s, utf8path);
 			}
-			ERROR("line \"%s\" in playlist \"%s\" is too long\n", s, utf8path);
+			ERROR("line \"%s\" in playlist \"%s\" is too long\n", s,
+			      utf8path);
 			freeStoredPlaylist(sp);
 			sp = NULL;
 			goto out;
@@ -240,7 +246,7 @@ static int moveSongInStoredPlaylist(int fd, StoredPlaylist *sp, int src, int des
 	ListNode *srcNode, *destNode;
 
 	if (src >= lengthOfStoredPlaylist(sp) || dest >= lengthOfStoredPlaylist(sp) || src < 0 || dest < 0 || src == dest) {
-		commandError(fd, ACK_ERROR_ARG, "argument out of range.");
+		commandError(fd, ACK_ERROR_ARG, "argument out of range");
 		return -1;
 	}
 
@@ -300,7 +306,7 @@ int moveSongInStoredPlaylistByPath(int fd, const char *utf8path, int src, int de
 {
 	StoredPlaylist *sp = loadStoredPlaylist(utf8path, fd);
 	if (!sp) {
-		commandError(fd, ACK_ERROR_UNKNOWN, "could not open playlist.");
+		commandError(fd, ACK_ERROR_UNKNOWN, "could not open playlist");
 		freeStoredPlaylist(sp);
 		return -1;
 	}
@@ -311,7 +317,7 @@ int moveSongInStoredPlaylistByPath(int fd, const char *utf8path, int src, int de
 	}
 
 	if (writeStoredPlaylist(sp) != 0) {
-		commandError(fd, ACK_ERROR_UNKNOWN, "failed to save playlist.");
+		commandError(fd, ACK_ERROR_UNKNOWN, "failed to save playlist");
 		freeStoredPlaylist(sp);
 		return -1;
 	}
@@ -342,10 +348,12 @@ int removeAllFromStoredPlaylistByPath(int fd, const char *utf8path)
 	if (file == NULL) {
 		if (fd != -1) {
 			commandError(fd, ACK_ERROR_NO_EXIST,
-					"Could not open file \"%s\": %s", filename, strerror(errno));
+			             "could not open file \"%s\": %s", filename,
+			             strerror(errno));
 		}
 
-		ERROR("Could not open file \"%s\": %s", filename, strerror(errno));
+		ERROR("could not open file \"%s\": %s\n", filename,
+		      strerror(errno));
 		return -1;
 	}
 
@@ -357,7 +365,8 @@ static int removeOneSongFromStoredPlaylist(int fd, StoredPlaylist *sp, int pos)
 {
 	ListNode *node = nodeOfStoredPlaylist(sp, pos);
 	if (!node) {
-		commandError(fd, ACK_ERROR_ARG, "could not find song at position.");
+		commandError(fd, ACK_ERROR_ARG, "could not find song at "
+		             "position");
 		return -1;
 	}
 
@@ -370,7 +379,7 @@ int removeOneSongFromStoredPlaylistByPath(int fd, const char *utf8path, int pos)
 {
 	StoredPlaylist *sp = loadStoredPlaylist(utf8path, fd);
 	if (!sp) {
-		commandError(fd, ACK_ERROR_UNKNOWN, "could not open playlist.");
+		commandError(fd, ACK_ERROR_UNKNOWN, "could not open playlist");
 		freeStoredPlaylist(sp);
 		return -1;
 	}
@@ -381,7 +390,7 @@ int removeOneSongFromStoredPlaylistByPath(int fd, const char *utf8path, int pos)
 	}
 
 	if (writeStoredPlaylist(sp) != 0) {
-		commandError(fd, ACK_ERROR_UNKNOWN, "failed to save playlist.");
+		commandError(fd, ACK_ERROR_UNKNOWN, "failed to save playlist");
 		freeStoredPlaylist(sp);
 		return -1;
 	}
@@ -402,10 +411,12 @@ static int writeStoredPlaylistToPath(StoredPlaylist *sp, const char *fspath)
 	if (file == NULL) {
 		if (sp->fd != -1) {
 			commandError(sp->fd, ACK_ERROR_NO_EXIST,
-					"Could not open file \"%s\": %s", fspath, strerror(errno));
+			             "could not open file \"%s\": %s", fspath,
+			             strerror(errno));
 		}
 
-		ERROR("Couldn't open file \"%s\": %s", fspath, strerror(errno));
+		ERROR("could not open file \"%s\": %s\n", fspath,
+		      strerror(errno));
 		return -1;
 	}
 
@@ -451,10 +462,13 @@ int appendSongToStoredPlaylistByPath(int fd, const char *utf8path, Song *song)
 	if (file == NULL) {
 		if (fd != -1) {
 			commandError(fd, ACK_ERROR_NO_EXIST,
-					"Could not open file \"%s\": %s", filename, strerror(errno));
+			             "Could not open file \"%s\": %s", filename,
+			             strerror(errno));
 		}
 
-		ERROR("Could not open file \"%s\": %s", filename, strerror(errno));
+		ERROR("could not open file \"%s\": %s\n", filename,
+		      strerror(errno));
+
 		return -1;
 	}
 
