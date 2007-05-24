@@ -402,17 +402,18 @@ static int handleListPlaylistInfo(int fd, int *permission,
 
 static int handleLsInfo(int fd, int *permission, int argc, char *argv[])
 {
-	if (argc == 1) {
-		if (printDirectoryInfo(fd, NULL) < 0)
-			return -1;
-		else
-			return lsPlaylists(fd, "");
-	} else {
-		if (printDirectoryInfo(fd, argv[1]) < 0)
-			return -1;
-		else
-			return lsPlaylists(fd, argv[1]);
-	}
+	char *path = "";
+
+	if (argc == 2)
+		path = argv[1];
+
+	if (printDirectoryInfo(fd, path) < 0)
+		return -1;
+
+	if (isRootDirectory(path))
+		return lsPlaylists(fd, path);
+
+	return 0;
 }
 
 static int handleRm(int fd, int *permission, int argc, char *argv[])

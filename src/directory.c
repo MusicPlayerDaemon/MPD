@@ -835,13 +835,21 @@ static Directory *findSubDirectory(Directory * directory, char *name)
 	return NULL;
 }
 
+int isRootDirectory(char *name)
+{
+	if (name == NULL || name[0] == '\0' || strcmp(name, "/") == 0) {
+		return 1;
+	}
+	return 0;
+}
+
 static Directory *getSubDirectory(Directory * directory, char *name,
 				  char **shortname)
 {
 	Directory *subDirectory;
 	int len;
 
-	if (name == NULL || name[0] == '\0' || strcmp(name, "/") == 0) {
+	if (isRootDirectory(name)) {
 		return directory;
 	}
 
