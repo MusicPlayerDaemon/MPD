@@ -20,6 +20,7 @@ ver 0.13.0 (2007/??/??)
 * New count command for getting stats on found songs (similar to "find")
 * New playlistmove command for moving songs in stored playlists
 * New playlistdelete command for deleting songs from stored playlists
+* New rename command for renaming stored playlists
 * Lots of bug fixes, cleaned up code, and performance improvements
 
 ver 0.12.2 (2007/3/20)

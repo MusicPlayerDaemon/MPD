@@ -489,3 +489,68 @@ void appendPlaylistToStoredPlaylist(StoredPlaylist *sp, Playlist *playlist)
 		appendSongToStoredPlaylist(sp, playlist->songs[i]);
 	}
 }
+
+int renameStoredPlaylist(int fd, const char *utf8from, const char *utf8to)
+{
+	struct stat st;
+	char *from;
+	char *to;
+	int ret = 0;
+
+	from = xstrdup(utf8pathToFsPathInStoredPlaylist(utf8from, fd));
+	if (!from)
+		return -1;
+
+	to = xstrdup(utf8pathToFsPathInStoredPlaylist(utf8to, fd));
+	if (!to) {
+		free(from);
+		return -1;
+	}
+
+	if (stat(from, &st) != 0) {
+		if (fd != -1) {
+			commandError(fd, ACK_ERROR_NO_EXIST,
+			             "no playlist named \"%s\"", utf8from);
+		}
+
+		ERROR("no playlist named \"%s\"\n", utf8from);
+
+		ret = -1;
+		goto out;
+	}
+
+	if (stat(to, &st) == 0) {
+		if (fd != -1) {
+			commandError(fd, ACK_ERROR_EXIST, "a file or directory "
+			             "already exists with the name \"%s\"",
+			             utf8to);
+		}
+
+		ERROR("a file or directory already exists with the "
+		      "name \"%s\"\n", utf8to);
+
+		ret = -1;
+		goto out;
+	}
+
+	if (rename(from, to) < 0) {
+		if (fd != -1) {
+			commandError(fd, ACK_ERROR_UNKNOWN,
+			             "could not rename playlist \"%s\" to "
+			             "\"%s\": %s", utf8from, utf8to,
+			             strerror(errno));
+		}
+
+		ERROR("could not rename playlist \"%s\" to \"%s\": %s\n",
+		      utf8from, utf8to, strerror(errno));
+
+		ret = -1;
+		goto out;
+	}
+
+out:
+	free(from);
+	free(to);
+
+	return ret;
+}

@@ -43,4 +43,6 @@ int writeStoredPlaylist(StoredPlaylist *sp);
 int appendSongToStoredPlaylistByPath(int fd, const char *utf8path, Song *song);
 void appendPlaylistToStoredPlaylist(StoredPlaylist *sp, Playlist *playlist);
 
+int renameStoredPlaylist(int fd, const char *utf8from, const char *utf8to);
+
 #endif

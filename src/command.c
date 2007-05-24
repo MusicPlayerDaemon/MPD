@@ -100,6 +100,7 @@
 #define COMMAND_PLAYLISTDELETE	"playlistdelete"
 #define COMMAND_TAGTYPES	"tagtypes"
 #define COMMAND_COUNT		"count"
+#define COMMAND_RENAME		"rename"
 
 #define COMMAND_STATUS_VOLUME           "volume"
 #define COMMAND_STATUS_STATE            "state"
@@ -419,6 +420,11 @@ static int handleLsInfo(int fd, int *permission, int argc, char *argv[])
 static int handleRm(int fd, int *permission, int argc, char *argv[])
 {
 	return deletePlaylist(fd, argv[1]);
+}
+
+static int handleRename(int fd, int *permission, int argc, char *argv[])
+{
+	return renameStoredPlaylist(fd, argv[1], argv[2]);
 }
 
 static int handlePlaylistChanges(int fd, int *permission,
@@ -1117,6 +1123,7 @@ void initCommands(void)
 	addCommand(COMMAND_PLAYLISTDELETE,   PERMISSION_CONTROL, 2,   2,   handlePlaylistDelete,       NULL);
 	addCommand(COMMAND_TAGTYPES,         PERMISSION_READ,    0,   0,   handleTagTypes,             NULL);
 	addCommand(COMMAND_COUNT,            PERMISSION_READ,    2,   -1,  handleCount,                NULL);
+	addCommand(COMMAND_RENAME,           PERMISSION_CONTROL, 2,   2,   handleRename,               NULL);
 
 	sortList(commandList);
 }
