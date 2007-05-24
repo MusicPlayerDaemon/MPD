@@ -135,6 +135,7 @@ int initAudioOutput(AudioOutput *ao, ConfigParam * param)
 	memset(&ao->inAudioFormat, 0, sizeof(AudioFormat));
 	memset(&ao->outAudioFormat, 0, sizeof(AudioFormat));
 	memset(&ao->reqAudioFormat, 0, sizeof(AudioFormat));
+	memset(&ao->convState, 0, sizeof(ConvState));
 
 	if (format) {
 		ao->convertAudioFormat = 1;
@@ -205,10 +206,11 @@ static void convertAudioFormat(AudioOutput * audioOutput, char **chunkArgPtr,
 	}
 
 	pcm_convertAudioFormat(&(audioOutput->inAudioFormat), 
-			       *chunkArgPtr,
-			       *sizeArgPtr, 
-			       &(audioOutput->outAudioFormat),
-			       audioOutput->convBuffer);
+	                       *chunkArgPtr,
+	                       *sizeArgPtr, 
+	                       &(audioOutput->outAudioFormat),
+	                       audioOutput->convBuffer,
+	                       &audioOutput->convState);
 
 	*sizeArgPtr = size;
 	*chunkArgPtr = audioOutput->convBuffer;

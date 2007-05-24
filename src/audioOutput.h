@@ -21,6 +21,7 @@
 
 #include "../config.h"
 
+#include "pcm_utils.h"
 #include "mpd_types.h"
 #include "audio.h"
 #include "tag.h"
@@ -66,6 +67,7 @@ struct _AudioOutput {
 	AudioFormat inAudioFormat;
 	AudioFormat outAudioFormat;
 	AudioFormat reqAudioFormat;
+	ConvState convState;
 	char *convBuffer;
 	int convBufferLen;
 	int sameInAndOutFormats;

@@ -27,10 +27,6 @@
 #include <math.h>
 #include <assert.h>
 
-#ifdef HAVE_LIBSAMPLERATE
-#include <samplerate.h>
-#endif
-
 void pcm_volumeChange(char *buffer, int bufferSize, AudioFormat * format,
                       int volume)
 {
@@ -189,47 +185,74 @@ static int pcm_getSampleRateConverter(void)
 static int pcm_convertSampleRate(mpd_sint8 channels, mpd_uint32 inSampleRate,
                                  char *inBuffer, size_t inSize,
                                  mpd_uint32 outSampleRate, char *outBuffer,
-                                 size_t outSize)
+                                 size_t outSize, ConvState *convState)
 {
 	static int convalgo = -1;
-	static SRC_DATA data;
-	static size_t dataInSize;
-	static size_t dataOutSize;
-	size_t curDataInSize;
-	size_t curDataOutSize;
+	SRC_DATA *data = &convState->data;
+	size_t dataInSize;
+	size_t dataOutSize;
 	int error;
 
 	if (convalgo < 0)
 		convalgo = pcm_getSampleRateConverter();
 
-	data.src_ratio = (double)outSampleRate / (double)inSampleRate;
+	/* (re)set the state/ratio if the in or out format changed */
+	if ((channels != convState->lastChannels) ||
+	    (inSampleRate != convState->lastInSampleRate) ||
+	    (outSampleRate != convState->lastOutSampleRate)) {
+		convState->error = 0;
+		convState->lastChannels = channels;
+		convState->lastInSampleRate = inSampleRate;
+		convState->lastOutSampleRate = outSampleRate;
 
-	data.input_frames = inSize / 2 / channels;
-	curDataInSize = data.input_frames * sizeof(float) * channels;
-	if (curDataInSize > dataInSize) {
-		dataInSize = curDataInSize;
-		data.data_in = xrealloc(data.data_in, dataInSize);
+		if (convState->state)
+			convState->state = src_delete(convState->state);
+
+		convState->state = src_new(convalgo, channels, &error);
+		if (!convState->state) {
+			ERROR("cannot create new libsamplerate state: %s\n",
+			      src_strerror(error));
+			convState->error = 1;
+			return 0;
+		}
+		
+		data->src_ratio = (double)outSampleRate / (double)inSampleRate;
+		DEBUG("setting samplerate conversion ratio to %.2lf\n",
+		      data->src_ratio);
+		src_set_ratio(convState->state, data->src_ratio);
 	}
 
-	data.output_frames = outSize / 2 / channels;
-	curDataOutSize = data.output_frames * sizeof(float) * channels;
-	if (curDataOutSize > dataOutSize) {
-		dataOutSize = curDataOutSize;
-		data.data_out = xrealloc(data.data_out, dataOutSize);
+	/* there was an error previously, and nothing has changed */
+	if (convState->error)
+		return 0;
+
+	data->input_frames = inSize / 2 / channels;
+	dataInSize = data->input_frames * sizeof(float) * channels;
+	if (dataInSize > convState->dataInSize) {
+		convState->dataInSize = dataInSize;
+		data->data_in = xrealloc(data->data_in, dataInSize);
 	}
 
-	src_short_to_float_array((short *)inBuffer, data.data_in,
-	                         data.input_frames * channels);
+	data->output_frames = outSize / 2 / channels;
+	dataOutSize = data->output_frames * sizeof(float) * channels;
+	if (dataOutSize > convState->dataOutSize) {
+		convState->dataOutSize = dataOutSize;
+		data->data_out = xrealloc(data->data_out, dataOutSize);
+	}
 
-	error = src_simple(&data, convalgo, channels);
+	src_short_to_float_array((short *)inBuffer, data->data_in,
+	                         data->input_frames * channels);
+
+	error = src_process(convState->state, data);
 	if (error) {
 		ERROR("error processing samples with libsamplerate: %s\n",
 		      src_strerror(error));
+		convState->error = 1;
 		return 0;
 	}
 
-	src_float_to_short_array(data.data_out, (short *)outBuffer,
-	                         data.output_frames_gen * channels);
+	src_float_to_short_array(data->data_out, (short *)outBuffer,
+	                         data->output_frames_gen * channels);
 
 	return 1;
 }
@@ -238,7 +261,7 @@ static int pcm_convertSampleRate(mpd_sint8 channels, mpd_uint32 inSampleRate,
 static int pcm_convertSampleRate(mpd_sint8 channels, mpd_uint32 inSampleRate,
                                  char *inBuffer, size_t inSize,
                                  mpd_uint32 outSampleRate, char *outBuffer,
-                                 size_t outSize)
+                                 size_t outSize, ConvState *convState)
 {
 	mpd_uint32 rd_dat = 0;
 	mpd_uint32 wr_dat = 0;
@@ -370,7 +393,7 @@ static char *pcm_convertTo16bit(mpd_sint8 bits, char *inBuffer, size_t inSize,
 /* outFormat bits must be 16 and channels must be 1 or 2! */
 void pcm_convertAudioFormat(AudioFormat * inFormat, char *inBuffer,
                             size_t inSize, AudioFormat * outFormat,
-                            char *outBuffer)
+                            char *outBuffer, ConvState *convState)
 {
 	char *buf;
 	size_t len;
@@ -397,7 +420,7 @@ void pcm_convertAudioFormat(AudioFormat * inFormat, char *inBuffer,
 		if (!pcm_convertSampleRate(outFormat->channels,
 		                           inFormat->sampleRate, buf, len,
 		                           outFormat->sampleRate, outBuffer,
-		                           outSize))
+		                           outSize, convState))
 			exit(EXIT_FAILURE);
 	}
 }

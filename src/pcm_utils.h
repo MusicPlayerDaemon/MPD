@@ -25,14 +25,32 @@
 
 #include <stdlib.h>
 
+#ifdef HAVE_LIBSAMPLERATE
+#include <samplerate.h>
+#endif
+
+typedef struct _ConvState {
+#ifdef HAVE_LIBSAMPLERATE
+	SRC_STATE *state;
+	SRC_DATA data;
+	size_t dataInSize;
+	size_t dataOutSize;
+	mpd_sint8 lastChannels;
+	mpd_sint32 lastInSampleRate;
+	mpd_sint32 lastOutSampleRate;
+	int error;
+#endif
+} ConvState;
+
 void pcm_volumeChange(char *buffer, int bufferSize, AudioFormat * format,
                       int volume);
 
 void pcm_mix(char *buffer1, char *buffer2, size_t bufferSize1,
              size_t bufferSize2, AudioFormat * format, float portion1);
 
-void pcm_convertAudioFormat(AudioFormat * inFormat, char *inBuffer, size_t
-                            inSize, AudioFormat * outFormat, char *outBuffer);
+void pcm_convertAudioFormat(AudioFormat * inFormat, char *inBuffer,
+                            size_t inSize, AudioFormat * outFormat,
+                            char *outBuffer, ConvState *convState);
 
 size_t pcm_sizeOfConvBuffer(AudioFormat * inFormat, size_t inSize,
                             AudioFormat * outFormat);

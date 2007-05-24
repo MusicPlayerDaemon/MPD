@@ -19,6 +19,7 @@
 #ifndef OUTPUT_BUFFER_H
 #define OUTPUT_BUFFER_H
 
+#include "pcm_utils.h"
 #include "mpd_types.h"
 #include "decode.h"
 #include "audio.h"
@@ -39,6 +40,7 @@ typedef struct _OutputBuffer {
 	mpd_sint16 volatile begin;
 	mpd_sint16 volatile end;
 	AudioFormat audioFormat;
+	ConvState convState;
 	MetadataChunk metadataChunks[BUFFERED_METACHUNKS];
 	mpd_sint8 metaChunkSet[BUFFERED_METACHUNKS];
 	mpd_sint8 *volatile metaChunk;

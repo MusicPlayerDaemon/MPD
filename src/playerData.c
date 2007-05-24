@@ -116,6 +116,7 @@ void initPlayerData(void)
 	                                    allocationSize - device_array_size;
 	buffer = &(playerData_pd->buffer);
 
+	memset(&buffer->convState, 0, sizeof(ConvState));
 	buffer->chunks = ((char *)playerData_pd) + sizeof(PlayerData);
 	buffer->chunkSize = (mpd_uint16 *) (((char *)buffer->chunks) +
 					    buffered_chunks * CHUNK_SIZE);
