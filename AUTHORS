@@ -4,7 +4,7 @@ Warren Dukes <warren.dukes@gmail.com>
 	general
 
 J. Alexander Treuman <jat@spatialrift.net>
-	general, mp3, id3tag, pulseaudio
+	general, MP3, ID3, PulseAudio, format conversion, stored playlists
 
 Eric Wong <normalperson@yhbt.net>
 	general, FLAC, mpd-ke branch
