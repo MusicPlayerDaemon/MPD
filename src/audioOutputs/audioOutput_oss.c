@@ -359,7 +359,7 @@ static int oss_open_default(AudioOutput *ao, ConfigParam *param, OssData *od)
 	}
 
 	if (param)
-		ERROR("Error trying to open specified OSS device"
+		ERROR("error trying to open specified OSS device"
 	              " at line %i\n", param->line);
 	else
 		ERROR("error trying to open default OSS device\n");

@@ -75,9 +75,8 @@ static int audioOutputAo_initDriver(AudioOutput * audioOutput,
 	if ((blockParam = getBlockParam(param, "write_size"))) {
 		ad->writeSize = strtol(blockParam->value, &test, 10);
 		if (*test != '\0') {
-			ERROR("\"%s\" is not a valid write size at line %i\n",
+			FATAL("\"%s\" is not a valid write size at line %i\n",
 			      blockParam->value, blockParam->line);
-			exit(EXIT_FAILURE);
 		}
 	} else
 		ad->writeSize = 1024;
@@ -92,16 +91,13 @@ static int audioOutputAo_initDriver(AudioOutput * audioOutput,
 	if (!blockParam || 0 == strcmp(blockParam->value, "default")) {
 		ad->driverId = ao_default_driver_id();
 	} else if ((ad->driverId = ao_driver_id(blockParam->value)) < 0) {
-		ERROR("\"%s\" is not a valid ao driver at line %i\n",
+		FATAL("\"%s\" is not a valid ao driver at line %i\n",
 		      blockParam->value, blockParam->line);
-		exit(EXIT_FAILURE);
 	}
 
 	if ((ai = ao_driver_info(ad->driverId)) == NULL) {
-		ERROR("problems getting driver info for device defined at "
-		      "line %i\n", param->line);
-		ERROR("you may not have permission to the audio device\n");
-		exit(EXIT_FAILURE);
+		FATAL("problems getting driver info for device defined at line %i\n"
+		      "you may not have permission to the audio device\n" param->line);
 	}
 
 	DEBUG("using ao driver \"%s\" for \"%s\"\n", ai->short_name,
@@ -120,11 +116,8 @@ static int audioOutputAo_initDriver(AudioOutput * audioOutput,
 		while (n1) {
 			stk2 = NULL;
 			key = strtok_r(n1, "=", &stk2);
-			if (!key) {
-				ERROR("problems parsing "
-				      "options \"%s\"\n", n1);
-				exit(EXIT_FAILURE);
-			}
+			if (!key)
+				FATAL("problems parsing options \"%s\"\n", n1);
 			/*found = 0;
 			   for(i=0;i<ai->option_count;i++) {
 			   if(strcmp(ai->options[i],key)==0) {
@@ -133,17 +126,13 @@ static int audioOutputAo_initDriver(AudioOutput * audioOutput,
 			   }
 			   }
 			   if(!found) {
-			   ERROR("\"%s\" is not an option for "
+			   FATAL("\"%s\" is not an option for "
 			   "\"%s\" ao driver\n",key,
 			   ai->short_name);
-			   exit(EXIT_FAILURE);
 			   } */
 			value = strtok_r(NULL, "", &stk2);
-			if (!value) {
-				ERROR("problems parsing "
-				      "options \"%s\"\n", n1);
-				exit(EXIT_FAILURE);
-			}
+			if (!value)
+				FATAL("problems parsing options \"%s\"\n", n1);
 			ao_append_option(&ad->options, key, value);
 			n1 = strtok_r(NULL, ";", &stk1);
 		}

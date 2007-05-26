@@ -115,10 +115,8 @@ static void registerConfigParam(char *name, int repeatable, int block)
 {
 	ConfigEntry *entry;
 
-	if (findInList(configEntriesList, name, NULL)) {
-		ERROR("config parameter \"%s\" already registered\n", name);
-		exit(EXIT_FAILURE);
-	}
+	if (findInList(configEntriesList, name, NULL))
+		FATAL("config parameter \"%s\" already registered\n", name);
 
 	entry = newConfigEntry(repeatable, block);
 
@@ -225,19 +223,17 @@ static ConfigParam *readConfigBlock(FILE * fp, int *count, char *string)
 		}
 
 		if (2 != argsMinusComment) {
-			ERROR("improperly formatted config file at line %i:"
+			FATAL("improperly formatted config file at line %i:"
 			      " %s\n", *count, string);
-			exit(EXIT_FAILURE);
 		}
 
 		if (0 == strcmp(array[0], CONF_BLOCK_BEGIN) ||
 		    0 == strcmp(array[1], CONF_BLOCK_BEGIN) ||
 		    0 == strcmp(array[0], CONF_BLOCK_END) ||
 		    0 == strcmp(array[1], CONF_BLOCK_END)) {
-			ERROR("improperly formatted config file at line %i:"
-			      " %s\n", *count, string);
-			ERROR("in block beginning at line %i\n", ret->line);
-			exit(EXIT_FAILURE);
+			FATAL("improperly formatted config file at line %i: %s\n"
+			      "in block beginning at line %i\n",
+			      *count, string, ret->line);;
 		}
 
 		addBlockParam(ret, array[0], array[1], *count);
@@ -259,9 +255,8 @@ void readConf(char *file)
 	ConfigParam *param;
 
 	if (!(fp = fopen(file, "r"))) {
-		ERROR("problems opening file %s for reading: %s\n", file,
+		FATAL("problems opening file %s for reading: %s\n", file,
 		      strerror(errno));
-		exit(EXIT_FAILURE);
 	}
 
 	while (myFgets(string, MAX_STRING_SIZE, fp)) {
@@ -282,15 +277,13 @@ void readConf(char *file)
 		}
 
 		if (2 != argsMinusComment) {
-			ERROR("improperly formatted config file at line %i:"
+			FATAL("improperly formatted config file at line %i:"
 			      " %s\n", count, string);
-			exit(EXIT_FAILURE);
 		}
 
 		if (!findInList(configEntriesList, array[0], &voidPtr)) {
-			ERROR("unrecognized parameter in config file at line "
+			FATAL("unrecognized parameter in config file at line "
 			      "%i: %s\n", count, string);
-			exit(EXIT_FAILURE);
 		}
 
 		entry = (ConfigEntry *) voidPtr;
@@ -298,18 +291,15 @@ void readConf(char *file)
 		if (!(entry->mask & CONF_REPEATABLE_MASK) &&
 		    entry->configParamList->numberOfNodes) {
 			param = entry->configParamList->firstNode->data;
-			ERROR
-			    ("config parameter \"%s\" is first defined on line "
+			FATAL("config parameter \"%s\" is first defined on line "
 			     "%i and redefined on line %i\n", array[0],
 			     param->line, count);
-			exit(EXIT_FAILURE);
 		}
 
 		if (entry->mask & CONF_BLOCK_MASK) {
 			if (0 != strcmp(array[1], CONF_BLOCK_BEGIN)) {
-				ERROR("improperly formatted config file at "
+				FATAL("improperly formatted config file at "
 				      "line %i: %s\n", count, string);
-				exit(EXIT_FAILURE);
 			}
 			param = readConfigBlock(fp, &count, string);
 		} else
@@ -400,10 +390,8 @@ ConfigParam *parseConfigFilePath(char *name, int force)
 	ConfigParam *param = getConfigParam(name);
 	char *path;
 
-	if (!param && force) {
-		ERROR("config parameter \"%s\" not found\n", name);
-		exit(EXIT_FAILURE);
-	}
+	if (!param && force)
+		FATAL("config parameter \"%s\" not found\n", name);
 
 	if (!param)
 		return NULL;
@@ -411,9 +399,8 @@ ConfigParam *parseConfigFilePath(char *name, int force)
 	path = param->value;
 
 	if (path[0] != '/' && path[0] != '~') {
-		ERROR("\"%s\" is not an absolute path at line %i\n",
+		FATAL("\"%s\" is not an absolute path at line %i\n",
 		      param->value, param->line);
-		exit(EXIT_FAILURE);
 	}
 	/* Parse ~ in path */
 	else if (path[0] == '~') {
@@ -426,17 +413,15 @@ ConfigParam *parseConfigFilePath(char *name, int force)
 			if (userParam) {
 				pwd = getpwnam(userParam->value);
 				if (!pwd) {
-					ERROR("no such user %s at line %i\n",
+					FATAL("no such user %s at line %i\n",
 					      userParam->value,
 					      userParam->line);
-					exit(EXIT_FAILURE);
 				}
 			} else {
 				uid_t uid = geteuid();
 				if ((pwd = getpwuid(uid)) == NULL) {
-					ERROR("problems getting passwd entry "
+					FATAL("problems getting passwd entry "
 					      "for current user\n");
-					exit(EXIT_FAILURE);
 				}
 			}
 		} else {
@@ -448,9 +433,8 @@ ConfigParam *parseConfigFilePath(char *name, int force)
 			*ch = '\0';
 			pos += ch - path - 1;
 			if ((pwd = getpwnam(path + 1)) == NULL) {
-				ERROR("user \"%s\" not found at line %i\n",
+				FATAL("user \"%s\" not found at line %i\n",
 				      path + 1, param->line);
-				exit(EXIT_FAILURE);
 			}
 			if (foundSlash)
 				*ch = '/';

@@ -57,8 +57,7 @@ static int parsePermissions(char *string)
 		} else if (strcmp(temp, PERMISSION_ADMIN_STRING) == 0) {
 			permission |= PERMISSION_ADMIN;
 		} else {
-			ERROR("unknown permission \"%s\"\n", temp);
-			exit(EXIT_FAILURE);
+			FATAL("unknown permission \"%s\"\n", temp);
 		}
 
 		temp = strtok_r(NULL, PERMISSION_SEPERATOR, &tok);
@@ -87,19 +86,16 @@ void initPermissions(void)
 
 		do {
 			if (!strstr(param->value, PERMISSION_PASSWORD_CHAR)) {
-				ERROR("\"%s\" not found in password string "
+				FATAL("\"%s\" not found in password string "
 				      "\"%s\", line %i\n",
 				      PERMISSION_PASSWORD_CHAR,
 				      param->value, param->line);
-				exit(EXIT_FAILURE);
 			}
 
 			if (!(temp = strtok_r(param->value,
 					      PERMISSION_PASSWORD_CHAR,
 					      &cp2))) {
-				ERROR
-				    ("something weird just happened in permission.c\n");
-				exit(EXIT_FAILURE);
+				FATAL("something weird just happened in permission.c\n");
 			}
 
 			password = temp;

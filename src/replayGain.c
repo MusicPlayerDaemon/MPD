@@ -44,9 +44,8 @@ void initReplayGainState(void)
 	} else if (strcmp(param->value, "album") == 0) {
 		replayGainState = REPLAYGAIN_ALBUM;
 	} else {
-		ERROR("replaygain value \"%s\" at line %i is invalid\n",
+		FATAL("replaygain value \"%s\" at line %i is invalid\n",
 		      param->value, param->line);
-		exit(EXIT_FAILURE);
 	}
 
 	param = getConfigParam(CONF_REPLAYGAIN_PREAMP);
@@ -56,15 +55,13 @@ void initReplayGainState(void)
 		float f = strtod(param->value, &test);
 
 		if (*test != '\0') {
-			ERROR("Replaygain preamp \"%s\" is not a number at "
+			FATAL("Replaygain preamp \"%s\" is not a number at "
 			      "line %i\n", param->value, param->line);
-			exit(EXIT_FAILURE);
 		}
 
 		if (f < -15 || f > 15) {
-			ERROR("Replaygain preamp \"%s\" is not between -15 and"
+			FATAL("Replaygain preamp \"%s\" is not between -15 and"
 			      "15 at line %i\n", param->value, param->line);
-			exit(EXIT_FAILURE);
 		}
 
 		replayGainPreamp = pow(10, f / 20.0);

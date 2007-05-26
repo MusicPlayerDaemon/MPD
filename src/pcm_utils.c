@@ -72,9 +72,8 @@ void pcm_volumeChange(char *buffer, int bufferSize, AudioFormat * format,
 		}
 		break;
 	default:
-		ERROR("%i bits not supported by pcm_volumeChange!\n",
+		FATAL("%i bits not supported by pcm_volumeChange!\n",
 		      format->bits);
-		exit(EXIT_FAILURE);
 	}
 }
 
@@ -129,8 +128,7 @@ static void pcm_add(char *buffer1, char *buffer2, size_t bufferSize1,
 			memcpy(buffer8_1, buffer8_2, bufferSize2);
 		break;
 	default:
-		ERROR("%i bits not supported by pcm_add!\n", format->bits);
-		exit(EXIT_FAILURE);
+		FATAL("%i bits not supported by pcm_add!\n", format->bits);
 	}
 }
 
@@ -447,8 +445,7 @@ size_t pcm_sizeOfConvBuffer(AudioFormat * inFormat, size_t inSize,
 	case 16:
 		break;
 	default:
-		ERROR("only 8 or 16 bits are supported for conversion!\n");
-		exit(EXIT_FAILURE);
+		FATAL("only 8 or 16 bits are supported for conversion!\n");
 	}
 
 	if (inFormat->channels != outFormat->channels) {
@@ -460,9 +457,8 @@ size_t pcm_sizeOfConvBuffer(AudioFormat * inFormat, size_t inSize,
 			outSize >>= 1;
 			break;
 		default:
-			ERROR("only 1 or 2 channels are supported "
+			FATAL("only 1 or 2 channels are supported "
 			      "for conversion!\n");
-			exit(EXIT_FAILURE);
 		}
 	}
 

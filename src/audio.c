@@ -127,23 +127,21 @@ void initAudioDriver(void)
 		if (!initAudioOutput(output, param)) {
 			if (param)
 			{
-				ERROR("problems configuring output device "
+				FATAL("problems configuring output device "
 				      "defined at line %i\n", param->line);
 			}
 			else
 			{
-				ERROR("No audio_output specified and unable to "
+				FATAL("No audio_output specified and unable to "
 				      "detect a default audio output device\n");
 			}
-			exit(EXIT_FAILURE);
 		}
 
 		/* require output names to be unique: */
 		for (j = 0; j < i; j++) {
 			if (!strcmp(output->name, audioOutputArray[j].name)) {
-				ERROR("output devices with identical "
+				FATAL("output devices with identical "
 				      "names: %s\n", output->name);
-				exit(EXIT_FAILURE);
 			}
 		}
 		audioDeviceStates[i] = DEVICE_ENABLE;
@@ -169,9 +167,8 @@ void initAudioConfig(void)
 	audio_configFormat = xmalloc(sizeof(AudioFormat));
 
 	if (0 != parseAudioConfig(audio_configFormat, param->value)) {
-		ERROR("error parsing \"%s\" at line %i\n",
+		FATAL("error parsing \"%s\" at line %i\n",
 		      CONF_AUDIO_OUTPUT_FORMAT, param->line);
-		exit(EXIT_FAILURE);
 	}
 }
 

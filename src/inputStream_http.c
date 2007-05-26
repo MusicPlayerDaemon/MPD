@@ -81,9 +81,8 @@ void inputStream_initHttp(void)
 		param = getConfigParam(CONF_HTTP_PROXY_PORT);
 
 		if (!param) {
-			ERROR("%s specified but not %s", CONF_HTTP_PROXY_HOST,
+			FATAL("%s specified but not %s", CONF_HTTP_PROXY_HOST,
 			      CONF_HTTP_PROXY_PORT);
-			exit(EXIT_FAILURE);
 		}
 		proxyPort = param->value;
 
@@ -95,10 +94,9 @@ void inputStream_initHttp(void)
 			param = getConfigParam(CONF_HTTP_PROXY_PASSWORD);
 
 			if (!param) {
-				ERROR("%s specified but not %s\n",
+				FATAL("%s specified but not %s\n",
 				      CONF_HTTP_PROXY_USER,
 				      CONF_HTTP_PROXY_PASSWORD);
-				exit(EXIT_FAILURE);
 			}
 
 			proxyPassword = param->value;
@@ -106,24 +104,20 @@ void inputStream_initHttp(void)
 			param = getConfigParam(CONF_HTTP_PROXY_PASSWORD);
 
 			if (param) {
-				ERROR("%s specified but not %s\n",
+				FATAL("%s specified but not %s\n",
 				      CONF_HTTP_PROXY_PASSWORD, CONF_HTTP_PROXY_USER);
-				exit(EXIT_FAILURE);
 			}
 		}
 	} else if ((param = getConfigParam(CONF_HTTP_PROXY_PORT))) {
-		ERROR("%s specified but not %s, line %i\n",
+		FATAL("%s specified but not %s, line %i\n",
 		      CONF_HTTP_PROXY_PORT, CONF_HTTP_PROXY_HOST, param->line);
-		exit(EXIT_FAILURE);
 	} else if ((param = getConfigParam(CONF_HTTP_PROXY_USER))) {
-		ERROR("%s specified but not %s, line %i\n",
+		FATAL("%s specified but not %s, line %i\n",
 		      CONF_HTTP_PROXY_USER, CONF_HTTP_PROXY_HOST, param->line);
-		exit(EXIT_FAILURE);
 	} else if ((param = getConfigParam(CONF_HTTP_PROXY_PASSWORD))) {
-		ERROR("%s specified but not %s, line %i\n",
+		FATAL("%s specified but not %s, line %i\n",
 		      CONF_HTTP_PROXY_PASSWORD, CONF_HTTP_PROXY_HOST,
 		      param->line);
-		exit(EXIT_FAILURE);
 	}
 
 	param = getConfigParam(CONF_HTTP_BUFFER_SIZE);
@@ -132,10 +126,9 @@ void inputStream_initHttp(void)
 		bufferSize = strtol(param->value, &test, 10);
 
 		if (bufferSize <= 0 || *test != '\0') {
-			ERROR("\"%s\" specified for %s at line %i is not a "
+			FATAL("\"%s\" specified for %s at line %i is not a "
 			      "positive integer\n",
 			      param->value, CONF_HTTP_BUFFER_SIZE, param->line);
-			exit(EXIT_FAILURE);
 		}
 
 		bufferSize *= 1024;
@@ -150,11 +143,10 @@ void inputStream_initHttp(void)
 		prebufferSize = strtol(param->value, &test, 10);
 
 		if (prebufferSize <= 0 || *test != '\0') {
-			ERROR("\"%s\" specified for %s at line %i is not a "
+			FATAL("\"%s\" specified for %s at line %i is not a "
 			      "positive integer\n",
 			      param->value, CONF_HTTP_PREBUFFER_SIZE,
 			      param->line);
-			exit(EXIT_FAILURE);
 		}
 
 		prebufferSize *= 1024;

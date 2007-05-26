@@ -430,9 +430,8 @@ void initVolume(void)
 			volume_mixerType = VOLUME_MIXER_TYPE_SOFTWARE;
 			volume_mixerDevice = VOLUME_MIXER_SOFTWARE_DEFAULT;
 		} else {
-			ERROR("unknown mixer type %s at line %i\n",
+			FATAL("unknown mixer type %s at line %i\n",
 			      param->value, param->line);
-			exit(EXIT_FAILURE);
 		}
 	}
 

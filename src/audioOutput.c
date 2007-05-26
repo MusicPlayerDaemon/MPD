@@ -58,10 +58,9 @@ void finishAudioOutputPlugins(void)
 #define getBlockParam(name, str, force) { \
 	bp = getBlockParam(param, name); \
 	if(force && bp == NULL) { \
-		ERROR("couldn't find parameter \"%s\" in audio output " \
+		FATAL("couldn't find parameter \"%s\" in audio output " \
 				"definition beginning at %i\n", \
 				name, param->line); \
-		exit(EXIT_FAILURE); \
 	} \
 	if(bp) str = bp->value; \
 }
@@ -81,9 +80,8 @@ int initAudioOutput(AudioOutput *ao, ConfigParam * param)
 		getBlockParam(AUDIO_OUTPUT_FORMAT, format, 0);
 
 		if (!findInList(audioOutputPluginList, type, &data)) {
-			ERROR("couldn't find audio output plugin for type "
+			FATAL("couldn't find audio output plugin for type "
 			      "\"%s\" at line %i\n", type, param->line);
-			exit(EXIT_FAILURE);
 		}
 
 		plugin = (AudioOutputPlugin *) data;
@@ -141,8 +139,7 @@ int initAudioOutput(AudioOutput *ao, ConfigParam * param)
 		ao->convertAudioFormat = 1;
 
 		if (0 != parseAudioConfig(&ao->reqAudioFormat, format)) {
-			ERROR("error parsing format at line %i\n", bp->line);
-			exit(EXIT_FAILURE);
+			FATAL("error parsing format at line %i\n", bp->line);
 		}
 
 		copyAudioFormat(&ao->outAudioFormat, &ao->reqAudioFormat);

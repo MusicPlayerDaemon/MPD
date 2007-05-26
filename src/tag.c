@@ -103,9 +103,8 @@ void initTagConfig(void)
 				}
 			}
 			if (strlen(c) && i == TAG_NUM_OF_ITEM_TYPES) {
-				ERROR("error parsing metadata item \"%s\" at "
+				FATAL("error parsing metadata item \"%s\" at "
 				      "line %i\n", c, param->line);
-				exit(EXIT_FAILURE);
 			}
 			s++;
 			c = s;

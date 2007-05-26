@@ -87,16 +87,13 @@ void read_state_file(void)
 		DEBUG("failed to stat state file: %s\n", sfpath);
 		return;
 	}
-	if (!S_ISREG(st.st_mode)) {
-		ERROR("state file \"%s\" is not a regular file\n", sfpath);
-		exit(EXIT_FAILURE);
-	}
+	if (!S_ISREG(st.st_mode))
+		FATAL("state file \"%s\" is not a regular file\n", sfpath);
 
 	while (!(fp = fopen(sfpath, "r")) && errno == EINTR);
 	if (mpd_unlikely(!fp)) {
-		ERROR("problems opening state file \"%s\" for reading: %s\n",
+		FATAL("problems opening state file \"%s\" for reading: %s\n",
 		      sfpath, strerror(errno));
-		exit(EXIT_FAILURE);
 	}
 	for (i = 0; i < ARRAY_SIZE(sf_callbacks); i++) {
 		sf_callbacks[i].reader(fp);
@@ -108,7 +105,6 @@ void read_state_file(void)
 
 void mpd_noreturn state_file_fatal(void)
 {
-	ERROR("error parsing state file \"%s\"\n", sfpath);
-	exit(EXIT_FAILURE);
+	FATAL("error parsing state file \"%s\"\n", sfpath);
 }
 

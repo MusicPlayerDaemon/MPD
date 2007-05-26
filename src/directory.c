@@ -951,23 +951,18 @@ static void readDirectoryInfo(FILE * fp, Directory * directory)
 	       && 0 != strncmp(DIRECTORY_END, buffer, strlen(DIRECTORY_END))) {
 		if (0 == strncmp(DIRECTORY_DIR, buffer, strlen(DIRECTORY_DIR))) {
 			key = xstrdup(&(buffer[strlen(DIRECTORY_DIR)]));
-			if (!myFgets(buffer, bufferSize, fp)) {
-				ERROR("Error reading db, fgets\n");
-				exit(EXIT_FAILURE);
-			}
+			if (!myFgets(buffer, bufferSize, fp))
+				FATAL("Error reading db, fgets\n");
 			/* for compatibility with db's prior to 0.11 */
 			if (0 == strncmp(DIRECTORY_MTIME, buffer,
 					 strlen(DIRECTORY_MTIME))) {
-				if (!myFgets(buffer, bufferSize, fp)) {
-					ERROR("Error reading db, fgets\n");
-					exit(EXIT_FAILURE);
-				}
+				if (!myFgets(buffer, bufferSize, fp))
+					FATAL("Error reading db, fgets\n");
 			}
 			if (strncmp
 			    (DIRECTORY_BEGIN, buffer,
 			     strlen(DIRECTORY_BEGIN))) {
-				ERROR("Error reading db at line: %s\n", buffer);
-				exit(EXIT_FAILURE);
+				FATAL("Error reading db at line: %s\n", buffer);
 			}
 			name = xstrdup(&(buffer[strlen(DIRECTORY_BEGIN)]));
 
@@ -1001,8 +996,7 @@ static void readDirectoryInfo(FILE * fp, Directory * directory)
 		} else if (0 == strncmp(SONG_BEGIN, buffer, strlen(SONG_BEGIN))) {
 			readSongInfoIntoList(fp, directory->songs, directory);
 		} else {
-			ERROR("Unknown line in db: %s\n", buffer);
-			exit(EXIT_FAILURE);
+			FATAL("Unknown line in db: %s\n", buffer);
 		}
 	}
 
@@ -1155,21 +1149,16 @@ int readDirectoryDB(void)
 		int foundFsCharset = 0;
 		int foundVersion = 0;
 
-		if (!myFgets(buffer, bufferSize, fp)) {
-			ERROR("Error reading db, fgets\n");
-			exit(EXIT_FAILURE);
-		}
+		if (!myFgets(buffer, bufferSize, fp))
+			FATAL("Error reading db, fgets\n");
 		if (0 == strcmp(DIRECTORY_INFO_BEGIN, buffer)) {
 			while (myFgets(buffer, bufferSize, fp) &&
 			       0 != strcmp(DIRECTORY_INFO_END, buffer)) {
 				if (0 == strncmp(DIRECTORY_MPD_VERSION, buffer,
 						 strlen(DIRECTORY_MPD_VERSION)))
 				{
-					if (foundVersion) {
-						ERROR("already found "
-						      "version in db\n");
-						exit(EXIT_FAILURE);
-					}
+					if (foundVersion)
+						FATAL("already found version in db\n");
 					foundVersion = 1;
 				} else if (0 ==
 					   strncmp(DIRECTORY_FS_CHARSET, buffer,
@@ -1178,11 +1167,8 @@ int readDirectoryDB(void)
 					char *fsCharset;
 					char *tempCharset;
 
-					if (foundFsCharset) {
-						WARNING("already found "
-							"fs charset in db\n");
-						exit(EXIT_FAILURE);
-					}
+					if (foundFsCharset)
+						FATAL("already found fs charset in db\n");
 
 					foundFsCharset = 1;
 
@@ -1198,10 +1184,8 @@ int readDirectoryDB(void)
 						setFsCharset(fsCharset);
 					}
 				} else {
-					ERROR
-					    ("directory: unknown line in db info: %s\n",
+					FATAL("directory: unknown line in db info: %s\n",
 					     buffer);
-					exit(EXIT_FAILURE);
 				}
 			}
 		} else {
@@ -1233,14 +1217,12 @@ void updateMp3Directory(void)
 		/* nothing updated */
 		return;
 	case 1:
-		if (writeDirectoryDB() < 0) {
+		if (writeDirectoryDB() < 0)
 			exit(EXIT_FAILURE);
-		}
 		break;
 	default:
 		/* something was updated and db should be written */
-		ERROR("problems updating music db\n");
-		exit(EXIT_FAILURE);
+		FATAL("problems updating music db\n");
 	}
 
 	return;

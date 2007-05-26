@@ -135,9 +135,8 @@ void initPlaylist(void)
 	if (param) {
 		playlist_max_length = strtol(param->value, &test, 10);
 		if (*test != '\0') {
-			ERROR("max playlist length \"%s\" is not an integer, "
+			FATAL("max playlist length \"%s\" is not an integer, "
 			      "line %i\n", param->value, param->line);
-			exit(EXIT_FAILURE);
 		}
 	}
 

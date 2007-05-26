@@ -251,10 +251,8 @@ void readSongInfoIntoList(FILE * fp, SongList * list, Directory * parentDir)
 			song->type = SONG_TYPE_FILE;
 			song->parentDir = parentDir;
 		} else if (0 == strncmp(SONG_FILE, buffer, strlen(SONG_FILE))) {
-			if (!song) {
-				ERROR("Problems reading song info\n");
-				exit(EXIT_FAILURE);
-			}
+			if (!song)
+				FATAL("Problems reading song info\n");
 			/* we don't need this info anymore
 			   song->url = xstrdup(&(buffer[strlen(SONG_FILE)]));
 			 */
@@ -273,10 +271,8 @@ void readSongInfoIntoList(FILE * fp, SongList * list, Directory * parentDir)
 			song->mtime = atoi(&(buffer[strlen(SONG_MTIME)]));
 		}
 		/* ignore empty lines (starting with '\0') */
-		else if (*buffer) {
-			ERROR("songinfo: unknown line in db: %s\n", buffer);
-			exit(EXIT_FAILURE);
-		}
+		else if (*buffer)
+			FATAL("songinfo: unknown line in db: %s\n", buffer);
 	}
 
 	if (song) {

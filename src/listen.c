@@ -41,8 +41,9 @@
 #define DEFAULT_PORT	6600
 
 #define BINDERROR() do { \
-	ERROR("unable to bind port %u: %s\n", port, strerror(errno)); \
-	ERROR("maybe MPD is still running?\n"); \
+	FATAL("unable to bind port %u: %s\n" \
+	      "maybe MPD is still running?\n", \
+	      port, strerror(errno)); \
 } while (0);
 
 static int *listenSockets;
@@ -69,25 +70,20 @@ static int establishListen(unsigned int port,
 		pf = PF_UNIX;
 		break;
 	default:
-		ERROR("unknown address family: %i\n", addrp->sa_family);
-		exit(EXIT_FAILURE);
+		FATAL("unknown address family: %i\n", addrp->sa_family);
 	}
 
-	if ((sock = socket(pf, SOCK_STREAM, 0)) < 0) {
-		ERROR("socket < 0\n");
-		exit(EXIT_FAILURE);
-	}
+	if ((sock = socket(pf, SOCK_STREAM, 0)) < 0)
+		FATAL("socket < 0\n");
 
 	if (fcntl(sock, F_SETFL, fcntl(sock, F_GETFL) | O_NONBLOCK) < 0) {
-		ERROR("problems setting nonblocking on listen socket: %s\n",
+		FATAL("problems setting nonblocking on listen socket: %s\n",
 		      strerror(errno));
-		exit(EXIT_FAILURE);
 	}
 
 	if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (char *)&allowReuse,
 		       sizeof(allowReuse)) < 0) {
-		ERROR("problems setsockopt'ing: %s\n", strerror(errno));
-		exit(EXIT_FAILURE);
+		FATAL("problems setsockopt'ing: %s\n", strerror(errno));
 	}
 
 	if (bind(sock, addrp, addrlen) < 0) {
@@ -95,10 +91,8 @@ static int establishListen(unsigned int port,
 		return -1;
 	}
 
-	if (listen(sock, 5) < 0) {
-		ERROR("problems listen'ing: %s\n", strerror(errno));
-		exit(EXIT_FAILURE);
-	}
+	if (listen(sock, 5) < 0)
+		FATAL("problems listen'ing: %s\n", strerror(errno));
 
 	numberOfListenSockets++;
 	listenSockets =
@@ -133,10 +127,8 @@ static void parseListenConfigParam(unsigned int port, ConfigParam * param)
 			sin6.sin6_addr = in6addr_any;
 			addrp = (struct sockaddr *)&sin6;
 			addrlen = sizeof(struct sockaddr_in6);
-			if (establishListen(port, addrp, addrlen) < 0) {
+			if (establishListen(port, addrp, addrlen) < 0)
 				BINDERROR();
-				exit(EXIT_FAILURE);
-			}
 		}
 #endif
 		sin.sin_addr.s_addr = INADDR_ANY;
@@ -148,24 +140,21 @@ static void parseListenConfigParam(unsigned int port, ConfigParam * param)
 		if (establishListen(port, addrp, addrlen) < 0) {
 #endif
 			BINDERROR();
-			exit(EXIT_FAILURE);
 		}
 	} else {
 		struct hostent *he;
 		DEBUG("binding to address for %s\n", param->value);
 		if (!(he = gethostbyname(param->value))) {
-			ERROR("can't lookup host \"%s\" at line %i\n",
+			FATAL("can't lookup host \"%s\" at line %i\n",
 			      param->value, param->line);
-			exit(EXIT_FAILURE);
 		}
 		switch (he->h_addrtype) {
 #ifdef HAVE_IPV6
 		case AF_INET6:
 			if (!useIpv6) {
-				ERROR("no IPv6 support, but a IPv6 address "
+				FATAL("no IPv6 support, but a IPv6 address "
 				      "found for \"%s\" at line %i\n",
 				      param->value, param->line);
-				exit(EXIT_FAILURE);
 			}
 			memcpy((char *)&sin6.sin6_addr.s6_addr,
 			       (char *)he->h_addr, he->h_length);
@@ -180,15 +169,12 @@ static void parseListenConfigParam(unsigned int port, ConfigParam * param)
 			addrlen = sizeof(struct sockaddr_in);
 			break;
 		default:
-			ERROR("address type for \"%s\" is not IPv4 or IPv6 "
+			FATAL("address type for \"%s\" is not IPv4 or IPv6 "
 			      "at line %i\n", param->value, param->line);
-			exit(EXIT_FAILURE);
 		}
 
-		if (establishListen(port, addrp, addrlen) < 0) {
+		if (establishListen(port, addrp, addrlen) < 0)
 			BINDERROR();
-			exit(EXIT_FAILURE);
-		}
 	}
 }
 
@@ -202,10 +188,9 @@ void listenOnPort(void)
 		char *test;
 		port = strtol(portParam->value, &test, 10);
 		if (port <= 0 || *test != '\0') {
-			ERROR("%s \"%s\" specified at line %i is not a "
+			FATAL("%s \"%s\" specified at line %i is not a "
 			      "positive integer", CONF_PORT,
 			      portParam->value, portParam->line);
-			exit(EXIT_FAILURE);
 		}
 	}
 

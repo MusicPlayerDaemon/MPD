@@ -246,15 +246,13 @@ static void changeToUser(void)
 		/* get uid */
 		struct passwd *userpwd;
 		if ((userpwd = getpwnam(param->value)) == NULL) {
-			ERROR("no such user \"%s\" at line %i\n", param->value,
+			FATAL("no such user \"%s\" at line %i\n", param->value,
 			      param->line);
-			exit(EXIT_FAILURE);
 		}
 
 		if (setgid(userpwd->pw_gid) == -1) {
-			ERROR("cannot setgid for user \"%s\" at line %i: %s\n",
+			FATAL("cannot setgid for user \"%s\" at line %i: %s\n",
 			      param->value, param->line, strerror(errno));
-			exit(EXIT_FAILURE);
 		}
 #ifdef _BSD_SOURCE
 		/* init suplementary groups 
@@ -269,10 +267,9 @@ static void changeToUser(void)
 
 		/* set uid */
 		if (setuid(userpwd->pw_uid) == -1) {
-			ERROR("cannot change to uid of user "
+			FATAL("cannot change to uid of user "
 			      "\"%s\" at line %i: %s\n",
 			      param->value, param->line, strerror(errno));
-			exit(EXIT_FAILURE);
 		}
 
 		/* this is needed by libs such as arts */
@@ -286,10 +283,9 @@ static void openDB(Options * options, char *argv0)
 {
 	if (options->createDB > 0 || readDirectoryDB() < 0) {
 		if (options->createDB < 0) {
-			ERROR("can't open db file and using \"--no-create-db\""
-			      " command line option\n");
-			ERROR("try running \"%s --create-db\"\n", argv0);
-			exit(EXIT_FAILURE);
+			FATAL("can't open db file and using "
+			      "\"--no-create-db\" command line option\n"
+			      "try running \"%s --create-db\"\n", argv0);
 		}
 		flushWarningLog();
 		if (checkDirectoryDB() < 0)
@@ -313,11 +309,9 @@ static void daemonize(Options * options)
 		DEBUG("opening pid file\n");
 		fp = fopen(pidFileParam->value, "w+");
 		if (!fp) {
-			ERROR
-			    ("could not open %s \"%s\" (at line %i) for writing: %s\n",
+			FATAL("could not open %s \"%s\" (at line %i) for writing: %s\n",
 			     CONF_PID_FILE, pidFileParam->value,
 			     pidFileParam->line, strerror(errno));
-			exit(EXIT_FAILURE);
 		}
 	}
 
@@ -329,18 +323,15 @@ static void daemonize(Options * options)
 		if (pid > 0)
 			_exit(EXIT_SUCCESS);
 		else if (pid < 0) {
-			ERROR("problems fork'ing for daemon!\n");
-			exit(EXIT_FAILURE);
+			FATAL("problems fork'ing for daemon!\n");
 		}
 
 		if (chdir("/") < 0) {
-			ERROR("problems changing to root directory\n");
-			exit(EXIT_FAILURE);
+			FATAL("problems changing to root directory\n");
 		}
 
 		if (setsid() < 0) {
-			ERROR("problems setsid'ing\n");
-			exit(EXIT_FAILURE);
+			FATAL("problems setsid'ing\n");
 		}
 
 		fflush(NULL);
@@ -348,8 +339,7 @@ static void daemonize(Options * options)
 		if (pid > 0)
 			_exit(EXIT_SUCCESS);
 		else if (pid < 0) {
-			ERROR("problems fork'ing for daemon!\n");
-			exit(EXIT_FAILURE);
+			FATAL("problems fork'ing for daemon!\n");
 		}
 
 		DEBUG("daemonized!\n");
@@ -381,26 +371,22 @@ static void killFromPidFile(char *cmd, int killOption)
 	int pid;
 
 	if (!pidFileParam) {
-		ERROR("no pid_file specified in the config file\n");
-		exit(EXIT_FAILURE);
+		FATAL("no pid_file specified in the config file\n");
 	}
 
 	fp = fopen(pidFileParam->value, "r");
 	if (!fp) {
-		ERROR("unable to open %s \"%s\": %s\n",
+		FATAL("unable to open %s \"%s\": %s\n",
 		      CONF_PID_FILE, pidFileParam->value, strerror(errno));
-		exit(EXIT_FAILURE);
 	}
 	if (fscanf(fp, "%i", &pid) != 1) {
-		ERROR("unable to read the pid from file \"%s\"\n",
+		FATAL("unable to read the pid from file \"%s\"\n",
 		      pidFileParam->value);
-		exit(EXIT_FAILURE);
 	}
 	fclose(fp);
 
 	if (kill(pid, SIGTERM)) {
-		ERROR("unable to kill proccess %i: %s\n", pid, strerror(errno));
-		exit(EXIT_FAILURE);
+		FATAL("unable to kill proccess %i: %s\n", pid, strerror(errno));
 	}
 	exit(EXIT_SUCCESS);
 }

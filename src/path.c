@@ -142,18 +142,16 @@ void initPaths(void)
 	playlistDir = appendSlash(&(playlistParam->value));
 
 	if ((dir = opendir(playlistDir)) == NULL) {
-		ERROR("cannot open %s \"%s\" (config line %i): %s\n",
+		FATAL("cannot open %s \"%s\" (config line %i): %s\n",
 		      CONF_PLAYLIST_DIR, playlistParam->value,
 		      playlistParam->line, strerror(errno));
-		exit(EXIT_FAILURE);
 	}
 	closedir(dir);
 
 	if ((dir = opendir(musicDir)) == NULL) {
-		ERROR("cannot open %s \"%s\" (config line %i): %s\n",
+		FATAL("cannot open %s \"%s\" (config line %i): %s\n",
 		      CONF_MUSIC_DIR, musicParam->value,
 		      musicParam->line, strerror(errno));
-		exit(EXIT_FAILURE);
 	}
 	closedir(dir);
 

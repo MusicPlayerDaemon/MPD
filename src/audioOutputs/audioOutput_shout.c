@@ -100,10 +100,9 @@ static void freeShoutData(ShoutData * sd)
 
 #define checkBlockParam(name) { \
 	blockParam = getBlockParam(param, name); \
-	if(!blockParam) { \
-		ERROR("no \"%s\" defined for shout device defined at line " \
+	if (!blockParam) { \
+		FATAL("no \"%s\" defined for shout device defined at line " \
 				"%i\n", name, param->line); \
-		exit(EXIT_FAILURE); \
 	} \
 }
 
@@ -138,9 +137,8 @@ static int myShout_initDriver(AudioOutput * audioOutput, ConfigParam * param)
 	port = strtol(blockParam->value, &test, 10);
 
 	if (*test != '\0' || port <= 0) {
-		ERROR("shout port \"%s\" is not a positive integer, line %i\n",
+		FATAL("shout port \"%s\" is not a positive integer, line %i\n",
 		      blockParam->value, blockParam->line);
-		exit(EXIT_FAILURE);
 	}
 
 	checkBlockParam("password");
@@ -151,14 +149,13 @@ static int myShout_initDriver(AudioOutput * audioOutput, ConfigParam * param)
 
 	blockParam = getBlockParam(param, "public");
 	if (blockParam) {
-		if (0 == strcmp(blockParam->value, "yes"))
+		if (0 == strcmp(blockParam->value, "yes")) {
 			public = 1;
-		else if (0 == strcmp(blockParam->value, "no"))
+		} else if (0 == strcmp(blockParam->value, "no")) {
 			public = 0;
-		else {
-			ERROR("public \"%s\" is not \"yes\" or \"no\" at line "
+		} else {
+			FATAL("public \"%s\" is not \"yes\" or \"no\" at line "
 			      "%i\n", param->value, param->line);
-			exit(EXIT_FAILURE);
 		}
 	} else
 		public = 0;
@@ -177,35 +174,31 @@ static int myShout_initDriver(AudioOutput * audioOutput, ConfigParam * param)
 		sd->quality = strtod(blockParam->value, &test);
 
 		if (*test != '\0' || sd->quality < -1.0 || sd->quality > 10.0) {
-			ERROR("shout quality \"%s\" is not a number in the "
+			FATAL("shout quality \"%s\" is not a number in the "
 			      "range -1 to 10, line %i\n", blockParam->value,
 			      blockParam->line);
-			exit(EXIT_FAILURE);
 		}
 
 		blockParam = getBlockParam(param, "bitrate");
 
 		if (blockParam) {
-			ERROR("quality (line %i) and bitrate (line %i) are "
+			FATAL("quality (line %i) and bitrate (line %i) are "
 			      "both defined for shout output\n", line,
 			      blockParam->line);
-			exit(EXIT_FAILURE);
 		}
 	} else {
 		blockParam = getBlockParam(param, "bitrate");
 
 		if (!blockParam) {
-			ERROR("neither bitrate nor quality defined for shout "
+			FATAL("neither bitrate nor quality defined for shout "
 			      "output at line %i\n", param->line);
-			exit(EXIT_FAILURE);
 		}
 
 		sd->bitrate = strtol(blockParam->value, &test, 10);
 
 		if (*test != '\0' || sd->bitrate <= 0) {
-			ERROR("bitrate at line %i should be a positive integer "
+			FATAL("bitrate at line %i should be a positive integer "
 			      "\n", blockParam->line);
-			exit(EXIT_FAILURE);
 		}
 	}
 
@@ -225,25 +218,22 @@ static int myShout_initDriver(AudioOutput * audioOutput, ConfigParam * param)
 	    shout_set_protocol(sd->shoutConn, SHOUT_PROTOCOL_HTTP)
 	    != SHOUTERR_SUCCESS ||
 	    shout_set_agent(sd->shoutConn, "MPD") != SHOUTERR_SUCCESS) {
-		ERROR("error configuring shout defined at line %i: %s\n",
+		FATAL("error configuring shout defined at line %i: %s\n",
 		      param->line, shout_get_error(sd->shoutConn));
-		exit(EXIT_FAILURE);
 	}
 
 	/* optional paramters */
 	blockParam = getBlockParam(param, "genre");
 	if (blockParam && shout_set_genre(sd->shoutConn, blockParam->value)) {
-		ERROR("error configuring shout defined at line %i: %s\n",
+		FATAL("error configuring shout defined at line %i: %s\n",
 		      param->line, shout_get_error(sd->shoutConn));
-		exit(EXIT_FAILURE);
 	}
 
 	blockParam = getBlockParam(param, "description");
 	if (blockParam && shout_set_description(sd->shoutConn,
 						blockParam->value)) {
-		ERROR("error configuring shout defined at line %i: %s\n",
+		FATAL("error configuring shout defined at line %i: %s\n",
 		      param->line, shout_get_error(sd->shoutConn));
-		exit(EXIT_FAILURE);
 	}
 
 	{

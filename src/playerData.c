@@ -53,9 +53,8 @@ void initPlayerData(void)
 	if (param) {
 		bufferSize = strtol(param->value, &test, 10);
 		if (*test != '\0' || bufferSize <= 0) {
-			ERROR("buffer size \"%s\" is not a positive integer, "
+			FATAL("buffer size \"%s\" is not a positive integer, "
 			      "line %i\n", param->value, param->line);
-			exit(EXIT_FAILURE);
 		}
 	}
 
@@ -64,8 +63,7 @@ void initPlayerData(void)
 	buffered_chunks = bufferSize / CHUNK_SIZE;
 
 	if (buffered_chunks >= 1 << 15) {
-		ERROR("buffer size \"%li\" is too big\n", (long)bufferSize);
-		exit(EXIT_FAILURE);
+		FATAL("buffer size \"%li\" is too big\n", (long)bufferSize);
 	}
 
 	param = getConfigParam(CONF_BUFFER_BEFORE_PLAY);
@@ -73,10 +71,9 @@ void initPlayerData(void)
 	if (param) {
 		perc = strtod(param->value, &test);
 		if (*test != '%' || perc < 0 || perc > 100) {
-			ERROR("buffered before play \"%s\" is not a positive "
+			FATAL("buffered before play \"%s\" is not a positive "
 			      "percentage and less than 100 percent, line %i"
 			      "\n", param->value, param->line);
-			exit(EXIT_FAILURE);
 		}
 	}
 
@@ -97,20 +94,11 @@ void initPlayerData(void)
 	allocationSize += device_array_size;
 
 	if ((shmid = shmget(IPC_PRIVATE, allocationSize, IPC_CREAT | 0600)) < 0)
-	{
-		ERROR("problems shmget'ing\n");
-		exit(EXIT_FAILURE);
-	}
+		FATAL("problems shmget'ing\n");
 	if (!(playerData_pd = shmat(shmid, NULL, 0))) 
-	{
-		ERROR("problems shmat'ing\n");
-		exit(EXIT_FAILURE);
-	}
+		FATAL("problems shmat'ing\n");
 	if (shmctl(shmid, IPC_RMID, NULL) < 0) 
-	{
-		ERROR("problems shmctl'ing\n");
-		exit(EXIT_FAILURE);
-	}
+		FATAL("problems shmctl'ing\n");
 
 	playerData_pd->audioDeviceStates = (mpd_uint8 *)playerData_pd +
 	                                    allocationSize - device_array_size;

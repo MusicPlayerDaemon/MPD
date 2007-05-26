@@ -585,10 +585,9 @@ void initInterfaces(void)
 	if (param) {
 		interface_timeout = strtol(param->value, &test, 10);
 		if (*test != '\0' || interface_timeout <= 0) {
-			ERROR("connection timeout \"%s\" is not a positive "
+			FATAL("connection timeout \"%s\" is not a positive "
 			      "integer, line %i\n", CONF_CONN_TIMEOUT,
 			      param->line);
-			exit(EXIT_FAILURE);
 		}
 	}
 
@@ -597,9 +596,8 @@ void initInterfaces(void)
 	if (param) {
 		interface_max_connections = strtol(param->value, &test, 10);
 		if (*test != '\0' || interface_max_connections <= 0) {
-			ERROR("max connections \"%s\" is not a positive integer"
+			FATAL("max connections \"%s\" is not a positive integer"
 			      ", line %i\n", param->value, param->line);
-			exit(EXIT_FAILURE);
 		}
 	} else
 		interface_max_connections = INTERFACE_MAX_CONNECTIONS_DEFAULT;
@@ -610,9 +608,8 @@ void initInterfaces(void)
 		interface_max_command_list_size = strtol(param->value,
 							 &test, 10);
 		if (*test != '\0' || interface_max_command_list_size <= 0) {
-			ERROR("max command list size \"%s\" is not a positive "
+			FATAL("max command list size \"%s\" is not a positive "
 			      "integer, line %i\n", param->value, param->line);
-			exit(EXIT_FAILURE);
 		}
 		interface_max_command_list_size *= 1024;
 	}
@@ -623,9 +620,8 @@ void initInterfaces(void)
 		interface_max_output_buffer_size = strtol(param->value,
 		                                          &test, 10);
 		if (*test != '\0' || interface_max_output_buffer_size <= 0) {
-			ERROR("max output buffer size \"%s\" is not a positive "
+			FATAL("max output buffer size \"%s\" is not a positive "
 			      "integer, line %i\n", param->value, param->line);
-			exit(EXIT_FAILURE);
 		}
 		interface_max_output_buffer_size *= 1024;
 	}
