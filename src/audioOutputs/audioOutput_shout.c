@@ -117,7 +117,7 @@ static int myShout_initDriver(AudioOutput * audioOutput, ConfigParam * param)
 	char *user;
 	char *name;
 	BlockParam *blockParam;
-	unsigned int public;
+	unsigned int public = 0;
 
 	sd = newShoutData();
 
@@ -157,8 +157,7 @@ static int myShout_initDriver(AudioOutput * audioOutput, ConfigParam * param)
 			FATAL("public \"%s\" is not \"yes\" or \"no\" at line "
 			      "%i\n", param->value, param->line);
 		}
-	} else
-		public = 0;
+	}
 
 	blockParam = getBlockParam(param, "user");
 	if (blockParam)

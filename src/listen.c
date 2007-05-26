@@ -53,7 +53,7 @@ static int boundPort;
 static int establishListen(unsigned int port,
                            struct sockaddr *addrp, socklen_t addrlen)
 {
-	int pf;
+	int pf = 0;
 	int sock;
 	int allowReuse = ALLOW_REUSE;
 
@@ -105,8 +105,8 @@ static int establishListen(unsigned int port,
 
 static void parseListenConfigParam(unsigned int port, ConfigParam * param)
 {
-	struct sockaddr *addrp;
-	socklen_t addrlen;
+	struct sockaddr *addrp = NULL;
+	socklen_t addrlen = 0;
 	struct sockaddr_in sin;
 #ifdef HAVE_IPV6
 	struct sockaddr_in6 sin6;

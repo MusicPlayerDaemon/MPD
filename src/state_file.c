@@ -106,5 +106,6 @@ void read_state_file(void)
 void mpd_noreturn state_file_fatal(void)
 {
 	FATAL("error parsing state file \"%s\"\n", sfpath);
+	exit(EXIT_FAILURE);
 }
 
