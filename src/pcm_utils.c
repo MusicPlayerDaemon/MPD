@@ -151,32 +151,36 @@ void pcm_mix(char *buffer1, char *buffer2, size_t bufferSize1,
 #ifdef HAVE_LIBSAMPLERATE
 static int pcm_getSampleRateConverter(void)
 {
-	const char *conf, *test;
-	int convalgo = SRC_SINC_FASTEST;
-	int newalgo;
+	const char *conf = getConfigParamValue(CONF_SAMPLERATE_CONVERTER);
+	long convalgo;
+	char *test;
 	size_t len;
- 
-	conf = getConfigParamValue(CONF_SAMPLERATE_CONVERTER);
-	if(conf) {
-		newalgo = strtol(conf, (char **)&test, 10);
-		if(*test) {
-			len = strlen(conf);
-			for(newalgo = 0; ; newalgo++) {
-				test = src_get_name(newalgo);
-				if(!test)
-					break; /* FAIL */
-				if(!strncasecmp(test, conf, len)) {
-					convalgo = newalgo;
-					break;
-				}
-			}
-		} else {
-			if(src_get_name(newalgo))
-				convalgo = newalgo;
-			/* else FAIL */
-		}
+
+	if (!conf) {
+		convalgo = SRC_SINC_FASTEST;
+		goto out;
 	}
-	DEBUG("Selecting samplerate converter '%s'\n", src_get_name(convalgo));
+
+	convalgo = strtol(conf, &test, 10);
+	if (*test == '\0' && src_get_name(convalgo))
+		goto out;
+
+	len = strlen(conf);
+	for (convalgo = 0 ; ; convalgo++) {
+		test = (char *)src_get_name(convalgo);
+		if (!test) {
+			convalgo = SRC_SINC_FASTEST;
+			break;
+		}
+		if (strncasecmp(test, conf, len) == 0)
+			goto out;
+	}
+
+	ERROR("unknown samplerate converter \"%s\"\n", conf);
+out:
+	DEBUG("selecting samplerate converter \"%s\"\n",
+	      src_get_name(convalgo));
+
 	return convalgo;
 }
 #endif
