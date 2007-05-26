@@ -100,7 +100,7 @@ static ListNode *nodeOfStoredPlaylist(StoredPlaylist *sp, int index)
 
 static void appendSongToStoredPlaylist(StoredPlaylist *sp, Song *song)
 {
-	insertInListWithoutKey(sp->list, strdup(getSongUrl(song)));
+	insertInListWithoutKey(sp->list, xstrdup(getSongUrl(song)));
 }
 
 StoredPlaylist *newStoredPlaylist(const char *utf8name, int fd, int ignoreExisting)
@@ -128,7 +128,7 @@ StoredPlaylist *newStoredPlaylist(const char *utf8name, int fd, int ignoreExisti
 	sp->fd = fd;
 
 	if (filename)
-		sp->fspath = strdup(filename);
+		sp->fspath = xstrdup(filename);
 
 	return sp;
 }
