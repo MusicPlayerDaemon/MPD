@@ -1137,7 +1137,7 @@ int readDirectoryDB(void)
 		mp3rootDirectory = newDirectory(NULL, NULL);
 	while (!(fp = fopen(dbFile, "r")) && errno == EINTR) ;
 	if (fp == NULL) {
-		ERROR("unable open db file \"%s\": %s\n",
+		ERROR("unable to open db file \"%s\": %s\n",
 		      dbFile, strerror(errno));
 		return -1;
 	}
