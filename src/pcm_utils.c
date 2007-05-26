@@ -455,6 +455,10 @@ size_t pcm_sizeOfConvBuffer(AudioFormat * inFormat, size_t inSize,
 		case 2:
 			outSize >>= 1;
 			break;
+		default:
+			ERROR("only 1 or 2 channels are supported "
+			      "for conversion!\n");
+			exit(EXIT_FAILURE);
 		}
 	}
 
