@@ -586,17 +586,26 @@ int addToStoredPlaylist(int fd, char *url, char *utf8file)
 
 	DEBUG("add to stored playlist: %s\n", url);
 
-	if ((song = getSongFromDB(url))) {
-	} else if (!(isValidRemoteUtf8Url(url) &&
-	             (song = newSong(url, SONG_TYPE_URL, NULL)))) {
-		commandError(fd, ACK_ERROR_NO_EXIST,
-		             "\"%s\" is not in the music db or is "
-		             "not a valid url", url);
-		return -1;
+	song = getSongFromDB(url);
+	if (song) {
+		appendSongToStoredPlaylistByPath(fd, utf8file, song);
+		return 0;
 	}
 
-	appendSongToStoredPlaylistByPath(fd, utf8file, song);
-	return 0;
+	if (!isValidRemoteUtf8Url(url))
+		goto fail;
+
+	song = newSong(url, SONG_TYPE_URL, NULL);
+	if (song) {
+		appendSongToStoredPlaylistByPath(fd, utf8file, song);
+		freeJustSong(song);
+		return 0;
+	}
+
+fail:
+	commandError(fd, ACK_ERROR_NO_EXIST, "\"%s\" is not in the music db"
+	             "or is not a valid url", url);
+	return -1;
 }
 
 int addSongToPlaylist(int fd, Song * song, int printId)
