@@ -53,7 +53,7 @@ typedef struct _List {
 	ListNode **nodesArray;
 	/* sorted */
 	int sorted;
-	/* weather to strdup() key's on insertion */
+	/* whether to strdup() key's on insertion */
 	int strdupKeys;
 } List;
 
