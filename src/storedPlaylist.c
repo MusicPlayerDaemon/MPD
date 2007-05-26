@@ -303,7 +303,6 @@ int moveSongInStoredPlaylistByPath(int fd, const char *utf8path, int src, int de
 	StoredPlaylist *sp = loadStoredPlaylist(utf8path, fd);
 	if (!sp) {
 		commandError(fd, ACK_ERROR_UNKNOWN, "could not open playlist");
-		freeStoredPlaylist(sp);
 		return -1;
 	}
 
@@ -369,7 +368,6 @@ int removeOneSongFromStoredPlaylistByPath(int fd, const char *utf8path, int pos)
 	StoredPlaylist *sp = loadStoredPlaylist(utf8path, fd);
 	if (!sp) {
 		commandError(fd, ACK_ERROR_UNKNOWN, "could not open playlist");
-		freeStoredPlaylist(sp);
 		return -1;
 	}
 
