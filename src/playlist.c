@@ -1434,9 +1434,7 @@ int loadPlaylist(int fd, char *utf8file)
 	node = sp->list->firstNode;
 	while (node != NULL) {
 		char *temp = node->data;
-		if (!getSongFromDB(temp) && !isRemoteUrl(temp)) {
-
-		} else if ((addToPlaylist(STDERR_FILENO, temp, 0)) < 0) {
+		if ((addToPlaylist(STDERR_FILENO, temp, 0)) < 0) {
 			/* for windows compatibility, convert slashes */
 			char *temp2 = xstrdup(temp);
 			char *p = temp2;

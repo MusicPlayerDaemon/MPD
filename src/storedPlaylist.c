@@ -23,6 +23,8 @@
 #include "playlist.h"
 #include "ack.h"
 #include "command.h"
+#include "ls.h"
+#include "directory.h"
 
 #include <string.h>
 #include <errno.h>
@@ -96,6 +98,11 @@ static ListNode *nodeOfStoredPlaylist(StoredPlaylist *sp, int index)
 	return NULL;
 }
 
+static void appendSongToStoredPlaylist(StoredPlaylist *sp, Song *song)
+{
+	insertInListWithoutKey(sp->list, strdup(getSongUrl(song)));
+}
+
 StoredPlaylist *newStoredPlaylist(const char *utf8name, int fd, int ignoreExisting)
 {
 	struct stat buf;
@@ -138,6 +145,7 @@ StoredPlaylist *loadStoredPlaylist(const char *utf8path, int fd)
 	int parentlen = strlen(parent);
 	int tempInt;
 	int commentCharFound = 0;
+	Song *song;
 
 	filename = utf8pathToFsPathInStoredPlaylist(utf8path, fd);
 	if (!filename)
@@ -182,10 +190,22 @@ StoredPlaylist *loadStoredPlaylist(const char *utf8path, int fd)
 			}
 			slength = 0;
 			temp = fsCharsetToUtf8(s);
-			if (!temp)
-				continue;
-			if (!commentCharFound)
-				insertInListWithoutKey(sp->list, strdup(s));
+			if (temp && !commentCharFound) {
+				song = getSongFromDB(temp);
+				if (song) {
+					appendSongToStoredPlaylist(sp, song);
+					continue;
+				}
+
+				if (!isValidRemoteUtf8Url(temp))
+					continue;
+
+				song = newSong(temp, SONG_TYPE_URL, NULL);
+				if (song) {
+					appendSongToStoredPlaylist(sp, song);
+					freeJustSong(song);
+				}
+			}
 		} else if (slength == MAXPATHLEN) {
 			s[slength] = '\0';
 			commandError(sp->fd, ACK_ERROR_PLAYLIST_LOAD,
@@ -365,8 +385,9 @@ int removeOneSongFromStoredPlaylistByPath(int fd, const char *utf8path, int pos)
 
 static int writeStoredPlaylistToPath(StoredPlaylist *sp, const char *fspath)
 {
-	FILE *file;
 	ListNode *node;
+	FILE *file;
+	char *s;
 
 	if (fspath == NULL)
 		return -1;
@@ -380,7 +401,12 @@ static int writeStoredPlaylistToPath(StoredPlaylist *sp, const char *fspath)
 
 	node = sp->list->firstNode;
 	while (node != NULL) {
-		fprintf(file, "%s\n", (char *)node->data);
+		s = (char *)node->data;
+		if (isValidRemoteUtf8Url(s) || !playlist_saveAbsolutePaths)
+			s = utf8ToFsCharset(s);
+		else
+			s = rmp2amp(utf8ToFsCharset(s));
+		fprintf(file, "%s\n", s);
 		node = node->nextNode;
 	}
 
@@ -393,22 +419,11 @@ int writeStoredPlaylist(StoredPlaylist *sp)
 	return writeStoredPlaylistToPath(sp, sp->fspath);
 }
 
-static void appendSongToStoredPlaylist(StoredPlaylist *sp, Song *song)
-{
-	char *s;
-
-	if (playlist_saveAbsolutePaths && song->type == SONG_TYPE_FILE)
-		s = rmp2amp(utf8ToFsCharset(getSongUrl(song)));
-	else
-		s = utf8ToFsCharset(getSongUrl(song));
-
-	insertInListWithoutKey(sp->list, strdup(s));
-}
-
 int appendSongToStoredPlaylistByPath(int fd, const char *utf8path, Song *song)
 {
 	char *filename;
 	FILE *file;
+	char *s;
 
 	filename = utf8pathToFsPathInStoredPlaylist(utf8path, fd);
 	if (!filename)
@@ -422,9 +437,11 @@ int appendSongToStoredPlaylistByPath(int fd, const char *utf8path, Song *song)
 	}
 
 	if (playlist_saveAbsolutePaths && song->type == SONG_TYPE_FILE)
-		fprintf(file, "%s\n", rmp2amp(utf8ToFsCharset(getSongUrl(song))));
+		s = rmp2amp(utf8ToFsCharset(getSongUrl(song)));
 	else
-		fprintf(file, "%s\n", utf8ToFsCharset(getSongUrl(song)));
+		s = utf8ToFsCharset(getSongUrl(song));
+
+	fprintf(file, "%s\n", s);
 
 	while (fclose(file) != 0 && errno == EINTR);
 	return 0;
