@@ -34,15 +34,9 @@ static char *utf8pathToFsPathInStoredPlaylist(const char *utf8path, int fd)
 	char *actualFile;
 
 	if (strstr(utf8path, "/")) {
-		if (fd != -1) {
-			commandError(fd, ACK_ERROR_ARG, "playlist name \"%s\" "
-			             "is invalid: playlist names may not "
-			             "contain slashes", utf8path);
-		}
-
-		ERROR("playlist name \"%s\" is invalid: playlist names may not "
-		      "contain slashes\n", utf8path);
-
+		commandError(fd, ACK_ERROR_ARG, "playlist name \"%s\" is "
+		             "invalid: playlist names may not contain slashes",
+		             utf8path);
 		return NULL;
 	}
 
@@ -118,7 +112,6 @@ StoredPlaylist *newStoredPlaylist(const char *utf8name, int fd, int ignoreExisti
 			commandError(fd, ACK_ERROR_EXIST,
 			             "a file or directory already exists with "
 			             "the name \"%s\"", utf8name);
-
 			free(sp);
 			return NULL;
 		}
@@ -152,31 +145,22 @@ StoredPlaylist *loadStoredPlaylist(const char *utf8path, int fd)
 
 	while (!(file = fopen(filename, "r")) && errno == EINTR);
 	if (file == NULL) {
-		if (fd != -1) {
-			commandError(fd, ACK_ERROR_NO_EXIST,
-			             "could not open file \"%s\": %s", filename,
-			             strerror(errno));
-		}
-
-		ERROR("could not open file \"%s\": %s\n", filename,
-		      strerror(errno));
-
+		commandError(fd, ACK_ERROR_NO_EXIST, "could not open file "
+		             "\"%s\": %s", filename, strerror(errno));
 		return NULL;
 	}
 
 	sp = newStoredPlaylist(utf8path, fd, 1);
-	if (!sp) {
+	if (!sp)
 		goto out;
-	}
 
 	while ((tempInt = fgetc(file)) != EOF) {
 		s[slength] = tempInt;
 		if (s[slength] == '\n' || s[slength] == '\0') {
 			commentCharFound = 0;
 			s[slength] = '\0';
-			if (s[0] == PLAYLIST_COMMENT) {
+			if (s[0] == PLAYLIST_COMMENT)
 				commentCharFound = 1;
-			}
 			if (strncmp(s, musicDir, strlen(musicDir)) == 0) {
 				strcpy(s, &(s[strlen(musicDir)]));
 			} else if (parentlen) {
@@ -186,12 +170,9 @@ StoredPlaylist *loadStoredPlaylist(const char *utf8path, int fd)
 				strncat(s, "/", MAXPATHLEN - parentlen);
 				strncat(s, temp, MAXPATHLEN - parentlen - 1);
 				if (strlen(s) >= MAXPATHLEN) {
-					if (sp->fd != -1) {
-						commandError(sp->fd, ACK_ERROR_PLAYLIST_LOAD,
-								"\"%s\" is too long", temp);
-					}
-
-					ERROR("\"%s\" is too long\n", temp);
+					commandError(sp->fd,
+					             ACK_ERROR_PLAYLIST_LOAD,
+					             "\"%s\" is too long", temp);
 					free(temp);
 					freeStoredPlaylist(sp);
 					sp = NULL;
@@ -203,23 +184,19 @@ StoredPlaylist *loadStoredPlaylist(const char *utf8path, int fd)
 			temp = fsCharsetToUtf8(s);
 			if (!temp)
 				continue;
-			if (!commentCharFound) {
+			if (!commentCharFound)
 				insertInListWithoutKey(sp->list, strdup(s));
-			}
 		} else if (slength == MAXPATHLEN) {
 			s[slength] = '\0';
-			if (sp->fd != -1) {
-				commandError(sp->fd, ACK_ERROR_PLAYLIST_LOAD,
-				             "line \"%s\" in playlist \"%s\" "
-				             "is too long", s, utf8path);
-			}
-			ERROR("line \"%s\" in playlist \"%s\" is too long\n", s,
-			      utf8path);
+			commandError(sp->fd, ACK_ERROR_PLAYLIST_LOAD,
+				     "line \"%s\" in playlist \"%s\" "
+				     "is too long", s, utf8path);
 			freeStoredPlaylist(sp);
 			sp = NULL;
 			goto out;
-		} else if (s[slength] != '\r')
+		} else if (s[slength] != '\r') {
 			slength++;
+		}
 	}
 
 out:
@@ -396,14 +373,8 @@ static int writeStoredPlaylistToPath(StoredPlaylist *sp, const char *fspath)
 
 	while (!(file = fopen(fspath, "w")) && errno == EINTR);
 	if (file == NULL) {
-		if (sp->fd != -1) {
-			commandError(sp->fd, ACK_ERROR_NO_EXIST,
-			             "could not open file \"%s\": %s", fspath,
-			             strerror(errno));
-		}
-
-		ERROR("could not open file \"%s\": %s\n", fspath,
-		      strerror(errno));
+		commandError(sp->fd, ACK_ERROR_NO_EXIST, "could not open file "
+		             "\"%s\": %s", fspath, strerror(errno));
 		return -1;
 	}
 
@@ -486,7 +457,6 @@ int renameStoredPlaylist(int fd, const char *utf8from, const char *utf8to)
 	if (stat(from, &st) != 0) {
 		commandError(fd, ACK_ERROR_NO_EXIST,
 			     "no playlist named \"%s\"", utf8from);
-
 		ret = -1;
 		goto out;
 	}
@@ -494,7 +464,6 @@ int renameStoredPlaylist(int fd, const char *utf8from, const char *utf8to)
 	if (stat(to, &st) == 0) {
 		commandError(fd, ACK_ERROR_EXIST, "a file or directory "
 			     "already exists with the name \"%s\"", utf8to);
-
 		ret = -1;
 		goto out;
 	}
@@ -503,7 +472,6 @@ int renameStoredPlaylist(int fd, const char *utf8from, const char *utf8to)
 		commandError(fd, ACK_ERROR_UNKNOWN,
 		             "could not rename playlist \"%s\" to \"%s\": %s",
 		             utf8from, utf8to, strerror(errno));
-
 		ret = -1;
 		goto out;
 	}
