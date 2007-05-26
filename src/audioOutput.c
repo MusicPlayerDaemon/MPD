@@ -205,14 +205,12 @@ static void convertAudioFormat(AudioOutput * audioOutput, char **chunkArgPtr,
 		audioOutput->convBufferLen = size;
 	}
 
-	pcm_convertAudioFormat(&(audioOutput->inAudioFormat), 
-	                       *chunkArgPtr,
-	                       *sizeArgPtr, 
-	                       &(audioOutput->outAudioFormat),
-	                       audioOutput->convBuffer,
-	                       &audioOutput->convState);
+	*sizeArgPtr = pcm_convertAudioFormat(&(audioOutput->inAudioFormat), 
+	                                     *chunkArgPtr, *sizeArgPtr, 
+	                                     &(audioOutput->outAudioFormat),
+	                                     audioOutput->convBuffer,
+	                                     &audioOutput->convState);
 
-	*sizeArgPtr = size;
 	*chunkArgPtr = audioOutput->convBuffer;
 }
 

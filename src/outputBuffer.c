@@ -89,9 +89,9 @@ int sendDataToOutputBuffer(OutputBuffer * cb, InputStream * inStream,
 			convBufferLen = datalen;
 		}
 		data = convBuffer;
-		pcm_convertAudioFormat(&(dc->audioFormat), dataIn, dataInLen,
-		                       &(cb->audioFormat), data,
-		                       &(cb->convState));
+		datalen = pcm_convertAudioFormat(&(dc->audioFormat), dataIn,
+		                                 dataInLen, &(cb->audioFormat),
+		                                 data, &(cb->convState));
 	}
 
 	if (replayGainInfo && (replayGainState != REPLAYGAIN_OFF))

@@ -182,10 +182,10 @@ static int pcm_getSampleRateConverter(void)
 #endif
 
 #ifdef HAVE_LIBSAMPLERATE
-static int pcm_convertSampleRate(mpd_sint8 channels, mpd_uint32 inSampleRate,
-                                 char *inBuffer, size_t inSize,
-                                 mpd_uint32 outSampleRate, char *outBuffer,
-                                 size_t outSize, ConvState *convState)
+static size_t pcm_convertSampleRate(mpd_sint8 channels, mpd_uint32 inSampleRate,
+                                    char *inBuffer, size_t inSize,
+                                    mpd_uint32 outSampleRate, char *outBuffer,
+                                    size_t outSize, ConvState *convState)
 {
 	static int convalgo = -1;
 	SRC_DATA *data = &convState->data;
@@ -254,14 +254,14 @@ static int pcm_convertSampleRate(mpd_sint8 channels, mpd_uint32 inSampleRate,
 	src_float_to_short_array(data->data_out, (short *)outBuffer,
 	                         data->output_frames_gen * channels);
 
-	return 1;
+	return data->output_frames_gen * 2 * channels;
 }
 #else /* !HAVE_LIBSAMPLERATE */
 /* resampling code blatantly ripped from ESD */
-static int pcm_convertSampleRate(mpd_sint8 channels, mpd_uint32 inSampleRate,
-                                 char *inBuffer, size_t inSize,
-                                 mpd_uint32 outSampleRate, char *outBuffer,
-                                 size_t outSize, ConvState *convState)
+static size_t pcm_convertSampleRate(mpd_sint8 channels, mpd_uint32 inSampleRate,
+                                    char *inBuffer, size_t inSize,
+                                    mpd_uint32 outSampleRate, char *outBuffer,
+                                    size_t outSize, ConvState *convState)
 {
 	mpd_uint32 rd_dat = 0;
 	mpd_uint32 wr_dat = 0;
@@ -294,7 +294,7 @@ static int pcm_convertSampleRate(mpd_sint8 channels, mpd_uint32 inSampleRate,
 		break;
 	}
 
-	return 1;
+	return outSize;
 }
 #endif /* !HAVE_LIBSAMPLERATE */
 
@@ -391,9 +391,9 @@ static char *pcm_convertTo16bit(mpd_sint8 bits, char *inBuffer, size_t inSize,
 }
 
 /* outFormat bits must be 16 and channels must be 1 or 2! */
-void pcm_convertAudioFormat(AudioFormat * inFormat, char *inBuffer,
-                            size_t inSize, AudioFormat * outFormat,
-                            char *outBuffer, ConvState *convState)
+size_t pcm_convertAudioFormat(AudioFormat * inFormat, char *inBuffer,
+                              size_t inSize, AudioFormat * outFormat,
+                              char *outBuffer, ConvState *convState)
 {
 	char *buf;
 	size_t len;
@@ -417,12 +417,15 @@ void pcm_convertAudioFormat(AudioFormat * inFormat, char *inBuffer,
 		assert(outSize >= len);
 		memcpy(outBuffer, buf, len);
 	} else {
-		if (!pcm_convertSampleRate(outFormat->channels,
-		                           inFormat->sampleRate, buf, len,
-		                           outFormat->sampleRate, outBuffer,
-		                           outSize, convState))
+		len = pcm_convertSampleRate(outFormat->channels,
+		                            inFormat->sampleRate, buf, len,
+		                            outFormat->sampleRate, outBuffer,
+		                            outSize, convState);
+		if (len == 0)
 			exit(EXIT_FAILURE);
 	}
+
+	return len;
 }
 
 size_t pcm_sizeOfConvBuffer(AudioFormat * inFormat, size_t inSize,
