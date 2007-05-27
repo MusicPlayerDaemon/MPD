@@ -97,7 +97,7 @@ static int audioOutputAo_initDriver(AudioOutput * audioOutput,
 
 	if ((ai = ao_driver_info(ad->driverId)) == NULL) {
 		FATAL("problems getting driver info for device defined at line %i\n"
-		      "you may not have permission to the audio device\n" param->line);
+		      "you may not have permission to the audio device\n", param->line);
 	}
 
 	DEBUG("using ao driver \"%s\" for \"%s\"\n", ai->short_name,
