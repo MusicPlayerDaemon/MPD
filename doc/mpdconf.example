@@ -190,7 +190,7 @@ error_file                      "~/.mpd/mpd.error"
 # How much of the buffer to fill before beginning to play.
 # Increase this if you hear skipping when changing songs.
 #
-#buffer_before_play              "0%"
+#buffer_before_play              "10%"
 #
 # Similar options for the HTTP stream buffer.  If you hear
 # skipping while playing HTTP streams, you may wish to increase

@@ -21,6 +21,7 @@ ver 0.13.0 (2007/??/??)
 * New playlistmove command for moving songs in stored playlists
 * New playlistdelete command for deleting songs from stored playlists
 * New rename command for renaming stored playlists
+* Increased default buffer_before_play from 0% to 10% to prevent skipping
 * Lots of bug fixes, cleaned up code, and performance improvements
 
 ver 0.12.2 (2007/3/20)

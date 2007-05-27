@@ -171,7 +171,8 @@ large enough for nearly 12 seconds of CD-quality audio.
 .B buffer_before_play <0-100%>
 This specifies how much of the audio buffer should be filled before playing a
 song.  Try increasing this if you hear skipping when manually changing songs.
-The default is 0%.
+The default is 10%, a little over 1 second of CD-quality audio with the default
+buffer size.
 .TP
 .B http_buffer_size <size in KiB>
 This specifies the size of the buffer used for playing HTTP streams.  The
