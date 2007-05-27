@@ -20,6 +20,9 @@ Linux.  You will need libasound.
 PulseAudio - http://www.pulseaudio.org/
 An advanced sound daemon.  You will need libpulse.
 
+JACK - http://www.jackaudio.org/
+A low-latency sound daemon.
+
 libshout - http://www.icecast.org/
 For streaming to an Icecast or Shoutcast server.
 
@@ -61,7 +64,7 @@ For MOD support.  You will need libmikmod.
 Optional Miscellaneous Dependencies
 -----------------------------------
 
-Avahi - http://avahi.org/
+Avahi - http://www.avahi.org/
 For Zeroconf support.
 
 libsamplerate - http://www.mega-nerd.com/SRC/
