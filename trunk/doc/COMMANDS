@@ -1,0 +1,275 @@
+                         Music Player Daemon - Commands
+
+                                    WARNING
+	This document has not been updated to reflect recent changes in
+	the MPD protocol.  It does not contain all supported commands,
+	and some commands may now take additional arguments.  However,
+	clients conforming to this specification should still be
+	compatible with the latest release of MPD.  For more up to date
+	documentation, please see the protocol reference on the wiki at
+	<http://mpd.wikia.com/wiki/Protocol_Reference>.
+
+This document is intended for client developers, not end users.
+
+Format:
+-------
+
+If arguments contain spaces, they should be surrounded by double quotation 
+marks, ".  
+
+command <type arg1> <type arg2> ...
+	explanation: w/ arg1 and arg2
+
+All data between the client and server is encoded in UTF-8. (Note,
+that in UTF-8 all standard ansi characters, 0-127, are the same as a standard
+ansi encoding. Also, no ansi character appears in any multi-byte
+characters.  So, you can use standard C functions like strlen, and strcpy
+just fine with UTF-8 encoded strings. For example: "OK\n" encoded in UTF-8 is
+simply "OK\n".  For more information on UTF=8: 
+http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8 )
+
+Command Completion:
+-------------------
+
+A command returns "OK\n" on completion or "ACK some error\n" on failure.
+These denote the end of command execution.
+
+NOTE:
+-----
+
+For manipulating playlists and playing, there are two sets of commands.  One
+set uses the song id of a song in the playlist, while another set uses the
+playlist position of the song.  The commands using song id's should be used
+instead of the commands that manipulate and control playback based on playlist
+position.  Using song id's is a safer method when multiple clients are 
+interacting with MPD.
+
+Commands:
+---------
+
+add <string path>
+	add the file _path_ to the playlist (directories add recursively)
+	_path_ can also be a single file
+	increments playlist version by for each song added
+
+clear	
+	clears the current playlist
+	increments playlist version by 1
+
+clearerror	
+	clear the current error message in status
+	(this is also accomplished by any command that starts playback)
+
+close
+	close the connection with the MPD
+
+crossfade <int seconds>
+	sets crossfading between songs
+
+currentsong
+	displays the song info of current song (same song that is identified
+	in status)
+
+delete <int song>
+	delete _song_ from playlist
+	increments playlist version by 1
+
+deleteid <int songid>
+	delete song with _songid_ from playlist
+	increments playlist version by 1
+
+find <string type> <string what>
+	finds songs in the db that are exactly _what_
+	_type_ should be "album", "artist", or "title"
+	_what_ is what to find
+
+kill
+	kill MPD
+
+list <string type> <string arg1>
+	list all tags of _type_ 
+	_type_ should be "album" or "artist"
+	_arg1_ is an optional parameter when type is album, this specifies
+		to list albums by a artist, where artist is specified with
+		arg1
+
+listall <string path>
+	lists all songs and directories in _path_ (recursively)
+	_path_ is optional and maybe a directory or path
+
+listallinfo <string path>
+	same as listall command, except it also returns metadata info
+	in the same format as lsinfo
+
+load <string name>
+	loads the playlist _name_.m3u from the playlist directory
+	increments playlist version by the number of songs added
+
+lsinfo <string directory>
+	list contents of _directory_, from the db.  _directory_ is optional
+
+move <int from> <int to>
+	move song at _from_ to _to_ in the playlist
+	increments playlist version by 1
+
+moveid <int songid> <int to>
+	move song with _songid_ to  _to_ in the playlist
+	increments playlist version by 1
+
+next
+	plays next song in playlist
+
+pause	<bool pause>
+	toggle pause/resume playing
+	_pause_ is required and should be 0 or 1
+	NOTE: use of pause command w/o the _pause_ argument is deprecated
+
+password <string password>
+	this is used for authentication with the server.
+	_password_ is simply the plaintext password
+
+ping
+	does nothing but return "OK"
+
+play <int song>
+	begin playing playlist at song number _song_, _song_ is optional
+
+playid <int songid>
+	begin playing playlist at song with _songid_, _songid_ is optional
+
+playlist
+	displays the current playlist
+	NOTE: do not use this, instead use 'playlistinfo'
+
+playlistinfo <int song>
+	displays list of songs in the playlist
+	_song_ is optional and specifies a single song to display info for
+
+playlistid <int songid>
+	displays list of songs in the playlist
+	_songid_ is optional and specifies a single song to display info for
+
+plchanges <playlist version>
+	displays changed songs currently in the playlist since 
+	_playlist version_
+	NOTE: to detect songs that were deleted at the end of the playlist,
+	use playlistlength returned by status command.
+
+plchangesposid <playlist version>
+	displays changed songs currently in the playlist since 
+	_playlist version_
+	This function only returns the position and the id of the changed song, not the complete metadata. This is more bandwidth efficient.
+	NOTE: to detect songs that were deleted at the end of the playlist,
+	use playlistlength returned by status command.
+
+previous
+	plays previous song in playlist
+
+random <int state>
+	set random state to _state_, _state_ should be 0 or 1
+
+repeat <int state>
+	set repeat state to _state_, _state_ should be 0 or 1
+
+rm <string name>
+	removes the playlist <name>.m3u from the playlist directory
+
+save <string name>
+	saves the current playlist to _name_.m3u in the playlist directory
+
+search <string type> <string what>
+	searches for any song that contain _what_
+	_type_ can be "title","artist","album", or "filename"
+	search is not case sensitive
+
+seek <int song> <int time>
+	seeks to the position _time_ (in seconds) of entry _song_ in the 
+	playlist
+
+seekid <int songid> <int time>
+	seeks to the position _time_ (in seconds) of song with _songid_
+
+setvol <int vol>
+	set volume to _vol_
+	_vol_ the range of volume is 0-100
+
+shuffle
+	shuffles the current playlist
+	increments playlist version by 1
+
+stats
+	display stats
+	artists: number of artists
+	albums: number of albums
+	songs: number of songs
+	uptime: daemon uptime in seconds
+	db_playtime: sum of all song times in db
+	db_update: last db update in UNIX time
+	playtime: time length of music played
+
+status
+	reports current status of player, and volume level.
+	volume: (0-100).
+	repeat: (0 or 1)
+	playlist: (31-bit unsigned integer, the playlist version number)
+	playlistlength: (integer, the length of the playlist)
+	state: ("play", "stop", or "pause")
+	song: (current song stopped on or playing, playlist song number)
+	songid: (current song stopped on or playing, playlist songid)
+	time: <int elapsed>:<time total> (of current playing/paused song)
+	bitrate: <int bitrate> (instantaneous bitrate in kbps)
+	xfade: <int seconds> (crossfade in seconds)
+	audio: <int sampleRate>:<int bits>:<int channels>
+	updatings_db: <int job id>
+	error: if there is an error, returns message here
+
+stop
+	stop playing
+
+swap <int song1> <int song2>
+	swap positions of _song1_ and _song2_
+	increments playlist version by 1
+
+swapid <int songid1> <int songid2>
+	swap positions of of songs with song id's of _songid1_ and _songid2_
+	increments playlist version by 1
+
+update <string path>
+	searches mp3 directory for new music and removes old music from the db
+	_path_ is an optional argument that maybe a particular directory or 
+		song/file to update.
+	returned:
+		updating_db: <int job id>
+	where job id, is the job id requested for your update, and is displayed
+	in status, while the requested update is happening
+	increments playlist version by 1
+	NOTE: To update a number of paths/songs at once, use command_list,
+	it will be much more faster/efficient.  Also, if you use a 
+	command_list for updating, only one update_db job id will be returned
+	per sequence of updates.
+
+volume <int change>
+	change volume by amount _change_
+	NOTE: volume command is deprecated, use setvol instead
+
+COMMAND LIST
+------------
+
+To facilitate faster adding of files, etc, you can pass a list of commands all
+at once using a command list.  The command list beings with:
+
+command_list_begin
+
+or:
+
+command_list_ok_begin
+
+And ends with:
+
+command_list_end
+
+It does not execute any commands until the list has ended.  The return
+value is whatever the return for a list of commands is.  On success
+for all commands, OK is returned.  If a command fails, no more commands
+are executed and the appropriate ACK error is returned. If "command_list_ok_begin is used", "list_OK\n" is returned for each successful command executed
+in the command list.

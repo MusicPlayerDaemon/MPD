@@ -1,0 +1,84 @@
+                       Music Player Daemon (MPD) - UPGRADING
+
+Upgrading to 0.13.0
+-------------------
+
+JACK, Avahi, and libsamplerate have been added as optional dependencies.
+FLAC/OggFLAC now supports the 1.1.3 API, and libmikmod 3.2.0 betas are
+supported as well.
+
+New mpd.conf parameters include zeroconf_name, samplerate_converter, and
+gapless_mp3_playback.  See the mpd.conf man page or updated mpconf.example for
+more information on these parameters.
+
+Support for the ID3v2 "Original Artist/Performer" tag has been added.  Your
+MP3s will need to be rescanned for these tags to be included in the database.
+This can be done by running mpd --create-db.
+
+Upgrading to 0.12.0
+-------------------
+
+The ao_driver and ao_driver_options config parameters have been removed and
+replaced with the audio_output config section.  You will have to update your
+config file to use this instead.  See the mpd.conf man page or the new
+mpdconf.example for details on specifying audio_output sections.
+
+The db_file parameter is no longer optional.  If you did not specify it in your
+old config file then you will have to add it in order to run 0.12.0.
+
+Support for OggFLAC and Musepack audio files has been added.  Additionally,
+scanning of MP3 files has been improved.  To make use of these updates it is
+highly recommended that you run mpd --create-db to recreate your entire
+database.
+
+Upgrading to 0.11.0
+-------------------
+
+The database format has changed a little bit, but in a backward compatible way.
+This means that if you upgrade to 0.11.0 from 0.10.x, you do not need to make
+any changes.  However, if you downgrade back to 0.10.x, then you will need
+to recreate your db.
+
+The default port for MPD is now 6600, so update your mpd and client
+configurations appropriately.
+
+Upgrading to 0.10.0
+-------------------
+
+All information is now stored in the db in UTF-8 format, and the character
+set used for the filesystem is stored in the db.  Thus, it is highly
+recommended that you recreate the db.  To do so, run mpd with the 
+"--create-db" command line option.  Also, note that the filesystem
+character set will be determined from your current locale settings.
+If your locale settings are not the same as those used for the filesystem,
+then use the config file parameter "filesystem_charset" to specify the
+correct character set (this maybe necessary if you create the db with root).
+
+Upgrading to 0.9.3
+------------------
+
+Wave support was added, so to have your wave files added, update the db (mpc
+update).  
+
+Also, song lengths are now stored in the db.  To get this stuff
+added to the db, you will need to recreate the db from scratch.  To do this,
+run mpd with the "--create-db" commandline option. 
+
+Upgrading to 0.9.0
+------------------
+
+The "stop_on_error" config parameter was removed, so be sure to remove this
+parameter from your config file.
+
+Upgrading to 0.8.x
+------------------
+
+If you have FLACs, then to have them added to your list of available music,
+just use "update".
+
+Upgrading from 0.5.x to 0.6.x
+-----------------------------
+If you have not compiled MPD with "make ogg", then nothing is needed.
+
+If you compiled with "make ogg", just use "update" (available via the phpMp
+interface) to add your OGGs to MPD's list of available music.

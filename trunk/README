@@ -1,0 +1,22 @@
+
+                       Music Player Daemon (MPD)
+                        http://www.musicpd.org
+
+A daemon for playing music of various formats.  Music is played through the 
+server's audio device.  The daemon stores info about all available music, 
+and this info can be easily searched and retrieved.  Player control, info
+retrieval, and playlist management can all be managed remotely.
+
+To install MPD, see INSTALL.
+
+MPD includes mp4ff in the source, due to licensing issues of the newer 
+version and includes bugfixes with the properly licensed version.  mp4ff is 
+released under the GPL and copyrighted by M. Bakker, Ahead Software AG 
+(http://www.nero.com) and is distributed as a part of the FAAD2 - Freeware 
+Advance Audio (AAC) Decoder.
+
+MPD is released under the GNU Public License.
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+For the full license, see COPYING.

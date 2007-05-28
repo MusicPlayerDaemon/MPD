@@ -1,0 +1,387 @@
+.TH mpd.conf 5
+.SH NAME
+mpd.conf \- Music Player Daemon configuration file
+.SH DESCRIPTION
+\fBmpd.conf\fP is the configuration file for mpd(1).  If not specified on the
+command line, MPD first searches for it at \fB~/.mpdconf\fP and then in
+\fB/etc/mpd.conf\fP.
+
+Lines beginning with a "#" character are comments.  All other non-empty lines
+specify parameters and their values.  These lines contain the parameter name
+and parameter value (surrounded by double quotes) separated by whitespace
+(either tabs or spaces).  For example:
+
+parameter "value"
+
+The exception to this rule is the audio_output parameter, which is of the form:
+
+audio_output {
+.br
+        parameter1 "value"
+        parameter2 "value"
+.br
+}
+
+Parameters that take a file or directory as an argument should use absolute
+paths.
+
+See \fBdocs/mpdconf.example\fP in the source tarball for an example
+configuration file.
+.SH REQUIRED PARAMETERS
+.TP
+.B music_directory <directory>
+This specifies the directory where music is located.
+.TP
+.B playlist_directory <directory>
+This specifies the directory where saved playlists are stored.
+.TP
+.B db_file <file>
+This specifies where the db file will be stored.
+.TP
+.B log_file <file>
+This specifies where the log file should be located.
+.TP
+.B error_file <file>
+This specifies where the error file should be located.
+.SH OPTIONAL PARAMETERS
+.TP
+.B pid_file <file>
+This specifies the file to save mpd's process ID in.
+.TP
+.B state_file <file>
+This specifies if a state file is used and where it is located.  The state of
+mpd will be saved to this file when mpd is terminated by a TERM signal or by
+the "kill" command.  When mpd is restarted, it will read the state file and
+restore the state of mpd (including the playlist).
+.TP
+.B user <username>
+This specifies the user that mpd will run as, if set.
+.TP
+.B bind_to_address <ip address or hostname or any>
+This specifies which address mpd binds to and listens on.  Multiple
+bind_to_address parameters may be specified.  The default is "any", which binds
+to all available addresses.
+.TP
+.B port <port>
+This specifies the port that mpd listens on.  The default is 6600.
+.TP
+.B log_level <default, secure, or verbose>
+This specifies how verbose logs are.  "default" is minimal logging, "secure"
+reports from what address a connection is opened, and when it is closed, and
+"verbose" records excessive amounts of information for debugging purposes.  The
+default is "default".
+.TP
+.B zeroconf_name <name>
+If Zerconf is compiled into MPD, this is the service name to publish.  This
+should be unique to your local network, but name collisions will be properly
+dealt with.
+.TP
+.B password <password@permissions>
+This specifies a password for access to mpd.  The format is
+"password@permissions" where permissions is a comma delimited list composed
+of "read", "add", "control", and/or "admin".  "read" allows for reading of the
+database, displaying the current playlist, and current status of mpd.  "add"
+allows for adding songs and loading playlists.  "control" allows for all other
+player and playlist manipulations.  "admin" allows the db to be updated and for
+the client to kill mpd.  An example value is "somePassword@read,add".  Multiple
+password parameters may be specified.
+.TP
+.B default_permissions <permissions>
+This specifies the permissions of a client that has not been authenticated
+using a password.  The format of permissions is specified in the description of
+the "password" config parameter.  If no passwords are specified, the default is
+"read,add,control,admin", otherwise it is "" (no permissions).
+.TP
+.B audio_output
+See \fBDESCRIPTION\fP and the various \fBAUDIO OUTPUT PARAMETERS\fP sections
+for the format of this parameter.  Multiple audio_output sections may be
+specified.  If no audio_output section is specified, then MPD will scan for a
+usable audio output.
+.TP
+.B audio_output_format <sample_rate:bits:channels>
+This specifies the sample rate, bits per sample, and number of channels of
+audio that is sent to each audio output.  Note that audio outputs may specify
+their own audio format which will be used for actual output to the audio
+device.  An example is "44100:16:2" for 44100Hz, 16 bits, and 2 channels.  The
+default is to use the audio format of the input file.
+.TP
+.B samplerate_converter <integer or prefix>
+This specifies the libsamplerate converter to use.  The supplied value should
+either be an integer or a prefix of the name of a converter.  The default is
+"Fastest Sinc Interpolator".
+
+At the time of this writing, the following converters are available:
+.RS
+.TP
+Best Sinc Interpolator (0)
+
+Band limited sinc interpolation, best quality, 97dB SNR, 96% BW.
+.TP
+Medium Sinc Interpolator (1)
+
+Band limited sinc interpolation, medium quality, 97dB SNR, 90% BW.
+.TP
+Fastest Sinc Interpolator (2)
+
+Band limited sinc interpolation, fastest, 97dB SNR, 80% BW.
+.TP
+ZOH Interpolator (3)
+
+Zero order hold interpolator, very fast, very poor quality with audible
+distortions.
+.TP
+Linear Interpolator (4)
+
+Linear interpolator, very fast, poor quality.
+.RE
+.IP
+For an up-to-date list of available converters, please see the libsamplerate
+documentation (available online at <\fBhttp://www.mega-nerd.com/SRC/\fP>).
+.TP
+.B mixer_type <oss, alsa or software>
+This specifies which mixer to use.  The default depends on what audio output
+support mpd was built with.
+.TP
+.B mixer_device <mixer dev>
+This specifies which mixer to use.  The default for oss is "/dev/mixer"; the
+default for alsa is "default".
+.TP
+.B mixer_control <mixer ctrl>
+This specifies which mixer control to use (sometimes referred to as the
+"device").  Examples of mixer controls are PCM, Line1, Master, etc.  An example
+for OSS is "Pcm", and an example for alsa is "PCM".
+.TP
+.B replaygain <album or track>
+If specified, mpd will adjust the volume of songs played using ReplayGain tags
+(see <\fBhttp://www.replaygain.org/\fP>).  Setting this to "album" will adjust
+volume using the album's ReplayGain tags, while setting it to "track" will
+adjust it using the track ReplayGain tags.  Currently only FLAC, Ogg Vorbis,
+Musepack, and MP3 (through ID3v2 ReplayGain tags, not APEv2) are supported.
+.TP
+.B replaygain_preamp <-15 to 15>
+This is the gain (in dB) applied to songs with ReplayGain tags.
+.TP
+.B volume_normalization <yes or no>
+If yes, mpd will normalize the volume of songs as they play.  The default is no.
+.TP
+.B audio_buffer_size <size in KiB>
+This specifies the size of the audio buffer in kibibytes.  The default is 2048,
+large enough for nearly 12 seconds of CD-quality audio.
+.TP
+.B buffer_before_play <0-100%>
+This specifies how much of the audio buffer should be filled before playing a
+song.  Try increasing this if you hear skipping when manually changing songs.
+The default is 10%, a little over 1 second of CD-quality audio with the default
+buffer size.
+.TP
+.B http_buffer_size <size in KiB>
+This specifies the size of the buffer used for playing HTTP streams.  The
+default is 128.
+.TP
+.B http_prebuffer_size <size in KiB>
+This specifies how much of an HTTP stream should be buffered before beginning
+playback.  The default is 32.
+.TP
+.B http_proxy_host <hostname>
+Use to specify the proxy host used for HTTP connections.
+.TP
+.B http_proxy_port <port>
+The port that the HTTP proxy host uses.
+.TP
+.B http_proxy_user <username>
+If the HTTP proxy server requires authentication, this specifies the username.
+.TP
+.B http_proxy_password <password>
+If the HTTP proxy server requires authentication, this specifies the password.
+.TP
+.B connection_timeout <seconds>
+If a client does not send any new data in this time period, the connection is
+closed.  The default is 60.
+.TP
+.B max_connections <number>
+This specifies the maximum number of clients that can be connected to mpd.  The
+default is 5.
+.TP
+.B max_playlist_length <number>
+This specifies the maximum number of songs that can be in the playlist.  The
+default is 4096.
+.TP
+.B max_command_list_size <size in KiB>
+This specifies the maximum size a command list can be.  The default is 2048.
+.TP
+.B max_output_buffer_size <size in KiB>
+This specifies the maximum size of the output buffer to a client.  The default
+is 8192.
+.TP
+.B filesystem_charset <charset>
+This specifies the character set used for the filesystem.  A list of supported
+character sets can be obtained by running "iconv -l".  The default is
+determined from the locale when the db was originally created.
+.TP
+.B id3v1_encoding <charset>
+This specifies the character set which ID3v1 tags are encoded in.  A list of
+supported character sets can be obtained by running "iconv -l".  The default is
+to let libid3tag convert them (from ISO-8859-1, as the standard specifies) and
+do no additional conversion.
+.TP
+.B gapless_mp3_playback <yes or no>
+This specifies whether to support gapless playback of MP3s which have the
+necessary headers.  Useful if your MP3s have headers with incorrect
+information.  If you have such MP3s, it is highly recommended that you fix them
+using vbrfix (available from <http://www.willwap.co.uk/Programs/vbrfix.php>)
+instead of disabling gapless MP3 playback.  The default is to support gapless
+MP3 playback.
+.TP
+.B save_absolute_paths_in_playlists <yes or no>
+This specifies whether relative or absolute paths for song filenames are used
+when saving playlists.  The default is "no".
+.TP
+.B metadata_to_use <tags>
+This specifies the tag types that will be scanned for and made available to
+clients.  Note that you must recreate (not update) your database for changes to
+this parameter to take effect.  Possible values are artist, album, title,
+track, name, genre, date, composer, performer, comment, and disc.  Multiple
+tags may be specified as a comma separated list.  An example value is
+"artist,album,title,track".  The special value "none" may be used alone to
+disable all metadata.  The default is to use all known tag types except for
+comments.
+.SH REQUIRED AUDIO OUTPUT PARAMETERS
+.TP
+.B type <type>
+This specifies the audio output type.  See the list of supported outputs in mpd
+--version for possible values.
+.TP
+.B name <name>
+This specifies a unique name for the audio output.
+.SH OPTIONAL AUDIO OUTPUT PARAMETERS
+.TP
+.B format <sample_rate:bits:channels>
+This specifies the sample rate, bits per sample, and number of channels of
+audio that is sent to the audio output device.  See documentation for the
+\fBaudio_output_format\fP parameter for more details.  The default is to use
+whatever audio format is passed to the audio output.
+.SH OPTIONAL ALSA OUTPUT PARAMETERS
+.TP
+.B device <dev>
+This specifies the device to use for audio output.  The default is "default".
+.TP
+.B use_mmap <yes or no>
+Setting this allows you to use memory-mapped I/O.  Certain hardware setups may
+benefit from this, but most do not.  Most users do not need to set this.  The
+default is to not use memory-mapped I/O.
+.TP
+.B buffer_time <time in microseconds>
+This sets the length of the hardware sample buffer in microseconds.  Increasing
+it may help to reduce or eliminate skipping on certain setups.  Most users do
+not need to change this.  The default is 500000 microseconds (0.5 seconds).
+.TP
+.B period_time <time in microseconds>
+This sets the time between hardware sample transfers in microseconds.
+Increasing this can reduce CPU usage while lowering it can reduce underrun
+errors on bandwidth-limited devices.  Some users have reported good results
+with this set to 50000, but not all devices support values this high.  Most
+users do not need to change this.  The default is 256000000 / sample_rate(kHz),
+or 5804 microseconds for CD-quality audio.
+.SH OPTIONAL OSS OUTPUT PARAMETERS
+.TP
+.B device <dev>
+This specifies the device to use for audio output.  The default is "/dev/dsp".
+.SH OPTIONAL PULSE OUTPUT PARAMETERS
+.TP
+.B server <server list>
+A space separated list of servers to try to connect to.  See
+<\fBhttp://www.pulseaudio.org/wiki/ServerStrings\fP> for more details.  The
+default is to let PulseAudio choose a server.
+.TP
+.B sink <sink>
+The sink to output to.  The default is to let PulseAudio choose a sink.
+.SH REQUIRED JACK OUTPUT PARAMETERS
+.TP
+.B name <name>
+The client name to use when connecting to JACK.  The output ports <name>:left
+and <name>:right will also be created for the left and right channels,
+respectively.
+.SH OPTIONAL JACK OUTPUT PARAMETERS
+.TP
+.B ports <left_port,right_port>
+This specifies the left and right ports to connect to for the left and right
+channels, respectively.  The default is to let JACK choose a pair of ports.
+.TP
+.B ringbuffer_size <size in bytes>
+This specifies the size of the ringbuffer in bytes.  The default is 32768.
+.SH OPTIONAL AO OUTPUT PARAMETERS
+.TP
+.B driver <driver>
+This specifies the libao driver to use for audio output.  Possible values
+depend on what libao drivers are available.  See
+<\fBhttp://www.xiph.org/ao/doc/drivers.html\fP> for information on some
+commonly used drivers.  Typical values for Linux include "oss" and "alsa09".
+The default is "default", which causes libao to select an appropriate plugin.
+.TP
+.B options <opts>
+This specifies the options to use for the selected libao driver.  For oss, the
+only option available is "dsp".  For alsa09, the available options are: "dev",
+"buf_size", and "periods".  See <\fBhttp://www.xiph.org/ao/doc/drivers.html\fP>
+for available options for some commonly used drivers.  Options are assigned
+using "=", and ";" is used to separate options.  An example for oss:
+"dsp=/dev/dsp".  An example for alsa09: "dev=hw:0,0;buf_size=4096".  The
+default is "".
+.TP
+.B write_size <size in bytes>
+This specifies how many bytes to write to the audio device at once.  This
+parameter is to work around a bug in older versions of libao on sound cards
+with very small buffers.  The default is 1024.
+.SH REQUIRED SHOUT OUTPUT PARAMETERS
+.TP
+.B name <name>
+This specifies not only the unique audio output name, but also the stream
+title.
+.TP
+.B host <hostname>
+This specifies the hostname of the icecast server to connect to.
+.TP
+.B port <port>
+This specifies the port of the icecast server to connect to.
+.TP
+.B mount <mountpoint>
+This specifies the icecast mountpoint to use.
+.TP
+.B password <password>
+This specifies the password to use when logging in to the icecast server.
+.TP
+.B quality <quality>
+This specifies the ogg encoding quality to use.  The value must be between 0
+and 10.  Fractional values, such as 2.5, are permitted.  Either the quality or
+the bitrate parameter must be specified, but not both.
+.TP
+.B bitrate <kbps>
+This specifies the bitrate to use for encoding.  Either the quality or the
+bitrate parameter must be specified, but not both.
+.TP
+.B format <sample_rate:bits:channels>
+This specifies the sample rate, bits per sample, and number of channels to use
+for encoding.
+.SH OPTIONAL SHOUT OUTPUT PARAMETERS
+.TP
+.B user <username>
+This specifies the username to use when logging in to the icecast server.  The
+default is "source".
+.TP
+.B public <yes or no>
+This specifies whether to request that the stream be listed in all public
+stream directories that the icecast server knows about.  The default is no.
+.TP
+.B description <description>
+This specifies a description of the stream.
+.TP
+.B genre <genre>
+This specifies the genre(s) of the stream.
+.SH FILES
+.TP
+.BI ~/.mpdconf
+User configuration file.
+.TP
+.BI /etc/mpd.conf
+Global configuration file.
+.SH SEE ALSO
+mpd(1), mpc(1)

@@ -1,0 +1,83 @@
+0.14
+----
+
+*) data structures
+	*) remove changes made to linked list for TagTracker
+
+*) input plugins
+	*) add support for playing aac streams
+
+*) mixer
+	*) add sun support
+	*) add OS X support
+
+*) Add support for 24-bit audio
+
+*) cleanup linked list code!
+
+*) implement listener socket protocol as documented here:
+	http://mpd.wikia.com/wiki/MusicPlayerDaemonListenerProtocol
+
+*) support for dynamically loading plugins
+	*) cleanup input plugins "API"
+	*) cleanup output plugins "API"
+
+*) add error codes for status->error
+
+*) Cleanup Config File Code
+
+*) audio output
+	*) write a esd native audioOutput
+	*) write a nas native audioOutput
+	*) allowing "pausing" of audio output devices
+	*) while pausing, play silence for the devices that don't support 
+	   "pausing"
+	*) write a sun native audioOutput
+	*) more accurate time reporting by determining how much of audio_device
+                buffer has been played
+
+*) state
+	*) abstract out state code from playlist.c
+	*) put MPD Version in statefile
+
+*) add playlistreplace command (replace current playlist with saved playlist
+                                and keep playing)
+
+*) add command for inserting songs in a specific position
+
+1.0
+---
+
+*) bug fixes
+
+post-1.0
+--------
+
+*) rewrite audio pipe
+	*) use pthreads/clone
+		*) try to constrain the use of pthread mutex's and condition's
+			to specific output plugins
+	*) use pull model for audio_output
+	*) threads
+		0) managing thread
+			*) receives commands
+			*) manages state
+			*) handles time/metadata sending
+		1) decoding thread
+		2) effects thread
+			*) crossfading
+			*) *command* resampling/conversions
+		3) audio_output thread
+			*) thread for each audio_output device
+
+*) dynamic metadata
+	*) implement by recording the ftell positions of entries
+	*) buffer changes and flush them once every 60 seconds
+	*) buffer changes while doing an update
+	*) be sure to check that the metadata "header" is what we expect
+	   before writing at the position
+	*) add support for:
+		*) last time played
+		*) times played
+		*) times skipped
+		*) ranking
