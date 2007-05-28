@@ -1,4 +1,4 @@
-ver 0.13.0 (2007/??/??)
+ver 0.13.0 (2007/5/28)
 * New JACK audio output
 * Support for "file" as an alternative to "filename" in search, find, and list
 * FLAC 1.1.3 API support
