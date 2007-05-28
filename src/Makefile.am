@@ -73,6 +73,7 @@ mpd_headers = \
 	utf8.h \
 	utils.h \
 	volume.h \
+	ioops.h \
 	zeroconf.h \
 	locate.h \
 	storedPlaylist.h
