@@ -2,10 +2,10 @@
 # "Inspired" by ogg.m4
 
 dnl AM_PATH_LIBFLAC([ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND]])
-dnl Test for libFLAC, and define LIBFLAC_CFLAGS, LIBFLAC_LIBS, LIBFLAC_LIBDIR
+dnl Test for libFLAC, and define LIBFLAC_CFLAGS and LIBFLAC_LIBS
 dnl
 AC_DEFUN([AM_PATH_LIBFLAC],
-[dnl
+[dnl 
 dnl Get the cflags and libraries
 dnl
 AC_ARG_WITH(libFLAC,[  --with-libFLAC=PFX   Prefix where libFLAC is installed (optional)], libFLAC_prefix="$withval", libFLAC_prefix="")
@@ -14,21 +14,21 @@ AC_ARG_WITH(libFLAC-includes,[  --with-libFLAC-includes=DIR   Directory where li
 AC_ARG_ENABLE(libFLACtest, [  --disable-libFLACtest       Do not try to compile and run a test libFLAC program],, enable_libFLACtest=yes)
 
   if test "x$libFLAC_libraries" != "x" ; then
-    LIBFLAC_LIBDIR="$libFLAC_libraries"
+    LIBFLAC_LIBS="-L$libFLAC_libraries"
   elif test "x$libFLAC_prefix" != "x" ; then
-    LIBFLAC_LIBDIR="$libFLAC_prefix/lib"
+    LIBFLAC_LIBS="-L$libFLAC_prefix/lib"
   elif test "x$prefix" != "xNONE" ; then
-    LIBFLAC_LIBDIR="$libdir"
+    LIBFLAC_LIBS="-L$libdir"
   fi
 
-  LIBFLAC_LIBS="-L$LIBFLAC_LIBDIR -lFLAC $OGG_LIBS -lm"
+  LIBFLAC_LIBS="$LIBFLAC_LIBS -lFLAC -lm"
 
   if test "x$libFLAC_includes" != "x" ; then
     LIBFLAC_CFLAGS="-I$libFLAC_includes"
   elif test "x$libFLAC_prefix" != "x" ; then
     LIBFLAC_CFLAGS="-I$libFLAC_prefix/include"
-  elif test "x$prefix" != "xNONE"; then
-    LIBFLAC_CFLAGS=""
+  elif test "$prefix" != "xNONE"; then
+    LIBFLAC_CFLAGS="-I$libdir"
   fi
 
   AC_MSG_CHECKING(for libFLAC)
@@ -39,11 +39,9 @@ AC_ARG_ENABLE(libFLACtest, [  --disable-libFLACtest       Do not try to compile 
     ac_save_CFLAGS="$CFLAGS"
     ac_save_CXXFLAGS="$CXXFLAGS"
     ac_save_LIBS="$LIBS"
-    ac_save_LDPATH="$LD_LIBRARY_PATH"
     CFLAGS="$CFLAGS $LIBFLAC_CFLAGS"
     CXXFLAGS="$CXXFLAGS $LIBFLAC_CFLAGS"
     LIBS="$LIBS $LIBFLAC_LIBS"
-    LD_LIBRARY_PATH="$LIBFLAC_LIBDIR:$LD_LIBRARY_PATH"
 dnl
 dnl Now check if the installed libFLAC is sufficiently new.
 dnl
@@ -62,9 +60,7 @@ int main ()
 
 ],, no_libFLAC=yes,[echo $ac_n "cross compiling; assumed OK... $ac_c"])
        CFLAGS="$ac_save_CFLAGS"
-       CXXFLAGS="$ac_save_CXXFLAGS"
        LIBS="$ac_save_LIBS"
-       LD_LIBRARY_PATH="$ac_save_LD_LIBRARY_PATH"
   fi
 
   if test "x$no_libFLAC" = "x" ; then
@@ -77,9 +73,7 @@ int main ()
      else
        echo "*** Could not run libFLAC test program, checking why..."
        CFLAGS="$CFLAGS $LIBFLAC_CFLAGS"
-       CXXFLAGS="$CXXFLAGS $LIBFLAC_CFLAGS"
        LIBS="$LIBS $LIBFLAC_LIBS"
-       LD_LIBRARY_PATH="$LIBFLAC_LIBDIR:$LD_LIBRARY_PATH"
        AC_TRY_LINK([
 #include <stdio.h>
 #include <FLAC/format.h>
@@ -98,17 +92,13 @@ int main ()
        echo "*** or that you have moved libFLAC since it was installed. In the latter case, you"
        echo "*** may want to edit the libFLAC-config script: $LIBFLAC_CONFIG" ])
        CFLAGS="$ac_save_CFLAGS"
-       CXXFLAGS="$ac_save_CXXFLAGS"
        LIBS="$ac_save_LIBS"
-       LD_LIBRARY_PATH="$ac_save_LD_LIBRARY_PATH"
      fi
      LIBFLAC_CFLAGS=""
-     LIBFLAC_LIBDIR=""
      LIBFLAC_LIBS=""
      ifelse([$2], , :, [$2])
   fi
   AC_SUBST(LIBFLAC_CFLAGS)
-  AC_SUBST(LIBFLAC_LIBDIR)
   AC_SUBST(LIBFLAC_LIBS)
   rm -f conf.libFLACtest
 ])
