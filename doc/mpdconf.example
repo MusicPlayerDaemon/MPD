@@ -118,6 +118,13 @@ error_file                      "~/.mpd/mpd.error"
 #        public                  "no"                    # optional
 #}
 #
+# An example of a null output (for no audio output):
+#
+#audio_output {
+#        type                    "null"
+#        name                    "My Null Output"
+#}
+#
 # Force all decoded audio to be converted to this format before
 # being passed to the audio outputs.
 #
