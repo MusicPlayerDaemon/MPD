@@ -242,7 +242,8 @@ void closeAudioOutput(AudioOutput * audioOutput)
 void finishAudioOutput(AudioOutput * audioOutput)
 {
 	closeAudioOutput(audioOutput);
-	audioOutput->finishDriverFunc(audioOutput);
+	if (audioOutput->finishDriverFunc)
+		audioOutput->finishDriverFunc(audioOutput);
 	if (audioOutput->convBuffer)
 		free(audioOutput->convBuffer);
 }
