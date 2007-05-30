@@ -1,3 +1,6 @@
+ver 0.14.0 (????/??/??)
+* New null audio output plugin
+
 ver 0.13.0 (2007/5/28)
 * New JACK audio output
 * Support for "file" as an alternative to "filename" in search, find, and list
