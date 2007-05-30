@@ -77,7 +77,8 @@ mpd_headers = \
 	ioops.h \
 	zeroconf.h \
 	locate.h \
-	storedPlaylist.h
+	storedPlaylist.h \
+	timer.h
 
 
 mpd_SOURCES = \
@@ -129,7 +130,8 @@ mpd_SOURCES = \
 	utf8.c \
 	zeroconf.c \
 	locate.c \
-	storedPlaylist.c
+	storedPlaylist.c \
+	timer.c
 
 
 mpd_CFLAGS = $(MPD_CFLAGS)
