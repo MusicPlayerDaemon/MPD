@@ -1,8 +1,8 @@
 dnl AC_INIT(src/main.c)
-dnl AM_INIT_AUTOMAKE(mpd, 0.13.0)
+dnl AM_INIT_AUTOMAKE(mpd, 0.14.0)
 
 AC_PREREQ(2.58)
-AC_INIT(mpd, 0.13.0, warren.dukes@gmail.com)
+AC_INIT(mpd, 0.14.0, warren.dukes@gmail.com)
 AM_INIT_AUTOMAKE($PACKAGE_NAME, $PACKAGE_VERSION)
 
 AC_SUBST(MPD_LIBS)
@@ -17,7 +17,7 @@ AC_PROG_LIBTOOL
 AC_PROG_MAKE_SET
 
 AM_CONFIG_HEADER(config.h)
-AC_DEFINE(PROTOCOL_VERSION, "0.13.0", [The mpd protocol version])
+AC_DEFINE(PROTOCOL_VERSION, "0.14.0", [The mpd protocol version])
 
 MPD_LIBS=""
 MPD_CFLAGS=""
