@@ -105,6 +105,7 @@ void sendMetadataToAudioOutput(AudioOutput * audioOutput, MpdTag * tag);
 
 void printAllOutputPluginTypes(FILE * fp);
 
+extern AudioOutputPlugin nullPlugin;
 extern AudioOutputPlugin alsaPlugin;
 extern AudioOutputPlugin aoPlugin;
 extern AudioOutputPlugin ossPlugin;

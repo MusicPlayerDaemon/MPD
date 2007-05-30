@@ -92,6 +92,7 @@ int cmpAudioFormat(AudioFormat * f1, AudioFormat * f2)
 void loadAudioDrivers(void)
 {
 	initAudioOutputPlugins();
+	loadAudioOutputPlugin(&nullPlugin);
 	loadAudioOutputPlugin(&alsaPlugin);
 	loadAudioOutputPlugin(&aoPlugin);
 	loadAudioOutputPlugin(&ossPlugin);

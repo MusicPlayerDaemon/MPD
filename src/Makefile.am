@@ -2,6 +2,7 @@ bin_PROGRAMS = mpd
 SUBDIRS = $(MP4FF_SUBDIR)
 
 mpd_audioOutputs = \
+	audioOutputs/audioOutput_null.c \
 	audioOutputs/audioOutput_alsa.c \
 	audioOutputs/audioOutput_ao.c \
 	audioOutputs/audioOutput_oss.c \
