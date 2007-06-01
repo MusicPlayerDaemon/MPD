@@ -222,11 +222,6 @@ int playerStop(int fd)
 void playerKill(void)
 {
 	int pid;
-	/*PlayerControl * pc = &(getPlayerData()->playerControl);
-
-	   playerStop(stderr);
-	   playerCloseAudio(stderr);
-	   if(player_pid>0 && pc->closeAudio) sleep(1); */
 
 	pid = player_pid;
 	if (pid > 0)

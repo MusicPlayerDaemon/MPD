@@ -840,7 +840,6 @@ int stopPlaylist(int fd)
 
 static int playPlaylistOrderNumber(int fd, int orderNum)
 {
-
 	if (playerStop(fd) < 0)
 		return -1;
 
@@ -1195,7 +1194,6 @@ static void randomizeOrder(int start, int end)
 			playlist.current = ri;
 		swapOrder(i, ri);
 	}
-
 }
 
 int setPlaylistRandomStatus(int fd, int status)
