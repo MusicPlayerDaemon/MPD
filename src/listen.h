@@ -26,6 +26,8 @@
 #include <unistd.h>
 #include <sys/select.h>
 
+extern int boundPort;
+
 void listenOnPort(void);
 
 void getConnections(fd_set * fds);
@@ -35,7 +37,5 @@ void freeAllListenSockets(void);
 
 /* fdmax should be initialized to something */
 void addListenSocketsToFdSet(fd_set * fds, int *fdmax);
-
-int getBoundPort(void);
 
 #endif

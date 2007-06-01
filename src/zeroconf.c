@@ -255,7 +255,7 @@ static void avahiRegisterService(AvahiClient *c)
 					AVAHI_IF_UNSPEC, AVAHI_PROTO_UNSPEC, 0,
 					avahiName, SERVICE_TYPE,
 					NULL, NULL,
-					getBoundPort(),
+					boundPort,
 					NULL);
 	if( ret < 0 ) {
 		ERROR( "Avahi: Failed to add service %s: %s\n", SERVICE_TYPE, avahi_strerror(ret) );

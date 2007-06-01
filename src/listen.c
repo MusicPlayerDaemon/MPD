@@ -48,7 +48,7 @@
 
 static int *listenSockets;
 static int numberOfListenSockets;
-static int boundPort;
+int boundPort;
 
 static int establishListen(unsigned int port,
                            struct sockaddr *addrp, socklen_t addrlen)
@@ -250,9 +250,4 @@ void getConnections(fd_set * fds)
 			}
 		}
 	}
-}
-
-int getBoundPort(void)
-{
-	return boundPort;
 }
