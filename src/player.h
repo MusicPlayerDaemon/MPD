@@ -57,6 +57,7 @@
 #define PLAYER_METADATA_STATE_WRITE     2
 
 typedef struct _PlayerControl {
+	volatile mpd_sint8 quit;
 	volatile mpd_sint8 stop;
 	volatile mpd_sint8 play;
 	volatile mpd_sint8 pause;
@@ -120,6 +121,8 @@ char *getPlayerErrorStr(void);
 int getPlayerError(void);
 
 int playerInit(void);
+
+int playerQuit(int fd);
 
 int queueSong(Song * song);
 

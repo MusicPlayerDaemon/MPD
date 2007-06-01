@@ -155,6 +155,9 @@ int playerInit(void)
 			} else if (pc->cycleLogFiles) {
 				cycle_log_files();
 				pc->cycleLogFiles = 0;
+			} else if (pc->quit) {
+				pc->quit = 0;
+				break;
 			} else
 				my_usleep(10000);
 		}
@@ -170,6 +173,24 @@ int playerInit(void)
 	}
 
 	unblockSignals();
+
+	return 0;
+}
+
+int playerQuit(int fd)
+{
+	PlayerControl *pc = &(getPlayerData()->playerControl);
+
+	if (playerStop(fd) < 0)
+		return -1;
+
+	playerCloseAudio();
+
+	if (player_pid > 0) {
+		pc->quit = 1;
+		while (player_pid > 0 && pc->quit)
+			my_usleep(1000);
+	}
 
 	return 0;
 }
@@ -341,6 +362,8 @@ void playerCloseAudio(void)
 		if (playerStop(STDERR_FILENO) < 0)
 			return;
 		pc->closeAudio = 1;
+		while (player_pid > 0 && pc->closeAudio)
+			my_usleep(1000);
 	}
 }
 

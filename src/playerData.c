@@ -118,6 +118,7 @@ void initPlayerData(void)
 		      buffered_chunks * sizeof(mpd_sint8));
 	buffer->acceptMetadata = 0;
 
+	playerData_pd->playerControl.quit = 0;
 	playerData_pd->playerControl.stop = 0;
 	playerData_pd->playerControl.pause = 0;
 	playerData_pd->playerControl.play = 0;
