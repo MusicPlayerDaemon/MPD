@@ -35,6 +35,15 @@
  */
 #define SERVICE_NAME		"Music Player"
 
+static struct ioOps zeroConfIo = {
+};
+
+#ifdef HAVE_BONJOUR
+#include <dns_sd.h>
+
+static DNSServiceRef dnsReference;
+#endif
+
 /* Here is the implementation for Avahi (http://avahi.org) Zeroconf support */
 #ifdef HAVE_AVAHI
 
@@ -55,10 +64,6 @@ static int avahiRunning;
 
 static int avahiFdset( fd_set* rfds, fd_set* wfds, fd_set* efds );
 static int avahiFdconsume( int fdCount, fd_set* rfds, fd_set* wfds, fd_set* efds );
-static struct ioOps avahiIo = {
-	.fdset = avahiFdset,
-	.consume = avahiFdconsume,
-};
 
 /* Forward Declaration */
 static void avahiRegisterService(AvahiClient *c);
@@ -451,18 +456,93 @@ static void init_avahi(const char *serviceName)
 		goto fail;
 	}
 
-	avahiIo.fdset = avahiFdset;
-	avahiIo.consume = avahiFdconsume;
-	registerIO( &avahiIo );
+	zeroConfIo.fdset = avahiFdset;
+	zeroConfIo.consume = avahiFdconsume;
+	registerIO( &zeroConfIo );
 
 	return;
 
 fail:
 	finishZeroconf();
 }
-#else  /* !HAVE_AVAHI */
-static void init_avahi(const char *serviceName) { }
 #endif /* HAVE_AVAHI */
+
+#ifdef HAVE_BONJOUR
+static int dnsRegisterFdset(fd_set* rfds, fd_set* wfds, fd_set* efds)
+{
+	int fd;
+
+	if (dnsReference == NULL)
+		return -1;
+
+	fd = DNSServiceRefSockFD(dnsReference);
+	if (fd == -1)
+		return -1;
+
+	FD_SET(fd, rfds);
+
+	return fd;
+}
+
+static int dnsRegisterFdconsume(int fdCount, fd_set* rfds, fd_set* wfds,
+                                fd_set* efds)
+{
+	int fd;
+
+	if (dnsReference == NULL)
+		return -1;
+
+	fd = DNSServiceRefSockFD(dnsReference);
+	if (fd == -1)
+		return -1;
+
+	if (FD_ISSET(fd, rfds)) {
+		FD_CLR(fd, rfds);
+
+		DNSServiceProcessResult(dnsReference);
+
+		return fdCount - 1;
+	}
+
+	return fdCount;
+}
+
+static void dnsRegisterCallback (DNSServiceRef sdRef, DNSServiceFlags flags,
+				    DNSServiceErrorType errorCode, const char *name,
+					const char *regtype, const char *domain, void *context)
+{
+	if (errorCode != kDNSServiceErr_NoError) {
+		ERROR("Failed to register zeroconf service.\n");
+
+		DNSServiceRefDeallocate(dnsReference);
+		dnsReference = NULL;
+		deregisterIO( &zeroConfIo );
+	} else {
+		DEBUG("Registered zeroconf service with name '%s'\n", name);
+	}
+}
+
+static void init_zeroconf_osx(const char *serviceName)
+{
+	DNSServiceErrorType error = DNSServiceRegister(&dnsReference,
+			0, 0, serviceName, SERVICE_TYPE, NULL, NULL, htons(boundPort), 0,
+			NULL, dnsRegisterCallback, NULL);
+
+	if (error != kDNSServiceErr_NoError) {
+		ERROR("Failed to register zeroconf service.\n");
+
+		if (dnsReference) {
+			DNSServiceRefDeallocate(dnsReference);
+			dnsReference = NULL;
+		}
+		return;
+	}
+
+	zeroConfIo.fdset = dnsRegisterFdset;
+	zeroConfIo.consume = dnsRegisterFdconsume;
+	registerIO( &zeroConfIo );
+}
+#endif
 
 void initZeroconf(void)
 {
@@ -473,14 +553,21 @@ void initZeroconf(void)
 
 	if (param && strlen(param->value) > 0)
 		serviceName = param->value;
+
+#ifdef HAVE_AVAHI
 	init_avahi(serviceName);
+#endif
+
+#ifdef HAVE_BONJOUR
+	init_zeroconf_osx(serviceName);
+#endif
 }
 
 void finishZeroconf(void)
 {
 #ifdef HAVE_AVAHI
 	DEBUG( "Avahi: Shutting down interface\n" );
-	deregisterIO( &avahiIo );
+	deregisterIO( &zeroConfIo );
 
 	if( avahiGroup ) {
 		avahi_entry_group_free( avahiGroup );
@@ -495,4 +582,13 @@ void finishZeroconf(void)
 	avahi_free( avahiName );
 	avahiName = NULL;
 #endif /* HAVE_AVAHI */
+
+#ifdef HAVE_BONJOUR
+	deregisterIO( &zeroConfIo );
+	if (dnsReference != NULL) {
+		DNSServiceRefDeallocate(dnsReference);
+		dnsReference = NULL;
+		DEBUG("Deregistered Zeroconf service.\n");
+	}
+#endif
 }
