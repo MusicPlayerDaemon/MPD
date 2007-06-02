@@ -470,7 +470,7 @@ static int finishHTTPInit(InputStream * inStream)
 			 "User-Agent: %s/%s\r\n"
 			 "Range: bytes=%ld-\r\n"
 			 "%s"	/* authorization */
-			 "Icy-Metadata:1\r\n"
+			 "Icy-Metadata: 1\r\n"
 			 "\r\n",
 			 data->path, data->host,
 			 PACKAGE_NAME, PACKAGE_VERSION,
