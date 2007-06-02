@@ -666,7 +666,6 @@ static int getHTTPHello(InputStream * inStream)
 
 	needle += 4;	/* 4 == strlen("\r\n\r\n") */
 	data->buflen -= (needle - data->buffer);
-	/*fwrite(data->buffer, 1, data->buflen, stdout); */
 	memmove(data->buffer, needle, data->buflen);
 
 	data->connState = HTTP_CONN_STATE_OPEN;
@@ -816,10 +815,8 @@ size_t inputStream_httpRead(InputStream * inStream, void *ptr, size_t size,
 		tosend = (tosend / size) * size;
 
 		memcpy(ptr, data->buffer, tosend);
-		/*fwrite(ptr,1,readed,stdout); */
 		data->buflen -= tosend;
 		data->icyOffset += tosend;
-		/*fwrite(data->buffer,1,readed,stdout); */
 		memmove(data->buffer, data->buffer + tosend, data->buflen);
 
 		inStream->offset += tosend;
@@ -901,7 +898,6 @@ int inputStream_httpBuffer(InputStream * inStream)
 			data->connState = HTTP_CONN_STATE_CLOSED;
 			readed = 0;
 		}
-		/*fwrite(data->buffer+data->buflen,1,readed,stdout); */
 		data->buflen += readed;
 	}
 
