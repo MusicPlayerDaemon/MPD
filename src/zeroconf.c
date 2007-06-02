@@ -19,6 +19,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
+#include <arpa/inet.h>
 
 #include "zeroconf.h"
 #include "conf.h"
