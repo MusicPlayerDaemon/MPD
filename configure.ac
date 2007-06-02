@@ -601,6 +601,7 @@ if test x$with_zeroconf != xno; then
 
 	if test x$with_zeroconf = xbonjour -o x$with_zeroconf = xauto; then
 		AC_CHECK_HEADER(dns_sd.h, [found_bonjour=1;AC_DEFINE(HAVE_BONJOUR,1,[Define to enable Bonjour Zeroconf support])],[found_bonjour=0])
+		AC_CHECK_LIB(dns_sd, DNSServiceRegister, MPD_LIBS="$MPD_LIBS -ldns_sd")
 	fi
 
 	if test x$found_bonjour = x1; then
