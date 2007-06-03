@@ -36,6 +36,10 @@
  */
 #define SERVICE_NAME		"Music Player"
 
+#define DEFAULT_ZEROCONF_ENABLED 1
+
+static zeroconfEnabled;
+
 static struct ioOps zeroConfIo = {
 };
 
@@ -549,9 +553,14 @@ void initZeroconf(void)
 {
 	const char* serviceName = SERVICE_NAME;
 	ConfigParam *param;
-	int enabled = getBoolConfigParam(CONF_ZEROCONF_ENABLED);
 
-	if (enabled != -1 && enabled != 1)
+	zeroconfEnabled = getBoolConfigParam(CONF_ZEROCONF_ENABLED);
+	if (enabled == -1)
+		zeroconfEnabled = DEFAULT_ZEROCONF_ENABLED;
+	else if (enabled < 0)
+		exit(EXIT_FAILURE);
+
+	if (!zeroconfEnabled)
 		return;
 
 	param = getConfigParam(CONF_ZEROCONF_NAME);
@@ -570,9 +579,7 @@ void initZeroconf(void)
 
 void finishZeroconf(void)
 {
-	int enabled = getBoolConfigParam(CONF_ZEROCONF_ENABLED);
-
-	if (enabled != -1 && enabled != 1)
+	if (!zeroconfEnabled)
 		return;
 
 #ifdef HAVE_AVAHI

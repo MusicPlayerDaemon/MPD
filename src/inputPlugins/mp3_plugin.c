@@ -58,7 +58,7 @@
 
 #define DEFAULT_GAPLESS_MP3_PLAYBACK 1
 
-static int gaplessPlayback;
+static int gaplessPlaybackEnabled;
 
 /* this is stolen from mpg321! */
 struct audio_dither {
@@ -120,9 +120,11 @@ static signed long audio_linear_dither(unsigned int bits, mad_fixed_t sample,
 
 static int mp3_plugin_init(void)
 {
-	gaplessPlayback = getBoolConfigParam(CONF_GAPLESS_MP3_PLAYBACK);
-	if (gaplessPlayback == -1) gaplessPlayback = DEFAULT_GAPLESS_MP3_PLAYBACK;
-	else if (gaplessPlayback < 0) exit(EXIT_FAILURE);
+	gaplessPlaybackEnabled = getBoolConfigParam(CONF_GAPLESS_MP3_PLAYBACK);
+	if (gaplessPlaybackEnabled == -1)
+		gaplessPlaybackEnabled = DEFAULT_GAPLESS_MP3_PLAYBACK;
+	else if (gaplessPlaybackEnabled < 0)
+		exit(EXIT_FAILURE);
 	return 1;
 }
 
@@ -692,7 +694,7 @@ static int decodeFirstFrame(mp3DecodeData * data, DecoderControl * dc,
 		data->foundXing = 1;
 		data->muteFrame = MUTEFRAME_SKIP;
 
-		if (gaplessPlayback && data->inStream->seekable &&
+		if (gaplessPlaybackEnabled && data->inStream->seekable &&
 		    parse_lame(&lame, &ptr, &bitlen)) {
 			data->dropSamplesAtStart = lame.encoderDelay + DECODERDELAY;
 			data->dropSamplesAtEnd = lame.encoderPadding;

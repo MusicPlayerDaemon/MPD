@@ -22,13 +22,17 @@
 
 #include <stdlib.h>
 
+#define DEFAULT_VOLUME_NORMALIZATION 0
+
 int normalizationEnabled;
 
 void initNormalization(void)
 {
 	normalizationEnabled = getBoolConfigParam(CONF_VOLUME_NORMALIZATION);
-	if (normalizationEnabled == -1) normalizationEnabled = 0;
-	else if (normalizationEnabled < 0) exit(EXIT_FAILURE);
+	if (normalizationEnabled == -1)
+		normalizationEnabled = DEFAULT_VOLUME_NORMALIZATION;
+	else if (normalizationEnabled < 0)
+		exit(EXIT_FAILURE);
 
 	if (normalizationEnabled)
 		CompressCfg(0, ANTICLIP, TARGET, GAINMAX, GAINSMOOTH, BUCKETS);
