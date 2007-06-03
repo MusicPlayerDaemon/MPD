@@ -38,7 +38,7 @@
 
 #define DEFAULT_ZEROCONF_ENABLED 1
 
-static zeroconfEnabled;
+static int zeroconfEnabled;
 
 static struct ioOps zeroConfIo = {
 };
@@ -551,13 +551,13 @@ static void init_zeroconf_osx(const char *serviceName)
 
 void initZeroconf(void)
 {
-	const char* serviceName = SERVICE_NAME;
+	const char *serviceName = SERVICE_NAME;
 	ConfigParam *param;
 
 	zeroconfEnabled = getBoolConfigParam(CONF_ZEROCONF_ENABLED);
-	if (enabled == -1)
+	if (zeroconfEnabled == -1)
 		zeroconfEnabled = DEFAULT_ZEROCONF_ENABLED;
-	else if (enabled < 0)
+	else if (zeroconfEnabled < 0)
 		exit(EXIT_FAILURE);
 
 	if (!zeroconfEnabled)
