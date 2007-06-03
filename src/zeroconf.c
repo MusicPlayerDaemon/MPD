@@ -549,6 +549,10 @@ void initZeroconf(void)
 {
 	const char* serviceName = SERVICE_NAME;
 	ConfigParam *param;
+	int enabled = getBoolConfigParam(CONF_ZEROCONF_ENABLED);
+
+	if (enabled != -1 && enabled != 1)
+		return;
 
 	param = getConfigParam(CONF_ZEROCONF_NAME);
 
@@ -566,6 +570,11 @@ void initZeroconf(void)
 
 void finishZeroconf(void)
 {
+	int enabled = getBoolConfigParam(CONF_ZEROCONF_ENABLED);
+
+	if (enabled != -1 && enabled != 1)
+		return;
+
 #ifdef HAVE_AVAHI
 	DEBUG( "Avahi: Shutting down interface\n" );
 	deregisterIO( &zeroConfIo );

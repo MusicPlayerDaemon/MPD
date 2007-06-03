@@ -45,6 +45,10 @@ error_file                      "~/.mpd/mpd.error"
 #
 #log_level                       "default"
 #
+# If Zeroconf support should be enabled.
+#
+#zeroconf_enabled                "yes"
+#
 # If Zeroconf is configured, the service name to publish.  This
 # should be unique on your local network, but name collisions
 # will be taken care of for you.
