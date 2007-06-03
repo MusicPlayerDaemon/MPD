@@ -45,13 +45,17 @@ error_file                      "~/.mpd/mpd.error"
 #
 #log_level                       "default"
 #
-# If Zeroconf support should be enabled.
+################################################################
+
+
+########################### ZEROCONF ###########################
+#
+# If yes, service information will be published with Zeroconf.
 #
 #zeroconf_enabled                "yes"
 #
-# If Zeroconf is configured, the service name to publish.  This
-# should be unique on your local network, but name collisions
-# will be taken care of for you.
+# The service name to publish.  This name should be unique on
+# your local network.
 #
 #zeroconf_name                   "Music Player"
 #
