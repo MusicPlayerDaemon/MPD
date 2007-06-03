@@ -601,7 +601,7 @@ if test x$with_zeroconf != xno; then
 
 	if test x$with_zeroconf = xbonjour || test x$with_zeroconf = xauto; then
 		AC_CHECK_HEADER(dns_sd.h,
-		                [found_bonjour=1;AC_DEFINE(HAVE_BONJOUR, 1, [Define to enable Bonjour Zeroconf support])],
+		                [found_bonjour=1;AC_DEFINE([HAVE_BONJOUR], 1, [Define to enable Bonjour Zeroconf support])],
 		                [found_bonjour=0])
 		AC_CHECK_LIB(dns_sd, DNSServiceRegister,
 		             MPD_LIBS="$MPD_LIBS -ldns_sd")
@@ -616,6 +616,8 @@ if test x$with_zeroconf != xno; then
 	if test x$with_zeroconf = xauto || test x$with_zeroconf = xno; then
 		AC_MSG_WARN([No supported Zeroconf backend found, disabling Zeroconf])
 		with_zeroconf=no
+	else
+		AC_DEFINE([HAVE_ZEROCONF], 1, [Define to enable Zeroconf support])
 	fi
 fi
 

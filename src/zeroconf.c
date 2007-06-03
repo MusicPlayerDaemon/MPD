@@ -40,8 +40,10 @@
 
 static int zeroconfEnabled;
 
+#ifdef HAVE_ZEROCONF
 static struct ioOps zeroConfIo = {
 };
+#endif
 
 #ifdef HAVE_BONJOUR
 #include <dns_sd.h>
