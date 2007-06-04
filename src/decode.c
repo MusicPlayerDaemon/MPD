@@ -83,11 +83,12 @@ static void quitDecode(PlayerControl * pc, DecoderControl * dc)
 	pc->play = 0;
 	pc->stop = 0;
 	pc->pause = 0;
-	kill(getppid(), SIGUSR1);
 
 	pid = decode_pid;
 	if (pid > 0)
 		kill(pid, SIGSTOP);
+
+	kill(getppid(), SIGUSR1);
 }
 
 static int calculateCrossFadeChunks(PlayerControl * pc, AudioFormat * af)
