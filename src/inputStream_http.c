@@ -610,13 +610,13 @@ static int getHTTPHello(InputStream * inStream)
 
 	cur = strstr(data->buffer, "\r\n");
 	while (cur && cur != needle) {
-		if (0 == strncmp(cur, "\r\nContent-Length: ", 18)) {
+		if (0 == strncasecmp(cur, "\r\nContent-Length: ", 18)) {
 			if (!inStream->size)
 				inStream->size = atol(cur + 18);
-		} else if (0 == strncmp(cur, "\r\nicy-metaint:", 14)) {
+		} else if (0 == strncasecmp(cur, "\r\nicy-metaint:", 14)) {
 			data->icyMetaint = atoi(cur + 14);
-		} else if (0 == strncmp(cur, "\r\nicy-name:", 11) ||
-			   0 == strncmp(cur, "\r\nice-name:", 11)) {
+		} else if (0 == strncasecmp(cur, "\r\nicy-name:", 11) ||
+			   0 == strncasecmp(cur, "\r\nice-name:", 11)) {
 			int incr = 11;
 			char *temp = strstr(cur + incr, "\r\n");
 			if (!temp)
@@ -630,7 +630,7 @@ static int getHTTPHello(InputStream * inStream)
 			*temp = '\r';
 			DEBUG("inputStream_http: metaName: %s\n",
 			      inStream->metaName);
-		} else if (0 == strncmp(cur, "\r\nx-audiocast-name:", 19)) {
+		} else if (0 == strncasecmp(cur, "\r\nx-audiocast-name:", 19)) {
 			int incr = 19;
 			char *temp = strstr(cur + incr, "\r\n");
 			if (!temp)
@@ -644,7 +644,7 @@ static int getHTTPHello(InputStream * inStream)
 			*temp = '\r';
 			DEBUG("inputStream_http: metaName: %s\n",
 			      inStream->metaName);
-		} else if (0 == strncmp(cur, "\r\nContent-Type:", 15)) {
+		} else if (0 == strncasecmp(cur, "\r\nContent-Type:", 15)) {
 			int incr = 15;
 			char *temp = strstr(cur + incr, "\r\n");
 			if (!temp)
