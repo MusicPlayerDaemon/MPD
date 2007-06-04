@@ -2,6 +2,8 @@ ver 0.14.0 (????/??/??)
 * New null audio output plugin
 * Zeroconf support using Bonjour
 * New zeroconf_enabled option so that Zeroconf support can be disabled
+* Enable the AAC input plugin if support for it has been compiled in
+* Support for playing MP4 streams
 
 ver 0.13.0 (2007/5/28)
 * New JACK audio output
