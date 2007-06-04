@@ -148,6 +148,7 @@ void initInputPlugins(void)
 	loadInputPlugin(&flacPlugin);
 	loadInputPlugin(&audiofilePlugin);
 	loadInputPlugin(&mp4Plugin);
+	loadInputPlugin(&aacPlugin);
 	loadInputPlugin(&mpcPlugin);
 	loadInputPlugin(&modPlugin);
 }

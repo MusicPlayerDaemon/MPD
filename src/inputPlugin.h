@@ -102,8 +102,8 @@ extern InputPlugin flacPlugin;
 extern InputPlugin oggflacPlugin;
 extern InputPlugin audiofilePlugin;
 extern InputPlugin mp4Plugin;
-extern InputPlugin mpcPlugin;
 extern InputPlugin aacPlugin;
+extern InputPlugin mpcPlugin;
 extern InputPlugin modPlugin;
 
 #endif
