@@ -318,9 +318,7 @@ static void decodeStart(PlayerControl * pc, OutputBuffer * cb,
 		cb->acceptMetadata = 1;
 
 		/* first we try mime types: */
-		while (ret
-		       && (plugin =
-			   getInputPluginFromMimeType(inStream.mime, next++))) {
+		while (ret && (plugin = getInputPluginFromMimeType(inStream.mime, next++))) {
 			if (!plugin->streamDecodeFunc)
 				continue;
 			if (!(plugin->streamTypes & INPUT_PLUGIN_STREAM_URL))
@@ -336,9 +334,7 @@ static void decodeStart(PlayerControl * pc, OutputBuffer * cb,
 		if (plugin == NULL) {
 			char *s = getSuffix(dc->utf8url);
 			next = 0;
-			while (ret
-			       && (plugin =
-				   getInputPluginFromSuffix(s, next++))) {
+			while (ret && (plugin = getInputPluginFromSuffix(s, next++))) {
 				if (!plugin->streamDecodeFunc)
 					continue;
 				if (!(plugin->streamTypes &
@@ -347,8 +343,7 @@ static void decodeStart(PlayerControl * pc, OutputBuffer * cb,
 				if (plugin->tryDecodeFunc &&
 				    !plugin->tryDecodeFunc(&inStream))
 					continue;
-				ret =
-				    plugin->streamDecodeFunc(cb, dc, &inStream);
+				ret = plugin->streamDecodeFunc(cb, dc, &inStream);
 				break;
 			}
 		}
@@ -359,8 +354,7 @@ static void decodeStart(PlayerControl * pc, OutputBuffer * cb,
 			/* we already know our mp3Plugin supports streams, no
 			 * need to check for stream{Types,DecodeFunc} */
 			if ((plugin = getInputPluginFromName("mp3")))
-				ret = plugin->streamDecodeFunc(cb, dc,
-							       &inStream);
+				ret = plugin->streamDecodeFunc(cb, dc, &inStream);
 		}
 	} else {
 		unsigned int next = 0;
