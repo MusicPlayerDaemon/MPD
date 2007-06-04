@@ -433,7 +433,8 @@ static MpdTag *mp4TagDup(char *file)
 	return ret;
 }
 
-static char *mp4Suffixes[] = { "m4a", "mp4", NULL };
+static char *mp4_suffixes[] = { "m4a", "mp4", NULL };
+static char *mp4_mimeTypes[] = { "audio/mp4", "audio/m4a", NULL };
 
 InputPlugin mp4Plugin = {
 	"mp4",
@@ -444,8 +445,8 @@ InputPlugin mp4Plugin = {
 	mp4_decode,
 	mp4TagDup,
 	INPUT_PLUGIN_STREAM_FILE,
-	mp4Suffixes,
-	NULL
+	mp4_suffixes,
+	mp4_mimeTypes
 };
 
 #else
