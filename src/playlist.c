@@ -788,7 +788,7 @@ int deleteFromPlaylist(int fd, int song)
 	    && playlist.current == songOrder) {
 		/*if(playlist.current>=playlist.length) return playerStop(fd);
 		   else return playPlaylistOrderNumber(fd,playlist.current); */
-		playerQuit(STDERR_FILENO);
+		playerWait(STDERR_FILENO);
 		playlist_noGoToNext = 1;
 	}
 
@@ -829,7 +829,7 @@ void deleteASongFromPlaylist(Song * song)
 int stopPlaylist(int fd)
 {
 	DEBUG("playlist: stop\n");
-	if (playerQuit(fd) < 0)
+	if (playerWait(fd) < 0)
 		return -1;
 	playlist.queued = -1;
 	playlist_state = PLAYLIST_STATE_STOP;

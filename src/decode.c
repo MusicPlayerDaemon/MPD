@@ -75,6 +75,8 @@ static void stopDecode(DecoderControl * dc)
 
 static void quitDecode(PlayerControl * pc, DecoderControl * dc)
 {
+	int pid;
+
 	stopDecode(dc);
 	pc->state = PLAYER_STATE_STOP;
 	dc->seek = 0;
@@ -82,6 +84,10 @@ static void quitDecode(PlayerControl * pc, DecoderControl * dc)
 	pc->stop = 0;
 	pc->pause = 0;
 	kill(getppid(), SIGUSR1);
+
+	pid = decode_pid;
+	if (pid > 0)
+		kill(pid, SIGSTOP);
 }
 
 static int calculateCrossFadeChunks(PlayerControl * pc, AudioFormat * af)
@@ -396,6 +402,14 @@ static void decodeStart(PlayerControl * pc, OutputBuffer * cb,
 static int decoderInit(PlayerControl * pc, OutputBuffer * cb,
 		       DecoderControl * dc)
 {
+	int pid;
+
+	pid = decode_pid;
+	if (pid > 0) {
+		kill(pid, SIGCONT);
+		return 0;
+	}
+
 	blockSignals();
 	getPlayerData()->playerControl.decode_pid = 0;
 	decode_pid = fork();
@@ -691,10 +705,8 @@ void decode(void)
 	dc->stop = 0;
 	dc->start = 1;
 
-	if (decode_pid <= 0) {
-		if (decoderInit(pc, cb, dc) < 0)
-			return;
-	}
+	if (decoderInit(pc, cb, dc) < 0)
+		return;
 
 	decodeParent(pc, dc, cb);
 }

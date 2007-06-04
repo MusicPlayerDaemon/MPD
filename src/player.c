@@ -110,6 +110,14 @@ void player_sigChldHandler(int pid, int status)
 
 int playerInit(void)
 {
+	int pid;
+
+	pid = player_pid;
+	if (pid > 0) {
+		kill(pid, SIGCONT);
+		return 0;
+	}
+
 	blockSignals();
 	player_pid = fork();
 	if (player_pid==0)
@@ -155,9 +163,6 @@ int playerInit(void)
 			} else if (pc->cycleLogFiles) {
 				cycle_log_files();
 				pc->cycleLogFiles = 0;
-			} else if (pc->quit) {
-				pc->quit = 0;
-				break;
 			} else
 				my_usleep(10000);
 		}
@@ -177,20 +182,18 @@ int playerInit(void)
 	return 0;
 }
 
-int playerQuit(int fd)
+int playerWait(int fd)
 {
-	PlayerControl *pc = &(getPlayerData()->playerControl);
+	int pid;
 
 	if (playerStop(fd) < 0)
 		return -1;
 
 	playerCloseAudio();
 
-	if (player_pid > 0) {
-		pc->quit = 1;
-		while (player_pid > 0 && pc->quit)
-			my_usleep(1000);
-	}
+	pid = player_pid;
+	if (pid > 0)
+		kill(pid, SIGSTOP);
 
 	return 0;
 }
@@ -212,7 +215,7 @@ int playerPlay(int fd, Song * song)
 	pathcpy_trunc(pc->utf8url, getSongUrl(song));
 
 	pc->play = 1;
-	if (player_pid == 0 && playerInit() < 0) {
+	if (playerInit() < 0) {
 		pc->play = 0;
 		return -1;
 	}
@@ -245,8 +248,10 @@ void playerKill(void)
 	int pid;
 
 	pid = player_pid;
-	if (pid > 0)
+	if (pid > 0) {
+		kill(pid, SIGCONT);
 		kill(pid, SIGTERM);
+	}
 }
 
 int playerPause(int fd)
