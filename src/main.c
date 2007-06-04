@@ -429,7 +429,6 @@ int main(int argc, char *argv[])
 	initAudioDriver();
 	initVolume();
 	initInterfaces();
-	initZeroconf();
 	initReplayGainState();
 	initNormalization();
 	initInputStream();
@@ -438,9 +437,9 @@ int main(int argc, char *argv[])
 
 	setup_log_output(options.stdOutput);
 
-
-
 	initSigHandlers();
+
+	initZeroconf();
 
 	openVolumeDevice();
 	read_state_file();
