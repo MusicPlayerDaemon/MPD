@@ -110,11 +110,13 @@ void player_sigChldHandler(int pid, int status)
 
 int playerInit(void)
 {
+	PlayerControl *pc = &(getPlayerData()->playerControl);
 	int pid;
 
 	pid = player_pid;
 	if (pid > 0) {
 		kill(pid, SIGCONT);
+		pc->wait = 0;
 		return 0;
 	}
 
@@ -123,8 +125,6 @@ int playerInit(void)
 	if (player_pid==0)
 	{
 		clock_t start = clock();
-
-		PlayerControl *pc = &(getPlayerData()->playerControl);
 
 		unblockSignals();
 
@@ -184,7 +184,11 @@ int playerInit(void)
 
 int playerWait(int fd)
 {
+	PlayerControl *pc = &(getPlayerData()->playerControl);
 	int pid;
+
+	if (pc->wait)
+		return 0;
 
 	if (playerStop(fd) < 0)
 		return -1;
@@ -192,8 +196,10 @@ int playerWait(int fd)
 	playerCloseAudio();
 
 	pid = player_pid;
-	if (pid > 0)
+	if (pid > 0) {
+		pc->wait = 1;
 		kill(pid, SIGSTOP);
+	}
 
 	return 0;
 }

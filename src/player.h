@@ -57,6 +57,7 @@
 #define PLAYER_METADATA_STATE_WRITE     2
 
 typedef struct _PlayerControl {
+	volatile mpd_sint8 wait;
 	volatile mpd_sint8 stop;
 	volatile mpd_sint8 play;
 	volatile mpd_sint8 pause;
