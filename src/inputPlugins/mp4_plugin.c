@@ -88,7 +88,8 @@ static uint32_t mp4_inputStreamSeekCallback(void *inStream, uint64_t position)
 	return seekInputStream((InputStream *) inStream, position, SEEK_SET);
 }
 
-static int mp4_decode(OutputBuffer * cb, DecoderControl * dc, char *path)
+static int mp4_decode(OutputBuffer * cb, DecoderControl * dc,
+                      InputStream * inStream)
 {
 	mp4ff_t *mp4fh;
 	mp4ff_callback_t *mp4cb;
@@ -115,24 +116,18 @@ static int mp4_decode(OutputBuffer * cb, DecoderControl * dc, char *path)
 	int seekPositionFound = 0;
 	long offset;
 	mpd_uint16 bitRate = 0;
-	InputStream inStream;
 	int seeking = 0;
-
-	if (openInputStream(&inStream, path) < 0) {
-		ERROR("failed to open %s\n", path);
-		return -1;
-	}
 
 	mp4cb = xmalloc(sizeof(mp4ff_callback_t));
 	mp4cb->read = mp4_inputStreamReadCallback;
 	mp4cb->seek = mp4_inputStreamSeekCallback;
-	mp4cb->user_data = &inStream;
+	mp4cb->user_data = inStream;
 
 	mp4fh = mp4ff_open_read(mp4cb);
 	if (!mp4fh) {
 		ERROR("Input does not appear to be a mp4 stream.\n");
 		free(mp4cb);
-		closeInputStream(&inStream);
+		closeInputStream(inStream);
 		return -1;
 	}
 
@@ -140,7 +135,7 @@ static int mp4_decode(OutputBuffer * cb, DecoderControl * dc, char *path)
 	if (track < 0) {
 		ERROR("No AAC track found in mp4 stream.\n");
 		mp4ff_close(mp4fh);
-		closeInputStream(&inStream);
+		closeInputStream(inStream);
 		free(mp4cb);
 		return -1;
 	}
@@ -169,7 +164,7 @@ static int mp4_decode(OutputBuffer * cb, DecoderControl * dc, char *path)
 		faacDecClose(decoder);
 		mp4ff_close(mp4fh);
 		free(mp4cb);
-		closeInputStream(&inStream);
+		closeInputStream(inStream);
 		return -1;
 	}
 
@@ -185,7 +180,7 @@ static int mp4_decode(OutputBuffer * cb, DecoderControl * dc, char *path)
 		ERROR("Error getting audio format of mp4 AAC track.\n");
 		faacDecClose(decoder);
 		mp4ff_close(mp4fh);
-		closeInputStream(&inStream);
+		closeInputStream(inStream);
 		free(mp4cb);
 		return -1;
 	}
@@ -254,7 +249,6 @@ static int mp4_decode(OutputBuffer * cb, DecoderControl * dc, char *path)
 		if (mp4Buffer)
 			free(mp4Buffer);
 		if (frameInfo.error > 0) {
-			ERROR("error decoding MP4 file: %s\n", path);
 			ERROR("faad2 error: %s\n",
 			      faacDecGetErrorMessage(frameInfo.error));
 			eof = 1;
@@ -302,7 +296,7 @@ static int mp4_decode(OutputBuffer * cb, DecoderControl * dc, char *path)
 	free(seekTable);
 	faacDecClose(decoder);
 	mp4ff_close(mp4fh);
-	closeInputStream(&inStream);
+	closeInputStream(inStream);
 	free(mp4cb);
 
 	if (dc->state != DECODE_STATE_DECODE)
@@ -441,10 +435,10 @@ InputPlugin mp4Plugin = {
 	NULL,
 	NULL,
 	NULL,
-	NULL,
 	mp4_decode,
+	NULL,
 	mp4TagDup,
-	INPUT_PLUGIN_STREAM_FILE,
+	INPUT_PLUGIN_STREAM_FILE | INPUT_PLUGIN_STREAM_URL,
 	mp4_suffixes,
 	mp4_mimeTypes
 };
