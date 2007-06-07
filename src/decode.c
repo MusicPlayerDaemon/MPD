@@ -57,6 +57,7 @@ void decodeSigHandler(int sig, siginfo_t * si, void *v)
 		int pid = decode_pid;
 		if (pid > 0) {
 			DEBUG("player (or child) got SIGTERM\n");
+			kill(pid, SIGCONT);
 			kill(pid, SIGTERM);
 		} else
 			DEBUG("decoder (or child) got SIGTERM\n");
