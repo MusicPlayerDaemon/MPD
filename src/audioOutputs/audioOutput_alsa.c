@@ -370,7 +370,9 @@ static void alsa_closeDevice(AudioOutput * audioOutput)
 	AlsaData *ad = audioOutput->data;
 
 	if (ad->pcmHandle) {
-		snd_pcm_drain(ad->pcmHandle);
+                if (snd_pcm_state(ad->pcmHandle) == SND_PCM_STATE_RUNNING) {
+                        snd_pcm_drain(ad->pcmHandle);
+                }
 		snd_pcm_close(ad->pcmHandle);
 		ad->pcmHandle = NULL;
 	}
