@@ -25,6 +25,7 @@
 #include "../conf.h"
 #include "../log.h"
 #include "../pcm_utils.h"
+#include "../timer.h"
 
 #include <string.h>
 #include <time.h>
@@ -33,6 +34,7 @@
 #include <vorbis/vorbisenc.h>
 
 #define CONN_ATTEMPT_INTERVAL	60
+#define SHOUT_MAX_CONNTIME_US	10000000
 
 static int shoutInitCount;
 
@@ -66,6 +68,8 @@ typedef struct _ShoutData {
 	time_t lastAttempt;
 	int last_err;
 
+	Timer *timer;
+
 	/* just a pointer to audioOutput->outAudioFormat */
 	AudioFormat *audioFormat;
 } ShoutData;
@@ -84,6 +88,7 @@ static ShoutData *newShoutData(void)
 	ret->lastAttempt = 0;
 	ret->audioFormat = NULL;
 	ret->last_err = SHOUTERR_UNCONNECTED;
+	ret->timer = NULL;
 
 	return ret;
 }
@@ -95,7 +100,29 @@ static void freeShoutData(ShoutData * sd)
 	if (sd->tag)
 		freeMpdTag(sd->tag);
 
+	if(sd->timer)
+		timer_free(sd->timer);
+
 	free(sd);
+}
+
+static void myShout_startTimer(AudioOutput *audioOutput) 
+{
+	ShoutData *sd;
+	sd = audioOutput->data;
+	if(sd->timer != NULL)
+		ERROR("sd->timer is not null\n");
+	
+	sd->timer = timer_new(&audioOutput->inAudioFormat); // <<--?
+	timer_start(sd->timer);
+}
+
+static void myShout_endTimer(ShoutData *sd)
+{
+	if(sd->timer) { 
+		timer_free(sd->timer);
+		sd->timer = NULL;
+	}
 }
 
 #define checkBlockParam(name) { \
@@ -347,6 +374,10 @@ static void myShout_closeShoutConn(ShoutData * sd)
 		}
 	}
 
+	if(sd->timer) {
+		myShout_endTimer(sd);
+	}
+
 	sd->last_err = SHOUTERR_UNCONNECTED;
 	sd->opened = 0;
 }
@@ -443,31 +474,44 @@ static int myShout_openShoutConn(AudioOutput * audioOutput)
 	ShoutData *sd = (ShoutData *) audioOutput->data;
 	time_t t = time(NULL);
 
+	if(sd->last_err == SHOUTERR_BUSY)
+		sd->last_err = shout_get_connected(sd->shoutConn);
+	if(sd->last_err == SHOUTERR_BUSY)
+		return 1;
+
 	if (sd->connAttempts != 0 &&
+	    sd->last_err != SHOUTERR_CONNECTED &&
+	    sd->last_err != SHOUTERR_SUCCESS &&
 	    (t - sd->lastAttempt) < CONN_ATTEMPT_INTERVAL) {
 		return -1;
 	}
 
+	sd->last_err = shout_get_connected(sd->shoutConn);
+
+	if (sd->last_err == SHOUTERR_UNCONNECTED) {
+		sd->last_err = shout_open(sd->shoutConn);
+		sd->lastAttempt = t;
+		/* start timer */
+		myShout_startTimer(audioOutput);
+		DEBUG("SHOUT: opening connection to shout server\n");
+	} 
+	
 	sd->connAttempts++;
 
-	if (sd->last_err == SHOUTERR_UNCONNECTED)
-		sd->last_err = shout_open(sd->shoutConn);
 	switch (sd->last_err) {
 	case SHOUTERR_SUCCESS:
 	case SHOUTERR_CONNECTED:
+		DEBUG("SHOUT: connected!\n");
 		break;
 	case SHOUTERR_BUSY:
-		sd->last_err = shout_get_connected(sd->shoutConn);
-		if (sd->last_err == SHOUTERR_CONNECTED)
-			break;
-		return -1;
+		return 1;
 	default:
-		sd->lastAttempt = t;
 		ERROR("problem opening connection to shout server %s:%i "
 		      "(attempt %i): %s\n",
 		      shout_get_host(sd->shoutConn),
 		      shout_get_port(sd->shoutConn),
 		      sd->connAttempts, shout_get_error(sd->shoutConn));
+		DEBUG("SHOUT: connection failed: %s\n", shout_get_error(sd->shoutConn));
 		return -1;
 	}
 
@@ -563,7 +607,31 @@ static int myShout_play(AudioOutput * audioOutput, char *playChunk, int size)
 		myShout_sendMetadata(sd);
 
 	if (!sd->opened) {
-		if (myShout_openShoutConn(audioOutput) < 0) {
+		i = myShout_openShoutConn(audioOutput);
+		if (i == 0) {
+			myShout_endTimer(sd);
+			DEBUG("SHOUT: should be connected, ending timer\n");
+		}
+		else if(i == 1) {
+			if(!sd->timer) {
+				myShout_startTimer(audioOutput);
+				DEBUG("SHOUT: starting timer\n");
+			}
+
+			if(timer_get_runtime_us(sd->timer) > SHOUT_MAX_CONNTIME_US) {
+				DEBUG("SHOUT: giving up on getting a connection after 10s\n");
+				audioOutput->open = 0;
+				myShout_endTimer(sd);
+				return -1;
+			}
+
+			timer_add(sd->timer, size);
+			timer_sync(sd->timer);
+			return 0;
+		}
+		else {
+			DEBUG("SHOUT: giving up on trying to get a connection\n");
+			audioOutput->open = 0;
 			return -1;
 		}
 	}
