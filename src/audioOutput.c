@@ -155,36 +155,29 @@ int openAudioOutput(AudioOutput * audioOutput, AudioFormat * audioFormat)
 {
 	int ret = 0;
 
-	if (audioOutput->open) 
-	{
-		if (0==cmpAudioFormat(audioFormat, &audioOutput->inAudioFormat))
-		{
-			return 0;
-		}
+	if (audioOutput->open &&
+	    0 == cmpAudioFormat(audioFormat, &audioOutput->inAudioFormat)) {
+		return 0;
 	}
 
 	copyAudioFormat(&audioOutput->inAudioFormat, audioFormat);
 
-	if (audioOutput->convertAudioFormat) 
-	{
+	if (audioOutput->convertAudioFormat) {
 		copyAudioFormat(&audioOutput->outAudioFormat,
-				&audioOutput->reqAudioFormat);
-	} 
-	else 
-	{
+		                &audioOutput->reqAudioFormat);
+	} else {
 		copyAudioFormat(&audioOutput->outAudioFormat,
-				&audioOutput->inAudioFormat);
-		if (audioOutput->open) closeAudioOutput(audioOutput);
+		                &audioOutput->inAudioFormat);
+		if (audioOutput->open)
+			closeAudioOutput(audioOutput);
 	}
 
 	if (!audioOutput->open)
-	{
 		ret = audioOutput->openDeviceFunc(audioOutput);
-	}
 
 	audioOutput->sameInAndOutFormats =
 		!cmpAudioFormat(&audioOutput->inAudioFormat,
-			   	&audioOutput->outAudioFormat);
+		                &audioOutput->outAudioFormat);
 
 	return ret;
 }
