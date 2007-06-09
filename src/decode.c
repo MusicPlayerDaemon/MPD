@@ -649,10 +649,6 @@ static void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer *
 			while (pc->queueState == PLAYER_QUEUE_DECODE ||
 			       pc->queueLockState == PLAYER_QUEUE_LOCKED) {
 				processDecodeInput();
-				if (quit) {
-					quitDecode(pc, dc);
-					return;
-				}
 				my_usleep(10000);
 			}
 			if (pc->queueState != PLAYER_QUEUE_PLAY) {
