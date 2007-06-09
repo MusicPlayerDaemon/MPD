@@ -51,7 +51,7 @@ void timer_free(Timer *timer)
 
 void timer_start(Timer *timer)
 {
-	timer->time = now();
+	timer->start_time = timer->time = now();
 	timer->started = 1;
 }
 
@@ -59,6 +59,7 @@ void timer_reset(Timer *timer)
 {
 	timer->time = 0;
 	timer->started = 0;
+	timer->start_time = 0;
 }
 
 void timer_add(Timer *timer, int size)
@@ -77,4 +78,9 @@ void timer_sync(Timer *timer)
 	sleep = timer->time - now();
 	if (sleep > 0)
 		my_usleep(sleep);
+}
+
+int timer_get_runtime_ms(Timer *timer) 
+{
+	return (now() - timer->start_time)/1000;
 }
