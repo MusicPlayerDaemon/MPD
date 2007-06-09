@@ -41,6 +41,6 @@ void timer_add(Timer *timer, int size);
 
 void timer_sync(Timer *timer);
 
-int timer_get_runtime_ms(Timer *timer);
+uint64_t timer_get_runtime_us(Timer *timer);
 
 #endif

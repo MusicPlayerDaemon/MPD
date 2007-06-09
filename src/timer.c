@@ -80,7 +80,7 @@ void timer_sync(Timer *timer)
 		my_usleep(sleep);
 }
 
-int timer_get_runtime_ms(Timer *timer) 
+uint64_t timer_get_runtime_us(Timer *timer) 
 {
-	return (now() - timer->start_time)/1000;
+	return now() - timer->start_time;
 }
