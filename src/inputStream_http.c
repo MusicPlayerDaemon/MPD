@@ -468,14 +468,13 @@ static int finishHTTPInit(InputStream * inStream)
 	                 "GET %s HTTP/1.1\r\n"
 	                 "Host: %s\r\n"
 	                 /* "Connection: close\r\n" */
-	                 "User-Agent: %s/%s\r\n"
+	                 "User-Agent: " PACKAGE_NAME "/" PACKAGE_VERSION "\r\n"
 	                 "Range: bytes=%ld-\r\n"
 	                 "%s"  /* authorization */
 	                 "Icy-Metadata:1\r\n"
 	                 "\r\n",
 	                 data->path,
 	                 data->host,
-	                 PACKAGE_NAME, PACKAGE_VERSION,
 	                 inStream->offset,
 	                 data->proxyAuth ? data->proxyAuth :
 	                 (data->httpAuth ? data->httpAuth : ""));
