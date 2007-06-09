@@ -272,23 +272,27 @@ int isCurrentAudioFormat(AudioFormat * audioFormat)
 
 static void syncAudioDeviceStates(void)
 {
+	AudioOutput *audioOutput;
 	int i;
 
 	if (!audio_format.channels)
 		return;
-	for (i = 0; i < audioOutputArraySize; ++i ) {
+
+	for (i = 0; i < audioOutputArraySize; ++i) {
+		audioOutput = &audioOutputArray[i];
 		switch (audioDeviceStates[i]) {
 		case DEVICE_ON:
 			/* This will reopen only if the audio format changed */
-			openAudioOutput(&audioOutputArray[i], &audio_format);
+			if (openAudioOutput(audioOutput, &audio_format) < 0)
+				audioDeviceStates[i] = DEVICE_ENABLE;
 			break;
 		case DEVICE_ENABLE:
-			openAudioOutput(&audioOutputArray[i], &audio_format);
-			audioDeviceStates[i] = DEVICE_ON;
+			if (openAudioOutput(audioOutput, &audio_format) == 0)
+				audioDeviceStates[i] = DEVICE_ON;
 			break;
 		case DEVICE_DISABLE:
-			dropBufferedAudioOutput(&audioOutputArray[i]);
-			closeAudioOutput(&audioOutputArray[i]);
+			dropBufferedAudioOutput(audioOutput);
+			closeAudioOutput(audioOutput);
 			audioDeviceStates[i] = DEVICE_OFF;
 			break;
 		}
