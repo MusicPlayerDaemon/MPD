@@ -99,8 +99,8 @@ void loadAudioDrivers(void)
 	loadAudioOutputPlugin(&osxPlugin);
 	loadAudioOutputPlugin(&pulsePlugin);
 	loadAudioOutputPlugin(&mvpPlugin);
-	loadAudioOutputPlugin(&shoutPlugin);
 	loadAudioOutputPlugin(&jackPlugin);
+	loadAudioOutputPlugin(&shoutPlugin);
 }
 
 /* make sure initPlayerData is called before this function!! */

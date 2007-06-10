@@ -112,7 +112,7 @@ extern AudioOutputPlugin ossPlugin;
 extern AudioOutputPlugin osxPlugin;
 extern AudioOutputPlugin pulsePlugin;
 extern AudioOutputPlugin mvpPlugin;
-extern AudioOutputPlugin shoutPlugin;
 extern AudioOutputPlugin jackPlugin;
+extern AudioOutputPlugin shoutPlugin;
 
 #endif
