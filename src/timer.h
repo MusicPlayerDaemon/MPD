@@ -23,7 +23,6 @@
 #include "mpd_types.h"
 
 typedef struct _Timer {
-	uint64_t start_time;
 	uint64_t time;
 	int started;
 	int rate;
@@ -40,7 +39,5 @@ void timer_reset(Timer *timer);
 void timer_add(Timer *timer, int size);
 
 void timer_sync(Timer *timer);
-
-uint64_t timer_get_runtime_us(Timer *timer);
 
 #endif
