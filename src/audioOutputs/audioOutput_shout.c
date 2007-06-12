@@ -453,7 +453,7 @@ static int myShout_openShoutConn(AudioOutput * audioOutput)
 	int state;
 
 	if (sd->connAttempts != 0 &&
-	    (t - sd->lastAttempt) < CONN_ATTEMPT_INTERVAL) {
+	    (t - sd->lastAttempt) <= CONN_ATTEMPT_INTERVAL) {
 		return -1;
 	}
 
@@ -462,7 +462,7 @@ static int myShout_openShoutConn(AudioOutput * audioOutput)
 
 	state = shout_open(sd->shoutConn);
 
-	while (state == SHOUTERR_BUSY && (t - sd->lastAttempt) < sd->timeout) {
+	while (state == SHOUTERR_BUSY && (t - sd->lastAttempt) <= sd->timeout) {
 		my_usleep(10000);
 		state = shout_get_connected(sd->shoutConn);
 		t = time(NULL);
