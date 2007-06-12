@@ -92,6 +92,7 @@ int cmpAudioFormat(AudioFormat * f1, AudioFormat * f2)
 void loadAudioDrivers(void)
 {
 	initAudioOutputPlugins();
+	loadAudioOutputPlugin(&shoutPlugin);
 	loadAudioOutputPlugin(&nullPlugin);
 	loadAudioOutputPlugin(&alsaPlugin);
 	loadAudioOutputPlugin(&aoPlugin);
@@ -100,7 +101,6 @@ void loadAudioDrivers(void)
 	loadAudioOutputPlugin(&pulsePlugin);
 	loadAudioOutputPlugin(&mvpPlugin);
 	loadAudioOutputPlugin(&jackPlugin);
-	loadAudioOutputPlugin(&shoutPlugin);
 }
 
 /* make sure initPlayerData is called before this function!! */
