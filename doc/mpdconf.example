@@ -124,6 +124,7 @@ error_file                      "~/.mpd/mpd.error"
 #        description             "My Stream Description" # optional
 #        genre                   "jazz"                  # optional
 #        public                  "no"                    # optional
+#        timeout                 "2"                     # optional
 #}
 #
 # An example of a null output (for no audio output):

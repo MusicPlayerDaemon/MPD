@@ -33,7 +33,7 @@
 #include <vorbis/vorbisenc.h>
 
 #define CONN_ATTEMPT_INTERVAL 60
-#define CONN_TIMEOUT          2
+#define DEFAULT_CONN_TIMEOUT  2
 
 static int shoutInitCount;
 
@@ -63,6 +63,7 @@ typedef struct _ShoutData {
 	MpdTag *tag;
 	int tagToSend;
 
+	int timeout;
 	int connAttempts;
 	time_t lastAttempt;
 
@@ -80,6 +81,7 @@ static ShoutData *newShoutData(void)
 	ret->tagToSend = 0;
 	ret->bitrate = -1;
 	ret->quality = -2.0;
+	ret->timeout = DEFAULT_CONN_TIMEOUT;
 	ret->connAttempts = 0;
 	ret->lastAttempt = 0;
 	ret->audioFormat = NULL;
@@ -221,6 +223,15 @@ static int myShout_initDriver(AudioOutput * audioOutput, ConfigParam * param)
 	}
 
 	/* optional paramters */
+	blockParam = getBlockParam(param, "timeout");
+	if (blockParam) {
+		sd->timeout = strtod(blockParam->value, &test);
+		if (*test != '\0' || sd->timeout <= 0) {
+			FATAL("shout timeout is not a positive integer, "
+			      "line %i\n", blockParam->line);
+		}
+	}
+
 	blockParam = getBlockParam(param, "genre");
 	if (blockParam && shout_set_genre(sd->shoutConn, blockParam->value)) {
 		FATAL("error configuring shout defined at line %i: %s\n",
@@ -451,7 +462,7 @@ static int myShout_openShoutConn(AudioOutput * audioOutput)
 
 	state = shout_open(sd->shoutConn);
 
-	while (state == SHOUTERR_BUSY && (t - sd->lastAttempt) < CONN_TIMEOUT) {
+	while (state == SHOUTERR_BUSY && (t - sd->lastAttempt) < sd->timeout) {
 		my_usleep(10000);
 		state = shout_get_connected(sd->shoutConn);
 		t = time(NULL);
