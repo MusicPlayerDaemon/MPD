@@ -1,5 +1,5 @@
 ver 0.14.0 (????/??/??)
-* New null audio output plugin
+* New null audio output
 * Zeroconf support using Bonjour
 * New zeroconf_enabled option so that Zeroconf support can be disabled
 * Enable the AAC input plugin if support for it has been compiled in
@@ -8,6 +8,7 @@ ver 0.14.0 (????/??/??)
 * Fix a bug where closing an ALSA dmix device could cause MPD to hang
 * Make the shout output block while trying to connect instead of failing
 * New timeout parameter for shout outputs to define a connection timeout
+* New FIFO audio output
 
 ver 0.13.0 (2007/5/28)
 * New JACK audio output

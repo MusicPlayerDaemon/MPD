@@ -107,6 +107,7 @@ void printAllOutputPluginTypes(FILE * fp);
 
 extern AudioOutputPlugin shoutPlugin;
 extern AudioOutputPlugin nullPlugin;
+extern AudioOutputPlugin fifoPlugin;
 extern AudioOutputPlugin alsaPlugin;
 extern AudioOutputPlugin aoPlugin;
 extern AudioOutputPlugin ossPlugin;

@@ -2,14 +2,15 @@ bin_PROGRAMS = mpd
 SUBDIRS = $(MP4FF_SUBDIR)
 
 mpd_audioOutputs = \
+	audioOutputs/audioOutput_shout.c \
 	audioOutputs/audioOutput_null.c \
+	audioOutputs/audioOutput_fifo.c \
 	audioOutputs/audioOutput_alsa.c \
 	audioOutputs/audioOutput_ao.c \
 	audioOutputs/audioOutput_oss.c \
 	audioOutputs/audioOutput_osx.c \
 	audioOutputs/audioOutput_pulse.c \
 	audioOutputs/audioOutput_mvp.c \
-	audioOutputs/audioOutput_shout.c \
 	audioOutputs/audioOutput_jack.c
 
 mpd_inputPlugins = \

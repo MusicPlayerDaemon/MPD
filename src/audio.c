@@ -94,6 +94,7 @@ void loadAudioDrivers(void)
 	initAudioOutputPlugins();
 	loadAudioOutputPlugin(&shoutPlugin);
 	loadAudioOutputPlugin(&nullPlugin);
+	loadAudioOutputPlugin(&fifoPlugin);
 	loadAudioOutputPlugin(&alsaPlugin);
 	loadAudioOutputPlugin(&aoPlugin);
 	loadAudioOutputPlugin(&ossPlugin);
