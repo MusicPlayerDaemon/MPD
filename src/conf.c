@@ -397,55 +397,12 @@ ConfigParam *parseConfigFilePath(char *name, int force)
 	if (!param)
 		return NULL;
 
-	path = param->value;
+	path = parsePath(param->value);
+	if (!path)
+		FATAL("error parsing \"%s\" at line %i\n", name, param->line);
 
-	if (path[0] != '/' && path[0] != '~') {
-		FATAL("\"%s\" is not an absolute path at line %i\n",
-		      param->value, param->line);
-	}
-	/* Parse ~ in path */
-	else if (path[0] == '~') {
-		struct passwd *pwd = NULL;
-		char *newPath;
-		int pos = 1;
-		if (path[1] == '/' || path[1] == '\0') {
-			ConfigParam *userParam = getConfigParam(CONF_USER);
-
-			if (userParam) {
-				pwd = getpwnam(userParam->value);
-				if (!pwd) {
-					FATAL("no such user %s at line %i\n",
-					      userParam->value,
-					      userParam->line);
-				}
-			} else {
-				uid_t uid = geteuid();
-				if ((pwd = getpwuid(uid)) == NULL) {
-					FATAL("problems getting passwd entry "
-					      "for current user\n");
-				}
-			}
-		} else {
-			int foundSlash = 0;
-			char *ch = path + 1;
-			for (; *ch != '\0' && *ch != '/'; ch++) ;
-			if (*ch == '/')
-				foundSlash = 1;
-			*ch = '\0';
-			pos += ch - path - 1;
-			if ((pwd = getpwnam(path + 1)) == NULL) {
-				FATAL("user \"%s\" not found at line %i\n",
-				      path + 1, param->line);
-			}
-			if (foundSlash)
-				*ch = '/';
-		}
-		newPath = xmalloc(strlen(pwd->pw_dir) + strlen(path + pos) + 1);
-		strcpy(newPath, pwd->pw_dir);
-		strcat(newPath, path + pos);
-		free(param->value);
-		param->value = newPath;
-	}
+	free(param->value);
+	param->value = path;
 
 	return param;
 }

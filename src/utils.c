@@ -18,6 +18,7 @@
 
 #include "utils.h"
 #include "log.h"
+#include "conf.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -28,6 +29,7 @@
 #include <sys/time.h>
 #include <unistd.h>
 #include <assert.h>
+#include <pwd.h>
 
 char *myFgets(char *buffer, int bufferSize, FILE * fp)
 {
@@ -158,4 +160,60 @@ mpd_malloc void *xcalloc(size_t nmemb, size_t size)
 	return ret;
 }
 
+char *parsePath(char *path)
+{
+	ConfigParam *param;
+	struct passwd *passwd;
+	char *newPath;
+	char *c;
+	int foundSlash = 0;
+	int pos = 1;
 
+	if (path[0] != '/' && path[0] != '~') {
+		ERROR("\"%s\" is not an absolute path\n", path);
+		return NULL;
+	} else if (path[0] == '~') {
+		if (path[1] == '/' || path[1] == '\0') {
+			param = getConfigParam(CONF_USER);
+			if (param && param->value) {
+				passwd = getpwnam(param->value);
+				if (!passwd) {
+					ERROR("no such user %s\n",
+				              param->value);
+					return NULL;
+				}
+			} else {
+				passwd = getpwuid(geteuid());
+				if (!passwd) {
+					ERROR("problems getting passwd entry "
+					      "for current user\n");
+					return NULL;
+				}
+			}
+		} else {
+			for (c = path + 1; *c != '\0' && *c != '/'; c++);
+			if (*c == '/') {
+				foundSlash = 1;
+				*c = '\0';
+			}
+			pos = c - path;
+
+			passwd = getpwnam(path + 1);
+			if (!passwd) {
+				ERROR("user \"%s\" not found\n", path + 1);
+				return NULL;
+			}
+
+			if (foundSlash)
+				*c = '/';
+		}
+
+		newPath = xmalloc(strlen(passwd->pw_dir) + strlen(path + pos) + 1);
+		strcpy(newPath, passwd->pw_dir);
+		strcat(newPath, path + pos);
+	} else {
+		newPath = xstrdup(path);
+	}
+
+	return newPath;
+}

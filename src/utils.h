@@ -82,4 +82,6 @@ mpd_malloc void *xrealloc(void *ptr, size_t size);
 
 mpd_malloc void *xcalloc(size_t nmemb, size_t size);
 
+char *parsePath(char *path);
+
 #endif
