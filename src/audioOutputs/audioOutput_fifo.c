@@ -164,23 +164,23 @@ static int openFifo(FifoData *fd)
 static int fifo_initDriver(AudioOutput *audioOutput, ConfigParam *param)
 {
 	FifoData *fd;
-	BlockParam *path = NULL;
+	BlockParam *blockParam;
+	char *path;
 
-	if (param)
-		path = getBlockParam(param, "path");
-
-	if (!path) {
+	blockParam = getBlockParam(param, "path");
+	if (!blockParam) {
 		FATAL("No \"path\" parameter specified for fifo output "
 		      "defined at line %i\n", param->line);
 	}
 
-	if (path->value[0] != '/') {
-		FATAL("\"path\" parameter for fifo output is not an absolute "
-		      "path at line %i\n", param->line);
+	path = parsePath(blockParam->value);
+	if (!path) {
+		FATAL("Could not parse \"path\" parameter for fifo output "
+		      "at line %i\n", blockParam->line);
 	}
 
 	fd = newFifoData();
-	fd->path = xstrdup(path->value);
+	fd->path = path;
 	audioOutput->data = fd;
 
 	if (openFifo(fd) < 0) {
