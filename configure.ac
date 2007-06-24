@@ -77,9 +77,9 @@ AC_ARG_ENABLE(flac,[  --disable-flac          disable flac support (default: ena
 AC_ARG_ENABLE(mp3,[  --disable-mp3           disable mp3 support (default: enable)],[enable_mp3=$enableval],[enable_mp3=yes])
 AC_ARG_ENABLE(aac,[  --disable-aac           disable AAC support (default: enable)],[enable_aac=$enableval],[enable_aac=yes])
 AC_ARG_ENABLE(audiofile,[  --disable-audiofile     disable audiofile support, disables wave support (default: enable)],[enable_audiofile=$enableval],[enable_audiofile=yes])
-AC_ARG_ENABLE(mod,[  --enable-mod            enable MOD support (default: disable],[enable_mod=$enableval],[enable_mod=yes])
+AC_ARG_ENABLE(mod,[  --enable-mod            enable MOD support (default: disable)],[enable_mod=$enableval],[enable_mod=yes])
 AC_ARG_ENABLE(mpc,[  --disable-mpc           disable musepack (MPC) support (default: enable)],[enable_mpc=$enableval],[enable_mpc=yes])
-AC_ARG_ENABLE(wavpack,[  --disable-wavpack       disable wavpack support (default: enable)],[enable_wavpack=$enableval],[enable_wavpack=yes])
+AC_ARG_ENABLE(wavpack,[  --disable-wavpack       disable WavPack support (default: enable)],[enable_wavpack=$enableval],[enable_wavpack=yes])
 AC_ARG_ENABLE(id3,[  --disable-id3           disable id3 support (default: enable)],[enable_id3=$enableval],[enable_id3=yes])
 AC_ARG_ENABLE(lsr,[  --disable-lsr           disable libsamplerate support (default: enable)],[enable_lsr=$enableval],[enable_lsr=yes])
 
