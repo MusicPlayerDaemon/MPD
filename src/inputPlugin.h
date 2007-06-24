@@ -104,6 +104,7 @@ extern InputPlugin audiofilePlugin;
 extern InputPlugin mp4Plugin;
 extern InputPlugin aacPlugin;
 extern InputPlugin mpcPlugin;
+extern InputPlugin wavpackPlugin;
 extern InputPlugin modPlugin;
 
 #endif

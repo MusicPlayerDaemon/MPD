@@ -79,6 +79,7 @@ AC_ARG_ENABLE(aac,[  --disable-aac           disable AAC support (default: enabl
 AC_ARG_ENABLE(audiofile,[  --disable-audiofile     disable audiofile support, disables wave support (default: enable)],[enable_audiofile=$enableval],[enable_audiofile=yes])
 AC_ARG_ENABLE(mod,[  --enable-mod            enable MOD support (default: disable],[enable_mod=$enableval],[enable_mod=yes])
 AC_ARG_ENABLE(mpc,[  --disable-mpc           disable musepack (MPC) support (default: enable)],[enable_mpc=$enableval],[enable_mpc=yes])
+AC_ARG_ENABLE(wavpack,[  --disable-wavpack       disable wavpack support (default: enable)],[enable_wavpack=$enableval],[enable_wavpack=yes])
 AC_ARG_ENABLE(id3,[  --disable-id3           disable id3 support (default: enable)],[enable_id3=$enableval],[enable_id3=yes])
 AC_ARG_ENABLE(lsr,[  --disable-lsr           disable libsamplerate support (default: enable)],[enable_lsr=$enableval],[enable_lsr=yes])
 
@@ -182,7 +183,8 @@ if test x$enable_oss = xyes; then
 fi
 
 if test x$enable_pulse = xyes || test x$enable_jack = xyes ||
-   test x$enable_lsr = xyes || test x$with_zeroconf != xno; then
+   test x$enable_lsr = xyes || test x$with_zeroconf != xno ||
+   test x$enable_wavpack = xyes; then
 	PKG_PROG_PKG_CONFIG
 fi
 
@@ -366,6 +368,12 @@ if test x$enable_mpc = xyes; then
 	CFLAGS=$oldcflags
 	LIBS=$oldlibs
 	CPPFLAGS=$oldcppflags
+fi
+
+if test x$enable_wavpack = xyes; then
+	PKG_CHECK_MODULES([WAVPACK], [wavpack],
+	                  [enable_wavpack=yes;AC_DEFINE([HAVE_WAVPACK], 1, [Define to enable WavPack support])] MPD_LIBS="$MPD_LIBS $WAVPACK_LIBS" MPD_CFLAGS="$MPD_CFLAGS $WAVPACK_CFLAGS",
+	                  [enable_wavpack=no;AC_MSG_WARN([WavPack not found -- disabling])])
 fi
 
 MP4FF_SUBDIR=""
@@ -764,6 +772,12 @@ else
 	echo " Musepack (MPC) support ........disabled"
 fi
 
+if test x$enable_wavpack = xyes; then
+	echo " WavPack support ...............enabled"
+else
+	echo " WavPack support ...............disabled"
+fi
+
 if test x$enable_mod = xyes; then
 	echo " MOD support ...................enabled"
 else
@@ -778,6 +792,7 @@ if
 	test x$enable_audiofile = xno && 
 	test x$enable_aac = xno &&
 	test x$enable_mpc = xno &&
+	test x$enable_wavpack = xno &&
 	test x$enable_mod = xno; then
 	AC_MSG_ERROR([No input plugins supported!])
 fi

@@ -150,6 +150,7 @@ void initInputPlugins(void)
 	loadInputPlugin(&mp4Plugin);
 	loadInputPlugin(&aacPlugin);
 	loadInputPlugin(&mpcPlugin);
+	loadInputPlugin(&wavpackPlugin);
 	loadInputPlugin(&modPlugin);
 }
 

@@ -24,7 +24,8 @@ mpd_inputPlugins = \
 	inputPlugins/mod_plugin.c \
 	inputPlugins/mp3_plugin.c \
 	inputPlugins/mp4_plugin.c \
-	inputPlugins/mpc_plugin.c
+	inputPlugins/mpc_plugin.c \
+	inputPlugins/wavpack_plugin.c
 
 
 mpd_headers = \
