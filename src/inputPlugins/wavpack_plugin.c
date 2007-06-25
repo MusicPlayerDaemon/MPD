@@ -206,10 +206,6 @@ static void wavpack_decode(OutputBuffer *cb, DecoderControl *dc,
 	dc->stop = 0;
 }
 
-/*
- * These functions aren't currently used, which just results in warnings.
- */
-#if 0
 static char *wavpack_tag(WavpackContext *wpc, char *key)
 {
 	char *value = NULL;
@@ -271,7 +267,6 @@ static ReplayGainInfo *wavpack_replaygain(WavpackContext *wpc)
 
 	return NULL;
 }
-#endif
 
 /*
  * Reads metainfo from the specified file.
@@ -454,20 +449,14 @@ static int wavpack_filedecode(OutputBuffer *cb, DecoderControl *dc, char *fname)
 	ReplayGainInfo *replayGainInfo;
 
 	wpc = WavpackOpenFileInput(fname, error,
-	                           OPEN_WVC | OPEN_2CH_MAX | OPEN_NORMALIZE,
-				   15);
+	                           OPEN_TAGS | OPEN_WVC |
+	                           OPEN_2CH_MAX | OPEN_NORMALIZE, 15);
 	if (wpc == NULL) {
 		ERROR("failed to open WavPack file \"%s\": %s\n", fname, error);
 		return -1;
 	}
 
-	/*
-	 * ReplayGain support is currently disabled, because WavpackGetTagItem
-	 * can't seem to find the replaygain_* fields in APEv2 tags.
-	 */
-
-	/* replayGainInfo = wavpack_replaygain(wpc); */
-	replayGainInfo = NULL;
+	replayGainInfo = wavpack_replaygain(wpc);
 
 	wavpack_decode(cb, dc, wpc, 1, replayGainInfo);
 
