@@ -120,10 +120,14 @@ void doReplayGain(ReplayGainInfo * info, char *buffer, int bufferSize,
 	if (info->scale < 0) {
 		switch (replayGainState) {
 		case REPLAYGAIN_TRACK:
+			DEBUG("computing ReplayGain track scale with gain %f, "
+			      "peak %f\n", info->trackGain, info->trackPeak);
 			info->scale = computeReplayGainScale(info->trackGain,
 							     info->trackPeak);
 			break;
 		default:
+			DEBUG("computing ReplayGain album scale with gain %f, "
+			      "peak %f\n", info->albumGain, info->albumPeak);
 			info->scale = computeReplayGainScale(info->albumGain,
 							     info->albumPeak);
 			break;
