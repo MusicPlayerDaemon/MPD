@@ -371,26 +371,27 @@ static void decodeStart(PlayerControl * pc, OutputBuffer * cb,
 		while (ret && (plugin = getInputPluginFromSuffix(s, next++))) {
 			if (!plugin->streamTypes & INPUT_PLUGIN_STREAM_FILE)
 				continue;
-			if (plugin->tryDecodeFunc
-			    && !plugin->tryDecodeFunc(&inStream))
+
+			if (plugin->tryDecodeFunc &&
+			    !plugin->tryDecodeFunc(&inStream))
 				continue;
 
-			if (plugin->streamDecodeFunc) {
-				ret =
-				    plugin->streamDecodeFunc(cb, dc, &inStream);
-				break;
-			} else if (plugin->fileDecodeFunc) {
+			if (plugin->fileDecodeFunc) {
 				closeInputStream(&inStream);
 				ret = plugin->fileDecodeFunc(cb, dc, path);
+				break;
+			} else if (plugin->streamDecodeFunc) {
+				ret = plugin->streamDecodeFunc(cb, dc, &inStream);
+				break;
 			}
 		}
 	}
 
 	if (ret < 0 || ret == DECODE_ERROR_UNKTYPE) {
 		pathcpy_trunc(pc->erroredUrl, dc->utf8url);
-		if (ret != DECODE_ERROR_UNKTYPE)
+		if (ret != DECODE_ERROR_UNKTYPE) {
 			dc->error = DECODE_ERROR_FILE;
-		else {
+		} else {
 			dc->error = DECODE_ERROR_UNKTYPE;
 			closeInputStream(&inStream);
 		}
