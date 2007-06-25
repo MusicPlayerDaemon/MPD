@@ -120,7 +120,8 @@ static void format_samples_float(int Bps, void *buffer, uint32_t samcnt)
  * Requires an already opened WavpackContext.
  */
 static void wavpack_decode(OutputBuffer *cb, DecoderControl *dc,
-                           WavpackContext *wpc, int canseek)
+                           WavpackContext *wpc, int canseek,
+                           ReplayGainInfo *replayGainInfo)
 {
 	void (*format_samples)(int Bps, void *buffer, uint32_t samcnt);
 	char chunk[CHUNK_SIZE];
@@ -195,7 +196,7 @@ static void wavpack_decode(OutputBuffer *cb, DecoderControl *dc,
 
 			sendDataToOutputBuffer(cb, NULL, dc, 0, chunk,
 			                       samplesgot * outsamplesize,
-			                       time, bitrate, NULL);
+			                       time, bitrate, replayGainInfo);
 		}
 	} while (samplesgot == samplesreq);
 
@@ -204,6 +205,73 @@ static void wavpack_decode(OutputBuffer *cb, DecoderControl *dc,
 	dc->state = DECODE_STATE_STOP;
 	dc->stop = 0;
 }
+
+/*
+ * These functions aren't currently used, which just results in warnings.
+ */
+#if 0
+static char *wavpack_tag(WavpackContext *wpc, char *key)
+{
+	char *value = NULL;
+	int size;
+
+	size = WavpackGetTagItem(wpc, key, NULL, 0);
+	if (size > 0) {
+		size++;
+		value = xmalloc(size);
+		if (!value)
+			return NULL;
+		WavpackGetTagItem(wpc, key, value, size);
+	}
+
+	return value;
+}
+
+static ReplayGainInfo *wavpack_replaygain(WavpackContext *wpc)
+{
+	ReplayGainInfo *replayGainInfo;
+	int found = 0;
+	char *value;
+
+	replayGainInfo = newReplayGainInfo();
+
+	value = wavpack_tag(wpc, "replaygain_track_gain");
+	if (value) {
+		replayGainInfo->trackGain = atof(value);
+		free(value);
+		found = 1;
+	}
+
+	value = wavpack_tag(wpc, "replaygain_album_gain");
+	if (value) {
+		replayGainInfo->albumGain = atof(value);
+		free(value);
+		found = 1;
+	}
+
+	value = wavpack_tag(wpc, "replaygain_track_peak");
+	if (value) {
+		replayGainInfo->trackPeak = atof(value);
+		free(value);
+		found = 1;
+	}
+
+	value = wavpack_tag(wpc, "replaygain_album_peak");
+	if (value) {
+		replayGainInfo->albumPeak = atof(value);
+		free(value);
+		found = 1;
+	}
+
+
+	if (found)
+		return replayGainInfo;
+
+	freeReplayGainInfo(replayGainInfo);
+
+	return NULL;
+}
+#endif
 
 /*
  * Reads metainfo from the specified file.
@@ -367,7 +435,7 @@ static int wavpack_streamdecode(OutputBuffer *cb, DecoderControl *dc,
 		return -1;
 	}
 
-	wavpack_decode(cb, dc, wpc, can_seek(is));
+	wavpack_decode(cb, dc, wpc, can_seek(is), NULL);
 
 	WavpackCloseFile(wpc);
 	closeInputStream(is); /* calling side doesn't do this in mpd 0.13.0 */
@@ -383,6 +451,7 @@ static int wavpack_filedecode(OutputBuffer *cb, DecoderControl *dc, char *fname)
 {
 	char error[ERRORLEN];
 	WavpackContext *wpc;
+	ReplayGainInfo *replayGainInfo;
 
 	wpc = WavpackOpenFileInput(fname, error,
 	                           OPEN_WVC | OPEN_2CH_MAX | OPEN_NORMALIZE,
@@ -392,7 +461,18 @@ static int wavpack_filedecode(OutputBuffer *cb, DecoderControl *dc, char *fname)
 		return -1;
 	}
 
-	wavpack_decode(cb, dc, wpc, 1);
+	/*
+	 * ReplayGain support is currently disabled, because WavpackGetTagItem
+	 * can't seem to find the replaygain_* fields in APEv2 tags.
+	 */
+
+	/* replayGainInfo = wavpack_replaygain(wpc); */
+	replayGainInfo = NULL;
+
+	wavpack_decode(cb, dc, wpc, 1, replayGainInfo);
+
+	if (replayGainInfo)
+		freeReplayGainInfo(replayGainInfo);
 
 	WavpackCloseFile(wpc);
 
