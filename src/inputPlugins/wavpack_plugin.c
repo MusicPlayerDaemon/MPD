@@ -2,7 +2,7 @@
  * Copyright (C) 2003-2007 by Warren Dukes (warren.dukes@gmail.com)
  * This project's homepage is: http://www.musicpd.org
  * 
- * WavPack support added by Kodest <kodest at gmail dot com>
+ * WavPack support added by Laszlo Ashin <kodest@gmail.com>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
