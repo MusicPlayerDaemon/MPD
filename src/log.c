@@ -175,6 +175,7 @@ void setup_log_output(const int use_stdout)
 	if (!use_stdout) {
 		redirect_logs();
 		stdout_mode = 0;
+		flushWarningLog();
 	}
 	redirect_stdin();
 }
