@@ -915,15 +915,24 @@ static void writeDirectoryInfo(FILE * fp, Directory * directory)
 {
 	ListNode *node = (directory->subDirectories)->firstNode;
 	Directory *subDirectory;
+	int retv;
 
 	if (directory->path) {
-		fprintf(fp, "%s%s\n", DIRECTORY_BEGIN,
+		retv = fprintf(fp, "%s%s\n", DIRECTORY_BEGIN,
 			  getDirectoryPath(directory));
+		if (retv < 0) {
+			ERROR("Failed to write data to database file: %s\n",strerror(errno));
+			return;
+		}
 	}
 
 	while (node != NULL) {
 		subDirectory = (Directory *) node->data;
-		fprintf(fp, "%s%s\n", DIRECTORY_DIR, node->key);
+		retv = fprintf(fp, "%s%s\n", DIRECTORY_DIR, node->key);
+		if (retv < 0) {
+			ERROR("Failed to write data to database file: %s\n",strerror(errno));
+			return;
+		}
 		writeDirectoryInfo(fp, subDirectory);
 		node = node->nextNode;
 	}
@@ -931,8 +940,12 @@ static void writeDirectoryInfo(FILE * fp, Directory * directory)
 	writeSongInfoFromList(fp, directory->songs);
 
 	if (directory->path) {
-		fprintf(fp, "%s%s\n", DIRECTORY_END,
+		retv = fprintf(fp, "%s%s\n", DIRECTORY_END,
 			  getDirectoryPath(directory));
+		if (retv < 0) {
+			ERROR("Failed to write data to database file: %s\n",strerror(errno));
+			return;
+		}
 	}
 }
 
