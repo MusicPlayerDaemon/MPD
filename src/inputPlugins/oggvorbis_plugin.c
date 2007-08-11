@@ -214,11 +214,6 @@ static void putOggCommentsIntoOutputBuffer(OutputBuffer * cb, char *streamName,
 	if (!tag)
 		return;
 
-	/*if(tag->artist) printf("Artist: %s\n", tag->artist);
-	   if(tag->album) printf("Album: %s\n", tag->album);
-	   if(tag->track) printf("Track: %s\n", tag->track);
-	   if(tag->title) printf("Title: %s\n", tag->title); */
-
 	if (streamName) {
 		clearItemsFromMpdTag(tag, TAG_ITEM_NAME);
 		addItemToMpdTag(tag, TAG_ITEM_NAME, streamName);
