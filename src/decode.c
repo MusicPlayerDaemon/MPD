@@ -124,7 +124,11 @@ static int calculateCrossFadeChunks(PlayerControl * pc, AudioFormat * af)
 				ERROR("problems opening audio device while playing \"%s\"\n", pc->utf8url); \
 				quitDecode(pc,dc); \
 				return; \
-	                } \
+			} \
+			if (pause) { \
+				dropBufferedAudio(); \
+				closeAudioDevice(); \
+			} \
 			pc->totalTime = dc->totalTime; \
 			pc->sampleRate = dc->audioFormat.sampleRate; \
 			pc->bits = dc->audioFormat.bits; \
