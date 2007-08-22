@@ -41,17 +41,17 @@
 #include <unistd.h>
 #include <errno.h>
 
-#define FRAMES_CUSHION		2000
+#define FRAMES_CUSHION    2000
 
-#define READ_BUFFER_SIZE	40960
+#define READ_BUFFER_SIZE  40960
 
-#define DECODE_SKIP		-3
-#define DECODE_BREAK		-2
-#define DECODE_CONT		-1
-#define DECODE_OK		0
+#define DECODE_SKIP       -3
+#define DECODE_BREAK      -2
+#define DECODE_CONT       -1
+#define DECODE_OK          0
 
-#define MUTEFRAME_SKIP          1
-#define MUTEFRAME_SEEK          2
+#define MUTEFRAME_SKIP     1
+#define MUTEFRAME_SEEK     2
 
 /* the number of samples of silence the decoder inserts at start */
 #define DECODERDELAY 529
@@ -498,16 +498,20 @@ enum {
 	XING_SCALE  = 0x00000008L
 };
 
+struct version {
+	int major;
+	int minor;
+};
+
 struct lame {
-	char encoder[10];   /* 9 byte encoder name/version ("LAME3.97b") */
-#if 0
-	/* See related comment in parse_lame() */
-	float peak;         /* replaygain peak */
-	float trackGain;    /* replaygain track gain */
-	float albumGain;    /* replaygain album gain */
-#endif
-	int encoderDelay;   /* # of added samples at start of mp3 */
-	int encoderPadding; /* # of added samples at end of mp3 */
+	char encoder[10];       /* 9 byte encoder name/version ("LAME3.97b") */
+	struct version version; /* struct containing just the version */
+	float peak;             /* replaygain peak */
+	float trackGain;        /* replaygain track gain */
+	float albumGain;        /* replaygain album gain */
+	int encoderDelay;       /* # of added samples at start of mp3 */
+	int encoderPadding;     /* # of added samples at end of mp3 */
+	int crc;                /* CRC of the first 190 bytes of this frame */
 };
 
 static int parse_xing(struct xing *xing, struct mad_bitptr *ptr, int *oldbitlen)
@@ -585,52 +589,94 @@ fail:
 
 static int parse_lame(struct lame *lame, struct mad_bitptr *ptr, int *bitlen)
 {
+	int adj = 0;
+	int name;
+	int orig;
+	int sign;
+	int gain;
 	int i;
 
 	/* Unlike the xing header, the lame tag has a fixed length.  Fail if
 	 * not all 36 bytes (288 bits) are there. */
-	if (*bitlen < 288) return 0;
+	if (*bitlen < 288)
+		return 0;
 
-	for (i = 0; i < 9; i++) lame->encoder[i] = (char)mad_bit_read(ptr, 8);
+	for (i = 0; i < 9; i++)
+		lame->encoder[i] = (char)mad_bit_read(ptr, 8);
 	lame->encoder[9] = '\0';
+
+	*bitlen -= 72;
 
 	/* This is technically incorrect, since the encoder might not be lame.
 	 * But there's no other way to determine if this is a lame tag, and we
 	 * wouldn't want to go reading a tag that's not there. */
-	if (strncmp(lame->encoder, "LAME", 4) != 0) return 0;
+	if (strncmp(lame->encoder, "LAME", 4) != 0)
+		return 0;
 
+	if (sscanf(lame->encoder+4, "%u.%u",
+	           &lame->version.major, &lame->version.minor) != 2)
+		return 0;
+
+	DEBUG("detected LAME version %i.%i (\"%s\")\n",
+	      lame->version.major, lame->version.minor, lame->encoder);
+
+	/* The reference volume was changed from the 83dB used in the
+	 * ReplayGain spec to 89dB in lame 3.95.1.  Bump the gain for older
+	 * versions, since everyone else uses 89dB instead of 83dB.
+	 * Unfortunately, lame didn't differentiate between 3.95 and 3.95.1, so
+	 * it's impossible to make the proper adjustment for 3.95.
+	 * Fortunately, 3.95 was only out for about a day before 3.95.1 was
+	 * released. -- tmz */
+	if (lame->version.major < 3 ||
+	    (lame->version.major == 3 && lame->version.minor < 95))
+		adj = 6;
+
+	mad_bit_read(ptr, 16);
+
+	lame->peak = mad_f_todouble(mad_bit_read(ptr, 32) << 5); /* peak */
+	DEBUG("LAME peak found: %f\n", lame->peak);
+
+	lame->trackGain = 0;
+	name = mad_bit_read(ptr, 3); /* gain name */
+	orig = mad_bit_read(ptr, 3); /* gain originator */
+	sign = mad_bit_read(ptr, 1); /* sign bit */
+	gain = mad_bit_read(ptr, 9); /* gain*10 */
+	if (gain && name == 1 && orig != 0) {
+		lame->trackGain = ((sign ? -gain : gain) / 10.0) + adj;
+		DEBUG("LAME track gain found: %f\n", lame->trackGain);
+	}
+
+	/* tmz reports that this isn't currently written by any version of lame
+	 * (as of 3.97).  Since we have no way of testing it, don't use it.
+	 * Wouldn't want to go blowing someone's ears just because we read it
+	 * wrong. :P -- jat */
+	lame->albumGain = 0;
 #if 0
-	/* Apparently lame versions <3.97b1 do not calculate replaygain.  I'm
-	 * using lame 3.97b2, and while it does calculate replaygain, it's
-	 * setting the values to 0.  Using --replaygain-(fast|accurate) doesn't
-	 * make any difference.  Leaving this code unused until we have a way
-	 * of testing it. -- jat */
-
-	mad_bit_read(ptr, 16);
-
-	mad_bit_read(ptr, 32); /* peak */
-
-	mad_bit_read(ptr, 6); /* header */
-	bits = mad_bit_read(ptr, 1); /* sign bit */
-	lame->trackGain = mad_bit_read(ptr, 9); /* gain*10 */
-	lame->trackGain = (bits ? -lame->trackGain : lame->trackGain) / 10;
-
-	mad_bit_read(ptr, 6); /* header */
-	bits = mad_bit_read(ptr, 1); /* sign bit */
-	lame->albumGain = mad_bit_read(ptr, 9); /* gain*10 */
-	lame->albumGain = (bits ? -lame->albumGain : lame->albumGain) / 10;
-
-	mad_bit_read(ptr, 16);
+	name = mad_bit_read(ptr, 3); /* gain name */
+	orig = mad_bit_read(ptr, 3); /* gain originator */
+	sign = mad_bit_read(ptr, 1); /* sign bit */
+	gain = mad_bit_read(ptr, 9); /* gain*10 */
+	if (gain && name == 2 && orig != 0) {
+		lame->albumGain = ((sign ? -gain : gain) / 10.0) + adj;
+		DEBUG("LAME album gain found: %f\n", lame->trackGain);
+	}
 #else
-	mad_bit_read(ptr, 96);
+	mad_bit_read(ptr, 16);
 #endif
+
+	mad_bit_read(ptr, 16);
 
 	lame->encoderDelay = mad_bit_read(ptr, 12);
 	lame->encoderPadding = mad_bit_read(ptr, 12);
 
-	mad_bit_read(ptr, 96);
+	DEBUG("encoder delay is %i, encoder padding is %i\n",
+	      lame->encoderDelay, lame->encoderPadding);
 
-	*bitlen -= 288;
+	mad_bit_read(ptr, 80);
+
+	lame->crc = mad_bit_read(ptr, 16);
+
+	*bitlen -= 216;
 
 	return 1;
 }
@@ -694,17 +740,29 @@ static int decodeFirstFrame(mp3DecodeData * data, DecoderControl * dc,
 		data->foundXing = 1;
 		data->muteFrame = MUTEFRAME_SKIP;
 
-		if (gaplessPlaybackEnabled && data->inStream->seekable &&
-		    parse_lame(&lame, &ptr, &bitlen)) {
-			data->dropSamplesAtStart = lame.encoderDelay + DECODERDELAY;
-			data->dropSamplesAtEnd = lame.encoderPadding;
-		}
-
 		if ((xing.flags & XING_FRAMES) && xing.frames) {
 			mad_timer_t duration = data->frame.header.duration;
 			mad_timer_multiply(&duration, xing.frames);
 			data->totalTime = ((float)mad_timer_count(duration, MAD_UNITS_MILLISECONDS)) / 1000;
 			data->maxFrames = xing.frames;
+		}
+
+		if (parse_lame(&lame, &ptr, &bitlen)) {
+			if (gaplessPlaybackEnabled &&
+			    data->inStream->seekable) {
+				data->dropSamplesAtStart = lame.encoderDelay +
+				                           DECODERDELAY;
+				data->dropSamplesAtEnd = lame.encoderPadding;
+			}
+
+			/* Album gain isn't currently used.  See comment in
+			 * parse_lame() for details. -- jat */
+			if (replayGainInfo && !*replayGainInfo &&
+			    lame.trackGain) {
+				*replayGainInfo = newReplayGainInfo();
+				(*replayGainInfo)->trackGain = lame.trackGain;
+				(*replayGainInfo)->trackPeak = lame.peak;
+			}
 		}
 	} 
 
