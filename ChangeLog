@@ -10,6 +10,7 @@ ver 0.14.0 (????/??/??)
 * New timeout parameter for shout outputs to define a connection timeout
 * New FIFO audio output
 * Support for WavPack files
+* Support for reading ReplayGain from LAME tags on MP3s
 
 ver 0.13.0 (2007/5/28)
 * New JACK audio output
