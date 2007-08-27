@@ -254,6 +254,7 @@ static void closeInterface(Interface * interface)
 
 void openAInterface(int fd, struct sockaddr *addr)
 {
+	char *hostname;
 	int i;
 
 	for (i = 0; i < interface_max_connections
@@ -263,16 +264,15 @@ void openAInterface(int fd, struct sockaddr *addr)
 		ERROR("Max Connections Reached!\n");
 		xclose(fd);
 	} else {
-		SECURE("interface %i: opened from ", i);
 		switch (addr->sa_family) {
 		case AF_INET:
 			{
 				char *host = inet_ntoa(((struct sockaddr_in *)
 							addr)->sin_addr);
 				if (host) {
-					SECURE("%s\n", host);
+					hostname = host;
 				} else {
-					SECURE("error getting ipv4 address\n");
+					hostname = "error getting ipv4 address";
 				}
 			}
 			break;
@@ -285,19 +285,20 @@ void openAInterface(int fd, struct sockaddr *addr)
 					      &(((struct sockaddr_in6 *)addr)->
 						sin6_addr), host,
 					      INET6_ADDRSTRLEN)) {
-					SECURE("%s\n", host);
+					hostname = host;
 				} else {
-					SECURE("error getting ipv6 address\n");
+					hostname = "error getting ipv6 address";
 				}
 			}
 			break;
 #endif
 		case AF_UNIX:
-			SECURE("local connection\n");
+			hostname = "local connection";
 			break;
 		default:
-			SECURE("unknown\n");
+			hostname = "unknown";
 		}
+		SECURE("interface %i: opened from %s\n", i, hostname);
 		openInterface(&(interfaces[i]), fd);
 	}
 }
