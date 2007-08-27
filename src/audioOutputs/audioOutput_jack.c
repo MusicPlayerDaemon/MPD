@@ -267,7 +267,7 @@ static int connect_jack(AudioOutput *audioOutput)
 	jack_on_shutdown(jd->client, shutdown_callback, (void *)jd);
 
 	if ( jack_activate(jd->client) ) {
-		ERROR("cannot activate client");
+		ERROR("cannot activate client\n");
 		freeJackData(audioOutput);
 		return -1;
 	}
@@ -312,7 +312,7 @@ static int connect_jack(AudioOutput *audioOutput)
 		sprintf(port_name, "%s:left", name);
 		if ( (jack_connect(jd->client, port_name,
 				   output_ports[0])) != 0 ) {
-			ERROR("%s is not a valid Jack Client / Port ",
+			ERROR("%s is not a valid Jack Client / Port\n",
 			      output_ports[0]);
 			freeJackData(audioOutput);
 			free(port_name);
@@ -321,7 +321,7 @@ static int connect_jack(AudioOutput *audioOutput)
 		sprintf(port_name, "%s:right", name);
 		if ( (jack_connect(jd->client, port_name,
 				   output_ports[1])) != 0 ) {
-			ERROR("%s is not a valid Jack Client / Port ",
+			ERROR("%s is not a valid Jack Client / Port\n",
 			      output_ports[1]);
 			freeJackData(audioOutput);
 			free(port_name);

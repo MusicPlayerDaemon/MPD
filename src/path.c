@@ -220,7 +220,7 @@ static char *pfx_path(const char *path, const char *pfx, const size_t pfx_len)
 	/* unlikely, return an empty string because truncating would
 	 * also be wrong... break early and break loudly (the system
 	 * headers are likely screwed, not mpd) */
-	ERROR("Cannot prefix '%s' to '%s', max: %d", pfx, path, MAXPATHLEN);
+	ERROR("Cannot prefix '%s' to '%s', max: %d\n", pfx, path, MAXPATHLEN);
 	ret[0] = '\0';
 	return ret;
 }

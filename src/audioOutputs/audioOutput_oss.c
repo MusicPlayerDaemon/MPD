@@ -377,7 +377,7 @@ static int oss_open_default(AudioOutput *ao, ConfigParam *param, OssData *od)
 			ERROR("%s: permission denied\n", dev);
 			break;
 		default:
-			ERROR("Error accessing %s: %s", dev, strerror(err[i]));
+			ERROR("Error accessing %s: %s\n", dev, strerror(err[i]));
 		}
 	}
 	exit(EXIT_FAILURE);

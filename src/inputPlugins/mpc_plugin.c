@@ -158,7 +158,7 @@ static int mpc_decode(OutputBuffer * cb, DecoderControl * dc,
 	if ((ret = mpc_streaminfo_read(&info, &reader)) != ERROR_CODE_OK) {
 		closeInputStream(inStream);
 		if (!dc->stop) {
-			ERROR("Not a valid musepack stream");
+			ERROR("Not a valid musepack stream\n");
 			return -1;
 		} else {
 			dc->state = DECODE_STATE_STOP;
@@ -172,7 +172,7 @@ static int mpc_decode(OutputBuffer * cb, DecoderControl * dc,
 	if (!mpc_decoder_initialize(&decoder, &info)) {
 		closeInputStream(inStream);
 		if (!dc->stop) {
-			ERROR("Not a valid musepack stream");
+			ERROR("Not a valid musepack stream\n");
 		} else {
 			dc->state = DECODE_STATE_STOP;
 			dc->stop = 0;

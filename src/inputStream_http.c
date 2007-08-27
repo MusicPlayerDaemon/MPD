@@ -81,7 +81,7 @@ void inputStream_initHttp(void)
 		param = getConfigParam(CONF_HTTP_PROXY_PORT);
 
 		if (!param) {
-			FATAL("%s specified but not %s", CONF_HTTP_PROXY_HOST,
+			FATAL("%s specified but not %s\n", CONF_HTTP_PROXY_HOST,
 			      CONF_HTTP_PROXY_PORT);
 		}
 		proxyPort = param->value;
