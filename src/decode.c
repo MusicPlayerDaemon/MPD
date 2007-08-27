@@ -44,23 +44,25 @@ void decodeSigHandler(int sig, siginfo_t * si, void *v)
 	if (sig == SIGCHLD) {
 		int status;
 		if (decode_pid == wait3(&status, WNOHANG, NULL)) {
+			/*
 			if (WIFSIGNALED(status)) {
 				if (WTERMSIG(status) != SIGTERM) {
 					ERROR("decode process died from "
 					      "signal: %i\n", WTERMSIG(status));
 				}
 			}
+			*/
 			decode_pid = 0;
 			getPlayerData()->playerControl.decode_pid = 0;
 		}
 	} else if (sig == SIGTERM) {
 		int pid = decode_pid;
 		if (pid > 0) {
-			DEBUG("player (or child) got SIGTERM\n");
+			/* DEBUG("player (or child) got SIGTERM\n"); */
 			kill(pid, SIGCONT);
 			kill(pid, SIGTERM);
-		} else
-			DEBUG("decoder (or child) got SIGTERM\n");
+		} /* else
+			DEBUG("decoder (or child) got SIGTERM\n"); */
 		exit(EXIT_SUCCESS);
 	}
 }
