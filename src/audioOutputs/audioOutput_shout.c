@@ -158,9 +158,7 @@ static int myShout_initDriver(AudioOutput * audioOutput, ConfigParam * param)
 	if (blockParam) {
 		if (0 == strcmp(blockParam->value, "yes")) {
 			public = 1;
-		} else if (0 == strcmp(blockParam->value, "no")) {
-			public = 0;
-		} else {
+		} else if (strcmp(blockParam->value, "no")) {
 			FATAL("public \"%s\" is not \"yes\" or \"no\" at line "
 			      "%i\n", param->value, param->line);
 		}

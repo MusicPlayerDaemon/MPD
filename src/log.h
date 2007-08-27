@@ -33,7 +33,7 @@ mpd_printf void LOG(const char *fmt, ...);
 mpd_printf void SECURE(const char *fmt, ...);
 mpd_printf void DEBUG(const char *fmt, ...);
 mpd_printf void WARNING(const char *fmt, ...);
-mpd_printf void FATAL(const char *fmt, ...);
+mpd_printf mpd_noreturn void FATAL(const char *fmt, ...);
 
 void initLog(const int verbose);
 
