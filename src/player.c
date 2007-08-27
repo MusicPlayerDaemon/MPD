@@ -239,6 +239,7 @@ int playerStop(int fd)
 
 	if (player_pid > 0 && pc->state != PLAYER_STATE_STOP) {
 		pc->stop = 1;
+		kill(player_pid, SIGCONT);
 		while (player_pid > 0 && pc->stop)
 			my_usleep(1000);
 	}
@@ -266,6 +267,8 @@ int playerPause(int fd)
 
 	if (player_pid > 0 && pc->state != PLAYER_STATE_STOP) {
 		pc->pause = 1;
+		if (player_pid > 0 && pc->state == PLAYER_STATE_PAUSE)
+			kill(player_pid, SIGCONT);
 		while (player_pid > 0 && pc->pause)
 			my_usleep(1000);
 	}
