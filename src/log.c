@@ -28,6 +28,8 @@
 #include <stdarg.h>
 #include <time.h>
 
+#define LOG_DATE_BUF_SIZE 16
+#define LOG_DATE_LEN (LOG_DATE_BUF_SIZE - 1)
 static unsigned int logLevel = LOG_LEVEL_LOW;
 static int warningFlushed;
 static int stdout_mode = 1;
@@ -59,9 +61,9 @@ static void redirect_logs(void)
 
 static const char *log_date(void)
 {
-	static char buf[16];
+	static char buf[LOG_DATE_BUF_SIZE];
 	time_t t = time(NULL);
-	strftime(buf, 16, "%b %d %H:%M : ", localtime(&t));
+	strftime(buf, LOG_DATE_BUF_SIZE, "%b %d %H:%M : ", localtime(&t));
 	return buf;
 }
 
@@ -73,9 +75,9 @@ static void buffer_warning(const char *fmt, va_list args)
 	size_t len = BUFFER_LENGTH;
 
 	if (!stdout_mode) {
-		memcpy(buffer, log_date(), 15);
-		tmp += 15;
-		len -= 15;
+		memcpy(buffer, log_date(), LOG_DATE_LEN);
+		tmp += LOG_DATE_LEN;
+		len -= LOG_DATE_LEN;
 	}
 
 	vsnprintf(tmp, len, fmt, args);
@@ -87,7 +89,7 @@ static void buffer_warning(const char *fmt, va_list args)
 static void do_log(FILE *fp, const char *fmt, va_list args)
 {
 	if (!stdout_mode)
-		fwrite(log_date(), 15, 1, fp);
+		fwrite(log_date(), LOG_DATE_LEN, 1, fp);
 	vfprintf(fp, fmt, args);
 }
 
