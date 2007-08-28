@@ -270,26 +270,27 @@ static MpdTag *flacMetadataDup(char *file, int *vorbisCommentFound)
 
 	it = FLAC__metadata_simple_iterator_new();
 	if (!FLAC__metadata_simple_iterator_init(it, file, 1, 0)) {
-		switch (FLAC__metadata_simple_iterator_status(it)) {
+		const char *err;
+		FLAC_API FLAC__Metadata_SimpleIteratorStatus s;
+
+		s = FLAC__metadata_simple_iterator_status(it);
+
+		switch (s) { /* slightly more human-friendly messages: */
 		case FLAC__METADATA_SIMPLE_ITERATOR_STATUS_ILLEGAL_INPUT:
-			DEBUG
-			    ("flacMetadataDup: Reading '%s' metadata gave the following error: Illegal Input\n",
-			     file);
+			err = "illegal input";
 			break;
 		case FLAC__METADATA_SIMPLE_ITERATOR_STATUS_ERROR_OPENING_FILE:
-			DEBUG
-			    ("flacMetadataDup: Reading '%s' metadata gave the following error: Error Opening File\n",
-			     file);
+			err = "error opening file";
 			break;
 		case FLAC__METADATA_SIMPLE_ITERATOR_STATUS_NOT_A_FLAC_FILE:
-			DEBUG
-			    ("flacMetadataDup: Reading '%s' metadata gave the following error: Not A Flac File\n",
-			     file);
+			err = "not a FLAC file";
 			break;
 		default:
-			DEBUG("flacMetadataDup: Reading '%s' metadata failed\n",
-			      file);
+			err = FLAC__Metadata_SimpleIteratorStatusString[s];
 		}
+		DEBUG("flacMetadataDup: Reading '%s' "
+		      "metadata gave the following error: %s\n",
+		      file, err);
 		FLAC__metadata_simple_iterator_delete(it);
 		return ret;
 	}
