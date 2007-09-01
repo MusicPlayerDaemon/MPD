@@ -254,7 +254,6 @@ static void closeInterface(Interface * interface)
 
 void openAInterface(int fd, struct sockaddr *addr)
 {
-	char *hostname;
 	int i;
 
 	for (i = 0; i < interface_max_connections
@@ -264,28 +263,24 @@ void openAInterface(int fd, struct sockaddr *addr)
 		ERROR("Max Connections Reached!\n");
 		xclose(fd);
 	} else {
+		const char *hostname;
 		switch (addr->sa_family) {
 		case AF_INET:
-			{
-				char *host = inet_ntoa(((struct sockaddr_in *)
-							addr)->sin_addr);
-				if (host) {
-					hostname = host;
-				} else {
-					hostname = "error getting ipv4 address";
-				}
-			}
+			hostname = (const char *)inet_ntoa(((struct sockaddr_in *)
+			                                    addr)->sin_addr);
+			if (!hostname)
+				hostname = "error getting ipv4 address";
 			break;
 #ifdef HAVE_IPV6
 		case AF_INET6:
 			{
-				char host[INET6_ADDRSTRLEN + 1];
+				static char host[INET6_ADDRSTRLEN + 1];
 				memset(host, 0, INET6_ADDRSTRLEN + 1);
 				if (inet_ntop(AF_INET6, (void *)
 					      &(((struct sockaddr_in6 *)addr)->
 						sin6_addr), host,
 					      INET6_ADDRSTRLEN)) {
-					hostname = host;
+					hostname = (const char *)host;
 				} else {
 					hostname = "error getting ipv6 address";
 				}
