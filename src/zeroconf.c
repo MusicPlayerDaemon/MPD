@@ -309,10 +309,12 @@ static void avahiClientCallback(AvahiClient *c, AvahiClientState state, void *us
 				int reason = avahi_client_errno(c);
 				if( reason == AVAHI_ERR_DISCONNECTED ) {
 					LOG( "Avahi: Client Disconnected, will reconnect shortly\n");
-					avahi_entry_group_free( avahiGroup );
-					avahiGroup = NULL;
-					avahi_client_free( avahiClient );
-					avahiClient = NULL;
+					if (avahiGroup) {
+						avahi_entry_group_free(avahiGroup);
+						avahiGroup = NULL;
+					}
+					if (avahiClient)
+						avahi_client_free(avahiClient);
 					avahiClient = avahi_client_new( &avahiPoll, AVAHI_CLIENT_NO_FAIL,
 						avahiClientCallback, NULL, &reason );
 					if( !avahiClient ) {
