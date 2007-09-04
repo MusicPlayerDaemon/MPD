@@ -51,7 +51,7 @@ static void redirect_stdin(void)
 	struct stat ss;
 
 	if ((st = fstat(STDIN_FILENO, &ss)) < 0) {
-		if ((fd = open("/dev/null", O_RDONLY) > 0))
+		if ((fd = open("/dev/null", O_RDONLY) > 0)) {
 			DEBUG("stdin closed, and could not open /dev/null "
 			      "as fd=0, some external library bugs "
 			      "may be exposed...\n");
