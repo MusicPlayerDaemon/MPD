@@ -64,6 +64,9 @@
 #define CONF_SAVE_ABSOLUTE_PATHS        "save_absolute_paths_in_playlists"
 #define CONF_GAPLESS_MP3_PLAYBACK	"gapless_mp3_playback"
 
+#define CONF_BOOL_UNSET         -1
+#define CONF_BOOL_INVALID       -2
+
 typedef struct _BlockParam {
 	char *name;
 	char *value;
@@ -90,10 +93,12 @@ ConfigParam *getNextConfigParam(char *name, ConfigParam * last);
 
 char *getConfigParamValue(char *name);
 
-int getBoolConfigParam(char *name);
-
 BlockParam *getBlockParam(ConfigParam * param, char *name);
 
 ConfigParam *parseConfigFilePath(char *name, int force);
+
+int getBoolConfigParam(char *name, int force);
+
+int getBoolBlockParam(ConfigParam *param, char *name, int force);
 
 #endif

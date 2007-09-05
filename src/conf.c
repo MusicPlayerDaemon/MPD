@@ -50,6 +50,23 @@ typedef struct _configEntry {
 
 static List *configEntriesList;
 
+static int get_bool(const char *value)
+{
+	const char **x;
+	static const char *t[] = { "yes", "true", "1", NULL };
+	static const char *f[] = { "no", "false", "0", NULL };
+
+	for (x = t; *x; x++) {
+		if (!strcasecmp(*x, value))
+			return 1;
+	}
+	for (x = f; *x; x++) {
+		if (!strcasecmp(*x, value))
+			return 0;
+	}
+	return CONF_BOOL_INVALID;
+}
+
 static ConfigParam *newConfigParam(char *value, int line)
 {
 	ConfigParam *ret = xmalloc(sizeof(ConfigParam));
@@ -352,21 +369,6 @@ char *getConfigParamValue(char *name)
 	return param->value;
 }
 
-int getBoolConfigParam(char *name)
-{
-	ConfigParam *param;
-	
-	param = getConfigParam(name);
-	if (!param) return -1;
-
-	if (strcmp("yes", param->value) == 0) return 1;
-	else if (strcmp("no", param->value) == 0) return 0;
-
-	ERROR("%s is not \"yes\" or \"no\" on line %i\n", name, param->line);
-
-	return -2;
-}
-
 BlockParam *getBlockParam(ConfigParam * param, char *name)
 {
 	BlockParam *ret = NULL;
@@ -406,3 +408,35 @@ ConfigParam *parseConfigFilePath(char *name, int force)
 
 	return param;
 }
+
+int getBoolConfigParam(char *name, int force)
+{
+	int ret;
+	ConfigParam *param = getConfigParam(name);
+
+	if (!param)
+		return CONF_BOOL_UNSET;
+
+	ret = get_bool(param->value);
+	if (force && ret == CONF_BOOL_INVALID)
+		FATAL("%s is not a boolean value (yes, true, 1) or "
+		      "(no, false, 0) on line %i\n",
+		      name, param->line);
+	return ret;
+}
+
+int getBoolBlockParam(ConfigParam *param, char *name, int force)
+{
+	int ret;
+	BlockParam *bp = getBlockParam(param, name);
+
+	if (!bp)
+		return CONF_BOOL_UNSET;
+
+	ret = get_bool(bp->value);
+	if (force && ret == CONF_BOOL_INVALID)
+		FATAL("%s is not a boolean value (yes, true, 1) or "
+		      "(no, false, 0) on line %i\n", bp->value, bp->line);
+	return ret;
+}
+

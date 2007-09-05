@@ -558,11 +558,9 @@ void initZeroconf(void)
 	const char *serviceName = SERVICE_NAME;
 	ConfigParam *param;
 
-	zeroconfEnabled = getBoolConfigParam(CONF_ZEROCONF_ENABLED);
-	if (zeroconfEnabled == -1)
+	zeroconfEnabled = getBoolConfigParam(CONF_ZEROCONF_ENABLED, 1);
+	if (zeroconfEnabled == CONF_BOOL_UNSET)
 		zeroconfEnabled = DEFAULT_ZEROCONF_ENABLED;
-	else if (zeroconfEnabled < 0)
-		exit(EXIT_FAILURE);
 
 	if (!zeroconfEnabled)
 		return;

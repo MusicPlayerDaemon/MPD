@@ -140,11 +140,11 @@ void initPlaylist(void)
 		}
 	}
 
-	playlist_saveAbsolutePaths = getBoolConfigParam(CONF_SAVE_ABSOLUTE_PATHS);
-	if (playlist_saveAbsolutePaths == -1)
-		playlist_saveAbsolutePaths = DEFAULT_PLAYLIST_SAVE_ABSOLUTE_PATHS;
-	else if (playlist_saveAbsolutePaths < 0)
-		exit(EXIT_FAILURE);
+	playlist_saveAbsolutePaths = getBoolConfigParam(
+	                                         CONF_SAVE_ABSOLUTE_PATHS, 1);
+	if (playlist_saveAbsolutePaths == CONF_BOOL_UNSET)
+		playlist_saveAbsolutePaths =
+		                         DEFAULT_PLAYLIST_SAVE_ABSOLUTE_PATHS;
 
 	playlist.songs = xmalloc(sizeof(Song *) * playlist_max_length);
 	playlist.songMod = xmalloc(sizeof(mpd_uint32) * playlist_max_length);

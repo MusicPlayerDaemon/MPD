@@ -120,11 +120,10 @@ static signed long audio_linear_dither(unsigned int bits, mad_fixed_t sample,
 
 static int mp3_plugin_init(void)
 {
-	gaplessPlaybackEnabled = getBoolConfigParam(CONF_GAPLESS_MP3_PLAYBACK);
-	if (gaplessPlaybackEnabled == -1)
+	gaplessPlaybackEnabled = getBoolConfigParam(CONF_GAPLESS_MP3_PLAYBACK,
+	                                            1);
+	if (gaplessPlaybackEnabled == CONF_BOOL_UNSET)
 		gaplessPlaybackEnabled = DEFAULT_GAPLESS_MP3_PLAYBACK;
-	else if (gaplessPlaybackEnabled < 0)
-		exit(EXIT_FAILURE);
 	return 1;
 }
 
