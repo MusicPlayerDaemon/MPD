@@ -84,9 +84,9 @@ static int alsa_initDriver(AudioOutput * audioOutput, ConfigParam * param)
 		BlockParam *bp = getBlockParam(param, "device");
 		ad->device = bp ? xstrdup(bp->value) : xstrdup("default");
 
-		if ((bp = getBlockParam(param, "use_mmap")) &&
-		    !strcasecmp(bp->value, "yes"))
-			ad->useMmap = 1;
+		ad->useMmap = getBoolBlockParam(param, "use_mmap", 1);
+		if (ad->useMmap == CONF_BOOL_UNSET)
+			ad->useMmap = 0;
 		if ((bp = getBlockParam(param, "buffer_time")))
 			ad->buffer_time = atoi(bp->value);
 		if ((bp = getBlockParam(param, "period_time")))
