@@ -194,6 +194,10 @@ int playerWait(int fd)
 	if (pc->wait)
 		return 0;
 
+	pid = player_pid;
+	if (pid > 0)
+		kill(pid, SIGCONT);
+
 	if (playerStop(fd) < 0)
 		return -1;
 
@@ -231,6 +235,8 @@ int playerPlay(int fd, Song * song)
 	}
 
 	resetPlayerMetadata();
+	if (player_pid)
+		kill(player_pid, SIGCONT);
 	while (player_pid > 0 && pc->play)
 		my_usleep(1000);
 
@@ -380,6 +386,7 @@ void playerCloseAudio(void)
 		if (playerStop(STDERR_FILENO) < 0)
 			return;
 		pc->closeAudio = 1;
+		kill(player_pid, SIGCONT);
 		while (player_pid > 0 && pc->closeAudio)
 			my_usleep(1000);
 	}
@@ -425,6 +432,7 @@ void playerQueueLock(void)
 	PlayerControl *pc = &(getPlayerData()->playerControl);
 
 	if (player_pid > 0 && pc->queueLockState == PLAYER_QUEUE_UNLOCKED) {
+		kill(player_pid, SIGCONT);
 		pc->lockQueue = 1;
 		while (player_pid > 0 && pc->lockQueue)
 			my_usleep(1000);
@@ -436,6 +444,7 @@ void playerQueueUnlock(void)
 	PlayerControl *pc = &(getPlayerData()->playerControl);
 
 	if (player_pid > 0 && pc->queueLockState == PLAYER_QUEUE_LOCKED) {
+		kill(player_pid, SIGCONT);
 		pc->unlockQueue = 1;
 		while (player_pid > 0 && pc->unlockQueue)
 			my_usleep(1000);
@@ -467,6 +476,8 @@ int playerSeek(int fd, Song * song, float time)
 		resetPlayerMetadata();
 		pc->seekWhere = time;
 		pc->seek = 1;
+		if (player_pid)
+			kill(player_pid, SIGCONT);
 		while (player_pid > 0 && pc->seek)
 			my_usleep(1000);
 	}
