@@ -71,7 +71,6 @@ static void stopDecode(DecoderControl * dc)
 {
 	if (decode_pid > 0 && (dc->start || dc->state != DECODE_STATE_STOP)) {
 		dc->stop = 1;
-		kill(decode_pid, SIGCONT);
 		while (decode_pid > 0 && dc->stop)
 			my_usleep(10000);
 	}
@@ -127,8 +126,7 @@ static int calculateCrossFadeChunks(PlayerControl * pc, AudioFormat * af)
 				ERROR("problems opening audio device while playing \"%s\"\n", pc->utf8url); \
 				quitDecode(pc,dc); \
 				return; \
-			} else if (decode_pid > 0) { \
-				kill(decode_pid, SIGCONT); }\
+			} \
 			if (pause) { \
 				dropBufferedAudio(); \
 				closeAudioDevice(); \
@@ -240,8 +238,6 @@ static int decodeSeek(PlayerControl * pc, DecoderControl * dc,
 			pc->state = PLAYER_STATE_PAUSE; \
 		} else { \
 			if (openAudioDevice(NULL) >= 0) { \
-				if (decode_pid > 0) \
-					kill(decode_pid, SIGCONT); \
 				pc->state = PLAYER_STATE_PLAY; \
 			} else { \
 				pathcpy_trunc(pc->erroredUrl, pc->utf8url); \
@@ -583,11 +579,9 @@ static void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer *
 		   race conditions and weirdness */
 		end = cb->end;
 
-		if (pause) {
-			if (decode_pid)
-				kill(decode_pid, SIGSTOP);
-			kill(getpid(), SIGSTOP);
-		} else if (cb->begin != end && cb->begin != next) {
+		if (pause)
+			my_usleep(10000);
+		else if (cb->begin != end && cb->begin != next) {
 			if (doCrossFade == 1 && next >= 0 &&
 			    ((next > cb->begin &&
 			      (fadePosition = next - cb->begin)
