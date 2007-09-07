@@ -40,13 +40,6 @@
 #define DECODE_ERROR_UNKTYPE	10
 #define DECODE_ERROR_FILE	20
 
-#define DECODE_SUFFIX_MP3       1
-#define DECODE_SUFFIX_OGG       2
-#define DECODE_SUFFIX_FLAC      3
-#define DECODE_SUFFIX_AAC       4
-#define DECODE_SUFFIX_MP4       5
-#define DECODE_SUFFIX_WAVE      6
-
 typedef struct _DecoderControl {
 	volatile mpd_sint8 state;
 	volatile mpd_sint8 stop;
