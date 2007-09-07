@@ -208,6 +208,7 @@ static int decodeSeek(PlayerControl * pc, DecoderControl * dc,
 			dc->seekWhere = 0 > dc->seekWhere ? 0 : dc->seekWhere;
 			dc->seekError = 0;
 			dc->seek = 1;
+			kill(decode_pid, SIGCONT);
 			while (decode_pid > 0 && dc->seek)
 				my_usleep(10000);
 			if (!dc->seekError) {
