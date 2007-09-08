@@ -467,7 +467,7 @@ static int finishHTTPInit(InputStream * inStream)
 	length = snprintf(request, sizeof(request),
 	                 "GET %s HTTP/1.1\r\n"
 	                 "Host: %s\r\n"
-	                 /* "Connection: close\r\n" */
+	                 "Connection: close\r\n"
 	                 "User-Agent: " PACKAGE_NAME "/" PACKAGE_VERSION "\r\n"
 	                 "Range: bytes=%ld-\r\n"
 	                 "%s"  /* authorization */
