@@ -112,7 +112,7 @@ void player_sigChldHandler(int pid, int status)
 	}
 }
 
-int playerInit(void)
+static int playerInit(void)
 {
 	PlayerControl *pc = &(getPlayerData()->playerControl);
 	int pid;

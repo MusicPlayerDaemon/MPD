@@ -120,8 +120,6 @@ char *getPlayerErrorStr(void);
 
 int getPlayerError(void);
 
-int playerInit(void);
-
 int playerWait(int fd);
 
 int queueSong(Song * song);
