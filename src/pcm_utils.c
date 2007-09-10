@@ -305,7 +305,7 @@ static char *pcm_convertChannels(mpd_sint8 channels, char *inBuffer,
 {
 	static char *buf;
 	static size_t len;
-	char *outBuffer = NULL;;
+	char *outBuffer = NULL;
 	mpd_sint16 *in;
 	mpd_sint16 *out;
 	int inSamples, i;
