@@ -285,7 +285,7 @@ static int mp4_decode(OutputBuffer * cb, DecoderControl * dc,
 
 		sampleBuffer += offset * channels * 2;
 
-		sendDataToOutputBuffer(cb, NULL, dc, 1, sampleBuffer,
+		sendDataToOutputBuffer(cb, inStream, dc, 1, sampleBuffer,
 				       sampleBufferLen, time, bitRate, NULL);
 		if (dc->stop) {
 			eof = 1;
