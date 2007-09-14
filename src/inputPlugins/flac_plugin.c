@@ -478,7 +478,7 @@ static unsigned int oggflac_try_decode(InputStream * inStream)
 	return (ogg_stream_type_detect(inStream) == FLAC) ? 1 : 0;
 }
 
-static char *oggflac_suffixes[] = { "ogg", NULL };
+static char *oggflac_suffixes[] = { "ogg", "oga", NULL };
 static char *oggflac_mime_types[] = { "audio/x-flac+ogg",
                                       "application/ogg",
                                       "application/x-ogg",
