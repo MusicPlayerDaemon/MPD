@@ -21,10 +21,12 @@
 
 #include "../inputPlugin.h"
 
+#include "_flac_common.h"
+#include "_ogg_common.h"
+
 #if defined(HAVE_OGGFLAC) || defined(HAVE_OGGVORBIS)
 
 #include "../utils.h"
-#include "_ogg_common.h"
 
 #include <string.h>
 
