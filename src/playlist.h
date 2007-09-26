@@ -43,6 +43,7 @@ typedef struct _Playlist {
 	int repeat;
 	int random;
 	mpd_uint32 version;
+	mpd_uint32 queueversion;
 } Playlist;
 
 extern int playlist_saveAbsolutePaths;
@@ -78,6 +79,8 @@ int playlistId(int fd, int song);
 int stopPlaylist(int fd);
 
 int playPlaylist(int fd, int song, int stopOnError);
+
+int playNextPlaylistQueue(int fd, int stopOnError);
 
 int playPlaylistById(int fd, int song, int stopOnError);
 
@@ -123,6 +126,8 @@ int getPlaylistLength(void);
 
 unsigned long getPlaylistVersion(void);
 
+unsigned long getPlaylistQueueVersion(void);
+
 void playPlaylistIfPlayerStopped(void);
 
 int seekSongInPlaylist(int fd, int song, float time);
@@ -140,5 +145,15 @@ int PlaylistInfo(int fd, char *utf8file, int detail);
 void searchForSongsInPlaylist(int fd, int numItems, LocateTagItem * items);
 
 void findSongsInPlaylist(int fd, int numItems, LocateTagItem * items);
+
+void clearPlaylistQueue(void);
+
+int addToPlaylistQueueById(int fd, int song, int toPosition);
+
+int deleteFromPlaylistQueue(int fd, int song);
+
+int deleteFromPlaylistQueueInternal(int song);
+
+int playlistQueueInfo(int fd);
 
 #endif

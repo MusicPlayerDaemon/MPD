@@ -73,9 +73,12 @@ static int playlist_noGoToNext;
 
 int playlist_saveAbsolutePaths = DEFAULT_PLAYLIST_SAVE_ABSOLUTE_PATHS;
 
+static List *playlistQueue;
+
 static void swapOrder(int a, int b);
 static int playPlaylistOrderNumber(int fd, int orderNum);
 static void randomizeOrder(int start, int end);
+static void clearPlayerQueue(void);
 
 static void incrPlaylistVersion(void)
 {
@@ -103,6 +106,14 @@ void playlistVersionChange(void)
 	incrPlaylistVersion();
 }
 
+static void incrPlaylistQueueVersion(void)
+{
+	static unsigned long max = ((mpd_uint32) 1 << 31) - 1;
+	playlist.queueversion++;
+	if (playlist.queueversion >= max) 
+		playlist.queueversion = 1;
+}
+
 static void incrPlaylistCurrent(void)
 {
 	if (playlist.current < 0)
@@ -126,6 +137,7 @@ void initPlaylist(void)
 	playlist.length = 0;
 	playlist.repeat = 0;
 	playlist.version = 1;
+	playlist.queueversion = 1;
 	playlist.random = 0;
 	playlist.queued = -1;
 	playlist.current = -1;
@@ -160,6 +172,8 @@ void initPlaylist(void)
 	for (i = 0; i < playlist_max_length * PLAYLIST_HASH_MULT; i++) {
 		playlist.idToPosition[i] = -1;
 	}
+	
+	playlistQueue = makeList(DEFAULT_FREE_DATA_FUNC, 0);
 }
 
 static int getNextId(void)
@@ -205,6 +219,7 @@ int clearPlaylist(int fd)
 
 	if (stopPlaylist(fd) < 0)
 		return -1;
+	clearPlaylistQueue();
 
 	for (i = 0; i < playlist.length; i++) {
 		if (playlist.songs[i]->type == SONG_TYPE_URL) {
@@ -485,7 +500,28 @@ static void swapSongs(int song1, int song2)
 
 static void queueNextSongInPlaylist(void)
 {
-	if (playlist.current < playlist.length - 1) {
+	if (playlistQueue->numberOfNodes != 0) {
+		int i;
+		/* we need to find where in order[] is first song from queue */
+		for (i=0;i < playlist.length; i++)
+			if (playlist.order[i] == playlist.
+			    idToPosition[*(int *)playlistQueue->
+			    firstNode->data])
+				break;
+		clearPlayerQueue();
+		playlist.queued = i;
+		DEBUG("playlist: queue song %i:\"%s\"\n",
+		      playlist.queued,
+		      getSongUrl(playlist.
+				 songs[playlist.order[playlist.queued]]));
+		
+		if (queueSong(playlist.songs[playlist.order[playlist.queued]]) <
+		    0) {
+			playlist.queued = -1;
+			playlist_queueError = 1;
+		}
+	} else if (playlist.current < playlist.length - 1) {
+		clearPlayerQueue();
 		playlist.queued = playlist.current + 1;
 		DEBUG("playlist: queue song %i:\"%s\"\n",
 		      playlist.queued,
@@ -500,6 +536,7 @@ static void queueNextSongInPlaylist(void)
 		if (playlist.length > 1 && playlist.random) {
 			randomizeOrder(0, playlist.length - 1);
 		}
+		clearPlayerQueue();
 		playlist.queued = 0;
 		DEBUG("playlist: queue song %i:\"%s\"\n",
 		      playlist.queued,
@@ -527,6 +564,9 @@ static void syncPlaylistWithQueue(int queue)
 		if (playlist.queued >= 0) {
 			DEBUG("playlist: now playing queued song\n");
 			playlist.current = playlist.queued;
+			if (playlistQueue->numberOfNodes > 0) {
+				deleteFromPlaylistQueueInternal(0);
+			}
 		}
 		playlist.queued = -1;
 		if (queue)
@@ -737,11 +777,28 @@ int deleteFromPlaylist(int fd, int song)
 {
 	int i;
 	int songOrder;
+	ListNode *qItem;
 
 	if (song < 0 || song >= playlist.length) {
 		commandError(fd, ACK_ERROR_NO_EXIST,
 			     "song doesn't exist: \"%i\"", song);
 		return -1;
+	}
+	
+	/* we need to clear song from queue */
+	i = 0;
+	qItem = playlistQueue->firstNode;
+	while (qItem) {
+		if (playlist.idToPosition[*(int *)qItem->data] == 
+				song) {
+                
+			qItem = qItem->nextNode;
+			deleteFromPlaylistQueueInternal(i); 
+			/* can be queued multiple times */
+			continue;
+		}
+		i++;
+		qItem = qItem->nextNode;
 	}
 
 	if (playlist_state == PLAYLIST_STATE_PLAY) {
@@ -859,7 +916,26 @@ static int playPlaylistOrderNumber(int fd, int orderNum)
 
 	playlist.current = orderNum;
 
+	/* are we playing from queue ? */
+	if (playlistQueue->numberOfNodes > 0 &&
+	    playlist.idToPosition[*(int *)playlistQueue->
+	    firstNode->data] == playlist.order[orderNum]) {
+		deleteFromPlaylistQueueInternal(0);
+		queueNextSongInPlaylist();
+	}
+
 	return 0;
+}
+
+int playNextPlaylistQueue(int fd, int stopOnError)
+{
+	int ret;
+	if (playlistQueue->numberOfNodes == 0)
+		return -1;
+
+	ret = playPlaylistById(fd, *(int *)playlistQueue->firstNode->data, 
+			       stopOnError);
+	return ret;
 }
 
 int playPlaylist(int fd, int song, int stopOnError)
@@ -875,6 +951,12 @@ int playPlaylist(int fd, int song, int stopOnError)
 		if (playlist_state == PLAYLIST_STATE_PLAY) {
 			return playerSetPause(fd, 0);
 		}
+
+		if (playlist_state != PLAYLIST_STATE_STOP &&
+		    playNextPlaylistQueue(fd, stopOnError) == 0) {
+			return 0;
+		}
+
 		if (playlist.current >= 0 && playlist.current < playlist.length) {
 			i = playlist.current;
 		} else {
@@ -981,6 +1063,9 @@ int nextSongInPlaylist(int fd)
 	syncPlaylistWithQueue(0);
 
 	playlist_stopOnError = 0;
+
+	if (playNextPlaylistQueue(fd, 0) == 0)
+		return 0;
 
 	if (playlist.current < playlist.length - 1) {
 		return playPlaylistOrderNumber(fd, playlist.current + 1);
@@ -1349,6 +1434,11 @@ unsigned long getPlaylistVersion(void)
 	return playlist.version;
 }
 
+unsigned long getPlaylistQueueVersion(void)
+{
+	return playlist.queueversion;
+}
+
 int getPlaylistLength(void)
 {
 	return playlist.length;
@@ -1495,4 +1585,85 @@ void findSongsInPlaylist(int fd, int numItems, LocateTagItem * items)
 		if (tagItemsFoundAndMatches(playlist.songs[i], numItems, items))
 			printPlaylistSongInfo(fd, i);
 	}
+}
+
+void clearPlaylistQueue(void)
+{
+	freeList(playlistQueue);
+	playlistQueue = makeList(DEFAULT_FREE_DATA_FUNC, 0);
+        incrPlaylistQueueVersion();
+}
+
+int addToPlaylistQueueById(int fd, int song, int toPosition)
+{
+	int pos, *data;
+	ListNode *prevItem;
+
+	pos = playlist.idToPosition[song];
+	if (pos < 0 || pos >= playlist.length) {
+		commandError(fd, ACK_ERROR_NO_EXIST,
+			     "song doesn't exist: \"%i\"", song);
+		return -1;
+	}
+	if (toPosition < -1 || toPosition > playlistQueue->numberOfNodes) {
+		commandError(fd, ACK_ERROR_ARG,
+			     "queue position out of range: \"%i\"", toPosition);
+		return -1;
+	}
+	data = xmalloc(sizeof(int));
+	*data = song;
+	if (toPosition == -1) {
+		insertInList(playlistQueue, (char *)1, data);
+	} else {
+		prevItem = getNodeByPosition(playlistQueue, toPosition);
+		if (prevItem == NULL) {
+			insertInList(playlistQueue, (char *)1, data);
+		} else 
+			insertInListBeforeNode(playlistQueue, prevItem, -1,
+					       (char*) 1, data); 
+	}
+
+        if (playlistQueue->numberOfNodes == 1 || toPosition == 0)
+            queueNextSongInPlaylist();
+        incrPlaylistQueueVersion();
+	return 0;
+}
+
+int deleteFromPlaylistQueue(int fd, int song)
+{
+	if (song < 0 || song >= playlistQueue->numberOfNodes) {
+		commandError(fd, ACK_ERROR_NO_EXIST,
+			     "song doesn't exist: \"%i\"", song);
+		return -1;
+	}
+
+	return deleteFromPlaylistQueueInternal(song);
+}
+
+int deleteFromPlaylistQueueInternal(int song)
+{
+	ListNode *delItem;
+
+	delItem = getNodeByPosition(playlistQueue, song);
+	if (delItem == NULL)
+		return -1;
+
+	deleteNodeFromList(playlistQueue, delItem);
+	if (song == 0) 
+		queueNextSongInPlaylist();
+
+        incrPlaylistQueueVersion();
+	return 0;
+}
+
+int playlistQueueInfo(int fd)
+{
+	ListNode *cur = playlistQueue->firstNode;
+	int no = 0;
+	while (cur) {
+		printSongInfo(fd, playlist.songs[playlist.idToPosition[*(int *)cur->data]]);
+		fdprintf(fd, "Pos: %i\nId: %i\n", no++, *(int *)cur->data);
+		cur = cur->nextNode;
+	}
+	return 0;
 }

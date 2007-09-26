@@ -100,6 +100,12 @@ int findInList(List * list, char *key, void **data);
 	the info would be found */
 int findNodeInList(List * list, char *key, ListNode ** node, int *pos);
 
+/*
+ * returns ListNode at position _pos_ from first node. If no ListNode exists
+ * at position _pos_ returns NULL
+ */
+ListNode *getNodeByPosition(List *list, int pos);
+
 /* frees memory malloc'd for list and its nodes
  *  _list_ -> List to be free'd
  */
