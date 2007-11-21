@@ -38,11 +38,9 @@ typedef struct _ConvState {
 	mpd_sint8 lastChannels;
 	mpd_sint32 lastInSampleRate;
 	mpd_sint32 lastOutSampleRate;
-	int error;
-#else
-	/* Strict C99 doesn't allow empty structs */
-	void *__padding;
 #endif
+	/* Strict C99 doesn't allow empty structs */
+	int error;
 } ConvState;
 
 void pcm_volumeChange(char *buffer, int bufferSize, AudioFormat * format,
