@@ -39,6 +39,9 @@ typedef struct _ConvState {
 	mpd_sint32 lastInSampleRate;
 	mpd_sint32 lastOutSampleRate;
 	int error;
+#else
+	/* Strict C99 doesn't allow empty structs */
+	void *__padding;
 #endif
 } ConvState;
 
