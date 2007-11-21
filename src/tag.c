@@ -139,57 +139,153 @@ void printMpdTag(int fd, MpdTag * tag)
 }
 
 #ifdef HAVE_ID3TAG
+/* This will try to convert a string to utf-8,
+ */
+static id3_utf8_t * processID3FieldString (int is_id3v1, const id3_ucs4_t *ucs4, int type)
+{
+    id3_utf8_t *utf8 = NULL; 
+    id3_latin1_t *isostr;
+	char *encoding;
+
+    if (type == TAG_ITEM_GENRE)
+        ucs4 = id3_genre_name(ucs4);
+    /* use encoding field here? */
+    if (is_id3v1 &&
+            (encoding = getConfigParamValue(CONF_ID3V1_ENCODING))) {
+        isostr = id3_ucs4_latin1duplicate(ucs4);
+        if (mpd_unlikely(!isostr)) {
+            return NULL;
+        }
+        setCharSetConversion("UTF-8", encoding);
+        utf8 = (id3_utf8_t *)convStrDup((char *)isostr);
+        if (!utf8) {
+            DEBUG("Unable to convert %s string to UTF-8: "
+                    "'%s'\n", encoding, isostr);
+            free(isostr);
+            return NULL;
+        }
+        free(isostr);
+    } else {
+        utf8 = id3_ucs4_utf8duplicate(ucs4);
+        if (mpd_unlikely(!utf8)) {
+            return NULL;
+        }
+    }
+    return utf8;
+}
+
 static MpdTag *getID3Info(struct id3_tag *tag, char *id, int type, MpdTag * mpdTag)
 {
 	struct id3_frame const *frame;
 	id3_ucs4_t const *ucs4;
-	id3_utf8_t *utf8;
-	id3_latin1_t *isostr;
+	id3_utf8_t *utf8 = NULL;
 	union id3_field const *field;
 	unsigned int nstrings;
-	int i;
-	char *encoding;
+    int  i;
 
 	frame = id3_tag_findframe(tag, id, 0);
-	if (!frame || frame->nfields < 2)
+	/* Check frame */
+	if (!frame)
+	{
 		return mpdTag;
+	}
+	/* Check fields in frame */
+	if(frame->nfields == 0)
+	{
+		DEBUG(__FILE__": Frame has no fields\n");
+		return mpdTag;
+	}
 
-	field = &frame->fields[1];
-	nstrings = id3_field_getnstrings(field);
-
-	for (i = 0; i < nstrings; i++) {
-		ucs4 = id3_field_getstrings(field, i);
-		if (!ucs4)
-			continue;
-
-		if (type == TAG_ITEM_GENRE)
-			ucs4 = id3_genre_name(ucs4);
-
-		if (isId3v1(tag) &&
-		    (encoding = getConfigParamValue(CONF_ID3V1_ENCODING))) {
-			isostr = id3_ucs4_latin1duplicate(ucs4);
-			if (mpd_unlikely(!isostr))
-				continue;
-			setCharSetConversion("UTF-8", encoding);
-			utf8 = (id3_utf8_t *)convStrDup((char *)isostr);
-			if (!utf8) {
-				DEBUG("Unable to convert %s string to UTF-8: "
-				      "'%s'\n", encoding, isostr);
-				free(isostr);
-				continue;
-			}
-			free(isostr);
-		} else {
-			utf8 = id3_ucs4_utf8duplicate(ucs4);
-			if (mpd_unlikely(!utf8))
-				continue;
+	/* Starting with T is a stringlist */
+	if (id[0] == 'T')
+	{
+		/* This one contains 2 fields:
+		 * 1st: Text encoding
+		 * 2: Stringlist
+		 * Shamefully this isn't the RL case.
+		 * But I am going to enforce it anyway. 
+		 */
+		if(frame->nfields != 2) 
+		{
+			DEBUG(__FILE__": Invalid number '%i' of fields for TXX frame\n",frame->nfields);
+			return mpdTag;
 		}
+        field = &frame->fields[0];
+        /**
+         * First field is encoding field.
+         * This is ignored by mpd.
+         */ 
+        if(field->type != ID3_FIELD_TYPE_TEXTENCODING)
+        {
+            DEBUG(__FILE__": Expected encoding, found: %i\n",field->type);
+        }
+        /* Process remaining fields, should be only one */
+        field = &frame->fields[1];
+        /* Encoding field */
+        if(field->type == ID3_FIELD_TYPE_STRINGLIST) {
+            /* Get the number of strings available */
+            nstrings = id3_field_getnstrings(field);
+            for (i = 0; i < nstrings; i++) {
+                ucs4 = id3_field_getstrings(field,i);
+                if(!ucs4)
+                    continue;
+                utf8 = processID3FieldString(isId3v1(tag),ucs4, type);
+                if(!utf8)
+                    continue;
 
-		if (mpdTag == NULL)
-			mpdTag = newMpdTag();
-		addItemToMpdTag(mpdTag, type, (char *)utf8);
-
-		free(utf8);
+                if (mpdTag == NULL)
+                    mpdTag = newMpdTag();
+                addItemToMpdTag(mpdTag, type, (char *)utf8);
+                free(utf8);
+            }
+        }
+        else {
+            ERROR(__FILE__": Field type not processed: %i\n",(int)id3_field_gettextencoding(field));
+        }
+    }
+	/* A comment frame */	
+	else if(!strcmp(ID3_FRAME_COMMENT, id))
+	{
+		/* A comment frame is different... */
+        /* 1st: encoding
+         * 2nd: Language
+         * 3rd: String
+         * 4th: FullString.
+         * The 'value' we want is in the 4th field
+         */
+		if(frame->nfields == 4)
+		{
+			/* for now I only read the 4th field, with the fullstring */
+			field = &frame->fields[3];
+			if(field->type == ID3_FIELD_TYPE_STRINGFULL)
+			{
+				ucs4 = id3_field_getfullstring(field);
+				if(ucs4)
+				{
+                    utf8 = processID3FieldString(isId3v1(tag),ucs4, type);
+                    if(utf8)
+                    {
+						if (mpdTag == NULL)
+							mpdTag = newMpdTag();
+						addItemToMpdTag(mpdTag, type, (char *)utf8);
+						free(utf8);
+					}
+				}
+			}
+            else 
+            {
+                DEBUG(__FILE__": 4th field in comment frame differs from expected, got '%i': ignoring\n",field->type);
+            }
+		}
+        else 
+        {
+            DEBUG(__FILE__": Invalid 'comments' tag, got '%i' fields instead of 4\n", frame->nfields);
+        }
+	} 
+	/* Unsupported */
+	else {
+		DEBUG(__FILE__": Unsupported tag type requrested\n");
+		return mpdTag;
 	}
 
 	return mpdTag;
@@ -633,8 +729,9 @@ static void appendToTagItems(MpdTag * tag, int type, char *value, int len)
 void addItemToMpdTagWithLen(MpdTag * tag, int itemType, char *value, int len)
 {
 	if (ignoreTagItems[itemType])
+	{
 		return;
-
+	}
 	if (!value || !len)
 		return;
 
