@@ -558,7 +558,7 @@ static int getHTTPHello(InputStream * inStream)
 		inStream->seekable = 0;
 		rc = atoi(cur + 9);
 	} else if (0 == strncmp(cur, "HTTP/1.1 ", 9)) {
-		inStream->seekable = 0;
+		inStream->seekable = 1;
 		rc = atoi(cur + 9);
 	} else if (0 == strncmp(cur, "ICY 200 OK", 10)) {
 		inStream->seekable = 0;

@@ -87,7 +87,8 @@ static size_t ogg_read_cb(void *ptr, size_t size, size_t nmemb, void *vdata)
 static int ogg_seek_cb(void *vdata, ogg_int64_t offset, int whence)
 {
 	OggCallbackData *data = (OggCallbackData *) vdata;
-
+	if(data->dc->stop)
+		return -1;
 	return seekInputStream(data->inStream, offset, whence);
 }
 
@@ -251,7 +252,6 @@ static int oggvorbis_decode(OutputBuffer * cb, DecoderControl * dc,
 	callbacks.seek_func = ogg_seek_cb;
 	callbacks.close_func = ogg_close_cb;
 	callbacks.tell_func = ogg_tell_cb;
-
 	if ((ret = ov_open_callbacks(&data, &vf, NULL, 0, callbacks)) < 0) {
 		closeInputStream(inStream);
 		if (!dc->stop) {
@@ -284,14 +284,12 @@ static int oggvorbis_decode(OutputBuffer * cb, DecoderControl * dc,
 		}
 		return 0;
 	}
-
 	dc->totalTime = ov_time_total(&vf, -1);
 	if (dc->totalTime < 0)
 		dc->totalTime = 0;
-
 	dc->audioFormat.bits = 16;
 
-	while (!eof) {
+	while (!eof && !dc->stop) {
 		if (dc->seek) {
 			if (0 == ov_time_seek_page(&vf, dc->seekWhere)) {
 				clearOutputBuffer(cb);
@@ -303,7 +301,6 @@ static int oggvorbis_decode(OutputBuffer * cb, DecoderControl * dc,
 		ret = ov_read(&vf, chunk + chunkpos,
 			      OGG_CHUNK_SIZE - chunkpos,
 			      OGG_DECODE_USE_BIGENDIAN, 2, 1, &current_section);
-
 		if (current_section != prev_section) {
 			/*printf("new song!\n"); */
 			vorbis_info *vi = ov_info(&vf, -1);
