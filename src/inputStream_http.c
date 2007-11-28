@@ -47,6 +47,8 @@
 
 #define HTTP_REDIRECT_MAX    10
 
+#define HTTP_MAX_TRIES 100
+
 static char *proxyHost;
 static char *proxyPort;
 static char *proxyUser;
@@ -68,13 +70,14 @@ typedef struct _InputStreemHTTPData {
 	int icyOffset;
 	char *proxyAuth;
 	char *httpAuth;
+    /* Number of times mpd tried to get data */
+    int tries;
 } InputStreamHTTPData;
 
 void inputStream_initHttp(void)
 {
 	ConfigParam *param = getConfigParam(CONF_HTTP_PROXY_HOST);
 	char *test;
-
 	if (param) {
 		proxyHost = param->value;
 
@@ -249,7 +252,7 @@ static InputStreamHTTPData *newInputStreamHTTPData(void)
 	ret->prebuffer = 0;
 	ret->icyOffset = 0;
 	ret->buffer = xmalloc(bufferSize);
-
+    ret->tries = 0;
 	return ret;
 }
 
@@ -395,6 +398,7 @@ static int initHTTPConnection(InputStream * inStream)
 	if (error) {
 		DEBUG(__FILE__ ": Error getting address info: %s\n",
 		      gai_strerror(error));
+
 		return -1;
 	}
 
@@ -681,7 +685,6 @@ int inputStream_httpOpen(InputStream * inStream, char *url)
 	InputStreamHTTPData *data = newInputStreamHTTPData();
 
 	inStream->data = data;
-
 	if (parseUrl(data, url) < 0) {
 		freeInputStreamHTTPData(data);
 		return -1;
@@ -704,7 +707,6 @@ int inputStream_httpOpen(InputStream * inStream, char *url)
 int inputStream_httpSeek(InputStream * inStream, long offset, int whence)
 {
 	InputStreamHTTPData *data;
-
 	if (!inStream->seekable)
 		return -1;
 
@@ -858,7 +860,6 @@ int inputStream_httpBuffer(InputStream * inStream)
 {
 	InputStreamHTTPData *data = (InputStreamHTTPData *) inStream->data;
 	ssize_t readed = 0;
-
 	if (data->connState == HTTP_CONN_STATE_REOPEN) {
 		if (initHTTPConnection(inStream) < 0)
 			return -1;
@@ -891,14 +892,26 @@ int inputStream_httpBuffer(InputStream * inStream)
 	    data->buflen < bufferSize - 1) {
 		readed = read(data->sock, data->buffer + data->buflen,
 			      (size_t) (bufferSize - 1 - data->buflen));
-
-		if (readed < 0 && (errno == EAGAIN || errno == EINTR)) {
-			readed = 0;
+        /* If the connection is currently unavailable, or interrupted (EINTR)
+         * Don't give an error, so it's retried later.
+         * Max times in a row to re-try this is HTTP_MAX_TRIES
+         */
+		if (readed < 0 && (errno == EAGAIN || errno == EINTR) && data->tries < HTTP_MAX_TRIES) {
+            data->tries++;
+            DEBUG(__FILE__": Resource unavailable, trying %i times again\n", HTTP_MAX_TRIES-data->tries);
+            readed = 0;
 		} else if (readed <= 0) {
 			close(data->sock);
+            if(errno)
+                DEBUG(__FILE__": Closing connection with error: '%s'\n", strerror(errno));
 			data->connState = HTTP_CONN_STATE_CLOSED;
 			readed = 0;
 		}
+        else{
+            /* Reset the tries back to 0, because we managed to read data */
+            data->tries = 0;
+        }
+
 		data->buflen += readed;
 	}
 
