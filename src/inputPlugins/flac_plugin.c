@@ -351,6 +351,15 @@ static int flac_decode_internal(OutputBuffer * cb, DecoderControl * dc,
 	if (!(flacDec = flac_new()))
 		return -1;
 	init_FlacData(&data, cb, dc, inStream);
+
+#if !defined(FLAC_API_VERSION_CURRENT) || FLAC_API_VERSION_CURRENT > 7
+        if(!FLAC__stream_decoder_set_metadata_respond(flacDec, FLAC__METADATA_TYPE_VORBIS_COMMENT))
+        {
+                DEBUG(__FILE__": Failed to set metadata respond\n");
+        }
+#endif
+
+
 	if (is_ogg) {
 		if (!flac_ogg_init(flacDec, flacRead, flacSeek, flacTell,
 		                   flacLength, flacEOF, flacWrite, flacMetadata,
