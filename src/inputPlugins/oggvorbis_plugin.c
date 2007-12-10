@@ -289,7 +289,7 @@ static int oggvorbis_decode(OutputBuffer * cb, DecoderControl * dc,
 		dc->totalTime = 0;
 	dc->audioFormat.bits = 16;
 
-	while (!eof && !dc->stop) {
+	while (!eof) {
 		if (dc->seek) {
 			if (0 == ov_time_seek_page(&vf, dc->seekWhere)) {
 				clearOutputBuffer(cb);
