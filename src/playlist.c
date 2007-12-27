@@ -238,8 +238,7 @@ int clearPlaylist(int fd)
 
 int clearStoredPlaylist(int fd, char *utf8file)
 {
-	removeAllFromStoredPlaylistByPath(fd, utf8file);
-	return 0;
+	return removeAllFromStoredPlaylistByPath(fd, utf8file);
 }
 
 int showPlaylist(int fd)
