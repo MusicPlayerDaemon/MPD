@@ -34,7 +34,9 @@
 
 char *myFgets(char *buffer, int bufferSize, FILE * fp);
 
-char *strDupToUpper(char *str);
+char *string_toupper(char *str);
+
+char *strDupToUpper(char *str); /* avoid, use string_toupper instead */
 
 void stripReturnChar(char *string);
 

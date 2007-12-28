@@ -56,7 +56,7 @@
 #define PLAYLIST_STATE_FILE_STATE_PAUSE		"pause"
 #define PLAYLIST_STATE_FILE_STATE_STOP		"stop"
 
-#define PLAYLIST_BUFFER_SIZE	2*MAXPATHLEN
+#define PLAYLIST_BUFFER_SIZE	2*MPD_PATH_MAX
 
 #define PLAYLIST_HASH_MULT	4
 
@@ -244,9 +244,11 @@ int clearStoredPlaylist(int fd, char *utf8file)
 int showPlaylist(int fd)
 {
 	int i;
+	char path_max_tmp[MPD_PATH_MAX];
 
 	for (i = 0; i < playlist.length; i++) {
-		fdprintf(fd, "%i:%s\n", i, getSongUrl(playlist.songs[i]));
+		fdprintf(fd, "%i:%s\n", i,
+		         get_song_url(path_max_tmp, playlist.songs[i]));
 	}
 
 	return 0;
@@ -499,6 +501,8 @@ static void swapSongs(int song1, int song2)
 
 static void queueNextSongInPlaylist(void)
 {
+	char path_max_tmp[MPD_PATH_MAX];
+
 	if (playlistQueue->numberOfNodes != 0) {
 		int i;
 		/* we need to find where in order[] is first song from queue */
@@ -511,8 +515,9 @@ static void queueNextSongInPlaylist(void)
 		playlist.queued = i;
 		DEBUG("playlist: queue song %i:\"%s\"\n",
 		      playlist.queued,
-		      getSongUrl(playlist.
-				 songs[playlist.order[playlist.queued]]));
+		      get_song_url(path_max_tmp,
+		                   playlist.
+				   songs[playlist.order[playlist.queued]]));
 		
 		if (queueSong(playlist.songs[playlist.order[playlist.queued]]) <
 		    0) {
@@ -524,8 +529,9 @@ static void queueNextSongInPlaylist(void)
 		playlist.queued = playlist.current + 1;
 		DEBUG("playlist: queue song %i:\"%s\"\n",
 		      playlist.queued,
-		      getSongUrl(playlist.
-				 songs[playlist.order[playlist.queued]]));
+		      get_song_url(path_max_tmp,
+		                   playlist.
+				   songs[playlist.order[playlist.queued]]));
 		if (queueSong(playlist.songs[playlist.order[playlist.queued]]) <
 		    0) {
 			playlist.queued = -1;
@@ -539,8 +545,9 @@ static void queueNextSongInPlaylist(void)
 		playlist.queued = 0;
 		DEBUG("playlist: queue song %i:\"%s\"\n",
 		      playlist.queued,
-		      getSongUrl(playlist.
-				 songs[playlist.order[playlist.queued]]));
+		      get_song_url(path_max_tmp,
+		                   playlist.
+		                   songs[playlist.order[playlist.queued]]));
 		if (queueSong(playlist.songs[playlist.order[playlist.queued]]) <
 		    0) {
 			playlist.queued = -1;
@@ -897,6 +904,8 @@ int stopPlaylist(int fd)
 
 static int playPlaylistOrderNumber(int fd, int orderNum)
 {
+	char path_max_tmp[MPD_PATH_MAX];
+
 	if (playerStop(fd) < 0)
 		return -1;
 
@@ -906,7 +915,8 @@ static int playPlaylistOrderNumber(int fd, int orderNum)
 	playlist_queueError = 0;
 
 	DEBUG("playlist: play %i:\"%s\"\n", orderNum,
-	      getSongUrl(playlist.songs[playlist.order[orderNum]]));
+	      get_song_url(path_max_tmp,
+	                   playlist.songs[playlist.order[orderNum]]));
 
 	if (playerPlay(fd, (playlist.songs[playlist.order[orderNum]])) < 0) {
 		stopPlaylist(fd);
@@ -1003,6 +1013,7 @@ static void syncCurrentPlayerDecodeMetadata(void)
 	Song *songPlayer = playerCurrentDecodeSong();
 	Song *song;
 	int songNum;
+	char path_max_tmp[MPD_PATH_MAX];
 
 	if (!songPlayer)
 		return;
@@ -1014,7 +1025,7 @@ static void syncCurrentPlayerDecodeMetadata(void)
 	song = playlist.songs[songNum];
 
 	if (song->type == SONG_TYPE_URL &&
-	    0 == strcmp(getSongUrl(song), songPlayer->url) &&
+	    0 == strcmp(get_song_url(path_max_tmp, song), songPlayer->url) &&
 	    !mpdTagsAreEqual(song->tag, songPlayer->tag)) {
 		if (song->tag)
 			freeMpdTag(song->tag);
@@ -1376,16 +1387,18 @@ int shufflePlaylist(int fd)
 
 int deletePlaylist(int fd, char *utf8file)
 {
-	char *file = utf8ToFsCharset(utf8file);
+	char path_max_tmp[MPD_PATH_MAX];
+	char *file = utf8_to_fs_charset(path_max_tmp, utf8file);
 	char *rfile = xmalloc(strlen(file) + strlen(".") +
-			     strlen(PLAYLIST_FILE_SUFFIX) + 1);
+			      strlen(PLAYLIST_FILE_SUFFIX) + 1);
 	char *actualFile;
 
 	strcpy(rfile, file);
 	strcat(rfile, ".");
 	strcat(rfile, PLAYLIST_FILE_SUFFIX);
 
-	if ((actualFile = rpp2app(rfile)) && isPlaylist(actualFile))
+	actualFile = rpp2app_r(path_max_tmp, rfile);
+	if (isPlaylist(actualFile))
 		free(rfile);
 	else {
 		free(rfile);

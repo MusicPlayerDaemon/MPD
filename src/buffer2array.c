@@ -79,48 +79,56 @@ int main()
 	int max;
 
 	b = strdup("lsinfo \"/some/dir/name \\\"test\\\"\"");
+	assert(b);
 	max = buffer2array(b, a, 4);
 	assert( !strcmp("lsinfo", a[0]) );
 	assert( !strcmp("/some/dir/name \"test\"", a[1]) );
 	assert( !a[2] );
 
 	b = strdup("lsinfo \"/some/dir/name \\\"test\\\" something else\"");
+	assert(b);
 	max = buffer2array(b, a, 4);
 	assert( !strcmp("lsinfo", a[0]) );
 	assert( !strcmp("/some/dir/name \"test\" something else", a[1]) );
 	assert( !a[2] );
 
 	b = strdup("lsinfo \"/some/dir\\\\name\"");
+	assert(b);
 	max = buffer2array(b, a, 4);
 	assert( !strcmp("lsinfo", a[0]) );
 	assert( !strcmp("/some/dir\\name", a[1]) );
 	assert( !a[2] );
 
 	b = strdup("lsinfo \"/some/dir name\"");
+	assert(b);
 	max = buffer2array(b, a, 4);
 	assert( !strcmp("lsinfo", a[0]) );
 	assert( !strcmp("/some/dir name", a[1]) );
 	assert( !a[2] );
 
 	b = strdup("lsinfo \"\\\"/some/dir\\\"\"");
+	assert(b);
 	max = buffer2array(b, a, 4);
 	assert( !strcmp("lsinfo", a[0]) );
 	assert( !strcmp("\"/some/dir\"", a[1]) );
 	assert( !a[2] );
 
 	b = strdup("lsinfo \"\\\"/some/dir\\\" x\"");
+	assert(b);
 	max = buffer2array(b, a, 4);
 	assert( !strcmp("lsinfo", a[0]) );
 	assert( !strcmp("\"/some/dir\" x", a[1]) );
 	assert( !a[2] );
 
 	b = strdup("lsinfo \"single quote\\'d from php magicquotes\"");
+	assert(b);
 	max = buffer2array(b, a, 4);
 	assert( !strcmp("lsinfo", a[0]) );
 	assert( !strcmp("single quote\'d from php magicquotes", a[1]) );
 	assert( !a[2] );
 
 	b = strdup("lsinfo \"double quote\\\"d from php magicquotes\"");
+	assert(b);
 	max = buffer2array(b, a, 4);
 	assert( !strcmp("lsinfo", a[0]) );
 	assert( !strcmp("double quote\"d from php magicquotes", a[1]) );

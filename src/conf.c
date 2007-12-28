@@ -32,8 +32,9 @@
 #include <sys/types.h>
 #include <pwd.h>
 #include <errno.h>
+#include "path.h"
 
-#define MAX_STRING_SIZE	MAXPATHLEN+80
+#define MAX_STRING_SIZE	MPD_PATH_MAX+80
 
 #define CONF_COMMENT		'#'
 #define CONF_BLOCK_BEGIN	"{"

@@ -31,7 +31,7 @@
 #include <string.h>
 #include <errno.h>
 
-#define BUFFER_LENGTH	MAXPATHLEN+1024
+#define BUFFER_LENGTH	MPD_PATH_MAX+1024
 
 static void blockingWrite(const int fd, const char *string, size_t len)
 {

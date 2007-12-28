@@ -23,6 +23,6 @@
 
 int setCharSetConversion(char *to, char *from);
 
-char *convStrDup(char *string);
+char *char_conv_str(char *dest, char *string);
 
 #endif

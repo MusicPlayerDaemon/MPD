@@ -35,6 +35,7 @@
 #include "tagTracker.h"
 #include "utils.h"
 #include "volume.h"
+#include "ls.h"
 
 #include <sys/wait.h>
 #include <dirent.h>
@@ -296,7 +297,9 @@ static void removeSongFromDirectory(Directory * directory, char *shortname)
 	void *song;
 
 	if (findInList(directory->songs, shortname, &song)) {
-		LOG("removing: %s\n", getSongUrl((Song *) song));
+		char path_max_tmp[MPD_PATH_MAX]; /* wasteful */
+		LOG("removing: %s\n",
+		    get_song_url(path_max_tmp, (Song *) song));
 		deleteFromList(directory->songs, shortname);
 	}
 }
@@ -359,64 +362,40 @@ static int updateInDirectory(Directory * directory, char *shortname, char *name)
 	return 0;
 }
 
+/* we don't look at hidden files nor files with newlines in them */
+static int skip_path(const char *path)
+{
+	return (path[0] == '.' || strchr(path, '\n')) ? 1 : 0;
+}
+
 /* return values:
    -1 -> error
     0 -> no error, but nothing removed
     1 -> no error, and stuff removed
  */
-static int removeDeletedFromDirectory(Directory * directory, DIR * dir)
+static int removeDeletedFromDirectory(char *path_max_tmp, Directory * directory)
 {
-	char cwd[2];
-	struct dirent *ent;
-	char *dirname = getDirectoryPath(directory);
-	List *entList = makeList(free, 1);
-	void *name;
-	char *s;
-	char *utf8;
-	ListNode *node;
-	ListNode *tmpNode;
+	const char *dirname = (directory && directory->path) ?
+	    directory->path : NULL;
+	ListNode *node, *tmpNode;
+	DirectoryList *subdirs = directory->subDirectories;
 	int ret = 0;
 
-	cwd[0] = '.';
-	cwd[1] = '\0';
-	if (dirname == NULL)
-		dirname = cwd;
-
-	while ((ent = readdir(dir))) {
-		if (ent->d_name[0] == '.')
-			continue;	/* hide hidden stuff */
-		if (strchr(ent->d_name, '\n'))
-			continue;
-
-		utf8 = fsCharsetToUtf8(ent->d_name);
-
-		if (!utf8)
-			continue;
-
-		if (directory->path) {
-			s = xmalloc(strlen(getDirectoryPath(directory))
-				   + strlen(utf8) + 2);
-			sprintf(s, "%s/%s", getDirectoryPath(directory), utf8);
-		} else
-			s = xstrdup(utf8);
-		insertInList(entList, utf8, s);
-	}
-
-	node = directory->subDirectories->firstNode;
+	node = subdirs->firstNode;
 	while (node) {
 		tmpNode = node->nextNode;
-		if (findInList(entList, node->key, &name)) {
-			if (!isDir((char *)name)) {
-				LOG("removing directory: %s\n", (char *)name);
-				deleteFromList(directory->subDirectories,
-					       node->key);
+		if (node->key) {
+			if (dirname)
+				sprintf(path_max_tmp, "%s/%s", dirname,
+					node->key);
+			else
+				strcpy(path_max_tmp, node->key);
+
+			if (!isDir(path_max_tmp)) {
+				LOG("removing directory: %s\n", path_max_tmp);
+				deleteFromList(subdirs, node->key);
 				ret = 1;
 			}
-		} else {
-			LOG("removing directory: %s/%s\n",
-			    getDirectoryPath(directory), node->key);
-			deleteFromList(directory->subDirectories, node->key);
-			ret = 1;
 		}
 		node = tmpNode;
 	}
@@ -424,40 +403,40 @@ static int removeDeletedFromDirectory(Directory * directory, DIR * dir)
 	node = directory->songs->firstNode;
 	while (node) {
 		tmpNode = node->nextNode;
-		if (findInList(entList, node->key, (void **)&name)) {
-			if (!isMusic(name, NULL, 0)) {
+		if (node->key) {
+			if (dirname)
+				sprintf(path_max_tmp, "%s/%s", dirname,
+					node->key);
+			else
+				strcpy(path_max_tmp, node->key);
+
+			if (!isFile(path_max_tmp, NULL)) {
 				removeSongFromDirectory(directory, node->key);
 				ret = 1;
 			}
-		} else {
-			removeSongFromDirectory(directory, node->key);
-			ret = 1;
 		}
 		node = tmpNode;
 	}
-
-	freeList(entList);
 
 	return ret;
 }
 
 static Directory *addDirectoryPathToDB(char *utf8path, char **shortname)
 {
+	char path_max_tmp[MPD_PATH_MAX];
 	char *parent;
 	Directory *parentDirectory;
 	void *directory;
 
-	parent = xstrdup(parentPath(utf8path));
+	parent = parent_path(path_max_tmp, utf8path);
 
 	if (strlen(parent) == 0)
 		parentDirectory = (void *)mp3rootDirectory;
 	else
 		parentDirectory = addDirectoryPathToDB(parent, shortname);
 
-	if (!parentDirectory) {
-		free(parent);
+	if (!parentDirectory)
 		return NULL;
-	}
 
 	*shortname = utf8path + strlen(parent);
 	while (*(*shortname) && *(*shortname) == '/')
@@ -467,10 +446,9 @@ static Directory *addDirectoryPathToDB(char *utf8path, char **shortname)
 	    (parentDirectory->subDirectories, *shortname, &directory)) {
 		struct stat st;
 		if (myStat(utf8path, &st) < 0 ||
-		    inodeFoundInParent(parentDirectory, st.st_ino, st.st_dev)) {
-			free(parent);
+		    inodeFoundInParent(parentDirectory, st.st_ino, st.st_dev))
 			return NULL;
-		} else {
+		else {
 			directory = newDirectory(utf8path, parentDirectory);
 			insertInList(parentDirectory->subDirectories,
 				     *shortname, directory);
@@ -481,33 +459,28 @@ static Directory *addDirectoryPathToDB(char *utf8path, char **shortname)
 	   with potentially the same name */
 	removeSongFromDirectory(parentDirectory, *shortname);
 
-	free(parent);
-
 	return (Directory *) directory;
 }
 
 static Directory *addParentPathToDB(char *utf8path, char **shortname)
 {
 	char *parent;
+	char path_max_tmp[MPD_PATH_MAX];
 	Directory *parentDirectory;
 
-	parent = xstrdup(parentPath(utf8path));
+	parent = parent_path(path_max_tmp, utf8path);
 
 	if (strlen(parent) == 0)
 		parentDirectory = (void *)mp3rootDirectory;
 	else
 		parentDirectory = addDirectoryPathToDB(parent, shortname);
 
-	if (!parentDirectory) {
-		free(parent);
+	if (!parentDirectory)
 		return NULL;
-	}
 
 	*shortname = utf8path + strlen(parent);
 	while (*(*shortname) && *(*shortname) == '/')
 		(*shortname)++;
-
-	free(parent);
 
 	return (Directory *) parentDirectory;
 }
@@ -526,6 +499,7 @@ static int updatePath(char *utf8path)
 	char *path = sanitizePathDup(utf8path);
 	time_t mtime;
 	int ret = 0;
+	char path_max_tmp[MPD_PATH_MAX];
 
 	if (NULL == path)
 		return -1;
@@ -563,7 +537,8 @@ static int updatePath(char *utf8path)
 		else if (0 == inodeFoundInParent(parentDirectory->parent,
 						 parentDirectory->stat->inode,
 						 parentDirectory->stat->device)
-			 && song && isMusic(getSongUrl(song), &mtime, 0)) {
+			 && song &&
+			 isMusic(get_song_url(path_max_tmp, song), &mtime, 0)) {
 			free(path);
 			if (song->mtime == mtime)
 				return 0;
@@ -606,6 +581,14 @@ static int updatePath(char *utf8path)
 	return ret;
 }
 
+static const char *opendir_path(char *path_max_tmp, char *dirname)
+{
+	if (*dirname != '\0')
+		return rmp2amp_r(path_max_tmp,
+		                 utf8_to_fs_charset(path_max_tmp, dirname));
+	return musicDir;
+}
+
 /* return values:
    -1 -> error
     0 -> no error, but nothing updated
@@ -614,59 +597,39 @@ static int updatePath(char *utf8path)
 static int updateDirectory(Directory * directory)
 {
 	DIR *dir;
-	char cwd[2];
-	struct dirent *ent;
-	char *s;
-	char *utf8;
 	char *dirname = getDirectoryPath(directory);
+	struct dirent *ent;
+	char path_max_tmp[MPD_PATH_MAX];
 	int ret = 0;
 
-	{
-		if (!directory->stat && statDirectory(directory) < 0) {
-			return -1;
-		} else if (inodeFoundInParent(directory->parent,
-					      directory->stat->inode,
-					      directory->stat->device)) {
-			return -1;
-		}
-	}
-
-	cwd[0] = '.';
-	cwd[1] = '\0';
-	if (dirname == NULL)
-		dirname = cwd;
-
-	if ((dir = opendir(rmp2amp(utf8ToFsCharset(dirname)))) == NULL)
+	if (!directory->stat && statDirectory(directory) < 0)
+		return -1;
+	else if (inodeFoundInParent(directory->parent,
+				    directory->stat->inode,
+				    directory->stat->device))
 		return -1;
 
-	if (removeDeletedFromDirectory(directory, dir) > 0)
+	dir = opendir(opendir_path(path_max_tmp, dirname));
+	if (!dir)
+		return -1;
+
+	if (removeDeletedFromDirectory(path_max_tmp, directory) > 0)
 		ret = 1;
 
-	rewinddir(dir);
-
 	while ((ent = readdir(dir))) {
-		if (ent->d_name[0] == '.')
-			continue;	/* hide hidden stuff */
-		if (strchr(ent->d_name, '\n'))
+		char *utf8;
+		if (skip_path(ent->d_name))
 			continue;
 
-		utf8 = fsCharsetToUtf8(ent->d_name);
-
+		utf8 = fs_charset_to_utf8(path_max_tmp, ent->d_name);
 		if (!utf8)
 			continue;
 
-		utf8 = xstrdup(utf8);
-
-		if (directory->path) {
-			s = xmalloc(strlen(getDirectoryPath(directory)) +
-				   strlen(utf8) + 2);
-			sprintf(s, "%s/%s", getDirectoryPath(directory), utf8);
-		} else
-			s = xstrdup(utf8);
-		if (updateInDirectory(directory, utf8, s) > 0)
+		if (directory->path)
+			utf8 = pfx_dir(path_max_tmp, utf8, strlen(utf8),
+			               dirname, strlen(dirname));
+		if (updateInDirectory(directory, utf8, path_max_tmp) > 0)
 			ret = 1;
-		free(utf8);
-		free(s);
 	}
 
 	closedir(dir);
@@ -682,48 +645,35 @@ static int updateDirectory(Directory * directory)
 static int exploreDirectory(Directory * directory)
 {
 	DIR *dir;
-	char cwd[2];
-	struct dirent *ent;
-	char *s;
-	char *utf8;
 	char *dirname = getDirectoryPath(directory);
+	struct dirent *ent;
+	char path_max_tmp[MPD_PATH_MAX];
 	int ret = 0;
 
-	cwd[0] = '.';
-	cwd[1] = '\0';
-	if (dirname == NULL)
-		dirname = cwd;
-
 	DEBUG("explore: attempting to opendir: %s\n", dirname);
-	if ((dir = opendir(rmp2amp(utf8ToFsCharset(dirname)))) == NULL)
+
+	dir = opendir(opendir_path(path_max_tmp, dirname));
+	if (!dir)
 		return -1;
 
 	DEBUG("explore: %s\n", dirname);
+
 	while ((ent = readdir(dir))) {
-		if (ent->d_name[0] == '.')
-			continue;	/* hide hidden stuff */
-		if (strchr(ent->d_name, '\n'))
+		char *utf8;
+		if (skip_path(ent->d_name))
 			continue;
 
-		utf8 = fsCharsetToUtf8(ent->d_name);
-
+		utf8 = fs_charset_to_utf8(path_max_tmp, ent->d_name);
 		if (!utf8)
 			continue;
 
-		utf8 = xstrdup(utf8);
-
 		DEBUG("explore: found: %s (%s)\n", ent->d_name, utf8);
 
-		if (directory->path) {
-			s = xmalloc(strlen(getDirectoryPath(directory)) +
-				   strlen(utf8) + 2);
-			sprintf(s, "%s/%s", getDirectoryPath(directory), utf8);
-		} else
-			s = xstrdup(utf8);
-		if (addToDirectory(directory, utf8, s) > 0)
+		if (directory->path)
+			utf8 = pfx_dir(path_max_tmp, utf8, strlen(utf8),
+			               dirname, strlen(dirname));
+		if (addToDirectory(directory, utf8, path_max_tmp) > 0)
 			ret = 1;
-		free(utf8);
-		free(s);
 	}
 
 	closedir(dir);
@@ -735,10 +685,8 @@ static int statDirectory(Directory * dir)
 {
 	struct stat st;
 
-	if (myStat(getDirectoryPath(dir) ? getDirectoryPath(dir) : "", &st) < 0)
-	{
+	if (myStat(getDirectoryPath(dir), &st) < 0)
 		return -1;
-	}
 
 	dir->stat = newDirectoryStat(&st);
 
@@ -953,8 +901,8 @@ static void writeDirectoryInfo(FILE * fp, Directory * directory)
 
 static void readDirectoryInfo(FILE * fp, Directory * directory)
 {
-	char buffer[MAXPATHLEN * 2];
-	int bufferSize = MAXPATHLEN * 2;
+	char buffer[MPD_PATH_MAX * 2];
+	int bufferSize = MPD_PATH_MAX * 2;
 	char *key;
 	Directory *subDirectory;
 	int strcmpRet;

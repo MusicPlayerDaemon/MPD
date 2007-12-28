@@ -222,7 +222,7 @@ int playerPlay(int fd, Song * song)
 
 	copyMpdTagToMetadataChunk(song->tag, &(pc->fileMetadataChunk));
 
-	pathcpy_trunc(pc->utf8url, getSongUrl(song));
+	get_song_url(pc->utf8url, song);
 
 	pc->play = 1;
 	if (playerInit() < 0) {
@@ -337,7 +337,7 @@ int getPlayerError(void)
 char *getPlayerErrorStr(void)
 {
 	static char *error;
-	int errorlen = MAXPATHLEN + 1024;
+	int errorlen = MPD_PATH_MAX + 1024;
 	PlayerControl *pc = &(getPlayerData()->playerControl);
 
 	error = xrealloc(error, errorlen);
@@ -395,7 +395,7 @@ int queueSong(Song * song)
 	PlayerControl *pc = &(getPlayerData()->playerControl);
 
 	if (pc->queueState == PLAYER_QUEUE_BLANK) {
-		pathcpy_trunc(pc->utf8url, getSongUrl(song));
+		get_song_url(pc->utf8url, song);
 
 		if (song->tag)
 			pc->fileTime = song->tag->time;
@@ -454,6 +454,7 @@ void playerQueueUnlock(void)
 int playerSeek(int fd, Song * song, float time)
 {
 	PlayerControl *pc = &(getPlayerData()->playerControl);
+	char path_max_tmp[MPD_PATH_MAX];
 
 	if (pc->state == PLAYER_STATE_STOP) {
 		commandError(fd, ACK_ERROR_PLAYER_SYNC,
@@ -461,7 +462,7 @@ int playerSeek(int fd, Song * song, float time)
 		return -1;
 	}
 
-	if (strcmp(pc->utf8url, getSongUrl(song)) != 0) {
+	if (strcmp(pc->utf8url, get_song_url(path_max_tmp, song)) != 0) {
 		if (song->tag)
 			pc->fileTime = song->tag->time;
 		else
@@ -469,7 +470,7 @@ int playerSeek(int fd, Song * song, float time)
 
 		copyMpdTagToMetadataChunk(song->tag, &(pc->fileMetadataChunk));
 
-		pathcpy_trunc(pc->utf8url, getSongUrl(song));
+		strcpy(pc->utf8url, path_max_tmp);
 	}
 
 	if (pc->error == PLAYER_ERROR_NOERROR) {

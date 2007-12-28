@@ -74,6 +74,6 @@ int updateSongInfo(Song * song);
 
 void printSongUrl(int fd, Song * song);
 
-char *getSongUrl(Song * song);
+char *get_song_url(char *path_max_tmp, Song * song);
 
 #endif

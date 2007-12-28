@@ -151,3 +151,15 @@ sparse-check:
 		$(SPARSE) -I. $(mpd_CFLAGS) $(SPARSE_FLAGS) $(srcdir)/$$i || exit; \
 	done
 
+TEST_CFLAGS = -DUNIT_TEST
+TEST_FILES := $(shell grep UNIT_TEST $(mpd_SOURCES) | \
+               awk -F: '{print $$1}' | uniq)
+
+test: $(addprefix test-, $(subst .c,,$(TEST_FILES)))
+
+test-%: %.c
+	$(CC) $(CFLAGS) $(TEST_CFLAGS) -o $@ $<
+	@./$@
+	@echo $@: OK
+
+.PHONY: sparse-check test

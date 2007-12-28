@@ -49,4 +49,6 @@ InputPlugin *isMusic(char *utf8file, time_t * mtime, unsigned int next);
 
 int printRemoteUrlHandlers(int fd);
 
+int isFile(char *utf8file, time_t * mtime);
+
 #endif

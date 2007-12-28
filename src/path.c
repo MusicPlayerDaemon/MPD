@@ -40,39 +40,25 @@
 
 const char *musicDir;
 static const char *playlistDir;
+static size_t music_dir_len;
+static size_t playlist_dir_len;
 static char *fsCharset;
 
-static char *pathConvCharset(char *to, char *from, char *str, char *ret)
+static char *path_conv_charset(char *dest, char *to, char *from, char *str)
 {
-	if (ret)
-		free(ret);
-	return setCharSetConversion(to, from) ? NULL : convStrDup(str);
+	return setCharSetConversion(to, from) ? NULL : char_conv_str(dest, str);
 }
 
-char *fsCharsetToUtf8(char *str)
+char *fs_charset_to_utf8(char *dst, char *str)
 {
-	static char *ret;
-
-	ret = pathConvCharset("UTF-8", fsCharset, str, ret);
-
-	if (ret && !validUtf8String(ret)) {
-		free(ret);
-		ret = NULL;
-	}
-
-	return ret;
+	char *ret = path_conv_charset(dst, "UTF-8", fsCharset, str);
+	return (ret && !validUtf8String(ret)) ? NULL : ret;
 }
 
-char *utf8ToFsCharset(char *str)
+char *utf8_to_fs_charset(char *dst, char *str)
 {
-	static char *ret;
-
-	ret = pathConvCharset(fsCharset, "UTF-8", str, ret);
-
-	if (!ret)
-		ret = xstrdup(str);
-
-	return ret;
+	char *ret = path_conv_charset(dst, fsCharset, "UTF-8", str);
+	return ret ? ret : strcpy(dst, str);
 }
 
 void setFsCharset(char *charset)
@@ -111,23 +97,6 @@ char *getFsCharset(void)
 	return fsCharset;
 }
 
-static char *appendSlash(char **path)
-{
-	char *temp = *path;
-	int len = strlen(temp);
-
-	if (temp[len - 1] != '/') {
-		temp = xmalloc(len + 2);
-		memset(temp, 0, len + 2);
-		memcpy(temp, *path, len);
-		temp[len] = '/';
-		free(*path);
-		*path = temp;
-	}
-
-	return temp;
-}
-
 void initPaths(void)
 {
 	ConfigParam *musicParam = parseConfigFilePath(CONF_MUSIC_DIR, 1);
@@ -138,8 +107,11 @@ void initPaths(void)
 	char *originalLocale;
 	DIR *dir;
 
-	musicDir = appendSlash(&(musicParam->value));
-	playlistDir = appendSlash(&(playlistParam->value));
+	musicDir = xstrdup(musicParam->value);
+	playlistDir = xstrdup(playlistParam->value);
+
+	music_dir_len = strlen(musicDir);
+	playlist_dir_len = strlen(playlistDir);
 
 	if ((dir = opendir(playlistDir)) == NULL) {
 		FATAL("cannot open %s \"%s\" (config line %i): %s\n",
@@ -205,36 +177,35 @@ void finishPaths(void)
 	fsCharset = NULL;
 }
 
-static char *pfx_path(const char *path, const char *pfx, const size_t pfx_len)
+char *pfx_dir(char *dst,
+              const char *path, const size_t path_len,
+              const char *pfx, const size_t pfx_len)
 {
-	static char ret[MAXPATHLEN+1];
-	size_t rp_len = strlen(path);
+	if (mpd_unlikely((pfx_len + path_len + 1) >= MPD_PATH_MAX))
+		FATAL("Cannot prefix '%s' to '%s', PATH_MAX: %d\n",
+		      pfx, path, MPD_PATH_MAX);
 
-	/* check for the likely condition first: */
-	if (mpd_likely((pfx_len + rp_len) < MAXPATHLEN)) {
-		memcpy(ret, pfx, pfx_len);
-		memcpy(ret + pfx_len, path, rp_len + 1);
-		return ret;
-	}
+	/* memmove allows dst == path */
+	memmove(dst + pfx_len + 1, path, path_len + 1);
+	memcpy(dst, pfx, pfx_len);
+	dst[pfx_len] = '/';
 
-	/* unlikely, return an empty string because truncating would
-	 * also be wrong... break early and break loudly (the system
-	 * headers are likely screwed, not mpd) */
-	ERROR("Cannot prefix '%s' to '%s', max: %d\n", pfx, path, MAXPATHLEN);
-	ret[0] = '\0';
-	return ret;
+	/* this is weird, but directory.c can use it more safely/efficiently */
+	return (dst + pfx_len + 1);
 }
 
-char *rmp2amp(char *relativePath)
+char *rmp2amp_r(char *dst, const char *rel_path)
 {
-	size_t pfx_len = strlen(musicDir);
-	return pfx_path(relativePath, musicDir, pfx_len);
+	pfx_dir(dst, rel_path, strlen(rel_path),
+	        (const char *)musicDir, music_dir_len);
+	return dst;
 }
 
-char *rpp2app(char *relativePath)
+char *rpp2app_r(char *dst, const char *rel_path)
 {
-	size_t pfx_len = strlen(playlistDir);
-	return pfx_path(relativePath, playlistDir, pfx_len);
+	pfx_dir(dst, rel_path, strlen(rel_path),
+	        (const char *)playlistDir, playlist_dir_len);
+	return dst;
 }
 
 /* this is actually like strlcpy (OpenBSD), but we don't actually want to
@@ -244,29 +215,28 @@ void pathcpy_trunc(char *dest, const char *src)
 {
 	size_t len = strlen(src);
 
-	if (mpd_unlikely(len > MAXPATHLEN))
-		len = MAXPATHLEN;
+	if (mpd_unlikely(len >= MPD_PATH_MAX))
+		len = MPD_PATH_MAX - 1;
 	memcpy(dest, src, len);
 	dest[len] = '\0';
 }
 
-char *parentPath(char *path)
+char *parent_path(char *path_max_tmp, const char *path)
 {
-	static char parentPath[MAXPATHLEN+1];
 	char *c;
 
-	pathcpy_trunc(parentPath, path);
-	c = strrchr(parentPath,'/');
+	pathcpy_trunc(path_max_tmp, path);
+	c = strrchr(path_max_tmp,'/');
 
 	if (c == NULL)
-		parentPath[0] = '\0';
+		path_max_tmp[0] = '\0';
 	else {
-		while ((parentPath <= c) && *(--c) == '/')	/* nothing */
+		while ((path_max_tmp <= c) && *(--c) == '/')	/* nothing */
 			;
 		c[1] = '\0';
 	}
 
-	return parentPath;
+	return path_max_tmp;
 }
 
 char *sanitizePathDup(char *path)

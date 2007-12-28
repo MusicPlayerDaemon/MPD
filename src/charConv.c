@@ -95,26 +95,25 @@ int setCharSetConversion(char *to, char *from)
 	return -1;
 }
 
-char *convStrDup(char *string)
+char *char_conv_str(char *dest, char *string)
 {
 	if (!char_conv_to)
 		return NULL;
 
 	if (char_conv_same)
-		return xstrdup(string);
+		return strcpy(dest, string);
 
 #ifdef HAVE_ICONV
 	if (char_conv_use_iconv) {
+		/* not optimized: */
 		char buffer[BUFFER_SIZE];
 		size_t inleft = strlen(string);
-		char *ret;
 		size_t outleft;
 		size_t retlen = 0;
 		size_t err;
 		char *bufferPtr;
 
-		ret = xmalloc(1);
-		ret[0] = '\0';
+		dest[0] = '\0';
 
 		while (inleft) {
 			bufferPtr = buffer;
@@ -124,27 +123,22 @@ char *convStrDup(char *string)
 				  &outleft);
 			if (outleft == BUFFER_SIZE
 			    || (err == -1L && errno != E2BIG)) {
-				free(ret);
 				return NULL;
 			}
-
-			ret = xrealloc(ret, retlen + BUFFER_SIZE - outleft + 1);
-			memcpy(ret + retlen, buffer, BUFFER_SIZE - outleft);
+			memcpy(dest + retlen, buffer, BUFFER_SIZE - outleft);
 			retlen += BUFFER_SIZE - outleft;
-			ret[retlen] = '\0';
+			dest[retlen] = '\0';
 		}
 
-		return ret;
+		return dest;
 	}
 #endif
 
 	switch (char_conv_latin1ToUtf8) {
 	case 1:
-		return latin1StrToUtf8Dup(string);
-		break;
+		return latin1_to_utf8(dest, string);
 	case -1:
-		return utf8StrToLatin1Dup(string);
-		break;
+		return utf8_to_latin1(dest, string);
 	}
 
 	return NULL;

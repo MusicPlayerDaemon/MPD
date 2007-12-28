@@ -66,9 +66,11 @@ Song *newSong(char *url, int type, Directory * parentDir)
 	if (song->type == SONG_TYPE_FILE) {
 		InputPlugin *plugin;
 		unsigned int next = 0;
-		char *song_url = getSongUrl(song);
-		char *abs_path = rmp2amp(utf8ToFsCharset(song_url));
-		while (!song->tag && (plugin = isMusic(song_url,
+		char path_max_tmp[MPD_PATH_MAX];
+		char *abs_path = rmp2amp_r(path_max_tmp,
+		                           get_song_url(path_max_tmp, song));
+
+		while (!song->tag && (plugin = isMusic(abs_path,
 						       &(song->mtime),
 						       next++))) {
 			song->tag = plugin->tagDupFunc(abs_path);
@@ -94,7 +96,6 @@ void freeJustSong(Song * song)
 	if (song->tag)
 		freeMpdTag(song->tag);
 	free(song);
-	getSongUrl(NULL);
 }
 
 SongList *newSongList(void)
@@ -231,8 +232,8 @@ static int matchesAnMpdTagItemKey(char *buffer, int *itemType)
 
 void readSongInfoIntoList(FILE * fp, SongList * list, Directory * parentDir)
 {
-	char buffer[MAXPATHLEN + 1024];
-	int bufferSize = MAXPATHLEN + 1024;
+	char buffer[MPD_PATH_MAX + 1024];
+	int bufferSize = MPD_PATH_MAX + 1024;
 	Song *song = NULL;
 	ListNode *nextSongNode = list->firstNode;
 	ListNode *nodeTemp;
@@ -292,15 +293,16 @@ int updateSongInfo(Song * song)
 	if (song->type == SONG_TYPE_FILE) {
 		InputPlugin *plugin;
 		unsigned int next = 0;
-		char *song_url = getSongUrl(song);
-		char *abs_path = rmp2amp(song_url);
+		char path_max_tmp[MPD_PATH_MAX];
+		char *abs_path = rmp2amp_r(path_max_tmp,
+		                           get_song_url(path_max_tmp, song));
 
 		if (song->tag)
 			freeMpdTag(song->tag);
 
 		song->tag = NULL;
 
-		while (!song->tag && (plugin = isMusic(song_url,
+		while (!song->tag && (plugin = isMusic(abs_path,
 						       &(song->mtime),
 						       next++))) {
 			song->tag = plugin->tagDupFunc(abs_path);
@@ -312,42 +314,15 @@ int updateSongInfo(Song * song)
 	return 0;
 }
 
-/* pass song = NULL to reset, we do this freeJustSong(), so that if
- * 	we free and recreate this memory we make sure to print it correctly*/
-char *getSongUrl(Song * song)
+char *get_song_url(char *path_max_tmp, Song *song)
 {
-	static char *buffer;
-	static int bufferSize;
-	static Song *lastSong;
-	int slen;
-	int dlen;
-	int size;
-
-	if (!song) {
-		lastSong = song;
+	if (!song)
 		return NULL;
-	}
-
 	if (!song->parentDir || !song->parentDir->path)
-		return song->url;
-
-	/* be careful with this! */
-	if (song == lastSong)
-		return buffer;
-
-	slen = strlen(song->url);
-	dlen = strlen(getDirectoryPath(song->parentDir));
-
-	size = slen + dlen + 2;
-
-	if (size > bufferSize) {
-		buffer = xrealloc(buffer, size);
-		bufferSize = size;
-	}
-
-	strcpy(buffer, getDirectoryPath(song->parentDir));
-	buffer[dlen] = '/';
-	strcpy(buffer + dlen + 1, song->url);
-
-	return buffer;
+		strcpy(path_max_tmp, song->url);
+	else
+		pfx_dir(path_max_tmp, song->url, strlen(song->url),
+			getDirectoryPath(song->parentDir),
+			strlen(getDirectoryPath(song->parentDir)));
+	return path_max_tmp;
 }

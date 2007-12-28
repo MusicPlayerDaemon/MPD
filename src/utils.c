@@ -30,6 +30,8 @@
 #include <unistd.h>
 #include <assert.h>
 #include <pwd.h>
+#include <signal.h>
+#include <sys/param.h>
 
 char *myFgets(char *buffer, int bufferSize, FILE * fp)
 {
@@ -43,15 +45,21 @@ char *myFgets(char *buffer, int bufferSize, FILE * fp)
 	return ret;
 }
 
-char *strDupToUpper(char *str)
+char *string_toupper(char *str)
 {
-	char *ret = xstrdup(str);
-	int i;
+	int i = strlen(str);
+	char *ret = str;
 
-	for (i = 0; i < strlen(str); i++)
-		ret[i] = toupper((int)ret[i]);
+	for (; --i >= 0; ++str)
+		*str = toupper((int)(*str));
 
 	return ret;
+
+}
+
+char *strDupToUpper(char *str)
+{
+	return string_toupper(xstrdup(str));
 }
 
 void stripReturnChar(char *string)

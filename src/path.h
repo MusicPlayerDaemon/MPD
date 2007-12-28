@@ -22,6 +22,17 @@
 #include "../config.h"
 
 #include <sys/param.h>
+#include <limits.h>
+
+#if !defined(MPD_PATH_MAX)
+#  if defined(MAXPATHLEN)
+#    define MPD_PATH_MAX MAXPATHLEN
+#  elif defined(PATH_MAX)
+#    define MPD_PATH_MAX PATH_MAX
+#  else
+#    define MPD_PATH_MAX 256
+#  endif
+#endif
 
 extern const char *musicDir;
 
@@ -29,33 +40,34 @@ void initPaths(void);
 
 void finishPaths(void);
 
-/* utf8ToFsCharset() and fsCharsetToUtf8()
- * Each returns a static pointer to a dynamically allocated buffer
- * which means:
- * - Do not manually free the return value of these functions, it'll be
- *   automatically freed the next time it is called.
- * - They are not reentrant, xstrdup the return value immediately if
- *   you expect to call one of these functions again, but still need the
- *   previous result.
- * - The static pointer is unique to each function.
- */
-char *utf8ToFsCharset(char *str);
-char *fsCharsetToUtf8(char *str);
+char *fs_charset_to_utf8(char *dst, char *str);
+
+char *utf8_to_fs_charset(char *dst, char *str);
 
 void setFsCharset(char *charset);
 
 char *getFsCharset(void);
 
+/*
+ * pfx_dir - sets dst="$pfx/$path" and returns a pointer to path inside * dst
+ * this will unconditionally put a '/' between pfx and path unlike
+ * the static pfx_path() function in path.c
+ * dst is assumed to be MAXPATHLEN in size
+ * dst can point to the same location as path, but not pfx, which makes
+ * this better than sprintf(3) in some cases
+ */
+char *pfx_dir(char *dst,
+              const char *path, const size_t path_len,
+              const char *pfx, const size_t pfx_len);
+
 /* relative music path to absolute music path
  * char * passed is a static variable, so don't free it
  */
-char *rmp2amp(char *file);
+char *rmp2amp_r(char *dst, const char *rel_path);
 
-/* static char * returned */
-char *rpp2app(char *file);
+char *rpp2app_r(char *dst, const char *rel_path);
 
-/* static char * returned */
-char *parentPath(char *path);
+char *parent_path(char *path_max_tmp, const char *path);
 
 /* strips extra "///" and leading "/" and trailing "/" */
 char *sanitizePathDup(char *path);

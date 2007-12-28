@@ -34,6 +34,7 @@ static char *utf8pathToFsPathInStoredPlaylist(const char *utf8path, int fd)
 	char *file;
 	char *rfile;
 	char *actualFile;
+	static char path_max_tmp[MPD_PATH_MAX]; /* should be MT-safe */
 
 	if (strstr(utf8path, "/")) {
 		commandError(fd, ACK_ERROR_ARG, "playlist name \"%s\" is "
@@ -42,8 +43,7 @@ static char *utf8pathToFsPathInStoredPlaylist(const char *utf8path, int fd)
 		return NULL;
 	}
 
-	file = utf8ToFsCharset((char *)utf8path);
-
+	file = utf8_to_fs_charset(path_max_tmp, (char *)utf8path);
 	rfile = xmalloc(strlen(file) + strlen(".") +
 	                strlen(PLAYLIST_FILE_SUFFIX) + 1);
 
@@ -51,7 +51,7 @@ static char *utf8pathToFsPathInStoredPlaylist(const char *utf8path, int fd)
 	strcat(rfile, ".");
 	strcat(rfile, PLAYLIST_FILE_SUFFIX);
 
-	actualFile = rpp2app(rfile);
+	actualFile = rpp2app_r(path_max_tmp, rfile);
 
 	free(rfile);
 
@@ -100,7 +100,10 @@ static ListNode *nodeOfStoredPlaylist(StoredPlaylist *sp, int index)
 
 static void appendSongToStoredPlaylist(StoredPlaylist *sp, Song *song)
 {
-	insertInListWithoutKey(sp->list, xstrdup(getSongUrl(song)));
+	char path_max_tmp[MPD_PATH_MAX];
+
+	get_song_url(path_max_tmp, song);
+	insertInListWithoutKey(sp->list, xstrdup(path_max_tmp));
 }
 
 StoredPlaylist *newStoredPlaylist(const char *utf8name, int fd, int ignoreExisting)
@@ -138,10 +141,13 @@ StoredPlaylist *loadStoredPlaylist(const char *utf8path, int fd)
 	char *filename;
 	StoredPlaylist *sp;
 	FILE *file;
-	char s[MAXPATHLEN + 1];
+	char s[MPD_PATH_MAX];
+	char path_max_tmp[MPD_PATH_MAX];
+	char path_max_tmp2[MPD_PATH_MAX]; /* TODO: cleanup */
+	char path_max_tmp3[MPD_PATH_MAX]; /* TODO: cleanup */
 	int slength = 0;
-	char *temp = utf8ToFsCharset((char *)utf8path);
-	char *parent = parentPath(temp);
+	char *temp = utf8_to_fs_charset(path_max_tmp2, (char *)utf8path);
+	char *parent = parent_path(path_max_tmp3, temp);
 	int parentlen = strlen(parent);
 	int tempInt;
 	int commentCharFound = 0;
@@ -169,15 +175,18 @@ StoredPlaylist *loadStoredPlaylist(const char *utf8path, int fd)
 			s[slength] = '\0';
 			if (s[0] == PLAYLIST_COMMENT)
 				commentCharFound = 1;
-			if (strncmp(s, musicDir, strlen(musicDir)) == 0) {
-				strcpy(s, &(s[strlen(musicDir)]));
+			if (!strncmp(s, musicDir, strlen(musicDir)) &&
+			    s[strlen(musicDir)] == '/') {
+				memmove(s, &(s[strlen(musicDir) + 1]),
+				        strlen(&(s[strlen(musicDir) + 1])) + 1);
+				printf("s: <%s>\n", s);
 			} else if (parentlen) {
 				temp = xstrdup(s);
-				memset(s, 0, MAXPATHLEN + 1);
+				memset(s, 0, MPD_PATH_MAX);
 				strcpy(s, parent);
-				strncat(s, "/", MAXPATHLEN - parentlen);
-				strncat(s, temp, MAXPATHLEN - parentlen - 1);
-				if (strlen(s) >= MAXPATHLEN) {
+				strncat(s, "/", MPD_PATH_MAX - parentlen);
+				strncat(s, temp, MPD_PATH_MAX - parentlen - 1);
+				if (strlen(s) >= MPD_PATH_MAX) {
 					commandError(sp->fd,
 					             ACK_ERROR_PLAYLIST_LOAD,
 					             "\"%s\" is too long", temp);
@@ -189,7 +198,7 @@ StoredPlaylist *loadStoredPlaylist(const char *utf8path, int fd)
 				free(temp);
 			}
 			slength = 0;
-			temp = fsCharsetToUtf8(s);
+			temp = fs_charset_to_utf8(path_max_tmp, s);
 			if (temp && !commentCharFound) {
 				song = getSongFromDB(temp);
 				if (song) {
@@ -206,7 +215,7 @@ StoredPlaylist *loadStoredPlaylist(const char *utf8path, int fd)
 					freeJustSong(song);
 				}
 			}
-		} else if (slength == MAXPATHLEN) {
+		} else if (slength == (MPD_PATH_MAX - 1)) {
 			s[slength] = '\0';
 			commandError(sp->fd, ACK_ERROR_PLAYLIST_LOAD,
 				     "line \"%s\" in playlist \"%s\" "
@@ -401,11 +410,11 @@ static int writeStoredPlaylistToPath(StoredPlaylist *sp, const char *fspath)
 
 	node = sp->list->firstNode;
 	while (node != NULL) {
-		s = (char *)node->data;
-		if (isValidRemoteUtf8Url(s) || !playlist_saveAbsolutePaths)
-			s = utf8ToFsCharset(s);
-		else
-			s = rmp2amp(utf8ToFsCharset(s));
+		char path_max_tmp[MPD_PATH_MAX];
+
+		s = utf8_to_fs_charset(path_max_tmp, (char *)node->data);
+		if (playlist_saveAbsolutePaths && !isValidRemoteUtf8Url(s))
+			s = rmp2amp_r(path_max_tmp, s);
 		fprintf(file, "%s\n", s);
 		node = node->nextNode;
 	}
@@ -424,6 +433,8 @@ int appendSongToStoredPlaylistByPath(int fd, const char *utf8path, Song *song)
 	char *filename;
 	FILE *file;
 	char *s;
+	char path_max_tmp[MPD_PATH_MAX];
+	char path_max_tmp2[MPD_PATH_MAX];
 
 	filename = utf8pathToFsPathInStoredPlaylist(utf8path, fd);
 	if (!filename)
@@ -436,10 +447,10 @@ int appendSongToStoredPlaylistByPath(int fd, const char *utf8path, Song *song)
 		return -1;
 	}
 
+	s = utf8_to_fs_charset(path_max_tmp2, get_song_url(path_max_tmp, song));
+
 	if (playlist_saveAbsolutePaths && song->type == SONG_TYPE_FILE)
-		s = rmp2amp(utf8ToFsCharset(getSongUrl(song)));
-	else
-		s = utf8ToFsCharset(getSongUrl(song));
+		s = rmp2amp_r(path_max_tmp, s);
 
 	fprintf(file, "%s\n", s);
 

@@ -130,9 +130,9 @@ void initPlayerData(void)
 	playerData_pd->playerControl.queueLockState = PLAYER_QUEUE_UNLOCKED;
 	playerData_pd->playerControl.seek = 0;
 	playerData_pd->playerControl.closeAudio = 0;
-	memset(playerData_pd->playerControl.utf8url, 0, MAXPATHLEN + 1);
-	memset(playerData_pd->playerControl.erroredUrl, 0, MAXPATHLEN + 1);
-	memset(playerData_pd->playerControl.currentUrl, 0, MAXPATHLEN + 1);
+	memset(playerData_pd->playerControl.utf8url, 0, MPD_PATH_MAX);
+	memset(playerData_pd->playerControl.erroredUrl, 0, MPD_PATH_MAX);
+	memset(playerData_pd->playerControl.currentUrl, 0, MPD_PATH_MAX);
 	playerData_pd->playerControl.crossFade = crossfade;
 	playerData_pd->playerControl.softwareVolume = 1000;
 	playerData_pd->playerControl.totalPlayTime = 0;
@@ -145,7 +145,7 @@ void initPlayerData(void)
 	playerData_pd->decoderControl.state = DECODE_STATE_STOP;
 	playerData_pd->decoderControl.seek = 0;
 	playerData_pd->decoderControl.error = DECODE_ERROR_NOERROR;
-	memset(playerData_pd->decoderControl.utf8url, 0, MAXPATHLEN + 1);
+	memset(playerData_pd->decoderControl.utf8url, 0, MPD_PATH_MAX);
 }
 
 PlayerData *getPlayerData(void)

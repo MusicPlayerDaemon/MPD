@@ -108,22 +108,24 @@ int lsPlaylists(int fd, char *utf8path)
 	struct dirent *ent;
 	char *dup;
 	char *utf8;
-	char s[MAXPATHLEN + 1];
+	char s[MPD_PATH_MAX];
+	char path_max_tmp[MPD_PATH_MAX];
 	List *list = NULL;
 	ListNode *node = NULL;
-	char *path = utf8ToFsCharset(utf8path);
-	char *actualPath = rpp2app(path);
+	char *actualPath = rpp2app_r(path_max_tmp,
+	                             utf8_to_fs_charset(path_max_tmp,
+				                        utf8path));
 	int actlen = strlen(actualPath) + 1;
-	int maxlen = MAXPATHLEN - actlen;
+	int maxlen = MPD_PATH_MAX - actlen;
 	int suflen = strlen(PLAYLIST_FILE_SUFFIX) + 1;
 	int suff;
 
-	if (actlen > MAXPATHLEN - 1 || (dir = opendir(actualPath)) == NULL) {
+	if (actlen > MPD_PATH_MAX - 1 || (dir = opendir(actualPath)) == NULL) {
 		return 0;
 	}
 
-	s[MAXPATHLEN] = '\0';
-	/* this is safe, notice actlen > MAXPATHLEN-1 above */
+	s[MPD_PATH_MAX - 1] = '\0';
+	/* this is safe, notice actlen > MPD_PATH_MAX-1 above */
 	strcpy(s, actualPath);
 	strcat(s, "/");
 
@@ -138,12 +140,14 @@ int lsPlaylists(int fd, char *utf8path)
 			memcpy(s + actlen, ent->d_name, len);
 			if (stat(s, &st) == 0) {
 				if (S_ISREG(st.st_mode)) {
+					char path_max_tmp[MPD_PATH_MAX];
 					if (list == NULL)
 						list = makeList(NULL, 1);
 					dup[suff] = '\0';
-					if ((utf8 = fsCharsetToUtf8(dup))) {
+					utf8 = fs_charset_to_utf8(path_max_tmp,
+					                          dup);
+					if (utf8)
 						insertInList(list, utf8, NULL);
-					}
 				}
 			}
 		}
@@ -181,16 +185,17 @@ int lsPlaylists(int fd, char *utf8path)
 
 int myStat(char *utf8file, struct stat *st)
 {
-	char *file = utf8ToFsCharset(utf8file);
+	char path_max_tmp[MPD_PATH_MAX];
+	char *file = utf8_to_fs_charset(path_max_tmp, utf8file);
 	char *actualFile = file;
 
 	if (actualFile[0] != '/')
-		actualFile = rmp2amp(file);
+		actualFile = rmp2amp_r(path_max_tmp, file);
 
 	return stat(actualFile, st);
 }
 
-static int isFile(char *utf8file, time_t * mtime)
+int isFile(char *utf8file, time_t * mtime)
 {
 	struct stat st;
 

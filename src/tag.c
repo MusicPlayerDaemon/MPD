@@ -157,7 +157,8 @@ static id3_utf8_t * processID3FieldString (int is_id3v1, const id3_ucs4_t *ucs4,
             return NULL;
         }
         setCharSetConversion("UTF-8", encoding);
-        utf8 = (id3_utf8_t *)convStrDup((char *)isostr);
+        utf8 = xmalloc(strlen((char *)isostr) + 1);
+        utf8 = (id3_utf8_t *)char_conv_str((char *)utf8, (char *)isostr);
         if (!utf8) {
             DEBUG("Unable to convert %s string to UTF-8: "
                     "'%s'\n", encoding, isostr);

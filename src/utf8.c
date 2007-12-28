@@ -23,51 +23,42 @@
 #include <string.h>
 #include <stdlib.h>
 
-static char *latin1ToUtf8(char c)
+char *latin1_to_utf8(char *dest, char *in_latin1)
 {
-	static unsigned char utf8[3];
-	unsigned char uc = c;
+	unsigned char *cp = (unsigned char *)dest;
+	unsigned char *latin1 = (unsigned char *)in_latin1;
 
-	memset(utf8, 0, 3);
-
-	if (uc < 128)
-		utf8[0] = uc;
-	else if (uc < 192) {
-		utf8[0] = 194;
-		utf8[1] = uc;
-	} else {
-		utf8[0] = 195;
-		utf8[1] = uc - 64;
+	while (*latin1) {
+		if (*latin1 < 128)
+			*(cp++) = *latin1;
+		else {
+			if (*latin1 < 192) {
+				*(cp++) = 194;
+				*(cp++) = *latin1;
+			} else {
+				*(cp++) = 195;
+				*(cp++) = (*latin1) - 64;
+			}
+		}
+		++latin1;
 	}
 
-	return (char *)utf8;
+	*cp = '\0';
+
+	return dest;
 }
 
 char *latin1StrToUtf8Dup(char *latin1)
 {
 	/* utf8 should have at most two char's per latin1 char */
-	int len = strlen(latin1) * 2 + 1;
-	char *ret = xmalloc(len);
-	char *cp = ret;
-	char *utf8;
+	char *ret = xmalloc(strlen(latin1) * 2 + 1);
 
-	memset(ret, 0, len);
+	ret = latin1_to_utf8(ret, latin1);
 
-	len = 0;
-
-	while (*latin1) {
-		utf8 = latin1ToUtf8(*latin1);
-		while (*utf8) {
-			*(cp++) = *(utf8++);
-			len++;
-		}
-		latin1++;
-	}
-
-	return xrealloc(ret, len + 1);
+	return ((ret) ? xrealloc(ret, strlen((char *)ret) + 1) : NULL);
 }
 
-static char utf8ToLatin1(char *inUtf8)
+static char utf8_to_latin1_char(char *inUtf8)
 {
 	unsigned char c = 0;
 	unsigned char *utf8 = (unsigned char *)inUtf8;
@@ -124,14 +115,10 @@ int validUtf8String(char *string)
 char *utf8StrToLatin1Dup(char *utf8)
 {
 	/* utf8 should have at most two char's per latin1 char */
-	int len = strlen(utf8) + 1;
-	char *ret = xmalloc(len);
+	char *ret = xmalloc(strlen(utf8) + 1);
 	char *cp = ret;
 	int count;
-
-	memset(ret, 0, len);
-
-	len = 0;
+	size_t len = 0;
 
 	while (*utf8) {
 		count = validateUtf8Char(utf8);
@@ -139,10 +126,32 @@ char *utf8StrToLatin1Dup(char *utf8)
 			free(ret);
 			return NULL;
 		}
-		*(cp++) = utf8ToLatin1(utf8);
+		*(cp++) = utf8_to_latin1_char(utf8);
 		utf8 += count;
 		len++;
 	}
 
+	*cp = '\0';
+
 	return xrealloc(ret, len + 1);
+}
+
+char *utf8_to_latin1(char *dest, char *utf8)
+{
+	char *cp = dest;
+	int count;
+	size_t len = 0;
+
+	while (*utf8) {
+		count = validateUtf8Char(utf8);
+		if (count) {
+			*(cp++) = utf8_to_latin1_char(utf8);
+			utf8 += count;
+			len++;
+		} else
+			return NULL;
+	}
+
+	*cp = '\0';
+	return dest;
 }

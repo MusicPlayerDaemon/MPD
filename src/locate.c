@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#include "path.h"
 #include "locate.h"
-
 #include "utils.h"
 
 #define LOCATE_TAG_FILE_KEY     "file"
@@ -127,13 +127,13 @@ static int strstrSearchTag(Song * song, int type, char *str)
 	int ret = 0;
 
 	if (type == LOCATE_TAG_FILE_TYPE || type == LOCATE_TAG_ANY_TYPE) {
-		dup = strDupToUpper(getSongUrl(song));
-		if (strstr(dup, str))
+		char path_max_tmp[MPD_PATH_MAX];
+
+		string_toupper(get_song_url(path_max_tmp, song));
+		if (strstr(path_max_tmp, str))
 			ret = 1;
-		free(dup);
-		if (ret == 1 || type == LOCATE_TAG_FILE_TYPE) {
+		if (ret == 1 || type == LOCATE_TAG_FILE_TYPE)
 			return ret;
-		}
 	}
 
 	if (!song->tag)
@@ -173,7 +173,8 @@ static int tagItemFoundAndMatches(Song * song, int type, char *str)
 	int i;
 
 	if (type == LOCATE_TAG_FILE_TYPE || type == LOCATE_TAG_ANY_TYPE) {
-		if (0 == strcmp(str, getSongUrl(song)))
+		char path_max_tmp[MPD_PATH_MAX];
+		if (0 == strcmp(str, get_song_url(path_max_tmp, song)))
 			return 1;
 		if (type == LOCATE_TAG_FILE_TYPE)
 			return 0;

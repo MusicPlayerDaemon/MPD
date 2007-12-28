@@ -208,10 +208,10 @@ static void parseOptions(int argc, char **argv, Options * options)
 		} else if (argcLeft == 1) {
 			struct stat st;
 			char *homedir = getenv("HOME");
-			char userfile[MAXPATHLEN + 1] = "";
+			char userfile[MPD_PATH_MAX] = "";
 			if (homedir && (strlen(homedir) +
 					strlen(USER_CONFIG_FILE_LOCATION)) <
-			    MAXPATHLEN) {
+			    MPD_PATH_MAX) {
 				strcpy(userfile, homedir);
 				strcat(userfile, USER_CONFIG_FILE_LOCATION);
 			}

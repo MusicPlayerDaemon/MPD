@@ -25,4 +25,9 @@ char *utf8StrToLatin1Dup(char *utf8);
 
 int validUtf8String(char *string);
 
+char *utf8_to_latin1(char *dest, char *utf8);
+
+char *latin1_to_utf8(char *dest, char *utf8);
+
+
 #endif

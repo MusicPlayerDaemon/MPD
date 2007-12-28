@@ -20,6 +20,7 @@
 #define DECODE_H
 
 #include "../config.h"
+#include "path.h"
 #include "tag.h"
 
 #include "mpd_types.h"
@@ -51,7 +52,7 @@ typedef struct _DecoderControl {
 	volatile mpd_sint8 cycleLogFiles;
 	volatile double seekWhere;
 	AudioFormat audioFormat;
-	char utf8url[MAXPATHLEN + 1];
+	char utf8url[MPD_PATH_MAX];
 	volatile float totalTime;
 } DecoderControl;
 

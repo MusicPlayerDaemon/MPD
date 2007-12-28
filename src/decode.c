@@ -280,29 +280,28 @@ static void decodeStart(PlayerControl * pc, OutputBuffer * cb,
 	int ret;
 	InputStream inStream;
 	InputPlugin *plugin = NULL;
-	char *path;
+	char path_max_tmp[MPD_PATH_MAX];
 
-	if (isRemoteUrl(pc->utf8url))
-		path = utf8StrToLatin1Dup(pc->utf8url);
-	else
-		path = xstrdup(rmp2amp(utf8ToFsCharset(pc->utf8url)));
-
-	if (!path) {
-		dc->error = DECODE_ERROR_FILE;
-		dc->state = DECODE_STATE_STOP;
-		dc->start = 0;
-		return;
-	}
+	/* not actually sure why we convert between latin/UTF8 for URLs */
+	if (isRemoteUrl(pc->utf8url)) {
+		if (!utf8_to_latin1(path_max_tmp, pc->utf8url)) {
+			dc->error = DECODE_ERROR_FILE;
+			dc->state = DECODE_STATE_STOP;
+			dc->start = 0;
+			return;
+		}
+	} else
+		rmp2amp_r(path_max_tmp,
+		          utf8_to_fs_charset(path_max_tmp, pc->utf8url));
 
 	copyMpdTagToOutputBuffer(cb, NULL);
 
 	pathcpy_trunc(dc->utf8url, pc->utf8url);
 
-	if (openInputStream(&inStream, path) < 0) {
+	if (openInputStream(&inStream, path_max_tmp) < 0) {
 		dc->error = DECODE_ERROR_FILE;
 		dc->state = DECODE_STATE_STOP;
 		dc->start = 0;
-		free(path);
 		return;
 	}
 
@@ -321,7 +320,6 @@ static void decodeStart(PlayerControl * pc, OutputBuffer * cb,
 	if (dc->stop) {
 		dc->state = DECODE_STATE_STOP;
 		dc->stop = 0;
-		free(path);
 		return;
 	}
 
@@ -392,7 +390,8 @@ static void decodeStart(PlayerControl * pc, OutputBuffer * cb,
 
 			if (plugin->fileDecodeFunc) {
 				closeInputStream(&inStream);
-				ret = plugin->fileDecodeFunc(cb, dc, path);
+				ret = plugin->fileDecodeFunc(cb, dc,
+				                             path_max_tmp);
 				break;
 			} else if (plugin->streamDecodeFunc) {
 				ret = plugin->streamDecodeFunc(cb, dc, &inStream);
@@ -412,8 +411,6 @@ static void decodeStart(PlayerControl * pc, OutputBuffer * cb,
 		dc->stop = 0;
 		dc->state = DECODE_STATE_STOP;
 	}
-
-	free(path);
 }
 
 static int decoderInit(PlayerControl * pc, OutputBuffer * cb,
