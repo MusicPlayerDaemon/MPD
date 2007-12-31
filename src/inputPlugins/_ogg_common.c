@@ -54,20 +54,11 @@ ogg_stream_type ogg_stream_type_detect(InputStream * inStream)
 
 	seekInputStream(inStream, 0, SEEK_SET);
 
-	if (r >= 32 && memcmp(buf, "OggS", 4) == 0 && ((memcmp
-							(buf + 29, "FLAC",
-							 4) == 0
-							&& memcmp(buf + 37,
-								  "fLaC",
-								  4) == 0)
-						       ||
-						       (memcmp
-							(buf + 28, "FLAC",
-							 4) == 0)
-						       ||
-						       (memcmp
-							(buf + 28, "fLaC",
-							 4) == 0))) {
+	if (r >= 32 && memcmp(buf, "OggS", 4) == 0 && (
+				(memcmp(buf+29, "FLAC", 4) == 0
+					&& memcmp(buf+37, "fLaC", 4) == 0)
+				|| (memcmp(buf+28, "FLAC", 4) == 0)
+				|| (memcmp(buf+28, "fLaC", 4) == 0))) {
 		return FLAC;
 	}
 	return VORBIS;
