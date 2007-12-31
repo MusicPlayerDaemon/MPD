@@ -80,15 +80,13 @@ typedef unsigned flac_read_status_size_t;
 #  ifdef HAVE_OGGFLAC
 #    include <OggFLAC/seekable_stream_decoder.h>
 #  endif
-#else /* FLAC_API_VERSION_CURRENT >= 7 */
+#else /* FLAC_API_VERSION_CURRENT > 7 */
 
-   /* OggFLAC support is handled by our flac_plugin already, and
-    * thus we *can* always have it if libFLAC was compiled with it */
-#  ifndef HAVE_OGGFLAC
-#    define HAVE_OGGFLAC 1
-#  endif
+/*
+ * OggFLAC support is handled by our flac_plugin already, and
+ * thus we *can* always have it if libFLAC was compiled with it
+ */
 #  include "_ogg_common.h"
-#  undef HAVE_OGGFLAC /* we don't need this defined anymore */
 
 #  include <FLAC/stream_decoder.h>
 #  define flac_decoder           FLAC__StreamDecoder
