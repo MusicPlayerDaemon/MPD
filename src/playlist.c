@@ -1516,11 +1516,12 @@ int getPlaylistSongId(int song)
 int PlaylistInfo(int fd, char *utf8file, int detail)
 {
 	ListNode *node;
-	StoredPlaylist *sp = loadStoredPlaylist(utf8file, fd);
-	if (sp == NULL)
+	StoredPlaylist sp;
+
+	if (loadStoredPlaylist(fd, &sp, utf8file) < 0)
 		return -1;
 
-	node = sp->list->firstNode;
+	node = sp.list->firstNode;
 	while (node != NULL) {
 		char *temp = node->data;
 		int wrote = 0;
@@ -1540,18 +1541,19 @@ int PlaylistInfo(int fd, char *utf8file, int detail)
 		node = node->nextNode;
 	}
 
-	freeStoredPlaylist(sp);
+	freeStoredPlaylist(&sp);
 	return 0;
 }
 
 int loadPlaylist(int fd, char *utf8file)
 {
 	ListNode *node;
-	StoredPlaylist *sp = loadStoredPlaylist(utf8file, fd);
-	if (sp == NULL)
+	StoredPlaylist sp;
+
+	if (loadStoredPlaylist(fd, &sp, utf8file) < 0)
 		return -1;
 
-	node = sp->list->firstNode;
+	node = sp.list->firstNode;
 	while (node != NULL) {
 		char *temp = node->data;
 		if ((addToPlaylist(STDERR_FILENO, temp, 0)) < 0) {
@@ -1573,7 +1575,7 @@ int loadPlaylist(int fd, char *utf8file)
 		node = node->nextNode;
 	}
 
-	freeStoredPlaylist(sp);
+	freeStoredPlaylist(&sp);
 	return 0;
 }
 

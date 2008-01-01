@@ -69,6 +69,37 @@ static ListNode *nodeOfStoredPlaylist(StoredPlaylist *sp, int index)
 	return NULL;
 }
 
+static int writeStoredPlaylistToPath(StoredPlaylist *sp, const char *fspath)
+{
+	ListNode *node;
+	FILE *file;
+	char *s;
+
+	if (fspath == NULL)
+		return -1;
+
+	while (!(file = fopen(fspath, "w")) && errno == EINTR);
+	if (file == NULL) {
+		commandError(sp->fd, ACK_ERROR_NO_EXIST, "could not open file "
+		             "\"%s\": %s", fspath, strerror(errno));
+		return -1;
+	}
+
+	node = sp->list->firstNode;
+	while (node != NULL) {
+		char path_max_tmp[MPD_PATH_MAX];
+
+		s = utf8_to_fs_charset(path_max_tmp, (char *)node->data);
+		if (playlist_saveAbsolutePaths && !isValidRemoteUtf8Url(s))
+			s = rmp2amp_r(path_max_tmp, s);
+		fprintf(file, "%s\n", s);
+		node = node->nextNode;
+	}
+
+	while (fclose(file) != 0 && errno == EINTR);
+	return 0;
+}
+
 static void appendSongToStoredPlaylist(StoredPlaylist *sp, Song *song)
 {
 	char path_max_tmp[MPD_PATH_MAX];
@@ -77,55 +108,32 @@ static void appendSongToStoredPlaylist(StoredPlaylist *sp, Song *song)
 	insertInListWithoutKey(sp->list, xstrdup(path_max_tmp));
 }
 
-StoredPlaylist *newStoredPlaylist(const char *utf8name, int fd, int ignoreExisting)
+static void initStoredPlaylist(int fd, StoredPlaylist *sp, const char *utf8name)
 {
-	struct stat buf;
-	char filename[MPD_PATH_MAX];
-	StoredPlaylist *sp;
-
-	if (!valid_playlist_name(fd, utf8name))
-		return NULL;
-
-	utf8_to_fs_playlist_path(filename, utf8name);
-
-	if (stat(filename, &buf) == 0 && ! ignoreExisting) {
-		commandError(fd, ACK_ERROR_EXIST,
-			     "a file or directory already exists with "
-			     "the name \"%s\"", utf8name);
-		return NULL;
-	}
-	if (!(sp = malloc(sizeof(*sp))))
-		return NULL;
-
+	utf8_to_fs_playlist_path(sp->fs_path, utf8name);
 	sp->list = makeList(DEFAULT_FREE_DATA_FUNC, 0);
 	sp->fd = fd;
-	sp->fspath = xstrdup(filename);
-
-	return sp;
 }
 
-StoredPlaylist *loadStoredPlaylist(const char *utf8path, int fd)
+int loadStoredPlaylist(int fd, StoredPlaylist *sp, const char *utf8path)
 {
-	StoredPlaylist *sp;
 	FILE *file;
 	char buffer[MPD_PATH_MAX];
 	char path_max_tmp[MPD_PATH_MAX];
 	const size_t musicDir_len = strlen(musicDir);
 
 	if (!valid_playlist_name(fd, utf8path))
-		return NULL;
+		return -1;
 
 	utf8_to_fs_playlist_path(path_max_tmp, utf8path);
 	while (!(file = fopen(path_max_tmp, "r")) && errno == EINTR);
 	if (file == NULL) {
 		commandError(fd, ACK_ERROR_NO_EXIST, "could not open file "
 		             "\"%s\": %s", path_max_tmp, strerror(errno));
-		return NULL;
+		return -1;
 	}
 
-	sp = newStoredPlaylist(utf8path, fd, 1);
-	if (!sp)
-		goto out;
+	initStoredPlaylist(fd, sp, utf8path);
 
 	while (myFgets(buffer, sizeof(buffer), file)) {
 		char *s = buffer;
@@ -143,19 +151,14 @@ StoredPlaylist *loadStoredPlaylist(const char *utf8path, int fd)
 			insertInListWithoutKey(sp->list, xstrdup(s));
 	}
 
-out:
 	while (fclose(file) && errno == EINTR);
-	return sp;
+	return 0;
 }
 
 void freeStoredPlaylist(StoredPlaylist *sp)
 {
 	if (sp->list)
 		freeList(sp->list);
-	if (sp->fspath)
-		free(sp->fspath);
-
-	free(sp);
 }
 
 static int moveSongInStoredPlaylist(int fd, StoredPlaylist *sp, int src, int dest)
@@ -219,26 +222,28 @@ static int moveSongInStoredPlaylist(int fd, StoredPlaylist *sp, int src, int des
 	return 0;
 }
 
-int moveSongInStoredPlaylistByPath(int fd, const char *utf8path, int src, int dest)
+int moveSongInStoredPlaylistByPath(int fd, const char *utf8path,
+                                   int src, int dest)
 {
-	StoredPlaylist *sp = loadStoredPlaylist(utf8path, fd);
-	if (!sp) {
+	StoredPlaylist sp;
+
+	if (loadStoredPlaylist(fd, &sp, utf8path) < 0) {
 		commandError(fd, ACK_ERROR_UNKNOWN, "could not open playlist");
 		return -1;
 	}
 
-	if (moveSongInStoredPlaylist(fd, sp, src, dest) != 0) {
-		freeStoredPlaylist(sp);
+	if (moveSongInStoredPlaylist(fd, &sp, src, dest) != 0) {
+		freeStoredPlaylist(&sp);
 		return -1;
 	}
 
-	if (writeStoredPlaylist(sp) != 0) {
+	if (writeStoredPlaylistToPath(&sp, utf8path) != 0) {
 		commandError(fd, ACK_ERROR_UNKNOWN, "failed to save playlist");
-		freeStoredPlaylist(sp);
+		freeStoredPlaylist(&sp);
 		return -1;
 	}
 
-	freeStoredPlaylist(sp);
+	freeStoredPlaylist(&sp);
 	return 0;
 }
 
@@ -278,61 +283,26 @@ static int removeOneSongFromStoredPlaylist(int fd, StoredPlaylist *sp, int pos)
 
 int removeOneSongFromStoredPlaylistByPath(int fd, const char *utf8path, int pos)
 {
-	StoredPlaylist *sp = loadStoredPlaylist(utf8path, fd);
-	if (!sp) {
+	StoredPlaylist sp;
+
+	if (loadStoredPlaylist(fd, &sp, utf8path) < 0) {
 		commandError(fd, ACK_ERROR_UNKNOWN, "could not open playlist");
 		return -1;
 	}
 
-	if (removeOneSongFromStoredPlaylist(fd, sp, pos) != 0) {
-		freeStoredPlaylist(sp);
+	if (removeOneSongFromStoredPlaylist(fd, &sp, pos) != 0) {
+		freeStoredPlaylist(&sp);
 		return -1;
 	}
 
-	if (writeStoredPlaylist(sp) != 0) {
+	if (writeStoredPlaylistToPath(&sp, utf8path) != 0) {
 		commandError(fd, ACK_ERROR_UNKNOWN, "failed to save playlist");
-		freeStoredPlaylist(sp);
+		freeStoredPlaylist(&sp);
 		return -1;
 	}
 
-	freeStoredPlaylist(sp);
+	freeStoredPlaylist(&sp);
 	return 0;
-}
-
-static int writeStoredPlaylistToPath(StoredPlaylist *sp, const char *fspath)
-{
-	ListNode *node;
-	FILE *file;
-	char *s;
-
-	if (fspath == NULL)
-		return -1;
-
-	while (!(file = fopen(fspath, "w")) && errno == EINTR);
-	if (file == NULL) {
-		commandError(sp->fd, ACK_ERROR_NO_EXIST, "could not open file "
-		             "\"%s\": %s", fspath, strerror(errno));
-		return -1;
-	}
-
-	node = sp->list->firstNode;
-	while (node != NULL) {
-		char path_max_tmp[MPD_PATH_MAX];
-
-		s = utf8_to_fs_charset(path_max_tmp, (char *)node->data);
-		if (playlist_saveAbsolutePaths && !isValidRemoteUtf8Url(s))
-			s = rmp2amp_r(path_max_tmp, s);
-		fprintf(file, "%s\n", s);
-		node = node->nextNode;
-	}
-
-	while (fclose(file) != 0 && errno == EINTR);
-	return 0;
-}
-
-int writeStoredPlaylist(StoredPlaylist *sp)
-{
-	return writeStoredPlaylistToPath(sp, sp->fspath);
 }
 
 int appendSongToStoredPlaylistByPath(int fd, const char *utf8path, Song *song)
@@ -362,13 +332,6 @@ int appendSongToStoredPlaylistByPath(int fd, const char *utf8path, Song *song)
 
 	while (fclose(file) != 0 && errno == EINTR);
 	return 0;
-}
-
-void appendPlaylistToStoredPlaylist(StoredPlaylist *sp, Playlist *playlist)
-{
-	int i;
-	for (i = 0; i < playlist->length; i++)
-		appendSongToStoredPlaylist(sp, playlist->songs[i]);
 }
 
 int renameStoredPlaylist(int fd, const char *utf8from, const char *utf8to)

@@ -22,26 +22,22 @@
 #include "song.h"
 #include "list.h"
 #include "playlist.h"
+#include "path.h"
 
 typedef struct _storedPlaylist {
 	List *list;
-	unsigned int length;
-	char *fspath;
+	char fs_path[MPD_PATH_MAX];
 	int fd;
 } StoredPlaylist;
 
-StoredPlaylist *newStoredPlaylist(const char *filename, int fd, int ignoreExisting);
-StoredPlaylist *loadStoredPlaylist(const char *utf8path, int fd);
+int loadStoredPlaylist(int fd, StoredPlaylist *sp, const char *utf8path);
 void freeStoredPlaylist(StoredPlaylist *sp);
 
 int moveSongInStoredPlaylistByPath(int fd, const char *utf8path, int src, int dest);
 int removeAllFromStoredPlaylistByPath(int fd, const char *utf8path);
 int removeOneSongFromStoredPlaylistByPath(int fd, const char *utf8path, int pos);
 
-int writeStoredPlaylist(StoredPlaylist *sp);
-
 int appendSongToStoredPlaylistByPath(int fd, const char *utf8path, Song *song);
-void appendPlaylistToStoredPlaylist(StoredPlaylist *sp, Playlist *playlist);
 
 int renameStoredPlaylist(int fd, const char *utf8from, const char *utf8to);
 
