@@ -22,6 +22,7 @@
 #include "conf.h"
 #include "utf8.h"
 #include "utils.h"
+#include "playlist.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -277,4 +278,11 @@ char *sanitizePathDup(char *path)
 	DEBUG("sanitized: %s\n", ret);
 
 	return xrealloc(ret, len + 1);
+}
+
+void utf8_to_fs_playlist_path(char *path_max_tmp, const char *utf8path)
+{
+	utf8_to_fs_charset(path_max_tmp, (char *)utf8path);
+	rpp2app_r(path_max_tmp, path_max_tmp);
+	strncat(path_max_tmp, "." PLAYLIST_FILE_SUFFIX, MPD_PATH_MAX - 1);
 }

@@ -75,7 +75,13 @@ char *sanitizePathDup(char *path);
 /* this is actually like strlcpy (OpenBSD), but we don't actually want to
  * blindly use it everywhere, only for paths that are OK to truncate (for
  * error reporting and such.
- * dest must be MAXPATHLEN+1 bytes large (which is standard in mpd) */
+ * dest must be MPD_PATH_MAX bytes large (which is standard in mpd) */
 void pathcpy_trunc(char *dest, const char *src);
+
+/*
+ * converts a path passed from a client into an absolute FS path.
+ * paths passed by clients do NOT have file suffixes in them
+ */
+void utf8_to_fs_playlist_path(char *path_max_tmp, const char *utf8path);
 
 #endif

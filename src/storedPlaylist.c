@@ -52,17 +52,6 @@ static int valid_playlist_name(int err_fd, const char *utf8path)
 	return 1;
 }
 
-/*
- * converts a path passed from a client into an absolute, FS path
- * paths passed by clients do NOT have file suffixes in them
- */
-static void utf8_to_fs_playlist_path(char *path_max_tmp, const char *utf8path)
-{
-	utf8_to_fs_charset(path_max_tmp, (char *)utf8path);
-	rpp2app_r(path_max_tmp, path_max_tmp);
-	strncat(path_max_tmp, "." PLAYLIST_FILE_SUFFIX, MPD_PATH_MAX - 1);
-}
-
 static unsigned int lengthOfStoredPlaylist(StoredPlaylist *sp)
 {
 	return sp->list->numberOfNodes;
