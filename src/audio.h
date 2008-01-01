@@ -55,7 +55,7 @@ void finishAudioDriver(void);
 
 int openAudioDevice(AudioFormat * audioFormat);
 
-int playAudio(char *playChunk, int size);
+int playAudio(const char *playChunk, int size);
 
 void dropBufferedAudio(void);
 

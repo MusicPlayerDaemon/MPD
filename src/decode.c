@@ -510,15 +510,13 @@ static void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer *
 	int nextChunk = -1;
 	int test;
 	int decodeWaitedOn = 0;
-	char silence[CHUNK_SIZE];
+	static const char silence[CHUNK_SIZE];
 	double sizeToTime = 0.0;
 	int previousMetadataChunk = -1;
 	MetadataChunk currentMetadataChunk;
 	int currentChunkSent = 1;
 	int end;
 	int next = -1;
-
-	memset(silence, 0, CHUNK_SIZE);
 
 	if (waitOnDecode(pc, dc, cb, &decodeWaitedOn) < 0)
 		return;

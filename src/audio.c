@@ -366,7 +366,7 @@ int openAudioDevice(AudioFormat * audioFormat)
 	return ret;
 }
 
-int playAudio(char *playChunk, int size)
+int playAudio(const char *playChunk, int size)
 {
 	int send;
 
