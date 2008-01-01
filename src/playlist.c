@@ -1388,26 +1388,16 @@ int shufflePlaylist(int fd)
 int deletePlaylist(int fd, char *utf8file)
 {
 	char path_max_tmp[MPD_PATH_MAX];
-	char *file = utf8_to_fs_charset(path_max_tmp, utf8file);
-	char *rfile = xmalloc(strlen(file) + strlen(".") +
-			      strlen(PLAYLIST_FILE_SUFFIX) + 1);
-	char *actualFile;
 
-	strcpy(rfile, file);
-	strcat(rfile, ".");
-	strcat(rfile, PLAYLIST_FILE_SUFFIX);
+	utf8_to_fs_playlist_path(path_max_tmp, utf8file);
 
-	actualFile = rpp2app_r(path_max_tmp, rfile);
-	if (isPlaylist(actualFile))
-		free(rfile);
-	else {
-		free(rfile);
+	if (!isPlaylist(path_max_tmp)) {
 		commandError(fd, ACK_ERROR_NO_EXIST,
 			     "playlist \"%s\" not found", utf8file);
 		return -1;
 	}
 
-	if (unlink(actualFile) < 0) {
+	if (unlink(path_max_tmp) < 0) {
 		commandError(fd, ACK_ERROR_SYSTEM,
 			     "problems deleting file");
 		return -1;
