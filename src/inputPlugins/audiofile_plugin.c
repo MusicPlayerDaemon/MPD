@@ -131,17 +131,6 @@ static int audiofile_decode(OutputBuffer * cb, DecoderControl * dc, char *path)
 		}
 
 		flushOutputBuffer(cb);
-
-		/*if(dc->seek) {
-		   dc->seekError = 1;
-		   dc->seek = 0;
-		   } */
-
-		if (dc->stop) {
-			dc->state = DECODE_STATE_STOP;
-			dc->stop = 0;
-		} else
-			dc->state = DECODE_STATE_STOP;
 	}
 	afCloseFile(af_fp);
 

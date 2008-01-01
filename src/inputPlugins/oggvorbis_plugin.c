@@ -92,11 +92,10 @@ static int ogg_seek_cb(void *vdata, ogg_int64_t offset, int whence)
 	return seekInputStream(data->inStream, offset, whence);
 }
 
+/* TODO: check Ogg libraries API and see if we can just not have this func */
 static int ogg_close_cb(void *vdata)
 {
-	OggCallbackData *data = (OggCallbackData *) vdata;
-
-	return closeInputStream(data->inStream);
+	return 0;
 }
 
 static long ogg_tell_cb(void *vdata)
@@ -253,7 +252,6 @@ static int oggvorbis_decode(OutputBuffer * cb, DecoderControl * dc,
 	callbacks.close_func = ogg_close_cb;
 	callbacks.tell_func = ogg_tell_cb;
 	if ((ret = ov_open_callbacks(&data, &vf, NULL, 0, callbacks)) < 0) {
-		closeInputStream(inStream);
 		if (!dc->stop) {
 			switch (ret) {
 			case OV_EREAD:
@@ -278,9 +276,6 @@ static int oggvorbis_decode(OutputBuffer * cb, DecoderControl * dc,
 			ERROR("Error decoding Ogg Vorbis stream: %s\n",
 			      errorStr);
 			return -1;
-		} else {
-			dc->state = DECODE_STATE_STOP;
-			dc->stop = 0;
 		}
 		return 0;
 	}
@@ -357,12 +352,6 @@ static int oggvorbis_decode(OutputBuffer * cb, DecoderControl * dc,
 	ov_clear(&vf);
 
 	flushOutputBuffer(cb);
-
-	if (dc->stop) {
-		dc->state = DECODE_STATE_STOP;
-		dc->stop = 0;
-	} else
-		dc->state = DECODE_STATE_STOP;
 
 	return 0;
 }

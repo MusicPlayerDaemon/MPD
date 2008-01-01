@@ -1028,14 +1028,10 @@ static int mp3_decode(OutputBuffer * cb, DecoderControl * dc,
 
 	if (openMp3FromInputStream(inStream, &data, dc, &tag, &replayGainInfo) <
 	    0) {
-		closeInputStream(inStream);
 		if (!dc->stop) {
 			ERROR
 			    ("Input does not appear to be a mp3 bit stream.\n");
 			return -1;
-		} else {
-			dc->state = DECODE_STATE_STOP;
-			dc->stop = 0;
 		}
 		return 0;
 	}
@@ -1089,8 +1085,6 @@ static int mp3_decode(OutputBuffer * cb, DecoderControl * dc,
 	if (replayGainInfo)
 		freeReplayGainInfo(replayGainInfo);
 
-	closeInputStream(inStream);
-
 	if (dc->seek && data.muteFrame == MUTEFRAME_SEEK) {
 		clearOutputBuffer(cb);
 		dc->seek = 0;
@@ -1098,12 +1092,6 @@ static int mp3_decode(OutputBuffer * cb, DecoderControl * dc,
 
 	flushOutputBuffer(cb);
 	mp3DecodeDataFinalize(&data);
-
-	if (dc->stop) {
-		dc->state = DECODE_STATE_STOP;
-		dc->stop = 0;
-	} else
-		dc->state = DECODE_STATE_STOP;
 
 	return 0;
 }

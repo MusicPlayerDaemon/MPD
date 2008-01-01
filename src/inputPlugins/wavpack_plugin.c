@@ -218,9 +218,6 @@ static void wavpack_decode(OutputBuffer *cb, DecoderControl *dc,
 	} while (samplesgot == samplesreq);
 
 	flushOutputBuffer(cb);
-
-	dc->state = DECODE_STATE_STOP;
-	dc->stop = 0;
 }
 
 static char *wavpack_tag(WavpackContext *wpc, char *key)
@@ -450,7 +447,6 @@ static int wavpack_streamdecode(OutputBuffer *cb, DecoderControl *dc,
 	wavpack_decode(cb, dc, wpc, can_seek(is), NULL);
 
 	WavpackCloseFile(wpc);
-	closeInputStream(is); /* calling side doesn't do this in mpd 0.13.0 */
 
 	return 0;
 }

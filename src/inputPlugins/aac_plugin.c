@@ -337,7 +337,6 @@ static int aac_decode(OutputBuffer * cb, DecoderControl * dc, char *path)
 	if (bread < 0) {
 		ERROR("Error not a AAC stream.\n");
 		faacDecClose(decoder);
-		closeInputStream(b.inStream);
 		if (b.buffer)
 			free(b.buffer);
 		return -1;
@@ -413,7 +412,6 @@ static int aac_decode(OutputBuffer * cb, DecoderControl * dc, char *path)
 	flushOutputBuffer(cb);
 
 	faacDecClose(decoder);
-	closeInputStream(b.inStream);
 	if (b.buffer)
 		free(b.buffer);
 
@@ -424,12 +422,6 @@ static int aac_decode(OutputBuffer * cb, DecoderControl * dc, char *path)
 		dc->seekError = 1;
 		dc->seek = 0;
 	}
-
-	if (dc->stop) {
-		dc->state = DECODE_STATE_STOP;
-		dc->stop = 0;
-	} else
-		dc->state = DECODE_STATE_STOP;
 
 	return 0;
 }

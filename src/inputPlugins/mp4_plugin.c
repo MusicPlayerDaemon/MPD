@@ -127,7 +127,6 @@ static int mp4_decode(OutputBuffer * cb, DecoderControl * dc,
 	if (!mp4fh) {
 		ERROR("Input does not appear to be a mp4 stream.\n");
 		free(mp4cb);
-		closeInputStream(inStream);
 		return -1;
 	}
 
@@ -135,7 +134,6 @@ static int mp4_decode(OutputBuffer * cb, DecoderControl * dc,
 	if (track < 0) {
 		ERROR("No AAC track found in mp4 stream.\n");
 		mp4ff_close(mp4fh);
-		closeInputStream(inStream);
 		free(mp4cb);
 		return -1;
 	}
@@ -164,7 +162,6 @@ static int mp4_decode(OutputBuffer * cb, DecoderControl * dc,
 		faacDecClose(decoder);
 		mp4ff_close(mp4fh);
 		free(mp4cb);
-		closeInputStream(inStream);
 		return -1;
 	}
 
@@ -180,7 +177,6 @@ static int mp4_decode(OutputBuffer * cb, DecoderControl * dc,
 		ERROR("Error getting audio format of mp4 AAC track.\n");
 		faacDecClose(decoder);
 		mp4ff_close(mp4fh);
-		closeInputStream(inStream);
 		free(mp4cb);
 		return -1;
 	}
@@ -296,7 +292,6 @@ static int mp4_decode(OutputBuffer * cb, DecoderControl * dc,
 	free(seekTable);
 	faacDecClose(decoder);
 	mp4ff_close(mp4fh);
-	closeInputStream(inStream);
 	free(mp4cb);
 
 	if (dc->state != DECODE_STATE_DECODE)
@@ -307,12 +302,6 @@ static int mp4_decode(OutputBuffer * cb, DecoderControl * dc,
 		dc->seek = 0;
 	}
 	flushOutputBuffer(cb);
-
-	if (dc->stop) {
-		dc->state = DECODE_STATE_STOP;
-		dc->stop = 0;
-	} else
-		dc->state = DECODE_STATE_STOP;
 
 	return 0;
 }

@@ -221,12 +221,6 @@ static int mod_decode(OutputBuffer * cb, DecoderControl * dc, char *path)
 
 	MikMod_Exit();
 
-	if (dc->stop) {
-		dc->state = DECODE_STATE_STOP;
-		dc->stop = 0;
-	} else
-		dc->state = DECODE_STATE_STOP;
-
 	return 0;
 }
 

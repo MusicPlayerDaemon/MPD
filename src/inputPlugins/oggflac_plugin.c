@@ -37,15 +37,13 @@
 #include <string.h>
 #include <unistd.h>
 
-static void oggflac_cleanup(InputStream * inStream,
-			    FlacData * data,
+static void oggflac_cleanup(FlacData * data,
 			    OggFLAC__SeekableStreamDecoder * decoder)
 {
 	if (data->replayGainInfo)
 		freeReplayGainInfo(data->replayGainInfo);
 	if (decoder)
 		OggFLAC__seekable_stream_decoder_delete(decoder);
-	closeInputStream(inStream);
 }
 
 static OggFLAC__SeekableStreamDecoderReadStatus of_read_cb(const
@@ -330,7 +328,8 @@ static MpdTag *oggflac_TagDup(char *file)
 	 * data.tag will be set or unset, that's all we care about */
 	decoder = full_decoder_init_and_read_metadata(&data, 1);
 
-	oggflac_cleanup(&inStream, &data, decoder);
+	oggflac_cleanup(&data, decoder);
+	closeInputStream(&inStream);
 
 	return data.tag;
 }
@@ -388,11 +387,8 @@ static int oggflac_decode(OutputBuffer * cb, DecoderControl * dc,
 		flushOutputBuffer(data.cb);
 	}
 
-	dc->state = DECODE_STATE_STOP;
-	dc->stop = 0;
-
 fail:
-	oggflac_cleanup(inStream, &data, decoder);
+	oggflac_cleanup(&data, decoder);
 
 	return ret;
 }

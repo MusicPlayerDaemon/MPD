@@ -410,22 +410,12 @@ static int flac_decode_internal(OutputBuffer * cb, DecoderControl * dc,
 		flushOutputBuffer(data.cb);
 	}
 
-	/*if(dc->seek) {
-	   dc->seekError = 1;
-	   dc->seek = 0;
-	   } */
-
-	dc->state = DECODE_STATE_STOP;
-	dc->stop = 0;
-
 fail:
 	if (data.replayGainInfo)
 		freeReplayGainInfo(data.replayGainInfo);
 
 	if (flacDec)
 		flac_delete(flacDec);
-
-	closeInputStream(inStream);
 
 	if (err) {
 		ERROR("flac %s\n", err);

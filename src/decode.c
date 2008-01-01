@@ -278,6 +278,7 @@ static void decodeStart(PlayerControl * pc, OutputBuffer * cb,
 			DecoderControl * dc)
 {
 	int ret;
+	int close_instream = 1;
 	InputStream inStream;
 	InputPlugin *plugin = NULL;
 	char path_max_tmp[MPD_PATH_MAX];
@@ -286,9 +287,7 @@ static void decodeStart(PlayerControl * pc, OutputBuffer * cb,
 	if (isRemoteUrl(pc->utf8url)) {
 		if (!utf8_to_latin1(path_max_tmp, pc->utf8url)) {
 			dc->error = DECODE_ERROR_FILE;
-			dc->state = DECODE_STATE_STOP;
-			dc->start = 0;
-			return;
+			goto stop_no_close;
 		}
 	} else
 		rmp2amp_r(path_max_tmp,
@@ -300,9 +299,7 @@ static void decodeStart(PlayerControl * pc, OutputBuffer * cb,
 
 	if (openInputStream(&inStream, path_max_tmp) < 0) {
 		dc->error = DECODE_ERROR_FILE;
-		dc->state = DECODE_STATE_STOP;
-		dc->start = 0;
-		return;
+		goto stop_no_close;
 	}
 
 	dc->state = DECODE_STATE_START;
@@ -317,20 +314,8 @@ static void decodeStart(PlayerControl * pc, OutputBuffer * cb,
 	/* for http streams, seekable is determined in bufferInputStream */
 	dc->seekable = inStream.seekable;
         
-	if (dc->stop) {
-		dc->state = DECODE_STATE_STOP;
-		dc->stop = 0;
-		return;
-	}
-
-	/*if(inStream.metaName) {
-	   MpdTag * tag = newMpdTag();
-	   tag->name = xstrdup(inStream.metaName);
-	   copyMpdTagToOutputBuffer(cb, tag);
-	   freeMpdTag(tag);
-	   } */
-
-	/* reset Metadata in OutputBuffer */
+	if (dc->stop)
+		goto stop;
 
 	ret = DECODE_ERROR_UNKTYPE;
 	if (isRemoteUrl(dc->utf8url)) {
@@ -390,6 +375,7 @@ static void decodeStart(PlayerControl * pc, OutputBuffer * cb,
 
 			if (plugin->fileDecodeFunc) {
 				closeInputStream(&inStream);
+				close_instream = 0;
 				ret = plugin->fileDecodeFunc(cb, dc,
 				                             path_max_tmp);
 				break;
@@ -402,15 +388,18 @@ static void decodeStart(PlayerControl * pc, OutputBuffer * cb,
 
 	if (ret < 0 || ret == DECODE_ERROR_UNKTYPE) {
 		pathcpy_trunc(pc->erroredUrl, dc->utf8url);
-		if (ret != DECODE_ERROR_UNKTYPE) {
+		if (ret != DECODE_ERROR_UNKTYPE)
 			dc->error = DECODE_ERROR_FILE;
-		} else {
+		else
 			dc->error = DECODE_ERROR_UNKTYPE;
-			closeInputStream(&inStream);
-		}
-		dc->stop = 0;
-		dc->state = DECODE_STATE_STOP;
 	}
+
+stop:
+	if (close_instream)
+		closeInputStream(&inStream);
+stop_no_close:
+	dc->state = DECODE_STATE_STOP;
+	dc->stop = 0;
 }
 
 static int decoderInit(PlayerControl * pc, OutputBuffer * cb,
