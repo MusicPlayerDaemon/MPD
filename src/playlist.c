@@ -1418,17 +1418,38 @@ int deletePlaylist(int fd, char *utf8file)
 
 int savePlaylist(int fd, char *utf8file)
 {
-	StoredPlaylist *sp = newStoredPlaylist(utf8file, fd, 0);
-	if (!sp)
+	FILE *fp;
+	int i;
+	struct stat sb;
+	char path_max_tmp[MPD_PATH_MAX];
+
+	if (!valid_playlist_name(fd, utf8file))
 		return -1;
 
-	appendPlaylistToStoredPlaylist(sp, &playlist);
-	if (writeStoredPlaylist(sp) != 0) {
-		freeStoredPlaylist(sp);
+	utf8_to_fs_playlist_path(path_max_tmp, utf8file);
+	if (!stat(path_max_tmp, &sb)) {
+		commandError(fd, ACK_ERROR_EXIST, "a file or directory already "
+			     "exists with the name \"%s\"", utf8file);
 		return -1;
 	}
 
-	freeStoredPlaylist(sp);
+	while (!(fp = fopen(path_max_tmp, "w")) && errno == EINTR);
+
+	for (i = 0; i < playlist.length; i++) {
+		char tmp[MPD_PATH_MAX];
+
+		get_song_url(path_max_tmp, playlist.songs[i]);
+		utf8_to_fs_charset(tmp, path_max_tmp);
+
+		if (playlist_saveAbsolutePaths &&
+		    playlist.songs[i]->type == SONG_TYPE_FILE)
+			fprintf(fp, "%s\n", rmp2amp_r(tmp, tmp));
+		else
+			fprintf(fp, "%s\n", tmp);
+	}
+
+	while (fclose(fp) && errno == EINTR) ;
+
 	return 0;
 }
 
@@ -1679,3 +1700,28 @@ int playlistQueueInfo(int fd)
 	}
 	return 0;
 }
+
+/*
+ * Not supporting '/' was done out of laziness, and we should really
+ * strive to support it in the future.
+ *
+ * Not supporting '\r' and '\n' is done out of protocol limitations (and
+ * arguably laziness), but bending over head over heels to modify the
+ * protocol (and compatibility with all clients) to support idiots who
+ * put '\r' and '\n' in filenames isn't going to happen, either.
+ */
+int valid_playlist_name(int err_fd, const char *utf8path)
+{
+	if (strchr(utf8path, '/') ||
+	    strchr(utf8path, '\n') ||
+	    strchr(utf8path, '\r')) {
+		commandError(err_fd, ACK_ERROR_ARG, "playlist name \"%s\" is "
+		             "invalid: playlist names may not contain slashes,"
+			     " newlines or carriage returns",
+		             utf8path);
+		return 0;
+	}
+	return 1;
+}
+
+

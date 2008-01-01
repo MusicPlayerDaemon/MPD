@@ -156,4 +156,6 @@ int deleteFromPlaylistQueueInternal(int song);
 
 int playlistQueueInfo(int fd);
 
+int valid_playlist_name(int err_fd, const char *utf8path);
+
 #endif

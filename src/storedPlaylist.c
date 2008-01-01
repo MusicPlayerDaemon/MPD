@@ -29,29 +29,6 @@
 #include <string.h>
 #include <errno.h>
 
-/*
- * Not supporting '/' was done out of laziness, and we should really
- * strive to support it in the future.
- *
- * Not supporting '\r' and '\n' is done out of protocol limitations (and
- * arguably laziness), but bending over head over heels to modify the
- * protocol (and compatibility with all clients) to support idiots who
- * put '\r' and '\n' in filenames isn't going to happen, either.
- */
-static int valid_playlist_name(int err_fd, const char *utf8path)
-{
-	if (strchr(utf8path, '/') ||
-	    strchr(utf8path, '\n') ||
-	    strchr(utf8path, '\r')) {
-		commandError(err_fd, ACK_ERROR_ARG, "playlist name \"%s\" is "
-		             "invalid: playlist names may not contain slashes,"
-			     " newlines or carriage returns",
-		             utf8path);
-		return 0;
-	}
-	return 1;
-}
-
 static unsigned int lengthOfStoredPlaylist(StoredPlaylist *sp)
 {
 	return sp->list->numberOfNodes;
