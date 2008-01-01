@@ -29,33 +29,40 @@
 #include <string.h>
 #include <errno.h>
 
-static char *utf8pathToFsPathInStoredPlaylist(const char *utf8path, int fd)
+/*
+ * Not supporting '/' was done out of laziness, and we should really
+ * strive to support it in the future.
+ *
+ * Not supporting '\r' and '\n' is done out of protocol limitations (and
+ * arguably laziness), but bending over head over heels to modify the
+ * protocol (and compatibility with all clients) to support idiots who
+ * put '\r' and '\n' in filenames isn't going to happen, either.
+ */
+static int valid_playlist_name(int err_fd, const char *utf8path)
 {
-	char *file;
-	char *rfile;
-	char *actualFile;
-	static char path_max_tmp[MPD_PATH_MAX]; /* should be MT-safe */
-
-	if (strstr(utf8path, "/")) {
-		commandError(fd, ACK_ERROR_ARG, "playlist name \"%s\" is "
-		             "invalid: playlist names may not contain slashes",
+	if (strchr(utf8path, '/') ||
+	    strchr(utf8path, '\n') ||
+	    strchr(utf8path, '\r')) {
+		commandError(err_fd, ACK_ERROR_ARG, "playlist name \"%s\" is "
+		             "invalid: playlist names may not contain slashes,"
+			     " newlines or carriage returns",
 		             utf8path);
-		return NULL;
+		return 0;
 	}
+	return 1;
+}
 
-	file = utf8_to_fs_charset(path_max_tmp, (char *)utf8path);
-	rfile = xmalloc(strlen(file) + strlen(".") +
-	                strlen(PLAYLIST_FILE_SUFFIX) + 1);
+/*
+ * converts a path passed from a client into an absolute, FS path
+ * paths passed by clients do NOT have file suffixes in them
+ */
+static void utf8_to_fs_playlist_path(char *path_max_tmp, const char *utf8path)
+{
+	utf8_to_fs_charset(path_max_tmp, (char *)utf8path);
+	rpp2app_r(path_max_tmp, path_max_tmp);
+	strncat(path_max_tmp, "." PLAYLIST_FILE_SUFFIX, MPD_PATH_MAX - 1);
 
-	strcpy(rfile, file);
-	strcat(rfile, ".");
-	strcat(rfile, PLAYLIST_FILE_SUFFIX);
-
-	actualFile = rpp2app_r(path_max_tmp, rfile);
-
-	free(rfile);
-
-	return actualFile;
+	return path_max_tmp;
 }
 
 static unsigned int lengthOfStoredPlaylist(StoredPlaylist *sp)
@@ -109,36 +116,33 @@ static void appendSongToStoredPlaylist(StoredPlaylist *sp, Song *song)
 StoredPlaylist *newStoredPlaylist(const char *utf8name, int fd, int ignoreExisting)
 {
 	struct stat buf;
-	char *filename = NULL;
-	StoredPlaylist *sp = calloc(1, sizeof(*sp));
-	if (!sp)
+	char filename[MPD_PATH_MAX];
+	StoredPlaylist *sp;
+
+	if (!valid_playlist_name(fd, utf8name))
 		return NULL;
 
-	if (utf8name) {
-		filename = utf8pathToFsPathInStoredPlaylist(utf8name, fd);
+	utf8_to_fs_playlist_path(filename, utf8name);
 
-		if (filename && stat(filename, &buf) == 0 &&
-		    ignoreExisting == 0) {
-			commandError(fd, ACK_ERROR_EXIST,
-			             "a file or directory already exists with "
-			             "the name \"%s\"", utf8name);
-			free(sp);
-			return NULL;
-		}
+	if (stat(filename, &buf) == 0 && ! ignoreExisting) {
+		commandError(fd, ACK_ERROR_EXIST,
+			     "a file or directory already exists with "
+			     "the name \"%s\"", utf8name);
+		return NULL;
 	}
+	if (!(sp = malloc(sizeof(*sp))))
+		return NULL;
 
 	sp->list = makeList(DEFAULT_FREE_DATA_FUNC, 0);
 	sp->fd = fd;
-
-	if (filename)
-		sp->fspath = xstrdup(filename);
+	sp->fspath = xstrdup(filename);
 
 	return sp;
 }
 
+/* FIXME - this function is gross */
 StoredPlaylist *loadStoredPlaylist(const char *utf8path, int fd)
 {
-	char *filename;
 	StoredPlaylist *sp;
 	FILE *file;
 	char s[MPD_PATH_MAX];
@@ -146,27 +150,32 @@ StoredPlaylist *loadStoredPlaylist(const char *utf8path, int fd)
 	char path_max_tmp2[MPD_PATH_MAX]; /* TODO: cleanup */
 	char path_max_tmp3[MPD_PATH_MAX]; /* TODO: cleanup */
 	int slength = 0;
-	char *temp = utf8_to_fs_charset(path_max_tmp2, (char *)utf8path);
-	char *parent = parent_path(path_max_tmp3, temp);
-	int parentlen = strlen(parent);
+	char *temp;
+	char *parent;
+	int parentlen;
 	int tempInt;
 	int commentCharFound = 0;
 	Song *song;
 
-	filename = utf8pathToFsPathInStoredPlaylist(utf8path, fd);
-	if (!filename)
+	if (!valid_playlist_name(fd, utf8path))
 		return NULL;
 
-	while (!(file = fopen(filename, "r")) && errno == EINTR);
+	utf8_to_fs_playlist_path(path_max_tmp, utf8path);
+
+	while (!(file = fopen(path_max_tmp, "r")) && errno == EINTR);
 	if (file == NULL) {
 		commandError(fd, ACK_ERROR_NO_EXIST, "could not open file "
-		             "\"%s\": %s", filename, strerror(errno));
+		             "\"%s\": %s", path_max_tmp, strerror(errno));
 		return NULL;
 	}
 
 	sp = newStoredPlaylist(utf8path, fd, 1);
 	if (!sp)
 		goto out;
+
+	temp = utf8_to_fs_charset(path_max_tmp2, (char *)utf8path);
+	parent = parent_path(path_max_tmp3, temp);
+	parentlen = strlen(parent);
 
 	while ((tempInt = fgetc(file)) != EOF) {
 		s[slength] = tempInt;
@@ -179,10 +188,8 @@ StoredPlaylist *loadStoredPlaylist(const char *utf8path, int fd)
 			    s[strlen(musicDir)] == '/') {
 				memmove(s, &(s[strlen(musicDir) + 1]),
 				        strlen(&(s[strlen(musicDir) + 1])) + 1);
-				printf("s: <%s>\n", s);
 			} else if (parentlen) {
 				temp = xstrdup(s);
-				memset(s, 0, MPD_PATH_MAX);
 				strcpy(s, parent);
 				strncat(s, "/", MPD_PATH_MAX - parentlen);
 				strncat(s, temp, MPD_PATH_MAX - parentlen - 1);
@@ -327,22 +334,14 @@ int moveSongInStoredPlaylistByPath(int fd, const char *utf8path, int src, int de
 	return 0;
 }
 
-/* Not used currently
-static void removeAllFromStoredPlaylist(StoredPlaylist *sp)
-{
-	freeList(sp->list);
-	sp->list = makeList(DEFAULT_FREE_DATA_FUNC, 0);
-}
-*/
-
 int removeAllFromStoredPlaylistByPath(int fd, const char *utf8path)
 {
-	char *filename;
+	char filename[MPD_PATH_MAX];
 	FILE *file;
 
-	filename = utf8pathToFsPathInStoredPlaylist(utf8path, fd);
-	if (!filename)
+	if (!valid_playlist_name(fd, utf8path))
 		return -1;
+	utf8_to_fs_playlist_path(filename, utf8path);
 
 	while (!(file = fopen(filename, "w")) && errno == EINTR);
 	if (file == NULL) {
@@ -430,20 +429,19 @@ int writeStoredPlaylist(StoredPlaylist *sp)
 
 int appendSongToStoredPlaylistByPath(int fd, const char *utf8path, Song *song)
 {
-	char *filename;
 	FILE *file;
 	char *s;
 	char path_max_tmp[MPD_PATH_MAX];
 	char path_max_tmp2[MPD_PATH_MAX];
 
-	filename = utf8pathToFsPathInStoredPlaylist(utf8path, fd);
-	if (!filename)
+	if (!valid_playlist_name(fd, utf8path))
 		return -1;
+	utf8_to_fs_playlist_path(path_max_tmp, utf8path);
 
-	while (!(file = fopen(filename, "a")) && errno == EINTR);
+	while (!(file = fopen(path_max_tmp, "a")) && errno == EINTR);
 	if (file == NULL) {
 		commandError(fd, ACK_ERROR_NO_EXIST, "could not open file "
-		             "\"%s\": %s", filename, strerror(errno));
+		             "\"%s\": %s", path_max_tmp, strerror(errno));
 		return -1;
 	}
 
@@ -468,45 +466,34 @@ void appendPlaylistToStoredPlaylist(StoredPlaylist *sp, Playlist *playlist)
 int renameStoredPlaylist(int fd, const char *utf8from, const char *utf8to)
 {
 	struct stat st;
-	char *from;
-	char *to;
-	int ret = 0;
+	char from[MPD_PATH_MAX];
+	char to[MPD_PATH_MAX];
 
-	from = xstrdup(utf8pathToFsPathInStoredPlaylist(utf8from, fd));
-	if (!from)
+	if (!valid_playlist_name(fd, utf8from) ||
+	    !valid_playlist_name(fd, utf8to))
 		return -1;
 
-	to = xstrdup(utf8pathToFsPathInStoredPlaylist(utf8to, fd));
-	if (!to) {
-		free(from);
-		return -1;
-	}
+	utf8_to_fs_playlist_path(from, utf8from);
+	utf8_to_fs_playlist_path(to, utf8to);
 
 	if (stat(from, &st) != 0) {
 		commandError(fd, ACK_ERROR_NO_EXIST,
 			     "no playlist named \"%s\"", utf8from);
-		ret = -1;
-		goto out;
+		return -1;
 	}
 
 	if (stat(to, &st) == 0) {
 		commandError(fd, ACK_ERROR_EXIST, "a file or directory "
 			     "already exists with the name \"%s\"", utf8to);
-		ret = -1;
-		goto out;
+		return -1;
 	}
 
 	if (rename(from, to) < 0) {
 		commandError(fd, ACK_ERROR_UNKNOWN,
 		             "could not rename playlist \"%s\" to \"%s\": %s",
 		             utf8from, utf8to, strerror(errno));
-		ret = -1;
-		goto out;
+		return -1;
 	}
 
-out:
-	free(from);
-	free(to);
-
-	return ret;
+	return 0;
 }

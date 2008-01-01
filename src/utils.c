@@ -121,11 +121,7 @@ unsigned long readLEuint32(const unsigned char *p)
 
 mpd_malloc char *xstrdup(const char *s)
 {
-	char *ret;
-	/* Return NULL, if s is NULL */
-	if(!s)
-		return NULL;
-	ret = strdup(s);
+	char *ret = strdup(s);
 	if (mpd_unlikely(!ret))
 		FATAL("OOM: strdup\n");
 	return ret;
