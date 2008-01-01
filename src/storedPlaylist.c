@@ -104,28 +104,18 @@ StoredPlaylist *newStoredPlaylist(const char *utf8name, int fd, int ignoreExisti
 	return sp;
 }
 
-/* FIXME - this function is gross */
 StoredPlaylist *loadStoredPlaylist(const char *utf8path, int fd)
 {
 	StoredPlaylist *sp;
 	FILE *file;
-	char s[MPD_PATH_MAX];
+	char buffer[MPD_PATH_MAX];
 	char path_max_tmp[MPD_PATH_MAX];
-	char path_max_tmp2[MPD_PATH_MAX]; /* TODO: cleanup */
-	char path_max_tmp3[MPD_PATH_MAX]; /* TODO: cleanup */
-	int slength = 0;
-	char *temp;
-	char *parent;
-	int parentlen;
-	int tempInt;
-	int commentCharFound = 0;
-	Song *song;
+	const size_t musicDir_len = strlen(musicDir);
 
 	if (!valid_playlist_name(fd, utf8path))
 		return NULL;
 
 	utf8_to_fs_playlist_path(path_max_tmp, utf8path);
-
 	while (!(file = fopen(path_max_tmp, "r")) && errno == EINTR);
 	if (file == NULL) {
 		commandError(fd, ACK_ERROR_NO_EXIST, "could not open file "
@@ -137,66 +127,20 @@ StoredPlaylist *loadStoredPlaylist(const char *utf8path, int fd)
 	if (!sp)
 		goto out;
 
-	temp = utf8_to_fs_charset(path_max_tmp2, (char *)utf8path);
-	parent = parent_path(path_max_tmp3, temp);
-	parentlen = strlen(parent);
+	while (myFgets(buffer, sizeof(buffer), file)) {
+		char *s = buffer;
+		Song *song;
 
-	while ((tempInt = fgetc(file)) != EOF) {
-		s[slength] = tempInt;
-		if (s[slength] == '\n' || s[slength] == '\0') {
-			commentCharFound = 0;
-			s[slength] = '\0';
-			if (s[0] == PLAYLIST_COMMENT)
-				commentCharFound = 1;
-			if (!strncmp(s, musicDir, strlen(musicDir)) &&
-			    s[strlen(musicDir)] == '/') {
-				memmove(s, &(s[strlen(musicDir) + 1]),
-				        strlen(&(s[strlen(musicDir) + 1])) + 1);
-			} else if (parentlen) {
-				temp = xstrdup(s);
-				strcpy(s, parent);
-				strncat(s, "/", MPD_PATH_MAX - parentlen);
-				strncat(s, temp, MPD_PATH_MAX - parentlen - 1);
-				if (strlen(s) >= MPD_PATH_MAX) {
-					commandError(sp->fd,
-					             ACK_ERROR_PLAYLIST_LOAD,
-					             "\"%s\" is too long", temp);
-					free(temp);
-					freeStoredPlaylist(sp);
-					sp = NULL;
-					goto out;
-				}
-				free(temp);
-			}
-			slength = 0;
-			temp = fs_charset_to_utf8(path_max_tmp, s);
-			if (temp && !commentCharFound) {
-				song = getSongFromDB(temp);
-				if (song) {
-					appendSongToStoredPlaylist(sp, song);
-					continue;
-				}
-
-				if (!isValidRemoteUtf8Url(temp))
-					continue;
-
-				song = newSong(temp, SONG_TYPE_URL, NULL);
-				if (song) {
-					appendSongToStoredPlaylist(sp, song);
-					freeJustSong(song);
-				}
-			}
-		} else if (slength == (MPD_PATH_MAX - 1)) {
-			s[slength] = '\0';
-			commandError(sp->fd, ACK_ERROR_PLAYLIST_LOAD,
-				     "line \"%s\" in playlist \"%s\" "
-				     "is too long", s, utf8path);
-			freeStoredPlaylist(sp);
-			sp = NULL;
-			goto out;
-		} else if (s[slength] != '\r') {
-			slength++;
-		}
+		if (*s == PLAYLIST_COMMENT)
+			continue;
+		if (s[musicDir_len] == '/' &&
+		    !strncmp(s, musicDir, musicDir_len))
+			memmove(s, s + musicDir_len + 1,
+				strlen(s + musicDir_len + 1) + 1);
+		if ((song = getSongFromDB(s)))
+			appendSongToStoredPlaylist(sp, song);
+		else if (isValidRemoteUtf8Url(s))
+			insertInListWithoutKey(sp->list, xstrdup(s));
 	}
 
 out:
