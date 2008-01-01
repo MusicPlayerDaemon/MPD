@@ -61,8 +61,6 @@ static void utf8_to_fs_playlist_path(char *path_max_tmp, const char *utf8path)
 	utf8_to_fs_charset(path_max_tmp, (char *)utf8path);
 	rpp2app_r(path_max_tmp, path_max_tmp);
 	strncat(path_max_tmp, "." PLAYLIST_FILE_SUFFIX, MPD_PATH_MAX - 1);
-
-	return path_max_tmp;
 }
 
 static unsigned int lengthOfStoredPlaylist(StoredPlaylist *sp)
