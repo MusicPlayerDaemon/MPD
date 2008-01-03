@@ -29,7 +29,7 @@ struct ioOps {
 	 *   To register for IO, call FD_SET for each required queue
 	 * Return the highest fd number you registered
 	 */
-	int (*fdset) ( fd_set *rfds, fd_set *wfds, fd_set *efds );
+	int (*fdset) (fd_set * rfds, fd_set * wfds, fd_set * efds);
 
 	/*
 	 * Called after each 'select' statement.
@@ -39,13 +39,14 @@ struct ioOps {
 	 * Return the total number of fds left in all sets (Ie, return fdCount
 	 *   minus the number of times you called FD_CLR).
 	 */
-	int (*consume) ( int fdCount, fd_set *rfds, fd_set *wfds, fd_set *efds );
+	int (*consume) (int fdCount, fd_set * rfds, fd_set * wfds,
+			fd_set * efds);
 };
 
 /* Call this to register your io operation handler struct */
-void registerIO( struct ioOps *ops );
+void registerIO(struct ioOps *ops);
 
 /* Call this to deregister your io operation handler struct */
-void deregisterIO( struct ioOps *ops );
+void deregisterIO(struct ioOps *ops);
 
 #endif

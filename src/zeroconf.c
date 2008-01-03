@@ -16,8 +16,12 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "os_compat.h"
+#include "../config.h"
+
+#ifdef HAVE_ZEROCONF
+
 #include "zeroconf.h"
+#include "os_compat.h"
 #include "conf.h"
 #include "log.h"
 #include "listen.h"
@@ -27,7 +31,7 @@
 /* The dns-sd service type qualifier to publish */
 #define SERVICE_TYPE		"_mpd._tcp"
 
-/* The default service name to publish 
+/* The default service name to publish
  * (overridden by 'zeroconf_name' config parameter)
  */
 #define SERVICE_NAME		"Music Player"
@@ -35,11 +39,7 @@
 #define DEFAULT_ZEROCONF_ENABLED 1
 
 static int zeroconfEnabled;
-
-#ifdef HAVE_ZEROCONF
-static struct ioOps zeroConfIo = {
-};
-#endif
+static struct ioOps zeroConfIo;
 
 #ifdef HAVE_BONJOUR
 #include <dns_sd.h>
@@ -61,41 +61,44 @@ static DNSServiceRef dnsReference;
 /* Static avahi data */
 static AvahiEntryGroup *avahiGroup;
 static char *avahiName;
-static AvahiClient* avahiClient;
+static AvahiClient *avahiClient;
 static AvahiPoll avahiPoll;
 static int avahiRunning;
 
-static int avahiFdset( fd_set* rfds, fd_set* wfds, fd_set* efds );
-static int avahiFdconsume( int fdCount, fd_set* rfds, fd_set* wfds, fd_set* efds );
+static int avahiFdset(fd_set * rfds, fd_set * wfds, fd_set * efds);
+static int avahiFdconsume(int fdCount, fd_set * rfds, fd_set * wfds,
+			  fd_set * efds);
 
 /* Forward Declaration */
-static void avahiRegisterService(AvahiClient *c);
+static void avahiRegisterService(AvahiClient * c);
 
 struct AvahiWatch {
-	struct AvahiWatch* prev;
-	struct AvahiWatch* next;
+	struct AvahiWatch *prev;
+	struct AvahiWatch *next;
 	int fd;
 	AvahiWatchEvent requestedEvent;
 	AvahiWatchEvent observedEvent;
 	AvahiWatchCallback callback;
-	void* userdata;
+	void *userdata;
 };
 
 struct AvahiTimeout {
-	struct AvahiTimeout* prev;
-	struct AvahiTimeout* next;
+	struct AvahiTimeout *prev;
+	struct AvahiTimeout *next;
 	struct timeval expiry;
 	int enabled;
 	AvahiTimeoutCallback callback;
-	void* userdata;
+	void *userdata;
 };
 
-static AvahiWatch* avahiWatchList;
-static AvahiTimeout* avahiTimeoutList;
+static AvahiWatch *avahiWatchList;
+static AvahiTimeout *avahiTimeoutList;
 
-static AvahiWatch* avahiWatchNew( const AvahiPoll *api, int fd, AvahiWatchEvent event, AvahiWatchCallback callback, void *userdata )
+static AvahiWatch *avahiWatchNew(const AvahiPoll * api, int fd,
+				 AvahiWatchEvent event,
+				 AvahiWatchCallback callback, void *userdata)
 {
-	struct AvahiWatch* newWatch = xmalloc( sizeof(struct AvahiWatch) );
+	struct AvahiWatch *newWatch = xmalloc(sizeof(struct AvahiWatch));
 
 	newWatch->fd = fd;
 	newWatch->requestedEvent = event;
@@ -107,53 +110,53 @@ static AvahiWatch* avahiWatchNew( const AvahiPoll *api, int fd, AvahiWatchEvent 
 	newWatch->next = avahiWatchList;
 	avahiWatchList = newWatch;
 	newWatch->prev = NULL;
-	if( newWatch->next )
+	if (newWatch->next)
 		newWatch->next->prev = newWatch;
 
 	return newWatch;
 }
 
-static void avahiWatchUpdate( AvahiWatch *w, AvahiWatchEvent event )
+static void avahiWatchUpdate(AvahiWatch * w, AvahiWatchEvent event)
 {
-	assert( w != NULL );
+	assert(w != NULL);
 	w->requestedEvent = event;
 }
 
-static AvahiWatchEvent avahiWatchGetEvents( AvahiWatch *w )
+static AvahiWatchEvent avahiWatchGetEvents(AvahiWatch * w)
 {
-	assert( w != NULL );
+	assert(w != NULL);
 	return w->observedEvent;
 }
 
-static void avahiWatchFree( AvahiWatch *w )
+static void avahiWatchFree(AvahiWatch * w)
 {
-	assert( w != NULL );
+	assert(w != NULL);
 
-	if( avahiWatchList == w )
+	if (avahiWatchList == w)
 		avahiWatchList = w->next;
-	else if( w->prev != NULL )
+	else if (w->prev != NULL)
 		w->prev->next = w->next;
 
-	free( w );
+	free(w);
 }
 
-static void avahiCheckExpiry( AvahiTimeout *t )
+static void avahiCheckExpiry(AvahiTimeout * t)
 {
-	assert( t != NULL );
-	if( t->enabled ) {
+	assert(t != NULL);
+	if (t->enabled) {
 		struct timeval now;
-		gettimeofday( &now, NULL );
-		if( timercmp( &now, &(t->expiry), > ) ) {
+		gettimeofday(&now, NULL);
+		if (timercmp(&now, &(t->expiry), >)) {
 			t->enabled = 0;
-			t->callback( t, t->userdata );
+			t->callback(t, t->userdata);
 		}
 	}
 }
 
-static void avahiTimeoutUpdate( AvahiTimeout *t, const struct timeval *tv )
+static void avahiTimeoutUpdate(AvahiTimeout * t, const struct timeval *tv)
 {
-	assert( t != NULL );
-	if( tv ) {
+	assert(t != NULL);
+	if (tv) {
 		t->enabled = 1;
 		t->expiry.tv_sec = tv->tv_sec;
 		t->expiry.tv_usec = tv->tv_usec;
@@ -162,118 +165,122 @@ static void avahiTimeoutUpdate( AvahiTimeout *t, const struct timeval *tv )
 	}
 }
 
-static void avahiTimeoutFree( AvahiTimeout *t )
+static void avahiTimeoutFree(AvahiTimeout * t)
 {
-	assert( t != NULL );
+	assert(t != NULL);
 
-	if( avahiTimeoutList == t )
+	if (avahiTimeoutList == t)
 		avahiTimeoutList = t->next;
-	else if( t->prev != NULL )
+	else if (t->prev != NULL)
 		t->prev->next = t->next;
 
-	free( t );
+	free(t);
 }
 
-static AvahiTimeout* avahiTimeoutNew( const AvahiPoll *api, const struct timeval *tv, AvahiTimeoutCallback callback, void *userdata )
+static AvahiTimeout *avahiTimeoutNew(const AvahiPoll * api,
+				     const struct timeval *tv,
+				     AvahiTimeoutCallback callback,
+				     void *userdata)
 {
-	struct AvahiTimeout* newTimeout = xmalloc( sizeof(struct AvahiTimeout) );
+	struct AvahiTimeout *newTimeout = xmalloc(sizeof(struct AvahiTimeout));
 
 	newTimeout->callback = callback;
 	newTimeout->userdata = userdata;
 
-	avahiTimeoutUpdate( newTimeout, tv );
+	avahiTimeoutUpdate(newTimeout, tv);
 
 	/* Insert at front of list */
 	newTimeout->next = avahiTimeoutList;
 	avahiTimeoutList = newTimeout;
 	newTimeout->prev = NULL;
-	if( newTimeout->next )
+	if (newTimeout->next)
 		newTimeout->next->prev = newTimeout;
-	
+
 	return newTimeout;
 }
 
 /* Callback when the EntryGroup changes state */
-static void avahiGroupCallback(
-		AvahiEntryGroup *g,
-		AvahiEntryGroupState state,
-		void *userdata)
+static void avahiGroupCallback(AvahiEntryGroup * g,
+			       AvahiEntryGroupState state, void *userdata)
 {
+	char *n;
 	assert(g);
 
-	DEBUG( "Avahi: Service group changed to state %d\n", state );
+	DEBUG("Avahi: Service group changed to state %d\n", state);
 
 	switch (state) {
-		case AVAHI_ENTRY_GROUP_ESTABLISHED :
-			/* The entry group has been established successfully */
-			LOG( "Avahi: Service '%s' successfully established.\n", avahiName );
-			break;
+	case AVAHI_ENTRY_GROUP_ESTABLISHED:
+		/* The entry group has been established successfully */
+		LOG("Avahi: Service '%s' successfully established.\n",
+		    avahiName);
+		break;
 
-		case AVAHI_ENTRY_GROUP_COLLISION : {
-			char *n;
-			
-			/* A service name collision happened. Let's pick a new name */
-			n = avahi_alternative_service_name(avahiName);
-			avahi_free(avahiName);
-			avahiName = n;
-			
-			LOG( "Avahi: Service name collision, renaming service to '%s'\n", avahiName );
+	case AVAHI_ENTRY_GROUP_COLLISION:
+		/* A service name collision happened. Let's pick a new name */
+		n = avahi_alternative_service_name(avahiName);
+		avahi_free(avahiName);
+		avahiName = n;
 
-			/* And recreate the services */
-			avahiRegisterService(avahi_entry_group_get_client(g));
-			break;
-		}
+		LOG("Avahi: Service name collision, renaming service to '%s'\n",
+		    avahiName);
 
-		case AVAHI_ENTRY_GROUP_FAILURE :
-			ERROR( "Avahi: Entry group failure: %s\n",
-					avahi_strerror(avahi_client_errno(avahi_entry_group_get_client(g))) );
-			/* Some kind of failure happened while we were registering our services */
-			avahiRunning = 0;
-			break;
+		/* And recreate the services */
+		avahiRegisterService(avahi_entry_group_get_client(g));
+		break;
 
-		case AVAHI_ENTRY_GROUP_UNCOMMITED:
-			DEBUG( "Avahi: Service group is UNCOMMITED\n" );
-			break;
-		case AVAHI_ENTRY_GROUP_REGISTERING:
-			DEBUG( "Avahi: Service group is REGISTERING\n" );
-			;
+	case AVAHI_ENTRY_GROUP_FAILURE:
+		ERROR("Avahi: Entry group failure: %s\n",
+		      avahi_strerror(avahi_client_errno
+				     (avahi_entry_group_get_client(g))));
+		/* Some kind of failure happened while we were registering our services */
+		avahiRunning = 0;
+		break;
+
+	case AVAHI_ENTRY_GROUP_UNCOMMITED:
+		DEBUG("Avahi: Service group is UNCOMMITED\n");
+		break;
+	case AVAHI_ENTRY_GROUP_REGISTERING:
+		DEBUG("Avahi: Service group is REGISTERING\n");
 	}
 }
 
 /* Registers a new service with avahi */
-static void avahiRegisterService(AvahiClient *c)
+static void avahiRegisterService(AvahiClient * c)
 {
 	int ret;
 	assert(c);
-	DEBUG( "Avahi: Registering service %s/%s\n", SERVICE_TYPE, avahiName );
+	DEBUG("Avahi: Registering service %s/%s\n", SERVICE_TYPE, avahiName);
 
-	/* If this is the first time we're called, let's create a new entry group */
+	/* If this is the first time we're called,
+	 * let's create a new entry group */
 	if (!avahiGroup) {
 		avahiGroup = avahi_entry_group_new(c, avahiGroupCallback, NULL);
-		if( !avahiGroup ) {
-			ERROR( "Avahi: Failed to create avahi EntryGroup: %s\n", avahi_strerror(avahi_client_errno(c)) );
+		if (!avahiGroup) {
+			ERROR("Avahi: Failed to create avahi EntryGroup: %s\n",
+			      avahi_strerror(avahi_client_errno(c)));
 			goto fail;
 		}
 	}
 
 	/* Add the service */
 	/* TODO: This currently binds to ALL interfaces.
-	 *       We could maybe add a service per actual bound interface, if that's better. */
+	 *       We could maybe add a service per actual bound interface,
+	 *       if that's better. */
 	ret = avahi_entry_group_add_service(avahiGroup,
-					AVAHI_IF_UNSPEC, AVAHI_PROTO_UNSPEC, 0,
-					avahiName, SERVICE_TYPE,
-					NULL, NULL,
-					boundPort,
-					NULL);
-	if( ret < 0 ) {
-		ERROR( "Avahi: Failed to add service %s: %s\n", SERVICE_TYPE, avahi_strerror(ret) );
+					    AVAHI_IF_UNSPEC, AVAHI_PROTO_UNSPEC,
+					    0, avahiName, SERVICE_TYPE, NULL,
+					    NULL, boundPort, NULL);
+	if (ret < 0) {
+		ERROR("Avahi: Failed to add service %s: %s\n", SERVICE_TYPE,
+		      avahi_strerror(ret));
 		goto fail;
 	}
 
 	/* Tell the server to register the service group */
 	ret = avahi_entry_group_commit(avahiGroup);
-	if( ret < 0 ) {
-		ERROR( "Avahi: Failed to commit service group: %s\n", avahi_strerror(ret) );
+	if (ret < 0) {
+		ERROR("Avahi: Failed to commit service group: %s\n",
+		      avahi_strerror(ret));
 		goto fail;
 	}
 	return;
@@ -283,125 +290,131 @@ fail:
 }
 
 /* Callback when avahi changes state */
-static void avahiClientCallback(AvahiClient *c, AvahiClientState state, void *userdata)
+static void avahiClientCallback(AvahiClient * c, AvahiClientState state,
+				void *userdata)
 {
+	int reason;
 	assert(c);
 
 	/* Called whenever the client or server state changes */
-	DEBUG( "Avahi: Client changed to state %d\n", state );
+	DEBUG("Avahi: Client changed to state %d\n", state);
 
 	switch (state) {
-		case AVAHI_CLIENT_S_RUNNING:
-			DEBUG( "Avahi: Client is RUNNING\n" );
-		
-			/* The server has startup successfully and registered its host
-			 * name on the network, so it's time to create our services */
-			if (!avahiGroup)
-				avahiRegisterService(c);
-			break;
+	case AVAHI_CLIENT_S_RUNNING:
+		DEBUG("Avahi: Client is RUNNING\n");
 
-		case AVAHI_CLIENT_FAILURE:
-			{
-				int reason = avahi_client_errno(c);
-				if( reason == AVAHI_ERR_DISCONNECTED ) {
-					LOG( "Avahi: Client Disconnected, will reconnect shortly\n");
-					if (avahiGroup) {
-						avahi_entry_group_free(avahiGroup);
-						avahiGroup = NULL;
-					}
-					if (avahiClient)
-						avahi_client_free(avahiClient);
-					avahiClient = avahi_client_new( &avahiPoll, AVAHI_CLIENT_NO_FAIL,
-						avahiClientCallback, NULL, &reason );
-					if( !avahiClient ) {
-						ERROR( "Avahi: Could not reconnect: %s\n", avahi_strerror(reason) );
-						avahiRunning = 0;
-					}
-				} else {
-					ERROR( "Avahi: Client failure: %s (terminal)\n", avahi_strerror(reason));
-					avahiRunning = 0;
-				}
-			}
-			break;
+		/* The server has startup successfully and registered its host
+		 * name on the network, so it's time to create our services */
+		if (!avahiGroup)
+			avahiRegisterService(c);
+		break;
 
-		case AVAHI_CLIENT_S_COLLISION:
-			DEBUG( "Avahi: Client is COLLISION\n" );
-			/* Let's drop our registered services. When the server is back
-			 * in AVAHI_SERVER_RUNNING state we will register them
-			 * again with the new host name. */
+	case AVAHI_CLIENT_FAILURE:
+		reason = avahi_client_errno(c);
+		if (reason == AVAHI_ERR_DISCONNECTED) {
+			LOG("Avahi: Client Disconnected, "
+			    "will reconnect shortly\n");
 			if (avahiGroup) {
-				DEBUG( "Avahi: Resetting group\n" );
-				avahi_entry_group_reset(avahiGroup);
+				avahi_entry_group_free(avahiGroup);
+				avahiGroup = NULL;
 			}
-			
-		case AVAHI_CLIENT_S_REGISTERING:
-			DEBUG( "Avahi: Client is REGISTERING\n" );
-			/* The server records are now being established. This
-			 * might be caused by a host name change. We need to wait
-			 * for our own records to register until the host name is
-			 * properly esatblished. */
-			
-			if (avahiGroup) {
-				DEBUG( "Avahi: Resetting group\n" );
-				avahi_entry_group_reset(avahiGroup);
+			if (avahiClient)
+				avahi_client_free(avahiClient);
+			avahiClient =
+			    avahi_client_new(&avahiPoll,
+					     AVAHI_CLIENT_NO_FAIL,
+					     avahiClientCallback, NULL,
+					     &reason);
+			if (!avahiClient) {
+				ERROR("Avahi: Could not reconnect: %s\n",
+				      avahi_strerror(reason));
+				avahiRunning = 0;
 			}
-			
-			break;
+		} else {
+			ERROR("Avahi: Client failure: %s (terminal)\n",
+			      avahi_strerror(reason));
+			avahiRunning = 0;
+		}
+		break;
 
-		case AVAHI_CLIENT_CONNECTING:
-			DEBUG( "Avahi: Client is CONNECTING\n" );
-			;
+	case AVAHI_CLIENT_S_COLLISION:
+		DEBUG("Avahi: Client is COLLISION\n");
+		/* Let's drop our registered services. When the server is back
+		 * in AVAHI_SERVER_RUNNING state we will register them
+		 * again with the new host name. */
+		if (avahiGroup) {
+			DEBUG("Avahi: Resetting group\n");
+			avahi_entry_group_reset(avahiGroup);
+		}
+
+	case AVAHI_CLIENT_S_REGISTERING:
+		DEBUG("Avahi: Client is REGISTERING\n");
+		/* The server records are now being established. This
+		 * might be caused by a host name change. We need to wait
+		 * for our own records to register until the host name is
+		 * properly esatblished. */
+
+		if (avahiGroup) {
+			DEBUG("Avahi: Resetting group\n");
+			avahi_entry_group_reset(avahiGroup);
+		}
+
+		break;
+
+	case AVAHI_CLIENT_CONNECTING:
+		DEBUG("Avahi: Client is CONNECTING\n");
 	}
 }
 
-static int avahiFdset( fd_set* rfds, fd_set* wfds, fd_set* efds )
+static int avahiFdset(fd_set * rfds, fd_set * wfds, fd_set * efds)
 {
-	AvahiWatch* w;
+	AvahiWatch *w;
 	int maxfd = -1;
-	if( !avahiRunning )
+	if (!avahiRunning)
 		return maxfd;
-	for( w = avahiWatchList; w != NULL; w = w->next ) {
-		if( w->requestedEvent & AVAHI_WATCH_IN ) {
-			FD_SET( w->fd, rfds );
-		} 
-		if( w->requestedEvent & AVAHI_WATCH_OUT ) {
-			FD_SET( w->fd, wfds );
+	for (w = avahiWatchList; w != NULL; w = w->next) {
+		if (w->requestedEvent & AVAHI_WATCH_IN) {
+			FD_SET(w->fd, rfds);
 		}
-		if( w->requestedEvent & AVAHI_WATCH_ERR ) {
-			FD_SET( w->fd, efds );
+		if (w->requestedEvent & AVAHI_WATCH_OUT) {
+			FD_SET(w->fd, wfds);
 		}
-		if( w->requestedEvent & AVAHI_WATCH_HUP ) {
-			ERROR( "Avahi: No support for HUP events! (ignoring)\n" );
+		if (w->requestedEvent & AVAHI_WATCH_ERR) {
+			FD_SET(w->fd, efds);
+		}
+		if (w->requestedEvent & AVAHI_WATCH_HUP) {
+			ERROR("Avahi: No support for HUP events! (ignoring)\n");
 		}
 
-		if( w->fd > maxfd )
+		if (w->fd > maxfd)
 			maxfd = w->fd;
 	}
-	return maxfd; 
+	return maxfd;
 }
 
-static int avahiFdconsume( int fdCount, fd_set* rfds, fd_set* wfds, fd_set* efds )
+static int avahiFdconsume(int fdCount, fd_set * rfds, fd_set * wfds,
+			  fd_set * efds)
 {
 	int retval = fdCount;
-	AvahiTimeout* t;
-	AvahiWatch* w = avahiWatchList;
+	AvahiTimeout *t;
+	AvahiWatch *w = avahiWatchList;
 
-	while( w != NULL && retval > 0 ) {
-		AvahiWatch* current = w;
+	while (w != NULL && retval > 0) {
+		AvahiWatch *current = w;
 		current->observedEvent = 0;
-		if( FD_ISSET( current->fd, rfds ) ) {
+		if (FD_ISSET(current->fd, rfds)) {
 			current->observedEvent |= AVAHI_WATCH_IN;
-			FD_CLR( current->fd, rfds );
+			FD_CLR(current->fd, rfds);
 			retval--;
 		}
-		if( FD_ISSET( current->fd, wfds ) ) {
+		if (FD_ISSET(current->fd, wfds)) {
 			current->observedEvent |= AVAHI_WATCH_OUT;
-			FD_CLR( current->fd, wfds );
+			FD_CLR(current->fd, wfds);
 			retval--;
 		}
-		if( FD_ISSET( current->fd, efds ) ) {
+		if (FD_ISSET(current->fd, efds)) {
 			current->observedEvent |= AVAHI_WATCH_ERR;
-			FD_CLR( current->fd, efds );
+			FD_CLR(current->fd, efds);
 			retval--;
 		}
 
@@ -410,21 +423,22 @@ static int avahiFdconsume( int fdCount, fd_set* rfds, fd_set* wfds, fd_set* efds
 		 */
 		w = w->next;
 
-		if( current->observedEvent && avahiRunning ) {
-			current->callback( current, current->fd,
-					current->observedEvent, current->userdata );
+		if (current->observedEvent && avahiRunning) {
+			current->callback(current, current->fd,
+					  current->observedEvent,
+					  current->userdata);
 		}
 	}
 
 	t = avahiTimeoutList;
-	while( t != NULL && avahiRunning ) {
-		AvahiTimeout* current = t;
+	while (t != NULL && avahiRunning) {
+		AvahiTimeout *current = t;
 
 		/* Advance to the next one right now, in case the callback
 		 * removes itself
 		 */
 		t = t->next;
-		avahiCheckExpiry( current );
+		avahiCheckExpiry(current);
 	}
 
 	return retval;
@@ -433,13 +447,15 @@ static int avahiFdconsume( int fdCount, fd_set* rfds, fd_set* wfds, fd_set* efds
 static void init_avahi(const char *serviceName)
 {
 	int error;
-	DEBUG( "Avahi: Initializing interface\n" );
+	DEBUG("Avahi: Initializing interface\n");
 
-	if( avahi_is_valid_service_name( serviceName ) ) {
-		avahiName = avahi_strdup( serviceName );
+	if (avahi_is_valid_service_name(serviceName)) {
+		avahiName = avahi_strdup(serviceName);
 	} else {
-		ERROR( "Invalid zeroconf_name \"%s\", defaulting to \"%s\" instead.\n", serviceName, SERVICE_NAME );
-		avahiName = avahi_strdup( SERVICE_NAME );
+		ERROR("Invalid zeroconf_name \"%s\", defaulting to "
+		      "\"%s\" instead.\n",
+		      serviceName, SERVICE_NAME);
+		avahiName = avahi_strdup(SERVICE_NAME);
 	}
 
 	avahiRunning = 1;
@@ -453,17 +469,18 @@ static void init_avahi(const char *serviceName)
 	avahiPoll.timeout_update = avahiTimeoutUpdate;
 	avahiPoll.timeout_free = avahiTimeoutFree;
 
-	avahiClient = avahi_client_new( &avahiPoll, AVAHI_CLIENT_NO_FAIL,
-			avahiClientCallback, NULL, &error );
+	avahiClient = avahi_client_new(&avahiPoll, AVAHI_CLIENT_NO_FAIL,
+				       avahiClientCallback, NULL, &error);
 
-	if( !avahiClient ) {
-		ERROR( "Avahi: Failed to create client: %s\n", avahi_strerror(error) );
+	if (!avahiClient) {
+		ERROR("Avahi: Failed to create client: %s\n",
+		      avahi_strerror(error));
 		goto fail;
 	}
 
 	zeroConfIo.fdset = avahiFdset;
 	zeroConfIo.consume = avahiFdconsume;
-	registerIO( &zeroConfIo );
+	registerIO(&zeroConfIo);
 
 	return;
 
@@ -473,7 +490,7 @@ fail:
 #endif /* HAVE_AVAHI */
 
 #ifdef HAVE_BONJOUR
-static int dnsRegisterFdset(fd_set* rfds, fd_set* wfds, fd_set* efds)
+static int dnsRegisterFdset(fd_set * rfds, fd_set * wfds, fd_set * efds)
 {
 	int fd;
 
@@ -489,8 +506,8 @@ static int dnsRegisterFdset(fd_set* rfds, fd_set* wfds, fd_set* efds)
 	return fd;
 }
 
-static int dnsRegisterFdconsume(int fdCount, fd_set* rfds, fd_set* wfds,
-                                fd_set* efds)
+static int dnsRegisterFdconsume(int fdCount, fd_set * rfds, fd_set * wfds,
+				fd_set * efds)
 {
 	int fd;
 
@@ -512,16 +529,17 @@ static int dnsRegisterFdconsume(int fdCount, fd_set* rfds, fd_set* wfds,
 	return fdCount;
 }
 
-static void dnsRegisterCallback (DNSServiceRef sdRef, DNSServiceFlags flags,
-				    DNSServiceErrorType errorCode, const char *name,
-					const char *regtype, const char *domain, void *context)
+static void dnsRegisterCallback(DNSServiceRef sdRef, DNSServiceFlags flags,
+				DNSServiceErrorType errorCode, const char *name,
+				const char *regtype, const char *domain,
+				void *context)
 {
 	if (errorCode != kDNSServiceErr_NoError) {
 		ERROR("Failed to register zeroconf service.\n");
 
 		DNSServiceRefDeallocate(dnsReference);
 		dnsReference = NULL;
-		deregisterIO( &zeroConfIo );
+		deregisterIO(&zeroConfIo);
 	} else {
 		DEBUG("Registered zeroconf service with name '%s'\n", name);
 	}
@@ -530,8 +548,12 @@ static void dnsRegisterCallback (DNSServiceRef sdRef, DNSServiceFlags flags,
 static void init_zeroconf_osx(const char *serviceName)
 {
 	DNSServiceErrorType error = DNSServiceRegister(&dnsReference,
-			0, 0, serviceName, SERVICE_TYPE, NULL, NULL, htons(boundPort), 0,
-			NULL, dnsRegisterCallback, NULL);
+						       0, 0, serviceName,
+						       SERVICE_TYPE, NULL, NULL,
+						       htons(boundPort), 0,
+						       NULL,
+						       dnsRegisterCallback,
+						       NULL);
 
 	if (error != kDNSServiceErr_NoError) {
 		ERROR("Failed to register zeroconf service.\n");
@@ -545,7 +567,7 @@ static void init_zeroconf_osx(const char *serviceName)
 
 	zeroConfIo.fdset = dnsRegisterFdset;
 	zeroConfIo.consume = dnsRegisterFdconsume;
-	registerIO( &zeroConfIo );
+	registerIO(&zeroConfIo);
 }
 #endif
 
@@ -581,25 +603,25 @@ void finishZeroconf(void)
 		return;
 
 #ifdef HAVE_AVAHI
-	DEBUG( "Avahi: Shutting down interface\n" );
-	deregisterIO( &zeroConfIo );
+	DEBUG("Avahi: Shutting down interface\n");
+	deregisterIO(&zeroConfIo);
 
-	if( avahiGroup ) {
-		avahi_entry_group_free( avahiGroup );
+	if (avahiGroup) {
+		avahi_entry_group_free(avahiGroup);
 		avahiGroup = NULL;
 	}
 
-	if( avahiClient ) {
-		avahi_client_free( avahiClient );
+	if (avahiClient) {
+		avahi_client_free(avahiClient);
 		avahiClient = NULL;
 	}
 
-	avahi_free( avahiName );
+	avahi_free(avahiName);
 	avahiName = NULL;
 #endif /* HAVE_AVAHI */
 
 #ifdef HAVE_BONJOUR
-	deregisterIO( &zeroConfIo );
+	deregisterIO(&zeroConfIo);
 	if (dnsReference != NULL) {
 		DNSServiceRefDeallocate(dnsReference);
 		dnsReference = NULL;
@@ -607,3 +629,5 @@ void finishZeroconf(void)
 	}
 #endif
 }
+
+#endif /* HAVE_ZEROCONF */

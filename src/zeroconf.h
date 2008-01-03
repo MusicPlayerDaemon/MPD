@@ -21,7 +21,16 @@
 
 #include "../config.h"
 
+#ifdef HAVE_ZEROCONF
+
 void initZeroconf(void);
 void finishZeroconf(void);
+
+#else /* ! HAVE_ZEROCONF */
+
+static void initZeroconf(void) { }
+static void finishZeroconf(void) { }
+
+#endif /* ! HAVE_ZEROCONF */
 
 #endif

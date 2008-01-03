@@ -811,23 +811,23 @@ static void printInterfaceOutBuffer(Interface * interface)
 }
 
 /* From ioops.h: */
-void registerIO( struct ioOps *ops )
+void registerIO(struct ioOps *ops)
 {
-	assert( ops != NULL );
+	assert(ops != NULL);
 
 	ops->next = ioList;
 	ioList = ops;
 	ops->prev = NULL;
-	if( ops->next )
+	if (ops->next)
 		ops->next->prev = ops;
 }
 
-void deregisterIO( struct ioOps *ops )
+void deregisterIO(struct ioOps *ops)
 {
-	assert( ops != NULL );
+	assert(ops != NULL);
 
-	if( ioList == ops )
+	if (ioList == ops)
 		ioList = ops->next;
-	else if( ops->prev != NULL )
+	else if (ops->prev != NULL)
 		ops->prev->next = ops->next;
 }
