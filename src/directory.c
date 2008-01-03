@@ -991,6 +991,8 @@ int checkDirectoryDB(void)
 		 * see if we can write a file in that */
 		char dirPath[MPD_PATH_MAX];
 		parent_path(dirPath, dbFile);
+		if (*dirPath == '\0')
+			strcpy(dirPath, "/");
 
 		/* Check that the parent part of the path is a directory */
 		if (stat(dirPath, &st) < 0) {
