@@ -44,6 +44,8 @@
 #include <errno.h>
 #include <fcntl.h>
 
+static void playerCloseAudio(void);
+
 volatile int player_pid = 0;
 
 void clearPlayerPid(void)
@@ -377,7 +379,7 @@ char *getPlayerErrorStr(void)
 	return NULL;
 }
 
-void playerCloseAudio(void)
+static void playerCloseAudio(void)
 {
 	PlayerControl *pc = &(getPlayerData()->playerControl);
 

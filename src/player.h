@@ -102,8 +102,6 @@ int playerPause(int fd);
 
 int playerStop(int fd);
 
-void playerCloseAudio(void);
-
 void playerKill(void);
 
 int getPlayerTotalTime(void);
