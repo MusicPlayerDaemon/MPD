@@ -49,9 +49,6 @@ static size_t interface_max_command_list_size =
 static size_t interface_max_output_buffer_size =
     INTERFACE_MAX_OUTPUT_BUFFER_SIZE_DEFAULT;
 
-/* List of registered external IO handlers */
-static struct ioOps *ioList;
-
 /* maybe make conf option for this, or... 32 might be good enough */
 static long int interface_list_cache_size = 32;
 
@@ -487,41 +484,18 @@ int doIOForInterfaces(void)
 	while (1) {
 		fdmax = 0;
 
-		FD_ZERO( &rfds );
-		FD_ZERO( &wfds );
 		FD_ZERO( &efds );
 		addInterfacesReadyToReadAndListenSocketToFdSet(&rfds, &fdmax);
 		addInterfacesForBufferFlushToFdSet(&wfds, &fdmax);
 
-		/* Add fds for all registered IO handlers */
-		if( ioList ) {
-			struct ioOps *o = ioList;
-			while( o ) {
-				struct ioOps *current = o;
-				int fdnum;
-				assert( current->fdset );
-				fdnum = current->fdset( &rfds, &wfds, &efds );
-				if( fdmax < fdnum )
-					fdmax = fdnum;
-				o = o->next;
-			}
-		}
+		registered_IO_add_fds(&fdmax, &rfds, &wfds, &efds);
 
 		selret = select(fdmax + 1, &rfds, &wfds, &efds, &tv);
 
 		if (selret < 0 && errno == EINTR)
 			break;
 
-		/* Consume fds for all registered IO handlers */
-		if( ioList ) {
-			struct ioOps *o = ioList;
-			while( o ) {
-				struct ioOps *current = o;
-				assert( current->consume );
-				selret = current->consume( selret, &rfds, &wfds, &efds );
-				o = o->next;
-			}
-		}
+		registered_IO_consume_fds(&selret, &rfds, &wfds, &efds);
 
 		if (selret == 0)
 			break;
@@ -810,24 +784,3 @@ static void printInterfaceOutBuffer(Interface * interface)
 	interface->send_buf_used = 0;
 }
 
-/* From ioops.h: */
-void registerIO(struct ioOps *ops)
-{
-	assert(ops != NULL);
-
-	ops->next = ioList;
-	ioList = ops;
-	ops->prev = NULL;
-	if (ops->next)
-		ops->next->prev = ops;
-}
-
-void deregisterIO(struct ioOps *ops)
-{
-	assert(ops != NULL);
-
-	if (ioList == ops)
-		ioList = ops->next;
-	else if (ops->prev != NULL)
-		ops->prev->next = ops->next;
-}

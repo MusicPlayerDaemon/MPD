@@ -101,6 +101,7 @@ mpd_SOURCES = \
 	inputStream_file.c \
 	inputStream_http.c \
 	interface.c \
+	ioops.c \
 	list.c \
 	listen.c \
 	log.c \
