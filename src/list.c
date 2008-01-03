@@ -18,12 +18,7 @@
 
 #include "list.h"
 #include "utils.h"
-
-#include <stdlib.h>
-#include <string.h>
-#include <assert.h>
-#include <time.h>
-#include <stdio.h>
+#include "os_compat.h"
 
 static void makeListNodesArray(List * list)
 {

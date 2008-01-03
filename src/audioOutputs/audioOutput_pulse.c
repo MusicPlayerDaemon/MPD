@@ -18,15 +18,11 @@
 
 #include "../audioOutput.h"
 
-#include <stdlib.h>
-
 #ifdef HAVE_PULSE
 
 #include "../conf.h"
 #include "../log.h"
-
-#include <string.h>
-#include <time.h>
+#include "../os_compat.h"
 
 #include <pulse/simple.h>
 #include <pulse/error.h>

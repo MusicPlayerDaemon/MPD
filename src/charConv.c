@@ -21,10 +21,7 @@
 #include "utf8.h"
 #include "utils.h"
 #include "path.h"
-
-#include <stdlib.h>
-#include <errno.h>
-#include <string.h>
+#include "os_compat.h"
 
 #ifdef HAVE_ICONV
 #include <iconv.h>

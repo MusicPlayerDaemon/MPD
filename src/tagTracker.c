@@ -22,9 +22,7 @@
 #include "log.h"
 #include "utils.h"
 #include "myfprintf.h"
-
-#include <assert.h>
-#include <stdlib.h>
+#include "os_compat.h"
 
 static Tree *tagTrees[TAG_NUM_OF_ITEM_TYPES];
 

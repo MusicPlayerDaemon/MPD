@@ -18,8 +18,6 @@
 
 #include "../audioOutput.h"
 
-#include <stdlib.h>
-
 #ifdef HAVE_ALSA
 
 #define ALSA_PCM_NEW_HW_PARAMS_API
@@ -34,8 +32,7 @@
 
 #include "../conf.h"
 #include "../log.h"
-
-#include <string.h>
+#include "../os_compat.h"
 
 #include <alsa/asoundlib.h>
 

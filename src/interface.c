@@ -27,21 +27,7 @@
 #include "sllist.h"
 #include "utils.h"
 #include "ioops.h"
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <assert.h>
-#include <sys/select.h>
-#include <sys/time.h>
-#include <sys/types.h>
-#include <unistd.h>
-#include <sys/param.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <string.h>
-#include <fcntl.h>
-#include <errno.h>
-#include <signal.h>
+#include "os_compat.h"
 
 #define GREETING				"OK MPD " PROTOCOL_VERSION "\n"
 

@@ -20,8 +20,7 @@
 #define LIST_H
 
 #include "../config.h"
-
-#include <stdlib.h>
+#include "os_compat.h"
 
 /* used to make a list where free() will be used to free data in list */
 #define DEFAULT_FREE_DATA_FUNC	free

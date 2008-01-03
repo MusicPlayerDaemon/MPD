@@ -21,8 +21,6 @@
 #ifdef HAVE_OSX
 
 #include <AudioUnit/AudioUnit.h>
-#include <stdlib.h>
-#include <pthread.h>
 
 #include "../log.h"
 
@@ -367,8 +365,6 @@ AudioOutputPlugin osxPlugin = {
 };
 
 #else
-
-#include <stdio.h>
 
 DISABLED_AUDIO_OUTPUT_PLUGIN(osxPlugin)
 #endif

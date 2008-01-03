@@ -22,12 +22,7 @@
 #include "../config.h"
 
 #include "inputPlugin.h"
-
-#include <stdio.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
-#include <time.h>
+#include "os_compat.h"
 
 int lsPlaylists(int fd, char *utf8path);
 

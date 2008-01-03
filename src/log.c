@@ -21,12 +21,7 @@
 #include "conf.h"
 #include "myfprintf.h"
 #include "utils.h"
-
-#include <assert.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdarg.h>
-#include <time.h>
+#include "os_compat.h"
 
 #define LOG_DATE_BUF_SIZE 16
 #define LOG_DATE_LEN (LOG_DATE_BUF_SIZE - 1)

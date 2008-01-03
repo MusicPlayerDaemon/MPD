@@ -20,8 +20,7 @@
 #define VOLUME_H
 
 #include "../config.h"
-
-#include <stdio.h>
+#include "os_compat.h"
 
 #define VOLUME_MIXER_OSS	"oss"
 #define VOLUME_MIXER_ALSA	"alsa"

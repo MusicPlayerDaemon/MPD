@@ -19,14 +19,7 @@
 #include "inputStream_file.h"
 
 #include "log.h"
-
-#include <stdio.h>
-#include <string.h>
-#include <sys/types.h>
-#include <unistd.h>
-#include <errno.h>
-#define _XOPEN_SOURCE 600
-#include <fcntl.h>
+#include "os_compat.h"
 
 void inputStream_initFile(void)
 {

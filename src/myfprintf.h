@@ -21,9 +21,7 @@
 
 #include "../config.h"
 #include "gcc.h"
-
-#include <stdarg.h>
-#include <stdio.h>
+#include "os_compat.h"
 
 mpd_fprintf void fdprintf(const int fd, const char *fmt, ...);
 void vfdprintf(const int fd, const char *fmt, va_list arglist);

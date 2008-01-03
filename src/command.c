@@ -31,12 +31,7 @@
 #include "tag.h"
 #include "utils.h"
 #include "storedPlaylist.h"
-
-#include <assert.h>
-#include <stdarg.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
+#include "os_compat.h"
 
 #define COMMAND_PLAY           	"play"
 #define COMMAND_PLAYID         	"playid"

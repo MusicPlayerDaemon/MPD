@@ -20,11 +20,7 @@
 #define INTERFACE_H
 
 #include "../config.h"
-
-#include <stdio.h>
-#include <time.h>
-#include <sys/types.h>
-#include <sys/socket.h>
+#include "os_compat.h"
 
 void initInterfaces(void);
 void openAInterface(int fd, struct sockaddr *addr);

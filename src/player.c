@@ -31,18 +31,7 @@
 #include "playerData.h"
 #include "permission.h"
 #include "sig_handlers.h"
-
-#include <stdio.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
-#include <sys/time.h>
-#include <sys/wait.h>
-#include <stdlib.h>
-#include <signal.h>
-#include <string.h>
-#include <errno.h>
-#include <fcntl.h>
+#include "os_compat.h"
 
 static void playerCloseAudio(void);
 

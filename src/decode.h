@@ -26,9 +26,7 @@
 #include "mpd_types.h"
 #include "audio.h"
 
-#include <stdio.h>
-#include <sys/param.h>
-#include <signal.h>
+#include "os_compat.h"
 
 #define DECODE_TYPE_FILE	0
 #define DECODE_TYPE_URL		1

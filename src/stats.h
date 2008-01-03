@@ -21,8 +21,6 @@
 
 #include "../config.h"
 
-#include <stdio.h>
-
 typedef struct _Stats {
 	unsigned long daemonStart;
 	int numberOfSongs;

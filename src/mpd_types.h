@@ -20,16 +20,7 @@
 #define MPD_TYPES_H
 
 #include "../config.h"
-
-#if defined(HAVE_STDINT_H)
-#include <stdint.h>
-#elif defined(HAVE_INTTYPES_H)
-#include <inttypes.h>
-#elif defined(HAVE_SYS_INTTYPES_H)
-#include <sys/inttypes.h>
-#elif defined(HAVE_SYS_TYPES_H)
-#include <sys/types.h>
-#endif
+#include "os_compat.h"
 
 typedef unsigned char mpd_uint8;
 typedef signed char mpd_sint8;

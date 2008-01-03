@@ -27,11 +27,8 @@
 #include "../log.h"
 #include "../inputStream.h"
 #include "../outputBuffer.h"
+#include "../os_compat.h"
 
-#include <stdio.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <string.h>
 #include <faad.h>
 
 /* all code here is either based on or copied from FAAD2's frontend code */

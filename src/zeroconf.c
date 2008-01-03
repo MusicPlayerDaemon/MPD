@@ -16,11 +16,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include <stdlib.h>
-#include <assert.h>
-#include <string.h>
-#include <arpa/inet.h>
-
+#include "os_compat.h"
 #include "zeroconf.h"
 #include "conf.h"
 #include "log.h"

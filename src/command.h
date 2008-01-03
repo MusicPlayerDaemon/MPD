@@ -26,9 +26,7 @@
 #include "log.h"
 #include "ack.h"
 #include "sllist.h"
-
-#include <unistd.h>
-#include <stdio.h>
+#include "os_compat.h"
 
 #define COMMAND_RETURN_KILL	10
 #define COMMAND_RETURN_CLOSE	20

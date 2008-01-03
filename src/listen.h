@@ -20,11 +20,7 @@
 #define LISTEN_H
 
 #include "../config.h"
-
-#include <sys/time.h>
-#include <sys/types.h>
-#include <unistd.h>
-#include <sys/select.h>
+#include "os_compat.h"
 
 extern int boundPort;
 

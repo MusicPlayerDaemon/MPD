@@ -22,10 +22,7 @@
 #include "../config.h"
 
 #include "dbUtils.h"
-
-#include <stdio.h>
-#include <sys/param.h>
-#include <time.h>
+#include "os_compat.h"
 
 #define PLAYLIST_FILE_SUFFIX 	"m3u"
 #define PLAYLIST_COMMENT	'#'

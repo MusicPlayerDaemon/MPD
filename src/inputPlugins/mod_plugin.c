@@ -25,14 +25,8 @@
 #include "../log.h"
 #include "../pcm_utils.h"
 #include "../playerData.h"
+#include "../os_compat.h"
 
-#include <stdio.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
 #include <mikmod.h>
 
 /* this is largely copied from alsaplayer */

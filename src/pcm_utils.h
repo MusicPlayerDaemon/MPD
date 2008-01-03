@@ -22,8 +22,7 @@
 #include "../config.h"
 
 #include "audio.h"
-
-#include <stdlib.h>
+#include "os_compat.h"
 
 #ifdef HAVE_LIBSAMPLERATE
 #include <samplerate.h>

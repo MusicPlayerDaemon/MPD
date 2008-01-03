@@ -17,8 +17,7 @@
  */
 
 #include "../audioOutput.h"
-
-#include <stdlib.h>
+#include "../os_compat.h"
 
 #ifdef HAVE_FIFO
 
@@ -26,13 +25,6 @@
 #include "../conf.h"
 #include "../utils.h"
 #include "../timer.h"
-
-#include <errno.h>
-#include <fcntl.h>
-#include <string.h>
-#include <unistd.h>
-#include <sys/stat.h>
-#include <sys/types.h>
 
 #define FIFO_BUFFER_SIZE 65536 /* pipe capacity on Linux >= 2.6.11 */
 

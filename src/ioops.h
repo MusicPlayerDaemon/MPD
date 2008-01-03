@@ -19,7 +19,7 @@
 #ifndef IOOPS_H
 #define IOOPS_H
 
-#include <sys/select.h>
+#include "os_compat.h"
 
 struct ioOps {
 	struct ioOps *prev, *next;

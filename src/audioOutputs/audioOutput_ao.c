@@ -22,8 +22,7 @@
 
 #include "../conf.h"
 #include "../log.h"
-
-#include <string.h>
+#include "../os_compat.h"
 
 #include <ao/ao.h>
 
@@ -239,8 +238,6 @@ AudioOutputPlugin aoPlugin = {
 };
 
 #else
-
-#include <stdio.h>
 
 DISABLED_AUDIO_OUTPUT_PLUGIN(aoPlugin)
 #endif

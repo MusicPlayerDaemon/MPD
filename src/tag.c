@@ -29,13 +29,7 @@
 #include "mpd_types.h"
 #include "gcc.h"
 #include "song.h"
-
-#include <sys/stat.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdio.h>
-#include <assert.h>
-#include <errno.h>
+#include "os_compat.h"
 
 #ifdef HAVE_ID3TAG
 #  define isId3v1(tag) (id3_tag_options(tag, 0, 0) & ID3_TAG_OPTION_ID3V1)

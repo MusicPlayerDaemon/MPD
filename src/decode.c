@@ -28,14 +28,7 @@
 #include "sig_handlers.h"
 #include "ls.h"
 #include "utf8.h"
-
-#include <signal.h>
-#include <sys/types.h>
-#include <sys/time.h>
-#include <sys/resource.h>
-#include <sys/wait.h>
-#include <unistd.h>
-#include <string.h>
+#include "os_compat.h"
 
 static int decode_pid;
 

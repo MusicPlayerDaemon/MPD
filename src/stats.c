@@ -23,8 +23,7 @@
 #include "player.h"
 #include "tag.h"
 #include "tagTracker.h"
-
-#include <time.h>
+#include "os_compat.h"
 
 Stats stats;
 

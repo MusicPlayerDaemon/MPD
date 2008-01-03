@@ -19,8 +19,7 @@
 #include "compress.h"
 #include "conf.h"
 #include "normalize.h"
-
-#include <stdlib.h>
+#include "os_compat.h"
 
 #define DEFAULT_VOLUME_NORMALIZATION 0
 

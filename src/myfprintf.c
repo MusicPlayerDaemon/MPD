@@ -22,14 +22,7 @@
 #include "log.h"
 #include "conf.h"
 #include "utils.h"
-
-#include <stdarg.h>
-#include <sys/param.h>
-#include <unistd.h>
-#include <sys/select.h>
-#include <fcntl.h>
-#include <string.h>
-#include <errno.h>
+#include "os_compat.h"
 
 #define BUFFER_LENGTH	MPD_PATH_MAX+1024
 

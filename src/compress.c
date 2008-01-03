@@ -20,11 +20,7 @@
  *
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/types.h>
-
+#include "os_compat.h"
 #include "compress.h"
 #include "utils.h"
 

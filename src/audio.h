@@ -23,8 +23,7 @@
 
 #include "mpd_types.h"
 #include "tag.h"
-
-#include <stdio.h>
+#include "os_compat.h"
 
 #define AUDIO_AO_DRIVER_DEFAULT	"default"
 

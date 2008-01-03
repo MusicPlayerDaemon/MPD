@@ -28,15 +28,9 @@
 #include "../pcm_utils.h"
 #include "../playerData.h"
 #include "../outputBuffer.h"
+#include "../os_compat.h"
 
-#include <stdio.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <wavpack/wavpack.h>
-#include <math.h>
 
 #define ERRORLEN 80
 

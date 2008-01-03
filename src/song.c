@@ -30,9 +30,7 @@
 #define SONG_KEY	"key: "
 #define SONG_MTIME	"mtime: "
 
-#include <stdlib.h>
-#include <string.h>
-#include <assert.h>
+#include "os_compat.h"
 
 Song *newNullSong(void)
 {

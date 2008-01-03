@@ -20,9 +20,7 @@
 
 #include "list.h"
 #include "myfprintf.h"
-
-#include <stdlib.h>
-#include <string.h>
+#include "os_compat.h"
 
 static List *inputPlugin_list;
 

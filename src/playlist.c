@@ -29,14 +29,7 @@
 #include "sig_handlers.h"
 #include "state_file.h"
 #include "storedPlaylist.h"
-
-#include <string.h>
-#include <stdlib.h>
-#include <sys/stat.h>
-#include <sys/param.h>
-#include <errno.h>
-#include <unistd.h>
-#include <time.h>
+#include "os_compat.h"
 
 #define PLAYLIST_STATE_STOP		0
 #define PLAYLIST_STATE_PLAY		1

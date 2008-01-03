@@ -20,10 +20,7 @@
 #define SONG_H
 
 #include "../config.h"
-
-#include <sys/param.h>
-#include <time.h>
-
+#include "os_compat.h"
 #include "tag.h"
 #include "list.h"
 

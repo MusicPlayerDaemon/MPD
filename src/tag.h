@@ -23,9 +23,6 @@
 
 #include "mpd_types.h"
 
-#include <string.h>
-
-#include <stdio.h>
 #ifdef HAVE_ID3TAG
 #include <id3tag.h>
 #endif

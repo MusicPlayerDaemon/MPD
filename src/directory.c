@@ -37,11 +37,6 @@
 #include "volume.h"
 #include "ls.h"
 
-#include <sys/wait.h>
-#include <dirent.h>
-#include <errno.h>
-#include <assert.h>
-
 #define DIRECTORY_DIR		"directory: "
 #define DIRECTORY_MTIME		"mtime: "
 #define DIRECTORY_BEGIN		"begin: "

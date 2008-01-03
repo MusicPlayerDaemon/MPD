@@ -19,14 +19,9 @@
 
 #ifdef HAVE_JACK
 
-#include <stdlib.h>
-#include <errno.h>
-
+#include "../os_compat.h"
 #include "../conf.h"
 #include "../log.h"
-
-#include <string.h>
-#include <pthread.h>
 
 #include <jack/jack.h>
 #include <jack/types.h>
@@ -37,7 +32,11 @@ pthread_cond_t  play_audio = PTHREAD_COND_INITIALIZER;
 
 /*#include "dmalloc.h"*/
 
-#define MIN(a, b) ((a) < (b) ? (a) : (b))
+#ifdef MIN
+#  undef MIN
+#  define MIN(a, b) ((a) < (b) ? (a) : (b))
+#endif
+
 /*#define SAMPLE_SIZE  sizeof(jack_default_audio_sample_t);*/
 
 

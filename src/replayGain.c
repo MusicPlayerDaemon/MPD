@@ -22,10 +22,7 @@
 
 #include "log.h"
 #include "conf.h"
-
-#include <string.h>
-#include <math.h>
-#include <stdlib.h>
+#include "os_compat.h"
 
 /* Added 4/14/2004 by AliasMrJones */
 int replayGainState = REPLAYGAIN_OFF;

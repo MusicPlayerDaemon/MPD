@@ -27,11 +27,7 @@
 #include "../outputBuffer.h"
 #include "../replayGain.h"
 #include "../audio.h"
-
-#include <stdio.h>
-#include <string.h>
-#include <unistd.h>
-#include <assert.h>
+#include "../os_compat.h"
 
 /* this code was based on flac123, from flac-tools */
 

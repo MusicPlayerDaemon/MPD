@@ -23,16 +23,8 @@
 #include "utils.h"
 #include "buffer2array.h"
 #include "list.h"
-
-#include <sys/param.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <pwd.h>
-#include <errno.h>
 #include "path.h"
+#include "os_compat.h"
 
 #define MAX_STRING_SIZE	MPD_PATH_MAX+80
 

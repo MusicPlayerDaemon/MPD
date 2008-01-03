@@ -18,10 +18,7 @@
 
 #include "tree.h"
 #include "utils.h"
-
-#include <assert.h>
-#include <stdlib.h>
-#include <string.h>
+#include "os_compat.h"
 
 #ifndef CHILDREN_PER_NODE
 #define CHILDREN_PER_NODE 25

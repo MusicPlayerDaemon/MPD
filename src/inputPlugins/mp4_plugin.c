@@ -27,15 +27,11 @@
 #include "../inputStream.h"
 #include "../outputBuffer.h"
 #include "../decode.h"
+#include "../os_compat.h"
 
 #include "../mp4ff/mp4ff.h"
 
-#include <stdio.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <string.h>
 #include <faad.h>
-
 /* all code here is either based on or copied from FAAD2's frontend code */
 
 static int mp4_getAACTrack(mp4ff_t * infile)

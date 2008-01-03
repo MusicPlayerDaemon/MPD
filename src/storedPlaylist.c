@@ -25,9 +25,7 @@
 #include "command.h"
 #include "ls.h"
 #include "directory.h"
-
-#include <string.h>
-#include <errno.h>
+#include "os_compat.h"
 
 static ListNode *nodeOfStoredPlaylist(List *list, int index)
 {

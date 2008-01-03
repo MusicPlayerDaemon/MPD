@@ -20,22 +20,12 @@
  */
 
 #include "../audioOutput.h"
-
-#include <stdlib.h>
+#include "../os_compat.h"
 
 #ifdef HAVE_OSS
 
 #include "../conf.h"
 #include "../log.h"
-
-#include <string.h>
-
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/ioctl.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <errno.h>
 
 #if defined(__OpenBSD__) || defined(__NetBSD__)
 # include <soundcard.h>

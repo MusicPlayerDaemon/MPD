@@ -22,8 +22,7 @@
 #include "list.h"
 #include "log.h"
 #include "utils.h"
-
-#include <string.h>
+#include "os_compat.h"
 
 #define PERMISSION_PASSWORD_CHAR	"@"
 #define PERMISSION_SEPERATOR		","

@@ -21,14 +21,7 @@
 
 #include "../config.h"
 #include "gcc.h"
-
-#include <unistd.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <errno.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
+#include "os_compat.h"
 
 #define ARRAY_SIZE(x) (sizeof(x)/sizeof(x[0]))
 

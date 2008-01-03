@@ -18,10 +18,7 @@
 
 #include "timer.h"
 #include "utils.h"
-
-#include <assert.h>
-#include <limits.h>
-#include <sys/time.h>
+#include "os_compat.h"
 
 static uint64_t now(void)
 {

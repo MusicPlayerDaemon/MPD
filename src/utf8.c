@@ -18,10 +18,7 @@
 
 #include "utf8.h"
 #include "utils.h"
-
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
+#include "os_compat.h"
 
 char *latin1_to_utf8(char *dest, char *in_latin1)
 {

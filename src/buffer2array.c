@@ -17,12 +17,7 @@
  */
 
 #include "buffer2array.h"
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
-
+#include "os_compat.h"
 
 static inline
 int

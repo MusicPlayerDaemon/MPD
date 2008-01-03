@@ -19,7 +19,7 @@
 #ifndef DB_UTILS_H
 #define DB_UTILS_H
 
-#include <stdio.h>
+#include "os_compat.h"
 
 #include "locate.h"
 

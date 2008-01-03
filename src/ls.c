@@ -23,10 +23,7 @@
 #include "log.h"
 #include "utf8.h"
 #include "utils.h"
-
-#include <dirent.h>
-#include <stdio.h>
-#include <errno.h>
+#include "os_compat.h"
 
 static char *remoteUrlPrefixes[] = {
 	"http://",

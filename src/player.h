@@ -25,9 +25,7 @@
 #include "mpd_types.h"
 #include "song.h"
 #include "metadataChunk.h"
-
-#include <stdio.h>
-#include <sys/param.h>
+#include "os_compat.h"
 
 #define PLAYER_STATE_STOP	0
 #define PLAYER_STATE_PAUSE	1

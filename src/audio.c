@@ -25,15 +25,7 @@
 #include "playerData.h"
 #include "utils.h"
 #include "state_file.h"
-
-#include <stdlib.h>
-#include <string.h>
-#include <assert.h>
-#include <signal.h>
-#include <sys/stat.h>
-#include <sys/param.h>
-#include <errno.h>
-#include <unistd.h>
+#include "os_compat.h"
 
 #define AUDIO_DEVICE_STATE	"audio_device_state:"
 #define AUDIO_DEVICE_STATE_LEN	19	/* strlen(AUDIO_DEVICE_STATE) */

@@ -24,11 +24,9 @@
 #include "log.h"
 #include "normalize.h"
 #include "conf.h"
-
-#include <string.h>
+#include "os_compat.h"
 
 static mpd_sint16 currentChunk = -1;
-
 static mpd_sint8 currentMetaChunk = -1;
 static mpd_sint8 sendMetaChunk;
 

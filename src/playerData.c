@@ -19,14 +19,7 @@
 #include "playerData.h"
 #include "conf.h"
 #include "log.h"
-
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <sys/ipc.h>
-#include <sys/shm.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include "os_compat.h"
 
 int buffered_before_play;
 int buffered_chunks;

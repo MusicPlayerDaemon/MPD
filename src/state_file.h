@@ -21,8 +21,6 @@
 
 #include "gcc.h"
 
-#include <stdio.h>
-
 void write_state_file(void);
 void read_state_file(void);
 void mpd_noreturn state_file_fatal(void);

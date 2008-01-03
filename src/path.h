@@ -20,9 +20,7 @@
 #define PATH_H
 
 #include "../config.h"
-
-#include <sys/param.h>
-#include <limits.h>
+#include "os_compat.h"
 
 #if !defined(MPD_PATH_MAX)
 #  if defined(MAXPATHLEN)

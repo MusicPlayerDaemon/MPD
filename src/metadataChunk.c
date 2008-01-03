@@ -18,8 +18,7 @@
 
 #include "metadataChunk.h"
 #include "gcc.h"
-
-#include <string.h>
+#include "os_compat.h"
 
 static void initMetadataChunk(MetadataChunk * chunk)
 {

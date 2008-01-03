@@ -32,10 +32,7 @@
 #include "../outputBuffer.h"
 #include "../replayGain.h"
 #include "../audio.h"
-
-#include <stdio.h>
-#include <string.h>
-#include <unistd.h>
+#include "../os_compat.h"
 
 static void oggflac_cleanup(FlacData * data,
 			    OggFLAC__SeekableStreamDecoder * decoder)

@@ -31,11 +31,7 @@
 #include "../inputStream.h"
 #include "../outputBuffer.h"
 #include "../replayGain.h"
-
-#include <stdio.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <string.h>
+#include "../os_compat.h"
 
 #ifndef HAVE_TREMOR
 #include <vorbis/vorbisfile.h>
@@ -51,8 +47,6 @@
 #define ov_time_tell(VF) ((double)ov_time_tell(VF)/1000)
 #define ov_time_seek_page(VF, S) (ov_time_seek_page(VF, (S)*1000))
 #endif /* HAVE_TREMOR */
-
-#include <errno.h>
 
 #ifdef WORDS_BIGENDIAN
 #define OGG_DECODE_USE_BIGENDIAN	1

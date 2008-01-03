@@ -21,18 +21,7 @@
 #include "conf.h"
 #include "log.h"
 #include "utils.h"
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/socket.h>
-#include <sys/stat.h>
-#include <sys/param.h>
-#include <netinet/in.h>
-#include <netdb.h>
-#include <string.h>
-#include <errno.h>
-#include <resolv.h>
-#include <fcntl.h>
+#include "os_compat.h"
 
 #define MAXHOSTNAME 	1024
 

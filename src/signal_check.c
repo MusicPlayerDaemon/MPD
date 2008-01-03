@@ -18,9 +18,7 @@
  */
 
 #include "signal_check.h"
-
-#include <errno.h>
-#include <stddef.h>
+#include "os_compat.h"
 
 static volatile sig_atomic_t __caught_signals[NSIG];
 

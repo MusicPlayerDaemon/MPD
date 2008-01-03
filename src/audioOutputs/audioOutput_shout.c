@@ -18,17 +18,12 @@
 
 #include "../audioOutput.h"
 
-#include <stdlib.h>
-
 #ifdef HAVE_SHOUT
 
 #include "../conf.h"
 #include "../log.h"
 #include "../pcm_utils.h"
 #include "../timer.h"
-
-#include <string.h>
-#include <time.h>
 
 #include <shout/shout.h>
 #include <vorbis/vorbisenc.h>

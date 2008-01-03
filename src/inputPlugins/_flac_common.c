@@ -31,10 +31,8 @@
 #include "../outputBuffer.h"
 #include "../decode.h"
 #include "../replayGain.h"
+#include "../os_compat.h"
 
-#include <stdio.h>
-#include <string.h>
-#include <unistd.h>
 #include <FLAC/format.h>
 #include <FLAC/metadata.h>
 

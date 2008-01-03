@@ -27,14 +27,9 @@
 #include "../inputStream.h"
 #include "../outputBuffer.h"
 #include "../replayGain.h"
+#include "../os_compat.h"
 
-#include <stdio.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <string.h>
 #include <mpcdec/mpcdec.h>
-#include <errno.h>
-#include <math.h>
 
 typedef struct _MpcCallbackData {
 	InputStream *inStream;

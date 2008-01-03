@@ -22,10 +22,7 @@
 #include "log.h"
 #include "utils.h"
 #include "conf.h"
-
-#include <string.h>
-#include <math.h>
-#include <assert.h>
+#include "os_compat.h"
 
 void pcm_volumeChange(char *buffer, int bufferSize, AudioFormat * format,
                       int volume)

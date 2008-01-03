@@ -24,14 +24,8 @@
 #include "state_file.h"
 #include "gcc.h"
 #include "utils.h"
+#include "os_compat.h"
 
-#include <math.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <sys/ioctl.h>
-#include <fcntl.h>
-#include <errno.h>
 #ifdef HAVE_OSS
 #include <sys/soundcard.h>
 #endif

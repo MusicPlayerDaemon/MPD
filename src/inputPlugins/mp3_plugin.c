@@ -33,13 +33,7 @@
 #include "../tag.h"
 #include "../conf.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
-#include <errno.h>
+#include "../os_compat.h"
 
 #define FRAMES_CUSHION    2000
 
