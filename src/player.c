@@ -208,6 +208,15 @@ int playerWait(int fd)
 	return 0;
 }
 
+static void set_current_song(Song *song)
+{
+	PlayerControl *pc = &(getPlayerData()->playerControl);
+
+	pc->fileTime = song->tag ? song->tag->time : 0;
+	copyMpdTagToMetadataChunk(song->tag, &(pc->fileMetadataChunk));
+	get_song_url(pc->utf8url, song);
+}
+
 int playerPlay(int fd, Song * song)
 {
 	PlayerControl *pc = &(getPlayerData()->playerControl);
@@ -215,14 +224,7 @@ int playerPlay(int fd, Song * song)
 	if (playerStop(fd) < 0)
 		return -1;
 
-	if (song->tag)
-		pc->fileTime = song->tag->time;
-	else
-		pc->fileTime = 0;
-
-	copyMpdTagToMetadataChunk(song->tag, &(pc->fileMetadataChunk));
-
-	get_song_url(pc->utf8url, song);
+	set_current_song(song);
 
 	pc->play = 1;
 	if (playerInit() < 0) {
@@ -395,15 +397,7 @@ int queueSong(Song * song)
 	PlayerControl *pc = &(getPlayerData()->playerControl);
 
 	if (pc->queueState == PLAYER_QUEUE_BLANK) {
-		get_song_url(pc->utf8url, song);
-
-		if (song->tag)
-			pc->fileTime = song->tag->time;
-		else
-			pc->fileTime = 0;
-
-		copyMpdTagToMetadataChunk(song->tag, &(pc->fileMetadataChunk));
-
+		set_current_song(song);
 		pc->queueState = PLAYER_QUEUE_FULL;
 		return 0;
 	}
@@ -462,16 +456,8 @@ int playerSeek(int fd, Song * song, float time)
 		return -1;
 	}
 
-	if (strcmp(pc->utf8url, get_song_url(path_max_tmp, song)) != 0) {
-		if (song->tag)
-			pc->fileTime = song->tag->time;
-		else
-			pc->fileTime = 0;
-
-		copyMpdTagToMetadataChunk(song->tag, &(pc->fileMetadataChunk));
-
-		strcpy(pc->utf8url, path_max_tmp);
-	}
+	if (strcmp(pc->utf8url, get_song_url(path_max_tmp, song)) != 0)
+		set_current_song(song);
 
 	if (pc->error == PLAYER_ERROR_NOERROR) {
 		resetPlayerMetadata();
