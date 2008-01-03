@@ -60,13 +60,20 @@ char *pfx_dir(char *dst,
               const char *path, const size_t path_len,
               const char *pfx, const size_t pfx_len);
 
-/* relative music path to absolute music path
- * char * passed is a static variable, so don't free it
- */
+/* relative music path to absolute music path */
 char *rmp2amp_r(char *dst, const char *rel_path);
 
+/* relative playlist path to absolute playlist path */
 char *rpp2app_r(char *dst, const char *rel_path);
 
+/*
+ * parent_path - saner version of dirname(3) with slightly different semantics
+ *  - we will return "" instead of "." or "/" if we have no parent
+ *    this is because we only deal with internal paths
+ *  - we always skip over redundant slashes in the middle, if there are any
+ *  - we will never get meaningful paths with trailing slashes in our callers
+ *    (set handle_trailing_slashes to true if we do)
+ */
 char *parent_path(char *path_max_tmp, const char *path);
 
 /* strips extra "///" and leading "/" and trailing "/" */
