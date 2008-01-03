@@ -41,7 +41,6 @@
 #include <dirent.h>
 #include <errno.h>
 #include <assert.h>
-#include <libgen.h>
 
 #define DIRECTORY_DIR		"directory: "
 #define DIRECTORY_MTIME		"mtime: "
@@ -988,32 +987,26 @@ static void sortDirectory(Directory * directory)
 int checkDirectoryDB(void)
 {
 	struct stat st;
-	char *dbFile;
-	char *dirPath;
-	char *dbPath;
-
-	dbFile = getDbFile();
+	char *dbFile = getDbFile();
 
 	/* Check if the file exists */
 	if (access(dbFile, F_OK)) {
 		/* If the file doesn't exist, we can't check if we can write
 		 * it, so we are going to try to get the directory path, and
 		 * see if we can write a file in that */
-		dbPath = xstrdup(dbFile);
-		dirPath = dirname(dbPath);
+		char dirPath[MPD_PATH_MAX];
+		parent_path(dirPath, dbFile);
 
 		/* Check that the parent part of the path is a directory */
 		if (stat(dirPath, &st) < 0) {
 			ERROR("Couldn't stat parent directory of db file "
 			      "\"%s\": %s\n", dbFile, strerror(errno));
-			free(dbPath);
 			return -1;
 		}
 
 		if (!S_ISDIR(st.st_mode)) {
 			ERROR("Couldn't create db file \"%s\" because the "
 			      "parent path is not a directory\n", dbFile);
-			free(dbPath);
 			return -1;
 		}
 
@@ -1021,12 +1014,9 @@ int checkDirectoryDB(void)
 		if (access(dirPath, R_OK | W_OK)) {
 			ERROR("Can't create db file in \"%s\": %s\n", dirPath,
 			      strerror(errno));
-			free(dbPath);
 			return -1;
-
 		}
 
-		free(dbPath);
 		return 0;
 	}
 
