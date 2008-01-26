@@ -348,7 +348,7 @@ static int flac_decode_internal(OutputBuffer * cb, DecoderControl * dc,
 		return -1;
 	init_FlacData(&data, cb, dc, inStream);
 
-#if !defined(FLAC_API_VERSION_CURRENT) || FLAC_API_VERSION_CURRENT > 7
+#if defined(FLAC_API_VERSION_CURRENT) && FLAC_API_VERSION_CURRENT > 7
         if(!FLAC__stream_decoder_set_metadata_respond(flacDec, FLAC__METADATA_TYPE_VORBIS_COMMENT))
         {
                 DEBUG(__FILE__": Failed to set metadata respond\n");
