@@ -66,7 +66,7 @@ void flushOutputBuffer(OutputBuffer * cb)
 
 int sendDataToOutputBuffer(OutputBuffer * cb, InputStream * inStream,
 			   DecoderControl * dc, int seekable, void *dataIn,
-			   long dataInLen, float time, mpd_uint16 bitRate,
+			   long dataInLen, float data_time, mpd_uint16 bitRate,
 			   ReplayGainInfo * replayGainInfo)
 {
 	mpd_uint16 dataToSend;
@@ -128,7 +128,7 @@ int sendDataToOutputBuffer(OutputBuffer * cb, InputStream * inStream,
 			} else
 				cb->metaChunk[currentChunk] = -1;
 			cb->bitRate[currentChunk] = bitRate;
-			cb->times[currentChunk] = time;
+			cb->times[currentChunk] = data_time;
 		}
 
 		chunkLeft = CHUNK_SIZE - cb->chunkSize[currentChunk];

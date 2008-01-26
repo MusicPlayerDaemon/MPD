@@ -761,21 +761,21 @@ void closeMp3Directory(void)
 static Directory *findSubDirectory(Directory * directory, char *name)
 {
 	void *subDirectory;
-	char *dup = xstrdup(name);
+	char *duplicated = xstrdup(name);
 	char *key;
 
-	key = strtok(dup, "/");
+	key = strtok(duplicated, "/");
 	if (!key) {
-		free(dup);
+		free(duplicated);
 		return NULL;
 	}
 
 	if (findInList(directory->subDirectories, key, &subDirectory)) {
-		free(dup);
+		free(duplicated);
 		return (Directory *) subDirectory;
 	}
 
-	free(dup);
+	free(duplicated);
 	return NULL;
 }
 
@@ -1264,9 +1264,9 @@ static Song *getSongDetails(char *file, char **shortnameRet,
 	void *song = NULL;
 	Directory *directory;
 	char *dir = NULL;
-	char *dup = xstrdup(file);
-	char *shortname = dup;
-	char *c = strtok(dup, "/");
+	char *duplicated = xstrdup(file);
+	char *shortname = duplicated;
+	char *c = strtok(duplicated, "/");
 
 	DEBUG("get song: %s\n", file);
 
@@ -1275,25 +1275,25 @@ static Song *getSongDetails(char *file, char **shortnameRet,
 		c = strtok(NULL, "/");
 	}
 
-	if (shortname != dup) {
-		for (c = dup; c < shortname - 1; c++) {
+	if (shortname != duplicated) {
+		for (c = duplicated; c < shortname - 1; c++) {
 			if (*c == '\0')
 				*c = '/';
 		}
-		dir = dup;
+		dir = duplicated;
 	}
 
 	if (!(directory = getDirectory(dir))) {
-		free(dup);
+		free(duplicated);
 		return NULL;
 	}
 
 	if (!findInList(directory->songs, shortname, &song)) {
-		free(dup);
+		free(duplicated);
 		return NULL;
 	}
 
-	free(dup);
+	free(duplicated);
 	if (shortnameRet)
 		*shortnameRet = shortname;
 	if (directoryRet)

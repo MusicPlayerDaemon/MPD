@@ -276,7 +276,7 @@ int playerPause(int fd)
 	return 0;
 }
 
-int playerSetPause(int fd, int pause)
+int playerSetPause(int fd, int pause_flag)
 {
 	PlayerControl *pc = &(getPlayerData()->playerControl);
 
@@ -285,11 +285,11 @@ int playerSetPause(int fd, int pause)
 
 	switch (pc->state) {
 	case PLAYER_STATE_PLAY:
-		if (pause)
+		if (pause_flag)
 			playerPause(fd);
 		break;
 	case PLAYER_STATE_PAUSE:
-		if (!pause)
+		if (!pause_flag)
 			playerPause(fd);
 		break;
 	}
@@ -436,7 +436,7 @@ void playerQueueUnlock(void)
 	}
 }
 
-int playerSeek(int fd, Song * song, float time)
+int playerSeek(int fd, Song * song, float seek_time)
 {
 	PlayerControl *pc = &(getPlayerData()->playerControl);
 	char path_max_tmp[MPD_PATH_MAX];
@@ -452,7 +452,7 @@ int playerSeek(int fd, Song * song, float time)
 
 	if (pc->error == PLAYER_ERROR_NOERROR) {
 		resetPlayerMetadata();
-		pc->seekWhere = time;
+		pc->seekWhere = seek_time;
 		pc->seek = 1;
 		if (player_pid > 0 && pc->state == PLAYER_STATE_PAUSE)
 			kill(player_pid, SIGCONT);

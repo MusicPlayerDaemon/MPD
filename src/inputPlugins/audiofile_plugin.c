@@ -33,16 +33,16 @@
 
 static int getAudiofileTotalTime(char *file)
 {
-	int time;
+	int total_time;
 	AFfilehandle af_fp = afOpenFile(file, "r", NULL);
 	if (af_fp == AF_NULL_FILEHANDLE) {
 		return -1;
 	}
-	time = (int)
+	total_time = (int)
 	    ((double)afGetFrameCount(af_fp, AF_DEFAULT_TRACK)
 	     / afGetRate(af_fp, AF_DEFAULT_TRACK));
 	afCloseFile(af_fp);
-	return time;
+	return total_time;
 }
 
 static int audiofile_decode(OutputBuffer * cb, DecoderControl * dc, char *path)
@@ -134,12 +134,12 @@ static int audiofile_decode(OutputBuffer * cb, DecoderControl * dc, char *path)
 static MpdTag *audiofileTagDup(char *file)
 {
 	MpdTag *ret = NULL;
-	int time = getAudiofileTotalTime(file);
+	int total_time = getAudiofileTotalTime(file);
 
-	if (time >= 0) {
+	if (total_time >= 0) {
 		if (!ret)
 			ret = newMpdTag();
-		ret->time = time;
+		ret->time = total_time;
 	} else {
 		DEBUG
 		    ("audiofileTagDup: Failed to get total song time from: %s\n",

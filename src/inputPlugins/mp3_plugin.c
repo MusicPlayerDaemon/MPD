@@ -69,7 +69,7 @@ static signed long audio_linear_dither(unsigned int bits, mad_fixed_t sample,
 				       struct audio_dither *dither)
 {
 	unsigned int scalebits;
-	mad_fixed_t output, mask, random;
+	mad_fixed_t output, mask, rnd;
 
 	enum {
 		MIN = -MAD_F_ONE,
@@ -86,10 +86,10 @@ static signed long audio_linear_dither(unsigned int bits, mad_fixed_t sample,
 	scalebits = MAD_F_FRACBITS + 1 - bits;
 	mask = (1L << scalebits) - 1;
 
-	random = prng(dither->random);
-	output += (random & mask) - (dither->random & mask);
+	rnd = prng(dither->random);
+	output += (rnd & mask) - (dither->random & mask);
 
-	dither->random = random;
+	dither->random = rnd;
 
 	if (output > MAX) {
 		output = MAX;
@@ -1093,16 +1093,16 @@ static int mp3_decode(OutputBuffer * cb, DecoderControl * dc,
 static MpdTag *mp3_tagDup(char *file)
 {
 	MpdTag *ret = NULL;
-	int time;
+	int total_time;
 
 	ret = id3Dup(file);
 
-	time = getMp3TotalTime(file);
+	total_time = getMp3TotalTime(file);
 
-	if (time >= 0) {
+	if (total_time >= 0) {
 		if (!ret)
 			ret = newMpdTag();
-		ret->time = time;
+		ret->time = total_time;
 	} else {
 		DEBUG("mp3_tagDup: Failed to get total song time from: %s\n",
 		      file);

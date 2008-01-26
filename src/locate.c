@@ -123,7 +123,7 @@ void freeLocateTagItem(LocateTagItem * item)
 static int strstrSearchTag(Song * song, int type, char *str)
 {
 	int i;
-	char *dup;
+	char *duplicate;
 	int ret = 0;
 
 	if (type == LOCATE_TAG_FILE_TYPE || type == LOCATE_TAG_ANY_TYPE) {
@@ -145,10 +145,10 @@ static int strstrSearchTag(Song * song, int type, char *str)
 			continue;
 		}
 
-		dup = strDupToUpper(song->tag->items[i].value);
-		if (strstr(dup, str))
+		duplicate = strDupToUpper(song->tag->items[i].value);
+		if (strstr(duplicate, str))
 			ret = 1;
-		free(dup);
+		free(duplicate);
 	}
 
 	return ret;

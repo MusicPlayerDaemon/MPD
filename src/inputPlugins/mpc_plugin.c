@@ -134,7 +134,7 @@ static int mpc_decode(OutputBuffer * cb, DecoderControl * dc,
 	unsigned long samplePos = 0;
 	mpc_uint32_t vbrUpdateAcc;
 	mpc_uint32_t vbrUpdateBits;
-	float time;
+	float total_time;
 	int i;
 	ReplayGainInfo *replayGainInfo = NULL;
 
@@ -218,7 +218,7 @@ static int mpc_decode(OutputBuffer * cb, DecoderControl * dc,
 			s16++;
 
 			if (chunkpos >= MPC_CHUNK_SIZE) {
-				time = ((float)samplePos) /
+				total_time = ((float)samplePos) /
 				    dc->audioFormat.sampleRate;
 
 				bitRate = vbrUpdateBits *
@@ -227,7 +227,7 @@ static int mpc_decode(OutputBuffer * cb, DecoderControl * dc,
 				sendDataToOutputBuffer(cb, inStream, dc,
 						       inStream->seekable,
 						       chunk, chunkpos,
-						       time,
+						       total_time,
 						       bitRate, replayGainInfo);
 
 				chunkpos = 0;
@@ -241,13 +241,13 @@ static int mpc_decode(OutputBuffer * cb, DecoderControl * dc,
 	}
 
 	if (!dc->stop && chunkpos > 0) {
-		time = ((float)samplePos) / dc->audioFormat.sampleRate;
+		total_time = ((float)samplePos) / dc->audioFormat.sampleRate;
 
 		bitRate =
 		    vbrUpdateBits * dc->audioFormat.sampleRate / 1152 / 1000;
 
 		sendDataToOutputBuffer(cb, NULL, dc, inStream->seekable,
-				       chunk, chunkpos, time, bitRate,
+				       chunk, chunkpos, total_time, bitRate,
 				       replayGainInfo);
 	}
 
@@ -261,7 +261,7 @@ static int mpc_decode(OutputBuffer * cb, DecoderControl * dc,
 static float mpcGetTime(char *file)
 {
 	InputStream inStream;
-	float time = -1;
+	float total_time = -1;
 
 	mpc_reader reader;
 	mpc_streaminfo info;
@@ -289,19 +289,19 @@ static float mpcGetTime(char *file)
 		return -1;
 	}
 
-	time = mpc_streaminfo_get_length(&info);
+	total_time = mpc_streaminfo_get_length(&info);
 
 	closeInputStream(&inStream);
 
-	return time;
+	return total_time;
 }
 
 static MpdTag *mpcTagDup(char *file)
 {
 	MpdTag *ret = NULL;
-	float time = mpcGetTime(file);
+	float total_time = mpcGetTime(file);
 
-	if (time < 0) {
+	if (total_time < 0) {
 		DEBUG("mpcTagDup: Failed to get Songlength of file: %s\n",
 		      file);
 		return NULL;
@@ -312,7 +312,7 @@ static MpdTag *mpcTagDup(char *file)
 		ret = id3Dup(file);
 	if (!ret)
 		ret = newMpdTag();
-	ret->time = time;
+	ret->time = total_time;
 
 	return ret;
 }

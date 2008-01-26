@@ -103,7 +103,7 @@ int lsPlaylists(int fd, char *utf8path)
 	DIR *dir;
 	struct stat st;
 	struct dirent *ent;
-	char *dup;
+	char *duplicated;
 	char *utf8;
 	char s[MPD_PATH_MAX];
 	char path_max_tmp[MPD_PATH_MAX];
@@ -128,21 +128,20 @@ int lsPlaylists(int fd, char *utf8path)
 
 	while ((ent = readdir(dir))) {
 		size_t len = strlen(ent->d_name) + 1;
-		dup = ent->d_name;
+		duplicated = ent->d_name;
 		if (mpd_likely(len <= maxlen) &&
-		    dup[0] != '.' &&
-		    (suff = strlen(dup) - suflen) > 0 &&
-		    dup[suff] == '.' &&
-		    strcmp(dup + suff + 1, PLAYLIST_FILE_SUFFIX) == 0) {
+		    duplicated[0] != '.' &&
+		    (suff = strlen(duplicated) - suflen) > 0 &&
+		    duplicated[suff] == '.' &&
+		    strcmp(duplicated + suff + 1, PLAYLIST_FILE_SUFFIX) == 0) {
 			memcpy(s + actlen, ent->d_name, len);
 			if (stat(s, &st) == 0) {
 				if (S_ISREG(st.st_mode)) {
-					char path_max_tmp[MPD_PATH_MAX];
 					if (list == NULL)
 						list = makeList(NULL, 1);
-					dup[suff] = '\0';
+					duplicated[suff] = '\0';
 					utf8 = fs_charset_to_utf8(path_max_tmp,
-					                          dup);
+					                          duplicated);
 					if (utf8)
 						insertInList(list, utf8, NULL);
 				}
@@ -156,25 +155,27 @@ int lsPlaylists(int fd, char *utf8path)
 		int i;
 		sortList(list);
 
-		dup = xmalloc(strlen(utf8path) + 2);
-		strcpy(dup, utf8path);
-		for (i = strlen(dup) - 1; i >= 0 && dup[i] == '/'; i--) {
-			dup[i] = '\0';
+		duplicated = xmalloc(strlen(utf8path) + 2);
+		strcpy(duplicated, utf8path);
+		for (i = strlen(duplicated) - 1;
+		     i >= 0 && duplicated[i] == '/';
+		     i--) {
+			duplicated[i] = '\0';
 		}
-		if (strlen(dup))
-			strcat(dup, "/");
+		if (strlen(duplicated))
+			strcat(duplicated, "/");
 
 		node = list->firstNode;
 		while (node != NULL) {
 			if (!strchr(node->key, '\n')) {
-				fdprintf(fd, "playlist: %s%s\n", dup,
+				fdprintf(fd, "playlist: %s%s\n", duplicated,
 					  node->key);
 			}
 			node = node->nextNode;
 		}
 
 		freeList(list);
-		free(dup);
+		free(duplicated);
 	}
 
 	return 0;

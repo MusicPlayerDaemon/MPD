@@ -166,7 +166,7 @@ static void mod_close(mod_Data * data)
 static int mod_decode(OutputBuffer * cb, DecoderControl * dc, char *path)
 {
 	mod_Data *data;
-	float time = 0.0;
+	float total_time = 0.0;
 	int ret;
 	float secPerByte;
 
@@ -203,10 +203,10 @@ static int mod_decode(OutputBuffer * cb, DecoderControl * dc, char *path)
 			break;
 
 		ret = VC_WriteBytes(data->audio_buffer, MIKMOD_FRAME_SIZE);
-		time += ret * secPerByte;
+		total_time += ret * secPerByte;
 		sendDataToOutputBuffer(cb, NULL, dc, 0,
-				       (char *)data->audio_buffer, ret, time,
-				       0, NULL);
+				       (char *)data->audio_buffer, ret,
+				       total_time, 0, NULL);
 	}
 
 	flushOutputBuffer(cb);

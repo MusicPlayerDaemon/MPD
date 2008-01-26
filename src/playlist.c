@@ -279,7 +279,7 @@ void savePlaylistState(FILE *fp)
 }
 
 static void loadPlaylistFromStateFile(FILE *fp, char *buffer,
-				      int state, int current, int time)
+				      int state, int current, int seek_time)
 {
 	char *temp;
 	int song;
@@ -300,7 +300,8 @@ static void loadPlaylistFromStateFile(FILE *fp, char *buffer,
 			}
 			if (state != PLAYER_STATE_STOP) {
 				seekSongInPlaylist(STDERR_FILENO,
-						   playlist.length - 1, time);
+						   playlist.length - 1,
+						   seek_time);
 			}
 		}
 		if (!myFgets(buffer, PLAYLIST_BUFFER_SIZE, fp))
@@ -311,7 +312,7 @@ static void loadPlaylistFromStateFile(FILE *fp, char *buffer,
 void readPlaylistState(FILE *fp)
 {
 	int current = -1;
-	int time = 0;
+	int seek_time = 0;
 	int state = PLAYER_STATE_STOP;
 	char buffer[PLAYLIST_BUFFER_SIZE];
 
@@ -330,7 +331,7 @@ void readPlaylistState(FILE *fp)
 			}
 		} else if (strncmp(buffer, PLAYLIST_STATE_FILE_TIME,
 				   strlen(PLAYLIST_STATE_FILE_TIME)) == 0) {
-			time =
+			seek_time =
 			    atoi(&(buffer[strlen(PLAYLIST_STATE_FILE_TIME)]));
 		} else
 		    if (strncmp
@@ -380,7 +381,7 @@ void readPlaylistState(FILE *fp)
 			if (state == PLAYER_STATE_STOP)
 				current = -1;
 			loadPlaylistFromStateFile(fp, buffer, state,
-						  current, time);
+						  current, seek_time);
 		}
 	}
 }
@@ -1460,7 +1461,7 @@ int getPlaylistLength(void)
 	return playlist.length;
 }
 
-int seekSongInPlaylist(int fd, int song, float time)
+int seekSongInPlaylist(int fd, int song, float seek_time)
 {
 	int i = song;
 
@@ -1491,14 +1492,14 @@ int seekSongInPlaylist(int fd, int song, float time)
 			return -1;
 	}
 
-	return playerSeek(fd, playlist.songs[playlist.order[i]], time);
+	return playerSeek(fd, playlist.songs[playlist.order[i]], seek_time);
 }
 
-int seekSongInPlaylistById(int fd, int id, float time)
+int seekSongInPlaylistById(int fd, int id, float seek_time)
 {
 	checkSongId(id);
 
-	return seekSongInPlaylist(fd, playlist.idToPosition[id], time);
+	return seekSongInPlaylist(fd, playlist.idToPosition[id], seek_time);
 }
 
 int getPlaylistSongId(int song)

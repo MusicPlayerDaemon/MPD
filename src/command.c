@@ -239,13 +239,13 @@ static int handlePause(int fd, int *permission, int argc, char *argv[])
 {
 	if (argc == 2) {
 		char *test;
-		int pause = strtol(argv[1], &test, 10);
-		if (*test != '\0' || (pause != 0 && pause != 1)) {
+		int pause_flag = strtol(argv[1], &test, 10);
+		if (*test != '\0' || (pause_flag != 0 && pause_flag != 1)) {
 			commandError(fd, ACK_ERROR_ARG, "\"%s\" is not 0 or 1",
 				     argv[1]);
 			return -1;
 		}
-		return playerSetPause(fd, pause);
+		return playerSetPause(fd, pause_flag);
 	}
 	return playerPause(fd);
 }
@@ -929,7 +929,7 @@ static int handleSwapId(int fd, int *permission, int argc, char *argv[])
 static int handleSeek(int fd, int *permission, int argc, char *argv[])
 {
 	int song;
-	int time;
+	int seek_time;
 	char *test;
 
 	song = strtol(argv[1], &test, 10);
@@ -938,19 +938,19 @@ static int handleSeek(int fd, int *permission, int argc, char *argv[])
 			     "\"%s\" is not a integer", argv[1]);
 		return -1;
 	}
-	time = strtol(argv[2], &test, 10);
+	seek_time = strtol(argv[2], &test, 10);
 	if (*test != '\0') {
 		commandError(fd, ACK_ERROR_ARG,
 			     "\"%s\" is not a integer", argv[2]);
 		return -1;
 	}
-	return seekSongInPlaylist(fd, song, time);
+	return seekSongInPlaylist(fd, song, seek_time);
 }
 
 static int handleSeekId(int fd, int *permission, int argc, char *argv[])
 {
 	int id;
-	int time;
+	int seek_time;
 	char *test;
 
 	id = strtol(argv[1], &test, 10);
@@ -959,13 +959,13 @@ static int handleSeekId(int fd, int *permission, int argc, char *argv[])
 			     "\"%s\" is not a integer", argv[1]);
 		return -1;
 	}
-	time = strtol(argv[2], &test, 10);
+	seek_time = strtol(argv[2], &test, 10);
 	if (*test != '\0') {
 		commandError(fd, ACK_ERROR_ARG,
 			     "\"%s\" is not a integer", argv[2]);
 		return -1;
 	}
-	return seekSongInPlaylistById(fd, id, time);
+	return seekSongInPlaylistById(fd, id, seek_time);
 }
 
 static int handleListAllInfo(int fd, int *permission, int argc, char *argv[])
@@ -994,17 +994,17 @@ static int handlePassword(int fd, int *permission, int argc, char *argv[])
 
 static int handleCrossfade(int fd, int *permission, int argc, char *argv[])
 {
-	int time;
+	int xfade_time;
 	char *test;
 
-	time = strtol(argv[1], &test, 10);
-	if (*test != '\0' || time < 0) {
+	xfade_time = strtol(argv[1], &test, 10);
+	if (*test != '\0' || xfade_time < 0) {
 		commandError(fd, ACK_ERROR_ARG,
 			     "\"%s\" is not a integer >= 0", argv[1]);
 		return -1;
 	}
 
-	setPlayerCrossFade(time);
+	setPlayerCrossFade(xfade_time);
 
 	return 0;
 }

@@ -62,12 +62,12 @@ static int flacFindVorbisCommentFloat(const FLAC__StreamMetadata * block,
 		    - pos;
 		if (len > 0) {
 			unsigned char tmp;
-			unsigned char *dup = &(block->data.vorbis_comment.
-					       comments[offset].entry[pos]);
-			tmp = dup[len];
-			dup[len] = '\0';
-			*fl = atof((char *)dup);
-			dup[len] = tmp;
+			unsigned char *p = &(block->data.vorbis_comment.
+					     comments[offset].entry[pos]);
+			tmp = p[len];
+			p[len] = '\0';
+			*fl = atof((char *)p);
+			p[len] = tmp;
 
 			return 1;
 		}

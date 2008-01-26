@@ -27,16 +27,16 @@
 #include "directory.h"
 #include "os_compat.h"
 
-static ListNode *nodeOfStoredPlaylist(List *list, int index)
+static ListNode *nodeOfStoredPlaylist(List *list, int idx)
 {
 	int forward;
 	ListNode *node;
 	int i;
 
-	if (index >= list->numberOfNodes || index < 0)
+	if (idx >= list->numberOfNodes || idx < 0)
 		return NULL;
 
-	if (index > (list->numberOfNodes/2)) {
+	if (idx > (list->numberOfNodes/2)) {
 		forward = 0;
 		node = list->lastNode;
 		i = list->numberOfNodes - 1;
@@ -47,7 +47,7 @@ static ListNode *nodeOfStoredPlaylist(List *list, int index)
 	}
 
 	while (node != NULL) {
-		if (i == index)
+		if (i == idx)
 			return node;
 
 		if (forward) {

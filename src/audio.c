@@ -360,16 +360,16 @@ int openAudioDevice(AudioFormat * audioFormat)
 
 int playAudio(const char *playChunk, int size)
 {
-	int send;
+	int send_size;
 
 	while (size > 0) {
-		send = audioBufferSize - audioBufferPos;
-		send = send < size ? send : size;
+		send_size = audioBufferSize - audioBufferPos;
+		send_size = send_size < size ? send_size : size;
 
-		memcpy(audioBuffer + audioBufferPos, playChunk, send);
-		audioBufferPos += send;
-		size -= send;
-		playChunk += send;
+		memcpy(audioBuffer + audioBufferPos, playChunk, send_size);
+		audioBufferPos += send_size;
+		size -= send_size;
+		playChunk += send_size;
 
 		if (audioBufferPos == audioBufferSize) {
 			if (flushAudioBuffer() < 0)

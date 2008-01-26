@@ -62,39 +62,39 @@ typedef struct _OssData {
 
 static int getIndexForParam(int param)
 {
-	int index = 0;
+	int idx = 0;
 
 	switch (param) {
 	case SNDCTL_DSP_SPEED:
-		index = OSS_RATE;
+		idx = OSS_RATE;
 		break;
 	case SNDCTL_DSP_CHANNELS:
-		index = OSS_CHANNELS;
+		idx = OSS_CHANNELS;
 		break;
 	case SNDCTL_DSP_SAMPLESIZE:
-		index = OSS_BITS;
+		idx = OSS_BITS;
 		break;
 	}
 
-	return index;
+	return idx;
 }
 
 static int findSupportedParam(OssData * od, int param, int val)
 {
 	int i;
-	int index = getIndexForParam(param);
+	int idx = getIndexForParam(param);
 
-	for (i = 0; i < od->numSupported[index]; i++) {
-		if (od->supported[index][i] == val)
+	for (i = 0; i < od->numSupported[idx]; i++) {
+		if (od->supported[idx][i] == val)
 			return 1;
 	}
 
 	return 0;
 }
 
-static int canConvert(int index, int val)
+static int canConvert(int idx, int val)
 {
-	switch (index) {
+	switch (idx) {
 	case OSS_BITS:
 		if (val != 16)
 			return 0;
@@ -111,21 +111,21 @@ static int canConvert(int index, int val)
 static int getSupportedParam(OssData * od, int param, int val)
 {
 	int i;
-	int index = getIndexForParam(param);
+	int idx = getIndexForParam(param);
 	int ret = -1;
 	int least = val;
 	int diff;
 
-	for (i = 0; i < od->numSupported[index]; i++) {
-		diff = od->supported[index][i] - val;
+	for (i = 0; i < od->numSupported[idx]; i++) {
+		diff = od->supported[idx][i] - val;
 		if (diff < 0)
 			diff = -diff;
 		if (diff < least) {
-			if (!canConvert(index, od->supported[index][i])) {
+			if (!canConvert(idx, od->supported[idx][i])) {
 				continue;
 			}
 			least = diff;
-			ret = od->supported[index][i];
+			ret = od->supported[idx][i];
 		}
 	}
 
@@ -135,10 +135,10 @@ static int getSupportedParam(OssData * od, int param, int val)
 static int findUnsupportedParam(OssData * od, int param, int val)
 {
 	int i;
-	int index = getIndexForParam(param);
+	int idx = getIndexForParam(param);
 
-	for (i = 0; i < od->numUnsupported[index]; i++) {
-		if (od->unsupported[index][i] == val)
+	for (i = 0; i < od->numUnsupported[idx]; i++) {
+		if (od->unsupported[idx][i] == val)
 			return 1;
 	}
 
@@ -147,58 +147,58 @@ static int findUnsupportedParam(OssData * od, int param, int val)
 
 static void addSupportedParam(OssData * od, int param, int val)
 {
-	int index = getIndexForParam(param);
+	int idx = getIndexForParam(param);
 
-	od->numSupported[index]++;
-	od->supported[index] = xrealloc(od->supported[index],
-				       od->numSupported[index] * sizeof(int));
-	od->supported[index][od->numSupported[index] - 1] = val;
+	od->numSupported[idx]++;
+	od->supported[idx] = xrealloc(od->supported[idx],
+				      od->numSupported[idx] * sizeof(int));
+	od->supported[idx][od->numSupported[idx] - 1] = val;
 }
 
 static void addUnsupportedParam(OssData * od, int param, int val)
 {
-	int index = getIndexForParam(param);
+	int idx = getIndexForParam(param);
 
-	od->numUnsupported[index]++;
-	od->unsupported[index] = xrealloc(od->unsupported[index],
-					 od->numUnsupported[index] *
-					 sizeof(int));
-	od->unsupported[index][od->numUnsupported[index] - 1] = val;
+	od->numUnsupported[idx]++;
+	od->unsupported[idx] = xrealloc(od->unsupported[idx],
+					od->numUnsupported[idx] *
+					sizeof(int));
+	od->unsupported[idx][od->numUnsupported[idx] - 1] = val;
 }
 
 static void removeSupportedParam(OssData * od, int param, int val)
 {
 	int i = 0;
 	int j = 0;
-	int index = getIndexForParam(param);
+	int idx = getIndexForParam(param);
 
-	for (i = 0; i < od->numSupported[index] - 1; i++) {
-		if (od->supported[index][i] == val)
+	for (i = 0; i < od->numSupported[idx] - 1; i++) {
+		if (od->supported[idx][i] == val)
 			j = 1;
-		od->supported[index][i] = od->supported[index][i + j];
+		od->supported[idx][i] = od->supported[idx][i + j];
 	}
 
-	od->numSupported[index]--;
-	od->supported[index] = xrealloc(od->supported[index],
-				       od->numSupported[index] * sizeof(int));
+	od->numSupported[idx]--;
+	od->supported[idx] = xrealloc(od->supported[idx],
+				      od->numSupported[idx] * sizeof(int));
 }
 
 static void removeUnsupportedParam(OssData * od, int param, int val)
 {
 	int i = 0;
 	int j = 0;
-	int index = getIndexForParam(param);
+	int idx = getIndexForParam(param);
 
-	for (i = 0; i < od->numUnsupported[index] - 1; i++) {
-		if (od->unsupported[index][i] == val)
+	for (i = 0; i < od->numUnsupported[idx] - 1; i++) {
+		if (od->unsupported[idx][i] == val)
 			j = 1;
-		od->unsupported[index][i] = od->unsupported[index][i + j];
+		od->unsupported[idx][i] = od->unsupported[idx][i + j];
 	}
 
-	od->numUnsupported[index]--;
-	od->unsupported[index] = xrealloc(od->unsupported[index],
-					 od->numUnsupported[index] *
-					 sizeof(int));
+	od->numUnsupported[idx]--;
+	od->unsupported[idx] = xrealloc(od->unsupported[idx],
+					od->numUnsupported[idx] *
+					sizeof(int));
 }
 
 static int isSupportedParam(OssData * od, int param, int val)

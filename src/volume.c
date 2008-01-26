@@ -95,7 +95,7 @@ static int prepOssMixer(char *device)
 
 	if (param) {
 		char *labels[SOUND_MIXER_NRDEVICES] = SOUND_DEVICE_LABELS;
-		char *dup;
+		char *duplicated;
 		int i, j;
 		int devmask = 0;
 
@@ -106,16 +106,16 @@ static int prepOssMixer(char *device)
 		}
 
 		for (i = 0; i < SOUND_MIXER_NRDEVICES; i++) {
-			dup = xstrdup(labels[i]);
+			duplicated = xstrdup(labels[i]);
 			/* eliminate spaces at the end */
-			j = strlen(dup) - 1;
-			while (j >= 0 && dup[j] == ' ')
-				dup[j--] = '\0';
-			if (strcasecmp(dup, param->value) == 0) {
-				free(dup);
+			j = strlen(duplicated) - 1;
+			while (j >= 0 && duplicated[j] == ' ')
+				duplicated[j--] = '\0';
+			if (strcasecmp(duplicated, param->value) == 0) {
+				free(duplicated);
 				break;
 			}
-			free(dup);
+			free(duplicated);
 		}
 
 		if (i >= SOUND_MIXER_NRDEVICES) {

@@ -67,11 +67,11 @@ void timer_add(Timer *timer, int size)
 
 void timer_sync(Timer *timer)
 {
-	int64_t sleep;
+	int64_t sleep_duration;
 
 	assert(timer->started);
 
-	sleep = timer->time - now();
-	if (sleep > 0)
-		my_usleep(sleep);
+	sleep_duration = timer->time - now();
+	if (sleep_duration > 0)
+		my_usleep(sleep_duration);
 }

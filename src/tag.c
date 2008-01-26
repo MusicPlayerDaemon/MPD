@@ -588,17 +588,17 @@ MpdTag *newMpdTag(void)
 	return ret;
 }
 
-static void deleteItem(MpdTag * tag, int index)
+static void deleteItem(MpdTag * tag, int idx)
 {
-	assert(index < tag->numOfItems);
+	assert(idx < tag->numOfItems);
 	tag->numOfItems--;
 
-	removeTagItemString(tag->items[index].type, tag->items[index].value);
-	/* free(tag->items[index].value); */
+	removeTagItemString(tag->items[idx].type, tag->items[idx].value);
+	/* free(tag->items[idx].value); */
 
-	if (tag->numOfItems - index > 0) {
-		memmove(tag->items + index, tag->items + index + 1,
-			tag->numOfItems - index);
+	if (tag->numOfItems - idx > 0) {
+		memmove(tag->items + idx, tag->items + idx + 1,
+			tag->numOfItems - idx);
 	}
 
 	if (tag->numOfItems > 0) {
@@ -704,21 +704,21 @@ int mpdTagsAreEqual(MpdTag * tag1, MpdTag * tag2)
 static void appendToTagItems(MpdTag * tag, int type, char *value, int len)
 {
 	int i = tag->numOfItems;
-	char *dup = xmalloc(len + 1);
+	char *duplicated = xmalloc(len + 1);
 
-	memcpy(dup, value, len);
-	dup[len] = '\0';
+	memcpy(duplicated, value, len);
+	duplicated[len] = '\0';
 
-	fixUtf8(dup);
-	stripReturnChar(dup);
+	fixUtf8(duplicated);
+	stripReturnChar(duplicated);
 
 	tag->numOfItems++;
 	tag->items = xrealloc(tag->items, tag->numOfItems * sizeof(MpdTagItem));
 
 	tag->items[i].type = type;
-	tag->items[i].value = getTagItemString(type, dup);
+	tag->items[i].value = getTagItemString(type, duplicated);
 
-	free(dup);
+	free(duplicated);
 }
 
 void addItemToMpdTagWithLen(MpdTag * tag, int itemType, char *value, int len)

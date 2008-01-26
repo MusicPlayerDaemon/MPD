@@ -201,10 +201,10 @@ static int directoryPrintSongInfo(int fd, Song * song, void *data)
 
 static int sumSongTime(int fd, Song * song, void *data)
 {
-	unsigned long *time = (unsigned long *)data;
+	unsigned long *sum_time = (unsigned long *)data;
 
 	if (song->tag && song->tag->time >= 0)
-		*time += song->tag->time;
+		*sum_time += song->tag->time;
 
 	return 0;
 }
