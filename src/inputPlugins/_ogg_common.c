@@ -24,7 +24,8 @@
 #include "_flac_common.h"
 #include "_ogg_common.h"
 
-#if defined(HAVE_OGGFLAC) || defined(HAVE_OGGVORBIS)
+#if defined(HAVE_OGGFLAC) || defined(HAVE_OGGVORBIS) || \
+  (defined(FLAC_API_VERSION_CURRENT) && FLAC_API_VERSION_CURRENT > 7)
 
 #include "../utils.h"
 

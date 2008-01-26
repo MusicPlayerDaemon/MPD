@@ -24,7 +24,8 @@
 
 #include "../inputPlugin.h"
 
-#if defined(HAVE_OGGFLAC) || defined(HAVE_OGGVORBIS)
+#if defined(HAVE_OGGFLAC) || defined(HAVE_OGGVORBIS) || \
+  (defined(FLAC_API_VERSION_CURRENT) && FLAC_API_VERSION_CURRENT > 7)
 
 typedef enum _ogg_stream_type { VORBIS, FLAC } ogg_stream_type;
 
