@@ -173,10 +173,12 @@ static int mpc_decode(OutputBuffer * cb, DecoderControl * dc,
 		closeInputStream(inStream);
 		if (!dc->stop) {
 			ERROR("Not a valid musepack stream");
+			return -1;
 		} else {
 			dc->state = DECODE_STATE_STOP;
 			dc->stop = 0;
 		}
+		return 0;
 	}
 
 	dc->totalTime = mpc_streaminfo_get_length(&info);
