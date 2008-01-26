@@ -85,6 +85,7 @@ void player_sigChldHandler(int pid, int status)
 {
 	if (player_pid == pid) 
 	{
+		/*
 		DEBUG("SIGCHLD caused by player process\n");
 		if (WIFSIGNALED(status) && 
 		    WTERMSIG(status) != SIGTERM &&
@@ -93,17 +94,20 @@ void player_sigChldHandler(int pid, int status)
 			ERROR("player process died from signal: %i\n",
 			      WTERMSIG(status));
 		}
+		*/
 		resetPlayer();
 	} 
 	else if (pid == getPlayerData()->playerControl.decode_pid &&
 		 player_pid <= 0) 
 	{
+		/*
 		if (WIFSIGNALED(status) && WTERMSIG(status) != SIGTERM) 
 		{
 			ERROR("(caught by master parent) "
 			      "decode process died from a "
 			      "non-TERM signal: %i\n", WTERMSIG(status));
 		}
+		*/
 		getPlayerData()->playerControl.decode_pid = 0;
 	}
 }

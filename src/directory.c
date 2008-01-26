@@ -130,20 +130,22 @@ void directory_sigChldHandler(int pid, int status)
 {
 	if (directory_updatePid == pid) {
 		if (WIFSIGNALED(status) && WTERMSIG(status) != SIGTERM) {
-			ERROR("update process died from a "
-			      "non-TERM signal: %i\n", WTERMSIG(status));
+			/* ERROR("update process died from a "
+			      "non-TERM signal: %i\n", WTERMSIG(status)); */
 		} else if (!WIFSIGNALED(status)) {
 			switch (WEXITSTATUS(status)) {
 			case DIRECTORY_UPDATE_EXIT_UPDATE:
 				directory_reReadDB = 1;
-				DEBUG("directory_sigChldHandler: "
-				      "updated db\n");
+				/* DEBUG("directory_sigChldHandler: "
+				      "updated db\n"); */
 			case DIRECTORY_UPDATE_EXIT_NOUPDATE:
-				DEBUG("directory_sigChldHandler: "
-				      "update exited succesffully\n");
+				/* DEBUG("directory_sigChldHandler: "
+				      "update exited succesffully\n"); */
 				break;
+			/*
 			default:
 				ERROR("error updating db\n");
+			*/
 			}
 		}
 		clearUpdatePid();

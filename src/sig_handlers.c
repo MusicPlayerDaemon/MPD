@@ -62,7 +62,7 @@ static void chldSigHandler(int signal)
 {
 	int status;
 	int pid;
-	DEBUG("main process got SIGCHLD\n");
+	/* DEBUG("main process got SIGCHLD\n"); */
 	while (0 != (pid = wait3(&status, WNOHANG, NULL))) {
 		if (pid < 0) {
 			if (errno == EINTR)
