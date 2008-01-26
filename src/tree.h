@@ -51,7 +51,7 @@ void SetTreeIteratorToBegin(Tree * tree, TreeIterator * iter);
 int IsTreeIteratorAtEnd(const TreeIterator * iter);
 void IncrementTreeIterator(TreeIterator * iter);
 
-TreeKeyData GetTreeKeyData(TreeIterator * iter);
+const TreeKeyData *GetTreeKeyData(TreeIterator * iter);
 
 int InsertInTree(Tree * tree, void * key, void * data);
 int RemoveFromTreeByKey(Tree * tree, void * key);

@@ -44,8 +44,8 @@ char *getTagItemString(int type, char *string)
 
 	if (FindInTree(tagTrees[type], string, &iter)) 
 	{
-		((TagTrackerItem *)GetTreeKeyData(&iter).data)->count++;
-		return (char *)GetTreeKeyData(&iter).key;
+		((TagTrackerItem *)GetTreeKeyData(&iter)->data)->count++;
+		return (char *)GetTreeKeyData(&iter)->key;
 	} 
 	else 
 	{
@@ -71,7 +71,7 @@ void removeTagItemString(int type, char *string)
 	if (FindInTree(tagTrees[type], string, &iter)) 
 	{
 		TagTrackerItem * item = 
-			(TagTrackerItem *)GetTreeKeyData(&iter).data;
+			(TagTrackerItem *)GetTreeKeyData(&iter)->data;
 		item->count--;
 		if (item->count <= 0)
 			RemoveFromTreeByIterator(tagTrees[type], &iter);
@@ -103,7 +103,7 @@ void resetVisitedFlagsInTagTracker(int type)
 	     !IsTreeIteratorAtEnd(&iter);
 	     IncrementTreeIterator(&iter))
 	{
-		((TagTrackerItem *)GetTreeKeyData(&iter).data)->visited = 0;
+		((TagTrackerItem *)GetTreeKeyData(&iter)->data)->visited = 0;
 	}
 }
 
@@ -117,7 +117,7 @@ void visitInTagTracker(int type, char *str)
 	if (!FindInTree(tagTrees[type], str, &iter))
 		return;
 
-	((TagTrackerItem *)GetTreeKeyData(&iter).data)->visited = 1;
+	((TagTrackerItem *)GetTreeKeyData(&iter)->data)->visited = 1;
 }
 
 void printVisitedInTagTracker(int fd, int type)
@@ -132,14 +132,14 @@ void printVisitedInTagTracker(int fd, int type)
 	     !IsTreeIteratorAtEnd(&iter);
 	     IncrementTreeIterator(&iter))
 	{
-		item = ((TagTrackerItem *)GetTreeKeyData(&iter).data);
+		item = ((TagTrackerItem *)GetTreeKeyData(&iter)->data);
 
 		if (item->visited) 
 		{
 			fdprintf(fd, 
 				 "%s: %s\n", 
 				 mpdTagItemKeys[type],
-				 (char *)GetTreeKeyData(&iter).key);
+				 (char *)GetTreeKeyData(&iter)->key);
 		}
 	}
 }

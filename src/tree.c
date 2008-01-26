@@ -630,13 +630,13 @@ void IncrementTreeIterator(TreeIterator * iter)
 	}
 }
 
-TreeKeyData
+const TreeKeyData *
 GetTreeKeyData(TreeIterator * iter)
 {
 	assert(iter->node && 
 	       iter->which > 0 && 
 	       iter->which <= iter->node->count);
-	return iter->node->keyData[iter->which-1];
+	return &iter->node->keyData[iter->which-1];
 }
 
 int
