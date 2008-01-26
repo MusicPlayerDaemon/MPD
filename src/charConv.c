@@ -120,7 +120,7 @@ char *char_conv_str(char *dest, char *string)
 			    iconv(char_conv_iconv, &string, &inleft, &bufferPtr,
 				  &outleft);
 			if (outleft == BUFFER_SIZE
-			    || (err == -1L && errno != E2BIG)) {
+			    || (err == (size_t)-1L && errno != E2BIG)) {
 				return NULL;
 			}
 			memcpy(dest + retlen, buffer, BUFFER_SIZE - outleft);

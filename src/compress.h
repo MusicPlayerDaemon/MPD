@@ -38,7 +38,7 @@ void CompressCfg(int monitor,
 		 int target,
 		 int maxgain,
 		 int smooth,
-		 int buckets);
+		 unsigned buckets);
 
 void CompressDo(void *data, unsigned int numSamples);
 

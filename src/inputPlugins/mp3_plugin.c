@@ -492,8 +492,8 @@ enum {
 };
 
 struct version {
-	int major;
-	int minor;
+	unsigned major;
+	unsigned minor;
 };
 
 struct lame {

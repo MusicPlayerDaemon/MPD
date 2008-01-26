@@ -119,7 +119,7 @@ static int myShout_initDriver(AudioOutput * audioOutput, ConfigParam * param)
 	char *user;
 	char *name;
 	BlockParam *blockParam;
-	unsigned int public;
+	int public;
 
 	sd = newShoutData();
 

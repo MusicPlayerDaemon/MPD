@@ -44,7 +44,7 @@ static struct {
 	int target;
 	int gainmax;
 	int gainsmooth;
-	int buckets;
+	unsigned buckets;
 } prefs;
 
 #ifdef USE_X
@@ -52,9 +52,9 @@ static int mon_init;
 #endif
 
 void CompressCfg(int show_mon, int anticlip, int target, int gainmax,
-		 int gainsmooth, int buckets)
+		 int gainsmooth, unsigned buckets)
 {
-	static int lastsize;
+	static unsigned lastsize;
 
 	prefs.show_mon = show_mon;
 	prefs.anticlip = anticlip;
@@ -170,8 +170,8 @@ void CompressFree(void)
 void CompressDo(void *data, unsigned int length)
 {
 	int16_t *audio = (int16_t *)data, *ap;
-	int peak, pos;
-	int i;
+	int peak;
+	unsigned int i, pos;
 	int gr, gf, gn;
 	static int pn = -1;
 #ifdef STATS
