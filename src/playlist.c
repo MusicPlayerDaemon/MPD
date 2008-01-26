@@ -1144,8 +1144,7 @@ int moveSongInPlaylist(int fd, int from, int to)
 	int i;
 	Song *tmpSong;
 	int tmpId;
-	int queuedSong = -1;
-	int currentSong = -1;
+	int currentSong;
 
 	if (from < 0 || from >= playlist.length) {
 		commandError(fd, ACK_ERROR_NO_EXIST,
@@ -1160,19 +1159,26 @@ int moveSongInPlaylist(int fd, int from, int to)
 		return -1;
 	}
 
+	if (from == to) /* no-op */
+		return 0;
+
 	/*
 	 * (to < 0) => move to offset from current song
 	 * (-playlist.length == to) => move to position BEFORE current song
 	 */
-	if (to < 0 && playlist.current >= 0)
-		to = (playlist.order[playlist.current] + abs(to)) %
-		     playlist.length;
+	currentSong = playlist.order[playlist.current];
+	if (to < 0 && playlist.current >= 0) {
+		if (currentSong == from)
+			/* no-op, can't be moved to offset of itself */
+			return 0;
+		to = (currentSong + abs(to)) % playlist.length;
+	}
 
 	if (playlist_state == PLAYLIST_STATE_PLAY) {
-		if (playlist.queued >= 0) {
+		int queuedSong = -1;
+
+		if (playlist.queued >= 0)
 			queuedSong = playlist.order[playlist.queued];
-		}
-		currentSong = playlist.order[playlist.current];
 		if (queuedSong == from || queuedSong == to
 		    || currentSong == from || currentSong == to) {
 			lockPlaylistInteraction();
