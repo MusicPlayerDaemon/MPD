@@ -191,6 +191,9 @@ StoredPlaylist *loadStoredPlaylist(const char *utf8path, int fd)
 			slength = 0;
 			temp = fsCharsetToUtf8(s);
 			if (temp && !commentCharFound) {
+				if (sp->list->numberOfNodes >=
+				    (playlist_max_length - 1))
+					goto out;
 				song = getSongFromDB(temp);
 				if (song) {
 					appendSongToStoredPlaylist(sp, song);
@@ -424,15 +427,27 @@ int appendSongToStoredPlaylistByPath(int fd, const char *utf8path, Song *song)
 	char *filename;
 	FILE *file;
 	char *s;
+	int nr_songs = 0;
+	char path_max_tmp[MAXPATHLEN + 1];
 
 	filename = utf8pathToFsPathInStoredPlaylist(utf8path, fd);
 	if (!filename)
 		return -1;
 
-	while (!(file = fopen(filename, "a")) && errno == EINTR);
+	while (!(file = fopen(filename, "a+")) && errno == EINTR);
 	if (file == NULL) {
 		commandError(fd, ACK_ERROR_NO_EXIST, "could not open file "
 		             "\"%s\": %s", filename, strerror(errno));
+		return -1;
+	}
+	while (myFgets(path_max_tmp, sizeof(path_max_tmp), file)) {
+		if (path_max_tmp[0] != PLAYLIST_COMMENT &&
+		    (++nr_songs >= playlist_max_length))
+			break;
+	}
+	if (nr_songs >= playlist_max_length) {
+		commandError(fd, ACK_ERROR_PLAYLIST_MAX,
+		             "playlist is at the max size");
 		return -1;
 	}
 

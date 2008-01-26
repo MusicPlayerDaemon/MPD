@@ -65,7 +65,7 @@
 
 static Playlist playlist;
 static int playlist_state = PLAYLIST_STATE_STOP;
-static int playlist_max_length = DEFAULT_PLAYLIST_MAX_LENGTH;
+int playlist_max_length = DEFAULT_PLAYLIST_MAX_LENGTH;
 static int playlist_stopOnError;
 static int playlist_errorCount;
 static int playlist_queueError;
