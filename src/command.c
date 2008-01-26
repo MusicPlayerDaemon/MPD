@@ -140,6 +140,16 @@ struct _CommandEntry {
 	CommandListHandlerFunction listHandler;
 };
 
+
+/* this should really be "need a non-negative integer": */
+static const char need_positive[] = "need a positive integer"; /* no-op */
+
+/* FIXME: redundant error messages */
+static const char check_integer[] = "\"%s\" is not a integer";
+static const char need_integer[] = "need an integer";
+static const char check_boolean[] = "\"%s\" is not 0 or 1";
+static const char check_non_negative[] = "\"%s\" is not an integer >= 0";
+
 static char *current_command;
 static int command_listNum;
 
@@ -157,6 +167,56 @@ static CommandEntry *newCommandEntry(void)
 	cmd->listHandler = NULL;
 	cmd->reqPermission = 0;
 	return cmd;
+}
+
+static void command_error_va(int fd, int error, const char *fmt, va_list args)
+{
+	if (current_command && fd != STDERR_FILENO) {
+		fdprintf(fd, "ACK [%i@%i] {%s} ",
+		         (int)error, command_listNum, current_command);
+		vfdprintf(fd, fmt, args);
+		fdprintf(fd, "\n");
+		current_command = NULL;
+	} else {
+		fdprintf(STDERR_FILENO, "ACK [%i@%i] ",
+		         (int)error, command_listNum);
+		vfdprintf(STDERR_FILENO, fmt, args);
+		fdprintf(STDERR_FILENO, "\n");
+	}
+}
+
+static int mpd_fprintf__ check_uint32(int fd, mpd_uint32 *dst,
+                                      const char *s, const char *fmt, ...)
+{
+	char *test;
+
+	*dst = strtoul(s, &test, 10);
+	if (*test != '\0') {
+		va_list args;
+		va_start(args, fmt);
+		command_error_va(fd, ACK_ERROR_ARG, fmt, args);
+		va_end(args);
+		return -1;
+	}
+	return 0;
+}
+
+static int mpd_fprintf__ check_int(int fd, int *dst,
+                                   const char *s, const char *fmt, ...)
+{
+	char *test;
+
+	*dst = strtol(s, &test, 10);
+	if (*test != '\0' ||
+	    (fmt == check_boolean && *dst != 0 && *dst != 1) ||
+	    (fmt == check_non_negative && *dst < 0)) {
+		va_list args;
+		va_start(args, fmt);
+		command_error_va(fd, ACK_ERROR_ARG, fmt, args);
+		va_end(args);
+		return -1;
+	}
+	return 0;
 }
 
 static void addCommand(char *name,
@@ -191,32 +251,19 @@ static int handleTagTypes(int fd, int *permission, int argc, char *argv[])
 static int handlePlay(int fd, int *permission, int argc, char *argv[])
 {
 	int song = -1;
-	char *test;
 
-	if (argc == 2) {
-		song = strtol(argv[1], &test, 10);
-		if (*test != '\0') {
-			commandError(fd, ACK_ERROR_ARG,
-				     "need a positive integer");
-			return -1;
-		}
-	}
+	if (argc == 2 && check_int(fd, &song, argv[1], need_positive) < 0)
+		return -1;
 	return playPlaylist(fd, song, 0);
 }
 
 static int handlePlayId(int fd, int *permission, int argc, char *argv[])
 {
 	int id = -1;
-	char *test;
 
-	if (argc == 2) {
-		id = strtol(argv[1], &test, 10);
-		if (*test != '\0') {
-			commandError(fd, ACK_ERROR_ARG,
-				     "need a positive integer");
-			return -1;
-		}
-	}
+	if (argc == 2 && check_int(fd, &id, argv[1], need_positive) < 0)
+		return -1;
+
 	return playPlaylistById(fd, id, 0);
 }
 
@@ -238,13 +285,9 @@ static int handleCurrentSong(int fd, int *permission, int argc, char *argv[])
 static int handlePause(int fd, int *permission, int argc, char *argv[])
 {
 	if (argc == 2) {
-		char *test;
-		int pause_flag = strtol(argv[1], &test, 10);
-		if (*test != '\0' || (pause_flag != 0 && pause_flag != 1)) {
-			commandError(fd, ACK_ERROR_ARG, "\"%s\" is not 0 or 1",
-				     argv[1]);
+		int pause_flag;
+		if (check_int(fd, &pause_flag, argv[1], check_boolean, argv[1]) < 0)
 			return -1;
-		}
 		return playerSetPause(fd, pause_flag);
 	}
 	return playerPause(fd);
@@ -348,26 +391,18 @@ static int handleAddId(int fd, int *permission, int argc, char *argv[])
 static int handleDelete(int fd, int *permission, int argc, char *argv[])
 {
 	int song;
-	char *test;
 
-	song = strtol(argv[1], &test, 10);
-	if (*test != '\0') {
-		commandError(fd, ACK_ERROR_ARG, "need a positive integer");
+	if (check_int(fd, &song, argv[1], need_positive) < 0)
 		return -1;
-	}
 	return deleteFromPlaylist(fd, song);
 }
 
 static int handleDeleteId(int fd, int *permission, int argc, char *argv[])
 {
 	int id;
-	char *test;
 
-	id = strtol(argv[1], &test, 10);
-	if (*test != '\0') {
-		commandError(fd, ACK_ERROR_ARG, "need a positive integer");
+	if (check_int(fd, &id, argv[1], need_positive) < 0)
 		return -1;
-	}
 	return deleteFromPlaylistById(fd, id);
 }
 
@@ -436,60 +471,38 @@ static int handleRename(int fd, int *permission, int argc, char *argv[])
 static int handlePlaylistChanges(int fd, int *permission,
 				 int argc, char *argv[])
 {
-	unsigned long version;
-	char *test;
+	mpd_uint32 version;
 
-	version = strtoul(argv[1], &test, 10);
-	if (*test != '\0') {
-		commandError(fd, ACK_ERROR_ARG, "need a positive integer");
+	if (check_uint32(fd, &version, argv[1], need_positive) < 0)
 		return -1;
-	}
 	return playlistChanges(fd, version);
 }
 
 static int handlePlaylistChangesPosId(int fd, int *permission,
 				      int argc, char *argv[])
 {
-	unsigned long version;
-	char *test;
+	mpd_uint32 version;
 
-	version = strtoul(argv[1], &test, 10);
-	if (*test != '\0') {
-		commandError(fd, ACK_ERROR_ARG, "need a positive integer");
+	if (check_uint32(fd, &version, argv[1], need_positive) < 0)
 		return -1;
-	}
 	return playlistChangesPosId(fd, version);
 }
 
 static int handlePlaylistInfo(int fd, int *permission, int argc, char *argv[])
 {
 	int song = -1;
-	char *test;
 
-	if (argc == 2) {
-		song = strtol(argv[1], &test, 10);
-		if (*test != '\0') {
-			commandError(fd, ACK_ERROR_ARG,
-				     "need a positive integer");
-			return -1;
-		}
-	}
+	if (argc == 2 && check_int(fd, &song, argv[1], need_positive) < 0)
+		return -1;
 	return playlistInfo(fd, song);
 }
 
 static int handlePlaylistId(int fd, int *permission, int argc, char *argv[])
 {
 	int id = -1;
-	char *test;
 
-	if (argc == 2) {
-		id = strtol(argv[1], &test, 10);
-		if (*test != '\0') {
-			commandError(fd, ACK_ERROR_ARG,
-				     "need a positive integer");
-			return -1;
-		}
-	}
+	if (argc == 2 && check_int(fd, &id, argv[1], need_positive) < 0)
+		return -1;
 	return playlistId(fd, id);
 }
 
@@ -597,14 +610,9 @@ static int handlePlaylistSearch(int fd, int *permission, int argc, char *argv[])
 static int handlePlaylistDelete(int fd, int *permission, int argc, char *argv[]) {
 	char *playlist = argv[1];
 	int from;
-	char *test;
 
-	from = strtol(argv[2], &test, 10);
-	if (*test != '\0') {
-		commandError(fd, ACK_ERROR_ARG,
-			     "\"%s\" is not a integer", argv[2]);
+	if (check_int(fd, &from, argv[2], check_integer, argv[2]) < 0)
 		return -1;
-	}
 
 	return removeOneSongFromStoredPlaylistByPath(fd, playlist, from);
 }
@@ -613,20 +621,11 @@ static int handlePlaylistMove(int fd, int *permission, int argc, char *argv[])
 {
 	char *playlist = argv[1];
 	int from, to;
-	char *test;
 
-	from = strtol(argv[2], &test, 10);
-	if (*test != '\0') {
-		commandError(fd, ACK_ERROR_ARG,
-			     "\"%s\" is not a integer", argv[2]);
+	if (check_int(fd, &from, argv[2], check_integer, argv[2]) < 0)
 		return -1;
-	}
-	to = strtol(argv[3], &test, 10);
-	if (*test != '\0') {
-		commandError(fd, ACK_ERROR_ARG,
-			     "\"%s\" is not a integer", argv[3]);
+	if (check_int(fd, &to, argv[3], check_integer, argv[3]) < 0)
 		return -1;
-	}
 
 	return moveSongInStoredPlaylistByPath(fd, playlist, from, to);
 }
@@ -738,52 +737,36 @@ static int handleListAll(int fd, int *permission, int argc, char *argv[])
 static int handleVolume(int fd, int *permission, int argc, char *argv[])
 {
 	int change;
-	char *test;
 
-	change = strtol(argv[1], &test, 10);
-	if (*test != '\0') {
-		commandError(fd, ACK_ERROR_ARG, "need an integer");
+	if (check_int(fd, &change, argv[1], need_integer) < 0)
 		return -1;
-	}
 	return changeVolumeLevel(fd, change, 1);
 }
 
 static int handleSetVol(int fd, int *permission, int argc, char *argv[])
 {
 	int level;
-	char *test;
 
-	level = strtol(argv[1], &test, 10);
-	if (*test != '\0') {
-		commandError(fd, ACK_ERROR_ARG, "need an integer");
+	if (check_int(fd, &level, argv[1], need_integer) < 0)
 		return -1;
-	}
 	return changeVolumeLevel(fd, level, 0);
 }
 
 static int handleRepeat(int fd, int *permission, int argc, char *argv[])
 {
 	int status;
-	char *test;
 
-	status = strtol(argv[1], &test, 10);
-	if (*test != '\0') {
-		commandError(fd, ACK_ERROR_ARG, "need an integer");
+	if (check_int(fd, &status, argv[1], need_integer) < 0)
 		return -1;
-	}
 	return setPlaylistRepeatStatus(fd, status);
 }
 
 static int handleRandom(int fd, int *permission, int argc, char *argv[])
 {
 	int status;
-	char *test;
 
-	status = strtol(argv[1], &test, 10);
-	if (*test != '\0') {
-		commandError(fd, ACK_ERROR_ARG, "need an integer");
+	if (check_int(fd, &status, argv[1], need_integer) < 0)
 		return -1;
-	}
 	return setPlaylistRandomStatus(fd, status);
 }
 
@@ -849,127 +832,67 @@ static int handleList(int fd, int *permission, int argc, char *argv[])
 
 static int handleMove(int fd, int *permission, int argc, char *argv[])
 {
-	int from;
-	int to;
-	char *test;
+	int from, to;
 
-	from = strtol(argv[1], &test, 10);
-	if (*test != '\0') {
-		commandError(fd, ACK_ERROR_ARG,
-			     "\"%s\" is not a integer", argv[1]);
+	if (check_int(fd, &from, argv[1], check_integer, argv[1]) < 0)
 		return -1;
-	}
-	to = strtol(argv[2], &test, 10);
-	if (*test != '\0') {
-		commandError(fd, ACK_ERROR_ARG,
-			     "\"%s\" is not a integer", argv[2]);
+	if (check_int(fd, &to, argv[2], check_integer, argv[2]) < 0)
 		return -1;
-	}
 	return moveSongInPlaylist(fd, from, to);
 }
 
 static int handleMoveId(int fd, int *permission, int argc, char *argv[])
 {
-	int id;
-	int to;
-	char *test;
+	int id, to;
 
-	id = strtol(argv[1], &test, 10);
-	if (*test != '\0') {
-		commandError(fd, ACK_ERROR_ARG,
-			     "\"%s\" is not a integer", argv[1]);
+	if (check_int(fd, &id, argv[1], check_integer, argv[1]) < 0)
 		return -1;
-	}
-	to = strtol(argv[2], &test, 10);
-	if (*test != '\0') {
-		commandError(fd, ACK_ERROR_ARG,
-			     "\"%s\" is not a integer", argv[2]);
+	if (check_int(fd, &to, argv[2], check_integer, argv[2]) < 0)
 		return -1;
-	}
 	return moveSongInPlaylistById(fd, id, to);
 }
 
 static int handleSwap(int fd, int *permission, int argc, char *argv[])
 {
-	int song1;
-	int song2;
-	char *test;
+	int song1, song2;
 
-	song1 = strtol(argv[1], &test, 10);
-	if (*test != '\0') {
-		commandError(fd, ACK_ERROR_ARG,
-			     "\"%s\" is not a integer", argv[1]);
+	if (check_int(fd, &song1, argv[1], check_integer, argv[1]) < 0)
 		return -1;
-	}
-	song2 = strtol(argv[2], &test, 10);
-	if (*test != '\0') {
-		commandError(fd, ACK_ERROR_ARG, "\"%s\" is not a integer",
-			     argv[2]);
+	if (check_int(fd, &song2, argv[2], check_integer, argv[2]) < 0)
 		return -1;
-	}
 	return swapSongsInPlaylist(fd, song1, song2);
 }
 
 static int handleSwapId(int fd, int *permission, int argc, char *argv[])
 {
-	int id1;
-	int id2;
-	char *test;
+	int id1, id2;
 
-	id1 = strtol(argv[1], &test, 10);
-	if (*test != '\0') {
-		commandError(fd, ACK_ERROR_ARG,
-			     "\"%s\" is not a integer", argv[1]);
+	if (check_int(fd, &id1, argv[1], check_integer, argv[1]) < 0)
 		return -1;
-	}
-	id2 = strtol(argv[2], &test, 10);
-	if (*test != '\0') {
-		commandError(fd, ACK_ERROR_ARG, "\"%s\" is not a integer",
-			     argv[2]);
+	if (check_int(fd, &id2, argv[2], check_integer, argv[2]) < 0)
 		return -1;
-	}
 	return swapSongsInPlaylistById(fd, id1, id2);
 }
 
 static int handleSeek(int fd, int *permission, int argc, char *argv[])
 {
-	int song;
-	int seek_time;
-	char *test;
+	int song, seek_time;
 
-	song = strtol(argv[1], &test, 10);
-	if (*test != '\0') {
-		commandError(fd, ACK_ERROR_ARG,
-			     "\"%s\" is not a integer", argv[1]);
+	if (check_int(fd, &song, argv[1], check_integer, argv[1]) < 0)
 		return -1;
-	}
-	seek_time = strtol(argv[2], &test, 10);
-	if (*test != '\0') {
-		commandError(fd, ACK_ERROR_ARG,
-			     "\"%s\" is not a integer", argv[2]);
+	if (check_int(fd, &seek_time, argv[2], check_integer, argv[2]) < 0)
 		return -1;
-	}
 	return seekSongInPlaylist(fd, song, seek_time);
 }
 
 static int handleSeekId(int fd, int *permission, int argc, char *argv[])
 {
-	int id;
-	int seek_time;
-	char *test;
+	int id, seek_time;
 
-	id = strtol(argv[1], &test, 10);
-	if (*test != '\0') {
-		commandError(fd, ACK_ERROR_ARG,
-			     "\"%s\" is not a integer", argv[1]);
+	if (check_int(fd, &id, argv[1], check_integer, argv[1]) < 0)
 		return -1;
-	}
-	seek_time = strtol(argv[2], &test, 10);
-	if (*test != '\0') {
-		commandError(fd, ACK_ERROR_ARG,
-			     "\"%s\" is not a integer", argv[2]);
+	if (check_int(fd, &seek_time, argv[2], check_integer, argv[2]) < 0)
 		return -1;
-	}
 	return seekSongInPlaylistById(fd, id, seek_time);
 }
 
@@ -1000,15 +923,9 @@ static int handlePassword(int fd, int *permission, int argc, char *argv[])
 static int handleCrossfade(int fd, int *permission, int argc, char *argv[])
 {
 	int xfade_time;
-	char *test;
 
-	xfade_time = strtol(argv[1], &test, 10);
-	if (*test != '\0' || xfade_time < 0) {
-		commandError(fd, ACK_ERROR_ARG,
-			     "\"%s\" is not a integer >= 0", argv[1]);
+	if (check_int(fd, &xfade_time, argv[1], check_non_negative, argv[1]) < 0)
 		return -1;
-	}
-
 	setPlayerCrossFade(xfade_time);
 
 	return 0;
@@ -1017,30 +934,18 @@ static int handleCrossfade(int fd, int *permission, int argc, char *argv[])
 static int handleEnableDevice(int fd, int *permission, int argc, char *argv[])
 {
 	int device;
-	char *test;
 
-	device = strtol(argv[1], &test, 10);
-	if (*test != '\0' || device < 0) {
-		commandError(fd, ACK_ERROR_ARG,
-			     "\"%s\" is not a integer >= 0", argv[1]);
+	if (check_int(fd, &device, argv[1], check_non_negative, argv[1]) < 0)
 		return -1;
-	}
-
 	return enableAudioDevice(fd, device);
 }
 
 static int handleDisableDevice(int fd, int *permission, int argc, char *argv[])
 {
 	int device;
-	char *test;
 
-	device = strtol(argv[1], &test, 10);
-	if (*test != '\0' || device < 0) {
-		commandError(fd, ACK_ERROR_ARG,
-			     "\"%s\" is not a integer >= 0", argv[1]);
+	if (check_int(fd, &device, argv[1], check_non_negative, argv[1]) < 0)
 		return -1;
-	}
-
 	return disableAudioDevice(fd, device);
 }
 
@@ -1331,19 +1236,6 @@ mpd_fprintf_ void commandError(int fd, int error, const char *fmt, ...)
 {
 	va_list args;
 	va_start(args, fmt);
-
-	if (current_command && fd != STDERR_FILENO) {
-		fdprintf(fd, "ACK [%i@%i] {%s} ",
-		         (int)error, command_listNum, current_command);
-		vfdprintf(fd, fmt, args);
-		fdprintf(fd, "\n");
-		current_command = NULL;
-	} else {
-		fdprintf(STDERR_FILENO, "ACK [%i@%i] ",
-		         (int)error, command_listNum);
-		vfdprintf(STDERR_FILENO, fmt, args);
-		fdprintf(STDERR_FILENO, "\n");
-	}
-
+	command_error_va(fd, error, fmt, args);
 	va_end(args);
 }
