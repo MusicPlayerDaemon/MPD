@@ -45,6 +45,8 @@ typedef struct _Playlist {
 
 extern int playlist_saveAbsolutePaths;
 
+extern int playlist_max_length;
+
 void initPlaylist(void);
 
 void finishPlaylist(void);

@@ -129,6 +129,9 @@ List *loadStoredPlaylist(int fd, const char *utf8path)
 			insertInListWithoutKey(list, xstrdup(path_max_tmp));
 		} else if (isValidRemoteUtf8Url(s))
 			insertInListWithoutKey(list, xstrdup(s));
+
+		if (list->numberOfNodes >= playlist_max_length)
+			break;
 	}
 
 	while (fclose(file) && errno == EINTR);
@@ -284,6 +287,7 @@ int appendSongToStoredPlaylistByPath(int fd, const char *utf8path, Song *song)
 {
 	FILE *file;
 	char *s;
+	int nr_songs = 0;
 	char path_max_tmp[MPD_PATH_MAX];
 	char path_max_tmp2[MPD_PATH_MAX];
 
@@ -291,10 +295,20 @@ int appendSongToStoredPlaylistByPath(int fd, const char *utf8path, Song *song)
 		return -1;
 	utf8_to_fs_playlist_path(path_max_tmp, utf8path);
 
-	while (!(file = fopen(path_max_tmp, "a")) && errno == EINTR);
+	while (!(file = fopen(path_max_tmp, "a+")) && errno == EINTR);
 	if (file == NULL) {
 		commandError(fd, ACK_ERROR_NO_EXIST, "could not open file "
 		             "\"%s\": %s", path_max_tmp, strerror(errno));
+		return -1;
+	}
+	while (myFgets(path_max_tmp, sizeof(path_max_tmp), file)) {
+		if (path_max_tmp[0] != PLAYLIST_COMMENT &&
+		    (++nr_songs >= playlist_max_length))
+			break;
+	}
+	if (nr_songs >= playlist_max_length) {
+		commandError(fd, ACK_ERROR_PLAYLIST_MAX,
+		             "playlist is at the max size");
 		return -1;
 	}
 
