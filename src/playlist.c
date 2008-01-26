@@ -290,7 +290,8 @@ static void loadPlaylistFromStateFile(FILE *fp, char *buffer,
 		song = atoi(strtok(buffer, ":"));
 		if (!(temp = strtok(NULL, "")))
 			state_file_fatal();
-		if (!addToPlaylist(STDERR_FILENO, temp, 0) && current == song) {
+		if (!addToPlaylist(STDERR_FILENO, temp, NULL)
+		    && current == song) {
 			if (state != PLAYER_STATE_STOP) {
 				playPlaylist(STDERR_FILENO,
 					     playlist.length - 1, 0);
@@ -603,7 +604,7 @@ static void clearPlayerQueue(void)
 	}
 }
 
-int addToPlaylist(int fd, char *url, int printId)
+int addToPlaylist(int fd, char *url, int *added_id)
 {
 	Song *song;
 
@@ -618,7 +619,7 @@ int addToPlaylist(int fd, char *url, int printId)
 		return -1;
 	}
 
-	return addSongToPlaylist(fd, song, printId);
+	return addSongToPlaylist(fd, song, added_id);
 }
 
 int addToStoredPlaylist(int fd, char *url, char *utf8file)
@@ -649,7 +650,7 @@ fail:
 	return -1;
 }
 
-int addSongToPlaylist(int fd, Song * song, int printId)
+int addSongToPlaylist(int fd, Song * song, int *added_id)
 {
 	int id;
 
@@ -695,8 +696,8 @@ int addSongToPlaylist(int fd, Song * song, int printId)
 
 	incrPlaylistVersion();
 
-	if (printId)
-		fdprintf(fd, "Id: %i\n", id);
+	if (added_id)
+		*added_id = id;
 
 	return 0;
 }
@@ -1550,7 +1551,7 @@ int loadPlaylist(int fd, char *utf8file)
 	node = list->firstNode;
 	while (node != NULL) {
 		char *temp = node->data;
-		if ((addToPlaylist(STDERR_FILENO, temp, 0)) < 0) {
+		if ((addToPlaylist(STDERR_FILENO, temp, NULL)) < 0) {
 			/* for windows compatibility, convert slashes */
 			char *temp2 = xstrdup(temp);
 			char *p = temp2;
@@ -1559,7 +1560,7 @@ int loadPlaylist(int fd, char *utf8file)
 					*p = '/';
 				p++;
 			}
-			if ((addToPlaylist(STDERR_FILENO, temp2, 0)) < 0) {
+			if ((addToPlaylist(STDERR_FILENO, temp2, NULL)) < 0) {
 				commandError(fd, ACK_ERROR_PLAYLIST_LOAD,
 							"can't add file \"%s\"", temp2);
 			}

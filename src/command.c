@@ -330,14 +330,19 @@ static int handleAdd(int fd, int *permission, int argc, char *argv[])
 	char *path = argv[1];
 
 	if (isRemoteUrl(path))
-		return addToPlaylist(fd, path, 0);
+		return addToPlaylist(fd, path, NULL);
 
 	return addAllIn(fd, path);
 }
 
 static int handleAddId(int fd, int *permission, int argc, char *argv[])
 {
-	return addToPlaylist(fd, argv[1], 1);
+	int added_id;
+	int ret = addToPlaylist(fd, argv[1], &added_id);
+
+	if (!ret)
+		fdprintf(fd, "Id: %d\n", added_id);
+	return ret;
 }
 
 static int handleDelete(int fd, int *permission, int argc, char *argv[])

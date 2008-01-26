@@ -57,11 +57,11 @@ int clearPlaylist(int fd);
 
 int clearStoredPlaylist(int fd, char *utf8file);
 
-int addToPlaylist(int fd, char *file, int printId);
+int addToPlaylist(int fd, char *file, int *added_id);
 
 int addToStoredPlaylist(int fd, char *file, char *utf8file);
 
-int addSongToPlaylist(int fd, Song * song, int printId);
+int addSongToPlaylist(int fd, Song * song, int *added_id);
 
 int showPlaylist(int fd);
 

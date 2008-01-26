@@ -173,7 +173,7 @@ int printAllIn(int fd, char *name)
 
 static int directoryAddSongToPlaylist(int fd, Song * song, void *data)
 {
-	return addSongToPlaylist(fd, song, 0);
+	return addSongToPlaylist(fd, song, NULL);
 }
 
 static int directoryAddSongToStoredPlaylist(int fd, Song *song, void *data)
