@@ -36,6 +36,7 @@
 #  define mpd_printf		__attribute__ ((format(printf,1,2)))
 #  define mpd_fprintf		__attribute__ ((format(printf,2,3)))
 #  define mpd_fprintf_		__attribute__ ((format(printf,3,4)))
+#  define mpd_fprintf__		__attribute__ ((format(printf,4,5)))
 #  define mpd_pure		__attribute__ ((pure))
 #  define mpd_scanf		__attribute__ ((format(scanf,1,2)))
 #  define mpd_unused		__attribute__ ((unused))
