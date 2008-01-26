@@ -153,7 +153,8 @@ sparse-check:
 	done
 
 TEST_CFLAGS = -DUNIT_TEST
-TEST_FILES := $(shell grep UNIT_TEST $(mpd_SOURCES) | \
+TEST_FILES := $(shell grep UNIT_TEST \
+               $(addprefix $(srcdir)/, $(mpd_SOURCES)) | \
                awk -F: '{print $$1}' | uniq)
 
 test: $(addprefix test-, $(subst .c,,$(TEST_FILES)))
