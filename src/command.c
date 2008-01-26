@@ -383,8 +383,20 @@ static int handleAddId(int fd, int *permission, int argc, char *argv[])
 	int added_id;
 	int ret = addToPlaylist(fd, argv[1], &added_id);
 
-	if (!ret)
+	if (!ret) {
+		if (argc == 3) {
+			int to;
+			if (check_int(fd, &to, argv[2],
+			              check_integer, argv[2]) < 0)
+				return -1;
+			ret = moveSongInPlaylistById(fd, added_id, to);
+			if (ret) { /* move failed */
+				deleteFromPlaylistById(fd, added_id);
+				return ret;
+			}
+		}
 		fdprintf(fd, "Id: %d\n", added_id);
+	}
 	return ret;
 }
 
@@ -1022,7 +1034,7 @@ void initCommands(void)
 	addCommand(COMMAND_KILL,             PERMISSION_ADMIN,   -1,  -1,  handleKill,                 NULL);
 	addCommand(COMMAND_CLOSE,            PERMISSION_NONE,    -1,  -1,  handleClose,                NULL);
 	addCommand(COMMAND_ADD,              PERMISSION_ADD,     1,   1,   handleAdd,                  NULL);
-	addCommand(COMMAND_ADDID,            PERMISSION_ADD,     1,   1,   handleAddId,                NULL);
+	addCommand(COMMAND_ADDID,            PERMISSION_ADD,     1,   2,   handleAddId,                NULL);
 	addCommand(COMMAND_DELETE,           PERMISSION_CONTROL, 1,   1,   handleDelete,               NULL);
 	addCommand(COMMAND_DELETEID,         PERMISSION_CONTROL, 1,   1,   handleDeleteId,             NULL);
 	addCommand(COMMAND_PLAYLIST,         PERMISSION_READ,    0,   0,   handlePlaylist,             NULL);
