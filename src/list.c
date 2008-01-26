@@ -282,21 +282,6 @@ int findInList(List * list, char *key, void **data)
 	return 0;
 }
 
-ListNode *getNodeByPosition(List *list, int pos)
-{
-	ListNode *tmpNode;
-
-	assert(list != NULL);
-	if (pos < 0 || pos >= list->numberOfNodes)
-		return NULL;
-
-	tmpNode = list->firstNode;
-	while (pos-- > 0) 
-		tmpNode = tmpNode->nextNode;
-
-	return tmpNode;
-}
-
 int deleteFromList(List * list, char *key)
 {
 	ListNode *tmpNode;

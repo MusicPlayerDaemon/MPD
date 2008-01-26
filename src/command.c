@@ -93,9 +93,6 @@
 #define COMMAND_PLAYLISTSEARCH	"playlistsearch"
 #define COMMAND_PLAYLISTMOVE	"playlistmove"
 #define COMMAND_PLAYLISTDELETE	"playlistdelete"
-#define COMMAND_QUEUEID 	"queueid"
-#define COMMAND_DEQUEUE 	"dequeue"
-#define COMMAND_QUEUEINFO 	"queueinfo"
 #define COMMAND_TAGTYPES	"tagtypes"
 #define COMMAND_COUNT		"count"
 #define COMMAND_RENAME		"rename"
@@ -105,7 +102,6 @@
 #define COMMAND_STATUS_REPEAT           "repeat"
 #define COMMAND_STATUS_RANDOM           "random"
 #define COMMAND_STATUS_PLAYLIST         "playlist"
-#define COMMAND_STATUS_PLAYLIST_QUEUE  "playlistqueue"
 #define COMMAND_STATUS_PLAYLIST_LENGTH  "playlistlength"
 #define COMMAND_STATUS_SONG             "song"
 #define COMMAND_STATUS_SONGID           "songid"
@@ -320,8 +316,6 @@ static int commandStatus(int fd, int *permission, int argc, char *argv[])
 		 getPlaylistRandomStatus());
 	fdprintf(fd, "%s: %li\n", COMMAND_STATUS_PLAYLIST,
 		 getPlaylistVersion());
-	fdprintf(fd, "%s: %li\n", COMMAND_STATUS_PLAYLIST_QUEUE,
-		 getPlaylistQueueVersion());
 	fdprintf(fd, "%s: %i\n", COMMAND_STATUS_PLAYLIST_LENGTH,
 		 getPlaylistLength());
 	fdprintf(fd, "%s: %i\n", COMMAND_STATUS_CROSSFADE,
@@ -640,47 +634,6 @@ static int handlePlaylistMove(int fd, int *permission, int argc, char *argv[])
 		return -1;
 
 	return moveSongInStoredPlaylistByPath(fd, playlist, from, to);
-}
-
-static int handleQueueInfo(int fd, int *permission, int argc, char *argv[])
-{
-	return playlistQueueInfo(fd);
-}
-
-static int handleQueueId(int fd, int *permission, int argc, char *argv[])
-{
-	int id, position = -1;
-	char *test;
-
-	id = strtol(argv[1], &test, 10);
-	if (*test != '\0') {
-		commandError(fd, ACK_ERROR_ARG,
-			     "\"%s\" is not a integer", argv[1]);
-		return -1;
-	}
-	if (argc == 3) {
-		position = strtol(argv[2], &test, 10);
-		if (*test != '\0') {
-			commandError(fd, ACK_ERROR_ARG,
-		        	     "\"%s\" is not a integer", argv[2]);
-			return -1;
-		}
-	}
-	return addToPlaylistQueueById(fd, id, position);
-}
-
-static int handleDequeue(int fd, int *permission, int argc, char *argv[])
-{
-	int pos;
-	char *test;
-
-	pos = strtol(argv[1], &test, 10);
-	if (*test != '\0') {
-		commandError(fd, ACK_ERROR_ARG,
-			     "\"%s\" is not a integer", argv[1]);
-		return -1;
-	}
-	return deleteFromPlaylistQueue(fd, pos); 
 }
 
 static int listHandleUpdate(int fd,
@@ -1085,9 +1038,6 @@ void initCommands(void)
 	addCommand(COMMAND_PLAYLISTSEARCH,   PERMISSION_READ,    2,   -1,  handlePlaylistSearch,       NULL);
 	addCommand(COMMAND_PLAYLISTMOVE,     PERMISSION_CONTROL, 3,   3,   handlePlaylistMove,         NULL);
 	addCommand(COMMAND_PLAYLISTDELETE,   PERMISSION_CONTROL, 2,   2,   handlePlaylistDelete,       NULL);
-	addCommand(COMMAND_QUEUEINFO,        PERMISSION_CONTROL, 0,   0,   handleQueueInfo,            NULL);
-	addCommand(COMMAND_QUEUEID,          PERMISSION_CONTROL, 1,   2,   handleQueueId,              NULL);
-	addCommand(COMMAND_DEQUEUE,          PERMISSION_CONTROL, 1,   1,   handleDequeue,              NULL);
 	addCommand(COMMAND_TAGTYPES,         PERMISSION_READ,    0,   0,   handleTagTypes,             NULL);
 	addCommand(COMMAND_COUNT,            PERMISSION_READ,    2,   -1,  handleCount,                NULL);
 	addCommand(COMMAND_RENAME,           PERMISSION_CONTROL, 2,   2,   handleRename,               NULL);
