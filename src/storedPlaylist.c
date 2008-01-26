@@ -461,11 +461,19 @@ int renameStoredPlaylist(int fd, const char *utf8from, const char *utf8to)
 	char *to;
 	int ret = 0;
 
-	from = xstrdup(utf8pathToFsPathInStoredPlaylist(utf8from, fd));
+	from = utf8pathToFsPathInStoredPlaylist(utf8from, fd);
+	if (!from)
+		return -1;
+	from = xstrdup(from);
 	if (!from)
 		return -1;
 
-	to = xstrdup(utf8pathToFsPathInStoredPlaylist(utf8to, fd));
+	to = utf8pathToFsPathInStoredPlaylist(utf8to, fd);
+	if (!to) {
+		free(from);
+		return -1;
+	}
+	to = xstrdup(to);
 	if (!to) {
 		free(from);
 		return -1;
