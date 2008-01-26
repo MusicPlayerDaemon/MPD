@@ -64,7 +64,7 @@ static volatile int directory_reReadDB;
 
 static volatile mpd_uint16 directory_updateJobId;
 
-static DirectoryList *newDirectoryList();
+static DirectoryList *newDirectoryList(void);
 
 static int addToDirectory(Directory * directory, char *shortname, char *name);
 

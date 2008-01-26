@@ -31,7 +31,7 @@ extern int drms_get_sys_key( uint32_t *p_sys_key );
 extern int drms_get_user_key( uint32_t *p_sys_key,
                               uint32_t *p_user_key );
 
-extern void *drms_alloc();
+extern void *drms_alloc(void);
 extern void drms_free( void *p_drms );
 extern int drms_init( void *p_drms, uint32_t i_type,
                       uint8_t *p_info, uint32_t i_len );

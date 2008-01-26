@@ -31,10 +31,10 @@
 
 /* optional, set this to NULL if the InputPlugin doesn't have/need one
  * this must return < 0 if there is an error and >= 0 otherwise */
-typedef int (*InputPlugin_initFunc) ();
+typedef int (*InputPlugin_initFunc) (void);
 
 /* optional, set this to NULL if the InputPlugin doesn't have/need one */
-typedef void (*InputPlugin_finishFunc) ();
+typedef void (*InputPlugin_finishFunc) (void);
 
 /* boolean return value, returns 1 if the InputStream is decodable by
  * the InputPlugin, 0 if not */

@@ -871,7 +871,7 @@ struct drms_s
 
 #define P_DRMS ((struct drms_s *)p_drms)
 
-void *drms_alloc()
+void *drms_alloc(void)
 {
     struct drms_s *p_drms;
 

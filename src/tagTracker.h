@@ -27,7 +27,7 @@ void removeTagItemString(int type, char *string);
 
 int getNumberOfTagItems(int type);
 
-void printMemorySavedByTagTracker();
+void printMemorySavedByTagTracker(void);
 
 void resetVisitedFlagsInTagTracker(int type);
 

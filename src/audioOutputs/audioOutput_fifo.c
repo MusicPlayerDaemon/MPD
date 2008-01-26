@@ -36,7 +36,7 @@ typedef struct _FifoData {
 	Timer *timer;
 } FifoData;
 
-static FifoData *newFifoData()
+static FifoData *newFifoData(void)
 {
 	FifoData *ret;
 

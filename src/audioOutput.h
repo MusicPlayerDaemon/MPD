@@ -33,7 +33,7 @@
 
 typedef struct _AudioOutput AudioOutput;
 
-typedef int (*AudioOutputTestDefaultDeviceFunc) ();
+typedef int (*AudioOutputTestDefaultDeviceFunc) (void);
 
 typedef int (*AudioOutputInitDriverFunc) (AudioOutput * audioOutput,
 					  ConfigParam * param);
