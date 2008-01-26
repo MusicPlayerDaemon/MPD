@@ -1153,11 +1153,20 @@ int moveSongInPlaylist(int fd, int from, int to)
 		return -1;
 	}
 
-	if (to < 0 || to >= playlist.length) {
+	if ((to >= 0 && to >= playlist.length) ||
+	    (to < 0 && abs(to) > playlist.length)) {
 		commandError(fd, ACK_ERROR_NO_EXIST,
 			     "song doesn't exist: \"%i\"", to);
 		return -1;
 	}
+
+	/*
+	 * (to < 0) => move to offset from current song
+	 * (-playlist.length == to) => move to position BEFORE current song
+	 */
+	if (to < 0 && playlist.current >= 0)
+		to = (playlist.order[playlist.current] + abs(to)) %
+		     playlist.length;
 
 	if (playlist_state == PLAYLIST_STATE_PLAY) {
 		if (playlist.queued >= 0) {
