@@ -37,20 +37,6 @@ static int err_fd = -1;
 static const char *out_filename;
 static const char *err_filename;
 
-/* redirect stdin to /dev/null to work around a libao bug */
-static void redirect_stdin(void)
-{
-	int fd, st;
-	struct stat ss;
-
-	if ((st = fstat(STDIN_FILENO, &ss)) < 0 || ! isatty(STDIN_FILENO))
-		return;
-	if ((fd = open("/dev/null", O_RDONLY)) < 0)
-		FATAL("failed to open /dev/null %s\n", strerror(errno));
-	if (dup2(fd, STDIN_FILENO) < 0)
-		FATAL("dup2 stdin: %s\n", strerror(errno));
-}
-
 static void redirect_logs(void)
 {
 	assert(out_fd > 0);
@@ -180,7 +166,6 @@ void setup_log_output(const int use_stdout)
 		redirect_logs();
 		stdout_mode = 0;
 	}
-	redirect_stdin();
 }
 
 #define log_func(func,level,fp) \
