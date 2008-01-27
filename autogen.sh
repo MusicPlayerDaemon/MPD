@@ -22,7 +22,7 @@ if test -n "$AC_FORCE_VERSION"
 then
 	AC_VERSIONS="$AC_FORCE_VERSION"
 else
-	AC_VERSIONS='2.58 2.59'
+	AC_VERSIONS='2.58 2.59 2.60 2.61'
 fi
 
 versioned_bins ()
