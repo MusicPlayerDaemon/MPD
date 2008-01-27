@@ -38,8 +38,8 @@ typedef struct _ConvState {
 	mpd_sint8 lastChannels;
 	mpd_sint32 lastInSampleRate;
 	mpd_sint32 lastOutSampleRate;
-	int error;
 #endif
+	int error;
 } ConvState;
 
 void pcm_volumeChange(char *buffer, int bufferSize, AudioFormat * format,
