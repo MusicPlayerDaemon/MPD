@@ -55,6 +55,7 @@
 #  define mpd_printf
 #  define mpd_fprintf
 #  define mpd_fprintf_
+#  define mpd_fprintf__
 #  define mpd_pure
 #  define mpd_scanf
 #  define mpd_unused
