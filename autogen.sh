@@ -42,7 +42,7 @@ versioned_bins ()
 
 for c in autoconf autoheader automake aclocal
 do
-	uc=`echo $c | tr a-z A-Z`
+	uc=`echo $c | tr '[:lower:]' '[:upper:]'`
 	eval "val=`echo '$'$uc`"
 	if test -n "$val"
 	then
