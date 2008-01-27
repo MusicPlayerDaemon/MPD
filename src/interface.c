@@ -367,6 +367,8 @@ static int processBytesRead(Interface * interface, int bytesRead)
 					*(buf_tail - 1) = '\0';
 			}
 			ret = processLineOfInput(interface);
+			if (interface->expired)
+				return ret;
 			interface->bufferPos = interface->bufferLength;
 		}
 		if (interface->bufferLength == INTERFACE_MAX_BUFFER_LENGTH) {
