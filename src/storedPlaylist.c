@@ -427,25 +427,25 @@ int appendSongToStoredPlaylistByPath(int fd, const char *utf8path, Song *song)
 	char *filename;
 	FILE *file;
 	char *s;
-	int nr_songs = 0;
+	struct stat st;
 	char path_max_tmp[MAXPATHLEN + 1];
 
 	filename = utf8pathToFsPathInStoredPlaylist(utf8path, fd);
 	if (!filename)
 		return -1;
 
-	while (!(file = fopen(filename, "a+")) && errno == EINTR);
+	while (!(file = fopen(filename, "a")) && errno == EINTR);
 	if (file == NULL) {
 		commandError(fd, ACK_ERROR_NO_EXIST, "could not open file "
 		             "\"%s\": %s", filename, strerror(errno));
 		return -1;
 	}
-	while (myFgets(path_max_tmp, sizeof(path_max_tmp), file)) {
-		if (path_max_tmp[0] != PLAYLIST_COMMENT &&
-		    (++nr_songs >= playlist_max_length))
-			break;
+	if (fstat(fileno(file), &st) < 0) {
+		commandError(fd, ACK_ERROR_NO_EXIST, "could not stat file "
+		             "\"%s\": %s", path_max_tmp, strerror(errno));
+		return -1;
 	}
-	if (nr_songs >= playlist_max_length) {
+	if (st.st_size >= ((MAXPATHLEN+1) * playlist_max_length)) {
 		commandError(fd, ACK_ERROR_PLAYLIST_MAX,
 		             "playlist is at the max size");
 		return -1;
