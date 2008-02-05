@@ -124,7 +124,7 @@ static void parseListenConfigParam(unsigned int port, ConfigParam * param)
 {
 	struct sockaddr *addrp;
 	socklen_t addrlen;
-	struct sockaddr_in sin;
+	struct sockaddr_in sin4;
 #ifdef HAVE_IPV6
 	struct sockaddr_in6 sin6;
 	int useIpv6 = ipv6Supported();
@@ -133,9 +133,9 @@ static void parseListenConfigParam(unsigned int port, ConfigParam * param)
 	sin6.sin6_port = htons(port);
 	sin6.sin6_family = AF_INET6;
 #endif
-	memset(&sin, 0, sizeof(struct sockaddr_in));
-	sin.sin_port = htons(port);
-	sin.sin_family = AF_INET;
+	memset(&sin4, 0, sizeof(struct sockaddr_in));
+	sin4.sin_port = htons(port);
+	sin4.sin_family = AF_INET;
 
 	if (!param || 0 == strcmp(param->value, "any")) {
 		DEBUG("binding to any address\n");
@@ -148,8 +148,8 @@ static void parseListenConfigParam(unsigned int port, ConfigParam * param)
 				BINDERROR();
 		}
 #endif
-		sin.sin_addr.s_addr = INADDR_ANY;
-		addrp = (struct sockaddr *)&sin;
+		sin4.sin_addr.s_addr = INADDR_ANY;
+		addrp = (struct sockaddr *)&sin4;
 		addrlen = sizeof(struct sockaddr_in);
 #ifdef HAVE_IPV6
 		if ((establishListen(port, addrp, addrlen) < 0) && !useIpv6) {
@@ -180,9 +180,9 @@ static void parseListenConfigParam(unsigned int port, ConfigParam * param)
 			break;
 #endif
 		case AF_INET:
-			memcpy((char *)&sin.sin_addr.s_addr,
+			memcpy((char *)&sin4.sin_addr.s_addr,
 			       (char *)he->h_addr, he->h_length);
-			addrp = (struct sockaddr *)&sin;
+			addrp = (struct sockaddr *)&sin4;
 			addrlen = sizeof(struct sockaddr_in);
 			break;
 		default:
