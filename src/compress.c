@@ -354,7 +354,7 @@ void CompressDo(void *data, unsigned int length)
 	if (!pos)
 		pos = 1;
 
-	gr = ((gainTarget - gainCurrent) << 16)/pos;
+	gr = ((gainTarget - gainCurrent) << 16)/(int)pos;
 
 	/* Do the shiznit */
 	gf = gainCurrent << 16;
