@@ -38,13 +38,13 @@ void initPaths(void);
 
 void finishPaths(void);
 
-char *fs_charset_to_utf8(char *dst, char *str);
+char *fs_charset_to_utf8(char *dst, const char *str);
 
-char *utf8_to_fs_charset(char *dst, char *str);
+char *utf8_to_fs_charset(char *dst, const char *str);
 
-void setFsCharset(char *charset);
+void setFsCharset(const char *charset);
 
-char *getFsCharset(void);
+const char *getFsCharset(void);
 
 /*
  * pfx_dir - sets dst="$pfx/$path" and returns a pointer to path inside * dst
@@ -75,7 +75,7 @@ char *rpp2app_r(char *dst, const char *rel_path);
 char *parent_path(char *path_max_tmp, const char *path);
 
 /* strips extra "///" and leading "/" and trailing "/" */
-char *sanitizePathDup(char *path);
+char *sanitizePathDup(const char *path);
 
 /* this is actually like strlcpy (OpenBSD), but we don't actually want to
  * blindly use it everywhere, only for paths that are OK to truncate (for

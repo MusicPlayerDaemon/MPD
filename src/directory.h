@@ -51,9 +51,9 @@ void initMp3Directory(void);
 
 void closeMp3Directory(void);
 
-int isRootDirectory(char *name);
+int isRootDirectory(const char *name);
 
-int printDirectoryInfo(int fd, char *dirname);
+int printDirectoryInfo(int fd, const char *dirname);
 
 int checkDirectoryDB(void);
 

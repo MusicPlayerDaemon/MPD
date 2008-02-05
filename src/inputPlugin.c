@@ -44,7 +44,7 @@ void unloadInputPlugin(InputPlugin * inputPlugin)
 	deleteFromList(inputPlugin_list, inputPlugin->name);
 }
 
-static int stringFoundInStringArray(char **array, char *suffix)
+static int stringFoundInStringArray(const char *const*array, const char *suffix)
 {
 	while (array && *array) {
 		if (strcasecmp(*array, suffix) == 0)
@@ -55,7 +55,7 @@ static int stringFoundInStringArray(char **array, char *suffix)
 	return 0;
 }
 
-InputPlugin *getInputPluginFromSuffix(char *suffix, unsigned int next)
+InputPlugin *getInputPluginFromSuffix(const char *suffix, unsigned int next)
 {
 	static ListNode *pos;
 	ListNode *node;
@@ -84,7 +84,7 @@ InputPlugin *getInputPluginFromSuffix(char *suffix, unsigned int next)
 	return NULL;
 }
 
-InputPlugin *getInputPluginFromMimeType(char *mimeType, unsigned int next)
+InputPlugin *getInputPluginFromMimeType(const char *mimeType, unsigned int next)
 {
 	static ListNode *pos;
 	ListNode *node;
@@ -107,7 +107,7 @@ InputPlugin *getInputPluginFromMimeType(char *mimeType, unsigned int next)
 	return NULL;
 }
 
-InputPlugin *getInputPluginFromName(char *name)
+InputPlugin *getInputPluginFromName(const char *name)
 {
 	void *plugin = NULL;
 
@@ -120,7 +120,7 @@ void printAllInputPluginSuffixes(FILE * fp)
 {
 	ListNode *node = inputPlugin_list->firstNode;
 	InputPlugin *plugin;
-	char **suffixes;
+	const char *const*suffixes;
 
 	while (node) {
 		plugin = (InputPlugin *) node->data;

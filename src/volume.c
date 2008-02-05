@@ -57,7 +57,7 @@
 #endif
 
 static int volume_mixerType = VOLUME_MIXER_TYPE_DEFAULT;
-static char *volume_mixerDevice = VOLUME_MIXER_DEVICE_DEFAULT;
+static const char *volume_mixerDevice = VOLUME_MIXER_DEVICE_DEFAULT;
 
 static int volume_softwareSet = 100;
 
@@ -82,7 +82,7 @@ static void closeOssMixer(void)
 	volume_ossFd = -1;
 }
 
-static int prepOssMixer(char *device)
+static int prepOssMixer(const char *device)
 {
 	ConfigParam *param;
 
@@ -94,7 +94,7 @@ static int prepOssMixer(char *device)
 	param = getConfigParam(CONF_MIXER_CONTROL);
 
 	if (param) {
-		char *labels[SOUND_MIXER_NRDEVICES] = SOUND_DEVICE_LABELS;
+		const char *labels[SOUND_MIXER_NRDEVICES] = SOUND_DEVICE_LABELS;
 		char *duplicated;
 		int i, j;
 		int devmask = 0;
@@ -211,11 +211,11 @@ static void closeAlsaMixer(void)
 	volume_alsaMixerHandle = NULL;
 }
 
-static int prepAlsaMixer(char *card)
+static int prepAlsaMixer(const char *card)
 {
 	int err;
 	snd_mixer_elem_t *elem;
-	char *controlName = VOLUME_MIXER_ALSA_CONTROL_DEFAULT;
+	const char *controlName = VOLUME_MIXER_ALSA_CONTROL_DEFAULT;
 	ConfigParam *param;
 
 	err = snd_mixer_open(&volume_alsaMixerHandle, 0);
@@ -370,7 +370,7 @@ static int changeAlsaVolumeLevel(int fd, int change, int rel)
 }
 #endif
 
-static int prepMixer(char *device)
+static int prepMixer(const char *device)
 {
 	switch (volume_mixerType) {
 #ifdef HAVE_ALSA

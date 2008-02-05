@@ -116,7 +116,7 @@ static int myShout_initDriver(AudioOutput * audioOutput, ConfigParam * param)
 	char *host;
 	char *mount;
 	char *passwd;
-	char *user;
+	const char *user;
 	char *name;
 	BlockParam *blockParam;
 	int public;
@@ -388,8 +388,13 @@ static void myShout_closeDevice(AudioOutput * audioOutput)
 	audioOutput->open = 0;
 }
 
-#define addTag(name, value) { \
-	if(value) vorbis_comment_add_tag(&(sd->vc), name, value); \
+static void addTag(ShoutData *sd, const char *name, char *value)
+{
+	if (value) {
+		union const_hack u;
+		u.in = name;
+		vorbis_comment_add_tag(&(sd->vc), u.out, value);
+	}
 }
 
 static void copyTagToVorbisComment(ShoutData * sd)
@@ -400,13 +405,13 @@ static void copyTagToVorbisComment(ShoutData * sd)
 		for (i = 0; i < sd->tag->numOfItems; i++) {
 			switch (sd->tag->items[i].type) {
 			case TAG_ITEM_ARTIST:
-				addTag("ARTIST", sd->tag->items[i].value);
+				addTag(sd, "ARTIST", sd->tag->items[i].value);
 				break;
 			case TAG_ITEM_ALBUM:
-				addTag("ALBUM", sd->tag->items[i].value);
+				addTag(sd, "ALBUM", sd->tag->items[i].value);
 				break;
 			case TAG_ITEM_TITLE:
-				addTag("TITLE", sd->tag->items[i].value);
+				addTag(sd, "TITLE", sd->tag->items[i].value);
 				break;
 			}
 		}

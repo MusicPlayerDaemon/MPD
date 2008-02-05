@@ -83,22 +83,22 @@ typedef struct _ConfigParam {
 void initConf(void);
 void finishConf(void);
 
-void readConf(char *file);
+void readConf(const char *file);
 
 /* don't free the returned value
    set _last_ to NULL to get first entry */
-ConfigParam *getNextConfigParam(char *name, ConfigParam * last);
+ConfigParam *getNextConfigParam(const char *name, ConfigParam * last);
 
 #define getConfigParam(name) 	getNextConfigParam(name, NULL)
 
-char *getConfigParamValue(char *name);
+char *getConfigParamValue(const char *name);
 
-BlockParam *getBlockParam(ConfigParam * param, char *name);
+BlockParam *getBlockParam(ConfigParam * param, const char *name);
 
-ConfigParam *parseConfigFilePath(char *name, int force);
+ConfigParam *parseConfigFilePath(const char *name, int force);
 
-int getBoolConfigParam(char *name, int force);
+int getBoolConfigParam(const char *name, int force);
 
-int getBoolBlockParam(ConfigParam *param, char *name, int force);
+int getBoolBlockParam(ConfigParam *param, const char *name, int force);
 
 #endif

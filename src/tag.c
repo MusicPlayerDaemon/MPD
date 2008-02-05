@@ -44,7 +44,7 @@
 #  endif
 #endif
 
-char *mpdTagItemKeys[TAG_NUM_OF_ITEM_TYPES] = {
+const char *mpdTagItemKeys[TAG_NUM_OF_ITEM_TYPES] = {
 	"Artist",
 	"Album",
 	"Title",
@@ -169,7 +169,8 @@ static id3_utf8_t * processID3FieldString (int is_id3v1, const id3_ucs4_t *ucs4,
     return utf8;
 }
 
-static MpdTag *getID3Info(struct id3_tag *tag, char *id, int type, MpdTag * mpdTag)
+static MpdTag *getID3Info(
+	struct id3_tag *tag, const char *id, int type, MpdTag * mpdTag)
 {
 	struct id3_frame const *frame;
 	id3_ucs4_t const *ucs4;
@@ -480,7 +481,7 @@ MpdTag *apeDup(char *file)
 		unsigned char reserved[8];
 	} footer;
 
-	char *apeItems[7] = {
+	const char *apeItems[7] = {
 		"title",
 		"artist",
 		"album",

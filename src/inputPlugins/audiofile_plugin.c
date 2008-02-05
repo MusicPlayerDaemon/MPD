@@ -149,7 +149,7 @@ static MpdTag *audiofileTagDup(char *file)
 	return ret;
 }
 
-static char *audiofileSuffixes[] = { "wav", "au", "aiff", "aif", NULL };
+static const char *audiofileSuffixes[] = { "wav", "au", "aiff", "aif", NULL };
 
 InputPlugin audiofilePlugin = {
 	"audiofile",

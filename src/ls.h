@@ -24,26 +24,26 @@
 #include "inputPlugin.h"
 #include "os_compat.h"
 
-int lsPlaylists(int fd, char *utf8path);
+int lsPlaylists(int fd, const char *utf8path);
 
-char *getSuffix(char *utf8file);
+const char *getSuffix(const char *utf8file);
 
 int isValidRemoteUtf8Url(char *utf8url);
 
 int isRemoteUrl(char *url);
 
-int myStat(char *utf8file, struct stat *st);
+int myStat(const char *utf8file, struct stat *st);
 
-int isDir(char *utf8name);
+int isDir(const char *utf8name);
 
-int isPlaylist(char *utf8file);
+int isPlaylist(const char *utf8file);
 
-InputPlugin *hasMusicSuffix(char *utf8file, unsigned int next);
+InputPlugin *hasMusicSuffix(const char *utf8file, unsigned int next);
 
-InputPlugin *isMusic(char *utf8file, time_t * mtime, unsigned int next);
+InputPlugin *isMusic(const char *utf8file, time_t * mtime, unsigned int next);
 
 int printRemoteUrlHandlers(int fd);
 
-int isFile(char *utf8file, time_t * mtime);
+int isFile(const char *utf8file, time_t * mtime);
 
 #endif

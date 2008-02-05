@@ -24,7 +24,7 @@
 #define LOCATE_TAG_FILE_KEY_OLD "filename"
 #define LOCATE_TAG_ANY_KEY      "any"
 
-int getLocateTagItemType(char *str)
+int getLocateTagItemType(const char *str)
 {
 	int i;
 
@@ -48,7 +48,8 @@ int getLocateTagItemType(char *str)
 	return -1;
 }
 
-static int initLocateTagItem(LocateTagItem * item, char *typeStr, char *needle)
+static int initLocateTagItem(LocateTagItem * item,
+			     const char *typeStr, const char *needle)
 {
 	item->tagType = getLocateTagItemType(typeStr);
 
@@ -60,7 +61,7 @@ static int initLocateTagItem(LocateTagItem * item, char *typeStr, char *needle)
 	return 0;
 }
 
-LocateTagItem *newLocateTagItem(char *typeStr, char *needle)
+LocateTagItem *newLocateTagItem(const char *typeStr, const char *needle)
 {
 	LocateTagItem *ret = xmalloc(sizeof(LocateTagItem));
 

@@ -330,7 +330,7 @@ static void decodeStart(PlayerControl * pc, OutputBuffer * cb,
 
 		/* if that fails, try suffix matching the URL: */
 		if (plugin == NULL) {
-			char *s = getSuffix(dc->utf8url);
+			const char *s = getSuffix(dc->utf8url);
 			next = 0;
 			while (ret && (plugin = getInputPluginFromSuffix(s, next++))) {
 				if (!plugin->streamDecodeFunc)
@@ -356,7 +356,7 @@ static void decodeStart(PlayerControl * pc, OutputBuffer * cb,
 		}
 	} else {
 		unsigned int next = 0;
-		char *s = getSuffix(dc->utf8url);
+		const char *s = getSuffix(dc->utf8url);
 		cb->acceptMetadata = 0;
 		while (ret && (plugin = getInputPluginFromSuffix(s, next++))) {
 			if (!plugin->streamTypes & INPUT_PLUGIN_STREAM_FILE)

@@ -60,7 +60,7 @@ typedef int (*InputPlugin_fileDecodeFunc) (OutputBuffer *, DecoderControl *,
 typedef MpdTag *(*InputPlugin_tagDupFunc) (char *file);
 
 typedef struct _InputPlugin {
-	char *name;
+	const char *name;
 	InputPlugin_initFunc initFunc;
 	InputPlugin_finishFunc finishFunc;
 	InputPlugin_tryDecodeFunc tryDecodeFunc;
@@ -72,8 +72,8 @@ typedef struct _InputPlugin {
 	unsigned char streamTypes;
 
 	/* last element in these arrays must always be a NULL: */
-	char **suffixes;
-	char **mimeTypes;
+	const char *const*suffixes;
+	const char *const*mimeTypes;
 } InputPlugin;
 
 /* individual functions to load/unload plugins */
@@ -82,11 +82,11 @@ void unloadInputPlugin(InputPlugin * inputPlugin);
 
 /* interface for using plugins */
 
-InputPlugin *getInputPluginFromSuffix(char *suffix, unsigned int next);
+InputPlugin *getInputPluginFromSuffix(const char *suffix, unsigned int next);
 
-InputPlugin *getInputPluginFromMimeType(char *mimeType, unsigned int next);
+InputPlugin *getInputPluginFromMimeType(const char *mimeType, unsigned int next);
 
-InputPlugin *getInputPluginFromName(char *name);
+InputPlugin *getInputPluginFromName(const char *name);
 
 void printAllInputPluginSuffixes(FILE * fp);
 

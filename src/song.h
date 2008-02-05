@@ -45,7 +45,7 @@ typedef List SongList;
 
 Song *newNullSong(void);
 
-Song *newSong(char *url, int songType, struct _Directory *parentDir);
+Song *newSong(const char *url, int songType, struct _Directory *parentDir);
 
 void freeSong(Song *);
 
@@ -55,7 +55,7 @@ SongList *newSongList(void);
 
 void freeSongList(SongList * list);
 
-Song *addSongToList(SongList * list, char *url, char *utf8path,
+Song *addSongToList(SongList * list, const char *url, const char *utf8path,
 		    int songType, struct _Directory *parentDir);
 
 int printSongInfo(int fd, Song * song);

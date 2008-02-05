@@ -121,7 +121,7 @@ static void freeConfigEntry(ConfigEntry * entry)
 	free(entry);
 }
 
-static void registerConfigParam(char *name, int repeatable, int block)
+static void registerConfigParam(const char *name, int repeatable, int block)
 {
 	ConfigEntry *entry;
 
@@ -253,7 +253,7 @@ static ConfigParam *readConfigBlock(FILE * fp, int *count, char *string)
 	return ret;
 }
 
-void readConf(char *file)
+void readConf(const char *file)
 {
 	FILE *fp;
 	char string[MAX_STRING_SIZE + 1];
@@ -321,7 +321,7 @@ void readConf(char *file)
 	fclose(fp);
 }
 
-ConfigParam *getNextConfigParam(char *name, ConfigParam * last)
+ConfigParam *getNextConfigParam(const char *name, ConfigParam * last)
 {
 	void *voidPtr;
 	ConfigEntry *entry;
@@ -352,7 +352,7 @@ ConfigParam *getNextConfigParam(char *name, ConfigParam * last)
 	return param;
 }
 
-char *getConfigParamValue(char *name)
+char *getConfigParamValue(const char *name)
 {
 	ConfigParam *param = getConfigParam(name);
 
@@ -362,7 +362,7 @@ char *getConfigParamValue(char *name)
 	return param->value;
 }
 
-BlockParam *getBlockParam(ConfigParam * param, char *name)
+BlockParam *getBlockParam(ConfigParam * param, const char *name)
 {
 	BlockParam *ret = NULL;
 	int i;
@@ -381,7 +381,7 @@ BlockParam *getBlockParam(ConfigParam * param, char *name)
 	return ret;
 }
 
-ConfigParam *parseConfigFilePath(char *name, int force)
+ConfigParam *parseConfigFilePath(const char *name, int force)
 {
 	ConfigParam *param = getConfigParam(name);
 	char *path;
@@ -402,7 +402,7 @@ ConfigParam *parseConfigFilePath(char *name, int force)
 	return param;
 }
 
-int getBoolConfigParam(char *name, int force)
+int getBoolConfigParam(const char *name, int force)
 {
 	int ret;
 	ConfigParam *param = getConfigParam(name);
@@ -418,7 +418,7 @@ int getBoolConfigParam(char *name, int force)
 	return ret;
 }
 
-int getBoolBlockParam(ConfigParam *param, char *name, int force)
+int getBoolBlockParam(ConfigParam *param, const char *name, int force)
 {
 	int ret;
 	BlockParam *bp = getBlockParam(param, name);

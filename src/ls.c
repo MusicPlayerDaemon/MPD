@@ -25,14 +25,14 @@
 #include "utils.h"
 #include "os_compat.h"
 
-static char *remoteUrlPrefixes[] = {
+static const char *remoteUrlPrefixes[] = {
 	"http://",
 	NULL
 };
 
 int printRemoteUrlHandlers(int fd)
 {
-	char **prefixes = remoteUrlPrefixes;
+	const char **prefixes = remoteUrlPrefixes;
 
 	while (*prefixes) {
 		fdprintf(fd, "handler: %s\n", *prefixes);
@@ -85,7 +85,7 @@ int isValidRemoteUtf8Url(char *utf8url)
 int isRemoteUrl(char *url)
 {
 	int count = 0;
-	char **urlPrefixes = remoteUrlPrefixes;
+	const char **urlPrefixes = remoteUrlPrefixes;
 
 	while (*urlPrefixes) {
 		count++;
@@ -98,7 +98,7 @@ int isRemoteUrl(char *url)
 	return 0;
 }
 
-int lsPlaylists(int fd, char *utf8path)
+int lsPlaylists(int fd, const char *utf8path)
 {
 	DIR *dir;
 	struct stat st;
@@ -181,11 +181,11 @@ int lsPlaylists(int fd, char *utf8path)
 	return 0;
 }
 
-int myStat(char *utf8file, struct stat *st)
+int myStat(const char *utf8file, struct stat *st)
 {
 	char path_max_tmp[MPD_PATH_MAX];
-	char *file = utf8_to_fs_charset(path_max_tmp, utf8file);
-	char *actualFile = file;
+	const char *file = utf8_to_fs_charset(path_max_tmp, utf8file);
+	const char *actualFile = file;
 
 	if (actualFile[0] != '/')
 		actualFile = rmp2amp_r(path_max_tmp, file);
@@ -193,7 +193,7 @@ int myStat(char *utf8file, struct stat *st)
 	return stat(actualFile, st);
 }
 
-int isFile(char *utf8file, time_t * mtime)
+int isFile(const char *utf8file, time_t * mtime)
 {
 	struct stat st;
 
@@ -215,9 +215,9 @@ int isFile(char *utf8file, time_t * mtime)
 }
 
 /* suffixes should be ascii only characters */
-char *getSuffix(char *utf8file)
+const char *getSuffix(const char *utf8file)
 {
-	char *ret = NULL;
+	const char *ret = NULL;
 
 	while (*utf8file) {
 		if (*utf8file == '.')
@@ -228,15 +228,15 @@ char *getSuffix(char *utf8file)
 	return ret;
 }
 
-static int hasSuffix(char *utf8file, char *suffix)
+static int hasSuffix(const char *utf8file, const char *suffix)
 {
-	char *s = getSuffix(utf8file);
+	const char *s = getSuffix(utf8file);
 	if (s && 0 == strcmp(s, suffix))
 		return 1;
 	return 0;
 }
 
-int isPlaylist(char *utf8file)
+int isPlaylist(const char *utf8file)
 {
 	if (isFile(utf8file, NULL)) {
 		return hasSuffix(utf8file, PLAYLIST_FILE_SUFFIX);
@@ -244,7 +244,7 @@ int isPlaylist(char *utf8file)
 	return 0;
 }
 
-int isDir(char *utf8name)
+int isDir(const char *utf8name)
 {
 	struct stat st;
 
@@ -257,11 +257,11 @@ int isDir(char *utf8name)
 	return 0;
 }
 
-InputPlugin *hasMusicSuffix(char *utf8file, unsigned int next)
+InputPlugin *hasMusicSuffix(const char *utf8file, unsigned int next)
 {
 	InputPlugin *ret = NULL;
 
-	char *s = getSuffix(utf8file);
+	const char *s = getSuffix(utf8file);
 	if (s) {
 		ret = getInputPluginFromSuffix(s, next);
 	} else {
@@ -272,7 +272,7 @@ InputPlugin *hasMusicSuffix(char *utf8file, unsigned int next)
 	return ret;
 }
 
-InputPlugin *isMusic(char *utf8file, time_t * mtime, unsigned int next)
+InputPlugin *isMusic(const char *utf8file, time_t * mtime, unsigned int next)
 {
 	if (isFile(utf8file, mtime)) {
 		InputPlugin *plugin = hasMusicSuffix(utf8file, next);

@@ -54,8 +54,8 @@ typedef void (*AudioOutputSendMetadataFunc) (AudioOutput * audioOutput,
 
 struct _AudioOutput {
 	int open;
-	char *name;
-	char *type;
+	const char *name;
+	const char *type;
 
 	AudioOutputFinishDriverFunc finishDriverFunc;
 	AudioOutputOpenDeviceFunc openDeviceFunc;
@@ -77,7 +77,7 @@ struct _AudioOutput {
 };
 
 typedef struct _AudioOutputPlugin {
-	char *name;
+	const char *name;
 
 	AudioOutputTestDefaultDeviceFunc testDefaultDeviceFunc;
 	AudioOutputInitDriverFunc initDriverFunc;

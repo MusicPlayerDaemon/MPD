@@ -38,24 +38,25 @@ static size_t music_dir_len;
 static size_t playlist_dir_len;
 static char *fsCharset;
 
-static char *path_conv_charset(char *dest, char *to, char *from, char *str)
+static char *path_conv_charset(char *dest, const char *to,
+			       const char *from, const char *str)
 {
 	return setCharSetConversion(to, from) ? NULL : char_conv_str(dest, str);
 }
 
-char *fs_charset_to_utf8(char *dst, char *str)
+char *fs_charset_to_utf8(char *dst, const char *str)
 {
 	char *ret = path_conv_charset(dst, "UTF-8", fsCharset, str);
 	return (ret && !validUtf8String(ret)) ? NULL : ret;
 }
 
-char *utf8_to_fs_charset(char *dst, char *str)
+char *utf8_to_fs_charset(char *dst, const char *str)
 {
 	char *ret = path_conv_charset(dst, fsCharset, "UTF-8", str);
 	return ret ? ret : strcpy(dst, str);
 }
 
-void setFsCharset(char *charset)
+void setFsCharset(const char *charset)
 {
 	int error = 0;
 
@@ -86,7 +87,7 @@ void setFsCharset(char *charset)
 	}
 }
 
-char *getFsCharset(void)
+const char *getFsCharset(void)
 {
 	return fsCharset;
 }
@@ -243,7 +244,7 @@ char *parent_path(char *path_max_tmp, const char *path)
 	return path_max_tmp;
 }
 
-char *sanitizePathDup(char *path)
+char *sanitizePathDup(const char *path)
 {
 	int len = strlen(path) + 1;
 	char *ret = xmalloc(len);
@@ -285,7 +286,7 @@ char *sanitizePathDup(char *path)
 
 void utf8_to_fs_playlist_path(char *path_max_tmp, const char *utf8path)
 {
-	utf8_to_fs_charset(path_max_tmp, (char *)utf8path);
+	utf8_to_fs_charset(path_max_tmp, utf8path);
 	rpp2app_r(path_max_tmp, path_max_tmp);
 	strncat(path_max_tmp, "." PLAYLIST_FILE_SUFFIX, MPD_PATH_MAX - 1);
 }

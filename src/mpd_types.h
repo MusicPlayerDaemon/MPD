@@ -41,4 +41,9 @@ typedef unsigned long mpd_uint32;
 typedef signed long mpd_sint32;
 #endif
 
+union const_hack {
+	const char *in;
+	char *out;
+};
+
 #endif

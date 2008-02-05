@@ -44,7 +44,7 @@ Song *newNullSong(void)
 	return song;
 }
 
-Song *newSong(char *url, int type, Directory * parentDir)
+Song *newSong(const char *url, int type, Directory * parentDir)
 {
 	Song *song = NULL;
 
@@ -101,7 +101,7 @@ SongList *newSongList(void)
 	return makeList((ListFreeDataFunc *) freeSong, 0);
 }
 
-Song *addSongToList(SongList * list, char *url, char *utf8path,
+Song *addSongToList(SongList * list, const char *url, const char *utf8path,
 		    int songType, Directory * parentDirectory)
 {
 	Song *song = NULL;

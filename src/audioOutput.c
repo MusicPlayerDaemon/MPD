@@ -67,9 +67,9 @@ void finishAudioOutputPlugins(void)
 int initAudioOutput(AudioOutput *ao, ConfigParam * param)
 {
 	void *data = NULL;
-	char *name = NULL;
+	const char *name = NULL;
 	char *format = NULL;
-	char *type = NULL;
+	const char *type = NULL;
 	BlockParam *bp = NULL;
 	AudioOutputPlugin *plugin = NULL;
 

@@ -30,7 +30,7 @@ typedef void ListFreeDataFunc(void *);
 
 typedef struct _ListNode {
 	/* used to identify node (ie. when using findInList) */
-	char *key;
+	const char *key;
 	/* data store in node */
 	void *data;
 	/* next node in list */
@@ -69,10 +69,10 @@ List *makeList(ListFreeDataFunc * freeDataFunc, int strdupKeys);
  *  _data_ -> data to be inserted in list
  * returns 1 if successful, 0 otherwise
  */
-ListNode *insertInList(List * list, char *key, void *data);
+ListNode *insertInList(List * list, const char *key, void *data);
 
 ListNode *insertInListBeforeNode(List * list, ListNode * beforeNode,
-				 int pos, char *key, void *data);
+				 int pos, const char *key, void *data);
 
 int insertInListWithoutKey(List * list, void *data);
 
@@ -81,7 +81,7 @@ int insertInListWithoutKey(List * list, void *data);
  *  _key_ -> key used to identify node to delete
  *  returns 1 if node is found and deleted, 0 otherwise
  */
-int deleteFromList(List * list, char *key);
+int deleteFromList(List * list, const char *key);
 
 void deleteNodeFromList(List * list, ListNode * node);
 
@@ -93,11 +93,11 @@ void deleteNodeFromList(List * list, ListNode * node);
  *      _data_ can be NULL
  * returns 1 if successful, 0 otherwise
  */
-int findInList(List * list, char *key, void **data);
+int findInList(List * list, const char *key, void **data);
 
 /* if _key_ is not found, *_node_ is assigned to the node before which
 	the info would be found */
-int findNodeInList(List * list, char *key, ListNode ** node, int *pos);
+int findNodeInList(List * list, const char *key, ListNode ** node, int *pos);
 
 /* frees memory malloc'd for list and its nodes
  *  _list_ -> List to be free'd

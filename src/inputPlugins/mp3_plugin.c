@@ -1111,8 +1111,8 @@ static MpdTag *mp3_tagDup(char *file)
 	return ret;
 }
 
-static char *mp3_suffixes[] = { "mp3", "mp2", NULL };
-static char *mp3_mimeTypes[] = { "audio/mpeg", NULL };
+static const char *mp3_suffixes[] = { "mp3", "mp2", NULL };
+static const char *mp3_mimeTypes[] = { "audio/mpeg", NULL };
 
 InputPlugin mp3Plugin = {
 	"mp3",

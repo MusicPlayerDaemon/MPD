@@ -41,7 +41,7 @@
 
 #define TAG_NUM_OF_ITEM_TYPES	11
 
-extern char *mpdTagItemKeys[];
+extern const char *mpdTagItemKeys[];
 
 typedef struct _MpdTagItem {
 	mpd_sint8 type;

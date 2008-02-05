@@ -187,7 +187,8 @@ static char *base64Dup(char *s)
 	return ret;
 }
 
-static char *authString(char *header, char *user, char *password)
+static char *authString(const char *header,
+			const char *user, const char *password)
 {
 	char *ret = NULL;
 	int templen;

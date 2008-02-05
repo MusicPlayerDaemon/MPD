@@ -63,7 +63,7 @@ List *makeList(ListFreeDataFunc * freeDataFunc, int strdupKeys)
 }
 
 ListNode *insertInListBeforeNode(List * list, ListNode * beforeNode, int pos,
-				 char *key, void *data)
+				 const char *key, void *data)
 {
 	ListNode *node;
 
@@ -126,7 +126,7 @@ ListNode *insertInListBeforeNode(List * list, ListNode * beforeNode, int pos,
 	return node;
 }
 
-ListNode *insertInList(List * list, char *key, void *data)
+ListNode *insertInList(List * list, const char *key, void *data)
 {
 	ListNode *node;
 
@@ -201,7 +201,7 @@ int insertInListWithoutKey(List * list, void *data)
 
 /* if _key_ is not found, *_node_ is assigned to the node before which
 	the info would be found */
-int findNodeInList(List * list, char *key, ListNode ** node, int *pos)
+int findNodeInList(List * list, const char *key, ListNode ** node, int *pos)
 {
 	long high;
 	long low;
@@ -268,7 +268,7 @@ int findNodeInList(List * list, char *key, ListNode ** node, int *pos)
 	return 0;
 }
 
-int findInList(List * list, char *key, void **data)
+int findInList(List * list, const char *key, void **data)
 {
 	ListNode *node;
 	int pos;
@@ -282,7 +282,7 @@ int findInList(List * list, char *key, void **data)
 	return 0;
 }
 
-int deleteFromList(List * list, char *key)
+int deleteFromList(List * list, const char *key)
 {
 	ListNode *tmpNode;
 
@@ -300,6 +300,11 @@ int deleteFromList(List * list, char *key)
 		return 0;
 
 	return 1;
+}
+
+static void free_const_string(const char *p)
+{
+	free((char *)p);
 }
 
 void deleteNodeFromList(List * list, ListNode * node)
@@ -322,7 +327,7 @@ void deleteNodeFromList(List * list, ListNode * node)
 	}
 
 	if (list->strdupKeys)
-		free(node->key);
+		free_const_string(node->key);
 	free(node);
 	list->numberOfNodes--;
 
@@ -349,7 +354,7 @@ void freeList(void *list)
 	while (tmpNode != NULL) {
 		tmpNode2 = tmpNode->nextNode;
 		if (((List *) list)->strdupKeys)
-			free(tmpNode->key);
+			free_const_string(tmpNode->key);
 		if (((List *) list)->freeDataFunc) {
 			((List *) list)->freeDataFunc(tmpNode->data);
 		}
@@ -362,7 +367,7 @@ void freeList(void *list)
 
 static void swapNodes(ListNode * nodeA, ListNode * nodeB)
 {
-	char *key;
+	const char *key;
 	void *data;
 
 	assert(nodeA != NULL);
@@ -408,7 +413,7 @@ static void quickSort(ListNode ** nodesArray, long start, long end)
 		ListNode *node;
 		long pivot;
 		ListNode *pivotNode;
-		char *pivotKey;
+		const char *pivotKey;
 
 		List *startList = makeList(free, 0);
 		List *endList = makeList(free, 0);

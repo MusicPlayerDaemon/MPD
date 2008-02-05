@@ -128,14 +128,13 @@ typedef int (*CommandListHandlerFunction)
 /* if min: -1 don't check args *
  * if max: -1 no max args      */
 struct _CommandEntry {
-	char *cmd;
+	const char *cmd;
 	int min;
 	int max;
 	int reqPermission;
 	CommandHandlerFunction handler;
 	CommandListHandlerFunction listHandler;
 };
-
 
 /* this should really be "need a non-negative integer": */
 static const char need_positive[] = "need a positive integer"; /* no-op */
@@ -146,7 +145,7 @@ static const char need_integer[] = "need an integer";
 static const char check_boolean[] = "\"%s\" is not 0 or 1";
 static const char check_non_negative[] = "\"%s\" is not an integer >= 0";
 
-static char *current_command;
+static const char *current_command;
 static int command_listNum;
 
 static CommandEntry *getCommandEntryFromString(char *string, int *permission);
@@ -215,7 +214,7 @@ static int mpd_fprintf__ check_int(int fd, int *dst,
 	return 0;
 }
 
-static void addCommand(char *name,
+static void addCommand(const char *name,
 		       int reqPermission,
 		       int minargs,
 		       int maxargs,
@@ -291,7 +290,7 @@ static int handlePause(int fd, int *permission, int argc, char *argv[])
 
 static int commandStatus(int fd, int *permission, int argc, char *argv[])
 {
-	char *state = NULL;
+	const char *state = NULL;
 	int updateJobId;
 	int song;
 
@@ -450,7 +449,7 @@ static int handleListPlaylistInfo(int fd, int *permission,
 
 static int handleLsInfo(int fd, int *permission, int argc, char *argv[])
 {
-	char *path = "";
+	const char *path = "";
 
 	if (argc == 2)
 		path = argv[1];

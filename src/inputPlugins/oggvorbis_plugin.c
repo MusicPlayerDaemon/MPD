@@ -80,7 +80,7 @@ static size_t ogg_read_cb(void *ptr, size_t size, size_t nmemb, void *vdata)
 
 static int ogg_seek_cb(void *vdata, ogg_int64_t offset, int whence)
 {
-	OggCallbackData *data = (OggCallbackData *) vdata;
+	const OggCallbackData *data = (const OggCallbackData *) vdata;
 	if(data->dc->stop)
 		return -1;
 	return seekInputStream(data->inStream, offset, whence);
@@ -94,12 +94,12 @@ static int ogg_close_cb(void *vdata)
 
 static long ogg_tell_cb(void *vdata)
 {
-	OggCallbackData *data = (OggCallbackData *) vdata;
+	const OggCallbackData *data = (const OggCallbackData *) vdata;
 
 	return (long)(data->inStream->offset);
 }
 
-static char *ogg_parseComment(char *comment, char *needle)
+static const char *ogg_parseComment(const char *comment, const char *needle)
 {
 	int len = strlen(needle);
 
@@ -112,7 +112,7 @@ static char *ogg_parseComment(char *comment, char *needle)
 
 static void ogg_getReplayGainInfo(char **comments, ReplayGainInfo ** infoPtr)
 {
-	char *temp;
+	const char *temp;
 	int found = 0;
 
 	if (*infoPtr)
@@ -236,7 +236,7 @@ static int oggvorbis_decode(OutputBuffer * cb, DecoderControl * dc,
 	long test;
 	ReplayGainInfo *replayGainInfo = NULL;
 	char **comments;
-	char *errorStr;
+	const char *errorStr;
 
 	data.inStream = inStream;
 	data.dc = dc;
@@ -383,11 +383,11 @@ static unsigned int oggvorbis_try_decode(InputStream * inStream)
 	return (ogg_stream_type_detect(inStream) == VORBIS) ? 1 : 0;
 }
 
-static char *oggvorbis_Suffixes[] = { "ogg", NULL };
-static char *oggvorbis_MimeTypes[] = { "application/ogg",
-                                       "audio/x-vorbis+ogg",
-                                       "application/x-ogg",
-                                       NULL };
+static const char *oggvorbis_Suffixes[] = { "ogg", NULL };
+static const char *oggvorbis_MimeTypes[] = { "application/ogg",
+					     "audio/x-vorbis+ogg",
+					     "application/x-ogg",
+					     NULL };
 
 InputPlugin oggvorbisPlugin = {
 	"oggvorbis",

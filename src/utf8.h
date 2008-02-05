@@ -19,15 +19,15 @@
 #ifndef UTF_8_H
 #define UTF_8_H
 
-char *latin1StrToUtf8Dup(char *latin1);
+char *latin1StrToUtf8Dup(const char *latin1);
 
-char *utf8StrToLatin1Dup(char *utf8);
+char *utf8StrToLatin1Dup(const char *utf8);
 
-int validUtf8String(char *string);
+int validUtf8String(const char *string);
 
-char *utf8_to_latin1(char *dest, char *utf8);
+char *utf8_to_latin1(char *dest, const char *utf8);
 
-char *latin1_to_utf8(char *dest, char *utf8);
+char *latin1_to_utf8(char *dest, const char *utf8);
 
 
 #endif

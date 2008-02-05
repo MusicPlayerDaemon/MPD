@@ -28,10 +28,10 @@ typedef struct _LocateTagItem {
 	char *needle;
 } LocateTagItem;
 
-int getLocateTagItemType(char *str);
+int getLocateTagItemType(const char *str);
 
 /* returns NULL if not a known type */
-LocateTagItem *newLocateTagItem(char *typeString, char *needle);
+LocateTagItem *newLocateTagItem(const char *typeString, const char *needle);
 
 /* return number of items or -1 on error */
 int newLocateTagItemArrayFromArgArray(char *argArray[], int numArgs,

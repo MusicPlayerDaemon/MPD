@@ -317,7 +317,7 @@ static MpdTag *mpcTagDup(char *file)
 	return ret;
 }
 
-static char *mpcSuffixes[] = { "mpc", NULL };
+static const char *mpcSuffixes[] = { "mpc", NULL };
 
 InputPlugin mpcPlugin = {
 	"mpc",

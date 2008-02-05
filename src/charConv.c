@@ -42,7 +42,7 @@ static mpd_sint8 char_conv_latin1ToUtf8;
 
 static void closeCharSetConversion(void);
 
-int setCharSetConversion(char *to, char *from)
+int setCharSetConversion(const char *to, const char *from)
 {
 	if (char_conv_to && char_conv_from) {
 		if (char_conv_latin1ToUtf8 &&
@@ -93,7 +93,7 @@ int setCharSetConversion(char *to, char *from)
 	return -1;
 }
 
-char *char_conv_str(char *dest, char *string)
+char *char_conv_str(char *dest, const char *string)
 {
 	if (!char_conv_to)
 		return NULL;

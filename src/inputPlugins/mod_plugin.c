@@ -249,7 +249,7 @@ static MpdTag *modTagDup(char *file)
 	return ret;
 }
 
-static char *modSuffixes[] = { "amf",
+static const char *modSuffixes[] = { "amf",
 	"dsm",
 	"far",
 	"gdm",

@@ -20,10 +20,10 @@
 #include "utils.h"
 #include "os_compat.h"
 
-char *latin1_to_utf8(char *dest, char *in_latin1)
+char *latin1_to_utf8(char *dest, const char *in_latin1)
 {
 	unsigned char *cp = (unsigned char *)dest;
-	unsigned char *latin1 = (unsigned char *)in_latin1;
+	const unsigned char *latin1 = (const unsigned char *)in_latin1;
 
 	while (*latin1) {
 		if (*latin1 < 128)
@@ -45,7 +45,7 @@ char *latin1_to_utf8(char *dest, char *in_latin1)
 	return dest;
 }
 
-char *latin1StrToUtf8Dup(char *latin1)
+char *latin1StrToUtf8Dup(const char *latin1)
 {
 	/* utf8 should have at most two char's per latin1 char */
 	char *ret = xmalloc(strlen(latin1) * 2 + 1);
@@ -55,10 +55,10 @@ char *latin1StrToUtf8Dup(char *latin1)
 	return ((ret) ? xrealloc(ret, strlen((char *)ret) + 1) : NULL);
 }
 
-static char utf8_to_latin1_char(char *inUtf8)
+static char utf8_to_latin1_char(const char *inUtf8)
 {
 	unsigned char c = 0;
-	unsigned char *utf8 = (unsigned char *)inUtf8;
+	const unsigned char *utf8 = (const unsigned char *)inUtf8;
 
 	if (utf8[0] < 128)
 		return utf8[0];
@@ -69,9 +69,9 @@ static char utf8_to_latin1_char(char *inUtf8)
 	return (char)(c + utf8[1]);
 }
 
-static int validateUtf8Char(char *inUtf8Char)
+static int validateUtf8Char(const char *inUtf8Char)
 {
-	unsigned char *utf8Char = (unsigned char *)inUtf8Char;
+	const unsigned char *utf8Char = (const unsigned char *)inUtf8Char;
 
 	if (utf8Char[0] < 0x80)
 		return 1;
@@ -95,7 +95,7 @@ static int validateUtf8Char(char *inUtf8Char)
 		return 0;
 }
 
-int validUtf8String(char *string)
+int validUtf8String(const char *string)
 {
 	int ret;
 
@@ -109,7 +109,7 @@ int validUtf8String(char *string)
 	return 1;
 }
 
-char *utf8StrToLatin1Dup(char *utf8)
+char *utf8StrToLatin1Dup(const char *utf8)
 {
 	/* utf8 should have at most two char's per latin1 char */
 	char *ret = xmalloc(strlen(utf8) + 1);
@@ -133,7 +133,7 @@ char *utf8StrToLatin1Dup(char *utf8)
 	return xrealloc(ret, len + 1);
 }
 
-char *utf8_to_latin1(char *dest, char *utf8)
+char *utf8_to_latin1(char *dest, const char *utf8)
 {
 	char *cp = dest;
 	int count;
