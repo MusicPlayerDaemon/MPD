@@ -7,32 +7,18 @@
 *) input plugins
 	*) add support for playing aac streams
 
-*) mixer
-	*) add sun support
-	*) add OS X support
-
 *) Add support for 24-bit audio
 
 *) cleanup linked list code!
-
-*) implement listener socket protocol as documented here:
-	http://mpd.wikia.com/wiki/MusicPlayerDaemonListenerProtocol
-
-*) support for dynamically loading plugins
-	*) cleanup input plugins "API"
-	*) cleanup output plugins "API"
 
 *) add error codes for status->error
 
 *) Cleanup Config File Code
 
 *) audio output
-	*) write a esd native audioOutput
-	*) write a nas native audioOutput
 	*) allowing "pausing" of audio output devices
-	*) while pausing, play silence for the devices that don't support 
+	*) while pausing, play silence for the devices that don't support
 	   "pausing"
-	*) write a sun native audioOutput
 	*) more accurate time reporting by determining how much of audio_device
                 buffer has been played
 
@@ -43,7 +29,24 @@
 *) add playlistreplace command (replace current playlist with saved playlist
                                 and keep playing)
 
-*) add command for inserting songs in a specific position
+0.15.0
+------
+*) support for dynamically loading plugins
+	*) cleanup input plugins "API"
+	*) cleanup output plugins "API"
+
+*) implement listener socket protocol as documented here:
+	http://mpd.wikia.com/wiki/MusicPlayerDaemonListenerProtocol
+
+
+???
+---
+*) mixer
+	*) add sun support
+	*) add OS X support
+*) audio output
+	*) write a nas native audioOutput
+	*) write a sun native audioOutput
 
 1.0
 ---
