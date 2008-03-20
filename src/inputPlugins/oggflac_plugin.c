@@ -390,7 +390,7 @@ fail:
 	return ret;
 }
 
-static const char *oggflac_Suffixes[] = { "ogg", NULL };
+static const char *oggflac_Suffixes[] = { "ogg", "oga",NULL };
 static const char *oggflac_mime_types[] = { "audio/x-flac+ogg",
 					    "application/ogg",
 					    "application/x-ogg",

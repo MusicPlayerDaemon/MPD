@@ -383,7 +383,7 @@ static unsigned int oggvorbis_try_decode(InputStream * inStream)
 	return (ogg_stream_type_detect(inStream) == VORBIS) ? 1 : 0;
 }
 
-static const char *oggvorbis_Suffixes[] = { "ogg", NULL };
+static const char *oggvorbis_Suffixes[] = { "ogg","oga", NULL };
 static const char *oggvorbis_MimeTypes[] = { "application/ogg",
 					     "audio/x-vorbis+ogg",
 					     "application/x-ogg",
