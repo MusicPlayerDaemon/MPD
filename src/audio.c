@@ -55,7 +55,7 @@ static mpd_sint32 audioBufferPos;
 
 unsigned int audio_device_count(void)
 {
-	size_t nr = 0;
+	unsigned int nr = 0;
 	ConfigParam *param = NULL;
 
 	while ((param = getNextConfigParam(CONF_AUDIO_OUTPUT, param)))
