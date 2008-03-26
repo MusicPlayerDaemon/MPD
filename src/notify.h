@@ -40,8 +40,8 @@ typedef struct _Notify {
 
 void initNotify(Notify *notify);
 
-int waitNotify(Notify *notify);
+void waitNotify(Notify *notify);
 
-int signalNotify(Notify *notify);
+void signalNotify(Notify *notify);
 
 #endif

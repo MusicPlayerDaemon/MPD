@@ -30,18 +30,19 @@ void initNotify(Notify *notify)
 		      strerror(errno));
 }
 
-int waitNotify(Notify *notify)
+void waitNotify(Notify *notify)
 {
 	char buffer[64];
-	ssize_t nbytes;
 
-	nbytes = read(notify->fds[0], buffer, sizeof(buffer));
-	return (int)nbytes;
+	if (read(notify->fds[0], buffer, sizeof(buffer)) < 0)
+		FATAL("error reading from pipe: %s\n", strerror(errno));
 }
 
-int signalNotify(Notify *notify)
+void signalNotify(Notify *notify)
 {
-	char buffer[1] = { 0 };
+	char buffer;
 
-	return (int)write(notify->fds[1], &buffer, sizeof(buffer));
+	if (write(notify->fds[1], &buffer, sizeof(buffer)) < 0 &&
+	    errno != EAGAIN && errno != EINTR)
+		FATAL("error writing to pipe: %s\n", strerror(errno));
 }
