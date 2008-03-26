@@ -17,40 +17,17 @@
  */
 
 #include "notify.h"
+#include "os_compat.h"
+#include "log.h"
+#include "utils.h"
 
-#include <assert.h>
-#include <fcntl.h>
-#include <unistd.h>
-
-int set_nonblock(int fd)
+void initNotify(Notify *notify)
 {
-	int ret;
-
-	assert(fd >= 0);
-
-	ret = fcntl(fd, F_GETFL, 0);
-	if (ret < 0)
-		return ret;
-
-	return fcntl(fd, F_SETFL, ret|O_NONBLOCK);
-}
-
-int initNotify(Notify *notify)
-{
-	int ret;
-
-	ret = pipe(notify->fds);
-	if (ret < 0)
-		return -1;
-
-	ret = set_nonblock(notify->fds[1]);
-	if (ret < 0) {
-		close(notify->fds[0]);
-		close(notify->fds[1]);
-		return -1;
-	}
-
-	return 0;
+	if (pipe(notify->fds) < 0)
+		FATAL("Couldn't open pipe: %s", strerror(errno));
+	if (set_nonblocking(notify->fds[1]) < 0)
+		FATAL("Couldn't set non-blocking on notify fd: %s",
+		      strerror(errno));
 }
 
 int waitNotify(Notify *notify)

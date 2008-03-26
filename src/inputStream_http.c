@@ -357,7 +357,7 @@ static int initHTTPConnection(InputStream * inStream)
 	struct addrinfo *ans = NULL;
 	struct addrinfo *ap = NULL;
 	struct addrinfo hints;
-	int error, flags;
+	int error;
 	InputStreamHTTPData *data = (InputStreamHTTPData *) inStream->data;
 	/**
 	 * Setup hints
@@ -397,8 +397,7 @@ static int initHTTPConnection(InputStream * inStream)
 			return -1;
 		}
 
-		flags = fcntl(data->sock, F_GETFL, 0);
-		fcntl(data->sock, F_SETFL, flags | O_NONBLOCK);
+		set_nonblocking(data->sock);
 
 		if (connect(data->sock, ap->ai_addr, ap->ai_addrlen) >= 0
 		    || errno == EINPROGRESS) {

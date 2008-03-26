@@ -127,8 +127,6 @@ static void set_send_buf_size(Interface * interface)
 
 static void openInterface(Interface * interface, int fd)
 {
-	int flags;
-
 	assert(interface->fd < 0);
 
 	interface->cmd_list_size = 0;
@@ -137,8 +135,7 @@ static void openInterface(Interface * interface, int fd)
 	interface->bufferLength = 0;
 	interface->bufferPos = 0;
 	interface->fd = fd;
-	while ((flags = fcntl(fd, F_GETFL)) < 0 && errno == EINTR) ;
-	while (fcntl(fd, F_SETFL, flags | O_NONBLOCK) < 0 && errno == EINTR) ;
+	set_nonblocking(fd);
 	interface->lastTime = time(NULL);
 	interface->cmd_list = NULL;
 	interface->cmd_list_tail = NULL;

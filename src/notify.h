@@ -38,7 +38,7 @@ typedef struct _Notify {
 	int fds[2];
 } Notify;
 
-int initNotify(Notify *notify);
+void initNotify(Notify *notify);
 
 int waitNotify(Notify *notify);
 

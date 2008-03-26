@@ -79,4 +79,6 @@ mpd_malloc void *xcalloc(size_t nmemb, size_t size);
 
 char *parsePath(char *path);
 
+int set_nonblocking(int fd);
+
 #endif

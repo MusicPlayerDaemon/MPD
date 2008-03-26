@@ -214,3 +214,18 @@ char *parsePath(char *path)
 
 	return newPath;
 }
+
+int set_nonblocking(int fd)
+{
+	int ret, flags;
+
+	assert(fd >= 0);
+
+	while ((flags = fcntl(fd, F_GETFL)) < 0 && errno == EINTR) ;
+	if (flags < 0)
+		return flags;
+
+	flags |= O_NONBLOCK;
+	while ((ret = fcntl(fd, F_SETFL, flags)) < 0 && errno == EINTR) ;
+	return ret;
+}

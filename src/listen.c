@@ -93,7 +93,7 @@ static int establishListen(unsigned int port,
 	if ((sock = socket(pf, SOCK_STREAM, 0)) < 0)
 		FATAL("socket < 0\n");
 
-	if (fcntl(sock, F_SETFL, fcntl(sock, F_GETFL) | O_NONBLOCK) < 0) {
+	if (set_nonblocking(sock) < 0) {
 		FATAL("problems setting nonblocking on listen socket: %s\n",
 		      strerror(errno));
 	}
