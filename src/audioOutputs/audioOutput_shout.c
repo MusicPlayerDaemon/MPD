@@ -218,7 +218,7 @@ static int myShout_initDriver(AudioOutput * audioOutput, ConfigParam * param)
 	/* optional paramters */
 	blockParam = getBlockParam(param, "timeout");
 	if (blockParam) {
-		sd->timeout = strtod(blockParam->value, &test);
+		sd->timeout = (int)strtol(blockParam->value, &test, 10);
 		if (*test != '\0' || sd->timeout <= 0) {
 			FATAL("shout timeout is not a positive integer, "
 			      "line %i\n", blockParam->line);
