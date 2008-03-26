@@ -431,9 +431,8 @@ int main(int argc, char *argv[])
 	openVolumeDevice();
 	read_state_file();
 
-	while (COMMAND_RETURN_KILL != doIOForInterfaces()) {
-		if (COMMAND_RETURN_KILL == handlePendingSignals())
-			break;
+	while (COMMAND_RETURN_KILL != doIOForInterfaces() &&
+	       COMMAND_RETURN_KILL != handlePendingSignals()) {
 		syncPlayerAndPlaylist();
 		closeOldInterfaces();
 		readDirectoryDBIfUpdateIsFinished();
