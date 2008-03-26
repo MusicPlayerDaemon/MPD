@@ -1349,6 +1349,11 @@ int savePlaylist(int fd, char *utf8file)
 
 	while (!(fp = fopen(path_max_tmp, "w")) && errno == EINTR);
 
+	if (fp == NULL) {
+		commandError(fd, ACK_ERROR_SYSTEM, "failed to create file");
+		return -1;
+	}
+
 	for (i = 0; i < playlist.length; i++) {
 		char tmp[MPD_PATH_MAX];
 
