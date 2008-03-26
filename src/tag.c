@@ -137,7 +137,7 @@ void printMpdTag(int fd, MpdTag * tag)
  */
 static id3_utf8_t * processID3FieldString (int is_id3v1, const id3_ucs4_t *ucs4, int type)
 {
-    id3_utf8_t *utf8 = NULL; 
+    id3_utf8_t *utf8;
     id3_latin1_t *isostr;
 	char *encoding;
 
@@ -174,7 +174,7 @@ static MpdTag *getID3Info(
 {
 	struct id3_frame const *frame;
 	id3_ucs4_t const *ucs4;
-	id3_utf8_t *utf8 = NULL;
+	id3_utf8_t *utf8;
 	union id3_field const *field;
 	unsigned int nstrings;
     int  i;
@@ -462,7 +462,7 @@ MpdTag *id3Dup(char *file)
 MpdTag *apeDup(char *file)
 {
 	MpdTag *ret = NULL;
-	FILE *fp = NULL;
+	FILE *fp;
 	int tagCount;
 	char *buffer = NULL;
 	char *p;
@@ -613,7 +613,7 @@ static void deleteItem(MpdTag * tag, int idx)
 
 void clearItemsFromMpdTag(MpdTag * tag, int type)
 {
-	int i = 0;
+	int i;
 
 	for (i = 0; i < tag->numOfItems; i++) {
 		if (tag->items[i].type == type) {
@@ -650,7 +650,7 @@ void freeMpdTag(MpdTag * tag)
 
 MpdTag *mpdTagDup(MpdTag * tag)
 {
-	MpdTag *ret = NULL;
+	MpdTag *ret;
 	int i;
 
 	if (!tag)

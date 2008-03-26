@@ -168,7 +168,7 @@ static void addUnsupportedParam(OssData * od, int param, int val)
 
 static void removeSupportedParam(OssData * od, int param, int val)
 {
-	int i = 0;
+	int i;
 	int j = 0;
 	int idx = getIndexForParam(param);
 
@@ -185,7 +185,7 @@ static void removeSupportedParam(OssData * od, int param, int val)
 
 static void removeUnsupportedParam(OssData * od, int param, int val)
 {
-	int i = 0;
+	int i;
 	int j = 0;
 	int idx = getIndexForParam(param);
 
@@ -481,7 +481,7 @@ fail:
 
 static int oss_openDevice(AudioOutput * audioOutput)
 {
-	int ret = -1;
+	int ret;
 	OssData *od = audioOutput->data;
 	AudioFormat *audioFormat = &audioOutput->outAudioFormat;
 

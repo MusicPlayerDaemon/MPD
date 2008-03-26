@@ -81,7 +81,7 @@ static int searchInDirectory(int fd, Song * song, void *data)
 
 int searchForSongsIn(int fd, char *name, int numItems, LocateTagItem * items)
 {
-	int ret = -1;
+	int ret;
 	int i;
 
 	char **originalNeedles = xmalloc(numItems * sizeof(char *));

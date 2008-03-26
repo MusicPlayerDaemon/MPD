@@ -108,7 +108,7 @@ int lsPlaylists(int fd, const char *utf8path)
 	char s[MPD_PATH_MAX];
 	char path_max_tmp[MPD_PATH_MAX];
 	List *list = NULL;
-	ListNode *node = NULL;
+	ListNode *node;
 	char *actualPath = rpp2app_r(path_max_tmp,
 	                             utf8_to_fs_charset(path_max_tmp,
 				                        utf8path));

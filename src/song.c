@@ -46,7 +46,7 @@ Song *newNullSong(void)
 
 Song *newSong(const char *url, int type, Directory * parentDir)
 {
-	Song *song = NULL;
+	Song *song;
 
 	if (strchr(url, '\n')) {
 		DEBUG("newSong: '%s' is not a valid uri\n", url);
@@ -239,11 +239,9 @@ void readSongInfoIntoList(FILE * fp, SongList * list, Directory * parentDir)
 
 	while (myFgets(buffer, bufferSize, fp) && 0 != strcmp(SONG_END, buffer)) {
 		if (0 == strncmp(SONG_KEY, buffer, strlen(SONG_KEY))) {
-			if (song) {
+			if (song)
 				insertSongIntoList(list, &nextSongNode,
 						   song->url, song);
-				song = NULL;
-			}
 
 			song = newNullSong();
 			song->url = xstrdup(buffer + strlen(SONG_KEY));
@@ -274,10 +272,8 @@ void readSongInfoIntoList(FILE * fp, SongList * list, Directory * parentDir)
 			FATAL("songinfo: unknown line in db: %s\n", buffer);
 	}
 
-	if (song) {
+	if (song)
 		insertSongIntoList(list, &nextSongNode, song->url, song);
-		song = NULL;
-	}
 
 	while (nextSongNode) {
 		nodeTemp = nextSongNode->nextNode;

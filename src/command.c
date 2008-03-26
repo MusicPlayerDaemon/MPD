@@ -747,7 +747,7 @@ static int handleClearError(int fd, int *permission, int argc, char *argv[])
 
 static int handleList(int fd, int *permission, int argc, char *argv[])
 {
-	int numConditionals = 0;
+	int numConditionals;
 	LocateTagItem *conditionals = NULL;
 	int tagType = getLocateTagItemType(argv[1]);
 	int ret;
@@ -1122,7 +1122,7 @@ static CommandEntry *getCommandEntryAndCheckArgcAndPermission(int fd,
 
 static CommandEntry *getCommandEntryFromString(char *string, int *permission)
 {
-	CommandEntry *cmd = NULL;
+	CommandEntry *cmd;
 	char *argv[COMMAND_ARGV_MAX] = { NULL };
 	int argc = buffer2array(string, argv, COMMAND_ARGV_MAX);
 

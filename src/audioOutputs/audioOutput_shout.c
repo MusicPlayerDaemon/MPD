@@ -292,7 +292,7 @@ static int myShout_handleError(ShoutData * sd, int err)
 
 static int write_page(ShoutData * sd)
 {
-	int err = 0;
+	int err;
 
 	shout_sync(sd->shoutConn);
 	err = shout_send(sd->shoutConn, sd->og.header, sd->og.header_len);

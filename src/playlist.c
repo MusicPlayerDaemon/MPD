@@ -87,7 +87,7 @@ static void incrPlaylistVersion(void)
 
 void playlistVersionChange(void)
 {
-	int i = 0;
+	int i;
 
 	for (i = 0; i < playlist.length; i++) {
 		playlist.songMod[i] = playlist.version;
@@ -664,7 +664,7 @@ int addSongToPlaylist(int fd, Song * song, int *added_id)
 int swapSongsInPlaylist(int fd, int song1, int song2)
 {
 	int queuedSong = -1;
-	int currentSong = -1;
+	int currentSong;
 
 	if (song1 < 0 || song1 >= playlist.length) {
 		commandError(fd, ACK_ERROR_NO_EXIST,

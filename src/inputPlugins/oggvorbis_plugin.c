@@ -61,7 +61,7 @@ typedef struct _OggCallbackData {
 
 static size_t ogg_read_cb(void *ptr, size_t size, size_t nmemb, void *vdata)
 {
-	size_t ret = 0;
+	size_t ret;
 	OggCallbackData *data = (OggCallbackData *) vdata;
 
 	while (1) {
@@ -352,7 +352,7 @@ static int oggvorbis_decode(OutputBuffer * cb, DecoderControl * dc,
 
 static MpdTag *oggvorbis_TagDup(char *file)
 {
-	MpdTag *ret = NULL;
+	MpdTag *ret;
 	FILE *fp;
 	OggVorbis_File vf;
 
