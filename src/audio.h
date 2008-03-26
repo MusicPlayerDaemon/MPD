@@ -33,7 +33,7 @@ typedef struct _AudioFormat {
 	volatile mpd_sint8 bits;
 } AudioFormat;
 
-size_t audio_device_count(void);
+unsigned int audio_device_count(void);
 
 void copyAudioFormat(AudioFormat * dest, AudioFormat * src);
 
@@ -68,9 +68,9 @@ void sendMetadataToAudioDevice(MpdTag * tag);
 
 /* these functions are called in the main parent process while the child
 	process is busy playing to the audio */
-int enableAudioDevice(int fd, int device);
+int enableAudioDevice(int fd, unsigned int device);
 
-int disableAudioDevice(int fd, int device);
+int disableAudioDevice(int fd, unsigned int device);
 
 void printAudioDevices(int fd);
 

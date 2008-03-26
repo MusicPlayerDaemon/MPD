@@ -36,7 +36,7 @@ static AudioFormat audio_format;
 static AudioFormat *audio_configFormat;
 
 static AudioOutput *audioOutputArray;
-static mpd_uint8 audioOutputArraySize;
+static unsigned int audioOutputArraySize;
 
 #define	DEVICE_OFF        0x00
 #define DEVICE_ENABLE	  0x01   /* currently off, but to be turned on */
@@ -53,7 +53,7 @@ static mpd_sint32 audioBufferSize;
 static char *audioBuffer;
 static mpd_sint32 audioBufferPos;
 
-size_t audio_device_count(void)
+unsigned int audio_device_count(void)
 {
 	size_t nr = 0;
 	ConfigParam *param = NULL;
@@ -100,7 +100,7 @@ void loadAudioDrivers(void)
 void initAudioDriver(void)
 {
 	ConfigParam *param = NULL;
-	int i;
+	unsigned int i;
 
 	loadAudioDrivers();
 
@@ -111,7 +111,7 @@ void initAudioDriver(void)
 	for (i = 0; i < audioOutputArraySize; i++)
 	{
 		AudioOutput *output = &audioOutputArray[i];
-		int j;
+		unsigned int j;
 
 		param = getNextConfigParam(CONF_AUDIO_OUTPUT, param);
 
@@ -241,7 +241,7 @@ void finishAudioConfig(void)
 
 void finishAudioDriver(void)
 {
-	int i;
+	unsigned int i;
 
 	for (i = 0; i < audioOutputArraySize; i++) {
 		finishAudioOutput(&audioOutputArray[i]);
@@ -266,7 +266,7 @@ int isCurrentAudioFormat(AudioFormat * audioFormat)
 static void syncAudioDeviceStates(void)
 {
 	AudioOutput *audioOutput;
-	int i;
+	unsigned int i;
 
 	if (!audio_format.channels)
 		return;
@@ -294,8 +294,8 @@ static void syncAudioDeviceStates(void)
 
 static int flushAudioBuffer(void)
 {
-	int ret = -1;
-	int i, err;
+	int ret = -1, err;
+	unsigned int i;
 
 	if (audioBufferPos == 0)
 		return 0;
@@ -323,7 +323,7 @@ static int flushAudioBuffer(void)
 int openAudioDevice(AudioFormat * audioFormat)
 {
 	int ret = -1;
-	int i;
+	unsigned int i;
 
 	if (!audioOutputArray)
 		return -1;
@@ -387,7 +387,7 @@ int isAudioDeviceOpen(void)
 
 void dropBufferedAudio(void)
 {
-	int i;
+	unsigned int i;
 
 	syncAudioDeviceStates();
 	audioBufferPos = 0;
@@ -400,7 +400,7 @@ void dropBufferedAudio(void)
 
 void closeAudioDevice(void)
 {
-	int i;
+	unsigned int i;
 
 	flushAudioBuffer();
 
@@ -419,14 +419,14 @@ void closeAudioDevice(void)
 
 void sendMetadataToAudioDevice(MpdTag * tag)
 {
-	int i;
+	unsigned int i;
 
 	for (i = 0; i < audioOutputArraySize; ++i) {
 		sendMetadataToAudioOutput(&audioOutputArray[i], tag);
 	}
 }
 
-int enableAudioDevice(int fd, int device)
+int enableAudioDevice(int fd, unsigned int device)
 {
 	if (device >= audioOutputArraySize) {
 		commandError(fd, ACK_ERROR_ARG, "audio output device id %i "
@@ -440,7 +440,7 @@ int enableAudioDevice(int fd, int device)
 	return 0;
 }
 
-int disableAudioDevice(int fd, int device)
+int disableAudioDevice(int fd, unsigned int device)
 {
 	if (device >= audioOutputArraySize) {
 		commandError(fd, ACK_ERROR_ARG, "audio output device id %i "
@@ -455,7 +455,7 @@ int disableAudioDevice(int fd, int device)
 
 void printAudioDevices(int fd)
 {
-	int i;
+	unsigned int i;
 
 	for (i = 0; i < audioOutputArraySize; i++) {
 		fdprintf(fd,
@@ -468,7 +468,7 @@ void printAudioDevices(int fd)
 
 void saveAudioDevicesState(FILE *fp)
 {
-	int i;
+	unsigned int i;
 
 	assert(audioOutputArraySize != 0);
 	for (i = 0; i < audioOutputArraySize; i++) {
@@ -481,7 +481,7 @@ void saveAudioDevicesState(FILE *fp)
 void readAudioDevicesState(FILE *fp)
 {
 	char buffer[AUDIO_BUFFER_SIZE];
-	int i;
+	unsigned int i;
 
 	assert(audioOutputArraySize != 0);
 
