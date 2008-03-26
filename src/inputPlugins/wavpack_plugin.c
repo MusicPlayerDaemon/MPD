@@ -52,9 +52,6 @@ static struct {
 	{ NULL,         0 }
 };
 
-/* workaround for at least the last push_back_byte */
-static int last_byte = EOF;
-
 /*
  * This function has been borrowed from the tiny player found on
  * wavpack.com. Modifications were required because mpd only handles
@@ -153,7 +150,12 @@ static void wavpack_decode(OutputBuffer *cb, DecoderControl *dc,
 		format_samples = format_samples_float;
 	else
 		format_samples = format_samples_int;
-
+/*
+	if ((WavpackGetMode(wpc) & MODE_WVC) == MODE_WVC)
+		ERROR("decoding WITH wvc!!!\n");
+	else
+		ERROR("decoding without wvc\n");
+*/
 	allsamples = WavpackGetNumSamples(wpc);
 	Bps = WavpackGetBytesPerSample(wpc);
 
@@ -168,6 +170,7 @@ static void wavpack_decode(OutputBuffer *cb, DecoderControl *dc,
 
 	dc->totalTime = (float)allsamples / dc->audioFormat.sampleRate;
 	dc->state = DECODE_STATE_DECODE;
+	dc->seekable = canseek;
 
 	position = 0;
 
@@ -339,49 +342,57 @@ static MpdTag *wavpack_tagdup(char *fname)
  * mpd InputStream <=> WavpackStreamReader wrapper callbacks
  */
 
+/* This struct is needed for per-stream last_byte storage. */
+typedef struct {
+	InputStream *is;
+	/* Needed for push_back_byte() */
+	int last_byte;
+} InputStreamPlus;
+
 static int32_t read_bytes(void *id, void *data, int32_t bcount)
 {
+	InputStreamPlus *isp = (InputStreamPlus *)id;
 	uint8_t *buf = (uint8_t *)data;
 	int32_t i = 0;
 
-	if (last_byte != EOF) {
-		*buf++ = last_byte;
-		last_byte = EOF;
+	if (isp->last_byte != EOF) {
+		*buf++ = isp->last_byte;
+		isp->last_byte = EOF;
 		--bcount;
 		++i;
 	}
-	return i + readFromInputStream((InputStream *)id, buf, 1, bcount);
+	return i + readFromInputStream(isp->is, buf, 1, bcount);
 }
 
 static uint32_t get_pos(void *id)
 {
-	return ((InputStream *)id)->offset;
+	return ((InputStreamPlus *)id)->is->offset;
 }
 
 static int set_pos_abs(void *id, uint32_t pos)
 {
-	return seekInputStream((InputStream *)id, pos, SEEK_SET);
+	return seekInputStream(((InputStreamPlus *)id)->is, pos, SEEK_SET);
 }
 
 static int set_pos_rel(void *id, int32_t delta, int mode)
 {
-	return seekInputStream((InputStream *)id, delta, mode);
+	return seekInputStream(((InputStreamPlus *)id)->is, delta, mode);
 }
 
 static int push_back_byte(void *id, int c)
 {
-	last_byte = c;
+	((InputStreamPlus *)id)->last_byte = c;
 	return 1;
 }
 
 static uint32_t get_length(void *id)
 {
-	return ((InputStream *)id)->size;
+	return ((InputStreamPlus *)id)->is->size;
 }
 
 static int can_seek(void *id)
 {
-	return (seekInputStream((InputStream *)id, 0, SEEK_SET) != -1);
+	return ((InputStreamPlus *)id)->is->seekable;
 }
 
 static WavpackStreamReader mpd_is_reader = {
@@ -395,6 +406,13 @@ static WavpackStreamReader mpd_is_reader = {
 	.write_bytes = NULL /* no need to write edited tags */
 };
 
+static void
+initInputStreamPlus(InputStreamPlus *isp, InputStream *is)
+{
+	isp->is = is;
+	isp->last_byte = EOF;
+}
+
 /*
  * Tries to decode the specified stream, and gives true if managed to do it.
  */
@@ -402,8 +420,10 @@ static unsigned int wavpack_trydecode(InputStream *is)
 {
 	char error[ERRORLEN];
 	WavpackContext *wpc;
+	InputStreamPlus isp;
 
-	wpc = WavpackOpenFileInputEx(&mpd_is_reader, (void *)is, NULL, error,
+	initInputStreamPlus(&isp, is);
+	wpc = WavpackOpenFileInputEx(&mpd_is_reader, &isp, NULL, error,
 	                             OPEN_STREAMING, 0);
 	if (wpc == NULL)
 		return 0;
@@ -417,37 +437,118 @@ static unsigned int wavpack_trydecode(InputStream *is)
 
 /*
  * Decodes a stream.
- * We cannot handle wvc files this way, use the wavpack_filedecode for that.
  */
 static int wavpack_streamdecode(OutputBuffer *cb, DecoderControl *dc,
                                 InputStream *is)
 {
 	char error[ERRORLEN];
 	WavpackContext *wpc;
+	InputStream is_wvc;
+	int open_flags = OPEN_2CH_MAX | OPEN_NORMALIZE /*| OPEN_STREAMING*/;
+	char *wvc_url = NULL;
+	int err;
+	InputStreamPlus isp, isp_wvc;
+	int canseek;
 
-	/*
-	 * wavpack_streamdecode is unable to use wvc :-(
-	 * If we know the original stream url, we would find out the wvc url...
-	 * This would require InputStream to store that.
-	 */
+	/* Try to find wvc */
+	do {
+		size_t len;
+		err = 1;
 
-	wpc = WavpackOpenFileInputEx(&mpd_is_reader, (void *)is, NULL, error,
-	                             OPEN_2CH_MAX | OPEN_NORMALIZE, 15);
+		/*
+		 * As we use dc->utf8url, this function will be bad for
+		 * single files. utf8url is not absolute file path :/
+		 */
+		if (dc->utf8url == NULL) {
+			break;
+		}
+
+		len = strlen(dc->utf8url);
+		if (!len) {
+			break;
+		}
+
+		wvc_url = (char *)malloc(len + 2); /* +2: 'c' and EOS */
+		if (wvc_url == NULL) {
+			break;
+		}
+
+		strncpy(wvc_url, dc->utf8url, len);
+		wvc_url[len] = 'c';
+		wvc_url[len + 1] = '\0';
+
+		if (openInputStream(&is_wvc, wvc_url)) {
+			break;
+		}
+
+		/*
+		 * And we try to buffer in order to get know
+		 * about a possible 404 error.
+		 */
+		for (;;) {
+			if (inputStreamAtEOF(&is_wvc)) {
+				/*
+				 * EOF is reached even without
+				 * a single byte is read...
+				 * So, this is not good :/
+				 */
+				break;
+			}
+
+			if (bufferInputStream(&is_wvc) >= 0) {
+				err = 0;
+				break;
+			}
+
+			if (dc->stop) {
+				break;
+			}
+
+			/* Save some CPU */
+			my_usleep(1000);
+		}
+		if (err) {
+			closeInputStream(&is_wvc);
+			break;
+		}
+
+		open_flags |= OPEN_WVC;
+
+	} while (0);
+
+	canseek = can_seek(&isp);
+	if (wvc_url != NULL) {
+		if (err) {
+			free(wvc_url);
+			wvc_url = NULL;
+		} else {
+			initInputStreamPlus(&isp_wvc, &is_wvc);
+		}
+	}
+
+	initInputStreamPlus(&isp, is);
+	wpc = WavpackOpenFileInputEx(&mpd_is_reader, &isp, &isp_wvc, error,
+				     open_flags, 15);
+
 	if (wpc == NULL) {
 		ERROR("failed to open WavPack stream: %s\n", error);
 		return -1;
 	}
 
-	wavpack_decode(cb, dc, wpc, can_seek(is), NULL);
+	wavpack_decode(cb, dc, wpc, canseek, NULL);
 
 	WavpackCloseFile(wpc);
+	if (wvc_url != NULL) {
+		closeInputStream(&is_wvc);
+		free(wvc_url);
+	}
+	closeInputStream(is);
 
 	return 0;
 }
 
 /*
- * Decodes a file. This has the goods on wavpack_streamdecode that this
- * can handle wvc files.
+ * Decodes a file.
  */
 static int wavpack_filedecode(OutputBuffer *cb, DecoderControl *dc, char *fname)
 {
@@ -475,8 +576,8 @@ static int wavpack_filedecode(OutputBuffer *cb, DecoderControl *dc, char *fname)
 	return 0;
 }
 
-static char *wavpackSuffixes[] = { "wv", NULL };
-static char *wavpackMimeTypes[] = { "audio/x-wavpack", NULL };
+static char const *wavpackSuffixes[] = { "wv", NULL };
+static char const *wavpackMimeTypes[] = { "audio/x-wavpack", NULL };
 
 InputPlugin wavpackPlugin = {
 	"wavpack",
@@ -484,7 +585,7 @@ InputPlugin wavpackPlugin = {
 	NULL,
 	wavpack_trydecode,
 	wavpack_streamdecode,
-	wavpack_filedecode, /* provides more functionality! (wvc) */
+	wavpack_filedecode,
 	wavpack_tagdup,
 	INPUT_PLUGIN_STREAM_FILE | INPUT_PLUGIN_STREAM_URL,
 	wavpackSuffixes,
