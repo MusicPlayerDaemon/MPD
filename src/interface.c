@@ -604,7 +604,7 @@ static void closeAllInterfaces(void)
 	int i;
 
 	for (i = 0; i < interface_max_connections; i++) {
-		if (interfaces[i].fd > 0)
+		if (interfaces[i].fd >= 0)
 			closeInterface(&(interfaces[i]));
 		if (interfaces[i].send_buf)
 			free(interfaces[i].send_buf);
@@ -626,7 +626,7 @@ void closeOldInterfaces(void)
 	int i;
 
 	for (i = 0; i < interface_max_connections; i++) {
-		if (interfaces[i].fd > 0) {
+		if (interfaces[i].fd >= 0) {
 			if (interfaces[i].expired) {
 				DEBUG("interface %i: expired\n", i);
 				closeInterface(&(interfaces[i]));
@@ -690,7 +690,7 @@ int interfacePrintWithFD(int fd, char *buffer, int buflen)
 	int copylen;
 	Interface *interface;
 
-	assert(fd > 0);
+	assert(fd >= 0);
 
 	if (i >= interface_max_connections ||
 	    interfaces[i].fd < 0 || interfaces[i].fd != fd) {

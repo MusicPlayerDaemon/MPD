@@ -36,8 +36,8 @@ static const char *err_filename;
 
 static void redirect_logs(void)
 {
-	assert(out_fd > 0);
-	assert(err_fd > 0);
+	assert(out_fd >= 0);
+	assert(err_fd >= 0);
 	if (dup2(out_fd, STDOUT_FILENO) < 0)
 		FATAL("problems dup2 stdout : %s\n", strerror(errno));
 	if (dup2(err_fd, STDERR_FILENO) < 0)
@@ -241,8 +241,8 @@ void close_log_files(void)
 {
 	if (stdout_mode)
 		return;
-	assert(out_fd > 0);
-	assert(err_fd > 0);
+	assert(out_fd >= 0);
+	assert(err_fd >= 0);
 	xclose(out_fd);
 	xclose(err_fd);
 }
