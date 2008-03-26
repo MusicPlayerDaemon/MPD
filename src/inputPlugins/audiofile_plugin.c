@@ -68,8 +68,10 @@ static int audiofile_decode(OutputBuffer * cb, DecoderControl * dc, char *path)
 	                         AF_SAMPFMT_TWOSCOMP, 16);
 	afGetVirtualSampleFormat(af_fp, AF_DEFAULT_TRACK, &fs, &bits);
 	dc->audioFormat.bits = (mpd_uint8)bits;
-	dc->audioFormat.sampleRate = (unsigned int)afGetRate(af_fp, AF_DEFAULT_TRACK);
-	dc->audioFormat.channels = (mpd_uint8)afGetVirtualChannels(af_fp, AF_DEFAULT_TRACK);
+	dc->audioFormat.sampleRate =
+	                      (unsigned int)afGetRate(af_fp, AF_DEFAULT_TRACK);
+	dc->audioFormat.channels =
+	              (mpd_uint8)afGetVirtualChannels(af_fp, AF_DEFAULT_TRACK);
 	getOutputAudioFormat(&(dc->audioFormat), &(cb->audioFormat));
 
 	frame_count = afGetFrameCount(af_fp, AF_DEFAULT_TRACK);
