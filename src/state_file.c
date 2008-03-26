@@ -50,7 +50,7 @@ static void get_state_file_path(void)
 
 void write_state_file(void)
 {
-	int i;
+	unsigned int i;
 	FILE *fp;
 
 	if (!sfpath)
@@ -72,7 +72,7 @@ void write_state_file(void)
 void read_state_file(void)
 {
 	struct stat st;
-	int i;
+	unsigned int i;
 	FILE *fp;
 
 	get_state_file_path();

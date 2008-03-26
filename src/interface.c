@@ -42,7 +42,7 @@
 #define INTERFACE_MAX_OUTPUT_BUFFER_SIZE_DEFAULT	(8192*1024)
 
 /* set this to zero to indicate we have no possible interfaces */
-static int interface_max_connections;	/*INTERFACE_MAX_CONNECTIONS_DEFAULT; */
+static unsigned int interface_max_connections;	/*INTERFACE_MAX_CONNECTIONS_DEFAULT; */
 static int interface_timeout = INTERFACE_TIMEOUT_DEFAULT;
 static size_t interface_max_command_list_size =
     INTERFACE_MAX_COMMAND_LIST_DEFAULT;
@@ -73,7 +73,7 @@ typedef struct _Interface {
 	size_t deferred_bytes;	/* mem deferred_send consumes */
 	int expired;	/* set whether this interface should be closed on next
 			   check of old interfaces */
-	int num;	/* interface number */
+	unsigned int num;	/* interface number */
 
 	char *send_buf;
 	size_t send_buf_used;	/* bytes used this instance */
@@ -237,7 +237,7 @@ static void closeInterface(Interface * interface)
 
 void openAInterface(int fd, struct sockaddr *addr)
 {
-	int i;
+	unsigned int i;
 
 	for (i = 0; i < interface_max_connections
 	     && interfaces[i].fd >= 0; i++) /* nothing */ ;
@@ -421,7 +421,7 @@ static int interfaceReadInput(Interface * interface)
 static void addInterfacesReadyToReadAndListenSocketToFdSet(fd_set * fds,
 							   int *fdmax)
 {
-	int i;
+	unsigned int i;
 
 	FD_ZERO(fds);
 	addListenSocketsToFdSet(fds, fdmax);
@@ -438,7 +438,7 @@ static void addInterfacesReadyToReadAndListenSocketToFdSet(fd_set * fds,
 
 static void addInterfacesForBufferFlushToFdSet(fd_set * fds, int *fdmax)
 {
-	int i;
+	unsigned int i;
 
 	FD_ZERO(fds);
 
@@ -456,7 +456,7 @@ static void closeNextErroredInterface(void)
 {
 	fd_set fds;
 	struct timeval tv;
-	int i;
+	unsigned int i;
 
 	tv.tv_sec = 0;
 	tv.tv_usec = 0;
@@ -478,7 +478,7 @@ int doIOForInterfaces(void)
 	fd_set rfds;
 	fd_set wfds;
 	fd_set efds;
-	int i;
+	unsigned int i;
 	int selret;
 	int fdmax;
 
@@ -532,7 +532,7 @@ int doIOForInterfaces(void)
 
 void initInterfaces(void)
 {
-	int i;
+	unsigned int i;
 	char *test;
 	ConfigParam *param;
 
@@ -597,7 +597,7 @@ void initInterfaces(void)
 
 static void closeAllInterfaces(void)
 {
-	int i;
+	unsigned int i;
 
 	for (i = 0; i < interface_max_connections; i++) {
 		if (interfaces[i].fd >= 0)
@@ -619,7 +619,7 @@ void freeAllInterfaces(void)
 
 void closeOldInterfaces(void)
 {
-	int i;
+	unsigned int i;
 
 	for (i = 0; i < interface_max_connections; i++) {
 		if (interfaces[i].fd >= 0) {
@@ -685,7 +685,7 @@ static void flushInterfaceBuffer(Interface * interface)
 
 int interfacePrintWithFD(int fd, char *buffer, size_t buflen)
 {
-	static int i;
+	static unsigned int i;
 	size_t copylen;
 	Interface *interface;
 
