@@ -161,8 +161,6 @@ static int playerInit(void)
 			} else
 				my_usleep(10000);
 		}
-
-		exit(EXIT_SUCCESS);
 	} 
 	else if (player_pid < 0) 
 	{

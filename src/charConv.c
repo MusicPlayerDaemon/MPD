@@ -88,9 +88,9 @@ int setCharSetConversion(const char *to, const char *from)
 	char_conv_use_iconv = 1;
 
 	return 0;
-#endif
-
+#else
 	return -1;
+#endif
 }
 
 char *char_conv_str(char *dest, const char *string)

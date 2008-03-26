@@ -76,8 +76,9 @@ int ipv6Supported(void)
 		return 0;
 	close(s);
 	return 1;
-#endif
+#else
 	return 0;
+#endif
 }
 
 char *appendToString(char *dest, const char *src)

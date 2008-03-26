@@ -973,8 +973,6 @@ static int currentSongInPlaylist(int fd)
 		return playPlaylistOrderNumber(fd, playlist.current);
 	} else
 		return stopPlaylist(fd);
-
-	return 0;
 }
 
 int nextSongInPlaylist(int fd)
@@ -996,8 +994,6 @@ int nextSongInPlaylist(int fd)
 		incrPlaylistCurrent();
 		return stopPlaylist(fd);
 	}
-
-	return 0;
 }
 
 void playPlaylistIfPlayerStopped(void)
@@ -1270,8 +1266,6 @@ int previousSongInPlaylist(int fd)
 			return playPlaylistOrderNumber(fd, playlist.current);
 		}
 	}
-
-	return 0;
 }
 
 int shufflePlaylist(int fd)

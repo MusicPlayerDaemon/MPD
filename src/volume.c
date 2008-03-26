@@ -510,7 +510,6 @@ int changeVolumeLevel(int fd, int change, int rel)
 		return changeSoftwareVolume(fd, change, rel);
 	default:
 		return 0;
-		break;
 	}
 }
 
