@@ -45,6 +45,8 @@ void initOutputBuffer(OutputBuffer * cb, char *chunks)
 	    (float *)(((char *)cb->metaChunk) +
 		      buffered_chunks * sizeof(mpd_sint8));
 	cb->acceptMetadata = 0;
+
+	initNotify(&cb->notify);
 }
 
 void clearAllMetaChunkSets(OutputBuffer * cb)
@@ -131,7 +133,7 @@ int sendDataToOutputBuffer(OutputBuffer * cb, InputStream * inStream,
 				}
 				if (!inStream ||
 				    bufferInputStream(inStream) <= 0) {
-					my_usleep(10000);
+					waitNotify(&cb->notify);
 				}
 			}
 			if (dc->stop)

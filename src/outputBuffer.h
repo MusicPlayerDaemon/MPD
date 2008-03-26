@@ -26,6 +26,7 @@
 #include "inputStream.h"
 #include "metadataChunk.h"
 #include "replayGain.h"
+#include "notify.h"
 
 #define OUTPUT_BUFFER_DC_STOP   -1
 #define OUTPUT_BUFFER_DC_SEEK   -2
@@ -45,6 +46,7 @@ typedef struct _OutputBuffer {
 	mpd_sint8 metaChunkSet[BUFFERED_METACHUNKS];
 	mpd_sint8 *volatile metaChunk;
 	volatile mpd_sint8 acceptMetadata;
+	Notify notify;
 } OutputBuffer;
 
 void initOutputBuffer(OutputBuffer * cb, char *chunks);

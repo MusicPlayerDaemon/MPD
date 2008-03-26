@@ -623,6 +623,7 @@ static void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer *
 				cb->begin = 0;
 			} else
 				cb->begin++;
+			signalNotify(&cb->notify);
 		} else if (cb->begin != end && cb->begin == next) {
 			if (doCrossFade == 1 && nextChunk >= 0) {
 				nextChunk = cb->begin + crossFadeChunks;

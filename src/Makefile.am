@@ -29,6 +29,7 @@ mpd_inputPlugins = \
 
 
 mpd_headers = \
+	notify.h \
 	ack.h \
 	audio.h \
 	audioOutput.h \
@@ -87,6 +88,7 @@ mpd_SOURCES = \
 	$(mpd_headers) \
 	$(mpd_audioOutputs) \
 	$(mpd_inputPlugins) \
+	notify.c \
 	audio.c \
 	audioOutput.c \
 	buffer2array.c \
