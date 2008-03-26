@@ -478,7 +478,6 @@ int doIOForInterfaces(void)
 	fd_set rfds;
 	fd_set wfds;
 	fd_set efds;
-	struct timeval tv, *tvp = NULL;
 	int i;
 	int selret;
 	int fdmax;
@@ -492,7 +491,7 @@ int doIOForInterfaces(void)
 
 		registered_IO_add_fds(&fdmax, &rfds, &wfds, &efds);
 
-		selret = select(fdmax + 1, &rfds, &wfds, &efds, tvp);
+		selret = select(fdmax + 1, &rfds, &wfds, &efds, NULL);
 
 		if (selret < 0 && errno == EINTR)
 			break;
@@ -525,9 +524,7 @@ int doIOForInterfaces(void)
 			}
 		}
 
-		tv.tv_sec = 0;
-		tv.tv_usec = 0;
-		tvp = &tv;
+		break;
 	}
 
 	return 1;
