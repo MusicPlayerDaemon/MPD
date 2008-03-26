@@ -468,12 +468,12 @@ static int wavpack_streamdecode(OutputBuffer *cb, DecoderControl *dc,
 			break;
 		}
 
-		wvc_url = (char *)malloc(len + 2); /* +2: 'c' and EOS */
+		wvc_url = (char *)xmalloc(len + 2); /* +2: 'c' and EOS */
 		if (wvc_url == NULL) {
 			break;
 		}
 
-		strncpy(wvc_url, dc->utf8url, len);
+		memcpy(wvc_url, dc->utf8url, len);
 		wvc_url[len] = 'c';
 		wvc_url[len + 1] = '\0';
 
