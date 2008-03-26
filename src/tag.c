@@ -466,8 +466,8 @@ MpdTag *apeDup(char *file)
 	int tagCount;
 	char *buffer = NULL;
 	char *p;
-	int tagLen;
-	int size;
+	size_t tagLen;
+	size_t size;
 	unsigned long flags;
 	int i;
 	char *key;
@@ -508,7 +508,7 @@ MpdTag *apeDup(char *file)
 	/* determine if file has an apeV2 tag */
 	if (fseek(fp, 0, SEEK_END))
 		goto fail;
-	size = ftell(fp);
+	size = (size_t)ftell(fp);
 	if (fseek(fp, size - sizeof(footer), SEEK_SET))
 		goto fail;
 	if (fread(&footer, 1, sizeof(footer), fp) != sizeof(footer))
@@ -554,7 +554,7 @@ MpdTag *apeDup(char *file)
 		tagLen--;
 
 		/* get the value */
-		if (tagLen - size < 0)
+		if (tagLen < size)
 			goto fail;
 
 		/* we only care about utf-8 text tags */

@@ -30,7 +30,7 @@ static void blockingWrite(const int fd, const char *string, size_t len)
 {
 	while (len) {
 		ssize_t ret = xwrite(fd, string, len);
-		if (ret == len)
+		if (ret == (ssize_t)len)
 			return;
 		if (ret >= 0) {
 			len -= ret;

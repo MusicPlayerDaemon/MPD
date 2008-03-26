@@ -59,26 +59,26 @@ static struct strnode *list_cache_tail;
 
 typedef struct _Interface {
 	char buffer[INTERFACE_MAX_BUFFER_LENGTH];
-	int bufferLength;
-	int bufferPos;
+	size_t bufferLength;
+	size_t bufferPos;
 	int fd;	/* file descriptor */
 	int permission;
 	time_t lastTime;
 	struct strnode *cmd_list;	/* for when in list mode */
 	struct strnode *cmd_list_tail;	/* for when in list mode */
 	int cmd_list_OK;	/* print OK after each command execution */
-	int cmd_list_size;	/* mem cmd_list consumes */
+	size_t cmd_list_size;	/* mem cmd_list consumes */
 	int cmd_list_dup;	/* has the cmd_list been copied to private space? */
 	struct sllnode *deferred_send;	/* for output if client is slow */
-	int deferred_bytes;	/* mem deferred_send consumes */
+	size_t deferred_bytes;	/* mem deferred_send consumes */
 	int expired;	/* set whether this interface should be closed on next
 			   check of old interfaces */
 	int num;	/* interface number */
 
 	char *send_buf;
-	int send_buf_used;	/* bytes used this instance */
-	int send_buf_size;	/* bytes usable this instance */
-	int send_buf_alloc;	/* bytes actually allocated */
+	size_t send_buf_used;	/* bytes used this instance */
+	size_t send_buf_size;	/* bytes usable this instance */
+	size_t send_buf_alloc;	/* bytes actually allocated */
 } Interface;
 
 static Interface *interfaces;
@@ -88,7 +88,7 @@ static void flushInterfaceBuffer(Interface * interface);
 static void printInterfaceOutBuffer(Interface * interface);
 
 #ifdef SO_SNDBUF
-static int get_default_snd_buf_size(Interface * interface)
+static size_t get_default_snd_buf_size(Interface * interface)
 {
 	int new_size;
 	socklen_t sockOptLen = sizeof(int);
@@ -99,12 +99,12 @@ static int get_default_snd_buf_size(Interface * interface)
 		return INTERFACE_DEFAULT_OUT_BUFFER_SIZE;
 	}
 	if (new_size > 0)
-		return new_size;
+		return (size_t)new_size;
 	DEBUG("sockets send buffer size is not positive\n");
 	return INTERFACE_DEFAULT_OUT_BUFFER_SIZE;
 }
 #else /* !SO_SNDBUF */
-static int get_default_snd_buf_size(Interface * interface)
+static size_t get_default_snd_buf_size(Interface * interface)
 {
 	return INTERFACE_DEFAULT_OUT_BUFFER_SIZE;
 }
@@ -112,7 +112,7 @@ static int get_default_snd_buf_size(Interface * interface)
 
 static void set_send_buf_size(Interface * interface)
 {
-	int new_size = get_default_snd_buf_size(interface);
+	size_t new_size = get_default_snd_buf_size(interface);
 	if (interface->send_buf_size != new_size) {
 		interface->send_buf_size = new_size;
 		/* don't resize to get smaller, only bigger */
@@ -313,12 +313,12 @@ static int processLineOfInput(Interface * interface)
 			if (interface->cmd_list_size >
 			    interface_max_command_list_size) {
 				ERROR("interface %i: command "
-				      "list size (%i) is "
+				      "list size (%lu) is "
 				      "larger than the max "
-				      "(%li)\n",
+				      "(%lu)\n",
 				      interface->num,
-				      interface->cmd_list_size,
-				      (long)interface_max_command_list_size);
+				      (unsigned long)interface->cmd_list_size,
+				      (unsigned long)interface_max_command_list_size);
 				closeInterface(interface);
 				ret = COMMAND_RETURN_CLOSE;
 			} else
@@ -642,14 +642,14 @@ void closeOldInterfaces(void)
 static void flushInterfaceBuffer(Interface * interface)
 {
 	struct sllnode *buf;
-	int ret = 0;
+	ssize_t ret = 0;
 
 	buf = interface->deferred_send;
 	while (buf) {
 		ret = write(interface->fd, buf->data, buf->size);
 		if (ret < 0)
 			break;
-		else if (ret < buf->size) {
+		else if ((size_t)ret < buf->size) {
 			interface->deferred_bytes -= ret;
 			buf->data = (char *)buf->data + ret;
 			buf->size -= ret;
@@ -665,8 +665,8 @@ static void flushInterfaceBuffer(Interface * interface)
 	}
 
 	if (!interface->deferred_send) {
-		DEBUG("interface %i: buffer empty %i\n", interface->num,
-		      interface->deferred_bytes);
+		DEBUG("interface %i: buffer empty %lu\n", interface->num,
+		      (unsigned long)interface->deferred_bytes);
 		assert(interface->deferred_bytes == 0);
 	} else if (ret < 0 && errno != EAGAIN && errno != EINTR) {
 		/* cause interface to close */
@@ -684,10 +684,10 @@ static void flushInterfaceBuffer(Interface * interface)
 	}
 }
 
-int interfacePrintWithFD(int fd, char *buffer, int buflen)
+int interfacePrintWithFD(int fd, char *buffer, size_t buflen)
 {
 	static int i;
-	int copylen;
+	size_t copylen;
 	Interface *interface;
 
 	assert(fd >= 0);
@@ -709,7 +709,7 @@ int interfacePrintWithFD(int fd, char *buffer, int buflen)
 	interface = interfaces + i;
 
 	while (buflen > 0 && !interface->expired) {
-		int left = interface->send_buf_size - interface->send_buf_used;
+		size_t left = interface->send_buf_size - interface->send_buf_used;
 		copylen = buflen > left ? left : buflen;
 		memcpy(interface->send_buf + interface->send_buf_used, buffer,
 		       copylen);
@@ -725,7 +725,7 @@ int interfacePrintWithFD(int fd, char *buffer, int buflen)
 
 static void printInterfaceOutBuffer(Interface * interface)
 {
-	int ret;
+	ssize_t ret;
 	struct sllnode *buf;
 
 	if (interface->fd < 0 || interface->expired ||
@@ -770,7 +770,7 @@ static void printInterfaceOutBuffer(Interface * interface)
 				interface->expired = 1;
 				return;
 			}
-		} else if (ret < interface->send_buf_used) {
+		} else if ((size_t)ret < interface->send_buf_used) {
 			interface->deferred_send =
 			    new_sllnode(interface->send_buf + ret,
 					interface->send_buf_used - ret);

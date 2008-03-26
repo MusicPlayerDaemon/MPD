@@ -359,7 +359,7 @@ static char *pcm_convertTo16bit(mpd_sint8 bits, char *inBuffer, size_t inSize,
 	char *outBuffer = NULL;
 	mpd_sint8 *in;
 	mpd_sint16 *out;
-	int i;
+	size_t i;
 
 	switch (bits) {
 	case 8:

@@ -26,7 +26,7 @@ void initInterfaces(void);
 void openAInterface(int fd, struct sockaddr *addr);
 void freeAllInterfaces(void);
 void closeOldInterfaces(void);
-int interfacePrintWithFD(int fd, char *buffer, int len);
+int interfacePrintWithFD(int fd, char *buffer, size_t len);
 
 int doIOForInterfaces(void);
 

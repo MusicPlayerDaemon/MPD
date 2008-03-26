@@ -112,10 +112,10 @@ int lsPlaylists(int fd, const char *utf8path)
 	char *actualPath = rpp2app_r(path_max_tmp,
 	                             utf8_to_fs_charset(path_max_tmp,
 				                        utf8path));
-	int actlen = strlen(actualPath) + 1;
-	int maxlen = MPD_PATH_MAX - actlen;
-	int suflen = strlen(PLAYLIST_FILE_SUFFIX) + 1;
-	int suff;
+	size_t actlen = strlen(actualPath) + 1;
+	size_t maxlen = MPD_PATH_MAX - actlen;
+	size_t suflen = strlen(PLAYLIST_FILE_SUFFIX) + 1;
+	ssize_t suff;
 
 	if (actlen > MPD_PATH_MAX - 1 || (dir = opendir(actualPath)) == NULL) {
 		return 0;
@@ -131,7 +131,7 @@ int lsPlaylists(int fd, const char *utf8path)
 		duplicated = ent->d_name;
 		if (mpd_likely(len <= maxlen) &&
 		    duplicated[0] != '.' &&
-		    (suff = strlen(duplicated) - suflen) > 0 &&
+		    (suff = (ssize_t)(strlen(duplicated) - suflen)) > 0 &&
 		    duplicated[suff] == '.' &&
 		    strcmp(duplicated + suff + 1, PLAYLIST_FILE_SUFFIX) == 0) {
 			memcpy(s + actlen, ent->d_name, len);

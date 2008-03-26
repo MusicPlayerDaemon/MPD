@@ -40,8 +40,8 @@ static char *proxyHost;
 static char *proxyPort;
 static char *proxyUser;
 static char *proxyPassword;
-static int bufferSize = HTTP_BUFFER_SIZE_DEFAULT;
-static int prebufferSize = HTTP_PREBUFFER_SIZE_DEFAULT;
+static size_t bufferSize = HTTP_BUFFER_SIZE_DEFAULT;
+static size_t prebufferSize = HTTP_PREBUFFER_SIZE_DEFAULT;
 
 typedef struct _InputStreemHTTPData {
 	char *host;
@@ -52,9 +52,9 @@ typedef struct _InputStreemHTTPData {
 	char *buffer;
 	size_t buflen;
 	int timesRedirected;
-	int icyMetaint;
+	size_t icyMetaint;
 	int prebuffer;
-	int icyOffset;
+	size_t icyOffset;
 	char *proxyAuth;
 	char *httpAuth;
     /* Number of times mpd tried to get data */
@@ -113,9 +113,9 @@ void inputStream_initHttp(void)
 	param = getConfigParam(CONF_HTTP_BUFFER_SIZE);
 
 	if (param) {
-		bufferSize = strtol(param->value, &test, 10);
+		bufferSize = strtoul(param->value, &test, 10);
 
-		if (bufferSize <= 0 || *test != '\0') {
+		if (*test != '\0') {
 			FATAL("\"%s\" specified for %s at line %i is not a "
 			      "positive integer\n",
 			      param->value, CONF_HTTP_BUFFER_SIZE, param->line);
@@ -130,7 +130,7 @@ void inputStream_initHttp(void)
 	param = getConfigParam(CONF_HTTP_PREBUFFER_SIZE);
 
 	if (param) {
-		prebufferSize = strtol(param->value, &test, 10);
+		prebufferSize = strtoul(param->value, &test, 10);
 
 		if (prebufferSize <= 0 || *test != '\0') {
 			FATAL("\"%s\" specified for %s at line %i is not a "
@@ -430,7 +430,8 @@ static int finishHTTPInit(InputStream * inStream)
 	int error;
 	socklen_t error_len = sizeof(int);
 	int ret;
-	int length;
+	size_t length;
+	ssize_t nbytes;
 	char request[2048];
 
 	tv.tv_sec = 0;
@@ -456,7 +457,7 @@ static int finishHTTPInit(InputStream * inStream)
 		goto close_err;
 
 	/* deal with ICY metadata later, for now its fucking up stuff! */
-	length = snprintf(request, sizeof(request),
+	length = (size_t)snprintf(request, sizeof(request),
 	                 "GET %s HTTP/1.1\r\n"
 	                 "Host: %s\r\n"
 	                 "Connection: close\r\n"
@@ -473,8 +474,8 @@ static int finishHTTPInit(InputStream * inStream)
 
 	if (length >= sizeof(request))
 		goto close_err;
-	ret = write(data->sock, request, length);
-	if (ret != length)
+	nbytes = write(data->sock, request, length);
+	if (nbytes < 0 || (size_t)nbytes != length)
 		goto close_err;
 
 	data->connState = HTTP_CONN_STATE_HELLO;
@@ -607,7 +608,7 @@ static int getHTTPHello(InputStream * inStream)
 			if (!inStream->size)
 				inStream->size = atol(cur + 18);
 		} else if (0 == strncasecmp(cur, "\r\nicy-metaint:", 14)) {
-			data->icyMetaint = atoi(cur + 14);
+			data->icyMetaint = strtoul(cur + 14, NULL, 0);
 		} else if (0 == strncasecmp(cur, "\r\nicy-name:", 11) ||
 			   0 == strncasecmp(cur, "\r\nice-name:", 11)) {
 			int incr = 11;
@@ -753,9 +754,9 @@ size_t inputStream_httpRead(InputStream * inStream, void *ptr, size_t size,
 			    size_t nmemb)
 {
 	InputStreamHTTPData *data = (InputStreamHTTPData *) inStream->data;
-	long tosend = 0;
-	long inlen = size * nmemb;
-	long maxToSend = data->buflen;
+	size_t tosend = 0;
+	size_t inlen = size * nmemb;
+	size_t maxToSend = data->buflen;
 
 	inputStream_httpBuffer(inStream);
 
@@ -774,10 +775,8 @@ size_t inputStream_httpRead(InputStream * inStream, void *ptr, size_t size,
 
 	if (data->icyMetaint > 0) {
 		if (data->icyOffset >= data->icyMetaint) {
-			int metalen = *(data->buffer);
+			size_t metalen = *(data->buffer);
 			metalen <<= 4;
-			if (metalen < 0)
-				metalen = 0;
 			if (metalen + 1 > data->buflen) {
 				/* damn that's some fucking big metadata! */
 				if (bufferSize < metalen + 1) {
@@ -879,7 +878,7 @@ int inputStream_httpBuffer(InputStream * inStream)
 	if (data->connState == HTTP_CONN_STATE_OPEN &&
 	    data->buflen < bufferSize - 1) {
 		readed = read(data->sock, data->buffer + data->buflen,
-			      (size_t) (bufferSize - 1 - data->buflen));
+			      bufferSize - 1 - data->buflen);
         /* If the connection is currently unavailable, or interrupted (EINTR)
          * Don't give an error, so it's retried later.
          * Max times in a row to re-try this is HTTP_MAX_TRIES

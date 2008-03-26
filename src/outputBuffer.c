@@ -66,7 +66,7 @@ void flushOutputBuffer(OutputBuffer * cb)
 
 int sendDataToOutputBuffer(OutputBuffer * cb, InputStream * inStream,
 			   DecoderControl * dc, int seekable, void *dataIn,
-			   long dataInLen, float data_time, mpd_uint16 bitRate,
+			   size_t dataInLen, float data_time, mpd_uint16 bitRate,
 			   ReplayGainInfo * replayGainInfo)
 {
 	mpd_uint16 dataToSend;
@@ -74,7 +74,7 @@ int sendDataToOutputBuffer(OutputBuffer * cb, InputStream * inStream,
 	char *data;
 	size_t datalen;
 	static char *convBuffer;
-	static long convBufferLen;
+	static size_t convBufferLen;
 
 	if (cmpAudioFormat(&(cb->audioFormat), &(dc->audioFormat)) == 0) {
 		data = dataIn;
