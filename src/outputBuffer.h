@@ -47,6 +47,8 @@ typedef struct _OutputBuffer {
 	volatile mpd_sint8 acceptMetadata;
 } OutputBuffer;
 
+void initOutputBuffer(OutputBuffer * cb, char *chunks);
+
 void clearOutputBuffer(OutputBuffer * cb);
 
 void flushOutputBuffer(OutputBuffer * cb);

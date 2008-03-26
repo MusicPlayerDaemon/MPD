@@ -30,6 +30,23 @@ static mpd_sint16 currentChunk = -1;
 static mpd_sint8 currentMetaChunk = -1;
 static mpd_sint8 sendMetaChunk;
 
+void initOutputBuffer(OutputBuffer * cb, char *chunks)
+{
+	memset(&cb->convState, 0, sizeof(ConvState));
+	cb->chunks = chunks;
+	cb->chunkSize = (mpd_uint16 *) (((char *)cb->chunks) +
+					    buffered_chunks * CHUNK_SIZE);
+	cb->bitRate = (mpd_uint16 *) (((char *)cb->chunkSize) +
+					  buffered_chunks * sizeof(mpd_sint16));
+	cb->metaChunk = (mpd_sint8 *) (((char *)cb->bitRate) +
+					   buffered_chunks *
+					   sizeof(mpd_sint16));
+	cb->times =
+	    (float *)(((char *)cb->metaChunk) +
+		      buffered_chunks * sizeof(mpd_sint8));
+	cb->acceptMetadata = 0;
+}
+
 void clearAllMetaChunkSets(OutputBuffer * cb)
 {
 	memset(cb->metaChunkSet, 0, BUFFERED_METACHUNKS);

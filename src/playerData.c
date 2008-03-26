@@ -37,7 +37,6 @@ void initPlayerData(void)
 	int crossfade = 0;
 	size_t bufferSize = DEFAULT_BUFFER_SIZE;
 	size_t allocationSize;
-	OutputBuffer *buffer;
 	ConfigParam *param;
 	size_t device_array_size = audio_device_count() * sizeof(mpd_sint8);
 
@@ -95,21 +94,9 @@ void initPlayerData(void)
 
 	playerData_pd->audioDeviceStates = (mpd_uint8 *)playerData_pd +
 	                                    allocationSize - device_array_size;
-	buffer = &(playerData_pd->buffer);
 
-	memset(&buffer->convState, 0, sizeof(ConvState));
-	buffer->chunks = ((char *)playerData_pd) + sizeof(PlayerData);
-	buffer->chunkSize = (mpd_uint16 *) (((char *)buffer->chunks) +
-					    buffered_chunks * CHUNK_SIZE);
-	buffer->bitRate = (mpd_uint16 *) (((char *)buffer->chunkSize) +
-					  buffered_chunks * sizeof(mpd_sint16));
-	buffer->metaChunk = (mpd_sint8 *) (((char *)buffer->bitRate) +
-					   buffered_chunks *
-					   sizeof(mpd_sint16));
-	buffer->times =
-	    (float *)(((char *)buffer->metaChunk) +
-		      buffered_chunks * sizeof(mpd_sint8));
-	buffer->acceptMetadata = 0;
+	initOutputBuffer(&(playerData_pd->buffer),
+			 ((char *)playerData_pd) + sizeof(PlayerData));
 
 	playerData_pd->playerControl.wait = 0;
 	playerData_pd->playerControl.stop = 0;
