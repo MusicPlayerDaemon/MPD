@@ -462,7 +462,8 @@ static void closeNextErroredInterface(void)
 		if (interfaces[i].fd >= 0) {
 			FD_ZERO(&fds);
 			FD_SET(interfaces[i].fd, &fds);
-			if (select(FD_SETSIZE, &fds, NULL, NULL, &tv) < 0) {
+			if (select(interfaces[i].fd + 1,
+			           &fds, NULL, NULL, &tv) < 0) {
 				closeInterface(&interfaces[i]);
 				return;
 			}
