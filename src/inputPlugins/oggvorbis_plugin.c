@@ -227,7 +227,6 @@ static int oggvorbis_decode(OutputBuffer * cb, DecoderControl * dc,
 	OggCallbackData data;
 	int current_section;
 	int prev_section = -1;
-	int eof = 0;
 	long ret;
 #define OGG_CHUNK_SIZE 4096
 	char chunk[OGG_CHUNK_SIZE];
@@ -278,7 +277,7 @@ static int oggvorbis_decode(OutputBuffer * cb, DecoderControl * dc,
 		dc->totalTime = 0;
 	dc->audioFormat.bits = 16;
 
-	while (!eof) {
+	while (1) {
 		if (dc->seek) {
 			if (0 == ov_time_seek_page(&vf, dc->seekWhere)) {
 				clearOutputBuffer(cb);
@@ -308,12 +307,12 @@ static int oggvorbis_decode(OutputBuffer * cb, DecoderControl * dc,
 
 		prev_section = current_section;
 
-		if (ret <= 0 && ret != OV_HOLE) {
-			eof = 1;
-			break;
+		if (ret <= 0) {
+			if (ret == OV_HOLE) /* bad packet */
+				ret = 0;
+			else /* break on EOF or other error */
+				break;
 		}
-		if (ret == OV_HOLE)
-			ret = 0;
 
 		chunkpos += ret;
 
