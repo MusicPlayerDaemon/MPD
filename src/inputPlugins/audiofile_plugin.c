@@ -67,9 +67,9 @@ static int audiofile_decode(OutputBuffer * cb, DecoderControl * dc, char *path)
 	afSetVirtualSampleFormat(af_fp, AF_DEFAULT_TRACK,
 	                         AF_SAMPFMT_TWOSCOMP, 16);
 	afGetVirtualSampleFormat(af_fp, AF_DEFAULT_TRACK, &fs, &bits);
-	dc->audioFormat.bits = bits;
-	dc->audioFormat.sampleRate = afGetRate(af_fp, AF_DEFAULT_TRACK);
-	dc->audioFormat.channels = afGetVirtualChannels(af_fp, AF_DEFAULT_TRACK);
+	dc->audioFormat.bits = (mpd_uint8)bits;
+	dc->audioFormat.sampleRate = (unsigned int)afGetRate(af_fp, AF_DEFAULT_TRACK);
+	dc->audioFormat.channels = (mpd_uint8)afGetVirtualChannels(af_fp, AF_DEFAULT_TRACK);
 	getOutputAudioFormat(&(dc->audioFormat), &(cb->audioFormat));
 
 	frame_count = afGetFrameCount(af_fp, AF_DEFAULT_TRACK);
@@ -77,7 +77,7 @@ static int audiofile_decode(OutputBuffer * cb, DecoderControl * dc, char *path)
 	dc->totalTime =
 	    ((float)frame_count / (float)dc->audioFormat.sampleRate);
 
-	bitRate = st.st_size * 8.0 / dc->totalTime / 1000.0 + 0.5;
+	bitRate = (mpd_uint16)(st.st_size * 8.0 / dc->totalTime / 1000.0 + 0.5);
 
 	if (dc->audioFormat.bits != 8 && dc->audioFormat.bits != 16) {
 		ERROR("Only 8 and 16-bit files are supported. %s is %i-bit\n",

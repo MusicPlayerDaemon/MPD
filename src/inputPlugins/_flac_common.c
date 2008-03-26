@@ -66,7 +66,7 @@ static int flacFindVorbisCommentFloat(const FLAC__StreamMetadata * block,
 					     comments[offset].entry[pos]);
 			tmp = p[len];
 			p[len] = '\0';
-			*fl = atof((char *)p);
+			*fl = (float)atof((char *)p);
 			p[len] = tmp;
 
 			return 1;
@@ -170,9 +170,9 @@ void flac_metadata_common_cb(const FLAC__StreamMetadata * block,
 
 	switch (block->type) {
 	case FLAC__METADATA_TYPE_STREAMINFO:
-		dc->audioFormat.bits = si->bits_per_sample;
+		dc->audioFormat.bits = (mpd_sint8)si->bits_per_sample;
 		dc->audioFormat.sampleRate = si->sample_rate;
-		dc->audioFormat.channels = si->channels;
+		dc->audioFormat.channels = (mpd_sint8)si->channels;
 		dc->totalTime = ((float)si->total_samples) / (si->sample_rate);
 		getOutputAudioFormat(&(dc->audioFormat),
 				     &(data->cb->audioFormat));

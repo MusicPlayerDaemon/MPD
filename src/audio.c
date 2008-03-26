@@ -197,7 +197,7 @@ int parseAudioConfig(AudioFormat * audioFormat, char *conf)
 		return -1;
 	}
 
-	audioFormat->bits = strtol(test + 1, &test, 10);
+	audioFormat->bits = (mpd_sint8)strtol(test + 1, &test, 10);
 
 	if (*test != ':') {
 		ERROR("error parsing audio output format: %s\n", conf);
@@ -213,7 +213,7 @@ int parseAudioConfig(AudioFormat * audioFormat, char *conf)
 		return -1;
 	}
 
-	audioFormat->channels = strtol(test + 1, &test, 10);
+	audioFormat->channels = (mpd_sint8)strtol(test + 1, &test, 10);
 
 	if (*test != '\0') {
 		ERROR("error parsing audio output format: %s\n", conf);
@@ -428,7 +428,7 @@ void sendMetadataToAudioDevice(MpdTag * tag)
 
 int enableAudioDevice(int fd, int device)
 {
-	if (device < 0 || device >= audioOutputArraySize) {
+	if (device >= audioOutputArraySize) {
 		commandError(fd, ACK_ERROR_ARG, "audio output device id %i "
 			     "doesn't exist\n", device);
 		return -1;
@@ -442,7 +442,7 @@ int enableAudioDevice(int fd, int device)
 
 int disableAudioDevice(int fd, int device)
 {
-	if (device < 0 || device >= audioOutputArraySize) {
+	if (device >= audioOutputArraySize) {
 		commandError(fd, ACK_ERROR_ARG, "audio output device id %i "
 			     "doesn't exist\n", device);
 		return -1;
