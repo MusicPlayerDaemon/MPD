@@ -439,6 +439,8 @@ int playerSeek(int fd, Song * song, float seek_time)
 	PlayerControl *pc = &(getPlayerData()->playerControl);
 	char path_max_tmp[MPD_PATH_MAX];
 
+	assert(song != NULL);
+
 	if (pc->state == PLAYER_STATE_STOP) {
 		commandError(fd, ACK_ERROR_PLAYER_SYNC,
 			     "player not currently playing");
