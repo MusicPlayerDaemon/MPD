@@ -57,8 +57,8 @@ typedef struct _InputStreemHTTPData {
 	size_t icyOffset;
 	char *proxyAuth;
 	char *httpAuth;
-    /* Number of times mpd tried to get data */
-    int tries;
+	/* Number of times mpd tried to get data */
+	int tries;
 } InputStreamHTTPData;
 
 void inputStream_initHttp(void)
@@ -113,37 +113,34 @@ void inputStream_initHttp(void)
 	param = getConfigParam(CONF_HTTP_BUFFER_SIZE);
 
 	if (param) {
-		bufferSize = strtoul(param->value, &test, 10);
-
-		if (*test != '\0') {
+		long tmp = strtol(param->value, &test, 10);
+		if (*test != '\0' || tmp <= 0) {
 			FATAL("\"%s\" specified for %s at line %i is not a "
 			      "positive integer\n",
 			      param->value, CONF_HTTP_BUFFER_SIZE, param->line);
 		}
 
-		bufferSize *= 1024;
-
-		if (prebufferSize > bufferSize)
-			prebufferSize = bufferSize;
+		bufferSize = tmp * 1024;
 	}
 
 	param = getConfigParam(CONF_HTTP_PREBUFFER_SIZE);
 
 	if (param) {
-		prebufferSize = strtoul(param->value, &test, 10);
-
-		if (prebufferSize <= 0 || *test != '\0') {
+		long tmp = strtol(param->value, &test, 10);
+		if (*test != '\0' || tmp <= 0) {
 			FATAL("\"%s\" specified for %s at line %i is not a "
 			      "positive integer\n",
 			      param->value, CONF_HTTP_PREBUFFER_SIZE,
 			      param->line);
 		}
 
-		prebufferSize *= 1024;
+		prebufferSize = tmp * 1024;
 	}
 
 	if (prebufferSize > bufferSize)
 		prebufferSize = bufferSize;
+	assert(bufferSize > 0 && "http bufferSize too small");
+	assert(prebufferSize > 0 && "http prebufferSize too small");
 }
 
 /* base64 code taken from xmms */
@@ -157,7 +154,7 @@ static char *base64Dup(char *s)
 	char *ret = xcalloc(BASE64_LENGTH(len) + 1, 1);
 	unsigned char *p = (unsigned char *)ret;
 
-	char tbl[64] = {
+	static const char tbl[64] = {
 		'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
 		'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
 		'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
@@ -240,7 +237,7 @@ static InputStreamHTTPData *newInputStreamHTTPData(void)
 	ret->prebuffer = 0;
 	ret->icyOffset = 0;
 	ret->buffer = xmalloc(bufferSize);
-    ret->tries = 0;
+	ret->tries = 0;
 	return ret;
 }
 
@@ -776,6 +773,9 @@ size_t inputStream_httpRead(InputStream * inStream, void *ptr, size_t size,
 	if (data->icyMetaint > 0) {
 		if (data->icyOffset >= data->icyMetaint) {
 			size_t metalen = *(data->buffer);
+			/* maybe we're in some strange universe where a byte
+			 * can hold more than 255 ... */
+			assert(metalen <= 255 && "metalen greater than 255");
 			metalen <<= 4;
 			if (metalen + 1 > data->buflen) {
 				/* damn that's some fucking big metadata! */
@@ -796,6 +796,8 @@ size_t inputStream_httpRead(InputStream * inStream, void *ptr, size_t size,
 				data->buflen);
 			data->icyOffset = 0;
 		}
+		assert(data->icyOffset <= data->icyMetaint &&
+		       "icyOffset bigger than icyMetaint!");
 		maxToSend = data->icyMetaint - data->icyOffset;
 		maxToSend = maxToSend > data->buflen ? data->buflen : maxToSend;
 	}
@@ -879,25 +881,25 @@ int inputStream_httpBuffer(InputStream * inStream)
 	    data->buflen < bufferSize - 1) {
 		readed = read(data->sock, data->buffer + data->buflen,
 			      bufferSize - 1 - data->buflen);
-        /* If the connection is currently unavailable, or interrupted (EINTR)
-         * Don't give an error, so it's retried later.
-         * Max times in a row to re-try this is HTTP_MAX_TRIES
-         */
-		if (readed < 0 && (errno == EAGAIN || errno == EINTR) && data->tries < HTTP_MAX_TRIES) {
-            data->tries++;
-            DEBUG(__FILE__": Resource unavailable, trying %i times again\n", HTTP_MAX_TRIES-data->tries);
-            readed = 0;
+		/*
+		 * If the connection is currently unavailable, or
+		 * interrupted (EINTR)
+		 * Don't give an error, so it's retried later.
+		 * Max times in a row to retry this is HTTP_MAX_TRIES
+		 */
+		if (readed < 0 &&
+		    (errno == EAGAIN || errno == EINTR) &&
+		    data->tries < HTTP_MAX_TRIES) {
+			data->tries++;
+			DEBUG(__FILE__": Resource unavailable, trying %i "
+			      "times again\n", HTTP_MAX_TRIES - data->tries);
+			readed = 0;
 		} else if (readed <= 0) {
-			close(data->sock);
-            if(errno)
-                DEBUG(__FILE__": Closing connection with error: '%s'\n", strerror(errno));
+			while (close(data->sock) && errno == EINTR);
 			data->connState = HTTP_CONN_STATE_CLOSED;
 			readed = 0;
-		}
-        else{
-            /* Reset the tries back to 0, because we managed to read data */
-            data->tries = 0;
-        }
+		} else /* readed > 0, reset */
+			data->tries = 0;
 
 		data->buflen += readed;
 	}

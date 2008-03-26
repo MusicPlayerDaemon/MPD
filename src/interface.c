@@ -318,7 +318,8 @@ static int processLineOfInput(Interface * interface)
 				      "(%lu)\n",
 				      interface->num,
 				      (unsigned long)interface->cmd_list_size,
-				      (unsigned long)interface_max_command_list_size);
+				      (unsigned long)
+				      interface_max_command_list_size);
 				closeInterface(interface);
 				ret = COMMAND_RETURN_CLOSE;
 			} else
@@ -362,7 +363,7 @@ static int processBytesRead(Interface * interface, int bytesRead)
 		buf_tail++;
 		if (*buf_tail == '\n') {
 			*buf_tail = '\0';
-			if (interface->bufferLength - interface->bufferPos > 1) {
+			if (interface->bufferLength > interface->bufferPos) {
 				if (*(buf_tail - 1) == '\r')
 					*(buf_tail - 1) = '\0';
 			}
@@ -382,6 +383,8 @@ static int processBytesRead(Interface * interface, int bytesRead)
 			    interface->cmd_list &&
 			    !interface->cmd_list_dup)
 				cmd_list_clone(interface);
+			assert(interface->bufferLength >= interface->bufferPos
+			       && "bufferLength >= bufferPos");
 			interface->bufferLength -= interface->bufferPos;
 			memmove(interface->buffer,
 				interface->buffer + interface->bufferPos,
@@ -563,25 +566,23 @@ void initInterfaces(void)
 	param = getConfigParam(CONF_MAX_COMMAND_LIST_SIZE);
 
 	if (param) {
-		interface_max_command_list_size = strtol(param->value,
-							 &test, 10);
-		if (*test != '\0' || interface_max_command_list_size <= 0) {
+		long tmp = strtol(param->value, &test, 10);
+		if (*test != '\0' || tmp <= 0) {
 			FATAL("max command list size \"%s\" is not a positive "
 			      "integer, line %i\n", param->value, param->line);
 		}
-		interface_max_command_list_size *= 1024;
+		interface_max_command_list_size = tmp * 1024;
 	}
 
 	param = getConfigParam(CONF_MAX_OUTPUT_BUFFER_SIZE);
 
 	if (param) {
-		interface_max_output_buffer_size = strtol(param->value,
-		                                          &test, 10);
-		if (*test != '\0' || interface_max_output_buffer_size <= 0) {
+		long tmp = strtol(param->value, &test, 10);
+		if (*test != '\0' || tmp <= 0) {
 			FATAL("max output buffer size \"%s\" is not a positive "
 			      "integer, line %i\n", param->value, param->line);
 		}
-		interface_max_output_buffer_size *= 1024;
+		interface_max_output_buffer_size = tmp * 1024;
 	}
 
 	interfaces = xmalloc(sizeof(Interface) * interface_max_connections);
@@ -650,13 +651,16 @@ static void flushInterfaceBuffer(Interface * interface)
 		if (ret < 0)
 			break;
 		else if ((size_t)ret < buf->size) {
+			assert(interface->deferred_bytes >= ret);
 			interface->deferred_bytes -= ret;
 			buf->data = (char *)buf->data + ret;
 			buf->size -= ret;
 		} else {
 			struct sllnode *tmp = buf;
-			interface->deferred_bytes -= (buf->size +
-						      sizeof(struct sllnode));
+			size_t decr = (buf->size + sizeof(struct sllnode));
+
+			assert(interface->deferred_bytes >= decr);
+			interface->deferred_bytes -= decr;
 			buf = buf->next;
 			free(tmp);
 			interface->deferred_send = buf;
@@ -709,7 +713,11 @@ int interfacePrintWithFD(int fd, char *buffer, size_t buflen)
 	interface = interfaces + i;
 
 	while (buflen > 0 && !interface->expired) {
-		size_t left = interface->send_buf_size - interface->send_buf_used;
+		size_t left;
+
+		assert(interface->send_buf_size >= interface->send_buf_used);
+		left = interface->send_buf_size - interface->send_buf_used;
+
 		copylen = buflen > left ? left : buflen;
 		memcpy(interface->send_buf + interface->send_buf_used, buffer,
 		       copylen);
@@ -737,11 +745,11 @@ static void printInterfaceOutBuffer(Interface * interface)
 		                             + interface->send_buf_used;
 		if (interface->deferred_bytes >
 		    interface_max_output_buffer_size) {
-			ERROR("interface %i: output buffer size (%li) is "
-			      "larger than the max (%li)\n",
+			ERROR("interface %i: output buffer size (%lu) is "
+			      "larger than the max (%lu)\n",
 			      interface->num,
-			      (long)interface->deferred_bytes,
-			      (long)interface_max_output_buffer_size);
+			      (unsigned long)interface->deferred_bytes,
+			      (unsigned long)interface_max_output_buffer_size);
 			/* cause interface to close */
 			interface->expired = 1;
 			do {
