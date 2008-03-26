@@ -65,6 +65,7 @@ static void stopDecode(DecoderControl * dc)
 	if (decode_pid > 0 && (dc->start || dc->state != DECODE_STATE_STOP)) {
 		dc->stop = 1;
 		kill(decode_pid, SIGCONT);
+		signalNotify(&(getPlayerData()->buffer.notify));
 		while (decode_pid > 0 && dc->stop)
 			my_usleep(10000);
 	}
@@ -202,6 +203,7 @@ static int decodeSeek(PlayerControl * pc, DecoderControl * dc,
 			dc->seekError = 0;
 			dc->seek = 1;
 			kill(decode_pid, SIGCONT);
+			signalNotify(&(getPlayerData()->buffer.notify));
 			while (decode_pid > 0 && dc->seek)
 				my_usleep(10000);
 			if (!dc->seekError) {
