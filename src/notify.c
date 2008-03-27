@@ -40,7 +40,7 @@ void waitNotify(Notify *notify)
 
 void signalNotify(Notify *notify)
 {
-	char buffer;
+	char buffer = 0;
 
 	if (write(notify->fds[1], &buffer, sizeof(buffer)) < 0 &&
 	    errno != EAGAIN && errno != EINTR)
