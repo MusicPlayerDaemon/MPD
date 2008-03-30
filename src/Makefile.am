@@ -57,6 +57,7 @@ mpd_headers = \
 	myfprintf.h \
 	normalize.h \
 	compress.h \
+	os_compat.h \
 	outputBuffer.h \
 	path.h \
 	pcm_utils.h \
