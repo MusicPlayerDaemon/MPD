@@ -94,7 +94,7 @@ int sendDataToOutputBuffer(OutputBuffer * cb,
 			   int seekable,
 			   void *data,
 			   size_t datalen,
-			   float time,
+			   float data_time,
 			   mpd_uint16 bitRate, ReplayGainInfo * replayGainInfo);
 
 #endif

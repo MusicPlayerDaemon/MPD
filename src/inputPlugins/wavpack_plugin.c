@@ -133,7 +133,7 @@ static void wavpack_decode(OutputBuffer *cb, DecoderControl *dc,
 {
 	void (*format_samples)(int Bps, void *buffer, uint32_t samcnt);
 	char chunk[CHUNK_SIZE];
-	float time;
+	float file_time;
 	int samplesreq, samplesgot;
 	int allsamples;
 	int position, outsamplesize;
@@ -204,14 +204,16 @@ static void wavpack_decode(OutputBuffer *cb, DecoderControl *dc,
 			int bitrate = (int)(WavpackGetInstantBitrate(wpc) /
 			              1000 + 0.5);
 			position += samplesgot;
-			time = (float)position / dc->audioFormat.sampleRate;
+			file_time = (float)position /
+			            dc->audioFormat.sampleRate;
 
 			format_samples(Bps, chunk,
 			               samplesgot * dc->audioFormat.channels);
 
 			sendDataToOutputBuffer(cb, NULL, dc, 0, chunk,
 			                       samplesgot * outsamplesize,
-			                       time, bitrate, replayGainInfo);
+			                       file_time, bitrate,
+					       replayGainInfo);
 		}
 	} while (samplesgot == samplesreq);
 

@@ -401,7 +401,7 @@ static int playChunk(PlayerControl * pc, OutputBufferChunk * chunk,
 
 static void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb)
 {
-	int pause = 0;
+	int do_pause = 0;
 	int buffering = 1;
 	unsigned int bbp = buffered_before_play;
 	/** cross fading enabled for the current song? 0=must check;
@@ -428,7 +428,7 @@ static void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer *
 
 	while (1) {
 		processDecodeInput(pc, dc, cb,
-				   &pause, &bbp, &doCrossFade,
+				   &do_pause, &bbp, &doCrossFade,
 				   &decodeWaitedOn, &next);
 		if (pc->stop) {
 			dropBufferedAudio();
@@ -461,7 +461,7 @@ static void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer *
 				} else {
 					player_wakeup_decoder();
 				}
-				if (pause) {
+				if (do_pause) {
 					dropBufferedAudio();
 					closeAudioDevice();
 				}
@@ -519,7 +519,7 @@ static void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer *
 		   race conditions and weirdness */
 		end = cb->end;
 
-		if (pause)
+		if (do_pause)
 			player_sleep();
 		else if (!outputBufferEmpty(cb) && cb->begin != next) {
 			OutputBufferChunk *beginChunk =

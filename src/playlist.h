@@ -124,9 +124,9 @@ unsigned long getPlaylistVersion(void);
 
 void playPlaylistIfPlayerStopped(void);
 
-int seekSongInPlaylist(int fd, int song, float time);
+int seekSongInPlaylist(int fd, int song, float seek_time);
 
-int seekSongInPlaylistById(int fd, int id, float time);
+int seekSongInPlaylistById(int fd, int id, float seek_time);
 
 void playlistVersionChange(void);
 

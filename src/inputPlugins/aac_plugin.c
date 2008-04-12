@@ -273,18 +273,18 @@ static float getAacFloatTotalTime(char *file)
 
 static int getAacTotalTime(char *file)
 {
-	int time = -1;
+	int file_time = -1;
 	float length;
 
 	if ((length = getAacFloatTotalTime(file)) >= 0)
-		time = length + 0.5;
+		file_time = length + 0.5;
 
-	return time;
+	return file_time;
 }
 
 static int aac_decode(OutputBuffer * cb, DecoderControl * dc, char *path)
 {
-	float time;
+	float file_time;
 	float totalTime;
 	faacDecHandle decoder;
 	faacDecFrameInfo frameInfo;
@@ -343,7 +343,7 @@ static int aac_decode(OutputBuffer * cb, DecoderControl * dc, char *path)
 
 	dc->totalTime = totalTime;
 
-	time = 0.0;
+	file_time = 0.0;
 
 	advanceAacBuffer(&b, bread);
 
@@ -388,7 +388,7 @@ static int aac_decode(OutputBuffer * cb, DecoderControl * dc, char *path)
 			bitRate = frameInfo.bytesconsumed * 8.0 *
 			    frameInfo.channels * sampleRate /
 			    frameInfo.samples / 1000 + 0.5;
-			time +=
+			file_time +=
 			    (float)(frameInfo.samples) / frameInfo.channels /
 			    sampleRate;
 		}
@@ -396,7 +396,8 @@ static int aac_decode(OutputBuffer * cb, DecoderControl * dc, char *path)
 		sampleBufferLen = sampleCount * 2;
 
 		sendDataToOutputBuffer(cb, NULL, dc, 0, sampleBuffer,
-				       sampleBufferLen, time, bitRate, NULL);
+				       sampleBufferLen, file_time,
+				       bitRate, NULL);
 		if (dc->seek) {
 			dc->seekError = 1;
 			dc->seek = 0;
@@ -428,14 +429,12 @@ static int aac_decode(OutputBuffer * cb, DecoderControl * dc, char *path)
 static MpdTag *aacTagDup(char *file)
 {
 	MpdTag *ret = NULL;
-	int time;
+	int file_time = getAacTotalTime(file);
 
-	time = getAacTotalTime(file);
-
-	if (time >= 0) {
+	if (file_time >= 0) {
 		if ((ret = id3Dup(file)) == NULL)
 			ret = newMpdTag();
-		ret->time = time;
+		ret->time = file_time;
 	} else {
 		DEBUG("aacTagDup: Failed to get total song time from: %s\n",
 		      file);

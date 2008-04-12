@@ -90,7 +90,7 @@ static int mp4_decode(OutputBuffer * cb, DecoderControl * dc,
 	mp4ff_t *mp4fh;
 	mp4ff_callback_t *mp4cb;
 	int32_t track;
-	float time;
+	float file_time;
 	int32_t scale;
 	faacDecHandle decoder;
 	faacDecFrameInfo frameInfo;
@@ -163,7 +163,7 @@ static int mp4_decode(OutputBuffer * cb, DecoderControl * dc,
 
 	dc->audioFormat.sampleRate = sampleRate;
 	dc->audioFormat.channels = channels;
-	time = mp4ff_get_track_duration_use_offsets(mp4fh, track);
+	file_time = mp4ff_get_track_duration_use_offsets(mp4fh, track);
 	scale = mp4ff_time_scale(mp4fh, track);
 
 	if (mp4Buffer)
@@ -176,11 +176,11 @@ static int mp4_decode(OutputBuffer * cb, DecoderControl * dc,
 		free(mp4cb);
 		return -1;
 	}
-	dc->totalTime = ((float)time) / scale;
+	dc->totalTime = ((float)file_time) / scale;
 
 	numSamples = mp4ff_num_samples(mp4fh, track);
 
-	time = 0.0;
+	file_time = 0.0;
 
 	seekTable = xmalloc(sizeof(float) * numSamples);
 
@@ -194,14 +194,14 @@ static int mp4_decode(OutputBuffer * cb, DecoderControl * dc,
 			while (seekTable[i] < dc->seekWhere)
 				i++;
 			sampleId = i - 1;
-			time = seekTable[sampleId];
+			file_time = seekTable[sampleId];
 		}
 
 		dur = mp4ff_get_sample_duration(mp4fh, track, sampleId);
 		offset = mp4ff_get_sample_offset(mp4fh, track, sampleId);
 
 		if (sampleId > seekTableEnd) {
-			seekTable[sampleId] = time;
+			seekTable[sampleId] = file_time;
 			seekTableEnd = sampleId;
 		}
 
@@ -211,9 +211,9 @@ static int mp4_decode(OutputBuffer * cb, DecoderControl * dc,
 			dur = 0;
 		else
 			dur -= offset;
-		time += ((float)dur) / scale;
+		file_time += ((float)dur) / scale;
 
-		if (seeking && time > dc->seekWhere)
+		if (seeking && file_time > dc->seekWhere)
 			seekPositionFound = 1;
 
 		if (seeking && seekPositionFound) {
@@ -279,7 +279,8 @@ static int mp4_decode(OutputBuffer * cb, DecoderControl * dc,
 		sampleBuffer += offset * channels * 2;
 
 		sendDataToOutputBuffer(cb, inStream, dc, 1, sampleBuffer,
-				       sampleBufferLen, time, bitRate, NULL);
+				       sampleBufferLen, file_time,
+				       bitRate, NULL);
 		if (dc->stop) {
 			eof = 1;
 			break;
@@ -311,7 +312,7 @@ static MpdTag *mp4DataDup(char *file, int *mp4MetadataFound)
 	mp4ff_t *mp4fh;
 	mp4ff_callback_t *cb;
 	int32_t track;
-	int32_t time;
+	int32_t file_time;
 	int32_t scale;
 	int i;
 
@@ -343,7 +344,7 @@ static MpdTag *mp4DataDup(char *file, int *mp4MetadataFound)
 	}
 
 	ret = newMpdTag();
-	time = mp4ff_get_track_duration_use_offsets(mp4fh, track);
+	file_time = mp4ff_get_track_duration_use_offsets(mp4fh, track);
 	scale = mp4ff_time_scale(mp4fh, track);
 	if (scale < 0) {
 		mp4ff_close(mp4fh);
@@ -352,7 +353,7 @@ static MpdTag *mp4DataDup(char *file, int *mp4MetadataFound)
 		freeMpdTag(ret);
 		return NULL;
 	}
-	ret->time = ((float)time) / scale + 0.5;
+	ret->time = ((float)file_time) / scale + 0.5;
 
 	for (i = 0; i < mp4ff_meta_get_num_items(mp4fh); i++) {
 		char *item;

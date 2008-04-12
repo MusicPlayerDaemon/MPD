@@ -88,7 +88,7 @@ void player_sleep(void);
 
 int playerPlay(int fd, Song * song);
 
-int playerSetPause(int fd, int pause);
+int playerSetPause(int fd, int pause_flag);
 
 int playerPause(int fd);
 
@@ -122,7 +122,7 @@ void playerQueueLock(void);
 
 void playerQueueUnlock(void);
 
-int playerSeek(int fd, Song * song, float time);
+int playerSeek(int fd, Song * song, float seek_time);
 
 void setPlayerCrossFade(float crossFadeInSeconds);
 
