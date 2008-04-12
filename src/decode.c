@@ -138,7 +138,6 @@ static int calculateCrossFadeChunks(PlayerControl * pc, AudioFormat * af)
 static int waitOnDecode(PlayerControl * pc, DecoderControl * dc,
 			OutputBuffer * cb, int *decodeWaitedOn)
 {
-	MpdTag *tag = NULL;
 	pathcpy_trunc(pc->currentUrl, pc->utf8url);
 
 	while (dc->start)
@@ -149,11 +148,6 @@ static int waitOnDecode(PlayerControl * pc, DecoderControl * dc,
 		pc->error = PLAYER_ERROR_FILE;
 		quitDecode(pc, dc);
 		return -1;
-	}
-
-	if ((tag = metadataChunkToMpdTagDup(&(pc->fileMetadataChunk)))) {
-		sendMetadataToAudioDevice(tag);
-		freeMpdTag(tag);
 	}
 
 	pc->totalTime = pc->fileTime;
@@ -267,8 +261,6 @@ static void decodeStart(PlayerControl * pc, OutputBuffer * cb,
 		rmp2amp_r(path_max_tmp,
 		          utf8_to_fs_charset(path_max_tmp, pc->utf8url));
 
-	copyMpdTagToOutputBuffer(cb, NULL);
-
 	pathcpy_trunc(dc->utf8url, pc->utf8url);
 
 	if (openInputStream(&inStream, path_max_tmp) < 0) {
@@ -294,7 +286,6 @@ static void decodeStart(PlayerControl * pc, OutputBuffer * cb,
 	ret = DECODE_ERROR_UNKTYPE;
 	if (isRemoteUrl(dc->utf8url)) {
 		unsigned int next = 0;
-		cb->acceptMetadata = 1;
 
 		/* first we try mime types: */
 		while (ret && (plugin = getInputPluginFromMimeType(inStream.mime, next++))) {
@@ -340,7 +331,6 @@ static void decodeStart(PlayerControl * pc, OutputBuffer * cb,
 	} else {
 		unsigned int next = 0;
 		const char *s = getSuffix(dc->utf8url);
-		cb->acceptMetadata = 0;
 		while (ret && (plugin = getInputPluginFromSuffix(s, next++))) {
 			if (!plugin->streamTypes & INPUT_PLUGIN_STREAM_FILE)
 				continue;
@@ -408,53 +398,14 @@ void decoderInit(void)
 		FATAL("Failed to spawn decoder task: %s\n", strerror(errno));
 }
 
-static void handleMetadata(OutputBuffer * cb, PlayerControl * pc, int *previous,
-			   int *currentChunkSent, MetadataChunk * currentChunk)
-{
-	if (cb->begin != cb->end) {
-		int meta = cb->metaChunk[cb->begin];
-		if (meta != *previous) {
-			DEBUG("player: metadata change\n");
-			if (meta >= 0 && cb->metaChunkSet[meta]) {
-				DEBUG("player: new metadata from decoder!\n");
-				memcpy(currentChunk,
-				       cb->metadataChunks + meta,
-				       sizeof(MetadataChunk));
-				*currentChunkSent = 0;
-				cb->metaChunkSet[meta] = 0;
-			}
-		}
-		*previous = meta;
-	}
-	if (!(*currentChunkSent) && pc->metadataState ==
-	    PLAYER_METADATA_STATE_WRITE) {
-		MpdTag *tag = NULL;
-
-		*currentChunkSent = 1;
-
-		if ((tag = metadataChunkToMpdTagDup(currentChunk))) {
-			sendMetadataToAudioDevice(tag);
-			freeMpdTag(tag);
-		}
-
-		memcpy(&(pc->metadataChunk), currentChunk,
-		       sizeof(MetadataChunk));
-		pc->metadataState = PLAYER_METADATA_STATE_READ;
-		kill(getppid(), SIGUSR1);
-	}
-}
-
 static void advanceOutputBufferTo(OutputBuffer * cb, PlayerControl * pc,
-				  int *previous, int *currentChunkSent,
-				  MetadataChunk * currentChunk, int to)
+				  int *currentChunkSent, int to)
 {
 	while (cb->begin != to) {
-		handleMetadata(cb, pc, previous, currentChunkSent,
-			       currentChunk);
-		if ((unsigned)cb->begin + 1 >= buffered_chunks) {
+		if ((unsigned)cb->begin + 1 >= buffered_chunks)
 			cb->begin = 0;
-		}
-		else cb->begin++;
+		else
+			cb->begin++;
 	}
 }
 
@@ -471,8 +422,6 @@ static void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer *
 	int decodeWaitedOn = 0;
 	static const char silence[CHUNK_SIZE];
 	double sizeToTime = 0.0;
-	int previousMetadataChunk = -1;
-	MetadataChunk currentMetadataChunk;
 	int currentChunkSent = 1;
 	unsigned int end;
 	int next = -1;
@@ -495,8 +444,6 @@ static void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer *
 	while (!quit) {
 		processDecodeInput();
 		handleDecodeStart();
-		handleMetadata(cb, pc, &previousMetadataChunk,
-			       &currentChunkSent, &currentMetadataChunk);
 		if (dc->state == DECODE_STATE_STOP &&
 		    pc->queueState == PLAYER_QUEUE_FULL &&
 		    pc->queueLockState == PLAYER_QUEUE_UNLOCKED) {
@@ -599,9 +546,7 @@ static void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer *
 						nextChunk -= buffered_chunks;
 					}
 					advanceOutputBufferTo(cb, pc,
-							      &previousMetadataChunk,
 							      &currentChunkSent,
-							      &currentMetadataChunk,
 							      nextChunk);
 				}
 			}
@@ -651,7 +596,6 @@ void decode(void)
 
 	cb = &(getPlayerData()->buffer);
 
-	clearAllMetaChunkSets(cb);
 	cb->begin = 0;
 	cb->end = 0;
 	pc = &(getPlayerData()->playerControl);

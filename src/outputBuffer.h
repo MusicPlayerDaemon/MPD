@@ -24,13 +24,10 @@
 #include "decode.h"
 #include "audio.h"
 #include "inputStream.h"
-#include "metadataChunk.h"
 #include "replayGain.h"
 
 #define OUTPUT_BUFFER_DC_STOP   -1
 #define OUTPUT_BUFFER_DC_SEEK   -2
-
-#define BUFFERED_METACHUNKS	25
 
 typedef struct _OutputBuffer {
 	char *volatile chunks;
@@ -41,10 +38,6 @@ typedef struct _OutputBuffer {
 	mpd_uint16 volatile end;
 	AudioFormat audioFormat;
 	ConvState convState;
-	MetadataChunk metadataChunks[BUFFERED_METACHUNKS];
-	mpd_sint8 metaChunkSet[BUFFERED_METACHUNKS];
-	mpd_sint8 *volatile metaChunk;
-	volatile mpd_sint8 acceptMetadata;
 } OutputBuffer;
 
 void initOutputBuffer(OutputBuffer * cb, char *chunks);
@@ -63,9 +56,5 @@ int sendDataToOutputBuffer(OutputBuffer * cb,
 			   size_t datalen,
 			   float time,
 			   mpd_uint16 bitRate, ReplayGainInfo * replayGainInfo);
-
-int copyMpdTagToOutputBuffer(OutputBuffer * cb, MpdTag * tag);
-
-void clearAllMetaChunkSets(OutputBuffer * cb);
 
 #endif

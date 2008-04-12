@@ -24,7 +24,6 @@
 #include "decode.h"
 #include "mpd_types.h"
 #include "song.h"
-#include "metadataChunk.h"
 #include "os_compat.h"
 
 #define PLAYER_STATE_STOP	0
@@ -50,9 +49,6 @@
 
 #define PLAYER_QUEUE_UNLOCKED	0
 #define PLAYER_QUEUE_LOCKED	1
-
-#define PLAYER_METADATA_STATE_READ      1
-#define PLAYER_METADATA_STATE_WRITE     2
 
 typedef struct _PlayerControl {
 	volatile mpd_sint8 stop;
@@ -80,9 +76,6 @@ typedef struct _PlayerControl {
 	volatile float crossFade;
 	volatile mpd_uint16 softwareVolume;
 	volatile double totalPlayTime;
-	volatile mpd_sint8 metadataState;
-	MetadataChunk metadataChunk;
-	MetadataChunk fileMetadataChunk;
 } PlayerControl;
 
 void wakeup_main_task(void);

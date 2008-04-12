@@ -78,7 +78,6 @@ void initPlayerData(void)
 	allocationSize += buffered_chunks * sizeof(float);	/*for times */
 	allocationSize += buffered_chunks * sizeof(mpd_sint16);	/*for chunkSize */
 	allocationSize += buffered_chunks * sizeof(mpd_sint16);	/*for bitRate */
-	allocationSize += buffered_chunks * sizeof(mpd_sint8);	/*for metaChunk */
 	allocationSize += sizeof(PlayerData);	/*for playerData struct */
 
 	/* for audioDeviceStates[] */
@@ -114,8 +113,6 @@ void initPlayerData(void)
 	playerData_pd->playerControl.crossFade = crossfade;
 	playerData_pd->playerControl.softwareVolume = 1000;
 	playerData_pd->playerControl.totalPlayTime = 0;
-	playerData_pd->playerControl.metadataState =
-	    PLAYER_METADATA_STATE_WRITE;
 
 	playerData_pd->decoderControl.stop = 0;
 	playerData_pd->decoderControl.start = 0;

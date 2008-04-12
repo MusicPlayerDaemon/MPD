@@ -893,7 +893,6 @@ static int mp3Read(mp3DecodeData * data, OutputBuffer * cb, DecoderControl * dc,
 					data->inStream->metaTitle);
 			free(data->inStream->metaTitle);
 			data->inStream->metaTitle = NULL;
-			copyMpdTagToOutputBuffer(cb, tag);
 			freeMpdTag(tag);
 		}
 
@@ -1048,21 +1047,18 @@ static int mp3_decode(OutputBuffer * cb, DecoderControl * dc,
 		if (inStream->metaName) {
 			addItemToMpdTag(tag, TAG_ITEM_NAME, inStream->metaName);
 		}
-		copyMpdTagToOutputBuffer(cb, tag);
 		freeMpdTag(tag);
 	} else if (tag) {
 		if (inStream->metaName) {
 			clearItemsFromMpdTag(tag, TAG_ITEM_NAME);
 			addItemToMpdTag(tag, TAG_ITEM_NAME, inStream->metaName);
 		}
-		copyMpdTagToOutputBuffer(cb, tag);
 		freeMpdTag(tag);
 	} else if (inStream->metaName) {
 		tag = newMpdTag();
 		if (inStream->metaName) {
 			addItemToMpdTag(tag, TAG_ITEM_NAME, inStream->metaName);
 		}
-		copyMpdTagToOutputBuffer(cb, tag);
 		freeMpdTag(tag);
 	}
 

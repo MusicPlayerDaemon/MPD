@@ -27,8 +27,6 @@
 #include "os_compat.h"
 
 static mpd_sint16 currentChunk = -1;
-static mpd_sint8 currentMetaChunk = -1;
-static mpd_sint8 sendMetaChunk;
 
 void initOutputBuffer(OutputBuffer * cb, char *chunks)
 {
@@ -38,35 +36,14 @@ void initOutputBuffer(OutputBuffer * cb, char *chunks)
 					    buffered_chunks * CHUNK_SIZE);
 	cb->bitRate = (mpd_uint16 *) (((char *)cb->chunkSize) +
 					  buffered_chunks * sizeof(mpd_sint16));
-	cb->metaChunk = (mpd_sint8 *) (((char *)cb->bitRate) +
-					   buffered_chunks *
-					   sizeof(mpd_sint16));
-	cb->times =
-	    (float *)(((char *)cb->metaChunk) +
-		      buffered_chunks * sizeof(mpd_sint8));
-	cb->acceptMetadata = 0;
-}
-
-void clearAllMetaChunkSets(OutputBuffer * cb)
-{
-	memset(cb->metaChunkSet, 0, BUFFERED_METACHUNKS);
+	cb->times = (float *)(((char *)cb->bitRate) +
+	             buffered_chunks * sizeof(mpd_sint8));
 }
 
 void clearOutputBuffer(OutputBuffer * cb)
 {
 	int currentSet = 1;
-
 	cb->end = cb->begin;
-
-	/* be sure to reset metaChunkSets cause we are skipping over audio
-	 * audio chunks, and thus skipping over metadata */
-	if (currentChunk >= 0 && sendMetaChunk == 0 && currentMetaChunk >= 0) {
-		currentSet = cb->metaChunkSet[currentChunk];
-	}
-	clearAllMetaChunkSets(cb);
-	if (currentChunk >= 0 && sendMetaChunk == 0 && currentMetaChunk >= 0) {
-		cb->metaChunkSet[currentChunk] = currentSet;
-	}
 	currentChunk = -1;
 }
 
@@ -140,11 +117,6 @@ int sendDataToOutputBuffer(OutputBuffer * cb, InputStream * inStream,
 
 			currentChunk = cb->end;
 			cb->chunkSize[currentChunk] = 0;
-
-			if (sendMetaChunk) {
-				cb->metaChunk[currentChunk] = currentMetaChunk;
-			} else
-				cb->metaChunk[currentChunk] = -1;
 			cb->bitRate[currentChunk] = bitRate;
 			cb->times[currentChunk] = data_time;
 		}
@@ -167,49 +139,3 @@ int sendDataToOutputBuffer(OutputBuffer * cb, InputStream * inStream,
 	return 0;
 }
 
-int copyMpdTagToOutputBuffer(OutputBuffer * cb, MpdTag * tag)
-{
-	int nextChunk;
-	static MpdTag *last;
-
-	if (!cb->acceptMetadata || !tag) {
-		sendMetaChunk = 0;
-		if (last)
-			freeMpdTag(last);
-		last = NULL;
-		DEBUG("copyMpdTagToOB: !acceptMetadata || !tag\n");
-		return 0;
-	}
-
-	if (last && mpdTagsAreEqual(last, tag)) {
-		DEBUG("copyMpdTagToOB: same as last\n");
-		return 0;
-	}
-
-	if (last)
-		freeMpdTag(last);
-	last = NULL;
-
-	nextChunk = currentMetaChunk + 1;
-	if (nextChunk >= BUFFERED_METACHUNKS)
-		nextChunk = 0;
-
-	if (cb->metaChunkSet[nextChunk]) {
-		sendMetaChunk = 0;
-		DEBUG("copyMpdTagToOB: metachunk in use!\n");
-		return -1;
-	}
-
-	sendMetaChunk = 1;
-	currentMetaChunk = nextChunk;
-
-	last = mpdTagDup(tag);
-
-	copyMpdTagToMetadataChunk(tag, &(cb->metadataChunks[currentMetaChunk]));
-
-	cb->metaChunkSet[nextChunk] = 1;
-
-	DEBUG("copyMpdTagToOB: copiedTag\n");
-
-	return 0;
-}

@@ -95,15 +95,6 @@ static void * player_task(mpd_unused void *unused)
 	return NULL;
 }
 
-static void resetPlayerMetadata(void)
-{
-	PlayerControl *pc = &(getPlayerData()->playerControl);
-
-	if (pc->metadataState == PLAYER_METADATA_STATE_READ) {
-		pc->metadataState = PLAYER_METADATA_STATE_WRITE;
-	}
-}
-
 void playerInit(void)
 {
 	pthread_attr_t attr;
@@ -130,7 +121,6 @@ static void set_current_song(Song *song)
 	PlayerControl *pc = &(getPlayerData()->playerControl);
 
 	pc->fileTime = song->tag ? song->tag->time : 0;
-	copyMpdTagToMetadataChunk(song->tag, &(pc->fileMetadataChunk));
 	get_song_url(pc->utf8url, song);
 }
 
@@ -143,7 +133,6 @@ int playerPlay(int fd, Song * song)
 
 	set_current_song(song);
 
-	resetPlayerMetadata();
 	pc->play = 1;
 	/* FIXME: _nb() variant is probably wrong here, and everywhere... */
 	do { wakeup_player_nb(); } while (pc->play);
@@ -346,7 +335,6 @@ int playerSeek(int fd, Song * song, float seek_time)
 		set_current_song(song);
 
 	if (pc->error == PLAYER_ERROR_NOERROR) {
-		resetPlayerMetadata();
 		pc->seekWhere = seek_time;
 		pc->seek = 1;
 		/* FIXME: _nb() is probably wrong here, too */
@@ -415,24 +403,5 @@ int getPlayerChannels(void)
 /* this actually creates a dupe of the current metadata */
 Song *playerCurrentDecodeSong(void)
 {
-	static Song *song;
-	static MetadataChunk *prev;
-	Song *ret = NULL;
-	PlayerControl *pc = &(getPlayerData()->playerControl);
-
-	if (pc->metadataState == PLAYER_METADATA_STATE_READ) {
-		if (prev)
-			free(prev);
-		prev = xmalloc(sizeof(MetadataChunk));
-		memcpy(prev, &(pc->metadataChunk), sizeof(MetadataChunk));
-		if (song)
-			freeJustSong(song);
-		song = newNullSong();
-		song->url = xstrdup(pc->currentUrl);
-		song->tag = metadataChunkToMpdTagDup(prev);
-		ret = song;
-		resetPlayerMetadata();
-	}
-
-	return ret;
+	return NULL;
 }

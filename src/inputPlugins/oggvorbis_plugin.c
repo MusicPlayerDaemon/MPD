@@ -213,8 +213,6 @@ static void putOggCommentsIntoOutputBuffer(OutputBuffer * cb, char *streamName,
 		addItemToMpdTag(tag, TAG_ITEM_NAME, streamName);
 	}
 
-	copyMpdTagToOutputBuffer(cb, tag);
-
 	freeMpdTag(tag);
 }
 

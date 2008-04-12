@@ -52,7 +52,6 @@ mpd_headers = \
 	listen.h \
 	log.h \
 	ls.h \
-	metadataChunk.h \
 	mpd_types.h \
 	myfprintf.h \
 	normalize.h \
@@ -110,7 +109,6 @@ mpd_SOURCES = \
 	log.c \
 	ls.c \
 	main.c \
-	metadataChunk.c \
 	myfprintf.c \
 	normalize.c \
 	compress.c \
