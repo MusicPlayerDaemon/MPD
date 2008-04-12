@@ -33,13 +33,15 @@
 /* called inside decoder_task (inputPlugins) */
 void decoder_wakeup_player(void)
 {
-	wakeup_player_nb();
+	PlayerControl *pc = &(getPlayerData()->playerControl);
+	wakeup_player_nb(pc);
 }
 
 void decoder_sleep(DecoderControl * dc)
 {
+	PlayerControl *pc = &(getPlayerData()->playerControl);
 	notifyWait(&dc->notify);
-	wakeup_player_nb();
+	wakeup_player_nb(pc);
 }
 
 static void player_wakeup_decoder_nb(DecoderControl * dc)
@@ -48,10 +50,10 @@ static void player_wakeup_decoder_nb(DecoderControl * dc)
 }
 
 /* called from player_task */
-static void player_wakeup_decoder(DecoderControl * dc)
+static void player_wakeup_decoder(PlayerControl * pc, DecoderControl * dc)
 {
 	notifySignal(&dc->notify);
-	player_sleep();
+	player_sleep(pc);
 }
 
 static void stopDecode(DecoderControl * dc)
@@ -102,7 +104,7 @@ static int waitOnDecode(PlayerControl * pc, DecoderControl * dc,
 			OutputBuffer * cb, int *decodeWaitedOn)
 {
 	while (dc->start)
-		player_wakeup_decoder(dc);
+		player_wakeup_decoder(pc, dc);
 
 	if (dc->error != DECODE_ERROR_NOERROR) {
 		pc->errored_song = pc->current_song;
@@ -143,7 +145,7 @@ static int decodeSeek(PlayerControl * pc, DecoderControl * dc,
 		dc->seekWhere = 0 > dc->seekWhere ? 0 : dc->seekWhere;
 		dc->seekError = 0;
 		dc->seek = 1;
-		do { player_wakeup_decoder(dc); } while (dc->seek);
+		do { player_wakeup_decoder(pc, dc); } while (dc->seek);
 		if (!dc->seekError) {
 			pc->elapsedTime = dc->seekWhere;
 			ret = 0;
@@ -431,7 +433,7 @@ static void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer *
 		if (buffering) {
 			if (availableOutputBuffer(cb) < bbp) {
 				/* not enough decoded buffer space yet */
-				player_sleep();
+				player_sleep(pc);
 				continue;
 			} else
 				/* buffering is complete */
@@ -452,7 +454,7 @@ static void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer *
 					      get_song_url(tmp, pc->current_song));
 					break;
 				} else {
-					player_wakeup_decoder(dc);
+					player_wakeup_decoder(pc, dc);
 				}
 				if (do_pause) {
 					dropBufferedAudio();
@@ -473,7 +475,7 @@ static void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer *
 			else {
 				/* the decoder is not yet ready; wait
 				   some more */
-				player_sleep();
+				player_sleep(pc);
 				continue;
 			}
 		}
@@ -509,7 +511,7 @@ static void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer *
 		}
 
 		if (do_pause)
-			player_sleep();
+			player_sleep(pc);
 		else if (!outputBufferEmpty(cb) && (int)cb->begin != next) {
 			OutputBufferChunk *beginChunk =
 				outputBufferGetChunk(cb, cb->begin);
@@ -544,7 +546,7 @@ static void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer *
 					} else {
 						/* wait for the
 						   decoder */
-						player_sleep();
+						player_sleep(pc);
 						continue;
 					}
 				}
@@ -571,7 +573,7 @@ static void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer *
 			/* wait for the decoder to work on the new song */
 			if (pc->queueState == PLAYER_QUEUE_DECODE ||
 			    pc->queueLockState == PLAYER_QUEUE_LOCKED) {
-				player_sleep();
+				player_sleep(pc);
 				continue;
 			}
 			if (pc->queueState != PLAYER_QUEUE_PLAY)
@@ -615,7 +617,7 @@ void decode(void)
 	dc->seek = 0;
 	dc->stop = 0;
 	dc->start = 1;
-	do { player_wakeup_decoder(dc); } while (dc->start);
+	do { player_wakeup_decoder(pc, dc); } while (dc->start);
 
 	decodeParent(pc, dc, cb);
 }

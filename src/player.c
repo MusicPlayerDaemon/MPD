@@ -35,22 +35,19 @@
 
 static void playerCloseAudio(void);
 
-void wakeup_player_nb(void)
+void wakeup_player_nb(PlayerControl *pc)
 {
-	PlayerControl *pc = &(getPlayerData()->playerControl);
 	notifySignal(&pc->notify);
 }
 
-static void wakeup_player(void)
+static void wakeup_player(PlayerControl *pc)
 {
-	PlayerControl *pc = &(getPlayerData()->playerControl);
 	notifySignal(&pc->notify);
 	wait_main_task();
 }
 
-void player_sleep(void)
+void player_sleep(PlayerControl *pc)
 {
-	PlayerControl *pc = &(getPlayerData()->playerControl);
 	notifyWait(&pc->notify);
 }
 
@@ -80,7 +77,7 @@ static void * player_task(mpd_unused void *unused)
 			pc->queueLockState = PLAYER_QUEUE_UNLOCKED;
 			pc->unlockQueue = 0;
 		} else {
-			player_sleep();
+			player_sleep(pc);
 			continue;
 		}
 		/* we did something, tell the main task about it */
@@ -129,7 +126,7 @@ int playerPlay(int fd, Song * song)
 
 	pc->play = 1;
 	/* FIXME: _nb() variant is probably wrong here, and everywhere... */
-	do { wakeup_player_nb(); } while (pc->play);
+	do { wakeup_player_nb(pc); } while (pc->play);
 
 	return 0;
 }
@@ -140,7 +137,7 @@ int playerStop(int fd)
 
 	if (pc->state != PLAYER_STATE_STOP) {
 		pc->stop = 1;
-		do { wakeup_player(); } while (pc->stop);
+		do { wakeup_player(pc); } while (pc->stop);
 	}
 
 	pc->queueState = PLAYER_QUEUE_BLANK;
@@ -160,7 +157,7 @@ int playerPause(int fd)
 
 	if (pc->state != PLAYER_STATE_STOP) {
 		pc->pause = 1;
-		do { wakeup_player(); } while (pc->pause);
+		do { wakeup_player(pc); } while (pc->pause);
 	}
 
 	return 0;
@@ -253,7 +250,7 @@ static void playerCloseAudio(void)
 	if (playerStop(STDERR_FILENO) < 0)
 		return;
 	pc->closeAudio = 1;
-	do { wakeup_player(); } while (pc->closeAudio);
+	do { wakeup_player(pc); } while (pc->closeAudio);
 }
 
 int queueSong(Song * song)
@@ -281,7 +278,7 @@ void setQueueState(int queueState)
 	PlayerControl *pc = &(getPlayerData()->playerControl);
 
 	pc->queueState = queueState;
-	wakeup_player_nb();
+	wakeup_player_nb(pc);
 }
 
 void playerQueueLock(void)
@@ -290,7 +287,7 @@ void playerQueueLock(void)
 
 	if (pc->queueLockState == PLAYER_QUEUE_UNLOCKED) {
 		pc->lockQueue = 1;
-		do { wakeup_player(); } while (pc->lockQueue);
+		do { wakeup_player(pc); } while (pc->lockQueue);
 	}
 }
 
@@ -300,7 +297,7 @@ void playerQueueUnlock(void)
 
 	if (pc->queueLockState == PLAYER_QUEUE_LOCKED) {
 		pc->unlockQueue = 1;
-		do { wakeup_player(); } while (pc->unlockQueue);
+		do { wakeup_player(pc); } while (pc->unlockQueue);
 	}
 }
 
@@ -323,7 +320,7 @@ int playerSeek(int fd, Song * song, float seek_time)
 		pc->seekWhere = seek_time;
 		pc->seek = 1;
 		/* FIXME: _nb() is probably wrong here, too */
-		do { wakeup_player_nb(); } while (pc->seek);
+		do { wakeup_player_nb(pc); } while (pc->seek);
 	}
 
 	return 0;

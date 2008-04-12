@@ -82,9 +82,9 @@ void wakeup_main_task(void);
 
 void wait_main_task(void);
 
-void wakeup_player_nb(void);
+void wakeup_player_nb(PlayerControl *pc);
 
-void player_sleep(void);
+void player_sleep(PlayerControl *pc);
 
 int playerPlay(int fd, Song * song);
 
