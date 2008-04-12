@@ -308,7 +308,7 @@ static void decodeStart(PlayerControl * pc, OutputBuffer * cb,
 
 	/* for http streams, seekable is determined in bufferInputStream */
 	dc->seekable = inStream.seekable;
-        
+
 	if (dc->stop)
 		goto stop;
 

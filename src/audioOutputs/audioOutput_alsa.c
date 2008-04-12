@@ -347,10 +347,10 @@ static int alsa_errorRecovery(AlsaData * ad, int err)
 		snd_pcm_close(ad->pcmHandle);
 		ad->pcmHandle = NULL;
 		break;
-        /* this is no error, so just keep running */
-    case SND_PCM_STATE_RUNNING:
-        err = 0;
-        break;
+	/* this is no error, so just keep running */
+	case SND_PCM_STATE_RUNNING:
+		err = 0;
+		break;
 	default:
 		/* unknown state, do nothing */
 		break;
@@ -371,9 +371,9 @@ static void alsa_closeDevice(AudioOutput * audioOutput)
 	AlsaData *ad = audioOutput->data;
 
 	if (ad->pcmHandle) {
-                if (snd_pcm_state(ad->pcmHandle) == SND_PCM_STATE_RUNNING) {
-                        snd_pcm_drain(ad->pcmHandle);
-                }
+		if (snd_pcm_state(ad->pcmHandle) == SND_PCM_STATE_RUNNING) {
+			snd_pcm_drain(ad->pcmHandle);
+		}
 		snd_pcm_close(ad->pcmHandle);
 		ad->pcmHandle = NULL;
 	}
