@@ -29,13 +29,22 @@
 #define OUTPUT_BUFFER_DC_STOP   -1
 #define OUTPUT_BUFFER_DC_SEEK   -2
 
+/**
+ * A ring set of buffers where the decoder appends data after the end,
+ * and the player consumes data from the beginning.
+ */
 typedef struct _OutputBuffer {
 	char *volatile chunks;
 	mpd_uint16 *volatile chunkSize;
 	mpd_uint16 *volatile bitRate;
 	float *volatile times;
+
+	/** the index of the first decoded chunk */
 	mpd_uint16 volatile begin;
+
+	/** the index after the last decoded chunk */
 	mpd_uint16 volatile end;
+
 	AudioFormat audioFormat;
 	ConvState convState;
 } OutputBuffer;
