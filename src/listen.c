@@ -74,6 +74,7 @@ static int establishListen(const struct sockaddr *addrp, socklen_t addrlen)
 	int allowReuse = ALLOW_REUSE;
 
 	switch (addrp->sa_family) {
+#ifdef HAVE_TCP
 	case AF_INET:
 		pf = PF_INET;
 		break;
@@ -82,9 +83,12 @@ static int establishListen(const struct sockaddr *addrp, socklen_t addrlen)
 		pf = PF_INET6;
 		break;
 #endif
+#endif /* HAVE_TCP */
+#ifdef HAVE_UN
 	case AF_UNIX:
 		pf = PF_UNIX;
 		break;
+#endif /* HAVE_UN */
 	default:
 		FATAL("unknown address family: %i\n", addrp->sa_family);
 	}
@@ -123,6 +127,7 @@ static void parseListenConfigParam(unsigned int port, ConfigParam * param)
 {
 	const struct sockaddr *addrp;
 	socklen_t addrlen;
+#ifdef HAVE_TCP
 	struct sockaddr_in sin4;
 #ifdef HAVE_IPV6
 	struct sockaddr_in6 sin6;
@@ -135,8 +140,10 @@ static void parseListenConfigParam(unsigned int port, ConfigParam * param)
 	memset(&sin4, 0, sizeof(struct sockaddr_in));
 	sin4.sin_port = htons(port);
 	sin4.sin_family = AF_INET;
+#endif /* HAVE_TCP */
 
 	if (!param || 0 == strcmp(param->value, "any")) {
+#ifdef HAVE_TCP
 		DEBUG("binding to any address\n");
 #ifdef HAVE_IPV6
 		if (useIpv6) {
@@ -157,6 +164,10 @@ static void parseListenConfigParam(unsigned int port, ConfigParam * param)
 #endif
 			BINDERROR();
 		}
+#else /* HAVE_TCP */
+		FATAL("TCP support is disabled\n");
+#endif /* HAVE_TCP */
+#ifdef HAVE_UN
 	} else if (param->value[0] == '/') {
 		size_t path_length;
 		struct sockaddr_un sun;
@@ -173,7 +184,9 @@ static void parseListenConfigParam(unsigned int port, ConfigParam * param)
 
 		if (establishListen(addrp, addrlen) < 0)
 			BINDERROR();
+#endif /* HAVE_UN */
 	} else {
+#ifdef HAVE_TCP
 		struct hostent *he;
 		DEBUG("binding to address for %s\n", param->value);
 		if (!(he = gethostbyname(param->value))) {
@@ -207,6 +220,9 @@ static void parseListenConfigParam(unsigned int port, ConfigParam * param)
 
 		if (establishListen(addrp, addrlen) < 0)
 			BINDERROR();
+#else /* HAVE_TCP */
+		FATAL("TCP support is disabled\n");
+#endif /* HAVE_TCP */
 	}
 }
 

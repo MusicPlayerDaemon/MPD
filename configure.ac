@@ -65,6 +65,8 @@ AC_ARG_ENABLE(ao,[  --enable-ao             enable support for libao (default: d
 AC_ARG_ENABLE(shout,[  --disable-shout         disable support for streaming through shout (default: enable)],[enable_shout=$enableval],[enable_shout=yes])
 AC_ARG_ENABLE(iconv,[  --disable-iconv         disable iconv support (default: enable)],[enable_iconv=$enableval],[enable_iconv=yes])
 AC_ARG_ENABLE(ipv6,[  --disable-ipv6          disable IPv6 support (default: enable)],[enable_ipv6=$enableval],[enable_ipv6=yes])
+AC_ARG_ENABLE(tcp,[  --disable-tcp           disable support for clients connecting via TCP (default: enable)],[enable_tcp=$enableval],[enable_tcp=yes])
+AC_ARG_ENABLE(un,[  --enable-un             enable support for clients connecting via unix domain sockets (default: disable)],[enable_un=$enableval],[enable_un=no])
 AC_ARG_ENABLE(oss,[  --disable-oss           disable OSS support (default: enable)],[enable_oss=$enableval],[enable_oss=yes])
 AC_ARG_ENABLE(alsa,[  --disable-alsa          disable ALSA support (default: enable)],[enable_alsa=$enableval],[enable_alsa=yes])
 AC_ARG_ENABLE(jack,[  --disable-jack          disable jack support (default: enable)],[enable_jack=$enableval],[enable_jack=yes])
@@ -132,6 +134,11 @@ dnl AC_CHECK_HEADER(langinfo.h,[enable_langinfo=yes;AC_DEFINE(HAVE_LANGINFO,1,[D
 AM_LANGINFO_CODESET
 AC_CHECK_HEADER(locale.h,[enable_locale=yes;AC_DEFINE(HAVE_LOCALE,1,[Define if locale.h is present])],enable_locale=no)
 
+if test x$enable_tcp = xno; then
+	# if we don't support TCP, we don't need IPv6 either
+	enable_ipv6=no
+fi
+
 if test x$enable_ipv6 = xyes; then
 	AC_MSG_CHECKING(for ipv6)
 	AC_EGREP_CPP([AP_maGiC_VALUE],
@@ -149,6 +156,14 @@ AP_maGiC_VALUE
 	AC_MSG_RESULT([yes]),
 	AC_MSG_RESULT([no])
 )
+fi
+
+if test x$enable_tcp = xyes; then
+	AC_DEFINE(HAVE_TCP, 1, [Define if TCP socket support is enabled])
+fi
+
+if test x$enable_un = xyes; then
+	AC_DEFINE(HAVE_UN, 1, [Define if unix domain socket support is enabled])
 fi
 
 enable_osx=no
@@ -637,6 +652,27 @@ AC_OUTPUT(src/mp4ff/Makefile doc/Makefile src/Makefile Makefile )
 echo ""
 echo "########### MPD CONFIGURATION ############"
 echo ""
+
+echo " Client Support:"
+if test x$enable_tcp = xyes; then
+	echo " TCP support ...................enabled"
+else
+	echo " TCP support ...................disabled"
+fi
+
+if test x$enable_un = xyes; then
+	echo " Unix domain socket support ....enabled"
+else
+	echo " Unix domain socket support ....disabled"
+fi
+
+echo ""
+
+if
+	test x$enable_tcp = xno &&
+	test x$enable_un = xno; then
+	AC_MSG_ERROR([No client interfaces configured!])
+fi
 
 echo " Playback Support:"
 if test x$enable_ao = xyes; then

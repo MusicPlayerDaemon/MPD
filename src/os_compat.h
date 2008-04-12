@@ -64,7 +64,6 @@
 #include <netdb.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include <sys/un.h>
 #include <pwd.h>
 #include <grp.h>
 #include <limits.h>
@@ -74,5 +73,9 @@
 /* remove when we switch to pthreads: */
 #include <sys/ipc.h>
 #include <sys/shm.h>
+
+#ifdef HAVE_UN
+#include <sys/un.h>
+#endif
 
 #endif /* OS_COMPAT_H */

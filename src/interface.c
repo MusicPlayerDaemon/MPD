@@ -245,6 +245,7 @@ void openAInterface(int fd, struct sockaddr *addr)
 	} else {
 		const char *hostname;
 		switch (addr->sa_family) {
+#ifdef HAVE_TCP
 		case AF_INET:
 			hostname = (const char *)inet_ntoa(((struct sockaddr_in *)
 			                                    addr)->sin_addr);
@@ -267,9 +268,12 @@ void openAInterface(int fd, struct sockaddr *addr)
 			}
 			break;
 #endif
+#endif /* HAVE_TCP */
+#ifdef HAVE_UN
 		case AF_UNIX:
 			hostname = "local connection";
 			break;
+#endif /* HAVE_UN */
 		default:
 			hostname = "unknown";
 		}
