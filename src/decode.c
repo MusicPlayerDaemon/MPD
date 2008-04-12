@@ -24,6 +24,7 @@
 #include "path.h"
 #include "log.h"
 #include "ls.h"
+#include "main_notify.h"
 
 /* called inside decoder_task (inputPlugins) */
 void decoder_wakeup_player(void)

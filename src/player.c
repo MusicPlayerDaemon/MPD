@@ -32,6 +32,7 @@
 #include "permission.h"
 #include "ack.h"
 #include "os_compat.h"
+#include "main_notify.h"
 
 static void playerCloseAudio(void);
 

@@ -76,10 +76,6 @@ typedef struct _PlayerControl {
 	volatile double totalPlayTime;
 } PlayerControl;
 
-void wakeup_main_task(void);
-
-void wait_main_task(void);
-
 void wakeup_player_nb(PlayerControl *pc);
 
 void player_sleep(PlayerControl *pc);

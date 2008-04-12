@@ -27,6 +27,7 @@
 #include "ioops.h"
 #include "myfprintf.h"
 #include "os_compat.h"
+#include "main_notify.h"
 
 #include "../config.h"
 
@@ -494,7 +495,9 @@ int doIOForInterfaces(void)
 
 		registered_IO_add_fds(&fdmax, &rfds, &wfds, &efds);
 
+		main_notify_lock();
 		selret = select(fdmax + 1, &rfds, &wfds, &efds, NULL);
+		main_notify_unlock();
 
 		if (selret < 0 && errno == EINTR)
 			break;

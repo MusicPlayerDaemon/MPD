@@ -43,6 +43,7 @@
 #include "utils.h"
 #include "normalize.h"
 #include "zeroconf.h"
+#include "main_notify.h"
 #include "os_compat.h"
 
 #define SYSTEM_CONFIG_FILE_LOCATION	"/etc/mpd.conf"
@@ -55,8 +56,6 @@ typedef struct _Options {
 	int createDB;
 	int verbose;
 } Options;
-
-static Notify main_notify;
 
 /* 
  * from git-1.3.0, needed for solaris
@@ -380,16 +379,6 @@ static void killFromPidFile(char *cmd, int killOption)
 	exit(EXIT_SUCCESS);
 }
 
-void wakeup_main_task(void)
-{
-	notifySignal(&main_notify);
-}
-
-void wait_main_task(void)
-{
-	notifySignal(&main_notify);
-}
-
 int main(int argc, char *argv[])
 {
 	Options options;
@@ -432,10 +421,9 @@ int main(int argc, char *argv[])
 	initNormalization();
 	initInputStream();
 
-	notifyInit(&main_notify);
-
 	daemonize(&options);
 
+	init_main_notify();
 	setup_log_output(options.stdOutput);
 
 	initSigHandlers();
@@ -446,8 +434,6 @@ int main(int argc, char *argv[])
 	decoderInit(&getPlayerData()->decoderControl);
 	playerInit(&getPlayerData()->playerControl);
 	read_state_file();
-
-	notifyEnter(&main_notify);
 
 	while (COMMAND_RETURN_KILL != doIOForInterfaces() &&
 	       COMMAND_RETURN_KILL != handlePendingSignals()) {
