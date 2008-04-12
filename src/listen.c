@@ -178,6 +178,8 @@ static void parseListenConfigParam(unsigned int port, ConfigParam * param)
 		if (path_length >= sizeof(sun.sun_path))
 			FATAL("unix socket path is too long\n");
 
+		unlink(param->value);
+
 		sun.sun_family = AF_UNIX;
 		memcpy(sun.sun_path, param->value, path_length + 1);
 
