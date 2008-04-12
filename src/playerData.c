@@ -34,7 +34,6 @@ void initPlayerData(void)
 {
 	float perc = DEFAULT_BUFFER_BEFORE_PLAY;
 	char *test;
-	int shmid;
 	int crossfade = 0;
 	size_t bufferSize = DEFAULT_BUFFER_SIZE;
 	size_t allocationSize;
@@ -78,12 +77,7 @@ void initPlayerData(void)
 	/* for playerData struct */
 	allocationSize = sizeof(PlayerData);
 
-	if ((shmid = shmget(IPC_PRIVATE, allocationSize, IPC_CREAT | 0600)) < 0)
-		FATAL("problems shmget'ing\n");
-	if (!(playerData_pd = shmat(shmid, NULL, 0))) 
-		FATAL("problems shmat'ing\n");
-	if (shmctl(shmid, IPC_RMID, NULL) < 0) 
-		FATAL("problems shmctl'ing\n");
+	playerData_pd = xmalloc(allocationSize);
 
 	playerData_pd->audioDeviceStates = xmalloc(device_array_size);
 
@@ -129,5 +123,5 @@ void freePlayerData(void)
 	waitpid(-1, NULL, 0);
 
 	free(playerData_pd->audioDeviceStates);
-	shmdt(playerData_pd);
+	free(playerData_pd);
 }
