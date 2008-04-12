@@ -721,7 +721,7 @@ int inputStream_httpSeek(InputStream * inStream, long offset, int whence)
 
 static void parseIcyMetadata(InputStream * inStream, char *metadata, int size)
 {
-	char *r;
+	char *r = NULL;
 	char *s;
 	char *temp = xmalloc(size + 1);
 	memcpy(temp, metadata, size);

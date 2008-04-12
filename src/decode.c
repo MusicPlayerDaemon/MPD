@@ -342,6 +342,8 @@ static void * decoder_task(void *arg)
 			decoder_sleep(dc);
 		}
 	}
+
+	return NULL;
 }
 
 void decoderInit(DecoderControl * dc)
