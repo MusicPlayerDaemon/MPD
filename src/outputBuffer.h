@@ -38,8 +38,8 @@ typedef struct _OutputBuffer {
 	mpd_uint16 *volatile chunkSize;
 	mpd_uint16 *volatile bitRate;
 	float *volatile times;
-	mpd_sint16 volatile begin;
-	mpd_sint16 volatile end;
+	mpd_uint16 volatile begin;
+	mpd_uint16 volatile end;
 	AudioFormat audioFormat;
 	ConvState convState;
 	MetadataChunk metadataChunks[BUFFERED_METACHUNKS];

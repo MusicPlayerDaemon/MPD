@@ -118,7 +118,7 @@ int sendDataToOutputBuffer(OutputBuffer * cb, InputStream * inStream,
 
 	while (datalen) {
 		if (currentChunk != cb->end) {
-			int next = cb->end + 1;
+			unsigned int next = cb->end + 1;
 			if (next >= buffered_chunks) {
 				next = 0;
 			}
