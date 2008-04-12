@@ -142,29 +142,29 @@ static id3_utf8_t * processID3FieldString (int is_id3v1, const id3_ucs4_t *ucs4,
 	char *encoding;
 
     if (type == TAG_ITEM_GENRE)
-        ucs4 = id3_genre_name(ucs4);
+	    ucs4 = id3_genre_name(ucs4);
     /* use encoding field here? */
     if (is_id3v1 &&
-            (encoding = getConfigParamValue(CONF_ID3V1_ENCODING))) {
-        isostr = id3_ucs4_latin1duplicate(ucs4);
-        if (mpd_unlikely(!isostr)) {
-            return NULL;
-        }
-        setCharSetConversion("UTF-8", encoding);
-        utf8 = xmalloc(strlen((char *)isostr) + 1);
-        utf8 = (id3_utf8_t *)char_conv_str((char *)utf8, (char *)isostr);
-        if (!utf8) {
-            DEBUG("Unable to convert %s string to UTF-8: "
-                    "'%s'\n", encoding, isostr);
-            free(isostr);
-            return NULL;
-        }
-        free(isostr);
+	(encoding = getConfigParamValue(CONF_ID3V1_ENCODING))) {
+	    isostr = id3_ucs4_latin1duplicate(ucs4);
+	    if (mpd_unlikely(!isostr)) {
+		    return NULL;
+	    }
+	    setCharSetConversion("UTF-8", encoding);
+	    utf8 = xmalloc(strlen((char *)isostr) + 1);
+	    utf8 = (id3_utf8_t *)char_conv_str((char *)utf8, (char *)isostr);
+	    if (!utf8) {
+		    DEBUG("Unable to convert %s string to UTF-8: "
+			  "'%s'\n", encoding, isostr);
+		    free(isostr);
+		    return NULL;
+	    }
+	    free(isostr);
     } else {
-        utf8 = id3_ucs4_utf8duplicate(ucs4);
-        if (mpd_unlikely(!utf8)) {
-            return NULL;
-        }
+	    utf8 = id3_ucs4_utf8duplicate(ucs4);
+	    if (mpd_unlikely(!utf8)) {
+		    return NULL;
+	    }
     }
     return utf8;
 }
@@ -206,44 +206,44 @@ static MpdTag *getID3Info(
 			DEBUG(__FILE__": Invalid number '%i' of fields for TXX frame\n",frame->nfields);
 			return mpdTag;
 		}
-        field = &frame->fields[0];
-        /**
-         * First field is encoding field.
-         * This is ignored by mpd.
-         */ 
-        if(field->type != ID3_FIELD_TYPE_TEXTENCODING)
-        {
-            DEBUG(__FILE__": Expected encoding, found: %i\n",field->type);
-        }
-        /* Process remaining fields, should be only one */
-        field = &frame->fields[1];
-        /* Encoding field */
-        if(field->type == ID3_FIELD_TYPE_STRINGLIST) {
-            /* Get the number of strings available */
-            nstrings = id3_field_getnstrings(field);
-            for (i = 0; i < nstrings; i++) {
-                ucs4 = id3_field_getstrings(field,i);
-                if(!ucs4)
-                    continue;
-                utf8 = processID3FieldString(isId3v1(tag),ucs4, type);
-                if(!utf8)
-                    continue;
+		field = &frame->fields[0];
+		/**
+		 * First field is encoding field.
+		 * This is ignored by mpd.
+		 */
+		if(field->type != ID3_FIELD_TYPE_TEXTENCODING)
+		{
+			DEBUG(__FILE__": Expected encoding, found: %i\n",field->type);
+		}
+		/* Process remaining fields, should be only one */
+		field = &frame->fields[1];
+		/* Encoding field */
+		if(field->type == ID3_FIELD_TYPE_STRINGLIST) {
+			/* Get the number of strings available */
+			nstrings = id3_field_getnstrings(field);
+			for (i = 0; i < nstrings; i++) {
+				ucs4 = id3_field_getstrings(field,i);
+				if(!ucs4)
+					continue;
+				utf8 = processID3FieldString(isId3v1(tag),ucs4, type);
+				if(!utf8)
+					continue;
 
-                if (mpdTag == NULL)
-                    mpdTag = newMpdTag();
-                addItemToMpdTag(mpdTag, type, (char *)utf8);
-                free(utf8);
-            }
-        }
-        else {
-            ERROR(__FILE__": Field type not processed: %i\n",(int)id3_field_gettextencoding(field));
-        }
-    }
-	/* A comment frame */	
+				if (mpdTag == NULL)
+					mpdTag = newMpdTag();
+				addItemToMpdTag(mpdTag, type, (char *)utf8);
+				free(utf8);
+			}
+		}
+		else {
+			ERROR(__FILE__": Field type not processed: %i\n",(int)id3_field_gettextencoding(field));
+		}
+	}
+	/* A comment frame */
 	else if(!strcmp(ID3_FRAME_COMMENT, id))
 	{
 		/* A comment frame is different... */
-        /* 1st: encoding
+	/* 1st: encoding
          * 2nd: Language
          * 3rd: String
          * 4th: FullString.
@@ -258,9 +258,9 @@ static MpdTag *getID3Info(
 				ucs4 = id3_field_getfullstring(field);
 				if(ucs4)
 				{
-                    utf8 = processID3FieldString(isId3v1(tag),ucs4, type);
-                    if(utf8)
-                    {
+					utf8 = processID3FieldString(isId3v1(tag),ucs4, type);
+					if(utf8)
+					{
 						if (mpdTag == NULL)
 							mpdTag = newMpdTag();
 						addItemToMpdTag(mpdTag, type, (char *)utf8);
@@ -268,16 +268,16 @@ static MpdTag *getID3Info(
 					}
 				}
 			}
-            else 
-            {
-                DEBUG(__FILE__": 4th field in comment frame differs from expected, got '%i': ignoring\n",field->type);
-            }
+			else
+			{
+				DEBUG(__FILE__": 4th field in comment frame differs from expected, got '%i': ignoring\n",field->type);
+			}
 		}
-        else 
-        {
-            DEBUG(__FILE__": Invalid 'comments' tag, got '%i' fields instead of 4\n", frame->nfields);
-        }
-	} 
+		else
+		{
+			DEBUG(__FILE__": Invalid 'comments' tag, got '%i' fields instead of 4\n", frame->nfields);
+		}
+	}
 	/* Unsupported */
 	else {
 		DEBUG(__FILE__": Unsupported tag type requrested\n");
