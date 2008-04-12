@@ -359,6 +359,21 @@ static void advanceOutputBufferTo(OutputBuffer * cb, int to)
 	cb->begin = to;
 }
 
+static void crossFade(OutputBufferChunk * a, OutputBufferChunk * b,
+		      AudioFormat * format,
+		      int fadePosition, int crossFadeChunks)
+{
+	pcm_mix(a->data,
+		b->data,
+		a->chunkSize,
+		b->chunkSize,
+		format,
+		((float)fadePosition) /
+		crossFadeChunks);
+	if (b->chunkSize > a->chunkSize)
+		a->chunkSize = b->chunkSize;
+}
+
 static void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb)
 {
 	int pause = 0;
@@ -508,21 +523,11 @@ static void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer *
 				}
 				nextChunk = outputBufferAbsolute(cb, crossFadeChunks);
 				if (nextChunk >= 0) {
-					OutputBufferChunk *fadeChunk =
-						outputBufferGetChunk(cb, nextChunk);
-					pcm_mix(beginChunk->data,
-						fadeChunk->data,
-						beginChunk->chunkSize,
-						fadeChunk->chunkSize,
-						&(cb->audioFormat),
-						((float)fadePosition) /
-						crossFadeChunks);
-					if (fadeChunk->chunkSize >
-					    beginChunk->chunkSize
-					    ) {
-						beginChunk->chunkSize
-							= fadeChunk->chunkSize;
-					}
+					crossFade(beginChunk,
+						  outputBufferGetChunk(cb, nextChunk),
+						  &(cb->audioFormat),
+						  fadePosition,
+						  crossFadeChunks);
 				} else {
 					/* there are not enough
 					   decoded chunks yet */
