@@ -21,12 +21,11 @@
 
 #include "gcc.h"
 #include "os_compat.h"
+#include "sllist.h"
 
 #define COMMAND_RETURN_KILL	10
 #define COMMAND_RETURN_CLOSE	20
 #define COMMAND_MASTER_READY	30
-
-struct strnode;
 
 int processListOfCommands(int fd, int *permission, int *expired,
 			  int listOK, struct strnode *list);
