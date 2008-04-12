@@ -188,7 +188,7 @@ int sendDataToOutputBuffer(OutputBuffer * cb, InputStream * inStream,
 
 		chunk = outputBufferGetChunk(cb, chunk_index);
 
-		chunkLeft = CHUNK_SIZE - chunk->chunkSize;
+		chunkLeft = sizeof(chunk->data) - chunk->chunkSize;
 		dataToSend = datalen > chunkLeft ? chunkLeft : datalen;
 
 		memcpy(chunk->data + chunk->chunkSize, data, dataToSend);
@@ -196,7 +196,7 @@ int sendDataToOutputBuffer(OutputBuffer * cb, InputStream * inStream,
 		datalen -= dataToSend;
 		data += dataToSend;
 
-		if (chunk->chunkSize == CHUNK_SIZE) {
+		if (chunk->chunkSize == sizeof(chunk->data)) {
 			flushOutputBuffer(cb);
 		}
 	}
