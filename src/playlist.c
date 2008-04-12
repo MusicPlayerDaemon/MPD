@@ -26,9 +26,10 @@
 #include "log.h"
 #include "path.h"
 #include "utils.h"
-#include "sig_handlers.h"
 #include "state_file.h"
 #include "storedPlaylist.h"
+#include "ack.h"
+#include "myfprintf.h"
 #include "os_compat.h"
 
 #define PLAYLIST_STATE_STOP		0

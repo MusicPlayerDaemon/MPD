@@ -19,16 +19,10 @@
 #ifndef DECODE_H
 #define DECODE_H
 
-#include "../config.h"
-#include "path.h"
-#include "tag.h"
 #include "song.h"
 
-#include "mpd_types.h"
 #include "audio.h"
 #include "notify.h"
-
-#include "os_compat.h"
 
 #define DECODE_TYPE_FILE	0
 #define DECODE_TYPE_URL		1

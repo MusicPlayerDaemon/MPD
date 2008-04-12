@@ -21,7 +21,6 @@
 #include "directory.h"
 #include "myfprintf.h"
 #include "player.h"
-#include "tag.h"
 #include "tagTracker.h"
 #include "os_compat.h"
 

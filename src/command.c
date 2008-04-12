@@ -28,9 +28,10 @@
 #include "permission.h"
 #include "buffer2array.h"
 #include "log.h"
-#include "tag.h"
 #include "utils.h"
 #include "storedPlaylist.h"
+#include "sllist.h"
+#include "ack.h"
 #include "os_compat.h"
 
 #define COMMAND_PLAY           	"play"

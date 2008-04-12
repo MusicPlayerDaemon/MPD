@@ -20,7 +20,6 @@
 #include "conf.h"
 #include "log.h"
 #include "utils.h"
-#include "os_compat.h"
 
 unsigned int buffered_before_play;
 

@@ -29,6 +29,7 @@
 #include "../playerData.h"
 #include "../outputBuffer.h"
 #include "../os_compat.h"
+#include "../path.h"
 
 #include <wavpack/wavpack.h>
 

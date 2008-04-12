@@ -30,7 +30,7 @@
 #include "volume.h"
 #include "playerData.h"
 #include "permission.h"
-#include "sig_handlers.h"
+#include "ack.h"
 #include "os_compat.h"
 
 static void playerCloseAudio(void);

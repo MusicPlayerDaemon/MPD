@@ -19,6 +19,8 @@
 #ifndef OS_COMPAT_H
 #define OS_COMPAT_H
 
+#include "../config.h"
+
 /*
  * This includes OS-wide headers that can be expected to be available
  * on any machine that mpd can be compiled on for any UNIX-like OS.

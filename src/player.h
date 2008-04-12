@@ -19,8 +19,6 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
-#include "../config.h"
-
 #include "decode.h"
 #include "mpd_types.h"
 #include "song.h"

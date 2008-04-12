@@ -19,15 +19,16 @@
 #include "interface.h"
 #include "command.h"
 #include "conf.h"
-#include "list.h"
 #include "log.h"
 #include "listen.h"
-#include "playlist.h"
 #include "permission.h"
 #include "sllist.h"
 #include "utils.h"
 #include "ioops.h"
+#include "myfprintf.h"
 #include "os_compat.h"
+
+#include "../config.h"
 
 #define GREETING				"OK MPD " PROTOCOL_VERSION "\n"
 

@@ -19,11 +19,8 @@
 #ifndef INPUT_PLUGIN_H
 #define INPUT_PLUGIN_H
 
-#include "../config.h"
 #include "inputStream.h"
-#include "decode.h"
 #include "outputBuffer.h"
-#include "tag.h"
 
 /* valid values for streamTypes in the InputPlugin struct: */
 #define INPUT_PLUGIN_STREAM_FILE	0x01

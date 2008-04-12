@@ -20,15 +20,10 @@
 
 #include "player.h"
 #include "playerData.h"
-#include "utils.h"
 #include "pcm_utils.h"
-#include "audio.h"
 #include "path.h"
 #include "log.h"
-#include "sig_handlers.h"
 #include "ls.h"
-#include "utf8.h"
-#include "os_compat.h"
 
 /* called inside decoder_task (inputPlugins) */
 void decoder_wakeup_player(void)

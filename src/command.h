@@ -19,18 +19,14 @@
 #ifndef COMMAND_H
 #define COMMAND_H
 
-#include "../config.h"
-
-#include "list.h"
-#include "myfprintf.h"
-#include "log.h"
-#include "ack.h"
-#include "sllist.h"
+#include "gcc.h"
 #include "os_compat.h"
 
 #define COMMAND_RETURN_KILL	10
 #define COMMAND_RETURN_CLOSE	20
 #define COMMAND_MASTER_READY	30
+
+struct strnode;
 
 int processListOfCommands(int fd, int *permission, int *expired,
 			  int listOK, struct strnode *list);

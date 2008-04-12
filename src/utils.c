@@ -19,7 +19,8 @@
 #include "utils.h"
 #include "log.h"
 #include "conf.h"
-#include "os_compat.h"
+
+#include "../config.h"
 
 char *myFgets(char *buffer, int bufferSize, FILE * fp)
 {

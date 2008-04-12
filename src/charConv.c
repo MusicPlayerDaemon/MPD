@@ -23,6 +23,8 @@
 #include "path.h"
 #include "os_compat.h"
 
+#include "../config.h"
+
 #ifdef HAVE_ICONV
 #include <iconv.h>
 static iconv_t char_conv_iconv;

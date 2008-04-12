@@ -18,10 +18,6 @@
 
 #include "inputPlugin.h"
 
-#include "list.h"
-#include "myfprintf.h"
-#include "os_compat.h"
-
 static List *inputPlugin_list;
 
 void loadInputPlugin(InputPlugin * inputPlugin)

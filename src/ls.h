@@ -19,10 +19,7 @@
 #ifndef LS_H
 #define LS_H
 
-#include "../config.h"
-
 #include "inputPlugin.h"
-#include "os_compat.h"
 
 int lsPlaylists(int fd, const char *utf8path);
 

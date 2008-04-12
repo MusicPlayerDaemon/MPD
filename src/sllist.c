@@ -18,7 +18,6 @@
 
 /* a very simple singly-linked-list structure for queues/buffers */
 
-#include "os_compat.h"
 #include "sllist.h"
 #include "utils.h"
 

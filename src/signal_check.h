@@ -20,8 +20,6 @@
 #ifndef SIGNAL_CHECK_H
 #define SIGNAL_CHECK_H
 
-#include "os_compat.h"
-
 void signal_handle(int sig);
 void signal_unhandle(int sig);
 int signal_is_pending(int sig);

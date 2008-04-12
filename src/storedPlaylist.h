@@ -22,7 +22,6 @@
 #include "song.h"
 #include "list.h"
 #include "playlist.h"
-#include "path.h"
 
 List *loadStoredPlaylist(int fd, const char *utf8path);
 

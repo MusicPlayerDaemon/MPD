@@ -19,7 +19,6 @@
 #ifndef INTERFACE_H
 #define INTERFACE_H
 
-#include "../config.h"
 #include "os_compat.h"
 
 void initInterfaces(void);

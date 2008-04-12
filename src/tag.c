@@ -17,17 +17,13 @@
  */
 
 #include "tag.h"
-#include "path.h"
 #include "myfprintf.h"
 #include "utils.h"
 #include "utf8.h"
 #include "log.h"
-#include "inputStream.h"
 #include "conf.h"
 #include "charConv.h"
 #include "tagTracker.h"
-#include "mpd_types.h"
-#include "gcc.h"
 #include "song.h"
 #include "os_compat.h"
 

@@ -19,8 +19,6 @@
 #ifndef CONF_H
 #define CONF_H
 
-#include "../config.h"
-
 #define CONF_MUSIC_DIR                  "music_directory"
 #define CONF_PLAYLIST_DIR               "playlist_directory"
 #define CONF_DB_FILE                    "db_file"

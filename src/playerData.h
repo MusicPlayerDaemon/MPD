@@ -19,8 +19,6 @@
 #ifndef PLAYER_DATA_H
 #define PLAYER_DATA_H
 
-#include "../config.h"
-
 #include "audio.h"
 #include "player.h"
 #include "decode.h"

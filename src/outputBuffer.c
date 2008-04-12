@@ -18,13 +18,8 @@
 
 #include "outputBuffer.h"
 
-#include "pcm_utils.h"
-#include "playerData.h"
 #include "utils.h"
-#include "log.h"
 #include "normalize.h"
-#include "conf.h"
-#include "os_compat.h"
 
 void initOutputBuffer(OutputBuffer * cb, unsigned int size)
 {

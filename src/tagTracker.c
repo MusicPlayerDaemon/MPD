@@ -18,11 +18,10 @@
 
 #include "tagTracker.h"
 
+#include "tag.h"
 #include "tree.h"
-#include "log.h"
 #include "utils.h"
 #include "myfprintf.h"
-#include "os_compat.h"
 
 static Tree *tagTrees[TAG_NUM_OF_ITEM_TYPES];
 

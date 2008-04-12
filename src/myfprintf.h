@@ -19,7 +19,6 @@
 #ifndef MYFPRINTF_H
 #define MYFPRINTF_H
 
-#include "../config.h"
 #include "gcc.h"
 #include "os_compat.h"
 

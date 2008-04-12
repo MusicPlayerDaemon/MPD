@@ -19,8 +19,6 @@
 #ifndef DB_UTILS_H
 #define DB_UTILS_H
 
-#include "os_compat.h"
-
 #include "locate.h"
 
 int printAllIn(int fd, char *name);

@@ -18,13 +18,12 @@
 
 #include "audio.h"
 #include "audioOutput.h"
-#include "conf.h"
 #include "log.h"
-#include "sig_handlers.h"
 #include "command.h"
 #include "playerData.h"
-#include "utils.h"
-#include "state_file.h"
+#include "path.h"
+#include "ack.h"
+#include "myfprintf.h"
 #include "os_compat.h"
 
 #define AUDIO_DEVICE_STATE	"audio_device_state:"

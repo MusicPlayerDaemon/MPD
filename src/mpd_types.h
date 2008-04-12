@@ -20,7 +20,6 @@
 #define MPD_TYPES_H
 
 #include "../config.h"
-#include "os_compat.h"
 
 typedef unsigned char mpd_uint8;
 typedef signed char mpd_sint8;

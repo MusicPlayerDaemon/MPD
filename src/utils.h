@@ -19,7 +19,6 @@
 #ifndef UTILS_H
 #define UTILS_H
 
-#include "../config.h"
 #include "gcc.h"
 #include "os_compat.h"
 

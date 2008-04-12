@@ -21,10 +21,12 @@
 #include "conf.h"
 #include "log.h"
 #include "player.h"
-#include "state_file.h"
 #include "gcc.h"
 #include "utils.h"
+#include "ack.h"
 #include "os_compat.h"
+
+#include "../config.h"
 
 #ifdef HAVE_OSS
 #include <sys/soundcard.h>

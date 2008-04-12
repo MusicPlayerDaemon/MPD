@@ -19,7 +19,6 @@
 #ifndef PATH_H
 #define PATH_H
 
-#include "../config.h"
 #include "os_compat.h"
 
 #if !defined(MPD_PATH_MAX)

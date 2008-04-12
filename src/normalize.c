@@ -16,10 +16,9 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#include "normalize.h"
 #include "compress.h"
 #include "conf.h"
-#include "normalize.h"
-#include "os_compat.h"
 
 #define DEFAULT_VOLUME_NORMALIZATION 0
 

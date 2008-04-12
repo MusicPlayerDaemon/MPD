@@ -19,7 +19,6 @@
 #ifndef LIST_H
 #define LIST_H
 
-#include "../config.h"
 #include "os_compat.h"
 
 /* used to make a list where free() will be used to free data in list */

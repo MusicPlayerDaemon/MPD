@@ -23,6 +23,8 @@
 #include "utils.h"
 #include "os_compat.h"
 
+#include "../config.h"
+
 #define MAXHOSTNAME 	1024
 
 #define ALLOW_REUSE	1

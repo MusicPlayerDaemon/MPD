@@ -19,8 +19,6 @@
 #include "myfprintf.h"
 #include "interface.h"
 #include "path.h"
-#include "log.h"
-#include "conf.h"
 #include "utils.h"
 #include "os_compat.h"
 

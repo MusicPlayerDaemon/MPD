@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "path.h"
 #include "locate.h"
+#include "path.h"
 #include "utils.h"
 
 #define LOCATE_TAG_FILE_KEY     "file"

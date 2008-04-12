@@ -19,8 +19,6 @@
 #ifndef STATS_H
 #define STATS_H
 
-#include "../config.h"
-
 typedef struct _Stats {
 	unsigned long daemonStart;
 	int numberOfSongs;

@@ -18,8 +18,6 @@
  */
 
 #include "sig_handlers.h"
-#include "player.h"
-#include "playerData.h"
 #include "playlist.h"
 #include "directory.h"
 #include "command.h"
@@ -27,7 +25,6 @@
 #include "log.h"
 #include "player.h"
 #include "decode.h"
-#include "os_compat.h"
 
 int handlePendingSignals(void)
 {

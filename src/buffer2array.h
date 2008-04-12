@@ -19,8 +19,6 @@
 #ifndef BUFFER_2_ARRAY_H
 #define BUFFER_2_ARRAY_H
 
-#include "../config.h"
-
 /* tokenizes up to max elements in buffer (a null-terminated string) and
  * stores the result in array (which must be capable of holding up to
  * max elements).  Tokenization is based on C string quoting rules.

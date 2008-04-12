@@ -17,10 +17,8 @@
  */
 
 #include "storedPlaylist.h"
-#include "log.h"
 #include "path.h"
 #include "utils.h"
-#include "playlist.h"
 #include "ack.h"
 #include "command.h"
 #include "ls.h"
