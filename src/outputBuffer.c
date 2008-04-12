@@ -62,12 +62,17 @@ int outputBufferEmpty(const OutputBuffer * cb)
 	return cb->begin == cb->end;
 }
 
+unsigned int outputBufferRelative(const OutputBuffer * cb, unsigned i)
+{
+	if (i >= cb->begin)
+		return i - cb->begin;
+	else
+		return i + buffered_chunks - cb->begin;
+}
+
 unsigned availableOutputBuffer(const OutputBuffer * cb)
 {
-	if (cb->end >= cb->begin)
-		return cb->end - cb->begin;
-	else
-		return cb->end + buffered_chunks - cb->begin;
+	return outputBufferRelative(cb, cb->end);
 }
 
 int outputBufferAbsolute(const OutputBuffer * cb, unsigned relative)

@@ -58,6 +58,12 @@ void flushOutputBuffer(OutputBuffer * cb);
 /** is the buffer empty? */
 int outputBufferEmpty(const OutputBuffer * cb);
 
+/**
+ * what is the position of the specified chunk number, relative to
+ * the first chunk in use?
+ */
+unsigned int outputBufferRelative(const OutputBuffer * cb, unsigned i);
+
 /** determine the number of decoded chunks */
 unsigned availableOutputBuffer(const OutputBuffer * cb);
 

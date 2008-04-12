@@ -496,12 +496,8 @@ static void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer *
 		else if (!outputBufferEmpty(cb) && cb->begin != next) {
 			unsigned int fadePosition;
 			if (doCrossFade == 1 && next >= 0 &&
-			    ((next > cb->begin &&
-			      (fadePosition = next - cb->begin)
-			      <= crossFadeChunks) ||
-			     (cb->begin > next &&
-			      (fadePosition = next - cb->begin +
-			       buffered_chunks) <= crossFadeChunks))) {
+			    (fadePosition = outputBufferRelative(cb, next))
+			    <= crossFadeChunks) {
 				/* perform cross fade */
 				if (nextChunk < 0) {
 					/* beginning of the cross fade
