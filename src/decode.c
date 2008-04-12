@@ -503,7 +503,6 @@ static void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer *
 			      (fadePosition = next - cb->begin +
 			       buffered_chunks) <= crossFadeChunks))) {
 				/* perform cross fade */
-				unsigned int test = end;
 				if (nextChunk < 0) {
 					/* beginning of the cross fade
 					   - adjust crossFadeChunks
@@ -512,13 +511,8 @@ static void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer *
 					   chunks in the old song */
 					crossFadeChunks = fadePosition;
 				}
-				if (end < cb->begin)
-					test += buffered_chunks;
-				nextChunk = cb->begin + crossFadeChunks;
-				if ((unsigned)nextChunk < test) {
-					if ((unsigned)nextChunk >= buffered_chunks) {
-						nextChunk -= buffered_chunks;
-					}
+				nextChunk = outputBufferAbsolute(cb, crossFadeChunks);
+				if (nextChunk >= 0) {
 					pcm_mix(cb->chunks +
 						cb->begin * CHUNK_SIZE,
 						cb->chunks +
@@ -575,16 +569,9 @@ static void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer *
 				/* the cross-fade is finished; skip
 				   the section which was cross-faded
 				   (and thus already played) */
-				unsigned int test = end;
-				nextChunk = cb->begin + crossFadeChunks;
-				if (end < cb->begin)
-					test += buffered_chunks;
-				if ((unsigned)nextChunk < test) {
-					if ((unsigned)nextChunk >= buffered_chunks) {
-						nextChunk -= buffered_chunks;
-					}
+				nextChunk = outputBufferAbsolute(cb, crossFadeChunks);
+				if (nextChunk >= 0)
 					advanceOutputBufferTo(cb, nextChunk);
-				}
 			}
 
 			/* wait for the decoder to work on the new song */

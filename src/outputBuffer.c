@@ -65,6 +65,23 @@ unsigned availableOutputBuffer(const OutputBuffer * cb)
 		return cb->end + buffered_chunks - cb->begin;
 }
 
+int outputBufferAbsolute(const OutputBuffer * cb, unsigned relative)
+{
+	unsigned i, max;
+
+	max = cb->end;
+	if (max < cb->begin)
+		max += buffered_chunks;
+	i = (unsigned)cb->begin + relative;
+	if (i >= max)
+		return -1;
+
+	if (i >= buffered_chunks)
+		i -= buffered_chunks;
+
+	return (int)i;
+}
+
 /**
  * Return the tail chunk has room for additional data.  If there is no
  * room in the queue, this function blocks until the player thread has

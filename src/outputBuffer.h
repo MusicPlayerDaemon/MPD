@@ -58,6 +58,12 @@ void flushOutputBuffer(OutputBuffer * cb);
 /** determine the number of decoded chunks */
 unsigned availableOutputBuffer(const OutputBuffer * cb);
 
+/**
+ * Get the absolute index of the nth used chunk after the first one.
+ * Returns -1 if there is no such chunk.
+ */
+int outputBufferAbsolute(const OutputBuffer * cb, unsigned relative);
+
 /* we send inStream for buffering the inputStream while waiting to
    send the next chunk */
 int sendDataToOutputBuffer(OutputBuffer * cb,
