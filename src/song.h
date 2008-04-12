@@ -71,6 +71,12 @@ int updateSongInfo(Song * song);
 
 void printSongUrl(int fd, Song * song);
 
+/*
+ * get_song_url - Returns a path of a song in UTF8-encoded form
+ * path_max_tmp is the argument that the URL is written to, this
+ * buffer is assumed to be MPD_PATH_MAX or greater (including
+ * terminating '\0').
+ */
 char *get_song_url(char *path_max_tmp, Song * song);
 
 #endif
