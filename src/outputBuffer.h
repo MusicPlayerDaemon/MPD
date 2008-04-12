@@ -29,6 +29,9 @@
 #define OUTPUT_BUFFER_DC_STOP   -1
 #define OUTPUT_BUFFER_DC_SEEK   -2
 
+/* pick 1020 since its devisible for 8,16,24, and 32-bit audio */
+#define CHUNK_SIZE		1020
+
 /**
  * A ring set of buffers where the decoder appends data after the end,
  * and the player consumes data from the beginning.

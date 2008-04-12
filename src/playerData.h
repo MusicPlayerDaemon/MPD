@@ -27,9 +27,6 @@
 #include "mpd_types.h"
 #include "outputBuffer.h"
 
-/* pick 1020 since its devisible for 8,16,24, and 32-bit audio */
-#define CHUNK_SIZE		1020
-
 extern unsigned int buffered_before_play;
 extern unsigned int buffered_chunks;
 
