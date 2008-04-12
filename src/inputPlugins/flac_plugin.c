@@ -215,7 +215,7 @@ static FLAC__StreamDecoderWriteStatus flacWrite(const flac_decoder *dec,
 	FLAC__uint32 samples = frame->header.blocksize;
 	FLAC__uint16 u16;
 	unsigned char *uc;
-	int c_samp, c_chan, d_samp;
+	int c_samp, c_chan;
 	int i;
 	float timeChange;
 	FLAC__uint64 newPosition = 0;
@@ -231,9 +231,9 @@ static FLAC__StreamDecoderWriteStatus flacWrite(const flac_decoder *dec,
 	}
 	data->position = newPosition;
 
-	for (c_samp = d_samp = 0; c_samp < frame->header.blocksize; c_samp++) {
+	for (c_samp = 0; c_samp < frame->header.blocksize; c_samp++) {
 		for (c_chan = 0; c_chan < frame->header.channels;
-		     c_chan++, d_samp++) {
+		     c_chan++) {
 			u16 = buf[c_chan][c_samp];
 			uc = (unsigned char *)&u16;
 			for (i = 0; i < (data->dc->audioFormat.bits / 8); i++) {
