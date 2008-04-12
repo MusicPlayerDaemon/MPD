@@ -281,6 +281,7 @@ void setQueueState(int queueState)
 	PlayerControl *pc = &(getPlayerData()->playerControl);
 
 	pc->queueState = queueState;
+	wakeup_player_nb();
 }
 
 void playerQueueLock(void)
