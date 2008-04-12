@@ -74,15 +74,15 @@ void pcm_volumeChange(char *buffer, int bufferSize, AudioFormat * format,
 	}
 }
 
-static void pcm_add(char *buffer1, char *buffer2, size_t bufferSize1,
+static void pcm_add(char *buffer1, const char *buffer2, size_t bufferSize1,
                     size_t bufferSize2, int vol1, int vol2,
-                    AudioFormat * format)
+                    const AudioFormat * format)
 {
 	mpd_sint32 temp32;
 	mpd_sint8 *buffer8_1 = (mpd_sint8 *) buffer1;
-	mpd_sint8 *buffer8_2 = (mpd_sint8 *) buffer2;
+	const mpd_sint8 *buffer8_2 = (const mpd_sint8 *) buffer2;
 	mpd_sint16 *buffer16_1 = (mpd_sint16 *) buffer1;
-	mpd_sint16 *buffer16_2 = (mpd_sint16 *) buffer2;
+	const mpd_sint16 *buffer16_2 = (const mpd_sint16 *) buffer2;
 
 	switch (format->bits) {
 	case 16:
@@ -129,8 +129,8 @@ static void pcm_add(char *buffer1, char *buffer2, size_t bufferSize1,
 	}
 }
 
-void pcm_mix(char *buffer1, char *buffer2, size_t bufferSize1,
-             size_t bufferSize2, AudioFormat * format, float portion1)
+void pcm_mix(char *buffer1, const char *buffer2, size_t bufferSize1,
+             size_t bufferSize2, const AudioFormat * format, float portion1)
 {
 	int vol1;
 	float s = sin(M_PI_2 * portion1);
@@ -351,8 +351,8 @@ static char *pcm_convertChannels(mpd_sint8 channels, char *inBuffer,
 	return outBuffer;
 }
 
-static char *pcm_convertTo16bit(mpd_sint8 bits, char *inBuffer, size_t inSize,
-                                size_t *outSize)
+static char *pcm_convertTo16bit(mpd_sint8 bits, const char *inBuffer,
+				size_t inSize, size_t *outSize)
 {
 	static char *buf;
 	static size_t len;
@@ -378,8 +378,7 @@ static char *pcm_convertTo16bit(mpd_sint8 bits, char *inBuffer, size_t inSize,
 		break;
 	case 16:
 		*outSize = inSize;
-		outBuffer = inBuffer;
-		break;
+		return inBuffer;
 	case 24:
 		/* put dithering code from mp3_decode here */
 	default:
@@ -390,7 +389,7 @@ static char *pcm_convertTo16bit(mpd_sint8 bits, char *inBuffer, size_t inSize,
 }
 
 /* outFormat bits must be 16 and channels must be 1 or 2! */
-size_t pcm_convertAudioFormat(AudioFormat * inFormat, char *inBuffer,
+size_t pcm_convertAudioFormat(AudioFormat * inFormat, const char *inBuffer,
                               size_t inSize, AudioFormat * outFormat,
                               char *outBuffer, ConvState *convState)
 {
@@ -427,8 +426,8 @@ size_t pcm_convertAudioFormat(AudioFormat * inFormat, char *inBuffer,
 	return len;
 }
 
-size_t pcm_sizeOfConvBuffer(AudioFormat * inFormat, size_t inSize,
-                            AudioFormat * outFormat)
+size_t pcm_sizeOfConvBuffer(const AudioFormat * inFormat, size_t inSize,
+                            const AudioFormat * outFormat)
 {
 	const double ratio = (double)outFormat->sampleRate /
 	                     (double)inFormat->sampleRate;

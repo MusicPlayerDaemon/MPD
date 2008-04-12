@@ -67,7 +67,7 @@ static void redirect_stdin(void)
 		FATAL("dup2 stdin: %s\n", strerror(errno));
 }
 
-static int establishListen(struct sockaddr *addrp, socklen_t addrlen)
+static int establishListen(const struct sockaddr *addrp, socklen_t addrlen)
 {
 	int pf;
 	int sock;
@@ -121,7 +121,7 @@ static int establishListen(struct sockaddr *addrp, socklen_t addrlen)
 
 static void parseListenConfigParam(unsigned int port, ConfigParam * param)
 {
-	struct sockaddr *addrp;
+	const struct sockaddr *addrp;
 	socklen_t addrlen;
 	struct sockaddr_in sin4;
 #ifdef HAVE_IPV6
@@ -141,14 +141,14 @@ static void parseListenConfigParam(unsigned int port, ConfigParam * param)
 #ifdef HAVE_IPV6
 		if (useIpv6) {
 			sin6.sin6_addr = in6addr_any;
-			addrp = (struct sockaddr *)&sin6;
+			addrp = (const struct sockaddr *)&sin6;
 			addrlen = sizeof(struct sockaddr_in6);
 			if (establishListen(addrp, addrlen) < 0)
 				BINDERROR();
 		}
 #endif
 		sin4.sin_addr.s_addr = INADDR_ANY;
-		addrp = (struct sockaddr *)&sin4;
+		addrp = (const struct sockaddr *)&sin4;
 		addrlen = sizeof(struct sockaddr_in);
 #ifdef HAVE_IPV6
 		if ((establishListen(addrp, addrlen) < 0) && !useIpv6) {
@@ -173,14 +173,14 @@ static void parseListenConfigParam(unsigned int port, ConfigParam * param)
 				      param->value, param->line);
 			}
 			memcpy((char *)&sin6.sin6_addr.s6_addr,
-			       (char *)he->h_addr, he->h_length);
-			addrp = (struct sockaddr *)&sin6;
+			       (const char *)he->h_addr, he->h_length);
+			addrp = (const struct sockaddr *)&sin6;
 			addrlen = sizeof(struct sockaddr_in6);
 			break;
 #endif
 		case AF_INET:
 			memcpy((char *)&sin4.sin_addr.s_addr,
-			       (char *)he->h_addr, he->h_length);
+			       (const char *)he->h_addr, he->h_length);
 			addrp = (struct sockaddr *)&sin4;
 			addrlen = sizeof(struct sockaddr_in);
 			break;
