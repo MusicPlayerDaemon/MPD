@@ -76,11 +76,13 @@ static void quitDecode(PlayerControl * pc, DecoderControl * dc)
 	wakeup_main_task();
 }
 
-static int calculateCrossFadeChunks(PlayerControl * pc, AudioFormat * af)
+static int calculateCrossFadeChunks(PlayerControl * pc, AudioFormat * af,
+				    float totalTime)
 {
 	long chunks;
 
-	if (pc->crossFade <= 0)
+	if (pc->crossFade <= 0 || pc->crossFade >= totalTime ||
+	    !isCurrentAudioFormat(af))
 		return 0;
 
 	chunks = (af->sampleRate * af->bits * af->channels / 8.0 / CHUNK_SIZE);
@@ -499,21 +501,17 @@ static void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer *
 			/* enable cross fading in this song?  if yes,
 			   calculate how many chunks will be required
 			   for it */
-			if (isCurrentAudioFormat(&(cb->audioFormat))) {
+			crossFadeChunks =
+				calculateCrossFadeChunks(pc,
+							 &(cb->
+							   audioFormat),
+							 dc->totalTime);
+			if (crossFadeChunks > 0) {
 				doCrossFade = 1;
 				nextChunk = -1;
-				crossFadeChunks =
-				    calculateCrossFadeChunks(pc,
-							     &(cb->
-							       audioFormat));
-				if (!crossFadeChunks
-				    || pc->crossFade >= dc->totalTime) {
-					/* cross fading is disabled or
-					   the next song is too
-					   short */
-					doCrossFade = -1;
-				}
 			} else
+				/* cross fading is disabled or the
+				   next song is too short */
 				doCrossFade = -1;
 		}
 
