@@ -59,7 +59,7 @@ static int audioOutputAo_initDriver(AudioOutput * audioOutput,
 				    ConfigParam * param)
 {
 	ao_info *ai;
-	char *dup;
+	char *duplicated;
 	char *stk1;
 	char *stk2;
 	char *n1;
@@ -105,13 +105,13 @@ static int audioOutputAo_initDriver(AudioOutput * audioOutput,
 	blockParam = getBlockParam(param, "options");
 
 	if (blockParam) {
-		dup = xstrdup(blockParam->value);
+		duplicated = xstrdup(blockParam->value);
 	} else
-		dup = xstrdup("");
+		duplicated = xstrdup("");
 
-	if (strlen(dup)) {
+	if (strlen(duplicated)) {
 		stk1 = NULL;
-		n1 = strtok_r(dup, ";", &stk1);
+		n1 = strtok_r(duplicated, ";", &stk1);
 		while (n1) {
 			stk2 = NULL;
 			key = strtok_r(n1, "=", &stk2);
@@ -136,7 +136,7 @@ static int audioOutputAo_initDriver(AudioOutput * audioOutput,
 			n1 = strtok_r(NULL, ";", &stk1);
 		}
 	}
-	free(dup);
+	free(duplicated);
 
 	return 0;
 }
@@ -219,25 +219,25 @@ static int ao_play_deconst(ao_device *device, const void *output_samples,
 static int audioOutputAo_play(AudioOutput * audioOutput,
 			      const char *playChunk, size_t size)
 {
-	size_t send;
+	size_t chunk_size;
 	AoData *ad = (AoData *) audioOutput->data;
 
 	if (ad->device == NULL)
 		return -1;
 
 	while (size > 0) {
-		send = (size_t)ad->writeSize > size
+		chunk_size = (size_t)ad->writeSize > size
 			? size : (size_t)ad->writeSize;
 
-		if (ao_play_deconst(ad->device, playChunk, send) == 0) {
+		if (ao_play_deconst(ad->device, playChunk, chunk_size) == 0) {
 			audioOutputAo_error();
 			ERROR("closing audio device due to write error\n");
 			audioOutputAo_closeDevice(audioOutput);
 			return -1;
 		}
 
-		playChunk += send;
-		size -= send;
+		playChunk += chunk_size;
+		size -= chunk_size;
 	}
 
 	return 0;
