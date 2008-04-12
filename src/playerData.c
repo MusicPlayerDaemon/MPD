@@ -19,6 +19,7 @@
 #include "playerData.h"
 #include "conf.h"
 #include "log.h"
+#include "utils.h"
 #include "os_compat.h"
 
 unsigned int buffered_before_play;
@@ -77,9 +78,6 @@ void initPlayerData(void)
 	/* for playerData struct */
 	allocationSize = sizeof(PlayerData);
 
-	/* for audioDeviceStates[] */
-	allocationSize += device_array_size;
-
 	if ((shmid = shmget(IPC_PRIVATE, allocationSize, IPC_CREAT | 0600)) < 0)
 		FATAL("problems shmget'ing\n");
 	if (!(playerData_pd = shmat(shmid, NULL, 0))) 
@@ -87,8 +85,7 @@ void initPlayerData(void)
 	if (shmctl(shmid, IPC_RMID, NULL) < 0) 
 		FATAL("problems shmctl'ing\n");
 
-	playerData_pd->audioDeviceStates = (mpd_uint8 *)playerData_pd +
-	                                    allocationSize - device_array_size;
+	playerData_pd->audioDeviceStates = xmalloc(device_array_size);
 
 	initOutputBuffer(&(playerData_pd->buffer));
 
@@ -130,5 +127,7 @@ void freePlayerData(void)
 	 * decoder have exited.  Otherwise, their signal handlers will want to
 	 * access playerData_pd and we need to keep it available for them */
 	waitpid(-1, NULL, 0);
+
+	free(playerData_pd->audioDeviceStates);
 	shmdt(playerData_pd);
 }
