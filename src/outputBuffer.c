@@ -39,13 +39,19 @@ void clearOutputBuffer(OutputBuffer * cb)
 	cb->currentChunk = -1;
 }
 
+/** return the index of the chunk after i */
+static inline unsigned successor(unsigned i)
+{
+	assert(i <= buffered_chunks);
+
+	++i;
+	return i == buffered_chunks ? 0 : i;
+}
+
 void flushOutputBuffer(OutputBuffer * cb)
 {
 	if (cb->currentChunk == cb->end) {
-		if (((unsigned)cb->end + 1) >= buffered_chunks) {
-			cb->end = 0;
-		}
-		else cb->end++;
+		cb->end = successor(cb->end);
 		cb->currentChunk = -1;
 	}
 }
@@ -60,9 +66,7 @@ void outputBufferShift(OutputBuffer * cb)
 	assert(cb->begin != cb->end);
 	assert(cb->begin < buffered_chunks);
 
-	++cb->begin;
-	if (cb->begin >= buffered_chunks)
-		cb->begin = 0;
+	cb->begin = successor(cb->begin);
 }
 
 unsigned int outputBufferRelative(const OutputBuffer * cb, unsigned i)
@@ -121,10 +125,7 @@ static int tailChunk(OutputBuffer * cb, InputStream * inStream,
 	if (cb->currentChunk == cb->end)
 		return cb->currentChunk;
 
-	next = cb->end + 1;
-	if (next >= buffered_chunks) {
-		next = 0;
-	}
+	next = successor(cb->end);
 	while (cb->begin == next && !dc->stop) {
 		if (dc->seek) {
 			if (seekable) {
