@@ -543,10 +543,8 @@ static void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer *
 				processDecodeInput();
 				player_sleep();
 			}
-			if (pc->queueState != PLAYER_QUEUE_PLAY) {
-				quit = 1;
+			if (pc->queueState != PLAYER_QUEUE_PLAY)
 				break;
-			}
 
 			next = -1;
 			if (waitOnDecode(pc, dc, cb, &decodeWaitedOn) < 0)
@@ -558,12 +556,11 @@ static void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer *
 			pc->queueState = PLAYER_QUEUE_EMPTY;
 			wakeup_main_task();
 		} else if (dc->state == DECODE_STATE_STOP && !dc->start) {
-			quit = 1;
 			break;
 		} else {
 			/*DEBUG("waiting for decoded audio, play silence\n");*/
 			if (playAudio(silence, CHUNK_SIZE) < 0)
-				quit = 1;
+				break;
 		}
 	}
 
