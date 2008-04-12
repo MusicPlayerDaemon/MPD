@@ -408,10 +408,10 @@ static void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer *
 	/** cross fading enabled for the current song? 0=must check;
 	    1=enabled; -1=disabled */
 	int doCrossFade = 0;
-	unsigned int crossFadeChunks;
+	unsigned int crossFadeChunks = 0;
 	/** the position of the next cross-faded chunk in the next
 	    song */
-	int nextChunk;
+	int nextChunk = 0;
 	int decodeWaitedOn = 0;
 	static const char silence[CHUNK_SIZE];
 	double sizeToTime = 0.0;

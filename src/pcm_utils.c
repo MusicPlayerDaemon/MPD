@@ -394,7 +394,7 @@ size_t pcm_convertAudioFormat(AudioFormat * inFormat, const char *inBuffer,
                               char *outBuffer, ConvState *convState)
 {
 	const char *buf;
-	size_t len;
+	size_t len = 0;
 	size_t outSize = pcm_sizeOfConvBuffer(inFormat, inSize, outFormat);
 
 	assert(outFormat->bits == 16);
