@@ -176,8 +176,7 @@ static MpdTag *getID3Info(
 	id3_ucs4_t const *ucs4;
 	id3_utf8_t *utf8;
 	union id3_field const *field;
-	unsigned int nstrings;
-    int  i;
+	unsigned int nstrings, i;
 
 	frame = id3_tag_findframe(tag, id, 0);
 	/* Check frame */

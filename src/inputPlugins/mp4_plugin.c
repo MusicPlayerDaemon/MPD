@@ -260,7 +260,7 @@ static int mp4_decode(OutputBuffer * cb, DecoderControl * dc,
 			dc->state = DECODE_STATE_DECODE;
 		}
 
-		if (channels * (dur + offset) > frameInfo.samples) {
+		if (channels * (unsigned long)(dur + offset) > frameInfo.samples) {
 			dur = frameInfo.samples / channels;
 			offset = 0;
 		}

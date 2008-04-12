@@ -35,8 +35,8 @@ typedef struct _ConvState {
 	size_t dataInSize;
 	size_t dataOutSize;
 	mpd_sint8 lastChannels;
-	mpd_sint32 lastInSampleRate;
-	mpd_sint32 lastOutSampleRate;
+	mpd_uint32 lastInSampleRate;
+	mpd_uint32 lastOutSampleRate;
 #endif
 	/* Strict C99 doesn't allow empty structs */
 	int error;

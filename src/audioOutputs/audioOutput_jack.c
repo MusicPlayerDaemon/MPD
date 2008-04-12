@@ -372,7 +372,7 @@ static int jack_playAudio(AudioOutput * audioOutput, char *buff, int size)
 {
 	JackData *jd = audioOutput->data;
 	size_t space;
-	int i;
+	unsigned int i;
 	short *buffer = (short *) buff;
 	jack_default_audio_sample_t sample;
 	size_t samples = size/4;

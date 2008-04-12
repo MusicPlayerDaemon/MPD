@@ -285,7 +285,7 @@ static ReplayGainInfo *parseId3ReplayGainInfo(struct id3_tag *tag)
 #endif
 
 #ifdef HAVE_ID3TAG
-static void mp3_parseId3Tag(mp3DecodeData * data, signed long tagsize,
+static void mp3_parseId3Tag(mp3DecodeData * data, size_t tagsize,
 			    MpdTag ** mpdTag, ReplayGainInfo ** replayGainInfo)
 {
 	struct id3_tag *id3Tag = NULL;
@@ -309,7 +309,7 @@ static void mp3_parseId3Tag(mp3DecodeData * data, signed long tagsize,
 		mad_stream_skip(&(data->stream), count);
 
 		while (count < tagsize) {
-			int len;
+			size_t len;
 
 			len = readFromInputStream(data->inStream,
 						  allocated + count, (size_t) 1,
@@ -383,8 +383,8 @@ static int decodeNextFrameHeader(mp3DecodeData * data, MpdTag ** tag,
 
 			if (tagsize > 0) {
 				if (tag && !(*tag)) {
-					mp3_parseId3Tag(data, tagsize, tag,
-							replayGainInfo);
+					mp3_parseId3Tag(data, (size_t)tagsize,
+							tag, replayGainInfo);
 				} else {
 					mad_stream_skip(&(data->stream),
 							tagsize);
