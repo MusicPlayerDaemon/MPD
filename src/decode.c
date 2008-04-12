@@ -427,8 +427,7 @@ static void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer *
 				   &decodeWaitedOn, &next);
 		if (pc->stop) {
 			dropBufferedAudio();
-			quitDecode(pc,dc);
-			return;
+			break;
 		}
 
 		if (buffering) {
@@ -453,8 +452,7 @@ static void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer *
 					ERROR("problems opening audio device "
 					      "while playing \"%s\"\n",
 					      get_song_url(tmp, pc->current_song));
-					quitDecode(pc,dc);
-					return;
+					break;
 				} else {
 					player_wakeup_decoder();
 				}
@@ -472,8 +470,7 @@ static void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer *
 				/* the decoder failed */
 				pc->errored_song = pc->current_song;
 				pc->error = PLAYER_ERROR_FILE;
-				quitDecode(pc,dc);
-				return;
+				break;
 			}
 			else {
 				/* the decoder is not yet ready; wait
