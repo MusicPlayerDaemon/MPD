@@ -96,7 +96,7 @@ static void wakeup_via_cond(void)
 
 	if (ret == EBUSY)
 		return; /* nope, no need to wakeup at all */
-	pthread_cond_broadcast(&main_wakeup);
+	pthread_cond_signal(&main_wakeup);
 	pthread_mutex_unlock(&main_wakeup_mutex);
 }
 
