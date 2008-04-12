@@ -209,6 +209,7 @@ int sendDataToOutputBuffer(OutputBuffer * cb, InputStream * inStream,
 	size_t datalen;
 	static char *convBuffer;
 	static size_t convBufferLen;
+	OutputBufferChunk *chunk = NULL;
 
 	if (cmpAudioFormat(&(cb->audioFormat), &(dc->audioFormat)) == 0) {
 		data = dataIn;
@@ -234,7 +235,6 @@ int sendDataToOutputBuffer(OutputBuffer * cb, InputStream * inStream,
 		normalizeData(data, datalen, &cb->audioFormat);
 
 	while (datalen) {
-		OutputBufferChunk *chunk;
 		int chunk_index = tailChunk(cb, inStream,
 					    dc, seekable,
 					    data_time, bitRate);
@@ -251,11 +251,10 @@ int sendDataToOutputBuffer(OutputBuffer * cb, InputStream * inStream,
 		chunk->chunkSize += dataToSend;
 		datalen -= dataToSend;
 		data += dataToSend;
-
-		if (chunk->chunkSize == sizeof(chunk->data)) {
-			flushOutputBuffer(cb);
-		}
 	}
+
+	if (chunk != NULL && chunk->chunkSize == sizeof(chunk->data))
+		flushOutputBuffer(cb);
 
 	return 0;
 }
