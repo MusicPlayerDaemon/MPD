@@ -546,18 +546,17 @@ static void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer *
 			if (pc->queueState != PLAYER_QUEUE_PLAY) {
 				quit = 1;
 				break;
-			} else {
-				next = -1;
-				if (waitOnDecode(pc, dc, cb, &decodeWaitedOn) <
-				    0) {
-					return;
-				}
-				nextChunk = -1;
-				doCrossFade = 0;
-				crossFadeChunks = 0;
-				pc->queueState = PLAYER_QUEUE_EMPTY;
-				wakeup_main_task();
 			}
+
+			next = -1;
+			if (waitOnDecode(pc, dc, cb, &decodeWaitedOn) < 0)
+				return;
+
+			nextChunk = -1;
+			doCrossFade = 0;
+			crossFadeChunks = 0;
+			pc->queueState = PLAYER_QUEUE_EMPTY;
+			wakeup_main_task();
 		} else if (dc->state == DECODE_STATE_STOP && !dc->start) {
 			quit = 1;
 			break;
