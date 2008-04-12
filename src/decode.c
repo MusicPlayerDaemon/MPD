@@ -411,7 +411,6 @@ static void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer *
 	int decodeWaitedOn = 0;
 	static const char silence[CHUNK_SIZE];
 	double sizeToTime = 0.0;
-	unsigned int end;
 	/** the position of the first chunk in the next song */
 	int next = -1;
 
@@ -511,10 +510,6 @@ static void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer *
 				   next song is too short */
 				doCrossFade = -1;
 		}
-
-		/* copy these to local variables to prevent any potential
-		   race conditions and weirdness */
-		end = cb->end;
 
 		if (do_pause)
 			player_sleep();
