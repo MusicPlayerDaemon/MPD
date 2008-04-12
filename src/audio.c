@@ -49,9 +49,9 @@ static mpd_uint8 *audioDeviceStates;
 
 static mpd_uint8 audioOpened;
 
-static mpd_sint32 audioBufferSize;
+static size_t audioBufferSize;
 static char *audioBuffer;
-static mpd_sint32 audioBufferPos;
+static size_t audioBufferPos;
 
 unsigned int audio_device_count(void)
 {
@@ -358,9 +358,9 @@ int openAudioDevice(AudioFormat * audioFormat)
 	return ret;
 }
 
-int playAudio(const char *playChunk, int size)
+int playAudio(const char *playChunk, size_t size)
 {
-	int send_size;
+	size_t send_size;
 
 	while (size > 0) {
 		send_size = audioBufferSize - audioBufferPos;
