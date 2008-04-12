@@ -79,24 +79,25 @@ static void quitDecode(PlayerControl * pc, DecoderControl * dc)
 static unsigned calculateCrossFadeChunks(PlayerControl * pc, AudioFormat * af,
 					 float totalTime)
 {
-	long chunks;
+	unsigned chunks;
 
-	if (pc->crossFade <= 0 || pc->crossFade >= totalTime ||
+	if (pc->crossFade == 0 || pc->crossFade >= totalTime ||
 	    !isCurrentAudioFormat(af))
 		return 0;
+
+	assert(pc->crossFade > 0);
+	assert(af->bits > 0);
+	assert(af->channels > 0);
+	assert(af->sampleRate > 0);
 
 	chunks = (af->sampleRate * af->bits * af->channels / 8.0 / CHUNK_SIZE);
 	chunks = (chunks * pc->crossFade + 0.5);
 
 	assert(buffered_chunks >= buffered_before_play);
-	if (chunks > (buffered_chunks - buffered_before_play)) {
+	if (chunks > (buffered_chunks - buffered_before_play))
 		chunks = buffered_chunks - buffered_before_play;
-	}
 
-	if (chunks < 0)
-		chunks = 0;
-
-	return (unsigned)chunks;
+	return chunks;
 }
 
 static int waitOnDecode(PlayerControl * pc, DecoderControl * dc,
