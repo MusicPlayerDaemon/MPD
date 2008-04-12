@@ -70,7 +70,7 @@ struct _AudioOutput {
 	AudioFormat reqAudioFormat;
 	ConvState convState;
 	char *convBuffer;
-	int convBufferLen;
+	size_t convBufferLen;
 	int sameInAndOutFormats;
 
 	void *data;

@@ -188,7 +188,7 @@ static void convertAudioFormat(AudioOutput * audioOutput,
 					   *sizeArgPtr,
 					   &(audioOutput->outAudioFormat));
 
-	if (size > (size_t)audioOutput->convBufferLen) {
+	if (size > audioOutput->convBufferLen) {
 		audioOutput->convBuffer =
 		    xrealloc(audioOutput->convBuffer, size);
 		audioOutput->convBufferLen = size;
