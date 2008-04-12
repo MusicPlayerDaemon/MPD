@@ -453,6 +453,8 @@ static int wavpack_streamdecode(OutputBuffer *cb, DecoderControl *dc,
 
 	/* Try to find wvc */
 	do {
+		char tmp[MPD_PATH_MAX];
+		const char *utf8url;
 		size_t len;
 		err = 1;
 
@@ -460,11 +462,12 @@ static int wavpack_streamdecode(OutputBuffer *cb, DecoderControl *dc,
 		 * As we use dc->utf8url, this function will be bad for
 		 * single files. utf8url is not absolute file path :/
 		 */
-		if (dc->utf8url == NULL) {
+		utf8url = get_song_url(tmp, getPlayerData()->playerControl.current_song);
+		if (utf8url == NULL) {
 			break;
 		}
 
-		len = strlen(dc->utf8url);
+		len = strlen(utf8url);
 		if (!len) {
 			break;
 		}
@@ -474,7 +477,7 @@ static int wavpack_streamdecode(OutputBuffer *cb, DecoderControl *dc,
 			break;
 		}
 
-		memcpy(wvc_url, dc->utf8url, len);
+		memcpy(wvc_url, utf8url, len);
 		wvc_url[len] = 'c';
 		wvc_url[len + 1] = '\0';
 
