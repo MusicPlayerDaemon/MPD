@@ -238,7 +238,8 @@ static FLAC__StreamDecoderWriteStatus flacWrite(const flac_decoder *dec,
 	const unsigned int bytes_per_sample = (data->dc->audioFormat.bits / 8);
 	const unsigned int bytes_per_channel =
 		bytes_per_sample * frame->header.channels;
-	unsigned int num_samples, max_samples;
+	const unsigned int max_samples = FLAC_CHUNK_SIZE / bytes_per_channel;
+	unsigned int num_samples;
 	float timeChange;
 	FLAC__uint64 newPosition = 0;
 
@@ -261,15 +262,13 @@ static FLAC__StreamDecoderWriteStatus flacWrite(const flac_decoder *dec,
 	for (c_samp = 0; c_samp < frame->header.blocksize;
 	     c_samp += num_samples) {
 		num_samples = frame->header.blocksize - c_samp;
-		max_samples = (FLAC_CHUNK_SIZE - data->chunk_length) /
-			bytes_per_channel;
 		if (num_samples > max_samples)
 			num_samples = max_samples;
 
 		flac_convert(data->chunk + data->chunk_length,
 			     frame, bytes_per_sample, buf,
 			     c_samp, c_samp + num_samples);
-		data->chunk_length += num_samples;
+		data->chunk_length = num_samples;
 
 		if (flacSendChunk(data) < 0) {
 			return
