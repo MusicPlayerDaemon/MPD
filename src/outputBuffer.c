@@ -42,7 +42,6 @@ void initOutputBuffer(OutputBuffer * cb, char *chunks)
 
 void clearOutputBuffer(OutputBuffer * cb)
 {
-	int currentSet = 1;
 	cb->end = cb->begin;
 	currentChunk = -1;
 }
