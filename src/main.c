@@ -444,7 +444,7 @@ int main(int argc, char *argv[])
 
 	openVolumeDevice();
 	decoderInit();
-	playerInit();
+	playerInit(&getPlayerData()->playerControl);
 	read_state_file();
 
 	notifyEnter(&main_notify);

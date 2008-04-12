@@ -51,9 +51,9 @@ void player_sleep(PlayerControl *pc)
 	notifyWait(&pc->notify);
 }
 
-static void * player_task(mpd_unused void *unused)
+static void * player_task(void *arg)
 {
-	PlayerControl *pc = &(getPlayerData()->playerControl);
+	PlayerControl *pc = arg;
 
 	notifyEnter(&pc->notify);
 
@@ -86,14 +86,14 @@ static void * player_task(mpd_unused void *unused)
 	return NULL;
 }
 
-void playerInit(void)
+void playerInit(PlayerControl * pc)
 {
 	pthread_attr_t attr;
 	pthread_t player_thread;
 
 	pthread_attr_init(&attr);
 	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
-	if (pthread_create(&player_thread, &attr, player_task, NULL))
+	if (pthread_create(&player_thread, &attr, player_task, pc))
 		FATAL("Failed to spawn player task: %s\n", strerror(errno));
 }
 

@@ -138,6 +138,6 @@ int getPlayerChannels(void);
 
 Song *playerCurrentDecodeSong(void);
 
-void playerInit(void);
+void playerInit(PlayerControl * pc);
 
 #endif
