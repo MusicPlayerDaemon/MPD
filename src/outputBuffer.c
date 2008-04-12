@@ -107,9 +107,9 @@ OutputBufferChunk * outputBufferGetChunk(const OutputBuffer * cb, unsigned i)
 }
 
 /**
- * Return the tail chunk has room for additional data.  If there is no
- * room in the queue, this function blocks until the player thread has
- * finished playing its current chunk.
+ * Return the tail chunk which has room for additional data.  If there
+ * is no room in the queue, this function blocks until the player
+ * thread has finished playing its current chunk.
  *
  * @return the positive index of the new chunk; OUTPUT_BUFFER_DC_SEEK
  * if another thread requested seeking; OUTPUT_BUFFER_DC_STOP if
