@@ -38,11 +38,12 @@ static inline double audioFormatSizeToTime(const AudioFormat * af)
 	return 8.0 / af->bits / af->channels / af->sampleRate;
 }
 
-void copyAudioFormat(AudioFormat * dest, AudioFormat * src);
+void copyAudioFormat(AudioFormat * dest, const AudioFormat * src);
 
-int cmpAudioFormat(AudioFormat * dest, AudioFormat * src);
+int cmpAudioFormat(const AudioFormat * dest, const AudioFormat * src);
 
-void getOutputAudioFormat(AudioFormat * inFormat, AudioFormat * outFormat);
+void getOutputAudioFormat(const AudioFormat * inFormat,
+			  AudioFormat * outFormat);
 
 int parseAudioConfig(AudioFormat * audioFormat, char *conf);
 
@@ -55,7 +56,7 @@ void initAudioDriver(void);
 
 void finishAudioDriver(void);
 
-int openAudioDevice(AudioFormat * audioFormat);
+int openAudioDevice(const AudioFormat * audioFormat);
 
 int playAudio(const char *playChunk, size_t size);
 
@@ -65,7 +66,7 @@ void closeAudioDevice(void);
 
 int isAudioDeviceOpen(void);
 
-int isCurrentAudioFormat(AudioFormat * audioFormat);
+int isCurrentAudioFormat(const AudioFormat * audioFormat);
 
 void sendMetadataToAudioDevice(MpdTag * tag);
 

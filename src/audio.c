@@ -64,7 +64,7 @@ unsigned int audio_device_count(void)
 	return nr;
 }
 
-void copyAudioFormat(AudioFormat * dest, AudioFormat * src)
+void copyAudioFormat(AudioFormat * dest, const AudioFormat * src)
 {
 	if (!src)
 		return;
@@ -72,7 +72,7 @@ void copyAudioFormat(AudioFormat * dest, AudioFormat * src)
 	memcpy(dest, src, sizeof(AudioFormat));
 }
 
-int cmpAudioFormat(AudioFormat * f1, AudioFormat * f2)
+int cmpAudioFormat(const AudioFormat * f1, const AudioFormat * f2)
 {
 	if (f1 && f2 && (f1->sampleRate == f2->sampleRate) &&
 	    (f1->bits == f2->bits) && (f1->channels == f2->channels))
@@ -141,7 +141,7 @@ void initAudioDriver(void)
 	}
 }
 
-void getOutputAudioFormat(AudioFormat * inAudioFormat,
+void getOutputAudioFormat(const AudioFormat * inAudioFormat,
 			  AudioFormat * outAudioFormat)
 {
 	if (audio_configFormat) {
@@ -251,7 +251,7 @@ void finishAudioDriver(void)
 	audioOutputArraySize = 0;
 }
 
-int isCurrentAudioFormat(AudioFormat * audioFormat)
+int isCurrentAudioFormat(const AudioFormat * audioFormat)
 {
 	if (!audioFormat)
 		return 1;
@@ -319,7 +319,7 @@ static int flushAudioBuffer(void)
 	return ret;
 }
 
-int openAudioDevice(AudioFormat * audioFormat)
+int openAudioDevice(const AudioFormat * audioFormat)
 {
 	int ret = -1;
 	unsigned int i;
