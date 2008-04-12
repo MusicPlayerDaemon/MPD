@@ -144,7 +144,7 @@ static int waitOnDecode(PlayerControl * pc, DecoderControl * dc,
 	while (dc->start)
 		player_wakeup_decoder();
 
-	if (dc->start || dc->error != DECODE_ERROR_NOERROR) {
+	if (dc->error != DECODE_ERROR_NOERROR) {
 		pc->errored_song = pc->current_song;
 		pc->error = PLAYER_ERROR_FILE;
 		quitDecode(pc, dc);
