@@ -126,5 +126,6 @@ void wait_main_task(void)
 
 	pthread_mutex_lock(&main_wakeup_mutex);
 	pthread_cond_wait(&main_wakeup, &main_wakeup_mutex);
+	pthread_mutex_unlock(&main_wakeup_mutex);
 }
 
