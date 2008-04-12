@@ -67,8 +67,7 @@ static void redirect_stdin(void)
 		FATAL("dup2 stdin: %s\n", strerror(errno));
 }
 
-static int establishListen(unsigned int port,
-                           struct sockaddr *addrp, socklen_t addrlen)
+static int establishListen(struct sockaddr *addrp, socklen_t addrlen)
 {
 	int pf;
 	int sock;
@@ -144,7 +143,7 @@ static void parseListenConfigParam(unsigned int port, ConfigParam * param)
 			sin6.sin6_addr = in6addr_any;
 			addrp = (struct sockaddr *)&sin6;
 			addrlen = sizeof(struct sockaddr_in6);
-			if (establishListen(port, addrp, addrlen) < 0)
+			if (establishListen(addrp, addrlen) < 0)
 				BINDERROR();
 		}
 #endif
@@ -152,9 +151,9 @@ static void parseListenConfigParam(unsigned int port, ConfigParam * param)
 		addrp = (struct sockaddr *)&sin4;
 		addrlen = sizeof(struct sockaddr_in);
 #ifdef HAVE_IPV6
-		if ((establishListen(port, addrp, addrlen) < 0) && !useIpv6) {
+		if ((establishListen(addrp, addrlen) < 0) && !useIpv6) {
 #else
-		if (establishListen(port, addrp, addrlen) < 0) {
+		if (establishListen(addrp, addrlen) < 0) {
 #endif
 			BINDERROR();
 		}
@@ -190,7 +189,7 @@ static void parseListenConfigParam(unsigned int port, ConfigParam * param)
 			      "at line %i\n", param->value, param->line);
 		}
 
-		if (establishListen(port, addrp, addrlen) < 0)
+		if (establishListen(addrp, addrlen) < 0)
 			BINDERROR();
 	}
 }
