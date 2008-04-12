@@ -157,6 +157,22 @@ static void parseListenConfigParam(unsigned int port, ConfigParam * param)
 #endif
 			BINDERROR();
 		}
+	} else if (param->value[0] == '/') {
+		size_t path_length;
+		struct sockaddr_un sun;
+
+		path_length = strlen(param->value);
+		if (path_length >= sizeof(sun.sun_path))
+			FATAL("unix socket path is too long\n");
+
+		sun.sun_family = AF_UNIX;
+		memcpy(sun.sun_path, param->value, path_length + 1);
+
+		addrp = (const struct sockaddr *)&sun;
+		addrlen = sizeof(sun);
+
+		if (establishListen(addrp, addrlen) < 0)
+			BINDERROR();
 	} else {
 		struct hostent *he;
 		DEBUG("binding to address for %s\n", param->value);
