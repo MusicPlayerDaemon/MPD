@@ -28,7 +28,7 @@ unsigned int buffered_chunks;
 #define DEFAULT_BUFFER_SIZE         2048
 #define DEFAULT_BUFFER_BEFORE_PLAY  10
 
-static PlayerData *playerData_pd;
+static PlayerData playerData_pd;
 
 void initPlayerData(void)
 {
@@ -36,7 +36,6 @@ void initPlayerData(void)
 	char *test;
 	int crossfade = 0;
 	size_t bufferSize = DEFAULT_BUFFER_SIZE;
-	size_t allocationSize;
 	ConfigParam *param;
 	size_t device_array_size = audio_device_count() * sizeof(mpd_sint8);
 
@@ -74,45 +73,40 @@ void initPlayerData(void)
 		buffered_before_play = buffered_chunks;
 	}
 
-	/* for playerData struct */
-	allocationSize = sizeof(PlayerData);
+	playerData_pd.audioDeviceStates = xmalloc(device_array_size);
 
-	playerData_pd = xmalloc(allocationSize);
+	initOutputBuffer(&(playerData_pd.buffer));
 
-	playerData_pd->audioDeviceStates = xmalloc(device_array_size);
+	notifyInit(&playerData_pd.playerControl.notify);
+	playerData_pd.playerControl.stop = 0;
+	playerData_pd.playerControl.pause = 0;
+	playerData_pd.playerControl.play = 0;
+	playerData_pd.playerControl.error = PLAYER_ERROR_NOERROR;
+	playerData_pd.playerControl.lockQueue = 0;
+	playerData_pd.playerControl.unlockQueue = 0;
+	playerData_pd.playerControl.state = PLAYER_STATE_STOP;
+	playerData_pd.playerControl.queueState = PLAYER_QUEUE_BLANK;
+	playerData_pd.playerControl.queueLockState = PLAYER_QUEUE_UNLOCKED;
+	playerData_pd.playerControl.seek = 0;
+	playerData_pd.playerControl.closeAudio = 0;
+	playerData_pd.playerControl.current_song = NULL;
+	playerData_pd.playerControl.errored_song = NULL;
+	playerData_pd.playerControl.crossFade = crossfade;
+	playerData_pd.playerControl.softwareVolume = 1000;
+	playerData_pd.playerControl.totalPlayTime = 0;
 
-	initOutputBuffer(&(playerData_pd->buffer));
-
-	notifyInit(&playerData_pd->playerControl.notify);
-	playerData_pd->playerControl.stop = 0;
-	playerData_pd->playerControl.pause = 0;
-	playerData_pd->playerControl.play = 0;
-	playerData_pd->playerControl.error = PLAYER_ERROR_NOERROR;
-	playerData_pd->playerControl.lockQueue = 0;
-	playerData_pd->playerControl.unlockQueue = 0;
-	playerData_pd->playerControl.state = PLAYER_STATE_STOP;
-	playerData_pd->playerControl.queueState = PLAYER_QUEUE_BLANK;
-	playerData_pd->playerControl.queueLockState = PLAYER_QUEUE_UNLOCKED;
-	playerData_pd->playerControl.seek = 0;
-	playerData_pd->playerControl.closeAudio = 0;
-	playerData_pd->playerControl.current_song = NULL;
-	playerData_pd->playerControl.errored_song = NULL;
-	playerData_pd->playerControl.crossFade = crossfade;
-	playerData_pd->playerControl.softwareVolume = 1000;
-	playerData_pd->playerControl.totalPlayTime = 0;
-
-	notifyInit(&playerData_pd->decoderControl.notify);
-	playerData_pd->decoderControl.stop = 0;
-	playerData_pd->decoderControl.start = 0;
-	playerData_pd->decoderControl.state = DECODE_STATE_STOP;
-	playerData_pd->decoderControl.seek = 0;
-	playerData_pd->decoderControl.error = DECODE_ERROR_NOERROR;
-	playerData_pd->decoderControl.current_song = NULL;
+	notifyInit(&playerData_pd.decoderControl.notify);
+	playerData_pd.decoderControl.stop = 0;
+	playerData_pd.decoderControl.start = 0;
+	playerData_pd.decoderControl.state = DECODE_STATE_STOP;
+	playerData_pd.decoderControl.seek = 0;
+	playerData_pd.decoderControl.error = DECODE_ERROR_NOERROR;
+	playerData_pd.decoderControl.current_song = NULL;
 }
 
 PlayerData *getPlayerData(void)
 {
-	return playerData_pd;
+	return &playerData_pd;
 }
 
 void freePlayerData(void)
@@ -122,6 +116,5 @@ void freePlayerData(void)
 	 * access playerData_pd and we need to keep it available for them */
 	waitpid(-1, NULL, 0);
 
-	free(playerData_pd->audioDeviceStates);
-	free(playerData_pd);
+	free(playerData_pd.audioDeviceStates);
 }
