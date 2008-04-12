@@ -184,11 +184,11 @@ int openAudioOutput(AudioOutput * audioOutput, AudioFormat * audioFormat)
 static void convertAudioFormat(AudioOutput * audioOutput, char **chunkArgPtr,
 			       int *sizeArgPtr)
 {
-	int size = pcm_sizeOfConvBuffer(&(audioOutput->inAudioFormat),
-                                        *sizeArgPtr,
-                                        &(audioOutput->outAudioFormat));
+	size_t size = pcm_sizeOfConvBuffer(&(audioOutput->inAudioFormat),
+					   *sizeArgPtr,
+					   &(audioOutput->outAudioFormat));
 
-	if (size > audioOutput->convBufferLen) {
+	if (size > (size_t)audioOutput->convBufferLen) {
 		audioOutput->convBuffer =
 		    xrealloc(audioOutput->convBuffer, size);
 		audioOutput->convBufferLen = size;
