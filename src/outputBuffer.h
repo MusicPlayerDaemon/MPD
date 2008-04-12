@@ -53,8 +53,6 @@ typedef struct _OutputBuffer {
 	/** the index after the last decoded chunk */
 	unsigned int volatile end;
 
-	int currentChunk;
-
 	AudioFormat audioFormat;
 	ConvState convState;
 } OutputBuffer;

@@ -30,7 +30,7 @@ void initOutputBuffer(OutputBuffer * cb, unsigned int size)
 	cb->size = size;
 	cb->begin = 0;
 	cb->end = 0;
-	cb->currentChunk = -1;
+	cb->chunks[0].chunkSize = 0;
 }
 
 void output_buffer_free(OutputBuffer * cb)
@@ -42,7 +42,7 @@ void output_buffer_free(OutputBuffer * cb)
 void clearOutputBuffer(OutputBuffer * cb)
 {
 	cb->end = cb->begin;
-	cb->currentChunk = -1;
+	cb->chunks[cb->end].chunkSize = 0;
 }
 
 /** return the index of the chunk after i */
@@ -66,7 +66,7 @@ static void output_buffer_expand(OutputBuffer * cb, unsigned i)
 	assert(i != cb->end);
 
 	cb->end = i;
-	cb->currentChunk = -1;
+	cb->chunks[i].chunkSize = 0;
 	if (was_empty)
 		/* if the buffer was empty, the player thread might be
 		   waiting for us; wake it up now that another decoded
@@ -76,8 +76,18 @@ static void output_buffer_expand(OutputBuffer * cb, unsigned i)
 
 void flushOutputBuffer(OutputBuffer * cb)
 {
-	if (cb->currentChunk == (int)cb->end)
-		output_buffer_expand(cb, successor(cb, cb->end));
+	OutputBufferChunk *chunk = outputBufferGetChunk(cb, cb->end);
+
+	if (chunk->chunkSize > 0) {
+		unsigned int next = successor(cb, cb->end);
+		if (next == cb->begin)
+			/* all buffers are full; we have to wait for
+			   the player to free one, so don't flush
+			   right now */
+			return;
+
+		output_buffer_expand(cb, next);
+	}
 }
 
 int outputBufferEmpty(const OutputBuffer * cb)
@@ -146,35 +156,47 @@ static int tailChunk(OutputBuffer * cb, InputStream * inStream,
 	unsigned int next;
 	OutputBufferChunk *chunk;
 
-	if (cb->currentChunk == (int)cb->end)
-		return cb->currentChunk;
+	chunk = outputBufferGetChunk(cb, cb->end);
+	assert(chunk->chunkSize <= sizeof(chunk->data));
+	if (chunk->chunkSize == sizeof(chunk->data)) {
+		/* this chunk is full; allocate a new chunk */
+		next = successor(cb, cb->end);
+		while (cb->begin == next && !dc->stop) {
+			/* all chunks are full of decoded data; wait
+			   for the player to free one */
 
-	next = successor(cb, cb->end);
-	while (cb->begin == next && !dc->stop) {
-		if (dc->seek) {
-			if (seekable) {
-				return OUTPUT_BUFFER_DC_SEEK;
-			} else {
-				dc->seekError = 1;
-				dc->seek = 0;
-				decoder_wakeup_player();
+			if (dc->seek) {
+				if (seekable) {
+					return OUTPUT_BUFFER_DC_SEEK;
+				} else {
+					dc->seekError = 1;
+					dc->seek = 0;
+					decoder_wakeup_player();
+				}
+			}
+			if (!inStream ||
+			    bufferInputStream(inStream) <= 0) {
+				decoder_sleep(dc);
 			}
 		}
-		if (!inStream ||
-		    bufferInputStream(inStream) <= 0) {
-			decoder_sleep(dc);
-		}
+
+		if (dc->stop)
+			return OUTPUT_BUFFER_DC_STOP;
+
+		output_buffer_expand(cb, next);
+		chunk = outputBufferGetChunk(cb, next);
+		assert(chunk->chunkSize == 0);
 	}
-	if (dc->stop)
-		return OUTPUT_BUFFER_DC_STOP;
 
-	cb->currentChunk = cb->end;
-	chunk = outputBufferGetChunk(cb, cb->currentChunk);
-	chunk->chunkSize = 0;
-	chunk->bitRate = bitRate;
-	chunk->times = data_time;
+	if (chunk->chunkSize == 0) {
+		/* if the chunk is empty, nobody has set bitRate and
+		   times yet */
 
-	return cb->currentChunk;
+		chunk->bitRate = bitRate;
+		chunk->times = data_time;
+	}
+
+	return cb->end;
 }
 
 int sendDataToOutputBuffer(OutputBuffer * cb, InputStream * inStream,
