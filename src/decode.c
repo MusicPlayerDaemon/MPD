@@ -374,6 +374,24 @@ static void crossFade(OutputBufferChunk * a, OutputBufferChunk * b,
 		a->chunkSize = b->chunkSize;
 }
 
+static int playChunk(PlayerControl * pc, OutputBufferChunk * chunk,
+		     AudioFormat * format, double sizeToTime)
+{
+	pc->elapsedTime = chunk->times;
+	pc->bitRate = chunk->bitRate;
+
+	pcm_volumeChange(chunk->data, chunk->chunkSize,
+			 format, pc->softwareVolume);
+
+	if (playAudio(chunk->data,
+		      chunk->chunkSize) < 0)
+		return -1;
+
+	pc->totalPlayTime +=
+		sizeToTime * chunk->chunkSize;
+	return 0;
+}
+
 static void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb)
 {
 	int pause = 0;
@@ -546,17 +564,9 @@ static void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer *
 			}
 
 			/* play the current chunk */
-			pc->elapsedTime = beginChunk->times;
-			pc->bitRate = beginChunk->bitRate;
-			pcm_volumeChange(beginChunk->data,
-					 beginChunk->chunkSize,
-					 &(cb->audioFormat),
-					 pc->softwareVolume);
-			if (playAudio(beginChunk->data,
-				      beginChunk->chunkSize) < 0)
+			if (playChunk(pc, beginChunk, &(cb->audioFormat),
+				      sizeToTime) < 0)
 				break;
-			pc->totalPlayTime +=
-				sizeToTime * beginChunk->chunkSize;
 			outputBufferShift(cb);
 			player_wakeup_decoder_nb();
 		} else if (!outputBufferEmpty(cb) && cb->begin == next) {
