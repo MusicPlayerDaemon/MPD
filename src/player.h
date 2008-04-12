@@ -51,6 +51,7 @@
 #define PLAYER_QUEUE_LOCKED	1
 
 typedef struct _PlayerControl {
+	Notify notify;
 	volatile mpd_sint8 stop;
 	volatile mpd_sint8 play;
 	volatile mpd_sint8 pause;

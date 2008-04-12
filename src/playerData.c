@@ -96,6 +96,7 @@ void initPlayerData(void)
 	initOutputBuffer(&(playerData_pd->buffer),
 			 (OutputBufferChunk*)(((char *)playerData_pd) + sizeof(PlayerData)));
 
+	notifyInit(&playerData_pd->playerControl.notify);
 	playerData_pd->playerControl.stop = 0;
 	playerData_pd->playerControl.pause = 0;
 	playerData_pd->playerControl.play = 0;

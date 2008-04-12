@@ -33,9 +33,6 @@
 #include "sig_handlers.h"
 #include "os_compat.h"
 
-static pthread_cond_t player_wakeup = PTHREAD_COND_INITIALIZER;
-static pthread_mutex_t player_wakeup_mutex = PTHREAD_MUTEX_INITIALIZER;
-
 static pthread_cond_t main_wakeup = PTHREAD_COND_INITIALIZER;
 static pthread_mutex_t main_wakeup_mutex = PTHREAD_MUTEX_INITIALIZER;
 
@@ -43,12 +40,14 @@ static void playerCloseAudio(void);
 
 void wakeup_player_nb(void)
 {
-	pthread_cond_signal(&player_wakeup);
+	PlayerControl *pc = &(getPlayerData()->playerControl);
+	notifySignal(&pc->notify);
 }
 
 static void wakeup_player(void)
 {
-	pthread_cond_signal(&player_wakeup);
+	PlayerControl *pc = &(getPlayerData()->playerControl);
+	notifySignal(&pc->notify);
 	pthread_cond_wait(&main_wakeup, &main_wakeup_mutex);
 }
 
@@ -59,12 +58,15 @@ void wakeup_main_task(void)
 
 void player_sleep(void)
 {
-	pthread_cond_wait(&player_wakeup, &player_wakeup_mutex);
+	PlayerControl *pc = &(getPlayerData()->playerControl);
+	notifyWait(&pc->notify);
 }
 
 static void * player_task(mpd_unused void *unused)
 {
 	PlayerControl *pc = &(getPlayerData()->playerControl);
+
+	notifyEnter(&pc->notify);
 
 	while (1) {
 		if (pc->play) {
