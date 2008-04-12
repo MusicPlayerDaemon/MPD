@@ -362,7 +362,6 @@ static void advanceOutputBufferTo(OutputBuffer * cb, int to)
 static void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb)
 {
 	int pause = 0;
-	int quit = 0;
 	int buffering = 1;
 	unsigned int bbp = buffered_before_play;
 	/** cross fading enabled for the current song? 0=must check;
@@ -387,7 +386,7 @@ static void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer *
 	pc->play = 0;
 	wakeup_main_task();
 
-	while (!quit) {
+	while (1) {
 		processDecodeInput(pc, dc, cb,
 				   &pause, &bbp, &doCrossFade,
 				   &decodeWaitedOn, &next);
@@ -546,9 +545,8 @@ static void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer *
 					 &(cb->audioFormat),
 					 pc->softwareVolume);
 			if (playAudio(cb->chunks + cb->begin * CHUNK_SIZE,
-				      cb->chunkSize[cb->begin]) < 0) {
-				quit = 1;
-			}
+				      cb->chunkSize[cb->begin]) < 0)
+				break;
 			pc->totalPlayTime +=
 			    sizeToTime * cb->chunkSize[cb->begin];
 			if ((unsigned)cb->begin + 1 >= buffered_chunks) {
