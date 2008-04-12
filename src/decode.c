@@ -76,8 +76,8 @@ static void quitDecode(PlayerControl * pc, DecoderControl * dc)
 	wakeup_main_task();
 }
 
-static int calculateCrossFadeChunks(PlayerControl * pc, AudioFormat * af,
-				    float totalTime)
+static unsigned calculateCrossFadeChunks(PlayerControl * pc, AudioFormat * af,
+					 float totalTime)
 {
 	long chunks;
 
@@ -95,7 +95,7 @@ static int calculateCrossFadeChunks(PlayerControl * pc, AudioFormat * af,
 	if (chunks < 0)
 		chunks = 0;
 
-	return (int)chunks;
+	return (unsigned)chunks;
 }
 
 static int waitOnDecode(PlayerControl * pc, DecoderControl * dc,
@@ -365,7 +365,7 @@ static void advanceOutputBufferTo(OutputBuffer * cb, int to)
 
 static void crossFade(OutputBufferChunk * a, OutputBufferChunk * b,
 		      AudioFormat * format,
-		      int fadePosition, int crossFadeChunks)
+		      unsigned int fadePosition, unsigned int crossFadeChunks)
 {
 	pcm_mix(a->data,
 		b->data,
