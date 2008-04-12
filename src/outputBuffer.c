@@ -26,28 +26,27 @@
 #include "conf.h"
 #include "os_compat.h"
 
-static mpd_sint16 currentChunk = -1;
-
 void initOutputBuffer(OutputBuffer * cb, OutputBufferChunk * chunks)
 {
 	memset(&cb->convState, 0, sizeof(ConvState));
 	cb->chunks = chunks;
+	cb->currentChunk = -1;
 }
 
 void clearOutputBuffer(OutputBuffer * cb)
 {
 	cb->end = cb->begin;
-	currentChunk = -1;
+	cb->currentChunk = -1;
 }
 
 void flushOutputBuffer(OutputBuffer * cb)
 {
-	if (currentChunk == cb->end) {
+	if (cb->currentChunk == cb->end) {
 		if (((unsigned)cb->end + 1) >= buffered_chunks) {
 			cb->end = 0;
 		}
 		else cb->end++;
-		currentChunk = -1;
+		cb->currentChunk = -1;
 	}
 }
 
@@ -119,8 +118,8 @@ static int tailChunk(OutputBuffer * cb, InputStream * inStream,
 	unsigned int next;
 	OutputBufferChunk *chunk;
 
-	if (currentChunk == cb->end)
-		return currentChunk;
+	if (cb->currentChunk == cb->end)
+		return cb->currentChunk;
 
 	next = cb->end + 1;
 	if (next >= buffered_chunks) {
@@ -144,13 +143,13 @@ static int tailChunk(OutputBuffer * cb, InputStream * inStream,
 	if (dc->stop)
 		return OUTPUT_BUFFER_DC_STOP;
 
-	currentChunk = cb->end;
-	chunk = outputBufferGetChunk(cb, currentChunk);
+	cb->currentChunk = cb->end;
+	chunk = outputBufferGetChunk(cb, cb->currentChunk);
 	chunk->chunkSize = 0;
 	chunk->bitRate = bitRate;
 	chunk->times = data_time;
 
-	return currentChunk;
+	return cb->currentChunk;
 }
 
 int sendDataToOutputBuffer(OutputBuffer * cb, InputStream * inStream,
