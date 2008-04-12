@@ -26,10 +26,10 @@
 #include "conf.h"
 #include "os_compat.h"
 
-void initOutputBuffer(OutputBuffer * cb, OutputBufferChunk * chunks)
+void initOutputBuffer(OutputBuffer * cb)
 {
 	memset(&cb->convState, 0, sizeof(ConvState));
-	cb->chunks = chunks;
+	cb->chunks = xmalloc(buffered_chunks * sizeof(*cb->chunks));
 	cb->currentChunk = -1;
 }
 

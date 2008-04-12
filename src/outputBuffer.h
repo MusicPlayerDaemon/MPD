@@ -58,7 +58,7 @@ typedef struct _OutputBuffer {
 	ConvState convState;
 } OutputBuffer;
 
-void initOutputBuffer(OutputBuffer * cb, OutputBufferChunk * chunks);
+void initOutputBuffer(OutputBuffer * cb);
 
 void clearOutputBuffer(OutputBuffer * cb);
 

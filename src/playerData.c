@@ -74,11 +74,8 @@ void initPlayerData(void)
 		buffered_before_play = buffered_chunks;
 	}
 
-	allocationSize = buffered_chunks * sizeof(OutputBufferChunk);	/*actual buffer */
-	allocationSize += buffered_chunks * sizeof(float);	/*for times */
-	allocationSize += buffered_chunks * sizeof(mpd_sint16);	/*for chunkSize */
-	allocationSize += buffered_chunks * sizeof(mpd_sint16);	/*for bitRate */
-	allocationSize += sizeof(PlayerData);	/*for playerData struct */
+	/* for playerData struct */
+	allocationSize = sizeof(PlayerData);
 
 	/* for audioDeviceStates[] */
 	allocationSize += device_array_size;
@@ -93,8 +90,7 @@ void initPlayerData(void)
 	playerData_pd->audioDeviceStates = (mpd_uint8 *)playerData_pd +
 	                                    allocationSize - device_array_size;
 
-	initOutputBuffer(&(playerData_pd->buffer),
-			 (OutputBufferChunk*)(((char *)playerData_pd) + sizeof(PlayerData)));
+	initOutputBuffer(&(playerData_pd->buffer));
 
 	notifyInit(&playerData_pd->playerControl.notify);
 	playerData_pd->playerControl.stop = 0;
