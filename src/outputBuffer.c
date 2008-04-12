@@ -204,8 +204,7 @@ int sendDataToOutputBuffer(OutputBuffer * cb, InputStream * inStream,
 			   size_t dataInLen, float data_time, mpd_uint16 bitRate,
 			   ReplayGainInfo * replayGainInfo)
 {
-	mpd_uint16 dataToSend;
-	mpd_uint16 chunkLeft;
+	size_t dataToSend;
 	char *data;
 	size_t datalen;
 	static char *convBuffer;
@@ -244,8 +243,9 @@ int sendDataToOutputBuffer(OutputBuffer * cb, InputStream * inStream,
 
 		chunk = outputBufferGetChunk(cb, chunk_index);
 
-		chunkLeft = sizeof(chunk->data) - chunk->chunkSize;
-		dataToSend = datalen > chunkLeft ? chunkLeft : datalen;
+		dataToSend = sizeof(chunk->data) - chunk->chunkSize;
+		if (dataToSend > datalen)
+			dataToSend = datalen;
 
 		memcpy(chunk->data + chunk->chunkSize, data, dataToSend);
 		chunk->chunkSize += dataToSend;
