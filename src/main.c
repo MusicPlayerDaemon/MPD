@@ -443,7 +443,7 @@ int main(int argc, char *argv[])
 	initZeroconf();
 
 	openVolumeDevice();
-	decoderInit();
+	decoderInit(&getPlayerData()->decoderControl);
 	playerInit(&getPlayerData()->playerControl);
 	read_state_file();
 

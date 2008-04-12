@@ -323,11 +323,11 @@ stop_no_close:
 	dc->stop = 0;
 }
 
-static void * decoder_task(mpd_unused void *unused)
+static void * decoder_task(void *arg)
 {
+	DecoderControl *dc = arg;
 	OutputBuffer *cb = &(getPlayerData()->buffer);
 	PlayerControl *pc = &(getPlayerData()->playerControl);
-	DecoderControl * dc = &(getPlayerData()->decoderControl);
 
 	notifyEnter(&dc->notify);
 
@@ -344,14 +344,14 @@ static void * decoder_task(mpd_unused void *unused)
 	}
 }
 
-void decoderInit(void)
+void decoderInit(DecoderControl * dc)
 {
 	pthread_attr_t attr;
 	pthread_t decoder_thread;
 
 	pthread_attr_init(&attr);
 	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
-	if (pthread_create(&decoder_thread, &attr, decoder_task, NULL))
+	if (pthread_create(&decoder_thread, &attr, decoder_task, dc))
 		FATAL("Failed to spawn decoder task: %s\n", strerror(errno));
 }
 
