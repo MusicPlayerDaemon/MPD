@@ -196,56 +196,59 @@ static int decodeSeek(PlayerControl * pc, DecoderControl * dc,
 	return ret;
 }
 
-#define processDecodeInput() \
-	if(pc->lockQueue) { \
-		pc->queueLockState = PLAYER_QUEUE_LOCKED; \
-		pc->lockQueue = 0; \
-		wakeup_main_task(); \
-	} \
-	if(pc->unlockQueue) { \
-		pc->queueLockState = PLAYER_QUEUE_UNLOCKED; \
-		pc->unlockQueue = 0; \
-		wakeup_main_task(); \
-	} \
-	if(pc->pause) { \
-		pause = !pause; \
-		if (pause) { \
-			pc->state = PLAYER_STATE_PAUSE; \
-		} else { \
-			if (openAudioDevice(NULL) >= 0) { \
-				pc->state = PLAYER_STATE_PLAY; \
-			} else { \
-				char tmp[MPD_PATH_MAX]; \
-				pc->errored_song = pc->current_song; \
-				pc->error = PLAYER_ERROR_AUDIO; \
-				ERROR("problems opening audio device " \
-				      "while playing \"%s\"\n", \
-				      get_song_url(tmp, pc->current_song)); \
-				pause = -1; \
-			} \
-		} \
-		pc->pause = 0; \
-		wakeup_main_task(); \
-		if (pause == -1) { \
-			pause = 1; \
-		} else if (pause) { \
-			dropBufferedAudio(); \
-			closeAudioDevice(); \
-		} \
-	} \
-	if(pc->seek) { \
-		dropBufferedAudio(); \
-		if(decodeSeek(pc,dc,cb,&decodeWaitedOn,&next) == 0) { \
-		        doCrossFade = 0; \
-		        nextChunk =  -1; \
-                        bbp = 0; \
-                } \
-	} \
-	if(pc->stop) { \
-		dropBufferedAudio(); \
-		quitDecode(pc,dc); \
-		return; \
+static void processDecodeInput(PlayerControl * pc, DecoderControl * dc,
+			       OutputBuffer * cb,
+			       int *pause_r, unsigned int *bbp_r,
+			       int *doCrossFade_r,
+			       int *nextChunk_r,
+			       int *decodeWaitedOn_r,
+			       int *next_r)
+{
+	if(pc->lockQueue) {
+		pc->queueLockState = PLAYER_QUEUE_LOCKED;
+		pc->lockQueue = 0;
+		wakeup_main_task();
 	}
+	if(pc->unlockQueue) {
+		pc->queueLockState = PLAYER_QUEUE_UNLOCKED;
+		pc->unlockQueue = 0;
+		wakeup_main_task();
+	}
+	if(pc->pause) {
+		*pause_r = !*pause_r;
+		if (*pause_r) {
+			pc->state = PLAYER_STATE_PAUSE;
+		} else {
+			if (openAudioDevice(NULL) >= 0) {
+				pc->state = PLAYER_STATE_PLAY;
+			} else {
+				char tmp[MPD_PATH_MAX];
+				pc->errored_song = pc->current_song;
+				pc->error = PLAYER_ERROR_AUDIO;
+				ERROR("problems opening audio device "
+				      "while playing \"%s\"\n",
+				      get_song_url(tmp, pc->current_song));
+				*pause_r = -1;
+			}
+		}
+		pc->pause = 0;
+		wakeup_main_task();
+		if (*pause_r == -1) {
+			*pause_r = 1;
+		} else if (*pause_r) {
+			dropBufferedAudio();
+			closeAudioDevice();
+		}
+	}
+	if(pc->seek) {
+		dropBufferedAudio();
+		if(decodeSeek(pc,dc,cb,decodeWaitedOn_r,next_r) == 0) {
+			*doCrossFade_r = 0;
+			*nextChunk_r =  -1;
+			*bbp_r = 0;
+		}
+	}
+}
 
 static void decodeStart(PlayerControl * pc, OutputBuffer * cb,
 			DecoderControl * dc)
@@ -427,12 +430,28 @@ static void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer *
 
 	while (availableOutputBuffer(cb) < bbp &&
 	       dc->state != DECODE_STATE_STOP) {
-		processDecodeInput();
+		processDecodeInput(pc, dc, cb,
+				   &pause, &bbp, &doCrossFade,
+				   &nextChunk, &decodeWaitedOn, &next);
+		if (pc->stop) {
+			dropBufferedAudio();
+			quitDecode(pc,dc);
+			return;
+		}
+
 		player_sleep();
 	}
 
 	while (!quit) {
-		processDecodeInput();
+		processDecodeInput(pc, dc, cb,
+				   &pause, &bbp, &doCrossFade,
+				   &nextChunk, &decodeWaitedOn, &next);
+		if (pc->stop) {
+			dropBufferedAudio();
+			quitDecode(pc,dc);
+			return;
+		}
+
 		handleDecodeStart();
 		if (dc->state == DECODE_STATE_STOP &&
 		    pc->queueState == PLAYER_QUEUE_FULL &&
@@ -540,7 +559,16 @@ static void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer *
 			}
 			while (pc->queueState == PLAYER_QUEUE_DECODE ||
 			       pc->queueLockState == PLAYER_QUEUE_LOCKED) {
-				processDecodeInput();
+				processDecodeInput(pc, dc, cb,
+						   &pause, &bbp, &doCrossFade,
+						   &nextChunk, &decodeWaitedOn,
+						   &next);
+				if (pc->stop) {
+					dropBufferedAudio();
+					quitDecode(pc,dc);
+					return;
+				}
+
 				player_sleep();
 			}
 			if (pc->queueState != PLAYER_QUEUE_PLAY)
