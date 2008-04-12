@@ -216,15 +216,20 @@ static FLAC__StreamDecoderWriteStatus flacWrite(const flac_decoder *dec,
 	FLAC__uint16 u16;
 	unsigned char *uc;
 	unsigned int c_samp, c_chan;
-	int i;
+	unsigned int i;
 	float timeChange;
 	FLAC__uint64 newPosition = 0;
+
+	assert(data->dc->audioFormat.bits > 0);
 
 	timeChange = ((float)samples) / frame->header.sample_rate;
 	data->time += timeChange;
 
 	flac_get_decode_position(dec, &newPosition);
 	if (data->position) {
+		assert(newPosition >= data->position);
+		assert(timeChange >= 0);
+
 		data->bitRate =
 		    ((newPosition - data->position) * 8.0 / timeChange)
 		    / 1000 + 0.5;
@@ -236,7 +241,7 @@ static FLAC__StreamDecoderWriteStatus flacWrite(const flac_decoder *dec,
 		     c_chan++) {
 			u16 = buf[c_chan][c_samp];
 			uc = (unsigned char *)&u16;
-			for (i = 0; i < (data->dc->audioFormat.bits / 8); i++) {
+			for (i = 0; i < (unsigned)(data->dc->audioFormat.bits / 8); i++) {
 				if (data->chunk_length >= FLAC_CHUNK_SIZE) {
 					if (flacSendChunk(data) < 0) {
 						return

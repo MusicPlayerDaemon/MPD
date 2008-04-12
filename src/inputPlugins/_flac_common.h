@@ -144,9 +144,9 @@ typedef size_t flac_read_status_size_t;
 
 typedef struct {
 	unsigned char chunk[FLAC_CHUNK_SIZE];
-	int chunk_length;
+	size_t chunk_length;
 	float time;
-	int bitRate;
+	unsigned int bitRate;
 	FLAC__uint64 position;
 	OutputBuffer *cb;
 	DecoderControl *dc;
