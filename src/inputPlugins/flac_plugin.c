@@ -207,7 +207,7 @@ static void flacMetadata(const flac_decoder * dec,
 }
 
 static void flac_convert(unsigned char *dest,
-			 const FLAC__Frame * frame,
+			 unsigned int num_channels,
 			 unsigned int bytes_per_sample,
 			 const FLAC__int32 * const buf[],
 			 unsigned int position, unsigned int end)
@@ -217,7 +217,7 @@ static void flac_convert(unsigned char *dest,
 	unsigned char *uc;
 
 	for (; position < end; ++position) {
-		for (c_chan = 0; c_chan < frame->header.channels; c_chan++) {
+		for (c_chan = 0; c_chan < num_channels; c_chan++) {
 			u16 = buf[c_chan][position];
 			uc = (unsigned char *)&u16;
 			for (i = 0; i < bytes_per_sample; i++) {
@@ -235,6 +235,7 @@ static FLAC__StreamDecoderWriteStatus flacWrite(const flac_decoder *dec,
 	FlacData *data = (FlacData *) vdata;
 	FLAC__uint32 samples = frame->header.blocksize;
 	unsigned int c_samp;
+	const unsigned int num_channels = frame->header.channels;
 	const unsigned int bytes_per_sample = (data->dc->audioFormat.bits / 8);
 	const unsigned int bytes_per_channel =
 		bytes_per_sample * frame->header.channels;
@@ -266,7 +267,7 @@ static FLAC__StreamDecoderWriteStatus flacWrite(const flac_decoder *dec,
 			num_samples = max_samples;
 
 		flac_convert(data->chunk + data->chunk_length,
-			     frame, bytes_per_sample, buf,
+			     num_channels, bytes_per_sample, buf,
 			     c_samp, c_samp + num_samples);
 		data->chunk_length = num_samples;
 
