@@ -103,9 +103,12 @@ static int calculateCrossFadeChunks(PlayerControl * pc, AudioFormat * af)
 		{ \
 			decodeWaitedOn = 0; \
 			if(openAudioDevice(&(cb->audioFormat))<0) { \
-				pathcpy_trunc(pc->erroredUrl, pc->utf8url); \
+				char tmp[MPD_PATH_MAX]; \
+				pc->errored_song = pc->current_song; \
 				pc->error = PLAYER_ERROR_AUDIO; \
-				ERROR("problems opening audio device while playing \"%s\"\n", pc->utf8url); \
+				ERROR("problems opening audio device " \
+				      "while playing \"%s\"\n", \
+				      get_song_url(tmp, pc->current_song)); \
 				quitDecode(pc,dc); \
 				return; \
 			} else { \
@@ -124,7 +127,7 @@ static int calculateCrossFadeChunks(PlayerControl * pc, AudioFormat * af)
 					cb->audioFormat.sampleRate; \
                 } \
                 else if(dc->state!=DECODE_STATE_START) { \
-			pathcpy_trunc(pc->erroredUrl, pc->utf8url); \
+			pc->errored_song = pc->current_song; \
 		        pc->error = PLAYER_ERROR_FILE; \
 		        quitDecode(pc,dc); \
 		        return; \
@@ -138,13 +141,11 @@ static int calculateCrossFadeChunks(PlayerControl * pc, AudioFormat * af)
 static int waitOnDecode(PlayerControl * pc, DecoderControl * dc,
 			OutputBuffer * cb, int *decodeWaitedOn)
 {
-	pathcpy_trunc(pc->currentUrl, pc->utf8url);
-
 	while (dc->start)
 		player_wakeup_decoder();
 
 	if (dc->start || dc->error != DECODE_ERROR_NOERROR) {
-		pathcpy_trunc(pc->erroredUrl, pc->utf8url);
+		pc->errored_song = pc->current_song;
 		pc->error = PLAYER_ERROR_FILE;
 		quitDecode(pc, dc);
 		return -1;
@@ -165,8 +166,9 @@ static int decodeSeek(PlayerControl * pc, DecoderControl * dc,
 {
 	int ret = -1;
 
-	if (dc->state == DECODE_STATE_STOP || dc->error ||
-	    strcmp(dc->utf8url, pc->utf8url) != 0) {
+	if (dc->state == DECODE_STATE_STOP ||
+	    dc->error ||
+	    dc->current_song != pc->current_song) {
 		stopDecode(dc);
 		*next = -1;
 		cb->begin = 0;
@@ -213,9 +215,12 @@ static int decodeSeek(PlayerControl * pc, DecoderControl * dc,
 			if (openAudioDevice(NULL) >= 0) { \
 				pc->state = PLAYER_STATE_PLAY; \
 			} else { \
-				pathcpy_trunc(pc->erroredUrl, pc->utf8url); \
+				char tmp[MPD_PATH_MAX]; \
+				pc->errored_song = pc->current_song; \
 				pc->error = PLAYER_ERROR_AUDIO; \
-				ERROR("problems opening audio device while playing \"%s\"\n", pc->utf8url); \
+				ERROR("problems opening audio device " \
+				      "while playing \"%s\"\n", \
+				      get_song_url(tmp, pc->current_song)); \
 				pause = -1; \
 			} \
 		} \
@@ -249,33 +254,26 @@ static void decodeStart(PlayerControl * pc, OutputBuffer * cb,
 	int close_instream = 1;
 	InputStream inStream;
 	InputPlugin *plugin = NULL;
-	char path_max_tmp[MPD_PATH_MAX];
+	char path_max_fs[MPD_PATH_MAX];
+	char path_max_utf8[MPD_PATH_MAX];
 
-	/* not actually sure why we convert between latin/UTF8 for URLs */
-	if (isRemoteUrl(pc->utf8url)) {
-		if (!utf8_to_latin1(path_max_tmp, pc->utf8url)) {
-			dc->error = DECODE_ERROR_FILE;
-			goto stop_no_close;
-		}
-	} else
-		rmp2amp_r(path_max_tmp,
-		          utf8_to_fs_charset(path_max_tmp, pc->utf8url));
+	if (!get_song_url(path_max_utf8, pc->current_song)) {
+		dc->error = DECODE_ERROR_FILE;
+		goto stop_no_close;
+	}
+	if (!isRemoteUrl(path_max_utf8)) {
+		rmp2amp_r(path_max_fs,
+		          utf8_to_fs_charset(path_max_fs, path_max_utf8));
+	}
 
-	pathcpy_trunc(dc->utf8url, pc->utf8url);
-
-	if (openInputStream(&inStream, path_max_tmp) < 0) {
+	dc->current_song = pc->current_song; /* NEED LOCK */
+	if (openInputStream(&inStream, path_max_fs) < 0) {
 		dc->error = DECODE_ERROR_FILE;
 		goto stop_no_close;
 	}
 
 	dc->state = DECODE_STATE_START;
 	dc->start = 0;
-
-	while (!inputStreamAtEOF(&inStream) && bufferInputStream(&inStream) < 0
-	       && !dc->stop) {
-		/* sleep so we don't consume 100% of the cpu */
-		my_usleep(10000);
-	}
 
 	/* for http streams, seekable is determined in bufferInputStream */
 	dc->seekable = inStream.seekable;
@@ -284,7 +282,7 @@ static void decodeStart(PlayerControl * pc, OutputBuffer * cb,
 		goto stop;
 
 	ret = DECODE_ERROR_UNKTYPE;
-	if (isRemoteUrl(dc->utf8url)) {
+	if (isRemoteUrl(path_max_utf8)) {
 		unsigned int next = 0;
 
 		/* first we try mime types: */
@@ -302,7 +300,7 @@ static void decodeStart(PlayerControl * pc, OutputBuffer * cb,
 
 		/* if that fails, try suffix matching the URL: */
 		if (plugin == NULL) {
-			const char *s = getSuffix(dc->utf8url);
+			const char *s = getSuffix(path_max_utf8);
 			next = 0;
 			while (ret && (plugin = getInputPluginFromSuffix(s, next++))) {
 				if (!plugin->streamDecodeFunc)
@@ -330,7 +328,7 @@ static void decodeStart(PlayerControl * pc, OutputBuffer * cb,
 		}
 	} else {
 		unsigned int next = 0;
-		const char *s = getSuffix(dc->utf8url);
+		const char *s = getSuffix(path_max_utf8);
 		while (ret && (plugin = getInputPluginFromSuffix(s, next++))) {
 			if (!plugin->streamTypes & INPUT_PLUGIN_STREAM_FILE)
 				continue;
@@ -343,7 +341,7 @@ static void decodeStart(PlayerControl * pc, OutputBuffer * cb,
 				closeInputStream(&inStream);
 				close_instream = 0;
 				ret = plugin->fileDecodeFunc(cb, dc,
-				                             path_max_tmp);
+				                             path_max_fs);
 				break;
 			} else if (plugin->streamDecodeFunc) {
 				ret = plugin->streamDecodeFunc(cb, dc, &inStream);
@@ -353,7 +351,7 @@ static void decodeStart(PlayerControl * pc, OutputBuffer * cb,
 	}
 
 	if (ret < 0 || ret == DECODE_ERROR_UNKTYPE) {
-		pathcpy_trunc(pc->erroredUrl, dc->utf8url);
+		pc->errored_song = pc->current_song;
 		if (ret != DECODE_ERROR_UNKTYPE)
 			dc->error = DECODE_ERROR_FILE;
 		else

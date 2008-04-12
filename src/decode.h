@@ -22,6 +22,7 @@
 #include "../config.h"
 #include "path.h"
 #include "tag.h"
+#include "song.h"
 
 #include "mpd_types.h"
 #include "audio.h"
@@ -49,7 +50,7 @@ typedef struct _DecoderControl {
 	volatile mpd_sint8 seekable;
 	volatile double seekWhere;
 	AudioFormat audioFormat;
-	char utf8url[MPD_PATH_MAX];
+	Song *current_song;
 	volatile float totalTime;
 } DecoderControl;
 

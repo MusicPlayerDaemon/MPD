@@ -121,7 +121,7 @@ static void set_current_song(Song *song)
 	PlayerControl *pc = &(getPlayerData()->playerControl);
 
 	pc->fileTime = song->tag ? song->tag->time : 0;
-	get_song_url(pc->utf8url, song);
+	pc->current_song = song;
 }
 
 int playerPlay(int fd, Song * song)
@@ -222,43 +222,34 @@ int getPlayerError(void)
 
 char *getPlayerErrorStr(void)
 {
-	static char *error;
-	int errorlen = MPD_PATH_MAX + 1024;
+	/* static OK here, only one user in main task */
+	static char error[MPD_PATH_MAX + 64]; /* still too much */
+	static const size_t errorlen = sizeof(error);
+	char path_max_tmp[MPD_PATH_MAX];
 	PlayerControl *pc = &(getPlayerData()->playerControl);
-
-	error = xrealloc(error, errorlen);
-	error[0] = '\0';
+	*error = '\0'; /* likely */
 
 	switch (pc->error) {
 	case PLAYER_ERROR_FILENOTFOUND:
 		snprintf(error, errorlen,
 			 "file \"%s\" does not exist or is inaccessible",
-			 pc->erroredUrl);
+			 get_song_url(path_max_tmp, pc->errored_song));
 		break;
 	case PLAYER_ERROR_FILE:
 		snprintf(error, errorlen, "problems decoding \"%s\"",
-			 pc->erroredUrl);
+			 get_song_url(path_max_tmp, pc->errored_song));
 		break;
 	case PLAYER_ERROR_AUDIO:
-		snprintf(error, errorlen, "problems opening audio device");
+		strcpy(error, "problems opening audio device");
 		break;
 	case PLAYER_ERROR_SYSTEM:
-		snprintf(error, errorlen, "system error occured");
+		strcpy(error, "system error occured");
 		break;
 	case PLAYER_ERROR_UNKTYPE:
-		snprintf(error, errorlen, "file type  of \"%s\" is unknown",
-			 pc->erroredUrl);
-	default:
-		break;
+		snprintf(error, errorlen, "file type of \"%s\" is unknown",
+			 get_song_url(path_max_tmp, pc->errored_song));
 	}
-
-	errorlen = strlen(error);
-	error = xrealloc(error, errorlen + 1);
-
-	if (errorlen)
-		return error;
-
-	return NULL;
+	return *error ? error : NULL;
 }
 
 static void playerCloseAudio(void)
@@ -321,7 +312,6 @@ void playerQueueUnlock(void)
 int playerSeek(int fd, Song * song, float seek_time)
 {
 	PlayerControl *pc = &(getPlayerData()->playerControl);
-	char path_max_tmp[MPD_PATH_MAX];
 
 	assert(song != NULL);
 
@@ -331,7 +321,7 @@ int playerSeek(int fd, Song * song, float seek_time)
 		return -1;
 	}
 
-	if (strcmp(pc->utf8url, get_song_url(path_max_tmp, song)) != 0)
+	if (pc->current_song != song)
 		set_current_song(song);
 
 	if (pc->error == PLAYER_ERROR_NOERROR) {
