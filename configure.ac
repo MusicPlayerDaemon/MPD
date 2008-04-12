@@ -22,7 +22,7 @@ AC_DEFINE(PROTOCOL_VERSION, "0.14.0", [The mpd protocol version])
 MPD_LIBS=""
 MPD_CFLAGS=""
 if test x$GCC = xyes; then
-	MPD_CFLAGS="-Wall -Wmissing-prototypes"
+	MPD_CFLAGS="-Wall -Wextra -Wno-unused-parameter -Wno-deprecated-declarations -Wmissing-prototypes"
 fi
 
 if test -z "$prefix" || test "x$prefix" = xNONE; then
