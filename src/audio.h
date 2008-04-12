@@ -35,6 +35,11 @@ typedef struct _AudioFormat {
 
 unsigned int audio_device_count(void);
 
+static inline double audioFormatSizeToTime(const AudioFormat * af)
+{
+	return 8.0 / af->bits / af->channels / af->sampleRate;
+}
+
 void copyAudioFormat(AudioFormat * dest, AudioFormat * src);
 
 int cmpAudioFormat(AudioFormat * dest, AudioFormat * src);

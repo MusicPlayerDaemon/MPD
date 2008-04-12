@@ -466,9 +466,7 @@ static void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer *
 				pc->sampleRate = dc->audioFormat.sampleRate;
 				pc->bits = dc->audioFormat.bits;
 				pc->channels = dc->audioFormat.channels;
-				sizeToTime = 8.0/cb->audioFormat.bits/
-					cb->audioFormat.channels/
-					cb->audioFormat.sampleRate;
+				sizeToTime = audioFormatSizeToTime(&cb->audioFormat);
 			}
 			else if(dc->state!=DECODE_STATE_START) {
 				/* the decoder failed */
