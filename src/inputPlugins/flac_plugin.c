@@ -286,7 +286,7 @@ static FLAC__StreamDecoderWriteStatus flacWrite(const flac_decoder *dec,
 			flac_convert(data->chunk + data->chunk_length,
 				     num_channels, bytes_per_sample, buf,
 				     c_samp, c_samp + num_samples);
-		data->chunk_length = num_samples;
+		data->chunk_length = num_samples * bytes_per_channel;
 
 		if (flacSendChunk(data) < 0) {
 			return
