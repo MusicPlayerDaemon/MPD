@@ -167,13 +167,13 @@ static int decodeSeek(PlayerControl * pc, DecoderControl * dc,
 	int ret = -1;
 
 	if (dc->state == DECODE_STATE_STOP ||
-	    dc->error ||
+	    dc->error != DECODE_ERROR_NOERROR ||
 	    dc->current_song != pc->current_song) {
 		stopDecode(dc);
 		*next = -1;
 		cb->begin = 0;
 		cb->end = 0;
-		dc->error = 0;
+		dc->error = DECODE_ERROR_NOERROR;
 		dc->start = 1;
 		waitOnDecode(pc, dc, cb, decodeWaitedOn);
 	}
@@ -612,7 +612,7 @@ void decode(void)
 	cb->end = 0;
 	pc = &(getPlayerData()->playerControl);
 	dc = &(getPlayerData()->decoderControl);
-	dc->error = 0;
+	dc->error = DECODE_ERROR_NOERROR;
 	dc->seek = 0;
 	dc->stop = 0;
 	dc->start = 1;
