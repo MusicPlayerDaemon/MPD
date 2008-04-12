@@ -157,7 +157,6 @@ static void processDecodeInput(PlayerControl * pc, DecoderControl * dc,
 			       OutputBuffer * cb,
 			       int *pause_r, unsigned int *bbp_r,
 			       int *doCrossFade_r,
-			       int *nextChunk_r,
 			       int *decodeWaitedOn_r,
 			       int *next_r)
 {
@@ -201,7 +200,6 @@ static void processDecodeInput(PlayerControl * pc, DecoderControl * dc,
 		dropBufferedAudio();
 		if(decodeSeek(pc,dc,cb,decodeWaitedOn_r,next_r) == 0) {
 			*doCrossFade_r = 0;
-			*nextChunk_r =  -1;
 			*bbp_r = 0;
 		}
 	}
@@ -370,10 +368,10 @@ static void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer *
 	/** cross fading enabled for the current song? 0=must check;
 	    1=enabled; -1=disabled */
 	int doCrossFade = 0;
-	unsigned int crossFadeChunks = 0;
+	unsigned int crossFadeChunks;
 	/** the position of the next cross-faded chunk in the next
 	    song */
-	int nextChunk = -1;
+	int nextChunk;
 	int decodeWaitedOn = 0;
 	static const char silence[CHUNK_SIZE];
 	double sizeToTime = 0.0;
@@ -392,7 +390,7 @@ static void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer *
 	while (!quit) {
 		processDecodeInput(pc, dc, cb,
 				   &pause, &bbp, &doCrossFade,
-				   &nextChunk, &decodeWaitedOn, &next);
+				   &decodeWaitedOn, &next);
 		if (pc->stop) {
 			dropBufferedAudio();
 			quitDecode(pc,dc);
@@ -469,9 +467,9 @@ static void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer *
 			/* enable cross fading in this song?  if yes,
 			   calculate how many chunks will be required
 			   for it */
-			nextChunk = -1;
 			if (isCurrentAudioFormat(&(cb->audioFormat))) {
 				doCrossFade = 1;
+				nextChunk = -1;
 				crossFadeChunks =
 				    calculateCrossFadeChunks(pc,
 							     &(cb->
@@ -575,7 +573,7 @@ static void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer *
 			       pc->queueLockState == PLAYER_QUEUE_LOCKED) {
 				processDecodeInput(pc, dc, cb,
 						   &pause, &bbp, &doCrossFade,
-						   &nextChunk, &decodeWaitedOn,
+						   &decodeWaitedOn,
 						   &next);
 				if (pc->stop) {
 					dropBufferedAudio();
@@ -592,9 +590,7 @@ static void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer *
 			if (waitOnDecode(pc, dc, cb, &decodeWaitedOn) < 0)
 				return;
 
-			nextChunk = -1;
 			doCrossFade = 0;
-			crossFadeChunks = 0;
 			pc->queueState = PLAYER_QUEUE_EMPTY;
 			wakeup_main_task();
 		} else if (dc->state == DECODE_STATE_STOP && !dc->start) {
