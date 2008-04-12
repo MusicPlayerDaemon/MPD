@@ -396,8 +396,7 @@ void decoderInit(void)
 		FATAL("Failed to spawn decoder task: %s\n", strerror(errno));
 }
 
-static void advanceOutputBufferTo(OutputBuffer * cb, PlayerControl * pc,
-				  int *currentChunkSent, int to)
+static void advanceOutputBufferTo(OutputBuffer * cb, int to)
 {
 	while (cb->begin != to) {
 		if ((unsigned)cb->begin + 1 >= buffered_chunks)
@@ -420,7 +419,6 @@ static void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer *
 	int decodeWaitedOn = 0;
 	static const char silence[CHUNK_SIZE];
 	double sizeToTime = 0.0;
-	int currentChunkSent = 1;
 	unsigned int end;
 	int next = -1;
 
@@ -543,9 +541,7 @@ static void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer *
 					if ((unsigned)nextChunk >= buffered_chunks) {
 						nextChunk -= buffered_chunks;
 					}
-					advanceOutputBufferTo(cb, pc,
-							      &currentChunkSent,
-							      nextChunk);
+					advanceOutputBufferTo(cb, nextChunk);
 				}
 			}
 			while (pc->queueState == PLAYER_QUEUE_DECODE ||
