@@ -49,12 +49,12 @@ typedef struct _OutputBuffer {
 	unsigned int size;
 
 	/** the index of the first decoded chunk */
-	mpd_uint16 volatile begin;
+	unsigned int volatile begin;
 
 	/** the index after the last decoded chunk */
-	mpd_uint16 volatile end;
+	unsigned int volatile end;
 
-	mpd_sint16 currentChunk;
+	int currentChunk;
 
 	AudioFormat audioFormat;
 	ConvState convState;

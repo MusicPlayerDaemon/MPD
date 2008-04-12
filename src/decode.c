@@ -518,7 +518,7 @@ static void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer *
 
 		if (do_pause)
 			player_sleep();
-		else if (!outputBufferEmpty(cb) && cb->begin != next) {
+		else if (!outputBufferEmpty(cb) && (int)cb->begin != next) {
 			OutputBufferChunk *beginChunk =
 				outputBufferGetChunk(cb, cb->begin);
 			unsigned int fadePosition;
@@ -564,7 +564,7 @@ static void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer *
 				break;
 			outputBufferShift(cb);
 			player_wakeup_decoder_nb();
-		} else if (!outputBufferEmpty(cb) && cb->begin == next) {
+		} else if (!outputBufferEmpty(cb) && (int)cb->begin == next) {
 			/* at the beginning of a new song */
 
 			if (doCrossFade == 1 && nextChunk >= 0) {

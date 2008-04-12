@@ -53,7 +53,7 @@ static inline unsigned successor(const OutputBuffer * cb, unsigned i)
 
 void flushOutputBuffer(OutputBuffer * cb)
 {
-	if (cb->currentChunk == cb->end) {
+	if (cb->currentChunk == (int)cb->end) {
 		cb->end = successor(cb, cb->end);
 		cb->currentChunk = -1;
 	}
@@ -125,7 +125,7 @@ static int tailChunk(OutputBuffer * cb, InputStream * inStream,
 	unsigned int next;
 	OutputBufferChunk *chunk;
 
-	if (cb->currentChunk == cb->end)
+	if (cb->currentChunk == (int)cb->end)
 		return cb->currentChunk;
 
 	next = successor(cb, cb->end);
