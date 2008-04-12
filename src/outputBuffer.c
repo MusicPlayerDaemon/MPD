@@ -161,9 +161,12 @@ static int tailChunk(OutputBuffer * cb, InputStream * inStream,
 	if (chunk->chunkSize == sizeof(chunk->data)) {
 		/* this chunk is full; allocate a new chunk */
 		next = successor(cb, cb->end);
-		while (cb->begin == next && !dc->stop) {
+		while (cb->begin == next) {
 			/* all chunks are full of decoded data; wait
 			   for the player to free one */
+
+			if (dc->stop)
+				return OUTPUT_BUFFER_DC_STOP;
 
 			if (dc->seek) {
 				if (seekable) {
@@ -179,9 +182,6 @@ static int tailChunk(OutputBuffer * cb, InputStream * inStream,
 				decoder_sleep(dc);
 			}
 		}
-
-		if (dc->stop)
-			return OUTPUT_BUFFER_DC_STOP;
 
 		output_buffer_expand(cb, next);
 		chunk = outputBufferGetChunk(cb, next);
