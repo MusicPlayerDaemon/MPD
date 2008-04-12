@@ -171,8 +171,7 @@ static int decodeSeek(PlayerControl * pc, DecoderControl * dc,
 	    dc->current_song != pc->current_song) {
 		stopDecode(dc);
 		*next = -1;
-		cb->begin = 0;
-		cb->end = 0;
+		clearOutputBuffer(cb);
 		dc->error = DECODE_ERROR_NOERROR;
 		dc->start = 1;
 		waitOnDecode(pc, dc, cb, decodeWaitedOn);
@@ -607,9 +606,8 @@ void decode(void)
 	DecoderControl *dc;
 
 	cb = &(getPlayerData()->buffer);
+	clearOutputBuffer(cb);
 
-	cb->begin = 0;
-	cb->end = 0;
 	pc = &(getPlayerData()->playerControl);
 	dc = &(getPlayerData()->decoderControl);
 	dc->error = DECODE_ERROR_NOERROR;
