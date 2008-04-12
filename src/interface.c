@@ -644,7 +644,7 @@ static void flushInterfaceBuffer(Interface * interface)
 		if (ret < 0)
 			break;
 		else if ((size_t)ret < buf->size) {
-			assert(interface->deferred_bytes >= ret);
+			assert(interface->deferred_bytes >= (size_t)ret);
 			interface->deferred_bytes -= ret;
 			buf->data = (char *)buf->data + ret;
 			buf->size -= ret;

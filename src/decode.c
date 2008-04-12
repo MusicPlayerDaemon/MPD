@@ -487,7 +487,7 @@ static void advanceOutputBufferTo(OutputBuffer * cb, PlayerControl * pc,
 	while (cb->begin != to) {
 		handleMetadata(cb, pc, previous, currentChunkSent,
 			       currentChunk);
-		if (cb->begin + 1 >= buffered_chunks) {
+		if ((unsigned)cb->begin + 1 >= buffered_chunks) {
 			cb->begin = 0;
 		}
 		else cb->begin++;
@@ -522,7 +522,7 @@ static void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer *
 	kill(getppid(), SIGUSR1);
 
 	while (decode_pid > 0 && 
-	       cb->end - cb->begin < bbp &&
+	       (unsigned)(cb->end - cb->begin) < bbp &&
 	       cb->end != buffered_chunks - 1 &&
 	       dc->state != DECODE_STATE_STOP) {
 		processDecodeInput();
@@ -582,8 +582,8 @@ static void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer *
 				if (end < cb->begin)
 					test += buffered_chunks;
 				nextChunk = cb->begin + crossFadeChunks;
-				if (nextChunk < test) {
-					if (nextChunk >= buffered_chunks) {
+				if ((unsigned)nextChunk < test) {
+					if ((unsigned)nextChunk >= buffered_chunks) {
 						nextChunk -= buffered_chunks;
 					}
 					pcm_mix(cb->chunks +
@@ -621,7 +621,7 @@ static void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer *
 			}
 			pc->totalPlayTime +=
 			    sizeToTime * cb->chunkSize[cb->begin];
-			if (cb->begin + 1 >= buffered_chunks) {
+			if ((unsigned)cb->begin + 1 >= buffered_chunks) {
 				cb->begin = 0;
 			} else
 				cb->begin++;
@@ -632,8 +632,8 @@ static void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer *
 				test = end;
 				if (end < cb->begin)
 					test += buffered_chunks;
-				if (nextChunk < test) {
-					if (nextChunk >= buffered_chunks) {
+				if ((unsigned)nextChunk < test) {
+					if ((unsigned)nextChunk >= buffered_chunks) {
 						nextChunk -= buffered_chunks;
 					}
 					advanceOutputBufferTo(cb, pc,

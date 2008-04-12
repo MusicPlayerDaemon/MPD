@@ -169,7 +169,7 @@ void setup_log_output(const int use_stdout)
 #define log_func(func,level,fp) \
 mpd_printf void func(const char *fmt, ...) \
 { \
-	if (logLevel >= level) { \
+	if ((int)logLevel >= level) {		\
 		va_list args; \
 		va_start(args, fmt); \
 		do_log(fp, fmt, args); \
