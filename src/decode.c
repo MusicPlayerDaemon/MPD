@@ -398,12 +398,7 @@ void decoderInit(void)
 
 static void advanceOutputBufferTo(OutputBuffer * cb, int to)
 {
-	while (cb->begin != to) {
-		if ((unsigned)cb->begin + 1 >= buffered_chunks)
-			cb->begin = 0;
-		else
-			cb->begin++;
-	}
+	cb->begin = to;
 }
 
 static void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer * cb)
