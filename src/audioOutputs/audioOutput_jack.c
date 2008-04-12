@@ -368,12 +368,13 @@ static void jack_dropBufferedAudio (AudioOutput * audioOutput)
 {
 }
 
-static int jack_playAudio(AudioOutput * audioOutput, char *buff, int size)
+static int jack_playAudio(AudioOutput * audioOutput,
+			  const char *buff, size_t size)
 {
 	JackData *jd = audioOutput->data;
 	size_t space;
-	unsigned int i;
-	short *buffer = (short *) buff;
+	size_t i;
+	const short *buffer = (const short *) buff;
 	jack_default_audio_sample_t sample;
 	size_t samples = size/4;
 

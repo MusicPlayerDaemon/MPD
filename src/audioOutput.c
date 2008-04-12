@@ -181,8 +181,8 @@ int openAudioOutput(AudioOutput * audioOutput, AudioFormat * audioFormat)
 	return ret;
 }
 
-static void convertAudioFormat(AudioOutput * audioOutput, char **chunkArgPtr,
-			       int *sizeArgPtr)
+static void convertAudioFormat(AudioOutput * audioOutput,
+			       const char **chunkArgPtr, size_t *sizeArgPtr)
 {
 	size_t size = pcm_sizeOfConvBuffer(&(audioOutput->inAudioFormat),
 					   *sizeArgPtr,
@@ -203,7 +203,8 @@ static void convertAudioFormat(AudioOutput * audioOutput, char **chunkArgPtr,
 	*chunkArgPtr = audioOutput->convBuffer;
 }
 
-int playAudioOutput(AudioOutput * audioOutput, char *playChunk, int size)
+int playAudioOutput(AudioOutput * audioOutput,
+		    const char *playChunk, size_t size)
 {
 	int ret;
 

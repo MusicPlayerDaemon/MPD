@@ -381,7 +381,8 @@ static void alsa_closeDevice(AudioOutput * audioOutput)
 	audioOutput->open = 0;
 }
 
-static int alsa_playAudio(AudioOutput * audioOutput, char *playChunk, int size)
+static int alsa_playAudio(AudioOutput * audioOutput,
+			  const char *playChunk, size_t size)
 {
 	AlsaData *ad = audioOutput->data;
 	int ret;

@@ -182,7 +182,8 @@ static void pulse_closeDevice(AudioOutput * audioOutput)
 	audioOutput->open = 0;
 }
 
-static int pulse_playAudio(AudioOutput * audioOutput, char *playChunk, int size)
+static int pulse_playAudio(AudioOutput * audioOutput,
+			   const char *playChunk, size_t size)
 {
 	PulseData *pd;
 	int error;

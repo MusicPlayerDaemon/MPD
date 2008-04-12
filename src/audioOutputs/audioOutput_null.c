@@ -42,7 +42,8 @@ static void null_closeDevice(AudioOutput *audioOutput)
 	audioOutput->open = 0;
 }
 
-static int null_playAudio(AudioOutput *audioOutput, char *playChunk, int size)
+static int null_playAudio(AudioOutput *audioOutput,
+			  const char *playChunk, size_t size)
 {
 	Timer *timer = audioOutput->data;
 

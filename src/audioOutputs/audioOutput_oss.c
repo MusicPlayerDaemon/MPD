@@ -521,10 +521,11 @@ static void oss_dropBufferedAudio(AudioOutput * audioOutput)
 	}
 }
 
-static int oss_playAudio(AudioOutput * audioOutput, char *playChunk, int size)
+static int oss_playAudio(AudioOutput * audioOutput,
+			 const char *playChunk, size_t size)
 {
 	OssData *od = audioOutput->data;
-	int ret;
+	ssize_t ret;
 
 	/* reopen the device since it was closed by dropBufferedAudio */
 	if (od->fd < 0 && oss_open(audioOutput) < 0)

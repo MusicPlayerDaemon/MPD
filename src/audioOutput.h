@@ -43,7 +43,7 @@ typedef void (*AudioOutputFinishDriverFunc) (AudioOutput * audioOutput);
 typedef int (*AudioOutputOpenDeviceFunc) (AudioOutput * audioOutput);
 
 typedef int (*AudioOutputPlayFunc) (AudioOutput * audioOutput,
-				    char *playChunk, int size);
+				    const char *playChunk, size_t size);
 
 typedef void (*AudioOutputDropBufferedAudioFunc) (AudioOutput * audioOutput);
 
@@ -97,7 +97,8 @@ void unloadAudioOutputPlugin(AudioOutputPlugin * audioOutputPlugin);
 
 int initAudioOutput(AudioOutput *, ConfigParam * param);
 int openAudioOutput(AudioOutput * audioOutput, AudioFormat * audioFormat);
-int playAudioOutput(AudioOutput * audioOutput, char *playChunk, int size);
+int playAudioOutput(AudioOutput * audioOutput,
+		    const char *playChunk, size_t size);
 void dropBufferedAudioOutput(AudioOutput * audioOutput);
 void closeAudioOutput(AudioOutput * audioOutput);
 void finishAudioOutput(AudioOutput * audioOutput);

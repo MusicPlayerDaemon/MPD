@@ -231,10 +231,11 @@ static void mvp_dropBufferedAudio(AudioOutput * audioOutput)
 	}
 }
 
-static int mvp_playAudio(AudioOutput * audioOutput, char *playChunk, int size)
+static int mvp_playAudio(AudioOutput * audioOutput,
+			 const char *playChunk, size_t size)
 {
 	MvpData *md = audioOutput->data;
-	int ret;
+	ssize_t ret;
 
 	/* reopen the device since it was closed by dropBufferedAudio */
 	if (md->fd < 0)

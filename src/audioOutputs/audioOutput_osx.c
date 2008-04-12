@@ -29,9 +29,9 @@ typedef struct _OsxData {
 	pthread_mutex_t mutex;
 	pthread_cond_t condition;
 	char *buffer;
-	int bufferSize;
-	int pos;
-	int len;
+	size_t bufferSize;
+	size_t pos;
+	size_t len;
 	int started;
 } OsxData;
 
@@ -141,8 +141,8 @@ static OSStatus osx_render(void *vdata,
 {
 	OsxData *od = (OsxData *) vdata;
 	AudioBuffer *buffer = &bufferList->mBuffers[0];
-	int bufferSize = buffer->mDataByteSize;
-	int bytesToCopy;
+	size_t bufferSize = buffer->mDataByteSize;
+	size_t bytesToCopy;
 	int curpos = 0;
 
 	/*DEBUG("osx_render: enter : %i\n", (int)bufferList->mNumberBuffers);
@@ -186,7 +186,7 @@ static OSStatus osx_render(void *vdata,
 	od->len -= bytesToCopy;
 
 	if (od->pos + bytesToCopy > od->bufferSize) {
-		int bytes = od->bufferSize - od->pos;
+		size_t bytes = od->bufferSize - od->pos;
 		memcpy(buffer->mData + curpos, od->buffer + od->pos, bytes);
 		od->pos = 0;
 		curpos += bytes;
@@ -294,11 +294,12 @@ static int osx_openDevice(AudioOutput * audioOutput)
 	return 0;
 }
 
-static int osx_play(AudioOutput * audioOutput, char *playChunk, int size)
+static int osx_play(AudioOutput * audioOutput,
+		    const char *playChunk, size_t size)
 {
 	OsxData *od = (OsxData *) audioOutput->data;
-	int bytesToCopy;
-	int curpos;
+	size_t bytesToCopy;
+	size_t curpos;
 
 	/* DEBUG("osx_play: enter\n"); */
 
@@ -333,7 +334,7 @@ static int osx_play(AudioOutput * audioOutput, char *playChunk, int size)
 		od->len += bytesToCopy;
 
 		if (curpos + bytesToCopy > od->bufferSize) {
-			int bytes = od->bufferSize - curpos;
+			size_t bytes = od->bufferSize - curpos;
 			memcpy(od->buffer + curpos, playChunk, bytes);
 			curpos = 0;
 			playChunk += bytes;

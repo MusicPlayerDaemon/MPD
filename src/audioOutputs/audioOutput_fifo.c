@@ -234,11 +234,12 @@ static void fifo_dropBufferedAudio(AudioOutput *audioOutput)
 	}
 }
 
-static int fifo_playAudio(AudioOutput *audioOutput, char *playChunk, int size)
+static int fifo_playAudio(AudioOutput *audioOutput,
+			  const char *playChunk, size_t size)
 {
 	FifoData *fd = (FifoData *)audioOutput->data;
-	int offset = 0;
-	int bytes;
+	size_t offset = 0;
+	ssize_t bytes;
 
 	if (!fd->timer->started)
 		timer_start(fd->timer);

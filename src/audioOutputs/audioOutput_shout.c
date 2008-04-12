@@ -597,12 +597,14 @@ static void myShout_sendMetadata(ShoutData * sd)
 	sd->tagToSend = 0;
 }
 
-static int myShout_play(AudioOutput * audioOutput, char *playChunk, int size)
+static int myShout_play(AudioOutput * audioOutput,
+			const char *playChunk, size_t size)
 {
-	int i, j;
+	unsigned int i;
+	int j;
 	ShoutData *sd = (ShoutData *) audioOutput->data;
 	float **vorbbuf;
-	int samples;
+	unsigned int samples;
 	int bytes = sd->audioFormat->bits / 8;
 	int status;
 
