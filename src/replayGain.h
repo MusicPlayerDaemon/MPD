@@ -45,6 +45,6 @@ void freeReplayGainInfo(ReplayGainInfo * info);
 void initReplayGainState(void);
 
 void doReplayGain(ReplayGainInfo * info, char *buffer, int bufferSize,
-		  AudioFormat * format);
+		  const AudioFormat * format);
 
 #endif

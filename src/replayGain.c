@@ -104,7 +104,7 @@ void freeReplayGainInfo(ReplayGainInfo * info)
 }
 
 void doReplayGain(ReplayGainInfo * info, char *buffer, int bufferSize,
-		  AudioFormat * format)
+		  const AudioFormat * format)
 {
 	mpd_sint16 *buffer16;
 	mpd_sint8 *buffer8;
