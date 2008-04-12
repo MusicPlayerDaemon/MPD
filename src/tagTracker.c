@@ -33,20 +33,20 @@ typedef struct tagTrackerItem {
 char *getTagItemString(int type, char *string)
 {
 	TreeIterator iter;
-	
-	if (tagTrees[type] == NULL) 
+
+	if (tagTrees[type] == NULL)
 	{
-		tagTrees[type] = MakeTree((TreeCompareKeyFunction)strcmp, 
-					  (TreeFreeFunction)free, 
+		tagTrees[type] = MakeTree((TreeCompareKeyFunction)strcmp,
+					  (TreeFreeFunction)free,
 					  (TreeFreeFunction)free);
 	}
 
-	if (FindInTree(tagTrees[type], string, &iter)) 
+	if (FindInTree(tagTrees[type], string, &iter))
 	{
 		((TagTrackerItem *)GetTreeKeyData(&iter)->data)->count++;
 		return (char *)GetTreeKeyData(&iter)->key;
-	} 
-	else 
+	}
+	else
 	{
 		TagTrackerItem *item = xmalloc(sizeof(TagTrackerItem));
 		char *key = xstrdup(string);
@@ -60,23 +60,23 @@ char *getTagItemString(int type, char *string)
 void removeTagItemString(int type, char *string)
 {
 	TreeIterator iter;
-	
+
 	assert(string);
 
 	assert(tagTrees[type]);
 	if (tagTrees[type] == NULL)
 		return;
 
-	if (FindInTree(tagTrees[type], string, &iter)) 
+	if (FindInTree(tagTrees[type], string, &iter))
 	{
-		TagTrackerItem * item = 
+		TagTrackerItem * item =
 			(TagTrackerItem *)GetTreeKeyData(&iter)->data;
 		item->count--;
 		if (item->count <= 0)
 			RemoveFromTreeByIterator(tagTrees[type], &iter);
 	}
 
-	if (GetTreeSize(tagTrees[type]) == 0) 
+	if (GetTreeSize(tagTrees[type]) == 0)
 	{
 		FreeTree(tagTrees[type]);
 		tagTrees[type] = NULL;
@@ -133,10 +133,10 @@ void printVisitedInTagTracker(int fd, int type)
 	{
 		item = ((TagTrackerItem *)GetTreeKeyData(&iter)->data);
 
-		if (item->visited) 
+		if (item->visited)
 		{
-			fdprintf(fd, 
-				 "%s: %s\n", 
+			fdprintf(fd,
+				 "%s: %s\n",
 				 mpdTagItemKeys[type],
 				 (char *)GetTreeKeyData(&iter)->key);
 		}
