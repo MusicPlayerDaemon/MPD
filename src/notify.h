@@ -38,10 +38,10 @@ typedef struct _Notify {
 	int fds[2];
 } Notify;
 
-void initNotify(Notify *notify);
+void notifyInit(Notify *notify);
 
-void waitNotify(Notify *notify);
+void notifyWait(Notify *notify);
 
-void signalNotify(Notify *notify);
+void notifySignal(Notify *notify);
 
 #endif

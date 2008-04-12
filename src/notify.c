@@ -21,7 +21,7 @@
 #include "log.h"
 #include "utils.h"
 
-void initNotify(Notify *notify)
+void notifyInit(Notify *notify)
 {
 	if (pipe(notify->fds) < 0)
 		FATAL("Couldn't open pipe: %s", strerror(errno));
@@ -30,7 +30,7 @@ void initNotify(Notify *notify)
 		      strerror(errno));
 }
 
-void waitNotify(Notify *notify)
+void notifyWait(Notify *notify)
 {
 	char buffer[64];
 
@@ -38,7 +38,7 @@ void waitNotify(Notify *notify)
 		FATAL("error reading from pipe: %s\n", strerror(errno));
 }
 
-void signalNotify(Notify *notify)
+void notifySignal(Notify *notify)
 {
 	char buffer = 0;
 
