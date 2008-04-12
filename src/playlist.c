@@ -566,6 +566,13 @@ static void clearPlayerQueue(void)
 	}
 }
 
+static void clearPlayerQueueLocked(void)
+{
+	lockPlaylistInteraction();
+	clearPlayerQueue();
+	unlockPlaylistInteraction();
+}
+
 int addToPlaylist(int fd, char *url, int *added_id)
 {
 	Song *song;
@@ -624,11 +631,8 @@ int addSongToPlaylist(int fd, Song * song, int *added_id)
 
 	if (playlist_state == PLAYLIST_STATE_PLAY) {
 		if (playlist.queued >= 0
-		    && playlist.current == playlist.length - 1) {
-			lockPlaylistInteraction();
-			clearPlayerQueue();
-			unlockPlaylistInteraction();
-		}
+		    && playlist.current == playlist.length - 1)
+			clearPlayerQueueLocked();
 	}
 
 	id = getNextId();
@@ -687,11 +691,8 @@ int swapSongsInPlaylist(int fd, int song1, int song2)
 		currentSong = playlist.order[playlist.current];
 
 		if (queuedSong == song1 || queuedSong == song2
-		    || currentSong == song1 || currentSong == song2) {
-			lockPlaylistInteraction();
-			clearPlayerQueue();
-			unlockPlaylistInteraction();
-		}
+		    || currentSong == song1 || currentSong == song2)
+			clearPlayerQueueLocked();
 	}
 
 	swapSongs(song1, song2);
@@ -750,11 +751,8 @@ int deleteFromPlaylist(int fd, int song)
 	if (playlist_state == PLAYLIST_STATE_PLAY) {
 		if (playlist.queued >= 0
 		    && (playlist.order[playlist.queued] == song
-			|| playlist.order[playlist.current] == song)) {
-			lockPlaylistInteraction();
-			clearPlayerQueue();
-			unlockPlaylistInteraction();
-		}
+			|| playlist.order[playlist.current] == song))
+			clearPlayerQueueLocked();
 	}
 
 	if (playlist.songs[song]->type == SONG_TYPE_URL) {
@@ -1040,11 +1038,8 @@ int setPlaylistRepeatStatus(int fd, int status)
 	}
 
 	if (playlist_state == PLAYLIST_STATE_PLAY) {
-		if (playlist.repeat && !status && playlist.queued == 0) {
-			lockPlaylistInteraction();
-			clearPlayerQueue();
-			unlockPlaylistInteraction();
-		}
+		if (playlist.repeat && !status && playlist.queued == 0)
+			clearPlayerQueueLocked();
 	}
 
 	playlist.repeat = status;
@@ -1093,11 +1088,8 @@ int moveSongInPlaylist(int fd, int from, int to)
 		if (playlist.queued >= 0)
 			queuedSong = playlist.order[playlist.queued];
 		if (queuedSong == from || queuedSong == to
-		    || currentSong == from || currentSong == to) {
-			lockPlaylistInteraction();
-			clearPlayerQueue();
-			unlockPlaylistInteraction();
-		}
+		    || currentSong == from || currentSong == to)
+			clearPlayerQueueLocked();
 	}
 
 	tmpSong = playlist.songs[from];
@@ -1170,11 +1162,8 @@ static void orderPlaylist(void)
 	}
 
 	if (playlist_state == PLAYLIST_STATE_PLAY) {
-		if (playlist.queued >= 0) {
-			lockPlaylistInteraction();
-			clearPlayerQueue();
-			unlockPlaylistInteraction();
-		}
+		if (playlist.queued >= 0)
+			clearPlayerQueueLocked();
 	}
 
 	for (i = 0; i < playlist.length; i++) {
@@ -1198,11 +1187,8 @@ static void randomizeOrder(int start, int end)
 	DEBUG("playlist: randomize from %i to %i\n", start, end);
 
 	if (playlist_state == PLAYLIST_STATE_PLAY) {
-		if (playlist.queued >= start && playlist.queued <= end) {
-			lockPlaylistInteraction();
-			clearPlayerQueue();
-			unlockPlaylistInteraction();
-		}
+		if (playlist.queued >= start && playlist.queued <= end)
+			clearPlayerQueueLocked();
 	}
 
 	for (i = start; i <= end; i++) {
@@ -1278,9 +1264,7 @@ int shufflePlaylist(int fd)
 
 	if (playlist.length > 1) {
 		if (playlist_state == PLAYLIST_STATE_PLAY) {
-			lockPlaylistInteraction();
-			clearPlayerQueue();
-			unlockPlaylistInteraction();
+			clearPlayerQueueLocked();
 			/* put current playing song first */
 			swapSongs(0, playlist.order[playlist.current]);
 			if (playlist.random) {
@@ -1406,11 +1390,8 @@ int seekSongInPlaylist(int fd, int song, float seek_time)
 	playlist_errorCount = 0;
 
 	if (playlist_state == PLAYLIST_STATE_PLAY) {
-		if (playlist.queued >= 0) {
-			lockPlaylistInteraction();
-			clearPlayerQueue();
-			unlockPlaylistInteraction();
-		}
+		if (playlist.queued >= 0)
+			clearPlayerQueueLocked();
 	} else if (playPlaylistOrderNumber(fd, i) < 0)
 		return -1;
 
