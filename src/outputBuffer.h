@@ -62,6 +62,8 @@ typedef struct _OutputBuffer {
 
 void initOutputBuffer(OutputBuffer * cb, unsigned int size);
 
+void output_buffer_free(OutputBuffer * cb);
+
 void clearOutputBuffer(OutputBuffer * cb);
 
 void flushOutputBuffer(OutputBuffer * cb);

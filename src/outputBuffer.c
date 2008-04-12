@@ -36,6 +36,12 @@ void initOutputBuffer(OutputBuffer * cb, unsigned int size)
 	cb->currentChunk = -1;
 }
 
+void output_buffer_free(OutputBuffer * cb)
+{
+	assert(cb->chunks != NULL);
+	free(cb->chunks);
+}
+
 void clearOutputBuffer(OutputBuffer * cb)
 {
 	cb->end = cb->begin;

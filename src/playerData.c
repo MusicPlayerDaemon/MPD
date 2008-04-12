@@ -116,5 +116,6 @@ void freePlayerData(void)
 	 * access playerData_pd and we need to keep it available for them */
 	waitpid(-1, NULL, 0);
 
+	output_buffer_free(&playerData_pd.buffer);
 	free(playerData_pd.audioDeviceStates);
 }
