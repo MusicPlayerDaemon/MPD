@@ -218,3 +218,9 @@ int sendDataToOutputBuffer(OutputBuffer * cb, InputStream * inStream,
 	return 0;
 }
 
+void output_buffer_skip(OutputBuffer * cb, unsigned num)
+{
+	int i = outputBufferAbsolute(cb, num);
+	if (i >= 0)
+		cb->begin = i;
+}

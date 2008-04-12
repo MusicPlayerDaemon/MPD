@@ -99,4 +99,6 @@ int sendDataToOutputBuffer(OutputBuffer * cb,
 			   float data_time,
 			   mpd_uint16 bitRate, ReplayGainInfo * replayGainInfo);
 
+void output_buffer_skip(OutputBuffer * cb, unsigned num);
+
 #endif

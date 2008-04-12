@@ -361,11 +361,6 @@ void decoderInit(void)
 		FATAL("Failed to spawn decoder task: %s\n", strerror(errno));
 }
 
-static void advanceOutputBufferTo(OutputBuffer * cb, int to)
-{
-	cb->begin = to;
-}
-
 static void crossFade(OutputBufferChunk * a, OutputBufferChunk * b,
 		      AudioFormat * format,
 		      unsigned int fadePosition, unsigned int crossFadeChunks)
@@ -576,9 +571,7 @@ static void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer *
 				/* the cross-fade is finished; skip
 				   the section which was cross-faded
 				   (and thus already played) */
-				nextChunk = outputBufferAbsolute(cb, crossFadeChunks);
-				if (nextChunk >= 0)
-					advanceOutputBufferTo(cb, nextChunk);
+				output_buffer_skip(cb, crossFadeChunks);
 			}
 
 			doCrossFade = 0;
