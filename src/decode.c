@@ -88,6 +88,7 @@ static unsigned calculateCrossFadeChunks(PlayerControl * pc, AudioFormat * af,
 	chunks = (af->sampleRate * af->bits * af->channels / 8.0 / CHUNK_SIZE);
 	chunks = (chunks * pc->crossFade + 0.5);
 
+	assert(buffered_chunks >= buffered_before_play);
 	if (chunks > (buffered_chunks - buffered_before_play)) {
 		chunks = buffered_chunks - buffered_before_play;
 	}
@@ -367,6 +368,8 @@ static void crossFade(OutputBufferChunk * a, OutputBufferChunk * b,
 		      AudioFormat * format,
 		      unsigned int fadePosition, unsigned int crossFadeChunks)
 {
+	assert(fadePosition <= crossFadeChunks);
+
 	pcm_mix(a->data,
 		b->data,
 		a->chunkSize,
