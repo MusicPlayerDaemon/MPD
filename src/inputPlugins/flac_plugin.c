@@ -206,6 +206,18 @@ static void flacMetadata(const flac_decoder * dec,
 	flac_metadata_common_cb(block, (FlacData *) vdata);
 }
 
+static void flac_convert_stereo16(unsigned char *dest,
+				  const FLAC__int32 * const buf[],
+				  unsigned int position, unsigned int end)
+{
+	for (; position < end; ++position) {
+		*(uint16_t*)dest = buf[0][position];
+		dest += 2;
+		*(uint16_t*)dest = buf[1][position];
+		dest += 2;
+	}
+}
+
 static void flac_convert(unsigned char *dest,
 			 unsigned int num_channels,
 			 unsigned int bytes_per_sample,
@@ -266,9 +278,14 @@ static FLAC__StreamDecoderWriteStatus flacWrite(const flac_decoder *dec,
 		if (num_samples > max_samples)
 			num_samples = max_samples;
 
-		flac_convert(data->chunk + data->chunk_length,
-			     num_channels, bytes_per_sample, buf,
-			     c_samp, c_samp + num_samples);
+		if (bytes_per_sample == 2)
+			flac_convert_stereo16(data->chunk + data->chunk_length,
+					      buf, c_samp,
+					      c_samp + num_samples);
+		else
+			flac_convert(data->chunk + data->chunk_length,
+				     num_channels, bytes_per_sample, buf,
+				     c_samp, c_samp + num_samples);
 		data->chunk_length = num_samples;
 
 		if (flacSendChunk(data) < 0) {
