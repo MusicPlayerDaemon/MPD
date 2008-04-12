@@ -65,6 +65,8 @@ void flushOutputBuffer(OutputBuffer * cb);
 /** is the buffer empty? */
 int outputBufferEmpty(const OutputBuffer * cb);
 
+void outputBufferShift(OutputBuffer * cb);
+
 /**
  * what is the position of the specified chunk number, relative to
  * the first chunk in use?

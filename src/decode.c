@@ -557,10 +557,7 @@ static void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer *
 				break;
 			pc->totalPlayTime +=
 				sizeToTime * beginChunk->chunkSize;
-			if ((unsigned)cb->begin + 1 >= buffered_chunks) {
-				cb->begin = 0;
-			} else
-				cb->begin++;
+			outputBufferShift(cb);
 			player_wakeup_decoder_nb();
 		} else if (!outputBufferEmpty(cb) && cb->begin == next) {
 			/* at the beginning of a new song */

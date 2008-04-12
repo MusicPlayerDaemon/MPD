@@ -56,6 +56,16 @@ int outputBufferEmpty(const OutputBuffer * cb)
 	return cb->begin == cb->end;
 }
 
+void outputBufferShift(OutputBuffer * cb)
+{
+	assert(cb->begin != cb->end);
+	assert(cb->begin < buffered_chunks);
+
+	++cb->begin;
+	if (cb->begin >= buffered_chunks)
+		cb->begin = 0;
+}
+
 unsigned int outputBufferRelative(const OutputBuffer * cb, unsigned i)
 {
 	if (i >= cb->begin)
