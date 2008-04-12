@@ -660,6 +660,12 @@ else
 	echo " TCP support ...................disabled"
 fi
 
+if test x$enable_ipv6 = xyes; then
+	echo " IPv6 support ..................enabled"
+else
+	echo " IPv6 support ..................disabled"
+fi
+
 if test x$enable_un = xyes; then
 	echo " Unix domain socket support ....enabled"
 else
