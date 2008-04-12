@@ -21,8 +21,8 @@
 #include "log.h"
 #include "os_compat.h"
 
-int buffered_before_play;
-int buffered_chunks;
+unsigned int buffered_before_play;
+unsigned int buffered_chunks;
 
 #define DEFAULT_BUFFER_SIZE         2048
 #define DEFAULT_BUFFER_BEFORE_PLAY  10
@@ -72,8 +72,7 @@ void initPlayerData(void)
 	buffered_before_play = (perc / 100) * buffered_chunks;
 	if (buffered_before_play > buffered_chunks) {
 		buffered_before_play = buffered_chunks;
-	} else if (buffered_before_play < 0)
-		buffered_before_play = 0;
+	}
 
 	allocationSize = buffered_chunks * CHUNK_SIZE;	/*actual buffer */
 	allocationSize += buffered_chunks * sizeof(float);	/*for times */

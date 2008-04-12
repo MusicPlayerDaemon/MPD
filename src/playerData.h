@@ -30,8 +30,8 @@
 /* pick 1020 since its devisible for 8,16,24, and 32-bit audio */
 #define CHUNK_SIZE		1020
 
-extern int buffered_before_play;
-extern int buffered_chunks;
+extern unsigned int buffered_before_play;
+extern unsigned int buffered_chunks;
 
 typedef struct _PlayerData {
 	OutputBuffer buffer;
