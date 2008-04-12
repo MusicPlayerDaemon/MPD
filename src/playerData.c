@@ -23,7 +23,6 @@
 #include "os_compat.h"
 
 unsigned int buffered_before_play;
-unsigned int buffered_chunks;
 
 #define DEFAULT_BUFFER_SIZE         2048
 #define DEFAULT_BUFFER_BEFORE_PLAY  10
@@ -36,6 +35,7 @@ void initPlayerData(void)
 	char *test;
 	int crossfade = 0;
 	size_t bufferSize = DEFAULT_BUFFER_SIZE;
+	unsigned int buffered_chunks;
 	ConfigParam *param;
 	size_t device_array_size = audio_device_count() * sizeof(mpd_sint8);
 

@@ -28,7 +28,6 @@
 #include "outputBuffer.h"
 
 extern unsigned int buffered_before_play;
-extern unsigned int buffered_chunks;
 
 typedef struct _PlayerData {
 	OutputBuffer buffer;
