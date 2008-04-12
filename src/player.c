@@ -107,10 +107,8 @@ int playerWait(int fd)
 	return 0;
 }
 
-static void set_current_song(Song *song)
+static void set_current_song(PlayerControl * pc, Song *song)
 {
-	PlayerControl *pc = &(getPlayerData()->playerControl);
-
 	pc->fileTime = song->tag ? song->tag->time : 0;
 	pc->current_song = song;
 }
@@ -122,7 +120,7 @@ int playerPlay(int fd, Song * song)
 	if (playerStop(fd) < 0)
 		return -1;
 
-	set_current_song(song);
+	set_current_song(pc, song);
 
 	pc->play = 1;
 	/* FIXME: _nb() variant is probably wrong here, and everywhere... */
@@ -258,7 +256,7 @@ int queueSong(Song * song)
 	PlayerControl *pc = &(getPlayerData()->playerControl);
 
 	if (pc->queueState == PLAYER_QUEUE_BLANK) {
-		set_current_song(song);
+		set_current_song(pc, song);
 		pc->queueState = PLAYER_QUEUE_FULL;
 		return 0;
 	}
@@ -314,7 +312,7 @@ int playerSeek(int fd, Song * song, float seek_time)
 	}
 
 	if (pc->current_song != song)
-		set_current_song(song);
+		set_current_song(pc, song);
 
 	if (pc->error == PLAYER_ERROR_NOERROR) {
 		pc->seekWhere = seek_time;
