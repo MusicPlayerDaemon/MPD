@@ -857,6 +857,7 @@ static int mp3Read(mp3DecodeData * data, OutputBuffer * cb, DecoderControl * dc,
 			clearOutputBuffer(cb);
 			data->muteFrame = 0;
 			dc->seek = 0;
+			decoder_wakeup_player();
 		}
 		break;
 	default:
@@ -972,10 +973,12 @@ static int mp3Read(mp3DecodeData * data, OutputBuffer * cb, DecoderControl * dc,
 					dc->seekError = 1;
 				data->muteFrame = 0;
 				dc->seek = 0;
+				decoder_wakeup_player();
 			}
 		} else if (dc->seek && !data->inStream->seekable) {
 			dc->seek = 0;
 			dc->seekError = 1;
+			decoder_wakeup_player();
 		}
 	}
 
@@ -1082,6 +1085,7 @@ static int mp3_decode(OutputBuffer * cb, DecoderControl * dc,
 	if (dc->seek && data.muteFrame == MUTEFRAME_SEEK) {
 		clearOutputBuffer(cb);
 		dc->seek = 0;
+		decoder_wakeup_player();
 	}
 
 	flushOutputBuffer(cb);

@@ -45,7 +45,6 @@ int handlePendingSignals(void)
 		}
 		if (cycle_log_files() < 0)
 			return COMMAND_RETURN_KILL;
-		playerCycleLogFiles();
 	}
 
 	return 0;
@@ -63,7 +62,6 @@ static void chldSigHandler(int sig)
 			else
 				break;
 		}
-		player_sigChldHandler(pid, status);
 		directory_sigChldHandler(pid, status);
 	}
 }
@@ -90,23 +88,6 @@ void finishSigHandlers(void)
 	signal_unhandle(SIGUSR1);
 	signal_unhandle(SIGTERM);
 	signal_unhandle(SIGHUP);
-}
-
-void setSigHandlersForDecoder(void)
-{
-	struct sigaction sa;
-
-	finishSigHandlers();
-
-	sa.sa_flags = 0;
-	sigemptyset(&sa.sa_mask);
-	sa.sa_handler = SIG_IGN;
-	while (sigaction(SIGHUP, &sa, NULL) < 0 && errno == EINTR) ;
-	while (sigaction(SIGINT, &sa, NULL) < 0 && errno == EINTR) ;
-	sa.sa_flags = SA_SIGINFO;
-	sa.sa_sigaction = decodeSigHandler;
-	while (sigaction(SIGCHLD, &sa, NULL) < 0 && errno == EINTR) ;
-	while (sigaction(SIGTERM, &sa, NULL) < 0 && errno == EINTR) ;
 }
 
 void ignoreSignals(void)

@@ -194,6 +194,7 @@ static int mpc_decode(OutputBuffer * cb, DecoderControl * dc,
 			} else
 				dc->seekError = 1;
 			dc->seek = 0;
+			decoder_wakeup_player();
 		}
 
 		vbrUpdateAcc = 0;

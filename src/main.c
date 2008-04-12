@@ -429,6 +429,8 @@ int main(int argc, char *argv[])
 	initZeroconf();
 
 	openVolumeDevice();
+	decoderInit();
+	playerInit();
 	read_state_file();
 
 	while (COMMAND_RETURN_KILL != doIOForInterfaces() &&

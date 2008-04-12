@@ -192,6 +192,7 @@ static void wavpack_decode(OutputBuffer *cb, DecoderControl *dc,
 			}
 
 			dc->seek = 0;
+			decoder_wakeup_player();
 		}
 
 		if (dc->stop)

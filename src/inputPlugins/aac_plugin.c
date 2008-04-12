@@ -400,6 +400,7 @@ static int aac_decode(OutputBuffer * cb, DecoderControl * dc, char *path)
 		if (dc->seek) {
 			dc->seekError = 1;
 			dc->seek = 0;
+			decoder_wakeup_player();
 		} else if (dc->stop) {
 			eof = 1;
 			break;
@@ -418,6 +419,7 @@ static int aac_decode(OutputBuffer * cb, DecoderControl * dc, char *path)
 	if (dc->seek) {
 		dc->seekError = 1;
 		dc->seek = 0;
+		decoder_wakeup_player();
 	}
 
 	return 0;

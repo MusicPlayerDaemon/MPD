@@ -97,7 +97,6 @@ void initPlayerData(void)
 	initOutputBuffer(&(playerData_pd->buffer),
 			 ((char *)playerData_pd) + sizeof(PlayerData));
 
-	playerData_pd->playerControl.wait = 0;
 	playerData_pd->playerControl.stop = 0;
 	playerData_pd->playerControl.pause = 0;
 	playerData_pd->playerControl.play = 0;
@@ -115,7 +114,6 @@ void initPlayerData(void)
 	playerData_pd->playerControl.crossFade = crossfade;
 	playerData_pd->playerControl.softwareVolume = 1000;
 	playerData_pd->playerControl.totalPlayTime = 0;
-	playerData_pd->playerControl.decode_pid = 0;
 	playerData_pd->playerControl.metadataState =
 	    PLAYER_METADATA_STATE_WRITE;
 

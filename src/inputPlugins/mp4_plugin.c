@@ -221,6 +221,7 @@ static int mp4_decode(OutputBuffer * cb, DecoderControl * dc,
 			clearOutputBuffer(cb);
 			seeking = 0;
 			dc->seek = 0;
+			decoder_wakeup_player();
 		}
 
 		if (seeking)
@@ -296,6 +297,7 @@ static int mp4_decode(OutputBuffer * cb, DecoderControl * dc,
 	if (dc->seek && seeking) {
 		clearOutputBuffer(cb);
 		dc->seek = 0;
+		decoder_wakeup_player();
 	}
 	flushOutputBuffer(cb);
 

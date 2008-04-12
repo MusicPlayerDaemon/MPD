@@ -45,8 +45,6 @@ void initOutputBuffer(OutputBuffer * cb, char *chunks)
 	    (float *)(((char *)cb->metaChunk) +
 		      buffered_chunks * sizeof(mpd_sint8));
 	cb->acceptMetadata = 0;
-
-	initNotify(&cb->notify);
 }
 
 void clearAllMetaChunkSets(OutputBuffer * cb)
@@ -129,11 +127,12 @@ int sendDataToOutputBuffer(OutputBuffer * cb, InputStream * inStream,
 					} else {
 						dc->seekError = 1;
 						dc->seek = 0;
+						decoder_wakeup_player();
 					}
 				}
 				if (!inStream ||
 				    bufferInputStream(inStream) <= 0) {
-					waitNotify(&cb->notify);
+					decoder_sleep();
 				}
 			}
 			if (dc->stop)
@@ -163,6 +162,7 @@ int sendDataToOutputBuffer(OutputBuffer * cb, InputStream * inStream,
 			flushOutputBuffer(cb);
 		}
 	}
+	decoder_wakeup_player();
 
 	return 0;
 }

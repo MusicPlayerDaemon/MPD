@@ -285,6 +285,7 @@ static int oggvorbis_decode(OutputBuffer * cb, DecoderControl * dc,
 			} else
 				dc->seekError = 1;
 			dc->seek = 0;
+			decoder_wakeup_player();
 		}
 		ret = ov_read(&vf, chunk + chunkpos,
 			      OGG_CHUNK_SIZE - chunkpos,

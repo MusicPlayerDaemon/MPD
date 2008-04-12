@@ -47,15 +47,18 @@ typedef struct _DecoderControl {
 	volatile mpd_sint8 seek;
 	volatile mpd_sint8 seekError;
 	volatile mpd_sint8 seekable;
-	volatile mpd_sint8 cycleLogFiles;
 	volatile double seekWhere;
 	AudioFormat audioFormat;
 	char utf8url[MPD_PATH_MAX];
 	volatile float totalTime;
 } DecoderControl;
 
-void decodeSigHandler(int sig, siginfo_t * siginfo, void *v);
-
 void decode(void);
+
+void decoder_wakeup_player(void);
+
+void decoder_sleep(void);
+
+void decoderInit(void);
 
 #endif

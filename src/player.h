@@ -55,7 +55,6 @@
 #define PLAYER_METADATA_STATE_WRITE     2
 
 typedef struct _PlayerControl {
-	volatile mpd_sint8 wait;
 	volatile mpd_sint8 stop;
 	volatile mpd_sint8 play;
 	volatile mpd_sint8 pause;
@@ -81,16 +80,16 @@ typedef struct _PlayerControl {
 	volatile float crossFade;
 	volatile mpd_uint16 softwareVolume;
 	volatile double totalPlayTime;
-	volatile int decode_pid;
-	volatile mpd_sint8 cycleLogFiles;
 	volatile mpd_sint8 metadataState;
 	MetadataChunk metadataChunk;
 	MetadataChunk fileMetadataChunk;
 } PlayerControl;
 
-void clearPlayerPid(void);
+void wakeup_main_task(void);
 
-void player_sigChldHandler(int pid, int status);
+void wakeup_player_nb(void);
+
+void player_sleep(void);
 
 int playerPlay(int fd, Song * song);
 
@@ -144,8 +143,8 @@ int getPlayerBits(void);
 
 int getPlayerChannels(void);
 
-void playerCycleLogFiles(void);
-
 Song *playerCurrentDecodeSong(void);
+
+void playerInit(void);
 
 #endif

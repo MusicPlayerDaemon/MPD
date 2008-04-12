@@ -194,6 +194,7 @@ static int mod_decode(OutputBuffer * cb, DecoderControl * dc, char *path)
 		if (dc->seek) {
 			dc->seekError = 1;
 			dc->seek = 0;
+			decoder_wakeup_player();
 		}
 
 		if (dc->stop)

@@ -102,6 +102,7 @@ static int audiofile_decode(OutputBuffer * cb, DecoderControl * dc, char *path)
 				    dc->audioFormat.sampleRate;
 				afSeekFrame(af_fp, AF_DEFAULT_TRACK, current);
 				dc->seek = 0;
+				decoder_wakeup_player();
 			}
 
 			ret =
