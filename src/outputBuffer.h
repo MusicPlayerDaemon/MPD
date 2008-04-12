@@ -73,6 +73,8 @@ unsigned availableOutputBuffer(const OutputBuffer * cb);
  */
 int outputBufferAbsolute(const OutputBuffer * cb, unsigned relative);
 
+char * outputBufferChunkData(const OutputBuffer * cb, unsigned i);
+
 /* we send inStream for buffering the inputStream while waiting to
    send the next chunk */
 int sendDataToOutputBuffer(OutputBuffer * cb,

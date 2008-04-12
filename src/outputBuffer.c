@@ -92,6 +92,13 @@ int outputBufferAbsolute(const OutputBuffer * cb, unsigned relative)
 	return (int)i;
 }
 
+char * outputBufferChunkData(const OutputBuffer * cb, unsigned i)
+{
+	assert(i < buffered_chunks);
+
+	return cb->chunks + i * CHUNK_SIZE;
+}
+
 /**
  * Return the tail chunk has room for additional data.  If there is no
  * room in the queue, this function blocks until the player thread has

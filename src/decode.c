@@ -506,10 +506,8 @@ static void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer *
 				}
 				nextChunk = outputBufferAbsolute(cb, crossFadeChunks);
 				if (nextChunk >= 0) {
-					pcm_mix(cb->chunks +
-						cb->begin * CHUNK_SIZE,
-						cb->chunks +
-						nextChunk * CHUNK_SIZE,
+					pcm_mix(outputBufferChunkData(cb, cb->begin),
+						outputBufferChunkData(cb, nextChunk),
 						cb->chunkSize[cb->begin],
 						cb->chunkSize[nextChunk],
 						&(cb->audioFormat),
