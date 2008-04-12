@@ -182,7 +182,7 @@ out:
 
 #ifdef HAVE_LIBSAMPLERATE
 static size_t pcm_convertSampleRate(mpd_sint8 channels, mpd_uint32 inSampleRate,
-                                    char *inBuffer, size_t inSize,
+                                    const char *inBuffer, size_t inSize,
                                     mpd_uint32 outSampleRate, char *outBuffer,
                                     size_t outSize, ConvState *convState)
 {
@@ -297,7 +297,7 @@ static size_t pcm_convertSampleRate(mpd_sint8 channels, mpd_uint32 inSampleRate,
 }
 #endif /* !HAVE_LIBSAMPLERATE */
 
-static char *pcm_convertChannels(mpd_sint8 channels, char *inBuffer,
+static char *pcm_convertChannels(mpd_sint8 channels, const char *inBuffer,
                                  size_t inSize, size_t *outSize)
 {
 	static char *buf;
@@ -351,8 +351,8 @@ static char *pcm_convertChannels(mpd_sint8 channels, char *inBuffer,
 	return outBuffer;
 }
 
-static char *pcm_convertTo16bit(mpd_sint8 bits, const char *inBuffer,
-				size_t inSize, size_t *outSize)
+static const char *pcm_convertTo16bit(mpd_sint8 bits, const char *inBuffer,
+				      size_t inSize, size_t *outSize)
 {
 	static char *buf;
 	static size_t len;
@@ -393,7 +393,7 @@ size_t pcm_convertAudioFormat(AudioFormat * inFormat, const char *inBuffer,
                               size_t inSize, AudioFormat * outFormat,
                               char *outBuffer, ConvState *convState)
 {
-	char *buf;
+	const char *buf;
 	size_t len;
 	size_t outSize = pcm_sizeOfConvBuffer(inFormat, inSize, outFormat);
 

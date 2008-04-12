@@ -444,8 +444,8 @@ static MpdTag *aacTagDup(char *file)
 	return ret;
 }
 
-static char *aac_suffixes[] = { "aac", NULL };
-static char *aac_mimeTypes[] = { "audio/aac", "audio/aacp", NULL };
+static const char *aac_suffixes[] = { "aac", NULL };
+static const char *aac_mimeTypes[] = { "audio/aac", "audio/aacp", NULL };
 
 InputPlugin aacPlugin = {
 	"aac",

@@ -414,8 +414,8 @@ static MpdTag *mp4TagDup(char *file)
 	return ret;
 }
 
-static char *mp4_suffixes[] = { "m4a", "mp4", NULL };
-static char *mp4_mimeTypes[] = { "audio/mp4", "audio/m4a", NULL };
+static const char *mp4_suffixes[] = { "m4a", "mp4", NULL };
+static const char *mp4_mimeTypes[] = { "audio/mp4", "audio/m4a", NULL };
 
 InputPlugin mp4Plugin = {
 	"mp4",
