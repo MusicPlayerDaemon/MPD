@@ -30,9 +30,6 @@
 #include "utf8.h"
 #include "os_compat.h"
 
-static pthread_cond_t decoder_wakeup_cond = PTHREAD_COND_INITIALIZER;
-static pthread_mutex_t decoder_wakeup_mutex = PTHREAD_MUTEX_INITIALIZER;
-
 /* called inside decoder_task (inputPlugins) */
 void decoder_wakeup_player(void)
 {
@@ -41,19 +38,22 @@ void decoder_wakeup_player(void)
 
 void decoder_sleep(void)
 {
-	pthread_cond_wait(&decoder_wakeup_cond, &decoder_wakeup_mutex);
+	DecoderControl *dc = &(getPlayerData()->decoderControl);
+	notifyWait(&dc->notify);
 	wakeup_player_nb();
 }
 
 static void player_wakeup_decoder_nb(void)
 {
-	pthread_cond_signal(&decoder_wakeup_cond);
+	DecoderControl *dc = &(getPlayerData()->decoderControl);
+	notifySignal(&dc->notify);
 }
 
 /* called from player_task */
 static void player_wakeup_decoder(void)
 {
-	pthread_cond_signal(&decoder_wakeup_cond);
+	DecoderControl *dc = &(getPlayerData()->decoderControl);
+	notifySignal(&dc->notify);
 	player_sleep();
 }
 
@@ -331,6 +331,8 @@ static void * decoder_task(mpd_unused void *unused)
 	OutputBuffer *cb = &(getPlayerData()->buffer);
 	PlayerControl *pc = &(getPlayerData()->playerControl);
 	DecoderControl *dc = &(getPlayerData()->decoderControl);
+
+	notifyEnter(&dc->notify);
 
 	while (1) {
 		if (dc->start || dc->seek) {

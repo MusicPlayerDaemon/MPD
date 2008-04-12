@@ -113,6 +113,7 @@ void initPlayerData(void)
 	playerData_pd->playerControl.softwareVolume = 1000;
 	playerData_pd->playerControl.totalPlayTime = 0;
 
+	notifyInit(&playerData_pd->decoderControl.notify);
 	playerData_pd->decoderControl.stop = 0;
 	playerData_pd->decoderControl.start = 0;
 	playerData_pd->decoderControl.state = DECODE_STATE_STOP;

@@ -26,6 +26,7 @@
 
 #include "mpd_types.h"
 #include "audio.h"
+#include "notify.h"
 
 #include "os_compat.h"
 
@@ -41,6 +42,8 @@
 #define DECODE_ERROR_FILE	20
 
 typedef struct _DecoderControl {
+	Notify notify;
+
 	volatile mpd_sint8 state;
 	volatile mpd_sint8 stop;
 	volatile mpd_sint8 start;
