@@ -57,6 +57,14 @@ void flushOutputBuffer(OutputBuffer * cb)
 	}
 }
 
+unsigned availableOutputBuffer(const OutputBuffer * cb)
+{
+	if (cb->end >= cb->begin)
+		return cb->end - cb->begin;
+	else
+		return cb->end + buffered_chunks - cb->begin;
+}
+
 /**
  * Return the tail chunk has room for additional data.  If there is no
  * room in the queue, this function blocks until the player thread has

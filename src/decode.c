@@ -425,8 +425,7 @@ static void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer *
 	pc->play = 0;
 	wakeup_main_task();
 
-	while ((unsigned)cb->end - cb->begin < bbp &&
-	       cb->end != buffered_chunks - 1 &&
+	while (availableOutputBuffer(cb) < bbp &&
 	       dc->state != DECODE_STATE_STOP) {
 		processDecodeInput();
 		player_sleep();

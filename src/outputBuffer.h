@@ -55,6 +55,9 @@ void clearOutputBuffer(OutputBuffer * cb);
 
 void flushOutputBuffer(OutputBuffer * cb);
 
+/** determine the number of decoded chunks */
+unsigned availableOutputBuffer(const OutputBuffer * cb);
+
 /* we send inStream for buffering the inputStream while waiting to
    send the next chunk */
 int sendDataToOutputBuffer(OutputBuffer * cb,
