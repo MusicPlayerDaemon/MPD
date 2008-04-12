@@ -536,10 +536,12 @@ static void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer *
 						   running, abort
 						   cross fading */
 						doCrossFade = -1;
-					} else
+					} else {
 						/* wait for the
 						   decoder */
+						player_sleep();
 						continue;
+					}
 				}
 			}
 
