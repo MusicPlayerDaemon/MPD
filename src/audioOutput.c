@@ -150,7 +150,8 @@ int initAudioOutput(AudioOutput *ao, ConfigParam * param)
 	return 1;
 }
 
-int openAudioOutput(AudioOutput * audioOutput, AudioFormat * audioFormat)
+int openAudioOutput(AudioOutput * audioOutput,
+		    const AudioFormat * audioFormat)
 {
 	int ret = 0;
 
