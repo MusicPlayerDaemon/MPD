@@ -57,6 +57,54 @@ void flushOutputBuffer(OutputBuffer * cb)
 	}
 }
 
+/**
+ * Return the tail chunk has room for additional data.  If there is no
+ * room in the queue, this function blocks until the player thread has
+ * finished playing its current chunk.
+ *
+ * @return the positive index of the new chunk; OUTPUT_BUFFER_DC_SEEK
+ * if another thread requested seeking; OUTPUT_BUFFER_DC_STOP if
+ * another thread requested stopping the decoder.
+ */
+static int tailChunk(OutputBuffer * cb, InputStream * inStream,
+		     DecoderControl * dc, int seekable,
+		     float data_time, mpd_uint16 bitRate)
+{
+	unsigned int next;
+
+	if (currentChunk == cb->end)
+		return currentChunk;
+
+	next = cb->end + 1;
+	if (next >= buffered_chunks) {
+		next = 0;
+	}
+	while (cb->begin == next && !dc->stop) {
+		if (dc->seek) {
+			if (seekable) {
+				return OUTPUT_BUFFER_DC_SEEK;
+			} else {
+				dc->seekError = 1;
+				dc->seek = 0;
+				decoder_wakeup_player();
+			}
+		}
+		if (!inStream ||
+		    bufferInputStream(inStream) <= 0) {
+			decoder_sleep();
+		}
+	}
+	if (dc->stop)
+		return OUTPUT_BUFFER_DC_STOP;
+
+	currentChunk = cb->end;
+	cb->chunkSize[currentChunk] = 0;
+	cb->bitRate[currentChunk] = bitRate;
+	cb->times[currentChunk] = data_time;
+
+	return currentChunk;
+}
+
 int sendDataToOutputBuffer(OutputBuffer * cb, InputStream * inStream,
 			   DecoderControl * dc, int seekable, void *dataIn,
 			   size_t dataInLen, float data_time, mpd_uint16 bitRate,
@@ -93,45 +141,22 @@ int sendDataToOutputBuffer(OutputBuffer * cb, InputStream * inStream,
 		normalizeData(data, datalen, &cb->audioFormat);
 
 	while (datalen) {
-		if (currentChunk != cb->end) {
-			unsigned int next = cb->end + 1;
-			if (next >= buffered_chunks) {
-				next = 0;
-			}
-			while (cb->begin == next && !dc->stop) {
-				if (dc->seek) {
-					if (seekable) {
-						return OUTPUT_BUFFER_DC_SEEK;
-					} else {
-						dc->seekError = 1;
-						dc->seek = 0;
-						decoder_wakeup_player();
-					}
-				}
-				if (!inStream ||
-				    bufferInputStream(inStream) <= 0) {
-					decoder_sleep();
-				}
-			}
-			if (dc->stop)
-				return OUTPUT_BUFFER_DC_STOP;
+		int chunk_index = tailChunk(cb, inStream,
+					    dc, seekable,
+					    data_time, bitRate);
+		if (chunk_index < 0)
+			return chunk_index;
 
-			currentChunk = cb->end;
-			cb->chunkSize[currentChunk] = 0;
-			cb->bitRate[currentChunk] = bitRate;
-			cb->times[currentChunk] = data_time;
-		}
-
-		chunkLeft = CHUNK_SIZE - cb->chunkSize[currentChunk];
+		chunkLeft = CHUNK_SIZE - cb->chunkSize[chunk_index];
 		dataToSend = datalen > chunkLeft ? chunkLeft : datalen;
 
-		memcpy(cb->chunks + currentChunk * CHUNK_SIZE +
-		       cb->chunkSize[currentChunk], data, dataToSend);
-		cb->chunkSize[currentChunk] += dataToSend;
+		memcpy(cb->chunks + chunk_index * CHUNK_SIZE +
+		       cb->chunkSize[chunk_index], data, dataToSend);
+		cb->chunkSize[chunk_index] += dataToSend;
 		datalen -= dataToSend;
 		data += dataToSend;
 
-		if (cb->chunkSize[currentChunk] == CHUNK_SIZE) {
+		if (cb->chunkSize[chunk_index] == CHUNK_SIZE) {
 			flushOutputBuffer(cb);
 		}
 	}
