@@ -371,11 +371,9 @@ static void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer *
 	    1=enabled; -1=disabled */
 	int doCrossFade = 0;
 	unsigned int crossFadeChunks = 0;
-	unsigned int fadePosition;
 	/** the position of the next cross-faded chunk in the next
 	    song */
 	int nextChunk = -1;
-	unsigned int test;
 	int decodeWaitedOn = 0;
 	static const char silence[CHUNK_SIZE];
 	double sizeToTime = 0.0;
@@ -496,6 +494,7 @@ static void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer *
 		if (pause)
 			player_sleep();
 		else if (cb->begin != end && cb->begin != next) {
+			unsigned int fadePosition;
 			if (doCrossFade == 1 && next >= 0 &&
 			    ((next > cb->begin &&
 			      (fadePosition = next - cb->begin)
@@ -504,6 +503,7 @@ static void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer *
 			      (fadePosition = next - cb->begin +
 			       buffered_chunks) <= crossFadeChunks))) {
 				/* perform cross fade */
+				unsigned int test = end;
 				if (nextChunk < 0) {
 					/* beginning of the cross fade
 					   - adjust crossFadeChunks
@@ -512,7 +512,6 @@ static void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer *
 					   chunks in the old song */
 					crossFadeChunks = fadePosition;
 				}
-				test = end;
 				if (end < cb->begin)
 					test += buffered_chunks;
 				nextChunk = cb->begin + crossFadeChunks;
@@ -576,8 +575,8 @@ static void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer *
 				/* the cross-fade is finished; skip
 				   the section which was cross-faded
 				   (and thus already played) */
+				unsigned int test = end;
 				nextChunk = cb->begin + crossFadeChunks;
-				test = end;
 				if (end < cb->begin)
 					test += buffered_chunks;
 				if ((unsigned)nextChunk < test) {
