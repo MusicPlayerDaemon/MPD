@@ -28,6 +28,8 @@ void initOutputBuffer(OutputBuffer * cb, unsigned int size)
 	memset(&cb->convState, 0, sizeof(ConvState));
 	cb->chunks = xmalloc(size * sizeof(*cb->chunks));
 	cb->size = size;
+	cb->begin = 0;
+	cb->end = 0;
 	cb->currentChunk = -1;
 }
 
