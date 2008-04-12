@@ -262,8 +262,7 @@ static FLAC__StreamDecoderWriteStatus flacWrite(const flac_decoder *dec,
 	data->time += timeChange;
 
 	flac_get_decode_position(dec, &newPosition);
-	if (data->position) {
-		assert(newPosition >= data->position);
+	if (data->position && newPosition >= data->position) {
 		assert(timeChange >= 0);
 
 		data->bitRate =
