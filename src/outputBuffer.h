@@ -33,9 +33,9 @@
 #define CHUNK_SIZE		1020
 
 typedef struct _OutputBufferChunk {
-	volatile mpd_uint16 chunkSize;
-	volatile mpd_uint16 bitRate;
-	volatile float times;
+	mpd_uint16 chunkSize;
+	mpd_uint16 bitRate;
+	float times;
 	char data[CHUNK_SIZE];
 } OutputBufferChunk;
 
