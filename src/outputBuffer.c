@@ -55,8 +55,17 @@ static inline unsigned successor(const OutputBuffer * cb, unsigned i)
 void flushOutputBuffer(OutputBuffer * cb)
 {
 	if (cb->currentChunk == (int)cb->end) {
+		int was_empty = outputBufferEmpty(cb);
+
 		cb->end = successor(cb, cb->end);
 		cb->currentChunk = -1;
+
+		if (was_empty)
+			/* if the buffer was empty, the player thread
+			   might be waiting for us; wake it up now
+			   that another decoded buffer has become
+			   available. */
+			decoder_wakeup_player();
 	}
 }
 
@@ -214,7 +223,6 @@ int sendDataToOutputBuffer(OutputBuffer * cb, InputStream * inStream,
 			flushOutputBuffer(cb);
 		}
 	}
-	decoder_wakeup_player();
 
 	return 0;
 }
