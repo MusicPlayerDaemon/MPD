@@ -26,10 +26,13 @@
 #include "conf.h"
 #include "os_compat.h"
 
-void initOutputBuffer(OutputBuffer * cb)
+void initOutputBuffer(OutputBuffer * cb, unsigned int size)
 {
+	assert(size > 0);
+
 	memset(&cb->convState, 0, sizeof(ConvState));
-	cb->chunks = xmalloc(buffered_chunks * sizeof(*cb->chunks));
+	cb->chunks = xmalloc(size * sizeof(*cb->chunks));
+	cb->size = size;
 	cb->currentChunk = -1;
 }
 
@@ -40,18 +43,18 @@ void clearOutputBuffer(OutputBuffer * cb)
 }
 
 /** return the index of the chunk after i */
-static inline unsigned successor(unsigned i)
+static inline unsigned successor(const OutputBuffer * cb, unsigned i)
 {
-	assert(i <= buffered_chunks);
+	assert(i <= cb->size);
 
 	++i;
-	return i == buffered_chunks ? 0 : i;
+	return i == cb->size ? 0 : i;
 }
 
 void flushOutputBuffer(OutputBuffer * cb)
 {
 	if (cb->currentChunk == cb->end) {
-		cb->end = successor(cb->end);
+		cb->end = successor(cb, cb->end);
 		cb->currentChunk = -1;
 	}
 }
@@ -64,9 +67,9 @@ int outputBufferEmpty(const OutputBuffer * cb)
 void outputBufferShift(OutputBuffer * cb)
 {
 	assert(cb->begin != cb->end);
-	assert(cb->begin < buffered_chunks);
+	assert(cb->begin < cb->size);
 
-	cb->begin = successor(cb->begin);
+	cb->begin = successor(cb, cb->begin);
 }
 
 unsigned int outputBufferRelative(const OutputBuffer * cb, unsigned i)
@@ -74,7 +77,7 @@ unsigned int outputBufferRelative(const OutputBuffer * cb, unsigned i)
 	if (i >= cb->begin)
 		return i - cb->begin;
 	else
-		return i + buffered_chunks - cb->begin;
+		return i + cb->size - cb->begin;
 }
 
 unsigned availableOutputBuffer(const OutputBuffer * cb)
@@ -88,20 +91,20 @@ int outputBufferAbsolute(const OutputBuffer * cb, unsigned relative)
 
 	max = cb->end;
 	if (max < cb->begin)
-		max += buffered_chunks;
+		max += cb->size;
 	i = (unsigned)cb->begin + relative;
 	if (i >= max)
 		return -1;
 
-	if (i >= buffered_chunks)
-		i -= buffered_chunks;
+	if (i >= cb->size)
+		i -= cb->size;
 
 	return (int)i;
 }
 
 OutputBufferChunk * outputBufferGetChunk(const OutputBuffer * cb, unsigned i)
 {
-	assert(i < buffered_chunks);
+	assert(i < cb->size);
 
 	return &cb->chunks[i];
 }
@@ -125,7 +128,7 @@ static int tailChunk(OutputBuffer * cb, InputStream * inStream,
 	if (cb->currentChunk == cb->end)
 		return cb->currentChunk;
 
-	next = successor(cb->end);
+	next = successor(cb, cb->end);
 	while (cb->begin == next && !dc->stop) {
 		if (dc->seek) {
 			if (seekable) {

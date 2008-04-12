@@ -46,6 +46,8 @@ typedef struct _OutputBufferChunk {
 typedef struct _OutputBuffer {
 	OutputBufferChunk *chunks;
 
+	unsigned int size;
+
 	/** the index of the first decoded chunk */
 	mpd_uint16 volatile begin;
 
@@ -58,7 +60,7 @@ typedef struct _OutputBuffer {
 	ConvState convState;
 } OutputBuffer;
 
-void initOutputBuffer(OutputBuffer * cb);
+void initOutputBuffer(OutputBuffer * cb, unsigned int size);
 
 void clearOutputBuffer(OutputBuffer * cb);
 

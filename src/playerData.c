@@ -75,7 +75,7 @@ void initPlayerData(void)
 
 	playerData_pd.audioDeviceStates = xmalloc(device_array_size);
 
-	initOutputBuffer(&(playerData_pd.buffer));
+	initOutputBuffer(&(playerData_pd.buffer), buffered_chunks);
 
 	notifyInit(&playerData_pd.playerControl.notify);
 	playerData_pd.playerControl.stop = 0;
