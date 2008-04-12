@@ -32,15 +32,19 @@
 /* pick 1020 since its devisible for 8,16,24, and 32-bit audio */
 #define CHUNK_SIZE		1020
 
+typedef struct _OutputBufferChunk {
+	volatile mpd_uint16 chunkSize;
+	volatile mpd_uint16 bitRate;
+	volatile float times;
+	char data[CHUNK_SIZE];
+} OutputBufferChunk;
+
 /**
  * A ring set of buffers where the decoder appends data after the end,
  * and the player consumes data from the beginning.
  */
 typedef struct _OutputBuffer {
-	char *volatile chunks;
-	mpd_uint16 *volatile chunkSize;
-	mpd_uint16 *volatile bitRate;
-	float *volatile times;
+	OutputBufferChunk *chunks;
 
 	/** the index of the first decoded chunk */
 	mpd_uint16 volatile begin;
@@ -52,7 +56,7 @@ typedef struct _OutputBuffer {
 	ConvState convState;
 } OutputBuffer;
 
-void initOutputBuffer(OutputBuffer * cb, char *chunks);
+void initOutputBuffer(OutputBuffer * cb, OutputBufferChunk * chunks);
 
 void clearOutputBuffer(OutputBuffer * cb);
 
@@ -76,7 +80,7 @@ unsigned availableOutputBuffer(const OutputBuffer * cb);
  */
 int outputBufferAbsolute(const OutputBuffer * cb, unsigned relative);
 
-char * outputBufferChunkData(const OutputBuffer * cb, unsigned i);
+OutputBufferChunk * outputBufferGetChunk(const OutputBuffer * cb, unsigned i);
 
 /* we send inStream for buffering the inputStream while waiting to
    send the next chunk */

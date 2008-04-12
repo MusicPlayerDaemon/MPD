@@ -491,6 +491,8 @@ static void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer *
 		if (pause)
 			player_sleep();
 		else if (!outputBufferEmpty(cb) && cb->begin != next) {
+			OutputBufferChunk *beginChunk =
+				outputBufferGetChunk(cb, cb->begin);
 			unsigned int fadePosition;
 			if (doCrossFade == 1 && next >= 0 &&
 			    (fadePosition = outputBufferRelative(cb, next))
@@ -506,18 +508,20 @@ static void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer *
 				}
 				nextChunk = outputBufferAbsolute(cb, crossFadeChunks);
 				if (nextChunk >= 0) {
-					pcm_mix(outputBufferChunkData(cb, cb->begin),
-						outputBufferChunkData(cb, nextChunk),
-						cb->chunkSize[cb->begin],
-						cb->chunkSize[nextChunk],
+					OutputBufferChunk *fadeChunk =
+						outputBufferGetChunk(cb, nextChunk);
+					pcm_mix(beginChunk->data,
+						fadeChunk->data,
+						beginChunk->chunkSize,
+						fadeChunk->chunkSize,
 						&(cb->audioFormat),
 						((float)fadePosition) /
 						crossFadeChunks);
-					if (cb->chunkSize[nextChunk] >
-					    cb->chunkSize[cb->begin]
+					if (fadeChunk->chunkSize >
+					    beginChunk->chunkSize
 					    ) {
-						cb->chunkSize[cb->begin]
-						    = cb->chunkSize[nextChunk];
+						beginChunk->chunkSize
+							= fadeChunk->chunkSize;
 					}
 				} else {
 					/* there are not enough
@@ -535,18 +539,17 @@ static void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer *
 			}
 
 			/* play the current chunk */
-			pc->elapsedTime = cb->times[cb->begin];
-			pc->bitRate = cb->bitRate[cb->begin];
-			pcm_volumeChange(cb->chunks + cb->begin *
-					 CHUNK_SIZE,
-					 cb->chunkSize[cb->begin],
+			pc->elapsedTime = beginChunk->times;
+			pc->bitRate = beginChunk->bitRate;
+			pcm_volumeChange(beginChunk->data,
+					 beginChunk->chunkSize,
 					 &(cb->audioFormat),
 					 pc->softwareVolume);
-			if (playAudio(cb->chunks + cb->begin * CHUNK_SIZE,
-				      cb->chunkSize[cb->begin]) < 0)
+			if (playAudio(beginChunk->data,
+				      beginChunk->chunkSize) < 0)
 				break;
 			pc->totalPlayTime +=
-			    sizeToTime * cb->chunkSize[cb->begin];
+				sizeToTime * beginChunk->chunkSize;
 			if ((unsigned)cb->begin + 1 >= buffered_chunks) {
 				cb->begin = 0;
 			} else

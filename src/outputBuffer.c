@@ -28,16 +28,10 @@
 
 static mpd_sint16 currentChunk = -1;
 
-void initOutputBuffer(OutputBuffer * cb, char *chunks)
+void initOutputBuffer(OutputBuffer * cb, OutputBufferChunk * chunks)
 {
 	memset(&cb->convState, 0, sizeof(ConvState));
 	cb->chunks = chunks;
-	cb->chunkSize = (mpd_uint16 *) (((char *)cb->chunks) +
-					    buffered_chunks * CHUNK_SIZE);
-	cb->bitRate = (mpd_uint16 *) (((char *)cb->chunkSize) +
-					  buffered_chunks * sizeof(mpd_sint16));
-	cb->times = (float *)(((char *)cb->bitRate) +
-	             buffered_chunks * sizeof(mpd_sint8));
 }
 
 void clearOutputBuffer(OutputBuffer * cb)
@@ -92,11 +86,11 @@ int outputBufferAbsolute(const OutputBuffer * cb, unsigned relative)
 	return (int)i;
 }
 
-char * outputBufferChunkData(const OutputBuffer * cb, unsigned i)
+OutputBufferChunk * outputBufferGetChunk(const OutputBuffer * cb, unsigned i)
 {
 	assert(i < buffered_chunks);
 
-	return cb->chunks + i * CHUNK_SIZE;
+	return &cb->chunks[i];
 }
 
 /**
@@ -113,6 +107,7 @@ static int tailChunk(OutputBuffer * cb, InputStream * inStream,
 		     float data_time, mpd_uint16 bitRate)
 {
 	unsigned int next;
+	OutputBufferChunk *chunk;
 
 	if (currentChunk == cb->end)
 		return currentChunk;
@@ -140,9 +135,10 @@ static int tailChunk(OutputBuffer * cb, InputStream * inStream,
 		return OUTPUT_BUFFER_DC_STOP;
 
 	currentChunk = cb->end;
-	cb->chunkSize[currentChunk] = 0;
-	cb->bitRate[currentChunk] = bitRate;
-	cb->times[currentChunk] = data_time;
+	chunk = outputBufferGetChunk(cb, currentChunk);
+	chunk->chunkSize = 0;
+	chunk->bitRate = bitRate;
+	chunk->times = data_time;
 
 	return currentChunk;
 }
@@ -183,22 +179,24 @@ int sendDataToOutputBuffer(OutputBuffer * cb, InputStream * inStream,
 		normalizeData(data, datalen, &cb->audioFormat);
 
 	while (datalen) {
+		OutputBufferChunk *chunk;
 		int chunk_index = tailChunk(cb, inStream,
 					    dc, seekable,
 					    data_time, bitRate);
 		if (chunk_index < 0)
 			return chunk_index;
 
-		chunkLeft = CHUNK_SIZE - cb->chunkSize[chunk_index];
+		chunk = outputBufferGetChunk(cb, chunk_index);
+
+		chunkLeft = CHUNK_SIZE - chunk->chunkSize;
 		dataToSend = datalen > chunkLeft ? chunkLeft : datalen;
 
-		memcpy(cb->chunks + chunk_index * CHUNK_SIZE +
-		       cb->chunkSize[chunk_index], data, dataToSend);
-		cb->chunkSize[chunk_index] += dataToSend;
+		memcpy(chunk->data + chunk->chunkSize, data, dataToSend);
+		chunk->chunkSize += dataToSend;
 		datalen -= dataToSend;
 		data += dataToSend;
 
-		if (cb->chunkSize[chunk_index] == CHUNK_SIZE) {
+		if (chunk->chunkSize == CHUNK_SIZE) {
 			flushOutputBuffer(cb);
 		}
 	}

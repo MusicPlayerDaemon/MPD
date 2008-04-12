@@ -74,7 +74,7 @@ void initPlayerData(void)
 		buffered_before_play = buffered_chunks;
 	}
 
-	allocationSize = buffered_chunks * CHUNK_SIZE;	/*actual buffer */
+	allocationSize = buffered_chunks * sizeof(OutputBufferChunk);	/*actual buffer */
 	allocationSize += buffered_chunks * sizeof(float);	/*for times */
 	allocationSize += buffered_chunks * sizeof(mpd_sint16);	/*for chunkSize */
 	allocationSize += buffered_chunks * sizeof(mpd_sint16);	/*for bitRate */
@@ -94,7 +94,7 @@ void initPlayerData(void)
 	                                    allocationSize - device_array_size;
 
 	initOutputBuffer(&(playerData_pd->buffer),
-			 ((char *)playerData_pd) + sizeof(PlayerData));
+			 (OutputBufferChunk*)(((char *)playerData_pd) + sizeof(PlayerData)));
 
 	playerData_pd->playerControl.stop = 0;
 	playerData_pd->playerControl.pause = 0;
