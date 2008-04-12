@@ -19,29 +19,42 @@
 #ifndef NOTIFY_H
 #define NOTIFY_H
 
-/*
- * This library implements inter-process signalling using blocking
- * read() on an anonymous pipe.  As a side effect, the read() system
- * call has the same signal interruption behaviour as the old sleep
- * function.
- *
- * As soon as mpd uses threading instead of fork()/shm, we can replace
- * this library with a pthread_cond object.
- *
- * This code is experimental and carries a lot of overhead.  Still, it
- * uses less resources than the old polling code with a fixed sleep
- * time.
- *
- */
+#include "os_compat.h"
 
 typedef struct _Notify {
-	int fds[2];
+	pthread_mutex_t mutex;
+	pthread_cond_t cond;
+	int pending;
 } Notify;
 
-void notifyInit(Notify *notify);
+int notifyInit(Notify *notify);
 
+/**
+ * The thread which shall be notified by this object must call this
+ * function before any notifyWait() invocation.  It locks the mutex.
+ */
+void notifyEnter(Notify *notify);
+
+/**
+ * Neutralize notifyLeave().
+ */
+void notifyLeave(Notify *notify);
+
+/**
+ * Wait for a notification.  Return immediately if we have already
+ * been notified since we last returned from notifyWait().
+ */
 void notifyWait(Notify *notify);
 
+/**
+ * Notify the thread.  This function never blocks.
+ */
 void notifySignal(Notify *notify);
+
+/**
+ * Notify the thread synchonously, i.e. wait until it has received the
+ * notification.
+ */
+void notifySignalSync(Notify *notify);
 
 #endif

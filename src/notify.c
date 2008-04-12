@@ -17,32 +17,52 @@
  */
 
 #include "notify.h"
-#include "os_compat.h"
-#include "log.h"
-#include "utils.h"
 
-void notifyInit(Notify *notify)
+int notifyInit(Notify *notify)
 {
-	if (pipe(notify->fds) < 0)
-		FATAL("Couldn't open pipe: %s", strerror(errno));
-	if (set_nonblocking(notify->fds[1]) < 0)
-		FATAL("Couldn't set non-blocking on notify fd: %s",
-		      strerror(errno));
+	int ret;
+
+	ret = pthread_mutex_init(&notify->mutex, NULL);
+	if (ret != 0)
+		return ret;
+
+	ret = pthread_cond_init(&notify->cond, NULL);
+	if (ret != 0) {
+		pthread_mutex_destroy(&notify->mutex);
+		return ret;
+	}
+
+	notify->pending = 0;
+
+	return 0;
+}
+
+void notifyEnter(Notify *notify)
+{
+	pthread_mutex_lock(&notify->mutex);
+}
+
+void notifyLeave(Notify *notify)
+{
+	pthread_mutex_unlock(&notify->mutex);
 }
 
 void notifyWait(Notify *notify)
 {
-	char buffer[64];
-
-	if (read(notify->fds[0], buffer, sizeof(buffer)) < 0)
-		FATAL("error reading from pipe: %s\n", strerror(errno));
+	if (!notify->pending)
+		pthread_cond_wait(&notify->cond, &notify->mutex);
+	notify->pending = 0;
 }
 
 void notifySignal(Notify *notify)
 {
-	char buffer = 0;
+	notify->pending = 1;
+	pthread_cond_signal(&notify->cond);
+}
 
-	if (write(notify->fds[1], &buffer, sizeof(buffer)) < 0 &&
-	    errno != EAGAIN && errno != EINTR)
-		FATAL("error writing to pipe: %s\n", strerror(errno));
+void notifySignalSync(Notify *notify)
+{
+	pthread_mutex_lock(&notify->mutex);
+	notifySignal(notify);
+	pthread_mutex_unlock(&notify->mutex);
 }
