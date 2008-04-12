@@ -498,19 +498,19 @@ static void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer *
 {
 	int pause = 0;
 	int quit = 0;
-	int bbp = buffered_before_play;
+	unsigned int bbp = buffered_before_play;
 	int doCrossFade = 0;
-	int crossFadeChunks = 0;
-	int fadePosition;
+	unsigned int crossFadeChunks = 0;
+	unsigned int fadePosition;
 	int nextChunk = -1;
-	int test;
+	unsigned int test;
 	int decodeWaitedOn = 0;
 	static const char silence[CHUNK_SIZE];
 	double sizeToTime = 0.0;
 	int previousMetadataChunk = -1;
 	MetadataChunk currentMetadataChunk;
 	int currentChunkSent = 1;
-	int end;
+	unsigned int end;
 	int next = -1;
 
 	if (waitOnDecode(pc, dc, cb, &decodeWaitedOn) < 0)
