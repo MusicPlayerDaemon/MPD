@@ -61,7 +61,7 @@ void decode(void);
 
 void decoder_wakeup_player(void);
 
-void decoder_sleep(void);
+void decoder_sleep(DecoderControl * dc);
 
 void decoderInit(void);
 

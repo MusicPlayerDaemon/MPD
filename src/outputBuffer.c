@@ -147,7 +147,7 @@ static int tailChunk(OutputBuffer * cb, InputStream * inStream,
 		}
 		if (!inStream ||
 		    bufferInputStream(inStream) <= 0) {
-			decoder_sleep();
+			decoder_sleep(dc);
 		}
 	}
 	if (dc->stop)
