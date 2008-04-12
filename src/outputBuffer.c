@@ -54,21 +54,30 @@ static inline unsigned successor(const OutputBuffer * cb, unsigned i)
 	return i == cb->size ? 0 : i;
 }
 
+/**
+ * Mark the tail chunk as "full" and wake up the player if is waiting
+ * for the decoder.
+ */
+static void output_buffer_expand(OutputBuffer * cb, unsigned i)
+{
+	int was_empty = outputBufferEmpty(cb);
+
+	assert(i == (cb->end + 1) % cb->size);
+	assert(i != cb->end);
+
+	cb->end = i;
+	cb->currentChunk = -1;
+	if (was_empty)
+		/* if the buffer was empty, the player thread might be
+		   waiting for us; wake it up now that another decoded
+		   buffer has become available. */
+		decoder_wakeup_player();
+}
+
 void flushOutputBuffer(OutputBuffer * cb)
 {
-	if (cb->currentChunk == (int)cb->end) {
-		int was_empty = outputBufferEmpty(cb);
-
-		cb->end = successor(cb, cb->end);
-		cb->currentChunk = -1;
-
-		if (was_empty)
-			/* if the buffer was empty, the player thread
-			   might be waiting for us; wake it up now
-			   that another decoded buffer has become
-			   available. */
-			decoder_wakeup_player();
-	}
+	if (cb->currentChunk == (int)cb->end)
+		output_buffer_expand(cb, successor(cb, cb->end));
 }
 
 int outputBufferEmpty(const OutputBuffer * cb)
