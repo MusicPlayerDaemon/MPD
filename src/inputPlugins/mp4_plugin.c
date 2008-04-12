@@ -97,7 +97,7 @@ static int mp4_decode(OutputBuffer * cb, DecoderControl * dc,
 	faacDecConfigurationPtr config;
 	unsigned char *mp4Buffer;
 	unsigned int mp4BufferSize;
-	unsigned long sampleRate;
+	uint32_t sampleRate;
 	unsigned char channels;
 	long sampleId;
 	long numSamples;
