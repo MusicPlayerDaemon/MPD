@@ -574,20 +574,13 @@ static void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer *
 					advanceOutputBufferTo(cb, nextChunk);
 			}
 
-			/* wait for the decoder to work on the new song */
-			while (pc->queueState == PLAYER_QUEUE_DECODE ||
-			       pc->queueLockState == PLAYER_QUEUE_LOCKED) {
-				processDecodeInput(pc, dc, cb,
-						   &pause, &bbp, &doCrossFade,
-						   &decodeWaitedOn,
-						   &next);
-				if (pc->stop) {
-					dropBufferedAudio();
-					quitDecode(pc,dc);
-					return;
-				}
+			doCrossFade = 0;
 
+			/* wait for the decoder to work on the new song */
+			if (pc->queueState == PLAYER_QUEUE_DECODE ||
+			    pc->queueLockState == PLAYER_QUEUE_LOCKED) {
 				player_sleep();
+				continue;
 			}
 			if (pc->queueState != PLAYER_QUEUE_PLAY)
 				break;
@@ -596,7 +589,6 @@ static void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer *
 			if (waitOnDecode(pc, dc, cb, &decodeWaitedOn) < 0)
 				return;
 
-			doCrossFade = 0;
 			pc->queueState = PLAYER_QUEUE_EMPTY;
 			wakeup_main_task();
 		} else if (dc->state == DECODE_STATE_STOP && !dc->start) {
