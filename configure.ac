@@ -10,6 +10,7 @@ AC_SUBST(MPD_CFLAGS)
 AC_SUBST(MP4FF_LIB)
 AC_SUBST(MP4FF_SUBDIR)
 
+AC_LANG(C)
 AC_PROG_CC
 AM_PROG_CC_C_O
 AC_PROG_INSTALL
@@ -21,8 +22,15 @@ AC_DEFINE(PROTOCOL_VERSION, "0.14.0", [The mpd protocol version])
 
 MPD_LIBS=""
 MPD_CFLAGS=""
-if test x$GCC = xyes; then
-	MPD_CFLAGS="-Wall -Wextra -Wno-unused-parameter -Wno-deprecated-declarations -Wmissing-prototypes"
+if test x$GCC = xyes
+then
+	MPD_CHECK_FLAG([-Wall])
+	MPD_CHECK_FLAG([-Wextra])
+	MPD_CHECK_FLAG([-Wno-unused-parameter])
+	MPD_CHECK_FLAG([-Wno-deprecated-declarations])
+	MPD_CHECK_FLAG([-Wmissing-prototypes])
+	MPD_CHECK_FLAG([-Wdeclaration-after-statement])
+	MPD_CHECK_FLAG([-Wshadow])
 fi
 
 if test -z "$prefix" || test "x$prefix" = xNONE; then
