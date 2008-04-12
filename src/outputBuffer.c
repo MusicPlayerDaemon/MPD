@@ -76,7 +76,9 @@ int sendDataToOutputBuffer(OutputBuffer * cb, InputStream * inStream,
 		datalen = pcm_sizeOfConvBuffer(&(dc->audioFormat), dataInLen,
 		                               &(cb->audioFormat));
 		if (datalen > convBufferLen) {
-			convBuffer = xrealloc(convBuffer, datalen);
+			if (convBuffer != NULL)
+				free(convBuffer);
+			convBuffer = xmalloc(datalen);
 			convBufferLen = datalen;
 		}
 		data = convBuffer;
