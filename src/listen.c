@@ -183,7 +183,8 @@ static void parseListenConfigParam(unsigned int port, ConfigParam * param)
 		addrlen = sizeof(sun);
 
 		if (establishListen(addrp, addrlen) < 0)
-			BINDERROR();
+			FATAL("unable to bind to %s: %s\n",
+			      param->value, strerror(errno));
 #endif /* HAVE_UN */
 	} else {
 #ifdef HAVE_TCP
