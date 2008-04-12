@@ -258,7 +258,7 @@ static size_t pcm_convertSampleRate(mpd_sint8 channels, mpd_uint32 inSampleRate,
 #else /* !HAVE_LIBSAMPLERATE */
 /* resampling code blatantly ripped from ESD */
 static size_t pcm_convertSampleRate(mpd_sint8 channels, mpd_uint32 inSampleRate,
-                                    char *inBuffer, size_t inSize,
+                                    const char *inBuffer, size_t inSize,
                                     mpd_uint32 outSampleRate, char *outBuffer,
                                     size_t outSize, ConvState *convState)
 {
