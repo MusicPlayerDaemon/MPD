@@ -366,15 +366,20 @@ static void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer *
 	int pause = 0;
 	int quit = 0;
 	unsigned int bbp = buffered_before_play;
+	/** cross fading enabled for the current song? 0=must check;
+	    1=enabled; -1=disabled */
 	int doCrossFade = 0;
 	unsigned int crossFadeChunks = 0;
 	unsigned int fadePosition;
+	/** the position of the next cross-faded chunk in the next
+	    song */
 	int nextChunk = -1;
 	unsigned int test;
 	int decodeWaitedOn = 0;
 	static const char silence[CHUNK_SIZE];
 	double sizeToTime = 0.0;
 	unsigned int end;
+	/** the position of the first chunk in the next song */
 	int next = -1;
 
 	if (waitOnDecode(pc, dc, cb, &decodeWaitedOn) < 0)
@@ -412,6 +417,7 @@ static void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer *
 		if (decodeWaitedOn) {
 			if(dc->state!=DECODE_STATE_START &&
 			   dc->error==DECODE_ERROR_NOERROR) {
+				/* the decoder is ready and ok */
 				decodeWaitedOn = 0;
 				if(openAudioDevice(&(cb->audioFormat))<0) {
 					char tmp[MPD_PATH_MAX];
@@ -438,12 +444,15 @@ static void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer *
 					cb->audioFormat.sampleRate;
 			}
 			else if(dc->state!=DECODE_STATE_START) {
+				/* the decoder failed */
 				pc->errored_song = pc->current_song;
 				pc->error = PLAYER_ERROR_FILE;
 				quitDecode(pc,dc);
 				return;
 			}
 			else {
+				/* the decoder is not yet ready; wait
+				   some more */
 				player_sleep();
 				continue;
 			}
@@ -452,6 +461,8 @@ static void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer *
 		if (dc->state == DECODE_STATE_STOP &&
 		    pc->queueState == PLAYER_QUEUE_FULL &&
 		    pc->queueLockState == PLAYER_QUEUE_UNLOCKED) {
+			/* the decoder has finished the current song;
+			   make it decode the next song */
 			next = cb->end;
 			dc->start = 1;
 			pc->queueState = PLAYER_QUEUE_DECODE;
@@ -460,6 +471,9 @@ static void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer *
 		}
 		if (next >= 0 && doCrossFade == 0 && !dc->start &&
 		    dc->state != DECODE_STATE_START) {
+			/* enable cross fading in this song?  if yes,
+			   calculate how many chunks will be required
+			   for it */
 			nextChunk = -1;
 			if (isCurrentAudioFormat(&(cb->audioFormat))) {
 				doCrossFade = 1;
@@ -469,6 +483,9 @@ static void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer *
 							       audioFormat));
 				if (!crossFadeChunks
 				    || pc->crossFade >= dc->totalTime) {
+					/* cross fading is disabled or
+					   the next song is too
+					   short */
 					doCrossFade = -1;
 				}
 			} else
@@ -489,7 +506,13 @@ static void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer *
 			     (cb->begin > next &&
 			      (fadePosition = next - cb->begin +
 			       buffered_chunks) <= crossFadeChunks))) {
+				/* perform cross fade */
 				if (nextChunk < 0) {
+					/* beginning of the cross fade
+					   - adjust crossFadeChunks
+					   which might be bigger than
+					   the remaining number of
+					   chunks in the old song */
 					crossFadeChunks = fadePosition;
 				}
 				test = end;
@@ -516,12 +539,21 @@ static void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer *
 						    = cb->chunkSize[nextChunk];
 					}
 				} else {
+					/* there are not enough
+					   decoded chunks yet */
 					if (dc->state == DECODE_STATE_STOP) {
+						/* the decoder isn't
+						   running, abort
+						   cross fading */
 						doCrossFade = -1;
 					} else
+						/* wait for the
+						   decoder */
 						continue;
 				}
 			}
+
+			/* play the current chunk */
 			pc->elapsedTime = cb->times[cb->begin];
 			pc->bitRate = cb->bitRate[cb->begin];
 			pcm_volumeChange(cb->chunks + cb->begin *
@@ -541,7 +573,12 @@ static void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer *
 				cb->begin++;
 			player_wakeup_decoder_nb();
 		} else if (cb->begin != end && cb->begin == next) {
+			/* at the beginning of a new song */
+
 			if (doCrossFade == 1 && nextChunk >= 0) {
+				/* the cross-fade is finished; skip
+				   the section which was cross-faded
+				   (and thus already played) */
 				nextChunk = cb->begin + crossFadeChunks;
 				test = end;
 				if (end < cb->begin)
@@ -553,6 +590,8 @@ static void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer *
 					advanceOutputBufferTo(cb, nextChunk);
 				}
 			}
+
+			/* wait for the decoder to work on the new song */
 			while (pc->queueState == PLAYER_QUEUE_DECODE ||
 			       pc->queueLockState == PLAYER_QUEUE_LOCKED) {
 				processDecodeInput(pc, dc, cb,
