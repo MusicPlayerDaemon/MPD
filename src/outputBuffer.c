@@ -57,6 +57,11 @@ void flushOutputBuffer(OutputBuffer * cb)
 	}
 }
 
+int outputBufferEmpty(const OutputBuffer * cb)
+{
+	return cb->begin == cb->end;
+}
+
 unsigned availableOutputBuffer(const OutputBuffer * cb)
 {
 	if (cb->end >= cb->begin)

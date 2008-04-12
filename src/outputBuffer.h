@@ -55,6 +55,9 @@ void clearOutputBuffer(OutputBuffer * cb);
 
 void flushOutputBuffer(OutputBuffer * cb);
 
+/** is the buffer empty? */
+int outputBufferEmpty(const OutputBuffer * cb);
+
 /** determine the number of decoded chunks */
 unsigned availableOutputBuffer(const OutputBuffer * cb);
 
