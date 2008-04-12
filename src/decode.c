@@ -96,48 +96,6 @@ static int calculateCrossFadeChunks(PlayerControl * pc, AudioFormat * af)
 	return (int)chunks;
 }
 
-#define handleDecodeStart() \
-	if(decodeWaitedOn) { \
-		if(dc->state!=DECODE_STATE_START && \
-				dc->error==DECODE_ERROR_NOERROR) \
-		{ \
-			decodeWaitedOn = 0; \
-			if(openAudioDevice(&(cb->audioFormat))<0) { \
-				char tmp[MPD_PATH_MAX]; \
-				pc->errored_song = pc->current_song; \
-				pc->error = PLAYER_ERROR_AUDIO; \
-				ERROR("problems opening audio device " \
-				      "while playing \"%s\"\n", \
-				      get_song_url(tmp, pc->current_song)); \
-				quitDecode(pc,dc); \
-				return; \
-			} else { \
-				player_wakeup_decoder(); \
-			} \
-			if (pause) { \
-				dropBufferedAudio(); \
-				closeAudioDevice(); \
-			} \
-			pc->totalTime = dc->totalTime; \
-			pc->sampleRate = dc->audioFormat.sampleRate; \
-			pc->bits = dc->audioFormat.bits; \
-			pc->channels = dc->audioFormat.channels; \
-			sizeToTime = 8.0/cb->audioFormat.bits/ \
-					cb->audioFormat.channels/ \
-					cb->audioFormat.sampleRate; \
-                } \
-                else if(dc->state!=DECODE_STATE_START) { \
-			pc->errored_song = pc->current_song; \
-		        pc->error = PLAYER_ERROR_FILE; \
-		        quitDecode(pc,dc); \
-		        return; \
-                } \
-                else { \
-			player_sleep(); \
-                        continue; \
-		} \
-	}
-
 static int waitOnDecode(PlayerControl * pc, DecoderControl * dc,
 			OutputBuffer * cb, int *decodeWaitedOn)
 {
@@ -451,7 +409,46 @@ static void decodeParent(PlayerControl * pc, DecoderControl * dc, OutputBuffer *
 			return;
 		}
 
-		handleDecodeStart();
+		if (decodeWaitedOn) {
+			if(dc->state!=DECODE_STATE_START &&
+			   dc->error==DECODE_ERROR_NOERROR) {
+				decodeWaitedOn = 0;
+				if(openAudioDevice(&(cb->audioFormat))<0) {
+					char tmp[MPD_PATH_MAX];
+					pc->errored_song = pc->current_song;
+					pc->error = PLAYER_ERROR_AUDIO;
+					ERROR("problems opening audio device "
+					      "while playing \"%s\"\n",
+					      get_song_url(tmp, pc->current_song));
+					quitDecode(pc,dc);
+					return;
+				} else {
+					player_wakeup_decoder();
+				}
+				if (pause) {
+					dropBufferedAudio();
+					closeAudioDevice();
+				}
+				pc->totalTime = dc->totalTime;
+				pc->sampleRate = dc->audioFormat.sampleRate;
+				pc->bits = dc->audioFormat.bits;
+				pc->channels = dc->audioFormat.channels;
+				sizeToTime = 8.0/cb->audioFormat.bits/
+					cb->audioFormat.channels/
+					cb->audioFormat.sampleRate;
+			}
+			else if(dc->state!=DECODE_STATE_START) {
+				pc->errored_song = pc->current_song;
+				pc->error = PLAYER_ERROR_FILE;
+				quitDecode(pc,dc);
+				return;
+			}
+			else {
+				player_sleep();
+				continue;
+			}
+		}
+
 		if (dc->state == DECODE_STATE_STOP &&
 		    pc->queueState == PLAYER_QUEUE_FULL &&
 		    pc->queueLockState == PLAYER_QUEUE_UNLOCKED) {
