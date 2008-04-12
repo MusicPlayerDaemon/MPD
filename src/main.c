@@ -56,6 +56,8 @@ typedef struct _Options {
 	int verbose;
 } Options;
 
+static Notify main_notify;
+
 /* 
  * from git-1.3.0, needed for solaris
  */
@@ -378,6 +380,16 @@ static void killFromPidFile(char *cmd, int killOption)
 	exit(EXIT_SUCCESS);
 }
 
+void wakeup_main_task(void)
+{
+	notifySignal(&main_notify);
+}
+
+void wait_main_task(void)
+{
+	notifySignal(&main_notify);
+}
+
 int main(int argc, char *argv[])
 {
 	Options options;
@@ -420,6 +432,8 @@ int main(int argc, char *argv[])
 	initNormalization();
 	initInputStream();
 
+	notifyInit(&main_notify);
+
 	daemonize(&options);
 
 	setup_log_output(options.stdOutput);
@@ -432,6 +446,8 @@ int main(int argc, char *argv[])
 	decoderInit();
 	playerInit();
 	read_state_file();
+
+	notifyEnter(&main_notify);
 
 	while (COMMAND_RETURN_KILL != doIOForInterfaces() &&
 	       COMMAND_RETURN_KILL != handlePendingSignals()) {
