@@ -90,22 +90,12 @@ static int wakeup_via_pipe(void)
 	}
 }
 
-static void wakeup_via_cond(void)
-{
-	int ret = pthread_mutex_trylock(&main_wakeup_mutex);
-
-	if (ret == EBUSY)
-		return; /* nope, no need to wakeup at all */
-	pthread_cond_signal(&main_wakeup);
-	pthread_mutex_unlock(&main_wakeup_mutex);
-}
-
 void wakeup_main_task(void)
 {
 	assert(!pthread_equal(main_task, pthread_self()));
 
 	if (!wakeup_via_pipe())
-		wakeup_via_cond();
+		pthread_cond_signal(&main_wakeup);
 }
 
 void main_notify_lock(void)
