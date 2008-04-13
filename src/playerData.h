@@ -26,10 +26,10 @@
 #include "outputBuffer.h"
 
 extern unsigned int buffered_before_play;
+extern PlayerControl pc;
 
 typedef struct _PlayerData {
 	OutputBuffer buffer;
-	PlayerControl playerControl;
 	DecoderControl decoderControl;
 	mpd_uint8 *audioDeviceStates;
 } PlayerData;

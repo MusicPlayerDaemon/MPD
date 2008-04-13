@@ -27,6 +27,7 @@ unsigned int buffered_before_play;
 #define DEFAULT_BUFFER_BEFORE_PLAY  10
 
 static PlayerData playerData_pd;
+PlayerControl pc;
 
 void initPlayerData(void)
 {
@@ -76,23 +77,13 @@ void initPlayerData(void)
 
 	initOutputBuffer(&(playerData_pd.buffer), buffered_chunks);
 
-	notifyInit(&playerData_pd.playerControl.notify);
-	playerData_pd.playerControl.stop = 0;
-	playerData_pd.playerControl.pause = 0;
-	playerData_pd.playerControl.play = 0;
-	playerData_pd.playerControl.error = PLAYER_ERROR_NOERROR;
-	playerData_pd.playerControl.lockQueue = 0;
-	playerData_pd.playerControl.unlockQueue = 0;
-	playerData_pd.playerControl.state = PLAYER_STATE_STOP;
-	playerData_pd.playerControl.queueState = PLAYER_QUEUE_BLANK;
-	playerData_pd.playerControl.queueLockState = PLAYER_QUEUE_UNLOCKED;
-	playerData_pd.playerControl.seek = 0;
-	playerData_pd.playerControl.closeAudio = 0;
-	playerData_pd.playerControl.current_song = NULL;
-	playerData_pd.playerControl.errored_song = NULL;
-	playerData_pd.playerControl.crossFade = crossfade;
-	playerData_pd.playerControl.softwareVolume = 1000;
-	playerData_pd.playerControl.totalPlayTime = 0;
+	notifyInit(&pc.notify);
+	pc.error = PLAYER_ERROR_NOERROR;
+	pc.state = PLAYER_STATE_STOP;
+	pc.queueState = PLAYER_QUEUE_BLANK;
+	pc.queueLockState = PLAYER_QUEUE_UNLOCKED;
+	pc.crossFade = crossfade;
+	pc.softwareVolume = 1000;
 
 	notifyInit(&playerData_pd.decoderControl.notify);
 	playerData_pd.decoderControl.stop = 0;

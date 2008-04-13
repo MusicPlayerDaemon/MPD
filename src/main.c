@@ -432,7 +432,7 @@ int main(int argc, char *argv[])
 
 	openVolumeDevice();
 	decoderInit(&getPlayerData()->decoderControl);
-	playerInit(&getPlayerData()->playerControl);
+	playerInit();
 	read_state_file();
 
 	while (COMMAND_RETURN_KILL != doIOForInterfaces() &&

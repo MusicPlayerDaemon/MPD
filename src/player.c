@@ -36,49 +36,47 @@
 
 static void playerCloseAudio(void);
 
-void wakeup_player_nb(PlayerControl *pc)
+void wakeup_player_nb(void)
 {
-	notifySignal(&pc->notify);
+	notifySignal(&pc.notify);
 }
 
-static void wakeup_player(PlayerControl *pc)
+static void wakeup_player(void)
 {
-	notifySignal(&pc->notify);
+	notifySignal(&pc.notify);
 	wait_main_task();
 }
 
-void player_sleep(PlayerControl *pc)
+void player_sleep(void)
 {
-	notifyWait(&pc->notify);
+	notifyWait(&pc.notify);
 }
 
-static void * player_task(void *arg)
+static void * player_task(mpd_unused void *arg)
 {
-	PlayerControl *pc = arg;
-
-	notifyEnter(&pc->notify);
+	notifyEnter(&pc.notify);
 
 	while (1) {
-		if (pc->play) {
+		if (pc.play) {
 			decode();
 			continue; /* decode() calls wakeup_main_task */
-		} else if (pc->stop) {
-			pc->stop = 0;
-		} else if (pc->seek) {
-			pc->seek = 0;
-		} else if (pc->pause) {
-			pc->pause = 0;
-		} else if (pc->closeAudio) {
+		} else if (pc.stop) {
+			pc.stop = 0;
+		} else if (pc.seek) {
+			pc.seek = 0;
+		} else if (pc.pause) {
+			pc.pause = 0;
+		} else if (pc.closeAudio) {
 			closeAudioDevice();
-			pc->closeAudio = 0;
-		} else if (pc->lockQueue) {
-			pc->queueLockState = PLAYER_QUEUE_LOCKED;
-			pc->lockQueue = 0;
-		} else if (pc->unlockQueue) {
-			pc->queueLockState = PLAYER_QUEUE_UNLOCKED;
-			pc->unlockQueue = 0;
+			pc.closeAudio = 0;
+		} else if (pc.lockQueue) {
+			pc.queueLockState = PLAYER_QUEUE_LOCKED;
+			pc.lockQueue = 0;
+		} else if (pc.unlockQueue) {
+			pc.queueLockState = PLAYER_QUEUE_UNLOCKED;
+			pc.unlockQueue = 0;
 		} else {
-			player_sleep(pc);
+			player_sleep();
 			continue;
 		}
 		/* we did something, tell the main task about it */
@@ -87,14 +85,14 @@ static void * player_task(void *arg)
 	return NULL;
 }
 
-void playerInit(PlayerControl * pc)
+void playerInit(void)
 {
 	pthread_attr_t attr;
 	pthread_t player_thread;
 
 	pthread_attr_init(&attr);
 	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
-	if (pthread_create(&player_thread, &attr, player_task, pc))
+	if (pthread_create(&player_thread, &attr, player_task, NULL))
 		FATAL("Failed to spawn player task: %s\n", strerror(errno));
 }
 
@@ -108,38 +106,34 @@ int playerWait(int fd)
 	return 0;
 }
 
-static void set_current_song(PlayerControl * pc, Song *song)
+static void set_current_song(Song *song)
 {
-	pc->fileTime = song->tag ? song->tag->time : 0;
-	pc->current_song = song;
+	pc.fileTime = song->tag ? song->tag->time : 0;
+	pc.current_song = song;
 }
 
 int playerPlay(int fd, Song * song)
 {
-	PlayerControl *pc = &(getPlayerData()->playerControl);
-
 	if (playerStop(fd) < 0)
 		return -1;
 
-	set_current_song(pc, song);
+	set_current_song(song);
 
-	pc->play = 1;
+	pc.play = 1;
 	/* FIXME: _nb() variant is probably wrong here, and everywhere... */
-	do { wakeup_player_nb(pc); } while (pc->play);
+	do { wakeup_player_nb(); } while (pc.play);
 
 	return 0;
 }
 
 int playerStop(int fd)
 {
-	PlayerControl *pc = &(getPlayerData()->playerControl);
-
-	if (pc->state != PLAYER_STATE_STOP) {
-		pc->stop = 1;
-		do { wakeup_player(pc); } while (pc->stop);
+	if (pc.state != PLAYER_STATE_STOP) {
+		pc.stop = 1;
+		do { wakeup_player(); } while (pc.stop);
 	}
 
-	pc->queueState = PLAYER_QUEUE_BLANK;
+	pc.queueState = PLAYER_QUEUE_BLANK;
 	playerQueueUnlock();
 
 	return 0;
@@ -152,11 +146,9 @@ void playerKill(void) /* deprecated */
 
 int playerPause(int fd)
 {
-	PlayerControl *pc = &(getPlayerData()->playerControl);
-
-	if (pc->state != PLAYER_STATE_STOP) {
-		pc->pause = 1;
-		do { wakeup_player(pc); } while (pc->pause);
+	if (pc.state != PLAYER_STATE_STOP) {
+		pc.pause = 1;
+		do { wakeup_player(); } while (pc.pause);
 	}
 
 	return 0;
@@ -164,9 +156,7 @@ int playerPause(int fd)
 
 int playerSetPause(int fd, int pause_flag)
 {
-	PlayerControl *pc = &(getPlayerData()->playerControl);
-
-	switch (pc->state) {
+	switch (pc.state) {
 	case PLAYER_STATE_PLAY:
 		if (pause_flag)
 			playerPause(fd);
@@ -182,32 +172,32 @@ int playerSetPause(int fd, int pause_flag)
 
 int getPlayerElapsedTime(void)
 {
-	return (int)(getPlayerData()->playerControl.elapsedTime + 0.5);
+	return (int)(pc.elapsedTime + 0.5);
 }
 
 unsigned long getPlayerBitRate(void)
 {
-	return getPlayerData()->playerControl.bitRate;
+	return pc.bitRate;
 }
 
 int getPlayerTotalTime(void)
 {
-	return (int)(getPlayerData()->playerControl.totalTime + 0.5);
+	return (int)(pc.totalTime + 0.5);
 }
 
 int getPlayerState(void)
 {
-	return getPlayerData()->playerControl.state;
+	return pc.state;
 }
 
 void clearPlayerError(void)
 {
-	getPlayerData()->playerControl.error = 0;
+	pc.error = 0;
 }
 
 int getPlayerError(void)
 {
-	return getPlayerData()->playerControl.error;
+	return pc.error;
 }
 
 char *getPlayerErrorStr(void)
@@ -216,18 +206,17 @@ char *getPlayerErrorStr(void)
 	static char error[MPD_PATH_MAX + 64]; /* still too much */
 	static const size_t errorlen = sizeof(error);
 	char path_max_tmp[MPD_PATH_MAX];
-	PlayerControl *pc = &(getPlayerData()->playerControl);
 	*error = '\0'; /* likely */
 
-	switch (pc->error) {
+	switch (pc.error) {
 	case PLAYER_ERROR_FILENOTFOUND:
 		snprintf(error, errorlen,
 			 "file \"%s\" does not exist or is inaccessible",
-			 get_song_url(path_max_tmp, pc->errored_song));
+			 get_song_url(path_max_tmp, pc.errored_song));
 		break;
 	case PLAYER_ERROR_FILE:
 		snprintf(error, errorlen, "problems decoding \"%s\"",
-			 get_song_url(path_max_tmp, pc->errored_song));
+			 get_song_url(path_max_tmp, pc.errored_song));
 		break;
 	case PLAYER_ERROR_AUDIO:
 		strcpy(error, "problems opening audio device");
@@ -237,28 +226,24 @@ char *getPlayerErrorStr(void)
 		break;
 	case PLAYER_ERROR_UNKTYPE:
 		snprintf(error, errorlen, "file type of \"%s\" is unknown",
-			 get_song_url(path_max_tmp, pc->errored_song));
+			 get_song_url(path_max_tmp, pc.errored_song));
 	}
 	return *error ? error : NULL;
 }
 
 static void playerCloseAudio(void)
 {
-	PlayerControl *pc = &(getPlayerData()->playerControl);
-
 	if (playerStop(STDERR_FILENO) < 0)
 		return;
-	pc->closeAudio = 1;
-	do { wakeup_player(pc); } while (pc->closeAudio);
+	pc.closeAudio = 1;
+	do { wakeup_player(); } while (pc.closeAudio);
 }
 
 int queueSong(Song * song)
 {
-	PlayerControl *pc = &(getPlayerData()->playerControl);
-
-	if (pc->queueState == PLAYER_QUEUE_BLANK) {
-		set_current_song(pc, song);
-		pc->queueState = PLAYER_QUEUE_FULL;
+	if (pc.queueState == PLAYER_QUEUE_BLANK) {
+		set_current_song(song);
+		pc.queueState = PLAYER_QUEUE_FULL;
 		return 0;
 	}
 
@@ -267,59 +252,49 @@ int queueSong(Song * song)
 
 int getPlayerQueueState(void)
 {
-	PlayerControl *pc = &(getPlayerData()->playerControl);
-
-	return pc->queueState;
+	return pc.queueState;
 }
 
 void setQueueState(int queueState)
 {
-	PlayerControl *pc = &(getPlayerData()->playerControl);
-
-	pc->queueState = queueState;
-	wakeup_player_nb(pc);
+	pc.queueState = queueState;
+	wakeup_player_nb();
 }
 
 void playerQueueLock(void)
 {
-	PlayerControl *pc = &(getPlayerData()->playerControl);
-
-	if (pc->queueLockState == PLAYER_QUEUE_UNLOCKED) {
-		pc->lockQueue = 1;
-		do { wakeup_player(pc); } while (pc->lockQueue);
+	if (pc.queueLockState == PLAYER_QUEUE_UNLOCKED) {
+		pc.lockQueue = 1;
+		do { wakeup_player(); } while (pc.lockQueue);
 	}
 }
 
 void playerQueueUnlock(void)
 {
-	PlayerControl *pc = &(getPlayerData()->playerControl);
-
-	if (pc->queueLockState == PLAYER_QUEUE_LOCKED) {
-		pc->unlockQueue = 1;
-		do { wakeup_player(pc); } while (pc->unlockQueue);
+	if (pc.queueLockState == PLAYER_QUEUE_LOCKED) {
+		pc.unlockQueue = 1;
+		do { wakeup_player(); } while (pc.unlockQueue);
 	}
 }
 
 int playerSeek(int fd, Song * song, float seek_time)
 {
-	PlayerControl *pc = &(getPlayerData()->playerControl);
-
 	assert(song != NULL);
 
-	if (pc->state == PLAYER_STATE_STOP) {
+	if (pc.state == PLAYER_STATE_STOP) {
 		commandError(fd, ACK_ERROR_PLAYER_SYNC,
 			     "player not currently playing");
 		return -1;
 	}
 
-	if (pc->current_song != song)
-		set_current_song(pc, song);
+	if (pc.current_song != song)
+		set_current_song(song);
 
-	if (pc->error == PLAYER_ERROR_NOERROR) {
-		pc->seekWhere = seek_time;
-		pc->seek = 1;
+	if (pc.error == PLAYER_ERROR_NOERROR) {
+		pc.seekWhere = seek_time;
+		pc.seek = 1;
 		/* FIXME: _nb() is probably wrong here, too */
-		do { wakeup_player_nb(pc); } while (pc->seek);
+		do { wakeup_player_nb(); } while (pc.seek);
 	}
 
 	return 0;
@@ -327,58 +302,40 @@ int playerSeek(int fd, Song * song, float seek_time)
 
 float getPlayerCrossFade(void)
 {
-	PlayerControl *pc = &(getPlayerData()->playerControl);
-
-	return pc->crossFade;
+	return pc.crossFade;
 }
 
 void setPlayerCrossFade(float crossFadeInSeconds)
 {
-	PlayerControl *pc;
 	if (crossFadeInSeconds < 0)
 		crossFadeInSeconds = 0;
-
-	pc = &(getPlayerData()->playerControl);
-
-	pc->crossFade = crossFadeInSeconds;
+	pc.crossFade = crossFadeInSeconds;
 }
 
 void setPlayerSoftwareVolume(int volume)
 {
-	PlayerControl *pc;
 	volume = (volume > 1000) ? 1000 : (volume < 0 ? 0 : volume);
-
-	pc = &(getPlayerData()->playerControl);
-
-	pc->softwareVolume = volume;
+	pc.softwareVolume = volume;
 }
 
 double getPlayerTotalPlayTime(void)
 {
-	PlayerControl *pc = &(getPlayerData()->playerControl);
-
-	return pc->totalPlayTime;
+	return pc.totalPlayTime;
 }
 
 unsigned int getPlayerSampleRate(void)
 {
-	PlayerControl *pc = &(getPlayerData()->playerControl);
-
-	return pc->sampleRate;
+	return pc.sampleRate;
 }
 
 int getPlayerBits(void)
 {
-	PlayerControl *pc = &(getPlayerData()->playerControl);
-
-	return pc->bits;
+	return pc.bits;
 }
 
 int getPlayerChannels(void)
 {
-	PlayerControl *pc = &(getPlayerData()->playerControl);
-
-	return pc->channels;
+	return pc.channels;
 }
 
 /* this actually creates a dupe of the current metadata */

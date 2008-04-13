@@ -465,7 +465,7 @@ static int wavpack_streamdecode(OutputBuffer *cb, DecoderControl *dc,
 		 * As we use dc->utf8url, this function will be bad for
 		 * single files. utf8url is not absolute file path :/
 		 */
-		utf8url = get_song_url(tmp, getPlayerData()->playerControl.current_song);
+		utf8url = get_song_url(tmp, pc.current_song);
 		if (utf8url == NULL) {
 			break;
 		}

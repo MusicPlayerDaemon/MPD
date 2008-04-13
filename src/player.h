@@ -76,9 +76,9 @@ typedef struct _PlayerControl {
 	volatile double totalPlayTime;
 } PlayerControl;
 
-void wakeup_player_nb(PlayerControl *pc);
+void wakeup_player_nb(void);
 
-void player_sleep(PlayerControl *pc);
+void player_sleep(void);
 
 int playerPlay(int fd, Song * song);
 
@@ -134,6 +134,6 @@ int getPlayerChannels(void);
 
 Song *playerCurrentDecodeSong(void);
 
-void playerInit(PlayerControl * pc);
+void playerInit(void);
 
 #endif
