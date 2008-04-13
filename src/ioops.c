@@ -20,8 +20,6 @@
 
 /* Eventually the listener protocol will use this, too */
 
-#ifdef HAVE_ZEROCONF
-
 /*
  * functions and variables in this file are only used by a single thread and
  * thus do not need to be thread-safe
@@ -84,4 +82,3 @@ void deregisterIO(struct ioOps *ops)
 		ops->prev->next = ops->next;
 }
 
-#endif /* HAVE_ZEROCONF */

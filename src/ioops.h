@@ -22,7 +22,6 @@
 #include "../config.h"
 #include "os_compat.h"
 
-#ifdef HAVE_ZEROCONF
 struct ioOps {
 	struct ioOps *prev, *next;
 
@@ -58,11 +57,4 @@ void registered_IO_add_fds(int *fdmax,
 /* Consume fds for all registered IO handlers */
 void registered_IO_consume_fds(int *selret,
 			       fd_set * rfds, fd_set * wfds, fd_set * efds);
-#else /* ! HAVE_ZEROCONF */
-
-#define registered_IO_add_fds(fdmax,rfds,wfds,efds)
-#define registered_IO_consume_fds(selret,rfds,wfds,efds)
-
-#endif /* HAVE_ZEROCONF */
-
 #endif
