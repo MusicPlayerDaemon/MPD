@@ -217,7 +217,7 @@ static int mp4_decode(InputStream * inStream)
 
 		if (seeking && seekPositionFound) {
 			seekPositionFound = 0;
-			clearOutputBuffer();
+			ob_clear();
 			seeking = 0;
 			dc.seek = 0;
 			decoder_wakeup_player();
@@ -255,7 +255,7 @@ static int mp4_decode(InputStream * inStream)
 			dc.audioFormat.sampleRate = scale;
 			dc.audioFormat.channels = frameInfo.channels;
 			getOutputAudioFormat(&(dc.audioFormat),
-					     &(cb.audioFormat));
+					     &(ob.audioFormat));
 			dc.state = DECODE_STATE_DECODE;
 		}
 
@@ -277,7 +277,7 @@ static int mp4_decode(InputStream * inStream)
 
 		sampleBuffer += offset * channels * 2;
 
-		sendDataToOutputBuffer(inStream, 1, sampleBuffer,
+		ob_send(inStream, 1, sampleBuffer,
 				       sampleBufferLen, file_time,
 				       bitRate, NULL);
 		if (dc.stop) {
@@ -295,11 +295,11 @@ static int mp4_decode(InputStream * inStream)
 		return -1;
 
 	if (dc.seek && seeking) {
-		clearOutputBuffer();
+		ob_clear();
 		dc.seek = 0;
 		decoder_wakeup_player();
 	}
-	flushOutputBuffer();
+	ob_flush();
 
 	return 0;
 }

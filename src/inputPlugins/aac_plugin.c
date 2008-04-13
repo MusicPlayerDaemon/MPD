@@ -376,7 +376,7 @@ static int aac_decode(char *path)
 			dc.audioFormat.channels = frameInfo.channels;
 			dc.audioFormat.sampleRate = sampleRate;
 			getOutputAudioFormat(&(dc.audioFormat),
-					     &(cb.audioFormat));
+					     &(ob.audioFormat));
 			dc.state = DECODE_STATE_DECODE;
 		}
 
@@ -395,7 +395,7 @@ static int aac_decode(char *path)
 
 		sampleBufferLen = sampleCount * 2;
 
-		sendDataToOutputBuffer(NULL, 0, sampleBuffer,
+		ob_send(NULL, 0, sampleBuffer,
 				       sampleBufferLen, file_time,
 				       bitRate, NULL);
 		if (dc.seek) {
@@ -408,7 +408,7 @@ static int aac_decode(char *path)
 		}
 	}
 
-	flushOutputBuffer();
+	ob_flush();
 
 	faacDecClose(decoder);
 	if (b.buffer)

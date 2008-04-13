@@ -36,14 +36,14 @@ typedef struct _OutputBufferChunk {
 	mpd_uint16 bitRate;
 	float times;
 	char data[CHUNK_SIZE];
-} OutputBufferChunk;
+} ob_chunk;
 
 /**
  * A ring set of buffers where the decoder appends data after the end,
  * and the player consumes data from the beginning.
  */
 typedef struct _OutputBuffer {
-	OutputBufferChunk *chunks;
+	ob_chunk *chunks;
 
 	unsigned int size;
 
@@ -57,45 +57,45 @@ typedef struct _OutputBuffer {
 	ConvState convState;
 } OutputBuffer;
 
-void initOutputBuffer(unsigned int size);
+void ob_init(unsigned int size);
 
-void output_buffer_free(void);
+void ob_free(void);
 
-void clearOutputBuffer(void);
+void ob_clear(void);
 
-void flushOutputBuffer(void);
+void ob_flush(void);
 
 /** is the buffer empty? */
-int outputBufferEmpty(void);
+int ob_is_empty(void);
 
-void outputBufferShift(void);
+void ob_shift(void);
 
 /**
  * what is the position of the specified chunk number, relative to
  * the first chunk in use?
  */
-unsigned int outputBufferRelative(const unsigned i);
+unsigned int ob_relative(const unsigned i);
 
 /** determine the number of decoded chunks */
-unsigned availableOutputBuffer(void);
+unsigned ob_available(void);
 
 /**
  * Get the absolute index of the nth used chunk after the first one.
  * Returns -1 if there is no such chunk.
  */
-int outputBufferAbsolute(const unsigned relative);
+int ob_absolute(const unsigned relative);
 
-OutputBufferChunk * outputBufferGetChunk(const unsigned i);
+ob_chunk * ob_get_chunk(const unsigned i);
 
 /* we send inStream for buffering the inputStream while waiting to
    send the next chunk */
-int sendDataToOutputBuffer(InputStream * inStream,
+int ob_send(InputStream * inStream,
 			   int seekable,
 			   void *data,
 			   size_t datalen,
 			   float data_time,
 			   mpd_uint16 bitRate, ReplayGainInfo * replayGainInfo);
 
-void output_buffer_skip(unsigned num);
+void ob_skip(unsigned num);
 
 #endif

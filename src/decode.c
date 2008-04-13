@@ -85,7 +85,7 @@ static unsigned calculateCrossFadeChunks(AudioFormat * af, float totalTime)
 	chunks = (af->sampleRate * af->bits * af->channels / 8.0 / CHUNK_SIZE);
 	chunks = (chunks * pc.crossFade + 0.5);
 
-	buffered_chunks = cb.size;
+	buffered_chunks = ob.size;
 	assert(buffered_chunks >= buffered_before_play);
 	if (chunks > (buffered_chunks - buffered_before_play))
 		chunks = buffered_chunks - buffered_before_play;
@@ -124,7 +124,7 @@ static int decodeSeek(int *decodeWaitedOn, int *next)
 	    dc.current_song != pc.current_song) {
 		stopDecode();
 		*next = -1;
-		clearOutputBuffer();
+		ob_clear();
 		dc.error = DECODE_ERROR_NOERROR;
 		dc.start = 1;
 		waitOnDecode(decodeWaitedOn);
@@ -344,7 +344,7 @@ void decoderInit(void)
 		FATAL("Failed to spawn decoder task: %s\n", strerror(errno));
 }
 
-static void crossFade(OutputBufferChunk * a, OutputBufferChunk * b,
+static void crossFade(ob_chunk * a, ob_chunk * b,
 		      AudioFormat * format,
 		      unsigned int fadePosition, unsigned int crossFadeChunks)
 {
@@ -361,7 +361,7 @@ static void crossFade(OutputBufferChunk * a, OutputBufferChunk * b,
 		a->chunkSize = b->chunkSize;
 }
 
-static int playChunk(OutputBufferChunk * chunk,
+static int playChunk(ob_chunk * chunk,
 		     AudioFormat * format, double sizeToTime)
 {
 	pc.elapsedTime = chunk->times;
@@ -413,7 +413,7 @@ static void decodeParent(void)
 		}
 
 		if (buffering) {
-			if (availableOutputBuffer() < bbp) {
+			if (ob_available() < bbp) {
 				/* not enough decoded buffer space yet */
 				player_sleep();
 				continue;
@@ -427,7 +427,7 @@ static void decodeParent(void)
 			   dc.error==DECODE_ERROR_NOERROR) {
 				/* the decoder is ready and ok */
 				decodeWaitedOn = 0;
-				if(openAudioDevice(&(cb.audioFormat))<0) {
+				if(openAudioDevice(&(ob.audioFormat))<0) {
 					char tmp[MPD_PATH_MAX];
 					pc.errored_song = pc.current_song;
 					pc.error = PLAYER_ERROR_AUDIO;
@@ -446,7 +446,7 @@ static void decodeParent(void)
 				pc.sampleRate = dc.audioFormat.sampleRate;
 				pc.bits = dc.audioFormat.bits;
 				pc.channels = dc.audioFormat.channels;
-				sizeToTime = audioFormatSizeToTime(&cb.audioFormat);
+				sizeToTime = audioFormatSizeToTime(&ob.audioFormat);
 			}
 			else if(dc.state!=DECODE_STATE_START) {
 				/* the decoder failed */
@@ -467,7 +467,7 @@ static void decodeParent(void)
 		    pc.queueLockState == PLAYER_QUEUE_UNLOCKED) {
 			/* the decoder has finished the current song;
 			   make it decode the next song */
-			next = cb.end;
+			next = ob.end;
 			dc.start = 1;
 			pc.queueState = PLAYER_QUEUE_DECODE;
 			wakeup_main_task();
@@ -479,7 +479,7 @@ static void decodeParent(void)
 			   calculate how many chunks will be required
 			   for it */
 			crossFadeChunks =
-				calculateCrossFadeChunks(&(cb.audioFormat),
+				calculateCrossFadeChunks(&(ob.audioFormat),
 							 dc.totalTime);
 			if (crossFadeChunks > 0) {
 				doCrossFade = 1;
@@ -492,12 +492,12 @@ static void decodeParent(void)
 
 		if (do_pause)
 			player_sleep();
-		else if (!outputBufferEmpty() && (int)cb.begin != next) {
-			OutputBufferChunk *beginChunk =
-				outputBufferGetChunk(cb.begin);
+		else if (!ob_is_empty() && (int)ob.begin != next) {
+			ob_chunk *beginChunk =
+				ob_get_chunk(ob.begin);
 			unsigned int fadePosition;
 			if (doCrossFade == 1 && next >= 0 &&
-			    (fadePosition = outputBufferRelative(next))
+			    (fadePosition = ob_relative(next))
 			    <= crossFadeChunks) {
 				/* perform cross fade */
 				if (nextChunk < 0) {
@@ -508,11 +508,11 @@ static void decodeParent(void)
 					   chunks in the old song */
 					crossFadeChunks = fadePosition;
 				}
-				nextChunk = outputBufferAbsolute(crossFadeChunks);
+				nextChunk = ob_absolute(crossFadeChunks);
 				if (nextChunk >= 0) {
 					crossFade(beginChunk,
-						  outputBufferGetChunk(nextChunk),
-						  &(cb.audioFormat),
+						  ob_get_chunk(nextChunk),
+						  &(ob.audioFormat),
 						  fadePosition,
 						  crossFadeChunks);
 				} else {
@@ -533,19 +533,19 @@ static void decodeParent(void)
 			}
 
 			/* play the current chunk */
-			if (playChunk(beginChunk, &(cb.audioFormat),
+			if (playChunk(beginChunk, &(ob.audioFormat),
 				      sizeToTime) < 0)
 				break;
-			outputBufferShift();
+			ob_shift();
 			player_wakeup_decoder_nb();
-		} else if (!outputBufferEmpty() && (int)cb.begin == next) {
+		} else if (!ob_is_empty() && (int)ob.begin == next) {
 			/* at the beginning of a new song */
 
 			if (doCrossFade == 1 && nextChunk >= 0) {
 				/* the cross-fade is finished; skip
 				   the section which was cross-faded
 				   (and thus already played) */
-				output_buffer_skip(crossFadeChunks);
+				ob_skip(crossFadeChunks);
 			}
 
 			doCrossFade = 0;
@@ -584,7 +584,7 @@ static void decodeParent(void)
  */
 void decode(void)
 {
-	clearOutputBuffer();
+	ob_clear();
 
 	dc.error = DECODE_ERROR_NOERROR;
 	dc.seek = 0;

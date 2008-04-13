@@ -430,7 +430,7 @@ static int flac_decode_internal(InputStream * inStream, int is_ogg)
 			FLAC__uint64 sampleToSeek = dc.seekWhere *
 			    dc.audioFormat.sampleRate + 0.5;
 			if (flac_seek_absolute(flacDec, sampleToSeek)) {
-				clearOutputBuffer();
+				ob_clear();
 				data.time = ((float)sampleToSeek) /
 				    dc.audioFormat.sampleRate;
 				data.position = 0;
@@ -447,7 +447,7 @@ static int flac_decode_internal(InputStream * inStream, int is_ogg)
 	/* send last little bit */
 	if (data.chunk_length > 0 && !dc.stop) {
 		flacSendChunk(&data);
-		flushOutputBuffer();
+		ob_flush();
 	}
 
 fail:

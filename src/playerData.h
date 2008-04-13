@@ -28,7 +28,7 @@
 extern unsigned int buffered_before_play;
 extern PlayerControl pc;
 extern DecoderControl dc;
-extern OutputBuffer cb; /* rename this to 'ob' */
+extern OutputBuffer ob;
 
 typedef struct _PlayerData {
 	mpd_uint8 *audioDeviceStates;

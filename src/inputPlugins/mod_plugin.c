@@ -183,7 +183,7 @@ static int mod_decode(char *path)
 	dc.audioFormat.bits = 16;
 	dc.audioFormat.sampleRate = 44100;
 	dc.audioFormat.channels = 2;
-	getOutputAudioFormat(&(dc.audioFormat), &(cb.audioFormat));
+	getOutputAudioFormat(&(dc.audioFormat), &(ob.audioFormat));
 
 	secPerByte =
 	    1.0 / ((dc.audioFormat.bits * dc.audioFormat.channels / 8.0) *
@@ -205,12 +205,12 @@ static int mod_decode(char *path)
 
 		ret = VC_WriteBytes(data->audio_buffer, MIKMOD_FRAME_SIZE);
 		total_time += ret * secPerByte;
-		sendDataToOutputBuffer(NULL, 0,
+		ob_send(NULL, 0,
 				       (char *)data->audio_buffer, ret,
 				       total_time, 0, NULL);
 	}
 
-	flushOutputBuffer();
+	ob_flush();
 
 	mod_close(data);
 

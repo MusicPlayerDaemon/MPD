@@ -170,7 +170,7 @@ void flac_metadata_common_cb(const FLAC__StreamMetadata * block,
 		dc.audioFormat.sampleRate = si->sample_rate;
 		dc.audioFormat.channels = (mpd_sint8)si->channels;
 		dc.totalTime = ((float)si->total_samples) / (si->sample_rate);
-		getOutputAudioFormat(&(dc.audioFormat), &(cb.audioFormat));
+		getOutputAudioFormat(&(dc.audioFormat), &(ob.audioFormat));
 		break;
 	case FLAC__METADATA_TYPE_VORBIS_COMMENT:
 		flacParseReplayGain(block, data);

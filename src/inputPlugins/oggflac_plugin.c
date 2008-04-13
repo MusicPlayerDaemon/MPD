@@ -362,7 +362,7 @@ static int oggflac_decode(InputStream * inStream)
 			    dc.audioFormat.sampleRate + 0.5;
 			if (OggFLAC__seekable_stream_decoder_seek_absolute
 			    (decoder, sampleToSeek)) {
-				clearOutputBuffer();
+				ob_clear();
 				data.time = ((float)sampleToSeek) /
 				    dc.audioFormat.sampleRate;
 				data.position = 0;
@@ -381,7 +381,7 @@ static int oggflac_decode(InputStream * inStream)
 	/* send last little bit */
 	if (data.chunk_length > 0 && !dc.stop) {
 		flacSendChunk(&data);
-		flushOutputBuffer();
+		ob_flush();
 	}
 
 fail:

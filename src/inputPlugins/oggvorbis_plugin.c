@@ -275,7 +275,7 @@ static int oggvorbis_decode(InputStream * inStream)
 	while (1) {
 		if (dc.seek) {
 			if (0 == ov_time_seek_page(&vf, dc.seekWhere)) {
-				clearOutputBuffer();
+				ob_clear();
 				chunkpos = 0;
 			} else
 				dc.seekError = 1;
@@ -292,7 +292,7 @@ static int oggvorbis_decode(InputStream * inStream)
 			dc.audioFormat.sampleRate = vi->rate;
 			if (dc.state == DECODE_STATE_START) {
 				getOutputAudioFormat(&(dc.audioFormat),
-						     &(cb.audioFormat));
+						     &(ob.audioFormat));
 				dc.state = DECODE_STATE_DECODE;
 			}
 			comments = ov_comment(&vf, -1)->user_comments;
@@ -316,7 +316,7 @@ static int oggvorbis_decode(InputStream * inStream)
 			if ((test = ov_bitrate_instant(&vf)) > 0) {
 				bitRate = test / 1000;
 			}
-			sendDataToOutputBuffer(inStream,
+			ob_send(inStream,
 					       inStream->seekable,
 					       chunk, chunkpos,
 					       ov_pcm_tell(&vf) /
@@ -329,7 +329,7 @@ static int oggvorbis_decode(InputStream * inStream)
 	}
 
 	if (!dc.stop && chunkpos > 0) {
-		sendDataToOutputBuffer(NULL, inStream->seekable,
+		ob_send(NULL, inStream->seekable,
 				       chunk, chunkpos,
 				       ov_time_tell(&vf), bitRate,
 				       replayGainInfo);
@@ -340,7 +340,7 @@ static int oggvorbis_decode(InputStream * inStream)
 
 	ov_clear(&vf);
 
-	flushOutputBuffer();
+	ob_flush();
 
 	return 0;
 }

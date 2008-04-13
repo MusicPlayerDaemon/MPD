@@ -166,7 +166,7 @@ static void wavpack_decode(WavpackContext *wpc, int canseek,
 
 	samplesreq = sizeof(chunk) / (4 * dc.audioFormat.channels);
 
-	getOutputAudioFormat(&(dc.audioFormat), &(cb.audioFormat));
+	getOutputAudioFormat(&(dc.audioFormat), &(ob.audioFormat));
 
 	dc.totalTime = (float)allsamples / dc.audioFormat.sampleRate;
 	dc.state = DECODE_STATE_DECODE;
@@ -179,7 +179,7 @@ static void wavpack_decode(WavpackContext *wpc, int canseek,
 			if (canseek) {
 				int where;
 
-				clearOutputBuffer();
+				ob_clear();
 
 				where = dc.seekWhere *
 				        dc.audioFormat.sampleRate;
@@ -210,14 +210,14 @@ static void wavpack_decode(WavpackContext *wpc, int canseek,
 			format_samples(Bps, chunk,
 			               samplesgot * dc.audioFormat.channels);
 
-			sendDataToOutputBuffer(NULL, 0, chunk,
+			ob_send(NULL, 0, chunk,
 			                       samplesgot * outsamplesize,
 			                       file_time, bitrate,
 					       replayGainInfo);
 		}
 	} while (samplesgot == samplesreq);
 
-	flushOutputBuffer();
+	ob_flush();
 }
 
 static char *wavpack_tag(WavpackContext *wpc, char *key)
