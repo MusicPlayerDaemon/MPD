@@ -45,7 +45,7 @@ static int getAudiofileTotalTime(char *file)
 	return total_time;
 }
 
-static int audiofile_decode(OutputBuffer * cb, char *path)
+static int audiofile_decode(char *path)
 {
 	int fs, frame_count;
 	AFfilehandle af_fp;
@@ -72,7 +72,7 @@ static int audiofile_decode(OutputBuffer * cb, char *path)
 	                      (unsigned int)afGetRate(af_fp, AF_DEFAULT_TRACK);
 	dc.audioFormat.channels =
 	              (mpd_uint8)afGetVirtualChannels(af_fp, AF_DEFAULT_TRACK);
-	getOutputAudioFormat(&(dc.audioFormat), &(cb->audioFormat));
+	getOutputAudioFormat(&(dc.audioFormat), &(cb.audioFormat));
 
 	frame_count = afGetFrameCount(af_fp, AF_DEFAULT_TRACK);
 
@@ -97,7 +97,7 @@ static int audiofile_decode(OutputBuffer * cb, char *path)
 
 		while (!eof) {
 			if (dc.seek) {
-				clearOutputBuffer(cb);
+				clearOutputBuffer();
 				current = dc.seekWhere *
 				    dc.audioFormat.sampleRate;
 				afSeekFrame(af_fp, AF_DEFAULT_TRACK, current);
@@ -112,8 +112,7 @@ static int audiofile_decode(OutputBuffer * cb, char *path)
 				eof = 1;
 			else {
 				current += ret;
-				sendDataToOutputBuffer(cb,
-						       NULL,
+				sendDataToOutputBuffer(NULL,
 						       1,
 						       chunk,
 						       ret * fs,
@@ -126,7 +125,7 @@ static int audiofile_decode(OutputBuffer * cb, char *path)
 			}
 		}
 
-		flushOutputBuffer(cb);
+		flushOutputBuffer();
 	}
 	afCloseFile(af_fp);
 

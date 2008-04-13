@@ -57,46 +57,45 @@ typedef struct _OutputBuffer {
 	ConvState convState;
 } OutputBuffer;
 
-void initOutputBuffer(OutputBuffer * cb, unsigned int size);
+void initOutputBuffer(unsigned int size);
 
-void output_buffer_free(OutputBuffer * cb);
+void output_buffer_free(void);
 
-void clearOutputBuffer(OutputBuffer * cb);
+void clearOutputBuffer(void);
 
-void flushOutputBuffer(OutputBuffer * cb);
+void flushOutputBuffer(void);
 
 /** is the buffer empty? */
-int outputBufferEmpty(const OutputBuffer * cb);
+int outputBufferEmpty(void);
 
-void outputBufferShift(OutputBuffer * cb);
+void outputBufferShift(void);
 
 /**
  * what is the position of the specified chunk number, relative to
  * the first chunk in use?
  */
-unsigned int outputBufferRelative(const OutputBuffer * cb, unsigned i);
+unsigned int outputBufferRelative(const unsigned i);
 
 /** determine the number of decoded chunks */
-unsigned availableOutputBuffer(const OutputBuffer * cb);
+unsigned availableOutputBuffer(void);
 
 /**
  * Get the absolute index of the nth used chunk after the first one.
  * Returns -1 if there is no such chunk.
  */
-int outputBufferAbsolute(const OutputBuffer * cb, unsigned relative);
+int outputBufferAbsolute(const unsigned relative);
 
-OutputBufferChunk * outputBufferGetChunk(const OutputBuffer * cb, unsigned i);
+OutputBufferChunk * outputBufferGetChunk(const unsigned i);
 
 /* we send inStream for buffering the inputStream while waiting to
    send the next chunk */
-int sendDataToOutputBuffer(OutputBuffer * cb,
-			   InputStream * inStream,
+int sendDataToOutputBuffer(InputStream * inStream,
 			   int seekable,
 			   void *data,
 			   size_t datalen,
 			   float data_time,
 			   mpd_uint16 bitRate, ReplayGainInfo * replayGainInfo);
 
-void output_buffer_skip(OutputBuffer * cb, unsigned num);
+void output_buffer_skip(unsigned num);
 
 #endif

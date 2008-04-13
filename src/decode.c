@@ -85,7 +85,7 @@ static unsigned calculateCrossFadeChunks(AudioFormat * af, float totalTime)
 	chunks = (af->sampleRate * af->bits * af->channels / 8.0 / CHUNK_SIZE);
 	chunks = (chunks * pc.crossFade + 0.5);
 
-	buffered_chunks = getPlayerData()->buffer.size;
+	buffered_chunks = cb.size;
 	assert(buffered_chunks >= buffered_before_play);
 	if (chunks > (buffered_chunks - buffered_before_play))
 		chunks = buffered_chunks - buffered_before_play;
@@ -93,7 +93,7 @@ static unsigned calculateCrossFadeChunks(AudioFormat * af, float totalTime)
 	return chunks;
 }
 
-static int waitOnDecode(OutputBuffer * cb, int *decodeWaitedOn)
+static int waitOnDecode(int *decodeWaitedOn)
 {
 	while (dc.start)
 		player_wakeup_decoder();
@@ -115,7 +115,7 @@ static int waitOnDecode(OutputBuffer * cb, int *decodeWaitedOn)
 	return 0;
 }
 
-static int decodeSeek(OutputBuffer * cb, int *decodeWaitedOn, int *next)
+static int decodeSeek(int *decodeWaitedOn, int *next)
 {
 	int ret = -1;
 
@@ -124,10 +124,10 @@ static int decodeSeek(OutputBuffer * cb, int *decodeWaitedOn, int *next)
 	    dc.current_song != pc.current_song) {
 		stopDecode();
 		*next = -1;
-		clearOutputBuffer(cb);
+		clearOutputBuffer();
 		dc.error = DECODE_ERROR_NOERROR;
 		dc.start = 1;
-		waitOnDecode(cb, decodeWaitedOn);
+		waitOnDecode(decodeWaitedOn);
 	}
 	if (dc.state != DECODE_STATE_STOP && dc.seekable) {
 		*next = -1;
@@ -148,8 +148,7 @@ static int decodeSeek(OutputBuffer * cb, int *decodeWaitedOn, int *next)
 	return ret;
 }
 
-static void processDecodeInput(OutputBuffer * cb,
-			       int *pause_r, unsigned int *bbp_r,
+static void processDecodeInput(int *pause_r, unsigned int *bbp_r,
 			       int *doCrossFade_r,
 			       int *decodeWaitedOn_r,
 			       int *next_r)
@@ -192,14 +191,14 @@ static void processDecodeInput(OutputBuffer * cb,
 	}
 	if(pc.seek) {
 		dropBufferedAudio();
-		if (decodeSeek(cb, decodeWaitedOn_r, next_r) == 0) {
+		if (decodeSeek(decodeWaitedOn_r, next_r) == 0) {
 			*doCrossFade_r = 0;
 			*bbp_r = 0;
 		}
 	}
 }
 
-static void decodeStart(OutputBuffer * cb)
+static void decodeStart(void)
 {
 	int ret;
 	int close_instream = 1;
@@ -245,7 +244,7 @@ static void decodeStart(OutputBuffer * cb)
 			if (plugin->tryDecodeFunc
 			    && !plugin->tryDecodeFunc(&inStream))
 				continue;
-			ret = plugin->streamDecodeFunc(cb, &inStream);
+			ret = plugin->streamDecodeFunc(&inStream);
 			break;
 		}
 
@@ -262,7 +261,7 @@ static void decodeStart(OutputBuffer * cb)
 				if (plugin->tryDecodeFunc &&
 				    !plugin->tryDecodeFunc(&inStream))
 					continue;
-				ret = plugin->streamDecodeFunc(cb, &inStream);
+				ret = plugin->streamDecodeFunc(&inStream);
 				break;
 			}
 		}
@@ -273,7 +272,7 @@ static void decodeStart(OutputBuffer * cb)
 			/* we already know our mp3Plugin supports streams, no
 			 * need to check for stream{Types,DecodeFunc} */
 			if ((plugin = getInputPluginFromName("mp3"))) {
-				ret = plugin->streamDecodeFunc(cb, &inStream);
+				ret = plugin->streamDecodeFunc(&inStream);
 			}
 		}
 	} else {
@@ -290,10 +289,10 @@ static void decodeStart(OutputBuffer * cb)
 			if (plugin->fileDecodeFunc) {
 				closeInputStream(&inStream);
 				close_instream = 0;
-				ret = plugin->fileDecodeFunc(cb, path_max_fs);
+				ret = plugin->fileDecodeFunc(path_max_fs);
 				break;
 			} else if (plugin->streamDecodeFunc) {
-				ret = plugin->streamDecodeFunc(cb, &inStream);
+				ret = plugin->streamDecodeFunc(&inStream);
 				break;
 			}
 		}
@@ -317,13 +316,11 @@ stop_no_close:
 
 static void * decoder_task(mpd_unused void *arg)
 {
-	OutputBuffer *cb = &(getPlayerData()->buffer);
-
 	notifyEnter(&dc.notify);
 
 	while (1) {
 		if (dc.start || dc.seek) {
-			decodeStart(cb);
+			decodeStart();
 		} else if (dc.stop) {
 			dc.state = DECODE_STATE_STOP;
 			dc.stop = 0;
@@ -381,7 +378,7 @@ static int playChunk(OutputBufferChunk * chunk,
 	return 0;
 }
 
-static void decodeParent(OutputBuffer * cb)
+static void decodeParent(void)
 {
 	int do_pause = 0;
 	int buffering = 1;
@@ -399,7 +396,7 @@ static void decodeParent(OutputBuffer * cb)
 	/** the position of the first chunk in the next song */
 	int next = -1;
 
-	if (waitOnDecode(cb, &decodeWaitedOn) < 0)
+	if (waitOnDecode(&decodeWaitedOn) < 0)
 		return;
 
 	pc.elapsedTime = 0;
@@ -408,8 +405,7 @@ static void decodeParent(OutputBuffer * cb)
 	wakeup_main_task();
 
 	while (1) {
-		processDecodeInput(cb,
-				   &do_pause, &bbp, &doCrossFade,
+		processDecodeInput(&do_pause, &bbp, &doCrossFade,
 				   &decodeWaitedOn, &next);
 		if (pc.stop) {
 			dropBufferedAudio();
@@ -417,7 +413,7 @@ static void decodeParent(OutputBuffer * cb)
 		}
 
 		if (buffering) {
-			if (availableOutputBuffer(cb) < bbp) {
+			if (availableOutputBuffer() < bbp) {
 				/* not enough decoded buffer space yet */
 				player_sleep();
 				continue;
@@ -431,7 +427,7 @@ static void decodeParent(OutputBuffer * cb)
 			   dc.error==DECODE_ERROR_NOERROR) {
 				/* the decoder is ready and ok */
 				decodeWaitedOn = 0;
-				if(openAudioDevice(&(cb->audioFormat))<0) {
+				if(openAudioDevice(&(cb.audioFormat))<0) {
 					char tmp[MPD_PATH_MAX];
 					pc.errored_song = pc.current_song;
 					pc.error = PLAYER_ERROR_AUDIO;
@@ -450,7 +446,7 @@ static void decodeParent(OutputBuffer * cb)
 				pc.sampleRate = dc.audioFormat.sampleRate;
 				pc.bits = dc.audioFormat.bits;
 				pc.channels = dc.audioFormat.channels;
-				sizeToTime = audioFormatSizeToTime(&cb->audioFormat);
+				sizeToTime = audioFormatSizeToTime(&cb.audioFormat);
 			}
 			else if(dc.state!=DECODE_STATE_START) {
 				/* the decoder failed */
@@ -471,7 +467,7 @@ static void decodeParent(OutputBuffer * cb)
 		    pc.queueLockState == PLAYER_QUEUE_UNLOCKED) {
 			/* the decoder has finished the current song;
 			   make it decode the next song */
-			next = cb->end;
+			next = cb.end;
 			dc.start = 1;
 			pc.queueState = PLAYER_QUEUE_DECODE;
 			wakeup_main_task();
@@ -483,7 +479,7 @@ static void decodeParent(OutputBuffer * cb)
 			   calculate how many chunks will be required
 			   for it */
 			crossFadeChunks =
-				calculateCrossFadeChunks(&(cb->audioFormat),
+				calculateCrossFadeChunks(&(cb.audioFormat),
 							 dc.totalTime);
 			if (crossFadeChunks > 0) {
 				doCrossFade = 1;
@@ -496,12 +492,12 @@ static void decodeParent(OutputBuffer * cb)
 
 		if (do_pause)
 			player_sleep();
-		else if (!outputBufferEmpty(cb) && (int)cb->begin != next) {
+		else if (!outputBufferEmpty() && (int)cb.begin != next) {
 			OutputBufferChunk *beginChunk =
-				outputBufferGetChunk(cb, cb->begin);
+				outputBufferGetChunk(cb.begin);
 			unsigned int fadePosition;
 			if (doCrossFade == 1 && next >= 0 &&
-			    (fadePosition = outputBufferRelative(cb, next))
+			    (fadePosition = outputBufferRelative(next))
 			    <= crossFadeChunks) {
 				/* perform cross fade */
 				if (nextChunk < 0) {
@@ -512,11 +508,11 @@ static void decodeParent(OutputBuffer * cb)
 					   chunks in the old song */
 					crossFadeChunks = fadePosition;
 				}
-				nextChunk = outputBufferAbsolute(cb, crossFadeChunks);
+				nextChunk = outputBufferAbsolute(crossFadeChunks);
 				if (nextChunk >= 0) {
 					crossFade(beginChunk,
-						  outputBufferGetChunk(cb, nextChunk),
-						  &(cb->audioFormat),
+						  outputBufferGetChunk(nextChunk),
+						  &(cb.audioFormat),
 						  fadePosition,
 						  crossFadeChunks);
 				} else {
@@ -537,19 +533,19 @@ static void decodeParent(OutputBuffer * cb)
 			}
 
 			/* play the current chunk */
-			if (playChunk(beginChunk, &(cb->audioFormat),
+			if (playChunk(beginChunk, &(cb.audioFormat),
 				      sizeToTime) < 0)
 				break;
-			outputBufferShift(cb);
+			outputBufferShift();
 			player_wakeup_decoder_nb();
-		} else if (!outputBufferEmpty(cb) && (int)cb->begin == next) {
+		} else if (!outputBufferEmpty() && (int)cb.begin == next) {
 			/* at the beginning of a new song */
 
 			if (doCrossFade == 1 && nextChunk >= 0) {
 				/* the cross-fade is finished; skip
 				   the section which was cross-faded
 				   (and thus already played) */
-				output_buffer_skip(cb, crossFadeChunks);
+				output_buffer_skip(crossFadeChunks);
 			}
 
 			doCrossFade = 0;
@@ -564,7 +560,7 @@ static void decodeParent(OutputBuffer * cb)
 				break;
 
 			next = -1;
-			if (waitOnDecode(cb, &decodeWaitedOn) < 0)
+			if (waitOnDecode(&decodeWaitedOn) < 0)
 				return;
 
 			pc.queueState = PLAYER_QUEUE_EMPTY;
@@ -588,10 +584,7 @@ static void decodeParent(OutputBuffer * cb)
  */
 void decode(void)
 {
-	OutputBuffer *cb;
-
-	cb = &(getPlayerData()->buffer);
-	clearOutputBuffer(cb);
+	clearOutputBuffer();
 
 	dc.error = DECODE_ERROR_NOERROR;
 	dc.seek = 0;
@@ -599,5 +592,5 @@ void decode(void)
 	dc.start = 1;
 	do { player_wakeup_decoder(); } while (dc.start);
 
-	decodeParent(cb);
+	decodeParent();
 }

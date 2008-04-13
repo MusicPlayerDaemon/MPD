@@ -282,7 +282,7 @@ static int getAacTotalTime(char *file)
 	return file_time;
 }
 
-static int aac_decode(OutputBuffer * cb, char *path)
+static int aac_decode(char *path)
 {
 	float file_time;
 	float totalTime;
@@ -376,7 +376,7 @@ static int aac_decode(OutputBuffer * cb, char *path)
 			dc.audioFormat.channels = frameInfo.channels;
 			dc.audioFormat.sampleRate = sampleRate;
 			getOutputAudioFormat(&(dc.audioFormat),
-					     &(cb->audioFormat));
+					     &(cb.audioFormat));
 			dc.state = DECODE_STATE_DECODE;
 		}
 
@@ -395,7 +395,7 @@ static int aac_decode(OutputBuffer * cb, char *path)
 
 		sampleBufferLen = sampleCount * 2;
 
-		sendDataToOutputBuffer(cb, NULL, 0, sampleBuffer,
+		sendDataToOutputBuffer(NULL, 0, sampleBuffer,
 				       sampleBufferLen, file_time,
 				       bitRate, NULL);
 		if (dc.seek) {
@@ -408,7 +408,7 @@ static int aac_decode(OutputBuffer * cb, char *path)
 		}
 	}
 
-	flushOutputBuffer(cb);
+	flushOutputBuffer();
 
 	faacDecClose(decoder);
 	if (b.buffer)

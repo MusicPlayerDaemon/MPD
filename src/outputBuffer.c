@@ -22,52 +22,52 @@
 #include "normalize.h"
 #include "playerData.h"
 
-void initOutputBuffer(OutputBuffer * cb, unsigned int size)
+void initOutputBuffer(unsigned int size)
 {
 	assert(size > 0);
 
-	memset(&cb->convState, 0, sizeof(ConvState));
-	cb->chunks = xmalloc(size * sizeof(*cb->chunks));
-	cb->size = size;
-	cb->begin = 0;
-	cb->end = 0;
-	cb->chunks[0].chunkSize = 0;
+	memset(&cb.convState, 0, sizeof(ConvState));
+	cb.chunks = xmalloc(size * sizeof(*cb.chunks));
+	cb.size = size;
+	cb.begin = 0;
+	cb.end = 0;
+	cb.chunks[0].chunkSize = 0;
 }
 
-void output_buffer_free(OutputBuffer * cb)
+void output_buffer_free(void)
 {
-	assert(cb->chunks != NULL);
-	free(cb->chunks);
+	assert(cb.chunks != NULL);
+	free(cb.chunks);
 }
 
-void clearOutputBuffer(OutputBuffer * cb)
+void clearOutputBuffer(void)
 {
-	cb->end = cb->begin;
-	cb->chunks[cb->end].chunkSize = 0;
+	cb.end = cb.begin;
+	cb.chunks[cb.end].chunkSize = 0;
 }
 
 /** return the index of the chunk after i */
-static inline unsigned successor(const OutputBuffer * cb, unsigned i)
+static inline unsigned successor(unsigned i)
 {
-	assert(i <= cb->size);
+	assert(i <= cb.size);
 
 	++i;
-	return i == cb->size ? 0 : i;
+	return i == cb.size ? 0 : i;
 }
 
 /**
  * Mark the tail chunk as "full" and wake up the player if is waiting
  * for the decoder.
  */
-static void output_buffer_expand(OutputBuffer * cb, unsigned i)
+static void output_buffer_expand(unsigned i)
 {
-	int was_empty = outputBufferEmpty(cb);
+	int was_empty = outputBufferEmpty();
 
-	assert(i == (cb->end + 1) % cb->size);
-	assert(i != cb->end);
+	assert(i == (cb.end + 1) % cb.size);
+	assert(i != cb.end);
 
-	cb->end = i;
-	cb->chunks[i].chunkSize = 0;
+	cb.end = i;
+	cb.chunks[i].chunkSize = 0;
 	if (was_empty)
 		/* if the buffer was empty, the player thread might be
 		   waiting for us; wake it up now that another decoded
@@ -75,70 +75,70 @@ static void output_buffer_expand(OutputBuffer * cb, unsigned i)
 		decoder_wakeup_player();
 }
 
-void flushOutputBuffer(OutputBuffer * cb)
+void flushOutputBuffer(void)
 {
-	OutputBufferChunk *chunk = outputBufferGetChunk(cb, cb->end);
+	OutputBufferChunk *chunk = outputBufferGetChunk(cb.end);
 
 	if (chunk->chunkSize > 0) {
-		unsigned int next = successor(cb, cb->end);
-		if (next == cb->begin)
+		unsigned int next = successor(cb.end);
+		if (next == cb.begin)
 			/* all buffers are full; we have to wait for
 			   the player to free one, so don't flush
 			   right now */
 			return;
 
-		output_buffer_expand(cb, next);
+		output_buffer_expand(next);
 	}
 }
 
-int outputBufferEmpty(const OutputBuffer * cb)
+int outputBufferEmpty(void)
 {
-	return cb->begin == cb->end;
+	return cb.begin == cb.end;
 }
 
-void outputBufferShift(OutputBuffer * cb)
+void outputBufferShift(void)
 {
-	assert(cb->begin != cb->end);
-	assert(cb->begin < cb->size);
+	assert(cb.begin != cb.end);
+	assert(cb.begin < cb.size);
 
-	cb->begin = successor(cb, cb->begin);
+	cb.begin = successor(cb.begin);
 }
 
-unsigned int outputBufferRelative(const OutputBuffer * cb, unsigned i)
+unsigned int outputBufferRelative(const unsigned i)
 {
-	if (i >= cb->begin)
-		return i - cb->begin;
+	if (i >= cb.begin)
+		return i - cb.begin;
 	else
-		return i + cb->size - cb->begin;
+		return i + cb.size - cb.begin;
 }
 
-unsigned availableOutputBuffer(const OutputBuffer * cb)
+unsigned availableOutputBuffer(void)
 {
-	return outputBufferRelative(cb, cb->end);
+	return outputBufferRelative(cb.end);
 }
 
-int outputBufferAbsolute(const OutputBuffer * cb, unsigned relative)
+int outputBufferAbsolute(const unsigned relative)
 {
 	unsigned i, max;
 
-	max = cb->end;
-	if (max < cb->begin)
-		max += cb->size;
-	i = (unsigned)cb->begin + relative;
+	max = cb.end;
+	if (max < cb.begin)
+		max += cb.size;
+	i = (unsigned)cb.begin + relative;
 	if (i >= max)
 		return -1;
 
-	if (i >= cb->size)
-		i -= cb->size;
+	if (i >= cb.size)
+		i -= cb.size;
 
 	return (int)i;
 }
 
-OutputBufferChunk * outputBufferGetChunk(const OutputBuffer * cb, unsigned i)
+OutputBufferChunk * outputBufferGetChunk(const unsigned i)
 {
-	assert(i < cb->size);
+	assert(i < cb.size);
 
-	return &cb->chunks[i];
+	return &cb.chunks[i];
 }
 
 /**
@@ -150,18 +150,18 @@ OutputBufferChunk * outputBufferGetChunk(const OutputBuffer * cb, unsigned i)
  * if another thread requested seeking; OUTPUT_BUFFER_DC_STOP if
  * another thread requested stopping the decoder.
  */
-static int tailChunk(OutputBuffer * cb, InputStream * inStream,
+static int tailChunk(InputStream * inStream,
 		     int seekable, float data_time, mpd_uint16 bitRate)
 {
 	unsigned int next;
 	OutputBufferChunk *chunk;
 
-	chunk = outputBufferGetChunk(cb, cb->end);
+	chunk = outputBufferGetChunk(cb.end);
 	assert(chunk->chunkSize <= sizeof(chunk->data));
 	if (chunk->chunkSize == sizeof(chunk->data)) {
 		/* this chunk is full; allocate a new chunk */
-		next = successor(cb, cb->end);
-		while (cb->begin == next) {
+		next = successor(cb.end);
+		while (cb.begin == next) {
 			/* all chunks are full of decoded data; wait
 			   for the player to free one */
 
@@ -182,8 +182,8 @@ static int tailChunk(OutputBuffer * cb, InputStream * inStream,
 			}
 		}
 
-		output_buffer_expand(cb, next);
-		chunk = outputBufferGetChunk(cb, next);
+		output_buffer_expand(next);
+		chunk = outputBufferGetChunk(next);
 		assert(chunk->chunkSize == 0);
 	}
 
@@ -195,10 +195,10 @@ static int tailChunk(OutputBuffer * cb, InputStream * inStream,
 		chunk->times = data_time;
 	}
 
-	return cb->end;
+	return cb.end;
 }
 
-int sendDataToOutputBuffer(OutputBuffer * cb, InputStream * inStream,
+int sendDataToOutputBuffer(InputStream * inStream,
 			   int seekable, void *dataIn,
 			   size_t dataInLen, float data_time, mpd_uint16 bitRate,
 			   ReplayGainInfo * replayGainInfo)
@@ -210,12 +210,12 @@ int sendDataToOutputBuffer(OutputBuffer * cb, InputStream * inStream,
 	static size_t convBufferLen;
 	OutputBufferChunk *chunk = NULL;
 
-	if (cmpAudioFormat(&(cb->audioFormat), &(dc.audioFormat)) == 0) {
+	if (cmpAudioFormat(&(cb.audioFormat), &(dc.audioFormat)) == 0) {
 		data = dataIn;
 		datalen = dataInLen;
 	} else {
 		datalen = pcm_sizeOfConvBuffer(&(dc.audioFormat), dataInLen,
-		                               &(cb->audioFormat));
+		                               &(cb.audioFormat));
 		if (datalen > convBufferLen) {
 			if (convBuffer != NULL)
 				free(convBuffer);
@@ -224,22 +224,22 @@ int sendDataToOutputBuffer(OutputBuffer * cb, InputStream * inStream,
 		}
 		data = convBuffer;
 		datalen = pcm_convertAudioFormat(&(dc.audioFormat), dataIn,
-		                                 dataInLen, &(cb->audioFormat),
-		                                 data, &(cb->convState));
+		                                 dataInLen, &(cb.audioFormat),
+		                                 data, &(cb.convState));
 	}
 
 	if (replayGainInfo && (replayGainState != REPLAYGAIN_OFF))
-		doReplayGain(replayGainInfo, data, datalen, &cb->audioFormat);
+		doReplayGain(replayGainInfo, data, datalen, &cb.audioFormat);
 	else if (normalizationEnabled)
-		normalizeData(data, datalen, &cb->audioFormat);
+		normalizeData(data, datalen, &cb.audioFormat);
 
 	while (datalen) {
-		int chunk_index = tailChunk(cb, inStream, seekable,
+		int chunk_index = tailChunk(inStream, seekable,
 					    data_time, bitRate);
 		if (chunk_index < 0)
 			return chunk_index;
 
-		chunk = outputBufferGetChunk(cb, chunk_index);
+		chunk = outputBufferGetChunk(chunk_index);
 
 		dataToSend = sizeof(chunk->data) - chunk->chunkSize;
 		if (dataToSend > datalen)
@@ -252,14 +252,14 @@ int sendDataToOutputBuffer(OutputBuffer * cb, InputStream * inStream,
 	}
 
 	if (chunk != NULL && chunk->chunkSize == sizeof(chunk->data))
-		flushOutputBuffer(cb);
+		flushOutputBuffer();
 
 	return 0;
 }
 
-void output_buffer_skip(OutputBuffer * cb, unsigned num)
+void output_buffer_skip(unsigned num)
 {
-	int i = outputBufferAbsolute(cb, num);
+	int i = outputBufferAbsolute(num);
 	if (i >= 0)
-		cb->begin = i;
+		cb.begin = i;
 }

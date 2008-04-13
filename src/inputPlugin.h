@@ -42,14 +42,14 @@ typedef unsigned int (*InputPlugin_tryDecodeFunc) (InputStream *);
  * and networked (HTTP) connections.
  *
  * returns -1 on error, 0 on success */
-typedef int (*InputPlugin_streamDecodeFunc) (OutputBuffer *, InputStream *);
+typedef int (*InputPlugin_streamDecodeFunc) (InputStream *);
 
 /* use this if and only if your InputPlugin can only be passed a filename or
  * handle as input, and will not allow callbacks to be set (like Ogg-Vorbis
  * and FLAC libraries allow)
  *
  * returns -1 on error, 0 on success */
-typedef int (*InputPlugin_fileDecodeFunc) (OutputBuffer *, char *path);
+typedef int (*InputPlugin_fileDecodeFunc) (char *path);
 
 /* file should be the full path!  Returns NULL if a tag cannot be found
  * or read */

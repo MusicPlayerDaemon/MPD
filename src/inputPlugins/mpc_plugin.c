@@ -111,7 +111,7 @@ static inline mpd_sint16 convertSample(MPC_SAMPLE_FORMAT sample)
 	return val;
 }
 
-static int mpc_decode(OutputBuffer * cb, InputStream * inStream)
+static int mpc_decode(InputStream * inStream)
 {
 	mpc_decoder decoder;
 	mpc_reader reader;
@@ -170,7 +170,7 @@ static int mpc_decode(OutputBuffer * cb, InputStream * inStream)
 	dc.audioFormat.channels = info.channels;
 	dc.audioFormat.sampleRate = info.sample_freq;
 
-	getOutputAudioFormat(&(dc.audioFormat), &(cb->audioFormat));
+	getOutputAudioFormat(&(dc.audioFormat), &(cb.audioFormat));
 
 	replayGainInfo = newReplayGainInfo();
 	replayGainInfo->albumGain = info.gain_album * 0.01;
@@ -184,7 +184,7 @@ static int mpc_decode(OutputBuffer * cb, InputStream * inStream)
 		if (dc.seek) {
 			samplePos = dc.seekWhere * dc.audioFormat.sampleRate;
 			if (mpc_decoder_seek_sample(&decoder, samplePos)) {
-				clearOutputBuffer(cb);
+				clearOutputBuffer();
 				s16 = (mpd_sint16 *) chunk;
 				chunkpos = 0;
 			} else
@@ -221,7 +221,7 @@ static int mpc_decode(OutputBuffer * cb, InputStream * inStream)
 				bitRate = vbrUpdateBits *
 				    dc.audioFormat.sampleRate / 1152 / 1000;
 
-				sendDataToOutputBuffer(cb, inStream,
+				sendDataToOutputBuffer(inStream,
 						       inStream->seekable,
 						       chunk, chunkpos,
 						       total_time,
@@ -243,12 +243,12 @@ static int mpc_decode(OutputBuffer * cb, InputStream * inStream)
 		bitRate =
 		    vbrUpdateBits * dc.audioFormat.sampleRate / 1152 / 1000;
 
-		sendDataToOutputBuffer(cb, NULL, inStream->seekable,
+		sendDataToOutputBuffer(NULL, inStream->seekable,
 				       chunk, chunkpos, total_time, bitRate,
 				       replayGainInfo);
 	}
 
-	flushOutputBuffer(cb);
+	flushOutputBuffer();
 
 	freeReplayGainInfo(replayGainInfo);
 

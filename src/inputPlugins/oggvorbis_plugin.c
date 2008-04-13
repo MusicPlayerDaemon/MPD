@@ -195,7 +195,7 @@ static MpdTag *oggCommentsParse(char **comments)
 	return tag;
 }
 
-static void putOggCommentsIntoOutputBuffer(OutputBuffer * cb, char *streamName,
+static void putOggCommentsIntoOutputBuffer(char *streamName,
 					   char **comments)
 {
 	MpdTag *tag;
@@ -216,7 +216,7 @@ static void putOggCommentsIntoOutputBuffer(OutputBuffer * cb, char *streamName,
 }
 
 /* public */
-static int oggvorbis_decode(OutputBuffer * cb, InputStream * inStream)
+static int oggvorbis_decode(InputStream * inStream)
 {
 	OggVorbis_File vf;
 	ov_callbacks callbacks;
@@ -275,7 +275,7 @@ static int oggvorbis_decode(OutputBuffer * cb, InputStream * inStream)
 	while (1) {
 		if (dc.seek) {
 			if (0 == ov_time_seek_page(&vf, dc.seekWhere)) {
-				clearOutputBuffer(cb);
+				clearOutputBuffer();
 				chunkpos = 0;
 			} else
 				dc.seekError = 1;
@@ -292,11 +292,11 @@ static int oggvorbis_decode(OutputBuffer * cb, InputStream * inStream)
 			dc.audioFormat.sampleRate = vi->rate;
 			if (dc.state == DECODE_STATE_START) {
 				getOutputAudioFormat(&(dc.audioFormat),
-						     &(cb->audioFormat));
+						     &(cb.audioFormat));
 				dc.state = DECODE_STATE_DECODE;
 			}
 			comments = ov_comment(&vf, -1)->user_comments;
-			putOggCommentsIntoOutputBuffer(cb, inStream->metaName,
+			putOggCommentsIntoOutputBuffer(inStream->metaName,
 						       comments);
 			ogg_getReplayGainInfo(comments, &replayGainInfo);
 		}
@@ -316,7 +316,7 @@ static int oggvorbis_decode(OutputBuffer * cb, InputStream * inStream)
 			if ((test = ov_bitrate_instant(&vf)) > 0) {
 				bitRate = test / 1000;
 			}
-			sendDataToOutputBuffer(cb, inStream,
+			sendDataToOutputBuffer(inStream,
 					       inStream->seekable,
 					       chunk, chunkpos,
 					       ov_pcm_tell(&vf) /
@@ -329,7 +329,7 @@ static int oggvorbis_decode(OutputBuffer * cb, InputStream * inStream)
 	}
 
 	if (!dc.stop && chunkpos > 0) {
-		sendDataToOutputBuffer(cb, NULL, inStream->seekable,
+		sendDataToOutputBuffer(NULL, inStream->seekable,
 				       chunk, chunkpos,
 				       ov_time_tell(&vf), bitRate,
 				       replayGainInfo);
@@ -340,7 +340,7 @@ static int oggvorbis_decode(OutputBuffer * cb, InputStream * inStream)
 
 	ov_clear(&vf);
 
-	flushOutputBuffer(cb);
+	flushOutputBuffer();
 
 	return 0;
 }

@@ -36,13 +36,12 @@
 #include <FLAC/format.h>
 #include <FLAC/metadata.h>
 
-void init_FlacData(FlacData * data, OutputBuffer * cb, InputStream * inStream)
+void init_FlacData(FlacData * data, InputStream * inStream)
 {
 	data->chunk_length = 0;
 	data->time = 0;
 	data->position = 0;
 	data->bitRate = 0;
-	data->cb = cb;
 	data->inStream = inStream;
 	data->replayGainInfo = NULL;
 	data->tag = NULL;
@@ -171,8 +170,7 @@ void flac_metadata_common_cb(const FLAC__StreamMetadata * block,
 		dc.audioFormat.sampleRate = si->sample_rate;
 		dc.audioFormat.channels = (mpd_sint8)si->channels;
 		dc.totalTime = ((float)si->total_samples) / (si->sample_rate);
-		getOutputAudioFormat(&(dc.audioFormat),
-				     &(data->cb->audioFormat));
+		getOutputAudioFormat(&(dc.audioFormat), &(cb.audioFormat));
 		break;
 	case FLAC__METADATA_TYPE_VORBIS_COMMENT:
 		flacParseReplayGain(block, data);

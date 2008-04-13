@@ -381,8 +381,7 @@ static MpdTag *flacTagDup(char *file)
 	return ret;
 }
 
-static int flac_decode_internal(OutputBuffer * cb,
-                               InputStream * inStream, int is_ogg)
+static int flac_decode_internal(InputStream * inStream, int is_ogg)
 {
 	flac_decoder *flacDec;
 	FlacData data;
@@ -390,7 +389,7 @@ static int flac_decode_internal(OutputBuffer * cb,
 
 	if (!(flacDec = flac_new()))
 		return -1;
-	init_FlacData(&data, cb, inStream);
+	init_FlacData(&data, inStream);
 
 #if defined(FLAC_API_VERSION_CURRENT) && FLAC_API_VERSION_CURRENT > 7
         if(!FLAC__stream_decoder_set_metadata_respond(flacDec, FLAC__METADATA_TYPE_VORBIS_COMMENT))
@@ -431,7 +430,7 @@ static int flac_decode_internal(OutputBuffer * cb,
 			FLAC__uint64 sampleToSeek = dc.seekWhere *
 			    dc.audioFormat.sampleRate + 0.5;
 			if (flac_seek_absolute(flacDec, sampleToSeek)) {
-				clearOutputBuffer(cb);
+				clearOutputBuffer();
 				data.time = ((float)sampleToSeek) /
 				    dc.audioFormat.sampleRate;
 				data.position = 0;
@@ -448,7 +447,7 @@ static int flac_decode_internal(OutputBuffer * cb,
 	/* send last little bit */
 	if (data.chunk_length > 0 && !dc.stop) {
 		flacSendChunk(&data);
-		flushOutputBuffer(data.cb);
+		flushOutputBuffer();
 	}
 
 fail:
@@ -465,9 +464,9 @@ fail:
 	return 0;
 }
 
-static int flac_decode(OutputBuffer * cb, InputStream * inStream)
+static int flac_decode(InputStream * inStream)
 {
-	return flac_decode_internal(cb, inStream, 0);
+	return flac_decode_internal(inStream, 0);
 }
 
 #if !defined(FLAC_API_VERSION_CURRENT) || FLAC_API_VERSION_CURRENT <= 7
@@ -506,9 +505,9 @@ out:
 	return ret;
 }
 
-static int oggflac_decode(OutputBuffer * cb, InputStream * inStream)
+static int oggflac_decode(InputStream * inStream)
 {
-	return flac_decode_internal(cb, inStream, 1);
+	return flac_decode_internal(inStream, 1);
 }
 
 static unsigned int oggflac_try_decode(InputStream * inStream)

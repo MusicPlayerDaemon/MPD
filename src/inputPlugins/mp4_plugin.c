@@ -84,7 +84,7 @@ static uint32_t mp4_inputStreamSeekCallback(void *inStream, uint64_t position)
 	return seekInputStream((InputStream *) inStream, position, SEEK_SET);
 }
 
-static int mp4_decode(OutputBuffer * cb, InputStream * inStream)
+static int mp4_decode(InputStream * inStream)
 {
 	mp4ff_t *mp4fh;
 	mp4ff_callback_t *mp4cb;
@@ -217,7 +217,7 @@ static int mp4_decode(OutputBuffer * cb, InputStream * inStream)
 
 		if (seeking && seekPositionFound) {
 			seekPositionFound = 0;
-			clearOutputBuffer(cb);
+			clearOutputBuffer();
 			seeking = 0;
 			dc.seek = 0;
 			decoder_wakeup_player();
@@ -255,7 +255,7 @@ static int mp4_decode(OutputBuffer * cb, InputStream * inStream)
 			dc.audioFormat.sampleRate = scale;
 			dc.audioFormat.channels = frameInfo.channels;
 			getOutputAudioFormat(&(dc.audioFormat),
-					     &(cb->audioFormat));
+					     &(cb.audioFormat));
 			dc.state = DECODE_STATE_DECODE;
 		}
 
@@ -277,7 +277,7 @@ static int mp4_decode(OutputBuffer * cb, InputStream * inStream)
 
 		sampleBuffer += offset * channels * 2;
 
-		sendDataToOutputBuffer(cb, inStream, 1, sampleBuffer,
+		sendDataToOutputBuffer(inStream, 1, sampleBuffer,
 				       sampleBufferLen, file_time,
 				       bitRate, NULL);
 		if (dc.stop) {
@@ -295,11 +295,11 @@ static int mp4_decode(OutputBuffer * cb, InputStream * inStream)
 		return -1;
 
 	if (dc.seek && seeking) {
-		clearOutputBuffer(cb);
+		clearOutputBuffer();
 		dc.seek = 0;
 		decoder_wakeup_player();
 	}
-	flushOutputBuffer(cb);
+	flushOutputBuffer();
 
 	return 0;
 }
@@ -309,7 +309,7 @@ static MpdTag *mp4DataDup(char *file, int *mp4MetadataFound)
 	MpdTag *ret = NULL;
 	InputStream inStream;
 	mp4ff_t *mp4fh;
-	mp4ff_callback_t *cb;
+	mp4ff_callback_t *callback;
 	int32_t track;
 	int32_t file_time;
 	int32_t scale;
@@ -322,14 +322,14 @@ static MpdTag *mp4DataDup(char *file, int *mp4MetadataFound)
 		return NULL;
 	}
 
-	cb = xmalloc(sizeof(mp4ff_callback_t));
-	cb->read = mp4_inputStreamReadCallback;
-	cb->seek = mp4_inputStreamSeekCallback;
-	cb->user_data = &inStream;
+	callback = xmalloc(sizeof(mp4ff_callback_t));
+	callback->read = mp4_inputStreamReadCallback;
+	callback->seek = mp4_inputStreamSeekCallback;
+	callback->user_data = &inStream;
 
-	mp4fh = mp4ff_open_read(cb);
+	mp4fh = mp4ff_open_read(callback);
 	if (!mp4fh) {
-		free(cb);
+		free(callback);
 		closeInputStream(&inStream);
 		return NULL;
 	}
@@ -338,7 +338,7 @@ static MpdTag *mp4DataDup(char *file, int *mp4MetadataFound)
 	if (track < 0) {
 		mp4ff_close(mp4fh);
 		closeInputStream(&inStream);
-		free(cb);
+		free(callback);
 		return NULL;
 	}
 
@@ -348,7 +348,7 @@ static MpdTag *mp4DataDup(char *file, int *mp4MetadataFound)
 	if (scale < 0) {
 		mp4ff_close(mp4fh);
 		closeInputStream(&inStream);
-		free(cb);
+		free(callback);
 		freeMpdTag(ret);
 		return NULL;
 	}
@@ -389,7 +389,6 @@ static MpdTag *mp4DataDup(char *file, int *mp4MetadataFound)
 
 	mp4ff_close(mp4fh);
 	closeInputStream(&inStream);
-	free(cb);
 
 	return ret;
 }

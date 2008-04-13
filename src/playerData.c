@@ -29,6 +29,7 @@ unsigned int buffered_before_play;
 static PlayerData playerData_pd;
 PlayerControl pc;
 DecoderControl dc;
+OutputBuffer cb; /* rename this to 'ob' */
 
 void initPlayerData(void)
 {
@@ -76,7 +77,7 @@ void initPlayerData(void)
 
 	playerData_pd.audioDeviceStates = xmalloc(device_array_size);
 
-	initOutputBuffer(&(playerData_pd.buffer), buffered_chunks);
+	initOutputBuffer(buffered_chunks);
 
 	notifyInit(&pc.notify);
 	pc.error = PLAYER_ERROR_NOERROR;
@@ -103,6 +104,6 @@ void freePlayerData(void)
 	 * access playerData_pd and we need to keep it available for them */
 	waitpid(-1, NULL, 0);
 
-	output_buffer_free(&playerData_pd.buffer);
+	output_buffer_free();
 	free(playerData_pd.audioDeviceStates);
 }

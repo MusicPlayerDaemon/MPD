@@ -128,8 +128,7 @@ static void format_samples_float(int Bps, void *buffer, uint32_t samcnt)
  * This does the main decoding thing.
  * Requires an already opened WavpackContext.
  */
-static void wavpack_decode(OutputBuffer *cb,
-                           WavpackContext *wpc, int canseek,
+static void wavpack_decode(WavpackContext *wpc, int canseek,
                            ReplayGainInfo *replayGainInfo)
 {
 	void (*format_samples)(int Bps, void *buffer, uint32_t samcnt);
@@ -167,7 +166,7 @@ static void wavpack_decode(OutputBuffer *cb,
 
 	samplesreq = sizeof(chunk) / (4 * dc.audioFormat.channels);
 
-	getOutputAudioFormat(&(dc.audioFormat), &(cb->audioFormat));
+	getOutputAudioFormat(&(dc.audioFormat), &(cb.audioFormat));
 
 	dc.totalTime = (float)allsamples / dc.audioFormat.sampleRate;
 	dc.state = DECODE_STATE_DECODE;
@@ -180,7 +179,7 @@ static void wavpack_decode(OutputBuffer *cb,
 			if (canseek) {
 				int where;
 
-				clearOutputBuffer(cb);
+				clearOutputBuffer();
 
 				where = dc.seekWhere *
 				        dc.audioFormat.sampleRate;
@@ -211,14 +210,14 @@ static void wavpack_decode(OutputBuffer *cb,
 			format_samples(Bps, chunk,
 			               samplesgot * dc.audioFormat.channels);
 
-			sendDataToOutputBuffer(cb, NULL, 0, chunk,
+			sendDataToOutputBuffer(NULL, 0, chunk,
 			                       samplesgot * outsamplesize,
 			                       file_time, bitrate,
 					       replayGainInfo);
 		}
 	} while (samplesgot == samplesreq);
 
-	flushOutputBuffer(cb);
+	flushOutputBuffer();
 }
 
 static char *wavpack_tag(WavpackContext *wpc, char *key)
@@ -442,7 +441,7 @@ static unsigned int wavpack_trydecode(InputStream *is)
 /*
  * Decodes a stream.
  */
-static int wavpack_streamdecode(OutputBuffer *cb, InputStream *is)
+static int wavpack_streamdecode(InputStream *is)
 {
 	char error[ERRORLEN];
 	WavpackContext *wpc;
@@ -541,7 +540,7 @@ static int wavpack_streamdecode(OutputBuffer *cb, InputStream *is)
 		return -1;
 	}
 
-	wavpack_decode(cb, wpc, canseek, NULL);
+	wavpack_decode(wpc, canseek, NULL);
 
 	WavpackCloseFile(wpc);
 	if (wvc_url != NULL) {
@@ -556,7 +555,7 @@ static int wavpack_streamdecode(OutputBuffer *cb, InputStream *is)
 /*
  * Decodes a file.
  */
-static int wavpack_filedecode(OutputBuffer *cb, char *fname)
+static int wavpack_filedecode(char *fname)
 {
 	char error[ERRORLEN];
 	WavpackContext *wpc;
@@ -572,7 +571,7 @@ static int wavpack_filedecode(OutputBuffer *cb, char *fname)
 
 	replayGainInfo = wavpack_replaygain(wpc);
 
-	wavpack_decode(cb, wpc, 1, replayGainInfo);
+	wavpack_decode(wpc, 1, replayGainInfo);
 
 	if (replayGainInfo)
 		freeReplayGainInfo(replayGainInfo);

@@ -813,8 +813,7 @@ static int openMp3FromInputStream(InputStream * inStream, mp3DecodeData * data,
 	return 0;
 }
 
-static int mp3Read(mp3DecodeData * data, OutputBuffer * cb,
-		   ReplayGainInfo ** replayGainInfo)
+static int mp3Read(mp3DecodeData * data, ReplayGainInfo ** replayGainInfo)
 {
 	int samplesPerFrame;
 	int samplesLeft;
@@ -854,7 +853,7 @@ static int mp3Read(mp3DecodeData * data, OutputBuffer * cb,
 	case MUTEFRAME_SEEK:
 		if (dc.seekWhere <= data->elapsedTime) {
 			data->outputPtr = data->outputBuffer;
-			clearOutputBuffer(cb);
+			clearOutputBuffer();
 			data->muteFrame = 0;
 			dc.seek = 0;
 			decoder_wakeup_player();
@@ -929,8 +928,7 @@ static int mp3Read(mp3DecodeData * data, OutputBuffer * cb,
 			}
 
 			if (data->outputPtr >= data->outputBufferEnd) {
-				ret = sendDataToOutputBuffer(cb,
-							     data->inStream,
+				ret = sendDataToOutputBuffer(data->inStream,
 							     data->inStream->seekable,
 							     data->outputBuffer,
 							     data->outputPtr - data->outputBuffer,
@@ -965,7 +963,7 @@ static int mp3Read(mp3DecodeData * data, OutputBuffer * cb,
 						       data->frameOffset[j]) ==
 				    0) {
 					data->outputPtr = data->outputBuffer;
-					clearOutputBuffer(cb);
+					clearOutputBuffer();
 					data->currentFrame = j;
 				} else
 					dc.seekError = 1;
@@ -1014,7 +1012,7 @@ static void initAudioFormatFromMp3DecodeData(mp3DecodeData * data,
 	af->channels = MAD_NCHANNELS(&(data->frame).header);
 }
 
-static int mp3_decode(OutputBuffer * cb, InputStream * inStream)
+static int mp3_decode(InputStream * inStream)
 {
 	mp3DecodeData data;
 	MpdTag *tag = NULL;
@@ -1031,7 +1029,7 @@ static int mp3_decode(OutputBuffer * cb, InputStream * inStream)
 	}
 
 	initAudioFormatFromMp3DecodeData(&data, &(dc.audioFormat));
-	getOutputAudioFormat(&(dc.audioFormat), &(cb->audioFormat));
+	getOutputAudioFormat(&(dc.audioFormat), &(cb.audioFormat));
 
 	dc.totalTime = data.totalTime;
 
@@ -1062,10 +1060,10 @@ static int mp3_decode(OutputBuffer * cb, InputStream * inStream)
 
 	dc.state = DECODE_STATE_DECODE;
 
-	while (mp3Read(&data, cb, &replayGainInfo) != DECODE_BREAK) ;
+	while (mp3Read(&data, &replayGainInfo) != DECODE_BREAK) ;
 	/* send last little bit if not dc.stop */
 	if (!dc.stop && data.outputPtr != data.outputBuffer && data.flush) {
-		sendDataToOutputBuffer(cb, NULL,
+		sendDataToOutputBuffer(NULL,
 				       data.inStream->seekable,
 				       data.outputBuffer,
 				       data.outputPtr - data.outputBuffer,
@@ -1077,12 +1075,12 @@ static int mp3_decode(OutputBuffer * cb, InputStream * inStream)
 		freeReplayGainInfo(replayGainInfo);
 
 	if (dc.seek && data.muteFrame == MUTEFRAME_SEEK) {
-		clearOutputBuffer(cb);
+		clearOutputBuffer();
 		dc.seek = 0;
 		decoder_wakeup_player();
 	}
 
-	flushOutputBuffer(cb);
+	flushOutputBuffer();
 	mp3DecodeDataFinalize(&data);
 
 	return 0;

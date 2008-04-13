@@ -336,13 +336,13 @@ static unsigned int oggflac_try_decode(InputStream * inStream)
 	return (ogg_stream_type_detect(inStream) == FLAC) ? 1 : 0;
 }
 
-static int oggflac_decode(OutputBuffer * cb, InputStream * inStream)
+static int oggflac_decode(InputStream * inStream)
 {
 	OggFLAC__SeekableStreamDecoder *decoder = NULL;
 	FlacData data;
 	int ret = 0;
 
-	init_FlacData(&data, cb, inStream);
+	init_FlacData(&data, inStream);
 
 	if (!(decoder = full_decoder_init_and_read_metadata(&data, 0))) {
 		ret = -1;
@@ -362,7 +362,7 @@ static int oggflac_decode(OutputBuffer * cb, InputStream * inStream)
 			    dc.audioFormat.sampleRate + 0.5;
 			if (OggFLAC__seekable_stream_decoder_seek_absolute
 			    (decoder, sampleToSeek)) {
-				clearOutputBuffer(cb);
+				clearOutputBuffer();
 				data.time = ((float)sampleToSeek) /
 				    dc.audioFormat.sampleRate;
 				data.position = 0;
@@ -381,7 +381,7 @@ static int oggflac_decode(OutputBuffer * cb, InputStream * inStream)
 	/* send last little bit */
 	if (data.chunk_length > 0 && !dc.stop) {
 		flacSendChunk(&data);
-		flushOutputBuffer(data.cb);
+		flushOutputBuffer();
 	}
 
 fail:
