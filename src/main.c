@@ -431,7 +431,7 @@ int main(int argc, char *argv[])
 	initZeroconf();
 
 	openVolumeDevice();
-	decoderInit(&getPlayerData()->decoderControl);
+	decoderInit();
 	playerInit();
 	read_state_file();
 

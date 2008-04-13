@@ -282,7 +282,7 @@ static int getAacTotalTime(char *file)
 	return file_time;
 }
 
-static int aac_decode(OutputBuffer * cb, DecoderControl * dc, char *path)
+static int aac_decode(OutputBuffer * cb, char *path)
 {
 	float file_time;
 	float totalTime;
@@ -339,9 +339,9 @@ static int aac_decode(OutputBuffer * cb, DecoderControl * dc, char *path)
 		return -1;
 	}
 
-	dc->audioFormat.bits = 16;
+	dc.audioFormat.bits = 16;
 
-	dc->totalTime = totalTime;
+	dc.totalTime = totalTime;
 
 	file_time = 0.0;
 
@@ -372,12 +372,12 @@ static int aac_decode(OutputBuffer * cb, DecoderControl * dc, char *path)
 		sampleRate = frameInfo.samplerate;
 #endif
 
-		if (dc->state != DECODE_STATE_DECODE) {
-			dc->audioFormat.channels = frameInfo.channels;
-			dc->audioFormat.sampleRate = sampleRate;
-			getOutputAudioFormat(&(dc->audioFormat),
+		if (dc.state != DECODE_STATE_DECODE) {
+			dc.audioFormat.channels = frameInfo.channels;
+			dc.audioFormat.sampleRate = sampleRate;
+			getOutputAudioFormat(&(dc.audioFormat),
 					     &(cb->audioFormat));
-			dc->state = DECODE_STATE_DECODE;
+			dc.state = DECODE_STATE_DECODE;
 		}
 
 		advanceAacBuffer(&b, frameInfo.bytesconsumed);
@@ -395,14 +395,14 @@ static int aac_decode(OutputBuffer * cb, DecoderControl * dc, char *path)
 
 		sampleBufferLen = sampleCount * 2;
 
-		sendDataToOutputBuffer(cb, NULL, dc, 0, sampleBuffer,
+		sendDataToOutputBuffer(cb, NULL, 0, sampleBuffer,
 				       sampleBufferLen, file_time,
 				       bitRate, NULL);
-		if (dc->seek) {
-			dc->seekError = 1;
-			dc->seek = 0;
+		if (dc.seek) {
+			dc.seekError = 1;
+			dc.seek = 0;
 			decoder_wakeup_player();
-		} else if (dc->stop) {
+		} else if (dc.stop) {
 			eof = 1;
 			break;
 		}
@@ -414,12 +414,12 @@ static int aac_decode(OutputBuffer * cb, DecoderControl * dc, char *path)
 	if (b.buffer)
 		free(b.buffer);
 
-	if (dc->state != DECODE_STATE_DECODE)
+	if (dc.state != DECODE_STATE_DECODE)
 		return -1;
 
-	if (dc->seek) {
-		dc->seekError = 1;
-		dc->seek = 0;
+	if (dc.seek) {
+		dc.seekError = 1;
+		dc.seek = 0;
 		decoder_wakeup_player();
 	}
 

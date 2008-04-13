@@ -84,8 +84,7 @@ static uint32_t mp4_inputStreamSeekCallback(void *inStream, uint64_t position)
 	return seekInputStream((InputStream *) inStream, position, SEEK_SET);
 }
 
-static int mp4_decode(OutputBuffer * cb, DecoderControl * dc,
-                      InputStream * inStream)
+static int mp4_decode(OutputBuffer * cb, InputStream * inStream)
 {
 	mp4ff_t *mp4fh;
 	mp4ff_callback_t *mp4cb;
@@ -146,7 +145,7 @@ static int mp4_decode(OutputBuffer * cb, DecoderControl * dc,
 #endif
 	faacDecSetConfiguration(decoder, config);
 
-	dc->audioFormat.bits = 16;
+	dc.audioFormat.bits = 16;
 
 	mp4Buffer = NULL;
 	mp4BufferSize = 0;
@@ -161,8 +160,8 @@ static int mp4_decode(OutputBuffer * cb, DecoderControl * dc,
 		return -1;
 	}
 
-	dc->audioFormat.sampleRate = sampleRate;
-	dc->audioFormat.channels = channels;
+	dc.audioFormat.sampleRate = sampleRate;
+	dc.audioFormat.channels = channels;
 	file_time = mp4ff_get_track_duration_use_offsets(mp4fh, track);
 	scale = mp4ff_time_scale(mp4fh, track);
 
@@ -176,7 +175,7 @@ static int mp4_decode(OutputBuffer * cb, DecoderControl * dc,
 		free(mp4cb);
 		return -1;
 	}
-	dc->totalTime = ((float)file_time) / scale;
+	dc.totalTime = ((float)file_time) / scale;
 
 	numSamples = mp4ff_num_samples(mp4fh, track);
 
@@ -185,13 +184,13 @@ static int mp4_decode(OutputBuffer * cb, DecoderControl * dc,
 	seekTable = xmalloc(sizeof(float) * numSamples);
 
 	for (sampleId = 0; sampleId < numSamples && !eof; sampleId++) {
-		if (dc->seek)
+		if (dc.seek)
 			seeking = 1;
 
 		if (seeking && seekTableEnd > 1 &&
-		    seekTable[seekTableEnd] >= dc->seekWhere) {
+		    seekTable[seekTableEnd] >= dc.seekWhere) {
 			int i = 2;
-			while (seekTable[i] < dc->seekWhere)
+			while (seekTable[i] < dc.seekWhere)
 				i++;
 			sampleId = i - 1;
 			file_time = seekTable[sampleId];
@@ -213,14 +212,14 @@ static int mp4_decode(OutputBuffer * cb, DecoderControl * dc,
 			dur -= offset;
 		file_time += ((float)dur) / scale;
 
-		if (seeking && file_time > dc->seekWhere)
+		if (seeking && file_time > dc.seekWhere)
 			seekPositionFound = 1;
 
 		if (seeking && seekPositionFound) {
 			seekPositionFound = 0;
 			clearOutputBuffer(cb);
 			seeking = 0;
-			dc->seek = 0;
+			dc.seek = 0;
 			decoder_wakeup_player();
 		}
 
@@ -248,16 +247,16 @@ static int mp4_decode(OutputBuffer * cb, DecoderControl * dc,
 			break;
 		}
 
-		if (dc->state != DECODE_STATE_DECODE) {
+		if (dc.state != DECODE_STATE_DECODE) {
 			channels = frameInfo.channels;
 #ifdef HAVE_FAACDECFRAMEINFO_SAMPLERATE
 			scale = frameInfo.samplerate;
 #endif
-			dc->audioFormat.sampleRate = scale;
-			dc->audioFormat.channels = frameInfo.channels;
-			getOutputAudioFormat(&(dc->audioFormat),
+			dc.audioFormat.sampleRate = scale;
+			dc.audioFormat.channels = frameInfo.channels;
+			getOutputAudioFormat(&(dc.audioFormat),
 					     &(cb->audioFormat));
-			dc->state = DECODE_STATE_DECODE;
+			dc.state = DECODE_STATE_DECODE;
 		}
 
 		if (channels * (unsigned long)(dur + offset) > frameInfo.samples) {
@@ -278,10 +277,10 @@ static int mp4_decode(OutputBuffer * cb, DecoderControl * dc,
 
 		sampleBuffer += offset * channels * 2;
 
-		sendDataToOutputBuffer(cb, inStream, dc, 1, sampleBuffer,
+		sendDataToOutputBuffer(cb, inStream, 1, sampleBuffer,
 				       sampleBufferLen, file_time,
 				       bitRate, NULL);
-		if (dc->stop) {
+		if (dc.stop) {
 			eof = 1;
 			break;
 		}
@@ -292,12 +291,12 @@ static int mp4_decode(OutputBuffer * cb, DecoderControl * dc,
 	mp4ff_close(mp4fh);
 	free(mp4cb);
 
-	if (dc->state != DECODE_STATE_DECODE)
+	if (dc.state != DECODE_STATE_DECODE)
 		return -1;
 
-	if (dc->seek && seeking) {
+	if (dc.seek && seeking) {
 		clearOutputBuffer(cb);
-		dc->seek = 0;
+		dc.seek = 0;
 		decoder_wakeup_player();
 	}
 	flushOutputBuffer(cb);

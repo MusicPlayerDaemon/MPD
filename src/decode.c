@@ -32,37 +32,37 @@ void decoder_wakeup_player(void)
 	wakeup_player_nb();
 }
 
-void decoder_sleep(DecoderControl * dc)
+void decoder_sleep(void)
 {
-	notifyWait(&dc->notify);
+	notifyWait(&dc.notify);
 	wakeup_player_nb();
 }
 
-static void player_wakeup_decoder_nb(DecoderControl * dc)
+static void player_wakeup_decoder_nb(void)
 {
-	notifySignal(&dc->notify);
+	notifySignal(&dc.notify);
 }
 
 /* called from player_task */
-static void player_wakeup_decoder(DecoderControl * dc)
+static void player_wakeup_decoder(void)
 {
-	notifySignal(&dc->notify);
+	notifySignal(&dc.notify);
 	player_sleep();
 }
 
-static void stopDecode(DecoderControl * dc)
+static void stopDecode(void)
 {
-	if (dc->start || dc->state != DECODE_STATE_STOP) {
-		dc->stop = 1;
-		do { player_wakeup_decoder_nb(dc); } while (dc->stop);
+	if (dc.start || dc.state != DECODE_STATE_STOP) {
+		dc.stop = 1;
+		do { player_wakeup_decoder_nb(); } while (dc.stop);
 	}
 }
 
-static void quitDecode(DecoderControl * dc)
+static void quitDecode(void)
 {
-	stopDecode(dc);
+	stopDecode();
 	pc.state = PLAYER_STATE_STOP;
-	dc->seek = 0;
+	dc.seek = 0;
 	pc.play = 0;
 	pc.stop = 0;
 	pc.pause = 0;
@@ -93,16 +93,15 @@ static unsigned calculateCrossFadeChunks(AudioFormat * af, float totalTime)
 	return chunks;
 }
 
-static int waitOnDecode(DecoderControl * dc,
-			OutputBuffer * cb, int *decodeWaitedOn)
+static int waitOnDecode(OutputBuffer * cb, int *decodeWaitedOn)
 {
-	while (dc->start)
-		player_wakeup_decoder(dc);
+	while (dc.start)
+		player_wakeup_decoder();
 
-	if (dc->error != DECODE_ERROR_NOERROR) {
+	if (dc.error != DECODE_ERROR_NOERROR) {
 		pc.errored_song = pc.current_song;
 		pc.error = PLAYER_ERROR_FILE;
-		quitDecode(dc);
+		quitDecode();
 		return -1;
 	}
 
@@ -116,31 +115,30 @@ static int waitOnDecode(DecoderControl * dc,
 	return 0;
 }
 
-static int decodeSeek(DecoderControl * dc,
-		      OutputBuffer * cb, int *decodeWaitedOn, int *next)
+static int decodeSeek(OutputBuffer * cb, int *decodeWaitedOn, int *next)
 {
 	int ret = -1;
 
-	if (dc->state == DECODE_STATE_STOP ||
-	    dc->error != DECODE_ERROR_NOERROR ||
-	    dc->current_song != pc.current_song) {
-		stopDecode(dc);
+	if (dc.state == DECODE_STATE_STOP ||
+	    dc.error != DECODE_ERROR_NOERROR ||
+	    dc.current_song != pc.current_song) {
+		stopDecode();
 		*next = -1;
 		clearOutputBuffer(cb);
-		dc->error = DECODE_ERROR_NOERROR;
-		dc->start = 1;
-		waitOnDecode(dc, cb, decodeWaitedOn);
+		dc.error = DECODE_ERROR_NOERROR;
+		dc.start = 1;
+		waitOnDecode(cb, decodeWaitedOn);
 	}
-	if (dc->state != DECODE_STATE_STOP && dc->seekable) {
+	if (dc.state != DECODE_STATE_STOP && dc.seekable) {
 		*next = -1;
-		dc->seekWhere = pc.seekWhere > pc.totalTime - 0.1 ?
+		dc.seekWhere = pc.seekWhere > pc.totalTime - 0.1 ?
 		    pc.totalTime - 0.1 : pc.seekWhere;
-		dc->seekWhere = 0 > dc->seekWhere ? 0 : dc->seekWhere;
-		dc->seekError = 0;
-		dc->seek = 1;
-		do { player_wakeup_decoder(dc); } while (dc->seek);
-		if (!dc->seekError) {
-			pc.elapsedTime = dc->seekWhere;
+		dc.seekWhere = 0 > dc.seekWhere ? 0 : dc.seekWhere;
+		dc.seekError = 0;
+		dc.seek = 1;
+		do { player_wakeup_decoder(); } while (dc.seek);
+		if (!dc.seekError) {
+			pc.elapsedTime = dc.seekWhere;
 			ret = 0;
 		}
 	}
@@ -150,8 +148,7 @@ static int decodeSeek(DecoderControl * dc,
 	return ret;
 }
 
-static void processDecodeInput(DecoderControl * dc,
-			       OutputBuffer * cb,
+static void processDecodeInput(OutputBuffer * cb,
 			       int *pause_r, unsigned int *bbp_r,
 			       int *doCrossFade_r,
 			       int *decodeWaitedOn_r,
@@ -195,14 +192,14 @@ static void processDecodeInput(DecoderControl * dc,
 	}
 	if(pc.seek) {
 		dropBufferedAudio();
-		if(decodeSeek(dc,cb,decodeWaitedOn_r,next_r) == 0) {
+		if (decodeSeek(cb, decodeWaitedOn_r, next_r) == 0) {
 			*doCrossFade_r = 0;
 			*bbp_r = 0;
 		}
 	}
 }
 
-static void decodeStart(OutputBuffer * cb, DecoderControl * dc)
+static void decodeStart(OutputBuffer * cb)
 {
 	int ret;
 	int close_instream = 1;
@@ -212,7 +209,7 @@ static void decodeStart(OutputBuffer * cb, DecoderControl * dc)
 	char path_max_utf8[MPD_PATH_MAX];
 
 	if (!get_song_url(path_max_utf8, pc.current_song)) {
-		dc->error = DECODE_ERROR_FILE;
+		dc.error = DECODE_ERROR_FILE;
 		goto stop_no_close;
 	}
 	if (!isRemoteUrl(path_max_utf8)) {
@@ -220,19 +217,19 @@ static void decodeStart(OutputBuffer * cb, DecoderControl * dc)
 		          utf8_to_fs_charset(path_max_fs, path_max_utf8));
 	}
 
-	dc->current_song = pc.current_song; /* NEED LOCK */
+	dc.current_song = pc.current_song; /* NEED LOCK */
 	if (openInputStream(&inStream, path_max_fs) < 0) {
-		dc->error = DECODE_ERROR_FILE;
+		dc.error = DECODE_ERROR_FILE;
 		goto stop_no_close;
 	}
 
-	dc->state = DECODE_STATE_START;
-	dc->start = 0;
+	dc.state = DECODE_STATE_START;
+	dc.start = 0;
 
 	/* for http streams, seekable is determined in bufferInputStream */
-	dc->seekable = inStream.seekable;
+	dc.seekable = inStream.seekable;
 
-	if (dc->stop)
+	if (dc.stop)
 		goto stop;
 
 	ret = DECODE_ERROR_UNKTYPE;
@@ -248,7 +245,7 @@ static void decodeStart(OutputBuffer * cb, DecoderControl * dc)
 			if (plugin->tryDecodeFunc
 			    && !plugin->tryDecodeFunc(&inStream))
 				continue;
-			ret = plugin->streamDecodeFunc(cb, dc, &inStream);
+			ret = plugin->streamDecodeFunc(cb, &inStream);
 			break;
 		}
 
@@ -265,7 +262,7 @@ static void decodeStart(OutputBuffer * cb, DecoderControl * dc)
 				if (plugin->tryDecodeFunc &&
 				    !plugin->tryDecodeFunc(&inStream))
 					continue;
-				ret = plugin->streamDecodeFunc(cb, dc, &inStream);
+				ret = plugin->streamDecodeFunc(cb, &inStream);
 				break;
 			}
 		}
@@ -276,8 +273,7 @@ static void decodeStart(OutputBuffer * cb, DecoderControl * dc)
 			/* we already know our mp3Plugin supports streams, no
 			 * need to check for stream{Types,DecodeFunc} */
 			if ((plugin = getInputPluginFromName("mp3"))) {
-				ret = plugin->streamDecodeFunc(cb, dc,
-				                               &inStream);
+				ret = plugin->streamDecodeFunc(cb, &inStream);
 			}
 		}
 	} else {
@@ -294,11 +290,10 @@ static void decodeStart(OutputBuffer * cb, DecoderControl * dc)
 			if (plugin->fileDecodeFunc) {
 				closeInputStream(&inStream);
 				close_instream = 0;
-				ret = plugin->fileDecodeFunc(cb, dc,
-				                             path_max_fs);
+				ret = plugin->fileDecodeFunc(cb, path_max_fs);
 				break;
 			} else if (plugin->streamDecodeFunc) {
-				ret = plugin->streamDecodeFunc(cb, dc, &inStream);
+				ret = plugin->streamDecodeFunc(cb, &inStream);
 				break;
 			}
 		}
@@ -307,49 +302,48 @@ static void decodeStart(OutputBuffer * cb, DecoderControl * dc)
 	if (ret < 0 || ret == DECODE_ERROR_UNKTYPE) {
 		pc.errored_song = pc.current_song;
 		if (ret != DECODE_ERROR_UNKTYPE)
-			dc->error = DECODE_ERROR_FILE;
+			dc.error = DECODE_ERROR_FILE;
 		else
-			dc->error = DECODE_ERROR_UNKTYPE;
+			dc.error = DECODE_ERROR_UNKTYPE;
 	}
 
 stop:
 	if (close_instream)
 		closeInputStream(&inStream);
 stop_no_close:
-	dc->state = DECODE_STATE_STOP;
-	dc->stop = 0;
+	dc.state = DECODE_STATE_STOP;
+	dc.stop = 0;
 }
 
-static void * decoder_task(void *arg)
+static void * decoder_task(mpd_unused void *arg)
 {
-	DecoderControl *dc = arg;
 	OutputBuffer *cb = &(getPlayerData()->buffer);
 
-	notifyEnter(&dc->notify);
+	notifyEnter(&dc.notify);
 
 	while (1) {
-		if (dc->start || dc->seek) {
-			decodeStart(cb, dc);
-		} else if (dc->stop) {
-			dc->state = DECODE_STATE_STOP;
-			dc->stop = 0;
+		if (dc.start || dc.seek) {
+			decodeStart(cb);
+		} else if (dc.stop) {
+			dc.state = DECODE_STATE_STOP;
+			dc.stop = 0;
 			decoder_wakeup_player();
 		} else {
-			decoder_sleep(dc);
+			decoder_sleep();
 		}
 	}
 
 	return NULL;
 }
 
-void decoderInit(DecoderControl * dc)
+void decoderInit(void)
 {
 	pthread_attr_t attr;
 	pthread_t decoder_thread;
 
 	pthread_attr_init(&attr);
 	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
-	if (pthread_create(&decoder_thread, &attr, decoder_task, dc))
+	if (pthread_create(&decoder_thread, &attr, decoder_task, NULL))
 		FATAL("Failed to spawn decoder task: %s\n", strerror(errno));
 }
 
@@ -387,7 +381,7 @@ static int playChunk(OutputBufferChunk * chunk,
 	return 0;
 }
 
-static void decodeParent(DecoderControl * dc, OutputBuffer * cb)
+static void decodeParent(OutputBuffer * cb)
 {
 	int do_pause = 0;
 	int buffering = 1;
@@ -405,7 +399,7 @@ static void decodeParent(DecoderControl * dc, OutputBuffer * cb)
 	/** the position of the first chunk in the next song */
 	int next = -1;
 
-	if (waitOnDecode(dc, cb, &decodeWaitedOn) < 0)
+	if (waitOnDecode(cb, &decodeWaitedOn) < 0)
 		return;
 
 	pc.elapsedTime = 0;
@@ -414,7 +408,7 @@ static void decodeParent(DecoderControl * dc, OutputBuffer * cb)
 	wakeup_main_task();
 
 	while (1) {
-		processDecodeInput(dc, cb,
+		processDecodeInput(cb,
 				   &do_pause, &bbp, &doCrossFade,
 				   &decodeWaitedOn, &next);
 		if (pc.stop) {
@@ -433,8 +427,8 @@ static void decodeParent(DecoderControl * dc, OutputBuffer * cb)
 		}
 
 		if (decodeWaitedOn) {
-			if(dc->state!=DECODE_STATE_START &&
-			   dc->error==DECODE_ERROR_NOERROR) {
+			if(dc.state!=DECODE_STATE_START &&
+			   dc.error==DECODE_ERROR_NOERROR) {
 				/* the decoder is ready and ok */
 				decodeWaitedOn = 0;
 				if(openAudioDevice(&(cb->audioFormat))<0) {
@@ -446,19 +440,19 @@ static void decodeParent(DecoderControl * dc, OutputBuffer * cb)
 					      get_song_url(tmp, pc.current_song));
 					break;
 				} else {
-					player_wakeup_decoder(dc);
+					player_wakeup_decoder();
 				}
 				if (do_pause) {
 					dropBufferedAudio();
 					closeAudioDevice();
 				}
-				pc.totalTime = dc->totalTime;
-				pc.sampleRate = dc->audioFormat.sampleRate;
-				pc.bits = dc->audioFormat.bits;
-				pc.channels = dc->audioFormat.channels;
+				pc.totalTime = dc.totalTime;
+				pc.sampleRate = dc.audioFormat.sampleRate;
+				pc.bits = dc.audioFormat.bits;
+				pc.channels = dc.audioFormat.channels;
 				sizeToTime = audioFormatSizeToTime(&cb->audioFormat);
 			}
-			else if(dc->state!=DECODE_STATE_START) {
+			else if(dc.state!=DECODE_STATE_START) {
 				/* the decoder failed */
 				pc.errored_song = pc.current_song;
 				pc.error = PLAYER_ERROR_FILE;
@@ -472,25 +466,25 @@ static void decodeParent(DecoderControl * dc, OutputBuffer * cb)
 			}
 		}
 
-		if (dc->state == DECODE_STATE_STOP &&
+		if (dc.state == DECODE_STATE_STOP &&
 		    pc.queueState == PLAYER_QUEUE_FULL &&
 		    pc.queueLockState == PLAYER_QUEUE_UNLOCKED) {
 			/* the decoder has finished the current song;
 			   make it decode the next song */
 			next = cb->end;
-			dc->start = 1;
+			dc.start = 1;
 			pc.queueState = PLAYER_QUEUE_DECODE;
 			wakeup_main_task();
-			player_wakeup_decoder_nb(dc);
+			player_wakeup_decoder_nb();
 		}
-		if (next >= 0 && doCrossFade == 0 && !dc->start &&
-		    dc->state != DECODE_STATE_START) {
+		if (next >= 0 && doCrossFade == 0 && !dc.start &&
+		    dc.state != DECODE_STATE_START) {
 			/* enable cross fading in this song?  if yes,
 			   calculate how many chunks will be required
 			   for it */
 			crossFadeChunks =
 				calculateCrossFadeChunks(&(cb->audioFormat),
-							 dc->totalTime);
+							 dc.totalTime);
 			if (crossFadeChunks > 0) {
 				doCrossFade = 1;
 				nextChunk = -1;
@@ -528,7 +522,7 @@ static void decodeParent(DecoderControl * dc, OutputBuffer * cb)
 				} else {
 					/* there are not enough
 					   decoded chunks yet */
-					if (dc->state == DECODE_STATE_STOP) {
+					if (dc.state == DECODE_STATE_STOP) {
 						/* the decoder isn't
 						   running, abort
 						   cross fading */
@@ -547,7 +541,7 @@ static void decodeParent(DecoderControl * dc, OutputBuffer * cb)
 				      sizeToTime) < 0)
 				break;
 			outputBufferShift(cb);
-			player_wakeup_decoder_nb(dc);
+			player_wakeup_decoder_nb();
 		} else if (!outputBufferEmpty(cb) && (int)cb->begin == next) {
 			/* at the beginning of a new song */
 
@@ -570,12 +564,12 @@ static void decodeParent(DecoderControl * dc, OutputBuffer * cb)
 				break;
 
 			next = -1;
-			if (waitOnDecode(dc, cb, &decodeWaitedOn) < 0)
+			if (waitOnDecode(cb, &decodeWaitedOn) < 0)
 				return;
 
 			pc.queueState = PLAYER_QUEUE_EMPTY;
 			wakeup_main_task();
-		} else if (dc->state == DECODE_STATE_STOP && !dc->start) {
+		} else if (dc.state == DECODE_STATE_STOP && !dc.start) {
 			break;
 		} else {
 			/*DEBUG("waiting for decoded audio, play silence\n");*/
@@ -584,7 +578,7 @@ static void decodeParent(DecoderControl * dc, OutputBuffer * cb)
 		}
 	}
 
-	quitDecode(dc);
+	quitDecode();
 }
 
 /* decode w/ buffering
@@ -595,17 +589,15 @@ static void decodeParent(DecoderControl * dc, OutputBuffer * cb)
 void decode(void)
 {
 	OutputBuffer *cb;
-	DecoderControl *dc;
 
 	cb = &(getPlayerData()->buffer);
 	clearOutputBuffer(cb);
 
-	dc = &(getPlayerData()->decoderControl);
-	dc->error = DECODE_ERROR_NOERROR;
-	dc->seek = 0;
-	dc->stop = 0;
-	dc->start = 1;
-	do { player_wakeup_decoder(dc); } while (dc->start);
+	dc.error = DECODE_ERROR_NOERROR;
+	dc.seek = 0;
+	dc.stop = 0;
+	dc.start = 1;
+	do { player_wakeup_decoder(); } while (dc.start);
 
-	decodeParent(dc, cb);
+	decodeParent(cb);
 }

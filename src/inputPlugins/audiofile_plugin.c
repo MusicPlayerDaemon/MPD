@@ -45,7 +45,7 @@ static int getAudiofileTotalTime(char *file)
 	return total_time;
 }
 
-static int audiofile_decode(OutputBuffer * cb, DecoderControl * dc, char *path)
+static int audiofile_decode(OutputBuffer * cb, char *path)
 {
 	int fs, frame_count;
 	AFfilehandle af_fp;
@@ -67,41 +67,41 @@ static int audiofile_decode(OutputBuffer * cb, DecoderControl * dc, char *path)
 	afSetVirtualSampleFormat(af_fp, AF_DEFAULT_TRACK,
 	                         AF_SAMPFMT_TWOSCOMP, 16);
 	afGetVirtualSampleFormat(af_fp, AF_DEFAULT_TRACK, &fs, &bits);
-	dc->audioFormat.bits = (mpd_uint8)bits;
-	dc->audioFormat.sampleRate =
+	dc.audioFormat.bits = (mpd_uint8)bits;
+	dc.audioFormat.sampleRate =
 	                      (unsigned int)afGetRate(af_fp, AF_DEFAULT_TRACK);
-	dc->audioFormat.channels =
+	dc.audioFormat.channels =
 	              (mpd_uint8)afGetVirtualChannels(af_fp, AF_DEFAULT_TRACK);
-	getOutputAudioFormat(&(dc->audioFormat), &(cb->audioFormat));
+	getOutputAudioFormat(&(dc.audioFormat), &(cb->audioFormat));
 
 	frame_count = afGetFrameCount(af_fp, AF_DEFAULT_TRACK);
 
-	dc->totalTime =
-	    ((float)frame_count / (float)dc->audioFormat.sampleRate);
+	dc.totalTime =
+	    ((float)frame_count / (float)dc.audioFormat.sampleRate);
 
-	bitRate = (mpd_uint16)(st.st_size * 8.0 / dc->totalTime / 1000.0 + 0.5);
+	bitRate = (mpd_uint16)(st.st_size * 8.0 / dc.totalTime / 1000.0 + 0.5);
 
-	if (dc->audioFormat.bits != 8 && dc->audioFormat.bits != 16) {
+	if (dc.audioFormat.bits != 8 && dc.audioFormat.bits != 16) {
 		ERROR("Only 8 and 16-bit files are supported. %s is %i-bit\n",
-		      path, dc->audioFormat.bits);
+		      path, dc.audioFormat.bits);
 		afCloseFile(af_fp);
 		return -1;
 	}
 
 	fs = (int)afGetVirtualFrameSize(af_fp, AF_DEFAULT_TRACK, 1);
 
-	dc->state = DECODE_STATE_DECODE;
+	dc.state = DECODE_STATE_DECODE;
 	{
 		int ret, eof = 0, current = 0;
 		char chunk[CHUNK_SIZE];
 
 		while (!eof) {
-			if (dc->seek) {
+			if (dc.seek) {
 				clearOutputBuffer(cb);
-				current = dc->seekWhere *
-				    dc->audioFormat.sampleRate;
+				current = dc.seekWhere *
+				    dc.audioFormat.sampleRate;
 				afSeekFrame(af_fp, AF_DEFAULT_TRACK, current);
-				dc->seek = 0;
+				dc.seek = 0;
 				decoder_wakeup_player();
 			}
 
@@ -114,15 +114,14 @@ static int audiofile_decode(OutputBuffer * cb, DecoderControl * dc, char *path)
 				current += ret;
 				sendDataToOutputBuffer(cb,
 						       NULL,
-						       dc,
 						       1,
 						       chunk,
 						       ret * fs,
 						       (float)current /
-						       (float)dc->audioFormat.
+						       (float)dc.audioFormat.
 						       sampleRate, bitRate,
 						       NULL);
-				if (dc->stop)
+				if (dc.stop)
 					break;
 			}
 		}

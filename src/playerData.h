@@ -27,10 +27,10 @@
 
 extern unsigned int buffered_before_play;
 extern PlayerControl pc;
+extern DecoderControl dc;
 
 typedef struct _PlayerData {
 	OutputBuffer buffer;
-	DecoderControl decoderControl;
 	mpd_uint8 *audioDeviceStates;
 } PlayerData;
 

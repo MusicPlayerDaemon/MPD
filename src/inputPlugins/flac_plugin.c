@@ -41,15 +41,14 @@ static flac_read_status flacRead(const flac_decoder * flacDec,
 
 	while (1) {
 		r = readFromInputStream(data->inStream, (void *)buf, 1, *bytes);
-		if (r == 0 && !inputStreamAtEOF(data->inStream) &&
-		    !data->dc->stop)
+		if (r == 0 && !inputStreamAtEOF(data->inStream) && !dc.stop)
 			my_usleep(10000);
 		else
 			break;
 	}
 	*bytes = r;
 
-	if (r == 0 && !data->dc->stop) {
+	if (r == 0 && !dc.stop) {
 		if (inputStreamAtEOF(data->inStream))
 			return flac_read_status_eof;
 		else
@@ -248,7 +247,7 @@ static FLAC__StreamDecoderWriteStatus flacWrite(const flac_decoder *dec,
 	FLAC__uint32 samples = frame->header.blocksize;
 	unsigned int c_samp;
 	const unsigned int num_channels = frame->header.channels;
-	const unsigned int bytes_per_sample = (data->dc->audioFormat.bits / 8);
+	const unsigned int bytes_per_sample = (dc.audioFormat.bits / 8);
 	const unsigned int bytes_per_channel =
 		bytes_per_sample * frame->header.channels;
 	const unsigned int max_samples = FLAC_CHUNK_SIZE / bytes_per_channel;
@@ -256,7 +255,7 @@ static FLAC__StreamDecoderWriteStatus flacWrite(const flac_decoder *dec,
 	float timeChange;
 	FLAC__uint64 newPosition = 0;
 
-	assert(data->dc->audioFormat.bits > 0);
+	assert(dc.audioFormat.bits > 0);
 
 	timeChange = ((float)samples) / frame->header.sample_rate;
 	data->time += timeChange;
@@ -292,7 +291,7 @@ static FLAC__StreamDecoderWriteStatus flacWrite(const flac_decoder *dec,
 				FLAC__STREAM_DECODER_WRITE_STATUS_ABORT;
 		}
 		data->chunk_length = 0;
-		if (data->dc->seek) {
+		if (dc.seek) {
 			return
 				FLAC__STREAM_DECODER_WRITE_STATUS_CONTINUE;
 		}
@@ -382,7 +381,7 @@ static MpdTag *flacTagDup(char *file)
 	return ret;
 }
 
-static int flac_decode_internal(OutputBuffer * cb, DecoderControl * dc,
+static int flac_decode_internal(OutputBuffer * cb,
                                InputStream * inStream, int is_ogg)
 {
 	flac_decoder *flacDec;
@@ -391,7 +390,7 @@ static int flac_decode_internal(OutputBuffer * cb, DecoderControl * dc,
 
 	if (!(flacDec = flac_new()))
 		return -1;
-	init_FlacData(&data, cb, dc, inStream);
+	init_FlacData(&data, cb, inStream);
 
 #if defined(FLAC_API_VERSION_CURRENT) && FLAC_API_VERSION_CURRENT > 7
         if(!FLAC__stream_decoder_set_metadata_respond(flacDec, FLAC__METADATA_TYPE_VORBIS_COMMENT))
@@ -421,33 +420,33 @@ static int flac_decode_internal(OutputBuffer * cb, DecoderControl * dc,
 		}
 	}
 
-	dc->state = DECODE_STATE_DECODE;
+	dc.state = DECODE_STATE_DECODE;
 
 	while (1) {
 		if (!flac_process_single(flacDec))
 			break;
 		if (flac_get_state(flacDec) == flac_decoder_eof)
 			break;
-		if (dc->seek) {
-			FLAC__uint64 sampleToSeek = dc->seekWhere *
-			    dc->audioFormat.sampleRate + 0.5;
+		if (dc.seek) {
+			FLAC__uint64 sampleToSeek = dc.seekWhere *
+			    dc.audioFormat.sampleRate + 0.5;
 			if (flac_seek_absolute(flacDec, sampleToSeek)) {
 				clearOutputBuffer(cb);
 				data.time = ((float)sampleToSeek) /
-				    dc->audioFormat.sampleRate;
+				    dc.audioFormat.sampleRate;
 				data.position = 0;
 			} else
-				dc->seekError = 1;
-			dc->seek = 0;
+				dc.seekError = 1;
+			dc.seek = 0;
 			decoder_wakeup_player();
 		}
 	}
-	if (!dc->stop) {
+	if (!dc.stop) {
 		flacPrintErroredState(flac_get_state(flacDec));
 		flac_finish(flacDec);
 	}
 	/* send last little bit */
-	if (data.chunk_length > 0 && !dc->stop) {
+	if (data.chunk_length > 0 && !dc.stop) {
 		flacSendChunk(&data);
 		flushOutputBuffer(data.cb);
 	}
@@ -466,10 +465,9 @@ fail:
 	return 0;
 }
 
-static int flac_decode(OutputBuffer * cb, DecoderControl * dc,
-                       InputStream * inStream)
+static int flac_decode(OutputBuffer * cb, InputStream * inStream)
 {
-	return flac_decode_internal(cb, dc, inStream, 0);
+	return flac_decode_internal(cb, inStream, 0);
 }
 
 #if !defined(FLAC_API_VERSION_CURRENT) || FLAC_API_VERSION_CURRENT <= 7
@@ -508,10 +506,9 @@ out:
 	return ret;
 }
 
-static int oggflac_decode(OutputBuffer * cb, DecoderControl * dc,
-		          InputStream * inStream)
+static int oggflac_decode(OutputBuffer * cb, InputStream * inStream)
 {
-	return flac_decode_internal(cb, dc, inStream, 1);
+	return flac_decode_internal(cb, inStream, 1);
 }
 
 static unsigned int oggflac_try_decode(InputStream * inStream)

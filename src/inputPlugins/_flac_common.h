@@ -149,15 +149,13 @@ typedef struct {
 	unsigned int bitRate;
 	FLAC__uint64 position;
 	OutputBuffer *cb;
-	DecoderControl *dc;
 	InputStream *inStream;
 	ReplayGainInfo *replayGainInfo;
 	MpdTag *tag;
 } FlacData;
 
 /* initializes a given FlacData struct */
-void init_FlacData(FlacData * data, OutputBuffer * cb,
-		   DecoderControl * dc, InputStream * inStream);
+void init_FlacData(FlacData * data, OutputBuffer * cb, InputStream * inStream);
 void flac_metadata_common_cb(const FLAC__StreamMetadata * block,
 			     FlacData * data);
 void flac_error_common_cb(const char *plugin,
@@ -171,7 +169,7 @@ MpdTag *copyVorbisCommentBlockToMpdTag(const FLAC__StreamMetadata * block,
 static inline int flacSendChunk(FlacData * data)
 {
 	if (sendDataToOutputBuffer(data->cb, data->inStream,
-	                           data->dc, 1, data->chunk,
+	                           1, data->chunk,
 				   data->chunk_length, data->time,
 				   data->bitRate,
 				   data->replayGainInfo) ==

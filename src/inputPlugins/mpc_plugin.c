@@ -33,7 +33,6 @@
 
 typedef struct _MpcCallbackData {
 	InputStream *inStream;
-	DecoderControl *dc;
 } MpcCallbackData;
 
 static mpc_int32_t mpc_read_cb(void *vdata, void *ptr, mpc_int32_t size)
@@ -43,10 +42,9 @@ static mpc_int32_t mpc_read_cb(void *vdata, void *ptr, mpc_int32_t size)
 
 	while (1) {
 		ret = readFromInputStream(data->inStream, ptr, 1, size);
-		if (ret == 0 && !inputStreamAtEOF(data->inStream) &&
-		    (data->dc && !data->dc->stop)) {
+		if (ret == 0 && !inputStreamAtEOF(data->inStream) && !dc.stop)
 			my_usleep(10000);
-		} else
+		else
 			break;
 	}
 
@@ -113,8 +111,7 @@ static inline mpd_sint16 convertSample(MPC_SAMPLE_FORMAT sample)
 	return val;
 }
 
-static int mpc_decode(OutputBuffer * cb, DecoderControl * dc,
-		      InputStream * inStream)
+static int mpc_decode(OutputBuffer * cb, InputStream * inStream)
 {
 	mpc_decoder decoder;
 	mpc_reader reader;
@@ -139,7 +136,6 @@ static int mpc_decode(OutputBuffer * cb, DecoderControl * dc,
 	ReplayGainInfo *replayGainInfo = NULL;
 
 	data.inStream = inStream;
-	data.dc = dc;
 
 	reader.read = mpc_read_cb;
 	reader.seek = mpc_seek_cb;
@@ -151,7 +147,7 @@ static int mpc_decode(OutputBuffer * cb, DecoderControl * dc,
 	mpc_streaminfo_init(&info);
 
 	if ((ret = mpc_streaminfo_read(&info, &reader)) != ERROR_CODE_OK) {
-		if (!dc->stop) {
+		if (!dc.stop) {
 			ERROR("Not a valid musepack stream\n");
 			return -1;
 		}
@@ -161,20 +157,20 @@ static int mpc_decode(OutputBuffer * cb, DecoderControl * dc,
 	mpc_decoder_setup(&decoder, &reader);
 
 	if (!mpc_decoder_initialize(&decoder, &info)) {
-		if (!dc->stop) {
+		if (!dc.stop) {
 			ERROR("Not a valid musepack stream\n");
 			return -1;
 		}
 		return 0;
 	}
 
-	dc->totalTime = mpc_streaminfo_get_length(&info);
+	dc.totalTime = mpc_streaminfo_get_length(&info);
 
-	dc->audioFormat.bits = 16;
-	dc->audioFormat.channels = info.channels;
-	dc->audioFormat.sampleRate = info.sample_freq;
+	dc.audioFormat.bits = 16;
+	dc.audioFormat.channels = info.channels;
+	dc.audioFormat.sampleRate = info.sample_freq;
 
-	getOutputAudioFormat(&(dc->audioFormat), &(cb->audioFormat));
+	getOutputAudioFormat(&(dc.audioFormat), &(cb->audioFormat));
 
 	replayGainInfo = newReplayGainInfo();
 	replayGainInfo->albumGain = info.gain_album * 0.01;
@@ -182,18 +178,18 @@ static int mpc_decode(OutputBuffer * cb, DecoderControl * dc,
 	replayGainInfo->trackGain = info.gain_title * 0.01;
 	replayGainInfo->trackPeak = info.peak_title / 32767.0;
 
-	dc->state = DECODE_STATE_DECODE;
+	dc.state = DECODE_STATE_DECODE;
 
 	while (!eof) {
-		if (dc->seek) {
-			samplePos = dc->seekWhere * dc->audioFormat.sampleRate;
+		if (dc.seek) {
+			samplePos = dc.seekWhere * dc.audioFormat.sampleRate;
 			if (mpc_decoder_seek_sample(&decoder, samplePos)) {
 				clearOutputBuffer(cb);
 				s16 = (mpd_sint16 *) chunk;
 				chunkpos = 0;
 			} else
-				dc->seekError = 1;
-			dc->seek = 0;
+				dc.seekError = 1;
+			dc.seek = 0;
 			decoder_wakeup_player();
 		}
 
@@ -202,7 +198,7 @@ static int mpc_decode(OutputBuffer * cb, DecoderControl * dc,
 		ret = mpc_decoder_decode(&decoder, sample_buffer,
 					 &vbrUpdateAcc, &vbrUpdateBits);
 
-		if (ret <= 0 || dc->stop) {
+		if (ret <= 0 || dc.stop) {
 			eof = 1;
 			break;
 		}
@@ -220,12 +216,12 @@ static int mpc_decode(OutputBuffer * cb, DecoderControl * dc,
 
 			if (chunkpos >= MPC_CHUNK_SIZE) {
 				total_time = ((float)samplePos) /
-				    dc->audioFormat.sampleRate;
+				    dc.audioFormat.sampleRate;
 
 				bitRate = vbrUpdateBits *
-				    dc->audioFormat.sampleRate / 1152 / 1000;
+				    dc.audioFormat.sampleRate / 1152 / 1000;
 
-				sendDataToOutputBuffer(cb, inStream, dc,
+				sendDataToOutputBuffer(cb, inStream,
 						       inStream->seekable,
 						       chunk, chunkpos,
 						       total_time,
@@ -233,7 +229,7 @@ static int mpc_decode(OutputBuffer * cb, DecoderControl * dc,
 
 				chunkpos = 0;
 				s16 = (mpd_sint16 *) chunk;
-				if (dc->stop) {
+				if (dc.stop) {
 					eof = 1;
 					break;
 				}
@@ -241,13 +237,13 @@ static int mpc_decode(OutputBuffer * cb, DecoderControl * dc,
 		}
 	}
 
-	if (!dc->stop && chunkpos > 0) {
-		total_time = ((float)samplePos) / dc->audioFormat.sampleRate;
+	if (!dc.stop && chunkpos > 0) {
+		total_time = ((float)samplePos) / dc.audioFormat.sampleRate;
 
 		bitRate =
-		    vbrUpdateBits * dc->audioFormat.sampleRate / 1152 / 1000;
+		    vbrUpdateBits * dc.audioFormat.sampleRate / 1152 / 1000;
 
-		sendDataToOutputBuffer(cb, NULL, dc, inStream->seekable,
+		sendDataToOutputBuffer(cb, NULL, inStream->seekable,
 				       chunk, chunkpos, total_time, bitRate,
 				       replayGainInfo);
 	}
@@ -269,7 +265,6 @@ static float mpcGetTime(char *file)
 	MpcCallbackData data;
 
 	data.inStream = &inStream;
-	data.dc = NULL;
 
 	reader.read = mpc_read_cb;
 	reader.seek = mpc_seek_cb;

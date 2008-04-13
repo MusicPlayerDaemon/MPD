@@ -36,15 +36,13 @@
 #include <FLAC/format.h>
 #include <FLAC/metadata.h>
 
-void init_FlacData(FlacData * data, OutputBuffer * cb,
-		   DecoderControl * dc, InputStream * inStream)
+void init_FlacData(FlacData * data, OutputBuffer * cb, InputStream * inStream)
 {
 	data->chunk_length = 0;
 	data->time = 0;
 	data->position = 0;
 	data->bitRate = 0;
 	data->cb = cb;
-	data->dc = dc;
 	data->inStream = inStream;
 	data->replayGainInfo = NULL;
 	data->tag = NULL;
@@ -165,16 +163,15 @@ MpdTag *copyVorbisCommentBlockToMpdTag(const FLAC__StreamMetadata * block,
 void flac_metadata_common_cb(const FLAC__StreamMetadata * block,
 			     FlacData * data)
 {
-	DecoderControl *dc = data->dc;
 	const FLAC__StreamMetadata_StreamInfo *si = &(block->data.stream_info);
 
 	switch (block->type) {
 	case FLAC__METADATA_TYPE_STREAMINFO:
-		dc->audioFormat.bits = (mpd_sint8)si->bits_per_sample;
-		dc->audioFormat.sampleRate = si->sample_rate;
-		dc->audioFormat.channels = (mpd_sint8)si->channels;
-		dc->totalTime = ((float)si->total_samples) / (si->sample_rate);
-		getOutputAudioFormat(&(dc->audioFormat),
+		dc.audioFormat.bits = (mpd_sint8)si->bits_per_sample;
+		dc.audioFormat.sampleRate = si->sample_rate;
+		dc.audioFormat.channels = (mpd_sint8)si->channels;
+		dc.totalTime = ((float)si->total_samples) / (si->sample_rate);
+		getOutputAudioFormat(&(dc.audioFormat),
 				     &(data->cb->audioFormat));
 		break;
 	case FLAC__METADATA_TYPE_VORBIS_COMMENT:
@@ -188,7 +185,7 @@ void flac_error_common_cb(const char *plugin,
 			  const FLAC__StreamDecoderErrorStatus status,
 			  FlacData * data)
 {
-	if (data->dc->stop)
+	if (dc.stop)
 		return;
 
 	switch (status) {

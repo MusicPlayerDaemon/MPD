@@ -28,6 +28,7 @@ unsigned int buffered_before_play;
 
 static PlayerData playerData_pd;
 PlayerControl pc;
+DecoderControl dc;
 
 void initPlayerData(void)
 {
@@ -85,13 +86,9 @@ void initPlayerData(void)
 	pc.crossFade = crossfade;
 	pc.softwareVolume = 1000;
 
-	notifyInit(&playerData_pd.decoderControl.notify);
-	playerData_pd.decoderControl.stop = 0;
-	playerData_pd.decoderControl.start = 0;
-	playerData_pd.decoderControl.state = DECODE_STATE_STOP;
-	playerData_pd.decoderControl.seek = 0;
-	playerData_pd.decoderControl.error = DECODE_ERROR_NOERROR;
-	playerData_pd.decoderControl.current_song = NULL;
+	notifyInit(&dc.notify);
+	dc.state = DECODE_STATE_STOP;
+	dc.error = DECODE_ERROR_NOERROR;
 }
 
 PlayerData *getPlayerData(void)

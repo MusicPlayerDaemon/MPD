@@ -56,7 +56,6 @@
 
 typedef struct _OggCallbackData {
 	InputStream *inStream;
-	DecoderControl *dc;
 } OggCallbackData;
 
 static size_t ogg_read_cb(void *ptr, size_t size, size_t nmemb, void *vdata)
@@ -67,7 +66,7 @@ static size_t ogg_read_cb(void *ptr, size_t size, size_t nmemb, void *vdata)
 	while (1) {
 		ret = readFromInputStream(data->inStream, ptr, size, nmemb);
 		if (ret == 0 && !inputStreamAtEOF(data->inStream) &&
-		    !data->dc->stop) {
+		    !dc.stop) {
 			my_usleep(10000);
 		} else
 			break;
@@ -81,7 +80,7 @@ static size_t ogg_read_cb(void *ptr, size_t size, size_t nmemb, void *vdata)
 static int ogg_seek_cb(void *vdata, ogg_int64_t offset, int whence)
 {
 	const OggCallbackData *data = (const OggCallbackData *) vdata;
-	if(data->dc->stop)
+	if (dc.stop)
 		return -1;
 	return seekInputStream(data->inStream, offset, whence);
 }
@@ -217,8 +216,7 @@ static void putOggCommentsIntoOutputBuffer(OutputBuffer * cb, char *streamName,
 }
 
 /* public */
-static int oggvorbis_decode(OutputBuffer * cb, DecoderControl * dc,
-			    InputStream * inStream)
+static int oggvorbis_decode(OutputBuffer * cb, InputStream * inStream)
 {
 	OggVorbis_File vf;
 	ov_callbacks callbacks;
@@ -236,14 +234,13 @@ static int oggvorbis_decode(OutputBuffer * cb, DecoderControl * dc,
 	const char *errorStr;
 
 	data.inStream = inStream;
-	data.dc = dc;
 
 	callbacks.read_func = ogg_read_cb;
 	callbacks.seek_func = ogg_seek_cb;
 	callbacks.close_func = ogg_close_cb;
 	callbacks.tell_func = ogg_tell_cb;
 	if ((ret = ov_open_callbacks(&data, &vf, NULL, 0, callbacks)) < 0) {
-		if (!dc->stop) {
+		if (!dc.stop) {
 			switch (ret) {
 			case OV_EREAD:
 				errorStr = "read error";
@@ -270,19 +267,19 @@ static int oggvorbis_decode(OutputBuffer * cb, DecoderControl * dc,
 		}
 		return 0;
 	}
-	dc->totalTime = ov_time_total(&vf, -1);
-	if (dc->totalTime < 0)
-		dc->totalTime = 0;
-	dc->audioFormat.bits = 16;
+	dc.totalTime = ov_time_total(&vf, -1);
+	if (dc.totalTime < 0)
+		dc.totalTime = 0;
+	dc.audioFormat.bits = 16;
 
 	while (1) {
-		if (dc->seek) {
-			if (0 == ov_time_seek_page(&vf, dc->seekWhere)) {
+		if (dc.seek) {
+			if (0 == ov_time_seek_page(&vf, dc.seekWhere)) {
 				clearOutputBuffer(cb);
 				chunkpos = 0;
 			} else
-				dc->seekError = 1;
-			dc->seek = 0;
+				dc.seekError = 1;
+			dc.seek = 0;
 			decoder_wakeup_player();
 		}
 		ret = ov_read(&vf, chunk + chunkpos,
@@ -291,12 +288,12 @@ static int oggvorbis_decode(OutputBuffer * cb, DecoderControl * dc,
 		if (current_section != prev_section) {
 			/*printf("new song!\n"); */
 			vorbis_info *vi = ov_info(&vf, -1);
-			dc->audioFormat.channels = vi->channels;
-			dc->audioFormat.sampleRate = vi->rate;
-			if (dc->state == DECODE_STATE_START) {
-				getOutputAudioFormat(&(dc->audioFormat),
+			dc.audioFormat.channels = vi->channels;
+			dc.audioFormat.sampleRate = vi->rate;
+			if (dc.state == DECODE_STATE_START) {
+				getOutputAudioFormat(&(dc.audioFormat),
 						     &(cb->audioFormat));
-				dc->state = DECODE_STATE_DECODE;
+				dc.state = DECODE_STATE_DECODE;
 			}
 			comments = ov_comment(&vf, -1)->user_comments;
 			putOggCommentsIntoOutputBuffer(cb, inStream->metaName,
@@ -319,20 +316,20 @@ static int oggvorbis_decode(OutputBuffer * cb, DecoderControl * dc,
 			if ((test = ov_bitrate_instant(&vf)) > 0) {
 				bitRate = test / 1000;
 			}
-			sendDataToOutputBuffer(cb, inStream, dc,
+			sendDataToOutputBuffer(cb, inStream,
 					       inStream->seekable,
 					       chunk, chunkpos,
 					       ov_pcm_tell(&vf) /
-					       dc->audioFormat.sampleRate,
+					       dc.audioFormat.sampleRate,
 					       bitRate, replayGainInfo);
 			chunkpos = 0;
-			if (dc->stop)
+			if (dc.stop)
 				break;
 		}
 	}
 
-	if (!dc->stop && chunkpos > 0) {
-		sendDataToOutputBuffer(cb, NULL, dc, inStream->seekable,
+	if (!dc.stop && chunkpos > 0) {
+		sendDataToOutputBuffer(cb, NULL, inStream->seekable,
 				       chunk, chunkpos,
 				       ov_time_tell(&vf), bitRate,
 				       replayGainInfo);

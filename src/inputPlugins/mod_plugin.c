@@ -163,7 +163,7 @@ static void mod_close(mod_Data * data)
 	free(data);
 }
 
-static int mod_decode(OutputBuffer * cb, DecoderControl * dc, char *path)
+static int mod_decode(OutputBuffer * cb, char *path)
 {
 	mod_Data *data;
 	float total_time = 0.0;
@@ -179,25 +179,25 @@ static int mod_decode(OutputBuffer * cb, DecoderControl * dc, char *path)
 		return -1;
 	}
 
-	dc->totalTime = 0;
-	dc->audioFormat.bits = 16;
-	dc->audioFormat.sampleRate = 44100;
-	dc->audioFormat.channels = 2;
-	getOutputAudioFormat(&(dc->audioFormat), &(cb->audioFormat));
+	dc.totalTime = 0;
+	dc.audioFormat.bits = 16;
+	dc.audioFormat.sampleRate = 44100;
+	dc.audioFormat.channels = 2;
+	getOutputAudioFormat(&(dc.audioFormat), &(cb->audioFormat));
 
 	secPerByte =
-	    1.0 / ((dc->audioFormat.bits * dc->audioFormat.channels / 8.0) *
-		   (float)dc->audioFormat.sampleRate);
+	    1.0 / ((dc.audioFormat.bits * dc.audioFormat.channels / 8.0) *
+		   (float)dc.audioFormat.sampleRate);
 
-	dc->state = DECODE_STATE_DECODE;
+	dc.state = DECODE_STATE_DECODE;
 	while (1) {
-		if (dc->seek) {
-			dc->seekError = 1;
-			dc->seek = 0;
+		if (dc.seek) {
+			dc.seekError = 1;
+			dc.seek = 0;
 			decoder_wakeup_player();
 		}
 
-		if (dc->stop)
+		if (dc.stop)
 			break;
 
 		if (!Player_Active())
@@ -205,7 +205,7 @@ static int mod_decode(OutputBuffer * cb, DecoderControl * dc, char *path)
 
 		ret = VC_WriteBytes(data->audio_buffer, MIKMOD_FRAME_SIZE);
 		total_time += ret * secPerByte;
-		sendDataToOutputBuffer(cb, NULL, dc, 0,
+		sendDataToOutputBuffer(cb, NULL, 0,
 				       (char *)data->audio_buffer, ret,
 				       total_time, 0, NULL);
 	}

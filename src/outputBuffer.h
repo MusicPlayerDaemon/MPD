@@ -91,7 +91,6 @@ OutputBufferChunk * outputBufferGetChunk(const OutputBuffer * cb, unsigned i);
    send the next chunk */
 int sendDataToOutputBuffer(OutputBuffer * cb,
 			   InputStream * inStream,
-			   DecoderControl * dc,
 			   int seekable,
 			   void *data,
 			   size_t datalen,

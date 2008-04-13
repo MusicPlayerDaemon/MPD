@@ -20,6 +20,7 @@
 
 #include "utils.h"
 #include "normalize.h"
+#include "playerData.h"
 
 void initOutputBuffer(OutputBuffer * cb, unsigned int size)
 {
@@ -150,8 +151,7 @@ OutputBufferChunk * outputBufferGetChunk(const OutputBuffer * cb, unsigned i)
  * another thread requested stopping the decoder.
  */
 static int tailChunk(OutputBuffer * cb, InputStream * inStream,
-		     DecoderControl * dc, int seekable,
-		     float data_time, mpd_uint16 bitRate)
+		     int seekable, float data_time, mpd_uint16 bitRate)
 {
 	unsigned int next;
 	OutputBufferChunk *chunk;
@@ -165,21 +165,20 @@ static int tailChunk(OutputBuffer * cb, InputStream * inStream,
 			/* all chunks are full of decoded data; wait
 			   for the player to free one */
 
-			if (dc->stop)
+			if (dc.stop)
 				return OUTPUT_BUFFER_DC_STOP;
 
-			if (dc->seek) {
+			if (dc.seek) {
 				if (seekable) {
 					return OUTPUT_BUFFER_DC_SEEK;
 				} else {
-					dc->seekError = 1;
-					dc->seek = 0;
+					dc.seekError = 1;
+					dc.seek = 0;
 					decoder_wakeup_player();
 				}
 			}
-			if (!inStream ||
-			    bufferInputStream(inStream) <= 0) {
-				decoder_sleep(dc);
+			if (!inStream || bufferInputStream(inStream) <= 0) {
+				decoder_sleep();
 			}
 		}
 
@@ -200,7 +199,7 @@ static int tailChunk(OutputBuffer * cb, InputStream * inStream,
 }
 
 int sendDataToOutputBuffer(OutputBuffer * cb, InputStream * inStream,
-			   DecoderControl * dc, int seekable, void *dataIn,
+			   int seekable, void *dataIn,
 			   size_t dataInLen, float data_time, mpd_uint16 bitRate,
 			   ReplayGainInfo * replayGainInfo)
 {
@@ -211,11 +210,11 @@ int sendDataToOutputBuffer(OutputBuffer * cb, InputStream * inStream,
 	static size_t convBufferLen;
 	OutputBufferChunk *chunk = NULL;
 
-	if (cmpAudioFormat(&(cb->audioFormat), &(dc->audioFormat)) == 0) {
+	if (cmpAudioFormat(&(cb->audioFormat), &(dc.audioFormat)) == 0) {
 		data = dataIn;
 		datalen = dataInLen;
 	} else {
-		datalen = pcm_sizeOfConvBuffer(&(dc->audioFormat), dataInLen,
+		datalen = pcm_sizeOfConvBuffer(&(dc.audioFormat), dataInLen,
 		                               &(cb->audioFormat));
 		if (datalen > convBufferLen) {
 			if (convBuffer != NULL)
@@ -224,7 +223,7 @@ int sendDataToOutputBuffer(OutputBuffer * cb, InputStream * inStream,
 			convBufferLen = datalen;
 		}
 		data = convBuffer;
-		datalen = pcm_convertAudioFormat(&(dc->audioFormat), dataIn,
+		datalen = pcm_convertAudioFormat(&(dc.audioFormat), dataIn,
 		                                 dataInLen, &(cb->audioFormat),
 		                                 data, &(cb->convState));
 	}
@@ -235,8 +234,7 @@ int sendDataToOutputBuffer(OutputBuffer * cb, InputStream * inStream,
 		normalizeData(data, datalen, &cb->audioFormat);
 
 	while (datalen) {
-		int chunk_index = tailChunk(cb, inStream,
-					    dc, seekable,
+		int chunk_index = tailChunk(cb, inStream, seekable,
 					    data_time, bitRate);
 		if (chunk_index < 0)
 			return chunk_index;
