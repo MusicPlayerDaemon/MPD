@@ -295,7 +295,6 @@ static int commandStatus(int fd, int *permission, int argc, char *argv[])
 	int updateJobId;
 	int song;
 
-	/*syncPlayerAndPlaylist(); */
 	playPlaylistIfPlayerStopped();
 	switch (getPlayerState()) {
 	case PLAYER_STATE_STOP:
