@@ -26,6 +26,12 @@
 #include "ls.h"
 #include "main_notify.h"
 
+enum xfade_state {
+	XFADE_DISABLED = 1,
+	XFADE_UNKNOWN = 0,
+	XFADE_ENABLED = 1
+};
+
 /* called inside decoder_task (inputPlugins) */
 void decoder_wakeup_player(void)
 {
@@ -149,7 +155,7 @@ static int decodeSeek(int *decodeWaitedOn, int *next)
 }
 
 static void processDecodeInput(int *pause_r, unsigned int *bbp_r,
-			       int *doCrossFade_r,
+			       enum xfade_state *do_xfade_r,
 			       int *decodeWaitedOn_r,
 			       int *next_r)
 {
@@ -192,7 +198,7 @@ static void processDecodeInput(int *pause_r, unsigned int *bbp_r,
 	if(pc.seek) {
 		dropBufferedAudio();
 		if (decodeSeek(decodeWaitedOn_r, next_r) == 0) {
-			*doCrossFade_r = 0;
+			*do_xfade_r = XFADE_UNKNOWN;
 			*bbp_r = 0;
 		}
 	}
@@ -383,9 +389,7 @@ static void decodeParent(void)
 	int do_pause = 0;
 	int buffering = 1;
 	unsigned int bbp = buffered_before_play;
-	/** cross fading enabled for the current song? 0=must check;
-	    1=enabled; -1=disabled */
-	int doCrossFade = 0;
+	enum xfade_state do_xfade = XFADE_UNKNOWN;
 	unsigned int crossFadeChunks = 0;
 	/** the position of the next cross-faded chunk in the next
 	    song */
@@ -405,7 +409,7 @@ static void decodeParent(void)
 	wakeup_main_task();
 
 	while (1) {
-		processDecodeInput(&do_pause, &bbp, &doCrossFade,
+		processDecodeInput(&do_pause, &bbp, &do_xfade,
 				   &decodeWaitedOn, &next);
 		if (pc.stop) {
 			dropBufferedAudio();
@@ -473,7 +477,7 @@ static void decodeParent(void)
 			wakeup_main_task();
 			player_wakeup_decoder_nb();
 		}
-		if (next >= 0 && doCrossFade == 0 && !dc.start &&
+		if (next >= 0 && do_xfade == XFADE_UNKNOWN && !dc.start &&
 		    dc.state != DECODE_STATE_START) {
 			/* enable cross fading in this song?  if yes,
 			   calculate how many chunks will be required
@@ -482,21 +486,20 @@ static void decodeParent(void)
 				calculateCrossFadeChunks(&(ob.audioFormat),
 							 dc.totalTime);
 			if (crossFadeChunks > 0) {
-				doCrossFade = 1;
+				do_xfade = XFADE_ENABLED;
 				nextChunk = -1;
 			} else
 				/* cross fading is disabled or the
 				   next song is too short */
-				doCrossFade = -1;
+				do_xfade = XFADE_DISABLED;
 		}
 
 		if (do_pause)
 			player_sleep();
 		else if (!ob_is_empty() && (int)ob.begin != next) {
-			ob_chunk *beginChunk =
-				ob_get_chunk(ob.begin);
+			ob_chunk *beginChunk = ob_get_chunk(ob.begin);
 			unsigned int fadePosition;
-			if (doCrossFade == 1 && next >= 0 &&
+			if (do_xfade == XFADE_ENABLED && next >= 0 &&
 			    (fadePosition = ob_relative(next))
 			    <= crossFadeChunks) {
 				/* perform cross fade */
@@ -522,7 +525,7 @@ static void decodeParent(void)
 						/* the decoder isn't
 						   running, abort
 						   cross fading */
-						doCrossFade = -1;
+						do_xfade = XFADE_DISABLED;
 					} else {
 						/* wait for the
 						   decoder */
@@ -541,14 +544,14 @@ static void decodeParent(void)
 		} else if (!ob_is_empty() && (int)ob.begin == next) {
 			/* at the beginning of a new song */
 
-			if (doCrossFade == 1 && nextChunk >= 0) {
+			if (do_xfade == XFADE_ENABLED && nextChunk >= 0) {
 				/* the cross-fade is finished; skip
 				   the section which was cross-faded
 				   (and thus already played) */
 				ob_skip(crossFadeChunks);
 			}
 
-			doCrossFade = 0;
+			do_xfade = XFADE_UNKNOWN;
 
 			/* wait for the decoder to work on the new song */
 			if (pc.queueState == PLAYER_QUEUE_DECODE ||
