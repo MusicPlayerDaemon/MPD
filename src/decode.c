@@ -27,7 +27,7 @@
 #include "main_notify.h"
 
 enum xfade_state {
-	XFADE_DISABLED = 1,
+	XFADE_DISABLED = -1,
 	XFADE_UNKNOWN = 0,
 	XFADE_ENABLED = 1
 };
