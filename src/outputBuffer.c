@@ -31,6 +31,7 @@ void ob_init(unsigned int size)
 	ob.size = size;
 	ob.begin = 0;
 	ob.end = 0;
+	ob.lazy = 0;
 	ob.chunks[0].chunkSize = 0;
 }
 
@@ -61,7 +62,7 @@ static inline unsigned successor(unsigned i)
  */
 static void output_buffer_expand(unsigned i)
 {
-	int was_empty = ob_is_empty();
+	int was_empty = !ob.lazy || ob_is_empty();
 
 	assert(i == (ob.end + 1) % ob.size);
 	assert(i != ob.end);
@@ -89,6 +90,11 @@ void ob_flush(void)
 
 		output_buffer_expand(next);
 	}
+}
+
+void ob_set_lazy(int lazy)
+{
+	ob.lazy = lazy;
 }
 
 int ob_is_empty(void)

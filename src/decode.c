@@ -400,6 +400,8 @@ static void decodeParent(void)
 	/** the position of the first chunk in the next song */
 	int next = -1;
 
+	ob_set_lazy(0);
+
 	if (waitOnDecode(&decodeWaitedOn) < 0)
 		return;
 
@@ -421,9 +423,11 @@ static void decodeParent(void)
 				/* not enough decoded buffer space yet */
 				player_sleep();
 				continue;
-			} else
+			} else {
 				/* buffering is complete */
 				buffering = 0;
+				ob_set_lazy(1);
+			}
 		}
 
 		if (decodeWaitedOn) {
@@ -513,6 +517,7 @@ static void decodeParent(void)
 				}
 				nextChunk = ob_absolute(crossFadeChunks);
 				if (nextChunk >= 0) {
+					ob_set_lazy(1);
 					crossFade(beginChunk,
 						  ob_get_chunk(nextChunk),
 						  &(ob.audioFormat),
@@ -529,6 +534,7 @@ static void decodeParent(void)
 					} else {
 						/* wait for the
 						   decoder */
+						ob_set_lazy(0);
 						player_sleep();
 						continue;
 					}

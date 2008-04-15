@@ -53,6 +53,10 @@ typedef struct _OutputBuffer {
 	/** the index after the last decoded chunk */
 	unsigned int volatile end;
 
+	/** non-zero if the player thread should only we woken up if
+	    the buffer becomes non-empty */
+	int lazy;
+
 	AudioFormat audioFormat;
 	ConvState convState;
 } OutputBuffer;
@@ -64,6 +68,14 @@ void ob_free(void);
 void ob_clear(void);
 
 void ob_flush(void);
+
+/**
+ * When a chunk is decoded, we wake up the player thread to tell him
+ * about it.  In "lazy" mode, we only wake him up when the buffer was
+ * previously empty, i.e. when the player thread has really been
+ * waiting for us.
+ */
+void ob_set_lazy(int lazy);
 
 /** is the buffer empty? */
 int ob_is_empty(void);
