@@ -24,7 +24,7 @@
 #include "conf.h"
 #include "os_compat.h"
 
-void pcm_volumeChange(char *buffer, int bufferSize, AudioFormat * format,
+void pcm_volumeChange(char *buffer, int bufferSize, const AudioFormat * format,
                       int volume)
 {
 	mpd_sint32 temp32;
@@ -389,8 +389,9 @@ static const char *pcm_convertTo16bit(mpd_sint8 bits, const char *inBuffer,
 }
 
 /* outFormat bits must be 16 and channels must be 1 or 2! */
-size_t pcm_convertAudioFormat(AudioFormat * inFormat, const char *inBuffer,
-                              size_t inSize, AudioFormat * outFormat,
+size_t pcm_convertAudioFormat(const AudioFormat * inFormat,
+			      const char *inBuffer, size_t inSize,
+			      const AudioFormat * outFormat,
                               char *outBuffer, ConvState *convState)
 {
 	const char *buf;

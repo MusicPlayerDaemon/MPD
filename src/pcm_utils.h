@@ -42,14 +42,15 @@ typedef struct _ConvState {
 	int error;
 } ConvState;
 
-void pcm_volumeChange(char *buffer, int bufferSize, AudioFormat * format,
+void pcm_volumeChange(char *buffer, int bufferSize, const AudioFormat * format,
                       int volume);
 
 void pcm_mix(char *buffer1, const char *buffer2, size_t bufferSize1,
              size_t bufferSize2, const AudioFormat * format, float portion1);
 
-size_t pcm_convertAudioFormat(AudioFormat * inFormat, const char *inBuffer,
-                              size_t inSize, AudioFormat * outFormat,
+size_t pcm_convertAudioFormat(const AudioFormat * inFormat,
+			      const char *inBuffer, size_t inSize,
+			      const AudioFormat * outFormat,
                               char *outBuffer, ConvState *convState);
 
 size_t pcm_sizeOfConvBuffer(const AudioFormat * inFormat, size_t inSize,
