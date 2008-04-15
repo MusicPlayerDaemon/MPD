@@ -368,7 +368,7 @@ static void crossFade(ob_chunk * a, ob_chunk * b,
 }
 
 static int playChunk(ob_chunk * chunk,
-		     AudioFormat * format, double sizeToTime)
+		     const AudioFormat * format, double sizeToTime)
 {
 	pc.elapsedTime = chunk->times;
 	pc.bitRate = chunk->bitRate;
