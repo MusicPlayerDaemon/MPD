@@ -39,7 +39,7 @@ void finishNormalization(void)
 	if (normalizationEnabled) CompressFree();
 }
 
-void normalizeData(char *buffer, int bufferSize, AudioFormat *format)
+void normalizeData(char *buffer, int bufferSize, const AudioFormat *format)
 {
 	if ((format->bits != 16) || (format->channels != 2)) return;
 
