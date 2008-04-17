@@ -30,6 +30,7 @@ static int main_pipe[2];
 static pthread_t main_task;
 static pthread_cond_t main_wakeup = PTHREAD_COND_INITIALIZER;
 static pthread_mutex_t main_wakeup_mutex = PTHREAD_MUTEX_INITIALIZER;
+static volatile int pending;
 static pthread_mutex_t select_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 static int ioops_fdset(fd_set * rfds,
@@ -94,6 +95,8 @@ void wakeup_main_task(void)
 {
 	assert(!pthread_equal(main_task, pthread_self()));
 
+	pending = 1;
+
 	if (!wakeup_via_pipe())
 		pthread_cond_signal(&main_wakeup);
 }
@@ -115,7 +118,9 @@ void wait_main_task(void)
 	assert(pthread_equal(main_task, pthread_self()));
 
 	pthread_mutex_lock(&main_wakeup_mutex);
-	pthread_cond_wait(&main_wakeup, &main_wakeup_mutex);
+	if (!pending)
+		pthread_cond_wait(&main_wakeup, &main_wakeup_mutex);
+	pending = 0;
 	pthread_mutex_unlock(&main_wakeup_mutex);
 }
 
