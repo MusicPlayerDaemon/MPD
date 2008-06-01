@@ -27,9 +27,11 @@
 #define DECODE_TYPE_FILE	0
 #define DECODE_TYPE_URL		1
 
-#define DECODE_STATE_STOP	0
-#define DECODE_STATE_START      1
-#define DECODE_STATE_DECODE	2
+enum decoder_state {
+	DECODE_STATE_STOP = 0,
+	DECODE_STATE_START,
+	DECODE_STATE_DECODE
+};
 
 #define DECODE_ERROR_NOERROR	0
 #define DECODE_ERROR_UNKTYPE	10
@@ -38,7 +40,7 @@
 typedef struct _DecoderControl {
 	Notify notify;
 
-	volatile mpd_sint8 state;
+	volatile enum decoder_state state;
 	volatile mpd_sint8 stop;
 	volatile mpd_sint8 start;
 	volatile mpd_uint16 error;
