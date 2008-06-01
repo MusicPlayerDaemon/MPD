@@ -319,7 +319,7 @@ static MpdTag *oggflac_TagDup(char *file)
 		return NULL;
 	}
 
-	init_FlacData(&data, NULL, NULL, &inStream);
+	init_FlacData(&data, &inStream);
 
 	/* errors here won't matter,
 	 * data.tag will be set or unset, that's all we care about */
