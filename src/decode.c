@@ -40,19 +40,19 @@ void decoder_wakeup_player(void)
 
 void decoder_sleep(void)
 {
-	notifyWait(&dc.notify);
+	notify_wait(&dc.notify);
 	wakeup_player_nb();
 }
 
 static void player_wakeup_decoder_nb(void)
 {
-	notifySignal(&dc.notify);
+	notify_signal(&dc.notify);
 }
 
 /* called from player_task */
 static void player_wakeup_decoder(void)
 {
-	notifySignal(&dc.notify);
+	notify_signal(&dc.notify);
 	player_sleep();
 }
 
@@ -322,7 +322,7 @@ stop_no_close:
 
 static void * decoder_task(mpd_unused void *arg)
 {
-	notifyEnter(&dc.notify);
+	notify_enter(&dc.notify);
 
 	while (1) {
 		assert(dc.state == DECODE_STATE_STOP);

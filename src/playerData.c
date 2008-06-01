@@ -79,7 +79,7 @@ void initPlayerData(void)
 
 	ob_init(buffered_chunks);
 
-	notifyInit(&pc.notify);
+	notify_init(&pc.notify);
 	pc.error = PLAYER_ERROR_NOERROR;
 	pc.state = PLAYER_STATE_STOP;
 	pc.queueState = PLAYER_QUEUE_BLANK;
@@ -87,7 +87,7 @@ void initPlayerData(void)
 	pc.crossFade = crossfade;
 	pc.softwareVolume = 1000;
 
-	notifyInit(&dc.notify);
+	notify_init(&dc.notify);
 	dc.state = DECODE_STATE_STOP;
 	dc.error = DECODE_ERROR_NOERROR;
 }

@@ -27,34 +27,34 @@ typedef struct _Notify {
 	int pending;
 } Notify;
 
-int notifyInit(Notify *notify);
+int notify_init(Notify *notify);
 
 /**
  * The thread which shall be notified by this object must call this
- * function before any notifyWait() invocation.  It locks the mutex.
+ * function before any notify_wait() invocation.  It locks the mutex.
  */
-void notifyEnter(Notify *notify);
+void notify_enter(Notify *notify);
 
 /**
- * Neutralize notifyLeave().
+ * Neutralize notify_leave().
  */
-void notifyLeave(Notify *notify);
+void notify_leave(Notify *notify);
 
 /**
  * Wait for a notification.  Return immediately if we have already
- * been notified since we last returned from notifyWait().
+ * been notified since we last returned from notify_wait().
  */
-void notifyWait(Notify *notify);
+void notify_wait(Notify *notify);
 
 /**
  * Notify the thread.  This function never blocks.
  */
-void notifySignal(Notify *notify);
+void notify_signal(Notify *notify);
 
 /**
  * Notify the thread synchonously, i.e. wait until it has received the
  * notification.
  */
-void notifySignalSync(Notify *notify);
+void notify_signal_sync(Notify *notify);
 
 #endif

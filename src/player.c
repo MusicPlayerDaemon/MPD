@@ -38,23 +38,23 @@ static void playerCloseAudio(void);
 
 void wakeup_player_nb(void)
 {
-	notifySignal(&pc.notify);
+	notify_signal(&pc.notify);
 }
 
 static void wakeup_player(void)
 {
-	notifySignal(&pc.notify);
+	notify_signal(&pc.notify);
 	wait_main_task();
 }
 
 void player_sleep(void)
 {
-	notifyWait(&pc.notify);
+	notify_wait(&pc.notify);
 }
 
 static void * player_task(mpd_unused void *arg)
 {
-	notifyEnter(&pc.notify);
+	notify_enter(&pc.notify);
 
 	while (1) {
 		if (pc.play) {
