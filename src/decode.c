@@ -220,7 +220,8 @@ static void decodeStart(void)
 	if (!isRemoteUrl(path_max_utf8)) {
 		rmp2amp_r(path_max_fs,
 		          utf8_to_fs_charset(path_max_fs, path_max_utf8));
-	}
+	} else
+		pathcpy_trunc(path_max_fs, path_max_utf8);
 
 	dc.current_song = pc.current_song; /* NEED LOCK */
 	if (openInputStream(&inStream, path_max_fs) < 0) {
