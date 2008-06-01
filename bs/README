@@ -1,0 +1,69 @@
+bs - build system
+-----------------
+
+bs is an attempt at a fast and reliable build system that will let
+developers build mpd without having to deal with the complexity of
+autotools.  It is still a work in progress, but it seems to be
+reasonably usable (to developers) and fast.
+
+It is designed from the ground up to work with cross-compilation, as well as
+multiple build targets/configurations from the same source tree (using the O
+variable).
+
+It is NOT intended to replace autotools for distribution maintainers
+or end users who are satisfied with autotools.
+
+SYNOPSIS
+--------
+
+# To build mpd in a directory "output"
+./build.mk O=output defconfig
+$EDITOR output/config.mk
+./build.mk O=output
+
+
+FEATURES
+--------
+
+* Designed for cross-compilation from the ground up
+* Designed to easily handle multiple build directories from the same source
+  tree.  Just set the O variable when invoking make (see synopsis).
+* Automatic dependency analysis (if using GCC)
+* Highly configurable (no auto-detection of dependencies to get wrong)
+* Simple, no archaic M4 macros or unreadable auto-generated shell or makefiles
+  just human-maintained GNU Make and POSIX shell.
+
+
+config.mk
+---------
+
+This is the configuration file a user should edit if they wish to
+enable/disable features or tune settings.  Once created, this
+will NOT be modified by the build system, so user settings will
+always be preserved.
+
+
+VARIABLES
+---------
+
+These are conventions, not hard and fast rules (as there's no good way to
+enforce them :)
+mixed-case or lower-case variables are used by bs internally.
+ALL_CAPS variables are designed to be changed by users.
+
+
+REQUIREMENTS
+------------
+
+GNU Make, POSIX shell + common UNIX tools (awk, sed, mv, rm, mkdir).
+git (version control system) is only required if you wish to autodownload
+external dependencies (flac, tremor, mad, etc...) for static linking.
+
+
+BUGS
+----
+
+Modifications to config.mk will over-rebuild.
+
+Changes to CFLAGS/LDFLAGS from the command-line are not yet checked in
+rebuilds.

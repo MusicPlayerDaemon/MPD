@@ -1,0 +1,61 @@
+# config.mk file for the bs build-system this is the only file a user should
+# need to edit
+# report bugs to Eric Wong <normalperson@yhbt.net>
+
+# change this if cross compiling, default: @@HOST@@
+# HOST := @@HOST@@
+
+# default compiler and linker settings
+CC = gcc
+CFLAGS = -O2 -Wall \
+ -Wmissing-prototypes -Wextra -Wno-unused-parameter \
+ -Wno-deprecated-declarations -Wmissing-prototypes \
+ -Wdeclaration-after-statement -Wshadow
+
+LDFLAGS = -Wl,-O1
+
+# TCP or UNIX domain sockets support.  MPD needs at least one of these
+HAVE_TCP := 1
+HAVE_UN :=
+
+# miscellaneous dependencies and features, mpd does not
+# require any of these:
+#
+HAVE_LANGINFO_CODESET :=
+HAVE_IPV6 :=
+HAVE_ICONV :=
+HAVE_ID3TAG :=
+
+MPD_PATH_MAX := 255
+
+# audio output features, at least one of these must be defined to 1
+# (and usable)
+#
+HAVE_ALSA :=
+HAVE_AO :=
+HAVE_FIFO :=
+HAVE_JACK :=
+HAVE_MVP :=
+HAVE_NULL :=
+HAVE_OSS :=
+HAVE_OSX :=
+HAVE_PULSE :=
+HAVE_SHOUT :=
+
+# input file format support, at least one of these must be defined to 1
+# (and usable)
+#
+HAVE_AUDIOFILE :=
+HAVE_FAAD :=
+HAVE_FAACDECCONFIGURATION_DONTUPSAMPLEIMPLICITSBR :=
+HAVE_FAACDECCONFIGURATION_DOWNMATRIX :=
+HAVE_FAACDECFRAMEINFO_SAMPLERATE :=
+HAVE_FLAC :=
+HAVE_HELIXMP3 :=
+HAVE_MIKMOD :=
+HAVE_MAD :=
+HAVE_MPCDEC :=
+HAVE_OGGFLAC :=
+HAVE_OGGVORBIS :=
+HAVE_TREMOR :=
+HAVE_WAVPACK :=
