@@ -325,10 +325,11 @@ static void * decoder_task(mpd_unused void *arg)
 	notifyEnter(&dc.notify);
 
 	while (1) {
+		assert(dc.state == DECODE_STATE_STOP);
+
 		if (dc.start || dc.seek) {
 			decodeStart();
 		} else if (dc.stop) {
-			dc.state = DECODE_STATE_STOP;
 			dc.stop = 0;
 			decoder_wakeup_player();
 		} else {
