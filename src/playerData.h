@@ -30,14 +30,6 @@ extern PlayerControl pc;
 extern DecoderControl dc;
 extern OutputBuffer ob;
 
-typedef struct _PlayerData {
-	mpd_uint8 *audioDeviceStates;
-} PlayerData;
-
 void initPlayerData(void);
-
-PlayerData *getPlayerData(void);
-
-void freePlayerData(void);
 
 #endif

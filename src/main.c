@@ -464,7 +464,6 @@ int main(int argc, char *argv[])
 	finishInputPlugins();
 	cleanUpPidFile();
 	finishConf();
-	freePlayerData();
 
 	close_log_files();
 	return EXIT_SUCCESS;

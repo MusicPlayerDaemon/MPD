@@ -21,12 +21,10 @@
 #include "log.h"
 #include "utils.h"
 
-unsigned int buffered_before_play;
-
 #define DEFAULT_BUFFER_SIZE         2048
 #define DEFAULT_BUFFER_BEFORE_PLAY  10
 
-static PlayerData playerData_pd;
+unsigned int buffered_before_play;
 PlayerControl pc;
 DecoderControl dc;
 OutputBuffer ob;
@@ -39,7 +37,6 @@ void initPlayerData(void)
 	size_t bufferSize = DEFAULT_BUFFER_SIZE;
 	unsigned int buffered_chunks;
 	ConfigParam *param;
-	size_t device_array_size = audio_device_count() * sizeof(mpd_sint8);
 
 	param = getConfigParam(CONF_AUDIO_BUFFER_SIZE);
 
@@ -75,8 +72,6 @@ void initPlayerData(void)
 		buffered_before_play = buffered_chunks;
 	}
 
-	playerData_pd.audioDeviceStates = xmalloc(device_array_size);
-
 	ob_init(buffered_chunks);
 
 	notify_init(&pc.notify);
@@ -92,18 +87,4 @@ void initPlayerData(void)
 	dc.error = DECODE_ERROR_NOERROR;
 }
 
-PlayerData *getPlayerData(void)
-{
-	return &playerData_pd;
-}
 
-void freePlayerData(void)
-{
-	/* We don't want to release this memory until we know our player and
-	 * decoder have exited.  Otherwise, their signal handlers will want to
-	 * access playerData_pd and we need to keep it available for them */
-	waitpid(-1, NULL, 0);
-
-	ob_free();
-	free(playerData_pd.audioDeviceStates);
-}

@@ -37,14 +37,16 @@ static AudioFormat *audio_configFormat;
 static AudioOutput *audioOutputArray;
 static unsigned int audioOutputArraySize;
 
-#define	DEVICE_OFF        0x00
-#define DEVICE_ENABLE	  0x01   /* currently off, but to be turned on */
-#define	DEVICE_ON         0x03
-#define DEVICE_DISABLE    0x04   /* currently on, but to be turned off */
+enum ad_state {
+	DEVICE_OFF = 0x00,
+	DEVICE_ENABLE = 0x01,  /* currently off, but to be turned on */
+	DEVICE_ON = 0x03,
+	DEVICE_DISABLE = 0x04   /* currently on, but to be turned off */
+};
 
 /* the audioEnabledArray should be stuck into shared memory, and then disable
    and enable in playAudio() routine */
-static mpd_uint8 *audioDeviceStates;
+static enum ad_state *audioDeviceStates;
 
 static mpd_uint8 audioOpened;
 
@@ -52,7 +54,7 @@ static size_t audioBufferSize;
 static char *audioBuffer;
 static size_t audioBufferPos;
 
-unsigned int audio_device_count(void)
+static unsigned int audio_output_count(void)
 {
 	unsigned int nr = 0;
 	ConfigParam *param = NULL;
@@ -103,8 +105,9 @@ void initAudioDriver(void)
 
 	loadAudioDrivers();
 
-	audioOutputArraySize = audio_device_count();
-	audioDeviceStates = (getPlayerData())->audioDeviceStates;
+	audioOutputArraySize = audio_output_count();
+	audioDeviceStates = xmalloc(sizeof(enum ad_state) *
+	                            audioOutputArraySize);
 	audioOutputArray = xmalloc(sizeof(AudioOutput) * audioOutputArraySize);
 
 	for (i = 0; i < audioOutputArraySize; i++)
@@ -273,6 +276,8 @@ static void syncAudioDeviceStates(void)
 	for (i = 0; i < audioOutputArraySize; ++i) {
 		audioOutput = &audioOutputArray[i];
 		switch (audioDeviceStates[i]) {
+		case DEVICE_OFF:
+			break;
 		case DEVICE_ON:
 			/* This will reopen only if the audio format changed */
 			if (openAudioOutput(audioOutput, &audio_format) < 0)
@@ -286,7 +291,6 @@ static void syncAudioDeviceStates(void)
 			dropBufferedAudioOutput(audioOutput);
 			closeAudioOutput(audioOutput);
 			audioDeviceStates[i] = DEVICE_OFF;
-			break;
 		}
 	}
 }

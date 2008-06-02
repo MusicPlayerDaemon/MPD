@@ -31,8 +31,6 @@ typedef struct _AudioFormat {
 	volatile mpd_sint8 bits;
 } AudioFormat;
 
-unsigned int audio_device_count(void);
-
 static inline double audioFormatSizeToTime(const AudioFormat * af)
 {
 	return 8.0 / af->bits / af->channels / af->sampleRate;
