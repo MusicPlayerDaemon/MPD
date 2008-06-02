@@ -27,7 +27,7 @@
 #include "os_compat.h"
 
 #define AUDIO_DEVICE_STATE	"audio_device_state:"
-#define AUDIO_DEVICE_STATE_LEN	19	/* strlen(AUDIO_DEVICE_STATE) */
+#define AUDIO_DEVICE_STATE_LEN	(sizeof(AUDIO_DEVICE_STATE)-1)
 #define AUDIO_BUFFER_SIZE	2*MPD_PATH_MAX
 
 static AudioFormat audio_format;
