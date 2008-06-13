@@ -191,7 +191,9 @@ static int jack_initDriver(AudioOutput *audioOutput, ConfigParam *param)
 	BlockParam *bp;
 	char *endptr;
 	int val;
- 	char *cp = NULL;
+	char *cp = NULL;
+
+	audioOutput->data = NULL;
 
 	DEBUG("jack_initDriver (pid=%d)\n", getpid());
 	if ( ! param ) return 0;
