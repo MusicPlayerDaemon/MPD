@@ -60,7 +60,7 @@ static MDRIVER drv_mpd = {
 	255,
 #if (LIBMIKMOD_VERSION > 0x030106)
 	"mpd", /* Alias */
-#if (LIBMIKMOD_VERSION > 0x030200)
+#if (LIBMIKMOD_VERSION >= 0x030200)
 	NULL,  /* CmdLineHelp */
 #endif
 	NULL,  /* CommandLine */
