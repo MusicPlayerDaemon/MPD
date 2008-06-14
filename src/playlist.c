@@ -275,7 +275,10 @@ static void loadPlaylistFromStateFile(FILE *fp, char *buffer,
 	if (!myFgets(buffer, PLAYLIST_BUFFER_SIZE, fp))
 		state_file_fatal();
 	while (strcmp(buffer, PLAYLIST_STATE_FILE_PLAYLIST_END)) {
-		song = atoi(strtok(buffer, ":"));
+		temp = strtok(buffer, ":");
+		if (temp == NULL)
+			state_file_fatal();
+		song = atoi(temp);
 		if (!(temp = strtok(NULL, "")))
 			state_file_fatal();
 		if (!addToPlaylist(STDERR_FILENO, temp, 0) && current == song) {
