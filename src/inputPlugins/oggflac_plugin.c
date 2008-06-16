@@ -397,7 +397,7 @@ fail:
 	return ret;
 }
 
-static char *oggflac_Suffixes[] = { "ogg", NULL };
+static char *oggflac_Suffixes[] = { "ogg", "oga", NULL };
 static char *oggflac_mime_types[] = { "audio/x-flac+ogg",
                                       "application/ogg",
                                       "application/x-ogg",
