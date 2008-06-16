@@ -630,7 +630,7 @@ if test x$with_zeroconf != xno; then
 	if test x$found_avahi = x1; then
 		with_zeroconf=avahi
 	elif test x$with_zeroconf = xavahi; then
-		with_zeroconf=no
+		AC_MSG_ERROR([Avahi support requested but not found])
 	fi
 
 	if test x$with_zeroconf = xbonjour || test x$with_zeroconf = xauto; then
@@ -644,10 +644,10 @@ if test x$with_zeroconf != xno; then
 	if test x$found_bonjour = x1; then
 		with_zeroconf=bonjour
 	elif test x$with_zeroconf = xbonjour; then
-		with_zeroconf=no
+		AC_MSG_ERROR([Bonjour support requested but not found])
 	fi
 
-	if test x$with_zeroconf = xauto || test x$with_zeroconf = xno; then
+	if test x$with_zeroconf = xauto; then
 		AC_MSG_WARN([No supported Zeroconf backend found, disabling Zeroconf])
 		with_zeroconf=no
 	else
