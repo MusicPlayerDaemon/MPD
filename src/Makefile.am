@@ -36,6 +36,7 @@ mpd_headers = \
 	buffer2array.h \
 	charConv.h \
 	command.h \
+	condition.h \
 	conf.h \
 	dbUtils.h \
 	decode.h \
@@ -97,6 +98,7 @@ mpd_SOURCES = \
 	buffer2array.c \
 	charConv.c \
 	command.c \
+	condition.c \
 	conf.c \
 	dbUtils.c \
 	decode.c \

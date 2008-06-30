@@ -24,6 +24,7 @@
 #include "conf.h"
 #include "os_compat.h"
 #include "ringbuf.h"
+#include "condition.h"
 
 enum conn_state { /* only written by io thread, read by both */
 	CONN_STATE_NEW,             /* just (re)initialized */
@@ -71,14 +72,9 @@ struct http_data {
 		pthread_t io_thread;
 		struct ringbuf *rb;
 
-		/* TODO: fix Notify so it doesn't use ugly "pending" flag */
-		pthread_mutex_t full_lock;
-		pthread_cond_t full_cond;
-		pthread_mutex_t empty_lock;
-		pthread_cond_t empty_cond;
-
-		pthread_mutex_t action_lock;
-		pthread_cond_t action_cond;
+		struct condition full_cond;
+		struct condition empty_cond;
+		struct condition action_cond;
 	/* } */
 
 	int nr_redirect;
@@ -112,12 +108,9 @@ static void init_http_data(struct http_data *data)
 	data->icy_offset = 0;
 	data->rb = ringbuf_create(buffer_size);
 
-	pthread_cond_init(&data->action_cond, NULL);
-	pthread_mutex_init(&data->action_lock, NULL);
-	pthread_cond_init(&data->full_cond, NULL);
-	pthread_mutex_init(&data->full_lock, NULL);
-	pthread_cond_init(&data->empty_cond, NULL);
-	pthread_mutex_init(&data->empty_lock, NULL);
+	cond_init(&data->action_cond);
+	cond_init(&data->full_cond);
+	cond_init(&data->empty_cond);
 }
 
 static struct http_data *new_http_data(void)
@@ -135,12 +128,9 @@ static void free_http_data(struct http_data * data)
 	if (data->proxy_auth) free(data->proxy_auth);
 	if (data->http_auth) free(data->http_auth);
 
-	xpthread_cond_destroy(&data->action_cond);
-	xpthread_mutex_destroy(&data->action_lock);
-	xpthread_cond_destroy(&data->full_cond);
-	xpthread_mutex_destroy(&data->full_lock);
-	xpthread_cond_destroy(&data->empty_cond);
-	xpthread_mutex_destroy(&data->empty_lock);
+	cond_destroy(&data->action_cond);
+	cond_destroy(&data->full_cond);
+	cond_destroy(&data->empty_cond);
 
 	xclose(data->pipe_fds[0]);
 	xclose(data->pipe_fds[1]);
@@ -242,15 +232,6 @@ static int parse_url(struct http_data * data, char *url)
 	return 0;
 }
 
-static struct timespec * ts_timeout(struct timespec *ts, const long sec)
-{
-	struct timeval tv;
-	gettimeofday(&tv, NULL);
-	ts->tv_sec = tv.tv_sec + sec;
-	ts->tv_nsec = tv.tv_usec * 1000;
-	return ts;
-}
-
 /* triggers an action and waits for completion */
 static int trigger_action(struct http_data *data,
                           enum conn_action action,
@@ -259,7 +240,7 @@ static int trigger_action(struct http_data *data,
 	int ret = -1;
 
 	assert(!pthread_equal(data->io_thread, pthread_self()));
-	pthread_mutex_lock(&data->action_lock);
+	cond_enter(&data->action_cond);
 	if (data->action != CONN_ACTION_NONE)
 		goto out;
 	data->action = action;
@@ -270,17 +251,13 @@ static int trigger_action(struct http_data *data,
 		data->action = CONN_ACTION_NONE;
 		goto out;
 	}
-	if (nonblocking) {
-		struct timespec ts;
-		pthread_cond_timedwait(&data->action_cond,
-		                       &data->action_lock,
-		                       ts_timeout(&ts, 1));
-	} else {
-		pthread_cond_wait(&data->action_cond, &data->action_lock);
-	}
+	if (nonblocking)
+		cond_timedwait(&data->action_cond, 1);
+	else
+		cond_wait(&data->action_cond);
 	ret = 0;
 out:
-	pthread_mutex_unlock(&data->action_lock);
+	cond_leave(&data->action_cond);
 	return ret;
 }
 
@@ -288,10 +265,10 @@ static int take_action(struct http_data *data)
 {
 	assert(pthread_equal(data->io_thread, pthread_self()));
 
-	pthread_mutex_lock(&data->action_lock);
+	cond_enter(&data->action_cond);
 	switch (data->action) {
 	case CONN_ACTION_NONE:
-		pthread_mutex_unlock(&data->action_lock);
+		cond_leave(&data->action_cond);
 		return 0;
 	case CONN_ACTION_DOSEEK:
 		data->state = CONN_STATE_NEW;
@@ -302,8 +279,8 @@ static int take_action(struct http_data *data)
 	xclose(data->fd);
 	data->fd = -1;
 	data->action = CONN_ACTION_NONE;
-	pthread_cond_signal(&data->action_cond);
-	pthread_mutex_unlock(&data->action_lock);
+	cond_signal_sync(&data->action_cond);
+	cond_leave(&data->action_cond);
 	return 1;
 }
 
@@ -450,7 +427,7 @@ static void await_buffer_space(struct http_data *data)
 {
 	assert(pthread_equal(data->io_thread, pthread_self()));
 	assert_state(CONN_STATE_BUFFER_FULL);
-	pthread_cond_wait(&data->full_cond, &data->full_lock);
+	cond_wait(&data->full_cond);
 	if (ringbuf_write_space(data->rb) > 0)
 		data->state = CONN_STATE_BUFFER;
 	/* else spurious wakeup or action triggered ... */
@@ -459,32 +436,20 @@ static void await_buffer_space(struct http_data *data)
 static void feed_starved(struct http_data *data)
 {
 	assert(pthread_equal(data->io_thread, pthread_self()));
-
-	if (!pthread_mutex_trylock(&data->empty_lock)) {
-		pthread_cond_signal(&data->empty_cond);
-		pthread_mutex_unlock(&data->empty_lock);
-	}
+	cond_signal_async(&data->empty_cond);
 }
 
 static int starved_wait(struct http_data *data, const long sec)
 {
-	struct timespec ts;
-
 	assert(!pthread_equal(data->io_thread, pthread_self()));
-	return pthread_cond_timedwait(&data->empty_cond,
-	                              &data->empty_lock,
-	                              ts_timeout(&ts, sec));
+	return cond_timedwait(&data->empty_cond, sec);
 }
 
 static int awaken_buffer_task(struct http_data *data)
 {
 	assert(!pthread_equal(data->io_thread, pthread_self()));
-	if (!pthread_mutex_trylock(&data->full_lock)) {
-		pthread_cond_signal(&data->full_cond);
-		pthread_mutex_unlock(&data->full_lock);
-		return 1;
-	}
-	return 0;
+
+	return ! cond_signal_async(&data->full_cond);
 }
 
 static ssize_t buffer_data(InputStream *is)
@@ -741,7 +706,7 @@ static void * http_io_task(void *arg)
 	InputStream *is = (InputStream *) arg;
 	struct http_data *data = (struct http_data *) is->data;
 
-	pthread_mutex_lock(&data->full_lock);
+	cond_enter(&data->full_cond);
 	while (1) {
 		take_action(data);
 		switch (data->state) {
@@ -782,7 +747,7 @@ err:
 	err_close(data);
 closed:
 	assert_state(CONN_STATE_CLOSED);
-	pthread_mutex_unlock(&data->full_lock);
+	cond_leave(&data->full_cond);
 	return NULL;
 }
 
@@ -813,7 +778,7 @@ int inputStream_httpOpen(InputStream * is, char *url)
 	if (pthread_create(&data->io_thread, &attr, http_io_task, is))
 		FATAL("failed to spawn http_io_task: %s", strerror(errno));
 
-	pthread_mutex_lock(&data->empty_lock);
+	cond_enter(&data->empty_cond); /* httpClose will leave this */
 	return 0;
 }
 
@@ -982,7 +947,7 @@ int inputStream_httpClose(InputStream * is)
 	while (data->state != CONN_STATE_CLOSED)
 		trigger_action(data, CONN_ACTION_CLOSE, 1);
 	pthread_join(data->io_thread, NULL);
-	pthread_mutex_unlock(&data->empty_lock);
+	cond_leave(&data->empty_cond);
 	free_http_data(data);
 	return 0;
 }
