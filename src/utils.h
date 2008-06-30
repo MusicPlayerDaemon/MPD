@@ -82,6 +82,10 @@ int set_nonblocking(int fd);
 
 void init_async_pipe(int file_des[2]);
 
+void xpthread_mutex_init(pthread_mutex_t *m, const pthread_mutexattr_t *a);
+
+void xpthread_cond_init(pthread_cond_t *c, pthread_condattr_t *a);
+
 void xpthread_mutex_destroy(pthread_mutex_t *mutex);
 
 void xpthread_cond_destroy(pthread_cond_t *cond);
