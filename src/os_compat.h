@@ -44,6 +44,7 @@
 #include <fcntl.h>
 
 #include <stdio.h>
+#include <sys/uio.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #include <time.h>
