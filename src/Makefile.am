@@ -66,6 +66,7 @@ mpd_headers = \
 	playerData.h \
 	playlist.h \
 	replayGain.h \
+	ringbuf.h \
 	signal_check.h \
 	sig_handlers.h \
 	sllist.h \
@@ -122,6 +123,7 @@ mpd_SOURCES = \
 	playerData.c \
 	playlist.c \
 	replayGain.c \
+	ringbuf.c \
 	sig_handlers.c \
 	signal_check.c \
 	sllist.c \
