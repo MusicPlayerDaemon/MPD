@@ -50,7 +50,8 @@ ogg_stream_type ogg_stream_type_detect(InputStream * inStream)
 			break;
 	}
 
-	seekInputStream(inStream, 0, SEEK_SET);
+	if (r > 0)
+		seekInputStream(inStream, 0, SEEK_SET);
 
 	if (r >= 32 && memcmp(buf, "OggS", 4) == 0 && (
 				(memcmp(buf+29, "FLAC", 4) == 0
