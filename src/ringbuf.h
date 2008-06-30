@@ -173,6 +173,24 @@ size_t ringbuf_read_space(const struct ringbuf * rb);
 void ringbuf_reset(struct ringbuf * rb);
 
 /**
+ * Reset the write pointer to the read pointer, making an empty buffer.
+ *
+ * This should only be called by the writer
+ *
+ * @param rb a pointer to the ringbuffer structure.
+ */
+void ringbuf_writer_reset(struct ringbuf * rb);
+
+/**
+ * Reset the read pointer to the write pointer, making an empty buffer.
+ *
+ * This should only be called by the reader
+ *
+ * @param rb a pointer to the ringbuffer structure.
+ */
+void ringbuf_reader_reset(struct ringbuf * rb);
+
+/**
  * Write data into the ringbuffer.
  *
  * @param rb a pointer to the ringbuffer structure.

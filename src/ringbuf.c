@@ -62,6 +62,18 @@ void ringbuf_reset(struct ringbuf * rb)
 	rb->write_ptr = 0;
 }
 
+/* Reset the read and write pointers, thread-safe iff called only by writer */
+void ringbuf_writer_reset(struct ringbuf * rb)
+{
+	rb->write_ptr = rb->read_ptr;
+}
+
+/* Reset the read and write pointers, thread-safe iff called only by reader */
+void ringbuf_reader_reset(struct ringbuf * rb)
+{
+	rb->read_ptr = rb->write_ptr;
+}
+
 /*
  * Return the number of bytes available for reading.  This is the
  * number of bytes in front of the read pointer and behind the write
