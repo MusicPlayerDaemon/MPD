@@ -276,18 +276,13 @@ static int parseUrl(InputStreamHTTPData * data, char *url)
 	return 0;
 }
 
-static int initHTTPConnection(InputStream * inStream)
+/* returns -1 on error, 0 on success (and sets dest) */
+static int my_getaddrinfo(struct addrinfo **dest,
+                          const char *host, const char *port)
 {
-	char *connHost;
-	char *connPort;
-	struct addrinfo *ans = NULL;
-	struct addrinfo *ap = NULL;
 	struct addrinfo hints;
 	int error;
-	InputStreamHTTPData *data = (InputStreamHTTPData *) inStream->data;
-	/**
-	 * Setup hints
-	 */
+
 	hints.ai_flags = 0;
 	hints.ai_family = PF_UNSPEC;
 	hints.ai_socktype = SOCK_STREAM;
@@ -297,50 +292,57 @@ static int initHTTPConnection(InputStream * inStream)
 	hints.ai_canonname = NULL;
 	hints.ai_next = NULL;
 
-	if (proxyHost) {
-		connHost = proxyHost;
-		connPort = proxyPort;
-	} else {
-		connHost = data->host;
-		connPort = data->port;
-	}
-
-	error = getaddrinfo(connHost, connPort, &hints, &ans);
-	if (error) {
-		DEBUG(__FILE__ ": Error getting address info: %s\n",
-		      gai_strerror(error));
-
+	if ((error = getaddrinfo(host, port, &hints, dest))) {
+		DEBUG(__FILE__ ": Error getting address info for %s:%s: %s\n",
+		      host, port, gai_strerror(error));
 		return -1;
 	}
+	return 0;
+}
+
+/* returns the fd we connected to, or -1 on error */
+static int my_connect_addrs(struct addrinfo *ans)
+{
+	int fd;
+	struct addrinfo *ap;
 
 	/* loop through possible addresses */
 	for (ap = ans; ap != NULL; ap = ap->ai_next) {
-		if ((data->sock = socket(ap->ai_family, ap->ai_socktype,
-					 ap->ai_protocol)) < 0) {
-			DEBUG(__FILE__ ": unable to connect: %s\n",
+		fd = socket(ap->ai_family, ap->ai_socktype, ap->ai_protocol);
+		if (fd < 0) {
+			DEBUG(__FILE__ ": unable to get socket: %s\n",
 			      strerror(errno));
-			freeaddrinfo(ans);
-			return -1;
+			continue;
 		}
 
-		set_nonblocking(data->sock);
-
-		if (connect(data->sock, ap->ai_addr, ap->ai_addrlen) >= 0
-		    || errno == EINPROGRESS) {
-			data->connState = HTTP_CONN_STATE_INIT;
-			data->buflen = 0;
-			freeaddrinfo(ans);
-			return 0;	/* success */
-		}
-
-		/* failed, get the next one */
+		set_nonblocking(fd);
+		if (connect(fd, ap->ai_addr, ap->ai_addrlen) >= 0
+		    || errno == EINPROGRESS)
+			return fd;	/* success */
 
 		DEBUG(__FILE__ ": unable to connect: %s\n", strerror(errno));
-		close(data->sock);
+		xclose(fd); /* failed, get the next one */
 	}
+	return -1;
+}
 
+static int initHTTPConnection(InputStream * inStream)
+{
+	struct addrinfo *ans = NULL;
+	InputStreamHTTPData *data = (InputStreamHTTPData *) inStream->data;
+
+	if ((proxyHost ? my_getaddrinfo(&ans, proxyHost, proxyPort) :
+	                 my_getaddrinfo(&ans, data->host, data->port)) < 0)
+		return -1;
+
+	data->sock = my_connect_addrs(ans);
 	freeaddrinfo(ans);
-	return -1;	/* failed */
+
+	if (data->sock < 0)
+		return -1; /* failed */
+	data->connState = HTTP_CONN_STATE_INIT;
+	data->buflen = 0;
+	return 0;
 }
 
 static int finishHTTPInit(InputStream * inStream)
