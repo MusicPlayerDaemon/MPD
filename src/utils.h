@@ -80,4 +80,10 @@ char *parsePath(char *path);
 
 int set_nonblocking(int fd);
 
+void init_async_pipe(int file_des[2]);
+
+void xpthread_mutex_destroy(pthread_mutex_t *mutex);
+
+void xpthread_cond_destroy(pthread_cond_t *cond);
+
 #endif

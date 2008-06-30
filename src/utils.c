@@ -230,3 +230,27 @@ int set_nonblocking(int fd)
 	while ((ret = fcntl(fd, F_SETFL, flags)) < 0 && errno == EINTR) ;
 	return ret;
 }
+
+void init_async_pipe(int file_des[2])
+{
+	if (pipe(file_des) < 0)
+		FATAL("Couldn't open pipe: %s", strerror(errno));
+	if (set_nonblocking(file_des[0]) < 0)
+		FATAL("Couldn't set non-blocking I/O: %s\n", strerror(errno));
+	if (set_nonblocking(file_des[1]) < 0)
+		FATAL("Couldn't set non-blocking I/O: %s\n", strerror(errno));
+}
+
+void xpthread_mutex_destroy(pthread_mutex_t *mutex)
+{
+	int err;
+	if ((err = pthread_mutex_destroy(mutex)))
+		FATAL("failed to destroy mutex: %s\n", strerror(err));
+}
+
+void xpthread_cond_destroy(pthread_cond_t *cond)
+{
+	int err;
+	if ((err = pthread_cond_destroy(cond)))
+		FATAL("failed to destroy cond: %s\n", strerror(err));
+}
