@@ -27,7 +27,7 @@
 
 #define BASE64_LENGTH(len) (4 * (((len) + 2) / 3))
 
-static char *base64Dup(char *s)
+static char *base64dup(char *s)
 {
 	int i;
 	int len = strlen(s);
@@ -64,8 +64,8 @@ static char *base64Dup(char *s)
 	return ret;
 }
 
-static char *authString(const char *header,
-			const char *user, const char *password)
+static char *auth_string(const char *header,
+			 const char *user, const char *password)
 {
 	char *ret = NULL;
 	int templen;
@@ -80,7 +80,7 @@ static char *authString(const char *header,
 	strcpy(temp, user);
 	strcat(temp, ":");
 	strcat(temp, password);
-	temp64 = base64Dup(temp);
+	temp64 = base64dup(temp);
 	free(temp);
 
 	ret = xmalloc(strlen(temp64) + strlen(header) + 3);
@@ -95,7 +95,7 @@ static char *authString(const char *header,
 #define PROXY_AUTH_HEADER	"Proxy-Authorization: Basic "
 #define HTTP_AUTH_HEADER	"Authorization: Basic "
 
-#define proxyAuthString(x, y)	authString(PROXY_AUTH_HEADER, x, y)
-#define httpAuthString(x, y)	authString(HTTP_AUTH_HEADER, x, y)
+#define proxy_auth_string(x, y)	auth_string(PROXY_AUTH_HEADER, x, y)
+#define http_auth_string(x, y)	auth_string(HTTP_AUTH_HEADER, x, y)
 
 #endif /* INPUT_STREAM_HTTP_AUTH_H */

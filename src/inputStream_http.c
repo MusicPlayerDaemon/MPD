@@ -23,187 +23,150 @@
 #include "log.h"
 #include "conf.h"
 #include "os_compat.h"
+#include "ringbuf.h"
 
-#define HTTP_CONN_STATE_CLOSED  0
-#define HTTP_CONN_STATE_INIT    1
-#define HTTP_CONN_STATE_HELLO   2
-#define HTTP_CONN_STATE_OPEN    3
-#define HTTP_CONN_STATE_REOPEN  4
+enum conn_state { /* only written by io thread, read by both */
+	CONN_STATE_NEW,             /* just (re)initialized */
+	CONN_STATE_REDIRECT,        /* redirect */
+	CONN_STATE_CONNECTED,       /* connected to the socket */
+	CONN_STATE_REQUESTED,       /* sent HTTP request */
+	CONN_STATE_RESP_HEAD,       /* reading HTTP response header */
+	CONN_STATE_PREBUFFER,       /* prebuffering data stream */
+	CONN_STATE_BUFFER,          /* buffering data stream */
+	CONN_STATE_BUFFER_FULL,     /* reading actual data stream */
+	CONN_STATE_CLOSED           /* it's over, time to die */
+};
+
+/* used by all HTTP header matching */
+#define match(s) !strncasecmp(cur, s, (offset = sizeof(s) - 1))
+
+#define assert_state(st) assert(data->state == st)
+#define assert_state2(s1,s2) assert((data->state == s1) || (data->state == s2))
+
+enum conn_action { /* only written by control thread, read by both */
+	CONN_ACTION_NONE,
+	CONN_ACTION_CLOSE,
+	CONN_ACTION_DOSEEK
+};
 
 #define HTTP_BUFFER_SIZE_DEFAULT        131072
 #define HTTP_PREBUFFER_SIZE_DEFAULT	(HTTP_BUFFER_SIZE_DEFAULT >> 2)
-
 #define HTTP_REDIRECT_MAX    10
 
-#define HTTP_MAX_TRIES 100
+static char *proxy_host;
+static char *proxy_port;
+static char *proxy_user;
+static char *proxy_password;
+static size_t buffer_size = HTTP_BUFFER_SIZE_DEFAULT;
+static size_t prebuffer_size = HTTP_PREBUFFER_SIZE_DEFAULT;
 
-static char *proxyHost;
-static char *proxyPort;
-static char *proxyUser;
-static char *proxyPassword;
-static size_t bufferSize = HTTP_BUFFER_SIZE_DEFAULT;
-static size_t prebufferSize = HTTP_PREBUFFER_SIZE_DEFAULT;
+struct http_data {
+	int fd;
+	enum conn_state state;
 
-typedef struct _InputStreemHTTPData {
+	/* { we may have a non-multithreaded HTTP discipline in the future */
+		enum conn_action action;
+		int pipe_fds[2];
+
+		pthread_t io_thread;
+		struct ringbuf *rb;
+
+		/* TODO: fix Notify so it doesn't use ugly "pending" flag */
+		pthread_mutex_t full_lock;
+		pthread_cond_t full_cond;
+		pthread_mutex_t empty_lock;
+		pthread_cond_t empty_cond;
+
+		pthread_mutex_t action_lock;
+		pthread_cond_t action_cond;
+	/* } */
+
+	int nr_redirect;
+	size_t icy_metaint;
+	size_t icy_offset;
 	char *host;
 	char *path;
 	char *port;
-	int sock;
-	int connState;
-	char *buffer;
-	size_t buflen;
-	int timesRedirected;
-	size_t icyMetaint;
-	int prebuffer;
-	size_t icyOffset;
-	char *proxyAuth;
-	char *httpAuth;
-	/* Number of times mpd tried to get data */
-	int tries;
-} InputStreamHTTPData;
+	char *proxy_auth;
+	char *http_auth;
+};
 
-void inputStream_initHttp(void)
+static int awaken_buffer_task(struct http_data *data);
+
+static void init_http_data(struct http_data *data)
 {
-	ConfigParam *param = getConfigParam(CONF_HTTP_PROXY_HOST);
-	char *test;
-	if (param) {
-		proxyHost = param->value;
+	data->fd = -1;
+	data->action = CONN_ACTION_NONE;
+	data->state = CONN_STATE_NEW;
+	init_async_pipe(data->pipe_fds);
 
-		param = getConfigParam(CONF_HTTP_PROXY_PORT);
+	data->proxy_auth = proxy_host ?
+	                   proxy_auth_string(proxy_user, proxy_password) :
+	                   NULL;
+	data->http_auth = NULL;
+	data->host = NULL;
+	data->path = NULL;
+	data->port = NULL;
+	data->nr_redirect = 0;
+	data->icy_metaint = 0;
+	data->icy_offset = 0;
+	data->rb = ringbuf_create(buffer_size);
 
-		if (!param) {
-			FATAL("%s specified but not %s\n", CONF_HTTP_PROXY_HOST,
-			      CONF_HTTP_PROXY_PORT);
-		}
-		proxyPort = param->value;
-
-		param = getConfigParam(CONF_HTTP_PROXY_USER);
-
-		if (param) {
-			proxyUser = param->value;
-
-			param = getConfigParam(CONF_HTTP_PROXY_PASSWORD);
-
-			if (!param) {
-				FATAL("%s specified but not %s\n",
-				      CONF_HTTP_PROXY_USER,
-				      CONF_HTTP_PROXY_PASSWORD);
-			}
-
-			proxyPassword = param->value;
-		} else {
-			param = getConfigParam(CONF_HTTP_PROXY_PASSWORD);
-
-			if (param) {
-				FATAL("%s specified but not %s\n",
-				      CONF_HTTP_PROXY_PASSWORD, CONF_HTTP_PROXY_USER);
-			}
-		}
-	} else if ((param = getConfigParam(CONF_HTTP_PROXY_PORT))) {
-		FATAL("%s specified but not %s, line %i\n",
-		      CONF_HTTP_PROXY_PORT, CONF_HTTP_PROXY_HOST, param->line);
-	} else if ((param = getConfigParam(CONF_HTTP_PROXY_USER))) {
-		FATAL("%s specified but not %s, line %i\n",
-		      CONF_HTTP_PROXY_USER, CONF_HTTP_PROXY_HOST, param->line);
-	} else if ((param = getConfigParam(CONF_HTTP_PROXY_PASSWORD))) {
-		FATAL("%s specified but not %s, line %i\n",
-		      CONF_HTTP_PROXY_PASSWORD, CONF_HTTP_PROXY_HOST,
-		      param->line);
-	}
-
-	param = getConfigParam(CONF_HTTP_BUFFER_SIZE);
-
-	if (param) {
-		long tmp = strtol(param->value, &test, 10);
-		if (*test != '\0' || tmp <= 0) {
-			FATAL("\"%s\" specified for %s at line %i is not a "
-			      "positive integer\n",
-			      param->value, CONF_HTTP_BUFFER_SIZE, param->line);
-		}
-
-		bufferSize = tmp * 1024;
-	}
-
-	param = getConfigParam(CONF_HTTP_PREBUFFER_SIZE);
-
-	if (param) {
-		long tmp = strtol(param->value, &test, 10);
-		if (*test != '\0' || tmp <= 0) {
-			FATAL("\"%s\" specified for %s at line %i is not a "
-			      "positive integer\n",
-			      param->value, CONF_HTTP_PREBUFFER_SIZE,
-			      param->line);
-		}
-
-		prebufferSize = tmp * 1024;
-	}
-
-	if (prebufferSize > bufferSize)
-		prebufferSize = bufferSize;
-	assert(bufferSize > 0 && "http bufferSize too small");
-	assert(prebufferSize > 0 && "http prebufferSize too small");
+	pthread_cond_init(&data->action_cond, NULL);
+	pthread_mutex_init(&data->action_lock, NULL);
+	pthread_cond_init(&data->full_cond, NULL);
+	pthread_mutex_init(&data->full_lock, NULL);
+	pthread_cond_init(&data->empty_cond, NULL);
+	pthread_mutex_init(&data->empty_lock, NULL);
 }
 
-static InputStreamHTTPData *newInputStreamHTTPData(void)
+static struct http_data *new_http_data(void)
 {
-	InputStreamHTTPData *ret = xmalloc(sizeof(InputStreamHTTPData));
-
-	if (proxyHost) {
-		ret->proxyAuth = proxyAuthString(proxyUser, proxyPassword);
-	} else
-		ret->proxyAuth = NULL;
-
-	ret->httpAuth = NULL;
-	ret->host = NULL;
-	ret->path = NULL;
-	ret->port = NULL;
-	ret->connState = HTTP_CONN_STATE_CLOSED;
-	ret->timesRedirected = 0;
-	ret->icyMetaint = 0;
-	ret->prebuffer = 0;
-	ret->icyOffset = 0;
-	ret->buffer = xmalloc(bufferSize);
-	ret->tries = 0;
+	struct http_data *ret = xmalloc(sizeof(struct http_data));
+	init_http_data(ret);
 	return ret;
 }
 
-static void freeInputStreamHTTPData(InputStreamHTTPData * data)
+static void free_http_data(struct http_data * data)
 {
-	if (data->host)
-		free(data->host);
-	if (data->path)
-		free(data->path);
-	if (data->port)
-		free(data->port);
-	if (data->proxyAuth)
-		free(data->proxyAuth);
-	if (data->httpAuth)
-		free(data->httpAuth);
+	if (data->host) free(data->host);
+	if (data->path) free(data->path);
+	if (data->port) free(data->port);
+	if (data->proxy_auth) free(data->proxy_auth);
+	if (data->http_auth) free(data->http_auth);
 
-	free(data->buffer);
+	xpthread_cond_destroy(&data->action_cond);
+	xpthread_mutex_destroy(&data->action_lock);
+	xpthread_cond_destroy(&data->full_cond);
+	xpthread_mutex_destroy(&data->full_lock);
+	xpthread_cond_destroy(&data->empty_cond);
+	xpthread_mutex_destroy(&data->empty_lock);
 
+	xclose(data->pipe_fds[0]);
+	xclose(data->pipe_fds[1]);
+	ringbuf_free(data->rb);
 	free(data);
 }
 
-static int parseUrl(InputStreamHTTPData * data, char *url)
+static int parse_url(struct http_data * data, char *url)
 {
-	char *temp;
 	char *colon;
 	char *slash;
 	char *at;
 	int len;
+	char *cur = url;
+	size_t offset;
 
-	if (strncmp("http://", url, strlen("http://")) != 0)
+	if (!match("http://"))
 		return -1;
 
-	temp = url + strlen("http://");
+	cur = url + offset;
+	colon = strchr(cur, ':');
+	at = strchr(cur, '@');
 
-	colon = strchr(temp, ':');
-	at = strchr(temp, '@');
-
-	if (data->httpAuth) {
-		free(data->httpAuth);
-		data->httpAuth = NULL;
+	if (data->http_auth) {
+		free(data->http_auth);
+		data->http_auth = NULL;
 	}
 
 	if (at) {
@@ -211,42 +174,42 @@ static int parseUrl(InputStreamHTTPData * data, char *url)
 		char *passwd;
 
 		if (colon && colon < at) {
-			user = xmalloc(colon - temp + 1);
-			memcpy(user, temp, colon - temp);
-			user[colon - temp] = '\0';
+			user = xmalloc(colon - cur + 1);
+			memcpy(user, cur, colon - cur);
+			user[colon - cur] = '\0';
 
 			passwd = xmalloc(at - colon);
 			memcpy(passwd, colon + 1, at - colon - 1);
 			passwd[at - colon - 1] = '\0';
 		} else {
-			user = xmalloc(at - temp + 1);
-			memcpy(user, temp, at - temp);
-			user[at - temp] = '\0';
+			user = xmalloc(at - cur + 1);
+			memcpy(user, cur, at - cur);
+			user[at - cur] = '\0';
 
 			passwd = xstrdup("");
 		}
 
-		data->httpAuth = httpAuthString(user, passwd);
+		data->http_auth = http_auth_string(user, passwd);
 
 		free(user);
 		free(passwd);
 
-		temp = at + 1;
-		colon = strchr(temp, ':');
+		cur = at + 1;
+		colon = strchr(cur, ':');
 	}
 
-	slash = strchr(temp, '/');
+	slash = strchr(cur, '/');
 
 	if (slash && colon && slash <= colon)
 		return -1;
 
 	/* fetch the host portion */
 	if (colon)
-		len = colon - temp + 1;
+		len = colon - cur + 1;
 	else if (slash)
-		len = slash - temp + 1;
+		len = slash - cur + 1;
 	else
-		len = strlen(temp) + 1;
+		len = strlen(cur) + 1;
 
 	if (len <= 1)
 		return -1;
@@ -254,7 +217,7 @@ static int parseUrl(InputStreamHTTPData * data, char *url)
 	if (data->host)
 		free(data->host);
 	data->host = xmalloc(len);
-	memcpy(data->host, temp, len - 1);
+	memcpy(data->host, cur, len - 1);
 	data->host[len - 1] = '\0';
 	if (data->port)
 		free(data->port);
@@ -274,12 +237,82 @@ static int parseUrl(InputStreamHTTPData * data, char *url)
 	if (data->path)
 		free(data->path);
 	/* fetch the path */
-	if (proxyHost)
-		data->path = xstrdup(url);
-	else
-		data->path = xstrdup(slash ? slash : "/");
+	data->path = proxy_host ? xstrdup(url) : xstrdup(slash ? slash : "/");
 
 	return 0;
+}
+
+static struct timespec * ts_timeout(struct timespec *ts, const long sec)
+{
+	struct timeval tv;
+	gettimeofday(&tv, NULL);
+	ts->tv_sec = tv.tv_sec + sec;
+	ts->tv_nsec = tv.tv_usec * 1000;
+	return ts;
+}
+
+/* triggers an action and waits for completion */
+static int trigger_action(struct http_data *data,
+                          enum conn_action action,
+                          int nonblocking)
+{
+	int ret = -1;
+
+	assert(!pthread_equal(data->io_thread, pthread_self()));
+	pthread_mutex_lock(&data->action_lock);
+	if (data->action != CONN_ACTION_NONE)
+		goto out;
+	data->action = action;
+	if (awaken_buffer_task(data)) {
+		/* DEBUG("wokeup from cond_wait to trigger action\n"); */
+	} else if (xwrite(data->pipe_fds[1], "", 1) != 1) {
+		ERROR(__FILE__ ": pipe full, couldn't trigger action\n");
+		data->action = CONN_ACTION_NONE;
+		goto out;
+	}
+	if (nonblocking) {
+		struct timespec ts;
+		pthread_cond_timedwait(&data->action_cond,
+		                       &data->action_lock,
+		                       ts_timeout(&ts, 1));
+	} else {
+		pthread_cond_wait(&data->action_cond, &data->action_lock);
+	}
+	ret = 0;
+out:
+	pthread_mutex_unlock(&data->action_lock);
+	return ret;
+}
+
+static int take_action(struct http_data *data)
+{
+	assert(pthread_equal(data->io_thread, pthread_self()));
+
+	pthread_mutex_lock(&data->action_lock);
+	switch (data->action) {
+	case CONN_ACTION_NONE:
+		pthread_mutex_unlock(&data->action_lock);
+		return 0;
+	case CONN_ACTION_DOSEEK:
+		data->state = CONN_STATE_NEW;
+		break;
+	case CONN_ACTION_CLOSE:
+		data->state = CONN_STATE_CLOSED;
+	}
+	xclose(data->fd);
+	data->fd = -1;
+	data->action = CONN_ACTION_NONE;
+	pthread_cond_signal(&data->action_cond);
+	pthread_mutex_unlock(&data->action_lock);
+	return 1;
+}
+
+static int err_close(struct http_data *data)
+{
+	assert(pthread_equal(data->io_thread, pthread_self()));
+	xclose(data->fd);
+	data->state = CONN_STATE_CLOSED;
+	return -1;
 }
 
 /* returns -1 on error, 0 on success (and sets dest) */
@@ -325,69 +358,191 @@ static int my_connect_addrs(struct addrinfo *ans)
 		if (connect(fd, ap->ai_addr, ap->ai_addrlen) >= 0
 		    || errno == EINPROGRESS)
 			return fd;	/* success */
-
 		DEBUG(__FILE__ ": unable to connect: %s\n", strerror(errno));
 		xclose(fd); /* failed, get the next one */
 	}
 	return -1;
 }
 
-static int initHTTPConnection(InputStream * inStream)
+static int init_connection(struct http_data *data)
 {
 	struct addrinfo *ans = NULL;
-	InputStreamHTTPData *data = (InputStreamHTTPData *) inStream->data;
 
-	if ((proxyHost ? my_getaddrinfo(&ans, proxyHost, proxyPort) :
-	                 my_getaddrinfo(&ans, data->host, data->port)) < 0)
+	assert(pthread_equal(data->io_thread, pthread_self()));
+	assert_state2(CONN_STATE_NEW, CONN_STATE_REDIRECT);
+
+	if ((proxy_host ? my_getaddrinfo(&ans, proxy_host, proxy_port) :
+	                  my_getaddrinfo(&ans, data->host, data->port)) < 0)
 		return -1;
 
-	data->sock = my_connect_addrs(ans);
+	assert(data->fd < 0);
+	data->fd = my_connect_addrs(ans);
 	freeaddrinfo(ans);
 
-	if (data->sock < 0)
+	if (data->fd < 0)
 		return -1; /* failed */
-	data->connState = HTTP_CONN_STATE_INIT;
-	data->buflen = 0;
+	data->state = CONN_STATE_CONNECTED;
 	return 0;
 }
 
-static int finishHTTPInit(InputStream * inStream)
+#define my_nfds(d) ((d->fd > d->pipe_fds[0] ? d->fd : d->pipe_fds[0]) + 1)
+
+static int pipe_notified(struct http_data * data, fd_set *rfds)
 {
-	InputStreamHTTPData *data = (InputStreamHTTPData *) inStream->data;
-	struct timeval tv;
-	fd_set writeSet;
-	fd_set errorSet;
-	int error;
-	socklen_t error_len = sizeof(int);
+	char buf;
+	int fd = data->pipe_fds[0];
+
+	assert(pthread_equal(data->io_thread, pthread_self()));
+	return FD_ISSET(fd, rfds) && (xread(fd, &buf, 1) == 1);
+}
+
+enum await_result {
+	AWAIT_READY,
+	AWAIT_ACTION_PENDING,
+	AWAIT_ERROR
+};
+
+static enum await_result socket_error_or_ready(int fd)
+{
 	int ret;
-	size_t length;
-	ssize_t nbytes;
-	char request[2048];
+	int error = 0;
+	socklen_t error_len = sizeof(int);
 
-	tv.tv_sec = 0;
-	tv.tv_usec = 0;
+	ret = getsockopt(fd, SOL_SOCKET, SO_ERROR, &error, &error_len);
+	return (ret < 0 || error) ? AWAIT_ERROR : AWAIT_READY;
+}
 
-	FD_ZERO(&writeSet);
-	FD_ZERO(&errorSet);
-	FD_SET(data->sock, &writeSet);
-	FD_SET(data->sock, &errorSet);
+static enum await_result await_sendable(struct http_data *data)
+{
+	fd_set rfds, wfds;
 
-	ret = select(data->sock + 1, NULL, &writeSet, &errorSet, &tv);
+	assert(pthread_equal(data->io_thread, pthread_self()));
+	assert_state(CONN_STATE_CONNECTED);
 
-	if (ret == 0 || (ret < 0 && errno == EINTR))
-		return 0;
+	FD_ZERO(&rfds);
+	FD_ZERO(&wfds);
+	FD_SET(data->pipe_fds[0], &rfds);
+	FD_SET(data->fd, &wfds);
 
-	if (ret < 0) {
-		DEBUG(__FILE__ ": problem select'ing: %s\n", strerror(errno));
-		goto close_err;
+	if (select(my_nfds(data), &rfds, &wfds, NULL, NULL) <= 0)
+		return AWAIT_ERROR;
+	if (pipe_notified(data, &rfds)) return AWAIT_ACTION_PENDING;
+	return socket_error_or_ready(data->fd);
+}
+
+static enum await_result await_recvable(struct http_data *data)
+{
+	fd_set rfds;
+
+	assert(pthread_equal(data->io_thread, pthread_self()));
+
+	FD_ZERO(&rfds);
+	FD_SET(data->pipe_fds[0], &rfds);
+	FD_SET(data->fd, &rfds);
+
+	if (select(my_nfds(data), &rfds, NULL, NULL, NULL) <= 0)
+		return AWAIT_ERROR;
+	if (pipe_notified(data, &rfds)) return AWAIT_ACTION_PENDING;
+	return socket_error_or_ready(data->fd);
+}
+
+static void await_buffer_space(struct http_data *data)
+{
+	assert(pthread_equal(data->io_thread, pthread_self()));
+	assert_state(CONN_STATE_BUFFER_FULL);
+	pthread_cond_wait(&data->full_cond, &data->full_lock);
+	if (ringbuf_write_space(data->rb) > 0)
+		data->state = CONN_STATE_BUFFER;
+	/* else spurious wakeup or action triggered ... */
+}
+
+static void feed_starved(struct http_data *data)
+{
+	assert(pthread_equal(data->io_thread, pthread_self()));
+
+	if (!pthread_mutex_trylock(&data->empty_lock)) {
+		pthread_cond_signal(&data->empty_cond);
+		pthread_mutex_unlock(&data->empty_lock);
 	}
+}
 
-	getsockopt(data->sock, SOL_SOCKET, SO_ERROR, &error, &error_len);
-	if (error)
-		goto close_err;
+static int starved_wait(struct http_data *data, const long sec)
+{
+	struct timespec ts;
 
-	/* deal with ICY metadata later, for now its fucking up stuff! */
-	length = (size_t)snprintf(request, sizeof(request),
+	assert(!pthread_equal(data->io_thread, pthread_self()));
+	return pthread_cond_timedwait(&data->empty_cond,
+	                              &data->empty_lock,
+	                              ts_timeout(&ts, sec));
+}
+
+static int awaken_buffer_task(struct http_data *data)
+{
+	assert(!pthread_equal(data->io_thread, pthread_self()));
+	if (!pthread_mutex_trylock(&data->full_lock)) {
+		pthread_cond_signal(&data->full_cond);
+		pthread_mutex_unlock(&data->full_lock);
+		return 1;
+	}
+	return 0;
+}
+
+static ssize_t buffer_data(InputStream *is)
+{
+	struct iovec vec[2];
+	ssize_t r;
+	struct http_data *data = (struct http_data *)is->data;
+
+	assert(pthread_equal(data->io_thread, pthread_self()));
+	assert_state2(CONN_STATE_BUFFER, CONN_STATE_PREBUFFER);
+
+	if (!ringbuf_get_write_vector(data->rb, vec)) {
+		data->state = CONN_STATE_BUFFER_FULL;
+		return 0;
+	}
+	r = readv(data->fd, vec, vec[1].iov_len ? 2 : 1);
+	if (r > 0) {
+		size_t buflen;
+
+		ringbuf_write_advance(data->rb, r);
+		buflen = ringbuf_read_space(data->rb);
+		if (buflen == 0 || buflen < data->icy_metaint)
+			data->state = CONN_STATE_PREBUFFER;
+		else if (buflen >= prebuffer_size)
+			data->state = CONN_STATE_BUFFER;
+		if (data->state == CONN_STATE_BUFFER)
+			feed_starved(data);
+		return r;
+	} else if (r < 0) {
+		if (errno == EAGAIN || errno == EINTR)
+			return 0;
+		is->error = errno;
+	}
+	err_close(data);
+	return r;
+}
+
+/*
+ * This requires the socket to be writable beforehand (determined via
+ * select(2)).  This does NOT retry or continue if we can't write the
+ * HTTP header in one shot.  One reason for this is laziness, I don't
+ * want to have to store the header when recalling this function, but
+ * the other reason is practical, too: if we can't send a small HTTP
+ * request without blocking, the connection is pathetic anyways and we
+ * should just stop
+ *
+ * Returns -1 on error, 0 on success
+ */
+static int send_request(InputStream * is)
+{
+	struct http_data *data = (struct http_data *) is->data;
+	int length;
+	ssize_t nbytes;
+	char request[2048]; /* todo(?): write item-at-a-time and cork */
+
+	assert(pthread_equal(data->io_thread, pthread_self()));
+	assert_state(CONN_STATE_CONNECTED);
+	length = snprintf(request, sizeof(request),
 	                 "GET %s HTTP/1.1\r\n"
 	                 "Host: %s\r\n"
 	                 "Connection: close\r\n"
@@ -398,447 +553,529 @@ static int finishHTTPInit(InputStream * inStream)
 	                 "\r\n",
 	                 data->path,
 	                 data->host,
-	                 inStream->offset,
-	                 data->proxyAuth ? data->proxyAuth :
-	                 (data->httpAuth ? data->httpAuth : ""));
-
-	if (length >= sizeof(request))
-		goto close_err;
-	nbytes = write(data->sock, request, length);
-	if (nbytes < 0 || (size_t)nbytes != length)
-		goto close_err;
-
-	data->connState = HTTP_CONN_STATE_HELLO;
+	                 is->offset,
+	                 data->proxy_auth ? data->proxy_auth :
+	                  (data->http_auth ? data->http_auth : ""));
+	if (length < 0 || length >= (int)sizeof(request))
+		return err_close(data);
+	nbytes = write(data->fd, request, (size_t)length);
+	if (nbytes < 0 || nbytes != (ssize_t)length)
+		return err_close(data);
+	data->state = CONN_STATE_REQUESTED;
 	return 0;
+}
 
-close_err:
-	close(data->sock);
-	data->connState = HTTP_CONN_STATE_CLOSED;
+/* handles parsing of the first line of the HTTP response */
+static int parse_response_code(InputStream * is, const char *response)
+{
+	size_t offset;
+	const char *cur = response;
+
+	is->seekable = 0;
+	if (match("HTTP/1.0 ")) {
+		return atoi(cur + offset);
+	} else if (match("HTTP/1.1 ")) {
+		is->seekable = 1;
+		return atoi(cur + offset);
+	} else if (match("ICY 200 OK")) {
+		return 200;
+	} else if (match("ICY 400 Server Full")) {
+		return 400;
+	} else if (match("ICY 404"))
+		return 404;
+	return 0;
+}
+
+static int leading_space(int c)
+{
+	return (c == ' ' || c == '\t');
+}
+
+static int parse_header_dup(char **dst, char *cur)
+{
+	char *eol;
+	size_t len;
+
+	if (!(eol = strstr(cur, "\r\n")))
+		return -1;
+	*eol = '\0';
+	while (leading_space(*cur))
+		cur++;
+	len = strlen(cur) + 1;
+	*dst = xrealloc(*dst, len);
+	memcpy(*dst, cur, len);
+	*eol = '\r';
+	return 0;
+}
+
+static int parse_redirect(InputStream * is, char *response, const char *needle)
+{
+	char *url = NULL;
+	char *cur = strstr(response, "\r\n");
+	size_t offset;
+	struct http_data *data = (struct http_data *) is->data;
+	int ret;
+
+	while (cur && cur != needle) {
+		assert(cur < needle);
+		if (match("\r\nLocation:"))
+			goto found;
+		cur = strstr(cur + 2, "\r\n");
+	}
+	return -1;
+found:
+	if (parse_header_dup(&url, cur + offset) < 0)
+		return -1;
+	ret = parse_url(data, url);
+	free(url);
+	if (!ret && data->nr_redirect < HTTP_REDIRECT_MAX) {
+		data->nr_redirect++;
+		xclose(data->fd);
+		data->fd = -1;
+		data->state = CONN_STATE_REDIRECT;
+		return 0; /* success */
+	}
 	return -1;
 }
 
-static int getHTTPHello(InputStream * inStream)
+static int parse_headers(InputStream * is, char *response, const char *needle)
 {
-	InputStreamHTTPData *data = (InputStreamHTTPData *) inStream->data;
-	fd_set readSet;
-	struct timeval tv;
-	int ret;
-	char *needle;
-	char *cur = data->buffer;
-	int rc;
-	long readed;
+	struct http_data *data = (struct http_data *) is->data;
+	char *cur = strstr(response, "\r\n");
+	size_t offset;
+	long tmp;
 
-	FD_ZERO(&readSet);
-	FD_SET(data->sock, &readSet);
-
-	tv.tv_sec = 0;
-	tv.tv_usec = 0;
-
-	ret = select(data->sock + 1, &readSet, NULL, NULL, &tv);
-
-	if (ret == 0 || (ret < 0 && errno == EINTR))
-		return 0;
-
-	if (ret < 0) {
-		data->connState = HTTP_CONN_STATE_CLOSED;
-		close(data->sock);
-		data->buflen = 0;
-		return -1;
+	data->icy_metaint = 0;
+	data->icy_offset = 0;
+	if (is->mime) {
+		free(is->mime);
+		is->mime = NULL;
 	}
-
-	if (data->buflen >= bufferSize - 1) {
-		data->connState = HTTP_CONN_STATE_CLOSED;
-		close(data->sock);
-		return -1;
+	if (is->metaName) {
+		free(is->metaName);
+		is->metaName = NULL;
 	}
+	is->size = 0;
 
-	readed = recv(data->sock, data->buffer + data->buflen,
-		      bufferSize - 1 - data->buflen, 0);
-
-	if (readed < 0 && (errno == EAGAIN || errno == EINTR))
-		return 0;
-
-	if (readed <= 0) {
-		data->connState = HTTP_CONN_STATE_CLOSED;
-		close(data->sock);
-		data->buflen = 0;
-		return -1;
-	}
-
-	data->buffer[data->buflen + readed] = '\0';
-	data->buflen += readed;
-
-	needle = strstr(data->buffer, "\r\n\r\n");
-
-	if (!needle)
-		return 0;
-
-	if (0 == strncmp(cur, "HTTP/1.0 ", 9)) {
-		inStream->seekable = 0;
-		rc = atoi(cur + 9);
-	} else if (0 == strncmp(cur, "HTTP/1.1 ", 9)) {
-		inStream->seekable = 1;
-		rc = atoi(cur + 9);
-	} else if (0 == strncmp(cur, "ICY 200 OK", 10)) {
-		inStream->seekable = 0;
-		rc = 200;
-	} else if (0 == strncmp(cur, "ICY 400 Server Full", 19))
-		rc = 400;
-	else if (0 == strncmp(cur, "ICY 404", 7))
-		rc = 404;
-	else {
-		close(data->sock);
-		data->connState = HTTP_CONN_STATE_CLOSED;
-		return -1;
-	}
-
-	switch (rc) {
-	case 200:
-	case 206:
-		break;
-	case 301:
-	case 302:
-		cur = strstr(cur, "Location: ");
-		if (cur) {
-			char *url;
-			int curlen = 0;
-			cur += strlen("Location: ");
-			while (*(cur + curlen) != '\0'
-			       && *(cur + curlen) != '\r') {
-				curlen++;
-			}
-			url = xmalloc(curlen + 1);
-			memcpy(url, cur, curlen);
-			url[curlen] = '\0';
-			ret = parseUrl(data, url);
-			free(url);
-			if (ret == 0 && data->timesRedirected <
-			    HTTP_REDIRECT_MAX) {
-				data->timesRedirected++;
-				close(data->sock);
-				data->connState = HTTP_CONN_STATE_REOPEN;
-				data->buflen = 0;
-				return 0;
-			}
-		}
-	case 400:
-	case 401:
-	case 403:
-	case 404:
-	default:
-		close(data->sock);
-		data->connState = HTTP_CONN_STATE_CLOSED;
-		data->buflen = 0;
-		return -1;
-	}
-
-	cur = strstr(data->buffer, "\r\n");
 	while (cur && cur != needle) {
-		if (0 == strncasecmp(cur, "\r\nContent-Length: ", 18)) {
-			if (!inStream->size)
-				inStream->size = atol(cur + 18);
-		} else if (0 == strncasecmp(cur, "\r\nicy-metaint:", 14)) {
-			data->icyMetaint = strtoul(cur + 14, NULL, 0);
-		} else if (0 == strncasecmp(cur, "\r\nicy-name:", 11) ||
-			   0 == strncasecmp(cur, "\r\nice-name:", 11)) {
-			int incr = 11;
-			char *temp = strstr(cur + incr, "\r\n");
-			if (!temp)
-				break;
-			*temp = '\0';
-			if (inStream->metaName)
-				free(inStream->metaName);
-			while (*(incr + cur) == ' ')
-				incr++;
-			inStream->metaName = xstrdup(cur + incr);
-			*temp = '\r';
-			DEBUG("inputStream_http: metaName: %s\n",
-			      inStream->metaName);
-		} else if (0 == strncasecmp(cur, "\r\nx-audiocast-name:", 19)) {
-			int incr = 19;
-			char *temp = strstr(cur + incr, "\r\n");
-			if (!temp)
-				break;
-			*temp = '\0';
-			if (inStream->metaName)
-				free(inStream->metaName);
-			while (*(incr + cur) == ' ')
-				incr++;
-			inStream->metaName = xstrdup(cur + incr);
-			*temp = '\r';
-			DEBUG("inputStream_http: metaName: %s\n",
-			      inStream->metaName);
-		} else if (0 == strncasecmp(cur, "\r\nContent-Type:", 15)) {
-			int incr = 15;
-			char *temp = strstr(cur + incr, "\r\n");
-			if (!temp)
-				break;
-			*temp = '\0';
-			if (inStream->mime)
-				free(inStream->mime);
-			while (*(incr + cur) == ' ')
-				incr++;
-			inStream->mime = xstrdup(cur + incr);
-			*temp = '\r';
+		assert(cur < needle);
+		if (match("\r\nContent-Length:")) {
+			if ((tmp = atol(cur + offset)) >= 0)
+				is->size = tmp;
+		} else if (match("\r\nicy-metaint:")) {
+			if ((tmp = atol(cur + offset)) >= 0)
+				data->icy_metaint = tmp;
+		} else if (match("\r\nicy-name:") ||
+		           match("\r\nice-name:") ||
+		           match("\r\nx-audiocast-name:")) {
+			if (parse_header_dup(&is->metaName, cur + offset) < 0)
+				return -1;
+			DEBUG(__FILE__": metaName: %s\n", is->metaName);
+		} else if (match("\r\nContent-Type:")) {
+			if (parse_header_dup(&is->mime, cur + offset) < 0)
+				return -1;
 		}
-
 		cur = strstr(cur + 2, "\r\n");
 	}
+	return 0;
+}
 
-	if (inStream->size <= 0)
-		inStream->seekable = 0;
+/* Returns -1 on error, 0 on success */
+static int recv_response(InputStream * is)
+{
+	struct http_data *data = (struct http_data *) is->data;
+	char *needle;
+	char response[2048];
+	const size_t response_max = sizeof(response) - 1;
+	ssize_t r;
+	ssize_t peeked;
 
-	needle += 4;	/* 4 == strlen("\r\n\r\n") */
-	data->buflen -= (needle - data->buffer);
-	memmove(data->buffer, needle, data->buflen);
+	assert(pthread_equal(data->io_thread, pthread_self()));
+	assert_state2(CONN_STATE_RESP_HEAD, CONN_STATE_REQUESTED);
+	do {
+		r = recv(data->fd, response, response_max, MSG_PEEK);
+	} while (r < 0 && errno == EINTR);
+	if (r <= 0)
+		return err_close(data); /* EOF */
+	response[r] = '\0';
+	if (!(needle = strstr(response, "\r\n\r\n"))) {
+		if ((size_t)r == response_max)
+			return err_close(data);
+		/* response too small, try again */
+		data->state = CONN_STATE_RESP_HEAD;
+		return -1;
+	}
 
-	data->connState = HTTP_CONN_STATE_OPEN;
+	switch (parse_response_code(is, response)) {
+	case 200: /* OK */
+	case 206: /* Partial Content */
+		break;
+	case 301: /* Moved Permanently */
+	case 302: /* Moved Temporarily */
+		if (parse_redirect(is, response, needle) == 0)
+			return 0; /* success, reconnect */
+	default:
+		return err_close(data);
+	}
 
-	data->prebuffer = 1;
+	parse_headers(is, response, needle);
+	if (is->size <= 0)
+		is->seekable = 0;
+	is->seekable = 0;
+	needle += sizeof("\r\n\r\n") - 1;
+	peeked = needle - response;
+	assert(peeked <= r);
+	do {
+		r = recv(data->fd, response, peeked, 0);
+	} while (r < 0 && errno == EINTR);
+	assert(r == peeked && "r != peeked");
+
+	ringbuf_writer_reset(data->rb);
+	data->state = CONN_STATE_PREBUFFER;
 
 	return 0;
 }
 
-int inputStream_httpOpen(InputStream * inStream, char *url)
+static void * http_io_task(void *arg)
 {
-	InputStreamHTTPData *data = newInputStreamHTTPData();
+	InputStream *is = (InputStream *) arg;
+	struct http_data *data = (struct http_data *) is->data;
 
-	inStream->data = data;
-	if (parseUrl(data, url) < 0) {
-		freeInputStreamHTTPData(data);
-		return -1;
+	pthread_mutex_lock(&data->full_lock);
+	while (1) {
+		take_action(data);
+		switch (data->state) {
+		case CONN_STATE_NEW:
+		case CONN_STATE_REDIRECT:
+			init_connection(data);
+			break;
+		case CONN_STATE_CONNECTED:
+			switch (await_sendable(data)) {
+			case AWAIT_READY: send_request(is); break;
+			case AWAIT_ACTION_PENDING: break;
+			case AWAIT_ERROR: goto err;
+			}
+			break;
+		case CONN_STATE_REQUESTED:
+		case CONN_STATE_RESP_HEAD:
+			switch (await_recvable(data)) {
+			case AWAIT_READY: recv_response(is); break;
+			case AWAIT_ACTION_PENDING: break;
+			case AWAIT_ERROR: goto err;
+			}
+			break;
+		case CONN_STATE_PREBUFFER:
+		case CONN_STATE_BUFFER:
+			switch (await_recvable(data)) {
+			case AWAIT_READY: buffer_data(is); break;
+			case AWAIT_ACTION_PENDING: break;
+			case AWAIT_ERROR: goto err;
+			}
+			break;
+		case CONN_STATE_BUFFER_FULL:
+			await_buffer_space(data);
+			break;
+		case CONN_STATE_CLOSED: goto closed;
+		}
 	}
+err:
+	err_close(data);
+closed:
+	assert_state(CONN_STATE_CLOSED);
+	pthread_mutex_unlock(&data->full_lock);
+	return NULL;
+}
 
-	if (initHTTPConnection(inStream) < 0) {
-		freeInputStreamHTTPData(data);
-		return -1;
-	}
-
-	inStream->seekFunc = inputStream_httpSeek;
-	inStream->closeFunc = inputStream_httpClose;
-	inStream->readFunc = inputStream_httpRead;
-	inStream->atEOFFunc = inputStream_httpAtEOF;
-	inStream->bufferFunc = inputStream_httpBuffer;
-
+int inputStream_httpBuffer(InputStream *is)
+{
 	return 0;
 }
 
-int inputStream_httpSeek(InputStream * inStream, long offset, int whence)
+int inputStream_httpOpen(InputStream * is, char *url)
 {
-	InputStreamHTTPData *data;
-	if (!inStream->seekable)
+	struct http_data *data = new_http_data();
+	pthread_attr_t attr;
+
+	is->seekable = 0;
+	is->data = data;
+	if (parse_url(data, url) < 0) {
+		free_http_data(data);
 		return -1;
+	}
+
+	is->seekFunc = inputStream_httpSeek;
+	is->closeFunc = inputStream_httpClose;
+	is->readFunc = inputStream_httpRead;
+	is->atEOFFunc = inputStream_httpAtEOF;
+	is->bufferFunc = inputStream_httpBuffer;
+
+	pthread_attr_init(&attr);
+	if (pthread_create(&data->io_thread, &attr, http_io_task, is))
+		FATAL("failed to spawn http_io_task: %s", strerror(errno));
+
+	pthread_mutex_lock(&data->empty_lock);
+	return 0;
+}
+
+int inputStream_httpSeek(InputStream * is, long offset, int whence)
+{
+	struct http_data *data = (struct http_data *)is->data;
+	long old_offset = is->offset;
+	long diff;
+
+	if (!is->seekable) {
+		is->error = ESPIPE;
+		return -1;
+	}
+	assert(is->size > 0);
 
 	switch (whence) {
 	case SEEK_SET:
-		inStream->offset = offset;
+		is->offset = offset;
 		break;
 	case SEEK_CUR:
-		inStream->offset += offset;
+		is->offset += offset;
 		break;
 	case SEEK_END:
-		inStream->offset = inStream->size + offset;
+		is->offset = is->size + offset;
 		break;
 	default:
+		is->error = EINVAL;
 		return -1;
 	}
 
-	data = (InputStreamHTTPData *)inStream->data;
-	close(data->sock);
-	data->connState = HTTP_CONN_STATE_REOPEN;
-	data->buflen = 0;
-
-	inputStream_httpBuffer(inStream);
-
+	diff = is->offset - old_offset;
+	if (diff > 0) { /* seek forward if we've already buffered it */
+		long avail = (long)ringbuf_read_space(data->rb);
+		if (avail >= diff) {
+			ringbuf_read_advance(data->rb, diff);
+			return 0;
+		}
+	}
+	trigger_action(data, CONN_ACTION_DOSEEK, 0);
 	return 0;
 }
 
-static void parseIcyMetadata(InputStream * inStream, char *metadata, int size)
+static void parse_icy_metadata(InputStream * is, char *metadata, size_t size)
 {
 	char *r = NULL;
-	char *s;
-	char *temp = xmalloc(size + 1);
-	memcpy(temp, metadata, size);
-	temp[size] = '\0';
-	s = strtok_r(temp, ";", &r);
-	while (s) {
-		if (0 == strncmp(s, "StreamTitle=", 12)) {
-			int cur = 12;
-			if (inStream->metaTitle)
-				free(inStream->metaTitle);
-			if (*(s + cur) == '\'')
-				cur++;
-			if (s[strlen(s) - 1] == '\'') {
-				s[strlen(s) - 1] = '\0';
-			}
-			inStream->metaTitle = xstrdup(s + cur);
-			DEBUG("inputStream_http: metaTitle: %s\n",
-			      inStream->metaTitle);
+	char *cur;
+	size_t offset;
+
+	assert(size);
+	metadata[size] = '\0';
+	cur = strtok_r(metadata, ";", &r);
+	while (cur) {
+		if (match("StreamTitle=")) {
+			if (is->metaTitle)
+				free(is->metaTitle);
+			if (cur[offset] == '\'')
+				offset++;
+			if (r[-2] == '\'')
+				r[-2] = '\0';
+			is->metaTitle = xstrdup(cur + offset);
+			DEBUG(__FILE__ ": metaTitle: %s\n", is->metaTitle);
+			return;
 		}
-		s = strtok_r(NULL, ";", &r);
+		cur = strtok_r(NULL, ";", &r);
 	}
-	free(temp);
 }
 
-size_t inputStream_httpRead(InputStream * inStream, void *ptr, size_t size,
+static size_t read_with_metadata(InputStream *is, void *ptr, ssize_t len)
+{
+	struct http_data *data = (struct http_data *) is->data;
+	size_t readed = 0;
+	size_t r;
+	size_t to_read;
+	assert(data->icy_metaint > 0);
+
+	while (len > 0) {
+		if (ringbuf_read_space(data->rb) < data->icy_metaint)
+			break;
+		if (data->icy_offset >= data->icy_metaint) {
+			unsigned char metabuf[(UCHAR_MAX << 4) + 1];
+			size_t metalen;
+			r = ringbuf_read(data->rb, metabuf, 1);
+			assert(r == 1 && "failed to read");
+			awaken_buffer_task(data);
+			metalen = *(metabuf);
+			metalen <<= 4;
+			if (metalen) {
+				r = ringbuf_read(data->rb, metabuf, metalen);
+				assert(r == metalen && "short metadata read");
+				parse_icy_metadata(is, (char*)metabuf, metalen);
+			}
+			data->icy_offset = 0;
+		}
+		to_read = len;
+		if (to_read > (data->icy_metaint - data->icy_offset))
+			to_read = data->icy_metaint - data->icy_offset;
+		if (!(r = ringbuf_read(data->rb, ptr, to_read)))
+			break;
+		awaken_buffer_task(data);
+		len -= r;
+		ptr += r;
+		readed += r;
+		data->icy_offset += r;
+	}
+	return readed;
+}
+
+size_t inputStream_httpRead(InputStream * is, void *ptr, size_t size,
 			    size_t nmemb)
 {
-	InputStreamHTTPData *data = (InputStreamHTTPData *) inStream->data;
-	size_t tosend = 0;
-	size_t inlen = size * nmemb;
-	size_t maxToSend = data->buflen;
+	struct http_data *data = (struct http_data *) is->data;
+	size_t len = size * nmemb;
+	size_t r;
+	void *ptr0 = ptr;
+	long tries = len / 128; /* try harder for bigger reads */
 
-	inputStream_httpBuffer(inStream);
-
-	switch (data->connState) {
-	case HTTP_CONN_STATE_OPEN:
-		if (data->prebuffer || data->buflen < data->icyMetaint)
-			return 0;
-
-		break;
-	case HTTP_CONN_STATE_CLOSED:
-		if (data->buflen)
-			break;
-	default:
+retry:
+	switch (data->state) {
+	case CONN_STATE_NEW:
+	case CONN_STATE_REDIRECT:
+	case CONN_STATE_CONNECTED:
+	case CONN_STATE_REQUESTED:
+	case CONN_STATE_RESP_HEAD:
+	case CONN_STATE_PREBUFFER:
+		if ((starved_wait(data, 1) == 0) || (tries-- > 0))
+			goto retry; /* success */
 		return 0;
+	case CONN_STATE_BUFFER:
+	case CONN_STATE_BUFFER_FULL:
+		break;
+	case CONN_STATE_CLOSED:
+		if (!ringbuf_read_space(data->rb))
+			return 0;
 	}
 
-	if (data->icyMetaint > 0) {
-		if (data->icyOffset >= data->icyMetaint) {
-			size_t metalen = *(data->buffer);
-			/* maybe we're in some strange universe where a byte
-			 * can hold more than 255 ... */
-			assert(metalen <= 255 && "metalen greater than 255");
-			metalen <<= 4;
-			if (metalen + 1 > data->buflen) {
-				/* damn that's some fucking big metadata! */
-				if (bufferSize < metalen + 1) {
-					data->connState =
-					    HTTP_CONN_STATE_CLOSED;
-					close(data->sock);
-					data->buflen = 0;
-				}
-				return 0;
-			}
-			if (metalen > 0) {
-				parseIcyMetadata(inStream, data->buffer + 1,
-						 metalen);
-			}
-			data->buflen -= metalen + 1;
-			memmove(data->buffer, data->buffer + metalen + 1,
-				data->buflen);
-			data->icyOffset = 0;
+	while (1) {
+		if (data->icy_metaint > 0)
+			r = read_with_metadata(is, ptr, len);
+		else /* easy, no metadata to worry about */
+			r = ringbuf_read(data->rb, ptr, len);
+		assert(r <= len);
+		if (r) {
+			awaken_buffer_task(data);
+			is->offset += r;
+			ptr += r;
+			len -= r;
 		}
-		assert(data->icyOffset <= data->icyMetaint &&
-		       "icyOffset bigger than icyMetaint!");
-		maxToSend = data->icyMetaint - data->icyOffset;
-		maxToSend = maxToSend > data->buflen ? data->buflen : maxToSend;
+		if (!len || (--tries < 0) ||
+		    (data->state == CONN_STATE_CLOSED &&
+		     !ringbuf_read_space(data->rb)))
+			break;
+		starved_wait(data, 1);
 	}
-
-	if (data->buflen > 0) {
-		tosend = inlen > maxToSend ? maxToSend : inlen;
-		tosend = (tosend / size) * size;
-
-		memcpy(ptr, data->buffer, tosend);
-		data->buflen -= tosend;
-		data->icyOffset += tosend;
-		memmove(data->buffer, data->buffer + tosend, data->buflen);
-
-		inStream->offset += tosend;
-	}
-
-	return tosend / size;
+	return (ptr - ptr0) / size;
 }
 
-int inputStream_httpClose(InputStream * inStream)
+int inputStream_httpClose(InputStream * is)
 {
-	InputStreamHTTPData *data = (InputStreamHTTPData *) inStream->data;
+	struct http_data *data = (struct http_data *) is->data;
 
-	switch (data->connState) {
-	case HTTP_CONN_STATE_CLOSED:
-		break;
-	default:
-		close(data->sock);
-	}
-
-	freeInputStreamHTTPData(data);
-
+	/*
+	 * The cancellation routines in pthreads suck (and
+	 * are probably unportable) and using signal handlers
+	 * between threads is _definitely_ unportable.
+	 */
+	while (data->state != CONN_STATE_CLOSED)
+		trigger_action(data, CONN_ACTION_CLOSE, 1);
+	pthread_join(data->io_thread, NULL);
+	pthread_mutex_unlock(&data->empty_lock);
+	free_http_data(data);
 	return 0;
 }
 
-int inputStream_httpAtEOF(InputStream * inStream)
+int inputStream_httpAtEOF(InputStream * is)
 {
-	InputStreamHTTPData *data = (InputStreamHTTPData *) inStream->data;
-	switch (data->connState) {
-	case HTTP_CONN_STATE_CLOSED:
-		if (data->buflen == 0)
-			return 1;
-	default:
-		return 0;
-	}
+	struct http_data *data = (struct http_data *) is->data;
+	if (data->state == CONN_STATE_CLOSED && !ringbuf_read_space(data->rb))
+		return 1;
+	return 0;
 }
 
-int inputStream_httpBuffer(InputStream * inStream)
+void inputStream_initHttp(void)
 {
-	InputStreamHTTPData *data = (InputStreamHTTPData *) inStream->data;
-	ssize_t readed = 0;
-	if (data->connState == HTTP_CONN_STATE_REOPEN) {
-		if (initHTTPConnection(inStream) < 0)
-			return -1;
+	ConfigParam *param = getConfigParam(CONF_HTTP_PROXY_HOST);
+	char *test;
+	if (param) {
+		proxy_host = param->value;
+
+		param = getConfigParam(CONF_HTTP_PROXY_PORT);
+
+		if (!param) {
+			FATAL("%s specified but not %s\n", CONF_HTTP_PROXY_HOST,
+			      CONF_HTTP_PROXY_PORT);
+		}
+		proxy_port = param->value;
+
+		param = getConfigParam(CONF_HTTP_PROXY_USER);
+
+		if (param) {
+			proxy_user = param->value;
+
+			param = getConfigParam(CONF_HTTP_PROXY_PASSWORD);
+
+			if (!param) {
+				FATAL("%s specified but not %s\n",
+				      CONF_HTTP_PROXY_USER,
+				      CONF_HTTP_PROXY_PASSWORD);
+			}
+
+			proxy_password = param->value;
+		} else {
+			param = getConfigParam(CONF_HTTP_PROXY_PASSWORD);
+
+			if (param) {
+				FATAL("%s specified but not %s\n",
+				      CONF_HTTP_PROXY_PASSWORD, CONF_HTTP_PROXY_USER);
+			}
+		}
+	} else if ((param = getConfigParam(CONF_HTTP_PROXY_PORT))) {
+		FATAL("%s specified but not %s, line %i\n",
+		      CONF_HTTP_PROXY_PORT, CONF_HTTP_PROXY_HOST, param->line);
+	} else if ((param = getConfigParam(CONF_HTTP_PROXY_USER))) {
+		FATAL("%s specified but not %s, line %i\n",
+		      CONF_HTTP_PROXY_USER, CONF_HTTP_PROXY_HOST, param->line);
+	} else if ((param = getConfigParam(CONF_HTTP_PROXY_PASSWORD))) {
+		FATAL("%s specified but not %s, line %i\n",
+		      CONF_HTTP_PROXY_PASSWORD, CONF_HTTP_PROXY_HOST,
+		      param->line);
 	}
 
-	if (data->connState == HTTP_CONN_STATE_INIT) {
-		if (finishHTTPInit(inStream) < 0)
-			return -1;
+	param = getConfigParam(CONF_HTTP_BUFFER_SIZE);
+
+	if (param) {
+		long tmp = strtol(param->value, &test, 10);
+		if (*test != '\0' || tmp <= 0) {
+			FATAL("\"%s\" specified for %s at line %i is not a "
+			      "positive integer\n",
+			      param->value, CONF_HTTP_BUFFER_SIZE, param->line);
+		}
+
+		buffer_size = tmp * 1024;
+	}
+	if (buffer_size < 4096)
+		FATAL(CONF_HTTP_BUFFER_SIZE" must be >= 4KB\n");
+
+	param = getConfigParam(CONF_HTTP_PREBUFFER_SIZE);
+
+	if (param) {
+		long tmp = strtol(param->value, &test, 10);
+		if (*test != '\0' || tmp <= 0) {
+			FATAL("\"%s\" specified for %s at line %i is not a "
+			      "positive integer\n",
+			      param->value, CONF_HTTP_PREBUFFER_SIZE,
+			      param->line);
+		}
+
+		prebuffer_size = tmp * 1024;
 	}
 
-	if (data->connState == HTTP_CONN_STATE_HELLO) {
-		if (getHTTPHello(inStream) < 0)
-			return -1;
-	}
-
-	switch (data->connState) {
-	case HTTP_CONN_STATE_OPEN:
-	case HTTP_CONN_STATE_CLOSED:
-		break;
-	default:
-		return -1;
-	}
-
-	if (data->buflen == 0 || data->buflen < data->icyMetaint) {
-		data->prebuffer = 1;
-	} else if (data->buflen > prebufferSize)
-		data->prebuffer = 0;
-
-	if (data->connState == HTTP_CONN_STATE_OPEN &&
-	    data->buflen < bufferSize - 1) {
-		readed = read(data->sock, data->buffer + data->buflen,
-			      bufferSize - 1 - data->buflen);
-		/*
-		 * If the connection is currently unavailable, or
-		 * interrupted (EINTR)
-		 * Don't give an error, so it's retried later.
-		 * Max times in a row to retry this is HTTP_MAX_TRIES
-		 */
-		if (readed < 0 &&
-		    (errno == EAGAIN || errno == EINTR) &&
-		    data->tries < HTTP_MAX_TRIES) {
-			data->tries++;
-			DEBUG(__FILE__": Resource unavailable, trying %i "
-			      "times again\n", HTTP_MAX_TRIES - data->tries);
-			readed = 0;
-		} else if (readed <= 0) {
-			while (close(data->sock) && errno == EINTR);
-			data->connState = HTTP_CONN_STATE_CLOSED;
-			readed = 0;
-		} else /* readed > 0, reset */
-			data->tries = 0;
-
-		data->buflen += readed;
-	}
-
-	if (data->buflen > prebufferSize)
-		data->prebuffer = 0;
-
-	return (readed ? 1 : 0);
+	if (prebuffer_size > buffer_size)
+		prebuffer_size = buffer_size;
+	assert(buffer_size > 0 && "http buffer_size too small");
+	assert(prebuffer_size > 0 && "http prebuffer_size too small");
 }
+
