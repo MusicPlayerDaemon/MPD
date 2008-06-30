@@ -85,8 +85,9 @@ void ringbuf_free(struct ringbuf * rb);
  * @param rb a pointer to the ringbuffer structure.
  * @param vec a pointer to a 2 element array of struct iovec.
  *
+ * @return total number of bytes readable into both vec elements
  */
-void ringbuf_get_read_vector(const struct ringbuf * rb, struct iovec * vec);
+size_t ringbuf_get_read_vector(const struct ringbuf * rb, struct iovec * vec);
 
 /**
  * Fill a data structure with a description of the current writable
@@ -106,8 +107,10 @@ void ringbuf_get_read_vector(const struct ringbuf * rb, struct iovec * vec);
  *
  * @param rb a pointer to the ringbuffer structure.
  * @param vec a pointer to a 2 element array of struct iovec.
+ *
+ * @return total number of bytes writable in both vec elements
  */
-void ringbuf_get_write_vector(const struct ringbuf * rb, struct iovec * vec);
+size_t ringbuf_get_write_vector(const struct ringbuf * rb, struct iovec * vec);
 
 /**
  * Read data from the ringbuffer.

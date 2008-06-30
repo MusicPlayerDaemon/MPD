@@ -224,7 +224,7 @@ void ringbuf_write_advance(struct ringbuf * rb, size_t cnt)
  * the readable data is in one segment the second segment has zero
  * length.
  */
-void ringbuf_get_read_vector(const struct ringbuf * rb, struct iovec * vec)
+size_t ringbuf_get_read_vector(const struct ringbuf * rb, struct iovec * vec)
 {
 	size_t free_cnt;
 	size_t cnt2;
@@ -247,13 +247,13 @@ void ringbuf_get_read_vector(const struct ringbuf * rb, struct iovec * vec)
 		vec[0].iov_len = rb->size - r;
 		vec[1].iov_base = rb->buf;
 		vec[1].iov_len = cnt2 & rb->size_mask;
-
 	} else {
 		/* Single part vector: just the rest of the buffer */
 		vec[0].iov_base = rb->buf + r;
 		vec[0].iov_len = free_cnt;
 		vec[1].iov_len = 0;
 	}
+	return vec[0].iov_len + vec[1].iov_len;
 }
 
 /*
@@ -262,7 +262,7 @@ void ringbuf_get_read_vector(const struct ringbuf * rb, struct iovec * vec)
  * the writeable data is in one segment the second segment has zero
  * length.
  */
-void ringbuf_get_write_vector(const struct ringbuf * rb, struct iovec * vec)
+size_t ringbuf_get_write_vector(const struct ringbuf * rb, struct iovec * vec)
 {
 	size_t free_cnt;
 	size_t cnt2;
@@ -292,5 +292,6 @@ void ringbuf_get_write_vector(const struct ringbuf * rb, struct iovec * vec)
 		vec[0].iov_len = free_cnt;
 		vec[1].iov_len = 0;
 	}
+	return vec[0].iov_len + vec[1].iov_len;
 }
 
