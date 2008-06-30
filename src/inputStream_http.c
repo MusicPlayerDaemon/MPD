@@ -686,7 +686,6 @@ static int recv_response(InputStream * is)
 	parse_headers(is, response, needle);
 	if (is->size <= 0)
 		is->seekable = 0;
-	is->seekable = 0;
 	needle += sizeof("\r\n\r\n") - 1;
 	peeked = needle - response;
 	assert(peeked <= r);
@@ -810,6 +809,8 @@ int inputStream_httpSeek(InputStream * is, long offset, int whence)
 	}
 
 	diff = is->offset - old_offset;
+	if (!diff)
+		return 0; /* nothing to seek */
 	if (diff > 0) { /* seek forward if we've already buffered it */
 		long avail = (long)ringbuf_read_space(data->rb);
 		if (avail >= diff) {
