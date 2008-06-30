@@ -251,9 +251,13 @@ static int parseUrl(InputStreamHTTPData * data, char *url)
 	if (len <= 1)
 		return -1;
 
+	if (data->host)
+		free(data->host);
 	data->host = xmalloc(len);
 	memcpy(data->host, temp, len - 1);
 	data->host[len - 1] = '\0';
+	if (data->port)
+		free(data->port);
 	/* fetch the port */
 	if (colon && (!slash || slash != colon + 1)) {
 		len = strlen(colon) - 1;
@@ -267,6 +271,8 @@ static int parseUrl(InputStreamHTTPData * data, char *url)
 		data->port = xstrdup("80");
 	}
 
+	if (data->path)
+		free(data->path);
 	/* fetch the path */
 	if (proxyHost)
 		data->path = xstrdup(url);
