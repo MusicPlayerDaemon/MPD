@@ -36,15 +36,14 @@ ogg_stream_type ogg_stream_type_detect(InputStream * inStream)
 	 * http://lists.xiph.org/pipermail/flac/2004-December/000393.html
 	 * ogg123 trunk still doesn't have this patch as of June 2005 */
 	unsigned char buf[41];
-	size_t r, to_read = 41;
+	size_t r;
 
 	seekInputStream(inStream, 0, SEEK_SET);
 
-	while (to_read) {
-		r = readFromInputStream(inStream, buf, 1, to_read);
+	while (1) {
+		r = readFromInputStream(inStream, buf, 1, sizeof(buf));
 		if (inStream->error)
 			break;
-		to_read -= r;
 		if (!r && !inputStreamAtEOF(inStream))
 			my_usleep(10000);
 		else
