@@ -42,7 +42,7 @@ ifneq ($(HOST),$(build))
   endif
 endif
 
-mpd_CFLAGS += -I$(O)/src
+mpd_CFLAGS += -I$(O)/src -I$(O)
 mpd_LDFLAGS += -lm
 mpd_DIRS := $(O)/src/inputPlugins $(O)/src/audioOutputs
 

@@ -41,5 +41,6 @@ ifeq ($(HAVE_OGGVORBIS),1)
   endif
 endif
 
-
-
+ifeq ($(HAVE_WAVPACK),1)
+  mpd_LDFLAGS += -lwavpack
+endif
