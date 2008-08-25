@@ -847,7 +847,8 @@ static void parse_icy_metadata(InputStream * is, char *metadata, size_t size)
 	}
 }
 
-static size_t read_with_metadata(InputStream *is, void *ptr, ssize_t len)
+static size_t read_with_metadata(InputStream *is, unsigned char *ptr,
+				 ssize_t len)
 {
 	struct http_data *data = (struct http_data *) is->data;
 	size_t readed = 0;
@@ -887,13 +888,13 @@ static size_t read_with_metadata(InputStream *is, void *ptr, ssize_t len)
 	return readed;
 }
 
-size_t inputStream_httpRead(InputStream * is, void *ptr, size_t size,
+size_t inputStream_httpRead(InputStream * is, void *_ptr, size_t size,
 			    size_t nmemb)
 {
 	struct http_data *data = (struct http_data *) is->data;
 	size_t len = size * nmemb;
 	size_t r;
-	void *ptr0 = ptr;
+	unsigned char *ptr = _ptr, *ptr0 = _ptr;
 	long tries = len / 128; /* try harder for bigger reads */
 
 retry:
