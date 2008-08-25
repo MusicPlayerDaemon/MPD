@@ -36,7 +36,7 @@ struct ringbuf *ringbuf_create(size_t sz)
 	struct ringbuf *rb = xmalloc(sizeof(struct ringbuf));
 	size_t power_of_two;
 
-	for (power_of_two = 1; 1 << power_of_two < sz; power_of_two++)
+	for (power_of_two = 1; (size_t)(1 << power_of_two) < sz; power_of_two++)
 		/* next power_of_two... */;
 
 	rb->size = 1 << power_of_two;
@@ -137,7 +137,7 @@ size_t ringbuf_read(struct ringbuf * rb, void *dest, size_t cnt)
 	ringbuf_read_advance(rb, n1);
 
 	if (n2) {
-		memcpy(dest + n1, rb->buf + rb->read_ptr, n2);
+		memcpy((char*)dest + n1, rb->buf + rb->read_ptr, n2);
 		ringbuf_read_advance(rb, n2);
 	}
 
@@ -175,7 +175,7 @@ size_t ringbuf_peek(struct ringbuf * rb, void *dest, size_t cnt)
 	advance_ptr(tmp_read_ptr, n1, rb->size_mask);
 
 	if (n2) {
-		memcpy(dest + n1, rb->buf + tmp_read_ptr, n2);
+		memcpy((char*)dest + n1, rb->buf + tmp_read_ptr, n2);
 		advance_ptr(tmp_read_ptr, n2, rb->size_mask);
 	}
 
@@ -211,7 +211,7 @@ size_t ringbuf_write(struct ringbuf * rb, const void *src, size_t cnt)
 	ringbuf_write_advance(rb, n1);
 
 	if (n2) {
-		memcpy(rb->buf + rb->write_ptr, src + n1, n2);
+		memcpy(rb->buf + rb->write_ptr, (const char*)src + n1, n2);
 		ringbuf_write_advance(rb, n2);
 	}
 

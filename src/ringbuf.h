@@ -39,7 +39,7 @@
  */
 
 struct ringbuf {
-	void *buf;
+	unsigned char *buf;
 	size_t write_ptr;
 	size_t read_ptr;
 	size_t size;
