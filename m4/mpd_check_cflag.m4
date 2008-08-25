@@ -1,5 +1,5 @@
 AC_DEFUN([MPD_CHECK_FLAG],[
-  var=`echo "$1" | tr "-" "_"`
+  var=`echo "$1" | tr "=-" "__"`
   AC_CACHE_CHECK([whether the C compiler accepts $1],
     [mpd_check_cflag_$var],[
     save_CFLAGS="$CFLAGS"
