@@ -307,7 +307,6 @@ static void decodeStart(void)
 	}
 
 	if (ret < 0 || ret == DECODE_ERROR_UNKTYPE) {
-		pc.errored_song = dc.next_song;
 		if (ret != DECODE_ERROR_UNKTYPE)
 			dc.error = DECODE_ERROR_FILE;
 		else
