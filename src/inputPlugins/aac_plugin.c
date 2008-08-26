@@ -93,9 +93,8 @@ static int adtsSampleRates[] =
 static int adtsParse(AacBuffer * b, float *length)
 {
 	int frames, frameLength;
-	int tFrameLength = 0;
 	int sampleRate = 0;
-	float framesPerSec, bytesPerFrame;
+	float framesPerSec;
 
 	/* Read all frames to ensure correct time and bitrate */
 	for (frames = 0;; frames++) {
@@ -118,8 +117,6 @@ static int adtsParse(AacBuffer * b, float *length)
 				       << 11) | (((unsigned int)b->buffer[4])
 						 << 3) | (b->buffer[5] >> 5);
 
-			tFrameLength += frameLength;
-
 			if (frameLength > b->bytesIntoBuffer)
 				break;
 
@@ -129,10 +126,6 @@ static int adtsParse(AacBuffer * b, float *length)
 	}
 
 	framesPerSec = (float)sampleRate / 1024.0;
-	if (frames != 0) {
-		bytesPerFrame = (float)tFrameLength / (float)(frames * 1000);
-	} else
-		bytesPerFrame = 0;
 	if (framesPerSec != 0)
 		*length = (float)frames / framesPerSec;
 
@@ -227,7 +220,6 @@ static float getAacFloatTotalTime(char *file)
 {
 	AacBuffer b;
 	float length;
-	size_t fileread, tagsize;
 	faacDecHandle decoder;
 	faacDecConfigurationPtr config;
 	uint32_t sampleRate;
@@ -238,7 +230,7 @@ static float getAacFloatTotalTime(char *file)
 	if (openInputStream(&inStream, file) < 0)
 		return -1;
 
-	initAacBuffer(&inStream, &b, &length, &fileread, &tagsize);
+	initAacBuffer(&inStream, &b, &length, NULL, NULL);
 
 	if (length < 0) {
 		decoder = faacDecOpen();
