@@ -533,7 +533,7 @@ static int flac_plugin_init(void)
 	                            INPUT_PLUGIN_STREAM_FILE;
 	oggflacPlugin.suffixes = oggflac_suffixes;
 	oggflacPlugin.mime_types = oggflac_mime_types;
-	loadInputPlugin(&oggflacPlugin);
+	decoder_plugin_load(&oggflacPlugin);
 	return 1;
 }
 

@@ -128,8 +128,8 @@ static void version(void)
 	LOG("\n");
 	LOG("Supported formats:\n");
 
-	initInputPlugins();
-	printAllInputPluginSuffixes(stdout);
+	decoder_plugin_init_all();
+	decoder_plugin_print_all_suffixes(stdout);
 
 	LOG("\n");
 	LOG("Supported outputs:\n");
@@ -407,7 +407,7 @@ int main(int argc, char *argv[])
 	initPaths();
 	initPermissions();
 	initPlaylist();
-	initInputPlugins();
+	decoder_plugin_init_all();
 
 	openDB(&options, argv[0]);
 
@@ -461,7 +461,7 @@ int main(int argc, char *argv[])
 	finishPaths();
 	finishPermissions();
 	finishCommands();
-	finishInputPlugins();
+	decoder_plugin_deinit_all();
 	cleanUpPidFile();
 	finishConf();
 

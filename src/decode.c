@@ -243,7 +243,7 @@ static void decodeStart(void)
 		unsigned int next = 0;
 
 		/* first we try mime types: */
-		while (ret && (plugin = getInputPluginFromMimeType(inStream.mime, next++))) {
+		while (ret && (plugin = decoder_plugin_from_mime_type(inStream.mime, next++))) {
 			if (!plugin->stream_decode_func)
 				continue;
 			if (!(plugin->stream_types & INPUT_PLUGIN_STREAM_URL))
@@ -259,7 +259,7 @@ static void decodeStart(void)
 		if (plugin == NULL) {
 			const char *s = getSuffix(path_max_utf8);
 			next = 0;
-			while (ret && (plugin = getInputPluginFromSuffix(s, next++))) {
+			while (ret && (plugin = decoder_plugin_from_suffix(s, next++))) {
 				if (!plugin->stream_decode_func)
 					continue;
 				if (!(plugin->stream_types &
@@ -280,7 +280,7 @@ static void decodeStart(void)
 		if (plugin == NULL) {
 			/* we already know our mp3Plugin supports streams, no
 			 * need to check for stream{Types,DecodeFunc} */
-			if ((plugin = getInputPluginFromName("mp3"))) {
+			if ((plugin = decoder_plugin_from_name("mp3"))) {
 				decoder.plugin = plugin;
 				ret = plugin->stream_decode_func(&decoder,
 								 &inStream);
@@ -289,7 +289,7 @@ static void decodeStart(void)
 	} else {
 		unsigned int next = 0;
 		const char *s = getSuffix(path_max_utf8);
-		while (ret && (plugin = getInputPluginFromSuffix(s, next++))) {
+		while (ret && (plugin = decoder_plugin_from_suffix(s, next++))) {
 			if (!plugin->stream_types & INPUT_PLUGIN_STREAM_FILE)
 				continue;
 

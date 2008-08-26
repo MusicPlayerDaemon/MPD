@@ -263,7 +263,7 @@ struct decoder_plugin *hasMusicSuffix(const char *utf8file, unsigned int next)
 
 	const char *s = getSuffix(utf8file);
 	if (s) {
-		ret = getInputPluginFromSuffix(s, next);
+		ret = decoder_plugin_from_suffix(s, next);
 	} else {
 		DEBUG("hasMusicSuffix: The file: %s has no valid suffix\n",
 		      utf8file);

@@ -32,7 +32,7 @@ extern struct decoder_plugin modPlugin;
 
 static List *inputPlugin_list;
 
-void loadInputPlugin(struct decoder_plugin * inputPlugin)
+void decoder_plugin_load(struct decoder_plugin * inputPlugin)
 {
 	if (!inputPlugin)
 		return;
@@ -45,7 +45,7 @@ void loadInputPlugin(struct decoder_plugin * inputPlugin)
 	insertInList(inputPlugin_list, inputPlugin->name, (void *)inputPlugin);
 }
 
-void unloadInputPlugin(struct decoder_plugin * inputPlugin)
+void decoder_plugin_unload(struct decoder_plugin * inputPlugin)
 {
 	if (inputPlugin->finish_func)
 		inputPlugin->finish_func();
@@ -63,7 +63,8 @@ static int stringFoundInStringArray(const char *const*array, const char *suffix)
 	return 0;
 }
 
-struct decoder_plugin *getInputPluginFromSuffix(const char *suffix, unsigned int next)
+struct decoder_plugin *decoder_plugin_from_suffix(const char *suffix,
+						  unsigned int next)
 {
 	static ListNode *pos;
 	ListNode *node;
@@ -92,7 +93,8 @@ struct decoder_plugin *getInputPluginFromSuffix(const char *suffix, unsigned int
 	return NULL;
 }
 
-struct decoder_plugin *getInputPluginFromMimeType(const char *mimeType, unsigned int next)
+struct decoder_plugin *decoder_plugin_from_mime_type(const char *mimeType,
+						     unsigned int next)
 {
 	static ListNode *pos;
 	ListNode *node;
@@ -115,7 +117,7 @@ struct decoder_plugin *getInputPluginFromMimeType(const char *mimeType, unsigned
 	return NULL;
 }
 
-struct decoder_plugin *getInputPluginFromName(const char *name)
+struct decoder_plugin *decoder_plugin_from_name(const char *name)
 {
 	void *plugin = NULL;
 
@@ -124,7 +126,7 @@ struct decoder_plugin *getInputPluginFromName(const char *name)
 	return (struct decoder_plugin *) plugin;
 }
 
-void printAllInputPluginSuffixes(FILE * fp)
+void decoder_plugin_print_all_suffixes(FILE * fp)
 {
 	ListNode *node = inputPlugin_list->firstNode;
 	struct decoder_plugin *plugin;
@@ -143,24 +145,24 @@ void printAllInputPluginSuffixes(FILE * fp)
 	fflush(fp);
 }
 
-void initInputPlugins(void)
+void decoder_plugin_init_all(void)
 {
 	inputPlugin_list = makeList(NULL, 1);
 
 	/* load plugins here */
-	loadInputPlugin(&mp3Plugin);
-	loadInputPlugin(&oggvorbisPlugin);
-	loadInputPlugin(&oggflacPlugin);
-	loadInputPlugin(&flacPlugin);
-	loadInputPlugin(&audiofilePlugin);
-	loadInputPlugin(&mp4Plugin);
-	loadInputPlugin(&aacPlugin);
-	loadInputPlugin(&mpcPlugin);
-	loadInputPlugin(&wavpackPlugin);
-	loadInputPlugin(&modPlugin);
+	decoder_plugin_load(&mp3Plugin);
+	decoder_plugin_load(&oggvorbisPlugin);
+	decoder_plugin_load(&oggflacPlugin);
+	decoder_plugin_load(&flacPlugin);
+	decoder_plugin_load(&audiofilePlugin);
+	decoder_plugin_load(&mp4Plugin);
+	decoder_plugin_load(&aacPlugin);
+	decoder_plugin_load(&mpcPlugin);
+	decoder_plugin_load(&wavpackPlugin);
+	decoder_plugin_load(&modPlugin);
 }
 
-void finishInputPlugins(void)
+void decoder_plugin_deinit_all(void)
 {
 	freeList(inputPlugin_list);
 }
