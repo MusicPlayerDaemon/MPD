@@ -51,7 +51,7 @@ static OggFLAC__SeekableStreamDecoderReadStatus of_read_cb(const
 	*bytes = r;
 
 	if (r == 0 && !inputStreamAtEOF(data->inStream) &&
-	    decoder_get_command(data->decoder) != DECODE_COMMAND_STOP)
+	    decoder_get_command(data->decoder) == DECODE_COMMAND_NONE)
 		return OggFLAC__SEEKABLE_STREAM_DECODER_READ_STATUS_ERROR;
 
 	return OggFLAC__SEEKABLE_STREAM_DECODER_READ_STATUS_OK;
@@ -365,14 +365,14 @@ static int oggflac_decode(struct decoder * mpd_decoder, InputStream * inStream)
 		}
 	}
 
-	if (decoder_get_command(mpd_decoder) != DECODE_COMMAND_STOP) {
+	if (decoder_get_command(mpd_decoder) == DECODE_COMMAND_NONE) {
 		oggflacPrintErroredState
 		    (OggFLAC__seekable_stream_decoder_get_state(decoder));
 		OggFLAC__seekable_stream_decoder_finish(decoder);
 	}
 	/* send last little bit */
 	if (data.chunk_length > 0 &&
-	    decoder_get_command(mpd_decoder) != DECODE_COMMAND_STOP) {
+	    decoder_get_command(mpd_decoder) == DECODE_COMMAND_NONE) {
 		flacSendChunk(&data);
 		decoder_flush(mpd_decoder);
 	}

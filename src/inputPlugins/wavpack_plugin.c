@@ -487,7 +487,7 @@ static int wavpack_open_wvc(struct decoder *decoder,
 		if (bufferInputStream(is_wvc) >= 0)
 			return 1;
 
-		if (decoder_get_command(decoder) == DECODE_COMMAND_STOP) {
+		if (decoder_get_command(decoder) != DECODE_COMMAND_NONE) {
 			closeInputStream(is_wvc);
 			return 0;
 		}

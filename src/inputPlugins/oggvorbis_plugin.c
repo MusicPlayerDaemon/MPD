@@ -319,7 +319,8 @@ static int oggvorbis_decode(struct decoder * decoder, InputStream * inStream)
 		}
 	}
 
-	if (decoder_get_command(decoder) != DECODE_COMMAND_STOP && chunkpos > 0) {
+	if (decoder_get_command(decoder) == DECODE_COMMAND_NONE &&
+	    chunkpos > 0) {
 		decoder_data(decoder, NULL, inStream->seekable,
 			     chunk, chunkpos,
 			     ov_time_tell(&vf), bitRate,

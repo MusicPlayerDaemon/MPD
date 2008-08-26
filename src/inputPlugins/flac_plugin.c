@@ -36,7 +36,7 @@ static flac_read_status flacRead(mpd_unused const flac_decoder * flacDec,
 	r = decoder_read(data->decoder, data->inStream, (void *)buf, *bytes);
 	*bytes = r;
 
-	if (r == 0 && decoder_get_command(data->decoder) != DECODE_COMMAND_STOP) {
+	if (r == 0 && decoder_get_command(data->decoder) == DECODE_COMMAND_NONE) {
 		if (inputStreamAtEOF(data->inStream))
 			return flac_read_status_eof;
 		else

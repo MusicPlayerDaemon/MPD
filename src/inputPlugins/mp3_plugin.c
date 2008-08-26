@@ -700,16 +700,16 @@ static int decodeFirstFrame(mp3DecodeData * data,
 
 	while (1) {
 		while ((ret = decodeNextFrameHeader(data, tag, replayGainInfo)) == DECODE_CONT &&
-		       (!decoder || decoder_get_command(decoder) != DECODE_COMMAND_STOP));
+		       (!decoder || decoder_get_command(decoder) == DECODE_COMMAND_NONE));
 		if (ret == DECODE_BREAK ||
-		    (decoder && decoder_get_command(decoder) == DECODE_COMMAND_STOP))
+		    (decoder && decoder_get_command(decoder) != DECODE_COMMAND_NONE))
 			return -1;
 		if (ret == DECODE_SKIP) continue;
 
 		while ((ret = decodeNextFrame(data)) == DECODE_CONT &&
-		       (!decoder || decoder_get_command(decoder) != DECODE_COMMAND_STOP));
+		       (!decoder || decoder_get_command(decoder) == DECODE_COMMAND_NONE));
 		if (ret == DECODE_BREAK ||
-		    (decoder && decoder_get_command(decoder) == DECODE_COMMAND_STOP))
+		    (decoder && decoder_get_command(decoder) != DECODE_COMMAND_NONE))
 			return -1;
 		if (ret == DECODE_OK) break;
 	}
@@ -990,7 +990,7 @@ mp3Read(mp3DecodeData * data, ReplayGainInfo ** replayGainInfo)
 		while ((ret =
 			decodeNextFrameHeader(data, NULL,
 					      replayGainInfo)) == DECODE_CONT
-		       && decoder_get_command(decoder) != DECODE_COMMAND_STOP) ;
+		       && decoder_get_command(decoder) == DECODE_COMMAND_NONE) ;
 		if (ret == DECODE_BREAK || decoder_get_command(decoder) != DECODE_COMMAND_NONE)
 			break;
 		else if (ret == DECODE_SKIP)
@@ -1006,7 +1006,7 @@ mp3Read(mp3DecodeData * data, ReplayGainInfo ** replayGainInfo)
 			break;
 	}
 
-	if (decoder_get_command(decoder) == DECODE_COMMAND_STOP)
+	if (decoder_get_command(decoder) != DECODE_COMMAND_NONE)
 		return DECODE_BREAK;
 
 	return ret;
@@ -1029,7 +1029,7 @@ static int mp3_decode(struct decoder * decoder, InputStream * inStream)
 
 	if (openMp3FromInputStream(inStream, &data, decoder,
 				   &tag, &replayGainInfo) < 0) {
-		if (decoder_get_command(decoder) != DECODE_COMMAND_STOP) {
+		if (decoder_get_command(decoder) == DECODE_COMMAND_NONE) {
 			ERROR
 			    ("Input does not appear to be a mp3 bit stream.\n");
 			return -1;
