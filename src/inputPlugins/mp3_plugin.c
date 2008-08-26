@@ -1015,7 +1015,8 @@ static void initAudioFormatFromMp3DecodeData(mp3DecodeData * data,
 	af->channels = MAD_NCHANNELS(&(data->frame).header);
 }
 
-static int mp3_decode(InputStream * inStream)
+static int mp3_decode(mpd_unused struct decoder * decoder,
+		      InputStream * inStream)
 {
 	mp3DecodeData data;
 	MpdTag *tag = NULL;

@@ -159,7 +159,7 @@ static void mod_close(mod_Data * data)
 	free(data);
 }
 
-static int mod_decode(char *path)
+static int mod_decode(mpd_unused struct decoder * decoder, char *path)
 {
 	mod_Data *data;
 	float total_time = 0.0;

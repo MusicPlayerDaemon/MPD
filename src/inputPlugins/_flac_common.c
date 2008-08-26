@@ -30,12 +30,14 @@
 #include <FLAC/format.h>
 #include <FLAC/metadata.h>
 
-void init_FlacData(FlacData * data, InputStream * inStream)
+void init_FlacData(FlacData * data, struct decoder * decoder,
+		   InputStream * inStream)
 {
 	data->chunk_length = 0;
 	data->time = 0;
 	data->position = 0;
 	data->bitRate = 0;
+	data->decoder = decoder;
 	data->inStream = inStream;
 	data->replayGainInfo = NULL;
 	data->tag = NULL;

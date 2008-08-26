@@ -314,7 +314,7 @@ static MpdTag *oggflac_TagDup(char *file)
 		return NULL;
 	}
 
-	init_FlacData(&data, &inStream);
+	init_FlacData(&data, NULL, &inStream);
 
 	/* errors here won't matter,
 	 * data.tag will be set or unset, that's all we care about */
@@ -331,13 +331,15 @@ static unsigned int oggflac_try_decode(InputStream * inStream)
 	return (ogg_stream_type_detect(inStream) == FLAC) ? 1 : 0;
 }
 
-static int oggflac_decode(InputStream * inStream)
+static int oggflac_decode(struct decoder * mpd_decoder, InputStream * inStream)
 {
+	DecoderControl *dc = mpd_decoder->dc;
+	OutputBuffer *ob = mpd_decoder->ob;
 	OggFLAC__SeekableStreamDecoder *decoder = NULL;
 	FlacData data;
 	int ret = 0;
 
-	init_FlacData(&data, inStream);
+	init_FlacData(&data, mpd_decoder, inStream);
 
 	if (!(decoder = full_decoder_init_and_read_metadata(&data, 0))) {
 		ret = -1;

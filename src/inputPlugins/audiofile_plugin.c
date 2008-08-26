@@ -40,7 +40,7 @@ static int getAudiofileTotalTime(char *file)
 	return total_time;
 }
 
-static int audiofile_decode(char *path)
+static int audiofile_decode(mpd_unused struct decoder * decoder, char *path)
 {
 	int fs, frame_count;
 	AFfilehandle af_fp;

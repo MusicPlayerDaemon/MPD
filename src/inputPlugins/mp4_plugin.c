@@ -78,7 +78,8 @@ static uint32_t mp4_inputStreamSeekCallback(void *inStream, uint64_t position)
 	return seekInputStream((InputStream *) inStream, position, SEEK_SET);
 }
 
-static int mp4_decode(InputStream * inStream)
+static int mp4_decode(mpd_unused struct decoder * mpd_decoder,
+		      InputStream * inStream)
 {
 	mp4ff_t *mp4fh;
 	mp4ff_callback_t *mp4cb;

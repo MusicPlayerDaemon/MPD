@@ -210,7 +210,8 @@ static void putOggCommentsIntoOutputBuffer(char *streamName,
 }
 
 /* public */
-static int oggvorbis_decode(InputStream * inStream)
+static int oggvorbis_decode(mpd_unused struct decoder * decoder,
+			    InputStream * inStream)
 {
 	OggVorbis_File vf;
 	ov_callbacks callbacks;

@@ -40,6 +40,8 @@ mpd_headers = \
 	conf.h \
 	dbUtils.h \
 	decode.h \
+	decoder_api.h \
+	decoder_internal.h \
 	directory.h \
 	gcc.h \
 	inputPlugin.h \

@@ -106,7 +106,8 @@ static inline mpd_sint16 convertSample(MPC_SAMPLE_FORMAT sample)
 	return val;
 }
 
-static int mpc_decode(InputStream * inStream)
+static int mpc_decode(mpd_unused struct decoder * mpd_decoder,
+		      InputStream * inStream)
 {
 	mpc_decoder decoder;
 	mpc_reader reader;

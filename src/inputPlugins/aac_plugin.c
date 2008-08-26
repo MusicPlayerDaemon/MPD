@@ -278,7 +278,7 @@ static int getAacTotalTime(char *file)
 	return file_time;
 }
 
-static int aac_decode(char *path)
+static int aac_decode(mpd_unused struct decoder * mpd_decoder, char *path)
 {
 	float file_time;
 	float totalTime;

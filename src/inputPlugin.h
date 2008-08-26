@@ -27,6 +27,8 @@
 #define INPUT_PLUGIN_STREAM_FILE	0x01
 #define INPUT_PLUGIN_STREAM_URL		0x02
 
+struct decoder;
+
 /* optional, set this to NULL if the InputPlugin doesn't have/need one
  * this must return < 0 if there is an error and >= 0 otherwise */
 typedef int (*InputPlugin_initFunc) (void);
@@ -42,14 +44,16 @@ typedef unsigned int (*InputPlugin_tryDecodeFunc) (InputStream *);
  * and networked (HTTP) connections.
  *
  * returns -1 on error, 0 on success */
-typedef int (*InputPlugin_streamDecodeFunc) (InputStream *);
+typedef int (*InputPlugin_streamDecodeFunc) (struct decoder *,
+					     InputStream *);
 
 /* use this if and only if your InputPlugin can only be passed a filename or
  * handle as input, and will not allow callbacks to be set (like Ogg-Vorbis
  * and FLAC libraries allow)
  *
  * returns -1 on error, 0 on success */
-typedef int (*InputPlugin_fileDecodeFunc) (char *path);
+typedef int (*InputPlugin_fileDecodeFunc) (struct decoder *,
+					   char *path);
 
 /* file should be the full path!  Returns NULL if a tag cannot be found
  * or read */

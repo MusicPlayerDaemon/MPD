@@ -124,7 +124,8 @@ static void format_samples_float(mpd_unused int Bps, void *buffer,
  * This does the main decoding thing.
  * Requires an already opened WavpackContext.
  */
-static void wavpack_decode(WavpackContext *wpc, int canseek,
+static void wavpack_decode(mpd_unused struct decoder * decoder,
+                           WavpackContext *wpc, int canseek,
                            ReplayGainInfo *replayGainInfo)
 {
 	void (*format_samples)(int Bps, void *buffer, uint32_t samcnt);
@@ -436,7 +437,7 @@ static unsigned int wavpack_trydecode(InputStream *is)
 /*
  * Decodes a stream.
  */
-static int wavpack_streamdecode(InputStream *is)
+static int wavpack_streamdecode(struct decoder * decoder, InputStream *is)
 {
 	char error[ERRORLEN];
 	WavpackContext *wpc;
@@ -535,7 +536,7 @@ static int wavpack_streamdecode(InputStream *is)
 		return -1;
 	}
 
-	wavpack_decode(wpc, canseek, NULL);
+	wavpack_decode(decoder, wpc, canseek, NULL);
 
 	WavpackCloseFile(wpc);
 	if (wvc_url != NULL) {
@@ -550,7 +551,7 @@ static int wavpack_streamdecode(InputStream *is)
 /*
  * Decodes a file.
  */
-static int wavpack_filedecode(char *fname)
+static int wavpack_filedecode(struct decoder * decoder, char *fname)
 {
 	char error[ERRORLEN];
 	WavpackContext *wpc;
@@ -566,7 +567,7 @@ static int wavpack_filedecode(char *fname)
 
 	replayGainInfo = wavpack_replaygain(wpc);
 
-	wavpack_decode(wpc, 1, replayGainInfo);
+	wavpack_decode(decoder, wpc, 1, replayGainInfo);
 
 	if (replayGainInfo)
 		freeReplayGainInfo(replayGainInfo);

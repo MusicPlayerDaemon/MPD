@@ -17,6 +17,7 @@
  */
 
 #include "decode.h"
+#include "decoder_internal.h"
 
 #include "player.h"
 #include "playerData.h"
@@ -205,6 +206,7 @@ static void processDecodeInput(int *pause_r, unsigned int *bbp_r,
 
 static void decodeStart(void)
 {
+	struct decoder decoder;
 	int ret;
 	int close_instream = 1;
 	InputStream inStream;
@@ -250,7 +252,7 @@ static void decodeStart(void)
 			if (plugin->tryDecodeFunc
 			    && !plugin->tryDecodeFunc(&inStream))
 				continue;
-			ret = plugin->streamDecodeFunc(&inStream);
+			ret = plugin->streamDecodeFunc(&decoder, &inStream);
 			break;
 		}
 
@@ -267,7 +269,8 @@ static void decodeStart(void)
 				if (plugin->tryDecodeFunc &&
 				    !plugin->tryDecodeFunc(&inStream))
 					continue;
-				ret = plugin->streamDecodeFunc(&inStream);
+				decoder.plugin = plugin;
+				ret = plugin->streamDecodeFunc(&decoder, &inStream);
 				break;
 			}
 		}
@@ -278,7 +281,9 @@ static void decodeStart(void)
 			/* we already know our mp3Plugin supports streams, no
 			 * need to check for stream{Types,DecodeFunc} */
 			if ((plugin = getInputPluginFromName("mp3"))) {
-				ret = plugin->streamDecodeFunc(&inStream);
+				decoder.plugin = plugin;
+				ret = plugin->streamDecodeFunc(&decoder,
+				                               &inStream);
 			}
 		}
 	} else {
@@ -295,10 +300,13 @@ static void decodeStart(void)
 			if (plugin->fileDecodeFunc) {
 				closeInputStream(&inStream);
 				close_instream = 0;
-				ret = plugin->fileDecodeFunc(path_max_fs);
+				decoder.plugin = plugin;
+				ret = plugin->fileDecodeFunc(&decoder,
+				                             path_max_fs);
 				break;
 			} else if (plugin->streamDecodeFunc) {
-				ret = plugin->streamDecodeFunc(&inStream);
+				decoder.plugin = plugin;
+				ret = plugin->streamDecodeFunc(&decoder, &inStream);
 				break;
 			}
 		}

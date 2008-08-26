@@ -144,13 +144,15 @@ typedef struct {
 	float time;
 	unsigned int bitRate;
 	FLAC__uint64 position;
+	struct decoder *decoder;
 	InputStream *inStream;
 	ReplayGainInfo *replayGainInfo;
 	MpdTag *tag;
 } FlacData;
 
 /* initializes a given FlacData struct */
-void init_FlacData(FlacData * data, InputStream * inStream);
+void init_FlacData(FlacData * data, struct decoder * decoder,
+		   InputStream * inStream);
 void flac_metadata_common_cb(const FLAC__StreamMetadata * block,
 			     FlacData * data);
 void flac_error_common_cb(const char *plugin,
