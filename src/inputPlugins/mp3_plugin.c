@@ -933,6 +933,7 @@ static int mp3Read(mp3DecodeData * data, struct decoder *decoder,
 		}
 
 		while (i < pcm_length) {
+			enum decoder_command cmd;
 			unsigned int num_samples =
 				(data->outputBufferEnd - data->outputPtr) /
 				(2 * MAD_NCHANNELS(&(data->frame).header));
@@ -947,22 +948,19 @@ static int mp3Read(mp3DecodeData * data, struct decoder *decoder,
 						    MAD_NCHANNELS(&(data->frame).header));
 			data->outputPtr += 2 * num_samples;
 
-			if (data->outputPtr >= data->outputBufferEnd) {
-				enum decoder_command cmd;
-				cmd = decoder_data(decoder, data->inStream,
-						   data->inStream->seekable,
-						   data->outputBuffer,
-						   data->outputPtr - data->outputBuffer,
-						   data->elapsedTime,
-						   data->bitRate / 1000,
-						   (replayGainInfo != NULL) ? *replayGainInfo : NULL);
-				if (cmd == DECODE_COMMAND_STOP) {
-					data->flush = 0;
-					return DECODE_BREAK;
-				}
-
-				data->outputPtr = data->outputBuffer;
+			cmd = decoder_data(decoder, data->inStream,
+					   data->inStream->seekable,
+					   data->outputBuffer,
+					   data->outputPtr - data->outputBuffer,
+					   data->elapsedTime,
+					   data->bitRate / 1000,
+					   (replayGainInfo != NULL) ? *replayGainInfo : NULL);
+			if (cmd == DECODE_COMMAND_STOP) {
+				data->flush = 0;
+				return DECODE_BREAK;
 			}
+
+			data->outputPtr = data->outputBuffer;
 		}
 
 		if (data->dropSamplesAtEnd &&
