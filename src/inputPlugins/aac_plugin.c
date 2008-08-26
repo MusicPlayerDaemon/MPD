@@ -111,6 +111,40 @@ static size_t adts_check_frame(AacBuffer * b)
 		(b->buffer[5] >> 5);
 }
 
+/**
+ * Find the next AAC frame in the buffer.  Returns 0 if no frame is
+ * found or if not enough data is available.
+ */
+static size_t adts_find_frame(AacBuffer * b)
+{
+	const unsigned char *p;
+	size_t frame_length;
+
+	while ((p = memchr(b->buffer, 0xff, b->bytesIntoBuffer)) != NULL) {
+		/* discard data before 0xff */
+		if (p > b->buffer)
+			aac_buffer_shift(b, p - b->buffer);
+
+		if (b->bytesIntoBuffer <= 7)
+			/* not enough data yet */
+			return 0;
+
+		/* is it a frame? */
+		frame_length = adts_check_frame(b);
+		if (frame_length > 0)
+			/* yes, it is */
+			return frame_length;
+
+		/* it's just some random 0xff byte; discard and and
+		   continue searching */
+		aac_buffer_shift(b, 1);
+	}
+
+	/* nothing at all; discard the whole buffer */
+	aac_buffer_shift(b, b->bytesIntoBuffer);
+	return 0;
+}
+
 static void adtsParse(AacBuffer * b, float *length)
 {
 	unsigned int frames, frameLength;
@@ -121,7 +155,7 @@ static void adtsParse(AacBuffer * b, float *length)
 	for (frames = 0;; frames++) {
 		fillAacBuffer(b);
 
-		frameLength = adts_check_frame(b);
+		frameLength = adts_find_frame(b);
 		if (frameLength > 0) {
 			if (frames == 0) {
 				sampleRate = adtsSampleRates[(b->
