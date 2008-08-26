@@ -142,7 +142,7 @@ static int mp3_plugin_init(void)
 
 /* decoder stuff is based on madlld */
 
-#define MP3_DATA_OUTPUT_BUFFER_SIZE 4096
+#define MP3_DATA_OUTPUT_BUFFER_SIZE 2048
 
 typedef struct _mp3DecodeData {
 	struct mad_stream stream;
@@ -150,7 +150,7 @@ typedef struct _mp3DecodeData {
 	struct mad_synth synth;
 	mad_timer_t timer;
 	unsigned char readBuffer[READ_BUFFER_SIZE];
-	char outputBuffer[MP3_DATA_OUTPUT_BUFFER_SIZE];
+	mpd_sint16 outputBuffer[MP3_DATA_OUTPUT_BUFFER_SIZE];
 	float totalTime;
 	float elapsedTime;
 	int muteFrame;
@@ -933,7 +933,7 @@ static int mp3Read(mp3DecodeData * data, struct decoder *decoder,
 
 			i += num_samples;
 
-			num_samples = dither_buffer((mpd_sint16 *) data->outputBuffer,
+			num_samples = dither_buffer(data->outputBuffer,
 						    &data->synth, &data->dither,
 						    i - num_samples, i,
 						    MAD_NCHANNELS(&(data->frame).header));
