@@ -127,6 +127,7 @@ static void processDecodeInput(int *pause_r, unsigned int *bbp_r,
 	case PLAYER_COMMAND_NONE:
 	case PLAYER_COMMAND_PLAY:
 	case PLAYER_COMMAND_STOP:
+	case PLAYER_COMMAND_EXIT:
 	case PLAYER_COMMAND_CLOSE_AUDIO:
 		break;
 
@@ -225,6 +226,7 @@ static void decodeParent(void)
 		processDecodeInput(&do_pause, &bbp, &do_xfade,
 				   &decodeWaitedOn, &next);
 		if (pc.command == PLAYER_COMMAND_STOP ||
+		    pc.command == PLAYER_COMMAND_EXIT ||
 		    pc.command == PLAYER_COMMAND_CLOSE_AUDIO) {
 			dropBufferedAudio();
 			break;
@@ -440,6 +442,12 @@ static void * player_task(mpd_unused void *arg)
 		case PLAYER_COMMAND_CLOSE_AUDIO:
 			closeAudioDevice();
 			player_command_finished();
+			break;
+
+		case PLAYER_COMMAND_EXIT:
+			closeAudioDevice();
+			player_command_finished();
+			pthread_exit(NULL);
 			break;
 
 		case PLAYER_COMMAND_LOCK_QUEUE:

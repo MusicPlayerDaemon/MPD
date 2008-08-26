@@ -76,9 +76,9 @@ void playerWait(void)
 	playerQueueUnlock();
 }
 
-void playerKill(void) /* deprecated */
+void playerKill(void)
 {
-	playerPause();
+	player_command(PLAYER_COMMAND_EXIT);
 }
 
 void playerPause(void)
