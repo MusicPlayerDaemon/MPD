@@ -176,7 +176,17 @@ static void adtsParse(AacBuffer * b, float *length)
 		*length = (float)frames / framesPerSec;
 }
 
-static void initAacBuffer(InputStream * inStream, AacBuffer * b, float *length)
+static void initAacBuffer(InputStream * inStream, AacBuffer * b)
+{
+	memset(b, 0, sizeof(AacBuffer));
+
+	b->inStream = inStream;
+
+	b->buffer = xmalloc(FAAD_MIN_STREAMSIZE * AAC_MAX_CHANNELS);
+	memset(b->buffer, 0, FAAD_MIN_STREAMSIZE * AAC_MAX_CHANNELS);
+}
+
+static void aac_parse_header(AacBuffer * b, float *length)
 {
 	size_t fileread;
 	size_t tagsize;
@@ -184,14 +194,7 @@ static void initAacBuffer(InputStream * inStream, AacBuffer * b, float *length)
 	if (length)
 		*length = -1;
 
-	memset(b, 0, sizeof(AacBuffer));
-
-	b->inStream = inStream;
-
-	fileread = inStream->size;
-
-	b->buffer = xmalloc(FAAD_MIN_STREAMSIZE * AAC_MAX_CHANNELS);
-	memset(b->buffer, 0, FAAD_MIN_STREAMSIZE * AAC_MAX_CHANNELS);
+	fileread = b->inStream->size;
 
 	fillAacBuffer(b);
 
@@ -256,7 +259,8 @@ static float getAacFloatTotalTime(char *file)
 	if (openInputStream(&inStream, file) < 0)
 		return -1;
 
-	initAacBuffer(&inStream, &b, &length);
+	initAacBuffer(&inStream, &b);
+	aac_parse_header(&b, &length);
 
 	if (length < 0) {
 		decoder = faacDecOpen();
@@ -324,7 +328,8 @@ static int aac_decode(struct decoder * mpd_decoder, char *path)
 	if (openInputStream(&inStream, path) < 0)
 		return -1;
 
-	initAacBuffer(&inStream, &b, NULL);
+	initAacBuffer(&inStream, &b);
+	aac_parse_header(&b, NULL);
 
 	decoder = faacDecOpen();
 
