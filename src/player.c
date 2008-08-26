@@ -27,14 +27,10 @@
 
 static void playerCloseAudio(void);
 
-int playerWait(int fd)
+void playerWait(void)
 {
-	if (playerStop(fd) < 0)
-		return -1;
-
+	playerStop();
 	playerCloseAudio();
-
-	return 0;
 }
 
 static void set_current_song(Song *song)
@@ -63,42 +59,35 @@ void player_command_finished()
 	wakeup_main_task();
 }
 
-int playerPlay(int fd, Song * song)
+void playerPlay(Song * song)
 {
-	if (playerStop(fd) < 0)
-		return -1;
+	playerStop();
 
 	set_current_song(song);
 	player_command(PLAYER_COMMAND_PLAY);
-
-	return 0;
 }
 
-int playerStop(mpd_unused int fd)
+void playerStop(void)
 {
 	if (pc.state != PLAYER_STATE_STOP)
 		player_command(PLAYER_COMMAND_STOP);
 
 	pc.queueState = PLAYER_QUEUE_BLANK;
 	playerQueueUnlock();
-
-	return 0;
 }
 
 void playerKill(void) /* deprecated */
 {
-	playerPause(STDERR_FILENO);
+	playerPause();
 }
 
-int playerPause(mpd_unused int fd)
+void playerPause(void)
 {
 	if (pc.state != PLAYER_STATE_STOP)
 		player_command(PLAYER_COMMAND_PAUSE);
-
-	return 0;
 }
 
-int playerSetPause(int fd, int pause_flag)
+void playerSetPause(int pause_flag)
 {
 	switch (pc.state) {
 	case PLAYER_STATE_STOP:
@@ -106,15 +95,13 @@ int playerSetPause(int fd, int pause_flag)
 
 	case PLAYER_STATE_PLAY:
 		if (pause_flag)
-			playerPause(fd);
+			playerPause();
 		break;
 	case PLAYER_STATE_PAUSE:
 		if (!pause_flag)
-			playerPause(fd);
+			playerPause();
 		break;
 	}
-
-	return 0;
 }
 
 int getPlayerElapsedTime(void)
@@ -180,9 +167,7 @@ char *getPlayerErrorStr(void)
 
 static void playerCloseAudio(void)
 {
-	if (playerStop(STDERR_FILENO) < 0)
-		return;
-
+	playerStop();
 	player_command(PLAYER_COMMAND_CLOSE_AUDIO);
 }
 

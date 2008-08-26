@@ -85,13 +85,13 @@ typedef struct _PlayerControl {
 
 void player_command_finished(void);
 
-int playerPlay(int fd, Song * song);
+void playerPlay(Song * song);
 
-int playerSetPause(int fd, int pause_flag);
+void playerSetPause(int pause_flag);
 
-int playerPause(int fd);
+void playerPause(void);
 
-int playerStop(int fd);
+void playerStop(void);
 
 void playerKill(void);
 
@@ -109,7 +109,7 @@ char *getPlayerErrorStr(void);
 
 int getPlayerError(void);
 
-int playerWait(int fd);
+void playerWait(void);
 
 int queueSong(Song * song);
 

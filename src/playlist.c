@@ -286,7 +286,7 @@ static void loadPlaylistFromStateFile(FILE *fp, char *buffer,
 					     playlist.length - 1, 0);
 			}
 			if (state == PLAYER_STATE_PAUSE) {
-				playerPause(STDERR_FILENO);
+				playerPause();
 			}
 			if (state != PLAYER_STATE_STOP) {
 				seekSongInPlaylist(STDERR_FILENO,
@@ -790,7 +790,7 @@ int deleteFromPlaylist(int fd, int song)
 	    && playlist.current == songOrder) {
 		/*if(playlist.current>=playlist.length) return playerStop(fd);
 		   else return playPlaylistOrderNumber(fd,playlist.current); */
-		playerWait(STDERR_FILENO);
+		playerWait();
 		playlist_noGoToNext = 1;
 	}
 
@@ -828,11 +828,10 @@ void deleteASongFromPlaylist(Song * song)
 	}
 }
 
-int stopPlaylist(int fd)
+int stopPlaylist(mpd_unused int fd)
 {
 	DEBUG("playlist: stop\n");
-	if (playerWait(fd) < 0)
-		return -1;
+	playerWait();
 	playlist.queued = -1;
 	playlist_state = PLAYLIST_STATE_STOP;
 	playlist_noGoToNext = 0;
@@ -841,12 +840,11 @@ int stopPlaylist(int fd)
 	return 0;
 }
 
-static int playPlaylistOrderNumber(int fd, int orderNum)
+static int playPlaylistOrderNumber(mpd_unused int fd, int orderNum)
 {
 	char path_max_tmp[MPD_PATH_MAX];
 
-	if (playerStop(fd) < 0)
-		return -1;
+	playerStop();
 
 	playlist_state = PLAYLIST_STATE_PLAY;
 	playlist_noGoToNext = 0;
@@ -857,11 +855,7 @@ static int playPlaylistOrderNumber(int fd, int orderNum)
 	      get_song_url(path_max_tmp,
 	                   playlist.songs[playlist.order[orderNum]]));
 
-	if (playerPlay(fd, (playlist.songs[playlist.order[orderNum]])) < 0) {
-		stopPlaylist(fd);
-		return -1;
-	} 
-
+	playerPlay(playlist.songs[playlist.order[orderNum]]);
 	playlist.current = orderNum;
 
 	return 0;
@@ -878,7 +872,8 @@ int playPlaylist(int fd, int song, int stopOnError)
 			return 0;
 
 		if (playlist_state == PLAYLIST_STATE_PLAY) {
-			return playerSetPause(fd, 0);
+			playerSetPause(0);
+			return 0;
 		}
 		if (playlist.current >= 0 && playlist.current < playlist.length) {
 			i = playlist.current;

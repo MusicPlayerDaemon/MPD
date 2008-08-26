@@ -292,9 +292,12 @@ static int handlePause(int fd, mpd_unused int *permission,
 		int pause_flag;
 		if (check_int(fd, &pause_flag, argv[1], check_boolean, argv[1]) < 0)
 			return -1;
-		return playerSetPause(fd, pause_flag);
+		playerSetPause(pause_flag);
+		return 0;
 	}
-	return playerPause(fd);
+
+	playerPause();
+	return 0;
 }
 
 static int commandStatus(mpd_unused int fd, mpd_unused int *permission,
