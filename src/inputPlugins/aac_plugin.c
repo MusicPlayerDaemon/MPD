@@ -300,6 +300,141 @@ static int getAacTotalTime(char *file)
 	return file_time;
 }
 
+static int aac_stream_decode(struct decoder * mpd_decoder,
+			     InputStream *inStream)
+{
+	float file_time;
+	float totalTime = 0;
+	faacDecHandle decoder;
+	faacDecFrameInfo frameInfo;
+	faacDecConfigurationPtr config;
+	long bread;
+	AudioFormat audio_format;
+	uint32_t sampleRate;
+	unsigned char channels;
+	unsigned int sampleCount;
+	char *sampleBuffer;
+	size_t sampleBufferLen;
+	mpd_uint16 bitRate = 0;
+	AacBuffer b;
+	int initialized = 0;
+
+	initAacBuffer(inStream, &b);
+
+	decoder = faacDecOpen();
+
+	config = faacDecGetCurrentConfiguration(decoder);
+	config->outputFormat = FAAD_FMT_16BIT;
+#ifdef HAVE_FAACDECCONFIGURATION_DOWNMATRIX
+	config->downMatrix = 1;
+#endif
+#ifdef HAVE_FAACDECCONFIGURATION_DONTUPSAMPLEIMPLICITSBR
+	config->dontUpSampleImplicitSBR = 0;
+#endif
+	faacDecSetConfiguration(decoder, config);
+
+	while (b.bytesIntoBuffer < FAAD_MIN_STREAMSIZE * AAC_MAX_CHANNELS &&
+	       !b.atEof &&
+	       decoder_get_command(mpd_decoder) == DECODE_COMMAND_NONE) {
+	       	fillAacBuffer(&b);
+		adts_find_frame(&b);
+		fillAacBuffer(&b);
+		my_usleep(10000);
+	}
+
+#ifdef HAVE_FAAD_BUFLEN_FUNCS
+	bread = faacDecInit(decoder, b.buffer, b.bytesIntoBuffer,
+			    &sampleRate, &channels);
+#else
+	bread = faacDecInit(decoder, b.buffer, &sampleRate, &channels);
+#endif
+	if (bread < 0) {
+		ERROR("Error not a AAC stream.\n");
+		faacDecClose(decoder);
+		if (b.buffer)
+			free(b.buffer);
+		return -1;
+	}
+
+	audio_format.bits = 16;
+
+	file_time = 0.0;
+
+	advanceAacBuffer(&b, bread);
+
+	while (1) {
+		fillAacBuffer(&b);
+		adts_find_frame(&b);
+		fillAacBuffer(&b);
+
+		if (b.bytesIntoBuffer == 0)
+			break;
+
+#ifdef HAVE_FAAD_BUFLEN_FUNCS
+		sampleBuffer = faacDecDecode(decoder, &frameInfo, b.buffer,
+					     b.bytesIntoBuffer);
+#else
+		sampleBuffer = faacDecDecode(decoder, &frameInfo, b.buffer);
+#endif
+
+		if (frameInfo.error > 0) {
+			ERROR("error decoding AAC stream\n");
+			ERROR("faad2 error: %s\n",
+			      faacDecGetErrorMessage(frameInfo.error));
+			break;
+		}
+#ifdef HAVE_FAACDECFRAMEINFO_SAMPLERATE
+		sampleRate = frameInfo.samplerate;
+#endif
+
+		if (!initialized) {
+			audio_format.channels = frameInfo.channels;
+			audio_format.sampleRate = sampleRate;
+			decoder_initialized(mpd_decoder, &audio_format, totalTime);
+			initialized = 1;
+		}
+
+		advanceAacBuffer(&b, frameInfo.bytesconsumed);
+
+		sampleCount = (unsigned long)(frameInfo.samples);
+
+		if (sampleCount > 0) {
+			bitRate = frameInfo.bytesconsumed * 8.0 *
+			    frameInfo.channels * sampleRate /
+			    frameInfo.samples / 1000 + 0.5;
+			file_time +=
+			    (float)(frameInfo.samples) / frameInfo.channels /
+			    sampleRate;
+		}
+
+		sampleBufferLen = sampleCount * 2;
+
+		decoder_data(mpd_decoder, NULL, 0, sampleBuffer,
+			     sampleBufferLen, file_time,
+			     bitRate, NULL);
+		if (decoder_get_command(mpd_decoder) == DECODE_COMMAND_SEEK) {
+			decoder_seek_error(mpd_decoder);
+		} else if (decoder_get_command(mpd_decoder) == DECODE_COMMAND_STOP)
+			break;
+	}
+
+	decoder_flush(mpd_decoder);
+
+	faacDecClose(decoder);
+	if (b.buffer)
+		free(b.buffer);
+
+	if (!initialized)
+		return -1;
+
+	if (decoder_get_command(mpd_decoder) == DECODE_COMMAND_SEEK) {
+		decoder_seek_error(mpd_decoder);
+	}
+
+	return 0;
+}
+
+
 static int aac_decode(struct decoder * mpd_decoder, char *path)
 {
 	float file_time;
@@ -461,10 +596,10 @@ struct decoder_plugin aacPlugin = {
 	NULL,
 	NULL,
 	NULL,
-	NULL,
+	aac_stream_decode,
 	aac_decode,
 	aacTagDup,
-	INPUT_PLUGIN_STREAM_FILE,
+	INPUT_PLUGIN_STREAM_FILE | INPUT_PLUGIN_STREAM_URL,
 	aac_suffixes,
 	aac_mimeTypes
 };
