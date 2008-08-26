@@ -50,6 +50,7 @@ typedef struct _DecoderControl {
 	volatile double seekWhere;
 	AudioFormat audioFormat;
 	Song *current_song;
+	Song *volatile next_song;
 	volatile float totalTime;
 } DecoderControl;
 

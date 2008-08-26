@@ -63,7 +63,7 @@ typedef struct _PlayerControl {
 	volatile float totalTime;
 	volatile float elapsedTime;
 	volatile float fileTime;
-	Song *current_song;
+	Song *volatile next_song;
 	Song *errored_song;
 	volatile mpd_sint8 queueState;
 	volatile mpd_sint8 queueLockState;

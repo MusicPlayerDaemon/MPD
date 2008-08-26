@@ -18,7 +18,6 @@
 
 #include "player.h"
 #include "path.h"
-#include "decode.h"
 #include "command.h"
 #include "log.h"
 #include "playerData.h"
@@ -101,7 +100,7 @@ int playerWait(int fd)
 static void set_current_song(Song *song)
 {
 	pc.fileTime = song->tag ? song->tag->time : 0;
-	pc.current_song = song;
+	pc.next_song = song;
 }
 
 int playerPlay(int fd, Song * song)
@@ -279,7 +278,7 @@ int playerSeek(int fd, Song * song, float seek_time)
 		return -1;
 	}
 
-	if (pc.current_song != song)
+	if (pc.next_song != song)
 		set_current_song(song);
 
 	if (pc.error == PLAYER_ERROR_NOERROR) {

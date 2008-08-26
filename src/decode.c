@@ -105,7 +105,7 @@ static int waitOnDecode(int *decodeWaitedOn)
 		player_wakeup_decoder();
 
 	if (dc.error != DECODE_ERROR_NOERROR) {
-		pc.errored_song = pc.current_song;
+		pc.errored_song = dc.next_song;
 		pc.error = PLAYER_ERROR_FILE;
 		quitDecode();
 		return -1;
@@ -127,10 +127,11 @@ static int decodeSeek(int *decodeWaitedOn, int *next)
 
 	if (dc.state == DECODE_STATE_STOP ||
 	    dc.error != DECODE_ERROR_NOERROR ||
-	    dc.current_song != pc.current_song) {
+	    dc.current_song != pc.next_song) {
 		stopDecode();
 		*next = -1;
 		ob_clear();
+		dc.next_song = pc.next_song;
 		dc.error = DECODE_ERROR_NOERROR;
 		dc.start = 1;
 		waitOnDecode(decodeWaitedOn);
@@ -178,11 +179,11 @@ static void processDecodeInput(int *pause_r, unsigned int *bbp_r,
 				pc.state = PLAYER_STATE_PLAY;
 			} else {
 				char tmp[MPD_PATH_MAX];
-				pc.errored_song = pc.current_song;
+				pc.errored_song = dc.next_song;
 				pc.error = PLAYER_ERROR_AUDIO;
 				ERROR("problems opening audio device "
 				      "while playing \"%s\"\n",
-				      get_song_url(tmp, pc.current_song));
+				      get_song_url(tmp, dc.next_song));
 				*pause_r = -1;
 			}
 		}
@@ -213,7 +214,7 @@ static void decodeStart(void)
 	char path_max_fs[MPD_PATH_MAX];
 	char path_max_utf8[MPD_PATH_MAX];
 
-	if (!get_song_url(path_max_utf8, pc.current_song)) {
+	if (!get_song_url(path_max_utf8, dc.next_song)) {
 		dc.error = DECODE_ERROR_FILE;
 		goto stop_no_close;
 	}
@@ -223,7 +224,7 @@ static void decodeStart(void)
 	} else
 		pathcpy_trunc(path_max_fs, path_max_utf8);
 
-	dc.current_song = pc.current_song; /* NEED LOCK */
+	dc.current_song = dc.next_song; /* NEED LOCK */
 	if (openInputStream(&inStream, path_max_fs) < 0) {
 		dc.error = DECODE_ERROR_FILE;
 		goto stop_no_close;
@@ -306,7 +307,7 @@ static void decodeStart(void)
 	}
 
 	if (ret < 0 || ret == DECODE_ERROR_UNKTYPE) {
-		pc.errored_song = pc.current_song;
+		pc.errored_song = dc.next_song;
 		if (ret != DECODE_ERROR_UNKTYPE)
 			dc.error = DECODE_ERROR_FILE;
 		else
@@ -439,11 +440,11 @@ static void decodeParent(void)
 				decodeWaitedOn = 0;
 				if(openAudioDevice(&(ob.audioFormat))<0) {
 					char tmp[MPD_PATH_MAX];
-					pc.errored_song = pc.current_song;
+					pc.errored_song = dc.next_song;
 					pc.error = PLAYER_ERROR_AUDIO;
 					ERROR("problems opening audio device "
 					      "while playing \"%s\"\n",
-					      get_song_url(tmp, pc.current_song));
+					      get_song_url(tmp, dc.next_song));
 					break;
 				} else {
 					player_wakeup_decoder();
@@ -460,7 +461,7 @@ static void decodeParent(void)
 			}
 			else if(dc.state!=DECODE_STATE_START) {
 				/* the decoder failed */
-				pc.errored_song = pc.current_song;
+				pc.errored_song = dc.next_song;
 				pc.error = PLAYER_ERROR_FILE;
 				break;
 			}
@@ -478,6 +479,8 @@ static void decodeParent(void)
 			/* the decoder has finished the current song;
 			   make it decode the next song */
 			next = ob.end;
+			dc.next_song = pc.next_song;
+			dc.error = DECODE_ERROR_NOERROR;
 			dc.start = 1;
 			pc.queueState = PLAYER_QUEUE_DECODE;
 			wakeup_main_task();
@@ -596,7 +599,7 @@ static void decodeParent(void)
 void decode(void)
 {
 	ob_clear();
-
+	dc.next_song = pc.next_song;
 	dc.error = DECODE_ERROR_NOERROR;
 	dc.seek = 0;
 	dc.stop = 0;
