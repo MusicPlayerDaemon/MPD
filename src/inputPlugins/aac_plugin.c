@@ -29,6 +29,7 @@
 
 /* all code here is either based on or copied from FAAD2's frontend code */
 typedef struct {
+	struct decoder *decoder;
 	InputStream *inStream;
 	size_t bytesIntoBuffer;
 	size_t bytesConsumed;
@@ -176,10 +177,12 @@ static void adtsParse(AacBuffer * b, float *length)
 		*length = (float)frames / framesPerSec;
 }
 
-static void initAacBuffer(InputStream * inStream, AacBuffer * b)
+static void initAacBuffer(AacBuffer * b,
+			  struct decoder *decoder, InputStream * inStream)
 {
 	memset(b, 0, sizeof(AacBuffer));
 
+	b->decoder = decoder;
 	b->inStream = inStream;
 
 	b->buffer = xmalloc(FAAD_MIN_STREAMSIZE * AAC_MAX_CHANNELS);
@@ -259,7 +262,7 @@ static float getAacFloatTotalTime(char *file)
 	if (openInputStream(&inStream, file) < 0)
 		return -1;
 
-	initAacBuffer(&inStream, &b);
+	initAacBuffer(&b, NULL, &inStream);
 	aac_parse_header(&b, &length);
 
 	if (length < 0) {
@@ -319,7 +322,7 @@ static int aac_stream_decode(struct decoder * mpd_decoder,
 	AacBuffer b;
 	int initialized = 0;
 
-	initAacBuffer(inStream, &b);
+	initAacBuffer(&b, mpd_decoder, inStream);
 
 	decoder = faacDecOpen();
 
@@ -463,7 +466,7 @@ static int aac_decode(struct decoder * mpd_decoder, char *path)
 	if (openInputStream(&inStream, path) < 0)
 		return -1;
 
-	initAacBuffer(&inStream, &b);
+	initAacBuffer(&b, mpd_decoder, &inStream);
 	aac_parse_header(&b, NULL);
 
 	decoder = faacDecOpen();
