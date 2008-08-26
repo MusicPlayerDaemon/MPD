@@ -76,10 +76,6 @@ typedef struct _PlayerControl {
 	volatile double totalPlayTime;
 } PlayerControl;
 
-void wakeup_player_nb(void);
-
-void player_sleep(void);
-
 int playerPlay(int fd, Song * song);
 
 int playerSetPause(int fd, int pause_flag);

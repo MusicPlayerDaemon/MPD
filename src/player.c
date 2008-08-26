@@ -27,20 +27,10 @@
 
 static void playerCloseAudio(void);
 
-void wakeup_player_nb(void)
-{
-	notify_signal(&pc.notify);
-}
-
 static void wakeup_player(void)
 {
 	notify_signal(&pc.notify);
 	wait_main_task();
-}
-
-void player_sleep(void)
-{
-	notify_wait(&pc.notify);
 }
 
 static void * player_task(mpd_unused void *arg)
@@ -67,7 +57,7 @@ static void * player_task(mpd_unused void *arg)
 			pc.queueLockState = PLAYER_QUEUE_UNLOCKED;
 			pc.unlockQueue = 0;
 		} else {
-			player_sleep();
+			notify_wait(&pc.notify);
 			continue;
 		}
 		/* we did something, tell the main task about it */
@@ -112,7 +102,7 @@ int playerPlay(int fd, Song * song)
 
 	pc.play = 1;
 	/* FIXME: _nb() variant is probably wrong here, and everywhere... */
-	do { wakeup_player_nb(); } while (pc.play);
+	do { notify_signal(&pc.notify); } while (pc.play);
 
 	return 0;
 }
@@ -249,7 +239,7 @@ int getPlayerQueueState(void)
 void setQueueState(int queueState)
 {
 	pc.queueState = queueState;
-	wakeup_player_nb();
+	notify_signal(&pc.notify);
 }
 
 void playerQueueLock(void)
@@ -285,7 +275,7 @@ int playerSeek(int fd, Song * song, float seek_time)
 		pc.seekWhere = seek_time;
 		pc.seek = 1;
 		/* FIXME: _nb() is probably wrong here, too */
-		do { wakeup_player_nb(); } while (pc.seek);
+		do { notify_signal(&pc.notify); } while (pc.seek);
 	}
 
 	return 0;

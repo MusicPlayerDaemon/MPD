@@ -32,34 +32,10 @@ enum xfade_state {
 	XFADE_ENABLED = 1
 };
 
-/* called inside decoder_task (inputPlugins) */
-void decoder_wakeup_player(void)
-{
-	wakeup_player_nb();
-}
-
-void decoder_sleep(void)
-{
-	notify_wait(&dc.notify);
-	wakeup_player_nb();
-}
-
-static void player_wakeup_decoder_nb(void)
-{
-	notify_signal(&dc.notify);
-}
-
-/* called from player_task */
-static void player_wakeup_decoder(void)
-{
-	notify_signal(&dc.notify);
-	player_sleep();
-}
-
 static void dc_command_wait(void)
 {
 	while (dc.command != DECODE_COMMAND_NONE) {
-		player_wakeup_decoder_nb();
+		notify_signal(&dc.notify);
 		notify_wait(&pc.notify);
 	}
 }
@@ -72,10 +48,10 @@ static void dc_command(enum decoder_command cmd)
 
 void dc_command_finished(void)
 {
-	assert(dc.command != DECODE_COMMAND_NONE);
+       assert(dc.command != DECODE_COMMAND_NONE);
 
-	dc.command = DECODE_COMMAND_NONE;
-	decoder_wakeup_player();
+       dc.command = DECODE_COMMAND_NONE;
+       notify_signal(&pc.notify);
 }
 
 static void stopDecode(void)
@@ -354,9 +330,11 @@ static void * decoder_task(mpd_unused void *arg)
 		    dc.command == DECODE_COMMAND_SEEK) {
 			decodeStart();
 		} else if (dc.command == DECODE_COMMAND_STOP) {
-			dc_command_finished();
+			dc.command = DECODE_COMMAND_NONE;
+			notify_signal(&pc.notify);
 		} else {
-			decoder_sleep();
+			notify_wait(&dc.notify);
+			notify_signal(&pc.notify);
 		}
 	}
 
@@ -445,7 +423,7 @@ static void decodeParent(void)
 		if (buffering) {
 			if (ob_available() < bbp) {
 				/* not enough decoded buffer space yet */
-				player_sleep();
+				notify_wait(&pc.notify);
 				continue;
 			} else {
 				/* buffering is complete */
@@ -469,7 +447,8 @@ static void decodeParent(void)
 					break;
 				}
 
-				player_wakeup_decoder();
+				notify_signal(&dc.notify);
+				notify_wait(&pc.notify);
 
 				if (do_pause) {
 					dropBufferedAudio();
@@ -490,7 +469,7 @@ static void decodeParent(void)
 			else {
 				/* the decoder is not yet ready; wait
 				   some more */
-				player_sleep();
+				notify_wait(&pc.notify);
 				continue;
 			}
 		}
@@ -506,7 +485,7 @@ static void decodeParent(void)
 			dc.command = DECODE_COMMAND_START;
 			pc.queueState = PLAYER_QUEUE_DECODE;
 			wakeup_main_task();
-			player_wakeup_decoder_nb();
+			notify_signal(&dc.notify);
 		}
 		if (next >= 0 && do_xfade == XFADE_UNKNOWN &&
 		    dc.command != DECODE_COMMAND_START &&
@@ -527,7 +506,7 @@ static void decodeParent(void)
 		}
 
 		if (do_pause)
-			player_sleep();
+			notify_wait(&pc.notify);
 		else if (!ob_is_empty() && (int)ob.begin != next) {
 			ob_chunk *beginChunk = ob_get_chunk(ob.begin);
 			unsigned int fadePosition;
@@ -563,7 +542,7 @@ static void decodeParent(void)
 						/* wait for the
 						   decoder */
 						ob_set_lazy(0);
-						player_sleep();
+						notify_wait(&pc.notify);
 						continue;
 					}
 				}
@@ -574,7 +553,7 @@ static void decodeParent(void)
 				      sizeToTime) < 0)
 				break;
 			ob_shift();
-			player_wakeup_decoder_nb();
+			notify_signal(&dc.notify);
 		} else if (!ob_is_empty() && (int)ob.begin == next) {
 			/* at the beginning of a new song */
 
@@ -590,7 +569,7 @@ static void decodeParent(void)
 			/* wait for the decoder to work on the new song */
 			if (pc.queueState == PLAYER_QUEUE_DECODE ||
 			    pc.queueLockState == PLAYER_QUEUE_LOCKED) {
-				player_sleep();
+				notify_wait(&pc.notify);
 				continue;
 			}
 			if (pc.queueState != PLAYER_QUEUE_PLAY)

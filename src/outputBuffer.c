@@ -73,7 +73,7 @@ static void output_buffer_expand(unsigned i)
 		/* if the buffer was empty, the player thread might be
 		   waiting for us; wake it up now that another decoded
 		   buffer has become available. */
-		decoder_wakeup_player();
+		notify_signal(&pc.notify);
 }
 
 void ob_flush(void)
@@ -183,7 +183,8 @@ static int tailChunk(InputStream * inStream,
 				}
 			}
 			if (!inStream || bufferInputStream(inStream) <= 0) {
-				decoder_sleep();
+				notify_wait(&dc.notify);
+				notify_signal(&pc.notify);
 			}
 		}
 

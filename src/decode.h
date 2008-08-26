@@ -61,10 +61,6 @@ typedef struct _DecoderControl {
 
 void decode(void);
 
-void decoder_wakeup_player(void);
-
-void decoder_sleep(void);
-
 void decoderInit(void);
 
 /**
