@@ -25,7 +25,9 @@
 #include "conf.h"
 #include "path.h"
 #include "playerData.h"
+#include "outputBuffer.h"
 #include "decoder_thread.h"
+#include "decoder_control.h"
 #include "player_control.h"
 #include "stats.h"
 #include "sig_handlers.h"
@@ -415,6 +417,9 @@ int main(int argc, char *argv[])
 
 	initCommands();
 	initPlayerData();
+	pc_init(buffered_before_play);
+	ob_init(buffered_chunks, &pc.notify);
+	dc_init();
 	initAudioConfig();
 	initAudioDriver();
 	initVolume();
@@ -464,6 +469,7 @@ int main(int argc, char *argv[])
 	finishPermissions();
 	finishCommands();
 	decoder_plugin_deinit_all();
+	ob_free();
 	cleanUpPidFile();
 	finishConf();
 

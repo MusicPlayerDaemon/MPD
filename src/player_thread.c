@@ -18,7 +18,6 @@
 
 #include "player_thread.h"
 #include "player_control.h"
-#include "playerData.h"
 #include "decoder_control.h"
 #include "audio.h"
 #include "pcm_utils.h"
@@ -171,7 +170,7 @@ static void do_play(void)
 {
 	int do_pause = 0;
 	int buffering = 1;
-	unsigned int bbp = buffered_before_play;
+	unsigned int bbp = pc.buffered_before_play;
 	enum xfade_state do_xfade = XFADE_UNKNOWN;
 	unsigned int crossFadeChunks = 0;
 	/** the position of the next cross-faded chunk in the next
@@ -277,7 +276,7 @@ static void do_play(void)
 				cross_fade_calc(pc.crossFade, dc.totalTime,
 						&(ob.audioFormat),
 						ob.size -
-						buffered_before_play);
+						pc.buffered_before_play);
 			if (crossFadeChunks > 0) {
 				do_xfade = XFADE_ENABLED;
 				nextChunk = -1;

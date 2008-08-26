@@ -80,6 +80,8 @@ enum player_queue_state {
 #define PLAYER_QUEUE_LOCKED	1
 
 struct player_control {
+	unsigned int buffered_before_play;
+
 	Notify notify;
 	volatile enum player_command command;
 	volatile enum player_state state;
@@ -102,6 +104,8 @@ struct player_control {
 };
 
 extern struct player_control pc;
+
+void pc_init(unsigned int buffered_before_play);
 
 void player_command_finished(void);
 

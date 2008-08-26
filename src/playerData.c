@@ -18,7 +18,6 @@
 
 #include "playerData.h"
 #include "player_control.h"
-#include "decoder_control.h"
 #include "outputBuffer.h"
 #include "conf.h"
 #include "log.h"
@@ -27,15 +26,14 @@
 #define DEFAULT_BUFFER_SIZE         2048
 #define DEFAULT_BUFFER_BEFORE_PLAY  10
 
+unsigned int buffered_chunks;
 unsigned int buffered_before_play;
 
 void initPlayerData(void)
 {
 	float perc = DEFAULT_BUFFER_BEFORE_PLAY;
 	char *test;
-	int crossfade = 0;
 	size_t bufferSize = DEFAULT_BUFFER_SIZE;
-	unsigned int buffered_chunks;
 	ConfigParam *param;
 
 	param = getConfigParam(CONF_AUDIO_BUFFER_SIZE);
@@ -71,22 +69,4 @@ void initPlayerData(void)
 	if (buffered_before_play > buffered_chunks) {
 		buffered_before_play = buffered_chunks;
 	}
-
-	ob_init(buffered_chunks, &pc.notify);
-
-	notify_init(&pc.notify);
-	pc.command = PLAYER_COMMAND_NONE;
-	pc.error = PLAYER_ERROR_NOERROR;
-	pc.state = PLAYER_STATE_STOP;
-	pc.queueState = PLAYER_QUEUE_BLANK;
-	pc.queueLockState = PLAYER_QUEUE_UNLOCKED;
-	pc.crossFade = crossfade;
-	pc.softwareVolume = 1000;
-
-	notify_init(&dc.notify);
-	dc.state = DECODE_STATE_STOP;
-	dc.command = DECODE_COMMAND_NONE;
-	dc.error = DECODE_ERROR_NOERROR;
 }
-
-

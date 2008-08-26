@@ -19,6 +19,7 @@
 #ifndef PLAYER_DATA_H
 #define PLAYER_DATA_H
 
+extern unsigned int buffered_chunks;
 extern unsigned int buffered_before_play;
 
 void initPlayerData(void);

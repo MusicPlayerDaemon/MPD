@@ -25,6 +25,19 @@
 
 struct player_control pc;
 
+void pc_init(unsigned int buffered_before_play)
+{
+	pc.buffered_before_play = buffered_before_play;
+	notify_init(&pc.notify);
+	pc.command = PLAYER_COMMAND_NONE;
+	pc.error = PLAYER_ERROR_NOERROR;
+	pc.state = PLAYER_STATE_STOP;
+	pc.queueState = PLAYER_QUEUE_BLANK;
+	pc.queueLockState = PLAYER_QUEUE_UNLOCKED;
+	pc.crossFade = 0;
+	pc.softwareVolume = 1000;
+}
+
 static void set_current_song(Song *song)
 {
 	assert(song != NULL);
