@@ -17,7 +17,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "decoder_api.h"
+#include "decoder_internal.h"
 #include "audio.h"
 
 #include "utils.h"
@@ -25,11 +25,13 @@
 #include "playerData.h"
 #include "gcc.h"
 
-void decoder_initialized(mpd_unused struct decoder * decoder,
+void decoder_initialized(struct decoder * decoder,
 			 const AudioFormat * audio_format,
 			 float total_time)
 {
 	assert(dc.state == DECODE_STATE_START);
+
+	memset(&decoder->conv_state, 0, sizeof(decoder->conv_state));
 
 	if (audio_format != NULL) {
 		dc.audioFormat = *audio_format;
@@ -70,7 +72,7 @@ static int need_chunks(InputStream * inStream, int seekable)
 	return 0;
 }
 
-int decoder_data(mpd_unused struct decoder *decoder, InputStream * inStream,
+int decoder_data(struct decoder *decoder, InputStream * inStream,
 		 int seekable,
 		 void *dataIn, size_t dataInLen,
 		 float data_time, mpd_uint16 bitRate,
@@ -98,7 +100,7 @@ int decoder_data(mpd_unused struct decoder *decoder, InputStream * inStream,
 		data = convBuffer;
 		datalen = pcm_convertAudioFormat(&(dc.audioFormat), dataIn,
 		                                 dataInLen, &(ob.audioFormat),
-		                                 data, &(ob.convState));
+		                                 data, &decoder->conv_state);
 	}
 
 	if (replayGainInfo != NULL && (replayGainState != REPLAYGAIN_OFF))

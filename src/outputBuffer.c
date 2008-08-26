@@ -25,7 +25,6 @@ void ob_init(unsigned int size, Notify *notify)
 {
 	assert(size > 0);
 
-	memset(&ob.convState, 0, sizeof(ConvState));
 	ob.chunks = xmalloc(size * sizeof(*ob.chunks));
 	ob.size = size;
 	ob.begin = 0;

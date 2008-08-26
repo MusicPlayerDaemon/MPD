@@ -20,9 +20,12 @@
 #define DECODER_INTERNAL_H
 
 #include "decoder_api.h"
+#include "pcm_utils.h"
 
 struct decoder {
 	InputPlugin *plugin;
+
+	ConvState conv_state;
 };
 
 #endif

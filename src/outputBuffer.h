@@ -20,7 +20,7 @@
 #define OUTPUT_BUFFER_H
 
 #include "notify.h"
-#include "pcm_utils.h"
+#include "audio_format.h"
 
 #define OUTPUT_BUFFER_DC_STOP   -1
 #define OUTPUT_BUFFER_DC_SEEK   -2
@@ -55,7 +55,6 @@ typedef struct _OutputBuffer {
 	int lazy;
 
 	AudioFormat audioFormat;
-	ConvState convState;
 
 	Notify *notify;
 } OutputBuffer;
