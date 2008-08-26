@@ -165,12 +165,14 @@ typedef struct _mp3DecodeData {
 	int foundFirstFrame;
 	int decodedFirstFrame;
 	unsigned long bitRate;
+	struct decoder *decoder;
 	InputStream *inStream;
 	struct audio_dither dither;
 	enum mad_layer layer;
 } mp3DecodeData;
 
-static void initMp3DecodeData(mp3DecodeData * data, InputStream * inStream)
+static void initMp3DecodeData(mp3DecodeData * data, struct decoder *decoder,
+			      InputStream * inStream)
 {
 	data->muteFrame = 0;
 	data->highestFrame = 0;
@@ -185,6 +187,7 @@ static void initMp3DecodeData(mp3DecodeData * data, InputStream * inStream)
 	data->foundXing = 0;
 	data->foundFirstFrame = 0;
 	data->decodedFirstFrame = 0;
+	data->decoder = decoder;
 	data->inStream = inStream;
 	data->layer = 0;
 	memset(&(data->dither), 0, sizeof(struct audio_dither));
@@ -682,9 +685,10 @@ static int parse_lame(struct lame *lame, struct mad_bitptr *ptr, int *bitlen)
 	return 1;
 }
 
-static int decodeFirstFrame(mp3DecodeData * data, struct decoder * decoder,
+static int decodeFirstFrame(mp3DecodeData * data,
                             MpdTag ** tag, ReplayGainInfo ** replayGainInfo)
 {
+	struct decoder *decoder = data->decoder;
 	struct xing xing;
 	struct lame lame;
 	struct mad_bitptr ptr;
@@ -798,8 +802,8 @@ static int getMp3TotalTime(char *file)
 
 	if (openInputStream(&inStream, file) < 0)
 		return -1;
-	initMp3DecodeData(&data, &inStream);
-	if (decodeFirstFrame(&data, NULL, NULL, NULL) < 0)
+	initMp3DecodeData(&data, NULL, &inStream);
+	if (decodeFirstFrame(&data, NULL, NULL) < 0)
 		ret = -1;
 	else
 		ret = data.totalTime + 0.5;
@@ -813,9 +817,9 @@ static int openMp3FromInputStream(InputStream * inStream, mp3DecodeData * data,
 				  struct decoder * decoder, MpdTag ** tag,
 				  ReplayGainInfo ** replayGainInfo)
 {
-	initMp3DecodeData(data, inStream);
+	initMp3DecodeData(data, decoder, inStream);
 	*tag = NULL;
-	if (decodeFirstFrame(data, decoder, tag, replayGainInfo) < 0) {
+	if (decodeFirstFrame(data, tag, replayGainInfo) < 0) {
 		mp3DecodeDataFinalize(data);
 		if (tag && *tag)
 			freeMpdTag(*tag);
@@ -825,9 +829,9 @@ static int openMp3FromInputStream(InputStream * inStream, mp3DecodeData * data,
 	return 0;
 }
 
-static int mp3Read(mp3DecodeData * data, struct decoder *decoder,
-		   ReplayGainInfo ** replayGainInfo)
+static int mp3Read(mp3DecodeData * data, ReplayGainInfo ** replayGainInfo)
 {
+	struct decoder *decoder = data->decoder;
 	unsigned int pcm_length, max_samples;
 	unsigned int i;
 	int ret;
@@ -1062,7 +1066,7 @@ static int mp3_decode(struct decoder * decoder, InputStream * inStream)
 
 	decoder_initialized(decoder, &audio_format, data.totalTime);
 
-	while (mp3Read(&data, decoder, &replayGainInfo) != DECODE_BREAK) ;
+	while (mp3Read(&data, &replayGainInfo) != DECODE_BREAK) ;
 
 	if (replayGainInfo)
 		freeReplayGainInfo(replayGainInfo);
