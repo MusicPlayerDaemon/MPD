@@ -456,7 +456,7 @@ static int wavpack_streamdecode(struct decoder * decoder, InputStream *is)
 		 * As we use dc.utf8url, this function will be bad for
 		 * single files. utf8url is not absolute file path :/
 		 */
-		utf8url = get_song_url(tmp, dc.current_song);
+		utf8url = decoder_get_url(decoder, tmp);
 		if (utf8url == NULL) {
 			break;
 		}

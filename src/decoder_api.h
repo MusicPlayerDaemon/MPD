@@ -103,6 +103,8 @@ void decoder_initialized(struct decoder * decoder,
 			 const AudioFormat * audio_format,
 			 float total_time);
 
+const char *decoder_get_url(struct decoder * decoder, char * buffer);
+
 enum decoder_command decoder_get_command(struct decoder * decoder);
 
 /**
