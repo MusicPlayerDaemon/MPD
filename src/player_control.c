@@ -56,14 +56,6 @@ static void player_command(enum player_command cmd)
 	}
 }
 
-void player_command_finished()
-{
-	assert(pc.command != PLAYER_COMMAND_NONE);
-
-	pc.command = PLAYER_COMMAND_NONE;
-	wakeup_main_task();
-}
-
 void playerPlay(Song * song)
 {
 	assert(pc.queueLockState == PLAYER_QUEUE_UNLOCKED);

@@ -107,8 +107,6 @@ extern struct player_control pc;
 
 void pc_init(unsigned int buffered_before_play);
 
-void player_command_finished(void);
-
 void playerPlay(Song * song);
 
 void playerSetPause(int pause_flag);

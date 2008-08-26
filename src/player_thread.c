@@ -32,6 +32,14 @@ enum xfade_state {
 	XFADE_ENABLED = 1
 };
 
+static void player_command_finished(void)
+{
+	assert(pc.command != PLAYER_COMMAND_NONE);
+
+	pc.command = PLAYER_COMMAND_NONE;
+	wakeup_main_task();
+}
+
 static void quitDecode(void)
 {
 	dc_stop(&pc.notify);
