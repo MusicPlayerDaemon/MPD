@@ -50,6 +50,8 @@ static void decodeStart(void)
 		goto stop_no_close;
 	}
 
+	decoder.seeking = 0;
+
 	dc.state = DECODE_STATE_START;
 	dc.command = DECODE_COMMAND_NONE;
 

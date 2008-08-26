@@ -69,6 +69,8 @@ enum decoder_command decoder_get_command(mpd_unused struct decoder * decoder)
 void decoder_command_finished(mpd_unused struct decoder * decoder)
 {
 	assert(dc.command != DECODE_COMMAND_NONE);
+	assert(dc.command != DECODE_COMMAND_SEEK ||
+	       dc.seekError || decoder->seeking);
 
 	dc.command = DECODE_COMMAND_NONE;
 	notify_signal(&pc.notify);
@@ -77,6 +79,8 @@ void decoder_command_finished(mpd_unused struct decoder * decoder)
 double decoder_seek_where(mpd_unused struct decoder * decoder)
 {
 	assert(dc.command == DECODE_COMMAND_SEEK);
+
+	decoder->seeking = 1;
 
 	return dc.seekWhere;
 }
@@ -100,7 +104,10 @@ size_t decoder_read(struct decoder *decoder,
 
 	while (1) {
 		/* XXX don't allow decoder==NULL */
-		if (decoder != NULL && dc.command != DECODE_COMMAND_NONE)
+		if (decoder != NULL &&
+		    (dc.command != DECODE_COMMAND_SEEK ||
+		     !decoder->seeking) &&
+		    dc.command != DECODE_COMMAND_NONE)
 			return 0;
 
 		nbytes = readFromInputStream(inStream, buffer, 1, length);

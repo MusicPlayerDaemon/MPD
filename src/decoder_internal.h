@@ -26,6 +26,8 @@ struct decoder {
 	struct decoder_plugin *plugin;
 
 	ConvState conv_state;
+
+	int seeking;
 };
 
 #endif
