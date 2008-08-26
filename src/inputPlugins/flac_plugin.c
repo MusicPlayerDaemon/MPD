@@ -36,15 +36,13 @@ static flac_read_status flacRead(mpd_unused const flac_decoder * flacDec,
 	r = decoder_read(data->decoder, data->inStream, (void *)buf, *bytes);
 	*bytes = r;
 
-	if (r == 0 && decoder_get_command(data->decoder) == DECODE_COMMAND_NONE) {
-		if (inputStreamAtEOF(data->inStream))
+	if (r == 0) {
+		if (decoder_get_command(data->decoder) != DECODE_COMMAND_NONE ||
+		    inputStreamAtEOF(data->inStream))
 			return flac_read_status_eof;
 		else
 			return flac_read_status_abort;
 	}
-
-	if (r == 0 && decoder_get_command(data->decoder) == DECODE_COMMAND_SEEK)
-		return flac_read_status_eof;
 
 	return flac_read_status_continue;
 }
@@ -88,9 +86,9 @@ static FLAC__bool flacEOF(mpd_unused const flac_decoder * flacDec, void *fdata)
 {
 	FlacData *data = (FlacData *) fdata;
 
-	if (inputStreamAtEOF(data->inStream) == 1)
-		return true;
-	return false;
+	return (decoder_get_command(data->decoder) != DECODE_COMMAND_NONE &&
+		decoder_get_command(data->decoder) != DECODE_COMMAND_SEEK) ||
+		inputStreamAtEOF(data->inStream);
 }
 
 static void flacError(mpd_unused const flac_decoder *dec,

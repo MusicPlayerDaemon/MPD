@@ -104,9 +104,9 @@ static FLAC__bool of_EOF_cb(const OggFLAC__SeekableStreamDecoder * decoder,
 {
 	FlacData *data = (FlacData *) fdata;
 
-	if (inputStreamAtEOF(data->inStream) == 1)
-		return true;
-	return false;
+	return (decoder_get_command(data->decoder) != DECODE_COMMAND_NONE &&
+		decoder_get_command(data->decoder) != DECODE_COMMAND_SEEK) ||
+		inputStreamAtEOF(data->inStream);
 }
 
 static void of_error_cb(const OggFLAC__SeekableStreamDecoder * decoder,
