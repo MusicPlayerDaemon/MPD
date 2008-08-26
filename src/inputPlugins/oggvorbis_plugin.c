@@ -269,7 +269,7 @@ static int oggvorbis_decode(struct decoder * decoder, InputStream * inStream)
 	while (1) {
 		if (dc.command == DECODE_COMMAND_SEEK) {
 			if (0 == ov_time_seek_page(&vf, dc.seekWhere)) {
-				ob_clear();
+				decoder_clear(decoder);
 				chunkpos = 0;
 			} else
 				dc.seekError = 1;
@@ -332,7 +332,7 @@ static int oggvorbis_decode(struct decoder * decoder, InputStream * inStream)
 
 	ov_clear(&vf);
 
-	ob_flush();
+	decoder_flush(decoder);
 
 	return 0;
 }

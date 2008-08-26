@@ -205,7 +205,7 @@ static int mod_decode(struct decoder * decoder, char *path)
 			     total_time, 0, NULL);
 	}
 
-	ob_flush();
+	decoder_flush(decoder);
 
 	mod_close(data);
 

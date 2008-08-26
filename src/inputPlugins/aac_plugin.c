@@ -403,7 +403,7 @@ static int aac_decode(struct decoder * mpd_decoder, char *path)
 		}
 	}
 
-	ob_flush();
+	decoder_flush(mpd_decoder);
 
 	faacDecClose(decoder);
 	if (b.buffer)

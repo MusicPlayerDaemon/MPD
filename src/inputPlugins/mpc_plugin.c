@@ -179,7 +179,7 @@ static int mpc_decode(struct decoder * mpd_decoder, InputStream * inStream)
 		if (dc.command == DECODE_COMMAND_SEEK) {
 			samplePos = dc.seekWhere * dc.audioFormat.sampleRate;
 			if (mpc_decoder_seek_sample(&decoder, samplePos)) {
-				ob_clear();
+				decoder_clear(mpd_decoder);
 				s16 = (mpd_sint16 *) chunk;
 				chunkpos = 0;
 			} else
@@ -242,7 +242,7 @@ static int mpc_decode(struct decoder * mpd_decoder, InputStream * inStream)
 			     replayGainInfo);
 	}
 
-	ob_flush();
+	decoder_flush(mpd_decoder);
 
 	freeReplayGainInfo(replayGainInfo);
 

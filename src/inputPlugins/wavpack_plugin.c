@@ -177,7 +177,7 @@ static void wavpack_decode(struct decoder * decoder,
 			if (canseek) {
 				int where;
 
-				ob_clear();
+				decoder_clear(decoder);
 
 				where = dc.seekWhere *
 				        dc.audioFormat.sampleRate;
@@ -214,7 +214,7 @@ static void wavpack_decode(struct decoder * decoder,
 		}
 	} while (samplesgot == samplesreq);
 
-	ob_flush();
+	decoder_flush(decoder);
 }
 
 static char *wavpack_tag(WavpackContext *wpc, char *key)

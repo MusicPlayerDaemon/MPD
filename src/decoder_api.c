@@ -109,3 +109,13 @@ int decoder_data(mpd_unused struct decoder *decoder, InputStream * inStream,
 
 	return 0;
 }
+
+void decoder_flush(mpd_unused struct decoder *decoder)
+{
+	ob_flush();
+}
+
+void decoder_clear(mpd_unused struct decoder *decoder)
+{
+	ob_clear();
+}

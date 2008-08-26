@@ -92,7 +92,7 @@ static int audiofile_decode(struct decoder * decoder, char *path)
 
 		while (!eof) {
 			if (dc.command == DECODE_COMMAND_SEEK) {
-				ob_clear();
+				decoder_clear(decoder);
 				current = dc.seekWhere *
 				    dc.audioFormat.sampleRate;
 				afSeekFrame(af_fp, AF_DEFAULT_TRACK, current);
@@ -118,7 +118,7 @@ static int audiofile_decode(struct decoder * decoder, char *path)
 			}
 		}
 
-		ob_flush();
+		decoder_flush(decoder);
 	}
 	afCloseFile(af_fp);
 

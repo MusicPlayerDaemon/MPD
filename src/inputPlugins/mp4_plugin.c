@@ -211,7 +211,7 @@ static int mp4_decode(struct decoder * mpd_decoder, InputStream * inStream)
 
 		if (seeking && seekPositionFound) {
 			seekPositionFound = 0;
-			ob_clear();
+			decoder_clear(mpd_decoder);
 			seeking = 0;
 			dc_command_finished();
 		}
@@ -288,10 +288,10 @@ static int mp4_decode(struct decoder * mpd_decoder, InputStream * inStream)
 		return -1;
 
 	if (dc.command == DECODE_COMMAND_SEEK && seeking) {
-		ob_clear();
+		decoder_clear(mpd_decoder);
 		dc_command_finished();
 	}
-	ob_flush();
+	decoder_flush(mpd_decoder);
 
 	return 0;
 }

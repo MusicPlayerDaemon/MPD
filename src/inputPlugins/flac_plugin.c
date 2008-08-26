@@ -426,7 +426,7 @@ static int flac_decode_internal(struct decoder * decoder,
 			FLAC__uint64 sampleToSeek = dc.seekWhere *
 			    dc.audioFormat.sampleRate + 0.5;
 			if (flac_seek_absolute(flacDec, sampleToSeek)) {
-				ob_clear();
+				decoder_clear(decoder);
 				data.time = ((float)sampleToSeek) /
 				    dc.audioFormat.sampleRate;
 				data.position = 0;
@@ -442,7 +442,7 @@ static int flac_decode_internal(struct decoder * decoder,
 	/* send last little bit */
 	if (data.chunk_length > 0 && dc.command != DECODE_COMMAND_STOP) {
 		flacSendChunk(&data);
-		ob_flush();
+		decoder_flush(decoder);
 	}
 
 fail:

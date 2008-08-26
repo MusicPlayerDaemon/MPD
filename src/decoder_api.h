@@ -55,4 +55,8 @@ int decoder_data(struct decoder *decoder, InputStream * inStream,
 		 float data_time, mpd_uint16 bitRate,
 		 ReplayGainInfo * replayGainInfo);
 
+void decoder_flush(struct decoder *decoder);
+
+void decoder_clear(struct decoder *decoder);
+
 #endif
