@@ -30,9 +30,9 @@
 /* all code here is either based on or copied from FAAD2's frontend code */
 typedef struct {
 	InputStream *inStream;
-	long bytesIntoBuffer;
-	long bytesConsumed;
-	long fileOffset;
+	size_t bytesIntoBuffer;
+	size_t bytesConsumed;
+	off_t fileOffset;
 	unsigned char *buffer;
 	int atEof;
 } AacBuffer;
@@ -40,7 +40,7 @@ typedef struct {
 static void fillAacBuffer(AacBuffer * b)
 {
 	if (b->bytesConsumed > 0) {
-		int bread;
+		size_t bread;
 
 		if (b->bytesIntoBuffer) {
 			memmove((void *)b->buffer, (void *)(b->buffer +
@@ -78,7 +78,7 @@ static void fillAacBuffer(AacBuffer * b)
 	}
 }
 
-static void advanceAacBuffer(AacBuffer * b, int bytes)
+static void advanceAacBuffer(AacBuffer * b, size_t bytes)
 {
 	b->fileOffset += bytes;
 	b->bytesConsumed = bytes;
@@ -92,7 +92,7 @@ static int adtsSampleRates[] =
 
 static int adtsParse(AacBuffer * b, float *length)
 {
-	int frames, frameLength;
+	unsigned int frames, frameLength;
 	int sampleRate = 0;
 	float framesPerSec;
 
