@@ -97,9 +97,10 @@ static void set_current_song(Song *song)
 static void player_command(enum player_command cmd)
 {
 	pc.command = cmd;
-	while (pc.command != PLAYER_COMMAND_NONE)
-		/* FIXME: _nb() variant is probably wrong here, and everywhere... */
+	while (pc.command != PLAYER_COMMAND_NONE) {
 		notify_signal(&pc.notify);
+		wait_main_task();
+	}
 }
 
 void player_command_finished()
