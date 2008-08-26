@@ -536,22 +536,14 @@ static void syncPlaylistWithQueue(int queue)
 	}
 }
 
-static void lockPlaylistInteraction(void)
+static void clearPlayerQueue(void)
 {
 	if (getPlayerQueueState() == PLAYER_QUEUE_PLAY ||
 	    getPlayerQueueState() == PLAYER_QUEUE_FULL) {
 		playerQueueLock();
 		syncPlaylistWithQueue(0);
 	}
-}
 
-static void unlockPlaylistInteraction(void)
-{
-	playerQueueUnlock();
-}
-
-static void clearPlayerQueue(void)
-{
 	playlist.queued = -1;
 	switch (getPlayerQueueState()) {
 	case PLAYER_QUEUE_BLANK:
@@ -569,13 +561,8 @@ static void clearPlayerQueue(void)
 		setQueueState(PLAYER_QUEUE_STOP);
 		break;
 	}
-}
 
-static void clearPlayerQueueLocked(void)
-{
-	lockPlaylistInteraction();
-	clearPlayerQueue();
-	unlockPlaylistInteraction();
+	playerQueueUnlock();
 }
 
 int addToPlaylist(int fd, char *url, int *added_id)
@@ -637,7 +624,7 @@ int addSongToPlaylist(int fd, Song * song, int *added_id)
 	if (playlist_state == PLAYLIST_STATE_PLAY) {
 		if (playlist.queued >= 0
 		    && playlist.current == playlist.length - 1)
-			clearPlayerQueueLocked();
+			clearPlayerQueue();
 	}
 
 	id = getNextId();
@@ -697,7 +684,7 @@ int swapSongsInPlaylist(int fd, int song1, int song2)
 
 		if (queuedSong == song1 || queuedSong == song2
 		    || currentSong == song1 || currentSong == song2)
-			clearPlayerQueueLocked();
+			clearPlayerQueue();
 	}
 
 	swapSongs(song1, song2);
@@ -757,7 +744,7 @@ int deleteFromPlaylist(int fd, int song)
 		if (playlist.queued >= 0
 		    && (playlist.order[playlist.queued] == song
 			|| playlist.order[playlist.current] == song))
-			clearPlayerQueueLocked();
+			clearPlayerQueue();
 	}
 
 	if (playlist.songs[song]->type == SONG_TYPE_URL) {
@@ -1034,7 +1021,7 @@ int setPlaylistRepeatStatus(int fd, int status)
 
 	if (playlist_state == PLAYLIST_STATE_PLAY) {
 		if (playlist.repeat && !status && playlist.queued == 0)
-			clearPlayerQueueLocked();
+			clearPlayerQueue();
 	}
 
 	playlist.repeat = status;
@@ -1084,7 +1071,7 @@ int moveSongInPlaylist(int fd, int from, int to)
 			queuedSong = playlist.order[playlist.queued];
 		if (queuedSong == from || queuedSong == to
 		    || currentSong == from || currentSong == to)
-			clearPlayerQueueLocked();
+			clearPlayerQueue();
 	}
 
 	tmpSong = playlist.songs[from];
@@ -1158,7 +1145,7 @@ static void orderPlaylist(void)
 
 	if (playlist_state == PLAYLIST_STATE_PLAY) {
 		if (playlist.queued >= 0)
-			clearPlayerQueueLocked();
+			clearPlayerQueue();
 	}
 
 	for (i = 0; i < playlist.length; i++) {
@@ -1183,7 +1170,7 @@ static void randomizeOrder(int start, int end)
 
 	if (playlist_state == PLAYLIST_STATE_PLAY) {
 		if (playlist.queued >= start && playlist.queued <= end)
-			clearPlayerQueueLocked();
+			clearPlayerQueue();
 	}
 
 	for (i = start; i <= end; i++) {
@@ -1258,7 +1245,7 @@ int shufflePlaylist(mpd_unused int fd)
 
 	if (playlist.length > 1) {
 		if (playlist_state == PLAYLIST_STATE_PLAY) {
-			clearPlayerQueueLocked();
+			clearPlayerQueue();
 			/* put current playing song first */
 			swapSongs(0, playlist.order[playlist.current]);
 			if (playlist.random) {
@@ -1385,7 +1372,7 @@ int seekSongInPlaylist(int fd, int song, float seek_time)
 
 	if (playlist_state == PLAYLIST_STATE_PLAY) {
 		if (playlist.queued >= 0)
-			clearPlayerQueueLocked();
+			clearPlayerQueue();
 	} else
 		playPlaylistOrderNumber(i);
 
