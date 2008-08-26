@@ -35,7 +35,6 @@ static void quitDecode(void)
 {
 	dc_stop(&pc.notify);
 	pc.state = PLAYER_STATE_STOP;
-	dc.command = DECODE_COMMAND_NONE;
 	pc.command = PLAYER_COMMAND_NONE;
 	wakeup_main_task();
 }
