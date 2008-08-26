@@ -27,15 +27,19 @@
 #include <jack/types.h>
 #include <jack/ringbuffer.h>
 
-pthread_mutex_t play_audio_lock = PTHREAD_MUTEX_INITIALIZER;
-pthread_cond_t  play_audio = PTHREAD_COND_INITIALIZER;
-
-static char *name = "mpd";
-static char *output_ports[2];
-static int ringbuf_sz = 32768;
 size_t sample_size = sizeof(jack_default_audio_sample_t);
 
 typedef struct _JackData {
+	/* configuration */
+	char *name;
+	char *output_ports[2];
+	int ringbuf_sz;
+
+	/* locks */
+	pthread_mutex_t play_audio_lock;
+	pthread_cond_t play_audio;
+
+	/* jack library stuff */
 	jack_port_t *ports[2];
 	jack_client_t *client;
 	jack_ringbuffer_t *ringbuffer[2];
@@ -49,6 +53,12 @@ static JackData *newJackData(void)
 {
 	JackData *ret;
 	ret = xcalloc(sizeof(JackData), 1);
+
+	ret->name = "mpd";
+	ret->ringbuf_sz = 32768;
+
+	pthread_mutex_init(&ret->play_audio_lock, NULL);
+	pthread_cond_init(&ret->play_audio, NULL);
 
 	return ret;
 }
@@ -72,36 +82,36 @@ static void freeJackClient(JackData *jd)
 		jack_ringbuffer_free(jd->ringbuffer[1]);
 		jd->ringbuffer[1] = NULL;
 	}
+
+	pthread_mutex_destroy(&jd->play_audio_lock);
+	pthread_cond_destroy(&jd->play_audio);
 }
 
 static void freeJackData(AudioOutput *audioOutput)
 {
 	JackData *jd = audioOutput->data;
+	int i;
 
 	assert(jd != NULL);
 
 	freeJackClient(jd);
+
+	if (strcmp(jd->name, "mpd") != 0)
+		free(jd->name);
+
+	for ( i = ARRAY_SIZE(jd->output_ports); --i >= 0; ) {
+		if (!jd->output_ports[i])
+			continue;
+		free(jd->output_ports[i]);
+	}
+
 	free(jd);
 }
 
 static void jack_finishDriver(AudioOutput *audioOutput)
 {
-	int i;
-
 	freeJackData(audioOutput);
 	DEBUG("disconnect_jack (pid=%d)\n", getpid ());
-
- 	if ( strcmp(name, "mpd") ) {
- 		free(name);
- 		name = "mpd";
- 	}
-
-	for ( i = ARRAY_SIZE(output_ports); --i >= 0; ) {
-		if (!output_ports[i])
- 			continue;
- 		free(output_ports[i]);
- 		output_ports[i] = NULL;
- 	}
 }
 
 static int srate(mpd_unused jack_nframes_t rate, void *data)
@@ -152,9 +162,9 @@ static int process(jack_nframes_t nframes, void *arg)
 		    nframes = 0;
 		}
 
-		if (pthread_mutex_trylock (&play_audio_lock) == 0) {
-			pthread_cond_signal (&play_audio);
-			pthread_mutex_unlock (&play_audio_lock);
+		if (pthread_mutex_trylock (&jd->play_audio_lock) == 0) {
+			pthread_cond_signal (&jd->play_audio);
+			pthread_mutex_unlock (&jd->play_audio_lock);
 		}
 	}
 
@@ -190,12 +200,14 @@ static void error_callback(const char *msg)
 
 static int jack_initDriver(AudioOutput *audioOutput, ConfigParam *param)
 {
+	JackData *jd;
 	BlockParam *bp;
 	char *endptr;
 	int val;
 	char *cp = NULL;
 
 	audioOutput->data = newJackData();
+	jd = audioOutput->data;
 
 	DEBUG("jack_initDriver (pid=%d)\n", getpid());
 	if ( ! param ) return 0;
@@ -209,18 +221,19 @@ static int jack_initDriver(AudioOutput *audioOutput, ConfigParam *param)
 			      bp->name, bp->line, bp->value);
 
 		*cp = '\0';
-		output_ports[0] = xstrdup(bp->value);
+		jd->output_ports[0] = xstrdup(bp->value);
 		*cp++ = ',';
 
 		if (!*cp)
 			FATAL("expected a second value for '%s' at line %d: "
 			      "%s\n", bp->name, bp->line, bp->value);
 
-		output_ports[1] = xstrdup(cp);
+		jd->output_ports[1] = xstrdup(cp);
 
 		if (strchr(cp,','))
 			FATAL("Only %d values are supported for '%s' "
-			      "at line %d\n", (int)ARRAY_SIZE(output_ports),
+			      "at line %d\n",
+			      (int)ARRAY_SIZE(jd->output_ports),
 			      bp->name, bp->line);
 	}
 
@@ -229,18 +242,18 @@ static int jack_initDriver(AudioOutput *audioOutput, ConfigParam *param)
 		val = strtol(bp->value, &endptr, 10);
 
 		if ( errno == 0 && endptr != bp->value) {
-			ringbuf_sz = val < 32768 ? 32768 : val;
-			DEBUG("ringbuffer_size=%d\n", ringbuf_sz);
+			jd->ringbuf_sz = val < 32768 ? 32768 : val;
+			DEBUG("ringbuffer_size=%d\n", jd->ringbuf_sz);
 		} else {
 			FATAL("%s is not a number; ringbuf_size=%d\n",
-			      bp->value, ringbuf_sz);
+			      bp->value, jd->ringbuf_sz);
 		}
 	}
 
 	if ( (bp = getBlockParam(param, "name"))
 	     && (strcmp(bp->value, "mpd") != 0) ) {
-		name = xstrdup(bp->value);
-		DEBUG("name=%s\n", name);
+		jd->name = xstrdup(bp->value);
+		DEBUG("name=%s\n", jd->name);
 	}
 
  	return 0;
@@ -257,7 +270,7 @@ static int connect_jack(AudioOutput *audioOutput)
 	char **jports;
 	char *port_name;
 
-	if ( (jd->client = jack_client_new(name)) == NULL ) {
+	if ( (jd->client = jack_client_new(jd->name)) == NULL ) {
 		ERROR("jack server not running?\n");
 		return -1;
 	}
@@ -290,37 +303,38 @@ static int connect_jack(AudioOutput *audioOutput)
 	}
 
 	/*  hay que buscar que hay  */
-	if ( !output_ports[1]
+	if ( !jd->output_ports[1]
 	     && (jports = (char **)jack_get_ports(jd->client, NULL, NULL,
 							JackPortIsPhysical|
 							JackPortIsInput)) ) {
-		output_ports[0] = jports[0];
-		output_ports[1] = jports[1] ? jports[1] : jports[0];
-		DEBUG("output_ports: %s %s\n", output_ports[0], output_ports[1]);
+		jd->output_ports[0] = jports[0];
+		jd->output_ports[1] = jports[1] ? jports[1] : jports[0];
+		DEBUG("output_ports: %s %s\n",
+		      jd->output_ports[0], jd->output_ports[1]);
 		free(jports);
 	}
 
-	if ( output_ports[1] ) {
-		jd->ringbuffer[0] = jack_ringbuffer_create(ringbuf_sz);
-		jd->ringbuffer[1] = jack_ringbuffer_create(ringbuf_sz);
+	if ( jd->output_ports[1] ) {
+		jd->ringbuffer[0] = jack_ringbuffer_create(jd->ringbuf_sz);
+		jd->ringbuffer[1] = jack_ringbuffer_create(jd->ringbuf_sz);
 		memset(jd->ringbuffer[0]->buf, 0, jd->ringbuffer[0]->size);
 		memset(jd->ringbuffer[1]->buf, 0, jd->ringbuffer[1]->size);
 
-		port_name = xmalloc(sizeof(char)*(7+strlen(name)));
+		port_name = xmalloc(sizeof(char)*(7+strlen(jd->name)));
 
-		sprintf(port_name, "%s:left", name);
+		sprintf(port_name, "%s:left", jd->name);
 		if ( (jack_connect(jd->client, port_name,
-				   output_ports[0])) != 0 ) {
+				   jd->output_ports[0])) != 0 ) {
 			ERROR("%s is not a valid Jack Client / Port\n",
-			      output_ports[0]);
+			      jd->output_ports[0]);
 			free(port_name);
 			return -1;
 		}
-		sprintf(port_name, "%s:right", name);
+		sprintf(port_name, "%s:right", jd->name);
 		if ( (jack_connect(jd->client, port_name,
-				   output_ports[1])) != 0 ) {
+				   jd->output_ports[1])) != 0 ) {
 			ERROR("%s is not a valid Jack Client / Port\n",
-			      output_ports[1]);
+			      jd->output_ports[1]);
 			free(port_name);
 			return -1;
 		}
@@ -406,9 +420,10 @@ static int jack_playAudio(AudioOutput * audioOutput,
 			samples=0;
 
  		} else {
-			pthread_mutex_lock(&play_audio_lock);
-			pthread_cond_wait(&play_audio, &play_audio_lock);
-			pthread_mutex_unlock(&play_audio_lock);
+			pthread_mutex_lock(&jd->play_audio_lock);
+			pthread_cond_wait(&jd->play_audio,
+					  &jd->play_audio_lock);
+			pthread_mutex_unlock(&jd->play_audio_lock);
 		}
 
 	}
