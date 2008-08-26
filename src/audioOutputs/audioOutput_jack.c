@@ -27,7 +27,7 @@
 #include <jack/types.h>
 #include <jack/ringbuffer.h>
 
-size_t sample_size = sizeof(jack_default_audio_sample_t);
+static const size_t sample_size = sizeof(jack_default_audio_sample_t);
 
 typedef struct _JackData {
 	/* configuration */
