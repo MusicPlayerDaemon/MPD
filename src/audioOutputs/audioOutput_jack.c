@@ -205,7 +205,7 @@ static int jack_initDriver(AudioOutput *audioOutput, ConfigParam *param)
 	int val;
 	char *cp = NULL;
 
-	audioOutput->data = NULL;
+	audioOutput->data = newJackData();
 
 	DEBUG("jack_initDriver (pid=%d)\n", getpid());
 	if ( ! param ) return 0;
@@ -345,11 +345,7 @@ static int jack_openDevice(AudioOutput *audioOutput)
 {
 	JackData *jd = audioOutput->data;
 
-	if ( !jd ) {
-		DEBUG("connect!\n");
-		jd = newJackData();
-		audioOutput->data = jd;
-	}
+	assert(jd != NULL);
 
 	if (jd->client == NULL && connect_jack(audioOutput) < 0) {
 		freeJackClient(jd);
