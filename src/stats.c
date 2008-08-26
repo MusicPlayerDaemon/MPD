@@ -20,7 +20,7 @@
 
 #include "directory.h"
 #include "myfprintf.h"
-#include "player.h"
+#include "player_control.h"
 #include "tagTracker.h"
 #include "os_compat.h"
 

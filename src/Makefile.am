@@ -68,8 +68,8 @@ mpd_headers = \
 	path.h \
 	pcm_utils.h \
 	permission.h \
-	player.h \
 	player_thread.h \
+	player_control.h \
 	playerData.h \
 	playlist.h \
 	replayGain.h \
@@ -130,9 +130,8 @@ mpd_SOURCES = \
 	path.c \
 	pcm_utils.c \
 	permission.c \
-	player.c \
-	player_control.c \
 	player_thread.c \
+	player_control.c \
 	playerData.c \
 	playlist.c \
 	replayGain.c \

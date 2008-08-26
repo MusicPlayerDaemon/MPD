@@ -17,7 +17,7 @@
  */
 
 #include "playerData.h"
-#include "player.h"
+#include "player_control.h"
 #include "decoder_control.h"
 #include "outputBuffer.h"
 #include "conf.h"

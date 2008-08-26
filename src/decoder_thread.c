@@ -20,7 +20,7 @@
 #include "decoder_thread.h"
 #include "decoder_control.h"
 #include "decoder_internal.h"
-#include "player.h"
+#include "player_control.h"
 
 #include "path.h"
 #include "log.h"

@@ -20,7 +20,7 @@
 #include "command.h"
 #include "conf.h"
 #include "log.h"
-#include "player.h"
+#include "player_control.h"
 #include "gcc.h"
 #include "utils.h"
 #include "ack.h"

@@ -17,7 +17,7 @@
  */
 
 #include "playlist.h"
-#include "player.h"
+#include "player_control.h"
 #include "command.h"
 #include "ls.h"
 #include "tag.h"
