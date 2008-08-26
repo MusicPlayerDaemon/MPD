@@ -58,8 +58,10 @@ static void player_wakeup_decoder(void)
 
 static void dc_command_wait(void)
 {
-	while (dc.command != DECODE_COMMAND_NONE)
+	while (dc.command != DECODE_COMMAND_NONE) {
 		player_wakeup_decoder_nb();
+		notify_wait(&pc.notify);
+	}
 }
 
 static void dc_command(enum decoder_command cmd)
@@ -112,8 +114,10 @@ static unsigned calculateCrossFadeChunks(AudioFormat * af, float totalTime)
 
 static int waitOnDecode(int *decodeWaitedOn)
 {
-	while (dc.command == DECODE_COMMAND_START)
-		player_wakeup_decoder();
+	while (dc.command == DECODE_COMMAND_START) {
+		notify_signal(&dc.notify);
+		notify_wait(&pc.notify);
+	}
 
 	if (dc.error != DECODE_ERROR_NOERROR) {
 		pc.errored_song = dc.next_song;
