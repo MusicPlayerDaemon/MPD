@@ -50,7 +50,7 @@ static OggFLAC__SeekableStreamDecoderReadStatus of_read_cb(const
 	while (1) {
 		r = readFromInputStream(data->inStream, (void *)buf, 1, *bytes);
 		if (r == 0 && !inputStreamAtEOF(data->inStream) &&
-		    dc.command != DECODE_COMMAND_STOP)
+		    decoder_get_command(data->decoder) != DECODE_COMMAND_STOP)
 			my_usleep(10000);
 		else
 			break;
@@ -58,7 +58,7 @@ static OggFLAC__SeekableStreamDecoderReadStatus of_read_cb(const
 	*bytes = r;
 
 	if (r == 0 && !inputStreamAtEOF(data->inStream) &&
-	    dc.command != DECODE_COMMAND_STOP)
+	    decoder_get_command(data->decoder) != DECODE_COMMAND_STOP)
 		return OggFLAC__SEEKABLE_STREAM_DECODER_READ_STATUS_ERROR;
 
 	return OggFLAC__SEEKABLE_STREAM_DECODER_READ_STATUS_OK;
@@ -195,7 +195,7 @@ static FLAC__StreamDecoderWriteStatus oggflacWrite(const
 						    FLAC__STREAM_DECODER_WRITE_STATUS_ABORT;
 					}
 					data->chunk_length = 0;
-					if (dc.command == DECODE_COMMAND_SEEK) {
+					if (decoder_get_command(data->decoder) == DECODE_COMMAND_SEEK) {
 						return
 						    FLAC__STREAM_DECODER_WRITE_STATUS_CONTINUE;
 					}
@@ -353,7 +353,7 @@ static int oggflac_decode(struct decoder * mpd_decoder, InputStream * inStream)
 		    OggFLAC__SEEKABLE_STREAM_DECODER_OK) {
 			break;
 		}
-		if (dc->command == DECODE_COMMAND_SEEK) {
+		if (decoder_get_command(mpd_decoder) == DECODE_COMMAND_SEEK) {
 			FLAC__uint64 sampleToSeek = dc->seekWhere *
 			    data.audio_format.sampleRate + 0.5;
 			if (OggFLAC__seekable_stream_decoder_seek_absolute
@@ -368,13 +368,14 @@ static int oggflac_decode(struct decoder * mpd_decoder, InputStream * inStream)
 		}
 	}
 
-	if (dc.command != DECODE_COMMAND_STOP) {
+	if (decoder_get_command(mpd_decoder) != DECODE_COMMAND_STOP) {
 		oggflacPrintErroredState
 		    (OggFLAC__seekable_stream_decoder_get_state(decoder));
 		OggFLAC__seekable_stream_decoder_finish(decoder);
 	}
 	/* send last little bit */
-	if (data.chunk_length > 0 && dc.command != DECODE_COMMAND_STOP) {
+	if (data.chunk_length > 0 &&
+	    decoder_get_command(mpd_decoder) != DECODE_COMMAND_STOP) {
 		flacSendChunk(&data);
 		decoder_flush(mpd_decoder);
 	}

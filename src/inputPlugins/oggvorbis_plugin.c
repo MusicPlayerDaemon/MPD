@@ -50,6 +50,7 @@
 
 typedef struct _OggCallbackData {
 	InputStream *inStream;
+	struct decoder *decoder;
 } OggCallbackData;
 
 static size_t ogg_read_cb(void *ptr, size_t size, size_t nmemb, void *vdata)
@@ -60,7 +61,7 @@ static size_t ogg_read_cb(void *ptr, size_t size, size_t nmemb, void *vdata)
 	while (1) {
 		ret = readFromInputStream(data->inStream, ptr, size, nmemb);
 		if (ret == 0 && !inputStreamAtEOF(data->inStream) &&
-		    dc.command != DECODE_COMMAND_STOP) {
+		    decoder_get_command(data->decoder) != DECODE_COMMAND_STOP) {
 			my_usleep(10000);
 		} else
 			break;
@@ -74,7 +75,7 @@ static size_t ogg_read_cb(void *ptr, size_t size, size_t nmemb, void *vdata)
 static int ogg_seek_cb(void *vdata, ogg_int64_t offset, int whence)
 {
 	const OggCallbackData *data = (const OggCallbackData *) vdata;
-	if(dc.command == DECODE_COMMAND_STOP)
+	if(decoder_get_command(data->decoder) == DECODE_COMMAND_STOP)
 		return -1;
 	return seekInputStream(data->inStream, offset, whence);
 }
@@ -229,13 +230,14 @@ static int oggvorbis_decode(struct decoder * decoder, InputStream * inStream)
 	const char *errorStr;
 
 	data.inStream = inStream;
+	data.decoder = decoder;
 
 	callbacks.read_func = ogg_read_cb;
 	callbacks.seek_func = ogg_seek_cb;
 	callbacks.close_func = ogg_close_cb;
 	callbacks.tell_func = ogg_tell_cb;
 	if ((ret = ov_open_callbacks(&data, &vf, NULL, 0, callbacks)) < 0) {
-		if (dc.command != DECODE_COMMAND_STOP) {
+		if (decoder_get_command(decoder) != DECODE_COMMAND_STOP) {
 			switch (ret) {
 			case OV_EREAD:
 				errorStr = "read error";
@@ -265,7 +267,7 @@ static int oggvorbis_decode(struct decoder * decoder, InputStream * inStream)
 	audio_format.bits = 16;
 
 	while (1) {
-		if (dc.command == DECODE_COMMAND_SEEK) {
+		if (decoder_get_command(decoder) == DECODE_COMMAND_SEEK) {
 			if (0 == ov_time_seek_page(&vf, dc.seekWhere)) {
 				decoder_clear(decoder);
 				chunkpos = 0;
@@ -315,12 +317,12 @@ static int oggvorbis_decode(struct decoder * decoder, InputStream * inStream)
 				     ov_pcm_tell(&vf) / audio_format.sampleRate,
 				     bitRate, replayGainInfo);
 			chunkpos = 0;
-			if (dc.command == DECODE_COMMAND_STOP)
+			if (decoder_get_command(decoder) == DECODE_COMMAND_STOP)
 				break;
 		}
 	}
 
-	if (dc.command != DECODE_COMMAND_STOP && chunkpos > 0) {
+	if (decoder_get_command(decoder) != DECODE_COMMAND_STOP && chunkpos > 0) {
 		decoder_data(decoder, NULL, inStream->seekable,
 			     chunk, chunkpos,
 			     ov_time_tell(&vf), bitRate,

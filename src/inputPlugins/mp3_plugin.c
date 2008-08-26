@@ -669,7 +669,7 @@ static int parse_lame(struct lame *lame, struct mad_bitptr *ptr, int *bitlen)
 	return 1;
 }
 
-static int decodeFirstFrame(mp3DecodeData * data,
+static int decodeFirstFrame(mp3DecodeData * data, struct decoder * decoder,
                             MpdTag ** tag, ReplayGainInfo ** replayGainInfo)
 {
 	struct xing xing;
@@ -684,16 +684,16 @@ static int decodeFirstFrame(mp3DecodeData * data,
 
 	while (1) {
 		while ((ret = decodeNextFrameHeader(data, tag, replayGainInfo)) == DECODE_CONT &&
-		       dc.command != DECODE_COMMAND_STOP);
+		       (!decoder || decoder_get_command(decoder) != DECODE_COMMAND_STOP));
 		if (ret == DECODE_BREAK ||
-		    (dc.command == DECODE_COMMAND_STOP))
+		    (decoder && decoder_get_command(decoder) == DECODE_COMMAND_STOP))
 			return -1;
 		if (ret == DECODE_SKIP) continue;
 
 		while ((ret = decodeNextFrame(data)) == DECODE_CONT &&
-		       dc.command != DECODE_COMMAND_STOP);
+		       (!decoder || decoder_get_command(decoder) != DECODE_COMMAND_STOP));
 		if (ret == DECODE_BREAK ||
-		    (dc.command == DECODE_COMMAND_STOP))
+		    (decoder && decoder_get_command(decoder) == DECODE_COMMAND_STOP))
 			return -1;
 		if (ret == DECODE_OK) break;
 	}
@@ -786,7 +786,7 @@ static int getMp3TotalTime(char *file)
 	if (openInputStream(&inStream, file) < 0)
 		return -1;
 	initMp3DecodeData(&data, &inStream);
-	if (decodeFirstFrame(&data, NULL, NULL) < 0)
+	if (decodeFirstFrame(&data, NULL, NULL, NULL) < 0)
 		ret = -1;
 	else
 		ret = data.totalTime + 0.5;
@@ -797,12 +797,12 @@ static int getMp3TotalTime(char *file)
 }
 
 static int openMp3FromInputStream(InputStream * inStream, mp3DecodeData * data,
-				  MpdTag ** tag,
+				  struct decoder * decoder, MpdTag ** tag,
 				  ReplayGainInfo ** replayGainInfo)
 {
 	initMp3DecodeData(data, inStream);
 	*tag = NULL;
-	if (decodeFirstFrame(data, tag, replayGainInfo) < 0) {
+	if (decodeFirstFrame(data, decoder, tag, replayGainInfo) < 0) {
 		mp3DecodeDataFinalize(data);
 		if (tag && *tag)
 			freeMpdTag(*tag);
@@ -948,7 +948,7 @@ static int mp3Read(mp3DecodeData * data, struct decoder *decoder,
 
 		data->decodedFirstFrame = 1;
 
-		if (dc.command == DECODE_COMMAND_SEEK &&
+		if (decoder_get_command(decoder) == DECODE_COMMAND_SEEK &&
 		    data->inStream->seekable) {
 			long j = 0;
 			data->muteFrame = MUTEFRAME_SEEK;
@@ -970,7 +970,7 @@ static int mp3Read(mp3DecodeData * data, struct decoder *decoder,
 				data->muteFrame = 0;
 				dc_command_finished();
 			}
-		} else if (dc.command == DECODE_COMMAND_SEEK &&
+		} else if (decoder_get_command(decoder) == DECODE_COMMAND_SEEK &&
 			   !data->inStream->seekable) {
 			dc.seekError = 1;
 			dc_command_finished();
@@ -982,23 +982,23 @@ static int mp3Read(mp3DecodeData * data, struct decoder *decoder,
 		while ((ret =
 			decodeNextFrameHeader(data, NULL,
 					      replayGainInfo)) == DECODE_CONT
-		       && dc.command != DECODE_COMMAND_STOP) ;
-		if (ret == DECODE_BREAK || dc.command != DECODE_COMMAND_NONE)
+		       && decoder_get_command(decoder) != DECODE_COMMAND_STOP) ;
+		if (ret == DECODE_BREAK || decoder_get_command(decoder) != DECODE_COMMAND_NONE)
 			break;
 		else if (ret == DECODE_SKIP)
 			skip = 1;
 		if (!data->muteFrame) {
 			while ((ret = decodeNextFrame(data)) == DECODE_CONT &&
-			       dc.command == DECODE_COMMAND_NONE) ;
+			       decoder_get_command(decoder) == DECODE_COMMAND_NONE) ;
 			if (ret == DECODE_BREAK ||
-			    dc.command != DECODE_COMMAND_NONE)
+			    decoder_get_command(decoder) != DECODE_COMMAND_NONE)
 				break;
 		}
 		if (!skip && ret == DECODE_OK)
 			break;
 	}
 
-	if (dc.command == DECODE_COMMAND_STOP)
+	if (decoder_get_command(decoder) == DECODE_COMMAND_STOP)
 		return DECODE_BREAK;
 
 	return ret;
@@ -1019,9 +1019,9 @@ static int mp3_decode(struct decoder * decoder, InputStream * inStream)
 	ReplayGainInfo *replayGainInfo = NULL;
 	AudioFormat audio_format;
 
-	if (openMp3FromInputStream(inStream, &data, &tag, &replayGainInfo) <
-	    0) {
-		if (dc.command != DECODE_COMMAND_STOP) {
+	if (openMp3FromInputStream(inStream, &data, decoder,
+				   &tag, &replayGainInfo) < 0) {
+		if (decoder_get_command(decoder) != DECODE_COMMAND_STOP) {
 			ERROR
 			    ("Input does not appear to be a mp3 bit stream.\n");
 			return -1;
@@ -1060,7 +1060,7 @@ static int mp3_decode(struct decoder * decoder, InputStream * inStream)
 
 	while (mp3Read(&data, decoder, &replayGainInfo) != DECODE_BREAK) ;
 	/* send last little bit if not DECODE_COMMAND_STOP */
-	if (dc.command != DECODE_COMMAND_STOP &&
+	if (decoder_get_command(decoder) != DECODE_COMMAND_STOP &&
 	    data.outputPtr != data.outputBuffer && data.flush) {
 		decoder_data(decoder, NULL,
 			     data.inStream->seekable,
@@ -1073,7 +1073,7 @@ static int mp3_decode(struct decoder * decoder, InputStream * inStream)
 	if (replayGainInfo)
 		freeReplayGainInfo(replayGainInfo);
 
-	if (dc.command == DECODE_COMMAND_SEEK &&
+	if (decoder_get_command(decoder) == DECODE_COMMAND_SEEK &&
 	    data.muteFrame == MUTEFRAME_SEEK) {
 		decoder_clear(decoder);
 		dc_command_finished();

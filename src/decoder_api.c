@@ -45,6 +45,11 @@ void decoder_initialized(struct decoder * decoder,
 	notify_signal(&pc.notify);
 }
 
+enum decoder_command decoder_get_command(mpd_unused struct decoder * decoder)
+{
+	return dc.command;
+}
+
 /**
  * All chunks are full of decoded data; wait for the player to free
  * one.

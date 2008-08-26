@@ -172,7 +172,7 @@ static void wavpack_decode(struct decoder * decoder,
 	position = 0;
 
 	do {
-		if (dc.command == DECODE_COMMAND_SEEK) {
+		if (decoder_get_command(decoder) == DECODE_COMMAND_SEEK) {
 			if (canseek) {
 				int where;
 
@@ -191,7 +191,7 @@ static void wavpack_decode(struct decoder * decoder,
 			dc_command_finished();
 		}
 
-		if (dc.command == DECODE_COMMAND_STOP)
+		if (decoder_get_command(decoder) == DECODE_COMMAND_STOP)
 			break;
 
 		samplesgot = WavpackUnpackSamples(wpc,
@@ -501,7 +501,7 @@ static int wavpack_streamdecode(struct decoder * decoder, InputStream *is)
 				break;
 			}
 
-			if (dc.command == DECODE_COMMAND_STOP) {
+			if (decoder_get_command(decoder) == DECODE_COMMAND_STOP) {
 				break;
 			}
 

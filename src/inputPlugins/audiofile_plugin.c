@@ -90,7 +90,7 @@ static int audiofile_decode(struct decoder * decoder, char *path)
 	decoder_initialized(decoder, &audio_format, total_time);
 
 	do {
-		if (dc.command == DECODE_COMMAND_SEEK) {
+		if (decoder_get_command(decoder) == DECODE_COMMAND_SEEK) {
 			decoder_clear(decoder);
 			current = dc.seekWhere *
 				audio_format.sampleRate;
@@ -108,7 +108,7 @@ static int audiofile_decode(struct decoder * decoder, char *path)
 			     chunk, ret * fs,
 			     (float)current / (float)audio_format.sampleRate,
 			     bitRate, NULL);
-	} while (dc.command != DECODE_COMMAND_STOP);
+	} while (decoder_get_command(decoder) != DECODE_COMMAND_STOP);
 
 	decoder_flush(decoder);
 

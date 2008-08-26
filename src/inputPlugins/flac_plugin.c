@@ -37,14 +37,14 @@ static flac_read_status flacRead(mpd_unused const flac_decoder * flacDec,
 	while (1) {
 		r = readFromInputStream(data->inStream, (void *)buf, 1, *bytes);
 		if (r == 0 && !inputStreamAtEOF(data->inStream) &&
-		    dc.command != DECODE_COMMAND_STOP)
+		    decoder_get_command(data->decoder) != DECODE_COMMAND_STOP)
 			my_usleep(10000);
 		else
 			break;
 	}
 	*bytes = r;
 
-	if (r == 0 && dc.command != DECODE_COMMAND_STOP) {
+	if (r == 0 && decoder_get_command(data->decoder) != DECODE_COMMAND_STOP) {
 		if (inputStreamAtEOF(data->inStream))
 			return flac_read_status_eof;
 		else
@@ -287,7 +287,7 @@ static FLAC__StreamDecoderWriteStatus flacWrite(const flac_decoder *dec,
 				FLAC__STREAM_DECODER_WRITE_STATUS_ABORT;
 		}
 		data->chunk_length = 0;
-		if (dc.command == DECODE_COMMAND_SEEK) {
+		if (decoder_get_command(data->decoder) == DECODE_COMMAND_SEEK) {
 			return
 				FLAC__STREAM_DECODER_WRITE_STATUS_CONTINUE;
 		}
@@ -423,7 +423,7 @@ static int flac_decode_internal(struct decoder * decoder,
 			break;
 		if (flac_get_state(flacDec) == flac_decoder_eof)
 			break;
-		if (dc.command == DECODE_COMMAND_SEEK) {
+		if (decoder_get_command(decoder) == DECODE_COMMAND_SEEK) {
 			FLAC__uint64 sampleToSeek = dc.seekWhere *
 			    data.audio_format.sampleRate + 0.5;
 			if (flac_seek_absolute(flacDec, sampleToSeek)) {
@@ -436,12 +436,12 @@ static int flac_decode_internal(struct decoder * decoder,
 			dc_command_finished();
 		}
 	}
-	if (dc.command != DECODE_COMMAND_STOP) {
+	if (decoder_get_command(decoder) != DECODE_COMMAND_STOP) {
 		flacPrintErroredState(flac_get_state(flacDec));
 		flac_finish(flacDec);
 	}
 	/* send last little bit */
-	if (data.chunk_length > 0 && dc.command != DECODE_COMMAND_STOP) {
+	if (data.chunk_length > 0 && decoder_get_command(decoder) != DECODE_COMMAND_STOP) {
 		flacSendChunk(&data);
 		decoder_flush(decoder);
 	}

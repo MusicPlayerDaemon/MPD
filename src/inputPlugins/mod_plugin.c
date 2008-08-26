@@ -187,12 +187,12 @@ static int mod_decode(struct decoder * decoder, char *path)
 	decoder_initialized(decoder, &audio_format, 0);
 
 	while (1) {
-		if (dc.command == DECODE_COMMAND_SEEK) {
+		if (decoder_get_command(decoder) == DECODE_COMMAND_SEEK) {
 			dc.seekError = 1;
 			dc_command_finished();
 		}
 
-		if (dc.command == DECODE_COMMAND_STOP)
+		if (decoder_get_command(decoder) == DECODE_COMMAND_STOP)
 			break;
 
 		if (!Player_Active())

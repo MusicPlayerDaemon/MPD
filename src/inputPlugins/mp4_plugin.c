@@ -178,7 +178,7 @@ static int mp4_decode(struct decoder * mpd_decoder, InputStream * inStream)
 	seekTable = xmalloc(sizeof(float) * numSamples);
 
 	for (sampleId = 0; sampleId < numSamples; sampleId++) {
-		if (dc.command == DECODE_COMMAND_SEEK)
+		if (decoder_get_command(mpd_decoder) == DECODE_COMMAND_SEEK)
 			seeking = 1;
 
 		if (seeking && seekTableEnd > 1 &&
@@ -270,7 +270,7 @@ static int mp4_decode(struct decoder * mpd_decoder, InputStream * inStream)
 		decoder_data(mpd_decoder, inStream, 1, sampleBuffer,
 			     sampleBufferLen, file_time,
 			     bitRate, NULL);
-		if (dc.command == DECODE_COMMAND_STOP)
+		if (decoder_get_command(mpd_decoder) == DECODE_COMMAND_STOP)
 			break;
 	}
 
@@ -282,7 +282,7 @@ static int mp4_decode(struct decoder * mpd_decoder, InputStream * inStream)
 	if (dc.state != DECODE_STATE_DECODE)
 		return -1;
 
-	if (dc.command == DECODE_COMMAND_SEEK && seeking) {
+	if (decoder_get_command(mpd_decoder) == DECODE_COMMAND_SEEK && seeking) {
 		decoder_clear(mpd_decoder);
 		dc_command_finished();
 	}

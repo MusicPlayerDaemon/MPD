@@ -27,6 +27,7 @@
 
 typedef struct _MpcCallbackData {
 	InputStream *inStream;
+	struct decoder *decoder;
 } MpcCallbackData;
 
 static mpc_int32_t mpc_read_cb(void *vdata, void *ptr, mpc_int32_t size)
@@ -37,7 +38,8 @@ static mpc_int32_t mpc_read_cb(void *vdata, void *ptr, mpc_int32_t size)
 	while (1) {
 		ret = readFromInputStream(data->inStream, ptr, 1, size);
 		if (ret == 0 && !inputStreamAtEOF(data->inStream) &&
-		    (dc.command != DECODE_COMMAND_STOP))
+		    (data->decoder &&
+		     decoder_get_command(data->decoder) != DECODE_COMMAND_STOP))
 			my_usleep(10000);
 		else
 			break;
@@ -132,6 +134,7 @@ static int mpc_decode(struct decoder * mpd_decoder, InputStream * inStream)
 	ReplayGainInfo *replayGainInfo = NULL;
 
 	data.inStream = inStream;
+	data.decoder = mpd_decoder;
 
 	reader.read = mpc_read_cb;
 	reader.seek = mpc_seek_cb;
@@ -143,7 +146,7 @@ static int mpc_decode(struct decoder * mpd_decoder, InputStream * inStream)
 	mpc_streaminfo_init(&info);
 
 	if ((ret = mpc_streaminfo_read(&info, &reader)) != ERROR_CODE_OK) {
-		if (dc.command != DECODE_COMMAND_STOP) {
+		if (decoder_get_command(mpd_decoder) != DECODE_COMMAND_STOP) {
 			ERROR("Not a valid musepack stream\n");
 			return -1;
 		}
@@ -153,7 +156,7 @@ static int mpc_decode(struct decoder * mpd_decoder, InputStream * inStream)
 	mpc_decoder_setup(&decoder, &reader);
 
 	if (!mpc_decoder_initialize(&decoder, &info)) {
-		if (dc.command != DECODE_COMMAND_STOP) {
+		if (decoder_get_command(mpd_decoder) != DECODE_COMMAND_STOP) {
 			ERROR("Not a valid musepack stream\n");
 			return -1;
 		}
@@ -174,7 +177,7 @@ static int mpc_decode(struct decoder * mpd_decoder, InputStream * inStream)
 			    mpc_streaminfo_get_length(&info));
 
 	while (!eof) {
-		if (dc.command == DECODE_COMMAND_SEEK) {
+		if (decoder_get_command(mpd_decoder) == DECODE_COMMAND_SEEK) {
 			samplePos = dc.seekWhere * audio_format.sampleRate;
 			if (mpc_decoder_seek_sample(&decoder, samplePos)) {
 				decoder_clear(mpd_decoder);
@@ -190,7 +193,7 @@ static int mpc_decode(struct decoder * mpd_decoder, InputStream * inStream)
 		ret = mpc_decoder_decode(&decoder, sample_buffer,
 					 &vbrUpdateAcc, &vbrUpdateBits);
 
-		if (ret <= 0 || dc.command == DECODE_COMMAND_STOP) {
+		if (ret <= 0 || decoder_get_command(mpd_decoder) == DECODE_COMMAND_STOP) {
 			eof = 1;
 			break;
 		}
@@ -221,7 +224,7 @@ static int mpc_decode(struct decoder * mpd_decoder, InputStream * inStream)
 
 				chunkpos = 0;
 				s16 = (mpd_sint16 *) chunk;
-				if (dc.command == DECODE_COMMAND_STOP) {
+				if (decoder_get_command(mpd_decoder) == DECODE_COMMAND_STOP) {
 					eof = 1;
 					break;
 				}
@@ -229,7 +232,8 @@ static int mpc_decode(struct decoder * mpd_decoder, InputStream * inStream)
 		}
 	}
 
-	if (dc.command != DECODE_COMMAND_STOP && chunkpos > 0) {
+	if (decoder_get_command(mpd_decoder) != DECODE_COMMAND_STOP &&
+	    chunkpos > 0) {
 		total_time = ((float)samplePos) / audio_format.sampleRate;
 
 		bitRate =
@@ -257,6 +261,7 @@ static float mpcGetTime(char *file)
 	MpcCallbackData data;
 
 	data.inStream = &inStream;
+	data.decoder = NULL;
 
 	reader.read = mpc_read_cb;
 	reader.seek = mpc_seek_cb;

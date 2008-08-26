@@ -103,6 +103,8 @@ void decoder_initialized(struct decoder * decoder,
 			 const AudioFormat * audio_format,
 			 float total_time);
 
+enum decoder_command decoder_get_command(struct decoder * decoder);
+
 /**
  * This function is called by the decoder plugin when it has
  * successfully decoded block of input data.
