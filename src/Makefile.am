@@ -44,7 +44,7 @@ mpd_headers = \
 	decoder_internal.h \
 	directory.h \
 	gcc.h \
-	inputPlugin.h \
+	decoder_list.h \
 	inputPlugins/_flac_common.h \
 	inputPlugins/_ogg_common.h \
 	inputStream.h \
@@ -106,7 +106,7 @@ mpd_SOURCES = \
 	decode.c \
 	decoder_api.c \
 	directory.c \
-	inputPlugin.c \
+	decoder_list.c \
 	inputStream.c \
 	inputStream_file.c \
 	inputStream_http.c \

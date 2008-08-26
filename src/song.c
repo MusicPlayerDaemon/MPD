@@ -24,7 +24,7 @@
 #include "log.h"
 #include "path.h"
 #include "playlist.h"
-#include "inputPlugin.h"
+#include "decoder_list.h"
 #include "decoder_api.h"
 #include "myfprintf.h"
 

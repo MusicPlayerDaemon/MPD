@@ -32,7 +32,7 @@
 #include "log.h"
 #include "permission.h"
 #include "replayGain.h"
-#include "inputPlugin.h"
+#include "decoder_list.h"
 #include "audioOutput.h"
 #include "inputStream.h"
 #include "state_file.h"

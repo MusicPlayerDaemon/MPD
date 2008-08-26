@@ -19,7 +19,7 @@
 #ifndef LS_H
 #define LS_H
 
-#include "inputPlugin.h"
+#include "decoder_list.h"
 
 int lsPlaylists(int fd, const char *utf8path);
 
