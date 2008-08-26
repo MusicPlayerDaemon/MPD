@@ -53,11 +53,26 @@ enum player_command {
  *        ->4->0 don't play queued song
  */
 enum player_queue_state {
+	/** there is no queued song */
 	PLAYER_QUEUE_BLANK = 0,
+
+	/** there is a queued song */
 	PLAYER_QUEUE_FULL = 1,
+
+	/** the player thread has forwarded the queued song to the
+	    decoder; it waits for PLAY or STOP */
 	PLAYER_QUEUE_DECODE = 2,
+
+	/** tells the player thread to start playing the queued song;
+	    this is a response to DECODE */
 	PLAYER_QUEUE_PLAY = 3,
+
+	/** tells the player thread to stop before playing the queued
+	    song; this is a response to DECODE */
 	PLAYER_QUEUE_STOP = 4,
+
+	/** the player thread has begun playing the queued song, and
+	    thus its queue is empty */
 	PLAYER_QUEUE_EMPTY = 5
 };
 
