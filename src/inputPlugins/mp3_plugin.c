@@ -168,7 +168,6 @@ typedef struct _mp3DecodeData {
 	int foundXing;
 	int foundFirstFrame;
 	int decodedFirstFrame;
-	int flush;
 	unsigned long bitRate;
 	InputStream *inStream;
 	struct audio_dither dither;
@@ -193,7 +192,6 @@ static void initMp3DecodeData(mp3DecodeData * data, InputStream * inStream)
 	data->foundXing = 0;
 	data->foundFirstFrame = 0;
 	data->decodedFirstFrame = 0;
-	data->flush = 1;
 	data->inStream = inStream;
 	data->layer = 0;
 	memset(&(data->dither), 0, sizeof(struct audio_dither));
@@ -421,7 +419,6 @@ static int decodeNextFrameHeader(mp3DecodeData * data, MpdTag ** tag,
 				ERROR("unrecoverable frame level error "
 				      "(%s).\n",
 				      mad_stream_errorstr(&data->stream));
-				data->flush = 0;
 				return DECODE_BREAK;
 			}
 		}
@@ -474,7 +471,6 @@ static int decodeNextFrame(mp3DecodeData * data)
 				ERROR("unrecoverable frame level error "
 				      "(%s).\n",
 				      mad_stream_errorstr(&data->stream));
-				data->flush = 0;
 				return DECODE_BREAK;
 			}
 		}
@@ -955,10 +951,8 @@ static int mp3Read(mp3DecodeData * data, struct decoder *decoder,
 					   data->elapsedTime,
 					   data->bitRate / 1000,
 					   (replayGainInfo != NULL) ? *replayGainInfo : NULL);
-			if (cmd == DECODE_COMMAND_STOP) {
-				data->flush = 0;
+			if (cmd == DECODE_COMMAND_STOP)
 				return DECODE_BREAK;
-			}
 
 			data->outputPtr = data->outputBuffer;
 		}
@@ -1080,16 +1074,6 @@ static int mp3_decode(struct decoder * decoder, InputStream * inStream)
 	decoder_initialized(decoder, &audio_format, data.totalTime);
 
 	while (mp3Read(&data, decoder, &replayGainInfo) != DECODE_BREAK) ;
-	/* send last little bit if not DECODE_COMMAND_STOP */
-	if (decoder_get_command(decoder) != DECODE_COMMAND_STOP &&
-	    data.outputPtr != data.outputBuffer && data.flush) {
-		decoder_data(decoder, NULL,
-			     data.inStream->seekable,
-			     data.outputBuffer,
-			     data.outputPtr - data.outputBuffer,
-			     data.elapsedTime, data.bitRate / 1000,
-			     replayGainInfo);
-	}
 
 	if (replayGainInfo)
 		freeReplayGainInfo(replayGainInfo);
