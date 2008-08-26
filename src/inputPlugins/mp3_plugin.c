@@ -1006,8 +1006,17 @@ mp3Read(mp3DecodeData * data, ReplayGainInfo ** replayGainInfo)
 			break;
 	}
 
-	if (decoder_get_command(decoder) != DECODE_COMMAND_NONE)
+	switch (decoder_get_command(decoder)) {
+	case DECODE_COMMAND_NONE:
+	case DECODE_COMMAND_START:
+		break;
+
+	case DECODE_COMMAND_STOP:
 		return DECODE_BREAK;
+
+	case DECODE_COMMAND_SEEK:
+		return DECODE_CONT;
+	}
 
 	return ret;
 }

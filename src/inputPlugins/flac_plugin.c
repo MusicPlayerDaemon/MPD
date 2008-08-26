@@ -42,6 +42,10 @@ static flac_read_status flacRead(mpd_unused const flac_decoder * flacDec,
 		else
 			return flac_read_status_abort;
 	}
+
+	if (r == 0 && decoder_get_command(data->decoder) == DECODE_COMMAND_SEEK)
+		return flac_read_status_eof;
+
 	return flac_read_status_continue;
 }
 
@@ -413,8 +417,6 @@ static int flac_decode_internal(struct decoder * decoder,
 	while (1) {
 		if (!flac_process_single(flacDec))
 			break;
-		if (flac_get_state(flacDec) == flac_decoder_eof)
-			break;
 		if (decoder_get_command(decoder) == DECODE_COMMAND_SEEK) {
 			FLAC__uint64 sampleToSeek = decoder_seek_where(decoder) *
 			    data.audio_format.sampleRate + 0.5;
@@ -426,7 +428,8 @@ static int flac_decode_internal(struct decoder * decoder,
 				decoder_command_finished(decoder);
 			} else
 				decoder_seek_error(decoder);
-		}
+		} else if (flac_get_state(flacDec) == flac_decoder_eof)
+			break;
 	}
 	if (decoder_get_command(decoder) != DECODE_COMMAND_STOP) {
 		flacPrintErroredState(flac_get_state(flacDec));
