@@ -27,24 +27,25 @@
 #include <id3tag.h>
 #endif
 
-#define TAG_ITEM_ARTIST		0
-#define TAG_ITEM_ALBUM		1
-#define TAG_ITEM_TITLE		2
-#define TAG_ITEM_TRACK		3
-#define TAG_ITEM_NAME		4
-#define TAG_ITEM_GENRE		5
-#define TAG_ITEM_DATE		6
-#define TAG_ITEM_COMPOSER	7
-#define TAG_ITEM_PERFORMER	8
-#define TAG_ITEM_COMMENT	9
-#define TAG_ITEM_DISC      10
-
-#define TAG_NUM_OF_ITEM_TYPES	11
+enum tag_type {
+	TAG_ITEM_ARTIST,
+	TAG_ITEM_ALBUM,
+	TAG_ITEM_TITLE,
+	TAG_ITEM_TRACK,
+	TAG_ITEM_NAME,
+	TAG_ITEM_GENRE,
+	TAG_ITEM_DATE,
+	TAG_ITEM_COMPOSER,
+	TAG_ITEM_PERFORMER,
+	TAG_ITEM_COMMENT,
+	TAG_ITEM_DISC,
+	TAG_NUM_OF_ITEM_TYPES
+};
 
 extern const char *mpdTagItemKeys[];
 
 typedef struct _MpdTagItem {
-	mpd_sint8 type;
+	enum tag_type type;
 	char *value;
 } MpdTagItem;
 
@@ -66,11 +67,12 @@ MpdTag *newMpdTag(void);
 
 void initTagConfig(void);
 
-void clearItemsFromMpdTag(MpdTag * tag, int itemType);
+void clearItemsFromMpdTag(MpdTag * tag, enum tag_type itemType);
 
 void freeMpdTag(MpdTag * tag);
 
-void addItemToMpdTagWithLen(MpdTag * tag, int itemType, char *value, int len);
+void addItemToMpdTagWithLen(MpdTag * tag, enum tag_type itemType,
+			    char *value, int len);
 
 #define addItemToMpdTag(tag, itemType, value) \
 		addItemToMpdTagWithLen(tag, itemType, value, strlen(value))

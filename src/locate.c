@@ -121,7 +121,7 @@ void freeLocateTagItem(LocateTagItem * item)
 	free(item);
 }
 
-static int strstrSearchTag(Song * song, int type, char *str)
+static int strstrSearchTag(Song * song, enum tag_type type, char *str)
 {
 	int i;
 	char *duplicate;
@@ -169,7 +169,7 @@ int strstrSearchTags(Song * song, int numItems, LocateTagItem * items)
 	return 1;
 }
 
-static int tagItemFoundAndMatches(Song * song, int type, char *str)
+static int tagItemFoundAndMatches(Song * song, enum tag_type type, char *str)
 {
 	int i;
 

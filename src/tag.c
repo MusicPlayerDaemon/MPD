@@ -606,7 +606,7 @@ static void deleteItem(MpdTag * tag, int idx)
 	}
 }
 
-void clearItemsFromMpdTag(MpdTag * tag, int type)
+void clearItemsFromMpdTag(MpdTag * tag, enum tag_type type)
 {
 	int i;
 
@@ -697,7 +697,8 @@ int mpdTagsAreEqual(MpdTag * tag1, MpdTag * tag2)
 	} \
 }
 
-static void appendToTagItems(MpdTag * tag, int type, char *value, int len)
+static void appendToTagItems(MpdTag * tag, enum tag_type type,
+			     char *value, int len)
 {
 	int i = tag->numOfItems;
 	char *duplicated = xmalloc(len + 1);
@@ -717,7 +718,8 @@ static void appendToTagItems(MpdTag * tag, int type, char *value, int len)
 	free(duplicated);
 }
 
-void addItemToMpdTagWithLen(MpdTag * tag, int itemType, char *value, int len)
+void addItemToMpdTagWithLen(MpdTag * tag, enum tag_type itemType,
+			    char *value, int len)
 {
 	if (ignoreTagItems[itemType])
 	{

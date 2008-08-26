@@ -413,6 +413,8 @@ static void copyTagToVorbisComment(ShoutData * sd)
 			case TAG_ITEM_TITLE:
 				addTag(sd, "TITLE", sd->tag->items[i].value);
 				break;
+			default:
+				break;
 			}
 		}
 	}

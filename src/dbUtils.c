@@ -254,7 +254,7 @@ static void freeListCommandItem(ListCommandItem * item)
 	free(item);
 }
 
-static void visitTag(int fd, Song * song, int tagType)
+static void visitTag(int fd, Song * song, enum tag_type tagType)
 {
 	int i;
 	MpdTag *tag = song->tag;
