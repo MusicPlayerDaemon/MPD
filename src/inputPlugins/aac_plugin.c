@@ -41,27 +41,31 @@ static void fillAacBuffer(AacBuffer * b)
 {
 	size_t bread;
 
-	if (b->bytesConsumed == 0)
+	if (b->bytesIntoBuffer >= FAAD_MIN_STREAMSIZE * AAC_MAX_CHANNELS)
+		/* buffer already full */
 		return;
 
-	if (b->bytesIntoBuffer) {
+	if (b->bytesConsumed > 0 && b->bytesIntoBuffer > 0) {
 		memmove((void *)b->buffer, (void *)(b->buffer +
 						    b->bytesConsumed),
 			b->bytesIntoBuffer);
 	}
 
+	b->bytesConsumed = 0;
+
 	if (!b->atEof) {
+		size_t rest = FAAD_MIN_STREAMSIZE * AAC_MAX_CHANNELS -
+			b->bytesIntoBuffer;
+
 		bread = readFromInputStream(b->inStream,
 					    (void *)(b->buffer +
 						     b->
 						     bytesIntoBuffer),
-					    1, b->bytesConsumed);
-		if (bread != b->bytesConsumed)
+					    1, rest);
+		if (bread != rest)
 			b->atEof = 1;
 		b->bytesIntoBuffer += bread;
 	}
-
-	b->bytesConsumed = 0;
 
 	if ((b->bytesIntoBuffer > 3 && memcmp(b->buffer, "TAG", 3) == 0) ||
 	    (b->bytesIntoBuffer > 11 &&
