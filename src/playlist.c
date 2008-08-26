@@ -62,7 +62,6 @@ static int playlist_state = PLAYLIST_STATE_STOP;
 int playlist_max_length = DEFAULT_PLAYLIST_MAX_LENGTH;
 static int playlist_stopOnError;
 static int playlist_errorCount;
-static int playlist_queueError;
 static int playlist_noGoToNext;
 
 int playlist_saveAbsolutePaths = DEFAULT_PLAYLIST_SAVE_ABSOLUTE_PATHS;
@@ -491,11 +490,7 @@ static void queueNextSongInPlaylist(void)
 		      get_song_url(path_max_tmp,
 		                   playlist.
 				   songs[playlist.order[playlist.queued]]));
-		if (queueSong(playlist.songs[playlist.order[playlist.queued]]) <
-		    0) {
-			playlist.queued = -1;
-			playlist_queueError = 1;
-		}
+		queueSong(playlist.songs[playlist.order[playlist.queued]]);
 	} else if (playlist.length && playlist.repeat) {
 		if (playlist.length > 1 && playlist.random) {
 			randomizeOrder(0, playlist.length - 1);
@@ -506,11 +501,7 @@ static void queueNextSongInPlaylist(void)
 		      get_song_url(path_max_tmp,
 		                   playlist.
 		                   songs[playlist.order[playlist.queued]]));
-		if (queueSong(playlist.songs[playlist.order[playlist.queued]]) <
-		    0) {
-			playlist.queued = -1;
-			playlist_queueError = 1;
-		}
+		queueSong(playlist.songs[playlist.order[playlist.queued]]);
 	}
 }
 
@@ -851,7 +842,6 @@ static void playPlaylistOrderNumber(int orderNum)
 	playlist_state = PLAYLIST_STATE_PLAY;
 	playlist_noGoToNext = 0;
 	playlist.queued = -1;
-	playlist_queueError = 0;
 
 	DEBUG("playlist: play %i:\"%s\"\n", orderNum,
 	      get_song_url(path_max_tmp,
@@ -953,7 +943,7 @@ void syncPlayerAndPlaylist(void)
 	if (getPlayerState() == PLAYER_STATE_STOP)
 		playPlaylistIfPlayerStopped();
 	else
-		syncPlaylistWithQueue(!playlist_queueError);
+		syncPlaylistWithQueue(1);
 
 	syncCurrentPlayerDecodeMetadata();
 }

@@ -129,7 +129,7 @@ int getPlayerError(void);
 
 void playerWait(void);
 
-int queueSong(Song * song);
+void queueSong(Song * song);
 
 enum player_queue_state getPlayerQueueState(void);
 

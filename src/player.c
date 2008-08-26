@@ -165,15 +165,12 @@ char *getPlayerErrorStr(void)
 	return *error ? error : NULL;
 }
 
-int queueSong(Song * song)
+void queueSong(Song * song)
 {
-	if (pc.queueState == PLAYER_QUEUE_BLANK) {
-		set_current_song(song);
-		pc.queueState = PLAYER_QUEUE_FULL;
-		return 0;
-	}
+	assert(pc.queueState == PLAYER_QUEUE_BLANK);
 
-	return -1;
+	set_current_song(song);
+	pc.queueState = PLAYER_QUEUE_FULL;
 }
 
 enum player_queue_state getPlayerQueueState(void)
