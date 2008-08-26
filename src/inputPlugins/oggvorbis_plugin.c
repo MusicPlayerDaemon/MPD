@@ -381,7 +381,7 @@ static const char *oggvorbis_MimeTypes[] = { "application/ogg",
 					     "application/x-ogg",
 					     NULL };
 
-InputPlugin oggvorbisPlugin = {
+struct decoder_plugin oggvorbisPlugin = {
 	"oggvorbis",
 	NULL,
 	NULL,
@@ -396,6 +396,6 @@ InputPlugin oggvorbisPlugin = {
 
 #else /* !HAVE_OGGVORBIS */
 
-InputPlugin oggvorbisPlugin;
+struct decoder_plugin oggvorbisPlugin;
 
 #endif /* HAVE_OGGVORBIS */

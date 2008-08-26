@@ -313,7 +313,7 @@ static MpdTag *mpcTagDup(char *file)
 
 static const char *mpcSuffixes[] = { "mpc", NULL };
 
-InputPlugin mpcPlugin = {
+struct decoder_plugin mpcPlugin = {
 	"mpc",
 	NULL,
 	NULL,
@@ -328,6 +328,6 @@ InputPlugin mpcPlugin = {
 
 #else
 
-InputPlugin mpcPlugin;
+struct decoder_plugin mpcPlugin;
 
 #endif /* HAVE_MPCDEC */

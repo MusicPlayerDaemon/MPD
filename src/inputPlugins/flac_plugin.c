@@ -469,7 +469,7 @@ static int flac_decode(struct decoder * decoder, InputStream * inStream)
 #  define flac_plugin_init NULL
 #else /* FLAC_API_VERSION_CURRENT >= 7 */
 /* some of this stuff is duplicated from oggflac_plugin.c */
-extern InputPlugin oggflacPlugin;
+extern struct decoder_plugin oggflacPlugin;
 
 static MpdTag *oggflac_tag_dup(char *file)
 {
@@ -544,7 +544,7 @@ static const char *flac_mime_types[] = { "audio/x-flac",
 					 "application/x-flac",
 					 NULL };
 
-InputPlugin flacPlugin = {
+struct decoder_plugin flacPlugin = {
 	"flac",
 	flac_plugin_init,
 	NULL,
@@ -559,6 +559,6 @@ InputPlugin flacPlugin = {
 
 #else /* !HAVE_FLAC */
 
-InputPlugin flacPlugin;
+struct decoder_plugin flacPlugin;
 
 #endif /* HAVE_FLAC */

@@ -70,7 +70,7 @@ typedef int (*InputPlugin_fileDecodeFunc) (struct decoder *,
  * or read */
 typedef MpdTag *(*InputPlugin_tagDupFunc) (char *file);
 
-typedef struct _InputPlugin {
+struct decoder_plugin {
 	const char *name;
 	InputPlugin_initFunc initFunc;
 	InputPlugin_finishFunc finishFunc;
@@ -85,7 +85,7 @@ typedef struct _InputPlugin {
 	/* last element in these arrays must always be a NULL: */
 	const char *const*suffixes;
 	const char *const*mimeTypes;
-} InputPlugin;
+};
 
 
 /**

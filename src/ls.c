@@ -257,9 +257,9 @@ int isDir(const char *utf8name)
 	return 0;
 }
 
-InputPlugin *hasMusicSuffix(const char *utf8file, unsigned int next)
+struct decoder_plugin *hasMusicSuffix(const char *utf8file, unsigned int next)
 {
-	InputPlugin *ret = NULL;
+	struct decoder_plugin *ret = NULL;
 
 	const char *s = getSuffix(utf8file);
 	if (s) {
@@ -272,10 +272,11 @@ InputPlugin *hasMusicSuffix(const char *utf8file, unsigned int next)
 	return ret;
 }
 
-InputPlugin *isMusic(const char *utf8file, time_t * mtime, unsigned int next)
+struct decoder_plugin *isMusic(const char *utf8file, time_t * mtime,
+			       unsigned int next)
 {
 	if (isFile(utf8file, mtime)) {
-		InputPlugin *plugin = hasMusicSuffix(utf8file, next);
+		struct decoder_plugin *plugin = hasMusicSuffix(utf8file, next);
 		if (plugin != NULL)
 			return plugin;
 	}

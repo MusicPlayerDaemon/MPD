@@ -577,7 +577,7 @@ static int wavpack_filedecode(struct decoder * decoder, char *fname)
 static char const *wavpackSuffixes[] = { "wv", NULL };
 static char const *wavpackMimeTypes[] = { "audio/x-wavpack", NULL };
 
-InputPlugin wavpackPlugin = {
+struct decoder_plugin wavpackPlugin = {
 	"wavpack",
 	NULL,
 	NULL,
@@ -592,6 +592,6 @@ InputPlugin wavpackPlugin = {
 
 #else /* !HAVE_WAVPACK */
 
-InputPlugin wavpackPlugin;
+struct decoder_plugin wavpackPlugin;
 
 #endif /* !HAVE_WAVPACK */

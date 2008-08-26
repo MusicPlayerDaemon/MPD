@@ -17,10 +17,11 @@
  */
 
 #include "inputPlugin.h"
+#include "decoder_api.h"
 
 static List *inputPlugin_list;
 
-void loadInputPlugin(InputPlugin * inputPlugin)
+void loadInputPlugin(struct decoder_plugin * inputPlugin)
 {
 	if (!inputPlugin)
 		return;
@@ -33,7 +34,7 @@ void loadInputPlugin(InputPlugin * inputPlugin)
 	insertInList(inputPlugin_list, inputPlugin->name, (void *)inputPlugin);
 }
 
-void unloadInputPlugin(InputPlugin * inputPlugin)
+void unloadInputPlugin(struct decoder_plugin * inputPlugin)
 {
 	if (inputPlugin->finishFunc)
 		inputPlugin->finishFunc();
@@ -51,11 +52,11 @@ static int stringFoundInStringArray(const char *const*array, const char *suffix)
 	return 0;
 }
 
-InputPlugin *getInputPluginFromSuffix(const char *suffix, unsigned int next)
+struct decoder_plugin *getInputPluginFromSuffix(const char *suffix, unsigned int next)
 {
 	static ListNode *pos;
 	ListNode *node;
-	InputPlugin *plugin;
+	struct decoder_plugin *plugin;
 
 	if (suffix == NULL)
 		return NULL;
@@ -80,11 +81,11 @@ InputPlugin *getInputPluginFromSuffix(const char *suffix, unsigned int next)
 	return NULL;
 }
 
-InputPlugin *getInputPluginFromMimeType(const char *mimeType, unsigned int next)
+struct decoder_plugin *getInputPluginFromMimeType(const char *mimeType, unsigned int next)
 {
 	static ListNode *pos;
 	ListNode *node;
-	InputPlugin *plugin;
+	struct decoder_plugin *plugin;
 
 	if (mimeType == NULL)
 		return NULL;
@@ -103,23 +104,23 @@ InputPlugin *getInputPluginFromMimeType(const char *mimeType, unsigned int next)
 	return NULL;
 }
 
-InputPlugin *getInputPluginFromName(const char *name)
+struct decoder_plugin *getInputPluginFromName(const char *name)
 {
 	void *plugin = NULL;
 
 	findInList(inputPlugin_list, name, &plugin);
 
-	return (InputPlugin *) plugin;
+	return (struct decoder_plugin *) plugin;
 }
 
 void printAllInputPluginSuffixes(FILE * fp)
 {
 	ListNode *node = inputPlugin_list->firstNode;
-	InputPlugin *plugin;
+	struct decoder_plugin *plugin;
 	const char *const*suffixes;
 
 	while (node) {
-		plugin = (InputPlugin *) node->data;
+		plugin = (struct decoder_plugin *) node->data;
 		suffixes = plugin->suffixes;
 		while (suffixes && *suffixes) {
 			fprintf(fp, "%s ", *suffixes);

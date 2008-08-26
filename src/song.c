@@ -25,6 +25,7 @@
 #include "path.h"
 #include "playlist.h"
 #include "inputPlugin.h"
+#include "decoder_api.h"
 #include "myfprintf.h"
 
 #define SONG_KEY	"key: "
@@ -62,7 +63,7 @@ Song *newSong(const char *url, int type, Directory * parentDir)
 	assert(type == SONG_TYPE_URL || parentDir);
 
 	if (song->type == SONG_TYPE_FILE) {
-		InputPlugin *plugin;
+		struct decoder_plugin *plugin;
 		unsigned int next = 0;
 		char path_max_tmp[MPD_PATH_MAX];
 		char *abs_path = rmp2amp_r(path_max_tmp,
@@ -286,7 +287,7 @@ void readSongInfoIntoList(FILE * fp, SongList * list, Directory * parentDir)
 int updateSongInfo(Song * song)
 {
 	if (song->type == SONG_TYPE_FILE) {
-		InputPlugin *plugin;
+		struct decoder_plugin *plugin;
 		unsigned int next = 0;
 		char path_max_tmp[MPD_PATH_MAX];
 		char abs_path[MPD_PATH_MAX];

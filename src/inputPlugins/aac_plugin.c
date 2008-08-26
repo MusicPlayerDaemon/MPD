@@ -433,7 +433,7 @@ static MpdTag *aacTagDup(char *file)
 static const char *aac_suffixes[] = { "aac", NULL };
 static const char *aac_mimeTypes[] = { "audio/aac", "audio/aacp", NULL };
 
-InputPlugin aacPlugin = {
+struct decoder_plugin aacPlugin = {
 	"aac",
 	NULL,
 	NULL,
@@ -448,6 +448,6 @@ InputPlugin aacPlugin = {
 
 #else
 
-InputPlugin aacPlugin;
+struct decoder_plugin aacPlugin;
 
 #endif /* HAVE_FAAD */

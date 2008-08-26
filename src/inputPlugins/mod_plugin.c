@@ -262,7 +262,7 @@ static const char *modSuffixes[] = { "amf",
 	NULL
 };
 
-InputPlugin modPlugin = {
+struct decoder_plugin modPlugin = {
 	"mod",
 	NULL,
 	mod_finishMikMod,
@@ -277,6 +277,6 @@ InputPlugin modPlugin = {
 
 #else
 
-InputPlugin modPlugin;
+struct decoder_plugin modPlugin;
 
 #endif /* HAVE_MIKMOD */

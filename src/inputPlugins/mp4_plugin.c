@@ -408,7 +408,7 @@ static MpdTag *mp4TagDup(char *file)
 static const char *mp4_suffixes[] = { "m4a", "mp4", NULL };
 static const char *mp4_mimeTypes[] = { "audio/mp4", "audio/m4a", NULL };
 
-InputPlugin mp4Plugin = {
+struct decoder_plugin mp4Plugin = {
 	"mp4",
 	NULL,
 	NULL,
@@ -423,6 +423,6 @@ InputPlugin mp4Plugin = {
 
 #else
 
-InputPlugin mp4Plugin;
+struct decoder_plugin mp4Plugin;
 
 #endif /* HAVE_FAAD */

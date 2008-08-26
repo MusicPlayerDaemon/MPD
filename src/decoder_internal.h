@@ -23,7 +23,7 @@
 #include "pcm_utils.h"
 
 struct decoder {
-	InputPlugin *plugin;
+	struct decoder_plugin *plugin;
 
 	ConvState conv_state;
 };

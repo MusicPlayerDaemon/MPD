@@ -391,7 +391,7 @@ static const char *oggflac_mime_types[] = { "audio/x-flac+ogg",
 					    "application/x-ogg",
 					    NULL };
 
-InputPlugin oggflacPlugin = {
+struct decoder_plugin oggflacPlugin = {
 	"oggflac",
 	NULL,
 	NULL,
@@ -406,6 +406,6 @@ InputPlugin oggflacPlugin = {
 
 #else /* !HAVE_FLAC */
 
-InputPlugin oggflacPlugin;
+struct decoder_plugin oggflacPlugin;
 
 #endif /* HAVE_OGGFLAC */

@@ -19,19 +19,21 @@
 #ifndef INPUT_PLUGIN_H
 #define INPUT_PLUGIN_H
 
-#include "decoder_api.h"
+#include "os_compat.h"
+
+struct decoder_plugin;
 
 /* individual functions to load/unload plugins */
-void loadInputPlugin(InputPlugin * inputPlugin);
-void unloadInputPlugin(InputPlugin * inputPlugin);
+void loadInputPlugin(struct decoder_plugin * inputPlugin);
+void unloadInputPlugin(struct decoder_plugin * inputPlugin);
 
 /* interface for using plugins */
 
-InputPlugin *getInputPluginFromSuffix(const char *suffix, unsigned int next);
+struct decoder_plugin *getInputPluginFromSuffix(const char *suffix, unsigned int next);
 
-InputPlugin *getInputPluginFromMimeType(const char *mimeType, unsigned int next);
+struct decoder_plugin *getInputPluginFromMimeType(const char *mimeType, unsigned int next);
 
-InputPlugin *getInputPluginFromName(const char *name);
+struct decoder_plugin *getInputPluginFromName(const char *name);
 
 void printAllInputPluginSuffixes(FILE * fp);
 
@@ -41,15 +43,15 @@ void initInputPlugins(void);
 /* this is where we "unload" all the "plugins" */
 void finishInputPlugins(void);
 
-extern InputPlugin mp3Plugin;
-extern InputPlugin oggvorbisPlugin;
-extern InputPlugin flacPlugin;
-extern InputPlugin oggflacPlugin;
-extern InputPlugin audiofilePlugin;
-extern InputPlugin mp4Plugin;
-extern InputPlugin aacPlugin;
-extern InputPlugin mpcPlugin;
-extern InputPlugin wavpackPlugin;
-extern InputPlugin modPlugin;
+extern struct decoder_plugin mp3Plugin;
+extern struct decoder_plugin oggvorbisPlugin;
+extern struct decoder_plugin flacPlugin;
+extern struct decoder_plugin oggflacPlugin;
+extern struct decoder_plugin audiofilePlugin;
+extern struct decoder_plugin mp4Plugin;
+extern struct decoder_plugin aacPlugin;
+extern struct decoder_plugin mpcPlugin;
+extern struct decoder_plugin wavpackPlugin;
+extern struct decoder_plugin modPlugin;
 
 #endif

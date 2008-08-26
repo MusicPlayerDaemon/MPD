@@ -137,7 +137,7 @@ static MpdTag *audiofileTagDup(char *file)
 
 static const char *audiofileSuffixes[] = { "wav", "au", "aiff", "aif", NULL };
 
-InputPlugin audiofilePlugin = {
+struct decoder_plugin audiofilePlugin = {
 	"audiofile",
 	NULL,
 	NULL,
@@ -152,6 +152,6 @@ InputPlugin audiofilePlugin = {
 
 #else
 
-InputPlugin audiofilePlugin;
+struct decoder_plugin audiofilePlugin;
 
 #endif /* HAVE_AUDIOFILE */

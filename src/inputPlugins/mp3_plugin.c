@@ -1110,7 +1110,7 @@ static MpdTag *mp3_tagDup(char *file)
 static const char *mp3_suffixes[] = { "mp3", "mp2", NULL };
 static const char *mp3_mimeTypes[] = { "audio/mpeg", NULL };
 
-InputPlugin mp3Plugin = {
+struct decoder_plugin mp3Plugin = {
 	"mp3",
 	mp3_plugin_init,
 	NULL,
@@ -1124,6 +1124,6 @@ InputPlugin mp3Plugin = {
 };
 #else
 
-InputPlugin mp3Plugin;
+struct decoder_plugin mp3Plugin;
 
 #endif /* HAVE_MAD */

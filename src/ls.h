@@ -35,9 +35,10 @@ int isDir(const char *utf8name);
 
 int isPlaylist(const char *utf8file);
 
-InputPlugin *hasMusicSuffix(const char *utf8file, unsigned int next);
+struct decoder_plugin *hasMusicSuffix(const char *utf8file, unsigned int next);
 
-InputPlugin *isMusic(const char *utf8file, time_t * mtime, unsigned int next);
+struct decoder_plugin *isMusic(const char *utf8file, time_t * mtime,
+			       unsigned int next);
 
 int printRemoteUrlHandlers(int fd);
 

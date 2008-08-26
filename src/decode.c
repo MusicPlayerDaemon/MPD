@@ -209,7 +209,7 @@ static void decodeStart(void)
 	int ret;
 	int close_instream = 1;
 	InputStream inStream;
-	InputPlugin *plugin = NULL;
+	struct decoder_plugin *plugin = NULL;
 	char path_max_fs[MPD_PATH_MAX];
 	char path_max_utf8[MPD_PATH_MAX];
 
