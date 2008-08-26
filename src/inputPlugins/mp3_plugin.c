@@ -896,15 +896,24 @@ static int mp3Read(mp3DecodeData * data, struct decoder *decoder,
 
 		samplesLeft = (data->synth).pcm.length;
 
-		for (i = 0; i < (data->synth).pcm.length; i++) {
+		if (!data->decodedFirstFrame) {
+			if (data->dropSamplesAtStart >= samplesLeft) {
+				i = samplesLeft;
+				samplesLeft = 0;
+			} else {
+				i = data->dropSamplesAtStart;
+				samplesLeft -= data->dropSamplesAtStart;
+			}
+			data->decodedFirstFrame = 1;
+		} else
+			i = 0;
+
+		for (; i < (data->synth).pcm.length; i++) {
 			mpd_sint16 *sample;
 
 			samplesLeft--;
 
-			if (!data->decodedFirstFrame &&
-			    (i < data->dropSamplesAtStart)) {
-				continue;
-			} else if (data->dropSamplesAtEnd &&
+			if (data->dropSamplesAtEnd &&
 			           (data->currentFrame == (data->maxFrames - data->dropFramesAtEnd)) &&
 				   (samplesLeft < data->dropSamplesAtEnd)) {
 				/* stop decoding, effectively dropping
@@ -946,8 +955,6 @@ static int mp3Read(mp3DecodeData * data, struct decoder *decoder,
 					break;
 			}
 		}
-
-		data->decodedFirstFrame = 1;
 
 		if (decoder_get_command(decoder) == DECODE_COMMAND_SEEK &&
 		    data->inStream->seekable) {
