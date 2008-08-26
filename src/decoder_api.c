@@ -82,15 +82,15 @@ void decoder_seek_error(struct decoder * decoder)
  * All chunks are full of decoded data; wait for the player to free
  * one.
  */
-static int need_chunks(struct decoder *decoder, InputStream * inStream,
-		       int seekable)
+static enum decoder_command
+need_chunks(struct decoder *decoder, InputStream * inStream, int seekable)
 {
 	if (dc.command == DECODE_COMMAND_STOP)
-		return OUTPUT_BUFFER_DC_STOP;
+		return DECODE_COMMAND_STOP;
 
 	if (dc.command == DECODE_COMMAND_SEEK) {
 		if (seekable) {
-			return OUTPUT_BUFFER_DC_SEEK;
+			return DECODE_COMMAND_SEEK;
 		} else {
 			decoder_seek_error(decoder);
 		}
@@ -102,14 +102,14 @@ static int need_chunks(struct decoder *decoder, InputStream * inStream,
 		notify_signal(&pc.notify);
 	}
 
-	return 0;
+	return DECODE_COMMAND_NONE;
 }
 
-int decoder_data(struct decoder *decoder, InputStream * inStream,
-		 int seekable,
-		 void *dataIn, size_t dataInLen,
-		 float data_time, mpd_uint16 bitRate,
-		 ReplayGainInfo * replayGainInfo)
+enum decoder_command
+decoder_data(struct decoder *decoder, InputStream * inStream, int seekable,
+	     void *dataIn, size_t dataInLen,
+	     float data_time, mpd_uint16 bitRate,
+	     ReplayGainInfo * replayGainInfo)
 {
 	size_t nbytes;
 	char *data;
@@ -153,7 +153,7 @@ int decoder_data(struct decoder *decoder, InputStream * inStream,
 		}
 	}
 
-	return 0;
+	return DECODE_COMMAND_NONE;
 }
 
 void decoder_flush(mpd_unused struct decoder *decoder)

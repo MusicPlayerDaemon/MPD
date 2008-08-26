@@ -927,21 +927,22 @@ static int mp3Read(mp3DecodeData * data, struct decoder *decoder,
 			}
 
 			if (data->outputPtr >= data->outputBufferEnd) {
-				ret = decoder_data(decoder, data->inStream,
+				enum decoder_command cmd;
+				cmd = decoder_data(decoder, data->inStream,
 						   data->inStream->seekable,
 						   data->outputBuffer,
 						   data->outputPtr - data->outputBuffer,
 						   data->elapsedTime,
 						   data->bitRate / 1000,
 						   (replayGainInfo != NULL) ? *replayGainInfo : NULL);
-				if (ret == OUTPUT_BUFFER_DC_STOP) {
+				if (cmd == DECODE_COMMAND_STOP) {
 					data->flush = 0;
 					return DECODE_BREAK;
 				}
 
 				data->outputPtr = data->outputBuffer;
 
-				if (ret == OUTPUT_BUFFER_DC_SEEK)
+				if (cmd == DECODE_COMMAND_STOP)
 					break;
 			}
 		}

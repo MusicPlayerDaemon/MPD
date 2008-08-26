@@ -125,11 +125,10 @@ void decoder_seek_error(struct decoder * decoder);
  * We send inStream for buffering the inputStream while waiting to
  * send the next chunk
  */
-int decoder_data(struct decoder *decoder, InputStream * inStream,
-		 int seekable,
-		 void *data, size_t datalen,
-		 float data_time, mpd_uint16 bitRate,
-		 ReplayGainInfo * replayGainInfo);
+enum decoder_command
+decoder_data(struct decoder *decoder, InputStream * inStream, int seekable,
+	     void *data, size_t datalen, float data_time, mpd_uint16 bitRate,
+	     ReplayGainInfo * replayGainInfo);
 
 void decoder_flush(struct decoder *decoder);
 

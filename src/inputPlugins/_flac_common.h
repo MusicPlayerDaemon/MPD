@@ -171,7 +171,7 @@ static inline int flacSendChunk(FlacData * data)
 			 1, data->chunk,
 			 data->chunk_length, data->time,
 			 data->bitRate,
-			 data->replayGainInfo) == OUTPUT_BUFFER_DC_STOP)
+			 data->replayGainInfo) == DECODE_COMMAND_STOP)
 		return -1;
 
 	return 0;
