@@ -109,8 +109,6 @@ void playerSetPause(int pause_flag);
 
 void playerPause(void);
 
-void playerStop(void);
-
 void playerKill(void);
 
 int getPlayerTotalTime(void);

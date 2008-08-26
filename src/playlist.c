@@ -837,8 +837,6 @@ static void playPlaylistOrderNumber(int orderNum)
 {
 	char path_max_tmp[MPD_PATH_MAX];
 
-	playerStop();
-
 	playlist_state = PLAYLIST_STATE_PLAY;
 	playlist_noGoToNext = 0;
 	playlist.queued = -1;

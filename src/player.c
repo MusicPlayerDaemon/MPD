@@ -53,20 +53,15 @@ void player_command_finished()
 
 void playerPlay(Song * song)
 {
-	playerStop();
-
-	set_current_song(song);
-	player_command(PLAYER_COMMAND_PLAY);
-}
-
-void playerStop(void)
-{
 	assert(pc.queueLockState == PLAYER_QUEUE_UNLOCKED);
 
 	if (pc.state != PLAYER_STATE_STOP)
 		player_command(PLAYER_COMMAND_STOP);
 
 	pc.queueState = PLAYER_QUEUE_BLANK;
+
+	set_current_song(song);
+	player_command(PLAYER_COMMAND_PLAY);
 }
 
 void playerWait(void)
