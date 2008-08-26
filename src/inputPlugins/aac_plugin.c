@@ -90,7 +90,7 @@ static int adtsSampleRates[] =
 	16000, 12000, 11025, 8000, 7350, 0, 0, 0
 };
 
-static int adtsParse(AacBuffer * b, float *length)
+static void adtsParse(AacBuffer * b, float *length)
 {
 	unsigned int frames, frameLength;
 	int sampleRate = 0;
@@ -128,8 +128,6 @@ static int adtsParse(AacBuffer * b, float *length)
 	framesPerSec = (float)sampleRate / 1024.0;
 	if (framesPerSec != 0)
 		*length = (float)frames / framesPerSec;
-
-	return 1;
 }
 
 static void initAacBuffer(InputStream * inStream, AacBuffer * b, float *length)
