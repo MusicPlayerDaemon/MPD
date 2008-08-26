@@ -30,16 +30,6 @@
 pthread_mutex_t play_audio_lock = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t  play_audio = PTHREAD_COND_INITIALIZER;
 
-/*#include "dmalloc.h"*/
-
-#ifdef MIN
-#  undef MIN
-#  define MIN(a, b) ((a) < (b) ? (a) : (b))
-#endif
-
-/*#define SAMPLE_SIZE  sizeof(jack_default_audio_sample_t);*/
-
-
 static char *name = "mpd";
 static char *output_ports[2];
 static int ringbuf_sz = 32768;
