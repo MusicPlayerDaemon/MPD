@@ -19,6 +19,7 @@
 #ifndef OUTPUT_BUFFER_H
 #define OUTPUT_BUFFER_H
 
+#include "notify.h"
 #include "pcm_utils.h"
 
 #define OUTPUT_BUFFER_DC_STOP   -1
@@ -55,9 +56,11 @@ typedef struct _OutputBuffer {
 
 	AudioFormat audioFormat;
 	ConvState convState;
+
+	Notify *notify;
 } OutputBuffer;
 
-void ob_init(unsigned int size);
+void ob_init(unsigned int size, Notify *notify);
 
 void ob_free(void);
 

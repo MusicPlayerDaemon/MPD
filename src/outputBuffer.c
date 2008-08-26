@@ -21,7 +21,7 @@
 
 #include "utils.h"
 
-void ob_init(unsigned int size)
+void ob_init(unsigned int size, Notify *notify)
 {
 	assert(size > 0);
 
@@ -31,6 +31,7 @@ void ob_init(unsigned int size)
 	ob.begin = 0;
 	ob.end = 0;
 	ob.lazy = 0;
+	ob.notify = notify;
 	ob.chunks[0].chunkSize = 0;
 }
 
@@ -61,7 +62,7 @@ static inline unsigned successor(unsigned i)
  */
 static void output_buffer_expand(unsigned i)
 {
-	int was_empty = !ob.lazy || ob_is_empty();
+	int was_empty = ob.notify != NULL && (!ob.lazy || ob_is_empty());
 
 	assert(i == (ob.end + 1) % ob.size);
 	assert(i != ob.end);
@@ -72,7 +73,7 @@ static void output_buffer_expand(unsigned i)
 		/* if the buffer was empty, the player thread might be
 		   waiting for us; wake it up now that another decoded
 		   buffer has become available. */
-		notify_signal(&pc.notify);
+		notify_signal(ob.notify);
 }
 
 void ob_flush(void)

@@ -72,7 +72,7 @@ void initPlayerData(void)
 		buffered_before_play = buffered_chunks;
 	}
 
-	ob_init(buffered_chunks);
+	ob_init(buffered_chunks, &pc.notify);
 
 	notify_init(&pc.notify);
 	pc.error = PLAYER_ERROR_NOERROR;
