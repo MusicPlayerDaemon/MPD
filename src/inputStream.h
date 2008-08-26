@@ -32,6 +32,8 @@ typedef int (*InputStreamAtEOFFunc) (InputStream * inStream);
 typedef int (*InputStreamBufferFunc) (InputStream * inStream);
 
 struct _InputStream {
+	int ready;
+
 	int error;
 	long offset;
 	size_t size;

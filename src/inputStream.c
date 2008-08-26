@@ -31,6 +31,7 @@ void initInputStream(void)
 
 int openInputStream(InputStream * inStream, char *url)
 {
+	inStream->ready = 0;
 	inStream->offset = 0;
 	inStream->size = 0;
 	inStream->error = 0;

@@ -598,6 +598,7 @@ found:
 		xclose(data->fd);
 		data->fd = -1;
 		data->state = CONN_STATE_REDIRECT;
+		is->ready = 1;
 		return 0; /* success */
 	}
 	return -1;
@@ -696,6 +697,7 @@ static int recv_response(InputStream * is)
 
 	ringbuf_writer_reset(data->rb);
 	data->state = CONN_STATE_PREBUFFER;
+	is->ready = 1;
 
 	return 0;
 }

@@ -52,6 +52,8 @@ int inputStream_fileOpen(InputStream * inStream, char *filename)
 	inStream->atEOFFunc = inputStream_fileAtEOF;
 	inStream->bufferFunc = inputStream_fileBuffer;
 
+	inStream->ready = 1;
+
 	return 0;
 }
 

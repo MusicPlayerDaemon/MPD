@@ -53,6 +53,18 @@ static void decodeStart(void)
 	dc.state = DECODE_STATE_START;
 	dc.command = DECODE_COMMAND_NONE;
 
+	/* wait for the input stream to become ready; its metadata
+	   will be available then */
+
+	while (!inStream.ready) {
+		if (dc.command != DECODE_COMMAND_NONE)
+			goto stop;
+
+		ret = bufferInputStream(&inStream);
+		if (ret < 0)
+			goto stop;
+	}
+
 	/* for http streams, seekable is determined in bufferInputStream */
 	dc.seekable = inStream.seekable;
 
