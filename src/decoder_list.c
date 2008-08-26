@@ -39,7 +39,7 @@ void loadInputPlugin(struct decoder_plugin * inputPlugin)
 	if (!inputPlugin->name)
 		return;
 
-	if (inputPlugin->initFunc && inputPlugin->initFunc() < 0)
+	if (inputPlugin->init_func && inputPlugin->init_func() < 0)
 		return;
 
 	insertInList(inputPlugin_list, inputPlugin->name, (void *)inputPlugin);
@@ -47,8 +47,8 @@ void loadInputPlugin(struct decoder_plugin * inputPlugin)
 
 void unloadInputPlugin(struct decoder_plugin * inputPlugin)
 {
-	if (inputPlugin->finishFunc)
-		inputPlugin->finishFunc();
+	if (inputPlugin->finish_func)
+		inputPlugin->finish_func();
 	deleteFromList(inputPlugin_list, inputPlugin->name);
 }
 
@@ -105,7 +105,7 @@ struct decoder_plugin *getInputPluginFromMimeType(const char *mimeType, unsigned
 
 	while (node != NULL) {
 		plugin = node->data;
-		if (stringFoundInStringArray(plugin->mimeTypes, mimeType)) {
+		if (stringFoundInStringArray(plugin->mime_types, mimeType)) {
 			pos = node->nextNode;
 			return plugin;
 		}

@@ -71,19 +71,19 @@ typedef MpdTag *(*decoder_tag_dup_func) (char *file);
 struct decoder_plugin {
 	const char *name;
 
-	decoder_init_func initFunc;
-	decoder_finish_func finishFunc;
-	decoder_try_decode_func tryDecodeFunc;
-	decoder_stream_decode_func streamDecodeFunc;
-	decoder_file_decode_func fileDecodeFunc;
-	decoder_tag_dup_func tagDupFunc;
+	decoder_init_func init_func;
+	decoder_finish_func finish_func;
+	decoder_try_decode_func try_decode_func;
+	decoder_stream_decode_func stream_decode_func;
+	decoder_file_decode_func file_decode_func;
+	decoder_tag_dup_func tag_dup_func;
 
 	/* one or more of the INPUT_PLUGIN_STREAM_* values OR'd together */
-	unsigned char streamTypes;
+	unsigned char stream_types;
 
 	/* last element in these arrays must always be a NULL: */
 	const char *const*suffixes;
-	const char *const*mimeTypes;
+	const char *const*mime_types;
 };
 
 
