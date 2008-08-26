@@ -165,7 +165,7 @@ static int playChunk(ob_chunk * chunk,
 	return 0;
 }
 
-static void decodeParent(void)
+static void do_play(void)
 {
 	int do_pause = 0;
 	int buffering = 1;
@@ -181,8 +181,10 @@ static void decodeParent(void)
 	/** the position of the first chunk in the next song */
 	int next = -1;
 
+	ob_clear();
 	ob_set_lazy(0);
 
+	dc_start(&pc.notify, pc.next_song);
 	if (waitOnDecode(&decodeWaitedOn) < 0) {
 		quitDecode();
 		return;
@@ -371,19 +373,6 @@ static void decodeParent(void)
 	quitDecode();
 }
 
-/* decode w/ buffering
- * this will fork another process
- * child process does decoding
- * parent process does playing audio
- */
-static void decode(void)
-{
-	ob_clear();
-
-	dc_start(&pc.notify, pc.next_song);
-	decodeParent();
-}
-
 static void * player_task(mpd_unused void *arg)
 {
 	notify_enter(&pc.notify);
@@ -391,7 +380,7 @@ static void * player_task(mpd_unused void *arg)
 	while (1) {
 		switch (pc.command) {
 		case PLAYER_COMMAND_PLAY:
-			decode();
+			do_play();
 			break;
 
 		case PLAYER_COMMAND_STOP:
