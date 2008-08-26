@@ -41,8 +41,11 @@ enum mp3_action {
 	DECODE_OK = 0
 };
 
-#define MUTEFRAME_SKIP     1
-#define MUTEFRAME_SEEK     2
+enum muteframe {
+	MUTEFRAME_NONE,
+	MUTEFRAME_SKIP,
+	MUTEFRAME_SEEK
+};
 
 /* the number of samples of silence the decoder inserts at start */
 #define DECODERDELAY 529
@@ -153,7 +156,7 @@ typedef struct _mp3DecodeData {
 	mpd_sint16 outputBuffer[MP3_DATA_OUTPUT_BUFFER_SIZE];
 	float totalTime;
 	float elapsedTime;
-	int muteFrame;
+	enum muteframe muteFrame;
 	long *frameOffset;
 	mad_timer_t *times;
 	unsigned long highestFrame;
@@ -176,7 +179,7 @@ typedef struct _mp3DecodeData {
 static void initMp3DecodeData(mp3DecodeData * data, struct decoder *decoder,
 			      InputStream * inStream)
 {
-	data->muteFrame = 0;
+	data->muteFrame = MUTEFRAME_NONE;
 	data->highestFrame = 0;
 	data->maxFrames = 0;
 	data->frameOffset = NULL;
@@ -861,16 +864,16 @@ mp3Read(mp3DecodeData * data, ReplayGainInfo ** replayGainInfo)
 
 	switch (data->muteFrame) {
 	case MUTEFRAME_SKIP:
-		data->muteFrame = 0;
+		data->muteFrame = MUTEFRAME_NONE;
 		break;
 	case MUTEFRAME_SEEK:
 		if (decoder_seek_where(decoder) <= data->elapsedTime) {
 			decoder_clear(decoder);
-			data->muteFrame = 0;
+			data->muteFrame = MUTEFRAME_NONE;
 			decoder_command_finished(decoder);
 		}
 		break;
-	default:
+	case MUTEFRAME_NONE:
 		mad_synth_frame(&data->synth, &data->frame);
 
 		if (!data->foundFirstFrame) {
@@ -974,7 +977,7 @@ mp3Read(mp3DecodeData * data, ReplayGainInfo ** replayGainInfo)
 					decoder_command_finished(decoder);
 				} else
 					decoder_seek_error(decoder);
-				data->muteFrame = 0;
+				data->muteFrame = MUTEFRAME_NONE;
 			}
 		} else if (decoder_get_command(decoder) == DECODE_COMMAND_SEEK &&
 			   !data->inStream->seekable) {
@@ -992,7 +995,7 @@ mp3Read(mp3DecodeData * data, ReplayGainInfo ** replayGainInfo)
 			break;
 		else if (ret == DECODE_SKIP)
 			skip = 1;
-		if (!data->muteFrame) {
+		if (data->muteFrame == MUTEFRAME_NONE) {
 			while ((ret = decodeNextFrame(data)) == DECODE_CONT &&
 			       decoder_get_command(decoder) == DECODE_COMMAND_NONE) ;
 			if (ret == DECODE_BREAK ||
