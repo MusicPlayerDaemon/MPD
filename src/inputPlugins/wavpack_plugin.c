@@ -18,7 +18,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "../inputPlugin.h"
+#include "../decoder_api.h"
 
 #ifdef HAVE_WAVPACK
 
@@ -124,7 +124,7 @@ static void format_samples_float(mpd_unused int Bps, void *buffer,
  * This does the main decoding thing.
  * Requires an already opened WavpackContext.
  */
-static void wavpack_decode(mpd_unused struct decoder * decoder,
+static void wavpack_decode(struct decoder * decoder,
                            WavpackContext *wpc, int canseek,
                            ReplayGainInfo *replayGainInfo)
 {
@@ -166,8 +166,9 @@ static void wavpack_decode(mpd_unused struct decoder * decoder,
 	getOutputAudioFormat(&(dc.audioFormat), &(ob.audioFormat));
 
 	dc.totalTime = (float)allsamples / dc.audioFormat.sampleRate;
-	dc.state = DECODE_STATE_DECODE;
 	dc.seekable = canseek;
+
+	decoder_initialized(decoder);
 
 	position = 0;
 

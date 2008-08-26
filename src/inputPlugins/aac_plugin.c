@@ -16,7 +16,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "../inputPlugin.h"
+#include "../decoder_api.h"
 
 #ifdef HAVE_FAAD
 
@@ -278,7 +278,7 @@ static int getAacTotalTime(char *file)
 	return file_time;
 }
 
-static int aac_decode(mpd_unused struct decoder * mpd_decoder, char *path)
+static int aac_decode(struct decoder * mpd_decoder, char *path)
 {
 	float file_time;
 	float totalTime;
@@ -373,7 +373,7 @@ static int aac_decode(mpd_unused struct decoder * mpd_decoder, char *path)
 			dc.audioFormat.sampleRate = sampleRate;
 			getOutputAudioFormat(&(dc.audioFormat),
 					     &(ob.audioFormat));
-			dc.state = DECODE_STATE_DECODE;
+			decoder_initialized(mpd_decoder);
 		}
 
 		advanceAacBuffer(&b, frameInfo.bytesconsumed);

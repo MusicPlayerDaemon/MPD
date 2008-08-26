@@ -22,7 +22,7 @@
 #ifndef _FLAC_COMMON_H
 #define _FLAC_COMMON_H
 
-#include "../inputPlugin.h"
+#include "../decoder_api.h"
 
 #if defined(HAVE_FLAC) || defined(HAVE_OGGFLAC)
 

@@ -18,7 +18,7 @@
 
 /* TODO 'ogg' should probably be replaced with 'oggvorbis' in all instances */
 
-#include "../inputPlugin.h"
+#include "../decoder_api.h"
 
 #ifdef HAVE_OGGVORBIS
 
@@ -210,8 +210,7 @@ static void putOggCommentsIntoOutputBuffer(char *streamName,
 }
 
 /* public */
-static int oggvorbis_decode(mpd_unused struct decoder * decoder,
-			    InputStream * inStream)
+static int oggvorbis_decode(struct decoder * decoder, InputStream * inStream)
 {
 	OggVorbis_File vf;
 	ov_callbacks callbacks;
@@ -287,7 +286,7 @@ static int oggvorbis_decode(mpd_unused struct decoder * decoder,
 			if (dc.state == DECODE_STATE_START) {
 				getOutputAudioFormat(&(dc.audioFormat),
 						     &(ob.audioFormat));
-				dc.state = DECODE_STATE_DECODE;
+				decoder_initialized(decoder);
 			}
 			comments = ov_comment(&vf, -1)->user_comments;
 			putOggCommentsIntoOutputBuffer(inStream->metaName,

@@ -16,7 +16,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "../inputPlugin.h"
+#include "../decoder_api.h"
 
 #ifdef HAVE_MAD
 
@@ -1015,8 +1015,7 @@ static void initAudioFormatFromMp3DecodeData(mp3DecodeData * data,
 	af->channels = MAD_NCHANNELS(&(data->frame).header);
 }
 
-static int mp3_decode(mpd_unused struct decoder * decoder,
-		      InputStream * inStream)
+static int mp3_decode(struct decoder * decoder, InputStream * inStream)
 {
 	mp3DecodeData data;
 	MpdTag *tag = NULL;
@@ -1062,7 +1061,7 @@ static int mp3_decode(mpd_unused struct decoder * decoder,
 		freeMpdTag(tag);
 	}
 
-	dc.state = DECODE_STATE_DECODE;
+	decoder_initialized(decoder);
 
 	while (mp3Read(&data, &replayGainInfo) != DECODE_BREAK) ;
 	/* send last little bit if not DECODE_COMMAND_STOP */

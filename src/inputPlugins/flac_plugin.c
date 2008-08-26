@@ -415,7 +415,7 @@ static int flac_decode_internal(struct decoder * decoder,
 		}
 	}
 
-	dc.state = DECODE_STATE_DECODE;
+	decoder_initialized(decoder);
 
 	while (1) {
 		if (!flac_process_single(flacDec))

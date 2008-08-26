@@ -16,7 +16,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "../inputPlugin.h"
+#include "../decoder_api.h"
 
 #ifdef HAVE_MIKMOD
 
@@ -159,7 +159,7 @@ static void mod_close(mod_Data * data)
 	free(data);
 }
 
-static int mod_decode(mpd_unused struct decoder * decoder, char *path)
+static int mod_decode(struct decoder * decoder, char *path)
 {
 	mod_Data *data;
 	float total_time = 0.0;
@@ -185,7 +185,7 @@ static int mod_decode(mpd_unused struct decoder * decoder, char *path)
 	    1.0 / ((dc.audioFormat.bits * dc.audioFormat.channels / 8.0) *
 		   (float)dc.audioFormat.sampleRate);
 
-	dc.state = DECODE_STATE_DECODE;
+	decoder_initialized(decoder);
 	while (1) {
 		if (dc.command == DECODE_COMMAND_SEEK) {
 			dc.seekError = 1;

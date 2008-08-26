@@ -346,7 +346,7 @@ static int oggflac_decode(struct decoder * mpd_decoder, InputStream * inStream)
 		goto fail;
 	}
 
-	dc.state = DECODE_STATE_DECODE;
+	decoder_initialized(mpd_decoder);
 
 	while (1) {
 		OggFLAC__seekable_stream_decoder_process_single(decoder);

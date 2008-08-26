@@ -16,7 +16,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "../inputPlugin.h"
+#include "../decoder_api.h"
 
 #ifdef HAVE_FAAD
 
@@ -78,8 +78,7 @@ static uint32_t mp4_inputStreamSeekCallback(void *inStream, uint64_t position)
 	return seekInputStream((InputStream *) inStream, position, SEEK_SET);
 }
 
-static int mp4_decode(mpd_unused struct decoder * mpd_decoder,
-		      InputStream * inStream)
+static int mp4_decode(struct decoder * mpd_decoder, InputStream * inStream)
 {
 	mp4ff_t *mp4fh;
 	mp4ff_callback_t *mp4cb;
@@ -250,7 +249,7 @@ static int mp4_decode(mpd_unused struct decoder * mpd_decoder,
 			dc.audioFormat.channels = frameInfo.channels;
 			getOutputAudioFormat(&(dc.audioFormat),
 					     &(ob.audioFormat));
-			dc.state = DECODE_STATE_DECODE;
+			decoder_initialized(mpd_decoder);
 		}
 
 		if (channels * (unsigned long)(dur + offset) > frameInfo.samples) {

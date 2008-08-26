@@ -16,7 +16,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "../inputPlugin.h"
+#include "../decoder_api.h"
 
 #ifdef HAVE_MPCDEC
 
@@ -106,8 +106,7 @@ static inline mpd_sint16 convertSample(MPC_SAMPLE_FORMAT sample)
 	return val;
 }
 
-static int mpc_decode(mpd_unused struct decoder * mpd_decoder,
-		      InputStream * inStream)
+static int mpc_decode(struct decoder * mpd_decoder, InputStream * inStream)
 {
 	mpc_decoder decoder;
 	mpc_reader reader;
@@ -174,7 +173,7 @@ static int mpc_decode(mpd_unused struct decoder * mpd_decoder,
 	replayGainInfo->trackGain = info.gain_title * 0.01;
 	replayGainInfo->trackPeak = info.peak_title / 32767.0;
 
-	dc.state = DECODE_STATE_DECODE;
+	decoder_initialized(mpd_decoder);
 
 	while (!eof) {
 		if (dc.command == DECODE_COMMAND_SEEK) {

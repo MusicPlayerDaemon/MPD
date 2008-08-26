@@ -18,7 +18,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "../inputPlugin.h"
+#include "../decoder_api.h"
 
 #ifdef HAVE_AUDIOFILE
 
@@ -40,7 +40,7 @@ static int getAudiofileTotalTime(char *file)
 	return total_time;
 }
 
-static int audiofile_decode(mpd_unused struct decoder * decoder, char *path)
+static int audiofile_decode(struct decoder * decoder, char *path)
 {
 	int fs, frame_count;
 	AFfilehandle af_fp;
@@ -85,7 +85,7 @@ static int audiofile_decode(mpd_unused struct decoder * decoder, char *path)
 
 	fs = (int)afGetVirtualFrameSize(af_fp, AF_DEFAULT_TRACK, 1);
 
-	dc.state = DECODE_STATE_DECODE;
+	decoder_initialized(decoder);
 	{
 		int ret, eof = 0, current = 0;
 		char chunk[CHUNK_SIZE];

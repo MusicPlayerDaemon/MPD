@@ -104,6 +104,7 @@ mpd_SOURCES = \
 	conf.c \
 	dbUtils.c \
 	decode.c \
+	decoder_api.c \
 	directory.c \
 	inputPlugin.c \
 	inputStream.c \

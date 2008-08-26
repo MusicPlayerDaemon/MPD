@@ -17,27 +17,15 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef DECODER_API_H
-#define DECODER_API_H
+#include "decoder_api.h"
 
-/*
- * This is the public API which is used by decoder plugins to
- * communicate with the mpd core.
- *
- */
+#include "playerData.h"
+#include "gcc.h"
 
-#include "inputPlugin.h"
+void decoder_initialized(mpd_unused struct decoder * decoder)
+{
+	assert(dc.state == DECODE_STATE_START);
 
-/**
- * Opaque handle which the decoder plugin passes to the functions in
- * this header.
- */
-struct decoder;
-
-/**
- * Notify the player thread that it has finished initialization and
- * that it has read the song's meta data.
- */
-void decoder_initialized(struct decoder * decoder);
-
-#endif
+	dc.state = DECODE_STATE_DECODE;
+	notify_signal(&pc.notify);
+}
