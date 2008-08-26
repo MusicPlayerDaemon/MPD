@@ -196,7 +196,7 @@ static void initAacBuffer(InputStream * inStream, AacBuffer * b, float *length)
 	fillAacBuffer(b);
 
 	tagsize = 0;
-	if (!memcmp(b->buffer, "ID3", 3)) {
+	if (b->bytesIntoBuffer >= 10 && !memcmp(b->buffer, "ID3", 3)) {
 		tagsize = (b->buffer[6] << 21) | (b->buffer[7] << 14) |
 		    (b->buffer[8] << 7) | (b->buffer[9] << 0);
 
@@ -208,7 +208,8 @@ static void initAacBuffer(InputStream * inStream, AacBuffer * b, float *length)
 	if (length == NULL)
 		return;
 
-	if ((b->buffer[0] == 0xFF) && ((b->buffer[1] & 0xF6) == 0xF0)) {
+	if (b->bytesIntoBuffer >= 2 &&
+	    (b->buffer[0] == 0xFF) && ((b->buffer[1] & 0xF6) == 0xF0)) {
 		adtsParse(b, length);
 		seekInputStream(b->inStream, tagsize, SEEK_SET);
 
