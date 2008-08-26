@@ -854,8 +854,7 @@ static int mp3Read(mp3DecodeData * data, ReplayGainInfo ** replayGainInfo)
 			data->outputPtr = data->outputBuffer;
 			ob_clear();
 			data->muteFrame = 0;
-			dc.command = DECODE_COMMAND_NONE;
-			decoder_wakeup_player();
+			dc_command_finished();
 		}
 		break;
 	default:
@@ -968,14 +967,12 @@ static int mp3Read(mp3DecodeData * data, ReplayGainInfo ** replayGainInfo)
 				} else
 					dc.seekError = 1;
 				data->muteFrame = 0;
-				dc.command = DECODE_COMMAND_NONE;
-				decoder_wakeup_player();
+				dc_command_finished();
 			}
 		} else if (dc.command == DECODE_COMMAND_SEEK &&
 			   !data->inStream->seekable) {
-			dc.command = DECODE_COMMAND_NONE;
 			dc.seekError = 1;
-			decoder_wakeup_player();
+			dc_command_finished();
 		}
 	}
 
@@ -1084,8 +1081,7 @@ static int mp3_decode(InputStream * inStream)
 	if (dc.command == DECODE_COMMAND_SEEK &&
 	    data.muteFrame == MUTEFRAME_SEEK) {
 		ob_clear();
-		dc.command = DECODE_COMMAND_NONE;
-		decoder_wakeup_player();
+		dc_command_finished();
 	}
 
 	ob_flush();

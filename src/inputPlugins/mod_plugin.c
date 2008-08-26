@@ -189,8 +189,7 @@ static int mod_decode(char *path)
 	while (1) {
 		if (dc.command == DECODE_COMMAND_SEEK) {
 			dc.seekError = 1;
-			dc.command = DECODE_COMMAND_NONE;
-			decoder_wakeup_player();
+			dc_command_finished();
 		}
 
 		if (dc.command == DECODE_COMMAND_STOP)

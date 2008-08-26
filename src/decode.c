@@ -70,6 +70,14 @@ static void dc_command(enum decoder_command cmd)
 	dc_command_wait();
 }
 
+void dc_command_finished(void)
+{
+	assert(dc.command != DECODE_COMMAND_NONE);
+
+	dc.command = DECODE_COMMAND_NONE;
+	decoder_wakeup_player();
+}
+
 static void stopDecode(void)
 {
 	if (dc.command == DECODE_COMMAND_START ||
@@ -346,8 +354,7 @@ static void * decoder_task(mpd_unused void *arg)
 		    dc.command == DECODE_COMMAND_SEEK) {
 			decodeStart();
 		} else if (dc.command == DECODE_COMMAND_STOP) {
-			dc.command = DECODE_COMMAND_NONE;
-			decoder_wakeup_player();
+			dc_command_finished();
 		} else {
 			decoder_sleep();
 		}

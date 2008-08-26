@@ -431,8 +431,7 @@ static int flac_decode_internal(InputStream * inStream, int is_ogg)
 				data.position = 0;
 			} else
 				dc.seekError = 1;
-			dc.command = DECODE_COMMAND_NONE;
-			decoder_wakeup_player();
+			dc_command_finished();
 		}
 	}
 	if (dc.command != DECODE_COMMAND_STOP) {

@@ -363,8 +363,7 @@ static int oggflac_decode(InputStream * inStream)
 				data.position = 0;
 			} else
 				dc.seekError = 1;
-			dc.command = DECODE_COMMAND_NONE;
-			decoder_wakeup_player();
+			dc_command_finished(dc);
 		}
 	}
 

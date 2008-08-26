@@ -396,8 +396,7 @@ static int aac_decode(char *path)
 			bitRate, NULL);
 		if (dc.command == DECODE_COMMAND_SEEK) {
 			dc.seekError = 1;
-			dc.command = DECODE_COMMAND_NONE;
-			decoder_wakeup_player();
+			dc_command_finished();
 		} else if (dc.command == DECODE_COMMAND_STOP) {
 			eof = 1;
 			break;
@@ -415,8 +414,7 @@ static int aac_decode(char *path)
 
 	if (dc.command == DECODE_COMMAND_SEEK) {
 		dc.seekError = 1;
-		dc.command = DECODE_COMMAND_NONE;
-		decoder_wakeup_player();
+		dc_command_finished();
 	}
 
 	return 0;

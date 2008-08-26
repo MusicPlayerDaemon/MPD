@@ -179,8 +179,7 @@ static int tailChunk(InputStream * inStream,
 					return OUTPUT_BUFFER_DC_SEEK;
 				} else {
 					dc.seekError = 1;
-					dc.command = DECODE_COMMAND_NONE;
-					decoder_wakeup_player();
+					dc_command_finished();
 				}
 			}
 			if (!inStream || bufferInputStream(inStream) <= 0) {

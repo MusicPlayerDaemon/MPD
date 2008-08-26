@@ -184,8 +184,7 @@ static int mpc_decode(InputStream * inStream)
 				chunkpos = 0;
 			} else
 				dc.seekError = 1;
-			dc.command = DECODE_COMMAND_NONE;
-			decoder_wakeup_player();
+			dc_command_finished();
 		}
 
 		vbrUpdateAcc = 0;

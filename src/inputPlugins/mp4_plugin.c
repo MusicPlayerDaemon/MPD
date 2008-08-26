@@ -213,8 +213,7 @@ static int mp4_decode(InputStream * inStream)
 			seekPositionFound = 0;
 			ob_clear();
 			seeking = 0;
-			dc.command = DECODE_COMMAND_NONE;
-			decoder_wakeup_player();
+			dc_command_finished();
 		}
 
 		if (seeking)
@@ -290,8 +289,7 @@ static int mp4_decode(InputStream * inStream)
 
 	if (dc.command == DECODE_COMMAND_SEEK && seeking) {
 		ob_clear();
-		dc.command = DECODE_COMMAND_NONE;
-		decoder_wakeup_player();
+		dc_command_finished();
 	}
 	ob_flush();
 
