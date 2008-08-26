@@ -20,7 +20,6 @@
 
 #ifdef HAVE_MAD
 
-#include "../pcm_utils.h"
 #include <mad.h>
 
 #ifdef HAVE_ID3TAG
@@ -29,11 +28,7 @@
 
 #include "../log.h"
 #include "../utils.h"
-#include "../replayGain.h"
-#include "../tag.h"
 #include "../conf.h"
-
-#include "../os_compat.h"
 
 #define FRAMES_CUSHION    2000
 

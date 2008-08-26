@@ -21,7 +21,6 @@
 
 #include "pcm_utils.h"
 #include "mpd_types.h"
-#include "decode.h"
 #include "inputStream.h"
 #include "replayGain.h"
 

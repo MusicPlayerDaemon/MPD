@@ -21,13 +21,7 @@
 #ifdef HAVE_FAAD
 
 #include "../utils.h"
-#include "../audio.h"
 #include "../log.h"
-#include "../pcm_utils.h"
-#include "../inputStream.h"
-#include "../outputBuffer.h"
-#include "../decode.h"
-#include "../os_compat.h"
 
 #include "../mp4ff/mp4ff.h"
 

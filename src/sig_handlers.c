@@ -23,8 +23,6 @@
 #include "command.h"
 #include "signal_check.h"
 #include "log.h"
-#include "player.h"
-#include "decode.h"
 
 int handlePendingSignals(void)
 {

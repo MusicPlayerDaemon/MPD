@@ -27,12 +27,6 @@
 
 #include "../utils.h"
 #include "../log.h"
-#include "../pcm_utils.h"
-#include "../inputStream.h"
-#include "../outputBuffer.h"
-#include "../replayGain.h"
-#include "../audio.h"
-#include "../os_compat.h"
 
 static void oggflac_cleanup(FlacData * data,
 			    OggFLAC__SeekableStreamDecoder * decoder)

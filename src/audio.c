@@ -20,7 +20,6 @@
 #include "audioOutput.h"
 #include "log.h"
 #include "command.h"
-#include "playerData.h"
 #include "path.h"
 #include "ack.h"
 #include "myfprintf.h"

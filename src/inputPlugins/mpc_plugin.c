@@ -21,13 +21,7 @@
 #ifdef HAVE_MPCDEC
 
 #include "../utils.h"
-#include "../audio.h"
 #include "../log.h"
-#include "../pcm_utils.h"
-#include "../inputStream.h"
-#include "../outputBuffer.h"
-#include "../replayGain.h"
-#include "../os_compat.h"
 
 #include <mpcdec/mpcdec.h>
 

@@ -28,7 +28,6 @@
   (defined(FLAC_API_VERSION_CURRENT) && FLAC_API_VERSION_CURRENT > 7)
 
 #include "../utils.h"
-#include "../os_compat.h"
 
 ogg_stream_type ogg_stream_type_detect(InputStream * inStream)
 {

@@ -22,12 +22,6 @@
 
 #include "../utils.h"
 #include "../log.h"
-#include "../pcm_utils.h"
-#include "../inputStream.h"
-#include "../outputBuffer.h"
-#include "../replayGain.h"
-#include "../audio.h"
-#include "../os_compat.h"
 
 /* this code was based on flac123, from flac-tools */
 

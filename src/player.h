@@ -19,7 +19,7 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
-#include "decode.h"
+#include "notify.h"
 #include "mpd_types.h"
 #include "song.h"
 #include "os_compat.h"

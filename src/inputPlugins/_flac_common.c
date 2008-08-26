@@ -26,12 +26,6 @@
 #include "_flac_common.h"
 
 #include "../log.h"
-#include "../tag.h"
-#include "../inputStream.h"
-#include "../outputBuffer.h"
-#include "../decode.h"
-#include "../replayGain.h"
-#include "../os_compat.h"
 
 #include <FLAC/format.h>
 #include <FLAC/metadata.h>

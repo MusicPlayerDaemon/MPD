@@ -23,11 +23,7 @@
 #define AAC_MAX_CHANNELS	6
 
 #include "../utils.h"
-#include "../audio.h"
 #include "../log.h"
-#include "../inputStream.h"
-#include "../outputBuffer.h"
-#include "../os_compat.h"
 
 #include <faad.h>
 

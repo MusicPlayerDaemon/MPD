@@ -26,10 +26,6 @@
 
 #if defined(HAVE_FLAC) || defined(HAVE_OGGFLAC)
 
-#include "../tag.h"
-#include "../inputStream.h"
-#include "../outputBuffer.h"
-#include "../decode.h"
 #include <FLAC/export.h>
 #if !defined(FLAC_API_VERSION_CURRENT) || FLAC_API_VERSION_CURRENT <= 7
 #  include <FLAC/seekable_stream_decoder.h>
