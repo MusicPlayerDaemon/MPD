@@ -148,6 +148,9 @@ int playerPause(mpd_unused int fd)
 int playerSetPause(int fd, int pause_flag)
 {
 	switch (pc.state) {
+	case PLAYER_STATE_STOP:
+		break;
+
 	case PLAYER_STATE_PLAY:
 		if (pause_flag)
 			playerPause(fd);
@@ -176,7 +179,7 @@ int getPlayerTotalTime(void)
 	return (int)(pc.totalTime + 0.5);
 }
 
-int getPlayerState(void)
+enum player_state getPlayerState(void)
 {
 	return pc.state;
 }

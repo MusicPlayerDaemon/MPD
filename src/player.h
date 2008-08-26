@@ -24,9 +24,11 @@
 #include "song.h"
 #include "os_compat.h"
 
-#define PLAYER_STATE_STOP	0
-#define PLAYER_STATE_PAUSE	1
-#define PLAYER_STATE_PLAY	2
+enum player_state {
+	PLAYER_STATE_STOP = 0,
+	PLAYER_STATE_PAUSE,
+	PLAYER_STATE_PLAY
+};
 
 enum player_command {
 	PLAYER_COMMAND_NONE = 0,
@@ -62,7 +64,7 @@ enum player_command {
 typedef struct _PlayerControl {
 	Notify notify;
 	volatile enum player_command command;
-	volatile mpd_sint8 state;
+	volatile enum player_state state;
 	volatile mpd_sint8 error;
 	volatile mpd_uint16 bitRate;
 	volatile mpd_sint8 bits;
@@ -99,7 +101,7 @@ int getPlayerElapsedTime(void);
 
 unsigned long getPlayerBitRate(void);
 
-int getPlayerState(void);
+enum player_state getPlayerState(void);
 
 void clearPlayerError(void);
 
