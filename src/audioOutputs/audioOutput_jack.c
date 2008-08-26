@@ -337,12 +337,12 @@ static int jack_openDevice(AudioOutput *audioOutput)
 		DEBUG("connect!\n");
 		jd = newJackData();
 		audioOutput->data = jd;
+	}
 
-		if (connect_jack(audioOutput) < 0) {
-			freeJackData(audioOutput);
-			audioOutput->open = 0;
-			return -1;
-		}
+	if (jd->client == NULL && connect_jack(audioOutput) < 0) {
+		freeJackData(audioOutput);
+		audioOutput->open = 0;
+		return -1;
 	}
 
 	set_audioformat(audioOutput);
