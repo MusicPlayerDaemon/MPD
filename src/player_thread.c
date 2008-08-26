@@ -379,7 +379,7 @@ static void decodeParent(void)
 
 			do_xfade = XFADE_UNKNOWN;
 
-			/* wait for the decoder to work on the new song */
+			/* wait for a signal from the playlist */
 			if (pc.queueState == PLAYER_QUEUE_DECODE ||
 			    pc.queueLockState == PLAYER_QUEUE_LOCKED) {
 				notify_wait(&pc.notify);
