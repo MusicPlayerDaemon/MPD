@@ -44,7 +44,7 @@ enum decoder_command {
 #define DECODE_ERROR_UNKTYPE	10
 #define DECODE_ERROR_FILE	20
 
-typedef struct _DecoderControl {
+struct decoder_control {
 	Notify notify;
 
 	volatile enum decoder_state state;
@@ -57,29 +57,31 @@ typedef struct _DecoderControl {
 	Song *current_song;
 	Song *volatile next_song;
 	volatile float totalTime;
-} DecoderControl;
+};
+
+extern struct decoder_control dc;
 
 void decoderInit(void);
 
-static inline int decoder_is_idle(DecoderControl *dc)
+static inline int decoder_is_idle(void)
 {
-	return dc->state == DECODE_STATE_STOP &&
-		dc->command != DECODE_COMMAND_START;
+	return dc.state == DECODE_STATE_STOP &&
+		dc.command != DECODE_COMMAND_START;
 }
 
-static inline int decoder_is_starting(DecoderControl *dc)
+static inline int decoder_is_starting(void)
 {
-	return dc->command == DECODE_COMMAND_START ||
-		dc->state == DECODE_STATE_START;
+	return dc.command == DECODE_COMMAND_START ||
+		dc.state == DECODE_STATE_START;
 }
 
-static inline Song *decoder_current_song(DecoderControl *dc)
+static inline Song *decoder_current_song(void)
 {
-	if (dc->state == DECODE_STATE_STOP ||
-	    dc->error != DECODE_ERROR_NOERROR)
+	if (dc.state == DECODE_STATE_STOP ||
+	    dc.error != DECODE_ERROR_NOERROR)
 		return NULL;
 
-	return dc->current_song;
+	return dc.current_song;
 }
 
 void dc_command_wait(Notify *notify);

@@ -30,6 +30,7 @@
 #include "replayGain.h"
 #include "tag.h"
 #include "playerData.h"
+#include "decode.h"
 
 
 /* valid values for streamTypes in the InputPlugin struct: */

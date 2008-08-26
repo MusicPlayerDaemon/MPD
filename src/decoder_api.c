@@ -19,6 +19,7 @@
 
 #include "decoder_internal.h"
 #include "decoder_list.h"
+#include "decode.h"
 #include "audio.h"
 
 #include "utils.h"

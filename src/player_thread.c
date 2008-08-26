@@ -18,6 +18,7 @@
 
 #include "player_thread.h"
 #include "playerData.h"
+#include "decode.h"
 #include "audio.h"
 #include "pcm_utils.h"
 #include "path.h"
@@ -65,7 +66,7 @@ static int decodeSeek(int *decodeWaitedOn, int *next)
 	int ret = -1;
 	double where;
 
-	if (decoder_current_song(&dc) != pc.next_song) {
+	if (decoder_current_song() != pc.next_song) {
 		dc_stop(&pc.notify);
 		*next = -1;
 		ob_clear();
@@ -224,7 +225,7 @@ static void do_play(void)
 				pc.error = PLAYER_ERROR_FILE;
 				break;
 			}
-			else if (!decoder_is_starting(&dc)) {
+			else if (!decoder_is_starting()) {
 				/* the decoder is ready and ok */
 				decodeWaitedOn = 0;
 				if(openAudioDevice(&(ob.audioFormat))<0) {
@@ -256,7 +257,7 @@ static void do_play(void)
 			}
 		}
 
-		if (decoder_is_idle(&dc) &&
+		if (decoder_is_idle() &&
 		    pc.queueState == PLAYER_QUEUE_FULL &&
 		    pc.queueLockState == PLAYER_QUEUE_UNLOCKED) {
 			/* the decoder has finished the current song;
@@ -267,7 +268,7 @@ static void do_play(void)
 			wakeup_main_task();
 		}
 		if (next >= 0 && do_xfade == XFADE_UNKNOWN &&
-		    !decoder_is_starting(&dc)) {
+		    !decoder_is_starting()) {
 			/* enable cross fading in this song?  if yes,
 			   calculate how many chunks will be required
 			   for it */
@@ -313,7 +314,7 @@ static void do_play(void)
 				} else {
 					/* there are not enough
 					   decoded chunks yet */
-					if (decoder_is_idle(&dc)) {
+					if (decoder_is_idle()) {
 						/* the decoder isn't
 						   running, abort
 						   cross fading */
@@ -361,7 +362,7 @@ static void do_play(void)
 
 			pc.queueState = PLAYER_QUEUE_EMPTY;
 			wakeup_main_task();
-		} else if (decoder_is_idle(&dc)) {
+		} else if (decoder_is_idle()) {
 			break;
 		} else {
 			/*DEBUG("waiting for decoded audio, play silence\n");*/

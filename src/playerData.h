@@ -20,12 +20,10 @@
 #define PLAYER_DATA_H
 
 #include "player.h"
-#include "decode.h"
 #include "outputBuffer.h"
 
 extern unsigned int buffered_before_play;
 extern PlayerControl pc;
-extern DecoderControl dc;
 extern OutputBuffer ob;
 
 void initPlayerData(void);

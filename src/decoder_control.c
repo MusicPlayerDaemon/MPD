@@ -17,7 +17,8 @@
  */
 
 #include "decode.h"
-#include "playerData.h"
+
+struct decoder_control dc;
 
 void dc_command_wait(Notify *notify)
 {
