@@ -88,10 +88,10 @@ static int audiofile_decode(struct decoder * decoder, char *path)
 	decoder_initialized(decoder, &audio_format, total_time);
 
 	{
-		int ret, eof = 0, current = 0;
+		int ret, current = 0;
 		char chunk[CHUNK_SIZE];
 
-		while (!eof) {
+		do {
 			if (dc.command == DECODE_COMMAND_SEEK) {
 				decoder_clear(decoder);
 				current = dc.seekWhere *
@@ -104,20 +104,16 @@ static int audiofile_decode(struct decoder * decoder, char *path)
 			    afReadFrames(af_fp, AF_DEFAULT_TRACK, chunk,
 					 CHUNK_SIZE / fs);
 			if (ret <= 0)
-				eof = 1;
-			else {
-				current += ret;
-				decoder_data(decoder, NULL,
-					     1,
-					     chunk, ret * fs,
-					     (float)current /
-					     (float)audio_format.
-					     sampleRate, bitRate,
-					     NULL);
-				if (dc.command == DECODE_COMMAND_STOP)
-					break;
-			}
-		}
+
+			current += ret;
+			decoder_data(decoder, NULL,
+				     1,
+				     chunk, ret * fs,
+				     (float)current /
+				     (float)audio_format.
+				     sampleRate, bitRate,
+				     NULL);
+		} while (dc.command != DECODE_COMMAND_STOP);
 
 		decoder_flush(decoder);
 	}
