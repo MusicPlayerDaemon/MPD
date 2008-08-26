@@ -18,6 +18,7 @@
  */
 
 #include "decoder_api.h"
+#include "audio.h"
 
 #include "utils.h"
 #include "normalize.h"

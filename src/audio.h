@@ -19,22 +19,11 @@
 #ifndef AUDIO_H
 #define AUDIO_H
 
-#include "mpd_types.h"
 #include "tag.h"
 #include "os_compat.h"
+#include "audio_format.h"
 
 #define AUDIO_AO_DRIVER_DEFAULT	"default"
-
-typedef struct _AudioFormat {
-	volatile mpd_sint8 channels;
-	volatile mpd_uint32 sampleRate;
-	volatile mpd_sint8 bits;
-} AudioFormat;
-
-static inline double audioFormatSizeToTime(const AudioFormat * af)
-{
-	return 8.0 / af->bits / af->channels / af->sampleRate;
-}
 
 void copyAudioFormat(AudioFormat * dest, const AudioFormat * src);
 

@@ -32,6 +32,7 @@
 #include "storedPlaylist.h"
 #include "sllist.h"
 #include "ack.h"
+#include "audio.h"
 #include "os_compat.h"
 
 #define COMMAND_PLAY           	"play"

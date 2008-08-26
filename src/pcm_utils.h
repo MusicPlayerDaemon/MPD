@@ -21,7 +21,7 @@
 
 #include "../config.h"
 
-#include "audio.h"
+#include "audio_format.h"
 #include "os_compat.h"
 
 #ifdef HAVE_LIBSAMPLERATE

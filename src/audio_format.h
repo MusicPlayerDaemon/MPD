@@ -1,5 +1,5 @@
 /* the Music Player Daemon (MPD)
- * Copyright (C) 2007 by Warren Dukes (warren.dukes@gmail.com)
+ * Copyright (C) 2003-2007 by Warren Dukes (warren.dukes@gmail.com)
  * This project's homepage is: http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -16,28 +16,20 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef MPD_TIMER_H
-#define MPD_TIMER_H
+#ifndef AUDIO_FORMAT_H
+#define AUDIO_FORMAT_H
 
-#include "audio_format.h"
-#include "os_compat.h"
+#include "mpd_types.h"
 
-typedef struct _Timer {
-	uint64_t time;
-	int started;
-	int rate;
-} Timer;
+typedef struct _AudioFormat {
+	volatile mpd_sint8 channels;
+	volatile mpd_uint32 sampleRate;
+	volatile mpd_sint8 bits;
+} AudioFormat;
 
-Timer *timer_new(AudioFormat *af);
-
-void timer_free(Timer *timer);
-
-void timer_start(Timer *timer);
-
-void timer_reset(Timer *timer);
-
-void timer_add(Timer *timer, int size);
-
-void timer_sync(Timer *timer);
+static inline double audioFormatSizeToTime(const AudioFormat * af)
+{
+	return 8.0 / af->bits / af->channels / af->sampleRate;
+}
 
 #endif

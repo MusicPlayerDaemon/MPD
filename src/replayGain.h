@@ -20,7 +20,7 @@
 #ifndef REPLAYGAIN_H
 #define REPLAYGAIN_H
 
-#include "audio.h"
+#include "audio_format.h"
 
 #define REPLAYGAIN_OFF		0
 #define REPLAYGAIN_TRACK	1

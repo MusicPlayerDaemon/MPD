@@ -24,6 +24,7 @@
 #include "ack.h"
 #include "os_compat.h"
 #include "main_notify.h"
+#include "audio.h"
 
 static void playerCloseAudio(void);
 

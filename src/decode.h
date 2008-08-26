@@ -21,7 +21,7 @@
 
 #include "song.h"
 
-#include "audio.h"
+#include "audio_format.h"
 #include "notify.h"
 
 #define DECODE_TYPE_FILE	0

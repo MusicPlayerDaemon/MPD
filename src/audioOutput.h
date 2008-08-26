@@ -23,7 +23,7 @@
 
 #include "pcm_utils.h"
 #include "mpd_types.h"
-#include "audio.h"
+#include "audio_format.h"
 #include "tag.h"
 #include "conf.h"
 #include "utils.h"

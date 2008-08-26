@@ -19,7 +19,7 @@
 #ifndef NORMALIZE_H
 #define NORMALIZE_H
 
-#include "audio.h"
+#include "audio_format.h"
 
 extern int normalizationEnabled;
 

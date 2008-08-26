@@ -26,6 +26,7 @@
 #include "log.h"
 #include "ls.h"
 #include "main_notify.h"
+#include "audio.h"
 
 enum xfade_state {
 	XFADE_DISABLED = -1,

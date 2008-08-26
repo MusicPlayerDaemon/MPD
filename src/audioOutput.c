@@ -22,6 +22,7 @@
 #include "log.h"
 #include "pcm_utils.h"
 #include "os_compat.h"
+#include "audio.h"
 
 #define AUDIO_OUTPUT_TYPE	"type"
 #define AUDIO_OUTPUT_NAME	"name"
