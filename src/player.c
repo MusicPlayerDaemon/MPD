@@ -17,66 +17,15 @@
  */
 
 #include "player.h"
+#include "player_thread.h"
 #include "path.h"
 #include "command.h"
-#include "log.h"
 #include "playerData.h"
 #include "ack.h"
 #include "os_compat.h"
 #include "main_notify.h"
-#include "audio.h"
 
 static void playerCloseAudio(void);
-
-static void * player_task(mpd_unused void *arg)
-{
-	notify_enter(&pc.notify);
-
-	while (1) {
-		switch (pc.command) {
-		case PLAYER_COMMAND_PLAY:
-			decode();
-			break;
-
-		case PLAYER_COMMAND_STOP:
-		case PLAYER_COMMAND_SEEK:
-		case PLAYER_COMMAND_PAUSE:
-			player_command_finished();
-			break;
-
-		case PLAYER_COMMAND_CLOSE_AUDIO:
-			closeAudioDevice();
-			player_command_finished();
-			break;
-
-		case PLAYER_COMMAND_LOCK_QUEUE:
-			pc.queueLockState = PLAYER_QUEUE_LOCKED;
-			player_command_finished();
-			break;
-
-		case PLAYER_COMMAND_UNLOCK_QUEUE:
-			pc.queueLockState = PLAYER_QUEUE_UNLOCKED;
-			player_command_finished();
-			break;
-
-		case PLAYER_COMMAND_NONE:
-			notify_wait(&pc.notify);
-			break;
-		}
-	}
-	return NULL;
-}
-
-void playerInit(void)
-{
-	pthread_attr_t attr;
-	pthread_t player_thread;
-
-	pthread_attr_init(&attr);
-	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
-	if (pthread_create(&player_thread, &attr, player_task, NULL))
-		FATAL("Failed to spawn player task: %s\n", strerror(errno));
-}
 
 int playerWait(int fd)
 {

@@ -20,7 +20,7 @@
 #include "command.h"
 #include "playlist.h"
 #include "directory.h"
-#include "player.h"
+#include "player_thread.h"
 #include "listen.h"
 #include "conf.h"
 #include "path.h"
@@ -432,7 +432,7 @@ int main(int argc, char *argv[])
 
 	openVolumeDevice();
 	decoderInit();
-	playerInit();
+	player_create();
 	read_state_file();
 
 	while (COMMAND_RETURN_KILL != doIOForInterfaces() &&

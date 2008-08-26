@@ -59,8 +59,6 @@ typedef struct _DecoderControl {
 	volatile float totalTime;
 } DecoderControl;
 
-void decode(void);
-
 void decoderInit(void);
 
 #endif
