@@ -505,7 +505,7 @@ static void queueNextSongInPlaylist(void)
 	}
 }
 
-static void syncPlaylistWithQueue(int queue)
+static void syncPlaylistWithQueue(void)
 {
 	switch (getPlayerQueueState()) {
 	case PLAYER_QUEUE_EMPTY:
@@ -515,11 +515,6 @@ static void syncPlaylistWithQueue(int queue)
 			playlist.current = playlist.queued;
 		}
 		playlist.queued = -1;
-		/* intentionally no break here */
-
-	case PLAYER_QUEUE_BLANK:
-		if (queue)
-			queueNextSongInPlaylist();
 		break;
 
 	case PLAYER_QUEUE_DECODE:
@@ -532,6 +527,7 @@ static void syncPlaylistWithQueue(int queue)
 	case PLAYER_QUEUE_FULL:
 	case PLAYER_QUEUE_PLAY:
 	case PLAYER_QUEUE_STOP:
+	case PLAYER_QUEUE_BLANK:
 		break;
 	}
 }
@@ -541,7 +537,7 @@ static void clearPlayerQueue(void)
 	if (getPlayerQueueState() == PLAYER_QUEUE_PLAY ||
 	    getPlayerQueueState() == PLAYER_QUEUE_FULL) {
 		playerQueueLock();
-		syncPlaylistWithQueue(0);
+		syncPlaylistWithQueue();
 	}
 
 	playlist.queued = -1;
@@ -937,8 +933,11 @@ void syncPlayerAndPlaylist(void)
 
 	if (getPlayerState() == PLAYER_STATE_STOP)
 		playPlaylistIfPlayerStopped();
-	else
-		syncPlaylistWithQueue(1);
+	else {
+		syncPlaylistWithQueue();
+		if (getPlayerQueueState() == PLAYER_QUEUE_BLANK)
+			queueNextSongInPlaylist();
+	}
 
 	syncCurrentPlayerDecodeMetadata();
 }
@@ -950,7 +949,7 @@ static void currentSongInPlaylist(void)
 
 	playlist_stopOnError = 0;
 
-	syncPlaylistWithQueue(0);
+	syncPlaylistWithQueue();
 
 	if (playlist.current >= 0 && playlist.current < playlist.length)
 		playPlaylistOrderNumber(playlist.current);
@@ -963,7 +962,7 @@ void nextSongInPlaylist(void)
 	if (playlist_state != PLAYLIST_STATE_PLAY)
 		return;
 
-	syncPlaylistWithQueue(0);
+	syncPlaylistWithQueue();
 
 	playlist_stopOnError = 0;
 
@@ -1223,7 +1222,7 @@ void previousSongInPlaylist(void)
 	if (playlist_state != PLAYLIST_STATE_PLAY)
 		return;
 
-	syncPlaylistWithQueue(0);
+	syncPlaylistWithQueue();
 
 	if (diff && getPlayerElapsedTime() > PLAYLIST_PREV_UNLESS_ELAPSED) {
 		playPlaylistOrderNumber(playlist.current);
