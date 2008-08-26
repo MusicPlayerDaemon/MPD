@@ -34,10 +34,12 @@
 
 #define READ_BUFFER_SIZE  40960
 
-#define DECODE_SKIP       -3
-#define DECODE_BREAK      -2
-#define DECODE_CONT       -1
-#define DECODE_OK          0
+enum mp3_action {
+	DECODE_SKIP = -3,
+	DECODE_BREAK = -2,
+	DECODE_CONT = -1,
+	DECODE_OK = 0
+};
 
 #define MUTEFRAME_SKIP     1
 #define MUTEFRAME_SEEK     2
@@ -364,8 +366,9 @@ fail:
 }
 #endif
 
-static int decodeNextFrameHeader(mp3DecodeData * data, MpdTag ** tag,
-				 ReplayGainInfo ** replayGainInfo)
+static enum mp3_action
+decodeNextFrameHeader(mp3DecodeData * data, MpdTag ** tag,
+		      ReplayGainInfo ** replayGainInfo)
 {
 	enum mad_layer layer;
 
@@ -427,7 +430,8 @@ static int decodeNextFrameHeader(mp3DecodeData * data, MpdTag ** tag,
 	return DECODE_OK;
 }
 
-static int decodeNextFrame(mp3DecodeData * data)
+static enum mp3_action
+decodeNextFrame(mp3DecodeData * data)
 {
 	if ((data->stream).buffer == NULL
 	    || (data->stream).error == MAD_ERROR_BUFLEN) {
@@ -821,7 +825,8 @@ static int openMp3FromInputStream(InputStream * inStream, mp3DecodeData * data,
 	return 0;
 }
 
-static int mp3Read(mp3DecodeData * data, ReplayGainInfo ** replayGainInfo)
+static enum mp3_action
+mp3Read(mp3DecodeData * data, ReplayGainInfo ** replayGainInfo)
 {
 	struct decoder *decoder = data->decoder;
 	unsigned int pcm_length, max_samples;
