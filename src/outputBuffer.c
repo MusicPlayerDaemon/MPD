@@ -150,10 +150,10 @@ ob_chunk * ob_get_chunk(const unsigned i)
 /**
  * Return the tail chunk which has room for additional data.
  *
- * @return the positive index of the new chunk; -1 if there is no
+ * @return the chunk which has room for more data; NULL if there is no
  * room.
  */
-static int tailChunk(float data_time, mpd_uint16 bitRate)
+static ob_chunk *tail_chunk(float data_time, mpd_uint16 bitRate)
 {
 	unsigned int next;
 	ob_chunk *chunk;
@@ -165,7 +165,7 @@ static int tailChunk(float data_time, mpd_uint16 bitRate)
 		next = successor(ob.end);
 		if (ob.begin == next)
 			/* no chunks available */
-			return -1;
+			return NULL;
 
 		output_buffer_expand(next);
 		chunk = ob_get_chunk(next);
@@ -180,7 +180,7 @@ static int tailChunk(float data_time, mpd_uint16 bitRate)
 		chunk->times = data_time;
 	}
 
-	return ob.end;
+	return chunk;
 }
 
 size_t ob_append(const void *data0, size_t datalen,
@@ -191,11 +191,9 @@ size_t ob_append(const void *data0, size_t datalen,
 	ob_chunk *chunk = NULL;
 
 	while (datalen) {
-		int chunk_index = tailChunk(data_time, bitRate);
-		if (chunk_index < 0)
+		chunk = tail_chunk(data_time, bitRate);
+		if (chunk == NULL)
 			return ret;
-
-		chunk = ob_get_chunk(chunk_index);
 
 		dataToSend = sizeof(chunk->data) - chunk->chunkSize;
 		if (dataToSend > datalen)
