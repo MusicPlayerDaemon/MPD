@@ -61,6 +61,27 @@ typedef struct _DecoderControl {
 
 void decoderInit(void);
 
+static inline int decoder_is_idle(DecoderControl *dc)
+{
+	return dc->state == DECODE_STATE_STOP &&
+		dc->command != DECODE_COMMAND_START;
+}
+
+static inline int decoder_is_starting(DecoderControl *dc)
+{
+	return dc->command == DECODE_COMMAND_START ||
+		dc->state == DECODE_STATE_START;
+}
+
+static inline Song *decoder_current_song(DecoderControl *dc)
+{
+	if (dc->state == DECODE_STATE_STOP ||
+	    dc->error != DECODE_ERROR_NOERROR)
+		return NULL;
+
+	return dc->current_song;
+}
+
 void dc_command_wait(Notify *notify);
 
 void dc_start(Notify *notify, Song *song);
