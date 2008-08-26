@@ -434,6 +434,69 @@ static unsigned int wavpack_trydecode(InputStream *is)
 	return 1;
 }
 
+static int wavpack_open_wvc(struct decoder *decoder,
+			    InputStream *is_wvc)
+{
+	char tmp[MPD_PATH_MAX];
+	const char *utf8url;
+	size_t len;
+	char *wvc_url = NULL;
+	int ret;
+
+	/*
+	 * As we use dc->utf8url, this function will be bad for
+	 * single files. utf8url is not absolute file path :/
+	 */
+	utf8url = decoder_get_url(decoder, tmp);
+	if (utf8url == NULL)
+		return 0;
+
+	len = strlen(utf8url);
+	if (!len)
+		return 0;
+
+	wvc_url = (char *)xmalloc(len + 2); /* +2: 'c' and EOS */
+	if (wvc_url == NULL)
+		return 0;
+
+	memcpy(wvc_url, utf8url, len);
+	wvc_url[len] = 'c';
+	wvc_url[len + 1] = '\0';
+
+	ret = openInputStream(is_wvc, wvc_url);
+	free(wvc_url);
+
+	if (ret)
+		return 0;
+
+	/*
+	 * And we try to buffer in order to get know
+	 * about a possible 404 error.
+	 */
+	for (;;) {
+		if (inputStreamAtEOF(is_wvc)) {
+			/*
+			 * EOF is reached even without
+			 * a single byte is read...
+			 * So, this is not good :/
+			 */
+			closeInputStream(is_wvc);
+			return 0;
+		}
+
+		if (bufferInputStream(is_wvc) >= 0)
+			return 1;
+
+		if (decoder_get_command(decoder) == DECODE_COMMAND_STOP) {
+			closeInputStream(is_wvc);
+			return 0;
+		}
+
+		/* Save some CPU */
+		my_usleep(1000);
+	}
+}
+
 /*
  * Decodes a stream.
  */
@@ -443,89 +506,15 @@ static int wavpack_streamdecode(struct decoder * decoder, InputStream *is)
 	WavpackContext *wpc;
 	InputStream is_wvc;
 	int open_flags = OPEN_2CH_MAX | OPEN_NORMALIZE /*| OPEN_STREAMING*/;
-	char *wvc_url = NULL;
-	int err;
 	InputStreamPlus isp, isp_wvc;
 	int canseek;
 
-	/* Try to find wvc */
-	do {
-		char tmp[MPD_PATH_MAX];
-		const char *utf8url;
-		size_t len;
-		err = 1;
-
-		/*
-		 * As we use dc.utf8url, this function will be bad for
-		 * single files. utf8url is not absolute file path :/
-		 */
-		utf8url = decoder_get_url(decoder, tmp);
-		if (utf8url == NULL) {
-			break;
-		}
-
-		len = strlen(utf8url);
-		if (!len) {
-			break;
-		}
-
-		wvc_url = (char *)xmalloc(len + 2); /* +2: 'c' and EOS */
-		if (wvc_url == NULL) {
-			break;
-		}
-
-		memcpy(wvc_url, utf8url, len);
-		wvc_url[len] = 'c';
-		wvc_url[len + 1] = '\0';
-
-		if (openInputStream(&is_wvc, wvc_url)) {
-			break;
-		}
-
-		/*
-		 * And we try to buffer in order to get know
-		 * about a possible 404 error.
-		 */
-		for (;;) {
-			if (inputStreamAtEOF(&is_wvc)) {
-				/*
-				 * EOF is reached even without
-				 * a single byte is read...
-				 * So, this is not good :/
-				 */
-				break;
-			}
-
-			if (bufferInputStream(&is_wvc) >= 0) {
-				err = 0;
-				break;
-			}
-
-			if (decoder_get_command(decoder) == DECODE_COMMAND_STOP) {
-				break;
-			}
-
-			/* Save some CPU */
-			my_usleep(1000);
-		}
-		if (err) {
-			closeInputStream(&is_wvc);
-			break;
-		}
-
+	if (wavpack_open_wvc(decoder, &is_wvc)) {
+		initInputStreamPlus(&isp_wvc, decoder, &is_wvc);
 		open_flags |= OPEN_WVC;
-
-	} while (0);
+	}
 
 	canseek = can_seek(&isp);
-	if (wvc_url != NULL) {
-		if (err) {
-			free(wvc_url);
-			wvc_url = NULL;
-		} else {
-			initInputStreamPlus(&isp_wvc, decoder, &is_wvc);
-		}
-	}
 
 	initInputStreamPlus(&isp, decoder, is);
 	wpc = WavpackOpenFileInputEx(&mpd_is_reader, &isp, &isp_wvc, error,
@@ -539,10 +528,8 @@ static int wavpack_streamdecode(struct decoder * decoder, InputStream *is)
 	wavpack_decode(decoder, wpc, canseek, NULL);
 
 	WavpackCloseFile(wpc);
-	if (wvc_url != NULL) {
+	if (open_flags & OPEN_WVC)
 		closeInputStream(&is_wvc);
-		free(wvc_url);
-	}
 	closeInputStream(is);
 
 	return 0;
