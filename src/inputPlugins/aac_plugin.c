@@ -39,43 +39,35 @@ typedef struct {
 
 static void fillAacBuffer(AacBuffer * b)
 {
-	if (b->bytesConsumed > 0) {
-		size_t bread;
+	size_t bread;
 
-		if (b->bytesIntoBuffer) {
-			memmove((void *)b->buffer, (void *)(b->buffer +
-							    b->bytesConsumed),
-				b->bytesIntoBuffer);
-		}
+	if (b->bytesConsumed == 0)
+		return;
 
-		if (!b->atEof) {
-			bread = readFromInputStream(b->inStream,
-						    (void *)(b->buffer +
-							     b->
-							     bytesIntoBuffer),
-						    1, b->bytesConsumed);
-			if (bread != b->bytesConsumed)
-				b->atEof = 1;
-			b->bytesIntoBuffer += bread;
-		}
-
-		b->bytesConsumed = 0;
-
-		if (b->bytesIntoBuffer > 3) {
-			if (memcmp(b->buffer, "TAG", 3) == 0)
-				b->bytesIntoBuffer = 0;
-		}
-		if (b->bytesIntoBuffer > 11) {
-			if (memcmp(b->buffer, "LYRICSBEGIN", 11) == 0) {
-				b->bytesIntoBuffer = 0;
-			}
-		}
-		if (b->bytesIntoBuffer > 8) {
-			if (memcmp(b->buffer, "APETAGEX", 8) == 0) {
-				b->bytesIntoBuffer = 0;
-			}
-		}
+	if (b->bytesIntoBuffer) {
+		memmove((void *)b->buffer, (void *)(b->buffer +
+						    b->bytesConsumed),
+			b->bytesIntoBuffer);
 	}
+
+	if (!b->atEof) {
+		bread = readFromInputStream(b->inStream,
+					    (void *)(b->buffer +
+						     b->
+						     bytesIntoBuffer),
+					    1, b->bytesConsumed);
+		if (bread != b->bytesConsumed)
+			b->atEof = 1;
+		b->bytesIntoBuffer += bread;
+	}
+
+	b->bytesConsumed = 0;
+
+	if ((b->bytesIntoBuffer > 3 && memcmp(b->buffer, "TAG", 3) == 0) ||
+	    (b->bytesIntoBuffer > 11 &&
+	     memcmp(b->buffer, "LYRICSBEGIN", 11) == 0) ||
+	    (b->bytesIntoBuffer > 8 && memcmp(b->buffer, "APETAGEX", 8) == 0))
+		b->bytesIntoBuffer = 0;
 }
 
 static void advanceAacBuffer(AacBuffer * b, size_t bytes)
