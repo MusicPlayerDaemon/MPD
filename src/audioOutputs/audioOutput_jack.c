@@ -257,7 +257,6 @@ static int connect_jack(AudioOutput *audioOutput)
 
 	if ( (jd->client = jack_client_new(name)) == NULL ) {
 		ERROR("jack server not running?\n");
-		freeJackData(audioOutput);
 		return -1;
 	}
 
@@ -269,7 +268,6 @@ static int connect_jack(AudioOutput *audioOutput)
 
 	if ( jack_activate(jd->client) ) {
 		ERROR("cannot activate client\n");
-		freeJackData(audioOutput);
 		return -1;
 	}
 
@@ -278,7 +276,6 @@ static int connect_jack(AudioOutput *audioOutput)
 					  JackPortIsOutput, 0);
 	if ( !jd->ports[0] ) {
 		ERROR("Cannot register left output port.\n");
-		freeJackData(audioOutput);
 		return -1;
 	}
 
@@ -287,7 +284,6 @@ static int connect_jack(AudioOutput *audioOutput)
 					  JackPortIsOutput, 0);
 	if ( !jd->ports[1] ) {
 		ERROR("Cannot register right output port.\n");
-		freeJackData(audioOutput);
 		return -1;
 	}
 
@@ -315,7 +311,6 @@ static int connect_jack(AudioOutput *audioOutput)
 				   output_ports[0])) != 0 ) {
 			ERROR("%s is not a valid Jack Client / Port\n",
 			      output_ports[0]);
-			freeJackData(audioOutput);
 			free(port_name);
 			return -1;
 		}
@@ -324,7 +319,6 @@ static int connect_jack(AudioOutput *audioOutput)
 				   output_ports[1])) != 0 ) {
 			ERROR("%s is not a valid Jack Client / Port\n",
 			      output_ports[1]);
-			freeJackData(audioOutput);
 			free(port_name);
 			return -1;
 		}
