@@ -983,19 +983,15 @@ static int mp3Read(mp3DecodeData * data, struct decoder *decoder,
 			decodeNextFrameHeader(data, NULL,
 					      replayGainInfo)) == DECODE_CONT
 		       && dc.command != DECODE_COMMAND_STOP) ;
-		if (ret == DECODE_BREAK ||
-		    dc.command == DECODE_COMMAND_STOP ||
-		    dc.command == DECODE_COMMAND_SEEK)
+		if (ret == DECODE_BREAK || dc.command != DECODE_COMMAND_NONE)
 			break;
 		else if (ret == DECODE_SKIP)
 			skip = 1;
 		if (!data->muteFrame) {
 			while ((ret = decodeNextFrame(data)) == DECODE_CONT &&
-			       dc.command != DECODE_COMMAND_STOP &&
-			       dc.command != DECODE_COMMAND_SEEK) ;
+			       dc.command == DECODE_COMMAND_NONE) ;
 			if (ret == DECODE_BREAK ||
-			    dc.command == DECODE_COMMAND_STOP ||
-			    dc.command == DECODE_COMMAND_SEEK)
+			    dc.command != DECODE_COMMAND_NONE)
 				break;
 		}
 		if (!skip && ret == DECODE_OK)
