@@ -333,7 +333,6 @@ static unsigned int oggflac_try_decode(InputStream * inStream)
 
 static int oggflac_decode(struct decoder * mpd_decoder, InputStream * inStream)
 {
-	DecoderControl *dc = mpd_decoder->dc;
 	OggFLAC__SeekableStreamDecoder *decoder = NULL;
 	FlacData data;
 	int ret = 0;
@@ -354,7 +353,7 @@ static int oggflac_decode(struct decoder * mpd_decoder, InputStream * inStream)
 			break;
 		}
 		if (decoder_get_command(mpd_decoder) == DECODE_COMMAND_SEEK) {
-			FLAC__uint64 sampleToSeek = dc->seekWhere *
+			FLAC__uint64 sampleToSeek = decoder_seek_where(mpd_decoder) *
 			    data.audio_format.sampleRate + 0.5;
 			if (OggFLAC__seekable_stream_decoder_seek_absolute
 			    (decoder, sampleToSeek)) {
@@ -362,9 +361,9 @@ static int oggflac_decode(struct decoder * mpd_decoder, InputStream * inStream)
 				data.time = ((float)sampleToSeek) /
 				    data.audio_format.sampleRate;
 				data.position = 0;
+				decoder_command_finished(mpd_decoder);
 			} else
-				dc.seekError = 1;
-			decoder_command_finished(mpd_decoder);
+				decoder_seek_error(mpd_decoder);
 		}
 	}
 

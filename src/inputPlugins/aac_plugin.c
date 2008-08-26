@@ -389,10 +389,9 @@ static int aac_decode(struct decoder * mpd_decoder, char *path)
 		decoder_data(mpd_decoder, NULL, 0, sampleBuffer,
 			     sampleBufferLen, file_time,
 			     bitRate, NULL);
-		if (decoder_get_command(decoder) == DECODE_COMMAND_SEEK) {
-			dc.seekError = 1;
-			decoder_command_finished(decoder);
-		} else if (decoder_get_command(decoder) == DECODE_COMMAND_STOP)
+		if (decoder_get_command(mpd_decoder) == DECODE_COMMAND_SEEK) {
+			decoder_seek_error(mpd_decoder);
+		} else if (decoder_get_command(mpd_decoder) == DECODE_COMMAND_STOP)
 			break;
 	}
 
@@ -405,9 +404,8 @@ static int aac_decode(struct decoder * mpd_decoder, char *path)
 	if (dc.state != DECODE_STATE_DECODE)
 		return -1;
 
-	if (decoder_get_command(decoder) == DECODE_COMMAND_SEEK) {
-		dc.seekError = 1;
-		decoder_command_finished(decoder);
+	if (decoder_get_command(mpd_decoder) == DECODE_COMMAND_SEEK) {
+		decoder_seek_error(mpd_decoder);
 	}
 
 	return 0;

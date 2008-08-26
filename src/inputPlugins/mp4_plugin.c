@@ -106,6 +106,7 @@ static int mp4_decode(struct decoder * mpd_decoder, InputStream * inStream)
 	long offset;
 	mpd_uint16 bitRate = 0;
 	int seeking = 0;
+	double seek_where = 0;
 
 	mp4cb = xmalloc(sizeof(mp4ff_callback_t));
 	mp4cb->read = mp4_inputStreamReadCallback;
@@ -178,13 +179,15 @@ static int mp4_decode(struct decoder * mpd_decoder, InputStream * inStream)
 	seekTable = xmalloc(sizeof(float) * numSamples);
 
 	for (sampleId = 0; sampleId < numSamples; sampleId++) {
-		if (decoder_get_command(mpd_decoder) == DECODE_COMMAND_SEEK)
+		if (decoder_get_command(mpd_decoder) == DECODE_COMMAND_SEEK) {
 			seeking = 1;
+			seek_where = decoder_seek_where(mpd_decoder);
+		}
 
 		if (seeking && seekTableEnd > 1 &&
-		    seekTable[seekTableEnd] >= dc.seekWhere) {
+		    seekTable[seekTableEnd] >= seek_where) {
 			int i = 2;
-			while (seekTable[i] < dc.seekWhere)
+			while (seekTable[i] < seek_where)
 				i++;
 			sampleId = i - 1;
 			file_time = seekTable[sampleId];
@@ -206,7 +209,7 @@ static int mp4_decode(struct decoder * mpd_decoder, InputStream * inStream)
 			dur -= offset;
 		file_time += ((float)dur) / scale;
 
-		if (seeking && file_time > dc.seekWhere)
+		if (seeking && file_time > seek_where)
 			seekPositionFound = 1;
 
 		if (seeking && seekPositionFound) {

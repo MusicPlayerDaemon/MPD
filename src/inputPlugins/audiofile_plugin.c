@@ -92,7 +92,7 @@ static int audiofile_decode(struct decoder * decoder, char *path)
 	do {
 		if (decoder_get_command(decoder) == DECODE_COMMAND_SEEK) {
 			decoder_clear(decoder);
-			current = dc.seekWhere *
+			current = decoder_seek_where(decoder) *
 				audio_format.sampleRate;
 			afSeekFrame(af_fp, AF_DEFAULT_TRACK, current);
 			decoder_command_finished(decoder);

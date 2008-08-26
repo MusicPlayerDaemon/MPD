@@ -112,6 +112,10 @@ enum decoder_command decoder_get_command(struct decoder * decoder);
  */
 void decoder_command_finished(struct decoder * decoder);
 
+double decoder_seek_where(struct decoder * decoder);
+
+void decoder_seek_error(struct decoder * decoder);
+
 /**
  * This function is called by the decoder plugin when it has
  * successfully decoded block of input data.

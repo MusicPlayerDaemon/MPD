@@ -58,6 +58,21 @@ void decoder_command_finished(mpd_unused struct decoder * decoder)
 	notify_signal(&pc.notify);
 }
 
+double decoder_seek_where(mpd_unused struct decoder * decoder)
+{
+	assert(dc.command == DECODE_COMMAND_SEEK);
+
+	return dc.seekWhere;
+}
+
+void decoder_seek_error(struct decoder * decoder)
+{
+	assert(dc.command == DECODE_COMMAND_SEEK);
+
+	dc.seekError = 1;
+	decoder_command_finished(decoder);
+}
+
 /**
  * All chunks are full of decoded data; wait for the player to free
  * one.
@@ -72,8 +87,7 @@ static int need_chunks(struct decoder *decoder, InputStream * inStream,
 		if (seekable) {
 			return OUTPUT_BUFFER_DC_SEEK;
 		} else {
-			dc.seekError = 1;
-			decoder_command_finished(decoder);
+			decoder_seek_error(decoder);
 		}
 	}
 

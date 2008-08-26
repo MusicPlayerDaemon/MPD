@@ -268,12 +268,13 @@ static int oggvorbis_decode(struct decoder * decoder, InputStream * inStream)
 
 	while (1) {
 		if (decoder_get_command(decoder) == DECODE_COMMAND_SEEK) {
-			if (0 == ov_time_seek_page(&vf, dc.seekWhere)) {
+			double seek_where = decoder_seek_where(decoder);
+			if (0 == ov_time_seek_page(&vf, seek_where)) {
 				decoder_clear(decoder);
 				chunkpos = 0;
+				decoder_command_finished(decoder);
 			} else
-				dc.seekError = 1;
-			decoder_command_finished(decoder);
+				decoder_seek_error(decoder);
 		}
 		ret = ov_read(&vf, chunk + chunkpos,
 			      OGG_CHUNK_SIZE - chunkpos,

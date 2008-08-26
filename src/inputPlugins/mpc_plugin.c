@@ -178,14 +178,15 @@ static int mpc_decode(struct decoder * mpd_decoder, InputStream * inStream)
 
 	while (!eof) {
 		if (decoder_get_command(mpd_decoder) == DECODE_COMMAND_SEEK) {
-			samplePos = dc.seekWhere * audio_format.sampleRate;
+			samplePos = decoder_seek_where(mpd_decoder) *
+				audio_format.sampleRate;
 			if (mpc_decoder_seek_sample(&decoder, samplePos)) {
 				decoder_clear(mpd_decoder);
 				s16 = (mpd_sint16 *) chunk;
 				chunkpos = 0;
+				decoder_command_finished(mpd_decoder);
 			} else
-				dc.seekError = 1;
-			decoder_command_finished(mpd_decoder);
+				decoder_seek_error(mpd_decoder);
 		}
 
 		vbrUpdateAcc = 0;

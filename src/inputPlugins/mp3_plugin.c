@@ -851,7 +851,7 @@ static int mp3Read(mp3DecodeData * data, struct decoder *decoder,
 		data->muteFrame = 0;
 		break;
 	case MUTEFRAME_SEEK:
-		if (dc.seekWhere <= data->elapsedTime) {
+		if (decoder_seek_where(decoder) <= data->elapsedTime) {
 			data->outputPtr = data->outputBuffer;
 			decoder_clear(decoder);
 			data->muteFrame = 0;
@@ -952,7 +952,8 @@ static int mp3Read(mp3DecodeData * data, struct decoder *decoder,
 		    data->inStream->seekable) {
 			long j = 0;
 			data->muteFrame = MUTEFRAME_SEEK;
-			while (j < data->highestFrame && dc.seekWhere >
+			while (j < data->highestFrame &&
+			       decoder_seek_where(decoder) >
 			       ((float)mad_timer_count(data->times[j],
 						       MAD_UNITS_MILLISECONDS))
 			       / 1000) {
@@ -965,15 +966,14 @@ static int mp3Read(mp3DecodeData * data, struct decoder *decoder,
 					data->outputPtr = data->outputBuffer;
 					decoder_clear(decoder);
 					data->currentFrame = j;
+					decoder_command_finished(decoder);
 				} else
-					dc.seekError = 1;
+					decoder_seek_error(decoder);
 				data->muteFrame = 0;
-				decoder_command_finished(decoder);
 			}
 		} else if (decoder_get_command(decoder) == DECODE_COMMAND_SEEK &&
 			   !data->inStream->seekable) {
-			dc.seekError = 1;
-			decoder_command_finished(decoder);
+			decoder_seek_error(decoder);
 		}
 	}
 

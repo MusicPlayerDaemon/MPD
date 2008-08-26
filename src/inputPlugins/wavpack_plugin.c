@@ -178,17 +178,16 @@ static void wavpack_decode(struct decoder * decoder,
 
 				decoder_clear(decoder);
 
-				where = dc.seekWhere *
+				where = decoder_seek_where(decoder) *
 				        audio_format.sampleRate;
-				if (WavpackSeekSample(wpc, where))
+				if (WavpackSeekSample(wpc, where)) {
 					position = where;
-				else
-					dc.seekError = 1;
+					decoder_command_finished(decoder);
+				} else
+					decoder_seek_error(decoder);
 			} else {
-				dc.seekError = 1;
+				decoder_seek_error(decoder);
 			}
-
-			decoder_command_finished(decoder);
 		}
 
 		if (decoder_get_command(decoder) == DECODE_COMMAND_STOP)
