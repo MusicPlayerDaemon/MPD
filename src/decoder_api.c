@@ -19,6 +19,8 @@
 
 #include "decoder_api.h"
 
+#include "utils.h"
+#include "normalize.h"
 #include "playerData.h"
 #include "gcc.h"
 
@@ -28,4 +30,82 @@ void decoder_initialized(mpd_unused struct decoder * decoder)
 
 	dc.state = DECODE_STATE_DECODE;
 	notify_signal(&pc.notify);
+}
+
+/**
+ * All chunks are full of decoded data; wait for the player to free
+ * one.
+ */
+static int need_chunks(InputStream * inStream, int seekable)
+{
+	if (dc.command == DECODE_COMMAND_STOP)
+		return OUTPUT_BUFFER_DC_STOP;
+
+	if (dc.command == DECODE_COMMAND_SEEK) {
+		if (seekable) {
+			return OUTPUT_BUFFER_DC_SEEK;
+		} else {
+			dc.seekError = 1;
+			dc_command_finished();
+		}
+	}
+
+	if (!inStream ||
+	    bufferInputStream(inStream) <= 0) {
+		notify_wait(&dc.notify);
+		notify_signal(&pc.notify);
+	}
+
+	return 0;
+}
+
+int decoder_data(mpd_unused struct decoder *decoder, InputStream * inStream,
+		 int seekable,
+		 void *dataIn, size_t dataInLen,
+		 float data_time, mpd_uint16 bitRate,
+		 ReplayGainInfo * replayGainInfo)
+{
+	size_t nbytes;
+	char *data;
+	size_t datalen;
+	static char *convBuffer;
+	static size_t convBufferLen;
+	int ret;
+
+	if (cmpAudioFormat(&(ob.audioFormat), &(dc.audioFormat)) == 0) {
+		data = dataIn;
+		datalen = dataInLen;
+	} else {
+		datalen = pcm_sizeOfConvBuffer(&(dc.audioFormat), dataInLen,
+		                               &(ob.audioFormat));
+		if (datalen > convBufferLen) {
+			if (convBuffer != NULL)
+				free(convBuffer);
+			convBuffer = xmalloc(datalen);
+			convBufferLen = datalen;
+		}
+		data = convBuffer;
+		datalen = pcm_convertAudioFormat(&(dc.audioFormat), dataIn,
+		                                 dataInLen, &(ob.audioFormat),
+		                                 data, &(ob.convState));
+	}
+
+	if (replayGainInfo != NULL && (replayGainState != REPLAYGAIN_OFF))
+		doReplayGain(replayGainInfo, data, datalen, &ob.audioFormat);
+	else if (normalizationEnabled)
+		normalizeData(data, datalen, &ob.audioFormat);
+
+	while (datalen > 0) {
+		nbytes = ob_append(data, datalen, data_time, bitRate);
+		datalen -= nbytes;
+		data += nbytes;
+
+		if (datalen > 0) {
+			ret = need_chunks(inStream, seekable);
+			if (ret != 0)
+				return ret;
+		}
+	}
+
+	return 0;
 }

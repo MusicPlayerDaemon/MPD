@@ -309,12 +309,11 @@ static int oggvorbis_decode(struct decoder * decoder, InputStream * inStream)
 			if ((test = ov_bitrate_instant(&vf)) > 0) {
 				bitRate = test / 1000;
 			}
-			ob_send(inStream,
-					       inStream->seekable,
-					       chunk, chunkpos,
-					       ov_pcm_tell(&vf) /
-					       dc.audioFormat.sampleRate,
-					       bitRate, replayGainInfo);
+			decoder_data(decoder, inStream,
+				     inStream->seekable,
+				     chunk, chunkpos,
+				     ov_pcm_tell(&vf) / dc.audioFormat.sampleRate,
+				     bitRate, replayGainInfo);
 			chunkpos = 0;
 			if (dc.command == DECODE_COMMAND_STOP)
 				break;
@@ -322,10 +321,10 @@ static int oggvorbis_decode(struct decoder * decoder, InputStream * inStream)
 	}
 
 	if (dc.command != DECODE_COMMAND_STOP && chunkpos > 0) {
-		ob_send(NULL, inStream->seekable,
-				       chunk, chunkpos,
-				       ov_time_tell(&vf), bitRate,
-				       replayGainInfo);
+		decoder_data(decoder, NULL, inStream->seekable,
+			     chunk, chunkpos,
+			     ov_time_tell(&vf), bitRate,
+			     replayGainInfo);
 	}
 
 	if (replayGainInfo)

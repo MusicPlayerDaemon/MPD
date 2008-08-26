@@ -215,11 +215,11 @@ static int mpc_decode(struct decoder * mpd_decoder, InputStream * inStream)
 				bitRate = vbrUpdateBits *
 				    dc.audioFormat.sampleRate / 1152 / 1000;
 
-				ob_send(inStream,
-						       inStream->seekable,
-						       chunk, chunkpos,
-						       total_time,
-						       bitRate, replayGainInfo);
+				decoder_data(mpd_decoder, inStream,
+					     inStream->seekable,
+					     chunk, chunkpos,
+					     total_time,
+					     bitRate, replayGainInfo);
 
 				chunkpos = 0;
 				s16 = (mpd_sint16 *) chunk;
@@ -237,9 +237,9 @@ static int mpc_decode(struct decoder * mpd_decoder, InputStream * inStream)
 		bitRate =
 		    vbrUpdateBits * dc.audioFormat.sampleRate / 1152 / 1000;
 
-		ob_send(NULL, inStream->seekable,
-				       chunk, chunkpos, total_time, bitRate,
-				       replayGainInfo);
+		decoder_data(mpd_decoder, NULL, inStream->seekable,
+			     chunk, chunkpos, total_time, bitRate,
+			     replayGainInfo);
 	}
 
 	ob_flush();

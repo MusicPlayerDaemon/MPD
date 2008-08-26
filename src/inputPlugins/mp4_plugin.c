@@ -270,9 +270,9 @@ static int mp4_decode(struct decoder * mpd_decoder, InputStream * inStream)
 
 		sampleBuffer += offset * channels * 2;
 
-		ob_send(inStream, 1, sampleBuffer,
-			sampleBufferLen, file_time,
-			bitRate, NULL);
+		decoder_data(mpd_decoder, inStream, 1, sampleBuffer,
+			     sampleBufferLen, file_time,
+			     bitRate, NULL);
 		if (dc.command == DECODE_COMMAND_STOP) {
 			eof = 1;
 			break;

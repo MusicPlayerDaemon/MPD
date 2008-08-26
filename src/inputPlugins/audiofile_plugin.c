@@ -106,13 +106,13 @@ static int audiofile_decode(struct decoder * decoder, char *path)
 				eof = 1;
 			else {
 				current += ret;
-				ob_send(NULL,
-					1,
-					chunk, ret * fs,
-					(float)current /
-					(float)dc.audioFormat.
-					sampleRate, bitRate,
-					NULL);
+				decoder_data(decoder, NULL,
+					     1,
+					     chunk, ret * fs,
+					     (float)current /
+					     (float)dc.audioFormat.
+					     sampleRate, bitRate,
+					     NULL);
 				if (dc.command == DECODE_COMMAND_STOP)
 					break;
 			}

@@ -207,10 +207,10 @@ static void wavpack_decode(struct decoder * decoder,
 			format_samples(Bps, chunk,
 			               samplesgot * dc.audioFormat.channels);
 
-			ob_send(NULL, 0, chunk,
-			                       samplesgot * outsamplesize,
-			                       file_time, bitrate,
-					       replayGainInfo);
+			decoder_data(decoder, NULL, 0, chunk,
+				     samplesgot * outsamplesize,
+				     file_time, bitrate,
+				     replayGainInfo);
 		}
 	} while (samplesgot == samplesreq);
 

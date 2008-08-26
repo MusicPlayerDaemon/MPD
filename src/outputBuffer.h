@@ -20,9 +20,6 @@
 #define OUTPUT_BUFFER_H
 
 #include "pcm_utils.h"
-#include "mpd_types.h"
-#include "inputStream.h"
-#include "replayGain.h"
 
 #define OUTPUT_BUFFER_DC_STOP   -1
 #define OUTPUT_BUFFER_DC_SEEK   -2
@@ -98,15 +95,15 @@ int ob_absolute(const unsigned relative);
 
 ob_chunk * ob_get_chunk(const unsigned i);
 
-/* we send inStream for buffering the inputStream while waiting to
-   send the next chunk */
-int ob_send(InputStream * inStream,
-			   int seekable,
-			   void *data,
-			   size_t datalen,
-			   float data_time,
-			   mpd_uint16 bitRate, ReplayGainInfo * replayGainInfo);
+/**
+ * Append a data block to the buffer.
+ *
+ * @return the number of bytes actually written
+ */
+size_t ob_append(const void *data, size_t datalen,
+		 float data_time, mpd_uint16 bitRate);
 
 void ob_skip(unsigned num);
 
 #endif
+

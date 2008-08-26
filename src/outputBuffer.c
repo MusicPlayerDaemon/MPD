@@ -17,10 +17,9 @@
  */
 
 #include "outputBuffer.h"
+#include "playerData.h"
 
 #include "utils.h"
-#include "normalize.h"
-#include "playerData.h"
 
 void ob_init(unsigned int size)
 {
@@ -148,16 +147,12 @@ ob_chunk * ob_get_chunk(const unsigned i)
 }
 
 /**
- * Return the tail chunk which has room for additional data.  If there
- * is no room in the queue, this function blocks until the player
- * thread has finished playing its current chunk.
+ * Return the tail chunk which has room for additional data.
  *
- * @return the positive index of the new chunk; OUTPUT_BUFFER_DC_SEEK
- * if another thread requested seeking; OUTPUT_BUFFER_DC_STOP if
- * another thread requested stopping the decoder.
+ * @return the positive index of the new chunk; -1 if there is no
+ * room.
  */
-static int tailChunk(InputStream * inStream,
-		     int seekable, float data_time, mpd_uint16 bitRate)
+static int tailChunk(float data_time, mpd_uint16 bitRate)
 {
 	unsigned int next;
 	ob_chunk *chunk;
@@ -167,26 +162,9 @@ static int tailChunk(InputStream * inStream,
 	if (chunk->chunkSize == sizeof(chunk->data)) {
 		/* this chunk is full; allocate a new chunk */
 		next = successor(ob.end);
-		while (ob.begin == next) {
-			/* all chunks are full of decoded data; wait
-			   for the player to free one */
-
-			if (dc.command == DECODE_COMMAND_STOP)
-				return OUTPUT_BUFFER_DC_STOP;
-
-			if (dc.command == DECODE_COMMAND_SEEK) {
-				if (seekable) {
-					return OUTPUT_BUFFER_DC_SEEK;
-				} else {
-					dc.seekError = 1;
-					dc_command_finished();
-				}
-			}
-			if (!inStream || bufferInputStream(inStream) <= 0) {
-				notify_wait(&dc.notify);
-				notify_signal(&pc.notify);
-			}
-		}
+		if (ob.begin == next)
+			/* no chunks available */
+			return -1;
 
 		output_buffer_expand(next);
 		chunk = ob_get_chunk(next);
@@ -204,46 +182,17 @@ static int tailChunk(InputStream * inStream,
 	return ob.end;
 }
 
-int ob_send(InputStream * inStream,
-			   int seekable, void *dataIn,
-			   size_t dataInLen, float data_time, mpd_uint16 bitRate,
-			   ReplayGainInfo * replayGainInfo)
+size_t ob_append(const void *data0, size_t datalen,
+		 float data_time, mpd_uint16 bitRate)
 {
-	size_t dataToSend;
-	char *data;
-	size_t datalen;
-	static char *convBuffer;
-	static size_t convBufferLen;
+	const unsigned char *data = data0;
+	size_t ret = 0, dataToSend;
 	ob_chunk *chunk = NULL;
 
-	if (cmpAudioFormat(&(ob.audioFormat), &(dc.audioFormat)) == 0) {
-		data = dataIn;
-		datalen = dataInLen;
-	} else {
-		datalen = pcm_sizeOfConvBuffer(&(dc.audioFormat), dataInLen,
-		                               &(ob.audioFormat));
-		if (datalen > convBufferLen) {
-			if (convBuffer != NULL)
-				free(convBuffer);
-			convBuffer = xmalloc(datalen);
-			convBufferLen = datalen;
-		}
-		data = convBuffer;
-		datalen = pcm_convertAudioFormat(&(dc.audioFormat), dataIn,
-		                                 dataInLen, &(ob.audioFormat),
-		                                 data, &(ob.convState));
-	}
-
-	if (replayGainInfo && (replayGainState != REPLAYGAIN_OFF))
-		doReplayGain(replayGainInfo, data, datalen, &ob.audioFormat);
-	else if (normalizationEnabled)
-		normalizeData(data, datalen, &ob.audioFormat);
-
 	while (datalen) {
-		int chunk_index = tailChunk(inStream, seekable,
-					    data_time, bitRate);
+		int chunk_index = tailChunk(data_time, bitRate);
 		if (chunk_index < 0)
-			return chunk_index;
+			return ret;
 
 		chunk = ob_get_chunk(chunk_index);
 
@@ -255,12 +204,13 @@ int ob_send(InputStream * inStream,
 		chunk->chunkSize += dataToSend;
 		datalen -= dataToSend;
 		data += dataToSend;
+		ret += dataToSend;
 	}
 
 	if (chunk != NULL && chunk->chunkSize == sizeof(chunk->data))
 		ob_flush();
 
-	return 0;
+	return ret;
 }
 
 void ob_skip(unsigned num)

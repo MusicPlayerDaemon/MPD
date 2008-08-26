@@ -165,12 +165,11 @@ MpdTag *copyVorbisCommentBlockToMpdTag(const FLAC__StreamMetadata * block,
 /* keep this inlined, this is just macro but prettier :) */
 static inline int flacSendChunk(FlacData * data)
 {
-	if (ob_send(data->inStream,
-	                           1, data->chunk,
-				   data->chunk_length, data->time,
-				   data->bitRate,
-				   data->replayGainInfo) ==
-	    OUTPUT_BUFFER_DC_STOP)
+	if (decoder_data(data->decoder, data->inStream,
+			 1, data->chunk,
+			 data->chunk_length, data->time,
+			 data->bitRate,
+			 data->replayGainInfo) == OUTPUT_BUFFER_DC_STOP)
 		return -1;
 
 	return 0;

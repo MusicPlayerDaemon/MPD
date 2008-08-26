@@ -27,6 +27,8 @@
  */
 
 #include "inputPlugin.h"
+#include "inputStream.h"
+#include "replayGain.h"
 
 /**
  * Opaque handle which the decoder plugin passes to the functions in
@@ -39,5 +41,18 @@ struct decoder;
  * that it has read the song's meta data.
  */
 void decoder_initialized(struct decoder * decoder);
+
+/**
+ * This function is called by the decoder plugin when it has
+ * successfully decoded block of input data.
+ *
+ * We send inStream for buffering the inputStream while waiting to
+ * send the next chunk
+ */
+int decoder_data(struct decoder *decoder, InputStream * inStream,
+		 int seekable,
+		 void *data, size_t datalen,
+		 float data_time, mpd_uint16 bitRate,
+		 ReplayGainInfo * replayGainInfo);
 
 #endif

@@ -200,9 +200,9 @@ static int mod_decode(struct decoder * decoder, char *path)
 
 		ret = VC_WriteBytes(data->audio_buffer, MIKMOD_FRAME_SIZE);
 		total_time += ret * secPerByte;
-		ob_send(NULL, 0,
-				       (char *)data->audio_buffer, ret,
-				       total_time, 0, NULL);
+		decoder_data(decoder, NULL, 0,
+			     (char *)data->audio_buffer, ret,
+			     total_time, 0, NULL);
 	}
 
 	ob_flush();

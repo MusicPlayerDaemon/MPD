@@ -391,9 +391,9 @@ static int aac_decode(struct decoder * mpd_decoder, char *path)
 
 		sampleBufferLen = sampleCount * 2;
 
-		ob_send(NULL, 0, sampleBuffer,
-			sampleBufferLen, file_time,
-			bitRate, NULL);
+		decoder_data(mpd_decoder, NULL, 0, sampleBuffer,
+			     sampleBufferLen, file_time,
+			     bitRate, NULL);
 		if (dc.command == DECODE_COMMAND_SEEK) {
 			dc.seekError = 1;
 			dc_command_finished();

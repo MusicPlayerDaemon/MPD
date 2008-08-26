@@ -812,7 +812,8 @@ static int openMp3FromInputStream(InputStream * inStream, mp3DecodeData * data,
 	return 0;
 }
 
-static int mp3Read(mp3DecodeData * data, ReplayGainInfo ** replayGainInfo)
+static int mp3Read(mp3DecodeData * data, struct decoder *decoder,
+		   ReplayGainInfo ** replayGainInfo)
 {
 	int samplesPerFrame;
 	int samplesLeft;
@@ -926,13 +927,13 @@ static int mp3Read(mp3DecodeData * data, ReplayGainInfo ** replayGainInfo)
 			}
 
 			if (data->outputPtr >= data->outputBufferEnd) {
-				ret = ob_send(data->inStream,
-							     data->inStream->seekable,
-							     data->outputBuffer,
-							     data->outputPtr - data->outputBuffer,
-							     data->elapsedTime,
-							     data->bitRate / 1000,
-							     (replayGainInfo != NULL) ? *replayGainInfo : NULL);
+				ret = decoder_data(decoder, data->inStream,
+						   data->inStream->seekable,
+						   data->outputBuffer,
+						   data->outputPtr - data->outputBuffer,
+						   data->elapsedTime,
+						   data->bitRate / 1000,
+						   (replayGainInfo != NULL) ? *replayGainInfo : NULL);
 				if (ret == OUTPUT_BUFFER_DC_STOP) {
 					data->flush = 0;
 					return DECODE_BREAK;
@@ -1063,16 +1064,16 @@ static int mp3_decode(struct decoder * decoder, InputStream * inStream)
 
 	decoder_initialized(decoder);
 
-	while (mp3Read(&data, &replayGainInfo) != DECODE_BREAK) ;
+	while (mp3Read(&data, decoder, &replayGainInfo) != DECODE_BREAK) ;
 	/* send last little bit if not DECODE_COMMAND_STOP */
 	if (dc.command != DECODE_COMMAND_STOP &&
 	    data.outputPtr != data.outputBuffer && data.flush) {
-		ob_send(NULL,
-				       data.inStream->seekable,
-				       data.outputBuffer,
-				       data.outputPtr - data.outputBuffer,
-				       data.elapsedTime, data.bitRate / 1000,
-				       replayGainInfo);
+		decoder_data(decoder, NULL,
+			     data.inStream->seekable,
+			     data.outputBuffer,
+			     data.outputPtr - data.outputBuffer,
+			     data.elapsedTime, data.bitRate / 1000,
+			     replayGainInfo);
 	}
 
 	if (replayGainInfo)
