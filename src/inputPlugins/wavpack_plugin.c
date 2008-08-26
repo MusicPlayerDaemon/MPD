@@ -340,6 +340,7 @@ static MpdTag *wavpack_tagdup(char *fname)
 
 /* This struct is needed for per-stream last_byte storage. */
 typedef struct {
+	struct decoder *decoder;
 	InputStream *is;
 	/* Needed for push_back_byte() */
 	int last_byte;
@@ -403,8 +404,10 @@ static WavpackStreamReader mpd_is_reader = {
 };
 
 static void
-initInputStreamPlus(InputStreamPlus *isp, InputStream *is)
+initInputStreamPlus(InputStreamPlus *isp, struct decoder *decoder,
+		    InputStream *is)
 {
+	isp->decoder = decoder;
 	isp->is = is;
 	isp->last_byte = EOF;
 }
@@ -418,7 +421,7 @@ static unsigned int wavpack_trydecode(InputStream *is)
 	WavpackContext *wpc;
 	InputStreamPlus isp;
 
-	initInputStreamPlus(&isp, is);
+	initInputStreamPlus(&isp, NULL, is);
 	wpc = WavpackOpenFileInputEx(&mpd_is_reader, &isp, NULL, error,
 	                             OPEN_STREAMING, 0);
 	if (wpc == NULL)
@@ -520,11 +523,11 @@ static int wavpack_streamdecode(struct decoder * decoder, InputStream *is)
 			free(wvc_url);
 			wvc_url = NULL;
 		} else {
-			initInputStreamPlus(&isp_wvc, &is_wvc);
+			initInputStreamPlus(&isp_wvc, decoder, &is_wvc);
 		}
 	}
 
-	initInputStreamPlus(&isp, is);
+	initInputStreamPlus(&isp, decoder, is);
 	wpc = WavpackOpenFileInputEx(&mpd_is_reader, &isp, &isp_wvc, error,
 				     open_flags, 15);
 
