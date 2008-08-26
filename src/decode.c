@@ -455,9 +455,6 @@ static void decodeParent(void)
 					break;
 				}
 
-				notify_signal(&dc.notify);
-				notify_wait(&pc.notify);
-
 				if (do_pause) {
 					dropBufferedAudio();
 					closeAudioDevice();
