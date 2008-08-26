@@ -20,6 +20,6 @@
 #ifndef DECODER_THREAD_H
 #define DECODER_THREAD_H
 
-void decoderInit(void);
+void decoder_thread_start(void);
 
 #endif

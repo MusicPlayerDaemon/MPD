@@ -433,7 +433,7 @@ int main(int argc, char *argv[])
 	initZeroconf();
 
 	openVolumeDevice();
-	decoderInit();
+	decoder_thread_start();
 	player_create();
 	read_state_file();
 

@@ -187,7 +187,7 @@ static void * decoder_task(mpd_unused void *arg)
 	return NULL;
 }
 
-void decoderInit(void)
+void decoder_thread_start(void)
 {
 	pthread_attr_t attr;
 	pthread_t decoder_thread;
