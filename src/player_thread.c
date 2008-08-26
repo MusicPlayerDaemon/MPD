@@ -224,7 +224,8 @@ static void decodeParent(void)
 	while (1) {
 		processDecodeInput(&do_pause, &bbp, &do_xfade,
 				   &decodeWaitedOn, &next);
-		if (pc.command == PLAYER_COMMAND_STOP) {
+		if (pc.command == PLAYER_COMMAND_STOP ||
+		    pc.command == PLAYER_COMMAND_CLOSE_AUDIO) {
 			dropBufferedAudio();
 			break;
 		}

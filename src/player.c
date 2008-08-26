@@ -25,14 +25,6 @@
 #include "os_compat.h"
 #include "main_notify.h"
 
-static void playerCloseAudio(void);
-
-void playerWait(void)
-{
-	playerStop();
-	playerCloseAudio();
-}
-
 static void set_current_song(Song *song)
 {
 	assert(song != NULL);
@@ -71,6 +63,14 @@ void playerStop(void)
 {
 	if (pc.state != PLAYER_STATE_STOP)
 		player_command(PLAYER_COMMAND_STOP);
+
+	pc.queueState = PLAYER_QUEUE_BLANK;
+	playerQueueUnlock();
+}
+
+void playerWait(void)
+{
+	player_command(PLAYER_COMMAND_CLOSE_AUDIO);
 
 	pc.queueState = PLAYER_QUEUE_BLANK;
 	playerQueueUnlock();
@@ -163,12 +163,6 @@ char *getPlayerErrorStr(void)
 			 get_song_url(path_max_tmp, pc.errored_song));
 	}
 	return *error ? error : NULL;
-}
-
-static void playerCloseAudio(void)
-{
-	playerStop();
-	player_command(PLAYER_COMMAND_CLOSE_AUDIO);
 }
 
 int queueSong(Song * song)
