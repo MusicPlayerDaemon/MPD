@@ -93,6 +93,24 @@ static int adtsSampleRates[] =
 	16000, 12000, 11025, 8000, 7350, 0, 0, 0
 };
 
+/**
+ * Check whether the buffer head is an AAC frame, and return the frame
+ * length.  Returns 0 if it is not a frame.
+ */
+static size_t adts_check_frame(AacBuffer * b)
+{
+	if (b->bytesIntoBuffer <= 7)
+		return 0;
+
+	/* check syncword */
+	if (!((b->buffer[0] == 0xFF) && ((b->buffer[1] & 0xF6) == 0xF0)))
+		return 0;
+
+	return (((unsigned int)b->buffer[3] & 0x3) << 11) |
+		(((unsigned int)b->buffer[4]) << 3) |
+		(b->buffer[5] >> 5);
+}
+
 static void adtsParse(AacBuffer * b, float *length)
 {
 	unsigned int frames, frameLength;
@@ -103,22 +121,13 @@ static void adtsParse(AacBuffer * b, float *length)
 	for (frames = 0;; frames++) {
 		fillAacBuffer(b);
 
-		if (b->bytesIntoBuffer > 7) {
-			/* check syncword */
-			if (!((b->buffer[0] == 0xFF) &&
-			      ((b->buffer[1] & 0xF6) == 0xF0))) {
-				break;
-			}
-
+		frameLength = adts_check_frame(b);
+		if (frameLength > 0) {
 			if (frames == 0) {
 				sampleRate = adtsSampleRates[(b->
 							      buffer[2] & 0x3c)
 							     >> 2];
 			}
-
-			frameLength = ((((unsigned int)b->buffer[3] & 0x3))
-				       << 11) | (((unsigned int)b->buffer[4])
-						 << 3) | (b->buffer[5] >> 5);
 
 			if (frameLength > b->bytesIntoBuffer)
 				break;
