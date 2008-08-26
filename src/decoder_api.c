@@ -89,6 +89,30 @@ void decoder_seek_error(struct decoder * decoder)
 	decoder_command_finished(decoder);
 }
 
+size_t decoder_read(struct decoder *decoder,
+		    InputStream *inStream,
+		    void *buffer, size_t length)
+{
+	size_t nbytes;
+
+	assert(inStream != NULL);
+	assert(buffer != NULL);
+
+	while (1) {
+		/* XXX don't allow decoder==NULL */
+		if (decoder != NULL && dc.command != DECODE_COMMAND_NONE)
+			return 0;
+
+		nbytes = readFromInputStream(inStream, buffer, 1, length);
+		if (nbytes > 0 || inputStreamAtEOF(inStream))
+			return nbytes;
+
+		/* sleep for a fraction of a second! */
+		/* XXX don't sleep, wait for an event instead */
+		my_usleep(10000);
+	}
+}
+
 /**
  * All chunks are full of decoded data; wait for the player to free
  * one.

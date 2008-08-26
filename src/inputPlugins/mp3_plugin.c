@@ -233,15 +233,10 @@ static int fillMp3InputBuffer(mp3DecodeData * data)
 	if (readSize == 0)
 		return -1;
 
-	readed = readFromInputStream(data->inStream, readStart, (size_t) 1,
-				     readSize);
-	if (readed <= 0 && inputStreamAtEOF(data->inStream))
+	readed = decoder_read(data->decoder, data->inStream,
+			      readStart, readSize);
+	if (readed == 0)
 		return -1;
-	/* sleep for a fraction of a second! */
-	else if (readed <= 0) {
-		readed = 0;
-		my_usleep(10000);
-	}
 
 	mad_stream_buffer(&data->stream, data->readBuffer, readed + remaining);
 	(data->stream).error = 0;
@@ -324,13 +319,10 @@ static void mp3_parseId3Tag(mp3DecodeData * data, size_t tagsize,
 		while (count < tagsize) {
 			size_t len;
 
-			len = readFromInputStream(data->inStream,
-						  allocated + count, (size_t) 1,
-						  tagsize - count);
-			if (len <= 0 && inputStreamAtEOF(data->inStream)) {
+			len = decoder_read(data->decoder, data->inStream,
+					   allocated + count, tagsize - count);
+			if (len == 0)
 				break;
-			} else if (len <= 0)
-				my_usleep(10000);
 			else
 				count += len;
 		}

@@ -65,11 +65,9 @@ static void fillAacBuffer(AacBuffer * b)
 		size_t rest = FAAD_MIN_STREAMSIZE * AAC_MAX_CHANNELS -
 			b->bytesIntoBuffer;
 
-		bread = readFromInputStream(b->inStream,
-					    (void *)(b->buffer +
-						     b->
-						     bytesIntoBuffer),
-					    1, rest);
+		bread = decoder_read(b->decoder, b->inStream,
+				     (void *)(b->buffer + b->bytesIntoBuffer),
+				     rest);
 		if (bread == 0 && inputStreamAtEOF(b->inStream))
 			b->atEof = 1;
 		b->bytesIntoBuffer += bread;

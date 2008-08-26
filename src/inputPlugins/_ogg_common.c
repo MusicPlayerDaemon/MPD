@@ -37,15 +37,7 @@ ogg_stream_type ogg_stream_type_detect(InputStream * inStream)
 
 	seekInputStream(inStream, 0, SEEK_SET);
 
-	while (1) {
-		r = readFromInputStream(inStream, buf, 1, sizeof(buf));
-		if (inStream->error)
-			break;
-		if (!r && !inputStreamAtEOF(inStream))
-			my_usleep(10000);
-		else
-			break;
-	}
+	r = decoder_read(NULL, inStream, buf, sizeof(buf));
 
 	if (r > 0)
 		seekInputStream(inStream, 0, SEEK_SET);

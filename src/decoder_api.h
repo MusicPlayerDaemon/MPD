@@ -122,6 +122,15 @@ double decoder_seek_where(struct decoder * decoder);
 void decoder_seek_error(struct decoder * decoder);
 
 /**
+ * Blocking read from the input stream.  Returns the number of bytes
+ * read, or 0 if one of the following occurs: end of file; error;
+ * command (like SEEK or STOP).
+ */
+size_t decoder_read(struct decoder *decoder,
+		    InputStream *inStream,
+		    void *buffer, size_t length);
+
+/**
  * This function is called by the decoder plugin when it has
  * successfully decoded block of input data.
  *

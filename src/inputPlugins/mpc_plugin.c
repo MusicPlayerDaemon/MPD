@@ -32,20 +32,9 @@ typedef struct _MpcCallbackData {
 
 static mpc_int32_t mpc_read_cb(void *vdata, void *ptr, mpc_int32_t size)
 {
-	mpc_int32_t ret = 0;
 	MpcCallbackData *data = (MpcCallbackData *) vdata;
 
-	while (1) {
-		ret = readFromInputStream(data->inStream, ptr, 1, size);
-		if (ret == 0 && !inputStreamAtEOF(data->inStream) &&
-		    (data->decoder &&
-		     decoder_get_command(data->decoder) != DECODE_COMMAND_STOP))
-			my_usleep(10000);
-		else
-			break;
-	}
-
-	return ret;
+	return decoder_read(data->decoder, data->inStream, ptr, size);
 }
 
 static mpc_bool_t mpc_seek_cb(void *vdata, mpc_int32_t offset)

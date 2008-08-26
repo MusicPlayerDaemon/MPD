@@ -58,18 +58,12 @@ static size_t ogg_read_cb(void *ptr, size_t size, size_t nmemb, void *vdata)
 	size_t ret;
 	OggCallbackData *data = (OggCallbackData *) vdata;
 
-	while (1) {
-		ret = readFromInputStream(data->inStream, ptr, size, nmemb);
-		if (ret == 0 && !inputStreamAtEOF(data->inStream) &&
-		    decoder_get_command(data->decoder) != DECODE_COMMAND_STOP) {
-			my_usleep(10000);
-		} else
-			break;
-	}
+	ret = decoder_read(data->decoder, data->inStream, ptr, size * nmemb);
+
 	errno = 0;
 	/*if(ret<0) errno = ((InputStream *)inStream)->error; */
 
-	return ret;
+	return ret / size;
 }
 
 static int ogg_seek_cb(void *vdata, ogg_int64_t offset, int whence)

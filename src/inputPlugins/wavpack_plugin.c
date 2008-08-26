@@ -358,7 +358,7 @@ static int32_t read_bytes(void *id, void *data, int32_t bcount)
 		--bcount;
 		++i;
 	}
-	return i + readFromInputStream(isp->is, buf, 1, bcount);
+	return i + decoder_read(isp->decoder, isp->is, buf, bcount);
 }
 
 static uint32_t get_pos(void *id)
