@@ -179,7 +179,6 @@ static void adtsParse(AacBuffer * b, float *length)
 static void initAacBuffer(InputStream * inStream, AacBuffer * b, float *length)
 {
 	size_t fileread;
-	size_t bread;
 	size_t tagsize;
 
 	if (length)
@@ -194,14 +193,7 @@ static void initAacBuffer(InputStream * inStream, AacBuffer * b, float *length)
 	b->buffer = xmalloc(FAAD_MIN_STREAMSIZE * AAC_MAX_CHANNELS);
 	memset(b->buffer, 0, FAAD_MIN_STREAMSIZE * AAC_MAX_CHANNELS);
 
-	bread = readFromInputStream(inStream, b->buffer, 1,
-				    FAAD_MIN_STREAMSIZE * AAC_MAX_CHANNELS);
-	b->bytesIntoBuffer = bread;
-	b->bytesConsumed = 0;
-	b->fileOffset = 0;
-
-	if (bread == 0 && inputStreamAtEOF(inStream))
-		b->atEof = 1;
+	fillAacBuffer(b);
 
 	tagsize = 0;
 	if (!memcmp(b->buffer, "ID3", 3)) {
@@ -220,15 +212,11 @@ static void initAacBuffer(InputStream * inStream, AacBuffer * b, float *length)
 		adtsParse(b, length);
 		seekInputStream(b->inStream, tagsize, SEEK_SET);
 
-		bread = readFromInputStream(b->inStream, b->buffer, 1,
-					    FAAD_MIN_STREAMSIZE *
-					    AAC_MAX_CHANNELS);
-		if (bread == 0 && inputStreamAtEOF(inStream))
-			b->atEof = 1;
-
-		b->bytesIntoBuffer = bread;
+		b->bytesIntoBuffer = 0;
 		b->bytesConsumed = 0;
 		b->fileOffset = tagsize;
+
+		fillAacBuffer(b);
 	} else if (memcmp(b->buffer, "ADIF", 4) == 0) {
 		int bitRate;
 		int skipSize = (b->buffer[4] & 0x80) ? 9 : 0;
