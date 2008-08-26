@@ -750,7 +750,7 @@ closed:
 	return NULL;
 }
 
-int inputStream_httpBuffer(InputStream *is)
+int inputStream_httpBuffer(mpd_unused InputStream *is)
 {
 	return 0;
 }

@@ -102,7 +102,7 @@ static void jack_finishDriver(AudioOutput *audioOutput)
 	freeJackData(audioOutput);
 }
 
-static int srate(jack_nframes_t rate, void *data)
+static int srate(mpd_unused jack_nframes_t rate, void *data)
 {
 	JackData *jd = (JackData *) ((AudioOutput*) data)->data;
  	AudioFormat *audioFormat = &(((AudioOutput*) data)->outAudioFormat);
@@ -366,7 +366,7 @@ static void jack_closeDevice(AudioOutput * audioOutput)
 	DEBUG("jack_closeDevice (pid=%d)\n", getpid());
 }
 
-static void jack_dropBufferedAudio (AudioOutput * audioOutput)
+static void jack_dropBufferedAudio (mpd_unused AudioOutput * audioOutput)
 {
 }
 

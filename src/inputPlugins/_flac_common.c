@@ -181,7 +181,7 @@ void flac_metadata_common_cb(const FLAC__StreamMetadata * block,
 
 void flac_error_common_cb(const char *plugin,
 			  const FLAC__StreamDecoderErrorStatus status,
-			  FlacData * data)
+			  mpd_unused FlacData * data)
 {
 	if (dc.stop)
 		return;

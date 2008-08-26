@@ -158,7 +158,7 @@ static void audioOutputAo_finishDriver(AudioOutput * audioOutput)
 		ao_shutdown();
 }
 
-static void audioOutputAo_dropBufferedAudio(AudioOutput * audioOutput)
+static void audioOutputAo_dropBufferedAudio(mpd_unused AudioOutput * audioOutput)
 {
 	/* not supported by libao */
 }

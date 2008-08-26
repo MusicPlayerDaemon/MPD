@@ -469,7 +469,7 @@ int getVolumeLevel(void)
 	}
 }
 
-static int changeSoftwareVolume(int fd, int change, int rel)
+static int changeSoftwareVolume(mpd_unused int fd, int change, int rel)
 {
 	int new = change;
 

@@ -352,7 +352,7 @@ static void cleanUpPidFile(void)
 	unlink(pidFileParam->value);
 }
 
-static void killFromPidFile(char *cmd, int killOption)
+static void killFromPidFile(void)
 {
 	FILE *fp;
 	ConfigParam *pidFileParam = parseConfigFilePath(CONF_PID_FILE, 0);
@@ -391,7 +391,7 @@ int main(int argc, char *argv[])
 	parseOptions(argc, argv, &options);
 
 	if (options.kill)
-		killFromPidFile(argv[0], options.kill);
+		killFromPidFile();
 
 	initStats();
 	initTagConfig();

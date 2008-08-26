@@ -31,7 +31,7 @@
 
 /* this code was based on flac123, from flac-tools */
 
-static flac_read_status flacRead(const flac_decoder * flacDec,
+static flac_read_status flacRead(mpd_unused const flac_decoder * flacDec,
                                   FLAC__byte buf[],
 				  flac_read_status_size_t *bytes,
 				  void *fdata)
@@ -57,7 +57,7 @@ static flac_read_status flacRead(const flac_decoder * flacDec,
 	return flac_read_status_continue;
 }
 
-static flac_seek_status flacSeek(const flac_decoder * flacDec,
+static flac_seek_status flacSeek(mpd_unused const flac_decoder * flacDec,
 				 FLAC__uint64 offset,
 				 void *fdata)
 {
@@ -70,7 +70,7 @@ static flac_seek_status flacSeek(const flac_decoder * flacDec,
 	return flac_seek_status_ok;
 }
 
-static flac_tell_status flacTell(const flac_decoder * flacDec,
+static flac_tell_status flacTell(mpd_unused const flac_decoder * flacDec,
 				 FLAC__uint64 * offset,
 				 void *fdata)
 {
@@ -81,7 +81,7 @@ static flac_tell_status flacTell(const flac_decoder * flacDec,
 	return flac_tell_status_ok;
 }
 
-static flac_length_status flacLength(const flac_decoder * flacDec,
+static flac_length_status flacLength(mpd_unused const flac_decoder * flacDec,
 				     FLAC__uint64 * length,
 				     void *fdata)
 {
@@ -92,7 +92,7 @@ static flac_length_status flacLength(const flac_decoder * flacDec,
 	return flac_length_status_ok;
 }
 
-static FLAC__bool flacEOF(const flac_decoder * flacDec, void *fdata)
+static FLAC__bool flacEOF(mpd_unused const flac_decoder * flacDec, void *fdata)
 {
 	FlacData *data = (FlacData *) fdata;
 
@@ -101,7 +101,7 @@ static FLAC__bool flacEOF(const flac_decoder * flacDec, void *fdata)
 	return false;
 }
 
-static void flacError(const flac_decoder *dec,
+static void flacError(mpd_unused const flac_decoder *dec,
 		      FLAC__StreamDecoderErrorStatus status, void *fdata)
 {
 	flac_error_common_cb("flac", status, (FlacData *) fdata);
@@ -199,7 +199,7 @@ static void flacPrintErroredState(FLAC__StreamDecoderState state)
 }
 #endif /* FLAC_API_VERSION_CURRENT >= 7 */
 
-static void flacMetadata(const flac_decoder * dec,
+static void flacMetadata(mpd_unused const flac_decoder * dec,
 			 const FLAC__StreamMetadata * block, void *vdata)
 {
 	flac_metadata_common_cb(block, (FlacData *) vdata);

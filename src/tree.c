@@ -171,8 +171,7 @@ _SplitNode(TreeNode * node)
 
 static
 void
-_InsertNodeAndData(Tree * tree, 
-		   TreeNode * node,
+_InsertNodeAndData(TreeNode * node,
 		   int pos,
 		   TreeNode * newNode,
 		   TreeKeyData keyData)
@@ -204,8 +203,7 @@ _InsertNodeAndData(Tree * tree,
 
 static
 TreeKeyData
-_AddDataToSplitNodes(Tree * tree,
-		     TreeNode * lessNode, 
+_AddDataToSplitNodes(TreeNode * lessNode, 
 		     TreeNode * moreNode,
 		     int pos,
 		     TreeNode * newNode,
@@ -217,7 +215,7 @@ _AddDataToSplitNodes(Tree * tree,
 
 	if (pos <= lessNode->count)
 	{
-		_InsertNodeAndData(tree, lessNode, pos, newNode, keyData);
+		_InsertNodeAndData(lessNode, pos, newNode, keyData);
 		lessNode->count--;
 		retKeyData = lessNode->keyData[lessNode->count];
 		_ClearKeyData(&(lessNode->keyData[lessNode->count]));
@@ -277,8 +275,7 @@ _InsertAt(TreeIterator * iter, TreeKeyData keyData)
 			TreeNode * newNode = _SplitNode(node);
 
 			/* insert data in split nodes */
-			keyData = _AddDataToSplitNodes(iter->tree,
-						       node, 
+			keyData = _AddDataToSplitNodes(node, 
 						       newNode,
 						       pos,
 						       insertNode,
@@ -306,8 +303,7 @@ _InsertAt(TreeIterator * iter, TreeKeyData keyData)
 		else
 		{
 			/* insert the data and newNode */
-			_InsertNodeAndData(iter->tree, 
-					   node,
+			_InsertNodeAndData(node,
 					   pos,
 					   insertNode,
 					   keyData);

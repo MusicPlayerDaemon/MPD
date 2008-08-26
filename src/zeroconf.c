@@ -94,7 +94,7 @@ struct AvahiTimeout {
 static AvahiWatch *avahiWatchList;
 static AvahiTimeout *avahiTimeoutList;
 
-static AvahiWatch *avahiWatchNew(const AvahiPoll * api, int fd,
+static AvahiWatch *avahiWatchNew(mpd_unused const AvahiPoll * api, int fd,
 				 AvahiWatchEvent event,
 				 AvahiWatchCallback callback, void *userdata)
 {
@@ -177,7 +177,7 @@ static void avahiTimeoutFree(AvahiTimeout * t)
 	free(t);
 }
 
-static AvahiTimeout *avahiTimeoutNew(const AvahiPoll * api,
+static AvahiTimeout *avahiTimeoutNew(mpd_unused const AvahiPoll * api,
 				     const struct timeval *tv,
 				     AvahiTimeoutCallback callback,
 				     void *userdata)
@@ -201,7 +201,8 @@ static AvahiTimeout *avahiTimeoutNew(const AvahiPoll * api,
 
 /* Callback when the EntryGroup changes state */
 static void avahiGroupCallback(AvahiEntryGroup * g,
-			       AvahiEntryGroupState state, void *userdata)
+			       AvahiEntryGroupState state,
+			       mpd_unused void *userdata)
 {
 	char *n;
 	assert(g);
@@ -291,7 +292,7 @@ fail:
 
 /* Callback when avahi changes state */
 static void avahiClientCallback(AvahiClient * c, AvahiClientState state,
-				void *userdata)
+				mpd_unused void *userdata)
 {
 	int reason;
 	assert(c);

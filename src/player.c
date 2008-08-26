@@ -126,7 +126,7 @@ int playerPlay(int fd, Song * song)
 	return 0;
 }
 
-int playerStop(int fd)
+int playerStop(mpd_unused int fd)
 {
 	if (pc.state != PLAYER_STATE_STOP) {
 		pc.stop = 1;
@@ -144,7 +144,7 @@ void playerKill(void) /* deprecated */
 	playerPause(STDERR_FILENO);
 }
 
-int playerPause(int fd)
+int playerPause(mpd_unused int fd)
 {
 	if (pc.state != PLAYER_STATE_STOP) {
 		pc.pause = 1;

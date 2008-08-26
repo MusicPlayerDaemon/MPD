@@ -114,7 +114,8 @@ static void format_samples_int(int Bps, void *buffer, uint32_t samcnt)
 /*
  * This function converts floating point sample data to 16 bit integer.
  */
-static void format_samples_float(int Bps, void *buffer, uint32_t samcnt)
+static void format_samples_float(mpd_unused int Bps, void *buffer,
+				 uint32_t samcnt)
 {
 	int16_t *dst = (int16_t *)buffer;
 	float *src = (float *)buffer;

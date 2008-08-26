@@ -334,7 +334,8 @@ static int oss_testDefault(void)
 	return -1;
 }
 
-static int oss_open_default(AudioOutput *ao, ConfigParam *param, OssData *od)
+static int oss_open_default(mpd_unused AudioOutput *ao, ConfigParam *param,
+			    OssData *od)
 {
 	int i;
 	int err[ARRAY_SIZE(default_devices)];

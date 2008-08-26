@@ -1258,7 +1258,7 @@ int previousSongInPlaylist(int fd)
 	}
 }
 
-int shufflePlaylist(int fd)
+int shufflePlaylist(mpd_unused int fd)
 {
 	int i;
 	int ri;

@@ -19,7 +19,8 @@
 #include "../audioOutput.h"
 #include "../timer.h"
 
-static int null_initDriver(AudioOutput *audioOutput, ConfigParam *param)
+static int null_initDriver(AudioOutput *audioOutput,
+			   mpd_unused ConfigParam *param)
 {
 	audioOutput->data = NULL;
 	return 0;
@@ -43,7 +44,7 @@ static void null_closeDevice(AudioOutput *audioOutput)
 }
 
 static int null_playAudio(AudioOutput *audioOutput,
-			  const char *playChunk, size_t size)
+			  mpd_unused const char *playChunk, size_t size)
 {
 	Timer *timer = audioOutput->data;
 

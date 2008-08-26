@@ -106,7 +106,7 @@ int inputStream_fileAtEOF(InputStream * inStream)
 	return 0;
 }
 
-int inputStream_fileBuffer(InputStream * inStream)
+int inputStream_fileBuffer(mpd_unused InputStream * inStream)
 {
 	return 0;
 }

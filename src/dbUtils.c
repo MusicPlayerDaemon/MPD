@@ -45,7 +45,8 @@ typedef struct _SearchStats {
 	unsigned long playTime;
 } SearchStats;
 
-static int countSongsInDirectory(int fd, Directory * directory, void *data)
+static int countSongsInDirectory(mpd_unused int fd, Directory * directory,
+				 void *data)
 {
 	int *count = (int *)data;
 
@@ -55,7 +56,7 @@ static int countSongsInDirectory(int fd, Directory * directory, void *data)
 }
 
 static int printDirectoryInDirectory(int fd, Directory * directory,
-				     void *data)
+				     mpd_unused void *data)
 {
 	if (directory->path) {
 		fdprintf(fd, "directory: %s\n", getDirectoryPath(directory));
@@ -63,7 +64,7 @@ static int printDirectoryInDirectory(int fd, Directory * directory,
 	return 0;
 }
 
-static int printSongInDirectory(int fd, Song * song, void *data)
+static int printSongInDirectory(int fd, Song * song, mpd_unused void *data)
 {
 	printSongUrl(fd, song);
 	return 0;
@@ -133,7 +134,7 @@ static void printSearchStats(int fd, SearchStats *stats)
 	fdprintf(fd, "playtime: %li\n", stats->playTime);
 }
 
-static int searchStatsInDirectory(int fd, Song * song, void *data)
+static int searchStatsInDirectory(mpd_unused int fd, Song * song, void *data)
 {
 	SearchStats *stats = data;
 
@@ -171,7 +172,8 @@ int printAllIn(int fd, char *name)
 			     printDirectoryInDirectory, NULL);
 }
 
-static int directoryAddSongToPlaylist(int fd, Song * song, void *data)
+static int directoryAddSongToPlaylist(int fd, Song * song,
+				      mpd_unused void *data)
 {
 	return addSongToPlaylist(fd, song, NULL);
 }
@@ -194,12 +196,12 @@ int addAllInToStoredPlaylist(int fd, char *name, char *utf8file)
 	                     (void *)utf8file);
 }
 
-static int directoryPrintSongInfo(int fd, Song * song, void *data)
+static int directoryPrintSongInfo(int fd, Song * song, mpd_unused void *data)
 {
 	return printSongInfo(fd, song);
 }
 
-static int sumSongTime(int fd, Song * song, void *data)
+static int sumSongTime(mpd_unused int fd, Song * song, void *data)
 {
 	unsigned long *sum_time = (unsigned long *)data;
 
@@ -307,7 +309,8 @@ int listAllUniqueTags(int fd, int type, int numConditionals,
 	return ret;
 }
 
-static int sumSavedFilenameMemoryInDirectory(int fd, Directory * dir,
+static int sumSavedFilenameMemoryInDirectory(mpd_unused int fd,
+					     Directory * dir,
 					     void *data)
 {
 	int *sum = data;
@@ -321,7 +324,8 @@ static int sumSavedFilenameMemoryInDirectory(int fd, Directory * dir,
 	return 0;
 }
 
-static int sumSavedFilenameMemoryInSong(int fd, Song * song, void *data)
+static int sumSavedFilenameMemoryInSong(mpd_unused int fd, Song * song,
+					void *data)
 {
 	int *sum = data;
 
