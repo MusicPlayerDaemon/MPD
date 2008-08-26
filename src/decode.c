@@ -78,7 +78,7 @@ static unsigned calculateCrossFadeChunks(AudioFormat * af,
 	assert(af->channels > 0);
 	assert(af->sampleRate > 0);
 
-	chunks = (af->sampleRate * af->bits * af->channels / 8.0 / CHUNK_SIZE);
+	chunks = audio_format_time_to_size(af) / CHUNK_SIZE;
 	chunks = (chunks * pc.crossFade + 0.5);
 
 	if (chunks > max_chunks)
