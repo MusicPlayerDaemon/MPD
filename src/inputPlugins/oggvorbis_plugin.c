@@ -372,6 +372,11 @@ static MpdTag *oggvorbis_TagDup(char *file)
 
 static unsigned int oggvorbis_try_decode(InputStream * inStream)
 {
+	if (!inStream->seekable)
+		/* we cannot seek after the detection, so don't bother
+		   checking */
+		return 1;
+
 	return (ogg_stream_type_detect(inStream) == VORBIS) ? 1 : 0;
 }
 

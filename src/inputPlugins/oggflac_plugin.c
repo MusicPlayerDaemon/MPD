@@ -328,6 +328,11 @@ static MpdTag *oggflac_TagDup(char *file)
 
 static unsigned int oggflac_try_decode(InputStream * inStream)
 {
+	if (!inStream->seekable)
+		/* we cannot seek after the detection, so don't bother
+		   checking */
+		return 1;
+
 	return (ogg_stream_type_detect(inStream) == FLAC) ? 1 : 0;
 }
 
