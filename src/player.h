@@ -139,7 +139,7 @@ void playerQueueLock(void);
 
 void playerQueueUnlock(void);
 
-int playerSeek(int fd, Song * song, float seek_time);
+int playerSeek(Song * song, float seek_time);
 
 void setPlayerCrossFade(float crossFadeInSeconds);
 

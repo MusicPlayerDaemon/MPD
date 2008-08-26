@@ -19,7 +19,6 @@
 #include "player.h"
 #include "player_thread.h"
 #include "path.h"
-#include "command.h"
 #include "ack.h"
 #include "os_compat.h"
 #include "main_notify.h"
@@ -197,15 +196,12 @@ void playerQueueUnlock(void)
 	assert(pc.queueLockState == PLAYER_QUEUE_UNLOCKED);
 }
 
-int playerSeek(int fd, Song * song, float seek_time)
+int playerSeek(Song * song, float seek_time)
 {
 	assert(song != NULL);
 
-	if (pc.state == PLAYER_STATE_STOP) {
-		commandError(fd, ACK_ERROR_PLAYER_SYNC,
-			     "player not currently playing");
+	if (pc.state == PLAYER_STATE_STOP)
 		return -1;
-	}
 
 	if (pc.next_song != song)
 		set_current_song(song);

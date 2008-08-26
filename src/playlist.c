@@ -1354,7 +1354,7 @@ int getPlaylistLength(void)
 
 int seekSongInPlaylist(int fd, int song, float seek_time)
 {
-	int i;
+	int i, ret;
 
 	if (song < 0 || song >= playlist.length) {
 		commandError(fd, ACK_ERROR_NO_EXIST,
@@ -1381,7 +1381,11 @@ int seekSongInPlaylist(int fd, int song, float seek_time)
 		playPlaylistOrderNumber(i);
 	}
 
-	return playerSeek(fd, playlist.songs[playlist.order[i]], seek_time);
+	ret = playerSeek(playlist.songs[playlist.order[i]], seek_time);
+	if (ret < 0)
+		commandError(fd, ACK_ERROR_PLAYER_SYNC,
+			     "player not currently playing");
+	return ret;
 }
 
 int seekSongInPlaylistById(int fd, int id, float seek_time)
