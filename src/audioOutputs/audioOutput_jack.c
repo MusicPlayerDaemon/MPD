@@ -87,11 +87,11 @@ static void freeJackClient(JackData *jd)
 static void freeJackData(AudioOutput *audioOutput)
 {
 	JackData *jd = audioOutput->data;
-	if (jd) {
-		freeJackClient(jd);
-		free(jd);
-		audioOutput->data = NULL;
-	}
+
+	assert(jd != NULL);
+
+	freeJackClient(jd);
+	free(jd);
 }
 
 static void jack_finishDriver(AudioOutput *audioOutput)
