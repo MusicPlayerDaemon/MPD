@@ -232,32 +232,32 @@ static int oggvorbis_decode(struct decoder * decoder, InputStream * inStream)
 	callbacks.close_func = ogg_close_cb;
 	callbacks.tell_func = ogg_tell_cb;
 	if ((ret = ov_open_callbacks(&data, &vf, NULL, 0, callbacks)) < 0) {
-		if (decoder_get_command(decoder) != DECODE_COMMAND_STOP) {
-			switch (ret) {
-			case OV_EREAD:
-				errorStr = "read error";
-				break;
-			case OV_ENOTVORBIS:
-				errorStr = "not vorbis stream";
-				break;
-			case OV_EVERSION:
-				errorStr = "vorbis version mismatch";
-				break;
-			case OV_EBADHEADER:
-				errorStr = "invalid vorbis header";
-				break;
-			case OV_EFAULT:
-				errorStr = "internal logic error";
-				break;
-			default:
-				errorStr = "unknown error";
-				break;
-			}
-			ERROR("Error decoding Ogg Vorbis stream: %s\n",
-			      errorStr);
-			return -1;
+		if (decoder_get_command(decoder) != DECODE_COMMAND_NONE)
+			return 0;
+
+		switch (ret) {
+		case OV_EREAD:
+			errorStr = "read error";
+			break;
+		case OV_ENOTVORBIS:
+			errorStr = "not vorbis stream";
+			break;
+		case OV_EVERSION:
+			errorStr = "vorbis version mismatch";
+			break;
+		case OV_EBADHEADER:
+			errorStr = "invalid vorbis header";
+			break;
+		case OV_EFAULT:
+			errorStr = "internal logic error";
+			break;
+		default:
+			errorStr = "unknown error";
+			break;
 		}
-		return 0;
+		ERROR("Error decoding Ogg Vorbis stream: %s\n",
+		      errorStr);
+		return -1;
 	}
 	audio_format.bits = 16;
 
