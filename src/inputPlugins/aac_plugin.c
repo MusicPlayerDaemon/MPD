@@ -37,6 +37,19 @@ typedef struct {
 	int atEof;
 } AacBuffer;
 
+static void aac_buffer_shift(AacBuffer * b, size_t length)
+{
+	assert(length >= b->bytesConsumed);
+	assert(length <= b->bytesConsumed + b->bytesIntoBuffer);
+
+	memmove(b->buffer, b->buffer + length,
+		b->bytesConsumed + b->bytesIntoBuffer - length);
+
+	length -= b->bytesConsumed;
+	b->bytesConsumed = 0;
+	b->bytesIntoBuffer -= length;
+}
+
 static void fillAacBuffer(AacBuffer * b)
 {
 	size_t bread;
@@ -45,13 +58,7 @@ static void fillAacBuffer(AacBuffer * b)
 		/* buffer already full */
 		return;
 
-	if (b->bytesConsumed > 0 && b->bytesIntoBuffer > 0) {
-		memmove((void *)b->buffer, (void *)(b->buffer +
-						    b->bytesConsumed),
-			b->bytesIntoBuffer);
-	}
-
-	b->bytesConsumed = 0;
+	aac_buffer_shift(b, b->bytesConsumed);
 
 	if (!b->atEof) {
 		size_t rest = FAAD_MIN_STREAMSIZE * AAC_MAX_CHANNELS -
