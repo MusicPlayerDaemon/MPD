@@ -63,11 +63,4 @@ void decode(void);
 
 void decoderInit(void);
 
-/**
- * Called by the decoder thread when it has performed the requested
- * command (dc->command).  This function resets dc->command and wakes
- * up the player thread.
- */
-void dc_command_finished(void);
-
 #endif

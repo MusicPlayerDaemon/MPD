@@ -273,7 +273,7 @@ static int oggvorbis_decode(struct decoder * decoder, InputStream * inStream)
 				chunkpos = 0;
 			} else
 				dc.seekError = 1;
-			dc_command_finished();
+			decoder_command_finished(decoder);
 		}
 		ret = ov_read(&vf, chunk + chunkpos,
 			      OGG_CHUNK_SIZE - chunkpos,

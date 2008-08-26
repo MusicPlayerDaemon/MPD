@@ -48,14 +48,6 @@ static void dc_command(enum decoder_command cmd)
 	dc_command_wait();
 }
 
-void dc_command_finished(void)
-{
-       assert(dc.command != DECODE_COMMAND_NONE);
-
-       dc.command = DECODE_COMMAND_NONE;
-       notify_signal(&pc.notify);
-}
-
 static void stopDecode(void)
 {
 	if (dc.command == DECODE_COMMAND_START ||

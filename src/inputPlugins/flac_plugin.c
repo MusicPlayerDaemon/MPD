@@ -433,7 +433,7 @@ static int flac_decode_internal(struct decoder * decoder,
 				data.position = 0;
 			} else
 				dc.seekError = 1;
-			dc_command_finished();
+			decoder_command_finished(decoder);
 		}
 	}
 	if (decoder_get_command(decoder) != DECODE_COMMAND_STOP) {

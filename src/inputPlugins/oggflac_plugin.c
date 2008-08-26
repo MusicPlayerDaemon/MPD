@@ -364,7 +364,7 @@ static int oggflac_decode(struct decoder * mpd_decoder, InputStream * inStream)
 				data.position = 0;
 			} else
 				dc.seekError = 1;
-			dc_command_finished(dc);
+			decoder_command_finished(mpd_decoder);
 		}
 	}
 

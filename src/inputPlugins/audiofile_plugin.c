@@ -95,7 +95,7 @@ static int audiofile_decode(struct decoder * decoder, char *path)
 			current = dc.seekWhere *
 				audio_format.sampleRate;
 			afSeekFrame(af_fp, AF_DEFAULT_TRACK, current);
-			dc_command_finished();
+			decoder_command_finished(decoder);
 		}
 
 		ret = afReadFrames(af_fp, AF_DEFAULT_TRACK, chunk,

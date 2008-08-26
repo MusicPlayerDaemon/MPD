@@ -855,7 +855,7 @@ static int mp3Read(mp3DecodeData * data, struct decoder *decoder,
 			data->outputPtr = data->outputBuffer;
 			decoder_clear(decoder);
 			data->muteFrame = 0;
-			dc_command_finished();
+			decoder_command_finished(decoder);
 		}
 		break;
 	default:
@@ -968,12 +968,12 @@ static int mp3Read(mp3DecodeData * data, struct decoder *decoder,
 				} else
 					dc.seekError = 1;
 				data->muteFrame = 0;
-				dc_command_finished();
+				decoder_command_finished(decoder);
 			}
 		} else if (decoder_get_command(decoder) == DECODE_COMMAND_SEEK &&
 			   !data->inStream->seekable) {
 			dc.seekError = 1;
-			dc_command_finished();
+			decoder_command_finished(decoder);
 		}
 	}
 
@@ -1076,7 +1076,7 @@ static int mp3_decode(struct decoder * decoder, InputStream * inStream)
 	if (decoder_get_command(decoder) == DECODE_COMMAND_SEEK &&
 	    data.muteFrame == MUTEFRAME_SEEK) {
 		decoder_clear(decoder);
-		dc_command_finished();
+		decoder_command_finished(decoder);
 	}
 
 	decoder_flush(decoder);

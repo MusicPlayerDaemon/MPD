@@ -50,11 +50,20 @@ enum decoder_command decoder_get_command(mpd_unused struct decoder * decoder)
 	return dc.command;
 }
 
+void decoder_command_finished(mpd_unused struct decoder * decoder)
+{
+	assert(dc.command != DECODE_COMMAND_NONE);
+
+	dc.command = DECODE_COMMAND_NONE;
+	notify_signal(&pc.notify);
+}
+
 /**
  * All chunks are full of decoded data; wait for the player to free
  * one.
  */
-static int need_chunks(InputStream * inStream, int seekable)
+static int need_chunks(struct decoder *decoder, InputStream * inStream,
+		       int seekable)
 {
 	if (dc.command == DECODE_COMMAND_STOP)
 		return OUTPUT_BUFFER_DC_STOP;
@@ -64,7 +73,7 @@ static int need_chunks(InputStream * inStream, int seekable)
 			return OUTPUT_BUFFER_DC_SEEK;
 		} else {
 			dc.seekError = 1;
-			dc_command_finished();
+			decoder_command_finished(decoder);
 		}
 	}
 
@@ -119,7 +128,7 @@ int decoder_data(struct decoder *decoder, InputStream * inStream,
 		data += nbytes;
 
 		if (datalen > 0) {
-			ret = need_chunks(inStream, seekable);
+			ret = need_chunks(decoder, inStream, seekable);
 			if (ret != 0)
 				return ret;
 		}

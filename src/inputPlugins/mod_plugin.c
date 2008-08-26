@@ -189,7 +189,7 @@ static int mod_decode(struct decoder * decoder, char *path)
 	while (1) {
 		if (decoder_get_command(decoder) == DECODE_COMMAND_SEEK) {
 			dc.seekError = 1;
-			dc_command_finished();
+			decoder_command_finished(decoder);
 		}
 
 		if (decoder_get_command(decoder) == DECODE_COMMAND_STOP)

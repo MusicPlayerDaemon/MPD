@@ -188,7 +188,7 @@ static void wavpack_decode(struct decoder * decoder,
 				dc.seekError = 1;
 			}
 
-			dc_command_finished();
+			decoder_command_finished(decoder);
 		}
 
 		if (decoder_get_command(decoder) == DECODE_COMMAND_STOP)

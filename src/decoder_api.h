@@ -106,6 +106,13 @@ void decoder_initialized(struct decoder * decoder,
 enum decoder_command decoder_get_command(struct decoder * decoder);
 
 /**
+ * Called by the decoder when it has performed the requested command
+ * (dc->command).  This function resets dc->command and wakes up the
+ * player thread.
+ */
+void decoder_command_finished(struct decoder * decoder);
+
+/**
  * This function is called by the decoder plugin when it has
  * successfully decoded block of input data.
  *
