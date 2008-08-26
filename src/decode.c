@@ -64,9 +64,10 @@ static void quitDecode(void)
 	wakeup_main_task();
 }
 
-static unsigned calculateCrossFadeChunks(AudioFormat * af, float totalTime)
+static unsigned calculateCrossFadeChunks(AudioFormat * af,
+					 float totalTime, unsigned max_chunks)
 {
-	unsigned int buffered_chunks, chunks;
+	unsigned int chunks;
 
 	if (pc.crossFade == 0 || pc.crossFade >= totalTime ||
 	    !isCurrentAudioFormat(af))
@@ -80,10 +81,8 @@ static unsigned calculateCrossFadeChunks(AudioFormat * af, float totalTime)
 	chunks = (af->sampleRate * af->bits * af->channels / 8.0 / CHUNK_SIZE);
 	chunks = (chunks * pc.crossFade + 0.5);
 
-	buffered_chunks = ob.size;
-	assert(buffered_chunks >= buffered_before_play);
-	if (chunks > (buffered_chunks - buffered_before_play))
-		chunks = buffered_chunks - buffered_before_play;
+	if (chunks > max_chunks)
+		chunks = max_chunks;
 
 	return chunks;
 }
@@ -500,7 +499,9 @@ static void decodeParent(void)
 			   for it */
 			crossFadeChunks =
 				calculateCrossFadeChunks(&(ob.audioFormat),
-							 dc.totalTime);
+							 dc.totalTime,
+							 ob.size -
+							 buffered_before_play);
 			if (crossFadeChunks > 0) {
 				do_xfade = XFADE_ENABLED;
 				nextChunk = -1;
