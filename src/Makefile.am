@@ -107,6 +107,7 @@ mpd_SOURCES = \
 	crossfade.c \
 	dbUtils.c \
 	decode.c \
+	decoder_control.c \
 	decoder_api.c \
 	directory.c \
 	decoder_list.c \

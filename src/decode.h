@@ -61,4 +61,14 @@ typedef struct _DecoderControl {
 
 void decoderInit(void);
 
+void dc_command_wait(Notify *notify);
+
+void dc_start(Notify *notify, Song *song);
+
+void dc_start_async(Song *song);
+
+void dc_stop(Notify *notify);
+
+int dc_seek(Notify *notify, double where);
+
 #endif

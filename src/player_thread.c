@@ -31,30 +31,9 @@ enum xfade_state {
 	XFADE_ENABLED = 1
 };
 
-static void dc_command_wait(void)
-{
-	while (dc.command != DECODE_COMMAND_NONE) {
-		notify_signal(&dc.notify);
-		notify_wait(&pc.notify);
-	}
-}
-
-static void dc_command(enum decoder_command cmd)
-{
-	dc.command = cmd;
-	dc_command_wait();
-}
-
-static void stopDecode(void)
-{
-	if (dc.command == DECODE_COMMAND_START ||
-	    dc.state != DECODE_STATE_STOP)
-		dc_command(DECODE_COMMAND_STOP);
-}
-
 static void quitDecode(void)
 {
-	stopDecode();
+	dc_stop(&pc.notify);
 	pc.state = PLAYER_STATE_STOP;
 	dc.command = DECODE_COMMAND_NONE;
 	pc.command = PLAYER_COMMAND_NONE;
@@ -63,10 +42,7 @@ static void quitDecode(void)
 
 static int waitOnDecode(int *decodeWaitedOn)
 {
-	while (dc.command == DECODE_COMMAND_START) {
-		notify_signal(&dc.notify);
-		notify_wait(&pc.notify);
-	}
+	dc_command_wait(&pc.notify);
 
 	if (dc.error != DECODE_ERROR_NOERROR) {
 		assert(dc.next_song == NULL || dc.next_song->url != NULL);
@@ -88,30 +64,27 @@ static int waitOnDecode(int *decodeWaitedOn)
 static int decodeSeek(int *decodeWaitedOn, int *next)
 {
 	int ret = -1;
+	double where;
 
 	if (dc.state == DECODE_STATE_STOP ||
 	    dc.error != DECODE_ERROR_NOERROR ||
 	    dc.current_song != pc.next_song) {
-		stopDecode();
+		dc_stop(&pc.notify);
 		*next = -1;
 		ob_clear();
-		dc.next_song = pc.next_song;
-		dc.error = DECODE_ERROR_NOERROR;
-		dc.command = DECODE_COMMAND_START;
+		dc_start_async(pc.next_song);
 		waitOnDecode(decodeWaitedOn);
 	}
-	if (dc.state != DECODE_STATE_STOP && dc.seekable) {
-		*next = -1;
-		dc.seekWhere = pc.seekWhere > pc.totalTime - 0.1 ?
-		    pc.totalTime - 0.1 : pc.seekWhere;
-		dc.seekWhere = 0 > dc.seekWhere ? 0 : dc.seekWhere;
-		dc.seekError = 0;
-		dc_command(DECODE_COMMAND_SEEK);
-		if (!dc.seekError) {
-			pc.elapsedTime = dc.seekWhere;
-			ret = 0;
-		}
-	}
+
+	where = pc.seekWhere;
+	if (where > pc.totalTime)
+		where = pc.totalTime - 0.1;
+	if (where < 0.0)
+		where = 0.0;
+
+	ret = dc_seek(&pc.notify, where);
+	if (ret == 0)
+		pc.elapsedTime = where;
 
 	player_command_finished();
 
@@ -291,12 +264,9 @@ static void decodeParent(void)
 			/* the decoder has finished the current song;
 			   make it decode the next song */
 			next = ob.end;
-			dc.next_song = pc.next_song;
-			dc.error = DECODE_ERROR_NOERROR;
-			dc.command = DECODE_COMMAND_START;
+			dc_start_async(pc.next_song);
 			pc.queueState = PLAYER_QUEUE_DECODE;
 			wakeup_main_task();
-			notify_signal(&dc.notify);
 		}
 		if (next >= 0 && do_xfade == XFADE_UNKNOWN &&
 		    dc.command != DECODE_COMMAND_START &&
@@ -416,10 +386,7 @@ static void decode(void)
 {
 	ob_clear();
 
-	dc.next_song = pc.next_song;
-	dc.error = DECODE_ERROR_NOERROR;
-	dc_command(DECODE_COMMAND_START);
-
+	dc_start(&pc.notify, pc.next_song);
 	decodeParent();
 }
 
