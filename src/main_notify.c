@@ -28,9 +28,7 @@
 static struct ioOps main_notify_IO;
 static int main_pipe[2];
 static pthread_t main_task;
-static pthread_cond_t main_wakeup = PTHREAD_COND_INITIALIZER;
-static pthread_mutex_t main_wakeup_mutex = PTHREAD_MUTEX_INITIALIZER;
-static volatile int pending;
+static Notify main_notify;
 static pthread_mutex_t select_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 static int ioops_fdset(fd_set * rfds,
@@ -74,6 +72,7 @@ void init_main_notify(void)
 	main_notify_IO.consume = ioops_consume;
 	registerIO(&main_notify_IO);
 	main_task = pthread_self();
+	notify_init(&main_notify);
 }
 
 static int wakeup_via_pipe(void)
@@ -95,10 +94,10 @@ void wakeup_main_task(void)
 {
 	assert(!pthread_equal(main_task, pthread_self()));
 
-	pending = 1;
+	main_notify.pending = 1;
 
 	if (!wakeup_via_pipe())
-		pthread_cond_signal(&main_wakeup);
+		notify_signal(&main_notify);
 }
 
 void main_notify_lock(void)
@@ -117,10 +116,8 @@ void wait_main_task(void)
 {
 	assert(pthread_equal(main_task, pthread_self()));
 
-	pthread_mutex_lock(&main_wakeup_mutex);
-	if (!pending)
-		pthread_cond_wait(&main_wakeup, &main_wakeup_mutex);
-	pending = 0;
-	pthread_mutex_unlock(&main_wakeup_mutex);
+	notify_enter(&main_notify);
+	notify_wait(&main_notify);
+	notify_leave(&main_notify);
 }
 
