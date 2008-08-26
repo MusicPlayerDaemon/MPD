@@ -217,8 +217,14 @@ static void decodeParent(void)
 		}
 
 		if (decodeWaitedOn) {
-			if(dc.state!=DECODE_STATE_START &&
-			   dc.error==DECODE_ERROR_NOERROR) {
+			if (dc.error != DECODE_ERROR_NOERROR) {
+				/* the decoder failed */
+				assert(dc.next_song == NULL || dc.next_song->url != NULL);
+				pc.errored_song = dc.next_song;
+				pc.error = PLAYER_ERROR_FILE;
+				break;
+			}
+			else if (dc.state != DECODE_STATE_START) {
 				/* the decoder is ready and ok */
 				decodeWaitedOn = 0;
 				if(openAudioDevice(&(ob.audioFormat))<0) {
@@ -241,13 +247,6 @@ static void decodeParent(void)
 				pc.bits = dc.audioFormat.bits;
 				pc.channels = dc.audioFormat.channels;
 				sizeToTime = audioFormatSizeToTime(&ob.audioFormat);
-			}
-			else if(dc.state!=DECODE_STATE_START) {
-				/* the decoder failed */
-				assert(dc.next_song == NULL || dc.next_song->url != NULL);
-				pc.errored_song = dc.next_song;
-				pc.error = PLAYER_ERROR_FILE;
-				break;
 			}
 			else {
 				/* the decoder is not yet ready; wait
