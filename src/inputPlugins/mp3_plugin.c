@@ -932,12 +932,18 @@ static int mp3Read(mp3DecodeData * data, struct decoder *decoder,
 				pcm_length -= data->dropSamplesAtEnd;
 		}
 
-		for (; i < pcm_length; i++) {
-			unsigned int num_samples;
+		while (i < pcm_length) {
+			unsigned int num_samples =
+				(data->outputBufferEnd - data->outputPtr) /
+				(2 * MAD_NCHANNELS(&(data->frame).header));
+			if (num_samples > pcm_length - i)
+				num_samples = pcm_length - i;
+
+			i += num_samples;
 
 			num_samples = dither_buffer((mpd_sint16 *) data->outputPtr,
 						    &data->synth, &data->dither,
-						    i, i + 1,
+						    i - num_samples, i,
 						    MAD_NCHANNELS(&(data->frame).header));
 			data->outputPtr += 2 * num_samples;
 
