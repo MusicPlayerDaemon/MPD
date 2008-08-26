@@ -42,42 +42,41 @@ struct decoder;
 
 /* optional, set this to NULL if the InputPlugin doesn't have/need one
  * this must return < 0 if there is an error and >= 0 otherwise */
-typedef int (*InputPlugin_initFunc) (void);
+typedef int (*decoder_init_func) (void);
 
 /* optional, set this to NULL if the InputPlugin doesn't have/need one */
-typedef void (*InputPlugin_finishFunc) (void);
+typedef void (*decoder_finish_func) (void);
 
 /* boolean return value, returns 1 if the InputStream is decodable by
  * the InputPlugin, 0 if not */
-typedef unsigned int (*InputPlugin_tryDecodeFunc) (InputStream *);
+typedef unsigned int (*decoder_try_decode_func) (InputStream *);
 
 /* this will be used to decode InputStreams, and is recommended for files
  * and networked (HTTP) connections.
  *
  * returns -1 on error, 0 on success */
-typedef int (*InputPlugin_streamDecodeFunc) (struct decoder *,
-					     InputStream *);
+typedef int (*decoder_stream_decode_func) (struct decoder *, InputStream *);
 
 /* use this if and only if your InputPlugin can only be passed a filename or
  * handle as input, and will not allow callbacks to be set (like Ogg-Vorbis
  * and FLAC libraries allow)
  *
  * returns -1 on error, 0 on success */
-typedef int (*InputPlugin_fileDecodeFunc) (struct decoder *,
-					   char *path);
+typedef int (*decoder_file_decode_func) (struct decoder *, char *path);
 
 /* file should be the full path!  Returns NULL if a tag cannot be found
  * or read */
-typedef MpdTag *(*InputPlugin_tagDupFunc) (char *file);
+typedef MpdTag *(*decoder_tag_dup_func) (char *file);
 
 struct decoder_plugin {
 	const char *name;
-	InputPlugin_initFunc initFunc;
-	InputPlugin_finishFunc finishFunc;
-	InputPlugin_tryDecodeFunc tryDecodeFunc;
-	InputPlugin_streamDecodeFunc streamDecodeFunc;
-	InputPlugin_fileDecodeFunc fileDecodeFunc;
-	InputPlugin_tagDupFunc tagDupFunc;
+
+	decoder_init_func initFunc;
+	decoder_finish_func finishFunc;
+	decoder_try_decode_func tryDecodeFunc;
+	decoder_stream_decode_func streamDecodeFunc;
+	decoder_file_decode_func fileDecodeFunc;
+	decoder_tag_dup_func tagDupFunc;
 
 	/* one or more of the INPUT_PLUGIN_STREAM_* values OR'd together */
 	unsigned char streamTypes;
