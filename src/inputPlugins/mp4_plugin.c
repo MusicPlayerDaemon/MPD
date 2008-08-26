@@ -95,7 +95,6 @@ static int mp4_decode(struct decoder * mpd_decoder, InputStream * inStream)
 	unsigned char channels;
 	long sampleId;
 	long numSamples;
-	int eof = 0;
 	long dur;
 	unsigned int sampleCount;
 	char *sampleBuffer;
@@ -178,7 +177,7 @@ static int mp4_decode(struct decoder * mpd_decoder, InputStream * inStream)
 
 	seekTable = xmalloc(sizeof(float) * numSamples);
 
-	for (sampleId = 0; sampleId < numSamples && !eof; sampleId++) {
+	for (sampleId = 0; sampleId < numSamples; sampleId++) {
 		if (dc.command == DECODE_COMMAND_SEEK)
 			seeking = 1;
 
@@ -221,10 +220,9 @@ static int mp4_decode(struct decoder * mpd_decoder, InputStream * inStream)
 			continue;
 
 		if (mp4ff_read_sample(mp4fh, track, sampleId, &mp4Buffer,
-				      &mp4BufferSize) == 0) {
-			eof = 1;
-			continue;
-		}
+				      &mp4BufferSize) == 0)
+			break;
+
 #ifdef HAVE_FAAD_BUFLEN_FUNCS
 		sampleBuffer = faacDecDecode(decoder, &frameInfo, mp4Buffer,
 					     mp4BufferSize);
@@ -237,7 +235,6 @@ static int mp4_decode(struct decoder * mpd_decoder, InputStream * inStream)
 		if (frameInfo.error > 0) {
 			ERROR("faad2 error: %s\n",
 			      faacDecGetErrorMessage(frameInfo.error));
-			eof = 1;
 			break;
 		}
 
@@ -273,10 +270,8 @@ static int mp4_decode(struct decoder * mpd_decoder, InputStream * inStream)
 		decoder_data(mpd_decoder, inStream, 1, sampleBuffer,
 			     sampleBufferLen, file_time,
 			     bitRate, NULL);
-		if (dc.command == DECODE_COMMAND_STOP) {
-			eof = 1;
+		if (dc.command == DECODE_COMMAND_STOP)
 			break;
-		}
 	}
 
 	free(seekTable);

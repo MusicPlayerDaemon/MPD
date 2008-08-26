@@ -289,7 +289,6 @@ static int aac_decode(struct decoder * mpd_decoder, char *path)
 	AudioFormat audio_format;
 	uint32_t sampleRate;
 	unsigned char channels;
-	int eof = 0;
 	unsigned int sampleCount;
 	char *sampleBuffer;
 	size_t sampleBufferLen;
@@ -342,13 +341,12 @@ static int aac_decode(struct decoder * mpd_decoder, char *path)
 
 	advanceAacBuffer(&b, bread);
 
-	while (!eof) {
+	while (1) {
 		fillAacBuffer(&b);
 
-		if (b.bytesIntoBuffer == 0) {
-			eof = 1;
+		if (b.bytesIntoBuffer == 0)
 			break;
-		}
+
 #ifdef HAVE_FAAD_BUFLEN_FUNCS
 		sampleBuffer = faacDecDecode(decoder, &frameInfo, b.buffer,
 					     b.bytesIntoBuffer);
@@ -360,7 +358,6 @@ static int aac_decode(struct decoder * mpd_decoder, char *path)
 			ERROR("error decoding AAC file: %s\n", path);
 			ERROR("faad2 error: %s\n",
 			      faacDecGetErrorMessage(frameInfo.error));
-			eof = 1;
 			break;
 		}
 #ifdef HAVE_FAACDECFRAMEINFO_SAMPLERATE
@@ -395,10 +392,8 @@ static int aac_decode(struct decoder * mpd_decoder, char *path)
 		if (dc.command == DECODE_COMMAND_SEEK) {
 			dc.seekError = 1;
 			dc_command_finished();
-		} else if (dc.command == DECODE_COMMAND_STOP) {
-			eof = 1;
+		} else if (dc.command == DECODE_COMMAND_STOP)
 			break;
-		}
 	}
 
 	decoder_flush(mpd_decoder);
