@@ -190,14 +190,17 @@ void setQueueState(enum player_queue_state queueState)
 
 void playerQueueLock(void)
 {
-	if (pc.queueLockState == PLAYER_QUEUE_UNLOCKED)
-		player_command(PLAYER_COMMAND_LOCK_QUEUE);
+	assert(pc.queueLockState == PLAYER_QUEUE_UNLOCKED);
+	player_command(PLAYER_COMMAND_LOCK_QUEUE);
+	assert(pc.queueLockState == PLAYER_QUEUE_LOCKED);
 }
 
 void playerQueueUnlock(void)
 {
 	if (pc.queueLockState == PLAYER_QUEUE_LOCKED)
 		player_command(PLAYER_COMMAND_UNLOCK_QUEUE);
+
+	assert(pc.queueLockState == PLAYER_QUEUE_UNLOCKED);
 }
 
 int playerSeek(int fd, Song * song, float seek_time)
