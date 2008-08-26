@@ -966,9 +966,6 @@ static int mp3Read(mp3DecodeData * data, struct decoder *decoder,
 				}
 
 				data->outputPtr = data->outputBuffer;
-
-				if (cmd == DECODE_COMMAND_STOP)
-					break;
 			}
 		}
 
