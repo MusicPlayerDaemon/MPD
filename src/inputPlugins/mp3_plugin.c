@@ -151,8 +151,6 @@ typedef struct _mp3DecodeData {
 	mad_timer_t timer;
 	unsigned char readBuffer[READ_BUFFER_SIZE];
 	char outputBuffer[MP3_DATA_OUTPUT_BUFFER_SIZE];
-	char *outputPtr;
-	char *outputBufferEnd;
 	float totalTime;
 	float elapsedTime;
 	int muteFrame;
@@ -176,9 +174,6 @@ typedef struct _mp3DecodeData {
 
 static void initMp3DecodeData(mp3DecodeData * data, InputStream * inStream)
 {
-	data->outputPtr = data->outputBuffer;
-	data->outputBufferEnd =
-	    data->outputBuffer + MP3_DATA_OUTPUT_BUFFER_SIZE;
 	data->muteFrame = 0;
 	data->highestFrame = 0;
 	data->maxFrames = 0;
@@ -871,7 +866,6 @@ static int mp3Read(mp3DecodeData * data, struct decoder *decoder,
 		break;
 	case MUTEFRAME_SEEK:
 		if (decoder_seek_where(decoder) <= data->elapsedTime) {
-			data->outputPtr = data->outputBuffer;
 			decoder_clear(decoder);
 			data->muteFrame = 0;
 			decoder_command_finished(decoder);
@@ -930,31 +924,27 @@ static int mp3Read(mp3DecodeData * data, struct decoder *decoder,
 
 		while (i < pcm_length) {
 			enum decoder_command cmd;
-			unsigned int num_samples =
-				(data->outputBufferEnd - data->outputPtr) /
+			unsigned int num_samples = sizeof(data->outputBuffer) /
 				(2 * MAD_NCHANNELS(&(data->frame).header));
 			if (num_samples > pcm_length - i)
 				num_samples = pcm_length - i;
 
 			i += num_samples;
 
-			num_samples = dither_buffer((mpd_sint16 *) data->outputPtr,
+			num_samples = dither_buffer((mpd_sint16 *) data->outputBuffer,
 						    &data->synth, &data->dither,
 						    i - num_samples, i,
 						    MAD_NCHANNELS(&(data->frame).header));
-			data->outputPtr += 2 * num_samples;
 
 			cmd = decoder_data(decoder, data->inStream,
 					   data->inStream->seekable,
 					   data->outputBuffer,
-					   data->outputPtr - data->outputBuffer,
+					   2 * num_samples,
 					   data->elapsedTime,
 					   data->bitRate / 1000,
 					   (replayGainInfo != NULL) ? *replayGainInfo : NULL);
 			if (cmd == DECODE_COMMAND_STOP)
 				return DECODE_BREAK;
-
-			data->outputPtr = data->outputBuffer;
 		}
 
 		if (data->dropSamplesAtEnd &&
@@ -978,7 +968,6 @@ static int mp3Read(mp3DecodeData * data, struct decoder *decoder,
 				if (seekMp3InputBuffer(data,
 						       data->frameOffset[j]) ==
 				    0) {
-					data->outputPtr = data->outputBuffer;
 					decoder_clear(decoder);
 					data->currentFrame = j;
 					decoder_command_finished(decoder);
