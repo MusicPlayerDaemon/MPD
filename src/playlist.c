@@ -507,22 +507,32 @@ static void queueNextSongInPlaylist(void)
 
 static void syncPlaylistWithQueue(int queue)
 {
-	if (queue && getPlayerQueueState() == PLAYER_QUEUE_BLANK) {
-		queueNextSongInPlaylist();
-	} else if (getPlayerQueueState() == PLAYER_QUEUE_DECODE) {
-		if (playlist.queued != -1)
-			setQueueState(PLAYER_QUEUE_PLAY);
-		else
-			setQueueState(PLAYER_QUEUE_STOP);
-	} else if (getPlayerQueueState() == PLAYER_QUEUE_EMPTY) {
+	switch (getPlayerQueueState()) {
+	case PLAYER_QUEUE_EMPTY:
 		setQueueState(PLAYER_QUEUE_BLANK);
 		if (playlist.queued >= 0) {
 			DEBUG("playlist: now playing queued song\n");
 			playlist.current = playlist.queued;
 		}
 		playlist.queued = -1;
+		/* intentionally no break here */
+
+	case PLAYER_QUEUE_BLANK:
 		if (queue)
 			queueNextSongInPlaylist();
+		break;
+
+	case PLAYER_QUEUE_DECODE:
+		if (playlist.queued != -1)
+			setQueueState(PLAYER_QUEUE_PLAY);
+		else
+			setQueueState(PLAYER_QUEUE_STOP);
+		break;
+
+	case PLAYER_QUEUE_FULL:
+	case PLAYER_QUEUE_PLAY:
+	case PLAYER_QUEUE_STOP:
+		break;
 	}
 }
 
