@@ -22,7 +22,7 @@
 #ifndef _OGG_COMMON_H
 #define _OGG_COMMON_H
 
-#include "../inputPlugin.h"
+#include "../decoder_api.h"
 
 #if defined(HAVE_OGGFLAC) || defined(HAVE_OGGVORBIS) || \
   (defined(FLAC_API_VERSION_CURRENT) && FLAC_API_VERSION_CURRENT > 7)

@@ -22,6 +22,7 @@
 
 #include "../utils.h"
 #include "../log.h"
+#include "../inputPlugin.h"
 
 /* this code was based on flac123, from flac-tools */
 

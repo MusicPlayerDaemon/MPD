@@ -19,7 +19,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "../inputPlugin.h"
+#include "../decoder_api.h"
 
 #if defined(HAVE_FLAC) || defined(HAVE_OGGFLAC)
 

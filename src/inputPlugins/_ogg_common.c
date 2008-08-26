@@ -19,8 +19,6 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "../inputPlugin.h"
-
 #include "_flac_common.h"
 #include "_ogg_common.h"
 

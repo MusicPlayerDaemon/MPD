@@ -19,62 +19,7 @@
 #ifndef INPUT_PLUGIN_H
 #define INPUT_PLUGIN_H
 
-#include "inputStream.h"
-#include "outputBuffer.h"
-#include "playerData.h"
-
-/* valid values for streamTypes in the InputPlugin struct: */
-#define INPUT_PLUGIN_STREAM_FILE	0x01
-#define INPUT_PLUGIN_STREAM_URL		0x02
-
-struct decoder;
-
-/* optional, set this to NULL if the InputPlugin doesn't have/need one
- * this must return < 0 if there is an error and >= 0 otherwise */
-typedef int (*InputPlugin_initFunc) (void);
-
-/* optional, set this to NULL if the InputPlugin doesn't have/need one */
-typedef void (*InputPlugin_finishFunc) (void);
-
-/* boolean return value, returns 1 if the InputStream is decodable by
- * the InputPlugin, 0 if not */
-typedef unsigned int (*InputPlugin_tryDecodeFunc) (InputStream *);
-
-/* this will be used to decode InputStreams, and is recommended for files
- * and networked (HTTP) connections.
- *
- * returns -1 on error, 0 on success */
-typedef int (*InputPlugin_streamDecodeFunc) (struct decoder *,
-					     InputStream *);
-
-/* use this if and only if your InputPlugin can only be passed a filename or
- * handle as input, and will not allow callbacks to be set (like Ogg-Vorbis
- * and FLAC libraries allow)
- *
- * returns -1 on error, 0 on success */
-typedef int (*InputPlugin_fileDecodeFunc) (struct decoder *,
-					   char *path);
-
-/* file should be the full path!  Returns NULL if a tag cannot be found
- * or read */
-typedef MpdTag *(*InputPlugin_tagDupFunc) (char *file);
-
-typedef struct _InputPlugin {
-	const char *name;
-	InputPlugin_initFunc initFunc;
-	InputPlugin_finishFunc finishFunc;
-	InputPlugin_tryDecodeFunc tryDecodeFunc;
-	InputPlugin_streamDecodeFunc streamDecodeFunc;
-	InputPlugin_fileDecodeFunc fileDecodeFunc;
-	InputPlugin_tagDupFunc tagDupFunc;
-
-	/* one or more of the INPUT_PLUGIN_STREAM_* values OR'd together */
-	unsigned char streamTypes;
-
-	/* last element in these arrays must always be a NULL: */
-	const char *const*suffixes;
-	const char *const*mimeTypes;
-} InputPlugin;
+#include "decoder_api.h"
 
 /* individual functions to load/unload plugins */
 void loadInputPlugin(InputPlugin * inputPlugin);
