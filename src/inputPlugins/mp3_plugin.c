@@ -105,6 +105,30 @@ static signed long audio_linear_dither(unsigned int bits, mad_fixed_t sample,
 	return output >> scalebits;
 }
 
+static unsigned dither_buffer(mpd_sint16 *dest0, const struct mad_synth *synth,
+			      struct audio_dither *dither,
+			      unsigned int start, unsigned int end,
+			      unsigned int num_channels)
+{
+	mpd_sint16 *dest = dest0;
+	unsigned int i;
+
+	for (i = start; i < end; ++i) {
+		*dest++ = (mpd_sint16)
+			audio_linear_dither(16,
+					    synth->pcm.samples[0][i],
+					    dither);
+
+		if (num_channels == 2)
+			*dest++ = (mpd_sint16)
+				audio_linear_dither(16,
+						    synth->pcm.samples[1][i],
+						    dither);
+	}
+
+	return dest - dest0;
+}
+
 /* end of stolen stuff from mpg321 */
 
 static int mp3_plugin_init(void)
@@ -909,7 +933,7 @@ static int mp3Read(mp3DecodeData * data, struct decoder *decoder,
 			i = 0;
 
 		for (; i < (data->synth).pcm.length; i++) {
-			mpd_sint16 *sample;
+			unsigned int num_samples;
 
 			samplesLeft--;
 
@@ -921,19 +945,11 @@ static int mp3Read(mp3DecodeData * data, struct decoder *decoder,
 				return DECODE_BREAK;
 			}
 
-			sample = (mpd_sint16 *) data->outputPtr;
-			*sample = (mpd_sint16) audio_linear_dither(16,
-								   (data->synth).pcm.samples[0][i],
-								   &(data->dither));
-			data->outputPtr += 2;
-
-			if (MAD_NCHANNELS(&(data->frame).header) == 2) {
-				sample = (mpd_sint16 *) data->outputPtr;
-				*sample = (mpd_sint16) audio_linear_dither(16,
-									   (data->synth).pcm.samples[1][i],
-									   &(data->dither));
-				data->outputPtr += 2;
-			}
+			num_samples = dither_buffer((mpd_sint16 *) data->outputPtr,
+						    &data->synth, &data->dither,
+						    i, i + 1,
+						    MAD_NCHANNELS(&(data->frame).header));
+			data->outputPtr += 2 * num_samples;
 
 			if (data->outputPtr >= data->outputBufferEnd) {
 				enum decoder_command cmd;
