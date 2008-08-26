@@ -111,6 +111,7 @@ static int mpc_decode(struct decoder * mpd_decoder, InputStream * inStream)
 	mpc_decoder decoder;
 	mpc_reader reader;
 	mpc_streaminfo info;
+	AudioFormat audio_format;
 
 	MpcCallbackData data;
 
@@ -161,11 +162,9 @@ static int mpc_decode(struct decoder * mpd_decoder, InputStream * inStream)
 
 	dc.totalTime = mpc_streaminfo_get_length(&info);
 
-	dc.audioFormat.bits = 16;
-	dc.audioFormat.channels = info.channels;
-	dc.audioFormat.sampleRate = info.sample_freq;
-
-	getOutputAudioFormat(&(dc.audioFormat), &(ob.audioFormat));
+	audio_format.bits = 16;
+	audio_format.channels = info.channels;
+	audio_format.sampleRate = info.sample_freq;
 
 	replayGainInfo = newReplayGainInfo();
 	replayGainInfo->albumGain = info.gain_album * 0.01;
@@ -173,11 +172,11 @@ static int mpc_decode(struct decoder * mpd_decoder, InputStream * inStream)
 	replayGainInfo->trackGain = info.gain_title * 0.01;
 	replayGainInfo->trackPeak = info.peak_title / 32767.0;
 
-	decoder_initialized(mpd_decoder);
+	decoder_initialized(mpd_decoder, &audio_format);
 
 	while (!eof) {
 		if (dc.command == DECODE_COMMAND_SEEK) {
-			samplePos = dc.seekWhere * dc.audioFormat.sampleRate;
+			samplePos = dc.seekWhere * audio_format.sampleRate;
 			if (mpc_decoder_seek_sample(&decoder, samplePos)) {
 				decoder_clear(mpd_decoder);
 				s16 = (mpd_sint16 *) chunk;
@@ -210,10 +209,10 @@ static int mpc_decode(struct decoder * mpd_decoder, InputStream * inStream)
 
 			if (chunkpos >= MPC_CHUNK_SIZE) {
 				total_time = ((float)samplePos) /
-				    dc.audioFormat.sampleRate;
+				    audio_format.sampleRate;
 
 				bitRate = vbrUpdateBits *
-				    dc.audioFormat.sampleRate / 1152 / 1000;
+				    audio_format.sampleRate / 1152 / 1000;
 
 				decoder_data(mpd_decoder, inStream,
 					     inStream->seekable,
@@ -232,10 +231,10 @@ static int mpc_decode(struct decoder * mpd_decoder, InputStream * inStream)
 	}
 
 	if (dc.command != DECODE_COMMAND_STOP && chunkpos > 0) {
-		total_time = ((float)samplePos) / dc.audioFormat.sampleRate;
+		total_time = ((float)samplePos) / audio_format.sampleRate;
 
 		bitRate =
-		    vbrUpdateBits * dc.audioFormat.sampleRate / 1152 / 1000;
+		    vbrUpdateBits * audio_format.sampleRate / 1152 / 1000;
 
 		decoder_data(mpd_decoder, NULL, inStream->seekable,
 			     chunk, chunkpos, total_time, bitRate,

@@ -215,6 +215,7 @@ static int oggvorbis_decode(struct decoder * decoder, InputStream * inStream)
 	OggVorbis_File vf;
 	ov_callbacks callbacks;
 	OggCallbackData data;
+	AudioFormat audio_format;
 	int current_section;
 	int prev_section = -1;
 	long ret;
@@ -264,7 +265,7 @@ static int oggvorbis_decode(struct decoder * decoder, InputStream * inStream)
 	dc.totalTime = ov_time_total(&vf, -1);
 	if (dc.totalTime < 0)
 		dc.totalTime = 0;
-	dc.audioFormat.bits = 16;
+	audio_format.bits = 16;
 
 	while (1) {
 		if (dc.command == DECODE_COMMAND_SEEK) {
@@ -281,12 +282,10 @@ static int oggvorbis_decode(struct decoder * decoder, InputStream * inStream)
 		if (current_section != prev_section) {
 			/*printf("new song!\n"); */
 			vorbis_info *vi = ov_info(&vf, -1);
-			dc.audioFormat.channels = vi->channels;
-			dc.audioFormat.sampleRate = vi->rate;
+			audio_format.channels = vi->channels;
+			audio_format.sampleRate = vi->rate;
 			if (dc.state == DECODE_STATE_START) {
-				getOutputAudioFormat(&(dc.audioFormat),
-						     &(ob.audioFormat));
-				decoder_initialized(decoder);
+				decoder_initialized(decoder, &audio_format);
 			}
 			comments = ov_comment(&vf, -1)->user_comments;
 			putOggCommentsIntoOutputBuffer(inStream->metaName,
@@ -312,7 +311,7 @@ static int oggvorbis_decode(struct decoder * decoder, InputStream * inStream)
 			decoder_data(decoder, inStream,
 				     inStream->seekable,
 				     chunk, chunkpos,
-				     ov_pcm_tell(&vf) / dc.audioFormat.sampleRate,
+				     ov_pcm_tell(&vf) / audio_format.sampleRate,
 				     bitRate, replayGainInfo);
 			chunkpos = 0;
 			if (dc.command == DECODE_COMMAND_STOP)

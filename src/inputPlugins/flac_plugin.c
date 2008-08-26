@@ -242,7 +242,7 @@ static FLAC__StreamDecoderWriteStatus flacWrite(const flac_decoder *dec,
 	FLAC__uint32 samples = frame->header.blocksize;
 	unsigned int c_samp;
 	const unsigned int num_channels = frame->header.channels;
-	const unsigned int bytes_per_sample = (dc.audioFormat.bits / 8);
+	const unsigned int bytes_per_sample = (data->audio_format.bits / 8);
 	const unsigned int bytes_per_channel =
 		bytes_per_sample * frame->header.channels;
 	const unsigned int max_samples = FLAC_CHUNK_SIZE / bytes_per_channel;
@@ -250,7 +250,7 @@ static FLAC__StreamDecoderWriteStatus flacWrite(const flac_decoder *dec,
 	float timeChange;
 	FLAC__uint64 newPosition = 0;
 
-	assert(dc.audioFormat.bits > 0);
+	assert(data->audio_format.bits > 0);
 
 	timeChange = ((float)samples) / frame->header.sample_rate;
 	data->time += timeChange;
@@ -415,7 +415,7 @@ static int flac_decode_internal(struct decoder * decoder,
 		}
 	}
 
-	decoder_initialized(decoder);
+	decoder_initialized(decoder, &data.audio_format);
 
 	while (1) {
 		if (!flac_process_single(flacDec))
@@ -424,11 +424,11 @@ static int flac_decode_internal(struct decoder * decoder,
 			break;
 		if (dc.command == DECODE_COMMAND_SEEK) {
 			FLAC__uint64 sampleToSeek = dc.seekWhere *
-			    dc.audioFormat.sampleRate + 0.5;
+			    data.audio_format.sampleRate + 0.5;
 			if (flac_seek_absolute(flacDec, sampleToSeek)) {
 				decoder_clear(decoder);
 				data.time = ((float)sampleToSeek) /
-				    dc.audioFormat.sampleRate;
+				    data.audio_format.sampleRate;
 				data.position = 0;
 			} else
 				dc.seekError = 1;

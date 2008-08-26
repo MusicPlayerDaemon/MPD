@@ -188,7 +188,7 @@ static FLAC__StreamDecoderWriteStatus oggflacWrite(const
 		     c_chan++) {
 			u16 = buf[c_chan][c_samp];
 			uc = (unsigned char *)&u16;
-			for (i = 0; i < (dc.audioFormat.bits / 8); i++) {
+			for (i = 0; i < (data->audio_format.bits / 8); i++) {
 				if (data->chunk_length >= FLAC_CHUNK_SIZE) {
 					if (flacSendChunk(data) < 0) {
 						return
@@ -345,7 +345,7 @@ static int oggflac_decode(struct decoder * mpd_decoder, InputStream * inStream)
 		goto fail;
 	}
 
-	decoder_initialized(mpd_decoder);
+	decoder_initialized(mpd_decoder, &data.audio_format);
 
 	while (1) {
 		OggFLAC__seekable_stream_decoder_process_single(decoder);
@@ -353,14 +353,14 @@ static int oggflac_decode(struct decoder * mpd_decoder, InputStream * inStream)
 		    OggFLAC__SEEKABLE_STREAM_DECODER_OK) {
 			break;
 		}
-		if (dc.command == DECODE_COMMAND_SEEK) {
-			FLAC__uint64 sampleToSeek = dc.seekWhere *
-			    dc.audioFormat.sampleRate + 0.5;
+		if (dc->command == DECODE_COMMAND_SEEK) {
+			FLAC__uint64 sampleToSeek = dc->seekWhere *
+			    data.audio_format.sampleRate + 0.5;
 			if (OggFLAC__seekable_stream_decoder_seek_absolute
 			    (decoder, sampleToSeek)) {
 				decoder_clear(mpd_decoder);
 				data.time = ((float)sampleToSeek) /
-				    dc.audioFormat.sampleRate;
+				    data.audio_format.sampleRate;
 				data.position = 0;
 			} else
 				dc.seekError = 1;

@@ -162,6 +162,7 @@ static void mod_close(mod_Data * data)
 static int mod_decode(struct decoder * decoder, char *path)
 {
 	mod_Data *data;
+	AudioFormat audio_format;
 	float total_time = 0.0;
 	int ret;
 	float secPerByte;
@@ -176,16 +177,16 @@ static int mod_decode(struct decoder * decoder, char *path)
 	}
 
 	dc.totalTime = 0;
-	dc.audioFormat.bits = 16;
-	dc.audioFormat.sampleRate = 44100;
-	dc.audioFormat.channels = 2;
-	getOutputAudioFormat(&(dc.audioFormat), &(ob.audioFormat));
+	audio_format.bits = 16;
+	audio_format.sampleRate = 44100;
+	audio_format.channels = 2;
 
 	secPerByte =
-	    1.0 / ((dc.audioFormat.bits * dc.audioFormat.channels / 8.0) *
-		   (float)dc.audioFormat.sampleRate);
+	    1.0 / ((audio_format.bits * audio_format.channels / 8.0) *
+		   (float)audio_format.sampleRate);
 
-	decoder_initialized(decoder);
+	decoder_initialized(decoder, &audio_format);
+
 	while (1) {
 		if (dc.command == DECODE_COMMAND_SEEK) {
 			dc.seekError = 1;

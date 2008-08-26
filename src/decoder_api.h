@@ -40,7 +40,8 @@ struct decoder;
  * Notify the player thread that it has finished initialization and
  * that it has read the song's meta data.
  */
-void decoder_initialized(struct decoder * decoder);
+void decoder_initialized(struct decoder * decoder,
+			 const AudioFormat * audio_format);
 
 /**
  * This function is called by the decoder plugin when it has

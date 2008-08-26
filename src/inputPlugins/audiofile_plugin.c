@@ -45,6 +45,7 @@ static int audiofile_decode(struct decoder * decoder, char *path)
 	int fs, frame_count;
 	AFfilehandle af_fp;
 	int bits;
+	AudioFormat audio_format;
 	mpd_uint16 bitRate;
 	struct stat st;
 
@@ -62,30 +63,30 @@ static int audiofile_decode(struct decoder * decoder, char *path)
 	afSetVirtualSampleFormat(af_fp, AF_DEFAULT_TRACK,
 	                         AF_SAMPFMT_TWOSCOMP, 16);
 	afGetVirtualSampleFormat(af_fp, AF_DEFAULT_TRACK, &fs, &bits);
-	dc.audioFormat.bits = (mpd_uint8)bits;
-	dc.audioFormat.sampleRate =
+	audio_format.bits = (mpd_uint8)bits;
+	audio_format.sampleRate =
 	                      (unsigned int)afGetRate(af_fp, AF_DEFAULT_TRACK);
-	dc.audioFormat.channels =
+	audio_format.channels =
 	              (mpd_uint8)afGetVirtualChannels(af_fp, AF_DEFAULT_TRACK);
-	getOutputAudioFormat(&(dc.audioFormat), &(ob.audioFormat));
 
 	frame_count = afGetFrameCount(af_fp, AF_DEFAULT_TRACK);
 
 	dc.totalTime =
-	    ((float)frame_count / (float)dc.audioFormat.sampleRate);
+	    ((float)frame_count / (float)audio_format.sampleRate);
 
 	bitRate = (mpd_uint16)(st.st_size * 8.0 / dc.totalTime / 1000.0 + 0.5);
 
-	if (dc.audioFormat.bits != 8 && dc.audioFormat.bits != 16) {
+	if (audio_format.bits != 8 && audio_format.bits != 16) {
 		ERROR("Only 8 and 16-bit files are supported. %s is %i-bit\n",
-		      path, dc.audioFormat.bits);
+		      path, audio_format.bits);
 		afCloseFile(af_fp);
 		return -1;
 	}
 
 	fs = (int)afGetVirtualFrameSize(af_fp, AF_DEFAULT_TRACK, 1);
 
-	decoder_initialized(decoder);
+	decoder_initialized(decoder, &audio_format);
+
 	{
 		int ret, eof = 0, current = 0;
 		char chunk[CHUNK_SIZE];
@@ -94,7 +95,7 @@ static int audiofile_decode(struct decoder * decoder, char *path)
 			if (dc.command == DECODE_COMMAND_SEEK) {
 				decoder_clear(decoder);
 				current = dc.seekWhere *
-				    dc.audioFormat.sampleRate;
+				    audio_format.sampleRate;
 				afSeekFrame(af_fp, AF_DEFAULT_TRACK, current);
 				dc_command_finished();
 			}
@@ -110,7 +111,7 @@ static int audiofile_decode(struct decoder * decoder, char *path)
 					     1,
 					     chunk, ret * fs,
 					     (float)current /
-					     (float)dc.audioFormat.
+					     (float)audio_format.
 					     sampleRate, bitRate,
 					     NULL);
 				if (dc.command == DECODE_COMMAND_STOP)

@@ -128,6 +128,7 @@ static void wavpack_decode(struct decoder * decoder,
                            WavpackContext *wpc, int canseek,
                            ReplayGainInfo *replayGainInfo)
 {
+	AudioFormat audio_format;
 	void (*format_samples)(int Bps, void *buffer, uint32_t samcnt);
 	char chunk[CHUNK_SIZE];
 	float file_time;
@@ -136,12 +137,12 @@ static void wavpack_decode(struct decoder * decoder,
 	int position, outsamplesize;
 	int Bps;
 
-	dc.audioFormat.sampleRate = WavpackGetSampleRate(wpc);
-	dc.audioFormat.channels = WavpackGetReducedChannels(wpc);
-	dc.audioFormat.bits = WavpackGetBitsPerSample(wpc);
+	audio_format.sampleRate = WavpackGetSampleRate(wpc);
+	audio_format.channels = WavpackGetReducedChannels(wpc);
+	audio_format.bits = WavpackGetBitsPerSample(wpc);
 
-	if (dc.audioFormat.bits > 16)
-		dc.audioFormat.bits = 16;
+	if (audio_format.bits > 16)
+		audio_format.bits = 16;
 
 	if ((WavpackGetMode(wpc) & MODE_FLOAT) == MODE_FLOAT)
 		format_samples = format_samples_float;
@@ -159,16 +160,14 @@ static void wavpack_decode(struct decoder * decoder,
 	outsamplesize = Bps;
 	if (outsamplesize > 2)
 		outsamplesize = 2;
-	outsamplesize *= dc.audioFormat.channels;
+	outsamplesize *= audio_format.channels;
 
-	samplesreq = sizeof(chunk) / (4 * dc.audioFormat.channels);
+	samplesreq = sizeof(chunk) / (4 * audio_format.channels);
 
-	getOutputAudioFormat(&(dc.audioFormat), &(ob.audioFormat));
-
-	dc.totalTime = (float)allsamples / dc.audioFormat.sampleRate;
+	dc.totalTime = (float)allsamples / audio_format.sampleRate;
 	dc.seekable = canseek;
 
-	decoder_initialized(decoder);
+	decoder_initialized(decoder, &audio_format);
 
 	position = 0;
 
@@ -180,7 +179,7 @@ static void wavpack_decode(struct decoder * decoder,
 				decoder_clear(decoder);
 
 				where = dc.seekWhere *
-				        dc.audioFormat.sampleRate;
+				        audio_format.sampleRate;
 				if (WavpackSeekSample(wpc, where))
 					position = where;
 				else
@@ -202,10 +201,10 @@ static void wavpack_decode(struct decoder * decoder,
 			              1000 + 0.5);
 			position += samplesgot;
 			file_time = (float)position /
-			            dc.audioFormat.sampleRate;
+			            audio_format.sampleRate;
 
 			format_samples(Bps, chunk,
-			               samplesgot * dc.audioFormat.channels);
+			               samplesgot * audio_format.channels);
 
 			decoder_data(decoder, NULL, 0, chunk,
 				     samplesgot * outsamplesize,

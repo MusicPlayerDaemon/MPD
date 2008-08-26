@@ -24,9 +24,16 @@
 #include "playerData.h"
 #include "gcc.h"
 
-void decoder_initialized(mpd_unused struct decoder * decoder)
+void decoder_initialized(mpd_unused struct decoder * decoder,
+			 const AudioFormat * audio_format)
 {
 	assert(dc.state == DECODE_STATE_START);
+
+	if (audio_format != NULL) {
+		dc.audioFormat = *audio_format;
+		getOutputAudioFormat(audio_format,
+				     &(ob.audioFormat));
+	}
 
 	dc.state = DECODE_STATE_DECODE;
 	notify_signal(&pc.notify);
