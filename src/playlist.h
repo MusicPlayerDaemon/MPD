@@ -51,7 +51,7 @@ void readPlaylistState(FILE *);
 
 void savePlaylistState(FILE *);
 
-int clearPlaylist(int fd);
+void clearPlaylist(void);
 
 int clearStoredPlaylist(int fd, char *utf8file);
 
@@ -71,17 +71,17 @@ int playlistInfo(int fd, int song);
 
 int playlistId(int fd, int song);
 
-int stopPlaylist(int fd);
+void stopPlaylist(void);
 
 int playPlaylist(int fd, int song, int stopOnError);
 
 int playPlaylistById(int fd, int song, int stopOnError);
 
-int nextSongInPlaylist(int fd);
+void nextSongInPlaylist(void);
 
 void syncPlayerAndPlaylist(void);
 
-int previousSongInPlaylist(int fd);
+void previousSongInPlaylist(void);
 
 int shufflePlaylist(int fd);
 

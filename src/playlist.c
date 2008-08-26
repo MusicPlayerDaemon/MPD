@@ -68,7 +68,7 @@ static int playlist_noGoToNext;
 int playlist_saveAbsolutePaths = DEFAULT_PLAYLIST_SAVE_ABSOLUTE_PATHS;
 
 static void swapOrder(int a, int b);
-static int playPlaylistOrderNumber(int fd, int orderNum);
+static void playPlaylistOrderNumber(int orderNum);
 static void randomizeOrder(int start, int end);
 
 static void incrPlaylistVersion(void)
@@ -193,12 +193,11 @@ void finishPlaylist(void)
 	playlist.positionToId = NULL;
 }
 
-int clearPlaylist(int fd)
+void clearPlaylist(void)
 {
 	int i;
 
-	if (stopPlaylist(fd) < 0)
-		return -1;
+	stopPlaylist();
 
 	for (i = 0; i < playlist.length; i++) {
 		if (playlist.songs[i]->type == SONG_TYPE_URL) {
@@ -211,8 +210,6 @@ int clearPlaylist(int fd)
 	playlist.current = -1;
 
 	incrPlaylistVersion();
-
-	return 0;
 }
 
 int clearStoredPlaylist(int fd, char *utf8file)
@@ -828,7 +825,7 @@ void deleteASongFromPlaylist(Song * song)
 	}
 }
 
-int stopPlaylist(mpd_unused int fd)
+void stopPlaylist(void)
 {
 	DEBUG("playlist: stop\n");
 	playerWait();
@@ -837,10 +834,9 @@ int stopPlaylist(mpd_unused int fd)
 	playlist_noGoToNext = 0;
 	if (playlist.random)
 		randomizeOrder(0, playlist.length - 1);
-	return 0;
 }
 
-static int playPlaylistOrderNumber(mpd_unused int fd, int orderNum)
+static void playPlaylistOrderNumber(int orderNum)
 {
 	char path_max_tmp[MPD_PATH_MAX];
 
@@ -857,8 +853,6 @@ static int playPlaylistOrderNumber(mpd_unused int fd, int orderNum)
 
 	playerPlay(playlist.songs[playlist.order[orderNum]]);
 	playlist.current = orderNum;
-
-	return 0;
 }
 
 int playPlaylist(int fd, int song, int stopOnError)
@@ -903,7 +897,8 @@ int playPlaylist(int fd, int song, int stopOnError)
 	playlist_stopOnError = stopOnError;
 	playlist_errorCount = 0;
 
-	return playPlaylistOrderNumber(fd, i);
+	playPlaylistOrderNumber(i);
+	return 0;
 }
 
 int playPlaylistById(int fd, int id, int stopOnError)
@@ -957,39 +952,39 @@ void syncPlayerAndPlaylist(void)
 	syncCurrentPlayerDecodeMetadata();
 }
 
-static int currentSongInPlaylist(int fd)
+static void currentSongInPlaylist(void)
 {
 	if (playlist_state != PLAYLIST_STATE_PLAY)
-		return 0;
+		return;
 
 	playlist_stopOnError = 0;
 
 	syncPlaylistWithQueue(0);
 
-	if (playlist.current >= 0 && playlist.current < playlist.length) {
-		return playPlaylistOrderNumber(fd, playlist.current);
-	} else
-		return stopPlaylist(fd);
+	if (playlist.current >= 0 && playlist.current < playlist.length)
+		playPlaylistOrderNumber(playlist.current);
+	else
+		stopPlaylist();
 }
 
-int nextSongInPlaylist(int fd)
+void nextSongInPlaylist(void)
 {
 	if (playlist_state != PLAYLIST_STATE_PLAY)
-		return 0;
+		return;
 
 	syncPlaylistWithQueue(0);
 
 	playlist_stopOnError = 0;
 
 	if (playlist.current < playlist.length - 1) {
-		return playPlaylistOrderNumber(fd, playlist.current + 1);
+		playPlaylistOrderNumber(playlist.current + 1);
 	} else if (playlist.length && playlist.repeat) {
 		if (playlist.random)
 			randomizeOrder(0, playlist.length - 1);
-		return playPlaylistOrderNumber(fd, 0);
+		playPlaylistOrderNumber(0);
 	} else {
 		incrPlaylistCurrent();
-		return stopPlaylist(fd);
+		stopPlaylist();
 	}
 }
 
@@ -1008,11 +1003,11 @@ void playPlaylistIfPlayerStopped(void)
 			|| error == PLAYER_ERROR_AUDIO
 			|| error == PLAYER_ERROR_SYSTEM
 			|| playlist_errorCount >= playlist.length)) {
-			stopPlaylist(STDERR_FILENO);
+			stopPlaylist();
 		} else if (playlist_noGoToNext)
-			currentSongInPlaylist(STDERR_FILENO);
+			currentSongInPlaylist();
 		else
-			nextSongInPlaylist(STDERR_FILENO);
+			nextSongInPlaylist();
 	}
 }
 
@@ -1227,7 +1222,7 @@ int setPlaylistRandomStatus(int fd, int status)
 	return 0;
 }
 
-int previousSongInPlaylist(int fd)
+void previousSongInPlaylist(void)
 {
 	static time_t lastTime;
 	time_t diff = time(NULL) - lastTime;
@@ -1235,20 +1230,19 @@ int previousSongInPlaylist(int fd)
 	lastTime += diff;
 
 	if (playlist_state != PLAYLIST_STATE_PLAY)
-		return 0;
+		return;
 
 	syncPlaylistWithQueue(0);
 
 	if (diff && getPlayerElapsedTime() > PLAYLIST_PREV_UNLESS_ELAPSED) {
-		return playPlaylistOrderNumber(fd, playlist.current);
+		playPlaylistOrderNumber(playlist.current);
 	} else {
 		if (playlist.current > 0) {
-			return playPlaylistOrderNumber(fd,
-						       playlist.current - 1);
+			playPlaylistOrderNumber(playlist.current - 1);
 		} else if (playlist.repeat) {
-			return playPlaylistOrderNumber(fd, playlist.length - 1);
+			playPlaylistOrderNumber(playlist.length - 1);
 		} else {
-			return playPlaylistOrderNumber(fd, playlist.current);
+			playPlaylistOrderNumber(playlist.current);
 		}
 	}
 }
@@ -1388,12 +1382,11 @@ int seekSongInPlaylist(int fd, int song, float seek_time)
 	if (playlist_state == PLAYLIST_STATE_PLAY) {
 		if (playlist.queued >= 0)
 			clearPlayerQueueLocked();
-	} else if (playPlaylistOrderNumber(fd, i) < 0)
-		return -1;
+	} else
+		playPlaylistOrderNumber(i);
 
 	if (playlist.current != i) {
-		if (playPlaylistOrderNumber(fd, i) < 0)
-			return -1;
+		playPlaylistOrderNumber(i);
 	}
 
 	return playerSeek(fd, playlist.songs[playlist.order[i]], seek_time);

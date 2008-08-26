@@ -268,10 +268,11 @@ static int handlePlayId(int fd, mpd_unused int *permission,
 	return playPlaylistById(fd, id, 0);
 }
 
-static int handleStop(int fd, mpd_unused int *permission,
+static int handleStop(mpd_unused int fd, mpd_unused int *permission,
 		      mpd_unused int argc, mpd_unused char *argv[])
 {
-	return stopPlaylist(fd);
+	stopPlaylist();
+	return 0;
 }
 
 static int handleCurrentSong(int fd, mpd_unused int *permission,
@@ -441,10 +442,11 @@ static int handleShuffle(int fd, mpd_unused int *permission,
 	return shufflePlaylist(fd);
 }
 
-static int handleClear(int fd, mpd_unused int *permission,
+static int handleClear(mpd_unused int fd, mpd_unused int *permission,
 		       mpd_unused int argc, mpd_unused char *argv[])
 {
-	return clearPlaylist(fd);
+	clearPlaylist();
+	return 0;
 }
 
 static int handleSave(int fd, mpd_unused int *permission,
@@ -716,16 +718,18 @@ static int handleUpdate(int fd, mpd_unused int *permission,
 	return updateInit(fd, NULL);
 }
 
-static int handleNext(int fd, mpd_unused int *permission,
+static int handleNext(mpd_unused int fd, mpd_unused int *permission,
 		      mpd_unused int argc, mpd_unused char *argv[])
 {
-	return nextSongInPlaylist(fd);
+	nextSongInPlaylist();
+	return 0;
 }
 
-static int handlePrevious(int fd, mpd_unused int *permission,
+static int handlePrevious(mpd_unused int fd, mpd_unused int *permission,
 			  mpd_unused int argc, mpd_unused char *argv[])
 {
-	return previousSongInPlaylist(fd);
+	previousSongInPlaylist();
+	return 0;
 }
 
 static int handleListAll(int fd, mpd_unused int *permission,
