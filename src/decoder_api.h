@@ -87,6 +87,10 @@ struct decoder_plugin {
 };
 
 
+void decoder_plugin_register(struct decoder_plugin *plugin);
+
+void decoder_plugin_unregister(struct decoder_plugin *plugin);
+
 /**
  * Opaque handle which the decoder plugin passes to the functions in
  * this header.

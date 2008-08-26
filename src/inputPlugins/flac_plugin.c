@@ -22,7 +22,6 @@
 
 #include "../utils.h"
 #include "../log.h"
-#include "../decoder_list.h"
 
 /* this code was based on flac123, from flac-tools */
 
@@ -533,7 +532,7 @@ static int flac_plugin_init(void)
 	                            INPUT_PLUGIN_STREAM_FILE;
 	oggflacPlugin.suffixes = oggflac_suffixes;
 	oggflacPlugin.mime_types = oggflac_mime_types;
-	decoder_plugin_load(&oggflacPlugin);
+	decoder_plugin_register(&oggflacPlugin);
 	return 1;
 }
 

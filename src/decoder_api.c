@@ -18,12 +18,23 @@
  */
 
 #include "decoder_internal.h"
+#include "decoder_list.h"
 #include "audio.h"
 
 #include "utils.h"
 #include "normalize.h"
 #include "playerData.h"
 #include "gcc.h"
+
+void decoder_plugin_register(struct decoder_plugin *plugin)
+{
+	decoder_plugin_load(plugin);
+}
+
+void decoder_plugin_unregister(struct decoder_plugin *plugin)
+{
+	decoder_plugin_unload(plugin);
+}
 
 void decoder_initialized(struct decoder * decoder,
 			 const AudioFormat * audio_format,
