@@ -28,41 +28,41 @@
 
 static void playerCloseAudio(void);
 
-static void wakeup_player(void)
-{
-	notify_signal(&pc.notify);
-	wait_main_task();
-}
-
 static void * player_task(mpd_unused void *arg)
 {
 	notify_enter(&pc.notify);
 
 	while (1) {
-		if (pc.play) {
+		switch (pc.command) {
+		case PLAYER_COMMAND_PLAY:
 			decode();
-			continue; /* decode() calls wakeup_main_task */
-		} else if (pc.stop) {
-			pc.stop = 0;
-		} else if (pc.seek) {
-			pc.seek = 0;
-		} else if (pc.pause) {
-			pc.pause = 0;
-		} else if (pc.closeAudio) {
+			break;
+
+		case PLAYER_COMMAND_STOP:
+		case PLAYER_COMMAND_SEEK:
+		case PLAYER_COMMAND_PAUSE:
+			player_command_finished();
+			break;
+
+		case PLAYER_COMMAND_CLOSE_AUDIO:
 			closeAudioDevice();
-			pc.closeAudio = 0;
-		} else if (pc.lockQueue) {
+			player_command_finished();
+			break;
+
+		case PLAYER_COMMAND_LOCK_QUEUE:
 			pc.queueLockState = PLAYER_QUEUE_LOCKED;
-			pc.lockQueue = 0;
-		} else if (pc.unlockQueue) {
+			player_command_finished();
+			break;
+
+		case PLAYER_COMMAND_UNLOCK_QUEUE:
 			pc.queueLockState = PLAYER_QUEUE_UNLOCKED;
-			pc.unlockQueue = 0;
-		} else {
+			player_command_finished();
+			break;
+
+		case PLAYER_COMMAND_NONE:
 			notify_wait(&pc.notify);
-			continue;
+			break;
 		}
-		/* we did something, tell the main task about it */
-		wakeup_main_task();
 	}
 	return NULL;
 }
@@ -94,26 +94,37 @@ static void set_current_song(Song *song)
 	pc.next_song = song;
 }
 
+static void player_command(enum player_command cmd)
+{
+	pc.command = cmd;
+	while (pc.command != PLAYER_COMMAND_NONE)
+		/* FIXME: _nb() variant is probably wrong here, and everywhere... */
+		notify_signal(&pc.notify);
+}
+
+void player_command_finished()
+{
+	assert(pc.command != PLAYER_COMMAND_NONE);
+
+	pc.command = PLAYER_COMMAND_NONE;
+	wakeup_main_task();
+}
+
 int playerPlay(int fd, Song * song)
 {
 	if (playerStop(fd) < 0)
 		return -1;
 
 	set_current_song(song);
-
-	pc.play = 1;
-	/* FIXME: _nb() variant is probably wrong here, and everywhere... */
-	do { notify_signal(&pc.notify); } while (pc.play);
+	player_command(PLAYER_COMMAND_PLAY);
 
 	return 0;
 }
 
 int playerStop(mpd_unused int fd)
 {
-	if (pc.state != PLAYER_STATE_STOP) {
-		pc.stop = 1;
-		do { wakeup_player(); } while (pc.stop);
-	}
+	if (pc.state != PLAYER_STATE_STOP)
+		player_command(PLAYER_COMMAND_STOP);
 
 	pc.queueState = PLAYER_QUEUE_BLANK;
 	playerQueueUnlock();
@@ -128,10 +139,8 @@ void playerKill(void) /* deprecated */
 
 int playerPause(mpd_unused int fd)
 {
-	if (pc.state != PLAYER_STATE_STOP) {
-		pc.pause = 1;
-		do { wakeup_player(); } while (pc.pause);
-	}
+	if (pc.state != PLAYER_STATE_STOP)
+		player_command(PLAYER_COMMAND_PAUSE);
 
 	return 0;
 }
@@ -217,8 +226,8 @@ static void playerCloseAudio(void)
 {
 	if (playerStop(STDERR_FILENO) < 0)
 		return;
-	pc.closeAudio = 1;
-	do { wakeup_player(); } while (pc.closeAudio);
+
+	player_command(PLAYER_COMMAND_CLOSE_AUDIO);
 }
 
 int queueSong(Song * song)
@@ -245,18 +254,14 @@ void setQueueState(int queueState)
 
 void playerQueueLock(void)
 {
-	if (pc.queueLockState == PLAYER_QUEUE_UNLOCKED) {
-		pc.lockQueue = 1;
-		do { wakeup_player(); } while (pc.lockQueue);
-	}
+	if (pc.queueLockState == PLAYER_QUEUE_UNLOCKED)
+		player_command(PLAYER_COMMAND_LOCK_QUEUE);
 }
 
 void playerQueueUnlock(void)
 {
-	if (pc.queueLockState == PLAYER_QUEUE_LOCKED) {
-		pc.unlockQueue = 1;
-		do { wakeup_player(); } while (pc.unlockQueue);
-	}
+	if (pc.queueLockState == PLAYER_QUEUE_LOCKED)
+		player_command(PLAYER_COMMAND_UNLOCK_QUEUE);
 }
 
 int playerSeek(int fd, Song * song, float seek_time)
@@ -274,9 +279,7 @@ int playerSeek(int fd, Song * song, float seek_time)
 
 	if (pc.error == PLAYER_ERROR_NOERROR) {
 		pc.seekWhere = seek_time;
-		pc.seek = 1;
-		/* FIXME: _nb() is probably wrong here, too */
-		do { notify_signal(&pc.notify); } while (pc.seek);
+		player_command(PLAYER_COMMAND_SEEK);
 	}
 
 	return 0;

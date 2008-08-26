@@ -28,6 +28,17 @@
 #define PLAYER_STATE_PAUSE	1
 #define PLAYER_STATE_PLAY	2
 
+enum player_command {
+	PLAYER_COMMAND_NONE = 0,
+	PLAYER_COMMAND_STOP,
+	PLAYER_COMMAND_PLAY,
+	PLAYER_COMMAND_PAUSE,
+	PLAYER_COMMAND_SEEK,
+	PLAYER_COMMAND_CLOSE_AUDIO,
+	PLAYER_COMMAND_LOCK_QUEUE,
+	PLAYER_COMMAND_UNLOCK_QUEUE
+};
+
 #define PLAYER_ERROR_NOERROR		0
 #define PLAYER_ERROR_FILE		1
 #define PLAYER_ERROR_AUDIO		2
@@ -50,11 +61,8 @@
 
 typedef struct _PlayerControl {
 	Notify notify;
-	volatile mpd_sint8 stop;
-	volatile mpd_sint8 play;
-	volatile mpd_sint8 pause;
+	volatile enum player_command command;
 	volatile mpd_sint8 state;
-	volatile mpd_sint8 closeAudio;
 	volatile mpd_sint8 error;
 	volatile mpd_uint16 bitRate;
 	volatile mpd_sint8 bits;
@@ -67,14 +75,13 @@ typedef struct _PlayerControl {
 	Song *errored_song;
 	volatile mpd_sint8 queueState;
 	volatile mpd_sint8 queueLockState;
-	volatile mpd_sint8 lockQueue;
-	volatile mpd_sint8 unlockQueue;
-	volatile mpd_sint8 seek;
 	volatile double seekWhere;
 	volatile float crossFade;
 	volatile mpd_uint16 softwareVolume;
 	volatile double totalPlayTime;
 } PlayerControl;
+
+void player_command_finished(void);
 
 int playerPlay(int fd, Song * song);
 

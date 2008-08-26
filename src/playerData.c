@@ -75,6 +75,7 @@ void initPlayerData(void)
 	ob_init(buffered_chunks, &pc.notify);
 
 	notify_init(&pc.notify);
+	pc.command = PLAYER_COMMAND_NONE;
 	pc.error = PLAYER_ERROR_NOERROR;
 	pc.state = PLAYER_STATE_STOP;
 	pc.queueState = PLAYER_QUEUE_BLANK;

@@ -60,9 +60,7 @@ static void quitDecode(void)
 	stopDecode();
 	pc.state = PLAYER_STATE_STOP;
 	dc.command = DECODE_COMMAND_NONE;
-	pc.play = 0;
-	pc.stop = 0;
-	pc.pause = 0;
+	pc.command = PLAYER_COMMAND_NONE;
 	wakeup_main_task();
 }
 
@@ -141,8 +139,8 @@ static int decodeSeek(int *decodeWaitedOn, int *next)
 			ret = 0;
 		}
 	}
-	pc.seek = 0;
-	wakeup_main_task();
+
+	player_command_finished();
 
 	return ret;
 }
@@ -152,17 +150,24 @@ static void processDecodeInput(int *pause_r, unsigned int *bbp_r,
 			       int *decodeWaitedOn_r,
 			       int *next_r)
 {
-	if(pc.lockQueue) {
+	switch (pc.command) {
+	case PLAYER_COMMAND_NONE:
+	case PLAYER_COMMAND_PLAY:
+	case PLAYER_COMMAND_STOP:
+	case PLAYER_COMMAND_CLOSE_AUDIO:
+		break;
+
+	case PLAYER_COMMAND_LOCK_QUEUE:
 		pc.queueLockState = PLAYER_QUEUE_LOCKED;
-		pc.lockQueue = 0;
-		wakeup_main_task();
-	}
-	if(pc.unlockQueue) {
+		player_command_finished();
+		break;
+
+	case PLAYER_COMMAND_UNLOCK_QUEUE:
 		pc.queueLockState = PLAYER_QUEUE_UNLOCKED;
-		pc.unlockQueue = 0;
-		wakeup_main_task();
-	}
-	if(pc.pause) {
+		player_command_finished();
+		break;
+
+	case PLAYER_COMMAND_PAUSE:
 		*pause_r = !*pause_r;
 		if (*pause_r) {
 			pc.state = PLAYER_STATE_PAUSE;
@@ -179,21 +184,22 @@ static void processDecodeInput(int *pause_r, unsigned int *bbp_r,
 				*pause_r = -1;
 			}
 		}
-		pc.pause = 0;
-		wakeup_main_task();
+		player_command_finished();
 		if (*pause_r == -1) {
 			*pause_r = 1;
 		} else if (*pause_r) {
 			dropBufferedAudio();
 			closeAudioDevice();
 		}
-	}
-	if(pc.seek) {
+		break;
+
+	case PLAYER_COMMAND_SEEK:
 		dropBufferedAudio();
 		if (decodeSeek(decodeWaitedOn_r, next_r) == 0) {
 			*do_xfade_r = XFADE_UNKNOWN;
 			*bbp_r = 0;
 		}
+		break;
 	}
 }
 
@@ -410,13 +416,12 @@ static void decodeParent(void)
 
 	pc.elapsedTime = 0;
 	pc.state = PLAYER_STATE_PLAY;
-	pc.play = 0;
-	wakeup_main_task();
+	player_command_finished();
 
 	while (1) {
 		processDecodeInput(&do_pause, &bbp, &do_xfade,
 				   &decodeWaitedOn, &next);
-		if (pc.stop) {
+		if (pc.command == PLAYER_COMMAND_STOP) {
 			dropBufferedAudio();
 			break;
 		}
