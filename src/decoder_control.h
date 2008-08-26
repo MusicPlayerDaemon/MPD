@@ -1,5 +1,6 @@
 /* the Music Player Daemon (MPD)
  * Copyright (C) 2003-2007 by Warren Dukes (warren.dukes@gmail.com)
+ * Copyright (C) 2008 Max Kellermann <max@duempel.org>
  * This project's homepage is: http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify

@@ -18,7 +18,7 @@
  */
 
 #include "decoder_thread.h"
-#include "decode.h"
+#include "decoder_control.h"
 #include "decoder_internal.h"
 #include "player.h"
 

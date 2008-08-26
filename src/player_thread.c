@@ -19,7 +19,7 @@
 #include "player_thread.h"
 #include "player.h"
 #include "playerData.h"
-#include "decode.h"
+#include "decoder_control.h"
 #include "audio.h"
 #include "pcm_utils.h"
 #include "path.h"

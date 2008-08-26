@@ -40,8 +40,8 @@ mpd_headers = \
 	conf.h \
 	crossfade.h \
 	dbUtils.h \
-	decode.h \
 	decoder_thread.h \
+	decoder_control.h \
 	decoder_api.h \
 	decoder_internal.h \
 	directory.h \

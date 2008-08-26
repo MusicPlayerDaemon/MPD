@@ -16,7 +16,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "decode.h"
+#include "decoder_control.h"
 
 struct decoder_control dc;
 

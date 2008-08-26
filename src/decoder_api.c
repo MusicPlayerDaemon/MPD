@@ -19,7 +19,7 @@
 
 #include "decoder_internal.h"
 #include "decoder_list.h"
-#include "decode.h"
+#include "decoder_control.h"
 #include "player.h"
 #include "audio.h"
 
