@@ -262,9 +262,6 @@ static int oggvorbis_decode(struct decoder * decoder, InputStream * inStream)
 		}
 		return 0;
 	}
-	dc.totalTime = ov_time_total(&vf, -1);
-	if (dc.totalTime < 0)
-		dc.totalTime = 0;
 	audio_format.bits = 16;
 
 	while (1) {
@@ -285,7 +282,11 @@ static int oggvorbis_decode(struct decoder * decoder, InputStream * inStream)
 			audio_format.channels = vi->channels;
 			audio_format.sampleRate = vi->rate;
 			if (dc.state == DECODE_STATE_START) {
-				decoder_initialized(decoder, &audio_format);
+				float total_time = ov_time_total(&vf, -1);
+				if (total_time < 0)
+					total_time = 0;
+				decoder_initialized(decoder, &audio_format,
+						    total_time);
 			}
 			comments = ov_comment(&vf, -1)->user_comments;
 			putOggCommentsIntoOutputBuffer(inStream->metaName,

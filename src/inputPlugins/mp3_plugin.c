@@ -1035,8 +1035,6 @@ static int mp3_decode(struct decoder * decoder, InputStream * inStream)
 
 	initAudioFormatFromMp3DecodeData(&data, &audio_format);
 
-	dc.totalTime = data.totalTime;
-
 	if (inStream->metaTitle) {
 		if (tag)
 			freeMpdTag(tag);
@@ -1062,7 +1060,7 @@ static int mp3_decode(struct decoder * decoder, InputStream * inStream)
 		freeMpdTag(tag);
 	}
 
-	decoder_initialized(decoder, &audio_format);
+	decoder_initialized(decoder, &audio_format, data.totalTime);
 
 	while (mp3Read(&data, decoder, &replayGainInfo) != DECODE_BREAK) ;
 	/* send last little bit if not DECODE_COMMAND_STOP */

@@ -46,6 +46,7 @@ static int audiofile_decode(struct decoder * decoder, char *path)
 	AFfilehandle af_fp;
 	int bits;
 	AudioFormat audio_format;
+	float total_time;
 	mpd_uint16 bitRate;
 	struct stat st;
 
@@ -71,10 +72,9 @@ static int audiofile_decode(struct decoder * decoder, char *path)
 
 	frame_count = afGetFrameCount(af_fp, AF_DEFAULT_TRACK);
 
-	dc.totalTime =
-	    ((float)frame_count / (float)audio_format.sampleRate);
+	total_time = ((float)frame_count / (float)audio_format.sampleRate);
 
-	bitRate = (mpd_uint16)(st.st_size * 8.0 / dc.totalTime / 1000.0 + 0.5);
+	bitRate = (mpd_uint16)(st.st_size * 8.0 / total_time / 1000.0 + 0.5);
 
 	if (audio_format.bits != 8 && audio_format.bits != 16) {
 		ERROR("Only 8 and 16-bit files are supported. %s is %i-bit\n",
@@ -85,7 +85,7 @@ static int audiofile_decode(struct decoder * decoder, char *path)
 
 	fs = (int)afGetVirtualFrameSize(af_fp, AF_DEFAULT_TRACK, 1);
 
-	decoder_initialized(decoder, &audio_format);
+	decoder_initialized(decoder, &audio_format, total_time);
 
 	{
 		int ret, eof = 0, current = 0;

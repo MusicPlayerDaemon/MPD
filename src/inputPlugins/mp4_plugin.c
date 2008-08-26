@@ -83,7 +83,7 @@ static int mp4_decode(struct decoder * mpd_decoder, InputStream * inStream)
 	mp4ff_t *mp4fh;
 	mp4ff_callback_t *mp4cb;
 	int32_t track;
-	float file_time;
+	float file_time, total_time;
 	int32_t scale;
 	faacDecHandle decoder;
 	faacDecFrameInfo frameInfo;
@@ -170,7 +170,7 @@ static int mp4_decode(struct decoder * mpd_decoder, InputStream * inStream)
 		free(mp4cb);
 		return -1;
 	}
-	dc.totalTime = ((float)file_time) / scale;
+	total_time = ((float)file_time) / scale;
 
 	numSamples = mp4ff_num_samples(mp4fh, track);
 
@@ -248,7 +248,8 @@ static int mp4_decode(struct decoder * mpd_decoder, InputStream * inStream)
 #endif
 			audio_format.sampleRate = scale;
 			audio_format.channels = frameInfo.channels;
-			decoder_initialized(mpd_decoder, &audio_format);
+			decoder_initialized(mpd_decoder, &audio_format,
+					    total_time);
 		}
 
 		if (channels * (unsigned long)(dur + offset) > frameInfo.samples) {

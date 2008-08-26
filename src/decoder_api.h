@@ -41,7 +41,8 @@ struct decoder;
  * that it has read the song's meta data.
  */
 void decoder_initialized(struct decoder * decoder,
-			 const AudioFormat * audio_format);
+			 const AudioFormat * audio_format,
+			 float total_time);
 
 /**
  * This function is called by the decoder plugin when it has

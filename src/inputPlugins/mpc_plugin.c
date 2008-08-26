@@ -160,8 +160,6 @@ static int mpc_decode(struct decoder * mpd_decoder, InputStream * inStream)
 		return 0;
 	}
 
-	dc.totalTime = mpc_streaminfo_get_length(&info);
-
 	audio_format.bits = 16;
 	audio_format.channels = info.channels;
 	audio_format.sampleRate = info.sample_freq;
@@ -172,7 +170,8 @@ static int mpc_decode(struct decoder * mpd_decoder, InputStream * inStream)
 	replayGainInfo->trackGain = info.gain_title * 0.01;
 	replayGainInfo->trackPeak = info.peak_title / 32767.0;
 
-	decoder_initialized(mpd_decoder, &audio_format);
+	decoder_initialized(mpd_decoder, &audio_format,
+			    mpc_streaminfo_get_length(&info));
 
 	while (!eof) {
 		if (dc.command == DECODE_COMMAND_SEEK) {

@@ -176,7 +176,6 @@ static int mod_decode(struct decoder * decoder, char *path)
 		return -1;
 	}
 
-	dc.totalTime = 0;
 	audio_format.bits = 16;
 	audio_format.sampleRate = 44100;
 	audio_format.channels = 2;
@@ -185,7 +184,7 @@ static int mod_decode(struct decoder * decoder, char *path)
 	    1.0 / ((audio_format.bits * audio_format.channels / 8.0) *
 		   (float)audio_format.sampleRate);
 
-	decoder_initialized(decoder, &audio_format);
+	decoder_initialized(decoder, &audio_format, 0);
 
 	while (1) {
 		if (dc.command == DECODE_COMMAND_SEEK) {

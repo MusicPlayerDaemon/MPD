@@ -144,6 +144,7 @@ typedef struct {
 	float time;
 	unsigned int bitRate;
 	AudioFormat audio_format;
+	float total_time;
 	FLAC__uint64 position;
 	struct decoder *decoder;
 	InputStream *inStream;

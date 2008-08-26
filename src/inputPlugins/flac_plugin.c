@@ -415,7 +415,7 @@ static int flac_decode_internal(struct decoder * decoder,
 		}
 	}
 
-	decoder_initialized(decoder, &data.audio_format);
+	decoder_initialized(decoder, &data.audio_format, data.total_time);
 
 	while (1) {
 		if (!flac_process_single(flacDec))

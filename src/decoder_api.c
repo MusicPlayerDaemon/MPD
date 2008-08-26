@@ -25,7 +25,8 @@
 #include "gcc.h"
 
 void decoder_initialized(mpd_unused struct decoder * decoder,
-			 const AudioFormat * audio_format)
+			 const AudioFormat * audio_format,
+			 float total_time)
 {
 	assert(dc.state == DECODE_STATE_START);
 
@@ -34,6 +35,8 @@ void decoder_initialized(mpd_unused struct decoder * decoder,
 		getOutputAudioFormat(audio_format,
 				     &(ob.audioFormat));
 	}
+
+	dc.totalTime = total_time;
 
 	dc.state = DECODE_STATE_DECODE;
 	notify_signal(&pc.notify);
