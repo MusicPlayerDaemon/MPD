@@ -62,7 +62,7 @@ static void fillAacBuffer(AacBuffer * b)
 						     b->
 						     bytesIntoBuffer),
 					    1, rest);
-		if (bread != rest)
+		if (bread == 0 && inputStreamAtEOF(b->inStream))
 			b->atEof = 1;
 		b->bytesIntoBuffer += bread;
 	}
@@ -150,7 +150,7 @@ static void initAacBuffer(InputStream * inStream, AacBuffer * b, float *length)
 	b->bytesConsumed = 0;
 	b->fileOffset = 0;
 
-	if (bread != FAAD_MIN_STREAMSIZE * AAC_MAX_CHANNELS)
+	if (bread == 0 && inputStreamAtEOF(inStream))
 		b->atEof = 1;
 
 	tagsize = 0;
@@ -173,10 +173,9 @@ static void initAacBuffer(InputStream * inStream, AacBuffer * b, float *length)
 		bread = readFromInputStream(b->inStream, b->buffer, 1,
 					    FAAD_MIN_STREAMSIZE *
 					    AAC_MAX_CHANNELS);
-		if (bread != FAAD_MIN_STREAMSIZE * AAC_MAX_CHANNELS)
+		if (bread == 0 && inputStreamAtEOF(inStream))
 			b->atEof = 1;
-		else
-			b->atEof = 0;
+
 		b->bytesIntoBuffer = bread;
 		b->bytesConsumed = 0;
 		b->fileOffset = tagsize;
