@@ -71,7 +71,6 @@ static int waitOnDecode(int *decodeWaitedOn)
 	if (dc.error != DECODE_ERROR_NOERROR) {
 		pc.errored_song = dc.next_song;
 		pc.error = PLAYER_ERROR_FILE;
-		quitDecode();
 		return -1;
 	}
 
@@ -211,8 +210,10 @@ static void decodeParent(void)
 
 	ob_set_lazy(0);
 
-	if (waitOnDecode(&decodeWaitedOn) < 0)
+	if (waitOnDecode(&decodeWaitedOn) < 0) {
+		quitDecode();
 		return;
+	}
 
 	pc.elapsedTime = 0;
 	pc.state = PLAYER_STATE_PLAY;
