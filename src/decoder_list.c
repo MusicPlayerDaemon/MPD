@@ -18,6 +18,7 @@
 
 #include "decoder_list.h"
 #include "decoder_api.h"
+#include "list.h"
 
 extern struct decoder_plugin mp3Plugin;
 extern struct decoder_plugin oggvorbisPlugin;

@@ -130,6 +130,7 @@ mpd_SOURCES = \
 	pcm_utils.c \
 	permission.c \
 	player.c \
+	player_control.c \
 	player_thread.c \
 	playerData.c \
 	playlist.c \

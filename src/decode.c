@@ -18,8 +18,8 @@
 
 #include "decode.h"
 #include "decoder_internal.h"
+#include "player.h"
 
-#include "playerData.h"
 #include "path.h"
 #include "log.h"
 #include "ls.h"

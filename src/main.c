@@ -26,6 +26,7 @@
 #include "path.h"
 #include "playerData.h"
 #include "decode.h"
+#include "player.h"
 #include "stats.h"
 #include "sig_handlers.h"
 #include "audio.h"

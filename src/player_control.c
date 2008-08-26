@@ -1,5 +1,5 @@
 /* the Music Player Daemon (MPD)
- * Copyright (C) 2003-2007 by Warren Dukes (warren.dukes@gmail.com)
+ * Copyright (C) 2008 Max Kellermann <max@duempel.org>
  * This project's homepage is: http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -16,11 +16,6 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef PLAYER_DATA_H
-#define PLAYER_DATA_H
+#include "player.h"
 
-extern unsigned int buffered_before_play;
-
-void initPlayerData(void);
-
-#endif
+struct player_control pc;

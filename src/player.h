@@ -79,7 +79,7 @@ enum player_queue_state {
 #define PLAYER_QUEUE_UNLOCKED	0
 #define PLAYER_QUEUE_LOCKED	1
 
-typedef struct _PlayerControl {
+struct player_control {
 	Notify notify;
 	volatile enum player_command command;
 	volatile enum player_state state;
@@ -99,7 +99,9 @@ typedef struct _PlayerControl {
 	volatile float crossFade;
 	volatile mpd_uint16 softwareVolume;
 	volatile double totalPlayTime;
-} PlayerControl;
+};
+
+extern struct player_control pc;
 
 void player_command_finished(void);
 

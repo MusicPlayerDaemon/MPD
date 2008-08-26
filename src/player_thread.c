@@ -17,6 +17,7 @@
  */
 
 #include "player_thread.h"
+#include "player.h"
 #include "playerData.h"
 #include "decode.h"
 #include "audio.h"

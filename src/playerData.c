@@ -18,6 +18,7 @@
 
 #include "playerData.h"
 #include "decode.h"
+#include "player.h"
 #include "outputBuffer.h"
 #include "conf.h"
 #include "log.h"
@@ -27,7 +28,6 @@
 #define DEFAULT_BUFFER_BEFORE_PLAY  10
 
 unsigned int buffered_before_play;
-PlayerControl pc;
 
 void initPlayerData(void)
 {

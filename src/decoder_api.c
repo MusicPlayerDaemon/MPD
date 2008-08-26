@@ -20,11 +20,11 @@
 #include "decoder_internal.h"
 #include "decoder_list.h"
 #include "decode.h"
+#include "player.h"
 #include "audio.h"
 
 #include "utils.h"
 #include "normalize.h"
-#include "playerData.h"
 #include "outputBuffer.h"
 #include "gcc.h"
 

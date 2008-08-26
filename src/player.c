@@ -20,7 +20,6 @@
 #include "player_thread.h"
 #include "path.h"
 #include "command.h"
-#include "playerData.h"
 #include "ack.h"
 #include "os_compat.h"
 #include "main_notify.h"
