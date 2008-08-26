@@ -27,6 +27,7 @@
 #include "ls.h"
 #include "main_notify.h"
 #include "audio.h"
+#include "crossfade.h"
 
 enum xfade_state {
 	XFADE_DISABLED = -1,
@@ -62,29 +63,6 @@ static void quitDecode(void)
 	dc.command = DECODE_COMMAND_NONE;
 	pc.command = PLAYER_COMMAND_NONE;
 	wakeup_main_task();
-}
-
-static unsigned calculateCrossFadeChunks(AudioFormat * af,
-					 float totalTime, unsigned max_chunks)
-{
-	unsigned int chunks;
-
-	if (pc.crossFade == 0 || pc.crossFade >= totalTime ||
-	    !isCurrentAudioFormat(af))
-		return 0;
-
-	assert(pc.crossFade > 0);
-	assert(af->bits > 0);
-	assert(af->channels > 0);
-	assert(af->sampleRate > 0);
-
-	chunks = audio_format_time_to_size(af) / CHUNK_SIZE;
-	chunks = (chunks * pc.crossFade + 0.5);
-
-	if (chunks > max_chunks)
-		chunks = max_chunks;
-
-	return chunks;
 }
 
 static int waitOnDecode(int *decodeWaitedOn)
@@ -360,23 +338,6 @@ void decoderInit(void)
 		FATAL("Failed to spawn decoder task: %s\n", strerror(errno));
 }
 
-static void crossFade(ob_chunk * a, ob_chunk * b,
-		      AudioFormat * format,
-		      unsigned int fadePosition, unsigned int crossFadeChunks)
-{
-	assert(fadePosition <= crossFadeChunks);
-
-	pcm_mix(a->data,
-		b->data,
-		a->chunkSize,
-		b->chunkSize,
-		format,
-		((float)fadePosition) /
-		crossFadeChunks);
-	if (b->chunkSize > a->chunkSize)
-		a->chunkSize = b->chunkSize;
-}
-
 static int playChunk(ob_chunk * chunk,
 		     const AudioFormat * format, double sizeToTime)
 {
@@ -498,10 +459,10 @@ static void decodeParent(void)
 			   calculate how many chunks will be required
 			   for it */
 			crossFadeChunks =
-				calculateCrossFadeChunks(&(ob.audioFormat),
-							 dc.totalTime,
-							 ob.size -
-							 buffered_before_play);
+				cross_fade_calc(pc.crossFade, dc.totalTime,
+						&(ob.audioFormat),
+						ob.size -
+						buffered_before_play);
 			if (crossFadeChunks > 0) {
 				do_xfade = XFADE_ENABLED;
 				nextChunk = -1;
@@ -531,11 +492,11 @@ static void decodeParent(void)
 				nextChunk = ob_absolute(crossFadeChunks);
 				if (nextChunk >= 0) {
 					ob_set_lazy(1);
-					crossFade(beginChunk,
-						  ob_get_chunk(nextChunk),
-						  &(ob.audioFormat),
-						  fadePosition,
-						  crossFadeChunks);
+					cross_fade_apply(beginChunk,
+							 ob_get_chunk(nextChunk),
+							 &(ob.audioFormat),
+							 fadePosition,
+							 crossFadeChunks);
 				} else {
 					/* there are not enough
 					   decoded chunks yet */

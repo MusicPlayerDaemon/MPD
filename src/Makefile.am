@@ -38,6 +38,7 @@ mpd_headers = \
 	command.h \
 	condition.h \
 	conf.h \
+	crossfade.h \
 	dbUtils.h \
 	decode.h \
 	decoder_api.h \
@@ -102,6 +103,7 @@ mpd_SOURCES = \
 	command.c \
 	condition.c \
 	conf.c \
+	crossfade.c \
 	dbUtils.c \
 	decode.c \
 	decoder_api.c \
