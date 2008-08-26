@@ -684,13 +684,17 @@ static int decodeFirstFrame(mp3DecodeData * data,
 
 	while (1) {
 		while ((ret = decodeNextFrameHeader(data, tag, replayGainInfo)) == DECODE_CONT &&
-		       !dc.stop);
-		if (ret == DECODE_BREAK || dc.stop) return -1;
+		       dc.command != DECODE_COMMAND_STOP);
+		if (ret == DECODE_BREAK ||
+		    (dc.command == DECODE_COMMAND_STOP))
+			return -1;
 		if (ret == DECODE_SKIP) continue;
 
 		while ((ret = decodeNextFrame(data)) == DECODE_CONT &&
-		       !dc.stop);
-		if (ret == DECODE_BREAK || dc.stop) return -1;
+		       dc.command != DECODE_COMMAND_STOP);
+		if (ret == DECODE_BREAK ||
+		    (dc.command == DECODE_COMMAND_STOP))
+			return -1;
 		if (ret == DECODE_OK) break;
 	}
 
@@ -850,7 +854,7 @@ static int mp3Read(mp3DecodeData * data, ReplayGainInfo ** replayGainInfo)
 			data->outputPtr = data->outputBuffer;
 			ob_clear();
 			data->muteFrame = 0;
-			dc.seek = 0;
+			dc.command = DECODE_COMMAND_NONE;
 			decoder_wakeup_player();
 		}
 		break;
@@ -944,7 +948,8 @@ static int mp3Read(mp3DecodeData * data, ReplayGainInfo ** replayGainInfo)
 
 		data->decodedFirstFrame = 1;
 
-		if (dc.seek && data->inStream->seekable) {
+		if (dc.command == DECODE_COMMAND_SEEK &&
+		    data->inStream->seekable) {
 			long j = 0;
 			data->muteFrame = MUTEFRAME_SEEK;
 			while (j < data->highestFrame && dc.seekWhere >
@@ -963,11 +968,12 @@ static int mp3Read(mp3DecodeData * data, ReplayGainInfo ** replayGainInfo)
 				} else
 					dc.seekError = 1;
 				data->muteFrame = 0;
-				dc.seek = 0;
+				dc.command = DECODE_COMMAND_NONE;
 				decoder_wakeup_player();
 			}
-		} else if (dc.seek && !data->inStream->seekable) {
-			dc.seek = 0;
+		} else if (dc.command == DECODE_COMMAND_SEEK &&
+			   !data->inStream->seekable) {
+			dc.command = DECODE_COMMAND_NONE;
 			dc.seekError = 1;
 			decoder_wakeup_player();
 		}
@@ -978,22 +984,27 @@ static int mp3Read(mp3DecodeData * data, ReplayGainInfo ** replayGainInfo)
 		while ((ret =
 			decodeNextFrameHeader(data, NULL,
 					      replayGainInfo)) == DECODE_CONT
-		       && !dc.stop) ;
-		if (ret == DECODE_BREAK || dc.stop || dc.seek)
+		       && dc.command != DECODE_COMMAND_STOP) ;
+		if (ret == DECODE_BREAK ||
+		    dc.command == DECODE_COMMAND_STOP ||
+		    dc.command == DECODE_COMMAND_SEEK)
 			break;
 		else if (ret == DECODE_SKIP)
 			skip = 1;
 		if (!data->muteFrame) {
 			while ((ret = decodeNextFrame(data)) == DECODE_CONT &&
-			       !dc.stop && !dc.seek) ;
-			if (ret == DECODE_BREAK || dc.stop || dc.seek)
+			       dc.command != DECODE_COMMAND_STOP &&
+			       dc.command != DECODE_COMMAND_SEEK) ;
+			if (ret == DECODE_BREAK ||
+			    dc.command == DECODE_COMMAND_STOP ||
+			    dc.command == DECODE_COMMAND_SEEK)
 				break;
 		}
 		if (!skip && ret == DECODE_OK)
 			break;
 	}
 
-	if (dc.stop)
+	if (dc.command == DECODE_COMMAND_STOP)
 		return DECODE_BREAK;
 
 	return ret;
@@ -1015,7 +1026,7 @@ static int mp3_decode(InputStream * inStream)
 
 	if (openMp3FromInputStream(inStream, &data, &tag, &replayGainInfo) <
 	    0) {
-		if (!dc.stop) {
+		if (dc.command != DECODE_COMMAND_STOP) {
 			ERROR
 			    ("Input does not appear to be a mp3 bit stream.\n");
 			return -1;
@@ -1056,8 +1067,9 @@ static int mp3_decode(InputStream * inStream)
 	dc.state = DECODE_STATE_DECODE;
 
 	while (mp3Read(&data, &replayGainInfo) != DECODE_BREAK) ;
-	/* send last little bit if not dc.stop */
-	if (!dc.stop && data.outputPtr != data.outputBuffer && data.flush) {
+	/* send last little bit if not DECODE_COMMAND_STOP */
+	if (dc.command != DECODE_COMMAND_STOP &&
+	    data.outputPtr != data.outputBuffer && data.flush) {
 		ob_send(NULL,
 				       data.inStream->seekable,
 				       data.outputBuffer,
@@ -1069,9 +1081,10 @@ static int mp3_decode(InputStream * inStream)
 	if (replayGainInfo)
 		freeReplayGainInfo(replayGainInfo);
 
-	if (dc.seek && data.muteFrame == MUTEFRAME_SEEK) {
+	if (dc.command == DECODE_COMMAND_SEEK &&
+	    data.muteFrame == MUTEFRAME_SEEK) {
 		ob_clear();
-		dc.seek = 0;
+		dc.command = DECODE_COMMAND_NONE;
 		decoder_wakeup_player();
 	}
 

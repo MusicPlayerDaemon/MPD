@@ -178,7 +178,7 @@ static int mp4_decode(InputStream * inStream)
 	seekTable = xmalloc(sizeof(float) * numSamples);
 
 	for (sampleId = 0; sampleId < numSamples && !eof; sampleId++) {
-		if (dc.seek)
+		if (dc.command == DECODE_COMMAND_SEEK)
 			seeking = 1;
 
 		if (seeking && seekTableEnd > 1 &&
@@ -213,7 +213,7 @@ static int mp4_decode(InputStream * inStream)
 			seekPositionFound = 0;
 			ob_clear();
 			seeking = 0;
-			dc.seek = 0;
+			dc.command = DECODE_COMMAND_NONE;
 			decoder_wakeup_player();
 		}
 
@@ -272,9 +272,9 @@ static int mp4_decode(InputStream * inStream)
 		sampleBuffer += offset * channels * 2;
 
 		ob_send(inStream, 1, sampleBuffer,
-				       sampleBufferLen, file_time,
-				       bitRate, NULL);
-		if (dc.stop) {
+			sampleBufferLen, file_time,
+			bitRate, NULL);
+		if (dc.command == DECODE_COMMAND_STOP) {
 			eof = 1;
 			break;
 		}
@@ -288,9 +288,9 @@ static int mp4_decode(InputStream * inStream)
 	if (dc.state != DECODE_STATE_DECODE)
 		return -1;
 
-	if (dc.seek && seeking) {
+	if (dc.command == DECODE_COMMAND_SEEK && seeking) {
 		ob_clear();
-		dc.seek = 0;
+		dc.command = DECODE_COMMAND_NONE;
 		decoder_wakeup_player();
 	}
 	ob_flush();

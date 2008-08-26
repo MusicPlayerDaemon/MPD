@@ -392,13 +392,13 @@ static int aac_decode(char *path)
 		sampleBufferLen = sampleCount * 2;
 
 		ob_send(NULL, 0, sampleBuffer,
-				       sampleBufferLen, file_time,
-				       bitRate, NULL);
-		if (dc.seek) {
+			sampleBufferLen, file_time,
+			bitRate, NULL);
+		if (dc.command == DECODE_COMMAND_SEEK) {
 			dc.seekError = 1;
-			dc.seek = 0;
+			dc.command = DECODE_COMMAND_NONE;
 			decoder_wakeup_player();
-		} else if (dc.stop) {
+		} else if (dc.command == DECODE_COMMAND_STOP) {
 			eof = 1;
 			break;
 		}
@@ -413,9 +413,9 @@ static int aac_decode(char *path)
 	if (dc.state != DECODE_STATE_DECODE)
 		return -1;
 
-	if (dc.seek) {
+	if (dc.command == DECODE_COMMAND_SEEK) {
 		dc.seekError = 1;
-		dc.seek = 0;
+		dc.command = DECODE_COMMAND_NONE;
 		decoder_wakeup_player();
 	}
 

@@ -171,7 +171,7 @@ static void wavpack_decode(WavpackContext *wpc, int canseek,
 	position = 0;
 
 	do {
-		if (dc.seek) {
+		if (dc.command == DECODE_COMMAND_SEEK) {
 			if (canseek) {
 				int where;
 
@@ -187,11 +187,11 @@ static void wavpack_decode(WavpackContext *wpc, int canseek,
 				dc.seekError = 1;
 			}
 
-			dc.seek = 0;
+			dc.command = DECODE_COMMAND_NONE;
 			decoder_wakeup_player();
 		}
 
-		if (dc.stop)
+		if (dc.command == DECODE_COMMAND_STOP)
 			break;
 
 		samplesgot = WavpackUnpackSamples(wpc,
@@ -501,7 +501,7 @@ static int wavpack_streamdecode(InputStream *is)
 				break;
 			}
 
-			if (dc.stop) {
+			if (dc.command == DECODE_COMMAND_STOP) {
 				break;
 			}
 

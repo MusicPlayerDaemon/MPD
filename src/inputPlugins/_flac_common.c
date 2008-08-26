@@ -177,7 +177,7 @@ void flac_error_common_cb(const char *plugin,
 			  const FLAC__StreamDecoderErrorStatus status,
 			  mpd_unused FlacData * data)
 {
-	if (dc.stop)
+	if (dc.command == DECODE_COMMAND_STOP)
 		return;
 
 	switch (status) {

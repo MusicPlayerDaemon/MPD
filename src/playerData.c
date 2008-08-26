@@ -84,6 +84,7 @@ void initPlayerData(void)
 
 	notify_init(&dc.notify);
 	dc.state = DECODE_STATE_STOP;
+	dc.command = DECODE_COMMAND_NONE;
 	dc.error = DECODE_ERROR_NOERROR;
 }
 

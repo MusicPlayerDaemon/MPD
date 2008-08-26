@@ -36,7 +36,8 @@ static mpc_int32_t mpc_read_cb(void *vdata, void *ptr, mpc_int32_t size)
 
 	while (1) {
 		ret = readFromInputStream(data->inStream, ptr, 1, size);
-		if (ret == 0 && !inputStreamAtEOF(data->inStream) && !dc.stop)
+		if (ret == 0 && !inputStreamAtEOF(data->inStream) &&
+		    (dc.command != DECODE_COMMAND_STOP))
 			my_usleep(10000);
 		else
 			break;
@@ -141,7 +142,7 @@ static int mpc_decode(InputStream * inStream)
 	mpc_streaminfo_init(&info);
 
 	if ((ret = mpc_streaminfo_read(&info, &reader)) != ERROR_CODE_OK) {
-		if (!dc.stop) {
+		if (dc.command != DECODE_COMMAND_STOP) {
 			ERROR("Not a valid musepack stream\n");
 			return -1;
 		}
@@ -151,7 +152,7 @@ static int mpc_decode(InputStream * inStream)
 	mpc_decoder_setup(&decoder, &reader);
 
 	if (!mpc_decoder_initialize(&decoder, &info)) {
-		if (!dc.stop) {
+		if (dc.command != DECODE_COMMAND_STOP) {
 			ERROR("Not a valid musepack stream\n");
 			return -1;
 		}
@@ -175,7 +176,7 @@ static int mpc_decode(InputStream * inStream)
 	dc.state = DECODE_STATE_DECODE;
 
 	while (!eof) {
-		if (dc.seek) {
+		if (dc.command == DECODE_COMMAND_SEEK) {
 			samplePos = dc.seekWhere * dc.audioFormat.sampleRate;
 			if (mpc_decoder_seek_sample(&decoder, samplePos)) {
 				ob_clear();
@@ -183,7 +184,7 @@ static int mpc_decode(InputStream * inStream)
 				chunkpos = 0;
 			} else
 				dc.seekError = 1;
-			dc.seek = 0;
+			dc.command = DECODE_COMMAND_NONE;
 			decoder_wakeup_player();
 		}
 
@@ -192,7 +193,7 @@ static int mpc_decode(InputStream * inStream)
 		ret = mpc_decoder_decode(&decoder, sample_buffer,
 					 &vbrUpdateAcc, &vbrUpdateBits);
 
-		if (ret <= 0 || dc.stop) {
+		if (ret <= 0 || dc.command == DECODE_COMMAND_STOP) {
 			eof = 1;
 			break;
 		}
@@ -223,7 +224,7 @@ static int mpc_decode(InputStream * inStream)
 
 				chunkpos = 0;
 				s16 = (mpd_sint16 *) chunk;
-				if (dc.stop) {
+				if (dc.command == DECODE_COMMAND_STOP) {
 					eof = 1;
 					break;
 				}
@@ -231,7 +232,7 @@ static int mpc_decode(InputStream * inStream)
 		}
 	}
 
-	if (!dc.stop && chunkpos > 0) {
+	if (dc.command != DECODE_COMMAND_STOP && chunkpos > 0) {
 		total_time = ((float)samplePos) / dc.audioFormat.sampleRate;
 
 		bitRate =

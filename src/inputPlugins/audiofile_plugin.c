@@ -91,12 +91,12 @@ static int audiofile_decode(char *path)
 		char chunk[CHUNK_SIZE];
 
 		while (!eof) {
-			if (dc.seek) {
+			if (dc.command == DECODE_COMMAND_SEEK) {
 				ob_clear();
 				current = dc.seekWhere *
 				    dc.audioFormat.sampleRate;
 				afSeekFrame(af_fp, AF_DEFAULT_TRACK, current);
-				dc.seek = 0;
+				dc.command = DECODE_COMMAND_NONE;
 				decoder_wakeup_player();
 			}
 
@@ -108,14 +108,13 @@ static int audiofile_decode(char *path)
 			else {
 				current += ret;
 				ob_send(NULL,
-						       1,
-						       chunk,
-						       ret * fs,
-						       (float)current /
-						       (float)dc.audioFormat.
-						       sampleRate, bitRate,
-						       NULL);
-				if (dc.stop)
+					1,
+					chunk, ret * fs,
+					(float)current /
+					(float)dc.audioFormat.
+					sampleRate, bitRate,
+					NULL);
+				if (dc.command == DECODE_COMMAND_STOP)
 					break;
 			}
 		}

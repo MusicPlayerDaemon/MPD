@@ -171,15 +171,15 @@ static int tailChunk(InputStream * inStream,
 			/* all chunks are full of decoded data; wait
 			   for the player to free one */
 
-			if (dc.stop)
+			if (dc.command == DECODE_COMMAND_STOP)
 				return OUTPUT_BUFFER_DC_STOP;
 
-			if (dc.seek) {
+			if (dc.command == DECODE_COMMAND_SEEK) {
 				if (seekable) {
 					return OUTPUT_BUFFER_DC_SEEK;
 				} else {
 					dc.seekError = 1;
-					dc.seek = 0;
+					dc.command = DECODE_COMMAND_NONE;
 					decoder_wakeup_player();
 				}
 			}

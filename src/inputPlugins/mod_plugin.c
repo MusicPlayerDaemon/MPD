@@ -187,13 +187,13 @@ static int mod_decode(char *path)
 
 	dc.state = DECODE_STATE_DECODE;
 	while (1) {
-		if (dc.seek) {
+		if (dc.command == DECODE_COMMAND_SEEK) {
 			dc.seekError = 1;
-			dc.seek = 0;
+			dc.command = DECODE_COMMAND_NONE;
 			decoder_wakeup_player();
 		}
 
-		if (dc.stop)
+		if (dc.command == DECODE_COMMAND_STOP)
 			break;
 
 		if (!Player_Active())

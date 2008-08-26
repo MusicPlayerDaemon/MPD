@@ -60,7 +60,7 @@ static size_t ogg_read_cb(void *ptr, size_t size, size_t nmemb, void *vdata)
 	while (1) {
 		ret = readFromInputStream(data->inStream, ptr, size, nmemb);
 		if (ret == 0 && !inputStreamAtEOF(data->inStream) &&
-		    !dc.stop) {
+		    dc.command != DECODE_COMMAND_STOP) {
 			my_usleep(10000);
 		} else
 			break;
@@ -74,7 +74,7 @@ static size_t ogg_read_cb(void *ptr, size_t size, size_t nmemb, void *vdata)
 static int ogg_seek_cb(void *vdata, ogg_int64_t offset, int whence)
 {
 	const OggCallbackData *data = (const OggCallbackData *) vdata;
-	if (dc.stop)
+	if(dc.command == DECODE_COMMAND_STOP)
 		return -1;
 	return seekInputStream(data->inStream, offset, whence);
 }
@@ -234,7 +234,7 @@ static int oggvorbis_decode(InputStream * inStream)
 	callbacks.close_func = ogg_close_cb;
 	callbacks.tell_func = ogg_tell_cb;
 	if ((ret = ov_open_callbacks(&data, &vf, NULL, 0, callbacks)) < 0) {
-		if (!dc.stop) {
+		if (dc.command != DECODE_COMMAND_STOP) {
 			switch (ret) {
 			case OV_EREAD:
 				errorStr = "read error";
@@ -267,13 +267,13 @@ static int oggvorbis_decode(InputStream * inStream)
 	dc.audioFormat.bits = 16;
 
 	while (1) {
-		if (dc.seek) {
+		if (dc.command == DECODE_COMMAND_SEEK) {
 			if (0 == ov_time_seek_page(&vf, dc.seekWhere)) {
 				ob_clear();
 				chunkpos = 0;
 			} else
 				dc.seekError = 1;
-			dc.seek = 0;
+			dc.command = DECODE_COMMAND_NONE;
 			decoder_wakeup_player();
 		}
 		ret = ov_read(&vf, chunk + chunkpos,
@@ -317,12 +317,12 @@ static int oggvorbis_decode(InputStream * inStream)
 					       dc.audioFormat.sampleRate,
 					       bitRate, replayGainInfo);
 			chunkpos = 0;
-			if (dc.stop)
+			if (dc.command == DECODE_COMMAND_STOP)
 				break;
 		}
 	}
 
-	if (!dc.stop && chunkpos > 0) {
+	if (dc.command != DECODE_COMMAND_STOP && chunkpos > 0) {
 		ob_send(NULL, inStream->seekable,
 				       chunk, chunkpos,
 				       ov_time_tell(&vf), bitRate,

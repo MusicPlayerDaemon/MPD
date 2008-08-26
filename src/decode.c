@@ -56,19 +56,30 @@ static void player_wakeup_decoder(void)
 	player_sleep();
 }
 
+static void dc_command_wait(void)
+{
+	while (dc.command != DECODE_COMMAND_NONE)
+		player_wakeup_decoder_nb();
+}
+
+static void dc_command(enum decoder_command cmd)
+{
+	dc.command = cmd;
+	dc_command_wait();
+}
+
 static void stopDecode(void)
 {
-	if (dc.start || dc.state != DECODE_STATE_STOP) {
-		dc.stop = 1;
-		do { player_wakeup_decoder_nb(); } while (dc.stop);
-	}
+	if (dc.command == DECODE_COMMAND_START ||
+	    dc.state != DECODE_STATE_STOP)
+		dc_command(DECODE_COMMAND_STOP);
 }
 
 static void quitDecode(void)
 {
 	stopDecode();
 	pc.state = PLAYER_STATE_STOP;
-	dc.seek = 0;
+	dc.command = DECODE_COMMAND_NONE;
 	pc.play = 0;
 	pc.stop = 0;
 	pc.pause = 0;
@@ -101,7 +112,7 @@ static unsigned calculateCrossFadeChunks(AudioFormat * af, float totalTime)
 
 static int waitOnDecode(int *decodeWaitedOn)
 {
-	while (dc.start)
+	while (dc.command == DECODE_COMMAND_START)
 		player_wakeup_decoder();
 
 	if (dc.error != DECODE_ERROR_NOERROR) {
@@ -133,7 +144,7 @@ static int decodeSeek(int *decodeWaitedOn, int *next)
 		ob_clear();
 		dc.next_song = pc.next_song;
 		dc.error = DECODE_ERROR_NOERROR;
-		dc.start = 1;
+		dc.command = DECODE_COMMAND_START;
 		waitOnDecode(decodeWaitedOn);
 	}
 	if (dc.state != DECODE_STATE_STOP && dc.seekable) {
@@ -142,8 +153,7 @@ static int decodeSeek(int *decodeWaitedOn, int *next)
 		    pc.totalTime - 0.1 : pc.seekWhere;
 		dc.seekWhere = 0 > dc.seekWhere ? 0 : dc.seekWhere;
 		dc.seekError = 0;
-		dc.seek = 1;
-		do { player_wakeup_decoder(); } while (dc.seek);
+		dc_command(DECODE_COMMAND_SEEK);
 		if (!dc.seekError) {
 			pc.elapsedTime = dc.seekWhere;
 			ret = 0;
@@ -231,12 +241,12 @@ static void decodeStart(void)
 	}
 
 	dc.state = DECODE_STATE_START;
-	dc.start = 0;
+	dc.command = DECODE_COMMAND_NONE;
 
 	/* for http streams, seekable is determined in bufferInputStream */
 	dc.seekable = inStream.seekable;
 
-	if (dc.stop)
+	if (dc.command == DECODE_COMMAND_STOP)
 		goto stop;
 
 	ret = DECODE_ERROR_UNKTYPE;
@@ -318,7 +328,7 @@ stop:
 		closeInputStream(&inStream);
 stop_no_close:
 	dc.state = DECODE_STATE_STOP;
-	dc.stop = 0;
+	dc.command = DECODE_COMMAND_NONE;
 }
 
 static void * decoder_task(mpd_unused void *arg)
@@ -328,10 +338,11 @@ static void * decoder_task(mpd_unused void *arg)
 	while (1) {
 		assert(dc.state == DECODE_STATE_STOP);
 
-		if (dc.start || dc.seek) {
+		if (dc.command == DECODE_COMMAND_START ||
+		    dc.command == DECODE_COMMAND_SEEK) {
 			decodeStart();
-		} else if (dc.stop) {
-			dc.stop = 0;
+		} else if (dc.command == DECODE_COMMAND_STOP) {
+			dc.command = DECODE_COMMAND_NONE;
 			decoder_wakeup_player();
 		} else {
 			decoder_sleep();
@@ -480,12 +491,13 @@ static void decodeParent(void)
 			next = ob.end;
 			dc.next_song = pc.next_song;
 			dc.error = DECODE_ERROR_NOERROR;
-			dc.start = 1;
+			dc.command = DECODE_COMMAND_START;
 			pc.queueState = PLAYER_QUEUE_DECODE;
 			wakeup_main_task();
 			player_wakeup_decoder_nb();
 		}
-		if (next >= 0 && do_xfade == XFADE_UNKNOWN && !dc.start &&
+		if (next >= 0 && do_xfade == XFADE_UNKNOWN &&
+		    dc.command != DECODE_COMMAND_START &&
 		    dc.state != DECODE_STATE_START) {
 			/* enable cross fading in this song?  if yes,
 			   calculate how many chunks will be required
@@ -578,7 +590,8 @@ static void decodeParent(void)
 
 			pc.queueState = PLAYER_QUEUE_EMPTY;
 			wakeup_main_task();
-		} else if (dc.state == DECODE_STATE_STOP && !dc.start) {
+		} else if (dc.state == DECODE_STATE_STOP &&
+			   dc.command != DECODE_COMMAND_START) {
 			break;
 		} else {
 			/*DEBUG("waiting for decoded audio, play silence\n");*/
@@ -600,10 +613,7 @@ void decode(void)
 	ob_clear();
 	dc.next_song = pc.next_song;
 	dc.error = DECODE_ERROR_NOERROR;
-	dc.seek = 0;
-	dc.stop = 0;
-	dc.start = 1;
-	do { player_wakeup_decoder(); } while (dc.start);
+	dc_command(DECODE_COMMAND_START);
 
 	decodeParent();
 }

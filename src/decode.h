@@ -33,6 +33,13 @@ enum decoder_state {
 	DECODE_STATE_DECODE
 };
 
+enum decoder_command {
+	DECODE_COMMAND_NONE = 0,
+	DECODE_COMMAND_START,
+	DECODE_COMMAND_STOP,
+	DECODE_COMMAND_SEEK
+};
+
 #define DECODE_ERROR_NOERROR	0
 #define DECODE_ERROR_UNKTYPE	10
 #define DECODE_ERROR_FILE	20
@@ -41,10 +48,8 @@ typedef struct _DecoderControl {
 	Notify notify;
 
 	volatile enum decoder_state state;
-	volatile mpd_sint8 stop;
-	volatile mpd_sint8 start;
+	volatile enum decoder_command command;
 	volatile mpd_uint16 error;
-	volatile mpd_sint8 seek;
 	volatile mpd_sint8 seekError;
 	volatile mpd_sint8 seekable;
 	volatile double seekWhere;
