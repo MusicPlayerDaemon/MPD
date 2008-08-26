@@ -316,6 +316,9 @@ char *get_song_url(char *path_max_tmp, Song *song)
 {
 	if (!song)
 		return NULL;
+
+	assert(song->url != NULL);
+
 	if (!song->parentDir || !song->parentDir->path)
 		strcpy(path_max_tmp, song->url);
 	else

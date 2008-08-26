@@ -69,6 +69,7 @@ static int waitOnDecode(int *decodeWaitedOn)
 	}
 
 	if (dc.error != DECODE_ERROR_NOERROR) {
+		assert(dc.next_song == NULL || dc.next_song->url != NULL);
 		pc.errored_song = dc.next_song;
 		pc.error = PLAYER_ERROR_FILE;
 		return -1;
@@ -148,6 +149,7 @@ static void processDecodeInput(int *pause_r, unsigned int *bbp_r,
 				pc.state = PLAYER_STATE_PLAY;
 			} else {
 				char tmp[MPD_PATH_MAX];
+				assert(dc.next_song == NULL || dc.next_song->url != NULL);
 				pc.errored_song = dc.next_song;
 				pc.error = PLAYER_ERROR_AUDIO;
 				ERROR("problems opening audio device "
@@ -246,6 +248,7 @@ static void decodeParent(void)
 				decodeWaitedOn = 0;
 				if(openAudioDevice(&(ob.audioFormat))<0) {
 					char tmp[MPD_PATH_MAX];
+					assert(dc.next_song == NULL || dc.next_song->url != NULL);
 					pc.errored_song = dc.next_song;
 					pc.error = PLAYER_ERROR_AUDIO;
 					ERROR("problems opening audio device "
@@ -266,6 +269,7 @@ static void decodeParent(void)
 			}
 			else if(dc.state!=DECODE_STATE_START) {
 				/* the decoder failed */
+				assert(dc.next_song == NULL || dc.next_song->url != NULL);
 				pc.errored_song = dc.next_song;
 				pc.error = PLAYER_ERROR_FILE;
 				break;
