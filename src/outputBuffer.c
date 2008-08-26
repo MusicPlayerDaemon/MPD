@@ -17,9 +17,10 @@
  */
 
 #include "outputBuffer.h"
-#include "playerData.h"
 
 #include "utils.h"
+
+struct output_buffer ob;
 
 void ob_init(unsigned int size, Notify *notify)
 {

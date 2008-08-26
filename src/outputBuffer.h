@@ -36,7 +36,7 @@ typedef struct _OutputBufferChunk {
  * A ring set of buffers where the decoder appends data after the end,
  * and the player consumes data from the beginning.
  */
-typedef struct _OutputBuffer {
+struct output_buffer {
 	ob_chunk *chunks;
 
 	unsigned int size;
@@ -54,7 +54,9 @@ typedef struct _OutputBuffer {
 	AudioFormat audioFormat;
 
 	Notify *notify;
-} OutputBuffer;
+};
+
+extern struct output_buffer ob;
 
 void ob_init(unsigned int size, Notify *notify);
 

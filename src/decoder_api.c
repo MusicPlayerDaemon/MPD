@@ -25,6 +25,7 @@
 #include "utils.h"
 #include "normalize.h"
 #include "playerData.h"
+#include "outputBuffer.h"
 #include "gcc.h"
 
 void decoder_plugin_register(struct decoder_plugin *plugin)

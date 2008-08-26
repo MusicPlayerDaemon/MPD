@@ -28,6 +28,9 @@
 
 #include <wavpack/wavpack.h>
 
+/* pick 1020 since its devisible for 8,16,24, and 32-bit audio */
+#define CHUNK_SIZE		1020
+
 #define ERRORLEN 80
 
 static struct {

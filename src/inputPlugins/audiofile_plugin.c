@@ -26,6 +26,9 @@
 
 #include <audiofile.h>
 
+/* pick 1020 since its devisible for 8,16,24, and 32-bit audio */
+#define CHUNK_SIZE		1020
+
 static int getAudiofileTotalTime(char *file)
 {
 	int total_time;
