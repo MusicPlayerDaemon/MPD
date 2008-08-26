@@ -228,6 +228,7 @@ static int oggvorbis_decode(struct decoder * decoder, InputStream * inStream)
 	ReplayGainInfo *replayGainInfo = NULL;
 	char **comments;
 	const char *errorStr;
+	int initialized = 0;
 
 	data.inStream = inStream;
 	data.decoder = decoder;
@@ -284,12 +285,13 @@ static int oggvorbis_decode(struct decoder * decoder, InputStream * inStream)
 			vorbis_info *vi = ov_info(&vf, -1);
 			audio_format.channels = vi->channels;
 			audio_format.sampleRate = vi->rate;
-			if (dc.state == DECODE_STATE_START) {
+			if (!initialized) {
 				float total_time = ov_time_total(&vf, -1);
 				if (total_time < 0)
 					total_time = 0;
 				decoder_initialized(decoder, &audio_format,
 						    total_time);
+				initialized = 1;
 			}
 			comments = ov_comment(&vf, -1)->user_comments;
 			putOggCommentsIntoOutputBuffer(inStream->metaName,

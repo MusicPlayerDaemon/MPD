@@ -107,6 +107,7 @@ static int mp4_decode(struct decoder * mpd_decoder, InputStream * inStream)
 	mpd_uint16 bitRate = 0;
 	int seeking = 0;
 	double seek_where = 0;
+	int initialized = 0;
 
 	mp4cb = xmalloc(sizeof(mp4ff_callback_t));
 	mp4cb->read = mp4_inputStreamReadCallback;
@@ -241,7 +242,7 @@ static int mp4_decode(struct decoder * mpd_decoder, InputStream * inStream)
 			break;
 		}
 
-		if (dc.state != DECODE_STATE_DECODE) {
+		if (!initialized) {
 			channels = frameInfo.channels;
 #ifdef HAVE_FAACDECFRAMEINFO_SAMPLERATE
 			scale = frameInfo.samplerate;
@@ -250,6 +251,7 @@ static int mp4_decode(struct decoder * mpd_decoder, InputStream * inStream)
 			audio_format.channels = frameInfo.channels;
 			decoder_initialized(mpd_decoder, &audio_format,
 					    total_time);
+			initialized = 1;
 		}
 
 		if (channels * (unsigned long)(dur + offset) > frameInfo.samples) {
@@ -282,7 +284,7 @@ static int mp4_decode(struct decoder * mpd_decoder, InputStream * inStream)
 	mp4ff_close(mp4fh);
 	free(mp4cb);
 
-	if (dc.state != DECODE_STATE_DECODE)
+	if (!initialized)
 		return -1;
 
 	if (decoder_get_command(mpd_decoder) == DECODE_COMMAND_SEEK && seeking) {

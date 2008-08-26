@@ -298,6 +298,7 @@ static int aac_decode(struct decoder * mpd_decoder, char *path)
 	mpd_uint16 bitRate = 0;
 	AacBuffer b;
 	InputStream inStream;
+	int initialized = 0;
 
 	if ((totalTime = getAacFloatTotalTime(path)) < 0)
 		return -1;
@@ -364,11 +365,12 @@ static int aac_decode(struct decoder * mpd_decoder, char *path)
 		sampleRate = frameInfo.samplerate;
 #endif
 
-		if (dc.state != DECODE_STATE_DECODE) {
+		if (!initialized) {
 			audio_format.channels = frameInfo.channels;
 			audio_format.sampleRate = sampleRate;
 			decoder_initialized(mpd_decoder, &audio_format,
 					    totalTime);
+			initialized = 1;
 		}
 
 		advanceAacBuffer(&b, frameInfo.bytesconsumed);
@@ -401,7 +403,7 @@ static int aac_decode(struct decoder * mpd_decoder, char *path)
 	if (b.buffer)
 		free(b.buffer);
 
-	if (dc.state != DECODE_STATE_DECODE)
+	if (!initialized)
 		return -1;
 
 	if (decoder_get_command(mpd_decoder) == DECODE_COMMAND_SEEK) {
