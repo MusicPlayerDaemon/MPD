@@ -52,12 +52,14 @@ enum player_command {
 /* 0->1->2->3->5 regular playback
  *        ->4->0 don't play queued song
  */
-#define PLAYER_QUEUE_BLANK	0
-#define PLAYER_QUEUE_FULL	1
-#define PLAYER_QUEUE_DECODE	2
-#define PLAYER_QUEUE_PLAY	3
-#define PLAYER_QUEUE_STOP	4
-#define PLAYER_QUEUE_EMPTY	5
+enum player_queue_state {
+	PLAYER_QUEUE_BLANK = 0,
+	PLAYER_QUEUE_FULL = 1,
+	PLAYER_QUEUE_DECODE = 2,
+	PLAYER_QUEUE_PLAY = 3,
+	PLAYER_QUEUE_STOP = 4,
+	PLAYER_QUEUE_EMPTY = 5
+};
 
 #define PLAYER_QUEUE_UNLOCKED	0
 #define PLAYER_QUEUE_LOCKED	1
@@ -76,7 +78,7 @@ typedef struct _PlayerControl {
 	volatile float fileTime;
 	Song *volatile next_song;
 	Song *errored_song;
-	volatile mpd_sint8 queueState;
+	volatile enum player_queue_state queueState;
 	volatile mpd_sint8 queueLockState;
 	volatile double seekWhere;
 	volatile float crossFade;
@@ -114,9 +116,9 @@ void playerWait(void);
 
 int queueSong(Song * song);
 
-int getPlayerQueueState(void);
+enum player_queue_state getPlayerQueueState(void);
 
-void setQueueState(int queueState);
+void setQueueState(enum player_queue_state queueState);
 
 void playerQueueLock(void);
 

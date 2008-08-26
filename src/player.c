@@ -176,12 +176,12 @@ int queueSong(Song * song)
 	return -1;
 }
 
-int getPlayerQueueState(void)
+enum player_queue_state getPlayerQueueState(void)
 {
 	return pc.queueState;
 }
 
-void setQueueState(int queueState)
+void setQueueState(enum player_queue_state queueState)
 {
 	pc.queueState = queueState;
 	notify_signal(&pc.notify);

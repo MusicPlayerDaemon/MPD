@@ -553,6 +553,12 @@ static void clearPlayerQueue(void)
 {
 	playlist.queued = -1;
 	switch (getPlayerQueueState()) {
+	case PLAYER_QUEUE_BLANK:
+	case PLAYER_QUEUE_DECODE:
+	case PLAYER_QUEUE_STOP:
+	case PLAYER_QUEUE_EMPTY:
+		break;
+
 	case PLAYER_QUEUE_FULL:
 		DEBUG("playlist: dequeue song\n");
 		setQueueState(PLAYER_QUEUE_BLANK);
