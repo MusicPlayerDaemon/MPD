@@ -63,14 +63,32 @@ static JackData *newJackData(void)
 	return ret;
 }
 
+static void freeJackClient(JackData *jd)
+{
+	assert(jd != NULL);
+
+	if (jd->client != NULL) {
+		jack_deactivate(jd->client);
+		jack_client_close(jd->client);
+		jd->client = NULL;
+	}
+
+	if (jd->ringbuffer[0] != NULL) {
+		jack_ringbuffer_free(jd->ringbuffer[0]);
+		jd->ringbuffer[0] = NULL;
+	}
+
+	if (jd->ringbuffer[1] != NULL) {
+		jack_ringbuffer_free(jd->ringbuffer[1]);
+		jd->ringbuffer[1] = NULL;
+	}
+}
+
 static void freeJackData(AudioOutput *audioOutput)
 {
 	JackData *jd = audioOutput->data;
 	if (jd) {
-		if (jd->ringbuffer[0])
-			jack_ringbuffer_free(jd->ringbuffer[0]);
-		if (jd->ringbuffer[1])
-			jack_ringbuffer_free(jd->ringbuffer[1]);
+		freeJackClient(jd);
 		free(jd);
 		audioOutput->data = NULL;
 	}
@@ -78,13 +96,9 @@ static void freeJackData(AudioOutput *audioOutput)
 
 static void jack_finishDriver(AudioOutput *audioOutput)
 {
-	JackData *jd = audioOutput->data;
 	int i;
 
-	if ( jd && jd->client ) {
-		jack_deactivate(jd->client);
-		jack_client_close(jd->client);
-	}
+	freeJackData(audioOutput);
 	DEBUG("disconnect_jack (pid=%d)\n", getpid ());
 
  	if ( strcmp(name, "mpd") ) {
@@ -98,8 +112,6 @@ static void jack_finishDriver(AudioOutput *audioOutput)
  		free(output_ports[i]);
  		output_ports[i] = NULL;
  	}
-
-	freeJackData(audioOutput);
 }
 
 static int srate(mpd_unused jack_nframes_t rate, void *data)
@@ -340,7 +352,7 @@ static int jack_openDevice(AudioOutput *audioOutput)
 	}
 
 	if (jd->client == NULL && connect_jack(audioOutput) < 0) {
-		freeJackData(audioOutput);
+		freeJackClient(jd);
 		audioOutput->open = 0;
 		return -1;
 	}
@@ -378,7 +390,7 @@ static int jack_playAudio(AudioOutput * audioOutput,
 
 	if ( jd->shutdown ) {
 		ERROR("Refusing to play, because there is no client thread.\n");
-		freeJackData(audioOutput);
+		freeJackClient(jd);
 		audioOutput->open = 0;
 		return 0;
 	}
