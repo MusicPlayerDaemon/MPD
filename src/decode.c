@@ -467,9 +467,10 @@ static void decodeParent(void)
 					      "while playing \"%s\"\n",
 					      get_song_url(tmp, dc.next_song));
 					break;
-				} else {
-					player_wakeup_decoder();
 				}
+
+				player_wakeup_decoder();
+
 				if (do_pause) {
 					dropBufferedAudio();
 					closeAudioDevice();
