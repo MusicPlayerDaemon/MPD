@@ -19,6 +19,7 @@
 #ifndef DECODE_H
 #define DECODE_H
 
+#include "decoder_api.h"
 #include "song.h"
 
 #include "audio_format.h"
@@ -31,13 +32,6 @@ enum decoder_state {
 	DECODE_STATE_STOP = 0,
 	DECODE_STATE_START,
 	DECODE_STATE_DECODE
-};
-
-enum decoder_command {
-	DECODE_COMMAND_NONE = 0,
-	DECODE_COMMAND_START,
-	DECODE_COMMAND_STOP,
-	DECODE_COMMAND_SEEK
 };
 
 #define DECODE_ERROR_NOERROR	0

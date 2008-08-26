@@ -30,12 +30,19 @@
 #include "replayGain.h"
 #include "tag.h"
 #include "playerData.h"
-#include "decode.h"
 
 
 /* valid values for streamTypes in the InputPlugin struct: */
 #define INPUT_PLUGIN_STREAM_FILE	0x01
 #define INPUT_PLUGIN_STREAM_URL		0x02
+
+
+enum decoder_command {
+	DECODE_COMMAND_NONE = 0,
+	DECODE_COMMAND_START,
+	DECODE_COMMAND_STOP,
+	DECODE_COMMAND_SEEK
+};
 
 
 struct decoder;
