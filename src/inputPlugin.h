@@ -43,15 +43,4 @@ void initInputPlugins(void);
 /* this is where we "unload" all the "plugins" */
 void finishInputPlugins(void);
 
-extern struct decoder_plugin mp3Plugin;
-extern struct decoder_plugin oggvorbisPlugin;
-extern struct decoder_plugin flacPlugin;
-extern struct decoder_plugin oggflacPlugin;
-extern struct decoder_plugin audiofilePlugin;
-extern struct decoder_plugin mp4Plugin;
-extern struct decoder_plugin aacPlugin;
-extern struct decoder_plugin mpcPlugin;
-extern struct decoder_plugin wavpackPlugin;
-extern struct decoder_plugin modPlugin;
-
 #endif
