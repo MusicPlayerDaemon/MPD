@@ -49,6 +49,8 @@ static int audiofile_decode(struct decoder * decoder, char *path)
 	float total_time;
 	mpd_uint16 bitRate;
 	struct stat st;
+	int ret, current = 0;
+	char chunk[CHUNK_SIZE];
 
 	if (stat(path, &st) < 0) {
 		ERROR("failed to stat: %s\n", path);
@@ -87,36 +89,29 @@ static int audiofile_decode(struct decoder * decoder, char *path)
 
 	decoder_initialized(decoder, &audio_format, total_time);
 
-	{
-		int ret, current = 0;
-		char chunk[CHUNK_SIZE];
+	do {
+		if (dc.command == DECODE_COMMAND_SEEK) {
+			decoder_clear(decoder);
+			current = dc.seekWhere *
+				audio_format.sampleRate;
+			afSeekFrame(af_fp, AF_DEFAULT_TRACK, current);
+			dc_command_finished();
+		}
 
-		do {
-			if (dc.command == DECODE_COMMAND_SEEK) {
-				decoder_clear(decoder);
-				current = dc.seekWhere *
-				    audio_format.sampleRate;
-				afSeekFrame(af_fp, AF_DEFAULT_TRACK, current);
-				dc_command_finished();
-			}
+		ret = afReadFrames(af_fp, AF_DEFAULT_TRACK, chunk,
+				   CHUNK_SIZE / fs);
+		if (ret <= 0)
+			break;
 
-			ret =
-			    afReadFrames(af_fp, AF_DEFAULT_TRACK, chunk,
-					 CHUNK_SIZE / fs);
-			if (ret <= 0)
+		current += ret;
+		decoder_data(decoder, NULL, 1,
+			     chunk, ret * fs,
+			     (float)current / (float)audio_format.sampleRate,
+			     bitRate, NULL);
+	} while (dc.command != DECODE_COMMAND_STOP);
 
-			current += ret;
-			decoder_data(decoder, NULL,
-				     1,
-				     chunk, ret * fs,
-				     (float)current /
-				     (float)audio_format.
-				     sampleRate, bitRate,
-				     NULL);
-		} while (dc.command != DECODE_COMMAND_STOP);
+	decoder_flush(decoder);
 
-		decoder_flush(decoder);
-	}
 	afCloseFile(af_fp);
 
 	return 0;
