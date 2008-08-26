@@ -830,7 +830,7 @@ static int openMp3FromInputStream(InputStream * inStream, mp3DecodeData * data,
 static int mp3Read(mp3DecodeData * data, struct decoder *decoder,
 		   ReplayGainInfo ** replayGainInfo)
 {
-	unsigned int pcm_length;
+	unsigned int pcm_length, max_samples;
 	unsigned int i;
 	int ret;
 	int skip;
@@ -922,12 +922,14 @@ static int mp3Read(mp3DecodeData * data, struct decoder *decoder,
 				pcm_length -= data->dropSamplesAtEnd;
 		}
 
+		max_samples = sizeof(data->outputBuffer) /
+			(2 * MAD_NCHANNELS(&(data->frame).header));
+
 		while (i < pcm_length) {
 			enum decoder_command cmd;
-			unsigned int num_samples = sizeof(data->outputBuffer) /
-				(2 * MAD_NCHANNELS(&(data->frame).header));
-			if (num_samples > pcm_length - i)
-				num_samples = pcm_length - i;
+			unsigned int num_samples = pcm_length - i;
+			if (num_samples > max_samples)
+				num_samples = max_samples;
 
 			i += num_samples;
 
