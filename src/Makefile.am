@@ -41,6 +41,7 @@ mpd_headers = \
 	crossfade.h \
 	dbUtils.h \
 	decode.h \
+	decoder_thread.h \
 	decoder_api.h \
 	decoder_internal.h \
 	directory.h \
@@ -106,7 +107,7 @@ mpd_SOURCES = \
 	conf.c \
 	crossfade.c \
 	dbUtils.c \
-	decode.c \
+	decoder_thread.c \
 	decoder_control.c \
 	decoder_api.c \
 	directory.c \

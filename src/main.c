@@ -25,7 +25,7 @@
 #include "conf.h"
 #include "path.h"
 #include "playerData.h"
-#include "decode.h"
+#include "decoder_thread.h"
 #include "player.h"
 #include "stats.h"
 #include "sig_handlers.h"
