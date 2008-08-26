@@ -1354,7 +1354,7 @@ int getPlaylistLength(void)
 
 int seekSongInPlaylist(int fd, int song, float seek_time)
 {
-	int i = song;
+	int i;
 
 	if (song < 0 || song >= playlist.length) {
 		commandError(fd, ACK_ERROR_NO_EXIST,
@@ -1364,6 +1364,8 @@ int seekSongInPlaylist(int fd, int song, float seek_time)
 
 	if (playlist.random)
 		for (i = 0; song != playlist.order[i]; i++) ;
+	else
+		i = song;
 
 	clearPlayerError();
 	playlist_stopOnError = 1;
