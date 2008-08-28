@@ -689,29 +689,37 @@ static void client_write_deferred(struct client *client)
 	}
 }
 
-int client_print(int fd, const char *buffer, size_t buflen)
+static struct client *client_by_fd(int fd)
 {
 	static unsigned int i;
+
+	assert(fd >= 0);
+
+	if (i < client_max_connections && clients[i].fd >= 0 &&
+	    clients[i].fd == fd)
+		return &clients[i];
+
+	for (i = 0; i < client_max_connections; i++)
+		if (clients[i].fd == fd)
+			return &clients[i];
+
+	return NULL;
+}
+
+int client_print(int fd, const char *buffer, size_t buflen)
+{
 	size_t copylen;
 	struct client *client;
 
 	assert(fd >= 0);
 
-	if (i >= client_max_connections ||
-	    clients[i].fd < 0 || clients[i].fd != fd) {
-		for (i = 0; i < client_max_connections; i++) {
-			if (clients[i].fd == fd)
-				break;
-		}
-		if (i == client_max_connections)
-			return -1;
-	}
+	client = client_by_fd(fd);
+	if (client == NULL)
+		return -1;
 
 	/* if fd isn't found or client is going to be closed, do nothing */
-	if (clients[i].expired)
+	if (client->expired)
 		return 0;
-
-	client = clients + i;
 
 	while (buflen > 0 && !client->expired) {
 		size_t left;
