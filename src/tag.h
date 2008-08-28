@@ -22,6 +22,7 @@
 #include "../config.h"
 
 #include "mpd_types.h"
+#include "os_compat.h"
 
 #ifdef HAVE_ID3TAG
 #include <id3tag.h>
@@ -72,7 +73,7 @@ void clearItemsFromMpdTag(MpdTag * tag, enum tag_type itemType);
 void freeMpdTag(MpdTag * tag);
 
 void addItemToMpdTagWithLen(MpdTag * tag, enum tag_type itemType,
-			    char *value, int len);
+			    char *value, size_t len);
 
 #define addItemToMpdTag(tag, itemType, value) \
 		addItemToMpdTagWithLen(tag, itemType, value, strlen(value))

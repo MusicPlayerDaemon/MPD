@@ -69,7 +69,7 @@ static char utf8_to_latin1_char(const char *inUtf8)
 	return (char)(c + utf8[1]);
 }
 
-static int validateUtf8Char(const char *inUtf8Char)
+static unsigned int validateUtf8Char(const char *inUtf8Char)
 {
 	const unsigned char *utf8Char = (const unsigned char *)inUtf8Char;
 
@@ -77,9 +77,9 @@ static int validateUtf8Char(const char *inUtf8Char)
 		return 1;
 
 	if (utf8Char[0] >= 0xC0 && utf8Char[0] <= 0xFD) {
-		int count = 1;
+		unsigned int count = 1;
 		char t = 1 << 5;
-		int i;
+		unsigned int i;
 		while (count < 6 && (t & utf8Char[0])) {
 			t = (t >> 1);
 			count++;
@@ -97,7 +97,7 @@ static int validateUtf8Char(const char *inUtf8Char)
 
 int validUtf8String(const char *string)
 {
-	int ret;
+	unsigned int ret;
 
 	while (*string) {
 		ret = validateUtf8Char(string);
@@ -114,7 +114,7 @@ char *utf8StrToLatin1Dup(const char *utf8)
 	/* utf8 should have at most two char's per latin1 char */
 	char *ret = xmalloc(strlen(utf8) + 1);
 	char *cp = ret;
-	int count;
+	unsigned int count;
 	size_t len = 0;
 
 	while (*utf8) {
@@ -136,7 +136,7 @@ char *utf8StrToLatin1Dup(const char *utf8)
 char *utf8_to_latin1(char *dest, const char *utf8)
 {
 	char *cp = dest;
-	int count;
+	unsigned int count;
 	size_t len = 0;
 
 	while (*utf8) {

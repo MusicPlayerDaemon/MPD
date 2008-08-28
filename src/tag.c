@@ -25,7 +25,6 @@
 #include "charConv.h"
 #include "tagTracker.h"
 #include "song.h"
-#include "os_compat.h"
 
 #ifdef HAVE_ID3TAG
 #  define isId3v1(tag) (id3_tag_options(tag, 0, 0) & ID3_TAG_OPTION_ID3V1)
@@ -698,9 +697,9 @@ int mpdTagsAreEqual(MpdTag * tag1, MpdTag * tag2)
 }
 
 static void appendToTagItems(MpdTag * tag, enum tag_type type,
-			     char *value, int len)
+			     char *value, size_t len)
 {
-	int i = tag->numOfItems;
+	unsigned int i = tag->numOfItems;
 	char *duplicated = xmalloc(len + 1);
 
 	memcpy(duplicated, value, len);
@@ -719,7 +718,7 @@ static void appendToTagItems(MpdTag * tag, enum tag_type type,
 }
 
 void addItemToMpdTagWithLen(MpdTag * tag, enum tag_type itemType,
-			    char *value, int len)
+			    char *value, size_t len)
 {
 	if (ignoreTagItems[itemType])
 	{
