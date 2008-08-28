@@ -17,7 +17,7 @@
  */
 
 #include "listen.h"
-#include "interface.h"
+#include "client.h"
 #include "conf.h"
 #include "log.h"
 #include "utils.h"

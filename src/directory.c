@@ -20,7 +20,7 @@
 
 #include "command.h"
 #include "conf.h"
-#include "interface.h"
+#include "client.h"
 #include "listen.h"
 #include "log.h"
 #include "ls.h"

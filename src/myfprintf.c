@@ -17,7 +17,7 @@
  */
 
 #include "myfprintf.h"
-#include "interface.h"
+#include "client.h"
 #include "path.h"
 #include "utils.h"
 #include "os_compat.h"
