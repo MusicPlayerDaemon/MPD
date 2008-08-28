@@ -19,7 +19,7 @@
 #ifndef PLAYLIST_H
 #define PLAYLIST_H
 
-#include "dbUtils.h"
+#include "locate.h"
 
 #define PLAYLIST_FILE_SUFFIX 	"m3u"
 #define PLAYLIST_COMMENT	'#'

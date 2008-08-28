@@ -32,6 +32,7 @@
 #include "volume.h"
 #include "ack.h"
 #include "myfprintf.h"
+#include "dbUtils.h"
 
 #define DIRECTORY_DIR		"directory: "
 #define DIRECTORY_MTIME		"mtime: "

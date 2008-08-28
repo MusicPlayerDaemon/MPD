@@ -41,7 +41,6 @@
 #include "inputStream.h"
 #include "state_file.h"
 #include "tag.h"
-#include "tagTracker.h"
 #include "dbUtils.h"
 #include "../config.h"
 #include "utils.h"
