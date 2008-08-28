@@ -16,6 +16,9 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#ifndef LOCATE_H
+#define LOCATE_H
+
 #include "song.h"
 
 #define LOCATE_TAG_FILE_TYPE	TAG_NUM_OF_ITEM_TYPES+10
@@ -44,3 +47,5 @@ void freeLocateTagItem(LocateTagItem * item);
 int strstrSearchTags(Song * song, int numItems, LocateTagItem * items);
 
 int tagItemsFoundAndMatches(Song * song, int numItems, LocateTagItem * items);
+
+#endif
