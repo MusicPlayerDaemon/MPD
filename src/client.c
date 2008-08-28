@@ -722,7 +722,7 @@ int client_print(int fd, const char *buffer, size_t buflen)
 static void client_defer_output(struct client *client,
 				const void *data, size_t length)
 {
-	struct sllnode *buf = client->deferred_send;
+	struct sllnode *buf;
 
 	assert(client->deferred_send != NULL);
 
@@ -735,11 +735,13 @@ static void client_defer_output(struct client *client,
 		      (unsigned long)client_max_output_buffer_size);
 		/* cause client to close */
 		client->expired = 1;
-	} else {
-		while (buf->next)
-			buf = buf->next;
-		buf->next = new_sllnode(data, length);
+		return;
 	}
+
+	buf = client->deferred_send;
+	while (buf->next)
+		buf = buf->next;
+	buf->next = new_sllnode(data, length);
 }
 
 static void client_write_output(struct client *client)
