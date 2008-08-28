@@ -131,6 +131,16 @@ static void set_send_buf_size(struct client *client)
 	}
 }
 
+static inline int client_is_expired(const struct client *client)
+{
+	return client->expired;
+}
+
+static inline void client_set_expired(struct client *client)
+{
+	client->expired = 1;
+}
+
 static void client_init(struct client *client, int fd)
 {
 	static unsigned int next_client_num;
@@ -315,19 +325,25 @@ static int client_process_line(struct client *client)
 
 	if (client->cmd_list_OK >= 0) {
 		if (strcmp(line, CLIENT_LIST_MODE_END) == 0) {
+			int expired;
+
 			DEBUG("client %i: process command "
 			      "list\n", client->num);
 			ret = processListOfCommands(client->fd,
 						    &(client->permission),
-						    &(client->expired),
+						    &(expired),
 						    client->cmd_list_OK,
 						    client->cmd_list);
 			DEBUG("client %i: process command "
 			      "list returned %i\n", client->num, ret);
+
+			if (expired)
+				client_set_expired(client);
+
 			if (ret == 0)
 				commandSuccess(client->fd);
 			else if (ret == COMMAND_RETURN_CLOSE
-				 || client->expired)
+				 || client_is_expired(client))
 				client_close(client);
 
 			client_write_output(client);
@@ -369,7 +385,7 @@ static int client_process_line(struct client *client)
 			if (ret == 0)
 				commandSuccess(client->fd);
 			else if (ret == COMMAND_RETURN_CLOSE
-				 || client->expired) {
+				 || client_is_expired(client)) {
 				client_close(client);
 			}
 			client_write_output(client);
@@ -395,7 +411,7 @@ static int client_input_received(struct client *client, int bytesRead)
 					*(buf_tail - 1) = '\0';
 			}
 			ret = client_process_line(client);
-			if (client->expired)
+			if (client_is_expired(client))
 				return ret;
 			client->bufferPos = client->bufferLength;
 		}
@@ -453,7 +469,7 @@ static void client_manager_register_read_fd(fd_set * fds, int *fdmax)
 	addListenSocketsToFdSet(fds, fdmax);
 
 	list_for_each_entry(client, &clients, siblings) {
-		if (!client->expired && !client->deferred_send) {
+		if (!client_is_expired(client) && !client->deferred_send) {
 			FD_SET(client->fd, fds);
 			if (*fdmax < client->fd)
 				*fdmax = client->fd;
@@ -468,7 +484,7 @@ static void client_manager_register_write_fd(fd_set * fds, int *fdmax)
 	FD_ZERO(fds);
 
 	list_for_each_entry(client, &clients, siblings) {
-		if (client->fd >= 0 && !client->expired
+		if (client->fd >= 0 && !client_is_expired(client)
 		    && client->deferred_send) {
 			FD_SET(client->fd, fds);
 			if (*fdmax < client->fd)
@@ -601,7 +617,7 @@ void client_manager_expire(void)
 	struct client *client, *n;
 
 	list_for_each_entry_safe(client, n, &clients, siblings) {
-		if (client->expired) {
+		if (client_is_expired(client)) {
 			DEBUG("client %i: expired\n", client->num);
 			client_close(client);
 		} else if (time(NULL) - client->lastTime >
@@ -648,7 +664,7 @@ static void client_write_deferred(struct client *client)
 		/* cause client to close */
 		DEBUG("client %i: problems flushing buffer\n",
 		      client->num);
-		client->expired = 1;
+		client_set_expired(client);
 	}
 }
 
@@ -675,10 +691,10 @@ int client_print(int fd, const char *buffer, size_t buflen)
 		return -1;
 
 	/* if fd isn't found or client is going to be closed, do nothing */
-	if (client->expired)
+	if (client_is_expired(client))
 		return 0;
 
-	while (buflen > 0 && !client->expired) {
+	while (buflen > 0 && !client_is_expired(client)) {
 		size_t left;
 
 		assert(client->send_buf_size >= client->send_buf_used);
@@ -712,7 +728,7 @@ static void client_defer_output(struct client *client,
 		      (unsigned long)client->deferred_bytes,
 		      (unsigned long)client_max_output_buffer_size);
 		/* cause client to close */
-		client->expired = 1;
+		client_set_expired(client);
 		return;
 	}
 
@@ -734,7 +750,7 @@ static void client_write(struct client *client,
 			client_defer_output(client, data, length);
 		} else {
 			DEBUG("client %i: problems writing\n", client->num);
-			client->expired = 1;
+			client_set_expired(client);
 			return;
 		}
 	} else if ((size_t)ret < client->send_buf_used) {
@@ -747,7 +763,7 @@ static void client_write(struct client *client,
 
 static void client_write_output(struct client *client)
 {
-	if (client->expired || !client->send_buf_used)
+	if (client_is_expired(client) || !client->send_buf_used)
 		return;
 
 	if (client->deferred_send != NULL)
