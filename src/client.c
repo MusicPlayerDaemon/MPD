@@ -66,7 +66,7 @@ struct client {
 	char buffer[CLIENT_MAX_BUFFER_LENGTH];
 	size_t bufferLength;
 	size_t bufferPos;
-	int fd;	/* file descriptor */
+	int fd;	/* file descriptor; -1 if expired */
 	int permission;
 	time_t lastTime;
 	struct strnode *cmd_list;	/* for when in list mode */
@@ -76,8 +76,6 @@ struct client {
 	int cmd_list_dup;	/* has the cmd_list been copied to private space? */
 	struct sllnode *deferred_send;	/* for output if client is slow */
 	size_t deferred_bytes;	/* mem deferred_send consumes */
-	int expired;	/* set whether this client should be closed on next
-			   check of old clients */
 	unsigned int num;	/* client number */
 
 	char *send_buf;
@@ -133,12 +131,15 @@ static void set_send_buf_size(struct client *client)
 
 static inline int client_is_expired(const struct client *client)
 {
-	return client->expired;
+	return client->fd < 0;
 }
 
 static inline void client_set_expired(struct client *client)
 {
-	client->expired = 1;
+	if (client->fd >= 0) {
+		xclose(client->fd);
+		client->fd = -1;
+	}
 }
 
 static void client_init(struct client *client, int fd)
@@ -156,7 +157,6 @@ static void client_init(struct client *client, int fd)
 	client->cmd_list = NULL;
 	client->cmd_list_tail = NULL;
 	client->deferred_send = NULL;
-	client->expired = 0;
 	client->deferred_bytes = 0;
 	client->num = next_client_num++;
 	client->send_buf_used = 0;
