@@ -28,6 +28,7 @@
 #include "myfprintf.h"
 #include "os_compat.h"
 #include "main_notify.h"
+#include "dlist.h"
 
 #include "../config.h"
 
@@ -60,6 +61,8 @@ static struct strnode *list_cache_head;
 static struct strnode *list_cache_tail;
 
 struct client {
+	struct list_head siblings;
+
 	char buffer[CLIENT_MAX_BUFFER_LENGTH];
 	size_t bufferLength;
 	size_t bufferPos;
@@ -83,7 +86,8 @@ struct client {
 	size_t send_buf_alloc;	/* bytes actually allocated */
 };
 
-static struct client *clients;
+static LIST_HEAD(clients);
+static unsigned num_clients;
 
 static void client_write_deferred(struct client *client);
 
@@ -129,7 +133,7 @@ static void set_send_buf_size(struct client *client)
 
 static void client_init(struct client *client, int fd)
 {
-	assert(client->fd < 0);
+	static unsigned int next_client_num;
 
 	client->cmd_list_size = 0;
 	client->cmd_list_dup = 0;
@@ -144,6 +148,7 @@ static void client_init(struct client *client, int fd)
 	client->deferred_send = NULL;
 	client->expired = 0;
 	client->deferred_bytes = 0;
+	client->num = next_client_num++;
 	client->send_buf_used = 0;
 
 	client->permission = getDefaultPermissions();
@@ -212,10 +217,15 @@ out:
 static void client_close(struct client *client)
 {
 	struct sllnode *buf;
-	if (client->fd < 0)
-		return;
+
+	assert(client->fd >= 0);
+
 	xclose(client->fd);
-	client->fd = -1;
+
+	assert(num_clients > 0);
+	assert(!list_empty(&clients));
+	list_del(&client->siblings);
+	--num_clients;
 
 	if (client->cmd_list) {
 		free_cmd_list(client->cmd_list);
@@ -231,18 +241,19 @@ static void client_close(struct client *client)
 		client->deferred_send = NULL;
 	}
 
+	if (client->send_buf)
+		free(client->send_buf);
+
 	SECURE("client %i: closed\n", client->num);
+	free(client);
 }
 
 void client_new(int fd, const struct sockaddr *addr)
 {
-	unsigned int i;
 	const char *hostname;
+	struct client *client;
 
-	for (i = 0; i < client_max_connections
-	     && clients[i].fd >= 0; i++) /* nothing */ ;
-
-	if (i == client_max_connections) {
+	if (num_clients >= client_max_connections) {
 		ERROR("Max Connections Reached!\n");
 		xclose(fd);
 		return;
@@ -281,8 +292,12 @@ void client_new(int fd, const struct sockaddr *addr)
 	default:
 		hostname = "unknown";
 	}
-	SECURE("client %i: opened from %s\n", i, hostname);
-	client_init(&(clients[i]), fd);
+
+	client = xcalloc(1, sizeof(*client));
+	list_add(&client->siblings, &clients);
+	++num_clients;
+	client_init(client, fd);
+	SECURE("client %i: opened from %s\n", client->num, hostname);
 }
 
 static int client_process_line(struct client *client)
@@ -424,55 +439,52 @@ static int client_read(struct client *client)
 
 static void client_manager_register_read_fd(fd_set * fds, int *fdmax)
 {
-	unsigned int i;
+	struct client *client;
 
 	FD_ZERO(fds);
 	addListenSocketsToFdSet(fds, fdmax);
 
-	for (i = 0; i < client_max_connections; i++) {
-		if (clients[i].fd >= 0 && !clients[i].expired
-		    && !clients[i].deferred_send) {
-			FD_SET(clients[i].fd, fds);
-			if (*fdmax < clients[i].fd)
-				*fdmax = clients[i].fd;
+	list_for_each_entry(client, &clients, siblings) {
+		if (!client->expired && !client->deferred_send) {
+			FD_SET(client->fd, fds);
+			if (*fdmax < client->fd)
+				*fdmax = client->fd;
 		}
 	}
 }
 
 static void client_manager_register_write_fd(fd_set * fds, int *fdmax)
 {
-	unsigned int i;
+	struct client *client;
 
 	FD_ZERO(fds);
 
-	for (i = 0; i < client_max_connections; i++) {
-		if (clients[i].fd >= 0 && !clients[i].expired
-		    && clients[i].deferred_send) {
-			FD_SET(clients[i].fd, fds);
-			if (*fdmax < clients[i].fd)
-				*fdmax = clients[i].fd;
+	list_for_each_entry(client, &clients, siblings) {
+		if (client->fd >= 0 && !client->expired
+		    && client->deferred_send) {
+			FD_SET(client->fd, fds);
+			if (*fdmax < client->fd)
+				*fdmax = client->fd;
 		}
 	}
 }
 
 static void closeNextErroredInterface(void)
 {
+	struct client *client, *n;
 	fd_set fds;
 	struct timeval tv;
-	unsigned int i;
 
 	tv.tv_sec = 0;
 	tv.tv_usec = 0;
 
-	for (i = 0; i < client_max_connections; i++) {
-		if (clients[i].fd >= 0) {
-			FD_ZERO(&fds);
-			FD_SET(clients[i].fd, &fds);
-			if (select(clients[i].fd + 1,
-			           &fds, NULL, NULL, &tv) < 0) {
-				client_close(&clients[i]);
-				return;
-			}
+	list_for_each_entry_safe(client, n, &clients, siblings) {
+		FD_ZERO(&fds);
+		FD_SET(client->fd, &fds);
+		if (select(client->fd + 1,
+		           &fds, NULL, NULL, &tv) < 0) {
+			client_close(client);
+			return;
 		}
 	}
 }
@@ -482,7 +494,7 @@ int client_manager_io(void)
 	fd_set rfds;
 	fd_set wfds;
 	fd_set efds;
-	unsigned int i;
+	struct client *client, *n;
 	int selret;
 	int fdmax;
 
@@ -514,19 +526,17 @@ int client_manager_io(void)
 
 		getConnections(&rfds);
 
-		for (i = 0; i < client_max_connections; i++) {
-			if (clients[i].fd >= 0
-			    && FD_ISSET(clients[i].fd, &rfds)) {
+		list_for_each_entry_safe(client, n, &clients, siblings) {
+			if (FD_ISSET(client->fd, &rfds)) {
 				if (COMMAND_RETURN_KILL ==
-				    client_read(&(clients[i]))) {
+				    client_read(client)) {
 					return COMMAND_RETURN_KILL;
 				}
-				clients[i].lastTime = time(NULL);
+				client->lastTime = time(NULL);
 			}
-			if (clients[i].fd >= 0
-			    && FD_ISSET(clients[i].fd, &wfds)) {
-				client_write_deferred(&clients[i]);
-				clients[i].lastTime = time(NULL);
+			if (FD_ISSET(client->fd, &wfds)) {
+				client_write_deferred(client);
+				client->lastTime = time(NULL);
 			}
 		}
 
@@ -538,7 +548,6 @@ int client_manager_io(void)
 
 void client_manager_init(void)
 {
-	unsigned int i;
 	char *test;
 	ConfigParam *param;
 
@@ -586,31 +595,19 @@ void client_manager_init(void)
 		client_max_output_buffer_size = tmp * 1024;
 	}
 
-	clients = xmalloc(sizeof(clients[0]) * client_max_connections);
-
 	list_cache = xcalloc(client_list_cache_size, sizeof(struct strnode));
 	list_cache_head = &(list_cache[0]);
 	list_cache_tail = &(list_cache[client_list_cache_size - 1]);
-
-	for (i = 0; i < client_max_connections; i++) {
-		clients[i].fd = -1;
-		clients[i].send_buf = NULL;
-		clients[i].send_buf_size = 0;
-		clients[i].send_buf_alloc = 0;
-		clients[i].num = i;
-	}
 }
 
 static void client_close_all(void)
 {
-	unsigned int i;
+	struct client *client, *n;
 
-	for (i = 0; i < client_max_connections; i++) {
-		if (clients[i].fd >= 0)
-			client_close(&(clients[i]));
-		if (clients[i].send_buf)
-			free(clients[i].send_buf);
-	}
+	list_for_each_entry_safe(client, n, &clients, siblings)
+		client_close(client);
+	num_clients = 0;
+
 	free(list_cache);
 }
 
@@ -618,25 +615,21 @@ void client_manager_deinit(void)
 {
 	client_close_all();
 
-	free(clients);
-
 	client_max_connections = 0;
 }
 
 void client_manager_expire(void)
 {
-	unsigned int i;
+	struct client *client, *n;
 
-	for (i = 0; i < client_max_connections; i++) {
-		if (clients[i].fd >= 0) {
-			if (clients[i].expired) {
-				DEBUG("client %i: expired\n", i);
-				client_close(&(clients[i]));
-			} else if (time(NULL) - clients[i].lastTime >
-				   client_timeout) {
-				DEBUG("client %i: timeout\n", i);
-				client_close(&(clients[i]));
-			}
+	list_for_each_entry_safe(client, n, &clients, siblings) {
+		if (client->expired) {
+			DEBUG("client %i: expired\n", client->num);
+			client_close(client);
+		} else if (time(NULL) - client->lastTime >
+			   client_timeout) {
+			DEBUG("client %i: timeout\n", client->num);
+			client_close(client);
 		}
 	}
 }
@@ -691,17 +684,11 @@ static void client_write_deferred(struct client *client)
 
 static struct client *client_by_fd(int fd)
 {
-	static unsigned int i;
+	struct client *client;
 
-	assert(fd >= 0);
-
-	if (i < client_max_connections && clients[i].fd >= 0 &&
-	    clients[i].fd == fd)
-		return &clients[i];
-
-	for (i = 0; i < client_max_connections; i++)
-		if (clients[i].fd == fd)
-			return &clients[i];
+	list_for_each_entry(client, &clients, siblings)
+		if (client->fd == fd)
+			return client;
 
 	return NULL;
 }
@@ -745,8 +732,7 @@ static void client_write_output(struct client *client)
 	ssize_t ret;
 	struct sllnode *buf;
 
-	if (client->fd < 0 || client->expired ||
-	    !client->send_buf_used)
+	if (client->expired || !client->send_buf_used)
 		return;
 
 	if ((buf = client->deferred_send)) {
