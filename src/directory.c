@@ -177,7 +177,7 @@ int updateInit(int fd, List * pathList)
 
 		finishSigHandlers();
 		closeAllListenSockets();
-		freeAllInterfaces();
+		client_manager_deinit();
 		finishPlaylist();
 		finishVolume();
 

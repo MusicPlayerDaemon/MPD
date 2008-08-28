@@ -49,7 +49,7 @@ void vfdprintf(const int fd, const char *fmt, va_list args)
 	len = strlen(buf);
 	if (fd == STDERR_FILENO ||
 	    fd == STDOUT_FILENO ||
-	    interfacePrintWithFD(fd, buf, len) < 0)
+	    client_print(fd, buf, len) < 0)
 		blockingWrite(fd, buf, len);
 }
 

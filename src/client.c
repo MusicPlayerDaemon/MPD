@@ -234,7 +234,7 @@ static void client_close(struct client *client)
 	SECURE("client %i: closed\n", client->num);
 }
 
-void openAInterface(int fd, const struct sockaddr *addr)
+void client_new(int fd, const struct sockaddr *addr)
 {
 	unsigned int i;
 
@@ -476,7 +476,7 @@ static void closeNextErroredInterface(void)
 	}
 }
 
-int doIOForInterfaces(void)
+int client_manager_io(void)
 {
 	fd_set rfds;
 	fd_set wfds;
@@ -535,7 +535,7 @@ int doIOForInterfaces(void)
 	return 1;
 }
 
-void initInterfaces(void)
+void client_manager_init(void)
 {
 	unsigned int i;
 	char *test;
@@ -613,7 +613,7 @@ static void client_close_all(void)
 	free(list_cache);
 }
 
-void freeAllInterfaces(void)
+void client_manager_deinit(void)
 {
 	client_close_all();
 
@@ -622,7 +622,7 @@ void freeAllInterfaces(void)
 	client_max_connections = 0;
 }
 
-void closeOldInterfaces(void)
+void client_manager_expire(void)
 {
 	unsigned int i;
 
@@ -688,7 +688,7 @@ static void client_write_deferred(struct client *client)
 	}
 }
 
-int interfacePrintWithFD(int fd, const char *buffer, size_t buflen)
+int client_print(int fd, const char *buffer, size_t buflen)
 {
 	static unsigned int i;
 	size_t copylen;

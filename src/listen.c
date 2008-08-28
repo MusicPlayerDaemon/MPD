@@ -297,7 +297,7 @@ void getConnections(fd_set * fds)
 		if (FD_ISSET(listenSockets[i], fds)) {
 			if ((fd = accept(listenSockets[i], &sockAddr, &socklen))
 			    >= 0) {
-				openAInterface(fd, &sockAddr);
+				client_new(fd, &sockAddr);
 			} else if (fd < 0
 				   && (errno != EAGAIN && errno != EINTR)) {
 				ERROR("Problems accept()'ing\n");
