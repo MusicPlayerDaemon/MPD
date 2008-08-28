@@ -59,7 +59,7 @@ static struct strnode *list_cache;
 static struct strnode *list_cache_head;
 static struct strnode *list_cache_tail;
 
-typedef struct _Interface {
+struct client {
 	char buffer[INTERFACE_MAX_BUFFER_LENGTH];
 	size_t bufferLength;
 	size_t bufferPos;
@@ -81,16 +81,16 @@ typedef struct _Interface {
 	size_t send_buf_used;	/* bytes used this instance */
 	size_t send_buf_size;	/* bytes usable this instance */
 	size_t send_buf_alloc;	/* bytes actually allocated */
-} Interface;
+};
 
-static Interface *interfaces;
+static struct client *interfaces;
 
-static void flushInterfaceBuffer(Interface * interface);
+static void flushInterfaceBuffer(struct client *interface);
 
-static void printInterfaceOutBuffer(Interface * interface);
+static void printInterfaceOutBuffer(struct client *interface);
 
 #ifdef SO_SNDBUF
-static size_t get_default_snd_buf_size(Interface * interface)
+static size_t get_default_snd_buf_size(struct client *interface)
 {
 	int new_size;
 	socklen_t sockOptLen = sizeof(int);
@@ -106,13 +106,13 @@ static size_t get_default_snd_buf_size(Interface * interface)
 	return INTERFACE_DEFAULT_OUT_BUFFER_SIZE;
 }
 #else /* !SO_SNDBUF */
-static size_t get_default_snd_buf_size(Interface * interface)
+static size_t get_default_snd_buf_size(struct client *interface)
 {
 	return INTERFACE_DEFAULT_OUT_BUFFER_SIZE;
 }
 #endif /* !SO_SNDBUF */
 
-static void set_send_buf_size(Interface * interface)
+static void set_send_buf_size(struct client *interface)
 {
 	size_t new_size = get_default_snd_buf_size(interface);
 	if (interface->send_buf_size != new_size) {
@@ -127,7 +127,7 @@ static void set_send_buf_size(Interface * interface)
 	}
 }
 
-static void openInterface(Interface * interface, int fd)
+static void openInterface(struct client *interface, int fd)
 {
 	assert(interface->fd < 0);
 
@@ -168,7 +168,7 @@ static void free_cmd_list(struct strnode *list)
 	}
 }
 
-static void cmd_list_clone(Interface * interface)
+static void cmd_list_clone(struct client *interface)
 {
 	struct strnode *new = dup_strlist(interface->cmd_list);
 	free_cmd_list(interface->cmd_list);
@@ -181,7 +181,7 @@ static void cmd_list_clone(Interface * interface)
 	interface->cmd_list_tail = new;
 }
 
-static void new_cmd_list_ptr(Interface * interface, char *s, const int size)
+static void new_cmd_list_ptr(struct client *interface, char *s, const int size)
 {
 	int i;
 	struct strnode *new;
@@ -209,7 +209,7 @@ out:
 		interface->cmd_list = interface->cmd_list_tail = new;
 }
 
-static void closeInterface(Interface * interface)
+static void closeInterface(struct client *interface)
 {
 	struct sllnode *buf;
 	if (interface->fd < 0)
@@ -284,7 +284,7 @@ void openAInterface(int fd, const struct sockaddr *addr)
 	}
 }
 
-static int processLineOfInput(Interface * interface)
+static int processLineOfInput(struct client *interface)
 {
 	int ret = 1;
 	char *line = interface->buffer + interface->bufferPos;
@@ -355,7 +355,7 @@ static int processLineOfInput(Interface * interface)
 	return ret;
 }
 
-static int processBytesRead(Interface * interface, int bytesRead)
+static int processBytesRead(struct client *interface, int bytesRead)
 {
 	int ret = 0;
 	char *buf_tail = &(interface->buffer[interface->bufferLength - 1]);
@@ -403,7 +403,7 @@ static int processBytesRead(Interface * interface, int bytesRead)
 	return ret;
 }
 
-static int interfaceReadInput(Interface * interface)
+static int interfaceReadInput(struct client *interface)
 {
 	int bytesRead;
 
@@ -586,7 +586,7 @@ void initInterfaces(void)
 		interface_max_output_buffer_size = tmp * 1024;
 	}
 
-	interfaces = xmalloc(sizeof(Interface) * interface_max_connections);
+	interfaces = xmalloc(sizeof(interfaces[0]) * interface_max_connections);
 
 	list_cache = xcalloc(interface_list_cache_size, sizeof(struct strnode));
 	list_cache_head = &(list_cache[0]);
@@ -641,7 +641,7 @@ void closeOldInterfaces(void)
 	}
 }
 
-static void flushInterfaceBuffer(Interface * interface)
+static void flushInterfaceBuffer(struct client *interface)
 {
 	struct sllnode *buf;
 	ssize_t ret = 0;
@@ -693,7 +693,7 @@ int interfacePrintWithFD(int fd, const char *buffer, size_t buflen)
 {
 	static unsigned int i;
 	size_t copylen;
-	Interface *interface;
+	struct client *interface;
 
 	assert(fd >= 0);
 
@@ -732,7 +732,7 @@ int interfacePrintWithFD(int fd, const char *buffer, size_t buflen)
 	return 0;
 }
 
-static void printInterfaceOutBuffer(Interface * interface)
+static void printInterfaceOutBuffer(struct client *interface)
 {
 	ssize_t ret;
 	struct sllnode *buf;
