@@ -719,33 +719,40 @@ int client_print(int fd, const char *buffer, size_t buflen)
 	return 0;
 }
 
+static void client_defer_output(struct client *client,
+				const void *data, size_t length)
+{
+	struct sllnode *buf = client->deferred_send;
+
+	assert(client->deferred_send != NULL);
+
+	client->deferred_bytes += sizeof(struct sllnode) + length;
+	if (client->deferred_bytes > client_max_output_buffer_size) {
+		ERROR("client %i: output buffer size (%lu) is "
+		      "larger than the max (%lu)\n",
+		      client->num,
+		      (unsigned long)client->deferred_bytes,
+		      (unsigned long)client_max_output_buffer_size);
+		/* cause client to close */
+		client->expired = 1;
+	} else {
+		while (buf->next)
+			buf = buf->next;
+		buf->next = new_sllnode(data, length);
+	}
+}
+
 static void client_write_output(struct client *client)
 {
 	ssize_t ret;
-	struct sllnode *buf;
 
 	if (client->expired || !client->send_buf_used)
 		return;
 
-	if ((buf = client->deferred_send)) {
-		client->deferred_bytes += sizeof(struct sllnode)
-		                             + client->send_buf_used;
-		if (client->deferred_bytes >
-		    client_max_output_buffer_size) {
-			ERROR("client %i: output buffer size (%lu) is "
-			      "larger than the max (%lu)\n",
-			      client->num,
-			      (unsigned long)client->deferred_bytes,
-			      (unsigned long)client_max_output_buffer_size);
-			/* cause client to close */
-			client->expired = 1;
-		} else {
-			while (buf->next)
-				buf = buf->next;
-			buf->next = new_sllnode(client->send_buf,
-						client->send_buf_used);
-		}
-	} else {
+	if (client->deferred_send != NULL)
+		client_defer_output(client, client->send_buf,
+				    client->send_buf_used);
+	else {
 		if ((ret = write(client->fd, client->send_buf,
 				 client->send_buf_used)) < 0) {
 			if (errno == EAGAIN || errno == EINTR) {
