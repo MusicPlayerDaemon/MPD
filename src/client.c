@@ -237,6 +237,7 @@ static void client_close(struct client *client)
 void client_new(int fd, const struct sockaddr *addr)
 {
 	unsigned int i;
+	const char *hostname;
 
 	for (i = 0; i < client_max_connections
 	     && clients[i].fd >= 0; i++) /* nothing */ ;
@@ -244,44 +245,44 @@ void client_new(int fd, const struct sockaddr *addr)
 	if (i == client_max_connections) {
 		ERROR("Max Connections Reached!\n");
 		xclose(fd);
-	} else {
-		const char *hostname;
-		switch (addr->sa_family) {
+		return;
+	}
+
+	switch (addr->sa_family) {
 #ifdef HAVE_TCP
-		case AF_INET:
-			hostname = (const char *)inet_ntoa(((const struct sockaddr_in *)
-			                                    addr)->sin_addr);
-			if (!hostname)
-				hostname = "error getting ipv4 address";
-			break;
+	case AF_INET:
+		hostname = (const char *)inet_ntoa(((const struct sockaddr_in *)
+						    addr)->sin_addr);
+		if (!hostname)
+			hostname = "error getting ipv4 address";
+		break;
 #ifdef HAVE_IPV6
-		case AF_INET6:
-			{
-				static char host[INET6_ADDRSTRLEN + 1];
-				memset(host, 0, INET6_ADDRSTRLEN + 1);
-				if (inet_ntop(AF_INET6, (const void *)
-					      &(((const struct sockaddr_in6 *)addr)->
-						sin6_addr), host,
-					      INET6_ADDRSTRLEN)) {
-					hostname = (const char *)host;
-				} else {
-					hostname = "error getting ipv6 address";
-				}
+	case AF_INET6:
+		{
+			static char host[INET6_ADDRSTRLEN + 1];
+			memset(host, 0, INET6_ADDRSTRLEN + 1);
+			if (inet_ntop(AF_INET6, (const void *)
+				      &(((const struct sockaddr_in6 *)addr)->
+					sin6_addr), host,
+				      INET6_ADDRSTRLEN)) {
+				hostname = (const char *)host;
+			} else {
+				hostname = "error getting ipv6 address";
 			}
-			break;
+		}
+		break;
 #endif
 #endif /* HAVE_TCP */
 #ifdef HAVE_UN
-		case AF_UNIX:
-			hostname = "local connection";
-			break;
+	case AF_UNIX:
+		hostname = "local connection";
+		break;
 #endif /* HAVE_UN */
-		default:
-			hostname = "unknown";
-		}
-		SECURE("client %i: opened from %s\n", i, hostname);
-		client_init(&(clients[i]), fd);
+	default:
+		hostname = "unknown";
 	}
+	SECURE("client %i: opened from %s\n", i, hostname);
+	client_init(&(clients[i]), fd);
 }
 
 static int client_process_line(struct client *client)
