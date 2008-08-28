@@ -670,14 +670,6 @@ static void client_write_deferred(struct client *client)
 		/* cause client to close */
 		DEBUG("client %i: problems flushing buffer\n",
 		      client->num);
-		buf = client->deferred_send;
-		do {
-			struct sllnode *prev = buf;
-			buf = buf->next;
-			free(prev);
-		} while (buf);
-		client->deferred_send = NULL;
-		client->deferred_bytes = 0;
 		client->expired = 1;
 	}
 }
@@ -747,13 +739,6 @@ static void client_write_output(struct client *client)
 			      (unsigned long)client_max_output_buffer_size);
 			/* cause client to close */
 			client->expired = 1;
-			do {
-				struct sllnode *prev = buf;
-				buf = buf->next;
-				free(prev);
-			} while (buf);
-			client->deferred_send = NULL;
-			client->deferred_bytes = 0;
 		} else {
 			while (buf->next)
 				buf = buf->next;
