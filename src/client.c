@@ -33,34 +33,34 @@
 
 #define GREETING				"OK MPD " PROTOCOL_VERSION "\n"
 
-#define INTERFACE_MAX_BUFFER_LENGTH			(40960)
-#define INTERFACE_LIST_MODE_BEGIN			"command_list_begin"
-#define INTERFACE_LIST_OK_MODE_BEGIN			"command_list_ok_begin"
-#define INTERFACE_LIST_MODE_END				"command_list_end"
-#define INTERFACE_DEFAULT_OUT_BUFFER_SIZE		(4096)
-#define INTERFACE_TIMEOUT_DEFAULT			(60)
-#define INTERFACE_MAX_CONNECTIONS_DEFAULT		(10)
-#define INTERFACE_MAX_COMMAND_LIST_DEFAULT		(2048*1024)
-#define INTERFACE_MAX_OUTPUT_BUFFER_SIZE_DEFAULT	(8192*1024)
+#define CLIENT_MAX_BUFFER_LENGTH			(40960)
+#define CLIENT_LIST_MODE_BEGIN			"command_list_begin"
+#define CLIENT_LIST_OK_MODE_BEGIN			"command_list_ok_begin"
+#define CLIENT_LIST_MODE_END				"command_list_end"
+#define CLIENT_DEFAULT_OUT_BUFFER_SIZE		(4096)
+#define CLIENT_TIMEOUT_DEFAULT			(60)
+#define CLIENT_MAX_CONNECTIONS_DEFAULT		(10)
+#define CLIENT_MAX_COMMAND_LIST_DEFAULT		(2048*1024)
+#define CLIENT_MAX_OUTPUT_BUFFER_SIZE_DEFAULT	(8192*1024)
 
-/* set this to zero to indicate we have no possible interfaces */
-static unsigned int interface_max_connections;	/*INTERFACE_MAX_CONNECTIONS_DEFAULT; */
-static int interface_timeout = INTERFACE_TIMEOUT_DEFAULT;
-static size_t interface_max_command_list_size =
-    INTERFACE_MAX_COMMAND_LIST_DEFAULT;
-static size_t interface_max_output_buffer_size =
-    INTERFACE_MAX_OUTPUT_BUFFER_SIZE_DEFAULT;
+/* set this to zero to indicate we have no possible clients */
+static unsigned int client_max_connections;	/*CLIENT_MAX_CONNECTIONS_DEFAULT; */
+static int client_timeout = CLIENT_TIMEOUT_DEFAULT;
+static size_t client_max_command_list_size =
+    CLIENT_MAX_COMMAND_LIST_DEFAULT;
+static size_t client_max_output_buffer_size =
+    CLIENT_MAX_OUTPUT_BUFFER_SIZE_DEFAULT;
 
 /* maybe make conf option for this, or... 32 might be good enough */
-static long int interface_list_cache_size = 32;
+static long int client_list_cache_size = 32;
 
-/* shared globally between all interfaces: */
+/* shared globally between all clients: */
 static struct strnode *list_cache;
 static struct strnode *list_cache_head;
 static struct strnode *list_cache_tail;
 
 struct client {
-	char buffer[INTERFACE_MAX_BUFFER_LENGTH];
+	char buffer[CLIENT_MAX_BUFFER_LENGTH];
 	size_t bufferLength;
 	size_t bufferPos;
 	int fd;	/* file descriptor */
@@ -73,9 +73,9 @@ struct client {
 	int cmd_list_dup;	/* has the cmd_list been copied to private space? */
 	struct sllnode *deferred_send;	/* for output if client is slow */
 	size_t deferred_bytes;	/* mem deferred_send consumes */
-	int expired;	/* set whether this interface should be closed on next
-			   check of old interfaces */
-	unsigned int num;	/* interface number */
+	int expired;	/* set whether this client should be closed on next
+			   check of old clients */
+	unsigned int num;	/* client number */
 
 	char *send_buf;
 	size_t send_buf_used;	/* bytes used this instance */
@@ -83,71 +83,71 @@ struct client {
 	size_t send_buf_alloc;	/* bytes actually allocated */
 };
 
-static struct client *interfaces;
+static struct client *clients;
 
-static void flushInterfaceBuffer(struct client *interface);
+static void client_write_deferred(struct client *client);
 
-static void printInterfaceOutBuffer(struct client *interface);
+static void client_write_output(struct client *client);
 
 #ifdef SO_SNDBUF
-static size_t get_default_snd_buf_size(struct client *interface)
+static size_t get_default_snd_buf_size(struct client *client)
 {
 	int new_size;
 	socklen_t sockOptLen = sizeof(int);
 
-	if (getsockopt(interface->fd, SOL_SOCKET, SO_SNDBUF,
+	if (getsockopt(client->fd, SOL_SOCKET, SO_SNDBUF,
 		       (char *)&new_size, &sockOptLen) < 0) {
 		DEBUG("problem getting sockets send buffer size\n");
-		return INTERFACE_DEFAULT_OUT_BUFFER_SIZE;
+		return CLIENT_DEFAULT_OUT_BUFFER_SIZE;
 	}
 	if (new_size > 0)
 		return (size_t)new_size;
 	DEBUG("sockets send buffer size is not positive\n");
-	return INTERFACE_DEFAULT_OUT_BUFFER_SIZE;
+	return CLIENT_DEFAULT_OUT_BUFFER_SIZE;
 }
 #else /* !SO_SNDBUF */
-static size_t get_default_snd_buf_size(struct client *interface)
+static size_t get_default_snd_buf_size(struct client *client)
 {
-	return INTERFACE_DEFAULT_OUT_BUFFER_SIZE;
+	return CLIENT_DEFAULT_OUT_BUFFER_SIZE;
 }
 #endif /* !SO_SNDBUF */
 
-static void set_send_buf_size(struct client *interface)
+static void set_send_buf_size(struct client *client)
 {
-	size_t new_size = get_default_snd_buf_size(interface);
-	if (interface->send_buf_size != new_size) {
-		interface->send_buf_size = new_size;
+	size_t new_size = get_default_snd_buf_size(client);
+	if (client->send_buf_size != new_size) {
+		client->send_buf_size = new_size;
 		/* don't resize to get smaller, only bigger */
-		if (interface->send_buf_alloc < new_size) {
-			if (interface->send_buf)
-				free(interface->send_buf);
-			interface->send_buf = xmalloc(new_size);
-			interface->send_buf_alloc = new_size;
+		if (client->send_buf_alloc < new_size) {
+			if (client->send_buf)
+				free(client->send_buf);
+			client->send_buf = xmalloc(new_size);
+			client->send_buf_alloc = new_size;
 		}
 	}
 }
 
-static void openInterface(struct client *interface, int fd)
+static void client_init(struct client *client, int fd)
 {
-	assert(interface->fd < 0);
+	assert(client->fd < 0);
 
-	interface->cmd_list_size = 0;
-	interface->cmd_list_dup = 0;
-	interface->cmd_list_OK = -1;
-	interface->bufferLength = 0;
-	interface->bufferPos = 0;
-	interface->fd = fd;
+	client->cmd_list_size = 0;
+	client->cmd_list_dup = 0;
+	client->cmd_list_OK = -1;
+	client->bufferLength = 0;
+	client->bufferPos = 0;
+	client->fd = fd;
 	set_nonblocking(fd);
-	interface->lastTime = time(NULL);
-	interface->cmd_list = NULL;
-	interface->cmd_list_tail = NULL;
-	interface->deferred_send = NULL;
-	interface->expired = 0;
-	interface->deferred_bytes = 0;
-	interface->send_buf_used = 0;
+	client->lastTime = time(NULL);
+	client->cmd_list = NULL;
+	client->cmd_list_tail = NULL;
+	client->deferred_send = NULL;
+	client->expired = 0;
+	client->deferred_bytes = 0;
+	client->send_buf_used = 0;
 
-	interface->permission = getDefaultPermissions();
-	set_send_buf_size(interface);
+	client->permission = getDefaultPermissions();
+	set_send_buf_size(client);
 
 	xwrite(fd, GREETING, strlen(GREETING));
 }
@@ -168,26 +168,26 @@ static void free_cmd_list(struct strnode *list)
 	}
 }
 
-static void cmd_list_clone(struct client *interface)
+static void cmd_list_clone(struct client *client)
 {
-	struct strnode *new = dup_strlist(interface->cmd_list);
-	free_cmd_list(interface->cmd_list);
-	interface->cmd_list = new;
-	interface->cmd_list_dup = 1;
+	struct strnode *new = dup_strlist(client->cmd_list);
+	free_cmd_list(client->cmd_list);
+	client->cmd_list = new;
+	client->cmd_list_dup = 1;
 
 	/* new tail */
 	while (new && new->next)
 		new = new->next;
-	interface->cmd_list_tail = new;
+	client->cmd_list_tail = new;
 }
 
-static void new_cmd_list_ptr(struct client *interface, char *s, const int size)
+static void new_cmd_list_ptr(struct client *client, char *s, const int size)
 {
 	int i;
 	struct strnode *new;
 
-	if (!interface->cmd_list_dup) {
-		for (i = interface_list_cache_size - 1; i >= 0; --i) {
+	if (!client->cmd_list_dup) {
+		for (i = client_list_cache_size - 1; i >= 0; --i) {
 			if (list_cache[i].data)
 				continue;
 			new = &(list_cache[i]);
@@ -199,49 +199,49 @@ static void new_cmd_list_ptr(struct client *interface, char *s, const int size)
 	}
 
 	/* allocate from the heap */
-	new = interface->cmd_list_dup ? new_strnode_dup(s, size)
+	new = client->cmd_list_dup ? new_strnode_dup(s, size)
 	                              : new_strnode(s);
 out:
-	if (interface->cmd_list) {
-		interface->cmd_list_tail->next = new;
-		interface->cmd_list_tail = new;
+	if (client->cmd_list) {
+		client->cmd_list_tail->next = new;
+		client->cmd_list_tail = new;
 	} else
-		interface->cmd_list = interface->cmd_list_tail = new;
+		client->cmd_list = client->cmd_list_tail = new;
 }
 
-static void closeInterface(struct client *interface)
+static void client_close(struct client *client)
 {
 	struct sllnode *buf;
-	if (interface->fd < 0)
+	if (client->fd < 0)
 		return;
-	xclose(interface->fd);
-	interface->fd = -1;
+	xclose(client->fd);
+	client->fd = -1;
 
-	if (interface->cmd_list) {
-		free_cmd_list(interface->cmd_list);
-		interface->cmd_list = NULL;
+	if (client->cmd_list) {
+		free_cmd_list(client->cmd_list);
+		client->cmd_list = NULL;
 	}
 
-	if ((buf = interface->deferred_send)) {
+	if ((buf = client->deferred_send)) {
 		do {
 			struct sllnode *prev = buf;
 			buf = buf->next;
 			free(prev);
 		} while (buf);
-		interface->deferred_send = NULL;
+		client->deferred_send = NULL;
 	}
 
-	SECURE("interface %i: closed\n", interface->num);
+	SECURE("client %i: closed\n", client->num);
 }
 
 void openAInterface(int fd, const struct sockaddr *addr)
 {
 	unsigned int i;
 
-	for (i = 0; i < interface_max_connections
-	     && interfaces[i].fd >= 0; i++) /* nothing */ ;
+	for (i = 0; i < client_max_connections
+	     && clients[i].fd >= 0; i++) /* nothing */ ;
 
-	if (i == interface_max_connections) {
+	if (i == client_max_connections) {
 		ERROR("Max Connections Reached!\n");
 		xclose(fd);
 	} else {
@@ -279,120 +279,120 @@ void openAInterface(int fd, const struct sockaddr *addr)
 		default:
 			hostname = "unknown";
 		}
-		SECURE("interface %i: opened from %s\n", i, hostname);
-		openInterface(&(interfaces[i]), fd);
+		SECURE("client %i: opened from %s\n", i, hostname);
+		client_init(&(clients[i]), fd);
 	}
 }
 
-static int processLineOfInput(struct client *interface)
+static int client_process_line(struct client *client)
 {
 	int ret = 1;
-	char *line = interface->buffer + interface->bufferPos;
+	char *line = client->buffer + client->bufferPos;
 
-	if (interface->cmd_list_OK >= 0) {
-		if (strcmp(line, INTERFACE_LIST_MODE_END) == 0) {
-			DEBUG("interface %i: process command "
-			      "list\n", interface->num);
-			ret = processListOfCommands(interface->fd,
-						    &(interface->permission),
-						    &(interface->expired),
-						    interface->cmd_list_OK,
-						    interface->cmd_list);
-			DEBUG("interface %i: process command "
-			      "list returned %i\n", interface->num, ret);
+	if (client->cmd_list_OK >= 0) {
+		if (strcmp(line, CLIENT_LIST_MODE_END) == 0) {
+			DEBUG("client %i: process command "
+			      "list\n", client->num);
+			ret = processListOfCommands(client->fd,
+						    &(client->permission),
+						    &(client->expired),
+						    client->cmd_list_OK,
+						    client->cmd_list);
+			DEBUG("client %i: process command "
+			      "list returned %i\n", client->num, ret);
 			if (ret == 0)
-				commandSuccess(interface->fd);
+				commandSuccess(client->fd);
 			else if (ret == COMMAND_RETURN_CLOSE
-				 || interface->expired)
-				closeInterface(interface);
+				 || client->expired)
+				client_close(client);
 
-			printInterfaceOutBuffer(interface);
-			free_cmd_list(interface->cmd_list);
-			interface->cmd_list = NULL;
-			interface->cmd_list_OK = -1;
+			client_write_output(client);
+			free_cmd_list(client->cmd_list);
+			client->cmd_list = NULL;
+			client->cmd_list_OK = -1;
 		} else {
 			size_t len = strlen(line) + 1;
-			interface->cmd_list_size += len;
-			if (interface->cmd_list_size >
-			    interface_max_command_list_size) {
-				ERROR("interface %i: command "
+			client->cmd_list_size += len;
+			if (client->cmd_list_size >
+			    client_max_command_list_size) {
+				ERROR("client %i: command "
 				      "list size (%lu) is "
 				      "larger than the max "
 				      "(%lu)\n",
-				      interface->num,
-				      (unsigned long)interface->cmd_list_size,
+				      client->num,
+				      (unsigned long)client->cmd_list_size,
 				      (unsigned long)
-				      interface_max_command_list_size);
-				closeInterface(interface);
+				      client_max_command_list_size);
+				client_close(client);
 				ret = COMMAND_RETURN_CLOSE;
 			} else
-				new_cmd_list_ptr(interface, line, len);
+				new_cmd_list_ptr(client, line, len);
 		}
 	} else {
-		if (strcmp(line, INTERFACE_LIST_MODE_BEGIN) == 0) {
-			interface->cmd_list_OK = 0;
+		if (strcmp(line, CLIENT_LIST_MODE_BEGIN) == 0) {
+			client->cmd_list_OK = 0;
 			ret = 1;
-		} else if (strcmp(line, INTERFACE_LIST_OK_MODE_BEGIN) == 0) {
-			interface->cmd_list_OK = 1;
+		} else if (strcmp(line, CLIENT_LIST_OK_MODE_BEGIN) == 0) {
+			client->cmd_list_OK = 1;
 			ret = 1;
 		} else {
-			DEBUG("interface %i: process command \"%s\"\n",
-			      interface->num, line);
-			ret = processCommand(interface->fd,
-					     &(interface->permission), line);
-			DEBUG("interface %i: command returned %i\n",
-			      interface->num, ret);
+			DEBUG("client %i: process command \"%s\"\n",
+			      client->num, line);
+			ret = processCommand(client->fd,
+					     &(client->permission), line);
+			DEBUG("client %i: command returned %i\n",
+			      client->num, ret);
 			if (ret == 0)
-				commandSuccess(interface->fd);
+				commandSuccess(client->fd);
 			else if (ret == COMMAND_RETURN_CLOSE
-				 || interface->expired) {
-				closeInterface(interface);
+				 || client->expired) {
+				client_close(client);
 			}
-			printInterfaceOutBuffer(interface);
+			client_write_output(client);
 		}
 	}
 
 	return ret;
 }
 
-static int processBytesRead(struct client *interface, int bytesRead)
+static int client_input_received(struct client *client, int bytesRead)
 {
 	int ret = 0;
-	char *buf_tail = &(interface->buffer[interface->bufferLength - 1]);
+	char *buf_tail = &(client->buffer[client->bufferLength - 1]);
 
 	while (bytesRead > 0) {
-		interface->bufferLength++;
+		client->bufferLength++;
 		bytesRead--;
 		buf_tail++;
 		if (*buf_tail == '\n') {
 			*buf_tail = '\0';
-			if (interface->bufferLength > interface->bufferPos) {
+			if (client->bufferLength > client->bufferPos) {
 				if (*(buf_tail - 1) == '\r')
 					*(buf_tail - 1) = '\0';
 			}
-			ret = processLineOfInput(interface);
-			if (interface->expired)
+			ret = client_process_line(client);
+			if (client->expired)
 				return ret;
-			interface->bufferPos = interface->bufferLength;
+			client->bufferPos = client->bufferLength;
 		}
-		if (interface->bufferLength == INTERFACE_MAX_BUFFER_LENGTH) {
-			if (interface->bufferPos == 0) {
-				ERROR("interface %i: buffer overflow\n",
-				      interface->num);
-				closeInterface(interface);
+		if (client->bufferLength == CLIENT_MAX_BUFFER_LENGTH) {
+			if (client->bufferPos == 0) {
+				ERROR("client %i: buffer overflow\n",
+				      client->num);
+				client_close(client);
 				return 1;
 			}
-			if (interface->cmd_list_OK >= 0 &&
-			    interface->cmd_list &&
-			    !interface->cmd_list_dup)
-				cmd_list_clone(interface);
-			assert(interface->bufferLength >= interface->bufferPos
+			if (client->cmd_list_OK >= 0 &&
+			    client->cmd_list &&
+			    !client->cmd_list_dup)
+				cmd_list_clone(client);
+			assert(client->bufferLength >= client->bufferPos
 			       && "bufferLength >= bufferPos");
-			interface->bufferLength -= interface->bufferPos;
-			memmove(interface->buffer,
-				interface->buffer + interface->bufferPos,
-				interface->bufferLength);
-			interface->bufferPos = 0;
+			client->bufferLength -= client->bufferPos;
+			memmove(client->buffer,
+				client->buffer + client->bufferPos,
+				client->bufferLength);
+			client->bufferPos = 0;
 		}
 		if (ret == COMMAND_RETURN_KILL || ret == COMMAND_RETURN_CLOSE) {
 			return ret;
@@ -403,54 +403,53 @@ static int processBytesRead(struct client *interface, int bytesRead)
 	return ret;
 }
 
-static int interfaceReadInput(struct client *interface)
+static int client_read(struct client *client)
 {
 	int bytesRead;
 
-	bytesRead = read(interface->fd,
-			 interface->buffer + interface->bufferLength,
-			 INTERFACE_MAX_BUFFER_LENGTH - interface->bufferLength);
+	bytesRead = read(client->fd,
+			 client->buffer + client->bufferLength,
+			 CLIENT_MAX_BUFFER_LENGTH - client->bufferLength);
 
 	if (bytesRead > 0)
-		return processBytesRead(interface, bytesRead);
+		return client_input_received(client, bytesRead);
 	else if (bytesRead == 0 || (bytesRead < 0 && errno != EINTR)) {
-		closeInterface(interface);
+		client_close(client);
 	} else
 		return 0;
 
 	return 1;
 }
 
-static void addInterfacesReadyToReadAndListenSocketToFdSet(fd_set * fds,
-							   int *fdmax)
+static void client_manager_register_read_fd(fd_set * fds, int *fdmax)
 {
 	unsigned int i;
 
 	FD_ZERO(fds);
 	addListenSocketsToFdSet(fds, fdmax);
 
-	for (i = 0; i < interface_max_connections; i++) {
-		if (interfaces[i].fd >= 0 && !interfaces[i].expired
-		    && !interfaces[i].deferred_send) {
-			FD_SET(interfaces[i].fd, fds);
-			if (*fdmax < interfaces[i].fd)
-				*fdmax = interfaces[i].fd;
+	for (i = 0; i < client_max_connections; i++) {
+		if (clients[i].fd >= 0 && !clients[i].expired
+		    && !clients[i].deferred_send) {
+			FD_SET(clients[i].fd, fds);
+			if (*fdmax < clients[i].fd)
+				*fdmax = clients[i].fd;
 		}
 	}
 }
 
-static void addInterfacesForBufferFlushToFdSet(fd_set * fds, int *fdmax)
+static void client_manager_register_write_fd(fd_set * fds, int *fdmax)
 {
 	unsigned int i;
 
 	FD_ZERO(fds);
 
-	for (i = 0; i < interface_max_connections; i++) {
-		if (interfaces[i].fd >= 0 && !interfaces[i].expired
-		    && interfaces[i].deferred_send) {
-			FD_SET(interfaces[i].fd, fds);
-			if (*fdmax < interfaces[i].fd)
-				*fdmax = interfaces[i].fd;
+	for (i = 0; i < client_max_connections; i++) {
+		if (clients[i].fd >= 0 && !clients[i].expired
+		    && clients[i].deferred_send) {
+			FD_SET(clients[i].fd, fds);
+			if (*fdmax < clients[i].fd)
+				*fdmax = clients[i].fd;
 		}
 	}
 }
@@ -464,13 +463,13 @@ static void closeNextErroredInterface(void)
 	tv.tv_sec = 0;
 	tv.tv_usec = 0;
 
-	for (i = 0; i < interface_max_connections; i++) {
-		if (interfaces[i].fd >= 0) {
+	for (i = 0; i < client_max_connections; i++) {
+		if (clients[i].fd >= 0) {
 			FD_ZERO(&fds);
-			FD_SET(interfaces[i].fd, &fds);
-			if (select(interfaces[i].fd + 1,
+			FD_SET(clients[i].fd, &fds);
+			if (select(clients[i].fd + 1,
 			           &fds, NULL, NULL, &tv) < 0) {
-				closeInterface(&interfaces[i]);
+				client_close(&clients[i]);
 				return;
 			}
 		}
@@ -490,8 +489,8 @@ int doIOForInterfaces(void)
 		fdmax = 0;
 
 		FD_ZERO( &efds );
-		addInterfacesReadyToReadAndListenSocketToFdSet(&rfds, &fdmax);
-		addInterfacesForBufferFlushToFdSet(&wfds, &fdmax);
+		client_manager_register_read_fd(&rfds, &fdmax);
+		client_manager_register_write_fd(&wfds, &fdmax);
 
 		registered_IO_add_fds(&fdmax, &rfds, &wfds, &efds);
 
@@ -514,19 +513,19 @@ int doIOForInterfaces(void)
 
 		getConnections(&rfds);
 
-		for (i = 0; i < interface_max_connections; i++) {
-			if (interfaces[i].fd >= 0
-			    && FD_ISSET(interfaces[i].fd, &rfds)) {
+		for (i = 0; i < client_max_connections; i++) {
+			if (clients[i].fd >= 0
+			    && FD_ISSET(clients[i].fd, &rfds)) {
 				if (COMMAND_RETURN_KILL ==
-				    interfaceReadInput(&(interfaces[i]))) {
+				    client_read(&(clients[i]))) {
 					return COMMAND_RETURN_KILL;
 				}
-				interfaces[i].lastTime = time(NULL);
+				clients[i].lastTime = time(NULL);
 			}
-			if (interfaces[i].fd >= 0
-			    && FD_ISSET(interfaces[i].fd, &wfds)) {
-				flushInterfaceBuffer(&interfaces[i]);
-				interfaces[i].lastTime = time(NULL);
+			if (clients[i].fd >= 0
+			    && FD_ISSET(clients[i].fd, &wfds)) {
+				client_write_deferred(&clients[i]);
+				clients[i].lastTime = time(NULL);
 			}
 		}
 
@@ -545,8 +544,8 @@ void initInterfaces(void)
 	param = getConfigParam(CONF_CONN_TIMEOUT);
 
 	if (param) {
-		interface_timeout = strtol(param->value, &test, 10);
-		if (*test != '\0' || interface_timeout <= 0) {
+		client_timeout = strtol(param->value, &test, 10);
+		if (*test != '\0' || client_timeout <= 0) {
 			FATAL("connection timeout \"%s\" is not a positive "
 			      "integer, line %i\n", CONF_CONN_TIMEOUT,
 			      param->line);
@@ -556,13 +555,13 @@ void initInterfaces(void)
 	param = getConfigParam(CONF_MAX_CONN);
 
 	if (param) {
-		interface_max_connections = strtol(param->value, &test, 10);
-		if (*test != '\0' || interface_max_connections <= 0) {
+		client_max_connections = strtol(param->value, &test, 10);
+		if (*test != '\0' || client_max_connections <= 0) {
 			FATAL("max connections \"%s\" is not a positive integer"
 			      ", line %i\n", param->value, param->line);
 		}
 	} else
-		interface_max_connections = INTERFACE_MAX_CONNECTIONS_DEFAULT;
+		client_max_connections = CLIENT_MAX_CONNECTIONS_DEFAULT;
 
 	param = getConfigParam(CONF_MAX_COMMAND_LIST_SIZE);
 
@@ -572,7 +571,7 @@ void initInterfaces(void)
 			FATAL("max command list size \"%s\" is not a positive "
 			      "integer, line %i\n", param->value, param->line);
 		}
-		interface_max_command_list_size = tmp * 1024;
+		client_max_command_list_size = tmp * 1024;
 	}
 
 	param = getConfigParam(CONF_MAX_OUTPUT_BUFFER_SIZE);
@@ -583,109 +582,109 @@ void initInterfaces(void)
 			FATAL("max output buffer size \"%s\" is not a positive "
 			      "integer, line %i\n", param->value, param->line);
 		}
-		interface_max_output_buffer_size = tmp * 1024;
+		client_max_output_buffer_size = tmp * 1024;
 	}
 
-	interfaces = xmalloc(sizeof(interfaces[0]) * interface_max_connections);
+	clients = xmalloc(sizeof(clients[0]) * client_max_connections);
 
-	list_cache = xcalloc(interface_list_cache_size, sizeof(struct strnode));
+	list_cache = xcalloc(client_list_cache_size, sizeof(struct strnode));
 	list_cache_head = &(list_cache[0]);
-	list_cache_tail = &(list_cache[interface_list_cache_size - 1]);
+	list_cache_tail = &(list_cache[client_list_cache_size - 1]);
 
-	for (i = 0; i < interface_max_connections; i++) {
-		interfaces[i].fd = -1;
-		interfaces[i].send_buf = NULL;
-		interfaces[i].send_buf_size = 0;
-		interfaces[i].send_buf_alloc = 0;
-		interfaces[i].num = i;
+	for (i = 0; i < client_max_connections; i++) {
+		clients[i].fd = -1;
+		clients[i].send_buf = NULL;
+		clients[i].send_buf_size = 0;
+		clients[i].send_buf_alloc = 0;
+		clients[i].num = i;
 	}
 }
 
-static void closeAllInterfaces(void)
+static void client_close_all(void)
 {
 	unsigned int i;
 
-	for (i = 0; i < interface_max_connections; i++) {
-		if (interfaces[i].fd >= 0)
-			closeInterface(&(interfaces[i]));
-		if (interfaces[i].send_buf)
-			free(interfaces[i].send_buf);
+	for (i = 0; i < client_max_connections; i++) {
+		if (clients[i].fd >= 0)
+			client_close(&(clients[i]));
+		if (clients[i].send_buf)
+			free(clients[i].send_buf);
 	}
 	free(list_cache);
 }
 
 void freeAllInterfaces(void)
 {
-	closeAllInterfaces();
+	client_close_all();
 
-	free(interfaces);
+	free(clients);
 
-	interface_max_connections = 0;
+	client_max_connections = 0;
 }
 
 void closeOldInterfaces(void)
 {
 	unsigned int i;
 
-	for (i = 0; i < interface_max_connections; i++) {
-		if (interfaces[i].fd >= 0) {
-			if (interfaces[i].expired) {
-				DEBUG("interface %i: expired\n", i);
-				closeInterface(&(interfaces[i]));
-			} else if (time(NULL) - interfaces[i].lastTime >
-				   interface_timeout) {
-				DEBUG("interface %i: timeout\n", i);
-				closeInterface(&(interfaces[i]));
+	for (i = 0; i < client_max_connections; i++) {
+		if (clients[i].fd >= 0) {
+			if (clients[i].expired) {
+				DEBUG("client %i: expired\n", i);
+				client_close(&(clients[i]));
+			} else if (time(NULL) - clients[i].lastTime >
+				   client_timeout) {
+				DEBUG("client %i: timeout\n", i);
+				client_close(&(clients[i]));
 			}
 		}
 	}
 }
 
-static void flushInterfaceBuffer(struct client *interface)
+static void client_write_deferred(struct client *client)
 {
 	struct sllnode *buf;
 	ssize_t ret = 0;
 
-	buf = interface->deferred_send;
+	buf = client->deferred_send;
 	while (buf) {
-		ret = write(interface->fd, buf->data, buf->size);
+		ret = write(client->fd, buf->data, buf->size);
 		if (ret < 0)
 			break;
 		else if ((size_t)ret < buf->size) {
-			assert(interface->deferred_bytes >= (size_t)ret);
-			interface->deferred_bytes -= ret;
+			assert(client->deferred_bytes >= (size_t)ret);
+			client->deferred_bytes -= ret;
 			buf->data = (char *)buf->data + ret;
 			buf->size -= ret;
 		} else {
 			struct sllnode *tmp = buf;
 			size_t decr = (buf->size + sizeof(struct sllnode));
 
-			assert(interface->deferred_bytes >= decr);
-			interface->deferred_bytes -= decr;
+			assert(client->deferred_bytes >= decr);
+			client->deferred_bytes -= decr;
 			buf = buf->next;
 			free(tmp);
-			interface->deferred_send = buf;
+			client->deferred_send = buf;
 		}
-		interface->lastTime = time(NULL);
+		client->lastTime = time(NULL);
 	}
 
-	if (!interface->deferred_send) {
-		DEBUG("interface %i: buffer empty %lu\n", interface->num,
-		      (unsigned long)interface->deferred_bytes);
-		assert(interface->deferred_bytes == 0);
+	if (!client->deferred_send) {
+		DEBUG("client %i: buffer empty %lu\n", client->num,
+		      (unsigned long)client->deferred_bytes);
+		assert(client->deferred_bytes == 0);
 	} else if (ret < 0 && errno != EAGAIN && errno != EINTR) {
-		/* cause interface to close */
-		DEBUG("interface %i: problems flushing buffer\n",
-		      interface->num);
-		buf = interface->deferred_send;
+		/* cause client to close */
+		DEBUG("client %i: problems flushing buffer\n",
+		      client->num);
+		buf = client->deferred_send;
 		do {
 			struct sllnode *prev = buf;
 			buf = buf->next;
 			free(prev);
 		} while (buf);
-		interface->deferred_send = NULL;
-		interface->deferred_bytes = 0;
-		interface->expired = 1;
+		client->deferred_send = NULL;
+		client->deferred_bytes = 0;
+		client->expired = 1;
 	}
 }
 
@@ -693,105 +692,105 @@ int interfacePrintWithFD(int fd, const char *buffer, size_t buflen)
 {
 	static unsigned int i;
 	size_t copylen;
-	struct client *interface;
+	struct client *client;
 
 	assert(fd >= 0);
 
-	if (i >= interface_max_connections ||
-	    interfaces[i].fd < 0 || interfaces[i].fd != fd) {
-		for (i = 0; i < interface_max_connections; i++) {
-			if (interfaces[i].fd == fd)
+	if (i >= client_max_connections ||
+	    clients[i].fd < 0 || clients[i].fd != fd) {
+		for (i = 0; i < client_max_connections; i++) {
+			if (clients[i].fd == fd)
 				break;
 		}
-		if (i == interface_max_connections)
+		if (i == client_max_connections)
 			return -1;
 	}
 
-	/* if fd isn't found or interfaces is going to be closed, do nothing */
-	if (interfaces[i].expired)
+	/* if fd isn't found or client is going to be closed, do nothing */
+	if (clients[i].expired)
 		return 0;
 
-	interface = interfaces + i;
+	client = clients + i;
 
-	while (buflen > 0 && !interface->expired) {
+	while (buflen > 0 && !client->expired) {
 		size_t left;
 
-		assert(interface->send_buf_size >= interface->send_buf_used);
-		left = interface->send_buf_size - interface->send_buf_used;
+		assert(client->send_buf_size >= client->send_buf_used);
+		left = client->send_buf_size - client->send_buf_used;
 
 		copylen = buflen > left ? left : buflen;
-		memcpy(interface->send_buf + interface->send_buf_used, buffer,
+		memcpy(client->send_buf + client->send_buf_used, buffer,
 		       copylen);
 		buflen -= copylen;
-		interface->send_buf_used += copylen;
+		client->send_buf_used += copylen;
 		buffer += copylen;
-		if (interface->send_buf_used >= interface->send_buf_size)
-			printInterfaceOutBuffer(interface);
+		if (client->send_buf_used >= client->send_buf_size)
+			client_write_output(client);
 	}
 
 	return 0;
 }
 
-static void printInterfaceOutBuffer(struct client *interface)
+static void client_write_output(struct client *client)
 {
 	ssize_t ret;
 	struct sllnode *buf;
 
-	if (interface->fd < 0 || interface->expired ||
-	    !interface->send_buf_used)
+	if (client->fd < 0 || client->expired ||
+	    !client->send_buf_used)
 		return;
 
-	if ((buf = interface->deferred_send)) {
-		interface->deferred_bytes += sizeof(struct sllnode)
-		                             + interface->send_buf_used;
-		if (interface->deferred_bytes >
-		    interface_max_output_buffer_size) {
-			ERROR("interface %i: output buffer size (%lu) is "
+	if ((buf = client->deferred_send)) {
+		client->deferred_bytes += sizeof(struct sllnode)
+		                             + client->send_buf_used;
+		if (client->deferred_bytes >
+		    client_max_output_buffer_size) {
+			ERROR("client %i: output buffer size (%lu) is "
 			      "larger than the max (%lu)\n",
-			      interface->num,
-			      (unsigned long)interface->deferred_bytes,
-			      (unsigned long)interface_max_output_buffer_size);
-			/* cause interface to close */
-			interface->expired = 1;
+			      client->num,
+			      (unsigned long)client->deferred_bytes,
+			      (unsigned long)client_max_output_buffer_size);
+			/* cause client to close */
+			client->expired = 1;
 			do {
 				struct sllnode *prev = buf;
 				buf = buf->next;
 				free(prev);
 			} while (buf);
-			interface->deferred_send = NULL;
-			interface->deferred_bytes = 0;
+			client->deferred_send = NULL;
+			client->deferred_bytes = 0;
 		} else {
 			while (buf->next)
 				buf = buf->next;
-			buf->next = new_sllnode(interface->send_buf,
-						interface->send_buf_used);
+			buf->next = new_sllnode(client->send_buf,
+						client->send_buf_used);
 		}
 	} else {
-		if ((ret = write(interface->fd, interface->send_buf,
-				 interface->send_buf_used)) < 0) {
+		if ((ret = write(client->fd, client->send_buf,
+				 client->send_buf_used)) < 0) {
 			if (errno == EAGAIN || errno == EINTR) {
-				interface->deferred_send =
-				    new_sllnode(interface->send_buf,
-						interface->send_buf_used);
+				client->deferred_send =
+				    new_sllnode(client->send_buf,
+						client->send_buf_used);
 			} else {
-				DEBUG("interface %i: problems writing\n",
-				      interface->num);
-				interface->expired = 1;
+				DEBUG("client %i: problems writing\n",
+				      client->num);
+				client->expired = 1;
 				return;
 			}
-		} else if ((size_t)ret < interface->send_buf_used) {
-			interface->deferred_send =
-			    new_sllnode(interface->send_buf + ret,
-					interface->send_buf_used - ret);
+		} else if ((size_t)ret < client->send_buf_used) {
+			client->deferred_send =
+			    new_sllnode(client->send_buf + ret,
+					client->send_buf_used - ret);
 		}
-		if (interface->deferred_send) {
-			DEBUG("interface %i: buffer created\n", interface->num);
-			interface->deferred_bytes =
-			    interface->deferred_send->size
+		if (client->deferred_send) {
+			DEBUG("client %i: buffer created\n", client->num);
+			client->deferred_bytes =
+			    client->deferred_send->size
 			    + sizeof(struct sllnode);
 		}
 	}
 
-	interface->send_buf_used = 0;
+	client->send_buf_used = 0;
 }
 
