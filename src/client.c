@@ -744,41 +744,43 @@ static void client_defer_output(struct client *client,
 	*buf_r = new_sllnode(data, length);
 }
 
-static void client_write_output(struct client *client)
+static void client_write(struct client *client,
+			 const char *data, size_t length)
 {
 	ssize_t ret;
 
+	assert(client->deferred_send == NULL);
+
+	if ((ret = write(client->fd, data, length)) < 0) {
+		if (errno == EAGAIN || errno == EINTR) {
+			client->deferred_send = new_sllnode(data, length);
+		} else {
+			DEBUG("client %i: problems writing\n", client->num);
+			client->expired = 1;
+			return;
+		}
+	} else if ((size_t)ret < client->send_buf_used) {
+		client->deferred_send = new_sllnode(data + ret, length - ret);
+	}
+
+	if (client->deferred_send) {
+		DEBUG("client %i: buffer created\n", client->num);
+		client->deferred_bytes =
+			client->deferred_send->size
+			+ sizeof(struct sllnode);
+	}
+}
+
+static void client_write_output(struct client *client)
+{
 	if (client->expired || !client->send_buf_used)
 		return;
 
 	if (client->deferred_send != NULL)
 		client_defer_output(client, client->send_buf,
 				    client->send_buf_used);
-	else {
-		if ((ret = write(client->fd, client->send_buf,
-				 client->send_buf_used)) < 0) {
-			if (errno == EAGAIN || errno == EINTR) {
-				client->deferred_send =
-				    new_sllnode(client->send_buf,
-						client->send_buf_used);
-			} else {
-				DEBUG("client %i: problems writing\n",
-				      client->num);
-				client->expired = 1;
-				return;
-			}
-		} else if ((size_t)ret < client->send_buf_used) {
-			client->deferred_send =
-			    new_sllnode(client->send_buf + ret,
-					client->send_buf_used - ret);
-		}
-		if (client->deferred_send) {
-			DEBUG("client %i: buffer created\n", client->num);
-			client->deferred_bytes =
-			    client->deferred_send->size
-			    + sizeof(struct sllnode);
-		}
-	}
+	else
+		client_write(client, client->send_buf, client->send_buf_used);
 
 	client->send_buf_used = 0;
 }
