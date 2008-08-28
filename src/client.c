@@ -476,50 +476,44 @@ int client_manager_io(void)
 	fd_set efds;
 	struct client *client, *n;
 	int selret;
-	int fdmax;
+	int fdmax = 0;
 
-	while (1) {
-		fdmax = 0;
+	FD_ZERO( &efds );
+	client_manager_register_read_fd(&rfds, &fdmax);
+	client_manager_register_write_fd(&wfds, &fdmax);
 
-		FD_ZERO( &efds );
-		client_manager_register_read_fd(&rfds, &fdmax);
-		client_manager_register_write_fd(&wfds, &fdmax);
+	registered_IO_add_fds(&fdmax, &rfds, &wfds, &efds);
 
-		registered_IO_add_fds(&fdmax, &rfds, &wfds, &efds);
+	main_notify_lock();
+	selret = select(fdmax + 1, &rfds, &wfds, &efds, NULL);
+	main_notify_unlock();
 
-		main_notify_lock();
-		selret = select(fdmax + 1, &rfds, &wfds, &efds, NULL);
-		main_notify_unlock();
+	if (selret < 0) {
+		if (errno == EINTR)
+			return 0;
 
-		if (selret < 0) {
-			if (errno == EINTR)
-				break;
-
-			FATAL("select() failed: %s\n", strerror(errno));
-		}
-
-		registered_IO_consume_fds(&selret, &rfds, &wfds, &efds);
-
-		getConnections(&rfds);
-
-		list_for_each_entry_safe(client, n, &clients, siblings) {
-			if (FD_ISSET(client->fd, &rfds)) {
-				if (COMMAND_RETURN_KILL ==
-				    client_read(client)) {
-					return COMMAND_RETURN_KILL;
-				}
-				client->lastTime = time(NULL);
-			}
-			if (FD_ISSET(client->fd, &wfds)) {
-				client_write_deferred(client);
-				client->lastTime = time(NULL);
-			}
-		}
-
-		break;
+		FATAL("select() failed: %s\n", strerror(errno));
 	}
 
-	return 1;
+	registered_IO_consume_fds(&selret, &rfds, &wfds, &efds);
+
+	getConnections(&rfds);
+
+	list_for_each_entry_safe(client, n, &clients, siblings) {
+		if (FD_ISSET(client->fd, &rfds)) {
+			if (COMMAND_RETURN_KILL ==
+			    client_read(client)) {
+				return COMMAND_RETURN_KILL;
+			}
+			client->lastTime = time(NULL);
+		}
+		if (FD_ISSET(client->fd, &wfds)) {
+			client_write_deferred(client);
+			client->lastTime = time(NULL);
+		}
+	}
+
+	return 0;
 }
 
 void client_manager_init(void)
