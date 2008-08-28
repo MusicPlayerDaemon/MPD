@@ -248,16 +248,10 @@ static void client_close(struct client *client)
 	free(client);
 }
 
-void client_new(int fd, const struct sockaddr *addr)
+static const char *
+sockaddr_to_tmp_string(const struct sockaddr *addr)
 {
 	const char *hostname;
-	struct client *client;
-
-	if (num_clients >= client_max_connections) {
-		ERROR("Max Connections Reached!\n");
-		xclose(fd);
-		return;
-	}
 
 	switch (addr->sa_family) {
 #ifdef HAVE_TCP
@@ -293,11 +287,25 @@ void client_new(int fd, const struct sockaddr *addr)
 		hostname = "unknown";
 	}
 
+	return hostname;
+}
+
+void client_new(int fd, const struct sockaddr *addr)
+{
+	struct client *client;
+
+	if (num_clients >= client_max_connections) {
+		ERROR("Max Connections Reached!\n");
+		xclose(fd);
+		return;
+	}
+
 	client = xcalloc(1, sizeof(*client));
 	list_add(&client->siblings, &clients);
 	++num_clients;
 	client_init(client, fd);
-	SECURE("client %i: opened from %s\n", client->num, hostname);
+	SECURE("client %i: opened from %s\n", client->num,
+	       sockaddr_to_tmp_string(addr));
 }
 
 static int client_process_line(struct client *client)
