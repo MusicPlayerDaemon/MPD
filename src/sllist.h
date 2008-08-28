@@ -42,11 +42,11 @@ struct sllnode {
 
 struct strnode *new_strnode(char *s);
 
-struct strnode *new_strnode_dup(char *s, const size_t size);
+struct strnode *new_strnode_dup(const char *s, const size_t size);
 
 struct strnode *dup_strlist(struct strnode *old);
 
-struct sllnode *new_sllnode(void *s, const size_t size);
+struct sllnode *new_sllnode(const void *s, const size_t size);
 
 
 #endif /* SLLIST_H */

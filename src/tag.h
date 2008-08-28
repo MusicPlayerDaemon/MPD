@@ -73,7 +73,7 @@ void clearItemsFromMpdTag(MpdTag * tag, enum tag_type itemType);
 void freeMpdTag(MpdTag * tag);
 
 void addItemToMpdTagWithLen(MpdTag * tag, enum tag_type itemType,
-			    char *value, size_t len);
+			    const char *value, size_t len);
 
 #define addItemToMpdTag(tag, itemType, value) \
 		addItemToMpdTagWithLen(tag, itemType, value, strlen(value))

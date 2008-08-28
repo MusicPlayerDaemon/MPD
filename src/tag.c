@@ -697,7 +697,7 @@ int mpdTagsAreEqual(MpdTag * tag1, MpdTag * tag2)
 }
 
 static void appendToTagItems(MpdTag * tag, enum tag_type type,
-			     char *value, size_t len)
+			     const char *value, size_t len)
 {
 	unsigned int i = tag->numOfItems;
 	char *duplicated = xmalloc(len + 1);
@@ -718,7 +718,7 @@ static void appendToTagItems(MpdTag * tag, enum tag_type type,
 }
 
 void addItemToMpdTagWithLen(MpdTag * tag, enum tag_type itemType,
-			    char *value, size_t len)
+			    const char *value, size_t len)
 {
 	if (ignoreTagItems[itemType])
 	{

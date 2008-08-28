@@ -234,7 +234,7 @@ static void closeInterface(Interface * interface)
 	SECURE("interface %i: closed\n", interface->num);
 }
 
-void openAInterface(int fd, struct sockaddr *addr)
+void openAInterface(int fd, const struct sockaddr *addr)
 {
 	unsigned int i;
 
@@ -249,7 +249,7 @@ void openAInterface(int fd, struct sockaddr *addr)
 		switch (addr->sa_family) {
 #ifdef HAVE_TCP
 		case AF_INET:
-			hostname = (const char *)inet_ntoa(((struct sockaddr_in *)
+			hostname = (const char *)inet_ntoa(((const struct sockaddr_in *)
 			                                    addr)->sin_addr);
 			if (!hostname)
 				hostname = "error getting ipv4 address";
@@ -259,8 +259,8 @@ void openAInterface(int fd, struct sockaddr *addr)
 			{
 				static char host[INET6_ADDRSTRLEN + 1];
 				memset(host, 0, INET6_ADDRSTRLEN + 1);
-				if (inet_ntop(AF_INET6, (void *)
-					      &(((struct sockaddr_in6 *)addr)->
+				if (inet_ntop(AF_INET6, (const void *)
+					      &(((const struct sockaddr_in6 *)addr)->
 						sin6_addr), host,
 					      INET6_ADDRSTRLEN)) {
 					hostname = (const char *)host;
@@ -689,7 +689,7 @@ static void flushInterfaceBuffer(Interface * interface)
 	}
 }
 
-int interfacePrintWithFD(int fd, char *buffer, size_t buflen)
+int interfacePrintWithFD(int fd, const char *buffer, size_t buflen)
 {
 	static unsigned int i;
 	size_t copylen;

@@ -34,22 +34,22 @@ struct strnode *new_strnode(char *s)
 	return x;
 }
 
-struct strnode *new_strnode_dup(char *s, const size_t size)
+struct strnode *new_strnode_dup(const char *s, const size_t size)
 {
 	struct strnode *x = xmalloc(sizeof(struct strnode) + size);
 	x->next = NULL;
 	x->data = ((char *)x + sizeof(struct strnode));
-	memcpy((void *)x->data, (void*)s, size);
+	memcpy((void *)x->data, (const void*)s, size);
 	return x;
 }
 
-struct sllnode *new_sllnode(void *s, const size_t size)
+struct sllnode *new_sllnode(const void *s, const size_t size)
 {
 	struct sllnode *x = xmalloc(sizeof(struct sllnode) + size);
 	x->next = NULL;
 	x->size = size;
 	x->data = ((char *)x + sizeof(struct sllnode));
-	memcpy(x->data, (void *)s, size);
+	memcpy(x->data, (const void *)s, size);
 	return x;
 }
 
