@@ -469,26 +469,6 @@ static void client_manager_register_write_fd(fd_set * fds, int *fdmax)
 	}
 }
 
-static void closeNextErroredInterface(void)
-{
-	struct client *client, *n;
-	fd_set fds;
-	struct timeval tv;
-
-	tv.tv_sec = 0;
-	tv.tv_usec = 0;
-
-	list_for_each_entry_safe(client, n, &clients, siblings) {
-		FD_ZERO(&fds);
-		FD_SET(client->fd, &fds);
-		if (select(client->fd + 1,
-		           &fds, NULL, NULL, &tv) < 0) {
-			client_close(client);
-			return;
-		}
-	}
-}
-
 int client_manager_io(void)
 {
 	fd_set rfds;
@@ -511,18 +491,14 @@ int client_manager_io(void)
 		selret = select(fdmax + 1, &rfds, &wfds, &efds, NULL);
 		main_notify_unlock();
 
-		if (selret < 0 && errno == EINTR)
-			break;
+		if (selret < 0) {
+			if (errno == EINTR)
+				break;
+
+			FATAL("select() failed: %s\n", strerror(errno));
+		}
 
 		registered_IO_consume_fds(&selret, &rfds, &wfds, &efds);
-
-		if (selret == 0)
-			break;
-
-		if (selret < 0) {
-			closeNextErroredInterface();
-			continue;
-		}
 
 		getConnections(&rfds);
 
