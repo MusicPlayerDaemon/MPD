@@ -753,22 +753,18 @@ static void client_write(struct client *client,
 
 	if ((ret = write(client->fd, data, length)) < 0) {
 		if (errno == EAGAIN || errno == EINTR) {
-			client->deferred_send = new_sllnode(data, length);
+			client_defer_output(client, data, length);
 		} else {
 			DEBUG("client %i: problems writing\n", client->num);
 			client->expired = 1;
 			return;
 		}
 	} else if ((size_t)ret < client->send_buf_used) {
-		client->deferred_send = new_sllnode(data + ret, length - ret);
+		client_defer_output(client, data + ret, length - ret);
 	}
 
-	if (client->deferred_send) {
+	if (client->deferred_send)
 		DEBUG("client %i: buffer created\n", client->num);
-		client->deferred_bytes =
-			client->deferred_send->size
-			+ sizeof(struct sllnode);
-	}
 }
 
 static void client_write_output(struct client *client)
