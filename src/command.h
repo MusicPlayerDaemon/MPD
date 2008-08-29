@@ -27,10 +27,14 @@
 #define COMMAND_RETURN_CLOSE	20
 #define COMMAND_MASTER_READY	30
 
-int processListOfCommands(int fd, int *permission, int *expired,
+struct client;
+
+int processListOfCommands(struct client *client,
+			  int *permission, int *expired,
 			  int listOK, struct strnode *list);
 
-int processCommand(int fd, int *permission, char *commandString);
+int processCommand(struct client *client,
+		   int *permission, char *commandString);
 
 void initCommands(void);
 

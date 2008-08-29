@@ -34,6 +34,7 @@
 #include "ack.h"
 #include "audio.h"
 #include "dbUtils.h"
+#include "client.h"
 #include "os_compat.h"
 
 #define COMMAND_PLAY           	"play"
@@ -1204,9 +1205,11 @@ static CommandEntry *getCommandEntryFromString(char *string, int *permission)
 	return cmd;
 }
 
-static int processCommandInternal(int fd, mpd_unused int *permission,
+static int processCommandInternal(struct client *client,
+				  mpd_unused int *permission,
 				  char *commandString, struct strnode *cmdnode)
 {
+	int fd = client_get_fd(client);
 	int argc;
 	char *argv[COMMAND_ARGV_MAX] = { NULL };
 	CommandEntry *cmd;
@@ -1232,9 +1235,10 @@ static int processCommandInternal(int fd, mpd_unused int *permission,
 	return ret;
 }
 
-int processListOfCommands(int fd, int *permission, int *expired,
+int processListOfCommands(struct client *client, int *permission, int *expired,
 			  int listOK, struct strnode *list)
 {
+	int fd = client_get_fd(client);
 	struct strnode *cur = list;
 	int ret = 0;
 
@@ -1243,7 +1247,7 @@ int processListOfCommands(int fd, int *permission, int *expired,
 	while (cur) {
 		DEBUG("processListOfCommands: process command \"%s\"\n",
 		      cur->data);
-		ret = processCommandInternal(fd, permission, cur->data, cur);
+		ret = processCommandInternal(client, permission, cur->data, cur);
 		DEBUG("processListOfCommands: command returned %i\n", ret);
 		if (ret != 0 || (*expired) != 0)
 			goto out;
@@ -1257,9 +1261,9 @@ out:
 	return ret;
 }
 
-int processCommand(int fd, int *permission, char *commandString)
+int processCommand(struct client *client, int *permission, char *commandString)
 {
-	return processCommandInternal(fd, permission, commandString, NULL);
+	return processCommandInternal(client, permission, commandString, NULL);
 }
 
 mpd_fprintf_ void commandError(int fd, int error, const char *fmt, ...)

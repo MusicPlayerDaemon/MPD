@@ -324,6 +324,14 @@ void client_new(int fd, const struct sockaddr *addr)
 	       sockaddr_to_tmp_string(addr));
 }
 
+int client_get_fd(struct client *client)
+{
+	assert(client != NULL);
+	assert(client->fd >= 0);
+
+	return client->fd;
+}
+
 static int client_process_line(struct client *client)
 {
 	int ret = 1;
@@ -335,7 +343,7 @@ static int client_process_line(struct client *client)
 			      "list\n", client->num);
 
 			global_expired = 0;
-			ret = processListOfCommands(client->fd,
+			ret = processListOfCommands(client,
 						    &(client->permission),
 						    &global_expired,
 						    client->cmd_list_OK,
@@ -384,7 +392,7 @@ static int client_process_line(struct client *client)
 		} else {
 			DEBUG("client %i: process command \"%s\"\n",
 			      client->num, line);
-			ret = processCommand(client->fd,
+			ret = processCommand(client,
 					     &(client->permission), line);
 			DEBUG("client %i: command returned %i\n",
 			      client->num, ret);

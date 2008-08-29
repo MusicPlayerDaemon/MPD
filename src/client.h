@@ -21,12 +21,21 @@
 
 #include "os_compat.h"
 
+struct client;
+
 void client_manager_init(void);
 void client_manager_deinit(void);
 int client_manager_io(void);
 void client_manager_expire(void);
 
 void client_new(int fd, const struct sockaddr *addr);
+
+/**
+ * Return the file descriptor of this client's socket.  This function
+ * will be removed once we have migrated to passing the client struct
+ * everywhere.
+ */
+int client_get_fd(struct client *client);
 
 int client_print(int fd, const char *buffer, size_t len);
 
