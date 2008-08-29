@@ -313,9 +313,11 @@ struct tag *tag_dup(const struct tag *tag)
 
 	ret = tag_new();
 	ret->time = tag->time;
+	ret->numOfItems = tag->numOfItems;
+	ret->items = xmalloc(ret->numOfItems * sizeof(ret->items[0]));
 
 	for (i = 0; i < tag->numOfItems; i++) {
-		tag_add_item(ret, tag->items[i]->type, tag->items[i]->value);
+		ret->items[i] = tag_pool_dup_item(tag->items[i]);
 	}
 
 	return ret;

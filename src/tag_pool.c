@@ -61,6 +61,19 @@ tag_item_to_slot(struct tag_item *item)
 	return (struct slot*)(((char*)item) - offsetof(struct slot, item));
 }
 
+static struct slot *slot_alloc(struct slot *next,
+			       enum tag_type type,
+			       const char *value, int length)
+{
+	struct slot *slot = xmalloc(sizeof(*slot) + length);
+	slot->next = next;
+	slot->ref = 1;
+	slot->item.type = type;
+	memcpy(slot->item.value, value, length);
+	slot->item.value[length] = 0;
+	return slot;
+}
+
 struct tag_item *tag_pool_get_item(enum tag_type type,
 				   const char *value, int length)
 {
@@ -76,14 +89,32 @@ struct tag_item *tag_pool_get_item(enum tag_type type,
 		}
 	}
 
-	slot = xmalloc(sizeof(*slot) + length);
-	slot->next = *slot_p;
-	slot->ref = 1;
-	slot->item.type = type;
-	memcpy(slot->item.value, value, length);
-	slot->item.value[length] = 0;
+	slot = slot_alloc(*slot_p, type, value, length);
 	*slot_p = slot;
 	return &slot->item;
+}
+
+struct tag_item *tag_pool_dup_item(struct tag_item *item)
+{
+	struct slot *slot = tag_item_to_slot(item);
+
+	assert(slot->ref > 0);
+
+	if (slot->ref < 0xff) {
+		++slot->ref;
+		return item;
+	} else {
+		/* the reference counter overflows above 0xff;
+		   duplicate the item, and start with 1 */
+		size_t length = strlen(item->value);
+		struct slot **slot_p =
+			&slots[calc_hash_n(item->type, item->value,
+					   length) % NUM_SLOTS];
+		slot = slot_alloc(*slot_p, item->type,
+				  item->value, strlen(item->value));
+		*slot_p = slot;
+		return &slot->item;
+	}
 }
 
 void tag_pool_put_item(struct tag_item *item)
