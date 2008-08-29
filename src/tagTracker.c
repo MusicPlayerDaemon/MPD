@@ -37,16 +37,6 @@ struct visited {
 static struct visited *visited_heads[TAG_NUM_OF_ITEM_TYPES];
 static unsigned num_visited[TAG_NUM_OF_ITEM_TYPES];
 
-char *getTagItemString(int type mpd_unused, char *string)
-{
-	return xstrdup(string);
-}
-
-void removeTagItemString(int type mpd_unused, char *string)
-{
-	free(string);
-}
-
 static int visit_tag_items(int fd mpd_unused, Song *song, void *data)
 {
 	enum tag_type type = (enum tag_type)(size_t)data;

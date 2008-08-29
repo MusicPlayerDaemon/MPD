@@ -41,8 +41,8 @@ extern const char *mpdTagItemKeys[];
 
 struct tag_item {
 	enum tag_type type;
-	char *value;
-};
+	char value[1];
+} mpd_unused;
 
 struct tag {
 	int time;

@@ -248,7 +248,6 @@ static void deleteItem(struct tag *tag, int idx)
 	assert(idx < tag->numOfItems);
 	tag->numOfItems--;
 
-	removeTagItemString(tag->items[idx]->type, tag->items[idx]->value);
 	free(tag->items[idx]);
 	/* free(tag->items[idx].value); */
 
@@ -284,7 +283,6 @@ static void clearMpdTag(struct tag *tag)
 	int i;
 
 	for (i = 0; i < tag->numOfItems; i++) {
-		removeTagItemString(tag->items[i]->type, tag->items[i]->value);
 		/* free(tag->items[i].value); */
 		free(tag->items[i]);
 	}
@@ -374,9 +372,10 @@ static void appendToTagItems(struct tag *tag, enum tag_type type,
 	tag->items = xrealloc(tag->items,
 			      tag->numOfItems * sizeof(*tag->items));
 
-	tag->items[i] = xmalloc(sizeof(*tag->items[i]));
+	len = strlen(duplicated);
+	tag->items[i] = xmalloc(sizeof(*tag->items[i]) + len);
 	tag->items[i]->type = type;
-	tag->items[i]->value = getTagItemString(type, duplicated);
+	memcpy(tag->items[i]->value, duplicated, len + 1);
 
 	free(duplicated);
 }
