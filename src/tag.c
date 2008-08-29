@@ -347,14 +347,16 @@ int tag_equal(struct tag *tag1, struct tag *tag2)
 	return 1;
 }
 
-#define fixUtf8(str) { \
-	if(str && !validUtf8String(str)) { \
-		char * temp; \
-		DEBUG("not valid utf8 in tag: %s\n",str); \
-		temp = latin1StrToUtf8Dup(str); \
-		free(str); \
-		str = temp; \
-	} \
+static inline char *fix_utf8(char *str) {
+	char *temp;
+
+	if (str != NULL && validUtf8String(str))
+		return str;
+
+	DEBUG("not valid utf8 in tag: %s\n",str);
+	temp = latin1StrToUtf8Dup(str);
+	free(str);
+	return temp;
 }
 
 static void appendToTagItems(struct tag *tag, enum tag_type type,
@@ -366,7 +368,7 @@ static void appendToTagItems(struct tag *tag, enum tag_type type,
 	memcpy(duplicated, value, len);
 	duplicated[len] = '\0';
 
-	fixUtf8(duplicated);
+	duplicated = fix_utf8(duplicated);
 	stripReturnChar(duplicated);
 
 	tag->numOfItems++;
