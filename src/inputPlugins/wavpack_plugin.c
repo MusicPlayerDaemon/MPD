@@ -297,11 +297,6 @@ static struct tag *wavpack_tagdup(char *fname)
 	}
 
 	tag = tag_new();
-	if (tag == NULL) {
-		ERROR("failed to tag_new()\n");
-		return NULL;
-	}
-
 	tag->time =
 		(float)WavpackGetNumSamples(wpc) / WavpackGetSampleRate(wpc);
 
