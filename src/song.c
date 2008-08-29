@@ -93,7 +93,7 @@ void freeJustSong(Song * song)
 {
 	free(song->url);
 	if (song->tag)
-		freeMpdTag(song->tag);
+		tag_free(song->tag);
 	free(song);
 }
 
@@ -148,7 +148,7 @@ int printSongInfo(int fd, Song * song)
 	printSongUrl(fd, song);
 
 	if (song->tag)
-		printMpdTag(fd, song->tag);
+		tag_print(fd, song->tag);
 
 	return 0;
 }
@@ -201,7 +201,7 @@ static void insertSongIntoList(SongList * list, ListNode ** nextSongNode,
 	} else if (cmpRet == 0) {
 		Song *tempSong = (Song *) ((*nextSongNode)->data);
 		if (tempSong->mtime != song->mtime) {
-			freeMpdTag(tempSong->tag);
+			tag_free(tempSong->tag);
 			tempSong->tag = song->tag;
 			tempSong->mtime = song->mtime;
 			song->tag = NULL;
@@ -258,14 +258,14 @@ void readSongInfoIntoList(FILE * fp, SongList * list, Directory * parentDir)
 			 */
 		} else if (matchesAnMpdTagItemKey(buffer, &itemType)) {
 			if (!song->tag)
-				song->tag = newMpdTag();
-			addItemToMpdTag(song->tag, itemType,
-					&(buffer
-					  [strlen(mpdTagItemKeys[itemType]) +
-					   2]));
+				song->tag = tag_new();
+			tag_add_item(song->tag, itemType,
+				     &(buffer
+				       [strlen(mpdTagItemKeys[itemType]) +
+					2]));
 		} else if (0 == strncmp(SONG_TIME, buffer, strlen(SONG_TIME))) {
 			if (!song->tag)
-				song->tag = newMpdTag();
+				song->tag = tag_new();
 			song->tag->time = atoi(&(buffer[strlen(SONG_TIME)]));
 		} else if (0 == strncmp(SONG_MTIME, buffer, strlen(SONG_MTIME))) {
 			song->mtime = atoi(&(buffer[strlen(SONG_MTIME)]));
@@ -296,7 +296,7 @@ int updateSongInfo(Song * song)
 		rmp2amp_r(abs_path, abs_path);
 
 		if (song->tag)
-			freeMpdTag(song->tag);
+			tag_free(song->tag);
 
 		song->tag = NULL;
 

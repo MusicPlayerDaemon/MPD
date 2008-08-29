@@ -57,33 +57,33 @@ struct tag {
 };
 
 #ifdef HAVE_ID3TAG
-struct tag *parseId3Tag(struct id3_tag *);
+struct tag *tag_id3_import(struct id3_tag *);
 #endif
 
-struct tag *apeDup(char *file);
+struct tag *tag_ape_load(char *file);
 
-struct tag *id3Dup(char *file);
+struct tag *tag_id3_load(char *file);
 
-struct tag *newMpdTag(void);
+struct tag *tag_new(void);
 
-void initTagConfig(void);
+void tag_lib_init(void);
 
-void clearItemsFromMpdTag(struct tag *tag, enum tag_type itemType);
+void tag_clear_items_by_type(struct tag *tag, enum tag_type itemType);
 
-void freeMpdTag(struct tag *tag);
+void tag_free(struct tag *tag);
 
-void addItemToMpdTagWithLen(struct tag *tag, enum tag_type itemType,
+void tag_add_item_n(struct tag *tag, enum tag_type itemType,
 			    const char *value, size_t len);
 
-#define addItemToMpdTag(tag, itemType, value) \
-		addItemToMpdTagWithLen(tag, itemType, value, strlen(value))
+#define tag_add_item(tag, itemType, value) \
+		tag_add_item_n(tag, itemType, value, strlen(value))
 
-void printTagTypes(int fd);
+void tag_print_types(int fd);
 
-void printMpdTag(int fd, struct tag *tag);
+void tag_print(int fd, struct tag *tag);
 
-struct tag *mpdTagDup(struct tag *tag);
+struct tag *tag_dup(struct tag *tag);
 
-int mpdTagsAreEqual(struct tag *tag1, struct tag *tag2);
+int tag_equal(struct tag *tag1, struct tag *tag2);
 
 #endif

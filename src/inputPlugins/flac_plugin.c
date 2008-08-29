@@ -336,7 +336,7 @@ static struct tag *flacMetadataDup(char *file, int *vorbisCommentFound)
 				*vorbisCommentFound = 1;
 		} else if (block->type == FLAC__METADATA_TYPE_STREAMINFO) {
 			if (!ret)
-				ret = newMpdTag();
+				ret = tag_new();
 			ret->time = ((float)block->data.stream_info.
 				     total_samples) /
 			    block->data.stream_info.sample_rate + 0.5;
@@ -360,10 +360,10 @@ static struct tag *flacTagDup(char *file)
 		return NULL;
 	}
 	if (!foundVorbisComment) {
-		struct tag *temp = id3Dup(file);
+		struct tag *temp = tag_id3_load(file);
 		if (temp) {
 			temp->time = ret->time;
-			freeMpdTag(ret);
+			tag_free(ret);
 			ret = temp;
 		}
 	}
@@ -482,7 +482,7 @@ static struct tag *oggflac_tag_dup(char *file)
 			ret = copyVorbisCommentBlockToMpdTag(block, ret);
 		} else if (block->type == FLAC__METADATA_TYPE_STREAMINFO) {
 			if (!ret)
-				ret = newMpdTag();
+				ret = tag_new();
 			ret->time = ((float)block->data.stream_info.
 				     total_samples) /
 			    block->data.stream_info.sample_rate + 0.5;

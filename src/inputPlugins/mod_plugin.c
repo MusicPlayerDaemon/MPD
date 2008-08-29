@@ -232,12 +232,12 @@ static struct tag *modTagDup(char *file)
 	}
 	Player_Free(moduleHandle);
 
-	ret = newMpdTag();
+	ret = tag_new();
 
 	ret->time = 0;
 	title = xstrdup(Player_LoadTitle(file));
 	if (title)
-		addItemToMpdTag(ret, TAG_ITEM_TITLE, title);
+		tag_add_item(ret, TAG_ITEM_TITLE, title);
 
 	MikMod_Exit();
 

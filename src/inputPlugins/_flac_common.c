@@ -125,10 +125,10 @@ static unsigned int commentMatchesAddToTag(const
 	if ((vlen > 0) && (0 == strncasecmp(str, (char *)entry->entry, slen))
 	    && (*(entry->entry + slen) == '=')) {
 		if (!*tag)
-			*tag = newMpdTag();
+			*tag = tag_new();
 
-		addItemToMpdTagWithLen(*tag, itemType,
-				       (char *)(entry->entry + slen + 1), vlen);
+		tag_add_item_n(*tag, itemType,
+			       (char *)(entry->entry + slen + 1), vlen);
 
 		return 1;
 	}

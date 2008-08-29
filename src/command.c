@@ -245,7 +245,7 @@ static int handleUrlHandlers(int fd, mpd_unused int *permission,
 static int handleTagTypes(int fd, mpd_unused int *permission,
 			  mpd_unused int argc, mpd_unused char *argv[])
 {
-	printTagTypes(fd);
+	tag_print_types(fd);
 	return 0;
 }
 

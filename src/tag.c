@@ -55,7 +55,7 @@ const char *mpdTagItemKeys[TAG_NUM_OF_ITEM_TYPES] = {
 
 static mpd_sint8 ignoreTagItems[TAG_NUM_OF_ITEM_TYPES];
 
-void initTagConfig(void)
+void tag_lib_init(void)
 {
 	int quit = 0;
 	char *temp;
@@ -104,7 +104,7 @@ void initTagConfig(void)
 	free(temp);
 }
 
-void printTagTypes(int fd)
+void tag_print_types(int fd)
 {
 	int i;
 
@@ -114,7 +114,7 @@ void printTagTypes(int fd)
 	}
 }
 
-void printMpdTag(int fd, struct tag *tag)
+void tag_print(int fd, struct tag *tag)
 {
 	int i;
 
@@ -224,8 +224,8 @@ static struct tag *getID3Info(
 					continue;
 
 				if (mpdTag == NULL)
-					mpdTag = newMpdTag();
-				addItemToMpdTag(mpdTag, type, (char *)utf8);
+					mpdTag = tag_new();
+				tag_add_item(mpdTag, type, (char *)utf8);
 				free(utf8);
 			}
 		}
@@ -256,8 +256,8 @@ static struct tag *getID3Info(
 					if(utf8)
 					{
 						if (mpdTag == NULL)
-							mpdTag = newMpdTag();
-						addItemToMpdTag(mpdTag, type, (char *)utf8);
+							mpdTag = tag_new();
+						tag_add_item(mpdTag, type, (char *)utf8);
 						free(utf8);
 					}
 				}
@@ -283,7 +283,7 @@ static struct tag *getID3Info(
 #endif
 
 #ifdef HAVE_ID3TAG
-struct tag *parseId3Tag(struct id3_tag * tag)
+struct tag *tag_id3_import(struct id3_tag * tag)
 {
 	struct tag *ret = NULL;
 
@@ -425,7 +425,7 @@ static struct id3_tag *findId3TagFromEnd(FILE * stream)
 }
 #endif
 
-struct tag *id3Dup(char *file)
+struct tag *tag_id3_load(char *file)
 {
 	struct tag *ret = NULL;
 #ifdef HAVE_ID3TAG
@@ -434,7 +434,7 @@ struct tag *id3Dup(char *file)
 
 	stream = fopen(file, "r");
 	if (!stream) {
-		DEBUG("id3Dup: Failed to open file: '%s', %s\n", file,
+		DEBUG("tag_id3_load: Failed to open file: '%s', %s\n", file,
 		      strerror(errno));
 		return NULL;
 	}
@@ -447,13 +447,13 @@ struct tag *id3Dup(char *file)
 
 	if (!tag)
 		return NULL;
-	ret = parseId3Tag(tag);
+	ret = tag_id3_import(tag);
 	id3_tag_delete(tag);
 #endif
 	return ret;
 }
 
-struct tag *apeDup(char *file)
+struct tag *tag_ape_load(char *file)
 {
 	struct tag *ret = NULL;
 	FILE *fp;
@@ -556,9 +556,9 @@ struct tag *apeDup(char *file)
 			for (i = 0; i < 7; i++) {
 				if (strcasecmp(key, apeItems[i]) == 0) {
 					if (!ret)
-						ret = newMpdTag();
-					addItemToMpdTagWithLen(ret, tagItems[i],
-							       p, size);
+						ret = tag_new();
+					tag_add_item_n(ret, tagItems[i],
+						       p, size);
 				}
 			}
 		}
@@ -574,7 +574,7 @@ fail:
 	return ret;
 }
 
-struct tag *newMpdTag(void)
+struct tag *tag_new(void)
 {
 	struct tag *ret = xmalloc(sizeof(*ret));
 	ret->items = NULL;
@@ -605,7 +605,7 @@ static void deleteItem(struct tag *tag, int idx)
 	}
 }
 
-void clearItemsFromMpdTag(struct tag *tag, enum tag_type type)
+void tag_clear_items_by_type(struct tag *tag, enum tag_type type)
 {
 	int i;
 
@@ -636,13 +636,13 @@ static void clearMpdTag(struct tag *tag)
 	tag->time = -1;
 }
 
-void freeMpdTag(struct tag *tag)
+void tag_free(struct tag *tag)
 {
 	clearMpdTag(tag);
 	free(tag);
 }
 
-struct tag *mpdTagDup(struct tag *tag)
+struct tag *tag_dup(struct tag *tag)
 {
 	struct tag *ret;
 	int i;
@@ -650,17 +650,17 @@ struct tag *mpdTagDup(struct tag *tag)
 	if (!tag)
 		return NULL;
 
-	ret = newMpdTag();
+	ret = tag_new();
 	ret->time = tag->time;
 
 	for (i = 0; i < tag->numOfItems; i++) {
-		addItemToMpdTag(ret, tag->items[i].type, tag->items[i].value);
+		tag_add_item(ret, tag->items[i].type, tag->items[i].value);
 	}
 
 	return ret;
 }
 
-int mpdTagsAreEqual(struct tag *tag1, struct tag *tag2)
+int tag_equal(struct tag *tag1, struct tag *tag2)
 {
 	int i;
 
@@ -718,8 +718,8 @@ static void appendToTagItems(struct tag *tag, enum tag_type type,
 	free(duplicated);
 }
 
-void addItemToMpdTagWithLen(struct tag *tag, enum tag_type itemType,
-			    const char *value, size_t len)
+void tag_add_item_n(struct tag *tag, enum tag_type itemType,
+		    const char *value, size_t len)
 {
 	if (ignoreTagItems[itemType])
 	{

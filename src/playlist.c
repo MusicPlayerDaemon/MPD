@@ -917,10 +917,10 @@ static void syncCurrentPlayerDecodeMetadata(void)
 
 	if (song->type == SONG_TYPE_URL &&
 	    0 == strcmp(get_song_url(path_max_tmp, song), songPlayer->url) &&
-	    !mpdTagsAreEqual(song->tag, songPlayer->tag)) {
+	    !tag_equal(song->tag, songPlayer->tag)) {
 		if (song->tag)
-			freeMpdTag(song->tag);
-		song->tag = mpdTagDup(songPlayer->tag);
+			tag_free(song->tag);
+		song->tag = tag_dup(songPlayer->tag);
 		playlist.songMod[songNum] = playlist.version;
 		incrPlaylistVersion();
 	}

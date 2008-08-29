@@ -334,14 +334,14 @@ static struct tag *mp4DataDup(char *file, int *mp4MetadataFound)
 		return NULL;
 	}
 
-	ret = newMpdTag();
+	ret = tag_new();
 	file_time = mp4ff_get_track_duration_use_offsets(mp4fh, track);
 	scale = mp4ff_time_scale(mp4fh, track);
 	if (scale < 0) {
 		mp4ff_close(mp4fh);
 		closeInputStream(&inStream);
 		free(callback);
-		freeMpdTag(ret);
+		tag_free(ret);
 		return NULL;
 	}
 	ret->time = ((float)file_time) / scale + 0.5;
@@ -353,25 +353,25 @@ static struct tag *mp4DataDup(char *file, int *mp4MetadataFound)
 		mp4ff_meta_get_by_index(mp4fh, i, &item, &value);
 
 		if (0 == strcasecmp("artist", item)) {
-			addItemToMpdTag(ret, TAG_ITEM_ARTIST, value);
+			tag_add_item(ret, TAG_ITEM_ARTIST, value);
 			*mp4MetadataFound = 1;
 		} else if (0 == strcasecmp("title", item)) {
-			addItemToMpdTag(ret, TAG_ITEM_TITLE, value);
+			tag_add_item(ret, TAG_ITEM_TITLE, value);
 			*mp4MetadataFound = 1;
 		} else if (0 == strcasecmp("album", item)) {
-			addItemToMpdTag(ret, TAG_ITEM_ALBUM, value);
+			tag_add_item(ret, TAG_ITEM_ALBUM, value);
 			*mp4MetadataFound = 1;
 		} else if (0 == strcasecmp("track", item)) {
-			addItemToMpdTag(ret, TAG_ITEM_TRACK, value);
+			tag_add_item(ret, TAG_ITEM_TRACK, value);
 			*mp4MetadataFound = 1;
 		} else if (0 == strcasecmp("disc", item)) {	/* Is that the correct id? */
-			addItemToMpdTag(ret, TAG_ITEM_DISC, value);
+			tag_add_item(ret, TAG_ITEM_DISC, value);
 			*mp4MetadataFound = 1;
 		} else if (0 == strcasecmp("genre", item)) {
-			addItemToMpdTag(ret, TAG_ITEM_GENRE, value);
+			tag_add_item(ret, TAG_ITEM_GENRE, value);
 			*mp4MetadataFound = 1;
 		} else if (0 == strcasecmp("date", item)) {
-			addItemToMpdTag(ret, TAG_ITEM_DATE, value);
+			tag_add_item(ret, TAG_ITEM_DATE, value);
 			*mp4MetadataFound = 1;
 		}
 
@@ -394,10 +394,10 @@ static struct tag *mp4TagDup(char *file)
 	if (!ret)
 		return NULL;
 	if (!mp4MetadataFound) {
-		struct tag *temp = id3Dup(file);
+		struct tag *temp = tag_id3_load(file);
 		if (temp) {
 			temp->time = ret->time;
-			freeMpdTag(ret);
+			tag_free(ret);
 			ret = temp;
 		}
 	}
