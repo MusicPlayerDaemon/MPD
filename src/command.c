@@ -1235,7 +1235,7 @@ static int processCommandInternal(struct client *client,
 	return ret;
 }
 
-int processListOfCommands(struct client *client, int *permission, int *expired,
+int processListOfCommands(struct client *client, int *permission,
 			  int listOK, struct strnode *list)
 {
 	int fd = client_get_fd(client);
@@ -1249,7 +1249,7 @@ int processListOfCommands(struct client *client, int *permission, int *expired,
 		      cur->data);
 		ret = processCommandInternal(client, permission, cur->data, cur);
 		DEBUG("processListOfCommands: command returned %i\n", ret);
-		if (ret != 0 || (*expired) != 0)
+		if (ret != 0 || client_is_expired(client))
 			goto out;
 		else if (listOK)
 			fdprintf(fd, "list_OK\n");

@@ -29,8 +29,7 @@
 
 struct client;
 
-int processListOfCommands(struct client *client,
-			  int *permission, int *expired,
+int processListOfCommands(struct client *client, int *permission,
 			  int listOK, struct strnode *list);
 
 int processCommand(struct client *client,

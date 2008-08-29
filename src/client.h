@@ -37,6 +37,8 @@ void client_new(int fd, const struct sockaddr *addr);
  */
 int client_get_fd(struct client *client);
 
+int client_is_expired(const struct client *client);
+
 int client_print(int fd, const char *buffer, size_t len);
 
 #endif

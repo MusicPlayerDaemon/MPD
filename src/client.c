@@ -129,12 +129,10 @@ static void set_send_buf_size(struct client *client)
 	}
 }
 
-static inline int client_is_expired(const struct client *client)
+int client_is_expired(const struct client *client)
 {
 	return client->fd < 0;
 }
-
-static int global_expired;
 
 static inline void client_set_expired(struct client *client)
 {
@@ -142,8 +140,6 @@ static inline void client_set_expired(struct client *client)
 		xclose(client->fd);
 		client->fd = -1;
 	}
-
-	global_expired = 1;
 }
 
 static void client_init(struct client *client, int fd)
@@ -341,11 +337,8 @@ static int client_process_line(struct client *client)
 		if (strcmp(line, CLIENT_LIST_MODE_END) == 0) {
 			DEBUG("client %i: process command "
 			      "list\n", client->num);
-
-			global_expired = 0;
 			ret = processListOfCommands(client,
 						    &(client->permission),
-						    &global_expired,
 						    client->cmd_list_OK,
 						    client->cmd_list);
 			DEBUG("client %i: process command "
