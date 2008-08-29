@@ -22,11 +22,12 @@
 #include "os_compat.h"
 
 void client_manager_init(void);
-void client_new(int fd, const struct sockaddr *addr);
 void client_manager_deinit(void);
-void client_manager_expire(void);
-int client_print(int fd, const char *buffer, size_t len);
-
 int client_manager_io(void);
+void client_manager_expire(void);
+
+void client_new(int fd, const struct sockaddr *addr);
+
+int client_print(int fd, const char *buffer, size_t len);
 
 #endif
