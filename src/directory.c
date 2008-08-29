@@ -901,7 +901,7 @@ static void readDirectoryInfo(FILE * fp, Directory * directory)
 {
 	char buffer[MPD_PATH_MAX * 2];
 	int bufferSize = MPD_PATH_MAX * 2;
-	char *key;
+	char key[MPD_PATH_MAX * 2];
 	Directory *subDirectory;
 	int strcmpRet;
 	char *name;
@@ -911,7 +911,7 @@ static void readDirectoryInfo(FILE * fp, Directory * directory)
 	while (myFgets(buffer, bufferSize, fp)
 	       && 0 != strncmp(DIRECTORY_END, buffer, strlen(DIRECTORY_END))) {
 		if (0 == strncmp(DIRECTORY_DIR, buffer, strlen(DIRECTORY_DIR))) {
-			key = xstrdup(&(buffer[strlen(DIRECTORY_DIR)]));
+			strcpy(key, &(buffer[strlen(DIRECTORY_DIR)]));
 			if (!myFgets(buffer, bufferSize, fp))
 				FATAL("Error reading db, fgets\n");
 			/* for compatibility with db's prior to 0.11 */
@@ -925,7 +925,7 @@ static void readDirectoryInfo(FILE * fp, Directory * directory)
 			     strlen(DIRECTORY_BEGIN))) {
 				FATAL("Error reading db at line: %s\n", buffer);
 			}
-			name = xstrdup(&(buffer[strlen(DIRECTORY_BEGIN)]));
+			name = &(buffer[strlen(DIRECTORY_BEGIN)]);
 
 			while (nextDirNode && (strcmpRet =
 					       strcmp(key,
@@ -951,8 +951,6 @@ static void readDirectoryInfo(FILE * fp, Directory * directory)
 						       (void *)subDirectory);
 			}
 
-			free(name);
-			free(key);
 			readDirectoryInfo(fp, subDirectory);
 		} else if (0 == strncmp(SONG_BEGIN, buffer, strlen(SONG_BEGIN))) {
 			readSongInfoIntoList(fp, directory->songs, directory);
