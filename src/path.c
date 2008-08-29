@@ -47,7 +47,7 @@ static char *path_conv_charset(char *dest, const char *to,
 char *fs_charset_to_utf8(char *dst, const char *str)
 {
 	char *ret = path_conv_charset(dst, "UTF-8", fsCharset, str);
-	return (ret && !validUtf8String(ret)) ? NULL : ret;
+	return (ret && !validUtf8String(ret, strlen(ret))) ? NULL : ret;
 }
 
 char *utf8_to_fs_charset(char *dst, const char *str)

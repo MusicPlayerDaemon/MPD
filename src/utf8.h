@@ -19,11 +19,13 @@
 #ifndef UTF_8_H
 #define UTF_8_H
 
+#include <os_compat.h>
+
 char *latin1StrToUtf8Dup(const char *latin1);
 
 char *utf8StrToLatin1Dup(const char *utf8);
 
-int validUtf8String(const char *string);
+int validUtf8String(const char *string, size_t length);
 
 char *utf8_to_latin1(char *dest, const char *utf8);
 

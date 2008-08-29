@@ -352,7 +352,7 @@ static inline char *fix_utf8(char *str) {
 
 	assert(str != NULL);
 
-	if (validUtf8String(str))
+	if (validUtf8String(str, strlen(str)))
 		return str;
 
 	DEBUG("not valid utf8 in tag: %s\n",str);

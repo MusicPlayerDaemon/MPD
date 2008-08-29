@@ -69,9 +69,11 @@ static char utf8_to_latin1_char(const char *inUtf8)
 	return (char)(c + utf8[1]);
 }
 
-static unsigned int validateUtf8Char(const char *inUtf8Char)
+static unsigned int validateUtf8Char(const char *inUtf8Char, size_t length)
 {
 	const unsigned char *utf8Char = (const unsigned char *)inUtf8Char;
+
+	assert(length > 0);
 
 	if (utf8Char[0] < 0x80)
 		return 1;
@@ -84,7 +86,7 @@ static unsigned int validateUtf8Char(const char *inUtf8Char)
 			t = (t >> 1);
 			count++;
 		}
-		if (count > 5)
+		if (count > 5 || (size_t)count > length)
 			return 0;
 		for (i = 1; i <= count; i++) {
 			if (utf8Char[i] < 0x80 || utf8Char[i] > 0xBF)
@@ -95,15 +97,17 @@ static unsigned int validateUtf8Char(const char *inUtf8Char)
 		return 0;
 }
 
-int validUtf8String(const char *string)
+int validUtf8String(const char *string, size_t length)
 {
 	unsigned int ret;
 
-	while (*string) {
-		ret = validateUtf8Char(string);
+	while (length > 0) {
+		ret = validateUtf8Char(string, length);
+		assert((size_t)ret <= length);
 		if (0 == ret)
 			return 0;
 		string += ret;
+		length -= ret;
 	}
 
 	return 1;
@@ -118,7 +122,7 @@ char *utf8StrToLatin1Dup(const char *utf8)
 	size_t len = 0;
 
 	while (*utf8) {
-		count = validateUtf8Char(utf8);
+		count = validateUtf8Char(utf8, INT_MAX);
 		if (!count) {
 			free(ret);
 			return NULL;
@@ -140,7 +144,7 @@ char *utf8_to_latin1(char *dest, const char *utf8)
 	size_t len = 0;
 
 	while (*utf8) {
-		count = validateUtf8Char(utf8);
+		count = validateUtf8Char(utf8, INT_MAX);
 		if (count) {
 			*(cp++) = utf8_to_latin1_char(utf8);
 			utf8 += count;
