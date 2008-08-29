@@ -75,8 +75,11 @@ void tag_free(struct tag *tag);
 void tag_add_item_n(struct tag *tag, enum tag_type itemType,
 			    const char *value, size_t len);
 
-#define tag_add_item(tag, itemType, value) \
-		tag_add_item_n(tag, itemType, value, strlen(value))
+static inline void tag_add_item(struct tag *tag, enum tag_type itemType,
+				const char *value)
+{
+	tag_add_item_n(tag, itemType, value, strlen(value));
+}
 
 void tag_print_types(int fd);
 
