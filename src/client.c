@@ -343,11 +343,14 @@ static int client_process_line(struct client *client)
 			DEBUG("client %i: process command "
 			      "list returned %i\n", client->num, ret);
 
+			if (ret == COMMAND_RETURN_CLOSE ||
+			    client_is_expired(client)) {
+				client_close(client);
+				return COMMAND_RETURN_CLOSE;
+			}
+
 			if (ret == 0)
 				commandSuccess(client->fd);
-			else if (ret == COMMAND_RETURN_CLOSE
-				 || client_is_expired(client))
-				client_close(client);
 
 			client_write_output(client);
 			free_cmd_list(client->cmd_list);
@@ -385,12 +388,16 @@ static int client_process_line(struct client *client)
 					     &(client->permission), line);
 			DEBUG("client %i: command returned %i\n",
 			      client->num, ret);
+
+			if (ret == COMMAND_RETURN_CLOSE ||
+			    client_is_expired(client)) {
+				client_close(client);
+				return COMMAND_RETURN_CLOSE;
+			}
+
 			if (ret == 0)
 				commandSuccess(client->fd);
-			else if (ret == COMMAND_RETURN_CLOSE
-				 || client_is_expired(client)) {
-				client_close(client);
-			}
+
 			client_write_output(client);
 		}
 	}
