@@ -76,6 +76,19 @@ mpd_malloc void *xrealloc(void *ptr, size_t size);
 
 mpd_malloc void *xcalloc(size_t nmemb, size_t size);
 
+/**
+ * free a const pointer - unfortunately free() expects a non-const
+ * pointer, for whatever reason
+ */
+static inline void xfree(const void *p)
+{
+	union {
+		const void *in;
+		void *out;
+	} deconst = { .in = p };
+	free(deconst.out);
+}
+
 char *parsePath(char *path);
 
 int set_nonblocking(int fd);
