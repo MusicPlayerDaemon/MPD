@@ -296,9 +296,9 @@ static int mp4_decode(struct decoder * mpd_decoder, InputStream * inStream)
 	return 0;
 }
 
-static MpdTag *mp4DataDup(char *file, int *mp4MetadataFound)
+static struct tag *mp4DataDup(char *file, int *mp4MetadataFound)
 {
-	MpdTag *ret = NULL;
+	struct tag *ret = NULL;
 	InputStream inStream;
 	mp4ff_t *mp4fh;
 	mp4ff_callback_t *callback;
@@ -385,16 +385,16 @@ static MpdTag *mp4DataDup(char *file, int *mp4MetadataFound)
 	return ret;
 }
 
-static MpdTag *mp4TagDup(char *file)
+static struct tag *mp4TagDup(char *file)
 {
-	MpdTag *ret = NULL;
+	struct tag *ret = NULL;
 	int mp4MetadataFound = 0;
 
 	ret = mp4DataDup(file, &mp4MetadataFound);
 	if (!ret)
 		return NULL;
 	if (!mp4MetadataFound) {
-		MpdTag *temp = id3Dup(file);
+		struct tag *temp = id3Dup(file);
 		if (temp) {
 			temp->time = ret->time;
 			freeMpdTag(ret);

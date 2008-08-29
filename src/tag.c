@@ -114,7 +114,7 @@ void printTagTypes(int fd)
 	}
 }
 
-void printMpdTag(int fd, MpdTag * tag)
+void printMpdTag(int fd, struct tag *tag)
 {
 	int i;
 
@@ -164,8 +164,8 @@ static id3_utf8_t * processID3FieldString (int is_id3v1, const id3_ucs4_t *ucs4,
     return utf8;
 }
 
-static MpdTag *getID3Info(
-	struct id3_tag *tag, const char *id, int type, MpdTag * mpdTag)
+static struct tag *getID3Info(
+	struct id3_tag *tag, const char *id, int type, struct tag *mpdTag)
 {
 	struct id3_frame const *frame;
 	id3_ucs4_t const *ucs4;
@@ -283,9 +283,9 @@ static MpdTag *getID3Info(
 #endif
 
 #ifdef HAVE_ID3TAG
-MpdTag *parseId3Tag(struct id3_tag * tag)
+struct tag *parseId3Tag(struct id3_tag * tag)
 {
-	MpdTag *ret = NULL;
+	struct tag *ret = NULL;
 
 	ret = getID3Info(tag, ID3_FRAME_ARTIST, TAG_ITEM_ARTIST, ret);
 	ret = getID3Info(tag, ID3_FRAME_TITLE, TAG_ITEM_TITLE, ret);
@@ -425,9 +425,9 @@ static struct id3_tag *findId3TagFromEnd(FILE * stream)
 }
 #endif
 
-MpdTag *id3Dup(char *file)
+struct tag *id3Dup(char *file)
 {
-	MpdTag *ret = NULL;
+	struct tag *ret = NULL;
 #ifdef HAVE_ID3TAG
 	struct id3_tag *tag;
 	FILE *stream;
@@ -453,9 +453,9 @@ MpdTag *id3Dup(char *file)
 	return ret;
 }
 
-MpdTag *apeDup(char *file)
+struct tag *apeDup(char *file)
 {
-	MpdTag *ret = NULL;
+	struct tag *ret = NULL;
 	FILE *fp;
 	int tagCount;
 	char *buffer = NULL;
@@ -574,16 +574,16 @@ fail:
 	return ret;
 }
 
-MpdTag *newMpdTag(void)
+struct tag *newMpdTag(void)
 {
-	MpdTag *ret = xmalloc(sizeof(MpdTag));
+	struct tag *ret = xmalloc(sizeof(*ret));
 	ret->items = NULL;
 	ret->time = -1;
 	ret->numOfItems = 0;
 	return ret;
 }
 
-static void deleteItem(MpdTag * tag, int idx)
+static void deleteItem(struct tag *tag, int idx)
 {
 	assert(idx < tag->numOfItems);
 	tag->numOfItems--;
@@ -598,14 +598,14 @@ static void deleteItem(MpdTag * tag, int idx)
 
 	if (tag->numOfItems > 0) {
 		tag->items = xrealloc(tag->items,
-				     tag->numOfItems * sizeof(MpdTagItem));
+				      tag->numOfItems * sizeof(*tag->items));
 	} else {
 		free(tag->items);
 		tag->items = NULL;
 	}
 }
 
-void clearItemsFromMpdTag(MpdTag * tag, enum tag_type type)
+void clearItemsFromMpdTag(struct tag *tag, enum tag_type type)
 {
 	int i;
 
@@ -618,7 +618,7 @@ void clearItemsFromMpdTag(MpdTag * tag, enum tag_type type)
 	}
 }
 
-static void clearMpdTag(MpdTag * tag)
+static void clearMpdTag(struct tag *tag)
 {
 	int i;
 
@@ -636,15 +636,15 @@ static void clearMpdTag(MpdTag * tag)
 	tag->time = -1;
 }
 
-void freeMpdTag(MpdTag * tag)
+void freeMpdTag(struct tag *tag)
 {
 	clearMpdTag(tag);
 	free(tag);
 }
 
-MpdTag *mpdTagDup(MpdTag * tag)
+struct tag *mpdTagDup(struct tag *tag)
 {
-	MpdTag *ret;
+	struct tag *ret;
 	int i;
 
 	if (!tag)
@@ -660,7 +660,7 @@ MpdTag *mpdTagDup(MpdTag * tag)
 	return ret;
 }
 
-int mpdTagsAreEqual(MpdTag * tag1, MpdTag * tag2)
+int mpdTagsAreEqual(struct tag *tag1, struct tag *tag2)
 {
 	int i;
 
@@ -696,7 +696,7 @@ int mpdTagsAreEqual(MpdTag * tag1, MpdTag * tag2)
 	} \
 }
 
-static void appendToTagItems(MpdTag * tag, enum tag_type type,
+static void appendToTagItems(struct tag *tag, enum tag_type type,
 			     const char *value, size_t len)
 {
 	unsigned int i = tag->numOfItems;
@@ -709,7 +709,8 @@ static void appendToTagItems(MpdTag * tag, enum tag_type type,
 	stripReturnChar(duplicated);
 
 	tag->numOfItems++;
-	tag->items = xrealloc(tag->items, tag->numOfItems * sizeof(MpdTagItem));
+	tag->items = xrealloc(tag->items,
+			      tag->numOfItems * sizeof(*tag->items));
 
 	tag->items[i].type = type;
 	tag->items[i].value = getTagItemString(type, duplicated);
@@ -717,7 +718,7 @@ static void appendToTagItems(MpdTag * tag, enum tag_type type,
 	free(duplicated);
 }
 
-void addItemToMpdTagWithLen(MpdTag * tag, enum tag_type itemType,
+void addItemToMpdTagWithLen(struct tag *tag, enum tag_type itemType,
 			    const char *value, size_t len)
 {
 	if (ignoreTagItems[itemType])

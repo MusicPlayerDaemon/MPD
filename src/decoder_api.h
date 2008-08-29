@@ -74,7 +74,7 @@ typedef int (*decoder_file_decode_func) (struct decoder *, char *path);
 
 /* file should be the full path!  Returns NULL if a tag cannot be found
  * or read */
-typedef MpdTag *(*decoder_tag_dup_func) (char *file);
+typedef struct tag *(*decoder_tag_dup_func) (char *file);
 
 struct decoder_plugin {
 	const char *name;

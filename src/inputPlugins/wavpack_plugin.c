@@ -281,10 +281,10 @@ static ReplayGainInfo *wavpack_replaygain(WavpackContext *wpc)
 /*
  * Reads metainfo from the specified file.
  */
-static MpdTag *wavpack_tagdup(char *fname)
+static struct tag *wavpack_tagdup(char *fname)
 {
 	WavpackContext *wpc;
-	MpdTag *tag;
+	struct tag *tag;
 	char error[ERRORLEN];
 	char *s;
 	int ssize;

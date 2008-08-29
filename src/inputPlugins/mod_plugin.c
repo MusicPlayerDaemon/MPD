@@ -213,9 +213,9 @@ static int mod_decode(struct decoder * decoder, char *path)
 	return 0;
 }
 
-static MpdTag *modTagDup(char *file)
+static struct tag *modTagDup(char *file)
 {
-	MpdTag *ret = NULL;
+	struct tag *ret = NULL;
 	MODULE *moduleHandle;
 	char *title;
 

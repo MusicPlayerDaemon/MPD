@@ -120,9 +120,9 @@ static int audiofile_decode(struct decoder * decoder, char *path)
 	return 0;
 }
 
-static MpdTag *audiofileTagDup(char *file)
+static struct tag *audiofileTagDup(char *file)
 {
-	MpdTag *ret = NULL;
+	struct tag *ret = NULL;
 	int total_time = getAudiofileTotalTime(file);
 
 	if (total_time >= 0) {

@@ -36,7 +36,7 @@
 typedef struct _Song {
 	char *url;
 	mpd_sint8 type;
-	MpdTag *tag;
+	struct tag *tag;
 	struct _Directory *parentDir;
 	time_t mtime;
 } Song;

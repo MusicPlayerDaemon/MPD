@@ -50,7 +50,7 @@ typedef void (*AudioOutputDropBufferedAudioFunc) (AudioOutput * audioOutput);
 typedef void (*AudioOutputCloseDeviceFunc) (AudioOutput * audioOutput);
 
 typedef void (*AudioOutputSendMetadataFunc) (AudioOutput * audioOutput,
-					     const MpdTag * tag);
+					     const struct tag *tag);
 
 struct _AudioOutput {
 	int open;
@@ -104,7 +104,8 @@ void dropBufferedAudioOutput(AudioOutput * audioOutput);
 void closeAudioOutput(AudioOutput * audioOutput);
 void finishAudioOutput(AudioOutput * audioOutput);
 int keepAudioOutputAlive(AudioOutput * audioOutput, int ms);
-void sendMetadataToAudioOutput(AudioOutput * audioOutput, const MpdTag * tag);
+void sendMetadataToAudioOutput(AudioOutput * audioOutput,
+			       const struct tag *tag);
 
 void printAllOutputPluginTypes(FILE * fp);
 

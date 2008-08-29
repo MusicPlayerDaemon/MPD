@@ -56,7 +56,7 @@ typedef struct _ShoutData {
 
 	int opened;
 
-	MpdTag *tag;
+	struct tag *tag;
 	int tagToSend;
 
 	int timeout;
@@ -663,7 +663,7 @@ static int myShout_play(AudioOutput * audioOutput,
 	return 0;
 }
 
-static void myShout_setTag(AudioOutput * audioOutput, MpdTag * tag)
+static void myShout_setTag(AudioOutput * audioOutput, struct tag *tag)
 {
 	ShoutData *sd = (ShoutData *) audioOutput->data;
 
