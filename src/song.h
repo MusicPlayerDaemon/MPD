@@ -43,8 +43,6 @@ typedef struct _Song {
 
 typedef List SongList;
 
-Song *newNullSong(void);
-
 Song *newSong(const char *url, int songType, struct _Directory *parentDir);
 
 void freeSong(Song *);

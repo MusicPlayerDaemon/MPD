@@ -33,7 +33,7 @@
 
 #include "os_compat.h"
 
-Song *newNullSong(void)
+static Song *newNullSong(void)
 {
 	Song *song = xmalloc(sizeof(Song));
 
