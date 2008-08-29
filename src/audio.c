@@ -419,7 +419,7 @@ void closeAudioDevice(void)
 	audioOpened = 0;
 }
 
-void sendMetadataToAudioDevice(MpdTag * tag)
+void sendMetadataToAudioDevice(const MpdTag * tag)
 {
 	unsigned int i;
 

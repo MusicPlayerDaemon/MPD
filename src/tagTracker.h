@@ -29,7 +29,7 @@ void printMemorySavedByTagTracker(void);
 
 void resetVisitedFlagsInTagTracker(int type);
 
-void visitInTagTracker(int type, char *str);
+void visitInTagTracker(int type, const char *str);
 
 void printVisitedInTagTracker(int fd, int type);
 

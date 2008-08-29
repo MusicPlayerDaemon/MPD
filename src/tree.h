@@ -57,6 +57,7 @@ int InsertInTree(Tree * tree, void * key, void * data);
 int RemoveFromTreeByKey(Tree * tree, void * key);
 void RemoveFromTreeByIterator(Tree * tree, TreeIterator * iter);
 
-int FindInTree(Tree * tree, void * key, TreeIterator * iter /* can be NULL */);
+int FindInTree(Tree * tree, const void * key,
+	       TreeIterator * iter /* can be NULL */);
 
 #endif

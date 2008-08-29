@@ -244,7 +244,7 @@ void finishAudioOutput(AudioOutput * audioOutput)
 		free(audioOutput->convBuffer);
 }
 
-void sendMetadataToAudioOutput(AudioOutput * audioOutput, MpdTag * tag)
+void sendMetadataToAudioOutput(AudioOutput * audioOutput, const MpdTag * tag)
 {
 	if (!audioOutput->sendMetdataFunc)
 		return;

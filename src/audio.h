@@ -55,7 +55,7 @@ int isAudioDeviceOpen(void);
 
 int isCurrentAudioFormat(const AudioFormat * audioFormat);
 
-void sendMetadataToAudioDevice(MpdTag * tag);
+void sendMetadataToAudioDevice(const MpdTag * tag);
 
 /* these functions are called in the main parent process while the child
 	process is busy playing to the audio */

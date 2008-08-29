@@ -42,10 +42,10 @@ int printRemoteUrlHandlers(int fd)
 	return 0;
 }
 
-int isValidRemoteUtf8Url(char *utf8url)
+int isValidRemoteUtf8Url(const char *utf8url)
 {
 	int ret = 0;
-	char *temp;
+	const char *temp;
 
 	switch (isRemoteUrl(utf8url)) {
 	case 1:
@@ -82,7 +82,7 @@ int isValidRemoteUtf8Url(char *utf8url)
 	return ret;
 }
 
-int isRemoteUrl(char *url)
+int isRemoteUrl(const char *url)
 {
 	int count = 0;
 	const char **urlPrefixes = remoteUrlPrefixes;

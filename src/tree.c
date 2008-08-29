@@ -71,7 +71,7 @@ _ClearKeyData(TreeKeyData * keyData)
 
 static
 int
-_FindPosition(Tree * tree, TreeNode * node, void * key, int * pos)
+_FindPosition(Tree * tree, TreeNode * node, const void * key, int * pos)
 {
 #ifdef USE_BINARY_SEARCH
 	int low = 0;
@@ -113,7 +113,7 @@ _FindPosition(Tree * tree, TreeNode * node, void * key, int * pos)
 
 static
 int
-_Find(TreeIterator * iter, void * key)
+_Find(TreeIterator * iter, const void * key)
 {
 	while (1)
 	{
@@ -680,7 +680,7 @@ RemoveFromTreeByIterator(Tree * tree, TreeIterator * iter)
 }
 
 int
-FindInTree(Tree * tree, void * key, TreeIterator * iter)
+FindInTree(Tree * tree, const void * key, TreeIterator * iter)
 {
 	TreeIterator i;
 	

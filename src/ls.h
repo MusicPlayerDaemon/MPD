@@ -25,9 +25,9 @@ int lsPlaylists(int fd, const char *utf8path);
 
 const char *getSuffix(const char *utf8file);
 
-int isValidRemoteUtf8Url(char *utf8url);
+int isValidRemoteUtf8Url(const char *utf8url);
 
-int isRemoteUrl(char *url);
+int isRemoteUrl(const char *url);
 
 int myStat(const char *utf8file, struct stat *st);
 
