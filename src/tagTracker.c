@@ -19,126 +19,110 @@
 #include "tagTracker.h"
 
 #include "tag.h"
-#include "tree.h"
 #include "utils.h"
 #include "myfprintf.h"
+#include "directory.h"
 
-static Tree *tagTrees[TAG_NUM_OF_ITEM_TYPES];
+struct visited {
+	struct visited *next;
 
-typedef struct tagTrackerItem {
-	int count;
-	mpd_sint8 visited;
-} TagTrackerItem;
+	/**
+	 * this is the original pointer passed to visitInTagTracker(),
+	 * i.e. the caller must not invalidate it until he calls
+	 * resetVisitedFlagsInTagTracker().
+	 */
+	const char *value;
+} mpd_packed;
 
-char *getTagItemString(int type, char *string)
+static struct visited *visited_heads[TAG_NUM_OF_ITEM_TYPES];
+static unsigned num_visited[TAG_NUM_OF_ITEM_TYPES];
+
+char *getTagItemString(int type mpd_unused, char *string)
 {
-	TreeIterator iter;
-
-	if (tagTrees[type] == NULL)
-	{
-		tagTrees[type] = MakeTree((TreeCompareKeyFunction)strcmp,
-					  (TreeFreeFunction)free,
-					  (TreeFreeFunction)free);
-	}
-
-	if (FindInTree(tagTrees[type], string, &iter))
-	{
-		((TagTrackerItem *)GetTreeKeyData(&iter)->data)->count++;
-		return (char *)GetTreeKeyData(&iter)->key;
-	}
-	else
-	{
-		TagTrackerItem *item = xmalloc(sizeof(TagTrackerItem));
-		char *key = xstrdup(string);
-		item->count = 1;
-		item->visited = 0;
-		InsertInTree(tagTrees[type], key, item);
-		return key;
-	}
+	return xstrdup(string);
 }
 
-void removeTagItemString(int type, char *string)
+void removeTagItemString(int type mpd_unused, char *string)
 {
-	TreeIterator iter;
+	free(string);
+}
 
-	assert(string);
+static int visit_tag_items(int fd mpd_unused, Song *song, void *data)
+{
+	enum tag_type type = (enum tag_type)(size_t)data;
+	unsigned i;
 
-	assert(tagTrees[type]);
-	if (tagTrees[type] == NULL)
-		return;
+	if (song->tag == NULL)
+		return 0;
 
-	if (FindInTree(tagTrees[type], string, &iter))
-	{
-		TagTrackerItem * item =
-			(TagTrackerItem *)GetTreeKeyData(&iter)->data;
-		item->count--;
-		if (item->count <= 0)
-			RemoveFromTreeByIterator(tagTrees[type], &iter);
+	for (i = 0; i < (unsigned)song->tag->numOfItems; ++i) {
+		const struct tag_item *item = song->tag->items[i];
+		if (item->type == type)
+			visitInTagTracker(type, item->value);
 	}
 
-	if (GetTreeSize(tagTrees[type]) == 0)
-	{
-		FreeTree(tagTrees[type]);
-		tagTrees[type] = NULL;
-	}
+	return 0;
 }
 
 int getNumberOfTagItems(int type)
 {
-	if (tagTrees[type] == NULL)
-		return 0;
+	int ret;
 
-	return GetTreeSize(tagTrees[type]);
+	resetVisitedFlagsInTagTracker(type);
+
+	traverseAllIn(-1, NULL, visit_tag_items, NULL, (void*)(size_t)type);
+
+	ret = (int)num_visited[type];
+	resetVisitedFlagsInTagTracker(type);
+	return ret;
 }
 
 void resetVisitedFlagsInTagTracker(int type)
 {
-	TreeIterator iter;
-
-	if (!tagTrees[type])
-		return;
-
-	for (SetTreeIteratorToBegin(tagTrees[type], &iter);
-	     !IsTreeIteratorAtEnd(&iter);
-	     IncrementTreeIterator(&iter))
-	{
-		((TagTrackerItem *)GetTreeKeyData(&iter)->data)->visited = 0;
+	while (visited_heads[type] != NULL) {
+		struct visited *v = visited_heads[type];
+		visited_heads[type] = v->next;
+		free(v);
 	}
+
+	num_visited[type] = 0;
+}
+
+static struct visited *
+find_visit(int type, const char *p)
+{
+	struct visited *v;
+
+	for (v = visited_heads[type]; v != NULL; v = v->next)
+		if (strcmp(v->value, p) == 0)
+			return v;
+
+	return NULL;
 }
 
 void visitInTagTracker(int type, const char *str)
 {
-	TreeIterator iter;
+	struct visited *v = find_visit(type, str);
+	size_t length;
 
-	if (!tagTrees[type])
+	if (v != NULL)
 		return;
 
-	if (!FindInTree(tagTrees[type], str, &iter))
-		return;
-
-	((TagTrackerItem *)GetTreeKeyData(&iter)->data)->visited = 1;
+	length = strlen(str);
+	v = xmalloc(sizeof(*v));
+	v->value = str;
+	v->next = visited_heads[type];
+	visited_heads[type] = v;
+	++num_visited[type];
 }
 
 void printVisitedInTagTracker(int fd, int type)
 {
-	TreeIterator iter;
-	TagTrackerItem * item;
+	struct visited *v;
 
-	if (!tagTrees[type])
-		return;
-
-	for (SetTreeIteratorToBegin(tagTrees[type], &iter);
-	     !IsTreeIteratorAtEnd(&iter);
-	     IncrementTreeIterator(&iter))
-	{
-		item = ((TagTrackerItem *)GetTreeKeyData(&iter)->data);
-
-		if (item->visited)
-		{
-			fdprintf(fd,
-				 "%s: %s\n",
-				 mpdTagItemKeys[type],
-				 (char *)GetTreeKeyData(&iter)->key);
-		}
-	}
+	for (v = visited_heads[type]; v != NULL; v = v->next)
+		fdprintf(fd,
+			 "%s: %s\n",
+			 mpdTagItemKeys[type],
+			 v->value);
 }
