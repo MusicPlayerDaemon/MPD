@@ -347,8 +347,8 @@ int tag_equal(struct tag *tag1, struct tag *tag2)
 	return 1;
 }
 
-static inline char *fix_utf8(char *str, size_t *length_r) {
-	char *temp;
+static inline const char *fix_utf8(const char *str, size_t *length_r) {
+	const char *temp;
 
 	assert(str != NULL);
 
@@ -357,7 +357,6 @@ static inline char *fix_utf8(char *str, size_t *length_r) {
 
 	DEBUG("not valid utf8 in tag: %s\n",str);
 	temp = latin1StrToUtf8Dup(str);
-	free(str);
 	*length_r = strlen(temp);
 	return temp;
 }
@@ -366,22 +365,28 @@ static void appendToTagItems(struct tag *tag, enum tag_type type,
 			     const char *value, size_t len)
 {
 	unsigned int i = tag->numOfItems;
-	char *duplicated = xmalloc(len + 1);
+	const char *p;
 
-	memcpy(duplicated, value, len);
-	duplicated[len] = '\0';
+	p = fix_utf8(value, &len);
+	if (memchr(p, '\n', len) != NULL) {
+		char *duplicated = xmalloc(len + 1);
+		memcpy(duplicated, p, len);
+		duplicated[len] = '\0';
+		if (p != value)
+			xfree(p);
 
-	duplicated = fix_utf8(duplicated, &len);
-	stripReturnChar(duplicated);
+		stripReturnChar(duplicated);
+		p = duplicated;
+	}
 
 	tag->numOfItems++;
 	tag->items = xrealloc(tag->items,
 			      tag->numOfItems * sizeof(*tag->items));
 
-	len = strlen(duplicated);
-	tag->items[i] = tag_pool_get_item(type, duplicated, len);
+	tag->items[i] = tag_pool_get_item(type, p, len);
 
-	free(duplicated);
+	if (p != value)
+		xfree(p);
 }
 
 void tag_add_item_n(struct tag *tag, enum tag_type itemType,
