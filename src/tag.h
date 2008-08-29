@@ -61,8 +61,22 @@ void tag_clear_items_by_type(struct tag *tag, enum tag_type itemType);
 
 void tag_free(struct tag *tag);
 
+/**
+ * Gives an optional hint to the tag library that we will now add
+ * several tag items; this is used by the library to optimize memory
+ * allocation.  Only one tag may be in this state, and this tag must
+ * not have any items yet.  You must call tag_end_add() when you are
+ * done.
+ */
+void tag_begin_add(struct tag *tag);
+
+/**
+ * Finishes the operation started with tag_begin_add().
+ */
+void tag_end_add(struct tag *tag);
+
 void tag_add_item_n(struct tag *tag, enum tag_type itemType,
-			    const char *value, size_t len);
+		    const char *value, size_t len);
 
 static inline void tag_add_item(struct tag *tag, enum tag_type itemType,
 				const char *value)

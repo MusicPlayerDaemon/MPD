@@ -361,6 +361,53 @@ static inline const char *fix_utf8(const char *str, size_t *length_r) {
 	return temp;
 }
 
+/**
+ * Maximum number of items managed in the bulk list; if it is
+ * exceeded, we switch back to "normal" reallocation.
+ */
+#define BULK_MAX 64
+
+static struct {
+#ifndef NDEBUG
+	int busy;
+#endif
+	struct tag_item *items[BULK_MAX];
+} bulk;
+
+void tag_begin_add(struct tag *tag)
+{
+	assert(!bulk.busy);
+	assert(tag != NULL);
+	assert(tag->items == NULL);
+	assert(tag->numOfItems == 0);
+
+#ifndef NDEBUG
+	bulk.busy = 1;
+#endif
+	tag->items = bulk.items;
+}
+
+void tag_end_add(struct tag *tag)
+{
+	if (tag->items == bulk.items) {
+		assert(tag->numOfItems <= BULK_MAX);
+
+		if (tag->numOfItems > 0) {
+			/* copy the tag items from the bulk list over
+			   to a new list (which fits exactly) */
+			tag->items = xmalloc(tag->numOfItems *
+					     sizeof(tag->items[0]));
+			memcpy(tag->items, bulk.items,
+			       tag->numOfItems * sizeof(tag->items[0]));
+		} else
+			tag->items = NULL;
+	}
+
+#ifndef NDEBUG
+	bulk.busy = 0;
+#endif
+}
+
 static void appendToTagItems(struct tag *tag, enum tag_type type,
 			     const char *value, size_t len)
 {
@@ -380,8 +427,19 @@ static void appendToTagItems(struct tag *tag, enum tag_type type,
 	}
 
 	tag->numOfItems++;
-	tag->items = xrealloc(tag->items,
-			      tag->numOfItems * sizeof(*tag->items));
+
+	if (tag->items != bulk.items)
+		/* bulk mode disabled */
+		tag->items = xrealloc(tag->items,
+				      tag->numOfItems * sizeof(*tag->items));
+	else if (tag->numOfItems >= BULK_MAX) {
+		/* bulk list already full - switch back to non-bulk */
+		assert(bulk.busy);
+
+		tag->items = xmalloc(tag->numOfItems * sizeof(tag->items[0]));
+		memcpy(tag->items, bulk.items,
+		       (tag->numOfItems - 1) * sizeof(tag->items[0]));
+	}
 
 	tag->items[i] = tag_pool_get_item(type, p, len);
 

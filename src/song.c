@@ -240,9 +240,12 @@ void readSongInfoIntoList(FILE * fp, SongList * list, Directory * parentDir)
 
 	while (myFgets(buffer, bufferSize, fp) && 0 != strcmp(SONG_END, buffer)) {
 		if (0 == strncmp(SONG_KEY, buffer, strlen(SONG_KEY))) {
-			if (song)
+			if (song) {
 				insertSongIntoList(list, &nextSongNode,
 						   song->url, song);
+				if (song->tag != NULL)
+					tag_end_add(song->tag);
+			}
 
 			song = newNullSong();
 			song->url = xstrdup(buffer + strlen(SONG_KEY));
@@ -257,15 +260,21 @@ void readSongInfoIntoList(FILE * fp, SongList * list, Directory * parentDir)
 			   song->url = xstrdup(&(buffer[strlen(SONG_FILE)]));
 			 */
 		} else if (matchesAnMpdTagItemKey(buffer, &itemType)) {
-			if (!song->tag)
+			if (!song->tag) {
 				song->tag = tag_new();
+				tag_begin_add(song->tag);
+			}
+
 			tag_add_item(song->tag, itemType,
 				     &(buffer
 				       [strlen(mpdTagItemKeys[itemType]) +
 					2]));
 		} else if (0 == strncmp(SONG_TIME, buffer, strlen(SONG_TIME))) {
-			if (!song->tag)
+			if (!song->tag) {
 				song->tag = tag_new();
+				tag_begin_add(song->tag);
+			}
+
 			song->tag->time = atoi(&(buffer[strlen(SONG_TIME)]));
 		} else if (0 == strncmp(SONG_MTIME, buffer, strlen(SONG_MTIME))) {
 			song->mtime = atoi(&(buffer[strlen(SONG_MTIME)]));
@@ -274,8 +283,11 @@ void readSongInfoIntoList(FILE * fp, SongList * list, Directory * parentDir)
 			FATAL("songinfo: unknown line in db: %s\n", buffer);
 	}
 
-	if (song)
+	if (song) {
 		insertSongIntoList(list, &nextSongNode, song->url, song);
+		if (song->tag != NULL)
+			tag_end_add(song->tag);
+	}
 
 	while (nextSongNode) {
 		nodeTemp = nextSongNode->nextNode;
