@@ -17,6 +17,7 @@
  */
 
 #include "tag.h"
+#include "tag_pool.h"
 #include "myfprintf.h"
 #include "utils.h"
 #include "utf8.h"
@@ -248,7 +249,7 @@ static void deleteItem(struct tag *tag, int idx)
 	assert(idx < tag->numOfItems);
 	tag->numOfItems--;
 
-	free(tag->items[idx]);
+	tag_pool_put_item(tag->items[idx]);
 	/* free(tag->items[idx].value); */
 
 	if (tag->numOfItems - idx > 0) {
@@ -284,7 +285,7 @@ static void clearMpdTag(struct tag *tag)
 
 	for (i = 0; i < tag->numOfItems; i++) {
 		/* free(tag->items[i].value); */
-		free(tag->items[i]);
+		tag_pool_put_item(tag->items[i]);
 	}
 
 	if (tag->items)
@@ -373,9 +374,7 @@ static void appendToTagItems(struct tag *tag, enum tag_type type,
 			      tag->numOfItems * sizeof(*tag->items));
 
 	len = strlen(duplicated);
-	tag->items[i] = xmalloc(sizeof(*tag->items[i]) + len);
-	tag->items[i]->type = type;
-	memcpy(tag->items[i]->value, duplicated, len + 1);
+	tag->items[i] = tag_pool_get_item(type, duplicated, len);
 
 	free(duplicated);
 }

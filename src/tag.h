@@ -21,6 +21,7 @@
 
 #include "mpd_types.h"
 #include "os_compat.h"
+#include "gcc.h"
 
 enum tag_type {
 	TAG_ITEM_ARTIST,
@@ -42,7 +43,7 @@ extern const char *mpdTagItemKeys[];
 struct tag_item {
 	enum tag_type type;
 	char value[1];
-} mpd_unused;
+} mpd_packed;
 
 struct tag {
 	int time;
