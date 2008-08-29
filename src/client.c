@@ -723,7 +723,6 @@ static void client_defer_output(struct client *client,
 	struct sllnode **buf_r;
 
 	assert(length > 0);
-	assert(client->deferred_send != NULL);
 
 	client->deferred_bytes += sizeof(struct sllnode) + length;
 	if (client->deferred_bytes > client_max_output_buffer_size) {
