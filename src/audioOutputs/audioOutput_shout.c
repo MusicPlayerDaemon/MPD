@@ -93,7 +93,7 @@ static void freeShoutData(ShoutData * sd)
 	if (sd->shoutConn)
 		shout_free(sd->shoutConn);
 	if (sd->tag)
-		freeMpdTag(sd->tag);
+		tag_free(sd->tag);
 	if (sd->timer)
 		timer_free(sd->timer);
 
@@ -403,15 +403,15 @@ static void copyTagToVorbisComment(ShoutData * sd)
 		int i;
 
 		for (i = 0; i < sd->tag->numOfItems; i++) {
-			switch (sd->tag->items[i].type) {
+			switch (sd->tag->items[i]->type) {
 			case TAG_ITEM_ARTIST:
-				addTag(sd, "ARTIST", sd->tag->items[i].value);
+				addTag(sd, "ARTIST", sd->tag->items[i]->value);
 				break;
 			case TAG_ITEM_ALBUM:
-				addTag(sd, "ALBUM", sd->tag->items[i].value);
+				addTag(sd, "ALBUM", sd->tag->items[i]->value);
 				break;
 			case TAG_ITEM_TITLE:
-				addTag(sd, "TITLE", sd->tag->items[i].value);
+				addTag(sd, "TITLE", sd->tag->items[i]->value);
 				break;
 			default:
 				break;
@@ -663,19 +663,19 @@ static int myShout_play(AudioOutput * audioOutput,
 	return 0;
 }
 
-static void myShout_setTag(AudioOutput * audioOutput, struct tag *tag)
+static void myShout_setTag(AudioOutput * audioOutput, const struct tag *tag)
 {
 	ShoutData *sd = (ShoutData *) audioOutput->data;
 
 	if (sd->tag)
-		freeMpdTag(sd->tag);
+		tag_free(sd->tag);
 	sd->tag = NULL;
 	sd->tagToSend = 0;
 
 	if (!tag)
 		return;
 
-	sd->tag = mpdTagDup(tag);
+	sd->tag = tag_dup(tag);
 	sd->tagToSend = 1;
 }
 
