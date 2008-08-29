@@ -46,7 +46,7 @@ struct tag_item {
 
 struct tag {
 	int time;
-	struct tag_item *items;
+	struct tag_item **items;
 	mpd_uint8 numOfItems;
 };
 

@@ -142,11 +142,11 @@ static int strstrSearchTag(Song * song, enum tag_type type, char *str)
 
 	for (i = 0; i < song->tag->numOfItems && !ret; i++) {
 		if (type != LOCATE_TAG_ANY_TYPE &&
-		    song->tag->items[i].type != type) {
+		    song->tag->items[i]->type != type) {
 			continue;
 		}
 
-		duplicate = strDupToUpper(song->tag->items[i].value);
+		duplicate = strDupToUpper(song->tag->items[i]->value);
 		if (strstr(duplicate, str))
 			ret = 1;
 		free(duplicate);
@@ -186,11 +186,11 @@ static int tagItemFoundAndMatches(Song * song, enum tag_type type, char *str)
 
 	for (i = 0; i < song->tag->numOfItems; i++) {
 		if (type != LOCATE_TAG_ANY_TYPE &&
-		    song->tag->items[i].type != type) {
+		    song->tag->items[i]->type != type) {
 			continue;
 		}
 
-		if (0 == strcmp(str, song->tag->items[i].value))
+		if (0 == strcmp(str, song->tag->items[i]->value))
 			return 1;
 	}
 

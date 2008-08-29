@@ -108,8 +108,8 @@ void tag_print(int fd, struct tag *tag)
 		fdprintf(fd, SONG_TIME "%i\n", tag->time);
 
 	for (i = 0; i < tag->numOfItems; i++) {
-		fdprintf(fd, "%s: %s\n", mpdTagItemKeys[tag->items[i].type],
-			  tag->items[i].value);
+		fdprintf(fd, "%s: %s\n", mpdTagItemKeys[tag->items[i]->type],
+			  tag->items[i]->value);
 	}
 }
 
@@ -248,7 +248,8 @@ static void deleteItem(struct tag *tag, int idx)
 	assert(idx < tag->numOfItems);
 	tag->numOfItems--;
 
-	removeTagItemString(tag->items[idx].type, tag->items[idx].value);
+	removeTagItemString(tag->items[idx]->type, tag->items[idx]->value);
+	free(tag->items[idx]);
 	/* free(tag->items[idx].value); */
 
 	if (tag->numOfItems - idx > 0) {
@@ -270,7 +271,7 @@ void tag_clear_items_by_type(struct tag *tag, enum tag_type type)
 	int i;
 
 	for (i = 0; i < tag->numOfItems; i++) {
-		if (tag->items[i].type == type) {
+		if (tag->items[i]->type == type) {
 			deleteItem(tag, i);
 			/* decrement since when just deleted this node */
 			i--;
@@ -283,8 +284,9 @@ static void clearMpdTag(struct tag *tag)
 	int i;
 
 	for (i = 0; i < tag->numOfItems; i++) {
-		removeTagItemString(tag->items[i].type, tag->items[i].value);
+		removeTagItemString(tag->items[i]->type, tag->items[i]->value);
 		/* free(tag->items[i].value); */
+		free(tag->items[i]);
 	}
 
 	if (tag->items)
@@ -314,7 +316,7 @@ struct tag *tag_dup(struct tag *tag)
 	ret->time = tag->time;
 
 	for (i = 0; i < tag->numOfItems; i++) {
-		tag_add_item(ret, tag->items[i].type, tag->items[i].value);
+		tag_add_item(ret, tag->items[i]->type, tag->items[i]->value);
 	}
 
 	return ret;
@@ -336,9 +338,9 @@ int tag_equal(struct tag *tag1, struct tag *tag2)
 		return 0;
 
 	for (i = 0; i < tag1->numOfItems; i++) {
-		if (tag1->items[i].type != tag2->items[i].type)
+		if (tag1->items[i]->type != tag2->items[i]->type)
 			return 0;
-		if (strcmp(tag1->items[i].value, tag2->items[i].value)) {
+		if (strcmp(tag1->items[i]->value, tag2->items[i]->value)) {
 			return 0;
 		}
 	}
@@ -372,8 +374,9 @@ static void appendToTagItems(struct tag *tag, enum tag_type type,
 	tag->items = xrealloc(tag->items,
 			      tag->numOfItems * sizeof(*tag->items));
 
-	tag->items[i].type = type;
-	tag->items[i].value = getTagItemString(type, duplicated);
+	tag->items[i] = xmalloc(sizeof(*tag->items[i]));
+	tag->items[i]->type = type;
+	tag->items[i]->value = getTagItemString(type, duplicated);
 
 	free(duplicated);
 }

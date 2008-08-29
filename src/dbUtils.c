@@ -268,8 +268,8 @@ static void visitTag(int fd, Song * song, enum tag_type tagType)
 		return;
 
 	for (i = 0; i < tag->numOfItems; i++) {
-		if (tag->items[i].type == tagType) {
-			visitInTagTracker(tagType, tag->items[i].value);
+		if (tag->items[i]->type == tagType) {
+			visitInTagTracker(tagType, tag->items[i]->value);
 		}
 	}
 }
