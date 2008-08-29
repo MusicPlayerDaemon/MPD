@@ -19,14 +19,8 @@
 #ifndef TAG_H
 #define TAG_H
 
-#include "../config.h"
-
 #include "mpd_types.h"
 #include "os_compat.h"
-
-#ifdef HAVE_ID3TAG
-#include <id3tag.h>
-#endif
 
 enum tag_type {
 	TAG_ITEM_ARTIST,
@@ -56,13 +50,7 @@ struct tag {
 	mpd_uint8 numOfItems;
 };
 
-#ifdef HAVE_ID3TAG
-struct tag *tag_id3_import(struct id3_tag *);
-#endif
-
 struct tag *tag_ape_load(char *file);
-
-struct tag *tag_id3_load(char *file);
 
 struct tag *tag_new(void);
 

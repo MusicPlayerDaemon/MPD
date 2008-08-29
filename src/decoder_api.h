@@ -29,6 +29,7 @@
 #include "inputStream.h"
 #include "replayGain.h"
 #include "tag.h"
+#include "tag_id3.h"
 #include "playerData.h"
 
 
