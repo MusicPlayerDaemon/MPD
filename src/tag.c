@@ -101,7 +101,7 @@ void tag_print_types(int fd)
 	}
 }
 
-void tag_print(int fd, struct tag *tag)
+void tag_print(int fd, const struct tag *tag)
 {
 	int i;
 
@@ -114,7 +114,7 @@ void tag_print(int fd, struct tag *tag)
 	}
 }
 
-struct tag *tag_ape_load(char *file)
+struct tag *tag_ape_load(const char *file)
 {
 	struct tag *ret = NULL;
 	FILE *fp;
@@ -303,7 +303,7 @@ void tag_free(struct tag *tag)
 	free(tag);
 }
 
-struct tag *tag_dup(struct tag *tag)
+struct tag *tag_dup(const struct tag *tag)
 {
 	struct tag *ret;
 	int i;
@@ -321,7 +321,7 @@ struct tag *tag_dup(struct tag *tag)
 	return ret;
 }
 
-int tag_equal(struct tag *tag1, struct tag *tag2)
+int tag_equal(const struct tag *tag1, const struct tag *tag2)
 {
 	int i;
 

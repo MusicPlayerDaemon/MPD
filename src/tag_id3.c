@@ -338,7 +338,7 @@ static struct id3_tag *findId3TagFromEnd(FILE * stream)
 }
 #endif
 
-struct tag *tag_id3_load(char *file)
+struct tag *tag_id3_load(const char *file)
 {
 	struct tag *ret = NULL;
 #ifdef HAVE_ID3TAG
