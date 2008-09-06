@@ -53,11 +53,11 @@ void savePlaylistState(FILE *);
 
 void clearPlaylist(void);
 
-int clearStoredPlaylist(int fd, char *utf8file);
+int clearStoredPlaylist(int fd, const char *utf8file);
 
-int addToPlaylist(int fd, char *file, int *added_id);
+int addToPlaylist(int fd, const char *file, int *added_id);
 
-int addToStoredPlaylist(int fd, char *file, char *utf8file);
+int addToStoredPlaylist(int fd, const char *file, const char *utf8file);
 
 int addSongToPlaylist(int fd, Song * song, int *added_id);
 
@@ -85,11 +85,11 @@ void previousSongInPlaylist(void);
 
 int shufflePlaylist(int fd);
 
-int savePlaylist(int fd, char *utf8file);
+int savePlaylist(int fd, const char *utf8file);
 
-int deletePlaylist(int fd, char *utf8file);
+int deletePlaylist(int fd, const char *utf8file);
 
-int deletePlaylistById(int fd, char *utf8file);
+int deletePlaylistById(int fd, const char *utf8file);
 
 void deleteASongFromPlaylist(Song * song);
 
@@ -101,7 +101,7 @@ int swapSongsInPlaylist(int fd, int song1, int song2);
 
 int swapSongsInPlaylistById(int fd, int id1, int id2);
 
-int loadPlaylist(int fd, char *utf8file);
+int loadPlaylist(int fd, const char *utf8file);
 
 int getPlaylistRepeatStatus(void);
 
@@ -131,7 +131,7 @@ int playlistChanges(int fd, mpd_uint32 version);
 
 int playlistChangesPosId(int fd, mpd_uint32 version);
 
-int PlaylistInfo(int fd, char *utf8file, int detail);
+int PlaylistInfo(int fd, const char *utf8file, int detail);
 
 void searchForSongsInPlaylist(int fd, int numItems, LocateTagItem * items);
 

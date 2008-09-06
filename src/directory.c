@@ -1219,7 +1219,7 @@ static int traverseAllInSubDirectory(int fd, Directory * directory,
 	return errFlag;
 }
 
-int traverseAllIn(int fd, char *name,
+int traverseAllIn(int fd, const char *name,
 		  int (*forEachSong) (int, Song *, void *),
 		  int (*forEachDir) (int, Directory *, void *), void *data)
 {
@@ -1303,7 +1303,7 @@ static Song *getSongDetails(const char *file, const char **shortnameRet,
 	return (Song *) song;
 }
 
-Song *getSongFromDB(char *file)
+Song *getSongFromDB(const char *file)
 {
 	return getSongDetails(file, NULL, NULL);
 }

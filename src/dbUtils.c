@@ -80,7 +80,8 @@ static int searchInDirectory(int fd, Song * song, void *data)
 	return 0;
 }
 
-int searchForSongsIn(int fd, char *name, int numItems, LocateTagItem * items)
+int searchForSongsIn(int fd, const char *name, int numItems,
+		     LocateTagItem * items)
 {
 	int ret;
 	int i;
@@ -118,7 +119,7 @@ static int findInDirectory(int fd, Song * song, void *data)
 	return 0;
 }
 
-int findSongsIn(int fd, char *name, int numItems, LocateTagItem * items)
+int findSongsIn(int fd, const char *name, int numItems, LocateTagItem * items)
 {
 	LocateTagItemArray array;
 
@@ -148,7 +149,7 @@ static int searchStatsInDirectory(mpd_unused int fd, Song * song, void *data)
 	return 0;
 }
 
-int searchStatsForSongsIn(int fd, char *name, int numItems,
+int searchStatsForSongsIn(int fd, const char *name, int numItems,
                           LocateTagItem * items)
 {
 	SearchStats stats;
@@ -166,7 +167,7 @@ int searchStatsForSongsIn(int fd, char *name, int numItems,
 	return ret;
 }
 
-int printAllIn(int fd, char *name)
+int printAllIn(int fd, const char *name)
 {
 	return traverseAllIn(fd, name, printSongInDirectory,
 			     printDirectoryInDirectory, NULL);
@@ -185,12 +186,12 @@ static int directoryAddSongToStoredPlaylist(int fd, Song *song, void *data)
 	return 0;
 }
 
-int addAllIn(int fd, char *name)
+int addAllIn(int fd, const char *name)
 {
 	return traverseAllIn(fd, name, directoryAddSongToPlaylist, NULL, NULL);
 }
 
-int addAllInToStoredPlaylist(int fd, char *name, char *utf8file)
+int addAllInToStoredPlaylist(int fd, const char *name, const char *utf8file)
 {
 	return traverseAllIn(fd, name, directoryAddSongToStoredPlaylist, NULL,
 	                     (void *)utf8file);
@@ -211,13 +212,13 @@ static int sumSongTime(mpd_unused int fd, Song * song, void *data)
 	return 0;
 }
 
-int printInfoForAllIn(int fd, char *name)
+int printInfoForAllIn(int fd, const char *name)
 {
 	return traverseAllIn(fd, name, directoryPrintSongInfo,
 			     printDirectoryInDirectory, NULL);
 }
 
-int countSongsIn(int fd, char *name)
+int countSongsIn(int fd, const char *name)
 {
 	int count = 0;
 	void *ptr = (void *)&count;
@@ -227,7 +228,7 @@ int countSongsIn(int fd, char *name)
 	return count;
 }
 
-unsigned long sumSongTimesIn(int fd, char *name)
+unsigned long sumSongTimesIn(int fd, const char *name)
 {
 	unsigned long dbPlayTime = 0;
 	void *ptr = (void *)&dbPlayTime;

@@ -60,11 +60,11 @@ int readDirectoryDB(void);
 
 void updateMp3Directory(void);
 
-Song *getSongFromDB(char *file);
+Song *getSongFromDB(const char *file);
 
 time_t getDbModTime(void);
 
-int traverseAllIn(int fd, char *name,
+int traverseAllIn(int fd, const char *name,
 		  int (*forEachSong) (int, Song *, void *),
 		  int (*forEachDir) (int, Directory *, void *), void *data);
 

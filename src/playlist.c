@@ -211,7 +211,7 @@ void clearPlaylist(void)
 	incrPlaylistVersion();
 }
 
-int clearStoredPlaylist(int fd, char *utf8file)
+int clearStoredPlaylist(int fd, const char *utf8file)
 {
 	return removeAllFromStoredPlaylistByPath(fd, utf8file);
 }
@@ -561,7 +561,7 @@ static void clearPlayerQueue(void)
 	playerQueueUnlock();
 }
 
-int addToPlaylist(int fd, char *url, int *added_id)
+int addToPlaylist(int fd, const char *url, int *added_id)
 {
 	Song *song;
 
@@ -579,7 +579,7 @@ int addToPlaylist(int fd, char *url, int *added_id)
 	return addSongToPlaylist(fd, song, added_id);
 }
 
-int addToStoredPlaylist(int fd, char *url, char *utf8file)
+int addToStoredPlaylist(int fd, const char *url, const char *utf8file)
 {
 	Song *song;
 
@@ -1270,7 +1270,7 @@ int shufflePlaylist(mpd_unused int fd)
 	return 0;
 }
 
-int deletePlaylist(int fd, char *utf8file)
+int deletePlaylist(int fd, const char *utf8file)
 {
 	char path_max_tmp[MPD_PATH_MAX];
 
@@ -1291,7 +1291,7 @@ int deletePlaylist(int fd, char *utf8file)
 	return 0;
 }
 
-int savePlaylist(int fd, char *utf8file)
+int savePlaylist(int fd, const char *utf8file)
 {
 	FILE *fp;
 	int i;
@@ -1400,7 +1400,7 @@ int getPlaylistSongId(int song)
 	return playlist.positionToId[song];
 }
 
-int PlaylistInfo(int fd, char *utf8file, int detail)
+int PlaylistInfo(int fd, const char *utf8file, int detail)
 {
 	ListNode *node;
 	List *list;
@@ -1432,7 +1432,7 @@ int PlaylistInfo(int fd, char *utf8file, int detail)
 	return 0;
 }
 
-int loadPlaylist(int fd, char *utf8file)
+int loadPlaylist(int fd, const char *utf8file)
 {
 	ListNode *node;
 	List *list;

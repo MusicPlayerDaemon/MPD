@@ -21,25 +21,25 @@
 
 #include "locate.h"
 
-int printAllIn(int fd, char *name);
+int printAllIn(int fd, const char *name);
 
-int addAllIn(int fd, char *name);
+int addAllIn(int fd, const char *name);
 
-int addAllInToStoredPlaylist(int fd, char *name, char *utf8file);
+int addAllInToStoredPlaylist(int fd, const char *name, const char *utf8file);
 
-int printInfoForAllIn(int fd, char *name);
+int printInfoForAllIn(int fd, const char *name);
 
-int searchForSongsIn(int fd, char *name, int numItems,
+int searchForSongsIn(int fd, const char *name, int numItems,
                      LocateTagItem * items);
 
-int findSongsIn(int fd, char *name, int numItems, LocateTagItem * items);
+int findSongsIn(int fd, const char *name, int numItems, LocateTagItem * items);
 
-int searchStatsForSongsIn(int fd, char *name, int numItems,
+int searchStatsForSongsIn(int fd, const char *name, int numItems,
                           LocateTagItem * items);
 
-int countSongsIn(int fd, char *name);
+int countSongsIn(int fd, const char *name);
 
-unsigned long sumSongTimesIn(int fd, char *name);
+unsigned long sumSongTimesIn(int fd, const char *name);
 
 int listAllUniqueTags(int fd, int type, int numConditiionals,
 		      LocateTagItem * conditionals);
