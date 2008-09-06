@@ -202,6 +202,7 @@ static void insertSongIntoList(SongList * list, ListNode ** nextSongNode,
 		Song *tempSong = (Song *) ((*nextSongNode)->data);
 		if (tempSong->mtime != song->mtime) {
 			tag_free(tempSong->tag);
+			tag_end_add(song->tag);
 			tempSong->tag = song->tag;
 			tempSong->mtime = song->mtime;
 			song->tag = NULL;

@@ -26,6 +26,19 @@
 #include "tagTracker.h"
 #include "song.h"
 
+/**
+ * Maximum number of items managed in the bulk list; if it is
+ * exceeded, we switch back to "normal" reallocation.
+ */
+#define BULK_MAX 64
+
+static struct {
+#ifndef NDEBUG
+	int busy;
+#endif
+	struct tag_item *items[BULK_MAX];
+} bulk;
+
 const char *mpdTagItemKeys[TAG_NUM_OF_ITEM_TYPES] = {
 	"Artist",
 	"Album",
@@ -288,8 +301,15 @@ static void clearMpdTag(struct tag *tag)
 		tag_pool_put_item(tag->items[i]);
 	}
 
-	if (tag->items)
+	if (tag->items == bulk.items) {
+#ifndef NDEBUG
+		assert(bulk.busy);
+		bulk.busy = 0;
+#endif
+	} else if (tag->items) {
 		free(tag->items);
+	}
+
 	tag->items = NULL;
 
 	tag->numOfItems = 0;
@@ -362,19 +382,6 @@ static inline const char *fix_utf8(const char *str, size_t *length_r) {
 	*length_r = strlen(temp);
 	return temp;
 }
-
-/**
- * Maximum number of items managed in the bulk list; if it is
- * exceeded, we switch back to "normal" reallocation.
- */
-#define BULK_MAX 64
-
-static struct {
-#ifndef NDEBUG
-	int busy;
-#endif
-	struct tag_item *items[BULK_MAX];
-} bulk;
 
 void tag_begin_add(struct tag *tag)
 {
