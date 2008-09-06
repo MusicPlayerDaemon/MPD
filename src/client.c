@@ -230,14 +230,12 @@ static void client_close(struct client *client)
 {
 	struct sllnode *buf;
 
-	assert(client->fd >= 0);
-
-	xclose(client->fd);
-
 	assert(num_clients > 0);
 	assert(!list_empty(&clients));
 	list_del(&client->siblings);
 	--num_clients;
+
+	client_set_expired(client);
 
 	if (client->cmd_list) {
 		free_cmd_list(client->cmd_list);
