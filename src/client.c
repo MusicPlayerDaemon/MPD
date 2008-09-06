@@ -540,7 +540,8 @@ int client_manager_io(void)
 			}
 			client->lastTime = time(NULL);
 		}
-		if (FD_ISSET(client->fd, &wfds)) {
+		if (!client_is_expired(client) &&
+		    FD_ISSET(client->fd, &wfds)) {
 			client_write_deferred(client);
 			client->lastTime = time(NULL);
 		}
