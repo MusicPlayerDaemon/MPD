@@ -19,11 +19,12 @@
 #ifndef AUDIO_H
 #define AUDIO_H
 
-#include "tag.h"
 #include "os_compat.h"
 #include "audio_format.h"
 
 #define AUDIO_AO_DRIVER_DEFAULT	"default"
+
+struct tag;
 
 void copyAudioFormat(AudioFormat * dest, const AudioFormat * src);
 

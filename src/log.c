@@ -19,7 +19,6 @@
 #include "log.h"
 
 #include "conf.h"
-#include "myfprintf.h"
 #include "utils.h"
 #include "os_compat.h"
 

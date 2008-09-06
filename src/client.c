@@ -25,7 +25,6 @@
 #include "sllist.h"
 #include "utils.h"
 #include "ioops.h"
-#include "myfprintf.h"
 #include "os_compat.h"
 #include "main_notify.h"
 #include "dlist.h"

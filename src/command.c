@@ -34,6 +34,7 @@
 #include "ack.h"
 #include "audio.h"
 #include "dbUtils.h"
+#include "tag.h"
 #include "client.h"
 #include "os_compat.h"
 

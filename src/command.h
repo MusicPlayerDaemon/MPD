@@ -22,6 +22,7 @@
 #include "gcc.h"
 #include "os_compat.h"
 #include "sllist.h"
+#include "myfprintf.h"
 
 #define COMMAND_RETURN_KILL	10
 #define COMMAND_RETURN_CLOSE	20

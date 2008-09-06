@@ -19,6 +19,7 @@
 #include "stats.h"
 
 #include "directory.h"
+#include "tag.h"
 #include "myfprintf.h"
 #include "player_control.h"
 #include "tagTracker.h"

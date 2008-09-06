@@ -19,10 +19,9 @@
 #ifndef SONG_H
 #define SONG_H
 
-#include "../config.h"
-#include "os_compat.h"
-#include "tag.h"
 #include "list.h"
+#include "os_compat.h"
+#include "mpd_types.h"
 
 #define SONG_BEGIN	"songList begin"
 #define SONG_END	"songList end"

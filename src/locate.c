@@ -19,6 +19,7 @@
 #include "locate.h"
 #include "path.h"
 #include "utils.h"
+#include "tag.h"
 
 #define LOCATE_TAG_FILE_KEY     "file"
 #define LOCATE_TAG_FILE_KEY_OLD "filename"
