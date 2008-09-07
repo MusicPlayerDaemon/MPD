@@ -66,8 +66,7 @@ static int writeStoredPlaylistToPath(int fd, List *list, const char *fspath)
 	FILE *file;
 	char *s;
 
-	if (fspath == NULL)
-		return -1;
+	assert(fspath != NULL);
 
 	while (!(file = fopen(fspath, "w")) && errno == EINTR);
 	if (file == NULL) {
