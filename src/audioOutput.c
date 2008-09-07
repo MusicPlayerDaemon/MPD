@@ -72,11 +72,12 @@ int initAudioOutput(struct audio_output *ao, ConfigParam * param)
 	void *data = NULL;
 	const char *name = NULL;
 	char *format = NULL;
-	const char *type = NULL;
 	BlockParam *bp = NULL;
 	struct audio_output_plugin *plugin = NULL;
 
 	if (param) {
+		const char *type = NULL;
+
 		getBlockParam(AUDIO_OUTPUT_NAME, name, 1);
 		getBlockParam(AUDIO_OUTPUT_TYPE, type, 1);
 		getBlockParam(AUDIO_OUTPUT_FORMAT, format, 0);
@@ -114,17 +115,10 @@ int initAudioOutput(struct audio_output *ao, ConfigParam * param)
 		}
 
 		name = "default detected output";
-		type = plugin->name;
 	}
 
 	ao->name = name;
-	ao->type = type;
-	ao->finishDriverFunc = plugin->finishDriverFunc;
-	ao->openDeviceFunc = plugin->openDeviceFunc;
-	ao->playFunc = plugin->playFunc;
-	ao->dropBufferedAudioFunc = plugin->dropBufferedAudioFunc;
-	ao->closeDeviceFunc = plugin->closeDeviceFunc;
-	ao->sendMetdataFunc = plugin->sendMetdataFunc;
+	ao->plugin = plugin;
 	ao->open = 0;
 
 	ao->convertAudioFormat = 0;
@@ -176,7 +170,7 @@ int openAudioOutput(struct audio_output *audioOutput,
 	}
 
 	if (!audioOutput->open)
-		ret = audioOutput->openDeviceFunc(audioOutput);
+		ret = audioOutput->plugin->openDeviceFunc(audioOutput);
 
 	audioOutput->sameInAndOutFormats =
 		!cmpAudioFormat(&audioOutput->inAudioFormat,
@@ -220,7 +214,7 @@ int playAudioOutput(struct audio_output *audioOutput,
 		convertAudioFormat(audioOutput, &playChunk, &size);
 	}
 
-	ret = audioOutput->playFunc(audioOutput, playChunk, size);
+	ret = audioOutput->plugin->playFunc(audioOutput, playChunk, size);
 
 	return ret;
 }
@@ -228,20 +222,20 @@ int playAudioOutput(struct audio_output *audioOutput,
 void dropBufferedAudioOutput(struct audio_output *audioOutput)
 {
 	if (audioOutput->open)
-		audioOutput->dropBufferedAudioFunc(audioOutput);
+		audioOutput->plugin->dropBufferedAudioFunc(audioOutput);
 }
 
 void closeAudioOutput(struct audio_output *audioOutput)
 {
 	if (audioOutput->open)
-		audioOutput->closeDeviceFunc(audioOutput);
+		audioOutput->plugin->closeDeviceFunc(audioOutput);
 }
 
 void finishAudioOutput(struct audio_output *audioOutput)
 {
 	closeAudioOutput(audioOutput);
-	if (audioOutput->finishDriverFunc)
-		audioOutput->finishDriverFunc(audioOutput);
+	if (audioOutput->plugin->finishDriverFunc)
+		audioOutput->plugin->finishDriverFunc(audioOutput);
 	if (audioOutput->convBuffer)
 		free(audioOutput->convBuffer);
 }
@@ -249,9 +243,9 @@ void finishAudioOutput(struct audio_output *audioOutput)
 void sendMetadataToAudioOutput(struct audio_output *audioOutput,
 			       const struct tag *tag)
 {
-	if (!audioOutput->sendMetdataFunc)
+	if (!audioOutput->plugin->sendMetdataFunc)
 		return;
-	audioOutput->sendMetdataFunc(audioOutput, tag);
+	audioOutput->plugin->sendMetdataFunc(audioOutput, tag);
 }
 
 void printAllOutputPluginTypes(FILE * fp)

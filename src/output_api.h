@@ -67,14 +67,8 @@ struct audio_output_plugin {
 struct audio_output {
 	int open;
 	const char *name;
-	const char *type;
 
-	AudioOutputFinishDriverFunc finishDriverFunc;
-	AudioOutputOpenDeviceFunc openDeviceFunc;
-	AudioOutputPlayFunc playFunc;
-	AudioOutputDropBufferedAudioFunc dropBufferedAudioFunc;
-	AudioOutputCloseDeviceFunc closeDeviceFunc;
-	AudioOutputSendMetadataFunc sendMetdataFunc;
+	const struct audio_output_plugin *plugin;
 
 	int convertAudioFormat;
 	struct audio_format inAudioFormat;
