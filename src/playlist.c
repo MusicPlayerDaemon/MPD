@@ -212,9 +212,9 @@ void clearPlaylist(void)
 	incrPlaylistVersion();
 }
 
-int clearStoredPlaylist(int fd, const char *utf8file)
+int clearStoredPlaylist(const char *utf8file)
 {
-	return removeAllFromStoredPlaylistByPath(fd, utf8file);
+	return removeAllFromStoredPlaylistByPath(utf8file);
 }
 
 void showPlaylist(int fd)
@@ -568,32 +568,27 @@ enum playlist_result addToPlaylist(const char *url, int *added_id)
 	return addSongToPlaylist(song, added_id);
 }
 
-int addToStoredPlaylist(int fd, const char *url, const char *utf8file)
+int addToStoredPlaylist(const char *url, const char *utf8file)
 {
 	Song *song;
 
 	DEBUG("add to stored playlist: %s\n", url);
 
 	song = getSongFromDB(url);
-	if (song) {
-		appendSongToStoredPlaylistByPath(fd, utf8file, song);
-		return 0;
-	}
+	if (song)
+		return appendSongToStoredPlaylistByPath(utf8file, song);
 
 	if (!isValidRemoteUtf8Url(url))
-		goto fail;
+		return ACK_ERROR_NO_EXIST;
 
 	song = newSong(url, SONG_TYPE_URL, NULL);
 	if (song) {
-		appendSongToStoredPlaylistByPath(fd, utf8file, song);
+		int ret = appendSongToStoredPlaylistByPath(utf8file, song);
 		freeJustSong(song);
-		return 0;
+		return ret;
 	}
 
-fail:
-	commandError(fd, ACK_ERROR_NO_EXIST, "\"%s\" is not in the music db"
-	             "or is not a valid url", url);
-	return -1;
+	return ACK_ERROR_NO_EXIST;
 }
 
 enum playlist_result addSongToPlaylist(Song * song, int *added_id)
@@ -1347,8 +1342,11 @@ int PlaylistInfo(int fd, const char *utf8file, int detail)
 	ListNode *node;
 	List *list;
 
-	if (!(list = loadStoredPlaylist(fd, utf8file)))
+	if (!(list = loadStoredPlaylist(utf8file))) {
+		commandError(fd, ACK_ERROR_NO_EXIST, "could not open playlist "
+		             "\"%s\": %s", utf8file, strerror(errno));
 		return -1;
+	}
 
 	node = list->firstNode;
 	while (node != NULL) {
@@ -1374,13 +1372,13 @@ int PlaylistInfo(int fd, const char *utf8file, int detail)
 	return 0;
 }
 
-int loadPlaylist(int fd, const char *utf8file)
+enum playlist_result loadPlaylist(int fd, const char *utf8file)
 {
 	ListNode *node;
 	List *list;
 
-	if (!(list = loadStoredPlaylist(fd,  utf8file)))
-		return -1;
+	if (!(list = loadStoredPlaylist(utf8file)))
+		return PLAYLIST_RESULT_NO_SUCH_LIST;
 
 	node = list->firstNode;
 	while (node != NULL) {
@@ -1405,7 +1403,7 @@ int loadPlaylist(int fd, const char *utf8file)
 	}
 
 	freeList(list);
-	return 0;
+	return PLAYLIST_RESULT_SUCCESS;
 }
 
 void searchForSongsInPlaylist(int fd, int numItems, LocateTagItem * items)
@@ -1456,17 +1454,3 @@ int is_valid_playlist_name(const char *utf8path)
 		strchr(utf8path, '\n') == NULL &&
 		strchr(utf8path, '\r') == NULL;
 }
-
-int valid_playlist_name(int err_fd, const char *utf8path)
-{
-	if (!is_valid_playlist_name(utf8path)) {
-		commandError(err_fd, ACK_ERROR_ARG, "playlist name \"%s\" is "
-		             "invalid: playlist names may not contain slashes,"
-			     " newlines or carriage returns",
-		             utf8path);
-		return 0;
-	}
-	return 1;
-}
-
-

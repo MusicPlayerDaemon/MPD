@@ -180,11 +180,10 @@ static int directoryAddSongToPlaylist(mpd_unused int fd, Song * song,
 	return addSongToPlaylist(song, NULL);
 }
 
-static int directoryAddSongToStoredPlaylist(int fd, Song *song, void *data)
+static int directoryAddSongToStoredPlaylist(mpd_unused int fd, Song *song,
+					    void *data)
 {
-	if (appendSongToStoredPlaylistByPath(fd, (char *)data, song) != 0)
-		return -1;
-	return 0;
+	return appendSongToStoredPlaylistByPath((char *)data, song);
 }
 
 int addAllIn(int fd, const char *name)

@@ -23,14 +23,21 @@
 #include "list.h"
 #include "playlist.h"
 
-List *loadStoredPlaylist(int fd, const char *utf8path);
+List *loadStoredPlaylist(const char *utf8path);
 
-int moveSongInStoredPlaylistByPath(int fd, const char *utf8path, int src, int dest);
-int removeAllFromStoredPlaylistByPath(int fd, const char *utf8path);
-int removeOneSongFromStoredPlaylistByPath(int fd, const char *utf8path, int pos);
+enum playlist_result
+moveSongInStoredPlaylistByPath(const char *utf8path, int src, int dest);
 
-int appendSongToStoredPlaylistByPath(int fd, const char *utf8path, Song *song);
+enum playlist_result
+removeAllFromStoredPlaylistByPath(const char *utf8path);
 
-int renameStoredPlaylist(int fd, const char *utf8from, const char *utf8to);
+enum playlist_result
+removeOneSongFromStoredPlaylistByPath(const char *utf8path, int pos);
+
+enum playlist_result
+appendSongToStoredPlaylistByPath(const char *utf8path, Song *song);
+
+enum playlist_result
+renameStoredPlaylist(const char *utf8from, const char *utf8to);
 
 #endif

@@ -531,7 +531,10 @@ static int handleSave(int fd, mpd_unused int *permission,
 static int handleLoad(int fd, mpd_unused int *permission,
 		      mpd_unused int argc, char *argv[])
 {
-	return loadPlaylist(fd, argv[1]);
+	enum playlist_result result;
+
+	result = loadPlaylist(fd, argv[1]);
+	return print_playlist_result(fd, result);
 }
 
 static int handleListPlaylist(int fd, mpd_unused int *permission,
@@ -575,7 +578,10 @@ static int handleRm(int fd, mpd_unused int *permission,
 static int handleRename(int fd, mpd_unused int *permission,
 			mpd_unused int argc, char *argv[])
 {
-	return renameStoredPlaylist(fd, argv[1], argv[2]);
+	enum playlist_result result;
+
+	result = renameStoredPlaylist(argv[1], argv[2]);
+	return print_playlist_result(fd, result);
 }
 
 static int handlePlaylistChanges(int fd, mpd_unused int *permission,
@@ -734,11 +740,13 @@ static int handlePlaylistDelete(int fd, mpd_unused int *permission,
 				mpd_unused int argc, char *argv[]) {
 	char *playlist = argv[1];
 	int from;
+	enum playlist_result result;
 
 	if (check_int(fd, &from, argv[2], check_integer, argv[2]) < 0)
 		return -1;
 
-	return removeOneSongFromStoredPlaylistByPath(fd, playlist, from);
+	result = removeOneSongFromStoredPlaylistByPath(playlist, from);
+	return print_playlist_result(fd, result);
 }
 
 static int handlePlaylistMove(int fd, mpd_unused int *permission,
@@ -746,13 +754,15 @@ static int handlePlaylistMove(int fd, mpd_unused int *permission,
 {
 	char *playlist = argv[1];
 	int from, to;
+	enum playlist_result result;
 
 	if (check_int(fd, &from, argv[2], check_integer, argv[2]) < 0)
 		return -1;
 	if (check_int(fd, &to, argv[3], check_integer, argv[3]) < 0)
 		return -1;
 
-	return moveSongInStoredPlaylistByPath(fd, playlist, from, to);
+	result = moveSongInStoredPlaylistByPath(playlist, from, to);
+	return print_playlist_result(fd, result);
 }
 
 static int listHandleUpdate(int fd,
@@ -1137,7 +1147,10 @@ static int handleNotcommands(int fd, mpd_unused int *permission,
 static int handlePlaylistClear(int fd, mpd_unused int *permission,
 			       mpd_unused int argc, char *argv[])
 {
-	return clearStoredPlaylist(fd, argv[1]);
+	enum playlist_result result;
+
+	result = clearStoredPlaylist(argv[1]);
+	return print_playlist_result(fd, result);
 }
 
 static int handlePlaylistAdd(int fd, mpd_unused int *permission,
@@ -1145,11 +1158,13 @@ static int handlePlaylistAdd(int fd, mpd_unused int *permission,
 {
 	char *playlist = argv[1];
 	char *path = argv[2];
+	enum playlist_result result;
 
 	if (isRemoteUrl(path))
-		return addToStoredPlaylist(fd, path, playlist);
-
-	return addAllInToStoredPlaylist(fd, path, playlist);
+		result = addToStoredPlaylist(path, playlist);
+	else
+		result = addAllInToStoredPlaylist(fd, path, playlist);
+	return print_playlist_result(fd, result);
 }
 
 void initCommands(void)
