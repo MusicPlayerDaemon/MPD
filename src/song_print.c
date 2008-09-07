@@ -19,34 +19,34 @@
 #include "song_print.h"
 #include "directory.h"
 #include "tag_print.h"
-#include "myfprintf.h"
+#include "client.h"
 
-void printSongUrl(int fd, Song * song)
+void printSongUrl(struct client *client, Song * song)
 {
 	if (song->parentDir && song->parentDir->path) {
-		fdprintf(fd, "%s%s/%s\n", SONG_FILE,
-			  getDirectoryPath(song->parentDir), song->url);
+		client_printf(client, "%s%s/%s\n", SONG_FILE,
+			      getDirectoryPath(song->parentDir), song->url);
 	} else {
-		fdprintf(fd, "%s%s\n", SONG_FILE, song->url);
+		client_printf(client, "%s%s\n", SONG_FILE, song->url);
 	}
 }
 
-int printSongInfo(int fd, Song * song)
+int printSongInfo(struct client *client, Song * song)
 {
-	printSongUrl(fd, song);
+	printSongUrl(client, song);
 
 	if (song->tag)
-		tag_print(fd, song->tag);
+		tag_print(client, song->tag);
 
 	return 0;
 }
 
-int printSongInfoFromList(int fd, SongList * list)
+int printSongInfoFromList(struct client *client, SongList * list)
 {
 	ListNode *tempNode = list->firstNode;
 
 	while (tempNode != NULL) {
-		printSongInfo(fd, (Song *) tempNode->data);
+		printSongInfo(client, (Song *) tempNode->data);
 		tempNode = tempNode->nextNode;
 	}
 

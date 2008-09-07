@@ -29,7 +29,6 @@
 #include "stats.h"
 #include "utils.h"
 #include "volume.h"
-#include "myfprintf.h"
 #include "dbUtils.h"
 #include "song_print.h"
 #include "song_save.h"
@@ -824,30 +823,30 @@ static Directory *getDirectory(const char *name)
 	return getSubDirectory(mp3rootDirectory, name, &shortname);
 }
 
-static int printDirectoryList(int fd, DirectoryList * directoryList)
+static int printDirectoryList(struct client *client, DirectoryList * directoryList)
 {
 	ListNode *node = directoryList->firstNode;
 	Directory *directory;
 
 	while (node != NULL) {
 		directory = (Directory *) node->data;
-		fdprintf(fd, "%s%s\n", DIRECTORY_DIR,
-			 getDirectoryPath(directory));
+		client_printf(client, "%s%s\n", DIRECTORY_DIR,
+			      getDirectoryPath(directory));
 		node = node->nextNode;
 	}
 
 	return 0;
 }
 
-int printDirectoryInfo(int fd, const char *name)
+int printDirectoryInfo(struct client *client, const char *name)
 {
 	Directory *directory;
 
 	if ((directory = getDirectory(name)) == NULL)
 		return -1;
 
-	printDirectoryList(fd, directory->subDirectories);
-	printSongInfoFromList(fd, directory->songs);
+	printDirectoryList(client, directory->subDirectories);
+	printSongInfoFromList(client, directory->songs);
 
 	return 0;
 }

@@ -323,7 +323,7 @@ static int handleUrlHandlers(struct client *client, mpd_unused int *permission,
 static int handleTagTypes(struct client *client, mpd_unused int *permission,
 			  mpd_unused int argc, mpd_unused char *argv[])
 {
-	tag_print_types(client_get_fd(client));
+	tag_print_types(client);
 	return 0;
 }
 
@@ -368,7 +368,7 @@ static int handleCurrentSong(struct client *client, mpd_unused int *permission,
 	if (song < 0)
 		return 0;
 
-	result = playlistInfo(client_get_fd(client), song);
+	result = playlistInfo(client, song);
 	return print_playlist_result(client, result);
 }
 
@@ -584,7 +584,7 @@ static int handleListPlaylist(struct client *client, mpd_unused int *permission,
 {
 	int ret;
 
-	ret = PlaylistInfo(client_get_fd(client), argv[1], 0);
+	ret = PlaylistInfo(client, argv[1], 0);
 	if (ret == -1)
 		command_error(client, ACK_ERROR_NO_EXIST, "No such playlist");
 
@@ -596,7 +596,7 @@ static int handleListPlaylistInfo(struct client *client, mpd_unused int *permiss
 {
 	int ret;
 
-	ret = PlaylistInfo(client_get_fd(client), argv[1], 1);
+	ret = PlaylistInfo(client, argv[1], 1);
 	if (ret == -1)
 		command_error(client, ACK_ERROR_NO_EXIST, "No such playlist");
 
@@ -611,7 +611,7 @@ static int handleLsInfo(struct client *client, mpd_unused int *permission,
 	if (argc == 2)
 		path = argv[1];
 
-	if (printDirectoryInfo(client_get_fd(client), path) < 0) {
+	if (printDirectoryInfo(client, path) < 0) {
 		command_error(client, ACK_ERROR_NO_EXIST,
 			      "directory not found");
 		return -1;
@@ -648,7 +648,7 @@ static int handlePlaylistChanges(struct client *client, mpd_unused int *permissi
 
 	if (check_uint32(client, &version, argv[1], need_positive) < 0)
 		return -1;
-	return playlistChanges(client_get_fd(client), version);
+	return playlistChanges(client, version);
 }
 
 static int handlePlaylistChangesPosId(struct client *client, mpd_unused int *permission,
@@ -670,7 +670,7 @@ static int handlePlaylistInfo(struct client *client, mpd_unused int *permission,
 	if (argc == 2 && check_int(client, &song, argv[1], need_positive) < 0)
 		return -1;
 
-	result = playlistInfo(client_get_fd(client), song);
+	result = playlistInfo(client, song);
 	return print_playlist_result(client, result);
 }
 
@@ -683,7 +683,7 @@ static int handlePlaylistId(struct client *client, mpd_unused int *permission,
 	if (argc == 2 && check_int(client, &id, argv[1], need_positive) < 0)
 		return -1;
 
-	result = playlistId(client_get_fd(client), id);
+	result = playlistId(client, id);
 	return print_playlist_result(client, result);
 }
 
@@ -702,7 +702,7 @@ static int handleFind(struct client *client, mpd_unused int *permission,
 		return -1;
 	}
 
-	ret = findSongsIn(client_get_fd(client), NULL, numItems, items);
+	ret = findSongsIn(client, NULL, numItems, items);
 	if (ret == -1)
 		command_error(client, ACK_ERROR_NO_EXIST,
 			      "directory or file not found");
@@ -727,7 +727,7 @@ static int handleSearch(struct client *client, mpd_unused int *permission,
 		return -1;
 	}
 
-	ret = searchForSongsIn(client_get_fd(client), NULL, numItems, items);
+	ret = searchForSongsIn(client, NULL, numItems, items);
 	if (ret == -1)
 		command_error(client, ACK_ERROR_NO_EXIST,
 			      "directory or file not found");
@@ -752,7 +752,7 @@ static int handleCount(struct client *client, mpd_unused int *permission,
 		return -1;
 	}
 
-	ret = searchStatsForSongsIn(client_get_fd(client), NULL, numItems, items);
+	ret = searchStatsForSongsIn(client, NULL, numItems, items);
 	if (ret == -1)
 		command_error(client, ACK_ERROR_NO_EXIST,
 			      "directory or file not found");
@@ -775,7 +775,7 @@ static int handlePlaylistFind(struct client *client, mpd_unused int *permission,
 		return -1;
 	}
 
-	findSongsInPlaylist(client_get_fd(client), numItems, items);
+	findSongsInPlaylist(client, numItems, items);
 
 	freeLocateTagItemArray(numItems, items);
 
@@ -795,7 +795,7 @@ static int handlePlaylistSearch(struct client *client, mpd_unused int *permissio
 		return -1;
 	}
 
-	searchForSongsInPlaylist(client_get_fd(client), numItems, items);
+	searchForSongsInPlaylist(client, numItems, items);
 
 	freeLocateTagItemArray(numItems, items);
 
@@ -937,7 +937,7 @@ static int handleListAll(struct client *client, mpd_unused int *permission,
 	if (argc == 2)
 		directory = argv[1];
 
-	ret = printAllIn(client_get_fd(client), directory);
+	ret = printAllIn(client, directory);
 	if (ret == -1)
 		command_error(client, ACK_ERROR_NO_EXIST,
 			      "directory or file not found");
@@ -1068,7 +1068,7 @@ static int handleList(struct client *client, mpd_unused int *permission,
 		}
 	}
 
-	ret = listAllUniqueTags(client_get_fd(client), tagType, numConditionals, conditionals);
+	ret = listAllUniqueTags(client, tagType, numConditionals, conditionals);
 
 	if (conditionals)
 		freeLocateTagItemArray(numConditionals, conditionals);
@@ -1175,7 +1175,7 @@ static int handleListAllInfo(struct client *client, mpd_unused int *permission,
 	if (argc == 2)
 		directory = argv[1];
 
-	ret = printInfoForAllIn(client_get_fd(client), directory);
+	ret = printInfoForAllIn(client, directory);
 	if (ret == -1)
 		command_error(client, ACK_ERROR_NO_EXIST,
 			      "directory or file not found");

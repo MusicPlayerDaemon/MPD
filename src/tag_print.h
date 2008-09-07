@@ -20,9 +20,10 @@
 #define TAG_PRINT_H
 
 struct tag;
+struct client;
 
-void tag_print_types(int fd);
+void tag_print_types(struct client *client);
 
-void tag_print(int fd, const struct tag *tag);
+void tag_print(struct client *client, const struct tag *tag);
 
 #endif

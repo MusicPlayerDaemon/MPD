@@ -21,10 +21,10 @@
 
 #include "song.h"
 
-int printSongInfo(int fd, Song * song);
+int printSongInfo(struct client *client, Song * song);
 
-int printSongInfoFromList(int fd, SongList * list);
+int printSongInfoFromList(struct client *client, SongList * list);
 
-void printSongUrl(int fd, Song * song);
+void printSongUrl(struct client *client, Song * song);
 
 #endif

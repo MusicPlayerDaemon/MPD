@@ -79,9 +79,9 @@ enum playlist_result deleteFromPlaylist(int song);
 
 enum playlist_result deleteFromPlaylistById(int song);
 
-enum playlist_result playlistInfo(int fd, int song);
+enum playlist_result playlistInfo(struct client *client, int song);
 
-enum playlist_result playlistId(int fd, int song);
+enum playlist_result playlistId(struct client *client, int song);
 
 void stopPlaylist(void);
 
@@ -137,15 +137,17 @@ enum playlist_result seekSongInPlaylistById(int id, float seek_time);
 
 void playlistVersionChange(void);
 
-int playlistChanges(int fd, mpd_uint32 version);
+int playlistChanges(struct client *client, mpd_uint32 version);
 
 int playlistChangesPosId(int fd, mpd_uint32 version);
 
-int PlaylistInfo(int fd, const char *utf8file, int detail);
+int PlaylistInfo(struct client *client, const char *utf8file, int detail);
 
-void searchForSongsInPlaylist(int fd, int numItems, LocateTagItem * items);
+void searchForSongsInPlaylist(struct client *client,
+			      int numItems, LocateTagItem * items);
 
-void findSongsInPlaylist(int fd, int numItems, LocateTagItem * items);
+void findSongsInPlaylist(struct client *client,
+			 int numItems, LocateTagItem * items);
 
 int is_valid_playlist_name(const char *utf8path);
 

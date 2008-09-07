@@ -22,6 +22,7 @@
 #include "ls.h"
 #include "tag.h"
 #include "song_print.h"
+#include "client.h"
 #include "conf.h"
 #include "directory.h"
 #include "log.h"
@@ -369,13 +370,13 @@ void readPlaylistState(FILE *fp)
 	}
 }
 
-static void printPlaylistSongInfo(int fd, int song)
+static void printPlaylistSongInfo(struct client *client, int song)
 {
-	printSongInfo(fd, playlist.songs[song]);
-	fdprintf(fd, "Pos: %i\nId: %i\n", song, playlist.positionToId[song]);
+	printSongInfo(client, playlist.songs[song]);
+	client_printf(client, "Pos: %i\nId: %i\n", song, playlist.positionToId[song]);
 }
 
-int playlistChanges(int fd, mpd_uint32 version)
+int playlistChanges(struct client *client, mpd_uint32 version)
 {
 	int i;
 
@@ -383,7 +384,7 @@ int playlistChanges(int fd, mpd_uint32 version)
 		if (version > playlist.version ||
 		    playlist.songMod[i] >= version ||
 		    playlist.songMod[i] == 0) {
-			printPlaylistSongInfo(fd, i);
+			printPlaylistSongInfo(client, i);
 		}
 	}
 
@@ -406,7 +407,7 @@ int playlistChangesPosId(int fd, mpd_uint32 version)
 	return 0;
 }
 
-enum playlist_result playlistInfo(int fd, int song)
+enum playlist_result playlistInfo(struct client *client, int song)
 {
 	int i;
 	int begin = 0;
@@ -420,7 +421,7 @@ enum playlist_result playlistInfo(int fd, int song)
 		return PLAYLIST_RESULT_BAD_RANGE;
 
 	for (i = begin; i < end; i++)
-		printPlaylistSongInfo(fd, i);
+		printPlaylistSongInfo(client, i);
 
 	return PLAYLIST_RESULT_SUCCESS;
 }
@@ -431,7 +432,7 @@ static int song_id_exists(int id)
 		playlist.idToPosition[id] != -1;
 }
 
-enum playlist_result playlistId(int fd, int id)
+enum playlist_result playlistId(struct client *client, int id)
 {
 	int i;
 	int begin = 0;
@@ -446,7 +447,7 @@ enum playlist_result playlistId(int fd, int id)
 	}
 
 	for (i = begin; i < end; i++)
-		printPlaylistSongInfo(fd, i);
+		printPlaylistSongInfo(client, i);
 
 	return PLAYLIST_RESULT_SUCCESS;
 }
@@ -1337,7 +1338,7 @@ int getPlaylistSongId(int song)
 	return playlist.positionToId[song];
 }
 
-int PlaylistInfo(int fd, const char *utf8file, int detail)
+int PlaylistInfo(struct client *client, const char *utf8file, int detail)
 {
 	ListNode *node;
 	List *list;
@@ -1353,13 +1354,13 @@ int PlaylistInfo(int fd, const char *utf8file, int detail)
 		if (detail) {
 			Song *song = getSongFromDB(temp);
 			if (song) {
-				printSongInfo(fd, song);
+				printSongInfo(client, song);
 				wrote = 1;
 			}
 		}
 
 		if (!wrote) {
-			fdprintf(fd, SONG_FILE "%s\n", temp);
+			client_printf(client, SONG_FILE "%s\n", temp);
 		}
 
 		node = node->nextNode;
@@ -1403,7 +1404,8 @@ enum playlist_result loadPlaylist(int fd, const char *utf8file)
 	return PLAYLIST_RESULT_SUCCESS;
 }
 
-void searchForSongsInPlaylist(int fd, int numItems, LocateTagItem * items)
+void searchForSongsInPlaylist(struct client *client,
+			      int numItems, LocateTagItem * items)
 {
 	int i;
 	char **originalNeedles = xmalloc(numItems * sizeof(char *));
@@ -1415,7 +1417,7 @@ void searchForSongsInPlaylist(int fd, int numItems, LocateTagItem * items)
 
 	for (i = 0; i < playlist.length; i++) {
 		if (strstrSearchTags(playlist.songs[i], numItems, items))
-			printPlaylistSongInfo(fd, i);
+			printPlaylistSongInfo(client, i);
 	}
 
 	for (i = 0; i < numItems; i++) {
@@ -1426,13 +1428,14 @@ void searchForSongsInPlaylist(int fd, int numItems, LocateTagItem * items)
 	free(originalNeedles);
 }
 
-void findSongsInPlaylist(int fd, int numItems, LocateTagItem * items)
+void findSongsInPlaylist(struct client *client,
+			 int numItems, LocateTagItem * items)
 {
 	int i;
 
 	for (i = 0; i < playlist.length; i++) {
 		if (tagItemsFoundAndMatches(playlist.songs[i], numItems, items))
-			printPlaylistSongInfo(fd, i);
+			printPlaylistSongInfo(client, i);
 	}
 }
 

@@ -32,6 +32,8 @@
 #define SONG_FILE	"file: "
 #define SONG_TIME	"Time: "
 
+struct client;
+
 typedef struct _Song {
 	char *url;
 	mpd_sint8 type;

@@ -19,28 +19,30 @@
 #include "tag_print.h"
 #include "tag.h"
 #include "tag_internal.h"
-#include "myfprintf.h"
+#include "client.h"
 #include "song.h"
 
-void tag_print_types(int fd)
+void tag_print_types(struct client *client)
 {
 	int i;
 
 	for (i = 0; i < TAG_NUM_OF_ITEM_TYPES; i++) {
 		if (ignoreTagItems[i] == 0)
-			fdprintf(fd, "tagtype: %s\n", mpdTagItemKeys[i]);
+			client_printf(client, "tagtype: %s\n",
+				      mpdTagItemKeys[i]);
 	}
 }
 
-void tag_print(int fd, const struct tag *tag)
+void tag_print(struct client *client, const struct tag *tag)
 {
 	int i;
 
 	if (tag->time >= 0)
-		fdprintf(fd, SONG_TIME "%i\n", tag->time);
+		client_printf(client, SONG_TIME "%i\n", tag->time);
 
 	for (i = 0; i < tag->numOfItems; i++) {
-		fdprintf(fd, "%s: %s\n", mpdTagItemKeys[tag->items[i]->type],
-			  tag->items[i]->value);
+		client_printf(client, "%s: %s\n",
+			      mpdTagItemKeys[tag->items[i]->type],
+			      tag->items[i]->value);
 	}
 }
