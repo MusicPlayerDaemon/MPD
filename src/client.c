@@ -317,14 +317,6 @@ void client_new(int fd, const struct sockaddr *addr)
 	       sockaddr_to_tmp_string(addr));
 }
 
-int client_get_fd(struct client *client)
-{
-	assert(client != NULL);
-	assert(client->fd >= 0);
-
-	return client->fd;
-}
-
 static int client_process_line(struct client *client)
 {
 	int ret = 1;

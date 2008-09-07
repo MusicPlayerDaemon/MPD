@@ -31,13 +31,6 @@ void client_manager_expire(void);
 
 void client_new(int fd, const struct sockaddr *addr);
 
-/**
- * Return the file descriptor of this client's socket.  This function
- * will be removed once we have migrated to passing the client struct
- * everywhere.
- */
-int client_get_fd(struct client *client);
-
 int client_is_expired(const struct client *client);
 
 /**
