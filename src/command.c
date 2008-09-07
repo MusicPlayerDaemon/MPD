@@ -153,7 +153,7 @@ static const char check_non_negative[] = "\"%s\" is not an integer >= 0";
 static const char *current_command;
 static int command_listNum;
 
-static CommandEntry *getCommandEntryFromString(char *string, int *permission);
+static CommandEntry *getCommandEntryFromString(char *string, int permission);
 
 static List *commandList;
 
@@ -833,7 +833,7 @@ static int listHandleUpdate(struct client *client,
 		insertInList(pathList, "", NULL);
 
 	if (next)
-		nextCmd = getCommandEntryFromString(next->data, permission);
+		nextCmd = getCommandEntryFromString(next->data, *permission);
 
 	if (cmd != nextCmd) {
 		int ret = updateInit(pathList);
@@ -1418,7 +1418,7 @@ static int checkArgcAndPermission(CommandEntry * cmd, struct client *client,
 }
 
 static CommandEntry *getCommandEntryAndCheckArgcAndPermission(struct client *client,
-							      int *permission,
+							      int permission,
 							      int argc,
 							      char *argv[])
 {
@@ -1439,14 +1439,14 @@ static CommandEntry *getCommandEntryAndCheckArgcAndPermission(struct client *cli
 
 	current_command = cmd->cmd;
 
-	if (checkArgcAndPermission(cmd, client, *permission, argc, argv) < 0) {
+	if (checkArgcAndPermission(cmd, client, permission, argc, argv) < 0) {
 		return NULL;
 	}
 
 	return cmd;
 }
 
-static CommandEntry *getCommandEntryFromString(char *string, int *permission)
+static CommandEntry *getCommandEntryFromString(char *string, int permission)
 {
 	CommandEntry *cmd;
 	char *argv[COMMAND_ARGV_MAX] = { NULL };
@@ -1475,7 +1475,7 @@ static int processCommandInternal(struct client *client,
 	if (argc == 0)
 		return 0;
 
-	if ((cmd = getCommandEntryAndCheckArgcAndPermission(client, permission,
+	if ((cmd = getCommandEntryAndCheckArgcAndPermission(client, *permission,
 							    argc, argv))) {
 		if (!cmdnode || !cmd->listHandler) {
 			ret = cmd->handler(client, permission, argc, argv);
