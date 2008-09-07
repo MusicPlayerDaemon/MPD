@@ -32,6 +32,8 @@ then
 	MPD_CHECK_FLAG([-Wshadow])
 	MPD_CHECK_FLAG([-Wpointer-arith])
 	MPD_CHECK_FLAG([-Wstrict-prototypes])
+	MPD_CHECK_FLAG([-Wcast-qual])
+	MPD_CHECK_FLAG([-Wwrite-strings])
 fi
 
 if test -z "$prefix" || test "x$prefix" = xNONE; then

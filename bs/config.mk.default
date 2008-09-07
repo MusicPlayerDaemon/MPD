@@ -10,7 +10,8 @@ CC = gcc
 CFLAGS = -O2 -Wall \
  -Wmissing-prototypes -Wextra -Wno-unused-parameter \
  -Wno-deprecated-declarations -Wmissing-prototypes \
- -Wdeclaration-after-statement -Wshadow
+ -Wdeclaration-after-statement -Wshadow -Wpointer-arith \
+ -Wstrict-prototypes -Wcast-qual -Wwrite-strings
 
 LDFLAGS = -Wl,-O1
 
