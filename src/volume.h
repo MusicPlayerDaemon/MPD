@@ -33,7 +33,7 @@ void finishVolume(void);
 
 int getVolumeLevel(void);
 
-int changeVolumeLevel(int fd, int change, int rel);
+int changeVolumeLevel(int change, int rel);
 
 void read_sw_volume_state(FILE *fp);
 

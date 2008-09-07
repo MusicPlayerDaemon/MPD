@@ -911,21 +911,33 @@ static int handleListAll(int fd, mpd_unused int *permission,
 static int handleVolume(int fd, mpd_unused int *permission,
 			mpd_unused int argc, char *argv[])
 {
-	int change;
+	int change, ret;
 
 	if (check_int(fd, &change, argv[1], need_integer) < 0)
 		return -1;
-	return changeVolumeLevel(fd, change, 1);
+
+	ret = changeVolumeLevel(change, 1);
+	if (ret == -1)
+		commandError(fd, ACK_ERROR_SYSTEM,
+			     "problems setting volume");
+
+	return ret;
 }
 
 static int handleSetVol(int fd, mpd_unused int *permission,
 			mpd_unused int argc, char *argv[])
 {
-	int level;
+	int level, ret;
 
 	if (check_int(fd, &level, argv[1], need_integer) < 0)
 		return -1;
-	return changeVolumeLevel(fd, level, 0);
+
+	ret = changeVolumeLevel(level, 0);
+	if (ret == -1)
+		commandError(fd, ACK_ERROR_SYSTEM,
+			     "problems setting volume");
+
+	return ret;
 }
 
 static int handleRepeat(int fd, mpd_unused int *permission,

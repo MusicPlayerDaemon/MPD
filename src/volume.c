@@ -17,13 +17,10 @@
  */
 #include "volume.h"
 
-#include "command.h"
 #include "conf.h"
 #include "log.h"
 #include "player_control.h"
-#include "gcc.h"
 #include "utils.h"
-#include "ack.h"
 #include "os_compat.h"
 
 #include "../config.h"
@@ -169,18 +166,15 @@ static int getOssVolumeLevel(void)
 	return left;
 }
 
-static int changeOssVolumeLevel(int fd, int change, int rel)
+static int changeOssVolumeLevel(int change, int rel)
 {
 	int current;
 	int new;
 	int level;
 
 	if (rel) {
-		if ((current = getOssVolumeLevel()) < 0) {
-			commandError(fd, ACK_ERROR_SYSTEM,
-				     "problem getting current volume");
+		if ((current = getOssVolumeLevel()) < 0)
 			return -1;
-		}
 
 		new = current + change;
 	} else {
@@ -198,7 +192,6 @@ static int changeOssVolumeLevel(int fd, int change, int rel)
 
 	if (ioctl(volume_ossFd, MIXER_WRITE(volume_ossControl), &level) < 0) {
 		closeOssMixer();
-		commandError(fd, ACK_ERROR_SYSTEM, "problems setting volume");
 		return -1;
 	}
 
@@ -328,7 +321,7 @@ static int getAlsaVolumeLevel(void)
 	return ret;
 }
 
-static int changeAlsaVolumeLevel(int fd, int change, int rel)
+static int changeAlsaVolumeLevel(int change, int rel)
 {
 	float vol;
 	long level;
@@ -361,7 +354,6 @@ static int changeAlsaVolumeLevel(int fd, int change, int rel)
 	if ((err =
 	     snd_mixer_selem_set_playback_volume_all(volume_alsaElem,
 						     level)) < 0) {
-		commandError(fd, ACK_ERROR_SYSTEM, "problems setting volume");
 		WARNING("problems setting alsa volume: %s\n",
 			snd_strerror(err));
 		closeAlsaMixer();
@@ -469,7 +461,7 @@ int getVolumeLevel(void)
 	}
 }
 
-static int changeSoftwareVolume(mpd_unused int fd, int change, int rel)
+static int changeSoftwareVolume(int change, int rel)
 {
 	int new = change;
 
@@ -497,19 +489,19 @@ static int changeSoftwareVolume(mpd_unused int fd, int change, int rel)
 	return 0;
 }
 
-int changeVolumeLevel(int fd, int change, int rel)
+int changeVolumeLevel(int change, int rel)
 {
 	switch (volume_mixerType) {
 #ifdef HAVE_ALSA
 	case VOLUME_MIXER_TYPE_ALSA:
-		return changeAlsaVolumeLevel(fd, change, rel);
+		return changeAlsaVolumeLevel(change, rel);
 #endif
 #ifdef HAVE_OSS
 	case VOLUME_MIXER_TYPE_OSS:
-		return changeOssVolumeLevel(fd, change, rel);
+		return changeOssVolumeLevel(change, rel);
 #endif
 	case VOLUME_MIXER_TYPE_SOFTWARE:
-		return changeSoftwareVolume(fd, change, rel);
+		return changeSoftwareVolume(change, rel);
 	default:
 		return 0;
 	}
@@ -531,7 +523,7 @@ void read_sw_volume_state(FILE *fp)
 			continue;
 		sv = strtol(buf + len, &end, 10);
 		if (mpd_likely(!*end))
-			changeSoftwareVolume(STDERR_FILENO, sv, 0);
+			changeSoftwareVolume(sv, 0);
 		else
 			ERROR("Can't parse software volume: %s\n", buf);
 		return;
