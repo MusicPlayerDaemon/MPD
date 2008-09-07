@@ -540,13 +540,25 @@ static int handleLoad(int fd, mpd_unused int *permission,
 static int handleListPlaylist(int fd, mpd_unused int *permission,
 			      mpd_unused int argc, char *argv[])
 {
-	return PlaylistInfo(fd, argv[1], 0);
+	int ret;
+
+	ret = PlaylistInfo(fd, argv[1], 0);
+	if (ret == -1)
+		commandError(fd, ACK_ERROR_NO_EXIST, "No such playlist");
+
+	return ret;
 }
 
 static int handleListPlaylistInfo(int fd, mpd_unused int *permission,
 				  mpd_unused int argc, char *argv[])
 {
-	return PlaylistInfo(fd, argv[1], 1);
+	int ret;
+
+	ret = PlaylistInfo(fd, argv[1], 1);
+	if (ret == -1)
+		commandError(fd, ACK_ERROR_NO_EXIST, "No such playlist");
+
+	return ret;
 }
 
 static int handleLsInfo(int fd, mpd_unused int *permission,

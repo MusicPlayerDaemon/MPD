@@ -1342,11 +1342,8 @@ int PlaylistInfo(int fd, const char *utf8file, int detail)
 	ListNode *node;
 	List *list;
 
-	if (!(list = loadStoredPlaylist(utf8file))) {
-		commandError(fd, ACK_ERROR_NO_EXIST, "could not open playlist "
-		             "\"%s\": %s", utf8file, strerror(errno));
+	if (!(list = loadStoredPlaylist(utf8file)))
 		return -1;
-	}
 
 	node = list->firstNode;
 	while (node != NULL) {
