@@ -53,6 +53,4 @@ void client_vprintf(struct client *client, const char *fmt, va_list args);
  */
 mpd_fprintf void client_printf(struct client *client, const char *fmt, ...);
 
-int client_print(int fd, const char *buffer, size_t len);
-
 #endif

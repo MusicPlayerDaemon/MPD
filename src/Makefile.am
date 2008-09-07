@@ -61,7 +61,6 @@ mpd_headers = \
 	ls.h \
 	main_notify.h \
 	mpd_types.h \
-	myfprintf.h \
 	normalize.h \
 	compress.h \
 	os_compat.h \
@@ -130,7 +129,6 @@ mpd_SOURCES = \
 	ls.c \
 	main.c \
 	main_notify.c \
-	myfprintf.c \
 	normalize.c \
 	compress.c \
 	outputBuffer.c \

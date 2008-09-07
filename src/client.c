@@ -671,31 +671,6 @@ static void client_write_deferred(struct client *client)
 	}
 }
 
-static struct client *client_by_fd(int fd)
-{
-	struct client *client;
-
-	list_for_each_entry(client, &clients, siblings)
-		if (client->fd == fd)
-			return client;
-
-	return NULL;
-}
-
-int client_print(int fd, const char *buffer, size_t buflen)
-{
-	struct client *client;
-
-	assert(fd >= 0);
-
-	client = client_by_fd(fd);
-	if (client == NULL)
-		return -1;
-
-	client_write(client, buffer, buflen);
-	return 0;
-}
-
 static void client_defer_output(struct client *client,
 				const void *data, size_t length)
 {
