@@ -434,10 +434,15 @@ enum playlist_result playlistInfo(struct client *client, int song)
 	return PLAYLIST_RESULT_SUCCESS;
 }
 
-static int song_id_exists(int id)
+static int song_id_to_position(int id)
 {
-	return id >= 0 && id < PLAYLIST_HASH_MULT*playlist_max_length &&
-		playlist.idToPosition[id] != -1;
+	if (id < 0 || id >= PLAYLIST_HASH_MULT*playlist_max_length)
+		return -1;
+
+	assert(playlist.idToPosition[id] >= -1);
+	assert(playlist.idToPosition[id] < playlist.length);
+
+	return playlist.idToPosition[id];
 }
 
 enum playlist_result playlistId(struct client *client, int id)
@@ -447,10 +452,10 @@ enum playlist_result playlistId(struct client *client, int id)
 	int end = playlist.length;
 
 	if (id >= 0) {
-		if (!song_id_exists(id))
+		begin = song_id_to_position(id);
+		if (begin < 0)
 			return PLAYLIST_RESULT_NO_SUCH_SONG;
 
-		begin = playlist.idToPosition[id];
 		end = begin + 1;
 	}
 
@@ -694,11 +699,13 @@ enum playlist_result swapSongsInPlaylist(int song1, int song2)
 
 enum playlist_result swapSongsInPlaylistById(int id1, int id2)
 {
-	if (!song_id_exists(id1) || !song_id_exists(id2))
+	int song1 = song_id_to_position(id1);
+	int song2 = song_id_to_position(id2);
+
+	if (song1 < 0 || song2 < 0)
 		return PLAYLIST_RESULT_NO_SUCH_SONG;
 
-	return swapSongsInPlaylist(playlist.idToPosition[id1],
-				   playlist.idToPosition[id2]);
+	return swapSongsInPlaylist(song1, song2);
 }
 
 #define moveSongFromTo(from, to) { \
@@ -776,10 +783,11 @@ enum playlist_result deleteFromPlaylist(int song)
 
 enum playlist_result deleteFromPlaylistById(int id)
 {
-	if (!song_id_exists(id))
+	int song = song_id_to_position(id);
+	if (song < 0)
 		return PLAYLIST_RESULT_NO_SUCH_SONG;
 
-	return deleteFromPlaylist(playlist.idToPosition[id]);
+	return deleteFromPlaylist(song);
 }
 
 void deleteASongFromPlaylist(Song * song)
@@ -869,14 +877,17 @@ enum playlist_result playPlaylist(int song, int stopOnError)
 
 enum playlist_result playPlaylistById(int id, int stopOnError)
 {
+	int song;
+
 	if (id == -1) {
 		return playPlaylist(id, stopOnError);
 	}
 
-	if (!song_id_exists(id))
+	song = song_id_to_position(id);
+	if (song < 0)
 		return PLAYLIST_RESULT_NO_SUCH_SONG;
 
-	return playPlaylist(playlist.idToPosition[id], stopOnError);
+	return playPlaylist(song, stopOnError);
 }
 
 static void syncCurrentPlayerDecodeMetadata(void)
@@ -1096,10 +1107,11 @@ enum playlist_result moveSongInPlaylist(int from, int to)
 
 enum playlist_result moveSongInPlaylistById(int id1, int to)
 {
-	if (!song_id_exists(id1))
+	int song = song_id_to_position(id1);
+	if (song < 0)
 		return PLAYLIST_RESULT_NO_SUCH_SONG;
 
-	return moveSongInPlaylist(playlist.idToPosition[id1], to);
+	return moveSongInPlaylist(song, to);
 }
 
 static void orderPlaylist(void)
@@ -1335,10 +1347,11 @@ enum playlist_result seekSongInPlaylist(int song, float seek_time)
 
 enum playlist_result seekSongInPlaylistById(int id, float seek_time)
 {
-	if (!song_id_exists(id))
+	int song = song_id_to_position(id);
+	if (song < 0)
 		return PLAYLIST_RESULT_NO_SUCH_SONG;
 
-	return seekSongInPlaylist(playlist.idToPosition[id], seek_time);
+	return seekSongInPlaylist(song, seek_time);
 }
 
 int getPlaylistSongId(int song)
