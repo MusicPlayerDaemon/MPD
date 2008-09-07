@@ -21,7 +21,9 @@
 
 #include "decoder_list.h"
 
-int lsPlaylists(int fd, const char *utf8path);
+struct client;
+
+int lsPlaylists(struct client *client, const char *utf8path);
 
 const char *getSuffix(const char *utf8file);
 
@@ -40,7 +42,7 @@ struct decoder_plugin *hasMusicSuffix(const char *utf8file, unsigned int next);
 struct decoder_plugin *isMusic(const char *utf8file, time_t * mtime,
 			       unsigned int next);
 
-int printRemoteUrlHandlers(int fd);
+int printRemoteUrlHandlers(struct client *client);
 
 int isFile(const char *utf8file, time_t * mtime);
 

@@ -19,7 +19,7 @@
 #include "ls.h"
 #include "playlist.h"
 #include "path.h"
-#include "myfprintf.h"
+#include "client.h"
 #include "log.h"
 #include "utf8.h"
 #include "utils.h"
@@ -30,12 +30,12 @@ static const char *remoteUrlPrefixes[] = {
 	NULL
 };
 
-int printRemoteUrlHandlers(int fd)
+int printRemoteUrlHandlers(struct client *client)
 {
 	const char **prefixes = remoteUrlPrefixes;
 
 	while (*prefixes) {
-		fdprintf(fd, "handler: %s\n", *prefixes);
+		client_printf(client, "handler: %s\n", *prefixes);
 		prefixes++;
 	}
 
@@ -98,7 +98,7 @@ int isRemoteUrl(const char *url)
 	return 0;
 }
 
-int lsPlaylists(int fd, const char *utf8path)
+int lsPlaylists(struct client *client, const char *utf8path)
 {
 	DIR *dir;
 	struct stat st;
@@ -168,8 +168,8 @@ int lsPlaylists(int fd, const char *utf8path)
 		node = list->firstNode;
 		while (node != NULL) {
 			if (!strchr(node->key, '\n')) {
-				fdprintf(fd, "playlist: %s%s\n", duplicated,
-					  node->key);
+				client_printf(client, "playlist: %s%s\n",
+					      duplicated, node->key);
 			}
 			node = node->nextNode;
 		}

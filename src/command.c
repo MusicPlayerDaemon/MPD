@@ -300,7 +300,7 @@ static void addCommand(const char *name,
 static int handleUrlHandlers(struct client *client, mpd_unused int *permission,
 			     mpd_unused int argc, mpd_unused char *argv[])
 {
-	return printRemoteUrlHandlers(client_get_fd(client));
+	return printRemoteUrlHandlers(client);
 }
 
 static int handleTagTypes(struct client *client, mpd_unused int *permission,
@@ -601,7 +601,7 @@ static int handleLsInfo(struct client *client, mpd_unused int *permission,
 	}
 
 	if (isRootDirectory(path))
-		return lsPlaylists(client_get_fd(client), path);
+		return lsPlaylists(client, path);
 
 	return 0;
 }
