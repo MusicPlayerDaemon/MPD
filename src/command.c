@@ -277,6 +277,7 @@ static int print_playlist_result(struct client *client,
 	}
 
 	assert(0);
+	return -1;
 }
 
 static void addCommand(const char *name,
