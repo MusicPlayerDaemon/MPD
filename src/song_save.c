@@ -17,7 +17,7 @@
  */
 
 #include "song_save.h"
-#include "song_print.h"
+#include "tag_save.h"
 #include "directory.h"
 #include "path.h"
 #include "utils.h"
@@ -27,6 +27,24 @@
 #define SONG_KEY	"key: "
 #define SONG_MTIME	"mtime: "
 
+static void song_save_url(FILE *fp, Song * song)
+{
+	if (song->parentDir != NULL && song->parentDir->path != NULL)
+		fprintf(fp, SONG_FILE "%s/%s\n",
+			getDirectoryPath(song->parentDir), song->url);
+	else
+		fprintf(fp, SONG_FILE "%s\n",
+			song->url);
+}
+
+static void song_save(FILE *fp, Song * song)
+{
+	song_save_url(fp, song);
+
+	if (song->tag != NULL)
+		tag_save(fp, song->tag);
+}
+
 void writeSongInfoFromList(FILE * fp, SongList * list)
 {
 	ListNode *tempNode = list->firstNode;
@@ -35,8 +53,7 @@ void writeSongInfoFromList(FILE * fp, SongList * list)
 
 	while (tempNode != NULL) {
 		fprintf(fp, "%s%s\n", SONG_KEY, tempNode->key);
-		fflush(fp);
-		printSongInfo(fileno(fp), (Song *) tempNode->data);
+		song_save(fp, (Song *) tempNode->data);
 		fprintf(fp, "%s%li\n", SONG_MTIME,
 			  (long)((Song *) tempNode->data)->mtime);
 		tempNode = tempNode->nextNode;
