@@ -102,7 +102,7 @@ static int mpc_decode(struct decoder * mpd_decoder, InputStream * inStream)
 	mpc_decoder decoder;
 	mpc_reader reader;
 	mpc_streaminfo info;
-	AudioFormat audio_format;
+	struct audio_format audio_format;
 
 	MpcCallbackData data;
 

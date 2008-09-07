@@ -18,6 +18,7 @@
 
 #include "timer.h"
 #include "utils.h"
+#include "audio_format.h"
 #include "os_compat.h"
 
 static uint64_t now(void)
@@ -29,7 +30,7 @@ static uint64_t now(void)
 	return ((uint64_t)tv.tv_sec * 1000000) + tv.tv_usec;
 }
 
-Timer *timer_new(AudioFormat *af)
+Timer *timer_new(struct audio_format *af)
 {
 	Timer *timer;
 

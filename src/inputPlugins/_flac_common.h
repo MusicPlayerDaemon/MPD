@@ -143,7 +143,7 @@ typedef struct {
 	size_t chunk_length;
 	float time;
 	unsigned int bitRate;
-	AudioFormat audio_format;
+	struct audio_format audio_format;
 	float total_time;
 	FLAC__uint64 position;
 	struct decoder *decoder;

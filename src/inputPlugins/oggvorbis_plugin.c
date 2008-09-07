@@ -210,7 +210,7 @@ static int oggvorbis_decode(struct decoder * decoder, InputStream * inStream)
 	OggVorbis_File vf;
 	ov_callbacks callbacks;
 	OggCallbackData data;
-	AudioFormat audio_format;
+	struct audio_format audio_format;
 	int current_section;
 	int prev_section = -1;
 	long ret;

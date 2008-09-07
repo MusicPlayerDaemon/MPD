@@ -131,7 +131,7 @@ static void wavpack_decode(struct decoder * decoder,
                            WavpackContext *wpc, int canseek,
                            ReplayGainInfo *replayGainInfo)
 {
-	AudioFormat audio_format;
+	struct audio_format audio_format;
 	void (*format_samples)(int Bps, void *buffer, uint32_t samcnt);
 	char chunk[CHUNK_SIZE];
 	float file_time;

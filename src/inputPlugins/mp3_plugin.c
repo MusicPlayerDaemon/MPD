@@ -1021,7 +1021,7 @@ mp3Read(mp3DecodeData * data, ReplayGainInfo ** replayGainInfo)
 }
 
 static void initAudioFormatFromMp3DecodeData(mp3DecodeData * data,
-					     AudioFormat * af)
+					     struct audio_format * af)
 {
 	af->bits = 16;
 	af->sampleRate = (data->frame).header.samplerate;
@@ -1033,7 +1033,7 @@ static int mp3_decode(struct decoder * decoder, InputStream * inStream)
 	mp3DecodeData data;
 	struct tag *tag = NULL;
 	ReplayGainInfo *replayGainInfo = NULL;
-	AudioFormat audio_format;
+	struct audio_format audio_format;
 
 	if (openMp3FromInputStream(inStream, &data, decoder,
 				   &tag, &replayGainInfo) < 0) {

@@ -112,7 +112,7 @@ static int pulse_testDefault(void)
 static int pulse_openDevice(AudioOutput * audioOutput)
 {
 	PulseData *pd;
-	AudioFormat *audioFormat;
+	struct audio_format *audioFormat;
 	pa_sample_spec ss;
 	time_t t;
 	int error;

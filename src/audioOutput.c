@@ -130,9 +130,9 @@ int initAudioOutput(AudioOutput *ao, ConfigParam * param)
 	ao->convBuffer = NULL;
 	ao->convBufferLen = 0;
 
-	memset(&ao->inAudioFormat, 0, sizeof(AudioFormat));
-	memset(&ao->outAudioFormat, 0, sizeof(AudioFormat));
-	memset(&ao->reqAudioFormat, 0, sizeof(AudioFormat));
+	memset(&ao->inAudioFormat, 0, sizeof(ao->inAudioFormat));
+	memset(&ao->outAudioFormat, 0, sizeof(ao->outAudioFormat));
+	memset(&ao->reqAudioFormat, 0, sizeof(ao->reqAudioFormat));
 	memset(&ao->convState, 0, sizeof(ConvState));
 
 	if (format) {
@@ -152,7 +152,7 @@ int initAudioOutput(AudioOutput *ao, ConfigParam * param)
 }
 
 int openAudioOutput(AudioOutput * audioOutput,
-		    const AudioFormat * audioFormat)
+		    const struct audio_format *audioFormat)
 {
 	int ret = 0;
 

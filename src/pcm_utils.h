@@ -21,12 +21,14 @@
 
 #include "../config.h"
 
-#include "audio_format.h"
+#include "mpd_types.h"
 #include "os_compat.h"
 
 #ifdef HAVE_LIBSAMPLERATE
 #include <samplerate.h>
 #endif
+
+struct audio_format;
 
 typedef struct _ConvState {
 #ifdef HAVE_LIBSAMPLERATE
@@ -42,17 +44,17 @@ typedef struct _ConvState {
 	int error;
 } ConvState;
 
-void pcm_volumeChange(char *buffer, int bufferSize, const AudioFormat * format,
+void pcm_volumeChange(char *buffer, int bufferSize, const struct audio_format *format,
                       int volume);
 
 void pcm_mix(char *buffer1, const char *buffer2, size_t bufferSize1,
-             size_t bufferSize2, const AudioFormat * format, float portion1);
+             size_t bufferSize2, const struct audio_format *format, float portion1);
 
-size_t pcm_convertAudioFormat(const AudioFormat * inFormat,
+size_t pcm_convertAudioFormat(const struct audio_format *inFormat,
 			      const char *inBuffer, size_t inSize,
-			      const AudioFormat * outFormat,
+			      const struct audio_format *outFormat,
                               char *outBuffer, ConvState *convState);
 
-size_t pcm_sizeOfConvBuffer(const AudioFormat * inFormat, size_t inSize,
-                            const AudioFormat * outFormat);
+size_t pcm_sizeOfConvBuffer(const struct audio_format *inFormat, size_t inSize,
+                            const struct audio_format *outFormat);
 #endif

@@ -20,15 +20,16 @@
 #ifndef CROSSFADE_H
 #define CROSSFADE_H
 
-#include "audio_format.h"
 #include "outputBuffer.h"
 
+struct audio_format;
+
 unsigned cross_fade_calc(float duration, float total_time,
-			 const AudioFormat * af,
+			 const struct audio_format *af,
 			 unsigned max_chunks);
 
 void cross_fade_apply(ob_chunk * a, const ob_chunk * b,
-		      const AudioFormat * format,
+		      const struct audio_format *format,
 		      unsigned int current_chunk, unsigned int num_chunks);
 
 #endif

@@ -30,6 +30,7 @@
 #include "replayGain.h"
 #include "tag.h"
 #include "tag_id3.h"
+#include "audio_format.h"
 #include "playerData.h"
 
 
@@ -112,7 +113,7 @@ struct decoder;
  * that it has read the song's meta data.
  */
 void decoder_initialized(struct decoder * decoder,
-			 const AudioFormat * audio_format,
+			 const struct audio_format *audio_format,
 			 float total_time);
 
 const char *decoder_get_url(struct decoder * decoder, char * buffer);

@@ -20,11 +20,11 @@
 #ifndef REPLAYGAIN_H
 #define REPLAYGAIN_H
 
-#include "audio_format.h"
-
 #define REPLAYGAIN_OFF		0
 #define REPLAYGAIN_TRACK	1
 #define REPLAYGAIN_ALBUM	2
+
+struct audio_format;
 
 extern int replayGainState;
 
@@ -45,6 +45,6 @@ void freeReplayGainInfo(ReplayGainInfo * info);
 void initReplayGainState(void);
 
 void doReplayGain(ReplayGainInfo * info, char *buffer, int bufferSize,
-		  const AudioFormat * format);
+		  const struct audio_format *format);
 
 #endif

@@ -158,7 +158,7 @@ static void processDecodeInput(int *pause_r, unsigned int *bbp_r,
 }
 
 static int playChunk(ob_chunk * chunk,
-		     const AudioFormat * format, double sizeToTime)
+		     const struct audio_format *format, double sizeToTime)
 {
 	pc.elapsedTime = chunk->times;
 	pc.bitRate = chunk->bitRate;

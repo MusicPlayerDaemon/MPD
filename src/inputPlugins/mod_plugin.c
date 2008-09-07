@@ -171,7 +171,7 @@ static void mod_close(mod_Data * data)
 static int mod_decode(struct decoder * decoder, char *path)
 {
 	mod_Data *data;
-	AudioFormat audio_format;
+	struct audio_format audio_format;
 	float total_time = 0.0;
 	int ret;
 	float secPerByte;

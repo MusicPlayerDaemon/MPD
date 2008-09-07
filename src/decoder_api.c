@@ -39,7 +39,7 @@ void decoder_plugin_unregister(struct decoder_plugin *plugin)
 }
 
 void decoder_initialized(struct decoder * decoder,
-			 const AudioFormat * audio_format,
+			 const struct audio_format *audio_format,
 			 float total_time)
 {
 	assert(dc.state == DECODE_STATE_START);

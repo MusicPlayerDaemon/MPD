@@ -22,9 +22,11 @@
 #include "log.h"
 #include "utils.h"
 #include "conf.h"
+#include "audio_format.h"
 #include "os_compat.h"
 
-void pcm_volumeChange(char *buffer, int bufferSize, const AudioFormat * format,
+void pcm_volumeChange(char *buffer, int bufferSize,
+                      const struct audio_format *format,
                       int volume)
 {
 	mpd_sint32 temp32;
@@ -76,7 +78,7 @@ void pcm_volumeChange(char *buffer, int bufferSize, const AudioFormat * format,
 
 static void pcm_add(char *buffer1, const char *buffer2, size_t bufferSize1,
                     size_t bufferSize2, int vol1, int vol2,
-                    const AudioFormat * format)
+                    const struct audio_format *format)
 {
 	mpd_sint32 temp32;
 	mpd_sint8 *buffer8_1 = (mpd_sint8 *) buffer1;
@@ -130,7 +132,8 @@ static void pcm_add(char *buffer1, const char *buffer2, size_t bufferSize1,
 }
 
 void pcm_mix(char *buffer1, const char *buffer2, size_t bufferSize1,
-             size_t bufferSize2, const AudioFormat * format, float portion1)
+             size_t bufferSize2, const struct audio_format *format,
+             float portion1)
 {
 	int vol1;
 	float s = sin(M_PI_2 * portion1);
@@ -392,9 +395,9 @@ static const char *pcm_convertTo16bit(mpd_sint8 bits, const char *inBuffer,
 }
 
 /* outFormat bits must be 16 and channels must be 1 or 2! */
-size_t pcm_convertAudioFormat(const AudioFormat * inFormat,
+size_t pcm_convertAudioFormat(const struct audio_format *inFormat,
 			      const char *inBuffer, size_t inSize,
-			      const AudioFormat * outFormat,
+			      const struct audio_format *outFormat,
                               char *outBuffer, ConvState *convState)
 {
 	const char *buf;
@@ -430,8 +433,8 @@ size_t pcm_convertAudioFormat(const AudioFormat * inFormat,
 	return len;
 }
 
-size_t pcm_sizeOfConvBuffer(const AudioFormat * inFormat, size_t inSize,
-                            const AudioFormat * outFormat)
+size_t pcm_sizeOfConvBuffer(const struct audio_format *inFormat, size_t inSize,
+                            const struct audio_format *outFormat)
 {
 	const double ratio = (double)outFormat->sampleRate /
 	                     (double)inFormat->sampleRate;

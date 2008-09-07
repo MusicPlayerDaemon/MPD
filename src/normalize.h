@@ -19,7 +19,7 @@
 #ifndef NORMALIZE_H
 #define NORMALIZE_H
 
-#include "audio_format.h"
+struct audio_format;
 
 extern int normalizationEnabled;
 
@@ -27,6 +27,7 @@ void initNormalization(void);
 
 void finishNormalization(void);
 
-void normalizeData(char *buffer, int bufferSize, const AudioFormat *format);
+void normalizeData(char *buffer, int bufferSize,
+		   const struct audio_format *format);
 
 #endif /* !NORMALIZE_H */

@@ -65,9 +65,9 @@ struct _AudioOutput {
 	AudioOutputSendMetadataFunc sendMetdataFunc;
 
 	int convertAudioFormat;
-	AudioFormat inAudioFormat;
-	AudioFormat outAudioFormat;
-	AudioFormat reqAudioFormat;
+	struct audio_format inAudioFormat;
+	struct audio_format outAudioFormat;
+	struct audio_format reqAudioFormat;
 	ConvState convState;
 	char *convBuffer;
 	size_t convBufferLen;
@@ -97,7 +97,7 @@ void unloadAudioOutputPlugin(AudioOutputPlugin * audioOutputPlugin);
 
 int initAudioOutput(AudioOutput *, ConfigParam * param);
 int openAudioOutput(AudioOutput * audioOutput,
-		    const AudioFormat * audioFormat);
+		    const struct audio_format *audioFormat);
 int playAudioOutput(AudioOutput * audioOutput,
 		    const char *playChunk, size_t size);
 void dropBufferedAudioOutput(AudioOutput * audioOutput);

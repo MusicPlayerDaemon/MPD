@@ -484,7 +484,7 @@ static int oss_openDevice(AudioOutput * audioOutput)
 {
 	int ret;
 	OssData *od = audioOutput->data;
-	AudioFormat *audioFormat = &audioOutput->outAudioFormat;
+	struct audio_format *audioFormat = &audioOutput->outAudioFormat;
 
 	od->channels = (mpd_sint8)audioFormat->channels;
 	od->sampleRate = audioFormat->sampleRate;

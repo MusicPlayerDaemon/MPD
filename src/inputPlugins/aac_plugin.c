@@ -310,7 +310,7 @@ static int aac_stream_decode(struct decoder * mpd_decoder,
 	faacDecFrameInfo frameInfo;
 	faacDecConfigurationPtr config;
 	long bread;
-	AudioFormat audio_format;
+	struct audio_format audio_format;
 	uint32_t sampleRate;
 	unsigned char channels;
 	unsigned int sampleCount;
@@ -444,7 +444,7 @@ static int aac_decode(struct decoder * mpd_decoder, char *path)
 	faacDecFrameInfo frameInfo;
 	faacDecConfigurationPtr config;
 	long bread;
-	AudioFormat audio_format;
+	struct audio_format audio_format;
 	uint32_t sampleRate;
 	unsigned char channels;
 	unsigned int sampleCount;

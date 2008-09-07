@@ -21,18 +21,18 @@
 
 #include "mpd_types.h"
 
-typedef struct _AudioFormat {
+struct audio_format {
 	mpd_sint8 channels;
 	mpd_uint32 sampleRate;
 	mpd_sint8 bits;
-} AudioFormat;
+};
 
-static inline double audio_format_time_to_size(const AudioFormat * af)
+static inline double audio_format_time_to_size(const struct audio_format *af)
 {
 	return af->sampleRate * af->bits * af->channels / 8.0;
 }
 
-static inline double audioFormatSizeToTime(const AudioFormat * af)
+static inline double audioFormatSizeToTime(const struct audio_format *af)
 {
 	return 8.0 / af->bits / af->channels / af->sampleRate;
 }

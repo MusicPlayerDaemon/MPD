@@ -19,6 +19,7 @@
 #include "normalize.h"
 #include "compress.h"
 #include "conf.h"
+#include "audio_format.h"
 
 #define DEFAULT_VOLUME_NORMALIZATION 0
 
@@ -39,7 +40,8 @@ void finishNormalization(void)
 	if (normalizationEnabled) CompressFree();
 }
 
-void normalizeData(char *buffer, int bufferSize, const AudioFormat *format)
+void normalizeData(char *buffer, int bufferSize,
+		   const struct audio_format *format)
 {
 	if ((format->bits != 16) || (format->channels != 2)) return;
 

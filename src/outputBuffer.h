@@ -51,7 +51,7 @@ struct output_buffer {
 	    the buffer becomes non-empty */
 	int lazy;
 
-	AudioFormat audioFormat;
+	struct audio_format audioFormat;
 
 	Notify *notify;
 };

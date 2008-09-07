@@ -19,8 +19,9 @@
 #ifndef MPD_TIMER_H
 #define MPD_TIMER_H
 
-#include "audio_format.h"
 #include "os_compat.h"
+
+struct audio_format;
 
 typedef struct _Timer {
 	uint64_t time;
@@ -28,7 +29,7 @@ typedef struct _Timer {
 	int rate;
 } Timer;
 
-Timer *timer_new(AudioFormat *af);
+Timer *timer_new(struct audio_format *af);
 
 void timer_free(Timer *timer);
 

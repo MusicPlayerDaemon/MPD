@@ -17,6 +17,7 @@
  */
 
 #include "audio.h"
+#include "audio_format.h"
 #include "audioOutput.h"
 #include "log.h"
 #include "path.h"
@@ -27,9 +28,9 @@
 #define AUDIO_DEVICE_STATE_LEN	(sizeof(AUDIO_DEVICE_STATE)-1)
 #define AUDIO_BUFFER_SIZE	2*MPD_PATH_MAX
 
-static AudioFormat audio_format;
+static struct audio_format audio_format;
 
-static AudioFormat *audio_configFormat;
+static struct audio_format *audio_configFormat;
 
 static AudioOutput *audioOutputArray;
 static unsigned int audioOutputArraySize;
@@ -63,15 +64,15 @@ static unsigned int audio_output_count(void)
 	return nr;
 }
 
-void copyAudioFormat(AudioFormat * dest, const AudioFormat * src)
+void copyAudioFormat(struct audio_format *dest, const struct audio_format *src)
 {
 	if (!src)
 		return;
 
-	memcpy(dest, src, sizeof(AudioFormat));
+	memcpy(dest, src, sizeof(*dest));
 }
 
-int cmpAudioFormat(const AudioFormat * f1, const AudioFormat * f2)
+int cmpAudioFormat(const struct audio_format *f1, const struct audio_format *f2)
 {
 	if (f1 && f2 && (f1->sampleRate == f2->sampleRate) &&
 	    (f1->bits == f2->bits) && (f1->channels == f2->channels))
@@ -141,8 +142,8 @@ void initAudioDriver(void)
 	}
 }
 
-void getOutputAudioFormat(const AudioFormat * inAudioFormat,
-			  AudioFormat * outAudioFormat)
+void getOutputAudioFormat(const struct audio_format *inAudioFormat,
+			  struct audio_format *outAudioFormat)
 {
 	if (audio_configFormat) {
 		copyAudioFormat(outAudioFormat, audio_configFormat);
@@ -157,7 +158,7 @@ void initAudioConfig(void)
 	if (NULL == param || NULL == param->value)
 		return;
 
-	audio_configFormat = xmalloc(sizeof(AudioFormat));
+	audio_configFormat = xmalloc(sizeof(*audio_configFormat));
 
 	if (0 != parseAudioConfig(audio_configFormat, param->value)) {
 		FATAL("error parsing \"%s\" at line %i\n",
@@ -165,11 +166,11 @@ void initAudioConfig(void)
 	}
 }
 
-int parseAudioConfig(AudioFormat * audioFormat, char *conf)
+int parseAudioConfig(struct audio_format *audioFormat, char *conf)
 {
 	char *test;
 
-	memset(audioFormat, 0, sizeof(AudioFormat));
+	memset(audioFormat, 0, sizeof(*audioFormat));
 
 	audioFormat->sampleRate = strtol(conf, &test, 10);
 
@@ -251,7 +252,7 @@ void finishAudioDriver(void)
 	audioOutputArraySize = 0;
 }
 
-int isCurrentAudioFormat(const AudioFormat * audioFormat)
+int isCurrentAudioFormat(const struct audio_format *audioFormat)
 {
 	if (!audioFormat)
 		return 1;
@@ -320,7 +321,7 @@ static int flushAudioBuffer(void)
 	return ret;
 }
 
-int openAudioDevice(const AudioFormat * audioFormat)
+int openAudioDevice(const struct audio_format *audioFormat)
 {
 	int ret = -1;
 	unsigned int i;

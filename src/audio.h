@@ -20,21 +20,21 @@
 #define AUDIO_H
 
 #include "os_compat.h"
-#include "audio_format.h"
 
 #define AUDIO_AO_DRIVER_DEFAULT	"default"
 
+struct audio_format;
 struct tag;
 struct client;
 
-void copyAudioFormat(AudioFormat * dest, const AudioFormat * src);
+void copyAudioFormat(struct audio_format *dest, const struct audio_format *src);
 
-int cmpAudioFormat(const AudioFormat * dest, const AudioFormat * src);
+int cmpAudioFormat(const struct audio_format *dest, const struct audio_format *src);
 
-void getOutputAudioFormat(const AudioFormat * inFormat,
-			  AudioFormat * outFormat);
+void getOutputAudioFormat(const struct audio_format *inFormat,
+			  struct audio_format *outFormat);
 
-int parseAudioConfig(AudioFormat * audioFormat, char *conf);
+int parseAudioConfig(struct audio_format *audioFormat, char *conf);
 
 /* make sure initPlayerData is called before this function!! */
 void initAudioConfig(void);
@@ -45,7 +45,7 @@ void initAudioDriver(void);
 
 void finishAudioDriver(void);
 
-int openAudioDevice(const AudioFormat * audioFormat);
+int openAudioDevice(const struct audio_format *audioFormat);
 
 int playAudio(const char *playChunk, size_t size);
 
@@ -55,7 +55,7 @@ void closeAudioDevice(void);
 
 int isAudioDeviceOpen(void);
 
-int isCurrentAudioFormat(const AudioFormat * audioFormat);
+int isCurrentAudioFormat(const struct audio_format *audioFormat);
 
 void sendMetadataToAudioDevice(const struct tag *tag);
 

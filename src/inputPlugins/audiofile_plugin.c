@@ -48,7 +48,7 @@ static int audiofile_decode(struct decoder * decoder, char *path)
 	int fs, frame_count;
 	AFfilehandle af_fp;
 	int bits;
-	AudioFormat audio_format;
+	struct audio_format audio_format;
 	float total_time;
 	mpd_uint16 bitRate;
 	struct stat st;

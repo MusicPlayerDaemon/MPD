@@ -88,7 +88,7 @@ static int mp4_decode(struct decoder * mpd_decoder, InputStream * inStream)
 	faacDecHandle decoder;
 	faacDecFrameInfo frameInfo;
 	faacDecConfigurationPtr config;
-	AudioFormat audio_format;
+	struct audio_format audio_format;
 	unsigned char *mp4Buffer;
 	unsigned int mp4BufferSize;
 	uint32_t sampleRate;

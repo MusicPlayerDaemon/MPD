@@ -66,7 +66,7 @@ typedef struct _ShoutData {
 	Timer *timer;
 
 	/* just a pointer to audioOutput->outAudioFormat */
-	AudioFormat *audioFormat;
+	struct audio_format *audioFormat;
 } ShoutData;
 
 static ShoutData *newShoutData(void)

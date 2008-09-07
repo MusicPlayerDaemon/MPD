@@ -22,6 +22,8 @@
 
 #include "log.h"
 #include "conf.h"
+#include "audio_format.h"
+#include "mpd_types.h"
 #include "os_compat.h"
 
 /* Added 4/14/2004 by AliasMrJones */
@@ -104,7 +106,7 @@ void freeReplayGainInfo(ReplayGainInfo * info)
 }
 
 void doReplayGain(ReplayGainInfo * info, char *buffer, int bufferSize,
-		  const AudioFormat * format)
+		  const struct audio_format *format)
 {
 	mpd_sint16 *buffer16;
 	mpd_sint8 *buffer8;

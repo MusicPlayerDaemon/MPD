@@ -118,7 +118,7 @@ static void jack_finishDriver(AudioOutput *audioOutput)
 static int srate(mpd_unused jack_nframes_t rate, void *data)
 {
 	JackData *jd = (JackData *) ((AudioOutput*) data)->data;
- 	AudioFormat *audioFormat = &(((AudioOutput*) data)->outAudioFormat);
+ 	struct audio_format *audioFormat = &(((AudioOutput*) data)->outAudioFormat);
 
  	audioFormat->sampleRate = (int)jack_get_sample_rate(jd->client);
 
@@ -183,7 +183,7 @@ static void shutdown_callback(void *arg)
 static void set_audioformat(AudioOutput *audioOutput)
 {
 	JackData *jd = audioOutput->data;
-	AudioFormat *audioFormat = &audioOutput->outAudioFormat;
+	struct audio_format *audioFormat = &audioOutput->outAudioFormat;
 
 	audioFormat->sampleRate = (int) jack_get_sample_rate(jd->client);
 	DEBUG("samplerate = %d\n", audioFormat->sampleRate);

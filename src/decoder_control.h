@@ -48,7 +48,7 @@ struct decoder_control {
 	volatile mpd_sint8 seekError;
 	volatile mpd_sint8 seekable;
 	volatile double seekWhere;
-	AudioFormat audioFormat;
+	struct audio_format audioFormat;
 	Song *current_song;
 	Song *volatile next_song;
 	volatile float totalTime;

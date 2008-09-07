@@ -123,7 +123,7 @@ static int alsa_testDefault(void)
 static int alsa_openDevice(AudioOutput * audioOutput)
 {
 	AlsaData *ad = audioOutput->data;
-	AudioFormat *audioFormat = &audioOutput->outAudioFormat;
+	struct audio_format *audioFormat = &audioOutput->outAudioFormat;
 	snd_pcm_format_t bitformat;
 	snd_pcm_hw_params_t *hwparams;
 	snd_pcm_sw_params_t *swparams;
