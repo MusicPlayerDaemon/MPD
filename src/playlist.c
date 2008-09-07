@@ -229,6 +229,16 @@ void showPlaylist(int fd)
 	}
 }
 
+static void playlist_save(FILE *fp)
+{
+	int i;
+	char path_max_tmp[MPD_PATH_MAX];
+
+	for (i = 0; i < playlist.length; i++)
+		fprintf(fp, "%i:%s\n", i,
+		        get_song_url(path_max_tmp, playlist.songs[i]));
+}
+
 void savePlaylistState(FILE *fp)
 {
 	fprintf(fp, "%s", PLAYLIST_STATE_FILE_STATE);
@@ -255,8 +265,7 @@ void savePlaylistState(FILE *fp)
 	fprintf(fp, "%s%i\n", PLAYLIST_STATE_FILE_CROSSFADE,
 	        (int)(getPlayerCrossFade()));
 	fprintf(fp, "%s\n", PLAYLIST_STATE_FILE_PLAYLIST_BEGIN);
-	fflush(fp);
-	showPlaylist(fileno(fp));
+	playlist_save(fp);
 	fprintf(fp, "%s\n", PLAYLIST_STATE_FILE_PLAYLIST_END);
 }
 
