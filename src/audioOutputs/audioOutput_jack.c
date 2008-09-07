@@ -87,7 +87,7 @@ static void freeJackClient(JackData *jd)
 	pthread_cond_destroy(&jd->play_audio);
 }
 
-static void freeJackData(AudioOutput *audioOutput)
+static void freeJackData(struct audio_output *audioOutput)
 {
 	JackData *jd = audioOutput->data;
 	int i;
@@ -108,7 +108,7 @@ static void freeJackData(AudioOutput *audioOutput)
 	free(jd);
 }
 
-static void jack_finishDriver(AudioOutput *audioOutput)
+static void jack_finishDriver(struct audio_output *audioOutput)
 {
 	freeJackData(audioOutput);
 	DEBUG("disconnect_jack (pid=%d)\n", getpid ());
@@ -116,8 +116,8 @@ static void jack_finishDriver(AudioOutput *audioOutput)
 
 static int srate(mpd_unused jack_nframes_t rate, void *data)
 {
-	JackData *jd = (JackData *) ((AudioOutput*) data)->data;
- 	struct audio_format *audioFormat = &(((AudioOutput*) data)->outAudioFormat);
+	JackData *jd = (JackData *) ((struct audio_output *) data)->data;
+ 	struct audio_format *audioFormat = &(((struct audio_output *) data)->outAudioFormat);
 
  	audioFormat->sampleRate = (int)jack_get_sample_rate(jd->client);
 
@@ -179,7 +179,7 @@ static void shutdown_callback(void *arg)
 	jd->shutdown = 1;
 }
 
-static void set_audioformat(AudioOutput *audioOutput)
+static void set_audioformat(struct audio_output *audioOutput)
 {
 	JackData *jd = audioOutput->data;
 	struct audio_format *audioFormat = &audioOutput->outAudioFormat;
@@ -198,7 +198,7 @@ static void error_callback(const char *msg)
 	ERROR("jack: %s\n", msg);
 }
 
-static int jack_initDriver(AudioOutput *audioOutput, ConfigParam *param)
+static int jack_initDriver(struct audio_output *audioOutput, ConfigParam *param)
 {
 	JackData *jd;
 	BlockParam *bp;
@@ -264,7 +264,7 @@ static int jack_testDefault(void)
 	return 0;
 }
 
-static int connect_jack(AudioOutput *audioOutput)
+static int connect_jack(struct audio_output *audioOutput)
 {
 	JackData *jd = audioOutput->data;
 	const char **jports;
@@ -345,7 +345,7 @@ static int connect_jack(AudioOutput *audioOutput)
 	return 1;
 }
 
-static int jack_openDevice(AudioOutput *audioOutput)
+static int jack_openDevice(struct audio_output *audioOutput)
 {
 	JackData *jd = audioOutput->data;
 
@@ -365,18 +365,18 @@ static int jack_openDevice(AudioOutput *audioOutput)
 }
 
 
-static void jack_closeDevice(AudioOutput * audioOutput)
+static void jack_closeDevice(struct audio_output *audioOutput)
 {
 	/*jack_finishDriver(audioOutput);*/
 	audioOutput->open = 0;
 	DEBUG("jack_closeDevice (pid=%d)\n", getpid());
 }
 
-static void jack_dropBufferedAudio (mpd_unused AudioOutput * audioOutput)
+static void jack_dropBufferedAudio (mpd_unused struct audio_output *audioOutput)
 {
 }
 
-static int jack_playAudio(AudioOutput * audioOutput,
+static int jack_playAudio(struct audio_output *audioOutput,
 			  const char *buff, size_t size)
 {
 	JackData *jd = audioOutput->data;
@@ -430,7 +430,7 @@ static int jack_playAudio(AudioOutput * audioOutput,
 	return 0;
 }
 
-AudioOutputPlugin jackPlugin = {
+struct audio_output_plugin jackPlugin = {
 	"jack",
 	jack_testDefault,
 	jack_initDriver,

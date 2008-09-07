@@ -17,6 +17,7 @@
  */
 
 #include "audioOutput.h"
+#include "output_api.h"
 
 #include "list.h"
 #include "log.h"
@@ -31,7 +32,7 @@
 
 static List *audioOutputPluginList;
 
-void loadAudioOutputPlugin(AudioOutputPlugin * audioOutputPlugin)
+void loadAudioOutputPlugin(struct audio_output_plugin *audioOutputPlugin)
 {
 	if (!audioOutputPlugin->name)
 		return;
@@ -39,7 +40,7 @@ void loadAudioOutputPlugin(AudioOutputPlugin * audioOutputPlugin)
 		     audioOutputPlugin);
 }
 
-void unloadAudioOutputPlugin(AudioOutputPlugin * audioOutputPlugin)
+void unloadAudioOutputPlugin(struct audio_output_plugin *audioOutputPlugin)
 {
 	if (!audioOutputPlugin->name)
 		return;
@@ -66,14 +67,14 @@ void finishAudioOutputPlugins(void)
 	if(bp) str = bp->value; \
 }
 
-int initAudioOutput(AudioOutput *ao, ConfigParam * param)
+int initAudioOutput(struct audio_output *ao, ConfigParam * param)
 {
 	void *data = NULL;
 	const char *name = NULL;
 	char *format = NULL;
 	const char *type = NULL;
 	BlockParam *bp = NULL;
-	AudioOutputPlugin *plugin = NULL;
+	struct audio_output_plugin *plugin = NULL;
 
 	if (param) {
 		getBlockParam(AUDIO_OUTPUT_NAME, name, 1);
@@ -85,7 +86,7 @@ int initAudioOutput(AudioOutput *ao, ConfigParam * param)
 			      "\"%s\" at line %i\n", type, param->line);
 		}
 
-		plugin = (AudioOutputPlugin *) data;
+		plugin = (struct audio_output_plugin *) data;
 	} else {
 		ListNode *node = audioOutputPluginList->firstNode;
 
@@ -94,7 +95,7 @@ int initAudioOutput(AudioOutput *ao, ConfigParam * param)
 		WARNING("Attempt to detect audio output device\n");
 
 		while (node) {
-			plugin = (AudioOutputPlugin *) node->data;
+			plugin = (struct audio_output_plugin *) node->data;
 			if (plugin->testDefaultDeviceFunc) {
 				WARNING("Attempting to detect a %s audio "
 					"device\n", plugin->name);
@@ -152,7 +153,7 @@ int initAudioOutput(AudioOutput *ao, ConfigParam * param)
 	return 1;
 }
 
-int openAudioOutput(AudioOutput * audioOutput,
+int openAudioOutput(struct audio_output *audioOutput,
 		    const struct audio_format *audioFormat)
 {
 	int ret = 0;
@@ -184,7 +185,7 @@ int openAudioOutput(AudioOutput * audioOutput,
 	return ret;
 }
 
-static void convertAudioFormat(AudioOutput * audioOutput,
+static void convertAudioFormat(struct audio_output *audioOutput,
 			       const char **chunkArgPtr, size_t *sizeArgPtr)
 {
 	size_t size = pcm_sizeOfConvBuffer(&(audioOutput->inAudioFormat),
@@ -207,7 +208,7 @@ static void convertAudioFormat(AudioOutput * audioOutput,
 	*chunkArgPtr = audioOutput->convBuffer;
 }
 
-int playAudioOutput(AudioOutput * audioOutput,
+int playAudioOutput(struct audio_output *audioOutput,
 		    const char *playChunk, size_t size)
 {
 	int ret;
@@ -224,19 +225,19 @@ int playAudioOutput(AudioOutput * audioOutput,
 	return ret;
 }
 
-void dropBufferedAudioOutput(AudioOutput * audioOutput)
+void dropBufferedAudioOutput(struct audio_output *audioOutput)
 {
 	if (audioOutput->open)
 		audioOutput->dropBufferedAudioFunc(audioOutput);
 }
 
-void closeAudioOutput(AudioOutput * audioOutput)
+void closeAudioOutput(struct audio_output *audioOutput)
 {
 	if (audioOutput->open)
 		audioOutput->closeDeviceFunc(audioOutput);
 }
 
-void finishAudioOutput(AudioOutput * audioOutput)
+void finishAudioOutput(struct audio_output *audioOutput)
 {
 	closeAudioOutput(audioOutput);
 	if (audioOutput->finishDriverFunc)
@@ -245,7 +246,7 @@ void finishAudioOutput(AudioOutput * audioOutput)
 		free(audioOutput->convBuffer);
 }
 
-void sendMetadataToAudioOutput(AudioOutput * audioOutput,
+void sendMetadataToAudioOutput(struct audio_output *audioOutput,
 			       const struct tag *tag)
 {
 	if (!audioOutput->sendMetdataFunc)
@@ -256,10 +257,10 @@ void sendMetadataToAudioOutput(AudioOutput * audioOutput,
 void printAllOutputPluginTypes(FILE * fp)
 {
 	ListNode *node = audioOutputPluginList->firstNode;
-	AudioOutputPlugin *plugin;
+	struct audio_output_plugin *plugin;
 
 	while (node) {
-		plugin = (AudioOutputPlugin *) node->data;
+		plugin = (struct audio_output_plugin *) node->data;
 		fprintf(fp, "%s ", plugin->name);
 		node = node->nextNode;
 	}

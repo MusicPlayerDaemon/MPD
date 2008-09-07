@@ -19,44 +19,45 @@
 #ifndef AUDIO_OUTPUT_H
 #define AUDIO_OUTPUT_H
 
-#include "output_api.h"
 #include "../config.h"
 
 #include "conf.h"
 #include "os_compat.h"
 
+struct audio_output;
+struct audio_output_plugin;
 struct audio_format;
 struct tag;
 
 void initAudioOutputPlugins(void);
 void finishAudioOutputPlugins(void);
 
-void loadAudioOutputPlugin(AudioOutputPlugin * audioOutputPlugin);
-void unloadAudioOutputPlugin(AudioOutputPlugin * audioOutputPlugin);
+void loadAudioOutputPlugin(struct audio_output_plugin *audioOutputPlugin);
+void unloadAudioOutputPlugin(struct audio_output_plugin *audioOutputPlugin);
 
-int initAudioOutput(AudioOutput *, ConfigParam * param);
-int openAudioOutput(AudioOutput * audioOutput,
+int initAudioOutput(struct audio_output *, ConfigParam * param);
+int openAudioOutput(struct audio_output *audioOutput,
 		    const struct audio_format *audioFormat);
-int playAudioOutput(AudioOutput * audioOutput,
+int playAudioOutput(struct audio_output *audioOutput,
 		    const char *playChunk, size_t size);
-void dropBufferedAudioOutput(AudioOutput * audioOutput);
-void closeAudioOutput(AudioOutput * audioOutput);
-void finishAudioOutput(AudioOutput * audioOutput);
-int keepAudioOutputAlive(AudioOutput * audioOutput, int ms);
-void sendMetadataToAudioOutput(AudioOutput * audioOutput,
+void dropBufferedAudioOutput(struct audio_output *audioOutput);
+void closeAudioOutput(struct audio_output *audioOutput);
+void finishAudioOutput(struct audio_output *audioOutput);
+int keepAudioOutputAlive(struct audio_output *audioOutput, int ms);
+void sendMetadataToAudioOutput(struct audio_output *audioOutput,
 			       const struct tag *tag);
 
 void printAllOutputPluginTypes(FILE * fp);
 
-extern AudioOutputPlugin shoutPlugin;
-extern AudioOutputPlugin nullPlugin;
-extern AudioOutputPlugin fifoPlugin;
-extern AudioOutputPlugin alsaPlugin;
-extern AudioOutputPlugin aoPlugin;
-extern AudioOutputPlugin ossPlugin;
-extern AudioOutputPlugin osxPlugin;
-extern AudioOutputPlugin pulsePlugin;
-extern AudioOutputPlugin mvpPlugin;
-extern AudioOutputPlugin jackPlugin;
+extern struct audio_output_plugin shoutPlugin;
+extern struct audio_output_plugin nullPlugin;
+extern struct audio_output_plugin fifoPlugin;
+extern struct audio_output_plugin alsaPlugin;
+extern struct audio_output_plugin aoPlugin;
+extern struct audio_output_plugin ossPlugin;
+extern struct audio_output_plugin osxPlugin;
+extern struct audio_output_plugin pulsePlugin;
+extern struct audio_output_plugin mvpPlugin;
+extern struct audio_output_plugin jackPlugin;
 
 #endif

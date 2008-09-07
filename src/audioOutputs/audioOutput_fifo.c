@@ -151,7 +151,8 @@ static int openFifo(FifoData *fd)
 	return 0;
 }
 
-static int fifo_initDriver(AudioOutput *audioOutput, ConfigParam *param)
+static int fifo_initDriver(struct audio_output *audioOutput,
+			   ConfigParam *param)
 {
 	FifoData *fd;
 	BlockParam *blockParam;
@@ -181,7 +182,7 @@ static int fifo_initDriver(AudioOutput *audioOutput, ConfigParam *param)
 	return 0;
 }
 
-static void fifo_finishDriver(AudioOutput *audioOutput)
+static void fifo_finishDriver(struct audio_output *audioOutput)
 {
 	FifoData *fd = (FifoData *)audioOutput->data;
 
@@ -189,7 +190,7 @@ static void fifo_finishDriver(AudioOutput *audioOutput)
 	freeFifoData(fd);
 }
 
-static int fifo_openDevice(AudioOutput *audioOutput)
+static int fifo_openDevice(struct audio_output *audioOutput)
 {
 	FifoData *fd = (FifoData *)audioOutput->data;
 
@@ -203,7 +204,7 @@ static int fifo_openDevice(AudioOutput *audioOutput)
 	return 0;
 }
 
-static void fifo_closeDevice(AudioOutput *audioOutput)
+static void fifo_closeDevice(struct audio_output *audioOutput)
 {
 	FifoData *fd = (FifoData *)audioOutput->data;
 
@@ -215,7 +216,7 @@ static void fifo_closeDevice(AudioOutput *audioOutput)
 	audioOutput->open = 0;
 }
 
-static void fifo_dropBufferedAudio(AudioOutput *audioOutput)
+static void fifo_dropBufferedAudio(struct audio_output *audioOutput)
 {
 	FifoData *fd = (FifoData *)audioOutput->data;
 	char buf[FIFO_BUFFER_SIZE];
@@ -232,7 +233,7 @@ static void fifo_dropBufferedAudio(AudioOutput *audioOutput)
 	}
 }
 
-static int fifo_playAudio(AudioOutput *audioOutput,
+static int fifo_playAudio(struct audio_output *audioOutput,
 			  const char *playChunk, size_t size)
 {
 	FifoData *fd = (FifoData *)audioOutput->data;
@@ -271,7 +272,7 @@ static int fifo_playAudio(AudioOutput *audioOutput,
 	return 0;
 }
 
-AudioOutputPlugin fifoPlugin = {
+struct audio_output_plugin fifoPlugin = {
 	"fifo",
 	NULL, /* testDefaultDeviceFunc */
 	fifo_initDriver,

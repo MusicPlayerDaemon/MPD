@@ -54,7 +54,7 @@ static void audioOutputAo_error(void)
 	}
 }
 
-static int audioOutputAo_initDriver(AudioOutput * audioOutput,
+static int audioOutputAo_initDriver(struct audio_output *audioOutput,
 				    ConfigParam * param)
 {
 	ao_info *ai;
@@ -146,7 +146,7 @@ static void freeAoData(AoData * ad)
 	free(ad);
 }
 
-static void audioOutputAo_finishDriver(AudioOutput * audioOutput)
+static void audioOutputAo_finishDriver(struct audio_output *audioOutput)
 {
 	AoData *ad = (AoData *) audioOutput->data;
 	freeAoData(ad);
@@ -157,12 +157,12 @@ static void audioOutputAo_finishDriver(AudioOutput * audioOutput)
 		ao_shutdown();
 }
 
-static void audioOutputAo_dropBufferedAudio(mpd_unused AudioOutput * audioOutput)
+static void audioOutputAo_dropBufferedAudio(mpd_unused struct audio_output *audioOutput)
 {
 	/* not supported by libao */
 }
 
-static void audioOutputAo_closeDevice(AudioOutput * audioOutput)
+static void audioOutputAo_closeDevice(struct audio_output *audioOutput)
 {
 	AoData *ad = (AoData *) audioOutput->data;
 
@@ -174,7 +174,7 @@ static void audioOutputAo_closeDevice(AudioOutput * audioOutput)
 	audioOutput->open = 0;
 }
 
-static int audioOutputAo_openDevice(AudioOutput * audioOutput)
+static int audioOutputAo_openDevice(struct audio_output *audioOutput)
 {
 	ao_sample_format format;
 	AoData *ad = (AoData *) audioOutput->data;
@@ -215,7 +215,7 @@ static int ao_play_deconst(ao_device *device, const void *output_samples,
 	return ao_play(device, u.out, num_bytes);
 }
 
-static int audioOutputAo_play(AudioOutput * audioOutput,
+static int audioOutputAo_play(struct audio_output *audioOutput,
 			      const char *playChunk, size_t size)
 {
 	size_t chunk_size;
@@ -242,7 +242,7 @@ static int audioOutputAo_play(AudioOutput * audioOutput,
 	return 0;
 }
 
-AudioOutputPlugin aoPlugin = {
+struct audio_output_plugin aoPlugin = {
 	"ao",
 	NULL,
 	audioOutputAo_initDriver,

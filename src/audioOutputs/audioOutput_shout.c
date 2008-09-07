@@ -107,7 +107,8 @@ static void freeShoutData(ShoutData * sd)
 	} \
 }
 
-static int myShout_initDriver(AudioOutput * audioOutput, ConfigParam * param)
+static int myShout_initDriver(struct audio_output *audioOutput,
+			      ConfigParam * param)
 {
 	ShoutData *sd;
 	char *test;
@@ -351,7 +352,7 @@ static void myShout_closeShoutConn(ShoutData * sd)
 	sd->opened = 0;
 }
 
-static void myShout_finishDriver(AudioOutput * audioOutput)
+static void myShout_finishDriver(struct audio_output *audioOutput)
 {
 	ShoutData *sd = (ShoutData *) audioOutput->data;
 
@@ -365,7 +366,7 @@ static void myShout_finishDriver(AudioOutput * audioOutput)
 		shout_shutdown();
 }
 
-static void myShout_dropBufferedAudio(AudioOutput * audioOutput)
+static void myShout_dropBufferedAudio(struct audio_output *audioOutput)
 {
 	ShoutData *sd = (ShoutData *)audioOutput->data;
 	timer_reset(sd->timer);
@@ -373,7 +374,7 @@ static void myShout_dropBufferedAudio(AudioOutput * audioOutput)
 	/* needs to be implemented for shout */
 }
 
-static void myShout_closeDevice(AudioOutput * audioOutput)
+static void myShout_closeDevice(struct audio_output *audioOutput)
 {
 	ShoutData *sd = (ShoutData *) audioOutput->data;
 
@@ -509,7 +510,7 @@ static int myShout_connect(ShoutData *sd)
 	}
 }
 
-static int myShout_openShoutConn(AudioOutput * audioOutput)
+static int myShout_openShoutConn(struct audio_output *audioOutput)
 {
 	ShoutData *sd = (ShoutData *) audioOutput->data;
 	int status;
@@ -550,7 +551,7 @@ static int myShout_openShoutConn(AudioOutput * audioOutput)
 	return 0;
 }
 
-static int myShout_openDevice(AudioOutput * audioOutput)
+static int myShout_openDevice(struct audio_output *audioOutput)
 {
 	ShoutData *sd = (ShoutData *) audioOutput->data;
 
@@ -598,7 +599,7 @@ static void myShout_sendMetadata(ShoutData * sd)
 	sd->tagToSend = 0;
 }
 
-static int myShout_play(AudioOutput * audioOutput,
+static int myShout_play(struct audio_output *audioOutput,
 			const char *playChunk, size_t size)
 {
 	unsigned int i;
@@ -662,7 +663,8 @@ static int myShout_play(AudioOutput * audioOutput,
 	return 0;
 }
 
-static void myShout_setTag(AudioOutput * audioOutput, const struct tag *tag)
+static void myShout_setTag(struct audio_output *audioOutput,
+			   const struct tag *tag)
 {
 	ShoutData *sd = (ShoutData *) audioOutput->data;
 
@@ -678,7 +680,7 @@ static void myShout_setTag(AudioOutput * audioOutput, const struct tag *tag)
 	sd->tagToSend = 1;
 }
 
-AudioOutputPlugin shoutPlugin = {
+struct audio_output_plugin shoutPlugin = {
 	"shout",
 	NULL,
 	myShout_initDriver,

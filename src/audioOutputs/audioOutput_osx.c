@@ -80,7 +80,8 @@ static int osx_testDefault()
 	return 0;
 }
 
-static int osx_initDriver(AudioOutput * audioOutput, ConfigParam * param)
+static int osx_initDriver(struct audio_output *audioOutput,
+			  ConfigParam * param)
 {
 	OsxData *od = newOsxData();
 
@@ -98,13 +99,13 @@ static void freeOsxData(OsxData * od)
 	free(od);
 }
 
-static void osx_finishDriver(AudioOutput * audioOutput)
+static void osx_finishDriver(struct audio_output *audioOutput)
 {
 	OsxData *od = (OsxData *) audioOutput->data;
 	freeOsxData(od);
 }
 
-static void osx_dropBufferedAudio(AudioOutput * audioOutput)
+static void osx_dropBufferedAudio(struct audio_output *audioOutput)
 {
 	OsxData *od = (OsxData *) audioOutput->data;
 
@@ -113,7 +114,7 @@ static void osx_dropBufferedAudio(AudioOutput * audioOutput)
 	pthread_mutex_unlock(&od->mutex);
 }
 
-static void osx_closeDevice(AudioOutput * audioOutput)
+static void osx_closeDevice(struct audio_output *audioOutput)
 {
 	OsxData *od = (OsxData *) audioOutput->data;
 
@@ -215,7 +216,7 @@ static OSStatus osx_render(void *vdata,
 	return 0;
 }
 
-static int osx_openDevice(AudioOutput * audioOutput)
+static int osx_openDevice(struct audio_output *audioOutput)
 {
 	OsxData *od = (OsxData *) audioOutput->data;
 	ComponentDescription desc;
@@ -295,7 +296,7 @@ static int osx_openDevice(AudioOutput * audioOutput)
 	return 0;
 }
 
-static int osx_play(AudioOutput * audioOutput,
+static int osx_play(struct audio_output *audioOutput,
 		    const char *playChunk, size_t size)
 {
 	OsxData *od = (OsxData *) audioOutput->data;
@@ -354,7 +355,7 @@ static int osx_play(AudioOutput * audioOutput,
 	return 0;
 }
 
-AudioOutputPlugin osxPlugin = {
+struct audio_output_plugin osxPlugin = {
 	"osx",
 	osx_testDefault,
 	osx_initDriver,

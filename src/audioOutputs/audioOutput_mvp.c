@@ -93,7 +93,8 @@ static int mvp_testDefault(void)
 	return -1;
 }
 
-static int mvp_initDriver(AudioOutput * audioOutput, ConfigParam * param)
+static int mvp_initDriver(struct audio_output *audioOutput,
+			  ConfigParam * param)
 {
 	MvpData *md = xmalloc(sizeof(MvpData));
 	md->fd = -1;
@@ -102,7 +103,7 @@ static int mvp_initDriver(AudioOutput * audioOutput, ConfigParam * param)
 	return 0;
 }
 
-static void mvp_finishDriver(AudioOutput * audioOutput)
+static void mvp_finishDriver(struct audio_output *audioOutput)
 {
 	MvpData *md = audioOutput->data;
 	free(md);
@@ -171,7 +172,7 @@ static int mvp_setPcmParams(MvpData * md, unsigned long rate, int channels,
 	return 0;
 }
 
-static int mvp_openDevice(AudioOutput * audioOutput)
+static int mvp_openDevice(struct audio_output *audioOutput)
 {
 	long long int stc = 0;
 	MvpData *md = audioOutput->data;
@@ -210,7 +211,7 @@ static int mvp_openDevice(AudioOutput * audioOutput)
 	return 0;
 }
 
-static void mvp_closeDevice(AudioOutput * audioOutput)
+static void mvp_closeDevice(struct audio_output *audioOutput)
 {
 	MvpData *md = audioOutput->data;
 	if (md->fd >= 0)
@@ -219,7 +220,7 @@ static void mvp_closeDevice(AudioOutput * audioOutput)
 	audioOutput->open = 0;
 }
 
-static void mvp_dropBufferedAudio(AudioOutput * audioOutput)
+static void mvp_dropBufferedAudio(struct audio_output *audioOutput)
 {
 	MvpData *md = audioOutput->data;
 	if (md->fd >= 0) {
@@ -230,7 +231,7 @@ static void mvp_dropBufferedAudio(AudioOutput * audioOutput)
 	}
 }
 
-static int mvp_playAudio(AudioOutput * audioOutput,
+static int mvp_playAudio(struct audio_output *audioOutput,
 			 const char *playChunk, size_t size)
 {
 	MvpData *md = audioOutput->data;
@@ -256,7 +257,7 @@ static int mvp_playAudio(AudioOutput * audioOutput,
 	return 0;
 }
 
-AudioOutputPlugin mvpPlugin = {
+struct audio_output_plugin mvpPlugin = {
 	"mvp",
 	mvp_testDefault,
 	mvp_initDriver,

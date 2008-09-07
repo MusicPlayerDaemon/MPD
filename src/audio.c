@@ -19,6 +19,7 @@
 #include "audio.h"
 #include "audio_format.h"
 #include "audioOutput.h"
+#include "output_api.h"
 #include "log.h"
 #include "path.h"
 #include "client.h"
@@ -33,7 +34,7 @@ static struct audio_format audio_format;
 
 static struct audio_format *audio_configFormat;
 
-static AudioOutput *audioOutputArray;
+static struct audio_output *audioOutputArray;
 static unsigned int audioOutputArraySize;
 
 enum ad_state {
@@ -107,11 +108,11 @@ void initAudioDriver(void)
 	audioOutputArraySize = audio_output_count();
 	audioDeviceStates = xmalloc(sizeof(enum ad_state) *
 	                            audioOutputArraySize);
-	audioOutputArray = xmalloc(sizeof(AudioOutput) * audioOutputArraySize);
+	audioOutputArray = xmalloc(sizeof(struct audio_output) * audioOutputArraySize);
 
 	for (i = 0; i < audioOutputArraySize; i++)
 	{
-		AudioOutput *output = &audioOutputArray[i];
+		struct audio_output *output = &audioOutputArray[i];
 		unsigned int j;
 
 		param = getNextConfigParam(CONF_AUDIO_OUTPUT, param);
@@ -266,7 +267,7 @@ int isCurrentAudioFormat(const struct audio_format *audioFormat)
 
 static void syncAudioDeviceStates(void)
 {
-	AudioOutput *audioOutput;
+	struct audio_output *audioOutput;
 	unsigned int i;
 
 	if (!audio_format.channels)

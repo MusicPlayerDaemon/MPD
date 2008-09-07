@@ -72,7 +72,8 @@ static void freeAlsaData(AlsaData * ad)
 	free(ad);
 }
 
-static int alsa_initDriver(AudioOutput * audioOutput, ConfigParam * param)
+static int alsa_initDriver(struct audio_output *audioOutput,
+			   ConfigParam * param)
 {
 	AlsaData *ad = newAlsaData();
 
@@ -94,7 +95,7 @@ static int alsa_initDriver(AudioOutput * audioOutput, ConfigParam * param)
 	return 0;
 }
 
-static void alsa_finishDriver(AudioOutput * audioOutput)
+static void alsa_finishDriver(struct audio_output *audioOutput)
 {
 	AlsaData *ad = audioOutput->data;
 
@@ -119,7 +120,7 @@ static int alsa_testDefault(void)
 	return 0;
 }
 
-static int alsa_openDevice(AudioOutput * audioOutput)
+static int alsa_openDevice(struct audio_output *audioOutput)
 {
 	AlsaData *ad = audioOutput->data;
 	struct audio_format *audioFormat = &audioOutput->outAudioFormat;
@@ -358,14 +359,14 @@ static int alsa_errorRecovery(AlsaData * ad, int err)
 	return err;
 }
 
-static void alsa_dropBufferedAudio(AudioOutput * audioOutput)
+static void alsa_dropBufferedAudio(struct audio_output *audioOutput)
 {
 	AlsaData *ad = audioOutput->data;
 
 	alsa_errorRecovery(ad, snd_pcm_drop(ad->pcmHandle));
 }
 
-static void alsa_closeDevice(AudioOutput * audioOutput)
+static void alsa_closeDevice(struct audio_output *audioOutput)
 {
 	AlsaData *ad = audioOutput->data;
 
@@ -380,7 +381,7 @@ static void alsa_closeDevice(AudioOutput * audioOutput)
 	audioOutput->open = 0;
 }
 
-static int alsa_playAudio(AudioOutput * audioOutput,
+static int alsa_playAudio(struct audio_output *audioOutput,
 			  const char *playChunk, size_t size)
 {
 	AlsaData *ad = audioOutput->data;
@@ -412,7 +413,7 @@ static int alsa_playAudio(AudioOutput * audioOutput,
 	return 0;
 }
 
-AudioOutputPlugin alsaPlugin = {
+struct audio_output_plugin alsaPlugin = {
 	"alsa",
 	alsa_testDefault,
 	alsa_initDriver,

@@ -28,30 +28,30 @@
 #include "log.h"
 #include "os_compat.h"
 
-#define DISABLED_AUDIO_OUTPUT_PLUGIN(plugin) AudioOutputPlugin plugin;
+#define DISABLED_AUDIO_OUTPUT_PLUGIN(plugin) struct audio_output_plugin plugin;
 
-typedef struct _AudioOutput AudioOutput;
+struct audio_output;
 
 typedef int (*AudioOutputTestDefaultDeviceFunc) (void);
 
-typedef int (*AudioOutputInitDriverFunc) (AudioOutput * audioOutput,
+typedef int (*AudioOutputInitDriverFunc) (struct audio_output *audioOutput,
 					  ConfigParam * param);
 
-typedef void (*AudioOutputFinishDriverFunc) (AudioOutput * audioOutput);
+typedef void (*AudioOutputFinishDriverFunc) (struct audio_output *audioOutput);
 
-typedef int (*AudioOutputOpenDeviceFunc) (AudioOutput * audioOutput);
+typedef int (*AudioOutputOpenDeviceFunc) (struct audio_output *audioOutput);
 
-typedef int (*AudioOutputPlayFunc) (AudioOutput * audioOutput,
+typedef int (*AudioOutputPlayFunc) (struct audio_output *audioOutput,
 				    const char *playChunk, size_t size);
 
-typedef void (*AudioOutputDropBufferedAudioFunc) (AudioOutput * audioOutput);
+typedef void (*AudioOutputDropBufferedAudioFunc) (struct audio_output *audioOutput);
 
-typedef void (*AudioOutputCloseDeviceFunc) (AudioOutput * audioOutput);
+typedef void (*AudioOutputCloseDeviceFunc) (struct audio_output *audioOutput);
 
-typedef void (*AudioOutputSendMetadataFunc) (AudioOutput * audioOutput,
+typedef void (*AudioOutputSendMetadataFunc) (struct audio_output *audioOutput,
 					     const struct tag *tag);
 
-typedef struct _AudioOutputPlugin {
+struct audio_output_plugin {
 	const char *name;
 
 	AudioOutputTestDefaultDeviceFunc testDefaultDeviceFunc;
@@ -62,9 +62,9 @@ typedef struct _AudioOutputPlugin {
 	AudioOutputDropBufferedAudioFunc dropBufferedAudioFunc;
 	AudioOutputCloseDeviceFunc closeDeviceFunc;
 	AudioOutputSendMetadataFunc sendMetdataFunc;
-} AudioOutputPlugin;
+};
 
-struct _AudioOutput {
+struct audio_output {
 	int open;
 	const char *name;
 	const char *type;

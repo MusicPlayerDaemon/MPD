@@ -19,21 +19,21 @@
 #include "../output_api.h"
 #include "../timer.h"
 
-static int null_initDriver(AudioOutput *audioOutput,
+static int null_initDriver(struct audio_output *audioOutput,
 			   mpd_unused ConfigParam *param)
 {
 	audioOutput->data = NULL;
 	return 0;
 }
 
-static int null_openDevice(AudioOutput *audioOutput)
+static int null_openDevice(struct audio_output *audioOutput)
 {
 	audioOutput->data = timer_new(&audioOutput->outAudioFormat);
 	audioOutput->open = 1;
 	return 0;
 }
 
-static void null_closeDevice(AudioOutput *audioOutput)
+static void null_closeDevice(struct audio_output *audioOutput)
 {
 	if (audioOutput->data) {
 		timer_free(audioOutput->data);
@@ -43,7 +43,7 @@ static void null_closeDevice(AudioOutput *audioOutput)
 	audioOutput->open = 0;
 }
 
-static int null_playAudio(AudioOutput *audioOutput,
+static int null_playAudio(struct audio_output *audioOutput,
 			  mpd_unused const char *playChunk, size_t size)
 {
 	Timer *timer = audioOutput->data;
@@ -58,12 +58,12 @@ static int null_playAudio(AudioOutput *audioOutput,
 	return 0;
 }
 
-static void null_dropBufferedAudio(AudioOutput *audioOutput)
+static void null_dropBufferedAudio(struct audio_output *audioOutput)
 {
 	timer_reset(audioOutput->data);
 }
 
-AudioOutputPlugin nullPlugin = {
+struct audio_output_plugin nullPlugin = {
 	"null",
 	NULL,
 	null_initDriver,

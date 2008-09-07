@@ -333,8 +333,8 @@ static int oss_testDefault(void)
 	return -1;
 }
 
-static int oss_open_default(mpd_unused AudioOutput *ao, ConfigParam *param,
-			    OssData *od)
+static int oss_open_default(mpd_unused struct audio_output *ao,
+			    ConfigParam *param, OssData *od)
 {
 	int i;
 	int err[ARRAY_SIZE(default_devices)];
@@ -374,7 +374,8 @@ static int oss_open_default(mpd_unused AudioOutput *ao, ConfigParam *param,
 	return 0; /* some compilers can be dumb... */
 }
 
-static int oss_initDriver(AudioOutput * audioOutput, ConfigParam * param)
+static int oss_initDriver(struct audio_output *audioOutput,
+			  ConfigParam * param)
 {
 	OssData *od = newOssData();
 	audioOutput->data = od;
@@ -388,7 +389,7 @@ static int oss_initDriver(AudioOutput * audioOutput, ConfigParam * param)
 	return oss_open_default(audioOutput, param, od);
 }
 
-static void oss_finishDriver(AudioOutput * audioOutput)
+static void oss_finishDriver(struct audio_output *audioOutput)
 {
 	OssData *od = audioOutput->data;
 
@@ -432,7 +433,7 @@ static void oss_close(OssData * od)
 	od->fd = -1;
 }
 
-static int oss_open(AudioOutput * audioOutput)
+static int oss_open(struct audio_output *audioOutput)
 {
 	int tmp;
 	OssData *od = audioOutput->data;
@@ -479,7 +480,7 @@ fail:
 	return -1;
 }
 
-static int oss_openDevice(AudioOutput * audioOutput)
+static int oss_openDevice(struct audio_output *audioOutput)
 {
 	int ret;
 	OssData *od = audioOutput->data;
@@ -502,7 +503,7 @@ static int oss_openDevice(AudioOutput * audioOutput)
 	return ret;
 }
 
-static void oss_closeDevice(AudioOutput * audioOutput)
+static void oss_closeDevice(struct audio_output *audioOutput)
 {
 	OssData *od = audioOutput->data;
 
@@ -511,7 +512,7 @@ static void oss_closeDevice(AudioOutput * audioOutput)
 	audioOutput->open = 0;
 }
 
-static void oss_dropBufferedAudio(AudioOutput * audioOutput)
+static void oss_dropBufferedAudio(struct audio_output *audioOutput)
 {
 	OssData *od = audioOutput->data;
 
@@ -521,7 +522,7 @@ static void oss_dropBufferedAudio(AudioOutput * audioOutput)
 	}
 }
 
-static int oss_playAudio(AudioOutput * audioOutput,
+static int oss_playAudio(struct audio_output *audioOutput,
 			 const char *playChunk, size_t size)
 {
 	OssData *od = audioOutput->data;
@@ -548,7 +549,7 @@ static int oss_playAudio(AudioOutput * audioOutput,
 	return 0;
 }
 
-AudioOutputPlugin ossPlugin = {
+struct audio_output_plugin ossPlugin = {
 	"oss",
 	oss_testDefault,
 	oss_initDriver,

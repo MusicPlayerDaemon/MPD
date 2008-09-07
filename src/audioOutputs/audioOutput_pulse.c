@@ -61,7 +61,8 @@ static void freePulseData(PulseData * pd)
 	free(pd);
 }
 
-static int pulse_initDriver(AudioOutput * audioOutput, ConfigParam * param)
+static int pulse_initDriver(struct audio_output *audioOutput,
+			    ConfigParam * param)
 {
 	BlockParam *server = NULL;
 	BlockParam *sink = NULL;
@@ -80,7 +81,7 @@ static int pulse_initDriver(AudioOutput * audioOutput, ConfigParam * param)
 	return 0;
 }
 
-static void pulse_finishDriver(AudioOutput * audioOutput)
+static void pulse_finishDriver(struct audio_output *audioOutput)
 {
 	freePulseData((PulseData *) audioOutput->data);
 }
@@ -108,7 +109,7 @@ static int pulse_testDefault(void)
 	return 0;
 }
 
-static int pulse_openDevice(AudioOutput * audioOutput)
+static int pulse_openDevice(struct audio_output *audioOutput)
 {
 	PulseData *pd;
 	struct audio_format *audioFormat;
@@ -157,7 +158,7 @@ static int pulse_openDevice(AudioOutput * audioOutput)
 	return 0;
 }
 
-static void pulse_dropBufferedAudio(AudioOutput * audioOutput)
+static void pulse_dropBufferedAudio(struct audio_output *audioOutput)
 {
 	PulseData *pd;
 	int error;
@@ -168,7 +169,7 @@ static void pulse_dropBufferedAudio(AudioOutput * audioOutput)
 			audioOutput->name, pa_strerror(error));
 }
 
-static void pulse_closeDevice(AudioOutput * audioOutput)
+static void pulse_closeDevice(struct audio_output *audioOutput)
 {
 	PulseData *pd;
 
@@ -181,7 +182,7 @@ static void pulse_closeDevice(AudioOutput * audioOutput)
 	audioOutput->open = 0;
 }
 
-static int pulse_playAudio(AudioOutput * audioOutput,
+static int pulse_playAudio(struct audio_output *audioOutput,
 			   const char *playChunk, size_t size)
 {
 	PulseData *pd;
@@ -199,7 +200,7 @@ static int pulse_playAudio(AudioOutput * audioOutput,
 	return 0;
 }
 
-AudioOutputPlugin pulsePlugin = {
+struct audio_output_plugin pulsePlugin = {
 	"pulse",
 	pulse_testDefault,
 	pulse_initDriver,
