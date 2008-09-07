@@ -348,7 +348,7 @@ static int client_process_line(struct client *client)
 			}
 
 			if (ret == 0)
-				commandSuccess(client->fd);
+				command_success(client);
 
 			client_write_output(client);
 			free_cmd_list(client->cmd_list);
@@ -394,7 +394,7 @@ static int client_process_line(struct client *client)
 			}
 
 			if (ret == 0)
-				commandSuccess(client->fd);
+				command_success(client);
 
 			client_write_output(client);
 		}

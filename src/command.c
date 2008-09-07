@@ -186,6 +186,34 @@ static void command_error_va(int fd, int error, const char *fmt, va_list args)
 	}
 }
 
+void command_success(struct client *client)
+{
+	client_puts(client, "OK\n");
+}
+
+static void command_error_v(struct client *client, int error,
+			    const char *fmt, va_list args)
+{
+	assert(client != NULL);
+	assert(current_command != NULL);
+
+	client_printf(client, "ACK [%i@%i] {%s} ",
+		      (int)error, command_listNum, current_command);
+	client_vprintf(client, fmt, args);
+	client_puts(client, "\n");
+
+	current_command = NULL;
+}
+
+mpd_fprintf_ void command_error(struct client *client, int error,
+				const char *fmt, ...)
+{
+	va_list args;
+	va_start(args, fmt);
+	command_error_v(client, error, fmt, args);
+	va_end(args);
+}
+
 static int mpd_fprintf__ check_uint32(int fd, mpd_uint32 *dst,
                                       const char *s, const char *fmt, ...)
 {

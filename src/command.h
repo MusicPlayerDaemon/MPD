@@ -22,7 +22,6 @@
 #include "gcc.h"
 #include "os_compat.h"
 #include "sllist.h"
-#include "myfprintf.h"
 
 #define COMMAND_RETURN_KILL	10
 #define COMMAND_RETURN_CLOSE	20
@@ -40,8 +39,11 @@ void initCommands(void);
 
 void finishCommands(void);
 
-#define commandSuccess(fd)              fdprintf(fd, "OK\n")
-
 mpd_fprintf_ void commandError(int fd, int error, const char *fmt, ...);
+
+void command_success(struct client *client);
+
+mpd_fprintf_ void command_error(struct client *client, int error,
+				const char *fmt, ...);
 
 #endif
