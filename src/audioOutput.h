@@ -19,75 +19,14 @@
 #ifndef AUDIO_OUTPUT_H
 #define AUDIO_OUTPUT_H
 
+#include "output_api.h"
 #include "../config.h"
 
-#include "pcm_utils.h"
-#include "mpd_types.h"
-#include "audio_format.h"
-#include "tag.h"
 #include "conf.h"
-#include "utils.h"
 #include "os_compat.h"
 
-#define DISABLED_AUDIO_OUTPUT_PLUGIN(plugin) AudioOutputPlugin plugin;
-
-typedef struct _AudioOutput AudioOutput;
-
-typedef int (*AudioOutputTestDefaultDeviceFunc) (void);
-
-typedef int (*AudioOutputInitDriverFunc) (AudioOutput * audioOutput,
-					  ConfigParam * param);
-
-typedef void (*AudioOutputFinishDriverFunc) (AudioOutput * audioOutput);
-
-typedef int (*AudioOutputOpenDeviceFunc) (AudioOutput * audioOutput);
-
-typedef int (*AudioOutputPlayFunc) (AudioOutput * audioOutput,
-				    const char *playChunk, size_t size);
-
-typedef void (*AudioOutputDropBufferedAudioFunc) (AudioOutput * audioOutput);
-
-typedef void (*AudioOutputCloseDeviceFunc) (AudioOutput * audioOutput);
-
-typedef void (*AudioOutputSendMetadataFunc) (AudioOutput * audioOutput,
-					     const struct tag *tag);
-
-struct _AudioOutput {
-	int open;
-	const char *name;
-	const char *type;
-
-	AudioOutputFinishDriverFunc finishDriverFunc;
-	AudioOutputOpenDeviceFunc openDeviceFunc;
-	AudioOutputPlayFunc playFunc;
-	AudioOutputDropBufferedAudioFunc dropBufferedAudioFunc;
-	AudioOutputCloseDeviceFunc closeDeviceFunc;
-	AudioOutputSendMetadataFunc sendMetdataFunc;
-
-	int convertAudioFormat;
-	struct audio_format inAudioFormat;
-	struct audio_format outAudioFormat;
-	struct audio_format reqAudioFormat;
-	ConvState convState;
-	char *convBuffer;
-	size_t convBufferLen;
-	int sameInAndOutFormats;
-
-	void *data;
-};
-
-typedef struct _AudioOutputPlugin {
-	const char *name;
-
-	AudioOutputTestDefaultDeviceFunc testDefaultDeviceFunc;
-	AudioOutputInitDriverFunc initDriverFunc;
-	AudioOutputFinishDriverFunc finishDriverFunc;
-	AudioOutputOpenDeviceFunc openDeviceFunc;
-	AudioOutputPlayFunc playFunc;
-	AudioOutputDropBufferedAudioFunc dropBufferedAudioFunc;
-	AudioOutputCloseDeviceFunc closeDeviceFunc;
-	AudioOutputSendMetadataFunc sendMetdataFunc;
-} AudioOutputPlugin;
+struct audio_format;
+struct tag;
 
 void initAudioOutputPlugins(void);
 void finishAudioOutputPlugins(void);

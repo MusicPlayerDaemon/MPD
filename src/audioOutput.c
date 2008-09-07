@@ -21,6 +21,7 @@
 #include "list.h"
 #include "log.h"
 #include "pcm_utils.h"
+#include "utils.h"
 #include "os_compat.h"
 #include "audio.h"
 

@@ -16,7 +16,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "../audioOutput.h"
+#include "../output_api.h"
 
 #ifdef HAVE_ALSA
 
@@ -30,9 +30,8 @@
 #define MPD_ALSA_PERIOD_TIME_US 50000
 #define MPD_ALSA_RETRY_NR 5
 
-#include "../conf.h"
+#include "../utils.h"
 #include "../log.h"
-#include "../os_compat.h"
 
 #include <alsa/asoundlib.h>
 

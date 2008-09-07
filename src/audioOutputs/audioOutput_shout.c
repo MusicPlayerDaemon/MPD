@@ -16,13 +16,12 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "../audioOutput.h"
+#include "../output_api.h"
 
 #ifdef HAVE_SHOUT
 
-#include "../conf.h"
+#include "../utils.h"
 #include "../log.h"
-#include "../pcm_utils.h"
 #include "../timer.h"
 
 #include <shout/shout.h>

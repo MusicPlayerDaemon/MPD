@@ -16,12 +16,13 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "../audioOutput.h"
+#include "../output_api.h"
 
 #ifdef HAVE_OSX
 
 #include <AudioUnit/AudioUnit.h>
 
+#include "../utils.h"
 #include "../log.h"
 
 typedef struct _OsxData {

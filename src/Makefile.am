@@ -33,6 +33,7 @@ mpd_headers = \
 	ack.h \
 	audio.h \
 	audioOutput.h \
+	output_api.h \
 	buffer2array.h \
 	charConv.h \
 	command.h \

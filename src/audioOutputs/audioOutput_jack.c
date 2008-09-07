@@ -15,12 +15,11 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "../audioOutput.h"
+#include "../output_api.h"
 
 #ifdef HAVE_JACK
 
-#include "../os_compat.h"
-#include "../conf.h"
+#include "../utils.h"
 #include "../log.h"
 
 #include <jack/jack.h>

@@ -22,6 +22,7 @@
 #include "log.h"
 #include "path.h"
 #include "client.h"
+#include "utils.h"
 #include "os_compat.h"
 
 #define AUDIO_DEVICE_STATE	"audio_device_state:"
