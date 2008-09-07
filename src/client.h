@@ -20,6 +20,7 @@
 #define INTERFACE_H
 
 #include "os_compat.h"
+#include "gcc.h"
 
 struct client;
 
@@ -48,6 +49,16 @@ void client_write(struct client *client, const char *data, size_t length);
  * Write a C string to the client.
  */
 void client_puts(struct client *client, const char *s);
+
+/**
+ * Write a printf-like formatted string to the client.
+ */
+void client_vprintf(struct client *client, const char *fmt, va_list args);
+
+/**
+ * Write a printf-like formatted string to the client.
+ */
+mpd_fprintf void client_printf(struct client *client, const char *fmt, ...);
 
 int client_print(int fd, const char *buffer, size_t len);
 

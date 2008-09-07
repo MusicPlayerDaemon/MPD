@@ -797,3 +797,32 @@ void client_puts(struct client *client, const char *s)
 {
 	client_write(client, s, strlen(s));
 }
+
+void client_vprintf(struct client *client, const char *fmt, va_list args)
+{
+	va_list tmp;
+	int length;
+	char *buffer;
+
+	va_copy(tmp, args);
+	length = vsnprintf(NULL, 0, fmt, tmp);
+	va_end(tmp);
+
+	if (length <= 0)
+		/* wtf.. */
+		return;
+
+	buffer = xmalloc(length + 1);
+	vsnprintf(buffer, length + 1, fmt, args);
+	client_write(client, buffer, length);
+	free(buffer);
+}
+
+mpd_fprintf void client_printf(struct client *client, const char *fmt, ...)
+{
+	va_list args;
+
+	va_start(args, fmt);
+	client_vprintf(client, fmt, args);
+	va_end(args);
+}
