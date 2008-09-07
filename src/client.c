@@ -133,6 +133,16 @@ int client_is_expired(const struct client *client)
 	return client->fd < 0;
 }
 
+int client_get_permission(const struct client *client)
+{
+	return client->permission;
+}
+
+void client_set_permission(struct client *client, int permission)
+{
+	client->permission = permission;
+}
+
 static inline void client_set_expired(struct client *client)
 {
 	if (client->fd >= 0) {

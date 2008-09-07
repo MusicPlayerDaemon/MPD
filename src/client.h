@@ -33,6 +33,10 @@ void client_new(int fd, const struct sockaddr *addr);
 
 int client_is_expired(const struct client *client);
 
+int client_get_permission(const struct client *client);
+
+void client_set_permission(struct client *client, int permission);
+
 /**
  * Write a block of data to the client.
  */
