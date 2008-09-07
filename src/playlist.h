@@ -111,7 +111,7 @@ enum playlist_result swapSongsInPlaylist(int song1, int song2);
 
 enum playlist_result swapSongsInPlaylistById(int id1, int id2);
 
-enum playlist_result loadPlaylist(int fd, const char *utf8file);
+enum playlist_result loadPlaylist(struct client *client, const char *utf8file);
 
 int getPlaylistRepeatStatus(void);
 

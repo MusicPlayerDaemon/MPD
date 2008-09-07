@@ -575,7 +575,7 @@ static int handleLoad(struct client *client, mpd_unused int *permission,
 {
 	enum playlist_result result;
 
-	result = loadPlaylist(client_get_fd(client), argv[1]);
+	result = loadPlaylist(client, argv[1]);
 	return print_playlist_result(client, result);
 }
 

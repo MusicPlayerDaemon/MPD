@@ -1370,7 +1370,7 @@ int PlaylistInfo(struct client *client, const char *utf8file, int detail)
 	return 0;
 }
 
-enum playlist_result loadPlaylist(int fd, const char *utf8file)
+enum playlist_result loadPlaylist(struct client *client, const char *utf8file)
 {
 	ListNode *node;
 	List *list;
@@ -1391,8 +1391,8 @@ enum playlist_result loadPlaylist(int fd, const char *utf8file)
 				p++;
 			}
 			if ((addToPlaylist(temp, NULL)) != PLAYLIST_RESULT_SUCCESS) {
-				commandError(fd, ACK_ERROR_PLAYLIST_LOAD,
-							"can't add file \"%s\"", temp2);
+				command_error(client, ACK_ERROR_PLAYLIST_LOAD,
+					      "can't add file \"%s\"", temp2);
 			}
 			free(temp2);
 		}
