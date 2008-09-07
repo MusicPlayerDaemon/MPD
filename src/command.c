@@ -391,49 +391,49 @@ static int commandStatus(struct client *client, mpd_unused int *permission,
 	}
 
 	client_printf(client,
-		      "%s: %i\n"
-		      "%s: %i\n"
-		      "%s: %i\n"
-		      "%s: %li\n"
-		      "%s: %i\n"
-		      "%s: %i\n"
-		      "%s: %s\n",
-		      COMMAND_STATUS_VOLUME, getVolumeLevel(),
-		      COMMAND_STATUS_REPEAT, getPlaylistRepeatStatus(),
-		      COMMAND_STATUS_RANDOM, getPlaylistRandomStatus(),
-		      COMMAND_STATUS_PLAYLIST, getPlaylistVersion(),
-		      COMMAND_STATUS_PLAYLIST_LENGTH, getPlaylistLength(),
-		      COMMAND_STATUS_CROSSFADE,
+		      COMMAND_STATUS_VOLUME ": %i\n"
+		      COMMAND_STATUS_REPEAT ": %i\n"
+		      COMMAND_STATUS_RANDOM ": %i\n"
+		      COMMAND_STATUS_PLAYLIST ": %li\n"
+		      COMMAND_STATUS_PLAYLIST_LENGTH ": %i\n"
+		      COMMAND_STATUS_CROSSFADE ": %i\n"
+		      COMMAND_STATUS_STATE ": %s\n",
+		      getVolumeLevel(),
+		      getPlaylistRepeatStatus(),
+		      getPlaylistRandomStatus(),
+		      getPlaylistVersion(),
+		      getPlaylistLength(),
 		      (int)(getPlayerCrossFade() + 0.5),
-		      COMMAND_STATUS_STATE, state);
+		      state);
 
 	song = getPlaylistCurrentSong();
 	if (song >= 0) {
-		client_printf(client, "%s: %i\n%s: %i\n",
-			      COMMAND_STATUS_SONG, song,
-			      COMMAND_STATUS_SONGID, getPlaylistSongId(song));
+		client_printf(client,
+			      COMMAND_STATUS_SONG ": %i\n"
+			      COMMAND_STATUS_SONGID ": %i\n",
+			      song, getPlaylistSongId(song));
 	}
 	if (getPlayerState() != PLAYER_STATE_STOP) {
 		client_printf(client,
-			      "%s: %i:%i\n"
-			      "%s: %li\n"
-			      "%s: %u:%i:%i\n",
-			      COMMAND_STATUS_TIME,
+			      COMMAND_STATUS_TIME ": %i:%i\n"
+			      COMMAND_STATUS_BITRATE ": %li\n"
+			      COMMAND_STATUS_AUDIO ": %u:%i:%i\n",
 			      getPlayerElapsedTime(), getPlayerTotalTime(),
-			      COMMAND_STATUS_BITRATE, getPlayerBitRate(),
-			      COMMAND_STATUS_AUDIO,
+			      getPlayerBitRate(),
 			      getPlayerSampleRate(), getPlayerBits(),
 			      getPlayerChannels());
 	}
 
 	if ((updateJobId = isUpdatingDB())) {
-		client_printf(client, "%s: %i\n",
-			      COMMAND_STATUS_UPDATING_DB, updateJobId);
+		client_printf(client,
+			      COMMAND_STATUS_UPDATING_DB ": %i\n",
+			      updateJobId);
 	}
 
 	if (getPlayerError() != PLAYER_ERROR_NOERROR) {
-		client_printf(client, "%s: %s\n",
-			      COMMAND_STATUS_ERROR, getPlayerErrorStr());
+		client_printf(client,
+			      COMMAND_STATUS_ERROR ": %s\n",
+			      getPlayerErrorStr());
 	}
 
 	return 0;
