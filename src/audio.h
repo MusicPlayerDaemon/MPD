@@ -60,9 +60,9 @@ void sendMetadataToAudioDevice(const struct tag *tag);
 
 /* these functions are called in the main parent process while the child
 	process is busy playing to the audio */
-int enableAudioDevice(int fd, unsigned int device);
+int enableAudioDevice(unsigned int device);
 
-int disableAudioDevice(int fd, unsigned int device);
+int disableAudioDevice(unsigned int device);
 
 void printAudioDevices(int fd);
 

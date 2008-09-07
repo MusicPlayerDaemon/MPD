@@ -1177,21 +1177,31 @@ static int handleCrossfade(int fd, mpd_unused int *permission,
 static int handleEnableDevice(int fd, mpd_unused int *permission,
 			      mpd_unused int argc, char *argv[])
 {
-	int device;
+	int device, ret;
 
 	if (check_int(fd, &device, argv[1], check_non_negative, argv[1]) < 0)
 		return -1;
-	return enableAudioDevice(fd, device);
+
+	ret = enableAudioDevice(device);
+	if (ret == -1)
+		commandError(fd, ACK_ERROR_NO_EXIST, "No such audio output");
+
+	return ret;
 }
 
 static int handleDisableDevice(int fd, mpd_unused int *permission,
 			       mpd_unused int argc, char *argv[])
 {
-	int device;
+	int device, ret;
 
 	if (check_int(fd, &device, argv[1], check_non_negative, argv[1]) < 0)
 		return -1;
-	return disableAudioDevice(fd, device);
+
+	ret = disableAudioDevice(device);
+	if (ret == -1)
+		commandError(fd, ACK_ERROR_NO_EXIST, "No such audio output");
+
+	return ret;
 }
 
 static int handleDevices(int fd, mpd_unused int *permission,

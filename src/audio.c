@@ -19,9 +19,7 @@
 #include "audio.h"
 #include "audioOutput.h"
 #include "log.h"
-#include "command.h"
 #include "path.h"
-#include "ack.h"
 #include "myfprintf.h"
 #include "os_compat.h"
 
@@ -428,13 +426,10 @@ void sendMetadataToAudioDevice(const struct tag *tag)
 	}
 }
 
-int enableAudioDevice(int fd, unsigned int device)
+int enableAudioDevice(unsigned int device)
 {
-	if (device >= audioOutputArraySize) {
-		commandError(fd, ACK_ERROR_ARG, "audio output device id %i "
-			     "doesn't exist\n", device);
+	if (device >= audioOutputArraySize)
 		return -1;
-	}
 
 	if (!(audioDeviceStates[device] & 0x01))
 		audioDeviceStates[device] = DEVICE_ENABLE;
@@ -442,13 +437,11 @@ int enableAudioDevice(int fd, unsigned int device)
 	return 0;
 }
 
-int disableAudioDevice(int fd, unsigned int device)
+int disableAudioDevice(unsigned int device)
 {
-	if (device >= audioOutputArraySize) {
-		commandError(fd, ACK_ERROR_ARG, "audio output device id %i "
-			     "doesn't exist\n", device);
+	if (device >= audioOutputArraySize)
 		return -1;
-	}
+
 	if (audioDeviceStates[device] & 0x01)
 		audioDeviceStates[device] = DEVICE_DISABLE;
 
