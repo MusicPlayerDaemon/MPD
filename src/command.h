@@ -29,11 +29,10 @@
 
 struct client;
 
-int processListOfCommands(struct client *client, int *permission,
+int processListOfCommands(struct client *client,
 			  int listOK, struct strnode *list);
 
-int processCommand(struct client *client,
-		   int *permission, char *commandString);
+int processCommand(struct client *client, char *commandString);
 
 void initCommands(void);
 

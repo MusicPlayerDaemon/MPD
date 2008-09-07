@@ -337,7 +337,6 @@ static int client_process_line(struct client *client)
 			DEBUG("client %i: process command "
 			      "list\n", client->num);
 			ret = processListOfCommands(client,
-						    &(client->permission),
 						    client->cmd_list_OK,
 						    client->cmd_list);
 			DEBUG("client %i: process command "
@@ -384,8 +383,7 @@ static int client_process_line(struct client *client)
 		} else {
 			DEBUG("client %i: process command \"%s\"\n",
 			      client->num, line);
-			ret = processCommand(client,
-					     &(client->permission), line);
+			ret = processCommand(client, line);
 			DEBUG("client %i: command returned %i\n",
 			      client->num, ret);
 
