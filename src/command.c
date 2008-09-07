@@ -1385,18 +1385,17 @@ void finishCommands(void)
 	freeList(commandList);
 }
 
-static int checkArgcAndPermission(CommandEntry * cmd, int fd,
+static int checkArgcAndPermission(CommandEntry * cmd, struct client *client,
 				  int permission, int argc, char *argv[])
 {
 	int min = cmd->min + 1;
 	int max = cmd->max + 1;
 
 	if (cmd->reqPermission != (permission & cmd->reqPermission)) {
-		if (fd) {
-			commandError(fd, ACK_ERROR_PERMISSION,
-				     "you don't have permission for \"%s\"",
-				     cmd->cmd);
-		}
+		if (client != NULL)
+			command_error(client, ACK_ERROR_PERMISSION,
+				      "you don't have permission for \"%s\"",
+				      cmd->cmd);
 		return -1;
 	}
 
@@ -1404,29 +1403,26 @@ static int checkArgcAndPermission(CommandEntry * cmd, int fd,
 		return 0;
 
 	if (min == max && max != argc) {
-		if (fd) {
-			commandError(fd, ACK_ERROR_ARG,
-				     "wrong number of arguments for \"%s\"",
-				     argv[0]);
-		}
+		if (client != NULL)
+			command_error(client, ACK_ERROR_ARG,
+				      "wrong number of arguments for \"%s\"",
+				      argv[0]);
 		return -1;
 	} else if (argc < min) {
-		if (fd) {
-			commandError(fd, ACK_ERROR_ARG,
-				     "too few arguments for \"%s\"", argv[0]);
-		}
+		if (client != NULL)
+			command_error(client, ACK_ERROR_ARG,
+				      "too few arguments for \"%s\"", argv[0]);
 		return -1;
 	} else if (argc > max && max /* != 0 */ ) {
-		if (fd) {
-			commandError(fd, ACK_ERROR_ARG,
-				     "too many arguments for \"%s\"", argv[0]);
-		}
+		if (client != NULL)
+			command_error(client, ACK_ERROR_ARG,
+				      "too many arguments for \"%s\"", argv[0]);
 		return -1;
 	} else
 		return 0;
 }
 
-static CommandEntry *getCommandEntryAndCheckArgcAndPermission(int fd,
+static CommandEntry *getCommandEntryAndCheckArgcAndPermission(struct client *client,
 							      int *permission,
 							      int argc,
 							      char *argv[])
@@ -1440,16 +1436,15 @@ static CommandEntry *getCommandEntryAndCheckArgcAndPermission(int fd,
 		return NULL;
 
 	if (!findInList(commandList, argv[0], (void *)&cmd)) {
-		if (fd) {
-			commandError(fd, ACK_ERROR_UNKNOWN,
-				     "unknown command \"%s\"", argv[0]);
-		}
+		if (client != NULL)
+			command_error(client, ACK_ERROR_UNKNOWN,
+				      "unknown command \"%s\"", argv[0]);
 		return NULL;
 	}
 
 	current_command = cmd->cmd;
 
-	if (checkArgcAndPermission(cmd, fd, *permission, argc, argv) < 0) {
+	if (checkArgcAndPermission(cmd, client, *permission, argc, argv) < 0) {
 		return NULL;
 	}
 
@@ -1486,7 +1481,7 @@ static int processCommandInternal(struct client *client,
 	if (argc == 0)
 		return 0;
 
-	if ((cmd = getCommandEntryAndCheckArgcAndPermission(fd, permission,
+	if ((cmd = getCommandEntryAndCheckArgcAndPermission(client, permission,
 							    argc, argv))) {
 		if (!cmdnode || !cmd->listHandler) {
 			ret = cmd->handler(fd, permission, argc, argv);
