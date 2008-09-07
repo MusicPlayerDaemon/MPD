@@ -60,7 +60,7 @@ int getNumberOfTagItems(int type)
 
 	resetVisitedFlagsInTagTracker(type);
 
-	traverseAllIn(-1, NULL, visit_tag_items, NULL, (void*)(size_t)type);
+	traverseAllIn(NULL, visit_tag_items, NULL, (void*)(size_t)type);
 
 	ret = (int)num_visited[type];
 	resetVisitedFlagsInTagTracker(type);

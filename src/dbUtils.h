@@ -23,9 +23,9 @@
 
 int printAllIn(int fd, const char *name);
 
-int addAllIn(int fd, const char *name);
+int addAllIn(const char *name);
 
-int addAllInToStoredPlaylist(int fd, const char *name, const char *utf8file);
+int addAllInToStoredPlaylist(const char *name, const char *utf8file);
 
 int printInfoForAllIn(int fd, const char *name);
 
@@ -37,9 +37,9 @@ int findSongsIn(int fd, const char *name, int numItems, LocateTagItem * items);
 int searchStatsForSongsIn(int fd, const char *name, int numItems,
                           LocateTagItem * items);
 
-int countSongsIn(int fd, const char *name);
+int countSongsIn(const char *name);
 
-unsigned long sumSongTimesIn(int fd, const char *name);
+unsigned long sumSongTimesIn(const char *name);
 
 int listAllUniqueTags(int fd, int type, int numConditiionals,
 		      LocateTagItem * conditionals);

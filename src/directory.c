@@ -1155,8 +1155,8 @@ int readDirectoryDB(void)
 	readDirectoryInfo(fp, mp3rootDirectory);
 	while (fclose(fp) && errno == EINTR) ;
 
-	stats.numberOfSongs = countSongsIn(STDERR_FILENO, NULL);
-	stats.dbPlayTime = sumSongTimesIn(STDERR_FILENO, NULL);
+	stats.numberOfSongs = countSongsIn(NULL);
+	stats.dbPlayTime = sumSongTimesIn(NULL);
 
 	if (stat(dbFile, &st) == 0)
 		directory_dbModTime = st.st_mtime;
@@ -1220,7 +1220,7 @@ static int traverseAllInSubDirectory(Directory * directory,
 	return errFlag;
 }
 
-int traverseAllIn(int fd, const char *name,
+int traverseAllIn(const char *name,
 		  int (*forEachSong) (Song *, void *),
 		  int (*forEachDir) (Directory *, void *), void *data)
 {
@@ -1231,8 +1231,6 @@ int traverseAllIn(int fd, const char *name,
 		if ((song = getSongFromDB(name)) && forEachSong) {
 			return forEachSong(song, data);
 		}
-		commandError(fd, ACK_ERROR_NO_EXIST,
-			     "directory or file not found");
 		return -1;
 	}
 
@@ -1257,8 +1255,8 @@ void initMp3Directory(void)
 	mp3rootDirectory = newDirectory(NULL, NULL);
 	exploreDirectory(mp3rootDirectory);
 	freeAllDirectoryStats(mp3rootDirectory);
-	stats.numberOfSongs = countSongsIn(STDERR_FILENO, NULL);
-	stats.dbPlayTime = sumSongTimesIn(STDERR_FILENO, NULL);
+	stats.numberOfSongs = countSongsIn(NULL);
+	stats.dbPlayTime = sumSongTimesIn(NULL);
 }
 
 static Song *getSongDetails(const char *file, const char **shortnameRet,

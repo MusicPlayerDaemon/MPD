@@ -64,7 +64,7 @@ Song *getSongFromDB(const char *file);
 
 time_t getDbModTime(void);
 
-int traverseAllIn(int fd, const char *name,
+int traverseAllIn(const char *name,
 		  int (*forEachSong) (Song *, void *),
 		  int (*forEachDir) (Directory *, void *), void *data);
 
