@@ -31,7 +31,6 @@
 #include "state_file.h"
 #include "storedPlaylist.h"
 #include "ack.h"
-#include "myfprintf.h"
 #include "os_compat.h"
 
 #define PLAYLIST_STATE_STOP		0
@@ -218,14 +217,14 @@ int clearStoredPlaylist(const char *utf8file)
 	return removeAllFromStoredPlaylistByPath(utf8file);
 }
 
-void showPlaylist(int fd)
+void showPlaylist(struct client *client)
 {
 	int i;
 	char path_max_tmp[MPD_PATH_MAX];
 
 	for (i = 0; i < playlist.length; i++) {
-		fdprintf(fd, "%i:%s\n", i,
-		         get_song_url(path_max_tmp, playlist.songs[i]));
+		client_printf(client, "%i:%s\n", i,
+			      get_song_url(path_max_tmp, playlist.songs[i]));
 	}
 }
 
@@ -400,7 +399,7 @@ int playlistChanges(struct client *client, mpd_uint32 version)
 	return 0;
 }
 
-int playlistChangesPosId(int fd, mpd_uint32 version)
+int playlistChangesPosId(struct client *client, mpd_uint32 version)
 {
 	int i;
 
@@ -408,8 +407,8 @@ int playlistChangesPosId(int fd, mpd_uint32 version)
 		if (version > playlist.version ||
 		    playlist.songMod[i] >= version ||
 		    playlist.songMod[i] == 0) {
-			fdprintf(fd, "cpos: %i\nId: %i\n",
-			         i, playlist.positionToId[i]);
+			client_printf(client, "cpos: %i\nId: %i\n",
+				      i, playlist.positionToId[i]);
 		}
 	}
 

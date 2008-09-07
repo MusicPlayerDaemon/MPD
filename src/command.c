@@ -525,7 +525,7 @@ static int handleDeleteId(struct client *client, mpd_unused int *permission,
 static int handlePlaylist(struct client *client, mpd_unused int *permission,
 			  mpd_unused int argc, mpd_unused char *argv[])
 {
-	showPlaylist(client_get_fd(client));
+	showPlaylist(client);
 	return 0;
 }
 
@@ -641,7 +641,7 @@ static int handlePlaylistChangesPosId(struct client *client, mpd_unused int *per
 
 	if (check_uint32(client, &version, argv[1], need_positive) < 0)
 		return -1;
-	return playlistChangesPosId(client_get_fd(client), version);
+	return playlistChangesPosId(client, version);
 }
 
 static int handlePlaylistInfo(struct client *client, mpd_unused int *permission,
