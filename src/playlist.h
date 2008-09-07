@@ -105,11 +105,11 @@ int loadPlaylist(int fd, const char *utf8file);
 
 int getPlaylistRepeatStatus(void);
 
-int setPlaylistRepeatStatus(int fd, int status);
+void setPlaylistRepeatStatus(int status);
 
 int getPlaylistRandomStatus(void);
 
-int setPlaylistRandomStatus(int fd, int status);
+void setPlaylistRandomStatus(int status);
 
 int getPlaylistCurrentSong(void);
 
