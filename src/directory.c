@@ -33,6 +33,8 @@
 #include "ack.h"
 #include "myfprintf.h"
 #include "dbUtils.h"
+#include "song_print.h"
+#include "song_save.h"
 
 #define DIRECTORY_DIR		"directory: "
 #define DIRECTORY_MTIME		"mtime: "

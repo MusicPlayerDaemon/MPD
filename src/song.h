@@ -42,6 +42,8 @@ typedef struct _Song {
 
 typedef List SongList;
 
+Song *newNullSong(void);
+
 Song *newSong(const char *url, int songType, struct _Directory *parentDir);
 
 void freeSong(Song *);
@@ -55,18 +57,7 @@ void freeSongList(SongList * list);
 Song *addSongToList(SongList * list, const char *url, const char *utf8path,
 		    int songType, struct _Directory *parentDir);
 
-int printSongInfo(int fd, Song * song);
-
-int printSongInfoFromList(int fd, SongList * list);
-
-void writeSongInfoFromList(FILE * fp, SongList * list);
-
-void readSongInfoIntoList(FILE * fp, SongList * list,
-			  struct _Directory *parent);
-
 int updateSongInfo(Song * song);
-
-void printSongUrl(int fd, Song * song);
 
 /*
  * get_song_url - Returns a path of a song in UTF8-encoded form

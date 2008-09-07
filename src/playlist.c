@@ -21,6 +21,7 @@
 #include "command.h"
 #include "ls.h"
 #include "tag.h"
+#include "song_print.h"
 #include "conf.h"
 #include "directory.h"
 #include "log.h"

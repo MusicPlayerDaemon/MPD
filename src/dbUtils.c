@@ -23,6 +23,7 @@
 #include "utils.h"
 #include "playlist.h"
 #include "song.h"
+#include "song_print.h"
 #include "tag.h"
 #include "tagTracker.h"
 #include "log.h"

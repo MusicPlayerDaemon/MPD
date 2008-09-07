@@ -20,21 +20,14 @@
 #include "ls.h"
 #include "directory.h"
 #include "utils.h"
-#include "tag.h"
 #include "log.h"
 #include "path.h"
 #include "playlist.h"
 #include "decoder_list.h"
 #include "decoder_api.h"
-#include "myfprintf.h"
-#include "tag_print.h"
-
-#define SONG_KEY	"key: "
-#define SONG_MTIME	"mtime: "
-
 #include "os_compat.h"
 
-static Song *newNullSong(void)
+Song *newNullSong(void)
 {
 	Song *song = xmalloc(sizeof(Song));
 
@@ -132,170 +125,6 @@ Song *addSongToList(SongList * list, const char *url, const char *utf8path,
 void freeSongList(SongList * list)
 {
 	freeList(list);
-}
-
-void printSongUrl(int fd, Song * song)
-{
-	if (song->parentDir && song->parentDir->path) {
-		fdprintf(fd, "%s%s/%s\n", SONG_FILE,
-			  getDirectoryPath(song->parentDir), song->url);
-	} else {
-		fdprintf(fd, "%s%s\n", SONG_FILE, song->url);
-	}
-}
-
-int printSongInfo(int fd, Song * song)
-{
-	printSongUrl(fd, song);
-
-	if (song->tag)
-		tag_print(fd, song->tag);
-
-	return 0;
-}
-
-int printSongInfoFromList(int fd, SongList * list)
-{
-	ListNode *tempNode = list->firstNode;
-
-	while (tempNode != NULL) {
-		printSongInfo(fd, (Song *) tempNode->data);
-		tempNode = tempNode->nextNode;
-	}
-
-	return 0;
-}
-
-void writeSongInfoFromList(FILE * fp, SongList * list)
-{
-	ListNode *tempNode = list->firstNode;
-
-	fprintf(fp, "%s\n", SONG_BEGIN);
-
-	while (tempNode != NULL) {
-		fprintf(fp, "%s%s\n", SONG_KEY, tempNode->key);
-		fflush(fp);
-		printSongInfo(fileno(fp), (Song *) tempNode->data);
-		fprintf(fp, "%s%li\n", SONG_MTIME,
-			  (long)((Song *) tempNode->data)->mtime);
-		tempNode = tempNode->nextNode;
-	}
-
-	fprintf(fp, "%s\n", SONG_END);
-}
-
-static void insertSongIntoList(SongList * list, ListNode ** nextSongNode,
-			       char *key, Song * song)
-{
-	ListNode *nodeTemp;
-	int cmpRet = 0;
-
-	while (*nextSongNode
-	       && (cmpRet = strcmp(key, (*nextSongNode)->key)) > 0) {
-		nodeTemp = (*nextSongNode)->nextNode;
-		deleteNodeFromList(list, *nextSongNode);
-		*nextSongNode = nodeTemp;
-	}
-
-	if (!(*nextSongNode)) {
-		insertInList(list, song->url, (void *)song);
-	} else if (cmpRet == 0) {
-		Song *tempSong = (Song *) ((*nextSongNode)->data);
-		if (tempSong->mtime != song->mtime) {
-			tag_free(tempSong->tag);
-			tag_end_add(song->tag);
-			tempSong->tag = song->tag;
-			tempSong->mtime = song->mtime;
-			song->tag = NULL;
-		}
-		freeJustSong(song);
-		*nextSongNode = (*nextSongNode)->nextNode;
-	} else {
-		insertInListBeforeNode(list, *nextSongNode, -1, song->url,
-				       (void *)song);
-	}
-}
-
-static int matchesAnMpdTagItemKey(char *buffer, int *itemType)
-{
-	int i;
-
-	for (i = 0; i < TAG_NUM_OF_ITEM_TYPES; i++) {
-		if (0 == strncmp(mpdTagItemKeys[i], buffer,
-				 strlen(mpdTagItemKeys[i]))) {
-			*itemType = i;
-			return 1;
-		}
-	}
-
-	return 0;
-}
-
-void readSongInfoIntoList(FILE * fp, SongList * list, Directory * parentDir)
-{
-	char buffer[MPD_PATH_MAX + 1024];
-	int bufferSize = MPD_PATH_MAX + 1024;
-	Song *song = NULL;
-	ListNode *nextSongNode = list->firstNode;
-	ListNode *nodeTemp;
-	int itemType;
-
-	while (myFgets(buffer, bufferSize, fp) && 0 != strcmp(SONG_END, buffer)) {
-		if (0 == strncmp(SONG_KEY, buffer, strlen(SONG_KEY))) {
-			if (song) {
-				insertSongIntoList(list, &nextSongNode,
-						   song->url, song);
-				if (song->tag != NULL)
-					tag_end_add(song->tag);
-			}
-
-			song = newNullSong();
-			song->url = xstrdup(buffer + strlen(SONG_KEY));
-			song->type = SONG_TYPE_FILE;
-			song->parentDir = parentDir;
-		} else if (*buffer == 0) {
-			/* ignore empty lines (starting with '\0') */
-		} else if (song == NULL) {
-			FATAL("Problems reading song info\n");
-		} else if (0 == strncmp(SONG_FILE, buffer, strlen(SONG_FILE))) {
-			/* we don't need this info anymore
-			   song->url = xstrdup(&(buffer[strlen(SONG_FILE)]));
-			 */
-		} else if (matchesAnMpdTagItemKey(buffer, &itemType)) {
-			if (!song->tag) {
-				song->tag = tag_new();
-				tag_begin_add(song->tag);
-			}
-
-			tag_add_item(song->tag, itemType,
-				     &(buffer
-				       [strlen(mpdTagItemKeys[itemType]) +
-					2]));
-		} else if (0 == strncmp(SONG_TIME, buffer, strlen(SONG_TIME))) {
-			if (!song->tag) {
-				song->tag = tag_new();
-				tag_begin_add(song->tag);
-			}
-
-			song->tag->time = atoi(&(buffer[strlen(SONG_TIME)]));
-		} else if (0 == strncmp(SONG_MTIME, buffer, strlen(SONG_MTIME))) {
-			song->mtime = atoi(&(buffer[strlen(SONG_MTIME)]));
-		}
-		else
-			FATAL("songinfo: unknown line in db: %s\n", buffer);
-	}
-
-	if (song) {
-		insertSongIntoList(list, &nextSongNode, song->url, song);
-		if (song->tag != NULL)
-			tag_end_add(song->tag);
-	}
-
-	while (nextSongNode) {
-		nodeTemp = nextSongNode->nextNode;
-		deleteNodeFromList(list, nextSongNode);
-		nextSongNode = nodeTemp;
-	}
 }
 
 int updateSongInfo(Song * song)
