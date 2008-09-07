@@ -57,7 +57,7 @@ mpd_sint8 ignoreTagItems[TAG_NUM_OF_ITEM_TYPES];
 
 static size_t items_size(const struct tag *tag)
 {
-	return (tag->numOfItems * sizeof(struct tag_item));
+	return (tag->numOfItems * sizeof(struct tag_item *));
 }
 
 void tag_lib_init(void)
@@ -427,7 +427,7 @@ static void appendToTagItems(struct tag *tag, enum tag_type type,
 
 		tag->items = xmalloc(items_size(tag));
 		memcpy(tag->items, bulk.items,
-		       items_size(tag) - sizeof(struct tag_item));
+		       items_size(tag) - sizeof(struct tag_item *));
 	}
 
 	pthread_mutex_lock(&tag_pool_lock);
