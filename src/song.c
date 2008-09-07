@@ -27,6 +27,7 @@
 #include "decoder_list.h"
 #include "decoder_api.h"
 #include "myfprintf.h"
+#include "tag_print.h"
 
 #define SONG_KEY	"key: "
 #define SONG_MTIME	"mtime: "

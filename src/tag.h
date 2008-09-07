@@ -84,10 +84,6 @@ static inline void tag_add_item(struct tag *tag, enum tag_type itemType,
 	tag_add_item_n(tag, itemType, value, strlen(value));
 }
 
-void tag_print_types(int fd);
-
-void tag_print(int fd, const struct tag *tag);
-
 struct tag *tag_dup(const struct tag *tag);
 
 int tag_equal(const struct tag *tag1, const struct tag *tag2);

@@ -36,6 +36,7 @@
 #include "dbUtils.h"
 #include "tag.h"
 #include "client.h"
+#include "tag_print.h"
 #include "os_compat.h"
 
 #define COMMAND_PLAY           	"play"

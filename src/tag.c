@@ -17,8 +17,8 @@
  */
 
 #include "tag.h"
+#include "tag_internal.h"
 #include "tag_pool.h"
-#include "myfprintf.h"
 #include "utils.h"
 #include "utf8.h"
 #include "log.h"
@@ -53,7 +53,7 @@ const char *mpdTagItemKeys[TAG_NUM_OF_ITEM_TYPES] = {
 	"Disc"
 };
 
-static mpd_sint8 ignoreTagItems[TAG_NUM_OF_ITEM_TYPES];
+mpd_sint8 ignoreTagItems[TAG_NUM_OF_ITEM_TYPES];
 
 void tag_lib_init(void)
 {
@@ -102,29 +102,6 @@ void tag_lib_init(void)
 	}
 
 	free(temp);
-}
-
-void tag_print_types(int fd)
-{
-	int i;
-
-	for (i = 0; i < TAG_NUM_OF_ITEM_TYPES; i++) {
-		if (ignoreTagItems[i] == 0)
-			fdprintf(fd, "tagtype: %s\n", mpdTagItemKeys[i]);
-	}
-}
-
-void tag_print(int fd, const struct tag *tag)
-{
-	int i;
-
-	if (tag->time >= 0)
-		fdprintf(fd, SONG_TIME "%i\n", tag->time);
-
-	for (i = 0; i < tag->numOfItems; i++) {
-		fdprintf(fd, "%s: %s\n", mpdTagItemKeys[tag->items[i]->type],
-			  tag->items[i]->value);
-	}
 }
 
 struct tag *tag_ape_load(const char *file)
