@@ -816,9 +816,27 @@ static int listHandleUpdate(int fd,
 		nextCmd = getCommandEntryFromString(next->data, permission);
 
 	if (cmd != nextCmd) {
-		int ret = updateInit(fd, pathList);
+		int ret = updateInit(pathList);
 		freeList(pathList);
 		pathList = NULL;
+
+		switch (ret) {
+		case 0:
+			commandError(fd, ACK_ERROR_UPDATE_ALREADY,
+				     "already updating");
+			break;
+
+		case -1:
+			commandError(fd, ACK_ERROR_SYSTEM,
+				     "problems trying to update");
+			break;
+
+		default:
+			fdprintf(fd, "updating_db: %i\n", ret);
+			ret = 0;
+			break;
+		}
+
 		return ret;
 	}
 
@@ -828,15 +846,35 @@ static int listHandleUpdate(int fd,
 static int handleUpdate(int fd, mpd_unused int *permission,
 			mpd_unused int argc, char *argv[])
 {
+	int ret;
+
 	if (argc == 2) {
-		int ret;
 		List *pathList = makeList(NULL, 1);
 		insertInList(pathList, argv[1], NULL);
-		ret = updateInit(fd, pathList);
+		ret = updateInit(pathList);
 		freeList(pathList);
-		return ret;
+	} else
+		ret = updateInit(NULL);
+
+	switch (ret) {
+	case 0:
+		commandError(fd, ACK_ERROR_UPDATE_ALREADY,
+			     "already updating");
+		ret = -1;
+		break;
+
+	case -1:
+		commandError(fd, ACK_ERROR_SYSTEM,
+			     "problems trying to update");
+		break;
+
+	default:
+		fdprintf(fd, "updating_db: %i\n", ret);
+		ret = 0;
+		break;
 	}
-	return updateInit(fd, NULL);
+
+	return ret;
 }
 
 static int handleNext(mpd_unused int fd, mpd_unused int *permission,

@@ -42,7 +42,12 @@ int isUpdatingDB(void);
 
 void directory_sigChldHandler(int pid, int status);
 
-int updateInit(int fd, List * pathList);
+/**
+ * Starts the tag cache update in the specified location(s).  Returns
+ * the job id on success, -1 on error or 0 if an update is already
+ * running.
+ */
+int updateInit(List * pathList);
 
 void initMp3Directory(void);
 

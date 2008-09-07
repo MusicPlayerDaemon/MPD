@@ -18,7 +18,6 @@
 
 #include "directory.h"
 
-#include "command.h"
 #include "conf.h"
 #include "client.h"
 #include "listen.h"
@@ -30,7 +29,6 @@
 #include "stats.h"
 #include "utils.h"
 #include "volume.h"
-#include "ack.h"
 #include "myfprintf.h"
 #include "dbUtils.h"
 #include "song_print.h"
@@ -160,12 +158,10 @@ void readDirectoryDBIfUpdateIsFinished(void)
 	}
 }
 
-int updateInit(int fd, List * pathList)
+int updateInit(List * pathList)
 {
-	if (directory_updatePid > 0) {
-		commandError(fd, ACK_ERROR_UPDATE_ALREADY, "already updating");
-		return -1;
-	}
+	if (directory_updatePid > 0)
+		return 0;
 
 	/* need to block CHLD signal, cause it can exit before we
 	   even get a chance to assign directory_updatePID */
@@ -216,8 +212,6 @@ int updateInit(int fd, List * pathList)
 	} else if (directory_updatePid < 0) {
 		unblockSignals();
 		ERROR("updateInit: Problems forking()'ing\n");
-		commandError(fd, ACK_ERROR_SYSTEM,
-			     "problems trying to update");
 		directory_updatePid = 0;
 		return -1;
 	}
@@ -228,9 +222,8 @@ int updateInit(int fd, List * pathList)
 		directory_updateJobId = 1;
 	DEBUG("updateInit: fork()'d update child for update job id %i\n",
 	      (int)directory_updateJobId);
-	fdprintf(fd, "updating_db: %i\n", (int)directory_updateJobId);
 
-	return 0;
+	return (int)directory_updateJobId;
 }
 
 static DirectoryStat *newDirectoryStat(struct stat *st)
