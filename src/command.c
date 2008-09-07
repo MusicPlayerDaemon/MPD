@@ -437,13 +437,15 @@ static int handleDeleteId(int fd, mpd_unused int *permission,
 static int handlePlaylist(int fd, mpd_unused int *permission,
 			  mpd_unused int argc, mpd_unused char *argv[])
 {
-	return showPlaylist(fd);
+	showPlaylist(fd);
+	return 0;
 }
 
 static int handleShuffle(int fd, mpd_unused int *permission,
 			 mpd_unused int argc, mpd_unused char *argv[])
 {
-	return shufflePlaylist(fd);
+	shufflePlaylist(fd);
+	return 0;
 }
 
 static int handleClear(mpd_unused int fd, mpd_unused int *permission,
