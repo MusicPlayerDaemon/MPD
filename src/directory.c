@@ -850,10 +850,8 @@ int printDirectoryInfo(int fd, const char *name)
 {
 	Directory *directory;
 
-	if ((directory = getDirectory(name)) == NULL) {
-		commandError(fd, ACK_ERROR_NO_EXIST, "directory not found");
+	if ((directory = getDirectory(name)) == NULL)
 		return -1;
-	}
 
 	printDirectoryList(fd, directory->subDirectories);
 	printSongInfoFromList(fd, directory->songs);

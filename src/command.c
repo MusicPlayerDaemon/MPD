@@ -575,8 +575,10 @@ static int handleLsInfo(int fd, mpd_unused int *permission,
 	if (argc == 2)
 		path = argv[1];
 
-	if (printDirectoryInfo(fd, path) < 0)
+	if (printDirectoryInfo(fd, path) < 0) {
+		commandError(fd, ACK_ERROR_NO_EXIST, "directory not found");
 		return -1;
+	}
 
 	if (isRootDirectory(path))
 		return lsPlaylists(fd, path);
