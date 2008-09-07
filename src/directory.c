@@ -1182,11 +1182,10 @@ void updateMp3Directory(void)
 	return;
 }
 
-static int traverseAllInSubDirectory(int fd, Directory * directory,
-				     int (*forEachSong) (int, Song *,
-							 void *),
-				     int (*forEachDir) (int, Directory *,
-							void *), void *data)
+static int traverseAllInSubDirectory(Directory * directory,
+				     int (*forEachSong) (Song *, void *),
+				     int (*forEachDir) (Directory *, void *),
+				     void *data)
 {
 	ListNode *node = directory->songs->firstNode;
 	Song *song;
@@ -1194,7 +1193,7 @@ static int traverseAllInSubDirectory(int fd, Directory * directory,
 	int errFlag = 0;
 
 	if (forEachDir) {
-		errFlag = forEachDir(fd, directory, data);
+		errFlag = forEachDir(directory, data);
 		if (errFlag)
 			return errFlag;
 	}
@@ -1202,7 +1201,7 @@ static int traverseAllInSubDirectory(int fd, Directory * directory,
 	if (forEachSong) {
 		while (node != NULL && !errFlag) {
 			song = (Song *) node->data;
-			errFlag = forEachSong(fd, song, data);
+			errFlag = forEachSong(song, data);
 			node = node->nextNode;
 		}
 		if (errFlag)
@@ -1213,7 +1212,7 @@ static int traverseAllInSubDirectory(int fd, Directory * directory,
 
 	while (node != NULL && !errFlag) {
 		dir = (Directory *) node->data;
-		errFlag = traverseAllInSubDirectory(fd, dir, forEachSong,
+		errFlag = traverseAllInSubDirectory(dir, forEachSong,
 						    forEachDir, data);
 		node = node->nextNode;
 	}
@@ -1222,22 +1221,22 @@ static int traverseAllInSubDirectory(int fd, Directory * directory,
 }
 
 int traverseAllIn(int fd, const char *name,
-		  int (*forEachSong) (int, Song *, void *),
-		  int (*forEachDir) (int, Directory *, void *), void *data)
+		  int (*forEachSong) (Song *, void *),
+		  int (*forEachDir) (Directory *, void *), void *data)
 {
 	Directory *directory;
 
 	if ((directory = getDirectory(name)) == NULL) {
 		Song *song;
 		if ((song = getSongFromDB(name)) && forEachSong) {
-			return forEachSong(fd, song, data);
+			return forEachSong(song, data);
 		}
 		commandError(fd, ACK_ERROR_NO_EXIST,
 			     "directory or file not found");
 		return -1;
 	}
 
-	return traverseAllInSubDirectory(fd, directory, forEachSong, forEachDir,
+	return traverseAllInSubDirectory(directory, forEachSong, forEachDir,
 					 data);
 }
 
