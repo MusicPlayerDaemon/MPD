@@ -19,6 +19,8 @@
 #ifndef TAG_TRACKER_H
 #define TAG_TRACKER_H
 
+struct client;
+
 int getNumberOfTagItems(int type);
 
 void printMemorySavedByTagTracker(void);
@@ -27,6 +29,6 @@ void resetVisitedFlagsInTagTracker(int type);
 
 void visitInTagTracker(int type, const char *str);
 
-void printVisitedInTagTracker(int fd, int type);
+void printVisitedInTagTracker(struct client *client, int type);
 
 #endif

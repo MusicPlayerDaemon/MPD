@@ -20,7 +20,7 @@
 
 #include "tag.h"
 #include "utils.h"
-#include "myfprintf.h"
+#include "client.h"
 #include "directory.h"
 
 struct visited {
@@ -106,13 +106,12 @@ void visitInTagTracker(int type, const char *str)
 	++num_visited[type];
 }
 
-void printVisitedInTagTracker(int fd, int type)
+void printVisitedInTagTracker(struct client *client, int type)
 {
 	struct visited *v;
 
 	for (v = visited_heads[type]; v != NULL; v = v->next)
-		fdprintf(fd,
-			 "%s: %s\n",
-			 mpdTagItemKeys[type],
-			 v->value);
+		client_printf(client, "%s: %s\n",
+			      mpdTagItemKeys[type],
+			      v->value);
 }

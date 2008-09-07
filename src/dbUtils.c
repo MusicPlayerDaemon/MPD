@@ -335,7 +335,7 @@ int listAllUniqueTags(struct client *client, int type, int numConditionals,
 			    &data);
 
 	if (type >= 0 && type <= TAG_NUM_OF_ITEM_TYPES) {
-		printVisitedInTagTracker(client_get_fd(client), type);
+		printVisitedInTagTracker(client, type);
 	}
 
 	freeListCommandItem(item);
