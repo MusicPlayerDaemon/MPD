@@ -23,7 +23,6 @@
 #include "directory.h"
 #include "volume.h"
 #include "stats.h"
-#include "myfprintf.h"
 #include "list.h"
 #include "permission.h"
 #include "buffer2array.h"
@@ -168,22 +167,6 @@ static CommandEntry *newCommandEntry(void)
 	cmd->listHandler = NULL;
 	cmd->reqPermission = 0;
 	return cmd;
-}
-
-static void command_error_va(int fd, int error, const char *fmt, va_list args)
-{
-	if (current_command && fd != STDERR_FILENO) {
-		fdprintf(fd, "ACK [%i@%i] {%s} ",
-		         (int)error, command_listNum, current_command);
-		vfdprintf(fd, fmt, args);
-		fdprintf(fd, "\n");
-		current_command = NULL;
-	} else {
-		fdprintf(STDERR_FILENO, "ACK [%i@%i] ",
-		         (int)error, command_listNum);
-		vfdprintf(STDERR_FILENO, fmt, args);
-		fdprintf(STDERR_FILENO, "\n");
-	}
 }
 
 void command_success(struct client *client)
@@ -1535,12 +1518,4 @@ out:
 int processCommand(struct client *client, int *permission, char *commandString)
 {
 	return processCommandInternal(client, permission, commandString, NULL);
-}
-
-mpd_fprintf_ void commandError(int fd, int error, const char *fmt, ...)
-{
-	va_list args;
-	va_start(args, fmt);
-	command_error_va(fd, error, fmt, args);
-	va_end(args);
 }

@@ -39,8 +39,6 @@ void initCommands(void);
 
 void finishCommands(void);
 
-mpd_fprintf_ void commandError(int fd, int error, const char *fmt, ...);
-
 void command_success(struct client *client);
 
 mpd_fprintf_ void command_error(struct client *client, int error,
