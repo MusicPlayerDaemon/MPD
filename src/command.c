@@ -1239,7 +1239,6 @@ static int processCommandInternal(struct client *client,
 int processListOfCommands(struct client *client, int *permission,
 			  int listOK, struct strnode *list)
 {
-	int fd = client_get_fd(client);
 	struct strnode *cur = list;
 	int ret = 0;
 
@@ -1253,7 +1252,7 @@ int processListOfCommands(struct client *client, int *permission,
 		if (ret != 0 || client_is_expired(client))
 			goto out;
 		else if (listOK)
-			fdprintf(fd, "list_OK\n");
+			client_puts(client, "list_OK\n");
 		command_listNum++;
 		cur = cur->next;
 	}

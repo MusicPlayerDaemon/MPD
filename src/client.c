@@ -692,7 +692,6 @@ static struct client *client_by_fd(int fd)
 
 int client_print(int fd, const char *buffer, size_t buflen)
 {
-	size_t copylen;
 	struct client *client;
 
 	assert(fd >= 0);
@@ -701,26 +700,7 @@ int client_print(int fd, const char *buffer, size_t buflen)
 	if (client == NULL)
 		return -1;
 
-	/* if fd isn't found or client is going to be closed, do nothing */
-	if (client_is_expired(client))
-		return 0;
-
-	while (buflen > 0 && !client_is_expired(client)) {
-		size_t left;
-
-		assert(client->send_buf_size >= client->send_buf_used);
-		left = client->send_buf_size - client->send_buf_used;
-
-		copylen = buflen > left ? left : buflen;
-		memcpy(client->send_buf + client->send_buf_used, buffer,
-		       copylen);
-		buflen -= copylen;
-		client->send_buf_used += copylen;
-		buffer += copylen;
-		if (client->send_buf_used >= client->send_buf_size)
-			client_write_output(client);
-	}
-
+	client_write(client, buffer, buflen);
 	return 0;
 }
 
@@ -749,8 +729,8 @@ static void client_defer_output(struct client *client,
 	*buf_r = new_sllnode(data, length);
 }
 
-static void client_write(struct client *client,
-			 const char *data, size_t length)
+static void client_write_direct(struct client *client,
+				const char *data, size_t length)
 {
 	ssize_t ret;
 
@@ -782,8 +762,38 @@ static void client_write_output(struct client *client)
 		client_defer_output(client, client->send_buf,
 				    client->send_buf_used);
 	else
-		client_write(client, client->send_buf, client->send_buf_used);
+		client_write_direct(client, client->send_buf,
+				    client->send_buf_used);
 
 	client->send_buf_used = 0;
 }
 
+void client_write(struct client *client, const char *buffer, size_t buflen)
+{
+	size_t copylen;
+
+	/* if the client is going to be closed, do nothing */
+	if (client_is_expired(client))
+		return;
+
+	while (buflen > 0 && !client_is_expired(client)) {
+		size_t left;
+
+		assert(client->send_buf_size >= client->send_buf_used);
+		left = client->send_buf_size - client->send_buf_used;
+
+		copylen = buflen > left ? left : buflen;
+		memcpy(client->send_buf + client->send_buf_used, buffer,
+		       copylen);
+		buflen -= copylen;
+		client->send_buf_used += copylen;
+		buffer += copylen;
+		if (client->send_buf_used >= client->send_buf_size)
+			client_write_output(client);
+	}
+}
+
+void client_puts(struct client *client, const char *s)
+{
+	client_write(client, s, strlen(s));
+}

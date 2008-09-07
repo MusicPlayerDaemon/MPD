@@ -39,6 +39,16 @@ int client_get_fd(struct client *client);
 
 int client_is_expired(const struct client *client);
 
+/**
+ * Write a block of data to the client.
+ */
+void client_write(struct client *client, const char *data, size_t length);
+
+/**
+ * Write a C string to the client.
+ */
+void client_puts(struct client *client, const char *s);
+
 int client_print(int fd, const char *buffer, size_t len);
 
 #endif
