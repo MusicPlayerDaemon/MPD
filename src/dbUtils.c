@@ -174,10 +174,10 @@ int printAllIn(int fd, const char *name)
 			     printDirectoryInDirectory, NULL);
 }
 
-static int directoryAddSongToPlaylist(int fd, Song * song,
+static int directoryAddSongToPlaylist(mpd_unused int fd, Song * song,
 				      mpd_unused void *data)
 {
-	return addSongToPlaylist(fd, song, NULL);
+	return addSongToPlaylist(song, NULL);
 }
 
 static int directoryAddSongToStoredPlaylist(int fd, Song *song, void *data)
