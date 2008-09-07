@@ -1509,11 +1509,16 @@ void findSongsInPlaylist(int fd, int numItems, LocateTagItem * items)
  * protocol (and compatibility with all clients) to support idiots who
  * put '\r' and '\n' in filenames isn't going to happen, either.
  */
+int is_valid_playlist_name(const char *utf8path)
+{
+	return strchr(utf8path, '/') == NULL &&
+		strchr(utf8path, '\n') == NULL &&
+		strchr(utf8path, '\r') == NULL;
+}
+
 int valid_playlist_name(int err_fd, const char *utf8path)
 {
-	if (strchr(utf8path, '/') ||
-	    strchr(utf8path, '\n') ||
-	    strchr(utf8path, '\r')) {
+	if (!is_valid_playlist_name(utf8path)) {
 		commandError(err_fd, ACK_ERROR_ARG, "playlist name \"%s\" is "
 		             "invalid: playlist names may not contain slashes,"
 			     " newlines or carriage returns",
