@@ -301,11 +301,6 @@ int deleteFromList(List * list, const char *key)
 	return 1;
 }
 
-static void free_const_string(const char *p)
-{
-	free((char *)p);
-}
-
 void deleteNodeFromList(List * list, ListNode * node)
 {
 	assert(list != NULL);
@@ -326,7 +321,7 @@ void deleteNodeFromList(List * list, ListNode * node)
 	}
 
 	if (list->strdupKeys)
-		free_const_string(node->key);
+		xfree(node->key);
 	free(node);
 	list->numberOfNodes--;
 
@@ -353,7 +348,7 @@ void freeList(void *list)
 	while (tmpNode != NULL) {
 		tmpNode2 = tmpNode->nextNode;
 		if (((List *) list)->strdupKeys)
-			free_const_string(tmpNode->key);
+			xfree(tmpNode->key);
 		if (((List *) list)->freeDataFunc) {
 			((List *) list)->freeDataFunc(tmpNode->data);
 		}

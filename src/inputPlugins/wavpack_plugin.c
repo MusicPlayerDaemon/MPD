@@ -235,34 +235,38 @@ static char *wavpack_tag(WavpackContext *wpc, char *key)
 
 static ReplayGainInfo *wavpack_replaygain(WavpackContext *wpc)
 {
+	static char replaygain_track_gain[] = "replaygain_track_gain";
+	static char replaygain_album_gain[] = "replaygain_album_gain";
+	static char replaygain_track_peak[] = "replaygain_track_peak";
+	static char replaygain_album_peak[] = "replaygain_album_peak";
 	ReplayGainInfo *replayGainInfo;
 	int found = 0;
 	char *value;
 
 	replayGainInfo = newReplayGainInfo();
 
-	value = wavpack_tag(wpc, "replaygain_track_gain");
+	value = wavpack_tag(wpc, replaygain_track_gain);
 	if (value) {
 		replayGainInfo->trackGain = atof(value);
 		free(value);
 		found = 1;
 	}
 
-	value = wavpack_tag(wpc, "replaygain_album_gain");
+	value = wavpack_tag(wpc, replaygain_album_gain);
 	if (value) {
 		replayGainInfo->albumGain = atof(value);
 		free(value);
 		found = 1;
 	}
 
-	value = wavpack_tag(wpc, "replaygain_track_peak");
+	value = wavpack_tag(wpc, replaygain_track_peak);
 	if (value) {
 		replayGainInfo->trackPeak = atof(value);
 		free(value);
 		found = 1;
 	}
 
-	value = wavpack_tag(wpc, "replaygain_album_peak");
+	value = wavpack_tag(wpc, replaygain_album_peak);
 	if (value) {
 		replayGainInfo->albumPeak = atof(value);
 		free(value);

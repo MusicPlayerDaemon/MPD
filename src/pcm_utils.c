@@ -149,6 +149,7 @@ static int pcm_getSampleRateConverter(void)
 	const char *conf = getConfigParamValue(CONF_SAMPLERATE_CONVERTER);
 	long convalgo;
 	char *test;
+	const char *test2;
 	size_t len;
 
 	if (!conf) {
@@ -162,12 +163,12 @@ static int pcm_getSampleRateConverter(void)
 
 	len = strlen(conf);
 	for (convalgo = 0 ; ; convalgo++) {
-		test = (char *)src_get_name(convalgo);
-		if (!test) {
+		test2 = src_get_name(convalgo);
+		if (!test2) {
 			convalgo = SRC_SINC_FASTEST;
 			break;
 		}
-		if (strncasecmp(test, conf, len) == 0)
+		if (strncasecmp(test2, conf, len) == 0)
 			goto out;
 	}
 
@@ -239,7 +240,7 @@ static size_t pcm_convertSampleRate(mpd_sint8 channels, mpd_uint32 inSampleRate,
 		data->data_out = xrealloc(data->data_out, dataOutSize);
 	}
 
-	src_short_to_float_array((short *)inBuffer, data->data_in,
+	src_short_to_float_array((const short *)inBuffer, data->data_in,
 	                         data->input_frames * channels);
 
 	error = src_process(convState->state, data);
@@ -305,7 +306,7 @@ static char *pcm_convertChannels(mpd_sint8 channels, const char *inBuffer,
 	static char *buf;
 	static size_t len;
 	char *outBuffer = NULL;
-	mpd_sint16 *in;
+	const mpd_sint16 *in;
 	mpd_sint16 *out;
 	int inSamples, i;
 
@@ -320,7 +321,7 @@ static char *pcm_convertChannels(mpd_sint8 channels, const char *inBuffer,
 		outBuffer = buf;
 
 		inSamples = inSize >> 1;
-		in = (mpd_sint16 *)inBuffer;
+		in = (const mpd_sint16 *)inBuffer;
 		out = (mpd_sint16 *)outBuffer;
 		for (i = 0; i < inSamples; i++) {
 			*out++ = *in;
@@ -338,7 +339,7 @@ static char *pcm_convertChannels(mpd_sint8 channels, const char *inBuffer,
 		outBuffer = buf;
 
 		inSamples = inSize >> 2;
-		in = (mpd_sint16 *)inBuffer;
+		in = (const mpd_sint16 *)inBuffer;
 		out = (mpd_sint16 *)outBuffer;
 		for (i = 0; i < inSamples; i++) {
 			*out = (*in++) / 2;
@@ -359,7 +360,7 @@ static const char *pcm_convertTo16bit(mpd_sint8 bits, const char *inBuffer,
 	static char *buf;
 	static size_t len;
 	char *outBuffer = NULL;
-	mpd_sint8 *in;
+	const mpd_sint8 *in;
 	mpd_sint16 *out;
 	size_t i;
 
@@ -372,7 +373,7 @@ static const char *pcm_convertTo16bit(mpd_sint8 bits, const char *inBuffer,
 		}
 		outBuffer = buf;
 
-		in = (mpd_sint8 *)inBuffer;
+		in = (const mpd_sint8 *)inBuffer;
 		out = (mpd_sint16 *)outBuffer;
 		for (i = 0; i < inSize; i++)
 			*out++ = (*in++) << 8;

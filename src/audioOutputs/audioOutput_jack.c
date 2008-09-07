@@ -31,8 +31,8 @@ static const size_t sample_size = sizeof(jack_default_audio_sample_t);
 
 typedef struct _JackData {
 	/* configuration */
-	char *name;
-	char *output_ports[2];
+	const char *name;
+	const char *output_ports[2];
 	int ringbuf_sz;
 
 	/* locks */
@@ -52,6 +52,7 @@ typedef struct _JackData {
 static JackData *newJackData(void)
 {
 	JackData *ret;
+
 	ret = xcalloc(sizeof(JackData), 1);
 
 	ret->name = "mpd";
@@ -97,12 +98,12 @@ static void freeJackData(AudioOutput *audioOutput)
 	freeJackClient(jd);
 
 	if (strcmp(jd->name, "mpd") != 0)
-		free(jd->name);
+		xfree(jd->name);
 
 	for ( i = ARRAY_SIZE(jd->output_ports); --i >= 0; ) {
 		if (!jd->output_ports[i])
 			continue;
-		free(jd->output_ports[i]);
+		xfree(jd->output_ports[i]);
 	}
 
 	free(jd);
@@ -267,7 +268,7 @@ static int jack_testDefault(void)
 static int connect_jack(AudioOutput *audioOutput)
 {
 	JackData *jd = audioOutput->data;
-	char **jports;
+	const char **jports;
 	char *port_name;
 
 	if ( (jd->client = jack_client_new(jd->name)) == NULL ) {
@@ -304,9 +305,9 @@ static int connect_jack(AudioOutput *audioOutput)
 
 	/*  hay que buscar que hay  */
 	if ( !jd->output_ports[1]
-	     && (jports = (char **)jack_get_ports(jd->client, NULL, NULL,
-							JackPortIsPhysical|
-							JackPortIsInput)) ) {
+	     && (jports = jack_get_ports(jd->client, NULL, NULL,
+					 JackPortIsPhysical|
+					 JackPortIsInput)) ) {
 		jd->output_ports[0] = jports[0];
 		jd->output_ports[1] = jports[1] ? jports[1] : jports[0];
 		DEBUG("output_ports: %s %s\n",

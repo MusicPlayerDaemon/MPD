@@ -48,14 +48,21 @@ static BOOL mod_mpd_IsThere(void)
 	return 1;
 }
 
+static char drv_name[] = "MPD";
+static char drv_version[] = "MPD Output Driver v0.1";
+
+#if (LIBMIKMOD_VERSION > 0x030106)
+static char drv_alias[] = "mpd";
+#endif
+
 static MDRIVER drv_mpd = {
 	NULL,
-	"MPD",
-	"MPD Output Driver v0.1",
+	drv_name,
+	drv_version,
 	0,
 	255,
 #if (LIBMIKMOD_VERSION > 0x030106)
-	"mpd", /* Alias */
+	drv_alias,
 #if (LIBMIKMOD_VERSION >= 0x030200)
 	NULL,  /* CmdLineHelp */
 #endif
@@ -92,6 +99,8 @@ static int mod_mikModInitError;
 
 static int mod_initMikMod(void)
 {
+	static char params[] = "";
+
 	if (mod_mikModInitError)
 		return -1;
 
@@ -110,7 +119,7 @@ static int mod_initMikMod(void)
 	md_mode = (DMODE_SOFT_MUSIC | DMODE_INTERP | DMODE_STEREO |
 		   DMODE_16BITS);
 
-	if (MikMod_Init("")) {
+	if (MikMod_Init(params)) {
 		ERROR("Could not init MikMod: %s\n",
 		      MikMod_strerror(MikMod_errno));
 		mod_mikModInitError = 1;
