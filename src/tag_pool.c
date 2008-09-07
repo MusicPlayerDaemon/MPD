@@ -19,6 +19,8 @@
 #include "tag_pool.h"
 #include "utils.h"
 
+pthread_mutex_t tag_pool_lock = PTHREAD_MUTEX_INITIALIZER;
+
 #define NUM_SLOTS 4096
 
 struct slot {

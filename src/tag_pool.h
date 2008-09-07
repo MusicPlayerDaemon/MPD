@@ -20,6 +20,9 @@
 #define TAG_POOL_H
 
 #include "tag.h"
+#include "os_compat.h"
+
+extern pthread_mutex_t tag_pool_lock;
 
 struct tag_item;
 

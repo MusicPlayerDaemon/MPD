@@ -244,8 +244,9 @@ static void deleteItem(struct tag *tag, int idx)
 	assert(idx < tag->numOfItems);
 	tag->numOfItems--;
 
+	pthread_mutex_lock(&tag_pool_lock);
 	tag_pool_put_item(tag->items[idx]);
-	/* free(tag->items[idx].value); */
+	pthread_mutex_unlock(&tag_pool_lock);
 
 	if (tag->numOfItems - idx > 0) {
 		memmove(tag->items + idx, tag->items + idx + 1,
@@ -277,10 +278,10 @@ static void clearMpdTag(struct tag *tag)
 {
 	int i;
 
-	for (i = 0; i < tag->numOfItems; i++) {
-		/* free(tag->items[i].value); */
+	pthread_mutex_lock(&tag_pool_lock);
+	for (i = 0; i < tag->numOfItems; i++)
 		tag_pool_put_item(tag->items[i]);
-	}
+	pthread_mutex_unlock(&tag_pool_lock);
 
 	if (tag->items == bulk.items) {
 #ifndef NDEBUG
@@ -317,9 +318,10 @@ struct tag *tag_dup(const struct tag *tag)
 	ret->numOfItems = tag->numOfItems;
 	ret->items = ret->numOfItems > 0 ? xmalloc(items_size(tag)) : NULL;
 
-	for (i = 0; i < tag->numOfItems; i++) {
+	pthread_mutex_lock(&tag_pool_lock);
+	for (i = 0; i < tag->numOfItems; i++)
 		ret->items[i] = tag_pool_dup_item(tag->items[i]);
-	}
+	pthread_mutex_unlock(&tag_pool_lock);
 
 	return ret;
 }
@@ -428,7 +430,9 @@ static void appendToTagItems(struct tag *tag, enum tag_type type,
 		       items_size(tag) - sizeof(struct tag_item));
 	}
 
+	pthread_mutex_lock(&tag_pool_lock);
 	tag->items[i] = tag_pool_get_item(type, p, len);
+	pthread_mutex_unlock(&tag_pool_lock);
 
 	if (p != value)
 		xfree(p);
