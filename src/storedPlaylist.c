@@ -301,9 +301,11 @@ int appendSongToStoredPlaylistByPath(int fd, const char *utf8path, Song *song)
 	if (fstat(fileno(file), &st) < 0) {
 		commandError(fd, ACK_ERROR_NO_EXIST, "could not stat file "
 		             "\"%s\": %s", path_max_tmp, strerror(errno));
+		while (fclose(file) != 0 && errno == EINTR);
 		return -1;
 	}
 	if (st.st_size >= ((MPD_PATH_MAX+1) * playlist_max_length)) {
+		while (fclose(file) != 0 && errno == EINTR);
 		commandError(fd, ACK_ERROR_PLAYLIST_MAX,
 		             "playlist is at the max size");
 		return -1;
