@@ -19,6 +19,8 @@
 #ifndef STATS_H
 #define STATS_H
 
+struct client;
+
 typedef struct _Stats {
 	unsigned long daemonStart;
 	int numberOfSongs;
@@ -31,6 +33,6 @@ extern Stats stats;
 
 void initStats(void);
 
-int printStats(int fd);
+int printStats(struct client *client);
 
 #endif

@@ -20,7 +20,7 @@
 
 #include "directory.h"
 #include "tag.h"
-#include "myfprintf.h"
+#include "client.h"
 #include "player_control.h"
 #include "tagTracker.h"
 #include "os_compat.h"
@@ -33,15 +33,22 @@ void initStats(void)
 	stats.numberOfSongs = 0;
 }
 
-int printStats(int fd)
+int printStats(struct client *client)
 {
-	fdprintf(fd, "artists: %i\n", getNumberOfTagItems(TAG_ITEM_ARTIST));
-	fdprintf(fd, "albums: %i\n", getNumberOfTagItems(TAG_ITEM_ALBUM));
-	fdprintf(fd, "songs: %i\n", stats.numberOfSongs);
-	fdprintf(fd, "uptime: %li\n", time(NULL) - stats.daemonStart);
-	fdprintf(fd, "playtime: %li\n",
-		  (long)(getPlayerTotalPlayTime() + 0.5));
-	fdprintf(fd, "db_playtime: %li\n", stats.dbPlayTime);
-	fdprintf(fd, "db_update: %li\n", getDbModTime());
+	client_printf(client,
+		      "artists: %i\n"
+		      "albums: %i\n"
+		      "songs: %i\n"
+		      "uptime: %li\n"
+		      "playtime: %li\n"
+		      "db_playtime: %li\n"
+		      "db_update: %li\n",
+		      getNumberOfTagItems(TAG_ITEM_ARTIST),
+		      getNumberOfTagItems(TAG_ITEM_ALBUM),
+		      stats.numberOfSongs,
+		      time(NULL) - stats.daemonStart,
+		      (long)(getPlayerTotalPlayTime() + 0.5),
+		      stats.dbPlayTime,
+		      getDbModTime());
 	return 0;
 }
