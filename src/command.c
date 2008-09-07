@@ -1230,7 +1230,7 @@ static int handleDisableDevice(struct client *client, mpd_unused int *permission
 static int handleDevices(struct client *client, mpd_unused int *permission,
 			 mpd_unused int argc, mpd_unused char *argv[])
 {
-	printAudioDevices(client_get_fd(client));
+	printAudioDevices(client);
 
 	return 0;
 }

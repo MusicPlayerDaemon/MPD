@@ -20,7 +20,7 @@
 #include "audioOutput.h"
 #include "log.h"
 #include "path.h"
-#include "myfprintf.h"
+#include "client.h"
 #include "os_compat.h"
 
 #define AUDIO_DEVICE_STATE	"audio_device_state:"
@@ -448,16 +448,18 @@ int disableAudioDevice(unsigned int device)
 	return 0;
 }
 
-void printAudioDevices(int fd)
+void printAudioDevices(struct client *client)
 {
 	unsigned int i;
 
 	for (i = 0; i < audioOutputArraySize; i++) {
-		fdprintf(fd,
-		         "outputid: %i\noutputname: %s\noutputenabled: %i\n",
-			 i,
-			 audioOutputArray[i].name,
-			 audioDeviceStates[i] & 0x01);
+		client_printf(client,
+			      "outputid: %i\n"
+			      "outputname: %s\n"
+			      "outputenabled: %i\n",
+			      i,
+			      audioOutputArray[i].name,
+			      audioDeviceStates[i] & 0x01);
 	}
 }
 

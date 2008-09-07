@@ -25,6 +25,7 @@
 #define AUDIO_AO_DRIVER_DEFAULT	"default"
 
 struct tag;
+struct client;
 
 void copyAudioFormat(AudioFormat * dest, const AudioFormat * src);
 
@@ -64,7 +65,7 @@ int enableAudioDevice(unsigned int device);
 
 int disableAudioDevice(unsigned int device);
 
-void printAudioDevices(int fd);
+void printAudioDevices(struct client *client);
 
 void readAudioDevicesState(FILE *fp);
 
