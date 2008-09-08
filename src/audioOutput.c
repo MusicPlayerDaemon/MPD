@@ -18,8 +18,8 @@
 
 #include "audioOutput.h"
 #include "output_api.h"
+#include "output_list.h"
 
-#include "list.h"
 #include "log.h"
 #include "pcm_utils.h"
 #include "utils.h"
@@ -29,33 +29,6 @@
 #define AUDIO_OUTPUT_TYPE	"type"
 #define AUDIO_OUTPUT_NAME	"name"
 #define AUDIO_OUTPUT_FORMAT	"format"
-
-static List *audioOutputPluginList;
-
-void loadAudioOutputPlugin(struct audio_output_plugin *audioOutputPlugin)
-{
-	if (!audioOutputPlugin->name)
-		return;
-	insertInList(audioOutputPluginList, audioOutputPlugin->name,
-		     audioOutputPlugin);
-}
-
-void unloadAudioOutputPlugin(struct audio_output_plugin *audioOutputPlugin)
-{
-	if (!audioOutputPlugin->name)
-		return;
-	deleteFromList(audioOutputPluginList, audioOutputPlugin->name);
-}
-
-void initAudioOutputPlugins(void)
-{
-	audioOutputPluginList = makeList(NULL, 0);
-}
-
-void finishAudioOutputPlugins(void)
-{
-	freeList(audioOutputPluginList);
-}
 
 #define getBlockParam(name, str, force) { \
 	bp = getBlockParam(param, name); \
@@ -69,11 +42,10 @@ void finishAudioOutputPlugins(void)
 
 int initAudioOutput(struct audio_output *ao, ConfigParam * param)
 {
-	void *data = NULL;
 	const char *name = NULL;
 	char *format = NULL;
 	BlockParam *bp = NULL;
-	struct audio_output_plugin *plugin = NULL;
+	const struct audio_output_plugin *plugin = NULL;
 
 	if (param) {
 		const char *type = NULL;
@@ -82,21 +54,19 @@ int initAudioOutput(struct audio_output *ao, ConfigParam * param)
 		getBlockParam(AUDIO_OUTPUT_TYPE, type, 1);
 		getBlockParam(AUDIO_OUTPUT_FORMAT, format, 0);
 
-		if (!findInList(audioOutputPluginList, type, &data)) {
+		plugin = audio_output_plugin_get(type);
+		if (plugin == NULL) {
 			FATAL("couldn't find audio output plugin for type "
 			      "\"%s\" at line %i\n", type, param->line);
 		}
-
-		plugin = (struct audio_output_plugin *) data;
 	} else {
-		ListNode *node = audioOutputPluginList->firstNode;
+		unsigned i;
 
 		WARNING("No \"%s\" defined in config file\n",
 			CONF_AUDIO_OUTPUT);
 		WARNING("Attempt to detect audio output device\n");
 
-		while (node) {
-			plugin = (struct audio_output_plugin *) node->data;
+		audio_output_plugins_for_each(plugin, i) {
 			if (plugin->testDefaultDeviceFunc) {
 				WARNING("Attempting to detect a %s audio "
 					"device\n", plugin->name);
@@ -106,10 +76,9 @@ int initAudioOutput(struct audio_output *ao, ConfigParam * param)
 					break;
 				}
 			}
-			node = node->nextNode;
 		}
 
-		if (!node) {
+		if (plugin == NULL) {
 			WARNING("Unable to detect an audio device\n");
 			return 0;
 		}
@@ -250,14 +219,12 @@ void sendMetadataToAudioOutput(struct audio_output *audioOutput,
 
 void printAllOutputPluginTypes(FILE * fp)
 {
-	ListNode *node = audioOutputPluginList->firstNode;
-	struct audio_output_plugin *plugin;
+	unsigned i;
+	const struct audio_output_plugin *plugin;
 
-	while (node) {
-		plugin = (struct audio_output_plugin *) node->data;
+	audio_output_plugins_for_each(plugin, i)
 		fprintf(fp, "%s ", plugin->name);
-		node = node->nextNode;
-	}
+
 	fprintf(fp, "\n");
 	fflush(fp);
 }

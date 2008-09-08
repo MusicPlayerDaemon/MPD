@@ -34,6 +34,7 @@ mpd_headers = \
 	audio.h \
 	audioOutput.h \
 	output_api.h \
+	output_list.h \
 	buffer2array.h \
 	charConv.h \
 	command.h \
@@ -107,6 +108,7 @@ mpd_SOURCES = \
 	notify.c \
 	audio.c \
 	audioOutput.c \
+	output_list.c \
 	buffer2array.c \
 	charConv.c \
 	command.c \

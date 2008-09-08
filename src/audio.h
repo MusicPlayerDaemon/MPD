@@ -71,5 +71,4 @@ void readAudioDevicesState(FILE *fp);
 
 void saveAudioDevicesState(FILE *fp);
 
-void loadAudioDrivers(void);
 #endif

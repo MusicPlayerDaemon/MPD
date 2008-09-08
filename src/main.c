@@ -136,7 +136,6 @@ static void version(void)
 
 	LOG("\n");
 	LOG("Supported outputs:\n");
-	loadAudioDrivers();
 	printAllOutputPluginTypes(stdout);
 }
 

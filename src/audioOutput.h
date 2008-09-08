@@ -29,12 +29,6 @@ struct audio_output_plugin;
 struct audio_format;
 struct tag;
 
-void initAudioOutputPlugins(void);
-void finishAudioOutputPlugins(void);
-
-void loadAudioOutputPlugin(struct audio_output_plugin *audioOutputPlugin);
-void unloadAudioOutputPlugin(struct audio_output_plugin *audioOutputPlugin);
-
 int initAudioOutput(struct audio_output *, ConfigParam * param);
 int openAudioOutput(struct audio_output *audioOutput,
 		    const struct audio_format *audioFormat);
@@ -48,16 +42,5 @@ void sendMetadataToAudioOutput(struct audio_output *audioOutput,
 			       const struct tag *tag);
 
 void printAllOutputPluginTypes(FILE * fp);
-
-extern struct audio_output_plugin shoutPlugin;
-extern struct audio_output_plugin nullPlugin;
-extern struct audio_output_plugin fifoPlugin;
-extern struct audio_output_plugin alsaPlugin;
-extern struct audio_output_plugin aoPlugin;
-extern struct audio_output_plugin ossPlugin;
-extern struct audio_output_plugin osxPlugin;
-extern struct audio_output_plugin pulsePlugin;
-extern struct audio_output_plugin mvpPlugin;
-extern struct audio_output_plugin jackPlugin;
 
 #endif

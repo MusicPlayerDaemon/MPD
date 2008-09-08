@@ -82,28 +82,11 @@ int cmpAudioFormat(const struct audio_format *f1, const struct audio_format *f2)
 	return 1;
 }
 
-void loadAudioDrivers(void)
-{
-	initAudioOutputPlugins();
-	loadAudioOutputPlugin(&shoutPlugin);
-	loadAudioOutputPlugin(&nullPlugin);
-	loadAudioOutputPlugin(&fifoPlugin);
-	loadAudioOutputPlugin(&alsaPlugin);
-	loadAudioOutputPlugin(&aoPlugin);
-	loadAudioOutputPlugin(&ossPlugin);
-	loadAudioOutputPlugin(&osxPlugin);
-	loadAudioOutputPlugin(&pulsePlugin);
-	loadAudioOutputPlugin(&mvpPlugin);
-	loadAudioOutputPlugin(&jackPlugin);
-}
-
 /* make sure initPlayerData is called before this function!! */
 void initAudioDriver(void)
 {
 	ConfigParam *param = NULL;
 	unsigned int i;
-
-	loadAudioDrivers();
 
 	audioOutputArraySize = audio_output_count();
 	audioDeviceStates = xmalloc(sizeof(enum ad_state) *
