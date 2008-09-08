@@ -92,6 +92,7 @@ mpd_headers = \
 	tag_save.h \
 	tagTracker.h \
 	utf8.h \
+	strset.h \
 	utils.h \
 	volume.h \
 	ioops.h \
@@ -158,6 +159,7 @@ mpd_SOURCES = \
 	tag_print.c \
 	tag_save.c \
 	tagTracker.c \
+	strset.c \
 	utils.c \
 	volume.c \
 	utf8.c \
