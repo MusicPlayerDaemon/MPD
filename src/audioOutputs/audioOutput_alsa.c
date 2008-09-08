@@ -119,6 +119,17 @@ static int alsa_testDefault(void)
 	return 0;
 }
 
+static snd_pcm_format_t get_bitformat(const struct audio_format *af)
+{
+	switch (af->bits) {
+	case 8: return SND_PCM_FORMAT_S8;
+	case 16: return SND_PCM_FORMAT_S16;
+	case 24: return SND_PCM_FORMAT_S24;
+	case 32: return SND_PCM_FORMAT_S32;
+	}
+	return SND_PCM_FORMAT_UNKNOWN;
+}
+
 static int alsa_openDevice(struct audio_output *audioOutput)
 {
 	AlsaData *ad = audioOutput->data;
@@ -136,24 +147,9 @@ static int alsa_openDevice(struct audio_output *audioOutput)
 	unsigned int period_time, period_time_ro;
 	unsigned int buffer_time;
 
-	switch (audioFormat->bits) {
-	case 8:
-		bitformat = SND_PCM_FORMAT_S8;
-		break;
-	case 16:
-		bitformat = SND_PCM_FORMAT_S16;
-		break;
-	case 24:
-		bitformat = SND_PCM_FORMAT_S24;
-		break;
-	case 32:
-		bitformat = SND_PCM_FORMAT_S32;
-		break;
-	default:
+	if ((bitformat = get_bitformat(audioFormat)) == SND_PCM_FORMAT_UNKNOWN)
 		ERROR("ALSA device \"%s\" doesn't support %i bit audio\n",
 		      ad->device, audioFormat->bits);
-		return -1;
-	}
 
 	err = snd_pcm_open(&ad->pcmHandle, ad->device,
 			   SND_PCM_STREAM_PLAYBACK, SND_PCM_NONBLOCK);
