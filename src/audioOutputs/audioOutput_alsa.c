@@ -74,7 +74,14 @@ static void freeAlsaData(AlsaData * ad)
 static int alsa_initDriver(struct audio_output *audioOutput,
 			   ConfigParam * param)
 {
+	/* no need for pthread_once thread-safety when reading config */
+	static int free_global_registered;
 	AlsaData *ad = newAlsaData();
+
+	if (!free_global_registered) {
+		atexit((void(*)(void))snd_config_update_free_global);
+		free_global_registered = 1;
+	}
 
 	if (param) {
 		BlockParam *bp;
@@ -107,8 +114,6 @@ static int alsa_testDefault(void)
 
 	int ret = snd_pcm_open(&handle, default_device,
 	                       SND_PCM_STREAM_PLAYBACK, SND_PCM_NONBLOCK);
-	snd_config_update_free_global();
-
 	if (ret) {
 		WARNING("Error opening default ALSA device: %s\n",
 			snd_strerror(-ret));
@@ -153,7 +158,6 @@ static int alsa_openDevice(struct audio_output *audioOutput)
 
 	err = snd_pcm_open(&ad->pcmHandle, ad->device,
 			   SND_PCM_STREAM_PLAYBACK, SND_PCM_NONBLOCK);
-	snd_config_update_free_global();
 	if (err < 0) {
 		ad->pcmHandle = NULL;
 		goto error;
