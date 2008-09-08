@@ -110,7 +110,7 @@ static int alsa_testDefault(void)
 	snd_config_update_free_global();
 
 	if (ret) {
-		WARNING("Error opening default alsa device: %s\n",
+		WARNING("Error opening default ALSA device: %s\n",
 			snd_strerror(-ret));
 		return -1;
 	} else
@@ -182,7 +182,7 @@ configure_hw:
 		err = snd_pcm_hw_params_set_access(ad->pcmHandle, hwparams,
 						   SND_PCM_ACCESS_MMAP_INTERLEAVED);
 		if (err < 0) {
-			ERROR("Cannot set mmap'ed mode on alsa device \"%s\": "
+			ERROR("Cannot set mmap'ed mode on ALSA device \"%s\": "
 			      " %s\n", ad->device, snd_strerror(-err));
 			ERROR("Falling back to direct write mode\n");
 			ad->useMmap = 0;
@@ -297,7 +297,7 @@ configure_hw:
 
 	audioOutput->open = 1;
 
-	DEBUG("alsa device \"%s\" will be playing %i bit, %i channel audio at "
+	DEBUG("ALSA device \"%s\" will be playing %i bit, %i channel audio at "
 	      "%i Hz\n", ad->device, (int)audioFormat->bits,
 	      channels, sampleRate);
 
@@ -305,10 +305,10 @@ configure_hw:
 
 error:
 	if (cmd) {
-		ERROR("Error opening alsa device \"%s\" (%s): %s\n",
+		ERROR("Error opening ALSA device \"%s\" (%s): %s\n",
 		      ad->device, cmd, snd_strerror(-err));
 	} else {
-		ERROR("Error opening alsa device \"%s\": %s\n", ad->device,
+		ERROR("Error opening ALSA device \"%s\": %s\n", ad->device,
 		      snd_strerror(-err));
 	}
 fail:
@@ -322,9 +322,9 @@ fail:
 static int alsa_errorRecovery(AlsaData * ad, int err)
 {
 	if (err == -EPIPE) {
-		DEBUG("Underrun on alsa device \"%s\"\n", ad->device);
+		DEBUG("Underrun on ALSA device \"%s\"\n", ad->device);
 	} else if (err == -ESTRPIPE) {
-		DEBUG("alsa device \"%s\" was suspended\n", ad->device);
+		DEBUG("ALSA device \"%s\" was suspended\n", ad->device);
 	}
 
 	switch (snd_pcm_state(ad->pcmHandle)) {
@@ -395,7 +395,7 @@ static int alsa_playAudio(struct audio_output *audioOutput,
 
 		if (ret < 0) {
 			if (alsa_errorRecovery(ad, ret) < 0) {
-				ERROR("closing alsa device \"%s\" due to write "
+				ERROR("closing ALSA device \"%s\" due to write "
 				      "error: %s\n", ad->device,
 				      snd_strerror(-errno));
 				alsa_closeDevice(audioOutput);
