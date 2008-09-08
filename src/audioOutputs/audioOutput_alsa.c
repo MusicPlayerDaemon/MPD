@@ -281,11 +281,6 @@ configure_hw:
 	if (err < 0)
 		goto error;
 
-	cmd = "snd_pcm_sw_params_set_xfer_align";
-	err = snd_pcm_sw_params_set_xfer_align(ad->pcmHandle, swparams, 1);
-	if (err < 0)
-		goto error;
-
 	cmd = "snd_pcm_sw_params";
 	err = snd_pcm_sw_params(ad->pcmHandle, swparams);
 	if (err < 0)
