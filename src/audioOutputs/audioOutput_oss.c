@@ -549,7 +549,7 @@ static int oss_playAudio(struct audio_output *audioOutput,
 	return 0;
 }
 
-struct audio_output_plugin ossPlugin = {
+const struct audio_output_plugin ossPlugin = {
 	"oss",
 	oss_testDefault,
 	oss_initDriver,

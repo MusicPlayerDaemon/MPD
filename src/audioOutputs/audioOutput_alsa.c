@@ -413,7 +413,7 @@ static int alsa_playAudio(struct audio_output *audioOutput,
 	return 0;
 }
 
-struct audio_output_plugin alsaPlugin = {
+const struct audio_output_plugin alsaPlugin = {
 	"alsa",
 	alsa_testDefault,
 	alsa_initDriver,

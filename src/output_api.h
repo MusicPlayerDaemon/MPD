@@ -28,7 +28,7 @@
 #include "log.h"
 #include "os_compat.h"
 
-#define DISABLED_AUDIO_OUTPUT_PLUGIN(plugin) struct audio_output_plugin plugin;
+#define DISABLED_AUDIO_OUTPUT_PLUGIN(plugin) const struct audio_output_plugin plugin;
 
 struct audio_output;
 

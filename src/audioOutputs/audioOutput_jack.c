@@ -430,7 +430,7 @@ static int jack_playAudio(struct audio_output *audioOutput,
 	return 0;
 }
 
-struct audio_output_plugin jackPlugin = {
+const struct audio_output_plugin jackPlugin = {
 	"jack",
 	jack_testDefault,
 	jack_initDriver,

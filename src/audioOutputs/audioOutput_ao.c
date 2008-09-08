@@ -242,7 +242,7 @@ static int audioOutputAo_play(struct audio_output *audioOutput,
 	return 0;
 }
 
-struct audio_output_plugin aoPlugin = {
+const struct audio_output_plugin aoPlugin = {
 	"ao",
 	NULL,
 	audioOutputAo_initDriver,

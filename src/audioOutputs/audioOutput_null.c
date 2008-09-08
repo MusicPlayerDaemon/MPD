@@ -63,7 +63,7 @@ static void null_dropBufferedAudio(struct audio_output *audioOutput)
 	timer_reset(audioOutput->data);
 }
 
-struct audio_output_plugin nullPlugin = {
+const struct audio_output_plugin nullPlugin = {
 	"null",
 	NULL,
 	null_initDriver,

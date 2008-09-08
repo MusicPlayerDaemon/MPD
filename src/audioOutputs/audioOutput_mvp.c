@@ -257,7 +257,7 @@ static int mvp_playAudio(struct audio_output *audioOutput,
 	return 0;
 }
 
-struct audio_output_plugin mvpPlugin = {
+const struct audio_output_plugin mvpPlugin = {
 	"mvp",
 	mvp_testDefault,
 	mvp_initDriver,

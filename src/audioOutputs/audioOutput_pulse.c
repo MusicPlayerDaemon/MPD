@@ -200,7 +200,7 @@ static int pulse_playAudio(struct audio_output *audioOutput,
 	return 0;
 }
 
-struct audio_output_plugin pulsePlugin = {
+const struct audio_output_plugin pulsePlugin = {
 	"pulse",
 	pulse_testDefault,
 	pulse_initDriver,

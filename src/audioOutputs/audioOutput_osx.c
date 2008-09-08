@@ -355,7 +355,7 @@ static int osx_play(struct audio_output *audioOutput,
 	return 0;
 }
 
-struct audio_output_plugin osxPlugin = {
+const struct audio_output_plugin osxPlugin = {
 	"osx",
 	osx_testDefault,
 	osx_initDriver,

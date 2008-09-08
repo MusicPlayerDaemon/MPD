@@ -272,7 +272,7 @@ static int fifo_playAudio(struct audio_output *audioOutput,
 	return 0;
 }
 
-struct audio_output_plugin fifoPlugin = {
+const struct audio_output_plugin fifoPlugin = {
 	"fifo",
 	NULL, /* testDefaultDeviceFunc */
 	fifo_initDriver,

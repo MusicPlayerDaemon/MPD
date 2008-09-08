@@ -680,7 +680,7 @@ static void myShout_setTag(struct audio_output *audioOutput,
 	sd->tagToSend = 1;
 }
 
-struct audio_output_plugin shoutPlugin = {
+const struct audio_output_plugin shoutPlugin = {
 	"shout",
 	NULL,
 	myShout_initDriver,
