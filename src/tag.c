@@ -23,7 +23,6 @@
 #include "utf8.h"
 #include "log.h"
 #include "conf.h"
-#include "tagTracker.h"
 #include "song.h"
 
 /**

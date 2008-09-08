@@ -1,5 +1,6 @@
 /* the Music Player Daemon (MPD)
  * Copyright (C) 2003-2007 by Warren Dukes (warren.dukes@gmail.com)
+ * Copyright (C) 2008 Max Kellermann <max@duempel.org>
  * This project's homepage is: http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -22,7 +23,7 @@
 #include "tag.h"
 #include "client.h"
 #include "player_control.h"
-#include "tagTracker.h"
+#include "strset.h"
 #include "os_compat.h"
 
 Stats stats;
@@ -33,11 +34,48 @@ void initStats(void)
 	stats.numberOfSongs = 0;
 }
 
+struct visit_data {
+	enum tag_type type;
+	struct strset *set;
+};
+
+static int visit_tag_items(Song *song, void *_data)
+{
+	const struct visit_data *data = _data;
+	unsigned i;
+
+	if (song->tag == NULL)
+		return 0;
+
+	for (i = 0; i < (unsigned)song->tag->numOfItems; ++i) {
+		const struct tag_item *item = song->tag->items[i];
+		if (item->type == data->type)
+			strset_add(data->set, item->value);
+	}
+
+	return 0;
+}
+
+static unsigned int getNumberOfTagItems(int type)
+{
+	struct visit_data data = {
+		.type = type,
+		.set = strset_new(),
+	};
+	unsigned int ret;
+
+	traverseAllIn(NULL, visit_tag_items, NULL, &data);
+
+	ret = strset_size(data.set);
+	strset_free(data.set);
+	return ret;
+}
+
 int printStats(struct client *client)
 {
 	client_printf(client,
-		      "artists: %i\n"
-		      "albums: %i\n"
+		      "artists: %u\n"
+		      "albums: %u\n"
 		      "songs: %i\n"
 		      "uptime: %li\n"
 		      "playtime: %li\n"
