@@ -47,7 +47,6 @@ typedef struct _AlsaData {
 	int sampleSize;
 	int useMmap;
 	int canPause;
-	int canResume;
 } AlsaData;
 
 static AlsaData *newAlsaData(void)
@@ -262,7 +261,6 @@ configure_hw:
 		goto error;
 
 	ad->canPause = snd_pcm_hw_params_can_pause(hwparams);
-	ad->canResume = snd_pcm_hw_params_can_resume(hwparams);
 
 	/* configure SW params */
 	snd_pcm_sw_params_alloca(&swparams);
@@ -334,10 +332,10 @@ static int alsa_errorRecovery(AlsaData * ad, int err)
 		err = snd_pcm_pause(ad->pcmHandle, /* disable */ 0);
 		break;
 	case SND_PCM_STATE_SUSPENDED:
-		err = ad->canResume ?
-		    snd_pcm_resume(ad->pcmHandle) :
-		    snd_pcm_prepare(ad->pcmHandle);
-		break;
+		err = snd_pcm_resume(ad->pcmHandle);
+		if (err == -EAGAIN)
+			return 0;
+		/* fall-through to snd_pcm_prepare: */
 	case SND_PCM_STATE_SETUP:
 	case SND_PCM_STATE_XRUN:
 		err = snd_pcm_prepare(ad->pcmHandle);
