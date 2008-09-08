@@ -85,7 +85,7 @@ void strset_add(struct strset *set, const char *value)
 		return;
 	}
 
-	for (slot = base_slot->next; slot != NULL; slot = slot->next)
+	for (slot = base_slot; slot != NULL; slot = slot->next)
 		if (strcmp(slot->value, value) == 0)
 			/* found it - do nothing */
 			return;
