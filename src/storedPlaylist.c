@@ -59,22 +59,23 @@ static ListNode *nodeOfStoredPlaylist(List *list, int idx)
 }
 
 static enum playlist_result
-writeStoredPlaylistToPath(List *list, const char *fspath)
+writeStoredPlaylistToPath(List *list, const char *utf8path)
 {
 	ListNode *node;
 	FILE *file;
 	char *s;
+	char path_max_tmp[MPD_PATH_MAX];
 
-	assert(fspath != NULL);
+	assert(utf8path != NULL);
 
-	while (!(file = fopen(fspath, "w")) && errno == EINTR);
+	utf8_to_fs_playlist_path(path_max_tmp, utf8path);
+
+	while (!(file = fopen(path_max_tmp, "w")) && errno == EINTR);
 	if (file == NULL)
 		return PLAYLIST_RESULT_ERRNO;
 
 	node = list->firstNode;
 	while (node != NULL) {
-		char path_max_tmp[MPD_PATH_MAX];
-
 		s = utf8_to_fs_charset(path_max_tmp, (char *)node->data);
 		if (playlist_saveAbsolutePaths && !isValidRemoteUtf8Url(s))
 			s = rmp2amp_r(path_max_tmp, s);
