@@ -30,7 +30,7 @@ static uint64_t now(void)
 	return ((uint64_t)tv.tv_sec * 1000000) + tv.tv_usec;
 }
 
-Timer *timer_new(struct audio_format *af)
+Timer *timer_new(const struct audio_format *af)
 {
 	Timer *timer;
 

@@ -29,7 +29,7 @@ typedef struct _Timer {
 	int rate;
 } Timer;
 
-Timer *timer_new(struct audio_format *af);
+Timer *timer_new(const struct audio_format *af);
 
 void timer_free(Timer *timer);
 
