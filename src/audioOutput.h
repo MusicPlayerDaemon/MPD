@@ -37,7 +37,6 @@ int playAudioOutput(struct audio_output *audioOutput,
 void dropBufferedAudioOutput(struct audio_output *audioOutput);
 void closeAudioOutput(struct audio_output *audioOutput);
 void finishAudioOutput(struct audio_output *audioOutput);
-int keepAudioOutputAlive(struct audio_output *audioOutput, int ms);
 void sendMetadataToAudioOutput(struct audio_output *audioOutput,
 			       const struct tag *tag);
 
