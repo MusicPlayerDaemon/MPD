@@ -37,6 +37,9 @@ static const char default_device[] = "default";
 
 #include <alsa/asoundlib.h>
 
+/* #define MPD_SND_PCM_NONBLOCK SND_PCM_NONBLOCK */
+#define MPD_SND_PCM_NONBLOCK 0
+
 typedef snd_pcm_sframes_t alsa_writei_t(snd_pcm_t * pcm, const void *buffer,
 					snd_pcm_uframes_t size);
 
@@ -157,16 +160,18 @@ static int alsa_openDevice(struct audio_output *audioOutput)
 		      ad->device, audioFormat->bits);
 
 	err = snd_pcm_open(&ad->pcmHandle, ad->device,
-			   SND_PCM_STREAM_PLAYBACK, SND_PCM_NONBLOCK);
+			   SND_PCM_STREAM_PLAYBACK, MPD_SND_PCM_NONBLOCK);
 	if (err < 0) {
 		ad->pcmHandle = NULL;
 		goto error;
 	}
 
+#if MPD_SND_PCM_NONBLOCK == SND_PCM_NONBLOCK
 	cmd = "snd_pcm_nonblock";
 	err = snd_pcm_nonblock(ad->pcmHandle, 0);
 	if (err < 0)
 		goto error;
+#endif /* MPD_SND_PCM_NONBLOCK == SND_PCM_NONBLOCK */
 
 	period_time_ro = period_time = ad->period_time;
 configure_hw:
