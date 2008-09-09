@@ -20,7 +20,6 @@
 #include "output_api.h"
 #include "pcm_utils.h"
 #include "utils.h"
-#include "audio.h"
 
 int audio_output_open(struct audio_output *audioOutput,
 		      const struct audio_format *audioFormat)
@@ -28,7 +27,7 @@ int audio_output_open(struct audio_output *audioOutput,
 	int ret = 0;
 
 	if (audioOutput->open &&
-	    0 == cmpAudioFormat(audioFormat, &audioOutput->inAudioFormat)) {
+	    audio_format_equals(audioFormat, &audioOutput->inAudioFormat)) {
 		return 0;
 	}
 
@@ -46,8 +45,8 @@ int audio_output_open(struct audio_output *audioOutput,
 		ret = audioOutput->plugin->open(audioOutput);
 
 	audioOutput->sameInAndOutFormats =
-		!cmpAudioFormat(&audioOutput->inAudioFormat,
-		                &audioOutput->outAudioFormat);
+		audio_format_equals(&audioOutput->inAudioFormat,
+		                    &audioOutput->outAudioFormat);
 
 	return ret;
 }

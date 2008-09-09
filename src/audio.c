@@ -66,14 +66,6 @@ static unsigned int audio_output_count(void)
 	return nr;
 }
 
-int cmpAudioFormat(const struct audio_format *f1, const struct audio_format *f2)
-{
-	if (f1 && f2 && (f1->sampleRate == f2->sampleRate) &&
-	    (f1->bits == f2->bits) && (f1->channels == f2->channels))
-		return 0;
-	return 1;
-}
-
 /* make sure initPlayerData is called before this function!! */
 void initAudioDriver(void)
 {
@@ -230,13 +222,8 @@ void finishAudioDriver(void)
 
 int isCurrentAudioFormat(const struct audio_format *audioFormat)
 {
-	if (!audioFormat)
-		return 1;
-
-	if (cmpAudioFormat(audioFormat, &audio_format) != 0)
-		return 0;
-
-	return 1;
+	return audioFormat == NULL ||
+		audio_format_equals(audioFormat, &audio_format);
 }
 
 static void syncAudioDeviceStates(void)

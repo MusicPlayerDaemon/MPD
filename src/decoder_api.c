@@ -162,7 +162,7 @@ decoder_data(struct decoder *decoder, InputStream * inStream, int seekable,
 	static size_t convBufferLen;
 	int ret;
 
-	if (cmpAudioFormat(&(ob.audioFormat), &(dc.audioFormat)) == 0) {
+	if (audio_format_equals(&ob.audioFormat, &dc.audioFormat)) {
 		data = dataIn;
 		datalen = dataInLen;
 	} else {
