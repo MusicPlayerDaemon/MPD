@@ -32,36 +32,26 @@
 
 struct audio_output;
 
-typedef int (*AudioOutputTestDefaultDeviceFunc) (void);
-
-typedef int (*AudioOutputInitDriverFunc) (struct audio_output *audioOutput,
-					  ConfigParam * param);
-
-typedef void (*AudioOutputFinishDriverFunc) (struct audio_output *audioOutput);
-
-typedef int (*AudioOutputOpenDeviceFunc) (struct audio_output *audioOutput);
-
-typedef int (*AudioOutputPlayFunc) (struct audio_output *audioOutput,
-				    const char *playChunk, size_t size);
-
-typedef void (*AudioOutputDropBufferedAudioFunc) (struct audio_output *audioOutput);
-
-typedef void (*AudioOutputCloseDeviceFunc) (struct audio_output *audioOutput);
-
-typedef void (*AudioOutputSendMetadataFunc) (struct audio_output *audioOutput,
-					     const struct tag *tag);
-
 struct audio_output_plugin {
 	const char *name;
 
-	AudioOutputTestDefaultDeviceFunc testDefaultDeviceFunc;
-	AudioOutputInitDriverFunc initDriverFunc;
-	AudioOutputFinishDriverFunc finishDriverFunc;
-	AudioOutputOpenDeviceFunc openDeviceFunc;
-	AudioOutputPlayFunc playFunc;
-	AudioOutputDropBufferedAudioFunc dropBufferedAudioFunc;
-	AudioOutputCloseDeviceFunc closeDeviceFunc;
-	AudioOutputSendMetadataFunc sendMetdataFunc;
+	int (*test_default_device)(void);
+
+	int (*init)(struct audio_output *ao, ConfigParam *param);
+
+	void (*finish)(struct audio_output *ao);
+
+	int (*open)(struct audio_output *ao);
+
+	int (*play)(struct audio_output *ao,
+		    const char *playChunk, size_t size);
+
+	void (*cancel)(struct audio_output *ao);
+
+	void (*close)(struct audio_output *ao);
+
+	void (*send_tag)(struct audio_output *audioOutput,
+			 const struct tag *tag);
 };
 
 struct audio_output {
