@@ -66,14 +66,6 @@ static unsigned int audio_output_count(void)
 	return nr;
 }
 
-void copyAudioFormat(struct audio_format *dest, const struct audio_format *src)
-{
-	if (!src)
-		return;
-
-	memcpy(dest, src, sizeof(*dest));
-}
-
 int cmpAudioFormat(const struct audio_format *f1, const struct audio_format *f2)
 {
 	if (f1 && f2 && (f1->sampleRate == f2->sampleRate) &&
@@ -130,10 +122,9 @@ void initAudioDriver(void)
 void getOutputAudioFormat(const struct audio_format *inAudioFormat,
 			  struct audio_format *outAudioFormat)
 {
-	if (audio_configFormat) {
-		copyAudioFormat(outAudioFormat, audio_configFormat);
-	} else
-		copyAudioFormat(outAudioFormat, inAudioFormat);
+	*outAudioFormat = audio_configFormat != NULL
+		? *audio_configFormat
+		: *inAudioFormat;
 }
 
 void initAudioConfig(void)
@@ -316,7 +307,8 @@ int openAudioDevice(const struct audio_format *audioFormat)
 
 	if (!audioOpened || !isCurrentAudioFormat(audioFormat)) {
 		flushAudioBuffer();
-		copyAudioFormat(&audio_format, audioFormat);
+		if (audioFormat != NULL)
+			audio_format = *audioFormat;
 		audioBufferSize = (audio_format.bits >> 3) *
 		    audio_format.channels;
 		audioBufferSize *= audio_format.sampleRate >> 5;

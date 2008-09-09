@@ -27,8 +27,6 @@ struct audio_format;
 struct tag;
 struct client;
 
-void copyAudioFormat(struct audio_format *dest, const struct audio_format *src);
-
 int cmpAudioFormat(const struct audio_format *dest, const struct audio_format *src);
 
 void getOutputAudioFormat(const struct audio_format *inFormat,

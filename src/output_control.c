@@ -32,14 +32,12 @@ int audio_output_open(struct audio_output *audioOutput,
 		return 0;
 	}
 
-	copyAudioFormat(&audioOutput->inAudioFormat, audioFormat);
+	audioOutput->inAudioFormat = *audioFormat;
 
 	if (audioOutput->convertAudioFormat) {
-		copyAudioFormat(&audioOutput->outAudioFormat,
-		                &audioOutput->reqAudioFormat);
+		audioOutput->outAudioFormat = audioOutput->reqAudioFormat;
 	} else {
-		copyAudioFormat(&audioOutput->outAudioFormat,
-		                &audioOutput->inAudioFormat);
+		audioOutput->outAudioFormat = audioOutput->inAudioFormat;
 		if (audioOutput->open)
 			audio_output_close(audioOutput);
 	}

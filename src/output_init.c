@@ -103,7 +103,7 @@ int audio_output_init(struct audio_output *ao, ConfigParam * param)
 			FATAL("error parsing format at line %i\n", bp->line);
 		}
 
-		copyAudioFormat(&ao->outAudioFormat, &ao->reqAudioFormat);
+		ao->outAudioFormat = ao->reqAudioFormat;
 	}
 
 	if (plugin->init(ao, param) != 0)
