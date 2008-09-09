@@ -103,7 +103,7 @@ void initAudioDriver(void)
 		/* only allow param to be NULL if there just one audioOutput */
 		assert(param || (audioOutputArraySize == 1));
 
-		if (!initAudioOutput(output, param)) {
+		if (!audio_output_init(output, param)) {
 			if (param)
 			{
 				FATAL("problems configuring output device "
@@ -229,7 +229,7 @@ void finishAudioDriver(void)
 	unsigned int i;
 
 	for (i = 0; i < audioOutputArraySize; i++) {
-		finishAudioOutput(&audioOutputArray[i]);
+		audio_output_finish(&audioOutputArray[i]);
 	}
 
 	free(audioOutputArray);
@@ -263,16 +263,16 @@ static void syncAudioDeviceStates(void)
 			break;
 		case DEVICE_ON:
 			/* This will reopen only if the audio format changed */
-			if (openAudioOutput(audioOutput, &audio_format) < 0)
+			if (audio_output_open(audioOutput, &audio_format) < 0)
 				audioDeviceStates[i] = DEVICE_ENABLE;
 			break;
 		case DEVICE_ENABLE:
-			if (openAudioOutput(audioOutput, &audio_format) == 0)
+			if (audio_output_open(audioOutput, &audio_format) == 0)
 				audioDeviceStates[i] = DEVICE_ON;
 			break;
 		case DEVICE_DISABLE:
-			dropBufferedAudioOutput(audioOutput);
-			closeAudioOutput(audioOutput);
+			audio_output_cancel(audioOutput);
+			audio_output_close(audioOutput);
 			audioDeviceStates[i] = DEVICE_OFF;
 		}
 	}
@@ -291,8 +291,8 @@ static int flushAudioBuffer(void)
 	for (i = 0; i < audioOutputArraySize; ++i) {
 		if (audioDeviceStates[i] != DEVICE_ON)
 			continue;
-		err = playAudioOutput(&audioOutputArray[i], audioBuffer,
-				      audioBufferPos);
+		err = audio_output_play(&audioOutputArray[i], audioBuffer,
+					audioBufferPos);
 		if (!err)
 			ret = 0;
 		else if (err < 0)
@@ -335,7 +335,7 @@ int openAudioDevice(const struct audio_format *audioFormat)
 	else {
 		/* close all devices if there was an error */
 		for (i = 0; i < audioOutputArraySize; ++i) {
-			closeAudioOutput(&audioOutputArray[i]);
+			audio_output_close(&audioOutputArray[i]);
 		}
 
 		audioOpened = 0;
@@ -380,7 +380,7 @@ void dropBufferedAudio(void)
 
 	for (i = 0; i < audioOutputArraySize; ++i) {
 		if (audioDeviceStates[i] == DEVICE_ON)
-			dropBufferedAudioOutput(&audioOutputArray[i]);
+			audio_output_cancel(&audioOutputArray[i]);
 	}
 }
 
@@ -397,7 +397,7 @@ void closeAudioDevice(void)
 	for (i = 0; i < audioOutputArraySize; ++i) {
 		if (audioDeviceStates[i] == DEVICE_ON)
 			audioDeviceStates[i] = DEVICE_ENABLE;
-		closeAudioOutput(&audioOutputArray[i]);
+		audio_output_close(&audioOutputArray[i]);
 	}
 
 	audioOpened = 0;
@@ -408,7 +408,7 @@ void sendMetadataToAudioDevice(const struct tag *tag)
 	unsigned int i;
 
 	for (i = 0; i < audioOutputArraySize; ++i) {
-		sendMetadataToAudioOutput(&audioOutputArray[i], tag);
+		audio_output_send_tag(&audioOutputArray[i], tag);
 	}
 }
 

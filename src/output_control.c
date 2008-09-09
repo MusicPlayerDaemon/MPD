@@ -22,8 +22,8 @@
 #include "utils.h"
 #include "audio.h"
 
-int openAudioOutput(struct audio_output *audioOutput,
-		    const struct audio_format *audioFormat)
+int audio_output_open(struct audio_output *audioOutput,
+		      const struct audio_format *audioFormat)
 {
 	int ret = 0;
 
@@ -41,7 +41,7 @@ int openAudioOutput(struct audio_output *audioOutput,
 		copyAudioFormat(&audioOutput->outAudioFormat,
 		                &audioOutput->inAudioFormat);
 		if (audioOutput->open)
-			closeAudioOutput(audioOutput);
+			audio_output_close(audioOutput);
 	}
 
 	if (!audioOutput->open)
@@ -77,8 +77,8 @@ static void convertAudioFormat(struct audio_output *audioOutput,
 	*chunkArgPtr = audioOutput->convBuffer;
 }
 
-int playAudioOutput(struct audio_output *audioOutput,
-		    const char *playChunk, size_t size)
+int audio_output_play(struct audio_output *audioOutput,
+		      const char *playChunk, size_t size)
 {
 	int ret;
 
@@ -94,29 +94,29 @@ int playAudioOutput(struct audio_output *audioOutput,
 	return ret;
 }
 
-void dropBufferedAudioOutput(struct audio_output *audioOutput)
+void audio_output_cancel(struct audio_output *audioOutput)
 {
 	if (audioOutput->open)
 		audioOutput->plugin->cancel(audioOutput);
 }
 
-void closeAudioOutput(struct audio_output *audioOutput)
+void audio_output_close(struct audio_output *audioOutput)
 {
 	if (audioOutput->open)
 		audioOutput->plugin->close(audioOutput);
 }
 
-void finishAudioOutput(struct audio_output *audioOutput)
+void audio_output_finish(struct audio_output *audioOutput)
 {
-	closeAudioOutput(audioOutput);
+	audio_output_close(audioOutput);
 	if (audioOutput->plugin->finish)
 		audioOutput->plugin->finish(audioOutput);
 	if (audioOutput->convBuffer)
 		free(audioOutput->convBuffer);
 }
 
-void sendMetadataToAudioOutput(struct audio_output *audioOutput,
-			       const struct tag *tag)
+void audio_output_send_tag(struct audio_output *audioOutput,
+			   const struct tag *tag)
 {
 	if (audioOutput->plugin->send_tag)
 		audioOutput->plugin->send_tag(audioOutput, tag);

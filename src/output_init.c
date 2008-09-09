@@ -36,7 +36,7 @@
 	if(bp) str = bp->value; \
 }
 
-int initAudioOutput(struct audio_output *ao, ConfigParam * param)
+int audio_output_init(struct audio_output *ao, ConfigParam * param)
 {
 	const char *name = NULL;
 	char *format = NULL;

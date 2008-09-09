@@ -27,15 +27,15 @@ struct audio_output_plugin;
 struct audio_format;
 struct tag;
 
-int initAudioOutput(struct audio_output *, ConfigParam * param);
-int openAudioOutput(struct audio_output *audioOutput,
-		    const struct audio_format *audioFormat);
-int playAudioOutput(struct audio_output *audioOutput,
-		    const char *playChunk, size_t size);
-void dropBufferedAudioOutput(struct audio_output *audioOutput);
-void closeAudioOutput(struct audio_output *audioOutput);
-void finishAudioOutput(struct audio_output *audioOutput);
-void sendMetadataToAudioOutput(struct audio_output *audioOutput,
-			       const struct tag *tag);
+int audio_output_init(struct audio_output *, ConfigParam * param);
+int audio_output_open(struct audio_output *audioOutput,
+		      const struct audio_format *audioFormat);
+int audio_output_play(struct audio_output *audioOutput,
+		      const char *playChunk, size_t size);
+void audio_output_cancel(struct audio_output *audioOutput);
+void audio_output_close(struct audio_output *audioOutput);
+void audio_output_finish(struct audio_output *audioOutput);
+void audio_output_send_tag(struct audio_output *audioOutput,
+			   const struct tag *tag);
 
 #endif
