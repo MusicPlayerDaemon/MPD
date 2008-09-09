@@ -18,8 +18,8 @@
 
 #include "audio.h"
 #include "audio_format.h"
-#include "audioOutput.h"
 #include "output_api.h"
+#include "output_control.h"
 #include "log.h"
 #include "path.h"
 #include "client.h"

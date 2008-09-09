@@ -19,26 +19,7 @@
 #ifndef AUDIO_OUTPUT_H
 #define AUDIO_OUTPUT_H
 
-#include "../config.h"
-
-#include "conf.h"
 #include "os_compat.h"
-
-struct audio_output;
-struct audio_output_plugin;
-struct audio_format;
-struct tag;
-
-int initAudioOutput(struct audio_output *, ConfigParam * param);
-int openAudioOutput(struct audio_output *audioOutput,
-		    const struct audio_format *audioFormat);
-int playAudioOutput(struct audio_output *audioOutput,
-		    const char *playChunk, size_t size);
-void dropBufferedAudioOutput(struct audio_output *audioOutput);
-void closeAudioOutput(struct audio_output *audioOutput);
-void finishAudioOutput(struct audio_output *audioOutput);
-void sendMetadataToAudioOutput(struct audio_output *audioOutput,
-			       const struct tag *tag);
 
 void printAllOutputPluginTypes(FILE * fp);
 

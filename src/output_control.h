@@ -16,18 +16,26 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "audioOutput.h"
-#include "output_api.h"
-#include "output_list.h"
+#ifndef OUTPUT_CONTROL_H
+#define OUTPUT_CONTROL_H
 
-void printAllOutputPluginTypes(FILE * fp)
-{
-	unsigned i;
-	const struct audio_output_plugin *plugin;
+#include "conf.h"
+#include "os_compat.h"
 
-	audio_output_plugins_for_each(plugin, i)
-		fprintf(fp, "%s ", plugin->name);
+struct audio_output;
+struct audio_output_plugin;
+struct audio_format;
+struct tag;
 
-	fprintf(fp, "\n");
-	fflush(fp);
-}
+int initAudioOutput(struct audio_output *, ConfigParam * param);
+int openAudioOutput(struct audio_output *audioOutput,
+		    const struct audio_format *audioFormat);
+int playAudioOutput(struct audio_output *audioOutput,
+		    const char *playChunk, size_t size);
+void dropBufferedAudioOutput(struct audio_output *audioOutput);
+void closeAudioOutput(struct audio_output *audioOutput);
+void finishAudioOutput(struct audio_output *audioOutput);
+void sendMetadataToAudioOutput(struct audio_output *audioOutput,
+			       const struct tag *tag);
+
+#endif
