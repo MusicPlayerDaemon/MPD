@@ -30,7 +30,7 @@
 #define AUDIO_DEVICE_STATE_LEN	(sizeof(AUDIO_DEVICE_STATE)-1)
 #define AUDIO_BUFFER_SIZE	2*MPD_PATH_MAX
 
-static struct audio_format *audio_configFormat;
+static struct audio_format audio_configFormat;
 
 static struct audio_output *audioOutputArray;
 static unsigned int audioOutputArraySize;
@@ -115,8 +115,8 @@ void initAudioDriver(void)
 void getOutputAudioFormat(const struct audio_format *inAudioFormat,
 			  struct audio_format *outAudioFormat)
 {
-	*outAudioFormat = audio_configFormat != NULL
-		? *audio_configFormat
+	*outAudioFormat = audio_format_defined(&audio_configFormat)
+		? audio_configFormat
 		: *inAudioFormat;
 }
 
@@ -127,9 +127,7 @@ void initAudioConfig(void)
 	if (NULL == param || NULL == param->value)
 		return;
 
-	audio_configFormat = xmalloc(sizeof(*audio_configFormat));
-
-	if (0 != parseAudioConfig(audio_configFormat, param->value)) {
+	if (0 != parseAudioConfig(&audio_configFormat, param->value)) {
 		FATAL("error parsing \"%s\" at line %i\n",
 		      CONF_AUDIO_OUTPUT_FORMAT, param->line);
 	}
@@ -204,8 +202,7 @@ int parseAudioConfig(struct audio_format *audioFormat, char *conf)
 
 void finishAudioConfig(void)
 {
-	if (audio_configFormat)
-		free(audio_configFormat);
+	audio_format_clear(&audio_configFormat);
 }
 
 void finishAudioDriver(void)
