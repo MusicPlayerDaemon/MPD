@@ -345,11 +345,6 @@ int playAudio(const char *playChunk, size_t size)
 	return 0;
 }
 
-int isAudioDeviceOpen(void)
-{
-	return audioOpened;
-}
-
 void dropBufferedAudio(void)
 {
 	unsigned int i;

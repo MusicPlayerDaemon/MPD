@@ -49,8 +49,6 @@ void dropBufferedAudio(void);
 
 void closeAudioDevice(void);
 
-int isAudioDeviceOpen(void);
-
 int isCurrentAudioFormat(const struct audio_format *audioFormat);
 
 void sendMetadataToAudioDevice(const struct tag *tag);
