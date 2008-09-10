@@ -289,6 +289,27 @@ static int flushAudioBuffer(void)
 	return ret;
 }
 
+static size_t audio_buffer_size(const struct audio_format *af)
+{
+	return (af->bits >> 3) * af->channels * (af->sampleRate >> 5);
+}
+
+static void audio_buffer_resize(size_t size)
+{
+	if (audio_buffer.size == size)
+		return;
+
+	if (audio_buffer.buffer != NULL)
+		free(audio_buffer.buffer);
+
+	if (size > 0)
+		audio_buffer.buffer = xmalloc(size);
+	else
+		audio_buffer.buffer = NULL;
+
+	audio_buffer.size = size;
+}
+
 int openAudioDevice(const struct audio_format *audioFormat)
 {
 	int ret = -1;
@@ -302,10 +323,7 @@ int openAudioDevice(const struct audio_format *audioFormat)
 		flushAudioBuffer();
 		if (audioFormat != NULL)
 			audio_buffer.format = *audioFormat;
-		audio_buffer.size = (audio_buffer.format.bits >> 3) *
-		    audio_buffer.format.channels;
-		audio_buffer.size *= audio_buffer.format.sampleRate >> 5;
-		audio_buffer.buffer = xrealloc(audio_buffer.buffer, audio_buffer.size);
+		audio_buffer_resize(audio_buffer_size(&audio_buffer.format));
 	}
 
 	syncAudioDeviceStates();
