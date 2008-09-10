@@ -293,6 +293,9 @@ static size_t audio_buffer_size(const struct audio_format *af)
 
 static void audio_buffer_resize(size_t size)
 {
+	assert(audio_buffer.position == 0);
+	assert((audio_buffer.size == 0) == (audio_buffer.buffer == NULL));
+
 	if (audio_buffer.size == size)
 		return;
 
@@ -351,6 +354,8 @@ int playAudio(const char *playChunk, size_t size)
 	while (size > 0) {
 		send_size = audio_buffer.size - audio_buffer.position;
 		send_size = send_size < size ? send_size : size;
+
+		assert(send_size > 0);
 
 		memcpy(audio_buffer.buffer + audio_buffer.position, playChunk, send_size);
 		audio_buffer.position += send_size;
