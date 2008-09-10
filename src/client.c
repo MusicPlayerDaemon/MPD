@@ -419,6 +419,9 @@ static int client_input_received(struct client *client, int bytesRead)
 					*(buf_tail - 1) = '\0';
 			}
 			ret = client_process_line(client);
+			if (ret == COMMAND_RETURN_KILL ||
+			    ret == COMMAND_RETURN_CLOSE)
+				return ret;
 			if (client_is_expired(client))
 				return ret;
 			client->bufferPos = client->bufferLength;
@@ -442,10 +445,6 @@ static int client_input_received(struct client *client, int bytesRead)
 				client->bufferLength);
 			client->bufferPos = 0;
 		}
-		if (ret == COMMAND_RETURN_KILL || ret == COMMAND_RETURN_CLOSE) {
-			return ret;
-		}
-
 	}
 
 	return ret;
