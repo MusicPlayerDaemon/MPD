@@ -222,8 +222,9 @@ void finishAudioDriver(void)
 
 int isCurrentAudioFormat(const struct audio_format *audioFormat)
 {
-	return audioFormat == NULL ||
-		audio_format_equals(audioFormat, &audio_format);
+	assert(audioFormat != NULL);
+
+	return audio_format_equals(audioFormat, &audio_format);
 }
 
 static void syncAudioDeviceStates(void)
@@ -292,7 +293,8 @@ int openAudioDevice(const struct audio_format *audioFormat)
 	if (!audioOutputArray)
 		return -1;
 
-	if (!audioOpened || !isCurrentAudioFormat(audioFormat)) {
+	if (!audioOpened ||
+	    (audioFormat != NULL && !isCurrentAudioFormat(audioFormat))) {
 		flushAudioBuffer();
 		if (audioFormat != NULL)
 			audio_format = *audioFormat;
