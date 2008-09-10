@@ -231,7 +231,7 @@ static void syncAudioDeviceStates(void)
 	struct audio_output *audioOutput;
 	unsigned int i;
 
-	if (!audio_format.channels)
+	if (!audio_format_defined(&audio_format))
 		return;
 
 	for (i = 0; i < audioOutputArraySize; ++i) {

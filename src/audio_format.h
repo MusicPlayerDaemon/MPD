@@ -27,6 +27,18 @@ struct audio_format {
 	mpd_sint8 channels;
 };
 
+static inline void audio_format_clear(struct audio_format *af)
+{
+	af->sampleRate = 0;
+	af->bits = 0;
+	af->channels = 0;
+}
+
+static inline int audio_format_defined(const struct audio_format *af)
+{
+	return af->sampleRate != 0;
+}
+
 static inline int audio_format_equals(const struct audio_format *a,
 				      const struct audio_format *b)
 {
