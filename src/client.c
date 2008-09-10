@@ -400,7 +400,7 @@ static int client_process_line(struct client *client)
 
 static int client_input_received(struct client *client, int bytesRead)
 {
-	int ret = 0;
+	int ret;
 	char *buf_tail = &(client->buffer[client->bufferLength - 1]);
 
 	while (bytesRead > 0) {
@@ -440,7 +440,7 @@ static int client_input_received(struct client *client, int bytesRead)
 		}
 	}
 
-	return ret;
+	return 0;
 }
 
 static int client_read(struct client *client)
@@ -457,8 +457,6 @@ static int client_read(struct client *client)
 		return COMMAND_RETURN_CLOSE;
 	} else
 		return 0;
-
-	return 1;
 }
 
 static void client_manager_register_read_fd(fd_set * fds, int *fdmax)
