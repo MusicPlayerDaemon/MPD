@@ -386,11 +386,12 @@ void closeAudioDevice(void)
 {
 	unsigned int i;
 
-	flushAudioBuffer();
-
-	free(audio_buffer.buffer);
-	audio_buffer.buffer = NULL;
-	audio_buffer.size = 0;
+	if (audio_buffer.buffer != NULL) {
+		flushAudioBuffer();
+		free(audio_buffer.buffer);
+		audio_buffer.buffer = NULL;
+		audio_buffer.size = 0;
+	}
 
 	for (i = 0; i < audioOutputArraySize; ++i) {
 		if (audioDeviceStates[i] == DEVICE_ON)
