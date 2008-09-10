@@ -146,18 +146,6 @@ int parseAudioConfig(struct audio_format *audioFormat, char *conf)
 		return -1;
 	}
 
-	/*switch(audioFormat->sampleRate) {
-	   case 48000:
-	   case 44100:
-	   case 32000:
-	   case 16000:
-	   break;
-	   default:
-	   ERROR("sample rate %i can not be used for audio output\n",
-	   (int)audioFormat->sampleRate);
-	   return -1
-	   } */
-
 	if (audioFormat->sampleRate <= 0) {
 		ERROR("sample rate %i is not >= 0\n",
 		      (int)audioFormat->sampleRate);
