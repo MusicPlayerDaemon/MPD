@@ -30,8 +30,6 @@
 #define AUDIO_DEVICE_STATE_LEN	(sizeof(AUDIO_DEVICE_STATE)-1)
 #define AUDIO_BUFFER_SIZE	2*MPD_PATH_MAX
 
-static struct audio_format audio_format;
-
 static struct audio_format *audio_configFormat;
 
 static struct audio_output *audioOutputArray;
@@ -50,9 +48,12 @@ static enum ad_state *audioDeviceStates;
 
 static mpd_uint8 audioOpened;
 
-static size_t audioBufferSize;
-static char *audioBuffer;
-static size_t audioBufferPos;
+static struct {
+	struct audio_format format;
+
+	size_t size, position;
+	char *buffer;
+} audio_buffer;
 
 static unsigned int audio_output_count(void)
 {
@@ -224,7 +225,7 @@ int isCurrentAudioFormat(const struct audio_format *audioFormat)
 {
 	assert(audioFormat != NULL);
 
-	return audio_format_equals(audioFormat, &audio_format);
+	return audio_format_equals(audioFormat, &audio_buffer.format);
 }
 
 static void syncAudioDeviceStates(void)
@@ -232,7 +233,7 @@ static void syncAudioDeviceStates(void)
 	struct audio_output *audioOutput;
 	unsigned int i;
 
-	if (!audio_format_defined(&audio_format))
+	if (!audio_format_defined(&audio_buffer.format))
 		return;
 
 	for (i = 0; i < audioOutputArraySize; ++i) {
@@ -242,11 +243,13 @@ static void syncAudioDeviceStates(void)
 			break;
 		case DEVICE_ON:
 			/* This will reopen only if the audio format changed */
-			if (audio_output_open(audioOutput, &audio_format) < 0)
+			if (audio_output_open(audioOutput,
+					      &audio_buffer.format) < 0)
 				audioDeviceStates[i] = DEVICE_ENABLE;
 			break;
 		case DEVICE_ENABLE:
-			if (audio_output_open(audioOutput, &audio_format) == 0)
+			if (audio_output_open(audioOutput,
+					      &audio_buffer.format) == 0)
 				audioDeviceStates[i] = DEVICE_ON;
 			break;
 		case DEVICE_DISABLE:
@@ -262,7 +265,7 @@ static int flushAudioBuffer(void)
 	int ret = -1, err;
 	unsigned int i;
 
-	if (audioBufferPos == 0)
+	if (audio_buffer.position == 0)
 		return 0;
 
 	syncAudioDeviceStates();
@@ -270,8 +273,9 @@ static int flushAudioBuffer(void)
 	for (i = 0; i < audioOutputArraySize; ++i) {
 		if (audioDeviceStates[i] != DEVICE_ON)
 			continue;
-		err = audio_output_play(&audioOutputArray[i], audioBuffer,
-					audioBufferPos);
+		err = audio_output_play(&audioOutputArray[i],
+					audio_buffer.buffer,
+					audio_buffer.position);
 		if (!err)
 			ret = 0;
 		else if (err < 0)
@@ -280,7 +284,7 @@ static int flushAudioBuffer(void)
 			audioDeviceStates[i] = DEVICE_ENABLE;
 	}
 
-	audioBufferPos = 0;
+	audio_buffer.position = 0;
 
 	return ret;
 }
@@ -297,11 +301,11 @@ int openAudioDevice(const struct audio_format *audioFormat)
 	    (audioFormat != NULL && !isCurrentAudioFormat(audioFormat))) {
 		flushAudioBuffer();
 		if (audioFormat != NULL)
-			audio_format = *audioFormat;
-		audioBufferSize = (audio_format.bits >> 3) *
-		    audio_format.channels;
-		audioBufferSize *= audio_format.sampleRate >> 5;
-		audioBuffer = xrealloc(audioBuffer, audioBufferSize);
+			audio_buffer.format = *audioFormat;
+		audio_buffer.size = (audio_buffer.format.bits >> 3) *
+		    audio_buffer.format.channels;
+		audio_buffer.size *= audio_buffer.format.sampleRate >> 5;
+		audio_buffer.buffer = xrealloc(audio_buffer.buffer, audio_buffer.size);
 	}
 
 	syncAudioDeviceStates();
@@ -330,15 +334,15 @@ int playAudio(const char *playChunk, size_t size)
 	size_t send_size;
 
 	while (size > 0) {
-		send_size = audioBufferSize - audioBufferPos;
+		send_size = audio_buffer.size - audio_buffer.position;
 		send_size = send_size < size ? send_size : size;
 
-		memcpy(audioBuffer + audioBufferPos, playChunk, send_size);
-		audioBufferPos += send_size;
+		memcpy(audio_buffer.buffer + audio_buffer.position, playChunk, send_size);
+		audio_buffer.position += send_size;
 		size -= send_size;
 		playChunk += send_size;
 
-		if (audioBufferPos == audioBufferSize) {
+		if (audio_buffer.position == audio_buffer.size) {
 			if (flushAudioBuffer() < 0)
 				return -1;
 		}
@@ -352,7 +356,7 @@ void dropBufferedAudio(void)
 	unsigned int i;
 
 	syncAudioDeviceStates();
-	audioBufferPos = 0;
+	audio_buffer.position = 0;
 
 	for (i = 0; i < audioOutputArraySize; ++i) {
 		if (audioDeviceStates[i] == DEVICE_ON)
@@ -366,9 +370,9 @@ void closeAudioDevice(void)
 
 	flushAudioBuffer();
 
-	free(audioBuffer);
-	audioBuffer = NULL;
-	audioBufferSize = 0;
+	free(audio_buffer.buffer);
+	audio_buffer.buffer = NULL;
+	audio_buffer.size = 0;
 
 	for (i = 0; i < audioOutputArraySize; ++i) {
 		if (audioDeviceStates[i] == DEVICE_ON)
