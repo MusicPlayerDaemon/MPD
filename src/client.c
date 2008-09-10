@@ -453,10 +453,12 @@ static int client_read(struct client *client)
 
 	if (bytesRead > 0)
 		return client_input_received(client, bytesRead);
-	else if (bytesRead == 0 || (bytesRead < 0 && errno != EINTR)) {
-		return COMMAND_RETURN_CLOSE;
-	} else
+	else if (bytesRead < 0 && errno == EINTR)
+		/* try again later, after select() */
 		return 0;
+	else
+		/* peer disconnected or I/O error */
+		return COMMAND_RETURN_CLOSE;
 }
 
 static void client_manager_register_read_fd(fd_set * fds, int *fdmax)
