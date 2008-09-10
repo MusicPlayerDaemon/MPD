@@ -343,10 +343,8 @@ static int client_process_line(struct client *client)
 			      "list returned %i\n", client->num, ret);
 
 			if (ret == COMMAND_RETURN_CLOSE ||
-			    client_is_expired(client)) {
-				client_close(client);
+			    client_is_expired(client))
 				return COMMAND_RETURN_CLOSE;
-			}
 
 			if (ret == 0)
 				command_success(client);
@@ -368,8 +366,7 @@ static int client_process_line(struct client *client)
 				      (unsigned long)client->cmd_list_size,
 				      (unsigned long)
 				      client_max_command_list_size);
-				client_close(client);
-				ret = COMMAND_RETURN_CLOSE;
+				return COMMAND_RETURN_CLOSE;
 			} else
 				new_cmd_list_ptr(client, line, len);
 		}
@@ -388,10 +385,8 @@ static int client_process_line(struct client *client)
 			      client->num, ret);
 
 			if (ret == COMMAND_RETURN_CLOSE ||
-			    client_is_expired(client)) {
-				client_close(client);
+			    client_is_expired(client))
 				return COMMAND_RETURN_CLOSE;
-			}
 
 			if (ret == 0)
 				command_success(client);
@@ -422,16 +417,14 @@ static int client_input_received(struct client *client, int bytesRead)
 			if (ret == COMMAND_RETURN_KILL ||
 			    ret == COMMAND_RETURN_CLOSE)
 				return ret;
-			if (client_is_expired(client))
-				return ret;
+			assert(!client_is_expired(client));
 			client->bufferPos = client->bufferLength;
 		}
 		if (client->bufferLength == CLIENT_MAX_BUFFER_LENGTH) {
 			if (client->bufferPos == 0) {
 				ERROR("client %i: buffer overflow\n",
 				      client->num);
-				client_close(client);
-				return 1;
+				return COMMAND_RETURN_CLOSE;
 			}
 			if (client->cmd_list_OK >= 0 &&
 			    client->cmd_list &&
@@ -461,7 +454,7 @@ static int client_read(struct client *client)
 	if (bytesRead > 0)
 		return client_input_received(client, bytesRead);
 	else if (bytesRead == 0 || (bytesRead < 0 && errno != EINTR)) {
-		client_close(client);
+		return COMMAND_RETURN_CLOSE;
 	} else
 		return 0;
 
@@ -532,10 +525,16 @@ int client_manager_io(void)
 
 	list_for_each_entry_safe(client, n, &clients, siblings) {
 		if (FD_ISSET(client->fd, &rfds)) {
-			if (COMMAND_RETURN_KILL ==
-			    client_read(client)) {
+			ret = client_read(client);
+			if (ret == COMMAND_RETURN_KILL)
 				return COMMAND_RETURN_KILL;
+			if (ret == COMMAND_RETURN_CLOSE) {
+				client_close(client);
+				continue;
 			}
+
+			assert(!client_is_expired(client));
+
 			client->lastTime = time(NULL);
 		}
 		if (!client_is_expired(client) &&
