@@ -34,7 +34,13 @@ int audio_output_open(struct audio_output *audioOutput,
 	audioOutput->inAudioFormat = *audioFormat;
 
 	if (audio_format_defined(&audioOutput->reqAudioFormat)) {
-		audioOutput->outAudioFormat = audioOutput->reqAudioFormat;
+		/* copy reqAudioFormat to outAudioFormat only if the
+		   device is not yet open; if it is already open,
+		   plugin->open() may have modified outAudioFormat,
+		   and the value is already ok */
+		if (!audioOutput->open)
+			audioOutput->outAudioFormat =
+				audioOutput->reqAudioFormat;
 	} else {
 		audioOutput->outAudioFormat = audioOutput->inAudioFormat;
 		if (audioOutput->open)
