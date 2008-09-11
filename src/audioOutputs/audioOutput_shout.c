@@ -195,7 +195,7 @@ static int myShout_initDriver(struct audio_output *audioOutput,
 	}
 
 	checkBlockParam("format");
-	sd->audio_format = audioOutput->outAudioFormat;
+	sd->audio_format = audioOutput->reqAudioFormat;
 
 	if (shout_set_host(sd->shoutConn, host) != SHOUTERR_SUCCESS ||
 	    shout_set_port(sd->shoutConn, port) != SHOUTERR_SUCCESS ||
