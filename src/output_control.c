@@ -33,7 +33,7 @@ int audio_output_open(struct audio_output *audioOutput,
 
 	audioOutput->inAudioFormat = *audioFormat;
 
-	if (audioOutput->convertAudioFormat) {
+	if (audio_format_defined(&audioOutput->reqAudioFormat)) {
 		audioOutput->outAudioFormat = audioOutput->reqAudioFormat;
 	} else {
 		audioOutput->outAudioFormat = audioOutput->inAudioFormat;

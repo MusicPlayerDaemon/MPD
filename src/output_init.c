@@ -86,25 +86,22 @@ int audio_output_init(struct audio_output *ao, ConfigParam * param)
 	ao->plugin = plugin;
 	ao->open = 0;
 
-	ao->convertAudioFormat = 0;
 	ao->sameInAndOutFormats = 0;
 	ao->convBuffer = NULL;
 	ao->convBufferLen = 0;
 
 	memset(&ao->inAudioFormat, 0, sizeof(ao->inAudioFormat));
 	memset(&ao->outAudioFormat, 0, sizeof(ao->outAudioFormat));
-	memset(&ao->reqAudioFormat, 0, sizeof(ao->reqAudioFormat));
 	memset(&ao->convState, 0, sizeof(ConvState));
 
 	if (format) {
-		ao->convertAudioFormat = 1;
-
 		if (0 != parseAudioConfig(&ao->reqAudioFormat, format)) {
 			FATAL("error parsing format at line %i\n", bp->line);
 		}
 
 		ao->outAudioFormat = ao->reqAudioFormat;
-	}
+	} else
+		audio_format_clear(&ao->reqAudioFormat);
 
 	if (plugin->init(ao, param) != 0)
 		return 0;

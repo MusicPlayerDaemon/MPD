@@ -60,7 +60,6 @@ struct audio_output {
 
 	const struct audio_output_plugin *plugin;
 
-	int convertAudioFormat;
 	struct audio_format inAudioFormat;
 	struct audio_format outAudioFormat;
 	struct audio_format reqAudioFormat;
