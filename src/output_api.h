@@ -66,7 +66,6 @@ struct audio_output {
 	ConvState convState;
 	char *convBuffer;
 	size_t convBufferLen;
-	int sameInAndOutFormats;
 
 	void *data;
 };

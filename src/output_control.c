@@ -44,10 +44,6 @@ int audio_output_open(struct audio_output *audioOutput,
 	if (!audioOutput->open)
 		ret = audioOutput->plugin->open(audioOutput);
 
-	audioOutput->sameInAndOutFormats =
-		audio_format_equals(&audioOutput->inAudioFormat,
-		                    &audioOutput->outAudioFormat);
-
 	return ret;
 }
 
@@ -82,9 +78,9 @@ int audio_output_play(struct audio_output *audioOutput,
 	if (!audioOutput->open)
 		return -1;
 
-	if (!audioOutput->sameInAndOutFormats) {
+	if (!audio_format_equals(&audioOutput->inAudioFormat,
+				 &audioOutput->outAudioFormat))
 		convertAudioFormat(audioOutput, &playChunk, &size);
-	}
 
 	ret = audioOutput->plugin->play(audioOutput, playChunk, size);
 
