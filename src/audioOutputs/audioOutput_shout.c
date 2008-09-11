@@ -64,8 +64,8 @@ typedef struct _ShoutData {
 
 	Timer *timer;
 
-	/* just a pointer to audioOutput->outAudioFormat */
-	const struct audio_format *audioFormat;
+	/* the configured audio format */
+	struct audio_format audio_format;
 } ShoutData;
 
 static ShoutData *newShoutData(void)
@@ -81,7 +81,6 @@ static ShoutData *newShoutData(void)
 	ret->timeout = DEFAULT_CONN_TIMEOUT;
 	ret->connAttempts = 0;
 	ret->lastAttempt = 0;
-	ret->audioFormat = NULL;
 	ret->timer = NULL;
 
 	return ret;
@@ -196,7 +195,7 @@ static int myShout_initDriver(struct audio_output *audioOutput,
 	}
 
 	checkBlockParam("format");
-	sd->audioFormat = &audioOutput->outAudioFormat;
+	sd->audio_format = audioOutput->outAudioFormat;
 
 	if (shout_set_host(sd->shoutConn, host) != SHOUTERR_SUCCESS ||
 	    shout_set_port(sd->shoutConn, port) != SHOUTERR_SUCCESS ||
@@ -242,10 +241,10 @@ static int myShout_initDriver(struct audio_output *audioOutput,
 		char temp[11];
 		memset(temp, 0, sizeof(temp));
 
-		snprintf(temp, sizeof(temp), "%d", sd->audioFormat->channels);
+		snprintf(temp, sizeof(temp), "%d", sd->audio_format.channels);
 		shout_set_audio_info(sd->shoutConn, SHOUT_AI_CHANNELS, temp);
 
-		snprintf(temp, sizeof(temp), "%d", sd->audioFormat->sampleRate);
+		snprintf(temp, sizeof(temp), "%d", sd->audio_format.sampleRate);
 
 		shout_set_audio_info(sd->shoutConn, SHOUT_AI_SAMPLERATE, temp);
 
@@ -426,8 +425,8 @@ static int initEncoder(ShoutData * sd)
 
 	if (sd->quality >= -1.0) {
 		if (0 != vorbis_encode_init_vbr(&(sd->vi),
-						sd->audioFormat->channels,
-						sd->audioFormat->sampleRate,
+						sd->audio_format.channels,
+						sd->audio_format.sampleRate,
 						sd->quality * 0.1)) {
 			ERROR("problem setting up vorbis encoder for shout\n");
 			vorbis_info_clear(&(sd->vi));
@@ -435,8 +434,8 @@ static int initEncoder(ShoutData * sd)
 		}
 	} else {
 		if (0 != vorbis_encode_init(&(sd->vi),
-					    sd->audioFormat->channels,
-					    sd->audioFormat->sampleRate, -1.0,
+					    sd->audio_format.channels,
+					    sd->audio_format.sampleRate, -1.0,
 					    sd->bitrate * 1000, -1.0)) {
 			ERROR("problem setting up vorbis encoder for shout\n");
 			vorbis_info_clear(&(sd->vi));
@@ -607,7 +606,7 @@ static int myShout_play(struct audio_output *audioOutput,
 	ShoutData *sd = (ShoutData *) audioOutput->data;
 	float **vorbbuf;
 	unsigned int samples;
-	int bytes = sd->audioFormat->bits / 8;
+	int bytes = sd->audio_format.bits / 8;
 	int status;
 
 	if (!sd->timer->started)
@@ -629,14 +628,14 @@ static int myShout_play(struct audio_output *audioOutput,
 		}
 	}
 
-	samples = size / (bytes * sd->audioFormat->channels);
+	samples = size / (bytes * sd->audio_format.channels);
 
 	/* this is for only 16-bit audio */
 
 	vorbbuf = vorbis_analysis_buffer(&(sd->vd), samples);
 
 	for (i = 0; i < samples; i++) {
-		for (j = 0; j < sd->audioFormat->channels; j++) {
+		for (j = 0; j < sd->audio_format.channels; j++) {
 			vorbbuf[j][i] = (*((const mpd_sint16 *) playChunk)) / 32768.0;
 			playChunk += bytes;
 		}
