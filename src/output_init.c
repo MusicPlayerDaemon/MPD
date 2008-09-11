@@ -89,16 +89,12 @@ int audio_output_init(struct audio_output *ao, ConfigParam * param)
 	ao->convBuffer = NULL;
 	ao->convBufferLen = 0;
 
-	memset(&ao->inAudioFormat, 0, sizeof(ao->inAudioFormat));
-	memset(&ao->outAudioFormat, 0, sizeof(ao->outAudioFormat));
 	memset(&ao->convState, 0, sizeof(ConvState));
 
 	if (format) {
 		if (0 != parseAudioConfig(&ao->reqAudioFormat, format)) {
 			FATAL("error parsing format at line %i\n", bp->line);
 		}
-
-		ao->outAudioFormat = ao->reqAudioFormat;
 	} else
 		audio_format_clear(&ao->reqAudioFormat);
 
