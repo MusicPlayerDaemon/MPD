@@ -18,9 +18,24 @@
 
 #include "audioOutput_shout.h"
 
-#ifdef HAVE_SHOUT
+#ifdef HAVE_SHOUT_OGG
 
 #include "../utils.h"
+#include <vorbis/vorbisenc.h>
+
+typedef struct _ogg_vorbis_data {
+	ogg_stream_state os;
+	ogg_page og;
+	ogg_packet op;
+	ogg_packet header_main;
+	ogg_packet header_comments;
+	ogg_packet header_codebooks;
+
+	vorbis_dsp_state vd;
+	vorbis_block vb;
+	vorbis_info vi;
+	vorbis_comment vc;
+} ogg_vorbis_data;
 
 static void add_tag(ogg_vorbis_data *od, const char *name, char *value)
 {
@@ -31,9 +46,9 @@ static void add_tag(ogg_vorbis_data *od, const char *name, char *value)
 	}
 }
 
-void copy_tag_to_vorbis_comment(struct shout_data *sd)
+static void copy_tag_to_vorbis_comment(struct shout_data *sd)
 {
-	ogg_vorbis_data *od = &sd->od;
+	ogg_vorbis_data *od = (ogg_vorbis_data *)sd->encoder_data;
 
 	if (sd->tag) {
 		int i;
@@ -49,6 +64,7 @@ void copy_tag_to_vorbis_comment(struct shout_data *sd)
 			case TAG_ITEM_TITLE:
 				add_tag(od, "TITLE", sd->tag->items[i]->value);
 				break;
+
 			default:
 				break;
 			}
@@ -83,7 +99,7 @@ static int copy_ogg_buffer_to_shout_buffer(ogg_page *og,
 static int flush_ogg_buffer(struct shout_data *sd)
 {
 	shout_buffer *buf = &sd->buf;
-	ogg_vorbis_data *od = &sd->od;
+	ogg_vorbis_data *od = (ogg_vorbis_data *)sd->encoder_data;
 	int ret = 0;
 
 	if (ogg_stream_flush(&od->os, &od->og))
@@ -92,9 +108,9 @@ static int flush_ogg_buffer(struct shout_data *sd)
 	return ret;
 }
 
-int send_ogg_vorbis_header(struct shout_data *sd)
+static int send_ogg_vorbis_header(struct shout_data *sd)
 {
-	ogg_vorbis_data *od = &sd->od;
+	ogg_vorbis_data *od = (ogg_vorbis_data *)sd->encoder_data;
 
 	vorbis_analysis_headerout(&od->vd, &od->vc,
 				  &od->header_main,
@@ -121,9 +137,9 @@ static void finish_encoder(ogg_vorbis_data *od)
 	}
 }
 
-int shout_ogg_encoder_clear_encoder(struct shout_data *sd)
+static int shout_ogg_encoder_clear_encoder(struct shout_data *sd)
 {
-	ogg_vorbis_data *od = &sd->od;
+	ogg_vorbis_data *od = (ogg_vorbis_data *)sd->encoder_data;
 	int ret;
 
 	finish_encoder(od);
@@ -139,9 +155,30 @@ int shout_ogg_encoder_clear_encoder(struct shout_data *sd)
 	return ret;
 }
 
+static void shout_ogg_encoder_finish(struct shout_data *sd)
+{
+	ogg_vorbis_data *od = (ogg_vorbis_data *)sd->encoder_data;
+
+	if (od) {
+		free(od);
+		sd->encoder_data = NULL;
+	}
+}
+
+static int shout_ogg_encoder_init(struct shout_data *sd)
+{
+	ogg_vorbis_data *od;
+
+	if (NULL == (od = xmalloc(sizeof(ogg_vorbis_data))))
+		FATAL("error initializing ogg vorbis encoder data\n");
+	sd->encoder_data = od;
+
+	return 0;
+}
+
 static int reinit_encoder(struct shout_data *sd)
 {
-	ogg_vorbis_data *od = &sd->od;
+	ogg_vorbis_data *od = (ogg_vorbis_data *)sd->encoder_data;
 
 	vorbis_info_init(&od->vi);
 
@@ -150,7 +187,7 @@ static int reinit_encoder(struct shout_data *sd)
 						sd->audio_format.channels,
 						sd->audio_format.sampleRate,
 						sd->quality * 0.1)) {
-			ERROR("problem setting up vorbis encoder for shout\n");
+			ERROR("error initializing vorbis vbr\n");
 			vorbis_info_clear(&od->vi);
 			return -1;
 		}
@@ -159,7 +196,7 @@ static int reinit_encoder(struct shout_data *sd)
 					    sd->audio_format.channels,
 					    sd->audio_format.sampleRate, -1.0,
 					    sd->bitrate * 1000, -1.0)) {
-			ERROR("problem setting up vorbis encoder for shout\n");
+			ERROR("error initializing vorbis encoder\n");
 			vorbis_info_clear(&od->vi);
 			return -1;
 		}
@@ -173,7 +210,7 @@ static int reinit_encoder(struct shout_data *sd)
 	return 0;
 }
 
-int init_encoder(struct shout_data *sd)
+static int shout_ogg_encoder_init_encoder(struct shout_data *sd)
 {
 	if (reinit_encoder(sd))
 		return -1;
@@ -186,11 +223,11 @@ int init_encoder(struct shout_data *sd)
 	return 0;
 }
 
-int shout_ogg_encoder_send_metadata(struct shout_data * sd,
-				    mpd_unused char * song,
-				    mpd_unused size_t size)
+static int shout_ogg_encoder_send_metadata(struct shout_data *sd,
+					   mpd_unused char * song,
+					   mpd_unused size_t size)
 {
-	ogg_vorbis_data *od = &sd->od;
+	ogg_vorbis_data *od = (ogg_vorbis_data *)sd->encoder_data;
 
 	shout_ogg_encoder_clear_encoder(sd);
 	if (reinit_encoder(sd))
@@ -212,8 +249,8 @@ int shout_ogg_encoder_send_metadata(struct shout_data * sd,
 	return 0;
 }
 
-void shout_ogg_encoder_encode(struct shout_data *sd,
-			      const char *chunk, size_t size)
+static int shout_ogg_encoder_encode(struct shout_data *sd,
+				    const char *chunk, size_t size)
 {
 	shout_buffer *buf = &sd->buf;
 	unsigned int i;
@@ -221,7 +258,7 @@ void shout_ogg_encoder_encode(struct shout_data *sd,
 	float **vorbbuf;
 	unsigned int samples;
 	int bytes = sd->audio_format.bits / 8;
-	ogg_vorbis_data *od = &sd->od;
+	ogg_vorbis_data *od = (ogg_vorbis_data *)sd->encoder_data;
 
 	samples = size / (bytes * sd->audio_format.channels);
 	vorbbuf = vorbis_analysis_buffer(&od->vd, samples);
@@ -248,6 +285,24 @@ void shout_ogg_encoder_encode(struct shout_data *sd,
 
 	if (ogg_stream_pageout(&od->os, &od->og))
 		copy_ogg_buffer_to_shout_buffer(&od->og, buf);
+
+	return 0;
 }
+
+shout_encoder_plugin shout_ogg_encoder = {
+	"ogg",
+	SHOUT_FORMAT_VORBIS,
+
+	shout_ogg_encoder_clear_encoder,
+	shout_ogg_encoder_encode,
+	shout_ogg_encoder_finish,
+	shout_ogg_encoder_init,
+	shout_ogg_encoder_init_encoder,
+	shout_ogg_encoder_send_metadata,
+};
+
+#else
+
+DISABLED_SHOUT_ENCODER_PLUGIN(shout_ogg_encoder);
 
 #endif

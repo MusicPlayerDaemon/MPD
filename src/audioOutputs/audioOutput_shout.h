@@ -27,7 +27,38 @@
 #include "../timer.h"
 
 #include <shout/shout.h>
-#include <vorbis/vorbisenc.h>
+
+#define DISABLED_SHOUT_ENCODER_PLUGIN(plugin) shout_encoder_plugin plugin;
+
+typedef struct shout_data shout_data;
+
+typedef int (*shout_encoder_clear_encoder_func) (shout_data * sd);
+typedef int (*shout_encoder_encode_func) (shout_data * sd,
+					  const char * chunk,
+					  size_t len);
+typedef void (*shout_encoder_finish_func) (shout_data * sd);
+typedef int (*shout_encoder_init_func) (shout_data * sd);
+typedef int (*shout_encoder_init_encoder_func) (shout_data * sd);
+/* Called when there is a new MpdTag to encode into the stream.  If
+   this function returns non-zero, then the resulting song will be
+   passed to the shout server as metadata.  This allows the Ogg
+   encoder to send metadata via Vorbis comments in the stream, while
+   an MP3 encoder can use the Shout Server's metadata API. */
+typedef int (*shout_encoder_send_metadata_func) (shout_data * sd,
+						 char * song,
+						 size_t size);
+
+typedef struct _shout_encoder_plugin {
+	const char *name;
+	unsigned int shout_format;
+
+	shout_encoder_clear_encoder_func clear_encoder_func;
+	shout_encoder_encode_func encode_func;
+	shout_encoder_finish_func finish_func;
+	shout_encoder_init_func init_func;
+	shout_encoder_init_encoder_func init_encoder_func;
+	shout_encoder_send_metadata_func send_metadata_func;
+} shout_encoder_plugin;
 
 typedef struct _shout_buffer {
 	unsigned char *data;
@@ -35,26 +66,13 @@ typedef struct _shout_buffer {
 	size_t max_len;
 } shout_buffer;
 
-typedef struct _ogg_vorbis_data {
-	ogg_stream_state os;
-	ogg_page og;
-	ogg_packet op;
-	ogg_packet header_main;
-	ogg_packet header_comments;
-	ogg_packet header_codebooks;
-
-	vorbis_dsp_state vd;
-	vorbis_block vb;
-	vorbis_info vi;
-	vorbis_comment vc;
-} ogg_vorbis_data;
-
 struct shout_data {
 	shout_t *shout_conn;
 	shout_metadata_t *shout_meta;
 	int shout_error;
 
-	ogg_vorbis_data od;
+	shout_encoder_plugin *encoder;
+	void *encoder_data;
 
 	float quality;
 	int bitrate;
@@ -76,19 +94,7 @@ struct shout_data {
 	shout_buffer buf;
 };
 
-void copy_tag_to_vorbis_comment(struct shout_data *sd);
-
-int send_ogg_vorbis_header(struct shout_data *sd);
-
-int shout_ogg_encoder_clear_encoder(struct shout_data *sd);
-
-int init_encoder(struct shout_data *sd);
-
-int shout_ogg_encoder_send_metadata(struct shout_data * sd,
-				    char *song, size_t size);
-
-void shout_ogg_encoder_encode(struct shout_data *sd,
-			      const char *chunk, size_t len);
+extern shout_encoder_plugin shout_ogg_encoder;
 
 #endif
 

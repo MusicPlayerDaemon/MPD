@@ -20,6 +20,7 @@
 
 #ifdef HAVE_SHOUT
 
+#include "../list.h"
 #include "../utils.h"
 
 #define CONN_ATTEMPT_INTERVAL 60
@@ -28,6 +29,33 @@
 #define SHOUT_BUF_SIZE 8192
 
 static int shout_init_count;
+static List *shout_encoder_plugin_list;
+
+mpd_unused
+static void finish_shout_encoder_plugins(void)
+{
+	freeList(shout_encoder_plugin_list);
+}
+
+static void init_shout_encoder_plugins(void)
+{
+	shout_encoder_plugin_list = makeList(NULL, 0);
+}
+
+static void load_shout_encoder_plugin(shout_encoder_plugin * plugin)
+{
+	if (!plugin->name)
+		return;
+	insertInList(shout_encoder_plugin_list, plugin->name, plugin);
+}
+
+mpd_unused
+static void unload_shout_encoder_plugin(shout_encoder_plugin * plugin)
+{
+	if (!plugin->name)
+		return;
+	deleteFromList(shout_encoder_plugin_list, plugin->name);
+}
 
 static void clear_shout_buffer(struct shout_data * sd)
 {
@@ -82,6 +110,12 @@ static void free_shout_data(struct shout_data *sd)
 		}							\
 	}
 
+static void load_shout_plugins(void)
+{
+	init_shout_encoder_plugins();
+	load_shout_encoder_plugin(&shout_ogg_encoder);
+}
+
 static int my_shout_init_driver(struct audio_output *audio_output,
 				ConfigParam * param)
 {
@@ -91,10 +125,14 @@ static int my_shout_init_driver(struct audio_output *audio_output,
 	char *host;
 	char *mount;
 	char *passwd;
+	const char *encoding;
 	const char *user;
 	char *name;
 	BlockParam *block_param;
 	int public;
+	void *data = NULL;
+
+	load_shout_plugins();
 
 	sd = new_shout_data();
 
@@ -173,6 +211,25 @@ static int my_shout_init_driver(struct audio_output *audio_output,
 	check_block_param("format");
 	sd->audio_format = audio_output->reqAudioFormat;
 
+	block_param = getBlockParam(param, "encoding");
+	if (block_param) {
+		if (0 == strncasecmp(block_param->value, "mp3", 3))
+			encoding = block_param->value;
+		else if (0 == strncasecmp(block_param->value, "ogg", 3))
+			encoding = block_param->value;
+		else
+			FATAL("shout encoding \"%s\" is not \"ogg\" or "
+			      "\"mp3\", line %i\n", block_param->value,
+			      block_param->line);
+	} else {
+		encoding = "ogg";
+	}
+	if (!findInList(shout_encoder_plugin_list, encoding, &data)) {
+		FATAL("couldn't find shout encoder plugin for \"%s\" "
+		      "at line %i\n", encoding, block_param->line);
+	}
+	sd->encoder = (shout_encoder_plugin *) data;
+
 	if (shout_set_host(sd->shout_conn, host) != SHOUTERR_SUCCESS ||
 	    shout_set_port(sd->shout_conn, port) != SHOUTERR_SUCCESS ||
 	    shout_set_password(sd->shout_conn, passwd) != SHOUTERR_SUCCESS ||
@@ -181,7 +238,7 @@ static int my_shout_init_driver(struct audio_output *audio_output,
 	    shout_set_user(sd->shout_conn, user) != SHOUTERR_SUCCESS ||
 	    shout_set_public(sd->shout_conn, public) != SHOUTERR_SUCCESS ||
 	    shout_set_nonblocking(sd->shout_conn, 1) != SHOUTERR_SUCCESS ||
-	    shout_set_format(sd->shout_conn, SHOUT_FORMAT_VORBIS)
+	    shout_set_format(sd->shout_conn, sd->encoder->shout_format)
 	    != SHOUTERR_SUCCESS ||
 	    shout_set_protocol(sd->shout_conn, SHOUT_PROTOCOL_HTTP)
 	    != SHOUTERR_SUCCESS ||
@@ -237,7 +294,7 @@ static int my_shout_init_driver(struct audio_output *audio_output,
 
 	audio_output->data = sd;
 
-	return 0;
+	return sd->encoder->init_func(sd);
 }
 
 static int handle_shout_error(struct shout_data *sd, int err)
@@ -278,10 +335,10 @@ static int write_page(struct shout_data *sd)
 	return 0;
 }
 
-static void close_shout_conn(struct shout_data *sd)
+static void close_shout_conn(struct shout_data * sd)
 {
 	if (sd->opened) {
-		if (shout_ogg_encoder_clear_encoder(sd))
+		if (sd->encoder->clear_encoder_func(sd))
 			write_page(sd);
 	}
 
@@ -300,6 +357,7 @@ static void my_shout_finish_driver(struct audio_output *audio_output)
 
 	close_shout_conn(sd);
 
+	sd->encoder->finish_func(sd);
 	free_shout_data(sd);
 
 	shout_init_count--;
@@ -395,7 +453,7 @@ static int open_shout_conn(struct audio_output *audio_output)
 	if (status != 0)
 		return status;
 
-	if (init_encoder(sd) < 0) {
+	if (sd->encoder->init_encoder_func(sd) < 0) {
 		shout_close(sd->shout_conn);
 		return -1;
 	}
@@ -436,7 +494,7 @@ static void send_metadata(struct shout_data * sd)
 	if (!sd->opened || !sd->tag)
 		return;
 
-	if (shout_ogg_encoder_send_metadata(sd, song, size)) {
+	if (sd->encoder->send_metadata_func(sd, song, size)) {
 		shout_metadata_add(sd->shout_meta, "song", song);
 		if (SHOUTERR_SUCCESS != shout_set_metadata(sd->shout_conn,
 							   sd->shout_meta)) {
@@ -473,7 +531,10 @@ static int my_shout_play(struct audio_output *audio_output,
 		}
 	}
 
-	shout_ogg_encoder_encode(sd, chunk, size);
+	if (sd->encoder->encode_func(sd, chunk, size)) {
+		my_shout_close_device(audio_output);
+		return -1;
+	}
 
 	if (write_page(sd) < 0) {
 		my_shout_close_device(audio_output);

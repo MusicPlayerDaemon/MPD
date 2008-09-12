@@ -365,9 +365,11 @@ This specifies the icecast mountpoint to use.
 This specifies the password to use when logging in to the icecast server.
 .TP
 .B quality <quality>
-This specifies the ogg encoding quality to use.  The value must be between 0
+This specifies the encoding quality to use.  The value must be between 0
 and 10.  Fractional values, such as 2.5, are permitted.  Either the quality or
-the bitrate parameter must be specified, but not both.
+the bitrate parameter must be specified, but not both.  For Ogg, a
+higher quality number produces higher quality output.  For MP3, it's
+just the opposite, with lower numbers producing higher quality output.
 .TP
 .B bitrate <kbps>
 This specifies the bitrate to use for encoding.  Either the quality or the
@@ -377,6 +379,10 @@ bitrate parameter must be specified, but not both.
 This specifies the sample rate, bits per sample, and number of channels to use
 for encoding.
 .SH OPTIONAL SHOUT OUTPUT PARAMETERS
+.TP
+.B encoding <encoding>
+This specifies which output encoding to use.  Should be either "ogg"
+or "mp3".  The default is "ogg".
 .TP
 .B user <username>
 This specifies the username to use when logging in to the icecast server.  The

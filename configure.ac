@@ -73,7 +73,7 @@ if test -z "$prefix" || test "x$prefix" = xNONE; then
 fi
 
 AC_ARG_ENABLE(ao,[  --enable-ao             enable support for libao (default: disable)],[enable_ao=$enableval],[enable_ao=no])
-AC_ARG_ENABLE(shout,[  --disable-shout         disable support for streaming through shout (default: enable)],[enable_shout=$enableval],[enable_shout=yes])
+AC_ARG_ENABLE(shout_ogg,[  --disable-shout_ogg     disable support for ogg streaming through shout (default: enable)],[enable_shout_ogg=$enableval],[enable_shout_ogg=yes])
 AC_ARG_ENABLE(iconv,[  --disable-iconv         disable iconv support (default: enable)],[enable_iconv=$enableval],[enable_iconv=yes])
 AC_ARG_ENABLE(ipv6,[  --disable-ipv6          disable IPv6 support (default: enable)],[enable_ipv6=$enableval],[enable_ipv6=yes])
 AC_ARG_ENABLE(tcp,[  --disable-tcp           disable support for clients connecting via TCP (default: enable)],[enable_tcp=$enableval],[enable_tcp=yes])
@@ -185,14 +185,25 @@ case $host in
 		enable_osx=yes ;;
 esac
 
-if test x$enable_shout = xyes; then
+if test x$enable_shout_ogg = xyes || x$enable_shout_mp3 = xyes; then
+	XIPH_PATH_SHOUT([enable_shout=yes;AC_DEFINE(HAVE_SHOUT, 1, [Define to enable libshout support]) MPD_LIBS="$MPD_LIBS $SHOUT_LIBS" MPD_CFLAGS="$MPD_CFLAGS $SHOUT_CFLAGS"], [AC_MSG_WARN(libshout not found -- disabling shout support);enable_shout=no])
+fi
+
+if test x$enable_shout_ogg = xyes; then
 	if test x$enable_oggvorbis = xno; then
-		AC_MSG_WARN([disabling shout streaming support because vorbis is not enabled])
-		enable_shout=no
+		AC_MSG_WARN([disabling ogg shout streaming support because vorbis is not enabled])
+		enable_shout_ogg=no
 	fi
 	if test x$use_tremor = xyes; then
-		AC_MSG_WARN([disabling shout streaming support because tremor does not support vorbis encoding])
-		enable_shout=no
+		AC_MSG_WARN([disabling ogg shout streaming support because tremor does not support vorbis encoding])
+		enable_shout_ogg=no
+	fi
+	if test x$enable_shout = xno; then
+		AC_MSG_WARN([disabling ogg shout streaming support because libshout is not found])
+		enable_shout_ogg=no
+	fi
+	if test x$enable_shout_ogg = xyes; then
+		AC_DEFINE(HAVE_SHOUT_OGG, 1, [Define to enable ogg streaming support])
 	fi
 fi
 
@@ -200,12 +211,8 @@ if test x$enable_ao = xyes; then
 	XIPH_PATH_AO([AC_DEFINE(HAVE_AO, 1, [Define to play with ao]) MPD_LIBS="$MPD_LIBS $AO_LIBS" MPD_CFLAGS="$MPD_CFLAGS $AO_CFLAGS"], enable_ao=no)
 fi
 
-if test x$enable_shout = xyes; then
-	XIPH_PATH_SHOUT([AC_DEFINE(HAVE_SHOUT, 1, [Define to enable libshout support]) MPD_LIBS="$MPD_LIBS $SHOUT_LIBS" MPD_CFLAGS="$MPD_CFLAGS $SHOUT_CFLAGS"], enable_shout=no)
-fi
-
 if test x$enable_oss = xyes; then
-	AC_CHECK_HEADER(sys/soundcard.h,[enable_oss=yes;AC_DEFINE(HAVE_OSS,1,[Define to enable OSS])],[AC_MSG_WARN(Soundcard headers not found -- disabling OSS support);enable_oss=no])
+        AC_CHECK_HEADER(sys/soundcard.h,[enable_oss=yes;AC_DEFINE(HAVE_OSS,1,[Define to enable OSS])],[AC_MSG_WARN(Soundcard headers not found -- disabling OSS support);enable_oss=no])
 fi
 
 PKG_PROG_PKG_CONFIG
@@ -535,7 +542,7 @@ elif test x$enable_oggvorbis = xyes; then
 		MPD_LIBS="$MPD_LIBS $OGG_LIBS $VORBIS_LIBS $VORBISFILE_LIBS"
 		MPD_CFLAGS="$MPD_CFLAGS $OGG_CFLAGS $VORBIS_CFLAGS"
 
-		if test x$enable_shout = xyes; then
+		if test x$enable_shout_ogg = xyes; then
 			MPD_LIBS="$MPD_LIBS $VORBISENC_LIBS"
 			MPD_CFLAGS="$MPD_CFLAGS $VORBISFILE_CFLAGS $VORBISENC_CFLAGS"
 		fi
@@ -740,17 +747,17 @@ else
 	echo " Media MVP support .............disabled"
 fi
 
-if test x$enable_shout = xyes; then
-	echo " Shout streaming support .......enabled"
+if test x$enable_shout_ogg = xyes; then
+	echo " Shout ogg streaming support ...enabled"
 else
-	echo " Shout streaming support .......disabled"
+	echo " Shout ogg streaming support ...disabled"
 fi
 
 echo ""
 
 if test x$enable_ao = xno &&
    test x$enable_oss = xno &&
-   test x$enable_shout = xno &&
+   test x$enable_shout_ogg = xno &&
    test x$enable_alsa = xno &&
    test x$enable_osx = xno &&
    test x$enable_pulse = xno &&

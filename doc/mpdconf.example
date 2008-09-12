@@ -112,6 +112,7 @@ error_file                      "~/.mpd/mpd.error"
 #
 #audio_output {
 #        type                    "shout"
+#        encoding		 "ogg"
 #        name                    "My Shout Stream"
 #        host                    "localhost"
 #        port                    "8000"
