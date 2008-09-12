@@ -35,10 +35,7 @@ typedef struct _shout_buffer {
 	size_t max_len;
 } shout_buffer;
 
-struct shout_data {
-	shout_t *shout_conn;
-	int shout_error;
-
+typedef struct _ogg_vorbis_data {
 	ogg_stream_state os;
 	ogg_page og;
 	ogg_packet op;
@@ -50,6 +47,13 @@ struct shout_data {
 	vorbis_block vb;
 	vorbis_info vi;
 	vorbis_comment vc;
+} ogg_vorbis_data;
+
+struct shout_data {
+	shout_t *shout_conn;
+	int shout_error;
+
+	ogg_vorbis_data od;
 
 	float quality;
 	int bitrate;
