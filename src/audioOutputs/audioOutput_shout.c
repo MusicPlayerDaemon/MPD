@@ -294,6 +294,9 @@ static int write_page(struct shout_data *sd)
 {
 	int err;
 
+	if (sd->buf.len == 0)
+		return 0;
+
 	shout_sync(sd->shout_conn);
 	err = shout_send(sd->shout_conn, sd->buf.data, sd->buf.len);
 	if (handle_shout_error(sd, err) < 0)
@@ -426,8 +429,7 @@ static int open_shout_conn(struct audio_output *audio_output)
 		return -1;
 	}
 
-	if (sd->buf.len)
-		write_page(sd);
+	write_page(sd);
 
 	sd->shout_error = 0;
 	sd->opened = 1;
