@@ -45,12 +45,6 @@ shout_encoder_plugin_get(const char *name)
 	return NULL;
 }
 
-static void clear_shout_buffer(struct shout_data * sd)
-{
-	sd->buf.len = 0;
-	sd->buf.data[0] = '\0';
-}
-
 static struct shout_data *new_shout_data(void)
 {
 	struct shout_data *ret = xmalloc(sizeof(*ret));
@@ -66,7 +60,7 @@ static struct shout_data *new_shout_data(void)
 	ret->conn_attempts = 0;
 	ret->last_attempt = 0;
 	ret->timer = NULL;
-	clear_shout_buffer(ret);
+	ret->buf.len = 0;
 
 	return ret;
 }
@@ -304,7 +298,7 @@ static int write_page(struct shout_data *sd)
 	err = shout_send(sd->shout_conn, sd->buf.data, sd->buf.len);
 	if (handle_shout_error(sd, err) < 0)
 		return -1;
-	clear_shout_buffer(sd);
+	sd->buf.len = 0;
 
 	return 0;
 }
