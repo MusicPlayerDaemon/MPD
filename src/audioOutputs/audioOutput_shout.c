@@ -32,8 +32,6 @@
 
 static int shout_init_count;
 
-/* lots of this code blatantly stolent from bossogg/bossao2 */
-
 struct shout_data {
 	shout_t *shout_conn;
 	int shout_error;
@@ -593,8 +591,6 @@ static void send_metadata(struct shout_data * sd)
 		}
 	}
 
-	/*if(sd->tag) freeMpdTag(sd->tag);
-	  sd->tag = NULL; */
 	sd->tag_to_send = 0;
 }
 
