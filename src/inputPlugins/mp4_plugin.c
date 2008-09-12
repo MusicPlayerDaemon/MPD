@@ -174,6 +174,13 @@ static int mp4_decode(struct decoder * mpd_decoder, InputStream * inStream)
 	total_time = ((float)file_time) / scale;
 
 	numSamples = mp4ff_num_samples(mp4fh, track);
+	if (numSamples > (long)(INT_MAX / sizeof(float))) {
+		 ERROR("Integer overflow.\n");
+		 faacDecClose(decoder);
+		 mp4ff_close(mp4fh);
+		 free(mp4cb);
+		 return -1;
+	}
 
 	file_time = 0.0;
 
