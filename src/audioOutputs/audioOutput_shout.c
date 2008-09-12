@@ -29,13 +29,13 @@
 
 static int shout_init_count;
 
-static struct shout_encoder_plugin *const shout_encoder_plugins[] = {
+static const struct shout_encoder_plugin *const shout_encoder_plugins[] = {
 	&shout_mp3_encoder,
 	&shout_ogg_encoder,
 	NULL
 };
 
-static struct shout_encoder_plugin *
+static const struct shout_encoder_plugin *
 shout_encoder_plugin_get(const char *name)
 {
 	unsigned i;

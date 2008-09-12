@@ -64,7 +64,7 @@ struct shout_data {
 	shout_metadata_t *shout_meta;
 	int shout_error;
 
-	struct shout_encoder_plugin *encoder;
+	const struct shout_encoder_plugin *encoder;
 	void *encoder_data;
 
 	float quality;
@@ -87,8 +87,8 @@ struct shout_data {
 	struct shout_buffer buf;
 };
 
-extern struct shout_encoder_plugin shout_mp3_encoder;
-extern struct shout_encoder_plugin shout_ogg_encoder;
+extern const struct shout_encoder_plugin shout_mp3_encoder;
+extern const struct shout_encoder_plugin shout_ogg_encoder;
 
 #endif
 

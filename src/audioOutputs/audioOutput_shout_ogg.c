@@ -289,7 +289,7 @@ static int shout_ogg_encoder_encode(struct shout_data *sd,
 	return 0;
 }
 
-struct shout_encoder_plugin shout_ogg_encoder = {
+const struct shout_encoder_plugin shout_ogg_encoder = {
 	"ogg",
 	SHOUT_FORMAT_VORBIS,
 

@@ -174,7 +174,7 @@ static int shout_mp3_encoder_encode(struct shout_data *sd,
 	return 0;
 }
 
-struct shout_encoder_plugin shout_mp3_encoder = {
+const struct shout_encoder_plugin shout_mp3_encoder = {
 	"mp3",
 	SHOUT_FORMAT_MP3,
 
