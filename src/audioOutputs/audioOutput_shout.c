@@ -16,55 +16,16 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "../output_api.h"
+#include "audioOutput_shout.h"
 
 #ifdef HAVE_SHOUT
 
 #include "../utils.h"
-#include "../log.h"
-#include "../timer.h"
-
-#include <shout/shout.h>
-#include <vorbis/vorbisenc.h>
 
 #define CONN_ATTEMPT_INTERVAL 60
 #define DEFAULT_CONN_TIMEOUT  2
 
 static int shout_init_count;
-
-struct shout_data {
-	shout_t *shout_conn;
-	int shout_error;
-
-	ogg_stream_state os;
-	ogg_page og;
-	ogg_packet op;
-	ogg_packet header_main;
-	ogg_packet header_comments;
-	ogg_packet header_codebooks;
-
-	vorbis_dsp_state vd;
-	vorbis_block vb;
-	vorbis_info vi;
-	vorbis_comment vc;
-
-	float quality;
-	int bitrate;
-
-	int opened;
-
-	struct tag *tag;
-	int tag_to_send;
-
-	int timeout;
-	int conn_attempts;
-	time_t last_attempt;
-
-	Timer *timer;
-
-	/* the configured audio format */
-	struct audio_format audio_format;
-};
 
 static struct shout_data *new_shout_data(void)
 {

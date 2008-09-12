@@ -36,6 +36,7 @@ mpd_headers = \
 	output_api.h \
 	output_list.h \
 	output_control.h \
+	audioOutputs/audioOutput_shout.h \
 	buffer2array.h \
 	charConv.h \
 	command.h \
