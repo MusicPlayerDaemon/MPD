@@ -54,7 +54,42 @@ void copy_tag_to_vorbis_comment(struct shout_data *sd)
 	}
 }
 
-void send_ogg_vorbis_header(struct shout_data *sd)
+static int copy_ogg_buffer_to_shout_buffer(ogg_page *og,
+					   shout_buffer *buf)
+{
+	if (buf->max_len - buf->len >= (size_t)og->header_len) {
+		memcpy(buf->data + buf->len,
+		       og->header, og->header_len);
+		buf->len += og->header_len;
+	} else {
+		ERROR("%s: not enough buffer space!\n", __func__);
+		return -1;
+	}
+
+	if (buf->max_len - buf->len >= (size_t)og->body_len) {
+		memcpy(buf->data + buf->len,
+		       og->body, og->body_len);
+		buf->len += og->body_len;
+	} else {
+		ERROR("%s: not enough buffer space!\n", __func__);
+		return -1;
+	}
+
+	return 0;
+}
+
+static int flush_ogg_buffer(struct shout_data *sd)
+{
+	shout_buffer *buf = &sd->buf;
+	int ret = 0;
+
+	if (ogg_stream_flush(&sd->os, &sd->og))
+		ret = copy_ogg_buffer_to_shout_buffer(&sd->og, buf);
+
+	return ret;
+}
+
+int send_ogg_vorbis_header(struct shout_data *sd)
 {
 	vorbis_analysis_headerout(&(sd->vd), &(sd->vc), &(sd->header_main),
 				  &(sd->header_comments),
@@ -63,6 +98,8 @@ void send_ogg_vorbis_header(struct shout_data *sd)
 	ogg_stream_packetin(&(sd->os), &(sd->header_main));
 	ogg_stream_packetin(&(sd->os), &(sd->header_comments));
 	ogg_stream_packetin(&(sd->os), &(sd->header_codebooks));
+
+	return flush_ogg_buffer(sd);
 }
 
 static void finish_encoder(struct shout_data *sd)
@@ -78,27 +115,24 @@ static void finish_encoder(struct shout_data *sd)
 	}
 }
 
-static int flush_encoder(struct shout_data *sd)
+int shout_ogg_encoder_clear_encoder(struct shout_data *sd)
 {
-	return (ogg_stream_pageout(&sd->os, &sd->og) > 0);
-}
+	int ret;
 
-void shout_ogg_encoder_clear_encoder(struct shout_data *sd)
-{
 	finish_encoder(sd);
-	while (1 == flush_encoder(sd)) {
-		if (!sd->shout_error)
-			write_page(sd);
-	}
+	if ((ret = ogg_stream_pageout(&sd->os, &sd->og)))
+		copy_ogg_buffer_to_shout_buffer(&sd->og, &sd->buf);
 
 	vorbis_comment_clear(&sd->vc);
 	ogg_stream_clear(&sd->os);
 	vorbis_block_clear(&sd->vb);
 	vorbis_dsp_clear(&sd->vd);
 	vorbis_info_clear(&sd->vi);
+
+	return ret;
 }
 
-int init_encoder(struct shout_data *sd)
+static int reinit_encoder(struct shout_data *sd)
 {
 	vorbis_info_init(&(sd->vi));
 
@@ -130,10 +164,23 @@ int init_encoder(struct shout_data *sd)
 	return 0;
 }
 
+int init_encoder(struct shout_data *sd)
+{
+	if (reinit_encoder(sd))
+		return -1;
+
+	if (send_ogg_vorbis_header(sd)) {
+		ERROR("error sending ogg vorbis header for shout\n");
+		return -1;
+	}
+
+	return 0;
+}
+
 int shout_ogg_encoder_send_metadata(struct shout_data * sd)
 {
 	shout_ogg_encoder_clear_encoder(sd);
-	if (init_encoder(sd) < 0)
+	if (reinit_encoder(sd))
 		return 0;
 
 	copy_tag_to_vorbis_comment(sd);
@@ -146,10 +193,7 @@ int shout_ogg_encoder_send_metadata(struct shout_data * sd)
 	ogg_stream_packetin(&(sd->os), &(sd->header_comments));
 	ogg_stream_packetin(&(sd->os), &(sd->header_codebooks));
 
-	while (ogg_stream_flush(&sd->os, &sd->og)) {
-		if (write_page(sd) < 0)
-			return -1;
-	}
+	flush_ogg_buffer(sd);
 
 	return 0;
 }
@@ -157,6 +201,7 @@ int shout_ogg_encoder_send_metadata(struct shout_data * sd)
 void shout_ogg_encoder_encode(struct shout_data *sd,
 			      const char *chunk, size_t size)
 {
+	shout_buffer *buf = &sd->buf;
 	unsigned int i;
 	int j;
 	float **vorbbuf;
@@ -185,6 +230,9 @@ void shout_ogg_encoder_encode(struct shout_data *sd,
 			ogg_stream_packetin(&(sd->os), &(sd->op));
 		}
 	}
+
+	if (ogg_stream_pageout(&sd->os, &sd->og))
+		copy_ogg_buffer_to_shout_buffer(&sd->og, buf);
 }
 
 #endif

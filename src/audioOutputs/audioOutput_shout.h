@@ -29,6 +29,12 @@
 #include <shout/shout.h>
 #include <vorbis/vorbisenc.h>
 
+typedef struct _shout_buffer {
+	unsigned char *data;
+	size_t len;
+	size_t max_len;
+} shout_buffer;
+
 struct shout_data {
 	shout_t *shout_conn;
 	int shout_error;
@@ -61,15 +67,15 @@ struct shout_data {
 
 	/* the configured audio format */
 	struct audio_format audio_format;
-};
 
-int write_page(struct shout_data *sd);
+	shout_buffer buf;
+};
 
 void copy_tag_to_vorbis_comment(struct shout_data *sd);
 
-void send_ogg_vorbis_header(struct shout_data *sd);
+int send_ogg_vorbis_header(struct shout_data *sd);
 
-void shout_ogg_encoder_clear_encoder(struct shout_data *sd);
+int shout_ogg_encoder_clear_encoder(struct shout_data *sd);
 
 int init_encoder(struct shout_data *sd);
 

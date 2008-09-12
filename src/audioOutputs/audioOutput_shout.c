@@ -25,7 +25,15 @@
 #define CONN_ATTEMPT_INTERVAL 60
 #define DEFAULT_CONN_TIMEOUT  2
 
+#define SHOUT_BUF_SIZE 8192
+
 static int shout_init_count;
+
+static void clear_shout_buffer(struct shout_data * sd)
+{
+	sd->buf.len = 0;
+	sd->buf.data[0] = '\0';
+}
 
 static struct shout_data *new_shout_data(void)
 {
@@ -41,6 +49,10 @@ static struct shout_data *new_shout_data(void)
 	ret->conn_attempts = 0;
 	ret->last_attempt = 0;
 	ret->timer = NULL;
+	ret->buf.data = xmalloc(sizeof(unsigned char) *
+				SHOUT_BUF_SIZE);
+	ret->buf.max_len = SHOUT_BUF_SIZE;
+	clear_shout_buffer(ret);
 
 	return ret;
 }
@@ -51,6 +63,8 @@ static void free_shout_data(struct shout_data *sd)
 		shout_free(sd->shout_conn);
 	if (sd->tag)
 		tag_free(sd->tag);
+	if (sd->buf.data)
+		free(sd->buf.data);
 	if (sd->timer)
 		timer_free(sd->timer);
 
@@ -248,25 +262,25 @@ static int handle_shout_error(struct shout_data *sd, int err)
 	return 0;
 }
 
-int write_page(struct shout_data *sd)
+static int write_page(struct shout_data *sd)
 {
 	int err;
 
 	shout_sync(sd->shout_conn);
-	err = shout_send(sd->shout_conn, sd->og.header, sd->og.header_len);
+	err = shout_send(sd->shout_conn, sd->buf.data, sd->buf.len);
 	if (handle_shout_error(sd, err) < 0)
 		return -1;
-	err = shout_send(sd->shout_conn, sd->og.body, sd->og.body_len);
-	if (handle_shout_error(sd, err) < 0)
-		return -1;
+	clear_shout_buffer(sd);
 
 	return 0;
 }
 
 static void close_shout_conn(struct shout_data *sd)
 {
-	if (sd->opened)
-		shout_ogg_encoder_clear_encoder(sd);
+	if (sd->opened) {
+		if (shout_ogg_encoder_clear_encoder(sd))
+			write_page(sd);
+	}
 
 	if (shout_get_connected(sd->shout_conn) != SHOUTERR_UNCONNECTED &&
 	    shout_close(sd->shout_conn) != SHOUTERR_SUCCESS) {
@@ -383,22 +397,12 @@ static int open_shout_conn(struct audio_output *audio_output)
 		return -1;
 	}
 
+	if (sd->buf.len)
+		write_page(sd);
+
 	sd->shout_error = 0;
-
-	copy_tag_to_vorbis_comment(sd);
-
-	send_ogg_vorbis_header(sd);
-
 	sd->opened = 1;
-	sd->tag_to_send = 0;
-
-	while (ogg_stream_flush(&(sd->os), &(sd->og))) {
-		if (write_page(sd) < 0) {
-			close_shout_conn(sd);
-			return -1;
-		}
-	}
-
+	sd->tag_to_send = 1;
 	sd->conn_attempts = 0;
 
 	return 0;
@@ -461,11 +465,9 @@ static int my_shout_play(struct audio_output *audio_output,
 
 	shout_ogg_encoder_encode(sd, chunk, size);
 
-	while (ogg_stream_pageout(&(sd->os), &(sd->og)) != 0) {
-		if (write_page(sd) < 0) {
-			my_shout_close_device(audio_output);
-			return -1;
-		}
+	if (write_page(sd) < 0) {
+		my_shout_close_device(audio_output);
+		return -1;
 	}
 
 	return 0;
