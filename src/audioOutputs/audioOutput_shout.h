@@ -54,9 +54,8 @@ struct shout_encoder_plugin {
 };
 
 struct shout_buffer {
-	unsigned char *data;
+	unsigned char data[8192];
 	size_t len;
-	size_t max_len;
 };
 
 struct shout_data {

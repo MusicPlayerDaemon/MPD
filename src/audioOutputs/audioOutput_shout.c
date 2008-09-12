@@ -25,8 +25,6 @@
 #define CONN_ATTEMPT_INTERVAL 60
 #define DEFAULT_CONN_TIMEOUT  2
 
-#define SHOUT_BUF_SIZE 8192
-
 static int shout_init_count;
 
 static const struct shout_encoder_plugin *const shout_encoder_plugins[] = {
@@ -68,9 +66,6 @@ static struct shout_data *new_shout_data(void)
 	ret->conn_attempts = 0;
 	ret->last_attempt = 0;
 	ret->timer = NULL;
-	ret->buf.data = xmalloc(sizeof(unsigned char) *
-				SHOUT_BUF_SIZE);
-	ret->buf.max_len = SHOUT_BUF_SIZE;
 	clear_shout_buffer(ret);
 
 	return ret;
@@ -84,8 +79,6 @@ static void free_shout_data(struct shout_data *sd)
 		shout_free(sd->shout_conn);
 	if (sd->tag)
 		tag_free(sd->tag);
-	if (sd->buf.data)
-		free(sd->buf.data);
 	if (sd->timer)
 		timer_free(sd->timer);
 

@@ -75,7 +75,7 @@ static void copy_tag_to_vorbis_comment(struct shout_data *sd)
 static int copy_ogg_buffer_to_shout_buffer(ogg_page *og,
 					   struct shout_buffer *buf)
 {
-	if (buf->max_len - buf->len >= (size_t)og->header_len) {
+	if (sizeof(buf->data) - buf->len >= (size_t)og->header_len) {
 		memcpy(buf->data + buf->len,
 		       og->header, og->header_len);
 		buf->len += og->header_len;
@@ -84,7 +84,7 @@ static int copy_ogg_buffer_to_shout_buffer(ogg_page *og,
 		return -1;
 	}
 
-	if (buf->max_len - buf->len >= (size_t)og->body_len) {
+	if (sizeof(buf->data) - buf->len >= (size_t)og->body_len) {
 		memcpy(buf->data + buf->len,
 		       og->body, og->body_len);
 		buf->len += og->body_len;

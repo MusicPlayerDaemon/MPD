@@ -160,7 +160,7 @@ static int shout_mp3_encoder_encode(struct shout_data *sd,
 
 	bytes_out = lame_encode_buffer_float(ld->gfp, lamebuf[0], lamebuf[1],
 					     samples, buf->data,
-					     buf->max_len - buf->len);
+					     sizeof(buf->data) - buf->len);
 	free(lamebuf);
 
 	if (0 > bytes_out) {
