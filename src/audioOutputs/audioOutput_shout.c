@@ -30,13 +30,13 @@
 #define CONN_ATTEMPT_INTERVAL 60
 #define DEFAULT_CONN_TIMEOUT  2
 
-static int shoutInitCount;
+static int shout_init_count;
 
 /* lots of this code blatantly stolent from bossogg/bossao2 */
 
-typedef struct _ShoutData {
-	shout_t *shoutConn;
-	int shoutError;
+struct shout_data {
+	shout_t *shout_conn;
+	int shout_error;
 
 	ogg_stream_state os;
 	ogg_page og;
@@ -56,40 +56,40 @@ typedef struct _ShoutData {
 	int opened;
 
 	struct tag *tag;
-	int tagToSend;
+	int tag_to_send;
 
 	int timeout;
-	int connAttempts;
-	time_t lastAttempt;
+	int conn_attempts;
+	time_t last_attempt;
 
 	Timer *timer;
 
 	/* the configured audio format */
 	struct audio_format audio_format;
-} ShoutData;
+};
 
-static ShoutData *newShoutData(void)
+static struct shout_data *new_shout_data(void)
 {
-	ShoutData *ret = xmalloc(sizeof(ShoutData));
+	struct shout_data *ret = xmalloc(sizeof(*ret));
 
-	ret->shoutConn = shout_new();
+	ret->shout_conn = shout_new();
 	ret->opened = 0;
 	ret->tag = NULL;
-	ret->tagToSend = 0;
+	ret->tag_to_send = 0;
 	ret->bitrate = -1;
 	ret->quality = -2.0;
 	ret->timeout = DEFAULT_CONN_TIMEOUT;
-	ret->connAttempts = 0;
-	ret->lastAttempt = 0;
+	ret->conn_attempts = 0;
+	ret->last_attempt = 0;
 	ret->timer = NULL;
 
 	return ret;
 }
 
-static void freeShoutData(ShoutData * sd)
+static void free_shout_data(struct shout_data *sd)
 {
-	if (sd->shoutConn)
-		shout_free(sd->shoutConn);
+	if (sd->shout_conn)
+		shout_free(sd->shout_conn);
 	if (sd->tag)
 		tag_free(sd->tag);
 	if (sd->timer)
@@ -98,18 +98,18 @@ static void freeShoutData(ShoutData * sd)
 	free(sd);
 }
 
-#define checkBlockParam(name) { \
-	blockParam = getBlockParam(param, name); \
-	if (!blockParam) { \
-		FATAL("no \"%s\" defined for shout device defined at line " \
-				"%i\n", name, param->line); \
-	} \
-}
+#define check_block_param(name) {		  \
+		block_param = getBlockParam(param, name);	\
+		if (!block_param) {					\
+			FATAL("no \"%s\" defined for shout device defined at line " \
+			      "%i\n", name, param->line);		\
+		}							\
+	}
 
-static int myShout_initDriver(struct audio_output *audioOutput,
-			      ConfigParam * param)
+static int my_shout_init_driver(struct audio_output *audio_output,
+				ConfigParam * param)
 {
-	ShoutData *sd;
+	struct shout_data *sd;
 	char *test;
 	int port;
 	char *host;
@@ -117,124 +117,124 @@ static int myShout_initDriver(struct audio_output *audioOutput,
 	char *passwd;
 	const char *user;
 	char *name;
-	BlockParam *blockParam;
+	BlockParam *block_param;
 	int public;
 
-	sd = newShoutData();
+	sd = new_shout_data();
 
-	if (shoutInitCount == 0)
+	if (shout_init_count == 0)
 		shout_init();
 
-	shoutInitCount++;
+	shout_init_count++;
 
-	checkBlockParam("host");
-	host = blockParam->value;
+	check_block_param("host");
+	host = block_param->value;
 
-	checkBlockParam("mount");
-	mount = blockParam->value;
+	check_block_param("mount");
+	mount = block_param->value;
 
-	checkBlockParam("port");
+	check_block_param("port");
 
-	port = strtol(blockParam->value, &test, 10);
+	port = strtol(block_param->value, &test, 10);
 
 	if (*test != '\0' || port <= 0) {
 		FATAL("shout port \"%s\" is not a positive integer, line %i\n",
-		      blockParam->value, blockParam->line);
+		      block_param->value, block_param->line);
 	}
 
-	checkBlockParam("password");
-	passwd = blockParam->value;
+	check_block_param("password");
+	passwd = block_param->value;
 
-	checkBlockParam("name");
-	name = blockParam->value;
+	check_block_param("name");
+	name = block_param->value;
 
 	public = getBoolBlockParam(param, "public", 1);
 	if (public == CONF_BOOL_UNSET)
 		public = 0;
 
-	blockParam = getBlockParam(param, "user");
-	if (blockParam)
-		user = blockParam->value;
+	block_param = getBlockParam(param, "user");
+	if (block_param)
+		user = block_param->value;
 	else
 		user = "source";
 
-	blockParam = getBlockParam(param, "quality");
+	block_param = getBlockParam(param, "quality");
 
-	if (blockParam) {
-		int line = blockParam->line;
+	if (block_param) {
+		int line = block_param->line;
 
-		sd->quality = strtod(blockParam->value, &test);
+		sd->quality = strtod(block_param->value, &test);
 
 		if (*test != '\0' || sd->quality < -1.0 || sd->quality > 10.0) {
 			FATAL("shout quality \"%s\" is not a number in the "
-			      "range -1 to 10, line %i\n", blockParam->value,
-			      blockParam->line);
+			      "range -1 to 10, line %i\n", block_param->value,
+			      block_param->line);
 		}
 
-		blockParam = getBlockParam(param, "bitrate");
+		block_param = getBlockParam(param, "bitrate");
 
-		if (blockParam) {
+		if (block_param) {
 			FATAL("quality (line %i) and bitrate (line %i) are "
 			      "both defined for shout output\n", line,
-			      blockParam->line);
+			      block_param->line);
 		}
 	} else {
-		blockParam = getBlockParam(param, "bitrate");
+		block_param = getBlockParam(param, "bitrate");
 
-		if (!blockParam) {
+		if (!block_param) {
 			FATAL("neither bitrate nor quality defined for shout "
 			      "output at line %i\n", param->line);
 		}
 
-		sd->bitrate = strtol(blockParam->value, &test, 10);
+		sd->bitrate = strtol(block_param->value, &test, 10);
 
 		if (*test != '\0' || sd->bitrate <= 0) {
 			FATAL("bitrate at line %i should be a positive integer "
-			      "\n", blockParam->line);
+			      "\n", block_param->line);
 		}
 	}
 
-	checkBlockParam("format");
-	sd->audio_format = audioOutput->reqAudioFormat;
+	check_block_param("format");
+	sd->audio_format = audio_output->reqAudioFormat;
 
-	if (shout_set_host(sd->shoutConn, host) != SHOUTERR_SUCCESS ||
-	    shout_set_port(sd->shoutConn, port) != SHOUTERR_SUCCESS ||
-	    shout_set_password(sd->shoutConn, passwd) != SHOUTERR_SUCCESS ||
-	    shout_set_mount(sd->shoutConn, mount) != SHOUTERR_SUCCESS ||
-	    shout_set_name(sd->shoutConn, name) != SHOUTERR_SUCCESS ||
-	    shout_set_user(sd->shoutConn, user) != SHOUTERR_SUCCESS ||
-	    shout_set_public(sd->shoutConn, public) != SHOUTERR_SUCCESS ||
-	    shout_set_nonblocking(sd->shoutConn, 1) != SHOUTERR_SUCCESS ||
-	    shout_set_format(sd->shoutConn, SHOUT_FORMAT_VORBIS)
+	if (shout_set_host(sd->shout_conn, host) != SHOUTERR_SUCCESS ||
+	    shout_set_port(sd->shout_conn, port) != SHOUTERR_SUCCESS ||
+	    shout_set_password(sd->shout_conn, passwd) != SHOUTERR_SUCCESS ||
+	    shout_set_mount(sd->shout_conn, mount) != SHOUTERR_SUCCESS ||
+	    shout_set_name(sd->shout_conn, name) != SHOUTERR_SUCCESS ||
+	    shout_set_user(sd->shout_conn, user) != SHOUTERR_SUCCESS ||
+	    shout_set_public(sd->shout_conn, public) != SHOUTERR_SUCCESS ||
+	    shout_set_nonblocking(sd->shout_conn, 1) != SHOUTERR_SUCCESS ||
+	    shout_set_format(sd->shout_conn, SHOUT_FORMAT_VORBIS)
 	    != SHOUTERR_SUCCESS ||
-	    shout_set_protocol(sd->shoutConn, SHOUT_PROTOCOL_HTTP)
+	    shout_set_protocol(sd->shout_conn, SHOUT_PROTOCOL_HTTP)
 	    != SHOUTERR_SUCCESS ||
-	    shout_set_agent(sd->shoutConn, "MPD") != SHOUTERR_SUCCESS) {
+	    shout_set_agent(sd->shout_conn, "MPD") != SHOUTERR_SUCCESS) {
 		FATAL("error configuring shout defined at line %i: %s\n",
-		      param->line, shout_get_error(sd->shoutConn));
+		      param->line, shout_get_error(sd->shout_conn));
 	}
 
 	/* optional paramters */
-	blockParam = getBlockParam(param, "timeout");
-	if (blockParam) {
-		sd->timeout = (int)strtol(blockParam->value, &test, 10);
+	block_param = getBlockParam(param, "timeout");
+	if (block_param) {
+		sd->timeout = (int)strtol(block_param->value, &test, 10);
 		if (*test != '\0' || sd->timeout <= 0) {
 			FATAL("shout timeout is not a positive integer, "
-			      "line %i\n", blockParam->line);
+			      "line %i\n", block_param->line);
 		}
 	}
 
-	blockParam = getBlockParam(param, "genre");
-	if (blockParam && shout_set_genre(sd->shoutConn, blockParam->value)) {
+	block_param = getBlockParam(param, "genre");
+	if (block_param && shout_set_genre(sd->shout_conn, block_param->value)) {
 		FATAL("error configuring shout defined at line %i: %s\n",
-		      param->line, shout_get_error(sd->shoutConn));
+		      param->line, shout_get_error(sd->shout_conn));
 	}
 
-	blockParam = getBlockParam(param, "description");
-	if (blockParam && shout_set_description(sd->shoutConn,
-						blockParam->value)) {
+	block_param = getBlockParam(param, "description");
+	if (block_param && shout_set_description(sd->shout_conn,
+						 block_param->value)) {
 		FATAL("error configuring shout defined at line %i: %s\n",
-		      param->line, shout_get_error(sd->shoutConn));
+		      param->line, shout_get_error(sd->shout_conn));
 	}
 
 	{
@@ -242,29 +242,29 @@ static int myShout_initDriver(struct audio_output *audioOutput,
 		memset(temp, 0, sizeof(temp));
 
 		snprintf(temp, sizeof(temp), "%d", sd->audio_format.channels);
-		shout_set_audio_info(sd->shoutConn, SHOUT_AI_CHANNELS, temp);
+		shout_set_audio_info(sd->shout_conn, SHOUT_AI_CHANNELS, temp);
 
 		snprintf(temp, sizeof(temp), "%d", sd->audio_format.sampleRate);
 
-		shout_set_audio_info(sd->shoutConn, SHOUT_AI_SAMPLERATE, temp);
+		shout_set_audio_info(sd->shout_conn, SHOUT_AI_SAMPLERATE, temp);
 
 		if (sd->quality >= -1.0) {
 			snprintf(temp, sizeof(temp), "%2.2f", sd->quality);
-			shout_set_audio_info(sd->shoutConn, SHOUT_AI_QUALITY,
+			shout_set_audio_info(sd->shout_conn, SHOUT_AI_QUALITY,
 					     temp);
 		} else {
 			snprintf(temp, sizeof(temp), "%d", sd->bitrate);
-			shout_set_audio_info(sd->shoutConn, SHOUT_AI_BITRATE,
+			shout_set_audio_info(sd->shout_conn, SHOUT_AI_BITRATE,
 					     temp);
 		}
 	}
 
-	audioOutput->data = sd;
+	audio_output->data = sd;
 
 	return 0;
 }
 
-static int myShout_handleError(ShoutData * sd, int err)
+static int handle_shout_error(struct shout_data *sd, int err)
 {
 	switch (err) {
 	case SHOUTERR_SUCCESS:
@@ -272,39 +272,39 @@ static int myShout_handleError(ShoutData * sd, int err)
 	case SHOUTERR_UNCONNECTED:
 	case SHOUTERR_SOCKET:
 		ERROR("Lost shout connection to %s:%i: %s\n",
-		      shout_get_host(sd->shoutConn),
-		      shout_get_port(sd->shoutConn),
-		      shout_get_error(sd->shoutConn));
-		sd->shoutError = 1;
+		      shout_get_host(sd->shout_conn),
+		      shout_get_port(sd->shout_conn),
+		      shout_get_error(sd->shout_conn));
+		sd->shout_error = 1;
 		return -1;
 	default:
 		ERROR("shout: connection to %s:%i error: %s\n",
-		      shout_get_host(sd->shoutConn),
-		      shout_get_port(sd->shoutConn),
-		      shout_get_error(sd->shoutConn));
-		sd->shoutError = 1;
+		      shout_get_host(sd->shout_conn),
+		      shout_get_port(sd->shout_conn),
+		      shout_get_error(sd->shout_conn));
+		sd->shout_error = 1;
 		return -1;
 	}
 
 	return 0;
 }
 
-static int write_page(ShoutData * sd)
+static int write_page(struct shout_data *sd)
 {
 	int err;
 
-	shout_sync(sd->shoutConn);
-	err = shout_send(sd->shoutConn, sd->og.header, sd->og.header_len);
-	if (myShout_handleError(sd, err) < 0)
+	shout_sync(sd->shout_conn);
+	err = shout_send(sd->shout_conn, sd->og.header, sd->og.header_len);
+	if (handle_shout_error(sd, err) < 0)
 		return -1;
-	err = shout_send(sd->shoutConn, sd->og.body, sd->og.body_len);
-	if (myShout_handleError(sd, err) < 0)
+	err = shout_send(sd->shout_conn, sd->og.body, sd->og.body_len);
+	if (handle_shout_error(sd, err) < 0)
 		return -1;
 
 	return 0;
 }
 
-static void finishEncoder(ShoutData * sd)
+static void finish_encoder(struct shout_data *sd)
 {
 	vorbis_analysis_wrote(&sd->vd, 0);
 
@@ -317,16 +317,16 @@ static void finishEncoder(ShoutData * sd)
 	}
 }
 
-static int flushEncoder(ShoutData * sd)
+static int flush_encoder(struct shout_data *sd)
 {
 	return (ogg_stream_pageout(&sd->os, &sd->og) > 0);
 }
 
-static void clearEncoder(ShoutData * sd)
+static void shout_ogg_encoder_clear_encoder(struct shout_data *sd)
 {
-	finishEncoder(sd);
-	while (1 == flushEncoder(sd)) {
-		if (!sd->shoutError)
+	finish_encoder(sd);
+	while (1 == flush_encoder(sd)) {
+		if (!sd->shout_error)
 			write_page(sd);
 	}
 
@@ -337,57 +337,57 @@ static void clearEncoder(ShoutData * sd)
 	vorbis_info_clear(&sd->vi);
 }
 
-static void myShout_closeShoutConn(ShoutData * sd)
+static void close_shout_conn(struct shout_data *sd)
 {
 	if (sd->opened)
-		clearEncoder(sd);
+		shout_ogg_encoder_clear_encoder(sd);
 
-	if (shout_get_connected(sd->shoutConn) != SHOUTERR_UNCONNECTED &&
-	    shout_close(sd->shoutConn) != SHOUTERR_SUCCESS) {
+	if (shout_get_connected(sd->shout_conn) != SHOUTERR_UNCONNECTED &&
+	    shout_close(sd->shout_conn) != SHOUTERR_SUCCESS) {
 		ERROR("problem closing connection to shout server: %s\n",
-		      shout_get_error(sd->shoutConn));
+		      shout_get_error(sd->shout_conn));
 	}
 
 	sd->opened = 0;
 }
 
-static void myShout_finishDriver(struct audio_output *audioOutput)
+static void my_shout_finish_driver(struct audio_output *audio_output)
 {
-	ShoutData *sd = (ShoutData *) audioOutput->data;
+	struct shout_data *sd = (struct shout_data *) audio_output->data;
 
-	myShout_closeShoutConn(sd);
+	close_shout_conn(sd);
 
-	freeShoutData(sd);
+	free_shout_data(sd);
 
-	shoutInitCount--;
+	shout_init_count--;
 
-	if (shoutInitCount == 0)
+	if (shout_init_count == 0)
 		shout_shutdown();
 }
 
-static void myShout_dropBufferedAudio(struct audio_output *audioOutput)
+static void my_shout_drop_buffered_audio(struct audio_output *audio_output)
 {
-	ShoutData *sd = (ShoutData *)audioOutput->data;
+	struct shout_data *sd = (struct shout_data *)audio_output->data;
 	timer_reset(sd->timer);
 
 	/* needs to be implemented for shout */
 }
 
-static void myShout_closeDevice(struct audio_output *audioOutput)
+static void my_shout_close_device(struct audio_output *audio_output)
 {
-	ShoutData *sd = (ShoutData *) audioOutput->data;
+	struct shout_data *sd = (struct shout_data *) audio_output->data;
 
-	myShout_closeShoutConn(sd);
+	close_shout_conn(sd);
 
-	if (sd->timer) { 
+	if (sd->timer) {
 		timer_free(sd->timer);
 		sd->timer = NULL;
 	}
 
-	audioOutput->open = 0;
+	audio_output->open = 0;
 }
 
-static void addTag(ShoutData *sd, const char *name, char *value)
+static void add_tag(struct shout_data *sd, const char *name, char *value)
 {
 	if (value) {
 		union const_hack u;
@@ -396,7 +396,7 @@ static void addTag(ShoutData *sd, const char *name, char *value)
 	}
 }
 
-static void copyTagToVorbisComment(ShoutData * sd)
+static void copy_tag_to_vorbis_comment(struct shout_data *sd)
 {
 	if (sd->tag) {
 		int i;
@@ -404,13 +404,13 @@ static void copyTagToVorbisComment(ShoutData * sd)
 		for (i = 0; i < sd->tag->numOfItems; i++) {
 			switch (sd->tag->items[i]->type) {
 			case TAG_ITEM_ARTIST:
-				addTag(sd, "ARTIST", sd->tag->items[i]->value);
+				add_tag(sd, "ARTIST", sd->tag->items[i]->value);
 				break;
 			case TAG_ITEM_ALBUM:
-				addTag(sd, "ALBUM", sd->tag->items[i]->value);
+				add_tag(sd, "ALBUM", sd->tag->items[i]->value);
 				break;
 			case TAG_ITEM_TITLE:
-				addTag(sd, "TITLE", sd->tag->items[i]->value);
+				add_tag(sd, "TITLE", sd->tag->items[i]->value);
 				break;
 			default:
 				break;
@@ -419,7 +419,7 @@ static void copyTagToVorbisComment(ShoutData * sd)
 	}
 }
 
-static int initEncoder(ShoutData * sd)
+static int init_encoder(struct shout_data *sd)
 {
 	vorbis_info_init(&(sd->vi));
 
@@ -453,24 +453,24 @@ static int initEncoder(ShoutData * sd)
 	return 0;
 }
 
-static int myShout_connect(ShoutData *sd)
+static int shout_connect(struct shout_data *sd)
 {
 	time_t t = time(NULL);
-	int state = shout_get_connected(sd->shoutConn);
+	int state = shout_get_connected(sd->shout_conn);
 
 	/* already connected */
 	if (state == SHOUTERR_CONNECTED)
 		return 0;
 
 	/* waiting to connect */
-	if (state == SHOUTERR_BUSY && sd->connAttempts != 0) {
+	if (state == SHOUTERR_BUSY && sd->conn_attempts != 0) {
 		/* timeout waiting to connect */
-		if ((t - sd->lastAttempt) > sd->timeout) {
+		if ((t - sd->last_attempt) > sd->timeout) {
 			ERROR("timeout connecting to shout server %s:%i "
 			      "(attempt %i)\n",
-			      shout_get_host(sd->shoutConn),
-			      shout_get_port(sd->shoutConn),
-			      sd->connAttempts);
+			      shout_get_host(sd->shout_conn),
+			      shout_get_port(sd->shout_conn),
+			      sd->conn_attempts);
 			return -1;
 		}
 
@@ -479,20 +479,20 @@ static int myShout_connect(ShoutData *sd)
 
 	/* we're in some funky state, so just reset it to unconnected */
 	if (state != SHOUTERR_UNCONNECTED)
-		shout_close(sd->shoutConn);
+		shout_close(sd->shout_conn);
 
 	/* throttle new connection attempts */
-	if (sd->connAttempts != 0 &&
-	    (t - sd->lastAttempt) <= CONN_ATTEMPT_INTERVAL) {
+	if (sd->conn_attempts != 0 &&
+	    (t - sd->last_attempt) <= CONN_ATTEMPT_INTERVAL) {
 		return -1;
 	}
 
 	/* initiate a new connection */
 
-	sd->connAttempts++;
-	sd->lastAttempt = t;
+	sd->conn_attempts++;
+	sd->last_attempt = t;
 
-	state = shout_open(sd->shoutConn);
+	state = shout_open(sd->shout_conn);
 	switch (state) {
 	case SHOUTERR_SUCCESS:
 	case SHOUTERR_CONNECTED:
@@ -502,30 +502,30 @@ static int myShout_connect(ShoutData *sd)
 	default:
 		ERROR("problem opening connection to shout server %s:%i "
 		      "(attempt %i): %s\n",
-		      shout_get_host(sd->shoutConn),
-		      shout_get_port(sd->shoutConn),
-		      sd->connAttempts, shout_get_error(sd->shoutConn));
+		      shout_get_host(sd->shout_conn),
+		      shout_get_port(sd->shout_conn),
+		      sd->conn_attempts, shout_get_error(sd->shout_conn));
 		return -1;
 	}
 }
 
-static int myShout_openShoutConn(struct audio_output *audioOutput)
+static int open_shout_conn(struct audio_output *audio_output)
 {
-	ShoutData *sd = (ShoutData *) audioOutput->data;
+	struct shout_data *sd = (struct shout_data *) audio_output->data;
 	int status;
 
-	status = myShout_connect(sd);
+	status = shout_connect(sd);
 	if (status != 0)
 		return status;
 
-	if (initEncoder(sd) < 0) {
-		shout_close(sd->shoutConn);
+	if (init_encoder(sd) < 0) {
+		shout_close(sd->shout_conn);
 		return -1;
 	}
 
-	sd->shoutError = 0;
+	sd->shout_error = 0;
 
-	copyTagToVorbisComment(sd);
+	copy_tag_to_vorbis_comment(sd);
 
 	vorbis_analysis_headerout(&(sd->vd), &(sd->vc), &(sd->header_main),
 				  &(sd->header_comments),
@@ -536,47 +536,47 @@ static int myShout_openShoutConn(struct audio_output *audioOutput)
 	ogg_stream_packetin(&(sd->os), &(sd->header_codebooks));
 
 	sd->opened = 1;
-	sd->tagToSend = 0;
+	sd->tag_to_send = 0;
 
 	while (ogg_stream_flush(&(sd->os), &(sd->og))) {
 		if (write_page(sd) < 0) {
-			myShout_closeShoutConn(sd);
+			close_shout_conn(sd);
 			return -1;
 		}
 	}
 
-	sd->connAttempts = 0;
+	sd->conn_attempts = 0;
 
 	return 0;
 }
 
-static int myShout_openDevice(struct audio_output *audioOutput)
+static int my_shout_open_device(struct audio_output *audio_output)
 {
-	ShoutData *sd = (ShoutData *) audioOutput->data;
+	struct shout_data *sd = (struct shout_data *) audio_output->data;
 
-	if (!sd->opened && myShout_openShoutConn(audioOutput) < 0)
+	if (!sd->opened && open_shout_conn(audio_output) < 0)
 		return -1;
 
 	if (sd->timer)
 		timer_free(sd->timer);
 
-	sd->timer = timer_new(&audioOutput->outAudioFormat);
+	sd->timer = timer_new(&audio_output->outAudioFormat);
 
-	audioOutput->open = 1;
+	audio_output->open = 1;
 
 	return 0;
 }
 
-static void myShout_sendMetadata(ShoutData * sd)
+static void send_metadata(struct shout_data * sd)
 {
 	if (!sd->opened || !sd->tag)
 		return;
 
-	clearEncoder(sd);
-	if (initEncoder(sd) < 0)
+	shout_ogg_encoder_clear_encoder(sd);
+	if (init_encoder(sd) < 0)
 		return;
 
-	copyTagToVorbisComment(sd);
+	copy_tag_to_vorbis_comment(sd);
 
 	vorbis_analysis_headerout(&(sd->vd), &(sd->vc), &(sd->header_main),
 				  &(sd->header_comments),
@@ -588,22 +588,22 @@ static void myShout_sendMetadata(ShoutData * sd)
 
 	while (ogg_stream_flush(&(sd->os), &(sd->og))) {
 		if (write_page(sd) < 0) {
-			myShout_closeShoutConn(sd);
+			close_shout_conn(sd);
 			return;
 		}
 	}
 
 	/*if(sd->tag) freeMpdTag(sd->tag);
-	   sd->tag = NULL; */
-	sd->tagToSend = 0;
+	  sd->tag = NULL; */
+	sd->tag_to_send = 0;
 }
 
-static int myShout_play(struct audio_output *audioOutput,
-			const char *playChunk, size_t size)
+static int my_shout_play(struct audio_output *audio_output,
+			 const char *chunk, size_t size)
 {
 	unsigned int i;
 	int j;
-	ShoutData *sd = (ShoutData *) audioOutput->data;
+	struct shout_data *sd = (struct shout_data *) audio_output->data;
 	float **vorbbuf;
 	unsigned int samples;
 	int bytes = sd->audio_format.bits / 8;
@@ -614,13 +614,13 @@ static int myShout_play(struct audio_output *audioOutput,
 
 	timer_add(sd->timer, size);
 
-	if (sd->opened && sd->tagToSend)
-		myShout_sendMetadata(sd);
+	if (sd->opened && sd->tag_to_send)
+		send_metadata(sd);
 
 	if (!sd->opened) {
-		status = myShout_openShoutConn(audioOutput);
+		status = open_shout_conn(audio_output);
 		if (status < 0) {
-			myShout_closeDevice(audioOutput);
+			my_shout_close_device(audio_output);
 			return -1;
 		} else if (status > 0) {
 			timer_sync(sd->timer);
@@ -636,8 +636,8 @@ static int myShout_play(struct audio_output *audioOutput,
 
 	for (i = 0; i < samples; i++) {
 		for (j = 0; j < sd->audio_format.channels; j++) {
-			vorbbuf[j][i] = (*((const mpd_sint16 *) playChunk)) / 32768.0;
-			playChunk += bytes;
+			vorbbuf[j][i] = (*((const mpd_sint16 *) chunk)) / 32768.0;
+			chunk += bytes;
 		}
 	}
 
@@ -654,7 +654,7 @@ static int myShout_play(struct audio_output *audioOutput,
 
 	while (ogg_stream_pageout(&(sd->os), &(sd->og)) != 0) {
 		if (write_page(sd) < 0) {
-			myShout_closeDevice(audioOutput);
+			my_shout_close_device(audio_output);
 			return -1;
 		}
 	}
@@ -662,33 +662,33 @@ static int myShout_play(struct audio_output *audioOutput,
 	return 0;
 }
 
-static void myShout_setTag(struct audio_output *audioOutput,
-			   const struct tag *tag)
+static void my_shout_set_tag(struct audio_output *audio_output,
+			     const struct tag *tag)
 {
-	ShoutData *sd = (ShoutData *) audioOutput->data;
+	struct shout_data *sd = (struct shout_data *) audio_output->data;
 
 	if (sd->tag)
 		tag_free(sd->tag);
 	sd->tag = NULL;
-	sd->tagToSend = 0;
+	sd->tag_to_send = 0;
 
 	if (!tag)
 		return;
 
 	sd->tag = tag_dup(tag);
-	sd->tagToSend = 1;
+	sd->tag_to_send = 1;
 }
 
 const struct audio_output_plugin shoutPlugin = {
 	"shout",
 	NULL,
-	myShout_initDriver,
-	myShout_finishDriver,
-	myShout_openDevice,
-	myShout_play,
-	myShout_dropBufferedAudio,
-	myShout_closeDevice,
-	myShout_setTag,
+	my_shout_init_driver,
+	my_shout_finish_driver,
+	my_shout_open_device,
+	my_shout_play,
+	my_shout_drop_buffered_audio,
+	my_shout_close_device,
+	my_shout_set_tag,
 };
 
 #else
