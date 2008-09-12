@@ -24,26 +24,26 @@
 #include "audioOutput_shout.h"
 #include <lame/lame.h>
 
-typedef struct _lame_data {
+struct lame_data {
 	lame_global_flags *gfp;
-} lame_data;
+};
 
 
-static int shout_mp3_encoder_init(shout_data * sd)
+static int shout_mp3_encoder_init(struct shout_data *sd)
 {
-	lame_data *ld;
+	struct lame_data *ld;
 
-	if (NULL == (ld = xmalloc(sizeof(lame_data))))
+	if (NULL == (ld = xmalloc(sizeof(*ld))))
 		FATAL("error initializing lame encoder data\n");
 	sd->encoder_data = ld;
 
 	return 0;
 }
 
-static int shout_mp3_encoder_clear_encoder(shout_data * sd)
+static int shout_mp3_encoder_clear_encoder(struct shout_data *sd)
 {
-	lame_data *ld = (lame_data *)sd->encoder_data;
-	shout_buffer *buf = &sd->buf;
+	struct lame_data *ld = (struct lame_data *)sd->encoder_data;
+	struct shout_buffer *buf = &sd->buf;
 	int ret;
 
 	if ((ret = lame_encode_flush(ld->gfp, buf->data + buf->len,
@@ -53,17 +53,17 @@ static int shout_mp3_encoder_clear_encoder(shout_data * sd)
 	return (ret > 0);
 }
 
-static void shout_mp3_encoder_finish(shout_data * sd)
+static void shout_mp3_encoder_finish(struct shout_data *sd)
 {
-	lame_data *ld = (lame_data *)sd->encoder_data;
+	struct lame_data *ld = (struct lame_data *)sd->encoder_data;
 
 	lame_close(ld->gfp);
 	ld->gfp = NULL;
 }
 
-static int shout_mp3_encoder_init_encoder(shout_data * sd)
+static int shout_mp3_encoder_init_encoder(struct shout_data *sd)
 {
-	lame_data *ld = (lame_data *)sd->encoder_data;
+	struct lame_data *ld = (struct lame_data *)sd->encoder_data;
 
 	if (NULL == (ld->gfp = lame_init())) {
 		ERROR("error initializing lame encoder for shout\n");
@@ -104,7 +104,7 @@ static int shout_mp3_encoder_init_encoder(shout_data * sd)
 	return 0;
 }
 
-static int shout_mp3_encoder_send_metadata(shout_data * sd,
+static int shout_mp3_encoder_send_metadata(struct shout_data *sd,
 					   char * song, size_t size)
 {
 	char artist[size];
@@ -133,16 +133,16 @@ static int shout_mp3_encoder_send_metadata(shout_data * sd,
 	return 1;
 }
 
-static int shout_mp3_encoder_encode(shout_data * sd,
+static int shout_mp3_encoder_encode(struct shout_data *sd,
 				    const char * chunk, size_t len)
 {
 	unsigned int i;
 	int j;
 	float (*lamebuf)[2];
-	shout_buffer *buf = &(sd->buf);
+	struct shout_buffer *buf = &(sd->buf);
 	unsigned int samples;
 	int bytes = sd->audio_format.bits / 8;
-	lame_data *ld = (lame_data *)sd->encoder_data;
+	struct lame_data *ld = (struct lame_data *)sd->encoder_data;
 	int bytes_out;
 
 	samples = len / (bytes * sd->audio_format.channels);
@@ -174,8 +174,7 @@ static int shout_mp3_encoder_encode(shout_data * sd,
 	return 0;
 }
 
-
-shout_encoder_plugin shout_mp3_encoder = {
+struct shout_encoder_plugin shout_mp3_encoder = {
 	"mp3",
 	SHOUT_FORMAT_MP3,
 

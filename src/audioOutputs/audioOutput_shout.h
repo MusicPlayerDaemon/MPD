@@ -28,50 +28,43 @@
 
 #include <shout/shout.h>
 
-#define DISABLED_SHOUT_ENCODER_PLUGIN(plugin) shout_encoder_plugin plugin;
+#define DISABLED_SHOUT_ENCODER_PLUGIN(plugin) \
+	struct shout_encoder_plugin plugin;
 
-typedef struct shout_data shout_data;
+struct shout_data;
 
-typedef int (*shout_encoder_clear_encoder_func) (shout_data * sd);
-typedef int (*shout_encoder_encode_func) (shout_data * sd,
-					  const char * chunk,
-					  size_t len);
-typedef void (*shout_encoder_finish_func) (shout_data * sd);
-typedef int (*shout_encoder_init_func) (shout_data * sd);
-typedef int (*shout_encoder_init_encoder_func) (shout_data * sd);
-/* Called when there is a new MpdTag to encode into the stream.  If
-   this function returns non-zero, then the resulting song will be
-   passed to the shout server as metadata.  This allows the Ogg
-   encoder to send metadata via Vorbis comments in the stream, while
-   an MP3 encoder can use the Shout Server's metadata API. */
-typedef int (*shout_encoder_send_metadata_func) (shout_data * sd,
-						 char * song,
-						 size_t size);
-
-typedef struct _shout_encoder_plugin {
+struct shout_encoder_plugin {
 	const char *name;
 	unsigned int shout_format;
 
-	shout_encoder_clear_encoder_func clear_encoder_func;
-	shout_encoder_encode_func encode_func;
-	shout_encoder_finish_func finish_func;
-	shout_encoder_init_func init_func;
-	shout_encoder_init_encoder_func init_encoder_func;
-	shout_encoder_send_metadata_func send_metadata_func;
-} shout_encoder_plugin;
+	int (*clear_encoder_func)(struct shout_data *sd);
+	int (*encode_func)(struct shout_data *sd,
+			   const char *chunk, size_t len);
+	void (*finish_func)(struct shout_data *sd);
+	int (*init_func)(struct shout_data *sd);
+	int (*init_encoder_func) (struct shout_data *sd);
+	/* Called when there is a new MpdTag to encode into the
+	   stream.  If this function returns non-zero, then the
+	   resulting song will be passed to the shout server as
+	   metadata.  This allows the Ogg encoder to send metadata via
+	   Vorbis comments in the stream, while an MP3 encoder can use
+	   the Shout Server's metadata API. */
+	int (*send_metadata_func)(struct shout_data *sd,
+				  char *song, size_t size);
+};
 
-typedef struct _shout_buffer {
+struct shout_buffer {
 	unsigned char *data;
 	size_t len;
 	size_t max_len;
-} shout_buffer;
+};
 
 struct shout_data {
 	shout_t *shout_conn;
 	shout_metadata_t *shout_meta;
 	int shout_error;
 
-	shout_encoder_plugin *encoder;
+	struct shout_encoder_plugin *encoder;
 	void *encoder_data;
 
 	float quality;
@@ -91,11 +84,11 @@ struct shout_data {
 	/* the configured audio format */
 	struct audio_format audio_format;
 
-	shout_buffer buf;
+	struct shout_buffer buf;
 };
 
-extern shout_encoder_plugin shout_mp3_encoder;
-extern shout_encoder_plugin shout_ogg_encoder;
+extern struct shout_encoder_plugin shout_mp3_encoder;
+extern struct shout_encoder_plugin shout_ogg_encoder;
 
 #endif
 

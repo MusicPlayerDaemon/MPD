@@ -42,7 +42,7 @@ static void init_shout_encoder_plugins(void)
 	shout_encoder_plugin_list = makeList(NULL, 0);
 }
 
-static void load_shout_encoder_plugin(shout_encoder_plugin * plugin)
+static void load_shout_encoder_plugin(struct shout_encoder_plugin * plugin)
 {
 	if (!plugin->name)
 		return;
@@ -50,7 +50,7 @@ static void load_shout_encoder_plugin(shout_encoder_plugin * plugin)
 }
 
 mpd_unused
-static void unload_shout_encoder_plugin(shout_encoder_plugin * plugin)
+static void unload_shout_encoder_plugin(struct shout_encoder_plugin * plugin)
 {
 	if (!plugin->name)
 		return;
@@ -229,7 +229,7 @@ static int my_shout_init_driver(struct audio_output *audio_output,
 		FATAL("couldn't find shout encoder plugin for \"%s\" "
 		      "at line %i\n", encoding, block_param->line);
 	}
-	sd->encoder = (shout_encoder_plugin *) data;
+	sd->encoder = (struct shout_encoder_plugin *) data;
 
 	if (shout_set_host(sd->shout_conn, host) != SHOUTERR_SUCCESS ||
 	    shout_set_port(sd->shout_conn, port) != SHOUTERR_SUCCESS ||
