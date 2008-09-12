@@ -51,6 +51,7 @@ typedef struct _ogg_vorbis_data {
 
 struct shout_data {
 	shout_t *shout_conn;
+	shout_metadata_t *shout_meta;
 	int shout_error;
 
 	ogg_vorbis_data od;
@@ -83,7 +84,8 @@ int shout_ogg_encoder_clear_encoder(struct shout_data *sd);
 
 int init_encoder(struct shout_data *sd);
 
-int shout_ogg_encoder_send_metadata(struct shout_data * sd);
+int shout_ogg_encoder_send_metadata(struct shout_data * sd,
+				    char *song, size_t size);
 
 void shout_ogg_encoder_encode(struct shout_data *sd,
 			      const char *chunk, size_t len);

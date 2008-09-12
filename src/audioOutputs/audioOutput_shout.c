@@ -40,6 +40,7 @@ static struct shout_data *new_shout_data(void)
 	struct shout_data *ret = xmalloc(sizeof(*ret));
 
 	ret->shout_conn = shout_new();
+	ret->shout_meta = shout_metadata_new();
 	ret->opened = 0;
 	ret->tag = NULL;
 	ret->tag_to_send = 0;
@@ -59,6 +60,8 @@ static struct shout_data *new_shout_data(void)
 
 static void free_shout_data(struct shout_data *sd)
 {
+	if (sd->shout_meta)
+		shout_metadata_free(sd->shout_meta);
 	if (sd->shout_conn)
 		shout_free(sd->shout_conn);
 	if (sd->tag)
@@ -427,12 +430,19 @@ static int my_shout_open_device(struct audio_output *audio_output)
 
 static void send_metadata(struct shout_data * sd)
 {
+	static const int size = 1024;
+	char song[size];
+
 	if (!sd->opened || !sd->tag)
 		return;
 
-	if (shout_ogg_encoder_send_metadata(sd)) {
-		close_shout_conn(sd);
-		return;
+	if (shout_ogg_encoder_send_metadata(sd, song, size)) {
+		shout_metadata_add(sd->shout_meta, "song", song);
+		if (SHOUTERR_SUCCESS != shout_set_metadata(sd->shout_conn,
+							   sd->shout_meta)) {
+			ERROR("error setting shout metadata\n");
+			return;
+		}
 	}
 
 	sd->tag_to_send = 0;
