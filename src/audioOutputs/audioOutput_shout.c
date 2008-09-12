@@ -20,7 +20,6 @@
 
 #ifdef HAVE_SHOUT
 
-#include "../list.h"
 #include "../utils.h"
 
 #define CONN_ATTEMPT_INTERVAL 60
@@ -29,32 +28,23 @@
 #define SHOUT_BUF_SIZE 8192
 
 static int shout_init_count;
-static List *shout_encoder_plugin_list;
 
-mpd_unused
-static void finish_shout_encoder_plugins(void)
-{
-	freeList(shout_encoder_plugin_list);
-}
+static struct shout_encoder_plugin *const shout_encoder_plugins[] = {
+	&shout_mp3_encoder,
+	&shout_ogg_encoder,
+	NULL
+};
 
-static void init_shout_encoder_plugins(void)
+static struct shout_encoder_plugin *
+shout_encoder_plugin_get(const char *name)
 {
-	shout_encoder_plugin_list = makeList(NULL, 0);
-}
+	unsigned i;
 
-static void load_shout_encoder_plugin(struct shout_encoder_plugin * plugin)
-{
-	if (!plugin->name)
-		return;
-	insertInList(shout_encoder_plugin_list, plugin->name, plugin);
-}
+	for (i = 0; shout_encoder_plugins[i] != NULL; ++i)
+		if (strcmp(shout_encoder_plugins[i]->name, name) == 0)
+			return shout_encoder_plugins[i];
 
-mpd_unused
-static void unload_shout_encoder_plugin(struct shout_encoder_plugin * plugin)
-{
-	if (!plugin->name)
-		return;
-	deleteFromList(shout_encoder_plugin_list, plugin->name);
+	return NULL;
 }
 
 static void clear_shout_buffer(struct shout_data * sd)
@@ -110,13 +100,6 @@ static void free_shout_data(struct shout_data *sd)
 		}							\
 	}
 
-static void load_shout_plugins(void)
-{
-	init_shout_encoder_plugins();
-	load_shout_encoder_plugin(&shout_mp3_encoder);
-	load_shout_encoder_plugin(&shout_ogg_encoder);
-}
-
 static int my_shout_init_driver(struct audio_output *audio_output,
 				ConfigParam * param)
 {
@@ -131,9 +114,6 @@ static int my_shout_init_driver(struct audio_output *audio_output,
 	char *name;
 	BlockParam *block_param;
 	int public;
-	void *data = NULL;
-
-	load_shout_plugins();
 
 	sd = new_shout_data();
 
@@ -225,11 +205,11 @@ static int my_shout_init_driver(struct audio_output *audio_output,
 	} else {
 		encoding = "ogg";
 	}
-	if (!findInList(shout_encoder_plugin_list, encoding, &data)) {
+
+	sd->encoder = shout_encoder_plugin_get(encoding);
+	if (sd->encoder == NULL)
 		FATAL("couldn't find shout encoder plugin for \"%s\" "
 		      "at line %i\n", encoding, block_param->line);
-	}
-	sd->encoder = (struct shout_encoder_plugin *) data;
 
 	if (shout_set_host(sd->shout_conn, host) != SHOUTERR_SUCCESS ||
 	    shout_set_port(sd->shout_conn, port) != SHOUTERR_SUCCESS ||
