@@ -3,6 +3,7 @@ SUBDIRS = $(MP4FF_SUBDIR)
 
 mpd_audioOutputs = \
 	audioOutputs/audioOutput_shout.c \
+	audioOutputs/audioOutput_shout_ogg.c \
 	audioOutputs/audioOutput_null.c \
 	audioOutputs/audioOutput_fifo.c \
 	audioOutputs/audioOutput_alsa.c \

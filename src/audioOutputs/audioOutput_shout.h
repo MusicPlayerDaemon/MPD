@@ -63,6 +63,21 @@ struct shout_data {
 	struct audio_format audio_format;
 };
 
+int write_page(struct shout_data *sd);
+
+void copy_tag_to_vorbis_comment(struct shout_data *sd);
+
+void send_ogg_vorbis_header(struct shout_data *sd);
+
+void shout_ogg_encoder_clear_encoder(struct shout_data *sd);
+
+int init_encoder(struct shout_data *sd);
+
+int shout_ogg_encoder_send_metadata(struct shout_data * sd);
+
+void shout_ogg_encoder_encode(struct shout_data *sd,
+			      const char *chunk, size_t len);
+
 #endif
 
 #endif
