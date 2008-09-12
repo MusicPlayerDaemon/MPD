@@ -113,6 +113,7 @@ static void free_shout_data(struct shout_data *sd)
 static void load_shout_plugins(void)
 {
 	init_shout_encoder_plugins();
+	load_shout_encoder_plugin(&shout_mp3_encoder);
 	load_shout_encoder_plugin(&shout_ogg_encoder);
 }
 

@@ -74,6 +74,7 @@ fi
 
 AC_ARG_ENABLE(ao,[  --enable-ao             enable support for libao (default: disable)],[enable_ao=$enableval],[enable_ao=no])
 AC_ARG_ENABLE(shout_ogg,[  --disable-shout_ogg     disable support for ogg streaming through shout (default: enable)],[enable_shout_ogg=$enableval],[enable_shout_ogg=yes])
+AC_ARG_ENABLE(shout_mp3,[  --disable-shout_mp3     disable support for mp3 streaming through shout (default: enable)],[enable_shout_mp3=$enableval],[enable_shout_mp3=yes])
 AC_ARG_ENABLE(iconv,[  --disable-iconv         disable iconv support (default: enable)],[enable_iconv=$enableval],[enable_iconv=yes])
 AC_ARG_ENABLE(ipv6,[  --disable-ipv6          disable IPv6 support (default: enable)],[enable_ipv6=$enableval],[enable_ipv6=yes])
 AC_ARG_ENABLE(tcp,[  --disable-tcp           disable support for clients connecting via TCP (default: enable)],[enable_tcp=$enableval],[enable_tcp=yes])
@@ -88,6 +89,7 @@ AC_ARG_ENABLE(oggvorbis,[  --disable-oggvorbis     disable Ogg Vorbis support (d
 AC_ARG_ENABLE(oggflac,[  --disable-oggflac       disable OggFLAC support (default: enable)],[enable_oggflac=$enableval],enable_oggflac=yes)
 AC_ARG_ENABLE(flac,[  --disable-flac          disable flac support (default: enable)],[enable_flac=$enableval],[enable_flac=yes])
 AC_ARG_ENABLE(mp3,[  --disable-mp3           disable mp3 support (default: enable)],[enable_mp3=$enableval],[enable_mp3=yes])
+AC_ARG_ENABLE(lame,[  --disable-lame          disable lame support (default: enable)],[enable_lame=$enableval],[enable_lame=yes])
 AC_ARG_ENABLE(aac,[  --disable-aac           disable AAC support (default: enable)],[enable_aac=$enableval],[enable_aac=yes])
 AC_ARG_ENABLE(audiofile,[  --disable-audiofile     disable audiofile support, disables wave support (default: enable)],[enable_audiofile=$enableval],[enable_audiofile=yes])
 AC_ARG_ENABLE(mod,[  --enable-mod            enable MOD support (default: disable)],[enable_mod=$enableval],[enable_mod=yes])
@@ -204,6 +206,20 @@ if test x$enable_shout_ogg = xyes; then
 	fi
 	if test x$enable_shout_ogg = xyes; then
 		AC_DEFINE(HAVE_SHOUT_OGG, 1, [Define to enable ogg streaming support])
+	fi
+fi
+
+if test x$enable_shout_mp3 = xyes; then
+	if test x$enable_lame = xno; then
+		AC_MSG_WARN([disabling mp3 shout streaming support because lame is not enabled])
+		enable_shout_mp3=no
+	fi
+	if test x$enable_shout = xno; then
+		AC_MSG_WARN([disabling mp3 shout streaming support because libshout is not found])
+		enable_shout_mp3=no
+	fi
+	if test x$enable_shout_mp3 = xyes; then
+		AC_DEFINE(HAVE_SHOUT_MP3, 1, [Define to enable mp3 streaming support])
 	fi
 fi
 
@@ -363,6 +379,12 @@ if test x$enable_mp3 = xyes; then
 		enable_mp3=no
 	fi
 fi
+
+if test x$enable_lame = xyes; then
+	AM_PATH_LAME([MPD_LIBS="$MPD_LIBS $LAME_LIBS" MPD_CFLAGS="$MPD_CFLAGS $LAME_CFLAGS"],
+	             [enable_lame=no;AC_MSG_WARN(You need lame -- disabling lame support)])
+fi
+
 
 if test x$enable_mpc = xyes; then
   	if test "x$mpcdec_libraries" != "x" ; then
@@ -753,11 +775,18 @@ else
 	echo " Shout ogg streaming support ...disabled"
 fi
 
+if test x$enable_shout_mp3 = xyes; then
+	echo " Shout mp3 streaming support ...enabled"
+else
+	echo " Shout mp3 streaming support ...disabled"
+fi
+
 echo ""
 
 if test x$enable_ao = xno &&
    test x$enable_oss = xno &&
    test x$enable_shout_ogg = xno &&
+   test x$enable_shout_mp3 = xno &&
    test x$enable_alsa = xno &&
    test x$enable_osx = xno &&
    test x$enable_pulse = xno &&
@@ -779,6 +808,12 @@ if test x$enable_mp3 = xyes; then
 	echo " mp3 support ...................enabled"
 else
 	echo " mp3 support ...................disabled"
+fi
+
+if test x$enable_lame = xyes; then
+        echo " lame support ..................enabled"
+else
+        echo " lame support ..................disabled"
 fi
 
 if test x$enable_oggvorbis = xyes; then

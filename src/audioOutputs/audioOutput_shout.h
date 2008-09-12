@@ -94,6 +94,7 @@ struct shout_data {
 	shout_buffer buf;
 };
 
+extern shout_encoder_plugin shout_mp3_encoder;
 extern shout_encoder_plugin shout_ogg_encoder;
 
 #endif
