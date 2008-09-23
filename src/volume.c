@@ -31,6 +31,7 @@
 #ifdef HAVE_ALSA
 #include <alsa/asoundlib.h>
 #endif
+#include <alloca.h>
 
 #define VOLUME_MIXER_TYPE_SOFTWARE		0
 #define VOLUME_MIXER_TYPE_OSS			1
@@ -75,6 +76,8 @@ static int volume_alsaSet = -1;
 
 #ifdef HAVE_OSS
 
+#include <alloca.h> /* only alloca user in mpd atm, may change ... */
+
 static void closeOssMixer(void)
 {
 	while (close(volume_ossFd) && errno == EINTR) ;
@@ -90,12 +93,9 @@ static int prepOssMixer(const char *device)
 		return -1;
 	}
 
-	param = getConfigParam(CONF_MIXER_CONTROL);
-
-	if (param) {
+	if ((param = getConfigParam(CONF_MIXER_CONTROL))) {
 		const char *labels[SOUND_MIXER_NRDEVICES] = SOUND_DEVICE_LABELS;
-		char *duplicated;
-		int i, j;
+		int i;
 		int devmask = 0;
 
 		if (ioctl(volume_ossFd, SOUND_MIXER_READ_DEVMASK, &devmask) < 0) {
@@ -105,16 +105,16 @@ static int prepOssMixer(const char *device)
 		}
 
 		for (i = 0; i < SOUND_MIXER_NRDEVICES; i++) {
-			duplicated = xstrdup(labels[i]);
+			ssize_t len = strlen(labels[i]);
+			char *duplicated = alloca(len + 1);
+
 			/* eliminate spaces at the end */
-			j = strlen(duplicated) - 1;
-			while (j >= 0 && duplicated[j] == ' ')
-				duplicated[j--] = '\0';
-			if (strcasecmp(duplicated, param->value) == 0) {
-				free(duplicated);
+			memcpy(duplicated, labels[i], len + 1);
+			len -= 2;
+			while (len >= 0 && duplicated[len] == ' ')
+				duplicated[len--] = '\0';
+			if (strcasecmp(duplicated, param->value) == 0)
 				break;
-			}
-			free(duplicated);
 		}
 
 		if (i >= SOUND_MIXER_NRDEVICES) {
