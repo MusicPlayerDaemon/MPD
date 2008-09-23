@@ -149,7 +149,7 @@ static void * update_task(void *arg)
 			}
 			node = node->nextNode;
 		}
-		free(path_list);
+		freeList(path_list);
 	} else {
 		ret = updateDirectory(mp3rootDirectory);
 	}
