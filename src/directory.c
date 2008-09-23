@@ -1135,24 +1135,6 @@ int readDirectoryDB(void)
 	return 0;
 }
 
-void updateMp3Directory(void)
-{
-	switch (updateDirectory(mp3rootDirectory)) {
-	case 0:
-		/* nothing updated */
-		return;
-	case 1:
-		if (writeDirectoryDB() < 0)
-			exit(EXIT_FAILURE);
-		break;
-	default:
-		/* something was updated and db should be written */
-		FATAL("problems updating music db\n");
-	}
-
-	return;
-}
-
 static int traverseAllInSubDirectory(Directory * directory,
 				     int (*forEachSong) (Song *, void *),
 				     int (*forEachDir) (Directory *, void *),
