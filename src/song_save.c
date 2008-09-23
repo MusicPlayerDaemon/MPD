@@ -150,5 +150,6 @@ void readSongInfoIntoList(FILE *fp, struct songvec *sv,
 	if (song)
 		insertSongIntoList(sv, song);
 
-	songvec_prune(sv);
+	if (isUpdatingDB()) /* only needed until we get rid of forked update */
+		songvec_prune(sv);
 }
