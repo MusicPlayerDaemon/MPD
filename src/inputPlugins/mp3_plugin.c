@@ -777,7 +777,8 @@ static int decodeFirstFrame(mp3DecodeData * data,
 	if (!data->maxFrames) return -1;
 
 	if (data->maxFrames > 8 * 1024 * 1024) {
-		ERROR("mp3 file header indicates too many frames: %lu", data->maxFrames);
+		ERROR("mp3 file header indicates too many frames: %lu",
+		      data->maxFrames);
 		return -1;
 	}
 
