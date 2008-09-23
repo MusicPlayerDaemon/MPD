@@ -209,15 +209,13 @@ static inline int flacSendChunk(FlacData * data)
 	return 0;
 }
 
-static void flac_convert_stereo16(unsigned char *dest,
+static void flac_convert_stereo16(int16_t *dest,
 				  const FLAC__int32 * const buf[],
 				  unsigned int position, unsigned int end)
 {
 	for (; position < end; ++position) {
-		*(uint16_t*)dest = buf[0][position];
-		dest += 2;
-		*(uint16_t*)dest = buf[1][position];
-		dest += 2;
+		*dest++ = buf[0][position];
+		*dest++ = buf[1][position];
 	}
 }
 
@@ -264,7 +262,7 @@ flac_common_write(FlacData *data, const FLAC__Frame * frame,
 			num_samples = max_samples;
 
 		if (num_channels == 2 && bytes_per_sample == 2)
-			flac_convert_stereo16(data->chunk,
+			flac_convert_stereo16((int16_t*)data->chunk,
 					      buf, c_samp,
 					      c_samp + num_samples);
 		else
