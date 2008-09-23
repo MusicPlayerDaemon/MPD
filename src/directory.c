@@ -889,22 +889,18 @@ static void readDirectoryInfo(FILE * fp, Directory * directory)
 	ListNode *nodeTemp;
 
 	while (myFgets(buffer, bufferSize, fp)
-	       && 0 != strncmp(DIRECTORY_END, buffer, strlen(DIRECTORY_END))) {
-		if (0 == strncmp(DIRECTORY_DIR, buffer, strlen(DIRECTORY_DIR))) {
+	       && prefixcmp(buffer, DIRECTORY_END)) {
+		if (!prefixcmp(buffer, DIRECTORY_DIR)) {
 			strcpy(key, &(buffer[strlen(DIRECTORY_DIR)]));
 			if (!myFgets(buffer, bufferSize, fp))
 				FATAL("Error reading db, fgets\n");
 			/* for compatibility with db's prior to 0.11 */
-			if (0 == strncmp(DIRECTORY_MTIME, buffer,
-					 strlen(DIRECTORY_MTIME))) {
+			if (!prefixcmp(buffer, DIRECTORY_MTIME)) {
 				if (!myFgets(buffer, bufferSize, fp))
 					FATAL("Error reading db, fgets\n");
 			}
-			if (strncmp
-			    (DIRECTORY_BEGIN, buffer,
-			     strlen(DIRECTORY_BEGIN))) {
+			if (prefixcmp(buffer, DIRECTORY_BEGIN))
 				FATAL("Error reading db at line: %s\n", buffer);
-			}
 			name = &(buffer[strlen(DIRECTORY_BEGIN)]);
 
 			while (nextDirNode && (strcmpRet =
@@ -932,7 +928,7 @@ static void readDirectoryInfo(FILE * fp, Directory * directory)
 			}
 
 			readDirectoryInfo(fp, subDirectory);
-		} else if (0 == strncmp(SONG_BEGIN, buffer, strlen(SONG_BEGIN))) {
+		} else if (!prefixcmp(buffer, SONG_BEGIN)) {
 			readSongInfoIntoList(fp, directory->songs, directory);
 		} else {
 			FATAL("Unknown line in db: %s\n", buffer);
@@ -1086,16 +1082,13 @@ int readDirectoryDB(void)
 		if (0 == strcmp(DIRECTORY_INFO_BEGIN, buffer)) {
 			while (myFgets(buffer, bufferSize, fp) &&
 			       0 != strcmp(DIRECTORY_INFO_END, buffer)) {
-				if (0 == strncmp(DIRECTORY_MPD_VERSION, buffer,
-						 strlen(DIRECTORY_MPD_VERSION)))
+				if (!prefixcmp(buffer, DIRECTORY_MPD_VERSION))
 				{
 					if (foundVersion)
 						FATAL("already found version in db\n");
 					foundVersion = 1;
-				} else if (0 ==
-					   strncmp(DIRECTORY_FS_CHARSET, buffer,
-						   strlen
-						   (DIRECTORY_FS_CHARSET))) {
+				} else if (!prefixcmp(buffer,
+				                      DIRECTORY_FS_CHARSET)) {
 					char *fsCharset;
 					char *tempCharset;
 

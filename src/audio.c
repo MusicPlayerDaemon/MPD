@@ -27,7 +27,6 @@
 #include "os_compat.h"
 
 #define AUDIO_DEVICE_STATE	"audio_device_state:"
-#define AUDIO_DEVICE_STATE_LEN	(sizeof(AUDIO_DEVICE_STATE)-1)
 #define AUDIO_BUFFER_SIZE	2*MPD_PATH_MAX
 
 static struct audio_format audio_configFormat;
@@ -460,7 +459,7 @@ void readAudioDevicesState(FILE *fp)
 	while (myFgets(buffer, AUDIO_BUFFER_SIZE, fp)) {
 		char *c, *name;
 
-		if (strncmp(buffer, AUDIO_DEVICE_STATE, AUDIO_DEVICE_STATE_LEN))
+		if (prefixcmp(buffer, AUDIO_DEVICE_STATE))
 			continue;
 
 		c = strchr(buffer, ':');

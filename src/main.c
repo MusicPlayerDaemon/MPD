@@ -152,7 +152,7 @@ static void parseOptions(int argc, char **argv, Options * options)
 	if (argc > 1) {
 		int i = 1;
 		while (i < argc) {
-			if (strncmp(argv[i], "--", 2) == 0) {
+			if (!prefixcmp(argv[i], "--")) {
 				if (strcmp(argv[i], "--help") == 0) {
 					usage(argv);
 					exit(EXIT_SUCCESS);

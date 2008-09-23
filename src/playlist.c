@@ -309,8 +309,7 @@ void readPlaylistState(FILE *fp)
 	char buffer[PLAYLIST_BUFFER_SIZE];
 
 	while (myFgets(buffer, PLAYLIST_BUFFER_SIZE, fp)) {
-		if (strncmp(buffer, PLAYLIST_STATE_FILE_STATE,
-			    strlen(PLAYLIST_STATE_FILE_STATE)) == 0) {
+		if (!prefixcmp(buffer, PLAYLIST_STATE_FILE_STATE)) {
 			if (strcmp(&(buffer[strlen(PLAYLIST_STATE_FILE_STATE)]),
 				   PLAYLIST_STATE_FILE_STATE_PLAY) == 0) {
 				state = PLAYER_STATE_PLAY;
@@ -321,33 +320,24 @@ void readPlaylistState(FILE *fp)
 				== 0) {
 				state = PLAYER_STATE_PAUSE;
 			}
-		} else if (strncmp(buffer, PLAYLIST_STATE_FILE_TIME,
-				   strlen(PLAYLIST_STATE_FILE_TIME)) == 0) {
+		} else if (!prefixcmp(buffer, PLAYLIST_STATE_FILE_TIME)) {
 			seek_time =
 			    atoi(&(buffer[strlen(PLAYLIST_STATE_FILE_TIME)]));
 		} else
-		    if (strncmp
-			(buffer, PLAYLIST_STATE_FILE_REPEAT,
-			 strlen(PLAYLIST_STATE_FILE_REPEAT)) == 0) {
+		    if (!prefixcmp(buffer, PLAYLIST_STATE_FILE_REPEAT)) {
 			if (strcmp
 			    (&(buffer[strlen(PLAYLIST_STATE_FILE_REPEAT)]),
 			     "1") == 0) {
 				setPlaylistRepeatStatus(1);
 			} else
 				setPlaylistRepeatStatus(0);
-		} else
-		    if (strncmp
-			(buffer, PLAYLIST_STATE_FILE_CROSSFADE,
-			 strlen(PLAYLIST_STATE_FILE_CROSSFADE)) == 0) {
+		} else if (!prefixcmp(buffer, PLAYLIST_STATE_FILE_CROSSFADE)) {
 			setPlayerCrossFade(atoi
 					   (&
 					    (buffer
 					     [strlen
 					      (PLAYLIST_STATE_FILE_CROSSFADE)])));
-		} else
-		    if (strncmp
-			(buffer, PLAYLIST_STATE_FILE_RANDOM,
-			 strlen(PLAYLIST_STATE_FILE_RANDOM)) == 0) {
+		} else if (!prefixcmp(buffer, PLAYLIST_STATE_FILE_RANDOM)) {
 			if (strcmp
 			    (&
 			     (buffer
@@ -356,20 +346,15 @@ void readPlaylistState(FILE *fp)
 				setPlaylistRandomStatus(1);
 			} else
 				setPlaylistRandomStatus(0);
-		} else if (strncmp(buffer, PLAYLIST_STATE_FILE_CURRENT,
-				   strlen(PLAYLIST_STATE_FILE_CURRENT))
-			   == 0) {
+		} else if (!prefixcmp(buffer, PLAYLIST_STATE_FILE_CURRENT)) {
 			if (strlen(buffer) ==
 			    strlen(PLAYLIST_STATE_FILE_CURRENT))
 				state_file_fatal();
 			current = atoi(&(buffer
 					 [strlen
 					  (PLAYLIST_STATE_FILE_CURRENT)]));
-		} else
-		    if (strncmp
-			(buffer, PLAYLIST_STATE_FILE_PLAYLIST_BEGIN,
-			 strlen(PLAYLIST_STATE_FILE_PLAYLIST_BEGIN)
-			) == 0) {
+		} else if (!prefixcmp(buffer,
+		                      PLAYLIST_STATE_FILE_PLAYLIST_BEGIN)) {
 			if (state == PLAYER_STATE_STOP)
 				current = -1;
 			loadPlaylistFromStateFile(fp, buffer, state,

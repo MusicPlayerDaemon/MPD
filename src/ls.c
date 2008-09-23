@@ -89,9 +89,8 @@ int isRemoteUrl(const char *url)
 
 	while (*urlPrefixes) {
 		count++;
-		if (strncmp(*urlPrefixes, url, strlen(*urlPrefixes)) == 0) {
+		if (!prefixcmp(url, *urlPrefixes))
 			return count;
-		}
 		urlPrefixes++;
 	}
 

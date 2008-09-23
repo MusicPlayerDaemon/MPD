@@ -508,26 +508,22 @@ int changeVolumeLevel(int change, int rel)
 
 void read_sw_volume_state(FILE *fp)
 {
-	/* strlen(SW_VOLUME_STATE) + strlen('100') + '\0' */
-	#define bufsize 16
-	char buf[bufsize];
-	const size_t len = strlen(SW_VOLUME_STATE);
+	char buf[sizeof(SW_VOLUME_STATE) + sizeof("100") - 1];
 	char *end = NULL;
 	long int sv;
 
 	if (volume_mixerType != VOLUME_MIXER_TYPE_SOFTWARE)
 		return;
-	while (myFgets(buf, bufsize, fp)) {
-		if (strncmp(buf, SW_VOLUME_STATE, len))
+	while (myFgets(buf, sizeof(buf), fp)) {
+		if (prefixcmp(buf, SW_VOLUME_STATE))
 			continue;
-		sv = strtol(buf + len, &end, 10);
+		sv = strtol(buf + strlen(SW_VOLUME_STATE), &end, 10);
 		if (mpd_likely(!*end))
 			changeSoftwareVolume(sv, 0);
 		else
 			ERROR("Can't parse software volume: %s\n", buf);
 		return;
 	}
-	#undef bufsize
 }
 
 void save_sw_volume_state(FILE *fp)

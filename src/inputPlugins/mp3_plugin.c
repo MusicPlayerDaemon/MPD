@@ -613,7 +613,7 @@ static int parse_lame(struct lame *lame, struct mad_bitptr *ptr, int *bitlen)
 	/* This is technically incorrect, since the encoder might not be lame.
 	 * But there's no other way to determine if this is a lame tag, and we
 	 * wouldn't want to go reading a tag that's not there. */
-	if (strncmp(lame->encoder, "LAME", 4) != 0)
+	if (prefixcmp(lame->encoder, "LAME"))
 		return 0;
 
 	if (sscanf(lame->encoder+4, "%u.%u",
