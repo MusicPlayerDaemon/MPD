@@ -20,13 +20,14 @@
 #define DIRECTORY_H
 
 #include "song.h"
+#include "songvec.h"
 
 typedef List DirectoryList;
 
 typedef struct _Directory {
 	char *path;
 	DirectoryList *subDirectories;
-	SongList *songs;
+	struct songvec songs;
 	struct _Directory *parent;
 	ino_t inode;
 	dev_t device;

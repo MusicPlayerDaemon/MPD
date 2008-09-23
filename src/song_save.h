@@ -21,9 +21,11 @@
 
 #include "song.h"
 
-void writeSongInfoFromList(FILE * fp, SongList * list);
+struct songvec;
 
-void readSongInfoIntoList(FILE * fp, SongList * list,
+void songvec_save(FILE *fp, struct songvec *sv);
+
+void readSongInfoIntoList(FILE * fp, struct songvec *sv,
 			  struct _Directory *parent);
 
 #endif

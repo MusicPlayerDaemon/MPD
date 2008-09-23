@@ -51,7 +51,7 @@ static int countSongsInDirectory(Directory * directory,
 {
 	int *count = (int *)data;
 
-	*count += directory->songs->numberOfNodes;
+	*count += directory->songs.nr;
 
 	return 0;
 }
@@ -362,7 +362,7 @@ static int sumSavedFilenameMemoryInDirectory(Directory * dir, void *data)
 		return 0;
 
 	*sum += (strlen(getDirectoryPath(dir)) + 1 - sizeof(Directory *)) *
-	    dir->songs->numberOfNodes;
+	    dir->songs.nr;
 
 	return 0;
 }

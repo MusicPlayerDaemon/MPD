@@ -25,6 +25,7 @@
 #include "playlist.h"
 #include "decoder_list.h"
 #include "decoder_api.h"
+
 #include "os_compat.h"
 
 Song *newNullSong(void)

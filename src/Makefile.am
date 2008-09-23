@@ -86,6 +86,7 @@ mpd_headers = \
 	song.h \
 	song_print.h \
 	song_save.h \
+	songvec.h \
 	state_file.h \
 	stats.h \
 	tag.h \
@@ -156,6 +157,7 @@ mpd_SOURCES = \
 	song.c \
 	song_print.c \
 	song_save.c \
+	songvec.c \
 	state_file.c \
 	stats.c \
 	tag.c \

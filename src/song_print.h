@@ -21,9 +21,11 @@
 
 #include "song.h"
 
+struct songvec;
+
 int printSongInfo(struct client *client, Song * song);
 
-int printSongInfoFromList(struct client *client, SongList * list);
+int songvec_print(struct client *client, const struct songvec *sv);
 
 void printSongUrl(struct client *client, Song * song);
 

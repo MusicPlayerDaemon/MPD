@@ -17,6 +17,7 @@
  */
 
 #include "song_print.h"
+#include "songvec.h"
 #include "directory.h"
 #include "tag_print.h"
 #include "client.h"
@@ -41,14 +42,14 @@ int printSongInfo(struct client *client, Song * song)
 	return 0;
 }
 
-int printSongInfoFromList(struct client *client, SongList * list)
+int songvec_print(struct client *client, const struct songvec *sv)
 {
-	ListNode *tempNode = list->firstNode;
+	int i;
+	Song **sp = sv->base;
 
-	while (tempNode != NULL) {
-		printSongInfo(client, (Song *) tempNode->data);
-		tempNode = tempNode->nextNode;
-	}
+	for (i = sv->nr; --i >= 0;)
+		if (printSongInfo(client, *sp++) < 0)
+			return -1;
 
 	return 0;
 }

@@ -45,52 +45,41 @@ static void song_save(FILE *fp, Song * song)
 		tag_save(fp, song->tag);
 }
 
-void writeSongInfoFromList(FILE * fp, SongList * list)
+void songvec_save(FILE *fp, struct songvec *sv)
 {
-	ListNode *tempNode = list->firstNode;
+	int i;
+	Song **sp = sv->base;
 
 	fprintf(fp, "%s\n", SONG_BEGIN);
 
-	while (tempNode != NULL) {
-		fprintf(fp, "%s%s\n", SONG_KEY, tempNode->key);
-		song_save(fp, (Song *) tempNode->data);
-		fprintf(fp, "%s%li\n", SONG_MTIME,
-			  (long)((Song *) tempNode->data)->mtime);
-		tempNode = tempNode->nextNode;
+	for (i = sv->nr; --i >= 0; ) {
+		Song *song = *sp++;
+		fprintf(fp, "%s%s\n", SONG_KEY, song->url);
+		song_save(fp, song);
+		fprintf(fp, "%s%li\n", SONG_MTIME, (long)song->mtime);
 	}
 
 	fprintf(fp, "%s\n", SONG_END);
 }
 
-static void insertSongIntoList(SongList * list, ListNode ** nextSongNode,
-			       char *key, Song * song)
+static void insertSongIntoList(struct songvec *sv, Song *newsong)
 {
-	ListNode *nodeTemp;
-	int cmpRet = 0;
+	Song *existing = songvec_find(sv, newsong->url);
 
-	while (*nextSongNode
-	       && (cmpRet = strcmp(key, (*nextSongNode)->key)) > 0) {
-		nodeTemp = (*nextSongNode)->nextNode;
-		deleteNodeFromList(list, *nextSongNode);
-		*nextSongNode = nodeTemp;
-	}
-
-	if (!(*nextSongNode)) {
-		insertInList(list, song->url, (void *)song);
-	} else if (cmpRet == 0) {
-		Song *tempSong = (Song *) ((*nextSongNode)->data);
-		if (tempSong->mtime != song->mtime) {
-			tag_free(tempSong->tag);
-			tag_end_add(song->tag);
-			tempSong->tag = song->tag;
-			tempSong->mtime = song->mtime;
-			song->tag = NULL;
+	if (!existing) {
+		songvec_add(sv, newsong);
+		if (newsong->tag)
+			tag_end_add(newsong->tag);
+	} else { /* prevent dupes, just update the existing song info */
+		if (existing->mtime != newsong->mtime) {
+			tag_free(existing->tag);
+			if (newsong->tag)
+				tag_end_add(newsong->tag);
+			existing->tag = newsong->tag;
+			existing->mtime = newsong->mtime;
+			newsong->tag = NULL;
 		}
-		freeJustSong(song);
-		*nextSongNode = (*nextSongNode)->nextNode;
-	} else {
-		insertInListBeforeNode(list, *nextSongNode, -1, song->url,
-				       (void *)song);
+		freeJustSong(newsong);
 	}
 }
 
@@ -109,23 +98,18 @@ static int matchesAnMpdTagItemKey(char *buffer, int *itemType)
 	return 0;
 }
 
-void readSongInfoIntoList(FILE * fp, SongList * list, Directory * parentDir)
+void readSongInfoIntoList(FILE *fp, struct songvec *sv,
+			  Directory *parentDir)
 {
 	char buffer[MPD_PATH_MAX + 1024];
 	int bufferSize = MPD_PATH_MAX + 1024;
 	Song *song = NULL;
-	ListNode *nextSongNode = list->firstNode;
-	ListNode *nodeTemp;
 	int itemType;
 
 	while (myFgets(buffer, bufferSize, fp) && 0 != strcmp(SONG_END, buffer)) {
 		if (0 == strncmp(SONG_KEY, buffer, strlen(SONG_KEY))) {
-			if (song) {
-				insertSongIntoList(list, &nextSongNode,
-						   song->url, song);
-				if (song->tag != NULL)
-					tag_end_add(song->tag);
-			}
+			if (song)
+				insertSongIntoList(sv, song);
 
 			song = newNullSong();
 			song->url = xstrdup(buffer + strlen(SONG_KEY));
@@ -163,15 +147,8 @@ void readSongInfoIntoList(FILE * fp, SongList * list, Directory * parentDir)
 			FATAL("songinfo: unknown line in db: %s\n", buffer);
 	}
 
-	if (song) {
-		insertSongIntoList(list, &nextSongNode, song->url, song);
-		if (song->tag != NULL)
-			tag_end_add(song->tag);
-	}
+	if (song)
+		insertSongIntoList(sv, song);
 
-	while (nextSongNode) {
-		nodeTemp = nextSongNode->nextNode;
-		deleteNodeFromList(list, nextSongNode);
-		nextSongNode = nodeTemp;
-	}
+	songvec_prune(sv);
 }
