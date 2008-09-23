@@ -237,7 +237,8 @@ static FLAC__StreamDecoderWriteStatus flacWrite(const flac_decoder *dec,
 	FLAC__uint32 samples = frame->header.blocksize;
 	unsigned int c_samp;
 	const unsigned int num_channels = frame->header.channels;
-	const unsigned int bytes_per_sample = (data->audio_format.bits / 8);
+	const unsigned int bytes_per_sample =
+		audio_format_sample_size(&data->audio_format);
 	const unsigned int bytes_per_channel =
 		bytes_per_sample * frame->header.channels;
 	const unsigned int max_samples = FLAC_CHUNK_SIZE / bytes_per_channel;

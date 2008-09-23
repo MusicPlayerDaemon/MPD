@@ -257,7 +257,7 @@ static int shout_ogg_encoder_encode(struct shout_data *sd,
 	int j;
 	float **vorbbuf;
 	unsigned int samples;
-	int bytes = sd->audio_format.bits / 8;
+	int bytes = audio_format_sample_size(&sd->audio_format);
 	struct ogg_vorbis_data *od = (struct ogg_vorbis_data *)sd->encoder_data;
 
 	samples = size / (bytes * sd->audio_format.channels);

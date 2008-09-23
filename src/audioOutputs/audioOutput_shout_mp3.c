@@ -141,7 +141,7 @@ static int shout_mp3_encoder_encode(struct shout_data *sd,
 	float (*lamebuf)[2];
 	struct shout_buffer *buf = &(sd->buf);
 	unsigned int samples;
-	int bytes = sd->audio_format.bits / 8;
+	int bytes = audio_format_sample_size(&sd->audio_format);
 	struct lame_data *ld = (struct lame_data *)sd->encoder_data;
 	int bytes_out;
 

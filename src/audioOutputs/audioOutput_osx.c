@@ -268,7 +268,7 @@ static int osx_openDevice(struct audio_output *audioOutput)
 #endif
 
 	streamDesc.mBytesPerPacket =
-	    audioFormat->channels * audioFormat->bits / 8;
+		audioFormat->channels * audio_format_sample_size(audioFormat);
 	streamDesc.mFramesPerPacket = 1;
 	streamDesc.mBytesPerFrame = streamDesc.mBytesPerPacket;
 	streamDesc.mChannelsPerFrame = audioFormat->channels;

@@ -160,7 +160,7 @@ static FLAC__StreamDecoderWriteStatus oggflacWrite(mpd_unused const
 	FLAC__uint16 u16;
 	unsigned char *uc;
 	unsigned int c_samp, c_chan;
-	int i;
+	unsigned int i;
 	float timeChange;
 
 	timeChange = ((float)samples) / frame->header.sample_rate;
@@ -183,7 +183,7 @@ static FLAC__StreamDecoderWriteStatus oggflacWrite(mpd_unused const
 		     c_chan++) {
 			u16 = buf[c_chan][c_samp];
 			uc = (unsigned char *)&u16;
-			for (i = 0; i < (data->audio_format.bits / 8); i++) {
+			for (i = 0; i < audio_format_sample_size(&data->audio_format); i++) {
 				if (data->chunk_length >= FLAC_CHUNK_SIZE) {
 					if (flacSendChunk(data) < 0) {
 						return

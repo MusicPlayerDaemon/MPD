@@ -289,7 +289,7 @@ configure_hw:
 	if (err < 0)
 		goto error;
 
-	ad->sampleSize = (audioFormat->bits / 8) * audioFormat->channels;
+	ad->sampleSize = audio_format_sample_size(audioFormat) * audioFormat->channels;
 
 	audioOutput->open = 1;
 

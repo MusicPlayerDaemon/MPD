@@ -47,14 +47,27 @@ static inline int audio_format_equals(const struct audio_format *a,
 		a->channels == b->channels;
 }
 
+/**
+ * Returns the size of each (mono) sample in bytes.
+ */
+static inline unsigned audio_format_sample_size(const struct audio_format *af)
+{
+	if (af->bits <= 8)
+		return 1;
+	else if (af->bits <= 16)
+		return 2;
+	else
+		return 4;
+}
+
 static inline double audio_format_time_to_size(const struct audio_format *af)
 {
-	return af->sampleRate * af->bits * af->channels / 8.0;
+	return af->sampleRate * af->channels * audio_format_sample_size(af);
 }
 
 static inline double audioFormatSizeToTime(const struct audio_format *af)
 {
-	return 8.0 / af->bits / af->channels / af->sampleRate;
+	return 1.0 / audio_format_time_to_size(af);
 }
 
 #endif
