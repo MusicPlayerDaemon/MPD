@@ -32,6 +32,7 @@
 #include "dbUtils.h"
 #include "song_print.h"
 #include "song_save.h"
+#include "main_notify.h"
 
 #define DIRECTORY_DIR		"directory: "
 #define DIRECTORY_MTIME		"mtime: "
@@ -54,11 +55,13 @@ static Directory *mp3rootDirectory;
 
 static time_t directory_dbModTime;
 
-static volatile int directory_updatePid;
+static sig_atomic_t directory_updatePid;
 
-static volatile int directory_reReadDB;
+static sig_atomic_t update_exited;
 
-static volatile mpd_uint16 directory_updateJobId;
+static sig_atomic_t update_status;
+
+static sig_atomic_t directory_updateJobId;
 
 static DirectoryList *newDirectoryList(void);
 
@@ -108,53 +111,48 @@ static char *getDbFile(void)
 	return param->value;
 }
 
-static void clearUpdatePid(void)
-{
-	directory_updatePid = 0;
-}
-
 int isUpdatingDB(void)
 {
-	if (directory_updatePid > 0 || directory_reReadDB) {
-		return directory_updateJobId;
-	}
-	return 0;
+	return directory_updatePid > 0 ? directory_updateJobId : 0;
 }
 
 void directory_sigChldHandler(int pid, int status)
 {
 	if (directory_updatePid == pid) {
-		if (WIFSIGNALED(status) && WTERMSIG(status) != SIGTERM) {
-			/* ERROR("update process died from a "
-			      "non-TERM signal: %i\n", WTERMSIG(status)); */
-		} else if (!WIFSIGNALED(status)) {
-			switch (WEXITSTATUS(status)) {
-			case DIRECTORY_UPDATE_EXIT_UPDATE:
-				directory_reReadDB = 1;
-				/* DEBUG("directory_sigChldHandler: "
-				      "updated db\n"); */
-			case DIRECTORY_UPDATE_EXIT_NOUPDATE:
-				/* DEBUG("directory_sigChldHandler: "
-				      "update exited succesffully\n"); */
-				break;
-			/*
-			default:
-				ERROR("error updating db\n");
-			*/
-			}
-		}
-		clearUpdatePid();
+		update_status = status;
+		update_exited = 1;
+		wakeup_main_task();
 	}
 }
 
 void readDirectoryDBIfUpdateIsFinished(void)
 {
-	if (directory_reReadDB && 0 == directory_updatePid) {
-		DEBUG("readDirectoryDB since update finished successfully\n");
-		readDirectoryDB();
-		playlistVersionChange();
-		directory_reReadDB = 0;
+	int status;
+
+	if (!update_exited)
+		return;
+
+	status = update_status;
+
+	if (WIFSIGNALED(status) && WTERMSIG(status) != SIGTERM) {
+		ERROR("update process died from a non-TERM signal: %d\n",
+		      WTERMSIG(status));
+	} else if (!WIFSIGNALED(status)) {
+		switch (WEXITSTATUS(status)) {
+		case DIRECTORY_UPDATE_EXIT_UPDATE:
+			DEBUG("update finished successfully with changes\n");
+			readDirectoryDB();
+			DEBUG("update changes read into memory\n");
+			playlistVersionChange();
+		case DIRECTORY_UPDATE_EXIT_NOUPDATE:
+			DEBUG("update exited successfully with no changes\n");
+			break;
+		default:
+			ERROR("error updating db\n");
+		}
 	}
+	update_exited = 0;
+	directory_updatePid = 0;
 }
 
 int updateInit(List * pathList)
@@ -162,8 +160,14 @@ int updateInit(List * pathList)
 	if (directory_updatePid > 0)
 		return 0;
 
-	/* need to block CHLD signal, cause it can exit before we
-	   even get a chance to assign directory_updatePID */
+	/*
+	 * need to block CHLD signal, cause it can exit before we
+	 * even get a chance to assign directory_updatePID
+	 *
+	 * Update: our signal blocking is is utterly broken by
+	 * pthreads(); goal will be to remove dependency on signals;
+	 * but for now use the my_usleep hack below.
+	 */
 	blockSignals();
 	directory_updatePid = fork();
 	if (directory_updatePid == 0) {
@@ -177,6 +181,13 @@ int updateInit(List * pathList)
 		client_manager_deinit();
 		finishPlaylist();
 		finishVolume();
+
+		/*
+		 * XXX HACK to workaround race condition where
+		 * directory_updatePid is still zero in the parent even upon
+		 * entry of directory_sigChldHandler.
+		 */
+		my_usleep(100000);
 
 		if (pathList) {
 			ListNode *node = pathList->firstNode;
