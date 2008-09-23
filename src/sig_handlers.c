@@ -57,7 +57,6 @@ static void chldSigHandler(mpd_unused int sig)
 			else
 				break;
 		}
-		directory_sigChldHandler(pid, status);
 	}
 }
 

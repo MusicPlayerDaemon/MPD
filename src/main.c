@@ -444,7 +444,7 @@ int main(int argc, char *argv[])
 	       COMMAND_RETURN_KILL != handlePendingSignals()) {
 		syncPlayerAndPlaylist();
 		client_manager_expire();
-		readDirectoryDBIfUpdateIsFinished();
+		reap_update_task();
 	}
 
 	write_state_file();

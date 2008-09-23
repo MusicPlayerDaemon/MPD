@@ -34,7 +34,7 @@ typedef struct _Directory {
 	unsigned stat; /* not needed if ino_t == dev_t == 0 is impossible */
 } Directory;
 
-void readDirectoryDBIfUpdateIsFinished(void);
+void reap_update_task(void);
 
 int isUpdatingDB(void);
 

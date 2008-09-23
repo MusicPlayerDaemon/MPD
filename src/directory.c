@@ -53,17 +53,19 @@ enum update_return {
 	UPDATE_RETURN_UPDATED = 1
 };
 
+enum update_progress {
+	UPDATE_PROGRESS_IDLE = 0,
+	UPDATE_PROGRESS_RUNNING = 1,
+	UPDATE_PROGRESS_DONE = 2
+} progress;
+
 static Directory *mp3rootDirectory;
 
 static time_t directory_dbModTime;
 
-static sig_atomic_t directory_updatePid;
+static pthread_t update_thr;
 
-static sig_atomic_t update_exited;
-
-static sig_atomic_t update_status;
-
-static sig_atomic_t directory_updateJobId;
+static int directory_updateJobId;
 
 static DirectoryList *newDirectoryList(void);
 
@@ -116,124 +118,66 @@ static char *getDbFile(void)
 
 int isUpdatingDB(void)
 {
-	return directory_updatePid > 0 ? directory_updateJobId : 0;
+	return (progress != UPDATE_PROGRESS_IDLE) ? directory_updateJobId : 0;
 }
 
-void directory_sigChldHandler(int pid, int status)
+void reap_update_task(void)
 {
-	if (directory_updatePid == pid) {
-		update_status = status;
-		update_exited = 1;
-		wakeup_main_task();
-	}
-}
-
-void readDirectoryDBIfUpdateIsFinished(void)
-{
-	int status;
-
-	if (!update_exited)
+	if (progress != UPDATE_PROGRESS_DONE)
 		return;
-
-	status = update_status;
-
-	if (WIFSIGNALED(status) && WTERMSIG(status) != SIGTERM) {
-		ERROR("update process died from a non-TERM signal: %d\n",
-		      WTERMSIG(status));
-	} else if (!WIFSIGNALED(status)) {
-		switch (WEXITSTATUS(status)) {
-		case DIRECTORY_UPDATE_EXIT_UPDATE:
-			DEBUG("update finished successfully with changes\n");
-			readDirectoryDB();
-			DEBUG("update changes read into memory\n");
-			playlistVersionChange();
-		case DIRECTORY_UPDATE_EXIT_NOUPDATE:
-			DEBUG("update exited successfully with no changes\n");
-			break;
-		default:
-			ERROR("error updating db\n");
-		}
-	}
-	update_exited = 0;
-	directory_updatePid = 0;
+	pthread_join(update_thr, NULL);
+	progress = UPDATE_PROGRESS_IDLE;
 }
 
-int updateInit(List * pathList)
+static void * update_task(void *arg)
 {
-	if (directory_updatePid > 0)
-		return 0;
+	List *path_list = (List *)arg;
+	enum update_return ret = UPDATE_RETURN_NOUPDATE;
 
-	/*
-	 * need to block CHLD signal, cause it can exit before we
-	 * even get a chance to assign directory_updatePID
-	 *
-	 * Update: our signal blocking is is utterly broken by
-	 * pthreads(); goal will be to remove dependency on signals;
-	 * but for now use the my_usleep hack below.
-	 */
-	blockSignals();
-	directory_updatePid = fork();
-	if (directory_updatePid == 0) {
-		/* child */
-		enum update_return dbUpdated = UPDATE_RETURN_NOUPDATE;
+	if (path_list) {
+		ListNode *node = path_list->firstNode;
 
-		unblockSignals();
-
-		finishSigHandlers();
-		closeAllListenSockets();
-		client_manager_deinit();
-		finishPlaylist();
-		finishVolume();
-
-		/*
-		 * XXX HACK to workaround race condition where
-		 * directory_updatePid is still zero in the parent even upon
-		 * entry of directory_sigChldHandler.
-		 */
-		my_usleep(100000);
-
-		if (pathList) {
-			ListNode *node = pathList->firstNode;
-
-			while (node) {
-				switch (updatePath(node->key)) {
-				case UPDATE_RETURN_UPDATED:
-					dbUpdated = UPDATE_RETURN_UPDATED;
-					break;
-				case UPDATE_RETURN_NOUPDATE:
-					break;
-				case UPDATE_RETURN_ERROR:
-					exit(DIRECTORY_UPDATE_EXIT_ERROR);
-				}
-				node = node->nextNode;
+		while (node) {
+			switch (updatePath(node->key)) {
+			case UPDATE_RETURN_ERROR:
+				ret = UPDATE_RETURN_ERROR;
+				goto out;
+			case UPDATE_RETURN_NOUPDATE:
+				break;
+			case UPDATE_RETURN_UPDATED:
+				ret = UPDATE_RETURN_UPDATED;
 			}
-		} else {
-			dbUpdated = updateDirectory(mp3rootDirectory);
-			if (dbUpdated == UPDATE_RETURN_ERROR)
-				exit(DIRECTORY_UPDATE_EXIT_ERROR);
+			node = node->nextNode;
 		}
-
-		if (dbUpdated == UPDATE_RETURN_NOUPDATE)
-			exit(DIRECTORY_UPDATE_EXIT_NOUPDATE);
-
-		/* ignore signals since we don't want them to corrupt the db */
-		ignoreSignals();
-		if (writeDirectoryDB() < 0) {
-			exit(DIRECTORY_UPDATE_EXIT_ERROR);
-		}
-		exit(DIRECTORY_UPDATE_EXIT_UPDATE);
-	} else if (directory_updatePid < 0) {
-		unblockSignals();
-		ERROR("updateInit: Problems forking()'ing\n");
-		directory_updatePid = 0;
-		return -1;
+		free(path_list);
+	} else {
+		ret = updateDirectory(mp3rootDirectory);
 	}
-	unblockSignals();
 
+	if (ret == UPDATE_RETURN_UPDATED && writeDirectoryDB() < 0)
+		ret = UPDATE_RETURN_ERROR;
+out:
+	progress = UPDATE_PROGRESS_DONE;
+	wakeup_main_task();
+	return (void *)ret;
+}
+
+int updateInit(List * path_list)
+{
+	pthread_attr_t attr;
+
+	if (progress != UPDATE_PROGRESS_IDLE)
+		return -1;
+
+	progress = UPDATE_PROGRESS_RUNNING;
+
+	pthread_attr_init(&attr);
+	if (pthread_create(&update_thr, &attr, update_task, path_list))
+		FATAL("Failed to spawn update task: %s\n", strerror(errno));
 	directory_updateJobId++;
 	if (directory_updateJobId > 1 << 15)
 		directory_updateJobId = 1;
-	DEBUG("updateInit: fork()'d update child for update job id %i\n",
+	DEBUG("updateInit: spawned update thread for update job id %i\n",
 	      (int)directory_updateJobId);
 
 	return (int)directory_updateJobId;

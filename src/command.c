@@ -819,12 +819,9 @@ static int listHandleUpdate(struct client *client,
 			    char *argv[],
 			    struct strnode *cmdnode, CommandEntry * cmd)
 {
-	static List *pathList;
+	List *pathList = makeList(NULL, 1);
 	CommandEntry *nextCmd = NULL;
 	struct strnode *next = cmdnode->next;
-
-	if (!pathList)
-		pathList = makeList(NULL, 1);
 
 	if (argc == 2)
 		insertInList(pathList, argv[1], NULL);
@@ -837,25 +834,9 @@ static int listHandleUpdate(struct client *client,
 
 	if (cmd != nextCmd) {
 		int ret = updateInit(pathList);
-		freeList(pathList);
-		pathList = NULL;
-
-		switch (ret) {
-		case 0:
+		if (ret == -1)
 			command_error(client, ACK_ERROR_UPDATE_ALREADY,
 				      "already updating");
-			break;
-
-		case -1:
-			command_error(client, ACK_ERROR_SYSTEM,
-				      "problems trying to update");
-			break;
-
-		default:
-			client_printf(client, "updating_db: %i\n", ret);
-			ret = 0;
-			break;
-		}
 
 		return ret;
 	}
@@ -872,26 +853,10 @@ static int handleUpdate(struct client *client,
 		List *pathList = makeList(NULL, 1);
 		insertInList(pathList, argv[1], NULL);
 		ret = updateInit(pathList);
-		freeList(pathList);
-	} else
-		ret = updateInit(NULL);
-
-	switch (ret) {
-	case 0:
-		command_error(client, ACK_ERROR_UPDATE_ALREADY,
-			      "already updating");
-		ret = -1;
-		break;
-
-	case -1:
-		command_error(client, ACK_ERROR_SYSTEM,
-			      "problems trying to update");
-		break;
-
-	default:
-		client_printf(client, "updating_db: %i\n", ret);
-		ret = 0;
-		break;
+		if (ret == -1)
+			command_error(client, ACK_ERROR_UPDATE_ALREADY,
+				      "already updating");
+		return ret;
 	}
 
 	return ret;
