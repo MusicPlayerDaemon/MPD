@@ -60,14 +60,7 @@ static int ioops_consume(int fd_count, fd_set * rfds,
 
 void init_main_notify(void)
 {
-	if (pipe(main_pipe) < 0)
-		FATAL("Couldn't open pipe: %s", strerror(errno));
-	if (set_nonblocking(main_pipe[0]) < 0)
-		FATAL("Couldn't set non-blocking on main_notify fd: %s",
-		      strerror(errno));
-	if (set_nonblocking(main_pipe[1]) < 0)
-		FATAL("Couldn't set non-blocking on main_notify fd: %s",
-		      strerror(errno));
+	init_async_pipe(main_pipe);
 	main_notify_IO.fdset = ioops_fdset;
 	main_notify_IO.consume = ioops_consume;
 	registerIO(&main_notify_IO);
