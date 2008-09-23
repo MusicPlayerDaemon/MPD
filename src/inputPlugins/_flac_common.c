@@ -196,19 +196,6 @@ void flac_error_common_cb(const char *plugin,
 	}
 }
 
-/* keep this inlined, this is just macro but prettier :) */
-static inline int flacSendChunk(FlacData * data)
-{
-	if (decoder_data(data->decoder, data->inStream,
-			 1, data->chunk,
-			 data->chunk_length, data->time,
-			 data->bitRate,
-			 data->replayGainInfo) == DECODE_COMMAND_STOP)
-		return -1;
-
-	return 0;
-}
-
 static void flac_convert_stereo16(int16_t *dest,
 				  const FLAC__int32 * const buf[],
 				  unsigned int position, unsigned int end)
@@ -301,6 +288,7 @@ flac_common_write(FlacData *data, const FLAC__Frame * frame,
 		bytes_per_sample * frame->header.channels;
 	const unsigned int max_samples = FLAC_CHUNK_SIZE / bytes_per_channel;
 	unsigned int num_samples;
+	enum decoder_command cmd;
 
 	if (bytes_per_sample != 1 && bytes_per_sample != 2 &&
 	    bytes_per_sample != 4)
@@ -319,12 +307,23 @@ flac_common_write(FlacData *data, const FLAC__Frame * frame,
 
 		data->chunk_length = num_samples * bytes_per_channel;
 
-		if (flacSendChunk(data) < 0) {
+		cmd = decoder_data(data->decoder, data->inStream,
+				   1, data->chunk,
+				   data->chunk_length, data->time,
+				   data->bitRate,
+				   data->replayGainInfo);
+		data->chunk_length = 0;
+
+		switch (cmd) {
+		case DECODE_COMMAND_NONE:
+		case DECODE_COMMAND_START:
+			break;
+
+		case DECODE_COMMAND_STOP:
 			return
 				FLAC__STREAM_DECODER_WRITE_STATUS_ABORT;
-		}
-		data->chunk_length = 0;
-		if (decoder_get_command(data->decoder) == DECODE_COMMAND_SEEK) {
+
+		case DECODE_COMMAND_SEEK:
 			return
 				FLAC__STREAM_DECODER_WRITE_STATUS_CONTINUE;
 		}
