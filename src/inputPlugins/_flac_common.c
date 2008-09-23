@@ -267,18 +267,25 @@ static void flac_convert(unsigned char *dest,
 			 const FLAC__int32 * const buf[],
 			 unsigned int position, unsigned int end)
 {
-	unsigned int c_chan, i;
-	FLAC__uint16 u16;
-	unsigned char *uc;
+	switch (bytes_per_sample) {
+	case 2:
+		if (num_channels == 2)
+			flac_convert_stereo16((int16_t*)dest, buf,
+					      position, end);
+		else
+			flac_convert_16((int16_t*)dest, num_channels, buf,
+					position, end);
+		break;
 
-	for (; position < end; ++position) {
-		for (c_chan = 0; c_chan < num_channels; c_chan++) {
-			u16 = buf[c_chan][position];
-			uc = (unsigned char *)&u16;
-			for (i = 0; i < bytes_per_sample; i++) {
-				*dest++ = *uc++;
-			}
-		}
+	case 4:
+		flac_convert_32((int32_t*)dest, num_channels, buf,
+				position, end);
+		break;
+
+	case 1:
+		flac_convert_8((int8_t*)dest, num_channels, buf,
+			       position, end);
+		break;
 	}
 }
 
@@ -295,7 +302,10 @@ flac_common_write(FlacData *data, const FLAC__Frame * frame,
 	const unsigned int max_samples = FLAC_CHUNK_SIZE / bytes_per_channel;
 	unsigned int num_samples;
 
-	assert(data->audio_format.bits > 0);
+	if (bytes_per_sample != 1 && bytes_per_sample != 2 &&
+	    bytes_per_sample != 4)
+		/* exotic unsupported bit rate */
+		return FLAC__STREAM_DECODER_WRITE_STATUS_ABORT;
 
 	for (c_samp = 0; c_samp < frame->header.blocksize;
 	     c_samp += num_samples) {
@@ -303,26 +313,10 @@ flac_common_write(FlacData *data, const FLAC__Frame * frame,
 		if (num_samples > max_samples)
 			num_samples = max_samples;
 
-		if (num_channels == 2 && bytes_per_sample == 2)
-			flac_convert_stereo16((int16_t*)data->chunk,
-					      buf, c_samp,
-					      c_samp + num_samples);
-		else if (bytes_per_sample == 2)
-			flac_convert_16((int16_t*)data->chunk,
-					num_channels, buf, c_samp,
-					c_samp + num_samples);
-		else if (bytes_per_sample == 4)
-			flac_convert_32((int32_t*)data->chunk,
-					num_channels, buf, c_samp,
-					c_samp + num_samples);
-		else if (bytes_per_sample == 1)
-			flac_convert_8((int8_t*)data->chunk,
-				       num_channels, buf, c_samp,
-				       c_samp + num_samples);
-		else
-			flac_convert(data->chunk,
-				     num_channels, bytes_per_sample, buf,
-				     c_samp, c_samp + num_samples);
+		flac_convert(data->chunk,
+			     num_channels, bytes_per_sample, buf,
+			     c_samp, c_samp + num_samples);
+
 		data->chunk_length = num_samples * bytes_per_channel;
 
 		if (flacSendChunk(data) < 0) {
