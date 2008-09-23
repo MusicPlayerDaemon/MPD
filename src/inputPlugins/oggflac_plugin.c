@@ -157,50 +157,12 @@ static FLAC__StreamDecoderWriteStatus oggflacWrite(mpd_unused const
 {
 	FlacData *data = (FlacData *) vdata;
 	FLAC__uint32 samples = frame->header.blocksize;
-	FLAC__uint16 u16;
-	unsigned char *uc;
-	unsigned int c_samp, c_chan;
-	unsigned int i;
 	float timeChange;
 
 	timeChange = ((float)samples) / frame->header.sample_rate;
 	data->time += timeChange;
 
-	/* ogg123 uses a complicated method of calculating bitrate
-	 * with averaging which I'm not too fond of.
-	 * (waste of memory/CPU cycles, especially given this is _lossless_)
-	 * a get_decode_position() is not available in OggFLAC, either
-	 *
-	 * this does not give an accurate bitrate:
-	 * (bytes_last_read was set in the read callback)
-	 data->bitRate = ((8.0 * data->bytes_last_read *
-	 frame->header.sample_rate)
-	 /((float)samples * 1000)) + 0.5;
-	 */
-
-	for (c_samp = 0; c_samp < frame->header.blocksize; c_samp++) {
-		for (c_chan = 0; c_chan < frame->header.channels;
-		     c_chan++) {
-			u16 = buf[c_chan][c_samp];
-			uc = (unsigned char *)&u16;
-			for (i = 0; i < audio_format_sample_size(&data->audio_format); i++) {
-				if (data->chunk_length >= FLAC_CHUNK_SIZE) {
-					if (flacSendChunk(data) < 0) {
-						return
-						    FLAC__STREAM_DECODER_WRITE_STATUS_ABORT;
-					}
-					data->chunk_length = 0;
-					if (decoder_get_command(data->decoder) == DECODE_COMMAND_SEEK) {
-						return
-						    FLAC__STREAM_DECODER_WRITE_STATUS_CONTINUE;
-					}
-				}
-				data->chunk[data->chunk_length++] = *(uc++);
-			}
-		}
-	}
-
-	return FLAC__STREAM_DECODER_WRITE_STATUS_CONTINUE;
+	return flac_common_write(data, frame, buf);
 }
 
 /* used by TagDup */
@@ -371,12 +333,6 @@ static int oggflac_decode(struct decoder * mpd_decoder, InputStream * inStream)
 		oggflacPrintErroredState
 		    (OggFLAC__seekable_stream_decoder_get_state(decoder));
 		OggFLAC__seekable_stream_decoder_finish(decoder);
-	}
-	/* send last little bit */
-	if (data.chunk_length > 0 &&
-	    decoder_get_command(mpd_decoder) == DECODE_COMMAND_NONE) {
-		flacSendChunk(&data);
-		decoder_flush(mpd_decoder);
 	}
 
 fail:

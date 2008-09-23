@@ -195,58 +195,15 @@ static void flacMetadata(mpd_unused const flac_decoder * dec,
 	flac_metadata_common_cb(block, (FlacData *) vdata);
 }
 
-static void flac_convert_stereo16(unsigned char *dest,
-				  const FLAC__int32 * const buf[],
-				  unsigned int position, unsigned int end)
-{
-	for (; position < end; ++position) {
-		*(uint16_t*)dest = buf[0][position];
-		dest += 2;
-		*(uint16_t*)dest = buf[1][position];
-		dest += 2;
-	}
-}
-
-static void flac_convert(unsigned char *dest,
-			 unsigned int num_channels,
-			 unsigned int bytes_per_sample,
-			 const FLAC__int32 * const buf[],
-			 unsigned int position, unsigned int end)
-{
-	unsigned int c_chan, i;
-	FLAC__uint16 u16;
-	unsigned char *uc;
-
-	for (; position < end; ++position) {
-		for (c_chan = 0; c_chan < num_channels; c_chan++) {
-			u16 = buf[c_chan][position];
-			uc = (unsigned char *)&u16;
-			for (i = 0; i < bytes_per_sample; i++) {
-				*dest++ = *uc++;
-			}
-		}
-	}
-}
-
 static FLAC__StreamDecoderWriteStatus flacWrite(const flac_decoder *dec,
                                                 const FLAC__Frame * frame,
 						const FLAC__int32 * const buf[],
 						void *vdata)
 {
-	FlacData *data = (FlacData *) vdata;
 	FLAC__uint32 samples = frame->header.blocksize;
-	unsigned int c_samp;
-	const unsigned int num_channels = frame->header.channels;
-	const unsigned int bytes_per_sample =
-		audio_format_sample_size(&data->audio_format);
-	const unsigned int bytes_per_channel =
-		bytes_per_sample * frame->header.channels;
-	const unsigned int max_samples = FLAC_CHUNK_SIZE / bytes_per_channel;
-	unsigned int num_samples;
+	FlacData *data = (FlacData *) vdata;
 	float timeChange;
 	FLAC__uint64 newPosition = 0;
-
-	assert(data->audio_format.bits > 0);
 
 	timeChange = ((float)samples) / frame->header.sample_rate;
 	data->time += timeChange;
@@ -261,34 +218,7 @@ static FLAC__StreamDecoderWriteStatus flacWrite(const flac_decoder *dec,
 	}
 	data->position = newPosition;
 
-	for (c_samp = 0; c_samp < frame->header.blocksize;
-	     c_samp += num_samples) {
-		num_samples = frame->header.blocksize - c_samp;
-		if (num_samples > max_samples)
-			num_samples = max_samples;
-
-		if (num_channels == 2 && bytes_per_sample == 2)
-			flac_convert_stereo16(data->chunk,
-					      buf, c_samp,
-					      c_samp + num_samples);
-		else
-			flac_convert(data->chunk,
-				     num_channels, bytes_per_sample, buf,
-				     c_samp, c_samp + num_samples);
-		data->chunk_length = num_samples * bytes_per_channel;
-
-		if (flacSendChunk(data) < 0) {
-			return
-				FLAC__STREAM_DECODER_WRITE_STATUS_ABORT;
-		}
-		data->chunk_length = 0;
-		if (decoder_get_command(data->decoder) == DECODE_COMMAND_SEEK) {
-			return
-				FLAC__STREAM_DECODER_WRITE_STATUS_CONTINUE;
-		}
-	}
-
-	return FLAC__STREAM_DECODER_WRITE_STATUS_CONTINUE;
+	return flac_common_write(data, frame, buf);
 }
 
 static struct tag *flacMetadataDup(char *file, int *vorbisCommentFound)
