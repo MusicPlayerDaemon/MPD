@@ -232,6 +232,35 @@ flac_convert_16(int16_t *dest,
 			*dest++ = buf[c_chan][position];
 }
 
+/**
+ * Note: this function also handles 24 bit files!
+ */
+static void
+flac_convert_32(int32_t *dest,
+		unsigned int num_channels,
+		const FLAC__int32 * const buf[],
+		unsigned int position, unsigned int end)
+{
+	unsigned int c_chan;
+
+	for (; position < end; ++position)
+		for (c_chan = 0; c_chan < num_channels; c_chan++)
+			*dest++ = buf[c_chan][position];
+}
+
+static void
+flac_convert_8(int8_t *dest,
+	       unsigned int num_channels,
+	       const FLAC__int32 * const buf[],
+	       unsigned int position, unsigned int end)
+{
+	unsigned int c_chan;
+
+	for (; position < end; ++position)
+		for (c_chan = 0; c_chan < num_channels; c_chan++)
+			*dest++ = buf[c_chan][position];
+}
+
 static void flac_convert(unsigned char *dest,
 			 unsigned int num_channels,
 			 unsigned int bytes_per_sample,
@@ -282,6 +311,14 @@ flac_common_write(FlacData *data, const FLAC__Frame * frame,
 			flac_convert_16((int16_t*)data->chunk,
 					num_channels, buf, c_samp,
 					c_samp + num_samples);
+		else if (bytes_per_sample == 4)
+			flac_convert_32((int32_t*)data->chunk,
+					num_channels, buf, c_samp,
+					c_samp + num_samples);
+		else if (bytes_per_sample == 1)
+			flac_convert_8((int8_t*)data->chunk,
+				       num_channels, buf, c_samp,
+				       c_samp + num_samples);
 		else
 			flac_convert(data->chunk,
 				     num_channels, bytes_per_sample, buf,
