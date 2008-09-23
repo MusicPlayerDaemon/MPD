@@ -64,26 +64,3 @@ void songvec_free(struct songvec *sv)
 	sv->base = NULL;
 	sv->nr = 0;
 }
-
-/*
- * Removes missing songs from a songvec. This function is only temporary
- * as updating will be moved into a thread and updating shared memory...
- */
-#include "path.h"
-#include "ls.h"
-void songvec_prune(struct songvec *sv)
-{
-	int i;
-	char tmp[MPD_PATH_MAX];
-	struct stat sb;
-
-	for (i = sv->nr; --i >= 0; ) {
-		Song *song = sv->base[i];
-		assert(song);
-		if (!myStat(get_song_url(tmp, song), &sb))
-			continue;
-		songvec_delete(sv, song);
-		freeSong(song);
-		i = sv->nr;
-	}
-}

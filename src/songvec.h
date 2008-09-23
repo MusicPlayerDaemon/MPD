@@ -19,6 +19,4 @@ void songvec_add(struct songvec *sv, Song *add);
 
 void songvec_free(struct songvec *sv);
 
-void songvec_prune(struct songvec *sv);
-
 #endif /* SONGVEC_H */
