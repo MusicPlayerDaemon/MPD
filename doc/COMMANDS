@@ -52,6 +52,14 @@ add <string path>
 	_path_ can also be a single file
 	increments playlist version by for each song added
 
+addid <string path>
+        adds a song to the playlist (non-recursive) and returns the song id;
+        example:
+
+        addid "foo.mp3"
+        Id: 999
+        OK
+
 clear	
 	clears the current playlist
 	increments playlist version by 1
