@@ -1052,7 +1052,7 @@ int readDirectoryDB(void)
 		} else {
 			ERROR("db info not found in db file\n");
 			ERROR("you should recreate the db using --create-db\n");
-			fseek(fp, 0, SEEK_SET);
+			while (fclose(fp) && errno == EINTR) ;
 			return -1;
 		}
 	}
