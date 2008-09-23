@@ -140,7 +140,6 @@ typedef size_t flac_read_status_size_t;
 
 typedef struct {
 	unsigned char chunk[FLAC_CHUNK_SIZE];
-	size_t chunk_length;
 	float time;
 	unsigned int bitRate;
 	struct audio_format audio_format;

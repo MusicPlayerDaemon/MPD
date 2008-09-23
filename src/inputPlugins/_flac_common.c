@@ -33,7 +33,6 @@
 void init_FlacData(FlacData * data, struct decoder * decoder,
 		   InputStream * inStream)
 {
-	data->chunk_length = 0;
 	data->time = 0;
 	data->position = 0;
 	data->bitRate = 0;
@@ -305,15 +304,11 @@ flac_common_write(FlacData *data, const FLAC__Frame * frame,
 			     num_channels, bytes_per_sample, buf,
 			     c_samp, c_samp + num_samples);
 
-		data->chunk_length = num_samples * bytes_per_channel;
-
 		cmd = decoder_data(data->decoder, data->inStream,
 				   1, data->chunk,
-				   data->chunk_length, data->time,
-				   data->bitRate,
+				   num_samples * bytes_per_channel,
+				   data->time, data->bitRate,
 				   data->replayGainInfo);
-		data->chunk_length = 0;
-
 		switch (cmd) {
 		case DECODE_COMMAND_NONE:
 		case DECODE_COMMAND_START:
