@@ -23,17 +23,14 @@
 
 typedef List DirectoryList;
 
-typedef struct _DirectoryStat {
-	ino_t inode;
-	dev_t device;
-} DirectoryStat;
-
 typedef struct _Directory {
 	char *path;
 	DirectoryList *subDirectories;
 	SongList *songs;
 	struct _Directory *parent;
-	DirectoryStat *stat;
+	ino_t inode;
+	dev_t device;
+	unsigned stat; /* not needed if ino_t == dev_t == 0 is impossible */
 } Directory;
 
 void readDirectoryDBIfUpdateIsFinished(void);

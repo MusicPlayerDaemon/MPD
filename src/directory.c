@@ -225,19 +225,11 @@ int updateInit(List * pathList)
 	return (int)directory_updateJobId;
 }
 
-static DirectoryStat *newDirectoryStat(struct stat *st)
+static void directory_set_stat(Directory * dir, const struct stat *st)
 {
-	DirectoryStat *ret = xmalloc(sizeof(DirectoryStat));
-	ret->inode = st->st_ino;
-	ret->device = st->st_dev;
-	return ret;
-}
-
-static void freeDirectoryStatFromDirectory(Directory * dir)
-{
-	if (dir->stat)
-		free(dir->stat);
-	dir->stat = NULL;
+	dir->inode = st->st_ino;
+	dir->device = st->st_dev;
+	dir->stat = 1;
 }
 
 static DirectoryList *newDirectoryList(void)
@@ -257,7 +249,9 @@ static Directory *newDirectory(const char *dirname, Directory * parent)
 		directory->path = NULL;
 	directory->subDirectories = newDirectoryList();
 	directory->songs = newSongList();
-	directory->stat = NULL;
+	directory->stat = 0;
+	directory->inode = 0;
+	directory->device = 0;
 	directory->parent = parent;
 
 	return directory;
@@ -269,7 +263,6 @@ static void freeDirectory(Directory * directory)
 	freeSongList(directory->songs);
 	if (directory->path)
 		free(directory->path);
-	freeDirectoryStatFromDirectory(directory);
 	free(directory);
 	/* this resets last dir returned */
 	/*getDirectoryPath(NULL); */
@@ -339,8 +332,7 @@ static int updateInDirectory(Directory * directory,
 	} else if (S_ISDIR(st.st_mode)) {
 		if (findInList
 		    (directory->subDirectories, shortname, (void **)&subDir)) {
-			freeDirectoryStatFromDirectory(subDir);
-			((Directory *) subDir)->stat = newDirectoryStat(&st);
+			directory_set_stat((Directory *)subDir, &st);
 			return updateDirectory((Directory *) subDir);
 		} else {
 			return addSubDirectoryToDirectory(directory, shortname,
@@ -525,8 +517,8 @@ static int updatePath(const char *utf8path)
 		}
 		/* if this song update is successfull, we are done */
 		else if (0 == inodeFoundInParent(parentDirectory->parent,
-						 parentDirectory->stat->inode,
-						 parentDirectory->stat->device)
+						 parentDirectory->inode,
+						 parentDirectory->device)
 			 && song &&
 			 isMusic(get_song_url(path_max_tmp, song), &mtime, 0)) {
 			free(path);
@@ -557,9 +549,8 @@ static int updatePath(const char *utf8path)
 		if (!parentDirectory || (!parentDirectory->stat &&
 					 statDirectory(parentDirectory) < 0)) {
 		} else if (0 == inodeFoundInParent(parentDirectory->parent,
-						   parentDirectory->stat->inode,
-						   parentDirectory->stat->
-						   device)
+						   parentDirectory->inode,
+						   parentDirectory->device)
 			   && addToDirectory(parentDirectory, shortname, path)
 			   > 0) {
 			ret = 1;
@@ -595,8 +586,8 @@ static int updateDirectory(Directory * directory)
 	if (!directory->stat && statDirectory(directory) < 0)
 		return -1;
 	else if (inodeFoundInParent(directory->parent,
-				    directory->stat->inode,
-				    directory->stat->device))
+				    directory->inode,
+				    directory->device))
 		return -1;
 
 	dir = opendir(opendir_path(path_max_tmp, dirname));
@@ -678,7 +669,7 @@ static int statDirectory(Directory * dir)
 	if (myStat(getDirectoryPath(dir), &st) < 0)
 		return -1;
 
-	dir->stat = newDirectoryStat(&st);
+	directory_set_stat(dir, &st);
 
 	return 0;
 }
@@ -686,12 +677,9 @@ static int statDirectory(Directory * dir)
 static int inodeFoundInParent(Directory * parent, ino_t inode, dev_t device)
 {
 	while (parent) {
-		if (!parent->stat) {
-			if (statDirectory(parent) < 0)
-				return -1;
-		}
-		if (parent->stat->inode == inode &&
-		    parent->stat->device == device) {
+		if (!parent->stat && statDirectory(parent) < 0)
+			return -1;
+		if (parent->inode == inode && parent->device == device) {
 			DEBUG("recursive directory found\n");
 			return 1;
 		}
@@ -711,7 +699,7 @@ static int addSubDirectoryToDirectory(Directory * directory,
 		return 0;
 
 	subDirectory = newDirectory(name, directory);
-	subDirectory->stat = newDirectoryStat(st);
+	directory_set_stat(subDirectory, st);
 
 	if (exploreDirectory(subDirectory) < 1) {
 		freeDirectory(subDirectory);
@@ -1228,23 +1216,10 @@ int traverseAllIn(const char *name,
 					 data);
 }
 
-static void freeAllDirectoryStats(Directory * directory)
-{
-	ListNode *node = directory->subDirectories->firstNode;
-
-	while (node != NULL) {
-		freeAllDirectoryStats((Directory *) node->data);
-		node = node->nextNode;
-	}
-
-	freeDirectoryStatFromDirectory(directory);
-}
-
 void initMp3Directory(void)
 {
 	mp3rootDirectory = newDirectory(NULL, NULL);
 	exploreDirectory(mp3rootDirectory);
-	freeAllDirectoryStats(mp3rootDirectory);
 	stats.numberOfSongs = countSongsIn(NULL);
 	stats.dbPlayTime = sumSongTimesIn(NULL);
 }
