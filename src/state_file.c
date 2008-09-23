@@ -55,8 +55,7 @@ void write_state_file(void)
 
 	if (!sfpath)
 		return;
-	while (!(fp = fopen(sfpath, "w")) && errno == EINTR);
-
+	fp = fopen(sfpath, "w");
 	if (mpd_unlikely(!fp)) {
 		ERROR("problems opening state file \"%s\" for writing: %s\n",
 		      sfpath, strerror(errno));

@@ -968,7 +968,7 @@ int writeDirectoryDB(void)
 
 	DEBUG("writing DB\n");
 
-	while (!(fp = fopen(dbFile, "w")) && errno == EINTR);
+	fp = fopen(dbFile, "w");
 	if (!fp) {
 		ERROR("unable to write to db file \"%s\": %s\n",
 		      dbFile, strerror(errno));
