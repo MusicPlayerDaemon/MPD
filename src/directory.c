@@ -67,8 +67,9 @@ static sig_atomic_t directory_updateJobId;
 
 static DirectoryList *newDirectoryList(void);
 
-static int addToDirectory(Directory * directory,
-			  const char *shortname, const char *name);
+static enum update_return
+addToDirectory(Directory * directory,
+	       const char *shortname, const char *name);
 
 static void freeDirectoryList(DirectoryList * list);
 
@@ -196,18 +197,19 @@ int updateInit(List * pathList)
 
 			while (node) {
 				switch (updatePath(node->key)) {
-				case 1:
+				case UPDATE_RETURN_UPDATED:
 					dbUpdated = UPDATE_RETURN_UPDATED;
 					break;
-				case 0:
+				case UPDATE_RETURN_NOUPDATE:
 					break;
-				default:
+				case UPDATE_RETURN_ERROR:
 					exit(DIRECTORY_UPDATE_EXIT_ERROR);
 				}
 				node = node->nextNode;
 			}
 		} else {
-			if ((dbUpdated = updateDirectory(mp3rootDirectory)) < 0)
+			dbUpdated = updateDirectory(mp3rootDirectory);
+			if (dbUpdated == UPDATE_RETURN_ERROR)
 				exit(DIRECTORY_UPDATE_EXIT_ERROR);
 		}
 
@@ -488,7 +490,8 @@ static enum update_return updatePath(const char *utf8path)
 		parentDirectory = directory->parent;
 
 		/* if this update directory is successfull, we are done */
-		if ((ret = updateDirectory(directory)) >= 0) {
+		ret = updateDirectory(directory);
+		if (ret != UPDATE_RETURN_ERROR) {
 			free(path);
 			sortDirectory(directory);
 			return ret;
@@ -549,7 +552,7 @@ static enum update_return updatePath(const char *utf8path)
 						   parentDirectory->inode,
 						   parentDirectory->device)
 			   && addToDirectory(parentDirectory, shortname, path)
-			   > 0) {
+			   == UPDATE_RETURN_UPDATED) {
 			ret = UPDATE_RETURN_UPDATED;
 		}
 	}
@@ -640,7 +643,8 @@ static enum update_return exploreDirectory(Directory * directory)
 		if (directory->path)
 			utf8 = pfx_dir(path_max_tmp, utf8, strlen(utf8),
 			               dirname, strlen(dirname));
-		if (addToDirectory(directory, utf8, path_max_tmp) > 0)
+		if (addToDirectory(directory, utf8, path_max_tmp) ==
+		    UPDATE_RETURN_UPDATED)
 			ret = UPDATE_RETURN_UPDATED;
 	}
 
@@ -688,7 +692,7 @@ static enum update_return addSubDirectoryToDirectory(Directory * directory,
 	subDirectory = newDirectory(name, directory);
 	directory_set_stat(subDirectory, st);
 
-	if (exploreDirectory(subDirectory) < 1) {
+	if (exploreDirectory(subDirectory) != UPDATE_RETURN_UPDATED) {
 		freeDirectory(subDirectory);
 		return UPDATE_RETURN_NOUPDATE;
 	}
@@ -698,24 +702,25 @@ static enum update_return addSubDirectoryToDirectory(Directory * directory,
 	return UPDATE_RETURN_UPDATED;
 }
 
-static int addToDirectory(Directory * directory,
-			  const char *shortname, const char *name)
+static enum update_return
+addToDirectory(Directory * directory,
+	       const char *shortname, const char *name)
 {
 	struct stat st;
 
 	if (myStat(name, &st)) {
 		DEBUG("failed to stat %s: %s\n", name, strerror(errno));
-		return -1;
+		return UPDATE_RETURN_ERROR;
 	}
 
 	if (S_ISREG(st.st_mode) &&
 	    hasMusicSuffix(name, 0) && isMusic(name, NULL, 0)) {
 		Song *song = newSong(shortname, SONG_TYPE_FILE, directory);
 		if (!song)
-			return -1;
+			return UPDATE_RETURN_ERROR;
 		songvec_add(&directory->songs, song);
 		LOG("added %s\n", name);
-		return 1;
+		return UPDATE_RETURN_UPDATED;
 	} else if (S_ISDIR(st.st_mode)) {
 		return addSubDirectoryToDirectory(directory, shortname, name,
 						  &st);
@@ -723,7 +728,7 @@ static int addToDirectory(Directory * directory,
 
 	DEBUG("addToDirectory: %s is not a directory or music\n", name);
 
-	return -1;
+	return UPDATE_RETURN_ERROR;
 }
 
 void closeMp3Directory(void)
