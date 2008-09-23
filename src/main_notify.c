@@ -85,8 +85,6 @@ static int wakeup_via_pipe(void)
 
 void wakeup_main_task(void)
 {
-	assert(!pthread_equal(main_task, pthread_self()));
-
 	main_notify.pending = 1;
 
 	if (!wakeup_via_pipe())
