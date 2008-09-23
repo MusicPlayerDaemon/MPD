@@ -60,7 +60,9 @@ void songvec_add(struct songvec *sv, Song *add)
 
 void songvec_free(struct songvec *sv)
 {
-	free(sv->base);
-	sv->base = NULL;
+	if (sv->base) {
+		free(sv->base);
+		sv->base = NULL;
+	}
 	sv->nr = 0;
 }
