@@ -36,9 +36,7 @@ static struct audio_output *audioOutputArray;
 static unsigned int audioOutputArraySize;
 
 enum ad_state {
-	DEVICE_OFF = 0x00,
 	DEVICE_ENABLE = 0x01,  /* currently off, but to be turned on */
-	DEVICE_ON = 0x03,
 	DEVICE_DISABLE = 0x04   /* currently on, but to be turned off */
 };
 
@@ -227,7 +225,7 @@ static void audio_output_wait_all(void)
 		int finished = 1;
 
 		for (i = 0; i < audioOutputArraySize; ++i)
-			if (audioDeviceStates[i] == DEVICE_ON &&
+			if (audio_output_is_open(&audioOutputArray[i]) &&
 			    !audio_output_command_is_finished(&audioOutputArray[i]))
 				finished = 0;
 
@@ -249,24 +247,16 @@ static void syncAudioDeviceStates(void)
 	for (i = 0; i < audioOutputArraySize; ++i) {
 		audioOutput = &audioOutputArray[i];
 		switch (audioDeviceStates[i]) {
-		case DEVICE_OFF:
-			break;
-		case DEVICE_ON:
-			/* This will reopen only if the audio format changed */
-			if (audio_output_open(audioOutput,
-					      &audio_buffer.format) < 0)
-				audioDeviceStates[i] = DEVICE_ENABLE;
-			break;
 		case DEVICE_ENABLE:
-			if (audio_output_open(audioOutput,
-					      &audio_buffer.format) == 0)
-				audioDeviceStates[i] = DEVICE_ON;
+			audio_output_open(audioOutput, &audio_buffer.format);
 			break;
 		case DEVICE_DISABLE:
+			if (!audio_output_is_open(audioOutput))
+				break;
+
 			audio_output_cancel(audioOutput);
 			audio_output_wait(audioOutput);
 			audio_output_close(audioOutput);
-			audioDeviceStates[i] = DEVICE_OFF;
 		}
 	}
 }
@@ -282,7 +272,7 @@ static int flushAudioBuffer(void)
 	syncAudioDeviceStates();
 
 	for (i = 0; i < audioOutputArraySize; ++i)
-		if (audioDeviceStates[i] == DEVICE_ON)
+		if (audio_output_is_open(&audioOutputArray[i]))
 			audio_output_play(&audioOutputArray[i],
 					  audio_buffer.buffer,
 					  audio_buffer.position);
@@ -293,7 +283,7 @@ static int flushAudioBuffer(void)
 		for (i = 0; i < audioOutputArraySize; ++i) {
 			const struct audio_output *ao = &audioOutputArray[i];
 
-			if (audioDeviceStates[i] != DEVICE_ON)
+			if (!audio_output_is_open(ao))
 				continue;
 
 			if (audio_output_command_is_finished(ao)) {
@@ -413,7 +403,7 @@ void dropBufferedAudio(void)
 	audio_buffer.position = 0;
 
 	for (i = 0; i < audioOutputArraySize; ++i) {
-		if (audioDeviceStates[i] == DEVICE_ON)
+		if (audio_output_is_open(&audioOutputArray[i]))
 			audio_output_cancel(&audioOutputArray[i]);
 	}
 
@@ -431,11 +421,8 @@ void closeAudioDevice(void)
 		audio_buffer.size = 0;
 	}
 
-	for (i = 0; i < audioOutputArraySize; ++i) {
-		if (audioDeviceStates[i] == DEVICE_ON)
-			audioDeviceStates[i] = DEVICE_ENABLE;
+	for (i = 0; i < audioOutputArraySize; ++i)
 		audio_output_close(&audioOutputArray[i]);
-	}
 
 	audioOpened = 0;
 }
@@ -445,7 +432,7 @@ void sendMetadataToAudioDevice(const struct tag *tag)
 	unsigned int i;
 
 	for (i = 0; i < audioOutputArraySize; ++i)
-		if (audioDeviceStates[i] == DEVICE_ON)
+		if (audio_output_is_open(&audioOutputArray[i]))
 			audio_output_send_tag(&audioOutputArray[i], tag);
 
 	audio_output_wait_all();
@@ -456,8 +443,7 @@ int enableAudioDevice(unsigned int device)
 	if (device >= audioOutputArraySize)
 		return -1;
 
-	if (!(audioDeviceStates[device] & 0x01))
-		audioDeviceStates[device] = DEVICE_ENABLE;
+	audioDeviceStates[device] = DEVICE_ENABLE;
 
 	return 0;
 }
@@ -467,8 +453,7 @@ int disableAudioDevice(unsigned int device)
 	if (device >= audioOutputArraySize)
 		return -1;
 
-	if (audioDeviceStates[device] & 0x01)
-		audioDeviceStates[device] = DEVICE_DISABLE;
+	audioDeviceStates[device] = DEVICE_DISABLE;
 
 	return 0;
 }
@@ -484,7 +469,7 @@ void printAudioDevices(struct client *client)
 			      "outputenabled: %i\n",
 			      i,
 			      audioOutputArray[i].name,
-			      audioDeviceStates[i] & 0x01);
+			      audioDeviceStates[i]);
 	}
 }
 
@@ -495,7 +480,7 @@ void saveAudioDevicesState(FILE *fp)
 	assert(audioOutputArraySize != 0);
 	for (i = 0; i < audioOutputArraySize; i++) {
 		fprintf(fp, AUDIO_DEVICE_STATE "%d:%s\n",
-			audioDeviceStates[i] & 0x01,
+			audioDeviceStates[i],
 		        audioOutputArray[i].name);
 	}
 }
