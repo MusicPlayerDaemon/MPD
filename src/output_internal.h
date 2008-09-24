@@ -24,22 +24,70 @@
 #include "notify.h"
 
 struct audio_output {
-	int open;
+	/**
+	 * The device's configured display name.
+	 */
 	const char *name;
 
+	/**
+	 * The plugin which implements this output device.
+	 */
 	const struct audio_output_plugin *plugin;
 
-	int convertAudioFormat;
+	/**
+	 * The plugin's internal data.  It is passed to every plugin
+	 * method.
+	 */
+	void *data;
+
+	/**
+	 * Is the device (already) open and functional?
+	 */
+	int open;
+
+	/**
+	 * The audio_format in which audio data is received from the
+	 * player thread (which in turn receives it from the decoder).
+	 */
 	struct audio_format inAudioFormat;
+
+	/**
+	 * The audio_format which is really sent to the device.  This
+	 * is basically reqAudioFormat (if configured) or
+	 * inAudioFormat, but may have been modified by
+	 * plugin->open().
+	 */
 	struct audio_format outAudioFormat;
+
+	/**
+	 * The audio_format which was configured.  Only set if
+	 * convertAudioFormat is true.
+	 */
 	struct audio_format reqAudioFormat;
+
 	ConvState convState;
 	char *convBuffer;
 	size_t convBufferLen;
 
+	/**
+	 * The thread handle, or "0" if the output thread isn't
+	 * running.
+	 */
 	pthread_t thread;
+
+	/**
+	 * Notify object for the thread.
+	 */
 	struct notify notify;
+
+	/**
+	 * The next command to be performed by the output thread.
+	 */
 	enum audio_output_command command;
+
+	/**
+	 * Command arguments, depending on the command.
+	 */
 	union {
 		struct {
 			const char *data;
@@ -48,11 +96,17 @@ struct audio_output {
 
 		const struct tag *tag;
 	} args;
-	int result;
 
-	void *data;
+	/**
+	 * Result value of the command.  Generally, "0" means success.
+	 */
+	int result;
 };
 
+/**
+ * Notify object used by the thread's client, i.e. we will send a
+ * notify signal to this object, expecting the caller to wait on it.
+ */
 extern struct notify audio_output_client_notify;
 
 #endif
