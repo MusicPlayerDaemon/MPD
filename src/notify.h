@@ -29,6 +29,8 @@ typedef struct notify {
 
 void notify_init(struct notify *notify);
 
+void notify_deinit(struct notify *notify);
+
 /**
  * The thread which shall be notified by this object must call this
  * function before any notify_wait() invocation.  It locks the mutex.

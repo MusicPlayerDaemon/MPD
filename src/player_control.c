@@ -38,6 +38,11 @@ void pc_init(unsigned int buffered_before_play)
 	pc.softwareVolume = 1000;
 }
 
+void pc_deinit(void)
+{
+	notify_deinit(&pc.notify);
+}
+
 static void set_current_song(Song *song)
 {
 	assert(song != NULL);

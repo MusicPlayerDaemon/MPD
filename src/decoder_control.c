@@ -28,6 +28,11 @@ void dc_init(void)
 	dc.error = DECODE_ERROR_NOERROR;
 }
 
+void dc_deinit(void)
+{
+	notify_deinit(&dc.notify);
+}
+
 void dc_command_wait(Notify *notify)
 {
 	while (dc.command != DECODE_COMMAND_NONE) {

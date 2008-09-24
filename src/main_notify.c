@@ -68,6 +68,14 @@ void init_main_notify(void)
 	notify_init(&main_notify);
 }
 
+void deinit_main_notify(void)
+{
+	notify_deinit(&main_notify);
+	deregisterIO(&main_notify_IO);
+	xclose(main_pipe[0]);
+	xclose(main_pipe[1]);
+}
+
 static int wakeup_via_pipe(void)
 {
 	int ret = pthread_mutex_trylock(&select_mutex);

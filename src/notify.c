@@ -34,6 +34,12 @@ void notify_init(struct notify *notify)
 	notify->pending = 0;
 }
 
+void notify_deinit(struct notify *notify)
+{
+	pthread_mutex_destroy(&notify->mutex);
+	pthread_cond_destroy(&notify->cond);
+}
+
 void notify_enter(struct notify *notify)
 {
 	pthread_mutex_lock(&notify->mutex);

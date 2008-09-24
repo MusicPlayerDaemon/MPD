@@ -23,6 +23,8 @@
 
 void init_main_notify(void);
 
+void deinit_main_notify(void);
+
 void wakeup_main_task(void);
 
 void wait_main_task(void);

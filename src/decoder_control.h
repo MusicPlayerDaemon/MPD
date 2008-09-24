@@ -58,6 +58,8 @@ extern struct decoder_control dc;
 
 void dc_init(void);
 
+void dc_deinit(void);
+
 static inline int decoder_is_idle(void)
 {
 	return dc.state == DECODE_STATE_STOP &&

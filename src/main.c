@@ -459,12 +459,16 @@ int main(int argc, char *argv[])
 	DEBUG("closeMp3Directory took %f seconds\n", 
 	      ((float)(clock()-start))/CLOCKS_PER_SEC);
 
+	deinit_main_notify();
+
 	finishNormalization();
 	finishAudioDriver();
 	finishAudioConfig();
 	finishVolume();
 	finishPaths();
 	finishPermissions();
+	dc_deinit();
+	pc_deinit();
 	finishCommands();
 	decoder_plugin_deinit_all();
 	ob_free();
