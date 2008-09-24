@@ -18,8 +18,27 @@
 
 #include "output_control.h"
 #include "output_api.h"
+#include "output_thread.h"
 #include "pcm_utils.h"
-#include "utils.h"
+
+#include <pthread.h>
+
+struct notify audio_output_client_notify = NOTIFY_INITIALIZER;
+
+static void ao_command_wait(struct audio_output *ao)
+{
+	while (ao->command != AO_COMMAND_NONE) {
+		notify_signal(&ao->notify);
+		notify_wait(&audio_output_client_notify);
+	}
+}
+
+static void ao_command(struct audio_output *ao, enum audio_output_command cmd)
+{
+	assert(ao->command == AO_COMMAND_NONE);
+	ao->command = cmd;
+	ao_command_wait(ao);
+}
 
 int audio_output_open(struct audio_output *audioOutput,
 		      const struct audio_format *audioFormat)
@@ -47,67 +66,46 @@ int audio_output_open(struct audio_output *audioOutput,
 			audio_output_close(audioOutput);
 	}
 
-	if (!audioOutput->open)
-		ret = audioOutput->plugin->open(audioOutput);
+	if (audioOutput->thread == 0)
+		audio_output_thread_start(audioOutput);
 
-	return ret;
-}
-
-static void convertAudioFormat(struct audio_output *audioOutput,
-			       const char **chunkArgPtr, size_t *sizeArgPtr)
-{
-	size_t size = pcm_sizeOfConvBuffer(&(audioOutput->inAudioFormat),
-					   *sizeArgPtr,
-					   &(audioOutput->outAudioFormat));
-
-	if (size > audioOutput->convBufferLen) {
-		if (audioOutput->convBuffer != NULL)
-			free(audioOutput->convBuffer);
-		audioOutput->convBuffer = xmalloc(size);
-		audioOutput->convBufferLen = size;
+	if (!audioOutput->open) {
+		ao_command(audioOutput, AO_COMMAND_OPEN);
+		ret = audioOutput->result;
 	}
 
-	*sizeArgPtr = pcm_convertAudioFormat(&(audioOutput->inAudioFormat), 
-	                                     *chunkArgPtr, *sizeArgPtr, 
-	                                     &(audioOutput->outAudioFormat),
-	                                     audioOutput->convBuffer,
-	                                     &audioOutput->convState);
-
-	*chunkArgPtr = audioOutput->convBuffer;
+	return ret;
 }
 
 int audio_output_play(struct audio_output *audioOutput,
 		      const char *playChunk, size_t size)
 {
-	int ret;
-
 	if (!audioOutput->open)
 		return -1;
 
-	if (!audio_format_equals(&audioOutput->inAudioFormat,
-				 &audioOutput->outAudioFormat))
-		convertAudioFormat(audioOutput, &playChunk, &size);
+	audioOutput->args.play.data = playChunk;
+	audioOutput->args.play.size = size;
+	ao_command(audioOutput, AO_COMMAND_PLAY);
 
-	ret = audioOutput->plugin->play(audioOutput, playChunk, size);
-
-	return ret;
+	return audioOutput->result;
 }
 
 void audio_output_cancel(struct audio_output *audioOutput)
 {
-	if (audioOutput->open)
-		audioOutput->plugin->cancel(audioOutput);
+	ao_command(audioOutput, AO_COMMAND_CANCEL);
 }
 
 void audio_output_close(struct audio_output *audioOutput)
 {
 	if (audioOutput->open)
-		audioOutput->plugin->close(audioOutput);
+		ao_command(audioOutput, AO_COMMAND_CLOSE);
 }
 
 void audio_output_finish(struct audio_output *audioOutput)
 {
 	audio_output_close(audioOutput);
+	if (audioOutput->thread != 0)
+		ao_command(audioOutput, AO_COMMAND_KILL);
 	if (audioOutput->plugin->finish)
 		audioOutput->plugin->finish(audioOutput);
 	if (audioOutput->convBuffer)
@@ -117,6 +115,9 @@ void audio_output_finish(struct audio_output *audioOutput)
 void audio_output_send_tag(struct audio_output *audioOutput,
 			   const struct tag *tag)
 {
-	if (audioOutput->plugin->send_tag)
-		audioOutput->plugin->send_tag(audioOutput, tag);
+	if (audioOutput->plugin->send_tag == NULL)
+		return;
+
+	audioOutput->args.tag = tag;
+	ao_command(audioOutput, AO_COMMAND_SEND_TAG);
 }

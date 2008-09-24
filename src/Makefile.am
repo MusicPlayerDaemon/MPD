@@ -37,6 +37,7 @@ mpd_headers = \
 	audioOutput.h \
 	output_api.h \
 	output_list.h \
+	output_thread.h \
 	output_control.h \
 	audioOutputs/audioOutput_shout.h \
 	buffer2array.h \
@@ -114,6 +115,7 @@ mpd_SOURCES = \
 	audio.c \
 	audioOutput.c \
 	output_list.c \
+	output_thread.c \
 	output_control.c \
 	output_init.c \
 	buffer2array.c \

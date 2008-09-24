@@ -26,6 +26,7 @@
 #include "tag.h"
 #include "conf.h"
 #include "log.h"
+#include "notify.h"
 #include "os_compat.h"
 
 #define DISABLED_AUDIO_OUTPUT_PLUGIN(plugin) const struct audio_output_plugin plugin;
@@ -54,6 +55,16 @@ struct audio_output_plugin {
 			 const struct tag *tag);
 };
 
+enum audio_output_command {
+	AO_COMMAND_NONE = 0,
+	AO_COMMAND_OPEN,
+	AO_COMMAND_CLOSE,
+	AO_COMMAND_PLAY,
+	AO_COMMAND_CANCEL,
+	AO_COMMAND_SEND_TAG,
+	AO_COMMAND_KILL
+};
+
 struct audio_output {
 	int open;
 	const char *name;
@@ -67,7 +78,22 @@ struct audio_output {
 	char *convBuffer;
 	size_t convBufferLen;
 
+	pthread_t thread;
+	struct notify notify;
+	enum audio_output_command command;
+	union {
+		struct {
+			const char *data;
+			size_t size;
+		} play;
+
+		const struct tag *tag;
+	} args;
+	int result;
+
 	void *data;
 };
+
+extern struct notify audio_output_client_notify;
 
 #endif
