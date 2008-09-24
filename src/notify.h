@@ -21,40 +21,40 @@
 
 #include "os_compat.h"
 
-typedef struct _Notify {
+typedef struct notify {
 	pthread_mutex_t mutex;
 	pthread_cond_t cond;
 	int pending;
 } Notify;
 
-int notify_init(Notify *notify);
+int notify_init(struct notify *notify);
 
 /**
  * The thread which shall be notified by this object must call this
  * function before any notify_wait() invocation.  It locks the mutex.
  */
-void notify_enter(Notify *notify);
+void notify_enter(struct notify *notify);
 
 /**
  * Neutralize notify_leave().
  */
-void notify_leave(Notify *notify);
+void notify_leave(struct notify *notify);
 
 /**
  * Wait for a notification.  Return immediately if we have already
  * been notified since we last returned from notify_wait().
  */
-void notify_wait(Notify *notify);
+void notify_wait(struct notify *notify);
 
 /**
  * Notify the thread.  This function never blocks.
  */
-void notify_signal(Notify *notify);
+void notify_signal(struct notify *notify);
 
 /**
  * Notify the thread synchonously, i.e. wait until it has received the
  * notification.
  */
-void notify_signal_sync(Notify *notify);
+void notify_signal_sync(struct notify *notify);
 
 #endif

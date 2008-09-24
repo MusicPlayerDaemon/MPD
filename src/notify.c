@@ -18,7 +18,7 @@
 
 #include "notify.h"
 
-int notify_init(Notify *notify)
+int notify_init(struct notify *notify)
 {
 	int ret;
 
@@ -37,30 +37,30 @@ int notify_init(Notify *notify)
 	return 0;
 }
 
-void notify_enter(Notify *notify)
+void notify_enter(struct notify *notify)
 {
 	pthread_mutex_lock(&notify->mutex);
 }
 
-void notify_leave(Notify *notify)
+void notify_leave(struct notify *notify)
 {
 	pthread_mutex_unlock(&notify->mutex);
 }
 
-void notify_wait(Notify *notify)
+void notify_wait(struct notify *notify)
 {
 	if (!notify->pending)
 		pthread_cond_wait(&notify->cond, &notify->mutex);
 	notify->pending = 0;
 }
 
-void notify_signal(Notify *notify)
+void notify_signal(struct notify *notify)
 {
 	notify->pending = 1;
 	pthread_cond_signal(&notify->cond);
 }
 
-void notify_signal_sync(Notify *notify)
+void notify_signal_sync(struct notify *notify)
 {
 	pthread_mutex_lock(&notify->mutex);
 	notify_signal(notify);
