@@ -114,6 +114,7 @@ mpd_SOURCES = \
 	notify.c \
 	audio.c \
 	audioOutput.c \
+	output_api.c \
 	output_list.c \
 	output_thread.c \
 	output_control.c \

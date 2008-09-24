@@ -100,7 +100,7 @@ static int audioOutputAo_initDriver(struct audio_output *audioOutput,
 	}
 
 	DEBUG("using ao driver \"%s\" for \"%s\"\n", ai->short_name,
-	      audioOutput->name);
+	      audio_output_get_name(audioOutput));
 
 	blockParam = getBlockParam(param, "options");
 
