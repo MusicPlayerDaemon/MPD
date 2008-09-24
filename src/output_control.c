@@ -41,6 +41,14 @@ static void ao_command(struct audio_output *ao, enum audio_output_command cmd)
 	ao_command_wait(ao);
 }
 
+static void ao_command_async(struct audio_output *ao,
+			     enum audio_output_command cmd)
+{
+	assert(ao->command == AO_COMMAND_NONE);
+	ao->command = cmd;
+	notify_signal(&ao->notify);
+}
+
 int audio_output_open(struct audio_output *audioOutput,
 		      const struct audio_format *audioFormat)
 {
@@ -78,22 +86,20 @@ int audio_output_open(struct audio_output *audioOutput,
 	return ret;
 }
 
-int audio_output_play(struct audio_output *audioOutput,
-		      const char *playChunk, size_t size)
+void audio_output_play(struct audio_output *audioOutput,
+		       const char *playChunk, size_t size)
 {
 	if (!audioOutput->open)
-		return -1;
+		return;
 
 	audioOutput->args.play.data = playChunk;
 	audioOutput->args.play.size = size;
-	ao_command(audioOutput, AO_COMMAND_PLAY);
-
-	return audioOutput->result;
+	ao_command_async(audioOutput, AO_COMMAND_PLAY);
 }
 
 void audio_output_cancel(struct audio_output *audioOutput)
 {
-	ao_command(audioOutput, AO_COMMAND_CANCEL);
+	ao_command_async(audioOutput, AO_COMMAND_CANCEL);
 }
 
 void audio_output_close(struct audio_output *audioOutput)
@@ -120,5 +126,5 @@ void audio_output_send_tag(struct audio_output *audioOutput,
 		return;
 
 	audioOutput->args.tag = tag;
-	ao_command(audioOutput, AO_COMMAND_SEND_TAG);
+	ao_command_async(audioOutput, AO_COMMAND_SEND_TAG);
 }

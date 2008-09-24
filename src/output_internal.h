@@ -109,4 +109,16 @@ struct audio_output {
  */
 extern struct notify audio_output_client_notify;
 
+static inline int
+audio_output_command_is_finished(const struct audio_output *ao)
+{
+	return ao->command == AO_COMMAND_NONE;
+}
+
+static inline int
+audio_output_get_result(const struct audio_output *ao)
+{
+	return ao->result;
+}
+
 #endif

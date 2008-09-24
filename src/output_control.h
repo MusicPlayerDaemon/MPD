@@ -30,8 +30,8 @@ struct tag;
 int audio_output_init(struct audio_output *, ConfigParam * param);
 int audio_output_open(struct audio_output *audioOutput,
 		      const struct audio_format *audioFormat);
-int audio_output_play(struct audio_output *audioOutput,
-		      const char *playChunk, size_t size);
+void audio_output_play(struct audio_output *audioOutput,
+		       const char *playChunk, size_t size);
 void audio_output_cancel(struct audio_output *audioOutput);
 void audio_output_close(struct audio_output *audioOutput);
 void audio_output_finish(struct audio_output *audioOutput);

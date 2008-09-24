@@ -213,6 +213,31 @@ int isCurrentAudioFormat(const struct audio_format *audioFormat)
 	return audio_format_equals(audioFormat, &audio_buffer.format);
 }
 
+static void audio_output_wait(struct audio_output *ao)
+{
+	while (!audio_output_command_is_finished(ao))
+		notify_wait(&audio_output_client_notify);
+}
+
+static void audio_output_wait_all(void)
+{
+	unsigned i;
+
+	while (1) {
+		int finished = 1;
+
+		for (i = 0; i < audioOutputArraySize; ++i)
+			if (audioDeviceStates[i] == DEVICE_ON &&
+			    !audio_output_command_is_finished(&audioOutputArray[i]))
+				finished = 0;
+
+		if (finished)
+			break;
+
+		notify_wait(&audio_output_client_notify);
+	};
+}
+
 static void syncAudioDeviceStates(void)
 {
 	struct audio_output *audioOutput;
@@ -239,6 +264,7 @@ static void syncAudioDeviceStates(void)
 			break;
 		case DEVICE_DISABLE:
 			audio_output_cancel(audioOutput);
+			audio_output_wait(audioOutput);
 			audio_output_close(audioOutput);
 			audioDeviceStates[i] = DEVICE_OFF;
 		}
@@ -255,19 +281,39 @@ static int flushAudioBuffer(void)
 
 	syncAudioDeviceStates();
 
-	for (i = 0; i < audioOutputArraySize; ++i) {
-		if (audioDeviceStates[i] != DEVICE_ON)
-			continue;
-		err = audio_output_play(&audioOutputArray[i],
-					audio_buffer.buffer,
-					audio_buffer.position);
-		if (!err)
-			ret = 0;
-		else if (err < 0)
-			/* device should already be closed if the play
-			 * func returned an error */
-			audioDeviceStates[i] = DEVICE_ENABLE;
-	}
+	for (i = 0; i < audioOutputArraySize; ++i)
+		if (audioDeviceStates[i] == DEVICE_ON)
+			audio_output_play(&audioOutputArray[i],
+					  audio_buffer.buffer,
+					  audio_buffer.position);
+
+	while (1) {
+		int finished = 1;
+
+		for (i = 0; i < audioOutputArraySize; ++i) {
+			const struct audio_output *ao = &audioOutputArray[i];
+
+			if (audioDeviceStates[i] != DEVICE_ON)
+				continue;
+
+			if (audio_output_command_is_finished(ao)) {
+				err = audio_output_get_result(ao);
+				if (!err)
+					ret = 0;
+				else if (err < 0)
+					/* device should already be
+					   closed if the play func
+					   returned an error */
+					audioDeviceStates[i] = DEVICE_ENABLE;
+			} else
+				finished = 0;
+		}
+
+		if (finished)
+			break;
+
+		notify_wait(&audio_output_client_notify);
+	};
 
 	audio_buffer.position = 0;
 
@@ -370,6 +416,8 @@ void dropBufferedAudio(void)
 		if (audioDeviceStates[i] == DEVICE_ON)
 			audio_output_cancel(&audioOutputArray[i]);
 	}
+
+	audio_output_wait_all();
 }
 
 void closeAudioDevice(void)
@@ -399,6 +447,8 @@ void sendMetadataToAudioDevice(const struct tag *tag)
 	for (i = 0; i < audioOutputArraySize; ++i)
 		if (audioDeviceStates[i] == DEVICE_ON)
 			audio_output_send_tag(&audioOutputArray[i], tag);
+
+	audio_output_wait_all();
 }
 
 int enableAudioDevice(unsigned int device)
