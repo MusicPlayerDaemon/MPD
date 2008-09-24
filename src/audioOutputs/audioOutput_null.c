@@ -31,7 +31,6 @@ static int null_openDevice(struct audio_output *audioOutput,
 			   struct audio_format *audio_format)
 {
 	audioOutput->data = timer_new(audio_format);
-	audioOutput->open = 1;
 	return 0;
 }
 
@@ -41,8 +40,6 @@ static void null_closeDevice(struct audio_output *audioOutput)
 		timer_free(audioOutput->data);
 		audioOutput->data = NULL;
 	}
-
-	audioOutput->open = 0;
 }
 
 static int null_playAudio(struct audio_output *audioOutput,

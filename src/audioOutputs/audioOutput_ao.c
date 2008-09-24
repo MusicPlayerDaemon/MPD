@@ -171,8 +171,6 @@ static void audioOutputAo_closeDevice(struct audio_output *audioOutput)
 		ao_close(ad->device);
 		ad->device = NULL;
 	}
-
-	audioOutput->open = 0;
 }
 
 static int audioOutputAo_openDevice(struct audio_output *audioOutput,
@@ -194,8 +192,6 @@ static int audioOutputAo_openDevice(struct audio_output *audioOutput,
 
 	if (ad->device == NULL)
 		return -1;
-
-	audioOutput->open = 1;
 
 	return 0;
 }

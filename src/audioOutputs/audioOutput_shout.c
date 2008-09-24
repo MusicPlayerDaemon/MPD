@@ -358,8 +358,6 @@ static void my_shout_close_device(struct audio_output *audio_output)
 		timer_free(sd->timer);
 		sd->timer = NULL;
 	}
-
-	audio_output->open = 0;
 }
 
 static int shout_connect(struct shout_data *sd)
@@ -454,8 +452,6 @@ static int my_shout_open_device(struct audio_output *audio_output,
 		timer_free(sd->timer);
 
 	sd->timer = timer_new(audio_format);
-
-	audio_output->open = 1;
 
 	return 0;
 }

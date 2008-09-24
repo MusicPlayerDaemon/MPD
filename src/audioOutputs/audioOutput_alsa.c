@@ -292,8 +292,6 @@ configure_hw:
 
 	ad->sampleSize = audio_format_sample_size(audioFormat) * audioFormat->channels;
 
-	audioOutput->open = 1;
-
 	DEBUG("ALSA device \"%s\" will be playing %i bit, %i channel audio at "
 	      "%i Hz\n", ad->device, (int)audioFormat->bits,
 	      channels, sampleRate);
@@ -312,7 +310,6 @@ fail:
 	if (ad->pcmHandle)
 		snd_pcm_close(ad->pcmHandle);
 	ad->pcmHandle = NULL;
-	audioOutput->open = 0;
 	return -1;
 }
 
@@ -372,8 +369,6 @@ static void alsa_closeDevice(struct audio_output *audioOutput)
 		snd_pcm_close(ad->pcmHandle);
 		ad->pcmHandle = NULL;
 	}
-
-	audioOutput->open = 0;
 }
 
 static int alsa_playAudio(struct audio_output *audioOutput,

@@ -149,7 +149,6 @@ static int pulse_openDevice(struct audio_output *audioOutput,
 	}
 
 	pd->connAttempts = 0;
-	audioOutput->open = 1;
 
 	DEBUG("PulseAudio output \"%s\" connected and playing %i bit, %i "
 	      "channel audio at %i Hz\n", audioOutput->name, audioFormat->bits,
@@ -178,8 +177,6 @@ static void pulse_closeDevice(struct audio_output *audioOutput)
 		pa_simple_drain(pd->s, NULL);
 		pa_simple_free(pd->s);
 	}
-
-	audioOutput->open = 0;
 }
 
 static int pulse_playAudio(struct audio_output *audioOutput,

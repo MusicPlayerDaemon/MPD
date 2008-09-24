@@ -471,13 +471,10 @@ static int oss_open(struct audio_output *audioOutput)
 		goto fail;
 	}
 
-	audioOutput->open = 1;
-
 	return 0;
 
 fail:
 	oss_close(od);
-	audioOutput->open = 0;
 	return -1;
 }
 
@@ -509,8 +506,6 @@ static void oss_closeDevice(struct audio_output *audioOutput)
 	OssData *od = audioOutput->data;
 
 	oss_close(od);
-
-	audioOutput->open = 0;
 }
 
 static void oss_dropBufferedAudio(struct audio_output *audioOutput)

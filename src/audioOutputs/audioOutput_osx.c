@@ -132,8 +132,6 @@ static void osx_closeDevice(struct audio_output *audioOutput)
 
 	CloseComponent(od->au);
 	AudioUnitUninitialize(od->au);
-
-	audioOutput->open = 0;
 }
 
 static OSStatus osx_render(void *vdata,
@@ -291,8 +289,6 @@ static int osx_openDevice(struct audio_output *audioOutput,
 
 	od->pos = 0;
 	od->len = 0;
-
-	audioOutput->open = 1;
 
 	return 0;
 }

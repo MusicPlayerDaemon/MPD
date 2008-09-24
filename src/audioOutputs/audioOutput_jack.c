@@ -363,22 +363,19 @@ static int jack_openDevice(struct audio_output *audioOutput,
 	if (jd->client == NULL && connect_jack(audioOutput,
 					       audio_format) < 0) {
 		freeJackClient(jd);
-		audioOutput->open = 0;
 		return -1;
 	}
 
 	set_audioformat(audioOutput, audio_format);
-	audioOutput->open = 1;
 
 	DEBUG("jack_openDevice (pid=%d)!\n", getpid ());
 	return 0;
 }
 
 
-static void jack_closeDevice(struct audio_output *audioOutput)
+static void jack_closeDevice(mpd_unused struct audio_output *audioOutput)
 {
 	/*jack_finishDriver(audioOutput);*/
-	audioOutput->open = 0;
 	DEBUG("jack_closeDevice (pid=%d)\n", getpid());
 }
 

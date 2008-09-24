@@ -208,7 +208,6 @@ static int mvp_openDevice(struct audio_output *audioOutput,
 	mvp_setPcmParams(md, audioFormat->sampleRate, audioFormat->channels, 1,
 			 audioFormat->bits);
 #endif
-	audioOutput->open = 1;
 	return 0;
 }
 
@@ -218,7 +217,6 @@ static void mvp_closeDevice(struct audio_output *audioOutput)
 	if (md->fd >= 0)
 		close(md->fd);
 	md->fd = -1;
-	audioOutput->open = 0;
 }
 
 static void mvp_dropBufferedAudio(struct audio_output *audioOutput)

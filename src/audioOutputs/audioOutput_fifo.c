@@ -201,8 +201,6 @@ static int fifo_openDevice(struct audio_output *audioOutput,
 
 	fd->timer = timer_new(audio_format);
 
-	audioOutput->open = 1;
-
 	return 0;
 }
 
@@ -214,8 +212,6 @@ static void fifo_closeDevice(struct audio_output *audioOutput)
 		timer_free(fd->timer);
 		fd->timer = NULL;
 	}
-
-	audioOutput->open = 0;
 }
 
 static void fifo_dropBufferedAudio(struct audio_output *audioOutput)
