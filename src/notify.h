@@ -27,7 +27,7 @@ typedef struct notify {
 	int pending;
 } Notify;
 
-int notify_init(struct notify *notify);
+void notify_init(struct notify *notify);
 
 /**
  * The thread which shall be notified by this object must call this

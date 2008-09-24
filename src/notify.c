@@ -17,24 +17,21 @@
  */
 
 #include "notify.h"
+#include "log.h"
 
-int notify_init(struct notify *notify)
+void notify_init(struct notify *notify)
 {
 	int ret;
 
 	ret = pthread_mutex_init(&notify->mutex, NULL);
 	if (ret != 0)
-		return ret;
+		FATAL("pthread_mutex_init() failed");
 
 	ret = pthread_cond_init(&notify->cond, NULL);
-	if (ret != 0) {
-		pthread_mutex_destroy(&notify->mutex);
-		return ret;
-	}
+	if (ret != 0)
+		FATAL("pthread_mutex_init() failed");
 
 	notify->pending = 0;
-
-	return 0;
 }
 
 void notify_enter(struct notify *notify)
