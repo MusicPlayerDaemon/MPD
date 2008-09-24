@@ -20,15 +20,17 @@
 #include "../timer.h"
 
 static int null_initDriver(struct audio_output *audioOutput,
+			   mpd_unused const struct audio_format *audio_format,
 			   mpd_unused ConfigParam *param)
 {
 	audioOutput->data = NULL;
 	return 0;
 }
 
-static int null_openDevice(struct audio_output *audioOutput)
+static int null_openDevice(struct audio_output *audioOutput,
+			   struct audio_format *audio_format)
 {
-	audioOutput->data = timer_new(&audioOutput->outAudioFormat);
+	audioOutput->data = timer_new(audio_format);
 	audioOutput->open = 1;
 	return 0;
 }

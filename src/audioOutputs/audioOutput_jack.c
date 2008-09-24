@@ -34,6 +34,9 @@ typedef struct _JackData {
 	const char *output_ports[2];
 	int ringbuf_sz;
 
+	/* for srate() only */
+	struct audio_format *audio_format;
+
 	/* locks */
 	pthread_mutex_t play_audio_lock;
 	pthread_cond_t play_audio;
@@ -117,7 +120,7 @@ static void jack_finishDriver(struct audio_output *audioOutput)
 static int srate(mpd_unused jack_nframes_t rate, void *data)
 {
 	JackData *jd = (JackData *) ((struct audio_output *) data)->data;
- 	struct audio_format *audioFormat = &(((struct audio_output *) data)->outAudioFormat);
+	struct audio_format *audioFormat = jd->audio_format;
 
  	audioFormat->sampleRate = (int)jack_get_sample_rate(jd->client);
 
@@ -179,10 +182,10 @@ static void shutdown_callback(void *arg)
 	jd->shutdown = 1;
 }
 
-static void set_audioformat(struct audio_output *audioOutput)
+static void set_audioformat(struct audio_output *audioOutput,
+			    struct audio_format *audioFormat)
 {
 	JackData *jd = audioOutput->data;
-	struct audio_format *audioFormat = &audioOutput->outAudioFormat;
 
 	audioFormat->sampleRate = (int) jack_get_sample_rate(jd->client);
 	DEBUG("samplerate = %d\n", audioFormat->sampleRate);
@@ -198,7 +201,9 @@ static void error_callback(const char *msg)
 	ERROR("jack: %s\n", msg);
 }
 
-static int jack_initDriver(struct audio_output *audioOutput, ConfigParam *param)
+static int jack_initDriver(struct audio_output *audioOutput,
+			   mpd_unused const struct audio_format *audio_format,
+			   ConfigParam *param)
 {
 	JackData *jd;
 	BlockParam *bp;
@@ -264,11 +269,14 @@ static int jack_testDefault(void)
 	return 0;
 }
 
-static int connect_jack(struct audio_output *audioOutput)
+static int connect_jack(struct audio_output *audioOutput,
+			struct audio_format *audio_format)
 {
 	JackData *jd = audioOutput->data;
 	const char **jports;
 	char *port_name;
+
+	jd->audio_format = audio_format;
 
 	if ( (jd->client = jack_client_new(jd->name)) == NULL ) {
 		ERROR("jack server not running?\n");
@@ -345,19 +353,21 @@ static int connect_jack(struct audio_output *audioOutput)
 	return 1;
 }
 
-static int jack_openDevice(struct audio_output *audioOutput)
+static int jack_openDevice(struct audio_output *audioOutput,
+			   struct audio_format *audio_format)
 {
 	JackData *jd = audioOutput->data;
 
 	assert(jd != NULL);
 
-	if (jd->client == NULL && connect_jack(audioOutput) < 0) {
+	if (jd->client == NULL && connect_jack(audioOutput,
+					       audio_format) < 0) {
 		freeJackClient(jd);
 		audioOutput->open = 0;
 		return -1;
 	}
 
-	set_audioformat(audioOutput);
+	set_audioformat(audioOutput, audio_format);
 	audioOutput->open = 1;
 
 	DEBUG("jack_openDevice (pid=%d)!\n", getpid ());

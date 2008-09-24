@@ -152,6 +152,7 @@ static int openFifo(FifoData *fd)
 }
 
 static int fifo_initDriver(struct audio_output *audioOutput,
+			   mpd_unused const struct audio_format *audio_format,
 			   ConfigParam *param)
 {
 	FifoData *fd;
@@ -190,14 +191,15 @@ static void fifo_finishDriver(struct audio_output *audioOutput)
 	freeFifoData(fd);
 }
 
-static int fifo_openDevice(struct audio_output *audioOutput)
+static int fifo_openDevice(struct audio_output *audioOutput,
+			   struct audio_format *audio_format)
 {
 	FifoData *fd = (FifoData *)audioOutput->data;
 
 	if (fd->timer)
 		timer_free(fd->timer);
 
-	fd->timer = timer_new(&audioOutput->outAudioFormat);
+	fd->timer = timer_new(audio_format);
 
 	audioOutput->open = 1;
 

@@ -375,6 +375,7 @@ static int oss_open_default(mpd_unused struct audio_output *ao,
 }
 
 static int oss_initDriver(struct audio_output *audioOutput,
+			  mpd_unused const struct audio_format *audio_format,
 			  ConfigParam * param)
 {
 	OssData *od = newOssData();
@@ -480,11 +481,11 @@ fail:
 	return -1;
 }
 
-static int oss_openDevice(struct audio_output *audioOutput)
+static int oss_openDevice(struct audio_output *audioOutput,
+			  struct audio_format *audioFormat)
 {
 	int ret;
 	OssData *od = audioOutput->data;
-	struct audio_format *audioFormat = &audioOutput->outAudioFormat;
 
 	od->channels = (mpd_sint8)audioFormat->channels;
 	od->sampleRate = audioFormat->sampleRate;

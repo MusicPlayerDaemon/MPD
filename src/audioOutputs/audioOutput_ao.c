@@ -55,6 +55,7 @@ static void audioOutputAo_error(void)
 }
 
 static int audioOutputAo_initDriver(struct audio_output *audioOutput,
+				    mpd_unused const struct audio_format *audio_format,
 				    ConfigParam * param)
 {
 	ao_info *ai;
@@ -174,7 +175,8 @@ static void audioOutputAo_closeDevice(struct audio_output *audioOutput)
 	audioOutput->open = 0;
 }
 
-static int audioOutputAo_openDevice(struct audio_output *audioOutput)
+static int audioOutputAo_openDevice(struct audio_output *audioOutput,
+				    struct audio_format *audio_format)
 {
 	ao_sample_format format;
 	AoData *ad = (AoData *) audioOutput->data;
@@ -183,10 +185,10 @@ static int audioOutputAo_openDevice(struct audio_output *audioOutput)
 		audioOutputAo_closeDevice(audioOutput);
 	}
 
-	format.bits = audioOutput->outAudioFormat.bits;
-	format.rate = audioOutput->outAudioFormat.sampleRate;
+	format.bits = audio_format->bits;
+	format.rate = audio_format->sampleRate;
 	format.byte_format = AO_FMT_NATIVE;
-	format.channels = audioOutput->outAudioFormat.channels;
+	format.channels = audio_format->channels;
 
 	ad->device = ao_open_live(ad->driverId, &format, ad->options);
 

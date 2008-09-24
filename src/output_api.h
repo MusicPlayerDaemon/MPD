@@ -38,11 +38,14 @@ struct audio_output_plugin {
 
 	int (*test_default_device)(void);
 
-	int (*init)(struct audio_output *ao, ConfigParam *param);
+	int (*init)(struct audio_output *ao,
+		    const struct audio_format *audio_format,
+		    ConfigParam *param);
 
 	void (*finish)(struct audio_output *ao);
 
-	int (*open)(struct audio_output *ao);
+	int (*open)(struct audio_output *ao,
+		    struct audio_format *audio_format);
 
 	int (*play)(struct audio_output *ao,
 		    const char *playChunk, size_t size);

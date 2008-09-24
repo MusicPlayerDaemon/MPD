@@ -94,6 +94,7 @@ static int mvp_testDefault(void)
 }
 
 static int mvp_initDriver(struct audio_output *audioOutput,
+			  mpd_unused const struct audio_format *audio_format,
 			  ConfigParam * param)
 {
 	MvpData *md = xmalloc(sizeof(MvpData));
@@ -172,11 +173,11 @@ static int mvp_setPcmParams(MvpData * md, unsigned long rate, int channels,
 	return 0;
 }
 
-static int mvp_openDevice(struct audio_output *audioOutput)
+static int mvp_openDevice(struct audio_output *audioOutput,
+			  struct audio_format *audioFormat)
 {
 	long long int stc = 0;
 	MvpData *md = audioOutput->data;
-	AudioFormat *audioFormat = &audioOutput->outAudioFormat;
 	int mix[5] = { 0, 2, 7, 1, 0 };
 
 	if ((md->fd = open("/dev/adec_pcm", O_RDWR | O_NONBLOCK)) < 0) {

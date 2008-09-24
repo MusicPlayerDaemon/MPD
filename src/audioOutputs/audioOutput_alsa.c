@@ -73,6 +73,7 @@ static void freeAlsaData(AlsaData * ad)
 }
 
 static int alsa_initDriver(struct audio_output *audioOutput,
+			   mpd_unused const struct audio_format *audio_format,
 			   ConfigParam * param)
 {
 	/* no need for pthread_once thread-safety when reading config */
@@ -136,10 +137,10 @@ static snd_pcm_format_t get_bitformat(const struct audio_format *af)
 	return SND_PCM_FORMAT_UNKNOWN;
 }
 
-static int alsa_openDevice(struct audio_output *audioOutput)
+static int alsa_openDevice(struct audio_output *audioOutput,
+			   struct audio_format *audioFormat)
 {
 	AlsaData *ad = audioOutput->data;
-	struct audio_format *audioFormat = &audioOutput->outAudioFormat;
 	snd_pcm_format_t bitformat;
 	snd_pcm_hw_params_t *hwparams;
 	snd_pcm_sw_params_t *swparams;

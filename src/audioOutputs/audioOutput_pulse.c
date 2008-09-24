@@ -62,6 +62,7 @@ static void freePulseData(PulseData * pd)
 }
 
 static int pulse_initDriver(struct audio_output *audioOutput,
+			    mpd_unused const struct audio_format *audio_format,
 			    ConfigParam * param)
 {
 	BlockParam *server = NULL;
@@ -109,17 +110,16 @@ static int pulse_testDefault(void)
 	return 0;
 }
 
-static int pulse_openDevice(struct audio_output *audioOutput)
+static int pulse_openDevice(struct audio_output *audioOutput,
+			    struct audio_format *audioFormat)
 {
 	PulseData *pd;
-	struct audio_format *audioFormat;
 	pa_sample_spec ss;
 	time_t t;
 	int error;
 
 	t = time(NULL);
 	pd = audioOutput->data;
-	audioFormat = &audioOutput->outAudioFormat;
 
 	if (pd->connAttempts != 0 &&
 	    (t - pd->lastAttempt) < CONN_ATTEMPT_INTERVAL)

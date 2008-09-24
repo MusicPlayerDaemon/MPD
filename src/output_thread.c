@@ -75,7 +75,7 @@ static void *audio_output_task(void *arg)
 
 		case AO_COMMAND_OPEN:
 			assert(!ao->open);
-			ao->plugin->open(ao);
+			ao->plugin->open(ao, &ao->outAudioFormat);
 			ao_command_finished(ao);
 			break;
 

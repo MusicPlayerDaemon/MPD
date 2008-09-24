@@ -102,7 +102,7 @@ int audio_output_init(struct audio_output *ao, ConfigParam * param)
 	notify_init(&ao->notify);
 	ao->command = AO_COMMAND_NONE;
 
-	if (plugin->init(ao, param) != 0)
+	if (plugin->init(ao, format ? &ao->reqAudioFormat : NULL, param) != 0)
 		return 0;
 
 	return 1;

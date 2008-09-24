@@ -81,6 +81,7 @@ static int osx_testDefault()
 }
 
 static int osx_initDriver(struct audio_output *audioOutput,
+			  mpd_unused const struct audio_format *audio_format,
 			  ConfigParam * param)
 {
 	OsxData *od = newOsxData();
@@ -216,13 +217,13 @@ static OSStatus osx_render(void *vdata,
 	return 0;
 }
 
-static int osx_openDevice(struct audio_output *audioOutput)
+static int osx_openDevice(struct audio_output *audioOutput,
+			  struct audio_format *audioFormat)
 {
 	OsxData *od = (OsxData *) audioOutput->data;
 	ComponentDescription desc;
 	Component comp;
 	AURenderCallbackStruct callback;
-	AudioFormat *audioFormat = &audioOutput->outAudioFormat;
 	AudioStreamBasicDescription streamDesc;
 
 	desc.componentType = kAudioUnitType_Output;

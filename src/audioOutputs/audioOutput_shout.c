@@ -88,6 +88,7 @@ static void free_shout_data(struct shout_data *sd)
 	}
 
 static int my_shout_init_driver(struct audio_output *audio_output,
+				const struct audio_format *audio_format,
 				ConfigParam * param)
 {
 	struct shout_data *sd;
@@ -177,7 +178,9 @@ static int my_shout_init_driver(struct audio_output *audio_output,
 	}
 
 	check_block_param("format");
-	sd->audio_format = audio_output->reqAudioFormat;
+
+	assert(audio_format != NULL);
+	sd->audio_format = *audio_format;
 
 	block_param = getBlockParam(param, "encoding");
 	if (block_param) {
@@ -439,7 +442,8 @@ static int open_shout_conn(struct audio_output *audio_output)
 	return 0;
 }
 
-static int my_shout_open_device(struct audio_output *audio_output)
+static int my_shout_open_device(struct audio_output *audio_output,
+				struct audio_format *audio_format)
 {
 	struct shout_data *sd = (struct shout_data *) audio_output->data;
 
@@ -449,7 +453,7 @@ static int my_shout_open_device(struct audio_output *audio_output)
 	if (sd->timer)
 		timer_free(sd->timer);
 
-	sd->timer = timer_new(&audio_output->outAudioFormat);
+	sd->timer = timer_new(audio_format);
 
 	audio_output->open = 1;
 
