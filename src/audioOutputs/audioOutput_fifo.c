@@ -151,9 +151,9 @@ static int openFifo(FifoData *fd)
 	return 0;
 }
 
-static int fifo_initDriver(struct audio_output *audioOutput,
-			   mpd_unused const struct audio_format *audio_format,
-			   ConfigParam *param)
+static void *fifo_initDriver(mpd_unused struct audio_output *ao,
+			     mpd_unused const struct audio_format *audio_format,
+			     ConfigParam *param)
 {
 	FifoData *fd;
 	BlockParam *blockParam;
@@ -173,28 +173,27 @@ static int fifo_initDriver(struct audio_output *audioOutput,
 
 	fd = newFifoData();
 	fd->path = path;
-	audioOutput->data = fd;
 
 	if (openFifo(fd) < 0) {
 		freeFifoData(fd);
-		return -1;
+		return NULL;
 	}
 
-	return 0;
+	return fd;
 }
 
-static void fifo_finishDriver(struct audio_output *audioOutput)
+static void fifo_finishDriver(void *data)
 {
-	FifoData *fd = (FifoData *)audioOutput->data;
+	FifoData *fd = (FifoData *)data;
 
 	closeFifo(fd);
 	freeFifoData(fd);
 }
 
-static int fifo_openDevice(struct audio_output *audioOutput,
+static int fifo_openDevice(void *data,
 			   struct audio_format *audio_format)
 {
-	FifoData *fd = (FifoData *)audioOutput->data;
+	FifoData *fd = (FifoData *)data;
 
 	if (fd->timer)
 		timer_free(fd->timer);
@@ -204,9 +203,9 @@ static int fifo_openDevice(struct audio_output *audioOutput,
 	return 0;
 }
 
-static void fifo_closeDevice(struct audio_output *audioOutput)
+static void fifo_closeDevice(void *data)
 {
-	FifoData *fd = (FifoData *)audioOutput->data;
+	FifoData *fd = (FifoData *)data;
 
 	if (fd->timer) {
 		timer_free(fd->timer);
@@ -214,9 +213,9 @@ static void fifo_closeDevice(struct audio_output *audioOutput)
 	}
 }
 
-static void fifo_dropBufferedAudio(struct audio_output *audioOutput)
+static void fifo_dropBufferedAudio(void *data)
 {
-	FifoData *fd = (FifoData *)audioOutput->data;
+	FifoData *fd = (FifoData *)data;
 	char buf[FIFO_BUFFER_SIZE];
 	int bytes = 1;
 
@@ -231,10 +230,10 @@ static void fifo_dropBufferedAudio(struct audio_output *audioOutput)
 	}
 }
 
-static int fifo_playAudio(struct audio_output *audioOutput,
+static int fifo_playAudio(void *data,
 			  const char *playChunk, size_t size)
 {
-	FifoData *fd = (FifoData *)audioOutput->data;
+	FifoData *fd = (FifoData *)data;
 	size_t offset = 0;
 	ssize_t bytes;
 
@@ -251,7 +250,7 @@ static int fifo_playAudio(struct audio_output *audioOutput,
 			switch (errno) {
 			case EAGAIN:
 				/* The pipe is full, so empty it */
-				fifo_dropBufferedAudio(audioOutput);
+				fifo_dropBufferedAudio(fd);
 				continue;
 			case EINTR:
 				continue;
@@ -259,7 +258,7 @@ static int fifo_playAudio(struct audio_output *audioOutput,
 
 			ERROR("Closing FIFO output \"%s\" due to write error: "
 			      "%s\n", fd->path, strerror(errno));
-			fifo_closeDevice(audioOutput);
+			fifo_closeDevice(fd);
 			return -1;
 		}
 

@@ -1,4 +1,5 @@
 /* the Music Player Daemon (MPD)
+ * Copyright (C) 2003-2007 by Warren Dukes (warren.dukes@gmail.com)
  * Copyright (C) 2008 Max Kellermann <max@duempel.org>
  * This project's homepage is: http://www.musicpd.org
  *
@@ -16,18 +17,42 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "output_api.h"
-#include "output_internal.h"
+#ifndef OUTPUT_INTERNAL_H
+#define OUTPUT_INTERNAL_H
 
-const char *audio_output_get_name(const struct audio_output *ao)
-{
-	return ao->name;
-}
+#include "pcm_utils.h"
+#include "notify.h"
 
-void audio_output_closed(struct audio_output *ao)
-{
-	assert(ao->open);
+struct audio_output {
+	int open;
+	const char *name;
 
-	ao->open = 0;
-}
+	const struct audio_output_plugin *plugin;
 
+	int convertAudioFormat;
+	struct audio_format inAudioFormat;
+	struct audio_format outAudioFormat;
+	struct audio_format reqAudioFormat;
+	ConvState convState;
+	char *convBuffer;
+	size_t convBufferLen;
+
+	pthread_t thread;
+	struct notify notify;
+	enum audio_output_command command;
+	union {
+		struct {
+			const char *data;
+			size_t size;
+		} play;
+
+		const struct tag *tag;
+	} args;
+	int result;
+
+	void *data;
+};
+
+extern struct notify audio_output_client_notify;
+
+#endif

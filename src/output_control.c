@@ -18,6 +18,7 @@
 
 #include "output_control.h"
 #include "output_api.h"
+#include "output_internal.h"
 #include "output_thread.h"
 #include "pcm_utils.h"
 
@@ -107,7 +108,7 @@ void audio_output_finish(struct audio_output *audioOutput)
 	if (audioOutput->thread != 0)
 		ao_command(audioOutput, AO_COMMAND_KILL);
 	if (audioOutput->plugin->finish)
-		audioOutput->plugin->finish(audioOutput);
+		audioOutput->plugin->finish(audioOutput->data);
 	if (audioOutput->convBuffer)
 		free(audioOutput->convBuffer);
 }

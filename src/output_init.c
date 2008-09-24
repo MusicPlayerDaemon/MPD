@@ -18,6 +18,7 @@
 
 #include "output_control.h"
 #include "output_api.h"
+#include "output_internal.h"
 #include "output_list.h"
 #include "log.h"
 #include "audio.h"
@@ -102,7 +103,8 @@ int audio_output_init(struct audio_output *ao, ConfigParam * param)
 	notify_init(&ao->notify);
 	ao->command = AO_COMMAND_NONE;
 
-	if (plugin->init(ao, format ? &ao->reqAudioFormat : NULL, param) != 0)
+	ao->data = plugin->init(ao, format ? &ao->reqAudioFormat : NULL, param);
+	if (ao->data == NULL)
 		return 0;
 
 	return 1;

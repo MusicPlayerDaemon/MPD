@@ -87,9 +87,9 @@ static void free_shout_data(struct shout_data *sd)
 		}							\
 	}
 
-static int my_shout_init_driver(struct audio_output *audio_output,
-				const struct audio_format *audio_format,
-				ConfigParam * param)
+static void *my_shout_init_driver(mpd_unused struct audio_output *audio_output,
+				  const struct audio_format *audio_format,
+				  ConfigParam *param)
 {
 	struct shout_data *sd;
 	char *test;
@@ -263,9 +263,11 @@ static int my_shout_init_driver(struct audio_output *audio_output,
 		}
 	}
 
-	audio_output->data = sd;
+	if (sd->encoder->init_func(sd) != 0)
+		FATAL("shout: encoder plugin '%s' failed to initialize\n",
+		      sd->encoder->name);
 
-	return sd->encoder->init_func(sd);
+	return sd;
 }
 
 static int handle_shout_error(struct shout_data *sd, int err)
@@ -325,9 +327,9 @@ static void close_shout_conn(struct shout_data * sd)
 	sd->opened = 0;
 }
 
-static void my_shout_finish_driver(struct audio_output *audio_output)
+static void my_shout_finish_driver(void *data)
 {
-	struct shout_data *sd = (struct shout_data *) audio_output->data;
+	struct shout_data *sd = (struct shout_data *)data;
 
 	close_shout_conn(sd);
 
@@ -340,17 +342,17 @@ static void my_shout_finish_driver(struct audio_output *audio_output)
 		shout_shutdown();
 }
 
-static void my_shout_drop_buffered_audio(struct audio_output *audio_output)
+static void my_shout_drop_buffered_audio(void *data)
 {
-	struct shout_data *sd = (struct shout_data *)audio_output->data;
+	struct shout_data *sd = (struct shout_data *)data;
 	timer_reset(sd->timer);
 
 	/* needs to be implemented for shout */
 }
 
-static void my_shout_close_device(struct audio_output *audio_output)
+static void my_shout_close_device(void *data)
 {
-	struct shout_data *sd = (struct shout_data *) audio_output->data;
+	struct shout_data *sd = (struct shout_data *)data;
 
 	close_shout_conn(sd);
 
@@ -416,9 +418,9 @@ static int shout_connect(struct shout_data *sd)
 	}
 }
 
-static int open_shout_conn(struct audio_output *audio_output)
+static int open_shout_conn(void *data)
 {
-	struct shout_data *sd = (struct shout_data *) audio_output->data;
+	struct shout_data *sd = (struct shout_data *)data;
 	int status;
 
 	status = shout_connect(sd);
@@ -440,12 +442,12 @@ static int open_shout_conn(struct audio_output *audio_output)
 	return 0;
 }
 
-static int my_shout_open_device(struct audio_output *audio_output,
+static int my_shout_open_device(void *data,
 				struct audio_format *audio_format)
 {
-	struct shout_data *sd = (struct shout_data *) audio_output->data;
+	struct shout_data *sd = (struct shout_data *)data;
 
-	if (!sd->opened && open_shout_conn(audio_output) < 0)
+	if (!sd->opened && open_shout_conn(sd) < 0)
 		return -1;
 
 	if (sd->timer)
@@ -476,10 +478,10 @@ static void send_metadata(struct shout_data * sd)
 	sd->tag_to_send = 0;
 }
 
-static int my_shout_play(struct audio_output *audio_output,
+static int my_shout_play(void *data,
 			 const char *chunk, size_t size)
 {
-	struct shout_data *sd = (struct shout_data *) audio_output->data;
+	struct shout_data *sd = (struct shout_data *)data;
 	int status;
 
 	if (!sd->timer->started)
@@ -491,9 +493,9 @@ static int my_shout_play(struct audio_output *audio_output,
 		send_metadata(sd);
 
 	if (!sd->opened) {
-		status = open_shout_conn(audio_output);
+		status = open_shout_conn(sd);
 		if (status < 0) {
-			my_shout_close_device(audio_output);
+			my_shout_close_device(sd);
 			return -1;
 		} else if (status > 0) {
 			timer_sync(sd->timer);
@@ -502,22 +504,22 @@ static int my_shout_play(struct audio_output *audio_output,
 	}
 
 	if (sd->encoder->encode_func(sd, chunk, size)) {
-		my_shout_close_device(audio_output);
+		my_shout_close_device(sd);
 		return -1;
 	}
 
 	if (write_page(sd) < 0) {
-		my_shout_close_device(audio_output);
+		my_shout_close_device(sd);
 		return -1;
 	}
 
 	return 0;
 }
 
-static void my_shout_set_tag(struct audio_output *audio_output,
+static void my_shout_set_tag(void *data,
 			     const struct tag *tag)
 {
-	struct shout_data *sd = (struct shout_data *) audio_output->data;
+	struct shout_data *sd = (struct shout_data *)data;
 
 	if (sd->tag)
 		tag_free(sd->tag);

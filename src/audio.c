@@ -20,6 +20,7 @@
 #include "audio_format.h"
 #include "output_api.h"
 #include "output_control.h"
+#include "output_internal.h"
 #include "log.h"
 #include "path.h"
 #include "client.h"

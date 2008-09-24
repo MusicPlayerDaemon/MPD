@@ -18,34 +18,45 @@
 
 #include "../output_api.h"
 #include "../timer.h"
+#include "../utils.h"
 
-static int null_initDriver(struct audio_output *audioOutput,
-			   mpd_unused const struct audio_format *audio_format,
-			   mpd_unused ConfigParam *param)
+struct null_data {
+	Timer *timer;
+};
+
+static void *null_initDriver(mpd_unused struct audio_output *audioOutput,
+			     mpd_unused const struct audio_format *audio_format,
+			     mpd_unused ConfigParam *param)
 {
-	audioOutput->data = NULL;
-	return 0;
+	struct null_data *nd = xmalloc(sizeof(*nd));
+	nd->timer = NULL;
+	return nd;
 }
 
-static int null_openDevice(struct audio_output *audioOutput,
+static int null_openDevice(void *data,
 			   struct audio_format *audio_format)
 {
-	audioOutput->data = timer_new(audio_format);
+	struct null_data *nd = data;
+
+	nd->timer = timer_new(audio_format);
 	return 0;
 }
 
-static void null_closeDevice(struct audio_output *audioOutput)
+static void null_closeDevice(void *data)
 {
-	if (audioOutput->data) {
-		timer_free(audioOutput->data);
-		audioOutput->data = NULL;
+	struct null_data *nd = data;
+
+	if (nd->timer != NULL) {
+		timer_free(nd->timer);
+		nd->timer = NULL;
 	}
 }
 
-static int null_playAudio(struct audio_output *audioOutput,
+static int null_playAudio(void *data,
 			  mpd_unused const char *playChunk, size_t size)
 {
-	Timer *timer = audioOutput->data;
+	struct null_data *nd = data;
+	Timer *timer = nd->timer;
 
 	if (!timer->started)
 		timer_start(timer);
@@ -57,9 +68,11 @@ static int null_playAudio(struct audio_output *audioOutput,
 	return 0;
 }
 
-static void null_dropBufferedAudio(struct audio_output *audioOutput)
+static void null_dropBufferedAudio(void *data)
 {
-	timer_reset(audioOutput->data);
+	struct null_data *nd = data;
+
+	timer_reset(nd->timer);
 }
 
 const struct audio_output_plugin nullPlugin = {

@@ -333,8 +333,7 @@ static int oss_testDefault(void)
 	return -1;
 }
 
-static int oss_open_default(mpd_unused struct audio_output *ao,
-			    ConfigParam *param, OssData *od)
+static void *oss_open_default(ConfigParam *param)
 {
 	int i;
 	int err[ARRAY_SIZE(default_devices)];
@@ -343,6 +342,7 @@ static int oss_open_default(mpd_unused struct audio_output *ao,
 	for (i = ARRAY_SIZE(default_devices); --i >= 0; ) {
 		ret[i] = oss_statDevice(default_devices[i], &err[i]);
 		if (ret[i] == 0) {
+			OssData *od = newOssData();
 			od->device = default_devices[i];
 			return 0;
 		}
@@ -371,28 +371,27 @@ static int oss_open_default(mpd_unused struct audio_output *ao,
 		}
 	}
 	exit(EXIT_FAILURE);
-	return 0; /* some compilers can be dumb... */
+	return NULL; /* some compilers can be dumb... */
 }
 
-static int oss_initDriver(struct audio_output *audioOutput,
-			  mpd_unused const struct audio_format *audio_format,
-			  ConfigParam * param)
+static void *oss_initDriver(mpd_unused struct audio_output *audioOutput,
+			    mpd_unused const struct audio_format *audio_format,
+			    ConfigParam * param)
 {
-	OssData *od = newOssData();
-	audioOutput->data = od;
 	if (param) {
 		BlockParam *bp = getBlockParam(param, "device");
 		if (bp) {
+			OssData *od = newOssData();
 			od->device = bp->value;
-			return 0;
+			return od;
 		}
 	}
-	return oss_open_default(audioOutput, param, od);
+	return oss_open_default(param);
 }
 
-static void oss_finishDriver(struct audio_output *audioOutput)
+static void oss_finishDriver(void *data)
 {
-	OssData *od = audioOutput->data;
+	OssData *od = data;
 
 	freeOssData(od);
 }
@@ -434,10 +433,9 @@ static void oss_close(OssData * od)
 	od->fd = -1;
 }
 
-static int oss_open(struct audio_output *audioOutput)
+static int oss_open(OssData *od)
 {
 	int tmp;
-	OssData *od = audioOutput->data;
 
 	if ((od->fd = open(od->device, O_WRONLY)) < 0) {
 		ERROR("Error opening OSS device \"%s\": %s\n", od->device,
@@ -478,17 +476,17 @@ fail:
 	return -1;
 }
 
-static int oss_openDevice(struct audio_output *audioOutput,
+static int oss_openDevice(void *data,
 			  struct audio_format *audioFormat)
 {
 	int ret;
-	OssData *od = audioOutput->data;
+	OssData *od = data;
 
 	od->channels = (mpd_sint8)audioFormat->channels;
 	od->sampleRate = audioFormat->sampleRate;
 	od->bits = (mpd_sint8)audioFormat->bits;
 
-	if ((ret = oss_open(audioOutput)) < 0)
+	if ((ret = oss_open(od)) < 0)
 		return ret;
 
 	audioFormat->channels = od->channels;
@@ -501,16 +499,16 @@ static int oss_openDevice(struct audio_output *audioOutput,
 	return ret;
 }
 
-static void oss_closeDevice(struct audio_output *audioOutput)
+static void oss_closeDevice(void *data)
 {
-	OssData *od = audioOutput->data;
+	OssData *od = data;
 
 	oss_close(od);
 }
 
-static void oss_dropBufferedAudio(struct audio_output *audioOutput)
+static void oss_dropBufferedAudio(void *data)
 {
-	OssData *od = audioOutput->data;
+	OssData *od = data;
 
 	if (od->fd >= 0) {
 		ioctl(od->fd, SNDCTL_DSP_RESET, 0);
@@ -518,14 +516,14 @@ static void oss_dropBufferedAudio(struct audio_output *audioOutput)
 	}
 }
 
-static int oss_playAudio(struct audio_output *audioOutput,
+static int oss_playAudio(void *data,
 			 const char *playChunk, size_t size)
 {
-	OssData *od = audioOutput->data;
+	OssData *od = data;
 	ssize_t ret;
 
 	/* reopen the device since it was closed by dropBufferedAudio */
-	if (od->fd < 0 && oss_open(audioOutput) < 0)
+	if (od->fd < 0 && oss_open(od) < 0)
 		return -1;
 
 	while (size > 0) {
@@ -535,7 +533,7 @@ static int oss_playAudio(struct audio_output *audioOutput,
 				continue;
 			ERROR("closing oss device \"%s\" due to write error: "
 			      "%s\n", od->device, strerror(errno));
-			oss_closeDevice(audioOutput);
+			oss_closeDevice(od);
 			return -1;
 		}
 		playChunk += ret;

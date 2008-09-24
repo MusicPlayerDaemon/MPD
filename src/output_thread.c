@@ -18,6 +18,7 @@
 
 #include "output_thread.h"
 #include "output_api.h"
+#include "output_internal.h"
 #include "utils.h"
 
 static void ao_command_finished(struct audio_output *ao)
@@ -58,7 +59,7 @@ static void ao_play(struct audio_output *ao)
 	if (!audio_format_equals(&ao->inAudioFormat, &ao->outAudioFormat))
 		convertAudioFormat(ao, &data, &size);
 
-	ao->result = ao->plugin->play(ao, data, size);
+	ao->result = ao->plugin->play(ao->data, data, size);
 	ao_command_finished(ao);
 }
 
@@ -75,7 +76,8 @@ static void *audio_output_task(void *arg)
 
 		case AO_COMMAND_OPEN:
 			assert(!ao->open);
-			ao->result = ao->plugin->open(ao, &ao->outAudioFormat);
+			ao->result = ao->plugin->open(ao->data,
+						      &ao->outAudioFormat);
 
 			assert(!ao->open);
 			if (ao->result == 0)
@@ -86,7 +88,7 @@ static void *audio_output_task(void *arg)
 
 		case AO_COMMAND_CLOSE:
 			assert(ao->open);
-			ao->plugin->close(ao);
+			ao->plugin->close(ao->data);
 			ao->open = 0;
 			ao_command_finished(ao);
 			break;
@@ -96,12 +98,12 @@ static void *audio_output_task(void *arg)
 			break;
 
 		case AO_COMMAND_CANCEL:
-			ao->plugin->cancel(ao);
+			ao->plugin->cancel(ao->data);
 			ao_command_finished(ao);
 			break;
 
 		case AO_COMMAND_SEND_TAG:
-			ao->plugin->send_tag(ao, ao->args.tag);
+			ao->plugin->send_tag(ao->data, ao->args.tag);
 			ao_command_finished(ao);
 			break;
 

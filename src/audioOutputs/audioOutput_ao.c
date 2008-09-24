@@ -54,9 +54,9 @@ static void audioOutputAo_error(void)
 	}
 }
 
-static int audioOutputAo_initDriver(struct audio_output *audioOutput,
-				    mpd_unused const struct audio_format *audio_format,
-				    ConfigParam * param)
+static void *audioOutputAo_initDriver(struct audio_output *ao,
+				      mpd_unused const struct audio_format *audio_format,
+				      ConfigParam * param)
 {
 	ao_info *ai;
 	char *duplicated;
@@ -68,8 +68,6 @@ static int audioOutputAo_initDriver(struct audio_output *audioOutput,
 	char *test;
 	AoData *ad = newAoData();
 	BlockParam *blockParam;
-
-	audioOutput->data = ad;
 
 	if ((blockParam = getBlockParam(param, "write_size"))) {
 		ad->writeSize = strtol(blockParam->value, &test, 10);
@@ -100,7 +98,7 @@ static int audioOutputAo_initDriver(struct audio_output *audioOutput,
 	}
 
 	DEBUG("using ao driver \"%s\" for \"%s\"\n", ai->short_name,
-	      audio_output_get_name(audioOutput));
+	      audio_output_get_name(ao));
 
 	blockParam = getBlockParam(param, "options");
 
@@ -138,7 +136,7 @@ static int audioOutputAo_initDriver(struct audio_output *audioOutput,
 	}
 	free(duplicated);
 
-	return 0;
+	return ad;
 }
 
 static void freeAoData(AoData * ad)
@@ -147,9 +145,9 @@ static void freeAoData(AoData * ad)
 	free(ad);
 }
 
-static void audioOutputAo_finishDriver(struct audio_output *audioOutput)
+static void audioOutputAo_finishDriver(void *data)
 {
-	AoData *ad = (AoData *) audioOutput->data;
+	AoData *ad = (AoData *)data;
 	freeAoData(ad);
 
 	driverInitCount--;
@@ -158,14 +156,14 @@ static void audioOutputAo_finishDriver(struct audio_output *audioOutput)
 		ao_shutdown();
 }
 
-static void audioOutputAo_dropBufferedAudio(mpd_unused struct audio_output *audioOutput)
+static void audioOutputAo_dropBufferedAudio(mpd_unused void *data)
 {
 	/* not supported by libao */
 }
 
-static void audioOutputAo_closeDevice(struct audio_output *audioOutput)
+static void audioOutputAo_closeDevice(void *data)
 {
-	AoData *ad = (AoData *) audioOutput->data;
+	AoData *ad = (AoData *)data;
 
 	if (ad->device) {
 		ao_close(ad->device);
@@ -173,14 +171,14 @@ static void audioOutputAo_closeDevice(struct audio_output *audioOutput)
 	}
 }
 
-static int audioOutputAo_openDevice(struct audio_output *audioOutput,
+static int audioOutputAo_openDevice(void *data,
 				    struct audio_format *audio_format)
 {
 	ao_sample_format format;
-	AoData *ad = (AoData *) audioOutput->data;
+	AoData *ad = (AoData *)data;
 
 	if (ad->device) {
-		audioOutputAo_closeDevice(audioOutput);
+		audioOutputAo_closeDevice(ad);
 	}
 
 	format.bits = audio_format->bits;
@@ -213,11 +211,10 @@ static int ao_play_deconst(ao_device *device, const void *output_samples,
 	return ao_play(device, u.out, num_bytes);
 }
 
-static int audioOutputAo_play(struct audio_output *audioOutput,
-			      const char *playChunk, size_t size)
+static int audioOutputAo_play(void *data, const char *playChunk, size_t size)
 {
+	AoData *ad = (AoData *)data;
 	size_t chunk_size;
-	AoData *ad = (AoData *) audioOutput->data;
 
 	if (ad->device == NULL)
 		return -1;
@@ -229,7 +226,7 @@ static int audioOutputAo_play(struct audio_output *audioOutput,
 		if (ao_play_deconst(ad->device, playChunk, chunk_size) == 0) {
 			audioOutputAo_error();
 			ERROR("closing audio device due to write error\n");
-			audioOutputAo_closeDevice(audioOutput);
+			audioOutputAo_closeDevice(ad);
 			return -1;
 		}
 

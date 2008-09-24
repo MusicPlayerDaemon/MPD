@@ -35,6 +35,7 @@ mpd_headers = \
 	ack.h \
 	audio.h \
 	audioOutput.h \
+	output_internal.h \
 	output_api.h \
 	output_list.h \
 	output_thread.h \

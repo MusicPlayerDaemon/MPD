@@ -72,9 +72,9 @@ static void freeAlsaData(AlsaData * ad)
 	free(ad);
 }
 
-static int alsa_initDriver(struct audio_output *audioOutput,
-			   mpd_unused const struct audio_format *audio_format,
-			   ConfigParam * param)
+static void *alsa_initDriver(mpd_unused struct audio_output *ao,
+			     mpd_unused const struct audio_format *audio_format,
+			     ConfigParam * param)
 {
 	/* no need for pthread_once thread-safety when reading config */
 	static int free_global_registered;
@@ -98,14 +98,13 @@ static int alsa_initDriver(struct audio_output *audioOutput,
 		if ((bp = getBlockParam(param, "period_time")))
 			ad->period_time = atoi(bp->value);
 	}
-	audioOutput->data = ad;
 
-	return 0;
+	return ad;
 }
 
-static void alsa_finishDriver(struct audio_output *audioOutput)
+static void alsa_finishDriver(void *data)
 {
-	AlsaData *ad = audioOutput->data;
+	AlsaData *ad = data;
 
 	freeAlsaData(ad);
 }
@@ -137,10 +136,9 @@ static snd_pcm_format_t get_bitformat(const struct audio_format *af)
 	return SND_PCM_FORMAT_UNKNOWN;
 }
 
-static int alsa_openDevice(struct audio_output *audioOutput,
-			   struct audio_format *audioFormat)
+static int alsa_openDevice(void *data, struct audio_format *audioFormat)
 {
-	AlsaData *ad = audioOutput->data;
+	AlsaData *ad = data;
 	snd_pcm_format_t bitformat;
 	snd_pcm_hw_params_t *hwparams;
 	snd_pcm_sw_params_t *swparams;
@@ -351,16 +349,16 @@ static int alsa_errorRecovery(AlsaData * ad, int err)
 	return err;
 }
 
-static void alsa_dropBufferedAudio(struct audio_output *audioOutput)
+static void alsa_dropBufferedAudio(void *data)
 {
-	AlsaData *ad = audioOutput->data;
+	AlsaData *ad = data;
 
 	alsa_errorRecovery(ad, snd_pcm_drop(ad->pcmHandle));
 }
 
-static void alsa_closeDevice(struct audio_output *audioOutput)
+static void alsa_closeDevice(void *data)
 {
-	AlsaData *ad = audioOutput->data;
+	AlsaData *ad = data;
 
 	if (ad->pcmHandle) {
 		if (snd_pcm_state(ad->pcmHandle) == SND_PCM_STATE_RUNNING) {
@@ -371,10 +369,9 @@ static void alsa_closeDevice(struct audio_output *audioOutput)
 	}
 }
 
-static int alsa_playAudio(struct audio_output *audioOutput,
-			  const char *playChunk, size_t size)
+static int alsa_playAudio(void *data, const char *playChunk, size_t size)
 {
-	AlsaData *ad = audioOutput->data;
+	AlsaData *ad = data;
 	int ret;
 
 	size /= ad->sampleSize;
@@ -395,7 +392,7 @@ static int alsa_playAudio(struct audio_output *audioOutput,
 				ERROR("closing ALSA device \"%s\" due to write "
 				      "error: %s\n", ad->device,
 				      snd_strerror(-errno));
-				alsa_closeDevice(audioOutput);
+				alsa_closeDevice(ad);
 				return -1;
 			}
 			continue;

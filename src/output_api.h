@@ -21,12 +21,10 @@
 #define OUTPUT_API_H
 
 #include "../config.h"
-#include "pcm_utils.h"
 #include "audio_format.h"
 #include "tag.h"
 #include "conf.h"
 #include "log.h"
-#include "notify.h"
 #include "os_compat.h"
 
 #define DISABLED_AUDIO_OUTPUT_PLUGIN(plugin) const struct audio_output_plugin plugin;
@@ -38,24 +36,21 @@ struct audio_output_plugin {
 
 	int (*test_default_device)(void);
 
-	int (*init)(struct audio_output *ao,
-		    const struct audio_format *audio_format,
-		    ConfigParam *param);
+	void *(*init)(struct audio_output *ao,
+		      const struct audio_format *audio_format,
+		      ConfigParam *param);
 
-	void (*finish)(struct audio_output *ao);
+	void (*finish)(void *data);
 
-	int (*open)(struct audio_output *ao,
-		    struct audio_format *audio_format);
+	int (*open)(void *data, struct audio_format *audio_format);
 
-	int (*play)(struct audio_output *ao,
-		    const char *playChunk, size_t size);
+	int (*play)(void *data, const char *playChunk, size_t size);
 
-	void (*cancel)(struct audio_output *ao);
+	void (*cancel)(void *data);
 
-	void (*close)(struct audio_output *ao);
+	void (*close)(void *data);
 
-	void (*send_tag)(struct audio_output *audioOutput,
-			 const struct tag *tag);
+	void (*send_tag)(void *data, const struct tag *tag);
 };
 
 enum audio_output_command {
@@ -68,36 +63,7 @@ enum audio_output_command {
 	AO_COMMAND_KILL
 };
 
-struct audio_output {
-	int open;
-	const char *name;
-
-	const struct audio_output_plugin *plugin;
-
-	struct audio_format inAudioFormat;
-	struct audio_format outAudioFormat;
-	struct audio_format reqAudioFormat;
-	ConvState convState;
-	char *convBuffer;
-	size_t convBufferLen;
-
-	pthread_t thread;
-	struct notify notify;
-	enum audio_output_command command;
-	union {
-		struct {
-			const char *data;
-			size_t size;
-		} play;
-
-		const struct tag *tag;
-	} args;
-	int result;
-
-	void *data;
-};
-
-extern struct notify audio_output_client_notify;
+struct audio_output;
 
 const char *audio_output_get_name(const struct audio_output *ao);
 
