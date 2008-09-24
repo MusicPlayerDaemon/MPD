@@ -31,25 +31,69 @@
 
 struct audio_output;
 
+/**
+ * A plugin which controls an audio output device.
+ */
 struct audio_output_plugin {
+	/**
+	 * the plugin's name
+	 */
 	const char *name;
 
+	/**
+	 * Test if this plugin can provide a default output, in case
+	 * none has been configured.  This method is optional.
+	 */
 	int (*test_default_device)(void);
 
+	/**
+	 * Configure and initialize the device, but do not open it
+	 * yet.
+	 *
+	 * @param ao an opaque pointer to the audio_output structure
+	 * @param audio_format the configured audio format, or NULL if
+	 * none is configured
+	 * @param param the configuration section, or NULL if there is
+	 * no configuration
+	 * @return NULL on error, or an opaque pointer to the plugin's
+	 * data
+	 */
 	void *(*init)(struct audio_output *ao,
 		      const struct audio_format *audio_format,
 		      ConfigParam *param);
 
+	/**
+	 * Free resources allocated by this device.
+	 */
 	void (*finish)(void *data);
 
+	/**
+	 * Really open the device.
+	 * @param audio_format the audio format in which data is going
+	 * to be delivered; may be modified by the plugin
+	 */
 	int (*open)(void *data, struct audio_format *audio_format);
 
+	/**
+	 * Play a chunk of audio data.
+	 */
 	int (*play)(void *data, const char *playChunk, size_t size);
 
+	/**
+	 * Try to cancel data which may still be in the device's
+	 * buffers.
+	 */
 	void (*cancel)(void *data);
 
+	/**
+	 * Close the device.
+	 */
 	void (*close)(void *data);
 
+	/**
+	 * Display metadata for the next chunk.  Optional method,
+	 * because not all devices can display metadata.
+	 */
 	void (*send_tag)(void *data, const struct tag *tag);
 };
 
