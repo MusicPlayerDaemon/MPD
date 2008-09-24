@@ -22,3 +22,11 @@ const char *audio_output_get_name(const struct audio_output *ao)
 {
 	return ao->name;
 }
+
+void audio_output_closed(struct audio_output *ao)
+{
+	assert(ao->open);
+
+	ao->open = 0;
+}
+

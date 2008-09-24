@@ -101,4 +101,6 @@ extern struct notify audio_output_client_notify;
 
 const char *audio_output_get_name(const struct audio_output *ao);
 
+void audio_output_closed(struct audio_output *ao);
+
 #endif

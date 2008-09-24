@@ -398,7 +398,7 @@ static int jack_playAudio(struct audio_output *audioOutput,
 	if ( jd->shutdown ) {
 		ERROR("Refusing to play, because there is no client thread.\n");
 		freeJackClient(jd);
-		audioOutput->open = 0;
+		audio_output_closed(audioOutput);
 		return 0;
 	}
 
