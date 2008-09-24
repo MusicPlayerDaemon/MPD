@@ -27,6 +27,11 @@ typedef struct notify {
 	int pending;
 } Notify;
 
+#define NOTIFY_INITIALIZER { \
+	.mutex = PTHREAD_MUTEX_INITIALIZER, \
+	.cond = PTHREAD_COND_INITIALIZER, \
+}
+
 void notify_init(struct notify *notify);
 
 void notify_deinit(struct notify *notify);
