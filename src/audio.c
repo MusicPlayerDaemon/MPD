@@ -396,9 +396,9 @@ void sendMetadataToAudioDevice(const struct tag *tag)
 {
 	unsigned int i;
 
-	for (i = 0; i < audioOutputArraySize; ++i) {
-		audio_output_send_tag(&audioOutputArray[i], tag);
-	}
+	for (i = 0; i < audioOutputArraySize; ++i)
+		if (audioDeviceStates[i] == DEVICE_ON)
+			audio_output_send_tag(&audioOutputArray[i], tag);
 }
 
 int enableAudioDevice(unsigned int device)
