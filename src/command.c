@@ -853,13 +853,16 @@ static int handleUpdate(struct client *client,
 		List *pathList = makeList(NULL, 1);
 		insertInList(pathList, argv[1], NULL);
 		ret = updateInit(pathList);
-		if (ret == -1)
-			command_error(client, ACK_ERROR_UPDATE_ALREADY,
-				      "already updating");
-		return ret;
+	} else {
+		ret = updateInit(NULL);
 	}
 
-	return ret;
+	if (ret == -1)
+		command_error(client, ACK_ERROR_UPDATE_ALREADY,
+			      "already updating");
+
+	client_printf(client, "updating_db: %i\n", ret);
+	return 0;
 }
 
 static int handleNext(mpd_unused struct client *client,
