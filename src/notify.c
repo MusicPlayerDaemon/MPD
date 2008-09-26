@@ -40,32 +40,20 @@ void notify_deinit(struct notify *notify)
 	pthread_cond_destroy(&notify->cond);
 }
 
-void notify_enter(struct notify *notify)
-{
-	pthread_mutex_lock(&notify->mutex);
-}
-
-void notify_leave(struct notify *notify)
-{
-	pthread_mutex_unlock(&notify->mutex);
-}
-
 void notify_wait(struct notify *notify)
 {
+	pthread_mutex_lock(&notify->mutex);
 	if (!notify->pending)
 		pthread_cond_wait(&notify->cond, &notify->mutex);
+	assert(notify->pending);
 	notify->pending = 0;
+	pthread_mutex_unlock(&notify->mutex);
 }
 
 void notify_signal(struct notify *notify)
 {
+	pthread_mutex_lock(&notify->mutex);
 	notify->pending = 1;
 	pthread_cond_signal(&notify->cond);
-}
-
-void notify_signal_sync(struct notify *notify)
-{
-	pthread_mutex_lock(&notify->mutex);
-	notify_signal(notify);
 	pthread_mutex_unlock(&notify->mutex);
 }

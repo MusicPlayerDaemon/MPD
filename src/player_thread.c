@@ -384,8 +384,6 @@ static void do_play(void)
 
 static void * player_task(mpd_unused void *arg)
 {
-	notify_enter(&pc.notify);
-
 	while (1) {
 		switch (pc.command) {
 		case PLAYER_COMMAND_PLAY:

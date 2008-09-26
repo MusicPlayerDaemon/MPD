@@ -115,8 +115,6 @@ void wait_main_task(void)
 {
 	assert(pthread_equal(main_task, pthread_self()));
 
-	notify_enter(&main_notify);
 	notify_wait(&main_notify);
-	notify_leave(&main_notify);
 }
 

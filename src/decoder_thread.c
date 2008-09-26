@@ -167,8 +167,6 @@ stop_no_close:
 
 static void * decoder_task(mpd_unused void *arg)
 {
-	notify_enter(&dc.notify);
-
 	while (1) {
 		assert(dc.state == DECODE_STATE_STOP);
 

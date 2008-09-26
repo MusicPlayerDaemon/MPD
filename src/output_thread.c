@@ -67,8 +67,6 @@ static void *audio_output_task(void *arg)
 {
 	struct audio_output *ao = arg;
 
-	notify_enter(&ao->notify);
-
 	while (1) {
 		switch (ao->command) {
 		case AO_COMMAND_NONE:
