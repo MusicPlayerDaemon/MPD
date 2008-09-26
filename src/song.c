@@ -92,42 +92,6 @@ void freeJustSong(Song * song)
 	free(song);
 }
 
-SongList *newSongList(void)
-{
-	return makeList((ListFreeDataFunc *) freeSong, 0);
-}
-
-Song *addSongToList(SongList * list, const char *url, const char *utf8path,
-		    int songType, Directory * parentDirectory)
-{
-	Song *song = NULL;
-
-	switch (songType) {
-	case SONG_TYPE_FILE:
-		if (isMusic(utf8path, NULL, 0)) {
-			song = newSong(url, songType, parentDirectory);
-		}
-		break;
-	case SONG_TYPE_URL:
-		song = newSong(url, songType, parentDirectory);
-		break;
-	default:
-		DEBUG("addSongToList: Trying to add an invalid song type\n");
-	}
-
-	if (song == NULL)
-		return NULL;
-
-	insertInList(list, song->url, (void *)song);
-
-	return song;
-}
-
-void freeSongList(SongList * list)
-{
-	freeList(list);
-}
-
 int updateSongInfo(Song * song)
 {
 	if (song->type == SONG_TYPE_FILE) {

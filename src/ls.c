@@ -23,6 +23,7 @@
 #include "log.h"
 #include "utf8.h"
 #include "utils.h"
+#include "list.h"
 #include "os_compat.h"
 
 static const char *remoteUrlPrefixes[] = {

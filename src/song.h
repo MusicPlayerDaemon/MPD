@@ -19,7 +19,6 @@
 #ifndef SONG_H
 #define SONG_H
 
-#include "list.h"
 #include "os_compat.h"
 #include "mpd_types.h"
 
@@ -42,8 +41,6 @@ typedef struct _Song {
 	time_t mtime;
 } Song;
 
-typedef List SongList;
-
 Song *newNullSong(void);
 
 Song *newSong(const char *url, int songType, struct _Directory *parentDir);
@@ -51,13 +48,6 @@ Song *newSong(const char *url, int songType, struct _Directory *parentDir);
 void freeSong(Song *);
 
 void freeJustSong(Song *);
-
-SongList *newSongList(void);
-
-void freeSongList(SongList * list);
-
-Song *addSongToList(SongList * list, const char *url, const char *utf8path,
-		    int songType, struct _Directory *parentDir);
 
 int updateSongInfo(Song * song);
 

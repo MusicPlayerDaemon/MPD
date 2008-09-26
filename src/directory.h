@@ -21,6 +21,7 @@
 
 #include "song.h"
 #include "songvec.h"
+#include "list.h"
 
 typedef List DirectoryList;
 
