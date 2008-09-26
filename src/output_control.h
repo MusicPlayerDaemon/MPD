@@ -30,6 +30,15 @@ struct tag;
 int audio_output_init(struct audio_output *, ConfigParam * param);
 int audio_output_open(struct audio_output *audioOutput,
 		      const struct audio_format *audioFormat);
+
+/**
+ * Wakes up the audio output thread.  This is part of a workaround for
+ * a deadlock bug, and should be removed as soon as the real cause is
+ * fixed.  XXX
+ */
+void
+audio_output_signal(struct audio_output *ao);
+
 void audio_output_play(struct audio_output *audioOutput,
 		       const char *playChunk, size_t size);
 void audio_output_cancel(struct audio_output *audioOutput);

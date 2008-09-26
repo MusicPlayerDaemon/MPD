@@ -281,7 +281,7 @@ static int flushAudioBuffer(void)
 		int finished = 1;
 
 		for (i = 0; i < audioOutputArraySize; ++i) {
-			const struct audio_output *ao = &audioOutputArray[i];
+			struct audio_output *ao = &audioOutputArray[i];
 
 			if (!audio_output_is_open(ao))
 				continue;
@@ -295,8 +295,10 @@ static int flushAudioBuffer(void)
 					   closed if the play func
 					   returned an error */
 					audioDeviceStates[i] = DEVICE_ENABLE;
-			} else
+			} else {
 				finished = 0;
+				audio_output_signal(ao);
+			}
 		}
 
 		if (finished)

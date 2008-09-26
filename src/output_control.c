@@ -86,6 +86,12 @@ int audio_output_open(struct audio_output *audioOutput,
 	return ret;
 }
 
+void
+audio_output_signal(struct audio_output *ao)
+{
+	notify_signal(&ao->notify);
+}
+
 void audio_output_play(struct audio_output *audioOutput,
 		       const char *playChunk, size_t size)
 {
