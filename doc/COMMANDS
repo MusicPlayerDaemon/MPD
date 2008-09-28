@@ -55,7 +55,7 @@ add <string path>
 addid <string path> <int position>
 	_path_ is always a single file or URL
 	_position_ is optional, a negative number means it is relative
-	to the currently playing song (if there is one)
+	to the currently playing song in the playlist (if there is one)
         adds a song to the playlist (non-recursive) and returns the song id;
         example:
 
@@ -126,6 +126,8 @@ move <int from> <int to>
 moveid <int songid> <int to>
 	move song with _songid_ to  _to_ in the playlist
 	increments playlist version by 1
+	if _to_ is negative, it is relative to the current song in
+	the playlist (if there is one).
 
 next
 	plays next song in playlist
