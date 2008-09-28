@@ -471,7 +471,7 @@ void printAudioDevices(struct client *client)
 			      "outputenabled: %i\n",
 			      i,
 			      audioOutputArray[i].name,
-			      audioDeviceStates[i]);
+			      audioDeviceStates[i] == DEVICE_ENABLE);
 	}
 }
 
