@@ -1,6 +1,6 @@
-                         Music Player Daemon - Commands
+			 Music Player Daemon - Commands
 
-                                    WARNING
+				    WARNING
 	This document has not been updated to reflect recent changes in
 	the MPD protocol.  It does not contain all supported commands,
 	and some commands may now take additional arguments.  However,
@@ -14,8 +14,8 @@ This document is intended for client developers, not end users.
 Format:
 -------
 
-If arguments contain spaces, they should be surrounded by double quotation 
-marks, ".  
+If arguments contain spaces, they should be surrounded by double quotation
+marks, ".
 
 command <type arg1> <type arg2> ...
 	explanation: w/ arg1 and arg2
@@ -25,7 +25,7 @@ that in UTF-8 all standard ansi characters, 0-127, are the same as a standard
 ansi encoding. Also, no ansi character appears in any multi-byte
 characters.  So, you can use standard C functions like strlen, and strcpy
 just fine with UTF-8 encoded strings. For example: "OK\n" encoded in UTF-8 is
-simply "OK\n".  For more information on UTF=8: 
+simply "OK\n".  For more information on UTF=8:
 http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8 )
 
 Command Completion:
@@ -41,7 +41,7 @@ For manipulating playlists and playing, there are two sets of commands.  One
 set uses the song id of a song in the playlist, while another set uses the
 playlist position of the song.  The commands using song id's should be used
 instead of the commands that manipulate and control playback based on playlist
-position.  Using song id's is a safer method when multiple clients are 
+position.  Using song id's is a safer method when multiple clients are
 interacting with MPD.
 
 Commands:
@@ -56,18 +56,18 @@ addid <string path> <int position>
 	_path_ is always a single file or URL
 	_position_ is optional, a negative number means it is relative
 	to the currently playing song in the playlist (if there is one)
-        adds a song to the playlist (non-recursive) and returns the song id;
-        example:
+	adds a song to the playlist (non-recursive) and returns the song id;
+	example:
 
-        addid "foo.mp3"
-        Id: 999
-        OK
+	addid "foo.mp3"
+	Id: 999
+	OK
 
-clear	
+clear
 	clears the current playlist
 	increments playlist version by 1
 
-clearerror	
+clearerror
 	clear the current error message in status
 	(this is also accomplished by any command that starts playback)
 
@@ -98,7 +98,7 @@ kill
 	kill MPD
 
 list <string type> <string arg1>
-	list all tags of _type_ 
+	list all tags of _type_
 	_type_ should be "album" or "artist"
 	_arg1_ is an optional parameter when type is album, this specifies
 		to list albums by a artist, where artist is specified with
@@ -163,13 +163,13 @@ playlistid <int songid>
 	_songid_ is optional and specifies a single song to display info for
 
 plchanges <playlist version>
-	displays changed songs currently in the playlist since 
+	displays changed songs currently in the playlist since
 	_playlist version_
 	NOTE: to detect songs that were deleted at the end of the playlist,
 	use playlistlength returned by status command.
 
 plchangesposid <playlist version>
-	displays changed songs currently in the playlist since 
+	displays changed songs currently in the playlist since
 	_playlist version_
 	This function only returns the position and the id of the changed song, not the complete metadata. This is more bandwidth efficient.
 	NOTE: to detect songs that were deleted at the end of the playlist,
@@ -196,7 +196,7 @@ search <string type> <string what>
 	search is not case sensitive
 
 seek <int song> <int time>
-	seeks to the position _time_ (in seconds) of entry _song_ in the 
+	seeks to the position _time_ (in seconds) of entry _song_ in the
 	playlist
 
 seekid <int songid> <int time>
@@ -249,7 +249,7 @@ swapid <int songid1> <int songid2>
 
 update <string path>
 	searches mp3 directory for new music and removes old music from the db
-	_path_ is an optional argument that maybe a particular directory or 
+	_path_ is an optional argument that maybe a particular directory or
 		song/file to update.
 	returned:
 		updating_db: <int job id>
@@ -257,7 +257,7 @@ update <string path>
 	in status, while the requested update is happening
 	increments playlist version by 1
 	NOTE: To update a number of paths/songs at once, use command_list,
-	it will be much more faster/efficient.  Also, if you use a 
+	it will be much more faster/efficient.  Also, if you use a
 	command_list for updating, only one update_db job id will be returned
 	per sequence of updates.
 
@@ -284,5 +284,6 @@ command_list_end
 It does not execute any commands until the list has ended.  The return
 value is whatever the return for a list of commands is.  On success
 for all commands, OK is returned.  If a command fails, no more commands
-are executed and the appropriate ACK error is returned. If "command_list_ok_begin is used", "list_OK\n" is returned for each successful command executed
-in the command list.
+are executed and the appropriate ACK error is returned. If
+"command_list_ok_begin is used", "list_OK\n" is returned for each
+successful command executed in the command list.
