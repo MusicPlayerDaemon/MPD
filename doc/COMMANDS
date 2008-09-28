@@ -52,7 +52,10 @@ add <string path>
 	_path_ can also be a single file
 	increments playlist version by for each song added
 
-addid <string path>
+addid <string path> <int position>
+	_path_ is always a single file or URL
+	_position_ is optional, a negative number means it is relative
+	to the currently playing song (if there is one)
         adds a song to the playlist (non-recursive) and returns the song id;
         example:
 
