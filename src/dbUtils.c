@@ -30,7 +30,7 @@
 #include "storedPlaylist.h"
 
 typedef struct _ListCommandItem {
-	mpd_sint8 tagType;
+	int8_t tagType;
 	int numConditionals;
 	LocateTagItem *conditionals;
 } ListCommandItem;

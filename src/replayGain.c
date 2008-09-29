@@ -108,9 +108,9 @@ void freeReplayGainInfo(ReplayGainInfo * info)
 void doReplayGain(ReplayGainInfo * info, char *buffer, int bufferSize,
 		  const struct audio_format *format)
 {
-	mpd_sint16 *buffer16;
-	mpd_sint8 *buffer8;
-	mpd_sint32 temp32;
+	int16_t *buffer16;
+	int8_t *buffer8;
+	int32_t temp32;
 	float scale;
 
 	if (replayGainState == REPLAYGAIN_OFF || !info)
@@ -136,8 +136,8 @@ void doReplayGain(ReplayGainInfo * info, char *buffer, int bufferSize,
 	if (info->scale <= 1.01 && info->scale >= 0.99)
 		return;
 
-	buffer16 = (mpd_sint16 *) buffer;
-	buffer8 = (mpd_sint8 *) buffer;
+	buffer16 = (int16_t *) buffer;
+	buffer8 = (int8_t *) buffer;
 
 	scale = info->scale;
 

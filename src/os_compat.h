@@ -31,14 +31,7 @@
  * 2) optional features in core (libsamplerate, avahi, ...)
  */
 
-#if defined(HAVE_STDINT_H)
-#include <stdint.h>
-#elif defined(HAVE_INTTYPES_H)
-#include <inttypes.h>
-#elif defined(HAVE_SYS_INTTYPES_H)
-#include <sys/inttypes.h>
-#endif
-#include <sys/types.h>
+#include "mpd_types.h"
 
 #define _XOPEN_SOURCE 600 /* for posix_fadvise, won't hurt if not available */
 #include <fcntl.h>

@@ -65,7 +65,7 @@ static unsigned long prng(unsigned long state)
 	return (state * 0x0019660dL + 0x3c6ef35fL) & 0xffffffffL;
 }
 
-static mpd_sint16 audio_linear_dither(unsigned int bits, mad_fixed_t sample,
+static int16_t audio_linear_dither(unsigned int bits, mad_fixed_t sample,
 				      struct audio_dither *dither)
 {
 	unsigned int scalebits;
@@ -107,15 +107,15 @@ static mpd_sint16 audio_linear_dither(unsigned int bits, mad_fixed_t sample,
 
 	dither->error[0] = sample - output;
 
-	return (mpd_sint16)(output >> scalebits);
+	return (int16_t)(output >> scalebits);
 }
 
-static unsigned dither_buffer(mpd_sint16 *dest0, const struct mad_synth *synth,
+static unsigned dither_buffer(int16_t *dest0, const struct mad_synth *synth,
 			      struct audio_dither *dither,
 			      unsigned int start, unsigned int end,
 			      unsigned int num_channels)
 {
-	mpd_sint16 *dest = dest0;
+	int16_t *dest = dest0;
 	unsigned int i;
 
 	for (i = start; i < end; ++i) {
@@ -153,7 +153,7 @@ typedef struct _mp3DecodeData {
 	struct mad_synth synth;
 	mad_timer_t timer;
 	unsigned char readBuffer[READ_BUFFER_SIZE];
-	mpd_sint16 outputBuffer[MP3_DATA_OUTPUT_BUFFER_SIZE];
+	int16_t outputBuffer[MP3_DATA_OUTPUT_BUFFER_SIZE];
 	float totalTime;
 	float elapsedTime;
 	enum muteframe muteFrame;

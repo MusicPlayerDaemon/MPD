@@ -48,7 +48,7 @@ struct tag_item {
 struct tag {
 	int time;
 	struct tag_item **items;
-	mpd_uint8 numOfItems;
+	uint8_t numOfItems;
 };
 
 struct tag *tag_ape_load(const char *file);

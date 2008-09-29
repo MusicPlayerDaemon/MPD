@@ -26,7 +26,7 @@
 
 /* struct used for search, find, list queries */
 typedef struct _LocateTagItem {
-	mpd_sint8 tagType;
+	int8_t tagType;
 	/* what we are looking for */
 	char *needle;
 } LocateTagItem;

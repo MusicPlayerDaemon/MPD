@@ -214,7 +214,7 @@ configure_hw:
 		      snd_strerror(-err));
 		goto fail;
 	}
-	audioFormat->channels = (mpd_sint8)channels;
+	audioFormat->channels = (int8_t)channels;
 
 	err = snd_pcm_hw_params_set_rate_near(ad->pcmHandle, hwparams,
 					      &sampleRate, NULL);

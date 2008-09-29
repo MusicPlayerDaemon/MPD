@@ -316,7 +316,7 @@ static int aac_stream_decode(struct decoder * mpd_decoder,
 	unsigned int sampleCount;
 	char *sampleBuffer;
 	size_t sampleBufferLen;
-	mpd_uint16 bitRate = 0;
+	uint16_t bitRate = 0;
 	AacBuffer b;
 	int initialized = 0;
 
@@ -453,7 +453,7 @@ static int aac_decode(struct decoder * mpd_decoder, char *path)
 	/*float * seekTable;
 	   long seekTableEnd = -1;
 	   int seekPositionFound = 0; */
-	mpd_uint16 bitRate = 0;
+	uint16_t bitRate = 0;
 	AacBuffer b;
 	InputStream inStream;
 	int initialized = 0;

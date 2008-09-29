@@ -19,6 +19,6 @@
 #ifndef TAG_INTERNAL_H
 #define TAG_INTERNAL_H
 
-extern mpd_sint8 ignoreTagItems[TAG_NUM_OF_ITEM_TYPES];
+extern int8_t ignoreTagItems[TAG_NUM_OF_ITEM_TYPES];
 
 #endif

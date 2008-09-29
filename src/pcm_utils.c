@@ -35,8 +35,8 @@ pcm_dither(void)
  * Check if the value is within the range of the provided bit size,
  * and caps it if necessary.
  */
-static mpd_sint32
-pcm_range(mpd_sint32 sample, unsigned bits)
+static int32_t
+pcm_range(int32_t sample, unsigned bits)
 {
 	if (mpd_unlikely(sample < (-1 << (bits - 1))))
 		return -1 << (bits - 1);
@@ -49,9 +49,9 @@ void pcm_volumeChange(char *buffer, int bufferSize,
                       const struct audio_format *format,
                       int volume)
 {
-	mpd_sint32 temp32;
-	mpd_sint8 *buffer8 = (mpd_sint8 *) buffer;
-	mpd_sint16 *buffer16 = (mpd_sint16 *) buffer;
+	int32_t temp32;
+	int8_t *buffer8 = (int8_t *) buffer;
+	int16_t *buffer16 = (int16_t *) buffer;
 
 	if (volume >= 1000)
 		return;
@@ -96,11 +96,11 @@ static void pcm_add(char *buffer1, const char *buffer2, size_t bufferSize1,
                     size_t bufferSize2, int vol1, int vol2,
                     const struct audio_format *format)
 {
-	mpd_sint32 temp32;
-	mpd_sint8 *buffer8_1 = (mpd_sint8 *) buffer1;
-	const mpd_sint8 *buffer8_2 = (const mpd_sint8 *) buffer2;
-	mpd_sint16 *buffer16_1 = (mpd_sint16 *) buffer1;
-	const mpd_sint16 *buffer16_2 = (const mpd_sint16 *) buffer2;
+	int32_t temp32;
+	int8_t *buffer8_1 = (int8_t *) buffer1;
+	const int8_t *buffer8_2 = (const int8_t *) buffer2;
+	int16_t *buffer16_1 = (int16_t *) buffer1;
+	const int16_t *buffer16_2 = (const int16_t *) buffer2;
 
 	switch (format->bits) {
 	case 16:
@@ -195,9 +195,9 @@ out:
 #endif
 
 #ifdef HAVE_LIBSAMPLERATE
-static size_t pcm_convertSampleRate(mpd_sint8 channels, mpd_uint32 inSampleRate,
+static size_t pcm_convertSampleRate(int8_t channels, uint32_t inSampleRate,
                                     const char *inBuffer, size_t inSize,
-                                    mpd_uint32 outSampleRate, char *outBuffer,
+                                    uint32_t outSampleRate, char *outBuffer,
                                     size_t outSize, ConvState *convState)
 {
 	static int convalgo = -1;
@@ -271,19 +271,19 @@ static size_t pcm_convertSampleRate(mpd_sint8 channels, mpd_uint32 inSampleRate,
 }
 #else /* !HAVE_LIBSAMPLERATE */
 /* resampling code blatantly ripped from ESD */
-static size_t pcm_convertSampleRate(mpd_sint8 channels, mpd_uint32 inSampleRate,
+static size_t pcm_convertSampleRate(int8_t channels, uint32_t inSampleRate,
                                     const char *inBuffer,
                                     mpd_unused size_t inSize,
-                                    mpd_uint32 outSampleRate, char *outBuffer,
+                                    uint32_t outSampleRate, char *outBuffer,
                                     size_t outSize,
                                     mpd_unused ConvState *convState)
 {
-	mpd_uint32 rd_dat = 0;
-	mpd_uint32 wr_dat = 0;
-	mpd_sint16 *in = (mpd_sint16 *)inBuffer;
-	mpd_sint16 *out = (mpd_sint16 *)outBuffer;
-	mpd_uint32 nlen = outSize / 2;
-	mpd_sint16 lsample, rsample;
+	uint32_t rd_dat = 0;
+	uint32_t wr_dat = 0;
+	int16_t *in = (int16_t *)inBuffer;
+	int16_t *out = (int16_t *)outBuffer;
+	uint32_t nlen = outSize / 2;
+	int16_t lsample, rsample;
 
 	switch (channels) {
 	case 1:
@@ -313,14 +313,14 @@ static size_t pcm_convertSampleRate(mpd_sint8 channels, mpd_uint32 inSampleRate,
 }
 #endif /* !HAVE_LIBSAMPLERATE */
 
-static char *pcm_convertChannels(mpd_sint8 channels, const char *inBuffer,
+static char *pcm_convertChannels(int8_t channels, const char *inBuffer,
                                  size_t inSize, size_t *outSize)
 {
 	static char *buf;
 	static size_t len;
 	char *outBuffer = NULL;
-	const mpd_sint16 *in;
-	mpd_sint16 *out;
+	const int16_t *in;
+	int16_t *out;
 	int inSamples, i;
 
 	switch (channels) {
@@ -334,8 +334,8 @@ static char *pcm_convertChannels(mpd_sint8 channels, const char *inBuffer,
 		outBuffer = buf;
 
 		inSamples = inSize >> 1;
-		in = (const mpd_sint16 *)inBuffer;
-		out = (mpd_sint16 *)outBuffer;
+		in = (const int16_t *)inBuffer;
+		out = (int16_t *)outBuffer;
 		for (i = 0; i < inSamples; i++) {
 			*out++ = *in;
 			*out++ = *in++;
@@ -352,8 +352,8 @@ static char *pcm_convertChannels(mpd_sint8 channels, const char *inBuffer,
 		outBuffer = buf;
 
 		inSamples = inSize >> 2;
-		in = (const mpd_sint16 *)inBuffer;
-		out = (mpd_sint16 *)outBuffer;
+		in = (const int16_t *)inBuffer;
+		out = (int16_t *)outBuffer;
 		for (i = 0; i < inSamples; i++) {
 			*out = (*in++) / 2;
 			*out++ += (*in++) / 2;
@@ -367,14 +367,14 @@ static char *pcm_convertChannels(mpd_sint8 channels, const char *inBuffer,
 	return outBuffer;
 }
 
-static const char *pcm_convertTo16bit(mpd_sint8 bits, const char *inBuffer,
+static const char *pcm_convertTo16bit(int8_t bits, const char *inBuffer,
 				      size_t inSize, size_t *outSize)
 {
 	static char *buf;
 	static size_t len;
 	char *outBuffer = NULL;
-	const mpd_sint8 *in;
-	mpd_sint16 *out;
+	const int8_t *in;
+	int16_t *out;
 	size_t i;
 
 	switch (bits) {
@@ -386,8 +386,8 @@ static const char *pcm_convertTo16bit(mpd_sint8 bits, const char *inBuffer,
 		}
 		outBuffer = buf;
 
-		in = (const mpd_sint8 *)inBuffer;
-		out = (mpd_sint16 *)outBuffer;
+		in = (const int8_t *)inBuffer;
+		out = (int16_t *)outBuffer;
 		for (i = 0; i < inSize; i++)
 			*out++ = (*in++) << 8;
 

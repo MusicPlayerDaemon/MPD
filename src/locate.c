@@ -127,7 +127,7 @@ static int strstrSearchTag(Song * song, enum tag_type type, char *str)
 	int i;
 	char *duplicate;
 	int ret = 0;
-	mpd_sint8 visitedTypes[TAG_NUM_OF_ITEM_TYPES] = { 0 };
+	int8_t visitedTypes[TAG_NUM_OF_ITEM_TYPES] = { 0 };
 
 	if (type == LOCATE_TAG_FILE_TYPE || type == LOCATE_TAG_ANY_TYPE) {
 		char path_max_tmp[MPD_PATH_MAX];
@@ -184,7 +184,7 @@ int strstrSearchTags(Song * song, int numItems, LocateTagItem * items)
 static int tagItemFoundAndMatches(Song * song, enum tag_type type, char *str)
 {
 	int i;
-	mpd_sint8 visitedTypes[TAG_NUM_OF_ITEM_TYPES] = { 0 };
+	int8_t visitedTypes[TAG_NUM_OF_ITEM_TYPES] = { 0 };
 
 	if (type == LOCATE_TAG_FILE_TYPE || type == LOCATE_TAG_ANY_TYPE) {
 		char path_max_tmp[MPD_PATH_MAX];

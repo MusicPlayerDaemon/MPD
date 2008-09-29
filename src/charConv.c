@@ -32,13 +32,13 @@ static iconv_t char_conv_iconv;
 
 static char *char_conv_to;
 static char *char_conv_from;
-static mpd_sint8 char_conv_same;
-static mpd_sint8 char_conv_use_iconv;
+static int8_t char_conv_same;
+static int8_t char_conv_use_iconv;
 
 /* 1 is to use latin1ToUtf8
    0 is not to use latin1/utf8 converter
   -1 is to use utf8ToLatin1*/
-static mpd_sint8 char_conv_latin1ToUtf8;
+static int8_t char_conv_latin1ToUtf8;
 
 #define BUFFER_SIZE	MPD_PATH_MAX
 

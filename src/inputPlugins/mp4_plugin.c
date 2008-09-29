@@ -104,7 +104,7 @@ static int mp4_decode(struct decoder * mpd_decoder, InputStream * inStream)
 	long seekTableEnd = -1;
 	int seekPositionFound = 0;
 	long offset;
-	mpd_uint16 bitRate = 0;
+	uint16_t bitRate = 0;
 	int seeking = 0;
 	double seek_where = 0;
 	int initialized = 0;
