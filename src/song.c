@@ -40,7 +40,7 @@ Song *newNullSong(void)
 	return song;
 }
 
-Song *newSong(const char *url, int type, Directory * parentDir)
+Song *newSong(const char *url, enum song_type type, Directory * parentDir)
 {
 	Song *song;
 
