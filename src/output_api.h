@@ -27,6 +27,8 @@
 #include "log.h"
 #include "os_compat.h"
 
+#include <stdbool.h>
+
 #define DISABLED_AUDIO_OUTPUT_PLUGIN(plugin) const struct audio_output_plugin plugin;
 
 struct audio_output;
@@ -112,5 +114,10 @@ struct audio_output;
 const char *audio_output_get_name(const struct audio_output *ao);
 
 void audio_output_closed(struct audio_output *ao);
+
+/**
+ * Returns true if there is a command pending.
+ */
+bool audio_output_is_pending(const struct audio_output *ao);
 
 #endif

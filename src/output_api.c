@@ -31,3 +31,7 @@ void audio_output_closed(struct audio_output *ao)
 	ao->open = 0;
 }
 
+bool audio_output_is_pending(const struct audio_output *ao)
+{
+	return ao->command != AO_COMMAND_NONE;
+}
