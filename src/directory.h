@@ -42,8 +42,6 @@ void reap_update_task(void);
 
 int isUpdatingDB(void);
 
-void directory_sigChldHandler(int pid, int status);
-
 /**
  * Starts the tag cache update in the specified location(s).  Returns
  * the job id on success, -1 on error or 0 if an update is already
