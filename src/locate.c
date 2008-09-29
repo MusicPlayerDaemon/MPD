@@ -127,6 +127,7 @@ static int strstrSearchTag(Song * song, enum tag_type type, char *str)
 	int i;
 	char *duplicate;
 	int ret = 0;
+	mpd_sint8 visitedTypes[TAG_NUM_OF_ITEM_TYPES] = { 0 };
 
 	if (type == LOCATE_TAG_FILE_TYPE || type == LOCATE_TAG_ANY_TYPE) {
 		char path_max_tmp[MPD_PATH_MAX];
@@ -142,16 +143,26 @@ static int strstrSearchTag(Song * song, enum tag_type type, char *str)
 		return 0;
 
 	for (i = 0; i < song->tag->numOfItems && !ret; i++) {
+		visitedTypes[song->tag->items[i]->type] = 1;
 		if (type != LOCATE_TAG_ANY_TYPE &&
 		    song->tag->items[i]->type != type) {
 			continue;
 		}
 
 		duplicate = strDupToUpper(song->tag->items[i]->value);
-		if (strstr(duplicate, str))
+		if (*str && strstr(duplicate, str))
 			ret = 1;
 		free(duplicate);
 	}
+
+	/** If the search critieron was not visited during the sweep
+	 * through the song's tag, it means this field is absent from
+	 * the tag or empty. Thus, if the searched string is also
+	 *  empty (first char is a \0), then it's a match as well and
+	 *  we should return 1.
+	 */
+	if (!*str && !visitedTypes[type])
+		return 1;
 
 	return ret;
 }
@@ -173,6 +184,7 @@ int strstrSearchTags(Song * song, int numItems, LocateTagItem * items)
 static int tagItemFoundAndMatches(Song * song, enum tag_type type, char *str)
 {
 	int i;
+	mpd_sint8 visitedTypes[TAG_NUM_OF_ITEM_TYPES] = { 0 };
 
 	if (type == LOCATE_TAG_FILE_TYPE || type == LOCATE_TAG_ANY_TYPE) {
 		char path_max_tmp[MPD_PATH_MAX];
@@ -186,6 +198,7 @@ static int tagItemFoundAndMatches(Song * song, enum tag_type type, char *str)
 		return 0;
 
 	for (i = 0; i < song->tag->numOfItems; i++) {
+		visitedTypes[song->tag->items[i]->type] = 1;
 		if (type != LOCATE_TAG_ANY_TYPE &&
 		    song->tag->items[i]->type != type) {
 			continue;
@@ -194,6 +207,15 @@ static int tagItemFoundAndMatches(Song * song, enum tag_type type, char *str)
 		if (0 == strcmp(str, song->tag->items[i]->value))
 			return 1;
 	}
+
+	/** If the search critieron was not visited during the sweep
+	 * through the song's tag, it means this field is absent from
+	 * the tag or empty. Thus, if the searched string is also
+	 *  empty (first char is a \0), then it's a match as well and
+	 *  we should return 1.
+	 */
+	if (!*str && !visitedTypes[type])
+		return 1;
 
 	return 0;
 }

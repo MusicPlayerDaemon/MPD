@@ -295,8 +295,10 @@ static void visitTag(struct client *client, struct strset *set,
 	for (i = 0; i < tag->numOfItems; i++) {
 		if (tag->items[i]->type == tagType) {
 			strset_add(set, tag->items[i]->value);
+			return;
 		}
 	}
+	strset_add(set, "");
 }
 
 struct list_tags_data {
