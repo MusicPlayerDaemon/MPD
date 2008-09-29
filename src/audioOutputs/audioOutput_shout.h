@@ -59,6 +59,8 @@ struct shout_buffer {
 };
 
 struct shout_data {
+	struct audio_output *audio_output;
+
 	shout_t *shout_conn;
 	shout_metadata_t *shout_meta;
 	int shout_error;

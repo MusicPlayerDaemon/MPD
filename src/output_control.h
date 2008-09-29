@@ -41,6 +41,9 @@ audio_output_signal(struct audio_output *ao);
 
 void audio_output_play(struct audio_output *audioOutput,
 		       const char *playChunk, size_t size);
+
+void audio_output_pause(struct audio_output *audioOutput);
+
 void audio_output_cancel(struct audio_output *audioOutput);
 void audio_output_close(struct audio_output *audioOutput);
 void audio_output_finish(struct audio_output *audioOutput);

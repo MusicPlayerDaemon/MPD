@@ -45,6 +45,8 @@ int openAudioDevice(const struct audio_format *audioFormat);
 
 int playAudio(const char *playChunk, size_t size);
 
+void audio_output_pause_all(void);
+
 void dropBufferedAudio(void);
 
 void closeAudioDevice(void);

@@ -397,6 +397,19 @@ int playAudio(const char *playChunk, size_t size)
 	return 0;
 }
 
+void audio_output_pause_all(void)
+{
+	unsigned int i;
+
+	syncAudioDeviceStates();
+
+	for (i = 0; i < audioOutputArraySize; ++i)
+		if (audio_output_is_open(&audioOutputArray[i]))
+			audio_output_pause(&audioOutputArray[i]);
+
+	audio_output_wait_all();
+}
+
 void dropBufferedAudio(void)
 {
 	unsigned int i;

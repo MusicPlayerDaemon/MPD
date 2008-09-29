@@ -87,7 +87,7 @@ static void free_shout_data(struct shout_data *sd)
 		}							\
 	}
 
-static void *my_shout_init_driver(mpd_unused struct audio_output *audio_output,
+static void *my_shout_init_driver(struct audio_output *audio_output,
 				  const struct audio_format *audio_format,
 				  ConfigParam *param)
 {
@@ -104,6 +104,7 @@ static void *my_shout_init_driver(mpd_unused struct audio_output *audio_output,
 	int public;
 
 	sd = new_shout_data();
+	sd->audio_output = audio_output;
 
 	if (shout_init_count == 0)
 		shout_init();
@@ -516,6 +517,21 @@ static int my_shout_play(void *data,
 	return 0;
 }
 
+static void my_shout_pause(void *data)
+{
+	struct shout_data *sd = (struct shout_data *)data;
+	static const char silence[1020];
+	int ret;
+
+	/* play silence until the player thread sends us a command */
+
+	while (sd->opened && !audio_output_is_pending(sd->audio_output)) {
+		ret = my_shout_play(data, silence, sizeof(silence));
+		if (ret != 0)
+			break;
+	}
+}
+
 static void my_shout_set_tag(void *data,
 			     const struct tag *tag)
 {
@@ -539,6 +555,7 @@ const struct audio_output_plugin shoutPlugin = {
 	.finish = my_shout_finish_driver,
 	.open = my_shout_open_device,
 	.play = my_shout_play,
+	.pause = my_shout_pause,
 	.cancel = my_shout_drop_buffered_audio,
 	.close = my_shout_close_device,
 	.send_tag = my_shout_set_tag,

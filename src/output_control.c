@@ -103,6 +103,11 @@ void audio_output_play(struct audio_output *audioOutput,
 	ao_command_async(audioOutput, AO_COMMAND_PLAY);
 }
 
+void audio_output_pause(struct audio_output *audioOutput)
+{
+	ao_command_async(audioOutput, AO_COMMAND_PAUSE);
+}
+
 void audio_output_cancel(struct audio_output *audioOutput)
 {
 	ao_command_async(audioOutput, AO_COMMAND_CANCEL);

@@ -143,7 +143,7 @@ static void processDecodeInput(int *pause_r, unsigned int *bbp_r,
 			*pause_r = 1;
 		} else if (*pause_r) {
 			dropBufferedAudio();
-			closeAudioDevice();
+			audio_output_pause_all();
 		}
 		break;
 

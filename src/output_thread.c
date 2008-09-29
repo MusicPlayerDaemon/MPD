@@ -63,6 +63,20 @@ static void ao_play(struct audio_output *ao)
 	ao_command_finished(ao);
 }
 
+static void ao_pause(struct audio_output *ao)
+{
+	if (ao->plugin->pause != NULL) {
+		/* pause is supported */
+		ao_command_finished(ao);
+		ao->plugin->pause(ao->data);
+	} else {
+		/* pause is not supported - simply close the device */
+		ao->plugin->close(ao->data);
+		ao->open = 0;
+		ao_command_finished(ao);
+	}
+}
+
 static void *audio_output_task(void *arg)
 {
 	struct audio_output *ao = arg;
@@ -93,6 +107,10 @@ static void *audio_output_task(void *arg)
 
 		case AO_COMMAND_PLAY:
 			ao_play(ao);
+			break;
+
+		case AO_COMMAND_PAUSE:
+			ao_pause(ao);
 			break;
 
 		case AO_COMMAND_CANCEL:

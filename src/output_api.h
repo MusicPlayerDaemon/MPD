@@ -82,6 +82,16 @@ struct audio_output_plugin {
 	int (*play)(void *data, const char *playChunk, size_t size);
 
 	/**
+	 * Pause the device.  If supported, it may perform a special
+	 * action, which keeps the device open, but does not play
+	 * anything.  Output plugins like "shout" might want to play
+	 * silence during pause, so their clients won't be
+	 * disconnected.  Plugins which do not support pausing will
+	 * simply be closed, and have to be reopened when unpaused.
+	 */
+	void (*pause)(void *data);
+
+	/**
 	 * Try to cancel data which may still be in the device's
 	 * buffers.
 	 */
@@ -104,6 +114,7 @@ enum audio_output_command {
 	AO_COMMAND_OPEN,
 	AO_COMMAND_CLOSE,
 	AO_COMMAND_PLAY,
+	AO_COMMAND_PAUSE,
 	AO_COMMAND_CANCEL,
 	AO_COMMAND_SEND_TAG,
 	AO_COMMAND_KILL
