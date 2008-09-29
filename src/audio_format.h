@@ -19,7 +19,7 @@
 #ifndef AUDIO_FORMAT_H
 #define AUDIO_FORMAT_H
 
-#include "mpd_types.h"
+#include <stdint.h>
 
 struct audio_format {
 	uint32_t sampleRate;

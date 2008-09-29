@@ -17,8 +17,6 @@
  */
 
 #include "pcm_utils.h"
-
-#include "mpd_types.h"
 #include "log.h"
 #include "utils.h"
 #include "conf.h"

@@ -69,7 +69,6 @@ mpd_headers = \
 	log.h \
 	ls.h \
 	main_notify.h \
-	mpd_types.h \
 	normalize.h \
 	compress.h \
 	os_compat.h \

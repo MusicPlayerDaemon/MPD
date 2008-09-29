@@ -21,8 +21,8 @@
 
 #include "../config.h"
 
-#include "mpd_types.h"
-#include "os_compat.h"
+#include <stdint.h>
+#include <stddef.h>
 
 #ifdef HAVE_LIBSAMPLERATE
 #include <samplerate.h>

@@ -20,7 +20,6 @@
 #define SONG_H
 
 #include "os_compat.h"
-#include "mpd_types.h"
 
 #define SONG_BEGIN	"songList begin"
 #define SONG_END	"songList end"

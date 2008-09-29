@@ -17,7 +17,6 @@
  */
 
 #include "charConv.h"
-#include "mpd_types.h"
 #include "utf8.h"
 #include "utils.h"
 #include "path.h"

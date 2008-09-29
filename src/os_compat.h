@@ -31,11 +31,9 @@
  * 2) optional features in core (libsamplerate, avahi, ...)
  */
 
-#include "mpd_types.h"
-
-#define _XOPEN_SOURCE 600 /* for posix_fadvise, won't hurt if not available */
 #include <fcntl.h>
 
+#include <stdint.h>
 #include <stdio.h>
 #include <sys/uio.h>
 #include <sys/stat.h>

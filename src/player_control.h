@@ -20,7 +20,6 @@
 #define PLAYER_H
 
 #include "notify.h"
-#include "mpd_types.h"
 #include "song.h"
 #include "os_compat.h"
 

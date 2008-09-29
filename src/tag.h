@@ -19,7 +19,6 @@
 #ifndef TAG_H
 #define TAG_H
 
-#include "mpd_types.h"
 #include "os_compat.h"
 #include "gcc.h"
 

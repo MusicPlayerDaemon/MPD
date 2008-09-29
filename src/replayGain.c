@@ -23,7 +23,6 @@
 #include "log.h"
 #include "conf.h"
 #include "audio_format.h"
-#include "mpd_types.h"
 #include "os_compat.h"
 
 /* Added 4/14/2004 by AliasMrJones */
