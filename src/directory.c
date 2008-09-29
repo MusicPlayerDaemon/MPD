@@ -692,7 +692,7 @@ int printDirectoryInfo(struct client *client, const char *name)
 }
 
 /* TODO error checking */
-static void writeDirectoryInfo(FILE * fp, Directory * directory)
+static int writeDirectoryInfo(FILE * fp, Directory * directory)
 {
 	struct dirvec *children = &directory->children;
 	size_t i;
@@ -700,11 +700,9 @@ static void writeDirectoryInfo(FILE * fp, Directory * directory)
 
 	if (directory->path) {
 		retv = fprintf(fp, "%s%s\n", DIRECTORY_BEGIN,
-			  getDirectoryPath(directory));
-		if (retv < 0) {
-			ERROR("Failed to write data to database file: %s\n",strerror(errno));
-			return;
-		}
+			       getDirectoryPath(directory));
+		if (retv < 0)
+			return -1;
 	}
 
 	for (i = 0; i < children->nr; ++i) {
@@ -712,24 +710,19 @@ static void writeDirectoryInfo(FILE * fp, Directory * directory)
 		const char *base = mpd_basename(cur->path);
 
 		retv = fprintf(fp, DIRECTORY_DIR "%s\n", base);
-		if (retv < 0) {
-			ERROR("Failed to write data to database file: %s\n",
-			      strerror(errno));
-			return;
-		}
-		writeDirectoryInfo(fp, cur);
+		if (retv < 0)
+			return -1;
+		if (writeDirectoryInfo(fp, cur) < 0)
+			return -1;
 	}
 
 	songvec_save(fp, &directory->songs);
 
-	if (directory->path) {
-		retv = fprintf(fp, "%s%s\n", DIRECTORY_END,
-			  getDirectoryPath(directory));
-		if (retv < 0) {
-			ERROR("Failed to write data to database file: %s\n",strerror(errno));
-			return;
-		}
-	}
+	if (directory->path &&
+	    fprintf(fp, DIRECTORY_END "%s\n",
+		    getDirectoryPath(directory)) < 0)
+		return -1;
+	return 0;
 }
 
 static void readDirectoryInfo(FILE * fp, Directory * directory)
@@ -865,7 +858,12 @@ int writeDirectoryDB(void)
 	fprintf(fp, "%s%s\n", DIRECTORY_FS_CHARSET, getFsCharset());
 	fprintf(fp, "%s\n", DIRECTORY_INFO_END);
 
-	writeDirectoryInfo(fp, music_root);
+	if (writeDirectoryInfo(fp, music_root) < 0) {
+		ERROR("Failed to write to database file: %s\n",
+		      strerror(errno));
+		while (fclose(fp) && errno == EINTR);
+		return -1;
+	}
 
 	while (fclose(fp) && errno == EINTR);
 
