@@ -71,6 +71,20 @@ pcm_volume_change_16(int16_t *buffer, unsigned num_samples,
 	}
 }
 
+static void
+pcm_volume_change_24(int32_t *buffer, unsigned num_samples,
+		     unsigned volume)
+{
+	while (num_samples > 0) {
+		int64_t sample = *buffer;
+
+		sample = (sample * volume + pcm_dither() + 500) / 1000;
+
+		*buffer++ = pcm_range(sample, 24);
+		--num_samples;
+	}
+}
+
 void pcm_volumeChange(char *buffer, int bufferSize,
                       const struct audio_format *format,
                       int volume)
@@ -90,6 +104,11 @@ void pcm_volumeChange(char *buffer, int bufferSize,
 
 	case 16:
 		pcm_volume_change_16((int16_t *)buffer, bufferSize / 2,
+				     volume);
+		break;
+
+	case 24:
+		pcm_volume_change_24((int32_t*)buffer, bufferSize / 4,
 				     volume);
 		break;
 
@@ -131,6 +150,22 @@ pcm_add_16(int16_t *buffer1, const int16_t *buffer2,
 	}
 }
 
+static void
+pcm_add_24(int32_t *buffer1, const int32_t *buffer2,
+	   unsigned num_samples, unsigned volume1, unsigned volume2)
+{
+	while (num_samples > 0) {
+		int64_t sample1 = *buffer1;
+		int64_t sample2 = *buffer2++;
+
+		sample1 = ((sample1 * volume1 + sample2 * volume2) +
+			   pcm_dither() + 500) / 1000;
+
+		*buffer1++ = pcm_range(sample1, 24);
+		--num_samples;
+	}
+}
+
 static void pcm_add(char *buffer1, const char *buffer2, size_t size,
                     int vol1, int vol2,
                     const struct audio_format *format)
@@ -144,6 +179,12 @@ static void pcm_add(char *buffer1, const char *buffer2, size_t size,
 	case 16:
 		pcm_add_16((int16_t *)buffer1, (const int16_t *)buffer2,
 			   size / 2, vol1, vol2);
+		break;
+
+	case 24:
+		pcm_add_24((int32_t*)buffer1,
+			   (const int32_t*)buffer2,
+			   size / 4, vol1, vol2);
 		break;
 
 	default:
@@ -385,6 +426,16 @@ pcm_convert_8_to_16(int16_t *out, const int8_t *in,
 	}
 }
 
+static void
+pcm_convert_24_to_16(int16_t *out, const int32_t *in,
+		     unsigned num_samples)
+{
+	while (num_samples > 0) {
+		*out++ = *in++ >> 8;
+		--num_samples;
+	}
+}
+
 static const char *pcm_convertTo16bit(int8_t bits, const char *inBuffer,
 				      size_t inSize, size_t *outSize)
 {
@@ -409,6 +460,19 @@ static const char *pcm_convertTo16bit(int8_t bits, const char *inBuffer,
 	case 16:
 		*outSize = inSize;
 		return inBuffer;
+
+	case 24:
+		num_samples = inSize / 4;
+		*outSize = num_samples * 2;
+		if (*outSize > len) {
+			len = *outSize;
+			buf = xrealloc(buf, len);
+		}
+
+		pcm_convert_24_to_16((int16_t *)buf,
+				     (const int32_t *)inBuffer,
+				     num_samples);
+		return buf;
 	}
 
 	ERROR("only 8 or 16 bits are supported for conversion!\n");
@@ -467,6 +531,9 @@ size_t pcm_sizeOfConvBuffer(const struct audio_format *inFormat, size_t inSize,
 		outSize <<= 1;
 		break;
 	case 16:
+		break;
+	case 24:
+		outSize = (outSize / 4) * 2;
 		break;
 	default:
 		FATAL("only 8 or 16 bits are supported for conversion!\n");
