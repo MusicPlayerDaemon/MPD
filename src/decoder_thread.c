@@ -81,14 +81,14 @@ static void decodeStart(void)
 
 		/* first we try mime types: */
 		while (ret && (plugin = decoder_plugin_from_mime_type(inStream.mime, next++))) {
-			if (!plugin->stream_decode_func)
+			if (plugin->stream_decode == NULL)
 				continue;
 			if (!(plugin->stream_types & INPUT_PLUGIN_STREAM_URL))
 				continue;
-			if (plugin->try_decode_func
-			    && !plugin->try_decode_func(&inStream))
+			if (plugin->try_decode != NULL
+			    && !plugin->try_decode(&inStream))
 				continue;
-			ret = plugin->stream_decode_func(&decoder, &inStream);
+			ret = plugin->stream_decode(&decoder, &inStream);
 			break;
 		}
 
@@ -97,17 +97,17 @@ static void decodeStart(void)
 			const char *s = getSuffix(path_max_utf8);
 			next = 0;
 			while (ret && (plugin = decoder_plugin_from_suffix(s, next++))) {
-				if (!plugin->stream_decode_func)
+				if (plugin->stream_decode == NULL)
 					continue;
 				if (!(plugin->stream_types &
 				      INPUT_PLUGIN_STREAM_URL))
 					continue;
-				if (plugin->try_decode_func &&
-				    !plugin->try_decode_func(&inStream))
+				if (plugin->try_decode != NULL &&
+				    !plugin->try_decode(&inStream))
 					continue;
 				decoder.plugin = plugin;
-				ret = plugin->stream_decode_func(&decoder,
-								 &inStream);
+				ret = plugin->stream_decode(&decoder,
+							    &inStream);
 				break;
 			}
 		}
@@ -119,8 +119,8 @@ static void decodeStart(void)
 			 * need to check for stream{Types,DecodeFunc} */
 			if ((plugin = decoder_plugin_from_name("mp3"))) {
 				decoder.plugin = plugin;
-				ret = plugin->stream_decode_func(&decoder,
-								 &inStream);
+				ret = plugin->stream_decode(&decoder,
+							    &inStream);
 			}
 		}
 	} else {
@@ -130,21 +130,21 @@ static void decodeStart(void)
 			if (!plugin->stream_types & INPUT_PLUGIN_STREAM_FILE)
 				continue;
 
-			if (plugin->try_decode_func &&
-			    !plugin->try_decode_func(&inStream))
+			if (plugin->try_decode != NULL &&
+			    !plugin->try_decode(&inStream))
 				continue;
 
-			if (plugin->file_decode_func) {
+			if (plugin->file_decode != NULL) {
 				closeInputStream(&inStream);
 				close_instream = 0;
 				decoder.plugin = plugin;
-				ret = plugin->file_decode_func(&decoder,
-							       path_max_fs);
+				ret = plugin->file_decode(&decoder,
+							  path_max_fs);
 				break;
-			} else if (plugin->stream_decode_func) {
+			} else if (plugin->stream_decode != NULL) {
 				decoder.plugin = plugin;
-				ret = plugin->stream_decode_func(&decoder,
-								 &inStream);
+				ret = plugin->stream_decode(&decoder,
+							    &inStream);
 				break;
 			}
 		}

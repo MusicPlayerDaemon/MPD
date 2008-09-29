@@ -40,7 +40,7 @@ void decoder_plugin_load(struct decoder_plugin * inputPlugin)
 	if (!inputPlugin->name)
 		return;
 
-	if (inputPlugin->init_func && inputPlugin->init_func() < 0)
+	if (inputPlugin->init != NULL && inputPlugin->init() < 0)
 		return;
 
 	insertInList(inputPlugin_list, inputPlugin->name, (void *)inputPlugin);
@@ -48,8 +48,8 @@ void decoder_plugin_load(struct decoder_plugin * inputPlugin)
 
 void decoder_plugin_unload(struct decoder_plugin * inputPlugin)
 {
-	if (inputPlugin->finish_func)
-		inputPlugin->finish_func();
+	if (inputPlugin->finish != NULL)
+		inputPlugin->finish();
 	deleteFromList(inputPlugin_list, inputPlugin->name);
 }
 

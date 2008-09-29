@@ -49,44 +49,49 @@ enum decoder_command {
 
 struct decoder;
 
-
-/* optional, set this to NULL if the InputPlugin doesn't have/need one
- * this must return < 0 if there is an error and >= 0 otherwise */
-typedef int (*decoder_init_func) (void);
-
-/* optional, set this to NULL if the InputPlugin doesn't have/need one */
-typedef void (*decoder_finish_func) (void);
-
-/* boolean return value, returns 1 if the InputStream is decodable by
- * the InputPlugin, 0 if not */
-typedef unsigned int (*decoder_try_decode_func) (InputStream *);
-
-/* this will be used to decode InputStreams, and is recommended for files
- * and networked (HTTP) connections.
- *
- * returns -1 on error, 0 on success */
-typedef int (*decoder_stream_decode_func) (struct decoder *, InputStream *);
-
-/* use this if and only if your InputPlugin can only be passed a filename or
- * handle as input, and will not allow callbacks to be set (like Ogg-Vorbis
- * and FLAC libraries allow)
- *
- * returns -1 on error, 0 on success */
-typedef int (*decoder_file_decode_func) (struct decoder *, char *path);
-
-/* file should be the full path!  Returns NULL if a tag cannot be found
- * or read */
-typedef struct tag *(*decoder_tag_dup_func) (char *file);
-
 struct decoder_plugin {
 	const char *name;
 
-	decoder_init_func init_func;
-	decoder_finish_func finish_func;
-	decoder_try_decode_func try_decode_func;
-	decoder_stream_decode_func stream_decode_func;
-	decoder_file_decode_func file_decode_func;
-	decoder_tag_dup_func tag_dup_func;
+	/**
+	 * optional, set this to NULL if the InputPlugin doesn't
+	 * have/need one this must return < 0 if there is an error and
+	 * >= 0 otherwise
+	 */
+	int (*init)(void);
+
+	/**
+	 * optional, set this to NULL if the InputPlugin doesn't have/need one
+	 */
+	void (*finish)(void);
+
+	/**
+	 * boolean return value, returns 1 if the InputStream is
+	 * decodable by the InputPlugin, 0 if not
+	 */
+	unsigned int (*try_decode)(InputStream *);
+
+	/**
+	 * this will be used to decode InputStreams, and is
+	 * recommended for files and networked (HTTP) connections.
+	 *
+	 * returns -1 on error, 0 on success
+	 */
+	int (*stream_decode)(struct decoder *, InputStream *);
+
+	/**
+	 * use this if and only if your InputPlugin can only be passed
+	 * a filename or handle as input, and will not allow callbacks
+	 * to be set (like Ogg-Vorbis and FLAC libraries allow)
+	 *
+	 * returns -1 on error, 0 on success
+	 */
+	int (*file_decode)(struct decoder *, char *path);
+
+	/**
+	 * file should be the full path!  Returns NULL if a tag cannot
+	 * be found or read
+	 */
+	struct tag *(*tag_dup)(char *file);
 
 	/* one or more of the INPUT_PLUGIN_STREAM_* values OR'd together */
 	unsigned char stream_types;

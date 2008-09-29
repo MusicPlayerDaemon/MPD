@@ -67,7 +67,7 @@ Song *newSong(const char *url, enum song_type type, Directory * parentDir)
 		while (!song->tag && (plugin = isMusic(abs_path,
 						       &(song->mtime),
 						       next++))) {
-			song->tag = plugin->tag_dup_func(abs_path);
+			song->tag = plugin->tag_dup(abs_path);
 		}
 		if (!song->tag || song->tag->time < 0) {
 			freeSong(song);
@@ -111,7 +111,7 @@ int updateSongInfo(Song * song)
 		while (!song->tag && (plugin = isMusic(abs_path,
 						       &(song->mtime),
 						       next++))) {
-			song->tag = plugin->tag_dup_func(abs_path);
+			song->tag = plugin->tag_dup(abs_path);
 		}
 		if (!song->tag || song->tag->time < 0)
 			return -1;

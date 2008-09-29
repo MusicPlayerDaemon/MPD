@@ -445,9 +445,9 @@ static int flac_plugin_init(void)
 	DEBUG("libFLAC supports OggFLAC, initializing OggFLAC support\n");
 	assert(oggflacPlugin.name == NULL);
 	oggflacPlugin.name = "oggflac";
-	oggflacPlugin.try_decode_func = oggflac_try_decode;
-	oggflacPlugin.stream_decode_func = oggflac_decode;
-	oggflacPlugin.tag_dup_func = oggflac_tag_dup;
+	oggflacPlugin.try_decode = oggflac_try_decode;
+	oggflacPlugin.stream_decode = oggflac_decode;
+	oggflacPlugin.tag_dup = oggflac_tag_dup;
 	oggflacPlugin.stream_types = INPUT_PLUGIN_STREAM_URL |
 	                            INPUT_PLUGIN_STREAM_FILE;
 	oggflacPlugin.suffixes = oggflac_suffixes;
