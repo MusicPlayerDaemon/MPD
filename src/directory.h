@@ -23,11 +23,14 @@
 #include "songvec.h"
 #include "list.h"
 
-typedef List DirectoryList;
+struct dirvec {
+	struct _Directory **base;
+	size_t nr;
+};
 
 typedef struct _Directory {
 	char *path;
-	DirectoryList *subDirectories;
+	struct dirvec children;
 	struct songvec songs;
 	struct _Directory *parent;
 	ino_t inode;

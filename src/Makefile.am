@@ -53,6 +53,7 @@ mpd_headers = \
 	decoder_api.h \
 	decoder_internal.h \
 	directory.h \
+	dirvec.h \
 	gcc.h \
 	decoder_list.h \
 	inputPlugins/_flac_common.h \
