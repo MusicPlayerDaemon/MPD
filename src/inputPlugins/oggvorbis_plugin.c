@@ -382,16 +382,13 @@ static const char *oggvorbis_MimeTypes[] = { "application/ogg",
 					     NULL };
 
 struct decoder_plugin oggvorbisPlugin = {
-	"oggvorbis",
-	NULL,
-	NULL,
-	oggvorbis_try_decode,
-	oggvorbis_decode,
-	NULL,
-	oggvorbis_TagDup,
-	INPUT_PLUGIN_STREAM_URL | INPUT_PLUGIN_STREAM_FILE,
-	oggvorbis_Suffixes,
-	oggvorbis_MimeTypes
+	.name = "oggvorbis",
+	.try_decode = oggvorbis_try_decode,
+	.stream_decode = oggvorbis_decode,
+	.tag_dup = oggvorbis_TagDup,
+	.stream_types = INPUT_PLUGIN_STREAM_URL | INPUT_PLUGIN_STREAM_FILE,
+	.suffixes = oggvorbis_Suffixes,
+	.mime_types = oggvorbis_MimeTypes
 };
 
 #else /* !HAVE_OGGVORBIS */

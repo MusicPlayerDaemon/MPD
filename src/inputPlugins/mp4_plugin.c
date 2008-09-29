@@ -416,16 +416,12 @@ static const char *mp4_suffixes[] = { "m4a", "mp4", NULL };
 static const char *mp4_mimeTypes[] = { "audio/mp4", "audio/m4a", NULL };
 
 struct decoder_plugin mp4Plugin = {
-	"mp4",
-	NULL,
-	NULL,
-	NULL,
-	mp4_decode,
-	NULL,
-	mp4TagDup,
-	INPUT_PLUGIN_STREAM_FILE | INPUT_PLUGIN_STREAM_URL,
-	mp4_suffixes,
-	mp4_mimeTypes
+	.name = "mp4",
+	.stream_decode = mp4_decode,
+	.tag_dup = mp4TagDup,
+	.stream_types = INPUT_PLUGIN_STREAM_FILE | INPUT_PLUGIN_STREAM_URL,
+	.suffixes = mp4_suffixes,
+	.mime_types = mp4_mimeTypes,
 };
 
 #else

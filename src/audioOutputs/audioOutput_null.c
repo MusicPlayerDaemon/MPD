@@ -76,13 +76,10 @@ static void null_dropBufferedAudio(void *data)
 }
 
 const struct audio_output_plugin nullPlugin = {
-	"null",
-	NULL,
-	null_initDriver,
-	NULL,
-	null_openDevice,
-	null_playAudio,
-	null_dropBufferedAudio,
-	null_closeDevice,
-	NULL,
+	.name = "null",
+	.init = null_initDriver,
+	.open = null_openDevice,
+	.play = null_playAudio,
+	.cancel = null_dropBufferedAudio,
+	.close = null_closeDevice,
 };

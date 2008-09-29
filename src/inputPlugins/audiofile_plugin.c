@@ -141,16 +141,11 @@ static struct tag *audiofileTagDup(char *file)
 static const char *audiofileSuffixes[] = { "wav", "au", "aiff", "aif", NULL };
 
 struct decoder_plugin audiofilePlugin = {
-	"audiofile",
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	audiofile_decode,
-	audiofileTagDup,
-	INPUT_PLUGIN_STREAM_FILE,
-	audiofileSuffixes,
-	NULL
+	.name = "audiofile",
+	.file_decode = audiofile_decode,
+	.tag_dup = audiofileTagDup,
+	.stream_types = INPUT_PLUGIN_STREAM_FILE,
+	.suffixes = audiofileSuffixes,
 };
 
 #else

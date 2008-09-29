@@ -567,16 +567,14 @@ static char const *wavpackSuffixes[] = { "wv", NULL };
 static char const *wavpackMimeTypes[] = { "audio/x-wavpack", NULL };
 
 struct decoder_plugin wavpackPlugin = {
-	"wavpack",
-	NULL,
-	NULL,
-	wavpack_trydecode,
-	wavpack_streamdecode,
-	wavpack_filedecode,
-	wavpack_tagdup,
-	INPUT_PLUGIN_STREAM_FILE | INPUT_PLUGIN_STREAM_URL,
-	wavpackSuffixes,
-	wavpackMimeTypes
+	.name = "wavpack",
+	.try_decode = wavpack_trydecode,
+	.stream_decode = wavpack_streamdecode,
+	.file_decode = wavpack_filedecode,
+	.tag_dup = wavpack_tagdup,
+	.stream_types = INPUT_PLUGIN_STREAM_FILE | INPUT_PLUGIN_STREAM_URL,
+	.suffixes = wavpackSuffixes,
+	.mime_types = wavpackMimeTypes
 };
 
 #else /* !HAVE_WAVPACK */

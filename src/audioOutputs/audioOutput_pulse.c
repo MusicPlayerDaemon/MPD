@@ -204,15 +204,14 @@ static int pulse_playAudio(void *data,
 }
 
 const struct audio_output_plugin pulsePlugin = {
-	"pulse",
-	pulse_testDefault,
-	pulse_initDriver,
-	pulse_finishDriver,
-	pulse_openDevice,
-	pulse_playAudio,
-	pulse_dropBufferedAudio,
-	pulse_closeDevice,
-	NULL,	/* sendMetadataFunc */
+	.name = "pulse",
+	.test_default_device = pulse_testDefault,
+	.init = pulse_initDriver,
+	.finish = pulse_finishDriver,
+	.open = pulse_openDevice,
+	.play = pulse_playAudio,
+	.cancel = pulse_dropBufferedAudio,
+	.close = pulse_closeDevice,
 };
 
 #else /* HAVE_PULSE */

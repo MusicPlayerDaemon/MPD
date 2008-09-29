@@ -1122,16 +1122,13 @@ static const char *mp3_suffixes[] = { "mp3", "mp2", NULL };
 static const char *mp3_mimeTypes[] = { "audio/mpeg", NULL };
 
 struct decoder_plugin mp3Plugin = {
-	"mp3",
-	mp3_plugin_init,
-	NULL,
-	NULL,
-	mp3_decode,
-	NULL,
-	mp3_tagDup,
-	INPUT_PLUGIN_STREAM_FILE | INPUT_PLUGIN_STREAM_URL,
-	mp3_suffixes,
-	mp3_mimeTypes
+	.name = "mp3",
+	.init = mp3_plugin_init,
+	.stream_decode = mp3_decode,
+	.tag_dup = mp3_tagDup,
+	.stream_types = INPUT_PLUGIN_STREAM_FILE | INPUT_PLUGIN_STREAM_URL,
+	.suffixes = mp3_suffixes,
+	.mime_types = mp3_mimeTypes
 };
 #else
 

@@ -257,15 +257,14 @@ static int mvp_playAudio(struct audio_output *audioOutput,
 }
 
 const struct audio_output_plugin mvpPlugin = {
-	"mvp",
-	mvp_testDefault,
-	mvp_initDriver,
-	mvp_finishDriver,
-	mvp_openDevice,
-	mvp_playAudio,
-	mvp_dropBufferedAudio,
-	mvp_closeDevice,
-	NULL,	/* sendMetadataFunc */
+	.name = "mvp",
+	.test_default_device = mvp_testDefault,
+	.init = mvp_initDriver,
+	.finish = mvp_finishDriver,
+	.open = mvp_openDevice,
+	.play = mvp_playAudio,
+	.cancel = mvp_dropBufferedAudio,
+	.close = mvp_closeDevice,
 };
 
 #else /* HAVE_MVP */

@@ -406,15 +406,14 @@ static int alsa_playAudio(void *data, const char *playChunk, size_t size)
 }
 
 const struct audio_output_plugin alsaPlugin = {
-	"alsa",
-	alsa_testDefault,
-	alsa_initDriver,
-	alsa_finishDriver,
-	alsa_openDevice,
-	alsa_playAudio,
-	alsa_dropBufferedAudio,
-	alsa_closeDevice,
-	NULL,	/* sendMetadataFunc */
+	.name = "alsa",
+	.test_default_device = alsa_testDefault,
+	.init = alsa_initDriver,
+	.finish = alsa_finishDriver,
+	.open = alsa_openDevice,
+	.play = alsa_playAudio,
+	.cancel = alsa_dropBufferedAudio,
+	.close = alsa_closeDevice,
 };
 
 #else /* HAVE ALSA */

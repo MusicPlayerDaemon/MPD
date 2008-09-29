@@ -353,15 +353,14 @@ static int osx_play(struct audio_output *audioOutput,
 }
 
 const struct audio_output_plugin osxPlugin = {
-	"osx",
-	osx_testDefault,
-	osx_initDriver,
-	osx_finishDriver,
-	osx_openDevice,
-	osx_play,
-	osx_dropBufferedAudio,
-	osx_closeDevice,
-	NULL,	/* sendMetadataFunc */
+	.name = "osx",
+	.test_default_device = osx_testDefault,
+	.init = osx_initDriver,
+	.finish = osx_finishDriver,
+	.open = osx_openDevice,
+	.play = osx_play,
+	.cancel = osx_dropBufferedAudio,
+	.close = osx_closeDevice,
 };
 
 #else

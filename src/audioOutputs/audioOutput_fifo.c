@@ -270,15 +270,13 @@ static int fifo_playAudio(void *data,
 }
 
 const struct audio_output_plugin fifoPlugin = {
-	"fifo",
-	NULL, /* testDefaultDeviceFunc */
-	fifo_initDriver,
-	fifo_finishDriver,
-	fifo_openDevice,
-	fifo_playAudio,
-	fifo_dropBufferedAudio,
-	fifo_closeDevice,
-	NULL, /* sendMetadataFunc */
+	.name = "fifo",
+	.init = fifo_initDriver,
+	.finish = fifo_finishDriver,
+	.open = fifo_openDevice,
+	.play = fifo_playAudio,
+	.cancel = fifo_dropBufferedAudio,
+	.close = fifo_closeDevice,
 };
 
 #else /* HAVE_FIFO */

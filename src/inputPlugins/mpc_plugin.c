@@ -303,16 +303,11 @@ static struct tag *mpcTagDup(char *file)
 static const char *mpcSuffixes[] = { "mpc", NULL };
 
 struct decoder_plugin mpcPlugin = {
-	"mpc",
-	NULL,
-	NULL,
-	NULL,
-	mpc_decode,
-	NULL,
-	mpcTagDup,
-	INPUT_PLUGIN_STREAM_URL | INPUT_PLUGIN_STREAM_FILE,
-	mpcSuffixes,
-	NULL
+	.name = "mpc",
+	.stream_decode = mpc_decode,
+	.tag_dup = mpcTagDup,
+	.stream_types = INPUT_PLUGIN_STREAM_URL | INPUT_PLUGIN_STREAM_FILE,
+	.suffixes = mpcSuffixes,
 };
 
 #else

@@ -272,16 +272,12 @@ static const char *modSuffixes[] = { "amf",
 };
 
 struct decoder_plugin modPlugin = {
-	"mod",
-	NULL,
-	mod_finishMikMod,
-	NULL,
-	NULL,
-	mod_decode,
-	modTagDup,
-	INPUT_PLUGIN_STREAM_FILE,
-	modSuffixes,
-	NULL
+	.name = "mod",
+	.finish = mod_finishMikMod,
+	.file_decode = mod_decode,
+	.tag_dup = modTagDup,
+	.stream_types = INPUT_PLUGIN_STREAM_FILE,
+	.suffixes = modSuffixes,
 };
 
 #else

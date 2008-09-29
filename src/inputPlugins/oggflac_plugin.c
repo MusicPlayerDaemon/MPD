@@ -348,16 +348,13 @@ static const char *oggflac_mime_types[] = { "audio/x-flac+ogg",
 					    NULL };
 
 struct decoder_plugin oggflacPlugin = {
-	"oggflac",
-	NULL,
-	NULL,
-	oggflac_try_decode,
-	oggflac_decode,
-	NULL,
-	oggflac_TagDup,
-	INPUT_PLUGIN_STREAM_URL | INPUT_PLUGIN_STREAM_FILE,
-	oggflac_Suffixes,
-	oggflac_mime_types
+	.name = "oggflac",
+	.try_decode = oggflac_try_decode,
+	.stream_decode = oggflac_decode,
+	.tag_dup = oggflac_TagDup,
+	.stream_types = INPUT_PLUGIN_STREAM_URL | INPUT_PLUGIN_STREAM_FILE,
+	.suffixes = oggflac_Suffixes,
+	.mime_types = oggflac_mime_types
 };
 
 #else /* !HAVE_FLAC */

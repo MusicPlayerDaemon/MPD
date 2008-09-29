@@ -534,15 +534,14 @@ static void my_shout_set_tag(void *data,
 }
 
 const struct audio_output_plugin shoutPlugin = {
-	"shout",
-	NULL,
-	my_shout_init_driver,
-	my_shout_finish_driver,
-	my_shout_open_device,
-	my_shout_play,
-	my_shout_drop_buffered_audio,
-	my_shout_close_device,
-	my_shout_set_tag,
+	.name = "shout",
+	.init = my_shout_init_driver,
+	.finish = my_shout_finish_driver,
+	.open = my_shout_open_device,
+	.play = my_shout_play,
+	.cancel = my_shout_drop_buffered_audio,
+	.close = my_shout_close_device,
+	.send_tag = my_shout_set_tag,
 };
 
 #else

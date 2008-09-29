@@ -238,15 +238,13 @@ static int audioOutputAo_play(void *data, const char *playChunk, size_t size)
 }
 
 const struct audio_output_plugin aoPlugin = {
-	"ao",
-	NULL,
-	audioOutputAo_initDriver,
-	audioOutputAo_finishDriver,
-	audioOutputAo_openDevice,
-	audioOutputAo_play,
-	audioOutputAo_dropBufferedAudio,
-	audioOutputAo_closeDevice,
-	NULL,	/* sendMetadataFunc */
+	.name = "ao",
+	.init = audioOutputAo_initDriver,
+	.finish = audioOutputAo_finishDriver,
+	.open = audioOutputAo_openDevice,
+	.play = audioOutputAo_play,
+	.cancel = audioOutputAo_dropBufferedAudio,
+	.close = audioOutputAo_closeDevice,
 };
 
 #else

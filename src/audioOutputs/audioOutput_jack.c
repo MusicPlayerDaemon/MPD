@@ -435,15 +435,14 @@ static int jack_playAudio(void *data,
 }
 
 const struct audio_output_plugin jackPlugin = {
-	"jack",
-	jack_testDefault,
-	jack_initDriver,
-	jack_finishDriver,
-	jack_openDevice,
-	jack_playAudio,
-	jack_dropBufferedAudio,
-	jack_closeDevice,
-	NULL,	/* sendMetadataFunc */
+	.name = "jack",
+	.test_default_device = jack_testDefault,
+	.init = jack_initDriver,
+	.finish = jack_finishDriver,
+	.open = jack_openDevice,
+	.play = jack_playAudio,
+	.cancel = jack_dropBufferedAudio,
+	.close = jack_closeDevice,
 };
 
 #else /* HAVE JACK */

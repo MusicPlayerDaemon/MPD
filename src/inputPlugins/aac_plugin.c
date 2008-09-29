@@ -593,16 +593,13 @@ static const char *aac_suffixes[] = { "aac", NULL };
 static const char *aac_mimeTypes[] = { "audio/aac", "audio/aacp", NULL };
 
 struct decoder_plugin aacPlugin = {
-	"aac",
-	NULL,
-	NULL,
-	NULL,
-	aac_stream_decode,
-	aac_decode,
-	aacTagDup,
-	INPUT_PLUGIN_STREAM_FILE | INPUT_PLUGIN_STREAM_URL,
-	aac_suffixes,
-	aac_mimeTypes
+	.name = "aac",
+	.stream_decode = aac_stream_decode,
+	.file_decode = aac_decode,
+	.tag_dup = aacTagDup,
+	.stream_types = INPUT_PLUGIN_STREAM_FILE | INPUT_PLUGIN_STREAM_URL,
+	.suffixes = aac_suffixes,
+	.mime_types = aac_mimeTypes
 };
 
 #else

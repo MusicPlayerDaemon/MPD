@@ -464,16 +464,13 @@ static const char *flac_mime_types[] = { "audio/x-flac",
 					 NULL };
 
 struct decoder_plugin flacPlugin = {
-	"flac",
-	flac_plugin_init,
-	NULL,
-	NULL,
-	flac_decode,
-	NULL,
-	flacTagDup,
-	INPUT_PLUGIN_STREAM_URL | INPUT_PLUGIN_STREAM_FILE,
-	flacSuffixes,
-	flac_mime_types
+	.name = "flac",
+	.init = flac_plugin_init,
+	.stream_decode = flac_decode,
+	.tag_dup = flacTagDup,
+	.stream_types = INPUT_PLUGIN_STREAM_URL | INPUT_PLUGIN_STREAM_FILE,
+	.suffixes = flacSuffixes,
+	.mime_types = flac_mime_types
 };
 
 #else /* !HAVE_FLAC */

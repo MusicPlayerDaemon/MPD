@@ -544,15 +544,14 @@ static int oss_playAudio(void *data,
 }
 
 const struct audio_output_plugin ossPlugin = {
-	"oss",
-	oss_testDefault,
-	oss_initDriver,
-	oss_finishDriver,
-	oss_openDevice,
-	oss_playAudio,
-	oss_dropBufferedAudio,
-	oss_closeDevice,
-	NULL,	/* sendMetadataFunc */
+	.name = "oss",
+	.test_default_device = oss_testDefault,
+	.init = oss_initDriver,
+	.finish = oss_finishDriver,
+	.open = oss_openDevice,
+	.play = oss_playAudio,
+	.cancel = oss_dropBufferedAudio,
+	.close = oss_closeDevice,
 };
 
 #else /* HAVE OSS */
