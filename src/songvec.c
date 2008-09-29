@@ -58,7 +58,7 @@ void songvec_add(struct songvec *sv, Song *add)
 	sv->base[sv->nr - 1] = add;
 }
 
-void songvec_free(struct songvec *sv)
+void songvec_destroy(struct songvec *sv)
 {
 	if (sv->base) {
 		free(sv->base);

@@ -220,7 +220,7 @@ static Directory *newDirectory(const char *dirname, Directory * parent)
 static void freeDirectory(Directory * directory)
 {
 	freeDirectoryList(directory->subDirectories);
-	songvec_free(&directory->songs);
+	songvec_destroy(&directory->songs);
 	if (directory->path)
 		free(directory->path);
 	free(directory);
