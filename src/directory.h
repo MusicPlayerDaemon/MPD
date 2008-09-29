@@ -49,9 +49,9 @@ int isUpdatingDB(void);
  */
 int updateInit(List * pathList);
 
-void initMp3Directory(void);
+void directory_init(void);
 
-void closeMp3Directory(void);
+void directory_finish(void);
 
 int isRootDirectory(const char *name);
 
