@@ -153,7 +153,7 @@ static int shout_mp3_encoder_encode(struct shout_data *sd,
 
 	for (i = 0; i < samples; i++) {
 		for (j = 0; j < sd->audio_format.channels; j++) {
-			lamebuf[j][i] = *((const mpd_sint16 *) chunk);
+			lamebuf[j][i] = *((const int16_t *) chunk);
 			chunk += bytes;
 		}
 	}

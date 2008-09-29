@@ -267,7 +267,7 @@ static int shout_ogg_encoder_encode(struct shout_data *sd,
 
 	for (i = 0; i < samples; i++) {
 		for (j = 0; j < sd->audio_format.channels; j++) {
-			vorbbuf[j][i] = (*((const mpd_sint16 *) chunk)) / 32768.0;
+			vorbbuf[j][i] = (*((const int16_t *) chunk)) / 32768.0;
 			chunk += bytes;
 		}
 	}

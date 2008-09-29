@@ -39,7 +39,7 @@ enum playlist_result {
 typedef struct _Playlist {
 	Song **songs;
 	/* holds version a song was modified on */
-	mpd_uint32 *songMod;
+	uint32_t *songMod;
 	int *order;
 	int *positionToId;
 	int *idToPosition;
@@ -48,7 +48,7 @@ typedef struct _Playlist {
 	int queued;
 	int repeat;
 	int random;
-	mpd_uint32 version;
+	uint32_t version;
 } Playlist;
 
 extern int playlist_saveAbsolutePaths;
@@ -137,9 +137,9 @@ enum playlist_result seekSongInPlaylistById(int id, float seek_time);
 
 void playlistVersionChange(void);
 
-int playlistChanges(struct client *client, mpd_uint32 version);
+int playlistChanges(struct client *client, uint32_t version);
 
-int playlistChangesPosId(struct client *client, mpd_uint32 version);
+int playlistChangesPosId(struct client *client, uint32_t version);
 
 int PlaylistInfo(struct client *client, const char *utf8file, int detail);
 

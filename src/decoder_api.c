@@ -152,7 +152,7 @@ need_chunks(struct decoder *decoder, InputStream * inStream, int seekable)
 enum decoder_command
 decoder_data(struct decoder *decoder, InputStream * inStream, int seekable,
 	     void *dataIn, size_t dataInLen,
-	     float data_time, mpd_uint16 bitRate,
+	     float data_time, uint16_t bitRate,
 	     ReplayGainInfo * replayGainInfo)
 {
 	size_t nbytes;

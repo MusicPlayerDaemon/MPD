@@ -153,7 +153,7 @@ ob_chunk * ob_get_chunk(const unsigned i)
  * @return the chunk which has room for more data; NULL if there is no
  * room.
  */
-static ob_chunk *tail_chunk(float data_time, mpd_uint16 bitRate)
+static ob_chunk *tail_chunk(float data_time, uint16_t bitRate)
 {
 	unsigned int next;
 	ob_chunk *chunk;
@@ -184,7 +184,7 @@ static ob_chunk *tail_chunk(float data_time, mpd_uint16 bitRate)
 }
 
 size_t ob_append(const void *data0, size_t datalen,
-		 float data_time, mpd_uint16 bitRate)
+		 float data_time, uint16_t bitRate)
 {
 	const unsigned char *data = data0;
 	size_t ret = 0, dataToSend;

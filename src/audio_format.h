@@ -22,9 +22,9 @@
 #include "mpd_types.h"
 
 struct audio_format {
-	mpd_uint32 sampleRate;
-	mpd_sint8 bits;
-	mpd_sint8 channels;
+	uint32_t sampleRate;
+	int8_t bits;
+	int8_t channels;
 };
 
 static inline void audio_format_clear(struct audio_format *af)

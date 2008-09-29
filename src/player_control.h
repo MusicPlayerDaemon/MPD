@@ -85,21 +85,21 @@ struct player_control {
 	Notify notify;
 	volatile enum player_command command;
 	volatile enum player_state state;
-	volatile mpd_sint8 error;
-	volatile mpd_uint16 bitRate;
-	volatile mpd_sint8 bits;
-	volatile mpd_sint8 channels;
-	volatile mpd_uint32 sampleRate;
+	volatile int8_t error;
+	volatile uint16_t bitRate;
+	volatile int8_t bits;
+	volatile int8_t channels;
+	volatile uint32_t sampleRate;
 	volatile float totalTime;
 	volatile float elapsedTime;
 	volatile float fileTime;
 	Song *volatile next_song;
 	Song *errored_song;
 	volatile enum player_queue_state queueState;
-	volatile mpd_sint8 queueLockState;
+	volatile int8_t queueLockState;
 	volatile double seekWhere;
 	volatile float crossFade;
-	volatile mpd_uint16 softwareVolume;
+	volatile uint16_t softwareVolume;
 	volatile double totalPlayTime;
 };
 

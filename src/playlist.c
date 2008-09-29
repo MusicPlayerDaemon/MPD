@@ -73,7 +73,7 @@ static void randomizeOrder(int start, int end);
 
 static void incrPlaylistVersion(void)
 {
-	static unsigned long max = ((mpd_uint32) 1 << 31) - 1;
+	static unsigned long max = ((uint32_t) 1 << 31) - 1;
 	playlist.version++;
 	if (playlist.version >= max) {
 		int i;
@@ -141,7 +141,7 @@ void initPlaylist(void)
 		                         DEFAULT_PLAYLIST_SAVE_ABSOLUTE_PATHS;
 
 	playlist.songs = xmalloc(sizeof(Song *) * playlist_max_length);
-	playlist.songMod = xmalloc(sizeof(mpd_uint32) * playlist_max_length);
+	playlist.songMod = xmalloc(sizeof(uint32_t) * playlist_max_length);
 	playlist.order = xmalloc(sizeof(int) * playlist_max_length);
 	playlist.idToPosition = xmalloc(sizeof(int) * playlist_max_length *
 				       PLAYLIST_HASH_MULT);
@@ -369,7 +369,7 @@ static void printPlaylistSongInfo(struct client *client, int song)
 	client_printf(client, "Pos: %i\nId: %i\n", song, playlist.positionToId[song]);
 }
 
-int playlistChanges(struct client *client, mpd_uint32 version)
+int playlistChanges(struct client *client, uint32_t version)
 {
 	int i;
 
@@ -384,7 +384,7 @@ int playlistChanges(struct client *client, mpd_uint32 version)
 	return 0;
 }
 
-int playlistChangesPosId(struct client *client, mpd_uint32 version)
+int playlistChangesPosId(struct client *client, uint32_t version)
 {
 	int i;
 

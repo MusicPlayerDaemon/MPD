@@ -26,8 +26,8 @@
 #define CHUNK_SIZE		1020
 
 typedef struct _OutputBufferChunk {
-	mpd_uint16 chunkSize;
-	mpd_uint16 bitRate;
+	uint16_t chunkSize;
+	uint16_t bitRate;
 	float times;
 	char data[CHUNK_SIZE];
 } ob_chunk;
@@ -102,9 +102,8 @@ ob_chunk * ob_get_chunk(const unsigned i);
  * @return the number of bytes actually written
  */
 size_t ob_append(const void *data, size_t datalen,
-		 float data_time, mpd_uint16 bitRate);
+		 float data_time, uint16_t bitRate);
 
 void ob_skip(unsigned num);
 
 #endif
-

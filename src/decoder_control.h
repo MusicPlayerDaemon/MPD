@@ -44,9 +44,9 @@ struct decoder_control {
 
 	volatile enum decoder_state state;
 	volatile enum decoder_command command;
-	volatile mpd_uint16 error;
-	volatile mpd_sint8 seekError;
-	volatile mpd_sint8 seekable;
+	volatile uint16_t error;
+	volatile int8_t seekError;
+	volatile int8_t seekable;
 	volatile double seekWhere;
 	struct audio_format audioFormat;
 	Song *current_song;

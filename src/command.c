@@ -197,7 +197,7 @@ mpd_fprintf_ void command_error(struct client *client, int error,
 	va_end(args);
 }
 
-static int mpd_fprintf__ check_uint32(struct client *client, mpd_uint32 *dst,
+static int mpd_fprintf__ check_uint32(struct client *client, uint32_t *dst,
                                       const char *s, const char *fmt, ...)
 {
 	char *test;
@@ -627,7 +627,7 @@ static int handleRename(struct client *client,
 static int handlePlaylistChanges(struct client *client,
 				 mpd_unused int argc, char *argv[])
 {
-	mpd_uint32 version;
+	uint32_t version;
 
 	if (check_uint32(client, &version, argv[1], need_positive) < 0)
 		return -1;
@@ -637,7 +637,7 @@ static int handlePlaylistChanges(struct client *client,
 static int handlePlaylistChangesPosId(struct client *client,
 				      mpd_unused int argc, char *argv[])
 {
-	mpd_uint32 version;
+	uint32_t version;
 
 	if (check_uint32(client, &version, argv[1], need_positive) < 0)
 		return -1;
