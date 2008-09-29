@@ -40,8 +40,10 @@ struct ogg_vorbis_data {
 static void add_tag(struct ogg_vorbis_data *od, const char *name, char *value)
 {
 	if (value) {
-		union const_hack u;
-		u.in = name;
+		union {
+			const char *in;
+			char *out;
+		} u = { .in = name };
 		vorbis_comment_add_tag(&od->vc, u.out, value);
 	}
 }

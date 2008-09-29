@@ -65,9 +65,4 @@ typedef signed long int32_t;
 
 #endif /* !HAVE_STDINT_H && !HAVE_INTTYPES_H */
 
-union const_hack {
-	const char *in;
-	char *out;
-};
-
 #endif
