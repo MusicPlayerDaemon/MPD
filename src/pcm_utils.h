@@ -47,8 +47,8 @@ typedef struct _ConvState {
 void pcm_volumeChange(char *buffer, int bufferSize, const struct audio_format *format,
                       int volume);
 
-void pcm_mix(char *buffer1, const char *buffer2, size_t bufferSize1,
-             size_t bufferSize2, const struct audio_format *format, float portion1);
+void pcm_mix(char *buffer1, const char *buffer2, size_t size,
+             const struct audio_format *format, float portion1);
 
 size_t pcm_convertAudioFormat(const struct audio_format *inFormat,
 			      const char *inBuffer, size_t inSize,

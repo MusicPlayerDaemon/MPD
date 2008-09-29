@@ -49,14 +49,28 @@ void cross_fade_apply(ob_chunk * a, const ob_chunk * b,
 		      const struct audio_format *format,
 		      unsigned int current_chunk, unsigned int num_chunks)
 {
+	size_t size;
+
 	assert(current_chunk <= num_chunks);
+
+	size = b->chunkSize > a->chunkSize
+		? a->chunkSize
+		: b->chunkSize;
 
 	pcm_mix(a->data,
 		b->data,
-		a->chunkSize,
-		b->chunkSize,
+		size,
 		format,
 		((float)current_chunk) / num_chunks);
-	if (b->chunkSize > a->chunkSize)
+
+	if (b->chunkSize > a->chunkSize) {
+		/* the second buffer is larger than the first one:
+		   there is unmixed rest at the end.  Copy it over.
+		   The output buffer API guarantees that there is
+		   enough room in a->data. */
+		memcpy(a->data + a->chunkSize,
+		       b->data + a->chunkSize,
+		       b->chunkSize - a->chunkSize);
 		a->chunkSize = b->chunkSize;
+	}
 }

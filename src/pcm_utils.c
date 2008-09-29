@@ -90,8 +90,8 @@ void pcm_volumeChange(char *buffer, int bufferSize,
 	}
 }
 
-static void pcm_add(char *buffer1, const char *buffer2, size_t bufferSize1,
-                    size_t bufferSize2, int vol1, int vol2,
+static void pcm_add(char *buffer1, const char *buffer2, size_t size,
+                    int vol1, int vol2,
                     const struct audio_format *format)
 {
 	int32_t temp32;
@@ -102,7 +102,7 @@ static void pcm_add(char *buffer1, const char *buffer2, size_t bufferSize1,
 
 	switch (format->bits) {
 	case 16:
-		while (bufferSize1 > 0 && bufferSize2 > 0) {
+		while (size > 0) {
 			temp32 =
 			    (vol1 * (*buffer16_1) +
 			     vol2 * (*buffer16_2));
@@ -112,14 +112,11 @@ static void pcm_add(char *buffer1, const char *buffer2, size_t bufferSize1,
 			*buffer16_1 = pcm_range(temp32, 16);
 			buffer16_1++;
 			buffer16_2++;
-			bufferSize1 -= 2;
-			bufferSize2 -= 2;
+			size -= 2;
 		}
-		if (bufferSize2 > 0)
-			memcpy(buffer16_1, buffer16_2, bufferSize2);
 		break;
 	case 8:
-		while (bufferSize1 > 0 && bufferSize2 > 0) {
+		while (size > 0) {
 			temp32 =
 			    (vol1 * (*buffer8_1) + vol2 * (*buffer8_2));
 			temp32 += pcm_dither();
@@ -128,20 +125,16 @@ static void pcm_add(char *buffer1, const char *buffer2, size_t bufferSize1,
 			*buffer8_1 = pcm_range(temp32, 8);
 			buffer8_1++;
 			buffer8_2++;
-			bufferSize1--;
-			bufferSize2--;
+			size--;
 		}
-		if (bufferSize2 > 0)
-			memcpy(buffer8_1, buffer8_2, bufferSize2);
 		break;
 	default:
 		FATAL("%i bits not supported by pcm_add!\n", format->bits);
 	}
 }
 
-void pcm_mix(char *buffer1, const char *buffer2, size_t bufferSize1,
-             size_t bufferSize2, const struct audio_format *format,
-             float portion1)
+void pcm_mix(char *buffer1, const char *buffer2, size_t size,
+             const struct audio_format *format, float portion1)
 {
 	int vol1;
 	float s = sin(M_PI_2 * portion1);
@@ -150,8 +143,7 @@ void pcm_mix(char *buffer1, const char *buffer2, size_t bufferSize1,
 	vol1 = s * 1000 + 0.5;
 	vol1 = vol1 > 1000 ? 1000 : (vol1 < 0 ? 0 : vol1);
 
-	pcm_add(buffer1, buffer2, bufferSize1, bufferSize2, vol1, 1000 - vol1,
-		format);
+	pcm_add(buffer1, buffer2, size, vol1, 1000 - vol1, format);
 }
 
 #ifdef HAVE_LIBSAMPLERATE
