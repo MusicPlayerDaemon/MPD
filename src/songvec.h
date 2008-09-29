@@ -13,7 +13,7 @@ void songvec_sort(struct songvec *sv);
 
 Song *songvec_find(struct songvec *sv, const char *url);
 
-int songvec_delete(struct songvec *sv, Song *del);
+int songvec_delete(struct songvec *sv, const Song *del);
 
 void songvec_add(struct songvec *sv, Song *add);
 

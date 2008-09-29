@@ -29,7 +29,7 @@ Song *songvec_find(struct songvec *sv, const char *url)
 	return NULL;
 }
 
-int songvec_delete(struct songvec *sv, Song *del)
+int songvec_delete(struct songvec *sv, const Song *del)
 {
 	int i;
 
