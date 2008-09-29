@@ -101,7 +101,7 @@ enum playlist_result savePlaylist(const char *utf8file);
 
 enum playlist_result deletePlaylist(const char *utf8file);
 
-void deleteASongFromPlaylist(Song * song);
+void deleteASongFromPlaylist(const Song * song);
 
 enum playlist_result moveSongInPlaylist(int from, int to);
 
