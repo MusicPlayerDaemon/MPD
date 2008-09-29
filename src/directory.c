@@ -625,10 +625,7 @@ void directory_finish(void)
 
 int isRootDirectory(const char *name)
 {
-	if (name == NULL || name[0] == '\0' || strcmp(name, "/") == 0) {
-		return 1;
-	}
-	return 0;
+	return (!name || name[0] == '\0' || !strcmp(name, "/"));
 }
 
 static Directory *getSubDirectory(Directory * directory, const char *name)
