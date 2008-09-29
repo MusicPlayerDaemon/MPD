@@ -33,7 +33,7 @@
 #include "dirvec.h"
 
 #define DIRECTORY_DIR		"directory: "
-#define DIRECTORY_MTIME		"mtime: "
+#define DIRECTORY_MTIME		"mtime: " /* DEPRECATED, noop-read-only */
 #define DIRECTORY_BEGIN		"begin: "
 #define DIRECTORY_END		"end: "
 #define DIRECTORY_INFO_BEGIN	"info_begin"
