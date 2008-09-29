@@ -40,10 +40,6 @@
 #define DIRECTORY_MPD_VERSION	"mpd_version: "
 #define DIRECTORY_FS_CHARSET	"fs_charset: "
 
-#define DIRECTORY_UPDATE_EXIT_NOUPDATE  0
-#define DIRECTORY_UPDATE_EXIT_UPDATE    1
-#define DIRECTORY_UPDATE_EXIT_ERROR     2
-
 enum update_return {
 	UPDATE_RETURN_ERROR = -1,
 	UPDATE_RETURN_NOUPDATE = 0,
