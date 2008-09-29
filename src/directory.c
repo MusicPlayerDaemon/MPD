@@ -123,9 +123,14 @@ int isUpdatingDB(void)
 
 void reap_update_task(void)
 {
+	enum update_return ret;
+
 	if (progress != UPDATE_PROGRESS_DONE)
 		return;
-	pthread_join(update_thr, NULL);
+	if (pthread_join(update_thr, (void **)&ret))
+		FATAL("error joining update thread: %s\n", strerror(errno));
+	if (ret == UPDATE_RETURN_UPDATED)
+		playlistVersionChange();
 	progress = UPDATE_PROGRESS_IDLE;
 }
 
