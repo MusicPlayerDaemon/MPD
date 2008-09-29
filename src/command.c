@@ -1422,16 +1422,19 @@ static CommandEntry *getCommandEntryAndCheckArgcAndPermission(struct client *cli
 
 static CommandEntry *getCommandEntryFromString(char *string, int permission)
 {
-	CommandEntry *cmd;
+	CommandEntry *cmd = NULL;
 	char *argv[COMMAND_ARGV_MAX] = { NULL };
-	int argc = buffer2array(string, argv, COMMAND_ARGV_MAX);
+	char *duplicated = xstrdup(string);
+	int argc = buffer2array(duplicated, argv, COMMAND_ARGV_MAX);
 
 	if (0 == argc)
-		return NULL;
+		goto out;
 
 	cmd = getCommandEntryAndCheckArgcAndPermission(0, permission,
 						       argc, argv);
 
+out:
+	free(duplicated);
 	return cmd;
 }
 
