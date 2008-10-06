@@ -70,7 +70,7 @@ Song *newSong(const char *url, enum song_type type, Directory * parentDir)
 			song->tag = plugin->tag_dup(abs_path);
 		}
 		if (!song->tag || song->tag->time < 0) {
-			freeSong(song);
+			freeJustSong(song);
 			song = NULL;
 		}
 	}
