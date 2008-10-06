@@ -21,6 +21,10 @@
 #ifndef MAIN_NOTIFY_H
 #define MAIN_NOTIFY_H
 
+#include <pthread.h>
+
+extern pthread_t main_task;
+
 void init_main_notify(void);
 
 void deinit_main_notify(void);

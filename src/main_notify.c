@@ -27,7 +27,7 @@
 
 static struct ioOps main_notify_IO;
 static int main_pipe[2];
-static pthread_t main_task;
+pthread_t main_task;
 static Notify main_notify;
 static pthread_mutex_t select_mutex = PTHREAD_MUTEX_INITIALIZER;
 
@@ -60,6 +60,7 @@ static int ioops_consume(int fd_count, fd_set * rfds,
 
 void init_main_notify(void)
 {
+	main_task = pthread_self();
 	init_async_pipe(main_pipe);
 	main_notify_IO.fdset = ioops_fdset;
 	main_notify_IO.consume = ioops_consume;
