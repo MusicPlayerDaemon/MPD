@@ -174,7 +174,7 @@ void finishPlaylist(void)
 {
 	int i;
 	for (i = 0; i < playlist.length; i++) {
-		if (playlist.songs[i]->type == SONG_TYPE_URL) {
+		if (!song_is_file(playlist.songs[i])) {
 			freeJustSong(playlist.songs[i]);
 		}
 	}
@@ -200,7 +200,7 @@ void clearPlaylist(void)
 	stopPlaylist();
 
 	for (i = 0; i < playlist.length; i++) {
-		if (playlist.songs[i]->type == SONG_TYPE_URL) {
+		if (!song_is_file(playlist.songs[i])) {
 			freeJustSong(playlist.songs[i]);
 		}
 		playlist.idToPosition[playlist.positionToId[i]] = -1;
@@ -560,7 +560,7 @@ enum playlist_result addToPlaylist(const char *url, int *added_id)
 
 	if ((song = getSongFromDB(url))) {
 	} else if (!(isValidRemoteUtf8Url(url) &&
-		     (song = newSong(url, SONG_TYPE_URL, NULL)))) {
+		     (song = newSong(url, NULL)))) {
 		return PLAYLIST_RESULT_NO_SUCH_SONG;
 	}
 
@@ -580,7 +580,7 @@ int addToStoredPlaylist(const char *url, const char *utf8file)
 	if (!isValidRemoteUtf8Url(url))
 		return ACK_ERROR_NO_EXIST;
 
-	song = newSong(url, SONG_TYPE_URL, NULL);
+	song = newSong(url, NULL);
 	if (song) {
 		int ret = appendSongToStoredPlaylistByPath(utf8file, song);
 		freeJustSong(song);
@@ -715,7 +715,7 @@ enum playlist_result deleteFromPlaylist(int song)
 			clearPlayerQueue();
 	}
 
-	if (playlist.songs[song]->type == SONG_TYPE_URL) {
+	if (!song_is_file(playlist.songs[song])) {
 		freeJustSong(playlist.songs[song]);
 	}
 
@@ -891,7 +891,7 @@ static void syncCurrentPlayerDecodeMetadata(void)
 	songNum = playlist.order[playlist.current];
 	song = playlist.songs[songNum];
 
-	if (song->type == SONG_TYPE_URL &&
+	if (!song_is_file(song) &&
 	    0 == strcmp(get_song_url(path_max_tmp, song), songPlayer->url) &&
 	    !tag_equal(song->tag, songPlayer->tag)) {
 		if (song->tag)
@@ -1267,7 +1267,7 @@ enum playlist_result savePlaylist(const char *utf8file)
 		utf8_to_fs_charset(tmp, path_max_tmp);
 
 		if (playlist_saveAbsolutePaths &&
-		    playlist.songs[i]->type == SONG_TYPE_FILE)
+		    song_is_file(playlist.songs[i]))
 			fprintf(fp, "%s\n", rmp2amp_r(tmp, tmp));
 		else
 			fprintf(fp, "%s\n", tmp);

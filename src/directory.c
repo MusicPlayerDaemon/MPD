@@ -617,7 +617,7 @@ addToDirectory(Directory * directory, const char *name)
 		Song *song;
 		const char *shortname = mpd_basename(name);
 
-		if (!(song = newSong(shortname, SONG_TYPE_FILE, directory)))
+		if (!(song = newSong(shortname, directory)))
 			return -1;
 		songvec_add(&directory->songs, song);
 		LOG("added %s\n", name);

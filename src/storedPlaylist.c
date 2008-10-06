@@ -294,7 +294,7 @@ appendSongToStoredPlaylistByPath(const char *utf8path, Song *song)
 
 	s = utf8_to_fs_charset(path_max_tmp2, get_song_url(path_max_tmp, song));
 
-	if (playlist_saveAbsolutePaths && song->type == SONG_TYPE_FILE)
+	if (playlist_saveAbsolutePaths && song_is_file(song))
 		s = rmp2amp_r(path_max_tmp, s);
 
 	fprintf(file, "%s\n", s);
