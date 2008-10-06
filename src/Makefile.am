@@ -34,6 +34,7 @@ mpd_headers = \
 	notify.h \
 	ack.h \
 	audio.h \
+	audio_format.h \
 	audioOutput.h \
 	output_internal.h \
 	output_api.h \

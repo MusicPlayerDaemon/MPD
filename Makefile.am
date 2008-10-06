@@ -4,7 +4,7 @@ AUTOMAKE_OPTIONS = foreign 1.6
 SUBDIRS = src doc
 docdir = $(prefix)/share/doc/$(PACKAGE)
 doc_DATA = README UPGRADING
-EXTRA_DIST = COPYING $(doc_DATA)
+EXTRA_DIST = COPYING $(doc_DATA) m4 autogen.sh bs build.mk scripts .gitignore
 
 sparse-check test:
 	$(MAKE) -C src $@
