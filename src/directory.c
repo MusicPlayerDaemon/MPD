@@ -298,7 +298,7 @@ removeDeletedFromDirectory(char *path_max_tmp, Directory * directory)
 
 	for (i = sv->nr; --i >= 0; ) { /* cleaner deletes if we go backwards */
 		Song *song = sv->base[i];
-		if (!song || !song->url)
+		if (!song || !*song->url)
 			continue; /* does this happen?, perhaps assert() */
 
 		if (dirname)

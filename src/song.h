@@ -20,6 +20,7 @@
 #define SONG_H
 
 #include "os_compat.h"
+#include "gcc.h"
 
 #define SONG_BEGIN	"songList begin"
 #define SONG_END	"songList end"
@@ -35,12 +36,15 @@ enum song_type {
 struct client;
 
 typedef struct _Song {
-	char *url;
 	enum song_type type;
 	struct tag *tag;
 	struct _Directory *parentDir;
 	time_t mtime;
-} Song;
+	char url[1];
+} mpd_packed Song;
+
+Song *
+song_alloc(const char *url, enum song_type type, struct _Directory *parent);
 
 Song *newSong(const char *url, enum song_type type,
 	      struct _Directory *parentDir);

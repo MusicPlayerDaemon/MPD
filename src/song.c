@@ -28,6 +28,19 @@
 
 #include "os_compat.h"
 
+Song *
+song_alloc(const char *url, enum song_type type, struct _Directory *parent)
+{
+	size_t urllen = strlen(url);
+	Song *song = xmalloc(sizeof(Song) + urllen);
+
+	song->tag = NULL;
+	memcpy(song->url, url, urllen + 1);
+	song->type = type;
+	song->parentDir = parent;
+
+	return song;
+}
 
 Song *newSong(const char *url, enum song_type type, Directory * parentDir)
 {
@@ -38,11 +51,7 @@ Song *newSong(const char *url, enum song_type type, Directory * parentDir)
 		return NULL;
 	}
 
-	song = xmalloc(sizeof(*song));
-	song->tag = NULL;
-	song->url = xstrdup(url);
-	song->type = type;
-	song->parentDir = parentDir;
+	song = song_alloc(url, type, parentDir);
 
 	assert(type == SONG_TYPE_URL || parentDir);
 
@@ -75,7 +84,6 @@ void freeSong(Song * song)
 
 void freeJustSong(Song * song)
 {
-	free(song->url);
 	if (song->tag)
 		tag_free(song->tag);
 	free(song);
@@ -114,7 +122,7 @@ char *get_song_url(char *path_max_tmp, Song *song)
 	if (!song)
 		return NULL;
 
-	assert(song->url != NULL);
+	assert(*song->url);
 
 	if (!song->parentDir || !song->parentDir->path)
 		strcpy(path_max_tmp, song->url);

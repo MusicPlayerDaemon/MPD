@@ -111,18 +111,14 @@ void readSongInfoIntoList(FILE *fp, struct songvec *sv,
 			if (song)
 				insertSongIntoList(sv, song);
 
-			song = xmalloc(sizeof(*song));
-			song->url = xstrdup(buffer + strlen(SONG_KEY));
-			song->type = SONG_TYPE_FILE;
-			song->parentDir = parentDir;
+			song = song_alloc(buffer + strlen(SONG_KEY),
+					  SONG_TYPE_FILE, parentDir);
 		} else if (*buffer == 0) {
 			/* ignore empty lines (starting with '\0') */
 		} else if (song == NULL) {
 			FATAL("Problems reading song info\n");
 		} else if (0 == strncmp(SONG_FILE, buffer, strlen(SONG_FILE))) {
-			/* we don't need this info anymore
-			   song->url = xstrdup(&(buffer[strlen(SONG_FILE)]));
-			 */
+			/* we don't need this info anymore */
 		} else if (matchesAnMpdTagItemKey(buffer, &itemType)) {
 			if (!song->tag) {
 				song->tag = tag_new();
