@@ -1378,25 +1378,21 @@ static CommandEntry *getCommandEntryAndCheckArgcAndPermission(struct client *cli
 	return cmd;
 }
 
-static int processCommandInternal(struct client *client,
-				  char *commandString, struct strnode *cmdnode)
+int processCommand(struct client *client, char *commandString)
 {
 	int argc;
 	char *argv[COMMAND_ARGV_MAX] = { NULL };
 	CommandEntry *cmd;
 	int ret = -1;
 
-	argc = buffer2array(commandString, argv, COMMAND_ARGV_MAX);
-
-	if (argc == 0)
+	if (!(argc = buffer2array(commandString, argv, COMMAND_ARGV_MAX)))
 		return 0;
 
-	if ((cmd = getCommandEntryAndCheckArgcAndPermission(client,
-							    client_get_permission(client),
-							    argc, argv))) {
-		if (!cmdnode)
-			ret = cmd->handler(client, argc, argv);
-	}
+	cmd = getCommandEntryAndCheckArgcAndPermission(client,
+						       client_get_permission(client),
+						       argc, argv);
+	if (cmd)
+		ret = cmd->handler(client, argc, argv);
 
 	current_command = NULL;
 
@@ -1414,7 +1410,7 @@ int processListOfCommands(struct client *client,
 	while (cur) {
 		DEBUG("processListOfCommands: process command \"%s\"\n",
 		      cur->data);
-		ret = processCommandInternal(client, cur->data, cur);
+		ret = processCommand(client, cur->data);
 		DEBUG("processListOfCommands: command returned %i\n", ret);
 		if (ret != 0 || client_is_expired(client))
 			goto out;
@@ -1426,9 +1422,4 @@ int processListOfCommands(struct client *client,
 out:
 	command_listNum = 0;
 	return ret;
-}
-
-int processCommand(struct client *client, char *commandString)
-{
-	return processCommandInternal(client, commandString, NULL);
 }
