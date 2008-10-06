@@ -273,12 +273,12 @@ void tag_clear_items_by_type(struct tag *tag, enum tag_type type)
 	}
 }
 
-static void clearMpdTag(struct tag *tag)
+void tag_free(struct tag *tag)
 {
 	int i;
 
 	pthread_mutex_lock(&tag_pool_lock);
-	for (i = 0; i < tag->numOfItems; i++)
+	for (i = tag->numOfItems; --i >= 0; )
 		tag_pool_put_item(tag->items[i]);
 	pthread_mutex_unlock(&tag_pool_lock);
 
@@ -291,16 +291,6 @@ static void clearMpdTag(struct tag *tag)
 		free(tag->items);
 	}
 
-	tag->items = NULL;
-
-	tag->numOfItems = 0;
-
-	tag->time = -1;
-}
-
-void tag_free(struct tag *tag)
-{
-	clearMpdTag(tag);
 	free(tag);
 }
 
