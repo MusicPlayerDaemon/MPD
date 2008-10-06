@@ -740,12 +740,13 @@ static void readDirectoryInfo(FILE * fp, Directory * directory)
 	char buffer[MPD_PATH_MAX * 2];
 	int bufferSize = MPD_PATH_MAX * 2;
 	char key[MPD_PATH_MAX * 2];
-	Directory *subDirectory;
 	char *name;
 
 	while (myFgets(buffer, bufferSize, fp)
 	       && prefixcmp(buffer, DIRECTORY_END)) {
 		if (!prefixcmp(buffer, DIRECTORY_DIR)) {
+			Directory *subdir;
+
 			strcpy(key, &(buffer[strlen(DIRECTORY_DIR)]));
 			if (!myFgets(buffer, bufferSize, fp))
 				FATAL("Error reading db, fgets\n");
@@ -757,9 +758,13 @@ static void readDirectoryInfo(FILE * fp, Directory * directory)
 			if (prefixcmp(buffer, DIRECTORY_BEGIN))
 				FATAL("Error reading db at line: %s\n", buffer);
 			name = &(buffer[strlen(DIRECTORY_BEGIN)]);
-			subDirectory = newDirectory(name, directory);
-			dirvec_add(&directory->children, subDirectory);
-			readDirectoryInfo(fp, subDirectory);
+			if ((subdir = getDirectory(name))) {
+				assert(subdir->parent == directory);
+			} else {
+				subdir = newDirectory(name, directory);
+				dirvec_add(&directory->children, subdir);
+			}
+			readDirectoryInfo(fp, subdir);
 		} else if (!prefixcmp(buffer, SONG_BEGIN)) {
 			readSongInfoIntoList(fp, &directory->songs, directory);
 		} else {
