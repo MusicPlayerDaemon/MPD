@@ -28,17 +28,6 @@
 
 #include "os_compat.h"
 
-Song *newNullSong(void)
-{
-	Song *song = xmalloc(sizeof(Song));
-
-	song->tag = NULL;
-	song->url = NULL;
-	song->type = SONG_TYPE_FILE;
-	song->parentDir = NULL;
-
-	return song;
-}
 
 Song *newSong(const char *url, enum song_type type, Directory * parentDir)
 {
@@ -49,8 +38,8 @@ Song *newSong(const char *url, enum song_type type, Directory * parentDir)
 		return NULL;
 	}
 
-	song = newNullSong();
-
+	song = xmalloc(sizeof(*song));
+	song->tag = NULL;
 	song->url = xstrdup(url);
 	song->type = type;
 	song->parentDir = parentDir;

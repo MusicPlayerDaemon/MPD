@@ -111,7 +111,7 @@ void readSongInfoIntoList(FILE *fp, struct songvec *sv,
 			if (song)
 				insertSongIntoList(sv, song);
 
-			song = newNullSong();
+			song = xmalloc(sizeof(*song));
 			song->url = xstrdup(buffer + strlen(SONG_KEY));
 			song->type = SONG_TYPE_FILE;
 			song->parentDir = parentDir;

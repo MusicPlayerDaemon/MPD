@@ -42,8 +42,6 @@ typedef struct _Song {
 	time_t mtime;
 } Song;
 
-Song *newNullSong(void);
-
 Song *newSong(const char *url, enum song_type type,
 	      struct _Directory *parentDir);
 
