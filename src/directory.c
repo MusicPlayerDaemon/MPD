@@ -72,8 +72,7 @@ static enum update_return updateDirectory(Directory * directory);
 
 static void deleteEmptyDirectoriesInDirectory(Directory * directory);
 
-static void removeSongFromDirectory(Directory * directory,
-				    const char *shortname);
+static void delete_song(Directory *dir, Song *del);
 
 static enum update_return addSubDirectoryToDirectory(Directory * directory,
 				      const char *name, struct stat *st);
@@ -201,16 +200,12 @@ static void freeDirectory(Directory * directory)
 	/*getDirectoryPath(NULL); */
 }
 
-static void removeSongFromDirectory(Directory * directory, const char *shortname)
+static void delete_song(Directory *dir, Song *del)
 {
-	Song *song = songvec_find(&directory->songs, shortname);
-
-	if (song) {
-		char path_max_tmp[MPD_PATH_MAX]; /* wasteful */
-		LOG("removing: %s\n", get_song_url(path_max_tmp, song));
-		songvec_delete(&directory->songs, song);
-		freeSong(song);
-	}
+	char path_max_tmp[MPD_PATH_MAX]; /* wasteful */
+	LOG("removing: %s\n", get_song_url(path_max_tmp, del));
+	songvec_delete(&dir->songs, del);
+	freeSong(del); /* FIXME racy */
 }
 
 static void deleteEmptyDirectoriesInDirectory(Directory * directory)
@@ -245,7 +240,7 @@ updateInDirectory(Directory * directory, const char *name)
 		} else if (st.st_mtime != song->mtime) {
 			LOG("updating %s\n", name);
 			if (updateSongInfo(song) < 0)
-				removeSongFromDirectory(directory, shortname);
+				delete_song(directory, song);
 			return UPDATE_RETURN_UPDATED;
 		}
 	} else if (S_ISDIR(st.st_mode)) {
@@ -297,7 +292,7 @@ removeDeletedFromDirectory(char *path_max_tmp, Directory * directory)
 			strcpy(path_max_tmp, song->url);
 
 		if (!isFile(path_max_tmp, NULL)) {
-			removeSongFromDirectory(directory, song->url);
+			delete_song(directory, song);
 			ret = UPDATE_RETURN_UPDATED;
 		}
 	}
@@ -311,6 +306,7 @@ static Directory *addDirectoryPathToDB(const char *utf8path)
 	char *parent;
 	Directory *parentDirectory;
 	Directory *directory;
+	Song *conflicting;
 
 	parent = parent_path(path_max_tmp, utf8path);
 
@@ -337,7 +333,10 @@ static Directory *addDirectoryPathToDB(const char *utf8path)
 
 	/* if we're adding directory paths, make sure to delete filenames
 	   with potentially the same name */
-	removeSongFromDirectory(parentDirectory, mpd_basename(directory->path));
+	conflicting = songvec_find(&parentDirectory->songs,
+	                           mpd_basename(directory->path));
+	if (conflicting)
+		delete_song(parentDirectory, conflicting);
 
 	return directory;
 }
@@ -415,14 +414,13 @@ static enum update_return updatePath(const char *utf8path)
 			else if (updateSongInfo(song) == 0)
 				return UPDATE_RETURN_UPDATED;
 			else {
-				removeSongFromDirectory(parentDirectory,
-							song->url);
+				delete_song(parentDirectory, song);
 				return UPDATE_RETURN_UPDATED;
 			}
 		}
 		/* if updateDirectory fails, means we should delete it */
 		else {
-			removeSongFromDirectory(parentDirectory, song->url);
+			delete_song(parentDirectory, song);
 			ret = UPDATE_RETURN_UPDATED;
 			/* don't return, path maybe a directory now */
 		}
