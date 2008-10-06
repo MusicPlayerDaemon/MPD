@@ -36,6 +36,7 @@
 #include "tag.h"
 #include "client.h"
 #include "tag_print.h"
+#include "path.h"
 #include "os_compat.h"
 
 #define COMMAND_PLAY           	"play"
@@ -152,8 +153,6 @@ static const char check_non_negative[] = "\"%s\" is not an integer >= 0";
 
 static const char *current_command;
 static int command_listNum;
-
-static CommandEntry *getCommandEntryFromString(char *string, int permission);
 
 static List *commandList;
 
@@ -814,55 +813,31 @@ static int handlePlaylistMove(struct client *client,
 	return print_playlist_result(client, result);
 }
 
-static int listHandleUpdate(struct client *client,
-			    mpd_unused int argc,
-			    char *argv[],
-			    struct strnode *cmdnode, CommandEntry * cmd)
+static int print_update_result(struct client *client, int ret)
 {
-	List *pathList = makeList(NULL, 1);
-	CommandEntry *nextCmd = NULL;
-	struct strnode *next = cmdnode->next;
-
-	if (argc == 2)
-		insertInList(pathList, argv[1], NULL);
-	else
-		insertInList(pathList, "", NULL);
-
-	if (next)
-		nextCmd = getCommandEntryFromString(next->data,
-						    client_get_permission(client));
-
-	if (cmd != nextCmd) {
-		int ret = updateInit(pathList);
-		if (ret == -1)
-			command_error(client, ACK_ERROR_UPDATE_ALREADY,
-				      "already updating");
-
-		return ret;
+	if (ret >= 0) {
+		client_printf(client, "updating_db: %i\n", ret);
+		return 0;
 	}
-
-	return 0;
+	if (ret == -2)
+		command_error(client, ACK_ERROR_ARG, "invalid path");
+	else
+		command_error(client, ACK_ERROR_UPDATE_ALREADY,
+			      "already updating");
+	return -1;
 }
 
 static int handleUpdate(struct client *client,
 			mpd_unused int argc, char *argv[])
 {
-	int ret;
+	char *path = NULL;
 
-	if (argc == 2) {
-		List *pathList = makeList(NULL, 1);
-		insertInList(pathList, argv[1], NULL);
-		ret = updateInit(pathList);
-	} else {
-		ret = updateInit(NULL);
+	assert(argc <= 2);
+	if (argc == 2 && !(path = sanitizePathDup(argv[1]))) {
+		command_error(client, ACK_ERROR_ARG, "invalid path");
+		return -1;
 	}
-
-	if (ret == -1)
-		command_error(client, ACK_ERROR_UPDATE_ALREADY,
-			      "already updating");
-
-	client_printf(client, "updating_db: %i\n", ret);
-	return 0;
+	return print_update_result(client, directory_update_init(path));
 }
 
 static int handleNext(mpd_unused struct client *client,
@@ -1307,7 +1282,7 @@ void initCommands(void)
 	addCommand(COMMAND_PLAYLISTINFO,     PERMISSION_READ,    0,   1,   handlePlaylistInfo,         NULL);
 	addCommand(COMMAND_FIND,             PERMISSION_READ,    2,   -1,  handleFind,                 NULL);
 	addCommand(COMMAND_SEARCH,           PERMISSION_READ,    2,   -1,  handleSearch,               NULL);
-	addCommand(COMMAND_UPDATE,           PERMISSION_ADMIN,   0,   1,   handleUpdate,               listHandleUpdate);
+	addCommand(COMMAND_UPDATE,           PERMISSION_ADMIN,   0,   1,   handleUpdate,               NULL);
 	addCommand(COMMAND_NEXT,             PERMISSION_CONTROL, 0,   0,   handleNext,                 NULL);
 	addCommand(COMMAND_PREVIOUS,         PERMISSION_CONTROL, 0,   0,   handlePrevious,             NULL);
 	addCommand(COMMAND_LISTALL,          PERMISSION_READ,    0,   1,   handleListAll,              NULL);
@@ -1417,24 +1392,6 @@ static CommandEntry *getCommandEntryAndCheckArgcAndPermission(struct client *cli
 		return NULL;
 	}
 
-	return cmd;
-}
-
-static CommandEntry *getCommandEntryFromString(char *string, int permission)
-{
-	CommandEntry *cmd = NULL;
-	char *argv[COMMAND_ARGV_MAX] = { NULL };
-	char *duplicated = xstrdup(string);
-	int argc = buffer2array(duplicated, argv, COMMAND_ARGV_MAX);
-
-	if (0 == argc)
-		goto out;
-
-	cmd = getCommandEntryAndCheckArgcAndPermission(0, permission,
-						       argc, argv);
-
-out:
-	free(duplicated);
 	return cmd;
 }
 

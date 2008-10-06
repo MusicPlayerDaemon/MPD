@@ -53,13 +53,18 @@ enum update_progress {
 	UPDATE_PROGRESS_DONE = 2
 } progress;
 
+/* make this dynamic?, or maybe this is big enough... */
+static char *update_paths[32];
+static size_t update_paths_nr;
+
 static Directory *music_root;
 
 static time_t directory_dbModTime;
 
 static pthread_t update_thr;
 
-static int directory_updateJobId;
+static const int update_task_id_max = 1 << 15;
+static int update_task_id;
 
 static enum update_return
 addToDirectory(Directory * directory, const char *name);
@@ -99,12 +104,47 @@ static char *getDbFile(void)
 
 int isUpdatingDB(void)
 {
-	return (progress != UPDATE_PROGRESS_IDLE) ? directory_updateJobId : 0;
+	return (progress != UPDATE_PROGRESS_IDLE) ? update_task_id : 0;
+}
+
+static void * update_task(void *_path)
+{
+	enum update_return ret = UPDATE_RETURN_NOUPDATE;
+
+	if (_path) {
+		ret = updatePath((char *)_path);
+		free(_path);
+	} else {
+		ret = updateDirectory(music_root);
+	}
+
+	if (ret == UPDATE_RETURN_UPDATED && writeDirectoryDB() < 0)
+		ret = UPDATE_RETURN_ERROR;
+	progress = UPDATE_PROGRESS_DONE;
+	wakeup_main_task();
+	return (void *)ret;
+}
+
+static void spawn_update_task(char *path)
+{
+	pthread_attr_t attr;
+
+	assert(pthread_equal(pthread_self(), main_task));
+
+	progress = UPDATE_PROGRESS_RUNNING;
+	pthread_attr_init(&attr);
+	if (pthread_create(&update_thr, &attr, update_task, path))
+		FATAL("Failed to spawn update task: %s\n", strerror(errno));
+	if (++update_task_id > update_task_id_max)
+		update_task_id = 1;
+	DEBUG("spawned thread for update job id %i\n", update_task_id);
 }
 
 void reap_update_task(void)
 {
 	enum update_return ret;
+
+	assert(pthread_equal(pthread_self(), main_task));
 
 	if (progress != UPDATE_PROGRESS_DONE)
 		return;
@@ -112,61 +152,36 @@ void reap_update_task(void)
 		FATAL("error joining update thread: %s\n", strerror(errno));
 	if (ret == UPDATE_RETURN_UPDATED)
 		playlistVersionChange();
-	progress = UPDATE_PROGRESS_IDLE;
-}
 
-static void * update_task(void *arg)
-{
-	List *path_list = (List *)arg;
-	enum update_return ret = UPDATE_RETURN_NOUPDATE;
-
-	if (path_list) {
-		ListNode *node = path_list->firstNode;
-
-		while (node) {
-			switch (updatePath(node->key)) {
-			case UPDATE_RETURN_ERROR:
-				ret = UPDATE_RETURN_ERROR;
-				goto out;
-			case UPDATE_RETURN_NOUPDATE:
-				break;
-			case UPDATE_RETURN_UPDATED:
-				ret = UPDATE_RETURN_UPDATED;
-			}
-			node = node->nextNode;
-		}
-		freeList(path_list);
+	if (update_paths_nr) {
+		char *path = update_paths[0];
+		memmove(&update_paths[0], &update_paths[1],
+		        --update_paths_nr * sizeof(char *));
+		spawn_update_task(path);
 	} else {
-		ret = updateDirectory(music_root);
+		progress = UPDATE_PROGRESS_IDLE;
 	}
-
-	if (ret == UPDATE_RETURN_UPDATED && writeDirectoryDB() < 0)
-		ret = UPDATE_RETURN_ERROR;
-out:
-	progress = UPDATE_PROGRESS_DONE;
-	wakeup_main_task();
-	return (void *)ret;
 }
 
-int updateInit(List * path_list)
+int directory_update_init(char *path)
 {
-	pthread_attr_t attr;
+	assert(pthread_equal(pthread_self(), main_task));
 
-	if (progress != UPDATE_PROGRESS_IDLE)
-		return -1;
+	if (progress != UPDATE_PROGRESS_IDLE) {
+		int next_task_id;
 
-	progress = UPDATE_PROGRESS_RUNNING;
+		if (!path)
+			return -1;
+		if (update_paths_nr == ARRAY_SIZE(update_paths))
+			return -1;
+		assert(update_paths_nr < ARRAY_SIZE(update_paths));
+		update_paths[update_paths_nr++] = path;
+		next_task_id = update_task_id + update_paths_nr;
 
-	pthread_attr_init(&attr);
-	if (pthread_create(&update_thr, &attr, update_task, path_list))
-		FATAL("Failed to spawn update task: %s\n", strerror(errno));
-	directory_updateJobId++;
-	if (directory_updateJobId > 1 << 15)
-		directory_updateJobId = 1;
-	DEBUG("updateInit: spawned update thread for update job id %i\n",
-	      (int)directory_updateJobId);
-
-	return (int)directory_updateJobId;
+		return next_task_id > update_task_id_max ?  1 : next_task_id;
+	}
+	spawn_update_task(path);
+	return update_task_id;
 }
 
 static void directory_set_stat(Directory * dir, const struct stat *st)

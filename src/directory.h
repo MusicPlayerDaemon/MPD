@@ -42,12 +42,12 @@ void reap_update_task(void);
 
 int isUpdatingDB(void);
 
-/**
- * Starts the tag cache update in the specified location(s).  Returns
- * the job id on success, -1 on error or 0 if an update is already
- * running.
+/*
+ * returns the non-negative update job ID on success,
+ * returns -1 if busy
+ * @path will be freed by this function and should not be reused
  */
-int updateInit(List * pathList);
+int directory_update_init(char *path);
 
 void directory_init(void);
 
