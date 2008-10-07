@@ -298,8 +298,8 @@ removeDeletedFromDirectory(char *path_max_tmp, Directory * directory)
 
 	for (i = sv->nr; --i >= 0; ) { /* cleaner deletes if we go backwards */
 		Song *song = sv->base[i];
-		if (!song || !*song->url)
-			continue; /* does this happen?, perhaps assert() */
+		assert(song);
+		assert(*song->url);
 
 		if (dirname)
 			sprintf(path_max_tmp, "%s/%s", dirname, song->url);

@@ -31,8 +31,13 @@
 Song *
 song_alloc(const char *url, struct _Directory *parent)
 {
-	size_t urllen = strlen(url);
-	Song *song = xmalloc(sizeof(*song) - sizeof(song->url) + urllen + 1);
+	size_t urllen;
+	Song *song;
+
+	assert(url);
+	urllen = strlen(url);
+	assert(urllen);
+	song = xmalloc(sizeof(*song) - sizeof(song->url) + urllen + 1);
 
 	song->tag = NULL;
 	memcpy(song->url, url, urllen + 1);
@@ -44,6 +49,7 @@ song_alloc(const char *url, struct _Directory *parent)
 Song *newSong(const char *url, Directory * parentDir)
 {
 	Song *song;
+	assert(*url);
 
 	if (strchr(url, '\n')) {
 		DEBUG("newSong: '%s' is not a valid uri\n", url);
