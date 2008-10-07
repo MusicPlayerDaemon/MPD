@@ -83,7 +83,7 @@ static int searchInDirectory(Song * song, void *_data)
 	LocateTagItemArray *array = &data->array;
 
 	if (strstrSearchTags(song, array->numItems, array->items))
-		song_print_info(data->client, song);
+		return song_print_info(data->client, song);
 
 	return 0;
 }
@@ -124,7 +124,7 @@ static int findInDirectory(Song * song, void *_data)
 	LocateTagItemArray *array = &data->array;
 
 	if (tagItemsFoundAndMatches(song, array->numItems, array->items))
-		song_print_info(data->client, song);
+		return song_print_info(data->client, song);
 
 	return 0;
 }

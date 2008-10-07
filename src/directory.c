@@ -974,14 +974,11 @@ static int traverseAllInSubDirectory(Directory * directory,
 				     void *data)
 {
 	struct dirvec *dv = &directory->children;
-	int errFlag = 0;
+	int err = 0;
 	size_t j;
 
-	if (forEachDir) {
-		errFlag = forEachDir(directory, data);
-		if (errFlag)
-			return errFlag;
-	}
+	if (forEachDir && (err = forEachDir(directory, data)) < 0)
+		return err;
 
 	if (forEachSong) {
 		int i;
@@ -990,16 +987,16 @@ static int traverseAllInSubDirectory(Directory * directory,
 
 		for (i = sv->nr; --i >= 0; ) {
 			Song *song = *sp++;
-			if ((errFlag = forEachSong(song, data)))
-				return errFlag;
+			if ((err = forEachSong(song, data)) < 0)
+				return err;
 		}
 	}
 
-	for (j = 0; !errFlag && j < dv->nr; ++j)
-		errFlag = traverseAllInSubDirectory(dv->base[j], forEachSong,
-						    forEachDir, data);
+	for (j = 0; err >= 0 && j < dv->nr; ++j)
+		err = traverseAllInSubDirectory(dv->base[j], forEachSong,
+						forEachDir, data);
 
-	return errFlag;
+	return err;
 }
 
 int traverseAllIn(const char *name,
