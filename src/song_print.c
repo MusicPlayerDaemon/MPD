@@ -22,7 +22,7 @@
 #include "tag_print.h"
 #include "client.h"
 
-void printSongUrl(struct client *client, Song * song)
+void song_print_url(struct client *client, Song * song)
 {
 	if (song->parentDir && song->parentDir->path) {
 		client_printf(client, "%s%s/%s\n", SONG_FILE,
@@ -32,9 +32,9 @@ void printSongUrl(struct client *client, Song * song)
 	}
 }
 
-int printSongInfo(struct client *client, Song * song)
+int song_print_info(struct client *client, Song * song)
 {
-	printSongUrl(client, song);
+	song_print_url(client, song);
 
 	if (song->tag)
 		tag_print(client, song->tag);
@@ -48,7 +48,7 @@ int songvec_print(struct client *client, const struct songvec *sv)
 	Song **sp = sv->base;
 
 	for (i = sv->nr; --i >= 0;)
-		if (printSongInfo(client, *sp++) < 0)
+		if (song_print_info(client, *sp++) < 0)
 			return -1;
 
 	return 0;

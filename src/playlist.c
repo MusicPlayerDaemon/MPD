@@ -365,7 +365,7 @@ void readPlaylistState(FILE *fp)
 
 static void printPlaylistSongInfo(struct client *client, int song)
 {
-	printSongInfo(client, playlist.songs[song]);
+	song_print_info(client, playlist.songs[song]);
 	client_printf(client, "Pos: %i\nId: %i\n", song, playlist.positionToId[song]);
 }
 
@@ -1360,7 +1360,7 @@ int PlaylistInfo(struct client *client, const char *utf8file, int detail)
 		if (detail) {
 			Song *song = getSongFromDB(temp);
 			if (song) {
-				printSongInfo(client, song);
+				song_print_info(client, song);
 				wrote = 1;
 			}
 		}

@@ -23,10 +23,10 @@
 
 struct songvec;
 
-int printSongInfo(struct client *client, Song * song);
+int song_print_info(struct client *client, Song * song);
 
 int songvec_print(struct client *client, const struct songvec *sv);
 
-void printSongUrl(struct client *client, Song * song);
+void song_print_url(struct client *client, Song * song);
 
 #endif
