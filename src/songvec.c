@@ -66,3 +66,16 @@ void songvec_destroy(struct songvec *sv)
 	}
 	sv->nr = 0;
 }
+
+int songvec_for_each(struct songvec *sv, int (*fn)(Song *, void *), void *arg)
+{
+	int i;
+	Song **sp = sv->base;
+
+	for (i = sv->nr; --i >= 0; ) {
+		if (fn(*sp++, arg) < 0)
+			return -1;
+	}
+
+	return 0;
+}
