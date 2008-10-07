@@ -23,7 +23,8 @@ void songvec_sort(struct songvec *sv)
 	pthread_mutex_unlock(&nr_lock);
 }
 
-Song *songvec_find(struct songvec *sv, const char *url)
+Song *
+songvec_find(const struct songvec *sv, const char *url)
 {
 	int i;
 	Song *ret = NULL;
@@ -83,7 +84,9 @@ void songvec_destroy(struct songvec *sv)
 	pthread_mutex_unlock(&nr_lock);
 }
 
-int songvec_for_each(struct songvec *sv, int (*fn)(Song *, void *), void *arg)
+int
+songvec_for_each(const struct songvec *sv,
+		 int (*fn)(Song *, void *), void *arg)
 {
 	size_t i;
 
