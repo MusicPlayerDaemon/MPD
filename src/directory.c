@@ -342,7 +342,7 @@ removeDeletedFromDirectory(char *path_max_tmp, Directory * directory)
 
 	data.dir = directory;
 	data.tmp = path_max_tmp;
-	data.ret = UPDATE_RETURN_UPDATED;
+	data.ret = ret;
 	songvec_for_each(&directory->songs, delete_song_if_removed, &data);
 
 	return data.ret;
