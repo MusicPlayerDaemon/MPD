@@ -42,8 +42,6 @@ song_alloc(const char *url, struct _Directory *parent);
 
 Song *newSong(const char *url, struct _Directory *parentDir);
 
-void freeSong(Song *);
-
 void freeJustSong(Song *);
 
 int updateSongInfo(Song * song);

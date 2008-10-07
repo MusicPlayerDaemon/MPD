@@ -31,6 +31,7 @@
 #include "song_save.h"
 #include "main_notify.h"
 #include "dirvec.h"
+#include "condition.h"
 
 #define DIRECTORY_DIR		"directory: "
 #define DIRECTORY_MTIME		"mtime: " /* DEPRECATED, noop-read-only */
@@ -64,7 +65,12 @@ static time_t directory_dbModTime;
 static pthread_t update_thr;
 
 static const int update_task_id_max = 1 << 15;
+
 static int update_task_id;
+
+static Song *delete;
+
+static struct condition delete_cond;
 
 static enum update_return
 addToDirectory(Directory * directory, const char *name);
@@ -146,6 +152,16 @@ void reap_update_task(void)
 
 	assert(pthread_equal(pthread_self(), main_task));
 
+	cond_enter(&delete_cond);
+	if (delete) {
+		char tmp[MPD_PATH_MAX];
+		LOG("removing: %s\n", get_song_url(tmp, delete));
+		deleteASongFromPlaylist(delete);
+		delete = NULL;
+		cond_signal_async(&delete_cond);
+	}
+	cond_leave(&delete_cond);
+
 	if (progress != UPDATE_PROGRESS_DONE)
 		return;
 	if (pthread_join(update_thr, (void **)&ret))
@@ -217,10 +233,19 @@ static void freeDirectory(Directory * directory)
 
 static void delete_song(Directory *dir, Song *del)
 {
-	char path_max_tmp[MPD_PATH_MAX]; /* wasteful */
-	LOG("removing: %s\n", get_song_url(path_max_tmp, del));
+	/* first, prevent traversers in main task from getting this */
 	songvec_delete(&dir->songs, del);
-	freeSong(del); /* FIXME racy */
+
+	/* now take it out of the playlist (in the main_task) */
+	cond_enter(&delete_cond);
+	assert(!delete);
+	delete = del;
+	wakeup_main_task();
+	do { cond_wait(&delete_cond); } while (delete);
+	cond_leave(&delete_cond);
+
+	/* finally, all possible references gone, free it */
+	freeJustSong(del);
 }
 
 static void deleteEmptyDirectoriesInDirectory(Directory * directory)

@@ -79,12 +79,6 @@ Song *newSong(const char *url, Directory * parentDir)
 	return song;
 }
 
-void freeSong(Song * song)
-{
-	deleteASongFromPlaylist(song);
-	freeJustSong(song);
-}
-
 void freeJustSong(Song * song)
 {
 	if (song->tag)
