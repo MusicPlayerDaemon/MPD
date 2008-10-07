@@ -278,15 +278,34 @@ static int skip_path(const char *path)
 	return (path[0] == '.' || strchr(path, '\n')) ? 1 : 0;
 }
 
+struct delete_data {
+	char *tmp;
+	Directory *dir;
+	enum update_return ret;
+};
+
+/* passed to songvec_for_each */
+static int delete_song_if_removed(Song *song, void *_data)
+{
+	struct delete_data *data = _data;
+
+	data->tmp = get_song_url(data->tmp, song);
+	assert(data->tmp);
+
+	if (!isFile(data->tmp, NULL)) {
+		delete_song(data->dir, song);
+		data->ret = UPDATE_RETURN_UPDATED;
+	}
+	return 0;
+}
+
 static enum update_return
 removeDeletedFromDirectory(char *path_max_tmp, Directory * directory)
 {
-	const char *dirname = (directory && directory->path) ?
-	    directory->path : NULL;
 	enum update_return ret = UPDATE_RETURN_NOUPDATE;
 	int i;
-	struct songvec *sv = &directory->songs;
 	struct dirvec *dv = &directory->children;
+	struct delete_data data;
 
 	for (i = dv->nr; --i >= 0; ) {
 		if (isDir(dv->base[i]->path))
@@ -296,23 +315,12 @@ removeDeletedFromDirectory(char *path_max_tmp, Directory * directory)
 		ret = UPDATE_RETURN_UPDATED;
 	}
 
-	for (i = sv->nr; --i >= 0; ) { /* cleaner deletes if we go backwards */
-		Song *song = sv->base[i];
-		assert(song);
-		assert(*song->url);
+	data.dir = directory;
+	data.tmp = path_max_tmp;
+	data.ret = UPDATE_RETURN_UPDATED;
+	songvec_for_each(&directory->songs, delete_song_if_removed, &data);
 
-		if (dirname)
-			sprintf(path_max_tmp, "%s/%s", dirname, song->url);
-		else
-			strcpy(path_max_tmp, song->url);
-
-		if (!isFile(path_max_tmp, NULL)) {
-			delete_song(directory, song);
-			ret = UPDATE_RETURN_UPDATED;
-		}
-	}
-
-	return ret;
+	return data.ret;
 }
 
 static Directory *addDirectoryPathToDB(const char *utf8path)
@@ -981,15 +989,9 @@ static int traverseAllInSubDirectory(Directory * directory,
 		return err;
 
 	if (forEachSong) {
-		int i;
-		struct songvec *sv = &directory->songs;
-		Song **sp = sv->base;
-
-		for (i = sv->nr; --i >= 0; ) {
-			Song *song = *sp++;
-			if ((err = forEachSong(song, data)) < 0)
-				return err;
-		}
+		err = songvec_for_each(&directory->songs, forEachSong, data);
+		if (err < 0)
+			return err;
 	}
 
 	for (j = 0; err >= 0 && j < dv->nr; ++j)
