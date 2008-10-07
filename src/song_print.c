@@ -42,14 +42,14 @@ int song_print_info(struct client *client, Song * song)
 	return 0;
 }
 
+static int
+song_print_info_x(Song *song, void *data)
+{
+	struct client *client = data;
+	return song_print_info(client, song);
+}
+
 int songvec_print(struct client *client, const struct songvec *sv)
 {
-	int i;
-	Song **sp = sv->base;
-
-	for (i = sv->nr; --i >= 0;)
-		if (song_print_info(client, *sp++) < 0)
-			return -1;
-
-	return 0;
+	return songvec_for_each(sv, song_print_info_x, client);
 }

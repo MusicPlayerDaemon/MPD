@@ -37,28 +37,27 @@ static void song_save_url(FILE *fp, Song * song)
 			song->url);
 }
 
-static void song_save(FILE *fp, Song * song)
+static int
+song_save(Song *song, void *data)
 {
+	FILE *fp = data;
+
+	fprintf(fp, SONG_KEY "%s\n", song->url);
+
 	song_save_url(fp, song);
 
 	if (song->tag != NULL)
 		tag_save(fp, song->tag);
+
+	fprintf(fp, SONG_MTIME "%li\n", (long)song->mtime);
+
+	return 0;
 }
 
 void songvec_save(FILE *fp, struct songvec *sv)
 {
-	int i;
-	Song **sp = sv->base;
-
 	fprintf(fp, "%s\n", SONG_BEGIN);
-
-	for (i = sv->nr; --i >= 0; ) {
-		Song *song = *sp++;
-		fprintf(fp, "%s%s\n", SONG_KEY, song->url);
-		song_save(fp, song);
-		fprintf(fp, "%s%li\n", SONG_MTIME, (long)song->mtime);
-	}
-
+	songvec_for_each(sv, song_save, fp);
 	fprintf(fp, "%s\n", SONG_END);
 }
 
