@@ -525,7 +525,7 @@ void reap_update_task(void)
 		LOG("removing: %s\n", song_get_url(delete, tmp));
 		deleteASongFromPlaylist(delete);
 		delete = NULL;
-		cond_signal_async(&delete_cond);
+		cond_signal_sync(&delete_cond);
 	}
 	cond_leave(&delete_cond);
 
