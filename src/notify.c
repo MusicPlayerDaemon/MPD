@@ -43,9 +43,8 @@ void notify_deinit(struct notify *notify)
 void notify_wait(struct notify *notify)
 {
 	pthread_mutex_lock(&notify->mutex);
-	if (!notify->pending)
+	while (!notify->pending)
 		pthread_cond_wait(&notify->cond, &notify->mutex);
-	assert(notify->pending);
 	notify->pending = 0;
 	pthread_mutex_unlock(&notify->mutex);
 }
