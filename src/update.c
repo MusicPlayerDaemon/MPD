@@ -321,7 +321,7 @@ addDirectoryPathToDB(const char *utf8path)
 	parent = parent_path(path_max_tmp, utf8path);
 
 	if (strlen(parent) == 0)
-		parentDirectory = directory_get_root();
+		parentDirectory = db_get_root();
 	else
 		parentDirectory = addDirectoryPathToDB(parent);
 
@@ -361,7 +361,7 @@ addParentPathToDB(const char *utf8path)
 	parent = parent_path(path_max_tmp, utf8path);
 
 	if (strlen(parent) == 0)
-		parentDirectory = directory_get_root();
+		parentDirectory = db_get_root();
 	else
 		parentDirectory = addDirectoryPathToDB(parent);
 
@@ -385,7 +385,7 @@ static enum update_return updatePath(const char *utf8path)
 		return UPDATE_RETURN_ERROR;
 
 	/* if path is in the DB try to update it, or else delete it */
-	if ((directory = getDirectory(path))) {
+	if ((directory = db_get_directory(path))) {
 		parentDirectory = directory->parent;
 
 		/* if this update directory is successfull, we are done */
@@ -396,7 +396,7 @@ static enum update_return updatePath(const char *utf8path)
 			return ret;
 		}
 		/* we don't want to delete the root directory */
-		else if (directory == directory_get_root()) {
+		else if (directory == db_get_root()) {
 			free(path);
 			return UPDATE_RETURN_NOUPDATE;
 		}
@@ -407,7 +407,7 @@ static enum update_return updatePath(const char *utf8path)
 			ret = UPDATE_RETURN_UPDATED;
 			/* don't return, path maybe a song now */
 		}
-	} else if ((song = getSongFromDB(path))) {
+	} else if ((song = get_get_song(path))) {
 		parentDirectory = song->parent;
 		if (!parentDirectory->stat
 		    && statDirectory(parentDirectory) < 0) {
@@ -467,10 +467,10 @@ static void * update_task(void *_path)
 		ret = updatePath((char *)_path);
 		free(_path);
 	} else {
-		ret = updateDirectory(directory_get_root());
+		ret = updateDirectory(db_get_root());
 	}
 
-	if (ret == UPDATE_RETURN_UPDATED && writeDirectoryDB() < 0)
+	if (ret == UPDATE_RETURN_UPDATED && db_save() < 0)
 		ret = UPDATE_RETURN_ERROR;
 	progress = UPDATE_PROGRESS_DONE;
 	wakeup_main_task();

@@ -36,7 +36,8 @@ static struct directory *music_root;
 
 static time_t directory_dbModTime;
 
-void directory_init(void)
+void
+db_init(void)
 {
 	music_root = newDirectory(NULL, NULL);
 	updateDirectory(music_root);
@@ -44,13 +45,14 @@ void directory_init(void)
 	stats.dbPlayTime = sumSongTimesIn(NULL);
 }
 
-void directory_finish(void)
+void
+db_finish(void)
 {
 	freeDirectory(music_root);
 }
 
 struct directory *
-directory_get_root(void)
+db_get_root(void)
 {
 	assert(music_root != NULL);
 
@@ -58,7 +60,7 @@ directory_get_root(void)
 }
 
 struct directory *
-getDirectory(const char *name)
+db_get_directory(const char *name)
 {
 	if (name == NULL)
 		return music_root;
@@ -67,7 +69,7 @@ getDirectory(const char *name)
 }
 
 struct song *
-getSongFromDB(const char *file)
+get_get_song(const char *file)
 {
 	struct song *song = NULL;
 	struct directory *directory;
@@ -85,7 +87,7 @@ getSongFromDB(const char *file)
 		dir = duplicated;
 	}
 
-	if (!(directory = getDirectory(dir)))
+	if (!(directory = db_get_directory(dir)))
 		goto out;
 	if (!(song = songvec_find(&directory->songs, shortname)))
 		goto out;
@@ -97,15 +99,15 @@ out:
 }
 
 int
-traverseAllIn(const char *name,
-	      int (*forEachSong) (struct song *, void *),
-	      int (*forEachDir) (struct directory *, void *), void *data)
+db_walk(const char *name,
+	int (*forEachSong)(struct song *, void *),
+	int (*forEachDir)(struct directory *, void *), void *data)
 {
 	struct directory *directory;
 
-	if ((directory = getDirectory(name)) == NULL) {
+	if ((directory = db_get_directory(name)) == NULL) {
 		struct song *song;
-		if ((song = getSongFromDB(name)) && forEachSong) {
+		if ((song = get_get_song(name)) && forEachSong) {
 			return forEachSong(song, data);
 		}
 		return -1;
@@ -115,7 +117,8 @@ traverseAllIn(const char *name,
 					 data);
 }
 
-static char *getDbFile(void)
+static char *
+db_get_file(void)
 {
 	ConfigParam *param = parseConfigFilePath(CONF_DB_FILE, 1);
 
@@ -125,10 +128,11 @@ static char *getDbFile(void)
 	return param->value;
 }
 
-int checkDirectoryDB(void)
+int
+db_check(void)
 {
 	struct stat st;
-	char *dbFile = getDbFile();
+	char *dbFile = db_get_file();
 
 	/* Check if the file exists */
 	if (access(dbFile, F_OK)) {
@@ -185,10 +189,11 @@ int checkDirectoryDB(void)
 	return 0;
 }
 
-int writeDirectoryDB(void)
+int
+db_save(void)
 {
 	FILE *fp;
-	char *dbFile = getDbFile();
+	char *dbFile = db_get_file();
 	struct stat st;
 
 	DEBUG("removing empty directories from DB\n");
@@ -228,10 +233,11 @@ int writeDirectoryDB(void)
 	return 0;
 }
 
-int readDirectoryDB(void)
+int
+db_load(void)
 {
 	FILE *fp = NULL;
-	char *dbFile = getDbFile();
+	char *dbFile = db_get_file();
 	struct stat st;
 
 	if (!music_root)
@@ -308,7 +314,8 @@ int readDirectoryDB(void)
 	return 0;
 }
 
-time_t getDbModTime(void)
+time_t
+db_get_mtime(void)
 {
 	return directory_dbModTime;
 }

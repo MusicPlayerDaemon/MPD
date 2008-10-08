@@ -579,7 +579,7 @@ static int handleLsInfo(struct client *client,
 	if (argc == 2)
 		path = argv[1];
 
-	directory = getDirectory(path);
+	directory = db_get_directory(path);
 	if (directory == NULL) {
 		command_error(client, ACK_ERROR_NO_EXIST,
 			      "directory not found");

@@ -559,7 +559,7 @@ enum playlist_result addToPlaylist(const char *url, int *added_id)
 
 	DEBUG("add to playlist: %s\n", url);
 
-	if ((song = getSongFromDB(url))) {
+	if ((song = get_get_song(url))) {
 	} else if (!(isValidRemoteUtf8Url(url) &&
 		     (song = song_remote_new(url)))) {
 		return PLAYLIST_RESULT_NO_SUCH_SONG;
@@ -574,7 +574,7 @@ int addToStoredPlaylist(const char *url, const char *utf8file)
 
 	DEBUG("add to stored playlist: %s\n", url);
 
-	song = getSongFromDB(url);
+	song = get_get_song(url);
 	if (song)
 		return appendSongToStoredPlaylistByPath(utf8file, song);
 
@@ -1360,7 +1360,7 @@ int PlaylistInfo(struct client *client, const char *utf8file, int detail)
 		int wrote = 0;
 
 		if (detail) {
-			struct song *song = getSongFromDB(temp);
+			struct song *song = get_get_song(temp);
 			if (song) {
 				song_print_info(client, song);
 				wrote = 1;

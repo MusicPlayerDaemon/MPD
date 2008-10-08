@@ -24,29 +24,35 @@
 
 struct directory;
 
-void directory_init(void);
+void
+db_init(void);
 
-void directory_finish(void);
+void
+db_finish(void);
 
 struct directory *
-directory_get_root(void);
+db_get_root(void);
 
 struct directory *
-getDirectory(const char *name);
+db_get_directory(const char *name);
 
 struct song *
-getSongFromDB(const char *file);
+get_get_song(const char *file);
 
-int traverseAllIn(const char *name,
-		  int (*forEachSong) (struct song *, void *),
-		  int (*forEachDir) (struct directory *, void *), void *data);
+int db_walk(const char *name,
+	    int (*forEachSong)(struct song *, void *),
+	    int (*forEachDir)(struct directory *, void *), void *data);
 
-int checkDirectoryDB(void);
+int
+db_check(void);
 
-int writeDirectoryDB(void);
+int
+db_save(void);
 
-int readDirectoryDB(void);
+int
+db_load(void);
 
-time_t getDbModTime(void);
+time_t
+db_get_mtime(void);
 
 #endif

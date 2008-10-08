@@ -40,7 +40,7 @@ int handlePendingSignals(void)
 		DEBUG("got SIGHUP, rereading DB\n");
 		signal_clear(SIGHUP);
 		if (!isUpdatingDB()) {
-			readDirectoryDB();
+			db_load();
 			playlistVersionChange();
 		}
 		if (cycle_log_files() < 0)
