@@ -18,6 +18,7 @@
  */
 
 #include "update.h"
+#include "directory.h"
 #include "log.h"
 #include "ls.h"
 #include "path.h"
@@ -53,14 +54,16 @@ int isUpdatingDB(void)
 	return (progress != UPDATE_PROGRESS_IDLE) ? update_task_id : 0;
 }
 
-static void directory_set_stat(Directory * dir, const struct stat *st)
+static void
+directory_set_stat(struct directory *dir, const struct stat *st)
 {
 	dir->inode = st->st_ino;
 	dir->device = st->st_dev;
 	dir->stat = 1;
 }
 
-static void delete_song(Directory *dir, Song *del)
+static void
+delete_song(struct directory *dir, Song *del)
 {
 	/* first, prevent traversers in main task from getting this */
 	songvec_delete(&dir->songs, del);
@@ -79,7 +82,7 @@ static void delete_song(Directory *dir, Song *del)
 
 struct delete_data {
 	char *tmp;
-	Directory *dir;
+	struct directory *dir;
 	enum update_return ret;
 };
 
@@ -99,7 +102,7 @@ static int delete_song_if_removed(Song *song, void *_data)
 }
 
 static enum update_return
-removeDeletedFromDirectory(char *path_max_tmp, Directory * directory)
+removeDeletedFromDirectory(char *path_max_tmp, struct directory *directory)
 {
 	enum update_return ret = UPDATE_RETURN_NOUPDATE;
 	int i;
@@ -130,7 +133,8 @@ static const char *opendir_path(char *path_max_tmp, const char *dirname)
 	return musicDir;
 }
 
-static int statDirectory(Directory * dir)
+static int
+statDirectory(struct directory *dir)
 {
 	struct stat st;
 
@@ -142,7 +146,8 @@ static int statDirectory(Directory * dir)
 	return 0;
 }
 
-static int inodeFoundInParent(Directory * parent, ino_t inode, dev_t device)
+static int
+inodeFoundInParent(struct directory *parent, ino_t inode, dev_t device)
 {
 	while (parent) {
 		if (!parent->stat && statDirectory(parent) < 0)
@@ -158,10 +163,10 @@ static int inodeFoundInParent(Directory * parent, ino_t inode, dev_t device)
 }
 
 static enum update_return
-addSubDirectoryToDirectory(Directory * directory,
+addSubDirectoryToDirectory(struct directory *directory,
 			   const char *name, struct stat *st)
 {
-	Directory *subDirectory;
+	struct directory *subDirectory;
 
 	if (inodeFoundInParent(directory, st->st_ino, st->st_dev))
 		return UPDATE_RETURN_NOUPDATE;
@@ -180,7 +185,7 @@ addSubDirectoryToDirectory(Directory * directory,
 }
 
 static enum update_return
-addToDirectory(Directory * directory, const char *name)
+addToDirectory(struct directory *directory, const char *name)
 {
 	struct stat st;
 
@@ -209,7 +214,7 @@ addToDirectory(Directory * directory, const char *name)
 }
 
 static enum update_return
-updateInDirectory(Directory * directory, const char *name)
+updateInDirectory(struct directory *directory, const char *name)
 {
 	Song *song;
 	struct stat st;
@@ -230,7 +235,7 @@ updateInDirectory(Directory * directory, const char *name)
 			return UPDATE_RETURN_UPDATED;
 		}
 	} else if (S_ISDIR(st.st_mode)) {
-		Directory *subdir = dirvec_find(&directory->children, name);
+		struct directory *subdir = dirvec_find(&directory->children, name);
 		if (subdir) {
 			assert(directory == subdir->parent);
 			directory_set_stat(subdir, &st);
@@ -250,7 +255,7 @@ static int skip_path(const char *path)
 }
 
 enum update_return
-updateDirectory(Directory * directory)
+updateDirectory(struct directory *directory)
 {
 	bool was_empty = directory_is_empty(directory);
 	DIR *dir;
@@ -301,12 +306,13 @@ updateDirectory(Directory * directory)
 	return ret;
 }
 
-static Directory *addDirectoryPathToDB(const char *utf8path)
+static struct directory *
+addDirectoryPathToDB(const char *utf8path)
 {
 	char path_max_tmp[MPD_PATH_MAX];
 	char *parent;
-	Directory *parentDirectory;
-	Directory *directory;
+	struct directory *parentDirectory;
+	struct directory *directory;
 	Song *conflicting;
 
 	parent = parent_path(path_max_tmp, utf8path);
@@ -342,11 +348,12 @@ static Directory *addDirectoryPathToDB(const char *utf8path)
 	return directory;
 }
 
-static Directory *addParentPathToDB(const char *utf8path)
+static struct directory *
+addParentPathToDB(const char *utf8path)
 {
 	char *parent;
 	char path_max_tmp[MPD_PATH_MAX];
-	Directory *parentDirectory;
+	struct directory *parentDirectory;
 
 	parent = parent_path(path_max_tmp, utf8path);
 
@@ -358,13 +365,13 @@ static Directory *addParentPathToDB(const char *utf8path)
 	if (!parentDirectory)
 		return NULL;
 
-	return (Directory *) parentDirectory;
+	return (struct directory *) parentDirectory;
 }
 
 static enum update_return updatePath(const char *utf8path)
 {
-	Directory *directory;
-	Directory *parentDirectory;
+	struct directory *directory;
+	struct directory *parentDirectory;
 	Song *song;
 	char *path = sanitizePathDup(utf8path);
 	time_t mtime;

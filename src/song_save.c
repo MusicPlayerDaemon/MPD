@@ -98,7 +98,7 @@ static int matchesAnMpdTagItemKey(char *buffer, int *itemType)
 }
 
 void readSongInfoIntoList(FILE *fp, struct songvec *sv,
-			  Directory *parentDir)
+			  struct directory *parentDir)
 {
 	char buffer[MPD_PATH_MAX + 1024];
 	int bufferSize = MPD_PATH_MAX + 1024;

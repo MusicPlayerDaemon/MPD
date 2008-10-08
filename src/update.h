@@ -20,7 +20,7 @@
 #ifndef UPDATE_H
 #define UPDATE_H
 
-#include "directory.h"
+struct directory;
 
 enum update_return {
 	UPDATE_RETURN_ERROR = -1,
@@ -31,7 +31,7 @@ enum update_return {
 int isUpdatingDB(void);
 
 enum update_return
-updateDirectory(Directory * directory);
+updateDirectory(struct directory *directory);
 
 /*
  * returns the non-negative update job ID on success,

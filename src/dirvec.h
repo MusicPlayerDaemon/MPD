@@ -1,15 +1,15 @@
 #ifndef DIRVEC_H
 #define DIRVEC_H
 
-#include "directory.h"
+struct dirvec;
 
 void dirvec_sort(struct dirvec *dv);
 
-Directory *dirvec_find(struct dirvec *dv, const char *path);
+struct directory *dirvec_find(struct dirvec *dv, const char *path);
 
-int dirvec_delete(struct dirvec *dv, Directory *del);
+int dirvec_delete(struct dirvec *dv, struct directory *del);
 
-void dirvec_add(struct dirvec *dv, Directory *add);
+void dirvec_add(struct dirvec *dv, struct directory *add);
 
 void dirvec_destroy(struct dirvec *dv);
 

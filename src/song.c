@@ -29,7 +29,7 @@
 #include "os_compat.h"
 
 Song *
-song_alloc(const char *url, struct _Directory *parent)
+song_alloc(const char *url, struct directory *parent)
 {
 	size_t urllen;
 	Song *song;
@@ -46,7 +46,7 @@ song_alloc(const char *url, struct _Directory *parent)
 	return song;
 }
 
-Song *newSong(const char *url, Directory * parentDir)
+Song *newSong(const char *url, struct directory *parentDir)
 {
 	Song *song;
 	assert(*url);

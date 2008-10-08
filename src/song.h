@@ -32,15 +32,15 @@ struct client;
 
 typedef struct _Song {
 	struct tag *tag;
-	struct _Directory *parentDir;
+	struct directory *parentDir;
 	time_t mtime;
 	char url[sizeof(size_t)];
 } Song;
 
 Song *
-song_alloc(const char *url, struct _Directory *parent);
+song_alloc(const char *url, struct directory *parent);
 
-Song *newSong(const char *url, struct _Directory *parentDir);
+Song *newSong(const char *url, struct directory *parentDir);
 
 void freeJustSong(Song *);
 
