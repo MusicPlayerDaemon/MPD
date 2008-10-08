@@ -33,6 +33,7 @@
 #include "audio_format.h"
 #include "playerData.h"
 
+#include <stdbool.h>
 
 /* valid values for streamTypes in the InputPlugin struct: */
 #define INPUT_PLUGIN_STREAM_FILE	0x01
@@ -65,10 +66,10 @@ struct decoder_plugin {
 	void (*finish)(void);
 
 	/**
-	 * boolean return value, returns 1 if the InputStream is
-	 * decodable by the InputPlugin, 0 if not
+	 * returns true if the InputStream is decodable by the
+	 * InputPlugin, false if not
 	 */
-	unsigned int (*try_decode)(InputStream *);
+	bool (*try_decode)(InputStream *);
 
 	/**
 	 * this will be used to decode InputStreams, and is

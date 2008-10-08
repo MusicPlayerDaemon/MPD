@@ -417,7 +417,7 @@ initInputStreamPlus(InputStreamPlus *isp, struct decoder *decoder,
 /*
  * Tries to decode the specified stream, and gives true if managed to do it.
  */
-static unsigned int wavpack_trydecode(InputStream *is)
+static bool wavpack_trydecode(InputStream *is)
 {
 	char error[ERRORLEN];
 	WavpackContext *wpc;
@@ -427,13 +427,13 @@ static unsigned int wavpack_trydecode(InputStream *is)
 	wpc = WavpackOpenFileInputEx(&mpd_is_reader, &isp, NULL, error,
 	                             OPEN_STREAMING, 0);
 	if (wpc == NULL)
-		return 0;
+		return false;
 
 	WavpackCloseFile(wpc);
 	/* Seek it back in order to play from the first byte. */
 	seekInputStream(is, 0, SEEK_SET);
 
-	return 1;
+	return true;
 }
 
 static int wavpack_open_wvc(struct decoder *decoder,

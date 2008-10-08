@@ -20,6 +20,7 @@
 #define AUDIO_FORMAT_H
 
 #include <stdint.h>
+#include <stdbool.h>
 
 struct audio_format {
 	uint32_t sampleRate;
@@ -34,13 +35,13 @@ static inline void audio_format_clear(struct audio_format *af)
 	af->channels = 0;
 }
 
-static inline int audio_format_defined(const struct audio_format *af)
+static inline bool audio_format_defined(const struct audio_format *af)
 {
 	return af->sampleRate != 0;
 }
 
-static inline int audio_format_equals(const struct audio_format *a,
-				      const struct audio_format *b)
+static inline bool audio_format_equals(const struct audio_format *a,
+				       const struct audio_format *b)
 {
 	return a->sampleRate == b->sampleRate &&
 		a->bits == b->bits &&

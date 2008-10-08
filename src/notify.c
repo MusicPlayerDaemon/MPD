@@ -31,7 +31,7 @@ void notify_init(struct notify *notify)
 	if (ret != 0)
 		FATAL("pthread_mutex_init() failed");
 
-	notify->pending = 0;
+	notify->pending = false;
 }
 
 void notify_deinit(struct notify *notify)
@@ -45,14 +45,14 @@ void notify_wait(struct notify *notify)
 	pthread_mutex_lock(&notify->mutex);
 	while (!notify->pending)
 		pthread_cond_wait(&notify->cond, &notify->mutex);
-	notify->pending = 0;
+	notify->pending = false;
 	pthread_mutex_unlock(&notify->mutex);
 }
 
 void notify_signal(struct notify *notify)
 {
 	pthread_mutex_lock(&notify->mutex);
-	notify->pending = 1;
+	notify->pending = true;
 	pthread_cond_signal(&notify->cond);
 	pthread_mutex_unlock(&notify->mutex);
 }

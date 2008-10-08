@@ -34,7 +34,7 @@ ob_init(unsigned int size, struct notify *notify)
 	ob.size = size;
 	ob.begin = 0;
 	ob.end = 0;
-	ob.lazy = 0;
+	ob.lazy = false;
 	ob.notify = notify;
 	ob.chunks[0].chunkSize = 0;
 }
@@ -96,7 +96,7 @@ void ob_flush(void)
 	}
 }
 
-void ob_set_lazy(int lazy)
+void ob_set_lazy(bool lazy)
 {
 	ob.lazy = lazy;
 }

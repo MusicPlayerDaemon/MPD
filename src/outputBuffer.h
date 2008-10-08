@@ -22,6 +22,7 @@
 #include "audio_format.h"
 
 #include <stddef.h>
+#include <stdbool.h>
 
 /* pick 1020 since its devisible for 8,16,24, and 32-bit audio */
 #define CHUNK_SIZE		1020
@@ -50,7 +51,7 @@ struct output_buffer {
 
 	/** non-zero if the player thread should only we woken up if
 	    the buffer becomes non-empty */
-	int lazy;
+	bool lazy;
 
 	struct audio_format audioFormat;
 
@@ -74,7 +75,7 @@ void ob_flush(void);
  * previously empty, i.e. when the player thread has really been
  * waiting for us.
  */
-void ob_set_lazy(int lazy);
+void ob_set_lazy(bool lazy);
 
 /** is the buffer empty? */
 int ob_is_empty(void);

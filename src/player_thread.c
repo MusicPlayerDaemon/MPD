@@ -192,7 +192,7 @@ static void do_play(void)
 	int next = -1;
 
 	ob_clear();
-	ob_set_lazy(0);
+	ob_set_lazy(false);
 
 	dc_start(&pc.notify, pc.next_song);
 	if (waitOnDecode(&decodeWaitedOn) < 0) {
@@ -222,7 +222,7 @@ static void do_play(void)
 			} else {
 				/* buffering is complete */
 				buffering = 0;
-				ob_set_lazy(1);
+				ob_set_lazy(true);
 			}
 		}
 
@@ -314,7 +314,7 @@ static void do_play(void)
 				}
 				nextChunk = ob_absolute(crossFadeChunks);
 				if (nextChunk >= 0) {
-					ob_set_lazy(1);
+					ob_set_lazy(true);
 					cross_fade_apply(beginChunk,
 							 ob_get_chunk(nextChunk),
 							 &(ob.audioFormat),
@@ -331,7 +331,7 @@ static void do_play(void)
 					} else {
 						/* wait for the
 						   decoder */
-						ob_set_lazy(0);
+						ob_set_lazy(false);
 						notify_wait(&pc.notify);
 						continue;
 					}

@@ -204,7 +204,8 @@ void finishAudioDriver(void)
 	audioOutputArraySize = 0;
 }
 
-int isCurrentAudioFormat(const struct audio_format *audioFormat)
+bool
+isCurrentAudioFormat(const struct audio_format *audioFormat)
 {
 	assert(audioFormat != NULL);
 

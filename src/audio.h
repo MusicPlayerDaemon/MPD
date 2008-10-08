@@ -19,6 +19,7 @@
 #ifndef AUDIO_H
 #define AUDIO_H
 
+#include <stdbool.h>
 #include <stdio.h>
 
 #define AUDIO_AO_DRIVER_DEFAULT	"default"
@@ -51,7 +52,7 @@ void dropBufferedAudio(void);
 
 void closeAudioDevice(void);
 
-int isCurrentAudioFormat(const struct audio_format *audioFormat);
+bool isCurrentAudioFormat(const struct audio_format *audioFormat);
 
 void sendMetadataToAudioDevice(const struct tag *tag);
 

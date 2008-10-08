@@ -19,12 +19,13 @@
 #ifndef NOTIFY_H
 #define NOTIFY_H
 
+#include <stdbool.h>
 #include <pthread.h>
 
 struct notify {
 	pthread_mutex_t mutex;
 	pthread_cond_t cond;
-	int pending;
+	bool pending;
 };
 
 #define NOTIFY_INITIALIZER { \

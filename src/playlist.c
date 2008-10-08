@@ -57,7 +57,7 @@
 #define PLAYLIST_HASH_MULT	4
 
 #define DEFAULT_PLAYLIST_MAX_LENGTH		(1024*16)
-#define DEFAULT_PLAYLIST_SAVE_ABSOLUTE_PATHS	0
+#define DEFAULT_PLAYLIST_SAVE_ABSOLUTE_PATHS	false
 
 static Playlist playlist;
 static int playlist_state = PLAYLIST_STATE_STOP;
@@ -66,7 +66,7 @@ static int playlist_stopOnError;
 static int playlist_errorCount;
 static int playlist_noGoToNext;
 
-int playlist_saveAbsolutePaths = DEFAULT_PLAYLIST_SAVE_ABSOLUTE_PATHS;
+bool playlist_saveAbsolutePaths = DEFAULT_PLAYLIST_SAVE_ABSOLUTE_PATHS;
 
 static void swapOrder(int a, int b);
 static void playPlaylistOrderNumber(int orderNum);
@@ -119,9 +119,9 @@ void initPlaylist(void)
 	ConfigParam *param;
 
 	playlist.length = 0;
-	playlist.repeat = 0;
+	playlist.repeat = false;
 	playlist.version = 1;
-	playlist.random = 0;
+	playlist.random = false;
 	playlist.queued = -1;
 	playlist.current = -1;
 
@@ -329,9 +329,9 @@ void readPlaylistState(FILE *fp)
 			if (strcmp
 			    (&(buffer[strlen(PLAYLIST_STATE_FILE_REPEAT)]),
 			     "1") == 0) {
-				setPlaylistRepeatStatus(1);
+				setPlaylistRepeatStatus(true);
 			} else
-				setPlaylistRepeatStatus(0);
+				setPlaylistRepeatStatus(false);
 		} else if (!prefixcmp(buffer, PLAYLIST_STATE_FILE_CROSSFADE)) {
 			setPlayerCrossFade(atoi
 					   (&
@@ -344,9 +344,9 @@ void readPlaylistState(FILE *fp)
 			     (buffer
 			      [strlen(PLAYLIST_STATE_FILE_RANDOM)]),
 			     "1") == 0) {
-				setPlaylistRandomStatus(1);
+				setPlaylistRandomStatus(true);
 			} else
-				setPlaylistRandomStatus(0);
+				setPlaylistRandomStatus(false);
 		} else if (!prefixcmp(buffer, PLAYLIST_STATE_FILE_CURRENT)) {
 			if (strlen(buffer) ==
 			    strlen(PLAYLIST_STATE_FILE_CURRENT))
@@ -980,17 +980,17 @@ void playPlaylistIfPlayerStopped(void)
 	}
 }
 
-int getPlaylistRepeatStatus(void)
+bool getPlaylistRepeatStatus(void)
 {
 	return playlist.repeat;
 }
 
-int getPlaylistRandomStatus(void)
+bool getPlaylistRandomStatus(void)
 {
 	return playlist.random;
 }
 
-void setPlaylistRepeatStatus(int status)
+void setPlaylistRepeatStatus(bool status)
 {
 	if (playlist_state == PLAYLIST_STATE_PLAY) {
 		if (playlist.repeat && !status && playlist.queued == 0)
@@ -1150,9 +1150,9 @@ static void randomizeOrder(int start, int end)
 	}
 }
 
-void setPlaylistRandomStatus(int status)
+void setPlaylistRandomStatus(bool status)
 {
-	int statusWas = playlist.random;
+	bool statusWas = playlist.random;
 
 	playlist.random = status;
 

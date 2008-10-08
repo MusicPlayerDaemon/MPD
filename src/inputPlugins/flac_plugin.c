@@ -427,9 +427,9 @@ static int oggflac_decode(struct decoder *decoder, InputStream * inStream)
 	return flac_decode_internal(decoder, inStream, 1);
 }
 
-static unsigned int oggflac_try_decode(InputStream * inStream)
+static bool oggflac_try_decode(InputStream * inStream)
 {
-	return (ogg_stream_type_detect(inStream) == FLAC) ? 1 : 0;
+	return ogg_stream_type_detect(inStream) == FLAC;
 }
 
 static const char *oggflac_suffixes[] = { "ogg", "oga", NULL };

@@ -21,6 +21,7 @@
 
 #include "locate.h"
 
+#include <stdbool.h>
 #include <stdio.h>
 
 #define PLAYLIST_FILE_SUFFIX 	"m3u"
@@ -50,12 +51,12 @@ typedef struct _Playlist {
 	int length;
 	int current;
 	int queued;
-	int repeat;
-	int random;
+	bool repeat;
+	bool random;
 	uint32_t version;
 } Playlist;
 
-extern int playlist_saveAbsolutePaths;
+extern bool playlist_saveAbsolutePaths;
 
 extern int playlist_max_length;
 
@@ -119,13 +120,13 @@ enum playlist_result swapSongsInPlaylistById(int id1, int id2);
 
 enum playlist_result loadPlaylist(struct client *client, const char *utf8file);
 
-int getPlaylistRepeatStatus(void);
+bool getPlaylistRepeatStatus(void);
 
-void setPlaylistRepeatStatus(int status);
+void setPlaylistRepeatStatus(bool status);
 
-int getPlaylistRandomStatus(void);
+bool getPlaylistRandomStatus(void);
 
-void setPlaylistRandomStatus(int status);
+void setPlaylistRandomStatus(bool status);
 
 int getPlaylistCurrentSong(void);
 

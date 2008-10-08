@@ -85,7 +85,7 @@ double decoder_seek_where(mpd_unused struct decoder * decoder)
 {
 	assert(dc.command == DECODE_COMMAND_SEEK);
 
-	decoder->seeking = 1;
+	decoder->seeking = true;
 
 	return dc.seekWhere;
 }

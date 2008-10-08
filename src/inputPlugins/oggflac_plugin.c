@@ -283,14 +283,14 @@ static struct tag *oggflac_TagDup(char *file)
 	return data.tag;
 }
 
-static unsigned int oggflac_try_decode(InputStream * inStream)
+static bool oggflac_try_decode(InputStream * inStream)
 {
 	if (!inStream->seekable)
 		/* we cannot seek after the detection, so don't bother
 		   checking */
-		return 1;
+		return true;
 
-	return (ogg_stream_type_detect(inStream) == FLAC) ? 1 : 0;
+	return ogg_stream_type_detect(inStream) == FLAC;
 }
 
 static int oggflac_decode(struct decoder * mpd_decoder, InputStream * inStream)

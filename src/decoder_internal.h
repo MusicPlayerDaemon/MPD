@@ -27,7 +27,7 @@ struct decoder {
 
 	ConvState conv_state;
 
-	int seeking;
+	bool seeking;
 };
 
 #endif

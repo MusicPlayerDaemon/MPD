@@ -31,7 +31,7 @@ static void decodeStart(void)
 {
 	struct decoder decoder;
 	int ret;
-	int close_instream = 1;
+	bool close_instream = true;
 	InputStream inStream;
 	struct decoder_plugin *plugin = NULL;
 	char path_max_fs[MPD_PATH_MAX];
@@ -53,7 +53,7 @@ static void decodeStart(void)
 		goto stop_no_close;
 	}
 
-	decoder.seeking = 0;
+	decoder.seeking = false;
 
 	dc.state = DECODE_STATE_START;
 	dc.command = DECODE_COMMAND_NONE;
@@ -137,7 +137,7 @@ static void decodeStart(void)
 
 			if (plugin->file_decode != NULL) {
 				closeInputStream(&inStream);
-				close_instream = 0;
+				close_instream = false;
 				decoder.plugin = plugin;
 				ret = plugin->file_decode(&decoder,
 							  path_max_fs);

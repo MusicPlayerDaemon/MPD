@@ -19,6 +19,8 @@
 #ifndef SONG_H
 #define SONG_H
 
+#include <stddef.h>
+#include <stdbool.h>
 #include <sys/time.h>
 
 #define SONG_BEGIN	"songList begin"
@@ -55,10 +57,10 @@ updateSongInfo(struct song *song);
 char *
 get_song_url(char *path_max_tmp, struct song *song);
 
-static inline int
+static inline bool
 song_is_file(const struct song *song)
 {
-	return !!song->parentDir;
+	return song->parentDir != NULL;
 }
 
 #endif

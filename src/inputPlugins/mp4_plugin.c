@@ -103,12 +103,12 @@ static int mp4_decode(struct decoder * mpd_decoder, InputStream * inStream)
 	unsigned int initial = 1;
 	float *seekTable;
 	long seekTableEnd = -1;
-	int seekPositionFound = 0;
+	bool seekPositionFound = false;
 	long offset;
 	uint16_t bitRate = 0;
-	int seeking = 0;
+	bool seeking = false;
 	double seek_where = 0;
-	int initialized = 0;
+	bool initialized = false;
 
 	mp4cb = xmalloc(sizeof(mp4ff_callback_t));
 	mp4cb->read = mp4_inputStreamReadCallback;
@@ -189,7 +189,7 @@ static int mp4_decode(struct decoder * mpd_decoder, InputStream * inStream)
 
 	for (sampleId = 0; sampleId < numSamples; sampleId++) {
 		if (decoder_get_command(mpd_decoder) == DECODE_COMMAND_SEEK) {
-			seeking = 1;
+			seeking = true;
 			seek_where = decoder_seek_where(mpd_decoder);
 		}
 
@@ -219,10 +219,10 @@ static int mp4_decode(struct decoder * mpd_decoder, InputStream * inStream)
 		file_time += ((float)dur) / scale;
 
 		if (seeking && file_time > seek_where)
-			seekPositionFound = 1;
+			seekPositionFound = true;
 
 		if (seeking && seekPositionFound) {
-			seekPositionFound = 0;
+			seekPositionFound = false;
 			decoder_clear(mpd_decoder);
 			seeking = 0;
 			decoder_command_finished(mpd_decoder);
@@ -259,7 +259,7 @@ static int mp4_decode(struct decoder * mpd_decoder, InputStream * inStream)
 			audio_format.channels = frameInfo.channels;
 			decoder_initialized(mpd_decoder, &audio_format,
 					    total_time);
-			initialized = 1;
+			initialized = true;
 		}
 
 		if (channels * (unsigned long)(dur + offset) > frameInfo.samples) {
