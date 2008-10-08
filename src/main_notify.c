@@ -28,7 +28,7 @@
 static struct ioOps main_notify_IO;
 static int main_pipe[2];
 pthread_t main_task;
-static Notify main_notify;
+static struct notify main_notify;
 static pthread_mutex_t select_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 static int ioops_fdset(fd_set * rfds,

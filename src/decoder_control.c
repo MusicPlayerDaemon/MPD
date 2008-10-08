@@ -33,7 +33,8 @@ void dc_deinit(void)
 	notify_deinit(&dc.notify);
 }
 
-void dc_command_wait(Notify *notify)
+void
+dc_command_wait(struct notify *notify)
 {
 	while (dc.command != DECODE_COMMAND_NONE) {
 		notify_signal(&dc.notify);
@@ -41,7 +42,8 @@ void dc_command_wait(Notify *notify)
 	}
 }
 
-static void dc_command(Notify *notify, enum decoder_command cmd)
+static void
+dc_command(struct notify *notify, enum decoder_command cmd)
 {
 	dc.command = cmd;
 	dc_command_wait(notify);
@@ -54,7 +56,7 @@ static void dc_command_async(enum decoder_command cmd)
 }
 
 void
-dc_start(Notify *notify, struct song *song)
+dc_start(struct notify *notify, struct song *song)
 {
 	assert(song != NULL);
 
@@ -73,14 +75,16 @@ dc_start_async(struct song *song)
 	dc_command_async(DECODE_COMMAND_START);
 }
 
-void dc_stop(Notify *notify)
+void
+dc_stop(struct notify *notify)
 {
 	if (dc.command == DECODE_COMMAND_START ||
 	    dc.state != DECODE_STATE_STOP)
 		dc_command(notify, DECODE_COMMAND_STOP);
 }
 
-int dc_seek(Notify *notify, double where)
+int
+dc_seek(struct notify *notify, double where)
 {
 	assert(where >= 0.0);
 

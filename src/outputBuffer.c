@@ -17,12 +17,13 @@
  */
 
 #include "outputBuffer.h"
-
+#include "notify.h"
 #include "utils.h"
 
 struct output_buffer ob;
 
-void ob_init(unsigned int size, Notify *notify)
+void
+ob_init(unsigned int size, struct notify *notify)
 {
 	assert(size > 0);
 

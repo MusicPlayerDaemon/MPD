@@ -80,7 +80,7 @@ enum player_queue_state {
 struct player_control {
 	unsigned int buffered_before_play;
 
-	Notify notify;
+	struct notify notify;
 	volatile enum player_command command;
 	volatile enum player_state state;
 	volatile int8_t error;

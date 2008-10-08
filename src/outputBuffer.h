@@ -19,8 +19,9 @@
 #ifndef OUTPUT_BUFFER_H
 #define OUTPUT_BUFFER_H
 
-#include "notify.h"
 #include "audio_format.h"
+
+#include <stddef.h>
 
 /* pick 1020 since its devisible for 8,16,24, and 32-bit audio */
 #define CHUNK_SIZE		1020
@@ -53,12 +54,13 @@ struct output_buffer {
 
 	struct audio_format audioFormat;
 
-	Notify *notify;
+	struct notify *notify;
 };
 
 extern struct output_buffer ob;
 
-void ob_init(unsigned int size, Notify *notify);
+void
+ob_init(unsigned int size, struct notify *notify);
 
 void ob_free(void);
 

@@ -39,7 +39,7 @@ enum decoder_state {
 #define DECODE_ERROR_FILE	20
 
 struct decoder_control {
-	Notify notify;
+	struct notify notify;
 
 	volatile enum decoder_state state;
 	volatile enum decoder_command command;
@@ -81,16 +81,19 @@ decoder_current_song(void)
 	return dc.current_song;
 }
 
-void dc_command_wait(Notify *notify);
+void
+dc_command_wait(struct notify *notify);
 
 void
-dc_start(Notify *notify, struct song *song);
+dc_start(struct notify *notify, struct song *song);
 
 void
 dc_start_async(struct song *song);
 
-void dc_stop(Notify *notify);
+void
+dc_stop(struct notify *notify);
 
-int dc_seek(Notify *notify, double where);
+int
+dc_seek(struct notify *notify, double where);
 
 #endif

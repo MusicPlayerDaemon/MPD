@@ -21,11 +21,11 @@
 
 #include "os_compat.h"
 
-typedef struct notify {
+struct notify {
 	pthread_mutex_t mutex;
 	pthread_cond_t cond;
 	int pending;
-} Notify;
+};
 
 #define NOTIFY_INITIALIZER { \
 	.mutex = PTHREAD_MUTEX_INITIALIZER, \
