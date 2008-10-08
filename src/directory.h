@@ -24,7 +24,7 @@
 
 #include <stdbool.h>
 #include <stdio.h>
-#include <sys/stat.h>
+#include <sys/types.h>
 
 #define DIRECTORY_DIR		"directory: "
 #define DIRECTORY_MTIME		"mtime: " /* DEPRECATED, noop-read-only */
