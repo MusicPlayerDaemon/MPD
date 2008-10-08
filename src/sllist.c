@@ -21,6 +21,8 @@
 #include "sllist.h"
 #include "utils.h"
 
+#include <string.h>
+
 static void init_strnode(struct strnode *x, char *s)
 {
 	x->data = s;

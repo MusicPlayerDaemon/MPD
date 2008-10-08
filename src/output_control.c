@@ -23,6 +23,8 @@
 #include "pcm_utils.h"
 
 #include <pthread.h>
+#include <assert.h>
+#include <stdlib.h>
 
 struct notify audio_output_client_notify = NOTIFY_INITIALIZER;
 

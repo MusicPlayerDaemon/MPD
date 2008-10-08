@@ -19,7 +19,7 @@
 #ifndef LISTEN_H
 #define LISTEN_H
 
-#include "os_compat.h"
+#include <sys/select.h>
 
 extern int boundPort;
 

@@ -25,6 +25,9 @@
 #include "gcc.h"
 #include "log.h"
 
+#include <assert.h>
+#include <string.h>
+
 static struct ioOps main_notify_IO;
 static int main_pipe[2];
 pthread_t main_task;

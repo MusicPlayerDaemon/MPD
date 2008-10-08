@@ -20,7 +20,8 @@
 #define PLAYER_H
 
 #include "notify.h"
-#include "os_compat.h"
+
+#include <stdint.h>
 
 enum player_state {
 	PLAYER_STATE_STOP = 0,

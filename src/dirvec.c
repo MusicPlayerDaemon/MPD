@@ -1,7 +1,8 @@
 #include "dirvec.h"
 #include "directory.h"
-#include "os_compat.h"
 #include "utils.h"
+
+#include <string.h>
 
 static size_t dv_size(struct dirvec *dv)
 {

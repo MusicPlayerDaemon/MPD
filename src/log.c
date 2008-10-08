@@ -20,7 +20,13 @@
 
 #include "conf.h"
 #include "utils.h"
-#include "os_compat.h"
+
+#include <assert.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <string.h>
+#include <stdarg.h>
+#include <fcntl.h>
 
 #define LOG_DATE_BUF_SIZE 16
 #define LOG_DATE_LEN (LOG_DATE_BUF_SIZE - 1)

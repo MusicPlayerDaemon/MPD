@@ -20,7 +20,8 @@
 #define TAG_POOL_H
 
 #include "tag.h"
-#include "os_compat.h"
+
+#include <pthread.h>
 
 extern pthread_mutex_t tag_pool_lock;
 

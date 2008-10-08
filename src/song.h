@@ -19,7 +19,7 @@
 #ifndef SONG_H
 #define SONG_H
 
-#include "os_compat.h"
+#include <sys/time.h>
 
 #define SONG_BEGIN	"songList begin"
 #define SONG_END	"songList end"
@@ -31,7 +31,7 @@ struct song {
 	struct tag *tag;
 	struct directory *parentDir;
 	time_t mtime;
-	char url[sizeof(size_t)];
+	char url[sizeof(int)];
 };
 
 struct song *

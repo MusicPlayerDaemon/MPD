@@ -23,6 +23,8 @@
 #include "../utils.h"
 #include "../log.h"
 
+#include <assert.h>
+
 /* this code was based on flac123, from flac-tools */
 
 static flac_read_status flacRead(mpd_unused const flac_decoder * flacDec,

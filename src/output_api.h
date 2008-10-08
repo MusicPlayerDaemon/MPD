@@ -25,7 +25,6 @@
 #include "tag.h"
 #include "conf.h"
 #include "log.h"
-#include "os_compat.h"
 
 #include <stdbool.h>
 

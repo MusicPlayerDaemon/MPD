@@ -19,6 +19,8 @@
 #include "output_api.h"
 #include "output_internal.h"
 
+#include <assert.h>
+
 const char *audio_output_get_name(const struct audio_output *ao)
 {
 	return ao->name;

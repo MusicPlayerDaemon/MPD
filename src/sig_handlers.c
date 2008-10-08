@@ -25,6 +25,10 @@
 #include "signal_check.h"
 #include "log.h"
 
+#include <sys/signal.h>
+#include <sys/wait.h>
+#include <errno.h>
+
 int handlePendingSignals(void)
 {
 	if (signal_is_pending(SIGINT) || signal_is_pending(SIGTERM)) {

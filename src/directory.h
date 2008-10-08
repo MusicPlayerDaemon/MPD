@@ -23,6 +23,7 @@
 #include "list.h"
 
 #include <stdbool.h>
+#include <sys/stat.h>
 
 struct client;
 

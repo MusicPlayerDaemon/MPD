@@ -21,6 +21,9 @@
 #include "utils.h"
 #include "log.h"
 
+#include <sys/time.h>
+#include <string.h>
+
 void cond_init(struct condition *cond)
 {
 	xpthread_mutex_init(&cond->mutex, NULL);

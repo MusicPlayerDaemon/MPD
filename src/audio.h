@@ -19,7 +19,7 @@
 #ifndef AUDIO_H
 #define AUDIO_H
 
-#include "os_compat.h"
+#include <stdio.h>
 
 #define AUDIO_AO_DRIVER_DEFAULT	"default"
 

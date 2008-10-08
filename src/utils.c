@@ -22,6 +22,17 @@
 
 #include "../config.h"
 
+#include <assert.h>
+#include <string.h>
+#include <ctype.h>
+#include <sys/types.h>
+#include <pwd.h>
+#include <fcntl.h>
+
+#ifdef HAVE_IPV6
+#include <sys/socket.h>
+#endif
+
 char *myFgets(char *buffer, int bufferSize, FILE * fp)
 {
 	char *ret = fgets(buffer, bufferSize, fp);

@@ -22,7 +22,8 @@
 #ifndef RINGBUF_H
 #define RINGBUF_H
 
-#include "os_compat.h"
+#include <stddef.h>
+#include <sys/uio.h>
 
 /** @file ringbuf.h
  *

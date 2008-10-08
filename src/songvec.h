@@ -1,7 +1,7 @@
 #ifndef SONGVEC_H
 #define SONGVEC_H
 
-#include "os_compat.h"
+#include <stddef.h>
 
 struct songvec {
 	struct song **base;

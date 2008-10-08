@@ -25,11 +25,17 @@
 #include "sllist.h"
 #include "utils.h"
 #include "ioops.h"
-#include "os_compat.h"
 #include "main_notify.h"
 #include "dlist.h"
 
 #include "../config.h"
+
+#include <assert.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <unistd.h>
+#include <string.h>
 
 #define GREETING				"OK MPD " PROTOCOL_VERSION "\n"
 

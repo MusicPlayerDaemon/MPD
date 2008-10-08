@@ -19,6 +19,9 @@
 #include "list.h"
 #include "utils.h"
 
+#include <assert.h>
+#include <string.h>
+
 static void makeListNodesArray(List * list)
 {
 	ListNode *node = list->firstNode;

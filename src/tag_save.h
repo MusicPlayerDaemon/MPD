@@ -19,7 +19,7 @@
 #ifndef TAG_SAVE_H
 #define TAG_SAVE_H
 
-#include "os_compat.h"
+#include <stdio.h>
 
 struct tag;
 

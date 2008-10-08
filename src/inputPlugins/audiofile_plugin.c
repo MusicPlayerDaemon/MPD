@@ -24,6 +24,7 @@
 
 #include "../log.h"
 
+#include <sys/stat.h>
 #include <audiofile.h>
 
 /* pick 1020 since its devisible for 8,16,24, and 32-bit audio */

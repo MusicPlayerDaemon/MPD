@@ -19,7 +19,7 @@
 #ifndef MPD_TIMER_H
 #define MPD_TIMER_H
 
-#include "os_compat.h"
+#include <stdint.h>
 
 struct audio_format;
 

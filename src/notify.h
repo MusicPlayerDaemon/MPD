@@ -19,7 +19,7 @@
 #ifndef NOTIFY_H
 #define NOTIFY_H
 
-#include "os_compat.h"
+#include <pthread.h>
 
 struct notify {
 	pthread_mutex_t mutex;

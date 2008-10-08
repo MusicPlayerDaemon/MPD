@@ -18,6 +18,9 @@
 
 #include "ioops.h"
 
+#include <assert.h>
+#include <stddef.h>
+
 /* Eventually the listener protocol will use this, too */
 
 /*

@@ -25,6 +25,8 @@
 #include "ringbuf.h"
 #include "utils.h"
 
+#include <string.h>
+
 #define advance_ptr(ptr,cnt,mask)  ptr = (ptr + cnt) & mask
 
 /*

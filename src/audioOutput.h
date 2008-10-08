@@ -19,7 +19,7 @@
 #ifndef AUDIO_OUTPUT_H
 #define AUDIO_OUTPUT_H
 
-#include "os_compat.h"
+#include <stdio.h>
 
 void printAllOutputPluginTypes(FILE * fp);
 

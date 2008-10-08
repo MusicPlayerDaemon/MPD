@@ -20,7 +20,7 @@
 #ifndef CONDITION_H
 #define CONDITION_H
 
-#include "os_compat.h"
+#include <pthread.h>
 
 struct condition {
 	pthread_mutex_t mutex;

@@ -25,7 +25,9 @@
 #include "playlist.h"
 #include "utils.h"
 #include "volume.h"
-#include "os_compat.h"
+
+#include <string.h>
+#include <sys/stat.h>
 
 static struct _sf_cb {
 	void (*reader)(FILE *);

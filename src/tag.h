@@ -19,8 +19,11 @@
 #ifndef TAG_H
 #define TAG_H
 
-#include "os_compat.h"
 #include "gcc.h"
+
+#include <stdint.h>
+#include <stddef.h>
+#include <string.h>
 
 enum tag_type {
 	TAG_ITEM_ARTIST,

@@ -20,8 +20,9 @@
 #ifndef INPUT_STREAM_HTTP_AUTH_H
 #define INPUT_STREAM_HTTP_AUTH_H
 
-#include "os_compat.h"
 #include "utils.h"
+
+#include <string.h>
 
 /* base64 code taken from xmms */
 

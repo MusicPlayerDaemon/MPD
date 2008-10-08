@@ -19,7 +19,10 @@
 #include "timer.h"
 #include "utils.h"
 #include "audio_format.h"
-#include "os_compat.h"
+
+#include <assert.h>
+#include <limits.h>
+#include <sys/time.h>
 
 static uint64_t now(void)
 {

@@ -22,6 +22,8 @@
 #include "../utils.h"
 #include "../log.h"
 
+#include <assert.h>
+
 #include <jack/jack.h>
 #include <jack/types.h>
 #include <jack/ringbuffer.h>

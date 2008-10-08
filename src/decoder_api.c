@@ -29,6 +29,8 @@
 #include "outputBuffer.h"
 #include "gcc.h"
 
+#include <assert.h>
+
 void decoder_plugin_register(struct decoder_plugin *plugin)
 {
 	decoder_plugin_load(plugin);

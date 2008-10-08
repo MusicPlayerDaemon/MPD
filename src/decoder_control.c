@@ -18,6 +18,8 @@
 
 #include "decoder_control.h"
 
+#include <assert.h>
+
 struct decoder_control dc;
 
 void dc_init(void)

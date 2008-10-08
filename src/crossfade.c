@@ -21,6 +21,9 @@
 #include "audio.h"
 #include "pcm_utils.h"
 
+#include <assert.h>
+#include <string.h>
+
 unsigned cross_fade_calc(float duration, float total_time,
 			 const struct audio_format *af,
 			 unsigned max_chunks)

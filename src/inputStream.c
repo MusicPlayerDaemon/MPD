@@ -21,7 +21,7 @@
 #include "inputStream_file.h"
 #include "inputStream_http.h"
 
-#include "os_compat.h"
+#include <stdlib.h>
 
 void initInputStream(void)
 {

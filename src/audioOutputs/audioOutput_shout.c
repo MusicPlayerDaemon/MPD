@@ -22,6 +22,8 @@
 
 #include "../utils.h"
 
+#include <assert.h>
+
 #define CONN_ATTEMPT_INTERVAL 60
 #define DEFAULT_CONN_TIMEOUT  2
 

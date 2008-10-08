@@ -24,6 +24,10 @@
 #include "../utils.h"
 #include "../timer.h"
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
 #define FIFO_BUFFER_SIZE 65536 /* pipe capacity on Linux >= 2.6.11 */
 
 typedef struct _FifoData {

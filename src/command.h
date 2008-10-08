@@ -20,7 +20,6 @@
 #define COMMAND_H
 
 #include "gcc.h"
-#include "os_compat.h"
 #include "sllist.h"
 
 #define COMMAND_RETURN_KILL	10

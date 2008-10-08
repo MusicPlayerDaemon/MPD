@@ -21,6 +21,8 @@
 #include "output_internal.h"
 #include "utils.h"
 
+#include <assert.h>
+
 static void ao_command_finished(struct audio_output *ao)
 {
 	assert(ao->command != AO_COMMAND_NONE);

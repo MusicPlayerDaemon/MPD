@@ -19,8 +19,11 @@
 #ifndef INTERFACE_H
 #define INTERFACE_H
 
-#include "os_compat.h"
 #include "gcc.h"
+
+#include <stddef.h>
+#include <stdarg.h>
+#include <sys/socket.h>
 
 struct client;
 

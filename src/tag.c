@@ -25,6 +25,8 @@
 #include "conf.h"
 #include "song.h"
 
+#include <assert.h>
+
 /**
  * Maximum number of items managed in the bulk list; if it is
  * exceeded, we switch back to "normal" reallocation.

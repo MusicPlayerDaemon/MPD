@@ -26,6 +26,10 @@
 #include "../utils.h"
 #include "../log.h"
 
+#include <sys/stat.h>
+#include <sys/ioctl.h>
+#include <fcntl.h>
+
 #if defined(__OpenBSD__) || defined(__NetBSD__)
 # include <soundcard.h>
 #else /* !(defined(__OpenBSD__) || defined(__NetBSD__) */

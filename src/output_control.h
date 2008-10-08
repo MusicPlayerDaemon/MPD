@@ -20,7 +20,8 @@
 #define OUTPUT_CONTROL_H
 
 #include "conf.h"
-#include "os_compat.h"
+
+#include <stddef.h>
 
 struct audio_output;
 struct audio_output_plugin;

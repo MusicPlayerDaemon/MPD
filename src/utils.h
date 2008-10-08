@@ -20,7 +20,12 @@
 #define UTILS_H
 
 #include "gcc.h"
-#include "os_compat.h"
+
+#include <unistd.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <errno.h>
+#include <pthread.h>
 
 #define ARRAY_SIZE(x) (sizeof(x)/sizeof(x[0]))
 

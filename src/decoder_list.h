@@ -19,7 +19,7 @@
 #ifndef INPUT_PLUGIN_H
 #define INPUT_PLUGIN_H
 
-#include "os_compat.h"
+#include <stdio.h>
 
 struct decoder_plugin;
 

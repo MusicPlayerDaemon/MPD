@@ -2,6 +2,9 @@
 #include "song.h"
 #include "utils.h"
 
+#include <assert.h>
+#include <string.h>
+
 static pthread_mutex_t nr_lock = PTHREAD_MUTEX_INITIALIZER;
 
 /* Only used for sorting/searchin a songvec, not general purpose compares */

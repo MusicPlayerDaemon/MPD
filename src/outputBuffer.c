@@ -20,6 +20,9 @@
 #include "notify.h"
 #include "utils.h"
 
+#include <assert.h>
+#include <string.h>
+
 struct output_buffer ob;
 
 void

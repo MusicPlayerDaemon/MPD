@@ -19,7 +19,7 @@
 #ifndef INPUT_STREAM_H
 #define INPUT_STREAM_H
 
-#include "os_compat.h"
+#include <stddef.h>
 
 typedef struct _InputStream InputStream;
 

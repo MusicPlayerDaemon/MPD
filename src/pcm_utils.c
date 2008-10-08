@@ -21,7 +21,10 @@
 #include "utils.h"
 #include "conf.h"
 #include "audio_format.h"
-#include "os_compat.h"
+
+#include <assert.h>
+#include <string.h>
+#include <math.h>
 
 static inline int
 pcm_dither(void)

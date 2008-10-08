@@ -21,6 +21,9 @@
 
 #include "decoder_list.h"
 
+#include <sys/time.h>
+
+struct stat;
 struct client;
 
 int lsPlaylists(struct client *client, const char *utf8path);

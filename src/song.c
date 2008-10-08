@@ -26,8 +26,6 @@
 #include "decoder_list.h"
 #include "decoder_api.h"
 
-#include "os_compat.h"
-
 struct song *
 song_alloc(const char *url, struct directory *parent)
 {

@@ -25,6 +25,7 @@
 #include "../utils.h"
 #include "../log.h"
 
+#include <assert.h>
 #include <faad.h>
 
 /* all code here is either based on or copied from FAAD2's frontend code */
