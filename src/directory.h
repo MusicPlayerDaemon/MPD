@@ -23,6 +23,8 @@
 #include "songvec.h"
 #include "list.h"
 
+#include <stdbool.h>
+
 struct dirvec {
 	struct _Directory **base;
 	size_t nr;
@@ -52,6 +54,12 @@ newDirectory(const char *dirname, Directory * parent);
 
 void
 freeDirectory(Directory * directory);
+
+static inline bool
+directory_is_empty(Directory *directory)
+{
+	return directory->children.nr == 0 && directory->songs.nr == 0;
+}
 
 Directory *
 getDirectory(const char *name);

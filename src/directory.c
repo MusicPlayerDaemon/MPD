@@ -89,7 +89,7 @@ static void deleteEmptyDirectoriesInDirectory(Directory * directory)
 
 	for (i = dv->nr; --i >= 0; ) {
 		deleteEmptyDirectoriesInDirectory(dv->base[i]);
-		if (!dv->base[i]->children.nr && !dv->base[i]->songs.nr)
+		if (directory_is_empty(dv->base[i]))
 			dirvec_delete(dv, dv->base[i]);
 	}
 	if (!dv->nr)
