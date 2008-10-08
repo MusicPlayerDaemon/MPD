@@ -134,7 +134,7 @@ strstrSearchTag(struct song *song, enum tag_type type, char *str)
 	if (type == LOCATE_TAG_FILE_TYPE || type == LOCATE_TAG_ANY_TYPE) {
 		char path_max_tmp[MPD_PATH_MAX];
 
-		string_toupper(get_song_url(path_max_tmp, song));
+		string_toupper(song_get_url(song, path_max_tmp));
 		if (strstr(path_max_tmp, str))
 			ret = 1;
 		if (ret == 1 || type == LOCATE_TAG_FILE_TYPE)
@@ -192,7 +192,7 @@ tagItemFoundAndMatches(struct song *song, enum tag_type type, char *str)
 
 	if (type == LOCATE_TAG_FILE_TYPE || type == LOCATE_TAG_ANY_TYPE) {
 		char path_max_tmp[MPD_PATH_MAX];
-		if (0 == strcmp(str, get_song_url(path_max_tmp, song)))
+		if (0 == strcmp(str, song_get_url(song, path_max_tmp)))
 			return 1;
 		if (type == LOCATE_TAG_FILE_TYPE)
 			return 0;

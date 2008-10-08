@@ -39,7 +39,7 @@ song_alloc(const char *url, struct directory *parent)
 
 	song->tag = NULL;
 	memcpy(song->url, url, urllen + 1);
-	song->parentDir = parent;
+	song->parent = parent;
 
 	return song;
 }
@@ -75,14 +75,14 @@ song_file_load(const char *path, struct directory *parent)
 
 	song = song_file_new(path, parent);
 
-	abs_path = rmp2amp_r(path_max_tmp, get_song_url(path_max_tmp, song));
+	abs_path = rmp2amp_r(path_max_tmp, song_get_url(song, path_max_tmp));
 	while (song->tag == NULL &&
 	       (plugin = isMusic(abs_path, &(song->mtime), next++))) {
 		song->tag = plugin->tag_dup(abs_path);
 	}
 
 	if (song->tag == NULL || song->tag->time < 0) {
-		freeJustSong(song);
+		song_free(song);
 		return NULL;
 	}
 
@@ -90,7 +90,7 @@ song_file_load(const char *path, struct directory *parent)
 }
 
 void
-freeJustSong(struct song *song)
+song_free(struct song *song)
 {
 	if (song->tag)
 		tag_free(song->tag);
@@ -98,7 +98,7 @@ freeJustSong(struct song *song)
 }
 
 int
-updateSongInfo(struct song *song)
+song_file_update(struct song *song)
 {
 	if (song_is_file(song)) {
 		struct decoder_plugin *plugin;
@@ -106,7 +106,7 @@ updateSongInfo(struct song *song)
 		char path_max_tmp[MPD_PATH_MAX];
 		char abs_path[MPD_PATH_MAX];
 
-		utf8_to_fs_charset(abs_path, get_song_url(path_max_tmp, song));
+		utf8_to_fs_charset(abs_path, song_get_url(song, path_max_tmp));
 		rmp2amp_r(abs_path, abs_path);
 
 		if (song->tag)
@@ -127,18 +127,18 @@ updateSongInfo(struct song *song)
 }
 
 char *
-get_song_url(char *path_max_tmp, struct song *song)
+song_get_url(struct song *song, char *path_max_tmp)
 {
 	if (!song)
 		return NULL;
 
 	assert(*song->url);
 
-	if (!song->parentDir || !song->parentDir->path)
+	if (!song->parent || !song->parent->path)
 		strcpy(path_max_tmp, song->url);
 	else
 		pfx_dir(path_max_tmp, song->url, strlen(song->url),
-			getDirectoryPath(song->parentDir),
-			strlen(getDirectoryPath(song->parentDir)));
+			getDirectoryPath(song->parent),
+			strlen(getDirectoryPath(song->parent)));
 	return path_max_tmp;
 }

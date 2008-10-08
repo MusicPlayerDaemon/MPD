@@ -176,7 +176,7 @@ void finishPlaylist(void)
 	int i;
 	for (i = 0; i < playlist.length; i++) {
 		if (!song_is_file(playlist.songs[i])) {
-			freeJustSong(playlist.songs[i]);
+			song_free(playlist.songs[i]);
 		}
 	}
 
@@ -202,7 +202,7 @@ void clearPlaylist(void)
 
 	for (i = 0; i < playlist.length; i++) {
 		if (!song_is_file(playlist.songs[i])) {
-			freeJustSong(playlist.songs[i]);
+			song_free(playlist.songs[i]);
 		}
 		playlist.idToPosition[playlist.positionToId[i]] = -1;
 		playlist.songs[i] = NULL;
@@ -225,7 +225,7 @@ void showPlaylist(struct client *client)
 
 	for (i = 0; i < playlist.length; i++) {
 		client_printf(client, "%i:%s\n", i,
-			      get_song_url(path_max_tmp, playlist.songs[i]));
+			      song_get_url(playlist.songs[i], path_max_tmp));
 	}
 }
 
@@ -236,7 +236,7 @@ static void playlist_save(FILE *fp)
 
 	for (i = 0; i < playlist.length; i++)
 		fprintf(fp, "%i:%s\n", i,
-		        get_song_url(path_max_tmp, playlist.songs[i]));
+			song_get_url(playlist.songs[i], path_max_tmp));
 }
 
 void savePlaylistState(FILE *fp)
@@ -479,9 +479,9 @@ static void queueNextSongInPlaylist(void)
 		playlist.queued = playlist.current + 1;
 		DEBUG("playlist: queue song %i:\"%s\"\n",
 		      playlist.queued,
-		      get_song_url(path_max_tmp,
-		                   playlist.
-				   songs[playlist.order[playlist.queued]]));
+		      song_get_url(playlist.
+				   songs[playlist.order[playlist.queued]],
+				   path_max_tmp));
 		queueSong(playlist.songs[playlist.order[playlist.queued]]);
 	} else if (playlist.length && playlist.repeat) {
 		if (playlist.length > 1 && playlist.random) {
@@ -490,9 +490,9 @@ static void queueNextSongInPlaylist(void)
 		playlist.queued = 0;
 		DEBUG("playlist: queue song %i:\"%s\"\n",
 		      playlist.queued,
-		      get_song_url(path_max_tmp,
-		                   playlist.
-		                   songs[playlist.order[playlist.queued]]));
+		      song_get_url(playlist.
+				   songs[playlist.order[playlist.queued]],
+				   path_max_tmp));
 		queueSong(playlist.songs[playlist.order[playlist.queued]]);
 	}
 }
@@ -584,7 +584,7 @@ int addToStoredPlaylist(const char *url, const char *utf8file)
 	song = song_remote_new(url);
 	if (song) {
 		int ret = appendSongToStoredPlaylistByPath(utf8file, song);
-		freeJustSong(song);
+		song_free(song);
 		return ret;
 	}
 
@@ -718,7 +718,7 @@ enum playlist_result deleteFromPlaylist(int song)
 	}
 
 	if (!song_is_file(playlist.songs[song])) {
-		freeJustSong(playlist.songs[song]);
+		song_free(playlist.songs[song]);
 	}
 
 	playlist.idToPosition[playlist.positionToId[song]] = -1;
@@ -812,8 +812,8 @@ static void playPlaylistOrderNumber(int orderNum)
 	playlist.queued = -1;
 
 	DEBUG("playlist: play %i:\"%s\"\n", orderNum,
-	      get_song_url(path_max_tmp,
-	                   playlist.songs[playlist.order[orderNum]]));
+	      song_get_url(playlist.songs[playlist.order[orderNum]],
+			   path_max_tmp));
 
 	playerPlay(playlist.songs[playlist.order[orderNum]]);
 	playlist.current = orderNum;
@@ -895,7 +895,7 @@ static void syncCurrentPlayerDecodeMetadata(void)
 	song = playlist.songs[songNum];
 
 	if (!song_is_file(song) &&
-	    0 == strcmp(get_song_url(path_max_tmp, song), songPlayer->url) &&
+	    0 == strcmp(song_get_url(song, path_max_tmp), songPlayer->url) &&
 	    !tag_equal(song->tag, songPlayer->tag)) {
 		if (song->tag)
 			tag_free(song->tag);
@@ -1265,7 +1265,7 @@ enum playlist_result savePlaylist(const char *utf8file)
 	for (i = 0; i < playlist.length; i++) {
 		char tmp[MPD_PATH_MAX];
 
-		get_song_url(path_max_tmp, playlist.songs[i]);
+		song_get_url(playlist.songs[i], path_max_tmp);
 		utf8_to_fs_charset(tmp, path_max_tmp);
 
 		if (playlist_saveAbsolutePaths &&

@@ -63,7 +63,7 @@ void decoder_initialized(struct decoder * decoder,
 
 const char *decoder_get_url(mpd_unused struct decoder * decoder, char * buffer)
 {
-	return get_song_url(buffer, dc.current_song);
+	return song_get_url(dc.current_song, buffer);
 }
 
 enum decoder_command decoder_get_command(mpd_unused struct decoder * decoder)

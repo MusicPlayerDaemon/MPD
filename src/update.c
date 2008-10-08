@@ -78,7 +78,7 @@ delete_song(struct directory *dir, struct song *del)
 	cond_leave(&delete_cond);
 
 	/* finally, all possible references gone, free it */
-	freeJustSong(del);
+	song_free(del);
 }
 
 struct delete_data {
@@ -93,7 +93,7 @@ delete_song_if_removed(struct song *song, void *_data)
 {
 	struct delete_data *data = _data;
 
-	data->tmp = get_song_url(data->tmp, song);
+	data->tmp = song_get_url(song, data->tmp);
 	assert(data->tmp);
 
 	if (!isFile(data->tmp, NULL)) {
@@ -232,7 +232,7 @@ updateInDirectory(struct directory *directory, const char *name)
 			return UPDATE_RETURN_UPDATED;
 		} else if (st.st_mtime != song->mtime) {
 			LOG("updating %s\n", name);
-			if (updateSongInfo(song) < 0)
+			if (song_file_update(song) < 0)
 				delete_song(directory, song);
 			return UPDATE_RETURN_UPDATED;
 		}
@@ -407,7 +407,7 @@ static enum update_return updatePath(const char *utf8path)
 			/* don't return, path maybe a song now */
 		}
 	} else if ((song = getSongFromDB(path))) {
-		parentDirectory = song->parentDir;
+		parentDirectory = song->parent;
 		if (!parentDirectory->stat
 		    && statDirectory(parentDirectory) < 0) {
 			free(path);
@@ -417,11 +417,11 @@ static enum update_return updatePath(const char *utf8path)
 		else if (!inodeFoundInParent(parentDirectory->parent,
 						 parentDirectory->inode,
 						 parentDirectory->device) &&
-			 isMusic(get_song_url(path_max_tmp, song), &mtime, 0)) {
+			 isMusic(song_get_url(song, path_max_tmp), &mtime, 0)) {
 			free(path);
 			if (song->mtime == mtime)
 				return UPDATE_RETURN_NOUPDATE;
-			else if (updateSongInfo(song) == 0)
+			else if (song_file_update(song) == 0)
 				return UPDATE_RETURN_UPDATED;
 			else {
 				delete_song(parentDirectory, song);
@@ -521,7 +521,7 @@ void reap_update_task(void)
 	cond_enter(&delete_cond);
 	if (delete) {
 		char tmp[MPD_PATH_MAX];
-		LOG("removing: %s\n", get_song_url(tmp, delete));
+		LOG("removing: %s\n", song_get_url(delete, tmp));
 		deleteASongFromPlaylist(delete);
 		delete = NULL;
 		cond_signal_async(&delete_cond);

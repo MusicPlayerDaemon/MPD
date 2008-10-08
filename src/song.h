@@ -31,7 +31,7 @@
 
 struct song {
 	struct tag *tag;
-	struct directory *parentDir;
+	struct directory *parent;
 	time_t mtime;
 	char url[sizeof(int)];
 };
@@ -53,24 +53,24 @@ struct song *
 song_file_load(const char *path, struct directory *parent);
 
 void
-freeJustSong(struct song *);
+song_free(struct song *song);
 
 int
-updateSongInfo(struct song *song);
+song_file_update(struct song *song);
 
 /*
- * get_song_url - Returns a path of a song in UTF8-encoded form
+ * song_get_url - Returns a path of a song in UTF8-encoded form
  * path_max_tmp is the argument that the URL is written to, this
  * buffer is assumed to be MPD_PATH_MAX or greater (including
  * terminating '\0').
  */
 char *
-get_song_url(char *path_max_tmp, struct song *song);
+song_get_url(struct song *song, char *path_max_tmp);
 
 static inline bool
 song_is_file(const struct song *song)
 {
-	return song->parentDir != NULL;
+	return song->parent != NULL;
 }
 
 #endif

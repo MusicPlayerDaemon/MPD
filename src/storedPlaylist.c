@@ -117,7 +117,7 @@ List *loadStoredPlaylist(const char *utf8path)
 			memmove(s, s + musicDir_len + 1,
 				strlen(s + musicDir_len + 1) + 1);
 		if ((song = getSongFromDB(s))) {
-			get_song_url(path_max_tmp, song);
+			song_get_url(song, path_max_tmp);
 			insertInListWithoutKey(list, xstrdup(path_max_tmp));
 		} else if (isValidRemoteUtf8Url(s))
 			insertInListWithoutKey(list, xstrdup(s));
@@ -293,7 +293,8 @@ appendSongToStoredPlaylistByPath(const char *utf8path, struct song *song)
 		return PLAYLIST_RESULT_TOO_LARGE;
 	}
 
-	s = utf8_to_fs_charset(path_max_tmp2, get_song_url(path_max_tmp, song));
+	s = utf8_to_fs_charset(path_max_tmp2,
+			       song_get_url(song, path_max_tmp));
 
 	if (playlist_saveAbsolutePaths && song_is_file(song))
 		s = rmp2amp_r(path_max_tmp, s);

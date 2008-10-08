@@ -37,7 +37,7 @@ static void decodeStart(void)
 	char path_max_fs[MPD_PATH_MAX];
 	char path_max_utf8[MPD_PATH_MAX];
 
-	if (!get_song_url(path_max_utf8, dc.next_song)) {
+	if (!song_get_url(dc.next_song, path_max_utf8)) {
 		dc.error = DECODE_ERROR_FILE;
 		goto stop_no_close;
 	}

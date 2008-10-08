@@ -135,7 +135,7 @@ static void processDecodeInput(int *pause_r, unsigned int *bbp_r,
 				pc.error = PLAYER_ERROR_AUDIO;
 				ERROR("problems opening audio device "
 				      "while playing \"%s\"\n",
-				      get_song_url(tmp, dc.next_song));
+				      song_get_url(dc.next_song, tmp));
 				*pause_r = -1;
 			}
 		}
@@ -244,7 +244,7 @@ static void do_play(void)
 					pc.error = PLAYER_ERROR_AUDIO;
 					ERROR("problems opening audio device "
 					      "while playing \"%s\"\n",
-					      get_song_url(tmp, dc.next_song));
+					      song_get_url(dc.next_song, tmp));
 					break;
 				}
 

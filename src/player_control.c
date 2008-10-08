@@ -158,11 +158,11 @@ char *getPlayerErrorStr(void)
 	case PLAYER_ERROR_FILENOTFOUND:
 		snprintf(error, errorlen,
 			 "file \"%s\" does not exist or is inaccessible",
-			 get_song_url(path_max_tmp, pc.errored_song));
+			 song_get_url(pc.errored_song, path_max_tmp));
 		break;
 	case PLAYER_ERROR_FILE:
 		snprintf(error, errorlen, "problems decoding \"%s\"",
-			 get_song_url(path_max_tmp, pc.errored_song));
+			 song_get_url(pc.errored_song, path_max_tmp));
 		break;
 	case PLAYER_ERROR_AUDIO:
 		strcpy(error, "problems opening audio device");
@@ -172,7 +172,7 @@ char *getPlayerErrorStr(void)
 		break;
 	case PLAYER_ERROR_UNKTYPE:
 		snprintf(error, errorlen, "file type of \"%s\" is unknown",
-			 get_song_url(path_max_tmp, pc.errored_song));
+			 song_get_url(pc.errored_song, path_max_tmp));
 	}
 	return *error ? error : NULL;
 }

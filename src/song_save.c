@@ -31,9 +31,9 @@
 static void
 song_save_url(FILE *fp, struct song *song)
 {
-	if (song->parentDir != NULL && song->parentDir->path != NULL)
+	if (song->parent != NULL && song->parent->path != NULL)
 		fprintf(fp, SONG_FILE "%s/%s\n",
-			getDirectoryPath(song->parentDir), song->url);
+			getDirectoryPath(song->parent), song->url);
 	else
 		fprintf(fp, SONG_FILE "%s\n",
 			song->url);
@@ -81,7 +81,7 @@ insertSongIntoList(struct songvec *sv, struct song *newsong)
 			existing->mtime = newsong->mtime;
 			newsong->tag = NULL;
 		}
-		freeJustSong(newsong);
+		song_free(newsong);
 	}
 }
 
@@ -101,7 +101,7 @@ static int matchesAnMpdTagItemKey(char *buffer, int *itemType)
 }
 
 void readSongInfoIntoList(FILE *fp, struct songvec *sv,
-			  struct directory *parentDir)
+			  struct directory *parent)
 {
 	char buffer[MPD_PATH_MAX + 1024];
 	int bufferSize = MPD_PATH_MAX + 1024;
@@ -114,7 +114,7 @@ void readSongInfoIntoList(FILE *fp, struct songvec *sv,
 				insertSongIntoList(sv, song);
 
 			song = song_file_new(buffer + strlen(SONG_KEY),
-					     parentDir);
+					     parent);
 		} else if (*buffer == 0) {
 			/* ignore empty lines (starting with '\0') */
 		} else if (song == NULL) {
