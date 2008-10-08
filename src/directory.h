@@ -38,22 +38,26 @@ typedef struct _Directory {
 	unsigned stat; /* not needed if ino_t == dev_t == 0 is impossible */
 } Directory;
 
-void reap_update_task(void);
-
-int isUpdatingDB(void);
-
-/*
- * returns the non-negative update job ID on success,
- * returns -1 if busy
- * @path will be freed by this function and should not be reused
- */
-int directory_update_init(char *path);
-
 void directory_init(void);
 
 void directory_finish(void);
 
 int isRootDirectory(const char *name);
+
+Directory *
+directory_get_root(void);
+
+Directory *
+newDirectory(const char *dirname, Directory * parent);
+
+void
+freeDirectory(Directory * directory);
+
+Directory *
+getDirectory(const char *name);
+
+void
+sortDirectory(Directory * directory);
 
 int printDirectoryInfo(struct client *client, const char *dirname);
 

@@ -22,16 +22,14 @@
 #include "log.h"
 #include "ls.h"
 #include "path.h"
-#include "playlist.h"
 #include "stats.h"
 #include "utils.h"
 #include "client.h"
 #include "dbUtils.h"
 #include "song_print.h"
 #include "song_save.h"
-#include "main_notify.h"
 #include "dirvec.h"
-#include "condition.h"
+#include "update.h"
 
 #define DIRECTORY_DIR		"directory: "
 #define DIRECTORY_MTIME		"mtime: " /* DEPRECATED, noop-read-only */
@@ -42,61 +40,11 @@
 #define DIRECTORY_MPD_VERSION	"mpd_version: "
 #define DIRECTORY_FS_CHARSET	"fs_charset: "
 
-enum update_return {
-	UPDATE_RETURN_ERROR = -1,
-	UPDATE_RETURN_NOUPDATE = 0,
-	UPDATE_RETURN_UPDATED = 1
-};
-
-enum update_progress {
-	UPDATE_PROGRESS_IDLE = 0,
-	UPDATE_PROGRESS_RUNNING = 1,
-	UPDATE_PROGRESS_DONE = 2
-} progress;
-
-/* make this dynamic?, or maybe this is big enough... */
-static char *update_paths[32];
-static size_t update_paths_nr;
-
 static Directory *music_root;
 
 static time_t directory_dbModTime;
 
-static pthread_t update_thr;
-
-static const int update_task_id_max = 1 << 15;
-
-static int update_task_id;
-
-static Song *delete;
-
-static struct condition delete_cond;
-
-static enum update_return
-addToDirectory(Directory * directory, const char *name);
-
-static void freeDirectory(Directory * directory);
-
-static enum update_return exploreDirectory(Directory * directory);
-
-static enum update_return updateDirectory(Directory * directory);
-
 static void deleteEmptyDirectoriesInDirectory(Directory * directory);
-
-static void delete_song(Directory *dir, Song *del);
-
-static enum update_return addSubDirectoryToDirectory(Directory * directory,
-				      const char *name, struct stat *st);
-
-static Directory *getDirectory(const char *name);
-
-static enum update_return updatePath(const char *utf8path);
-
-static void sortDirectory(Directory * directory);
-
-static int inodeFoundInParent(Directory * parent, ino_t inode, dev_t device);
-
-static int statDirectory(Directory * dir);
 
 static char *getDbFile(void)
 {
@@ -108,106 +56,8 @@ static char *getDbFile(void)
 	return param->value;
 }
 
-int isUpdatingDB(void)
-{
-	return (progress != UPDATE_PROGRESS_IDLE) ? update_task_id : 0;
-}
-
-static void * update_task(void *_path)
-{
-	enum update_return ret = UPDATE_RETURN_NOUPDATE;
-
-	if (_path) {
-		ret = updatePath((char *)_path);
-		free(_path);
-	} else {
-		ret = updateDirectory(music_root);
-	}
-
-	if (ret == UPDATE_RETURN_UPDATED && writeDirectoryDB() < 0)
-		ret = UPDATE_RETURN_ERROR;
-	progress = UPDATE_PROGRESS_DONE;
-	wakeup_main_task();
-	return (void *)ret;
-}
-
-static void spawn_update_task(char *path)
-{
-	pthread_attr_t attr;
-
-	assert(pthread_equal(pthread_self(), main_task));
-
-	progress = UPDATE_PROGRESS_RUNNING;
-	pthread_attr_init(&attr);
-	if (pthread_create(&update_thr, &attr, update_task, path))
-		FATAL("Failed to spawn update task: %s\n", strerror(errno));
-	if (++update_task_id > update_task_id_max)
-		update_task_id = 1;
-	DEBUG("spawned thread for update job id %i\n", update_task_id);
-}
-
-void reap_update_task(void)
-{
-	enum update_return ret;
-
-	assert(pthread_equal(pthread_self(), main_task));
-
-	cond_enter(&delete_cond);
-	if (delete) {
-		char tmp[MPD_PATH_MAX];
-		LOG("removing: %s\n", get_song_url(tmp, delete));
-		deleteASongFromPlaylist(delete);
-		delete = NULL;
-		cond_signal_async(&delete_cond);
-	}
-	cond_leave(&delete_cond);
-
-	if (progress != UPDATE_PROGRESS_DONE)
-		return;
-	if (pthread_join(update_thr, (void **)&ret))
-		FATAL("error joining update thread: %s\n", strerror(errno));
-	if (ret == UPDATE_RETURN_UPDATED)
-		playlistVersionChange();
-
-	if (update_paths_nr) {
-		char *path = update_paths[0];
-		memmove(&update_paths[0], &update_paths[1],
-		        --update_paths_nr * sizeof(char *));
-		spawn_update_task(path);
-	} else {
-		progress = UPDATE_PROGRESS_IDLE;
-	}
-}
-
-int directory_update_init(char *path)
-{
-	assert(pthread_equal(pthread_self(), main_task));
-
-	if (progress != UPDATE_PROGRESS_IDLE) {
-		int next_task_id;
-
-		if (!path)
-			return -1;
-		if (update_paths_nr == ARRAY_SIZE(update_paths))
-			return -1;
-		assert(update_paths_nr < ARRAY_SIZE(update_paths));
-		update_paths[update_paths_nr++] = path;
-		next_task_id = update_task_id + update_paths_nr;
-
-		return next_task_id > update_task_id_max ?  1 : next_task_id;
-	}
-	spawn_update_task(path);
-	return update_task_id;
-}
-
-static void directory_set_stat(Directory * dir, const struct stat *st)
-{
-	dir->inode = st->st_ino;
-	dir->device = st->st_dev;
-	dir->stat = 1;
-}
-
-static Directory *newDirectory(const char *dirname, Directory * parent)
+Directory *
+newDirectory(const char *dirname, Directory * parent)
 {
 	Directory *directory;
 
@@ -220,7 +70,8 @@ static Directory *newDirectory(const char *dirname, Directory * parent)
 	return directory;
 }
 
-static void freeDirectory(Directory * directory)
+void
+freeDirectory(Directory * directory)
 {
 	dirvec_destroy(&directory->children);
 	songvec_destroy(&directory->songs);
@@ -229,23 +80,6 @@ static void freeDirectory(Directory * directory)
 	free(directory);
 	/* this resets last dir returned */
 	/*getDirectoryPath(NULL); */
-}
-
-static void delete_song(Directory *dir, Song *del)
-{
-	/* first, prevent traversers in main task from getting this */
-	songvec_delete(&dir->songs, del);
-
-	/* now take it out of the playlist (in the main_task) */
-	cond_enter(&delete_cond);
-	assert(!delete);
-	delete = del;
-	wakeup_main_task();
-	do { cond_wait(&delete_cond); } while (delete);
-	cond_leave(&delete_cond);
-
-	/* finally, all possible references gone, free it */
-	freeJustSong(del);
 }
 
 static void deleteEmptyDirectoriesInDirectory(Directory * directory)
@@ -262,408 +96,6 @@ static void deleteEmptyDirectoriesInDirectory(Directory * directory)
 		dirvec_destroy(dv);
 }
 
-static enum update_return
-updateInDirectory(Directory * directory, const char *name)
-{
-	Song *song;
-	struct stat st;
-
-	if (myStat(name, &st))
-		return UPDATE_RETURN_ERROR;
-
-	if (S_ISREG(st.st_mode) && hasMusicSuffix(name, 0)) {
-		const char *shortname = mpd_basename(name);
-
-		if (!(song = songvec_find(&directory->songs, shortname))) {
-			addToDirectory(directory, name);
-			return UPDATE_RETURN_UPDATED;
-		} else if (st.st_mtime != song->mtime) {
-			LOG("updating %s\n", name);
-			if (updateSongInfo(song) < 0)
-				delete_song(directory, song);
-			return UPDATE_RETURN_UPDATED;
-		}
-	} else if (S_ISDIR(st.st_mode)) {
-		Directory *subdir = dirvec_find(&directory->children, name);
-		if (subdir) {
-			assert(directory == subdir->parent);
-			directory_set_stat(subdir, &st);
-			return updateDirectory(subdir);
-		} else {
-			return addSubDirectoryToDirectory(directory, name, &st);
-		}
-	}
-
-	return UPDATE_RETURN_NOUPDATE;
-}
-
-/* we don't look at hidden files nor files with newlines in them */
-static int skip_path(const char *path)
-{
-	return (path[0] == '.' || strchr(path, '\n')) ? 1 : 0;
-}
-
-struct delete_data {
-	char *tmp;
-	Directory *dir;
-	enum update_return ret;
-};
-
-/* passed to songvec_for_each */
-static int delete_song_if_removed(Song *song, void *_data)
-{
-	struct delete_data *data = _data;
-
-	data->tmp = get_song_url(data->tmp, song);
-	assert(data->tmp);
-
-	if (!isFile(data->tmp, NULL)) {
-		delete_song(data->dir, song);
-		data->ret = UPDATE_RETURN_UPDATED;
-	}
-	return 0;
-}
-
-static enum update_return
-removeDeletedFromDirectory(char *path_max_tmp, Directory * directory)
-{
-	enum update_return ret = UPDATE_RETURN_NOUPDATE;
-	int i;
-	struct dirvec *dv = &directory->children;
-	struct delete_data data;
-
-	for (i = dv->nr; --i >= 0; ) {
-		if (isDir(dv->base[i]->path))
-			continue;
-		LOG("removing directory: %s\n", dv->base[i]->path);
-		dirvec_delete(dv, dv->base[i]);
-		ret = UPDATE_RETURN_UPDATED;
-	}
-
-	data.dir = directory;
-	data.tmp = path_max_tmp;
-	data.ret = ret;
-	songvec_for_each(&directory->songs, delete_song_if_removed, &data);
-
-	return data.ret;
-}
-
-static Directory *addDirectoryPathToDB(const char *utf8path)
-{
-	char path_max_tmp[MPD_PATH_MAX];
-	char *parent;
-	Directory *parentDirectory;
-	Directory *directory;
-	Song *conflicting;
-
-	parent = parent_path(path_max_tmp, utf8path);
-
-	if (strlen(parent) == 0)
-		parentDirectory = music_root;
-	else
-		parentDirectory = addDirectoryPathToDB(parent);
-
-	if (!parentDirectory)
-		return NULL;
-
-	if ((directory = dirvec_find(&parentDirectory->children, utf8path))) {
-		assert(parentDirectory == directory->parent);
-	} else {
-		struct stat st;
-		if (myStat(utf8path, &st) < 0 ||
-		    inodeFoundInParent(parentDirectory, st.st_ino, st.st_dev))
-			return NULL;
-		else {
-			directory = newDirectory(utf8path, parentDirectory);
-			dirvec_add(&parentDirectory->children, directory);
-		}
-	}
-
-	/* if we're adding directory paths, make sure to delete filenames
-	   with potentially the same name */
-	conflicting = songvec_find(&parentDirectory->songs,
-	                           mpd_basename(directory->path));
-	if (conflicting)
-		delete_song(parentDirectory, conflicting);
-
-	return directory;
-}
-
-static Directory *addParentPathToDB(const char *utf8path)
-{
-	char *parent;
-	char path_max_tmp[MPD_PATH_MAX];
-	Directory *parentDirectory;
-
-	parent = parent_path(path_max_tmp, utf8path);
-
-	if (strlen(parent) == 0)
-		parentDirectory = music_root;
-	else
-		parentDirectory = addDirectoryPathToDB(parent);
-
-	if (!parentDirectory)
-		return NULL;
-
-	return (Directory *) parentDirectory;
-}
-
-static enum update_return updatePath(const char *utf8path)
-{
-	Directory *directory;
-	Directory *parentDirectory;
-	Song *song;
-	char *path = sanitizePathDup(utf8path);
-	time_t mtime;
-	enum update_return ret = UPDATE_RETURN_NOUPDATE;
-	char path_max_tmp[MPD_PATH_MAX];
-
-	if (NULL == path)
-		return UPDATE_RETURN_ERROR;
-
-	/* if path is in the DB try to update it, or else delete it */
-	if ((directory = getDirectory(path))) {
-		parentDirectory = directory->parent;
-
-		/* if this update directory is successfull, we are done */
-		ret = updateDirectory(directory);
-		if (ret != UPDATE_RETURN_ERROR) {
-			free(path);
-			sortDirectory(directory);
-			return ret;
-		}
-		/* we don't want to delete the root directory */
-		else if (directory == music_root) {
-			free(path);
-			return UPDATE_RETURN_NOUPDATE;
-		}
-		/* if updateDirectory fails, means we should delete it */
-		else {
-			LOG("removing directory: %s\n", path);
-			dirvec_delete(&parentDirectory->children, directory);
-			ret = UPDATE_RETURN_UPDATED;
-			/* don't return, path maybe a song now */
-		}
-	} else if ((song = getSongFromDB(path))) {
-		parentDirectory = song->parentDir;
-		if (!parentDirectory->stat
-		    && statDirectory(parentDirectory) < 0) {
-			free(path);
-			return UPDATE_RETURN_NOUPDATE;
-		}
-		/* if this song update is successful, we are done */
-		else if (!inodeFoundInParent(parentDirectory->parent,
-						 parentDirectory->inode,
-						 parentDirectory->device) &&
-			 isMusic(get_song_url(path_max_tmp, song), &mtime, 0)) {
-			free(path);
-			if (song->mtime == mtime)
-				return UPDATE_RETURN_NOUPDATE;
-			else if (updateSongInfo(song) == 0)
-				return UPDATE_RETURN_UPDATED;
-			else {
-				delete_song(parentDirectory, song);
-				return UPDATE_RETURN_UPDATED;
-			}
-		}
-		/* if updateDirectory fails, means we should delete it */
-		else {
-			delete_song(parentDirectory, song);
-			ret = UPDATE_RETURN_UPDATED;
-			/* don't return, path maybe a directory now */
-		}
-	}
-
-	/* path not found in the db, see if it actually exists on the fs.
-	 * Also, if by chance a directory was replaced by a file of the same
-	 * name or vice versa, we need to add it to the db
-	 */
-	if (isDir(path) || isMusic(path, NULL, 0)) {
-		parentDirectory = addParentPathToDB(path);
-		if (!parentDirectory || (!parentDirectory->stat &&
-					 statDirectory(parentDirectory) < 0)) {
-		} else if (0 == inodeFoundInParent(parentDirectory->parent,
-						   parentDirectory->inode,
-						   parentDirectory->device)
-			   && addToDirectory(parentDirectory, path)
-			   == UPDATE_RETURN_UPDATED) {
-			ret = UPDATE_RETURN_UPDATED;
-		}
-	}
-
-	free(path);
-
-	return ret;
-}
-
-static const char *opendir_path(char *path_max_tmp, const char *dirname)
-{
-	if (*dirname != '\0')
-		return rmp2amp_r(path_max_tmp,
-		                 utf8_to_fs_charset(path_max_tmp, dirname));
-	return musicDir;
-}
-
-static enum update_return updateDirectory(Directory * directory)
-{
-	DIR *dir;
-	const char *dirname = getDirectoryPath(directory);
-	struct dirent *ent;
-	char path_max_tmp[MPD_PATH_MAX];
-	enum update_return ret = UPDATE_RETURN_NOUPDATE;
-
-	if (!directory->stat && statDirectory(directory) < 0)
-		return UPDATE_RETURN_ERROR;
-	else if (inodeFoundInParent(directory->parent,
-				    directory->inode,
-				    directory->device))
-		return UPDATE_RETURN_ERROR;
-
-	dir = opendir(opendir_path(path_max_tmp, dirname));
-	if (!dir)
-		return UPDATE_RETURN_ERROR;
-
-	if (removeDeletedFromDirectory(path_max_tmp, directory) > 0)
-		ret = UPDATE_RETURN_UPDATED;
-
-	while ((ent = readdir(dir))) {
-		char *utf8;
-		if (skip_path(ent->d_name))
-			continue;
-
-		utf8 = fs_charset_to_utf8(path_max_tmp, ent->d_name);
-		if (!utf8)
-			continue;
-
-		if (directory->path)
-			utf8 = pfx_dir(path_max_tmp, utf8, strlen(utf8),
-			               dirname, strlen(dirname));
-		if (updateInDirectory(directory, path_max_tmp) > 0)
-			ret = UPDATE_RETURN_UPDATED;
-	}
-
-	closedir(dir);
-
-	return ret;
-}
-
-static enum update_return exploreDirectory(Directory * directory)
-{
-	DIR *dir;
-	const char *dirname = getDirectoryPath(directory);
-	struct dirent *ent;
-	char path_max_tmp[MPD_PATH_MAX];
-	enum update_return ret = UPDATE_RETURN_NOUPDATE;
-
-	DEBUG("explore: attempting to opendir: %s\n", dirname);
-
-	dir = opendir(opendir_path(path_max_tmp, dirname));
-	if (!dir)
-		return UPDATE_RETURN_ERROR;
-
-	DEBUG("explore: %s\n", dirname);
-
-	while ((ent = readdir(dir))) {
-		char *utf8;
-		if (skip_path(ent->d_name))
-			continue;
-
-		utf8 = fs_charset_to_utf8(path_max_tmp, ent->d_name);
-		if (!utf8)
-			continue;
-
-		DEBUG("explore: found: %s (%s)\n", ent->d_name, utf8);
-
-		if (directory->path)
-			utf8 = pfx_dir(path_max_tmp, utf8, strlen(utf8),
-			               dirname, strlen(dirname));
-		if (addToDirectory(directory, path_max_tmp) ==
-		    UPDATE_RETURN_UPDATED)
-			ret = UPDATE_RETURN_UPDATED;
-	}
-
-	closedir(dir);
-
-	return ret;
-}
-
-static int statDirectory(Directory * dir)
-{
-	struct stat st;
-
-	if (myStat(getDirectoryPath(dir), &st) < 0)
-		return -1;
-
-	directory_set_stat(dir, &st);
-
-	return 0;
-}
-
-static int inodeFoundInParent(Directory * parent, ino_t inode, dev_t device)
-{
-	while (parent) {
-		if (!parent->stat && statDirectory(parent) < 0)
-			return -1;
-		if (parent->inode == inode && parent->device == device) {
-			DEBUG("recursive directory found\n");
-			return 1;
-		}
-		parent = parent->parent;
-	}
-
-	return 0;
-}
-
-static enum update_return addSubDirectoryToDirectory(Directory * directory,
-				      const char *name, struct stat *st)
-{
-	Directory *subDirectory;
-
-	if (inodeFoundInParent(directory, st->st_ino, st->st_dev))
-		return UPDATE_RETURN_NOUPDATE;
-
-	subDirectory = newDirectory(name, directory);
-	directory_set_stat(subDirectory, st);
-
-	if (exploreDirectory(subDirectory) != UPDATE_RETURN_UPDATED) {
-		freeDirectory(subDirectory);
-		return UPDATE_RETURN_NOUPDATE;
-	}
-
-	dirvec_add(&directory->children, subDirectory);
-
-	return UPDATE_RETURN_UPDATED;
-}
-
-static enum update_return
-addToDirectory(Directory * directory, const char *name)
-{
-	struct stat st;
-
-	if (myStat(name, &st)) {
-		DEBUG("failed to stat %s: %s\n", name, strerror(errno));
-		return UPDATE_RETURN_ERROR;
-	}
-
-	if (S_ISREG(st.st_mode) &&
-	    hasMusicSuffix(name, 0) && isMusic(name, NULL, 0)) {
-		Song *song;
-		const char *shortname = mpd_basename(name);
-
-		if (!(song = newSong(shortname, directory)))
-			return -1;
-		songvec_add(&directory->songs, song);
-		LOG("added %s\n", name);
-		return UPDATE_RETURN_UPDATED;
-	} else if (S_ISDIR(st.st_mode)) {
-		return addSubDirectoryToDirectory(directory, name, &st);
-	}
-
-	DEBUG("addToDirectory: %s is not a directory or music\n", name);
-
-	return UPDATE_RETURN_ERROR;
-}
-
 void directory_finish(void)
 {
 	freeDirectory(music_root);
@@ -672,6 +104,14 @@ void directory_finish(void)
 int isRootDirectory(const char *name)
 {
 	return (!name || name[0] == '\0' || !strcmp(name, "/"));
+}
+
+Directory *
+directory_get_root(void)
+{
+	assert(music_root != NULL);
+
+	return music_root;
 }
 
 static Directory *getSubDirectory(Directory * directory, const char *name)
@@ -704,7 +144,8 @@ static Directory *getSubDirectory(Directory * directory, const char *name)
 	return found;
 }
 
-static Directory *getDirectory(const char *name)
+Directory *
+getDirectory(const char *name)
 {
 	return getSubDirectory(music_root, name);
 }
@@ -806,7 +247,8 @@ static void readDirectoryInfo(FILE * fp, Directory * directory)
 	}
 }
 
-static void sortDirectory(Directory * directory)
+void
+sortDirectory(Directory * directory)
 {
 	int i;
 	struct dirvec *dv = &directory->children;

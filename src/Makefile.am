@@ -54,6 +54,7 @@ mpd_headers = \
 	decoder_api.h \
 	decoder_internal.h \
 	directory.h \
+	update.h \
 	dirvec.h \
 	gcc.h \
 	decoder_list.h \
@@ -133,6 +134,7 @@ mpd_SOURCES = \
 	decoder_api.c \
 	directory.c \
 	dirvec.c \
+	update.c \
 	decoder_list.c \
 	inputStream.c \
 	inputStream_file.c \
