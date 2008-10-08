@@ -19,9 +19,7 @@
 #ifndef LOG_H
 #define LOG_H
 
-#include "../config.h"
 #include "gcc.h"
-#include "os_compat.h"
 
 #define LOG_LEVEL_LOW		0
 #define LOG_LEVEL_SECURE	1

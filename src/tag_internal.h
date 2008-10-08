@@ -19,6 +19,8 @@
 #ifndef TAG_INTERNAL_H
 #define TAG_INTERNAL_H
 
+#include <stdint.h>
+
 extern int8_t ignoreTagItems[TAG_NUM_OF_ITEM_TYPES];
 
 #endif

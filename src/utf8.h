@@ -31,5 +31,4 @@ char *utf8_to_latin1(char *dest, const char *utf8);
 
 char *latin1_to_utf8(char *dest, const char *utf8);
 
-
 #endif

@@ -17,11 +17,11 @@
  */
 
 #include "playerData.h"
-#include "player_control.h"
 #include "outputBuffer.h"
 #include "conf.h"
 #include "log.h"
-#include "utils.h"
+
+#include <stdlib.h>
 
 #define DEFAULT_BUFFER_SIZE         2048
 #define DEFAULT_BUFFER_BEFORE_PLAY  10

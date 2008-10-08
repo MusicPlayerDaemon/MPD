@@ -20,15 +20,12 @@
 #define SONG_H
 
 #include "os_compat.h"
-#include "gcc.h"
 
 #define SONG_BEGIN	"songList begin"
 #define SONG_END	"songList end"
 
 #define SONG_FILE	"file: "
 #define SONG_TIME	"Time: "
-
-struct client;
 
 struct song {
 	struct tag *tag;
