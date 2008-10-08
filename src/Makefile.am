@@ -132,6 +132,7 @@ mpd_SOURCES = \
 	decoder_control.c \
 	decoder_api.c \
 	directory.c \
+	dirvec.c \
 	decoder_list.c \
 	inputStream.c \
 	inputStream_file.c \
