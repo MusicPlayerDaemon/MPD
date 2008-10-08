@@ -291,7 +291,7 @@ updateDirectory(struct directory *directory)
 		if (!utf8)
 			continue;
 
-		if (directory->path)
+		if (!isRootDirectory(directory->path))
 			utf8 = pfx_dir(path_max_tmp, utf8, strlen(utf8),
 			               dirname, strlen(dirname));
 		if (was_empty) {
