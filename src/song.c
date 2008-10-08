@@ -26,7 +26,7 @@
 #include "decoder_list.h"
 #include "decoder_api.h"
 
-struct song *
+static struct song *
 song_alloc(const char *url, struct directory *parent)
 {
 	size_t urllen;
@@ -45,34 +45,45 @@ song_alloc(const char *url, struct directory *parent)
 }
 
 struct song *
-newSong(const char *url, struct directory *parentDir)
+song_remote_new(const char *url)
+{
+	return song_alloc(url, NULL);
+}
+
+struct song *
+song_file_new(const char *path, struct directory *parent)
+{
+	assert(parent != NULL);
+
+	return song_alloc(path, parent);
+}
+
+struct song *
+song_file_load(const char *path, struct directory *parent)
 {
 	struct song *song;
-	assert(*url);
+	struct decoder_plugin *plugin;
+	unsigned int next = 0;
+	char path_max_tmp[MPD_PATH_MAX], *abs_path;
 
-	if (strchr(url, '\n')) {
-		DEBUG("newSong: '%s' is not a valid uri\n", url);
+	assert(parent != NULL);
+
+	if (strchr(path, '\n')) {
+		DEBUG("newSong: '%s' is not a valid uri\n", path);
 		return NULL;
 	}
 
-	song = song_alloc(url, parentDir);
+	song = song_file_new(path, parent);
 
-	if (song_is_file(song)) {
-		struct decoder_plugin *plugin;
-		unsigned int next = 0;
-		char path_max_tmp[MPD_PATH_MAX];
-		char *abs_path = rmp2amp_r(path_max_tmp,
-		                           get_song_url(path_max_tmp, song));
+	abs_path = rmp2amp_r(path_max_tmp, get_song_url(path_max_tmp, song));
+	while (song->tag == NULL &&
+	       (plugin = isMusic(abs_path, &(song->mtime), next++))) {
+		song->tag = plugin->tag_dup(abs_path);
+	}
 
-		while (!song->tag && (plugin = isMusic(abs_path,
-						       &(song->mtime),
-						       next++))) {
-			song->tag = plugin->tag_dup(abs_path);
-		}
-		if (!song->tag || song->tag->time < 0) {
-			freeJustSong(song);
-			song = NULL;
-		}
+	if (song->tag == NULL || song->tag->time < 0) {
+		freeJustSong(song);
+		return NULL;
 	}
 
 	return song;

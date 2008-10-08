@@ -36,11 +36,21 @@ struct song {
 	char url[sizeof(int)];
 };
 
+/** allocate a new song with a remote URL */
 struct song *
-song_alloc(const char *url, struct directory *parent);
+song_remote_new(const char *url);
 
+/** allocate a new song with a local file name */
 struct song *
-newSong(const char *url, struct directory *parentDir);
+song_file_new(const char *path, struct directory *parent);
+
+/**
+ * allocate a new song structure with a local file name and attempt to
+ * load its metadata.  If all decoder plugin fail to read its meta
+ * data, NULL is returned.
+ */
+struct song *
+song_file_load(const char *path, struct directory *parent);
 
 void
 freeJustSong(struct song *);

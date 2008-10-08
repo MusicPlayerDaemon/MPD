@@ -113,8 +113,8 @@ void readSongInfoIntoList(FILE *fp, struct songvec *sv,
 			if (song)
 				insertSongIntoList(sv, song);
 
-			song = song_alloc(buffer + strlen(SONG_KEY),
-					  parentDir);
+			song = song_file_new(buffer + strlen(SONG_KEY),
+					     parentDir);
 		} else if (*buffer == 0) {
 			/* ignore empty lines (starting with '\0') */
 		} else if (song == NULL) {

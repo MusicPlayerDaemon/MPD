@@ -201,7 +201,7 @@ addToDirectory(struct directory *directory, const char *name)
 		struct song *song;
 		const char *shortname = mpd_basename(name);
 
-		if (!(song = newSong(shortname, directory)))
+		if (!(song = song_file_load(shortname, directory)))
 			return -1;
 		songvec_add(&directory->songs, song);
 		LOG("added %s\n", name);

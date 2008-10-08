@@ -561,7 +561,7 @@ enum playlist_result addToPlaylist(const char *url, int *added_id)
 
 	if ((song = getSongFromDB(url))) {
 	} else if (!(isValidRemoteUtf8Url(url) &&
-		     (song = newSong(url, NULL)))) {
+		     (song = song_remote_new(url)))) {
 		return PLAYLIST_RESULT_NO_SUCH_SONG;
 	}
 
@@ -581,7 +581,7 @@ int addToStoredPlaylist(const char *url, const char *utf8file)
 	if (!isValidRemoteUtf8Url(url))
 		return ACK_ERROR_NO_EXIST;
 
-	song = newSong(url, NULL);
+	song = song_remote_new(url);
 	if (song) {
 		int ret = appendSongToStoredPlaylistByPath(utf8file, song);
 		freeJustSong(song);
