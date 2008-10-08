@@ -100,28 +100,27 @@ song_free(struct song *song)
 int
 song_file_update(struct song *song)
 {
-	if (song_is_file(song)) {
-		struct decoder_plugin *plugin;
-		unsigned int next = 0;
-		char path_max_tmp[MPD_PATH_MAX];
-		char abs_path[MPD_PATH_MAX];
+	struct decoder_plugin *plugin;
+	unsigned int next = 0;
+	char path_max_tmp[MPD_PATH_MAX];
+	char abs_path[MPD_PATH_MAX];
 
-		utf8_to_fs_charset(abs_path, song_get_url(song, path_max_tmp));
-		rmp2amp_r(abs_path, abs_path);
+	assert(song_is_file(song));
 
-		if (song->tag)
-			tag_free(song->tag);
+	utf8_to_fs_charset(abs_path, song_get_url(song, path_max_tmp));
+	rmp2amp_r(abs_path, abs_path);
 
+	if (song->tag != NULL) {
+		tag_free(song->tag);
 		song->tag = NULL;
-
-		while (!song->tag && (plugin = isMusic(abs_path,
-						       &(song->mtime),
-						       next++))) {
-			song->tag = plugin->tag_dup(abs_path);
-		}
-		if (!song->tag || song->tag->time < 0)
-			return -1;
 	}
+
+	while (song->tag == NULL &&
+	       (plugin = isMusic(abs_path, &(song->mtime), next++)))
+		song->tag = plugin->tag_dup(abs_path);
+
+	if (song->tag == NULL || song->tag->time < 0)
+		return -1;
 
 	return 0;
 }
