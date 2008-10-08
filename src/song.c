@@ -97,7 +97,7 @@ song_free(struct song *song)
 	free(song);
 }
 
-int
+bool
 song_file_update(struct song *song)
 {
 	struct decoder_plugin *plugin;
@@ -120,9 +120,9 @@ song_file_update(struct song *song)
 		song->tag = plugin->tag_dup(abs_path);
 
 	if (song->tag == NULL || song->tag->time < 0)
-		return -1;
+		return false;
 
-	return 0;
+	return true;
 }
 
 char *

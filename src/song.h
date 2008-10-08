@@ -55,7 +55,7 @@ song_file_load(const char *path, struct directory *parent);
 void
 song_free(struct song *song);
 
-int
+bool
 song_file_update(struct song *song);
 
 /*
