@@ -70,6 +70,14 @@ directory_is_empty(struct directory *directory)
 	return directory->children.nr == 0 && directory->songs.nr == 0;
 }
 
+static inline const char *
+directory_get_path(struct directory *directory)
+{
+	if (directory->path == NULL)
+		return "";
+	return directory->path;
+}
+
 void
 directory_prune_empty(struct directory *directory);
 
@@ -93,7 +101,5 @@ directory_walk(struct directory *directory,
 	       int (*forEachSong)(struct song *, void *),
 	       int (*forEachDir)(struct directory *, void *),
 	       void *data);
-
-#define directory_get_path(dir) ((dir && dir->path) ? dir->path : "")
 
 #endif
