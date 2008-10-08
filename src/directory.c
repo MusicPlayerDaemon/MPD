@@ -17,7 +17,7 @@
  */
 
 #include "directory.h"
-
+#include "song.h"
 #include "conf.h"
 #include "log.h"
 #include "ls.h"
@@ -448,7 +448,7 @@ int readDirectoryDB(void)
 
 static int
 traverseAllInSubDirectory(struct directory * directory,
-			  int (*forEachSong) (Song *, void *),
+			  int (*forEachSong) (struct song *, void *),
 			  int (*forEachDir) (struct directory *, void *),
 			  void *data)
 {
@@ -474,13 +474,13 @@ traverseAllInSubDirectory(struct directory * directory,
 
 int
 traverseAllIn(const char *name,
-	      int (*forEachSong) (Song *, void *),
+	      int (*forEachSong) (struct song *, void *),
 	      int (*forEachDir) (struct directory *, void *), void *data)
 {
 	struct directory *directory;
 
 	if ((directory = getDirectory(name)) == NULL) {
-		Song *song;
+		struct song *song;
 		if ((song = getSongFromDB(name)) && forEachSong) {
 			return forEachSong(song, data);
 		}
@@ -499,9 +499,10 @@ void directory_init(void)
 	stats.dbPlayTime = sumSongTimesIn(NULL);
 }
 
-Song *getSongFromDB(const char *file)
+struct song *
+getSongFromDB(const char *file)
 {
-	Song *song = NULL;
+	struct song *song = NULL;
 	struct directory *directory;
 	char *dir = NULL;
 	char *duplicated = xstrdup(file);

@@ -25,6 +25,7 @@
 #include "log.h"
 #include "main_notify.h"
 #include "crossfade.h"
+#include "song.h"
 
 enum xfade_state {
 	XFADE_DISABLED = -1,

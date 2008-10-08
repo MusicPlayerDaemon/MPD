@@ -20,6 +20,7 @@
 #include "path.h"
 #include "log.h"
 #include "tag.h"
+#include "song.h"
 #include "os_compat.h"
 #include "main_notify.h"
 
@@ -43,7 +44,8 @@ void pc_deinit(void)
 	notify_deinit(&pc.notify);
 }
 
-static void set_current_song(Song *song)
+static void
+set_current_song(struct song *song)
 {
 	assert(song != NULL);
 	assert(song->url != NULL);
@@ -61,7 +63,8 @@ static void player_command(enum player_command cmd)
 	}
 }
 
-void playerPlay(Song * song)
+void
+playerPlay(struct song *song)
 {
 	assert(pc.queueLockState == PLAYER_QUEUE_UNLOCKED);
 
@@ -174,7 +177,8 @@ char *getPlayerErrorStr(void)
 	return *error ? error : NULL;
 }
 
-void queueSong(Song * song)
+void
+queueSong(struct song *song)
 {
 	assert(pc.queueState == PLAYER_QUEUE_BLANK);
 
@@ -208,7 +212,8 @@ void playerQueueUnlock(void)
 	assert(pc.queueLockState == PLAYER_QUEUE_UNLOCKED);
 }
 
-int playerSeek(Song * song, float seek_time)
+int
+playerSeek(struct song *song, float seek_time)
 {
 	assert(song != NULL);
 
@@ -265,7 +270,8 @@ int getPlayerChannels(void)
 }
 
 /* this actually creates a dupe of the current metadata */
-Song *playerCurrentDecodeSong(void)
+struct song *
+playerCurrentDecodeSong(void)
 {
 	return NULL;
 }

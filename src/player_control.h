@@ -20,7 +20,6 @@
 #define PLAYER_H
 
 #include "notify.h"
-#include "song.h"
 #include "os_compat.h"
 
 enum player_state {
@@ -92,8 +91,8 @@ struct player_control {
 	volatile float totalTime;
 	volatile float elapsedTime;
 	volatile float fileTime;
-	Song *volatile next_song;
-	Song *errored_song;
+	struct song *volatile next_song;
+	struct song *errored_song;
 	volatile enum player_queue_state queueState;
 	volatile int8_t queueLockState;
 	volatile double seekWhere;
@@ -108,7 +107,8 @@ void pc_init(unsigned int buffered_before_play);
 
 void pc_deinit(void);
 
-void playerPlay(Song * song);
+void
+playerPlay(struct song *song);
 
 void playerSetPause(int pause_flag);
 
@@ -132,7 +132,8 @@ int getPlayerError(void);
 
 void playerWait(void);
 
-void queueSong(Song * song);
+void
+queueSong(struct song *song);
 
 enum player_queue_state getPlayerQueueState(void);
 
@@ -142,7 +143,8 @@ void playerQueueLock(void);
 
 void playerQueueUnlock(void);
 
-int playerSeek(Song * song, float seek_time);
+int
+playerSeek(struct song *song, float seek_time);
 
 void setPlayerCrossFade(float crossFadeInSeconds);
 
@@ -158,7 +160,8 @@ int getPlayerBits(void);
 
 int getPlayerChannels(void);
 
-Song *playerCurrentDecodeSong(void);
+struct song *
+playerCurrentDecodeSong(void);
 
 void playerInit(void);
 

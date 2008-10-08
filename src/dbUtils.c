@@ -66,7 +66,8 @@ printDirectoryInDirectory(struct directory *directory, void *data)
 	return 0;
 }
 
-static int printSongInDirectory(Song * song, mpd_unused void *data)
+static int
+printSongInDirectory(struct song *song, mpd_unused void *data)
 {
 	struct client *client = data;
 	song_print_url(client, song);
@@ -78,7 +79,8 @@ struct search_data {
 	LocateTagItemArray array;
 };
 
-static int searchInDirectory(Song * song, void *_data)
+static int
+searchInDirectory(struct song *song, void *_data)
 {
 	struct search_data *data = _data;
 	LocateTagItemArray *array = &data->array;
@@ -119,7 +121,8 @@ int searchForSongsIn(struct client *client, const char *name,
 	return ret;
 }
 
-static int findInDirectory(Song * song, void *_data)
+static int
+findInDirectory(struct song *song, void *_data)
 {
 	struct search_data *data = _data;
 	LocateTagItemArray *array = &data->array;
@@ -148,7 +151,8 @@ static void printSearchStats(struct client *client, SearchStats *stats)
 	client_printf(client, "playtime: %li\n", stats->playTime);
 }
 
-static int searchStatsInDirectory(Song * song, void *data)
+static int
+searchStatsInDirectory(struct song *song, void *data)
 {
 	SearchStats *stats = data;
 
@@ -186,7 +190,8 @@ int printAllIn(struct client *client, const char *name)
 			     printDirectoryInDirectory, client);
 }
 
-static int directoryAddSongToPlaylist(Song * song, mpd_unused void *data)
+static int
+directoryAddSongToPlaylist(struct song *song, mpd_unused void *data)
 {
 	return addSongToPlaylist(song, NULL);
 }
@@ -195,7 +200,8 @@ struct add_data {
 	const char *path;
 };
 
-static int directoryAddSongToStoredPlaylist(Song *song, void *_data)
+static int
+directoryAddSongToStoredPlaylist(struct song *song, void *_data)
 {
 	struct add_data *data = _data;
 
@@ -219,14 +225,16 @@ int addAllInToStoredPlaylist(const char *name, const char *utf8file)
 	                     &data);
 }
 
-static int directoryPrintSongInfo(Song * song, void *data)
+static int
+directoryPrintSongInfo(struct song *song, void *data)
 {
 	struct client *client = data;
 	song_print_info(client, song);
 	return 0;
 }
 
-static int sumSongTime(Song * song, void *data)
+static int
+sumSongTime(struct song *song, void *data)
 {
 	unsigned long *sum_time = (unsigned long *)data;
 
@@ -279,8 +287,9 @@ static void freeListCommandItem(ListCommandItem * item)
 	free(item);
 }
 
-static void visitTag(struct client *client, struct strset *set,
-		     Song * song, enum tag_type tagType)
+static void
+visitTag(struct client *client, struct strset *set,
+	 struct song *song, enum tag_type tagType)
 {
 	int i;
 	struct tag *tag = song->tag;
@@ -308,7 +317,8 @@ struct list_tags_data {
 	struct strset *set;
 };
 
-static int listUniqueTagsInDirectory(Song * song, void *_data)
+static int
+listUniqueTagsInDirectory(struct song *song, void *_data)
 {
 	struct list_tags_data *data = _data;
 	ListCommandItem *item = data->item;
@@ -371,7 +381,8 @@ sumSavedFilenameMemoryInDirectory(struct directory *dir, void *data)
 	return 0;
 }
 
-static int sumSavedFilenameMemoryInSong(Song * song, void *data)
+static int
+sumSavedFilenameMemoryInSong(struct song *song, void *data)
 {
 	int *sum = data;
 

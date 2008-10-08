@@ -21,6 +21,7 @@
 #include "command.h"
 #include "ls.h"
 #include "tag.h"
+#include "song.h"
 #include "song_print.h"
 #include "client.h"
 #include "conf.h"
@@ -140,7 +141,7 @@ void initPlaylist(void)
 		playlist_saveAbsolutePaths =
 		                         DEFAULT_PLAYLIST_SAVE_ABSOLUTE_PATHS;
 
-	playlist.songs = xmalloc(sizeof(Song *) * playlist_max_length);
+	playlist.songs = xmalloc(sizeof(struct song *) * playlist_max_length);
 	playlist.songMod = xmalloc(sizeof(uint32_t) * playlist_max_length);
 	playlist.order = xmalloc(sizeof(int) * playlist_max_length);
 	playlist.idToPosition = xmalloc(sizeof(int) * playlist_max_length *
@@ -452,7 +453,7 @@ enum playlist_result playlistId(struct client *client, int id)
 
 static void swapSongs(int song1, int song2)
 {
-	Song *sTemp;
+	struct song *sTemp;
 	int iTemp;
 
 	sTemp = playlist.songs[song1];
@@ -554,7 +555,7 @@ static void clearPlayerQueue(void)
 
 enum playlist_result addToPlaylist(const char *url, int *added_id)
 {
-	Song *song;
+	struct song *song;
 
 	DEBUG("add to playlist: %s\n", url);
 
@@ -569,7 +570,7 @@ enum playlist_result addToPlaylist(const char *url, int *added_id)
 
 int addToStoredPlaylist(const char *url, const char *utf8file)
 {
-	Song *song;
+	struct song *song;
 
 	DEBUG("add to stored playlist: %s\n", url);
 
@@ -590,7 +591,8 @@ int addToStoredPlaylist(const char *url, const char *utf8file)
 	return ACK_ERROR_NO_EXIST;
 }
 
-enum playlist_result addSongToPlaylist(Song * song, int *added_id)
+enum playlist_result
+addSongToPlaylist(struct song *song, int *added_id)
 {
 	int id;
 
@@ -775,7 +777,8 @@ enum playlist_result deleteFromPlaylistById(int id)
 	return deleteFromPlaylist(song);
 }
 
-void deleteASongFromPlaylist(const Song * song)
+void
+deleteASongFromPlaylist(const struct song *song)
 {
 	int i;
 
@@ -877,8 +880,8 @@ enum playlist_result playPlaylistById(int id, int stopOnError)
 
 static void syncCurrentPlayerDecodeMetadata(void)
 {
-	Song *songPlayer = playerCurrentDecodeSong();
-	Song *song;
+	struct song *songPlayer = playerCurrentDecodeSong();
+	struct song *song;
 	int songNum;
 	char path_max_tmp[MPD_PATH_MAX];
 
@@ -1000,7 +1003,7 @@ void setPlaylistRepeatStatus(int status)
 enum playlist_result moveSongInPlaylist(int from, int to)
 {
 	int i;
-	Song *tmpSong;
+	struct song *tmpSong;
 	int tmpId;
 	int currentSong;
 
@@ -1358,7 +1361,7 @@ int PlaylistInfo(struct client *client, const char *utf8file, int detail)
 		int wrote = 0;
 
 		if (detail) {
-			Song *song = getSongFromDB(temp);
+			struct song *song = getSongFromDB(temp);
 			if (song) {
 				song_print_info(client, song);
 				wrote = 1;

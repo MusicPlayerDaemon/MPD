@@ -17,12 +17,14 @@
  */
 
 #include "song_print.h"
+#include "song.h"
 #include "songvec.h"
 #include "directory.h"
 #include "tag_print.h"
 #include "client.h"
 
-void song_print_url(struct client *client, Song * song)
+void
+song_print_url(struct client *client, struct song *song)
 {
 	if (song->parentDir && song->parentDir->path) {
 		client_printf(client, "%s%s/%s\n", SONG_FILE,
@@ -32,7 +34,8 @@ void song_print_url(struct client *client, Song * song)
 	}
 }
 
-int song_print_info(struct client *client, Song * song)
+int
+song_print_info(struct client *client, struct song *song)
 {
 	song_print_url(client, song);
 
@@ -43,7 +46,7 @@ int song_print_info(struct client *client, Song * song)
 }
 
 static int
-song_print_info_x(Song *song, void *data)
+song_print_info_x(struct song *song, void *data)
 {
 	struct client *client = data;
 	return song_print_info(client, song);

@@ -17,6 +17,7 @@
  */
 
 #include "song_save.h"
+#include "song.h"
 #include "tag_save.h"
 #include "directory.h"
 #include "path.h"
@@ -27,7 +28,8 @@
 #define SONG_KEY	"key: "
 #define SONG_MTIME	"mtime: "
 
-static void song_save_url(FILE *fp, Song * song)
+static void
+song_save_url(FILE *fp, struct song *song)
 {
 	if (song->parentDir != NULL && song->parentDir->path != NULL)
 		fprintf(fp, SONG_FILE "%s/%s\n",
@@ -38,7 +40,7 @@ static void song_save_url(FILE *fp, Song * song)
 }
 
 static int
-song_save(Song *song, void *data)
+song_save(struct song *song, void *data)
 {
 	FILE *fp = data;
 
@@ -61,9 +63,10 @@ void songvec_save(FILE *fp, struct songvec *sv)
 	fprintf(fp, "%s\n", SONG_END);
 }
 
-static void insertSongIntoList(struct songvec *sv, Song *newsong)
+static void
+insertSongIntoList(struct songvec *sv, struct song *newsong)
 {
-	Song *existing = songvec_find(sv, newsong->url);
+	struct song *existing = songvec_find(sv, newsong->url);
 
 	if (!existing) {
 		songvec_add(sv, newsong);
@@ -102,7 +105,7 @@ void readSongInfoIntoList(FILE *fp, struct songvec *sv,
 {
 	char buffer[MPD_PATH_MAX + 1024];
 	int bufferSize = MPD_PATH_MAX + 1024;
-	Song *song = NULL;
+	struct song *song = NULL;
 	int itemType;
 
 	while (myFgets(buffer, bufferSize, fp) && 0 != strcmp(SONG_END, buffer)) {

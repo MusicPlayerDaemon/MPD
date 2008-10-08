@@ -30,21 +30,24 @@
 
 struct client;
 
-typedef struct _Song {
+struct song {
 	struct tag *tag;
 	struct directory *parentDir;
 	time_t mtime;
 	char url[sizeof(size_t)];
-} Song;
+};
 
-Song *
+struct song *
 song_alloc(const char *url, struct directory *parent);
 
-Song *newSong(const char *url, struct directory *parentDir);
+struct song *
+newSong(const char *url, struct directory *parentDir);
 
-void freeJustSong(Song *);
+void
+freeJustSong(struct song *);
 
-int updateSongInfo(Song * song);
+int
+updateSongInfo(struct song *song);
 
 /*
  * get_song_url - Returns a path of a song in UTF8-encoded form
@@ -52,9 +55,11 @@ int updateSongInfo(Song * song);
  * buffer is assumed to be MPD_PATH_MAX or greater (including
  * terminating '\0').
  */
-char *get_song_url(char *path_max_tmp, Song * song);
+char *
+get_song_url(char *path_max_tmp, struct song *song);
 
-static inline int song_is_file(const Song *song)
+static inline int
+song_is_file(const struct song *song)
 {
 	return !!song->parentDir;
 }

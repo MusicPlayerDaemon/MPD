@@ -21,6 +21,7 @@
 
 #include "directory.h"
 #include "tag.h"
+#include "song.h"
 #include "client.h"
 #include "player_control.h"
 #include "strset.h"
@@ -39,7 +40,8 @@ struct visit_data {
 	struct strset *set;
 };
 
-static int visit_tag_items(Song *song, void *_data)
+static int
+visit_tag_items(struct song *song, void *_data)
 {
 	const struct visit_data *data = _data;
 	unsigned i;

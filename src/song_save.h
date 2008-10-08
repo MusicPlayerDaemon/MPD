@@ -19,9 +19,10 @@
 #ifndef SONG_SAVE_H
 #define SONG_SAVE_H
 
-#include "song.h"
+#include <stdio.h>
 
 struct songvec;
+struct directory;
 
 void songvec_save(FILE *fp, struct songvec *sv);
 

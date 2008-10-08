@@ -19,11 +19,12 @@
 #ifndef DIRECTORY_H
 #define DIRECTORY_H
 
-#include "song.h"
 #include "songvec.h"
 #include "list.h"
 
 #include <stdbool.h>
+
+struct client;
 
 struct dirvec {
 	struct directory **base;
@@ -75,12 +76,13 @@ int writeDirectoryDB(void);
 
 int readDirectoryDB(void);
 
-Song *getSongFromDB(const char *file);
+struct song *
+getSongFromDB(const char *file);
 
 time_t getDbModTime(void);
 
 int traverseAllIn(const char *name,
-		  int (*forEachSong) (Song *, void *),
+		  int (*forEachSong) (struct song *, void *),
 		  int (*forEachDir) (struct directory *, void *), void *data);
 
 #define getDirectoryPath(dir) ((dir && dir->path) ? dir->path : "")

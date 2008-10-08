@@ -28,11 +28,11 @@
 
 #include "os_compat.h"
 
-Song *
+struct song *
 song_alloc(const char *url, struct directory *parent)
 {
 	size_t urllen;
-	Song *song;
+	struct song *song;
 
 	assert(url);
 	urllen = strlen(url);
@@ -46,9 +46,10 @@ song_alloc(const char *url, struct directory *parent)
 	return song;
 }
 
-Song *newSong(const char *url, struct directory *parentDir)
+struct song *
+newSong(const char *url, struct directory *parentDir)
 {
-	Song *song;
+	struct song *song;
 	assert(*url);
 
 	if (strchr(url, '\n')) {
@@ -79,14 +80,16 @@ Song *newSong(const char *url, struct directory *parentDir)
 	return song;
 }
 
-void freeJustSong(Song * song)
+void
+freeJustSong(struct song *song)
 {
 	if (song->tag)
 		tag_free(song->tag);
 	free(song);
 }
 
-int updateSongInfo(Song * song)
+int
+updateSongInfo(struct song *song)
 {
 	if (song_is_file(song)) {
 		struct decoder_plugin *plugin;
@@ -114,7 +117,8 @@ int updateSongInfo(Song * song)
 	return 0;
 }
 
-char *get_song_url(char *path_max_tmp, Song *song)
+char *
+get_song_url(char *path_max_tmp, struct song *song)
 {
 	if (!song)
 		return NULL;

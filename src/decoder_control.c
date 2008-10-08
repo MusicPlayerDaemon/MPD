@@ -53,7 +53,8 @@ static void dc_command_async(enum decoder_command cmd)
 	notify_signal(&dc.notify);
 }
 
-void dc_start(Notify *notify, Song *song)
+void
+dc_start(Notify *notify, struct song *song)
 {
 	assert(song != NULL);
 
@@ -62,7 +63,8 @@ void dc_start(Notify *notify, Song *song)
 	dc_command(notify, DECODE_COMMAND_START);
 }
 
-void dc_start_async(Song *song)
+void
+dc_start_async(struct song *song)
 {
 	assert(song != NULL);
 

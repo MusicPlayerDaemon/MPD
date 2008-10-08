@@ -19,10 +19,12 @@
 #ifndef LOCATE_H
 #define LOCATE_H
 
-#include "song.h"
+#include <stdint.h>
 
 #define LOCATE_TAG_FILE_TYPE	TAG_NUM_OF_ITEM_TYPES+10
 #define LOCATE_TAG_ANY_TYPE     TAG_NUM_OF_ITEM_TYPES+20
+
+struct song;
 
 /* struct used for search, find, list queries */
 typedef struct _LocateTagItem {
@@ -44,8 +46,11 @@ void freeLocateTagItemArray(int count, LocateTagItem * array);
 
 void freeLocateTagItem(LocateTagItem * item);
 
-int strstrSearchTags(Song * song, int numItems, LocateTagItem * items);
+int
+strstrSearchTags(struct song *song, int numItems, LocateTagItem * items);
 
-int tagItemsFoundAndMatches(Song * song, int numItems, LocateTagItem * items);
+int
+tagItemsFoundAndMatches(struct song *song, int numItems,
+			LocateTagItem * items);
 
 #endif

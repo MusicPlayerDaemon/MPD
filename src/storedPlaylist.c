@@ -17,6 +17,7 @@
  */
 
 #include "storedPlaylist.h"
+#include "song.h"
 #include "path.h"
 #include "utils.h"
 #include "ls.h"
@@ -107,7 +108,7 @@ List *loadStoredPlaylist(const char *utf8path)
 
 	while (myFgets(buffer, sizeof(buffer), file)) {
 		char *s = buffer;
-		Song *song;
+		struct song *song;
 
 		if (*s == PLAYLIST_COMMENT)
 			continue;
@@ -260,7 +261,7 @@ removeOneSongFromStoredPlaylistByPath(const char *utf8path, int pos)
 }
 
 enum playlist_result
-appendSongToStoredPlaylistByPath(const char *utf8path, Song *song)
+appendSongToStoredPlaylistByPath(const char *utf8path, struct song *song)
 {
 	FILE *file;
 	char *s;

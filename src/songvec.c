@@ -1,4 +1,5 @@
 #include "songvec.h"
+#include "song.h"
 #include "utils.h"
 
 static pthread_mutex_t nr_lock = PTHREAD_MUTEX_INITIALIZER;
@@ -6,28 +7,28 @@ static pthread_mutex_t nr_lock = PTHREAD_MUTEX_INITIALIZER;
 /* Only used for sorting/searchin a songvec, not general purpose compares */
 static int songvec_cmp(const void *s1, const void *s2)
 {
-	const Song *a = ((const Song * const *)s1)[0];
-	const Song *b = ((const Song * const *)s2)[0];
+	const struct song *a = ((const struct song * const *)s1)[0];
+	const struct song *b = ((const struct song * const *)s2)[0];
 	return strcmp(a->url, b->url);
 }
 
 static size_t sv_size(struct songvec *sv)
 {
-	return sv->nr * sizeof(Song *);
+	return sv->nr * sizeof(struct song *);
 }
 
 void songvec_sort(struct songvec *sv)
 {
 	pthread_mutex_lock(&nr_lock);
-	qsort(sv->base, sv->nr, sizeof(Song *), songvec_cmp);
+	qsort(sv->base, sv->nr, sizeof(struct song *), songvec_cmp);
 	pthread_mutex_unlock(&nr_lock);
 }
 
-Song *
+struct song *
 songvec_find(const struct songvec *sv, const char *url)
 {
 	int i;
-	Song *ret = NULL;
+	struct song *ret = NULL;
 
 	pthread_mutex_lock(&nr_lock);
 	for (i = sv->nr; --i >= 0; ) {
@@ -40,7 +41,8 @@ songvec_find(const struct songvec *sv, const char *url)
 	return ret;
 }
 
-int songvec_delete(struct songvec *sv, const Song *del)
+int
+songvec_delete(struct songvec *sv, const struct song *del)
 {
 	int i;
 
@@ -54,7 +56,7 @@ int songvec_delete(struct songvec *sv, const Song *del)
 			sv->base = NULL;
 		} else {
 			memmove(&sv->base[i], &sv->base[i + 1],
-				(sv->nr - i + 1) * sizeof(Song *));
+				(sv->nr - i + 1) * sizeof(struct song *));
 			sv->base = xrealloc(sv->base, sv_size(sv));
 		}
 		break;
@@ -64,7 +66,8 @@ int songvec_delete(struct songvec *sv, const Song *del)
 	return i;
 }
 
-void songvec_add(struct songvec *sv, Song *add)
+void
+songvec_add(struct songvec *sv, struct song *add)
 {
 	pthread_mutex_lock(&nr_lock);
 	++sv->nr;
@@ -86,13 +89,13 @@ void songvec_destroy(struct songvec *sv)
 
 int
 songvec_for_each(const struct songvec *sv,
-		 int (*fn)(Song *, void *), void *arg)
+		 int (*fn)(struct song *, void *), void *arg)
 {
 	size_t i;
 
 	pthread_mutex_lock(&nr_lock);
 	for (i = 0; i < sv->nr; ++i) {
-		Song *song = sv->base[i];
+		struct song *song = sv->base[i];
 
 		assert(song);
 		assert(*song->url);

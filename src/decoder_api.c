@@ -22,6 +22,7 @@
 #include "decoder_control.h"
 #include "player_control.h"
 #include "audio.h"
+#include "song.h"
 
 #include "utils.h"
 #include "normalize.h"

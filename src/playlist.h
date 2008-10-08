@@ -21,8 +21,12 @@
 
 #include "locate.h"
 
+#include <stdio.h>
+
 #define PLAYLIST_FILE_SUFFIX 	"m3u"
 #define PLAYLIST_COMMENT	'#'
+
+struct client;
 
 enum playlist_result {
 	PLAYLIST_RESULT_SUCCESS,
@@ -37,7 +41,7 @@ enum playlist_result {
 };
 
 typedef struct _Playlist {
-	Song **songs;
+	struct song **songs;
 	/* holds version a song was modified on */
 	uint32_t *songMod;
 	int *order;
@@ -71,7 +75,8 @@ enum playlist_result addToPlaylist(const char *file, int *added_id);
 
 int addToStoredPlaylist(const char *file, const char *utf8file);
 
-enum playlist_result addSongToPlaylist(Song * song, int *added_id);
+enum playlist_result
+addSongToPlaylist(struct song *song, int *added_id);
 
 void showPlaylist(struct client *client);
 
@@ -101,7 +106,8 @@ enum playlist_result savePlaylist(const char *utf8file);
 
 enum playlist_result deletePlaylist(const char *utf8file);
 
-void deleteASongFromPlaylist(const Song * song);
+void
+deleteASongFromPlaylist(const struct song *song);
 
 enum playlist_result moveSongInPlaylist(int from, int to);
 

@@ -20,6 +20,7 @@
 #include "path.h"
 #include "utils.h"
 #include "tag.h"
+#include "song.h"
 
 #define LOCATE_TAG_FILE_KEY     "file"
 #define LOCATE_TAG_FILE_KEY_OLD "filename"
@@ -122,7 +123,8 @@ void freeLocateTagItem(LocateTagItem * item)
 	free(item);
 }
 
-static int strstrSearchTag(Song * song, enum tag_type type, char *str)
+static int
+strstrSearchTag(struct song *song, enum tag_type type, char *str)
 {
 	int i;
 	char *duplicate;
@@ -167,7 +169,8 @@ static int strstrSearchTag(Song * song, enum tag_type type, char *str)
 	return ret;
 }
 
-int strstrSearchTags(Song * song, int numItems, LocateTagItem * items)
+int
+strstrSearchTags(struct song *song, int numItems, LocateTagItem *items)
 {
 	int i;
 
@@ -181,7 +184,8 @@ int strstrSearchTags(Song * song, int numItems, LocateTagItem * items)
 	return 1;
 }
 
-static int tagItemFoundAndMatches(Song * song, enum tag_type type, char *str)
+static int
+tagItemFoundAndMatches(struct song *song, enum tag_type type, char *str)
 {
 	int i;
 	int8_t visitedTypes[TAG_NUM_OF_ITEM_TYPES] = { 0 };
@@ -221,7 +225,9 @@ static int tagItemFoundAndMatches(Song * song, enum tag_type type, char *str)
 }
 
 
-int tagItemsFoundAndMatches(Song * song, int numItems, LocateTagItem * items)
+int
+tagItemsFoundAndMatches(struct song *song, int numItems,
+			LocateTagItem * items)
 {
 	int i;
 

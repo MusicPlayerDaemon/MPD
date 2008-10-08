@@ -21,7 +21,6 @@
 #define DECODE_H
 
 #include "decoder_api.h"
-#include "song.h"
 
 #include "audio_format.h"
 #include "notify.h"
@@ -49,8 +48,8 @@ struct decoder_control {
 	volatile int8_t seekable;
 	volatile double seekWhere;
 	struct audio_format audioFormat;
-	Song *current_song;
-	Song *volatile next_song;
+	struct song *current_song;
+	struct song *volatile next_song;
 	volatile float totalTime;
 };
 
@@ -72,7 +71,8 @@ static inline int decoder_is_starting(void)
 		dc.state == DECODE_STATE_START;
 }
 
-static inline Song *decoder_current_song(void)
+static inline struct song *
+decoder_current_song(void)
 {
 	if (dc.state == DECODE_STATE_STOP ||
 	    dc.error != DECODE_ERROR_NOERROR)
@@ -83,9 +83,11 @@ static inline Song *decoder_current_song(void)
 
 void dc_command_wait(Notify *notify);
 
-void dc_start(Notify *notify, Song *song);
+void
+dc_start(Notify *notify, struct song *song);
 
-void dc_start_async(Song *song);
+void
+dc_start_async(struct song *song);
 
 void dc_stop(Notify *notify);
 

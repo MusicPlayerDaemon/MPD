@@ -19,14 +19,16 @@
 #ifndef SONG_PRINT_H
 #define SONG_PRINT_H
 
-#include "song.h"
-
+struct client;
+struct song;
 struct songvec;
 
-int song_print_info(struct client *client, Song * song);
+int
+song_print_info(struct client *client, struct song *song);
 
 int songvec_print(struct client *client, const struct songvec *sv);
 
-void song_print_url(struct client *client, Song * song);
+void
+song_print_url(struct client *client, struct song *song);
 
 #endif
