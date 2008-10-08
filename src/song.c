@@ -62,9 +62,7 @@ struct song *
 song_file_load(const char *path, struct directory *parent)
 {
 	struct song *song;
-	struct decoder_plugin *plugin;
-	unsigned int next = 0;
-	char path_max_tmp[MPD_PATH_MAX], *abs_path;
+	bool ret;
 
 	assert(parent != NULL);
 
@@ -75,13 +73,8 @@ song_file_load(const char *path, struct directory *parent)
 
 	song = song_file_new(path, parent);
 
-	abs_path = rmp2amp_r(path_max_tmp, song_get_url(song, path_max_tmp));
-	while (song->tag == NULL &&
-	       (plugin = isMusic(abs_path, &(song->mtime), next++))) {
-		song->tag = plugin->tag_dup(abs_path);
-	}
-
-	if (song->tag == NULL || song->tag->time < 0) {
+	ret = song_file_update(song);
+	if (!ret) {
 		song_free(song);
 		return NULL;
 	}
