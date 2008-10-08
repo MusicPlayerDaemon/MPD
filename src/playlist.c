@@ -1152,25 +1152,24 @@ static void randomizeOrder(int start, int end)
 
 void setPlaylistRandomStatus(bool status)
 {
-	bool statusWas = playlist.random;
+	if (status == playlist.random)
+		return;
 
 	playlist.random = status;
 
-	if (status != statusWas) {
-		if (playlist.random) {
-			/*if(playlist_state==PLAYLIST_STATE_PLAY) {
-			   randomizeOrder(playlist.current+1,
-			   playlist.length-1);
-			   }
-			   else */ randomizeOrder(0, playlist.length - 1);
-			if (playlist.current >= 0 &&
-			    playlist.current < playlist.length) {
-				swapOrder(playlist.current, 0);
-				playlist.current = 0;
-			}
-		} else
-			orderPlaylist();
-	}
+	if (playlist.random) {
+		/*if(playlist_state==PLAYLIST_STATE_PLAY) {
+		  randomizeOrder(playlist.current+1,
+		  playlist.length-1);
+		  }
+		  else */ randomizeOrder(0, playlist.length - 1);
+		if (playlist.current >= 0 &&
+		    playlist.current < playlist.length) {
+			swapOrder(playlist.current, 0);
+			playlist.current = 0;
+		}
+	} else
+		orderPlaylist();
 }
 
 void previousSongInPlaylist(void)
