@@ -121,9 +121,7 @@ song_file_update(struct song *song)
 char *
 song_get_url(struct song *song, char *path_max_tmp)
 {
-	if (!song)
-		return NULL;
-
+	assert(song != NULL);
 	assert(*song->url);
 
 	if (!song->parent || !song->parent->path)
