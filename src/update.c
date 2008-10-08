@@ -169,7 +169,7 @@ addSubDirectoryToDirectory(Directory * directory,
 	subDirectory = newDirectory(name, directory);
 	directory_set_stat(subDirectory, st);
 
-	if (exploreDirectory(subDirectory) != UPDATE_RETURN_UPDATED) {
+	if (updateDirectory(subDirectory) != UPDATE_RETURN_UPDATED) {
 		freeDirectory(subDirectory);
 		return UPDATE_RETURN_NOUPDATE;
 	}
@@ -207,8 +207,6 @@ addToDirectory(Directory * directory, const char *name)
 
 	return UPDATE_RETURN_ERROR;
 }
-
-static enum update_return updateDirectory(Directory * directory);
 
 static enum update_return
 updateInDirectory(Directory * directory, const char *name)
@@ -252,48 +250,9 @@ static int skip_path(const char *path)
 }
 
 enum update_return
-exploreDirectory(Directory * directory)
+updateDirectory(Directory * directory)
 {
-	DIR *dir;
-	const char *dirname = getDirectoryPath(directory);
-	struct dirent *ent;
-	char path_max_tmp[MPD_PATH_MAX];
-	enum update_return ret = UPDATE_RETURN_NOUPDATE;
-
-	DEBUG("explore: attempting to opendir: %s\n", dirname);
-
-	dir = opendir(opendir_path(path_max_tmp, dirname));
-	if (!dir)
-		return UPDATE_RETURN_ERROR;
-
-	DEBUG("explore: %s\n", dirname);
-
-	while ((ent = readdir(dir))) {
-		char *utf8;
-		if (skip_path(ent->d_name))
-			continue;
-
-		utf8 = fs_charset_to_utf8(path_max_tmp, ent->d_name);
-		if (!utf8)
-			continue;
-
-		DEBUG("explore: found: %s (%s)\n", ent->d_name, utf8);
-
-		if (directory->path)
-			utf8 = pfx_dir(path_max_tmp, utf8, strlen(utf8),
-			               dirname, strlen(dirname));
-		if (addToDirectory(directory, path_max_tmp) ==
-		    UPDATE_RETURN_UPDATED)
-			ret = UPDATE_RETURN_UPDATED;
-	}
-
-	closedir(dir);
-
-	return ret;
-}
-
-static enum update_return updateDirectory(Directory * directory)
-{
+	bool was_empty = directory_is_empty(directory);
 	DIR *dir;
 	const char *dirname = getDirectoryPath(directory);
 	struct dirent *ent;
@@ -311,7 +270,8 @@ static enum update_return updateDirectory(Directory * directory)
 	if (!dir)
 		return UPDATE_RETURN_ERROR;
 
-	if (removeDeletedFromDirectory(path_max_tmp, directory) > 0)
+	if (!was_empty &&
+	    removeDeletedFromDirectory(path_max_tmp, directory) > 0)
 		ret = UPDATE_RETURN_UPDATED;
 
 	while ((ent = readdir(dir))) {
@@ -326,8 +286,14 @@ static enum update_return updateDirectory(Directory * directory)
 		if (directory->path)
 			utf8 = pfx_dir(path_max_tmp, utf8, strlen(utf8),
 			               dirname, strlen(dirname));
-		if (updateInDirectory(directory, path_max_tmp) > 0)
-			ret = UPDATE_RETURN_UPDATED;
+		if (was_empty) {
+			if (addToDirectory(directory, path_max_tmp) ==
+			    UPDATE_RETURN_UPDATED)
+				ret = UPDATE_RETURN_UPDATED;
+		} else {
+			if (updateInDirectory(directory, path_max_tmp) > 0)
+				ret = UPDATE_RETURN_UPDATED;
+		}
 	}
 
 	closedir(dir);

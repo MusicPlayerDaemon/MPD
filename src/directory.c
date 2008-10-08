@@ -489,7 +489,7 @@ int traverseAllIn(const char *name,
 void directory_init(void)
 {
 	music_root = newDirectory(NULL, NULL);
-	exploreDirectory(music_root);
+	updateDirectory(music_root);
 	stats.numberOfSongs = countSongsIn(NULL);
 	stats.dbPlayTime = sumSongTimesIn(NULL);
 }
