@@ -39,7 +39,7 @@ static time_t directory_dbModTime;
 void
 db_init(void)
 {
-	music_root = newDirectory(NULL, NULL);
+	music_root = directory_new(NULL, NULL);
 	updateDirectory(music_root);
 	stats.numberOfSongs = countSongsIn(NULL);
 	stats.dbPlayTime = sumSongTimesIn(NULL);
@@ -48,7 +48,7 @@ db_init(void)
 void
 db_finish(void)
 {
-	freeDirectory(music_root);
+	directory_free(music_root);
 }
 
 struct directory *
@@ -65,7 +65,7 @@ db_get_directory(const char *name)
 	if (name == NULL)
 		return music_root;
 
-	return getSubDirectory(music_root, name);
+	return directory_get_directory(music_root, name);
 }
 
 struct song *
@@ -113,8 +113,7 @@ db_walk(const char *name,
 		return -1;
 	}
 
-	return traverseAllInSubDirectory(directory, forEachSong, forEachDir,
-					 data);
+	return directory_walk(directory, forEachSong, forEachDir, data);
 }
 
 static char *
@@ -197,11 +196,11 @@ db_save(void)
 	struct stat st;
 
 	DEBUG("removing empty directories from DB\n");
-	deleteEmptyDirectoriesInDirectory(music_root);
+	directory_prune_empty(music_root);
 
 	DEBUG("sorting DB\n");
 
-	sortDirectory(music_root);
+	directory_sort(music_root);
 
 	DEBUG("writing DB\n");
 
@@ -218,7 +217,7 @@ db_save(void)
 	fprintf(fp, "%s%s\n", DIRECTORY_FS_CHARSET, getFsCharset());
 	fprintf(fp, "%s\n", DIRECTORY_INFO_END);
 
-	if (writeDirectoryInfo(fp, music_root) < 0) {
+	if (directory_save(fp, music_root) < 0) {
 		ERROR("Failed to write to database file: %s\n",
 		      strerror(errno));
 		while (fclose(fp) && errno == EINTR);
@@ -241,7 +240,7 @@ db_load(void)
 	struct stat st;
 
 	if (!music_root)
-		music_root = newDirectory(NULL, NULL);
+		music_root = directory_new(NULL, NULL);
 	while (!(fp = fopen(dbFile, "r")) && errno == EINTR) ;
 	if (fp == NULL) {
 		ERROR("unable to open db file \"%s\": %s\n",
@@ -302,7 +301,7 @@ db_load(void)
 
 	DEBUG("reading DB\n");
 
-	readDirectoryInfo(fp, music_root);
+	directory_load(fp, music_root);
 	while (fclose(fp) && errno == EINTR) ;
 
 	stats.numberOfSongs = countSongsIn(NULL);

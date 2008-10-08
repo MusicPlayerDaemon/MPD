@@ -33,7 +33,7 @@ song_save_url(FILE *fp, struct song *song)
 {
 	if (song->parent != NULL && song->parent->path != NULL)
 		fprintf(fp, SONG_FILE "%s/%s\n",
-			getDirectoryPath(song->parent), song->url);
+			directory_get_path(song->parent), song->url);
 	else
 		fprintf(fp, SONG_FILE "%s\n",
 			song->url);

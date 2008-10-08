@@ -39,7 +39,7 @@ int dirvec_delete(struct dirvec *dv, struct directory *del)
 	for (i = dv->nr; --i >= 0; ) {
 		if (dv->base[i] != del)
 			continue;
-		/* we _don't_ call freeDirectory() here */
+		/* we _don't_ call directory_free() here */
 		if (!--dv->nr) {
 			free(dv->base);
 			dv->base = NULL;

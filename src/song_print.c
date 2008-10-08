@@ -28,7 +28,7 @@ song_print_url(struct client *client, struct song *song)
 {
 	if (song->parent && song->parent->path) {
 		client_printf(client, "%s%s/%s\n", SONG_FILE,
-			      getDirectoryPath(song->parent), song->url);
+			      directory_get_path(song->parent), song->url);
 	} else {
 		client_printf(client, "%s%s\n", SONG_FILE, song->url);
 	}

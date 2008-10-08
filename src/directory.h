@@ -59,10 +59,10 @@ isRootDirectory(const char *name)
 }
 
 struct directory *
-newDirectory(const char *dirname, struct directory * parent);
+directory_new(const char *dirname, struct directory *parent);
 
 void
-freeDirectory(struct directory * directory);
+directory_free(struct directory *directory);
 
 static inline bool
 directory_is_empty(struct directory *directory)
@@ -71,28 +71,29 @@ directory_is_empty(struct directory *directory)
 }
 
 void
-deleteEmptyDirectoriesInDirectory(struct directory *directory);
+directory_prune_empty(struct directory *directory);
 
 struct directory *
-getSubDirectory(struct directory *directory, const char *name);
+directory_get_directory(struct directory *directory, const char *name);
 
 int
 directory_print(struct client *client, const struct directory *directory);
 
 int
-writeDirectoryInfo(FILE *fp, struct directory *directory);
+directory_save(FILE *fp, struct directory *directory);
 
 void
-readDirectoryInfo(FILE *fp, struct directory *directory);
+directory_load(FILE *fp, struct directory *directory);
 
 void
-sortDirectory(struct directory * directory);
+directory_sort(struct directory *directory);
+
 int
-traverseAllInSubDirectory(struct directory * directory,
-			  int (*forEachSong) (struct song *, void *),
-			  int (*forEachDir) (struct directory *, void *),
-			  void *data);
+directory_walk(struct directory *directory,
+	       int (*forEachSong)(struct song *, void *),
+	       int (*forEachDir)(struct directory *, void *),
+	       void *data);
 
-#define getDirectoryPath(dir) ((dir && dir->path) ? dir->path : "")
+#define directory_get_path(dir) ((dir && dir->path) ? dir->path : "")
 
 #endif

@@ -62,7 +62,7 @@ printDirectoryInDirectory(struct directory *directory, void *data)
 {
 	struct client *client = data;
 	if (directory->path) {
-		client_printf(client, "directory: %s\n", getDirectoryPath(directory));
+		client_printf(client, "directory: %s\n", directory_get_path(directory));
 	}
 	return 0;
 }
@@ -374,7 +374,7 @@ sumSavedFilenameMemoryInDirectory(struct directory *dir, void *data)
 	if (!dir->path)
 		return 0;
 
-	*sum += (strlen(getDirectoryPath(dir)) + 1
+	*sum += (strlen(directory_get_path(dir)) + 1
 		 - sizeof(struct directory *)) * dir->songs.nr;
 
 	return 0;

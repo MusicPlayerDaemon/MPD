@@ -128,7 +128,7 @@ song_get_url(struct song *song, char *path_max_tmp)
 		strcpy(path_max_tmp, song->url);
 	else
 		pfx_dir(path_max_tmp, song->url, strlen(song->url),
-			getDirectoryPath(song->parent),
-			strlen(getDirectoryPath(song->parent)));
+			directory_get_path(song->parent),
+			strlen(directory_get_path(song->parent)));
 	return path_max_tmp;
 }
