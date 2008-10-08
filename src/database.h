@@ -23,7 +23,6 @@
 #include <sys/time.h>
 
 struct directory;
-struct client;
 
 void directory_init(void);
 
@@ -41,8 +40,6 @@ getSongFromDB(const char *file);
 int traverseAllIn(const char *name,
 		  int (*forEachSong) (struct song *, void *),
 		  int (*forEachDir) (struct directory *, void *), void *data);
-
-int printDirectoryInfo(struct client *client, const char *name);
 
 int checkDirectoryDB(void);
 

@@ -115,16 +115,6 @@ traverseAllIn(const char *name,
 					 data);
 }
 
-int printDirectoryInfo(struct client *client, const char *name)
-{
-	struct directory *directory;
-
-	if ((directory = getDirectory(name)) == NULL)
-		return -1;
-
-	return directory_print(client, directory);
-}
-
 static char *getDbFile(void)
 {
 	ConfigParam *param = parseConfigFilePath(CONF_DB_FILE, 1);

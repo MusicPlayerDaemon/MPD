@@ -574,15 +574,19 @@ static int handleLsInfo(struct client *client,
 			int argc, char *argv[])
 {
 	const char *path = "";
+	const struct directory *directory;
 
 	if (argc == 2)
 		path = argv[1];
 
-	if (printDirectoryInfo(client, path) < 0) {
+	directory = getDirectory(path);
+	if (directory == NULL) {
 		command_error(client, ACK_ERROR_NO_EXIST,
 			      "directory not found");
 		return -1;
 	}
+
+	directory_print(client, directory);
 
 	if (isRootDirectory(path))
 		return lsPlaylists(client, path);
