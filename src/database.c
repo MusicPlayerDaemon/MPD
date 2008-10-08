@@ -39,7 +39,7 @@ static time_t directory_dbModTime;
 void
 db_init(void)
 {
-	music_root = directory_new(NULL, NULL);
+	music_root = directory_new("", NULL);
 	updateDirectory(music_root);
 	stats.numberOfSongs = countSongsIn(NULL);
 	stats.dbPlayTime = sumSongTimesIn(NULL);
@@ -240,7 +240,7 @@ db_load(void)
 	struct stat st;
 
 	if (!music_root)
-		music_root = directory_new(NULL, NULL);
+		music_root = directory_new("", NULL);
 	while (!(fp = fopen(dbFile, "r")) && errno == EINTR) ;
 	if (fp == NULL) {
 		ERROR("unable to open db file \"%s\": %s\n",

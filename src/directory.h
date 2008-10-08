@@ -73,8 +73,6 @@ directory_is_empty(struct directory *directory)
 static inline const char *
 directory_get_path(struct directory *directory)
 {
-	if (directory->path == NULL)
-		return "";
 	return directory->path;
 }
 
