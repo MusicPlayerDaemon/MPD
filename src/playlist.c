@@ -25,7 +25,7 @@
 #include "song_print.h"
 #include "client.h"
 #include "conf.h"
-#include "directory.h"
+#include "database.h"
 #include "log.h"
 #include "path.h"
 #include "utils.h"

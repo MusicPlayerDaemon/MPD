@@ -18,6 +18,7 @@
  */
 
 #include "update.h"
+#include "database.h"
 #include "directory.h"
 #include "song.h"
 #include "log.h"

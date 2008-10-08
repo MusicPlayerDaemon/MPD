@@ -19,7 +19,7 @@
 
 #include "stats.h"
 
-#include "directory.h"
+#include "database.h"
 #include "tag.h"
 #include "song.h"
 #include "client.h"

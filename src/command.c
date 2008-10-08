@@ -21,6 +21,7 @@
 #include "playlist.h"
 #include "ls.h"
 #include "directory.h"
+#include "database.h"
 #include "update.h"
 #include "volume.h"
 #include "stats.h"

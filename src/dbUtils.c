@@ -19,6 +19,7 @@
 #include "dbUtils.h"
 
 #include "directory.h"
+#include "database.h"
 #include "client.h"
 #include "utils.h"
 #include "playlist.h"

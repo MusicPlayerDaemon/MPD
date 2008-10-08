@@ -19,7 +19,7 @@
 
 #include "sig_handlers.h"
 #include "playlist.h"
-#include "directory.h"
+#include "database.h"
 #include "update.h"
 #include "command.h"
 #include "signal_check.h"

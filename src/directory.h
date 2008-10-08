@@ -23,7 +23,17 @@
 #include "list.h"
 
 #include <stdbool.h>
+#include <stdio.h>
 #include <sys/stat.h>
+
+#define DIRECTORY_DIR		"directory: "
+#define DIRECTORY_MTIME		"mtime: " /* DEPRECATED, noop-read-only */
+#define DIRECTORY_BEGIN		"begin: "
+#define DIRECTORY_END		"end: "
+#define DIRECTORY_INFO_BEGIN	"info_begin"
+#define DIRECTORY_INFO_END	"info_end"
+#define DIRECTORY_MPD_VERSION	"mpd_version: "
+#define DIRECTORY_FS_CHARSET	"fs_charset: "
 
 struct client;
 
@@ -42,18 +52,11 @@ struct directory {
 	unsigned stat; /* not needed if ino_t == dev_t == 0 is impossible */
 };
 
-void directory_init(void);
-
-void directory_finish(void);
-
 static inline bool
 isRootDirectory(const char *name)
 {
 	return name[0] == 0 || (name[0] == '/' && name[1] == 0);
 }
-
-struct directory *
-directory_get_root(void);
 
 struct directory *
 newDirectory(const char *dirname, struct directory * parent);
@@ -67,28 +70,28 @@ directory_is_empty(struct directory *directory)
 	return directory->children.nr == 0 && directory->songs.nr == 0;
 }
 
+void
+deleteEmptyDirectoriesInDirectory(struct directory *directory);
+
 struct directory *
-getDirectory(const char *name);
+getSubDirectory(struct directory *directory, const char *name);
+
+int
+directory_print(struct client *client, const struct directory *directory);
+
+int
+writeDirectoryInfo(FILE *fp, struct directory *directory);
+
+void
+readDirectoryInfo(FILE *fp, struct directory *directory);
 
 void
 sortDirectory(struct directory * directory);
-
-int printDirectoryInfo(struct client *client, const char *dirname);
-
-int checkDirectoryDB(void);
-
-int writeDirectoryDB(void);
-
-int readDirectoryDB(void);
-
-struct song *
-getSongFromDB(const char *file);
-
-time_t getDbModTime(void);
-
-int traverseAllIn(const char *name,
-		  int (*forEachSong) (struct song *, void *),
-		  int (*forEachDir) (struct directory *, void *), void *data);
+int
+traverseAllInSubDirectory(struct directory * directory,
+			  int (*forEachSong) (struct song *, void *),
+			  int (*forEachDir) (struct directory *, void *),
+			  void *data);
 
 #define getDirectoryPath(dir) ((dir && dir->path) ? dir->path : "")
 

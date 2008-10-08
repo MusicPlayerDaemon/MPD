@@ -21,7 +21,7 @@
 #include "path.h"
 #include "utils.h"
 #include "ls.h"
-#include "directory.h"
+#include "database.h"
 #include "os_compat.h"
 
 static ListNode *nodeOfStoredPlaylist(List *list, int idx)
