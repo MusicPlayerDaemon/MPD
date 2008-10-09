@@ -329,7 +329,7 @@ static size_t pcm_convertSampleRate(int8_t channels, uint32_t inSampleRate,
 {
 	uint32_t rd_dat = 0;
 	uint32_t wr_dat = 0;
-	int16_t *in = (int16_t *)inBuffer;
+	const int16_t *in = (const int16_t *)inBuffer;
 	int16_t *out = (int16_t *)outBuffer;
 	uint32_t nlen = outSize / 2;
 	int16_t lsample, rsample;
