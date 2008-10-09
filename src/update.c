@@ -27,7 +27,6 @@
 #include "playlist.h"
 #include "utils.h"
 #include "main_notify.h"
-#include "dirvec.h"
 #include "condition.h"
 #include "update.h"
 

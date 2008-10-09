@@ -18,7 +18,6 @@
 
 #include "directory.h"
 #include "utils.h"
-#include "dirvec.h"
 
 #include <assert.h>
 #include <string.h>

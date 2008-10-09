@@ -1,7 +1,12 @@
 #ifndef DIRVEC_H
 #define DIRVEC_H
 
-struct dirvec;
+#include <stddef.h>
+
+struct dirvec {
+	struct directory **base;
+	size_t nr;
+};
 
 void dirvec_sort(struct dirvec *dv);
 

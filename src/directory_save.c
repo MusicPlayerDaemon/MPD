@@ -24,7 +24,6 @@
 #include "path.h"
 #include "utils.h"
 #include "song_save.h"
-#include "dirvec.h"
 
 /* TODO error checking */
 int

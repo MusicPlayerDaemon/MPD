@@ -20,7 +20,6 @@
 #include "directory.h"
 #include "client.h"
 #include "song_print.h"
-#include "dirvec.h"
 
 static int
 dirvec_print(struct client *client, const struct dirvec *dv)
