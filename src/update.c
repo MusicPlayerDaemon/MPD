@@ -404,7 +404,7 @@ static enum update_return updatePath(const char *path)
 			ret = UPDATE_RETURN_UPDATED;
 			/* don't return, path maybe a song now */
 		}
-	} else if ((song = get_get_song(path))) {
+	} else if ((song = db_get_song(path))) {
 		parentDirectory = song->parent;
 		if (!parentDirectory->stat
 		    && statDirectory(parentDirectory) < 0)

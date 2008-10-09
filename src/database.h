@@ -37,7 +37,7 @@ struct directory *
 db_get_directory(const char *name);
 
 struct song *
-get_get_song(const char *file);
+db_get_song(const char *file);
 
 int db_walk(const char *name,
 	    int (*forEachSong)(struct song *, void *),

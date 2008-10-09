@@ -70,7 +70,7 @@ db_get_directory(const char *name)
 }
 
 struct song *
-get_get_song(const char *file)
+db_get_song(const char *file)
 {
 	struct song *song = NULL;
 	struct directory *directory;
@@ -108,7 +108,7 @@ db_walk(const char *name,
 
 	if ((directory = db_get_directory(name)) == NULL) {
 		struct song *song;
-		if ((song = get_get_song(name)) && forEachSong) {
+		if ((song = db_get_song(name)) && forEachSong) {
 			return forEachSong(song, data);
 		}
 		return -1;
