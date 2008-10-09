@@ -20,10 +20,8 @@
 #define DIRECTORY_H
 
 #include "songvec.h"
-#include "list.h"
 
 #include <stdbool.h>
-#include <stdio.h>
 #include <sys/types.h>
 
 #define DIRECTORY_DIR		"directory: "
@@ -34,8 +32,6 @@
 #define DIRECTORY_INFO_END	"info_end"
 #define DIRECTORY_MPD_VERSION	"mpd_version: "
 #define DIRECTORY_FS_CHARSET	"fs_charset: "
-
-struct client;
 
 struct dirvec {
 	struct directory **base;
@@ -81,15 +77,6 @@ directory_prune_empty(struct directory *directory);
 
 struct directory *
 directory_get_directory(struct directory *directory, const char *name);
-
-int
-directory_print(struct client *client, const struct directory *directory);
-
-int
-directory_save(FILE *fp, struct directory *directory);
-
-void
-directory_load(FILE *fp, struct directory *directory);
 
 void
 directory_sort(struct directory *directory);

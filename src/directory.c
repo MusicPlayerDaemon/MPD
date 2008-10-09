@@ -17,15 +17,11 @@
  */
 
 #include "directory.h"
-#include "database.h"
-#include "song.h"
-#include "log.h"
-#include "path.h"
 #include "utils.h"
-#include "client.h"
-#include "song_print.h"
-#include "song_save.h"
 #include "dirvec.h"
+
+#include <assert.h>
+#include <string.h>
 
 struct directory *
 directory_new(const char *dirname, struct directory *parent)
@@ -99,102 +95,6 @@ directory_get_directory(struct directory *directory, const char *name)
 	free(duplicated);
 
 	return found;
-}
-
-static int
-dirvec_print(struct client *client, const struct dirvec *dv)
-{
-	size_t i;
-
-	for (i = 0; i < dv->nr; ++i) {
-		client_printf(client, DIRECTORY_DIR "%s\n",
-			      directory_get_path(dv->base[i]));
-	}
-
-	return 0;
-}
-
-int
-directory_print(struct client *client, const struct directory *directory)
-{
-	dirvec_print(client, &directory->children);
-	songvec_print(client, &directory->songs);
-
-	return 0;
-}
-
-/* TODO error checking */
-int
-directory_save(FILE *fp, struct directory *directory)
-{
-	struct dirvec *children = &directory->children;
-	size_t i;
-	int retv;
-
-	if (!isRootDirectory(directory->path)) {
-		retv = fprintf(fp, "%s%s\n", DIRECTORY_BEGIN,
-			       directory_get_path(directory));
-		if (retv < 0)
-			return -1;
-	}
-
-	for (i = 0; i < children->nr; ++i) {
-		struct directory *cur = children->base[i];
-		const char *base = mpd_basename(cur->path);
-
-		retv = fprintf(fp, DIRECTORY_DIR "%s\n", base);
-		if (retv < 0)
-			return -1;
-		if (directory_save(fp, cur) < 0)
-			return -1;
-	}
-
-	songvec_save(fp, &directory->songs);
-
-	if (!isRootDirectory(directory->path) &&
-	    fprintf(fp, DIRECTORY_END "%s\n",
-		    directory_get_path(directory)) < 0)
-		return -1;
-	return 0;
-}
-
-void
-directory_load(FILE *fp, struct directory *directory)
-{
-	char buffer[MPD_PATH_MAX * 2];
-	int bufferSize = MPD_PATH_MAX * 2;
-	char key[MPD_PATH_MAX * 2];
-	char *name;
-
-	while (myFgets(buffer, bufferSize, fp)
-	       && prefixcmp(buffer, DIRECTORY_END)) {
-		if (!prefixcmp(buffer, DIRECTORY_DIR)) {
-			struct directory *subdir;
-
-			strcpy(key, &(buffer[strlen(DIRECTORY_DIR)]));
-			if (!myFgets(buffer, bufferSize, fp))
-				FATAL("Error reading db, fgets\n");
-			/* for compatibility with db's prior to 0.11 */
-			if (!prefixcmp(buffer, DIRECTORY_MTIME)) {
-				if (!myFgets(buffer, bufferSize, fp))
-					FATAL("Error reading db, fgets\n");
-			}
-			if (prefixcmp(buffer, DIRECTORY_BEGIN))
-				FATAL("Error reading db at line: %s\n", buffer);
-			name = &(buffer[strlen(DIRECTORY_BEGIN)]);
-			if ((subdir = db_get_directory(name))) {
-				assert(subdir->parent == directory);
-			} else {
-				subdir = directory_new(name, directory);
-				dirvec_add(&directory->children, subdir);
-			}
-			directory_load(fp, subdir);
-		} else if (!prefixcmp(buffer, SONG_BEGIN)) {
-			readSongInfoIntoList(fp, &directory->songs, directory);
-		} else {
-			FATAL("Unknown line in db: %s\n", buffer);
-		}
-	}
 }
 
 void

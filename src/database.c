@@ -19,6 +19,7 @@
 
 #include "database.h"
 #include "directory.h"
+#include "directory_save.h"
 #include "song.h"
 #include "conf.h"
 #include "log.h"
