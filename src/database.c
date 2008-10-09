@@ -238,6 +238,10 @@ db_load(void)
 	FILE *fp = NULL;
 	char *dbFile = db_get_file();
 	struct stat st;
+	char buffer[100];
+	int bufferSize = 100;
+	int foundFsCharset = 0;
+	int foundVersion = 0;
 
 	if (!music_root)
 		music_root = directory_new("", NULL);
@@ -249,54 +253,45 @@ db_load(void)
 	}
 
 	/* get initial info */
-	{
-		char buffer[100];
-		int bufferSize = 100;
-		int foundFsCharset = 0;
-		int foundVersion = 0;
+	if (!myFgets(buffer, bufferSize, fp))
+		FATAL("Error reading db, fgets\n");
 
-		if (!myFgets(buffer, bufferSize, fp))
-			FATAL("Error reading db, fgets\n");
-		if (0 == strcmp(DIRECTORY_INFO_BEGIN, buffer)) {
-			while (myFgets(buffer, bufferSize, fp) &&
-			       0 != strcmp(DIRECTORY_INFO_END, buffer)) {
-				if (!prefixcmp(buffer, DIRECTORY_MPD_VERSION))
-				{
-					if (foundVersion)
-						FATAL("already found version in db\n");
-					foundVersion = 1;
-				} else if (!prefixcmp(buffer,
-				                      DIRECTORY_FS_CHARSET)) {
-					char *fsCharset;
-					char *tempCharset;
+	if (0 != strcmp(DIRECTORY_INFO_BEGIN, buffer)) {
+		ERROR("db info not found in db file\n");
+		ERROR("you should recreate the db using --create-db\n");
+		while (fclose(fp) && errno == EINTR) ;
+		return -1;
+	}
 
-					if (foundFsCharset)
-						FATAL("already found fs charset in db\n");
+	while (myFgets(buffer, bufferSize, fp) &&
+	       0 != strcmp(DIRECTORY_INFO_END, buffer)) {
+		if (!prefixcmp(buffer, DIRECTORY_MPD_VERSION)) {
+			if (foundVersion)
+				FATAL("already found version in db\n");
+			foundVersion = 1;
+		} else if (!prefixcmp(buffer, DIRECTORY_FS_CHARSET)) {
+			char *fsCharset;
+			char *tempCharset;
 
-					foundFsCharset = 1;
+			if (foundFsCharset)
+				FATAL("already found fs charset in db\n");
 
-					fsCharset = &(buffer[strlen(DIRECTORY_FS_CHARSET)]);
-					if ((tempCharset = getConfigParamValue(CONF_FS_CHARSET))
-					    && strcmp(fsCharset, tempCharset)) {
-						WARNING("Using \"%s\" for the "
-							"filesystem charset "
-							"instead of \"%s\"\n",
-							fsCharset, tempCharset);
-						WARNING("maybe you need to "
-							"recreate the db?\n");
-						setFsCharset(fsCharset);
-					}
-				} else {
-					FATAL("directory: unknown line in db info: %s\n",
-					     buffer);
-				}
+			foundFsCharset = 1;
+
+			fsCharset = &(buffer[strlen(DIRECTORY_FS_CHARSET)]);
+			if ((tempCharset = getConfigParamValue(CONF_FS_CHARSET))
+			    && strcmp(fsCharset, tempCharset)) {
+				WARNING("Using \"%s\" for the "
+					"filesystem charset "
+					"instead of \"%s\"\n",
+					fsCharset, tempCharset);
+				WARNING("maybe you need to "
+					"recreate the db?\n");
+				setFsCharset(fsCharset);
 			}
-		} else {
-			ERROR("db info not found in db file\n");
-			ERROR("you should recreate the db using --create-db\n");
-			while (fclose(fp) && errno == EINTR) ;
-			return -1;
-		}
+		} else
+			FATAL("directory: unknown line in db info: %s\n",
+			      buffer);
 	}
 
 	DEBUG("reading DB\n");
