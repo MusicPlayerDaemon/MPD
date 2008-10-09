@@ -303,8 +303,4 @@ const struct shout_encoder_plugin shout_ogg_encoder = {
 	shout_ogg_encoder_send_metadata,
 };
 
-#else
-
-DISABLED_SHOUT_ENCODER_PLUGIN(shout_ogg_encoder);
-
 #endif

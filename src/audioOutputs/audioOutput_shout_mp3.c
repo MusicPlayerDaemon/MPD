@@ -186,8 +186,4 @@ const struct shout_encoder_plugin shout_mp3_encoder = {
 	shout_mp3_encoder_send_metadata,
 };
 
-#else
-
-DISABLED_SHOUT_ENCODER_PLUGIN(shout_mp3_encoder);
-
 #endif

@@ -28,9 +28,6 @@
 
 #include <shout/shout.h>
 
-#define DISABLED_SHOUT_ENCODER_PLUGIN(plugin) \
-	struct shout_encoder_plugin plugin;
-
 struct shout_data;
 
 struct shout_encoder_plugin {
