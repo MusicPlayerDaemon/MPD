@@ -30,17 +30,13 @@
 #include "condition.h"
 #include "update.h"
 
-enum update_return {
-	UPDATE_RETURN_ERROR = -1,
-	UPDATE_RETURN_NOUPDATE = 0,
-	UPDATE_RETURN_UPDATED = 1
-};
-
 static enum update_progress {
 	UPDATE_PROGRESS_IDLE = 0,
 	UPDATE_PROGRESS_RUNNING = 1,
 	UPDATE_PROGRESS_DONE = 2
 } progress;
+
+static bool modified;
 
 /* make this dynamic?, or maybe this is big enough... */
 static char *update_paths[32];
@@ -130,7 +126,6 @@ delete_directory(struct directory *directory)
 struct delete_data {
 	char *tmp;
 	struct directory *dir;
-	enum update_return ret;
 };
 
 /* passed to songvec_for_each */
@@ -144,32 +139,31 @@ delete_song_if_removed(struct song *song, void *_data)
 
 	if (!isFile(data->tmp, NULL)) {
 		delete_song(data->dir, song);
-		data->ret = UPDATE_RETURN_UPDATED;
+		modified = true;
 	}
 	return 0;
 }
 
-static enum update_return
+static void
 delete_path(const char *path)
 {
 	struct directory *directory = db_get_directory(path);
 	struct song *song = db_get_song(path);
 
-	if (directory != NULL)
+	if (directory != NULL) {
 		delete_directory(directory);
+		modified = true;
+	}
 
-	if (song != NULL)
+	if (song != NULL) {
 		delete_song(song->parent, song);
-
-	return directory == NULL && song == NULL
-		? UPDATE_RETURN_NOUPDATE
-		: UPDATE_RETURN_UPDATED;
+		modified = true;
+	}
 }
 
-static enum update_return
+static void
 removeDeletedFromDirectory(char *path_max_tmp, struct directory *directory)
 {
-	enum update_return ret = UPDATE_RETURN_NOUPDATE;
 	int i;
 	struct dirvec *dv = &directory->children;
 	struct delete_data data;
@@ -179,15 +173,12 @@ removeDeletedFromDirectory(char *path_max_tmp, struct directory *directory)
 			continue;
 		LOG("removing directory: %s\n", dv->base[i]->path);
 		dirvec_delete(dv, dv->base[i]);
-		ret = UPDATE_RETURN_UPDATED;
+		modified = true;
 	}
 
 	data.dir = directory;
 	data.tmp = path_max_tmp;
-	data.ret = ret;
 	songvec_for_each(&directory->songs, delete_song_if_removed, &data);
-
-	return data.ret;
 }
 
 static const char *opendir_path(char *path_max_tmp, const char *dirname)
@@ -227,10 +218,10 @@ inodeFoundInParent(struct directory *parent, ino_t inode, dev_t device)
 	return 0;
 }
 
-static enum update_return
+static bool
 updateDirectory(struct directory *directory, const struct stat *st);
 
-static enum update_return
+static void
 updateInDirectory(struct directory *directory,
 		  const char *name, const struct stat *st)
 {
@@ -241,25 +232,23 @@ updateInDirectory(struct directory *directory,
 		if (song == NULL) {
 			song = song_file_load(shortname, directory);
 			if (song == NULL)
-				return -1;
+				return;
 
 			songvec_add(&directory->songs, song);
+			modified = true;
 			LOG("added %s\n", name);
-			return UPDATE_RETURN_UPDATED;
 		} else if (st->st_mtime != song->mtime) {
 			LOG("updating %s\n", name);
 			if (!song_file_update(song))
 				delete_song(directory, song);
-			return UPDATE_RETURN_UPDATED;
+			modified = true;
 		}
-
-		return UPDATE_RETURN_NOUPDATE;
 	} else if (S_ISDIR(st->st_mode)) {
 		struct directory *subdir;
-		enum update_return ret;
+		bool ret;
 
 		if (inodeFoundInParent(directory, st->st_ino, st->st_dev))
-			return UPDATE_RETURN_ERROR;
+			return;
 
 		subdir = directory_get_child(directory, name);
 		if (subdir == NULL)
@@ -268,13 +257,10 @@ updateInDirectory(struct directory *directory,
 		assert(directory == subdir->parent);
 
 		ret = updateDirectory(subdir, st);
-		if (ret == UPDATE_RETURN_ERROR || directory_is_empty(subdir))
+		if (!ret)
 			delete_directory(subdir);
-
-		return ret;
 	} else {
 		DEBUG("update: %s is not a directory or music\n", name);
-		return UPDATE_RETURN_NOUPDATE;
 	}
 }
 
@@ -284,14 +270,13 @@ static int skip_path(const char *path)
 	return (path[0] == '.' || strchr(path, '\n')) ? 1 : 0;
 }
 
-static enum update_return
+static bool
 updateDirectory(struct directory *directory, const struct stat *st)
 {
 	DIR *dir;
 	const char *dirname = directory_get_path(directory);
 	struct dirent *ent;
 	char path_max_tmp[MPD_PATH_MAX];
-	enum update_return ret = UPDATE_RETURN_NOUPDATE, ret2;
 
 	assert(S_ISDIR(st->st_mode));
 
@@ -299,10 +284,9 @@ updateDirectory(struct directory *directory, const struct stat *st)
 
 	dir = opendir(opendir_path(path_max_tmp, dirname));
 	if (!dir)
-		return UPDATE_RETURN_ERROR;
+		return false;
 
-	if (removeDeletedFromDirectory(path_max_tmp, directory) > 0)
-		ret = UPDATE_RETURN_UPDATED;
+	removeDeletedFromDirectory(path_max_tmp, directory);
 
 	while ((ent = readdir(dir))) {
 		char *utf8;
@@ -320,17 +304,14 @@ updateDirectory(struct directory *directory, const struct stat *st)
 			               dirname, strlen(dirname));
 
 		if (myStat(path_max_tmp, &st2) == 0)
-			ret2 = updateInDirectory(directory, path_max_tmp,
-						 &st2);
+			updateInDirectory(directory, path_max_tmp, &st2);
 		else
-			ret2 = delete_path(path_max_tmp);
-		if (ret == UPDATE_RETURN_NOUPDATE)
-			ret = ret2;
+			delete_path(path_max_tmp);
 	}
 
 	closedir(dir);
 
-	return ret;
+	return true;
 }
 
 static struct directory *
@@ -381,38 +362,35 @@ addParentPathToDB(const char *utf8path)
 	return directory;
 }
 
-static enum update_return updatePath(const char *path)
+static void
+updatePath(const char *path)
 {
 	struct stat st;
 
-	if (myStat(path, &st) < 0)
-		return delete_path(path);
-
-	return updateInDirectory(addParentPathToDB(path), path, &st);
+	if (myStat(path, &st) == 0)
+		updateInDirectory(addParentPathToDB(path), path, &st);
+	else
+		delete_path(path);
 }
 
 static void * update_task(void *_path)
 {
-	enum update_return ret = UPDATE_RETURN_NOUPDATE;
-
 	if (_path != NULL && !isRootDirectory(_path)) {
-		ret = updatePath((char *)_path);
+		updatePath((char *)_path);
 		free(_path);
 	} else {
 		struct directory *directory = db_get_root();
 		struct stat st;
 
 		if (myStat(directory_get_path(directory), &st) == 0)
-			ret = updateDirectory(directory, &st);
-		else
-			ret = UPDATE_RETURN_ERROR;
+			updateDirectory(directory, &st);
 	}
 
-	if (ret == UPDATE_RETURN_UPDATED && db_save() < 0)
-		ret = UPDATE_RETURN_ERROR;
+	if (modified)
+		db_save();
 	progress = UPDATE_PROGRESS_DONE;
 	wakeup_main_task();
-	return (void *)ret;
+	return NULL;
 }
 
 static void spawn_update_task(char *path)
@@ -422,6 +400,7 @@ static void spawn_update_task(char *path)
 	assert(pthread_equal(pthread_self(), main_task));
 
 	progress = UPDATE_PROGRESS_RUNNING;
+	modified = false;
 	pthread_attr_init(&attr);
 	if (pthread_create(&update_thr, &attr, update_task, path))
 		FATAL("Failed to spawn update task: %s\n", strerror(errno));
@@ -457,9 +436,6 @@ directory_update_init(char *path)
 
 void reap_update_task(void)
 {
-	void *thread_return;
-	enum update_return ret;
-
 	assert(pthread_equal(pthread_self(), main_task));
 
 	if (progress == UPDATE_PROGRESS_IDLE)
@@ -477,10 +453,10 @@ void reap_update_task(void)
 
 	if (progress != UPDATE_PROGRESS_DONE)
 		return;
-	if (pthread_join(update_thr, &thread_return))
+	if (pthread_join(update_thr, NULL))
 		FATAL("error joining update thread: %s\n", strerror(errno));
-	ret = (enum update_return)(size_t)thread_return;
-	if (ret == UPDATE_RETURN_UPDATED)
+
+	if (modified)
 		playlistVersionChange();
 
 	if (update_paths_nr) {
