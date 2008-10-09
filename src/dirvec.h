@@ -10,7 +10,7 @@ struct dirvec {
 
 void dirvec_sort(struct dirvec *dv);
 
-struct directory *dirvec_find(struct dirvec *dv, const char *path);
+struct directory *dirvec_find(const struct dirvec *dv, const char *path);
 
 int dirvec_delete(struct dirvec *dv, struct directory *del);
 

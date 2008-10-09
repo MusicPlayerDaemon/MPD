@@ -22,7 +22,7 @@ void dirvec_sort(struct dirvec *dv)
 	qsort(dv->base, dv->nr, sizeof(struct directory *), dirvec_cmp);
 }
 
-struct directory *dirvec_find(struct dirvec *dv, const char *path)
+struct directory *dirvec_find(const struct dirvec *dv, const char *path)
 {
 	int i;
 
