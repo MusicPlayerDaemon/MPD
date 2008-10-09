@@ -18,7 +18,6 @@
 
 #include "directory_save.h"
 #include "directory.h"
-#include "database.h"
 #include "song.h"
 #include "log.h"
 #include "path.h"
@@ -88,7 +87,8 @@ directory_load(FILE *fp, struct directory *directory)
 				FATAL("Wrong path in database: '%s' in '%s'\n",
 				      name, directory->path);
 
-			if ((subdir = db_get_directory(name))) {
+			subdir = directory_get_child(directory, name);
+			if (subdir != NULL) {
 				assert(subdir->parent == directory);
 			} else {
 				subdir = directory_new(name, directory);
