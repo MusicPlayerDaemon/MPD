@@ -439,8 +439,11 @@ directory_update_init(char *path)
 
 		if (!path)
 			return 0;
-		if (update_paths_nr == ARRAY_SIZE(update_paths))
+		if (update_paths_nr == ARRAY_SIZE(update_paths)) {
+			free(path);
 			return 0;
+		}
+
 		assert(update_paths_nr < ARRAY_SIZE(update_paths));
 		update_paths[update_paths_nr++] = path;
 		next_task_id = update_task_id + update_paths_nr;
