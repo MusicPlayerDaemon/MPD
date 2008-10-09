@@ -373,18 +373,14 @@ addParentPathToDB(const char *utf8path)
 	return directory;
 }
 
-static enum update_return updatePath(const char *utf8path)
+static enum update_return updatePath(const char *path)
 {
 	struct directory *directory;
 	struct directory *parentDirectory;
 	struct song *song;
-	char *path = sanitizePathDup(utf8path);
 	time_t mtime;
 	enum update_return ret = UPDATE_RETURN_NOUPDATE;
 	char path_max_tmp[MPD_PATH_MAX];
-
-	if (NULL == path)
-		return UPDATE_RETURN_ERROR;
 
 	/* if path is in the DB try to update it, or else delete it */
 	if ((directory = db_get_directory(path))) {
@@ -393,13 +389,11 @@ static enum update_return updatePath(const char *utf8path)
 		/* if this update directory is successfull, we are done */
 		ret = updateDirectory(directory);
 		if (ret != UPDATE_RETURN_ERROR) {
-			free(path);
 			directory_sort(directory);
 			return ret;
 		}
 		/* we don't want to delete the root directory */
 		else if (directory == db_get_root()) {
-			free(path);
 			clear_directory(directory);
 			return UPDATE_RETURN_NOUPDATE;
 		}
@@ -413,16 +407,14 @@ static enum update_return updatePath(const char *utf8path)
 	} else if ((song = get_get_song(path))) {
 		parentDirectory = song->parent;
 		if (!parentDirectory->stat
-		    && statDirectory(parentDirectory) < 0) {
-			free(path);
+		    && statDirectory(parentDirectory) < 0)
 			return UPDATE_RETURN_NOUPDATE;
-		}
+
 		/* if this song update is successful, we are done */
 		else if (!inodeFoundInParent(parentDirectory->parent,
 						 parentDirectory->inode,
 						 parentDirectory->device) &&
 			 isMusic(song_get_url(song, path_max_tmp), &mtime, 0)) {
-			free(path);
 			if (song->mtime == mtime)
 				return UPDATE_RETURN_NOUPDATE;
 			else if (song_file_update(song))
@@ -456,8 +448,6 @@ static enum update_return updatePath(const char *utf8path)
 			ret = UPDATE_RETURN_UPDATED;
 		}
 	}
-
-	free(path);
 
 	return ret;
 }
