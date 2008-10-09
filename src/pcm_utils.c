@@ -47,8 +47,7 @@ pcm_range(int32_t sample, unsigned bits)
 }
 
 static void
-pcm_volume_change_8(int8_t *buffer, unsigned num_samples,
-		    unsigned volume)
+pcm_volume_change_8(int8_t *buffer, unsigned num_samples, int volume)
 {
 	while (num_samples > 0) {
 		int32_t sample = *buffer;
@@ -61,8 +60,7 @@ pcm_volume_change_8(int8_t *buffer, unsigned num_samples,
 }
 
 static void
-pcm_volume_change_16(int16_t *buffer, unsigned num_samples,
-		     unsigned volume)
+pcm_volume_change_16(int16_t *buffer, unsigned num_samples, int volume)
 {
 	while (num_samples > 0) {
 		int32_t sample = *buffer;
@@ -75,8 +73,7 @@ pcm_volume_change_16(int16_t *buffer, unsigned num_samples,
 }
 
 static void
-pcm_volume_change_24(int32_t *buffer, unsigned num_samples,
-		     unsigned volume)
+pcm_volume_change_24(int32_t *buffer, unsigned num_samples, int volume)
 {
 	while (num_samples > 0) {
 		int64_t sample = *buffer;
