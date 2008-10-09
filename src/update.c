@@ -81,6 +81,45 @@ delete_song(struct directory *dir, struct song *del)
 	song_free(del);
 }
 
+static int
+delete_each_song(struct song *song, mpd_unused void *data)
+{
+	struct directory *directory = data;
+	assert(song->parent == directory);
+	delete_song(directory, song);
+	return 0;
+}
+
+/**
+ * Recursively remove all sub directories and songs from a directory,
+ * leaving an empty directory.
+ */
+static void
+clear_directory(struct directory *directory)
+{
+	int i;
+
+	for (i = directory->children.nr; --i >= 0;)
+		clear_directory(directory->children.base[i]);
+	dirvec_clear(&directory->children);
+
+	songvec_for_each(&directory->songs, delete_each_song, directory);
+}
+
+/**
+ * Recursively free a directory and all its contents.
+ */
+static void
+delete_directory(struct directory *directory)
+{
+	assert(directory->parent != NULL);
+
+	clear_directory(directory);
+
+	dirvec_delete(&directory->parent->children, directory);
+	directory_free(directory);
+}
+
 struct delete_data {
 	char *tmp;
 	struct directory *dir;
@@ -374,7 +413,7 @@ static enum update_return updatePath(const char *utf8path)
 		/* if updateDirectory fails, means we should delete it */
 		else {
 			LOG("removing directory: %s\n", path);
-			dirvec_delete(&parentDirectory->children, directory);
+			delete_directory(directory);
 			ret = UPDATE_RETURN_UPDATED;
 			/* don't return, path maybe a song now */
 		}
