@@ -250,12 +250,11 @@ static enum update_return
 updateInDirectory(struct directory *directory,
 		  const char *name, const struct stat *st)
 {
-	struct song *song;
-
 	if (S_ISREG(st->st_mode) && hasMusicSuffix(name, 0)) {
 		const char *shortname = mpd_basename(name);
+		struct song *song = songvec_find(&directory->songs, shortname);
 
-		if (!(song = songvec_find(&directory->songs, shortname))) {
+		if (song == NULL) {
 			song = song_file_load(shortname, directory);
 			if (song == NULL)
 				return -1;
