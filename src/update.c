@@ -36,7 +36,7 @@ enum update_return {
 	UPDATE_RETURN_UPDATED = 1
 };
 
-enum update_progress {
+static enum update_progress {
 	UPDATE_PROGRESS_IDLE = 0,
 	UPDATE_PROGRESS_RUNNING = 1,
 	UPDATE_PROGRESS_DONE = 2
