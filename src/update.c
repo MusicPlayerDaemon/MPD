@@ -254,9 +254,16 @@ updateInDirectory(struct directory *directory, const char *name)
 	} else if (S_ISDIR(st.st_mode)) {
 		struct directory *subdir = directory_get_child(directory, name);
 		if (subdir) {
+			enum update_return ret;
+
 			assert(directory == subdir->parent);
 			directory_set_stat(subdir, &st);
-			return updateDirectory(subdir);
+
+			ret = updateDirectory(subdir);
+			if (ret == UPDATE_RETURN_ERROR)
+				delete_directory(subdir);
+
+			return ret;
 		} else {
 			return addSubDirectoryToDirectory(directory, name, &st);
 		}
