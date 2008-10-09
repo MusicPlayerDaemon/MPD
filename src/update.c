@@ -149,6 +149,23 @@ delete_song_if_removed(struct song *song, void *_data)
 }
 
 static enum update_return
+delete_path(const char *path)
+{
+	struct directory *directory = db_get_directory(path);
+	struct song *song = db_get_song(path);
+
+	if (directory != NULL)
+		delete_directory(directory);
+
+	if (song != NULL)
+		delete_song(song->parent, song);
+
+	return directory == NULL && song == NULL
+		? UPDATE_RETURN_NOUPDATE
+		: UPDATE_RETURN_UPDATED;
+}
+
+static enum update_return
 removeDeletedFromDirectory(char *path_max_tmp, struct directory *directory)
 {
 	enum update_return ret = UPDATE_RETURN_NOUPDATE;
@@ -384,76 +401,12 @@ addParentPathToDB(const char *utf8path)
 
 static enum update_return updatePath(const char *path)
 {
-	struct directory *directory;
-	struct directory *parentDirectory;
-	struct song *song;
-	time_t mtime;
-	enum update_return ret = UPDATE_RETURN_NOUPDATE;
-	char path_max_tmp[MPD_PATH_MAX];
+	struct stat st;
 
-	/* if path is in the DB try to update it, or else delete it */
-	if ((directory = db_get_directory(path))) {
-		parentDirectory = directory->parent;
+	if (myStat(path, &st) < 0)
+		return delete_path(path);
 
-		/* if this update directory is successfull, we are done */
-		ret = updateDirectory(directory);
-		if (ret != UPDATE_RETURN_ERROR) {
-			directory_sort(directory);
-			return ret;
-		}
-		/* if updateDirectory fails, means we should delete it */
-		else {
-			LOG("removing directory: %s\n", path);
-			delete_directory(directory);
-			ret = UPDATE_RETURN_UPDATED;
-			/* don't return, path maybe a song now */
-		}
-	} else if ((song = db_get_song(path))) {
-		parentDirectory = song->parent;
-		if (!parentDirectory->stat
-		    && statDirectory(parentDirectory) < 0)
-			return UPDATE_RETURN_NOUPDATE;
-
-		/* if this song update is successful, we are done */
-		else if (!inodeFoundInParent(parentDirectory->parent,
-						 parentDirectory->inode,
-						 parentDirectory->device) &&
-			 isMusic(song_get_url(song, path_max_tmp), &mtime, 0)) {
-			if (song->mtime == mtime)
-				return UPDATE_RETURN_NOUPDATE;
-			else if (song_file_update(song))
-				return UPDATE_RETURN_UPDATED;
-			else {
-				delete_song(parentDirectory, song);
-				return UPDATE_RETURN_UPDATED;
-			}
-		}
-		/* if updateDirectory fails, means we should delete it */
-		else {
-			delete_song(parentDirectory, song);
-			ret = UPDATE_RETURN_UPDATED;
-			/* don't return, path maybe a directory now */
-		}
-	}
-
-	/* path not found in the db, see if it actually exists on the fs.
-	 * Also, if by chance a directory was replaced by a file of the same
-	 * name or vice versa, we need to add it to the db
-	 */
-	if (isDir(path) || isMusic(path, NULL, 0)) {
-		parentDirectory = addParentPathToDB(path);
-		if (!parentDirectory || (!parentDirectory->stat &&
-					 statDirectory(parentDirectory) < 0)) {
-		} else if (0 == inodeFoundInParent(parentDirectory->parent,
-						   parentDirectory->inode,
-						   parentDirectory->device)
-			   && updateInDirectory(parentDirectory, path)
-			   == UPDATE_RETURN_UPDATED) {
-			ret = UPDATE_RETURN_UPDATED;
-		}
-	}
-
-	return ret;
+	return updateInDirectory(addParentPathToDB(path), path);
 }
 
 static void * update_task(void *_path)
