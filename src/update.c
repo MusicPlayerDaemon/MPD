@@ -408,6 +408,7 @@ static enum update_return updatePath(const char *utf8path)
 		/* we don't want to delete the root directory */
 		else if (directory == db_get_root()) {
 			free(path);
+			clear_directory(directory);
 			return UPDATE_RETURN_NOUPDATE;
 		}
 		/* if updateDirectory fails, means we should delete it */
