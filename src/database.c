@@ -239,7 +239,6 @@ db_load(void)
 	char *dbFile = db_get_file();
 	struct stat st;
 	char buffer[100];
-	int bufferSize = 100;
 	int foundFsCharset = 0;
 	int foundVersion = 0;
 
@@ -253,7 +252,7 @@ db_load(void)
 	}
 
 	/* get initial info */
-	if (!myFgets(buffer, bufferSize, fp))
+	if (!myFgets(buffer, sizeof(buffer), fp))
 		FATAL("Error reading db, fgets\n");
 
 	if (0 != strcmp(DIRECTORY_INFO_BEGIN, buffer)) {
@@ -263,7 +262,7 @@ db_load(void)
 		return -1;
 	}
 
-	while (myFgets(buffer, bufferSize, fp) &&
+	while (myFgets(buffer, sizeof(buffer), fp) &&
 	       0 != strcmp(DIRECTORY_INFO_END, buffer)) {
 		if (!prefixcmp(buffer, DIRECTORY_MPD_VERSION)) {
 			if (foundVersion)
