@@ -376,7 +376,9 @@ directory_make_child_checked(struct directory *parent, const char *path)
 	if (conflicting)
 		delete_song(parent, conflicting);
 
-	return directory_new_child(parent, path);
+	directory = directory_new_child(parent, path);
+	directory_set_stat(directory, &st);
+	return directory;
 }
 
 static struct directory *
