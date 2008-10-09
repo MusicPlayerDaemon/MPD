@@ -230,23 +230,6 @@ static enum update_return
 updateDirectory(struct directory *directory, const struct stat *st);
 
 static enum update_return
-addSubDirectoryToDirectory(struct directory *directory,
-			   const char *name, const struct stat *st)
-{
-	struct directory *subDirectory;
-
-	subDirectory = directory_new(name, directory);
-	if (updateDirectory(subDirectory, st) != UPDATE_RETURN_UPDATED) {
-		directory_free(subDirectory);
-		return UPDATE_RETURN_NOUPDATE;
-	}
-
-	dirvec_add(&directory->children, subDirectory);
-
-	return UPDATE_RETURN_UPDATED;
-}
-
-static enum update_return
 updateInDirectory(struct directory *directory,
 		  const char *name, const struct stat *st)
 {
@@ -270,24 +253,22 @@ updateInDirectory(struct directory *directory,
 		}
 	} else if (S_ISDIR(st->st_mode)) {
 		struct directory *subdir;
+		enum update_return ret;
 
 		if (inodeFoundInParent(directory, st->st_ino, st->st_dev))
 			return UPDATE_RETURN_ERROR;
 
 		subdir = directory_get_child(directory, name);
-		if (subdir) {
-			enum update_return ret;
+		if (subdir == NULL)
+			subdir = directory_new_child(directory, name);
 
-			assert(directory == subdir->parent);
+		assert(directory == subdir->parent);
 
-			ret = updateDirectory(subdir, st);
-			if (ret == UPDATE_RETURN_ERROR)
-				delete_directory(subdir);
+		ret = updateDirectory(subdir, st);
+		if (ret == UPDATE_RETURN_ERROR || directory_is_empty(subdir))
+			delete_directory(subdir);
 
-			return ret;
-		} else {
-			return addSubDirectoryToDirectory(directory, name, st);
-		}
+		return ret;
 	}
 
 	DEBUG("update: %s is not a directory or music\n", name);
