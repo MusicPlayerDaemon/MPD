@@ -81,7 +81,7 @@ directory_get_directory(struct directory *directory, const char *name)
 	while (1) {
 		if (locate)
 			*locate = '\0';
-		if (!(found = dirvec_find(&cur->children, duplicated)))
+		if (!(found = directory_get_child(cur, duplicated)))
 			break;
 		assert(cur == found->parent);
 		cur = found;

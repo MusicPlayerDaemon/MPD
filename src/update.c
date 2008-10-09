@@ -237,7 +237,7 @@ updateInDirectory(struct directory *directory, const char *name)
 			return UPDATE_RETURN_UPDATED;
 		}
 	} else if (S_ISDIR(st.st_mode)) {
-		struct directory *subdir = dirvec_find(&directory->children, name);
+		struct directory *subdir = directory_get_child(directory, name);
 		if (subdir) {
 			assert(directory == subdir->parent);
 			directory_set_stat(subdir, &st);
@@ -327,17 +327,16 @@ addDirectoryPathToDB(const char *utf8path)
 	if (!parentDirectory)
 		return NULL;
 
-	if ((directory = dirvec_find(&parentDirectory->children, utf8path))) {
+	if ((directory = directory_get_child(parentDirectory, utf8path))) {
 		assert(parentDirectory == directory->parent);
 	} else {
 		struct stat st;
 		if (myStat(utf8path, &st) < 0 ||
 		    inodeFoundInParent(parentDirectory, st.st_ino, st.st_dev))
 			return NULL;
-		else {
-			directory = directory_new(utf8path, parentDirectory);
-			dirvec_add(&parentDirectory->children, directory);
-		}
+
+		directory = directory_new_child(parentDirectory,
+						utf8path);
 	}
 
 	/* if we're adding directory paths, make sure to delete filenames
