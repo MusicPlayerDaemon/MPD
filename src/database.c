@@ -29,6 +29,7 @@
 #include "utils.h"
 #include "dbUtils.h"
 #include "update.h"
+#include "main_notify.h"
 
 #include <assert.h>
 #include <string.h>
@@ -40,8 +41,19 @@ static time_t directory_dbModTime;
 void
 db_init(void)
 {
+	int ret;
+
 	music_root = directory_new("", NULL);
-	updateDirectory(music_root);
+
+	ret = directory_update_init(NULL);
+	if (ret < 0)
+		FATAL("directory update failed\n");
+
+	do {
+		wait_main_task();
+		reap_update_task();
+	} while (isUpdatingDB());
+
 	stats.numberOfSongs = countSongsIn(NULL);
 	stats.dbPlayTime = sumSongTimesIn(NULL);
 }

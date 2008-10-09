@@ -412,6 +412,8 @@ int main(int argc, char *argv[])
 	initPlaylist();
 	decoder_plugin_init_all();
 
+	init_main_notify();
+
 	openDB(&options, argv[0]);
 
 	initCommands();
@@ -429,7 +431,6 @@ int main(int argc, char *argv[])
 
 	daemonize(&options);
 
-	init_main_notify();
 	setup_log_output(options.stdOutput);
 
 	initSigHandlers();

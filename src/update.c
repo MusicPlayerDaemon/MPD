@@ -30,6 +30,12 @@
 #include "condition.h"
 #include "update.h"
 
+enum update_return {
+	UPDATE_RETURN_ERROR = -1,
+	UPDATE_RETURN_NOUPDATE = 0,
+	UPDATE_RETURN_UPDATED = 1
+};
+
 enum update_progress {
 	UPDATE_PROGRESS_IDLE = 0,
 	UPDATE_PROGRESS_RUNNING = 1,
@@ -204,6 +210,9 @@ inodeFoundInParent(struct directory *parent, ino_t inode, dev_t device)
 }
 
 static enum update_return
+updateDirectory(struct directory *directory);
+
+static enum update_return
 addSubDirectoryToDirectory(struct directory *directory,
 			   const char *name, const struct stat *st)
 {
@@ -280,7 +289,7 @@ static int skip_path(const char *path)
 	return (path[0] == '.' || strchr(path, '\n')) ? 1 : 0;
 }
 
-enum update_return
+static enum update_return
 updateDirectory(struct directory *directory)
 {
 	bool was_empty = directory_is_empty(directory);
