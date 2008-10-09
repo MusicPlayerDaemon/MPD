@@ -392,11 +392,6 @@ static enum update_return updatePath(const char *path)
 			directory_sort(directory);
 			return ret;
 		}
-		/* we don't want to delete the root directory */
-		else if (directory == db_get_root()) {
-			clear_directory(directory);
-			return UPDATE_RETURN_NOUPDATE;
-		}
 		/* if updateDirectory fails, means we should delete it */
 		else {
 			LOG("removing directory: %s\n", path);
@@ -456,7 +451,7 @@ static void * update_task(void *_path)
 {
 	enum update_return ret = UPDATE_RETURN_NOUPDATE;
 
-	if (_path) {
+	if (_path != NULL && !isRootDirectory(_path)) {
 		ret = updatePath((char *)_path);
 		free(_path);
 	} else {
