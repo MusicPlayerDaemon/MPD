@@ -237,7 +237,7 @@ static int print_playlist_result(struct client *client,
 		return -1;
 
 	case PLAYLIST_RESULT_LIST_EXISTS:
-		command_error(client, ACK_ERROR_NO_EXIST,
+		command_error(client, ACK_ERROR_EXIST,
 			      "Playlist already exists");
 		return -1;
 
