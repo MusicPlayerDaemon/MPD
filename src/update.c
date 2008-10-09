@@ -227,7 +227,7 @@ inodeFoundInParent(struct directory *parent, ino_t inode, dev_t device)
 }
 
 static enum update_return
-updateDirectory(struct directory *directory);
+updateDirectory(struct directory *directory, const struct stat *st);
 
 static enum update_return
 addSubDirectoryToDirectory(struct directory *directory,
@@ -239,9 +239,7 @@ addSubDirectoryToDirectory(struct directory *directory,
 		return UPDATE_RETURN_NOUPDATE;
 
 	subDirectory = directory_new(name, directory);
-	directory_set_stat(subDirectory, st);
-
-	if (updateDirectory(subDirectory) != UPDATE_RETURN_UPDATED) {
+	if (updateDirectory(subDirectory, st) != UPDATE_RETURN_UPDATED) {
 		directory_free(subDirectory);
 		return UPDATE_RETURN_NOUPDATE;
 	}
@@ -252,15 +250,12 @@ addSubDirectoryToDirectory(struct directory *directory,
 }
 
 static enum update_return
-updateInDirectory(struct directory *directory, const char *name)
+updateInDirectory(struct directory *directory,
+		  const char *name, const struct stat *st)
 {
 	struct song *song;
-	struct stat st;
 
-	if (myStat(name, &st))
-		return UPDATE_RETURN_ERROR;
-
-	if (S_ISREG(st.st_mode) && hasMusicSuffix(name, 0)) {
+	if (S_ISREG(st->st_mode) && hasMusicSuffix(name, 0)) {
 		const char *shortname = mpd_basename(name);
 
 		if (!(song = songvec_find(&directory->songs, shortname))) {
@@ -271,27 +266,26 @@ updateInDirectory(struct directory *directory, const char *name)
 			songvec_add(&directory->songs, song);
 			LOG("added %s\n", name);
 			return UPDATE_RETURN_UPDATED;
-		} else if (st.st_mtime != song->mtime) {
+		} else if (st->st_mtime != song->mtime) {
 			LOG("updating %s\n", name);
 			if (!song_file_update(song))
 				delete_song(directory, song);
 			return UPDATE_RETURN_UPDATED;
 		}
-	} else if (S_ISDIR(st.st_mode)) {
+	} else if (S_ISDIR(st->st_mode)) {
 		struct directory *subdir = directory_get_child(directory, name);
 		if (subdir) {
 			enum update_return ret;
 
 			assert(directory == subdir->parent);
-			directory_set_stat(subdir, &st);
 
-			ret = updateDirectory(subdir);
+			ret = updateDirectory(subdir, st);
 			if (ret == UPDATE_RETURN_ERROR)
 				delete_directory(subdir);
 
 			return ret;
 		} else {
-			return addSubDirectoryToDirectory(directory, name, &st);
+			return addSubDirectoryToDirectory(directory, name, st);
 		}
 	}
 
@@ -307,20 +301,21 @@ static int skip_path(const char *path)
 }
 
 static enum update_return
-updateDirectory(struct directory *directory)
+updateDirectory(struct directory *directory, const struct stat *st)
 {
 	bool was_empty = directory_is_empty(directory);
 	DIR *dir;
 	const char *dirname = directory_get_path(directory);
 	struct dirent *ent;
 	char path_max_tmp[MPD_PATH_MAX];
-	enum update_return ret = UPDATE_RETURN_NOUPDATE;
+	enum update_return ret = UPDATE_RETURN_NOUPDATE, ret2;
 
-	if (!directory->stat && statDirectory(directory) < 0)
-		return UPDATE_RETURN_ERROR;
-	else if (inodeFoundInParent(directory->parent,
-				    directory->inode,
-				    directory->device))
+	assert(S_ISDIR(st->st_mode));
+
+	directory_set_stat(directory, st);
+
+	if (inodeFoundInParent(directory->parent,
+			       directory->inode, directory->device))
 		return UPDATE_RETURN_ERROR;
 
 	dir = opendir(opendir_path(path_max_tmp, dirname));
@@ -333,6 +328,8 @@ updateDirectory(struct directory *directory)
 
 	while ((ent = readdir(dir))) {
 		char *utf8;
+		struct stat st2;
+
 		if (skip_path(ent->d_name))
 			continue;
 
@@ -343,9 +340,14 @@ updateDirectory(struct directory *directory)
 		if (!isRootDirectory(directory->path))
 			utf8 = pfx_dir(path_max_tmp, utf8, strlen(utf8),
 			               dirname, strlen(dirname));
-		if (updateInDirectory(directory, path_max_tmp) ==
-		    UPDATE_RETURN_UPDATED)
-			ret = UPDATE_RETURN_UPDATED;
+
+		if (myStat(path_max_tmp, &st2) == 0)
+			ret2 = updateInDirectory(directory, path_max_tmp,
+						 &st2);
+		else
+			ret2 = delete_path(path_max_tmp);
+		if (ret == UPDATE_RETURN_NOUPDATE)
+			ret = ret2;
 	}
 
 	closedir(dir);
@@ -406,7 +408,7 @@ static enum update_return updatePath(const char *path)
 	if (myStat(path, &st) < 0)
 		return delete_path(path);
 
-	return updateInDirectory(addParentPathToDB(path), path);
+	return updateInDirectory(addParentPathToDB(path), path, &st);
 }
 
 static void * update_task(void *_path)
@@ -417,7 +419,13 @@ static void * update_task(void *_path)
 		ret = updatePath((char *)_path);
 		free(_path);
 	} else {
-		ret = updateDirectory(db_get_root());
+		struct directory *directory = db_get_root();
+		struct stat st;
+
+		if (myStat(directory_get_path(directory), &st) == 0)
+			ret = updateDirectory(directory, &st);
+		else
+			ret = UPDATE_RETURN_ERROR;
 	}
 
 	if (ret == UPDATE_RETURN_UPDATED && db_save() < 0)
