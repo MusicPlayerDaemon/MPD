@@ -84,6 +84,10 @@ directory_load(FILE *fp, struct directory *directory)
 			if (prefixcmp(buffer, DIRECTORY_BEGIN))
 				FATAL("Error reading db at line: %s\n", buffer);
 			name = &(buffer[strlen(DIRECTORY_BEGIN)]);
+			if (prefixcmp(name, directory->path) != 0)
+				FATAL("Wrong path in database: '%s' in '%s'\n",
+				      name, directory->path);
+
 			if ((subdir = db_get_directory(name))) {
 				assert(subdir->parent == directory);
 			} else {
