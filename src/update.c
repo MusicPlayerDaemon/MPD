@@ -205,7 +205,7 @@ inodeFoundInParent(struct directory *parent, ino_t inode, dev_t device)
 
 static enum update_return
 addSubDirectoryToDirectory(struct directory *directory,
-			   const char *name, struct stat *st)
+			   const char *name, const struct stat *st)
 {
 	struct directory *subDirectory;
 
