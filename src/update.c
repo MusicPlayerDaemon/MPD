@@ -48,15 +48,16 @@ static size_t update_paths_nr;
 
 static pthread_t update_thr;
 
-static const int update_task_id_max = 1 << 15;
+static const unsigned update_task_id_max = 1 << 15;
 
-static int update_task_id;
+static unsigned update_task_id;
 
 static struct song *delete;
 
 static struct condition delete_cond;
 
-int isUpdatingDB(void)
+unsigned
+isUpdatingDB(void)
 {
 	return (progress != UPDATE_PROGRESS_IDLE) ? update_task_id : 0;
 }
@@ -428,12 +429,13 @@ static void spawn_update_task(char *path)
 	DEBUG("spawned thread for update job id %i\n", update_task_id);
 }
 
-int directory_update_init(char *path)
+unsigned
+directory_update_init(char *path)
 {
 	assert(pthread_equal(pthread_self(), main_task));
 
 	if (progress != UPDATE_PROGRESS_IDLE) {
-		int next_task_id;
+		unsigned next_task_id;
 
 		if (!path)
 			return 0;

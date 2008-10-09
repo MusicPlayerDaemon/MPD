@@ -20,14 +20,16 @@
 #ifndef UPDATE_H
 #define UPDATE_H
 
-int isUpdatingDB(void);
+unsigned
+isUpdatingDB(void);
 
 /*
  * returns the positive update job ID on success,
  * returns 0 if busy
  * @path will be freed by this function and should not be reused
  */
-int directory_update_init(char *path);
+unsigned
+directory_update_init(char *path);
 
 void reap_update_task(void);
 

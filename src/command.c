@@ -807,7 +807,7 @@ static int handleUpdate(struct client *client,
 			mpd_unused int argc, char *argv[])
 {
 	char *path = NULL;
-	int ret;
+	unsigned ret;
 
 	assert(argc <= 2);
 	if (argc == 2 && !(path = sanitizePathDup(argv[1]))) {

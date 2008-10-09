@@ -41,7 +41,7 @@ static time_t directory_dbModTime;
 void
 db_init(void)
 {
-	int ret;
+	unsigned ret;
 
 	music_root = directory_new("", NULL);
 
