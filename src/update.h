@@ -23,8 +23,8 @@
 int isUpdatingDB(void);
 
 /*
- * returns the non-negative update job ID on success,
- * returns -1 if busy
+ * returns the positive update job ID on success,
+ * returns 0 if busy
  * @path will be freed by this function and should not be reused
  */
 int directory_update_init(char *path);

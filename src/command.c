@@ -803,31 +803,27 @@ static int handlePlaylistMove(struct client *client,
 	return print_playlist_result(client, result);
 }
 
-static int print_update_result(struct client *client, int ret)
-{
-	if (ret >= 0) {
-		client_printf(client, "updating_db: %i\n", ret);
-		return 0;
-	}
-	if (ret == -2)
-		command_error(client, ACK_ERROR_ARG, "invalid path");
-	else
-		command_error(client, ACK_ERROR_UPDATE_ALREADY,
-			      "already updating");
-	return -1;
-}
-
 static int handleUpdate(struct client *client,
 			mpd_unused int argc, char *argv[])
 {
 	char *path = NULL;
+	int ret;
 
 	assert(argc <= 2);
 	if (argc == 2 && !(path = sanitizePathDup(argv[1]))) {
 		command_error(client, ACK_ERROR_ARG, "invalid path");
 		return -1;
 	}
-	return print_update_result(client, directory_update_init(path));
+
+	ret = directory_update_init(path);
+	if (ret > 0) {
+		client_printf(client, "updating_db: %i\n", ret);
+		return 0;
+	} else {
+		command_error(client, ACK_ERROR_UPDATE_ALREADY,
+			      "already updating");
+		return -1;
+	}
 }
 
 static int handleNext(mpd_unused struct client *client,

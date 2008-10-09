@@ -46,7 +46,7 @@ db_init(void)
 	music_root = directory_new("", NULL);
 
 	ret = directory_update_init(NULL);
-	if (ret < 0)
+	if (ret == 0)
 		FATAL("directory update failed\n");
 
 	do {
