@@ -354,21 +354,25 @@ directory_make_child_checked(struct directory *parent, const char *path)
 static struct directory *
 addDirectoryPathToDB(const char *utf8path)
 {
-	char path_max_tmp[MPD_PATH_MAX];
-	char *parent;
-	struct directory *parentDirectory;
+	struct directory *directory = db_get_root();
+	char *duplicated = xstrdup(utf8path);
+	char *slash = duplicated;
 
-	parent = parent_path(path_max_tmp, utf8path);
+	while (true) {
+		slash = strchr(slash, '/');
+		if (slash != NULL)
+			*slash = 0;
 
-	if (strlen(parent) == 0)
-		parentDirectory = db_get_root();
-	else
-		parentDirectory = addDirectoryPathToDB(parent);
+		directory = directory_make_child_checked(directory,
+							 duplicated);
+		if (directory == NULL || slash == NULL)
+			break;
 
-	if (!parentDirectory)
-		return NULL;
+		*slash++ = '/';
+	}
 
-	return directory_make_child_checked(parentDirectory, utf8path);
+	free(duplicated);
+	return directory;
 }
 
 static struct directory *
