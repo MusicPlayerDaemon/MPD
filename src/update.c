@@ -285,7 +285,6 @@ static int skip_path(const char *path)
 static enum update_return
 updateDirectory(struct directory *directory, const struct stat *st)
 {
-	bool was_empty = directory_is_empty(directory);
 	DIR *dir;
 	const char *dirname = directory_get_path(directory);
 	struct dirent *ent;
@@ -300,8 +299,7 @@ updateDirectory(struct directory *directory, const struct stat *st)
 	if (!dir)
 		return UPDATE_RETURN_ERROR;
 
-	if (!was_empty &&
-	    removeDeletedFromDirectory(path_max_tmp, directory) > 0)
+	if (removeDeletedFromDirectory(path_max_tmp, directory) > 0)
 		ret = UPDATE_RETURN_UPDATED;
 
 	while ((ent = readdir(dir))) {
