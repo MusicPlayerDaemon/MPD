@@ -456,6 +456,9 @@ void reap_update_task(void)
 
 	assert(pthread_equal(pthread_self(), main_task));
 
+	if (progress == UPDATE_PROGRESS_IDLE)
+		return;
+
 	cond_enter(&delete_cond);
 	if (delete) {
 		char tmp[MPD_PATH_MAX];
