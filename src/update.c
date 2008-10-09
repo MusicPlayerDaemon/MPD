@@ -235,9 +235,6 @@ addSubDirectoryToDirectory(struct directory *directory,
 {
 	struct directory *subDirectory;
 
-	if (inodeFoundInParent(directory, st->st_ino, st->st_dev))
-		return UPDATE_RETURN_NOUPDATE;
-
 	subDirectory = directory_new(name, directory);
 	if (updateDirectory(subDirectory, st) != UPDATE_RETURN_UPDATED) {
 		directory_free(subDirectory);
@@ -273,7 +270,12 @@ updateInDirectory(struct directory *directory,
 			return UPDATE_RETURN_UPDATED;
 		}
 	} else if (S_ISDIR(st->st_mode)) {
-		struct directory *subdir = directory_get_child(directory, name);
+		struct directory *subdir;
+
+		if (inodeFoundInParent(directory, st->st_ino, st->st_dev))
+			return UPDATE_RETURN_ERROR;
+
+		subdir = directory_get_child(directory, name);
 		if (subdir) {
 			enum update_return ret;
 
@@ -313,10 +315,6 @@ updateDirectory(struct directory *directory, const struct stat *st)
 	assert(S_ISDIR(st->st_mode));
 
 	directory_set_stat(directory, st);
-
-	if (inodeFoundInParent(directory->parent,
-			       directory->inode, directory->device))
-		return UPDATE_RETURN_ERROR;
 
 	dir = opendir(opendir_path(path_max_tmp, dirname));
 	if (!dir)
