@@ -451,6 +451,7 @@ int directory_update_init(char *path)
 
 void reap_update_task(void)
 {
+	void *thread_return;
 	enum update_return ret;
 
 	assert(pthread_equal(pthread_self(), main_task));
@@ -467,8 +468,9 @@ void reap_update_task(void)
 
 	if (progress != UPDATE_PROGRESS_DONE)
 		return;
-	if (pthread_join(update_thr, (void **)&ret))
+	if (pthread_join(update_thr, &thread_return))
 		FATAL("error joining update thread: %s\n", strerror(errno));
+	ret = (enum update_return)(size_t)thread_return;
 	if (ret == UPDATE_RETURN_UPDATED)
 		playlistVersionChange();
 
