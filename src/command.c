@@ -403,7 +403,7 @@ static int commandStatus(struct client *client,
 		client_printf(client,
 			      COMMAND_STATUS_TIME ": %i:%i\n"
 			      COMMAND_STATUS_BITRATE ": %li\n"
-			      COMMAND_STATUS_AUDIO ": %u:%i:%i\n",
+			      COMMAND_STATUS_AUDIO ": %u:%u:%u\n",
 			      getPlayerElapsedTime(), getPlayerTotalTime(),
 			      getPlayerBitRate(),
 			      getPlayerSampleRate(), getPlayerBits(),

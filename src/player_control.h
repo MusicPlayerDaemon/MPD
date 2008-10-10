@@ -20,6 +20,7 @@
 #define PLAYER_H
 
 #include "notify.h"
+#include "audio_format.h"
 
 #include <stdint.h>
 
@@ -86,9 +87,7 @@ struct player_control {
 	volatile enum player_state state;
 	volatile int8_t error;
 	volatile uint16_t bitRate;
-	volatile int8_t bits;
-	volatile int8_t channels;
-	volatile uint32_t sampleRate;
+	struct audio_format audio_format;
 	volatile float totalTime;
 	volatile float elapsedTime;
 	volatile float fileTime;
@@ -157,9 +156,9 @@ double getPlayerTotalPlayTime(void);
 
 unsigned int getPlayerSampleRate(void);
 
-int getPlayerBits(void);
+unsigned getPlayerBits(void);
 
-int getPlayerChannels(void);
+unsigned getPlayerChannels(void);
 
 struct song *
 playerCurrentDecodeSong(void);

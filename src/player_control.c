@@ -256,17 +256,17 @@ double getPlayerTotalPlayTime(void)
 
 unsigned int getPlayerSampleRate(void)
 {
-	return pc.sampleRate;
+	return pc.audio_format.sample_rate;
 }
 
-int getPlayerBits(void)
+unsigned getPlayerBits(void)
 {
-	return pc.bits;
+	return pc.audio_format.bits;
 }
 
-int getPlayerChannels(void)
+unsigned getPlayerChannels(void)
 {
-	return pc.channels;
+	return pc.audio_format.channels;
 }
 
 /* this actually creates a dupe of the current metadata */

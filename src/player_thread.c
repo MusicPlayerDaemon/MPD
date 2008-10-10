@@ -62,9 +62,7 @@ static int waitOnDecode(int *decodeWaitedOn)
 
 	pc.totalTime = pc.fileTime;
 	pc.bitRate = 0;
-	pc.sampleRate = 0;
-	pc.bits = 0;
-	pc.channels = 0;
+	audio_format_clear(&pc.audio_format);
 	*decodeWaitedOn = 1;
 
 	return 0;
@@ -253,9 +251,7 @@ static void do_play(void)
 					closeAudioDevice();
 				}
 				pc.totalTime = dc.totalTime;
-				pc.sampleRate = dc.audioFormat.sample_rate;
-				pc.bits = dc.audioFormat.bits;
-				pc.channels = dc.audioFormat.channels;
+				pc.audio_format = dc.audioFormat;
 				sizeToTime = audioFormatSizeToTime(&ob.audioFormat);
 			}
 			else {
