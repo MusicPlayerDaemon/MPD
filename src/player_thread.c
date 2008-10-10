@@ -339,7 +339,13 @@ static void do_play(void)
 				      sizeToTime) < 0)
 				break;
 			ob_shift();
-			notify_signal(&dc.notify);
+
+			/* this formula should prevent that the
+			   decoder gets woken up with each chunk; it
+			   is more efficient to make it decode a
+			   larger block at a time */
+			if (ob_available() <= (pc.buffered_before_play + ob.size * 3) / 4)
+				notify_signal(&dc.notify);
 		} else if (!ob_is_empty() && (int)ob.begin == next) {
 			/* at the beginning of a new song */
 
