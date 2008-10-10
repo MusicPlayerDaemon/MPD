@@ -65,13 +65,14 @@ static unsigned long prng(unsigned long state)
 	return (state * 0x0019660dL + 0x3c6ef35fL) & 0xffffffffL;
 }
 
-static int16_t audio_linear_dither(unsigned int bits, mad_fixed_t sample,
-				      struct audio_dither *dither)
+static int16_t audio_linear_dither(mad_fixed_t sample,
+				   struct audio_dither *dither)
 {
-	unsigned int scalebits;
 	mad_fixed_t output, mask, rnd;
 
 	enum {
+		bits = 16,
+		scalebits = MAD_F_FRACBITS + 1 - bits,
 		MIN = -MAD_F_ONE,
 		MAX = MAD_F_ONE - 1
 	};
@@ -83,7 +84,6 @@ static int16_t audio_linear_dither(unsigned int bits, mad_fixed_t sample,
 
 	output = sample + (1L << (MAD_F_FRACBITS + 1 - bits - 1));
 
-	scalebits = MAD_F_FRACBITS + 1 - bits;
 	mask = (1L << scalebits) - 1;
 
 	rnd = prng(dither->random);
@@ -119,13 +119,11 @@ static unsigned dither_buffer(int16_t *dest0, const struct mad_synth *synth,
 	unsigned int i;
 
 	for (i = start; i < end; ++i) {
-		*dest++ = audio_linear_dither(16,
-					      synth->pcm.samples[0][i],
+		*dest++ = audio_linear_dither(synth->pcm.samples[0][i],
 					      dither);
 
 		if (num_channels == 2)
-			*dest++ = audio_linear_dither(16,
-						      synth->pcm.samples[1][i],
+			*dest++ = audio_linear_dither(synth->pcm.samples[1][i],
 						      dither);
 	}
 
