@@ -66,7 +66,7 @@ typedef struct _MvpData {
 	int fd;
 } MvpData;
 
-static int pcmfrequencies[][3] = {
+static unsigned pcmfrequencies[][3] = {
 	{9, 8000, 32000},
 	{10, 11025, 44100},
 	{11, 12000, 48000},
@@ -81,7 +81,8 @@ static int pcmfrequencies[][3] = {
 	{15, 96000, 48000}
 };
 
-static int numfrequencies = sizeof(pcmfrequencies) / 12;
+static const unsigned numfrequencies =
+	sizeof(pcmfrequencies) / sizeof(pcmfrequencies[0]);
 
 static int mvp_testDefault(void)
 {
@@ -120,8 +121,8 @@ static void mvp_finishDriver(void *data)
 static int mvp_setPcmParams(MvpData * md, unsigned long rate, int channels,
 			    int big_endian, unsigned bits)
 {
-	int iloop;
-	int mix[5];
+	unsigned iloop;
+	unsigned mix[5];
 
 	if (channels == 1)
 		mix[0] = 1;
