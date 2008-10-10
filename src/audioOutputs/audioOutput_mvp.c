@@ -26,6 +26,11 @@
 #include "../utils.h"
 #include "../log.h"
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/ioctl.h>
+#include <fcntl.h>
+
 typedef struct {
 	unsigned long dsp_status;
 	unsigned long stream_decode_type;
