@@ -254,21 +254,6 @@ double getPlayerTotalPlayTime(void)
 	return pc.totalPlayTime;
 }
 
-unsigned int getPlayerSampleRate(void)
-{
-	return pc.audio_format.sample_rate;
-}
-
-unsigned getPlayerBits(void)
-{
-	return pc.audio_format.bits;
-}
-
-unsigned getPlayerChannels(void)
-{
-	return pc.audio_format.channels;
-}
-
 /* this actually creates a dupe of the current metadata */
 struct song *
 playerCurrentDecodeSong(void)

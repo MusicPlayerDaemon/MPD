@@ -154,11 +154,11 @@ void setPlayerSoftwareVolume(int volume);
 
 double getPlayerTotalPlayTime(void);
 
-unsigned int getPlayerSampleRate(void);
-
-unsigned getPlayerBits(void);
-
-unsigned getPlayerChannels(void);
+static inline const struct audio_format *
+player_get_audio_format(void)
+{
+	return &pc.audio_format;
+}
 
 struct song *
 playerCurrentDecodeSong(void);
