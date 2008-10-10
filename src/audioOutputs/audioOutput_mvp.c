@@ -61,6 +61,8 @@ typedef struct {
 #define MVP_GET_AUD_REGS		_IOW('a',28,aud_ctl_regs_t*)
 
 typedef struct _MvpData {
+	struct audio_output *audio_output;
+	struct audio_format audio_format;
 	int fd;
 } MvpData;
 
@@ -98,20 +100,20 @@ static int mvp_testDefault(void)
 	return -1;
 }
 
-static int mvp_initDriver(struct audio_output *audioOutput,
-			  mpd_unused const struct audio_format *audio_format,
-			  ConfigParam * param)
+static void *mvp_initDriver(mpd_unused struct audio_output *audio_output,
+			    mpd_unused const struct audio_format *audio_format,
+			    mpd_unused ConfigParam *param)
 {
 	MvpData *md = xmalloc(sizeof(MvpData));
+	md->audio_output = audio_output;
 	md->fd = -1;
-	audioOutput->data = md;
 
-	return 0;
+	return md;
 }
 
-static void mvp_finishDriver(struct audio_output *audioOutput)
+static void mvp_finishDriver(void *data)
 {
-	MvpData *md = audioOutput->data;
+	MvpData *md = data;
 	free(md);
 }
 
@@ -178,11 +180,10 @@ static int mvp_setPcmParams(MvpData * md, unsigned long rate, int channels,
 	return 0;
 }
 
-static int mvp_openDevice(struct audio_output *audioOutput,
-			  struct audio_format *audioFormat)
+static int mvp_openDevice(void *data, struct audio_format *audioFormat)
 {
+	MvpData *md = data;
 	long long int stc = 0;
-	MvpData *md = audioOutput->data;
 	int mix[5] = { 0, 2, 7, 1, 0 };
 
 	if ((md->fd = open("/dev/adec_pcm", O_RDWR | O_NONBLOCK)) < 0) {
@@ -213,37 +214,37 @@ static int mvp_openDevice(struct audio_output *audioOutput,
 	mvp_setPcmParams(md, audioFormat->sample_rate, audioFormat->channels,
 			 1, audioFormat->bits);
 #endif
+	md->audio_format = *audioFormat;
 	return 0;
 }
 
-static void mvp_closeDevice(struct audio_output *audioOutput)
+static void mvp_closeDevice(void *data)
 {
-	MvpData *md = audioOutput->data;
+	MvpData *md = data;
 	if (md->fd >= 0)
 		close(md->fd);
 	md->fd = -1;
 }
 
-static void mvp_dropBufferedAudio(struct audio_output *audioOutput)
+static void mvp_dropBufferedAudio(void *data)
 {
-	MvpData *md = audioOutput->data;
+	MvpData *md = data;
 	if (md->fd >= 0) {
 		ioctl(md->fd, MVP_SET_AUD_RESET, 0x11);
 		close(md->fd);
 		md->fd = -1;
-		audioOutput->open = 0;
+		audio_output_closed(md->audio_output);
 	}
 }
 
-static int mvp_playAudio(struct audio_output *audioOutput,
-			 const char *playChunk, size_t size)
+static int mvp_playAudio(void *data, const char *playChunk, size_t size)
 {
-	MvpData *md = audioOutput->data;
+	MvpData *md = data;
 	ssize_t ret;
 
 	/* reopen the device since it was closed by dropBufferedAudio */
 	if (md->fd < 0)
-		mvp_openDevice(audioOutput);
+		mvp_openDevice(md, &md->audio_format);
 
 	while (size > 0) {
 		ret = write(md->fd, playChunk, size);
@@ -252,7 +253,7 @@ static int mvp_playAudio(struct audio_output *audioOutput,
 				continue;
 			ERROR("closing mvp PCM device due to write error: "
 			      "%s\n", strerror(errno));
-			mvp_closeDevice(audioOutput);
+			mvp_closeDevice(md);
 			return -1;
 		}
 		playChunk += ret;
