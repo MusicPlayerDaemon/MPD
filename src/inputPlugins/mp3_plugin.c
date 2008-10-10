@@ -116,14 +116,11 @@ static unsigned dither_buffer(int16_t *dest0, const struct mad_synth *synth,
 			      unsigned int num_channels)
 {
 	int16_t *dest = dest0;
-	unsigned int i;
+	unsigned int i, c;
 
 	for (i = start; i < end; ++i) {
-		*dest++ = audio_linear_dither(synth->pcm.samples[0][i],
-					      dither);
-
-		if (num_channels == 2)
-			*dest++ = audio_linear_dither(synth->pcm.samples[1][i],
+		for (c = 0; c < num_channels; ++c)
+			*dest++ = audio_linear_dither(synth->pcm.samples[c][i],
 						      dither);
 	}
 
