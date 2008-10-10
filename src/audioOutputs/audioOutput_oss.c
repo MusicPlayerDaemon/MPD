@@ -45,10 +45,8 @@
 typedef struct _OssData {
 	int fd;
 	const char *device;
-	int channels;
-	int sampleRate;
+	struct audio_format audio_format;
 	int bitFormat;
-	int bits;
 	int *supported[3];
 	int numSupported[3];
 	int *unsupported[3];
@@ -447,19 +445,24 @@ static int oss_open(OssData *od)
 		goto fail;
 	}
 
-	if (setParam(od, SNDCTL_DSP_CHANNELS, &od->channels)) {
-		ERROR("OSS device \"%s\" does not support %i channels: %s\n",
-		      od->device, od->channels, strerror(errno));
+	tmp = od->audio_format.channels;
+	if (setParam(od, SNDCTL_DSP_CHANNELS, &tmp)) {
+		ERROR("OSS device \"%s\" does not support %u channels: %s\n",
+		      od->device, od->audio_format.channels, strerror(errno));
 		goto fail;
 	}
+	od->audio_format.channels = tmp;
 
-	if (setParam(od, SNDCTL_DSP_SPEED, &od->sampleRate)) {
-		ERROR("OSS device \"%s\" does not support %i Hz audio: %s\n",
-		      od->device, od->sampleRate, strerror(errno));
+	tmp = od->audio_format.sample_rate;
+	if (setParam(od, SNDCTL_DSP_SPEED, &tmp)) {
+		ERROR("OSS device \"%s\" does not support %u Hz audio: %s\n",
+		      od->device, od->audio_format.sample_rate,
+		      strerror(errno));
 		goto fail;
 	}
+	od->audio_format.sample_rate = tmp;
 
-	switch (od->bits) {
+	switch (od->audio_format.bits) {
 	case 8:
 		tmp = AFMT_S8;
 		break;
@@ -468,7 +471,7 @@ static int oss_open(OssData *od)
 	}
 
 	if (setParam(od, SNDCTL_DSP_SAMPLESIZE, &tmp)) {
-		ERROR("OSS device \"%s\" does not support %i bit audio: %s\n",
+		ERROR("OSS device \"%s\" does not support %u bit audio: %s\n",
 		      od->device, tmp, strerror(errno));
 		goto fail;
 	}
@@ -486,19 +489,17 @@ static int oss_openDevice(void *data,
 	int ret;
 	OssData *od = data;
 
-	od->channels = (int8_t)audioFormat->channels;
-	od->sampleRate = audioFormat->sample_rate;
-	od->bits = (int8_t)audioFormat->bits;
+	od->audio_format = *audioFormat;
 
 	if ((ret = oss_open(od)) < 0)
 		return ret;
 
-	audioFormat->channels = od->channels;
-	audioFormat->sample_rate = od->sampleRate;
-	audioFormat->bits = od->bits;
+	*audioFormat = od->audio_format;
 
-	DEBUG("oss device \"%s\" will be playing %i bit %i channel audio at "
-	      "%i Hz\n", od->device, od->bits, od->channels, od->sampleRate);
+	DEBUG("oss device \"%s\" will be playing %u bit %u channel audio at "
+	      "%u Hz\n", od->device,
+	      od->audio_format.bits, od->audio_format.channels,
+	      od->audio_format.sample_rate);
 
 	return ret;
 }
