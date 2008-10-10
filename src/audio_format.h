@@ -61,9 +61,15 @@ static inline unsigned audio_format_sample_size(const struct audio_format *af)
 		return 4;
 }
 
+static inline unsigned
+audio_format_frame_size(const struct audio_format *af)
+{
+	return audio_format_sample_size(af) * af->channels;
+}
+
 static inline double audio_format_time_to_size(const struct audio_format *af)
 {
-	return af->sample_rate * af->channels * audio_format_sample_size(af);
+	return af->sample_rate * audio_format_frame_size(af);
 }
 
 static inline double audioFormatSizeToTime(const struct audio_format *af)

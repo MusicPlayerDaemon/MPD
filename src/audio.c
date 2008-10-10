@@ -315,7 +315,7 @@ static int flushAudioBuffer(void)
 
 static size_t audio_buffer_size(const struct audio_format *af)
 {
-	return (af->bits >> 3) * af->channels * (af->sample_rate >> 5);
+	return audio_format_frame_size(af) * (af->sample_rate >> 5);
 }
 
 static void audio_buffer_resize(size_t size)

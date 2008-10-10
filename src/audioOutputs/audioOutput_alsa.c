@@ -288,7 +288,7 @@ configure_hw:
 	if (err < 0)
 		goto error;
 
-	ad->sampleSize = audio_format_sample_size(audioFormat) * audioFormat->channels;
+	ad->sampleSize = audio_format_frame_size(audioFormat);
 
 	DEBUG("ALSA device \"%s\" will be playing %i bit, %u channel audio at "
 	      "%u Hz\n", ad->device, audioFormat->bits,

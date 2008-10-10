@@ -266,8 +266,7 @@ static int osx_openDevice(struct audio_output *audioOutput,
 	streamDesc.mFormatFlags |= kLinearPCMFormatFlagIsBigEndian;
 #endif
 
-	streamDesc.mBytesPerPacket =
-		audioFormat->channels * audio_format_sample_size(audioFormat);
+	streamDesc.mBytesPerPacket = audio_format_frame_size(audioFormat);
 	streamDesc.mFramesPerPacket = 1;
 	streamDesc.mBytesPerFrame = streamDesc.mBytesPerPacket;
 	streamDesc.mChannelsPerFrame = audioFormat->channels;
@@ -284,7 +283,7 @@ static int osx_openDevice(struct audio_output *audioOutput,
 
 	/* create a buffer of 1s */
 	od->bufferSize = (audioFormat->sample_rate) *
-	    (audioFormat->bits >> 3) * (audioFormat->channels);
+		audio_format_frame_size(audioFormat);
 	od->buffer = xrealloc(od->buffer, od->bufferSize);
 
 	od->pos = 0;
