@@ -278,7 +278,7 @@ static int oggvorbis_decode(struct decoder * decoder, InputStream * inStream)
 			/*printf("new song!\n"); */
 			vorbis_info *vi = ov_info(&vf, -1);
 			audio_format.channels = vi->channels;
-			audio_format.sampleRate = vi->rate;
+			audio_format.sample_rate = vi->rate;
 			if (!initialized) {
 				float total_time = ov_time_total(&vf, -1);
 				if (total_time < 0)
@@ -311,7 +311,7 @@ static int oggvorbis_decode(struct decoder * decoder, InputStream * inStream)
 			decoder_data(decoder, inStream,
 				     inStream->seekable,
 				     chunk, chunkpos,
-				     ov_pcm_tell(&vf) / audio_format.sampleRate,
+				     ov_pcm_tell(&vf) / audio_format.sample_rate,
 				     bitRate, replayGainInfo);
 			chunkpos = 0;
 			if (decoder_get_command(decoder) == DECODE_COMMAND_STOP)

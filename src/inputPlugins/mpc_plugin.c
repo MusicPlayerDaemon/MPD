@@ -154,7 +154,7 @@ static int mpc_decode(struct decoder * mpd_decoder, InputStream * inStream)
 
 	audio_format.bits = 16;
 	audio_format.channels = info.channels;
-	audio_format.sampleRate = info.sample_freq;
+	audio_format.sample_rate = info.sample_freq;
 
 	replayGainInfo = newReplayGainInfo();
 	replayGainInfo->albumGain = info.gain_album * 0.01;
@@ -168,7 +168,7 @@ static int mpc_decode(struct decoder * mpd_decoder, InputStream * inStream)
 	while (!eof) {
 		if (decoder_get_command(mpd_decoder) == DECODE_COMMAND_SEEK) {
 			samplePos = decoder_seek_where(mpd_decoder) *
-				audio_format.sampleRate;
+				audio_format.sample_rate;
 			if (mpc_decoder_seek_sample(&decoder, samplePos)) {
 				decoder_clear(mpd_decoder);
 				s16 = (int16_t *) chunk;
@@ -201,10 +201,10 @@ static int mpc_decode(struct decoder * mpd_decoder, InputStream * inStream)
 
 			if (chunkpos >= MPC_CHUNK_SIZE) {
 				total_time = ((float)samplePos) /
-				    audio_format.sampleRate;
+				    audio_format.sample_rate;
 
 				bitRate = vbrUpdateBits *
-				    audio_format.sampleRate / 1152 / 1000;
+				    audio_format.sample_rate / 1152 / 1000;
 
 				decoder_data(mpd_decoder, inStream,
 					     inStream->seekable,
@@ -224,10 +224,10 @@ static int mpc_decode(struct decoder * mpd_decoder, InputStream * inStream)
 
 	if (decoder_get_command(mpd_decoder) != DECODE_COMMAND_STOP &&
 	    chunkpos > 0) {
-		total_time = ((float)samplePos) / audio_format.sampleRate;
+		total_time = ((float)samplePos) / audio_format.sample_rate;
 
 		bitRate =
-		    vbrUpdateBits * audio_format.sampleRate / 1152 / 1000;
+		    vbrUpdateBits * audio_format.sample_rate / 1152 / 1000;
 
 		decoder_data(mpd_decoder, NULL, inStream->seekable,
 			     chunk, chunkpos, total_time, bitRate,

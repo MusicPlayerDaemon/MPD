@@ -1030,7 +1030,7 @@ static void initAudioFormatFromMp3DecodeData(mp3DecodeData * data,
 					     struct audio_format * af)
 {
 	af->bits = 16;
-	af->sampleRate = (data->frame).header.samplerate;
+	af->sample_rate = (data->frame).header.samplerate;
 	af->channels = MAD_NCHANNELS(&(data->frame).header);
 }
 

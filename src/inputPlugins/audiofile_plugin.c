@@ -71,14 +71,14 @@ static int audiofile_decode(struct decoder * decoder, char *path)
 	                         AF_SAMPFMT_TWOSCOMP, 16);
 	afGetVirtualSampleFormat(af_fp, AF_DEFAULT_TRACK, &fs, &bits);
 	audio_format.bits = (uint8_t)bits;
-	audio_format.sampleRate =
+	audio_format.sample_rate =
 	                      (unsigned int)afGetRate(af_fp, AF_DEFAULT_TRACK);
 	audio_format.channels =
 	              (uint8_t)afGetVirtualChannels(af_fp, AF_DEFAULT_TRACK);
 
 	frame_count = afGetFrameCount(af_fp, AF_DEFAULT_TRACK);
 
-	total_time = ((float)frame_count / (float)audio_format.sampleRate);
+	total_time = ((float)frame_count / (float)audio_format.sample_rate);
 
 	bitRate = (uint16_t)(st.st_size * 8.0 / total_time / 1000.0 + 0.5);
 
@@ -97,7 +97,7 @@ static int audiofile_decode(struct decoder * decoder, char *path)
 		if (decoder_get_command(decoder) == DECODE_COMMAND_SEEK) {
 			decoder_clear(decoder);
 			current = decoder_seek_where(decoder) *
-				audio_format.sampleRate;
+				audio_format.sample_rate;
 			afSeekFrame(af_fp, AF_DEFAULT_TRACK, current);
 			decoder_command_finished(decoder);
 		}
@@ -110,7 +110,7 @@ static int audiofile_decode(struct decoder * decoder, char *path)
 		current += ret;
 		decoder_data(decoder, NULL, 1,
 			     chunk, ret * fs,
-			     (float)current / (float)audio_format.sampleRate,
+			     (float)current / (float)audio_format.sample_rate,
 			     bitRate, NULL);
 	} while (decoder_get_command(decoder) != DECODE_COMMAND_STOP);
 

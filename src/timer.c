@@ -40,7 +40,7 @@ Timer *timer_new(const struct audio_format *af)
 	timer = xmalloc(sizeof(Timer));
 	timer->time = 0;
 	timer->started = 0;
-	timer->rate = af->sampleRate * (af->bits / CHAR_BIT) * af->channels;
+	timer->rate = af->sample_rate * (af->bits / CHAR_BIT) * af->channels;
 
 	return timer;
 }

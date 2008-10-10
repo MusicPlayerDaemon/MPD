@@ -137,16 +137,16 @@ int parseAudioConfig(struct audio_format *audioFormat, char *conf)
 
 	memset(audioFormat, 0, sizeof(*audioFormat));
 
-	audioFormat->sampleRate = strtol(conf, &test, 10);
+	audioFormat->sample_rate = strtol(conf, &test, 10);
 
 	if (*test != ':') {
 		ERROR("error parsing audio output format: %s\n", conf);
 		return -1;
 	}
 
-	if (audioFormat->sampleRate <= 0) {
-		ERROR("sample rate %i is not >= 0\n",
-		      (int)audioFormat->sampleRate);
+	if (audioFormat->sample_rate <= 0) {
+		ERROR("sample rate %u is not >= 0\n",
+		      audioFormat->sample_rate);
 		return -1;
 	}
 
@@ -315,7 +315,7 @@ static int flushAudioBuffer(void)
 
 static size_t audio_buffer_size(const struct audio_format *af)
 {
-	return (af->bits >> 3) * af->channels * (af->sampleRate >> 5);
+	return (af->bits >> 3) * af->channels * (af->sample_rate >> 5);
 }
 
 static void audio_buffer_resize(size_t size)

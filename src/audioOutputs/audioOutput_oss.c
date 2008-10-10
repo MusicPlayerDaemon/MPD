@@ -487,14 +487,14 @@ static int oss_openDevice(void *data,
 	OssData *od = data;
 
 	od->channels = (int8_t)audioFormat->channels;
-	od->sampleRate = audioFormat->sampleRate;
+	od->sampleRate = audioFormat->sample_rate;
 	od->bits = (int8_t)audioFormat->bits;
 
 	if ((ret = oss_open(od)) < 0)
 		return ret;
 
 	audioFormat->channels = od->channels;
-	audioFormat->sampleRate = od->sampleRate;
+	audioFormat->sample_rate = od->sampleRate;
 	audioFormat->bits = od->bits;
 
 	DEBUG("oss device \"%s\" will be playing %i bit %i channel audio at "

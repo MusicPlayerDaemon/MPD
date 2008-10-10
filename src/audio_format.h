@@ -23,27 +23,27 @@
 #include <stdbool.h>
 
 struct audio_format {
-	uint32_t sampleRate;
+	uint32_t sample_rate;
 	uint8_t bits;
 	uint8_t channels;
 };
 
 static inline void audio_format_clear(struct audio_format *af)
 {
-	af->sampleRate = 0;
+	af->sample_rate = 0;
 	af->bits = 0;
 	af->channels = 0;
 }
 
 static inline bool audio_format_defined(const struct audio_format *af)
 {
-	return af->sampleRate != 0;
+	return af->sample_rate != 0;
 }
 
 static inline bool audio_format_equals(const struct audio_format *a,
 				       const struct audio_format *b)
 {
-	return a->sampleRate == b->sampleRate &&
+	return a->sample_rate == b->sample_rate &&
 		a->bits == b->bits &&
 		a->channels == b->channels;
 }
@@ -63,7 +63,7 @@ static inline unsigned audio_format_sample_size(const struct audio_format *af)
 
 static inline double audio_format_time_to_size(const struct audio_format *af)
 {
-	return af->sampleRate * af->channels * audio_format_sample_size(af);
+	return af->sample_rate * af->channels * audio_format_sample_size(af);
 }
 
 static inline double audioFormatSizeToTime(const struct audio_format *af)

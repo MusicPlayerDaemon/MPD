@@ -140,7 +140,7 @@ static void wavpack_decode(struct decoder * decoder,
 	int position, outsamplesize;
 	int Bps;
 
-	audio_format.sampleRate = WavpackGetSampleRate(wpc);
+	audio_format.sample_rate = WavpackGetSampleRate(wpc);
 	audio_format.channels = WavpackGetReducedChannels(wpc);
 	audio_format.bits = WavpackGetBitsPerSample(wpc);
 
@@ -168,7 +168,7 @@ static void wavpack_decode(struct decoder * decoder,
 	samplesreq = sizeof(chunk) / (4 * audio_format.channels);
 
 	decoder_initialized(decoder, &audio_format,
-			    (float)allsamples / audio_format.sampleRate);
+			    (float)allsamples / audio_format.sample_rate);
 
 	position = 0;
 
@@ -180,7 +180,7 @@ static void wavpack_decode(struct decoder * decoder,
 				decoder_clear(decoder);
 
 				where = decoder_seek_where(decoder) *
-				        audio_format.sampleRate;
+					audio_format.sample_rate;
 				if (WavpackSeekSample(wpc, where)) {
 					position = where;
 					decoder_command_finished(decoder);
@@ -200,8 +200,7 @@ static void wavpack_decode(struct decoder * decoder,
 			int bitrate = (int)(WavpackGetInstantBitrate(wpc) /
 			              1000 + 0.5);
 			position += samplesgot;
-			file_time = (float)position /
-			            audio_format.sampleRate;
+			file_time = (float)position / audio_format.sample_rate;
 
 			format_samples(Bps, chunk,
 			               samplesgot * audio_format.channels);

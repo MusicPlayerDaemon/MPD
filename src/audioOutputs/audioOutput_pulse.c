@@ -138,7 +138,7 @@ static int pulse_openDevice(void *data,
 	}
 
 	ss.format = PA_SAMPLE_S16NE;
-	ss.rate = audioFormat->sampleRate;
+	ss.rate = audioFormat->sample_rate;
 	ss.channels = audioFormat->channels;
 
 	pd->s = pa_simple_new(pd->server, MPD_PULSE_NAME, PA_STREAM_PLAYBACK,
@@ -159,7 +159,7 @@ static int pulse_openDevice(void *data,
 	      "channel audio at %i Hz\n",
 	      audio_output_get_name(pd->ao),
 	      audioFormat->bits,
-	      audioFormat->channels, audioFormat->sampleRate);
+	      audioFormat->channels, audioFormat->sample_rate);
 
 	return 0;
 }

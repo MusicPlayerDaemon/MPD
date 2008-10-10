@@ -186,12 +186,12 @@ static int mod_decode(struct decoder * decoder, char *path)
 	}
 
 	audio_format.bits = 16;
-	audio_format.sampleRate = 44100;
+	audio_format.sample_rate = 44100;
 	audio_format.channels = 2;
 
 	secPerByte =
 	    1.0 / ((audio_format.bits * audio_format.channels / 8.0) *
-		   (float)audio_format.sampleRate);
+		   (float)audio_format.sample_rate);
 
 	decoder_initialized(decoder, &audio_format, 0);
 

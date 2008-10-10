@@ -126,7 +126,7 @@ static int srate(mpd_unused jack_nframes_t rate, void *data)
 	JackData *jd = (JackData *)data;
 	struct audio_format *audioFormat = jd->audio_format;
 
- 	audioFormat->sampleRate = (int)jack_get_sample_rate(jd->client);
+	audioFormat->sample_rate = (int)jack_get_sample_rate(jd->client);
 
 	return 0;
 }
@@ -188,13 +188,13 @@ static void shutdown_callback(void *arg)
 
 static void set_audioformat(JackData *jd, struct audio_format *audioFormat)
 {
-	audioFormat->sampleRate = (int) jack_get_sample_rate(jd->client);
-	DEBUG("samplerate = %d\n", audioFormat->sampleRate);
+	audioFormat->sample_rate = jack_get_sample_rate(jd->client);
+	DEBUG("samplerate = %u\n", audioFormat->sample_rate);
 	audioFormat->channels = 2;
 	audioFormat->bits = 16;
 	jd->bps = audioFormat->channels
 		* sizeof(jack_default_audio_sample_t)
-		* audioFormat->sampleRate;
+		* audioFormat->sample_rate;
 }
 
 static void error_callback(const char *msg)

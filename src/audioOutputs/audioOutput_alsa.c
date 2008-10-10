@@ -142,7 +142,7 @@ static int alsa_openDevice(void *data, struct audio_format *audioFormat)
 	snd_pcm_format_t bitformat;
 	snd_pcm_hw_params_t *hwparams;
 	snd_pcm_sw_params_t *swparams;
-	unsigned int sampleRate = audioFormat->sampleRate;
+	unsigned int sample_rate = audioFormat->sample_rate;
 	unsigned int channels = audioFormat->channels;
 	snd_pcm_uframes_t alsa_buffer_size;
 	snd_pcm_uframes_t alsa_period_size;
@@ -217,13 +217,13 @@ configure_hw:
 	audioFormat->channels = (int8_t)channels;
 
 	err = snd_pcm_hw_params_set_rate_near(ad->pcmHandle, hwparams,
-					      &sampleRate, NULL);
-	if (err < 0 || sampleRate == 0) {
-		ERROR("ALSA device \"%s\" does not support %i Hz audio\n",
-		      ad->device, (int)audioFormat->sampleRate);
+					      &sample_rate, NULL);
+	if (err < 0 || sample_rate == 0) {
+		ERROR("ALSA device \"%s\" does not support %u Hz audio\n",
+		      ad->device, audioFormat->sample_rate);
 		goto fail;
 	}
-	audioFormat->sampleRate = sampleRate;
+	audioFormat->sample_rate = sample_rate;
 
 	buffer_time = ad->buffer_time;
 	cmd = "snd_pcm_hw_params_set_buffer_time_near";
@@ -291,8 +291,8 @@ configure_hw:
 	ad->sampleSize = audio_format_sample_size(audioFormat) * audioFormat->channels;
 
 	DEBUG("ALSA device \"%s\" will be playing %i bit, %u channel audio at "
-	      "%i Hz\n", ad->device, audioFormat->bits,
-	      channels, sampleRate);
+	      "%u Hz\n", ad->device, audioFormat->bits,
+	      channels, sample_rate);
 
 	return 0;
 

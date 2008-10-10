@@ -202,11 +202,11 @@ static int mvp_openDevice(struct audio_output *audioOutput,
 		return -1;
 	}
 #ifdef WORDS_BIGENDIAN
-	mvp_setPcmParams(md, audioFormat->sampleRate, audioFormat->channels, 0,
-			 audioFormat->bits);
+	mvp_setPcmParams(md, audioFormat->sample_rate, audioFormat->channels,
+			 0, audioFormat->bits);
 #else
-	mvp_setPcmParams(md, audioFormat->sampleRate, audioFormat->channels, 1,
-			 audioFormat->bits);
+	mvp_setPcmParams(md, audioFormat->sample_rate, audioFormat->channels,
+			 1, audioFormat->bits);
 #endif
 	return 0;
 }

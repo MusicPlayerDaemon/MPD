@@ -93,7 +93,7 @@ static int shout_mp3_encoder_init_encoder(struct shout_data *sd)
 	}
 
 	if (0 != lame_set_in_samplerate(ld->gfp,
-					sd->audio_format.sampleRate)) {
+					sd->audio_format.sample_rate)) {
 		ERROR("error setting lame sample rate\n");
 		return -1;
 	}

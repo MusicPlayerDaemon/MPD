@@ -187,7 +187,7 @@ static int reinit_encoder(struct shout_data *sd)
 	if (sd->quality >= -1.0) {
 		if (0 != vorbis_encode_init_vbr(&od->vi,
 						sd->audio_format.channels,
-						sd->audio_format.sampleRate,
+						sd->audio_format.sample_rate,
 						sd->quality * 0.1)) {
 			ERROR("error initializing vorbis vbr\n");
 			vorbis_info_clear(&od->vi);
@@ -196,7 +196,7 @@ static int reinit_encoder(struct shout_data *sd)
 	} else {
 		if (0 != vorbis_encode_init(&od->vi,
 					    sd->audio_format.channels,
-					    sd->audio_format.sampleRate, -1.0,
+					    sd->audio_format.sample_rate, -1.0,
 					    sd->bitrate * 1000, -1.0)) {
 			ERROR("error initializing vorbis encoder\n");
 			vorbis_info_clear(&od->vi);

@@ -92,7 +92,7 @@ static int mp4_decode(struct decoder * mpd_decoder, InputStream * inStream)
 	struct audio_format audio_format;
 	unsigned char *mp4Buffer;
 	unsigned int mp4BufferSize;
-	uint32_t sampleRate;
+	uint32_t sample_rate;
 	unsigned char channels;
 	long sampleId;
 	long numSamples;
@@ -149,7 +149,7 @@ static int mp4_decode(struct decoder * mpd_decoder, InputStream * inStream)
 	mp4ff_get_decoder_config(mp4fh, track, &mp4Buffer, &mp4BufferSize);
 
 	if (faacDecInit2
-	    (decoder, mp4Buffer, mp4BufferSize, &sampleRate, &channels) < 0) {
+	    (decoder, mp4Buffer, mp4BufferSize, &sample_rate, &channels) < 0) {
 		ERROR("Error not a AAC stream.\n");
 		faacDecClose(decoder);
 		mp4ff_close(mp4fh);
@@ -157,7 +157,7 @@ static int mp4_decode(struct decoder * mpd_decoder, InputStream * inStream)
 		return -1;
 	}
 
-	audio_format.sampleRate = sampleRate;
+	audio_format.sample_rate = sample_rate;
 	audio_format.channels = channels;
 	file_time = mp4ff_get_track_duration_use_offsets(mp4fh, track);
 	scale = mp4ff_time_scale(mp4fh, track);
@@ -255,7 +255,7 @@ static int mp4_decode(struct decoder * mpd_decoder, InputStream * inStream)
 #ifdef HAVE_FAACDECFRAMEINFO_SAMPLERATE
 			scale = frameInfo.samplerate;
 #endif
-			audio_format.sampleRate = scale;
+			audio_format.sample_rate = scale;
 			audio_format.channels = frameInfo.channels;
 			decoder_initialized(mpd_decoder, &audio_format,
 					    total_time);

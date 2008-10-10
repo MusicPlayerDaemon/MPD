@@ -253,7 +253,7 @@ static void do_play(void)
 					closeAudioDevice();
 				}
 				pc.totalTime = dc.totalTime;
-				pc.sampleRate = dc.audioFormat.sampleRate;
+				pc.sampleRate = dc.audioFormat.sample_rate;
 				pc.bits = dc.audioFormat.bits;
 				pc.channels = dc.audioFormat.channels;
 				sizeToTime = audioFormatSizeToTime(&ob.audioFormat);

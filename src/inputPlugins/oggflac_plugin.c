@@ -316,12 +316,12 @@ static int oggflac_decode(struct decoder * mpd_decoder, InputStream * inStream)
 		}
 		if (decoder_get_command(mpd_decoder) == DECODE_COMMAND_SEEK) {
 			FLAC__uint64 sampleToSeek = decoder_seek_where(mpd_decoder) *
-			    data.audio_format.sampleRate + 0.5;
+			    data.audio_format.sample_rate + 0.5;
 			if (OggFLAC__seekable_stream_decoder_seek_absolute
 			    (decoder, sampleToSeek)) {
 				decoder_clear(mpd_decoder);
 				data.time = ((float)sampleToSeek) /
-				    data.audio_format.sampleRate;
+				    data.audio_format.sample_rate;
 				data.position = 0;
 				decoder_command_finished(mpd_decoder);
 			} else

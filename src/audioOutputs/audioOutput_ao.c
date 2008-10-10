@@ -182,7 +182,7 @@ static int audioOutputAo_openDevice(void *data,
 	}
 
 	format.bits = audio_format->bits;
-	format.rate = audio_format->sampleRate;
+	format.rate = audio_format->sample_rate;
 	format.byte_format = AO_FMT_NATIVE;
 	format.channels = audio_format->channels;
 

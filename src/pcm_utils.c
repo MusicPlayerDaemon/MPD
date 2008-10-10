@@ -503,13 +503,13 @@ size_t pcm_convertAudioFormat(const struct audio_format *inFormat,
 			exit(EXIT_FAILURE);
 	}
 
-	if (inFormat->sampleRate == outFormat->sampleRate) {
+	if (inFormat->sample_rate == outFormat->sample_rate) {
 		assert(outSize >= len);
 		memcpy(outBuffer, buf, len);
 	} else {
 		len = pcm_convertSampleRate(outFormat->channels,
-		                            inFormat->sampleRate, buf, len,
-		                            outFormat->sampleRate, outBuffer,
+		                            inFormat->sample_rate, buf, len,
+		                            outFormat->sample_rate, outBuffer,
 		                            outSize, convState);
 		if (len == 0)
 			exit(EXIT_FAILURE);
@@ -521,8 +521,8 @@ size_t pcm_convertAudioFormat(const struct audio_format *inFormat,
 size_t pcm_sizeOfConvBuffer(const struct audio_format *inFormat, size_t inSize,
                             const struct audio_format *outFormat)
 {
-	const double ratio = (double)outFormat->sampleRate /
-	                     (double)inFormat->sampleRate;
+	const double ratio = (double)outFormat->sample_rate /
+	                     (double)inFormat->sample_rate;
 	const int shift = 2 * outFormat->channels;
 	size_t outSize = inSize;
 

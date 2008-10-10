@@ -259,7 +259,7 @@ static int osx_openDevice(struct audio_output *audioOutput,
 		return -1;
 	}
 
-	streamDesc.mSampleRate = audioFormat->sampleRate;
+	streamDesc.mSampleRate = audioFormat->sample_rate;
 	streamDesc.mFormatID = kAudioFormatLinearPCM;
 	streamDesc.mFormatFlags = kLinearPCMFormatFlagIsSignedInteger;
 #ifdef WORDS_BIGENDIAN
@@ -283,7 +283,7 @@ static int osx_openDevice(struct audio_output *audioOutput,
 	}
 
 	/* create a buffer of 1s */
-	od->bufferSize = (audioFormat->sampleRate) *
+	od->bufferSize = (audioFormat->sample_rate) *
 	    (audioFormat->bits >> 3) * (audioFormat->channels);
 	od->buffer = xrealloc(od->buffer, od->bufferSize);
 
