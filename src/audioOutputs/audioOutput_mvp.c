@@ -111,7 +111,7 @@ static void mvp_finishDriver(struct audio_output *audioOutput)
 }
 
 static int mvp_setPcmParams(MvpData * md, unsigned long rate, int channels,
-			    int big_endian, int bits)
+			    int big_endian, unsigned bits)
 {
 	int iloop;
 	int mix[5];

@@ -252,7 +252,7 @@ static void *my_shout_init_driver(struct audio_output *audio_output,
 		char temp[11];
 		memset(temp, 0, sizeof(temp));
 
-		snprintf(temp, sizeof(temp), "%d", sd->audio_format.channels);
+		snprintf(temp, sizeof(temp), "%u", sd->audio_format.channels);
 		shout_set_audio_info(sd->shout_conn, SHOUT_AI_CHANNELS, temp);
 
 		snprintf(temp, sizeof(temp), "%d", sd->audio_format.sampleRate);

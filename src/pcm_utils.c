@@ -113,7 +113,7 @@ void pcm_volumeChange(char *buffer, int bufferSize,
 		break;
 
 	default:
-		FATAL("%i bits not supported by pcm_volumeChange!\n",
+		FATAL("%u bits not supported by pcm_volumeChange!\n",
 		      format->bits);
 	}
 }
@@ -188,7 +188,7 @@ static void pcm_add(char *buffer1, const char *buffer2, size_t size,
 		break;
 
 	default:
-		FATAL("%i bits not supported by pcm_add!\n", format->bits);
+		FATAL("%u bits not supported by pcm_add!\n", format->bits);
 	}
 }
 
@@ -436,7 +436,7 @@ pcm_convert_24_to_16(int16_t *out, const int32_t *in,
 	}
 }
 
-static const char *pcm_convertTo16bit(int8_t bits, const char *inBuffer,
+static const char *pcm_convertTo16bit(uint8_t bits, const char *inBuffer,
 				      size_t inSize, size_t *outSize)
 {
 	static char *buf;

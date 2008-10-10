@@ -153,7 +153,7 @@ static int alsa_openDevice(void *data, struct audio_format *audioFormat)
 	unsigned int buffer_time;
 
 	if ((bitformat = get_bitformat(audioFormat)) == SND_PCM_FORMAT_UNKNOWN)
-		ERROR("ALSA device \"%s\" doesn't support %i bit audio\n",
+		ERROR("ALSA device \"%s\" doesn't support %u bit audio\n",
 		      ad->device, audioFormat->bits);
 
 	err = snd_pcm_open(&ad->pcmHandle, ad->device,
@@ -201,7 +201,7 @@ configure_hw:
 
 	err = snd_pcm_hw_params_set_format(ad->pcmHandle, hwparams, bitformat);
 	if (err < 0) {
-		ERROR("ALSA device \"%s\" does not support %i bit audio: "
+		ERROR("ALSA device \"%s\" does not support %u bit audio: "
 		      "%s\n", ad->device, audioFormat->bits, snd_strerror(-err));
 		goto fail;
 	}
@@ -290,8 +290,8 @@ configure_hw:
 
 	ad->sampleSize = audio_format_sample_size(audioFormat) * audioFormat->channels;
 
-	DEBUG("ALSA device \"%s\" will be playing %i bit, %i channel audio at "
-	      "%i Hz\n", ad->device, (int)audioFormat->bits,
+	DEBUG("ALSA device \"%s\" will be playing %i bit, %u channel audio at "
+	      "%i Hz\n", ad->device, audioFormat->bits,
 	      channels, sampleRate);
 
 	return 0;

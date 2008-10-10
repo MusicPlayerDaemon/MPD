@@ -150,7 +150,7 @@ int parseAudioConfig(struct audio_format *audioFormat, char *conf)
 		return -1;
 	}
 
-	audioFormat->bits = (int8_t)strtol(test + 1, &test, 10);
+	audioFormat->bits = (uint8_t)strtoul(test + 1, &test, 10);
 
 	if (*test != ':') {
 		ERROR("error parsing audio output format: %s\n", conf);
@@ -161,12 +161,12 @@ int parseAudioConfig(struct audio_format *audioFormat, char *conf)
 	case 16:
 		break;
 	default:
-		ERROR("bits %i can not be used for audio output\n",
-		      (int)audioFormat->bits);
+		ERROR("bits %u can not be used for audio output\n",
+		      audioFormat->bits);
 		return -1;
 	}
 
-	audioFormat->channels = (int8_t)strtol(test + 1, &test, 10);
+	audioFormat->channels = (uint8_t)strtoul(test + 1, &test, 10);
 
 	if (*test != '\0') {
 		ERROR("error parsing audio output format: %s\n", conf);

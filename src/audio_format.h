@@ -24,8 +24,8 @@
 
 struct audio_format {
 	uint32_t sampleRate;
-	int8_t bits;
-	int8_t channels;
+	uint8_t bits;
+	uint8_t channels;
 };
 
 static inline void audio_format_clear(struct audio_format *af)
