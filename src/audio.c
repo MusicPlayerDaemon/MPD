@@ -48,9 +48,6 @@ static uint8_t audioOpened;
 
 static struct {
 	struct audio_format format;
-
-	size_t size, position;
-	char *buffer;
 } audio_buffer;
 
 static unsigned int audio_output_count(void)
@@ -262,21 +259,17 @@ static void syncAudioDeviceStates(void)
 	}
 }
 
-static int flushAudioBuffer(void)
+int playAudio(const char *buffer, size_t length)
 {
 	int ret = -1, err;
 	unsigned int i;
-
-	if (audio_buffer.position == 0)
-		return 0;
 
 	syncAudioDeviceStates();
 
 	for (i = 0; i < audioOutputArraySize; ++i)
 		if (audio_output_is_open(&audioOutputArray[i]))
 			audio_output_play(&audioOutputArray[i],
-					  audio_buffer.buffer,
-					  audio_buffer.position);
+					  buffer, length);
 
 	while (1) {
 		int finished = 1;
@@ -308,33 +301,7 @@ static int flushAudioBuffer(void)
 		notify_wait(&audio_output_client_notify);
 	};
 
-	audio_buffer.position = 0;
-
 	return ret;
-}
-
-static size_t audio_buffer_size(const struct audio_format *af)
-{
-	return audio_format_frame_size(af) * (af->sample_rate >> 5);
-}
-
-static void audio_buffer_resize(size_t size)
-{
-	assert(audio_buffer.position == 0);
-	assert((audio_buffer.size == 0) == (audio_buffer.buffer == NULL));
-
-	if (audio_buffer.size == size)
-		return;
-
-	if (audio_buffer.buffer != NULL)
-		free(audio_buffer.buffer);
-
-	if (size > 0)
-		audio_buffer.buffer = xmalloc(size);
-	else
-		audio_buffer.buffer = NULL;
-
-	audio_buffer.size = size;
 }
 
 int openAudioDevice(const struct audio_format *audioFormat)
@@ -347,10 +314,8 @@ int openAudioDevice(const struct audio_format *audioFormat)
 
 	if (!audioOpened ||
 	    (audioFormat != NULL && !isCurrentAudioFormat(audioFormat))) {
-		flushAudioBuffer();
 		if (audioFormat != NULL)
 			audio_buffer.format = *audioFormat;
-		audio_buffer_resize(audio_buffer_size(&audio_buffer.format));
 	}
 
 	syncAudioDeviceStates();
@@ -374,30 +339,6 @@ int openAudioDevice(const struct audio_format *audioFormat)
 	return ret;
 }
 
-int playAudio(const char *playChunk, size_t size)
-{
-	size_t send_size;
-
-	while (size > 0) {
-		send_size = audio_buffer.size - audio_buffer.position;
-		send_size = send_size < size ? send_size : size;
-
-		assert(send_size > 0);
-
-		memcpy(audio_buffer.buffer + audio_buffer.position, playChunk, send_size);
-		audio_buffer.position += send_size;
-		size -= send_size;
-		playChunk += send_size;
-
-		if (audio_buffer.position == audio_buffer.size) {
-			if (flushAudioBuffer() < 0)
-				return -1;
-		}
-	}
-
-	return 0;
-}
-
 void audio_output_pause_all(void)
 {
 	unsigned int i;
@@ -416,7 +357,6 @@ void dropBufferedAudio(void)
 	unsigned int i;
 
 	syncAudioDeviceStates();
-	audio_buffer.position = 0;
 
 	for (i = 0; i < audioOutputArraySize; ++i) {
 		if (audio_output_is_open(&audioOutputArray[i]))
@@ -429,13 +369,6 @@ void dropBufferedAudio(void)
 void closeAudioDevice(void)
 {
 	unsigned int i;
-
-	if (audio_buffer.buffer != NULL) {
-		flushAudioBuffer();
-		free(audio_buffer.buffer);
-		audio_buffer.buffer = NULL;
-		audio_buffer.size = 0;
-	}
 
 	for (i = 0; i < audioOutputArraySize; ++i)
 		audio_output_close(&audioOutputArray[i]);
