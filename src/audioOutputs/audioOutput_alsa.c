@@ -46,7 +46,6 @@ typedef struct _AlsaData {
 	alsa_writei_t *writei;
 	unsigned int buffer_time;
 	unsigned int period_time;
-	unsigned int period_sleep;
 	int sampleSize;
 	int useMmap;
 } AlsaData;
@@ -157,16 +156,11 @@ static int alsa_openDevice(void *data, struct audio_format *audioFormat)
 		      ad->device, audioFormat->bits);
 
 	err = snd_pcm_open(&ad->pcmHandle, ad->device,
-			   SND_PCM_STREAM_PLAYBACK, SND_PCM_NONBLOCK);
+			   SND_PCM_STREAM_PLAYBACK, 0);
 	if (err < 0) {
 		ad->pcmHandle = NULL;
 		goto error;
 	}
-
-	cmd = "snd_pcm_nonblock";
-	err = snd_pcm_nonblock(ad->pcmHandle, 0);
-	if (err < 0)
-		goto error;
 
 	period_time_ro = period_time = ad->period_time;
 configure_hw:
@@ -248,8 +242,6 @@ configure_hw:
 		goto error;
 	if (retry != MPD_ALSA_RETRY_NR)
 		DEBUG("ALSA period_time set to %d\n", period_time);
-
-	ad->period_sleep = period_time >> 1;
 
 	cmd = "snd_pcm_hw_params_get_buffer_size";
 	err = snd_pcm_hw_params_get_buffer_size(hwparams, &alsa_buffer_size);
@@ -379,12 +371,7 @@ static int alsa_playAudio(void *data, const char *playChunk, size_t size)
 	while (size > 0) {
 		ret = ad->writei(ad->pcmHandle, playChunk, size);
 
-		if (ret == -EAGAIN) {
-			DEBUG("ALSA busy, sleeping %d\n", ad->period_sleep);
-			my_usleep(ad->period_sleep);
-			continue;
-		}
-		if (ret == -EINTR)
+		if (ret == -EAGAIN || ret == -EINTR)
 			continue;
 
 		if (ret < 0) {
