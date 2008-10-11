@@ -346,7 +346,7 @@ static void *oss_open_default(ConfigParam *param)
 		if (ret[i] == 0) {
 			OssData *od = newOssData();
 			od->device = default_devices[i];
-			return 0;
+			return od;
 		}
 	}
 
