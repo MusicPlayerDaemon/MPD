@@ -30,7 +30,8 @@
 #define AUDIO_DEVICE_STATE	"audio_device_state:"
 #define AUDIO_BUFFER_SIZE	2*MPD_PATH_MAX
 
-static struct audio_format audio_configFormat;
+static struct audio_format configured_audio_format;
+static struct audio_format input_audio_format;
 
 static struct audio_output *audioOutputArray;
 static unsigned int audioOutputArraySize;
@@ -42,10 +43,6 @@ static unsigned int audioOutputArraySize;
 static bool *audioDeviceStates;
 
 static uint8_t audioOpened;
-
-static struct {
-	struct audio_format format;
-} audio_buffer;
 
 static unsigned int audio_output_count(void)
 {
@@ -107,8 +104,8 @@ void initAudioDriver(void)
 void getOutputAudioFormat(const struct audio_format *inAudioFormat,
 			  struct audio_format *outAudioFormat)
 {
-	*outAudioFormat = audio_format_defined(&audio_configFormat)
-		? audio_configFormat
+	*outAudioFormat = audio_format_defined(&configured_audio_format)
+		? configured_audio_format
 		: *inAudioFormat;
 }
 
@@ -119,7 +116,7 @@ void initAudioConfig(void)
 	if (NULL == param || NULL == param->value)
 		return;
 
-	if (0 != parseAudioConfig(&audio_configFormat, param->value)) {
+	if (0 != parseAudioConfig(&configured_audio_format, param->value)) {
 		FATAL("error parsing \"%s\" at line %i\n",
 		      CONF_AUDIO_OUTPUT_FORMAT, param->line);
 	}
@@ -182,7 +179,7 @@ int parseAudioConfig(struct audio_format *audioFormat, char *conf)
 
 void finishAudioConfig(void)
 {
-	audio_format_clear(&audio_configFormat);
+	audio_format_clear(&configured_audio_format);
 }
 
 void finishAudioDriver(void)
@@ -203,7 +200,7 @@ isCurrentAudioFormat(const struct audio_format *audioFormat)
 {
 	assert(audioFormat != NULL);
 
-	return audio_format_equals(audioFormat, &audio_buffer.format);
+	return audio_format_equals(audioFormat, &input_audio_format);
 }
 
 static void audio_output_wait(struct audio_output *ao)
@@ -236,13 +233,13 @@ static void syncAudioDeviceStates(void)
 	struct audio_output *audioOutput;
 	unsigned int i;
 
-	if (!audio_format_defined(&audio_buffer.format))
+	if (!audio_format_defined(&input_audio_format))
 		return;
 
 	for (i = 0; i < audioOutputArraySize; ++i) {
 		audioOutput = &audioOutputArray[i];
 		if (audioDeviceStates[i])
-			audio_output_open(audioOutput, &audio_buffer.format);
+			audio_output_open(audioOutput, &input_audio_format);
 		else if (audio_output_is_open(audioOutput)) {
 			audio_output_cancel(audioOutput);
 			audio_output_wait(audioOutput);
@@ -304,11 +301,10 @@ int openAudioDevice(const struct audio_format *audioFormat)
 	if (!audioOutputArray)
 		return -1;
 
-	if (!audioOpened ||
-	    (audioFormat != NULL && !isCurrentAudioFormat(audioFormat))) {
-		if (audioFormat != NULL)
-			audio_buffer.format = *audioFormat;
-	}
+	if (audioFormat == NULL)
+		audio_format_clear(&input_audio_format);
+	else
+		input_audio_format = *audioFormat;
 
 	syncAudioDeviceStates();
 
