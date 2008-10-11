@@ -526,6 +526,8 @@ static void syncPlaylistWithQueue(void)
 
 static void clearPlayerQueue(void)
 {
+	assert(playlist.queued >= 0);
+
 	if (getPlayerQueueState() == PLAYER_QUEUE_PLAY ||
 	    getPlayerQueueState() == PLAYER_QUEUE_FULL) {
 		playerQueueLock();
@@ -599,11 +601,9 @@ addSongToPlaylist(struct song *song, int *added_id)
 	if (playlist.length == playlist_max_length)
 		return PLAYLIST_RESULT_TOO_LARGE;
 
-	if (playlist_state == PLAYLIST_STATE_PLAY) {
-		if (playlist.queued >= 0
-		    && playlist.current == playlist.length - 1)
-			clearPlayerQueue();
-	}
+	if (playlist_state == PLAYLIST_STATE_PLAY && playlist.queued >= 0 &&
+	    playlist.current == playlist.length - 1)
+		clearPlayerQueue();
 
 	id = getNextId();
 
@@ -640,18 +640,13 @@ addSongToPlaylist(struct song *song, int *added_id)
 
 enum playlist_result swapSongsInPlaylist(int song1, int song2)
 {
-	int queuedSong = -1;
-	int currentSong;
-
 	if (song1 < 0 || song1 >= playlist.length ||
 	    song2 < 0 || song2 >= playlist.length)
 		return PLAYLIST_RESULT_BAD_RANGE;
 
-	if (playlist_state == PLAYLIST_STATE_PLAY) {
-		if (playlist.queued >= 0) {
-			queuedSong = playlist.order[playlist.queued];
-		}
-		currentSong = playlist.order[playlist.current];
+	if (playlist_state == PLAYLIST_STATE_PLAY && playlist.queued >= 0) {
+		int queuedSong = playlist.order[playlist.queued];
+		int currentSong = playlist.order[playlist.current];
 
 		if (queuedSong == song1 || queuedSong == song2
 		    || currentSong == song1 || currentSong == song2)
@@ -710,12 +705,10 @@ enum playlist_result deleteFromPlaylist(int song)
 	if (song < 0 || song >= playlist.length)
 		return PLAYLIST_RESULT_BAD_RANGE;
 
-	if (playlist_state == PLAYLIST_STATE_PLAY) {
-		if (playlist.queued >= 0
-		    && (playlist.order[playlist.queued] == song
-			|| playlist.order[playlist.current] == song))
-			clearPlayerQueue();
-	}
+	if (playlist_state == PLAYLIST_STATE_PLAY && playlist.queued >= 0
+	    && (playlist.order[playlist.queued] == song
+		|| playlist.order[playlist.current] == song))
+		clearPlayerQueue();
 
 	if (!song_is_file(playlist.songs[song])) {
 		song_free(playlist.songs[song]);
@@ -992,10 +985,9 @@ bool getPlaylistRandomStatus(void)
 
 void setPlaylistRepeatStatus(bool status)
 {
-	if (playlist_state == PLAYLIST_STATE_PLAY) {
-		if (playlist.repeat && !status && playlist.queued == 0)
-			clearPlayerQueue();
-	}
+	if (playlist_state == PLAYLIST_STATE_PLAY &&
+	    playlist.repeat && !status && playlist.queued == 0)
+		clearPlayerQueue();
 
 	playlist.repeat = status;
 }
