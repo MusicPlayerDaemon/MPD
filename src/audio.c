@@ -35,14 +35,11 @@ static struct audio_format audio_configFormat;
 static struct audio_output *audioOutputArray;
 static unsigned int audioOutputArraySize;
 
-enum ad_state {
-	DEVICE_ENABLE = 0x01,  /* currently off, but to be turned on */
-	DEVICE_DISABLE = 0x04   /* currently on, but to be turned off */
-};
-
-/* the audioEnabledArray should be stuck into shared memory, and then disable
-   and enable in playAudio() routine */
-static enum ad_state *audioDeviceStates;
+/**
+ * A flag for each audio device: true = to be enabled, false = to be
+ * disabled.
+ */
+static bool *audioDeviceStates;
 
 static uint8_t audioOpened;
 
@@ -69,7 +66,7 @@ void initAudioDriver(void)
 	unsigned int i;
 
 	audioOutputArraySize = audio_output_count();
-	audioDeviceStates = xmalloc(sizeof(enum ad_state) *
+	audioDeviceStates = xmalloc(sizeof(audioDeviceStates[0]) *
 	                            audioOutputArraySize);
 	audioOutputArray = xmalloc(sizeof(struct audio_output) * audioOutputArraySize);
 
@@ -103,7 +100,7 @@ void initAudioDriver(void)
 				      "names: %s\n", output->name);
 			}
 		}
-		audioDeviceStates[i] = DEVICE_ENABLE;
+		audioDeviceStates[i] = true;
 	}
 }
 
@@ -244,14 +241,9 @@ static void syncAudioDeviceStates(void)
 
 	for (i = 0; i < audioOutputArraySize; ++i) {
 		audioOutput = &audioOutputArray[i];
-		switch (audioDeviceStates[i]) {
-		case DEVICE_ENABLE:
+		if (audioDeviceStates[i])
 			audio_output_open(audioOutput, &audio_buffer.format);
-			break;
-		case DEVICE_DISABLE:
-			if (!audio_output_is_open(audioOutput))
-				break;
-
+		else if (audio_output_is_open(audioOutput)) {
 			audio_output_cancel(audioOutput);
 			audio_output_wait(audioOutput);
 			audio_output_close(audioOutput);
@@ -288,7 +280,7 @@ int playAudio(const char *buffer, size_t length)
 					/* device should already be
 					   closed if the play func
 					   returned an error */
-					audioDeviceStates[i] = DEVICE_ENABLE;
+					audioDeviceStates[i] = true;
 			} else {
 				finished = 0;
 				audio_output_signal(ao);
@@ -392,7 +384,7 @@ int enableAudioDevice(unsigned int device)
 	if (device >= audioOutputArraySize)
 		return -1;
 
-	audioDeviceStates[device] = DEVICE_ENABLE;
+	audioDeviceStates[device] = true;
 
 	return 0;
 }
@@ -402,7 +394,7 @@ int disableAudioDevice(unsigned int device)
 	if (device >= audioOutputArraySize)
 		return -1;
 
-	audioDeviceStates[device] = DEVICE_DISABLE;
+	audioDeviceStates[device] = false;
 
 	return 0;
 }
@@ -418,7 +410,7 @@ void printAudioDevices(struct client *client)
 			      "outputenabled: %i\n",
 			      i,
 			      audioOutputArray[i].name,
-			      audioDeviceStates[i] == DEVICE_ENABLE);
+			      audioDeviceStates[i]);
 	}
 }
 
@@ -459,7 +451,7 @@ void readAudioDevicesState(FILE *fp)
 			if (!strcmp(name, audioOutputArray[i].name)) {
 				/* devices default to on */
 				if (!atoi(c))
-					audioDeviceStates[i] = DEVICE_DISABLE;
+					audioDeviceStates[i] = false;
 				break;
 			}
 		}
