@@ -38,8 +38,16 @@ enum player_command {
 	PLAYER_COMMAND_PAUSE,
 	PLAYER_COMMAND_SEEK,
 	PLAYER_COMMAND_CLOSE_AUDIO,
-	PLAYER_COMMAND_LOCK_QUEUE,
-	PLAYER_COMMAND_UNLOCK_QUEUE
+
+	/** player_control.next_song has been updated */
+	PLAYER_COMMAND_QUEUE,
+
+	/**
+	 * cancel pre-decoding player_control.next_song; if the player
+	 * has already started playing this song, it will completely
+	 * stop
+	 */
+	PLAYER_COMMAND_CANCEL,
 };
 
 #define PLAYER_ERROR_NOERROR		0
@@ -48,36 +56,6 @@ enum player_command {
 #define PLAYER_ERROR_SYSTEM		3
 #define PLAYER_ERROR_UNKTYPE		4
 #define PLAYER_ERROR_FILENOTFOUND	5
-
-/* 0->1->2->3->5 regular playback
- *        ->4->0 don't play queued song
- */
-enum player_queue_state {
-	/** there is no queued song */
-	PLAYER_QUEUE_BLANK = 0,
-
-	/** there is a queued song */
-	PLAYER_QUEUE_FULL = 1,
-
-	/** the player thread has forwarded the queued song to the
-	    decoder; it waits for PLAY or STOP */
-	PLAYER_QUEUE_DECODE = 2,
-
-	/** tells the player thread to start playing the queued song;
-	    this is a response to DECODE */
-	PLAYER_QUEUE_PLAY = 3,
-
-	/** tells the player thread to stop before playing the queued
-	    song; this is a response to DECODE */
-	PLAYER_QUEUE_STOP = 4,
-
-	/** the player thread has begun playing the queued song, and
-	    thus its queue is empty */
-	PLAYER_QUEUE_EMPTY = 5
-};
-
-#define PLAYER_QUEUE_UNLOCKED	0
-#define PLAYER_QUEUE_LOCKED	1
 
 struct player_control {
 	unsigned int buffered_before_play;
@@ -92,8 +70,6 @@ struct player_control {
 	volatile float elapsedTime;
 	struct song *volatile next_song;
 	struct song *errored_song;
-	volatile enum player_queue_state queueState;
-	volatile int8_t queueLockState;
 	volatile double seekWhere;
 	volatile float crossFade;
 	volatile uint16_t softwareVolume;
@@ -108,6 +84,11 @@ void pc_deinit(void);
 
 void
 playerPlay(struct song *song);
+
+/**
+ * see PLAYER_COMMAND_CANCEL
+ */
+void pc_cancel(void);
 
 void playerSetPause(int pause_flag);
 
@@ -133,14 +114,6 @@ void playerWait(void);
 
 void
 queueSong(struct song *song);
-
-enum player_queue_state getPlayerQueueState(void);
-
-void setQueueState(enum player_queue_state queueState);
-
-void playerQueueLock(void);
-
-void playerQueueUnlock(void);
 
 int
 playerSeek(struct song *song, float seek_time);

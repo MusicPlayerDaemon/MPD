@@ -33,8 +33,6 @@ void pc_init(unsigned int buffered_before_play)
 	pc.command = PLAYER_COMMAND_NONE;
 	pc.error = PLAYER_ERROR_NOERROR;
 	pc.state = PLAYER_STATE_STOP;
-	pc.queueState = PLAYER_QUEUE_BLANK;
-	pc.queueLockState = PLAYER_QUEUE_UNLOCKED;
 	pc.crossFade = 0;
 	pc.softwareVolume = 1000;
 }
@@ -57,26 +55,22 @@ void
 playerPlay(struct song *song)
 {
 	assert(song != NULL);
-	assert(pc.queueLockState == PLAYER_QUEUE_UNLOCKED);
 
 	if (pc.state != PLAYER_STATE_STOP)
 		player_command(PLAYER_COMMAND_STOP);
-
-	pc.queueState = PLAYER_QUEUE_BLANK;
 
 	pc.next_song = song;
 	player_command(PLAYER_COMMAND_PLAY);
 }
 
+void pc_cancel(void)
+{
+	player_command(PLAYER_COMMAND_CANCEL);
+}
+
 void playerWait(void)
 {
 	player_command(PLAYER_COMMAND_CLOSE_AUDIO);
-
-	assert(pc.queueLockState == PLAYER_QUEUE_UNLOCKED);
-
-	player_command(PLAYER_COMMAND_CLOSE_AUDIO);
-
-	pc.queueState = PLAYER_QUEUE_BLANK;
 }
 
 void playerKill(void)
@@ -172,36 +166,10 @@ void
 queueSong(struct song *song)
 {
 	assert(song != NULL);
-	assert(pc.queueState == PLAYER_QUEUE_BLANK);
+	assert(pc.next_song == NULL);
 
 	pc.next_song = song;
-	pc.queueState = PLAYER_QUEUE_FULL;
-}
-
-enum player_queue_state getPlayerQueueState(void)
-{
-	return pc.queueState;
-}
-
-void setQueueState(enum player_queue_state queueState)
-{
-	pc.queueState = queueState;
-	notify_signal(&pc.notify);
-}
-
-void playerQueueLock(void)
-{
-	assert(pc.queueLockState == PLAYER_QUEUE_UNLOCKED);
-	player_command(PLAYER_COMMAND_LOCK_QUEUE);
-	assert(pc.queueLockState == PLAYER_QUEUE_LOCKED);
-}
-
-void playerQueueUnlock(void)
-{
-	if (pc.queueLockState == PLAYER_QUEUE_LOCKED)
-		player_command(PLAYER_COMMAND_UNLOCK_QUEUE);
-
-	assert(pc.queueLockState == PLAYER_QUEUE_UNLOCKED);
+	player_command(PLAYER_COMMAND_QUEUE);
 }
 
 int

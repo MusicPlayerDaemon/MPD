@@ -52,6 +52,11 @@ struct player {
 	bool paused;
 
 	/**
+	 * is there a new song in pc.next_song?
+	 */
+	bool queued;
+
+	/**
 	 * is cross fading enabled?
 	 */
 	enum xfade_state xfade;
@@ -94,6 +99,9 @@ static int waitOnDecode(struct player *player)
 		? pc.next_song->tag->time : 0;
 	pc.bitRate = 0;
 	audio_format_clear(&pc.audio_format);
+
+	pc.next_song = NULL;
+	player->queued = false;
 	player->decoder_starting = true;
 
 	return 0;
@@ -137,13 +145,9 @@ static void processDecodeInput(struct player *player)
 	case PLAYER_COMMAND_CLOSE_AUDIO:
 		break;
 
-	case PLAYER_COMMAND_LOCK_QUEUE:
-		pc.queueLockState = PLAYER_QUEUE_LOCKED;
-		player_command_finished();
-		break;
-
-	case PLAYER_COMMAND_UNLOCK_QUEUE:
-		pc.queueLockState = PLAYER_QUEUE_UNLOCKED;
+	case PLAYER_COMMAND_QUEUE:
+		assert(pc.next_song != NULL);
+		player->queued = true;
 		player_command_finished();
 		break;
 
@@ -177,6 +181,27 @@ static void processDecodeInput(struct player *player)
 			player->buffered_before_play = 0;
 		}
 		break;
+
+	case PLAYER_COMMAND_CANCEL:
+		if (pc.next_song == NULL) {
+			/* the cancel request arrived too later, we're
+			   already playing the queued song...  stop
+			   everything now */
+			pc.command = PLAYER_COMMAND_STOP;
+			return;
+		}
+
+		if (player->next_song_chunk != -1) {
+			/* the decoder is already decoding the song -
+			   stop it and reset the position */
+			dc_stop(&pc.notify);
+			player->next_song_chunk = -1;
+		}
+
+		pc.next_song = NULL;
+		player->queued = false;
+		player_command_finished();
+		break;
 	}
 }
 
@@ -203,6 +228,7 @@ static void do_play(void)
 		.buffered_before_play = pc.buffered_before_play,
 		.decoder_starting = false,
 		.paused = false,
+		.queued = false,
 		.xfade = XFADE_UNKNOWN,
 		.next_song_chunk = -1,
 	};
@@ -286,15 +312,22 @@ static void do_play(void)
 			}
 		}
 
-		if (decoder_is_idle() &&
-		    pc.queueState == PLAYER_QUEUE_FULL &&
-		    pc.queueLockState == PLAYER_QUEUE_UNLOCKED) {
+		if (decoder_is_idle() && !player.queued &&
+		    pc.next_song != NULL) {
+			/* the decoder has finished the current song;
+			   request the next song from the playlist */
+			pc.next_song = NULL;
+			wakeup_main_task();
+		}
+
+		if (decoder_is_idle() && player.queued) {
 			/* the decoder has finished the current song;
 			   make it decode the next song */
+			assert(pc.next_song != NULL);
+
+			player.queued = false;
 			player.next_song_chunk = ob.end;
 			dc_start_async(pc.next_song);
-			pc.queueState = PLAYER_QUEUE_DECODE;
-			wakeup_main_task();
 		}
 		if (player.next_song_chunk >= 0 &&
 		    player.xfade == XFADE_UNKNOWN &&
@@ -386,20 +419,10 @@ static void do_play(void)
 
 			player.xfade = XFADE_UNKNOWN;
 
-			/* wait for a signal from the playlist */
-			if (pc.queueState == PLAYER_QUEUE_DECODE ||
-			    pc.queueLockState == PLAYER_QUEUE_LOCKED) {
-				notify_wait(&pc.notify);
-				continue;
-			}
-			if (pc.queueState != PLAYER_QUEUE_PLAY)
-				break;
-
 			player.next_song_chunk = -1;
 			if (waitOnDecode(&player) < 0)
 				return;
 
-			pc.queueState = PLAYER_QUEUE_EMPTY;
 			wakeup_main_task();
 		} else if (decoder_is_idle()) {
 			break;
@@ -418,6 +441,7 @@ static void * player_task(mpd_unused void *arg)
 	while (1) {
 		switch (pc.command) {
 		case PLAYER_COMMAND_PLAY:
+		case PLAYER_COMMAND_QUEUE:
 			do_play();
 			break;
 
@@ -438,13 +462,8 @@ static void * player_task(mpd_unused void *arg)
 			pthread_exit(NULL);
 			break;
 
-		case PLAYER_COMMAND_LOCK_QUEUE:
-			pc.queueLockState = PLAYER_QUEUE_LOCKED;
-			player_command_finished();
-			break;
-
-		case PLAYER_COMMAND_UNLOCK_QUEUE:
-			pc.queueLockState = PLAYER_QUEUE_UNLOCKED;
+		case PLAYER_COMMAND_CANCEL:
+			pc.next_song = NULL;
 			player_command_finished();
 			break;
 

@@ -499,28 +499,9 @@ static void queueNextSongInPlaylist(void)
 
 static void syncPlaylistWithQueue(void)
 {
-	switch (getPlayerQueueState()) {
-	case PLAYER_QUEUE_EMPTY:
-		setQueueState(PLAYER_QUEUE_BLANK);
-		if (playlist.queued >= 0) {
-			DEBUG("playlist: now playing queued song\n");
-			playlist.current = playlist.queued;
-		}
+	if (pc.next_song == NULL && playlist.queued != -1) {
+		playlist.current = playlist.queued;
 		playlist.queued = -1;
-		break;
-
-	case PLAYER_QUEUE_DECODE:
-		if (playlist.queued != -1)
-			setQueueState(PLAYER_QUEUE_PLAY);
-		else
-			setQueueState(PLAYER_QUEUE_STOP);
-		break;
-
-	case PLAYER_QUEUE_FULL:
-	case PLAYER_QUEUE_PLAY:
-	case PLAYER_QUEUE_STOP:
-	case PLAYER_QUEUE_BLANK:
-		break;
 	}
 }
 
@@ -528,31 +509,9 @@ static void clearPlayerQueue(void)
 {
 	assert(playlist.queued >= 0);
 
-	if (getPlayerQueueState() == PLAYER_QUEUE_PLAY ||
-	    getPlayerQueueState() == PLAYER_QUEUE_FULL) {
-		playerQueueLock();
-		syncPlaylistWithQueue();
-	}
-
 	playlist.queued = -1;
-	switch (getPlayerQueueState()) {
-	case PLAYER_QUEUE_BLANK:
-	case PLAYER_QUEUE_DECODE:
-	case PLAYER_QUEUE_STOP:
-	case PLAYER_QUEUE_EMPTY:
-		break;
 
-	case PLAYER_QUEUE_FULL:
-		DEBUG("playlist: dequeue song\n");
-		setQueueState(PLAYER_QUEUE_BLANK);
-		break;
-	case PLAYER_QUEUE_PLAY:
-		DEBUG("playlist: stop decoding queued song\n");
-		setQueueState(PLAYER_QUEUE_STOP);
-		break;
-	}
-
-	playerQueueUnlock();
+	pc_cancel();
 }
 
 enum playlist_result addToPlaylist(const char *url, int *added_id)
@@ -907,7 +866,7 @@ void syncPlayerAndPlaylist(void)
 		playPlaylistIfPlayerStopped();
 	else {
 		syncPlaylistWithQueue();
-		if (getPlayerQueueState() == PLAYER_QUEUE_BLANK)
+		if (pc.next_song == NULL)
 			queueNextSongInPlaylist();
 	}
 
