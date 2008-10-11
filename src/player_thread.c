@@ -33,6 +33,36 @@ enum xfade_state {
 	XFADE_ENABLED = 1
 };
 
+struct player {
+	/**
+	 * number of chunks which have to be decoded before playing
+	 * starts
+	 */
+	unsigned int buffered_before_play;
+
+	/**
+	 * true if the decoder is starting and did not provide data
+	 * yet
+	 */
+	bool decoder_starting;
+
+	/**
+	 * is the player paused?
+	 */
+	bool paused;
+
+	/**
+	 * is cross fading enabled?
+	 */
+	enum xfade_state xfade;
+
+	/**
+	 * index of the first chunk of the next song, -1 if there is
+	 * no next song
+	 */
+	int next_song_chunk;
+};
+
 static void player_command_finished(void)
 {
 	assert(pc.command != PLAYER_COMMAND_NONE);
@@ -49,7 +79,7 @@ static void quitDecode(void)
 	wakeup_main_task();
 }
 
-static int waitOnDecode(int *decodeWaitedOn)
+static int waitOnDecode(struct player *player)
 {
 	dc_command_wait(&pc.notify);
 
@@ -64,22 +94,22 @@ static int waitOnDecode(int *decodeWaitedOn)
 		? pc.next_song->tag->time : 0;
 	pc.bitRate = 0;
 	audio_format_clear(&pc.audio_format);
-	*decodeWaitedOn = 1;
+	player->decoder_starting = true;
 
 	return 0;
 }
 
-static int decodeSeek(int *decodeWaitedOn, int *next)
+static int decodeSeek(struct player *player)
 {
 	int ret = -1;
 	double where;
 
 	if (decoder_current_song() != pc.next_song) {
 		dc_stop(&pc.notify);
-		*next = -1;
+		player->next_song_chunk = -1;
 		ob_clear();
 		dc_start_async(pc.next_song);
-		waitOnDecode(decodeWaitedOn);
+		waitOnDecode(player);
 	}
 
 	where = pc.seekWhere;
@@ -97,10 +127,7 @@ static int decodeSeek(int *decodeWaitedOn, int *next)
 	return ret;
 }
 
-static void processDecodeInput(int *pause_r, unsigned int *bbp_r,
-			       enum xfade_state *do_xfade_r,
-			       int *decodeWaitedOn_r,
-			       int *next_r)
+static void processDecodeInput(struct player *player)
 {
 	switch (pc.command) {
 	case PLAYER_COMMAND_NONE:
@@ -121,8 +148,10 @@ static void processDecodeInput(int *pause_r, unsigned int *bbp_r,
 		break;
 
 	case PLAYER_COMMAND_PAUSE:
-		*pause_r = !*pause_r;
-		if (*pause_r) {
+		player->paused = !player->paused;
+		if (player->paused) {
+			dropBufferedAudio();
+			audio_output_pause_all();
 			pc.state = PLAYER_STATE_PAUSE;
 		} else {
 			if (openAudioDevice(NULL) >= 0) {
@@ -135,23 +164,17 @@ static void processDecodeInput(int *pause_r, unsigned int *bbp_r,
 				ERROR("problems opening audio device "
 				      "while playing \"%s\"\n",
 				      song_get_url(dc.next_song, tmp));
-				*pause_r = -1;
+				player->paused = true;
 			}
 		}
 		player_command_finished();
-		if (*pause_r == -1) {
-			*pause_r = 1;
-		} else if (*pause_r) {
-			dropBufferedAudio();
-			audio_output_pause_all();
-		}
 		break;
 
 	case PLAYER_COMMAND_SEEK:
 		dropBufferedAudio();
-		if (decodeSeek(decodeWaitedOn_r, next_r) == 0) {
-			*do_xfade_r = XFADE_UNKNOWN;
-			*bbp_r = 0;
+		if (decodeSeek(player) == 0) {
+			player->xfade = XFADE_UNKNOWN;
+			player->buffered_before_play = 0;
 		}
 		break;
 	}
@@ -176,25 +199,26 @@ static int playChunk(ob_chunk * chunk,
 
 static void do_play(void)
 {
-	int do_pause = 0;
+	struct player player = {
+		.buffered_before_play = pc.buffered_before_play,
+		.decoder_starting = false,
+		.paused = false,
+		.xfade = XFADE_UNKNOWN,
+		.next_song_chunk = -1,
+	};
 	int buffering = 1;
-	unsigned int bbp = pc.buffered_before_play;
-	enum xfade_state do_xfade = XFADE_UNKNOWN;
 	unsigned int crossFadeChunks = 0;
 	/** the position of the next cross-faded chunk in the next
 	    song */
 	int nextChunk = 0;
-	int decodeWaitedOn = 0;
 	static const char silence[CHUNK_SIZE];
 	double sizeToTime = 0.0;
-	/** the position of the first chunk in the next song */
-	int next = -1;
 
 	ob_clear();
 	ob_set_lazy(false);
 
 	dc_start(&pc.notify, pc.next_song);
-	if (waitOnDecode(&decodeWaitedOn) < 0) {
+	if (waitOnDecode(&player) < 0) {
 		quitDecode();
 		return;
 	}
@@ -204,8 +228,7 @@ static void do_play(void)
 	player_command_finished();
 
 	while (1) {
-		processDecodeInput(&do_pause, &bbp, &do_xfade,
-				   &decodeWaitedOn, &next);
+		processDecodeInput(&player);
 		if (pc.command == PLAYER_COMMAND_STOP ||
 		    pc.command == PLAYER_COMMAND_EXIT ||
 		    pc.command == PLAYER_COMMAND_CLOSE_AUDIO) {
@@ -214,7 +237,7 @@ static void do_play(void)
 		}
 
 		if (buffering) {
-			if (ob_available() < bbp) {
+			if (ob_available() < player.buffered_before_play) {
 				/* not enough decoded buffer space yet */
 				notify_wait(&pc.notify);
 				continue;
@@ -225,7 +248,7 @@ static void do_play(void)
 			}
 		}
 
-		if (decodeWaitedOn) {
+		if (player.decoder_starting) {
 			if (dc.error != DECODE_ERROR_NOERROR) {
 				/* the decoder failed */
 				assert(dc.next_song == NULL || dc.next_song->url != NULL);
@@ -235,7 +258,7 @@ static void do_play(void)
 			}
 			else if (!decoder_is_starting()) {
 				/* the decoder is ready and ok */
-				decodeWaitedOn = 0;
+				player.decoder_starting = false;
 				if(openAudioDevice(&(ob.audioFormat))<0) {
 					char tmp[MPD_PATH_MAX];
 					assert(dc.next_song == NULL || dc.next_song->url != NULL);
@@ -247,7 +270,7 @@ static void do_play(void)
 					break;
 				}
 
-				if (do_pause) {
+				if (player.paused) {
 					dropBufferedAudio();
 					closeAudioDevice();
 				}
@@ -268,12 +291,13 @@ static void do_play(void)
 		    pc.queueLockState == PLAYER_QUEUE_UNLOCKED) {
 			/* the decoder has finished the current song;
 			   make it decode the next song */
-			next = ob.end;
+			player.next_song_chunk = ob.end;
 			dc_start_async(pc.next_song);
 			pc.queueState = PLAYER_QUEUE_DECODE;
 			wakeup_main_task();
 		}
-		if (next >= 0 && do_xfade == XFADE_UNKNOWN &&
+		if (player.next_song_chunk >= 0 &&
+		    player.xfade == XFADE_UNKNOWN &&
 		    !decoder_is_starting()) {
 			/* enable cross fading in this song?  if yes,
 			   calculate how many chunks will be required
@@ -284,21 +308,23 @@ static void do_play(void)
 						ob.size -
 						pc.buffered_before_play);
 			if (crossFadeChunks > 0) {
-				do_xfade = XFADE_ENABLED;
+				player.xfade = XFADE_ENABLED;
 				nextChunk = -1;
 			} else
 				/* cross fading is disabled or the
 				   next song is too short */
-				do_xfade = XFADE_DISABLED;
+				player.xfade = XFADE_DISABLED;
 		}
 
-		if (do_pause)
+		if (player.paused)
 			notify_wait(&pc.notify);
-		else if (!ob_is_empty() && (int)ob.begin != next) {
+		else if (!ob_is_empty() &&
+			 (int)ob.begin != player.next_song_chunk) {
 			ob_chunk *beginChunk = ob_get_chunk(ob.begin);
 			unsigned int fadePosition;
-			if (do_xfade == XFADE_ENABLED && next >= 0 &&
-			    (fadePosition = ob_relative(next))
+			if (player.xfade == XFADE_ENABLED &&
+			    player.next_song_chunk >= 0 &&
+			    (fadePosition = ob_relative(player.next_song_chunk))
 			    <= crossFadeChunks) {
 				/* perform cross fade */
 				if (nextChunk < 0) {
@@ -324,7 +350,7 @@ static void do_play(void)
 						/* the decoder isn't
 						   running, abort
 						   cross fading */
-						do_xfade = XFADE_DISABLED;
+						player.xfade = XFADE_DISABLED;
 					} else {
 						/* wait for the
 						   decoder */
@@ -347,17 +373,18 @@ static void do_play(void)
 			   larger block at a time */
 			if (ob_available() <= (pc.buffered_before_play + ob.size * 3) / 4)
 				notify_signal(&dc.notify);
-		} else if (!ob_is_empty() && (int)ob.begin == next) {
+		} else if (!ob_is_empty() &&
+			   (int)ob.begin == player.next_song_chunk) {
 			/* at the beginning of a new song */
 
-			if (do_xfade == XFADE_ENABLED && nextChunk >= 0) {
+			if (player.xfade == XFADE_ENABLED && nextChunk >= 0) {
 				/* the cross-fade is finished; skip
 				   the section which was cross-faded
 				   (and thus already played) */
 				ob_skip(crossFadeChunks);
 			}
 
-			do_xfade = XFADE_UNKNOWN;
+			player.xfade = XFADE_UNKNOWN;
 
 			/* wait for a signal from the playlist */
 			if (pc.queueState == PLAYER_QUEUE_DECODE ||
@@ -368,8 +395,8 @@ static void do_play(void)
 			if (pc.queueState != PLAYER_QUEUE_PLAY)
 				break;
 
-			next = -1;
-			if (waitOnDecode(&decodeWaitedOn) < 0)
+			player.next_song_chunk = -1;
+			if (waitOnDecode(&player) < 0)
 				return;
 
 			pc.queueState = PLAYER_QUEUE_EMPTY;
