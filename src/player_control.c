@@ -44,15 +44,6 @@ void pc_deinit(void)
 	notify_deinit(&pc.notify);
 }
 
-static void
-set_current_song(struct song *song)
-{
-	assert(song != NULL);
-	assert(song->url != NULL);
-
-	pc.next_song = song;
-}
-
 static void player_command(enum player_command cmd)
 {
 	pc.command = cmd;
@@ -65,6 +56,7 @@ static void player_command(enum player_command cmd)
 void
 playerPlay(struct song *song)
 {
+	assert(song != NULL);
 	assert(pc.queueLockState == PLAYER_QUEUE_UNLOCKED);
 
 	if (pc.state != PLAYER_STATE_STOP)
@@ -72,7 +64,7 @@ playerPlay(struct song *song)
 
 	pc.queueState = PLAYER_QUEUE_BLANK;
 
-	set_current_song(song);
+	pc.next_song = song;
 	player_command(PLAYER_COMMAND_PLAY);
 }
 
@@ -179,9 +171,10 @@ char *getPlayerErrorStr(void)
 void
 queueSong(struct song *song)
 {
+	assert(song != NULL);
 	assert(pc.queueState == PLAYER_QUEUE_BLANK);
 
-	set_current_song(song);
+	pc.next_song = song;
 	pc.queueState = PLAYER_QUEUE_FULL;
 }
 
@@ -219,8 +212,7 @@ playerSeek(struct song *song, float seek_time)
 	if (pc.state == PLAYER_STATE_STOP)
 		return -1;
 
-	if (pc.next_song != song)
-		set_current_song(song);
+	pc.next_song = song;
 
 	if (pc.error == PLAYER_ERROR_NOERROR) {
 		pc.seekWhere = seek_time;
