@@ -25,11 +25,6 @@
 
 static const char default_device[] = "default";
 
-#define MPD_ALSA_BUFFER_TIME_US 500000
-/* the default period time of xmms is 50 ms, so let's use that as well.
- * a user can tweak this parameter via the "period_time" config parameter.
- */
-#define MPD_ALSA_PERIOD_TIME_US 50000
 #define MPD_ALSA_RETRY_NR 5
 
 #include "../utils.h"
@@ -58,8 +53,8 @@ static AlsaData *newAlsaData(void)
 	ret->pcmHandle = NULL;
 	ret->writei = snd_pcm_writei;
 	ret->useMmap = 0;
-	ret->buffer_time = MPD_ALSA_BUFFER_TIME_US;
-	ret->period_time = MPD_ALSA_PERIOD_TIME_US;
+	ret->buffer_time = 0;
+	ret->period_time = 0;
 
 	return ret;
 }
@@ -219,23 +214,27 @@ configure_hw:
 	}
 	audioFormat->sample_rate = sample_rate;
 
-	buffer_time = ad->buffer_time;
-	cmd = "snd_pcm_hw_params_set_buffer_time_near";
-	err = snd_pcm_hw_params_set_buffer_time_near(ad->pcmHandle, hwparams,
-						     &buffer_time, NULL);
-	if (err < 0)
-		goto error;
+	if (ad->buffer_time > 0) {
+		buffer_time = ad->buffer_time;
+		cmd = "snd_pcm_hw_params_set_buffer_time_near";
+		err = snd_pcm_hw_params_set_buffer_time_near(ad->pcmHandle, hwparams,
+							     &buffer_time, NULL);
+		if (err < 0)
+			goto error;
+	}
 
-	period_time = period_time_ro;
-	cmd = "snd_pcm_hw_params_set_period_time_near";
-	err = snd_pcm_hw_params_set_period_time_near(ad->pcmHandle, hwparams,
-						     &period_time, NULL);
-	if (err < 0)
-		goto error;
+	if (period_time_ro > 0) {
+		period_time = period_time_ro;
+		cmd = "snd_pcm_hw_params_set_period_time_near";
+		err = snd_pcm_hw_params_set_period_time_near(ad->pcmHandle, hwparams,
+							     &period_time, NULL);
+		if (err < 0)
+			goto error;
+	}
 
 	cmd = "snd_pcm_hw_params";
 	err = snd_pcm_hw_params(ad->pcmHandle, hwparams);
-	if (err == -EPIPE && --retry > 0) {
+	if (err == -EPIPE && --retry > 0 && period_time_ro > 0) {
 		period_time_ro = period_time_ro >> 1;
 		goto configure_hw;
 	} else if (err < 0)
