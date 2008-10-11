@@ -35,10 +35,9 @@ enum xfade_state {
 
 struct player {
 	/**
-	 * number of chunks which have to be decoded before playing
-	 * starts
+	 * are we waiting for buffered_before_play?
 	 */
-	unsigned int buffered_before_play;
+	bool buffering;
 
 	/**
 	 * true if the decoder is starting and did not provide data
@@ -178,7 +177,10 @@ static void processDecodeInput(struct player *player)
 		dropBufferedAudio();
 		if (decodeSeek(player) == 0) {
 			player->xfade = XFADE_UNKNOWN;
-			player->buffered_before_play = 0;
+
+			/* abort buffering when the user has requested
+			   a seek */
+			player->buffering = false;
 		}
 		break;
 
@@ -225,14 +227,13 @@ static int playChunk(ob_chunk * chunk,
 static void do_play(void)
 {
 	struct player player = {
-		.buffered_before_play = pc.buffered_before_play,
+		.buffering = true,
 		.decoder_starting = false,
 		.paused = false,
 		.queued = false,
 		.xfade = XFADE_UNKNOWN,
 		.next_song_chunk = -1,
 	};
-	int buffering = 1;
 	unsigned int crossFadeChunks = 0;
 	/** the position of the next cross-faded chunk in the next
 	    song */
@@ -262,14 +263,14 @@ static void do_play(void)
 			break;
 		}
 
-		if (buffering) {
-			if (ob_available() < player.buffered_before_play) {
+		if (player.buffering) {
+			if (ob_available() < pc.buffered_before_play) {
 				/* not enough decoded buffer space yet */
 				notify_wait(&pc.notify);
 				continue;
 			} else {
 				/* buffering is complete */
-				buffering = 0;
+				player.buffering = false;
 				ob_set_lazy(true);
 			}
 		}
