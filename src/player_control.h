@@ -90,7 +90,6 @@ struct player_control {
 	struct audio_format audio_format;
 	volatile float totalTime;
 	volatile float elapsedTime;
-	volatile float fileTime;
 	struct song *volatile next_song;
 	struct song *errored_song;
 	volatile enum player_queue_state queueState;

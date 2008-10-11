@@ -60,7 +60,8 @@ static int waitOnDecode(int *decodeWaitedOn)
 		return -1;
 	}
 
-	pc.totalTime = pc.fileTime;
+	pc.totalTime = pc.next_song->tag != NULL
+		? pc.next_song->tag->time : 0;
 	pc.bitRate = 0;
 	audio_format_clear(&pc.audio_format);
 	*decodeWaitedOn = 1;

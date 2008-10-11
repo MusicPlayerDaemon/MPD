@@ -50,7 +50,6 @@ set_current_song(struct song *song)
 	assert(song != NULL);
 	assert(song->url != NULL);
 
-	pc.fileTime = song->tag ? song->tag->time : 0;
 	pc.next_song = song;
 }
 
