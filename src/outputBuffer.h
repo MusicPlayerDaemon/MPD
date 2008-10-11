@@ -78,7 +78,10 @@ void ob_flush(void);
 void ob_set_lazy(bool lazy);
 
 /** is the buffer empty? */
-int ob_is_empty(void);
+static inline bool ob_is_empty(void)
+{
+	return ob.begin == ob.end;
+}
 
 void ob_shift(void);
 

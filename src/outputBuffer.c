@@ -101,11 +101,6 @@ void ob_set_lazy(bool lazy)
 	ob.lazy = lazy;
 }
 
-int ob_is_empty(void)
-{
-	return ob.begin == ob.end;
-}
-
 void ob_shift(void)
 {
 	assert(ob.begin != ob.end);
