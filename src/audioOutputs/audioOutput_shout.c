@@ -104,6 +104,7 @@ static void *my_shout_init_driver(struct audio_output *audio_output,
 	char *mount;
 	char *passwd;
 	const char *encoding;
+	unsigned protocol;
 	const char *user;
 	char *name;
 	BlockParam *block_param;
@@ -208,6 +209,29 @@ static void *my_shout_init_driver(struct audio_output *audio_output,
 		FATAL("couldn't find shout encoder plugin for \"%s\" "
 		      "at line %i\n", encoding, block_param->line);
 
+	check_block_param("protocol");
+
+	block_param = getBlockParam(param, "protocol");
+	if (block_param) {
+		if (0 == strcmp(block_param->value, "shoutcast") &&
+		    0 != strcmp(encoding, "mp3"))
+			FATAL("you cannot stream \"%s\" to shoutcast, use mp3\n",
+			      encoding);
+		else if (0 == strcmp(block_param->value, "shoutcast"))
+			protocol = SHOUT_PROTOCOL_ICY;
+		else if (0 == strcmp(block_param->value, "icecast1"))
+			protocol = SHOUT_PROTOCOL_XAUDIOCAST;
+		else if (0 == strcmp(block_param->value, "icecast2"))
+			protocol = SHOUT_PROTOCOL_HTTP;
+		else
+			FATAL("shout protocol \"%s\" is not \"shoutcast\" or "
+			      "\"icecast1\"or "
+			      "\"icecast2\", line %i\n", block_param->value,
+			      block_param->line);
+	} else {
+		protocol = SHOUT_PROTOCOL_HTTP;
+	}
+
 	if (shout_set_host(sd->shout_conn, host) != SHOUTERR_SUCCESS ||
 	    shout_set_port(sd->shout_conn, port) != SHOUTERR_SUCCESS ||
 	    shout_set_password(sd->shout_conn, passwd) != SHOUTERR_SUCCESS ||
@@ -218,8 +242,7 @@ static void *my_shout_init_driver(struct audio_output *audio_output,
 	    shout_set_nonblocking(sd->shout_conn, 1) != SHOUTERR_SUCCESS ||
 	    shout_set_format(sd->shout_conn, sd->encoder->shout_format)
 	    != SHOUTERR_SUCCESS ||
-	    shout_set_protocol(sd->shout_conn, SHOUT_PROTOCOL_HTTP)
-	    != SHOUTERR_SUCCESS ||
+	    shout_set_protocol(sd->shout_conn, protocol) != SHOUTERR_SUCCESS ||
 	    shout_set_agent(sd->shout_conn, "MPD") != SHOUTERR_SUCCESS) {
 		FATAL("error configuring shout defined at line %i: %s\n",
 		      param->line, shout_get_error(sd->shout_conn));
