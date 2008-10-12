@@ -191,9 +191,9 @@ static void *my_shout_init_driver(struct audio_output *audio_output,
 
 	block_param = getBlockParam(param, "encoding");
 	if (block_param) {
-		if (0 == strncasecmp(block_param->value, "mp3", 3))
+		if (0 == strcmp(block_param->value, "mp3"))
 			encoding = block_param->value;
-		else if (0 == strncasecmp(block_param->value, "ogg", 3))
+		else if (0 == strcmp(block_param->value, "ogg"))
 			encoding = block_param->value;
 		else
 			FATAL("shout encoding \"%s\" is not \"ogg\" or "
