@@ -362,6 +362,29 @@ static size_t pcm_convertSampleRate(int8_t channels, uint32_t inSampleRate,
 }
 #endif /* !HAVE_LIBSAMPLERATE */
 
+static void
+pcm_convert_channels_1_to_2(int16_t *dest, const int16_t *src,
+			    unsigned num_frames)
+{
+	while (num_frames-- > 0) {
+		int16_t value = *src++;
+
+		*dest++ = value;
+		*dest++ = value;
+	}
+}
+
+static void
+pcm_convert_channels_2_to_1(int16_t *dest, const int16_t *src,
+			    unsigned num_frames)
+{
+	while (num_frames-- > 0) {
+		int32_t a = *src++, b = *src++;
+
+		*dest++ = (a + b) / 2;
+	}
+}
+
 static const int16_t *
 pcm_convertChannels(int8_t channels, const int16_t *inBuffer,
 		    size_t inSize, size_t *outSize)
@@ -369,9 +392,6 @@ pcm_convertChannels(int8_t channels, const int16_t *inBuffer,
 	static int16_t *buf;
 	static size_t len;
 	int16_t *outBuffer = NULL;
-	const int16_t *in;
-	int16_t *out;
-	int inSamples, i;
 
 	switch (channels) {
 	/* convert from 1 -> 2 channels */
@@ -381,17 +401,13 @@ pcm_convertChannels(int8_t channels, const int16_t *inBuffer,
 			len = *outSize;
 			buf = xrealloc(buf, len);
 		}
+
 		outBuffer = buf;
-
-		inSamples = inSize >> 1;
-		in = (const int16_t *)inBuffer;
-		out = (int16_t *)outBuffer;
-		for (i = 0; i < inSamples; i++) {
-			*out++ = *in;
-			*out++ = *in++;
-		}
-
+		pcm_convert_channels_1_to_2((int16_t *)buf,
+					    (const int16_t *)inBuffer,
+					    inSize >> 1);
 		break;
+
 	/* convert from 2 -> 1 channels */
 	case 2:
 		*outSize = inSize >> 1;
@@ -401,15 +417,11 @@ pcm_convertChannels(int8_t channels, const int16_t *inBuffer,
 		}
 		outBuffer = buf;
 
-		inSamples = inSize >> 2;
-		in = (const int16_t *)inBuffer;
-		out = (int16_t *)outBuffer;
-		for (i = 0; i < inSamples; i++) {
-			*out = (*in++) / 2;
-			*out++ += (*in++) / 2;
-		}
-
+		pcm_convert_channels_2_to_1((int16_t *)buf,
+					    (const int16_t *)inBuffer,
+					    inSize >> 2);
 		break;
+
 	default:
 		ERROR("only 1 or 2 channels are supported for conversion!\n");
 	}
