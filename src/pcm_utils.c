@@ -568,17 +568,8 @@ size_t pcm_sizeOfConvBuffer(const struct audio_format *inFormat, size_t inSize,
 	}
 
 	if (inFormat->channels != outFormat->channels) {
-		switch (inFormat->channels) {
-		case 1:
-			outSize = (outSize >> 1) << 2;
-			break;
-		case 2:
-			outSize >>= 1;
-			break;
-		default:
-			FATAL("only 1 or 2 channels are supported "
-			      "for conversion!\n");
-		}
+		outSize /= inFormat->channels;
+		outSize *= outFormat->channels;
 	}
 
 	outSize /= shift;
