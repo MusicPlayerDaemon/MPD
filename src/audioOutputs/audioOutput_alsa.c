@@ -66,6 +66,22 @@ static void freeAlsaData(AlsaData * ad)
 	free(ad);
 }
 
+static void
+alsa_configure(AlsaData *ad, ConfigParam *param)
+{
+	BlockParam *bp;
+
+	if ((bp = getBlockParam(param, "device")))
+		ad->device = xstrdup(bp->value);
+	ad->useMmap = getBoolBlockParam(param, "use_mmap", 1);
+	if (ad->useMmap == CONF_BOOL_UNSET)
+		ad->useMmap = 0;
+	if ((bp = getBlockParam(param, "buffer_time")))
+		ad->buffer_time = atoi(bp->value);
+	if ((bp = getBlockParam(param, "period_time")))
+		ad->period_time = atoi(bp->value);
+}
+
 static void *alsa_initDriver(mpd_unused struct audio_output *ao,
 			     mpd_unused const struct audio_format *audio_format,
 			     ConfigParam * param)
@@ -79,19 +95,8 @@ static void *alsa_initDriver(mpd_unused struct audio_output *ao,
 		free_global_registered = 1;
 	}
 
-	if (param) {
-		BlockParam *bp;
-
-		if ((bp = getBlockParam(param, "device")))
-			ad->device = xstrdup(bp->value);
-		ad->useMmap = getBoolBlockParam(param, "use_mmap", 1);
-		if (ad->useMmap == CONF_BOOL_UNSET)
-			ad->useMmap = 0;
-		if ((bp = getBlockParam(param, "buffer_time")))
-			ad->buffer_time = atoi(bp->value);
-		if ((bp = getBlockParam(param, "period_time")))
-			ad->period_time = atoi(bp->value);
-	}
+	if (param)
+		alsa_configure(ad, param);
 
 	return ad;
 }
