@@ -386,47 +386,33 @@ pcm_convert_channels_2_to_1(int16_t *dest, const int16_t *src,
 }
 
 static const int16_t *
-pcm_convertChannels(int8_t channels, const int16_t *inBuffer,
-		    size_t inSize, size_t *outSize)
+pcm_convertChannels(int8_t dest_channels,
+		    int8_t src_channels, const int16_t *src,
+		    size_t src_size, size_t *dest_size_r)
 {
 	static int16_t *buf;
 	static size_t len;
-	int16_t *outBuffer = NULL;
+	unsigned num_frames = src_size / src_channels / sizeof(*src);
+	unsigned dest_size = num_frames * dest_channels * sizeof(*src);
 
-	switch (channels) {
-	/* convert from 1 -> 2 channels */
-	case 1:
-		*outSize = (inSize >> 1) << 2;
-		if (*outSize > len) {
-			len = *outSize;
-			buf = xrealloc(buf, len);
-		}
-
-		outBuffer = buf;
-		pcm_convert_channels_1_to_2((int16_t *)buf,
-					    (const int16_t *)inBuffer,
-					    inSize >> 1);
-		break;
-
-	/* convert from 2 -> 1 channels */
-	case 2:
-		*outSize = inSize >> 1;
-		if (*outSize > len) {
-			len = *outSize;
-			buf = xrealloc(buf, len);
-		}
-		outBuffer = buf;
-
-		pcm_convert_channels_2_to_1((int16_t *)buf,
-					    (const int16_t *)inBuffer,
-					    inSize >> 2);
-		break;
-
-	default:
-		ERROR("only 1 or 2 channels are supported for conversion!\n");
+	if (dest_size > len) {
+		len = dest_size;
+		buf = xrealloc(buf, len);
 	}
 
-	return outBuffer;
+	*dest_size_r = dest_size;
+
+	if (src_channels == 1 && dest_channels == 2)
+		pcm_convert_channels_1_to_2(buf, src, num_frames);
+	else if (src_channels == 2 && dest_channels == 1)
+		pcm_convert_channels_2_to_1(buf, src, num_frames);
+	else {
+		ERROR("conversion %u->%u channels is not supported\n",
+		      src_channels, dest_channels);
+		return NULL;
+	}
+
+	return buf;
 }
 
 static void
@@ -504,7 +490,6 @@ size_t pcm_convertAudioFormat(const struct audio_format *inFormat,
 	size_t outSize = pcm_sizeOfConvBuffer(inFormat, inSize, outFormat);
 
 	assert(outFormat->bits == 16);
-	assert(outFormat->channels == 2 || outFormat->channels == 1);
 
 	/* everything else supports 16 bit only, so convert to that first */
 	buf = pcm_convertTo16bit(inFormat->bits, inBuffer, inSize, &len);
@@ -512,7 +497,9 @@ size_t pcm_convertAudioFormat(const struct audio_format *inFormat,
 		exit(EXIT_FAILURE);
 
 	if (inFormat->channels != outFormat->channels) {
-		buf = pcm_convertChannels(inFormat->channels, buf, len, &len);
+		buf = pcm_convertChannels(outFormat->channels,
+					  inFormat->channels,
+					  buf, len, &len);
 		if (!buf)
 			exit(EXIT_FAILURE);
 	}
