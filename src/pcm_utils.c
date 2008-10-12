@@ -385,6 +385,29 @@ pcm_convert_channels_2_to_1(int16_t *dest, const int16_t *src,
 	}
 }
 
+static void
+pcm_convert_channels_n_to_2(int16_t *dest,
+			    unsigned src_channels, const int16_t *src,
+			    unsigned num_frames)
+{
+	unsigned c;
+
+	assert(src_channels > 0);
+
+	while (num_frames-- > 0) {
+		int32_t sum = 0;
+		int16_t value;
+
+		for (c = 0; c < src_channels; ++c)
+			sum += *src++;
+		value = sum / (int)src_channels;
+
+		/* XXX this is actually only mono ... */
+		*dest++ = value;
+		*dest++ = value;
+	}
+}
+
 static const int16_t *
 pcm_convertChannels(int8_t dest_channels,
 		    int8_t src_channels, const int16_t *src,
@@ -406,6 +429,9 @@ pcm_convertChannels(int8_t dest_channels,
 		pcm_convert_channels_1_to_2(buf, src, num_frames);
 	else if (src_channels == 2 && dest_channels == 1)
 		pcm_convert_channels_2_to_1(buf, src, num_frames);
+	else if (dest_channels == 2)
+		pcm_convert_channels_n_to_2(buf, src_channels, src,
+					    num_frames);
 	else {
 		ERROR("conversion %u->%u channels is not supported\n",
 		      src_channels, dest_channels);
