@@ -1185,11 +1185,10 @@ enum playlist_result deletePlaylist(const char *utf8file)
 
 	utf8_to_fs_playlist_path(path_max_tmp, utf8file);
 
-	if (!isPlaylist(path_max_tmp))
-		return PLAYLIST_RESULT_NO_SUCH_LIST;
-
 	if (unlink(path_max_tmp) < 0)
-		return PLAYLIST_RESULT_ERRNO;
+		return errno == ENOENT
+			? PLAYLIST_RESULT_NO_SUCH_LIST
+			: PLAYLIST_RESULT_ERRNO;
 
 	return PLAYLIST_RESULT_SUCCESS;
 }

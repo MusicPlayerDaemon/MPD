@@ -228,22 +228,6 @@ const char *getSuffix(const char *utf8file)
 	return ret;
 }
 
-static int hasSuffix(const char *utf8file, const char *suffix)
-{
-	const char *s = getSuffix(utf8file);
-	if (s && 0 == strcmp(s, suffix))
-		return 1;
-	return 0;
-}
-
-int isPlaylist(const char *utf8file)
-{
-	if (isFile(utf8file, NULL)) {
-		return hasSuffix(utf8file, PLAYLIST_FILE_SUFFIX);
-	}
-	return 0;
-}
-
 int isDir(const char *utf8name)
 {
 	struct stat st;

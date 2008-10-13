@@ -38,8 +38,6 @@ int myStat(const char *utf8file, struct stat *st);
 
 int isDir(const char *utf8name);
 
-int isPlaylist(const char *utf8file);
-
 struct decoder_plugin *hasMusicSuffix(const char *utf8file, unsigned int next);
 
 struct decoder_plugin *isMusic(const char *utf8file, time_t * mtime,
