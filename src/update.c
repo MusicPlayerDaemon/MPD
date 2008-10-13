@@ -162,23 +162,6 @@ delete_song_if_removed(struct song *song, void *_data)
 }
 
 static void
-delete_path(const char *path)
-{
-	struct directory *directory = db_get_directory(path);
-	struct song *song = db_get_song(path);
-
-	if (directory != NULL) {
-		delete_directory(directory);
-		modified = true;
-	}
-
-	if (song != NULL) {
-		delete_song(song->parent, song);
-		modified = true;
-	}
-}
-
-static void
 removeDeletedFromDirectory(char *path_max_tmp, struct directory *directory)
 {
 	int i;
@@ -405,13 +388,20 @@ addParentPathToDB(const char *utf8path)
 static void
 updatePath(const char *path)
 {
+	struct directory *parent;
+	const char *name;
 	struct stat st;
 
+	parent = addParentPathToDB(path);
+	if (parent == NULL)
+		return;
+
+	name = mpd_basename(path);
+
 	if (myStat(path, &st) == 0)
-		updateInDirectory(addParentPathToDB(path),
-				  mpd_basename(path), &st);
+		updateInDirectory(parent, name, &st);
 	else
-		delete_path(path);
+		delete_name_in(parent, name);
 }
 
 static void * update_task(void *_path)
