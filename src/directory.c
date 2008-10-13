@@ -23,16 +23,18 @@
 #include <string.h>
 
 struct directory *
-directory_new(const char *dirname, struct directory *parent)
+directory_new(const char *path, struct directory *parent)
 {
 	struct directory *directory;
+	size_t pathlen = strlen(path);
 
-	assert(dirname != NULL);
-	assert((*dirname == 0) == (parent == NULL));
+	assert(path != NULL);
+	assert((*path == 0) == (parent == NULL));
 
-	directory = xcalloc(1, sizeof(*directory));
-	directory->path = xstrdup(dirname);
+	directory = xcalloc(1, sizeof(*directory) -
+			    sizeof(directory->path) + pathlen + 1);
 	directory->parent = parent;
+	memcpy(directory->path, path, pathlen + 1);
 
 	return directory;
 }
@@ -42,7 +44,6 @@ directory_free(struct directory *directory)
 {
 	dirvec_destroy(&directory->children);
 	songvec_destroy(&directory->songs);
-	free(directory->path);
 	free(directory);
 	/* this resets last dir returned */
 	/*directory_get_path(NULL); */

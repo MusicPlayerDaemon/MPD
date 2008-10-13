@@ -35,13 +35,13 @@
 #define DIRECTORY_FS_CHARSET	"fs_charset: "
 
 struct directory {
-	char *path;
 	struct dirvec children;
 	struct songvec songs;
 	struct directory *parent;
 	ino_t inode;
 	dev_t device;
 	unsigned stat; /* not needed if ino_t == dev_t == 0 is impossible */
+	char path[sizeof(long)];
 };
 
 static inline bool
