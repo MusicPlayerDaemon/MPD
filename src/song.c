@@ -97,6 +97,7 @@ song_file_update(struct song *song)
 	unsigned int next = 0;
 	char path_max_tmp[MPD_PATH_MAX];
 	char abs_path[MPD_PATH_MAX];
+	struct stat st;
 
 	assert(song_is_file(song));
 
@@ -108,14 +109,16 @@ song_file_update(struct song *song)
 		song->tag = NULL;
 	}
 
-	while (song->tag == NULL &&
-	       (plugin = isMusic(abs_path, &(song->mtime), next++)))
-		song->tag = plugin->tag_dup(abs_path);
-
-	if (song->tag == NULL || song->tag->time < 0)
+	if (stat(abs_path, &st) < 0)
 		return false;
 
-	return true;
+	song->mtime = st.st_mtime;
+
+	while (song->tag == NULL &&
+	       (plugin = hasMusicSuffix(abs_path, next++)))
+		song->tag = plugin->tag_dup(abs_path);
+
+	return song->tag != NULL;
 }
 
 char *

@@ -255,15 +255,3 @@ struct decoder_plugin *hasMusicSuffix(const char *utf8file, unsigned int next)
 
 	return ret;
 }
-
-struct decoder_plugin *isMusic(const char *utf8file, time_t * mtime,
-			       unsigned int next)
-{
-	if (isFile(utf8file, mtime)) {
-		struct decoder_plugin *plugin = hasMusicSuffix(utf8file, next);
-		if (plugin != NULL)
-			return plugin;
-	}
-	DEBUG("isMusic: %s is not a valid file\n", utf8file);
-	return NULL;
-}
