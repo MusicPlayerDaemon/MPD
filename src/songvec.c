@@ -53,10 +53,12 @@ songvec_delete(struct songvec *sv, const struct song *del)
 	for (i = sv->nr; --i >= 0; ) {
 		if (sv->base[i] != del)
 			continue;
-		/* we _don't_ call freeSong() here */
+		/* we _don't_ call song_free() here */
 		if (!--sv->nr) {
+			pthread_mutex_unlock(&nr_lock);
 			free(sv->base);
 			sv->base = NULL;
+			return i;
 		} else {
 			memmove(&sv->base[i], &sv->base[i + 1],
 				(sv->nr - i + 1) * sizeof(struct song *));
@@ -82,12 +84,12 @@ songvec_add(struct songvec *sv, struct song *add)
 void songvec_destroy(struct songvec *sv)
 {
 	pthread_mutex_lock(&nr_lock);
+	sv->nr = 0;
+	pthread_mutex_unlock(&nr_lock);
 	if (sv->base) {
 		free(sv->base);
 		sv->base = NULL;
 	}
-	sv->nr = 0;
-	pthread_mutex_unlock(&nr_lock);
 }
 
 int
