@@ -44,7 +44,7 @@ extern const char *mpdTagItemKeys[];
 
 struct tag_item {
 	enum tag_type type;
-	char value[1];
+	char value[sizeof(long)];
 } mpd_packed;
 
 struct tag {

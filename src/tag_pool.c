@@ -69,7 +69,9 @@ static struct slot *slot_alloc(struct slot *next,
 			       enum tag_type type,
 			       const char *value, int length)
 {
-	struct slot *slot = xmalloc(sizeof(*slot) + length);
+	struct slot *slot;
+
+	slot = xmalloc(sizeof(*slot) - sizeof(slot->item.value) + length + 1);
 	slot->next = next;
 	slot->ref = 1;
 	slot->item.type = type;
