@@ -1,6 +1,7 @@
 #include "dirvec.h"
 #include "directory.h"
 #include "utils.h"
+#include "path.h"
 
 #include <string.h>
 
@@ -26,8 +27,10 @@ struct directory *dirvec_find(const struct dirvec *dv, const char *path)
 {
 	int i;
 
+	path = mpd_basename(path);
+
 	for (i = dv->nr; --i >= 0; )
-		if (!strcmp(dv->base[i]->path, path))
+		if (!strcmp(directory_get_name(dv->base[i]), path))
 			return dv->base[i];
 	return NULL;
 }
