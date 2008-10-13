@@ -57,13 +57,13 @@ void
 directory_free(struct directory *directory);
 
 static inline bool
-directory_is_empty(struct directory *directory)
+directory_is_empty(const struct directory *directory)
 {
 	return directory->children.nr == 0 && directory->songs.nr == 0;
 }
 
 static inline const char *
-directory_get_path(struct directory *directory)
+directory_get_path(const struct directory *directory)
 {
 	return directory->path;
 }
