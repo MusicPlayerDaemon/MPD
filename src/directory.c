@@ -18,6 +18,7 @@
 
 #include "directory.h"
 #include "utils.h"
+#include "path.h"
 
 #include <assert.h>
 #include <string.h>
@@ -47,6 +48,12 @@ directory_free(struct directory *directory)
 	free(directory);
 	/* this resets last dir returned */
 	/*directory_get_path(NULL); */
+}
+
+const char *
+directory_get_name(const struct directory *directory)
+{
+	return mpd_basename(directory->path);
 }
 
 void

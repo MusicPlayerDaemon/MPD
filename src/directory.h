@@ -68,6 +68,12 @@ directory_get_path(const struct directory *directory)
 	return directory->path;
 }
 
+/**
+ * Returns the base name of the directory.
+ */
+const char *
+directory_get_name(const struct directory *directory);
+
 static inline struct directory *
 directory_get_child(const struct directory *directory, const char *name)
 {
