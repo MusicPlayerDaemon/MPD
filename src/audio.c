@@ -301,9 +301,7 @@ int openAudioDevice(const struct audio_format *audioFormat)
 	if (!audioOutputArray)
 		return -1;
 
-	if (audioFormat == NULL)
-		audio_format_clear(&input_audio_format);
-	else
+	if (audioFormat != NULL)
 		input_audio_format = *audioFormat;
 
 	syncAudioDeviceStates();
