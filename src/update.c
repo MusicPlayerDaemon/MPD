@@ -417,10 +417,9 @@ directory_update_init(char *path)
 	if (progress != UPDATE_PROGRESS_IDLE) {
 		unsigned next_task_id;
 
-		if (!path)
-			return 0;
 		if (update_paths_nr == ARRAY_SIZE(update_paths)) {
-			free(path);
+			if (path)
+				free(path);
 			return 0;
 		}
 
