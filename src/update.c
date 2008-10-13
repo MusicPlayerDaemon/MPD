@@ -241,8 +241,18 @@ make_subdir(struct directory *parent, const char *name)
 	struct directory *directory;
 
 	directory = directory_get_child(parent, name);
-	if (directory == NULL)
-		directory = directory_new_child(parent, name);
+	if (directory == NULL) {
+		char path[MPD_PATH_MAX];
+
+		if (isRootDirectory(directory_get_path(parent)))
+			strcpy(path, name);
+		else
+			pfx_dir(path, name, strlen(name),
+				directory_get_path(parent),
+				strlen(directory_get_path(parent)));
+
+		directory = directory_new_child(parent, path);
+	}
 
 	return directory;
 }
@@ -254,20 +264,23 @@ static void
 updateInDirectory(struct directory *directory,
 		  const char *name, const struct stat *st)
 {
+	assert(strchr(name, '/') == NULL);
+
 	if (S_ISREG(st->st_mode) && hasMusicSuffix(name, 0)) {
-		const char *shortname = mpd_basename(name);
-		struct song *song = songvec_find(&directory->songs, shortname);
+		struct song *song = songvec_find(&directory->songs, name);
 
 		if (song == NULL) {
-			song = song_file_load(shortname, directory);
+			song = song_file_load(name, directory);
 			if (song == NULL)
 				return;
 
 			songvec_add(&directory->songs, song);
 			modified = true;
-			LOG("added %s\n", name);
+			LOG("added %s/%s\n",
+			    directory_get_path(directory), name);
 		} else if (st->st_mtime != song->mtime) {
-			LOG("updating %s\n", name);
+			LOG("updating %s/%s\n",
+			    directory_get_path(directory), name);
 			if (!song_file_update(song))
 				delete_song(directory, song);
 			modified = true;
@@ -330,7 +343,8 @@ updateDirectory(struct directory *directory, const struct stat *st)
 			               dirname, strlen(dirname));
 
 		if (myStat(path_max_tmp, &st2) == 0)
-			updateInDirectory(directory, path_max_tmp, &st2);
+			updateInDirectory(directory,
+					  mpd_basename(path_max_tmp), &st2);
 		else
 			delete_name_in(directory, mpd_basename(path_max_tmp));
 	}
@@ -394,7 +408,8 @@ updatePath(const char *path)
 	struct stat st;
 
 	if (myStat(path, &st) == 0)
-		updateInDirectory(addParentPathToDB(path), path, &st);
+		updateInDirectory(addParentPathToDB(path),
+				  mpd_basename(path), &st);
 	else
 		delete_path(path);
 }
