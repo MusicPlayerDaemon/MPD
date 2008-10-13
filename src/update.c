@@ -123,6 +123,23 @@ delete_directory(struct directory *directory)
 	directory_free(directory);
 }
 
+static void
+delete_name_in(struct directory *parent, const char *name)
+{
+	struct directory *directory = directory_get_child(parent, name);
+	struct song *song = songvec_find(&parent->songs, name);
+
+	if (directory != NULL) {
+		delete_directory(directory);
+		modified = true;
+	}
+
+	if (song != NULL) {
+		delete_song(parent, song);
+		modified = true;
+	}
+}
+
 struct delete_data {
 	char *tmp;
 	struct directory *dir;
@@ -306,7 +323,7 @@ updateDirectory(struct directory *directory, const struct stat *st)
 		if (myStat(path_max_tmp, &st2) == 0)
 			updateInDirectory(directory, path_max_tmp, &st2);
 		else
-			delete_path(path_max_tmp);
+			delete_name_in(directory, mpd_basename(path_max_tmp));
 	}
 
 	closedir(dir);
