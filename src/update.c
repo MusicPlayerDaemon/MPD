@@ -235,6 +235,18 @@ inodeFoundInParent(struct directory *parent, ino_t inode, dev_t device)
 	return 0;
 }
 
+static struct directory *
+make_subdir(struct directory *parent, const char *name)
+{
+	struct directory *directory;
+
+	directory = directory_get_child(parent, name);
+	if (directory == NULL)
+		directory = directory_new_child(parent, name);
+
+	return directory;
+}
+
 static bool
 updateDirectory(struct directory *directory, const struct stat *st);
 
@@ -267,10 +279,7 @@ updateInDirectory(struct directory *directory,
 		if (inodeFoundInParent(directory, st->st_ino, st->st_dev))
 			return;
 
-		subdir = directory_get_child(directory, name);
-		if (subdir == NULL)
-			subdir = directory_new_child(directory, name);
-
+		subdir = make_subdir(directory, name);
 		assert(directory == subdir->parent);
 
 		ret = updateDirectory(subdir, st);
