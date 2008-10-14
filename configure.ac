@@ -130,15 +130,7 @@ AC_ARG_WITH(lsr-includes,[  --with-lsr-includes=DIR    Directory where libsample
 
 AC_C_BIGENDIAN
 
-AC_CHECK_SIZEOF(short)
-AC_CHECK_SIZEOF(int)
-AC_CHECK_SIZEOF(long)
-AC_CHECK_SIZEOF(long long)
-
 AC_CHECK_HEADER(sys/inttypes.h,AC_DEFINE(HAVE_SYS_INTTYPES_H,1,[Define if sys/inttypes.h present]),)
-
-AC_TYPE_INT64_T
-AC_TYPE_UINT64_T
 
 AC_CHECK_LIB(socket,socket,MPD_LIBS="$MPD_LIBS -lsocket",)
 AC_CHECK_LIB(nsl,gethostbyname,MPD_LIBS="$MPD_LIBS -lnsl",)
