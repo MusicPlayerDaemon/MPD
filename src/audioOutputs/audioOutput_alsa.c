@@ -86,14 +86,20 @@ alsa_configure(AlsaData *ad, ConfigParam *param)
 	if ((bp = getBlockParam(param, "period_time")))
 		ad->period_time = atoi(bp->value);
 
+#ifdef SND_PCM_NO_AUTO_RESAMPLE
 	if (!getBoolBlockParam(param, "auto_resample", true))
 		ad->mode |= SND_PCM_NO_AUTO_RESAMPLE;
+#endif
 
+#ifdef SND_PCM_NO_AUTO_CHANNELS
 	if (!getBoolBlockParam(param, "auto_channels", true))
 		ad->mode |= SND_PCM_NO_AUTO_CHANNELS;
+#endif
 
+#ifdef SND_PCM_NO_AUTO_FORMAT
 	if (!getBoolBlockParam(param, "auto_format", true))
 		ad->mode |= SND_PCM_NO_AUTO_FORMAT;
+#endif
 }
 
 static void *alsa_initDriver(mpd_unused struct audio_output *ao,
