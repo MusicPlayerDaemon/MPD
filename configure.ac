@@ -696,6 +696,7 @@ then
 	MPD_CHECK_FLAG([-Wstrict-prototypes])
 	MPD_CHECK_FLAG([-Wcast-qual])
 	MPD_CHECK_FLAG([-Wwrite-strings])
+	MPD_CHECK_FLAG([-pedantic])
 fi
 
 
