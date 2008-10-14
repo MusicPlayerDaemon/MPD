@@ -83,7 +83,7 @@ AC_ARG_ENABLE(shout_mp3,[  --disable-shout_mp3     disable support for mp3 strea
 AC_ARG_ENABLE(iconv,[  --disable-iconv         disable iconv support (default: enable)],[enable_iconv=$enableval],[enable_iconv=yes])
 AC_ARG_ENABLE(ipv6,[  --disable-ipv6          disable IPv6 support (default: enable)],[enable_ipv6=$enableval],[enable_ipv6=yes])
 AC_ARG_ENABLE(tcp,[  --disable-tcp           disable support for clients connecting via TCP (default: enable)],[enable_tcp=$enableval],[enable_tcp=yes])
-AC_ARG_ENABLE(un,[  --enable-un             enable support for clients connecting via unix domain sockets (default: disable)],[enable_un=$enableval],[enable_un=no])
+AC_ARG_ENABLE(un,[  --enable-un             enable support for clients connecting via unix domain sockets (default: disable)],[enable_un=$enableval],[enable_un=yes])
 AC_ARG_ENABLE(oss,[  --disable-oss           disable OSS support (default: enable)],[enable_oss=$enableval],[enable_oss=yes])
 AC_ARG_ENABLE(alsa,[  --disable-alsa          disable ALSA support (default: enable)],[enable_alsa=$enableval],[enable_alsa=yes])
 AC_ARG_ENABLE(jack,[  --disable-jack          disable jack support (default: enable)],[enable_jack=$enableval],[enable_jack=yes])
