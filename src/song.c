@@ -122,7 +122,7 @@ song_file_update(struct song *song)
 }
 
 char *
-song_get_url(struct song *song, char *path_max_tmp)
+song_get_url(const struct song *song, char *path_max_tmp)
 {
 	assert(song != NULL);
 	assert(*song->url);

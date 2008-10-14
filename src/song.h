@@ -65,7 +65,7 @@ song_file_update(struct song *song);
  * terminating '\0').
  */
 char *
-song_get_url(struct song *song, char *path_max_tmp);
+song_get_url(const struct song *song, char *path_max_tmp);
 
 static inline bool
 song_is_file(const struct song *song)
