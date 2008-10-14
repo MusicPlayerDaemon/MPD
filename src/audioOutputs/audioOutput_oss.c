@@ -66,7 +66,7 @@ enum oss_param {
 };
 
 static enum oss_param
-getIndexForParam(int param)
+getIndexForParam(unsigned param)
 {
 	enum oss_param idx = OSS_RATE;
 
@@ -85,7 +85,7 @@ getIndexForParam(int param)
 	return idx;
 }
 
-static int findSupportedParam(OssData * od, int param, int val)
+static int findSupportedParam(OssData * od, unsigned param, int val)
 {
 	int i;
 	enum oss_param idx = getIndexForParam(param);
@@ -114,7 +114,7 @@ static int canConvert(int idx, int val)
 	return 1;
 }
 
-static int getSupportedParam(OssData * od, int param, int val)
+static int getSupportedParam(OssData * od, unsigned param, int val)
 {
 	int i;
 	enum oss_param idx = getIndexForParam(param);
@@ -138,7 +138,7 @@ static int getSupportedParam(OssData * od, int param, int val)
 	return ret;
 }
 
-static int findUnsupportedParam(OssData * od, int param, int val)
+static int findUnsupportedParam(OssData * od, unsigned param, int val)
 {
 	int i;
 	enum oss_param idx = getIndexForParam(param);
@@ -151,7 +151,7 @@ static int findUnsupportedParam(OssData * od, int param, int val)
 	return 0;
 }
 
-static void addSupportedParam(OssData * od, int param, int val)
+static void addSupportedParam(OssData * od, unsigned param, int val)
 {
 	enum oss_param idx = getIndexForParam(param);
 
@@ -161,7 +161,7 @@ static void addSupportedParam(OssData * od, int param, int val)
 	od->supported[idx][od->numSupported[idx] - 1] = val;
 }
 
-static void addUnsupportedParam(OssData * od, int param, int val)
+static void addUnsupportedParam(OssData * od, unsigned param, int val)
 {
 	enum oss_param idx = getIndexForParam(param);
 
@@ -172,7 +172,7 @@ static void addUnsupportedParam(OssData * od, int param, int val)
 	od->unsupported[idx][od->numUnsupported[idx] - 1] = val;
 }
 
-static void removeSupportedParam(OssData * od, int param, int val)
+static void removeSupportedParam(OssData * od, unsigned param, int val)
 {
 	int i;
 	int j = 0;
@@ -189,7 +189,7 @@ static void removeSupportedParam(OssData * od, int param, int val)
 				      od->numSupported[idx] * sizeof(int));
 }
 
-static void removeUnsupportedParam(OssData * od, int param, int val)
+static void removeUnsupportedParam(OssData * od, unsigned param, int val)
 {
 	int i;
 	int j = 0;
@@ -208,7 +208,7 @@ static void removeUnsupportedParam(OssData * od, int param, int val)
 }
 
 static enum oss_support
-isSupportedParam(OssData * od, int param, int val)
+isSupportedParam(OssData * od, unsigned param, int val)
 {
 	if (findSupportedParam(od, param, val))
 		return OSS_SUPPORTED;
@@ -217,7 +217,7 @@ isSupportedParam(OssData * od, int param, int val)
 	return OSS_UNKNOWN;
 }
 
-static void supportParam(OssData * od, int param, int val)
+static void supportParam(OssData * od, unsigned param, int val)
 {
 	enum oss_support supported = isSupportedParam(od, param, val);
 
@@ -231,7 +231,7 @@ static void supportParam(OssData * od, int param, int val)
 	addSupportedParam(od, param, val);
 }
 
-static void unsupportParam(OssData * od, int param, int val)
+static void unsupportParam(OssData * od, unsigned param, int val)
 {
 	enum oss_support supported = isSupportedParam(od, param, val);
 
@@ -404,7 +404,7 @@ static void oss_finishDriver(void *data)
 	freeOssData(od);
 }
 
-static int setParam(OssData * od, int param, int *value)
+static int setParam(OssData * od, unsigned param, int *value)
 {
 	int val = *value;
 	int copy;
