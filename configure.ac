@@ -11,6 +11,10 @@ AC_SUBST(MPD_CFLAGS)
 AC_SUBST(MP4FF_LIB)
 AC_SUBST(MP4FF_SUBDIR)
 
+dnl Remove the check for c++ and fortran compiler
+m4_defun([_LT_AC_LANG_CXX_CONFIG], [:])
+m4_defun([_LT_AC_LANG_F77_CONFIG], [:])
+
 AC_LANG(C)
 AC_PROG_CC_C99
 AM_PROG_CC_C_O
