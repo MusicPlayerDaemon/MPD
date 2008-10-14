@@ -53,17 +53,22 @@ typedef struct _OssData {
 	int numUnsupported[3];
 } OssData;
 
-#define OSS_SUPPORTED		1
-#define OSS_UNSUPPORTED		0
-#define OSS_UNKNOWN		-1
+enum oss_support {
+	OSS_SUPPORTED = 1,
+	OSS_UNSUPPORTED = 0,
+	OSS_UNKNOWN = -1,
+};
 
-#define OSS_RATE		0
-#define OSS_CHANNELS		1
-#define OSS_BITS		2
+enum oss_param {
+	OSS_RATE = 0,
+	OSS_CHANNELS = 1,
+	OSS_BITS = 2,
+};
 
-static int getIndexForParam(int param)
+static enum oss_param
+getIndexForParam(int param)
 {
-	int idx = 0;
+	enum oss_param idx = OSS_RATE;
 
 	switch (param) {
 	case SNDCTL_DSP_SPEED:
@@ -83,7 +88,7 @@ static int getIndexForParam(int param)
 static int findSupportedParam(OssData * od, int param, int val)
 {
 	int i;
-	int idx = getIndexForParam(param);
+	enum oss_param idx = getIndexForParam(param);
 
 	for (i = 0; i < od->numSupported[idx]; i++) {
 		if (od->supported[idx][i] == val)
@@ -112,7 +117,7 @@ static int canConvert(int idx, int val)
 static int getSupportedParam(OssData * od, int param, int val)
 {
 	int i;
-	int idx = getIndexForParam(param);
+	enum oss_param idx = getIndexForParam(param);
 	int ret = -1;
 	int least = val;
 	int diff;
@@ -136,7 +141,7 @@ static int getSupportedParam(OssData * od, int param, int val)
 static int findUnsupportedParam(OssData * od, int param, int val)
 {
 	int i;
-	int idx = getIndexForParam(param);
+	enum oss_param idx = getIndexForParam(param);
 
 	for (i = 0; i < od->numUnsupported[idx]; i++) {
 		if (od->unsupported[idx][i] == val)
@@ -148,7 +153,7 @@ static int findUnsupportedParam(OssData * od, int param, int val)
 
 static void addSupportedParam(OssData * od, int param, int val)
 {
-	int idx = getIndexForParam(param);
+	enum oss_param idx = getIndexForParam(param);
 
 	od->numSupported[idx]++;
 	od->supported[idx] = xrealloc(od->supported[idx],
@@ -158,7 +163,7 @@ static void addSupportedParam(OssData * od, int param, int val)
 
 static void addUnsupportedParam(OssData * od, int param, int val)
 {
-	int idx = getIndexForParam(param);
+	enum oss_param idx = getIndexForParam(param);
 
 	od->numUnsupported[idx]++;
 	od->unsupported[idx] = xrealloc(od->unsupported[idx],
@@ -171,7 +176,7 @@ static void removeSupportedParam(OssData * od, int param, int val)
 {
 	int i;
 	int j = 0;
-	int idx = getIndexForParam(param);
+	enum oss_param idx = getIndexForParam(param);
 
 	for (i = 0; i < od->numSupported[idx] - 1; i++) {
 		if (od->supported[idx][i] == val)
@@ -188,7 +193,7 @@ static void removeUnsupportedParam(OssData * od, int param, int val)
 {
 	int i;
 	int j = 0;
-	int idx = getIndexForParam(param);
+	enum oss_param idx = getIndexForParam(param);
 
 	for (i = 0; i < od->numUnsupported[idx] - 1; i++) {
 		if (od->unsupported[idx][i] == val)
@@ -202,7 +207,8 @@ static void removeUnsupportedParam(OssData * od, int param, int val)
 					sizeof(int));
 }
 
-static int isSupportedParam(OssData * od, int param, int val)
+static enum oss_support
+isSupportedParam(OssData * od, int param, int val)
 {
 	if (findSupportedParam(od, param, val))
 		return OSS_SUPPORTED;
@@ -213,7 +219,7 @@ static int isSupportedParam(OssData * od, int param, int val)
 
 static void supportParam(OssData * od, int param, int val)
 {
-	int supported = isSupportedParam(od, param, val);
+	enum oss_support supported = isSupportedParam(od, param, val);
 
 	if (supported == OSS_SUPPORTED)
 		return;
@@ -227,7 +233,7 @@ static void supportParam(OssData * od, int param, int val)
 
 static void unsupportParam(OssData * od, int param, int val)
 {
-	int supported = isSupportedParam(od, param, val);
+	enum oss_support supported = isSupportedParam(od, param, val);
 
 	if (supported == OSS_UNSUPPORTED)
 		return;
@@ -402,7 +408,7 @@ static int setParam(OssData * od, int param, int *value)
 {
 	int val = *value;
 	int copy;
-	int supported = isSupportedParam(od, param, val);
+	enum oss_support supported = isSupportedParam(od, param, val);
 
 	do {
 		if (supported == OSS_UNSUPPORTED) {
