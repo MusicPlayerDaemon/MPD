@@ -60,6 +60,19 @@ if test -z "$prefix" || test "x$prefix" = xNONE; then
 	done
 fi
 
+AC_ARG_ENABLE(werror,
+              AS_HELP_STRING([--enable-werror],
+                             [Treat warnings as errors (default: disabled)]),
+              [ENABLE_WERROR=$enableval], [ENABLE_WERROR=no])
+AC_ARG_ENABLE(debug,
+              AS_HELP_STRING([--enable-debug],
+                             [Enable debugging (default: disabled)]),
+              [ENABLE_DEBUG=$enableval], [ENABLE_DEBUG=no])
+AC_ARG_ENABLE(gprof,
+              AS_HELP_STRING([--enable-gprof],
+                             [Enable profiling via gprof (default: disabled)]),
+              [ENABLE_GPROF=$enableval], [ENABLE_GPROF=no])
+
 AC_ARG_ENABLE(ao,[  --enable-ao             enable support for libao (default: disable)],[enable_ao=$enableval],[enable_ao=no])
 AC_ARG_ENABLE(shout_ogg,[  --disable-shout_ogg     disable support for ogg streaming through shout (default: enable)],[enable_shout_ogg=$enableval],[enable_shout_ogg=yes])
 AC_ARG_ENABLE(shout_mp3,[  --disable-shout_mp3     disable support for mp3 streaming through shout (default: enable)],[enable_shout_mp3=$enableval],[enable_shout_mp3=yes])
@@ -677,6 +690,24 @@ if test x$with_zeroconf != xno; then
 	else
 		AC_DEFINE([HAVE_ZEROCONF], 1, [Define to enable Zeroconf support])
 	fi
+fi
+
+
+dnl
+dnl build options
+dnl
+
+if test "x$ENABLE_WERROR" = xyes; then
+	MPD_CFLAGS="$MPD_CFLAGS -Werror -pedantic-errors"
+fi
+
+#if test "x$ENABLE_DEBUG" = xno; then
+	# don't set NDEBUG for now, until MPD is stable
+	#MPD_CFLAGS="$MPD_CFLAGS -DNDEBUG"
+#fi
+
+if test "x$ENABLE_GPROF" = xyes; then
+	MPD_CFLAGS="$MPD_CFLAGS -pg"
 fi
 
 
