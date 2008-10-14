@@ -21,7 +21,6 @@
 #include "path.h"
 #include "client.h"
 #include "log.h"
-#include "utf8.h"
 #include "utils.h"
 #include "list.h"
 #include "os_compat.h"
@@ -181,39 +180,6 @@ int lsPlaylists(struct client *client, const char *utf8path)
 	return 0;
 }
 
-int myStat(const char *utf8file, struct stat *st)
-{
-	char path_max_tmp[MPD_PATH_MAX];
-	const char *file = utf8_to_fs_charset(path_max_tmp, utf8file);
-	const char *actualFile = file;
-
-	if (actualFile[0] != '/')
-		actualFile = rmp2amp_r(path_max_tmp, file);
-
-	return stat(actualFile, st);
-}
-
-int isFile(const char *utf8file, time_t * mtime)
-{
-	struct stat st;
-
-	if (myStat(utf8file, &st) == 0) {
-		if (S_ISREG(st.st_mode)) {
-			if (mtime)
-				*mtime = st.st_mtime;
-			return 1;
-		} else {
-			DEBUG("isFile: %s is not a regular file\n", utf8file);
-			return 0;
-		}
-	} else {
-		DEBUG("isFile: failed to stat: %s: %s\n", utf8file,
-		      strerror(errno));
-	}
-
-	return 0;
-}
-
 /* suffixes should be ascii only characters */
 const char *getSuffix(const char *utf8file)
 {
@@ -226,19 +192,6 @@ const char *getSuffix(const char *utf8file)
 	}
 
 	return ret;
-}
-
-int isDir(const char *utf8name)
-{
-	struct stat st;
-
-	if (myStat(utf8name, &st) == 0) {
-		if (S_ISDIR(st.st_mode)) {
-			return 1;
-		}
-	}
-
-	return 0;
 }
 
 struct decoder_plugin *hasMusicSuffix(const char *utf8file, unsigned int next)

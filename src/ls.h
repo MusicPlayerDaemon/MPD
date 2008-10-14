@@ -34,14 +34,8 @@ int isValidRemoteUtf8Url(const char *utf8url);
 
 int isRemoteUrl(const char *url);
 
-int myStat(const char *utf8file, struct stat *st);
-
-int isDir(const char *utf8name);
-
 struct decoder_plugin *hasMusicSuffix(const char *utf8file, unsigned int next);
 
 int printRemoteUrlHandlers(struct client *client);
-
-int isFile(const char *utf8file, time_t * mtime);
 
 #endif
