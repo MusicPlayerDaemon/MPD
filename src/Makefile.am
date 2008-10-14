@@ -45,6 +45,7 @@ mpd_headers = \
 	buffer2array.h \
 	charConv.h \
 	command.h \
+	idle.h \
 	condition.h \
 	conf.h \
 	crossfade.h \
@@ -130,6 +131,7 @@ mpd_SOURCES = \
 	buffer2array.c \
 	charConv.c \
 	command.c \
+	idle.c \
 	condition.c \
 	conf.c \
 	crossfade.c \

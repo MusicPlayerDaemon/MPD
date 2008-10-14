@@ -21,6 +21,7 @@
 #include "log.h"
 #include "tag.h"
 #include "song.h"
+#include "idle.h"
 #include "os_compat.h"
 #include "main_notify.h"
 
@@ -61,6 +62,8 @@ playerPlay(struct song *song)
 
 	pc.next_song = song;
 	player_command(PLAYER_COMMAND_PLAY);
+
+	idle_add(IDLE_PLAYER);
 }
 
 void pc_cancel(void)
@@ -71,17 +74,23 @@ void pc_cancel(void)
 void playerWait(void)
 {
 	player_command(PLAYER_COMMAND_CLOSE_AUDIO);
+
+	idle_add(IDLE_PLAYER);
 }
 
 void playerKill(void)
 {
 	player_command(PLAYER_COMMAND_EXIT);
+
+	idle_add(IDLE_PLAYER);
 }
 
 void playerPause(void)
 {
-	if (pc.state != PLAYER_STATE_STOP)
+	if (pc.state != PLAYER_STATE_STOP) {
 		player_command(PLAYER_COMMAND_PAUSE);
+		idle_add(IDLE_PLAYER);
+	}
 }
 
 void playerSetPause(int pause_flag)
@@ -185,6 +194,8 @@ playerSeek(struct song *song, float seek_time)
 	if (pc.error == PLAYER_ERROR_NOERROR) {
 		pc.seekWhere = seek_time;
 		player_command(PLAYER_COMMAND_SEEK);
+
+		idle_add(IDLE_PLAYER);
 	}
 
 	return 0;
@@ -200,6 +211,8 @@ void setPlayerCrossFade(float crossFadeInSeconds)
 	if (crossFadeInSeconds < 0)
 		crossFadeInSeconds = 0;
 	pc.crossFade = crossFadeInSeconds;
+
+	idle_add(IDLE_OPTIONS);
 }
 
 void setPlayerSoftwareVolume(int volume)

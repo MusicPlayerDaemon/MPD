@@ -30,6 +30,7 @@
 #include "main_notify.h"
 #include "condition.h"
 #include "update.h"
+#include "idle.h"
 
 static enum update_progress {
 	UPDATE_PROGRESS_IDLE = 0,
@@ -549,8 +550,10 @@ void reap_update_task(void)
 	if (pthread_join(update_thr, NULL))
 		FATAL("error joining update thread: %s\n", strerror(errno));
 
-	if (modified)
+	if (modified) {
 		playlistVersionChange();
+		idle_add(IDLE_DATABASE);
+	}
 
 	if (update_paths_nr) {
 		char *path = update_paths[0];

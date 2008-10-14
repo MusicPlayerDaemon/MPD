@@ -17,6 +17,7 @@
  */
 
 #include "client.h"
+#include "idle.h"
 #include "command.h"
 #include "playlist.h"
 #include "database.h"
@@ -445,9 +446,17 @@ int main(int argc, char *argv[])
 
 	while (COMMAND_RETURN_KILL != client_manager_io() &&
 	       COMMAND_RETURN_KILL != handlePendingSignals()) {
+		unsigned flags;
+
 		syncPlayerAndPlaylist();
 		client_manager_expire();
 		reap_update_task();
+
+		/* send "idle" notificaions to all subscribed
+		   clients */
+		flags = idle_get();
+		if (flags != 0)
+			client_manager_idle_add(flags);
 	}
 
 	write_state_file();

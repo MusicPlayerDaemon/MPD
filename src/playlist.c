@@ -34,6 +34,7 @@
 #include "state_file.h"
 #include "storedPlaylist.h"
 #include "ack.h"
+#include "idle.h"
 #include "os_compat.h"
 
 #define PLAYLIST_STATE_STOP		0
@@ -87,6 +88,8 @@ static void incrPlaylistVersion(void)
 
 		playlist.version = 1;
 	}
+
+	idle_add(IDLE_PLAYLIST);
 }
 
 void playlistVersionChange(void)
@@ -504,6 +507,8 @@ static void syncPlaylistWithQueue(void)
 	if (pc.next_song == NULL && playlist.queued != -1) {
 		playlist.current = playlist.queued;
 		playlist.queued = -1;
+
+		idle_add(IDLE_PLAYER);
 	}
 }
 
@@ -951,6 +956,8 @@ void setPlaylistRepeatStatus(bool status)
 		clearPlayerQueue();
 
 	playlist.repeat = status;
+
+	idle_add(IDLE_OPTIONS);
 }
 
 enum playlist_result moveSongInPlaylist(int from, int to)
@@ -1123,6 +1130,8 @@ void setPlaylistRandomStatus(bool status)
 		}
 	} else
 		orderPlaylist();
+
+	idle_add(IDLE_OPTIONS);
 }
 
 void previousSongInPlaylist(void)
@@ -1219,6 +1228,7 @@ enum playlist_result savePlaylist(const char *utf8file)
 
 	while (fclose(fp) && errno == EINTR) ;
 
+	idle_add(IDLE_STORED_PLAYLIST);
 	return PLAYLIST_RESULT_SUCCESS;
 }
 

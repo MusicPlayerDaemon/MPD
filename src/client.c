@@ -27,6 +27,7 @@
 #include "ioops.h"
 #include "main_notify.h"
 #include "dlist.h"
+#include "idle.h"
 
 #include "../config.h"
 
@@ -87,6 +88,13 @@ struct client {
 	size_t send_buf_used;	/* bytes used this instance */
 	size_t send_buf_size;	/* bytes usable this instance */
 	size_t send_buf_alloc;	/* bytes actually allocated */
+
+	/** is this client waiting for an "idle" response? */
+	bool idle_waiting;
+
+	/** idle flags pending on this client, to be sent as soon as
+	    the client enters "idle" */
+	unsigned idle_flags;
 };
 
 static LIST_HEAD(clients);
@@ -409,6 +417,9 @@ static int client_input_received(struct client *client, int bytesRead)
 	int ret;
 	char *buf_tail = &(client->buffer[client->bufferLength - 1]);
 
+	/* any input from the client makes it leave "idle" mode */
+	client->idle_waiting = false;
+
 	while (bytesRead > 0) {
 		client->bufferLength++;
 		bytesRead--;
@@ -635,7 +646,9 @@ void client_manager_expire(void)
 		if (client_is_expired(client)) {
 			DEBUG("client %i: expired\n", client->num);
 			client_close(client);
-		} else if (time(NULL) - client->lastTime >
+		} else if (!client->idle_waiting && /* idle clients
+						       never expire */
+			   time(NULL) - client->lastTime >
 			   client_timeout) {
 			DEBUG("client %i: timeout\n", client->num);
 			client_close(client);
@@ -806,4 +819,72 @@ mpd_fprintf void client_printf(struct client *client, const char *fmt, ...)
 	va_start(args, fmt);
 	client_vprintf(client, fmt, args);
 	va_end(args);
+}
+
+static const char *const idle_names[] = {
+	"database",
+	"stored_playlist",
+	"playlist",
+	"player",
+	"mixer",
+	"output",
+	"options",
+};
+
+/**
+ * Send "idle" response to this client.
+ */
+static void
+client_idle_notify(struct client *client)
+{
+	unsigned flags, i;
+
+	assert(client->idle_waiting);
+	assert(client->idle_flags != 0);
+
+	flags = client->idle_flags;
+	client->idle_flags = 0;
+	client->idle_waiting = false;
+
+	for (i = 0; i < sizeof(idle_names) / sizeof(idle_names[0]); ++i) {
+		assert(idle_names[i] != NULL);
+
+		if (flags & (1 << i))
+			client_printf(client, "changed: %s\n",
+				      idle_names[i]);
+	}
+
+	client_puts(client, "OK\n");
+	client->lastTime = time(NULL);
+}
+
+void client_manager_idle_add(unsigned flags)
+{
+	struct client *client;
+
+	assert(flags != 0);
+
+	list_for_each_entry(client, &clients, siblings) {
+		if (client_is_expired(client))
+			continue;
+
+		client->idle_flags |= flags;
+		if (client->idle_waiting) {
+			client_idle_notify(client);
+			client_write_output(client);
+		}
+	}
+}
+
+bool client_idle_wait(struct client *client)
+{
+	assert(!client->idle_waiting);
+
+	client->idle_waiting = true;
+
+	if (client->idle_flags != 0) {
+		client_idle_notify(client);
+		return true;
+	} else
+		return false;
 }

@@ -1239,6 +1239,17 @@ static int handlePlaylistAdd(struct client *client,
 	return print_playlist_result(client, result);
 }
 
+static int
+handle_idle(struct client *client,
+	    mpd_unused int argc, mpd_unused char *argv[])
+{
+	/* enable "idle" mode on this client */
+	client_idle_wait(client);
+
+	/* return value is "1" so the caller won't print "OK" */
+	return 1;
+}
+
 void initCommands(void)
 {
 	commandList = makeList(free, 1);
@@ -1307,6 +1318,7 @@ void initCommands(void)
 	addCommand(COMMAND_TAGTYPES,         PERMISSION_READ,    0,   0,   handleTagTypes);
 	addCommand(COMMAND_COUNT,            PERMISSION_READ,    2,   -1,  handleCount);
 	addCommand(COMMAND_RENAME,           PERMISSION_CONTROL, 2,   2,   handleRename);
+	addCommand("idle", PERMISSION_READ, 0, 0, handle_idle);
 
 	sortList(commandList);
 }

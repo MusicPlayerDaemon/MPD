@@ -24,6 +24,7 @@
 #include "utils.h"
 #include "ls.h"
 #include "database.h"
+#include "idle.h"
 #include "os_compat.h"
 
 static ListNode *nodeOfStoredPlaylist(List *list, int idx)
@@ -192,6 +193,7 @@ static int moveSongInStoredPlaylist(List *list, int src, int dest)
 		}
 	}
 
+	idle_add(IDLE_STORED_PLAYLIST);
 	return 0;
 }
 
@@ -212,6 +214,8 @@ moveSongInStoredPlaylistByPath(const char *utf8path, int src, int dest)
 	result = writeStoredPlaylistToPath(list, utf8path);
 
 	freeList(list);
+
+	idle_add(IDLE_STORED_PLAYLIST);
 	return result;
 }
 
@@ -231,6 +235,8 @@ removeAllFromStoredPlaylistByPath(const char *utf8path)
 		return PLAYLIST_RESULT_ERRNO;
 
 	while (fclose(file) != 0 && errno == EINTR);
+
+	idle_add(IDLE_STORED_PLAYLIST);
 	return PLAYLIST_RESULT_SUCCESS;
 }
 
@@ -262,6 +268,8 @@ removeOneSongFromStoredPlaylistByPath(const char *utf8path, int pos)
 	result = writeStoredPlaylistToPath(list, utf8path);
 
 	freeList(list);
+
+	idle_add(IDLE_STORED_PLAYLIST);
 	return result;
 }
 
@@ -299,6 +307,8 @@ appendSongToStoredPlaylistByPath(const char *utf8path, struct song *song)
 	playlist_print_song(file, song);
 
 	while (fclose(file) != 0 && errno == EINTR);
+
+	idle_add(IDLE_STORED_PLAYLIST);
 	return PLAYLIST_RESULT_SUCCESS;
 }
 
@@ -325,5 +335,6 @@ renameStoredPlaylist(const char *utf8from, const char *utf8to)
 	if (rename(from, to) < 0)
 		return PLAYLIST_RESULT_ERRNO;
 
+	idle_add(IDLE_STORED_PLAYLIST);
 	return PLAYLIST_RESULT_SUCCESS;
 }

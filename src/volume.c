@@ -21,6 +21,7 @@
 #include "log.h"
 #include "player_control.h"
 #include "utils.h"
+#include "idle.h"
 #include "os_compat.h"
 
 #include "../config.h"
@@ -490,6 +491,8 @@ static int changeSoftwareVolume(int change, int rel)
 
 int changeVolumeLevel(int change, int rel)
 {
+	idle_add(IDLE_MIXER);
+
 	switch (volume_mixerType) {
 #ifdef HAVE_ALSA
 	case VOLUME_MIXER_TYPE_ALSA:

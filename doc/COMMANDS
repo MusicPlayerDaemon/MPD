@@ -265,6 +265,27 @@ volume <int change>
 	change volume by amount _change_
 	NOTE: volume command is deprecated, use setvol instead
 
+idle
+	Waits until there is a noteworthy change in one or more of
+	MPD's subsystems.  As soon as there is one, it lists all
+	changed systems in a line in the format "changed: SUBSYSTEM",
+	where SUBSYSTEM is one of the following:
+
+	database: the song database has been updated
+	stored_playlist: a stored playlist has been modified, renamed,
+	                 created or deleted
+	playlist: the current playlist has been modified
+	player: the player has been started, stopped or seeked
+	mixer: the volume has been changed
+	output: an audio output has been enabled or disabled
+	options: options like "repeat", "random", "crossfade"
+
+	While a client waits for "idle" results, the server disables
+	timeouts, allowing a client to wait for events as long as mpd
+	runs.  The "idle" command can be canceled by sending a new
+	command.
+
+
 COMMAND LIST
 ------------
 

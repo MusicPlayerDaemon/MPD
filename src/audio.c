@@ -24,6 +24,7 @@
 #include "log.h"
 #include "path.h"
 #include "client.h"
+#include "idle.h"
 #include "utils.h"
 #include "os_compat.h"
 
@@ -379,6 +380,7 @@ int enableAudioDevice(unsigned int device)
 		return -1;
 
 	audioDeviceStates[device] = true;
+	idle_add(IDLE_OUTPUT);
 
 	return 0;
 }
@@ -389,6 +391,7 @@ int disableAudioDevice(unsigned int device)
 		return -1;
 
 	audioDeviceStates[device] = false;
+	idle_add(IDLE_OUTPUT);
 
 	return 0;
 }
