@@ -23,6 +23,7 @@
 #include "song.h"
 #include "log.h"
 #include "ls.h"
+#include "mapper.h"
 #include "path.h"
 #include "playlist.h"
 #include "utils.h"
@@ -150,11 +151,11 @@ static int
 delete_song_if_removed(struct song *song, void *_data)
 {
 	struct delete_data *data = _data;
+	const char *path;
+	struct stat st;
 
-	data->tmp = song_get_url(song, data->tmp);
-	assert(data->tmp);
-
-	if (!isFile(data->tmp, NULL)) {
+	if ((path = map_song_fs(song, data->tmp)) == NULL ||
+	    stat(data->tmp, &st) < 0 || !S_ISREG(st.st_mode)) {
 		delete_song(data->dir, song);
 		modified = true;
 	}
@@ -169,7 +170,12 @@ removeDeletedFromDirectory(char *path_max_tmp, struct directory *directory)
 	struct delete_data data;
 
 	for (i = dv->nr; --i >= 0; ) {
-		if (isDir(dv->base[i]->path))
+		const char *path_fs;
+		struct stat st;
+
+		path_fs = map_directory_fs(dv->base[i], path_max_tmp);
+		if (path_fs == NULL || (stat(path_fs, &st) == 0 &&
+					S_ISDIR(st.st_mode)))
 			continue;
 		LOG("removing directory: %s\n", dv->base[i]->path);
 		dirvec_delete(dv, dv->base[i]);
@@ -181,12 +187,26 @@ removeDeletedFromDirectory(char *path_max_tmp, struct directory *directory)
 	songvec_for_each(&directory->songs, delete_song_if_removed, &data);
 }
 
-static const char *opendir_path(char *path_max_tmp, const char *dirname)
+static int
+stat_directory(const struct directory *directory, struct stat *st)
 {
-	if (*dirname != '\0')
-		return rmp2amp_r(path_max_tmp,
-		                 utf8_to_fs_charset(path_max_tmp, dirname));
-	return musicDir;
+	char buffer[MPD_PATH_MAX];
+	const char *path_fs;
+
+	path_fs = map_directory_fs(directory, buffer);
+	if (path_fs == NULL)
+		return -1;
+	return stat(path_fs, st);
+}
+
+static int
+stat_directory_child(const struct directory *parent, const char *name,
+		     struct stat *st)
+{
+	char path_fs[MPD_PATH_MAX];
+
+	map_directory_child_fs(parent, name, path_fs);
+	return stat(path_fs, st);
 }
 
 static int
@@ -194,7 +214,7 @@ statDirectory(struct directory *dir)
 {
 	struct stat st;
 
-	if (myStat(directory_get_path(dir), &st) < 0)
+	if (stat_directory(dir, &st) < 0)
 		return -1;
 
 	directory_set_stat(dir, &st);
@@ -296,15 +316,19 @@ static bool
 updateDirectory(struct directory *directory, const struct stat *st)
 {
 	DIR *dir;
-	const char *dirname = directory_get_path(directory);
 	struct dirent *ent;
 	char path_max_tmp[MPD_PATH_MAX];
+	const char *path_fs;
 
 	assert(S_ISDIR(st->st_mode));
 
 	directory_set_stat(directory, st);
 
-	dir = opendir(opendir_path(path_max_tmp, dirname));
+	path_fs = map_directory_fs(directory, path_max_tmp);
+	if (path_fs == NULL)
+		return false;
+
+	dir = opendir(path_fs);
 	if (!dir)
 		return false;
 
@@ -321,15 +345,11 @@ updateDirectory(struct directory *directory, const struct stat *st)
 		if (!utf8)
 			continue;
 
-		if (!isRootDirectory(directory->path))
-			utf8 = pfx_dir(path_max_tmp, utf8, strlen(utf8),
-			               dirname, strlen(dirname));
-
-		if (myStat(path_max_tmp, &st2) == 0)
+		if (stat_directory_child(directory, utf8, &st2) == 0)
 			updateInDirectory(directory,
-					  mpd_basename(path_max_tmp), &st2);
+					  path_max_tmp, &st2);
 		else
-			delete_name_in(directory, mpd_basename(path_max_tmp));
+			delete_name_in(directory, path_max_tmp);
 	}
 
 	closedir(dir);
@@ -348,7 +368,7 @@ directory_make_child_checked(struct directory *parent, const char *path)
 	if (directory != NULL)
 		return directory;
 
-	if (myStat(path, &st) < 0 ||
+	if (stat_directory_child(parent, mpd_basename(path), &st) < 0 ||
 	    inodeFoundInParent(parent, st.st_ino, st.st_dev))
 		return NULL;
 
@@ -398,7 +418,7 @@ updatePath(const char *path)
 
 	name = mpd_basename(path);
 
-	if (myStat(path, &st) == 0)
+	if (stat_directory_child(parent, name, &st) == 0)
 		updateInDirectory(parent, name, &st);
 	else
 		delete_name_in(parent, name);
@@ -413,7 +433,7 @@ static void * update_task(void *_path)
 		struct directory *directory = db_get_root();
 		struct stat st;
 
-		if (myStat(directory_get_path(directory), &st) == 0)
+		if (stat_directory(directory, &st) == 0)
 			updateDirectory(directory, &st);
 	}
 

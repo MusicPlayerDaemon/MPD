@@ -19,6 +19,7 @@
 #include "storedPlaylist.h"
 #include "playlist_save.h"
 #include "song.h"
+#include "mapper.h"
 #include "path.h"
 #include "utils.h"
 #include "ls.h"
@@ -91,7 +92,6 @@ List *loadStoredPlaylist(const char *utf8path)
 	FILE *file;
 	char buffer[MPD_PATH_MAX];
 	char path_max_tmp[MPD_PATH_MAX];
-	const size_t musicDir_len = strlen(musicDir);
 
 	if (!is_valid_playlist_name(utf8path))
 		return NULL;
@@ -105,19 +105,27 @@ List *loadStoredPlaylist(const char *utf8path)
 
 	while (myFgets(buffer, sizeof(buffer), file)) {
 		char *s = buffer;
-		struct song *song;
+		const char *path_utf8;
 
 		if (*s == PLAYLIST_COMMENT)
 			continue;
-		if (s[musicDir_len] == '/' &&
-		    !strncmp(s, musicDir, musicDir_len))
-			memmove(s, s + musicDir_len + 1,
-				strlen(s + musicDir_len + 1) + 1);
-		if ((song = db_get_song(s))) {
+
+		if (isValidRemoteUtf8Url(s))
+			insertInListWithoutKey(list, xstrdup(s));
+		else {
+			struct song *song;
+
+			path_utf8 = map_fs_to_utf8(s, path_max_tmp);
+			if (path_utf8 == NULL)
+				continue;
+
+			song = db_get_song(path_utf8);
+			if (song == NULL)
+				continue;
+
 			song_get_url(song, path_max_tmp);
 			insertInListWithoutKey(list, xstrdup(path_max_tmp));
-		} else if (isValidRemoteUtf8Url(s))
-			insertInListWithoutKey(list, xstrdup(s));
+		}
 
 		if (list->numberOfNodes >= playlist_max_length)
 			break;

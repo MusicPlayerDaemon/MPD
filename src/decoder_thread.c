@@ -22,27 +22,28 @@
 #include "decoder_internal.h"
 #include "player_control.h"
 #include "song.h"
-
+#include "mapper.h"
 #include "path.h"
 #include "log.h"
 #include "ls.h"
 
 static void decodeStart(void)
 {
+	struct song *song = dc.next_song;
 	struct decoder decoder;
 	int ret;
 	bool close_instream = true;
 	InputStream inStream;
 	struct decoder_plugin *plugin = NULL;
 	char path_max_fs[MPD_PATH_MAX];
-	char path_max_utf8[MPD_PATH_MAX];
 
-	song_get_url(dc.next_song, path_max_utf8);
-	if (!isRemoteUrl(path_max_utf8)) {
-		rmp2amp_r(path_max_fs,
-		          utf8_to_fs_charset(path_max_fs, path_max_utf8));
-	} else
+	if (song_is_file(song))
+		map_song_fs(song, path_max_fs);
+	else {
+		char path_max_utf8[MPD_PATH_MAX];
+		song_get_url(song, path_max_utf8);
 		pathcpy_trunc(path_max_fs, path_max_utf8);
+	}
 
 	dc.current_song = dc.next_song; /* NEED LOCK */
 	if (openInputStream(&inStream, path_max_fs) < 0) {
@@ -74,7 +75,7 @@ static void decodeStart(void)
 		goto stop;
 
 	ret = DECODE_ERROR_UNKTYPE;
-	if (isRemoteUrl(path_max_utf8)) {
+	if (!song_is_file(song)) {
 		unsigned int next = 0;
 
 		/* first we try mime types: */
@@ -92,7 +93,7 @@ static void decodeStart(void)
 
 		/* if that fails, try suffix matching the URL: */
 		if (plugin == NULL) {
-			const char *s = getSuffix(path_max_utf8);
+			const char *s = getSuffix(path_max_fs);
 			next = 0;
 			while (ret && (plugin = decoder_plugin_from_suffix(s, next++))) {
 				if (plugin->stream_decode == NULL)
@@ -123,7 +124,7 @@ static void decodeStart(void)
 		}
 	} else {
 		unsigned int next = 0;
-		const char *s = getSuffix(path_max_utf8);
+		const char *s = getSuffix(path_max_fs);
 		while (ret && (plugin = decoder_plugin_from_suffix(s, next++))) {
 			if (!plugin->stream_types & INPUT_PLUGIN_STREAM_FILE)
 				continue;

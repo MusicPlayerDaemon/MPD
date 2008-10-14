@@ -19,21 +19,25 @@
 #include "playlist_save.h"
 #include "playlist.h"
 #include "song.h"
+#include "mapper.h"
 #include "path.h"
 #include "ls.h"
+#include "database.h"
 
 void
 playlist_print_song(FILE *file, const struct song *song)
 {
 	char tmp1[MPD_PATH_MAX], tmp2[MPD_PATH_MAX];
 
-	song_get_url(song, tmp1);
-	utf8_to_fs_charset(tmp2, tmp1);
-
-	if (playlist_saveAbsolutePaths && song_is_file(song))
-		fprintf(file, "%s\n", rmp2amp_r(tmp2, tmp2));
-	else
+	if (playlist_saveAbsolutePaths && song_is_file(song)) {
+		const char *path = map_song_fs(song, tmp1);
+		if (path != NULL)
+			fprintf(file, "%s\n", path);
+	} else {
+		song_get_url(song, tmp1);
+		utf8_to_fs_charset(tmp2, tmp1);
 		fprintf(file, "%s\n", tmp2);
+	}
 }
 
 void
@@ -42,8 +46,10 @@ playlist_print_uri(FILE *file, const char *uri)
 	char tmp[MPD_PATH_MAX];
 	const char *s;
 
-	s = utf8_to_fs_charset(tmp, uri);
 	if (playlist_saveAbsolutePaths && !isValidRemoteUtf8Url(s))
-		s = rmp2amp_r(tmp, s);
+		s = map_directory_child_fs(db_get_root(), uri, tmp);
+	else
+		s = utf8_to_fs_charset(tmp, uri);
+
 	fprintf(file, "%s\n", s);
 }

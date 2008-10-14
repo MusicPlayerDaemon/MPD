@@ -21,6 +21,7 @@
 #include "directory.h"
 #include "utils.h"
 #include "log.h"
+#include "mapper.h"
 #include "path.h"
 #include "playlist.h"
 #include "decoder_list.h"
@@ -95,14 +96,12 @@ song_file_update(struct song *song)
 {
 	struct decoder_plugin *plugin;
 	unsigned int next = 0;
-	char path_max_tmp[MPD_PATH_MAX];
 	char abs_path[MPD_PATH_MAX];
 	struct stat st;
 
 	assert(song_is_file(song));
 
-	utf8_to_fs_charset(abs_path, song_get_url(song, path_max_tmp));
-	rmp2amp_r(abs_path, abs_path);
+	map_song_fs(song, abs_path);
 
 	if (song->tag != NULL) {
 		tag_free(song->tag);

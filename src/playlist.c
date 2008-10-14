@@ -28,6 +28,7 @@
 #include "conf.h"
 #include "database.h"
 #include "log.h"
+#include "mapper.h"
 #include "path.h"
 #include "utils.h"
 #include "state_file.h"

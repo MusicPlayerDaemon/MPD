@@ -79,6 +79,7 @@ mpd_headers = \
 	os_compat.h \
 	outputBuffer.h \
 	path.h \
+	mapper.h \
 	pcm_utils.h \
 	permission.h \
 	player_thread.h \
@@ -158,6 +159,7 @@ mpd_SOURCES = \
 	compress.c \
 	outputBuffer.c \
 	path.c \
+	mapper.c \
 	pcm_utils.c \
 	permission.c \
 	player_thread.c \
