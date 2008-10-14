@@ -313,6 +313,48 @@ static int skip_path(const char *path)
 }
 
 static bool
+skip_symlink(const struct directory *directory, const char *utf8_name)
+{
+	char buffer[MPD_PATH_MAX];
+	const char *p;
+	ssize_t ret;
+
+	p = map_directory_child_fs(directory, utf8_name, buffer);
+	if (p == NULL)
+		return true;
+
+	ret = readlink(p, buffer, sizeof(buffer));
+	if (ret < 0)
+		/* don't skip if this is not a symlink */
+		return errno != EINVAL;
+
+	if (buffer[0] == '/')
+		return false;
+
+	p = buffer;
+	while (*p == '.') {
+		if (p[1] == '.' && p[2] == '/') {
+			/* "../" moves to parent directory */
+			directory = directory->parent;
+			if (directory == NULL)
+				/* we have moved outside the music
+				   directory - don't skip this
+				   symlink */
+				return false;
+			p += 3;
+		} else if (p[1] == '/')
+			/* eliminate "./" */
+			p += 2;
+		else
+			break;
+	}
+
+	/* we are still in the music directory, so this symlink points
+	   to a song which is already in the database - skip it */
+	return true;
+}
+
+static bool
 updateDirectory(struct directory *directory, const struct stat *st)
 {
 	DIR *dir;
@@ -338,7 +380,8 @@ updateDirectory(struct directory *directory, const struct stat *st)
 		char *utf8;
 		struct stat st2;
 
-		if (skip_path(ent->d_name))
+		if (skip_path(ent->d_name) ||
+		    skip_symlink(directory, ent->d_name))
 			continue;
 
 		utf8 = fs_charset_to_utf8(path_max_tmp, ent->d_name);
