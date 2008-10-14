@@ -47,28 +47,27 @@ songvec_find(const struct songvec *sv, const char *url)
 int
 songvec_delete(struct songvec *sv, const struct song *del)
 {
-	int i;
+	size_t i;
 
 	pthread_mutex_lock(&nr_lock);
-	for (i = sv->nr; --i >= 0; ) {
+	for (i = 0; i < sv->nr; ++i) {
 		if (sv->base[i] != del)
 			continue;
 		/* we _don't_ call song_free() here */
 		if (!--sv->nr) {
-			pthread_mutex_unlock(&nr_lock);
 			free(sv->base);
 			sv->base = NULL;
-			return i;
 		} else {
 			memmove(&sv->base[i], &sv->base[i + 1],
-				(sv->nr - i + 1) * sizeof(struct song *));
+				(sv->nr - i) * sizeof(struct song *));
 			sv->base = xrealloc(sv->base, sv_size(sv));
 		}
-		break;
+		pthread_mutex_unlock(&nr_lock);
+		return i;
 	}
 	pthread_mutex_unlock(&nr_lock);
 
-	return i;
+	return -1; /* not found */
 }
 
 void

@@ -37,9 +37,9 @@ struct directory *dirvec_find(const struct dirvec *dv, const char *path)
 
 int dirvec_delete(struct dirvec *dv, struct directory *del)
 {
-	int i;
+	size_t i;
 
-	for (i = dv->nr; --i >= 0; ) {
+	for (i = 0; i < dv->nr; ++i) {
 		if (dv->base[i] != del)
 			continue;
 		/* we _don't_ call directory_free() here */
@@ -48,7 +48,7 @@ int dirvec_delete(struct dirvec *dv, struct directory *del)
 			dv->base = NULL;
 		} else {
 			memmove(&dv->base[i], &dv->base[i + 1],
-				(dv->nr - i + 1) * sizeof(struct directory *));
+				(dv->nr - i) * sizeof(struct directory *));
 			dv->base = xrealloc(dv->base, dv_size(dv));
 		}
 		return i;
