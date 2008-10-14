@@ -124,9 +124,10 @@ static void usage(char *argv[])
 
 static void version(void)
 {
-	LOG("mpd (MPD: Music Player Daemon) %s\n", VERSION);
+	LOG(PACKAGE " (MPD: Music Player Daemon) %s\n", VERSION);
 	LOG("\n");
 	LOG("Copyright (C) 2003-2007 Warren Dukes <warren.dukes@gmail.com>\n");
+	LOG("Copyright (C) 2008 Max Kellermann <max@duempel.org>\n");
 	LOG("This is free software; see the source for copying conditions.  There is NO\n");
 	LOG("warranty; not even MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n");
 	LOG("\n");

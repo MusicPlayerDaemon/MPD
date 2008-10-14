@@ -2,7 +2,7 @@ dnl AC_INIT(src/main.c)
 dnl AM_INIT_AUTOMAKE(mpd, 0.14.0)
 
 AC_PREREQ(2.60)
-AC_INIT(mpd, 0.14.0, musicpd-dev-team@lists.sourceforge.net)
+AC_INIT(mpd-mk, 0.14~git, max@duempel.org)
 AM_INIT_AUTOMAKE($PACKAGE_NAME, $PACKAGE_VERSION)
 AC_CONFIG_MACRO_DIR([m4])
 
