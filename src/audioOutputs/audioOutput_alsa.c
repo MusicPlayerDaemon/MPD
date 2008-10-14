@@ -37,6 +37,10 @@ typedef snd_pcm_sframes_t alsa_writei_t(snd_pcm_t * pcm, const void *buffer,
 
 typedef struct _AlsaData {
 	const char *device;
+
+	/** the mode flags passed to snd_pcm_open */
+	int mode;
+
 	snd_pcm_t *pcmHandle;
 	alsa_writei_t *writei;
 	unsigned int buffer_time;
@@ -50,6 +54,7 @@ static AlsaData *newAlsaData(void)
 	AlsaData *ret = xmalloc(sizeof(AlsaData));
 
 	ret->device = default_device;
+	ret->mode = 0;
 	ret->pcmHandle = NULL;
 	ret->writei = snd_pcm_writei;
 	ret->useMmap = 0;
@@ -80,6 +85,15 @@ alsa_configure(AlsaData *ad, ConfigParam *param)
 		ad->buffer_time = atoi(bp->value);
 	if ((bp = getBlockParam(param, "period_time")))
 		ad->period_time = atoi(bp->value);
+
+	if (!getBoolBlockParam(param, "auto_resample", true))
+		ad->mode |= SND_PCM_NO_AUTO_RESAMPLE;
+
+	if (!getBoolBlockParam(param, "auto_channels", true))
+		ad->mode |= SND_PCM_NO_AUTO_CHANNELS;
+
+	if (!getBoolBlockParam(param, "auto_format", true))
+		ad->mode |= SND_PCM_NO_AUTO_FORMAT;
 }
 
 static void *alsa_initDriver(mpd_unused struct audio_output *ao,
@@ -156,7 +170,7 @@ static int alsa_openDevice(void *data, struct audio_format *audioFormat)
 		      ad->device, audioFormat->bits);
 
 	err = snd_pcm_open(&ad->pcmHandle, ad->device,
-			   SND_PCM_STREAM_PLAYBACK, 0);
+			   SND_PCM_STREAM_PLAYBACK, ad->mode);
 	if (err < 0) {
 		ad->pcmHandle = NULL;
 		goto error;

@@ -274,6 +274,19 @@ Setting this allows you to use memory-mapped I/O.  Certain hardware setups may
 benefit from this, but most do not.  Most users do not need to set this.  The
 default is to not use memory-mapped I/O.
 .TP
+.B auto_resample <yes or no>
+Setting this to "no" disables ALSA's software resampling, if the
+hardware does not support a specific sample rate.  This lets MPD do
+the resampling.  "yes" is the default and allows ALSA to resample.
+.TP
+.B auto_channels <yes or no>
+Setting this to "no" disables ALSA's channel conversion, if the
+hardware does not support a specific number of channels.  Default: "yes".
+.TP
+.B auto_format <yes or no>
+Setting this to "no" disables ALSA's sample format conversion, if the
+hardware does not support a specific sample format.  Default: "yes".
+.TP
 .B buffer_time <time in microseconds>
 This sets the length of the hardware sample buffer in microseconds.  Increasing
 it may help to reduce or eliminate skipping on certain setups.  Most users do
