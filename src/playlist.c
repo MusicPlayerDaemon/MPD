@@ -17,6 +17,7 @@
  */
 
 #include "playlist.h"
+#include "playlist_save.h"
 #include "player_control.h"
 #include "command.h"
 #include "ls.h"
@@ -1212,18 +1213,8 @@ enum playlist_result savePlaylist(const char *utf8file)
 	if (fp == NULL)
 		return PLAYLIST_RESULT_ERRNO;
 
-	for (i = 0; i < playlist.length; i++) {
-		char tmp[MPD_PATH_MAX];
-
-		song_get_url(playlist.songs[i], path_max_tmp);
-		utf8_to_fs_charset(tmp, path_max_tmp);
-
-		if (playlist_saveAbsolutePaths &&
-		    song_is_file(playlist.songs[i]))
-			fprintf(fp, "%s\n", rmp2amp_r(tmp, tmp));
-		else
-			fprintf(fp, "%s\n", tmp);
-	}
+	for (i = 0; i < playlist.length; i++)
+		playlist_print_song(fp, playlist.songs[i]);
 
 	while (fclose(fp) && errno == EINTR) ;
 

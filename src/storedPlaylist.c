@@ -17,6 +17,7 @@
  */
 
 #include "storedPlaylist.h"
+#include "playlist_save.h"
 #include "song.h"
 #include "path.h"
 #include "utils.h"
@@ -64,7 +65,6 @@ writeStoredPlaylistToPath(List *list, const char *utf8path)
 {
 	ListNode *node;
 	FILE *file;
-	char *s;
 	char path_max_tmp[MPD_PATH_MAX];
 
 	assert(utf8path != NULL);
@@ -77,10 +77,7 @@ writeStoredPlaylistToPath(List *list, const char *utf8path)
 
 	node = list->firstNode;
 	while (node != NULL) {
-		s = utf8_to_fs_charset(path_max_tmp, (char *)node->data);
-		if (playlist_saveAbsolutePaths && !isValidRemoteUtf8Url(s))
-			s = rmp2amp_r(path_max_tmp, s);
-		fprintf(file, "%s\n", s);
+		playlist_print_uri(file, (const char *)node->data);
 		node = node->nextNode;
 	}
 
@@ -264,10 +261,8 @@ enum playlist_result
 appendSongToStoredPlaylistByPath(const char *utf8path, struct song *song)
 {
 	FILE *file;
-	char *s;
 	struct stat st;
 	char path_max_tmp[MPD_PATH_MAX];
-	char path_max_tmp2[MPD_PATH_MAX];
 
 	if (!is_valid_playlist_name(utf8path))
 		return PLAYLIST_RESULT_BAD_NAME;
@@ -293,13 +288,7 @@ appendSongToStoredPlaylistByPath(const char *utf8path, struct song *song)
 		return PLAYLIST_RESULT_TOO_LARGE;
 	}
 
-	s = utf8_to_fs_charset(path_max_tmp2,
-			       song_get_url(song, path_max_tmp));
-
-	if (playlist_saveAbsolutePaths && song_is_file(song))
-		s = rmp2amp_r(path_max_tmp, s);
-
-	fprintf(file, "%s\n", s);
+	playlist_print_song(file, song);
 
 	while (fclose(file) != 0 && errno == EINTR);
 	return PLAYLIST_RESULT_SUCCESS;
