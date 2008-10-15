@@ -521,17 +521,30 @@ static void clearPlayerQueue(void)
 	pc_cancel();
 }
 
+static struct song *
+song_by_url(const char *url)
+{
+	struct song *song;
+
+	song = db_get_song(url);
+	if (song != NULL)
+		return song;
+
+	if (isValidRemoteUtf8Url(url))
+		return song_remote_new(url);
+
+	return NULL;
+}
+
 enum playlist_result addToPlaylist(const char *url, int *added_id)
 {
 	struct song *song;
 
 	DEBUG("add to playlist: %s\n", url);
 
-	if ((song = db_get_song(url))) {
-	} else if (!(isValidRemoteUtf8Url(url) &&
-		     (song = song_remote_new(url)))) {
+	song = song_by_url(url);
+	if (song == NULL)
 		return PLAYLIST_RESULT_NO_SUCH_SONG;
-	}
 
 	return addSongToPlaylist(song, added_id);
 }
