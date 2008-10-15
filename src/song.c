@@ -108,7 +108,7 @@ song_file_update(struct song *song)
 		song->tag = NULL;
 	}
 
-	if (stat(abs_path, &st) < 0)
+	if (stat(abs_path, &st) < 0 || !S_ISREG(st.st_mode))
 		return false;
 
 	song->mtime = st.st_mtime;
