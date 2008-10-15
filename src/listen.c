@@ -192,39 +192,30 @@ static void parseListenConfigParam(unsigned int port, ConfigParam * param)
 #endif /* HAVE_UN */
 	} else {
 #ifdef HAVE_TCP
-		struct hostent *he;
-		DEBUG("binding to address for %s\n", param->value);
-		if (!(he = gethostbyname(param->value))) {
-			FATAL("can't lookup host \"%s\" at line %i\n",
-			      param->value, param->line);
-		}
-		switch (he->h_addrtype) {
-#ifdef HAVE_IPV6
-		case AF_INET6:
-			if (!useIpv6) {
-				FATAL("no IPv6 support, but a IPv6 address "
-				      "found for \"%s\" at line %i\n",
-				      param->value, param->line);
-			}
-			memcpy((char *)&sin6.sin6_addr.s6_addr,
-			       (const char *)he->h_addr, he->h_length);
-			addrp = (const struct sockaddr *)&sin6;
-			addrlen = sizeof(struct sockaddr_in6);
-			break;
-#endif
-		case AF_INET:
-			memcpy((char *)&sin4.sin_addr.s_addr,
-			       (const char *)he->h_addr, he->h_length);
-			addrp = (struct sockaddr *)&sin4;
-			addrlen = sizeof(struct sockaddr_in);
-			break;
-		default:
-			FATAL("address type for \"%s\" is not IPv4 or IPv6 "
-			      "at line %i\n", param->value, param->line);
-		}
+		struct addrinfo hints, *ai, *i;
+		char service[20];
+		int ret;
 
-		if (establishListen(addrp, addrlen) < 0)
-			BINDERROR();
+		DEBUG("binding to address for %s\n", param->value);
+
+		memset(&hints, 0, sizeof(hints));
+		hints.ai_flags = AI_ADDRCONFIG;
+		hints.ai_family = PF_UNSPEC;
+		hints.ai_socktype = SOCK_STREAM;
+		hints.ai_protocol = IPPROTO_TCP;
+
+		snprintf(service, sizeof(service), "%u", port);
+
+		ret = getaddrinfo(param->value, service, &hints, &ai);
+		if (ret != 0)
+			FATAL("can't lookup host \"%s\" at line %i: %s\n",
+			      param->value, param->line, gai_strerror(ret));
+
+		for (i = ai; i != NULL; i = i->ai_next)
+			if (establishListen(i->ai_addr, i->ai_addrlen) < 0)
+				BINDERROR();
+
+		freeaddrinfo(ai);
 #else /* HAVE_TCP */
 		FATAL("TCP support is disabled\n");
 #endif /* HAVE_TCP */
