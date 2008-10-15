@@ -31,10 +31,6 @@
 
 char *myFgets(char *buffer, int bufferSize, FILE * fp);
 
-char *string_toupper(char *str);
-
-char *strDupToUpper(char *str); /* avoid, use string_toupper instead */
-
 void stripReturnChar(char *string);
 
 void my_usleep(long usec);

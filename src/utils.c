@@ -24,7 +24,6 @@
 
 #include <assert.h>
 #include <string.h>
-#include <ctype.h>
 #include <sys/types.h>
 #include <pwd.h>
 #include <fcntl.h>
@@ -43,23 +42,6 @@ char *myFgets(char *buffer, int bufferSize, FILE * fp)
 		buffer[strlen(buffer) - 1] = '\0';
 	}
 	return ret;
-}
-
-char *string_toupper(char *str)
-{
-	int i = strlen(str);
-	char *ret = str;
-
-	for (; --i >= 0; ++str)
-		*str = toupper((int)(*str));
-
-	return ret;
-
-}
-
-char *strDupToUpper(char *str)
-{
-	return string_toupper(xstrdup(str));
 }
 
 void stripReturnChar(char *string)

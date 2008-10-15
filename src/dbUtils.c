@@ -30,6 +30,8 @@
 #include "log.h"
 #include "storedPlaylist.h"
 
+#include <glib.h>
+
 typedef struct _ListCommandItem {
 	int8_t tagType;
 	int numConditionals;
@@ -103,7 +105,7 @@ int searchForSongsIn(struct client *client, const char *name,
 
 	for (i = 0; i < numItems; i++) {
 		originalNeedles[i] = items[i].needle;
-		items[i].needle = strDupToUpper(originalNeedles[i]);
+		items[i].needle = g_utf8_casefold(originalNeedles[i], -1);
 	}
 
 	data.client = client;
@@ -113,7 +115,7 @@ int searchForSongsIn(struct client *client, const char *name,
 	ret = db_walk(name, searchInDirectory, NULL, &data);
 
 	for (i = 0; i < numItems; i++) {
-		free(items[i].needle);
+		g_free(items[i].needle);
 		items[i].needle = originalNeedles[i];
 	}
 

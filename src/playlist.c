@@ -37,6 +37,8 @@
 #include "idle.h"
 #include "os_compat.h"
 
+#include <glib.h>
+
 #define PLAYLIST_STATE_STOP		0
 #define PLAYLIST_STATE_PLAY		1
 
@@ -1372,7 +1374,7 @@ void searchForSongsInPlaylist(struct client *client,
 
 	for (i = 0; i < numItems; i++) {
 		originalNeedles[i] = items[i].needle;
-		items[i].needle = strDupToUpper(originalNeedles[i]);
+		items[i].needle = g_utf8_casefold(originalNeedles[i], -1);
 	}
 
 	for (i = 0; i < playlist.length; i++) {
@@ -1381,7 +1383,7 @@ void searchForSongsInPlaylist(struct client *client,
 	}
 
 	for (i = 0; i < numItems; i++) {
-		free(items[i].needle);
+		g_free(items[i].needle);
 		items[i].needle = originalNeedles[i];
 	}
 

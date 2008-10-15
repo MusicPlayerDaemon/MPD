@@ -22,6 +22,8 @@
 #include "tag.h"
 #include "song.h"
 
+#include <glib.h>
+
 #define LOCATE_TAG_FILE_KEY     "file"
 #define LOCATE_TAG_FILE_KEY_OLD "filename"
 #define LOCATE_TAG_ANY_KEY      "any"
@@ -132,11 +134,13 @@ strstrSearchTag(struct song *song, enum tag_type type, char *str)
 	int8_t visitedTypes[TAG_NUM_OF_ITEM_TYPES] = { 0 };
 
 	if (type == LOCATE_TAG_FILE_TYPE || type == LOCATE_TAG_ANY_TYPE) {
-		char path_max_tmp[MPD_PATH_MAX];
+		char path_max_tmp[MPD_PATH_MAX], *p;
 
-		string_toupper(song_get_url(song, path_max_tmp));
+		song_get_url(song, path_max_tmp);
+		p = g_utf8_casefold(path_max_tmp, -1);
 		if (strstr(path_max_tmp, str))
 			ret = 1;
+		g_free(p);
 		if (ret == 1 || type == LOCATE_TAG_FILE_TYPE)
 			return ret;
 	}
@@ -151,10 +155,10 @@ strstrSearchTag(struct song *song, enum tag_type type, char *str)
 			continue;
 		}
 
-		duplicate = strDupToUpper(song->tag->items[i]->value);
+		duplicate = g_utf8_casefold(song->tag->items[i]->value, -1);
 		if (*str && strstr(duplicate, str))
 			ret = 1;
-		free(duplicate);
+		g_free(duplicate);
 	}
 
 	/** If the search critieron was not visited during the sweep
