@@ -18,7 +18,6 @@
 
 #include "path.h"
 #include "log.h"
-#include "charConv.h"
 #include "conf.h"
 #include "utf8.h"
 #include "utils.h"
@@ -32,28 +31,48 @@
 #endif
 #endif
 
+#include <glib.h>
+
 const char *musicDir;
 static const char *playlistDir;
 static size_t music_dir_len;
 static size_t playlist_dir_len;
 static char *fsCharset;
 
-static char *path_conv_charset(char *dest, const char *to,
-			       const char *from, const char *str)
-{
-	return setCharSetConversion(to, from) ? NULL : char_conv_str(dest, str);
-}
-
 char *fs_charset_to_utf8(char *dst, const char *str)
 {
-	char *ret = path_conv_charset(dst, "UTF-8", fsCharset, str);
-	return (ret && !validUtf8String(ret, strlen(ret))) ? NULL : ret;
+	gchar *p;
+	GError *error = NULL;
+
+	p = g_convert(str, -1,
+		      fsCharset, "utf-8",
+		      NULL, NULL, &error);
+	if (p == NULL)
+		/* no fallback */
+		return NULL;
+
+	g_strlcpy(dst, p, MPD_PATH_MAX);
+	g_free(p);
+	return dst;
 }
 
 char *utf8_to_fs_charset(char *dst, const char *str)
 {
-	char *ret = path_conv_charset(dst, fsCharset, "UTF-8", str);
-	return ret ? ret : strcpy(dst, str);
+	gchar *p;
+	GError *error = NULL;
+
+	p = g_convert(str, -1,
+		      "utf-8", fsCharset,
+		      NULL, NULL, &error);
+	if (p == NULL) {
+		/* fall back to UTF-8 */
+		g_error_free(error);
+		return strcpy(dst, str);
+	}
+
+	g_strlcpy(dst, p, MPD_PATH_MAX);
+	g_free(p);
+	return dst;
 }
 
 void setFsCharset(const char *charset)
@@ -66,19 +85,6 @@ void setFsCharset(const char *charset)
 	fsCharset = xstrdup(charset);
 
 	DEBUG("setFsCharset: fs charset is: %s\n", fsCharset);
-
-	if (setCharSetConversion("UTF-8", fsCharset) != 0) {
-		WARNING("fs charset conversion problem: "
-			"not able to convert from \"%s\" to \"%s\"\n",
-			fsCharset, "UTF-8");
-		error = 1;
-	}
-	if (setCharSetConversion(fsCharset, "UTF-8") != 0) {
-		WARNING("fs charset conversion problem: "
-			"not able to convert from \"%s\" to \"%s\"\n",
-			"UTF-8", fsCharset);
-		error = 1;
-	}
 
 	if (error) {
 		free(fsCharset);

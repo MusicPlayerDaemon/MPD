@@ -45,7 +45,6 @@ mpd_headers = \
 	output_control.h \
 	audioOutputs/audioOutput_shout.h \
 	buffer2array.h \
-	charConv.h \
 	command.h \
 	idle.h \
 	condition.h \
@@ -131,7 +130,6 @@ mpd_SOURCES = \
 	output_control.c \
 	output_init.c \
 	buffer2array.c \
-	charConv.c \
 	command.c \
 	idle.c \
 	condition.c \

@@ -21,9 +21,9 @@
 #include "utils.h"
 #include "log.h"
 #include "conf.h"
-#include "charConv.h"
 
 #ifdef HAVE_ID3TAG
+#include <glib.h>
 #include <id3tag.h>
 #endif
 
@@ -54,16 +54,21 @@ static id3_utf8_t * processID3FieldString (int is_id3v1, const id3_ucs4_t *ucs4,
 	/* use encoding field here? */
 	if (is_id3v1 &&
 	    (encoding = getConfigParamValue(CONF_ID3V1_ENCODING))) {
+		GError *error = NULL;
+
 		isostr = id3_ucs4_latin1duplicate(ucs4);
 		if (mpd_unlikely(!isostr)) {
 			return NULL;
 		}
-		setCharSetConversion("UTF-8", encoding);
-		utf8 = xmalloc(strlen((char *)isostr) + 1);
-		utf8 = (id3_utf8_t *)char_conv_str((char *)utf8, (char *)isostr);
-		if (!utf8) {
+
+		utf8 = (id3_utf8_t *)
+			g_convert_with_fallback((const char*)isostr, -1,
+						encoding, "utf-8",
+						NULL, NULL, NULL, &error);
+		if (utf8 == NULL) {
 			DEBUG("Unable to convert %s string to UTF-8: "
 			      "'%s'\n", encoding, isostr);
+			g_error_free(error);
 			free(isostr);
 			return NULL;
 		}
