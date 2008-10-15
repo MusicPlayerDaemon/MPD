@@ -33,9 +33,15 @@ void client_manager_deinit(void);
 int client_manager_io(void);
 void client_manager_expire(void);
 
-void client_new(int fd, const struct sockaddr *addr);
+void client_new(int fd, const struct sockaddr *addr, int uid);
 
 int client_is_expired(const struct client *client);
+
+/**
+ * returns the uid of the client process, or a negative value if the
+ * uid is unknown
+ */
+int client_get_uid(const struct client *client);
 
 int client_get_permission(const struct client *client);
 

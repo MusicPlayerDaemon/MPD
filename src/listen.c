@@ -74,6 +74,7 @@ static int establishListen(int pf, const struct sockaddr *addrp,
 {
 	int sock;
 	int allowReuse = ALLOW_REUSE;
+	int passcred = 1;
 
 	if ((sock = socket(pf, SOCK_STREAM, 0)) < 0)
 		FATAL("socket < 0\n");
@@ -95,6 +96,10 @@ static int establishListen(int pf, const struct sockaddr *addrp,
 
 	if (listen(sock, 5) < 0)
 		FATAL("problems listen'ing: %s\n", strerror(errno));
+
+#if defined(HAVE_UN) && defined(SO_PASSCRED)
+	setsockopt(sock, SOL_SOCKET, SO_PASSCRED, &passcred, sizeof(passcred));
+#endif
 
 	numberOfListenSockets++;
 	listenSockets =
@@ -258,6 +263,22 @@ void freeAllListenSockets(void)
 	listenSockets = NULL;
 }
 
+static int get_remote_uid(int fd)
+{
+#if defined(HAVE_UN) && defined(SO_PEERCRED)
+	struct ucred cred;
+	socklen_t len = sizeof (cred);
+
+	if (getsockopt(fd, SOL_SOCKET, SO_PEERCRED, &cred, &len) < 0)
+		return 0;
+
+	return cred.uid;
+#else
+	(void)fd;
+	return -1;
+#endif
+}
+
 void getConnections(fd_set * fds)
 {
 	int i;
@@ -269,7 +290,7 @@ void getConnections(fd_set * fds)
 		if (FD_ISSET(listenSockets[i], fds)) {
 			if ((fd = accept(listenSockets[i], &sockAddr, &socklen))
 			    >= 0) {
-				client_new(fd, &sockAddr);
+				client_new(fd, &sockAddr, get_remote_uid(fd));
 			} else if (fd < 0
 				   && (errno != EAGAIN && errno != EINTR)) {
 				ERROR("Problems accept()'ing\n");

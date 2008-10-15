@@ -72,8 +72,13 @@ struct client {
 	char buffer[CLIENT_MAX_BUFFER_LENGTH];
 	size_t bufferLength;
 	size_t bufferPos;
+
 	int fd;	/* file descriptor; -1 if expired */
 	int permission;
+
+	/** the uid of the client process, or -1 if unknown */
+	int uid;
+
 	time_t lastTime;
 	struct strnode *cmd_list;	/* for when in list mode */
 	struct strnode *cmd_list_tail;	/* for when in list mode */
@@ -145,6 +150,11 @@ static void set_send_buf_size(struct client *client)
 int client_is_expired(const struct client *client)
 {
 	return client->fd < 0;
+}
+
+int client_get_uid(const struct client *client)
+{
+	return client->uid;
 }
 
 int client_get_permission(const struct client *client)
@@ -323,7 +333,7 @@ sockaddr_to_tmp_string(const struct sockaddr *addr)
 	return hostname;
 }
 
-void client_new(int fd, const struct sockaddr *addr)
+void client_new(int fd, const struct sockaddr *addr, int uid)
 {
 	struct client *client;
 
@@ -337,6 +347,7 @@ void client_new(int fd, const struct sockaddr *addr)
 	list_add(&client->siblings, &clients);
 	++num_clients;
 	client_init(client, fd);
+	client->uid = uid;
 	SECURE("client %i: opened from %s\n", client->num,
 	       sockaddr_to_tmp_string(addr));
 }
