@@ -464,7 +464,7 @@ static int handleAddId(struct client *client,
 	enum playlist_result result = addToPlaylist(argv[1], &added_id);
 
 	if (result != PLAYLIST_RESULT_SUCCESS)
-		return result;
+		return print_playlist_result(client, result);
 
 	if (argc == 3) {
 		int to;
