@@ -309,6 +309,8 @@ This specifies the device to use for audio output.  The default is "/dev/dsp".
 A space separated list of servers to try to connect to.  See
 <\fBhttp://www.pulseaudio.org/wiki/ServerStrings\fP> for more details.  The
 default is to let PulseAudio choose a server.
+If you specify more than one server name, MPD tries to connect to one
+after another until it successfully establishes a connection.
 .TP
 .B sink <sink>
 The sink to output to.  The default is to let PulseAudio choose a sink.
