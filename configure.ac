@@ -208,7 +208,9 @@ if test x$enable_shout_ogg = xyes; then
 		enable_shout_ogg=no
 	fi
 	if test x$enable_shout_ogg = xyes; then
-		AC_DEFINE(HAVE_SHOUT_OGG, 1, [Define to enable ogg streaming support])
+		PKG_CHECK_MODULES(VORBISENC, [vorbisenc],
+			AC_DEFINE(HAVE_SHOUT_OGG, 1, [Define to enable ogg streaming support]),
+			enable_shout_ogg=no)
 	fi
 fi
 
