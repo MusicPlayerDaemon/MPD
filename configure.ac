@@ -227,7 +227,9 @@ if test x$enable_shout_mp3 = xyes; then
 fi
 
 if test x$enable_ao = xyes; then
-	XIPH_PATH_AO([AC_DEFINE(HAVE_AO, 1, [Define to play with ao]) MPD_LIBS="$MPD_LIBS $AO_LIBS" MPD_CFLAGS="$MPD_CFLAGS $AO_CFLAGS"], enable_ao=no)
+	PKG_CHECK_MODULES(AO, [ao],
+		AC_DEFINE(HAVE_AO, 1, [Define to play with ao]),
+		enable_ao=no)
 fi
 
 if test x$enable_oss = xyes; then
@@ -259,7 +261,9 @@ if test x$enable_mvp = xyes; then
 fi
 
 if test x$enable_alsa = xyes; then
-	AM_PATH_ALSA(0.9.0,[AC_DEFINE(HAVE_ALSA,1,[Define to enable ALSA support]) MPD_LIBS="$MPD_LIBS $ALSA_LIBS" MPD_CFLAGS="$MPD_CFLAGS $ALSA_CFLAGS"],enable_alsa=no)
+	PKG_CHECK_MODULES(ALSA, [alsa >= 0.9.0],
+		AC_DEFINE(HAVE_ALSA, 1, [Define to enable ALSA support]),
+		enable_alsa=no)
 fi
 
 if test x$enable_jack = xyes; then
@@ -561,21 +565,9 @@ if test x$use_tremor = xyes; then
 		LIBS="$ac_save_LIBS"
 	fi
 elif test x$enable_oggvorbis = xyes; then
-	XIPH_PATH_OGG(,enable_oggvorbis=no)
-	XIPH_PATH_VORBIS(,enable_oggvorbis=no)
-	if test x$enable_oggvorbis = xyes; then
-		MPD_LIBS="$MPD_LIBS $OGG_LIBS $VORBIS_LIBS $VORBISFILE_LIBS"
-		MPD_CFLAGS="$MPD_CFLAGS $OGG_CFLAGS $VORBIS_CFLAGS"
-
-		if test x$enable_shout_ogg = xyes; then
-			MPD_LIBS="$MPD_LIBS $VORBISENC_LIBS"
-			MPD_CFLAGS="$MPD_CFLAGS $VORBISFILE_CFLAGS $VORBISENC_CFLAGS"
-		fi
-	fi
-fi
-
-if test x$enable_oggvorbis = xyes; then
-	AC_DEFINE(HAVE_OGGVORBIS,1,[Define for Ogg Vorbis support])
+	PKG_CHECK_MODULES(OGGVORBIS, [ogg vorbis vorbisfile],
+		AC_DEFINE(HAVE_OGGVORBIS, 1, [Define for Ogg Vorbis support]),
+		enable_oggvorbis=no)
 fi
 
 if test x$use_tremor = xyes; then
@@ -587,23 +579,15 @@ if test x$use_tremor = xyes; then
 fi
 
 if test x$enable_flac = xyes; then
-	oldmpdcflags="$MPD_CFLAGS"
-	oldmpdlibs="$MPD_LIBS"
-	AM_PATH_LIBFLAC(MPD_LIBS="$MPD_LIBS $LIBFLAC_LIBS" MPD_CFLAGS="$MPD_CFLAGS $LIBFLAC_CFLAGS",enable_flac=no)
-fi
+	PKG_CHECK_MODULES(FLAC, [flac >= 1.1],
+		AC_DEFINE(HAVE_FLAC, 1, [Define for FLAC support]),
+		enable_flac=no)
 
-
-if test x$enable_flac = xyes; then
 	oldcflags="$CFLAGS"
 	oldlibs="$LIBS"
-	CFLAGS="$CFLAGS $MPD_CFLAGS"
-	LIBS="$LIBS $MPD_LIBS"
-	AC_CHECK_LIB(FLAC, FLAC__metadata_object_vorbiscomment_find_entry_from,
-	          ,[enable_flac=no;AC_MSG_WARN(You need FLAC 1.1 -- disabling flac support)])
-	if test x$enable_flac = xno; then
-		MPD_CFLAGS="$oldmpdcflags"
-		MPD_LIBS="$oldmpdlibs"
-	else
+	CFLAGS="$CFLAGS $FLAC_CFLAGS"
+	LIBS="$LIBS $FLAC_LIBS"
+	if test x$enable_flac = xyes; then
 		AC_CHECK_DECL(FLAC_API_SUPPORTS_OGG_FLAC,
 		              [enable_oggflac=flac], [],
 			      [#include <FLAC/export.h>])
@@ -611,12 +595,6 @@ if test x$enable_flac = xyes; then
 	CFLAGS="$oldcflags"
 	LIBS="$oldlibs"
 fi
-
-
-if test x$enable_flac = xyes; then
-	AC_DEFINE(HAVE_FLAC,1,[Define for FLAC support])
-fi
-
 
 if test x$enable_oggflac = xyes; then
 	oldmpdcflags="$MPD_CFLAGS"
@@ -630,20 +608,15 @@ fi
 
 
 if test x$enable_audiofile = xyes; then
-	AM_PATH_AUDIOFILE(0.1.7, MPD_LIBS="$MPD_LIBS $AUDIOFILE_LIBS" MPD_CFLAGS="$MPD_CFLAGS $AUDIOFILE_CFLAGS",
-		[enable_audiofile=no;AC_MSG_WARN(You need audiofile  -- disabling audiofile support)])
-fi
-
-if test x$enable_audiofile = xyes; then
-	AC_DEFINE(HAVE_AUDIOFILE,1,[Define for audiofile support])
+	PKG_CHECK_MODULES(AUDIOFILE, [audiofile >= 0.1.7],
+		AC_DEFINE(HAVE_AUDIOFILE, 1, [Define for audiofile support]),
+		enable_audiofile=no)
 fi
 
 if test x$enable_mod = xyes; then
-	AM_PATH_LIBMIKMOD(3.1.7, MPD_CFLAGS="$MPD_CFLAGS $LIBMIKMOD_CFLAGS"
-		MPD_LIBS="$MPD_LIBS $LIBMIKMOD_LIBS $LIBMIKMOD_LDADD", enable_mod=no)
-	if test x$enable_mod = xyes; then
-		AC_DEFINE(HAVE_MIKMOD, 1, [Define for mikmod support])
-	fi
+	PKG_CHECK_MODULES(LIBMIKMOD, [libmikmod],
+		AC_DEFINE(HAVE_MIKMOD, 1, [Define for mikmod support]),
+		enable_mod=no)
 fi
 
 case $with_zeroconf in
