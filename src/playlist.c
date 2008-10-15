@@ -536,7 +536,7 @@ playlist_append_file(const char *path, int uid, int *added_id)
 	if (ret < 0)
 		return PLAYLIST_RESULT_ERRNO;
 
-	if (st.st_uid != (uid_t)uid)
+	if (st.st_uid != (uid_t)uid && (st.st_mode & 0444) != 0444)
 		/* client is not owner */
 		return PLAYLIST_RESULT_DENIED;
 
