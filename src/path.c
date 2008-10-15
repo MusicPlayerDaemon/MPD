@@ -115,18 +115,18 @@ void initPaths(void)
 	playlist_dir_len = strlen(playlistDir);
 
 	if ((dir = opendir(playlistDir)) == NULL) {
-		FATAL("cannot open %s \"%s\" (config line %i): %s\n",
+		ERROR("cannot open %s \"%s\" (config line %i): %s\n",
 		      CONF_PLAYLIST_DIR, playlistParam->value,
 		      playlistParam->line, strerror(errno));
-	}
-	closedir(dir);
+	} else
+		closedir(dir);
 
 	if ((dir = opendir(musicDir)) == NULL) {
-		FATAL("cannot open %s \"%s\" (config line %i): %s\n",
+		ERROR("cannot open %s \"%s\" (config line %i): %s\n",
 		      CONF_MUSIC_DIR, musicParam->value,
 		      musicParam->line, strerror(errno));
-	}
-	closedir(dir);
+	} else
+		closedir(dir);
 
 	if (fsCharsetParam) {
 		charset = xstrdup(fsCharsetParam->value);
