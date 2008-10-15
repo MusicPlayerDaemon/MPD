@@ -1,3 +1,5 @@
+AM_CPPFLAGS = $(GLIB_CFLAGS)
+
 bin_PROGRAMS = mpd
 SUBDIRS = $(MP4FF_SUBDIR)
 
@@ -196,7 +198,8 @@ mpd_SOURCES = \
 
 
 mpd_CFLAGS = $(MPD_CFLAGS)
-mpd_LDADD = $(MPD_LIBS) $(MP4FF_LIB)
+mpd_LDADD = $(MPD_LIBS) $(MP4FF_LIB) \
+  $(GLIB_LIBS)
 
 DIST_SUBDIRS = mp4ff
 
