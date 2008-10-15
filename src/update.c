@@ -307,10 +307,12 @@ updateInDirectory(struct directory *directory,
 	}
 }
 
-/* we don't look at hidden files nor files with newlines in them */
-static int skip_path(const char *path)
+/* we don't look at "." / ".." nor files with newlines in their name */
+static bool skip_path(const char *path)
 {
-	return (path[0] == '.' || strchr(path, '\n')) ? 1 : 0;
+	return (path[0] == '.' && path[1] == 0) ||
+		(path[0] == '.' && path[1] == '.' && path[2] == 0) ||
+		strchr(path, '\n') != NULL;
 }
 
 static bool
