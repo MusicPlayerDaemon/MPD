@@ -45,36 +45,36 @@
  */
 static id3_utf8_t * processID3FieldString (int is_id3v1, const id3_ucs4_t *ucs4, int type)
 {
-    id3_utf8_t *utf8;
-    id3_latin1_t *isostr;
+	id3_utf8_t *utf8;
+	id3_latin1_t *isostr;
 	char *encoding;
 
-    if (type == TAG_ITEM_GENRE)
-	    ucs4 = id3_genre_name(ucs4);
-    /* use encoding field here? */
-    if (is_id3v1 &&
-	(encoding = getConfigParamValue(CONF_ID3V1_ENCODING))) {
-	    isostr = id3_ucs4_latin1duplicate(ucs4);
-	    if (mpd_unlikely(!isostr)) {
-		    return NULL;
-	    }
-	    setCharSetConversion("UTF-8", encoding);
-	    utf8 = xmalloc(strlen((char *)isostr) + 1);
-	    utf8 = (id3_utf8_t *)char_conv_str((char *)utf8, (char *)isostr);
-	    if (!utf8) {
-		    DEBUG("Unable to convert %s string to UTF-8: "
-			  "'%s'\n", encoding, isostr);
-		    free(isostr);
-		    return NULL;
-	    }
-	    free(isostr);
-    } else {
-	    utf8 = id3_ucs4_utf8duplicate(ucs4);
-	    if (mpd_unlikely(!utf8)) {
-		    return NULL;
-	    }
-    }
-    return utf8;
+	if (type == TAG_ITEM_GENRE)
+		ucs4 = id3_genre_name(ucs4);
+	/* use encoding field here? */
+	if (is_id3v1 &&
+	    (encoding = getConfigParamValue(CONF_ID3V1_ENCODING))) {
+		isostr = id3_ucs4_latin1duplicate(ucs4);
+		if (mpd_unlikely(!isostr)) {
+			return NULL;
+		}
+		setCharSetConversion("UTF-8", encoding);
+		utf8 = xmalloc(strlen((char *)isostr) + 1);
+		utf8 = (id3_utf8_t *)char_conv_str((char *)utf8, (char *)isostr);
+		if (!utf8) {
+			DEBUG("Unable to convert %s string to UTF-8: "
+			      "'%s'\n", encoding, isostr);
+			free(isostr);
+			return NULL;
+		}
+		free(isostr);
+	} else {
+		utf8 = id3_ucs4_utf8duplicate(ucs4);
+		if (mpd_unlikely(!utf8)) {
+			return NULL;
+		}
+	}
+	return utf8;
 }
 
 static struct tag *getID3Info(
