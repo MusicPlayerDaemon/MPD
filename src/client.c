@@ -341,10 +341,9 @@ void client_new(int fd, const struct sockaddr *addr)
 	       sockaddr_to_tmp_string(addr));
 }
 
-static int client_process_line(struct client *client)
+static int client_process_line(struct client *client, char *line)
 {
 	int ret = 1;
-	char *line = client->buffer + client->bufferPos;
 
 	if (client->cmd_list_OK >= 0) {
 		if (strcmp(line, CLIENT_LIST_MODE_END) == 0) {
@@ -414,49 +413,56 @@ static int client_process_line(struct client *client)
 
 static int client_input_received(struct client *client, int bytesRead)
 {
+	char *start = client->buffer + client->bufferLength;
+	char *end = start + bytesRead;
+	char *newline, *next;
 	int ret;
-	char *buf_tail = &(client->buffer[client->bufferLength - 1]);
 
 	/* any input from the client makes it leave "idle" mode */
 	client->idle_waiting = false;
 
-	while (bytesRead > 0) {
-		client->bufferLength++;
-		bytesRead--;
-		buf_tail++;
-		if (*buf_tail == '\n') {
-			*buf_tail = '\0';
-			if (client->bufferLength > client->bufferPos) {
-				if (*(buf_tail - 1) == '\r')
-					*(buf_tail - 1) = '\0';
-			}
-			ret = client_process_line(client);
-			if (ret == COMMAND_RETURN_KILL ||
-			    ret == COMMAND_RETURN_CLOSE)
-				return ret;
-			if (client_is_expired(client))
-				return COMMAND_RETURN_CLOSE;
+	client->bufferLength += bytesRead;
 
-			client->bufferPos = client->bufferLength;
+	/* process all lines */
+	while ((newline = memchr(start, '\n', end - start)) != NULL) {
+		next = newline + 1;
+
+		if (newline > start && newline[-1] == '\r')
+			--newline;
+		*newline = 0;
+
+		ret = client_process_line(client, start);
+		if (ret == COMMAND_RETURN_KILL ||
+		    ret == COMMAND_RETURN_CLOSE)
+			return ret;
+		if (client_is_expired(client))
+			return COMMAND_RETURN_CLOSE;
+
+		start = next;
+	}
+
+	/* mark consumed lines */
+	client->bufferPos = start - client->buffer;
+
+	/* if we're have reached the buffer's end, close the gab at
+	   the beginning */
+	if (client->bufferLength == sizeof(client->buffer)) {
+		if (client->bufferPos == 0) {
+			ERROR("client %i: buffer overflow\n",
+			      client->num);
+			return COMMAND_RETURN_CLOSE;
 		}
-		if (client->bufferLength == CLIENT_MAX_BUFFER_LENGTH) {
-			if (client->bufferPos == 0) {
-				ERROR("client %i: buffer overflow\n",
-				      client->num);
-				return COMMAND_RETURN_CLOSE;
-			}
-			if (client->cmd_list_OK >= 0 &&
-			    client->cmd_list &&
-			    !client->cmd_list_dup)
-				cmd_list_clone(client);
-			assert(client->bufferLength >= client->bufferPos
-			       && "bufferLength >= bufferPos");
-			client->bufferLength -= client->bufferPos;
-			memmove(client->buffer,
-				client->buffer + client->bufferPos,
-				client->bufferLength);
-			client->bufferPos = 0;
-		}
+		if (client->cmd_list_OK >= 0 &&
+		    client->cmd_list &&
+		    !client->cmd_list_dup)
+			cmd_list_clone(client);
+		assert(client->bufferLength >= client->bufferPos
+		       && "bufferLength >= bufferPos");
+		client->bufferLength -= client->bufferPos;
+		memmove(client->buffer,
+			client->buffer + client->bufferPos,
+			client->bufferLength);
+		client->bufferPos = 0;
 	}
 
 	return 0;
