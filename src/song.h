@@ -68,9 +68,15 @@ char *
 song_get_url(const struct song *song, char *path_max_tmp);
 
 static inline bool
-song_is_file(const struct song *song)
+song_in_database(const struct song *song)
 {
 	return song->parent != NULL;
+}
+
+static inline bool
+song_is_file(const struct song *song)
+{
+	return song_in_database(song);
 }
 
 #endif

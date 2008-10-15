@@ -181,11 +181,9 @@ static int getNextId(void)
 void finishPlaylist(void)
 {
 	int i;
-	for (i = 0; i < playlist.length; i++) {
-		if (!song_is_file(playlist.songs[i])) {
+	for (i = 0; i < playlist.length; i++)
+		if (!song_in_database(playlist.songs[i]))
 			song_free(playlist.songs[i]);
-		}
-	}
 
 	playlist.length = 0;
 
@@ -208,9 +206,9 @@ void clearPlaylist(void)
 	stopPlaylist();
 
 	for (i = 0; i < playlist.length; i++) {
-		if (!song_is_file(playlist.songs[i])) {
+		if (!song_in_database(playlist.songs[i]))
 			song_free(playlist.songs[i]);
-		}
+
 		playlist.idToPosition[playlist.positionToId[i]] = -1;
 		playlist.songs[i] = NULL;
 	}
@@ -678,9 +676,8 @@ enum playlist_result deleteFromPlaylist(int song)
 		|| playlist.order[playlist.current] == song))
 		clearPlayerQueue();
 
-	if (!song_is_file(playlist.songs[song])) {
+	if (!song_in_database(playlist.songs[song]))
 		song_free(playlist.songs[song]);
-	}
 
 	playlist.idToPosition[playlist.positionToId[song]] = -1;
 
@@ -858,6 +855,8 @@ static void syncCurrentPlayerDecodeMetadata(void)
 	if (!song_is_file(song) &&
 	    0 == strcmp(song_get_url(song, path_max_tmp), songPlayer->url) &&
 	    !tag_equal(song->tag, songPlayer->tag)) {
+		assert(!song_in_database(song));
+
 		if (song->tag)
 			tag_free(song->tag);
 		song->tag = tag_dup(songPlayer->tag);
