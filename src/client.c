@@ -345,6 +345,27 @@ static int client_process_line(struct client *client, char *line)
 {
 	int ret = 1;
 
+	if (strcmp(line, "noidle") == 0) {
+		if (client->idle_waiting) {
+			/* send empty idle response and leave idle mode */
+			client->idle_waiting = false;
+			command_success(client);
+			client_write_output(client);
+		}
+
+		/* do nothing if the client wasn't idling: the client
+		   has already received the full idle response from
+		   client_idle_notify(), which he can now evaluate */
+
+		return 0;
+	} else if (client->idle_waiting) {
+		/* during idle mode, clients must not send anything
+		   except "noidle" */
+		ERROR("client %i: command \"%s\" during idle\n",
+		      client->num, line);
+		return COMMAND_RETURN_CLOSE;
+	}
+
 	if (client->cmd_list_OK >= 0) {
 		if (strcmp(line, CLIENT_LIST_MODE_END) == 0) {
 			DEBUG("client %i: process command "
@@ -417,9 +438,6 @@ static int client_input_received(struct client *client, int bytesRead)
 	char *end = start + bytesRead;
 	char *newline, *next;
 	int ret;
-
-	/* any input from the client makes it leave "idle" mode */
-	client->idle_waiting = false;
 
 	client->bufferLength += bytesRead;
 

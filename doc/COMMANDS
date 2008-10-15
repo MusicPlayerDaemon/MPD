@@ -282,8 +282,10 @@ idle
 
 	While a client waits for "idle" results, the server disables
 	timeouts, allowing a client to wait for events as long as mpd
-	runs.  The "idle" command can be canceled by sending a new
-	command.
+	runs.  The "idle" command can be canceled by sending the
+	command "noidle" (no other commands are allowed).  MPD will
+	then leave "idle" mode and print results immediately; might be
+	empty at this time.
 
 
 COMMAND LIST
