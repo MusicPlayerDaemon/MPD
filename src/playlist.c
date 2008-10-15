@@ -521,6 +521,32 @@ static void clearPlayerQueue(void)
 	pc_cancel();
 }
 
+enum playlist_result
+playlist_append_file(const char *path, int uid, int *added_id)
+{
+	int ret;
+	struct stat st;
+	struct song *song;
+
+	if (uid <= 0)
+		/* unauthenticated client */
+		return PLAYLIST_RESULT_DENIED;
+
+	ret = stat(path, &st);
+	if (ret < 0)
+		return PLAYLIST_RESULT_ERRNO;
+
+	if (st.st_uid != (uid_t)uid)
+		/* client is not owner */
+		return PLAYLIST_RESULT_DENIED;
+
+	song = song_file_load(path, NULL);
+	if (song == NULL)
+		return PLAYLIST_RESULT_NO_SUCH_SONG;
+
+	return addSongToPlaylist(song, added_id);
+}
+
 static struct song *
 song_by_url(const char *url)
 {

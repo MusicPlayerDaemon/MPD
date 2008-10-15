@@ -96,9 +96,12 @@ map_directory_child_fs(const struct directory *directory, const char *name,
 const char *
 map_song_fs(const struct song *song, char *buffer)
 {
-	assert(song->parent != NULL);
+	assert(song_is_file(song));
 
-	return map_directory_child_fs(song->parent, song->url, buffer);
+	if (song_in_database(song))
+		return map_directory_child_fs(song->parent, song->url, buffer);
+	else
+		return utf8_to_fs_charset(buffer, song->url);
 }
 
 const char *

@@ -229,6 +229,10 @@ static int print_playlist_result(struct client *client,
 		command_error(client, ACK_ERROR_SYSTEM, strerror(errno));
 		return -1;
 
+	case PLAYLIST_RESULT_DENIED:
+		command_error(client, ACK_ERROR_NO_EXIST, "Access denied");
+		return -1;
+
 	case PLAYLIST_RESULT_NO_SUCH_SONG:
 		command_error(client, ACK_ERROR_NO_EXIST, "No such song");
 		return -1;
@@ -444,6 +448,12 @@ static int handleAdd(struct client *client,
 	char *path = argv[1];
 	enum playlist_result result;
 
+	if (path[0] == '/') {
+		result = playlist_append_file(path, client_get_uid(client),
+					      NULL);
+		return print_playlist_result(client, result);
+	}
+
 	if (isRemoteUrl(path))
 		return addToPlaylist(path, NULL);
 
@@ -461,7 +471,13 @@ static int handleAddId(struct client *client,
 		       int argc, char *argv[])
 {
 	int added_id;
-	enum playlist_result result = addToPlaylist(argv[1], &added_id);
+	enum playlist_result result;
+
+	if (argv[1][0] == '/')
+		result = playlist_append_file(argv[1], client_get_uid(client),
+					      &added_id);
+	else
+		result = addToPlaylist(argv[1], &added_id);
 
 	if (result != PLAYLIST_RESULT_SUCCESS)
 		return print_playlist_result(client, result);

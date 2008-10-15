@@ -32,6 +32,7 @@ struct client;
 enum playlist_result {
 	PLAYLIST_RESULT_SUCCESS,
 	PLAYLIST_RESULT_ERRNO,
+	PLAYLIST_RESULT_DENIED,
 	PLAYLIST_RESULT_NO_SUCH_SONG,
 	PLAYLIST_RESULT_NO_SUCH_LIST,
 	PLAYLIST_RESULT_LIST_EXISTS,
@@ -71,6 +72,13 @@ void savePlaylistState(FILE *);
 void clearPlaylist(void);
 
 int clearStoredPlaylist(const char *utf8file);
+
+/**
+ * Appends a local file (outside the music database) to the playlist,
+ * but only if the file's owner is equal to the specified uid.
+ */
+enum playlist_result
+playlist_append_file(const char *path, int uid, int *added_id);
 
 enum playlist_result addToPlaylist(const char *file, int *added_id);
 

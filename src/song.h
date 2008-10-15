@@ -76,7 +76,7 @@ song_in_database(const struct song *song)
 static inline bool
 song_is_file(const struct song *song)
 {
-	return song_in_database(song);
+	return song_in_database(song) || song->url[0] == '/';
 }
 
 #endif

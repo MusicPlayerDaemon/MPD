@@ -54,7 +54,7 @@ song_remote_new(const char *url)
 struct song *
 song_file_new(const char *path, struct directory *parent)
 {
-	assert(parent != NULL);
+	assert((parent == NULL) == (*path == '/'));
 
 	return song_alloc(path, parent);
 }
@@ -65,7 +65,7 @@ song_file_load(const char *path, struct directory *parent)
 	struct song *song;
 	bool ret;
 
-	assert(parent != NULL);
+	assert((parent == NULL) == (*path == '/'));
 
 	if (strchr(path, '\n')) {
 		DEBUG("newSong: '%s' is not a valid uri\n", path);
