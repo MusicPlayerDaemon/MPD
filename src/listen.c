@@ -69,31 +69,11 @@ static void redirect_stdin(void)
 		FATAL("dup2 stdin: %s\n", strerror(errno));
 }
 
-static int establishListen(const struct sockaddr *addrp, socklen_t addrlen)
+static int establishListen(int pf, const struct sockaddr *addrp,
+			   socklen_t addrlen)
 {
-	int pf;
 	int sock;
 	int allowReuse = ALLOW_REUSE;
-
-	switch (addrp->sa_family) {
-#ifdef HAVE_TCP
-	case AF_INET:
-		pf = PF_INET;
-		break;
-#ifdef HAVE_IPV6
-	case AF_INET6:
-		pf = PF_INET6;
-		break;
-#endif
-#endif /* HAVE_TCP */
-#ifdef HAVE_UN
-	case AF_UNIX:
-		pf = PF_UNIX;
-		break;
-#endif /* HAVE_UN */
-	default:
-		FATAL("unknown address family: %i\n", addrp->sa_family);
-	}
 
 	if ((sock = socket(pf, SOCK_STREAM, 0)) < 0)
 		FATAL("socket < 0\n");
@@ -152,7 +132,7 @@ static void parseListenConfigParam(unsigned int port, ConfigParam * param)
 			sin6.sin6_addr = in6addr_any;
 			addrp = (const struct sockaddr *)&sin6;
 			addrlen = sizeof(struct sockaddr_in6);
-			if (establishListen(addrp, addrlen) < 0)
+			if (establishListen(PF_INET6, addrp, addrlen) < 0)
 				BINDERROR();
 		}
 #endif
@@ -160,9 +140,9 @@ static void parseListenConfigParam(unsigned int port, ConfigParam * param)
 		addrp = (const struct sockaddr *)&sin4;
 		addrlen = sizeof(struct sockaddr_in);
 #ifdef HAVE_IPV6
-		if ((establishListen(addrp, addrlen) < 0) && !useIpv6) {
+		if ((establishListen(PF_INET, addrp, addrlen) < 0) && !useIpv6) {
 #else
-		if (establishListen(addrp, addrlen) < 0) {
+		if (establishListen(PF_INET, addrp, addrlen) < 0) {
 #endif
 			BINDERROR();
 		}
@@ -186,7 +166,7 @@ static void parseListenConfigParam(unsigned int port, ConfigParam * param)
 		addrp = (const struct sockaddr *)&sun;
 		addrlen = sizeof(sun);
 
-		if (establishListen(addrp, addrlen) < 0)
+		if (establishListen(PF_UNIX, addrp, addrlen) < 0)
 			FATAL("unable to bind to %s: %s\n",
 			      param->value, strerror(errno));
 #endif /* HAVE_UN */
@@ -212,7 +192,8 @@ static void parseListenConfigParam(unsigned int port, ConfigParam * param)
 			      param->value, param->line, gai_strerror(ret));
 
 		for (i = ai; i != NULL; i = i->ai_next)
-			if (establishListen(i->ai_addr, i->ai_addrlen) < 0)
+			if (establishListen(i->ai_family, i->ai_addr,
+					    i->ai_addrlen) < 0)
 				BINDERROR();
 
 		freeaddrinfo(ai);
