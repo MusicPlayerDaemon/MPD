@@ -31,8 +31,6 @@
 #  endif
 #endif
 
-extern const char *musicDir;
-
 void initPaths(void);
 
 void finishPaths(void);
@@ -56,9 +54,6 @@ const char *getFsCharset(void);
 char *pfx_dir(char *dst,
               const char *path, const size_t path_len,
               const char *pfx, const size_t pfx_len);
-
-/* relative music path to absolute music path */
-char *rmp2amp_r(char *dst, const char *rel_path);
 
 /* relative playlist path to absolute playlist path */
 char *rpp2app_r(char *dst, const char *rel_path);

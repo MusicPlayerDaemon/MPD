@@ -26,6 +26,7 @@
 #include "listen.h"
 #include "conf.h"
 #include "path.h"
+#include "mapper.h"
 #include "playerData.h"
 #include "outputBuffer.h"
 #include "decoder_thread.h"
@@ -410,6 +411,7 @@ int main(int argc, char *argv[])
 	open_log_files(options.stdOutput);
 
 	initPaths();
+	mapper_init();
 	initPermissions();
 	initPlaylist();
 	decoder_plugin_init_all();
@@ -477,6 +479,7 @@ int main(int argc, char *argv[])
 	finishAudioDriver();
 	finishAudioConfig();
 	finishVolume();
+	mapper_finish();
 	finishPaths();
 	finishPermissions();
 	dc_deinit();

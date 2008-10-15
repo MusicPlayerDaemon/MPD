@@ -24,13 +24,54 @@
 #include "directory.h"
 #include "song.h"
 #include "path.h"
+#include "conf.h"
+
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <glib.h>
+
+static char *music_dir;
+static size_t music_dir_length;
+
+void mapper_init(void)
+{
+	ConfigParam *music_dir_param = parseConfigFilePath(CONF_MUSIC_DIR, 1);
+	int ret;
+	struct stat st;
+
+	music_dir = g_strdup(music_dir_param->value);
+	music_dir_length = strlen(music_dir);
+
+	ret = stat(music_dir, &st);
+	if (ret < 0)
+		g_error("failed to stat music directory \"%s\" (config line %i): %s\n",
+			music_dir_param->value, music_dir_param->line,
+			strerror(errno));
+	else if (!S_ISDIR(st.st_mode))
+		g_error("music directory is not a directory: \"%s\" (config line %i)\n",
+			music_dir_param->value, music_dir_param->line);
+}
+
+void mapper_finish(void)
+{
+	g_free(music_dir);
+}
+
+static char *
+rmp2amp_r(char *dst, const char *rel_path)
+{
+	pfx_dir(dst, rel_path, strlen(rel_path),
+		(const char *)music_dir, music_dir_length);
+	return dst;
+}
 
 const char *
 map_directory_fs(const struct directory *directory, char *buffer)
 {
 	const char *dirname = directory_get_path(directory);
 	if (isRootDirectory(dirname))
-	    return musicDir;
+	    return music_dir;
 
 	return rmp2amp_r(buffer, utf8_to_fs_charset(buffer, dirname));
 }
@@ -63,12 +104,10 @@ map_song_fs(const struct song *song, char *buffer)
 const char *
 map_fs_to_utf8(const char *path_fs, char *buffer)
 {
-	size_t music_path_length = strlen(musicDir);
-
-	if (strncmp(path_fs, musicDir, music_path_length) == 0 &&
-	    path_fs[music_path_length] == '/')
+	if (strncmp(path_fs, music_dir, music_dir_length) == 0 &&
+	    path_fs[music_dir_length] == '/')
 		/* remove musicDir prefix */
-		path_fs += music_path_length;
+		path_fs += music_dir_length;
 	else if (path_fs[0] == '/')
 		/* not within musicDir */
 		return NULL;

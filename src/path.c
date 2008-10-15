@@ -33,9 +33,7 @@
 
 #include <glib.h>
 
-const char *musicDir;
 static const char *playlistDir;
-static size_t music_dir_len;
 static size_t playlist_dir_len;
 static char *fsCharset;
 
@@ -100,7 +98,6 @@ const char *getFsCharset(void)
 
 void initPaths(void)
 {
-	ConfigParam *musicParam = parseConfigFilePath(CONF_MUSIC_DIR, 1);
 	ConfigParam *playlistParam = parseConfigFilePath(CONF_PLAYLIST_DIR, 1);
 	ConfigParam *fsCharsetParam = getConfigParam(CONF_FS_CHARSET);
 
@@ -108,23 +105,13 @@ void initPaths(void)
 	char *originalLocale;
 	DIR *dir;
 
-	musicDir = xstrdup(musicParam->value);
 	playlistDir = xstrdup(playlistParam->value);
-
-	music_dir_len = strlen(musicDir);
 	playlist_dir_len = strlen(playlistDir);
 
 	if ((dir = opendir(playlistDir)) == NULL) {
 		ERROR("cannot open %s \"%s\" (config line %i): %s\n",
 		      CONF_PLAYLIST_DIR, playlistParam->value,
 		      playlistParam->line, strerror(errno));
-	} else
-		closedir(dir);
-
-	if ((dir = opendir(musicDir)) == NULL) {
-		ERROR("cannot open %s \"%s\" (config line %i): %s\n",
-		      CONF_MUSIC_DIR, musicParam->value,
-		      musicParam->line, strerror(errno));
 	} else
 		closedir(dir);
 
@@ -193,13 +180,6 @@ char *pfx_dir(char *dst,
 
 	/* this is weird, but directory.c can use it more safely/efficiently */
 	return (dst + pfx_len + 1);
-}
-
-char *rmp2amp_r(char *dst, const char *rel_path)
-{
-	pfx_dir(dst, rel_path, strlen(rel_path),
-	        (const char *)musicDir, music_dir_len);
-	return dst;
 }
 
 char *rpp2app_r(char *dst, const char *rel_path)

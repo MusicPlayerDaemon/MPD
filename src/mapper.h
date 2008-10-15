@@ -26,6 +26,10 @@
 struct directory;
 struct song;
 
+void mapper_init(void);
+
+void mapper_finish(void);
+
 /**
  * Determines the file system path of a directory object.
  *
