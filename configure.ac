@@ -308,6 +308,7 @@ fi
 
 if test x$enable_un = xyes; then
 	AC_DEFINE(HAVE_UN, 1, [Define if unix domain socket support is enabled])
+	STRUCT_UCRED
 fi
 
 enable_osx=no
