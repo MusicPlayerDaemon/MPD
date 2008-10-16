@@ -80,7 +80,6 @@ AC_ARG_ENABLE(gprof,
 AC_ARG_ENABLE(ao,[  --enable-ao             enable support for libao (default: disable)],[enable_ao=$enableval],[enable_ao=no])
 AC_ARG_ENABLE(shout_ogg,[  --disable-shout_ogg     disable support for ogg streaming through shout (default: enable)],[enable_shout_ogg=$enableval],[enable_shout_ogg=yes])
 AC_ARG_ENABLE(shout_mp3,[  --disable-shout_mp3     disable support for mp3 streaming through shout (default: enable)],[enable_shout_mp3=$enableval],[enable_shout_mp3=yes])
-AC_ARG_ENABLE(iconv,[  --disable-iconv         disable iconv support (default: enable)],[enable_iconv=$enableval],[enable_iconv=yes])
 AC_ARG_ENABLE(ipv6,[  --disable-ipv6          disable IPv6 support (default: enable)],[enable_ipv6=$enableval],[enable_ipv6=yes])
 AC_ARG_ENABLE(tcp,[  --disable-tcp           disable support for clients connecting via TCP (default: enable)],[enable_tcp=$enableval],[enable_tcp=yes])
 AC_ARG_ENABLE(un,[  --enable-un             enable support for clients connecting via unix domain sockets (default: disable)],[enable_un=$enableval],[enable_un=yes])
@@ -107,26 +106,14 @@ AC_ARG_WITH(tremor,[[  --with-tremor[=PFX]         Use Tremor(vorbisidec) intege
 AC_ARG_WITH(tremor-libraries,[  --with-tremor-libraries=DIR Directory where Tremor library is installed (optional)], tremor_libraries="$withval", tremor_libraries="")
 AC_ARG_WITH(tremor-includes,[  --with-tremor-includes=DIR  Directory where Tremor header files are installed (optional)], tremor_includes="$withval", tremor_includes="")
 
-AC_ARG_WITH(iconv,[  --with-iconv=PFX            Prefix where iconv is installed (optional)], iconv_prefix="$withval", iconv_prefix="")
-AC_ARG_WITH(iconv-libraries,[  --with-iconv-libraries=DIR  Directory where libiconv library is installed (optional)], iconv_libraries="$withval", iconv_libraries="")
-AC_ARG_WITH(iconv-includes,[  --with-iconv-includes=DIR   Directory where libiconv header files are installed (optional)], iconv_includes="$withval", iconv_includes="")
-
 AC_ARG_WITH(id3tag,[  --with-id3tag=PFX           Prefix where libid3tag is installed (optional)], id3tag_prefix="$withval", id3tag_prefix="")
 AC_ARG_WITH(id3tag-libraries,[  --with-id3tag-libraries=DIR Directory where libid3tag library is installed (optional)], id3tag_libraries="$withval", id3tag_libraries="")
 AC_ARG_WITH(id3tag-includes,[  --with-id3tag-includes=DIR  Directory where libid3tag header files are installed (optional)], id3tag_includes="$withval", id3tag_includes="")
-
-AC_ARG_WITH(mad,[  --with-mad=PFX              Prefix where libmad is installed (optional)], mad_prefix="$withval", mad_prefix="")
-AC_ARG_WITH(mad-libraries,[  --with-mad-libraries=DIR    Directory where libmad library is installed (optional)], mad_libraries="$withval", mad_libraries="")
-AC_ARG_WITH(mad-includes,[  --with-mad-includes=DIR     Directory where mad header files are installed (optional)], mad_includes="$withval", mad_includes="")
 
 AC_ARG_WITH(faad,[  --with-faad=PFX             Prefix where faad2 is installed], faad_prefix="$withval", faad_prefix="")
 AC_ARG_WITH(faad-libraries,[  --with-faad-libraries=DIR   Directory where faad2 library is installed (optional)], faad_libraries="$withval", faad_libraries="")
 AC_ARG_WITH(faad-includes,[  --with-faad-includes=DIR    Directory where faad2 header files are installed (optional)], faad_includes="$withval", faad_includes="")
 AC_ARG_WITH(zeroconf,[[  --with-zeroconf=[auto|avahi|bonjour|no]    Enable zeroconf backend (default=auto)]], with_zeroconf="$withval", with_zeroconf="auto")
-
-AC_ARG_WITH(lsr,[  --with-src=PFX             Prefix where libsamplerate is installed], src_prefix="$withval", src_prefix="")
-AC_ARG_WITH(lsr-libraries,[  --with-lsr-libraries=DIR   Directory where libsamplerate library is installed (optional)], lsr_libraries="$withval", lsr_libraries="")
-AC_ARG_WITH(lsr-includes,[  --with-lsr-includes=DIR    Directory where libsamplerate header files are installed (optional)], lsr_includes="$withval", lsr_includes="")
 
 AC_C_BIGENDIAN
 
@@ -272,37 +259,6 @@ if test x$enable_jack = xyes; then
 	PKG_CHECK_MODULES([JACK], [jack >= 0.4],
 	                  [enable_jack=yes;AC_DEFINE([HAVE_JACK], 1, [Define to enable JACK support])] MPD_LIBS="$MPD_LIBS $JACK_LIBS" MPD_CFLAGS="$MPD_CFLAGS $JACK_CFLAGS",
 	                  [enable_jack=no;AC_MSG_WARN([JACK not found -- disabling])])
-fi
-
-if test x$enable_iconv = xyes; then
-  	if test "x$iconv_libraries" != "x" ; then
-  		ICONV_LIBS="-L$iconv_libraries"
-  	elif test "x$iconv_prefix" != "x" ; then
-    		ICONV_LIBS="-L$iconv_prefix/lib"
-  	fi
-
-  	ICONV_LIBS="$ICONV_LIBS -liconv"
-
-  	if test "x$iconv_includes" != "x" ; then
-  		ICONV_CFLAGS="-I$iconv_includes"
-  	elif test "x$iconv_prefix" != "x" ; then
-    		ICONV_CFLAGS="-I$iconv_prefix/include"
-  	fi
-
-	oldcflags=$CFLAGS
-	oldlibs=$LIBS
-	oldcppflags=$CPPFLAGS
-	CFLAGS="$CFLAGS $MPD_CFLAGS $ICONV_CFLAGS"
-	LIBS="$LIBS $MPD_LIBS $ICONV_LIBS"
-	CPPFLAGS=$CFLAGS
-	AC_CHECK_HEADER(iconv.h,MPD_CFLAGS="$MPD_CFLAGS $ICONV_CFLAGS",enable_iconv=no)
-	if test x$enable_iconv = xyes; then
-		AC_CHECK_LIB(iconv,main,MPD_LIBS="$MPD_LIBS $ICONV_LIBS",)
-		AC_DEFINE(HAVE_ICONV,1,[Define to use iconv])
-	fi
-	CFLAGS=$oldcflags
-	LIBS=$oldlibs
-	CPPFLAGS=$oldcppflags
 fi
 
 ID3_SUBDIR=""
