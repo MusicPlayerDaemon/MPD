@@ -64,43 +64,188 @@ if test -z "$prefix" || test "x$prefix" = xNONE; then
 	done
 fi
 
-AC_ARG_ENABLE(werror,
-              AS_HELP_STRING([--enable-werror],
-                             [Treat warnings as errors (default: disabled)]),
-              [ENABLE_WERROR=$enableval], [ENABLE_WERROR=no])
-AC_ARG_ENABLE(debug,
-              AS_HELP_STRING([--enable-debug],
-                             [Enable debugging (default: disabled)]),
-              [ENABLE_DEBUG=$enableval], [ENABLE_DEBUG=no])
-AC_ARG_ENABLE(gprof,
-              AS_HELP_STRING([--enable-gprof],
-                             [Enable profiling via gprof (default: disabled)]),
-              [ENABLE_GPROF=$enableval], [ENABLE_GPROF=no])
 
-AC_ARG_ENABLE(ao,[  --enable-ao             enable support for libao (default: disable)],[enable_ao=$enableval],[enable_ao=no])
-AC_ARG_ENABLE(shout_ogg,[  --disable-shout_ogg     disable support for ogg streaming through shout (default: enable)],[enable_shout_ogg=$enableval],[enable_shout_ogg=yes])
-AC_ARG_ENABLE(shout_mp3,[  --disable-shout_mp3     disable support for mp3 streaming through shout (default: enable)],[enable_shout_mp3=$enableval],[enable_shout_mp3=yes])
-AC_ARG_ENABLE(ipv6,[  --disable-ipv6          disable IPv6 support (default: enable)],[enable_ipv6=$enableval],[enable_ipv6=yes])
-AC_ARG_ENABLE(tcp,[  --disable-tcp           disable support for clients connecting via TCP (default: enable)],[enable_tcp=$enableval],[enable_tcp=yes])
-AC_ARG_ENABLE(un,[  --enable-un             enable support for clients connecting via unix domain sockets (default: disable)],[enable_un=$enableval],[enable_un=yes])
-AC_ARG_ENABLE(oss,[  --disable-oss           disable OSS support (default: enable)],[enable_oss=$enableval],[enable_oss=yes])
-AC_ARG_ENABLE(alsa,[  --disable-alsa          disable ALSA support (default: enable)],[enable_alsa=$enableval],[enable_alsa=yes])
-AC_ARG_ENABLE(jack,[  --disable-jack          disable jack support (default: enable)],[enable_jack=$enableval],[enable_jack=yes])
-AC_ARG_ENABLE(pulse,[  --disable-pulse         disable support for the PulseAudio sound server (default: enable)],[enable_pulse=$enableval],[enable_pulse=yes])
-AC_ARG_ENABLE(fifo,[  --disable-fifo          disable support for writing audio to a FIFO (default: enable)],[enable_fifo=$enableval],[enable_fifo=yes])
-AC_ARG_ENABLE(mvp,[  --enable-mvp            enable support for Hauppauge Media MVP (default: disable)],[enable_mvp=$enableval],[enable_mvp=no])
-AC_ARG_ENABLE(oggvorbis,[  --disable-oggvorbis     disable Ogg Vorbis support (default: enable)],[enable_oggvorbis=$enableval],enable_oggvorbis=yes)
-AC_ARG_ENABLE(oggflac,[  --disable-oggflac       disable OggFLAC support (default: enable)],[enable_oggflac=$enableval],enable_oggflac=yes)
-AC_ARG_ENABLE(flac,[  --disable-flac          disable flac support (default: enable)],[enable_flac=$enableval],[enable_flac=yes])
-AC_ARG_ENABLE(mp3,[  --disable-mp3           disable mp3 support (default: enable)],[enable_mp3=$enableval],[enable_mp3=yes])
-AC_ARG_ENABLE(lame,[  --disable-lame          disable lame support (default: enable)],[enable_lame=$enableval],[enable_lame=yes])
-AC_ARG_ENABLE(aac,[  --disable-aac           disable AAC support (default: enable)],[enable_aac=$enableval],[enable_aac=yes])
-AC_ARG_ENABLE(audiofile,[  --disable-audiofile     disable audiofile support, disables wave support (default: enable)],[enable_audiofile=$enableval],[enable_audiofile=yes])
-AC_ARG_ENABLE(mod,[  --enable-mod            enable MOD support (default: disable)],[enable_mod=$enableval],[enable_mod=yes])
-AC_ARG_ENABLE(mpc,[  --disable-mpc           disable musepack (MPC) support (default: enable)],[enable_mpc=$enableval],[enable_mpc=yes])
-AC_ARG_ENABLE(wavpack,[  --disable-wavpack       disable WavPack support (default: enable)],[enable_wavpack=$enableval],[enable_wavpack=yes])
-AC_ARG_ENABLE(id3,[  --disable-id3           disable id3 support (default: enable)],[enable_id3=$enableval],[enable_id3=yes])
-AC_ARG_ENABLE(lsr,[  --disable-lsr           disable libsamplerate support (default: enable)],[enable_lsr=$enableval],[enable_lsr=yes])
+dnl
+dnl build options
+dnl
+
+AC_ARG_ENABLE(werror,
+	AS_HELP_STRING([--enable-werror],
+		[Treat warnings as errors (default: disabled)]),
+	ENABLE_WERROR=$enableval,
+	ENABLE_WERROR=no)
+
+AC_ARG_ENABLE(debug,
+	AS_HELP_STRING([--enable-debug],
+		[Enable debugging (default: disabled)]),
+	ENABLE_DEBUG=$enableval,
+	ENABLE_DEBUG=no)
+
+AC_ARG_ENABLE(gprof,
+	AS_HELP_STRING([--enable-gprof],
+		[Enable profiling via gprof (default: disabled)]),
+	ENABLE_GPROF=$enableval,
+	ENABLE_GPROF=no)
+
+
+dnl
+dnl protocol options
+dnl
+
+AC_ARG_ENABLE(ipv6,
+	AS_HELP_STRING([--disable-ipv6],
+		[disable IPv6 support (default: enable)]),
+	[enable_ipv6=$enableval],
+	[enable_ipv6=yes])
+
+AC_ARG_ENABLE(tcp,
+	AS_HELP_STRING([--disable-tcp],
+		[disable support for clients connecting via TCP (default: enable)]),
+	[enable_tcp=$enableval],
+	[enable_tcp=yes])
+
+AC_ARG_ENABLE(un,
+	AS_HELP_STRING([--enable-un],
+		[enable support for clients connecting via unix domain sockets (default: disable)]),
+	[enable_un=$enableval],
+	[enable_un=yes])
+
+
+dnl
+dnl audio output plugins
+dnl
+
+AC_ARG_ENABLE(ao,
+	AS_HELP_STRING([--enable-ao],
+		[enable support for libao (default: disable)]),
+	enable_ao=$enableval,
+	enable_ao=no)
+
+AC_ARG_ENABLE(shout_ogg,
+	AS_HELP_STRING([--disable-shout_ogg],
+		[disable support for ogg streaming through shout (default: enable)]),
+	[enable_shout_ogg=$enableval],
+	[enable_shout_ogg=yes])
+
+AC_ARG_ENABLE(shout_mp3,
+	AS_HELP_STRING([--disable-shout_mp3],
+		[disable support for mp3 streaming through shout (default: enable)]),
+	[enable_shout_mp3=$enableval],
+	[enable_shout_mp3=yes])
+
+AC_ARG_ENABLE(oss,
+	AS_HELP_STRING([--disable-oss],
+		[disable OSS support (default: enable)]),
+	enable_oss=$enableval,
+	enable_oss=yes)
+
+AC_ARG_ENABLE(alsa,
+	AS_HELP_STRING([--disable-alsa],
+		[disable ALSA support (default: enable)]),
+	enable_alsa=$enableval,
+	enable_alsa=yes)
+
+AC_ARG_ENABLE(jack,
+	AS_HELP_STRING([--disable-jack],
+		[disable jack support (default: enable)]),
+	enable_jack=$enableval,
+	enable_jack=yes)
+
+AC_ARG_ENABLE(pulse,
+	AS_HELP_STRING([--disable-pulse],
+		[disable support for the PulseAudio sound server (default: enable)]),
+	enable_pulse=$enableval,
+	enable_pulse=yes)
+
+AC_ARG_ENABLE(fifo,
+	AS_HELP_STRING([--disable-fifo],
+		[disable support for writing audio to a FIFO (default: enable)]),
+	enable_fifo=$enableval,
+	enable_fifo=yes)
+
+AC_ARG_ENABLE(mvp,
+	AS_HELP_STRING([--enable-mvp],
+		[enable support for Hauppauge Media MVP (default: disable)]),
+	enable_mvp=$enableval,
+	enable_mvp=no)
+
+
+dnl
+dnl decoder plugins
+dnl
+
+AC_ARG_ENABLE(oggvorbis,
+	AS_HELP_STRING([--disable-oggvorbis],
+		[disable Ogg Vorbis support (default: enable)]),
+	enable_oggvorbis=$enableval,
+	enable_oggvorbis=yes)
+
+AC_ARG_ENABLE(oggflac,
+	AS_HELP_STRING([--disable-oggflac],
+		[disable OggFLAC support (default: enable)]),
+	enable_oggflac=$enableval,
+	enable_oggflac=yes)
+
+AC_ARG_ENABLE(flac,
+	AS_HELP_STRING([--disable-flac],
+		[disable flac support (default: enable)]),
+	enable_flac=$enableval,
+	enable_flac=yes)
+
+AC_ARG_ENABLE(mp3,
+	AS_HELP_STRING([--disable-mp3],
+		[disable mp3 support (default: enable)]),
+	enable_mp3=$enableval,
+	enable_mp3=yes)
+
+AC_ARG_ENABLE(lame,
+	AS_HELP_STRING([--disable-lame],
+		[disable lame support (default: enable)]),
+	enable_lame=$enableval,
+	enable_lame=yes)
+
+AC_ARG_ENABLE(aac,
+	AS_HELP_STRING([--disable-aac],
+		[disable AAC support (default: enable)]),
+	enable_aac=$enableval,
+	enable_aac=yes)
+
+AC_ARG_ENABLE(audiofile,
+	AS_HELP_STRING([--disable-audiofile],
+		[disable audiofile support, disables wave support (default: enable)]),
+	enable_audiofile=$enableval,
+	enable_audiofile=yes)
+
+AC_ARG_ENABLE(mod,
+	AS_HELP_STRING([--enable-mod],
+		[enable MOD support (default: disable)]),
+	enable_mod=$enableval,
+	enable_mod=yes)
+
+AC_ARG_ENABLE(mpc,
+	AS_HELP_STRING([--disable-mpc],
+		[disable musepack (MPC) support (default: enable)]),
+	enable_mpc=$enableval,
+	enable_mpc=yes)
+
+AC_ARG_ENABLE(wavpack,
+	AS_HELP_STRING([--disable-wavpack],
+		[disable WavPack support (default: enable)]),
+	enable_wavpack=$enableval,
+	enable_wavpack=yes)
+
+AC_ARG_ENABLE(id3,
+	AS_HELP_STRING([--disable-id3],
+		[disable id3 support (default: enable)]),
+	enable_id3=$enableval,
+	enable_id3=yes)
+
+AC_ARG_ENABLE(lsr,
+	AS_HELP_STRING([--disable-lsr],
+		[disable libsamplerate support (default: enable)]),
+	enable_lsr=$enableval,
+	enable_lsr=yes)
+
 
 AC_ARG_WITH(tremor,[[  --with-tremor[=PFX]         Use Tremor(vorbisidec) integer Ogg-Vorbis decoder (with optional prefix)]], use_tremor=yes; test x$withval != xyes && tremor_prefix="$withval",)
 AC_ARG_WITH(tremor-libraries,[  --with-tremor-libraries=DIR Directory where Tremor library is installed (optional)], tremor_libraries="$withval", tremor_libraries="")
