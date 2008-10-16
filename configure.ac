@@ -106,10 +106,6 @@ AC_ARG_WITH(tremor,[[  --with-tremor[=PFX]         Use Tremor(vorbisidec) intege
 AC_ARG_WITH(tremor-libraries,[  --with-tremor-libraries=DIR Directory where Tremor library is installed (optional)], tremor_libraries="$withval", tremor_libraries="")
 AC_ARG_WITH(tremor-includes,[  --with-tremor-includes=DIR  Directory where Tremor header files are installed (optional)], tremor_includes="$withval", tremor_includes="")
 
-AC_ARG_WITH(id3tag,[  --with-id3tag=PFX           Prefix where libid3tag is installed (optional)], id3tag_prefix="$withval", id3tag_prefix="")
-AC_ARG_WITH(id3tag-libraries,[  --with-id3tag-libraries=DIR Directory where libid3tag library is installed (optional)], id3tag_libraries="$withval", id3tag_libraries="")
-AC_ARG_WITH(id3tag-includes,[  --with-id3tag-includes=DIR  Directory where libid3tag header files are installed (optional)], id3tag_includes="$withval", id3tag_includes="")
-
 AC_ARG_WITH(faad,[  --with-faad=PFX             Prefix where faad2 is installed], faad_prefix="$withval", faad_prefix="")
 AC_ARG_WITH(faad-libraries,[  --with-faad-libraries=DIR   Directory where faad2 library is installed (optional)], faad_libraries="$withval", faad_libraries="")
 AC_ARG_WITH(faad-includes,[  --with-faad-includes=DIR    Directory where faad2 header files are installed (optional)], faad_includes="$withval", faad_includes="")
@@ -178,7 +174,10 @@ case $host in
 esac
 
 if test x$enable_shout_ogg = xyes || x$enable_shout_mp3 = xyes; then
-	XIPH_PATH_SHOUT([enable_shout=yes;AC_DEFINE(HAVE_SHOUT, 1, [Define to enable libshout support]) MPD_LIBS="$MPD_LIBS $SHOUT_LIBS" MPD_CFLAGS="$MPD_CFLAGS $SHOUT_CFLAGS"], [AC_MSG_WARN(libshout not found -- disabling shout support);enable_shout=no])
+	enable_shout=yes
+	PKG_CHECK_MODULES([SHOUT], [shout],
+		AC_DEFINE(HAVE_SHOUT, 1, [Define to enable libshout support]),
+		enable_shout=no)
 fi
 
 if test x$enable_shout_ogg = xyes; then
@@ -261,88 +260,16 @@ if test x$enable_jack = xyes; then
 	                  [enable_jack=no;AC_MSG_WARN([JACK not found -- disabling])])
 fi
 
-ID3_SUBDIR=""
-
 if test x$enable_id3 = xyes; then
-	if test "x$id3tag_libraries" != "x" ; then
-		ID3TAG_LIBS="-L$id3tag_libraries"
-	elif test "x$id3tag_prefix" != "x" ; then
-		ID3TAG_LIBS="-L$id3tag_prefix/lib"
-	fi
-
-	ID3TAG_LIBS="$ID3TAG_LIBS -lid3tag -lz"
-
-	if test "x$id3tag_includes" != "x" ; then
-		ID3TAG_CFLAGS="-I$id3tag_includes"
-	elif test "x$id3tag_prefix" != "x" ; then
-		ID3TAG_CFLAGS="-I$id3tag_prefix/include"
-	fi
-
-	ID3TAG_CFLAGS="$ID3TAG_CFLAGS"
-
-	oldcflags=$CFLAGS
-	oldlibs=$LIBS
-	oldcppflags=$CPPFLAGS
-	CFLAGS="$CFLAGS $MPD_CFLAGS $ID3TAG_CFLAGS"
-	LIBS="$LIBS $MPD_LIBS $ID3TAG_LIBS"
-	CPPFLAGS=$CFLAGS
-	AC_CHECK_HEADERS(id3tag.h,use_libid3tag=yes,
-		[use_libid3tag=no])
-	if test x$use_libid3tag = xyes; then
-		AC_CHECK_LIB(id3tag,id3_file_open,
-			[MPD_LIBS="$MPD_LIBS $ID3TAG_LIBS";
-			MPD_CFLAGS="$MPD_CFLAGS $ID3TAG_CFLAGS";
-			use_libid3tag=yes],
-			[use_libid3tag=no])
-	fi
-	CFLAGS=$oldcflags
-	LIBS=$oldlibs
-	CPPFLAGS=$oldcppflags
-	if test x$use_libid3tag = xyes; then
-		AC_DEFINE(HAVE_ID3TAG,1,[Define to use id3tag])
-	else
-		enable_id3=no
-	fi
+	PKG_CHECK_MODULES([ID3TAG], [id3tag],
+		AC_DEFINE(HAVE_ID3TAG, 1, [Define to use id3tag]),
+		enable_id3=no)
 fi
 
-MAD_SUBDIR=""
-
 if test x$enable_mp3 = xyes; then
-	if test "x$mad_libraries" != "x" ; then
-		MAD_LIBS="-L$mad_libraries"
-	elif test "x$mad_prefix" != "x" ; then
-		MAD_LIBS="-L$mad_prefix/lib"
-	fi
-
-	MAD_LIBS="$MAD_LIBS -lmad"
-
-	if test "x$mad_includes" != "x" ; then
-		MAD_CFLAGS="-I$mad_includes"
-	elif test "x$mad_prefix" != "x" ; then
-		MAD_CFLAGS="-I$mad_prefix/include"
-	fi
-
-	oldcflags=$CFLAGS
-	oldlibs=$LIBS
-	oldcppflags=$CPPFLAGS
-	CFLAGS="$CFLAGS $MPD_CFLAGS $MAD_CFLAGS"
-	LIBS="$LIBS $MPD_LIBS $MAD_LIBS"
-	CPPFLAGS=$CFLAGS
-	AC_CHECK_HEADERS(mad.h,use_libmad=yes,
-		[use_libmad=no])
-	if test x$use_libmad = xyes; then
-		AC_CHECK_LIB(mad,mad_stream_init,[MPD_LIBS="$MPD_LIBS $MAD_LIBS";
-			MPD_CFLAGS="$MPD_CFLAGS $MAD_CFLAGS";
-			use_libmad=yes],[use_libmad=no])
-	fi
-	CFLAGS=$oldcflags
-	LIBS=$oldlibs
-	CPPFLAGS=$oldcppflags
-	if test x$use_libmad = xyes; then
-		AC_DEFINE(HAVE_MAD,1,[Define to use libmad])
-	else
-		enable_mp3=no
-	fi
+	PKG_CHECK_MODULES([MAD], [mad],
+		AC_DEFINE(HAVE_MAD, 1, [Define to use libmad]),
+		enable_mp3=no)
 fi
 
 if test x$enable_lame = xyes; then
