@@ -2,8 +2,8 @@ ACLOCAL_AMFLAGS = -I m4
 AUTOMAKE_OPTIONS = foreign 1.6
 
 SUBDIRS = src doc
-doc_DATA = README UPGRADING
-EXTRA_DIST = COPYING $(doc_DATA) m4 autogen.sh scripts .gitignore
+docs = README UPGRADING
+EXTRA_DIST = COPYING $(docs) m4 autogen.sh scripts .gitignore
 
 sparse-check test:
 	$(MAKE) -C src $@
