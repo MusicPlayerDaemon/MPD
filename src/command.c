@@ -448,7 +448,7 @@ static int handleAdd(struct client *client,
 	char *path = argv[1];
 	enum playlist_result result;
 
-	if (path[0] == '/') {
+	if (path[0] == '/' && path[1] != 0) {
 		result = playlist_append_file(path, client_get_uid(client),
 					      NULL);
 		return print_playlist_result(client, result);
