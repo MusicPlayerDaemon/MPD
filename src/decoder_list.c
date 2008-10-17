@@ -30,6 +30,7 @@ extern struct decoder_plugin aacPlugin;
 extern struct decoder_plugin mpcPlugin;
 extern struct decoder_plugin wavpackPlugin;
 extern struct decoder_plugin modPlugin;
+extern struct decoder_plugin ffmpegPlugin;
 
 static List *inputPlugin_list;
 
@@ -178,6 +179,9 @@ void decoder_plugin_init_all(void)
 #endif
 #ifdef HAVE_MIKMOD
 	decoder_plugin_load(&modPlugin);
+#endif
+#ifdef HAVE_FFMPEG
+	decoder_plugin_load(&ffmpegPlugin);
 #endif
 }
 

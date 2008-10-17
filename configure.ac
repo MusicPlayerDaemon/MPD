@@ -234,6 +234,12 @@ AC_ARG_ENABLE(wavpack,
 	enable_wavpack=$enableval,
 	enable_wavpack=yes)
 
+AC_ARG_ENABLE(ffmpeg,
+	AS_HELP_STRING([--disable-ffmpeg],
+		[enable FFMPEG support (default: enable)]),
+	enable_ffmpeg=$enableval,
+	enable_ffmpeg=yes)
+
 AC_ARG_ENABLE(id3,
 	AS_HELP_STRING([--disable-id3],
 		[disable id3 support (default: enable)]),
@@ -672,6 +678,14 @@ fi
 
 AM_CONDITIONAL(HAVE_MIKMOD, test x$enable_mod = xyes)
 
+if test x$enable_ffmpeg = xyes; then
+	PKG_CHECK_MODULES(FFMPEG, [libavcodec libavformat],
+		AC_DEFINE(HAVE_FFMPEG, 1, [Define for FFMPEG support]),
+		enable_ffmpeg=no)
+fi
+
+AM_CONDITIONAL(HAVE_FFMPEG, test x$enable_ffmpeg = xyes)
+
 case $with_zeroconf in
 no|avahi|bonjour)
 	;;
@@ -955,6 +969,12 @@ else
 	echo " MOD support ...................disabled"
 fi
 
+if test x$enable_ffmpeg = xyes; then
+	echo " FFMPEG support ................enabled"
+else
+	echo " FFMPEG support ................disabled"
+fi
+
 if
 	test x$enable_mp3 = xno &&
 	test x$enable_oggvorbis = xno &&
@@ -964,6 +984,7 @@ if
 	test x$enable_aac = xno &&
 	test x$enable_mpc = xno &&
 	test x$enable_wavpack = xno &&
+	test x$enable_ffmpeg = xno &&
 	test x$enable_mod = xno; then
 	AC_MSG_ERROR([No input plugins supported!])
 fi

@@ -225,6 +225,10 @@ if HAVE_MIKMOD
 mpd_SOURCES += inputPlugins/mod_plugin.c
 endif
 
+if HAVE_FFMPEG
+mpd_SOURCES += inputPlugins/ffmpeg_plugin.c
+endif
+
 
 if HAVE_ZEROCONF
 mpd_SOURCES += zeroconf.c
@@ -240,6 +244,7 @@ mpd_CPPFLAGS = \
 	$(AUDIOFILE_CFLAGS) $(LIBMIKMOD_CFLAGS) \
 	$(ID3TAG_CFLAGS) \
 	$(MAD_CFLAGS) \
+	$(FFMPEG_CFLAGS) \
 	$(GLIB_CFLAGS)
 mpd_LDADD = $(MPD_LIBS) $(MP4FF_LIB) \
 	$(AO_LIBS) $(ALSA_LIBS) \
@@ -248,6 +253,7 @@ mpd_LDADD = $(MPD_LIBS) $(MP4FF_LIB) \
 	$(AUDIOFILE_LIBS) $(LIBMIKMOD_LIBS) \
 	$(ID3TAG_LIBS) \
 	$(MAD_LIBS) \
+	$(FFMPEG_LIBS) \
 	$(GLIB_LIBS)
 
 DIST_SUBDIRS = mp4ff
