@@ -730,7 +730,7 @@ if test x$with_zeroconf != xno; then
 	fi
 fi
 
-AM_CONDITIONAL(HAVE_ZEROCONF, test x$with_zeroconf = xyes)
+AM_CONDITIONAL(HAVE_ZEROCONF, test x$with_zeroconf != xno)
 
 
 dnl
