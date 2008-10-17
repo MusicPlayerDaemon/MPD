@@ -19,9 +19,6 @@
  */
 
 #include "../decoder_api.h"
-
-#ifdef HAVE_WAVPACK
-
 #include "../utils.h"
 #include "../log.h"
 #include "../path.h"
@@ -575,9 +572,3 @@ struct decoder_plugin wavpackPlugin = {
 	.suffixes = wavpackSuffixes,
 	.mime_types = wavpackMimeTypes
 };
-
-#else /* !HAVE_WAVPACK */
-
-struct decoder_plugin wavpackPlugin;
-
-#endif /* !HAVE_WAVPACK */

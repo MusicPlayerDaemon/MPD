@@ -19,12 +19,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "_flac_common.h"
 #include "_ogg_common.h"
-
-#if defined(HAVE_OGGFLAC) || defined(HAVE_OGGVORBIS) || \
-  (defined(FLAC_API_VERSION_CURRENT) && FLAC_API_VERSION_CURRENT > 7)
-
+#include "_flac_common.h"
 #include "../utils.h"
 
 ogg_stream_type ogg_stream_type_detect(InputStream * inStream)
@@ -51,5 +47,3 @@ ogg_stream_type ogg_stream_type_detect(InputStream * inStream)
 	}
 	return VORBIS;
 }
-
-#endif /* defined(HAVE_OGGFLAC || defined(HAVE_OGGVORBIS) */

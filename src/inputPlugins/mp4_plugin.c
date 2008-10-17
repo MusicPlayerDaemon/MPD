@@ -17,9 +17,6 @@
  */
 
 #include "../decoder_api.h"
-
-#ifdef HAVE_FAAD
-
 #include "../utils.h"
 #include "../log.h"
 
@@ -424,9 +421,3 @@ struct decoder_plugin mp4Plugin = {
 	.suffixes = mp4_suffixes,
 	.mime_types = mp4_mimeTypes,
 };
-
-#else
-
-struct decoder_plugin mp4Plugin;
-
-#endif /* HAVE_FAAD */

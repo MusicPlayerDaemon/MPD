@@ -20,9 +20,6 @@
  */
 
 #include "_flac_common.h"
-
-#ifdef HAVE_OGGFLAC
-
 #include "_ogg_common.h"
 
 #include "../utils.h"
@@ -356,9 +353,3 @@ struct decoder_plugin oggflacPlugin = {
 	.suffixes = oggflac_Suffixes,
 	.mime_types = oggflac_mime_types
 };
-
-#else /* !HAVE_FLAC */
-
-struct decoder_plugin oggflacPlugin;
-
-#endif /* HAVE_OGGFLAC */

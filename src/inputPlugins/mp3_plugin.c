@@ -17,18 +17,15 @@
  */
 
 #include "../decoder_api.h"
-
-#ifdef HAVE_MAD
+#include "../log.h"
+#include "../utils.h"
+#include "../conf.h"
 
 #include <mad.h>
 
 #ifdef HAVE_ID3TAG
 #include <id3tag.h>
 #endif
-
-#include "../log.h"
-#include "../utils.h"
-#include "../conf.h"
 
 #define FRAMES_CUSHION    2000
 
@@ -1125,8 +1122,3 @@ struct decoder_plugin mp3Plugin = {
 	.suffixes = mp3_suffixes,
 	.mime_types = mp3_mimeTypes
 };
-#else
-
-struct decoder_plugin mp3Plugin;
-
-#endif /* HAVE_MAD */

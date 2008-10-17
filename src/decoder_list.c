@@ -151,16 +151,34 @@ void decoder_plugin_init_all(void)
 	inputPlugin_list = makeList(NULL, 1);
 
 	/* load plugins here */
+#ifdef HAVE_MAD
 	decoder_plugin_load(&mp3Plugin);
+#endif
+#ifdef HAVE_OGGVORBIS
 	decoder_plugin_load(&oggvorbisPlugin);
+#endif
+#ifdef HAVE_FLAC_COMMON
 	decoder_plugin_load(&oggflacPlugin);
+#endif
+#ifdef HAVE_FLAC
 	decoder_plugin_load(&flacPlugin);
+#endif
+#ifdef HAVE_AUDIOFILE
 	decoder_plugin_load(&audiofilePlugin);
+#endif
+#ifdef HAVE_FAAD
 	decoder_plugin_load(&mp4Plugin);
 	decoder_plugin_load(&aacPlugin);
+#endif
+#ifdef HAVE_MPCDEC
 	decoder_plugin_load(&mpcPlugin);
+#endif
+#ifdef HAVE_WAVPACK
 	decoder_plugin_load(&wavpackPlugin);
+#endif
+#ifdef HAVE_MIKMOD
 	decoder_plugin_load(&modPlugin);
+#endif
 }
 
 void decoder_plugin_deinit_all(void)

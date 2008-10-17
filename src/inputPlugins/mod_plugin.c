@@ -17,9 +17,6 @@
  */
 
 #include "../decoder_api.h"
-
-#ifdef HAVE_MIKMOD
-
 #include "../utils.h"
 #include "../log.h"
 
@@ -279,9 +276,3 @@ struct decoder_plugin modPlugin = {
 	.stream_types = INPUT_PLUGIN_STREAM_FILE,
 	.suffixes = modSuffixes,
 };
-
-#else
-
-struct decoder_plugin modPlugin;
-
-#endif /* HAVE_MIKMOD */

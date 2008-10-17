@@ -17,9 +17,6 @@
  */
 
 #include "_flac_common.h"
-
-#ifdef HAVE_FLAC
-
 #include "../utils.h"
 #include "../log.h"
 
@@ -386,12 +383,8 @@ static int flac_decode(struct decoder * decoder, InputStream * inStream)
 	return flac_decode_internal(decoder, inStream, 0);
 }
 
-#if !defined(FLAC_API_VERSION_CURRENT) || FLAC_API_VERSION_CURRENT <= 7
-#  define flac_plugin_init NULL
-#else /* FLAC_API_VERSION_CURRENT >= 7 */
-/* some of this stuff is duplicated from oggflac_plugin.c */
-extern struct decoder_plugin oggflacPlugin;
-
+#if defined(FLAC_API_VERSION_CURRENT) && FLAC_API_VERSION_CURRENT > 7 && \
+	!defined(HAVE_OGGFLAC)
 static struct tag *oggflac_tag_dup(char *file)
 {
 	struct tag *ret = NULL;
@@ -429,7 +422,8 @@ static int oggflac_decode(struct decoder *decoder, InputStream * inStream)
 
 static bool oggflac_try_decode(InputStream * inStream)
 {
-	return ogg_stream_type_detect(inStream) == FLAC;
+	return FLAC_API_SUPPORTS_OGG_FLAC &&
+		ogg_stream_type_detect(inStream) == FLAC;
 }
 
 static const char *oggflac_suffixes[] = { "ogg", "oga", NULL };
@@ -438,25 +432,15 @@ static const char *oggflac_mime_types[] = { "audio/x-flac+ogg",
 					    "application/x-ogg",
 					    NULL };
 
-static int flac_plugin_init(void)
-{
-	if (!FLAC_API_SUPPORTS_OGG_FLAC) {
-		DEBUG("libFLAC does not support OggFLAC\n");
-		return 1;
-	}
-	DEBUG("libFLAC supports OggFLAC, initializing OggFLAC support\n");
-	assert(oggflacPlugin.name == NULL);
-	oggflacPlugin.name = "oggflac";
-	oggflacPlugin.try_decode = oggflac_try_decode;
-	oggflacPlugin.stream_decode = oggflac_decode;
-	oggflacPlugin.tag_dup = oggflac_tag_dup;
-	oggflacPlugin.stream_types = INPUT_PLUGIN_STREAM_URL |
-	                            INPUT_PLUGIN_STREAM_FILE;
-	oggflacPlugin.suffixes = oggflac_suffixes;
-	oggflacPlugin.mime_types = oggflac_mime_types;
-	decoder_plugin_register(&oggflacPlugin);
-	return 1;
-}
+struct decoder_plugin oggflacPlugin = {
+	.name = "oggflac",
+	.try_decode = oggflac_try_decode,
+	.stream_decode = oggflac_decode,
+	.tag_dup = oggflac_tag_dup,
+	.stream_types = INPUT_PLUGIN_STREAM_URL | INPUT_PLUGIN_STREAM_FILE,
+	.suffixes = oggflac_suffixes,
+	.mime_types = oggflac_mime_types
+};
 
 #endif /* FLAC_API_VERSION_CURRENT >= 7 */
 
@@ -467,16 +451,9 @@ static const char *flac_mime_types[] = { "audio/x-flac",
 
 struct decoder_plugin flacPlugin = {
 	.name = "flac",
-	.init = flac_plugin_init,
 	.stream_decode = flac_decode,
 	.tag_dup = flacTagDup,
 	.stream_types = INPUT_PLUGIN_STREAM_URL | INPUT_PLUGIN_STREAM_FILE,
 	.suffixes = flacSuffixes,
 	.mime_types = flac_mime_types
 };
-
-#else /* !HAVE_FLAC */
-
-struct decoder_plugin flacPlugin;
-
-#endif /* HAVE_FLAC */

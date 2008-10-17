@@ -17,9 +17,6 @@
  */
 
 #include "../decoder_api.h"
-
-#ifdef HAVE_MPCDEC
-
 #include "../utils.h"
 #include "../log.h"
 
@@ -309,9 +306,3 @@ struct decoder_plugin mpcPlugin = {
 	.stream_types = INPUT_PLUGIN_STREAM_URL | INPUT_PLUGIN_STREAM_FILE,
 	.suffixes = mpcSuffixes,
 };
-
-#else
-
-struct decoder_plugin mpcPlugin;
-
-#endif /* HAVE_MPCDEC */

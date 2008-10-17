@@ -24,8 +24,6 @@
 
 #include "../decoder_api.h"
 
-#if defined(HAVE_FLAC) || defined(HAVE_OGGFLAC)
-
 #include <FLAC/export.h>
 #if !defined(FLAC_API_VERSION_CURRENT) || FLAC_API_VERSION_CURRENT <= 7
 #  include <FLAC/seekable_stream_decoder.h>
@@ -166,7 +164,5 @@ struct tag *copyVorbisCommentBlockToMpdTag(const FLAC__StreamMetadata * block,
 FLAC__StreamDecoderWriteStatus
 flac_common_write(FlacData *data, const FLAC__Frame * frame,
 		  const FLAC__int32 *const buf[]);
-
-#endif /* HAVE_FLAC || HAVE_OGGFLAC */
 
 #endif /* _FLAC_COMMON_H */

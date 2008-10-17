@@ -19,12 +19,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "../decoder_api.h"
-
-#if defined(HAVE_FLAC) || defined(HAVE_OGGFLAC)
-
 #include "_flac_common.h"
-
 #include "../log.h"
 
 #include <FLAC/format.h>
@@ -326,5 +321,3 @@ flac_common_write(FlacData *data, const FLAC__Frame * frame,
 
 	return FLAC__STREAM_DECODER_WRITE_STATUS_CONTINUE;
 }
-
-#endif /* HAVE_FLAC || HAVE_OGGFLAC */

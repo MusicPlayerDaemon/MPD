@@ -420,6 +420,8 @@ if test x$enable_mp3 = xyes; then
 		enable_mp3=no)
 fi
 
+AM_CONDITIONAL(HAVE_MAD, test x$enable_mp3 = xyes)
+
 if test x$enable_lame = xyes; then
 	AM_PATH_LAME([MPD_LIBS="$MPD_LIBS $LAME_LIBS" MPD_CFLAGS="$MPD_CFLAGS $LAME_CFLAGS"],
 	             [enable_lame=no;AC_MSG_WARN(You need lame -- disabling lame support)])
@@ -461,11 +463,15 @@ if test x$enable_mpc = xyes; then
 	CPPFLAGS=$oldcppflags
 fi
 
+AM_CONDITIONAL(HAVE_MPCDEC, test x$enable_mpc = xyes)
+
 if test x$enable_wavpack = xyes; then
 	PKG_CHECK_MODULES([WAVPACK], [wavpack],
 	                  [enable_wavpack=yes;AC_DEFINE([HAVE_WAVPACK], 1, [Define to enable WavPack support])] MPD_LIBS="$MPD_LIBS $WAVPACK_LIBS" MPD_CFLAGS="$MPD_CFLAGS $WAVPACK_CFLAGS",
 	                  [enable_wavpack=no;AC_MSG_WARN([WavPack not found -- disabling])])
 fi
+
+AM_CONDITIONAL(HAVE_WAVPACK, test x$enable_wavpack = xyes)
 
 MP4FF_SUBDIR=""
 
@@ -576,6 +582,8 @@ int main() {
 	CPPFLAGS=$oldcppflags
 fi
 
+AM_CONDITIONAL(HAVE_FAAD, test x$enable_aac = xyes)
+
 if test x$use_tremor = xyes; then
 	if test "x$tremor_libraries" != "x" ; then
 		TREMOR_LIBS="-L$tremor_libraries"
@@ -603,6 +611,8 @@ elif test x$enable_oggvorbis = xyes; then
 		enable_oggvorbis=no)
 fi
 
+AM_CONDITIONAL(HAVE_OGGVORBIS, test x$enable_oggvorbis = xyes)
+
 if test x$use_tremor = xyes; then
 	AC_DEFINE(HAVE_TREMOR,1,[Define to use tremor (libvorbisidec) for ogg support])
 	if test x$enable_oggflac = xyes; then
@@ -629,6 +639,8 @@ if test x$enable_flac = xyes; then
 	LIBS="$oldlibs"
 fi
 
+AM_CONDITIONAL(HAVE_FLAC, test x$enable_flac = xyes)
+
 if test x$enable_oggflac = xyes; then
 	oldmpdcflags="$MPD_CFLAGS"
 	oldmpdlibs="$MPD_LIBS"
@@ -639,6 +651,10 @@ if test x$enable_oggflac = xyes; then
 	AC_DEFINE(HAVE_OGGFLAC,1,[Define for OggFLAC support])
 fi
 
+AM_CONDITIONAL(HAVE_OGGFLAC, test x$enable_oggflac = xyes)
+
+AM_CONDITIONAL(HAVE_FLAC_COMMON, test x$enable_flac = xyes || test x$enable_oggflac = xyes)
+AM_CONDITIONAL(HAVE_OGG_COMMON, test x$enable_oggvorbis = xyes || test x$enable_oggflac = xyes)
 
 if test x$enable_audiofile = xyes; then
 	PKG_CHECK_MODULES(AUDIOFILE, [audiofile >= 0.1.7],
@@ -646,11 +662,15 @@ if test x$enable_audiofile = xyes; then
 		enable_audiofile=no)
 fi
 
+AM_CONDITIONAL(HAVE_AUDIOFILE, test x$enable_audiofile = xyes)
+
 if test x$enable_mod = xyes; then
 	PKG_CHECK_MODULES(LIBMIKMOD, [libmikmod],
 		AC_DEFINE(HAVE_MIKMOD, 1, [Define for mikmod support]),
 		enable_mod=no)
 fi
+
+AM_CONDITIONAL(HAVE_MIKMOD, test x$enable_mod = xyes)
 
 case $with_zeroconf in
 no|avahi|bonjour)

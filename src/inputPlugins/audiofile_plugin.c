@@ -19,9 +19,6 @@
  */
 
 #include "../decoder_api.h"
-
-#ifdef HAVE_AUDIOFILE
-
 #include "../log.h"
 
 #include <sys/stat.h>
@@ -148,9 +145,3 @@ struct decoder_plugin audiofilePlugin = {
 	.stream_types = INPUT_PLUGIN_STREAM_FILE,
 	.suffixes = audiofileSuffixes,
 };
-
-#else
-
-struct decoder_plugin audiofilePlugin;
-
-#endif /* HAVE_AUDIOFILE */

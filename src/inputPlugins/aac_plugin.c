@@ -18,8 +18,6 @@
 
 #include "../decoder_api.h"
 
-#ifdef HAVE_FAAD
-
 #define AAC_MAX_CHANNELS	6
 
 #include "../utils.h"
@@ -602,9 +600,3 @@ struct decoder_plugin aacPlugin = {
 	.suffixes = aac_suffixes,
 	.mime_types = aac_mimeTypes
 };
-
-#else
-
-struct decoder_plugin aacPlugin;
-
-#endif /* HAVE_FAAD */

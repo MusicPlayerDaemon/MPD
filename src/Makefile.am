@@ -15,21 +15,6 @@ mpd_audioOutputs = \
 	audioOutputs/audioOutput_mvp.c \
 	audioOutputs/audioOutput_jack.c
 
-mpd_inputPlugins = \
-	inputPlugins/_flac_common.c \
-	inputPlugins/_ogg_common.c \
-	inputPlugins/oggflac_plugin.c \
-	inputPlugins/oggvorbis_plugin.c \
-	inputPlugins/aac_plugin.c \
-	inputPlugins/audiofile_plugin.c \
-	inputPlugins/flac_plugin.c \
-	inputPlugins/mod_plugin.c \
-	inputPlugins/mp3_plugin.c \
-	inputPlugins/mp4_plugin.c \
-	inputPlugins/mpc_plugin.c \
-	inputPlugins/wavpack_plugin.c
-
-
 mpd_headers = \
 	notify.h \
 	ack.h \
@@ -118,7 +103,6 @@ mpd_headers = \
 mpd_SOURCES = \
 	$(mpd_headers) \
 	$(mpd_audioOutputs) \
-	$(mpd_inputPlugins) \
 	notify.c \
 	audio.c \
 	audioOutput.c \
@@ -193,6 +177,54 @@ mpd_SOURCES = \
 if HAVE_ID3TAG
 mpd_SOURCES += tag_id3.c
 endif
+
+
+# decoder plugins
+
+if HAVE_MAD
+mpd_SOURCES += inputPlugins/mp3_plugin.c
+endif
+
+if HAVE_MPCDEC
+mpd_SOURCES += inputPlugins/mpc_plugin.c
+endif
+
+if HAVE_WAVPACK
+mpd_SOURCES += inputPlugins/wavpack_plugin.c
+endif
+
+if HAVE_FAAD
+mpd_SOURCES += inputPlugins/aac_plugin.c inputPlugins/mp4_plugin.c
+endif
+
+if HAVE_OGG_COMMON
+mpd_SOURCES += inputPlugins/_ogg_common.c
+endif
+
+if HAVE_FLAC_COMMON
+mpd_SOURCES += inputPlugins/_flac_common.c
+endif
+
+if HAVE_OGGVORBIS
+mpd_SOURCES += inputPlugins/oggvorbis_plugin.c
+endif
+
+if HAVE_FLAC
+mpd_SOURCES += inputPlugins/flac_plugin.c
+endif
+
+if HAVE_OGGFLAC
+mpd_SOURCES += inputPlugins/oggflac_plugin.c
+endif
+
+if HAVE_AUDIOFILE
+mpd_SOURCES += inputPlugins/audiofile_plugin.c
+endif
+
+if HAVE_MIKMOD
+mpd_SOURCES += inputPlugins/mod_plugin.c
+endif
+
 
 if HAVE_ZEROCONF
 mpd_SOURCES += zeroconf.c

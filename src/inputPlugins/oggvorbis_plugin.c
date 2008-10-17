@@ -18,12 +18,7 @@
 
 /* TODO 'ogg' should probably be replaced with 'oggvorbis' in all instances */
 
-#include "../decoder_api.h"
-
-#ifdef HAVE_OGGVORBIS
-
 #include "_ogg_common.h"
-
 #include "../utils.h"
 #include "../log.h"
 
@@ -390,9 +385,3 @@ struct decoder_plugin oggvorbisPlugin = {
 	.suffixes = oggvorbis_Suffixes,
 	.mime_types = oggvorbis_MimeTypes
 };
-
-#else /* !HAVE_OGGVORBIS */
-
-struct decoder_plugin oggvorbisPlugin;
-
-#endif /* HAVE_OGGVORBIS */
