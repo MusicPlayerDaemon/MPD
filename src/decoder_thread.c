@@ -55,6 +55,7 @@ static void decodeStart(void)
 
 	dc.state = DECODE_STATE_START;
 	dc.command = DECODE_COMMAND_NONE;
+	notify_signal(&pc.notify);
 
 	/* wait for the input stream to become ready; its metadata
 	   will be available then */
