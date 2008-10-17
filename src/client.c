@@ -445,12 +445,12 @@ static int client_process_line(struct client *client, char *line)
 
 static int client_input_received(struct client *client, int bytesRead)
 {
-	char *start = client->buffer + client->bufferLength;
-	char *end = start + bytesRead;
+	char *start = client->buffer + client->bufferPos, *end;
 	char *newline, *next;
 	int ret;
 
 	client->bufferLength += bytesRead;
+	end = client->buffer + client->bufferLength;
 
 	/* process all lines */
 	while ((newline = memchr(start, '\n', end - start)) != NULL) {
