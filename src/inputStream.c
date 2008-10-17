@@ -54,9 +54,9 @@ int seekInputStream(struct input_stream *inStream, long offset, int whence)
 }
 
 size_t readFromInputStream(struct input_stream *inStream,
-			   void *ptr, size_t size, size_t nmemb)
+			   void *ptr, size_t size)
 {
-	return inStream->readFunc(inStream, ptr, size, nmemb);
+	return inStream->readFunc(inStream, ptr, size);
 }
 
 int closeInputStream(struct input_stream *inStream)

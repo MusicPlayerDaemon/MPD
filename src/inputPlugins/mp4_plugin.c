@@ -71,7 +71,7 @@ static int mp4_getAACTrack(mp4ff_t * infile)
 static uint32_t mp4_inputStreamReadCallback(void *inStream, void *buffer,
 					    uint32_t length)
 {
-	return readFromInputStream((InputStream *) inStream, buffer, 1, length);
+	return readFromInputStream((InputStream *) inStream, buffer, length);
 }
 
 static uint32_t mp4_inputStreamSeekCallback(void *inStream, uint64_t position)

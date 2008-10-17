@@ -71,12 +71,11 @@ int inputStream_fileSeek(struct input_stream *inStream, long offset,
 }
 
 size_t inputStream_fileRead(struct input_stream *inStream,
-			    void *ptr, size_t size,
-			    size_t nmemb)
+			    void *ptr, size_t size)
 {
 	size_t readSize;
 
-	readSize = fread(ptr, size, nmemb, (FILE *) inStream->data);
+	readSize = fread(ptr, 1, size, (FILE *) inStream->data);
 	if (readSize <= 0 && ferror((FILE *) inStream->data)) {
 		inStream->error = errno;
 		DEBUG("inputStream_fileRead: error reading: %s\n",

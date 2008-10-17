@@ -27,8 +27,7 @@ int inputStream_httpOpen(InputStream * inStream, char *filename);
 
 int inputStream_httpSeek(InputStream * inStream, long offset, int whence);
 
-size_t inputStream_httpRead(InputStream * inStream, void *ptr, size_t size,
-			    size_t nmemb);
+size_t inputStream_httpRead(InputStream * inStream, void *ptr, size_t size);
 
 int inputStream_httpClose(InputStream * inStream);
 

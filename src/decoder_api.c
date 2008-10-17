@@ -115,7 +115,7 @@ size_t decoder_read(struct decoder *decoder,
 		    dc.command != DECODE_COMMAND_NONE)
 			return 0;
 
-		nbytes = readFromInputStream(inStream, buffer, 1, length);
+		nbytes = readFromInputStream(inStream, buffer, length);
 		if (nbytes > 0 || inputStreamAtEOF(inStream))
 			return nbytes;
 

@@ -890,11 +890,10 @@ static size_t read_with_metadata(InputStream *is, unsigned char *ptr,
 	return readed;
 }
 
-size_t inputStream_httpRead(InputStream * is, void *_ptr, size_t size,
-			    size_t nmemb)
+size_t inputStream_httpRead(InputStream * is, void *_ptr, size_t size)
 {
 	struct http_data *data = (struct http_data *) is->data;
-	size_t len = size * nmemb;
+	size_t len = size;
 	size_t r;
 	unsigned char *ptr = _ptr, *ptr0 = _ptr;
 	long tries = len / 128; /* try harder for bigger reads */

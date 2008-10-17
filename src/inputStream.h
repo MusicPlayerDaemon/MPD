@@ -26,7 +26,7 @@ typedef struct input_stream InputStream;
 typedef int (*InputStreamSeekFunc) (struct input_stream *inStream, long offset,
 				    int whence);
 typedef size_t(*InputStreamReadFunc) (struct input_stream *inStream, void *ptr,
-				      size_t size, size_t nmemb);
+				      size_t size);
 typedef int (*InputStreamCloseFunc) (struct input_stream *inStream);
 typedef int (*InputStreamAtEOFFunc) (struct input_stream *inStream);
 typedef int (*InputStreamBufferFunc) (struct input_stream *inStream);
@@ -67,6 +67,6 @@ int inputStreamAtEOF(struct input_stream *inStream);
 int bufferInputStream(struct input_stream *inStream);
 
 size_t readFromInputStream(struct input_stream *inStream,
-			   void *ptr, size_t size, size_t nmemb);
+			   void *ptr, size_t size);
 
 #endif
