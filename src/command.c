@@ -290,6 +290,8 @@ static void addCommand(const char *name,
 static int handleUrlHandlers(struct client *client,
 			     mpd_unused int argc, mpd_unused char *argv[])
 {
+	if (client_get_uid(client) > 0)
+		client_puts(client, "handler: file://\n");
 	return printRemoteUrlHandlers(client);
 }
 
@@ -448,8 +450,8 @@ static int handleAdd(struct client *client,
 	char *path = argv[1];
 	enum playlist_result result;
 
-	if (path[0] == '/' && path[1] != 0) {
-		result = playlist_append_file(path, client_get_uid(client),
+	if (strncmp(path, "file:///", 8) == 0) {
+		result = playlist_append_file(path + 7, client_get_uid(client),
 					      NULL);
 		return print_playlist_result(client, result);
 	}
@@ -473,8 +475,9 @@ static int handleAddId(struct client *client,
 	int added_id;
 	enum playlist_result result;
 
-	if (argv[1][0] == '/')
-		result = playlist_append_file(argv[1], client_get_uid(client),
+	if (strncmp(argv[1], "file:///", 8) == 0)
+		result = playlist_append_file(argv[1] + 7,
+					      client_get_uid(client),
 					      &added_id);
 	else
 		result = addToPlaylist(argv[1], &added_id);
