@@ -22,12 +22,9 @@
 #include "log.h"
 #include "conf.h"
 
-#ifdef HAVE_ID3TAG
 #include <glib.h>
 #include <id3tag.h>
-#endif
 
-#ifdef HAVE_ID3TAG
 #  define isId3v1(tag) (id3_tag_options(tag, 0, 0) & ID3_TAG_OPTION_ID3V1)
 #  ifndef ID3_FRAME_COMPOSER
 #    define ID3_FRAME_COMPOSER "TCOM"
@@ -38,9 +35,7 @@
 #  ifndef ID3_FRAME_DISC
 #    define ID3_FRAME_DISC "TPOS"
 #  endif
-#endif
 
-#ifdef HAVE_ID3TAG
 /* This will try to convert a string to utf-8,
  */
 static id3_utf8_t * processID3FieldString (int is_id3v1, const id3_ucs4_t *ucs4, int type)
@@ -198,9 +193,7 @@ static struct tag *getID3Info(
 
 	return mpdTag;
 }
-#endif
 
-#ifdef HAVE_ID3TAG
 struct tag *tag_id3_import(struct id3_tag * tag)
 {
 	struct tag *ret = NULL;
@@ -218,18 +211,14 @@ struct tag *tag_id3_import(struct id3_tag * tag)
 
 	return ret;
 }
-#endif
 
-#ifdef HAVE_ID3TAG
 static int fillBuffer(void *buf, size_t size, FILE * stream,
 		      long offset, int whence)
 {
 	if (fseek(stream, offset, whence) != 0) return 0;
 	return fread(buf, 1, size, stream);
 }
-#endif
 
-#ifdef HAVE_ID3TAG
 static int getId3v2FooterSize(FILE * stream, long offset, int whence)
 {
 	id3_byte_t buf[ID3_TAG_QUERYSIZE];
@@ -239,9 +228,7 @@ static int getId3v2FooterSize(FILE * stream, long offset, int whence)
 	if (bufsize <= 0) return 0;
 	return id3_tag_query(buf, bufsize);
 }
-#endif
 
-#ifdef HAVE_ID3TAG
 static struct id3_tag *getId3Tag(FILE * stream, long offset, int whence)
 {
 	struct id3_tag *tag;
@@ -276,9 +263,7 @@ static struct id3_tag *getId3Tag(FILE * stream, long offset, int whence)
 
 	return tag;
 }
-#endif
 
-#ifdef HAVE_ID3TAG
 static struct id3_tag *findId3TagFromBeginning(FILE * stream)
 {
 	struct id3_tag *tag;
@@ -314,9 +299,7 @@ static struct id3_tag *findId3TagFromBeginning(FILE * stream)
 
 	return tag;
 }
-#endif
 
-#ifdef HAVE_ID3TAG
 static struct id3_tag *findId3TagFromEnd(FILE * stream)
 {
 	struct id3_tag *tag;
@@ -341,12 +324,10 @@ static struct id3_tag *findId3TagFromEnd(FILE * stream)
 
 	return tag;
 }
-#endif
 
 struct tag *tag_id3_load(const char *file)
 {
-	struct tag *ret = NULL;
-#ifdef HAVE_ID3TAG
+	struct tag *ret;
 	struct id3_tag *tag;
 	FILE *stream;
 
@@ -367,6 +348,5 @@ struct tag *tag_id3_load(const char *file)
 		return NULL;
 	ret = tag_id3_import(tag);
 	id3_tag_delete(tag);
-#endif
 	return ret;
 }

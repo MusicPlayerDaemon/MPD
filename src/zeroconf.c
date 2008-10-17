@@ -18,8 +18,6 @@
 
 #include "../config.h"
 
-#ifdef HAVE_ZEROCONF
-
 #include "zeroconf.h"
 #include "os_compat.h"
 #include "conf.h"
@@ -630,5 +628,3 @@ void finishZeroconf(void)
 	}
 #endif
 }
-
-#endif /* HAVE_ZEROCONF */

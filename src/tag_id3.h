@@ -26,8 +26,19 @@ struct tag;
 #ifdef HAVE_ID3TAG
 struct id3_tag;
 struct tag *tag_id3_import(struct id3_tag *);
-#endif
 
 struct tag *tag_id3_load(const char *file);
+
+#else
+
+#include "gcc.h"
+
+static inline struct tag *
+tag_id3_load(mpd_unused const char *file)
+{
+	return NULL;
+}
+
+#endif
 
 #endif

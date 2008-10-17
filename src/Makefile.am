@@ -180,17 +180,23 @@ mpd_SOURCES = \
 	stats.c \
 	tag.c \
 	tag_pool.c \
-	tag_id3.c \
 	tag_print.c \
 	tag_save.c \
 	strset.c \
 	utils.c \
 	volume.c \
 	utf8.c \
-	zeroconf.c \
 	locate.c \
 	storedPlaylist.c \
 	timer.c
+
+if HAVE_ID3TAG
+mpd_SOURCES += tag_id3.c
+endif
+
+if HAVE_ZEROCONF
+mpd_SOURCES += zeroconf.c
+endif
 
 
 mpd_CFLAGS = $(MPD_CFLAGS)

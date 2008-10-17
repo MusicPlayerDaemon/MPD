@@ -412,6 +412,8 @@ if test x$enable_id3 = xyes; then
 		enable_id3=no)
 fi
 
+AM_CONDITIONAL(HAVE_ID3TAG, test x$enable_id3 = xyes)
+
 if test x$enable_mp3 = xyes; then
 	PKG_CHECK_MODULES([MAD], [mad],
 		AC_DEFINE(HAVE_MAD, 1, [Define to use libmad]),
@@ -693,6 +695,8 @@ if test x$with_zeroconf != xno; then
 		AC_DEFINE([HAVE_ZEROCONF], 1, [Define to enable Zeroconf support])
 	fi
 fi
+
+AM_CONDITIONAL(HAVE_ZEROCONF, test x$with_zeroconf = xyes)
 
 
 dnl
