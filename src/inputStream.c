@@ -29,7 +29,7 @@ void initInputStream(void)
 	inputStream_initHttp();
 }
 
-int openInputStream(InputStream * inStream, char *url)
+int openInputStream(struct input_stream *inStream, char *url)
 {
 	inStream->ready = 0;
 	inStream->offset = 0;
@@ -48,18 +48,18 @@ int openInputStream(InputStream * inStream, char *url)
 	return -1;
 }
 
-int seekInputStream(InputStream * inStream, long offset, int whence)
+int seekInputStream(struct input_stream *inStream, long offset, int whence)
 {
 	return inStream->seekFunc(inStream, offset, whence);
 }
 
-size_t readFromInputStream(InputStream * inStream, void *ptr, size_t size,
-			   size_t nmemb)
+size_t readFromInputStream(struct input_stream *inStream,
+			   void *ptr, size_t size, size_t nmemb)
 {
 	return inStream->readFunc(inStream, ptr, size, nmemb);
 }
 
-int closeInputStream(InputStream * inStream)
+int closeInputStream(struct input_stream *inStream)
 {
 	if (inStream->mime)
 		free(inStream->mime);
@@ -71,12 +71,12 @@ int closeInputStream(InputStream * inStream)
 	return inStream->closeFunc(inStream);
 }
 
-int inputStreamAtEOF(InputStream * inStream)
+int inputStreamAtEOF(struct input_stream *inStream)
 {
 	return inStream->atEOFFunc(inStream);
 }
 
-int bufferInputStream(InputStream * inStream)
+int bufferInputStream(struct input_stream *inStream)
 {
 	return inStream->bufferFunc(inStream);
 }

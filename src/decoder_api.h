@@ -66,10 +66,10 @@ struct decoder_plugin {
 	void (*finish)(void);
 
 	/**
-	 * returns true if the InputStream is decodable by the
-	 * InputPlugin, false if not
+	 * returns true if the input stream is decodable by the
+	 * decoder plugin, false if not
 	 */
-	bool (*try_decode)(InputStream *);
+	bool (*try_decode)(struct input_stream *);
 
 	/**
 	 * this will be used to decode InputStreams, and is
@@ -77,7 +77,7 @@ struct decoder_plugin {
 	 *
 	 * returns -1 on error, 0 on success
 	 */
-	int (*stream_decode)(struct decoder *, InputStream *);
+	int (*stream_decode)(struct decoder *, struct input_stream *);
 
 	/**
 	 * use this if and only if your InputPlugin can only be passed
@@ -143,7 +143,7 @@ void decoder_seek_error(struct decoder * decoder);
  * command (like SEEK or STOP).
  */
 size_t decoder_read(struct decoder *decoder,
-		    InputStream *inStream,
+		    struct input_stream *inStream,
 		    void *buffer, size_t length);
 
 /**
@@ -154,7 +154,8 @@ size_t decoder_read(struct decoder *decoder,
  * send the next chunk
  */
 enum decoder_command
-decoder_data(struct decoder *decoder, InputStream * inStream, int seekable,
+decoder_data(struct decoder *decoder,
+	     struct input_stream *inStream, int seekable,
 	     void *data, size_t datalen, float data_time, uint16_t bitRate,
 	     ReplayGainInfo * replayGainInfo);
 

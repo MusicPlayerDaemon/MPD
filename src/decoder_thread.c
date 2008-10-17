@@ -33,7 +33,7 @@ static void decodeStart(void)
 	struct decoder decoder;
 	int ret;
 	bool close_instream = true;
-	InputStream inStream;
+	struct input_stream inStream;
 	struct decoder_plugin *plugin = NULL;
 	char path_max_fs[MPD_PATH_MAX];
 

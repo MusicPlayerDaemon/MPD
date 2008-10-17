@@ -99,7 +99,7 @@ void decoder_seek_error(struct decoder * decoder)
 }
 
 size_t decoder_read(struct decoder *decoder,
-		    InputStream *inStream,
+		    struct input_stream *inStream,
 		    void *buffer, size_t length)
 {
 	size_t nbytes;
@@ -130,7 +130,8 @@ size_t decoder_read(struct decoder *decoder,
  * one.
  */
 static enum decoder_command
-need_chunks(struct decoder *decoder, InputStream * inStream, int seekable)
+need_chunks(struct decoder *decoder,
+	    struct input_stream *inStream, int seekable)
 {
 	if (dc.command == DECODE_COMMAND_STOP)
 		return DECODE_COMMAND_STOP;
@@ -153,7 +154,8 @@ need_chunks(struct decoder *decoder, InputStream * inStream, int seekable)
 }
 
 enum decoder_command
-decoder_data(struct decoder *decoder, InputStream * inStream, int seekable,
+decoder_data(struct decoder *decoder,
+	     struct input_stream *inStream, int seekable,
 	     void *dataIn, size_t dataInLen,
 	     float data_time, uint16_t bitRate,
 	     ReplayGainInfo * replayGainInfo)

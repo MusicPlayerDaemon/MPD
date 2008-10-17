@@ -21,17 +21,17 @@
 
 #include <stddef.h>
 
-typedef struct _InputStream InputStream;
+typedef struct input_stream InputStream;
 
-typedef int (*InputStreamSeekFunc) (InputStream * inStream, long offset,
+typedef int (*InputStreamSeekFunc) (struct input_stream *inStream, long offset,
 				    int whence);
-typedef size_t(*InputStreamReadFunc) (InputStream * inStream, void *ptr,
+typedef size_t(*InputStreamReadFunc) (struct input_stream *inStream, void *ptr,
 				      size_t size, size_t nmemb);
-typedef int (*InputStreamCloseFunc) (InputStream * inStream);
-typedef int (*InputStreamAtEOFFunc) (InputStream * inStream);
-typedef int (*InputStreamBufferFunc) (InputStream * inStream);
+typedef int (*InputStreamCloseFunc) (struct input_stream *inStream);
+typedef int (*InputStreamAtEOFFunc) (struct input_stream *inStream);
+typedef int (*InputStreamBufferFunc) (struct input_stream *inStream);
 
-struct _InputStream {
+struct input_stream {
 	int ready;
 
 	int error;
@@ -57,16 +57,16 @@ int isUrlSaneForInputStream(char *url);
 
 /* if an error occurs for these 3 functions, then -1 is returned and errno
    for the input stream is set */
-int openInputStream(InputStream * inStream, char *url);
-int seekInputStream(InputStream * inStream, long offset, int whence);
-int closeInputStream(InputStream * inStream);
-int inputStreamAtEOF(InputStream * inStream);
+int openInputStream(struct input_stream *inStream, char *url);
+int seekInputStream(struct input_stream *inStream, long offset, int whence);
+int closeInputStream(struct input_stream *inStream);
+int inputStreamAtEOF(struct input_stream *inStream);
 
 /* return value: -1 is error, 1 inidicates stuff was buffered, 0 means nothing
    was buffered */
-int bufferInputStream(InputStream * inStream);
+int bufferInputStream(struct input_stream *inStream);
 
-size_t readFromInputStream(InputStream * inStream, void *ptr, size_t size,
-			   size_t nmemb);
+size_t readFromInputStream(struct input_stream *inStream,
+			   void *ptr, size_t size, size_t nmemb);
 
 #endif

@@ -25,7 +25,7 @@ void inputStream_initFile(void)
 {
 }
 
-int inputStream_fileOpen(InputStream * inStream, char *filename)
+int inputStream_fileOpen(struct input_stream *inStream, char *filename)
 {
 	FILE *fp;
 
@@ -57,7 +57,8 @@ int inputStream_fileOpen(InputStream * inStream, char *filename)
 	return 0;
 }
 
-int inputStream_fileSeek(InputStream * inStream, long offset, int whence)
+int inputStream_fileSeek(struct input_stream *inStream, long offset,
+			 int whence)
 {
 	if (fseek((FILE *) inStream->data, offset, whence) == 0) {
 		inStream->offset = ftell((FILE *) inStream->data);
@@ -69,7 +70,8 @@ int inputStream_fileSeek(InputStream * inStream, long offset, int whence)
 	return 0;
 }
 
-size_t inputStream_fileRead(InputStream * inStream, void *ptr, size_t size,
+size_t inputStream_fileRead(struct input_stream *inStream,
+			    void *ptr, size_t size,
 			    size_t nmemb)
 {
 	size_t readSize;
@@ -86,7 +88,7 @@ size_t inputStream_fileRead(InputStream * inStream, void *ptr, size_t size,
 	return readSize;
 }
 
-int inputStream_fileClose(InputStream * inStream)
+int inputStream_fileClose(struct input_stream *inStream)
 {
 	if (fclose((FILE *) inStream->data) < 0) {
 		inStream->error = errno;
@@ -96,7 +98,7 @@ int inputStream_fileClose(InputStream * inStream)
 	return 0;
 }
 
-int inputStream_fileAtEOF(InputStream * inStream)
+int inputStream_fileAtEOF(struct input_stream *inStream)
 {
 	if (feof((FILE *) inStream->data))
 		return 1;
@@ -108,7 +110,7 @@ int inputStream_fileAtEOF(InputStream * inStream)
 	return 0;
 }
 
-int inputStream_fileBuffer(mpd_unused InputStream * inStream)
+int inputStream_fileBuffer(mpd_unused struct input_stream *inStream)
 {
 	return 0;
 }

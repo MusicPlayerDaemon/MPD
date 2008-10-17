@@ -23,17 +23,19 @@
 
 void inputStream_initFile(void);
 
-int inputStream_fileOpen(InputStream * inStream, char *filename);
+int inputStream_fileOpen(struct input_stream *inStream, char *filename);
 
-int inputStream_fileSeek(InputStream * inStream, long offset, int whence);
+int inputStream_fileSeek(struct input_stream *inStream, long offset,
+			 int whence);
 
-size_t inputStream_fileRead(InputStream * inStream, void *ptr, size_t size,
+size_t inputStream_fileRead(struct input_stream *inStream,
+			    void *ptr, size_t size,
 			    size_t nmemb);
 
-int inputStream_fileClose(InputStream * inStream);
+int inputStream_fileClose(struct input_stream *inStream);
 
-int inputStream_fileAtEOF(InputStream * inStream);
+int inputStream_fileAtEOF(struct input_stream *inStream);
 
-int inputStream_fileBuffer(InputStream * inStream);
+int inputStream_fileBuffer(struct input_stream *inStream);
 
 #endif
