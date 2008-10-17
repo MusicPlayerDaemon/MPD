@@ -43,7 +43,6 @@
 #define CLIENT_LIST_MODE_BEGIN			"command_list_begin"
 #define CLIENT_LIST_OK_MODE_BEGIN			"command_list_ok_begin"
 #define CLIENT_LIST_MODE_END				"command_list_end"
-#define CLIENT_DEFAULT_OUT_BUFFER_SIZE		(4096)
 #define CLIENT_TIMEOUT_DEFAULT			(60)
 #define CLIENT_MAX_CONNECTIONS_DEFAULT		(10)
 #define CLIENT_MAX_COMMAND_LIST_DEFAULT		(2048*1024)
@@ -88,10 +87,8 @@ struct client {
 	size_t deferred_bytes;	/* mem deferred_send consumes */
 	unsigned int num;	/* client number */
 
-	char *send_buf;
+	char send_buf[4096];
 	size_t send_buf_used;	/* bytes used this instance */
-	size_t send_buf_size;	/* bytes usable this instance */
-	size_t send_buf_alloc;	/* bytes actually allocated */
 
 	/** is this client waiting for an "idle" response? */
 	bool idle_waiting;
@@ -107,44 +104,6 @@ static unsigned num_clients;
 static void client_write_deferred(struct client *client);
 
 static void client_write_output(struct client *client);
-
-#ifdef SO_SNDBUF
-static size_t get_default_snd_buf_size(struct client *client)
-{
-	int new_size;
-	socklen_t sockOptLen = sizeof(int);
-
-	if (getsockopt(client->fd, SOL_SOCKET, SO_SNDBUF,
-		       (char *)&new_size, &sockOptLen) < 0) {
-		DEBUG("problem getting sockets send buffer size\n");
-		return CLIENT_DEFAULT_OUT_BUFFER_SIZE;
-	}
-	if (new_size > 0)
-		return (size_t)new_size;
-	DEBUG("sockets send buffer size is not positive\n");
-	return CLIENT_DEFAULT_OUT_BUFFER_SIZE;
-}
-#else /* !SO_SNDBUF */
-static size_t get_default_snd_buf_size(struct client *client)
-{
-	return CLIENT_DEFAULT_OUT_BUFFER_SIZE;
-}
-#endif /* !SO_SNDBUF */
-
-static void set_send_buf_size(struct client *client)
-{
-	size_t new_size = get_default_snd_buf_size(client);
-	if (client->send_buf_size != new_size) {
-		client->send_buf_size = new_size;
-		/* don't resize to get smaller, only bigger */
-		if (client->send_buf_alloc < new_size) {
-			if (client->send_buf)
-				free(client->send_buf);
-			client->send_buf = xmalloc(new_size);
-			client->send_buf_alloc = new_size;
-		}
-	}
-}
 
 int client_is_expired(const struct client *client)
 {
@@ -196,7 +155,6 @@ static void client_init(struct client *client, int fd)
 	client->send_buf_used = 0;
 
 	client->permission = getDefaultPermissions();
-	set_send_buf_size(client);
 
 	xwrite(fd, GREETING, strlen(GREETING));
 }
@@ -282,9 +240,6 @@ static void client_close(struct client *client)
 		} while (buf);
 		client->deferred_send = NULL;
 	}
-
-	if (client->send_buf)
-		free(client->send_buf);
 
 	SECURE("client %i: closed\n", client->num);
 	free(client);
@@ -813,8 +768,8 @@ void client_write(struct client *client, const char *buffer, size_t buflen)
 	while (buflen > 0 && !client_is_expired(client)) {
 		size_t left;
 
-		assert(client->send_buf_size >= client->send_buf_used);
-		left = client->send_buf_size - client->send_buf_used;
+		assert(client->send_buf_used < sizeof(client->send_buf));
+		left = sizeof(client->send_buf) - client->send_buf_used;
 
 		copylen = buflen > left ? left : buflen;
 		memcpy(client->send_buf + client->send_buf_used, buffer,
@@ -822,7 +777,7 @@ void client_write(struct client *client, const char *buffer, size_t buflen)
 		buflen -= copylen;
 		client->send_buf_used += copylen;
 		buffer += copylen;
-		if (client->send_buf_used >= client->send_buf_size)
+		if (client->send_buf_used >= sizeof(client->send_buf))
 			client_write_output(client);
 	}
 }
