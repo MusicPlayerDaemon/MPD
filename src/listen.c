@@ -74,7 +74,9 @@ static int establishListen(int pf, const struct sockaddr *addrp,
 {
 	int sock;
 	int allowReuse = ALLOW_REUSE;
+#ifdef HAVE_UCRED
 	int passcred = 1;
+#endif
 
 	if ((sock = socket(pf, SOCK_STREAM, 0)) < 0)
 		FATAL("socket < 0\n");
