@@ -443,7 +443,7 @@ static int client_process_line(struct client *client, char *line)
 	return ret;
 }
 
-static int client_input_received(struct client *client, int bytesRead)
+static int client_input_received(struct client *client, size_t bytesRead)
 {
 	char *start = client->buffer + client->bufferPos, *end;
 	char *newline, *next;
@@ -499,7 +499,7 @@ static int client_input_received(struct client *client, int bytesRead)
 
 static int client_read(struct client *client)
 {
-	int bytesRead;
+	ssize_t bytesRead;
 
 	bytesRead = read(client->fd,
 			 client->buffer + client->bufferLength,
