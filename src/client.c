@@ -759,19 +759,19 @@ static void client_write_output(struct client *client)
 
 void client_write(struct client *client, const char *buffer, size_t buflen)
 {
-	size_t copylen;
-
 	/* if the client is going to be closed, do nothing */
 	if (client_is_expired(client))
 		return;
 
 	while (buflen > 0 && !client_is_expired(client)) {
-		size_t left;
+		size_t copylen;
 
 		assert(client->send_buf_used < sizeof(client->send_buf));
-		left = sizeof(client->send_buf) - client->send_buf_used;
 
-		copylen = buflen > left ? left : buflen;
+		copylen = sizeof(client->send_buf) - client->send_buf_used;
+		if (copylen > buflen)
+			copylen = buflen;
+
 		memcpy(client->send_buf + client->send_buf_used, buffer,
 		       copylen);
 		buflen -= copylen;
