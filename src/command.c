@@ -138,7 +138,7 @@ struct _CommandEntry {
 	const char *cmd;
 	int min;
 	int max;
-	int reqPermission;
+	unsigned reqPermission;
 	CommandHandlerFunction handler;
 };
 
@@ -272,7 +272,7 @@ static int print_playlist_result(struct client *client,
 }
 
 static void addCommand(const char *name,
-		       int reqPermission,
+		       unsigned reqPermission,
 		       int minargs,
 		       int maxargs,
 		       CommandHandlerFunction handler_func)
@@ -1124,7 +1124,7 @@ static int handlePing(mpd_unused struct client *client,
 static int handlePassword(struct client *client,
 			  mpd_unused int argc, char *argv[])
 {
-	int permission = 0;
+	unsigned permission = 0;
 
 	if (getPermissionFromPassword(argv[1], &permission) < 0) {
 		command_error(client, ACK_ERROR_PASSWORD, "incorrect password");
@@ -1192,7 +1192,7 @@ static int handleDevices(struct client *client,
 static int handleCommands(struct client *client,
 			  mpd_unused int argc, mpd_unused char *argv[])
 {
-	const int permission = client_get_permission(client);
+	const unsigned permission = client_get_permission(client);
 	ListNode *node = commandList->firstNode;
 	CommandEntry *cmd;
 
@@ -1211,7 +1211,7 @@ static int handleCommands(struct client *client,
 static int handleNotcommands(struct client *client,
 			     mpd_unused int argc, mpd_unused char *argv[])
 {
-	const int permission = client_get_permission(client);
+	const unsigned permission = client_get_permission(client);
 	ListNode *node = commandList->firstNode;
 	CommandEntry *cmd;
 
@@ -1348,7 +1348,7 @@ void finishCommands(void)
 }
 
 static int checkArgcAndPermission(CommandEntry * cmd, struct client *client,
-				  int permission, int argc, char *argv[])
+				  unsigned permission, int argc, char *argv[])
 {
 	int min = cmd->min + 1;
 	int max = cmd->max + 1;
@@ -1385,7 +1385,7 @@ static int checkArgcAndPermission(CommandEntry * cmd, struct client *client,
 }
 
 static CommandEntry *getCommandEntryAndCheckArgcAndPermission(struct client *client,
-							      int permission,
+							      unsigned permission,
 							      int argc,
 							      char *argv[])
 {

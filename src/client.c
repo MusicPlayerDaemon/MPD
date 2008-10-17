@@ -72,7 +72,7 @@ struct client {
 	size_t bufferPos;
 
 	int fd;	/* file descriptor; -1 if expired */
-	int permission;
+	unsigned permission;
 
 	/** the uid of the client process, or -1 if unknown */
 	int uid;
@@ -115,12 +115,12 @@ int client_get_uid(const struct client *client)
 	return client->uid;
 }
 
-int client_get_permission(const struct client *client)
+unsigned client_get_permission(const struct client *client)
 {
 	return client->permission;
 }
 
-void client_set_permission(struct client *client, int permission)
+void client_set_permission(struct client *client, unsigned permission)
 {
 	client->permission = permission;
 }

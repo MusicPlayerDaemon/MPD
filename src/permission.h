@@ -26,11 +26,11 @@
 #define PERMISSION_ADMIN   8
 
 
-int getPermissionFromPassword(char *password, int *permission);
+int getPermissionFromPassword(char *password, unsigned *permission);
 
 void finishPermissions(void);
 
-int getDefaultPermissions(void);
+unsigned getDefaultPermissions(void);
 
 void initPermissions(void);
 

@@ -43,9 +43,9 @@ int client_is_expired(const struct client *client);
  */
 int client_get_uid(const struct client *client);
 
-int client_get_permission(const struct client *client);
+unsigned client_get_permission(const struct client *client);
 
-void client_set_permission(struct client *client, int permission);
+void client_set_permission(struct client *client, unsigned permission);
 
 /**
  * Write a block of data to the client.
