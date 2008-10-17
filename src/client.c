@@ -449,6 +449,9 @@ static int client_input_received(struct client *client, size_t bytesRead)
 	char *newline, *next;
 	int ret;
 
+	assert(client->bufferPos <= client->bufferLength);
+	assert(client->bufferLength + bytesRead <= sizeof(client->buffer));
+
 	client->bufferLength += bytesRead;
 	end = client->buffer + client->bufferLength;
 
@@ -500,6 +503,9 @@ static int client_input_received(struct client *client, size_t bytesRead)
 static int client_read(struct client *client)
 {
 	ssize_t bytesRead;
+
+	assert(client->bufferPos <= client->bufferLength);
+	assert(client->bufferLength < sizeof(client->buffer));
 
 	bytesRead = read(client->fd,
 			 client->buffer + client->bufferLength,
