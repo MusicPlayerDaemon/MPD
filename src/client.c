@@ -40,7 +40,6 @@
 
 #define GREETING				"OK MPD " PROTOCOL_VERSION "\n"
 
-#define CLIENT_MAX_BUFFER_LENGTH			(40960)
 #define CLIENT_LIST_MODE_BEGIN			"command_list_begin"
 #define CLIENT_LIST_OK_MODE_BEGIN			"command_list_ok_begin"
 #define CLIENT_LIST_MODE_END				"command_list_end"
@@ -69,7 +68,7 @@ static struct strnode *list_cache_tail;
 struct client {
 	struct list_head siblings;
 
-	char buffer[CLIENT_MAX_BUFFER_LENGTH];
+	char buffer[4096];
 	size_t bufferLength;
 	size_t bufferPos;
 
@@ -509,7 +508,7 @@ static int client_read(struct client *client)
 
 	bytesRead = read(client->fd,
 			 client->buffer + client->bufferLength,
-			 CLIENT_MAX_BUFFER_LENGTH - client->bufferLength);
+			 sizeof(client->buffer) - client->bufferLength);
 
 	if (bytesRead > 0)
 		return client_input_received(client, bytesRead);
