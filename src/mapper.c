@@ -110,7 +110,7 @@ map_fs_to_utf8(const char *path_fs, char *buffer)
 	if (strncmp(path_fs, music_dir, music_dir_length) == 0 &&
 	    path_fs[music_dir_length] == '/')
 		/* remove musicDir prefix */
-		path_fs += music_dir_length;
+		path_fs += music_dir_length + 1;
 	else if (path_fs[0] == '/')
 		/* not within musicDir */
 		return NULL;
