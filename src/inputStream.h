@@ -23,14 +23,6 @@
 
 typedef struct input_stream InputStream;
 
-typedef int (*InputStreamSeekFunc) (struct input_stream *inStream, long offset,
-				    int whence);
-typedef size_t(*InputStreamReadFunc) (struct input_stream *inStream, void *ptr,
-				      size_t size);
-typedef int (*InputStreamCloseFunc) (struct input_stream *inStream);
-typedef int (*InputStreamAtEOFFunc) (struct input_stream *inStream);
-typedef int (*InputStreamBufferFunc) (struct input_stream *inStream);
-
 struct input_stream {
 	int ready;
 
@@ -40,12 +32,14 @@ struct input_stream {
 	char *mime;
 	int seekable;
 
-	/* don't touc this stuff */
-	InputStreamSeekFunc seekFunc;
-	InputStreamReadFunc readFunc;
-	InputStreamCloseFunc closeFunc;
-	InputStreamAtEOFFunc atEOFFunc;
-	InputStreamBufferFunc bufferFunc;
+	int (*seekFunc)(struct input_stream *inStream, long offset,
+			int whence);
+	size_t (*readFunc)(struct input_stream *inStream, void *ptr,
+			   size_t size);
+	int (*closeFunc)(struct input_stream *inStream);
+	int (*atEOFFunc)(struct input_stream *inStream);
+	int (*bufferFunc)(struct input_stream *inStream);
+
 	void *data;
 	char *metaName;
 	char *metaTitle;
