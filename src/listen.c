@@ -74,7 +74,7 @@ static int establishListen(int pf, const struct sockaddr *addrp,
 {
 	int sock;
 	int allowReuse = ALLOW_REUSE;
-#ifdef HAVE_UCRED
+#ifdef HAVE_STRUCT_UCRED
 	int passcred = 1;
 #endif
 
@@ -99,7 +99,7 @@ static int establishListen(int pf, const struct sockaddr *addrp,
 	if (listen(sock, 5) < 0)
 		FATAL("problems listen'ing: %s\n", strerror(errno));
 
-#ifdef HAVE_UCRED
+#ifdef HAVE_STRUCT_UCRED
 	setsockopt(sock, SOL_SOCKET, SO_PASSCRED, &passcred, sizeof(passcred));
 #endif
 
@@ -267,7 +267,7 @@ void freeAllListenSockets(void)
 
 static int get_remote_uid(int fd)
 {
-#ifdef HAVE_UCRED
+#ifdef HAVE_STRUCT_UCRED
 	struct ucred cred;
 	socklen_t len = sizeof (cred);
 
