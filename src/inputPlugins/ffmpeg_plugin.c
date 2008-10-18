@@ -48,25 +48,7 @@ typedef struct {
 	InputStream *input;
 } FopsHelper;
 
-int mpdurl_open(URLContext *h, const char *filename, int flags);
-int mpdurl_read(URLContext *h, unsigned char *buf, int size);
-int64_t mpdurl_seek(URLContext *h, int64_t pos, int whence);
-int mpdurl_close(URLContext *h);
-
-URLProtocol mpdurl_fileops = {
-	.name = "mpd",
-	.url_open = mpdurl_open,
-	.url_read = mpdurl_read,
-	.url_write = NULL,
-	.url_seek = mpdurl_seek,
-	.url_close = mpdurl_close,
-	.next = NULL,
-	.url_read_pause = NULL,
-	.url_read_seek = NULL
-};
-
-
-int mpdurl_open(URLContext *h, const char *filename, int flags)
+static int mpdurl_open(URLContext *h, const char *filename, int flags)
 {
 	uint32_t ptr;
 	FopsHelper *base;
@@ -84,7 +66,7 @@ int mpdurl_open(URLContext *h, const char *filename, int flags)
 	return -1;
 }
 
-int mpdurl_read(URLContext *h, unsigned char *buf, int size)
+static int mpdurl_read(URLContext *h, unsigned char *buf, int size)
 {
 	int ret;
 	FopsHelper *base = (FopsHelper *) h->priv_data;
@@ -107,7 +89,7 @@ int mpdurl_read(URLContext *h, unsigned char *buf, int size)
 	return ret;
 }
 
-int64_t mpdurl_seek(URLContext *h, int64_t pos, int whence)
+static int64_t mpdurl_seek(URLContext *h, int64_t pos, int whence)
 {
 	FopsHelper *base = (FopsHelper *) h->priv_data;
 	if (whence != AVSEEK_SIZE) { //only ftell
@@ -116,7 +98,7 @@ int64_t mpdurl_seek(URLContext *h, int64_t pos, int whence)
 	return base->input->offset;
 }
 
-int mpdurl_close(URLContext *h)
+static int mpdurl_close(URLContext *h)
 {
 	FopsHelper *base = (FopsHelper *) h->priv_data;
 	if (base && base->input->seekable) {
@@ -125,6 +107,14 @@ int mpdurl_close(URLContext *h)
 	h->priv_data = 0;
 	return 0;
 }
+
+static URLProtocol mpdurl_fileops = {
+	.name = "mpd",
+	.url_open = mpdurl_open,
+	.url_read = mpdurl_read,
+	.url_seek = mpdurl_seek,
+	.url_close = mpdurl_close,
+};
 
 static int ffmpeg_init(void)
 {
