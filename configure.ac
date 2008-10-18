@@ -671,9 +671,14 @@ fi
 AM_CONDITIONAL(HAVE_AUDIOFILE, test x$enable_audiofile = xyes)
 
 if test x$enable_mod = xyes; then
-	PKG_CHECK_MODULES(LIBMIKMOD, [libmikmod],
-		AC_DEFINE(HAVE_MIKMOD, 1, [Define for mikmod support]),
-		enable_mod=no)
+	AC_PATH_PROG(LIBMIKMOD_CONFIG, libmikmod-config)
+	if test x$LIBMIKMOD_CONFIG != x ; then
+		AC_SUBST(LIBMIKMOD_CFLAGS, `$LIBMIKMOD_CONFIG --cflags`)
+		AC_SUBST(LIBMIKMOD_LIBS, `$LIBMIKMOD_CONFIG --libs`)
+		AC_DEFINE(HAVE_MIKMOD, 1, [Define for mikmod support])
+	else
+		enable_mod=no
+	fi
 fi
 
 AM_CONDITIONAL(HAVE_MIKMOD, test x$enable_mod = xyes)
