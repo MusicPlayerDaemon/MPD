@@ -3,7 +3,7 @@ dnl AM_INIT_AUTOMAKE(mpd, 0.14.0)
 
 AC_PREREQ(2.60)
 AC_INIT(mpd, 0.14.0, musicpd-dev-team@lists.sourceforge.net)
-AM_INIT_AUTOMAKE($PACKAGE_NAME, $PACKAGE_VERSION)
+AM_INIT_AUTOMAKE([foreign 1.9 dist-bzip2])
 AC_CONFIG_MACRO_DIR([m4])
 
 AC_SUBST(MPD_LIBS)
