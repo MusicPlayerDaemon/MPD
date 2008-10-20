@@ -39,11 +39,8 @@ static void decodeStart(void)
 
 	if (song_is_file(song))
 		map_song_fs(song, path_max_fs);
-	else {
-		char path_max_utf8[MPD_PATH_MAX];
-		song_get_url(song, path_max_utf8);
-		pathcpy_trunc(path_max_fs, path_max_utf8);
-	}
+	else
+		song_get_url(song, path_max_fs);
 
 	dc.current_song = dc.next_song; /* NEED LOCK */
 	if (openInputStream(&inStream, path_max_fs) < 0) {

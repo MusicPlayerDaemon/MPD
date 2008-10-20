@@ -189,19 +189,6 @@ char *rpp2app_r(char *dst, const char *rel_path)
 	return dst;
 }
 
-/* this is actually like strlcpy (OpenBSD), but we don't actually want to
- * blindly use it everywhere, only for paths that are OK to truncate (for
- * error reporting and such */
-void pathcpy_trunc(char *dest, const char *src)
-{
-	size_t len = strlen(src);
-
-	if (mpd_unlikely(len >= MPD_PATH_MAX))
-		len = MPD_PATH_MAX - 1;
-	memcpy(dest, src, len);
-	dest[len] = '\0';
-}
-
 char *sanitizePathDup(const char *path)
 {
 	int len = strlen(path) + 1;
