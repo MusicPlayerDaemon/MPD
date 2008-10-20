@@ -6,7 +6,7 @@
 #include <string.h>
 #include <glib.h>
 
-static size_t dv_size(struct dirvec *dv)
+static size_t dv_size(const struct dirvec *dv)
 {
 	return dv->nr * sizeof(struct directory *);
 }

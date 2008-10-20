@@ -15,7 +15,7 @@ static int songvec_cmp(const void *s1, const void *s2)
 	return strcmp(a->url, b->url);
 }
 
-static size_t sv_size(struct songvec *sv)
+static size_t sv_size(const struct songvec *sv)
 {
 	return sv->nr * sizeof(struct song *);
 }
