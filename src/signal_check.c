@@ -20,14 +20,14 @@
 #include "signal_check.h"
 #include "os_compat.h"
 
-static volatile sig_atomic_t __caught_signals[NSIG];
+static volatile sig_atomic_t caught_signals[NSIG];
 
-static void __signal_handler(int sig)
+static void mpd_signal_handler(int sig)
 {
-	__caught_signals[sig] = 1;
+	caught_signals[sig] = 1;
 }
 
-static void __set_signal_handler(int sig, void (*handler) (int))
+static void set_signal_handler(int sig, void (*handler) (int))
 {
 	struct sigaction act;
 	act.sa_flags = 0;
@@ -38,21 +38,21 @@ static void __set_signal_handler(int sig, void (*handler) (int))
 
 void signal_handle(int sig)
 {
-	__set_signal_handler(sig, __signal_handler);
+	set_signal_handler(sig, mpd_signal_handler);
 }
 
 void signal_unhandle(int sig)
 {
 	signal_clear(sig);
-	__set_signal_handler(sig, SIG_DFL);
+	set_signal_handler(sig, SIG_DFL);
 }
 
 int signal_is_pending(int sig)
 {
-	return __caught_signals[sig];
+	return caught_signals[sig];
 }
 
 void signal_clear(int sig)
 {
-	__caught_signals[sig] = 0;
+	caught_signals[sig] = 0;
 }
