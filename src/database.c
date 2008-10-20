@@ -33,6 +33,7 @@
 
 #include <assert.h>
 #include <string.h>
+#include <glib.h>
 
 static struct directory *music_root;
 
@@ -151,19 +152,18 @@ db_check(void)
 		/* If the file doesn't exist, we can't check if we can write
 		 * it, so we are going to try to get the directory path, and
 		 * see if we can write a file in that */
-		char dirPath[MPD_PATH_MAX];
-		parent_path(dirPath, dbFile);
-		if (*dirPath == '\0')
-			strcpy(dirPath, "/");
+		char *dirPath = g_path_get_dirname(dbFile);
 
 		/* Check that the parent part of the path is a directory */
 		if (stat(dirPath, &st) < 0) {
+			g_free(dirPath);
 			ERROR("Couldn't stat parent directory of db file "
 			      "\"%s\": %s\n", dbFile, strerror(errno));
 			return -1;
 		}
 
 		if (!S_ISDIR(st.st_mode)) {
+			g_free(dirPath);
 			ERROR("Couldn't create db file \"%s\" because the "
 			      "parent path is not a directory\n", dbFile);
 			return -1;
@@ -173,8 +173,11 @@ db_check(void)
 		if (access(dirPath, R_OK | W_OK)) {
 			ERROR("Can't create db file in \"%s\": %s\n", dirPath,
 			      strerror(errno));
+			g_free(dirPath);
 			return -1;
 		}
+
+		g_free(dirPath);
 
 		return 0;
 	}

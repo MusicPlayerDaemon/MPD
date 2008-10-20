@@ -202,34 +202,6 @@ void pathcpy_trunc(char *dest, const char *src)
 	dest[len] = '\0';
 }
 
-char *parent_path(char *path_max_tmp, const char *path)
-{
-	char *c;
-	static const int handle_trailing_slashes = 0;
-
-	pathcpy_trunc(path_max_tmp, path);
-
-	if (handle_trailing_slashes) {
-		size_t last_char = strlen(path_max_tmp) - 1;
-
-		while (last_char > 0 && path_max_tmp[last_char] == '/')
-			path_max_tmp[last_char--] = '\0';
-	}
-
-	c = strrchr(path_max_tmp,'/');
-
-	if (c == NULL)
-		path_max_tmp[0] = '\0';
-	else {
-		/* strip redundant slashes: */
-		while ((path_max_tmp <= c) && *(--c) == '/')	/* nothing */
-			;
-		c[1] = '\0';
-	}
-
-	return path_max_tmp;
-}
-
 char *sanitizePathDup(const char *path)
 {
 	int len = strlen(path) + 1;
