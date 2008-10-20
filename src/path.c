@@ -276,15 +276,3 @@ void utf8_to_fs_playlist_path(char *path_max_tmp, const char *utf8path)
 	rpp2app_r(path_max_tmp, path_max_tmp);
 	strncat(path_max_tmp, "." PLAYLIST_FILE_SUFFIX, MPD_PATH_MAX - 1);
 }
-
-/* Only takes sanitized paths w/o trailing slashes */
-const char *mpd_basename(const char *path)
-{
-	const char *ret = strrchr(path, '/');
-
-	if (!ret)
-		return path;
-	++ret;
-	assert(*ret != '\0');
-	return ret;
-}

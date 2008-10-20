@@ -4,6 +4,7 @@
 #include "path.h"
 
 #include <string.h>
+#include <glib.h>
 
 static size_t dv_size(struct dirvec *dv)
 {
@@ -25,13 +26,18 @@ void dirvec_sort(struct dirvec *dv)
 
 struct directory *dirvec_find(const struct dirvec *dv, const char *path)
 {
+	char *basename;
 	int i;
 
-	path = mpd_basename(path);
+	basename = g_path_get_basename(path);
 
 	for (i = dv->nr; --i >= 0; )
-		if (!strcmp(directory_get_name(dv->base[i]), path))
+		if (!strcmp(directory_get_name(dv->base[i]), basename)) {
+			g_free(basename);
 			return dv->base[i];
+		}
+
+	g_free(basename);
 	return NULL;
 }
 

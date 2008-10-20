@@ -22,6 +22,7 @@
 
 #include <assert.h>
 #include <string.h>
+#include <glib.h>
 
 struct directory *
 directory_new(const char *path, struct directory *parent)
@@ -53,7 +54,7 @@ directory_free(struct directory *directory)
 const char *
 directory_get_name(const struct directory *directory)
 {
-	return mpd_basename(directory->path);
+	return g_basename(directory->path);
 }
 
 void

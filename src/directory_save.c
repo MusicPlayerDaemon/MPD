@@ -24,6 +24,8 @@
 #include "utils.h"
 #include "song_save.h"
 
+#include <glib.h>
+
 /* TODO error checking */
 int
 directory_save(FILE *fp, struct directory *directory)
@@ -41,9 +43,10 @@ directory_save(FILE *fp, struct directory *directory)
 
 	for (i = 0; i < children->nr; ++i) {
 		struct directory *cur = children->base[i];
-		const char *base = mpd_basename(cur->path);
+		char *base = g_path_get_basename(cur->path);
 
 		retv = fprintf(fp, DIRECTORY_DIR "%s\n", base);
+		g_free(base);
 		if (retv < 0)
 			return -1;
 		if (directory_save(fp, cur) < 0)

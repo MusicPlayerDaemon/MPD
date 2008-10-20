@@ -83,12 +83,4 @@ void pathcpy_trunc(char *dest, const char *src);
  */
 void utf8_to_fs_playlist_path(char *path_max_tmp, const char *utf8path);
 
-/*
- * Like basename(3) but with predictable semantics independent
- * of C library or build options used.  This is also much more strict
- * and does not account for trailing slashes (mpd should never deal with
- * trailing slashes on internal functions).
- */
-const char *mpd_basename(const char *path);
-
 #endif

@@ -32,6 +32,8 @@
 #include "update.h"
 #include "idle.h"
 
+#include <glib.h>
+
 static enum update_progress {
 	UPDATE_PROGRESS_IDLE = 0,
 	UPDATE_PROGRESS_RUNNING = 1,
@@ -407,6 +409,7 @@ static struct directory *
 directory_make_child_checked(struct directory *parent, const char *path)
 {
 	struct directory *directory;
+	char *basename;
 	struct stat st;
 	struct song *conflicting;
 
@@ -414,15 +417,21 @@ directory_make_child_checked(struct directory *parent, const char *path)
 	if (directory != NULL)
 		return directory;
 
-	if (stat_directory_child(parent, mpd_basename(path), &st) < 0 ||
-	    inodeFoundInParent(parent, st.st_ino, st.st_dev))
+	basename = g_path_get_basename(path);
+
+	if (stat_directory_child(parent, basename, &st) < 0 ||
+	    inodeFoundInParent(parent, st.st_ino, st.st_dev)) {
+		g_free(basename);
 		return NULL;
+	}
 
 	/* if we're adding directory paths, make sure to delete filenames
 	   with potentially the same name */
-	conflicting = songvec_find(&parent->songs, mpd_basename(path));
+	conflicting = songvec_find(&parent->songs, basename);
 	if (conflicting)
 		delete_song(parent, conflicting);
+
+	g_free(basename);
 
 	directory = directory_new_child(parent, path);
 	directory_set_stat(directory, &st);
@@ -455,19 +464,21 @@ static void
 updatePath(const char *path)
 {
 	struct directory *parent;
-	const char *name;
+	char *name;
 	struct stat st;
 
 	parent = addParentPathToDB(path);
 	if (parent == NULL)
 		return;
 
-	name = mpd_basename(path);
+	name = g_path_get_basename(path);
 
 	if (stat_directory_child(parent, name, &st) == 0)
 		updateInDirectory(parent, name, &st);
 	else
 		delete_name_in(parent, name);
+
+	g_free(name);
 }
 
 static void * update_task(void *_path)
