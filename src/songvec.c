@@ -96,18 +96,22 @@ songvec_for_each(const struct songvec *sv,
 		 int (*fn)(struct song *, void *), void *arg)
 {
 	size_t i;
+	size_t prev_nr;
 
 	pthread_mutex_lock(&nr_lock);
-	for (i = 0; i < sv->nr; ++i) {
+	for (i = 0; i < sv->nr; ) {
 		struct song *song = sv->base[i];
 
 		assert(song);
 		assert(*song->url);
 
+		prev_nr = sv->nr;
 		pthread_mutex_unlock(&nr_lock); /* fn() may block */
 		if (fn(song, arg) < 0)
 			return -1;
 		pthread_mutex_lock(&nr_lock); /* sv->nr may change in fn() */
+		if (prev_nr == sv->nr)
+			++i;
 	}
 	pthread_mutex_unlock(&nr_lock);
 

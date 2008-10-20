@@ -98,16 +98,20 @@ int dirvec_for_each(const struct dirvec *dv,
                     int (*fn)(struct directory *, void *), void *arg)
 {
 	size_t i;
+	size_t prev_nr;
 
 	pthread_mutex_lock(&nr_lock);
-	for (i = 0; i < dv->nr; ++i) {
+	for (i = 0; i < dv->nr; ) {
 		struct directory *dir = dv->base[i];
 
 		assert(dir);
+		prev_nr = dv->nr;
 		pthread_mutex_unlock(&nr_lock);
 		if (fn(dir, arg) < 0)
 			return -1;
 		pthread_mutex_lock(&nr_lock); /* dv->nr may change in fn() */
+		if (prev_nr == dv->nr)
+			++i;
 	}
 	pthread_mutex_unlock(&nr_lock);
 
