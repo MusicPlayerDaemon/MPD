@@ -78,3 +78,19 @@ void dirvec_destroy(struct dirvec *dv)
 	}
 	dv->nr = 0;
 }
+
+int dirvec_for_each(const struct dirvec *dv,
+                    int (*fn)(struct directory *, void *), void *arg)
+{
+	size_t i;
+
+	for (i = 0; i < dv->nr; ++i) {
+		struct directory *dir = dv->base[i];
+
+		assert(dir);
+		if (fn(dir, arg) < 0)
+			return -1;
+	}
+
+	return 0;
+}
