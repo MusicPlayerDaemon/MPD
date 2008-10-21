@@ -684,7 +684,7 @@ fi
 AM_CONDITIONAL(HAVE_MIKMOD, test x$enable_mod = xyes)
 
 if test x$enable_ffmpeg = xyes; then
-	PKG_CHECK_MODULES(FFMPEG, [libavcodec libavformat],
+	PKG_CHECK_MODULES(FFMPEG, [libavformat libavcodec libavutil],
 		AC_DEFINE(HAVE_FFMPEG, 1, [Define for FFMPEG support]),
 		enable_ffmpeg=no)
 fi
