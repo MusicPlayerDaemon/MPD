@@ -50,26 +50,34 @@ typedef struct {
 } BasePtrs;
 
 typedef struct {
+	/** hack - see url_to_base() */
+	char url[8];
+
 	struct decoder *decoder;
 	InputStream *input;
 } FopsHelper;
 
-static int mpdurl_open(URLContext *h, const char *filename, int flags)
+/**
+ * Convert a faked mpd:// URL to a FopsHelper structure.  This is a
+ * hack because ffmpeg does not provide a nice API for passing a
+ * user-defined pointer to mpdurl_open().
+ */
+static FopsHelper *url_to_base(const char *url)
 {
-	uint32_t ptr;
-	FopsHelper *base;
-	if (strlen(filename) == (8+8)) {
-		errno = 0;
-		ptr = (uint32_t) strtoll(filename + 6, NULL, 16);
-		if (errno == 0 && ptr != 0) {
-			base = (FopsHelper *) ptr;
-			h->priv_data = base;
-			h->is_streamed = (base->input->seekable ? 0 : 1);
-			return 0;
-		}
-	}
-	FATAL("Invalid format %s:%d\n", filename, flags);
-	return -1;
+	union {
+		const char *in;
+		FopsHelper *out;
+	} u = { .in = url };
+	return u.out;
+}
+
+static int mpdurl_open(URLContext *h, const char *filename,
+		       mpd_unused int flags)
+{
+	FopsHelper *base = url_to_base(filename);
+	h->priv_data = base;
+	h->is_streamed = (base->input->seekable ? 0 : 1);
+	return 0;
 }
 
 static int mpdurl_read(URLContext *h, unsigned char *buf, int size)
@@ -137,8 +145,9 @@ static int ffmpeg_helper(InputStream *input, int (*callback)(BasePtrs *ptrs),
 	AVCodec *aCodec;
 	int ret, audioStream;
 	unsigned i;
-	FopsHelper fopshelp;
-	char url[24];
+	FopsHelper fopshelp = {
+		.url = "mpd://X", /* only the mpd:// prefix matters */
+	};
 
 	fopshelp.input = input;
 	if (ptrs && ptrs->decoder) {
@@ -148,9 +157,7 @@ static int ffmpeg_helper(InputStream *input, int (*callback)(BasePtrs *ptrs),
 	}
 
 	//ffmpeg works with ours "fileops" helper
-	sprintf(url, "mpd://0x%8x", (unsigned int) &fopshelp);
-
-	if (av_open_input_file(&pFormatCtx, url, NULL, 0, NULL)!=0) {
+	if (av_open_input_file(&pFormatCtx, fopshelp.url, NULL, 0, NULL)!=0) {
 		ERROR("Open failed!\n");
 		return -1;
 	}
