@@ -90,7 +90,7 @@ int audio_output_init(struct audio_output *ao, ConfigParam * param)
 	ao->convBuffer = NULL;
 	ao->convBufferLen = 0;
 
-	memset(&ao->convState, 0, sizeof(ao->convState));
+	pcm_convert_init(&ao->convState);
 
 	if (format) {
 		if (0 != parseAudioConfig(&ao->reqAudioFormat, format)) {

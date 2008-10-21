@@ -47,7 +47,7 @@ void decoder_initialized(struct decoder * decoder,
 {
 	assert(dc.state == DECODE_STATE_START);
 
-	memset(&decoder->conv_state, 0, sizeof(decoder->conv_state));
+	pcm_convert_init(&decoder->conv_state);
 
 	if (audio_format != NULL) {
 		dc.audioFormat = *audio_format;

@@ -205,6 +205,11 @@ void pcm_mix(char *buffer1, const char *buffer2, size_t size,
 	pcm_add(buffer1, buffer2, size, vol1, 1000 - vol1, format);
 }
 
+void pcm_convert_init(struct pcm_convert_state *state)
+{
+	memset(state, 0, sizeof(*state));
+}
+
 #ifdef HAVE_LIBSAMPLERATE
 static int pcm_resample_get_converter(void)
 {
