@@ -29,9 +29,15 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+#ifdef OLD_FFMPEG_INCLUDES
 #include <avcodec.h>
 #include <avformat.h>
 #include <avio.h>
+#else
+#include <libavcodec/avcodec.h>
+#include <libavformat/avformat.h>
+#include <libavformat/avio.h>
+#endif
 
 typedef struct {
 	int audioStream;

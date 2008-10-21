@@ -689,6 +689,17 @@ if test x$enable_ffmpeg = xyes; then
 		enable_ffmpeg=no)
 fi
 
+if test x$enable_ffmpeg = xyes; then
+	# prior to ffmpeg svn12865, you had to specify include files
+	# without path prefix
+	old_CPPCFLAGS=$CPPFLAGS
+	CPPFLAGS="$CPPFLAGS $FFMPEG_CFLAGS"
+	AC_CHECK_HEADER(libavcodec/avcodec.h,,
+		AC_DEFINE(OLD_FFMPEG_INCLUDES, 1,
+			[Define if avcodec.h instead of libavcodec/avcodec.h should be included]))
+	CPPCFLAGS=$old_CPPFLAGS
+fi
+
 AM_CONDITIONAL(HAVE_FFMPEG, test x$enable_ffmpeg = xyes)
 
 case $with_zeroconf in
