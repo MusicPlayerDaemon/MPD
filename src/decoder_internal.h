@@ -25,7 +25,7 @@
 struct decoder {
 	struct decoder_plugin *plugin;
 
-	ConvState conv_state;
+	struct pcm_convert_state conv_state;
 
 	bool seeking;
 };

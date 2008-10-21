@@ -30,7 +30,7 @@
 
 struct audio_format;
 
-typedef struct _ConvState {
+struct pcm_convert_state {
 #ifdef HAVE_LIBSAMPLERATE
 	SRC_STATE *state;
 	SRC_DATA data;
@@ -42,7 +42,7 @@ typedef struct _ConvState {
 #endif
 	/* Strict C99 doesn't allow empty structs */
 	int error;
-} ConvState;
+};
 
 void pcm_volumeChange(char *buffer, int bufferSize, const struct audio_format *format,
                       int volume);
@@ -53,7 +53,8 @@ void pcm_mix(char *buffer1, const char *buffer2, size_t size,
 size_t pcm_convertAudioFormat(const struct audio_format *inFormat,
 			      const char *inBuffer, size_t inSize,
 			      const struct audio_format *outFormat,
-                              char *outBuffer, ConvState *convState);
+                              char *outBuffer,
+			      struct pcm_convert_state *convState);
 
 size_t pcm_sizeOfConvBuffer(const struct audio_format *inFormat, size_t inSize,
                             const struct audio_format *outFormat);

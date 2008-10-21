@@ -65,7 +65,7 @@ struct audio_output {
 	 */
 	struct audio_format reqAudioFormat;
 
-	ConvState convState;
+	struct pcm_convert_state convState;
 	char *convBuffer;
 	size_t convBufferLen;
 

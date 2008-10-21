@@ -247,7 +247,8 @@ out:
 static size_t pcm_convertSampleRate(int8_t channels, uint32_t inSampleRate,
                                     const int16_t *inBuffer, size_t inSize,
                                     uint32_t outSampleRate, int16_t *outBuffer,
-                                    size_t outSize, ConvState *convState)
+                                    size_t outSize,
+				    struct pcm_convert_state *convState)
 {
 	static int convalgo = -1;
 	SRC_DATA *data = &convState->data;
@@ -325,7 +326,7 @@ static size_t pcm_convertSampleRate(int8_t channels, uint32_t inSampleRate,
                                     mpd_unused size_t inSize,
                                     uint32_t outSampleRate, char *outBuffer,
                                     size_t outSize,
-                                    mpd_unused ConvState *convState)
+                                    mpd_unused struct pcm_convert_state *convState)
 {
 	uint32_t rd_dat = 0;
 	uint32_t wr_dat = 0;
@@ -509,7 +510,8 @@ pcm_convertTo16bit(uint8_t bits, const void *inBuffer,
 size_t pcm_convertAudioFormat(const struct audio_format *inFormat,
 			      const char *inBuffer, size_t inSize,
 			      const struct audio_format *outFormat,
-                              char *outBuffer, ConvState *convState)
+                              char *outBuffer,
+			      struct pcm_convert_state *convState)
 {
 	const int16_t *buf;
 	size_t len = 0;
