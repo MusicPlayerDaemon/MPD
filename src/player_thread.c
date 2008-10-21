@@ -213,8 +213,8 @@ static int playChunk(ob_chunk * chunk,
 	pc.elapsedTime = chunk->times;
 	pc.bitRate = chunk->bitRate;
 
-	pcm_volumeChange(chunk->data, chunk->chunkSize,
-			 format, pc.softwareVolume);
+	pcm_volume(chunk->data, chunk->chunkSize,
+		   format, pc.softwareVolume);
 
 	if (playAudio(chunk->data,
 		      chunk->chunkSize) < 0)

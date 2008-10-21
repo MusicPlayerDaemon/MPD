@@ -33,9 +33,9 @@ static void ao_command_finished(struct audio_output *ao)
 static void convertAudioFormat(struct audio_output *audioOutput,
 			       const char **chunkArgPtr, size_t *sizeArgPtr)
 {
-	size_t size = pcm_sizeOfConvBuffer(&(audioOutput->inAudioFormat),
-					   *sizeArgPtr,
-					   &(audioOutput->outAudioFormat));
+	size_t size = pcm_convert_size(&(audioOutput->inAudioFormat),
+				       *sizeArgPtr,
+				       &(audioOutput->outAudioFormat));
 
 	if (size > audioOutput->convBufferLen) {
 		if (audioOutput->convBuffer != NULL)
@@ -44,11 +44,11 @@ static void convertAudioFormat(struct audio_output *audioOutput,
 		audioOutput->convBufferLen = size;
 	}
 
-	*sizeArgPtr = pcm_convertAudioFormat(&(audioOutput->inAudioFormat), 
-	                                     *chunkArgPtr, *sizeArgPtr, 
-	                                     &(audioOutput->outAudioFormat),
-	                                     audioOutput->convBuffer,
-	                                     &audioOutput->convState);
+	*sizeArgPtr = pcm_convert(&(audioOutput->inAudioFormat),
+				  *chunkArgPtr, *sizeArgPtr,
+				  &(audioOutput->outAudioFormat),
+				  audioOutput->convBuffer,
+				  &audioOutput->convState);
 
 	*chunkArgPtr = audioOutput->convBuffer;
 }

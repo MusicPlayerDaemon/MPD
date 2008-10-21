@@ -171,8 +171,8 @@ decoder_data(struct decoder *decoder,
 		data = dataIn;
 		datalen = dataInLen;
 	} else {
-		datalen = pcm_sizeOfConvBuffer(&(dc.audioFormat), dataInLen,
-		                               &(ob.audioFormat));
+		datalen = pcm_convert_size(&(dc.audioFormat), dataInLen,
+					   &(ob.audioFormat));
 		if (datalen > convBufferLen) {
 			if (convBuffer != NULL)
 				free(convBuffer);
@@ -180,9 +180,9 @@ decoder_data(struct decoder *decoder,
 			convBufferLen = datalen;
 		}
 		data = convBuffer;
-		datalen = pcm_convertAudioFormat(&(dc.audioFormat), dataIn,
-		                                 dataInLen, &(ob.audioFormat),
-		                                 data, &decoder->conv_state);
+		datalen = pcm_convert(&(dc.audioFormat), dataIn,
+				      dataInLen, &(ob.audioFormat),
+				      data, &decoder->conv_state);
 	}
 
 	if (replayGainInfo != NULL && (replayGainState != REPLAYGAIN_OFF))

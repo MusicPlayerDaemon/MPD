@@ -44,18 +44,20 @@ struct pcm_convert_state {
 	int error;
 };
 
-void pcm_volumeChange(char *buffer, int bufferSize, const struct audio_format *format,
-                      int volume);
+void pcm_volume(char *buffer, int bufferSize,
+		const struct audio_format *format,
+		int volume);
 
 void pcm_mix(char *buffer1, const char *buffer2, size_t size,
              const struct audio_format *format, float portion1);
 
-size_t pcm_convertAudioFormat(const struct audio_format *inFormat,
-			      const char *inBuffer, size_t inSize,
-			      const struct audio_format *outFormat,
-                              char *outBuffer,
-			      struct pcm_convert_state *convState);
+size_t pcm_convert(const struct audio_format *inFormat,
+		   const char *inBuffer, size_t inSize,
+		   const struct audio_format *outFormat,
+		   char *outBuffer,
+		   struct pcm_convert_state *convState);
 
-size_t pcm_sizeOfConvBuffer(const struct audio_format *inFormat, size_t inSize,
-                            const struct audio_format *outFormat);
+size_t pcm_convert_size(const struct audio_format *inFormat, size_t inSize,
+			const struct audio_format *outFormat);
+
 #endif

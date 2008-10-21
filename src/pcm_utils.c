@@ -85,9 +85,9 @@ pcm_volume_change_24(int32_t *buffer, unsigned num_samples, int volume)
 	}
 }
 
-void pcm_volumeChange(char *buffer, int bufferSize,
-                      const struct audio_format *format,
-                      int volume)
+void pcm_volume(char *buffer, int bufferSize,
+		const struct audio_format *format,
+		int volume)
 {
 	if (volume >= 1000)
 		return;
@@ -113,7 +113,7 @@ void pcm_volumeChange(char *buffer, int bufferSize,
 		break;
 
 	default:
-		FATAL("%u bits not supported by pcm_volumeChange!\n",
+		FATAL("%u bits not supported by pcm_volume!\n",
 		      format->bits);
 	}
 }
@@ -206,7 +206,7 @@ void pcm_mix(char *buffer1, const char *buffer2, size_t size,
 }
 
 #ifdef HAVE_LIBSAMPLERATE
-static int pcm_getSampleRateConverter(void)
+static int pcm_resample_get_converter(void)
 {
 	const char *conf = getConfigParamValue(CONF_SAMPLERATE_CONVERTER);
 	long convalgo;
@@ -244,11 +244,11 @@ out:
 #endif
 
 #ifdef HAVE_LIBSAMPLERATE
-static size_t pcm_convertSampleRate(int8_t channels, uint32_t inSampleRate,
-                                    const int16_t *inBuffer, size_t inSize,
-                                    uint32_t outSampleRate, int16_t *outBuffer,
-                                    size_t outSize,
-				    struct pcm_convert_state *convState)
+static size_t pcm_resample(int8_t channels, uint32_t inSampleRate,
+			   const int16_t *src, size_t src_size,
+			   uint32_t outSampleRate, int16_t *outBuffer,
+			   size_t outSize,
+			   struct pcm_convert_state *convState)
 {
 	static int convalgo = -1;
 	SRC_DATA *data = &convState->data;
@@ -257,7 +257,7 @@ static size_t pcm_convertSampleRate(int8_t channels, uint32_t inSampleRate,
 	int error;
 
 	if (convalgo < 0)
-		convalgo = pcm_getSampleRateConverter();
+		convalgo = pcm_resample_get_converter();
 
 	/* (re)set the state/ratio if the in or out format changed */
 	if ((channels != convState->lastChannels) ||
@@ -289,7 +289,7 @@ static size_t pcm_convertSampleRate(int8_t channels, uint32_t inSampleRate,
 	if (convState->error)
 		return 0;
 
-	data->input_frames = inSize / 2 / channels;
+	data->input_frames = src_size / 2 / channels;
 	dataInSize = data->input_frames * sizeof(float) * channels;
 	if (dataInSize > convState->dataInSize) {
 		convState->dataInSize = dataInSize;
@@ -303,7 +303,7 @@ static size_t pcm_convertSampleRate(int8_t channels, uint32_t inSampleRate,
 		data->data_out = xrealloc(data->data_out, dataOutSize);
 	}
 
-	src_short_to_float_array((const short *)inBuffer, data->data_in,
+	src_short_to_float_array((const short *)src, data->data_in,
 	                         data->input_frames * channels);
 
 	error = src_process(convState->state, data);
@@ -321,16 +321,15 @@ static size_t pcm_convertSampleRate(int8_t channels, uint32_t inSampleRate,
 }
 #else /* !HAVE_LIBSAMPLERATE */
 /* resampling code blatantly ripped from ESD */
-static size_t pcm_convertSampleRate(int8_t channels, uint32_t inSampleRate,
-                                    const int16_t *inBuffer,
-                                    mpd_unused size_t inSize,
-                                    uint32_t outSampleRate, char *outBuffer,
-                                    size_t outSize,
-                                    mpd_unused struct pcm_convert_state *convState)
+static size_t pcm_resample(int8_t channels, uint32_t inSampleRate,
+			   const int16_t *src, mpd_unused size_t src_size,
+			   uint32_t outSampleRate, char *outBuffer,
+			   size_t outSize,
+			   mpd_unused struct pcm_convert_state *convState)
 {
 	uint32_t rd_dat = 0;
 	uint32_t wr_dat = 0;
-	const int16_t *in = (const int16_t *)inBuffer;
+	const int16_t *in = (const int16_t *)src;
 	int16_t *out = (int16_t *)outBuffer;
 	uint32_t nlen = outSize / 2;
 	int16_t lsample, rsample;
@@ -410,9 +409,9 @@ pcm_convert_channels_n_to_2(int16_t *dest,
 }
 
 static const int16_t *
-pcm_convertChannels(int8_t dest_channels,
-		    int8_t src_channels, const int16_t *src,
-		    size_t src_size, size_t *dest_size_r)
+pcm_convert_channels(int8_t dest_channels,
+		     int8_t src_channels, const int16_t *src,
+		     size_t src_size, size_t *dest_size_r)
 {
 	static int16_t *buf;
 	static size_t len;
@@ -463,8 +462,8 @@ pcm_convert_24_to_16(int16_t *out, const int32_t *in,
 }
 
 static const int16_t *
-pcm_convertTo16bit(uint8_t bits, const void *inBuffer,
-		   size_t inSize, size_t *outSize)
+pcm_convert_to_16(uint8_t bits, const void *src,
+		  size_t src_size, size_t *dest_size_r)
 {
 	static int16_t *buf;
 	static size_t len;
@@ -472,32 +471,32 @@ pcm_convertTo16bit(uint8_t bits, const void *inBuffer,
 
 	switch (bits) {
 	case 8:
-		num_samples = inSize;
-		*outSize = inSize << 1;
-		if (*outSize > len) {
-			len = *outSize;
+		num_samples = src_size;
+		*dest_size_r = src_size << 1;
+		if (*dest_size_r > len) {
+			len = *dest_size_r;
 			buf = xrealloc(buf, len);
 		}
 
 		pcm_convert_8_to_16((int16_t *)buf,
-				    (const int8_t *)inBuffer,
+				    (const int8_t *)src,
 				    num_samples);
 		return buf;
 
 	case 16:
-		*outSize = inSize;
-		return inBuffer;
+		*dest_size_r = src_size;
+		return src;
 
 	case 24:
-		num_samples = inSize / 4;
-		*outSize = num_samples * 2;
-		if (*outSize > len) {
-			len = *outSize;
+		num_samples = src_size / 4;
+		*dest_size_r = num_samples * 2;
+		if (*dest_size_r > len) {
+			len = *dest_size_r;
 			buf = xrealloc(buf, len);
 		}
 
 		pcm_convert_24_to_16((int16_t *)buf,
-				     (const int32_t *)inBuffer,
+				     (const int32_t *)src,
 				     num_samples);
 		return buf;
 	}
@@ -507,40 +506,40 @@ pcm_convertTo16bit(uint8_t bits, const void *inBuffer,
 }
 
 /* outFormat bits must be 16 and channels must be 1 or 2! */
-size_t pcm_convertAudioFormat(const struct audio_format *inFormat,
-			      const char *inBuffer, size_t inSize,
-			      const struct audio_format *outFormat,
-                              char *outBuffer,
-			      struct pcm_convert_state *convState)
+size_t pcm_convert(const struct audio_format *inFormat,
+		   const char *src, size_t src_size,
+		   const struct audio_format *outFormat,
+		   char *outBuffer,
+		   struct pcm_convert_state *convState)
 {
 	const int16_t *buf;
 	size_t len = 0;
-	size_t outSize = pcm_sizeOfConvBuffer(inFormat, inSize, outFormat);
+	size_t dest_size = pcm_convert_size(inFormat, src_size, outFormat);
 
 	assert(outFormat->bits == 16);
 
 	/* everything else supports 16 bit only, so convert to that first */
-	buf = pcm_convertTo16bit(inFormat->bits, inBuffer, inSize, &len);
+	buf = pcm_convert_to_16(inFormat->bits, src, src_size, &len);
 	if (!buf)
 		exit(EXIT_FAILURE);
 
 	if (inFormat->channels != outFormat->channels) {
-		buf = pcm_convertChannels(outFormat->channels,
-					  inFormat->channels,
-					  buf, len, &len);
+		buf = pcm_convert_channels(outFormat->channels,
+					   inFormat->channels,
+					   buf, len, &len);
 		if (!buf)
 			exit(EXIT_FAILURE);
 	}
 
 	if (inFormat->sample_rate == outFormat->sample_rate) {
-		assert(outSize >= len);
+		assert(dest_size >= len);
 		memcpy(outBuffer, buf, len);
 	} else {
-		len = pcm_convertSampleRate(outFormat->channels,
-		                            inFormat->sample_rate, buf, len,
-		                            outFormat->sample_rate,
-		                            (int16_t*)outBuffer,
-		                            outSize, convState);
+		len = pcm_resample(outFormat->channels,
+				   inFormat->sample_rate, buf, len,
+				   outFormat->sample_rate,
+				   (int16_t*)outBuffer,
+				   dest_size, convState);
 		if (len == 0)
 			exit(EXIT_FAILURE);
 	}
@@ -548,35 +547,35 @@ size_t pcm_convertAudioFormat(const struct audio_format *inFormat,
 	return len;
 }
 
-size_t pcm_sizeOfConvBuffer(const struct audio_format *inFormat, size_t inSize,
-                            const struct audio_format *outFormat)
+size_t pcm_convert_size(const struct audio_format *inFormat, size_t src_size,
+			const struct audio_format *outFormat)
 {
 	const double ratio = (double)outFormat->sample_rate /
 	                     (double)inFormat->sample_rate;
 	const int shift = 2 * outFormat->channels;
-	size_t outSize = inSize;
+	size_t dest_size = src_size;
 
 	switch (inFormat->bits) {
 	case 8:
-		outSize <<= 1;
+		dest_size <<= 1;
 		break;
 	case 16:
 		break;
 	case 24:
-		outSize = (outSize / 4) * 2;
+		dest_size = (dest_size / 4) * 2;
 		break;
 	default:
 		FATAL("only 8 or 16 bits are supported for conversion!\n");
 	}
 
 	if (inFormat->channels != outFormat->channels) {
-		outSize /= inFormat->channels;
-		outSize *= outFormat->channels;
+		dest_size /= inFormat->channels;
+		dest_size *= outFormat->channels;
 	}
 
-	outSize /= shift;
-	outSize = floor(0.5 + (double)outSize * ratio);
-	outSize *= shift;
+	dest_size /= shift;
+	dest_size = floor(0.5 + (double)dest_size * ratio);
+	dest_size *= shift;
 
-	return outSize;
+	return dest_size;
 }
