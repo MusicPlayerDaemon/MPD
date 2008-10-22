@@ -63,8 +63,6 @@
  */
 #define COMMAND_ARGV_MAX	(2+(TAG_NUM_OF_ITEM_TYPES*2))
 
-typedef int (*CommandHandlerFunction) (struct client *, int, char **);
-
 /* if min: -1 don't check args *
  * if max: -1 no max args      */
 struct command {
@@ -72,7 +70,7 @@ struct command {
 	unsigned reqPermission;
 	int min;
 	int max;
-	CommandHandlerFunction handler;
+	int (*handler)(struct client *client, int argc, char **argv);
 };
 
 /* this should really be "need a non-negative integer": */
