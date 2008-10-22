@@ -1157,6 +1157,22 @@ static int handlePlaylistAdd(struct client *client,
 }
 
 static int
+handle_list_playlists(struct client *client,
+		      mpd_unused int argc, mpd_unused char *argv[])
+{
+	GPtrArray *list = spl_list();
+	if (list == NULL) {
+		command_error(client, ACK_ERROR_SYSTEM,
+			      "failed to get list of stored playlists");
+		return -1;
+	}
+
+	print_spl_list(client, list);
+	spl_list_free(list);
+	return 0;
+}
+
+static int
 handle_idle(struct client *client,
 	    mpd_unused int argc, mpd_unused char *argv[])
 {
@@ -1194,6 +1210,7 @@ static const struct command commands[] = {
 	{ "listallinfo", PERMISSION_READ, 0, 1, handleListAllInfo },
 	{ "listplaylist", PERMISSION_READ, 1, 1, handleListPlaylist },
 	{ "listplaylistinfo", PERMISSION_READ, 1, 1, handleListPlaylistInfo },
+	{ "listplaylists", PERMISSION_READ, 0, 0, handle_list_playlists },
 	{ "load", PERMISSION_ADD, 1, 1, handleLoad },
 	{ "lsinfo", PERMISSION_READ, 0, 1, handleLsInfo },
 	{ "move", PERMISSION_CONTROL, 2, 2, handleMove },

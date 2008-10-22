@@ -119,6 +119,10 @@ load <string name>
 lsinfo <string directory>
 	list contents of _directory_, from the db.  _directory_ is optional
 
+	When listing the root directory, this currently returns the
+	list of stored playlists.  This behavior is deprecated; use
+	"listplaylists" instead.
+
 move <int from> <int to>
 	move song at _from_ to _to_ in the playlist
 	increments playlist version by 1
@@ -183,6 +187,9 @@ random <int state>
 
 repeat <int state>
 	set repeat state to _state_, _state_ should be 0 or 1
+
+listplaylists
+	prints a list of the playlist directory
 
 rm <string name>
 	removes the playlist <name>.m3u from the playlist directory
