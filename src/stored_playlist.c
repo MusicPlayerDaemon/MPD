@@ -27,7 +27,8 @@
 #include "idle.h"
 #include "os_compat.h"
 
-static ListNode *nodeOfStoredPlaylist(List *list, int idx)
+static ListNode *
+spl_get_index(List *list, int idx)
 {
 	int forward;
 	ListNode *node;
@@ -63,7 +64,7 @@ static ListNode *nodeOfStoredPlaylist(List *list, int idx)
 }
 
 static enum playlist_result
-writeStoredPlaylistToPath(List *list, const char *utf8path)
+spl_save(List *list, const char *utf8path)
 {
 	ListNode *node;
 	FILE *file;
@@ -87,7 +88,8 @@ writeStoredPlaylistToPath(List *list, const char *utf8path)
 	return PLAYLIST_RESULT_SUCCESS;
 }
 
-List *loadStoredPlaylist(const char *utf8path)
+List *
+spl_load(const char *utf8path)
 {
 	List *list;
 	FILE *file;
@@ -136,7 +138,8 @@ List *loadStoredPlaylist(const char *utf8path)
 	return list;
 }
 
-static int moveSongInStoredPlaylist(List *list, int src, int dest)
+static int
+spl_move_index_internal(List *list, int src, int dest)
 {
 	ListNode *srcNode, *destNode;
 
@@ -144,11 +147,11 @@ static int moveSongInStoredPlaylist(List *list, int src, int dest)
 	    src < 0 || dest < 0 || src == dest)
 		return -1;
 
-	srcNode = nodeOfStoredPlaylist(list, src);
+	srcNode = spl_get_index(list, src);
 	if (!srcNode)
 		return -1;
 
-	destNode = nodeOfStoredPlaylist(list, dest);
+	destNode = spl_get_index(list, dest);
 
 	/* remove src */
 	if (srcNode->prevNode)
@@ -198,20 +201,20 @@ static int moveSongInStoredPlaylist(List *list, int src, int dest)
 }
 
 enum playlist_result
-moveSongInStoredPlaylistByPath(const char *utf8path, int src, int dest)
+spl_move_index(const char *utf8path, int src, int dest)
 {
 	List *list;
 	enum playlist_result result;
 
-	if (!(list = loadStoredPlaylist(utf8path)))
+	if (!(list = spl_load(utf8path)))
 		return PLAYLIST_RESULT_NO_SUCH_LIST;
 
-	if (moveSongInStoredPlaylist(list, src, dest) != 0) {
+	if (spl_move_index_internal(list, src, dest) != 0) {
 		freeList(list);
 		return PLAYLIST_RESULT_BAD_RANGE;
 	}
 
-	result = writeStoredPlaylistToPath(list, utf8path);
+	result = spl_save(list, utf8path);
 
 	freeList(list);
 
@@ -220,7 +223,7 @@ moveSongInStoredPlaylistByPath(const char *utf8path, int src, int dest)
 }
 
 enum playlist_result
-removeAllFromStoredPlaylistByPath(const char *utf8path)
+spl_clear(const char *utf8path)
 {
 	char filename[MPD_PATH_MAX];
 	FILE *file;
@@ -240,9 +243,10 @@ removeAllFromStoredPlaylistByPath(const char *utf8path)
 	return PLAYLIST_RESULT_SUCCESS;
 }
 
-static int removeOneSongFromStoredPlaylist(List *list, int pos)
+static int
+spl_remove_index_internal(List *list, int pos)
 {
-	ListNode *node = nodeOfStoredPlaylist(list, pos);
+	ListNode *node = spl_get_index(list, pos);
 	if (!node)
 		return -1;
 
@@ -252,20 +256,20 @@ static int removeOneSongFromStoredPlaylist(List *list, int pos)
 }
 
 enum playlist_result
-removeOneSongFromStoredPlaylistByPath(const char *utf8path, int pos)
+spl_remove_index(const char *utf8path, int pos)
 {
 	List *list;
 	enum playlist_result result;
 
-	if (!(list = loadStoredPlaylist(utf8path)))
+	if (!(list = spl_load(utf8path)))
 		return PLAYLIST_RESULT_NO_SUCH_LIST;
 
-	if (removeOneSongFromStoredPlaylist(list, pos) != 0) {
+	if (spl_remove_index_internal(list, pos) != 0) {
 		freeList(list);
 		return PLAYLIST_RESULT_BAD_RANGE;
 	}
 
-	result = writeStoredPlaylistToPath(list, utf8path);
+	result = spl_save(list, utf8path);
 
 	freeList(list);
 
@@ -274,7 +278,7 @@ removeOneSongFromStoredPlaylistByPath(const char *utf8path, int pos)
 }
 
 enum playlist_result
-appendSongToStoredPlaylistByPath(const char *utf8path, struct song *song)
+spl_append_song(const char *utf8path, struct song *song)
 {
 	FILE *file;
 	struct stat st;
@@ -313,7 +317,7 @@ appendSongToStoredPlaylistByPath(const char *utf8path, struct song *song)
 }
 
 enum playlist_result
-renameStoredPlaylist(const char *utf8from, const char *utf8to)
+spl_rename(const char *utf8from, const char *utf8to)
 {
 	struct stat st;
 	char from[MPD_PATH_MAX];

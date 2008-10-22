@@ -220,7 +220,7 @@ void clearPlaylist(void)
 
 int clearStoredPlaylist(const char *utf8file)
 {
-	return removeAllFromStoredPlaylistByPath(utf8file);
+	return spl_clear(utf8file);
 }
 
 void showPlaylist(struct client *client)
@@ -583,14 +583,14 @@ int addToStoredPlaylist(const char *url, const char *utf8file)
 
 	song = db_get_song(url);
 	if (song)
-		return appendSongToStoredPlaylistByPath(utf8file, song);
+		return spl_append_song(utf8file, song);
 
 	if (!isValidRemoteUtf8Url(url))
 		return ACK_ERROR_NO_EXIST;
 
 	song = song_remote_new(url);
 	if (song) {
-		int ret = appendSongToStoredPlaylistByPath(utf8file, song);
+		int ret = spl_append_song(utf8file, song);
 		song_free(song);
 		return ret;
 	}
@@ -1343,7 +1343,7 @@ int PlaylistInfo(struct client *client, const char *utf8file, int detail)
 	ListNode *node;
 	List *list;
 
-	if (!(list = loadStoredPlaylist(utf8file)))
+	if (!(list = spl_load(utf8file)))
 		return -1;
 
 	node = list->firstNode;
@@ -1375,7 +1375,7 @@ enum playlist_result loadPlaylist(struct client *client, const char *utf8file)
 	ListNode *node;
 	List *list;
 
-	if (!(list = loadStoredPlaylist(utf8file)))
+	if (!(list = spl_load(utf8file)))
 		return PLAYLIST_RESULT_NO_SUCH_LIST;
 
 	node = list->firstNode;

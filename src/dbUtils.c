@@ -208,7 +208,7 @@ directoryAddSongToStoredPlaylist(struct song *song, void *_data)
 {
 	struct add_data *data = _data;
 
-	if (appendSongToStoredPlaylistByPath(data->path, song) != 0)
+	if (spl_append_song(data->path, song) != 0)
 		return -1;
 	return 0;
 }

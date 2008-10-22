@@ -24,21 +24,22 @@
 
 struct song;
 
-List *loadStoredPlaylist(const char *utf8path);
+List *
+spl_load(const char *utf8path);
 
 enum playlist_result
-moveSongInStoredPlaylistByPath(const char *utf8path, int src, int dest);
+spl_move_index(const char *utf8path, int src, int dest);
 
 enum playlist_result
-removeAllFromStoredPlaylistByPath(const char *utf8path);
+spl_clear(const char *utf8path);
 
 enum playlist_result
-removeOneSongFromStoredPlaylistByPath(const char *utf8path, int pos);
+spl_remove_index(const char *utf8path, int pos);
 
 enum playlist_result
-appendSongToStoredPlaylistByPath(const char *utf8path, struct song *song);
+spl_append_song(const char *utf8path, struct song *song);
 
 enum playlist_result
-renameStoredPlaylist(const char *utf8from, const char *utf8to);
+spl_rename(const char *utf8from, const char *utf8to);
 
 #endif

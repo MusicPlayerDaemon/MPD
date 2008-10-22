@@ -544,7 +544,7 @@ static int handleRename(struct client *client,
 {
 	enum playlist_result result;
 
-	result = renameStoredPlaylist(argv[1], argv[2]);
+	result = spl_rename(argv[1], argv[2]);
 	return print_playlist_result(client, result);
 }
 
@@ -718,7 +718,7 @@ static int handlePlaylistDelete(struct client *client,
 	if (check_int(client, &from, argv[2], check_integer, argv[2]) < 0)
 		return -1;
 
-	result = removeOneSongFromStoredPlaylistByPath(playlist, from);
+	result = spl_remove_index(playlist, from);
 	return print_playlist_result(client, result);
 }
 
@@ -734,7 +734,7 @@ static int handlePlaylistMove(struct client *client,
 	if (check_int(client, &to, argv[3], check_integer, argv[3]) < 0)
 		return -1;
 
-	result = moveSongInStoredPlaylistByPath(playlist, from, to);
+	result = spl_move_index(playlist, from, to);
 	return print_playlist_result(client, result);
 }
 
