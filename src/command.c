@@ -1115,7 +1115,7 @@ static int handlePlaylistClear(struct client *client,
 {
 	enum playlist_result result;
 
-	result = clearStoredPlaylist(argv[1]);
+	result = spl_clear(argv[1]);
 	return print_playlist_result(client, result);
 }
 
@@ -1127,7 +1127,7 @@ static int handlePlaylistAdd(struct client *client,
 	enum playlist_result result;
 
 	if (isRemoteUrl(path))
-		result = addToStoredPlaylist(path, playlist);
+		result = spl_append_uri(path, playlist);
 	else
 		result = addAllInToStoredPlaylist(path, playlist);
 

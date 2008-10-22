@@ -317,7 +317,8 @@ spl_append_song(const char *utf8path, struct song *song)
 	return PLAYLIST_RESULT_SUCCESS;
 }
 
-int addToStoredPlaylist(const char *url, const char *utf8file)
+int
+spl_append_uri(const char *url, const char *utf8file)
 {
 	struct song *song;
 
