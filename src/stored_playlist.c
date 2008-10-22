@@ -25,6 +25,7 @@
 #include "ls.h"
 #include "database.h"
 #include "idle.h"
+#include "ack.h"
 #include "os_compat.h"
 
 static ListNode *
@@ -314,6 +315,27 @@ spl_append_song(const char *utf8path, struct song *song)
 
 	idle_add(IDLE_STORED_PLAYLIST);
 	return PLAYLIST_RESULT_SUCCESS;
+}
+
+int addToStoredPlaylist(const char *url, const char *utf8file)
+{
+	struct song *song;
+
+	song = db_get_song(url);
+	if (song)
+		return spl_append_song(utf8file, song);
+
+	if (!isValidRemoteUtf8Url(url))
+		return ACK_ERROR_NO_EXIST;
+
+	song = song_remote_new(url);
+	if (song) {
+		int ret = spl_append_song(utf8file, song);
+		song_free(song);
+		return ret;
+	}
+
+	return ACK_ERROR_NO_EXIST;
 }
 
 enum playlist_result

@@ -33,11 +33,15 @@ spl_move_index(const char *utf8path, int src, int dest);
 enum playlist_result
 spl_clear(const char *utf8path);
 
+#define clearStoredPlaylist spl_clear
+
 enum playlist_result
 spl_remove_index(const char *utf8path, int pos);
 
 enum playlist_result
 spl_append_song(const char *utf8path, struct song *song);
+
+int addToStoredPlaylist(const char *file, const char *utf8file);
 
 enum playlist_result
 spl_rename(const char *utf8from, const char *utf8to);

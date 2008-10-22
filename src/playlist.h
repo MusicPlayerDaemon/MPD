@@ -71,8 +71,6 @@ void savePlaylistState(FILE *);
 
 void clearPlaylist(void);
 
-int clearStoredPlaylist(const char *utf8file);
-
 /**
  * Appends a local file (outside the music database) to the playlist,
  * but only if the file's owner is equal to the specified uid.
@@ -81,8 +79,6 @@ enum playlist_result
 playlist_append_file(const char *path, int uid, int *added_id);
 
 enum playlist_result addToPlaylist(const char *file, int *added_id);
-
-int addToStoredPlaylist(const char *file, const char *utf8file);
 
 enum playlist_result
 addSongToPlaylist(struct song *song, int *added_id);

@@ -218,11 +218,6 @@ void clearPlaylist(void)
 	incrPlaylistVersion();
 }
 
-int clearStoredPlaylist(const char *utf8file)
-{
-	return spl_clear(utf8file);
-}
-
 void showPlaylist(struct client *client)
 {
 	int i;
@@ -573,29 +568,6 @@ enum playlist_result addToPlaylist(const char *url, int *added_id)
 		return PLAYLIST_RESULT_NO_SUCH_SONG;
 
 	return addSongToPlaylist(song, added_id);
-}
-
-int addToStoredPlaylist(const char *url, const char *utf8file)
-{
-	struct song *song;
-
-	DEBUG("add to stored playlist: %s\n", url);
-
-	song = db_get_song(url);
-	if (song)
-		return spl_append_song(utf8file, song);
-
-	if (!isValidRemoteUtf8Url(url))
-		return ACK_ERROR_NO_EXIST;
-
-	song = song_remote_new(url);
-	if (song) {
-		int ret = spl_append_song(utf8file, song);
-		song_free(song);
-		return ret;
-	}
-
-	return ACK_ERROR_NO_EXIST;
 }
 
 enum playlist_result
