@@ -191,6 +191,12 @@ repeat <int state>
 listplaylists
 	prints a list of the playlist directory
 
+	After each playlist name, the server sends its last
+	modification time as attribute "Last-Modified" in ISO 8601
+	format.  To avoid problems due to clock differences between
+	clients and the server, clients should not compare this value
+	with their local clock.
+
 rm <string name>
 	removes the playlist <name>.m3u from the playlist directory
 

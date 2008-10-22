@@ -208,8 +208,16 @@ print_spl_list(struct client *client, GPtrArray *list)
 	for (unsigned i = 0; i < list->len; ++i) {
 		struct stored_playlist_info *playlist =
 			g_ptr_array_index(list, i);
+		time_t t;
+		struct tm tm;
+		char timestamp[32];
 
 		client_printf(client, "playlist: %s\n", playlist->name);
+
+		t = playlist->mtime;
+		strftime(timestamp, sizeof(timestamp), "%FT%TZ",
+			 gmtime_r(&t, &tm));
+		client_printf(client, "Last-Modified: %s\n", timestamp);
 	}
 }
 
