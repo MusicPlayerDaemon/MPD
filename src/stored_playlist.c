@@ -25,7 +25,6 @@
 #include "ls.h"
 #include "database.h"
 #include "idle.h"
-#include "ack.h"
 #include "os_compat.h"
 
 static ListNode *
@@ -317,7 +316,7 @@ spl_append_song(const char *utf8path, struct song *song)
 	return PLAYLIST_RESULT_SUCCESS;
 }
 
-int
+enum playlist_result
 spl_append_uri(const char *url, const char *utf8file)
 {
 	struct song *song;
@@ -327,7 +326,7 @@ spl_append_uri(const char *url, const char *utf8file)
 		return spl_append_song(utf8file, song);
 
 	if (!isValidRemoteUtf8Url(url))
-		return ACK_ERROR_NO_EXIST;
+		return PLAYLIST_RESULT_NO_SUCH_SONG;
 
 	song = song_remote_new(url);
 	if (song) {
@@ -336,7 +335,7 @@ spl_append_uri(const char *url, const char *utf8file)
 		return ret;
 	}
 
-	return ACK_ERROR_NO_EXIST;
+	return PLAYLIST_RESULT_NO_SUCH_SONG;
 }
 
 enum playlist_result

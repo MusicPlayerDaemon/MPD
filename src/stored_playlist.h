@@ -39,7 +39,7 @@ spl_remove_index(const char *utf8path, int pos);
 enum playlist_result
 spl_append_song(const char *utf8path, struct song *song);
 
-int
+enum playlist_result
 spl_append_uri(const char *file, const char *utf8file);
 
 enum playlist_result
