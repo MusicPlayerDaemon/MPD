@@ -27,6 +27,85 @@
 #include "idle.h"
 #include "os_compat.h"
 
+static struct stored_playlist_info *
+load_playlist_info(const char *parent_path_fs, const char *name_fs)
+{
+	size_t name_length = strlen(name_fs);
+	char buffer[MPD_PATH_MAX], *name, *name_utf8;
+	int ret;
+	struct stat st;
+	struct stored_playlist_info *playlist;
+
+	if (name_length < 1 + sizeof(PLAYLIST_FILE_SUFFIX) ||
+	    strlen(parent_path_fs) + name_length >= sizeof(buffer) ||
+	    memchr(name_fs, '\n', name_length) != NULL)
+		return NULL;
+
+	if (name_fs[name_length - sizeof(PLAYLIST_FILE_SUFFIX)] != '.' ||
+	    memcmp(name_fs + name_length - sizeof(PLAYLIST_FILE_SUFFIX) + 1,
+		   PLAYLIST_FILE_SUFFIX,
+		   sizeof(PLAYLIST_FILE_SUFFIX) - 1) != 0)
+		return NULL;
+
+	pfx_dir(buffer, name_fs, name_length,
+		parent_path_fs, strlen(parent_path_fs));
+
+	ret = stat(buffer, &st);
+	if (ret < 0 || !S_ISREG(st.st_mode))
+		return NULL;
+
+	name = g_strdup(name_fs);
+	name[name_length - sizeof(PLAYLIST_FILE_SUFFIX)] = 0;
+	name_utf8 = fs_charset_to_utf8(buffer, name);
+	g_free(name);
+	if (name_utf8 == NULL)
+		return NULL;
+
+	playlist = g_new(struct stored_playlist_info, 1);
+	playlist->name = g_strdup(name_utf8);
+	playlist->mtime = st.st_mtime;
+	return playlist;
+}
+
+GPtrArray *
+spl_list(void)
+{
+	char parent_path_fs[MPD_PATH_MAX];
+	DIR *dir;
+	struct dirent *ent;
+	GPtrArray *list;
+	struct stored_playlist_info *playlist;
+
+	rpp2app_r(parent_path_fs, "");
+	dir = opendir(parent_path_fs);
+	if (dir == NULL)
+		return NULL;
+
+	list = g_ptr_array_new();
+
+	while ((ent = readdir(dir)) != NULL) {
+		playlist = load_playlist_info(parent_path_fs, ent->d_name);
+		if (playlist != NULL)
+			g_ptr_array_add(list, playlist);
+	}
+
+	closedir(dir);
+	return list;
+}
+
+void
+spl_list_free(GPtrArray *list)
+{
+	for (unsigned i = 0; i < list->len; ++i) {
+		struct stored_playlist_info *playlist =
+			g_ptr_array_index(list, i);
+		g_free(playlist->name);
+		g_free(playlist);
+	}
+
+	g_ptr_array_free(list, true);
+}
+
 static ListNode *
 spl_get_index(List *list, int idx)
 {

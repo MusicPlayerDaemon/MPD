@@ -23,6 +23,7 @@
 #include "log.h"
 #include "utils.h"
 #include "list.h"
+#include "stored_playlist.h"
 #include "os_compat.h"
 
 static const char *remoteUrlPrefixes[] = {
@@ -99,84 +100,19 @@ int isRemoteUrl(const char *url)
 
 int lsPlaylists(struct client *client, const char *utf8path)
 {
-	DIR *dir;
-	struct stat st;
-	struct dirent *ent;
-	char *duplicated;
-	char *utf8;
-	char s[MPD_PATH_MAX];
-	char path_max_tmp[MPD_PATH_MAX];
-	List *list = NULL;
-	ListNode *node;
-	char *actualPath = rpp2app_r(path_max_tmp,
-	                             utf8_to_fs_charset(path_max_tmp,
-				                        utf8path));
-	size_t actlen = strlen(actualPath) + 1;
-	size_t maxlen = MPD_PATH_MAX - actlen;
-	size_t suflen = strlen(PLAYLIST_FILE_SUFFIX) + 1;
-	ssize_t suff;
-
-	if (actlen > MPD_PATH_MAX - 1 || (dir = opendir(actualPath)) == NULL) {
+	GPtrArray *list = spl_list();
+	if (list == NULL)
 		return 0;
+
+	for (unsigned i = 0; i < list->len; ++i) {
+		struct stored_playlist_info *playlist =
+			g_ptr_array_index(list, i);
+
+		client_printf(client, "playlist: %s%s\n",
+			      utf8path, playlist->name);
 	}
 
-	s[MPD_PATH_MAX - 1] = '\0';
-	/* this is safe, notice actlen > MPD_PATH_MAX-1 above */
-	strcpy(s, actualPath);
-	strcat(s, "/");
-
-	while ((ent = readdir(dir))) {
-		size_t len = strlen(ent->d_name) + 1;
-		duplicated = ent->d_name;
-		if (mpd_likely(len <= maxlen) &&
-		    duplicated[0] != '.' &&
-		    (suff = (ssize_t)(strlen(duplicated) - suflen)) > 0 &&
-		    duplicated[suff] == '.' &&
-		    strcmp(duplicated + suff + 1, PLAYLIST_FILE_SUFFIX) == 0) {
-			memcpy(s + actlen, ent->d_name, len);
-			if (stat(s, &st) == 0) {
-				if (S_ISREG(st.st_mode)) {
-					if (list == NULL)
-						list = makeList(NULL, 1);
-					duplicated[suff] = '\0';
-					utf8 = fs_charset_to_utf8(path_max_tmp,
-					                          duplicated);
-					if (utf8)
-						insertInList(list, utf8, NULL);
-				}
-			}
-		}
-	}
-
-	closedir(dir);
-
-	if (list) {
-		int i;
-		sortList(list);
-
-		duplicated = xmalloc(strlen(utf8path) + 2);
-		strcpy(duplicated, utf8path);
-		for (i = strlen(duplicated) - 1;
-		     i >= 0 && duplicated[i] == '/';
-		     i--) {
-			duplicated[i] = '\0';
-		}
-		if (strlen(duplicated))
-			strcat(duplicated, "/");
-
-		node = list->firstNode;
-		while (node != NULL) {
-			if (!strchr(node->key, '\n')) {
-				client_printf(client, "playlist: %s%s\n",
-					      duplicated, node->key);
-			}
-			node = node->nextNode;
-		}
-
-		freeList(list);
-		free(duplicated);
-	}
-
+	spl_list_free(list);
 	return 0;
 }
 

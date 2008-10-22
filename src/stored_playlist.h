@@ -22,7 +22,25 @@
 #include "list.h"
 #include "playlist.h"
 
+#include <glib.h>
+
 struct song;
+
+struct stored_playlist_info {
+	char *name;
+
+	time_t mtime;
+};
+
+/**
+ * Returns a list of stored_playlist_info struct pointers.  Returns
+ * NULL if an error occured.
+ */
+GPtrArray *
+spl_list(void);
+
+void
+spl_list_free(GPtrArray *list);
 
 List *
 spl_load(const char *utf8path);
