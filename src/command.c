@@ -1192,10 +1192,10 @@ static int handleCommands(struct client *client,
 {
 	const unsigned permission = client_get_permission(client);
 	ListNode *node = commandList->firstNode;
-	struct command *cmd;
+	const struct command *cmd;
 
 	while (node != NULL) {
-		cmd = (struct command *) node->data;
+		cmd = (const struct command *) node->data;
 		if (cmd->reqPermission == (permission & cmd->reqPermission)) {
 			client_printf(client, "command: %s\n", cmd->cmd);
 		}
@@ -1211,10 +1211,10 @@ static int handleNotcommands(struct client *client,
 {
 	const unsigned permission = client_get_permission(client);
 	ListNode *node = commandList->firstNode;
-	struct command *cmd;
+	const struct command *cmd;
 
 	while (node != NULL) {
-		cmd = (struct command *) node->data;
+		cmd = (const struct command *) node->data;
 
 		if (cmd->reqPermission != (permission & cmd->reqPermission)) {
 			client_printf(client, "command: %s\n", cmd->cmd);
@@ -1345,8 +1345,9 @@ void finishCommands(void)
 	freeList(commandList);
 }
 
-static int checkArgcAndPermission(struct command *cmd, struct client *client,
-				  unsigned permission, int argc, char *argv[])
+static int
+checkArgcAndPermission(const struct command *cmd, struct client *client,
+		       unsigned permission, int argc, char *argv[])
 {
 	int min = cmd->min + 1;
 	int max = cmd->max + 1;
@@ -1382,13 +1383,13 @@ static int checkArgcAndPermission(struct command *cmd, struct client *client,
 		return 0;
 }
 
-static struct command *getCommandEntryAndCheckArgcAndPermission(struct client *client,
-							      unsigned permission,
-							      int argc,
-							      char *argv[])
+static const struct command *
+getCommandEntryAndCheckArgcAndPermission(struct client *client,
+					 unsigned permission,
+					 int argc, char *argv[])
 {
 	static char unknown[] = "";
-	struct command *cmd;
+	const struct command *cmd;
 
 	current_command = unknown;
 
@@ -1415,7 +1416,7 @@ int processCommand(struct client *client, char *commandString)
 {
 	int argc;
 	char *argv[COMMAND_ARGV_MAX] = { NULL };
-	struct command *cmd;
+	const struct command *cmd;
 	int ret = -1;
 
 	if (!(argc = buffer2array(commandString, argv, COMMAND_ARGV_MAX)))
