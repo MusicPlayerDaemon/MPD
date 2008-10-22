@@ -335,9 +335,9 @@ static int client_process_line(struct client *client, char *line)
 		if (strcmp(line, CLIENT_LIST_MODE_END) == 0) {
 			DEBUG("client %i: process command "
 			      "list\n", client->num);
-			ret = processListOfCommands(client,
-						    client->cmd_list_OK,
-						    client->cmd_list);
+			ret = command_process_list(client,
+						   client->cmd_list_OK,
+						   client->cmd_list);
 			DEBUG("client %i: process command "
 			      "list returned %i\n", client->num, ret);
 
@@ -379,7 +379,7 @@ static int client_process_line(struct client *client, char *line)
 		} else {
 			DEBUG("client %i: process command \"%s\"\n",
 			      client->num, line);
-			ret = processCommand(client, line);
+			ret = command_process(client, line);
 			DEBUG("client %i: command returned %i\n",
 			      client->num, ret);
 

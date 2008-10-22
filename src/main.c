@@ -420,7 +420,7 @@ int main(int argc, char *argv[])
 
 	openDB(&options, argv[0]);
 
-	initCommands();
+	command_init();
 	initPlayerData();
 	pc_init(buffered_before_play);
 	ob_init(buffered_chunks, &pc.notify);
@@ -484,7 +484,7 @@ int main(int argc, char *argv[])
 	finishPermissions();
 	dc_deinit();
 	pc_deinit();
-	finishCommands();
+	command_finish();
 	decoder_plugin_deinit_all();
 	ob_free();
 	cleanUpPidFile();

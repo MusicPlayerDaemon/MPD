@@ -29,14 +29,16 @@
 
 struct client;
 
-int processListOfCommands(struct client *client,
-			  int listOK, struct strnode *list);
+void command_init(void);
 
-int processCommand(struct client *client, char *commandString);
+void command_finish(void);
 
-void initCommands(void);
+int
+command_process_list(struct client *client,
+		     int list_ok, struct strnode *list);
 
-void finishCommands(void);
+int
+command_process(struct client *client, char *commandString);
 
 void command_success(struct client *client);
 

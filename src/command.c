@@ -67,7 +67,7 @@
  * if max: -1 no max args      */
 struct command {
 	const char *cmd;
-	unsigned reqPermission;
+	unsigned permission;
 	int min;
 	int max;
 	int (*handler)(struct client *client, int argc, char **argv);
@@ -83,7 +83,7 @@ static const char check_boolean[] = "\"%s\" is not 0 or 1";
 static const char check_non_negative[] = "\"%s\" is not an integer >= 0";
 
 static const char *current_command;
-static int command_listNum;
+static int command_list_num;
 
 void command_success(struct client *client)
 {
@@ -97,7 +97,7 @@ static void command_error_v(struct client *client, enum ack error,
 	assert(current_command != NULL);
 
 	client_printf(client, "ACK [%i@%i] {%s} ",
-		      (int)error, command_listNum, current_command);
+		      (int)error, command_list_num, current_command);
 	client_vprintf(client, fmt, args);
 	client_puts(client, "\n");
 
@@ -219,23 +219,25 @@ print_spl_list(struct client *client, GPtrArray *list)
 	}
 }
 
-static int handleUrlHandlers(struct client *client,
-			     mpd_unused int argc, mpd_unused char *argv[])
+static int
+handle_urlhandlers(struct client *client,
+		   mpd_unused int argc, mpd_unused char *argv[])
 {
 	if (client_get_uid(client) > 0)
 		client_puts(client, "handler: file://\n");
 	return printRemoteUrlHandlers(client);
 }
 
-static int handleTagTypes(struct client *client,
-			  mpd_unused int argc, mpd_unused char *argv[])
+static int
+handle_tagtypes(struct client *client,
+		mpd_unused int argc, mpd_unused char *argv[])
 {
 	tag_print_types(client);
 	return 0;
 }
 
-static int handlePlay(struct client *client,
-		      int argc, char *argv[])
+static int
+handle_play(struct client *client, int argc, char *argv[])
 {
 	int song = -1;
 	enum playlist_result result;
@@ -246,8 +248,8 @@ static int handlePlay(struct client *client,
 	return print_playlist_result(client, result);
 }
 
-static int handlePlayId(struct client *client,
-			int argc, char *argv[])
+static int
+handle_playid(struct client *client, int argc, char *argv[])
 {
 	int id = -1;
 	enum playlist_result result;
@@ -259,15 +261,17 @@ static int handlePlayId(struct client *client,
 	return print_playlist_result(client, result);
 }
 
-static int handleStop(mpd_unused struct client *client,
-		      mpd_unused int argc, mpd_unused char *argv[])
+static int
+handle_stop(mpd_unused struct client *client,
+	    mpd_unused int argc, mpd_unused char *argv[])
 {
 	stopPlaylist();
 	return 0;
 }
 
-static int handleCurrentSong(struct client *client,
-			     mpd_unused int argc, mpd_unused char *argv[])
+static int
+handle_currentsong(struct client *client,
+		   mpd_unused int argc, mpd_unused char *argv[])
 {
 	int song = getPlaylistCurrentSong();
 	enum playlist_result result;
@@ -279,8 +283,9 @@ static int handleCurrentSong(struct client *client,
 	return print_playlist_result(client, result);
 }
 
-static int handlePause(struct client *client,
-		       int argc, char *argv[])
+static int
+handle_pause(struct client *client,
+	     int argc, char *argv[])
 {
 	if (argc == 2) {
 		int pause_flag;
@@ -294,8 +299,9 @@ static int handlePause(struct client *client,
 	return 0;
 }
 
-static int commandStatus(struct client *client,
-			 mpd_unused int argc, mpd_unused char *argv[])
+static int
+handle_status(struct client *client,
+	      mpd_unused int argc, mpd_unused char *argv[])
 {
 	const char *state = NULL;
 	int updateJobId;
@@ -364,20 +370,22 @@ static int commandStatus(struct client *client,
 	return 0;
 }
 
-static int handleKill(mpd_unused struct client *client,
-		      mpd_unused int argc, mpd_unused char *argv[])
+static int
+handle_kill(mpd_unused struct client *client,
+	    mpd_unused int argc, mpd_unused char *argv[])
 {
 	return COMMAND_RETURN_KILL;
 }
 
-static int handleClose(mpd_unused struct client *client,
-		       mpd_unused int argc, mpd_unused char *argv[])
+static int
+handle_close(mpd_unused struct client *client,
+	     mpd_unused int argc, mpd_unused char *argv[])
 {
 	return COMMAND_RETURN_CLOSE;
 }
 
-static int handleAdd(struct client *client,
-		     mpd_unused int argc, char *argv[])
+static int
+handle_add(struct client *client, mpd_unused int argc, char *argv[])
 {
 	char *path = argv[1];
 	enum playlist_result result;
@@ -401,8 +409,8 @@ static int handleAdd(struct client *client,
 	return print_playlist_result(client, result);
 }
 
-static int handleAddId(struct client *client,
-		       int argc, char *argv[])
+static int
+handle_addid(struct client *client, int argc, char *argv[])
 {
 	int added_id;
 	enum playlist_result result;
@@ -434,8 +442,8 @@ static int handleAddId(struct client *client,
 	return result;
 }
 
-static int handleDelete(struct client *client,
-			mpd_unused int argc, char *argv[])
+static int
+handle_delete(struct client *client, mpd_unused int argc, char *argv[])
 {
 	int song;
 	enum playlist_result result;
@@ -447,8 +455,8 @@ static int handleDelete(struct client *client,
 	return print_playlist_result(client, result);
 }
 
-static int handleDeleteId(struct client *client,
-			  mpd_unused int argc, char *argv[])
+static int
+handle_deleteid(struct client *client, mpd_unused int argc, char *argv[])
 {
 	int id;
 	enum playlist_result result;
@@ -460,29 +468,33 @@ static int handleDeleteId(struct client *client,
 	return print_playlist_result(client, result);
 }
 
-static int handlePlaylist(struct client *client,
-			  mpd_unused int argc, mpd_unused char *argv[])
+static int
+handle_playlist(struct client *client,
+	       mpd_unused int argc, mpd_unused char *argv[])
 {
 	showPlaylist(client);
 	return 0;
 }
 
-static int handleShuffle(mpd_unused struct client *client,
-			 mpd_unused int argc, mpd_unused char *argv[])
+static int
+handle_shuffle(mpd_unused struct client *client,
+	       mpd_unused int argc, mpd_unused char *argv[])
 {
 	shufflePlaylist();
 	return 0;
 }
 
-static int handleClear(mpd_unused struct client *client,
-		       mpd_unused int argc, mpd_unused char *argv[])
+static int
+handle_clear(mpd_unused struct client *client,
+	     mpd_unused int argc, mpd_unused char *argv[])
 {
 	clearPlaylist();
 	return 0;
 }
 
-static int handleSave(struct client *client,
-		      mpd_unused int argc, char *argv[])
+static int
+handle_save(struct client *client,
+	    mpd_unused int argc, char *argv[])
 {
 	enum playlist_result result;
 
@@ -490,8 +502,8 @@ static int handleSave(struct client *client,
 	return print_playlist_result(client, result);
 }
 
-static int handleLoad(struct client *client,
-		      mpd_unused int argc, char *argv[])
+static int
+handle_load(struct client *client, mpd_unused int argc, char *argv[])
 {
 	enum playlist_result result;
 
@@ -499,8 +511,8 @@ static int handleLoad(struct client *client,
 	return print_playlist_result(client, result);
 }
 
-static int handleListPlaylist(struct client *client,
-			      mpd_unused int argc, char *argv[])
+static int
+handle_listplaylist(struct client *client, mpd_unused int argc, char *argv[])
 {
 	int ret;
 
@@ -511,8 +523,9 @@ static int handleListPlaylist(struct client *client,
 	return ret;
 }
 
-static int handleListPlaylistInfo(struct client *client,
-				  mpd_unused int argc, char *argv[])
+static int
+handle_listplaylistinfo(struct client *client,
+			mpd_unused int argc, char *argv[])
 {
 	int ret;
 
@@ -523,8 +536,8 @@ static int handleListPlaylistInfo(struct client *client,
 	return ret;
 }
 
-static int handleLsInfo(struct client *client,
-			int argc, char *argv[])
+static int
+handle_lsinfo(struct client *client, int argc, char *argv[])
 {
 	const char *path = "";
 	const struct directory *directory;
@@ -552,8 +565,8 @@ static int handleLsInfo(struct client *client,
 	return 0;
 }
 
-static int handleRm(struct client *client,
-		    mpd_unused int argc, char *argv[])
+static int
+handle_rm(struct client *client, mpd_unused int argc, char *argv[])
 {
 	enum playlist_result result;
 
@@ -561,8 +574,8 @@ static int handleRm(struct client *client,
 	return print_playlist_result(client, result);
 }
 
-static int handleRename(struct client *client,
-			mpd_unused int argc, char *argv[])
+static int
+handle_rename(struct client *client, mpd_unused int argc, char *argv[])
 {
 	enum playlist_result result;
 
@@ -570,8 +583,8 @@ static int handleRename(struct client *client,
 	return print_playlist_result(client, result);
 }
 
-static int handlePlaylistChanges(struct client *client,
-				 mpd_unused int argc, char *argv[])
+static int
+handle_plchanges(struct client *client, mpd_unused int argc, char *argv[])
 {
 	uint32_t version;
 
@@ -580,8 +593,8 @@ static int handlePlaylistChanges(struct client *client,
 	return playlistChanges(client, version);
 }
 
-static int handlePlaylistChangesPosId(struct client *client,
-				      mpd_unused int argc, char *argv[])
+static int
+handle_plchangesposid(struct client *client, mpd_unused int argc, char *argv[])
 {
 	uint32_t version;
 
@@ -590,8 +603,8 @@ static int handlePlaylistChangesPosId(struct client *client,
 	return playlistChangesPosId(client, version);
 }
 
-static int handlePlaylistInfo(struct client *client,
-			      int argc, char *argv[])
+static int
+handle_playlistinfo(struct client *client, int argc, char *argv[])
 {
 	int song = -1;
 	enum playlist_result result;
@@ -603,8 +616,8 @@ static int handlePlaylistInfo(struct client *client,
 	return print_playlist_result(client, result);
 }
 
-static int handlePlaylistId(struct client *client,
-			    int argc, char *argv[])
+static int
+handle_playlistid(struct client *client, int argc, char *argv[])
 {
 	int id = -1;
 	enum playlist_result result;
@@ -616,8 +629,8 @@ static int handlePlaylistId(struct client *client,
 	return print_playlist_result(client, result);
 }
 
-static int handleFind(struct client *client,
-		      int argc, char *argv[])
+static int
+handle_find(struct client *client, int argc, char *argv[])
 {
 	int ret;
 
@@ -641,8 +654,8 @@ static int handleFind(struct client *client,
 	return ret;
 }
 
-static int handleSearch(struct client *client,
-			int argc, char *argv[])
+static int
+handle_search(struct client *client, int argc, char *argv[])
 {
 	int ret;
 
@@ -666,8 +679,8 @@ static int handleSearch(struct client *client,
 	return ret;
 }
 
-static int handleCount(struct client *client,
-		       int argc, char *argv[])
+static int
+handle_count(struct client *client, int argc, char *argv[])
 {
 	int ret;
 
@@ -691,8 +704,8 @@ static int handleCount(struct client *client,
 	return ret;
 }
 
-static int handlePlaylistFind(struct client *client,
-			      int argc, char *argv[])
+static int
+handle_playlistfind(struct client *client, int argc, char *argv[])
 {
 	LocateTagItem *items;
 	int numItems = newLocateTagItemArrayFromArgArray(argv + 1,
@@ -711,8 +724,8 @@ static int handlePlaylistFind(struct client *client,
 	return 0;
 }
 
-static int handlePlaylistSearch(struct client *client,
-				int argc, char *argv[])
+static int
+handle_playlistsearch(struct client *client, int argc, char *argv[])
 {
 	LocateTagItem *items;
 	int numItems = newLocateTagItemArrayFromArgArray(argv + 1,
@@ -731,8 +744,9 @@ static int handlePlaylistSearch(struct client *client,
 	return 0;
 }
 
-static int handlePlaylistDelete(struct client *client,
-				mpd_unused int argc, char *argv[]) {
+static int
+handle_playlistdelete(struct client *client,
+		      mpd_unused int argc, char *argv[]) {
 	char *playlist = argv[1];
 	int from;
 	enum playlist_result result;
@@ -744,8 +758,8 @@ static int handlePlaylistDelete(struct client *client,
 	return print_playlist_result(client, result);
 }
 
-static int handlePlaylistMove(struct client *client,
-			      mpd_unused mpd_unused int argc, char *argv[])
+static int
+handle_playlistmove(struct client *client, mpd_unused int argc, char *argv[])
 {
 	char *playlist = argv[1];
 	int from, to;
@@ -760,8 +774,8 @@ static int handlePlaylistMove(struct client *client,
 	return print_playlist_result(client, result);
 }
 
-static int handleUpdate(struct client *client,
-			mpd_unused int argc, char *argv[])
+static int
+handle_update(struct client *client, mpd_unused int argc, char *argv[])
 {
 	char *path = NULL;
 	unsigned ret;
@@ -783,22 +797,24 @@ static int handleUpdate(struct client *client,
 	}
 }
 
-static int handleNext(mpd_unused struct client *client,
-		      mpd_unused int argc, mpd_unused char *argv[])
+static int
+handle_next(mpd_unused struct client *client,
+	    mpd_unused int argc, mpd_unused char *argv[])
 {
 	nextSongInPlaylist();
 	return 0;
 }
 
-static int handlePrevious(mpd_unused struct client *client,
-			  mpd_unused int argc, mpd_unused char *argv[])
+static int
+handle_previous(mpd_unused struct client *client,
+		mpd_unused int argc, mpd_unused char *argv[])
 {
 	previousSongInPlaylist();
 	return 0;
 }
 
-static int handleListAll(struct client *client,
-			 mpd_unused int argc, char *argv[])
+static int
+handle_listall(struct client *client, mpd_unused int argc, char *argv[])
 {
 	char *directory = NULL;
 	int ret;
@@ -814,8 +830,8 @@ static int handleListAll(struct client *client,
 	return ret;
 }
 
-static int handleVolume(struct client *client,
-			mpd_unused int argc, char *argv[])
+static int
+handle_volume(struct client *client, mpd_unused int argc, char *argv[])
 {
 	int change, ret;
 
@@ -830,8 +846,8 @@ static int handleVolume(struct client *client,
 	return ret;
 }
 
-static int handleSetVol(struct client *client,
-			mpd_unused int argc, char *argv[])
+static int
+handle_setvol(struct client *client, mpd_unused int argc, char *argv[])
 {
 	int level, ret;
 
@@ -846,8 +862,8 @@ static int handleSetVol(struct client *client,
 	return ret;
 }
 
-static int handleRepeat(struct client *client,
-			mpd_unused int argc, char *argv[])
+static int
+handle_repeat(struct client *client, mpd_unused int argc, char *argv[])
 {
 	int status;
 
@@ -864,8 +880,8 @@ static int handleRepeat(struct client *client,
 	return 0;
 }
 
-static int handleRandom(struct client *client,
-			mpd_unused int argc, char *argv[])
+static int
+handle_random(struct client *client, mpd_unused int argc, char *argv[])
 {
 	int status;
 
@@ -882,21 +898,23 @@ static int handleRandom(struct client *client,
 	return 0;
 }
 
-static int handleStats(struct client *client,
-		       mpd_unused int argc, mpd_unused char *argv[])
+static int
+handle_stats(struct client *client,
+	     mpd_unused int argc, mpd_unused char *argv[])
 {
 	return printStats(client);
 }
 
-static int handleClearError(mpd_unused struct client *client,
-			    mpd_unused int argc, mpd_unused char *argv[])
+static int
+handle_clearerror(mpd_unused struct client *client,
+		  mpd_unused int argc, mpd_unused char *argv[])
 {
 	clearPlayerError();
 	return 0;
 }
 
-static int handleList(struct client *client,
-		      int argc, char *argv[])
+static int
+handle_list(struct client *client, int argc, char *argv[])
 {
 	int numConditionals;
 	LocateTagItem *conditionals = NULL;
@@ -949,8 +967,8 @@ static int handleList(struct client *client,
 	return ret;
 }
 
-static int handleMove(struct client *client,
-		      mpd_unused int argc, char *argv[])
+static int
+handle_move(struct client *client, mpd_unused int argc, char *argv[])
 {
 	int from, to;
 	enum playlist_result result;
@@ -963,8 +981,8 @@ static int handleMove(struct client *client,
 	return print_playlist_result(client, result);
 }
 
-static int handleMoveId(struct client *client,
-			mpd_unused int argc, char *argv[])
+static int
+handle_moveid(struct client *client, mpd_unused int argc, char *argv[])
 {
 	int id, to;
 	enum playlist_result result;
@@ -977,8 +995,8 @@ static int handleMoveId(struct client *client,
 	return print_playlist_result(client, result);
 }
 
-static int handleSwap(struct client *client,
-		      mpd_unused int argc, char *argv[])
+static int
+handle_swap(struct client *client, mpd_unused int argc, char *argv[])
 {
 	int song1, song2;
 	enum playlist_result result;
@@ -991,8 +1009,8 @@ static int handleSwap(struct client *client,
 	return print_playlist_result(client, result);
 }
 
-static int handleSwapId(struct client *client,
-			mpd_unused int argc, char *argv[])
+static int
+handle_swapid(struct client *client, mpd_unused int argc, char *argv[])
 {
 	int id1, id2;
 	enum playlist_result result;
@@ -1005,8 +1023,8 @@ static int handleSwapId(struct client *client,
 	return print_playlist_result(client, result);
 }
 
-static int handleSeek(struct client *client,
-		      mpd_unused int argc, char *argv[])
+static int
+handle_seek(struct client *client, mpd_unused int argc, char *argv[])
 {
 	int song, seek_time;
 	enum playlist_result result;
@@ -1020,8 +1038,8 @@ static int handleSeek(struct client *client,
 	return print_playlist_result(client, result);
 }
 
-static int handleSeekId(struct client *client,
-			mpd_unused int argc, char *argv[])
+static int
+handle_seekid(struct client *client, mpd_unused int argc, char *argv[])
 {
 	int id, seek_time;
 	enum playlist_result result;
@@ -1035,8 +1053,8 @@ static int handleSeekId(struct client *client,
 	return print_playlist_result(client, result);
 }
 
-static int handleListAllInfo(struct client *client,
-			     mpd_unused int argc, char *argv[])
+static int
+handle_listallinfo(struct client *client, mpd_unused int argc, char *argv[])
 {
 	char *directory = NULL;
 	int ret;
@@ -1052,14 +1070,15 @@ static int handleListAllInfo(struct client *client,
 	return ret;
 }
 
-static int handlePing(mpd_unused struct client *client,
-		      mpd_unused int argc, mpd_unused char *argv[])
+static int
+handle_ping(mpd_unused struct client *client,
+	    mpd_unused int argc, mpd_unused char *argv[])
 {
 	return 0;
 }
 
-static int handlePassword(struct client *client,
-			  mpd_unused int argc, char *argv[])
+static int
+handle_password(struct client *client, mpd_unused int argc, char *argv[])
 {
 	unsigned permission = 0;
 
@@ -1073,8 +1092,8 @@ static int handlePassword(struct client *client,
 	return 0;
 }
 
-static int handleCrossfade(struct client *client,
-			   mpd_unused int argc, char *argv[])
+static int
+handle_crossfade(struct client *client, mpd_unused int argc, char *argv[])
 {
 	int xfade_time;
 
@@ -1085,8 +1104,8 @@ static int handleCrossfade(struct client *client,
 	return 0;
 }
 
-static int handleEnableDevice(struct client *client,
-			      mpd_unused int argc, char *argv[])
+static int
+handle_enableoutput(struct client *client, mpd_unused int argc, char *argv[])
 {
 	int device, ret;
 
@@ -1101,8 +1120,8 @@ static int handleEnableDevice(struct client *client,
 	return ret;
 }
 
-static int handleDisableDevice(struct client *client,
-			       mpd_unused int argc, char *argv[])
+static int
+handle_disableoutput(struct client *client, mpd_unused int argc, char *argv[])
 {
 	int device, ret;
 
@@ -1117,8 +1136,9 @@ static int handleDisableDevice(struct client *client,
 	return ret;
 }
 
-static int handleDevices(struct client *client,
-			 mpd_unused int argc, mpd_unused char *argv[])
+static int
+handle_devices(struct client *client,
+	       mpd_unused int argc, mpd_unused char *argv[])
 {
 	printAudioDevices(client);
 
@@ -1126,14 +1146,16 @@ static int handleDevices(struct client *client,
 }
 
 /* don't be fooled, this is the command handler for "commands" command */
-static int handleCommands(struct client *client,
-			  mpd_unused int argc, mpd_unused char *argv[]);
+static int
+handle_commands(struct client *client,
+		mpd_unused int argc, mpd_unused char *argv[]);
 
-static int handleNotcommands(struct client *client,
-			     mpd_unused int argc, mpd_unused char *argv[]);
+static int
+handle_not_commands(struct client *client,
+		    mpd_unused int argc, mpd_unused char *argv[]);
 
-static int handlePlaylistClear(struct client *client,
-			       mpd_unused int argc, char *argv[])
+static int
+handle_playlistclear(struct client *client, mpd_unused int argc, char *argv[])
 {
 	enum playlist_result result;
 
@@ -1141,8 +1163,8 @@ static int handlePlaylistClear(struct client *client,
 	return print_playlist_result(client, result);
 }
 
-static int handlePlaylistAdd(struct client *client,
-			     mpd_unused int argc, char *argv[])
+static int
+handle_playlistadd(struct client *client, mpd_unused int argc, char *argv[])
 {
 	char *playlist = argv[1];
 	char *path = argv[2];
@@ -1163,8 +1185,8 @@ static int handlePlaylistAdd(struct client *client,
 }
 
 static int
-handle_list_playlists(struct client *client,
-		      mpd_unused int argc, mpd_unused char *argv[])
+handle_listplaylists(struct client *client,
+		     mpd_unused int argc, mpd_unused char *argv[])
 {
 	GPtrArray *list = spl_list();
 	if (list == NULL) {
@@ -1195,79 +1217,79 @@ handle_idle(struct client *client,
  * This array must be sorted!
  */
 static const struct command commands[] = {
-	{ "add", PERMISSION_ADD, 1, 1, handleAdd },
-	{ "addid", PERMISSION_ADD, 1, 2, handleAddId },
-	{ "clear", PERMISSION_CONTROL, 0, 0, handleClear },
-	{ "clearerror", PERMISSION_CONTROL, 0, 0, handleClearError },
-	{ "close", PERMISSION_NONE, -1, -1, handleClose },
-	{ "commands", PERMISSION_NONE, 0, 0, handleCommands },
-	{ "count", PERMISSION_READ, 2, -1, handleCount },
-	{ "crossfade", PERMISSION_CONTROL, 1, 1, handleCrossfade },
-	{ "currentsong", PERMISSION_READ, 0, 0, handleCurrentSong },
-	{ "delete", PERMISSION_CONTROL, 1, 1, handleDelete },
-	{ "deleteid", PERMISSION_CONTROL, 1, 1, handleDeleteId },
-	{ "disableoutput", PERMISSION_ADMIN, 1, 1, handleDisableDevice },
-	{ "enableoutput", PERMISSION_ADMIN, 1, 1, handleEnableDevice },
-	{ "find", PERMISSION_READ, 2, -1, handleFind },
+	{ "add", PERMISSION_ADD, 1, 1, handle_add },
+	{ "addid", PERMISSION_ADD, 1, 2, handle_addid },
+	{ "clear", PERMISSION_CONTROL, 0, 0, handle_clear },
+	{ "clearerror", PERMISSION_CONTROL, 0, 0, handle_clearerror },
+	{ "close", PERMISSION_NONE, -1, -1, handle_close },
+	{ "commands", PERMISSION_NONE, 0, 0, handle_commands },
+	{ "count", PERMISSION_READ, 2, -1, handle_count },
+	{ "crossfade", PERMISSION_CONTROL, 1, 1, handle_crossfade },
+	{ "currentsong", PERMISSION_READ, 0, 0, handle_currentsong },
+	{ "delete", PERMISSION_CONTROL, 1, 1, handle_delete },
+	{ "deleteid", PERMISSION_CONTROL, 1, 1, handle_deleteid },
+	{ "disableoutput", PERMISSION_ADMIN, 1, 1, handle_disableoutput },
+	{ "enableoutput", PERMISSION_ADMIN, 1, 1, handle_enableoutput },
+	{ "find", PERMISSION_READ, 2, -1, handle_find },
 	{ "idle", PERMISSION_READ, 0, 0, handle_idle },
-	{ "kill", PERMISSION_ADMIN, -1, -1, handleKill },
-	{ "list", PERMISSION_READ, 1, -1, handleList },
-	{ "listall", PERMISSION_READ, 0, 1, handleListAll },
-	{ "listallinfo", PERMISSION_READ, 0, 1, handleListAllInfo },
-	{ "listplaylist", PERMISSION_READ, 1, 1, handleListPlaylist },
-	{ "listplaylistinfo", PERMISSION_READ, 1, 1, handleListPlaylistInfo },
-	{ "listplaylists", PERMISSION_READ, 0, 0, handle_list_playlists },
-	{ "load", PERMISSION_ADD, 1, 1, handleLoad },
-	{ "lsinfo", PERMISSION_READ, 0, 1, handleLsInfo },
-	{ "move", PERMISSION_CONTROL, 2, 2, handleMove },
-	{ "moveid", PERMISSION_CONTROL, 2, 2, handleMoveId },
-	{ "next", PERMISSION_CONTROL, 0, 0, handleNext },
-	{ "notcommands", PERMISSION_NONE, 0, 0, handleNotcommands },
-	{ "outputs", PERMISSION_READ, 0, 0, handleDevices },
-	{ "password", PERMISSION_NONE, 1, 1, handlePassword },
-	{ "pause", PERMISSION_CONTROL, 0, 1, handlePause },
-	{ "ping", PERMISSION_NONE, 0, 0, handlePing },
-	{ "play", PERMISSION_CONTROL, 0, 1, handlePlay },
-	{ "playid", PERMISSION_CONTROL, 0, 1, handlePlayId },
-	{ "playlist", PERMISSION_READ, 0, 0, handlePlaylist },
-	{ "playlistadd", PERMISSION_CONTROL, 2, 2, handlePlaylistAdd },
-	{ "playlistclear", PERMISSION_CONTROL, 1, 1, handlePlaylistClear },
-	{ "playlistdelete", PERMISSION_CONTROL, 2, 2, handlePlaylistDelete },
-	{ "playlistfind", PERMISSION_READ, 2, -1, handlePlaylistFind },
-	{ "playlistid", PERMISSION_READ, 0, 1, handlePlaylistId },
-	{ "playlistinfo", PERMISSION_READ, 0, 1, handlePlaylistInfo },
-	{ "playlistmove", PERMISSION_CONTROL, 3, 3, handlePlaylistMove },
-	{ "playlistsearch", PERMISSION_READ, 2, -1, handlePlaylistSearch },
-	{ "plchanges", PERMISSION_READ, 1, 1, handlePlaylistChanges },
-	{ "plchangesposid", PERMISSION_READ, 1, 1,
-	  handlePlaylistChangesPosId },
-	{ "previous", PERMISSION_CONTROL, 0, 0, handlePrevious },
-	{ "random", PERMISSION_CONTROL, 1, 1, handleRandom },
-	{ "rename", PERMISSION_CONTROL, 2, 2, handleRename },
-	{ "repeat", PERMISSION_CONTROL, 1, 1, handleRepeat },
-	{ "rm", PERMISSION_CONTROL, 1, 1, handleRm },
-	{ "save", PERMISSION_CONTROL, 1, 1, handleSave },
-	{ "search", PERMISSION_READ, 2, -1, handleSearch },
-	{ "seek", PERMISSION_CONTROL, 2, 2, handleSeek },
-	{ "seekid", PERMISSION_CONTROL, 2, 2, handleSeekId },
-	{ "setvol", PERMISSION_CONTROL, 1, 1, handleSetVol },
-	{ "shuffle", PERMISSION_CONTROL, 0, 0, handleShuffle },
-	{ "stats", PERMISSION_READ, 0, 0, handleStats },
-	{ "status", PERMISSION_READ, 0, 0, commandStatus },
-	{ "stop", PERMISSION_CONTROL, 0, 0, handleStop },
-	{ "swap", PERMISSION_CONTROL, 2, 2, handleSwap },
-	{ "swapid", PERMISSION_CONTROL, 2, 2, handleSwapId },
-	{ "tagtypes", PERMISSION_READ, 0, 0, handleTagTypes },
-	{ "update", PERMISSION_ADMIN, 0, 1, handleUpdate },
-	{ "urlhandlers", PERMISSION_READ, 0, 0, handleUrlHandlers },
-	{ "volume", PERMISSION_CONTROL, 1, 1, handleVolume },
+	{ "kill", PERMISSION_ADMIN, -1, -1, handle_kill },
+	{ "list", PERMISSION_READ, 1, -1, handle_list },
+	{ "listall", PERMISSION_READ, 0, 1, handle_listall },
+	{ "listallinfo", PERMISSION_READ, 0, 1, handle_listallinfo },
+	{ "listplaylist", PERMISSION_READ, 1, 1, handle_listplaylist },
+	{ "listplaylistinfo", PERMISSION_READ, 1, 1, handle_listplaylistinfo },
+	{ "listplaylists", PERMISSION_READ, 0, 0, handle_listplaylists },
+	{ "load", PERMISSION_ADD, 1, 1, handle_load },
+	{ "lsinfo", PERMISSION_READ, 0, 1, handle_lsinfo },
+	{ "move", PERMISSION_CONTROL, 2, 2, handle_move },
+	{ "moveid", PERMISSION_CONTROL, 2, 2, handle_moveid },
+	{ "next", PERMISSION_CONTROL, 0, 0, handle_next },
+	{ "notcommands", PERMISSION_NONE, 0, 0, handle_not_commands },
+	{ "outputs", PERMISSION_READ, 0, 0, handle_devices },
+	{ "password", PERMISSION_NONE, 1, 1, handle_password },
+	{ "pause", PERMISSION_CONTROL, 0, 1, handle_pause },
+	{ "ping", PERMISSION_NONE, 0, 0, handle_ping },
+	{ "play", PERMISSION_CONTROL, 0, 1, handle_play },
+	{ "playid", PERMISSION_CONTROL, 0, 1, handle_playid },
+	{ "playlist", PERMISSION_READ, 0, 0, handle_playlist },
+	{ "playlistadd", PERMISSION_CONTROL, 2, 2, handle_playlistadd },
+	{ "playlistclear", PERMISSION_CONTROL, 1, 1, handle_playlistclear },
+	{ "playlistdelete", PERMISSION_CONTROL, 2, 2, handle_playlistdelete },
+	{ "playlistfind", PERMISSION_READ, 2, -1, handle_playlistfind },
+	{ "playlistid", PERMISSION_READ, 0, 1, handle_playlistid },
+	{ "playlistinfo", PERMISSION_READ, 0, 1, handle_playlistinfo },
+	{ "playlistmove", PERMISSION_CONTROL, 3, 3, handle_playlistmove },
+	{ "playlistsearch", PERMISSION_READ, 2, -1, handle_playlistsearch },
+	{ "plchanges", PERMISSION_READ, 1, 1, handle_plchanges },
+	{ "plchangesposid", PERMISSION_READ, 1, 1, handle_plchangesposid },
+	{ "previous", PERMISSION_CONTROL, 0, 0, handle_previous },
+	{ "random", PERMISSION_CONTROL, 1, 1, handle_random },
+	{ "rename", PERMISSION_CONTROL, 2, 2, handle_rename },
+	{ "repeat", PERMISSION_CONTROL, 1, 1, handle_repeat },
+	{ "rm", PERMISSION_CONTROL, 1, 1, handle_rm },
+	{ "save", PERMISSION_CONTROL, 1, 1, handle_save },
+	{ "search", PERMISSION_READ, 2, -1, handle_search },
+	{ "seek", PERMISSION_CONTROL, 2, 2, handle_seek },
+	{ "seekid", PERMISSION_CONTROL, 2, 2, handle_seekid },
+	{ "setvol", PERMISSION_CONTROL, 1, 1, handle_setvol },
+	{ "shuffle", PERMISSION_CONTROL, 0, 0, handle_shuffle },
+	{ "stats", PERMISSION_READ, 0, 0, handle_stats },
+	{ "status", PERMISSION_READ, 0, 0, handle_status },
+	{ "stop", PERMISSION_CONTROL, 0, 0, handle_stop },
+	{ "swap", PERMISSION_CONTROL, 2, 2, handle_swap },
+	{ "swapid", PERMISSION_CONTROL, 2, 2, handle_swapid },
+	{ "tagtypes", PERMISSION_READ, 0, 0, handle_tagtypes },
+	{ "update", PERMISSION_ADMIN, 0, 1, handle_update },
+	{ "urlhandlers", PERMISSION_READ, 0, 0, handle_urlhandlers },
+	{ "volume", PERMISSION_CONTROL, 1, 1, handle_volume },
 };
 
 static const unsigned num_commands = sizeof(commands) / sizeof(commands[0]);
 
 /* don't be fooled, this is the command handler for "commands" command */
-static int handleCommands(struct client *client,
-			  mpd_unused int argc, mpd_unused char *argv[])
+static int
+handle_commands(struct client *client,
+		mpd_unused int argc, mpd_unused char *argv[])
 {
 	const unsigned permission = client_get_permission(client);
 	const struct command *cmd;
@@ -1275,16 +1297,16 @@ static int handleCommands(struct client *client,
 	for (unsigned i = 0; i < num_commands; ++i) {
 		cmd = &commands[i];
 
-		if (cmd->reqPermission == (permission & cmd->reqPermission)) {
+		if (cmd->permission == (permission & cmd->permission))
 			client_printf(client, "command: %s\n", cmd->cmd);
-		}
 	}
 
 	return 0;
 }
 
-static int handleNotcommands(struct client *client,
-			     mpd_unused int argc, mpd_unused char *argv[])
+static int
+handle_not_commands(struct client *client,
+		    mpd_unused int argc, mpd_unused char *argv[])
 {
 	const unsigned permission = client_get_permission(client);
 	const struct command *cmd;
@@ -1292,15 +1314,14 @@ static int handleNotcommands(struct client *client,
 	for (unsigned i = 0; i < num_commands; ++i) {
 		cmd = &commands[i];
 
-		if (cmd->reqPermission != (permission & cmd->reqPermission)) {
+		if (cmd->permission != (permission & cmd->permission))
 			client_printf(client, "command: %s\n", cmd->cmd);
-		}
 	}
 
 	return 0;
 }
 
-void initCommands(void)
+void command_init(void)
 {
 #ifndef NDEBUG
 	/* ensure that the command list is sorted */
@@ -1309,7 +1330,7 @@ void initCommands(void)
 #endif
 }
 
-void finishCommands(void)
+void command_finish(void)
 {
 }
 
@@ -1336,13 +1357,13 @@ command_lookup(const char *name)
 }
 
 static int
-checkArgcAndPermission(const struct command *cmd, struct client *client,
-		       unsigned permission, int argc, char *argv[])
+command_check_request(const struct command *cmd, struct client *client,
+		      unsigned permission, int argc, char *argv[])
 {
 	int min = cmd->min + 1;
 	int max = cmd->max + 1;
 
-	if (cmd->reqPermission != (permission & cmd->reqPermission)) {
+	if (cmd->permission != (permission & cmd->permission)) {
 		if (client != NULL)
 			command_error(client, ACK_ERROR_PERMISSION,
 				      "you don't have permission for \"%s\"",
@@ -1374,9 +1395,8 @@ checkArgcAndPermission(const struct command *cmd, struct client *client,
 }
 
 static const struct command *
-getCommandEntryAndCheckArgcAndPermission(struct client *client,
-					 unsigned permission,
-					 int argc, char *argv[])
+command_checked_lookup(struct client *client, unsigned permission,
+		       int argc, char *argv[])
 {
 	static char unknown[] = "";
 	const struct command *cmd;
@@ -1396,14 +1416,14 @@ getCommandEntryAndCheckArgcAndPermission(struct client *client,
 
 	current_command = cmd->cmd;
 
-	if (checkArgcAndPermission(cmd, client, permission, argc, argv) < 0) {
+	if (command_check_request(cmd, client, permission, argc, argv) < 0)
 		return NULL;
-	}
 
 	return cmd;
 }
 
-int processCommand(struct client *client, char *commandString)
+int
+command_process(struct client *client, char *commandString)
 {
 	int argc;
 	char *argv[COMMAND_ARGV_MAX] = { NULL };
@@ -1413,9 +1433,8 @@ int processCommand(struct client *client, char *commandString)
 	if (!(argc = buffer2array(commandString, argv, COMMAND_ARGV_MAX)))
 		return 0;
 
-	cmd = getCommandEntryAndCheckArgcAndPermission(client,
-						       client_get_permission(client),
-						       argc, argv);
+	cmd = command_checked_lookup(client, client_get_permission(client),
+				     argc, argv);
 	if (cmd)
 		ret = cmd->handler(client, argc, argv);
 
@@ -1424,27 +1443,28 @@ int processCommand(struct client *client, char *commandString)
 	return ret;
 }
 
-int processListOfCommands(struct client *client,
-			  int listOK, struct strnode *list)
+int
+command_process_list(struct client *client,
+		     int list_ok, struct strnode *list)
 {
 	struct strnode *cur = list;
 	int ret = 0;
 
-	command_listNum = 0;
+	command_list_num = 0;
 
 	while (cur) {
-		DEBUG("processListOfCommands: process command \"%s\"\n",
+		DEBUG("command_process_list: process command \"%s\"\n",
 		      cur->data);
-		ret = processCommand(client, cur->data);
-		DEBUG("processListOfCommands: command returned %i\n", ret);
+		ret = command_process(client, cur->data);
+		DEBUG("command_process_list: command returned %i\n", ret);
 		if (ret != 0 || client_is_expired(client))
 			goto out;
-		else if (listOK)
+		else if (list_ok)
 			client_puts(client, "list_OK\n");
-		command_listNum++;
+		command_list_num++;
 		cur = cur->next;
 	}
 out:
-	command_listNum = 0;
+	command_list_num = 0;
 	return ret;
 }
