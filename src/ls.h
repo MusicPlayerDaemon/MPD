@@ -26,8 +26,6 @@
 struct stat;
 struct client;
 
-int lsPlaylists(struct client *client, const char *utf8path);
-
 const char *getSuffix(const char *utf8file);
 
 int isValidRemoteUtf8Url(const char *utf8url);

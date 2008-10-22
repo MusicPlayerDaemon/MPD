@@ -202,6 +202,17 @@ static int print_playlist_result(struct client *client,
 	return -1;
 }
 
+static void
+print_spl_list(struct client *client, GPtrArray *list)
+{
+	for (unsigned i = 0; i < list->len; ++i) {
+		struct stored_playlist_info *playlist =
+			g_ptr_array_index(list, i);
+
+		client_printf(client, "playlist: %s\n", playlist->name);
+	}
+}
+
 static int handleUrlHandlers(struct client *client,
 			     mpd_unused int argc, mpd_unused char *argv[])
 {
@@ -524,8 +535,13 @@ static int handleLsInfo(struct client *client,
 
 	directory_print(client, directory);
 
-	if (isRootDirectory(path))
-		return lsPlaylists(client, path);
+	if (isRootDirectory(path)) {
+		GPtrArray *list = spl_list();
+		if (list != NULL) {
+			print_spl_list(client, list);
+			spl_list_free(list);
+		}
+	}
 
 	return 0;
 }

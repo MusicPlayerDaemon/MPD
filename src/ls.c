@@ -98,24 +98,6 @@ int isRemoteUrl(const char *url)
 	return 0;
 }
 
-int lsPlaylists(struct client *client, const char *utf8path)
-{
-	GPtrArray *list = spl_list();
-	if (list == NULL)
-		return 0;
-
-	for (unsigned i = 0; i < list->len; ++i) {
-		struct stored_playlist_info *playlist =
-			g_ptr_array_index(list, i);
-
-		client_printf(client, "playlist: %s%s\n",
-			      utf8path, playlist->name);
-	}
-
-	spl_list_free(list);
-	return 0;
-}
-
 /* suffixes should be ascii only characters */
 const char *getSuffix(const char *utf8file)
 {
