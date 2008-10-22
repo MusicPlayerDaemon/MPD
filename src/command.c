@@ -128,13 +128,11 @@
  */
 #define COMMAND_ARGV_MAX	(2+(TAG_NUM_OF_ITEM_TYPES*2))
 
-typedef struct _CommandEntry CommandEntry;
-
 typedef int (*CommandHandlerFunction) (struct client *, int, char **);
 
 /* if min: -1 don't check args *
  * if max: -1 no max args      */
-struct _CommandEntry {
+struct command {
 	const char *cmd;
 	int min;
 	int max;
@@ -277,7 +275,7 @@ static void addCommand(const char *name,
 		       int maxargs,
 		       CommandHandlerFunction handler_func)
 {
-	CommandEntry *cmd = xmalloc(sizeof(CommandEntry));
+	struct command *cmd = xmalloc(sizeof(*cmd));
 	cmd->cmd = name;
 	cmd->min = minargs;
 	cmd->max = maxargs;
@@ -1194,10 +1192,10 @@ static int handleCommands(struct client *client,
 {
 	const unsigned permission = client_get_permission(client);
 	ListNode *node = commandList->firstNode;
-	CommandEntry *cmd;
+	struct command *cmd;
 
 	while (node != NULL) {
-		cmd = (CommandEntry *) node->data;
+		cmd = (struct command *) node->data;
 		if (cmd->reqPermission == (permission & cmd->reqPermission)) {
 			client_printf(client, "command: %s\n", cmd->cmd);
 		}
@@ -1213,10 +1211,10 @@ static int handleNotcommands(struct client *client,
 {
 	const unsigned permission = client_get_permission(client);
 	ListNode *node = commandList->firstNode;
-	CommandEntry *cmd;
+	struct command *cmd;
 
 	while (node != NULL) {
-		cmd = (CommandEntry *) node->data;
+		cmd = (struct command *) node->data;
 
 		if (cmd->reqPermission != (permission & cmd->reqPermission)) {
 			client_printf(client, "command: %s\n", cmd->cmd);
@@ -1347,7 +1345,7 @@ void finishCommands(void)
 	freeList(commandList);
 }
 
-static int checkArgcAndPermission(CommandEntry * cmd, struct client *client,
+static int checkArgcAndPermission(struct command *cmd, struct client *client,
 				  unsigned permission, int argc, char *argv[])
 {
 	int min = cmd->min + 1;
@@ -1384,13 +1382,13 @@ static int checkArgcAndPermission(CommandEntry * cmd, struct client *client,
 		return 0;
 }
 
-static CommandEntry *getCommandEntryAndCheckArgcAndPermission(struct client *client,
+static struct command *getCommandEntryAndCheckArgcAndPermission(struct client *client,
 							      unsigned permission,
 							      int argc,
 							      char *argv[])
 {
 	static char unknown[] = "";
-	CommandEntry *cmd;
+	struct command *cmd;
 
 	current_command = unknown;
 
@@ -1417,7 +1415,7 @@ int processCommand(struct client *client, char *commandString)
 {
 	int argc;
 	char *argv[COMMAND_ARGV_MAX] = { NULL };
-	CommandEntry *cmd;
+	struct command *cmd;
 	int ret = -1;
 
 	if (!(argc = buffer2array(commandString, argv, COMMAND_ARGV_MAX)))
