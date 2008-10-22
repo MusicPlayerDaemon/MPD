@@ -1458,13 +1458,13 @@ command_process_list(struct client *client,
 		ret = command_process(client, cur->data);
 		DEBUG("command_process_list: command returned %i\n", ret);
 		if (ret != 0 || client_is_expired(client))
-			goto out;
+			break;
 		else if (list_ok)
 			client_puts(client, "list_OK\n");
 		command_list_num++;
 		cur = cur->next;
 	}
-out:
+
 	command_list_num = 0;
 	return ret;
 }
