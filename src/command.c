@@ -113,8 +113,9 @@ mpd_fprintf_ void command_error(struct client *client, enum ack error,
 	va_end(args);
 }
 
-static int mpd_fprintf__ check_uint32(struct client *client, uint32_t *dst,
-                                      const char *s, const char *fmt, ...)
+static bool mpd_fprintf__
+check_uint32(struct client *client, uint32_t *dst,
+	     const char *s, const char *fmt, ...)
 {
 	char *test;
 
@@ -124,13 +125,14 @@ static int mpd_fprintf__ check_uint32(struct client *client, uint32_t *dst,
 		va_start(args, fmt);
 		command_error_v(client, ACK_ERROR_ARG, fmt, args);
 		va_end(args);
-		return -1;
+		return false;
 	}
-	return 0;
+	return true;
 }
 
-static int mpd_fprintf__ check_int(struct client *client, int *dst,
-                                   const char *s, const char *fmt, ...)
+static bool mpd_fprintf__
+check_int(struct client *client, int *dst,
+	  const char *s, const char *fmt, ...)
 {
 	char *test;
 
@@ -142,9 +144,9 @@ static int mpd_fprintf__ check_int(struct client *client, int *dst,
 		va_start(args, fmt);
 		command_error_v(client, ACK_ERROR_ARG, fmt, args);
 		va_end(args);
-		return -1;
+		return false;
 	}
-	return 0;
+	return true;
 }
 
 static enum command_return
@@ -243,7 +245,7 @@ handle_play(struct client *client, int argc, char *argv[])
 	int song = -1;
 	enum playlist_result result;
 
-	if (argc == 2 && check_int(client, &song, argv[1], need_positive) < 0)
+	if (argc == 2 && !check_int(client, &song, argv[1], need_positive))
 		return COMMAND_RETURN_ERROR;
 	result = playPlaylist(song, 0);
 	return print_playlist_result(client, result);
@@ -255,7 +257,7 @@ handle_playid(struct client *client, int argc, char *argv[])
 	int id = -1;
 	enum playlist_result result;
 
-	if (argc == 2 && check_int(client, &id, argv[1], need_positive) < 0)
+	if (argc == 2 && !check_int(client, &id, argv[1], need_positive))
 		return COMMAND_RETURN_ERROR;
 
 	result = playPlaylistById(id, 0);
@@ -290,7 +292,7 @@ handle_pause(struct client *client,
 {
 	if (argc == 2) {
 		int pause_flag;
-		if (check_int(client, &pause_flag, argv[1], check_boolean, argv[1]) < 0)
+		if (!check_int(client, &pause_flag, argv[1], check_boolean, argv[1]))
 			return COMMAND_RETURN_ERROR;
 		playerSetPause(pause_flag);
 		return COMMAND_RETURN_OK;
@@ -428,8 +430,7 @@ handle_addid(struct client *client, int argc, char *argv[])
 
 	if (argc == 3) {
 		int to;
-		if (check_int(client, &to, argv[2],
-			      check_integer, argv[2]) < 0)
+		if (!check_int(client, &to, argv[2], check_integer, argv[2]))
 			return COMMAND_RETURN_ERROR;
 		result = moveSongInPlaylistById(added_id, to);
 		if (result != PLAYLIST_RESULT_SUCCESS) {
@@ -450,7 +451,7 @@ handle_delete(struct client *client, mpd_unused int argc, char *argv[])
 	int song;
 	enum playlist_result result;
 
-	if (check_int(client, &song, argv[1], need_positive) < 0)
+	if (!check_int(client, &song, argv[1], need_positive))
 		return COMMAND_RETURN_ERROR;
 
 	result = deleteFromPlaylist(song);
@@ -463,7 +464,7 @@ handle_deleteid(struct client *client, mpd_unused int argc, char *argv[])
 	int id;
 	enum playlist_result result;
 
-	if (check_int(client, &id, argv[1], need_positive) < 0)
+	if (!check_int(client, &id, argv[1], need_positive))
 		return COMMAND_RETURN_ERROR;
 
 	result = deleteFromPlaylistById(id);
@@ -590,7 +591,7 @@ handle_plchanges(struct client *client, mpd_unused int argc, char *argv[])
 {
 	uint32_t version;
 
-	if (check_uint32(client, &version, argv[1], need_positive) < 0)
+	if (!check_uint32(client, &version, argv[1], need_positive))
 		return COMMAND_RETURN_ERROR;
 	return playlistChanges(client, version);
 }
@@ -600,7 +601,7 @@ handle_plchangesposid(struct client *client, mpd_unused int argc, char *argv[])
 {
 	uint32_t version;
 
-	if (check_uint32(client, &version, argv[1], need_positive) < 0)
+	if (!check_uint32(client, &version, argv[1], need_positive))
 		return COMMAND_RETURN_ERROR;
 	return playlistChangesPosId(client, version);
 }
@@ -611,7 +612,7 @@ handle_playlistinfo(struct client *client, int argc, char *argv[])
 	int song = -1;
 	enum playlist_result result;
 
-	if (argc == 2 && check_int(client, &song, argv[1], need_positive) < 0)
+	if (argc == 2 && !check_int(client, &song, argv[1], need_positive))
 		return COMMAND_RETURN_ERROR;
 
 	result = playlistInfo(client, song);
@@ -624,7 +625,7 @@ handle_playlistid(struct client *client, int argc, char *argv[])
 	int id = -1;
 	enum playlist_result result;
 
-	if (argc == 2 && check_int(client, &id, argv[1], need_positive) < 0)
+	if (argc == 2 && !check_int(client, &id, argv[1], need_positive))
 		return COMMAND_RETURN_ERROR;
 
 	result = playlistId(client, id);
@@ -753,7 +754,7 @@ handle_playlistdelete(struct client *client,
 	int from;
 	enum playlist_result result;
 
-	if (check_int(client, &from, argv[2], check_integer, argv[2]) < 0)
+	if (!check_int(client, &from, argv[2], check_integer, argv[2]))
 		return COMMAND_RETURN_ERROR;
 
 	result = spl_remove_index(playlist, from);
@@ -767,9 +768,9 @@ handle_playlistmove(struct client *client, mpd_unused int argc, char *argv[])
 	int from, to;
 	enum playlist_result result;
 
-	if (check_int(client, &from, argv[2], check_integer, argv[2]) < 0)
+	if (!check_int(client, &from, argv[2], check_integer, argv[2]))
 		return COMMAND_RETURN_ERROR;
-	if (check_int(client, &to, argv[3], check_integer, argv[3]) < 0)
+	if (!check_int(client, &to, argv[3], check_integer, argv[3]))
 		return COMMAND_RETURN_ERROR;
 
 	result = spl_move_index(playlist, from, to);
@@ -837,7 +838,7 @@ handle_volume(struct client *client, mpd_unused int argc, char *argv[])
 {
 	int change, ret;
 
-	if (check_int(client, &change, argv[1], need_integer) < 0)
+	if (!check_int(client, &change, argv[1], need_integer))
 		return COMMAND_RETURN_ERROR;
 
 	ret = changeVolumeLevel(change, 1);
@@ -853,7 +854,7 @@ handle_setvol(struct client *client, mpd_unused int argc, char *argv[])
 {
 	int level, ret;
 
-	if (check_int(client, &level, argv[1], need_integer) < 0)
+	if (!check_int(client, &level, argv[1], need_integer))
 		return COMMAND_RETURN_ERROR;
 
 	ret = changeVolumeLevel(level, 0);
@@ -869,7 +870,7 @@ handle_repeat(struct client *client, mpd_unused int argc, char *argv[])
 {
 	int status;
 
-	if (check_int(client, &status, argv[1], need_integer) < 0)
+	if (!check_int(client, &status, argv[1], need_integer))
 		return COMMAND_RETURN_ERROR;
 
 	if (status != 0 && status != 1) {
@@ -887,7 +888,7 @@ handle_random(struct client *client, mpd_unused int argc, char *argv[])
 {
 	int status;
 
-	if (check_int(client, &status, argv[1], need_integer) < 0)
+	if (!check_int(client, &status, argv[1], need_integer))
 		return COMMAND_RETURN_ERROR;
 
 	if (status != 0 && status != 1) {
@@ -975,9 +976,9 @@ handle_move(struct client *client, mpd_unused int argc, char *argv[])
 	int from, to;
 	enum playlist_result result;
 
-	if (check_int(client, &from, argv[1], check_integer, argv[1]) < 0)
+	if (!check_int(client, &from, argv[1], check_integer, argv[1]))
 		return COMMAND_RETURN_ERROR;
-	if (check_int(client, &to, argv[2], check_integer, argv[2]) < 0)
+	if (!check_int(client, &to, argv[2], check_integer, argv[2]))
 		return COMMAND_RETURN_ERROR;
 	result = moveSongInPlaylist(from, to);
 	return print_playlist_result(client, result);
@@ -989,9 +990,9 @@ handle_moveid(struct client *client, mpd_unused int argc, char *argv[])
 	int id, to;
 	enum playlist_result result;
 
-	if (check_int(client, &id, argv[1], check_integer, argv[1]) < 0)
+	if (!check_int(client, &id, argv[1], check_integer, argv[1]))
 		return COMMAND_RETURN_ERROR;
-	if (check_int(client, &to, argv[2], check_integer, argv[2]) < 0)
+	if (!check_int(client, &to, argv[2], check_integer, argv[2]))
 		return COMMAND_RETURN_ERROR;
 	result = moveSongInPlaylistById(id, to);
 	return print_playlist_result(client, result);
@@ -1003,9 +1004,9 @@ handle_swap(struct client *client, mpd_unused int argc, char *argv[])
 	int song1, song2;
 	enum playlist_result result;
 
-	if (check_int(client, &song1, argv[1], check_integer, argv[1]) < 0)
+	if (!check_int(client, &song1, argv[1], check_integer, argv[1]))
 		return COMMAND_RETURN_ERROR;
-	if (check_int(client, &song2, argv[2], check_integer, argv[2]) < 0)
+	if (!check_int(client, &song2, argv[2], check_integer, argv[2]))
 		return COMMAND_RETURN_ERROR;
 	result = swapSongsInPlaylist(song1, song2);
 	return print_playlist_result(client, result);
@@ -1017,9 +1018,9 @@ handle_swapid(struct client *client, mpd_unused int argc, char *argv[])
 	int id1, id2;
 	enum playlist_result result;
 
-	if (check_int(client, &id1, argv[1], check_integer, argv[1]) < 0)
+	if (!check_int(client, &id1, argv[1], check_integer, argv[1]))
 		return COMMAND_RETURN_ERROR;
-	if (check_int(client, &id2, argv[2], check_integer, argv[2]) < 0)
+	if (!check_int(client, &id2, argv[2], check_integer, argv[2]))
 		return COMMAND_RETURN_ERROR;
 	result = swapSongsInPlaylistById(id1, id2);
 	return print_playlist_result(client, result);
@@ -1031,9 +1032,9 @@ handle_seek(struct client *client, mpd_unused int argc, char *argv[])
 	int song, seek_time;
 	enum playlist_result result;
 
-	if (check_int(client, &song, argv[1], check_integer, argv[1]) < 0)
+	if (!check_int(client, &song, argv[1], check_integer, argv[1]))
 		return COMMAND_RETURN_ERROR;
-	if (check_int(client, &seek_time, argv[2], check_integer, argv[2]) < 0)
+	if (!check_int(client, &seek_time, argv[2], check_integer, argv[2]))
 		return COMMAND_RETURN_ERROR;
 
 	result = seekSongInPlaylist(song, seek_time);
@@ -1046,9 +1047,9 @@ handle_seekid(struct client *client, mpd_unused int argc, char *argv[])
 	int id, seek_time;
 	enum playlist_result result;
 
-	if (check_int(client, &id, argv[1], check_integer, argv[1]) < 0)
+	if (!check_int(client, &id, argv[1], check_integer, argv[1]))
 		return COMMAND_RETURN_ERROR;
-	if (check_int(client, &seek_time, argv[2], check_integer, argv[2]) < 0)
+	if (!check_int(client, &seek_time, argv[2], check_integer, argv[2]))
 		return COMMAND_RETURN_ERROR;
 
 	result = seekSongInPlaylistById(id, seek_time);
@@ -1099,7 +1100,7 @@ handle_crossfade(struct client *client, mpd_unused int argc, char *argv[])
 {
 	int xfade_time;
 
-	if (check_int(client, &xfade_time, argv[1], check_non_negative, argv[1]) < 0)
+	if (!check_int(client, &xfade_time, argv[1], check_non_negative, argv[1]))
 		return COMMAND_RETURN_ERROR;
 	setPlayerCrossFade(xfade_time);
 
@@ -1111,7 +1112,7 @@ handle_enableoutput(struct client *client, mpd_unused int argc, char *argv[])
 {
 	int device, ret;
 
-	if (check_int(client, &device, argv[1], check_non_negative, argv[1]) < 0)
+	if (!check_int(client, &device, argv[1], check_non_negative, argv[1]))
 		return COMMAND_RETURN_ERROR;
 
 	ret = enableAudioDevice(device);
@@ -1127,7 +1128,7 @@ handle_disableoutput(struct client *client, mpd_unused int argc, char *argv[])
 {
 	int device, ret;
 
-	if (check_int(client, &device, argv[1], check_non_negative, argv[1]) < 0)
+	if (!check_int(client, &device, argv[1], check_non_negative, argv[1]))
 		return COMMAND_RETURN_ERROR;
 
 	ret = disableAudioDevice(device);
@@ -1358,7 +1359,7 @@ command_lookup(const char *name)
 	return NULL;
 }
 
-static int
+static bool
 command_check_request(const struct command *cmd, struct client *client,
 		      unsigned permission, int argc, char *argv[])
 {
@@ -1370,30 +1371,30 @@ command_check_request(const struct command *cmd, struct client *client,
 			command_error(client, ACK_ERROR_PERMISSION,
 				      "you don't have permission for \"%s\"",
 				      cmd->cmd);
-		return -1;
+		return false;
 	}
 
 	if (min == 0)
-		return 0;
+		return true;
 
 	if (min == max && max != argc) {
 		if (client != NULL)
 			command_error(client, ACK_ERROR_ARG,
 				      "wrong number of arguments for \"%s\"",
 				      argv[0]);
-		return -1;
+		return false;
 	} else if (argc < min) {
 		if (client != NULL)
 			command_error(client, ACK_ERROR_ARG,
 				      "too few arguments for \"%s\"", argv[0]);
-		return -1;
+		return false;
 	} else if (argc > max && max /* != 0 */ ) {
 		if (client != NULL)
 			command_error(client, ACK_ERROR_ARG,
 				      "too many arguments for \"%s\"", argv[0]);
-		return -1;
+		return false;
 	} else
-		return 0;
+		return true;
 }
 
 static const struct command *
@@ -1418,7 +1419,7 @@ command_checked_lookup(struct client *client, unsigned permission,
 
 	current_command = cmd->cmd;
 
-	if (command_check_request(cmd, client, permission, argc, argv) < 0)
+	if (!command_check_request(cmd, client, permission, argc, argv))
 		return NULL;
 
 	return cmd;
@@ -1447,7 +1448,7 @@ command_process(struct client *client, char *commandString)
 
 enum command_return
 command_process_list(struct client *client,
-		     int list_ok, struct strnode *list)
+		     bool list_ok, struct strnode *list)
 {
 	struct strnode *cur = list;
 	enum command_return ret = COMMAND_RETURN_OK;
