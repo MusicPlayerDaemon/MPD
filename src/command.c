@@ -92,7 +92,7 @@ void command_success(struct client *client)
 	client_puts(client, "OK\n");
 }
 
-static void command_error_v(struct client *client, int error,
+static void command_error_v(struct client *client, enum ack error,
 			    const char *fmt, va_list args)
 {
 	assert(client != NULL);
@@ -106,7 +106,7 @@ static void command_error_v(struct client *client, int error,
 	current_command = NULL;
 }
 
-mpd_fprintf_ void command_error(struct client *client, int error,
+mpd_fprintf_ void command_error(struct client *client, enum ack error,
 				const char *fmt, ...)
 {
 	va_list args;

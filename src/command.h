@@ -21,6 +21,7 @@
 
 #include "gcc.h"
 #include "sllist.h"
+#include "ack.h"
 
 #define COMMAND_RETURN_KILL	10
 #define COMMAND_RETURN_CLOSE	20
@@ -39,7 +40,7 @@ void finishCommands(void);
 
 void command_success(struct client *client);
 
-mpd_fprintf_ void command_error(struct client *client, int error,
+mpd_fprintf_ void command_error(struct client *client, enum ack error,
 				const char *fmt, ...);
 
 #endif
