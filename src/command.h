@@ -23,9 +23,12 @@
 #include "sllist.h"
 #include "ack.h"
 
-#define COMMAND_RETURN_KILL	10
-#define COMMAND_RETURN_CLOSE	20
-#define COMMAND_MASTER_READY	30
+enum command_return {
+	COMMAND_RETURN_ERROR = -1,
+	COMMAND_RETURN_OK = 0,
+	COMMAND_RETURN_KILL = 10,
+	COMMAND_RETURN_CLOSE = 20,
+};
 
 struct client;
 
@@ -33,11 +36,11 @@ void command_init(void);
 
 void command_finish(void);
 
-int
+enum command_return
 command_process_list(struct client *client,
 		     int list_ok, struct strnode *list);
 
-int
+enum command_return
 command_process(struct client *client, char *commandString);
 
 void command_success(struct client *client);

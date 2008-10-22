@@ -70,7 +70,7 @@ struct command {
 	unsigned permission;
 	int min;
 	int max;
-	int (*handler)(struct client *client, int argc, char **argv);
+	enum command_return (*handler)(struct client *client, int argc, char **argv);
 };
 
 /* this should really be "need a non-negative integer": */
@@ -147,57 +147,58 @@ static int mpd_fprintf__ check_int(struct client *client, int *dst,
 	return 0;
 }
 
-static int print_playlist_result(struct client *client,
-				 enum playlist_result result)
+static enum command_return
+print_playlist_result(struct client *client,
+		      enum playlist_result result)
 {
 	switch (result) {
 	case PLAYLIST_RESULT_SUCCESS:
-		return 0;
+		return COMMAND_RETURN_OK;
 
 	case PLAYLIST_RESULT_ERRNO:
 		command_error(client, ACK_ERROR_SYSTEM, strerror(errno));
-		return -1;
+		return COMMAND_RETURN_ERROR;
 
 	case PLAYLIST_RESULT_DENIED:
 		command_error(client, ACK_ERROR_NO_EXIST, "Access denied");
-		return -1;
+		return COMMAND_RETURN_ERROR;
 
 	case PLAYLIST_RESULT_NO_SUCH_SONG:
 		command_error(client, ACK_ERROR_NO_EXIST, "No such song");
-		return -1;
+		return COMMAND_RETURN_ERROR;
 
 	case PLAYLIST_RESULT_NO_SUCH_LIST:
 		command_error(client, ACK_ERROR_NO_EXIST, "No such playlist");
-		return -1;
+		return COMMAND_RETURN_ERROR;
 
 	case PLAYLIST_RESULT_LIST_EXISTS:
 		command_error(client, ACK_ERROR_EXIST,
 			      "Playlist already exists");
-		return -1;
+		return COMMAND_RETURN_ERROR;
 
 	case PLAYLIST_RESULT_BAD_NAME:
 		command_error(client, ACK_ERROR_ARG,
 			      "playlist name is invalid: "
 			      "playlist names may not contain slashes,"
 			      " newlines or carriage returns");
-		return -1;
+		return COMMAND_RETURN_ERROR;
 
 	case PLAYLIST_RESULT_BAD_RANGE:
 		command_error(client, ACK_ERROR_ARG, "Bad song index");
-		return -1;
+		return COMMAND_RETURN_ERROR;
 
 	case PLAYLIST_RESULT_NOT_PLAYING:
 		command_error(client, ACK_ERROR_PLAYER_SYNC, "Not playing");
-		return -1;
+		return COMMAND_RETURN_ERROR;
 
 	case PLAYLIST_RESULT_TOO_LARGE:
 		command_error(client, ACK_ERROR_PLAYLIST_MAX,
 			      "playlist is at the max size");
-		return -1;
+		return COMMAND_RETURN_ERROR;
 	}
 
 	assert(0);
-	return -1;
+	return COMMAND_RETURN_ERROR;
 }
 
 static void
@@ -219,7 +220,7 @@ print_spl_list(struct client *client, GPtrArray *list)
 	}
 }
 
-static int
+static enum command_return
 handle_urlhandlers(struct client *client,
 		   mpd_unused int argc, mpd_unused char *argv[])
 {
@@ -228,48 +229,48 @@ handle_urlhandlers(struct client *client,
 	return printRemoteUrlHandlers(client);
 }
 
-static int
+static enum command_return
 handle_tagtypes(struct client *client,
 		mpd_unused int argc, mpd_unused char *argv[])
 {
 	tag_print_types(client);
-	return 0;
+	return COMMAND_RETURN_OK;
 }
 
-static int
+static enum command_return
 handle_play(struct client *client, int argc, char *argv[])
 {
 	int song = -1;
 	enum playlist_result result;
 
 	if (argc == 2 && check_int(client, &song, argv[1], need_positive) < 0)
-		return -1;
+		return COMMAND_RETURN_ERROR;
 	result = playPlaylist(song, 0);
 	return print_playlist_result(client, result);
 }
 
-static int
+static enum command_return
 handle_playid(struct client *client, int argc, char *argv[])
 {
 	int id = -1;
 	enum playlist_result result;
 
 	if (argc == 2 && check_int(client, &id, argv[1], need_positive) < 0)
-		return -1;
+		return COMMAND_RETURN_ERROR;
 
 	result = playPlaylistById(id, 0);
 	return print_playlist_result(client, result);
 }
 
-static int
+static enum command_return
 handle_stop(mpd_unused struct client *client,
 	    mpd_unused int argc, mpd_unused char *argv[])
 {
 	stopPlaylist();
-	return 0;
+	return COMMAND_RETURN_OK;
 }
 
-static int
+static enum command_return
 handle_currentsong(struct client *client,
 		   mpd_unused int argc, mpd_unused char *argv[])
 {
@@ -277,29 +278,29 @@ handle_currentsong(struct client *client,
 	enum playlist_result result;
 
 	if (song < 0)
-		return 0;
+		return COMMAND_RETURN_OK;
 
 	result = playlistInfo(client, song);
 	return print_playlist_result(client, result);
 }
 
-static int
+static enum command_return
 handle_pause(struct client *client,
 	     int argc, char *argv[])
 {
 	if (argc == 2) {
 		int pause_flag;
 		if (check_int(client, &pause_flag, argv[1], check_boolean, argv[1]) < 0)
-			return -1;
+			return COMMAND_RETURN_ERROR;
 		playerSetPause(pause_flag);
-		return 0;
+		return COMMAND_RETURN_OK;
 	}
 
 	playerPause();
-	return 0;
+	return COMMAND_RETURN_OK;
 }
 
-static int
+static enum command_return
 handle_status(struct client *client,
 	      mpd_unused int argc, mpd_unused char *argv[])
 {
@@ -367,24 +368,24 @@ handle_status(struct client *client,
 			      getPlayerErrorStr());
 	}
 
-	return 0;
+	return COMMAND_RETURN_OK;
 }
 
-static int
+static enum command_return
 handle_kill(mpd_unused struct client *client,
 	    mpd_unused int argc, mpd_unused char *argv[])
 {
 	return COMMAND_RETURN_KILL;
 }
 
-static int
+static enum command_return
 handle_close(mpd_unused struct client *client,
 	     mpd_unused int argc, mpd_unused char *argv[])
 {
 	return COMMAND_RETURN_CLOSE;
 }
 
-static int
+static enum command_return
 handle_add(struct client *client, mpd_unused int argc, char *argv[])
 {
 	char *path = argv[1];
@@ -403,13 +404,13 @@ handle_add(struct client *client, mpd_unused int argc, char *argv[])
 	if (result == (enum playlist_result)-1) {
 		command_error(client, ACK_ERROR_NO_EXIST,
 			      "directory or file not found");
-		return -1;
+		return COMMAND_RETURN_ERROR;
 	}
 
 	return print_playlist_result(client, result);
 }
 
-static int
+static enum command_return
 handle_addid(struct client *client, int argc, char *argv[])
 {
 	int added_id;
@@ -429,10 +430,11 @@ handle_addid(struct client *client, int argc, char *argv[])
 		int to;
 		if (check_int(client, &to, argv[2],
 			      check_integer, argv[2]) < 0)
-			return -1;
+			return COMMAND_RETURN_ERROR;
 		result = moveSongInPlaylistById(added_id, to);
 		if (result != PLAYLIST_RESULT_SUCCESS) {
-			int ret = print_playlist_result(client, result);
+			enum command_return ret =
+				print_playlist_result(client, result);
 			deleteFromPlaylistById(added_id);
 			return ret;
 		}
@@ -442,57 +444,57 @@ handle_addid(struct client *client, int argc, char *argv[])
 	return result;
 }
 
-static int
+static enum command_return
 handle_delete(struct client *client, mpd_unused int argc, char *argv[])
 {
 	int song;
 	enum playlist_result result;
 
 	if (check_int(client, &song, argv[1], need_positive) < 0)
-		return -1;
+		return COMMAND_RETURN_ERROR;
 
 	result = deleteFromPlaylist(song);
 	return print_playlist_result(client, result);
 }
 
-static int
+static enum command_return
 handle_deleteid(struct client *client, mpd_unused int argc, char *argv[])
 {
 	int id;
 	enum playlist_result result;
 
 	if (check_int(client, &id, argv[1], need_positive) < 0)
-		return -1;
+		return COMMAND_RETURN_ERROR;
 
 	result = deleteFromPlaylistById(id);
 	return print_playlist_result(client, result);
 }
 
-static int
+static enum command_return
 handle_playlist(struct client *client,
 	       mpd_unused int argc, mpd_unused char *argv[])
 {
 	showPlaylist(client);
-	return 0;
+	return COMMAND_RETURN_OK;
 }
 
-static int
+static enum command_return
 handle_shuffle(mpd_unused struct client *client,
 	       mpd_unused int argc, mpd_unused char *argv[])
 {
 	shufflePlaylist();
-	return 0;
+	return COMMAND_RETURN_OK;
 }
 
-static int
+static enum command_return
 handle_clear(mpd_unused struct client *client,
 	     mpd_unused int argc, mpd_unused char *argv[])
 {
 	clearPlaylist();
-	return 0;
+	return COMMAND_RETURN_OK;
 }
 
-static int
+static enum command_return
 handle_save(struct client *client,
 	    mpd_unused int argc, char *argv[])
 {
@@ -502,7 +504,7 @@ handle_save(struct client *client,
 	return print_playlist_result(client, result);
 }
 
-static int
+static enum command_return
 handle_load(struct client *client, mpd_unused int argc, char *argv[])
 {
 	enum playlist_result result;
@@ -511,7 +513,7 @@ handle_load(struct client *client, mpd_unused int argc, char *argv[])
 	return print_playlist_result(client, result);
 }
 
-static int
+static enum command_return
 handle_listplaylist(struct client *client, mpd_unused int argc, char *argv[])
 {
 	int ret;
@@ -523,7 +525,7 @@ handle_listplaylist(struct client *client, mpd_unused int argc, char *argv[])
 	return ret;
 }
 
-static int
+static enum command_return
 handle_listplaylistinfo(struct client *client,
 			mpd_unused int argc, char *argv[])
 {
@@ -536,7 +538,7 @@ handle_listplaylistinfo(struct client *client,
 	return ret;
 }
 
-static int
+static enum command_return
 handle_lsinfo(struct client *client, int argc, char *argv[])
 {
 	const char *path = "";
@@ -549,7 +551,7 @@ handle_lsinfo(struct client *client, int argc, char *argv[])
 	if (directory == NULL) {
 		command_error(client, ACK_ERROR_NO_EXIST,
 			      "directory not found");
-		return -1;
+		return COMMAND_RETURN_ERROR;
 	}
 
 	directory_print(client, directory);
@@ -562,10 +564,10 @@ handle_lsinfo(struct client *client, int argc, char *argv[])
 		}
 	}
 
-	return 0;
+	return COMMAND_RETURN_OK;
 }
 
-static int
+static enum command_return
 handle_rm(struct client *client, mpd_unused int argc, char *argv[])
 {
 	enum playlist_result result;
@@ -574,7 +576,7 @@ handle_rm(struct client *client, mpd_unused int argc, char *argv[])
 	return print_playlist_result(client, result);
 }
 
-static int
+static enum command_return
 handle_rename(struct client *client, mpd_unused int argc, char *argv[])
 {
 	enum playlist_result result;
@@ -583,53 +585,53 @@ handle_rename(struct client *client, mpd_unused int argc, char *argv[])
 	return print_playlist_result(client, result);
 }
 
-static int
+static enum command_return
 handle_plchanges(struct client *client, mpd_unused int argc, char *argv[])
 {
 	uint32_t version;
 
 	if (check_uint32(client, &version, argv[1], need_positive) < 0)
-		return -1;
+		return COMMAND_RETURN_ERROR;
 	return playlistChanges(client, version);
 }
 
-static int
+static enum command_return
 handle_plchangesposid(struct client *client, mpd_unused int argc, char *argv[])
 {
 	uint32_t version;
 
 	if (check_uint32(client, &version, argv[1], need_positive) < 0)
-		return -1;
+		return COMMAND_RETURN_ERROR;
 	return playlistChangesPosId(client, version);
 }
 
-static int
+static enum command_return
 handle_playlistinfo(struct client *client, int argc, char *argv[])
 {
 	int song = -1;
 	enum playlist_result result;
 
 	if (argc == 2 && check_int(client, &song, argv[1], need_positive) < 0)
-		return -1;
+		return COMMAND_RETURN_ERROR;
 
 	result = playlistInfo(client, song);
 	return print_playlist_result(client, result);
 }
 
-static int
+static enum command_return
 handle_playlistid(struct client *client, int argc, char *argv[])
 {
 	int id = -1;
 	enum playlist_result result;
 
 	if (argc == 2 && check_int(client, &id, argv[1], need_positive) < 0)
-		return -1;
+		return COMMAND_RETURN_ERROR;
 
 	result = playlistId(client, id);
 	return print_playlist_result(client, result);
 }
 
-static int
+static enum command_return
 handle_find(struct client *client, int argc, char *argv[])
 {
 	int ret;
@@ -641,7 +643,7 @@ handle_find(struct client *client, int argc, char *argv[])
 
 	if (numItems <= 0) {
 		command_error(client, ACK_ERROR_ARG, "incorrect arguments");
-		return -1;
+		return COMMAND_RETURN_ERROR;
 	}
 
 	ret = findSongsIn(client, NULL, numItems, items);
@@ -654,7 +656,7 @@ handle_find(struct client *client, int argc, char *argv[])
 	return ret;
 }
 
-static int
+static enum command_return
 handle_search(struct client *client, int argc, char *argv[])
 {
 	int ret;
@@ -666,7 +668,7 @@ handle_search(struct client *client, int argc, char *argv[])
 
 	if (numItems <= 0) {
 		command_error(client, ACK_ERROR_ARG, "incorrect arguments");
-		return -1;
+		return COMMAND_RETURN_ERROR;
 	}
 
 	ret = searchForSongsIn(client, NULL, numItems, items);
@@ -679,7 +681,7 @@ handle_search(struct client *client, int argc, char *argv[])
 	return ret;
 }
 
-static int
+static enum command_return
 handle_count(struct client *client, int argc, char *argv[])
 {
 	int ret;
@@ -691,7 +693,7 @@ handle_count(struct client *client, int argc, char *argv[])
 
 	if (numItems <= 0) {
 		command_error(client, ACK_ERROR_ARG, "incorrect arguments");
-		return -1;
+		return COMMAND_RETURN_ERROR;
 	}
 
 	ret = searchStatsForSongsIn(client, NULL, numItems, items);
@@ -704,7 +706,7 @@ handle_count(struct client *client, int argc, char *argv[])
 	return ret;
 }
 
-static int
+static enum command_return
 handle_playlistfind(struct client *client, int argc, char *argv[])
 {
 	LocateTagItem *items;
@@ -714,17 +716,17 @@ handle_playlistfind(struct client *client, int argc, char *argv[])
 
 	if (numItems <= 0) {
 		command_error(client, ACK_ERROR_ARG, "incorrect arguments");
-		return -1;
+		return COMMAND_RETURN_ERROR;
 	}
 
 	findSongsInPlaylist(client, numItems, items);
 
 	freeLocateTagItemArray(numItems, items);
 
-	return 0;
+	return COMMAND_RETURN_OK;
 }
 
-static int
+static enum command_return
 handle_playlistsearch(struct client *client, int argc, char *argv[])
 {
 	LocateTagItem *items;
@@ -734,17 +736,17 @@ handle_playlistsearch(struct client *client, int argc, char *argv[])
 
 	if (numItems <= 0) {
 		command_error(client, ACK_ERROR_ARG, "incorrect arguments");
-		return -1;
+		return COMMAND_RETURN_ERROR;
 	}
 
 	searchForSongsInPlaylist(client, numItems, items);
 
 	freeLocateTagItemArray(numItems, items);
 
-	return 0;
+	return COMMAND_RETURN_OK;
 }
 
-static int
+static enum command_return
 handle_playlistdelete(struct client *client,
 		      mpd_unused int argc, char *argv[]) {
 	char *playlist = argv[1];
@@ -752,13 +754,13 @@ handle_playlistdelete(struct client *client,
 	enum playlist_result result;
 
 	if (check_int(client, &from, argv[2], check_integer, argv[2]) < 0)
-		return -1;
+		return COMMAND_RETURN_ERROR;
 
 	result = spl_remove_index(playlist, from);
 	return print_playlist_result(client, result);
 }
 
-static int
+static enum command_return
 handle_playlistmove(struct client *client, mpd_unused int argc, char *argv[])
 {
 	char *playlist = argv[1];
@@ -766,15 +768,15 @@ handle_playlistmove(struct client *client, mpd_unused int argc, char *argv[])
 	enum playlist_result result;
 
 	if (check_int(client, &from, argv[2], check_integer, argv[2]) < 0)
-		return -1;
+		return COMMAND_RETURN_ERROR;
 	if (check_int(client, &to, argv[3], check_integer, argv[3]) < 0)
-		return -1;
+		return COMMAND_RETURN_ERROR;
 
 	result = spl_move_index(playlist, from, to);
 	return print_playlist_result(client, result);
 }
 
-static int
+static enum command_return
 handle_update(struct client *client, mpd_unused int argc, char *argv[])
 {
 	char *path = NULL;
@@ -783,37 +785,37 @@ handle_update(struct client *client, mpd_unused int argc, char *argv[])
 	assert(argc <= 2);
 	if (argc == 2 && !(path = sanitizePathDup(argv[1]))) {
 		command_error(client, ACK_ERROR_ARG, "invalid path");
-		return -1;
+		return COMMAND_RETURN_ERROR;
 	}
 
 	ret = directory_update_init(path);
 	if (ret > 0) {
 		client_printf(client, "updating_db: %i\n", ret);
-		return 0;
+		return COMMAND_RETURN_OK;
 	} else {
 		command_error(client, ACK_ERROR_UPDATE_ALREADY,
 			      "already updating");
-		return -1;
+		return COMMAND_RETURN_ERROR;
 	}
 }
 
-static int
+static enum command_return
 handle_next(mpd_unused struct client *client,
 	    mpd_unused int argc, mpd_unused char *argv[])
 {
 	nextSongInPlaylist();
-	return 0;
+	return COMMAND_RETURN_OK;
 }
 
-static int
+static enum command_return
 handle_previous(mpd_unused struct client *client,
 		mpd_unused int argc, mpd_unused char *argv[])
 {
 	previousSongInPlaylist();
-	return 0;
+	return COMMAND_RETURN_OK;
 }
 
-static int
+static enum command_return
 handle_listall(struct client *client, mpd_unused int argc, char *argv[])
 {
 	char *directory = NULL;
@@ -830,13 +832,13 @@ handle_listall(struct client *client, mpd_unused int argc, char *argv[])
 	return ret;
 }
 
-static int
+static enum command_return
 handle_volume(struct client *client, mpd_unused int argc, char *argv[])
 {
 	int change, ret;
 
 	if (check_int(client, &change, argv[1], need_integer) < 0)
-		return -1;
+		return COMMAND_RETURN_ERROR;
 
 	ret = changeVolumeLevel(change, 1);
 	if (ret == -1)
@@ -846,13 +848,13 @@ handle_volume(struct client *client, mpd_unused int argc, char *argv[])
 	return ret;
 }
 
-static int
+static enum command_return
 handle_setvol(struct client *client, mpd_unused int argc, char *argv[])
 {
 	int level, ret;
 
 	if (check_int(client, &level, argv[1], need_integer) < 0)
-		return -1;
+		return COMMAND_RETURN_ERROR;
 
 	ret = changeVolumeLevel(level, 0);
 	if (ret == -1)
@@ -862,58 +864,58 @@ handle_setvol(struct client *client, mpd_unused int argc, char *argv[])
 	return ret;
 }
 
-static int
+static enum command_return
 handle_repeat(struct client *client, mpd_unused int argc, char *argv[])
 {
 	int status;
 
 	if (check_int(client, &status, argv[1], need_integer) < 0)
-		return -1;
+		return COMMAND_RETURN_ERROR;
 
 	if (status != 0 && status != 1) {
 		command_error(client, ACK_ERROR_ARG,
 			      "\"%i\" is not 0 or 1", status);
-		return -1;
+		return COMMAND_RETURN_ERROR;
 	}
 
 	setPlaylistRepeatStatus(status);
-	return 0;
+	return COMMAND_RETURN_OK;
 }
 
-static int
+static enum command_return
 handle_random(struct client *client, mpd_unused int argc, char *argv[])
 {
 	int status;
 
 	if (check_int(client, &status, argv[1], need_integer) < 0)
-		return -1;
+		return COMMAND_RETURN_ERROR;
 
 	if (status != 0 && status != 1) {
 		command_error(client, ACK_ERROR_ARG,
 			      "\"%i\" is not 0 or 1", status);
-		return -1;
+		return COMMAND_RETURN_ERROR;
 	}
 
 	setPlaylistRandomStatus(status);
-	return 0;
+	return COMMAND_RETURN_OK;
 }
 
-static int
+static enum command_return
 handle_stats(struct client *client,
 	     mpd_unused int argc, mpd_unused char *argv[])
 {
 	return printStats(client);
 }
 
-static int
+static enum command_return
 handle_clearerror(mpd_unused struct client *client,
 		  mpd_unused int argc, mpd_unused char *argv[])
 {
 	clearPlayerError();
-	return 0;
+	return COMMAND_RETURN_OK;
 }
 
-static int
+static enum command_return
 handle_list(struct client *client, int argc, char *argv[])
 {
 	int numConditionals;
@@ -923,13 +925,13 @@ handle_list(struct client *client, int argc, char *argv[])
 
 	if (tagType < 0) {
 		command_error(client, ACK_ERROR_ARG, "\"%s\" is not known", argv[1]);
-		return -1;
+		return COMMAND_RETURN_ERROR;
 	}
 
 	if (tagType == LOCATE_TAG_ANY_TYPE) {
 		command_error(client, ACK_ERROR_ARG,
 			      "\"any\" is not a valid return tag type");
-		return -1;
+		return COMMAND_RETURN_ERROR;
 	}
 
 	/* for compatibility with < 0.12.0 */
@@ -938,7 +940,7 @@ handle_list(struct client *client, int argc, char *argv[])
 			command_error(client, ACK_ERROR_ARG,
 				      "should be \"%s\" for 3 arguments",
 				      mpdTagItemKeys[TAG_ITEM_ALBUM]);
-			return -1;
+			return COMMAND_RETURN_ERROR;
 		}
 		conditionals = newLocateTagItem(mpdTagItemKeys[TAG_ITEM_ARTIST],
 						argv[2]);
@@ -951,7 +953,7 @@ handle_list(struct client *client, int argc, char *argv[])
 		if (numConditionals < 0) {
 			command_error(client, ACK_ERROR_ARG,
 				      "not able to parse args");
-			return -1;
+			return COMMAND_RETURN_ERROR;
 		}
 	}
 
@@ -967,93 +969,93 @@ handle_list(struct client *client, int argc, char *argv[])
 	return ret;
 }
 
-static int
+static enum command_return
 handle_move(struct client *client, mpd_unused int argc, char *argv[])
 {
 	int from, to;
 	enum playlist_result result;
 
 	if (check_int(client, &from, argv[1], check_integer, argv[1]) < 0)
-		return -1;
+		return COMMAND_RETURN_ERROR;
 	if (check_int(client, &to, argv[2], check_integer, argv[2]) < 0)
-		return -1;
+		return COMMAND_RETURN_ERROR;
 	result = moveSongInPlaylist(from, to);
 	return print_playlist_result(client, result);
 }
 
-static int
+static enum command_return
 handle_moveid(struct client *client, mpd_unused int argc, char *argv[])
 {
 	int id, to;
 	enum playlist_result result;
 
 	if (check_int(client, &id, argv[1], check_integer, argv[1]) < 0)
-		return -1;
+		return COMMAND_RETURN_ERROR;
 	if (check_int(client, &to, argv[2], check_integer, argv[2]) < 0)
-		return -1;
+		return COMMAND_RETURN_ERROR;
 	result = moveSongInPlaylistById(id, to);
 	return print_playlist_result(client, result);
 }
 
-static int
+static enum command_return
 handle_swap(struct client *client, mpd_unused int argc, char *argv[])
 {
 	int song1, song2;
 	enum playlist_result result;
 
 	if (check_int(client, &song1, argv[1], check_integer, argv[1]) < 0)
-		return -1;
+		return COMMAND_RETURN_ERROR;
 	if (check_int(client, &song2, argv[2], check_integer, argv[2]) < 0)
-		return -1;
+		return COMMAND_RETURN_ERROR;
 	result = swapSongsInPlaylist(song1, song2);
 	return print_playlist_result(client, result);
 }
 
-static int
+static enum command_return
 handle_swapid(struct client *client, mpd_unused int argc, char *argv[])
 {
 	int id1, id2;
 	enum playlist_result result;
 
 	if (check_int(client, &id1, argv[1], check_integer, argv[1]) < 0)
-		return -1;
+		return COMMAND_RETURN_ERROR;
 	if (check_int(client, &id2, argv[2], check_integer, argv[2]) < 0)
-		return -1;
+		return COMMAND_RETURN_ERROR;
 	result = swapSongsInPlaylistById(id1, id2);
 	return print_playlist_result(client, result);
 }
 
-static int
+static enum command_return
 handle_seek(struct client *client, mpd_unused int argc, char *argv[])
 {
 	int song, seek_time;
 	enum playlist_result result;
 
 	if (check_int(client, &song, argv[1], check_integer, argv[1]) < 0)
-		return -1;
+		return COMMAND_RETURN_ERROR;
 	if (check_int(client, &seek_time, argv[2], check_integer, argv[2]) < 0)
-		return -1;
+		return COMMAND_RETURN_ERROR;
 
 	result = seekSongInPlaylist(song, seek_time);
 	return print_playlist_result(client, result);
 }
 
-static int
+static enum command_return
 handle_seekid(struct client *client, mpd_unused int argc, char *argv[])
 {
 	int id, seek_time;
 	enum playlist_result result;
 
 	if (check_int(client, &id, argv[1], check_integer, argv[1]) < 0)
-		return -1;
+		return COMMAND_RETURN_ERROR;
 	if (check_int(client, &seek_time, argv[2], check_integer, argv[2]) < 0)
-		return -1;
+		return COMMAND_RETURN_ERROR;
 
 	result = seekSongInPlaylistById(id, seek_time);
 	return print_playlist_result(client, result);
 }
 
-static int
+static enum command_return
 handle_listallinfo(struct client *client, mpd_unused int argc, char *argv[])
 {
 	char *directory = NULL;
@@ -1070,47 +1072,47 @@ handle_listallinfo(struct client *client, mpd_unused int argc, char *argv[])
 	return ret;
 }
 
-static int
+static enum command_return
 handle_ping(mpd_unused struct client *client,
 	    mpd_unused int argc, mpd_unused char *argv[])
 {
-	return 0;
+	return COMMAND_RETURN_OK;
 }
 
-static int
+static enum command_return
 handle_password(struct client *client, mpd_unused int argc, char *argv[])
 {
 	unsigned permission = 0;
 
 	if (getPermissionFromPassword(argv[1], &permission) < 0) {
 		command_error(client, ACK_ERROR_PASSWORD, "incorrect password");
-		return -1;
+		return COMMAND_RETURN_ERROR;
 	}
 
 	client_set_permission(client, permission);
 
-	return 0;
+	return COMMAND_RETURN_OK;
 }
 
-static int
+static enum command_return
 handle_crossfade(struct client *client, mpd_unused int argc, char *argv[])
 {
 	int xfade_time;
 
 	if (check_int(client, &xfade_time, argv[1], check_non_negative, argv[1]) < 0)
-		return -1;
+		return COMMAND_RETURN_ERROR;
 	setPlayerCrossFade(xfade_time);
 
-	return 0;
+	return COMMAND_RETURN_OK;
 }
 
-static int
+static enum command_return
 handle_enableoutput(struct client *client, mpd_unused int argc, char *argv[])
 {
 	int device, ret;
 
 	if (check_int(client, &device, argv[1], check_non_negative, argv[1]) < 0)
-		return -1;
+		return COMMAND_RETURN_ERROR;
 
 	ret = enableAudioDevice(device);
 	if (ret == -1)
@@ -1120,13 +1122,13 @@ handle_enableoutput(struct client *client, mpd_unused int argc, char *argv[])
 	return ret;
 }
 
-static int
+static enum command_return
 handle_disableoutput(struct client *client, mpd_unused int argc, char *argv[])
 {
 	int device, ret;
 
 	if (check_int(client, &device, argv[1], check_non_negative, argv[1]) < 0)
-		return -1;
+		return COMMAND_RETURN_ERROR;
 
 	ret = disableAudioDevice(device);
 	if (ret == -1)
@@ -1136,25 +1138,25 @@ handle_disableoutput(struct client *client, mpd_unused int argc, char *argv[])
 	return ret;
 }
 
-static int
+static enum command_return
 handle_devices(struct client *client,
 	       mpd_unused int argc, mpd_unused char *argv[])
 {
 	printAudioDevices(client);
 
-	return 0;
+	return COMMAND_RETURN_OK;
 }
 
 /* don't be fooled, this is the command handler for "commands" command */
-static int
+static enum command_return
 handle_commands(struct client *client,
 		mpd_unused int argc, mpd_unused char *argv[]);
 
-static int
+static enum command_return
 handle_not_commands(struct client *client,
 		    mpd_unused int argc, mpd_unused char *argv[]);
 
-static int
+static enum command_return
 handle_playlistclear(struct client *client, mpd_unused int argc, char *argv[])
 {
 	enum playlist_result result;
@@ -1163,7 +1165,7 @@ handle_playlistclear(struct client *client, mpd_unused int argc, char *argv[])
 	return print_playlist_result(client, result);
 }
 
-static int
+static enum command_return
 handle_playlistadd(struct client *client, mpd_unused int argc, char *argv[])
 {
 	char *playlist = argv[1];
@@ -1178,13 +1180,13 @@ handle_playlistadd(struct client *client, mpd_unused int argc, char *argv[])
 	if (result == (enum playlist_result)-1) {
 		command_error(client, ACK_ERROR_NO_EXIST,
 			      "directory or file not found");
-		return -1;
+		return COMMAND_RETURN_ERROR;
 	}
 
 	return print_playlist_result(client, result);
 }
 
-static int
+static enum command_return
 handle_listplaylists(struct client *client,
 		     mpd_unused int argc, mpd_unused char *argv[])
 {
@@ -1192,15 +1194,15 @@ handle_listplaylists(struct client *client,
 	if (list == NULL) {
 		command_error(client, ACK_ERROR_SYSTEM,
 			      "failed to get list of stored playlists");
-		return -1;
+		return COMMAND_RETURN_ERROR;
 	}
 
 	print_spl_list(client, list);
 	spl_list_free(list);
-	return 0;
+	return COMMAND_RETURN_OK;
 }
 
-static int
+static enum command_return
 handle_idle(struct client *client,
 	    mpd_unused int argc, mpd_unused char *argv[])
 {
@@ -1287,7 +1289,7 @@ static const struct command commands[] = {
 static const unsigned num_commands = sizeof(commands) / sizeof(commands[0]);
 
 /* don't be fooled, this is the command handler for "commands" command */
-static int
+static enum command_return
 handle_commands(struct client *client,
 		mpd_unused int argc, mpd_unused char *argv[])
 {
@@ -1301,10 +1303,10 @@ handle_commands(struct client *client,
 			client_printf(client, "command: %s\n", cmd->cmd);
 	}
 
-	return 0;
+	return COMMAND_RETURN_OK;
 }
 
-static int
+static enum command_return
 handle_not_commands(struct client *client,
 		    mpd_unused int argc, mpd_unused char *argv[])
 {
@@ -1318,7 +1320,7 @@ handle_not_commands(struct client *client,
 			client_printf(client, "command: %s\n", cmd->cmd);
 	}
 
-	return 0;
+	return COMMAND_RETURN_OK;
 }
 
 void command_init(void)
@@ -1422,16 +1424,16 @@ command_checked_lookup(struct client *client, unsigned permission,
 	return cmd;
 }
 
-int
+enum command_return
 command_process(struct client *client, char *commandString)
 {
 	int argc;
 	char *argv[COMMAND_ARGV_MAX] = { NULL };
 	const struct command *cmd;
-	int ret = -1;
+	enum command_return ret = COMMAND_RETURN_ERROR;
 
 	if (!(argc = buffer2array(commandString, argv, COMMAND_ARGV_MAX)))
-		return 0;
+		return COMMAND_RETURN_OK;
 
 	cmd = command_checked_lookup(client, client_get_permission(client),
 				     argc, argv);
@@ -1443,12 +1445,12 @@ command_process(struct client *client, char *commandString)
 	return ret;
 }
 
-int
+enum command_return
 command_process_list(struct client *client,
 		     int list_ok, struct strnode *list)
 {
 	struct strnode *cur = list;
-	int ret = 0;
+	enum command_return ret = COMMAND_RETURN_OK;
 
 	command_list_num = 0;
 
@@ -1457,7 +1459,7 @@ command_process_list(struct client *client,
 		      cur->data);
 		ret = command_process(client, cur->data);
 		DEBUG("command_process_list: command returned %i\n", ret);
-		if (ret != 0 || client_is_expired(client))
+		if (ret != COMMAND_RETURN_OK || client_is_expired(client))
 			break;
 		else if (list_ok)
 			client_puts(client, "list_OK\n");
