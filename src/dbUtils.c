@@ -28,7 +28,7 @@
 #include "tag.h"
 #include "strset.h"
 #include "log.h"
-#include "storedPlaylist.h"
+#include "stored_playlist.h"
 
 #include <glib.h>
 

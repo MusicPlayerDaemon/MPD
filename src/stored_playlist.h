@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef STORED_PLAYLIST_H
-#define STORED_PLAYLIST_H
+#ifndef MPD_STORED_PLAYLIST_H
+#define MPD_STORED_PLAYLIST_H
 
 #include "list.h"
 #include "playlist.h"

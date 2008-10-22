@@ -96,7 +96,7 @@ mpd_headers = \
 	ioops.h \
 	zeroconf.h \
 	locate.h \
-	storedPlaylist.h \
+	stored_playlist.h \
 	timer.h
 
 
@@ -171,7 +171,7 @@ mpd_SOURCES = \
 	volume.c \
 	utf8.c \
 	locate.c \
-	storedPlaylist.c \
+	stored_playlist.c \
 	timer.c
 
 if HAVE_ID3TAG

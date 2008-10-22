@@ -30,7 +30,7 @@
 #include "buffer2array.h"
 #include "log.h"
 #include "utils.h"
-#include "storedPlaylist.h"
+#include "stored_playlist.h"
 #include "sllist.h"
 #include "ack.h"
 #include "audio.h"

@@ -32,7 +32,7 @@
 #include "path.h"
 #include "utils.h"
 #include "state_file.h"
-#include "storedPlaylist.h"
+#include "stored_playlist.h"
 #include "ack.h"
 #include "idle.h"
 #include "os_compat.h"
