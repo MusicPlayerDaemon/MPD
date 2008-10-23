@@ -30,7 +30,7 @@ pcm_resample_16(uint8_t channels,
 		mpd_unused struct pcm_resample_state *state)
 {
 	unsigned src_pos, dest_pos = 0;
-	unsigned dest_samples = dest_size / 2;
+	unsigned dest_samples = dest_size / sizeof(*dest_buffer);
 	int16_t lsample, rsample;
 
 	switch (channels) {

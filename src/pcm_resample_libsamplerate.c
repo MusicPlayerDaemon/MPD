@@ -108,14 +108,14 @@ pcm_resample_16(uint8_t channels,
 	if (state->error)
 		return 0;
 
-	data->input_frames = src_size / 2 / channels;
+	data->input_frames = src_size / sizeof(*src_buffer) / channels;
 	data_in_size = data->input_frames * sizeof(float) * channels;
 	if (data_in_size > state->data_in_size) {
 		state->data_in_size = data_in_size;
 		data->data_in = xrealloc(data->data_in, data_in_size);
 	}
 
-	data->output_frames = dest_size / 2 / channels;
+	data->output_frames = dest_size / sizeof(*dest_buffer) / channels;
 	data_out_size = data->output_frames * sizeof(float) * channels;
 	if (data_out_size > state->data_out_size) {
 		state->data_out_size = data_out_size;
@@ -136,5 +136,5 @@ pcm_resample_16(uint8_t channels,
 	src_float_to_short_array(data->data_out, dest_buffer,
 				 data->output_frames_gen * channels);
 
-	return data->output_frames_gen * 2 * channels;
+	return data->output_frames_gen * sizeof(*dest_buffer) * channels;
 }
