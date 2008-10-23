@@ -149,10 +149,8 @@ int parseAudioConfig(struct audio_format *audioFormat, char *conf)
 		return -1;
 	}
 
-	switch (audioFormat->bits) {
-	case 16:
-		break;
-	default:
+	if (audioFormat->bits != 16 && audioFormat->bits != 24 &&
+	    audioFormat->bits != 8) {
 		ERROR("bits %u can not be used for audio output\n",
 		      audioFormat->bits);
 		return -1;
