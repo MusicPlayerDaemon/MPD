@@ -560,6 +560,9 @@ size_t pcm_convert_size(const struct audio_format *inFormat, size_t src_size,
 	const int shift = 2 * outFormat->channels;
 	size_t dest_size = src_size;
 
+	/* no partial frames allowed */
+	assert((src_size % audio_format_frame_size(inFormat)) == 0);
+
 	switch (inFormat->bits) {
 	case 8:
 		dest_size <<= 1;

@@ -154,12 +154,13 @@ ob_chunk * ob_get_chunk(const unsigned i)
  */
 static ob_chunk *tail_chunk(float data_time, uint16_t bitRate)
 {
+	const size_t frame_size = audio_format_frame_size(&ob.audioFormat);
 	unsigned int next;
 	ob_chunk *chunk;
 
 	chunk = ob_get_chunk(ob.end);
 	assert(chunk->chunkSize <= sizeof(chunk->data));
-	if (chunk->chunkSize == sizeof(chunk->data)) {
+	if (chunk->chunkSize + frame_size > sizeof(chunk->data)) {
 		/* this chunk is full; allocate a new chunk */
 		next = successor(ob.end);
 		if (ob.begin == next)
@@ -186,8 +187,12 @@ size_t ob_append(const void *data0, size_t datalen,
 		 float data_time, uint16_t bitRate)
 {
 	const unsigned char *data = data0;
+	const size_t frame_size = audio_format_frame_size(&ob.audioFormat);
 	size_t ret = 0, dataToSend;
 	ob_chunk *chunk = NULL;
+
+	/* no partial frames allowed */
+	assert((datalen % frame_size) == 0);
 
 	while (datalen) {
 		chunk = tail_chunk(data_time, bitRate);
@@ -197,6 +202,10 @@ size_t ob_append(const void *data0, size_t datalen,
 		dataToSend = sizeof(chunk->data) - chunk->chunkSize;
 		if (dataToSend > datalen)
 			dataToSend = datalen;
+
+		/* don't split frames */
+		dataToSend /= frame_size;
+		dataToSend *= frame_size;
 
 		memcpy(chunk->data + chunk->chunkSize, data, dataToSend);
 		chunk->chunkSize += dataToSend;

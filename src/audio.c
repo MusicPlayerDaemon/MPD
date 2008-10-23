@@ -254,6 +254,9 @@ int playAudio(const char *buffer, size_t length)
 	int ret = -1, err;
 	unsigned int i;
 
+	/* no partial frames allowed */
+	assert((length % audio_format_frame_size(&input_audio_format)) == 0);
+
 	syncAudioDeviceStates();
 
 	for (i = 0; i < audioOutputArraySize; ++i)
