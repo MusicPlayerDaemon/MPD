@@ -17,6 +17,7 @@
  */
 
 #include "pcm_utils.h"
+#include "pcm_channels.h"
 #include "log.h"
 #include "utils.h"
 #include "conf.h"
@@ -214,85 +215,6 @@ void pcm_convert_init(struct pcm_convert_state *state)
 }
 
 static void
-pcm_convert_channels_1_to_2(int16_t *dest, const int16_t *src,
-			    unsigned num_frames)
-{
-	while (num_frames-- > 0) {
-		int16_t value = *src++;
-
-		*dest++ = value;
-		*dest++ = value;
-	}
-}
-
-static void
-pcm_convert_channels_2_to_1(int16_t *dest, const int16_t *src,
-			    unsigned num_frames)
-{
-	while (num_frames-- > 0) {
-		int32_t a = *src++, b = *src++;
-
-		*dest++ = (a + b) / 2;
-	}
-}
-
-static void
-pcm_convert_channels_n_to_2(int16_t *dest,
-			    unsigned src_channels, const int16_t *src,
-			    unsigned num_frames)
-{
-	unsigned c;
-
-	assert(src_channels > 0);
-
-	while (num_frames-- > 0) {
-		int32_t sum = 0;
-		int16_t value;
-
-		for (c = 0; c < src_channels; ++c)
-			sum += *src++;
-		value = sum / (int)src_channels;
-
-		/* XXX this is actually only mono ... */
-		*dest++ = value;
-		*dest++ = value;
-	}
-}
-
-static const int16_t *
-pcm_convert_channels(int8_t dest_channels,
-		     int8_t src_channels, const int16_t *src,
-		     size_t src_size, size_t *dest_size_r)
-{
-	static int16_t *buf;
-	static size_t len;
-	unsigned num_frames = src_size / src_channels / sizeof(*src);
-	unsigned dest_size = num_frames * dest_channels * sizeof(*src);
-
-	if (dest_size > len) {
-		len = dest_size;
-		buf = xrealloc(buf, len);
-	}
-
-	*dest_size_r = dest_size;
-
-	if (src_channels == 1 && dest_channels == 2)
-		pcm_convert_channels_1_to_2(buf, src, num_frames);
-	else if (src_channels == 2 && dest_channels == 1)
-		pcm_convert_channels_2_to_1(buf, src, num_frames);
-	else if (dest_channels == 2)
-		pcm_convert_channels_n_to_2(buf, src_channels, src,
-					    num_frames);
-	else {
-		ERROR("conversion %u->%u channels is not supported\n",
-		      src_channels, dest_channels);
-		return NULL;
-	}
-
-	return buf;
-}
-
-static void
 pcm_convert_8_to_16(int16_t *out, const int8_t *in,
 		    unsigned num_samples)
 {
@@ -375,9 +297,9 @@ size_t pcm_convert(const struct audio_format *inFormat,
 		exit(EXIT_FAILURE);
 
 	if (inFormat->channels != outFormat->channels) {
-		buf = pcm_convert_channels(outFormat->channels,
-					   inFormat->channels,
-					   buf, len, &len);
+		buf = pcm_convert_channels_16(outFormat->channels,
+					      inFormat->channels,
+					      buf, len, &len);
 		if (!buf)
 			exit(EXIT_FAILURE);
 	}

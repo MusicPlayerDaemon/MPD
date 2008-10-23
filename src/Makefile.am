@@ -66,6 +66,7 @@ mpd_headers = \
 	path.h \
 	mapper.h \
 	pcm_utils.h \
+	pcm_channels.h \
 	pcm_resample.h \
 	pcm_dither.h \
 	permission.h \
@@ -147,6 +148,7 @@ mpd_SOURCES = \
 	path.c \
 	mapper.c \
 	pcm_utils.c \
+	pcm_channels.c \
 	pcm_resample.c \
 	pcm_dither.c \
 	permission.c \
