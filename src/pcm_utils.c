@@ -278,6 +278,68 @@ pcm_convert_to_16(struct pcm_convert_state *convert,
 	return NULL;
 }
 
+static void
+pcm_convert_8_to_24(int32_t *out, const int8_t *in,
+		    unsigned num_samples)
+{
+	while (num_samples > 0) {
+		*out++ = *in++ << 16;
+		--num_samples;
+	}
+}
+
+static void
+pcm_convert_16_to_24(int32_t *out, const int16_t *in,
+		     unsigned num_samples)
+{
+	while (num_samples > 0) {
+		*out++ = *in++ << 8;
+		--num_samples;
+	}
+}
+
+static const int32_t *
+pcm_convert_to_24(uint8_t bits, const void *src,
+		  size_t src_size, size_t *dest_size_r)
+{
+	static int32_t *buf;
+	static size_t len;
+	unsigned num_samples;
+
+	switch (bits) {
+	case 8:
+		num_samples = src_size;
+		*dest_size_r = src_size * 4;
+		if (*dest_size_r > len) {
+			len = *dest_size_r;
+			buf = xrealloc(buf, len);
+		}
+
+		pcm_convert_8_to_24(buf, (const int8_t *)src,
+				    num_samples);
+		return buf;
+
+	case 16:
+		num_samples = src_size / 2;
+		*dest_size_r = num_samples * 4;
+		if (*dest_size_r > len) {
+			len = *dest_size_r;
+			buf = xrealloc(buf, len);
+		}
+
+		pcm_convert_16_to_24(buf, (const int16_t *)src,
+				     num_samples);
+		return buf;
+
+	case 24:
+		*dest_size_r = src_size;
+		return src;
+	}
+
+	ERROR("only 8 or 24 bits are supported for conversion!\n");
+	return NULL;
+}
+
 static size_t
 pcm_convert_16(const struct audio_format *src_format,
 	       const void *src_buffer, size_t src_size,
@@ -320,6 +382,48 @@ pcm_convert_16(const struct audio_format *src_format,
 	return len;
 }
 
+static size_t
+pcm_convert_24(const struct audio_format *src_format,
+	       const void *src_buffer, size_t src_size,
+	       const struct audio_format *dest_format,
+	       int32_t *dest_buffer,
+	       struct pcm_convert_state *state)
+{
+	const int32_t *buf;
+	size_t len;
+	size_t dest_size = pcm_convert_size(src_format, src_size, dest_format);
+
+	assert(dest_format->bits == 24);
+
+	buf = pcm_convert_to_24(src_format->bits,
+				src_buffer, src_size, &len);
+	if (!buf)
+		exit(EXIT_FAILURE);
+
+	if (src_format->channels != dest_format->channels) {
+		buf = pcm_convert_channels_24(dest_format->channels,
+					      src_format->channels,
+					      buf, len, &len);
+		if (!buf)
+			exit(EXIT_FAILURE);
+	}
+
+	if (src_format->sample_rate == dest_format->sample_rate) {
+		assert(dest_size >= len);
+		memcpy(dest_buffer, buf, len);
+	} else {
+		len = pcm_resample_24(dest_format->channels,
+				      src_format->sample_rate, buf, len,
+				      dest_format->sample_rate,
+				      (int32_t*)dest_buffer, dest_size,
+				      &state->resample);
+		if (len == 0)
+			exit(EXIT_FAILURE);
+	}
+
+	return len;
+}
+
 /* outFormat bits must be 16 and channels must be 1 or 2! */
 size_t pcm_convert(const struct audio_format *inFormat,
 		   const char *src, size_t src_size,
@@ -331,6 +435,10 @@ size_t pcm_convert(const struct audio_format *inFormat,
 	case 16:
 		return pcm_convert_16(inFormat, src, src_size,
 				      outFormat, (int16_t*)outBuffer,
+				      convState);
+	case 24:
+		return pcm_convert_24(inFormat, src, src_size,
+				      outFormat, (int32_t*)outBuffer,
 				      convState);
 
 	default:
