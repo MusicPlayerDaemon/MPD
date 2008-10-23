@@ -280,7 +280,7 @@ spl_move_index_internal(List *list, int src, int dest)
 }
 
 enum playlist_result
-spl_move_index(const char *utf8path, int src, int dest)
+spl_move_index(const char *utf8path, unsigned src, unsigned dest)
 {
 	List *list;
 	enum playlist_result result;
@@ -323,7 +323,7 @@ spl_clear(const char *utf8path)
 }
 
 static int
-spl_remove_index_internal(List *list, int pos)
+spl_remove_index_internal(List *list, unsigned pos)
 {
 	ListNode *node = spl_get_index(list, pos);
 	if (!node)
@@ -335,7 +335,7 @@ spl_remove_index_internal(List *list, int pos)
 }
 
 enum playlist_result
-spl_remove_index(const char *utf8path, int pos)
+spl_remove_index(const char *utf8path, unsigned pos)
 {
 	List *list;
 	enum playlist_result result;
@@ -409,7 +409,7 @@ spl_append_uri(const char *url, const char *utf8file)
 
 	song = song_remote_new(url);
 	if (song) {
-		int ret = spl_append_song(utf8file, song);
+		enum playlist_result ret = spl_append_song(utf8file, song);
 		song_free(song);
 		return ret;
 	}

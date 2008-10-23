@@ -46,13 +46,13 @@ List *
 spl_load(const char *utf8path);
 
 enum playlist_result
-spl_move_index(const char *utf8path, int src, int dest);
+spl_move_index(const char *utf8path, unsigned src, unsigned dest);
 
 enum playlist_result
 spl_clear(const char *utf8path);
 
 enum playlist_result
-spl_remove_index(const char *utf8path, int pos);
+spl_remove_index(const char *utf8path, unsigned pos);
 
 enum playlist_result
 spl_append_song(const char *utf8path, struct song *song);
