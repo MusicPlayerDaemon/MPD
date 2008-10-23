@@ -27,4 +27,9 @@ pcm_convert_channels_16(int8_t dest_channels,
 			int8_t src_channels, const int16_t *src,
 			size_t src_size, size_t *dest_size_r);
 
+const int32_t *
+pcm_convert_channels_24(int8_t dest_channels,
+			int8_t src_channels, const int32_t *src,
+			size_t src_size, size_t *dest_size_r);
+
 #endif
