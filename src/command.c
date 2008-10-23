@@ -186,7 +186,7 @@ check_bool(struct client *client, bool *value_r, const char *s)
 	char *endptr;
 
 	value = strtol(s, &endptr, 10);
-	if (*endptr != 0 || value != 0 || value != 1) {
+	if (*endptr != 0 || (value != 0 && value != 1)) {
 		command_error(client, ACK_ERROR_ARG,
 			      "Boolean (0/1) expected: %s", s);
 		return false;
