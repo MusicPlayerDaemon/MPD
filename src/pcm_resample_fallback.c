@@ -33,7 +33,6 @@ pcm_resample_16(uint8_t channels,
 {
 	unsigned src_pos, dest_pos = 0;
 	unsigned dest_samples = dest_size / sizeof(*dest_buffer);
-	int16_t lsample, rsample;
 
 	assert((src_size % (sizeof(*src_buffer) * channels)) == 0);
 	assert((dest_size % (sizeof(*dest_buffer) * channels)) == 0);
@@ -43,9 +42,7 @@ pcm_resample_16(uint8_t channels,
 		while (dest_pos < dest_samples) {
 			src_pos = dest_pos * src_rate / dest_rate;
 
-			lsample = src_buffer[src_pos++];
-
-			dest_buffer[dest_pos++] = lsample;
+			dest_buffer[dest_pos++] = src_buffer[src_pos];
 		}
 		break;
 	case 2:
@@ -53,11 +50,8 @@ pcm_resample_16(uint8_t channels,
 			src_pos = dest_pos * src_rate / dest_rate;
 			src_pos &= ~1;
 
-			lsample = src_buffer[src_pos++];
-			rsample = src_buffer[src_pos++];
-
-			dest_buffer[dest_pos++] = lsample;
-			dest_buffer[dest_pos++] = rsample;
+			dest_buffer[dest_pos++] = src_buffer[src_pos];
+			dest_buffer[dest_pos++] = src_buffer[src_pos + 1];
 		}
 		break;
 	}
