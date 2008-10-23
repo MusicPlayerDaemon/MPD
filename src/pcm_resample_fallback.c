@@ -58,3 +58,36 @@ pcm_resample_16(uint8_t channels,
 
 	return dest_size;
 }
+
+size_t
+pcm_resample_24(uint8_t channels,
+		unsigned src_rate,
+		const int32_t *src_buffer, mpd_unused size_t src_size,
+		unsigned dest_rate,
+		int32_t *dest_buffer, size_t dest_size,
+		mpd_unused struct pcm_resample_state *state)
+{
+	unsigned src_pos, dest_pos = 0;
+	unsigned dest_samples = dest_size / sizeof(*dest_buffer);
+
+	switch (channels) {
+	case 1:
+		while (dest_pos < dest_samples) {
+			src_pos = dest_pos * src_rate / dest_rate;
+
+			dest_buffer[dest_pos++] = src_buffer[src_pos];
+		}
+		break;
+	case 2:
+		while (dest_pos < dest_samples) {
+			src_pos = dest_pos * src_rate / dest_rate;
+			src_pos &= ~1;
+
+			dest_buffer[dest_pos++] = src_buffer[src_pos];
+			dest_buffer[dest_pos++] = src_buffer[src_pos + 1];
+		}
+		break;
+	}
+
+	return dest_size;
+}

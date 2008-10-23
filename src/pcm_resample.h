@@ -60,4 +60,12 @@ pcm_resample_16(uint8_t channels,
 		int16_t *dest_buffer, size_t dest_size,
 		struct pcm_resample_state *state);
 
+size_t
+pcm_resample_24(uint8_t channels,
+		unsigned src_rate,
+		const int32_t *src_buffer, size_t src_size,
+		unsigned dest_rate,
+		int32_t *dest_buffer, size_t dest_size,
+		struct pcm_resample_state *state);
+
 #endif

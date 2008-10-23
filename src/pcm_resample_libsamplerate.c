@@ -153,3 +153,56 @@ pcm_resample_16(uint8_t channels,
 
 	return data->output_frames_gen * sizeof(*dest_buffer) * channels;
 }
+
+size_t
+pcm_resample_24(uint8_t channels,
+		unsigned src_rate,
+		const int32_t *src_buffer, size_t src_size,
+		unsigned dest_rate,
+		int32_t *dest_buffer, size_t dest_size,
+		struct pcm_resample_state *state)
+{
+	SRC_DATA *data = &state->data;
+	size_t data_in_size;
+	size_t data_out_size;
+	int error;
+
+	assert((src_size % (sizeof(*src_buffer) * channels)) == 0);
+	assert((dest_size % (sizeof(*dest_buffer) * channels)) == 0);
+
+	pcm_resample_set(state, channels, src_rate, dest_rate);
+
+	/* there was an error previously, and nothing has changed */
+	if (state->error)
+		return 0;
+
+	data->input_frames = src_size / sizeof(*src_buffer) / channels;
+	data_in_size = data->input_frames * sizeof(float) * channels;
+	if (data_in_size > state->data_in_size) {
+		state->data_in_size = data_in_size;
+		data->data_in = xrealloc(data->data_in, data_in_size);
+	}
+
+	data->output_frames = dest_size / sizeof(*dest_buffer) / channels;
+	data_out_size = data->output_frames * sizeof(float) * channels;
+	if (data_out_size > state->data_out_size) {
+		state->data_out_size = data_out_size;
+		data->data_out = xrealloc(data->data_out, data_out_size);
+	}
+
+	src_int_to_float_array(src_buffer, data->data_in,
+			       data->input_frames * channels);
+
+	error = src_process(state->state, data);
+	if (error) {
+		ERROR("error processing samples with libsamplerate: %s\n",
+		      src_strerror(error));
+		state->error = true;
+		return 0;
+	}
+
+	src_float_to_int_array(data->data_out, dest_buffer,
+			       data->output_frames_gen * channels);
+
+	return data->output_frames_gen * sizeof(*dest_buffer) * channels;
+}
