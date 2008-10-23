@@ -428,8 +428,14 @@ static void do_play(void)
 		} else if (decoder_is_idle()) {
 			break;
 		} else {
+			size_t frame_size =
+				audio_format_frame_size(&pc.audio_format);
+			/* this formula ensures that we don't send
+			   partial frames */
+			unsigned num_frames = CHUNK_SIZE / frame_size;
+
 			/*DEBUG("waiting for decoded audio, play silence\n");*/
-			if (playAudio(silence, CHUNK_SIZE) < 0)
+			if (playAudio(silence, num_frames * frame_size) < 0)
 				break;
 		}
 	}
