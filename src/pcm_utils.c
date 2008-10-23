@@ -278,6 +278,48 @@ pcm_convert_to_16(struct pcm_convert_state *convert,
 	return NULL;
 }
 
+static size_t
+pcm_convert_16(const struct audio_format *src_format,
+	       const void *src_buffer, size_t src_size,
+	       const struct audio_format *dest_format,
+	       int16_t *dest_buffer,
+	       struct pcm_convert_state *state)
+{
+	const int16_t *buf;
+	size_t len;
+	size_t dest_size = pcm_convert_size(src_format, src_size, dest_format);
+
+	assert(dest_format->bits == 16);
+
+	buf = pcm_convert_to_16(state, src_format->bits,
+				src_buffer, src_size, &len);
+	if (!buf)
+		exit(EXIT_FAILURE);
+
+	if (src_format->channels != dest_format->channels) {
+		buf = pcm_convert_channels_16(dest_format->channels,
+					      src_format->channels,
+					      buf, len, &len);
+		if (!buf)
+			exit(EXIT_FAILURE);
+	}
+
+	if (src_format->sample_rate == dest_format->sample_rate) {
+		assert(dest_size >= len);
+		memcpy(dest_buffer, buf, len);
+	} else {
+		len = pcm_resample_16(dest_format->channels,
+				      src_format->sample_rate, buf, len,
+				      dest_format->sample_rate,
+				      dest_buffer, dest_size,
+				      &state->resample);
+		if (len == 0)
+			exit(EXIT_FAILURE);
+	}
+
+	return len;
+}
+
 /* outFormat bits must be 16 and channels must be 1 or 2! */
 size_t pcm_convert(const struct audio_format *inFormat,
 		   const char *src, size_t src_size,
@@ -285,39 +327,15 @@ size_t pcm_convert(const struct audio_format *inFormat,
 		   char *outBuffer,
 		   struct pcm_convert_state *convState)
 {
-	const int16_t *buf;
-	size_t len = 0;
-	size_t dest_size = pcm_convert_size(inFormat, src_size, outFormat);
+	switch (outFormat->bits) {
+	case 16:
+		return pcm_convert_16(inFormat, src, src_size,
+				      outFormat, (int16_t*)outBuffer,
+				      convState);
 
-	assert(outFormat->bits == 16);
-
-	/* everything else supports 16 bit only, so convert to that first */
-	buf = pcm_convert_to_16(convState, inFormat->bits, src, src_size, &len);
-	if (!buf)
-		exit(EXIT_FAILURE);
-
-	if (inFormat->channels != outFormat->channels) {
-		buf = pcm_convert_channels_16(outFormat->channels,
-					      inFormat->channels,
-					      buf, len, &len);
-		if (!buf)
-			exit(EXIT_FAILURE);
+	default:
+		FATAL("cannot convert to %u bit\n", outFormat->bits);
 	}
-
-	if (inFormat->sample_rate == outFormat->sample_rate) {
-		assert(dest_size >= len);
-		memcpy(outBuffer, buf, len);
-	} else {
-		len = pcm_resample_16(outFormat->channels,
-				      inFormat->sample_rate, buf, len,
-				      outFormat->sample_rate,
-				      (int16_t*)outBuffer,
-				      dest_size, &convState->resample);
-		if (len == 0)
-			exit(EXIT_FAILURE);
-	}
-
-	return len;
 }
 
 size_t pcm_convert_size(const struct audio_format *inFormat, size_t src_size,
