@@ -390,6 +390,8 @@ if test x$enable_lsr = xyes; then
 	                  [enable_lsr=no;AC_MSG_WARN([libsamplerate not found -- disabling])])
 fi
 
+AM_CONDITIONAL(HAVE_LIBSAMPLERATE, test x$enable_lsr = xyes)
+
 if test x$enable_fifo = xyes; then
 	AC_CHECK_FUNC([mkfifo],
 	              [enable_fifo=yes;AC_DEFINE([HAVE_FIFO], 1, [Define to enable support for writing audio to a FIFO])],

@@ -1,5 +1,6 @@
 /* the Music Player Daemon (MPD)
  * Copyright (C) 2003-2007 by Warren Dukes (warren.dukes@gmail.com)
+ * Copyright (C) 2008 Max Kellermann <max@duempel.org>
  * This project's homepage is: http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -16,42 +17,47 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef PCM_UTILS_H
-#define PCM_UTILS_H
+#ifndef MPD_PCM_RESAMPLE_H
+#define MPD_PCM_RESAMPLE_H
 
-#include "pcm_resample.h"
-#include "pcm_dither.h"
+#include "config.h"
 
 #include <stdint.h>
 #include <stddef.h>
+#include <stdbool.h>
 
-struct audio_format;
+#ifdef HAVE_LIBSAMPLERATE
+#include <samplerate.h>
+#endif
 
-struct pcm_convert_state {
-	struct pcm_resample_state resample;
+struct pcm_resample_state {
+#ifdef HAVE_LIBSAMPLERATE
+	SRC_STATE *state;
+	SRC_DATA data;
+	size_t data_in_size;
+	size_t data_out_size;
 
-	struct pcm_dither_24 dither;
+	struct {
+		unsigned src_rate;
+		unsigned dest_rate;
+		uint8_t channels;
+	} prev;
 
-	/* Strict C99 doesn't allow empty structs */
-	int error;
+	bool error;
+#else
+	/* struct must not be empty */
+	int dummy;
+#endif
 };
 
-void pcm_volume(char *buffer, int bufferSize,
-		const struct audio_format *format,
-		int volume);
+void pcm_resample_init(struct pcm_resample_state *state);
 
-void pcm_mix(char *buffer1, const char *buffer2, size_t size,
-             const struct audio_format *format, float portion1);
-
-void pcm_convert_init(struct pcm_convert_state *state);
-
-size_t pcm_convert(const struct audio_format *inFormat,
-		   const char *inBuffer, size_t inSize,
-		   const struct audio_format *outFormat,
-		   char *outBuffer,
-		   struct pcm_convert_state *convState);
-
-size_t pcm_convert_size(const struct audio_format *inFormat, size_t inSize,
-			const struct audio_format *outFormat);
+size_t
+pcm_resample_16(uint8_t channels,
+		unsigned src_rate,
+		const int16_t *src_buffer, size_t src_size,
+		unsigned dest_rate,
+		int16_t *dest_buffer, size_t dest_size,
+		struct pcm_resample_state *state);
 
 #endif

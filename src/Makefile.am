@@ -66,6 +66,7 @@ mpd_headers = \
 	path.h \
 	mapper.h \
 	pcm_utils.h \
+	pcm_resample.h \
 	pcm_dither.h \
 	permission.h \
 	player_thread.h \
@@ -146,6 +147,7 @@ mpd_SOURCES = \
 	path.c \
 	mapper.c \
 	pcm_utils.c \
+	pcm_resample.c \
 	pcm_dither.c \
 	permission.c \
 	player_thread.c \
@@ -175,6 +177,12 @@ mpd_SOURCES = \
 	locate.c \
 	stored_playlist.c \
 	timer.c
+
+if HAVE_LIBSAMPLERATE
+mpd_SOURCES += pcm_resample_libsamplerate.c
+else
+mpd_SOURCES += pcm_resample_fallback.c
+endif
 
 if HAVE_ID3TAG
 mpd_SOURCES += tag_id3.c

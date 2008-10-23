@@ -209,165 +209,9 @@ void pcm_convert_init(struct pcm_convert_state *state)
 {
 	memset(state, 0, sizeof(*state));
 
+	pcm_resample_init(&state->resample);
 	pcm_dither_24_init(&state->dither);
 }
-
-#ifdef HAVE_LIBSAMPLERATE
-static int pcm_resample_get_converter(void)
-{
-	const char *conf = getConfigParamValue(CONF_SAMPLERATE_CONVERTER);
-	long convalgo;
-	char *test;
-	const char *test2;
-	size_t len;
-
-	if (!conf) {
-		convalgo = SRC_SINC_FASTEST;
-		goto out;
-	}
-
-	convalgo = strtol(conf, &test, 10);
-	if (*test == '\0' && src_get_name(convalgo))
-		goto out;
-
-	len = strlen(conf);
-	for (convalgo = 0 ; ; convalgo++) {
-		test2 = src_get_name(convalgo);
-		if (!test2) {
-			convalgo = SRC_SINC_FASTEST;
-			break;
-		}
-		if (strncasecmp(test2, conf, len) == 0)
-			goto out;
-	}
-
-	ERROR("unknown samplerate converter \"%s\"\n", conf);
-out:
-	DEBUG("selecting samplerate converter \"%s\"\n",
-	      src_get_name(convalgo));
-
-	return convalgo;
-}
-#endif
-
-#ifdef HAVE_LIBSAMPLERATE
-static size_t pcm_resample(int8_t channels, uint32_t inSampleRate,
-			   const int16_t *src, size_t src_size,
-			   uint32_t outSampleRate, int16_t *outBuffer,
-			   size_t outSize,
-			   struct pcm_convert_state *convState)
-{
-	static int convalgo = -1;
-	SRC_DATA *data = &convState->data;
-	size_t dataInSize;
-	size_t dataOutSize;
-	int error;
-
-	if (convalgo < 0)
-		convalgo = pcm_resample_get_converter();
-
-	/* (re)set the state/ratio if the in or out format changed */
-	if ((channels != convState->lastChannels) ||
-	    (inSampleRate != convState->lastInSampleRate) ||
-	    (outSampleRate != convState->lastOutSampleRate)) {
-		convState->error = 0;
-		convState->lastChannels = channels;
-		convState->lastInSampleRate = inSampleRate;
-		convState->lastOutSampleRate = outSampleRate;
-
-		if (convState->state)
-			convState->state = src_delete(convState->state);
-
-		convState->state = src_new(convalgo, channels, &error);
-		if (!convState->state) {
-			ERROR("cannot create new libsamplerate state: %s\n",
-			      src_strerror(error));
-			convState->error = 1;
-			return 0;
-		}
-		
-		data->src_ratio = (double)outSampleRate / (double)inSampleRate;
-		DEBUG("setting samplerate conversion ratio to %.2lf\n",
-		      data->src_ratio);
-		src_set_ratio(convState->state, data->src_ratio);
-	}
-
-	/* there was an error previously, and nothing has changed */
-	if (convState->error)
-		return 0;
-
-	data->input_frames = src_size / 2 / channels;
-	dataInSize = data->input_frames * sizeof(float) * channels;
-	if (dataInSize > convState->dataInSize) {
-		convState->dataInSize = dataInSize;
-		data->data_in = xrealloc(data->data_in, dataInSize);
-	}
-
-	data->output_frames = outSize / 2 / channels;
-	dataOutSize = data->output_frames * sizeof(float) * channels;
-	if (dataOutSize > convState->dataOutSize) {
-		convState->dataOutSize = dataOutSize;
-		data->data_out = xrealloc(data->data_out, dataOutSize);
-	}
-
-	src_short_to_float_array((const short *)src, data->data_in,
-	                         data->input_frames * channels);
-
-	error = src_process(convState->state, data);
-	if (error) {
-		ERROR("error processing samples with libsamplerate: %s\n",
-		      src_strerror(error));
-		convState->error = 1;
-		return 0;
-	}
-
-	src_float_to_short_array(data->data_out, (short *)outBuffer,
-	                         data->output_frames_gen * channels);
-
-	return data->output_frames_gen * 2 * channels;
-}
-#else /* !HAVE_LIBSAMPLERATE */
-/* resampling code blatantly ripped from ESD */
-static size_t pcm_resample(int8_t channels, uint32_t inSampleRate,
-			   const int16_t *src, mpd_unused size_t src_size,
-			   uint32_t outSampleRate, char *outBuffer,
-			   size_t outSize,
-			   mpd_unused struct pcm_convert_state *convState)
-{
-	uint32_t rd_dat = 0;
-	uint32_t wr_dat = 0;
-	const int16_t *in = (const int16_t *)src;
-	int16_t *out = (int16_t *)outBuffer;
-	uint32_t nlen = outSize / 2;
-	int16_t lsample, rsample;
-
-	switch (channels) {
-	case 1:
-		while (wr_dat < nlen) {
-			rd_dat = wr_dat * inSampleRate / outSampleRate;
-
-			lsample = in[rd_dat++];
-
-			out[wr_dat++] = lsample;
-		}
-		break;
-	case 2:
-		while (wr_dat < nlen) {
-			rd_dat = wr_dat * inSampleRate / outSampleRate;
-			rd_dat &= ~1;
-
-			lsample = in[rd_dat++];
-			rsample = in[rd_dat++];
-
-			out[wr_dat++] = lsample;
-			out[wr_dat++] = rsample;
-		}
-		break;
-	}
-
-	return outSize;
-}
-#endif /* !HAVE_LIBSAMPLERATE */
 
 static void
 pcm_convert_channels_1_to_2(int16_t *dest, const int16_t *src,
@@ -542,11 +386,11 @@ size_t pcm_convert(const struct audio_format *inFormat,
 		assert(dest_size >= len);
 		memcpy(outBuffer, buf, len);
 	} else {
-		len = pcm_resample(outFormat->channels,
-				   inFormat->sample_rate, buf, len,
-				   outFormat->sample_rate,
-				   (int16_t*)outBuffer,
-				   dest_size, convState);
+		len = pcm_resample_16(outFormat->channels,
+				      inFormat->sample_rate, buf, len,
+				      outFormat->sample_rate,
+				      (int16_t*)outBuffer,
+				      dest_size, &convState->resample);
 		if (len == 0)
 			exit(EXIT_FAILURE);
 	}
