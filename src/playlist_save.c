@@ -29,7 +29,7 @@ playlist_print_song(FILE *file, const struct song *song)
 {
 	char tmp1[MPD_PATH_MAX], tmp2[MPD_PATH_MAX];
 
-	if (playlist_saveAbsolutePaths && song_is_file(song)) {
+	if (playlist_saveAbsolutePaths && song_in_database(song)) {
 		const char *path = map_song_fs(song, tmp1);
 		if (path != NULL)
 			fprintf(file, "%s\n", path);
@@ -46,7 +46,8 @@ playlist_print_uri(FILE *file, const char *uri)
 	char tmp[MPD_PATH_MAX];
 	const char *s;
 
-	if (playlist_saveAbsolutePaths && !isValidRemoteUtf8Url(uri))
+	if (playlist_saveAbsolutePaths && !isValidRemoteUtf8Url(uri) &&
+	    uri[0] != '/')
 		s = map_directory_child_fs(db_get_root(), uri, tmp);
 	else
 		s = utf8_to_fs_charset(tmp, uri);
