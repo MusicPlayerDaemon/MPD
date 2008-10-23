@@ -922,7 +922,8 @@ mp3Read(mp3DecodeData * data, ReplayGainInfo ** replayGainInfo)
 		}
 
 		max_samples = sizeof(data->outputBuffer) /
-			(2 * MAD_NCHANNELS(&(data->frame).header));
+			sizeof(data->outputBuffer[0]) /
+			MAD_NCHANNELS(&(data->frame).header);
 
 		while (i < pcm_length) {
 			enum decoder_command cmd;
@@ -940,7 +941,7 @@ mp3Read(mp3DecodeData * data, ReplayGainInfo ** replayGainInfo)
 			cmd = decoder_data(decoder, data->inStream,
 					   data->inStream->seekable,
 					   data->outputBuffer,
-					   2 * num_samples,
+					   sizeof(data->outputBuffer[0]) * num_samples,
 					   data->elapsedTime,
 					   data->bitRate / 1000,
 					   (replayGainInfo != NULL) ? *replayGainInfo : NULL);
