@@ -66,9 +66,9 @@
 
 static Playlist playlist;
 static int playlist_state = PLAYLIST_STATE_STOP;
-int playlist_max_length = DEFAULT_PLAYLIST_MAX_LENGTH;
+unsigned playlist_max_length = DEFAULT_PLAYLIST_MAX_LENGTH;
 static int playlist_stopOnError;
-static int playlist_errorCount;
+static unsigned playlist_errorCount;
 static int playlist_noGoToNext;
 
 bool playlist_saveAbsolutePaths = DEFAULT_PLAYLIST_SAVE_ABSOLUTE_PATHS;
@@ -82,11 +82,8 @@ static void incrPlaylistVersion(void)
 	static unsigned long max = ((uint32_t) 1 << 31) - 1;
 	playlist.version++;
 	if (playlist.version >= max) {
-		int i;
-
-		for (i = 0; i < playlist.length; i++) {
+		for (unsigned i = 0; i < playlist.length; i++)
 			playlist.songMod[i] = 0;
-		}
 
 		playlist.version = 1;
 	}
@@ -96,11 +93,8 @@ static void incrPlaylistVersion(void)
 
 void playlistVersionChange(void)
 {
-	int i;
-
-	for (i = 0; i < playlist.length; i++) {
+	for (unsigned i = 0; i < playlist.length; i++)
 		playlist.songMod[i] = playlist.version;
-	}
 
 	incrPlaylistVersion();
 }
@@ -110,7 +104,7 @@ static void incrPlaylistCurrent(void)
 	if (playlist.current < 0)
 		return;
 
-	if (playlist.current >= playlist.length - 1) {
+	if (playlist.current >= (int)playlist.length - 1) {
 		if (playlist.repeat)
 			playlist.current = 0;
 		else
@@ -122,7 +116,6 @@ static void incrPlaylistCurrent(void)
 void initPlaylist(void)
 {
 	char *test;
-	int i;
 	ConfigParam *param;
 
 	playlist.length = 0;
@@ -150,23 +143,26 @@ void initPlaylist(void)
 
 	playlist.songs = xmalloc(sizeof(struct song *) * playlist_max_length);
 	playlist.songMod = xmalloc(sizeof(uint32_t) * playlist_max_length);
-	playlist.order = xmalloc(sizeof(int) * playlist_max_length);
+	playlist.order = xmalloc(sizeof(playlist.order[0]) *
+				 playlist_max_length);
 	playlist.idToPosition = xmalloc(sizeof(int) * playlist_max_length *
 				       PLAYLIST_HASH_MULT);
-	playlist.positionToId = xmalloc(sizeof(int) * playlist_max_length);
+	playlist.positionToId = xmalloc(sizeof(playlist.positionToId[0]) *
+					playlist_max_length);
 
 	memset(playlist.songs, 0, sizeof(char *) * playlist_max_length);
 
 	srandom(time(NULL));
 
-	for (i = 0; i < playlist_max_length * PLAYLIST_HASH_MULT; i++) {
+	for (unsigned i = 0; i < playlist_max_length * PLAYLIST_HASH_MULT;
+	     i++) {
 		playlist.idToPosition[i] = -1;
 	}
 }
 
-static int getNextId(void)
+static unsigned getNextId(void)
 {
-	static int cur = -1;
+	static unsigned cur = (unsigned)-1;
 
 	do {
 		cur++;
@@ -180,8 +176,7 @@ static int getNextId(void)
 
 void finishPlaylist(void)
 {
-	int i;
-	for (i = 0; i < playlist.length; i++)
+	for (unsigned i = 0; i < playlist.length; i++)
 		if (!song_in_database(playlist.songs[i]))
 			song_free(playlist.songs[i]);
 
@@ -201,11 +196,9 @@ void finishPlaylist(void)
 
 void clearPlaylist(void)
 {
-	int i;
-
 	stopPlaylist();
 
-	for (i = 0; i < playlist.length; i++) {
+	for (unsigned i = 0; i < playlist.length; i++) {
 		if (!song_in_database(playlist.songs[i]))
 			song_free(playlist.songs[i]);
 
@@ -220,21 +213,18 @@ void clearPlaylist(void)
 
 void showPlaylist(struct client *client)
 {
-	int i;
 	char path_max_tmp[MPD_PATH_MAX];
 
-	for (i = 0; i < playlist.length; i++) {
+	for (unsigned i = 0; i < playlist.length; i++)
 		client_printf(client, "%i:%s\n", i,
 			      song_get_url(playlist.songs[i], path_max_tmp));
-	}
 }
 
 static void playlist_save(FILE *fp)
 {
-	int i;
 	char path_max_tmp[MPD_PATH_MAX];
 
-	for (i = 0; i < playlist.length; i++)
+	for (unsigned i = 0; i < playlist.length; i++)
 		fprintf(fp, "%i:%s\n", i,
 			song_get_url(playlist.songs[i], path_max_tmp));
 }
@@ -364,17 +354,16 @@ void readPlaylistState(FILE *fp)
 	}
 }
 
-static void printPlaylistSongInfo(struct client *client, int song)
+static void printPlaylistSongInfo(struct client *client, unsigned song)
 {
 	song_print_info(client, playlist.songs[song]);
-	client_printf(client, "Pos: %i\nId: %i\n", song, playlist.positionToId[song]);
+	client_printf(client, "Pos: %u\nId: %u\n",
+		      song, playlist.positionToId[song]);
 }
 
 int playlistChanges(struct client *client, uint32_t version)
 {
-	int i;
-
-	for (i = 0; i < playlist.length; i++) {
+	for (unsigned i = 0; i < playlist.length; i++) {
 		if (version > playlist.version ||
 		    playlist.songMod[i] >= version ||
 		    playlist.songMod[i] == 0) {
@@ -387,9 +376,7 @@ int playlistChanges(struct client *client, uint32_t version)
 
 int playlistChangesPosId(struct client *client, uint32_t version)
 {
-	int i;
-
-	for (i = 0; i < playlist.length; i++) {
+	for (unsigned i = 0; i < playlist.length; i++) {
 		if (version > playlist.version ||
 		    playlist.songMod[i] >= version ||
 		    playlist.songMod[i] == 0) {
@@ -403,39 +390,37 @@ int playlistChangesPosId(struct client *client, uint32_t version)
 
 enum playlist_result playlistInfo(struct client *client, int song)
 {
-	int i;
-	int begin = 0;
-	int end = playlist.length;
+	unsigned begin = 0;
+	unsigned end = playlist.length;
 
 	if (song >= 0) {
 		begin = song;
 		end = song + 1;
 	}
-	if (song >= playlist.length)
+	if (song >= (int)playlist.length)
 		return PLAYLIST_RESULT_BAD_RANGE;
 
-	for (i = begin; i < end; i++)
+	for (unsigned i = begin; i < end; i++)
 		printPlaylistSongInfo(client, i);
 
 	return PLAYLIST_RESULT_SUCCESS;
 }
 
-static int song_id_to_position(int id)
+static int song_id_to_position(unsigned id)
 {
-	if (id < 0 || id >= PLAYLIST_HASH_MULT*playlist_max_length)
+	if (id >= PLAYLIST_HASH_MULT*playlist_max_length)
 		return -1;
 
 	assert(playlist.idToPosition[id] >= -1);
-	assert(playlist.idToPosition[id] < playlist.length);
+	assert(playlist.idToPosition[id] < (int)playlist.length);
 
 	return playlist.idToPosition[id];
 }
 
 enum playlist_result playlistId(struct client *client, int id)
 {
-	int i;
 	int begin = 0;
-	int end = playlist.length;
+	unsigned end = playlist.length;
 
 	if (id >= 0) {
 		begin = song_id_to_position(id);
@@ -445,16 +430,16 @@ enum playlist_result playlistId(struct client *client, int id)
 		end = begin + 1;
 	}
 
-	for (i = begin; i < end; i++)
+	for (unsigned i = begin; i < end; i++)
 		printPlaylistSongInfo(client, i);
 
 	return PLAYLIST_RESULT_SUCCESS;
 }
 
-static void swapSongs(int song1, int song2)
+static void swapSongs(unsigned song1, unsigned song2)
 {
 	struct song *sTemp;
-	int iTemp;
+	unsigned iTemp;
 
 	sTemp = playlist.songs[song1];
 	playlist.songs[song1] = playlist.songs[song2];
@@ -475,7 +460,7 @@ static void queueNextSongInPlaylist(void)
 {
 	char path_max_tmp[MPD_PATH_MAX];
 
-	if (playlist.current < playlist.length - 1) {
+	if (playlist.current < (int)playlist.length - 1) {
 		playlist.queued = playlist.current + 1;
 		DEBUG("playlist: queue song %i:\"%s\"\n",
 		      playlist.queued,
@@ -517,7 +502,7 @@ static void clearPlayerQueue(void)
 }
 
 enum playlist_result
-playlist_append_file(const char *path, int uid, int *added_id)
+playlist_append_file(const char *path, int uid, unsigned *added_id)
 {
 	int ret;
 	struct stat st;
@@ -557,7 +542,7 @@ song_by_url(const char *url)
 	return NULL;
 }
 
-enum playlist_result addToPlaylist(const char *url, int *added_id)
+enum playlist_result addToPlaylist(const char *url, unsigned *added_id)
 {
 	struct song *song;
 
@@ -571,15 +556,15 @@ enum playlist_result addToPlaylist(const char *url, int *added_id)
 }
 
 enum playlist_result
-addSongToPlaylist(struct song *song, int *added_id)
+addSongToPlaylist(struct song *song, unsigned *added_id)
 {
-	int id;
+	unsigned id;
 
 	if (playlist.length == playlist_max_length)
 		return PLAYLIST_RESULT_TOO_LARGE;
 
 	if (playlist_state == PLAYLIST_STATE_PLAY && playlist.queued >= 0 &&
-	    playlist.current == playlist.length - 1)
+	    playlist.current == (int)playlist.length - 1)
 		clearPlayerQueue();
 
 	id = getNextId();
@@ -593,15 +578,14 @@ addSongToPlaylist(struct song *song, int *added_id)
 	playlist.length++;
 
 	if (playlist.random) {
-		int swap;
-		int start;
+		unsigned start;
 		/*if(playlist_state==PLAYLIST_STATE_STOP) start = 0;
 		   else */ if (playlist.queued >= 0)
 			start = playlist.queued + 1;
 		else
 			start = playlist.current + 1;
 		if (start < playlist.length) {
-			swap = random() % (playlist.length - start);
+			unsigned swap = random() % (playlist.length - start);
 			swap += start;
 			swapOrder(playlist.length - 1, swap);
 		}
@@ -615,15 +599,14 @@ addSongToPlaylist(struct song *song, int *added_id)
 	return PLAYLIST_RESULT_SUCCESS;
 }
 
-enum playlist_result swapSongsInPlaylist(int song1, int song2)
+enum playlist_result swapSongsInPlaylist(unsigned song1, unsigned song2)
 {
-	if (song1 < 0 || song1 >= playlist.length ||
-	    song2 < 0 || song2 >= playlist.length)
+	if (song1 >= playlist.length || song2 >= playlist.length)
 		return PLAYLIST_RESULT_BAD_RANGE;
 
 	if (playlist_state == PLAYLIST_STATE_PLAY && playlist.queued >= 0) {
-		int queuedSong = playlist.order[playlist.queued];
-		int currentSong = playlist.order[playlist.current];
+		unsigned queuedSong = playlist.order[playlist.queued];
+		unsigned currentSong = playlist.order[playlist.current];
 
 		if (queuedSong == song1 || queuedSong == song2
 		    || currentSong == song1 || currentSong == song2)
@@ -632,8 +615,7 @@ enum playlist_result swapSongsInPlaylist(int song1, int song2)
 
 	swapSongs(song1, song2);
 	if (playlist.random) {
-		int i;
-		int k;
+		unsigned i, k;
 		int j = -1;
 		for (i = 0; playlist.order[i] != song1; i++) {
 			if (playlist.order[i] == song2)
@@ -645,9 +627,9 @@ enum playlist_result swapSongsInPlaylist(int song1, int song2)
 				j = i;
 		swapOrder(k, j);
 	} else {
-		if (playlist.current == song1)
+		if (playlist.current == (int)song1)
 			playlist.current = song2;
-		else if (playlist.current == song2)
+		else if (playlist.current == (int)song2)
 			playlist.current = song1;
 	}
 
@@ -656,7 +638,7 @@ enum playlist_result swapSongsInPlaylist(int song1, int song2)
 	return PLAYLIST_RESULT_SUCCESS;
 }
 
-enum playlist_result swapSongsInPlaylistById(int id1, int id2)
+enum playlist_result swapSongsInPlaylistById(unsigned id1, unsigned id2)
 {
 	int song1 = song_id_to_position(id1);
 	int song2 = song_id_to_position(id2);
@@ -674,12 +656,12 @@ enum playlist_result swapSongsInPlaylistById(int id1, int id2)
 	playlist.songMod[to] = playlist.version; \
 }
 
-enum playlist_result deleteFromPlaylist(int song)
+enum playlist_result deleteFromPlaylist(unsigned song)
 {
-	int i;
-	int songOrder;
+	unsigned i;
+	unsigned songOrder;
 
-	if (song < 0 || song >= playlist.length)
+	if (song >= playlist.length)
 		return PLAYLIST_RESULT_BAD_RANGE;
 
 	if (playlist_state == PLAYLIST_STATE_PLAY && playlist.queued >= 0
@@ -717,27 +699,27 @@ enum playlist_result deleteFromPlaylist(int song)
 	incrPlaylistVersion();
 
 	if (playlist_state != PLAYLIST_STATE_STOP
-	    && playlist.current == songOrder) {
+	    && playlist.current == (int)songOrder) {
 		/*if(playlist.current>=playlist.length) return playerStop(fd);
 		   else return playPlaylistOrderNumber(fd,playlist.current); */
 		playerWait();
 		playlist_noGoToNext = 1;
 	}
 
-	if (playlist.current > songOrder) {
+	if (playlist.current > (int)songOrder) {
 		playlist.current--;
-	} else if (playlist.current >= playlist.length) {
+	} else if (playlist.current >= (int)playlist.length) {
 		incrPlaylistCurrent();
 	}
 
-	if (playlist.queued > songOrder) {
+	if (playlist.queued > (int)songOrder) {
 		playlist.queued--;
 	}
 
 	return PLAYLIST_RESULT_SUCCESS;
 }
 
-enum playlist_result deleteFromPlaylistById(int id)
+enum playlist_result deleteFromPlaylistById(unsigned id)
 {
 	int song = song_id_to_position(id);
 	if (song < 0)
@@ -749,16 +731,12 @@ enum playlist_result deleteFromPlaylistById(int id)
 void
 deleteASongFromPlaylist(const struct song *song)
 {
-	int i;
-
 	if (NULL == playlist.songs)
 		return;
 
-	for (i = 0; i < playlist.length; i++) {
-		if (song == playlist.songs[i]) {
+	for (unsigned i = 0; i < playlist.length; i++)
+		if (song == playlist.songs[i])
 			deleteFromPlaylist(i);
-		}
-	}
 }
 
 void stopPlaylist(void)
@@ -790,7 +768,7 @@ static void playPlaylistOrderNumber(int orderNum)
 
 enum playlist_result playPlaylist(int song, int stopOnError)
 {
-	int i = song;
+	unsigned i = song;
 
 	clearPlayerError();
 
@@ -802,12 +780,13 @@ enum playlist_result playPlaylist(int song, int stopOnError)
 			playerSetPause(0);
 			return PLAYLIST_RESULT_SUCCESS;
 		}
-		if (playlist.current >= 0 && playlist.current < playlist.length) {
+		if (playlist.current >= 0 &&
+		    playlist.current < (int)playlist.length) {
 			i = playlist.current;
 		} else {
 			i = 0;
 		}
-	} else if (song < 0 || song >= playlist.length) {
+	} else if (song < 0 || song >= (int)playlist.length) {
 		return PLAYLIST_RESULT_BAD_RANGE;
 	}
 
@@ -816,7 +795,8 @@ enum playlist_result playPlaylist(int song, int stopOnError)
 			randomizeOrder(0, playlist.length - 1);
 		} else {
 			if (song >= 0)
-				for (i = 0; song != playlist.order[i]; i++) ;
+				for (i = 0; song != (int)playlist.order[i];
+				     i++) ;
 			if (playlist_state == PLAYLIST_STATE_STOP) {
 				playlist.current = 0;
 			}
@@ -901,7 +881,7 @@ static void currentSongInPlaylist(void)
 
 	syncPlaylistWithQueue();
 
-	if (playlist.current >= 0 && playlist.current < playlist.length)
+	if (playlist.current >= 0 && playlist.current < (int)playlist.length)
 		playPlaylistOrderNumber(playlist.current);
 	else
 		stopPlaylist();
@@ -916,7 +896,7 @@ void nextSongInPlaylist(void)
 
 	playlist_stopOnError = 0;
 
-	if (playlist.current < playlist.length - 1) {
+	if (playlist.current < (int)playlist.length - 1) {
 		playPlaylistOrderNumber(playlist.current + 1);
 	} else if (playlist.length && playlist.repeat) {
 		if (playlist.random)
@@ -972,21 +952,21 @@ void setPlaylistRepeatStatus(bool status)
 	idle_add(IDLE_OPTIONS);
 }
 
-enum playlist_result moveSongInPlaylist(int from, int to)
+enum playlist_result moveSongInPlaylist(unsigned from, int to)
 {
-	int i;
+	unsigned i;
 	struct song *tmpSong;
-	int tmpId;
-	int currentSong;
+	unsigned tmpId;
+	unsigned currentSong;
 
-	if (from < 0 || from >= playlist.length)
+	if (from >= playlist.length)
 		return PLAYLIST_RESULT_BAD_RANGE;
 
-	if ((to >= 0 && to >= playlist.length) ||
-	    (to < 0 && abs(to) > playlist.length))
+	if ((to >= 0 && to >= (int)playlist.length) ||
+	    (to < 0 && abs(to) > (int)playlist.length))
 		return PLAYLIST_RESULT_BAD_RANGE;
 
-	if (from == to) /* no-op */
+	if ((int)from == to) /* no-op */
 		return PLAYLIST_RESULT_SUCCESS;
 
 	/*
@@ -1006,19 +986,19 @@ enum playlist_result moveSongInPlaylist(int from, int to)
 
 		if (playlist.queued >= 0)
 			queuedSong = playlist.order[playlist.queued];
-		if (queuedSong == from || queuedSong == to
-		    || currentSong == from || currentSong == to)
+		if (queuedSong == (int)from || queuedSong == to
+		    || currentSong == from || (int)currentSong == to)
 			clearPlayerQueue();
 	}
 
 	tmpSong = playlist.songs[from];
 	tmpId = playlist.positionToId[from];
 	/* move songs to one less in from->to */
-	for (i = from; i < to; i++) {
+	for (i = from; (int)i < to; i++) {
 		moveSongFromTo(i + 1, i);
 	}
 	/* move songs to one more in to->from */
-	for (i = from; i > to; i--) {
+	for (i = from; (int)i > to; i--) {
 		moveSongFromTo(i - 1, i);
 	}
 	/* put song at _to_ */
@@ -1029,10 +1009,11 @@ enum playlist_result moveSongInPlaylist(int from, int to)
 	/* now deal with order */
 	if (playlist.random) {
 		for (i = 0; i < playlist.length; i++) {
-			if (playlist.order[i] > from && playlist.order[i] <= to) {
+			if (playlist.order[i] > from &&
+			    (int)playlist.order[i] <= to) {
 				playlist.order[i]--;
 			} else if (playlist.order[i] < from &&
-				   playlist.order[i] >= to) {
+				   (int)playlist.order[i] >= to) {
 				playlist.order[i]++;
 			} else if (from == playlist.order[i]) {
 				playlist.order[i] = to;
@@ -1041,21 +1022,23 @@ enum playlist_result moveSongInPlaylist(int from, int to)
 	}
 	else
 	{
-		if (playlist.current == from)
+		if (playlist.current == (int)from)
 			playlist.current = to;
-		else if (playlist.current > from && playlist.current <= to) {
+		else if (playlist.current > (int)from &&
+			 playlist.current <= to) {
 			playlist.current--;
-		} else if (playlist.current >= to && playlist.current < from) {
+		} else if (playlist.current >= to &&
+			   playlist.current < (int)from) {
 			playlist.current++;
 		}
 
 		/* this first if statement isn't necessary since the queue
 		 * would have been cleared out if queued == from */
-		if (playlist.queued == from)
+		if (playlist.queued == (int)from)
 			playlist.queued = to;
-		else if (playlist.queued > from && playlist.queued <= to) {
+		else if (playlist.queued > (int)from && playlist.queued <= to) {
 			playlist.queued--;
-		} else if (playlist.queued>= to && playlist.queued < from) {
+		} else if (playlist.queued>= to && playlist.queued < (int)from) {
 			playlist.queued++;
 		}
 	}
@@ -1065,7 +1048,7 @@ enum playlist_result moveSongInPlaylist(int from, int to)
 	return PLAYLIST_RESULT_SUCCESS;
 }
 
-enum playlist_result moveSongInPlaylistById(int id1, int to)
+enum playlist_result moveSongInPlaylistById(unsigned id1, int to)
 {
 	int song = song_id_to_position(id1);
 	if (song < 0)
@@ -1076,11 +1059,10 @@ enum playlist_result moveSongInPlaylistById(int id1, int to)
 
 static void orderPlaylist(void)
 {
-	int i;
+	unsigned i;
 
-	if (playlist.current >= 0 && playlist.current < playlist.length) {
+	if (playlist.current >= 0 && playlist.current < (int)playlist.length)
 		playlist.current = playlist.order[playlist.current];
-	}
 
 	if (playlist_state == PLAYLIST_STATE_PLAY) {
 		if (playlist.queued >= 0)
@@ -1136,7 +1118,7 @@ void setPlaylistRandomStatus(bool status)
 		  }
 		  else */ randomizeOrder(0, playlist.length - 1);
 		if (playlist.current >= 0 &&
-		    playlist.current < playlist.length) {
+		    playlist.current < (int)playlist.length) {
 			swapOrder(playlist.current, 0);
 			playlist.current = 0;
 		}
@@ -1173,7 +1155,7 @@ void previousSongInPlaylist(void)
 
 void shufflePlaylist(void)
 {
-	int i;
+	unsigned i;
 	int ri;
 
 	if (playlist.length > 1) {
@@ -1219,7 +1201,6 @@ enum playlist_result deletePlaylist(const char *utf8file)
 enum playlist_result savePlaylist(const char *utf8file)
 {
 	FILE *fp;
-	int i;
 	struct stat sb;
 	char path_max_tmp[MPD_PATH_MAX];
 
@@ -1235,7 +1216,7 @@ enum playlist_result savePlaylist(const char *utf8file)
 	if (fp == NULL)
 		return PLAYLIST_RESULT_ERRNO;
 
-	for (i = 0; i < playlist.length; i++)
+	for (unsigned i = 0; i < playlist.length; i++)
 		playlist_print_song(fp, playlist.songs[i]);
 
 	while (fclose(fp) && errno == EINTR) ;
@@ -1246,7 +1227,8 @@ enum playlist_result savePlaylist(const char *utf8file)
 
 int getPlaylistCurrentSong(void)
 {
-	if (playlist.current >= 0 && playlist.current < playlist.length) {
+	if (playlist.current >= 0 &&
+	    playlist.current < (int)playlist.length) {
 		return playlist.order[playlist.current];
 	}
 
@@ -1263,11 +1245,12 @@ int getPlaylistLength(void)
 	return playlist.length;
 }
 
-enum playlist_result seekSongInPlaylist(int song, float seek_time)
+enum playlist_result seekSongInPlaylist(unsigned song, float seek_time)
 {
-	int i, ret;
+	unsigned i;
+	int ret;
 
-	if (song < 0 || song >= playlist.length)
+	if (song >= playlist.length)
 		return PLAYLIST_RESULT_BAD_RANGE;
 
 	if (playlist.random)
@@ -1285,7 +1268,7 @@ enum playlist_result seekSongInPlaylist(int song, float seek_time)
 	} else
 		playPlaylistOrderNumber(i);
 
-	if (playlist.current != i) {
+	if (playlist.current != (int)i) {
 		playPlaylistOrderNumber(i);
 	}
 
@@ -1296,7 +1279,7 @@ enum playlist_result seekSongInPlaylist(int song, float seek_time)
 	return PLAYLIST_RESULT_SUCCESS;
 }
 
-enum playlist_result seekSongInPlaylistById(int id, float seek_time)
+enum playlist_result seekSongInPlaylistById(unsigned id, float seek_time)
 {
 	int song = song_id_to_position(id);
 	if (song < 0)
@@ -1305,7 +1288,7 @@ enum playlist_result seekSongInPlaylistById(int id, float seek_time)
 	return seekSongInPlaylist(song, seek_time);
 }
 
-int getPlaylistSongId(int song)
+unsigned getPlaylistSongId(unsigned song)
 {
 	return playlist.positionToId[song];
 }
@@ -1377,9 +1360,9 @@ enum playlist_result loadPlaylist(struct client *client, const char *utf8file)
 }
 
 void searchForSongsInPlaylist(struct client *client,
-			      int numItems, LocateTagItem * items)
+			      unsigned numItems, LocateTagItem * items)
 {
-	int i;
+	unsigned i;
 	char **originalNeedles = xmalloc(numItems * sizeof(char *));
 
 	for (i = 0; i < numItems; i++) {
@@ -1401,11 +1384,9 @@ void searchForSongsInPlaylist(struct client *client,
 }
 
 void findSongsInPlaylist(struct client *client,
-			 int numItems, LocateTagItem * items)
+			 unsigned numItems, LocateTagItem * items)
 {
-	int i;
-
-	for (i = 0; i < playlist.length; i++) {
+	for (unsigned i = 0; i < playlist.length; i++) {
 		if (tagItemsFoundAndMatches(playlist.songs[i], numItems, items))
 			printPlaylistSongInfo(client, i);
 	}

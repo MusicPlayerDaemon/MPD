@@ -343,7 +343,7 @@ handle_status(struct client *client,
 	if (song >= 0) {
 		client_printf(client,
 			      COMMAND_STATUS_SONG ": %i\n"
-			      COMMAND_STATUS_SONGID ": %i\n",
+			      COMMAND_STATUS_SONGID ": %u\n",
 			      song, getPlaylistSongId(song));
 	}
 
@@ -415,7 +415,7 @@ handle_add(struct client *client, mpd_unused int argc, char *argv[])
 static enum command_return
 handle_addid(struct client *client, int argc, char *argv[])
 {
-	int added_id;
+	unsigned added_id;
 	enum playlist_result result;
 
 	if (strncmp(argv[1], "file:///", 8) == 0)
@@ -441,7 +441,7 @@ handle_addid(struct client *client, int argc, char *argv[])
 		}
 	}
 
-	client_printf(client, "Id: %d\n", added_id);
+	client_printf(client, "Id: %u\n", added_id);
 	return result;
 }
 
