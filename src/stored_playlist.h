@@ -54,6 +54,9 @@ enum playlist_result
 spl_clear(const char *utf8path);
 
 enum playlist_result
+spl_delete(const char *name_utf8);
+
+enum playlist_result
 spl_remove_index(const char *utf8path, unsigned pos);
 
 enum playlist_result

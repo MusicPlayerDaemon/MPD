@@ -1185,20 +1185,6 @@ void shufflePlaylist(void)
 	}
 }
 
-enum playlist_result deletePlaylist(const char *utf8file)
-{
-	char path_max_tmp[MPD_PATH_MAX];
-
-	utf8_to_fs_playlist_path(path_max_tmp, utf8file);
-
-	if (unlink(path_max_tmp) < 0)
-		return errno == ENOENT
-			? PLAYLIST_RESULT_NO_SUCH_LIST
-			: PLAYLIST_RESULT_ERRNO;
-
-	return PLAYLIST_RESULT_SUCCESS;
-}
-
 enum playlist_result savePlaylist(const char *utf8file)
 {
 	FILE *fp;

@@ -626,7 +626,7 @@ handle_rm(struct client *client, mpd_unused int argc, char *argv[])
 {
 	enum playlist_result result;
 
-	result = deletePlaylist(argv[1]);
+	result = spl_delete(argv[1]);
 	return print_playlist_result(client, result);
 }
 

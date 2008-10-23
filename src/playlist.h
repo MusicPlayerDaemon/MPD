@@ -109,8 +109,6 @@ void shufflePlaylist(void);
 
 enum playlist_result savePlaylist(const char *utf8file);
 
-enum playlist_result deletePlaylist(const char *utf8file);
-
 void
 deleteASongFromPlaylist(const struct song *song);
 

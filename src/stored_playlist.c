@@ -266,6 +266,21 @@ spl_clear(const char *utf8path)
 }
 
 enum playlist_result
+spl_delete(const char *name_utf8)
+{
+	char filename[MPD_PATH_MAX];
+
+	utf8_to_fs_playlist_path(filename, name_utf8);
+
+	if (unlink(filename) < 0)
+		return errno == ENOENT
+			? PLAYLIST_RESULT_NO_SUCH_LIST
+			: PLAYLIST_RESULT_ERRNO;
+
+	return PLAYLIST_RESULT_SUCCESS;
+}
+
+enum playlist_result
 spl_remove_index(const char *utf8path, unsigned pos)
 {
 	GPtrArray *list;
