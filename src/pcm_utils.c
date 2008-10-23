@@ -208,6 +208,8 @@ void pcm_mix(char *buffer1, const char *buffer2, size_t size,
 void pcm_convert_init(struct pcm_convert_state *state)
 {
 	memset(state, 0, sizeof(*state));
+
+	pcm_dither_24_init(&state->dither);
 }
 
 #ifdef HAVE_LIBSAMPLERATE
@@ -457,17 +459,16 @@ pcm_convert_8_to_16(int16_t *out, const int8_t *in,
 }
 
 static void
-pcm_convert_24_to_16(int16_t *out, const int32_t *in,
+pcm_convert_24_to_16(struct pcm_dither_24 *dither,
+		     int16_t *out, const int32_t *in,
 		     unsigned num_samples)
 {
-	while (num_samples > 0) {
-		*out++ = *in++ >> 8;
-		--num_samples;
-	}
+	pcm_dither_24_to_16(dither, out, in, num_samples);
 }
 
 static const int16_t *
-pcm_convert_to_16(uint8_t bits, const void *src,
+pcm_convert_to_16(struct pcm_convert_state *convert,
+		  uint8_t bits, const void *src,
 		  size_t src_size, size_t *dest_size_r)
 {
 	static int16_t *buf;
@@ -500,7 +501,8 @@ pcm_convert_to_16(uint8_t bits, const void *src,
 			buf = xrealloc(buf, len);
 		}
 
-		pcm_convert_24_to_16((int16_t *)buf,
+		pcm_convert_24_to_16(&convert->dither,
+				     (int16_t *)buf,
 				     (const int32_t *)src,
 				     num_samples);
 		return buf;
@@ -524,7 +526,7 @@ size_t pcm_convert(const struct audio_format *inFormat,
 	assert(outFormat->bits == 16);
 
 	/* everything else supports 16 bit only, so convert to that first */
-	buf = pcm_convert_to_16(inFormat->bits, src, src_size, &len);
+	buf = pcm_convert_to_16(convState, inFormat->bits, src, src_size, &len);
 	if (!buf)
 		exit(EXIT_FAILURE);
 

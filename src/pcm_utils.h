@@ -20,6 +20,7 @@
 #define PCM_UTILS_H
 
 #include "../config.h"
+#include "pcm_dither.h"
 
 #include <stdint.h>
 #include <stddef.h>
@@ -40,6 +41,9 @@ struct pcm_convert_state {
 	uint32_t lastInSampleRate;
 	uint32_t lastOutSampleRate;
 #endif
+
+	struct pcm_dither_24 dither;
+
 	/* Strict C99 doesn't allow empty structs */
 	int error;
 };

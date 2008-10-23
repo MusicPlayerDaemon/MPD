@@ -66,6 +66,7 @@ mpd_headers = \
 	path.h \
 	mapper.h \
 	pcm_utils.h \
+	pcm_dither.h \
 	permission.h \
 	player_thread.h \
 	player_control.h \
@@ -145,6 +146,7 @@ mpd_SOURCES = \
 	path.c \
 	mapper.c \
 	pcm_utils.c \
+	pcm_dither.c \
 	permission.c \
 	player_thread.c \
 	player_control.c \
