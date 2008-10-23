@@ -79,8 +79,6 @@ static const char need_positive[] = "need a positive integer"; /* no-op */
 /* FIXME: redundant error messages */
 static const char check_integer[] = "\"%s\" is not a integer";
 static const char need_integer[] = "need an integer";
-static const char check_boolean[] = "\"%s\" is not 0 or 1";
-static const char check_non_negative[] = "\"%s\" is not an integer >= 0";
 
 static const char *current_command;
 static int command_list_num;
@@ -137,15 +135,59 @@ check_int(struct client *client, int *dst,
 	char *test;
 
 	*dst = strtol(s, &test, 10);
-	if (*test != '\0' ||
-	    (fmt == check_boolean && *dst != 0 && *dst != 1) ||
-	    (fmt == check_non_negative && *dst < 0)) {
+	if (*test != '\0') {
 		va_list args;
 		va_start(args, fmt);
 		command_error_v(client, ACK_ERROR_ARG, fmt, args);
 		va_end(args);
 		return false;
 	}
+	return true;
+}
+
+static bool
+check_unsigned(struct client *client, unsigned *value_r, const char *s)
+{
+	unsigned long value;
+	char *endptr;
+
+	value = strtoul(s, &endptr, 10);
+	if (*endptr != 0) {
+		command_error(client, ACK_ERROR_ARG,
+			      "Integer expected: %s", s);
+		return false;
+	}
+
+	if (value > UINT_MAX) {
+		command_error(client, ACK_ERROR_ARG,
+			      "Number too large: %s", s);
+		return false;
+	}
+
+	*value_r = (unsigned)value;
+	return true;
+}
+
+static bool
+check_bool(struct client *client, bool *value_r, const char *s)
+{
+	long value;
+	char *endptr;
+
+	value = strtol(s, &endptr, 10);
+	if (*endptr != 0 || value != 0 || value != 1) {
+		command_error(client, ACK_ERROR_ARG,
+			      "Boolean (0/1) expected: %s", s);
+		return false;
+	}
+
+	if (value > UINT_MAX) {
+		command_error(client, ACK_ERROR_ARG,
+			      "Number too large: %s", s);
+		return false;
+	}
+
+	*value_r = !!value;
 	return true;
 }
 
@@ -291,8 +333,8 @@ handle_pause(struct client *client,
 	     int argc, char *argv[])
 {
 	if (argc == 2) {
-		int pause_flag;
-		if (!check_int(client, &pause_flag, argv[1], check_boolean, argv[1]))
+		bool pause_flag;
+		if (!check_bool(client, &pause_flag, argv[1]))
 			return COMMAND_RETURN_ERROR;
 		playerSetPause(pause_flag);
 		return COMMAND_RETURN_OK;
@@ -1098,9 +1140,9 @@ handle_password(struct client *client, mpd_unused int argc, char *argv[])
 static enum command_return
 handle_crossfade(struct client *client, mpd_unused int argc, char *argv[])
 {
-	int xfade_time;
+	unsigned xfade_time;
 
-	if (!check_int(client, &xfade_time, argv[1], check_non_negative, argv[1]))
+	if (!check_unsigned(client, &xfade_time, argv[1]))
 		return COMMAND_RETURN_ERROR;
 	setPlayerCrossFade(xfade_time);
 
@@ -1110,9 +1152,10 @@ handle_crossfade(struct client *client, mpd_unused int argc, char *argv[])
 static enum command_return
 handle_enableoutput(struct client *client, mpd_unused int argc, char *argv[])
 {
-	int device, ret;
+	unsigned device;
+	int ret;
 
-	if (!check_int(client, &device, argv[1], check_non_negative, argv[1]))
+	if (!check_unsigned(client, &device, argv[1]))
 		return COMMAND_RETURN_ERROR;
 
 	ret = enableAudioDevice(device);
@@ -1126,9 +1169,10 @@ handle_enableoutput(struct client *client, mpd_unused int argc, char *argv[])
 static enum command_return
 handle_disableoutput(struct client *client, mpd_unused int argc, char *argv[])
 {
-	int device, ret;
+	unsigned device;
+	int ret;
 
-	if (!check_int(client, &device, argv[1], check_non_negative, argv[1]))
+	if (!check_unsigned(client, &device, argv[1]))
 		return COMMAND_RETURN_ERROR;
 
 	ret = disableAudioDevice(device);
