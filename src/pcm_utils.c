@@ -343,33 +343,14 @@ size_t pcm_convert_size(const struct audio_format *inFormat, size_t src_size,
 {
 	const double ratio = (double)outFormat->sample_rate /
 	                     (double)inFormat->sample_rate;
-	const int shift = 2 * outFormat->channels;
 	size_t dest_size = src_size;
 
 	/* no partial frames allowed */
 	assert((src_size % audio_format_frame_size(inFormat)) == 0);
 
-	switch (inFormat->bits) {
-	case 8:
-		dest_size <<= 1;
-		break;
-	case 16:
-		break;
-	case 24:
-		dest_size = (dest_size / 4) * 2;
-		break;
-	default:
-		FATAL("only 8 or 16 bits are supported for conversion!\n");
-	}
-
-	if (inFormat->channels != outFormat->channels) {
-		dest_size /= inFormat->channels;
-		dest_size *= outFormat->channels;
-	}
-
-	dest_size /= shift;
+	dest_size /= audio_format_frame_size(inFormat);
 	dest_size = floor(0.5 + (double)dest_size * ratio);
-	dest_size *= shift;
+	dest_size *= audio_format_frame_size(outFormat);
 
 	return dest_size;
 }
