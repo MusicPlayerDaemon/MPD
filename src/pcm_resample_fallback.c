@@ -20,6 +20,8 @@
 #include "pcm_resample.h"
 #include "gcc.h"
 
+#include <assert.h>
+
 /* resampling code blatantly ripped from ESD */
 size_t
 pcm_resample_16(uint8_t channels,
@@ -32,6 +34,9 @@ pcm_resample_16(uint8_t channels,
 	unsigned src_pos, dest_pos = 0;
 	unsigned dest_samples = dest_size / sizeof(*dest_buffer);
 	int16_t lsample, rsample;
+
+	assert((src_size % (sizeof(*src_buffer) * channels)) == 0);
+	assert((dest_size % (sizeof(*dest_buffer) * channels)) == 0);
 
 	switch (channels) {
 	case 1:

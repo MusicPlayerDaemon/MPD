@@ -22,6 +22,7 @@
 #include "log.h"
 #include "utils.h"
 
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -74,6 +75,9 @@ pcm_resample_16(uint8_t channels,
 	size_t data_in_size;
 	size_t data_out_size;
 	int error;
+
+	assert((src_size % (sizeof(*src_buffer) * channels)) == 0);
+	assert((dest_size % (sizeof(*dest_buffer) * channels)) == 0);
 
 	if (convalgo < 0)
 		convalgo = pcm_resample_get_converter();
