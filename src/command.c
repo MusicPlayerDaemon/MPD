@@ -129,12 +129,13 @@ check_uint32(struct client *client, uint32_t *dst,
 }
 
 static bool mpd_fprintf__
-check_int(struct client *client, int *dst,
+check_int(struct client *client, int *value_r,
 	  const char *s, const char *fmt, ...)
 {
 	char *test;
+	long value;
 
-	*dst = strtol(s, &test, 10);
+	value = strtol(s, &test, 10);
 	if (*test != '\0') {
 		va_list args;
 		va_start(args, fmt);
@@ -142,6 +143,16 @@ check_int(struct client *client, int *dst,
 		va_end(args);
 		return false;
 	}
+
+#if LONG_MAX > INT_MAX
+	if (value < INT_MIN || value > INT_MAX) {
+		command_error(client, ACK_ERROR_ARG,
+			      "Number too large: %s", s);
+		return false;
+	}
+#endif
+
+	*value_r = (int)value;
 	return true;
 }
 
