@@ -277,6 +277,7 @@ spl_delete(const char *name_utf8)
 			? PLAYLIST_RESULT_NO_SUCH_LIST
 			: PLAYLIST_RESULT_ERRNO;
 
+	idle_add(IDLE_STORED_PLAYLIST);
 	return PLAYLIST_RESULT_SUCCESS;
 }
 
