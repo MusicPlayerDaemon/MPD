@@ -62,6 +62,45 @@ out:
 	return convalgo;
 }
 
+static void
+pcm_resample_set(struct pcm_resample_state *state,
+		 uint8_t channels, unsigned src_rate, unsigned dest_rate)
+{
+	static int convalgo = -1;
+	int error;
+	SRC_DATA *data = &state->data;
+
+	if (convalgo < 0)
+		convalgo = pcm_resample_get_converter();
+
+	/* (re)set the state/ratio if the in or out format changed */
+	if (channels == state->prev.channels &&
+	    src_rate == state->prev.src_rate &&
+	    dest_rate == state->prev.dest_rate)
+		return;
+
+	state->error = false;
+	state->prev.channels = channels;
+	state->prev.src_rate = src_rate;
+	state->prev.dest_rate = dest_rate;
+
+	if (state->state)
+		state->state = src_delete(state->state);
+
+	state->state = src_new(convalgo, channels, &error);
+	if (!state->state) {
+		ERROR("cannot create new libsamplerate state: %s\n",
+		      src_strerror(error));
+		state->error = true;
+		return;
+	}
+
+	data->src_ratio = (double)dest_rate / (double)src_rate;
+	DEBUG("setting samplerate conversion ratio to %.2lf\n",
+	      data->src_ratio);
+	src_set_ratio(state->state, data->src_ratio);
+}
+
 size_t
 pcm_resample_16(uint8_t channels,
 		unsigned src_rate,
@@ -70,7 +109,6 @@ pcm_resample_16(uint8_t channels,
 		int16_t *dest_buffer, size_t dest_size,
 		struct pcm_resample_state *state)
 {
-	static int convalgo = -1;
 	SRC_DATA *data = &state->data;
 	size_t data_in_size;
 	size_t data_out_size;
@@ -79,34 +117,7 @@ pcm_resample_16(uint8_t channels,
 	assert((src_size % (sizeof(*src_buffer) * channels)) == 0);
 	assert((dest_size % (sizeof(*dest_buffer) * channels)) == 0);
 
-	if (convalgo < 0)
-		convalgo = pcm_resample_get_converter();
-
-	/* (re)set the state/ratio if the in or out format changed */
-	if (channels != state->prev.channels ||
-	    src_rate != state->prev.src_rate ||
-	    dest_rate != state->prev.dest_rate) {
-		state->error = false;
-		state->prev.channels = channels;
-		state->prev.src_rate = src_rate;
-		state->prev.dest_rate = dest_rate;
-
-		if (state->state)
-			state->state = src_delete(state->state);
-
-		state->state = src_new(convalgo, channels, &error);
-		if (!state->state) {
-			ERROR("cannot create new libsamplerate state: %s\n",
-			      src_strerror(error));
-			state->error = true;
-			return 0;
-		}
-
-		data->src_ratio = (double)dest_rate / (double)src_rate;
-		DEBUG("setting samplerate conversion ratio to %.2lf\n",
-		      data->src_ratio);
-		src_set_ratio(state->state, data->src_ratio);
-	}
+	pcm_resample_set(state, channels, src_rate, dest_rate);
 
 	/* there was an error previously, and nothing has changed */
 	if (state->error)
