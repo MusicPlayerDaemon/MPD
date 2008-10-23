@@ -106,46 +106,9 @@ spl_list_free(GPtrArray *list)
 	g_ptr_array_free(list, true);
 }
 
-static ListNode *
-spl_get_index(List *list, int idx)
-{
-	int forward;
-	ListNode *node;
-	int i;
-
-	if (idx >= list->numberOfNodes || idx < 0)
-		return NULL;
-
-	if (idx > (list->numberOfNodes/2)) {
-		forward = 0;
-		node = list->lastNode;
-		i = list->numberOfNodes - 1;
-	} else {
-		forward = 1;
-		node = list->firstNode;
-		i = 0;
-	}
-
-	while (node != NULL) {
-		if (i == idx)
-			return node;
-
-		if (forward) {
-			i++;
-			node = node->nextNode;
-		} else {
-			i--;
-			node = node->prevNode;
-		}
-	}
-
-	return NULL;
-}
-
 static enum playlist_result
-spl_save(List *list, const char *utf8path)
+spl_save(GPtrArray *list, const char *utf8path)
 {
-	ListNode *node;
 	FILE *file;
 	char path_max_tmp[MPD_PATH_MAX];
 
@@ -157,21 +120,20 @@ spl_save(List *list, const char *utf8path)
 	if (file == NULL)
 		return PLAYLIST_RESULT_ERRNO;
 
-	node = list->firstNode;
-	while (node != NULL) {
-		playlist_print_uri(file, (const char *)node->data);
-		node = node->nextNode;
+	for (unsigned i = 0; i < list->len; ++i) {
+		const char *uri = g_ptr_array_index(list, i);
+		playlist_print_uri(file, uri);
 	}
 
 	while (fclose(file) != 0 && errno == EINTR);
 	return PLAYLIST_RESULT_SUCCESS;
 }
 
-List *
+GPtrArray *
 spl_load(const char *utf8path)
 {
-	List *list;
 	FILE *file;
+	GPtrArray *list;
 	char buffer[MPD_PATH_MAX];
 	char path_max_tmp[MPD_PATH_MAX];
 
@@ -183,7 +145,7 @@ spl_load(const char *utf8path)
 	if (file == NULL)
 		return NULL;
 
-	list = makeList(DEFAULT_FREE_DATA_FUNC, 0);
+	list = g_ptr_array_new();
 
 	while (myFgets(buffer, sizeof(buffer), file)) {
 		char *s = buffer;
@@ -192,9 +154,7 @@ spl_load(const char *utf8path)
 		if (*s == PLAYLIST_COMMENT)
 			continue;
 
-		if (isValidRemoteUtf8Url(s))
-			insertInListWithoutKey(list, xstrdup(s));
-		else {
+		if (!isValidRemoteUtf8Url(s)) {
 			struct song *song;
 
 			path_utf8 = map_fs_to_utf8(s, path_max_tmp);
@@ -205,11 +165,12 @@ spl_load(const char *utf8path)
 			if (song == NULL)
 				continue;
 
-			song_get_url(song, path_max_tmp);
-			insertInListWithoutKey(list, xstrdup(path_max_tmp));
+			s = song_get_url(song, path_max_tmp);
 		}
 
-		if (list->numberOfNodes >= playlist_max_length)
+		g_ptr_array_add(list, xstrdup(s));
+
+		if (list->len >= playlist_max_length)
 			break;
 	}
 
@@ -217,85 +178,67 @@ spl_load(const char *utf8path)
 	return list;
 }
 
-static int
-spl_move_index_internal(List *list, int src, int dest)
+void
+spl_free(GPtrArray *list)
 {
-	ListNode *srcNode, *destNode;
-
-	if (src >= list->numberOfNodes || dest >= list->numberOfNodes ||
-	    src < 0 || dest < 0 || src == dest)
-		return -1;
-
-	srcNode = spl_get_index(list, src);
-	if (!srcNode)
-		return -1;
-
-	destNode = spl_get_index(list, dest);
-
-	/* remove src */
-	if (srcNode->prevNode)
-		srcNode->prevNode->nextNode = srcNode->nextNode;
-	else
-		list->firstNode = srcNode->nextNode;
-
-	if (srcNode->nextNode)
-		srcNode->nextNode->prevNode = srcNode->prevNode;
-	else
-		list->lastNode = srcNode->prevNode;
-
-	/* this is all a bit complicated - but I tried to
-	 * maintain the same order stuff is moved as in the
-	 * real playlist */
-	if (dest == 0) {
-		list->firstNode->prevNode = srcNode;
-		srcNode->nextNode = list->firstNode;
-		srcNode->prevNode = NULL;
-		list->firstNode = srcNode;
-	} else if ((dest + 1) == list->numberOfNodes) {
-		list->lastNode->nextNode = srcNode;
-		srcNode->nextNode = NULL;
-		srcNode->prevNode = list->lastNode;
-		list->lastNode = srcNode;
-	} else {
-		if (destNode == NULL) {
-			/* this shouldn't be happening. */
-			return -1;
-		}
-
-		if (src > dest) {
-			destNode->prevNode->nextNode = srcNode;
-			srcNode->prevNode = destNode->prevNode;
-			srcNode->nextNode = destNode;
-			destNode->prevNode = srcNode;
-		} else {
-			destNode->nextNode->prevNode = srcNode;
-			srcNode->prevNode = destNode;
-			srcNode->nextNode = destNode->nextNode;
-			destNode->nextNode = srcNode;
-		}
+	for (unsigned i = 0; i < list->len; ++i) {
+		char *uri = g_ptr_array_index(list, i);
+		g_free(uri);
 	}
 
-	idle_add(IDLE_STORED_PLAYLIST);
-	return 0;
+	g_ptr_array_free(list, true);
+}
+
+static char *
+spl_remove_index_internal(GPtrArray *list, unsigned idx)
+{
+	char *uri;
+
+	assert(idx < list->len);
+
+	uri = g_ptr_array_remove_index(list, idx);
+	assert(uri != NULL);
+	return uri;
+}
+
+static void
+spl_insert_index_internal(GPtrArray *list, unsigned idx, char *uri)
+{
+	assert(idx <= list->len);
+
+	g_ptr_array_add(list, uri);
+
+	memmove(list->pdata + idx + 1, list->pdata + idx,
+		(list->len - idx - 1) * sizeof(list->pdata[0]));
+	g_ptr_array_index(list, idx) = uri;
 }
 
 enum playlist_result
 spl_move_index(const char *utf8path, unsigned src, unsigned dest)
 {
-	List *list;
+	GPtrArray *list;
+	char *uri;
 	enum playlist_result result;
+
+	if (src == dest)
+		/* this doesn't check whether the playlist exists, but
+		   what the hell.. */
+		return PLAYLIST_RESULT_SUCCESS;
 
 	if (!(list = spl_load(utf8path)))
 		return PLAYLIST_RESULT_NO_SUCH_LIST;
 
-	if (spl_move_index_internal(list, src, dest) != 0) {
-		freeList(list);
+	if (src >= list->len || dest >= list->len) {
+		spl_free(list);
 		return PLAYLIST_RESULT_BAD_RANGE;
 	}
 
+	uri = spl_remove_index_internal(list, src);
+	spl_insert_index_internal(list, dest, uri);
+
 	result = spl_save(list, utf8path);
 
-	freeList(list);
+	spl_free(list);
 
 	idle_add(IDLE_STORED_PLAYLIST);
 	return result;
@@ -322,35 +265,26 @@ spl_clear(const char *utf8path)
 	return PLAYLIST_RESULT_SUCCESS;
 }
 
-static int
-spl_remove_index_internal(List *list, unsigned pos)
-{
-	ListNode *node = spl_get_index(list, pos);
-	if (!node)
-		return -1;
-
-	deleteNodeFromList(list, node);
-
-	return 0;
-}
-
 enum playlist_result
 spl_remove_index(const char *utf8path, unsigned pos)
 {
-	List *list;
+	GPtrArray *list;
+	char *uri;
 	enum playlist_result result;
 
 	if (!(list = spl_load(utf8path)))
 		return PLAYLIST_RESULT_NO_SUCH_LIST;
 
-	if (spl_remove_index_internal(list, pos) != 0) {
-		freeList(list);
+	if (pos >= list->len) {
+		spl_free(list);
 		return PLAYLIST_RESULT_BAD_RANGE;
 	}
 
+	uri = spl_remove_index_internal(list, pos);
+	g_free(uri);
 	result = spl_save(list, utf8path);
 
-	freeList(list);
+	spl_free(list);
 
 	idle_add(IDLE_STORED_PLAYLIST);
 	return result;

@@ -19,7 +19,6 @@
 #ifndef MPD_STORED_PLAYLIST_H
 #define MPD_STORED_PLAYLIST_H
 
-#include "list.h"
 #include "playlist.h"
 
 #include <glib.h>
@@ -42,8 +41,11 @@ spl_list(void);
 void
 spl_list_free(GPtrArray *list);
 
-List *
+GPtrArray *
 spl_load(const char *utf8path);
+
+void
+spl_free(GPtrArray *list);
 
 enum playlist_result
 spl_move_index(const char *utf8path, unsigned src, unsigned dest);

@@ -35,6 +35,7 @@
 #include "stored_playlist.h"
 #include "ack.h"
 #include "idle.h"
+#include "list.h"
 #include "os_compat.h"
 
 #include <glib.h>
@@ -1295,15 +1296,13 @@ unsigned getPlaylistSongId(unsigned song)
 
 int PlaylistInfo(struct client *client, const char *utf8file, int detail)
 {
-	ListNode *node;
-	List *list;
+	GPtrArray *list;
 
 	if (!(list = spl_load(utf8file)))
 		return -1;
 
-	node = list->firstNode;
-	while (node != NULL) {
-		char *temp = node->data;
+	for (unsigned i = 0; i < list->len; ++i) {
+		const char *temp = g_ptr_array_index(list, i);
 		int wrote = 0;
 
 		if (detail) {
@@ -1317,25 +1316,21 @@ int PlaylistInfo(struct client *client, const char *utf8file, int detail)
 		if (!wrote) {
 			client_printf(client, SONG_FILE "%s\n", temp);
 		}
-
-		node = node->nextNode;
 	}
 
-	freeList(list);
+	spl_free(list);
 	return 0;
 }
 
 enum playlist_result loadPlaylist(struct client *client, const char *utf8file)
 {
-	ListNode *node;
-	List *list;
+	GPtrArray *list;
 
 	if (!(list = spl_load(utf8file)))
 		return PLAYLIST_RESULT_NO_SUCH_LIST;
 
-	node = list->firstNode;
-	while (node != NULL) {
-		char *temp = node->data;
+	for (unsigned i = 0; i < list->len; ++i) {
+		const char *temp = g_ptr_array_index(list, i);
 		if ((addToPlaylist(temp, NULL)) != PLAYLIST_RESULT_SUCCESS) {
 			/* for windows compatibility, convert slashes */
 			char *temp2 = xstrdup(temp);
@@ -1351,11 +1346,9 @@ enum playlist_result loadPlaylist(struct client *client, const char *utf8file)
 			}
 			free(temp2);
 		}
-
-		node = node->nextNode;
 	}
 
-	freeList(list);
+	spl_free(list);
 	return PLAYLIST_RESULT_SUCCESS;
 }
 
