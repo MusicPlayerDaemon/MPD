@@ -51,77 +51,39 @@ enum muteframe {
 
 static int gaplessPlaybackEnabled;
 
-/* this is stolen from mpg321! */
-struct audio_dither {
-	mad_fixed_t error[3];
-	mad_fixed_t random;
-};
-
-static unsigned long prng(unsigned long state)
+static inline int32_t
+mad_fixed_to_24_sample(mad_fixed_t sample)
 {
-	return (state * 0x0019660dL + 0x3c6ef35fL) & 0xffffffffL;
-}
-
-static int16_t audio_linear_dither(mad_fixed_t sample,
-				   struct audio_dither *dither)
-{
-	mad_fixed_t output, mask, rnd;
-
 	enum {
-		bits = 16,
-		scalebits = MAD_F_FRACBITS + 1 - bits,
+		bits = 24,
 		MIN = -MAD_F_ONE,
 		MAX = MAD_F_ONE - 1
 	};
 
-	sample += dither->error[0] - dither->error[1] + dither->error[2];
+	/* round */
+	sample = sample + (1L << (MAD_F_FRACBITS - bits));
 
-	dither->error[2] = dither->error[1];
-	dither->error[1] = dither->error[0] / 2;
+	/* clip */
+	if (sample > MAX)
+		sample = MAX;
+	else if (sample < MIN)
+		sample = MIN;
 
-	output = sample + (1L << (MAD_F_FRACBITS + 1 - bits - 1));
-
-	mask = (1L << scalebits) - 1;
-
-	rnd = prng(dither->random);
-	output += (rnd & mask) - (dither->random & mask);
-
-	dither->random = rnd;
-
-	if (output > MAX) {
-		output = MAX;
-
-		if (sample > MAX)
-			sample = MAX;
-	} else if (output < MIN) {
-		output = MIN;
-
-		if (sample < MIN)
-			sample = MIN;
-	}
-
-	output &= ~mask;
-
-	dither->error[0] = sample - output;
-
-	return (int16_t)(output >> scalebits);
+	/* quantize */
+	return sample >> (MAD_F_FRACBITS + 1 - bits);
 }
 
-static unsigned dither_buffer(int16_t *dest0, const struct mad_synth *synth,
-			      struct audio_dither *dither,
-			      unsigned int start, unsigned int end,
-			      unsigned int num_channels)
+static void
+mad_fixed_to_24_buffer(int32_t *dest, const struct mad_synth *synth,
+		       unsigned int start, unsigned int end,
+		       unsigned int num_channels)
 {
-	int16_t *dest = dest0;
 	unsigned int i, c;
 
 	for (i = start; i < end; ++i) {
 		for (c = 0; c < num_channels; ++c)
-			*dest++ = audio_linear_dither(synth->pcm.samples[c][i],
-						      dither);
+			*dest++ = mad_fixed_to_24_sample(synth->pcm.samples[c][i]);
 	}
-
-	return dest - dest0;
 }
 
 /* end of stolen stuff from mpg321 */
@@ -145,7 +107,7 @@ typedef struct _mp3DecodeData {
 	struct mad_synth synth;
 	mad_timer_t timer;
 	unsigned char readBuffer[READ_BUFFER_SIZE];
-	int16_t outputBuffer[MP3_DATA_OUTPUT_BUFFER_SIZE];
+	int32_t outputBuffer[MP3_DATA_OUTPUT_BUFFER_SIZE];
 	float totalTime;
 	float elapsedTime;
 	enum muteframe muteFrame;
@@ -164,7 +126,6 @@ typedef struct _mp3DecodeData {
 	unsigned long bitRate;
 	struct decoder *decoder;
 	InputStream *inStream;
-	struct audio_dither dither;
 	enum mad_layer layer;
 } mp3DecodeData;
 
@@ -187,7 +148,6 @@ static void initMp3DecodeData(mp3DecodeData * data, struct decoder *decoder,
 	data->decoder = decoder;
 	data->inStream = inStream;
 	data->layer = 0;
-	memset(&(data->dither), 0, sizeof(struct audio_dither));
 
 	mad_stream_init(&data->stream);
 	mad_stream_options(&data->stream, MAD_OPTION_IGNORECRC);
@@ -933,10 +893,11 @@ mp3Read(mp3DecodeData * data, ReplayGainInfo ** replayGainInfo)
 
 			i += num_samples;
 
-			num_samples = dither_buffer(data->outputBuffer,
-						    &data->synth, &data->dither,
-						    i - num_samples, i,
-						    MAD_NCHANNELS(&(data->frame).header));
+			mad_fixed_to_24_buffer(data->outputBuffer,
+					       &data->synth,
+					       i - num_samples, i,
+					       MAD_NCHANNELS(&(data->frame).header));
+			num_samples *= MAD_NCHANNELS(&(data->frame).header);
 
 			cmd = decoder_data(decoder, data->inStream,
 					   data->inStream->seekable,
@@ -1022,7 +983,7 @@ mp3Read(mp3DecodeData * data, ReplayGainInfo ** replayGainInfo)
 static void initAudioFormatFromMp3DecodeData(mp3DecodeData * data,
 					     struct audio_format * af)
 {
-	af->bits = 16;
+	af->bits = 24;
 	af->sample_rate = (data->frame).header.samplerate;
 	af->channels = MAD_NCHANNELS(&(data->frame).header);
 }
