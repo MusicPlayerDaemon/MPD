@@ -132,6 +132,7 @@ static int process(jack_nframes_t nframes, void *arg)
 
 	for (unsigned i = 0; i < 2; ++i) {
 		available = jack_ringbuffer_read_space(jd->ringbuffer[i]);
+		assert(available % sample_size == 0);
 		available /= sample_size;
 		if (available > nframes)
 			available = nframes;
@@ -368,6 +369,7 @@ static int jack_playAudio(void *data,
 		return 0;
 	}
 
+	assert(size % frame_size == 0);
 	size /= frame_size;
 	while (size > 0 && !jd->shutdown) {
 		space = jack_ringbuffer_write_space(jd->ringbuffer[0]);
