@@ -165,7 +165,10 @@ set_audioformat(struct jack_data *jd, struct audio_format *audio_format)
 	audio_format->sample_rate = jack_get_sample_rate(jd->client);
 	DEBUG("samplerate = %u\n", audio_format->sample_rate);
 	audio_format->channels = 2;
-	audio_format->bits = 16;
+
+	if (audio_format->bits != 16 && audio_format->bits != 24)
+		audio_format->bits = 24;
+
 	jd->bps = audio_format->channels
 		* sizeof(jack_default_audio_sample_t)
 		* audio_format->sample_rate;
@@ -379,6 +382,29 @@ mpd_jack_write_samples_16(struct jack_data *jd, const int16_t *src,
 	}
 }
 
+static inline jack_default_audio_sample_t
+sample_24_to_jack(int32_t sample)
+{
+	return sample / (jack_default_audio_sample_t)(1 << (24 - 1));
+}
+
+static void
+mpd_jack_write_samples_24(struct jack_data *jd, const int32_t *src,
+			  unsigned num_samples)
+{
+	jack_default_audio_sample_t sample;
+
+	while (num_samples-- > 0) {
+		sample = sample_24_to_jack(*src++);
+		jack_ringbuffer_write(jd->ringbuffer[0], (void*)&sample,
+				      sizeof(sample));
+
+		sample = sample_24_to_jack(*src++);
+		jack_ringbuffer_write(jd->ringbuffer[1], (void*)&sample,
+				      sizeof(sample));
+	}
+}
+
 static void
 mpd_jack_write_samples(struct jack_data *jd, const void *src,
 		       unsigned num_samples)
@@ -386,6 +412,11 @@ mpd_jack_write_samples(struct jack_data *jd, const void *src,
 	switch (jd->audio_format->bits) {
 	case 16:
 		mpd_jack_write_samples_16(jd, (const int16_t*)src,
+					  num_samples);
+		break;
+
+	case 24:
+		mpd_jack_write_samples_24(jd, (const int32_t*)src,
 					  num_samples);
 		break;
 
