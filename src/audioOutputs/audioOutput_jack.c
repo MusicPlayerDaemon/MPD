@@ -356,14 +356,50 @@ mpd_jack_cancel (mpd_unused void *data)
 {
 }
 
+static inline jack_default_audio_sample_t
+sample_16_to_jack(int16_t sample)
+{
+	return sample / (jack_default_audio_sample_t)(1 << (16 - 1));
+}
+
+static void
+mpd_jack_write_samples_16(struct jack_data *jd, const int16_t *src,
+			  unsigned num_samples)
+{
+	jack_default_audio_sample_t sample;
+
+	while (num_samples-- > 0) {
+		sample = sample_16_to_jack(*src++);
+		jack_ringbuffer_write(jd->ringbuffer[0], (void*)&sample,
+				      sizeof(sample));
+
+		sample = sample_16_to_jack(*src++);
+		jack_ringbuffer_write(jd->ringbuffer[1], (void*)&sample,
+				      sizeof(sample));
+	}
+}
+
+static void
+mpd_jack_write_samples(struct jack_data *jd, const void *src,
+		       unsigned num_samples)
+{
+	switch (jd->audio_format->bits) {
+	case 16:
+		mpd_jack_write_samples_16(jd, (const int16_t*)src,
+					  num_samples);
+		break;
+
+	default:
+		assert(false);
+	}
+}
+
 static int
 mpd_jack_play(void *data, const char *buff, size_t size)
 {
 	struct jack_data *jd = data;
+	const size_t frame_size = audio_format_frame_size(jd->audio_format);
 	size_t space, space1;
-	const short *buffer = (const short *) buff;
-	static const size_t frame_size = sizeof(*buffer) * 2;
-	jack_default_audio_sample_t sample;
 
 	if (jd->shutdown) {
 		ERROR("Refusing to play, because there is no client thread.\n");
@@ -386,18 +422,10 @@ mpd_jack_play(void *data, const char *buff, size_t size)
 			if (space > size)
 				space = size;
 
+			mpd_jack_write_samples(jd, buff, space);
+
+			buff += space * frame_size;
 			size -= space;
-			while (space-- > 0) {
-				sample = (jack_default_audio_sample_t) *(buffer++)/32768.0;
-
-				jack_ringbuffer_write(jd->ringbuffer[0], (void*)&sample,
-						      sample_size);
-
-				sample = (jack_default_audio_sample_t) *(buffer++)/32768.0;
-
-				jack_ringbuffer_write(jd->ringbuffer[1], (void*)&sample,
-						      sample_size);
-			}
 		} else {
 			/* XXX do something more intelligent to
 			   synchronize */
