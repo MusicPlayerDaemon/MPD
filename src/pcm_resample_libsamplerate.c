@@ -154,6 +154,26 @@ pcm_resample_16(uint8_t channels,
 	return data->output_frames_gen * sizeof(*dest_buffer) * channels;
 }
 
+#ifdef HAVE_LIBSAMPLERATE_NOINT
+
+/* libsamplerate introduced these functions in v0.1.3 */
+
+static void
+src_int_to_float_array(const int *in, float *out, int len)
+{
+	while (len-- > 0)
+		*out++ = *in++ / (float)(1 << (24 - 1));
+}
+
+static void
+src_float_to_int_array (const float *in, int *out, int len)
+{
+	while (len-- > 0)
+		*out++ = *in++ * (float)(1 << (24 - 1));
+}
+
+#endif
+
 size_t
 pcm_resample_24(uint8_t channels,
 		unsigned src_rate,

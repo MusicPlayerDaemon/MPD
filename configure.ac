@@ -390,6 +390,11 @@ if test x$enable_lsr = xyes; then
 	                  [enable_lsr=no;AC_MSG_WARN([libsamplerate not found -- disabling])])
 fi
 
+if test x$enable_lsr = xyes; then
+	PKG_CHECK_MODULES([SAMPLERATE_013], [samplerate >= 0.1.3],,
+		[AC_DEFINE([HAVE_LIBSAMPLERATE_NOINT], 1, [libsamplerate doesn't provide src_int_to_float_array() (<0.1.3)])])
+fi
+
 AM_CONDITIONAL(HAVE_LIBSAMPLERATE, test x$enable_lsr = xyes)
 
 if test x$enable_fifo = xyes; then
