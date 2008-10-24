@@ -386,12 +386,10 @@ static int jack_playAudio(void *data,
 			  const char *buff, size_t size)
 {
 	JackData *jd = data;
-	size_t space;
-	size_t i;
+	size_t space, space1;
 	const short *buffer = (const short *) buff;
 	static const size_t frame_size = sizeof(*buffer) * 2;
 	jack_default_audio_sample_t sample;
-	size_t samples = size / frame_size;
 
 	/*DEBUG("jack_playAudio: (pid=%d)!\n", getpid());*/
 
@@ -402,14 +400,21 @@ static int jack_playAudio(void *data,
 		return 0;
 	}
 
-	while (samples && !jd->shutdown) {
+	size /= frame_size;
+	while (size > 0 && !jd->shutdown) {
 		space = jack_ringbuffer_write_space(jd->ringbuffer[0]);
-		if (space >= samples * sample_size) {
-			/*space = MIN(space, samples*sample_size);*/
-			/*space = samples*sample_size;*/
+		space1 = jack_ringbuffer_write_space(jd->ringbuffer[1]);
+		if (space > space1)
+			/* send data symmetrically */
+			space = space1;
 
-			/*for(i=0; i<space/sample_size; i++) {*/
-			for (i = 0; i < samples; i++) {
+		space /= sample_size;
+		if (space > 0) {
+			if (space > size)
+				space = size;
+
+			size -= space;
+			while (space-- > 0) {
 				sample = (jack_default_audio_sample_t) *(buffer++)/32768.0;
 
 				jack_ringbuffer_write(jd->ringbuffer[0], (void*)&sample,
@@ -419,12 +424,7 @@ static int jack_playAudio(void *data,
 
 				jack_ringbuffer_write(jd->ringbuffer[1], (void*)&sample,
 						      sample_size);
-
-				/*samples--;*/
 			}
-
-			samples = 0;
-
 		} else {
 			pthread_mutex_lock(&jd->play_audio_lock);
 			pthread_cond_wait(&jd->play_audio,
