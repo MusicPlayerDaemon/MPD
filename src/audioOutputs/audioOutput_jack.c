@@ -138,35 +138,35 @@ static int process(jack_nframes_t nframes, void *arg)
 	jack_default_audio_sample_t *out[2];
 	size_t avail_data, avail_frames;
 
-	if ( nframes <= 0 )
+	if (nframes <= 0)
 		return 0;
 
 	out[0] = jack_port_get_buffer(jd->ports[0], nframes);
 	out[1] = jack_port_get_buffer(jd->ports[1], nframes);
 
-	while ( nframes ) {
+	while (nframes) {
 		avail_data = jack_ringbuffer_read_space(jd->ringbuffer[1]);
 
 		if ( avail_data > 0 ) {
-		    avail_frames = avail_data / sample_size;
+			avail_frames = avail_data / sample_size;
 
-		    if (avail_frames > nframes) {
-			avail_frames = nframes;
-			avail_data = nframes*sample_size;
-		    }
+			if (avail_frames > nframes) {
+				avail_frames = nframes;
+				avail_data = nframes*sample_size;
+			}
 
-		    jack_ringbuffer_read(jd->ringbuffer[0], (char *)out[0],
-					 avail_data);
-		    jack_ringbuffer_read(jd->ringbuffer[1], (char *)out[1],
-					 avail_data);
+			jack_ringbuffer_read(jd->ringbuffer[0], (char *)out[0],
+					     avail_data);
+			jack_ringbuffer_read(jd->ringbuffer[1], (char *)out[1],
+					     avail_data);
 
-		    nframes -= avail_frames;
-		    out[0] += avail_data;
-		    out[1] += avail_data;
+			nframes -= avail_frames;
+			out[0] += avail_data;
+			out[1] += avail_data;
 		} else {
-		    for (i = 0; i < nframes; i++)
-  			out[0][i] = out[1][i] = 0.0;
-		    nframes = 0;
+			for (i = 0; i < nframes; i++)
+				out[0][i] = out[1][i] = 0.0;
+			nframes = 0;
 		}
 
 		if (pthread_mutex_trylock (&jd->play_audio_lock) == 0) {
@@ -202,9 +202,10 @@ static void error_callback(const char *msg)
 	ERROR("jack: %s\n", msg);
 }
 
-static void *jack_initDriver(struct audio_output *ao,
-			     mpd_unused const struct audio_format *audio_format,
-			     ConfigParam *param)
+static void *
+jack_initDriver(struct audio_output *ao,
+		mpd_unused const struct audio_format *audio_format,
+		ConfigParam *param)
 {
 	JackData *jd;
 	BlockParam *bp;
@@ -311,10 +312,9 @@ static int connect_jack(JackData *jd, struct audio_format *audio_format)
 	}
 
 	/*  hay que buscar que hay  */
-	if ( !jd->output_ports[1]
-	     && (jports = jack_get_ports(jd->client, NULL, NULL,
-					 JackPortIsPhysical|
-					 JackPortIsInput)) ) {
+	if (!jd->output_ports[1] &&
+	    (jports = jack_get_ports(jd->client, NULL, NULL,
+				     JackPortIsPhysical | JackPortIsInput))) {
 		jd->output_ports[0] = jports[0];
 		jd->output_ports[1] = jports[1] ? jports[1] : jports[0];
 		DEBUG("output_ports: %s %s\n",
@@ -394,23 +394,21 @@ static int jack_playAudio(void *data,
 
 	/*DEBUG("jack_playAudio: (pid=%d)!\n", getpid());*/
 
-	if ( jd->shutdown ) {
+	if (jd->shutdown) {
 		ERROR("Refusing to play, because there is no client thread.\n");
 		freeJackClient(jd);
 		audio_output_closed(jd->ao);
 		return 0;
 	}
 
-	while ( samples && !jd->shutdown ) {
-
- 		if ( (space = jack_ringbuffer_write_space(jd->ringbuffer[0]))
- 		     >= samples*sample_size ) {
-
+	while (samples && !jd->shutdown) {
+		space = jack_ringbuffer_write_space(jd->ringbuffer[0]);
+		if (space >= samples * sample_size) {
 			/*space = MIN(space, samples*sample_size);*/
 			/*space = samples*sample_size;*/
 
 			/*for(i=0; i<space/sample_size; i++) {*/
-			for(i=0; i<samples; i++) {
+			for (i = 0; i < samples; i++) {
 				sample = (jack_default_audio_sample_t) *(buffer++)/32768.0;
 
 				jack_ringbuffer_write(jd->ringbuffer[0], (void*)&sample,
@@ -423,9 +421,10 @@ static int jack_playAudio(void *data,
 
 				/*samples--;*/
 			}
-			samples=0;
 
- 		} else {
+			samples = 0;
+
+		} else {
 			pthread_mutex_lock(&jd->play_audio_lock);
 			pthread_cond_wait(&jd->play_audio,
 					  &jd->play_audio_lock);
@@ -433,6 +432,7 @@ static int jack_playAudio(void *data,
 		}
 
 	}
+
 	return 0;
 }
 
