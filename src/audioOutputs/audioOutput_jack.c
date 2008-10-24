@@ -389,8 +389,9 @@ static int jack_playAudio(void *data,
 	size_t space;
 	size_t i;
 	const short *buffer = (const short *) buff;
+	static const size_t frame_size = sizeof(*buffer) * 2;
 	jack_default_audio_sample_t sample;
-	size_t samples = size/4;
+	size_t samples = size / frame_size;
 
 	/*DEBUG("jack_playAudio: (pid=%d)!\n", getpid());*/
 
