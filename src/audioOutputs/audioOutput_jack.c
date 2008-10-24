@@ -41,10 +41,6 @@ typedef struct _JackData {
 	/* for srate() only */
 	struct audio_format *audio_format;
 
-	/* locks */
-	pthread_mutex_t play_audio_lock;
-	pthread_cond_t play_audio;
-
 	/* jack library stuff */
 	jack_port_t *ports[2];
 	jack_client_t *client;
@@ -63,9 +59,6 @@ static JackData *newJackData(void)
 
 	ret->name = "mpd";
 	ret->ringbuf_sz = 32768;
-
-	pthread_mutex_init(&ret->play_audio_lock, NULL);
-	pthread_cond_init(&ret->play_audio, NULL);
 
 	return ret;
 }
@@ -89,9 +82,6 @@ static void freeJackClient(JackData *jd)
 		jack_ringbuffer_free(jd->ringbuffer[1]);
 		jd->ringbuffer[1] = NULL;
 	}
-
-	pthread_mutex_destroy(&jd->play_audio_lock);
-	pthread_cond_destroy(&jd->play_audio);
 }
 
 static void freeJackData(JackData *jd)
@@ -133,50 +123,29 @@ static int srate(mpd_unused jack_nframes_t rate, void *data)
 
 static int process(jack_nframes_t nframes, void *arg)
 {
-	size_t i;
 	JackData *jd = (JackData *) arg;
-	jack_default_audio_sample_t *out[2];
+	jack_default_audio_sample_t *out;
 	size_t avail_data, avail_frames;
 
 	if (nframes <= 0)
 		return 0;
 
-	out[0] = jack_port_get_buffer(jd->ports[0], nframes);
-	out[1] = jack_port_get_buffer(jd->ports[1], nframes);
+	for (unsigned i = 0; i < 2; ++i) {
+		avail_data = jack_ringbuffer_read_space(jd->ringbuffer[i]);
+		if (avail_data > nframes * sample_size)
+			avail_data = nframes * sample_size;
 
-	while (nframes) {
-		avail_data = jack_ringbuffer_read_space(jd->ringbuffer[1]);
+		avail_frames = avail_data / sample_size;
 
-		if ( avail_data > 0 ) {
-			avail_frames = avail_data / sample_size;
+		out = jack_port_get_buffer(jd->ports[i], nframes);
+		jack_ringbuffer_read(jd->ringbuffer[i],
+				     (char *)out, avail_data);
 
-			if (avail_frames > nframes) {
-				avail_frames = nframes;
-				avail_data = nframes*sample_size;
-			}
-
-			jack_ringbuffer_read(jd->ringbuffer[0], (char *)out[0],
-					     avail_data);
-			jack_ringbuffer_read(jd->ringbuffer[1], (char *)out[1],
-					     avail_data);
-
-			nframes -= avail_frames;
-			out[0] += avail_data;
-			out[1] += avail_data;
-		} else {
-			for (i = 0; i < nframes; i++)
-				out[0][i] = out[1][i] = 0.0;
-			nframes = 0;
-		}
-
-		if (pthread_mutex_trylock (&jd->play_audio_lock) == 0) {
-			pthread_cond_signal (&jd->play_audio);
-			pthread_mutex_unlock (&jd->play_audio_lock);
-		}
+		while (avail_frames < nframes)
+			/* ringbuffer underrun, fill with silence */
+			out[avail_frames++] = 0.0;
 	}
 
-
-	/*DEBUG("process (pid=%d)\n", getpid());*/
 	return 0;
 }
 
@@ -426,10 +395,9 @@ static int jack_playAudio(void *data,
 						      sample_size);
 			}
 		} else {
-			pthread_mutex_lock(&jd->play_audio_lock);
-			pthread_cond_wait(&jd->play_audio,
-					  &jd->play_audio_lock);
-			pthread_mutex_unlock(&jd->play_audio_lock);
+			/* XXX do something more intelligent to
+			   synchronize */
+			my_usleep(10000);
 		}
 
 	}
