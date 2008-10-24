@@ -30,13 +30,13 @@
 
 static const size_t sample_size = sizeof(jack_default_audio_sample_t);
 
-typedef struct _JackData {
+struct jack_data {
 	struct audio_output *ao;
 
 	/* configuration */
 	const char *name;
 	const char *output_ports[2];
-	int ringbuf_sz;
+	int ringbuffer_size;
 
 	/* for srate() only */
 	struct audio_format *audio_format;
@@ -47,23 +47,23 @@ typedef struct _JackData {
 	jack_ringbuffer_t *ringbuffer[2];
 	int bps;
 	int shutdown;
-} JackData;
+};
 
-/*JackData *jd = NULL;*/
-
-static JackData *newJackData(void)
+static struct jack_data *
+mpd_jack_new(void)
 {
-	JackData *ret;
+	struct jack_data *ret;
 
-	ret = xcalloc(sizeof(JackData), 1);
+	ret = xcalloc(sizeof(*ret), 1);
 
 	ret->name = "mpd";
-	ret->ringbuf_sz = 32768;
+	ret->ringbuffer_size = 32768;
 
 	return ret;
 }
 
-static void freeJackClient(JackData *jd)
+static void
+mpd_jack_client_free(struct jack_data *jd)
 {
 	assert(jd != NULL);
 
@@ -84,13 +84,14 @@ static void freeJackClient(JackData *jd)
 	}
 }
 
-static void freeJackData(JackData *jd)
+static void
+mpd_jack_free(struct jack_data *jd)
 {
 	int i;
 
 	assert(jd != NULL);
 
-	freeJackClient(jd);
+	mpd_jack_client_free(jd);
 
 	if (strcmp(jd->name, "mpd") != 0)
 		xfree(jd->name);
@@ -104,16 +105,17 @@ static void freeJackData(JackData *jd)
 	free(jd);
 }
 
-static void jack_finishDriver(void *data)
+static void
+mpd_jack_finish(void *data)
 {
-	JackData *jd = data;
-	freeJackData(jd);
-	DEBUG("disconnect_jack (pid=%d)\n", getpid ());
+	struct jack_data *jd = data;
+	mpd_jack_free(jd);
 }
 
-static int srate(mpd_unused jack_nframes_t rate, void *data)
+static int
+mpd_jack_srate(mpd_unused jack_nframes_t rate, void *data)
 {
-	JackData *jd = (JackData *)data;
+	struct jack_data *jd = (struct jack_data *)data;
 	struct audio_format *audioFormat = jd->audio_format;
 
 	audioFormat->sample_rate = (int)jack_get_sample_rate(jd->client);
@@ -121,9 +123,10 @@ static int srate(mpd_unused jack_nframes_t rate, void *data)
 	return 0;
 }
 
-static int process(jack_nframes_t nframes, void *arg)
+static int
+mpd_jack_process(jack_nframes_t nframes, void *arg)
 {
-	JackData *jd = (JackData *) arg;
+	struct jack_data *jd = (struct jack_data *) arg;
 	jack_default_audio_sample_t *out;
 	size_t available;
 
@@ -149,43 +152,46 @@ static int process(jack_nframes_t nframes, void *arg)
 	return 0;
 }
 
-static void shutdown_callback(void *arg)
+static void
+mpd_jack_shutdown(void *arg)
 {
-	JackData *jd = (JackData *) arg;
+	struct jack_data *jd = (struct jack_data *) arg;
 	jd->shutdown = 1;
 }
 
-static void set_audioformat(JackData *jd, struct audio_format *audioFormat)
+static void
+set_audioformat(struct jack_data *jd, struct audio_format *audio_format)
 {
-	audioFormat->sample_rate = jack_get_sample_rate(jd->client);
-	DEBUG("samplerate = %u\n", audioFormat->sample_rate);
-	audioFormat->channels = 2;
-	audioFormat->bits = 16;
-	jd->bps = audioFormat->channels
+	audio_format->sample_rate = jack_get_sample_rate(jd->client);
+	DEBUG("samplerate = %u\n", audio_format->sample_rate);
+	audio_format->channels = 2;
+	audio_format->bits = 16;
+	jd->bps = audio_format->channels
 		* sizeof(jack_default_audio_sample_t)
-		* audioFormat->sample_rate;
+		* audio_format->sample_rate;
 }
 
-static void error_callback(const char *msg)
+static void
+mpd_jack_error(const char *msg)
 {
 	ERROR("jack: %s\n", msg);
 }
 
 static void *
-jack_initDriver(struct audio_output *ao,
-		mpd_unused const struct audio_format *audio_format,
-		ConfigParam *param)
+mpd_jack_init(struct audio_output *ao,
+	      mpd_unused const struct audio_format *audio_format,
+	      ConfigParam *param)
 {
-	JackData *jd;
+	struct jack_data *jd;
 	BlockParam *bp;
 	char *endptr;
 	int val;
 	char *cp = NULL;
 
-	jd = newJackData();
+	jd = mpd_jack_new();
 	jd->ao = ao;
 
-	DEBUG("jack_initDriver (pid=%d)\n", getpid());
+	DEBUG("mpd_jack_init (pid=%d)\n", getpid());
 	if (param == NULL)
 		return jd;
 
@@ -219,11 +225,11 @@ jack_initDriver(struct audio_output *ao,
 		val = strtol(bp->value, &endptr, 10);
 
 		if ( errno == 0 && endptr != bp->value) {
-			jd->ringbuf_sz = val < 32768 ? 32768 : val;
-			DEBUG("ringbuffer_size=%d\n", jd->ringbuf_sz);
+			jd->ringbuffer_size = val < 32768 ? 32768 : val;
+			DEBUG("ringbuffer_size=%d\n", jd->ringbuffer_size);
 		} else {
 			FATAL("%s is not a number; ringbuf_size=%d\n",
-			      bp->value, jd->ringbuf_sz);
+			      bp->value, jd->ringbuffer_size);
 		}
 	}
 
@@ -236,12 +242,14 @@ jack_initDriver(struct audio_output *ao,
 	return jd;
 }
 
-static int jack_testDefault(void)
+static int
+mpd_jack_test_default_device(void)
 {
 	return 0;
 }
 
-static int connect_jack(JackData *jd, struct audio_format *audio_format)
+static int
+mpd_jack_connect(struct jack_data *jd, struct audio_format *audio_format)
 {
 	const char **jports;
 	char *port_name;
@@ -253,11 +261,10 @@ static int connect_jack(JackData *jd, struct audio_format *audio_format)
 		return -1;
 	}
 
-	jack_set_error_function(error_callback);
-	jack_set_process_callback(jd->client, process, (void *)jd);
-	jack_set_sample_rate_callback(jd->client, (JackProcessCallback)srate,
-				      (void *)jd);
-	jack_on_shutdown(jd->client, shutdown_callback, (void *)jd);
+	jack_set_error_function(mpd_jack_error);
+	jack_set_process_callback(jd->client, mpd_jack_process, jd);
+	jack_set_sample_rate_callback(jd->client, mpd_jack_srate, jd);
+	jack_on_shutdown(jd->client, mpd_jack_shutdown, jd);
 
 	if ( jack_activate(jd->client) ) {
 		ERROR("cannot activate client\n");
@@ -292,8 +299,8 @@ static int connect_jack(JackData *jd, struct audio_format *audio_format)
 	}
 
 	if ( jd->output_ports[1] ) {
-		jd->ringbuffer[0] = jack_ringbuffer_create(jd->ringbuf_sz);
-		jd->ringbuffer[1] = jack_ringbuffer_create(jd->ringbuf_sz);
+		jd->ringbuffer[0] = jack_ringbuffer_create(jd->ringbuffer_size);
+		jd->ringbuffer[1] = jack_ringbuffer_create(jd->ringbuffer_size);
 		memset(jd->ringbuffer[0]->buf, 0, jd->ringbuffer[0]->size);
 		memset(jd->ringbuffer[1]->buf, 0, jd->ringbuffer[1]->size);
 
@@ -318,53 +325,49 @@ static int connect_jack(JackData *jd, struct audio_format *audio_format)
 		free(port_name);
 	}
 
-	DEBUG("connect_jack (pid=%d)\n", getpid());
 	return 1;
 }
 
-static int jack_openDevice(void *data,
-			   struct audio_format *audio_format)
+static int
+mpd_jack_open(void *data, struct audio_format *audio_format)
 {
-	JackData *jd = data;
+	struct jack_data *jd = data;
 
 	assert(jd != NULL);
 
-	if (jd->client == NULL && connect_jack(jd, audio_format) < 0) {
-		freeJackClient(jd);
+	if (jd->client == NULL && mpd_jack_connect(jd, audio_format) < 0) {
+		mpd_jack_client_free(jd);
 		return -1;
 	}
 
 	set_audioformat(jd, audio_format);
 
-	DEBUG("jack_openDevice (pid=%d)!\n", getpid ());
 	return 0;
 }
 
-
-static void jack_closeDevice(mpd_unused void *data)
+static void
+mpd_jack_close(mpd_unused void *data)
 {
-	/*jack_finishDriver(audioOutput);*/
-	DEBUG("jack_closeDevice (pid=%d)\n", getpid());
+	/*mpd_jack_finish(audioOutput);*/
 }
 
-static void jack_dropBufferedAudio (mpd_unused void *data)
+static void
+mpd_jack_cancel (mpd_unused void *data)
 {
 }
 
-static int jack_playAudio(void *data,
-			  const char *buff, size_t size)
+static int
+mpd_jack_play(void *data, const char *buff, size_t size)
 {
-	JackData *jd = data;
+	struct jack_data *jd = data;
 	size_t space, space1;
 	const short *buffer = (const short *) buff;
 	static const size_t frame_size = sizeof(*buffer) * 2;
 	jack_default_audio_sample_t sample;
 
-	/*DEBUG("jack_playAudio: (pid=%d)!\n", getpid());*/
-
 	if (jd->shutdown) {
 		ERROR("Refusing to play, because there is no client thread.\n");
-		freeJackClient(jd);
+		mpd_jack_client_free(jd);
 		audio_output_closed(jd->ao);
 		return 0;
 	}
@@ -408,13 +411,13 @@ static int jack_playAudio(void *data,
 
 const struct audio_output_plugin jackPlugin = {
 	.name = "jack",
-	.test_default_device = jack_testDefault,
-	.init = jack_initDriver,
-	.finish = jack_finishDriver,
-	.open = jack_openDevice,
-	.play = jack_playAudio,
-	.cancel = jack_dropBufferedAudio,
-	.close = jack_closeDevice,
+	.test_default_device = mpd_jack_test_default_device,
+	.init = mpd_jack_init,
+	.finish = mpd_jack_finish,
+	.open = mpd_jack_open,
+	.play = mpd_jack_play,
+	.cancel = mpd_jack_cancel,
+	.close = mpd_jack_close,
 };
 
 #else /* HAVE JACK */
