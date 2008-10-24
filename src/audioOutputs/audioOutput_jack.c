@@ -125,25 +125,24 @@ static int process(jack_nframes_t nframes, void *arg)
 {
 	JackData *jd = (JackData *) arg;
 	jack_default_audio_sample_t *out;
-	size_t avail_data, avail_frames;
+	size_t available;
 
 	if (nframes <= 0)
 		return 0;
 
 	for (unsigned i = 0; i < 2; ++i) {
-		avail_data = jack_ringbuffer_read_space(jd->ringbuffer[i]);
-		if (avail_data > nframes * sample_size)
-			avail_data = nframes * sample_size;
-
-		avail_frames = avail_data / sample_size;
+		available = jack_ringbuffer_read_space(jd->ringbuffer[i]);
+		available /= sample_size;
+		if (available > nframes)
+			available = nframes;
 
 		out = jack_port_get_buffer(jd->ports[i], nframes);
 		jack_ringbuffer_read(jd->ringbuffer[i],
-				     (char *)out, avail_data);
+				     (char *)out, available * sample_size);
 
-		while (avail_frames < nframes)
+		while (available < nframes)
 			/* ringbuffer underrun, fill with silence */
-			out[avail_frames++] = 0.0;
+			out[available++] = 0.0;
 	}
 
 	return 0;
