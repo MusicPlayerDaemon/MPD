@@ -8,8 +8,6 @@ AC_CONFIG_MACRO_DIR([m4])
 
 AC_SUBST(MPD_LIBS)
 AC_SUBST(MPD_CFLAGS)
-AC_SUBST(MP4FF_LIB)
-AC_SUBST(MP4FF_SUBDIR)
 
 dnl Remove the check for c++ and fortran compiler
 m4_defun([_LT_AC_LANG_CXX_CONFIG], [:])
@@ -486,8 +484,6 @@ fi
 
 AM_CONDITIONAL(HAVE_WAVPACK, test x$enable_wavpack = xyes)
 
-MP4FF_SUBDIR=""
-
 if test x$enable_aac = xyes; then
 	if test "x$faad_libraries" != "x" ; then
 		FAAD_LIBS="-L$faad_libraries"
@@ -495,7 +491,7 @@ if test x$enable_aac = xyes; then
 		FAAD_LIBS="-L$faad_prefix/lib"
 	fi
 
-	FAAD_LIBS="$FAAD_LIBS -lfaad"
+	FAAD_LIBS="$FAAD_LIBS -lfaad -lmp4ff"
 
 	if test "x$faad_includes" != "x" ; then
 		FAAD_CFLAGS="-I$faad_includes"
@@ -517,10 +513,10 @@ if test x$enable_aac = xyes; then
 		AC_CHECK_DECL(faacDecInit2,,enable_aac=no,[#include <faad.h>])
 	fi
 	if test x$enable_aac = xyes; then
-		AC_CHECK_LIB(faad,faacDecInit2,[MPD_LIBS="$MPD_LIBS $FAAD_LIBS";MPD_CFLAGS="$MPD_CFLAGS $FAAD_CFLAGS";MP4FF_SUBDIR="mp4ff";MP4FF_LIB="mp4ff/libmp4ff.la"],enable_aac=no)
+		AC_CHECK_LIB(faad,faacDecInit2,[MPD_LIBS="$MPD_LIBS $FAAD_LIBS";MPD_CFLAGS="$MPD_CFLAGS $FAAD_CFLAGS"],enable_aac=no)
 		if test x$enable_aac = xno; then
 			enable_aac=yes
-			AC_CHECK_LIB(faad,NeAACDecInit2,[MPD_LIBS="$MPD_LIBS $FAAD_LIBS";MPD_CFLAGS="$MPD_CFLAGS $FAAD_CFLAGS";MP4FF_SUBDIR="mp4ff";MP4FF_LIB="mp4ff/libmp4ff.la"],enable_aac=no)
+			AC_CHECK_LIB(faad,NeAACDecInit2,[MPD_LIBS="$MPD_LIBS $FAAD_LIBS";MPD_CFLAGS="$MPD_CFLAGS $FAAD_CFLAGS"],enable_aac=no)
 		fi
 	fi
 	if test x$enable_aac = xyes; then
@@ -799,7 +795,7 @@ dnl generate files
 dnl
 
 
-AC_OUTPUT(src/mp4ff/Makefile doc/Makefile src/Makefile Makefile )
+AC_OUTPUT(doc/Makefile src/Makefile Makefile)
 
 
 dnl

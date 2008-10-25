@@ -1,5 +1,4 @@
 bin_PROGRAMS = mpd
-SUBDIRS = $(MP4FF_SUBDIR)
 
 mpd_audioOutputs = \
 	audioOutputs/audioOutput_shout.c \
@@ -258,7 +257,7 @@ mpd_CPPFLAGS = \
 	$(MAD_CFLAGS) \
 	$(FFMPEG_CFLAGS) \
 	$(GLIB_CFLAGS)
-mpd_LDADD = $(MPD_LIBS) $(MP4FF_LIB) \
+mpd_LDADD = $(MPD_LIBS) \
 	$(AO_LIBS) $(ALSA_LIBS) \
 	$(SHOUT_LIBS) \
 	$(OGGVORBIS_LIBS) $(VORBISENC_LIBS) $(FLAC_LIBS) \
@@ -267,8 +266,6 @@ mpd_LDADD = $(MPD_LIBS) $(MP4FF_LIB) \
 	$(MAD_LIBS) \
 	$(FFMPEG_LIBS) \
 	$(GLIB_LIBS)
-
-DIST_SUBDIRS = mp4ff
 
 # sparse is a semantic parser
 # URL: git://www.kernel.org/pub/scm/devel/sparse/sparse.git

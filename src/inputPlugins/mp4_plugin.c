@@ -20,7 +20,7 @@
 #include "../utils.h"
 #include "../log.h"
 
-#include "../mp4ff/mp4ff.h"
+#include "mp4ff.h"
 
 #include <limits.h>
 #include <faad.h>
