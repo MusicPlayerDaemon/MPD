@@ -131,11 +131,9 @@ static int pulse_openDevice(void *data,
 	pd->connAttempts++;
 	pd->lastAttempt = t;
 
-	if (audioFormat->bits != 16) {
-		ERROR("PulseAudio doesn't support %i bit audio\n",
-		      audioFormat->bits);
-		return -1;
-	}
+	/* MPD doesn't support the other pulseaudio sample formats, so
+	   we just force MPD to send us everything as 16 bit */
+	audioFormat->bits = 16;
 
 	ss.format = PA_SAMPLE_S16NE;
 	ss.rate = audioFormat->sample_rate;
