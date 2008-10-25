@@ -9,9 +9,6 @@ Warren Dukes <warren.dukes@gmail.com>
 J. Alexander Treuman <jat@spatialrift.net>
 	general, MP3, ID3, PulseAudio, format conversion, stored playlists
 
-Eric Wong <normalperson@yhbt.net>
-	general, FLAC, mpd-ke branch
-
 José Anarch <anarchsss@gmail.com>
 	JACK plugin
 
@@ -45,6 +42,8 @@ mackstann
 
 AliasMrJones
 	replayGain
+
+Eric Wong
 
 mp4ff copyrighted by M. Bakker, Ahead Software AG, http://www.nero.com
 compress.[ch] copyrighted by fluffy <fluffy@beesbuzz.biz>
