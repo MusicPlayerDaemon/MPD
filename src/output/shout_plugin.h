@@ -20,9 +20,6 @@
 #define AUDIO_OUTPUT_SHOUT_H
 
 #include "../output_api.h"
-
-#ifdef HAVE_SHOUT
-
 #include "../conf.h"
 #include "../timer.h"
 
@@ -87,7 +84,5 @@ struct shout_data {
 
 extern const struct shout_encoder_plugin shout_mp3_encoder;
 extern const struct shout_encoder_plugin shout_ogg_encoder;
-
-#endif
 
 #endif

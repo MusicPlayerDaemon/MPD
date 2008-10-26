@@ -17,8 +17,10 @@
  */
 
 #include "../output_api.h"
+#include "../utils.h"
+#include "../log.h"
 
-#ifdef HAVE_ALSA
+#include <alsa/asoundlib.h>
 
 #define ALSA_PCM_NEW_HW_PARAMS_API
 #define ALSA_PCM_NEW_SW_PARAMS_API
@@ -26,11 +28,6 @@
 static const char default_device[] = "default";
 
 #define MPD_ALSA_RETRY_NR 5
-
-#include "../utils.h"
-#include "../log.h"
-
-#include <alsa/asoundlib.h>
 
 typedef snd_pcm_sframes_t alsa_writei_t(snd_pcm_t * pcm, const void *buffer,
 					snd_pcm_uframes_t size);
@@ -437,8 +434,3 @@ const struct audio_output_plugin alsaPlugin = {
 	.cancel = alsa_dropBufferedAudio,
 	.close = alsa_closeDevice,
 };
-
-#else /* HAVE ALSA */
-
-DISABLED_AUDIO_OUTPUT_PLUGIN(alsaPlugin)
-#endif /* HAVE_ALSA */

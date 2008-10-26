@@ -20,9 +20,6 @@
  */
 
 #include "../output_api.h"
-
-#ifdef HAVE_MVP
-
 #include "../utils.h"
 #include "../log.h"
 
@@ -273,8 +270,3 @@ const struct audio_output_plugin mvpPlugin = {
 	.cancel = mvp_dropBufferedAudio,
 	.close = mvp_closeDevice,
 };
-
-#else /* HAVE_MVP */
-
-DISABLED_AUDIO_OUTPUT_PLUGIN(mvpPlugin)
-#endif /* HAVE_MVP */

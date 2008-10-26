@@ -17,9 +17,6 @@
  */
 
 #include "../output_api.h"
-
-#ifdef HAVE_PULSE
-
 #include "../utils.h"
 #include "../log.h"
 
@@ -211,8 +208,3 @@ const struct audio_output_plugin pulsePlugin = {
 	.cancel = pulse_dropBufferedAudio,
 	.close = pulse_closeDevice,
 };
-
-#else /* HAVE_PULSE */
-
-DISABLED_AUDIO_OUTPUT_PLUGIN(pulsePlugin)
-#endif /* HAVE_PULSE */

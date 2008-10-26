@@ -16,9 +16,6 @@
  */
 
 #include "../output_api.h"
-
-#ifdef HAVE_JACK
-
 #include "../utils.h"
 #include "../log.h"
 
@@ -478,9 +475,3 @@ const struct audio_output_plugin jackPlugin = {
 	.cancel = mpd_jack_cancel,
 	.close = mpd_jack_close,
 };
-
-#else /* HAVE JACK */
-
-DISABLED_AUDIO_OUTPUT_PLUGIN(jackPlugin)
-
-#endif /* HAVE_JACK */

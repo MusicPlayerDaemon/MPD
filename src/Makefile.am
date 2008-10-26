@@ -1,19 +1,5 @@
 bin_PROGRAMS = mpd
 
-mpd_output = \
-	output/shout_plugin.c \
-	output/shout_ogg.c \
-	output/shout_mp3.c \
-	output/null_plugin.c \
-	output/fifo_plugin.c \
-	output/alsa_plugin.c \
-	output/ao_plugin.c \
-	output/oss_plugin.c \
-	output/osx_plugin.c \
-	output/pulse_plugin.c \
-	output/mvp_plugin.c \
-	output/jack_plugin.c
-
 mpd_headers = \
 	notify.h \
 	ack.h \
@@ -102,7 +88,6 @@ mpd_headers = \
 
 mpd_SOURCES = \
 	$(mpd_headers) \
-	$(mpd_output) \
 	notify.c \
 	audio.c \
 	audioOutput.c \
@@ -111,6 +96,7 @@ mpd_SOURCES = \
 	output_thread.c \
 	output_control.c \
 	output_init.c \
+	output/null_plugin.c \
 	buffer2array.c \
 	command.c \
 	idle.c \
@@ -245,6 +231,51 @@ endif
 
 if HAVE_CURL
 mpd_SOURCES += input_curl.c
+endif
+
+
+if HAVE_ALSA
+mpd_SOURCES += output/alsa_plugin.c
+endif
+
+if HAVE_AO
+mpd_SOURCES += output/ao_plugin.c
+endif
+
+if HAVE_FIFO
+mpd_SOURCES += output/fifo_plugin.c
+endif
+
+if HAVE_JACK
+mpd_SOURCES += output/jack_plugin.c
+endif
+
+if HAVE_MVP
+mpd_SOURCES += output/mvp_plugin.c
+endif
+
+if HAVE_OSS
+mpd_SOURCES += output/oss_plugin.c
+endif
+
+if HAVE_OSX
+mpd_SOURCES += output/osx_plugin.c
+endif
+
+if HAVE_PULSE
+mpd_SOURCES += output/pulse_plugin.c
+endif
+
+if HAVE_SHOUT
+mpd_SOURCES += output/shout_plugin.c
+endif
+
+if HAVE_SHOUT_MP3
+mpd_SOURCES += output/shout_mp3.c
+endif
+
+if HAVE_SHOUT_OGG
+mpd_SOURCES += output/shout_ogg.c
 endif
 
 

@@ -17,13 +17,10 @@
  */
 
 #include "../output_api.h"
-
-#ifdef HAVE_OSX
-
-#include <AudioUnit/AudioUnit.h>
-
 #include "../utils.h"
 #include "../log.h"
+
+#include <AudioUnit/AudioUnit.h>
 
 typedef struct _OsxData {
 	AudioUnit au;
@@ -361,8 +358,3 @@ const struct audio_output_plugin osxPlugin = {
 	.cancel = osx_dropBufferedAudio,
 	.close = osx_closeDevice,
 };
-
-#else
-
-DISABLED_AUDIO_OUTPUT_PLUGIN(osxPlugin)
-#endif

@@ -17,10 +17,8 @@
  */
 
 #include "shout_plugin.h"
-
-#ifdef HAVE_SHOUT_MP3
-
 #include "../utils.h"
+
 #include <lame/lame.h>
 
 struct lame_data {
@@ -184,5 +182,3 @@ const struct shout_encoder_plugin shout_mp3_encoder = {
 	shout_mp3_encoder_init_encoder,
 	shout_mp3_encoder_send_metadata,
 };
-
-#endif

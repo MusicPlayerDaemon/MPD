@@ -32,16 +32,34 @@ extern const struct audio_output_plugin mvpPlugin;
 extern const struct audio_output_plugin jackPlugin;
 
 const struct audio_output_plugin *audio_output_plugins[] = {
+#ifdef HAVE_SHOUT
 	&shoutPlugin,
+#endif
 	&nullPlugin,
+#ifdef HAVE_FIFO
 	&fifoPlugin,
+#endif
+#ifdef HAVE_ALSA
 	&alsaPlugin,
+#endif
+#ifdef HAVE_AO
 	&aoPlugin,
+#endif
+#ifdef HAVE_OSS
 	&ossPlugin,
+#endif
+#ifdef HAVE_OSX
 	&osxPlugin,
+#endif
+#ifdef HAVE_PULSE
 	&pulsePlugin,
+#endif
+#ifdef HAVE_MVP
 	&mvpPlugin,
+#endif
+#ifdef HAVE_JACK
 	&jackPlugin,
+#endif
 	NULL
 };
 

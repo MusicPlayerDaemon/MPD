@@ -25,8 +25,6 @@ const struct audio_output_plugin *
 audio_output_plugin_get(const char *name);
 
 #define audio_output_plugins_for_each(plugin, i) \
-	for (i = 0; (plugin = audio_output_plugins[i]) != NULL; ++i) \
-		if (plugin->name != NULL)
-
+	for (i = 0; (plugin = audio_output_plugins[i]) != NULL; ++i)
 
 #endif

@@ -17,9 +17,6 @@
  */
 
 #include "../output_api.h"
-
-#ifdef HAVE_AO
-
 #include "../utils.h"
 #include "../log.h"
 
@@ -246,8 +243,3 @@ const struct audio_output_plugin aoPlugin = {
 	.cancel = audioOutputAo_dropBufferedAudio,
 	.close = audioOutputAo_closeDevice,
 };
-
-#else
-
-DISABLED_AUDIO_OUTPUT_PLUGIN(aoPlugin)
-#endif

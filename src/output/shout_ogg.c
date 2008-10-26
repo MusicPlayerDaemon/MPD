@@ -17,10 +17,8 @@
  */
 
 #include "shout_plugin.h"
-
-#ifdef HAVE_SHOUT_OGG
-
 #include "../utils.h"
+
 #include <vorbis/vorbisenc.h>
 
 struct ogg_vorbis_data {
@@ -302,5 +300,3 @@ const struct shout_encoder_plugin shout_ogg_encoder = {
 	shout_ogg_encoder_init_encoder,
 	shout_ogg_encoder_send_metadata,
 };
-
-#endif

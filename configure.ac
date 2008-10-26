@@ -327,6 +327,8 @@ case $host in
 		enable_osx=yes ;;
 esac
 
+AM_CONDITIONAL(HAVE_OSX, test x$enable_osx = xyes)
+
 if test x$enable_curl = xyes; then
 	PKG_CHECK_MODULES(CURL, [libcurl],
 		AC_DEFINE(HAVE_CURL, 1, [Define when libcurl is used for HTTP streaming]),
@@ -375,15 +377,23 @@ if test x$enable_shout_mp3 = xyes; then
 	fi
 fi
 
+AM_CONDITIONAL(HAVE_SHOUT, test x$enable_shout = xyes)
+AM_CONDITIONAL(HAVE_SHOUT_OGG, test x$enable_shout_ogg = xyes)
+AM_CONDITIONAL(HAVE_SHOUT_MP3, test x$enable_shout_mp3 = xyes)
+
 if test x$enable_ao = xyes; then
 	PKG_CHECK_MODULES(AO, [ao],
 		AC_DEFINE(HAVE_AO, 1, [Define to play with ao]),
 		enable_ao=no)
 fi
 
+AM_CONDITIONAL(HAVE_AO, test x$enable_ao = xyes)
+
 if test x$enable_oss = xyes; then
         AC_CHECK_HEADER(sys/soundcard.h,[enable_oss=yes;AC_DEFINE(HAVE_OSS,1,[Define to enable OSS])],[AC_MSG_WARN(Soundcard headers not found -- disabling OSS support);enable_oss=no])
 fi
+
+AM_CONDITIONAL(HAVE_OSS, test x$enable_oss = xyes)
 
 PKG_PROG_PKG_CONFIG
 
@@ -392,6 +402,8 @@ if test x$enable_pulse = xyes; then
 	                  [enable_pulse=yes;AC_DEFINE([HAVE_PULSE], 1, [Define to enable PulseAudio support])] MPD_LIBS="$MPD_LIBS $PULSE_LIBS" MPD_CFLAGS="$MPD_CFLAGS $PULSE_CFLAGS",
 	                  [enable_pulse=no;AC_MSG_WARN([PulseAudio not found -- disabling])])
 fi
+
+AM_CONDITIONAL(HAVE_PULSE, test x$enable_pulse = xyes)
 
 if test x$enable_lsr = xyes; then
 	PKG_CHECK_MODULES([SAMPLERATE], [samplerate >= 0.0.15],
@@ -412,9 +424,13 @@ if test x$enable_fifo = xyes; then
 	              [enable_fifo=no;AC_MSG_WARN([mkfifo not found -- disabling support for writing audio to a FIFO])])
 fi
 
+AM_CONDITIONAL(HAVE_FIFO, test x$enable_fifo = xyes)
+
 if test x$enable_mvp = xyes; then
    AC_DEFINE(HAVE_MVP,1,[Define to enable Hauppauge Media MVP support])
 fi
+
+AM_CONDITIONAL(HAVE_MVP, test x$enable_mvp = xyes)
 
 if test x$enable_alsa = xyes; then
 	PKG_CHECK_MODULES(ALSA, [alsa >= 0.9.0],
@@ -422,11 +438,15 @@ if test x$enable_alsa = xyes; then
 		enable_alsa=no)
 fi
 
+AM_CONDITIONAL(HAVE_ALSA, test x$enable_alsa = xyes)
+
 if test x$enable_jack = xyes; then
 	PKG_CHECK_MODULES([JACK], [jack >= 0.4],
 	                  [enable_jack=yes;AC_DEFINE([HAVE_JACK], 1, [Define to enable JACK support])] MPD_LIBS="$MPD_LIBS $JACK_LIBS" MPD_CFLAGS="$MPD_CFLAGS $JACK_CFLAGS",
 	                  [enable_jack=no;AC_MSG_WARN([JACK not found -- disabling])])
 fi
+
+AM_CONDITIONAL(HAVE_JACK, test x$enable_jack = xyes)
 
 if test x$enable_id3 = xyes; then
 	PKG_CHECK_MODULES([ID3TAG], [id3tag],

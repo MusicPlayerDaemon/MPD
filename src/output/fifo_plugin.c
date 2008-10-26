@@ -17,9 +17,6 @@
  */
 
 #include "../output_api.h"
-
-#ifdef HAVE_FIFO
-
 #include "../log.h"
 #include "../utils.h"
 #include "../timer.h"
@@ -282,9 +279,3 @@ const struct audio_output_plugin fifoPlugin = {
 	.cancel = fifo_dropBufferedAudio,
 	.close = fifo_closeDevice,
 };
-
-#else /* HAVE_FIFO */
-
-DISABLED_AUDIO_OUTPUT_PLUGIN(fifoPlugin)
-
-#endif /* !HAVE_FIFO */

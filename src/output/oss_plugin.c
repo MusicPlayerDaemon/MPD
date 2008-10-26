@@ -20,9 +20,6 @@
  */
 
 #include "../output_api.h"
-
-#ifdef HAVE_OSS
-
 #include "../utils.h"
 #include "../log.h"
 
@@ -564,8 +561,3 @@ const struct audio_output_plugin ossPlugin = {
 	.cancel = oss_dropBufferedAudio,
 	.close = oss_closeDevice,
 };
-
-#else /* HAVE OSS */
-
-DISABLED_AUDIO_OUTPUT_PLUGIN(ossPlugin)
-#endif /* HAVE_OSS */
