@@ -26,7 +26,7 @@
  *
  */
 
-#include "inputStream.h"
+#include "input_stream.h"
 #include "replayGain.h"
 #include "tag.h"
 #include "tag_id3.h"

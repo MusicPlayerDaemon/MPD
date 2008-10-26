@@ -47,8 +47,8 @@ mpd_headers = \
 	decoder_list.h \
 	decoder/_flac_common.h \
 	decoder/_ogg_common.h \
-	inputStream.h \
-	inputStream_file.h \
+	input_stream.h \
+	input_file.h \
 	client.h \
 	list.h \
 	dlist.h \
@@ -128,8 +128,8 @@ mpd_SOURCES = \
 	dirvec.c \
 	update.c \
 	decoder_list.c \
-	inputStream.c \
-	inputStream_file.c \
+	input_stream.c \
+	input_file.c \
 	client.c \
 	ioops.c \
 	list.c \

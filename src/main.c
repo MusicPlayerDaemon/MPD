@@ -41,7 +41,7 @@
 #include "replayGain.h"
 #include "decoder_list.h"
 #include "audioOutput.h"
-#include "inputStream.h"
+#include "input_stream.h"
 #include "state_file.h"
 #include "tag.h"
 #include "dbUtils.h"

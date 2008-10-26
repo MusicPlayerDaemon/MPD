@@ -17,7 +17,7 @@
  */
 
 #include "input_curl.h"
-#include "inputStream.h"
+#include "input_stream.h"
 #include "gcc.h"
 #include "dlist.h"
 

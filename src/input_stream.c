@@ -16,10 +16,10 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "inputStream.h"
+#include "input_stream.h"
 #include "config.h"
 
-#include "inputStream_file.h"
+#include "input_file.h"
 
 #ifdef HAVE_CURL
 #include "input_curl.h"

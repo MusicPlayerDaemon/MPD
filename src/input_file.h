@@ -19,7 +19,7 @@
 #ifndef INPUT_STREAM_FILE_H
 #define INPUT_STREAM_FILE_H
 
-#include "inputStream.h"
+#include "input_stream.h"
 
 void inputStream_initFile(void);
 
