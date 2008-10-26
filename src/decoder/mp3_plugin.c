@@ -125,12 +125,12 @@ typedef struct _mp3DecodeData {
 	int decodedFirstFrame;
 	unsigned long bitRate;
 	struct decoder *decoder;
-	InputStream *inStream;
+	struct input_stream *inStream;
 	enum mad_layer layer;
 } mp3DecodeData;
 
 static void initMp3DecodeData(mp3DecodeData * data, struct decoder *decoder,
-			      InputStream * inStream)
+			      struct input_stream *inStream)
 {
 	data->muteFrame = MUTEFRAME_NONE;
 	data->highestFrame = 0;
@@ -753,7 +753,7 @@ static void mp3DecodeDataFinalize(mp3DecodeData * data)
 /* this is primarily used for getting total time for tags */
 static int getMp3TotalTime(char *file)
 {
-	InputStream inStream;
+	struct input_stream inStream;
 	mp3DecodeData data;
 	int ret;
 
@@ -770,9 +770,10 @@ static int getMp3TotalTime(char *file)
 	return ret;
 }
 
-static int openMp3FromInputStream(InputStream * inStream, mp3DecodeData * data,
-				  struct decoder * decoder, struct tag ** tag,
-				  ReplayGainInfo ** replayGainInfo)
+static int
+openMp3FromInputStream(struct input_stream *inStream, mp3DecodeData * data,
+		       struct decoder *decoder, struct tag **tag,
+		       ReplayGainInfo **replayGainInfo)
 {
 	initMp3DecodeData(data, decoder, inStream);
 	*tag = NULL;
@@ -988,7 +989,8 @@ static void initAudioFormatFromMp3DecodeData(mp3DecodeData * data,
 	af->channels = MAD_NCHANNELS(&(data->frame).header);
 }
 
-static int mp3_decode(struct decoder * decoder, InputStream * inStream)
+static int
+mp3_decode(struct decoder * decoder, struct input_stream *inStream)
 {
 	mp3DecodeData data;
 	struct tag *tag = NULL;

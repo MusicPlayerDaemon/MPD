@@ -21,8 +21,6 @@
 
 #include <stddef.h>
 
-typedef struct input_stream InputStream;
-
 struct input_stream {
 	int ready;
 

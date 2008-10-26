@@ -45,7 +45,7 @@ typedef struct {
 	AVCodecContext *aCodecCtx;
 	AVCodec *aCodec;
 	struct decoder *decoder;
-	InputStream *input;
+	struct input_stream *input;
 	struct tag *tag;
 } BasePtrs;
 
@@ -54,7 +54,7 @@ typedef struct {
 	char url[8];
 
 	struct decoder *decoder;
-	InputStream *input;
+	struct input_stream *input;
 } FopsHelper;
 
 /**
@@ -137,8 +137,9 @@ static int ffmpeg_init(void)
 	return 0;
 }
 
-static int ffmpeg_helper(InputStream *input, int (*callback)(BasePtrs *ptrs),
-			 BasePtrs *ptrs)
+static int
+ffmpeg_helper(struct input_stream *input, int (*callback)(BasePtrs *ptrs),
+	      BasePtrs *ptrs)
 {
 	AVFormatContext *pFormatCtx;
 	AVCodecContext *aCodecCtx;
@@ -211,7 +212,8 @@ static int ffmpeg_helper(InputStream *input, int (*callback)(BasePtrs *ptrs),
 	return ret;
 }
 
-static bool ffmpeg_try_decode(InputStream *input)
+static bool
+ffmpeg_try_decode(struct input_stream *input)
 {
 	int ret;
 	if (input->seekable) {
@@ -320,7 +322,8 @@ static int ffmpeg_decode_internal(BasePtrs *base)
 	return 0;
 }
 
-static int ffmpeg_decode(struct decoder *decoder, InputStream *input)
+static int
+ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 {
 	BasePtrs base;
 	int ret;
@@ -352,7 +355,7 @@ static int ffmpeg_tag_internal(BasePtrs *base)
 //no tag reading in ffmpeg, check if playable
 static struct tag *ffmpeg_tag(char *file)
 {
-	InputStream input;
+	struct input_stream input;
 	BasePtrs base;
 	int ret;
 	struct tag *tag = NULL;

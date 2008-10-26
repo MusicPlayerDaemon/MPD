@@ -68,15 +68,18 @@ static int mp4_getAACTrack(mp4ff_t * infile)
 static uint32_t mp4_inputStreamReadCallback(void *inStream, void *buffer,
 					    uint32_t length)
 {
-	return readFromInputStream((InputStream *) inStream, buffer, length);
+	return readFromInputStream((struct input_stream *) inStream,
+				   buffer, length);
 }
 
 static uint32_t mp4_inputStreamSeekCallback(void *inStream, uint64_t position)
 {
-	return seekInputStream((InputStream *) inStream, position, SEEK_SET);
+	return seekInputStream((struct input_stream *) inStream,
+			       position, SEEK_SET);
 }
 
-static int mp4_decode(struct decoder * mpd_decoder, InputStream * inStream)
+static int
+mp4_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 {
 	mp4ff_t *mp4fh;
 	mp4ff_callback_t *mp4cb;
@@ -304,7 +307,7 @@ static int mp4_decode(struct decoder * mpd_decoder, InputStream * inStream)
 static struct tag *mp4DataDup(char *file, int *mp4MetadataFound)
 {
 	struct tag *ret = NULL;
-	InputStream inStream;
+	struct input_stream inStream;
 	mp4ff_t *mp4fh;
 	mp4ff_callback_t *callback;
 	int32_t track;

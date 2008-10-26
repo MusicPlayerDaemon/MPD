@@ -29,7 +29,7 @@
 /* all code here is either based on or copied from FAAD2's frontend code */
 typedef struct {
 	struct decoder *decoder;
-	InputStream *inStream;
+	struct input_stream *inStream;
 	size_t bytesIntoBuffer;
 	size_t bytesConsumed;
 	off_t fileOffset;
@@ -174,8 +174,9 @@ static void adtsParse(AacBuffer * b, float *length)
 		*length = (float)frames / framesPerSec;
 }
 
-static void initAacBuffer(AacBuffer * b,
-			  struct decoder *decoder, InputStream * inStream)
+static void
+initAacBuffer(AacBuffer * b, struct decoder *decoder,
+	      struct input_stream *inStream)
 {
 	memset(b, 0, sizeof(AacBuffer));
 
@@ -253,7 +254,7 @@ static float getAacFloatTotalTime(char *file)
 	faacDecConfigurationPtr config;
 	uint32_t sample_rate;
 	unsigned char channels;
-	InputStream inStream;
+	struct input_stream inStream;
 	long bread;
 
 	if (openInputStream(&inStream, file) < 0)
@@ -301,7 +302,7 @@ static int getAacTotalTime(char *file)
 }
 
 static int aac_stream_decode(struct decoder * mpd_decoder,
-			     InputStream *inStream)
+			     struct input_stream *inStream)
 {
 	float file_time;
 	float totalTime = 0;
@@ -454,7 +455,7 @@ static int aac_decode(struct decoder * mpd_decoder, char *path)
 	   int seekPositionFound = 0; */
 	uint16_t bitRate = 0;
 	AacBuffer b;
-	InputStream inStream;
+	struct input_stream inStream;
 	int initialized = 0;
 
 	if ((totalTime = getAacFloatTotalTime(path)) < 0)

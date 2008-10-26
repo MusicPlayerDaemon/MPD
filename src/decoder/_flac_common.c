@@ -26,7 +26,7 @@
 #include <FLAC/metadata.h>
 
 void init_FlacData(FlacData * data, struct decoder * decoder,
-		   InputStream * inStream)
+		   struct input_stream *inStream)
 {
 	data->time = 0;
 	data->position = 0;

@@ -44,7 +44,7 @@
 #endif
 
 typedef struct _OggCallbackData {
-	InputStream *inStream;
+	struct input_stream *inStream;
 	struct decoder *decoder;
 } OggCallbackData;
 
@@ -56,7 +56,7 @@ static size_t ogg_read_cb(void *ptr, size_t size, size_t nmemb, void *vdata)
 	ret = decoder_read(data->decoder, data->inStream, ptr, size * nmemb);
 
 	errno = 0;
-	/*if(ret<0) errno = ((InputStream *)inStream)->error; */
+	/*if(ret<0) errno = ((struct input_stream *)inStream)->error; */
 
 	return ret / size;
 }
@@ -200,7 +200,8 @@ static void putOggCommentsIntoOutputBuffer(char *streamName,
 }
 
 /* public */
-static int oggvorbis_decode(struct decoder * decoder, InputStream * inStream)
+static int
+oggvorbis_decode(struct decoder *decoder, struct input_stream *inStream)
 {
 	OggVorbis_File vf;
 	ov_callbacks callbacks;
@@ -360,7 +361,8 @@ static struct tag *oggvorbis_TagDup(char *file)
 	return ret;
 }
 
-static bool oggvorbis_try_decode(InputStream * inStream)
+static bool
+oggvorbis_try_decode(struct input_stream *inStream)
 {
 	if (!inStream->seekable)
 		/* we cannot seek after the detection, so don't bother

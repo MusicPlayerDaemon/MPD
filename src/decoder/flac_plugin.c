@@ -301,8 +301,9 @@ static struct tag *flacTagDup(char *file)
 	return ret;
 }
 
-static int flac_decode_internal(struct decoder * decoder,
-				InputStream * inStream, int is_ogg)
+static int
+flac_decode_internal(struct decoder * decoder, struct input_stream *inStream,
+		     int is_ogg)
 {
 	flac_decoder *flacDec;
 	FlacData data;
@@ -378,7 +379,8 @@ fail:
 	return 0;
 }
 
-static int flac_decode(struct decoder * decoder, InputStream * inStream)
+static int
+flac_decode(struct decoder * decoder, struct input_stream *inStream)
 {
 	return flac_decode_internal(decoder, inStream, 0);
 }
@@ -415,12 +417,14 @@ out:
 	return ret;
 }
 
-static int oggflac_decode(struct decoder *decoder, InputStream * inStream)
+static int
+oggflac_decode(struct decoder *decoder, struct input_stream *inStream)
 {
 	return flac_decode_internal(decoder, inStream, 1);
 }
 
-static bool oggflac_try_decode(InputStream * inStream)
+static bool
+oggflac_try_decode(struct input_stream *inStream)
 {
 	return FLAC_API_SUPPORTS_OGG_FLAC &&
 		ogg_stream_type_detect(inStream) == FLAC;

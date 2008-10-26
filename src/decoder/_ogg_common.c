@@ -23,7 +23,7 @@
 #include "_flac_common.h"
 #include "../utils.h"
 
-ogg_stream_type ogg_stream_type_detect(InputStream * inStream)
+ogg_stream_type ogg_stream_type_detect(struct input_stream *inStream)
 {
 	/* oggflac detection based on code in ogg123 and this post
 	 * http://lists.xiph.org/pipermail/flac/2004-December/000393.html

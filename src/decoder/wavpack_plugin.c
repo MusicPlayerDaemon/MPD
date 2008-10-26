@@ -333,13 +333,13 @@ static struct tag *wavpack_tagdup(char *fname)
 }
 
 /*
- * mpd InputStream <=> WavpackStreamReader wrapper callbacks
+ * mpd input_stream <=> WavpackStreamReader wrapper callbacks
  */
 
 /* This struct is needed for per-stream last_byte storage. */
 typedef struct {
 	struct decoder *decoder;
-	InputStream *is;
+	struct input_stream *is;
 	/* Needed for push_back_byte() */
 	int last_byte;
 } InputStreamPlus;
@@ -403,7 +403,7 @@ static WavpackStreamReader mpd_is_reader = {
 
 static void
 initInputStreamPlus(InputStreamPlus *isp, struct decoder *decoder,
-		    InputStream *is)
+		    struct input_stream *is)
 {
 	isp->decoder = decoder;
 	isp->is = is;
@@ -413,7 +413,7 @@ initInputStreamPlus(InputStreamPlus *isp, struct decoder *decoder,
 /*
  * Tries to decode the specified stream, and gives true if managed to do it.
  */
-static bool wavpack_trydecode(InputStream *is)
+static bool wavpack_trydecode(struct input_stream *is)
 {
 	char error[ERRORLEN];
 	WavpackContext *wpc;
@@ -433,7 +433,7 @@ static bool wavpack_trydecode(InputStream *is)
 }
 
 static int wavpack_open_wvc(struct decoder *decoder,
-			    InputStream *is_wvc)
+			    struct input_stream *is_wvc)
 {
 	char tmp[MPD_PATH_MAX];
 	const char *utf8url;
@@ -498,11 +498,12 @@ static int wavpack_open_wvc(struct decoder *decoder,
 /*
  * Decodes a stream.
  */
-static int wavpack_streamdecode(struct decoder * decoder, InputStream *is)
+static int
+wavpack_streamdecode(struct decoder * decoder, struct input_stream *is)
 {
 	char error[ERRORLEN];
 	WavpackContext *wpc;
-	InputStream is_wvc;
+	struct input_stream is_wvc;
 	int open_flags = OPEN_2CH_MAX | OPEN_NORMALIZE /*| OPEN_STREAMING*/;
 	InputStreamPlus isp, isp_wvc;
 

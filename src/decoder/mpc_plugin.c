@@ -23,7 +23,7 @@
 #include <mpcdec/mpcdec.h>
 
 typedef struct _MpcCallbackData {
-	InputStream *inStream;
+	struct input_stream *inStream;
 	struct decoder *decoder;
 } MpcCallbackData;
 
@@ -94,7 +94,8 @@ static inline int16_t convertSample(MPC_SAMPLE_FORMAT sample)
 	return val;
 }
 
-static int mpc_decode(struct decoder * mpd_decoder, InputStream * inStream)
+static int
+mpc_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 {
 	mpc_decoder decoder;
 	mpc_reader reader;
@@ -240,7 +241,7 @@ static int mpc_decode(struct decoder * mpd_decoder, InputStream * inStream)
 
 static float mpcGetTime(char *file)
 {
-	InputStream inStream;
+	struct input_stream inStream;
 	float total_time = -1;
 
 	mpc_reader reader;
