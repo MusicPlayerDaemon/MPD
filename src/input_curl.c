@@ -235,11 +235,10 @@ input_curl_read(struct input_stream *is, void *ptr, size_t size)
 	return nbytes;
 }
 
-static int
+static void
 input_curl_close(struct input_stream *is)
 {
 	input_curl_free(is);
-	return 0;
 }
 
 static int

@@ -78,15 +78,10 @@ input_file_read(struct input_stream *is, void *ptr, size_t size)
 	return readSize;
 }
 
-static int
+static void
 input_file_close(struct input_stream *is)
 {
-	if (fclose((FILE *) is->data) < 0) {
-		is->error = errno;
-		return -1;
-	}
-
-	return 0;
+	fclose((FILE *) is->data);
 }
 
 static int

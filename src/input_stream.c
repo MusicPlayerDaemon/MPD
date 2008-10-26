@@ -85,7 +85,7 @@ input_stream_read(struct input_stream *is, void *ptr, size_t size)
 	return is->plugin->read(is, ptr, size);
 }
 
-int input_stream_close(struct input_stream *is)
+void input_stream_close(struct input_stream *is)
 {
 	if (is->mime)
 		free(is->mime);
@@ -94,7 +94,7 @@ int input_stream_close(struct input_stream *is)
 	if (is->meta_title)
 		free(is->meta_title);
 
-	return is->plugin->close(is);
+	is->plugin->close(is);
 }
 
 int input_stream_eof(struct input_stream *is)
