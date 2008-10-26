@@ -30,21 +30,21 @@ void dirvec_sort(struct dirvec *dv)
 
 struct directory *dirvec_find(const struct dirvec *dv, const char *path)
 {
-	char *basename;
+	char *base;
 	int i;
 	struct directory *ret = NULL;
 
-	basename = g_path_get_basename(path);
+	base = g_path_get_basename(path);
 
 	pthread_mutex_lock(&nr_lock);
 	for (i = dv->nr; --i >= 0; )
-		if (!strcmp(directory_get_name(dv->base[i]), basename)) {
+		if (!strcmp(directory_get_name(dv->base[i]), base)) {
 			ret = dv->base[i];
 			break;
 		}
 	pthread_mutex_unlock(&nr_lock);
 
-	g_free(basename);
+	g_free(base);
 	return ret;
 }
 
