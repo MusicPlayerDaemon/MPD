@@ -47,6 +47,8 @@ struct input_stream {
 
 void initInputStream(void);
 
+void input_stream_global_finish(void);
+
 int isUrlSaneForInputStream(char *url);
 
 /* if an error occurs for these 3 functions, then -1 is returned and errno

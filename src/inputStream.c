@@ -29,6 +29,10 @@ void initInputStream(void)
 	inputStream_initHttp();
 }
 
+void input_stream_global_finish(void)
+{
+}
+
 int openInputStream(struct input_stream *inStream, char *url)
 {
 	inStream->ready = 0;

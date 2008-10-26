@@ -475,6 +475,7 @@ int main(int argc, char *argv[])
 
 	deinit_main_notify();
 
+	input_stream_global_finish();
 	finishNormalization();
 	finishAudioDriver();
 	finishAudioConfig();
