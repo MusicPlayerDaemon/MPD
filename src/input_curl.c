@@ -316,6 +316,9 @@ input_curl_headerfunction(void *ptr, size_t size, size_t nmemb, void *stream)
 		buffer[end - value] = 0;
 
 		is->size = is->offset + g_ascii_strtoull(buffer, NULL, 10);
+	} else if (strcasecmp(name, "content-type") == 0) {
+		g_free(is->mime);
+		is->mime = g_strndup(value, end - value);
 	}
 
 	return size;
