@@ -25,7 +25,7 @@
 #include "input_curl.h"
 #endif
 
-#include <stdlib.h>
+#include <glib.h>
 
 static const struct input_plugin *const input_plugins[] = {
 	&input_plugin_file,
@@ -89,14 +89,11 @@ input_stream_read(struct input_stream *is, void *ptr, size_t size)
 
 void input_stream_close(struct input_stream *is)
 {
-	if (is->mime)
-		free(is->mime);
-	if (is->meta_name)
-		free(is->meta_name);
-	if (is->meta_title)
-		free(is->meta_title);
-
 	is->plugin->close(is);
+
+	g_free(is->mime);
+	g_free(is->meta_name);
+	g_free(is->meta_title);
 }
 
 bool input_stream_eof(struct input_stream *is)
