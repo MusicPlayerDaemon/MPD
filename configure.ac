@@ -336,7 +336,7 @@ if test x$enable_curl = xyes; then
 fi
 AM_CONDITIONAL(HAVE_CURL, test x$enable_curl = xyes)
 
-if test x$enable_shout_ogg = xyes || x$enable_shout_mp3 = xyes; then
+if test x$enable_shout_ogg = xyes || test x$enable_shout_mp3 = xyes; then
 	enable_shout=yes
 	PKG_CHECK_MODULES([SHOUT], [shout],
 		AC_DEFINE(HAVE_SHOUT, 1, [Define to enable libshout support]),
