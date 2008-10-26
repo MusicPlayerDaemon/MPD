@@ -332,7 +332,7 @@ spl_append_song(const char *utf8path, struct song *song)
 		return PLAYLIST_RESULT_ERRNO;
 	}
 
-	if (st.st_size >= ((MPD_PATH_MAX+1) * playlist_max_length)) {
+	if (st.st_size >= ((MPD_PATH_MAX+1) * (off_t)playlist_max_length)) {
 		while (fclose(file) != 0 && errno == EINTR);
 		return PLAYLIST_RESULT_TOO_LARGE;
 	}
