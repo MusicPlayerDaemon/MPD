@@ -257,7 +257,7 @@ static float getAacFloatTotalTime(char *file)
 	struct input_stream inStream;
 	long bread;
 
-	if (input_stream_open(&inStream, file) < 0)
+	if (!input_stream_open(&inStream, file))
 		return -1;
 
 	initAacBuffer(&b, NULL, &inStream);
@@ -461,7 +461,7 @@ static int aac_decode(struct decoder * mpd_decoder, char *path)
 	if ((totalTime = getAacFloatTotalTime(path)) < 0)
 		return -1;
 
-	if (input_stream_open(&inStream, path) < 0)
+	if (!input_stream_open(&inStream, path))
 		return -1;
 
 	initAacBuffer(&b, mpd_decoder, &inStream);

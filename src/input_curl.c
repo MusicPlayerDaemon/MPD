@@ -241,7 +241,7 @@ input_curl_close(struct input_stream *is)
 	input_curl_free(is);
 }
 
-static int
+static bool
 input_curl_eof(mpd_unused struct input_stream *is)
 {
 	struct input_curl *c = is->data;
@@ -397,7 +397,7 @@ input_curl_send_request(struct input_curl *c)
 	return true;
 }
 
-static int
+static bool
 input_curl_seek(struct input_stream *is, mpd_unused long offset,
 		mpd_unused int whence)
 {
@@ -405,7 +405,7 @@ input_curl_seek(struct input_stream *is, mpd_unused long offset,
 	bool ret;
 
 	if (!is->seekable)
-		return -1;
+		return false;
 
 	/* calculate the absolute offset */
 
@@ -423,11 +423,11 @@ input_curl_seek(struct input_stream *is, mpd_unused long offset,
 		break;
 
 	default:
-		return -1;
+		return false;
 	}
 
 	if (is->offset < 0)
-		return -1;
+		return false;
 
 	/* close the old connection and open a new one */
 
@@ -435,7 +435,7 @@ input_curl_seek(struct input_stream *is, mpd_unused long offset,
 
 	ret = input_curl_easy_init(is);
 	if (!ret)
-		return -1;
+		return false;
 
 	/* send the "Range" header */
 
@@ -446,9 +446,9 @@ input_curl_seek(struct input_stream *is, mpd_unused long offset,
 
 	ret = input_curl_send_request(c);
 	if (!ret)
-		return -1;
+		return false;
 
-	return 0;
+	return true;
 }
 
 static bool

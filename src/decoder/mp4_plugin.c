@@ -75,7 +75,8 @@ static uint32_t mp4_inputStreamReadCallback(void *inStream, void *buffer,
 static uint32_t mp4_inputStreamSeekCallback(void *inStream, uint64_t position)
 {
 	return input_stream_seek((struct input_stream *) inStream,
-			       position, SEEK_SET);
+				 position, SEEK_SET)
+		? 0 : -1;
 }
 
 static int
@@ -317,7 +318,7 @@ static struct tag *mp4DataDup(char *file, int *mp4MetadataFound)
 
 	*mp4MetadataFound = 0;
 
-	if (input_stream_open(&inStream, file) < 0) {
+	if (!input_stream_open(&inStream, file)) {
 		DEBUG("mp4DataDup: Failed to open file: %s\n", file);
 		return NULL;
 	}

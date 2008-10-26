@@ -366,12 +366,14 @@ static uint32_t get_pos(void *id)
 
 static int set_pos_abs(void *id, uint32_t pos)
 {
-	return input_stream_seek(((InputStreamPlus *)id)->is, pos, SEEK_SET);
+	return input_stream_seek(((InputStreamPlus *)id)->is, pos, SEEK_SET)
+		? 0 : -1;
 }
 
 static int set_pos_rel(void *id, int32_t delta, int mode)
 {
-	return input_stream_seek(((InputStreamPlus *)id)->is, delta, mode);
+	return input_stream_seek(((InputStreamPlus *)id)->is, delta, mode)
+		? 0 : -1;
 }
 
 static int push_back_byte(void *id, int c)
@@ -439,7 +441,7 @@ static int wavpack_open_wvc(struct decoder *decoder,
 	const char *utf8url;
 	size_t len;
 	char *wvc_url = NULL;
-	int ret;
+	bool ret;
 
 	/*
 	 * As we use dc->utf8url, this function will be bad for
@@ -464,7 +466,7 @@ static int wavpack_open_wvc(struct decoder *decoder,
 	ret = input_stream_open(is_wvc, wvc_url);
 	free(wvc_url);
 
-	if (ret)
+	if (!ret)
 		return 0;
 
 	/*

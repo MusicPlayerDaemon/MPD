@@ -38,7 +38,7 @@ static mpc_bool_t mpc_seek_cb(void *vdata, mpc_int32_t offset)
 {
 	MpcCallbackData *data = (MpcCallbackData *) vdata;
 
-	return input_stream_seek(data->inStream, offset, SEEK_SET) < 0 ? 0 : 1;
+	return input_stream_seek(data->inStream, offset, SEEK_SET) ? 0 : 1;
 }
 
 static mpc_int32_t mpc_tell_cb(void *vdata)
@@ -260,7 +260,7 @@ static float mpcGetTime(char *file)
 
 	mpc_streaminfo_init(&info);
 
-	if (input_stream_open(&inStream, file) < 0) {
+	if (!input_stream_open(&inStream, file)) {
 		DEBUG("mpcGetTime: Failed to open file: %s\n", file);
 		return -1;
 	}

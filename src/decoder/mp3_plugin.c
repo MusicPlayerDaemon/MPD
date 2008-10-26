@@ -158,9 +158,8 @@ static void initMp3DecodeData(mp3DecodeData * data, struct decoder *decoder,
 
 static int seekMp3InputBuffer(mp3DecodeData * data, long offset)
 {
-	if (input_stream_seek(data->inStream, offset, SEEK_SET) < 0) {
+	if (!input_stream_seek(data->inStream, offset, SEEK_SET))
 		return -1;
-	}
 
 	mad_stream_buffer(&data->stream, data->readBuffer, 0);
 	(data->stream).error = 0;
@@ -757,7 +756,7 @@ static int getMp3TotalTime(char *file)
 	mp3DecodeData data;
 	int ret;
 
-	if (input_stream_open(&inStream, file) < 0)
+	if (!input_stream_open(&inStream, file))
 		return -1;
 	initMp3DecodeData(&data, NULL, &inStream);
 	if (decodeFirstFrame(&data, NULL, NULL) < 0)

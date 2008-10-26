@@ -52,9 +52,8 @@ static flac_seek_status flacSeek(mpd_unused const flac_decoder * flacDec,
 {
 	FlacData *data = (FlacData *) fdata;
 
-	if (input_stream_seek(data->inStream, offset, SEEK_SET) < 0) {
+	if (!input_stream_seek(data->inStream, offset, SEEK_SET))
 		return flac_seek_status_error;
-	}
 
 	return flac_seek_status_ok;
 }

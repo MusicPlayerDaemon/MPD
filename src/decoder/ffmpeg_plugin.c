@@ -360,7 +360,7 @@ static struct tag *ffmpeg_tag(char *file)
 	int ret;
 	struct tag *tag = NULL;
 
-	if (input_stream_open(&input, file) < 0) {
+	if (!input_stream_open(&input, file)) {
 		ERROR("failed to open %s\n", file);
 		return NULL;
 	}

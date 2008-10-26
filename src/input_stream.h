@@ -30,20 +30,20 @@ struct input_plugin {
 
 	int (*buffer)(struct input_stream *is);
 	size_t (*read)(struct input_stream *is, void *ptr, size_t size);
-	int (*eof)(struct input_stream *is);
-	int (*seek)(struct input_stream *is, long offset, int whence);
+	bool (*eof)(struct input_stream *is);
+	bool (*seek)(struct input_stream *is, long offset, int whence);
 };
 
 struct input_stream {
 	const struct input_plugin *plugin;
 
-	int ready;
+	bool seekable;
+	bool ready;
 
 	int error;
 	long offset;
 	size_t size;
 	char *mime;
-	int seekable;
 
 	void *data;
 	char *meta_name;
@@ -56,10 +56,14 @@ void input_stream_global_finish(void);
 
 /* if an error occurs for these 3 functions, then -1 is returned and errno
    for the input stream is set */
-int input_stream_open(struct input_stream *is, char *url);
-int input_stream_seek(struct input_stream *is, long offset, int whence);
+bool
+input_stream_open(struct input_stream *is, char *url);
+
+bool
+input_stream_seek(struct input_stream *is, long offset, int whence);
+
 void input_stream_close(struct input_stream *is);
-int input_stream_eof(struct input_stream *is);
+bool input_stream_eof(struct input_stream *is);
 
 /* return value: -1 is error, 1 inidicates stuff was buffered, 0 means nothing
    was buffered */

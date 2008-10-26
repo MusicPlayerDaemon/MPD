@@ -64,9 +64,8 @@ static OggFLAC__SeekableStreamDecoderSeekStatus of_seek_cb(mpd_unused const
 {
 	FlacData *data = (FlacData *) fdata;
 
-	if (input_stream_seek(data->inStream, offset, SEEK_SET) < 0) {
+	if (!input_stream_seek(data->inStream, offset, SEEK_SET))
 		return OggFLAC__SEEKABLE_STREAM_DECODER_SEEK_STATUS_ERROR;
-	}
 
 	return OggFLAC__SEEKABLE_STREAM_DECODER_SEEK_STATUS_OK;
 }
@@ -261,7 +260,7 @@ static struct tag *oggflac_TagDup(char *file)
 	OggFLAC__SeekableStreamDecoder *decoder;
 	FlacData data;
 
-	if (input_stream_open(&inStream, file) < 0)
+	if (!input_stream_open(&inStream, file))
 		return NULL;
 	if (ogg_stream_type_detect(&inStream) != FLAC) {
 		input_stream_close(&inStream);

@@ -51,14 +51,15 @@ void input_stream_global_finish(void)
 #endif
 }
 
-int input_stream_open(struct input_stream *is, char *url)
+bool
+input_stream_open(struct input_stream *is, char *url)
 {
-	is->ready = 0;
+	is->seekable = false;
+	is->ready = false;
 	is->offset = 0;
 	is->size = 0;
 	is->error = 0;
 	is->mime = NULL;
-	is->seekable = 0;
 	is->meta_name = NULL;
 	is->meta_title = NULL;
 
@@ -67,14 +68,15 @@ int input_stream_open(struct input_stream *is, char *url)
 
 		if (plugin->open(is, url)) {
 			is->plugin = plugin;
-			return 0;
+			return true;
 		}
 	}
 
-	return -1;
+	return false;
 }
 
-int input_stream_seek(struct input_stream *is, long offset, int whence)
+bool
+input_stream_seek(struct input_stream *is, long offset, int whence)
 {
 	return is->plugin->seek(is, offset, whence);
 }
@@ -97,7 +99,7 @@ void input_stream_close(struct input_stream *is)
 	is->plugin->close(is);
 }
 
-int input_stream_eof(struct input_stream *is)
+bool input_stream_eof(struct input_stream *is)
 {
 	return is->plugin->eof(is);
 }

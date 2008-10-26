@@ -43,7 +43,7 @@ static void decodeStart(void)
 		song_get_url(song, path_max_fs);
 
 	dc.current_song = dc.next_song; /* NEED LOCK */
-	if (input_stream_open(&inStream, path_max_fs) < 0) {
+	if (!input_stream_open(&inStream, path_max_fs)) {
 		dc.error = DECODE_ERROR_FILE;
 		goto stop_no_close;
 	}

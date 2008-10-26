@@ -32,7 +32,7 @@ input_file_open(struct input_stream *is, const char *filename)
 		return false;
 	}
 
-	is->seekable = 1;
+	is->seekable = true;
 
 	fseek(fp, 0, SEEK_END);
 	is->size = ftell(fp);
@@ -43,22 +43,22 @@ input_file_open(struct input_stream *is, const char *filename)
 #endif
 
 	is->data = fp;
-	is->ready = 1;
+	is->ready = true;
 
 	return true;
 }
 
-static int
+static bool
 input_file_seek(struct input_stream *is, long offset, int whence)
 {
 	if (fseek((FILE *) is->data, offset, whence) == 0) {
 		is->offset = ftell((FILE *) is->data);
 	} else {
 		is->error = errno;
-		return -1;
+		return false;
 	}
 
-	return 0;
+	return true;
 }
 
 static size_t
@@ -84,7 +84,7 @@ input_file_close(struct input_stream *is)
 	fclose((FILE *) is->data);
 }
 
-static int
+static bool
 input_file_eof(struct input_stream *is)
 {
 	if (feof((FILE *) is->data))
