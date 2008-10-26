@@ -319,6 +319,11 @@ input_curl_headerfunction(void *ptr, size_t size, size_t nmemb, void *stream)
 	} else if (strcasecmp(name, "content-type") == 0) {
 		g_free(is->mime);
 		is->mime = g_strndup(value, end - value);
+	} else if (strcasecmp(name, "icy-name") == 0 ||
+		   strcasecmp(name, "ice-name") == 0 ||
+		   strcasecmp(name, "x-audiocast-name") == 0) {
+		g_free(is->meta_name);
+		is->meta_name = g_strndup(value, end - value);
 	}
 
 	return size;
