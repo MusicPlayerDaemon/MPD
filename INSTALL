@@ -70,6 +70,10 @@ For Zeroconf support.
 libsamplerate - http://www.mega-nerd.com/SRC/
 For advanced samplerate conversions.
 
+libcurl - http://curl.haxx.se/
+For playing HTTP streams.
+
+
 Download
 --------
 

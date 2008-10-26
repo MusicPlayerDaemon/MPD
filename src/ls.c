@@ -27,7 +27,9 @@
 #include "os_compat.h"
 
 static const char *remoteUrlPrefixes[] = {
+#ifdef HAVE_CURL
 	"http://",
+#endif
 	NULL
 };
 

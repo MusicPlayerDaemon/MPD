@@ -1,5 +1,5 @@
 /* the Music Player Daemon (MPD)
- * Copyright (C) 2003-2007 by Warren Dukes (warren.dukes@gmail.com)
+ * Copyright (C) 2008 Max Kellermann <max@duempel.org>
  * This project's homepage is: http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -16,23 +16,17 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef INPUT_STREAM_HTTP_H
-#define INPUT_STREAM_HTTP_H
+#ifndef MPD_INPUT_CURL_H
+#define MPD_INPUT_CURL_H
 
-#include "inputStream.h"
+#include <stdbool.h>
 
-void inputStream_initHttp(void);
+struct input_stream;
 
-int inputStream_httpOpen(InputStream * inStream, char *filename);
+void input_curl_global_init(void);
 
-int inputStream_httpSeek(InputStream * inStream, long offset, int whence);
+void input_curl_global_finish(void);
 
-size_t inputStream_httpRead(InputStream * inStream, void *ptr, size_t size);
-
-int inputStream_httpClose(InputStream * inStream);
-
-int inputStream_httpAtEOF(InputStream * inStream);
-
-int inputStream_httpBuffer(InputStream * inStream);
+bool input_curl_open(struct input_stream *is, char *url);
 
 #endif

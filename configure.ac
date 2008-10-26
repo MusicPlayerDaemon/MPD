@@ -103,6 +103,17 @@ AC_ARG_ENABLE(un,
 
 
 dnl
+dnl input options
+dnl
+
+AC_ARG_ENABLE(curl,
+	AS_HELP_STRING([--disable-curl],
+		[enable support obtaining song data via HTTP (default: enable)]),
+	[enable_curl=$enableval],
+	[enable_curl=yes])
+
+
+dnl
 dnl audio output plugins
 dnl
 
@@ -315,6 +326,13 @@ case $host in
 		MPD_LIBS="$MPD_LIBS -framework AudioUnit -framework CoreServices"
 		enable_osx=yes ;;
 esac
+
+if test x$enable_curl = xyes; then
+	PKG_CHECK_MODULES(CURL, [libcurl],
+		AC_DEFINE(HAVE_CURL, 1, [Define when libcurl is used for HTTP streaming]),
+		enable_curl=no)
+fi
+AM_CONDITIONAL(HAVE_CURL, test x$enable_curl = xyes)
 
 if test x$enable_shout_ogg = xyes || x$enable_shout_mp3 = xyes; then
 	enable_shout=yes

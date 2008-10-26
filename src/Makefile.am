@@ -49,8 +49,6 @@ mpd_headers = \
 	decoder/_ogg_common.h \
 	inputStream.h \
 	inputStream_file.h \
-	inputStream_http.h \
-	inputStream_http_auth.h \
 	client.h \
 	list.h \
 	dlist.h \
@@ -132,7 +130,6 @@ mpd_SOURCES = \
 	decoder_list.c \
 	inputStream.c \
 	inputStream_file.c \
-	inputStream_http.c \
 	client.c \
 	ioops.c \
 	list.c \
@@ -246,8 +243,14 @@ mpd_SOURCES += zeroconf.c
 endif
 
 
+if HAVE_CURL
+mpd_SOURCES += input_curl.c
+endif
+
+
 mpd_CFLAGS = $(MPD_CFLAGS)
 mpd_CPPFLAGS = \
+	$(CURL_CFLAGS) \
 	$(AO_CFLAGS) $(ALSA_CFLAGS) \
 	$(SHOUT_CFLAGS) \
 	$(OGGVORBIS_CFLAGS) $(VORBISENC_CFLAGS) \
@@ -258,6 +261,7 @@ mpd_CPPFLAGS = \
 	$(FFMPEG_CFLAGS) \
 	$(GLIB_CFLAGS)
 mpd_LDADD = $(MPD_LIBS) \
+	$(CURL_LIBS) \
 	$(AO_LIBS) $(ALSA_LIBS) \
 	$(SHOUT_LIBS) \
 	$(OGGVORBIS_LIBS) $(VORBISENC_LIBS) $(FLAC_LIBS) \

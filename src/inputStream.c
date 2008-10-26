@@ -17,20 +17,29 @@
  */
 
 #include "inputStream.h"
+#include "config.h"
 
 #include "inputStream_file.h"
-#include "inputStream_http.h"
+
+#ifdef HAVE_CURL
+#include "input_curl.h"
+#endif
 
 #include <stdlib.h>
 
 void initInputStream(void)
 {
 	inputStream_initFile();
-	inputStream_initHttp();
+#ifdef HAVE_CURL
+	input_curl_global_init();
+#endif
 }
 
 void input_stream_global_finish(void)
 {
+#ifdef HAVE_CURL
+	input_curl_global_finish();
+#endif
 }
 
 int openInputStream(struct input_stream *inStream, char *url)
@@ -46,8 +55,11 @@ int openInputStream(struct input_stream *inStream, char *url)
 
 	if (inputStream_fileOpen(inStream, url) == 0)
 		return 0;
-	if (inputStream_httpOpen(inStream, url) == 0)
+
+#ifdef HAVE_CURL
+	if (input_curl_open(inStream, url))
 		return 0;
+#endif
 
 	return -1;
 }
