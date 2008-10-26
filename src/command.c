@@ -192,12 +192,6 @@ check_bool(struct client *client, bool *value_r, const char *s)
 		return false;
 	}
 
-	if (value > UINT_MAX) {
-		command_error(client, ACK_ERROR_ARG,
-			      "Number too large: %s", s);
-		return false;
-	}
-
 	*value_r = !!value;
 	return true;
 }
