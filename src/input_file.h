@@ -21,8 +21,6 @@
 
 #include "input_stream.h"
 
-void inputStream_initFile(void);
-
 int inputStream_fileOpen(struct input_stream *inStream, char *filename);
 
 #endif

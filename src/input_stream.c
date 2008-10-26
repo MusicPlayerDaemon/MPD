@@ -29,7 +29,6 @@
 
 void initInputStream(void)
 {
-	inputStream_initFile();
 #ifdef HAVE_CURL
 	input_curl_global_init();
 #endif

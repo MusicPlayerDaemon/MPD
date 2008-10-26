@@ -21,10 +21,6 @@
 #include "log.h"
 #include "os_compat.h"
 
-void inputStream_initFile(void)
-{
-}
-
 static int
 inputStream_fileSeek(struct input_stream *is, long offset, int whence);
 
