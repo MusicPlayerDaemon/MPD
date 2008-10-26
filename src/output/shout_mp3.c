@@ -16,12 +16,11 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "../output_api.h"
+#include "shout_plugin.h"
 
 #ifdef HAVE_SHOUT_MP3
 
 #include "../utils.h"
-#include "audioOutput_shout.h"
 #include <lame/lame.h>
 
 struct lame_data {

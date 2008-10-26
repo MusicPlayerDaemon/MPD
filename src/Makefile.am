@@ -1,18 +1,18 @@
 bin_PROGRAMS = mpd
 
-mpd_audioOutputs = \
-	audioOutputs/audioOutput_shout.c \
-	audioOutputs/audioOutput_shout_ogg.c \
-	audioOutputs/audioOutput_shout_mp3.c \
-	audioOutputs/audioOutput_null.c \
-	audioOutputs/audioOutput_fifo.c \
-	audioOutputs/audioOutput_alsa.c \
-	audioOutputs/audioOutput_ao.c \
-	audioOutputs/audioOutput_oss.c \
-	audioOutputs/audioOutput_osx.c \
-	audioOutputs/audioOutput_pulse.c \
-	audioOutputs/audioOutput_mvp.c \
-	audioOutputs/audioOutput_jack.c
+mpd_output = \
+	output/shout_plugin.c \
+	output/shout_ogg.c \
+	output/shout_mp3.c \
+	output/null_plugin.c \
+	output/fifo_plugin.c \
+	output/alsa_plugin.c \
+	output/ao_plugin.c \
+	output/oss_plugin.c \
+	output/osx_plugin.c \
+	output/pulse_plugin.c \
+	output/mvp_plugin.c \
+	output/jack_plugin.c
 
 mpd_headers = \
 	notify.h \
@@ -25,7 +25,7 @@ mpd_headers = \
 	output_list.h \
 	output_thread.h \
 	output_control.h \
-	audioOutputs/audioOutput_shout.h \
+	output/shout_plugin.h \
 	buffer2array.h \
 	command.h \
 	idle.h \
@@ -104,7 +104,7 @@ mpd_headers = \
 
 mpd_SOURCES = \
 	$(mpd_headers) \
-	$(mpd_audioOutputs) \
+	$(mpd_output) \
 	notify.c \
 	audio.c \
 	audioOutput.c \
