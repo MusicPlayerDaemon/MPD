@@ -14,7 +14,7 @@ AC_PROG_INSTALL
 AC_PROG_MAKE_SET
 
 AM_CONFIG_HEADER(config.h)
-AC_DEFINE(PROTOCOL_VERSION, "0.14~git", [The mpd protocol version])
+AC_DEFINE(PROTOCOL_VERSION, "0.14.0", [The mpd protocol version])
 
 MPD_LIBS=""
 MPD_CFLAGS=""
