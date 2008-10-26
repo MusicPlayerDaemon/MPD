@@ -45,8 +45,8 @@ mpd_headers = \
 	dirvec.h \
 	gcc.h \
 	decoder_list.h \
-	inputPlugins/_flac_common.h \
-	inputPlugins/_ogg_common.h \
+	decoder/_flac_common.h \
+	decoder/_ogg_common.h \
 	inputStream.h \
 	inputStream_file.h \
 	inputStream_http.h \
@@ -193,51 +193,51 @@ endif
 # decoder plugins
 
 if HAVE_MAD
-mpd_SOURCES += inputPlugins/mp3_plugin.c
+mpd_SOURCES += decoder/mp3_plugin.c
 endif
 
 if HAVE_MPCDEC
-mpd_SOURCES += inputPlugins/mpc_plugin.c
+mpd_SOURCES += decoder/mpc_plugin.c
 endif
 
 if HAVE_WAVPACK
-mpd_SOURCES += inputPlugins/wavpack_plugin.c
+mpd_SOURCES += decoder/wavpack_plugin.c
 endif
 
 if HAVE_FAAD
-mpd_SOURCES += inputPlugins/aac_plugin.c inputPlugins/mp4_plugin.c
+mpd_SOURCES += decoder/aac_plugin.c decoder/mp4_plugin.c
 endif
 
 if HAVE_OGG_COMMON
-mpd_SOURCES += inputPlugins/_ogg_common.c
+mpd_SOURCES += decoder/_ogg_common.c
 endif
 
 if HAVE_FLAC_COMMON
-mpd_SOURCES += inputPlugins/_flac_common.c
+mpd_SOURCES += decoder/_flac_common.c
 endif
 
 if HAVE_OGGVORBIS
-mpd_SOURCES += inputPlugins/oggvorbis_plugin.c
+mpd_SOURCES += decoder/oggvorbis_plugin.c
 endif
 
 if HAVE_FLAC
-mpd_SOURCES += inputPlugins/flac_plugin.c
+mpd_SOURCES += decoder/flac_plugin.c
 endif
 
 if HAVE_OGGFLAC
-mpd_SOURCES += inputPlugins/oggflac_plugin.c
+mpd_SOURCES += decoder/oggflac_plugin.c
 endif
 
 if HAVE_AUDIOFILE
-mpd_SOURCES += inputPlugins/audiofile_plugin.c
+mpd_SOURCES += decoder/audiofile_plugin.c
 endif
 
 if HAVE_MIKMOD
-mpd_SOURCES += inputPlugins/mod_plugin.c
+mpd_SOURCES += decoder/mod_plugin.c
 endif
 
 if HAVE_FFMPEG
-mpd_SOURCES += inputPlugins/ffmpeg_plugin.c
+mpd_SOURCES += decoder/ffmpeg_plugin.c
 endif
 
 
