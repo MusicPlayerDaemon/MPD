@@ -19,14 +19,10 @@
 #ifndef MPD_INPUT_CURL_H
 #define MPD_INPUT_CURL_H
 
-#include <stdbool.h>
-
-struct input_stream;
+extern const struct input_plugin input_plugin_curl;
 
 void input_curl_global_init(void);
 
 void input_curl_global_finish(void);
-
-bool input_curl_open(struct input_stream *is, char *url);
 
 #endif

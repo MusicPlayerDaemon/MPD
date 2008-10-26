@@ -21,30 +21,15 @@
 #include "log.h"
 #include "os_compat.h"
 
-static int
-input_file_seek(struct input_stream *is, long offset, int whence);
-
-static size_t
-input_file_read(struct input_stream *is, void *ptr, size_t size);
-
-static int
-input_file_close(struct input_stream *is);
-
-static int
-input_file_eof(struct input_stream *is);
-
-static int
-input_file_buffer(struct input_stream *is);
-
-int
-input_file_open(struct input_stream *is, char *filename)
+static bool
+input_file_open(struct input_stream *is, const char *filename)
 {
 	FILE *fp;
 
 	fp = fopen(filename, "r");
 	if (!fp) {
 		is->error = errno;
-		return -1;
+		return false;
 	}
 
 	is->seekable = 1;
@@ -58,15 +43,9 @@ input_file_open(struct input_stream *is, char *filename)
 #endif
 
 	is->data = fp;
-	is->seekFunc = input_file_seek;
-	is->closeFunc = input_file_close;
-	is->readFunc = input_file_read;
-	is->atEOFFunc = input_file_eof;
-	is->bufferFunc = input_file_buffer;
-
 	is->ready = 1;
 
-	return 0;
+	return true;
 }
 
 static int
@@ -128,3 +107,12 @@ input_file_buffer(mpd_unused struct input_stream *is)
 {
 	return 0;
 }
+
+const struct input_plugin input_plugin_file = {
+	.open = input_file_open,
+	.close = input_file_close,
+	.buffer = input_file_buffer,
+	.read = input_file_read,
+	.eof = input_file_eof,
+	.seek = input_file_seek,
+};

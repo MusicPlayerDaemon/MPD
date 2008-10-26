@@ -27,6 +27,16 @@
 
 #include <stdlib.h>
 
+static const struct input_plugin *const input_plugins[] = {
+	&input_plugin_file,
+#ifdef HAVE_CURL
+	&input_plugin_curl,
+#endif
+};
+
+static const unsigned num_input_plugins =
+	sizeof(input_plugins) / sizeof(input_plugins[0]);
+
 void input_stream_global_init(void)
 {
 #ifdef HAVE_CURL
@@ -52,26 +62,27 @@ int input_stream_open(struct input_stream *is, char *url)
 	is->meta_name = NULL;
 	is->meta_title = NULL;
 
-	if (input_file_open(is, url) == 0)
-		return 0;
+	for (unsigned i = 0; i < num_input_plugins; ++i) {
+		const struct input_plugin *plugin = input_plugins[i];
 
-#ifdef HAVE_CURL
-	if (input_curl_open(is, url))
-		return 0;
-#endif
+		if (plugin->open(is, url)) {
+			is->plugin = plugin;
+			return 0;
+		}
+	}
 
 	return -1;
 }
 
 int input_stream_seek(struct input_stream *is, long offset, int whence)
 {
-	return is->seekFunc(is, offset, whence);
+	return is->plugin->seek(is, offset, whence);
 }
 
 size_t
 input_stream_read(struct input_stream *is, void *ptr, size_t size)
 {
-	return is->readFunc(is, ptr, size);
+	return is->plugin->read(is, ptr, size);
 }
 
 int input_stream_close(struct input_stream *is)
@@ -83,15 +94,15 @@ int input_stream_close(struct input_stream *is)
 	if (is->meta_title)
 		free(is->meta_title);
 
-	return is->closeFunc(is);
+	return is->plugin->close(is);
 }
 
 int input_stream_eof(struct input_stream *is)
 {
-	return is->atEOFFunc(is);
+	return is->plugin->eof(is);
 }
 
 int input_stream_buffer(struct input_stream *is)
 {
-	return is->bufferFunc(is);
+	return is->plugin->buffer(is);
 }

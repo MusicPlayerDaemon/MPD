@@ -452,7 +452,8 @@ input_curl_seek(struct input_stream *is, mpd_unused long offset,
 	return 0;
 }
 
-bool input_curl_open(struct input_stream *is, char *url)
+static bool
+input_curl_open(struct input_stream *is, const char *url)
 {
 	struct input_curl *c;
 	bool ret;
@@ -483,11 +484,14 @@ bool input_curl_open(struct input_stream *is, char *url)
 		return false;
 	}
 
-	is->seekFunc = input_curl_seek;
-	is->closeFunc = input_curl_close;
-	is->readFunc = input_curl_read;
-	is->atEOFFunc = input_curl_eof;
-	is->bufferFunc = input_curl_buffer;
-
 	return true;
 }
+
+const struct input_plugin input_plugin_curl = {
+	.open = input_curl_open,
+	.close = input_curl_close,
+	.buffer = input_curl_buffer,
+	.read = input_curl_read,
+	.eof = input_curl_eof,
+	.seek = input_curl_seek,
+};

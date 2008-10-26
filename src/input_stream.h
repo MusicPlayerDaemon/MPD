@@ -20,8 +20,23 @@
 #define INPUT_STREAM_H
 
 #include <stddef.h>
+#include <stdbool.h>
+
+struct input_stream;
+
+struct input_plugin {
+	bool (*open)(struct input_stream *is, const char *url);
+	int (*close)(struct input_stream *is);
+
+	int (*buffer)(struct input_stream *is);
+	size_t (*read)(struct input_stream *is, void *ptr, size_t size);
+	int (*eof)(struct input_stream *is);
+	int (*seek)(struct input_stream *is, long offset, int whence);
+};
 
 struct input_stream {
+	const struct input_plugin *plugin;
+
 	int ready;
 
 	int error;
@@ -29,12 +44,6 @@ struct input_stream {
 	size_t size;
 	char *mime;
 	int seekable;
-
-	int (*seekFunc)(struct input_stream *is, long offset, int whence);
-	size_t (*readFunc)(struct input_stream *is, void *ptr, size_t size);
-	int (*closeFunc)(struct input_stream *is);
-	int (*atEOFFunc)(struct input_stream *is);
-	int (*bufferFunc)(struct input_stream *is);
 
 	void *data;
 	char *meta_name;

@@ -21,7 +21,6 @@
 
 #include "input_stream.h"
 
-int
-input_file_open(struct input_stream *is, char *filename);
+extern const struct input_plugin input_plugin_file;
 
 #endif
