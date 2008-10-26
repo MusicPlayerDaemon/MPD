@@ -279,35 +279,43 @@ static size_t
 input_curl_headerfunction(void *ptr, size_t size, size_t nmemb, void *stream)
 {
 	struct input_stream *is = stream;
-	const char *header = ptr, *end, *colon;
+	const char *header = ptr, *end, *value;
 	char name[64];
 
 	size *= nmemb;
 	end = header + size;
 
-	colon = memchr(header, ':', size);
-	if (colon == NULL || (size_t)(colon - header) >= sizeof(name))
+	value = memchr(header, ':', size);
+	if (value == NULL || (size_t)(value - header) >= sizeof(name))
 		return size;
 
-	memcpy(name, header, colon - header);
-	name[colon - header] = 0;
+	memcpy(name, header, value - header);
+	name[value - header] = 0;
+
+	/* skip the colon */
+
+	++value;
+
+	/* strip the value */
+
+	while (value < end && g_ascii_isspace(*value))
+		++value;
+
+	while (end > value && g_ascii_isspace(end[-1]))
+		--end;
 
 	if (strcasecmp(name, "accept-ranges") == 0)
 		is->seekable = true;
 	else if (strcasecmp(name, "content-length") == 0) {
-		char value[64];
+		char buffer[64];
 
-		header = colon + 1;
-		while (header < end && header[0] == ' ')
-			++header;
-
-		if ((size_t)(end - header) >= sizeof(value))
+		if ((size_t)(end - header) >= sizeof(buffer))
 			return size;
 
-		memcpy(value, header, end - header);
-		value[end - header] = 0;
+		memcpy(buffer, value, end - value);
+		buffer[end - value] = 0;
 
-		is->size = is->offset + g_ascii_strtoull(value, NULL, 10);
+		is->size = is->offset + g_ascii_strtoull(buffer, NULL, 10);
 	}
 
 	return size;
