@@ -25,6 +25,21 @@ void inputStream_initFile(void)
 {
 }
 
+static int
+inputStream_fileSeek(struct input_stream *is, long offset, int whence);
+
+static size_t
+inputStream_fileRead(struct input_stream *is, void *ptr, size_t size);
+
+static int
+inputStream_fileClose(struct input_stream *is);
+
+static int
+inputStream_fileAtEOF(struct input_stream *is);
+
+static int
+inputStream_fileBuffer(struct input_stream *is);
+
 int inputStream_fileOpen(struct input_stream *inStream, char *filename)
 {
 	FILE *fp;
@@ -57,8 +72,8 @@ int inputStream_fileOpen(struct input_stream *inStream, char *filename)
 	return 0;
 }
 
-int inputStream_fileSeek(struct input_stream *inStream, long offset,
-			 int whence)
+static int
+inputStream_fileSeek(struct input_stream *inStream, long offset, int whence)
 {
 	if (fseek((FILE *) inStream->data, offset, whence) == 0) {
 		inStream->offset = ftell((FILE *) inStream->data);
@@ -70,8 +85,8 @@ int inputStream_fileSeek(struct input_stream *inStream, long offset,
 	return 0;
 }
 
-size_t inputStream_fileRead(struct input_stream *inStream,
-			    void *ptr, size_t size)
+static size_t
+inputStream_fileRead(struct input_stream *inStream, void *ptr, size_t size)
 {
 	size_t readSize;
 
@@ -87,7 +102,8 @@ size_t inputStream_fileRead(struct input_stream *inStream,
 	return readSize;
 }
 
-int inputStream_fileClose(struct input_stream *inStream)
+static int
+inputStream_fileClose(struct input_stream *inStream)
 {
 	if (fclose((FILE *) inStream->data) < 0) {
 		inStream->error = errno;
@@ -97,7 +113,8 @@ int inputStream_fileClose(struct input_stream *inStream)
 	return 0;
 }
 
-int inputStream_fileAtEOF(struct input_stream *inStream)
+static int
+inputStream_fileAtEOF(struct input_stream *inStream)
 {
 	if (feof((FILE *) inStream->data))
 		return 1;
@@ -109,7 +126,8 @@ int inputStream_fileAtEOF(struct input_stream *inStream)
 	return 0;
 }
 
-int inputStream_fileBuffer(mpd_unused struct input_stream *inStream)
+static int
+inputStream_fileBuffer(mpd_unused struct input_stream *inStream)
 {
 	return 0;
 }
