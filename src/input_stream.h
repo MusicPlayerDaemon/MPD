@@ -30,37 +30,33 @@ struct input_stream {
 	char *mime;
 	int seekable;
 
-	int (*seekFunc)(struct input_stream *inStream, long offset,
-			int whence);
-	size_t (*readFunc)(struct input_stream *inStream, void *ptr,
-			   size_t size);
-	int (*closeFunc)(struct input_stream *inStream);
-	int (*atEOFFunc)(struct input_stream *inStream);
-	int (*bufferFunc)(struct input_stream *inStream);
+	int (*seekFunc)(struct input_stream *is, long offset, int whence);
+	size_t (*readFunc)(struct input_stream *is, void *ptr, size_t size);
+	int (*closeFunc)(struct input_stream *is);
+	int (*atEOFFunc)(struct input_stream *is);
+	int (*bufferFunc)(struct input_stream *is);
 
 	void *data;
-	char *metaName;
-	char *metaTitle;
+	char *meta_name;
+	char *meta_title;
 };
 
-void initInputStream(void);
+void input_stream_global_init(void);
 
 void input_stream_global_finish(void);
 
-int isUrlSaneForInputStream(char *url);
-
 /* if an error occurs for these 3 functions, then -1 is returned and errno
    for the input stream is set */
-int openInputStream(struct input_stream *inStream, char *url);
-int seekInputStream(struct input_stream *inStream, long offset, int whence);
-int closeInputStream(struct input_stream *inStream);
-int inputStreamAtEOF(struct input_stream *inStream);
+int input_stream_open(struct input_stream *is, char *url);
+int input_stream_seek(struct input_stream *is, long offset, int whence);
+int input_stream_close(struct input_stream *is);
+int input_stream_eof(struct input_stream *is);
 
 /* return value: -1 is error, 1 inidicates stuff was buffered, 0 means nothing
    was buffered */
-int bufferInputStream(struct input_stream *inStream);
+int input_stream_buffer(struct input_stream *is);
 
-size_t readFromInputStream(struct input_stream *inStream,
-			   void *ptr, size_t size);
+size_t
+input_stream_read(struct input_stream *is, void *ptr, size_t size);
 
 #endif

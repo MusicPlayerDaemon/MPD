@@ -66,7 +66,7 @@ static int ogg_seek_cb(void *vdata, ogg_int64_t offset, int whence)
 	const OggCallbackData *data = (const OggCallbackData *) vdata;
 	if(decoder_get_command(data->decoder) == DECODE_COMMAND_STOP)
 		return -1;
-	return seekInputStream(data->inStream, offset, whence);
+	return input_stream_seek(data->inStream, offset, whence);
 }
 
 /* TODO: check Ogg libraries API and see if we can just not have this func */
@@ -284,7 +284,7 @@ oggvorbis_decode(struct decoder *decoder, struct input_stream *inStream)
 				initialized = 1;
 			}
 			comments = ov_comment(&vf, -1)->user_comments;
-			putOggCommentsIntoOutputBuffer(inStream->metaName,
+			putOggCommentsIntoOutputBuffer(inStream->meta_name,
 						       comments);
 			ogg_getReplayGainInfo(comments, &replayGainInfo);
 		}

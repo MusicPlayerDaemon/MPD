@@ -31,12 +31,12 @@ ogg_stream_type ogg_stream_type_detect(struct input_stream *inStream)
 	unsigned char buf[41];
 	size_t r;
 
-	seekInputStream(inStream, 0, SEEK_SET);
+	input_stream_seek(inStream, 0, SEEK_SET);
 
 	r = decoder_read(NULL, inStream, buf, sizeof(buf));
 
 	if (r > 0)
-		seekInputStream(inStream, 0, SEEK_SET);
+		input_stream_seek(inStream, 0, SEEK_SET);
 
 	if (r >= 32 && memcmp(buf, "OggS", 4) == 0 && (
 				(memcmp(buf+29, "FLAC", 4) == 0

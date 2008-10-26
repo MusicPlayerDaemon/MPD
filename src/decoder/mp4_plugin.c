@@ -68,13 +68,13 @@ static int mp4_getAACTrack(mp4ff_t * infile)
 static uint32_t mp4_inputStreamReadCallback(void *inStream, void *buffer,
 					    uint32_t length)
 {
-	return readFromInputStream((struct input_stream *) inStream,
+	return input_stream_read((struct input_stream *) inStream,
 				   buffer, length);
 }
 
 static uint32_t mp4_inputStreamSeekCallback(void *inStream, uint64_t position)
 {
-	return seekInputStream((struct input_stream *) inStream,
+	return input_stream_seek((struct input_stream *) inStream,
 			       position, SEEK_SET);
 }
 
@@ -317,7 +317,7 @@ static struct tag *mp4DataDup(char *file, int *mp4MetadataFound)
 
 	*mp4MetadataFound = 0;
 
-	if (openInputStream(&inStream, file) < 0) {
+	if (input_stream_open(&inStream, file) < 0) {
 		DEBUG("mp4DataDup: Failed to open file: %s\n", file);
 		return NULL;
 	}
@@ -330,14 +330,14 @@ static struct tag *mp4DataDup(char *file, int *mp4MetadataFound)
 	mp4fh = mp4ff_open_read(callback);
 	if (!mp4fh) {
 		free(callback);
-		closeInputStream(&inStream);
+		input_stream_close(&inStream);
 		return NULL;
 	}
 
 	track = mp4_getAACTrack(mp4fh);
 	if (track < 0) {
 		mp4ff_close(mp4fh);
-		closeInputStream(&inStream);
+		input_stream_close(&inStream);
 		free(callback);
 		return NULL;
 	}
@@ -347,7 +347,7 @@ static struct tag *mp4DataDup(char *file, int *mp4MetadataFound)
 	scale = mp4ff_time_scale(mp4fh, track);
 	if (scale < 0) {
 		mp4ff_close(mp4fh);
-		closeInputStream(&inStream);
+		input_stream_close(&inStream);
 		free(callback);
 		tag_free(ret);
 		return NULL;
@@ -388,7 +388,7 @@ static struct tag *mp4DataDup(char *file, int *mp4MetadataFound)
 	}
 
 	mp4ff_close(mp4fh);
-	closeInputStream(&inStream);
+	input_stream_close(&inStream);
 
 	return ret;
 }

@@ -431,7 +431,7 @@ int main(int argc, char *argv[])
 	client_manager_init();
 	initReplayGainState();
 	initNormalization();
-	initInputStream();
+	input_stream_global_init();
 
 	daemonize(&options);
 

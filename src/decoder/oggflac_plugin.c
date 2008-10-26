@@ -49,7 +49,7 @@ static OggFLAC__SeekableStreamDecoderReadStatus of_read_cb(mpd_unused const
 	r = decoder_read(data->decoder, data->inStream, (void *)buf, *bytes);
 	*bytes = r;
 
-	if (r == 0 && !inputStreamAtEOF(data->inStream) &&
+	if (r == 0 && !input_stream_eof(data->inStream) &&
 	    decoder_get_command(data->decoder) == DECODE_COMMAND_NONE)
 		return OggFLAC__SEEKABLE_STREAM_DECODER_READ_STATUS_ERROR;
 
@@ -64,7 +64,7 @@ static OggFLAC__SeekableStreamDecoderSeekStatus of_seek_cb(mpd_unused const
 {
 	FlacData *data = (FlacData *) fdata;
 
-	if (seekInputStream(data->inStream, offset, SEEK_SET) < 0) {
+	if (input_stream_seek(data->inStream, offset, SEEK_SET) < 0) {
 		return OggFLAC__SEEKABLE_STREAM_DECODER_SEEK_STATUS_ERROR;
 	}
 
@@ -105,7 +105,7 @@ static FLAC__bool of_EOF_cb(mpd_unused const OggFLAC__SeekableStreamDecoder * de
 
 	return (decoder_get_command(data->decoder) != DECODE_COMMAND_NONE &&
 		decoder_get_command(data->decoder) != DECODE_COMMAND_SEEK) ||
-		inputStreamAtEOF(data->inStream);
+		input_stream_eof(data->inStream);
 }
 
 static void of_error_cb(mpd_unused const OggFLAC__SeekableStreamDecoder * decoder,
@@ -261,10 +261,10 @@ static struct tag *oggflac_TagDup(char *file)
 	OggFLAC__SeekableStreamDecoder *decoder;
 	FlacData data;
 
-	if (openInputStream(&inStream, file) < 0)
+	if (input_stream_open(&inStream, file) < 0)
 		return NULL;
 	if (ogg_stream_type_detect(&inStream) != FLAC) {
-		closeInputStream(&inStream);
+		input_stream_close(&inStream);
 		return NULL;
 	}
 
@@ -275,7 +275,7 @@ static struct tag *oggflac_TagDup(char *file)
 	decoder = full_decoder_init_and_read_metadata(&data, 1);
 
 	oggflac_cleanup(&data, decoder);
-	closeInputStream(&inStream);
+	input_stream_close(&inStream);
 
 	return data.tag;
 }

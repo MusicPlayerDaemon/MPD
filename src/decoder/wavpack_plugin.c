@@ -366,12 +366,12 @@ static uint32_t get_pos(void *id)
 
 static int set_pos_abs(void *id, uint32_t pos)
 {
-	return seekInputStream(((InputStreamPlus *)id)->is, pos, SEEK_SET);
+	return input_stream_seek(((InputStreamPlus *)id)->is, pos, SEEK_SET);
 }
 
 static int set_pos_rel(void *id, int32_t delta, int mode)
 {
-	return seekInputStream(((InputStreamPlus *)id)->is, delta, mode);
+	return input_stream_seek(((InputStreamPlus *)id)->is, delta, mode);
 }
 
 static int push_back_byte(void *id, int c)
@@ -427,7 +427,7 @@ static bool wavpack_trydecode(struct input_stream *is)
 
 	WavpackCloseFile(wpc);
 	/* Seek it back in order to play from the first byte. */
-	seekInputStream(is, 0, SEEK_SET);
+	input_stream_seek(is, 0, SEEK_SET);
 
 	return true;
 }
@@ -461,7 +461,7 @@ static int wavpack_open_wvc(struct decoder *decoder,
 	wvc_url[len] = 'c';
 	wvc_url[len + 1] = '\0';
 
-	ret = openInputStream(is_wvc, wvc_url);
+	ret = input_stream_open(is_wvc, wvc_url);
 	free(wvc_url);
 
 	if (ret)
@@ -472,21 +472,21 @@ static int wavpack_open_wvc(struct decoder *decoder,
 	 * about a possible 404 error.
 	 */
 	for (;;) {
-		if (inputStreamAtEOF(is_wvc)) {
+		if (input_stream_eof(is_wvc)) {
 			/*
 			 * EOF is reached even without
 			 * a single byte is read...
 			 * So, this is not good :/
 			 */
-			closeInputStream(is_wvc);
+			input_stream_close(is_wvc);
 			return 0;
 		}
 
-		if (bufferInputStream(is_wvc) >= 0)
+		if (input_stream_buffer(is_wvc) >= 0)
 			return 1;
 
 		if (decoder_get_command(decoder) != DECODE_COMMAND_NONE) {
-			closeInputStream(is_wvc);
+			input_stream_close(is_wvc);
 			return 0;
 		}
 
@@ -525,8 +525,8 @@ wavpack_streamdecode(struct decoder * decoder, struct input_stream *is)
 
 	WavpackCloseFile(wpc);
 	if (open_flags & OPEN_WVC)
-		closeInputStream(&is_wvc);
-	closeInputStream(is);
+		input_stream_close(&is_wvc);
+	input_stream_close(is);
 
 	return 0;
 }

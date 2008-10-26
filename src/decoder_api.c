@@ -115,8 +115,8 @@ size_t decoder_read(struct decoder *decoder,
 		    dc.command != DECODE_COMMAND_NONE)
 			return 0;
 
-		nbytes = readFromInputStream(inStream, buffer, length);
-		if (nbytes > 0 || inputStreamAtEOF(inStream))
+		nbytes = input_stream_read(inStream, buffer, length);
+		if (nbytes > 0 || input_stream_eof(inStream))
 			return nbytes;
 
 		/* sleep for a fraction of a second! */
@@ -145,7 +145,7 @@ need_chunks(struct decoder *decoder,
 	}
 
 	if (!inStream ||
-	    bufferInputStream(inStream) <= 0) {
+	    input_stream_buffer(inStream) <= 0) {
 		notify_wait(&dc.notify);
 		notify_signal(&pc.notify);
 	}

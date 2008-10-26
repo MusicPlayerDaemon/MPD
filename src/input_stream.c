@@ -27,7 +27,7 @@
 
 #include <stdlib.h>
 
-void initInputStream(void)
+void input_stream_global_init(void)
 {
 #ifdef HAVE_CURL
 	input_curl_global_init();
@@ -41,57 +41,57 @@ void input_stream_global_finish(void)
 #endif
 }
 
-int openInputStream(struct input_stream *inStream, char *url)
+int input_stream_open(struct input_stream *is, char *url)
 {
-	inStream->ready = 0;
-	inStream->offset = 0;
-	inStream->size = 0;
-	inStream->error = 0;
-	inStream->mime = NULL;
-	inStream->seekable = 0;
-	inStream->metaName = NULL;
-	inStream->metaTitle = NULL;
+	is->ready = 0;
+	is->offset = 0;
+	is->size = 0;
+	is->error = 0;
+	is->mime = NULL;
+	is->seekable = 0;
+	is->meta_name = NULL;
+	is->meta_title = NULL;
 
-	if (inputStream_fileOpen(inStream, url) == 0)
+	if (input_file_open(is, url) == 0)
 		return 0;
 
 #ifdef HAVE_CURL
-	if (input_curl_open(inStream, url))
+	if (input_curl_open(is, url))
 		return 0;
 #endif
 
 	return -1;
 }
 
-int seekInputStream(struct input_stream *inStream, long offset, int whence)
+int input_stream_seek(struct input_stream *is, long offset, int whence)
 {
-	return inStream->seekFunc(inStream, offset, whence);
+	return is->seekFunc(is, offset, whence);
 }
 
-size_t readFromInputStream(struct input_stream *inStream,
-			   void *ptr, size_t size)
+size_t
+input_stream_read(struct input_stream *is, void *ptr, size_t size)
 {
-	return inStream->readFunc(inStream, ptr, size);
+	return is->readFunc(is, ptr, size);
 }
 
-int closeInputStream(struct input_stream *inStream)
+int input_stream_close(struct input_stream *is)
 {
-	if (inStream->mime)
-		free(inStream->mime);
-	if (inStream->metaName)
-		free(inStream->metaName);
-	if (inStream->metaTitle)
-		free(inStream->metaTitle);
+	if (is->mime)
+		free(is->mime);
+	if (is->meta_name)
+		free(is->meta_name);
+	if (is->meta_title)
+		free(is->meta_title);
 
-	return inStream->closeFunc(inStream);
+	return is->closeFunc(is);
 }
 
-int inputStreamAtEOF(struct input_stream *inStream)
+int input_stream_eof(struct input_stream *is)
 {
-	return inStream->atEOFFunc(inStream);
+	return is->atEOFFunc(is);
 }
 
-int bufferInputStream(struct input_stream *inStream)
+int input_stream_buffer(struct input_stream *is)
 {
-	return inStream->bufferFunc(inStream);
+	return is->bufferFunc(is);
 }

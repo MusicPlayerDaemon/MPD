@@ -85,10 +85,10 @@ static int mpdurl_read(URLContext *h, unsigned char *buf, int size)
 	int ret;
 	FopsHelper *base = (FopsHelper *) h->priv_data;
 	while (1) {
-		ret = readFromInputStream(base->input, (void *)buf, size);
+		ret = input_stream_read(base->input, (void *)buf, size);
 		if (ret == 0) {
 			DEBUG("ret 0\n");
-			if (inputStreamAtEOF(base->input) ||
+			if (input_stream_eof(base->input) ||
 			    (base->decoder &&
 			     decoder_get_command(base->decoder) != DECODE_COMMAND_NONE)) {
 				DEBUG("eof stream\n");
@@ -107,7 +107,7 @@ static int64_t mpdurl_seek(URLContext *h, int64_t pos, int whence)
 {
 	FopsHelper *base = (FopsHelper *) h->priv_data;
 	if (whence != AVSEEK_SIZE) { //only ftell
-		(void) seekInputStream(base->input, pos, whence);
+		(void) input_stream_seek(base->input, pos, whence);
 	}
 	return base->input->offset;
 }
@@ -116,7 +116,7 @@ static int mpdurl_close(URLContext *h)
 {
 	FopsHelper *base = (FopsHelper *) h->priv_data;
 	if (base && base->input->seekable) {
-		(void) seekInputStream(base->input, 0, SEEK_SET);
+		(void) input_stream_seek(base->input, 0, SEEK_SET);
 	}
 	h->priv_data = 0;
 	return 0;
@@ -360,7 +360,7 @@ static struct tag *ffmpeg_tag(char *file)
 	int ret;
 	struct tag *tag = NULL;
 
-	if (openInputStream(&input, file) < 0) {
+	if (input_stream_open(&input, file) < 0) {
 		ERROR("failed to open %s\n", file);
 		return NULL;
 	}
@@ -375,7 +375,7 @@ static struct tag *ffmpeg_tag(char *file)
 		tag = NULL;
 	}
 
-	closeInputStream(&input);
+	input_stream_close(&input);
 
 	return tag;
 }

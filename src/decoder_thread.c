@@ -43,7 +43,7 @@ static void decodeStart(void)
 		song_get_url(song, path_max_fs);
 
 	dc.current_song = dc.next_song; /* NEED LOCK */
-	if (openInputStream(&inStream, path_max_fs) < 0) {
+	if (input_stream_open(&inStream, path_max_fs) < 0) {
 		dc.error = DECODE_ERROR_FILE;
 		goto stop_no_close;
 	}
@@ -61,12 +61,12 @@ static void decodeStart(void)
 		if (dc.command != DECODE_COMMAND_NONE)
 			goto stop;
 
-		ret = bufferInputStream(&inStream);
+		ret = input_stream_buffer(&inStream);
 		if (ret < 0)
 			goto stop;
 	}
 
-	/* for http streams, seekable is determined in bufferInputStream */
+	/* for http streams, seekable is determined in input_stream_buffer */
 	dc.seekable = inStream.seekable;
 
 	if (dc.command == DECODE_COMMAND_STOP)
@@ -132,7 +132,7 @@ static void decodeStart(void)
 				continue;
 
 			if (plugin->file_decode != NULL) {
-				closeInputStream(&inStream);
+				input_stream_close(&inStream);
 				close_instream = false;
 				decoder.plugin = plugin;
 				ret = plugin->file_decode(&decoder,
@@ -156,7 +156,7 @@ static void decodeStart(void)
 
 stop:
 	if (close_instream)
-		closeInputStream(&inStream);
+		input_stream_close(&inStream);
 stop_no_close:
 	dc.state = DECODE_STATE_STOP;
 	dc.command = DECODE_COMMAND_NONE;

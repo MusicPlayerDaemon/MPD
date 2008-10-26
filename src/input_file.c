@@ -22,59 +22,60 @@
 #include "os_compat.h"
 
 static int
-inputStream_fileSeek(struct input_stream *is, long offset, int whence);
+input_file_seek(struct input_stream *is, long offset, int whence);
 
 static size_t
-inputStream_fileRead(struct input_stream *is, void *ptr, size_t size);
+input_file_read(struct input_stream *is, void *ptr, size_t size);
 
 static int
-inputStream_fileClose(struct input_stream *is);
+input_file_close(struct input_stream *is);
 
 static int
-inputStream_fileAtEOF(struct input_stream *is);
+input_file_eof(struct input_stream *is);
 
 static int
-inputStream_fileBuffer(struct input_stream *is);
+input_file_buffer(struct input_stream *is);
 
-int inputStream_fileOpen(struct input_stream *inStream, char *filename)
+int
+input_file_open(struct input_stream *is, char *filename)
 {
 	FILE *fp;
 
 	fp = fopen(filename, "r");
 	if (!fp) {
-		inStream->error = errno;
+		is->error = errno;
 		return -1;
 	}
 
-	inStream->seekable = 1;
+	is->seekable = 1;
 
 	fseek(fp, 0, SEEK_END);
-	inStream->size = ftell(fp);
+	is->size = ftell(fp);
 	fseek(fp, 0, SEEK_SET);
 
 #ifdef POSIX_FADV_SEQUENTIAL
-	posix_fadvise(fileno(fp), (off_t)0, inStream->size, POSIX_FADV_SEQUENTIAL);
+	posix_fadvise(fileno(fp), (off_t)0, is->size, POSIX_FADV_SEQUENTIAL);
 #endif
 
-	inStream->data = fp;
-	inStream->seekFunc = inputStream_fileSeek;
-	inStream->closeFunc = inputStream_fileClose;
-	inStream->readFunc = inputStream_fileRead;
-	inStream->atEOFFunc = inputStream_fileAtEOF;
-	inStream->bufferFunc = inputStream_fileBuffer;
+	is->data = fp;
+	is->seekFunc = input_file_seek;
+	is->closeFunc = input_file_close;
+	is->readFunc = input_file_read;
+	is->atEOFFunc = input_file_eof;
+	is->bufferFunc = input_file_buffer;
 
-	inStream->ready = 1;
+	is->ready = 1;
 
 	return 0;
 }
 
 static int
-inputStream_fileSeek(struct input_stream *inStream, long offset, int whence)
+input_file_seek(struct input_stream *is, long offset, int whence)
 {
-	if (fseek((FILE *) inStream->data, offset, whence) == 0) {
-		inStream->offset = ftell((FILE *) inStream->data);
+	if (fseek((FILE *) is->data, offset, whence) == 0) {
+		is->offset = ftell((FILE *) is->data);
 	} else {
-		inStream->error = errno;
+		is->error = errno;
 		return -1;
 	}
 
@@ -82,27 +83,27 @@ inputStream_fileSeek(struct input_stream *inStream, long offset, int whence)
 }
 
 static size_t
-inputStream_fileRead(struct input_stream *inStream, void *ptr, size_t size)
+input_file_read(struct input_stream *is, void *ptr, size_t size)
 {
 	size_t readSize;
 
-	readSize = fread(ptr, 1, size, (FILE *) inStream->data);
-	if (readSize <= 0 && ferror((FILE *) inStream->data)) {
-		inStream->error = errno;
-		DEBUG("inputStream_fileRead: error reading: %s\n",
-		      strerror(inStream->error));
+	readSize = fread(ptr, 1, size, (FILE *) is->data);
+	if (readSize <= 0 && ferror((FILE *) is->data)) {
+		is->error = errno;
+		DEBUG("input_file_read: error reading: %s\n",
+		      strerror(is->error));
 	}
 
-	inStream->offset = ftell((FILE *) inStream->data);
+	is->offset = ftell((FILE *) is->data);
 
 	return readSize;
 }
 
 static int
-inputStream_fileClose(struct input_stream *inStream)
+input_file_close(struct input_stream *is)
 {
-	if (fclose((FILE *) inStream->data) < 0) {
-		inStream->error = errno;
+	if (fclose((FILE *) is->data) < 0) {
+		is->error = errno;
 		return -1;
 	}
 
@@ -110,12 +111,12 @@ inputStream_fileClose(struct input_stream *inStream)
 }
 
 static int
-inputStream_fileAtEOF(struct input_stream *inStream)
+input_file_eof(struct input_stream *is)
 {
-	if (feof((FILE *) inStream->data))
+	if (feof((FILE *) is->data))
 		return 1;
 
-	if (ferror((FILE *) inStream->data) && inStream->error != EINTR) {
+	if (ferror((FILE *) is->data) && is->error != EINTR) {
 		return 1;
 	}
 
@@ -123,7 +124,7 @@ inputStream_fileAtEOF(struct input_stream *inStream)
 }
 
 static int
-inputStream_fileBuffer(mpd_unused struct input_stream *inStream)
+input_file_buffer(mpd_unused struct input_stream *is)
 {
 	return 0;
 }

@@ -158,7 +158,7 @@ static void initMp3DecodeData(mp3DecodeData * data, struct decoder *decoder,
 
 static int seekMp3InputBuffer(mp3DecodeData * data, long offset)
 {
-	if (seekInputStream(data->inStream, offset, SEEK_SET) < 0) {
+	if (input_stream_seek(data->inStream, offset, SEEK_SET) < 0) {
 		return -1;
 	}
 
@@ -757,7 +757,7 @@ static int getMp3TotalTime(char *file)
 	mp3DecodeData data;
 	int ret;
 
-	if (openInputStream(&inStream, file) < 0)
+	if (input_stream_open(&inStream, file) < 0)
 		return -1;
 	initMp3DecodeData(&data, NULL, &inStream);
 	if (decodeFirstFrame(&data, NULL, NULL) < 0)
@@ -765,7 +765,7 @@ static int getMp3TotalTime(char *file)
 	else
 		ret = data.totalTime + 0.5;
 	mp3DecodeDataFinalize(&data);
-	closeInputStream(&inStream);
+	input_stream_close(&inStream);
 
 	return ret;
 }
@@ -854,16 +854,16 @@ mp3Read(mp3DecodeData * data, ReplayGainInfo ** replayGainInfo)
 			return DECODE_BREAK;
 		}
 
-		if (data->inStream->metaTitle) {
+		if (data->inStream->meta_title) {
 			struct tag *tag = tag_new();
-			if (data->inStream->metaName) {
+			if (data->inStream->meta_name) {
 				tag_add_item(tag, TAG_ITEM_NAME,
-					     data->inStream->metaName);
+					     data->inStream->meta_name);
 			}
 			tag_add_item(tag, TAG_ITEM_TITLE,
-					data->inStream->metaTitle);
-			free(data->inStream->metaTitle);
-			data->inStream->metaTitle = NULL;
+					data->inStream->meta_title);
+			free(data->inStream->meta_title);
+			data->inStream->meta_title = NULL;
 			tag_free(tag);
 		}
 
@@ -1009,27 +1009,27 @@ mp3_decode(struct decoder * decoder, struct input_stream *inStream)
 
 	initAudioFormatFromMp3DecodeData(&data, &audio_format);
 
-	if (inStream->metaTitle) {
+	if (inStream->meta_title) {
 		if (tag)
 			tag_free(tag);
 		tag = tag_new();
-		tag_add_item(tag, TAG_ITEM_TITLE, inStream->metaTitle);
-		free(inStream->metaTitle);
-		inStream->metaTitle = NULL;
-		if (inStream->metaName) {
-			tag_add_item(tag, TAG_ITEM_NAME, inStream->metaName);
+		tag_add_item(tag, TAG_ITEM_TITLE, inStream->meta_title);
+		free(inStream->meta_title);
+		inStream->meta_title = NULL;
+		if (inStream->meta_name) {
+			tag_add_item(tag, TAG_ITEM_NAME, inStream->meta_name);
 		}
 		tag_free(tag);
 	} else if (tag) {
-		if (inStream->metaName) {
+		if (inStream->meta_name) {
 			tag_clear_items_by_type(tag, TAG_ITEM_NAME);
-			tag_add_item(tag, TAG_ITEM_NAME, inStream->metaName);
+			tag_add_item(tag, TAG_ITEM_NAME, inStream->meta_name);
 		}
 		tag_free(tag);
-	} else if (inStream->metaName) {
+	} else if (inStream->meta_name) {
 		tag = tag_new();
-		if (inStream->metaName) {
-			tag_add_item(tag, TAG_ITEM_NAME, inStream->metaName);
+		if (inStream->meta_name) {
+			tag_add_item(tag, TAG_ITEM_NAME, inStream->meta_name);
 		}
 		tag_free(tag);
 	}
