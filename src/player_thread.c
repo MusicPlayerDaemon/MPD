@@ -246,6 +246,7 @@ static void do_play(void)
 	dc_start(&pc.notify, pc.next_song);
 	if (waitOnDecode(&player) < 0) {
 		quitDecode();
+		player_command_finished();
 		return;
 	}
 
