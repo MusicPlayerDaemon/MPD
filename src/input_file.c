@@ -26,6 +26,9 @@ input_file_open(struct input_stream *is, const char *filename)
 {
 	FILE *fp;
 
+	if (filename[0] != '/')
+		return false;
+
 	fp = fopen(filename, "r");
 	if (!fp) {
 		is->error = errno;

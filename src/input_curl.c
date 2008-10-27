@@ -473,6 +473,9 @@ input_curl_open(struct input_stream *is, const char *url)
 	struct input_curl *c;
 	bool ret;
 
+	if (strncmp(url, "http://", 7) != 0)
+		return false;
+
 	c = g_new0(struct input_curl, 1);
 	c->url = g_strdup(url);
 	INIT_LIST_HEAD(&c->buffers);
