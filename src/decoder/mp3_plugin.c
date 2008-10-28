@@ -648,6 +648,46 @@ parse_lame(struct lame *lame, struct mad_bitptr *ptr, int *bitlen)
 	return true;
 }
 
+static inline float
+mp3_frame_duration(const struct mad_frame *frame)
+{
+	return mad_timer_count(frame->header.duration,
+			       MAD_UNITS_MILLISECONDS) / 1000.0;
+}
+
+static off_t
+mp3_rest_including_this_frame(const struct mp3_data *data)
+{
+	off_t offset = data->input_stream->offset;
+
+	if (data->stream.this_frame != NULL)
+		offset -= data->stream.bufend - data->stream.this_frame;
+	else
+		offset -= data->stream.bufend - data->stream.buffer;
+
+	return data->input_stream->size - offset;
+}
+
+/**
+ * Attempt to calulcate the length of the song from filesize
+ */
+static void
+mp3_filesize_to_song_length(struct mp3_data *data)
+{
+	off_t rest = mp3_rest_including_this_frame(data);
+
+	if (rest > 0) {
+		float frame_duration = mp3_frame_duration(&data->frame);
+
+		data->total_time = (rest * 8.0) / (data->frame).header.bitrate;
+		data->max_frames = data->total_time / frame_duration +
+			FRAMES_CUSHION;
+	} else {
+		data->max_frames = FRAMES_CUSHION;
+		data->total_time = 0;
+	}
+}
+
 static bool
 mp3_decode_first_frame(struct mp3_data *data, struct tag **tag,
 		       ReplayGainInfo **replay_gain_info_r)
@@ -682,29 +722,8 @@ mp3_decode_first_frame(struct mp3_data *data, struct tag **tag,
 	ptr = data->stream.anc_ptr;
 	bitlen = data->stream.anc_bitlen;
 
-	/*
-	 * Attempt to calulcate the length of the song from filesize
-	 */
-	{
-		off_t offset = data->input_stream->offset;
-		mad_timer_t duration = data->frame.header.duration;
-		float frame_duration = ((float)mad_timer_count(duration, MAD_UNITS_MILLISECONDS)) / 1000;
+	mp3_filesize_to_song_length(data);
 
-		if (data->stream.this_frame != NULL)
-			offset -= data->stream.bufend - data->stream.this_frame;
-		else
-			offset -= data->stream.bufend - data->stream.buffer;
-
-		if (data->input_stream->size >= offset) {
-			data->total_time = ((data->input_stream->size - offset) *
-			                   8.0) / (data->frame).header.bitrate;
-			data->max_frames = data->total_time / frame_duration +
-			                  FRAMES_CUSHION;
-		} else {
-			data->max_frames = FRAMES_CUSHION;
-			data->total_time = 0;
-		}
-	}
 	/*
 	 * if an xing tag exists, use that!
 	 */
