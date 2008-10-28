@@ -280,11 +280,11 @@ db_load(void)
 
 	while (myFgets(buffer, sizeof(buffer), fp) &&
 	       0 != strcmp(DIRECTORY_INFO_END, buffer)) {
-		if (!prefixcmp(buffer, DIRECTORY_MPD_VERSION)) {
+		if (g_str_has_prefix(buffer, DIRECTORY_MPD_VERSION)) {
 			if (foundVersion)
 				FATAL("already found version in db\n");
 			foundVersion = 1;
-		} else if (!prefixcmp(buffer, DIRECTORY_FS_CHARSET)) {
+		} else if (g_str_has_prefix(buffer, DIRECTORY_FS_CHARSET)) {
 			char *fsCharset;
 			char *tempCharset;
 

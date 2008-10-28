@@ -301,7 +301,7 @@ void readPlaylistState(FILE *fp)
 	char buffer[PLAYLIST_BUFFER_SIZE];
 
 	while (myFgets(buffer, PLAYLIST_BUFFER_SIZE, fp)) {
-		if (!prefixcmp(buffer, PLAYLIST_STATE_FILE_STATE)) {
+		if (g_str_has_prefix(buffer, PLAYLIST_STATE_FILE_STATE)) {
 			if (strcmp(&(buffer[strlen(PLAYLIST_STATE_FILE_STATE)]),
 				   PLAYLIST_STATE_FILE_STATE_PLAY) == 0) {
 				state = PLAYER_STATE_PLAY;
@@ -312,24 +312,24 @@ void readPlaylistState(FILE *fp)
 				== 0) {
 				state = PLAYER_STATE_PAUSE;
 			}
-		} else if (!prefixcmp(buffer, PLAYLIST_STATE_FILE_TIME)) {
+		} else if (g_str_has_prefix(buffer, PLAYLIST_STATE_FILE_TIME)) {
 			seek_time =
 			    atoi(&(buffer[strlen(PLAYLIST_STATE_FILE_TIME)]));
 		} else
-		    if (!prefixcmp(buffer, PLAYLIST_STATE_FILE_REPEAT)) {
+		    if (g_str_has_prefix(buffer, PLAYLIST_STATE_FILE_REPEAT)) {
 			if (strcmp
 			    (&(buffer[strlen(PLAYLIST_STATE_FILE_REPEAT)]),
 			     "1") == 0) {
 				setPlaylistRepeatStatus(true);
 			} else
 				setPlaylistRepeatStatus(false);
-		} else if (!prefixcmp(buffer, PLAYLIST_STATE_FILE_CROSSFADE)) {
+		} else if (g_str_has_prefix(buffer, PLAYLIST_STATE_FILE_CROSSFADE)) {
 			setPlayerCrossFade(atoi
 					   (&
 					    (buffer
 					     [strlen
 					      (PLAYLIST_STATE_FILE_CROSSFADE)])));
-		} else if (!prefixcmp(buffer, PLAYLIST_STATE_FILE_RANDOM)) {
+		} else if (g_str_has_prefix(buffer, PLAYLIST_STATE_FILE_RANDOM)) {
 			if (strcmp
 			    (&
 			     (buffer
@@ -338,15 +338,15 @@ void readPlaylistState(FILE *fp)
 				setPlaylistRandomStatus(true);
 			} else
 				setPlaylistRandomStatus(false);
-		} else if (!prefixcmp(buffer, PLAYLIST_STATE_FILE_CURRENT)) {
+		} else if (g_str_has_prefix(buffer, PLAYLIST_STATE_FILE_CURRENT)) {
 			if (strlen(buffer) ==
 			    strlen(PLAYLIST_STATE_FILE_CURRENT))
 				state_file_fatal();
 			current = atoi(&(buffer
 					 [strlen
 					  (PLAYLIST_STATE_FILE_CURRENT)]));
-		} else if (!prefixcmp(buffer,
-		                      PLAYLIST_STATE_FILE_PLAYLIST_BEGIN)) {
+		} else if (g_str_has_prefix(buffer,
+					    PLAYLIST_STATE_FILE_PLAYLIST_BEGIN)) {
 			if (state == PLAYER_STATE_STOP)
 				current = -1;
 			loadPlaylistFromStateFile(fp, buffer, state,

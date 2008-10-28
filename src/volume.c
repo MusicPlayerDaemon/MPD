@@ -26,6 +26,8 @@
 
 #include "../config.h"
 
+#include <glib.h>
+
 #ifdef HAVE_OSS
 #include <sys/soundcard.h>
 #endif
@@ -518,7 +520,7 @@ void read_sw_volume_state(FILE *fp)
 	if (volume_mixerType != VOLUME_MIXER_TYPE_SOFTWARE)
 		return;
 	while (myFgets(buf, sizeof(buf), fp)) {
-		if (prefixcmp(buf, SW_VOLUME_STATE))
+		if (!g_str_has_prefix(buf, SW_VOLUME_STATE))
 			continue;
 		sv = strtol(buf + strlen(SW_VOLUME_STATE), &end, 10);
 		if (mpd_likely(!*end))

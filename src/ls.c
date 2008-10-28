@@ -21,7 +21,6 @@
 #include "path.h"
 #include "client.h"
 #include "log.h"
-#include "utils.h"
 #include "list.h"
 #include "stored_playlist.h"
 #include "os_compat.h"
@@ -92,7 +91,7 @@ int isRemoteUrl(const char *url)
 
 	while (*urlPrefixes) {
 		count++;
-		if (!prefixcmp(url, *urlPrefixes))
+		if (g_str_has_prefix(url, *urlPrefixes))
 			return count;
 		urlPrefixes++;
 	}

@@ -71,22 +71,22 @@ directory_load(FILE *fp, struct directory *directory)
 	char *name;
 
 	while (myFgets(buffer, bufferSize, fp)
-	       && prefixcmp(buffer, DIRECTORY_END)) {
-		if (!prefixcmp(buffer, DIRECTORY_DIR)) {
+	       && !g_str_has_prefix(buffer, DIRECTORY_END)) {
+		if (g_str_has_prefix(buffer, DIRECTORY_DIR)) {
 			struct directory *subdir;
 
 			strcpy(key, &(buffer[strlen(DIRECTORY_DIR)]));
 			if (!myFgets(buffer, bufferSize, fp))
 				FATAL("Error reading db, fgets\n");
 			/* for compatibility with db's prior to 0.11 */
-			if (!prefixcmp(buffer, DIRECTORY_MTIME)) {
+			if (g_str_has_prefix(buffer, DIRECTORY_MTIME)) {
 				if (!myFgets(buffer, bufferSize, fp))
 					FATAL("Error reading db, fgets\n");
 			}
-			if (prefixcmp(buffer, DIRECTORY_BEGIN))
+			if (!g_str_has_prefix(buffer, DIRECTORY_BEGIN))
 				FATAL("Error reading db at line: %s\n", buffer);
 			name = &(buffer[strlen(DIRECTORY_BEGIN)]);
-			if (prefixcmp(name, directory->path) != 0)
+			if (!g_str_has_prefix(name, directory->path) != 0)
 				FATAL("Wrong path in database: '%s' in '%s'\n",
 				      name, directory->path);
 
@@ -98,7 +98,7 @@ directory_load(FILE *fp, struct directory *directory)
 				dirvec_add(&directory->children, subdir);
 			}
 			directory_load(fp, subdir);
-		} else if (!prefixcmp(buffer, SONG_BEGIN)) {
+		} else if (g_str_has_prefix(buffer, SONG_BEGIN)) {
 			readSongInfoIntoList(fp, &directory->songs, directory);
 		} else {
 			FATAL("Unknown line in db: %s\n", buffer);

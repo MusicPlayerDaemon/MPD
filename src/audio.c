@@ -28,6 +28,8 @@
 #include "utils.h"
 #include "os_compat.h"
 
+#include <glib.h>
+
 #define AUDIO_DEVICE_STATE	"audio_device_state:"
 #define AUDIO_BUFFER_SIZE	2*MPD_PATH_MAX
 
@@ -434,7 +436,7 @@ void readAudioDevicesState(FILE *fp)
 	while (myFgets(buffer, AUDIO_BUFFER_SIZE, fp)) {
 		char *c, *name;
 
-		if (prefixcmp(buffer, AUDIO_DEVICE_STATE))
+		if (!g_str_has_prefix(buffer, AUDIO_DEVICE_STATE))
 			continue;
 
 		c = strchr(buffer, ':');

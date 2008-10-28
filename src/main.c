@@ -46,11 +46,12 @@
 #include "tag.h"
 #include "dbUtils.h"
 #include "../config.h"
-#include "utils.h"
 #include "normalize.h"
 #include "zeroconf.h"
 #include "main_notify.h"
 #include "os_compat.h"
+
+#include <glib.h>
 
 #define SYSTEM_CONFIG_FILE_LOCATION	"/etc/mpd.conf"
 #define USER_CONFIG_FILE_LOCATION	"/.mpdconf"
@@ -156,7 +157,7 @@ static void parseOptions(int argc, char **argv, Options * options)
 	if (argc > 1) {
 		int i = 1;
 		while (i < argc) {
-			if (!prefixcmp(argv[i], "--")) {
+			if (g_str_has_prefix(argv[i], "--")) {
 				if (strcmp(argv[i], "--help") == 0) {
 					usage(argv);
 					exit(EXIT_SUCCESS);
