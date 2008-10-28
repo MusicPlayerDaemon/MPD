@@ -282,15 +282,18 @@ static void mp3_parse_id3(struct mp3_data *data, size_t tagsize,
 
 		if (count != tagsize) {
 			DEBUG("mp3_decode: error parsing ID3 tag\n");
-			goto fail;
+			g_free(allocated);
+			return;
 		}
 
 		id3_data = allocated;
 	}
 
 	id3_tag = id3_tag_parse(id3_data, tagsize);
-	if (id3_tag == NULL)
-		goto fail;
+	if (id3_tag == NULL) {
+		g_free(allocated);
+		return;
+	}
 
 	if (mpd_tag) {
 		struct tag *tmp_tag = tag_id3_import(id3_tag);
@@ -311,7 +314,7 @@ static void mp3_parse_id3(struct mp3_data *data, size_t tagsize,
 	}
 
 	id3_tag_delete(id3_tag);
-fail:
+
 	g_free(allocated);
 }
 #endif
@@ -472,49 +475,65 @@ parse_xing(struct xing *xing, struct mad_bitptr *ptr, int *oldbitlen)
 
 	bitlen = *oldbitlen;
 
-	if (bitlen < 16) goto fail;
+	if (bitlen < 16)
+		return false;
+
 	bits = mad_bit_read(ptr, 16);
 	bitlen -= 16;
 
 	if (bits == XI_MAGIC) {
-		if (bitlen < 16) goto fail;
-		if (mad_bit_read(ptr, 16) != NG_MAGIC) goto fail;
+		if (bitlen < 16)
+			return false;
+
+		if (mad_bit_read(ptr, 16) != NG_MAGIC)
+			return false;
+
 		bitlen -= 16;
 		xing->magic = XING_MAGIC_XING;
 	} else if (bits == IN_MAGIC) {
-		if (bitlen < 16) goto fail;
-		if (mad_bit_read(ptr, 16) != FO_MAGIC) goto fail;
+		if (bitlen < 16)
+			return false;
+
+		if (mad_bit_read(ptr, 16) != FO_MAGIC)
+			return false;
+
 		bitlen -= 16;
 		xing->magic = XING_MAGIC_INFO;
 	}
 	else if (bits == NG_MAGIC) xing->magic = XING_MAGIC_XING;
 	else if (bits == FO_MAGIC) xing->magic = XING_MAGIC_INFO;
-	else goto fail;
+	else
+		return false;
 
-	if (bitlen < 32) goto fail;
+	if (bitlen < 32)
+		return false;
 	xing->flags = mad_bit_read(ptr, 32);
 	bitlen -= 32;
 
 	if (xing->flags & XING_FRAMES) {
-		if (bitlen < 32) goto fail;
+		if (bitlen < 32)
+			return false;
 		xing->frames = mad_bit_read(ptr, 32);
 		bitlen -= 32;
 	}
 
 	if (xing->flags & XING_BYTES) {
-		if (bitlen < 32) goto fail;
+		if (bitlen < 32)
+			return false;
 		xing->bytes = mad_bit_read(ptr, 32);
 		bitlen -= 32;
 	}
 
 	if (xing->flags & XING_TOC) {
-		if (bitlen < 800) goto fail;
+		if (bitlen < 800)
+			return false;
 		for (i = 0; i < 100; ++i) xing->toc[i] = mad_bit_read(ptr, 8);
 		bitlen -= 800;
 	}
 
 	if (xing->flags & XING_SCALE) {
-		if (bitlen < 32) goto fail;
+		if (bitlen < 32)
+			return false;
 		xing->scale = mad_bit_read(ptr, 32);
 		bitlen -= 32;
 	}
@@ -522,7 +541,8 @@ parse_xing(struct xing *xing, struct mad_bitptr *ptr, int *oldbitlen)
 	/* Make sure we consume no less than 120 bytes (960 bits) in hopes that
 	 * the LAME tag is found there, and not right after the Xing header */
 	bitsleft = 960 - ((*oldbitlen) - bitlen);
-	if (bitsleft < 0) goto fail;
+	if (bitsleft < 0)
+		return false;
 	else if (bitsleft > 0) {
 		mad_bit_read(ptr, bitsleft);
 		bitlen -= bitsleft;
@@ -531,9 +551,6 @@ parse_xing(struct xing *xing, struct mad_bitptr *ptr, int *oldbitlen)
 	*oldbitlen = bitlen;
 
 	return true;
-fail:
-	xing->flags = 0;
-	return false;
 }
 
 static bool
