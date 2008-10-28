@@ -48,9 +48,9 @@ enum muteframe {
 /* the number of samples of silence the decoder inserts at start */
 #define DECODERDELAY 529
 
-#define DEFAULT_GAPLESS_MP3_PLAYBACK 1
+#define DEFAULT_GAPLESS_MP3_PLAYBACK true
 
-static int gapless_playback;
+static bool gapless_playback;
 
 static inline int32_t
 mad_fixed_to_24_sample(mad_fixed_t sample)
@@ -89,9 +89,10 @@ mad_fixed_to_24_buffer(int32_t *dest, const struct mad_synth *synth,
 
 static int mp3_plugin_init(void)
 {
-	gapless_playback = getBoolConfigParam(CONF_GAPLESS_MP3_PLAYBACK, 1);
-	if (gapless_playback == CONF_BOOL_UNSET)
-		gapless_playback = DEFAULT_GAPLESS_MP3_PLAYBACK;
+	int ret = getBoolConfigParam(CONF_GAPLESS_MP3_PLAYBACK, true);
+	gapless_playback = ret != CONF_BOOL_UNSET
+		? !!ret
+		: DEFAULT_GAPLESS_MP3_PLAYBACK;
 	return 1;
 }
 
@@ -116,9 +117,9 @@ struct mp3_data {
 	unsigned int drop_end_frames;
 	unsigned int drop_start_samples;
 	unsigned int drop_end_samples;
-	int found_xing;
-	int found_first_frame;
-	int decoded_first_frame;
+	bool found_xing;
+	bool found_first_frame;
+	bool decoded_first_frame;
 	unsigned long bit_rate;
 	struct decoder *decoder;
 	struct input_stream *input_stream;
@@ -139,9 +140,9 @@ mp3_data_init(struct mp3_data *data, struct decoder *decoder,
 	data->drop_end_frames = 0;
 	data->drop_start_samples = 0;
 	data->drop_end_samples = 0;
-	data->found_xing = 0;
-	data->found_first_frame = 0;
-	data->decoded_first_frame = 0;
+	data->found_xing = false;
+	data->found_first_frame = false;
+	data->decoded_first_frame = false;
 	data->decoder = decoder;
 	data->input_stream = input_stream;
 	data->layer = 0;
@@ -153,18 +154,19 @@ mp3_data_init(struct mp3_data *data, struct decoder *decoder,
 	mad_timer_reset(&data->timer);
 }
 
-static int mp3_seek(struct mp3_data *data, long offset)
+static bool mp3_seek(struct mp3_data *data, long offset)
 {
 	if (!input_stream_seek(data->input_stream, offset, SEEK_SET))
-		return -1;
+		return false;
 
 	mad_stream_buffer(&data->stream, data->input_buffer, 0);
 	(data->stream).error = 0;
 
-	return 0;
+	return true;
 }
 
-static int mp3_fill_buffer(struct mp3_data *data)
+static bool
+mp3_fill_buffer(struct mp3_data *data)
 {
 	size_t remaining, length;
 	unsigned char *dest;
@@ -184,17 +186,17 @@ static int mp3_fill_buffer(struct mp3_data *data)
 	/* we've exhausted the read buffer, so give up!, these potential
 	 * mp3 frames are way too big, and thus unlikely to be mp3 frames */
 	if (length == 0)
-		return -1;
+		return false;
 
 	length = decoder_read(data->decoder, data->input_stream, dest, length);
 	if (length == 0)
-		return -1;
+		return false;
 
 	mad_stream_buffer(&data->stream, data->input_buffer,
 			  length + remaining);
 	(data->stream).error = 0;
 
-	return 0;
+	return true;
 }
 
 #ifdef HAVE_ID3TAG
@@ -324,9 +326,8 @@ decode_next_frame_header(struct mp3_data *data, struct tag **tag,
 
 	if ((data->stream).buffer == NULL
 	    || (data->stream).error == MAD_ERROR_BUFLEN) {
-		if (mp3_fill_buffer(data) < 0) {
+		if (!mp3_fill_buffer(data))
 			return DECODE_BREAK;
-		}
 	}
 	if (mad_header_decode(&data->frame.header, &data->stream)) {
 #ifdef HAVE_ID3TAG
@@ -385,9 +386,8 @@ decodeNextFrame(struct mp3_data *data)
 {
 	if ((data->stream).buffer == NULL
 	    || (data->stream).error == MAD_ERROR_BUFLEN) {
-		if (mp3_fill_buffer(data) < 0) {
+		if (!mp3_fill_buffer(data))
 			return DECODE_BREAK;
-		}
 	}
 	if (mad_frame_decode(&data->frame, &data->stream)) {
 #ifdef HAVE_ID3TAG
@@ -464,7 +464,8 @@ struct lame {
 	int crc;                /* CRC of the first 190 bytes of this frame */
 };
 
-static int parse_xing(struct xing *xing, struct mad_bitptr *ptr, int *oldbitlen)
+static bool
+parse_xing(struct xing *xing, struct mad_bitptr *ptr, int *oldbitlen)
 {
 	unsigned long bits;
 	int bitlen;
@@ -531,13 +532,14 @@ static int parse_xing(struct xing *xing, struct mad_bitptr *ptr, int *oldbitlen)
 
 	*oldbitlen = bitlen;
 
-	return 1;
+	return true;
 fail:
 	xing->flags = 0;
-	return 0;
+	return false;
 }
 
-static int parse_lame(struct lame *lame, struct mad_bitptr *ptr, int *bitlen)
+static bool
+parse_lame(struct lame *lame, struct mad_bitptr *ptr, int *bitlen)
 {
 	int adj = 0;
 	int name;
@@ -549,7 +551,7 @@ static int parse_lame(struct lame *lame, struct mad_bitptr *ptr, int *bitlen)
 	/* Unlike the xing header, the lame tag has a fixed length.  Fail if
 	 * not all 36 bytes (288 bits) are there. */
 	if (*bitlen < 288)
-		return 0;
+		return false;
 
 	for (i = 0; i < 9; i++)
 		lame->encoder[i] = (char)mad_bit_read(ptr, 8);
@@ -561,11 +563,11 @@ static int parse_lame(struct lame *lame, struct mad_bitptr *ptr, int *bitlen)
 	 * But there's no other way to determine if this is a lame tag, and we
 	 * wouldn't want to go reading a tag that's not there. */
 	if (!g_str_has_prefix(lame->encoder, "LAME"))
-		return 0;
+		return false;
 
 	if (sscanf(lame->encoder+4, "%u.%u",
 	           &lame->version.major, &lame->version.minor) != 2)
-		return 0;
+		return false;
 
 	DEBUG("detected LAME version %i.%i (\"%s\")\n",
 	      lame->version.major, lame->version.minor, lame->encoder);
@@ -628,10 +630,10 @@ static int parse_lame(struct lame *lame, struct mad_bitptr *ptr, int *bitlen)
 
 	*bitlen -= 216;
 
-	return 1;
+	return true;
 }
 
-static int
+static bool
 mp3_decode_first_frame(struct mp3_data *data, struct tag **tag,
 		       ReplayGainInfo **replay_gain_info_r)
 {
@@ -646,19 +648,19 @@ mp3_decode_first_frame(struct mp3_data *data, struct tag **tag,
 	memset(&xing, 0, sizeof(struct xing));
 	xing.flags = 0;
 
-	while (1) {
+	while (true) {
 		while ((ret = decode_next_frame_header(data, tag, replay_gain_info_r)) == DECODE_CONT &&
 		       (!decoder || decoder_get_command(decoder) == DECODE_COMMAND_NONE));
 		if (ret == DECODE_BREAK ||
 		    (decoder && decoder_get_command(decoder) != DECODE_COMMAND_NONE))
-			return -1;
+			return false;
 		if (ret == DECODE_SKIP) continue;
 
 		while ((ret = decodeNextFrame(data)) == DECODE_CONT &&
 		       (!decoder || decoder_get_command(decoder) == DECODE_COMMAND_NONE));
 		if (ret == DECODE_BREAK ||
 		    (decoder && decoder_get_command(decoder) != DECODE_COMMAND_NONE))
-			return -1;
+			return false;
 		if (ret == DECODE_OK) break;
 	}
 
@@ -692,7 +694,7 @@ mp3_decode_first_frame(struct mp3_data *data, struct tag **tag,
 	 * if an xing tag exists, use that!
 	 */
 	if (parse_xing(&xing, &ptr, &bitlen)) {
-		data->found_xing = 1;
+		data->found_xing = true;
 		data->mute_frame = MUTEFRAME_SKIP;
 
 		if ((xing.flags & XING_FRAMES) && xing.frames) {
@@ -721,18 +723,19 @@ mp3_decode_first_frame(struct mp3_data *data, struct tag **tag,
 		}
 	} 
 
-	if (!data->max_frames) return -1;
+	if (!data->max_frames)
+		return false;
 
 	if (data->max_frames > 8 * 1024 * 1024) {
 		ERROR("mp3 file header indicates too many frames: %lu",
 		      data->max_frames);
-		return -1;
+		return false;
 	}
 
 	data->frame_offsets = xmalloc(sizeof(long) * data->max_frames);
 	data->times = xmalloc(sizeof(mad_timer_t) * data->max_frames);
 
-	return 0;
+	return true;
 }
 
 static void mp3_data_finish(struct mp3_data *data)
@@ -755,7 +758,7 @@ static int mp3_total_file_time(char *file)
 	if (!input_stream_open(&input_stream, file))
 		return -1;
 	mp3_data_init(&data, NULL, &input_stream);
-	if (mp3_decode_first_frame(&data, NULL, NULL) < 0)
+	if (!mp3_decode_first_frame(&data, NULL, NULL))
 		ret = -1;
 	else
 		ret = data.total_time + 0.5;
@@ -765,21 +768,21 @@ static int mp3_total_file_time(char *file)
 	return ret;
 }
 
-static int
+static bool
 mp3_open(struct input_stream *is, struct mp3_data *data,
 	 struct decoder *decoder, struct tag **tag,
 	 ReplayGainInfo **replay_gain_info_r)
 {
 	mp3_data_init(data, decoder, is);
 	*tag = NULL;
-	if (mp3_decode_first_frame(data, tag, replay_gain_info_r) < 0) {
+	if (!mp3_decode_first_frame(data, tag, replay_gain_info_r)) {
 		mp3_data_finish(data);
 		if (tag && *tag)
 			tag_free(*tag);
-		return -1;
+		return false;
 	}
 
-	return 0;
+	return true;
 }
 
 static enum mp3_action
@@ -836,7 +839,7 @@ mp3_read(struct mp3_data *data, ReplayGainInfo **replay_gain_info_r)
 			data->drop_end_frames = data->drop_end_samples / samples_per_frame;
 			data->drop_start_samples = data->drop_start_samples % samples_per_frame;
 			data->drop_end_samples = data->drop_end_samples % samples_per_frame;
-			data->found_first_frame = 1;
+			data->found_first_frame = true;
 		}
 
 		if (data->drop_start_frames > 0) {
@@ -864,7 +867,7 @@ mp3_read(struct mp3_data *data, ReplayGainInfo **replay_gain_info_r)
 
 		if (!data->decoded_first_frame) {
 			i = data->drop_start_samples;
-			data->decoded_first_frame = 1;
+			data->decoded_first_frame = true;
 		} else
 			i = 0;
 
@@ -924,8 +927,7 @@ mp3_read(struct mp3_data *data, ReplayGainInfo **replay_gain_info_r)
 				j++;
 			}
 			if (j < data->highest_frame) {
-				if (mp3_seek(data,
-					     data->frame_offsets[j]) == 0) {
+				if (mp3_seek(data, data->frame_offsets[j])) {
 					decoder_clear(decoder);
 					data->current_frame = j;
 					decoder_command_finished(decoder);
@@ -939,7 +941,7 @@ mp3_read(struct mp3_data *data, ReplayGainInfo **replay_gain_info_r)
 		}
 	}
 
-	while (1) {
+	while (true) {
 		skip = 0;
 		while ((ret =
 			decode_next_frame_header(data, NULL,
@@ -990,8 +992,7 @@ mp3_decode(struct decoder *decoder, struct input_stream *input_stream)
 	ReplayGainInfo *replay_gain_info = NULL;
 	struct audio_format audio_format;
 
-	if (mp3_open(input_stream, &data, decoder,
-		     &tag, &replay_gain_info) < 0) {
+	if (!mp3_open(input_stream, &data, decoder, &tag, &replay_gain_info)) {
 		if (decoder_get_command(decoder) == DECODE_COMMAND_NONE) {
 			ERROR
 			    ("Input does not appear to be a mp3 bit stream.\n");
