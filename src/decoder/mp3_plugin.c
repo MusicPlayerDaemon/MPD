@@ -18,9 +18,11 @@
 
 #include "../decoder_api.h"
 #include "../log.h"
-#include "../utils.h"
 #include "../conf.h"
 
+#include <unistd.h>
+#include <stdlib.h>
+#include <stdio.h>
 #include <glib.h>
 #include <mad.h>
 
@@ -263,10 +265,7 @@ static void mp3_parse_id3(struct mp3_data *data, size_t tagsize,
 		id3_data = data->stream.this_frame;
 		mad_stream_skip(&(data->stream), tagsize);
 	} else {
-		allocated = xmalloc(tagsize);
-		if (!allocated)
-			goto fail;
-
+		allocated = g_malloc(tagsize);
 		memcpy(allocated, data->stream.this_frame, count);
 		mad_stream_skip(&(data->stream), count);
 
@@ -313,8 +312,7 @@ static void mp3_parse_id3(struct mp3_data *data, size_t tagsize,
 
 	id3_tag_delete(id3_tag);
 fail:
-	if (allocated)
-		free(allocated);
+	g_free(allocated);
 }
 #endif
 
@@ -732,8 +730,8 @@ mp3_decode_first_frame(struct mp3_data *data, struct tag **tag,
 		return false;
 	}
 
-	data->frame_offsets = xmalloc(sizeof(long) * data->max_frames);
-	data->times = xmalloc(sizeof(mad_timer_t) * data->max_frames);
+	data->frame_offsets = g_malloc(sizeof(long) * data->max_frames);
+	data->times = g_malloc(sizeof(mad_timer_t) * data->max_frames);
 
 	return true;
 }
@@ -744,8 +742,8 @@ static void mp3_data_finish(struct mp3_data *data)
 	mad_frame_finish(&data->frame);
 	mad_stream_finish(&data->stream);
 
-	if (data->frame_offsets) free(data->frame_offsets);
-	if (data->times) free(data->times);
+	g_free(data->frame_offsets);
+	g_free(data->times);
 }
 
 /* this is primarily used for getting total time for tags */
