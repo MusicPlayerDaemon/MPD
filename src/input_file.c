@@ -17,35 +17,40 @@
  */
 
 #include "input_file.h"
-
 #include "log.h"
-#include "os_compat.h"
+
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <errno.h>
+#include <string.h>
+#include <glib.h>
 
 static bool
 input_file_open(struct input_stream *is, const char *filename)
 {
-	FILE *fp;
+	int fd, ret;
+	struct stat st;
 
 	if (filename[0] != '/')
 		return false;
 
-	fp = fopen(filename, "r");
-	if (!fp) {
+	fd = open(filename, O_RDONLY);
+	if (fd < 0) {
 		is->error = errno;
 		return false;
 	}
 
 	is->seekable = true;
 
-	fseek(fp, 0, SEEK_END);
-	is->size = ftell(fp);
-	fseek(fp, 0, SEEK_SET);
+	ret = fstat(fd, &st);
+	is->size = st.st_size;
 
 #ifdef POSIX_FADV_SEQUENTIAL
-	posix_fadvise(fileno(fp), (off_t)0, is->size, POSIX_FADV_SEQUENTIAL);
+	posix_fadvise(fd, (off_t)0, is->size, POSIX_FADV_SEQUENTIAL);
 #endif
 
-	is->data = fp;
+	is->data = GINT_TO_POINTER(fd);
 	is->ready = true;
 
 	return true;
@@ -54,50 +59,48 @@ input_file_open(struct input_stream *is, const char *filename)
 static bool
 input_file_seek(struct input_stream *is, off_t offset, int whence)
 {
-	if (fseek((FILE *) is->data, offset, whence) == 0) {
-		is->offset = ftell((FILE *) is->data);
-	} else {
+	int fd = GPOINTER_TO_INT(is->data);
+
+	offset = lseek(fd, offset, whence);
+	if (offset < 0) {
 		is->error = errno;
 		return false;
 	}
 
+	is->offset = offset;
 	return true;
 }
 
 static size_t
 input_file_read(struct input_stream *is, void *ptr, size_t size)
 {
-	size_t readSize;
+	int fd = GPOINTER_TO_INT(is->data);
+	ssize_t nbytes;
 
-	readSize = fread(ptr, 1, size, (FILE *) is->data);
-	if (readSize <= 0 && ferror((FILE *) is->data)) {
+	nbytes = read(fd, ptr, size);
+	if (nbytes < 0) {
 		is->error = errno;
 		DEBUG("input_file_read: error reading: %s\n",
 		      strerror(is->error));
+		return 0;
 	}
 
-	is->offset = ftell((FILE *) is->data);
-
-	return readSize;
+	is->offset += nbytes;
+	return (size_t)nbytes;
 }
 
 static void
 input_file_close(struct input_stream *is)
 {
-	fclose((FILE *) is->data);
+	int fd = GPOINTER_TO_INT(is->data);
+
+	close(fd);
 }
 
 static bool
 input_file_eof(struct input_stream *is)
 {
-	if (feof((FILE *) is->data))
-		return 1;
-
-	if (ferror((FILE *) is->data) && is->error != EINTR) {
-		return 1;
-	}
-
-	return 0;
+	return is->offset >= is->size;
 }
 
 static int
