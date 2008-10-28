@@ -87,8 +87,6 @@ mad_fixed_to_24_buffer(int32_t *dest, const struct mad_synth *synth,
 	}
 }
 
-/* end of stolen stuff from mpg321 */
-
 static int mp3_plugin_init(void)
 {
 	gaplessPlaybackEnabled = getBoolConfigParam(CONF_GAPLESS_MP3_PLAYBACK,
@@ -97,8 +95,6 @@ static int mp3_plugin_init(void)
 		gaplessPlaybackEnabled = DEFAULT_GAPLESS_MP3_PLAYBACK;
 	return 1;
 }
-
-/* decoder stuff is based on madlld */
 
 #define MP3_DATA_OUTPUT_BUFFER_SIZE 2048
 
