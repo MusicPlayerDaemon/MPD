@@ -76,7 +76,7 @@ input_stream_open(struct input_stream *is, char *url)
 }
 
 bool
-input_stream_seek(struct input_stream *is, long offset, int whence)
+input_stream_seek(struct input_stream *is, off_t offset, int whence)
 {
 	return is->plugin->seek(is, offset, whence);
 }

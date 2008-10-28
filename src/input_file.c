@@ -52,7 +52,7 @@ input_file_open(struct input_stream *is, const char *filename)
 }
 
 static bool
-input_file_seek(struct input_stream *is, long offset, int whence)
+input_file_seek(struct input_stream *is, off_t offset, int whence)
 {
 	if (fseek((FILE *) is->data, offset, whence) == 0) {
 		is->offset = ftell((FILE *) is->data);

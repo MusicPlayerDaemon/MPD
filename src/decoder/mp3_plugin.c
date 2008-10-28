@@ -673,7 +673,7 @@ static int decodeFirstFrame(mp3DecodeData * data,
 	 * Attempt to calulcate the length of the song from filesize
 	 */
 	{
-		size_t offset = data->inStream->offset;
+		off_t offset = data->inStream->offset;
 		mad_timer_t duration = data->frame.header.duration;
 		float frameTime = ((float)mad_timer_count(duration,
 		                   MAD_UNITS_MILLISECONDS)) / 1000;

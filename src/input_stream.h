@@ -21,6 +21,7 @@
 
 #include <stddef.h>
 #include <stdbool.h>
+#include <sys/types.h>
 
 struct input_stream;
 
@@ -31,7 +32,7 @@ struct input_plugin {
 	int (*buffer)(struct input_stream *is);
 	size_t (*read)(struct input_stream *is, void *ptr, size_t size);
 	bool (*eof)(struct input_stream *is);
-	bool (*seek)(struct input_stream *is, long offset, int whence);
+	bool (*seek)(struct input_stream *is, off_t offset, int whence);
 };
 
 struct input_stream {
@@ -41,8 +42,7 @@ struct input_stream {
 	bool ready;
 
 	int error;
-	long offset;
-	size_t size;
+	off_t size, offset;
 	char *mime;
 
 	void *data;
@@ -60,7 +60,7 @@ bool
 input_stream_open(struct input_stream *is, char *url);
 
 bool
-input_stream_seek(struct input_stream *is, long offset, int whence);
+input_stream_seek(struct input_stream *is, off_t offset, int whence);
 
 void input_stream_close(struct input_stream *is);
 bool input_stream_eof(struct input_stream *is);

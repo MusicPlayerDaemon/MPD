@@ -414,8 +414,7 @@ input_curl_send_request(struct input_curl *c)
 }
 
 static bool
-input_curl_seek(struct input_stream *is, mpd_unused long offset,
-		mpd_unused int whence)
+input_curl_seek(struct input_stream *is, off_t offset, int whence)
 {
 	struct input_curl *c = is->data;
 	bool ret;
@@ -427,15 +426,15 @@ input_curl_seek(struct input_stream *is, mpd_unused long offset,
 
 	switch (whence) {
 	case SEEK_SET:
-		is->offset = (off_t)offset;
+		is->offset = offset;
 		break;
 
 	case SEEK_CUR:
-		is->offset += (off_t)offset;
+		is->offset += offset;
 		break;
 
 	case SEEK_END:
-		is->offset = (off_t)is->size + (off_t)offset;
+		is->offset = is->size + offset;
 		break;
 
 	default:
@@ -456,7 +455,7 @@ input_curl_seek(struct input_stream *is, mpd_unused long offset,
 	/* send the "Range" header */
 
 	if (is->offset > 0) {
-		c->range = g_strdup_printf("%ld-", is->offset); /* XXX 64 bit safety */
+		c->range = g_strdup_printf("%lld-", (long long)is->offset);
 		curl_easy_setopt(c->easy, CURLOPT_RANGE, c->range);
 	}
 
