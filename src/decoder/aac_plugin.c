@@ -419,8 +419,6 @@ static int aac_stream_decode(struct decoder * mpd_decoder,
 			break;
 	}
 
-	decoder_flush(mpd_decoder);
-
 	faacDecClose(decoder);
 	if (b.buffer)
 		free(b.buffer);
@@ -555,8 +553,6 @@ static int aac_decode(struct decoder * mpd_decoder, char *path)
 		} else if (decoder_get_command(mpd_decoder) == DECODE_COMMAND_STOP)
 			break;
 	}
-
-	decoder_flush(mpd_decoder);
 
 	faacDecClose(decoder);
 	if (b.buffer)

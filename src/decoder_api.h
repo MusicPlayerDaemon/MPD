@@ -159,6 +159,4 @@ decoder_data(struct decoder *decoder,
 	     void *data, size_t datalen, float data_time, uint16_t bitRate,
 	     ReplayGainInfo * replayGainInfo);
 
-void decoder_flush(struct decoder *decoder);
-
 #endif

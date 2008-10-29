@@ -21,6 +21,7 @@
 #include "decoder_control.h"
 #include "decoder_internal.h"
 #include "player_control.h"
+#include "outputBuffer.h"
 #include "song.h"
 #include "mapper.h"
 #include "path.h"
@@ -146,6 +147,8 @@ static void decodeStart(void)
 			}
 		}
 	}
+
+	ob_flush();
 
 	if (ret < 0 || ret == DECODE_ERROR_UNKTYPE) {
 		if (ret != DECODE_ERROR_UNKTYPE)

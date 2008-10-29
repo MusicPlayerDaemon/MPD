@@ -110,10 +110,7 @@ static int audiofile_decode(struct decoder * decoder, char *path)
 			     bitRate, NULL);
 	} while (decoder_get_command(decoder) != DECODE_COMMAND_STOP);
 
-	decoder_flush(decoder);
-
 	afCloseFile(af_fp);
-
 	return 0;
 }
 

@@ -206,8 +206,3 @@ decoder_data(struct decoder *decoder,
 
 	return DECODE_COMMAND_NONE;
 }
-
-void decoder_flush(mpd_unused struct decoder *decoder)
-{
-	ob_flush();
-}

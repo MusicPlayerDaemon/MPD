@@ -298,8 +298,6 @@ mp4_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 	if (decoder_get_command(mpd_decoder) == DECODE_COMMAND_SEEK && seeking)
 		decoder_command_finished(mpd_decoder);
 
-	decoder_flush(mpd_decoder);
-
 	return 0;
 }
 

@@ -1131,9 +1131,7 @@ mp3_decode(struct decoder *decoder, struct input_stream *input_stream)
 	    data.mute_frame == MUTEFRAME_SEEK)
 		decoder_command_finished(decoder);
 
-	decoder_flush(decoder);
 	mp3_data_finish(&data);
-
 	return 0;
 }
 

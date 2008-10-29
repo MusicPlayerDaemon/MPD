@@ -314,10 +314,7 @@ static int ffmpeg_decode_internal(BasePtrs *base)
 		}
 	} while (decoder_get_command(decoder) != DECODE_COMMAND_STOP);
 
-	decoder_flush(decoder);
-
 	DEBUG("decoder finish\n");
-
 	return 0;
 }
 

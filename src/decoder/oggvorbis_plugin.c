@@ -326,9 +326,6 @@ oggvorbis_decode(struct decoder *decoder, struct input_stream *inStream)
 		freeReplayGainInfo(replayGainInfo);
 
 	ov_clear(&vf);
-
-	decoder_flush(decoder);
-
 	return 0;
 }
 

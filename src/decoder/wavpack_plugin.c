@@ -206,8 +206,6 @@ static void wavpack_decode(struct decoder * decoder,
 				     replayGainInfo);
 		}
 	} while (samplesgot == samplesreq);
-
-	decoder_flush(decoder);
 }
 
 static char *wavpack_tag(WavpackContext *wpc, char *key)

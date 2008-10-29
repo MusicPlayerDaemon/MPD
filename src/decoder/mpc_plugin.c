@@ -231,8 +231,6 @@ mpc_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 			     replayGainInfo);
 	}
 
-	decoder_flush(mpd_decoder);
-
 	freeReplayGainInfo(replayGainInfo);
 
 	return 0;

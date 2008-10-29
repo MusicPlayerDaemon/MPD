@@ -210,8 +210,6 @@ static int mod_decode(struct decoder * decoder, char *path)
 			     total_time, 0, NULL);
 	}
 
-	decoder_flush(decoder);
-
 	mod_close(data);
 
 	MikMod_Exit();
