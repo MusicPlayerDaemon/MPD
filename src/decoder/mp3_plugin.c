@@ -820,6 +820,22 @@ mp3_open(struct input_stream *is, struct mp3_data *data,
 	return true;
 }
 
+static long
+mp3_time_to_frame(const struct mp3_data *data, double t)
+{
+	unsigned long i;
+
+	for (i = 0; i < data->highest_frame; ++i) {
+		double frame_time =
+			mad_timer_count(data->times[i],
+					MAD_UNITS_MILLISECONDS) / 1000.;
+		if (frame_time >= t)
+			break;
+	}
+
+	return i;
+}
+
 static enum mp3_action
 mp3_read(struct mp3_data *data, ReplayGainInfo **replay_gain_info_r)
 {
@@ -951,18 +967,12 @@ mp3_read(struct mp3_data *data, ReplayGainInfo **replay_gain_info_r)
 			return DECODE_BREAK;
 
 		if (decoder_get_command(decoder) == DECODE_COMMAND_SEEK) {
-			unsigned long j = 0;
+			unsigned long j;
 
 			assert(data->input_stream->seekable);
 
-			data->mute_frame = MUTEFRAME_SEEK;
-			while (j < data->highest_frame &&
-			       decoder_seek_where(decoder) >
-			       ((float)mad_timer_count(data->times[j],
-						       MAD_UNITS_MILLISECONDS))
-			       / 1000) {
-				j++;
-			}
+			j = mp3_time_to_frame(data,
+					      decoder_seek_where(decoder));
 			if (j < data->highest_frame) {
 				if (mp3_seek(data, data->frame_offsets[j])) {
 					decoder_clear(decoder);
@@ -970,8 +980,8 @@ mp3_read(struct mp3_data *data, ReplayGainInfo **replay_gain_info_r)
 					decoder_command_finished(decoder);
 				} else
 					decoder_seek_error(decoder);
-				data->mute_frame = MUTEFRAME_NONE;
-			}
+			} else
+				data->mute_frame = MUTEFRAME_SEEK;
 		}
 	}
 
