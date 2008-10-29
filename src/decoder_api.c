@@ -46,14 +46,12 @@ void decoder_initialized(struct decoder * decoder,
 			 float total_time)
 {
 	assert(dc.state == DECODE_STATE_START);
+	assert(audio_format != NULL);
 
 	pcm_convert_init(&decoder->conv_state);
 
-	if (audio_format != NULL) {
-		dc.audioFormat = *audio_format;
-		getOutputAudioFormat(audio_format,
-				     &(ob.audioFormat));
-	}
+	dc.audioFormat = *audio_format;
+	getOutputAudioFormat(audio_format, &ob.audioFormat);
 
 	dc.totalTime = total_time;
 
