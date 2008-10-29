@@ -175,6 +175,7 @@ static void pulse_close(void *data)
 	if (pd->s) {
 		pa_simple_drain(pd->s, NULL);
 		pa_simple_free(pd->s);
+		pd->s = NULL;
 	}
 }
 
