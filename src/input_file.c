@@ -17,7 +17,7 @@
  */
 
 #include "input_file.h"
-#include "log.h"
+#include "gcc.h"
 
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -80,8 +80,8 @@ input_file_read(struct input_stream *is, void *ptr, size_t size)
 	nbytes = read(fd, ptr, size);
 	if (nbytes < 0) {
 		is->error = errno;
-		DEBUG("input_file_read: error reading: %s\n",
-		      strerror(is->error));
+		g_debug("input_file_read: error reading: %s\n",
+			strerror(is->error));
 		return 0;
 	}
 
