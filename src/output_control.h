@@ -36,6 +36,13 @@ audio_output_open(struct audio_output *audioOutput,
 		  const struct audio_format *audioFormat);
 
 /**
+ * Opens or closes the device, depending on the "enabled" flag.
+ */
+void
+audio_output_update(struct audio_output *ao,
+		    const struct audio_format *audio_format);
+
+/**
  * Wakes up the audio output thread.  This is part of a workaround for
  * a deadlock bug, and should be removed as soon as the real cause is
  * fixed.  XXX

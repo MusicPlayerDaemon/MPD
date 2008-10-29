@@ -214,19 +214,13 @@ static void audio_output_wait_all(void)
 
 static void syncAudioDeviceStates(void)
 {
-	struct audio_output *audioOutput;
 	unsigned int i;
 
 	if (!audio_format_defined(&input_audio_format))
 		return;
 
-	for (i = 0; i < audioOutputArraySize; ++i) {
-		audioOutput = &audioOutputArray[i];
-		if (audioOutput->enabled)
-			audio_output_open(audioOutput, &input_audio_format);
-		else if (audio_output_is_open(audioOutput))
-			audio_output_close(audioOutput);
-	}
+	for (i = 0; i < audioOutputArraySize; ++i)
+		audio_output_update(&audioOutputArray[i], &input_audio_format);
 }
 
 bool playAudio(const char *buffer, size_t length)

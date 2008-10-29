@@ -90,6 +90,16 @@ audio_output_open(struct audio_output *audioOutput,
 }
 
 void
+audio_output_update(struct audio_output *ao,
+		    const struct audio_format *audio_format)
+{
+	if (ao->enabled)
+		audio_output_open(ao, audio_format);
+	else if (audio_output_is_open(ao))
+		audio_output_close(ao);
+}
+
+void
 audio_output_signal(struct audio_output *ao)
 {
 	notify_signal(&ao->notify);
