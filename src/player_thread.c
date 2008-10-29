@@ -314,7 +314,8 @@ static void do_play(void)
 		}
 
 		if (decoder_is_idle() && !player.queued &&
-		    pc.next_song != NULL) {
+		    pc.next_song != NULL &&
+		    pc.command == PLAYER_COMMAND_NONE) {
 			/* the decoder has finished the current song;
 			   request the next song from the playlist */
 			pc.next_song = NULL;
