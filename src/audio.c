@@ -193,12 +193,6 @@ isCurrentAudioFormat(const struct audio_format *audioFormat)
 	return audio_format_equals(audioFormat, &input_audio_format);
 }
 
-static void audio_output_wait(struct audio_output *ao)
-{
-	while (!audio_output_command_is_finished(ao))
-		notify_wait(&audio_output_client_notify);
-}
-
 static void audio_output_wait_all(void)
 {
 	unsigned i;
@@ -230,11 +224,8 @@ static void syncAudioDeviceStates(void)
 		audioOutput = &audioOutputArray[i];
 		if (audioOutput->enabled)
 			audio_output_open(audioOutput, &input_audio_format);
-		else if (audio_output_is_open(audioOutput)) {
-			audio_output_cancel(audioOutput);
-			audio_output_wait(audioOutput);
+		else if (audio_output_is_open(audioOutput))
 			audio_output_close(audioOutput);
-		}
 	}
 }
 

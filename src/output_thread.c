@@ -63,6 +63,7 @@ static void ao_play(struct audio_output *ao)
 
 	ao->result = ao->plugin->play(ao->data, data, size);
 	if (!ao->result) {
+		ao->plugin->cancel(ao->data);
 		ao->plugin->close(ao->data);
 		ao->open = false;
 	}
@@ -72,6 +73,8 @@ static void ao_play(struct audio_output *ao)
 
 static void ao_pause(struct audio_output *ao)
 {
+	ao->plugin->cancel(ao->data);
+
 	if (ao->plugin->pause != NULL) {
 		/* pause is supported */
 		ao_command_finished(ao);
@@ -107,6 +110,7 @@ static void *audio_output_task(void *arg)
 
 		case AO_COMMAND_CLOSE:
 			assert(ao->open);
+			ao->plugin->cancel(ao->data);
 			ao->plugin->close(ao->data);
 			ao->open = false;
 			ao_command_finished(ao);

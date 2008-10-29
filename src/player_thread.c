@@ -152,7 +152,6 @@ static void processDecodeInput(struct player *player)
 	case PLAYER_COMMAND_PAUSE:
 		player->paused = !player->paused;
 		if (player->paused) {
-			dropBufferedAudio();
 			audio_output_pause_all();
 			pc.state = PLAYER_STATE_PAUSE;
 		} else {
@@ -298,10 +297,9 @@ static void do_play(void)
 					break;
 				}
 
-				if (player.paused) {
-					dropBufferedAudio();
+				if (player.paused)
 					closeAudioDevice();
-				}
+
 				pc.totalTime = dc.totalTime;
 				pc.audio_format = dc.audioFormat;
 				play_audio_format = ob.audioFormat;
