@@ -912,12 +912,81 @@ mp3_send_pcm(struct mp3_data *data, unsigned i, unsigned pcm_length,
 	return DECODE_COMMAND_NONE;
 }
 
+/**
+ * Synthesize the current frame and send it via decoder_data().
+ */
+static enum decoder_command
+mp3_synth_and_send(struct mp3_data *data, ReplayGainInfo *replay_gain_info)
+{
+	unsigned i, pcm_length;
+	enum decoder_command cmd;
+
+	mad_synth_frame(&data->synth, &data->frame);
+
+	if (!data->found_first_frame) {
+		unsigned int samples_per_frame = data->synth.pcm.length;
+		data->drop_start_frames = data->drop_start_samples / samples_per_frame;
+		data->drop_end_frames = data->drop_end_samples / samples_per_frame;
+		data->drop_start_samples = data->drop_start_samples % samples_per_frame;
+		data->drop_end_samples = data->drop_end_samples % samples_per_frame;
+		data->found_first_frame = true;
+	}
+
+	if (data->drop_start_frames > 0) {
+		data->drop_start_frames--;
+		return DECODE_COMMAND_NONE;
+	} else if ((data->drop_end_frames > 0) &&
+		   (data->current_frame == (data->max_frames + 1 - data->drop_end_frames))) {
+		/* stop decoding, effectively dropping all remaining
+		   frames */
+		return DECODE_COMMAND_STOP;
+	}
+
+	if (data->input_stream->meta_title) {
+		struct tag *tag = tag_new();
+		if (data->input_stream->meta_name) {
+			tag_add_item(tag, TAG_ITEM_NAME,
+				     data->input_stream->meta_name);
+		}
+		tag_add_item(tag, TAG_ITEM_TITLE,
+			     data->input_stream->meta_title);
+		free(data->input_stream->meta_title);
+		data->input_stream->meta_title = NULL;
+		tag_free(tag);
+	}
+
+	if (!data->decoded_first_frame) {
+		i = data->drop_start_samples;
+		data->decoded_first_frame = true;
+	} else
+		i = 0;
+
+	pcm_length = data->synth.pcm.length;
+	if (data->drop_end_samples &&
+	    (data->current_frame == data->max_frames - data->drop_end_frames)) {
+		if (data->drop_end_samples >= pcm_length)
+			pcm_length = 0;
+		else
+			pcm_length -= data->drop_end_samples;
+	}
+
+	cmd = mp3_send_pcm(data, i, pcm_length, replay_gain_info);
+	if (cmd == DECODE_COMMAND_STOP)
+		return cmd;
+
+	if (data->drop_end_samples &&
+	    (data->current_frame == data->max_frames - data->drop_end_frames))
+		/* stop decoding, effectively dropping
+		 * all remaining samples */
+		return DECODE_COMMAND_STOP;
+
+	return DECODE_COMMAND_NONE;
+}
+
 static enum mp3_action
 mp3_read(struct mp3_data *data, ReplayGainInfo **replay_gain_info_r)
 {
 	struct decoder *decoder = data->decoder;
-	unsigned int pcm_length;
-	unsigned int i;
 	int ret;
 	int skip;
 	enum decoder_command cmd;
@@ -936,65 +1005,10 @@ mp3_read(struct mp3_data *data, ReplayGainInfo **replay_gain_info_r)
 		}
 		break;
 	case MUTEFRAME_NONE:
-		mad_synth_frame(&data->synth, &data->frame);
-
-		if (!data->found_first_frame) {
-			unsigned int samples_per_frame = (data->synth).pcm.length;
-			data->drop_start_frames = data->drop_start_samples / samples_per_frame;
-			data->drop_end_frames = data->drop_end_samples / samples_per_frame;
-			data->drop_start_samples = data->drop_start_samples % samples_per_frame;
-			data->drop_end_samples = data->drop_end_samples % samples_per_frame;
-			data->found_first_frame = true;
-		}
-
-		if (data->drop_start_frames > 0) {
-			data->drop_start_frames--;
-			break;
-		} else if ((data->drop_end_frames > 0) && 
-		           (data->current_frame == (data->max_frames + 1 - data->drop_end_frames))) {
-			/* stop decoding, effectively dropping all remaining
-			 * frames */
-			return DECODE_BREAK;
-		}
-
-		if (data->input_stream->meta_title) {
-			struct tag *tag = tag_new();
-			if (data->input_stream->meta_name) {
-				tag_add_item(tag, TAG_ITEM_NAME,
-					     data->input_stream->meta_name);
-			}
-			tag_add_item(tag, TAG_ITEM_TITLE,
-					data->input_stream->meta_title);
-			free(data->input_stream->meta_title);
-			data->input_stream->meta_title = NULL;
-			tag_free(tag);
-		}
-
-		if (!data->decoded_first_frame) {
-			i = data->drop_start_samples;
-			data->decoded_first_frame = true;
-		} else
-			i = 0;
-
-		pcm_length = data->synth.pcm.length;
-		if (data->drop_end_samples &&
-		    (data->current_frame == data->max_frames - data->drop_end_frames)) {
-			if (data->drop_end_samples >= pcm_length)
-				pcm_length = 0;
-			else
-				pcm_length -= data->drop_end_samples;
-		}
-
-		cmd = mp3_send_pcm(data, i, pcm_length,
-				   replay_gain_info_r != NULL
-				   ? *replay_gain_info_r : NULL);
+		cmd = mp3_synth_and_send(data,
+					 replay_gain_info_r != NULL
+					 ? *replay_gain_info_r : NULL);
 		if (cmd == DECODE_COMMAND_STOP)
-			return DECODE_BREAK;
-
-		if (data->drop_end_samples &&
-		    (data->current_frame == data->max_frames - data->drop_end_frames))
-			/* stop decoding, effectively dropping
-			 * all remaining samples */
 			return DECODE_BREAK;
 
 		if (decoder_get_command(decoder) == DECODE_COMMAND_SEEK) {
