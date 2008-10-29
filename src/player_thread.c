@@ -238,6 +238,7 @@ static void do_play(void)
 	    song */
 	int nextChunk = 0;
 	static const char silence[CHUNK_SIZE];
+	struct audio_format play_audio_format;
 	double sizeToTime = 0.0;
 
 	ob_clear();
@@ -303,6 +304,7 @@ static void do_play(void)
 				}
 				pc.totalTime = dc.totalTime;
 				pc.audio_format = dc.audioFormat;
+				play_audio_format = ob.audioFormat;
 				sizeToTime = audioFormatSizeToTime(&ob.audioFormat);
 			}
 			else {
@@ -397,7 +399,7 @@ static void do_play(void)
 			}
 
 			/* play the current chunk */
-			if (playChunk(beginChunk, &(ob.audioFormat),
+			if (playChunk(beginChunk, &play_audio_format,
 				      sizeToTime) < 0)
 				break;
 			ob_shift();
@@ -430,7 +432,7 @@ static void do_play(void)
 			break;
 		} else {
 			size_t frame_size =
-				audio_format_frame_size(&pc.audio_format);
+				audio_format_frame_size(&play_audio_format);
 			/* this formula ensures that we don't send
 			   partial frames */
 			unsigned num_frames = CHUNK_SIZE / frame_size;
