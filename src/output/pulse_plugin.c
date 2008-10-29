@@ -26,32 +26,32 @@
 #define MPD_PULSE_NAME "mpd"
 #define CONN_ATTEMPT_INTERVAL 60
 
-typedef struct _PulseData {
+struct pulse_data {
 	struct audio_output *ao;
 
 	pa_simple *s;
 	char *server;
 	char *sink;
-	int connAttempts;
-	time_t lastAttempt;
-} PulseData;
+	int num_connect_attempts;
+	time_t last_connect_attempt;
+};
 
-static PulseData *newPulseData(void)
+static struct pulse_data *pulse_new_data(void)
 {
-	PulseData *ret;
+	struct pulse_data *ret;
 
-	ret = xmalloc(sizeof(PulseData));
+	ret = xmalloc(sizeof(*ret));
 
 	ret->s = NULL;
 	ret->server = NULL;
 	ret->sink = NULL;
-	ret->connAttempts = 0;
-	ret->lastAttempt = 0;
+	ret->num_connect_attempts = 0;
+	ret->last_connect_attempt = 0;
 
 	return ret;
 }
 
-static void freePulseData(PulseData * pd)
+static void pulse_free_data(struct pulse_data *pd)
 {
 	if (pd->server)
 		free(pd->server);
@@ -60,20 +60,21 @@ static void freePulseData(PulseData * pd)
 	free(pd);
 }
 
-static void *pulse_initDriver(struct audio_output *ao,
-			      mpd_unused const struct audio_format *audio_format,
-			      ConfigParam * param)
+static void *
+pulse_init(struct audio_output *ao,
+	   mpd_unused const struct audio_format *audio_format,
+	   ConfigParam *param)
 {
 	BlockParam *server = NULL;
 	BlockParam *sink = NULL;
-	PulseData *pd;
+	struct pulse_data *pd;
 
 	if (param) {
 		server = getBlockParam(param, "server");
 		sink = getBlockParam(param, "sink");
 	}
 
-	pd = newPulseData();
+	pd = pulse_new_data();
 	pd->ao = ao;
 	pd->server = server ? xstrdup(server->value) : NULL;
 	pd->sink = sink ? xstrdup(sink->value) : NULL;
@@ -81,14 +82,14 @@ static void *pulse_initDriver(struct audio_output *ao,
 	return pd;
 }
 
-static void pulse_finishDriver(void *data)
+static void pulse_finish(void *data)
 {
-	PulseData *pd = data;
+	struct pulse_data *pd = data;
 
-	freePulseData(pd);
+	pulse_free_data(pd);
 }
 
-static int pulse_testDefault(void)
+static int pulse_test_default_device(void)
 {
 	pa_simple *s;
 	pa_sample_spec ss;
@@ -111,30 +112,30 @@ static int pulse_testDefault(void)
 	return 0;
 }
 
-static int pulse_openDevice(void *data,
-			    struct audio_format *audioFormat)
+static int
+pulse_open(void *data, struct audio_format *audio_format)
 {
-	PulseData *pd = data;
+	struct pulse_data *pd = data;
 	pa_sample_spec ss;
 	time_t t;
 	int error;
 
 	t = time(NULL);
 
-	if (pd->connAttempts != 0 &&
-	    (t - pd->lastAttempt) < CONN_ATTEMPT_INTERVAL)
+	if (pd->num_connect_attempts != 0 &&
+	    (t - pd->last_connect_attempt) < CONN_ATTEMPT_INTERVAL)
 		return -1;
 
-	pd->connAttempts++;
-	pd->lastAttempt = t;
+	pd->num_connect_attempts++;
+	pd->last_connect_attempt = t;
 
 	/* MPD doesn't support the other pulseaudio sample formats, so
 	   we just force MPD to send us everything as 16 bit */
-	audioFormat->bits = 16;
+	audio_format->bits = 16;
 
 	ss.format = PA_SAMPLE_S16NE;
-	ss.rate = audioFormat->sample_rate;
-	ss.channels = audioFormat->channels;
+	ss.rate = audio_format->sample_rate;
+	ss.channels = audio_format->channels;
 
 	pd->s = pa_simple_new(pd->server, MPD_PULSE_NAME, PA_STREAM_PLAYBACK,
 			      pd->sink, audio_output_get_name(pd->ao),
@@ -144,24 +145,24 @@ static int pulse_openDevice(void *data,
 		ERROR("Cannot connect to server in PulseAudio output "
 		      "\"%s\" (attempt %i): %s\n",
 		      audio_output_get_name(pd->ao),
-		      pd->connAttempts, pa_strerror(error));
+		      pd->num_connect_attempts, pa_strerror(error));
 		return -1;
 	}
 
-	pd->connAttempts = 0;
+	pd->num_connect_attempts = 0;
 
 	DEBUG("PulseAudio output \"%s\" connected and playing %i bit, %i "
 	      "channel audio at %i Hz\n",
 	      audio_output_get_name(pd->ao),
-	      audioFormat->bits,
-	      audioFormat->channels, audioFormat->sample_rate);
+	      audio_format->bits,
+	      audio_format->channels, audio_format->sample_rate);
 
 	return 0;
 }
 
-static void pulse_dropBufferedAudio(void *data)
+static void pulse_cancel(void *data)
 {
-	PulseData *pd = data;
+	struct pulse_data *pd = data;
 	int error;
 
 	if (pa_simple_flush(pd->s, &error) < 0)
@@ -170,9 +171,9 @@ static void pulse_dropBufferedAudio(void *data)
 			pa_strerror(error));
 }
 
-static void pulse_closeDevice(void *data)
+static void pulse_close(void *data)
 {
-	PulseData *pd = data;
+	struct pulse_data *pd = data;
 
 	if (pd->s) {
 		pa_simple_drain(pd->s, NULL);
@@ -180,10 +181,10 @@ static void pulse_closeDevice(void *data)
 	}
 }
 
-static int pulse_playAudio(void *data,
+static int pulse_play(void *data,
 			   const char *playChunk, size_t size)
 {
-	PulseData *pd = data;
+	struct pulse_data *pd = data;
 	int error;
 
 	if (pa_simple_write(pd->s, playChunk, size, &error) < 0) {
@@ -191,20 +192,20 @@ static int pulse_playAudio(void *data,
 		      "error: %s\n",
 		      audio_output_get_name(pd->ao),
 		      pa_strerror(error));
-		pulse_closeDevice(pd);
+		pulse_close(pd);
 		return -1;
 	}
 
 	return 0;
 }
 
-const struct audio_output_plugin pulsePlugin = {
+const struct audio_output_plugin pulse_plugin = {
 	.name = "pulse",
-	.test_default_device = pulse_testDefault,
-	.init = pulse_initDriver,
-	.finish = pulse_finishDriver,
-	.open = pulse_openDevice,
-	.play = pulse_playAudio,
-	.cancel = pulse_dropBufferedAudio,
-	.close = pulse_closeDevice,
+	.test_default_device = pulse_test_default_device,
+	.init = pulse_init,
+	.finish = pulse_finish,
+	.open = pulse_open,
+	.play = pulse_play,
+	.cancel = pulse_cancel,
+	.close = pulse_close,
 };
