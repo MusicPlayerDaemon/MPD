@@ -174,8 +174,6 @@ static void wavpack_decode(struct decoder * decoder,
 			if (canseek) {
 				int where;
 
-				decoder_clear(decoder);
-
 				where = decoder_seek_where(decoder) *
 					audio_format.sample_rate;
 				if (WavpackSeekSample(wpc, where)) {

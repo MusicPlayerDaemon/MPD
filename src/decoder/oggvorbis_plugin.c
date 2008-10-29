@@ -261,7 +261,6 @@ oggvorbis_decode(struct decoder *decoder, struct input_stream *inStream)
 		if (decoder_get_command(decoder) == DECODE_COMMAND_SEEK) {
 			double seek_where = decoder_seek_where(decoder);
 			if (0 == ov_time_seek_page(&vf, seek_where)) {
-				decoder_clear(decoder);
 				chunkpos = 0;
 				decoder_command_finished(decoder);
 			} else

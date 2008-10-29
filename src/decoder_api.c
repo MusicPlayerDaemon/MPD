@@ -77,6 +77,10 @@ void decoder_command_finished(mpd_unused struct decoder * decoder)
 	assert(dc.command != DECODE_COMMAND_SEEK ||
 	       dc.seekError || decoder->seeking);
 
+	if (dc.command == DECODE_COMMAND_SEEK)
+		/* delete frames from the old song position */
+		ob_clear();
+
 	dc.command = DECODE_COMMAND_NONE;
 	notify_signal(&pc.notify);
 }
@@ -208,9 +212,4 @@ decoder_data(struct decoder *decoder,
 void decoder_flush(mpd_unused struct decoder *decoder)
 {
 	ob_flush();
-}
-
-void decoder_clear(mpd_unused struct decoder *decoder)
-{
-	ob_clear();
 }

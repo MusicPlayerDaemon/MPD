@@ -224,7 +224,6 @@ mp4_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 
 		if (seeking && seekPositionFound) {
 			seekPositionFound = false;
-			decoder_clear(mpd_decoder);
 			seeking = 0;
 			decoder_command_finished(mpd_decoder);
 		}
@@ -296,10 +295,9 @@ mp4_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 	if (!initialized)
 		return -1;
 
-	if (decoder_get_command(mpd_decoder) == DECODE_COMMAND_SEEK && seeking) {
-		decoder_clear(mpd_decoder);
+	if (decoder_get_command(mpd_decoder) == DECODE_COMMAND_SEEK && seeking)
 		decoder_command_finished(mpd_decoder);
-	}
+
 	decoder_flush(mpd_decoder);
 
 	return 0;

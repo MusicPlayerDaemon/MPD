@@ -1018,7 +1018,6 @@ mp3_read(struct mp3_data *data, ReplayGainInfo **replay_gain_info_r)
 					      decoder_seek_where(decoder));
 			if (j < data->highest_frame) {
 				if (mp3_seek(data, data->frame_offsets[j])) {
-					decoder_clear(decoder);
 					data->current_frame = j;
 					decoder_command_finished(decoder);
 				} else
@@ -1026,7 +1025,6 @@ mp3_read(struct mp3_data *data, ReplayGainInfo **replay_gain_info_r)
 			} else {
 				data->seek_where = decoder_seek_where(decoder);
 				data->mute_frame = MUTEFRAME_SEEK;
-				decoder_clear(decoder);
 				decoder_command_finished(decoder);
 			}
 		}
@@ -1130,10 +1128,8 @@ mp3_decode(struct decoder *decoder, struct input_stream *input_stream)
 		freeReplayGainInfo(replay_gain_info);
 
 	if (decoder_get_command(decoder) == DECODE_COMMAND_SEEK &&
-	    data.mute_frame == MUTEFRAME_SEEK) {
-		decoder_clear(decoder);
+	    data.mute_frame == MUTEFRAME_SEEK)
 		decoder_command_finished(decoder);
-	}
 
 	decoder_flush(decoder);
 	mp3_data_finish(&data);

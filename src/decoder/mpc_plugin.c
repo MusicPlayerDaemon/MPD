@@ -168,7 +168,6 @@ mpc_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 			samplePos = decoder_seek_where(mpd_decoder) *
 				audio_format.sample_rate;
 			if (mpc_decoder_seek_sample(&decoder, samplePos)) {
-				decoder_clear(mpd_decoder);
 				s16 = (int16_t *) chunk;
 				chunkpos = 0;
 				decoder_command_finished(mpd_decoder);

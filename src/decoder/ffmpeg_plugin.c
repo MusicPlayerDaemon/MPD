@@ -271,7 +271,6 @@ static int ffmpeg_decode_internal(BasePtrs *base)
 		if (decoder_get_command(decoder) == DECODE_COMMAND_SEEK) {
 
 			DEBUG("seek\n");
-			decoder_clear(decoder);
 			current = decoder_seek_where(decoder) * AV_TIME_BASE;
 
 			if (av_seek_frame(pFormatCtx, -1, current , 0) < 0) {

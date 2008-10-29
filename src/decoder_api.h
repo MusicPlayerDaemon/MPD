@@ -161,6 +161,4 @@ decoder_data(struct decoder *decoder,
 
 void decoder_flush(struct decoder *decoder);
 
-void decoder_clear(struct decoder *decoder);
-
 #endif

@@ -349,7 +349,6 @@ flac_decode_internal(struct decoder * decoder, struct input_stream *inStream,
 			FLAC__uint64 sampleToSeek = decoder_seek_where(decoder) *
 			    data.audio_format.sample_rate + 0.5;
 			if (flac_seek_absolute(flacDec, sampleToSeek)) {
-				decoder_clear(decoder);
 				data.time = ((float)sampleToSeek) /
 				    data.audio_format.sample_rate;
 				data.position = 0;
