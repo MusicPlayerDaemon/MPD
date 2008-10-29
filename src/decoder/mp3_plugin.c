@@ -842,6 +842,35 @@ mp3_time_to_frame(const struct mp3_data *data, double t)
 	return i;
 }
 
+static void
+mp3_update_timer_next_frame(struct mp3_data *data)
+{
+	if (data->current_frame >= data->highest_frame) {
+		/* record this frame's properties in
+		   data->frame_offsets (for seeking) and
+		   data->times */
+		data->bit_rate = (data->frame).header.bitrate;
+
+		if (data->current_frame >= data->max_frames)
+			/* cap data->current_frame */
+			data->current_frame = data->max_frames - 1;
+		else
+			data->highest_frame++;
+
+		data->frame_offsets[data->current_frame] =
+			mp3_this_frame_offset(data);
+
+		mad_timer_add(&data->timer, (data->frame).header.duration);
+		data->times[data->current_frame] = data->timer;
+	} else
+		/* get the new timer value from data->times */
+		data->timer = data->times[data->current_frame];
+
+	data->current_frame++;
+	data->elapsed_time =
+		mad_timer_count(data->timer, MAD_UNITS_MILLISECONDS) / 1000.0;
+}
+
 static enum mp3_action
 mp3_read(struct mp3_data *data, ReplayGainInfo **replay_gain_info_r)
 {
@@ -851,24 +880,7 @@ mp3_read(struct mp3_data *data, ReplayGainInfo **replay_gain_info_r)
 	int ret;
 	int skip;
 
-	if (data->current_frame >= data->highest_frame) {
-		mad_timer_add(&data->timer, (data->frame).header.duration);
-		data->bit_rate = (data->frame).header.bitrate;
-		if (data->current_frame >= data->max_frames) {
-			data->current_frame = data->max_frames - 1;
-		} else {
-			data->highest_frame++;
-		}
-		data->frame_offsets[data->current_frame] =
-			mp3_this_frame_offset(data);
-		data->times[data->current_frame] = data->timer;
-	} else {
-		data->timer = data->times[data->current_frame];
-	}
-	data->current_frame++;
-	data->elapsed_time =
-	    ((float)mad_timer_count(data->timer, MAD_UNITS_MILLISECONDS)) /
-	    1000;
+	mp3_update_timer_next_frame(data);
 
 	switch (data->mute_frame) {
 	case MUTEFRAME_SKIP:
