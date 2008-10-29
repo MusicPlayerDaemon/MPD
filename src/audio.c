@@ -342,6 +342,7 @@ int enableAudioDevice(unsigned int device)
 	if (device >= audioOutputArraySize)
 		return -1;
 
+	audioOutputArray[device].reopen_after = 0;
 	audioOutputArray[device].enabled = true;
 	idle_add(IDLE_OUTPUT);
 

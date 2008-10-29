@@ -23,6 +23,12 @@
 
 #include <assert.h>
 
+enum {
+	/** after a failure, wait this number of seconds before
+	    automatically reopening the device */
+	REOPEN_AFTER = 10,
+};
+
 static void ao_command_finished(struct audio_output *ao)
 {
 	assert(ao->command != AO_COMMAND_NONE);
@@ -104,6 +110,8 @@ static void *audio_output_task(void *arg)
 			assert(!ao->open);
 			if (ao->result == true)
 				ao->open = true;
+			else
+				ao->reopen_after = time(NULL) + REOPEN_AFTER;
 
 			ao_command_finished(ao);
 			break;

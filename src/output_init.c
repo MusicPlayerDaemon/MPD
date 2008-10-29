@@ -87,6 +87,7 @@ int audio_output_init(struct audio_output *ao, ConfigParam * param)
 	ao->plugin = plugin;
 	ao->enabled = true;
 	ao->open = false;
+	ao->reopen_after = 0;
 
 	ao->convBuffer = NULL;
 	ao->convBufferLen = 0;

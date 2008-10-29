@@ -57,6 +57,8 @@ audio_output_open(struct audio_output *audioOutput,
 {
 	bool ret = true;
 
+	audioOutput->reopen_after = 0;
+
 	if (audioOutput->open &&
 	    audio_format_equals(audioFormat, &audioOutput->inAudioFormat)) {
 		return true;
@@ -93,9 +95,10 @@ void
 audio_output_update(struct audio_output *ao,
 		    const struct audio_format *audio_format)
 {
-	if (ao->enabled)
-		audio_output_open(ao, audio_format);
-	else if (audio_output_is_open(ao))
+	if (ao->enabled) {
+		if (ao->reopen_after == 0 || time(NULL) > ao->reopen_after)
+			audio_output_open(ao, audio_format);
+	} else if (audio_output_is_open(ao))
 		audio_output_close(ao);
 }
 

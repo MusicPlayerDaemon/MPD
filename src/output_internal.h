@@ -23,6 +23,8 @@
 #include "pcm_utils.h"
 #include "notify.h"
 
+#include <time.h>
+
 struct audio_output {
 	/**
 	 * The device's configured display name.
@@ -49,6 +51,12 @@ struct audio_output {
 	 * Is the device (already) open and functional?
 	 */
 	bool open;
+
+	/**
+	 * If not zero, the device has failed, and should not be
+	 * reopened automatically before this time stamp.
+	 */
+	time_t reopen_after;
 
 	/**
 	 * The audio_format in which audio data is received from the
