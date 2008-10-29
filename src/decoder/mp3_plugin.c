@@ -20,6 +20,7 @@
 #include "../log.h"
 #include "../conf.h"
 
+#include <assert.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -949,9 +950,11 @@ mp3_read(struct mp3_data *data, ReplayGainInfo **replay_gain_info_r)
 			 * all remaining samples */
 			return DECODE_BREAK;
 
-		if (decoder_get_command(decoder) == DECODE_COMMAND_SEEK &&
-		    data->input_stream->seekable) {
+		if (decoder_get_command(decoder) == DECODE_COMMAND_SEEK) {
 			unsigned long j = 0;
+
+			assert(data->input_stream->seekable);
+
 			data->mute_frame = MUTEFRAME_SEEK;
 			while (j < data->highest_frame &&
 			       decoder_seek_where(decoder) >
@@ -969,9 +972,6 @@ mp3_read(struct mp3_data *data, ReplayGainInfo **replay_gain_info_r)
 					decoder_seek_error(decoder);
 				data->mute_frame = MUTEFRAME_NONE;
 			}
-		} else if (decoder_get_command(decoder) == DECODE_COMMAND_SEEK &&
-			   !data->input_stream->seekable) {
-			decoder_seek_error(decoder);
 		}
 	}
 
