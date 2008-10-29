@@ -17,9 +17,8 @@
  */
 
 #include "../output_api.h"
-#include "../utils.h"
-#include "../log.h"
 
+#include <glib.h>
 #include <pulse/simple.h>
 #include <pulse/error.h>
 
@@ -40,7 +39,7 @@ static struct pulse_data *pulse_new_data(void)
 {
 	struct pulse_data *ret;
 
-	ret = xmalloc(sizeof(*ret));
+	ret = g_new(struct pulse_data, 1);
 
 	ret->s = NULL;
 	ret->server = NULL;
@@ -53,11 +52,9 @@ static struct pulse_data *pulse_new_data(void)
 
 static void pulse_free_data(struct pulse_data *pd)
 {
-	if (pd->server)
-		free(pd->server);
-	if (pd->sink)
-		free(pd->sink);
-	free(pd);
+	g_free(pd->server);
+	g_free(pd->sink);
+	g_free(pd);
 }
 
 static void *
@@ -76,8 +73,8 @@ pulse_init(struct audio_output *ao,
 
 	pd = pulse_new_data();
 	pd->ao = ao;
-	pd->server = server ? xstrdup(server->value) : NULL;
-	pd->sink = sink ? xstrdup(sink->value) : NULL;
+	pd->server = g_strdup(server->value);
+	pd->sink = g_strdup(sink->value);
 
 	return pd;
 }
@@ -102,8 +99,8 @@ static int pulse_test_default_device(void)
 	s = pa_simple_new(NULL, MPD_PULSE_NAME, PA_STREAM_PLAYBACK, NULL,
 			  MPD_PULSE_NAME, &ss, NULL, NULL, &error);
 	if (!s) {
-		WARNING("Cannot connect to default PulseAudio server: %s\n",
-			pa_strerror(error));
+		g_message("Cannot connect to default PulseAudio server: %s\n",
+			  pa_strerror(error));
 		return -1;
 	}
 
@@ -142,20 +139,20 @@ pulse_open(void *data, struct audio_format *audio_format)
 			      &ss, NULL, NULL,
 			      &error);
 	if (!pd->s) {
-		ERROR("Cannot connect to server in PulseAudio output "
-		      "\"%s\" (attempt %i): %s\n",
-		      audio_output_get_name(pd->ao),
-		      pd->num_connect_attempts, pa_strerror(error));
+		g_warning("Cannot connect to server in PulseAudio output "
+			  "\"%s\" (attempt %i): %s\n",
+			  audio_output_get_name(pd->ao),
+			  pd->num_connect_attempts, pa_strerror(error));
 		return -1;
 	}
 
 	pd->num_connect_attempts = 0;
 
-	DEBUG("PulseAudio output \"%s\" connected and playing %i bit, %i "
-	      "channel audio at %i Hz\n",
-	      audio_output_get_name(pd->ao),
-	      audio_format->bits,
-	      audio_format->channels, audio_format->sample_rate);
+	g_debug("PulseAudio output \"%s\" connected and playing %i bit, %i "
+		"channel audio at %i Hz\n",
+		audio_output_get_name(pd->ao),
+		audio_format->bits,
+		audio_format->channels, audio_format->sample_rate);
 
 	return 0;
 }
@@ -166,9 +163,9 @@ static void pulse_cancel(void *data)
 	int error;
 
 	if (pa_simple_flush(pd->s, &error) < 0)
-		WARNING("Flush failed in PulseAudio output \"%s\": %s\n",
-			audio_output_get_name(pd->ao),
-			pa_strerror(error));
+		g_warning("Flush failed in PulseAudio output \"%s\": %s\n",
+			  audio_output_get_name(pd->ao),
+			  pa_strerror(error));
 }
 
 static void pulse_close(void *data)
@@ -188,10 +185,10 @@ static int pulse_play(void *data,
 	int error;
 
 	if (pa_simple_write(pd->s, playChunk, size, &error) < 0) {
-		ERROR("PulseAudio output \"%s\" disconnecting due to write "
-		      "error: %s\n",
-		      audio_output_get_name(pd->ao),
-		      pa_strerror(error));
+		g_warning("PulseAudio output \"%s\" disconnecting due to "
+			  "write error: %s\n",
+			  audio_output_get_name(pd->ao),
+			  pa_strerror(error));
 		pulse_close(pd);
 		return -1;
 	}
