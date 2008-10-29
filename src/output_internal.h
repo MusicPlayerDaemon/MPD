@@ -41,6 +41,11 @@ struct audio_output {
 	void *data;
 
 	/**
+	 * Has the user enabled this device?
+	 */
+	bool enabled;
+
+	/**
 	 * Is the device (already) open and functional?
 	 */
 	bool open;
