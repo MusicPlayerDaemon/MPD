@@ -871,14 +871,56 @@ mp3_update_timer_next_frame(struct mp3_data *data)
 		mad_timer_count(data->timer, MAD_UNITS_MILLISECONDS) / 1000.0;
 }
 
+/**
+ * Sends the synthesized current frame via decoder_data().
+ */
+static enum decoder_command
+mp3_send_pcm(struct mp3_data *data, unsigned i, unsigned pcm_length,
+	     ReplayGainInfo *replay_gain_info)
+{
+	unsigned max_samples;
+
+	max_samples = sizeof(data->output_buffer) /
+		sizeof(data->output_buffer[0]) /
+		MAD_NCHANNELS(&(data->frame).header);
+
+	while (i < pcm_length) {
+		enum decoder_command cmd;
+		unsigned int num_samples = pcm_length - i;
+		if (num_samples > max_samples)
+			num_samples = max_samples;
+
+		i += num_samples;
+
+		mad_fixed_to_24_buffer(data->output_buffer,
+				       &data->synth,
+				       i - num_samples, i,
+				       MAD_NCHANNELS(&(data->frame).header));
+		num_samples *= MAD_NCHANNELS(&(data->frame).header);
+
+		cmd = decoder_data(data->decoder, data->input_stream,
+				   data->input_stream->seekable,
+				   data->output_buffer,
+				   sizeof(data->output_buffer[0]) * num_samples,
+				   data->elapsed_time,
+				   data->bit_rate / 1000,
+				   replay_gain_info);
+		if (cmd == DECODE_COMMAND_STOP)
+			return cmd;
+	}
+
+	return DECODE_COMMAND_NONE;
+}
+
 static enum mp3_action
 mp3_read(struct mp3_data *data, ReplayGainInfo **replay_gain_info_r)
 {
 	struct decoder *decoder = data->decoder;
-	unsigned int pcm_length, max_samples;
+	unsigned int pcm_length;
 	unsigned int i;
 	int ret;
 	int skip;
+	enum decoder_command cmd;
 
 	mp3_update_timer_next_frame(data);
 
@@ -943,34 +985,11 @@ mp3_read(struct mp3_data *data, ReplayGainInfo **replay_gain_info_r)
 				pcm_length -= data->drop_end_samples;
 		}
 
-		max_samples = sizeof(data->output_buffer) /
-			sizeof(data->output_buffer[0]) /
-			MAD_NCHANNELS(&(data->frame).header);
-
-		while (i < pcm_length) {
-			enum decoder_command cmd;
-			unsigned int num_samples = pcm_length - i;
-			if (num_samples > max_samples)
-				num_samples = max_samples;
-
-			i += num_samples;
-
-			mad_fixed_to_24_buffer(data->output_buffer,
-					       &data->synth,
-					       i - num_samples, i,
-					       MAD_NCHANNELS(&(data->frame).header));
-			num_samples *= MAD_NCHANNELS(&(data->frame).header);
-
-			cmd = decoder_data(decoder, data->input_stream,
-					   data->input_stream->seekable,
-					   data->output_buffer,
-					   sizeof(data->output_buffer[0]) * num_samples,
-					   data->elapsed_time,
-					   data->bit_rate / 1000,
-					   (replay_gain_info_r != NULL) ? *replay_gain_info_r : NULL);
-			if (cmd == DECODE_COMMAND_STOP)
-				return DECODE_BREAK;
-		}
+		cmd = mp3_send_pcm(data, i, pcm_length,
+				   replay_gain_info_r != NULL
+				   ? *replay_gain_info_r : NULL);
+		if (cmd == DECODE_COMMAND_STOP)
+			return DECODE_BREAK;
 
 		if (data->drop_end_samples &&
 		    (data->current_frame == data->max_frames - data->drop_end_frames))
