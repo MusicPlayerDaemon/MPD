@@ -17,9 +17,7 @@
  */
 
 #include "log.h"
-
 #include "conf.h"
-#include "utils.h"
 
 #include <assert.h>
 #include <sys/types.h>
@@ -27,6 +25,13 @@
 #include <string.h>
 #include <stdarg.h>
 #include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#include <unistd.h>
+#include <errno.h>
+#include <pthread.h>
+#include <glib.h>
 
 #define LOG_DATE_BUF_SIZE 16
 #define LOG_DATE_LEN (LOG_DATE_BUF_SIZE - 1)
@@ -72,7 +77,14 @@ static void buffer_warning(const char *fmt, va_list args)
 	}
 
 	vsnprintf(tmp, len, fmt, args);
-	warningBuffer = appendToString(warningBuffer, buffer);
+
+	if (warningBuffer == NULL)
+		warningBuffer = g_strdup(tmp);
+	else {
+		tmp = g_strconcat(warningBuffer, tmp, NULL);
+		g_free(warningBuffer);
+		warningBuffer = tmp;
+	}
 
 	va_end(args);
 }
@@ -256,7 +268,7 @@ void close_log_files(void)
 		return;
 	assert(out_fd >= 0);
 	assert(err_fd >= 0);
-	xclose(out_fd);
-	xclose(err_fd);
+	close(out_fd);
+	close(err_fd);
 }
 

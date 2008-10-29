@@ -75,26 +75,6 @@ int ipv6Supported(void)
 #endif
 }
 
-char *appendToString(char *dest, const char *src)
-{
-	int destlen;
-	int srclen = strlen(src);
-
-	if (dest == NULL) {
-		dest = xmalloc(srclen + 1);
-		memset(dest, 0, srclen + 1);
-		destlen = 0;
-	} else {
-		destlen = strlen(dest);
-		dest = xrealloc(dest, destlen + srclen + 1);
-	}
-
-	memcpy(dest + destlen, src, srclen);
-	dest[destlen + srclen] = '\0';
-
-	return dest;
-}
-
 unsigned long readLEuint32(const unsigned char *p)
 {
 	return ((unsigned long)p[0] << 0) |
