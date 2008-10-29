@@ -525,7 +525,6 @@ my_shout_play(void *data, const char *chunk, size_t size)
 	if (!sd->opened) {
 		status = open_shout_conn(sd);
 		if (status < 0) {
-			my_shout_close_device(sd);
 			return false;
 		} else if (status > 0) {
 			timer_sync(sd->timer);
@@ -533,15 +532,11 @@ my_shout_play(void *data, const char *chunk, size_t size)
 		}
 	}
 
-	if (sd->encoder->encode_func(sd, chunk, size)) {
-		my_shout_close_device(sd);
+	if (sd->encoder->encode_func(sd, chunk, size))
 		return false;
-	}
 
-	if (write_page(sd) < 0) {
-		my_shout_close_device(sd);
+	if (write_page(sd) < 0)
 		return false;
-	}
 
 	return true;
 }

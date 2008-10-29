@@ -253,7 +253,6 @@ mvp_playAudio(void *data, const char *playChunk, size_t size)
 				continue;
 			ERROR("closing mvp PCM device due to write error: "
 			      "%s\n", strerror(errno));
-			mvp_closeDevice(md);
 			return false;
 		}
 		playChunk += ret;

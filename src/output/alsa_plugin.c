@@ -412,7 +412,6 @@ alsa_playAudio(void *data, const char *playChunk, size_t size)
 				ERROR("closing ALSA device \"%s\" due to write "
 				      "error: %s\n", ad->device,
 				      snd_strerror(-errno));
-				alsa_closeDevice(ad);
 				return false;
 			}
 			continue;

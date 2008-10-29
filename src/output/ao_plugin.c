@@ -224,7 +224,6 @@ audioOutputAo_play(void *data, const char *playChunk, size_t size)
 		if (ao_play_deconst(ad->device, playChunk, chunk_size) == 0) {
 			audioOutputAo_error();
 			ERROR("closing audio device due to write error\n");
-			audioOutputAo_closeDevice(ad);
 			return false;
 		}
 

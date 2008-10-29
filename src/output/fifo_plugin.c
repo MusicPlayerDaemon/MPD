@@ -259,7 +259,6 @@ fifo_playAudio(void *data, const char *playChunk, size_t size)
 
 			ERROR("Closing FIFO output \"%s\" due to write error: "
 			      "%s\n", fd->path, strerror(errno));
-			fifo_closeDevice(fd);
 			return false;
 		}
 

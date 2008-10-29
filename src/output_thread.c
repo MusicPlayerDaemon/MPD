@@ -62,6 +62,11 @@ static void ao_play(struct audio_output *ao)
 		convertAudioFormat(ao, &data, &size);
 
 	ao->result = ao->plugin->play(ao->data, data, size);
+	if (!ao->result) {
+		ao->plugin->close(ao->data);
+		ao->open = false;
+	}
+
 	ao_command_finished(ao);
 }
 

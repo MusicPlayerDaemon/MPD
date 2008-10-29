@@ -549,7 +549,6 @@ oss_playAudio(void *data, const char *playChunk, size_t size)
 				continue;
 			ERROR("closing oss device \"%s\" due to write error: "
 			      "%s\n", od->device, strerror(errno));
-			oss_closeDevice(od);
 			return false;
 		}
 		playChunk += ret;
