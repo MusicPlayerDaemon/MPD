@@ -168,8 +168,8 @@ static void audioOutputAo_closeDevice(void *data)
 	}
 }
 
-static int audioOutputAo_openDevice(void *data,
-				    struct audio_format *audio_format)
+static bool
+audioOutputAo_openDevice(void *data, struct audio_format *audio_format)
 {
 	ao_sample_format format;
 	AoData *ad = (AoData *)data;
@@ -186,9 +186,9 @@ static int audioOutputAo_openDevice(void *data,
 	ad->device = ao_open_live(ad->driverId, &format, ad->options);
 
 	if (ad->device == NULL)
-		return -1;
+		return false;
 
-	return 0;
+	return true;
 }
 
 /**
@@ -208,13 +208,14 @@ static int ao_play_deconst(ao_device *device, const void *output_samples,
 	return ao_play(device, u.out, num_bytes);
 }
 
-static int audioOutputAo_play(void *data, const char *playChunk, size_t size)
+static bool
+audioOutputAo_play(void *data, const char *playChunk, size_t size)
 {
 	AoData *ad = (AoData *)data;
 	size_t chunk_size;
 
 	if (ad->device == NULL)
-		return -1;
+		return false;
 
 	while (size > 0) {
 		chunk_size = (size_t)ad->writeSize > size
@@ -224,14 +225,14 @@ static int audioOutputAo_play(void *data, const char *playChunk, size_t size)
 			audioOutputAo_error();
 			ERROR("closing audio device due to write error\n");
 			audioOutputAo_closeDevice(ad);
-			return -1;
+			return false;
 		}
 
 		playChunk += chunk_size;
 		size -= chunk_size;
 	}
 
-	return 0;
+	return true;
 }
 
 const struct audio_output_plugin aoPlugin = {

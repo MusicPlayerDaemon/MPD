@@ -81,7 +81,7 @@ static unsigned pcmfrequencies[][3] = {
 static const unsigned numfrequencies =
 	sizeof(pcmfrequencies) / sizeof(pcmfrequencies[0]);
 
-static int mvp_testDefault(void)
+static bool mvp_testDefault(void)
 {
 	int fd;
 
@@ -89,13 +89,13 @@ static int mvp_testDefault(void)
 
 	if (fd) {
 		close(fd);
-		return 0;
+		return true;
 	}
 
 	WARNING("Error opening PCM device \"/dev/adec_pcm\": %s\n",
 		strerror(errno));
 
-	return -1;
+	return false;
 }
 
 static void *mvp_initDriver(mpd_unused struct audio_output *audio_output,
@@ -178,7 +178,8 @@ static int mvp_setPcmParams(MvpData * md, unsigned long rate, int channels,
 	return 0;
 }
 
-static int mvp_openDevice(void *data, struct audio_format *audioFormat)
+static bool
+mvp_openDevice(void *data, struct audio_format *audioFormat)
 {
 	MvpData *md = data;
 	long long int stc = 0;
@@ -186,24 +187,24 @@ static int mvp_openDevice(void *data, struct audio_format *audioFormat)
 
 	if ((md->fd = open("/dev/adec_pcm", O_RDWR | O_NONBLOCK)) < 0) {
 		ERROR("Error opening /dev/adec_pcm: %s\n", strerror(errno));
-		return -1;
+		return false;
 	}
 	if (ioctl(md->fd, MVP_SET_AUD_SRC, 1) < 0) {
 		ERROR("Error setting audio source: %s\n", strerror(errno));
-		return -1;
+		return false;
 	}
 	if (ioctl(md->fd, MVP_SET_AUD_STREAMTYPE, 0) < 0) {
 		ERROR("Error setting audio streamtype: %s\n", strerror(errno));
-		return -1;
+		return false;
 	}
 	if (ioctl(md->fd, MVP_SET_AUD_FORMAT, &mix) < 0) {
 		ERROR("Error setting audio format: %s\n", strerror(errno));
-		return -1;
+		return false;
 	}
 	ioctl(md->fd, MVP_SET_AUD_STC, &stc);
 	if (ioctl(md->fd, MVP_SET_AUD_BYPASS, 1) < 0) {
 		ERROR("Error setting audio streamtype: %s\n", strerror(errno));
-		return -1;
+		return false;
 	}
 #ifdef WORDS_BIGENDIAN
 	mvp_setPcmParams(md, audioFormat->sample_rate, audioFormat->channels,
@@ -213,7 +214,7 @@ static int mvp_openDevice(void *data, struct audio_format *audioFormat)
 			 1, audioFormat->bits);
 #endif
 	md->audio_format = *audioFormat;
-	return 0;
+	return true;
 }
 
 static void mvp_closeDevice(void *data)
@@ -235,7 +236,8 @@ static void mvp_dropBufferedAudio(void *data)
 	}
 }
 
-static int mvp_playAudio(void *data, const char *playChunk, size_t size)
+static bool
+mvp_playAudio(void *data, const char *playChunk, size_t size)
 {
 	MvpData *md = data;
 	ssize_t ret;
@@ -252,12 +254,12 @@ static int mvp_playAudio(void *data, const char *playChunk, size_t size)
 			ERROR("closing mvp PCM device due to write error: "
 			      "%s\n", strerror(errno));
 			mvp_closeDevice(md);
-			return -1;
+			return false;
 		}
 		playChunk += ret;
 		size -= ret;
 	}
-	return 0;
+	return true;
 }
 
 const struct audio_output_plugin mvpPlugin = {

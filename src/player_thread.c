@@ -156,7 +156,7 @@ static void processDecodeInput(struct player *player)
 			audio_output_pause_all();
 			pc.state = PLAYER_STATE_PAUSE;
 		} else {
-			if (openAudioDevice(NULL) >= 0) {
+			if (openAudioDevice(NULL)) {
 				pc.state = PLAYER_STATE_PLAY;
 			} else {
 				char tmp[MPD_PATH_MAX];
@@ -215,8 +215,7 @@ static int playChunk(ob_chunk * chunk,
 	pcm_volume(chunk->data, chunk->chunkSize,
 		   format, pc.softwareVolume);
 
-	if (playAudio(chunk->data,
-		      chunk->chunkSize) < 0)
+	if (!playAudio(chunk->data, chunk->chunkSize))
 		return -1;
 
 	pc.totalPlayTime += sizeToTime * chunk->chunkSize;
@@ -288,7 +287,7 @@ static void do_play(void)
 			else if (!decoder_is_starting()) {
 				/* the decoder is ready and ok */
 				player.decoder_starting = false;
-				if(openAudioDevice(&(ob.audioFormat))<0) {
+				if (!openAudioDevice(&ob.audioFormat)) {
 					char tmp[MPD_PATH_MAX];
 					assert(dc.next_song == NULL || dc.next_song->url != NULL);
 					pc.errored_song = dc.next_song;
@@ -439,7 +438,7 @@ static void do_play(void)
 			unsigned num_frames = CHUNK_SIZE / frame_size;
 
 			/*DEBUG("waiting for decoded audio, play silence\n");*/
-			if (playAudio(silence, num_frames * frame_size) < 0)
+			if (!playAudio(silence, num_frames * frame_size))
 				break;
 		}
 	}

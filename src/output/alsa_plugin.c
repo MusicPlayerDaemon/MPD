@@ -125,7 +125,7 @@ static void alsa_finishDriver(void *data)
 	freeAlsaData(ad);
 }
 
-static int alsa_testDefault(void)
+static bool alsa_testDefault(void)
 {
 	snd_pcm_t *handle;
 
@@ -134,11 +134,11 @@ static int alsa_testDefault(void)
 	if (ret) {
 		WARNING("Error opening default ALSA device: %s\n",
 			snd_strerror(-ret));
-		return -1;
+		return false;
 	} else
 		snd_pcm_close(handle);
 
-	return 0;
+	return true;
 }
 
 static snd_pcm_format_t get_bitformat(const struct audio_format *af)
@@ -152,7 +152,7 @@ static snd_pcm_format_t get_bitformat(const struct audio_format *af)
 	return SND_PCM_FORMAT_UNKNOWN;
 }
 
-static int alsa_openDevice(void *data, struct audio_format *audioFormat)
+static bool alsa_openDevice(void *data, struct audio_format *audioFormat)
 {
 	AlsaData *ad = data;
 	snd_pcm_format_t bitformat;
@@ -318,7 +318,7 @@ configure_hw:
 	      "%u Hz\n", ad->device, audioFormat->bits,
 	      channels, sample_rate);
 
-	return 0;
+	return true;
 
 error:
 	if (cmd) {
@@ -332,7 +332,7 @@ fail:
 	if (ad->pcmHandle)
 		snd_pcm_close(ad->pcmHandle);
 	ad->pcmHandle = NULL;
-	return -1;
+	return false;
 }
 
 static int alsa_errorRecovery(AlsaData * ad, int err)
@@ -393,7 +393,8 @@ static void alsa_closeDevice(void *data)
 	}
 }
 
-static int alsa_playAudio(void *data, const char *playChunk, size_t size)
+static bool
+alsa_playAudio(void *data, const char *playChunk, size_t size)
 {
 	AlsaData *ad = data;
 	int ret;
@@ -412,7 +413,7 @@ static int alsa_playAudio(void *data, const char *playChunk, size_t size)
 				      "error: %s\n", ad->device,
 				      snd_strerror(-errno));
 				alsa_closeDevice(ad);
-				return -1;
+				return false;
 			}
 			continue;
 		}
@@ -421,7 +422,7 @@ static int alsa_playAudio(void *data, const char *playChunk, size_t size)
 		size -= ret;
 	}
 
-	return 0;
+	return true;
 }
 
 const struct audio_output_plugin alsaPlugin = {

@@ -86,7 +86,7 @@ static void pulse_finish(void *data)
 	pulse_free_data(pd);
 }
 
-static int pulse_test_default_device(void)
+static bool pulse_test_default_device(void)
 {
 	pa_simple *s;
 	pa_sample_spec ss;
@@ -101,15 +101,15 @@ static int pulse_test_default_device(void)
 	if (!s) {
 		g_message("Cannot connect to default PulseAudio server: %s\n",
 			  pa_strerror(error));
-		return -1;
+		return false;
 	}
 
 	pa_simple_free(s);
 
-	return 0;
+	return true;
 }
 
-static int
+static bool
 pulse_open(void *data, struct audio_format *audio_format)
 {
 	struct pulse_data *pd = data;
@@ -121,7 +121,7 @@ pulse_open(void *data, struct audio_format *audio_format)
 
 	if (pd->num_connect_attempts != 0 &&
 	    (t - pd->last_connect_attempt) < CONN_ATTEMPT_INTERVAL)
-		return -1;
+		return false;
 
 	pd->num_connect_attempts++;
 	pd->last_connect_attempt = t;
@@ -143,7 +143,7 @@ pulse_open(void *data, struct audio_format *audio_format)
 			  "\"%s\" (attempt %i): %s\n",
 			  audio_output_get_name(pd->ao),
 			  pd->num_connect_attempts, pa_strerror(error));
-		return -1;
+		return false;
 	}
 
 	pd->num_connect_attempts = 0;
@@ -154,7 +154,7 @@ pulse_open(void *data, struct audio_format *audio_format)
 		audio_format->bits,
 		audio_format->channels, audio_format->sample_rate);
 
-	return 0;
+	return true;
 }
 
 static void pulse_cancel(void *data)
@@ -179,8 +179,8 @@ static void pulse_close(void *data)
 	}
 }
 
-static int pulse_play(void *data,
-			   const char *playChunk, size_t size)
+static bool
+pulse_play(void *data, const char *playChunk, size_t size)
 {
 	struct pulse_data *pd = data;
 	int error;
@@ -191,10 +191,10 @@ static int pulse_play(void *data,
 			  audio_output_get_name(pd->ao),
 			  pa_strerror(error));
 		pulse_close(pd);
-		return -1;
+		return false;
 	}
 
-	return 0;
+	return true;
 }
 
 const struct audio_output_plugin pulse_plugin = {

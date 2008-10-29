@@ -49,7 +49,7 @@ static OsxData *newOsxData()
 	return ret;
 }
 
-static int osx_testDefault()
+static bool osx_testDefault()
 {
 	/*AudioUnit au;
 	   ComponentDescription desc;
@@ -74,7 +74,7 @@ static int osx_testDefault()
 
 	   CloseComponent(au); */
 
-	return 0;
+	return true;
 }
 
 static int osx_initDriver(struct audio_output *audioOutput,
@@ -212,8 +212,9 @@ static OSStatus osx_render(void *vdata,
 	return 0;
 }
 
-static int osx_openDevice(struct audio_output *audioOutput,
-			  struct audio_format *audioFormat)
+static bool
+osx_openDevice(struct audio_output *audioOutput,
+	       struct audio_format *audioFormat)
 {
 	OsxData *od = (OsxData *) audioOutput->data;
 	ComponentDescription desc;
@@ -230,18 +231,18 @@ static int osx_openDevice(struct audio_output *audioOutput,
 	comp = FindNextComponent(NULL, &desc);
 	if (comp == 0) {
 		ERROR("Error finding OS X component\n");
-		return -1;
+		return false;
 	}
 
 	if (OpenAComponent(comp, &od->au) != noErr) {
 		ERROR("Unable to open OS X component\n");
-		return -1;
+		return false;
 	}
 
 	if (AudioUnitInitialize(od->au) != 0) {
 		CloseComponent(od->au);
 		ERROR("Unable to initialize OS X audio unit\n");
-		return -1;
+		return false;
 	}
 
 	callback.inputProc = osx_render;
@@ -253,7 +254,7 @@ static int osx_openDevice(struct audio_output *audioOutput,
 		AudioUnitUninitialize(od->au);
 		CloseComponent(od->au);
 		ERROR("unable to set callback for OS X audio unit\n");
-		return -1;
+		return false;
 	}
 
 	streamDesc.mSampleRate = audioFormat->sample_rate;
@@ -275,7 +276,7 @@ static int osx_openDevice(struct audio_output *audioOutput,
 		AudioUnitUninitialize(od->au);
 		CloseComponent(od->au);
 		ERROR("Unable to set format on OS X device\n");
-		return -1;
+		return false;
 	}
 
 	/* create a buffer of 1s */
@@ -286,11 +287,11 @@ static int osx_openDevice(struct audio_output *audioOutput,
 	od->pos = 0;
 	od->len = 0;
 
-	return 0;
+	return true;
 }
 
-static int osx_play(struct audio_output *audioOutput,
-		    const char *playChunk, size_t size)
+static bool
+osx_play(struct audio_output *audioOutput, const char *playChunk, size_t size)
 {
 	OsxData *od = (OsxData *) audioOutput->data;
 	size_t bytesToCopy;
@@ -304,7 +305,7 @@ static int osx_play(struct audio_output *audioOutput,
 		err = AudioOutputUnitStart(od->au);
 		if (err) {
 			ERROR("unable to start audio output: %i\n", err);
-			return -1;
+			return false;
 		}
 	}
 
@@ -345,7 +346,7 @@ static int osx_play(struct audio_output *audioOutput,
 	pthread_mutex_unlock(&od->mutex);
 
 	/* DEBUG("osx_play: leave\n"); */
-	return 0;
+	return true;
 }
 
 const struct audio_output_plugin osxPlugin = {

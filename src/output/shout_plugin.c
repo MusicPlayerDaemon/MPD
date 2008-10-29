@@ -354,7 +354,7 @@ static void close_shout_conn(struct shout_data * sd)
 		      shout_get_error(sd->shout_conn));
 	}
 
-	sd->opened = 0;
+	sd->opened = false;
 }
 
 static void my_shout_finish_driver(void *data)
@@ -465,27 +465,27 @@ static int open_shout_conn(void *data)
 	write_page(sd);
 
 	sd->shout_error = 0;
-	sd->opened = 1;
+	sd->opened = true;
 	sd->tag_to_send = 1;
 	sd->conn_attempts = 0;
 
 	return 0;
 }
 
-static int my_shout_open_device(void *data,
+static bool my_shout_open_device(void *data,
 				struct audio_format *audio_format)
 {
 	struct shout_data *sd = (struct shout_data *)data;
 
 	if (!sd->opened && open_shout_conn(sd) < 0)
-		return -1;
+		return false;
 
 	if (sd->timer)
 		timer_free(sd->timer);
 
 	sd->timer = timer_new(audio_format);
 
-	return 0;
+	return true;
 }
 
 static void send_metadata(struct shout_data * sd)
@@ -508,8 +508,8 @@ static void send_metadata(struct shout_data * sd)
 	sd->tag_to_send = 0;
 }
 
-static int my_shout_play(void *data,
-			 const char *chunk, size_t size)
+static bool
+my_shout_play(void *data, const char *chunk, size_t size)
 {
 	struct shout_data *sd = (struct shout_data *)data;
 	int status;
@@ -526,24 +526,24 @@ static int my_shout_play(void *data,
 		status = open_shout_conn(sd);
 		if (status < 0) {
 			my_shout_close_device(sd);
-			return -1;
+			return false;
 		} else if (status > 0) {
 			timer_sync(sd->timer);
-			return 0;
+			return true;
 		}
 	}
 
 	if (sd->encoder->encode_func(sd, chunk, size)) {
 		my_shout_close_device(sd);
-		return -1;
+		return false;
 	}
 
 	if (write_page(sd) < 0) {
 		my_shout_close_device(sd);
-		return -1;
+		return false;
 	}
 
-	return 0;
+	return true;
 }
 
 static void my_shout_pause(void *data)

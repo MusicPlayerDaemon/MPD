@@ -45,7 +45,7 @@ struct audio_output_plugin {
 	 * Test if this plugin can provide a default output, in case
 	 * none has been configured.  This method is optional.
 	 */
-	int (*test_default_device)(void);
+	bool (*test_default_device)(void);
 
 	/**
 	 * Configure and initialize the device, but do not open it
@@ -73,12 +73,12 @@ struct audio_output_plugin {
 	 * @param audio_format the audio format in which data is going
 	 * to be delivered; may be modified by the plugin
 	 */
-	int (*open)(void *data, struct audio_format *audio_format);
+	bool (*open)(void *data, struct audio_format *audio_format);
 
 	/**
 	 * Play a chunk of audio data.
 	 */
-	int (*play)(void *data, const char *playChunk, size_t size);
+	bool (*play)(void *data, const char *playChunk, size_t size);
 
 	/**
 	 * Pause the device.  If supported, it may perform a special

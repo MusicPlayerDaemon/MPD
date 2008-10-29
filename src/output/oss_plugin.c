@@ -322,20 +322,20 @@ static int oss_statDevice(const char *device, int *stErrno)
 
 static const char *default_devices[] = { "/dev/sound/dsp", "/dev/dsp" };
 
-static int oss_testDefault(void)
+static bool oss_testDefault(void)
 {
 	int fd, i;
 
 	for (i = ARRAY_SIZE(default_devices); --i >= 0; ) {
 		if ((fd = open(default_devices[i], O_WRONLY)) >= 0) {
 			xclose(fd);
-			return 0;
+			return true;
 		}
 		WARNING("Error opening OSS device \"%s\": %s\n",
 		        default_devices[i], strerror(errno));
 	}
 
-	return -1;
+	return false;
 }
 
 static void *oss_open_default(ConfigParam *param)
@@ -438,7 +438,7 @@ static void oss_close(OssData * od)
 	od->fd = -1;
 }
 
-static int oss_open(OssData *od)
+static bool oss_open(OssData *od)
 {
 	int tmp;
 
@@ -486,23 +486,24 @@ static int oss_open(OssData *od)
 		goto fail;
 	}
 
-	return 0;
+	return true;
 
 fail:
 	oss_close(od);
-	return -1;
+	return false;
 }
 
-static int oss_openDevice(void *data,
-			  struct audio_format *audioFormat)
+static bool
+oss_openDevice(void *data, struct audio_format *audioFormat)
 {
-	int ret;
+	bool ret;
 	OssData *od = data;
 
 	od->audio_format = *audioFormat;
 
-	if ((ret = oss_open(od)) < 0)
-		return ret;
+	ret = oss_open(od);
+	if (!ret)
+		return false;
 
 	*audioFormat = od->audio_format;
 
@@ -531,15 +532,15 @@ static void oss_dropBufferedAudio(void *data)
 	}
 }
 
-static int oss_playAudio(void *data,
-			 const char *playChunk, size_t size)
+static bool
+oss_playAudio(void *data, const char *playChunk, size_t size)
 {
 	OssData *od = data;
 	ssize_t ret;
 
 	/* reopen the device since it was closed by dropBufferedAudio */
 	if (od->fd < 0 && oss_open(od) < 0)
-		return -1;
+		return false;
 
 	while (size > 0) {
 		ret = write(od->fd, playChunk, size);
@@ -549,13 +550,13 @@ static int oss_playAudio(void *data,
 			ERROR("closing oss device \"%s\" due to write error: "
 			      "%s\n", od->device, strerror(errno));
 			oss_closeDevice(od);
-			return -1;
+			return false;
 		}
 		playChunk += ret;
 		size -= ret;
 	}
 
-	return 0;
+	return true;
 }
 
 const struct audio_output_plugin ossPlugin = {

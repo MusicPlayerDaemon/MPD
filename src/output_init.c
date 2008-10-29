@@ -67,7 +67,7 @@ int audio_output_init(struct audio_output *ao, ConfigParam * param)
 			if (plugin->test_default_device) {
 				WARNING("Attempting to detect a %s audio "
 					"device\n", plugin->name);
-				if (plugin->test_default_device() == 0) {
+				if (plugin->test_default_device()) {
 					WARNING("Successfully detected a %s "
 						"audio device\n", plugin->name);
 					break;
@@ -85,7 +85,7 @@ int audio_output_init(struct audio_output *ao, ConfigParam * param)
 
 	ao->name = name;
 	ao->plugin = plugin;
-	ao->open = 0;
+	ao->open = false;
 
 	ao->convBuffer = NULL;
 	ao->convBufferLen = 0;

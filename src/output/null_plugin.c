@@ -33,13 +33,13 @@ static void *null_initDriver(mpd_unused struct audio_output *audioOutput,
 	return nd;
 }
 
-static int null_openDevice(void *data,
-			   struct audio_format *audio_format)
+static bool
+null_openDevice(void *data, struct audio_format *audio_format)
 {
 	struct null_data *nd = data;
 
 	nd->timer = timer_new(audio_format);
-	return 0;
+	return true;
 }
 
 static void null_closeDevice(void *data)
@@ -52,8 +52,8 @@ static void null_closeDevice(void *data)
 	}
 }
 
-static int null_playAudio(void *data,
-			  mpd_unused const char *playChunk, size_t size)
+static bool
+null_playAudio(void *data, mpd_unused const char *playChunk, size_t size)
 {
 	struct null_data *nd = data;
 	Timer *timer = nd->timer;
@@ -65,7 +65,7 @@ static int null_playAudio(void *data,
 
 	timer_add(timer, size);
 
-	return 0;
+	return true;
 }
 
 static void null_dropBufferedAudio(void *data)

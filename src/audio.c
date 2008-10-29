@@ -247,9 +247,9 @@ static void syncAudioDeviceStates(void)
 	}
 }
 
-int playAudio(const char *buffer, size_t length)
+bool playAudio(const char *buffer, size_t length)
 {
-	int ret = -1, err;
+	bool ret = false;
 	unsigned int i;
 
 	/* no partial frames allowed */
@@ -262,8 +262,8 @@ int playAudio(const char *buffer, size_t length)
 			audio_output_play(&audioOutputArray[i],
 					  buffer, length);
 
-	while (1) {
-		int finished = 1;
+	while (true) {
+		bool finished = true;
 
 		for (i = 0; i < audioOutputArraySize; ++i) {
 			struct audio_output *ao = &audioOutputArray[i];
@@ -272,16 +272,16 @@ int playAudio(const char *buffer, size_t length)
 				continue;
 
 			if (audio_output_command_is_finished(ao)) {
-				err = audio_output_get_result(ao);
-				if (!err)
-					ret = 0;
-				else if (err < 0)
+				bool success = audio_output_get_result(ao);
+				if (success)
+					ret = true;
+				else
 					/* device should already be
 					   closed if the play func
 					   returned an error */
 					audioDeviceStates[i] = true;
 			} else {
-				finished = 0;
+				finished = false;
 				audio_output_signal(ao);
 			}
 		}
@@ -295,13 +295,13 @@ int playAudio(const char *buffer, size_t length)
 	return ret;
 }
 
-int openAudioDevice(const struct audio_format *audioFormat)
+bool openAudioDevice(const struct audio_format *audioFormat)
 {
-	int ret = -1;
+	bool ret = false;
 	unsigned int i;
 
 	if (!audioOutputArray)
-		return -1;
+		return false;
 
 	if (audioFormat != NULL)
 		input_audio_format = *audioFormat;
@@ -310,10 +310,10 @@ int openAudioDevice(const struct audio_format *audioFormat)
 
 	for (i = 0; i < audioOutputArraySize; ++i) {
 		if (audioOutputArray[i].open)
-			ret = 0;
+			ret = true;
 	}
 
-	if (ret != 0)
+	if (!ret)
 		/* close all devices if there was an error */
 		closeAudioDevice();
 

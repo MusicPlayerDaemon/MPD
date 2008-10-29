@@ -128,17 +128,17 @@ static int checkFifo(FifoData *fd)
 	return 0;
 }
 
-static int openFifo(FifoData *fd)
+static bool openFifo(FifoData *fd)
 {
 	if (checkFifo(fd) < 0)
-		return -1;
+		return false;
 
 	fd->input = open(fd->path, O_RDONLY|O_NONBLOCK);
 	if (fd->input < 0) {
 		ERROR("Could not open FIFO \"%s\" for reading: %s\n",
 		      fd->path, strerror(errno));
 		closeFifo(fd);
-		return -1;
+		return false;
 	}
 
 	fd->output = open(fd->path, O_WRONLY|O_NONBLOCK);
@@ -146,10 +146,10 @@ static int openFifo(FifoData *fd)
 		ERROR("Could not open FIFO \"%s\" for writing: %s\n",
 		      fd->path, strerror(errno));
 		closeFifo(fd);
-		return -1;
+		return false;
 	}
 
-	return 0;
+	return true;
 }
 
 static void *fifo_initDriver(mpd_unused struct audio_output *ao,
@@ -175,7 +175,7 @@ static void *fifo_initDriver(mpd_unused struct audio_output *ao,
 	fd = newFifoData();
 	fd->path = path;
 
-	if (openFifo(fd) < 0) {
+	if (!openFifo(fd)) {
 		freeFifoData(fd);
 		return NULL;
 	}
@@ -191,7 +191,7 @@ static void fifo_finishDriver(void *data)
 	freeFifoData(fd);
 }
 
-static int fifo_openDevice(void *data,
+static bool fifo_openDevice(void *data,
 			   struct audio_format *audio_format)
 {
 	FifoData *fd = (FifoData *)data;
@@ -201,7 +201,7 @@ static int fifo_openDevice(void *data,
 
 	fd->timer = timer_new(audio_format);
 
-	return 0;
+	return true;
 }
 
 static void fifo_closeDevice(void *data)
@@ -231,8 +231,8 @@ static void fifo_dropBufferedAudio(void *data)
 	}
 }
 
-static int fifo_playAudio(void *data,
-			  const char *playChunk, size_t size)
+static bool
+fifo_playAudio(void *data, const char *playChunk, size_t size)
 {
 	FifoData *fd = (FifoData *)data;
 	size_t offset = 0;
@@ -260,14 +260,14 @@ static int fifo_playAudio(void *data,
 			ERROR("Closing FIFO output \"%s\" due to write error: "
 			      "%s\n", fd->path, strerror(errno));
 			fifo_closeDevice(fd);
-			return -1;
+			return false;
 		}
 
 		size -= bytes;
 		offset += bytes;
 	}
 
-	return 0;
+	return true;
 }
 
 const struct audio_output_plugin fifoPlugin = {

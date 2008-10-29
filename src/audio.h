@@ -42,9 +42,9 @@ void initAudioDriver(void);
 
 void finishAudioDriver(void);
 
-int openAudioDevice(const struct audio_format *audioFormat);
+bool openAudioDevice(const struct audio_format *audioFormat);
 
-int playAudio(const char *playChunk, size_t size);
+bool playAudio(const char *playChunk, size_t size);
 
 void audio_output_pause_all(void);
 

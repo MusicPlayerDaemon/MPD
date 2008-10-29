@@ -51,14 +51,15 @@ static void ao_command_async(struct audio_output *ao,
 	notify_signal(&ao->notify);
 }
 
-int audio_output_open(struct audio_output *audioOutput,
-		      const struct audio_format *audioFormat)
+bool
+audio_output_open(struct audio_output *audioOutput,
+		  const struct audio_format *audioFormat)
 {
-	int ret = 0;
+	bool ret = true;
 
 	if (audioOutput->open &&
 	    audio_format_equals(audioFormat, &audioOutput->inAudioFormat)) {
-		return 0;
+		return true;
 	}
 
 	audioOutput->inAudioFormat = *audioFormat;

@@ -43,7 +43,7 @@ struct audio_output {
 	/**
 	 * Is the device (already) open and functional?
 	 */
-	int open;
+	bool open;
 
 	/**
 	 * The audio_format in which audio data is received from the
@@ -98,9 +98,9 @@ struct audio_output {
 	} args;
 
 	/**
-	 * Result value of the command.  Generally, "0" means success.
+	 * Result value of the command.  true means success.
 	 */
-	int result;
+	bool result;
 };
 
 /**
@@ -109,19 +109,19 @@ struct audio_output {
  */
 extern struct notify audio_output_client_notify;
 
-static inline int
+static inline bool
 audio_output_is_open(const struct audio_output *ao)
 {
 	return ao->open;
 }
 
-static inline int
+static inline bool
 audio_output_command_is_finished(const struct audio_output *ao)
 {
 	return ao->command == AO_COMMAND_NONE;
 }
 
-static inline int
+static inline bool
 audio_output_get_result(const struct audio_output *ao)
 {
 	return ao->result;

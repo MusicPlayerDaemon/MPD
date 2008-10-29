@@ -22,6 +22,7 @@
 #include "conf.h"
 
 #include <stddef.h>
+#include <stdbool.h>
 
 struct audio_output;
 struct audio_output_plugin;
@@ -29,8 +30,10 @@ struct audio_format;
 struct tag;
 
 int audio_output_init(struct audio_output *, ConfigParam * param);
-int audio_output_open(struct audio_output *audioOutput,
-		      const struct audio_format *audioFormat);
+
+bool
+audio_output_open(struct audio_output *audioOutput,
+		  const struct audio_format *audioFormat);
 
 /**
  * Wakes up the audio output thread.  This is part of a workaround for

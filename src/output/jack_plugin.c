@@ -242,10 +242,10 @@ mpd_jack_init(struct audio_output *ao,
 	return jd;
 }
 
-static int
+static bool
 mpd_jack_test_default_device(void)
 {
-	return 0;
+	return true;
 }
 
 static int
@@ -328,7 +328,7 @@ mpd_jack_connect(struct jack_data *jd, struct audio_format *audio_format)
 	return 1;
 }
 
-static int
+static bool
 mpd_jack_open(void *data, struct audio_format *audio_format)
 {
 	struct jack_data *jd = data;
@@ -337,12 +337,12 @@ mpd_jack_open(void *data, struct audio_format *audio_format)
 
 	if (jd->client == NULL && mpd_jack_connect(jd, audio_format) < 0) {
 		mpd_jack_client_free(jd);
-		return -1;
+		return false;
 	}
 
 	set_audioformat(jd, audio_format);
 
-	return 0;
+	return true;
 }
 
 static void
@@ -422,7 +422,7 @@ mpd_jack_write_samples(struct jack_data *jd, const void *src,
 	}
 }
 
-static int
+static bool
 mpd_jack_play(void *data, const char *buff, size_t size)
 {
 	struct jack_data *jd = data;
@@ -433,7 +433,7 @@ mpd_jack_play(void *data, const char *buff, size_t size)
 		ERROR("Refusing to play, because there is no client thread.\n");
 		mpd_jack_client_free(jd);
 		audio_output_closed(jd->ao);
-		return 0;
+		return true;
 	}
 
 	assert(size % frame_size == 0);
@@ -462,7 +462,7 @@ mpd_jack_play(void *data, const char *buff, size_t size)
 
 	}
 
-	return 0;
+	return true;
 }
 
 const struct audio_output_plugin jackPlugin = {

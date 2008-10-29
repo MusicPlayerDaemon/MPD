@@ -65,7 +65,7 @@ struct shout_data {
 	float quality;
 	int bitrate;
 
-	int opened;
+	bool opened;
 
 	struct tag *tag;
 	int tag_to_send;

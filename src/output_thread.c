@@ -74,7 +74,7 @@ static void ao_pause(struct audio_output *ao)
 	} else {
 		/* pause is not supported - simply close the device */
 		ao->plugin->close(ao->data);
-		ao->open = 0;
+		ao->open = false;
 		ao_command_finished(ao);
 	}
 }
@@ -94,8 +94,8 @@ static void *audio_output_task(void *arg)
 						      &ao->outAudioFormat);
 
 			assert(!ao->open);
-			if (ao->result == 0)
-				ao->open = 1;
+			if (ao->result == true)
+				ao->open = true;
 
 			ao_command_finished(ao);
 			break;
@@ -103,7 +103,7 @@ static void *audio_output_task(void *arg)
 		case AO_COMMAND_CLOSE:
 			assert(ao->open);
 			ao->plugin->close(ao->data);
-			ao->open = 0;
+			ao->open = false;
 			ao_command_finished(ao);
 			break;
 
