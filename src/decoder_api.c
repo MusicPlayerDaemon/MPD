@@ -165,7 +165,6 @@ decoder_data(struct decoder *decoder,
 	size_t datalen;
 	static char *convBuffer;
 	static size_t convBufferLen;
-	int ret;
 
 	if (audio_format_equals(&ob.audioFormat, &dc.audioFormat)) {
 		data = dataIn;
@@ -196,9 +195,10 @@ decoder_data(struct decoder *decoder,
 		data += nbytes;
 
 		if (datalen > 0) {
-			ret = need_chunks(decoder, inStream, seekable);
-			if (ret != 0)
-				return ret;
+			enum decoder_command cmd =
+				need_chunks(decoder, inStream, seekable);
+			if (cmd != DECODE_COMMAND_NONE)
+				return cmd;
 		}
 	}
 
