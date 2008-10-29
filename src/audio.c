@@ -313,12 +313,9 @@ int openAudioDevice(const struct audio_format *audioFormat)
 			ret = 0;
 	}
 
-	if (ret != 0) {
+	if (ret != 0)
 		/* close all devices if there was an error */
-		for (i = 0; i < audioOutputArraySize; ++i) {
-			audio_output_close(&audioOutputArray[i]);
-		}
-	}
+		closeAudioDevice();
 
 	return ret;
 }
