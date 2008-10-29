@@ -110,6 +110,7 @@ struct mp3_data {
 	int32_t output_buffer[MP3_DATA_OUTPUT_BUFFER_SIZE];
 	float total_time;
 	float elapsed_time;
+	float seek_where;
 	enum muteframe mute_frame;
 	long *frame_offsets;
 	mad_timer_t *times;
@@ -998,11 +999,8 @@ mp3_read(struct mp3_data *data, ReplayGainInfo **replay_gain_info_r)
 		data->mute_frame = MUTEFRAME_NONE;
 		break;
 	case MUTEFRAME_SEEK:
-		if (decoder_seek_where(decoder) <= data->elapsed_time) {
-			decoder_clear(decoder);
+		if (data->elapsed_time >= data->seek_where)
 			data->mute_frame = MUTEFRAME_NONE;
-			decoder_command_finished(decoder);
-		}
 		break;
 	case MUTEFRAME_NONE:
 		cmd = mp3_synth_and_send(data,
@@ -1025,8 +1023,12 @@ mp3_read(struct mp3_data *data, ReplayGainInfo **replay_gain_info_r)
 					decoder_command_finished(decoder);
 				} else
 					decoder_seek_error(decoder);
-			} else
+			} else {
+				data->seek_where = decoder_seek_where(decoder);
 				data->mute_frame = MUTEFRAME_SEEK;
+				decoder_clear(decoder);
+				decoder_command_finished(decoder);
+			}
 		}
 	}
 
