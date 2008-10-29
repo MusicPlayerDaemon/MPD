@@ -63,12 +63,13 @@ static void ao_play(struct audio_output *ao)
 {
 	const char *data = ao->args.play.data;
 	size_t size = ao->args.play.size;
+	bool ret;
 
 	if (!audio_format_equals(&ao->inAudioFormat, &ao->outAudioFormat))
 		convertAudioFormat(ao, &data, &size);
 
-	ao->result = ao->plugin->play(ao->data, data, size);
-	if (!ao->result) {
+	ret = ao->plugin->play(ao->data, data, size);
+	if (!ret) {
 		ao->plugin->cancel(ao->data);
 		ao->plugin->close(ao->data);
 		ao->open = false;
@@ -96,6 +97,7 @@ static void ao_pause(struct audio_output *ao)
 static void *audio_output_task(void *arg)
 {
 	struct audio_output *ao = arg;
+	bool ret;
 
 	while (1) {
 		switch (ao->command) {
@@ -104,11 +106,11 @@ static void *audio_output_task(void *arg)
 
 		case AO_COMMAND_OPEN:
 			assert(!ao->open);
-			ao->result = ao->plugin->open(ao->data,
-						      &ao->outAudioFormat);
+			ret = ao->plugin->open(ao->data,
+					       &ao->outAudioFormat);
 
 			assert(!ao->open);
-			if (ao->result == true)
+			if (ret == true)
 				ao->open = true;
 			else
 				ao->reopen_after = time(NULL) + REOPEN_AFTER;

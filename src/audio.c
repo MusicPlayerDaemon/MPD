@@ -247,11 +247,9 @@ bool playAudio(const char *buffer, size_t length)
 			if (!audio_output_is_open(ao))
 				continue;
 
-			if (audio_output_command_is_finished(ao)) {
-				bool success = audio_output_get_result(ao);
-				if (success)
-					ret = true;
-			} else {
+			if (audio_output_command_is_finished(ao))
+				ret = true;
+			else {
 				finished = false;
 				audio_output_signal(ao);
 			}

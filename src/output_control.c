@@ -55,8 +55,6 @@ bool
 audio_output_open(struct audio_output *audioOutput,
 		  const struct audio_format *audioFormat)
 {
-	bool ret = true;
-
 	audioOutput->reopen_after = 0;
 
 	if (audioOutput->open &&
@@ -83,12 +81,10 @@ audio_output_open(struct audio_output *audioOutput,
 	if (audioOutput->thread == 0)
 		audio_output_thread_start(audioOutput);
 
-	if (!audioOutput->open) {
+	if (!audioOutput->open)
 		ao_command(audioOutput, AO_COMMAND_OPEN);
-		ret = audioOutput->result;
-	}
 
-	return ret;
+	return audioOutput->open;
 }
 
 void

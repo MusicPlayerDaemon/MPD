@@ -109,11 +109,6 @@ struct audio_output {
 
 		const struct tag *tag;
 	} args;
-
-	/**
-	 * Result value of the command.  true means success.
-	 */
-	bool result;
 };
 
 /**
@@ -132,12 +127,6 @@ static inline bool
 audio_output_command_is_finished(const struct audio_output *ao)
 {
 	return ao->command == AO_COMMAND_NONE;
-}
-
-static inline bool
-audio_output_get_result(const struct audio_output *ao)
-{
-	return ao->result;
 }
 
 #endif
