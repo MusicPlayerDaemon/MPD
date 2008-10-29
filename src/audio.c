@@ -45,8 +45,6 @@ static unsigned int audioOutputArraySize;
  */
 static bool *audioDeviceStates;
 
-static uint8_t audioOpened;
-
 static unsigned int audio_output_count(void)
 {
 	unsigned int nr = 0;
@@ -315,15 +313,11 @@ int openAudioDevice(const struct audio_format *audioFormat)
 			ret = 0;
 	}
 
-	if (ret == 0)
-		audioOpened = 1;
-	else {
+	if (ret != 0) {
 		/* close all devices if there was an error */
 		for (i = 0; i < audioOutputArraySize; ++i) {
 			audio_output_close(&audioOutputArray[i]);
 		}
-
-		audioOpened = 0;
 	}
 
 	return ret;
@@ -362,8 +356,6 @@ void closeAudioDevice(void)
 
 	for (i = 0; i < audioOutputArraySize; ++i)
 		audio_output_close(&audioOutputArray[i]);
-
-	audioOpened = 0;
 }
 
 void sendMetadataToAudioDevice(const struct tag *tag)
