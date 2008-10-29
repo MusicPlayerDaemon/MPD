@@ -657,7 +657,7 @@ mp3_frame_duration(const struct mad_frame *frame)
 }
 
 static off_t
-mp3_rest_including_this_frame(const struct mp3_data *data)
+mp3_this_frame_offset(const struct mp3_data *data)
 {
 	off_t offset = data->input_stream->offset;
 
@@ -666,7 +666,13 @@ mp3_rest_including_this_frame(const struct mp3_data *data)
 	else
 		offset -= data->stream.bufend - data->stream.buffer;
 
-	return data->input_stream->size - offset;
+	return offset;
+}
+
+static off_t
+mp3_rest_including_this_frame(const struct mp3_data *data)
+{
+	return data->input_stream->size - mp3_this_frame_offset(data);
 }
 
 /**
@@ -853,14 +859,8 @@ mp3_read(struct mp3_data *data, ReplayGainInfo **replay_gain_info_r)
 		} else {
 			data->highest_frame++;
 		}
-		data->frame_offsets[data->current_frame] = data->input_stream->offset;
-		if (data->stream.this_frame != NULL) {
-			data->frame_offsets[data->current_frame] -=
-			    data->stream.bufend - data->stream.this_frame;
-		} else {
-			data->frame_offsets[data->current_frame] -=
-			    data->stream.bufend - data->stream.buffer;
-		}
+		data->frame_offsets[data->current_frame] =
+			mp3_this_frame_offset(data);
 		data->times[data->current_frame] = data->timer;
 	} else {
 		data->timer = data->times[data->current_frame];
