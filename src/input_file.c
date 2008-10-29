@@ -44,6 +44,12 @@ input_file_open(struct input_stream *is, const char *filename)
 	is->seekable = true;
 
 	ret = fstat(fd, &st);
+	if (ret < 0) {
+		is->error = errno;
+		close(fd);
+		return false;
+	}
+
 	is->size = st.st_size;
 
 #ifdef POSIX_FADV_SEQUENTIAL
