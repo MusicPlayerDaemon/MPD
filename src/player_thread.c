@@ -265,7 +265,8 @@ static void do_play(void)
 		}
 
 		if (player.buffering) {
-			if (ob_available() < pc.buffered_before_play) {
+			if (ob_available() < pc.buffered_before_play &&
+			    !decoder_is_idle()) {
 				/* not enough decoded buffer space yet */
 				notify_wait(&pc.notify);
 				continue;
