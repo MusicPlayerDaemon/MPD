@@ -905,7 +905,7 @@ mp3_send_pcm(struct mp3_data *data, unsigned i, unsigned pcm_length,
 				   data->elapsed_time,
 				   data->bit_rate / 1000,
 				   replay_gain_info);
-		if (cmd == DECODE_COMMAND_STOP)
+		if (cmd != DECODE_COMMAND_NONE)
 			return cmd;
 	}
 
@@ -971,7 +971,7 @@ mp3_synth_and_send(struct mp3_data *data, ReplayGainInfo *replay_gain_info)
 	}
 
 	cmd = mp3_send_pcm(data, i, pcm_length, replay_gain_info);
-	if (cmd == DECODE_COMMAND_STOP)
+	if (cmd != DECODE_COMMAND_NONE)
 		return cmd;
 
 	if (data->drop_end_samples &&
