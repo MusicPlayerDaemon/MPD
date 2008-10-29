@@ -471,6 +471,13 @@ static int oss_open(OssData *od)
 		break;
 	case 16:
 		tmp = AFMT_S16_MPD;
+		break;
+
+	default:
+		/* not supported by OSS - fall back to 16 bit */
+		od->audio_format.bits = 16;
+		tmp = AFMT_S16_MPD;
+		break;
 	}
 
 	if (setParam(od, SNDCTL_DSP_SAMPLESIZE, &tmp)) {
