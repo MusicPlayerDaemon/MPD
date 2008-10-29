@@ -50,6 +50,13 @@ input_file_open(struct input_stream *is, const char *filename)
 		return false;
 	}
 
+	if (!S_ISREG(st.st_mode)) {
+		g_debug("Not a regular file: %s\n", filename);
+		is->error = EINVAL;
+		close(fd);
+		return false;
+	}
+
 	is->size = st.st_size;
 
 #ifdef POSIX_FADV_SEQUENTIAL
