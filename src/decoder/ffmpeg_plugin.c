@@ -134,18 +134,19 @@ static bool ffmpeg_init(void)
 	return true;
 }
 
-static int
-ffmpeg_helper(struct input_stream *input, int (*callback)(BasePtrs *ptrs),
+static bool
+ffmpeg_helper(struct input_stream *input, bool (*callback)(BasePtrs *ptrs),
 	      BasePtrs *ptrs)
 {
 	AVFormatContext *pFormatCtx;
 	AVCodecContext *aCodecCtx;
 	AVCodec *aCodec;
-	int ret, audioStream;
+	int audioStream;
 	unsigned i;
 	FopsHelper fopshelp = {
 		.url = "mpd://X", /* only the mpd:// prefix matters */
 	};
+	bool ret;
 
 	fopshelp.input = input;
 	if (ptrs && ptrs->decoder) {
@@ -157,12 +158,12 @@ ffmpeg_helper(struct input_stream *input, int (*callback)(BasePtrs *ptrs),
 	//ffmpeg works with ours "fileops" helper
 	if (av_open_input_file(&pFormatCtx, fopshelp.url, NULL, 0, NULL)!=0) {
 		ERROR("Open failed!\n");
-		return -1;
+		return false;
 	}
 
 	if (av_find_stream_info(pFormatCtx)<0) {
 		ERROR("Couldn't find stream info!\n");
-		return -1;
+		return false;
 	}
 
 	audioStream = -1;
@@ -175,7 +176,7 @@ ffmpeg_helper(struct input_stream *input, int (*callback)(BasePtrs *ptrs),
 
 	if(audioStream==-1) {
 		ERROR("No audio stream inside!\n");
-		return -1;
+		return false;
 	}
 
 	aCodecCtx = pFormatCtx->streams[audioStream]->codec;
@@ -183,12 +184,12 @@ ffmpeg_helper(struct input_stream *input, int (*callback)(BasePtrs *ptrs),
 
 	if (!aCodec) {
 		ERROR("Unsupported audio codec!\n");
-		return -1;
+		return false;
 	}
 
 	if (avcodec_open(aCodecCtx, aCodec)<0) {
 		ERROR("Could not open codec!\n");
-		return -1;
+		return false;
 	}
 
 	if (callback) {
@@ -199,7 +200,7 @@ ffmpeg_helper(struct input_stream *input, int (*callback)(BasePtrs *ptrs),
 
 		ret = (*callback)( ptrs );
 	} else
-		ret = 0;
+		ret = true;
 
 	avcodec_close(aCodecCtx);
 	av_close_input_file(pFormatCtx);
@@ -210,16 +211,11 @@ ffmpeg_helper(struct input_stream *input, int (*callback)(BasePtrs *ptrs),
 static bool
 ffmpeg_try_decode(struct input_stream *input)
 {
-	int ret;
-	if (input->seekable) {
-		ret = ffmpeg_helper(input, NULL, NULL);
-	} else {
-		ret = 0;
-	}
-	return (ret == -1 ? 0 : 1);
+	return input->seekable && ffmpeg_helper(input, NULL, NULL);
 }
 
-static int ffmpeg_decode_internal(BasePtrs *base)
+static bool
+ffmpeg_decode_internal(BasePtrs *base)
 {
 	struct decoder *decoder = base->decoder;
 	AVCodecContext *aCodecCtx = base->aCodecCtx;
@@ -292,7 +288,7 @@ static int ffmpeg_decode_internal(BasePtrs *base)
 		}
 	} while (decoder_get_command(decoder) != DECODE_COMMAND_STOP);
 
-	return 0;
+	return true;
 }
 
 static bool
@@ -303,10 +299,10 @@ ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 	base.input = input;
 	base.decoder = decoder;
 
-	return ffmpeg_helper(input, ffmpeg_decode_internal, &base) == 0;
+	return ffmpeg_helper(input, ffmpeg_decode_internal, &base);
 }
 
-static int ffmpeg_tag_internal(BasePtrs *base)
+static bool ffmpeg_tag_internal(BasePtrs *base)
 {
 	struct tag *tag = (struct tag *) base->tag;
 
@@ -315,7 +311,8 @@ static int ffmpeg_tag_internal(BasePtrs *base)
 	} else {
 		tag->time = 0;
 	}
-	return 0;
+
+	return true;
 }
 
 //no tag reading in ffmpeg, check if playable
@@ -323,7 +320,7 @@ static struct tag *ffmpeg_tag(char *file)
 {
 	struct input_stream input;
 	BasePtrs base;
-	int ret;
+	bool ret;
 	struct tag *tag = NULL;
 
 	if (!input_stream_open(&input, file)) {
@@ -335,9 +332,9 @@ static struct tag *ffmpeg_tag(char *file)
 
 	base.decoder = NULL;
 	base.tag = tag;
-	ret = ffmpeg_helper(&input, ffmpeg_tag_internal, &base);
 
-	if (ret != 0) {
+	ret = ffmpeg_helper(&input, ffmpeg_tag_internal, &base);
+	if (ret) {
 		free(tag);
 		tag = NULL;
 	}
