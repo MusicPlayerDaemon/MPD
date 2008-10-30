@@ -249,11 +249,10 @@ ffmpeg_decode_internal(BasePtrs *base)
 		if (decoder_get_command(decoder) == DECODE_COMMAND_SEEK) {
 			current = decoder_seek_where(decoder) * AV_TIME_BASE;
 
-			if (av_seek_frame(pFormatCtx, -1, current , 0) < 0) {
-				WARNING("seek to %d failed\n", current);
-			}
-
-			decoder_command_finished(decoder);
+			if (av_seek_frame(pFormatCtx, -1, current, 0) < 0)
+				decoder_seek_error(decoder);
+			else
+				decoder_command_finished(decoder);
 		}
 
 		if (av_read_frame(pFormatCtx, &packet) >= 0) {
