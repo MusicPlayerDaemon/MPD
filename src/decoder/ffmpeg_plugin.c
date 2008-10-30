@@ -280,16 +280,15 @@ ffmpeg_decode_internal(BasePtrs *base)
 				decoder_command_finished(decoder);
 		}
 
-		if (av_read_frame(pFormatCtx, &packet) >= 0) {
-			if (packet.stream_index == base->audioStream)
-				ffmpeg_send_packet(decoder, &packet, aCodecCtx,
-						   &pFormatCtx->streams[base->audioStream]->time_base);
-
-			av_free_packet(&packet);
-		} else {
-			//end of file
+		if (av_read_frame(pFormatCtx, &packet) < 0)
+			/* end of file */
 			break;
-		}
+
+		if (packet.stream_index == base->audioStream)
+			ffmpeg_send_packet(decoder, &packet, aCodecCtx,
+					   &pFormatCtx->streams[base->audioStream]->time_base);
+
+		av_free_packet(&packet);
 	} while (decoder_get_command(decoder) != DECODE_COMMAND_STOP);
 
 	return true;
