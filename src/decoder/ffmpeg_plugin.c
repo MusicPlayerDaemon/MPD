@@ -212,6 +212,36 @@ ffmpeg_try_decode(struct input_stream *input)
 	return input->seekable && ffmpeg_helper(input, NULL, NULL);
 }
 
+static void
+ffmpeg_send_packet(struct decoder *decoder, const AVPacket *packet,
+		   AVCodecContext *codec_context,
+		   const AVRational *time_base)
+{
+	int position;
+	uint8_t audio_buf[(AVCODEC_MAX_AUDIO_FRAME_SIZE * 3) / 2];
+	int len, audio_size;
+
+	position = av_rescale_q(packet->pts, *time_base,
+				(AVRational){1, 1});
+
+	audio_size = sizeof(audio_buf);
+	len = avcodec_decode_audio2(codec_context,
+				    (int16_t *)audio_buf,
+				    &audio_size,
+				    packet->data, packet->size);
+
+	if (len < 0) {
+		WARNING("skipping frame!\n");
+		return;
+	}
+
+	if (audio_size >= 0)
+		decoder_data(decoder, NULL, 1,
+			     audio_buf, audio_size,
+			     position,
+			     codec_context->bit_rate / 1000, NULL);
+}
+
 static bool
 ffmpeg_decode_internal(BasePtrs *base)
 {
@@ -219,11 +249,8 @@ ffmpeg_decode_internal(BasePtrs *base)
 	AVCodecContext *aCodecCtx = base->aCodecCtx;
 	AVFormatContext *pFormatCtx = base->pFormatCtx;
 	AVPacket packet;
-	int len, audio_size;
-	int position;
 	struct audio_format audio_format;
 	int current, total_time;
-	uint8_t audio_buf[(AVCODEC_MAX_AUDIO_FRAME_SIZE * 3) / 2];
 
 	total_time = 0;
 
@@ -242,8 +269,6 @@ ffmpeg_decode_internal(BasePtrs *base)
 
 	decoder_initialized(decoder, &audio_format, total_time);
 
-	position = 0;
-
 	do {
 
 		if (decoder_get_command(decoder) == DECODE_COMMAND_SEEK) {
@@ -256,28 +281,10 @@ ffmpeg_decode_internal(BasePtrs *base)
 		}
 
 		if (av_read_frame(pFormatCtx, &packet) >= 0) {
-			if(packet.stream_index == base->audioStream) {
+			if (packet.stream_index == base->audioStream)
+				ffmpeg_send_packet(decoder, &packet, aCodecCtx,
+						   &pFormatCtx->streams[base->audioStream]->time_base);
 
-				position = av_rescale_q(packet.pts, pFormatCtx->streams[base->audioStream]->time_base,
-							(AVRational){1, 1});
-
-				audio_size = sizeof(audio_buf);
-				len = avcodec_decode_audio2(aCodecCtx,
-							    (int16_t *)audio_buf,
-							    &audio_size,
-							    packet.data,
-							    packet.size);
-
-				if(len >= 0) {
-					if(audio_size >= 0)
-						decoder_data(decoder, NULL, 1,
-							     audio_buf, audio_size,
-							     position, //(float)current / (float)audio_format.sample_rate,
-							     aCodecCtx->bit_rate / 1000, NULL);
-				} else {
-					WARNING("skiping frame!\n");
-				}
-			}
 			av_free_packet(&packet);
 		} else {
 			//end of file
