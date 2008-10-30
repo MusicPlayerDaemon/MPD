@@ -213,7 +213,7 @@ ffmpeg_try_decode(struct input_stream *input)
 	return input->seekable && ffmpeg_helper(input, NULL, NULL);
 }
 
-static void
+static enum decoder_command
 ffmpeg_send_packet(struct decoder *decoder, const AVPacket *packet,
 		   AVCodecContext *codec_context,
 		   const AVRational *time_base)
@@ -233,15 +233,15 @@ ffmpeg_send_packet(struct decoder *decoder, const AVPacket *packet,
 
 	if (len < 0) {
 		WARNING("skipping frame!\n");
-		return;
+		return decoder_get_command(decoder);
 	}
 
 	assert(audio_size >= 0);
 
-	decoder_data(decoder, NULL, 1,
-		     audio_buf, audio_size,
-		     position,
-		     codec_context->bit_rate / 1000, NULL);
+	return decoder_data(decoder, NULL, 1,
+			    audio_buf, audio_size,
+			    position,
+			    codec_context->bit_rate / 1000, NULL);
 }
 
 static bool
@@ -252,6 +252,7 @@ ffmpeg_decode_internal(BasePtrs *base)
 	AVFormatContext *pFormatCtx = base->pFormatCtx;
 	AVPacket packet;
 	struct audio_format audio_format;
+	enum decoder_command cmd;
 	int current, total_time;
 
 	total_time = 0;
@@ -272,8 +273,19 @@ ffmpeg_decode_internal(BasePtrs *base)
 	decoder_initialized(decoder, &audio_format, total_time);
 
 	do {
+		if (av_read_frame(pFormatCtx, &packet) < 0)
+			/* end of file */
+			break;
 
-		if (decoder_get_command(decoder) == DECODE_COMMAND_SEEK) {
+		if (packet.stream_index == base->audioStream)
+			cmd = ffmpeg_send_packet(decoder, &packet, aCodecCtx,
+						 &pFormatCtx->streams[base->audioStream]->time_base);
+		else
+			cmd = decoder_get_command(decoder);
+
+		av_free_packet(&packet);
+
+		if (cmd == DECODE_COMMAND_SEEK) {
 			current = decoder_seek_where(decoder) * AV_TIME_BASE;
 
 			if (av_seek_frame(pFormatCtx, -1, current, 0) < 0)
@@ -281,17 +293,7 @@ ffmpeg_decode_internal(BasePtrs *base)
 			else
 				decoder_command_finished(decoder);
 		}
-
-		if (av_read_frame(pFormatCtx, &packet) < 0)
-			/* end of file */
-			break;
-
-		if (packet.stream_index == base->audioStream)
-			ffmpeg_send_packet(decoder, &packet, aCodecCtx,
-					   &pFormatCtx->streams[base->audioStream]->time_base);
-
-		av_free_packet(&packet);
-	} while (decoder_get_command(decoder) != DECODE_COMMAND_STOP);
+	} while (cmd != DECODE_COMMAND_STOP);
 
 	return true;
 }
