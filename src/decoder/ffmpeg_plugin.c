@@ -82,22 +82,20 @@ static int mpdurl_open(URLContext *h, const char *filename,
 
 static int mpdurl_read(URLContext *h, unsigned char *buf, int size)
 {
-	int ret;
 	FopsHelper *base = (FopsHelper *) h->priv_data;
+
 	while (true) {
-		ret = input_stream_read(base->input, (void *)buf, size);
-		if (ret == 0) {
-			if (input_stream_eof(base->input) ||
-			    (base->decoder &&
-			     decoder_get_command(base->decoder) != DECODE_COMMAND_NONE))
-				return ret;
-			else
-				my_usleep(10000);
-		} else {
-			break;
-		}
+		size_t ret = input_stream_read(base->input, (void *)buf, size);
+		if (ret > 0)
+			return ret;
+
+		if (input_stream_eof(base->input) ||
+		    (base->decoder &&
+		     decoder_get_command(base->decoder) != DECODE_COMMAND_NONE))
+			return 0;
+
+		my_usleep(10000);
 	}
-	return ret;
 }
 
 static int64_t mpdurl_seek(URLContext *h, int64_t pos, int whence)
