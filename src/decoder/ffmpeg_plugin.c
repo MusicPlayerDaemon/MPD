@@ -363,6 +363,7 @@ static struct tag *ffmpeg_tag(char *file)
 
 	tag = tag_new();
 
+	base.decoder = NULL;
 	base.tag = tag;
 	ret = ffmpeg_helper(&input, ffmpeg_tag_internal, &base);
 
