@@ -74,12 +74,10 @@ static inline int16_t convertSample(MPC_SAMPLE_FORMAT sample)
 #ifdef MPC_FIXED_POINT
 	const int shift = 16 - MPC_FIXED_POINT_SCALE_SHIFT;
 
-	if (sample > 0) {
-		sample <<= shift;
-	} else if (shift < 0) {
-		sample >>= -shift;
-	}
-	val = sample;
+	if (shift < 0)
+		val = sample << -shift;
+	else
+		val = sample << shift;
 #else
 	const int float_scale = 1 << (16 - 1);
 
