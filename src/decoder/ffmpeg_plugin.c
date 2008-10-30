@@ -214,7 +214,8 @@ ffmpeg_try_decode(struct input_stream *input)
 }
 
 static enum decoder_command
-ffmpeg_send_packet(struct decoder *decoder, const AVPacket *packet,
+ffmpeg_send_packet(struct decoder *decoder, struct input_stream *is,
+		   const AVPacket *packet,
 		   AVCodecContext *codec_context,
 		   const AVRational *time_base)
 {
@@ -238,7 +239,7 @@ ffmpeg_send_packet(struct decoder *decoder, const AVPacket *packet,
 
 	assert(audio_size >= 0);
 
-	return decoder_data(decoder, NULL, 1,
+	return decoder_data(decoder, is, is->seekable,
 			    audio_buf, audio_size,
 			    position,
 			    codec_context->bit_rate / 1000, NULL);
@@ -278,7 +279,8 @@ ffmpeg_decode_internal(BasePtrs *base)
 			break;
 
 		if (packet.stream_index == base->audioStream)
-			cmd = ffmpeg_send_packet(decoder, &packet, aCodecCtx,
+			cmd = ffmpeg_send_packet(decoder, base->input,
+						 &packet, aCodecCtx,
 						 &pFormatCtx->streams[base->audioStream]->time_base);
 		else
 			cmd = decoder_get_command(decoder);
