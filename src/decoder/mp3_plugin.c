@@ -984,7 +984,7 @@ mp3_synth_and_send(struct mp3_data *data, ReplayGainInfo *replay_gain_info)
 	return DECODE_COMMAND_NONE;
 }
 
-static enum mp3_action
+static bool
 mp3_read(struct mp3_data *data, ReplayGainInfo **replay_gain_info_r)
 {
 	struct decoder *decoder = data->decoder;
@@ -1006,8 +1006,8 @@ mp3_read(struct mp3_data *data, ReplayGainInfo **replay_gain_info_r)
 		cmd = mp3_synth_and_send(data,
 					 replay_gain_info_r != NULL
 					 ? *replay_gain_info_r : NULL);
-		if (cmd == DECODE_COMMAND_STOP)
-			return DECODE_BREAK;
+		if (cmd != DECODE_COMMAND_NONE)
+			return false;
 
 		if (decoder_get_command(decoder) == DECODE_COMMAND_SEEK) {
 			unsigned long j;
@@ -1037,7 +1037,7 @@ mp3_read(struct mp3_data *data, ReplayGainInfo **replay_gain_info_r)
 						 replay_gain_info_r)) == DECODE_CONT
 		       && decoder_get_command(decoder) == DECODE_COMMAND_NONE) ;
 		if (ret == DECODE_BREAK || decoder_get_command(decoder) != DECODE_COMMAND_NONE)
-			break;
+			return false;
 		else if (ret == DECODE_SKIP)
 			skip = 1;
 		if (data->mute_frame == MUTEFRAME_NONE) {
@@ -1045,25 +1045,13 @@ mp3_read(struct mp3_data *data, ReplayGainInfo **replay_gain_info_r)
 			       decoder_get_command(decoder) == DECODE_COMMAND_NONE) ;
 			if (ret == DECODE_BREAK ||
 			    decoder_get_command(decoder) != DECODE_COMMAND_NONE)
-				break;
+				return false;
 		}
 		if (!skip && ret == DECODE_OK)
 			break;
 	}
 
-	switch (decoder_get_command(decoder)) {
-	case DECODE_COMMAND_NONE:
-	case DECODE_COMMAND_START:
-		break;
-
-	case DECODE_COMMAND_STOP:
-		return DECODE_BREAK;
-
-	case DECODE_COMMAND_SEEK:
-		return DECODE_CONT;
-	}
-
-	return ret;
+	return ret != DECODE_BREAK;
 }
 
 static void mp3_audio_format(struct mp3_data *data, struct audio_format *af)
@@ -1122,7 +1110,7 @@ mp3_decode(struct decoder *decoder, struct input_stream *input_stream)
 
 	decoder_initialized(decoder, &audio_format, data.total_time);
 
-	while (mp3_read(&data, &replay_gain_info) != DECODE_BREAK) ;
+	while (mp3_read(&data, &replay_gain_info)) ;
 
 	if (replay_gain_info)
 		freeReplayGainInfo(replay_gain_info);
