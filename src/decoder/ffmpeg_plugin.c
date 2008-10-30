@@ -321,27 +321,24 @@ static struct tag *ffmpeg_tag(char *file)
 	struct input_stream input;
 	BasePtrs base;
 	bool ret;
-	struct tag *tag = NULL;
 
 	if (!input_stream_open(&input, file)) {
 		ERROR("failed to open %s\n", file);
 		return NULL;
 	}
 
-	tag = tag_new();
-
 	base.decoder = NULL;
-	base.tag = tag;
+	base.tag = tag_new();
 
 	ret = ffmpeg_helper(&input, ffmpeg_tag_internal, &base);
 	if (ret) {
-		free(tag);
-		tag = NULL;
+		free(base.tag);
+		base.tag = NULL;
 	}
 
 	input_stream_close(&input);
 
-	return tag;
+	return base.tag;
 }
 
 /**
