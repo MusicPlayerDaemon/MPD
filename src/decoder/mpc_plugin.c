@@ -68,18 +68,22 @@ static inline int16_t convertSample(MPC_SAMPLE_FORMAT sample)
 	/* only doing 16-bit audio for now */
 	int32_t val;
 
-	const int clip_min = -1 << (16 - 1);
-	const int clip_max = (1 << (16 - 1)) - 1;
+	enum {
+		bits = 16,
+	};
+
+	const int clip_min = -1 << (bits - 1);
+	const int clip_max = (1 << (bits - 1)) - 1;
 
 #ifdef MPC_FIXED_POINT
-	const int shift = 16 - MPC_FIXED_POINT_SCALE_SHIFT;
+	const int shift = bits - MPC_FIXED_POINT_SCALE_SHIFT;
 
 	if (shift < 0)
 		val = sample << -shift;
 	else
 		val = sample << shift;
 #else
-	const int float_scale = 1 << (16 - 1);
+	const int float_scale = 1 << (bits - 1);
 
 	val = sample * float_scale;
 #endif
@@ -191,7 +195,7 @@ mpc_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 		for (i = 0; i < ret; i++) {
 			/* 16 bit audio again */
 			*dest++ = convertSample(sample_buffer[i]);
-			chunkpos += 2;
+			chunkpos += sizeof(*dest);
 
 			if (chunkpos >= MPC_CHUNK_SIZE) {
 				total_time = ((float)samplePos) /
