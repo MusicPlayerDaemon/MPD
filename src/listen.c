@@ -176,6 +176,10 @@ static void parseListenConfigParam(unsigned int port, ConfigParam * param)
 		if (establishListen(PF_UNIX, addrp, addrlen) < 0)
 			FATAL("unable to bind to %s: %s\n",
 			      param->value, strerror(errno));
+
+		/* allow everybody to connect */
+		chmod(param->value, 0666);
+
 #endif /* HAVE_UN */
 	} else {
 #ifdef HAVE_TCP
