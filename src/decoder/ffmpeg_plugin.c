@@ -21,6 +21,7 @@
 #include "../utils.h"
 #include "../log.h"
 
+#include <assert.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
@@ -235,11 +236,12 @@ ffmpeg_send_packet(struct decoder *decoder, const AVPacket *packet,
 		return;
 	}
 
-	if (audio_size >= 0)
-		decoder_data(decoder, NULL, 1,
-			     audio_buf, audio_size,
-			     position,
-			     codec_context->bit_rate / 1000, NULL);
+	assert(audio_size >= 0);
+
+	decoder_data(decoder, NULL, 1,
+		     audio_buf, audio_size,
+		     position,
+		     codec_context->bit_rate / 1000, NULL);
 }
 
 static bool
