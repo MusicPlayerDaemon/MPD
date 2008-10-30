@@ -73,8 +73,8 @@ pulse_init(struct audio_output *ao,
 
 	pd = pulse_new_data();
 	pd->ao = ao;
-	pd->server = g_strdup(server->value);
-	pd->sink = g_strdup(sink->value);
+	pd->server = server != NULL ? g_strdup(server->value) : NULL;
+	pd->sink = sink != NULL ? g_strdup(sink->value) : NULL;
 
 	return pd;
 }
