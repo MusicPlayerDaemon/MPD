@@ -332,7 +332,7 @@ static struct tag *ffmpeg_tag(char *file)
 
 	ret = ffmpeg_helper(&input, ffmpeg_tag_internal, &base);
 	if (ret) {
-		free(base.tag);
+		tag_free(base.tag);
 		base.tag = NULL;
 	}
 
