@@ -123,7 +123,7 @@ fi
 
 echo "Generating configuration files for $package, please wait...."
 
-ACLOCAL_FLAGS="$ACLOCAL_FLAGS -I $PWD/m4"
+ACLOCAL_FLAGS="$ACLOCAL_FLAGS -I m4"
 
 # /usr/share/aclocal is most likely included by default, already...
 ac_local_paths='
