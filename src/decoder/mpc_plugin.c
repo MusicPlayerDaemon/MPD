@@ -63,13 +63,13 @@ static mpc_int32_t mpc_getsize_cb(void *vdata)
 }
 
 /* this _looks_ performance-critical, don't de-inline -- eric */
-static inline int16_t convertSample(MPC_SAMPLE_FORMAT sample)
+static inline int32_t convertSample(MPC_SAMPLE_FORMAT sample)
 {
 	/* only doing 16-bit audio for now */
 	int32_t val;
 
 	enum {
-		bits = 16,
+		bits = 24,
 	};
 
 	const int clip_min = -1 << (bits - 1);
@@ -114,7 +114,7 @@ mpc_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 	char chunk[MPC_CHUNK_SIZE];
 	int chunkpos = 0;
 	long bitRate = 0;
-	int16_t *dest = (int16_t *) chunk;
+	int32_t *dest = (int32_t *) chunk;
 	unsigned long samplePos = 0;
 	mpc_uint32_t vbrUpdateAcc;
 	mpc_uint32_t vbrUpdateBits;
@@ -152,7 +152,7 @@ mpc_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 		return true;
 	}
 
-	audio_format.bits = 16;
+	audio_format.bits = 24;
 	audio_format.channels = info.channels;
 	audio_format.sample_rate = info.sample_freq;
 
@@ -170,7 +170,7 @@ mpc_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 			samplePos = decoder_seek_where(mpd_decoder) *
 				audio_format.sample_rate;
 			if (mpc_decoder_seek_sample(&decoder, samplePos)) {
-				dest = (int16_t *) chunk;
+				dest = (int32_t *)chunk;
 				chunkpos = 0;
 				decoder_command_finished(mpd_decoder);
 			} else
@@ -193,7 +193,6 @@ mpc_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 		ret *= 2;
 
 		for (i = 0; i < ret; i++) {
-			/* 16 bit audio again */
 			*dest++ = convertSample(sample_buffer[i]);
 			chunkpos += sizeof(*dest);
 
@@ -211,7 +210,7 @@ mpc_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 					     bitRate, replayGainInfo);
 
 				chunkpos = 0;
-				dest = (int16_t *) chunk;
+				dest = (int32_t *)chunk;
 				if (decoder_get_command(mpd_decoder) == DECODE_COMMAND_STOP) {
 					eof = true;
 					break;
