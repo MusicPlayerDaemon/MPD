@@ -87,15 +87,12 @@ static int mpdurl_read(URLContext *h, unsigned char *buf, int size)
 	while (true) {
 		ret = input_stream_read(base->input, (void *)buf, size);
 		if (ret == 0) {
-			DEBUG("ret 0\n");
 			if (input_stream_eof(base->input) ||
 			    (base->decoder &&
-			     decoder_get_command(base->decoder) != DECODE_COMMAND_NONE)) {
-				DEBUG("eof stream\n");
+			     decoder_get_command(base->decoder) != DECODE_COMMAND_NONE))
 				return ret;
-			} else {
+			else
 				my_usleep(10000);
-			}
 		} else {
 			break;
 		}
@@ -201,10 +198,8 @@ ffmpeg_helper(struct input_stream *input, int (*callback)(BasePtrs *ptrs),
 		ptrs->aCodec = aCodec;
 
 		ret = (*callback)( ptrs );
-	} else {
+	} else
 		ret = 0;
-		DEBUG("playable\n");
-	}
 
 	avcodec_close(aCodecCtx);
 	av_close_input_file(pFormatCtx);
@@ -238,8 +233,6 @@ static int ffmpeg_decode_internal(BasePtrs *base)
 
 	total_time = 0;
 
-	DEBUG("decoder_start\n");
-
 	if (aCodecCtx->channels > 2) {
 		aCodecCtx->channels = 2;
 	}
@@ -248,29 +241,18 @@ static int ffmpeg_decode_internal(BasePtrs *base)
 	audio_format.sample_rate = (unsigned int)aCodecCtx->sample_rate;
 	audio_format.channels = aCodecCtx->channels;
 
-	//    frame_count = afGetFrameCount(af_fp, AF_DEFAULT_TRACK);
-	//    total_time = ((float)frame_count / (float)audio_format.sample_rate);
-
 	//there is some problem with this on some demux (mp3 at least)
 	if (pFormatCtx->duration != (int)AV_NOPTS_VALUE) {
 		total_time = pFormatCtx->duration / AV_TIME_BASE;
 	}
 
-	DEBUG("ffmpeg sample rate: %dHz %d channels\n",
-	      aCodecCtx->sample_rate, aCodecCtx->channels);
-
 	decoder_initialized(decoder, &audio_format, total_time);
 
 	position = 0;
 
-	DEBUG("duration:%d (%d secs)\n", (int) pFormatCtx->duration,
-	      (int) total_time);
-
 	do {
 
 		if (decoder_get_command(decoder) == DECODE_COMMAND_SEEK) {
-
-			DEBUG("seek\n");
 			current = decoder_seek_where(decoder) * AV_TIME_BASE;
 
 			if (av_seek_frame(pFormatCtx, -1, current , 0) < 0) {
@@ -294,15 +276,11 @@ static int ffmpeg_decode_internal(BasePtrs *base)
 							    packet.size);
 
 				if(len >= 0) {
-					if(audio_size >= 0) {
-						// DEBUG("sending data %d/%d\n", audio_size, len);
-
+					if(audio_size >= 0)
 						decoder_data(decoder, NULL, 1,
 							     audio_buf, audio_size,
 							     position, //(float)current / (float)audio_format.sample_rate,
 							     aCodecCtx->bit_rate / 1000, NULL);
-
-					}
 				} else {
 					WARNING("skiping frame!\n");
 				}
@@ -314,7 +292,6 @@ static int ffmpeg_decode_internal(BasePtrs *base)
 		}
 	} while (decoder_get_command(decoder) != DECODE_COMMAND_STOP);
 
-	DEBUG("decoder finish\n");
 	return 0;
 }
 
@@ -322,18 +299,11 @@ static bool
 ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 {
 	BasePtrs base;
-	bool ret;
-
-	DEBUG("decode start\n");
 
 	base.input = input;
 	base.decoder = decoder;
 
-	ret = ffmpeg_helper(input, ffmpeg_decode_internal, &base) == 0;
-
-	DEBUG("decode finish\n");
-
-	return ret;
+	return ffmpeg_helper(input, ffmpeg_decode_internal, &base) == 0;
 }
 
 static int ffmpeg_tag_internal(BasePtrs *base)
