@@ -84,7 +84,7 @@ static int mpdurl_read(URLContext *h, unsigned char *buf, int size)
 {
 	int ret;
 	FopsHelper *base = (FopsHelper *) h->priv_data;
-	while (1) {
+	while (true) {
 		ret = input_stream_read(base->input, (void *)buf, size);
 		if (ret == 0) {
 			DEBUG("ret 0\n");
@@ -130,11 +130,11 @@ static URLProtocol mpdurl_fileops = {
 	.url_close = mpdurl_close,
 };
 
-static int ffmpeg_init(void)
+static bool ffmpeg_init(void)
 {
 	av_register_all();
 	register_protocol(&mpdurl_fileops);
-	return 0;
+	return true;
 }
 
 static int
@@ -318,18 +318,18 @@ static int ffmpeg_decode_internal(BasePtrs *base)
 	return 0;
 }
 
-static int
+static bool
 ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 {
 	BasePtrs base;
-	int ret;
+	bool ret;
 
 	DEBUG("decode start\n");
 
 	base.input = input;
 	base.decoder = decoder;
 
-	ret = ffmpeg_helper(input, ffmpeg_decode_internal, &base);
+	ret = ffmpeg_helper(input, ffmpeg_decode_internal, &base) == 0;
 
 	DEBUG("decode finish\n");
 

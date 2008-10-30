@@ -73,12 +73,12 @@ static void decodeStart(void)
 	if (dc.command == DECODE_COMMAND_STOP)
 		goto stop;
 
-	ret = DECODE_ERROR_UNKTYPE;
+	ret = false;
 	if (!song_is_file(song)) {
 		unsigned int next = 0;
 
 		/* first we try mime types: */
-		while (ret && (plugin = decoder_plugin_from_mime_type(inStream.mime, next++))) {
+		while ((plugin = decoder_plugin_from_mime_type(inStream.mime, next++))) {
 			if (plugin->stream_decode == NULL)
 				continue;
 			if (!(plugin->stream_types & INPUT_PLUGIN_STREAM_URL))
@@ -94,7 +94,7 @@ static void decodeStart(void)
 		if (plugin == NULL) {
 			const char *s = getSuffix(path_max_fs);
 			next = 0;
-			while (ret && (plugin = decoder_plugin_from_suffix(s, next++))) {
+			while ((plugin = decoder_plugin_from_suffix(s, next++))) {
 				if (plugin->stream_decode == NULL)
 					continue;
 				if (!(plugin->stream_types &
@@ -124,7 +124,7 @@ static void decodeStart(void)
 	} else {
 		unsigned int next = 0;
 		const char *s = getSuffix(path_max_fs);
-		while (ret && (plugin = decoder_plugin_from_suffix(s, next++))) {
+		while ((plugin = decoder_plugin_from_suffix(s, next++))) {
 			if (!plugin->stream_types & INPUT_PLUGIN_STREAM_FILE)
 				continue;
 
@@ -150,11 +150,10 @@ static void decodeStart(void)
 
 	ob_flush();
 
-	if (ret < 0 || ret == DECODE_ERROR_UNKTYPE) {
-		if (ret != DECODE_ERROR_UNKTYPE)
-			dc.error = DECODE_ERROR_FILE;
-		else
-			dc.error = DECODE_ERROR_UNKTYPE;
+	if (!ret) {
+		dc.error = plugin == NULL
+			? DECODE_ERROR_UNKTYPE
+			: DECODE_ERROR_FILE;
 	}
 
 stop:

@@ -94,7 +94,7 @@ static inline int16_t convertSample(MPC_SAMPLE_FORMAT sample)
 	return val;
 }
 
-static int
+static bool
 mpc_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 {
 	mpc_decoder decoder;
@@ -106,7 +106,7 @@ mpc_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 
 	MPC_SAMPLE_FORMAT sample_buffer[MPC_DECODER_BUFFER_LENGTH];
 
-	int eof = 0;
+	bool eof = false;
 	long ret;
 #define MPC_CHUNK_SIZE 4096
 	char chunk[MPC_CHUNK_SIZE];
@@ -135,9 +135,9 @@ mpc_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 	if ((ret = mpc_streaminfo_read(&info, &reader)) != ERROR_CODE_OK) {
 		if (decoder_get_command(mpd_decoder) != DECODE_COMMAND_STOP) {
 			ERROR("Not a valid musepack stream\n");
-			return -1;
+			return false;
 		}
-		return 0;
+		return true;
 	}
 
 	mpc_decoder_setup(&decoder, &reader);
@@ -145,9 +145,9 @@ mpc_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 	if (!mpc_decoder_initialize(&decoder, &info)) {
 		if (decoder_get_command(mpd_decoder) != DECODE_COMMAND_STOP) {
 			ERROR("Not a valid musepack stream\n");
-			return -1;
+			return false;
 		}
-		return 0;
+		return true;
 	}
 
 	audio_format.bits = 16;
@@ -181,7 +181,7 @@ mpc_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 					 &vbrUpdateAcc, &vbrUpdateBits);
 
 		if (ret <= 0 || decoder_get_command(mpd_decoder) == DECODE_COMMAND_STOP) {
-			eof = 1;
+			eof = true;
 			break;
 		}
 
@@ -212,7 +212,7 @@ mpc_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 				chunkpos = 0;
 				s16 = (int16_t *) chunk;
 				if (decoder_get_command(mpd_decoder) == DECODE_COMMAND_STOP) {
-					eof = 1;
+					eof = true;
 					break;
 				}
 			}
@@ -233,7 +233,7 @@ mpc_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 
 	freeReplayGainInfo(replayGainInfo);
 
-	return 0;
+	return true;
 }
 
 static float mpcGetTime(char *file)

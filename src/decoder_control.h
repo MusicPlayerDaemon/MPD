@@ -44,8 +44,8 @@ struct decoder_control {
 	volatile enum decoder_state state;
 	volatile enum decoder_command command;
 	volatile uint16_t error;
-	volatile int8_t seekError;
-	volatile int8_t seekable;
+	bool seekError;
+	bool seekable;
 	volatile double seekWhere;
 	struct audio_format audioFormat;
 	struct song *current_song;
@@ -59,13 +59,13 @@ void dc_init(void);
 
 void dc_deinit(void);
 
-static inline int decoder_is_idle(void)
+static inline bool decoder_is_idle(void)
 {
 	return dc.state == DECODE_STATE_STOP &&
 		dc.command != DECODE_COMMAND_START;
 }
 
-static inline int decoder_is_starting(void)
+static inline bool decoder_is_starting(void)
 {
 	return dc.command == DECODE_COMMAND_START ||
 		dc.state == DECODE_STATE_START;
@@ -93,7 +93,7 @@ dc_start_async(struct song *song);
 void
 dc_stop(struct notify *notify);
 
-int
+bool
 dc_seek(struct notify *notify, double where);
 
 #endif

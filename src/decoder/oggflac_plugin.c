@@ -304,7 +304,7 @@ static int oggflac_decode(struct decoder * mpd_decoder, InputStream * inStream)
 
 	decoder_initialized(mpd_decoder, &data.audio_format, data.total_time);
 
-	while (1) {
+	while (true) {
 		OggFLAC__seekable_stream_decoder_process_single(decoder);
 		if (OggFLAC__seekable_stream_decoder_get_state(decoder) !=
 		    OggFLAC__SEEKABLE_STREAM_DECODER_OK) {

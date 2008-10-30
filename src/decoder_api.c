@@ -96,7 +96,7 @@ void decoder_seek_error(struct decoder * decoder)
 {
 	assert(dc.command == DECODE_COMMAND_SEEK);
 
-	dc.seekError = 1;
+	dc.seekError = true;
 	decoder_command_finished(decoder);
 }
 
@@ -109,7 +109,7 @@ size_t decoder_read(struct decoder *decoder,
 	assert(inStream != NULL);
 	assert(buffer != NULL);
 
-	while (1) {
+	while (true) {
 		/* XXX don't allow decoder==NULL */
 		if (decoder != NULL &&
 		    (dc.command != DECODE_COMMAND_SEEK ||

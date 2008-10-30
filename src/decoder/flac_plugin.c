@@ -219,13 +219,14 @@ static FLAC__StreamDecoderWriteStatus flacWrite(const flac_decoder *dec,
 	return flac_common_write(data, frame, buf);
 }
 
-static struct tag *flacMetadataDup(char *file, int *vorbisCommentFound)
+static struct tag *
+flacMetadataDup(char *file, bool *vorbisCommentFound)
 {
 	struct tag *ret = NULL;
 	FLAC__Metadata_SimpleIterator *it;
 	FLAC__StreamMetadata *block = NULL;
 
-	*vorbisCommentFound = 0;
+	*vorbisCommentFound = false;
 
 	it = FLAC__metadata_simple_iterator_new();
 	if (!FLAC__metadata_simple_iterator_init(it, file, 1, 0)) {
@@ -262,7 +263,7 @@ static struct tag *flacMetadataDup(char *file, int *vorbisCommentFound)
 			ret = copyVorbisCommentBlockToMpdTag(block, ret);
 
 			if (ret)
-				*vorbisCommentFound = 1;
+				*vorbisCommentFound = true;
 		} else if (block->type == FLAC__METADATA_TYPE_STREAMINFO) {
 			if (!ret)
 				ret = tag_new();
@@ -280,7 +281,7 @@ static struct tag *flacMetadataDup(char *file, int *vorbisCommentFound)
 static struct tag *flacTagDup(char *file)
 {
 	struct tag *ret = NULL;
-	int foundVorbisComment = 0;
+	bool foundVorbisComment = false;
 
 	ret = flacMetadataDup(file, &foundVorbisComment);
 	if (!ret) {
@@ -300,16 +301,16 @@ static struct tag *flacTagDup(char *file)
 	return ret;
 }
 
-static int
+static bool
 flac_decode_internal(struct decoder * decoder, struct input_stream *inStream,
-		     int is_ogg)
+		     bool is_ogg)
 {
 	flac_decoder *flacDec;
 	FlacData data;
 	const char *err = NULL;
 
 	if (!(flacDec = flac_new()))
-		return -1;
+		return false;
 	init_FlacData(&data, decoder, inStream);
 
 #if defined(FLAC_API_VERSION_CURRENT) && FLAC_API_VERSION_CURRENT > 7
@@ -342,7 +343,7 @@ flac_decode_internal(struct decoder * decoder, struct input_stream *inStream,
 
 	decoder_initialized(decoder, &data.audio_format, data.total_time);
 
-	while (1) {
+	while (true) {
 		if (!flac_process_single(flacDec))
 			break;
 		if (decoder_get_command(decoder) == DECODE_COMMAND_SEEK) {
@@ -372,15 +373,15 @@ fail:
 
 	if (err) {
 		ERROR("flac %s\n", err);
-		return -1;
+		return false;
 	}
-	return 0;
+	return true;
 }
 
-static int
+static bool
 flac_decode(struct decoder * decoder, struct input_stream *inStream)
 {
-	return flac_decode_internal(decoder, inStream, 0);
+	return flac_decode_internal(decoder, inStream, false);
 }
 
 #if defined(FLAC_API_VERSION_CURRENT) && FLAC_API_VERSION_CURRENT > 7 && \
@@ -415,10 +416,10 @@ out:
 	return ret;
 }
 
-static int
+static bool
 oggflac_decode(struct decoder *decoder, struct input_stream *inStream)
 {
-	return flac_decode_internal(decoder, inStream, 1);
+	return flac_decode_internal(decoder, inStream, true);
 }
 
 static bool

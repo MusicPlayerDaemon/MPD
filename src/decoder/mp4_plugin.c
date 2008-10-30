@@ -79,7 +79,7 @@ static uint32_t mp4_inputStreamSeekCallback(void *inStream, uint64_t position)
 		? 0 : -1;
 }
 
-static int
+static bool
 mp4_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 {
 	mp4ff_t *mp4fh;
@@ -120,7 +120,7 @@ mp4_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 	if (!mp4fh) {
 		ERROR("Input does not appear to be a mp4 stream.\n");
 		free(mp4cb);
-		return -1;
+		return false;
 	}
 
 	track = mp4_getAACTrack(mp4fh);
@@ -128,7 +128,7 @@ mp4_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 		ERROR("No AAC track found in mp4 stream.\n");
 		mp4ff_close(mp4fh);
 		free(mp4cb);
-		return -1;
+		return false;
 	}
 
 	decoder = faacDecOpen();
@@ -155,7 +155,7 @@ mp4_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 		faacDecClose(decoder);
 		mp4ff_close(mp4fh);
 		free(mp4cb);
-		return -1;
+		return false;
 	}
 
 	audio_format.sample_rate = sample_rate;
@@ -171,7 +171,7 @@ mp4_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 		faacDecClose(decoder);
 		mp4ff_close(mp4fh);
 		free(mp4cb);
-		return -1;
+		return false;
 	}
 	total_time = ((float)file_time) / scale;
 
@@ -181,7 +181,7 @@ mp4_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 		 faacDecClose(decoder);
 		 mp4ff_close(mp4fh);
 		 free(mp4cb);
-		 return -1;
+		 return false;
 	}
 
 	file_time = 0.0;
@@ -293,12 +293,12 @@ mp4_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 	free(mp4cb);
 
 	if (!initialized)
-		return -1;
+		return false;
 
 	if (decoder_get_command(mpd_decoder) == DECODE_COMMAND_SEEK && seeking)
 		decoder_command_finished(mpd_decoder);
 
-	return 0;
+	return true;
 }
 
 static struct tag *mp4DataDup(char *file, int *mp4MetadataFound)

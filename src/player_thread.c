@@ -105,10 +105,10 @@ static int waitOnDecode(struct player *player)
 	return 0;
 }
 
-static int decodeSeek(struct player *player)
+static bool decodeSeek(struct player *player)
 {
-	int ret = -1;
 	double where;
+	bool ret;
 
 	if (decoder_current_song() != pc.next_song) {
 		dc_stop(&pc.notify);
@@ -125,7 +125,7 @@ static int decodeSeek(struct player *player)
 		where = 0.0;
 
 	ret = dc_seek(&pc.notify, where);
-	if (ret == 0)
+	if (ret)
 		pc.elapsedTime = where;
 
 	player_command_finished();
@@ -173,7 +173,7 @@ static void processDecodeInput(struct player *player)
 
 	case PLAYER_COMMAND_SEEK:
 		dropBufferedAudio();
-		if (decodeSeek(player) == 0) {
+		if (decodeSeek(player)) {
 			player->xfade = XFADE_UNKNOWN;
 
 			/* abort buffering when the user has requested

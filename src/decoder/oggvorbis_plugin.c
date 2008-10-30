@@ -96,7 +96,7 @@ static const char *ogg_parseComment(const char *comment, const char *needle)
 static void ogg_getReplayGainInfo(char **comments, ReplayGainInfo ** infoPtr)
 {
 	const char *temp;
-	int found = 0;
+	bool found = false;
 
 	if (*infoPtr)
 		freeReplayGainInfo(*infoPtr);
@@ -106,19 +106,19 @@ static void ogg_getReplayGainInfo(char **comments, ReplayGainInfo ** infoPtr)
 		if ((temp =
 		     ogg_parseComment(*comments, "replaygain_track_gain"))) {
 			(*infoPtr)->trackGain = atof(temp);
-			found = 1;
+			found = true;
 		} else if ((temp = ogg_parseComment(*comments,
 						    "replaygain_album_gain"))) {
 			(*infoPtr)->albumGain = atof(temp);
-			found = 1;
+			found = true;
 		} else if ((temp = ogg_parseComment(*comments,
 						    "replaygain_track_peak"))) {
 			(*infoPtr)->trackPeak = atof(temp);
-			found = 1;
+			found = true;
 		} else if ((temp = ogg_parseComment(*comments,
 						    "replaygain_album_peak"))) {
 			(*infoPtr)->albumPeak = atof(temp);
-			found = 1;
+			found = true;
 		}
 
 		comments++;
@@ -200,7 +200,7 @@ static void putOggCommentsIntoOutputBuffer(char *streamName,
 }
 
 /* public */
-static int
+static bool
 oggvorbis_decode(struct decoder *decoder, struct input_stream *inStream)
 {
 	OggVorbis_File vf;
@@ -218,7 +218,7 @@ oggvorbis_decode(struct decoder *decoder, struct input_stream *inStream)
 	ReplayGainInfo *replayGainInfo = NULL;
 	char **comments;
 	const char *errorStr;
-	int initialized = 0;
+	bool initialized = false;
 
 	data.inStream = inStream;
 	data.decoder = decoder;
@@ -229,7 +229,7 @@ oggvorbis_decode(struct decoder *decoder, struct input_stream *inStream)
 	callbacks.tell_func = ogg_tell_cb;
 	if ((ret = ov_open_callbacks(&data, &vf, NULL, 0, callbacks)) < 0) {
 		if (decoder_get_command(decoder) != DECODE_COMMAND_NONE)
-			return 0;
+			return true;
 
 		switch (ret) {
 		case OV_EREAD:
@@ -253,11 +253,11 @@ oggvorbis_decode(struct decoder *decoder, struct input_stream *inStream)
 		}
 		ERROR("Error decoding Ogg Vorbis stream: %s\n",
 		      errorStr);
-		return -1;
+		return false;
 	}
 	audio_format.bits = 16;
 
-	while (1) {
+	while (true) {
 		if (decoder_get_command(decoder) == DECODE_COMMAND_SEEK) {
 			double seek_where = decoder_seek_where(decoder);
 			if (0 == ov_time_seek_page(&vf, seek_where)) {
@@ -280,7 +280,7 @@ oggvorbis_decode(struct decoder *decoder, struct input_stream *inStream)
 					total_time = 0;
 				decoder_initialized(decoder, &audio_format,
 						    total_time);
-				initialized = 1;
+				initialized = true;
 			}
 			comments = ov_comment(&vf, -1)->user_comments;
 			putOggCommentsIntoOutputBuffer(inStream->meta_name,
@@ -326,7 +326,7 @@ oggvorbis_decode(struct decoder *decoder, struct input_stream *inStream)
 		freeReplayGainInfo(replayGainInfo);
 
 	ov_clear(&vf);
-	return 0;
+	return true;
 }
 
 static struct tag *oggvorbis_TagDup(char *file)

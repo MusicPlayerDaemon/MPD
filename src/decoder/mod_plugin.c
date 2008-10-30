@@ -91,18 +91,18 @@ static MDRIVER drv_mpd = {
 	VC_VoiceRealVolume
 };
 
-static int mod_mikModInitiated;
-static int mod_mikModInitError;
+static bool mod_mikModInitiated;
+static bool mod_mikModInitError;
 
-static int mod_initMikMod(void)
+static bool mod_initMikMod(void)
 {
 	static char params[] = "";
 
 	if (mod_mikModInitError)
-		return -1;
+		return false;
 
 	if (!mod_mikModInitiated) {
-		mod_mikModInitiated = 1;
+		mod_mikModInitiated = true;
 
 		md_device = 0;
 		md_reverb = 0;
@@ -119,11 +119,11 @@ static int mod_initMikMod(void)
 	if (MikMod_Init(params)) {
 		ERROR("Could not init MikMod: %s\n",
 		      MikMod_strerror(MikMod_errno));
-		mod_mikModInitError = 1;
-		return -1;
+		mod_mikModInitError = true;
+		return false;
 	}
 
-	return 0;
+	return true;
 }
 
 static void mod_finishMikMod(void)
@@ -165,7 +165,8 @@ static void mod_close(mod_Data * data)
 	free(data);
 }
 
-static int mod_decode(struct decoder * decoder, char *path)
+static bool
+mod_decode(struct decoder *decoder, char *path)
 {
 	mod_Data *data;
 	struct audio_format audio_format;
@@ -173,13 +174,13 @@ static int mod_decode(struct decoder * decoder, char *path)
 	int ret;
 	float secPerByte;
 
-	if (mod_initMikMod() < 0)
-		return -1;
+	if (!mod_initMikMod())
+		return false;
 
 	if (!(data = mod_open(path))) {
 		ERROR("failed to open mod: %s\n", path);
 		MikMod_Exit();
-		return -1;
+		return false;
 	}
 
 	audio_format.bits = 16;
@@ -192,7 +193,7 @@ static int mod_decode(struct decoder * decoder, char *path)
 
 	decoder_initialized(decoder, &audio_format, 0);
 
-	while (1) {
+	while (true) {
 		if (decoder_get_command(decoder) == DECODE_COMMAND_SEEK) {
 			decoder_seek_error(decoder);
 		}
@@ -214,7 +215,7 @@ static int mod_decode(struct decoder * decoder, char *path)
 
 	MikMod_Exit();
 
-	return 0;
+	return true;
 }
 
 static struct tag *modTagDup(char *file)
@@ -223,7 +224,7 @@ static struct tag *modTagDup(char *file)
 	MODULE *moduleHandle;
 	char *title;
 
-	if (mod_initMikMod() < 0) {
+	if (!mod_initMikMod()) {
 		DEBUG("modTagDup: Failed to initialize MikMod\n");
 		return NULL;
 	}

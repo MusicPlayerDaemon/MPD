@@ -58,7 +58,7 @@ struct decoder_plugin {
 	 * have/need one this must return < 0 if there is an error and
 	 * >= 0 otherwise
 	 */
-	int (*init)(void);
+	bool (*init)(void);
 
 	/**
 	 * optional, set this to NULL if the InputPlugin doesn't have/need one
@@ -75,9 +75,9 @@ struct decoder_plugin {
 	 * this will be used to decode InputStreams, and is
 	 * recommended for files and networked (HTTP) connections.
 	 *
-	 * returns -1 on error, 0 on success
+	 * returns false on error, true on success
 	 */
-	int (*stream_decode)(struct decoder *, struct input_stream *);
+	bool (*stream_decode)(struct decoder *, struct input_stream *);
 
 	/**
 	 * use this if and only if your InputPlugin can only be passed
@@ -86,7 +86,7 @@ struct decoder_plugin {
 	 *
 	 * returns -1 on error, 0 on success
 	 */
-	int (*file_decode)(struct decoder *, char *path);
+	bool (*file_decode)(struct decoder *, char *path);
 
 	/**
 	 * file should be the full path!  Returns NULL if a tag cannot

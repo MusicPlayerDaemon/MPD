@@ -90,13 +90,13 @@ mad_fixed_to_24_buffer(int32_t *dest, const struct mad_synth *synth,
 	}
 }
 
-static int mp3_plugin_init(void)
+static bool mp3_plugin_init(void)
 {
 	int ret = getBoolConfigParam(CONF_GAPLESS_MP3_PLAYBACK, true);
 	gapless_playback = ret != CONF_BOOL_UNSET
 		? !!ret
 		: DEFAULT_GAPLESS_MP3_PLAYBACK;
-	return 1;
+	return true;
 }
 
 #define MP3_DATA_OUTPUT_BUFFER_SIZE 2048
@@ -210,7 +210,7 @@ static ReplayGainInfo *parse_id3_replay_gain_info(struct id3_tag *tag)
 	char *key;
 	char *value;
 	struct id3_frame *frame;
-	int found = 0;
+	bool found = false;
 	ReplayGainInfo *replay_gain_info;
 
 	replay_gain_info = newReplayGainInfo();
@@ -228,16 +228,16 @@ static ReplayGainInfo *parse_id3_replay_gain_info(struct id3_tag *tag)
 
 		if (strcasecmp(key, "replaygain_track_gain") == 0) {
 			replay_gain_info->trackGain = atof(value);
-			found = 1;
+			found = true;
 		} else if (strcasecmp(key, "replaygain_album_gain") == 0) {
 			replay_gain_info->albumGain = atof(value);
-			found = 1;
+			found = true;
 		} else if (strcasecmp(key, "replaygain_track_peak") == 0) {
 			replay_gain_info->trackPeak = atof(value);
-			found = 1;
+			found = true;
 		} else if (strcasecmp(key, "replaygain_album_peak") == 0) {
 			replay_gain_info->albumPeak = atof(value);
-			found = 1;
+			found = true;
 		}
 
 		free(key);
@@ -989,7 +989,6 @@ mp3_read(struct mp3_data *data, ReplayGainInfo **replay_gain_info_r)
 {
 	struct decoder *decoder = data->decoder;
 	int ret;
-	int skip;
 	enum decoder_command cmd;
 
 	mp3_update_timer_next_frame(data);
@@ -1031,7 +1030,8 @@ mp3_read(struct mp3_data *data, ReplayGainInfo **replay_gain_info_r)
 	}
 
 	while (true) {
-		skip = 0;
+		bool skip = false;
+
 		while ((ret =
 			decode_next_frame_header(data, NULL,
 						 replay_gain_info_r)) == DECODE_CONT
@@ -1039,7 +1039,7 @@ mp3_read(struct mp3_data *data, ReplayGainInfo **replay_gain_info_r)
 		if (ret == DECODE_BREAK || decoder_get_command(decoder) != DECODE_COMMAND_NONE)
 			return false;
 		else if (ret == DECODE_SKIP)
-			skip = 1;
+			skip = true;
 		if (data->mute_frame == MUTEFRAME_NONE) {
 			while ((ret = decodeNextFrame(data)) == DECODE_CONT &&
 			       decoder_get_command(decoder) == DECODE_COMMAND_NONE) ;
@@ -1061,7 +1061,7 @@ static void mp3_audio_format(struct mp3_data *data, struct audio_format *af)
 	af->channels = MAD_NCHANNELS(&(data->frame).header);
 }
 
-static int
+static bool
 mp3_decode(struct decoder *decoder, struct input_stream *input_stream)
 {
 	struct mp3_data data;
@@ -1073,9 +1073,9 @@ mp3_decode(struct decoder *decoder, struct input_stream *input_stream)
 		if (decoder_get_command(decoder) == DECODE_COMMAND_NONE) {
 			ERROR
 			    ("Input does not appear to be a mp3 bit stream.\n");
-			return -1;
+			return false;
 		}
-		return 0;
+		return true;
 	}
 
 	mp3_audio_format(&data, &audio_format);
@@ -1120,7 +1120,7 @@ mp3_decode(struct decoder *decoder, struct input_stream *input_stream)
 		decoder_command_finished(decoder);
 
 	mp3_data_finish(&data);
-	return 0;
+	return true;
 }
 
 static struct tag *mp3_tag_dup(char *file)

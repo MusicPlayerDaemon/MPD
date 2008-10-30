@@ -232,7 +232,7 @@ static ReplayGainInfo *wavpack_replaygain(WavpackContext *wpc)
 	static char replaygain_track_peak[] = "replaygain_track_peak";
 	static char replaygain_album_peak[] = "replaygain_album_peak";
 	ReplayGainInfo *replayGainInfo;
-	int found = 0;
+	bool found = false;
 	char *value;
 
 	replayGainInfo = newReplayGainInfo();
@@ -241,28 +241,28 @@ static ReplayGainInfo *wavpack_replaygain(WavpackContext *wpc)
 	if (value) {
 		replayGainInfo->trackGain = atof(value);
 		free(value);
-		found = 1;
+		found = true;
 	}
 
 	value = wavpack_tag(wpc, replaygain_album_gain);
 	if (value) {
 		replayGainInfo->albumGain = atof(value);
 		free(value);
-		found = 1;
+		found = true;
 	}
 
 	value = wavpack_tag(wpc, replaygain_track_peak);
 	if (value) {
 		replayGainInfo->trackPeak = atof(value);
 		free(value);
-		found = 1;
+		found = true;
 	}
 
 	value = wavpack_tag(wpc, replaygain_album_peak);
 	if (value) {
 		replayGainInfo->albumPeak = atof(value);
 		free(value);
-		found = 1;
+		found = true;
 	}
 
 
@@ -496,7 +496,7 @@ static int wavpack_open_wvc(struct decoder *decoder,
 /*
  * Decodes a stream.
  */
-static int
+static bool
 wavpack_streamdecode(struct decoder * decoder, struct input_stream *is)
 {
 	char error[ERRORLEN];
@@ -516,7 +516,7 @@ wavpack_streamdecode(struct decoder * decoder, struct input_stream *is)
 
 	if (wpc == NULL) {
 		ERROR("failed to open WavPack stream: %s\n", error);
-		return -1;
+		return false;
 	}
 
 	wavpack_decode(decoder, wpc, can_seek(&isp), NULL);
@@ -526,13 +526,14 @@ wavpack_streamdecode(struct decoder * decoder, struct input_stream *is)
 		input_stream_close(&is_wvc);
 	input_stream_close(is);
 
-	return 0;
+	return true;
 }
 
 /*
  * Decodes a file.
  */
-static int wavpack_filedecode(struct decoder * decoder, char *fname)
+static bool
+wavpack_filedecode(struct decoder *decoder, char *fname)
 {
 	char error[ERRORLEN];
 	WavpackContext *wpc;
@@ -543,7 +544,7 @@ static int wavpack_filedecode(struct decoder * decoder, char *fname)
 	                           OPEN_2CH_MAX | OPEN_NORMALIZE, 15);
 	if (wpc == NULL) {
 		ERROR("failed to open WavPack file \"%s\": %s\n", fname, error);
-		return -1;
+		return false;
 	}
 
 	replayGainInfo = wavpack_replaygain(wpc);
@@ -555,7 +556,7 @@ static int wavpack_filedecode(struct decoder * decoder, char *fname)
 
 	WavpackCloseFile(wpc);
 
-	return 0;
+	return true;
 }
 
 static char const *wavpackSuffixes[] = { "wv", NULL };

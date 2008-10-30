@@ -41,7 +41,7 @@ void decoder_plugin_load(struct decoder_plugin * inputPlugin)
 	if (!inputPlugin->name)
 		return;
 
-	if (inputPlugin->init != NULL && inputPlugin->init() < 0)
+	if (inputPlugin->init != NULL && !inputPlugin->init())
 		return;
 
 	insertInList(inputPlugin_list, inputPlugin->name, (void *)inputPlugin);

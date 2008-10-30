@@ -85,20 +85,20 @@ dc_stop(struct notify *notify)
 		dc_command(notify, DECODE_COMMAND_STOP);
 }
 
-int
+bool
 dc_seek(struct notify *notify, double where)
 {
 	assert(where >= 0.0);
 
 	if (dc.state == DECODE_STATE_STOP || !dc.seekable)
-		return -1;
+		return false;
 
 	dc.seekWhere = where;
-	dc.seekError = 0;
+	dc.seekError = false;
 	dc_command(notify, DECODE_COMMAND_SEEK);
 
 	if (dc.seekError)
-		return -1;
+		return false;
 
-	return 0;
+	return true;
 }

@@ -41,7 +41,8 @@ static int getAudiofileTotalTime(char *file)
 	return total_time;
 }
 
-static int audiofile_decode(struct decoder * decoder, char *path)
+static bool
+audiofile_decode(struct decoder *decoder, char *path)
 {
 	int fs, frame_count;
 	AFfilehandle af_fp;
@@ -55,13 +56,13 @@ static int audiofile_decode(struct decoder * decoder, char *path)
 
 	if (stat(path, &st) < 0) {
 		ERROR("failed to stat: %s\n", path);
-		return -1;
+		return false;
 	}
 
 	af_fp = afOpenFile(path, "r", NULL);
 	if (af_fp == AF_NULL_FILEHANDLE) {
 		ERROR("failed to open: %s\n", path);
-		return -1;
+		return false;
 	}
 
 	afSetVirtualSampleFormat(af_fp, AF_DEFAULT_TRACK,
@@ -83,7 +84,7 @@ static int audiofile_decode(struct decoder * decoder, char *path)
 		ERROR("Only 8 and 16-bit files are supported. %s is %i-bit\n",
 		      path, audio_format.bits);
 		afCloseFile(af_fp);
-		return -1;
+		return false;
 	}
 
 	fs = (int)afGetVirtualFrameSize(af_fp, AF_DEFAULT_TRACK, 1);
@@ -111,7 +112,7 @@ static int audiofile_decode(struct decoder * decoder, char *path)
 	} while (decoder_get_command(decoder) != DECODE_COMMAND_STOP);
 
 	afCloseFile(af_fp);
-	return 0;
+	return true;
 }
 
 static struct tag *audiofileTagDup(char *file)
