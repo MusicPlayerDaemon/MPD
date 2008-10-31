@@ -169,15 +169,21 @@ static void * decoder_task(mpd_unused void *arg)
 	while (1) {
 		assert(dc.state == DECODE_STATE_STOP);
 
-		if (dc.command == DECODE_COMMAND_START ||
-		    dc.command == DECODE_COMMAND_SEEK) {
+		switch (dc.command) {
+		case DECODE_COMMAND_START:
+		case DECODE_COMMAND_SEEK:
 			decodeStart();
-		} else if (dc.command == DECODE_COMMAND_STOP) {
+			break;
+
+		case DECODE_COMMAND_STOP:
 			dc.command = DECODE_COMMAND_NONE;
 			notify_signal(&pc.notify);
-		} else {
+			break;
+
+		case DECODE_COMMAND_NONE:
 			notify_wait(&dc.notify);
 			notify_signal(&pc.notify);
+			break;
 		}
 	}
 
