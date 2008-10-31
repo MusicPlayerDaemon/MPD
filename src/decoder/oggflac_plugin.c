@@ -256,7 +256,7 @@ fail:
 /* public functions: */
 static struct tag *oggflac_TagDup(char *file)
 {
-	InputStream inStream;
+	struct input_stream inStream;
 	OggFLAC__SeekableStreamDecoder *decoder;
 	FlacData data;
 
@@ -279,7 +279,7 @@ static struct tag *oggflac_TagDup(char *file)
 	return data.tag;
 }
 
-static bool oggflac_try_decode(InputStream * inStream)
+static bool oggflac_try_decode(struct input_stream *inStream)
 {
 	if (!inStream->seekable)
 		/* we cannot seek after the detection, so don't bother
@@ -289,16 +289,17 @@ static bool oggflac_try_decode(InputStream * inStream)
 	return ogg_stream_type_detect(inStream) == FLAC;
 }
 
-static int oggflac_decode(struct decoder * mpd_decoder, InputStream * inStream)
+static bool
+oggflac_decode(struct decoder * mpd_decoder, struct input_stream *inStream)
 {
 	OggFLAC__SeekableStreamDecoder *decoder = NULL;
 	FlacData data;
-	int ret = 0;
+	bool ret = true;
 
 	init_FlacData(&data, mpd_decoder, inStream);
 
 	if (!(decoder = full_decoder_init_and_read_metadata(&data, 0))) {
-		ret = -1;
+		ret = false;
 		goto fail;
 	}
 
@@ -315,7 +316,6 @@ static int oggflac_decode(struct decoder * mpd_decoder, InputStream * inStream)
 			    data.audio_format.sample_rate + 0.5;
 			if (OggFLAC__seekable_stream_decoder_seek_absolute
 			    (decoder, sampleToSeek)) {
-				decoder_clear(mpd_decoder);
 				data.time = ((float)sampleToSeek) /
 				    data.audio_format.sample_rate;
 				data.position = 0;
