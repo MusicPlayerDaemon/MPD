@@ -100,6 +100,11 @@ map_directory_child_fs(const struct directory *directory, const char *name,
 	char buffer2[MPD_PATH_MAX];
 	const char *parent_fs;
 
+	/* check for invalid or unauthorized base names */
+	if (*name == 0 || strchr(name, '/') != NULL ||
+	    strcmp(name, ".") == 0 || strcmp(name, "..") == 0)
+		return NULL;
+
 	parent_fs = map_directory_fs(directory, buffer2);
 	if (parent_fs == NULL)
 		return NULL;
