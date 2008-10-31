@@ -46,7 +46,7 @@ static void decodeStart(void)
 	dc.current_song = dc.next_song; /* NEED LOCK */
 	if (!input_stream_open(&inStream, path_max_fs)) {
 		dc.error = DECODE_ERROR_FILE;
-		goto stop_no_close;
+		return;
 	}
 
 	decoder.seeking = false;
@@ -159,9 +159,6 @@ static void decodeStart(void)
 stop:
 	if (close_instream)
 		input_stream_close(&inStream);
-stop_no_close:
-	dc.state = DECODE_STATE_STOP;
-	dc.command = DECODE_COMMAND_NONE;
 }
 
 static void * decoder_task(mpd_unused void *arg)
@@ -173,6 +170,9 @@ static void * decoder_task(mpd_unused void *arg)
 		case DECODE_COMMAND_START:
 		case DECODE_COMMAND_SEEK:
 			decodeStart();
+
+			dc.state = DECODE_STATE_STOP;
+			dc.command = DECODE_COMMAND_NONE;
 			break;
 
 		case DECODE_COMMAND_STOP:
