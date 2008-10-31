@@ -55,16 +55,7 @@ char *pfx_dir(char *dst,
               const char *path, const size_t path_len,
               const char *pfx, const size_t pfx_len);
 
-/* relative playlist path to absolute playlist path */
-char *rpp2app_r(char *dst, const char *rel_path);
-
 /* strips extra "///" and leading "/" and trailing "/" */
 char *sanitizePathDup(const char *path);
-
-/*
- * converts a path passed from a client into an absolute FS path.
- * paths passed by clients do NOT have file suffixes in them
- */
-void utf8_to_fs_playlist_path(char *path_max_tmp, const char *utf8path);
 
 #endif

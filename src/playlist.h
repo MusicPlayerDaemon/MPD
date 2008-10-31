@@ -24,7 +24,6 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-#define PLAYLIST_FILE_SUFFIX 	"m3u"
 #define PLAYLIST_COMMENT	'#'
 
 struct client;

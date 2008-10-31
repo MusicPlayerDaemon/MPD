@@ -23,6 +23,8 @@
 #ifndef MPD_MAPPER_H
 #define MPD_MAPPER_H
 
+#define PLAYLIST_FILE_SUFFIX "m3u"
+
 struct directory;
 struct song;
 
@@ -74,5 +76,18 @@ map_song_fs(const struct song *song, char *buffer);
  */
 const char *
 map_fs_to_utf8(const char *path_fs, char *buffer);
+
+/**
+ * Returns the playlist directory.
+ */
+const char *
+map_spl_path(void);
+
+/**
+ * Maps a playlist name (without the ".m3u" suffix) to a file system
+ * path.
+ */
+const char *
+map_spl_utf8_to_fs(const char *name, char *buffer);
 
 #endif

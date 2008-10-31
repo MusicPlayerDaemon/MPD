@@ -34,9 +34,13 @@
 static char *music_dir;
 static size_t music_dir_length;
 
+static char *playlist_dir;
+static size_t playlist_dir_length;
+
 void mapper_init(void)
 {
 	ConfigParam *music_dir_param = parseConfigFilePath(CONF_MUSIC_DIR, 1);
+	ConfigParam *playlist_dir_param = parseConfigFilePath(CONF_PLAYLIST_DIR, 1);
 	int ret;
 	struct stat st;
 
@@ -51,11 +55,24 @@ void mapper_init(void)
 	else if (!S_ISDIR(st.st_mode))
 		g_warning("music directory is not a directory: \"%s\" (config line %i)\n",
 			  music_dir_param->value, music_dir_param->line);
+
+	playlist_dir = g_strdup(playlist_dir_param->value);
+	playlist_dir_length = strlen(playlist_dir);
+
+	ret = stat(playlist_dir, &st);
+	if (ret < 0)
+		g_warning("failed to stat playlist directory \"%s\" (config line %i): %s\n",
+			  playlist_dir_param->value, playlist_dir_param->line,
+			  strerror(errno));
+	else if (!S_ISDIR(st.st_mode))
+		g_warning("playlist directory is not a directory: \"%s\" (config line %i)\n",
+			  playlist_dir_param->value, playlist_dir_param->line);
 }
 
 void mapper_finish(void)
 {
 	g_free(music_dir);
+	g_free(playlist_dir);
 }
 
 static char *
@@ -116,4 +133,25 @@ map_fs_to_utf8(const char *path_fs, char *buffer)
 		return NULL;
 
 	return fs_charset_to_utf8(buffer, path_fs);
+}
+
+static char *rpp2app_r(char *dst, const char *rel_path)
+{
+	pfx_dir(dst, rel_path, strlen(rel_path),
+		playlist_dir, playlist_dir_length);
+	return dst;
+}
+
+const char *
+map_spl_path(void)
+{
+	return playlist_dir;
+}
+
+const char *
+map_spl_utf8_to_fs(const char *name, char *buffer)
+{
+	rpp2app_r(buffer, utf8_to_fs_charset(buffer, name));
+	g_strlcat(buffer, "." PLAYLIST_FILE_SUFFIX, MPD_PATH_MAX);
+	return buffer;
 }

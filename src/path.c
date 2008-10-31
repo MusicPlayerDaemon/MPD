@@ -32,8 +32,6 @@
 
 #include <glib.h>
 
-static const char *playlistDir;
-static size_t playlist_dir_len;
 static char *fsCharset;
 
 char *fs_charset_to_utf8(char *dst, const char *str)
@@ -99,22 +97,10 @@ const char *getFsCharset(void)
 
 void initPaths(void)
 {
-	ConfigParam *playlistParam = parseConfigFilePath(CONF_PLAYLIST_DIR, 1);
 	ConfigParam *fsCharsetParam = getConfigParam(CONF_FS_CHARSET);
 
 	char *charset = NULL;
 	char *originalLocale;
-	DIR *dir;
-
-	playlistDir = xstrdup(playlistParam->value);
-	playlist_dir_len = strlen(playlistDir);
-
-	if ((dir = opendir(playlistDir)) == NULL) {
-		ERROR("cannot open %s \"%s\" (config line %i): %s\n",
-		      CONF_PLAYLIST_DIR, playlistParam->value,
-		      playlistParam->line, strerror(errno));
-	} else
-		closedir(dir);
 
 	if (fsCharsetParam) {
 		charset = xstrdup(fsCharsetParam->value);
@@ -183,13 +169,6 @@ char *pfx_dir(char *dst,
 	return (dst + pfx_len + 1);
 }
 
-char *rpp2app_r(char *dst, const char *rel_path)
-{
-	pfx_dir(dst, rel_path, strlen(rel_path),
-	        (const char *)playlistDir, playlist_dir_len);
-	return dst;
-}
-
 char *sanitizePathDup(const char *path)
 {
 	int len = strlen(path) + 1;
@@ -228,11 +207,4 @@ char *sanitizePathDup(const char *path)
 	DEBUG("sanitized: %s\n", ret);
 
 	return xrealloc(ret, len + 1);
-}
-
-void utf8_to_fs_playlist_path(char *path_max_tmp, const char *utf8path)
-{
-	utf8_to_fs_charset(path_max_tmp, utf8path);
-	rpp2app_r(path_max_tmp, path_max_tmp);
-	strncat(path_max_tmp, "." PLAYLIST_FILE_SUFFIX, MPD_PATH_MAX - 1);
 }
