@@ -56,14 +56,6 @@ static size_t client_max_command_list_size =
 static size_t client_max_output_buffer_size =
     CLIENT_MAX_OUTPUT_BUFFER_SIZE_DEFAULT;
 
-/* maybe make conf option for this, or... 32 might be good enough */
-static long int client_list_cache_size = 32;
-
-/* shared globally between all clients: */
-static struct strnode *list_cache;
-static struct strnode *list_cache_head;
-static struct strnode *list_cache_tail;
-
 struct client {
 	struct list_head siblings;
 
@@ -165,12 +157,7 @@ static void free_cmd_list(struct strnode *list)
 
 	while (tmp) {
 		struct strnode *next = tmp->next;
-		if (tmp >= list_cache_head && tmp <= list_cache_tail) {
-			/* inside list_cache[] array */
-			tmp->data = NULL;
-			tmp->next = NULL;
-		} else
-			free(tmp);
+		free(tmp);
 		tmp = next;
 	}
 }
@@ -190,25 +177,11 @@ static void cmd_list_clone(struct client *client)
 
 static void new_cmd_list_ptr(struct client *client, char *s, const int size)
 {
-	int i;
 	struct strnode *new;
-
-	if (!client->cmd_list_dup) {
-		for (i = client_list_cache_size - 1; i >= 0; --i) {
-			if (list_cache[i].data)
-				continue;
-			new = &(list_cache[i]);
-			new->data = s;
-			/* implied in free_cmd_list() and init: */
-			/* last->next->next = NULL; */
-			goto out;
-		}
-	}
 
 	/* allocate from the heap */
 	new = client->cmd_list_dup ? new_strnode_dup(s, size)
 	                              : new_strnode(s);
-out:
 	if (client->cmd_list) {
 		client->cmd_list_tail->next = new;
 		client->cmd_list_tail = new;
@@ -609,10 +582,6 @@ void client_manager_init(void)
 		}
 		client_max_output_buffer_size = tmp * 1024;
 	}
-
-	list_cache = xcalloc(client_list_cache_size, sizeof(struct strnode));
-	list_cache_head = &(list_cache[0]);
-	list_cache_tail = &(list_cache[client_list_cache_size - 1]);
 }
 
 static void client_close_all(void)
@@ -622,8 +591,6 @@ static void client_close_all(void)
 	list_for_each_entry_safe(client, n, &clients, siblings)
 		client_close(client);
 	num_clients = 0;
-
-	free(list_cache);
 }
 
 void client_manager_deinit(void)
