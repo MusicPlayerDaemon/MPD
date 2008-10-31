@@ -17,6 +17,7 @@
  */
 
 #include "directory.h"
+#include "song.h"
 #include "utils.h"
 #include "path.h"
 
@@ -44,6 +45,12 @@ directory_new(const char *path, struct directory *parent)
 void
 directory_free(struct directory *directory)
 {
+	for (unsigned i = 0; i < directory->songs.nr; ++i)
+		song_free(directory->songs.base[i]);
+
+	for (unsigned i = 0; i < directory->children.nr; ++i)
+		directory_free(directory->children.base[i]);
+
 	dirvec_destroy(&directory->children);
 	songvec_destroy(&directory->songs);
 	free(directory);
