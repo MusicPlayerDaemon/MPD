@@ -830,10 +830,8 @@ handle_update(struct client *client, mpd_unused int argc, char *argv[])
 	unsigned ret;
 
 	assert(argc <= 2);
-	if (argc == 2 && !(path = sanitizePathDup(argv[1]))) {
-		command_error(client, ACK_ERROR_ARG, "invalid path");
-		return COMMAND_RETURN_ERROR;
-	}
+	if (argc == 2)
+		path = g_strdup(argv[1]);
 
 	ret = directory_update_init(path);
 	if (ret > 0) {

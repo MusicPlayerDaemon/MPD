@@ -55,7 +55,4 @@ char *pfx_dir(char *dst,
               const char *path, const size_t path_len,
               const char *pfx, const size_t pfx_len);
 
-/* strips extra "///" and leading "/" and trailing "/" */
-char *sanitizePathDup(const char *path);
-
 #endif
