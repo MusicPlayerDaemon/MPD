@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef PLAYER_H
-#define PLAYER_H
+#ifndef MPD_PLAYER_H
+#define MPD_PLAYER_H
 
 #include "notify.h"
 #include "audio_format.h"

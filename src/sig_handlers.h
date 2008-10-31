@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef SIG_HANDLERS_H
-#define SIG_HANDLERS_H
+#ifndef MPD_SIG_HANDLERS_H
+#define MPD_SIG_HANDLERS_H
 
 int handlePendingSignals(void);
 

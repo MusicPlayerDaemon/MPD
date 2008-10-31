@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef INPUT_PLUGIN_H
-#define INPUT_PLUGIN_H
+#ifndef MPD_DECODER_LIST_H
+#define MPD_DECODER_LIST_H
 
 #include <stdio.h>
 

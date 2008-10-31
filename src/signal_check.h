@@ -17,8 +17,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef SIGNAL_CHECK_H
-#define SIGNAL_CHECK_H
+#ifndef MPD_SIGNAL_CHECK_H
+#define MPD_SIGNAL_CHECK_H
 
 void signal_handle(int sig);
 void signal_unhandle(int sig);

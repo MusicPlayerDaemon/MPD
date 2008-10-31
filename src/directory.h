@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef DIRECTORY_H
-#define DIRECTORY_H
+#ifndef MPD_DIRECTORY_H
+#define MPD_DIRECTORY_H
 
 #include "dirvec.h"
 #include "songvec.h"

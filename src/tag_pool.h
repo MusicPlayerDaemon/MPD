@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef TAG_POOL_H
-#define TAG_POOL_H
+#ifndef MPD_TAG_POOL_H
+#define MPD_TAG_POOL_H
 
 #include "tag.h"
 

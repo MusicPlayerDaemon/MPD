@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef LIST_H
-#define LIST_H
+#ifndef MPD_LIST_H
+#define MPD_LIST_H
 
 /* used to make a list where free() will be used to free data in list */
 #define DEFAULT_FREE_DATA_FUNC	free

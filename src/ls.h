@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef LS_H
-#define LS_H
+#ifndef MPD_LS_H
+#define MPD_LS_H
 
 #include "decoder_list.h"
 

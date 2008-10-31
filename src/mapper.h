@@ -20,8 +20,8 @@
  * Maps directory and song objects to file system paths.
  */
 
-#ifndef MAPPER_H
-#define MAPPER_H
+#ifndef MPD_MAPPER_H
+#define MPD_MAPPER_H
 
 struct directory;
 struct song;

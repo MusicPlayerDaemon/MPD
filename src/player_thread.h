@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef PLAYER_THREAD_H
-#define PLAYER_THREAD_H
+#ifndef MPD_PLAYER_THREAD_H
+#define MPD_PLAYER_THREAD_H
 
 void player_create(void);
 

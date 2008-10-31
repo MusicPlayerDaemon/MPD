@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef DECODER_INTERNAL_H
-#define DECODER_INTERNAL_H
+#ifndef MPD_DECODER_INTERNAL_H
+#define MPD_DECODER_INTERNAL_H
 
 #include "decoder_api.h"
 #include "pcm_utils.h"

@@ -1,5 +1,5 @@
-#ifndef SONGVEC_H
-#define SONGVEC_H
+#ifndef MPD_SONGVEC_H
+#define MPD_SONGVEC_H
 
 #include <stddef.h>
 

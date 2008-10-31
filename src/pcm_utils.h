@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef PCM_UTILS_H
-#define PCM_UTILS_H
+#ifndef MPD_PCM_UTILS_H
+#define MPD_PCM_UTILS_H
 
 #include "pcm_resample.h"
 #include "pcm_dither.h"

@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef NORMALIZE_H
-#define NORMALIZE_H
+#ifndef MPD_NORMALIZE_H
+#define MPD_NORMALIZE_H
 
 struct audio_format;
 

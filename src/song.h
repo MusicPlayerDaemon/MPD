@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef SONG_H
-#define SONG_H
+#ifndef MPD_SONG_H
+#define MPD_SONG_H
 
 #include <stddef.h>
 #include <stdbool.h>

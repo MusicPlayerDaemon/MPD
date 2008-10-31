@@ -21,8 +21,8 @@
  *
  */
 
-#ifndef _LINUX_LIST_H
-#define _LINUX_LIST_H
+#ifndef MPD_DLIST_H
+#define MPD_DLIST_H
 
 /*
  * These are non-NULL pointers that will result in page faults

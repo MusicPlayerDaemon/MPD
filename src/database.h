@@ -17,8 +17,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef DATABASE_H
-#define DATABASE_H
+#ifndef MPD_DATABASE_H
+#define MPD_DATABASE_H
 
 #include <sys/time.h>
 

@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef INPUT_STREAM_FILE_H
-#define INPUT_STREAM_FILE_H
+#ifndef MPD_INPUT_FILE_H
+#define MPD_INPUT_FILE_H
 
 #include "input_stream.h"
 

@@ -1,5 +1,5 @@
-#ifndef DIRVEC_H
-#define DIRVEC_H
+#ifndef MPD_DIRVEC_H
+#define MPD_DIRVEC_H
 
 #include <stddef.h>
 

@@ -17,8 +17,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef CROSSFADE_H
-#define CROSSFADE_H
+#ifndef MPD_CROSSFADE_H
+#define MPD_CROSSFADE_H
 
 #include "outputBuffer.h"
 

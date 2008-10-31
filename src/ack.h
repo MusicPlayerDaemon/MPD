@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef ACK_H
-#define ACK_H
+#ifndef MPD_ACK_H
+#define MPD_ACK_H
 
 enum ack {
 	ACK_ERROR_NOT_LIST = 1,

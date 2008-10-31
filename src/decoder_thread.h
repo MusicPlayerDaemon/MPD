@@ -17,8 +17,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef DECODER_THREAD_H
-#define DECODER_THREAD_H
+#ifndef MPD_DECODER_THREAD_H
+#define MPD_DECODER_THREAD_H
 
 void decoder_thread_start(void);
 

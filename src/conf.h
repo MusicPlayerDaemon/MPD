@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef CONF_H
-#define CONF_H
+#ifndef MPD_CONF_H
+#define MPD_CONF_H
 
 #define CONF_MUSIC_DIR                  "music_directory"
 #define CONF_PLAYLIST_DIR               "playlist_directory"

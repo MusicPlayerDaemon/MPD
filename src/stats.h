@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef STATS_H
-#define STATS_H
+#ifndef MPD_STATS_H
+#define MPD_STATS_H
 
 struct client;
 

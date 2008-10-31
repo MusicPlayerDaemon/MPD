@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef LOCATE_H
-#define LOCATE_H
+#ifndef MPD_LOCATE_H
+#define MPD_LOCATE_H
 
 #include <stdint.h>
 

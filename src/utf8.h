@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef UTF_8_H
-#define UTF_8_H
+#ifndef MPD_UTF_8_H
+#define MPD_UTF_8_H
 
 #include <stddef.h>
 

@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef AUDIO_OUTPUT_SHOUT_H
-#define AUDIO_OUTPUT_SHOUT_H
+#ifndef MPD_SHOUT_PLUGIN_H
+#define MPD_SHOUT_PLUGIN_H
 
 #include "../output_api.h"
 #include "../conf.h"

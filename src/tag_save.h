@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef TAG_SAVE_H
-#define TAG_SAVE_H
+#ifndef MPD_TAG_SAVE_H
+#define MPD_TAG_SAVE_H
 
 #include <stdio.h>
 

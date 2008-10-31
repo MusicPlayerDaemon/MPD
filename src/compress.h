@@ -20,8 +20,8 @@
  *
  */
 
-#ifndef COMPRESS_H
-#define COMPRESS_H
+#ifndef MPD_COMPRESS_H
+#define MPD_COMPRESS_H
 
 /* These are copied from the AudioCompress config.h, mainly because CompressDo
  * needs GAINSHIFT defined.  The rest are here so they can be used as defaults

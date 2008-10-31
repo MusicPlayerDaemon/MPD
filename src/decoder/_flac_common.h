@@ -19,8 +19,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef _FLAC_COMMON_H
-#define _FLAC_COMMON_H
+#ifndef MPD_FLAC_COMMON_H
+#define MPD_FLAC_COMMON_H
 
 #include "../decoder_api.h"
 

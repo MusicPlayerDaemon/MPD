@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef ZEROCONF_H
-#define ZEROCONF_H
+#ifndef MPD_ZEROCONF_H
+#define MPD_ZEROCONF_H
 
 #include "../config.h"
 

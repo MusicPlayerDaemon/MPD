@@ -17,8 +17,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef DECODER_API_H
-#define DECODER_API_H
+#ifndef MPD_DECODER_API_H
+#define MPD_DECODER_API_H
 
 /*
  * This is the public API which is used by decoder plugins to

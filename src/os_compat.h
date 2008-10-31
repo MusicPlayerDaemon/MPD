@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef OS_COMPAT_H
-#define OS_COMPAT_H
+#ifndef MPD_OS_COMPAT_H
+#define MPD_OS_COMPAT_H
 
 #include "../config.h"
 

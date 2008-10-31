@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef STATE_FILE_H
-#define STATE_FILE_H
+#ifndef MPD_STATE_FILE_H
+#define MPD_STATE_FILE_H
 
 #include "gcc.h"
 

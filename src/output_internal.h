@@ -17,8 +17,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef OUTPUT_INTERNAL_H
-#define OUTPUT_INTERNAL_H
+#ifndef MPD_OUTPUT_INTERNAL_H
+#define MPD_OUTPUT_INTERNAL_H
 
 #include "pcm_utils.h"
 #include "notify.h"

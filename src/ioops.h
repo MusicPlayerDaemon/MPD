@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef IOOPS_H
-#define IOOPS_H
+#ifndef MPD_IOOPS_H
+#define MPD_IOOPS_H
 
 #include <sys/select.h>
 

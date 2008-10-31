@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef LISTEN_H
-#define LISTEN_H
+#ifndef MPD_LISTEN_H
+#define MPD_LISTEN_H
 
 #include <sys/select.h>
 

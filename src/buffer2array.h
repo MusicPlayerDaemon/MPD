@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef BUFFER_2_ARRAY_H
-#define BUFFER_2_ARRAY_H
+#ifndef MPD_BUFFER_2_ARRAY_H
+#define MPD_BUFFER_2_ARRAY_H
 
 /* tokenizes up to max elements in buffer (a null-terminated string) and
  * stores the result in array (which must be capable of holding up to

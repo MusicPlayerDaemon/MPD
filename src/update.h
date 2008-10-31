@@ -17,8 +17,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef UPDATE_H
-#define UPDATE_H
+#ifndef MPD_UPDATE_H
+#define MPD_UPDATE_H
 
 unsigned
 isUpdatingDB(void);

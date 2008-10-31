@@ -25,8 +25,8 @@
  * values - it stores the exact pointers it was given in strset_add().
  */
 
-#ifndef STRSET_H
-#define STRSET_H
+#ifndef MPD_STRSET_H
+#define MPD_STRSET_H
 
 #include "gcc.h"
 

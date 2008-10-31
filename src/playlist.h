@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef PLAYLIST_H
-#define PLAYLIST_H
+#ifndef MPD_PLAYLIST_H
+#define MPD_PLAYLIST_H
 
 #include "locate.h"
 

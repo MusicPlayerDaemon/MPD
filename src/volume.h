@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef VOLUME_H
-#define VOLUME_H
+#ifndef MPD_VOLUME_H
+#define MPD_VOLUME_H
 
 #include <stdio.h>
 

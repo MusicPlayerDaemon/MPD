@@ -17,8 +17,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef CONDITION_H
-#define CONDITION_H
+#ifndef MPD_CONDITION_H
+#define MPD_CONDITION_H
 
 #include <pthread.h>
 

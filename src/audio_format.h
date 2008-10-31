@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef AUDIO_FORMAT_H
-#define AUDIO_FORMAT_H
+#ifndef MPD_AUDIO_FORMAT_H
+#define MPD_AUDIO_FORMAT_H
 
 #include <stdint.h>
 #include <stdbool.h>
