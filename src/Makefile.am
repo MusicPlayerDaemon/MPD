@@ -62,7 +62,6 @@ mpd_headers = \
 	ringbuf.h \
 	signal_check.h \
 	sig_handlers.h \
-	sllist.h \
 	song.h \
 	song_print.h \
 	song_save.h \
@@ -143,7 +142,6 @@ mpd_SOURCES = \
 	ringbuf.c \
 	sig_handlers.c \
 	signal_check.c \
-	sllist.c \
 	song.c \
 	song_print.c \
 	song_save.c \
