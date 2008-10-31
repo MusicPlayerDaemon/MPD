@@ -20,7 +20,6 @@
  */
 
 #include "_ogg_common.h"
-#include "_flac_common.h"
 #include "../utils.h"
 
 ogg_stream_type ogg_stream_type_detect(struct input_stream *inStream)
