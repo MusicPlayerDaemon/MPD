@@ -59,19 +59,25 @@ static void decodeStart(void)
 	   will be available then */
 
 	while (!inStream.ready) {
-		if (dc.command != DECODE_COMMAND_NONE)
-			goto stop;
+		if (dc.command != DECODE_COMMAND_NONE) {
+			input_stream_close(&inStream);
+			return;
+		}
 
 		ret = input_stream_buffer(&inStream);
-		if (ret < 0)
-			goto stop;
+		if (ret < 0) {
+			input_stream_close(&inStream);
+			return;
+		}
 	}
 
 	/* for http streams, seekable is determined in input_stream_buffer */
 	dc.seekable = inStream.seekable;
 
-	if (dc.command == DECODE_COMMAND_STOP)
-		goto stop;
+	if (dc.command == DECODE_COMMAND_STOP) {
+		input_stream_close(&inStream);
+		return;
+	}
 
 	ret = false;
 	if (!song_is_file(song)) {
@@ -156,7 +162,6 @@ static void decodeStart(void)
 			: DECODE_ERROR_FILE;
 	}
 
-stop:
 	if (close_instream)
 		input_stream_close(&inStream);
 }
