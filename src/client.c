@@ -615,6 +615,7 @@ static void client_write_deferred(struct client *client)
 			client->deferred_bytes -= ret;
 			buf->size -= ret;
 			memmove(buf->data, buf->data + ret, buf->size);
+			break;
 		} else {
 			size_t decr = sizeof(*buf) -
 				sizeof(buf->data) + buf->size;
