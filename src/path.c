@@ -45,9 +45,11 @@ char *fs_charset_to_utf8(char *dst, const char *str)
 	p = g_convert(str, -1,
 		      fsCharset, "utf-8",
 		      NULL, NULL, &error);
-	if (p == NULL)
+	if (p == NULL) {
 		/* no fallback */
+		g_error_free(error);
 		return NULL;
+	}
 
 	g_strlcpy(dst, p, MPD_PATH_MAX);
 	g_free(p);
