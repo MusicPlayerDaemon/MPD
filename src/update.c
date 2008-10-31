@@ -206,9 +206,13 @@ static int
 stat_directory_child(const struct directory *parent, const char *name,
 		     struct stat *st)
 {
-	char path_fs[MPD_PATH_MAX];
+	char buffer[MPD_PATH_MAX];
+	const char *path_fs;
 
-	map_directory_child_fs(parent, name, path_fs);
+	path_fs = map_directory_child_fs(parent, name, buffer);
+	if (path_fs == NULL)
+		return -1;
+
 	return stat(path_fs, st);
 }
 

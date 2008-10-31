@@ -94,28 +94,31 @@ song_free(struct song *song)
 bool
 song_file_update(struct song *song)
 {
+	char buffer[MPD_PATH_MAX];
+	const char *path_fs;
 	struct decoder_plugin *plugin;
 	unsigned int next = 0;
-	char abs_path[MPD_PATH_MAX];
 	struct stat st;
 
 	assert(song_is_file(song));
 
-	map_song_fs(song, abs_path);
+	path_fs = map_song_fs(song, buffer);
+	if (path_fs == NULL)
+		return false;
 
 	if (song->tag != NULL) {
 		tag_free(song->tag);
 		song->tag = NULL;
 	}
 
-	if (stat(abs_path, &st) < 0 || !S_ISREG(st.st_mode))
+	if (stat(path_fs, &st) < 0 || !S_ISREG(st.st_mode))
 		return false;
 
 	song->mtime = st.st_mtime;
 
 	while (song->tag == NULL &&
-	       (plugin = hasMusicSuffix(abs_path, next++)))
-		song->tag = plugin->tag_dup(abs_path);
+	       (plugin = hasMusicSuffix(path_fs, next++)))
+		song->tag = plugin->tag_dup(path_fs);
 
 	return song->tag != NULL;
 }

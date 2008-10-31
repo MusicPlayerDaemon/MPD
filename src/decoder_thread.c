@@ -31,20 +31,25 @@
 static void decodeStart(void)
 {
 	struct song *song = dc.next_song;
+	char buffer[MPD_PATH_MAX];
+	const char *uri;
 	struct decoder decoder;
 	int ret;
 	bool close_instream = true;
 	struct input_stream inStream;
 	struct decoder_plugin *plugin = NULL;
-	char path_max_fs[MPD_PATH_MAX];
 
 	if (song_is_file(song))
-		map_song_fs(song, path_max_fs);
+		uri = map_song_fs(song, buffer);
 	else
-		song_get_url(song, path_max_fs);
+		uri = song_get_url(song, buffer);
+	if (uri == NULL) {
+		dc.error = DECODE_ERROR_FILE;
+		return;
+	}
 
 	dc.current_song = dc.next_song; /* NEED LOCK */
-	if (!input_stream_open(&inStream, path_max_fs)) {
+	if (!input_stream_open(&inStream, uri)) {
 		dc.error = DECODE_ERROR_FILE;
 		return;
 	}
@@ -98,7 +103,7 @@ static void decodeStart(void)
 
 		/* if that fails, try suffix matching the URL: */
 		if (plugin == NULL) {
-			const char *s = getSuffix(path_max_fs);
+			const char *s = getSuffix(uri);
 			next = 0;
 			while ((plugin = decoder_plugin_from_suffix(s, next++))) {
 				if (plugin->stream_decode == NULL)
@@ -129,7 +134,7 @@ static void decodeStart(void)
 		}
 	} else {
 		unsigned int next = 0;
-		const char *s = getSuffix(path_max_fs);
+		const char *s = getSuffix(uri);
 		while ((plugin = decoder_plugin_from_suffix(s, next++))) {
 			if (!plugin->stream_types & INPUT_PLUGIN_STREAM_FILE)
 				continue;
@@ -142,8 +147,7 @@ static void decodeStart(void)
 				input_stream_close(&inStream);
 				close_instream = false;
 				decoder.plugin = plugin;
-				ret = plugin->file_decode(&decoder,
-							  path_max_fs);
+				ret = plugin->file_decode(&decoder, uri);
 				break;
 			} else if (plugin->stream_decode != NULL) {
 				decoder.plugin = plugin;

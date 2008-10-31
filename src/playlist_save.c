@@ -52,5 +52,6 @@ playlist_print_uri(FILE *file, const char *uri)
 	else
 		s = utf8_to_fs_charset(tmp, uri);
 
-	fprintf(file, "%s\n", s);
+	if (s != NULL)
+		fprintf(file, "%s\n", s);
 }
