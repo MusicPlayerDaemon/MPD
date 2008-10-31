@@ -20,9 +20,9 @@
 #define COMMAND_H
 
 #include "gcc.h"
-#include "sllist.h"
 #include "ack.h"
 
+#include <glib.h>
 #include <stdbool.h>
 
 enum command_return {
@@ -40,7 +40,7 @@ void command_finish(void);
 
 enum command_return
 command_process_list(struct client *client,
-		     bool list_ok, struct strnode *list);
+		     bool list_ok, GSList *list);
 
 enum command_return
 command_process(struct client *client, char *commandString);

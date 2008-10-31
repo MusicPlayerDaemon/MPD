@@ -31,6 +31,7 @@
 
 #include "../config.h"
 
+#include <glib.h>
 #include <assert.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -70,11 +71,9 @@ struct client {
 	int uid;
 
 	time_t lastTime;
-	struct strnode *cmd_list;	/* for when in list mode */
-	struct strnode *cmd_list_tail;	/* for when in list mode */
+	GSList *cmd_list;	/* for when in list mode */
 	int cmd_list_OK;	/* print OK after each command execution */
 	size_t cmd_list_size;	/* mem cmd_list consumes */
-	int cmd_list_dup;	/* has the cmd_list been copied to private space? */
 	struct sllnode *deferred_send;	/* for output if client is slow */
 	size_t deferred_bytes;	/* mem deferred_send consumes */
 	unsigned int num;	/* client number */
@@ -132,7 +131,6 @@ static void client_init(struct client *client, int fd)
 	assert(fd >= 0);
 
 	client->cmd_list_size = 0;
-	client->cmd_list_dup = 0;
 	client->cmd_list_OK = -1;
 	client->bufferLength = 0;
 	client->bufferPos = 0;
@@ -140,7 +138,6 @@ static void client_init(struct client *client, int fd)
 	set_nonblocking(fd);
 	client->lastTime = time(NULL);
 	client->cmd_list = NULL;
-	client->cmd_list_tail = NULL;
 	client->deferred_send = NULL;
 	client->deferred_bytes = 0;
 	client->num = next_client_num++;
@@ -151,42 +148,17 @@ static void client_init(struct client *client, int fd)
 	xwrite(fd, GREETING, strlen(GREETING));
 }
 
-static void free_cmd_list(struct strnode *list)
+static void free_cmd_list(GSList *list)
 {
-	struct strnode *tmp = list;
+	for (GSList *tmp = list; tmp != NULL; tmp = g_slist_next(tmp))
+		g_free(tmp->data);
 
-	while (tmp) {
-		struct strnode *next = tmp->next;
-		free(tmp);
-		tmp = next;
-	}
+	g_slist_free(list);
 }
 
-static void cmd_list_clone(struct client *client)
+static void new_cmd_list_ptr(struct client *client, char *s)
 {
-	struct strnode *new = dup_strlist(client->cmd_list);
-	free_cmd_list(client->cmd_list);
-	client->cmd_list = new;
-	client->cmd_list_dup = 1;
-
-	/* new tail */
-	while (new && new->next)
-		new = new->next;
-	client->cmd_list_tail = new;
-}
-
-static void new_cmd_list_ptr(struct client *client, char *s, const int size)
-{
-	struct strnode *new;
-
-	/* allocate from the heap */
-	new = client->cmd_list_dup ? new_strnode_dup(s, size)
-	                              : new_strnode(s);
-	if (client->cmd_list) {
-		client->cmd_list_tail->next = new;
-		client->cmd_list_tail = new;
-	} else
-		client->cmd_list = client->cmd_list_tail = new;
+	client->cmd_list = g_slist_prepend(client->cmd_list, g_strdup(s));
 }
 
 static void client_close(struct client *client)
@@ -308,6 +280,12 @@ static int client_process_line(struct client *client, char *line)
 		if (strcmp(line, CLIENT_LIST_MODE_END) == 0) {
 			DEBUG("client %i: process command "
 			      "list\n", client->num);
+
+			/* for scalability reasons, we have prepended
+			   each new command; now we have to reverse it
+			   to restore the correct order */
+			client->cmd_list = g_slist_reverse(client->cmd_list);
+
 			ret = command_process_list(client,
 						   client->cmd_list_OK,
 						   client->cmd_list);
@@ -340,7 +318,7 @@ static int client_process_line(struct client *client, char *line)
 				      client_max_command_list_size);
 				return COMMAND_RETURN_CLOSE;
 			} else
-				new_cmd_list_ptr(client, line, len);
+				new_cmd_list_ptr(client, line);
 		}
 	} else {
 		if (strcmp(line, CLIENT_LIST_MODE_BEGIN) == 0) {
@@ -411,10 +389,6 @@ static int client_input_received(struct client *client, size_t bytesRead)
 			      client->num);
 			return COMMAND_RETURN_CLOSE;
 		}
-		if (client->cmd_list_OK >= 0 &&
-		    client->cmd_list &&
-		    !client->cmd_list_dup)
-			cmd_list_clone(client);
 		assert(client->bufferLength >= client->bufferPos
 		       && "bufferLength >= bufferPos");
 		client->bufferLength -= client->bufferPos;

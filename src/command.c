@@ -31,7 +31,6 @@
 #include "log.h"
 #include "utils.h"
 #include "stored_playlist.h"
-#include "sllist.h"
 #include "ack.h"
 #include "audio.h"
 #include "dbUtils.h"
@@ -1497,24 +1496,24 @@ command_process(struct client *client, char *commandString)
 
 enum command_return
 command_process_list(struct client *client,
-		     bool list_ok, struct strnode *list)
+		     bool list_ok, GSList *list)
 {
-	struct strnode *cur = list;
 	enum command_return ret = COMMAND_RETURN_OK;
 
 	command_list_num = 0;
 
-	while (cur) {
+	for (GSList *cur = list; cur != NULL; cur = g_slist_next(cur)) {
+		char *cmd = cur->data;
+
 		DEBUG("command_process_list: process command \"%s\"\n",
-		      cur->data);
-		ret = command_process(client, cur->data);
+		      cmd);
+		ret = command_process(client, cmd);
 		DEBUG("command_process_list: command returned %i\n", ret);
 		if (ret != COMMAND_RETURN_OK || client_is_expired(client))
 			break;
 		else if (list_ok)
 			client_puts(client, "list_OK\n");
 		command_list_num++;
-		cur = cur->next;
 	}
 
 	command_list_num = 0;
