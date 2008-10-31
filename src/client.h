@@ -35,7 +35,7 @@ void client_manager_expire(void);
 
 void client_new(int fd, const struct sockaddr *addr, int uid);
 
-int client_is_expired(const struct client *client);
+bool client_is_expired(const struct client *client);
 
 /**
  * returns the uid of the client process, or a negative value if the

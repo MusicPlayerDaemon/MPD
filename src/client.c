@@ -100,7 +100,7 @@ static void client_write_deferred(struct client *client);
 
 static void client_write_output(struct client *client);
 
-int client_is_expired(const struct client *client)
+bool client_is_expired(const struct client *client)
 {
 	return client->fd < 0;
 }
