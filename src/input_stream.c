@@ -52,7 +52,7 @@ void input_stream_global_finish(void)
 }
 
 bool
-input_stream_open(struct input_stream *is, char *url)
+input_stream_open(struct input_stream *is, const char *url)
 {
 	is->seekable = false;
 	is->ready = false;

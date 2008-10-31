@@ -57,7 +57,7 @@ void input_stream_global_finish(void);
 /* if an error occurs for these 3 functions, then -1 is returned and errno
    for the input stream is set */
 bool
-input_stream_open(struct input_stream *is, char *url);
+input_stream_open(struct input_stream *is, const char *url);
 
 bool
 input_stream_seek(struct input_stream *is, off_t offset, int whence);
