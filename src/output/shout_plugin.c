@@ -209,8 +209,6 @@ static void *my_shout_init_driver(struct audio_output *audio_output,
 		FATAL("couldn't find shout encoder plugin for \"%s\" "
 		      "at line %i\n", encoding, block_param->line);
 
-	check_block_param("protocol");
-
 	block_param = getBlockParam(param, "protocol");
 	if (block_param) {
 		if (0 == strcmp(block_param->value, "shoutcast") &&
