@@ -45,12 +45,12 @@ void mapper_init(void)
 
 	ret = stat(music_dir, &st);
 	if (ret < 0)
-		g_error("failed to stat music directory \"%s\" (config line %i): %s\n",
-			music_dir_param->value, music_dir_param->line,
-			strerror(errno));
+		g_warning("failed to stat music directory \"%s\" (config line %i): %s\n",
+			  music_dir_param->value, music_dir_param->line,
+			  strerror(errno));
 	else if (!S_ISDIR(st.st_mode))
-		g_error("music directory is not a directory: \"%s\" (config line %i)\n",
-			music_dir_param->value, music_dir_param->line);
+		g_warning("music directory is not a directory: \"%s\" (config line %i)\n",
+			  music_dir_param->value, music_dir_param->line);
 }
 
 void mapper_finish(void)
