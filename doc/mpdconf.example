@@ -112,7 +112,7 @@ error_file                      "~/.mpd/mpd.error"
 #
 #audio_output {
 #        type                    "shout"
-#        encoding                "ogg"
+#        encoding                "ogg"                   # optional
 #        name                    "My Shout Stream"
 #        host                    "localhost"
 #        port                    "8000"
@@ -121,7 +121,7 @@ error_file                      "~/.mpd/mpd.error"
 #        quality                 "5.0"
 #        bitrate                 "128"
 #        format                  "44100:16:1"
-#        protocol                "icecast2"
+#        protocol                "icecast2"              # optional
 #        user                    "source"                # optional
 #        description             "My Stream Description" # optional
 #        genre                   "jazz"                  # optional
