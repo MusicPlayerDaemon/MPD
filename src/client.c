@@ -22,7 +22,6 @@
 #include "log.h"
 #include "listen.h"
 #include "permission.h"
-#include "sllist.h"
 #include "utils.h"
 #include "ioops.h"
 #include "main_notify.h"
@@ -57,6 +56,11 @@ static size_t client_max_command_list_size =
 static size_t client_max_output_buffer_size =
     CLIENT_MAX_OUTPUT_BUFFER_SIZE_DEFAULT;
 
+struct deferred_buffer {
+	size_t size;
+	char data[sizeof(long)];
+};
+
 struct client {
 	struct list_head siblings;
 
@@ -74,7 +78,7 @@ struct client {
 	GSList *cmd_list;	/* for when in list mode */
 	int cmd_list_OK;	/* print OK after each command execution */
 	size_t cmd_list_size;	/* mem cmd_list consumes */
-	struct sllnode *deferred_send;	/* for output if client is slow */
+	GQueue *deferred_send;	/* for output if client is slow */
 	size_t deferred_bytes;	/* mem deferred_send consumes */
 	unsigned int num;	/* client number */
 
@@ -138,7 +142,7 @@ static void client_init(struct client *client, int fd)
 	set_nonblocking(fd);
 	client->lastTime = time(NULL);
 	client->cmd_list = NULL;
-	client->deferred_send = NULL;
+	client->deferred_send = g_queue_new();
 	client->deferred_bytes = 0;
 	client->num = next_client_num++;
 	client->send_buf_used = 0;
@@ -161,10 +165,15 @@ static void new_cmd_list_ptr(struct client *client, char *s)
 	client->cmd_list = g_slist_prepend(client->cmd_list, g_strdup(s));
 }
 
+static void
+deferred_buffer_free(gpointer data, mpd_unused gpointer user_data)
+{
+	struct deferred_buffer *buffer = data;
+	g_free(buffer);
+}
+
 static void client_close(struct client *client)
 {
-	struct sllnode *buf;
-
 	assert(num_clients > 0);
 	assert(!list_empty(&clients));
 	list_del(&client->siblings);
@@ -177,14 +186,8 @@ static void client_close(struct client *client)
 		client->cmd_list = NULL;
 	}
 
-	if ((buf = client->deferred_send)) {
-		do {
-			struct sllnode *prev = buf;
-			buf = buf->next;
-			free(prev);
-		} while (buf);
-		client->deferred_send = NULL;
-	}
+	g_queue_foreach(client->deferred_send, deferred_buffer_free, NULL);
+	g_queue_free(client->deferred_send);
 
 	SECURE("client %i: closed\n", client->num);
 	free(client);
@@ -430,7 +433,8 @@ static void client_manager_register_read_fd(fd_set * fds, int *fdmax)
 	addListenSocketsToFdSet(fds, fdmax);
 
 	list_for_each_entry(client, &clients, siblings) {
-		if (!client_is_expired(client) && !client->deferred_send) {
+		if (!client_is_expired(client) &&
+		    g_queue_is_empty(client->deferred_send)) {
 			FD_SET(client->fd, fds);
 			if (*fdmax < client->fd)
 				*fdmax = client->fd;
@@ -446,7 +450,7 @@ static void client_manager_register_write_fd(fd_set * fds, int *fdmax)
 
 	list_for_each_entry(client, &clients, siblings) {
 		if (client->fd >= 0 && !client_is_expired(client)
-		    && client->deferred_send) {
+		    && !g_queue_is_empty(client->deferred_send)) {
 			FD_SET(client->fd, fds);
 			if (*fdmax < client->fd)
 				*fdmax = client->fd;
@@ -594,12 +598,14 @@ void client_manager_expire(void)
 
 static void client_write_deferred(struct client *client)
 {
-	struct sllnode *buf;
 	ssize_t ret = 0;
 
-	buf = client->deferred_send;
-	while (buf) {
+	while (!g_queue_is_empty(client->deferred_send)) {
+		struct deferred_buffer *buf =
+			g_queue_peek_head(client->deferred_send);
+
 		assert(buf->size > 0);
+		assert(buf->size <= client->deferred_bytes);
 
 		ret = write(client->fd, buf->data, buf->size);
 		if (ret < 0)
@@ -607,22 +613,21 @@ static void client_write_deferred(struct client *client)
 		else if ((size_t)ret < buf->size) {
 			assert(client->deferred_bytes >= (size_t)ret);
 			client->deferred_bytes -= ret;
-			buf->data = (char *)buf->data + ret;
 			buf->size -= ret;
+			memmove(buf->data, buf->data + ret, buf->size);
 		} else {
-			struct sllnode *tmp = buf;
-			size_t decr = (buf->size + sizeof(struct sllnode));
+			size_t decr = sizeof(*buf) -
+				sizeof(buf->data) + buf->size;
 
 			assert(client->deferred_bytes >= decr);
 			client->deferred_bytes -= decr;
-			buf = buf->next;
-			free(tmp);
-			client->deferred_send = buf;
+			free(buf);
+			g_queue_pop_head(client->deferred_send);
 		}
 		client->lastTime = time(NULL);
 	}
 
-	if (!client->deferred_send) {
+	if (g_queue_is_empty(client->deferred_send)) {
 		DEBUG("client %i: buffer empty %lu\n", client->num,
 		      (unsigned long)client->deferred_bytes);
 		assert(client->deferred_bytes == 0);
@@ -637,11 +642,13 @@ static void client_write_deferred(struct client *client)
 static void client_defer_output(struct client *client,
 				const void *data, size_t length)
 {
-	struct sllnode **buf_r;
+	size_t alloc;
+	struct deferred_buffer *buf;
 
 	assert(length > 0);
 
-	client->deferred_bytes += sizeof(struct sllnode) + length;
+	alloc = sizeof(*buf) - sizeof(buf->data) + length;
+	client->deferred_bytes += alloc;
 	if (client->deferred_bytes > client_max_output_buffer_size) {
 		ERROR("client %i: output buffer size (%lu) is "
 		      "larger than the max (%lu)\n",
@@ -653,10 +660,11 @@ static void client_defer_output(struct client *client,
 		return;
 	}
 
-	buf_r = &client->deferred_send;
-	while (*buf_r != NULL)
-		buf_r = &(*buf_r)->next;
-	*buf_r = new_sllnode(data, length);
+	buf = g_malloc(alloc);
+	buf->size = length;
+	memcpy(buf->data, data, length);
+
+	g_queue_push_tail(client->deferred_send, buf);
 }
 
 static void client_write_direct(struct client *client,
@@ -665,7 +673,7 @@ static void client_write_direct(struct client *client,
 	ssize_t ret;
 
 	assert(length > 0);
-	assert(client->deferred_send == NULL);
+	assert(g_queue_is_empty(client->deferred_send));
 
 	if ((ret = write(client->fd, data, length)) < 0) {
 		if (errno == EAGAIN || errno == EINTR) {
@@ -679,7 +687,7 @@ static void client_write_direct(struct client *client,
 		client_defer_output(client, data + ret, length - ret);
 	}
 
-	if (client->deferred_send)
+	if (!g_queue_is_empty(client->deferred_send))
 		DEBUG("client %i: buffer created\n", client->num);
 }
 
@@ -688,7 +696,7 @@ static void client_write_output(struct client *client)
 	if (client_is_expired(client) || !client->send_buf_used)
 		return;
 
-	if (client->deferred_send != NULL)
+	if (!g_queue_is_empty(client->deferred_send))
 		client_defer_output(client, client->send_buf,
 				    client->send_buf_used);
 	else
