@@ -20,11 +20,11 @@
 #include "tag_internal.h"
 #include "tag_pool.h"
 #include "utils.h"
-#include "utf8.h"
 #include "log.h"
 #include "conf.h"
 #include "song.h"
 
+#include <glib.h>
 #include <assert.h>
 
 /**
@@ -345,15 +345,23 @@ int tag_equal(const struct tag *tag1, const struct tag *tag2)
 
 static inline const char *fix_utf8(const char *str, size_t *length_r) {
 	const char *temp;
+	GError *error = NULL;
+	gsize written;
 
 	assert(str != NULL);
 
-	if (validUtf8String(str, *length_r))
+	if (g_utf8_validate(str, *length_r, NULL))
 		return str;
 
 	DEBUG("not valid utf8 in tag: %s\n",str);
-	temp = latin1StrToUtf8Dup(str);
-	*length_r = strlen(temp);
+	temp = g_convert(str, *length_r, "utf-8", "iso-8859-1",
+			 NULL, &written, &error);
+	if (temp == NULL) {
+		g_error_free(error);
+		return str;
+	}
+
+	*length_r = written;
 	return temp;
 }
 

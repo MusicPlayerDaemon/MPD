@@ -74,7 +74,6 @@ mpd_headers = \
 	tag_id3.h \
 	tag_print.h \
 	tag_save.h \
-	utf8.h \
 	strset.h \
 	utils.h \
 	volume.h \
@@ -155,7 +154,6 @@ mpd_SOURCES = \
 	strset.c \
 	utils.c \
 	volume.c \
-	utf8.c \
 	locate.c \
 	stored_playlist.c \
 	timer.c

@@ -19,7 +19,6 @@
 #include "path.h"
 #include "log.h"
 #include "conf.h"
-#include "utf8.h"
 #include "utils.h"
 #include "playlist.h"
 #include "os_compat.h"
