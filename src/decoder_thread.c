@@ -183,7 +183,6 @@ static void * decoder_task(mpd_unused void *arg)
 
 		case DECODE_COMMAND_NONE:
 			notify_wait(&dc.notify);
-			notify_signal(&pc.notify);
 			break;
 		}
 	}
