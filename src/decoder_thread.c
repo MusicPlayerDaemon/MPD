@@ -173,6 +173,7 @@ static void * decoder_task(mpd_unused void *arg)
 
 			dc.state = DECODE_STATE_STOP;
 			dc.command = DECODE_COMMAND_NONE;
+			notify_signal(&pc.notify);
 			break;
 
 		case DECODE_COMMAND_STOP:
