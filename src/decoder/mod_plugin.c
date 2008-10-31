@@ -20,6 +20,7 @@
 #include "../utils.h"
 #include "../log.h"
 
+#include <glib.h>
 #include <mikmod.h>
 
 /* this is largely copied from alsaplayer */
@@ -136,12 +137,17 @@ typedef struct _mod_Data {
 	SBYTE *audio_buffer;
 } mod_Data;
 
-static mod_Data *mod_open(char *path)
+static mod_Data *mod_open(const char *path)
 {
+	char *path2;
 	MODULE *moduleHandle;
 	mod_Data *data;
 
-	if (!(moduleHandle = Player_Load(path, 128, 0)))
+	path2 = g_strdup(path);
+	moduleHandle = Player_Load(path2, 128, 0);
+	g_free(path2);
+
+	if (moduleHandle == NULL)
 		return NULL;
 
 	/* Prevent module from looping forever */
@@ -166,7 +172,7 @@ static void mod_close(mod_Data * data)
 }
 
 static bool
-mod_decode(struct decoder *decoder, char *path)
+mod_decode(struct decoder *decoder, const char *path)
 {
 	mod_Data *data;
 	struct audio_format audio_format;
@@ -218,8 +224,9 @@ mod_decode(struct decoder *decoder, char *path)
 	return true;
 }
 
-static struct tag *modTagDup(char *file)
+static struct tag *modTagDup(const char *file)
 {
+	char *path2;
 	struct tag *ret = NULL;
 	MODULE *moduleHandle;
 	char *title;
@@ -229,7 +236,11 @@ static struct tag *modTagDup(char *file)
 		return NULL;
 	}
 
-	if (!(moduleHandle = Player_Load(file, 128, 0))) {
+	path2 = g_strdup(file);
+	moduleHandle = Player_Load(path2, 128, 0);
+	g_free(path2);
+
+	if (moduleHandle == NULL) {
 		DEBUG("modTagDup: Failed to open file: %s\n", file);
 		MikMod_Exit();
 		return NULL;
@@ -240,7 +251,10 @@ static struct tag *modTagDup(char *file)
 	ret = tag_new();
 
 	ret->time = 0;
-	title = xstrdup(Player_LoadTitle(file));
+
+	path2 = g_strdup(file);
+	title = xstrdup(Player_LoadTitle(path2));
+	g_free(path2);
 	if (title)
 		tag_add_item(ret, TAG_ITEM_TITLE, title);
 

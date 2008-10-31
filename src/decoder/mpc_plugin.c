@@ -236,7 +236,7 @@ mpc_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 	return true;
 }
 
-static float mpcGetTime(char *file)
+static float mpcGetTime(const char *file)
 {
 	struct input_stream inStream;
 	float total_time = -1;
@@ -274,7 +274,7 @@ static float mpcGetTime(char *file)
 	return total_time;
 }
 
-static struct tag *mpcTagDup(char *file)
+static struct tag *mpcTagDup(const char *file)
 {
 	struct tag *ret = NULL;
 	float total_time = mpcGetTime(file);

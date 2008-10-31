@@ -254,7 +254,7 @@ fail:
 }
 
 /* public functions: */
-static struct tag *oggflac_TagDup(char *file)
+static struct tag *oggflac_TagDup(const char *file)
 {
 	struct input_stream inStream;
 	OggFLAC__SeekableStreamDecoder *decoder;

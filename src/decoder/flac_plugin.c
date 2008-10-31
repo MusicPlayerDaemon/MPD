@@ -220,7 +220,7 @@ static FLAC__StreamDecoderWriteStatus flacWrite(const flac_decoder *dec,
 }
 
 static struct tag *
-flacMetadataDup(char *file, bool *vorbisCommentFound)
+flacMetadataDup(const char *file, bool *vorbisCommentFound)
 {
 	struct tag *ret = NULL;
 	FLAC__Metadata_SimpleIterator *it;
@@ -278,7 +278,7 @@ flacMetadataDup(char *file, bool *vorbisCommentFound)
 	return ret;
 }
 
-static struct tag *flacTagDup(char *file)
+static struct tag *flacTagDup(const char *file)
 {
 	struct tag *ret = NULL;
 	bool foundVorbisComment = false;
@@ -386,7 +386,7 @@ flac_decode(struct decoder * decoder, struct input_stream *inStream)
 
 #if defined(FLAC_API_VERSION_CURRENT) && FLAC_API_VERSION_CURRENT > 7 && \
 	!defined(HAVE_OGGFLAC)
-static struct tag *oggflac_tag_dup(char *file)
+static struct tag *oggflac_tag_dup(const char *file)
 {
 	struct tag *ret = NULL;
 	FLAC__Metadata_Iterator *it;

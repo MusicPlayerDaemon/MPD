@@ -325,7 +325,7 @@ static bool ffmpeg_tag_internal(BasePtrs *base)
 }
 
 //no tag reading in ffmpeg, check if playable
-static struct tag *ffmpeg_tag(char *file)
+static struct tag *ffmpeg_tag(const char *file)
 {
 	struct input_stream input;
 	BasePtrs base;

@@ -329,7 +329,7 @@ oggvorbis_decode(struct decoder *decoder, struct input_stream *inStream)
 	return true;
 }
 
-static struct tag *oggvorbis_TagDup(char *file)
+static struct tag *oggvorbis_TagDup(const char *file)
 {
 	struct tag *ret;
 	FILE *fp;

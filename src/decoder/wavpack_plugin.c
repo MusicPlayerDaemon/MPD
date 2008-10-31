@@ -277,7 +277,7 @@ static ReplayGainInfo *wavpack_replaygain(WavpackContext *wpc)
 /*
  * Reads metainfo from the specified file.
  */
-static struct tag *wavpack_tagdup(char *fname)
+static struct tag *wavpack_tagdup(const char *fname)
 {
 	WavpackContext *wpc;
 	struct tag *tag;
@@ -533,7 +533,7 @@ wavpack_streamdecode(struct decoder * decoder, struct input_stream *is)
  * Decodes a file.
  */
 static bool
-wavpack_filedecode(struct decoder *decoder, char *fname)
+wavpack_filedecode(struct decoder *decoder, const char *fname)
 {
 	char error[ERRORLEN];
 	WavpackContext *wpc;

@@ -27,7 +27,7 @@
 /* pick 1020 since its devisible for 8,16,24, and 32-bit audio */
 #define CHUNK_SIZE		1020
 
-static int getAudiofileTotalTime(char *file)
+static int getAudiofileTotalTime(const char *file)
 {
 	int total_time;
 	AFfilehandle af_fp = afOpenFile(file, "r", NULL);
@@ -42,7 +42,7 @@ static int getAudiofileTotalTime(char *file)
 }
 
 static bool
-audiofile_decode(struct decoder *decoder, char *path)
+audiofile_decode(struct decoder *decoder, const char *path)
 {
 	int fs, frame_count;
 	AFfilehandle af_fp;
@@ -115,7 +115,7 @@ audiofile_decode(struct decoder *decoder, char *path)
 	return true;
 }
 
-static struct tag *audiofileTagDup(char *file)
+static struct tag *audiofileTagDup(const char *file)
 {
 	struct tag *ret = NULL;
 	int total_time = getAudiofileTotalTime(file);

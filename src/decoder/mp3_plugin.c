@@ -791,7 +791,7 @@ static void mp3_data_finish(struct mp3_data *data)
 }
 
 /* this is primarily used for getting total time for tags */
-static int mp3_total_file_time(char *file)
+static int mp3_total_file_time(const char *file)
 {
 	struct input_stream input_stream;
 	struct mp3_data data;
@@ -1123,7 +1123,7 @@ mp3_decode(struct decoder *decoder, struct input_stream *input_stream)
 	return true;
 }
 
-static struct tag *mp3_tag_dup(char *file)
+static struct tag *mp3_tag_dup(const char *file)
 {
 	struct tag *ret = NULL;
 	int total_time;

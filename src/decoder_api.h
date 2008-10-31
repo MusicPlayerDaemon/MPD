@@ -86,13 +86,13 @@ struct decoder_plugin {
 	 *
 	 * returns -1 on error, 0 on success
 	 */
-	bool (*file_decode)(struct decoder *, char *path);
+	bool (*file_decode)(struct decoder *, const char *path);
 
 	/**
 	 * file should be the full path!  Returns NULL if a tag cannot
 	 * be found or read
 	 */
-	struct tag *(*tag_dup)(char *file);
+	struct tag *(*tag_dup)(const char *file);
 
 	/* one or more of the INPUT_PLUGIN_STREAM_* values OR'd together */
 	unsigned char stream_types;

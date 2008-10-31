@@ -301,7 +301,7 @@ mp4_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 	return true;
 }
 
-static struct tag *mp4DataDup(char *file, int *mp4MetadataFound)
+static struct tag *mp4DataDup(const char *file, int *mp4MetadataFound)
 {
 	struct tag *ret = NULL;
 	struct input_stream inStream;
@@ -390,7 +390,7 @@ static struct tag *mp4DataDup(char *file, int *mp4MetadataFound)
 	return ret;
 }
 
-static struct tag *mp4TagDup(char *file)
+static struct tag *mp4TagDup(const char *file)
 {
 	struct tag *ret = NULL;
 	int mp4MetadataFound = 0;

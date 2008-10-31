@@ -246,7 +246,7 @@ static void aac_parse_header(AacBuffer * b, float *length)
 	}
 }
 
-static float getAacFloatTotalTime(char *file)
+static float getAacFloatTotalTime(const char *file)
 {
 	AacBuffer b;
 	float length;
@@ -290,7 +290,7 @@ static float getAacFloatTotalTime(char *file)
 	return length;
 }
 
-static int getAacTotalTime(char *file)
+static int getAacTotalTime(const char *file)
 {
 	int file_time = -1;
 	float length;
@@ -435,7 +435,7 @@ aac_stream_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 
 
 static bool
-aac_decode(struct decoder *mpd_decoder, char *path)
+aac_decode(struct decoder *mpd_decoder, const char *path)
 {
 	float file_time;
 	float totalTime;
@@ -569,7 +569,7 @@ aac_decode(struct decoder *mpd_decoder, char *path)
 	return true;
 }
 
-static struct tag *aacTagDup(char *file)
+static struct tag *aacTagDup(const char *file)
 {
 	struct tag *ret = NULL;
 	int file_time = getAacTotalTime(file);
