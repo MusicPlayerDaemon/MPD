@@ -343,22 +343,24 @@ int tag_equal(const struct tag *tag1, const struct tag *tag2)
 	return 1;
 }
 
-static inline const char *fix_utf8(const char *str, size_t *length_r) {
-	const char *temp;
+static char *
+fix_utf8(const char *str, size_t *length_r)
+{
+	char *temp;
 	GError *error = NULL;
 	gsize written;
 
 	assert(str != NULL);
 
 	if (g_utf8_validate(str, *length_r, NULL))
-		return str;
+		return NULL;
 
 	DEBUG("not valid utf8 in tag: %s\n",str);
 	temp = g_convert(str, *length_r, "utf-8", "iso-8859-1",
 			 NULL, &written, &error);
 	if (temp == NULL) {
 		g_error_free(error);
-		return str;
+		return NULL;
 	}
 
 	*length_r = written;
@@ -401,18 +403,17 @@ static void appendToTagItems(struct tag *tag, enum tag_type type,
 			     const char *value, size_t len)
 {
 	unsigned int i = tag->numOfItems;
+	char *duplicated;
 	const char *p;
 
-	p = fix_utf8(value, &len);
+	p = duplicated = fix_utf8(value, &len);
+	if (p == NULL)
+		p = value;
 	if (memchr(p, '\n', len) != NULL) {
-		char *duplicated = xmalloc(len + 1);
-		memcpy(duplicated, p, len);
-		duplicated[len] = '\0';
-		if (p != value)
-			xfree(p);
+		if (duplicated == NULL)
+			p = duplicated = g_strndup(p, len);
 
 		stripReturnChar(duplicated);
-		p = duplicated;
 	}
 
 	tag->numOfItems++;
@@ -433,8 +434,7 @@ static void appendToTagItems(struct tag *tag, enum tag_type type,
 	tag->items[i] = tag_pool_get_item(type, p, len);
 	pthread_mutex_unlock(&tag_pool_lock);
 
-	if (p != value)
-		xfree(p);
+	g_free(duplicated);
 }
 
 void tag_add_item_n(struct tag *tag, enum tag_type itemType,
