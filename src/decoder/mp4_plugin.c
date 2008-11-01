@@ -410,8 +410,8 @@ static struct tag *mp4TagDup(const char *file)
 	return ret;
 }
 
-static const char *mp4_suffixes[] = { "m4a", "mp4", NULL };
-static const char *mp4_mimeTypes[] = { "audio/mp4", "audio/m4a", NULL };
+static const char *const mp4_suffixes[] = { "m4a", "mp4", NULL };
+static const char *const mp4_mimeTypes[] = { "audio/mp4", "audio/m4a", NULL };
 
 const struct decoder_plugin mp4Plugin = {
 	.name = "mp4",

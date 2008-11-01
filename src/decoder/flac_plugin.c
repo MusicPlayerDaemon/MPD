@@ -429,11 +429,13 @@ oggflac_try_decode(struct input_stream *inStream)
 		ogg_stream_type_detect(inStream) == FLAC;
 }
 
-static const char *oggflac_suffixes[] = { "ogg", "oga", NULL };
-static const char *oggflac_mime_types[] = { "audio/x-flac+ogg",
-					    "application/ogg",
-					    "application/x-ogg",
-					    NULL };
+static const char *const oggflac_suffixes[] = { "ogg", "oga", NULL };
+static const char *const oggflac_mime_types[] = {
+	"audio/x-flac+ogg",
+	"application/ogg",
+	"application/x-ogg",
+	NULL
+};
 
 const struct decoder_plugin oggflacPlugin = {
 	.name = "oggflac",
@@ -447,10 +449,10 @@ const struct decoder_plugin oggflacPlugin = {
 
 #endif /* FLAC_API_VERSION_CURRENT >= 7 */
 
-static const char *flacSuffixes[] = { "flac", NULL };
-static const char *flac_mime_types[] = { "audio/x-flac",
-					 "application/x-flac",
-					 NULL };
+static const char *const flacSuffixes[] = { "flac", NULL };
+static const char *const flac_mime_types[] = {
+	"audio/x-flac", "application/x-flac", NULL
+};
 
 const struct decoder_plugin flacPlugin = {
 	.name = "flac",

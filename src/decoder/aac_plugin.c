@@ -586,8 +586,8 @@ static struct tag *aacTagDup(const char *file)
 	return ret;
 }
 
-static const char *aac_suffixes[] = { "aac", NULL };
-static const char *aac_mimeTypes[] = { "audio/aac", "audio/aacp", NULL };
+static const char *const aac_suffixes[] = { "aac", NULL };
+static const char *const aac_mimeTypes[] = { "audio/aac", "audio/aacp", NULL };
 
 const struct decoder_plugin aacPlugin = {
 	.name = "aac",

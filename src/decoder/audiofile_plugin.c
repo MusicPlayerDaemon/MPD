@@ -133,7 +133,9 @@ static struct tag *audiofileTagDup(const char *file)
 	return ret;
 }
 
-static const char *audiofileSuffixes[] = { "wav", "au", "aiff", "aif", NULL };
+static const char *const audiofileSuffixes[] = {
+	"wav", "au", "aiff", "aif", NULL
+};
 
 const struct decoder_plugin audiofilePlugin = {
 	.name = "audiofile",

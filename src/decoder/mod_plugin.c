@@ -263,7 +263,8 @@ static struct tag *modTagDup(const char *file)
 	return ret;
 }
 
-static const char *modSuffixes[] = { "amf",
+static const char *const modSuffixes[] = {
+	"amf",
 	"dsm",
 	"far",
 	"gdm",

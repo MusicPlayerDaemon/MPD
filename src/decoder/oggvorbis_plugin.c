@@ -368,11 +368,13 @@ oggvorbis_try_decode(struct input_stream *inStream)
 	return ogg_stream_type_detect(inStream) == VORBIS;
 }
 
-static const char *oggvorbis_Suffixes[] = { "ogg","oga", NULL };
-static const char *oggvorbis_MimeTypes[] = { "application/ogg",
-					     "audio/x-vorbis+ogg",
-					     "application/x-ogg",
-					     NULL };
+static const char *const oggvorbis_Suffixes[] = { "ogg","oga", NULL };
+static const char *const oggvorbis_MimeTypes[] = {
+	"application/ogg",
+	"audio/x-vorbis+ogg",
+	"application/x-ogg",
+	NULL
+};
 
 const struct decoder_plugin oggvorbisPlugin = {
 	.name = "oggvorbis",
