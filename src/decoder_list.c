@@ -21,17 +21,17 @@
 
 #include <glib.h>
 
-extern struct decoder_plugin mp3Plugin;
-extern struct decoder_plugin oggvorbisPlugin;
-extern struct decoder_plugin flacPlugin;
-extern struct decoder_plugin oggflacPlugin;
-extern struct decoder_plugin audiofilePlugin;
-extern struct decoder_plugin mp4Plugin;
-extern struct decoder_plugin aacPlugin;
-extern struct decoder_plugin mpcPlugin;
-extern struct decoder_plugin wavpackPlugin;
-extern struct decoder_plugin modPlugin;
-extern struct decoder_plugin ffmpegPlugin;
+extern const struct decoder_plugin mp3Plugin;
+extern const struct decoder_plugin oggvorbisPlugin;
+extern const struct decoder_plugin flacPlugin;
+extern const struct decoder_plugin oggflacPlugin;
+extern const struct decoder_plugin audiofilePlugin;
+extern const struct decoder_plugin mp4Plugin;
+extern const struct decoder_plugin aacPlugin;
+extern const struct decoder_plugin mpcPlugin;
+extern const struct decoder_plugin wavpackPlugin;
+extern const struct decoder_plugin modPlugin;
+extern const struct decoder_plugin ffmpegPlugin;
 
 static const struct decoder_plugin *const decoder_plugins[] = {
 #ifdef HAVE_MAD

@@ -343,7 +343,7 @@ static const char *oggflac_mime_types[] = { "audio/x-flac+ogg",
 					    "application/x-ogg",
 					    NULL };
 
-struct decoder_plugin oggflacPlugin = {
+const struct decoder_plugin oggflacPlugin = {
 	.name = "oggflac",
 	.try_decode = oggflac_try_decode,
 	.stream_decode = oggflac_decode,

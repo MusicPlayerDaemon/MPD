@@ -435,7 +435,7 @@ static const char *oggflac_mime_types[] = { "audio/x-flac+ogg",
 					    "application/x-ogg",
 					    NULL };
 
-struct decoder_plugin oggflacPlugin = {
+const struct decoder_plugin oggflacPlugin = {
 	.name = "oggflac",
 	.try_decode = oggflac_try_decode,
 	.stream_decode = oggflac_decode,
@@ -452,7 +452,7 @@ static const char *flac_mime_types[] = { "audio/x-flac",
 					 "application/x-flac",
 					 NULL };
 
-struct decoder_plugin flacPlugin = {
+const struct decoder_plugin flacPlugin = {
 	.name = "flac",
 	.stream_decode = flac_decode,
 	.tag_dup = flacTagDup,

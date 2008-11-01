@@ -281,7 +281,7 @@ static const char *modSuffixes[] = { "amf",
 	NULL
 };
 
-struct decoder_plugin modPlugin = {
+const struct decoder_plugin modPlugin = {
 	.name = "mod",
 	.finish = mod_finishMikMod,
 	.file_decode = mod_decode,

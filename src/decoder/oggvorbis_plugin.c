@@ -374,7 +374,7 @@ static const char *oggvorbis_MimeTypes[] = { "application/ogg",
 					     "application/x-ogg",
 					     NULL };
 
-struct decoder_plugin oggvorbisPlugin = {
+const struct decoder_plugin oggvorbisPlugin = {
 	.name = "oggvorbis",
 	.try_decode = oggvorbis_try_decode,
 	.stream_decode = oggvorbis_decode,

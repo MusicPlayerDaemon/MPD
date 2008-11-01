@@ -562,7 +562,7 @@ wavpack_filedecode(struct decoder *decoder, const char *fname)
 static char const *wavpackSuffixes[] = { "wv", NULL };
 static char const *wavpackMimeTypes[] = { "audio/x-wavpack", NULL };
 
-struct decoder_plugin wavpackPlugin = {
+const struct decoder_plugin wavpackPlugin = {
 	.name = "wavpack",
 	.try_decode = wavpack_trydecode,
 	.stream_decode = wavpack_streamdecode,
