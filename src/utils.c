@@ -75,13 +75,6 @@ int ipv6Supported(void)
 #endif
 }
 
-unsigned long readLEuint32(const unsigned char *p)
-{
-	return ((unsigned long)p[0] << 0) |
-	    ((unsigned long)p[1] << 8) |
-	    ((unsigned long)p[2] << 16) | ((unsigned long)p[3] << 24);
-}
-
 mpd_malloc char *xstrdup(const char *s)
 {
 	char *ret = strdup(s);

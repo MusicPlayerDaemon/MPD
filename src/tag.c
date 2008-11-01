@@ -125,9 +125,9 @@ struct tag *tag_ape_load(const char *file)
 
 	struct {
 		unsigned char id[8];
-		unsigned char version[4];
-		unsigned char length[4];
-		unsigned char tagCount[4];
+		uint32_t version;
+		uint32_t length;
+		uint32_t tagCount;
 		unsigned char flags[4];
 		unsigned char reserved[8];
 	} footer;
@@ -166,11 +166,11 @@ struct tag *tag_ape_load(const char *file)
 		goto fail;
 	if (memcmp(footer.id, "APETAGEX", sizeof(footer.id)) != 0)
 		goto fail;
-	if (readLEuint32(footer.version) != 2000)
+	if (GUINT32_FROM_LE(footer.version) != 2000)
 		goto fail;
 
 	/* find beginning of ape tag */
-	tagLen = readLEuint32(footer.length);
+	tagLen = GUINT32_FROM_LE(footer.length);
 	if (tagLen < sizeof(footer))
 		goto fail;
 	if (fseek(fp, size - tagLen, SEEK_SET))
@@ -185,13 +185,13 @@ struct tag *tag_ape_load(const char *file)
 		goto fail;
 
 	/* read tags */
-	tagCount = readLEuint32(footer.tagCount);
+	tagCount = GUINT32_FROM_LE(footer.tagCount);
 	p = buffer;
 	while (tagCount-- && tagLen > 10) {
-		size = readLEuint32((unsigned char *)p);
+		size = GUINT32_FROM_LE(*(const uint32_t *)p);
 		p += 4;
 		tagLen -= 4;
-		flags = readLEuint32((unsigned char *)p);
+		flags = GUINT32_FROM_LE(*(const uint32_t *)p);
 		p += 4;
 		tagLen -= 4;
 

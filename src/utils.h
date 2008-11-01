@@ -37,8 +37,6 @@ void my_usleep(long usec);
 
 int ipv6Supported(void);
 
-unsigned long readLEuint32(const unsigned char *p);
-
 /* trivial functions, keep them inlined */
 static inline void xclose(int fd)
 {
