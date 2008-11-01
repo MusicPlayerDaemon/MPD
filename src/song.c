@@ -96,7 +96,7 @@ song_file_update(struct song *song)
 {
 	char buffer[MPD_PATH_MAX];
 	const char *path_fs;
-	struct decoder_plugin *plugin;
+	const struct decoder_plugin *plugin;
 	unsigned int next = 0;
 	struct stat st;
 

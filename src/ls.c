@@ -113,9 +113,10 @@ const char *getSuffix(const char *utf8file)
 	return ret;
 }
 
-struct decoder_plugin *hasMusicSuffix(const char *utf8file, unsigned int next)
+const struct decoder_plugin *
+hasMusicSuffix(const char *utf8file, unsigned int next)
 {
-	struct decoder_plugin *ret = NULL;
+	const struct decoder_plugin *ret = NULL;
 
 	const char *s = getSuffix(utf8file);
 	if (s) {

@@ -37,7 +37,7 @@ static void decodeStart(void)
 	int ret;
 	bool close_instream = true;
 	struct input_stream inStream;
-	struct decoder_plugin *plugin = NULL;
+	const struct decoder_plugin *plugin;
 
 	if (song_is_file(song))
 		uri = map_song_fs(song, buffer);

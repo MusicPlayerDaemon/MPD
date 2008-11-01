@@ -32,7 +32,8 @@ int isValidRemoteUtf8Url(const char *utf8url);
 
 int isRemoteUrl(const char *url);
 
-struct decoder_plugin *hasMusicSuffix(const char *utf8file, unsigned int next);
+const struct decoder_plugin *
+hasMusicSuffix(const char *utf8file, unsigned int next);
 
 int printRemoteUrlHandlers(struct client *client);
 

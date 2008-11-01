@@ -24,18 +24,19 @@
 struct decoder_plugin;
 
 /* individual functions to load/unload plugins */
-void decoder_plugin_load(struct decoder_plugin * inputPlugin);
-void decoder_plugin_unload(struct decoder_plugin * inputPlugin);
+void decoder_plugin_load(struct decoder_plugin *inputPlugin);
+void decoder_plugin_unload(struct decoder_plugin *inputPlugin);
 
 /* interface for using plugins */
 
-struct decoder_plugin *decoder_plugin_from_suffix(const char *suffix,
-						  unsigned int next);
+const struct decoder_plugin *
+decoder_plugin_from_suffix(const char *suffix, unsigned int next);
 
-struct decoder_plugin *decoder_plugin_from_mime_type(const char *mimeType,
-						     unsigned int next);
+const struct decoder_plugin *
+decoder_plugin_from_mime_type(const char *mimeType, unsigned int next);
 
-struct decoder_plugin *decoder_plugin_from_name(const char *name);
+const struct decoder_plugin *
+decoder_plugin_from_name(const char *name);
 
 void decoder_plugin_print_all_suffixes(FILE * fp);
 

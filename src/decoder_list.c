@@ -65,12 +65,12 @@ static int stringFoundInStringArray(const char *const*array, const char *suffix)
 	return 0;
 }
 
-struct decoder_plugin *decoder_plugin_from_suffix(const char *suffix,
-						  unsigned int next)
+const struct decoder_plugin *
+decoder_plugin_from_suffix(const char *suffix, unsigned int next)
 {
 	static ListNode *pos;
 	ListNode *node;
-	struct decoder_plugin *plugin;
+	const struct decoder_plugin *plugin;
 
 	if (suffix == NULL)
 		return NULL;
@@ -95,8 +95,8 @@ struct decoder_plugin *decoder_plugin_from_suffix(const char *suffix,
 	return NULL;
 }
 
-struct decoder_plugin *decoder_plugin_from_mime_type(const char *mimeType,
-						     unsigned int next)
+const struct decoder_plugin *
+decoder_plugin_from_mime_type(const char *mimeType, unsigned int next)
 {
 	static ListNode *pos;
 	ListNode *node;
@@ -119,13 +119,14 @@ struct decoder_plugin *decoder_plugin_from_mime_type(const char *mimeType,
 	return NULL;
 }
 
-struct decoder_plugin *decoder_plugin_from_name(const char *name)
+const struct decoder_plugin *
+decoder_plugin_from_name(const char *name)
 {
 	void *plugin = NULL;
 
 	findInList(inputPlugin_list, name, &plugin);
 
-	return (struct decoder_plugin *) plugin;
+	return (const struct decoder_plugin *) plugin;
 }
 
 void decoder_plugin_print_all_suffixes(FILE * fp)
