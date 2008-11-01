@@ -26,6 +26,8 @@
 
 #include <glib.h>
 #include <assert.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 /**
  * Maximum number of items managed in the bulk list; if it is
@@ -85,7 +87,7 @@ void tag_lib_init(void)
 	if (0 == strcasecmp(param->value, "none"))
 		return;
 
-	temp = c = s = xstrdup(param->value);
+	temp = c = s = g_strdup(param->value);
 	while (!quit) {
 		if (*s == ',' || *s == '\0') {
 			if (*s == '\0')
@@ -180,7 +182,7 @@ struct tag *tag_ape_load(const char *file)
 	tagLen -= sizeof(footer);
 	if (tagLen <= 0)
 		goto fail;
-	buffer = xmalloc(tagLen);
+	buffer = g_malloc(tagLen);
 	if (fread(buffer, 1, tagLen, fp) != tagLen)
 		goto fail;
 
@@ -233,7 +235,7 @@ fail:
 
 struct tag *tag_new(void)
 {
-	struct tag *ret = xmalloc(sizeof(*ret));
+	struct tag *ret = g_new(struct tag, 1);
 	ret->items = NULL;
 	ret->time = -1;
 	ret->numOfItems = 0;
@@ -255,7 +257,7 @@ static void deleteItem(struct tag *tag, int idx)
 	}
 
 	if (tag->numOfItems > 0) {
-		tag->items = xrealloc(tag->items, items_size(tag));
+		tag->items = g_realloc(tag->items, items_size(tag));
 	} else {
 		free(tag->items);
 		tag->items = NULL;
@@ -307,7 +309,7 @@ struct tag *tag_dup(const struct tag *tag)
 	ret = tag_new();
 	ret->time = tag->time;
 	ret->numOfItems = tag->numOfItems;
-	ret->items = ret->numOfItems > 0 ? xmalloc(items_size(tag)) : NULL;
+	ret->items = ret->numOfItems > 0 ? g_malloc(items_size(tag)) : NULL;
 
 	pthread_mutex_lock(&tag_pool_lock);
 	for (i = 0; i < tag->numOfItems; i++)
@@ -388,7 +390,7 @@ void tag_end_add(struct tag *tag)
 		if (tag->numOfItems > 0) {
 			/* copy the tag items from the bulk list over
 			   to a new list (which fits exactly) */
-			tag->items = xmalloc(items_size(tag));
+			tag->items = g_malloc(items_size(tag));
 			memcpy(tag->items, bulk.items, items_size(tag));
 		} else
 			tag->items = NULL;
@@ -420,12 +422,12 @@ static void appendToTagItems(struct tag *tag, enum tag_type type,
 
 	if (tag->items != bulk.items)
 		/* bulk mode disabled */
-		tag->items = xrealloc(tag->items, items_size(tag));
+		tag->items = g_realloc(tag->items, items_size(tag));
 	else if (tag->numOfItems >= BULK_MAX) {
 		/* bulk list already full - switch back to non-bulk */
 		assert(bulk.busy);
 
-		tag->items = xmalloc(items_size(tag));
+		tag->items = g_malloc(items_size(tag));
 		memcpy(tag->items, bulk.items,
 		       items_size(tag) - sizeof(struct tag_item *));
 	}
