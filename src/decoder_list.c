@@ -18,7 +18,8 @@
 
 #include "decoder_list.h"
 #include "decoder_api.h"
-#include "list.h"
+
+#include <glib.h>
 
 extern struct decoder_plugin mp3Plugin;
 extern struct decoder_plugin oggvorbisPlugin;
@@ -32,27 +33,46 @@ extern struct decoder_plugin wavpackPlugin;
 extern struct decoder_plugin modPlugin;
 extern struct decoder_plugin ffmpegPlugin;
 
-static List *inputPlugin_list;
+static const struct decoder_plugin *const decoder_plugins[] = {
+#ifdef HAVE_MAD
+	&mp3Plugin,
+#endif
+#ifdef HAVE_OGGVORBIS
+	&oggvorbisPlugin,
+#endif
+#ifdef HAVE_FLAC_COMMON
+	&oggflacPlugin,
+#endif
+#ifdef HAVE_FLAC
+	&flacPlugin,
+#endif
+#ifdef HAVE_AUDIOFILE
+	&audiofilePlugin,
+#endif
+#ifdef HAVE_FAAD
+	&mp4Plugin,
+	&aacPlugin,
+#endif
+#ifdef HAVE_MPCDEC
+	&mpcPlugin,
+#endif
+#ifdef HAVE_WAVPACK
+	&wavpackPlugin,
+#endif
+#ifdef HAVE_MIKMOD
+	&modPlugin,
+#endif
+#ifdef HAVE_FFMPEG
+	&ffmpegPlugin,
+#endif
+};
 
-void decoder_plugin_load(struct decoder_plugin * inputPlugin)
-{
-	if (!inputPlugin)
-		return;
-	if (!inputPlugin->name)
-		return;
+enum {
+	num_decoder_plugins = G_N_ELEMENTS(decoder_plugins),
+};
 
-	if (inputPlugin->init != NULL && !inputPlugin->init())
-		return;
-
-	insertInList(inputPlugin_list, inputPlugin->name, (void *)inputPlugin);
-}
-
-void decoder_plugin_unload(struct decoder_plugin * inputPlugin)
-{
-	if (inputPlugin->finish != NULL)
-		inputPlugin->finish();
-	deleteFromList(inputPlugin_list, inputPlugin->name);
-}
+/** which plugins have been initialized successfully? */
+static bool decoder_plugins_enabled[num_decoder_plugins];
 
 static int stringFoundInStringArray(const char *const*array, const char *suffix)
 {
@@ -68,28 +88,20 @@ static int stringFoundInStringArray(const char *const*array, const char *suffix)
 const struct decoder_plugin *
 decoder_plugin_from_suffix(const char *suffix, unsigned int next)
 {
-	static ListNode *pos;
-	ListNode *node;
-	const struct decoder_plugin *plugin;
+	static unsigned i = num_decoder_plugins;
 
 	if (suffix == NULL)
 		return NULL;
 
-	if (next) {
-		if (pos)
-			node = pos;
-		else
-			return NULL;
-	} else
-		node = inputPlugin_list->firstNode;
-
-	while (node != NULL) {
-		plugin = node->data;
-		if (stringFoundInStringArray(plugin->suffixes, suffix)) {
-			pos = node->nextNode;
+	if (!next)
+		i = 0;
+	for (; i < num_decoder_plugins; ++i) {
+		const struct decoder_plugin *plugin = decoder_plugins[i];
+		if (decoder_plugins_enabled[i] &&
+		    stringFoundInStringArray(plugin->suffixes, suffix)) {
+			++i;
 			return plugin;
 		}
-		node = node->nextNode;
 	}
 
 	return NULL;
@@ -98,22 +110,20 @@ decoder_plugin_from_suffix(const char *suffix, unsigned int next)
 const struct decoder_plugin *
 decoder_plugin_from_mime_type(const char *mimeType, unsigned int next)
 {
-	static ListNode *pos;
-	ListNode *node;
-	struct decoder_plugin *plugin;
+	static unsigned i = num_decoder_plugins;
 
 	if (mimeType == NULL)
 		return NULL;
 
-	node = (next && pos) ? pos : inputPlugin_list->firstNode;
-
-	while (node != NULL) {
-		plugin = node->data;
-		if (stringFoundInStringArray(plugin->mime_types, mimeType)) {
-			pos = node->nextNode;
+	if (!next)
+		i = 0;
+	for (; i < num_decoder_plugins; ++i) {
+		const struct decoder_plugin *plugin = decoder_plugins[i];
+		if (decoder_plugins_enabled[i] &&
+		    stringFoundInStringArray(plugin->mime_types, mimeType)) {
+			++i;
 			return plugin;
 		}
-		node = node->nextNode;
 	}
 
 	return NULL;
@@ -122,27 +132,30 @@ decoder_plugin_from_mime_type(const char *mimeType, unsigned int next)
 const struct decoder_plugin *
 decoder_plugin_from_name(const char *name)
 {
-	void *plugin = NULL;
+	for (unsigned i = 0; i < num_decoder_plugins; ++i) {
+		const struct decoder_plugin *plugin = decoder_plugins[i];
+		if (decoder_plugins_enabled[i] &&
+		    strcmp(plugin->name, name) == 0)
+			return plugin;
+	}
 
-	findInList(inputPlugin_list, name, &plugin);
-
-	return (const struct decoder_plugin *) plugin;
+	return NULL;
 }
 
 void decoder_plugin_print_all_suffixes(FILE * fp)
 {
-	ListNode *node = inputPlugin_list->firstNode;
-	struct decoder_plugin *plugin;
 	const char *const*suffixes;
 
-	while (node) {
-		plugin = (struct decoder_plugin *) node->data;
+	for (unsigned i = 0; i < num_decoder_plugins; ++i) {
+		const struct decoder_plugin *plugin = decoder_plugins[i];
+		if (!decoder_plugins_enabled[i])
+			continue;
+
 		suffixes = plugin->suffixes;
 		while (suffixes && *suffixes) {
 			fprintf(fp, "%s ", *suffixes);
 			suffixes++;
 		}
-		node = node->nextNode;
 	}
 	fprintf(fp, "\n");
 	fflush(fp);
@@ -150,43 +163,18 @@ void decoder_plugin_print_all_suffixes(FILE * fp)
 
 void decoder_plugin_init_all(void)
 {
-	inputPlugin_list = makeList(NULL, 1);
-
-	/* load plugins here */
-#ifdef HAVE_MAD
-	decoder_plugin_load(&mp3Plugin);
-#endif
-#ifdef HAVE_OGGVORBIS
-	decoder_plugin_load(&oggvorbisPlugin);
-#endif
-#ifdef HAVE_FLAC_COMMON
-	decoder_plugin_load(&oggflacPlugin);
-#endif
-#ifdef HAVE_FLAC
-	decoder_plugin_load(&flacPlugin);
-#endif
-#ifdef HAVE_AUDIOFILE
-	decoder_plugin_load(&audiofilePlugin);
-#endif
-#ifdef HAVE_FAAD
-	decoder_plugin_load(&mp4Plugin);
-	decoder_plugin_load(&aacPlugin);
-#endif
-#ifdef HAVE_MPCDEC
-	decoder_plugin_load(&mpcPlugin);
-#endif
-#ifdef HAVE_WAVPACK
-	decoder_plugin_load(&wavpackPlugin);
-#endif
-#ifdef HAVE_MIKMOD
-	decoder_plugin_load(&modPlugin);
-#endif
-#ifdef HAVE_FFMPEG
-	decoder_plugin_load(&ffmpegPlugin);
-#endif
+	for (unsigned i = 0; i < num_decoder_plugins; ++i) {
+		const struct decoder_plugin *plugin = decoder_plugins[i];
+		if (plugin->init != NULL && decoder_plugins[i]->init())
+			decoder_plugins_enabled[i] = true;
+	}
 }
 
 void decoder_plugin_deinit_all(void)
 {
-	freeList(inputPlugin_list);
+	for (unsigned i = 0; i < num_decoder_plugins; ++i) {
+		const struct decoder_plugin *plugin = decoder_plugins[i];
+		if (decoder_plugins_enabled[i] && plugin->finish != NULL)
+			decoder_plugins[i]->finish();
+	}
 }

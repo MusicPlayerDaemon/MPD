@@ -23,10 +23,6 @@
 
 struct decoder_plugin;
 
-/* individual functions to load/unload plugins */
-void decoder_plugin_load(struct decoder_plugin *inputPlugin);
-void decoder_plugin_unload(struct decoder_plugin *inputPlugin);
-
 /* interface for using plugins */
 
 const struct decoder_plugin *

@@ -18,7 +18,6 @@
  */
 
 #include "decoder_internal.h"
-#include "decoder_list.h"
 #include "decoder_control.h"
 #include "player_control.h"
 #include "audio.h"
@@ -30,16 +29,6 @@
 #include "gcc.h"
 
 #include <assert.h>
-
-void decoder_plugin_register(struct decoder_plugin *plugin)
-{
-	decoder_plugin_load(plugin);
-}
-
-void decoder_plugin_unregister(struct decoder_plugin *plugin)
-{
-	decoder_plugin_unload(plugin);
-}
 
 void decoder_initialized(struct decoder * decoder,
 			 const struct audio_format *audio_format,
