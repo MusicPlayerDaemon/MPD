@@ -19,10 +19,12 @@
 #include "permission.h"
 
 #include "conf.h"
-#include "list.h"
 #include "log.h"
 #include "utils.h"
 #include "os_compat.h"
+
+#include <glib.h>
+#include <stdbool.h>
 
 #define PERMISSION_PASSWORD_CHAR	"@"
 #define PERMISSION_SEPERATOR		","
@@ -32,7 +34,7 @@
 #define PERMISSION_CONTROL_STRING	"control"
 #define PERMISSION_ADMIN_STRING		"admin"
 
-static List *permission_passwords;
+static GHashTable *permission_passwords;
 
 static unsigned permission_default;
 
@@ -70,10 +72,11 @@ void initPermissions(void)
 	char *temp;
 	char *cp2;
 	char *password;
-	unsigned *permission;
+	unsigned permission;
 	ConfigParam *param;
 
-	permission_passwords = makeList(free, 1);
+	permission_passwords = g_hash_table_new_full(g_str_hash, g_str_equal,
+						     g_free, NULL);
 
 	permission_default = PERMISSION_READ | PERMISSION_ADD |
 	    PERMISSION_CONTROL | PERMISSION_ADMIN;
@@ -99,12 +102,12 @@ void initPermissions(void)
 
 			password = temp;
 
-			permission = xmalloc(sizeof(unsigned));
-			*permission =
+			permission =
 			    parsePermissions(strtok_r(NULL, "", &cp2));
 
-			insertInList(permission_passwords, password,
-				     permission);
+			g_hash_table_replace(permission_passwords,
+					     g_strdup(password),
+					     GINT_TO_POINTER(permission));
 		} while ((param = getNextConfigParam(CONF_PASSWORD, param)));
 	}
 
@@ -112,25 +115,25 @@ void initPermissions(void)
 
 	if (param)
 		permission_default = parsePermissions(param->value);
-
-	sortList(permission_passwords);
 }
 
 int getPermissionFromPassword(char *password, unsigned *permission)
 {
-	void *foundPermission;
+	bool found;
+	gpointer key, value;
 
-	if (findInList(permission_passwords, password, &foundPermission)) {
-		*permission = *((unsigned *)foundPermission);
-		return 0;
-	}
+	found = g_hash_table_lookup_extended(permission_passwords,
+					     password, &key, &value);
+	if (!found)
+		return -1;
 
-	return -1;
+	*permission = GPOINTER_TO_INT(value);
+	return 0;
 }
 
 void finishPermissions(void)
 {
-	freeList(permission_passwords);
+	g_hash_table_destroy(permission_passwords);
 }
 
 unsigned getDefaultPermissions(void)
