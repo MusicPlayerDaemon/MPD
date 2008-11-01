@@ -20,6 +20,7 @@
 #include "../utils.h"
 #include "../log.h"
 
+#include <glib.h>
 #include <alsa/asoundlib.h>
 
 #define ALSA_PCM_NEW_HW_PARAMS_API
@@ -33,7 +34,7 @@ typedef snd_pcm_sframes_t alsa_writei_t(snd_pcm_t * pcm, const void *buffer,
 					snd_pcm_uframes_t size);
 
 typedef struct _AlsaData {
-	const char *device;
+	char *device;
 
 	/** the mode flags passed to snd_pcm_open */
 	int mode;
@@ -46,11 +47,16 @@ typedef struct _AlsaData {
 	int useMmap;
 } AlsaData;
 
+static const char *
+alsa_device(const AlsaData *ad)
+{
+	return ad->device != NULL ? ad->device : default_device;
+}
+
 static AlsaData *newAlsaData(void)
 {
 	AlsaData *ret = xmalloc(sizeof(AlsaData));
 
-	ret->device = default_device;
 	ret->mode = 0;
 	ret->pcmHandle = NULL;
 	ret->writei = snd_pcm_writei;
@@ -63,8 +69,7 @@ static AlsaData *newAlsaData(void)
 
 static void freeAlsaData(AlsaData * ad)
 {
-	if (ad->device && ad->device != default_device)
-		xfree(ad->device);
+	g_free(ad->device);
 	free(ad);
 }
 
@@ -75,6 +80,9 @@ alsa_configure(AlsaData *ad, ConfigParam *param)
 
 	if ((bp = getBlockParam(param, "device")))
 		ad->device = xstrdup(bp->value);
+	else
+		ad->device = NULL;
+
 	ad->useMmap = getBoolBlockParam(param, "use_mmap", 1);
 	if (ad->useMmap == CONF_BOOL_UNSET)
 		ad->useMmap = 0;
@@ -170,9 +178,9 @@ static bool alsa_openDevice(void *data, struct audio_format *audioFormat)
 
 	if ((bitformat = get_bitformat(audioFormat)) == SND_PCM_FORMAT_UNKNOWN)
 		ERROR("ALSA device \"%s\" doesn't support %u bit audio\n",
-		      ad->device, audioFormat->bits);
+		      alsa_device(ad), audioFormat->bits);
 
-	err = snd_pcm_open(&ad->pcmHandle, ad->device,
+	err = snd_pcm_open(&ad->pcmHandle, alsa_device(ad),
 			   SND_PCM_STREAM_PLAYBACK, ad->mode);
 	if (err < 0) {
 		ad->pcmHandle = NULL;
@@ -194,7 +202,7 @@ configure_hw:
 						   SND_PCM_ACCESS_MMAP_INTERLEAVED);
 		if (err < 0) {
 			ERROR("Cannot set mmap'ed mode on ALSA device \"%s\": "
-			      " %s\n", ad->device, snd_strerror(-err));
+			      " %s\n", alsa_device(ad), snd_strerror(-err));
 			ERROR("Falling back to direct write mode\n");
 			ad->useMmap = 0;
 		} else
@@ -217,14 +225,14 @@ configure_hw:
 						   SND_PCM_FORMAT_S16);
 		if (err == 0) {
 			DEBUG("ALSA device \"%s\": converting %u bit to 16 bit\n",
-			      ad->device, audioFormat->bits);
+			      alsa_device(ad), audioFormat->bits);
 			audioFormat->bits = 16;
 		}
 	}
 
 	if (err < 0) {
 		ERROR("ALSA device \"%s\" does not support %u bit audio: "
-		      "%s\n", ad->device, audioFormat->bits, snd_strerror(-err));
+		      "%s\n", alsa_device(ad), audioFormat->bits, snd_strerror(-err));
 		goto fail;
 	}
 
@@ -232,7 +240,7 @@ configure_hw:
 						  &channels);
 	if (err < 0) {
 		ERROR("ALSA device \"%s\" does not support %i channels: "
-		      "%s\n", ad->device, (int)audioFormat->channels,
+		      "%s\n", alsa_device(ad), (int)audioFormat->channels,
 		      snd_strerror(-err));
 		goto fail;
 	}
@@ -242,7 +250,7 @@ configure_hw:
 					      &sample_rate, NULL);
 	if (err < 0 || sample_rate == 0) {
 		ERROR("ALSA device \"%s\" does not support %u Hz audio\n",
-		      ad->device, audioFormat->sample_rate);
+		      alsa_device(ad), audioFormat->sample_rate);
 		goto fail;
 	}
 	audioFormat->sample_rate = sample_rate;
@@ -315,7 +323,7 @@ configure_hw:
 	ad->sampleSize = audio_format_frame_size(audioFormat);
 
 	DEBUG("ALSA device \"%s\" will be playing %i bit, %u channel audio at "
-	      "%u Hz\n", ad->device, audioFormat->bits,
+	      "%u Hz\n", alsa_device(ad), audioFormat->bits,
 	      channels, sample_rate);
 
 	return true;
@@ -323,9 +331,9 @@ configure_hw:
 error:
 	if (cmd) {
 		ERROR("Error opening ALSA device \"%s\" (%s): %s\n",
-		      ad->device, cmd, snd_strerror(-err));
+		      alsa_device(ad), cmd, snd_strerror(-err));
 	} else {
-		ERROR("Error opening ALSA device \"%s\": %s\n", ad->device,
+		ERROR("Error opening ALSA device \"%s\": %s\n", alsa_device(ad),
 		      snd_strerror(-err));
 	}
 fail:
@@ -338,9 +346,9 @@ fail:
 static int alsa_errorRecovery(AlsaData * ad, int err)
 {
 	if (err == -EPIPE) {
-		DEBUG("Underrun on ALSA device \"%s\"\n", ad->device);
+		DEBUG("Underrun on ALSA device \"%s\"\n", alsa_device(ad));
 	} else if (err == -ESTRPIPE) {
-		DEBUG("ALSA device \"%s\" was suspended\n", ad->device);
+		DEBUG("ALSA device \"%s\" was suspended\n", alsa_device(ad));
 	}
 
 	switch (snd_pcm_state(ad->pcmHandle)) {
@@ -410,7 +418,7 @@ alsa_playAudio(void *data, const char *playChunk, size_t size)
 		if (ret < 0) {
 			if (alsa_errorRecovery(ad, ret) < 0) {
 				ERROR("closing ALSA device \"%s\" due to write "
-				      "error: %s\n", ad->device,
+				      "error: %s\n", alsa_device(ad),
 				      snd_strerror(-errno));
 				return false;
 			}

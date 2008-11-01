@@ -21,6 +21,7 @@
 
 #include <assert.h>
 
+#include <glib.h>
 #include <jack/jack.h>
 #include <jack/types.h>
 #include <jack/ringbuffer.h>
@@ -31,7 +32,7 @@ struct jack_data {
 	struct audio_output *ao;
 
 	/* configuration */
-	const char *name;
+	char *name;
 	const char *output_ports[2];
 	int ringbuffer_size;
 
@@ -46,6 +47,12 @@ struct jack_data {
 	int shutdown;
 };
 
+static const char *
+mpd_jack_name(const struct jack_data *jd)
+{
+	return jd->name != NULL ? jd->name : "mpd";
+}
+
 static struct jack_data *
 mpd_jack_new(void)
 {
@@ -53,7 +60,6 @@ mpd_jack_new(void)
 
 	ret = xcalloc(sizeof(*ret), 1);
 
-	ret->name = "mpd";
 	ret->ringbuffer_size = 32768;
 
 	return ret;
@@ -90,8 +96,7 @@ mpd_jack_free(struct jack_data *jd)
 
 	mpd_jack_client_free(jd);
 
-	if (strcmp(jd->name, "mpd") != 0)
-		xfree(jd->name);
+	g_free(jd->name);
 
 	for ( i = ARRAY_SIZE(jd->output_ports); --i >= 0; ) {
 		if (!jd->output_ports[i])
@@ -237,7 +242,8 @@ mpd_jack_init(struct audio_output *ao,
 	     && (strcmp(bp->value, "mpd") != 0) ) {
 		jd->name = xstrdup(bp->value);
 		DEBUG("name=%s\n", jd->name);
-	}
+	} else
+		jd->name = NULL;
 
 	return jd;
 }
@@ -256,7 +262,7 @@ mpd_jack_connect(struct jack_data *jd, struct audio_format *audio_format)
 
 	jd->audio_format = audio_format;
 
-	if ( (jd->client = jack_client_new(jd->name)) == NULL ) {
+	if ((jd->client = jack_client_new(mpd_jack_name(jd))) == NULL) {
 		ERROR("jack server not running?\n");
 		return -1;
 	}
@@ -299,14 +305,16 @@ mpd_jack_connect(struct jack_data *jd, struct audio_format *audio_format)
 	}
 
 	if ( jd->output_ports[1] ) {
+		const char *name = mpd_jack_name(jd);
+
 		jd->ringbuffer[0] = jack_ringbuffer_create(jd->ringbuffer_size);
 		jd->ringbuffer[1] = jack_ringbuffer_create(jd->ringbuffer_size);
 		memset(jd->ringbuffer[0]->buf, 0, jd->ringbuffer[0]->size);
 		memset(jd->ringbuffer[1]->buf, 0, jd->ringbuffer[1]->size);
 
-		port_name = xmalloc(sizeof(char)*(7+strlen(jd->name)));
+		port_name = xmalloc(sizeof(char) * (7 + strlen(name)));
 
-		sprintf(port_name, "%s:left", jd->name);
+		sprintf(port_name, "%s:left", name);
 		if ( (jack_connect(jd->client, port_name,
 				   jd->output_ports[0])) != 0 ) {
 			ERROR("%s is not a valid Jack Client / Port\n",
@@ -314,7 +322,7 @@ mpd_jack_connect(struct jack_data *jd, struct audio_format *audio_format)
 			free(port_name);
 			return -1;
 		}
-		sprintf(port_name, "%s:right", jd->name);
+		sprintf(port_name, "%s:right", name);
 		if ( (jack_connect(jd->client, port_name,
 				   jd->output_ports[1])) != 0 ) {
 			ERROR("%s is not a valid Jack Client / Port\n",
