@@ -86,7 +86,8 @@ static int mpdurl_read(URLContext *h, unsigned char *buf, int size)
 	FopsHelper *base = (FopsHelper *) h->priv_data;
 
 	while (true) {
-		size_t ret = input_stream_read(base->input, (void *)buf, size);
+		size_t ret = decoder_read(base->decoder, base->input,
+					  (void *)buf, size);
 		if (ret > 0)
 			return ret;
 
