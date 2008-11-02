@@ -61,13 +61,13 @@ struct music_pipe {
 extern struct music_pipe ob;
 
 void
-ob_init(unsigned int size, struct notify *notify);
+music_pipe_init(unsigned int size, struct notify *notify);
 
-void ob_free(void);
+void music_pipe_free(void);
 
-void ob_clear(void);
+void music_pipe_clear(void);
 
-void ob_flush(void);
+void music_pipe_flush(void);
 
 /**
  * When a chunk is decoded, we wake up the player thread to tell him
@@ -75,42 +75,42 @@ void ob_flush(void);
  * previously empty, i.e. when the player thread has really been
  * waiting for us.
  */
-void ob_set_lazy(bool lazy);
+void music_pipe_set_lazy(bool lazy);
 
 /** is the buffer empty? */
-static inline bool ob_is_empty(void)
+static inline bool music_pipe_is_empty(void)
 {
 	return ob.begin == ob.end;
 }
 
-void ob_shift(void);
+void music_pipe_shift(void);
 
 /**
  * what is the position of the specified chunk number, relative to
  * the first chunk in use?
  */
-unsigned int ob_relative(const unsigned i);
+unsigned int music_pipe_relative(const unsigned i);
 
 /** determine the number of decoded chunks */
-unsigned ob_available(void);
+unsigned music_pipe_available(void);
 
 /**
  * Get the absolute index of the nth used chunk after the first one.
  * Returns -1 if there is no such chunk.
  */
-int ob_absolute(const unsigned relative);
+int music_pipe_absolute(const unsigned relative);
 
 struct music_chunk *
-ob_get_chunk(const unsigned i);
+music_pipe_get_chunk(const unsigned i);
 
 /**
  * Append a data block to the buffer.
  *
  * @return the number of bytes actually written
  */
-size_t ob_append(const void *data, size_t datalen,
-		 float data_time, uint16_t bitRate);
+size_t music_pipe_append(const void *data, size_t datalen,
+			 float data_time, uint16_t bitRate);
 
-void ob_skip(unsigned num);
+void music_pipe_skip(unsigned num);
 
 #endif

@@ -66,7 +66,7 @@ void decoder_command_finished(mpd_unused struct decoder * decoder)
 
 	if (dc.command == DECODE_COMMAND_SEEK)
 		/* delete frames from the old song position */
-		ob_clear();
+		music_pipe_clear();
 
 	dc.command = DECODE_COMMAND_NONE;
 	notify_signal(&pc.notify);
@@ -181,7 +181,7 @@ decoder_data(struct decoder *decoder,
 		normalizeData(data, datalen, &ob.audioFormat);
 
 	while (datalen > 0) {
-		nbytes = ob_append(data, datalen, data_time, bitRate);
+		nbytes = music_pipe_append(data, datalen, data_time, bitRate);
 		datalen -= nbytes;
 		data += nbytes;
 

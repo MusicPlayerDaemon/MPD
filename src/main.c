@@ -424,7 +424,7 @@ int main(int argc, char *argv[])
 	command_init();
 	initPlayerData();
 	pc_init(buffered_before_play);
-	ob_init(buffered_chunks, &pc.notify);
+	music_pipe_init(buffered_chunks, &pc.notify);
 	dc_init();
 	initAudioConfig();
 	initAudioDriver();
@@ -488,7 +488,7 @@ int main(int argc, char *argv[])
 	pc_deinit();
 	command_finish();
 	decoder_plugin_deinit_all();
-	ob_free();
+	music_pipe_free();
 	cleanUpPidFile();
 	finishConf();
 

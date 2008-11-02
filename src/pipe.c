@@ -26,7 +26,7 @@
 struct music_pipe ob;
 
 void
-ob_init(unsigned int size, struct notify *notify)
+music_pipe_init(unsigned int size, struct notify *notify)
 {
 	assert(size > 0);
 
@@ -39,13 +39,13 @@ ob_init(unsigned int size, struct notify *notify)
 	ob.chunks[0].chunkSize = 0;
 }
 
-void ob_free(void)
+void music_pipe_free(void)
 {
 	assert(ob.chunks != NULL);
 	free(ob.chunks);
 }
 
-void ob_clear(void)
+void music_pipe_clear(void)
 {
 	ob.end = ob.begin;
 	ob.chunks[ob.end].chunkSize = 0;
@@ -66,7 +66,7 @@ static inline unsigned successor(unsigned i)
  */
 static void output_buffer_expand(unsigned i)
 {
-	int was_empty = ob.notify != NULL && (!ob.lazy || ob_is_empty());
+	int was_empty = ob.notify != NULL && (!ob.lazy || music_pipe_is_empty());
 
 	assert(i == (ob.end + 1) % ob.size);
 	assert(i != ob.end);
@@ -80,9 +80,9 @@ static void output_buffer_expand(unsigned i)
 		notify_signal(ob.notify);
 }
 
-void ob_flush(void)
+void music_pipe_flush(void)
 {
-	struct music_chunk *chunk = ob_get_chunk(ob.end);
+	struct music_chunk *chunk = music_pipe_get_chunk(ob.end);
 
 	if (chunk->chunkSize > 0) {
 		unsigned int next = successor(ob.end);
@@ -96,12 +96,12 @@ void ob_flush(void)
 	}
 }
 
-void ob_set_lazy(bool lazy)
+void music_pipe_set_lazy(bool lazy)
 {
 	ob.lazy = lazy;
 }
 
-void ob_shift(void)
+void music_pipe_shift(void)
 {
 	assert(ob.begin != ob.end);
 	assert(ob.begin < ob.size);
@@ -109,7 +109,7 @@ void ob_shift(void)
 	ob.begin = successor(ob.begin);
 }
 
-unsigned int ob_relative(const unsigned i)
+unsigned int music_pipe_relative(const unsigned i)
 {
 	if (i >= ob.begin)
 		return i - ob.begin;
@@ -117,12 +117,12 @@ unsigned int ob_relative(const unsigned i)
 		return i + ob.size - ob.begin;
 }
 
-unsigned ob_available(void)
+unsigned music_pipe_available(void)
 {
-	return ob_relative(ob.end);
+	return music_pipe_relative(ob.end);
 }
 
-int ob_absolute(const unsigned relative)
+int music_pipe_absolute(const unsigned relative)
 {
 	unsigned i, max;
 
@@ -140,7 +140,7 @@ int ob_absolute(const unsigned relative)
 }
 
 struct music_chunk *
-ob_get_chunk(const unsigned i)
+music_pipe_get_chunk(const unsigned i)
 {
 	assert(i < ob.size);
 
@@ -160,7 +160,7 @@ tail_chunk(float data_time, uint16_t bitRate)
 	unsigned int next;
 	struct music_chunk *chunk;
 
-	chunk = ob_get_chunk(ob.end);
+	chunk = music_pipe_get_chunk(ob.end);
 	assert(chunk->chunkSize <= sizeof(chunk->data));
 	if (chunk->chunkSize + frame_size > sizeof(chunk->data)) {
 		/* this chunk is full; allocate a new chunk */
@@ -170,7 +170,7 @@ tail_chunk(float data_time, uint16_t bitRate)
 			return NULL;
 
 		output_buffer_expand(next);
-		chunk = ob_get_chunk(next);
+		chunk = music_pipe_get_chunk(next);
 		assert(chunk->chunkSize == 0);
 	}
 
@@ -185,8 +185,8 @@ tail_chunk(float data_time, uint16_t bitRate)
 	return chunk;
 }
 
-size_t ob_append(const void *data0, size_t datalen,
-		 float data_time, uint16_t bitRate)
+size_t music_pipe_append(const void *data0, size_t datalen,
+			 float data_time, uint16_t bitRate)
 {
 	const unsigned char *data = data0;
 	const size_t frame_size = audio_format_frame_size(&ob.audioFormat);
@@ -217,14 +217,14 @@ size_t ob_append(const void *data0, size_t datalen,
 	}
 
 	if (chunk != NULL && chunk->chunkSize == sizeof(chunk->data))
-		ob_flush();
+		music_pipe_flush();
 
 	return ret;
 }
 
-void ob_skip(unsigned num)
+void music_pipe_skip(unsigned num)
 {
-	int i = ob_absolute(num);
+	int i = music_pipe_absolute(num);
 	if (i >= 0)
 		ob.begin = i;
 }

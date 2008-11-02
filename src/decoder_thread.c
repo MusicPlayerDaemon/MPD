@@ -158,7 +158,7 @@ static void decodeStart(void)
 		}
 	}
 
-	ob_flush();
+	music_pipe_flush();
 
 	if (!ret) {
 		dc.error = plugin == NULL
