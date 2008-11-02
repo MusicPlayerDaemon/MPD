@@ -236,6 +236,9 @@ playChunk(struct song *song, struct music_chunk *chunk,
 		}
 	}
 
+	if (chunk->length == 0)
+		return 0;
+
 	pcm_volume(chunk->data, chunk->length,
 		   format, pc.softwareVolume);
 
