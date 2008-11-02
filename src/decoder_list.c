@@ -165,7 +165,7 @@ void decoder_plugin_init_all(void)
 {
 	for (unsigned i = 0; i < num_decoder_plugins; ++i) {
 		const struct decoder_plugin *plugin = decoder_plugins[i];
-		if (plugin->init != NULL && decoder_plugins[i]->init())
+		if (plugin->init == NULL || decoder_plugins[i]->init())
 			decoder_plugins_enabled[i] = true;
 	}
 }
