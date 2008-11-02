@@ -32,10 +32,17 @@ static bool
 decoder_try_decode(const struct decoder_plugin *plugin,
 		   struct input_stream *input_stream)
 {
+	bool ret;
+
 	if (plugin->try_decode == NULL)
 		return true;
 
-	return plugin->try_decode(input_stream);
+	ret = plugin->try_decode(input_stream);
+
+	/* rewind the stream, so the next reader gets a fresh start */
+	input_stream_seek(input_stream, 0, SEEK_SET);
+
+	return ret;
 }
 
 static void decodeStart(void)

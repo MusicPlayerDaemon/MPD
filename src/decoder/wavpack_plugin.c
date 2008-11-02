@@ -424,8 +424,6 @@ static bool wavpack_trydecode(struct input_stream *is)
 		return false;
 
 	WavpackCloseFile(wpc);
-	/* Seek it back in order to play from the first byte. */
-	input_stream_seek(is, 0, SEEK_SET);
 
 	return true;
 }
