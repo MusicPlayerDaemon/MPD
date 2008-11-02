@@ -288,7 +288,7 @@ static void do_play(void)
 			else if (!decoder_is_starting()) {
 				/* the decoder is ready and ok */
 				player.decoder_starting = false;
-				if (!openAudioDevice(&ob.audioFormat)) {
+				if (!openAudioDevice(&dc.out_audio_format)) {
 					char tmp[MPD_PATH_MAX];
 					assert(dc.next_song == NULL || dc.next_song->url != NULL);
 					pc.errored_song = dc.next_song;
@@ -303,9 +303,9 @@ static void do_play(void)
 					closeAudioDevice();
 
 				pc.totalTime = dc.totalTime;
-				pc.audio_format = dc.audioFormat;
-				play_audio_format = ob.audioFormat;
-				sizeToTime = audioFormatSizeToTime(&ob.audioFormat);
+				pc.audio_format = dc.in_audio_format;
+				play_audio_format = dc.out_audio_format;
+				sizeToTime = audioFormatSizeToTime(&dc.out_audio_format);
 			}
 			else {
 				/* the decoder is not yet ready; wait
@@ -341,7 +341,7 @@ static void do_play(void)
 			   for it */
 			crossFadeChunks =
 				cross_fade_calc(pc.crossFade, dc.totalTime,
-						&(ob.audioFormat),
+						&dc.out_audio_format,
 						ob.size -
 						pc.buffered_before_play);
 			if (crossFadeChunks > 0) {
@@ -378,7 +378,7 @@ static void do_play(void)
 					music_pipe_set_lazy(true);
 					cross_fade_apply(beginChunk,
 							 music_pipe_get_chunk(nextChunk),
-							 &(ob.audioFormat),
+							 &dc.out_audio_format,
 							 fadePosition,
 							 crossFadeChunks);
 				} else {

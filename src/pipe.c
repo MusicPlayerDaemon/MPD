@@ -19,6 +19,7 @@
 #include "pipe.h"
 #include "notify.h"
 #include "utils.h"
+#include "audio_format.h"
 
 #include <assert.h>
 #include <string.h>
@@ -185,10 +186,11 @@ tail_chunk(float data_time, uint16_t bitRate, size_t frame_size)
 }
 
 size_t music_pipe_append(const void *data0, size_t datalen,
+			 const struct audio_format *audio_format,
 			 float data_time, uint16_t bitRate)
 {
 	const unsigned char *data = data0;
-	const size_t frame_size = audio_format_frame_size(&ob.audioFormat);
+	const size_t frame_size = audio_format_frame_size(audio_format);
 	size_t ret = 0, dataToSend;
 	struct music_chunk *chunk = NULL;
 

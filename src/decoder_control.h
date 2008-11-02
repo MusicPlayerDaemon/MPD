@@ -47,7 +47,13 @@ struct decoder_control {
 	bool seekError;
 	bool seekable;
 	volatile double seekWhere;
-	struct audio_format audioFormat;
+
+	/** the format of the song file */
+	struct audio_format in_audio_format;
+
+	/** the format being sent to the music pipe */
+	struct audio_format out_audio_format;
+
 	struct song *current_song;
 	struct song *volatile next_song;
 	volatile float totalTime;

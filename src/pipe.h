@@ -19,13 +19,14 @@
 #ifndef MPD_PIPE_H
 #define MPD_PIPE_H
 
-#include "audio_format.h"
-
 #include <stddef.h>
+#include <stdint.h>
 #include <stdbool.h>
 
 /* pick 1020 since its devisible for 8,16,24, and 32-bit audio */
 #define CHUNK_SIZE		1020
+
+struct audio_format;
 
 struct music_chunk {
 	uint16_t chunkSize;
@@ -52,8 +53,6 @@ struct music_pipe {
 	/** non-zero if the player thread should only we woken up if
 	    the buffer becomes non-empty */
 	bool lazy;
-
-	struct audio_format audioFormat;
 
 	struct notify *notify;
 };
@@ -109,6 +108,7 @@ music_pipe_get_chunk(const unsigned i);
  * @return the number of bytes actually written
  */
 size_t music_pipe_append(const void *data, size_t datalen,
+			 const struct audio_format *audio_format,
 			 float data_time, uint16_t bitRate);
 
 void music_pipe_skip(unsigned num);

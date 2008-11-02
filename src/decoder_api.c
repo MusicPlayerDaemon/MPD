@@ -39,8 +39,8 @@ void decoder_initialized(struct decoder * decoder,
 
 	pcm_convert_init(&decoder->conv_state);
 
-	dc.audioFormat = *audio_format;
-	getOutputAudioFormat(audio_format, &ob.audioFormat);
+	dc.in_audio_format = *audio_format;
+	getOutputAudioFormat(audio_format, &dc.out_audio_format);
 
 	dc.totalTime = total_time;
 
@@ -157,12 +157,12 @@ decoder_data(struct decoder *decoder,
 	static char *convBuffer;
 	static size_t convBufferLen;
 
-	if (audio_format_equals(&ob.audioFormat, &dc.audioFormat)) {
+	if (audio_format_equals(&dc.in_audio_format, &dc.out_audio_format)) {
 		data = dataIn;
 		datalen = dataInLen;
 	} else {
-		datalen = pcm_convert_size(&(dc.audioFormat), dataInLen,
-					   &(ob.audioFormat));
+		datalen = pcm_convert_size(&dc.in_audio_format, dataInLen,
+					   &dc.out_audio_format);
 		if (datalen > convBufferLen) {
 			if (convBuffer != NULL)
 				free(convBuffer);
@@ -170,18 +170,21 @@ decoder_data(struct decoder *decoder,
 			convBufferLen = datalen;
 		}
 		data = convBuffer;
-		datalen = pcm_convert(&(dc.audioFormat), dataIn,
-				      dataInLen, &(ob.audioFormat),
+		datalen = pcm_convert(&dc.in_audio_format, dataIn,
+				      dataInLen, &dc.out_audio_format,
 				      data, &decoder->conv_state);
 	}
 
 	if (replayGainInfo != NULL && (replayGainState != REPLAYGAIN_OFF))
-		doReplayGain(replayGainInfo, data, datalen, &ob.audioFormat);
+		doReplayGain(replayGainInfo, data, datalen,
+			     &dc.out_audio_format);
 	else if (normalizationEnabled)
-		normalizeData(data, datalen, &ob.audioFormat);
+		normalizeData(data, datalen, &dc.out_audio_format);
 
 	while (datalen > 0) {
-		nbytes = music_pipe_append(data, datalen, data_time, bitRate);
+		nbytes = music_pipe_append(data, datalen,
+					   &dc.out_audio_format,
+					   data_time, bitRate);
 		datalen -= nbytes;
 		data += nbytes;
 
