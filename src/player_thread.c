@@ -213,6 +213,9 @@ playChunk(struct music_chunk *chunk, const struct audio_format *format,
 	pc.elapsedTime = chunk->times;
 	pc.bitRate = chunk->bit_rate;
 
+	if (chunk->tag != NULL)
+		sendMetadataToAudioDevice(chunk->tag);
+
 	pcm_volume(chunk->data, chunk->length,
 		   format, pc.softwareVolume);
 
