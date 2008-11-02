@@ -210,7 +210,7 @@ ffmpeg_helper(struct input_stream *input, bool (*callback)(BasePtrs *ptrs),
 static bool
 ffmpeg_try_decode(struct input_stream *input)
 {
-	return input->seekable && ffmpeg_helper(input, NULL, NULL);
+	return ffmpeg_helper(input, NULL, NULL);
 }
 
 static enum decoder_command

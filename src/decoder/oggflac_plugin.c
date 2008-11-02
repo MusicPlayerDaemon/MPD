@@ -281,11 +281,6 @@ static struct tag *oggflac_TagDup(const char *file)
 
 static bool oggflac_try_decode(struct input_stream *inStream)
 {
-	if (!inStream->seekable)
-		/* we cannot seek after the detection, so don't bother
-		   checking */
-		return true;
-
 	return ogg_stream_type_detect(inStream) == FLAC;
 }
 
