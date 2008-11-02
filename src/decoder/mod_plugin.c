@@ -200,10 +200,6 @@ mod_decode(struct decoder *decoder, const char *path)
 	decoder_initialized(decoder, &audio_format, false, 0);
 
 	while (true) {
-		if (decoder_get_command(decoder) == DECODE_COMMAND_SEEK) {
-			decoder_seek_error(decoder);
-		}
-
 		if (decoder_get_command(decoder) == DECODE_COMMAND_STOP)
 			break;
 

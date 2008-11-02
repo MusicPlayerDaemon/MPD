@@ -414,9 +414,7 @@ aac_stream_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 		decoder_data(mpd_decoder, NULL, sampleBuffer,
 			     sampleBufferLen, file_time,
 			     bitRate, NULL);
-		if (decoder_get_command(mpd_decoder) == DECODE_COMMAND_SEEK) {
-			decoder_seek_error(mpd_decoder);
-		} else if (decoder_get_command(mpd_decoder) == DECODE_COMMAND_STOP)
+		if (decoder_get_command(mpd_decoder) == DECODE_COMMAND_STOP)
 			break;
 	}
 
@@ -426,10 +424,6 @@ aac_stream_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 
 	if (!initialized)
 		return false;
-
-	if (decoder_get_command(mpd_decoder) == DECODE_COMMAND_SEEK) {
-		decoder_seek_error(mpd_decoder);
-	}
 
 	return true;
 }
@@ -550,9 +544,7 @@ aac_decode(struct decoder *mpd_decoder, const char *path)
 		decoder_data(mpd_decoder, NULL, sampleBuffer,
 			     sampleBufferLen, file_time,
 			     bitRate, NULL);
-		if (decoder_get_command(mpd_decoder) == DECODE_COMMAND_SEEK) {
-			decoder_seek_error(mpd_decoder);
-		} else if (decoder_get_command(mpd_decoder) == DECODE_COMMAND_STOP)
+		if (decoder_get_command(mpd_decoder) == DECODE_COMMAND_STOP)
 			break;
 	}
 
@@ -562,10 +554,6 @@ aac_decode(struct decoder *mpd_decoder, const char *path)
 
 	if (!initialized)
 		return false;
-
-	if (decoder_get_command(mpd_decoder) == DECODE_COMMAND_SEEK) {
-		decoder_seek_error(mpd_decoder);
-	}
 
 	return true;
 }
