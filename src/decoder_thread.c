@@ -21,7 +21,7 @@
 #include "decoder_control.h"
 #include "decoder_internal.h"
 #include "player_control.h"
-#include "outputBuffer.h"
+#include "pipe.h"
 #include "song.h"
 #include "mapper.h"
 #include "path.h"

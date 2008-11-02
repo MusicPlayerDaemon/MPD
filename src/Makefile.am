@@ -45,7 +45,7 @@ mpd_headers = \
 	normalize.h \
 	compress.h \
 	os_compat.h \
-	outputBuffer.h \
+	pipe.h \
 	path.h \
 	mapper.h \
 	pcm_utils.h \
@@ -124,7 +124,7 @@ mpd_SOURCES = \
 	main_notify.c \
 	normalize.c \
 	compress.c \
-	outputBuffer.c \
+	pipe.c \
 	path.c \
 	mapper.c \
 	pcm_utils.c \

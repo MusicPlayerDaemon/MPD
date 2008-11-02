@@ -25,7 +25,7 @@
 
 #include "utils.h"
 #include "normalize.h"
-#include "outputBuffer.h"
+#include "pipe.h"
 #include "gcc.h"
 
 #include <assert.h>

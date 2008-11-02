@@ -28,7 +28,7 @@
 #include "path.h"
 #include "mapper.h"
 #include "playerData.h"
-#include "outputBuffer.h"
+#include "pipe.h"
 #include "decoder_thread.h"
 #include "decoder_control.h"
 #include "player_control.h"

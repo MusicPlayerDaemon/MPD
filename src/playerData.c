@@ -17,7 +17,7 @@
  */
 
 #include "playerData.h"
-#include "outputBuffer.h"
+#include "pipe.h"
 #include "conf.h"
 #include "log.h"
 

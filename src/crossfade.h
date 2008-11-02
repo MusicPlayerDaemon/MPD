@@ -20,7 +20,7 @@
 #ifndef MPD_CROSSFADE_H
 #define MPD_CROSSFADE_H
 
-#include "outputBuffer.h"
+#include "pipe.h"
 
 struct audio_format;
 

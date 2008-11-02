@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef MPD_OUTPUT_BUFFER_H
-#define MPD_OUTPUT_BUFFER_H
+#ifndef MPD_PIPE_H
+#define MPD_PIPE_H
 
 #include "audio_format.h"
 
