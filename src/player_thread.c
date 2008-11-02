@@ -27,6 +27,7 @@
 #include "crossfade.h"
 #include "song.h"
 #include "pipe.h"
+#include "idle.h"
 
 enum xfade_state {
 	XFADE_DISABLED = -1,
@@ -213,14 +214,27 @@ static void processDecodeInput(struct player *player)
 }
 
 static int
-playChunk(struct music_chunk *chunk, const struct audio_format *format,
-	  double sizeToTime)
+playChunk(struct song *song, struct music_chunk *chunk,
+	  const struct audio_format *format, double sizeToTime)
 {
 	pc.elapsedTime = chunk->times;
 	pc.bitRate = chunk->bit_rate;
 
-	if (chunk->tag != NULL)
+	if (chunk->tag != NULL) {
 		sendMetadataToAudioDevice(chunk->tag);
+
+		if (!song_is_file(song)) {
+			/* always update the tag of remote streams */
+
+			if (song->tag != NULL)
+				tag_free(song->tag);
+			song->tag = tag_dup(chunk->tag);
+
+			/* notify all clients that the tag of the
+			   current song has changed */
+			idle_add(IDLE_PLAYER);
+		}
+	}
 
 	pcm_volume(chunk->data, chunk->length,
 		   format, pc.softwareVolume);
@@ -409,8 +423,8 @@ static void do_play(void)
 			}
 
 			/* play the current chunk */
-			if (playChunk(beginChunk, &play_audio_format,
-				      sizeToTime) < 0)
+			if (playChunk(player.song, beginChunk,
+				      &play_audio_format, sizeToTime) < 0)
 				break;
 			music_pipe_shift();
 
