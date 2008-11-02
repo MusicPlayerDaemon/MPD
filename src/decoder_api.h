@@ -155,4 +155,15 @@ decoder_data(struct decoder *decoder,
 	     void *data, size_t datalen, float data_time, uint16_t bitRate,
 	     ReplayGainInfo * replayGainInfo);
 
+/**
+ * This function is called by the decoder plugin when it has
+ * successfully decoded a tag.
+ *
+ * @param is an input stream which is buffering while we are waiting
+ * for the player
+ */
+enum decoder_command
+decoder_tag(struct decoder *decoder, struct input_stream *is,
+	    const struct tag *tag);
+
 #endif

@@ -190,3 +190,16 @@ decoder_data(struct decoder *decoder,
 
 	return DECODE_COMMAND_NONE;
 }
+
+enum decoder_command
+decoder_tag(mpd_unused struct decoder *decoder, struct input_stream *is,
+	    const struct tag *tag)
+{
+	while (!music_pipe_tag(tag)) {
+		enum decoder_command cmd = need_chunks(is);
+		if (cmd != DECODE_COMMAND_NONE)
+			return cmd;
+	}
+
+	return DECODE_COMMAND_NONE;
+}

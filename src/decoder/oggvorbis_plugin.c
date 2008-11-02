@@ -179,7 +179,9 @@ static struct tag *oggCommentsParse(char **comments)
 	return tag;
 }
 
-static void putOggCommentsIntoOutputBuffer(char *streamName,
+static void putOggCommentsIntoOutputBuffer(struct decoder *decoder,
+					   struct input_stream *is,
+					   char *streamName,
 					   char **comments)
 {
 	struct tag *tag;
@@ -196,6 +198,7 @@ static void putOggCommentsIntoOutputBuffer(char *streamName,
 		tag_add_item(tag, TAG_ITEM_NAME, streamName);
 	}
 
+	decoder_tag(decoder, is, tag);
 	tag_free(tag);
 }
 
@@ -284,7 +287,8 @@ oggvorbis_decode(struct decoder *decoder, struct input_stream *inStream)
 				initialized = true;
 			}
 			comments = ov_comment(&vf, -1)->user_comments;
-			putOggCommentsIntoOutputBuffer(inStream->meta_name,
+			putOggCommentsIntoOutputBuffer(decoder, inStream,
+						       inStream->meta_name,
 						       comments);
 			ogg_getReplayGainInfo(comments, &replayGainInfo);
 		}
