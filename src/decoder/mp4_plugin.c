@@ -258,7 +258,7 @@ mp4_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 			audio_format.sample_rate = scale;
 			audio_format.channels = frameInfo.channels;
 			decoder_initialized(mpd_decoder, &audio_format,
-					    total_time);
+					    inStream->seekable, total_time);
 			initialized = true;
 		}
 
@@ -280,7 +280,7 @@ mp4_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 
 		sampleBuffer += offset * channels * 2;
 
-		decoder_data(mpd_decoder, inStream, 1, sampleBuffer,
+		decoder_data(mpd_decoder, inStream, sampleBuffer,
 			     sampleBufferLen, file_time,
 			     bitRate, NULL);
 		if (decoder_get_command(mpd_decoder) == DECODE_COMMAND_STOP)

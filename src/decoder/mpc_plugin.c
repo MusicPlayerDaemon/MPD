@@ -163,6 +163,7 @@ mpc_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 	replayGainInfo->trackPeak = info.peak_title / 32767.0;
 
 	decoder_initialized(mpd_decoder, &audio_format,
+			    inStream->seekable,
 			    mpc_streaminfo_get_length(&info));
 
 	while (!eof) {
@@ -204,7 +205,6 @@ mpc_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 				    audio_format.sample_rate / 1152 / 1000;
 
 				decoder_data(mpd_decoder, inStream,
-					     inStream->seekable,
 					     chunk, chunkpos,
 					     total_time,
 					     bitRate, replayGainInfo);
@@ -226,7 +226,7 @@ mpc_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 		bitRate =
 		    vbrUpdateBits * audio_format.sample_rate / 1152 / 1000;
 
-		decoder_data(mpd_decoder, NULL, inStream->seekable,
+		decoder_data(mpd_decoder, NULL,
 			     chunk, chunkpos, total_time, bitRate,
 			     replayGainInfo);
 	}

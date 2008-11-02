@@ -239,7 +239,7 @@ ffmpeg_send_packet(struct decoder *decoder, struct input_stream *is,
 
 	assert(audio_size >= 0);
 
-	return decoder_data(decoder, is, is->seekable,
+	return decoder_data(decoder, is,
 			    audio_buf, audio_size,
 			    position,
 			    codec_context->bit_rate / 1000, NULL);
@@ -271,7 +271,8 @@ ffmpeg_decode_internal(BasePtrs *base)
 		total_time = pFormatCtx->duration / AV_TIME_BASE;
 	}
 
-	decoder_initialized(decoder, &audio_format, total_time);
+	decoder_initialized(decoder, &audio_format,
+			    base->input->seekable, total_time);
 
 	do {
 		if (av_read_frame(pFormatCtx, &packet) < 0)

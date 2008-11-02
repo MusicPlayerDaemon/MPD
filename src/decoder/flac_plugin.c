@@ -341,7 +341,8 @@ flac_decode_internal(struct decoder * decoder, struct input_stream *inStream,
 		}
 	}
 
-	decoder_initialized(decoder, &data.audio_format, data.total_time);
+	decoder_initialized(decoder, &data.audio_format,
+			    inStream->seekable, data.total_time);
 
 	while (true) {
 		if (!flac_process_single(flacDec))

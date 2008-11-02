@@ -197,7 +197,7 @@ mod_decode(struct decoder *decoder, const char *path)
 	    1.0 / ((audio_format.bits * audio_format.channels / 8.0) *
 		   (float)audio_format.sample_rate);
 
-	decoder_initialized(decoder, &audio_format, 0);
+	decoder_initialized(decoder, &audio_format, false, 0);
 
 	while (true) {
 		if (decoder_get_command(decoder) == DECODE_COMMAND_SEEK) {
@@ -212,7 +212,7 @@ mod_decode(struct decoder *decoder, const char *path)
 
 		ret = VC_WriteBytes(data->audio_buffer, MIKMOD_FRAME_SIZE);
 		total_time += ret * secPerByte;
-		decoder_data(decoder, NULL, 0,
+		decoder_data(decoder, NULL,
 			     (char *)data->audio_buffer, ret,
 			     total_time, 0, NULL);
 	}

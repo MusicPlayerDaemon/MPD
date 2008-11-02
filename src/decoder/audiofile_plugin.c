@@ -89,7 +89,7 @@ audiofile_decode(struct decoder *decoder, const char *path)
 
 	fs = (int)afGetVirtualFrameSize(af_fp, AF_DEFAULT_TRACK, 1);
 
-	decoder_initialized(decoder, &audio_format, total_time);
+	decoder_initialized(decoder, &audio_format, true, total_time);
 
 	do {
 		if (decoder_get_command(decoder) == DECODE_COMMAND_SEEK) {
@@ -105,7 +105,7 @@ audiofile_decode(struct decoder *decoder, const char *path)
 			break;
 
 		current += ret;
-		decoder_data(decoder, NULL, 1,
+		decoder_data(decoder, NULL,
 			     chunk, ret * fs,
 			     (float)current / (float)audio_format.sample_rate,
 			     bitRate, NULL);

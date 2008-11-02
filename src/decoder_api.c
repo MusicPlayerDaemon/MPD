@@ -32,7 +32,7 @@
 
 void decoder_initialized(struct decoder * decoder,
 			 const struct audio_format *audio_format,
-			 float total_time)
+			 bool seekable, float total_time)
 {
 	assert(dc.state == DECODE_STATE_START);
 	assert(audio_format != NULL);
@@ -42,6 +42,7 @@ void decoder_initialized(struct decoder * decoder,
 	dc.in_audio_format = *audio_format;
 	getOutputAudioFormat(audio_format, &dc.out_audio_format);
 
+	dc.seekable = seekable;
 	dc.totalTime = total_time;
 
 	dc.state = DECODE_STATE_DECODE;
@@ -121,19 +122,11 @@ size_t decoder_read(struct decoder *decoder,
  * one.
  */
 static enum decoder_command
-need_chunks(struct decoder *decoder,
-	    struct input_stream *inStream, int seekable)
+need_chunks(struct input_stream *inStream)
 {
-	if (dc.command == DECODE_COMMAND_STOP)
-		return DECODE_COMMAND_STOP;
-
-	if (dc.command == DECODE_COMMAND_SEEK) {
-		if (seekable) {
-			return DECODE_COMMAND_SEEK;
-		} else {
-			decoder_seek_error(decoder);
-		}
-	}
+	if (dc.command == DECODE_COMMAND_STOP ||
+	    dc.command == DECODE_COMMAND_SEEK)
+		return dc.command;
 
 	if (!inStream ||
 	    input_stream_buffer(inStream) <= 0) {
@@ -146,7 +139,7 @@ need_chunks(struct decoder *decoder,
 
 enum decoder_command
 decoder_data(struct decoder *decoder,
-	     struct input_stream *inStream, int seekable,
+	     struct input_stream *inStream,
 	     void *dataIn, size_t dataInLen,
 	     float data_time, uint16_t bitRate,
 	     ReplayGainInfo * replayGainInfo)
@@ -189,8 +182,7 @@ decoder_data(struct decoder *decoder,
 		data += nbytes;
 
 		if (datalen > 0) {
-			enum decoder_command cmd =
-				need_chunks(decoder, inStream, seekable);
+			enum decoder_command cmd = need_chunks(inStream);
 			if (cmd != DECODE_COMMAND_NONE)
 				return cmd;
 		}

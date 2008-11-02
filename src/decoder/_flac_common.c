@@ -300,7 +300,7 @@ flac_common_write(FlacData *data, const FLAC__Frame * frame,
 			     c_samp, c_samp + num_samples);
 
 		cmd = decoder_data(data->decoder, data->inStream,
-				   1, data->chunk,
+				   data->chunk,
 				   num_samples * bytes_per_channel,
 				   data->time, data->bitRate,
 				   data->replayGainInfo);

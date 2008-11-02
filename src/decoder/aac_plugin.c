@@ -391,7 +391,8 @@ aac_stream_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 		if (!initialized) {
 			audio_format.channels = frameInfo.channels;
 			audio_format.sample_rate = sample_rate;
-			decoder_initialized(mpd_decoder, &audio_format, totalTime);
+			decoder_initialized(mpd_decoder, &audio_format,
+					    false, totalTime);
 			initialized = true;
 		}
 
@@ -410,7 +411,7 @@ aac_stream_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 
 		sampleBufferLen = sampleCount * 2;
 
-		decoder_data(mpd_decoder, NULL, 0, sampleBuffer,
+		decoder_data(mpd_decoder, NULL, sampleBuffer,
 			     sampleBufferLen, file_time,
 			     bitRate, NULL);
 		if (decoder_get_command(mpd_decoder) == DECODE_COMMAND_SEEK) {
@@ -527,7 +528,7 @@ aac_decode(struct decoder *mpd_decoder, const char *path)
 			audio_format.channels = frameInfo.channels;
 			audio_format.sample_rate = sample_rate;
 			decoder_initialized(mpd_decoder, &audio_format,
-					    totalTime);
+					    false, totalTime);
 			initialized = true;
 		}
 
@@ -546,7 +547,7 @@ aac_decode(struct decoder *mpd_decoder, const char *path)
 
 		sampleBufferLen = sampleCount * 2;
 
-		decoder_data(mpd_decoder, NULL, 0, sampleBuffer,
+		decoder_data(mpd_decoder, NULL, sampleBuffer,
 			     sampleBufferLen, file_time,
 			     bitRate, NULL);
 		if (decoder_get_command(mpd_decoder) == DECODE_COMMAND_SEEK) {

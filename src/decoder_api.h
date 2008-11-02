@@ -116,7 +116,7 @@ struct decoder;
  */
 void decoder_initialized(struct decoder * decoder,
 			 const struct audio_format *audio_format,
-			 float total_time);
+			 bool seekable, float total_time);
 
 const char *decoder_get_url(struct decoder * decoder, char * buffer);
 
@@ -151,7 +151,7 @@ size_t decoder_read(struct decoder *decoder,
  */
 enum decoder_command
 decoder_data(struct decoder *decoder,
-	     struct input_stream *inStream, int seekable,
+	     struct input_stream *inStream,
 	     void *data, size_t datalen, float data_time, uint16_t bitRate,
 	     ReplayGainInfo * replayGainInfo);
 

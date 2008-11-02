@@ -279,6 +279,7 @@ oggvorbis_decode(struct decoder *decoder, struct input_stream *inStream)
 				if (total_time < 0)
 					total_time = 0;
 				decoder_initialized(decoder, &audio_format,
+						    inStream->seekable,
 						    total_time);
 				initialized = true;
 			}
@@ -304,7 +305,6 @@ oggvorbis_decode(struct decoder *decoder, struct input_stream *inStream)
 				bitRate = test / 1000;
 			}
 			decoder_data(decoder, inStream,
-				     inStream->seekable,
 				     chunk, chunkpos,
 				     ov_pcm_tell(&vf) / audio_format.sample_rate,
 				     bitRate, replayGainInfo);
@@ -316,7 +316,7 @@ oggvorbis_decode(struct decoder *decoder, struct input_stream *inStream)
 
 	if (decoder_get_command(decoder) == DECODE_COMMAND_NONE &&
 	    chunkpos > 0) {
-		decoder_data(decoder, NULL, inStream->seekable,
+		decoder_data(decoder, NULL,
 			     chunk, chunkpos,
 			     ov_time_tell(&vf), bitRate,
 			     replayGainInfo);

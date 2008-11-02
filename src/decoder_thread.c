@@ -76,9 +76,6 @@ static void decodeStart(void)
 		}
 	}
 
-	/* for http streams, seekable is determined in input_stream_buffer */
-	dc.seekable = inStream.seekable;
-
 	if (dc.command == DECODE_COMMAND_STOP) {
 		input_stream_close(&inStream);
 		return;

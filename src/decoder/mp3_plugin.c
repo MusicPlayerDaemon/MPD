@@ -900,7 +900,6 @@ mp3_send_pcm(struct mp3_data *data, unsigned i, unsigned pcm_length,
 		num_samples *= MAD_NCHANNELS(&(data->frame).header);
 
 		cmd = decoder_data(data->decoder, data->input_stream,
-				   data->input_stream->seekable,
 				   data->output_buffer,
 				   sizeof(data->output_buffer[0]) * num_samples,
 				   data->elapsed_time,
@@ -1108,7 +1107,8 @@ mp3_decode(struct decoder *decoder, struct input_stream *input_stream)
 		tag_free(tag);
 	}
 
-	decoder_initialized(decoder, &audio_format, data.total_time);
+	decoder_initialized(decoder, &audio_format,
+			    data.input_stream->seekable, data.total_time);
 
 	while (mp3_read(&data, &replay_gain_info)) ;
 

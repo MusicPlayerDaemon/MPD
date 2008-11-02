@@ -164,7 +164,7 @@ static void wavpack_decode(struct decoder * decoder,
 
 	samplesreq = sizeof(chunk) / (4 * audio_format.channels);
 
-	decoder_initialized(decoder, &audio_format,
+	decoder_initialized(decoder, &audio_format, false,
 			    (float)allsamples / audio_format.sample_rate);
 
 	position = 0;
@@ -200,7 +200,7 @@ static void wavpack_decode(struct decoder * decoder,
 			format_samples(Bps, chunk,
 			               samplesgot * audio_format.channels);
 
-			decoder_data(decoder, NULL, 0, chunk,
+			decoder_data(decoder, NULL, chunk,
 				     samplesgot * outsamplesize,
 				     file_time, bitrate,
 				     replayGainInfo);
