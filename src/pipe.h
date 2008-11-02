@@ -29,8 +29,8 @@
 struct audio_format;
 
 struct music_chunk {
-	uint16_t chunkSize;
-	uint16_t bitRate;
+	uint16_t length;
+	uint16_t bit_rate;
 	float times;
 	char data[CHUNK_SIZE];
 };
@@ -136,7 +136,7 @@ music_pipe_peek(void)
  */
 size_t music_pipe_append(const void *data, size_t datalen,
 			 const struct audio_format *audio_format,
-			 float data_time, uint16_t bitRate);
+			 float data_time, uint16_t bit_rate);
 
 void music_pipe_skip(unsigned num);
 

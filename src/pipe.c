@@ -37,7 +37,7 @@ music_pipe_init(unsigned int size, struct notify *notify)
 	music_pipe.end = 0;
 	music_pipe.lazy = false;
 	music_pipe.notify = notify;
-	music_pipe.chunks[0].chunkSize = 0;
+	music_pipe.chunks[0].length = 0;
 }
 
 void music_pipe_free(void)
@@ -49,7 +49,7 @@ void music_pipe_free(void)
 void music_pipe_clear(void)
 {
 	music_pipe.end = music_pipe.begin;
-	music_pipe.chunks[music_pipe.end].chunkSize = 0;
+	music_pipe.chunks[music_pipe.end].length = 0;
 }
 
 /** return the index of the chunk after i */
@@ -73,7 +73,7 @@ static void output_buffer_expand(unsigned i)
 	assert(i != music_pipe.end);
 
 	music_pipe.end = i;
-	music_pipe.chunks[i].chunkSize = 0;
+	music_pipe.chunks[i].length = 0;
 	if (was_empty)
 		/* if the buffer was empty, the player thread might be
 		   waiting for us; wake it up now that another decoded
@@ -85,7 +85,7 @@ void music_pipe_flush(void)
 {
 	struct music_chunk *chunk = music_pipe_get_chunk(music_pipe.end);
 
-	if (chunk->chunkSize > 0) {
+	if (chunk->length > 0) {
 		unsigned int next = successor(music_pipe.end);
 		if (next == music_pipe.begin)
 			/* all buffers are full; we have to wait for
@@ -161,8 +161,8 @@ tail_chunk(size_t frame_size)
 	struct music_chunk *chunk;
 
 	chunk = music_pipe_get_chunk(music_pipe.end);
-	assert(chunk->chunkSize <= sizeof(chunk->data));
-	if (chunk->chunkSize + frame_size > sizeof(chunk->data)) {
+	assert(chunk->length <= sizeof(chunk->data));
+	if (chunk->length + frame_size > sizeof(chunk->data)) {
 		/* this chunk is full; allocate a new chunk */
 		next = successor(music_pipe.end);
 		if (music_pipe.begin == next)
@@ -171,7 +171,7 @@ tail_chunk(size_t frame_size)
 
 		output_buffer_expand(next);
 		chunk = music_pipe_get_chunk(next);
-		assert(chunk->chunkSize == 0);
+		assert(chunk->length == 0);
 	}
 
 	return chunk;
@@ -181,7 +181,7 @@ static size_t
 music_chunk_append(struct music_chunk *chunk, const void *data, size_t length,
 		   size_t frame_size)
 {
-	size_t rest = sizeof(chunk->data) - chunk->chunkSize;
+	size_t rest = sizeof(chunk->data) - chunk->length;
 
 	assert(rest >= frame_size);
 
@@ -192,15 +192,15 @@ music_chunk_append(struct music_chunk *chunk, const void *data, size_t length,
 	length /= frame_size;
 	length *= frame_size;
 
-	memcpy(chunk->data + chunk->chunkSize, data, length);
-	chunk->chunkSize += length;
+	memcpy(chunk->data + chunk->length, data, length);
+	chunk->length += length;
 
 	return length;
 }
 
 size_t music_pipe_append(const void *data0, size_t datalen,
 			 const struct audio_format *audio_format,
-			 float data_time, uint16_t bitRate)
+			 float data_time, uint16_t bit_rate)
 {
 	const unsigned char *data = data0;
 	const size_t frame_size = audio_format_frame_size(audio_format);
@@ -215,11 +215,11 @@ size_t music_pipe_append(const void *data0, size_t datalen,
 		if (chunk == NULL)
 			return ret;
 
-		if (chunk->chunkSize == 0) {
+		if (chunk->length == 0) {
 			/* if the chunk is empty, nobody has set bitRate and
 			   times yet */
 
-			chunk->bitRate = bitRate;
+			chunk->bit_rate = bit_rate;
 			chunk->times = data_time;
 		}
 
@@ -232,7 +232,7 @@ size_t music_pipe_append(const void *data0, size_t datalen,
 		ret += nbytes;
 	}
 
-	if (chunk != NULL && chunk->chunkSize == sizeof(chunk->data))
+	if (chunk != NULL && chunk->length == sizeof(chunk->data))
 		music_pipe_flush();
 
 	return ret;

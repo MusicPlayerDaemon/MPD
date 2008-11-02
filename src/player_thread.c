@@ -211,15 +211,15 @@ playChunk(struct music_chunk *chunk, const struct audio_format *format,
 	  double sizeToTime)
 {
 	pc.elapsedTime = chunk->times;
-	pc.bitRate = chunk->bitRate;
+	pc.bitRate = chunk->bit_rate;
 
-	pcm_volume(chunk->data, chunk->chunkSize,
+	pcm_volume(chunk->data, chunk->length,
 		   format, pc.softwareVolume);
 
-	if (!playAudio(chunk->data, chunk->chunkSize))
+	if (!playAudio(chunk->data, chunk->length))
 		return -1;
 
-	pc.totalPlayTime += sizeToTime * chunk->chunkSize;
+	pc.totalPlayTime += sizeToTime * chunk->length;
 	return 0;
 }
 
