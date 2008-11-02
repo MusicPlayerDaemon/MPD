@@ -57,6 +57,11 @@ struct player {
 	bool queued;
 
 	/**
+	 * the song currently being played
+	 */
+	struct song *song;
+
+	/**
 	 * is cross fading enabled?
 	 */
 	enum xfade_state xfade;
@@ -99,6 +104,7 @@ static int waitOnDecode(struct player *player)
 	pc.bitRate = 0;
 	audio_format_clear(&pc.audio_format);
 
+	player->song = pc.next_song;
 	pc.next_song = NULL;
 	player->queued = false;
 	player->decoder_starting = true;
@@ -233,6 +239,7 @@ static void do_play(void)
 		.decoder_starting = false,
 		.paused = false,
 		.queued = false,
+		.song = NULL,
 		.xfade = XFADE_UNKNOWN,
 		.next_song_chunk = -1,
 	};
