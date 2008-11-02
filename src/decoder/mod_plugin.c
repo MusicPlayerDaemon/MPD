@@ -179,6 +179,7 @@ mod_decode(struct decoder *decoder, const char *path)
 	float total_time = 0.0;
 	int ret;
 	float secPerByte;
+	enum decoder_command cmd = DECODE_COMMAND_NONE;
 
 	if (!mod_initMikMod())
 		return false;
@@ -199,18 +200,12 @@ mod_decode(struct decoder *decoder, const char *path)
 
 	decoder_initialized(decoder, &audio_format, false, 0);
 
-	while (true) {
-		if (decoder_get_command(decoder) == DECODE_COMMAND_STOP)
-			break;
-
-		if (!Player_Active())
-			break;
-
+	while (cmd == DECODE_COMMAND_NONE && Player_Active()) {
 		ret = VC_WriteBytes(data->audio_buffer, MIKMOD_FRAME_SIZE);
 		total_time += ret * secPerByte;
-		decoder_data(decoder, NULL,
-			     (char *)data->audio_buffer, ret,
-			     total_time, 0, NULL);
+		cmd = decoder_data(decoder, NULL,
+				   data->audio_buffer, ret,
+				   total_time, 0, NULL);
 	}
 
 	mod_close(data);

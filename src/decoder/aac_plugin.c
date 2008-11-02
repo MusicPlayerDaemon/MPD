@@ -363,7 +363,7 @@ aac_stream_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 
 	advanceAacBuffer(&b, bread);
 
-	while (true) {
+	do {
 		fillAacBuffer(&b);
 		adts_find_frame(&b);
 		fillAacBuffer(&b);
@@ -414,9 +414,7 @@ aac_stream_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 		decoder_data(mpd_decoder, NULL, sampleBuffer,
 			     sampleBufferLen, file_time,
 			     bitRate, NULL);
-		if (decoder_get_command(mpd_decoder) == DECODE_COMMAND_STOP)
-			break;
-	}
+	} while (decoder_get_command(mpd_decoder) == DECODE_COMMAND_NONE);
 
 	faacDecClose(decoder);
 	if (b.buffer)
@@ -495,7 +493,7 @@ aac_decode(struct decoder *mpd_decoder, const char *path)
 
 	advanceAacBuffer(&b, bread);
 
-	while (true) {
+	do {
 		fillAacBuffer(&b);
 
 		if (b.bytesIntoBuffer == 0)
@@ -544,9 +542,7 @@ aac_decode(struct decoder *mpd_decoder, const char *path)
 		decoder_data(mpd_decoder, NULL, sampleBuffer,
 			     sampleBufferLen, file_time,
 			     bitRate, NULL);
-		if (decoder_get_command(mpd_decoder) == DECODE_COMMAND_STOP)
-			break;
-	}
+	} while (decoder_get_command(mpd_decoder) == DECODE_COMMAND_NONE);
 
 	faacDecClose(decoder);
 	if (b.buffer)
