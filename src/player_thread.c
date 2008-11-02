@@ -330,7 +330,7 @@ static void do_play(void)
 			assert(pc.next_song != NULL);
 
 			player.queued = false;
-			player.next_song_chunk = ob.end;
+			player.next_song_chunk = music_pipe_tail_index();
 			dc_start_async(pc.next_song);
 		}
 		if (player.next_song_chunk >= 0 &&
@@ -342,7 +342,7 @@ static void do_play(void)
 			crossFadeChunks =
 				cross_fade_calc(pc.crossFade, dc.totalTime,
 						&dc.out_audio_format,
-						ob.size -
+						music_pipe_size() -
 						pc.buffered_before_play);
 			if (crossFadeChunks > 0) {
 				player.xfade = XFADE_ENABLED;
@@ -356,9 +356,8 @@ static void do_play(void)
 		if (player.paused)
 			notify_wait(&pc.notify);
 		else if (!music_pipe_is_empty() &&
-			 (int)ob.begin != player.next_song_chunk) {
-			struct music_chunk *beginChunk =
-				music_pipe_get_chunk(ob.begin);
+			 !music_pipe_head_is(player.next_song_chunk)) {
+			struct music_chunk *beginChunk = music_pipe_peek();
 			unsigned int fadePosition;
 			if (player.xfade == XFADE_ENABLED &&
 			    player.next_song_chunk >= 0 &&
@@ -409,10 +408,9 @@ static void do_play(void)
 			   decoder gets woken up with each chunk; it
 			   is more efficient to make it decode a
 			   larger block at a time */
-			if (music_pipe_available() <= (pc.buffered_before_play + ob.size * 3) / 4)
+			if (music_pipe_available() <= (pc.buffered_before_play + music_pipe_size() * 3) / 4)
 				notify_signal(&dc.notify);
-		} else if (!music_pipe_is_empty() &&
-			   (int)ob.begin == player.next_song_chunk) {
+		} else if (music_pipe_head_is(player.next_song_chunk)) {
 			/* at the beginning of a new song */
 
 			if (player.xfade == XFADE_ENABLED && nextChunk >= 0) {

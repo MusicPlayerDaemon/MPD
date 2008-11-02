@@ -76,10 +76,28 @@ void music_pipe_flush(void);
  */
 void music_pipe_set_lazy(bool lazy);
 
+static inline unsigned
+music_pipe_size(void)
+{
+	return ob.size;
+}
+
 /** is the buffer empty? */
 static inline bool music_pipe_is_empty(void)
 {
 	return ob.begin == ob.end;
+}
+
+static inline bool
+music_pipe_head_is(unsigned i)
+{
+	return !music_pipe_is_empty() && ob.begin == i;
+}
+
+static inline unsigned
+music_pipe_tail_index(void)
+{
+	return ob.end;
 }
 
 void music_pipe_shift(void);
@@ -101,6 +119,15 @@ int music_pipe_absolute(const unsigned relative);
 
 struct music_chunk *
 music_pipe_get_chunk(const unsigned i);
+
+static inline struct music_chunk *
+music_pipe_peek(void)
+{
+	if (music_pipe_is_empty())
+		return NULL;
+
+	return music_pipe_get_chunk(ob.begin);
+}
 
 /**
  * Append a data block to the buffer.
