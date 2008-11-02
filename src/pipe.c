@@ -26,6 +26,18 @@
 
 struct music_pipe music_pipe;
 
+static void
+music_chunk_init(struct music_chunk *chunk)
+{
+	chunk->length = 0;
+}
+
+static void
+music_chunk_free(struct music_chunk *chunk)
+{
+	(void)chunk;
+}
+
 void
 music_pipe_init(unsigned int size, struct notify *notify)
 {
@@ -37,19 +49,16 @@ music_pipe_init(unsigned int size, struct notify *notify)
 	music_pipe.end = 0;
 	music_pipe.lazy = false;
 	music_pipe.notify = notify;
-	music_pipe.chunks[0].length = 0;
+	music_chunk_init(&music_pipe.chunks[0]);
 }
 
 void music_pipe_free(void)
 {
 	assert(music_pipe.chunks != NULL);
-	g_free(music_pipe.chunks);
-}
 
-void music_pipe_clear(void)
-{
-	music_pipe.end = music_pipe.begin;
-	music_pipe.chunks[music_pipe.end].length = 0;
+	music_pipe_clear();
+
+	g_free(music_pipe.chunks);
 }
 
 /** return the index of the chunk after i */
@@ -59,6 +68,19 @@ static inline unsigned successor(unsigned i)
 
 	++i;
 	return i == music_pipe.num_chunks ? 0 : i;
+}
+
+void music_pipe_clear(void)
+{
+	unsigned i;
+
+	for (i = music_pipe.begin; i != music_pipe.end; i = successor(i))
+		music_chunk_free(&music_pipe.chunks[i]);
+
+	music_chunk_free(&music_pipe.chunks[music_pipe.end]);
+
+	music_pipe.end = music_pipe.begin;
+	music_chunk_init(&music_pipe.chunks[music_pipe.end]);
 }
 
 /**
@@ -73,7 +95,8 @@ static void output_buffer_expand(unsigned i)
 	assert(i != music_pipe.end);
 
 	music_pipe.end = i;
-	music_pipe.chunks[i].length = 0;
+	music_chunk_init(&music_pipe.chunks[i]);
+
 	if (was_empty)
 		/* if the buffer was empty, the player thread might be
 		   waiting for us; wake it up now that another decoded
@@ -106,6 +129,8 @@ void music_pipe_shift(void)
 {
 	assert(music_pipe.begin != music_pipe.end);
 	assert(music_pipe.begin < music_pipe.num_chunks);
+
+	music_chunk_free(&music_pipe.chunks[music_pipe.begin]);
 
 	music_pipe.begin = successor(music_pipe.begin);
 }
@@ -241,6 +266,9 @@ size_t music_pipe_append(const void *data0, size_t datalen,
 void music_pipe_skip(unsigned num)
 {
 	int i = music_pipe_absolute(num);
-	if (i >= 0)
-		music_pipe.begin = i;
+	if (i < 0)
+		return;
+
+	while (music_pipe.begin != (unsigned)i)
+		music_pipe_shift();
 }
