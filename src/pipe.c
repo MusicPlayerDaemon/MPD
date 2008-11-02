@@ -18,9 +18,9 @@
 
 #include "pipe.h"
 #include "notify.h"
-#include "utils.h"
 #include "audio_format.h"
 
+#include <glib.h>
 #include <assert.h>
 #include <string.h>
 
@@ -31,7 +31,7 @@ music_pipe_init(unsigned int size, struct notify *notify)
 {
 	assert(size > 0);
 
-	ob.chunks = xmalloc(size * sizeof(*ob.chunks));
+	ob.chunks = g_new(struct music_chunk, size);
 	ob.size = size;
 	ob.begin = 0;
 	ob.end = 0;
@@ -43,7 +43,7 @@ music_pipe_init(unsigned int size, struct notify *notify)
 void music_pipe_free(void)
 {
 	assert(ob.chunks != NULL);
-	free(ob.chunks);
+	g_free(ob.chunks);
 }
 
 void music_pipe_clear(void)
