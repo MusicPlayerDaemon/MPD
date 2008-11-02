@@ -22,6 +22,7 @@
 #include "pcm_utils.h"
 #include "pipe.h"
 #include "audio_format.h"
+#include "tag.h"
 
 #include <assert.h>
 #include <string.h>
@@ -57,6 +58,10 @@ void cross_fade_apply(struct music_chunk *a, const struct music_chunk *b,
 	size_t size;
 
 	assert(current_chunk <= num_chunks);
+
+	if (a->tag == NULL && b->tag != NULL)
+		/* merge the tag into the destination chunk */
+		a->tag = tag_dup(b->tag);
 
 	size = b->length > a->length
 		? a->length
