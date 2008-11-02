@@ -24,41 +24,41 @@
 #include <assert.h>
 #include <string.h>
 
-struct music_pipe ob;
+struct music_pipe music_pipe;
 
 void
 music_pipe_init(unsigned int size, struct notify *notify)
 {
 	assert(size > 0);
 
-	ob.chunks = g_new(struct music_chunk, size);
-	ob.size = size;
-	ob.begin = 0;
-	ob.end = 0;
-	ob.lazy = false;
-	ob.notify = notify;
-	ob.chunks[0].chunkSize = 0;
+	music_pipe.chunks = g_new(struct music_chunk, size);
+	music_pipe.size = size;
+	music_pipe.begin = 0;
+	music_pipe.end = 0;
+	music_pipe.lazy = false;
+	music_pipe.notify = notify;
+	music_pipe.chunks[0].chunkSize = 0;
 }
 
 void music_pipe_free(void)
 {
-	assert(ob.chunks != NULL);
-	g_free(ob.chunks);
+	assert(music_pipe.chunks != NULL);
+	g_free(music_pipe.chunks);
 }
 
 void music_pipe_clear(void)
 {
-	ob.end = ob.begin;
-	ob.chunks[ob.end].chunkSize = 0;
+	music_pipe.end = music_pipe.begin;
+	music_pipe.chunks[music_pipe.end].chunkSize = 0;
 }
 
 /** return the index of the chunk after i */
 static inline unsigned successor(unsigned i)
 {
-	assert(i <= ob.size);
+	assert(i <= music_pipe.size);
 
 	++i;
-	return i == ob.size ? 0 : i;
+	return i == music_pipe.size ? 0 : i;
 }
 
 /**
@@ -67,27 +67,27 @@ static inline unsigned successor(unsigned i)
  */
 static void output_buffer_expand(unsigned i)
 {
-	int was_empty = ob.notify != NULL && (!ob.lazy || music_pipe_is_empty());
+	int was_empty = music_pipe.notify != NULL && (!music_pipe.lazy || music_pipe_is_empty());
 
-	assert(i == (ob.end + 1) % ob.size);
-	assert(i != ob.end);
+	assert(i == (music_pipe.end + 1) % music_pipe.size);
+	assert(i != music_pipe.end);
 
-	ob.end = i;
-	ob.chunks[i].chunkSize = 0;
+	music_pipe.end = i;
+	music_pipe.chunks[i].chunkSize = 0;
 	if (was_empty)
 		/* if the buffer was empty, the player thread might be
 		   waiting for us; wake it up now that another decoded
 		   buffer has become available. */
-		notify_signal(ob.notify);
+		notify_signal(music_pipe.notify);
 }
 
 void music_pipe_flush(void)
 {
-	struct music_chunk *chunk = music_pipe_get_chunk(ob.end);
+	struct music_chunk *chunk = music_pipe_get_chunk(music_pipe.end);
 
 	if (chunk->chunkSize > 0) {
-		unsigned int next = successor(ob.end);
-		if (next == ob.begin)
+		unsigned int next = successor(music_pipe.end);
+		if (next == music_pipe.begin)
 			/* all buffers are full; we have to wait for
 			   the player to free one, so don't flush
 			   right now */
@@ -99,43 +99,43 @@ void music_pipe_flush(void)
 
 void music_pipe_set_lazy(bool lazy)
 {
-	ob.lazy = lazy;
+	music_pipe.lazy = lazy;
 }
 
 void music_pipe_shift(void)
 {
-	assert(ob.begin != ob.end);
-	assert(ob.begin < ob.size);
+	assert(music_pipe.begin != music_pipe.end);
+	assert(music_pipe.begin < music_pipe.size);
 
-	ob.begin = successor(ob.begin);
+	music_pipe.begin = successor(music_pipe.begin);
 }
 
 unsigned int music_pipe_relative(const unsigned i)
 {
-	if (i >= ob.begin)
-		return i - ob.begin;
+	if (i >= music_pipe.begin)
+		return i - music_pipe.begin;
 	else
-		return i + ob.size - ob.begin;
+		return i + music_pipe.size - music_pipe.begin;
 }
 
 unsigned music_pipe_available(void)
 {
-	return music_pipe_relative(ob.end);
+	return music_pipe_relative(music_pipe.end);
 }
 
 int music_pipe_absolute(const unsigned relative)
 {
 	unsigned i, max;
 
-	max = ob.end;
-	if (max < ob.begin)
-		max += ob.size;
-	i = (unsigned)ob.begin + relative;
+	max = music_pipe.end;
+	if (max < music_pipe.begin)
+		max += music_pipe.size;
+	i = (unsigned)music_pipe.begin + relative;
 	if (i >= max)
 		return -1;
 
-	if (i >= ob.size)
-		i -= ob.size;
+	if (i >= music_pipe.size)
+		i -= music_pipe.size;
 
 	return (int)i;
 }
@@ -143,9 +143,9 @@ int music_pipe_absolute(const unsigned relative)
 struct music_chunk *
 music_pipe_get_chunk(const unsigned i)
 {
-	assert(i < ob.size);
+	assert(i < music_pipe.size);
 
-	return &ob.chunks[i];
+	return &music_pipe.chunks[i];
 }
 
 /**
@@ -160,12 +160,12 @@ tail_chunk(float data_time, uint16_t bitRate, size_t frame_size)
 	unsigned int next;
 	struct music_chunk *chunk;
 
-	chunk = music_pipe_get_chunk(ob.end);
+	chunk = music_pipe_get_chunk(music_pipe.end);
 	assert(chunk->chunkSize <= sizeof(chunk->data));
 	if (chunk->chunkSize + frame_size > sizeof(chunk->data)) {
 		/* this chunk is full; allocate a new chunk */
-		next = successor(ob.end);
-		if (ob.begin == next)
+		next = successor(music_pipe.end);
+		if (music_pipe.begin == next)
 			/* no chunks available */
 			return NULL;
 
@@ -227,5 +227,5 @@ void music_pipe_skip(unsigned num)
 {
 	int i = music_pipe_absolute(num);
 	if (i >= 0)
-		ob.begin = i;
+		music_pipe.begin = i;
 }

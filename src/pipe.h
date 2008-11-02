@@ -57,7 +57,7 @@ struct music_pipe {
 	struct notify *notify;
 };
 
-extern struct music_pipe ob;
+extern struct music_pipe music_pipe;
 
 void
 music_pipe_init(unsigned int size, struct notify *notify);
@@ -79,25 +79,25 @@ void music_pipe_set_lazy(bool lazy);
 static inline unsigned
 music_pipe_size(void)
 {
-	return ob.size;
+	return music_pipe.size;
 }
 
 /** is the buffer empty? */
 static inline bool music_pipe_is_empty(void)
 {
-	return ob.begin == ob.end;
+	return music_pipe.begin == music_pipe.end;
 }
 
 static inline bool
 music_pipe_head_is(unsigned i)
 {
-	return !music_pipe_is_empty() && ob.begin == i;
+	return !music_pipe_is_empty() && music_pipe.begin == i;
 }
 
 static inline unsigned
 music_pipe_tail_index(void)
 {
-	return ob.end;
+	return music_pipe.end;
 }
 
 void music_pipe_shift(void);
@@ -126,7 +126,7 @@ music_pipe_peek(void)
 	if (music_pipe_is_empty())
 		return NULL;
 
-	return music_pipe_get_chunk(ob.begin);
+	return music_pipe_get_chunk(music_pipe.begin);
 }
 
 /**
