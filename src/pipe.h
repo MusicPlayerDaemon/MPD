@@ -27,19 +27,19 @@
 /* pick 1020 since its devisible for 8,16,24, and 32-bit audio */
 #define CHUNK_SIZE		1020
 
-typedef struct _OutputBufferChunk {
+struct music_chunk {
 	uint16_t chunkSize;
 	uint16_t bitRate;
 	float times;
 	char data[CHUNK_SIZE];
-} ob_chunk;
+};
 
 /**
  * A ring set of buffers where the decoder appends data after the end,
  * and the player consumes data from the beginning.
  */
-struct output_buffer {
-	ob_chunk *chunks;
+struct music_pipe {
+	struct music_chunk *chunks;
 
 	unsigned int size;
 
@@ -58,7 +58,7 @@ struct output_buffer {
 	struct notify *notify;
 };
 
-extern struct output_buffer ob;
+extern struct music_pipe ob;
 
 void
 ob_init(unsigned int size, struct notify *notify);
@@ -100,7 +100,8 @@ unsigned ob_available(void);
  */
 int ob_absolute(const unsigned relative);
 
-ob_chunk * ob_get_chunk(const unsigned i);
+struct music_chunk *
+ob_get_chunk(const unsigned i);
 
 /**
  * Append a data block to the buffer.

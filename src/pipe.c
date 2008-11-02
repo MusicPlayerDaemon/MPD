@@ -23,7 +23,7 @@
 #include <assert.h>
 #include <string.h>
 
-struct output_buffer ob;
+struct music_pipe ob;
 
 void
 ob_init(unsigned int size, struct notify *notify)
@@ -82,7 +82,7 @@ static void output_buffer_expand(unsigned i)
 
 void ob_flush(void)
 {
-	ob_chunk *chunk = ob_get_chunk(ob.end);
+	struct music_chunk *chunk = ob_get_chunk(ob.end);
 
 	if (chunk->chunkSize > 0) {
 		unsigned int next = successor(ob.end);
@@ -139,7 +139,8 @@ int ob_absolute(const unsigned relative)
 	return (int)i;
 }
 
-ob_chunk * ob_get_chunk(const unsigned i)
+struct music_chunk *
+ob_get_chunk(const unsigned i)
 {
 	assert(i < ob.size);
 
@@ -152,11 +153,12 @@ ob_chunk * ob_get_chunk(const unsigned i)
  * @return the chunk which has room for more data; NULL if there is no
  * room.
  */
-static ob_chunk *tail_chunk(float data_time, uint16_t bitRate)
+static struct music_chunk *
+tail_chunk(float data_time, uint16_t bitRate)
 {
 	const size_t frame_size = audio_format_frame_size(&ob.audioFormat);
 	unsigned int next;
-	ob_chunk *chunk;
+	struct music_chunk *chunk;
 
 	chunk = ob_get_chunk(ob.end);
 	assert(chunk->chunkSize <= sizeof(chunk->data));
@@ -189,7 +191,7 @@ size_t ob_append(const void *data0, size_t datalen,
 	const unsigned char *data = data0;
 	const size_t frame_size = audio_format_frame_size(&ob.audioFormat);
 	size_t ret = 0, dataToSend;
-	ob_chunk *chunk = NULL;
+	struct music_chunk *chunk = NULL;
 
 	/* no partial frames allowed */
 	assert((datalen % frame_size) == 0);

@@ -20,6 +20,7 @@
 #include "crossfade.h"
 #include "audio.h"
 #include "pcm_utils.h"
+#include "pipe.h"
 
 #include <assert.h>
 #include <string.h>
@@ -48,7 +49,7 @@ unsigned cross_fade_calc(float duration, float total_time,
 	return chunks;
 }
 
-void cross_fade_apply(ob_chunk * a, const ob_chunk * b,
+void cross_fade_apply(struct music_chunk *a, const struct music_chunk *b,
 		      const struct audio_format *format,
 		      unsigned int current_chunk, unsigned int num_chunks)
 {

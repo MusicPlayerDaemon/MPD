@@ -26,6 +26,7 @@
 #include "main_notify.h"
 #include "crossfade.h"
 #include "song.h"
+#include "pipe.h"
 
 enum xfade_state {
 	XFADE_DISABLED = -1,
@@ -205,8 +206,9 @@ static void processDecodeInput(struct player *player)
 	}
 }
 
-static int playChunk(ob_chunk * chunk,
-		     const struct audio_format *format, double sizeToTime)
+static int
+playChunk(struct music_chunk *chunk, const struct audio_format *format,
+	  double sizeToTime)
 {
 	pc.elapsedTime = chunk->times;
 	pc.bitRate = chunk->bitRate;
@@ -355,7 +357,7 @@ static void do_play(void)
 			notify_wait(&pc.notify);
 		else if (!ob_is_empty() &&
 			 (int)ob.begin != player.next_song_chunk) {
-			ob_chunk *beginChunk = ob_get_chunk(ob.begin);
+			struct music_chunk *beginChunk = ob_get_chunk(ob.begin);
 			unsigned int fadePosition;
 			if (player.xfade == XFADE_ENABLED &&
 			    player.next_song_chunk >= 0 &&

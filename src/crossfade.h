@@ -20,15 +20,14 @@
 #ifndef MPD_CROSSFADE_H
 #define MPD_CROSSFADE_H
 
-#include "pipe.h"
-
 struct audio_format;
+struct music_chunk;
 
 unsigned cross_fade_calc(float duration, float total_time,
 			 const struct audio_format *af,
 			 unsigned max_chunks);
 
-void cross_fade_apply(ob_chunk * a, const ob_chunk * b,
+void cross_fade_apply(struct music_chunk *a, const struct music_chunk *b,
 		      const struct audio_format *format,
 		      unsigned int current_chunk, unsigned int num_chunks);
 
