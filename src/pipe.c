@@ -154,9 +154,8 @@ music_pipe_get_chunk(const unsigned i)
  * room.
  */
 static struct music_chunk *
-tail_chunk(float data_time, uint16_t bitRate)
+tail_chunk(float data_time, uint16_t bitRate, size_t frame_size)
 {
-	const size_t frame_size = audio_format_frame_size(&ob.audioFormat);
 	unsigned int next;
 	struct music_chunk *chunk;
 
@@ -197,7 +196,7 @@ size_t music_pipe_append(const void *data0, size_t datalen,
 	assert((datalen % frame_size) == 0);
 
 	while (datalen) {
-		chunk = tail_chunk(data_time, bitRate);
+		chunk = tail_chunk(data_time, bitRate, frame_size);
 		if (chunk == NULL)
 			return ret;
 
