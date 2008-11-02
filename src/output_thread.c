@@ -65,6 +65,8 @@ static void ao_play(struct audio_output *ao)
 	size_t size = ao->args.play.size;
 	bool ret;
 
+	assert(size > 0);
+
 	if (!audio_format_equals(&ao->inAudioFormat, &ao->outAudioFormat))
 		convertAudioFormat(ao, &data, &size);
 

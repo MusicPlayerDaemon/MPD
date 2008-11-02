@@ -107,6 +107,8 @@ audio_output_signal(struct audio_output *ao)
 void audio_output_play(struct audio_output *audioOutput,
 		       const char *playChunk, size_t size)
 {
+	assert(size > 0);
+
 	if (!audioOutput->open)
 		return;
 

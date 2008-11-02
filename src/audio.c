@@ -228,6 +228,7 @@ bool playAudio(const char *buffer, size_t length)
 	bool ret = false;
 	unsigned int i;
 
+	assert(length > 0);
 	/* no partial frames allowed */
 	assert((length % audio_format_frame_size(&input_audio_format)) == 0);
 
