@@ -44,10 +44,10 @@ struct music_pipe {
 	unsigned num_chunks;
 
 	/** the index of the first decoded chunk */
-	unsigned int volatile begin;
+	unsigned begin;
 
 	/** the index after the last decoded chunk */
-	unsigned int volatile end;
+	unsigned end;
 
 	/** non-zero if the player thread should only we woken up if
 	    the buffer becomes non-empty */
