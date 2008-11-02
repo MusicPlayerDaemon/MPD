@@ -29,6 +29,9 @@
 #include <curl/curl.h>
 #include <glib.h>
 
+/** rewinding is possible after up to 64 kB */
+static const off_t max_rewind_size = 64 * 1024;
+
 /**
  * Buffers created by input_curl_writefunction().
  */
@@ -64,6 +67,9 @@ struct input_curl {
 
 	/** did libcurl tell us the we're at the end of the response body? */
 	bool eof;
+
+	/** limited list of old buffers, for rewinding */
+	struct list_head rewind;
 };
 
 /** libcurl should accept "ICY 200 OK" */
@@ -107,6 +113,13 @@ input_curl_easy_free(struct input_curl *c)
 
 	while (!list_empty(&c->buffers)) {
 		struct buffer *buffer = (struct buffer *)c->buffers.next;
+		list_del(&buffer->siblings);
+
+		g_free(buffer);
+	}
+
+	while (!list_empty(&c->rewind)) {
+		struct buffer *buffer = (struct buffer *)c->rewind.next;
 		list_del(&buffer->siblings);
 
 		g_free(buffer);
@@ -169,7 +182,8 @@ input_curl_select(struct input_curl *c)
 }
 
 static size_t
-read_from_buffer(struct buffer *buffer, void *dest, size_t length)
+read_from_buffer(struct buffer *buffer, void *dest, size_t length,
+		 struct list_head *rewind_head)
 {
 	assert(buffer->size > 0);
 	assert(buffer->consumed < buffer->size);
@@ -182,7 +196,12 @@ read_from_buffer(struct buffer *buffer, void *dest, size_t length)
 	buffer->consumed += length;
 	if (buffer->consumed == buffer->size) {
 		list_del(&buffer->siblings);
-		g_free(buffer);
+
+		if (rewind_head != NULL)
+			/* append this buffer to the rewind buffer list */
+			list_add_tail(&buffer->siblings, rewind_head);
+		else
+			g_free(buffer);
 	}
 
 	return length;
@@ -193,6 +212,7 @@ input_curl_read(struct input_stream *is, void *ptr, size_t size)
 {
 	struct input_curl *c = is->data;
 	CURLMcode mcode = CURLM_CALL_MULTI_PERFORM;
+	struct list_head *rewind_head;
 	size_t nbytes = 0;
 	char *dest = ptr;
 
@@ -223,15 +243,37 @@ input_curl_read(struct input_stream *is, void *ptr, size_t size)
 
 	/* send buffer contents */
 
+	if (!list_empty(&c->rewind) || is->offset == 0)
+		/* at the beginning or already writing the rewind
+		   buffer list */
+		rewind_head = &c->rewind;
+	else
+		/* we don't need the rewind buffers anymore */
+		rewind_head = NULL;
+
 	while (size > 0 && !list_empty(&c->buffers)) {
 		struct buffer *buffer = (struct buffer *)c->buffers.next;
-		size_t copy = read_from_buffer(buffer, dest + nbytes, size);
+		size_t copy = read_from_buffer(buffer, dest + nbytes, size,
+					       rewind_head);
 
 		nbytes += copy;
 		size -= copy;
 	}
 
 	is->offset += (off_t)nbytes;
+
+	if (rewind_head != NULL && is->offset > max_rewind_size) {
+		/* drop the rewind buffer, it has grown too large */
+
+		while (!list_empty(&c->rewind)) {
+			struct buffer *buffer =
+				(struct buffer *)c->rewind.next;
+			list_del(&buffer->siblings);
+
+			g_free(buffer);
+		}
+	}
+
 	return nbytes;
 }
 
@@ -414,10 +456,79 @@ input_curl_send_request(struct input_curl *c)
 }
 
 static bool
+input_curl_can_rewind(struct input_stream *is)
+{
+	struct input_curl *c = is->data;
+	struct buffer *buffer;
+
+	if (!list_empty(&c->rewind))
+		/* the rewind buffer hasn't been wiped yet */
+		return true;
+
+	if (list_empty(&c->buffers))
+		/* there are no buffers at all - cheap rewind not
+		   possible */
+		return false;
+
+	/* rewind is possible if this is the very first buffer of the
+	   resource */
+	buffer = (struct buffer*)c->buffers.next;
+	return (off_t)buffer->consumed == is->offset;
+}
+
+static void
+input_curl_rewind(struct input_stream *is)
+{
+	struct input_curl *c = is->data;
+	struct buffer *buffer;
+#ifndef NDEBUG
+	off_t offset = 0;
+#endif
+
+	/* reset all rewind buffers */
+
+	list_for_each_entry(buffer, &c->rewind, siblings) {
+#ifndef NDEBUG
+		offset += buffer->consumed;
+#endif
+		buffer->consumed = 0;
+	}
+
+	/* rewind the current buffer */
+
+	if (!list_empty(&c->buffers)) {
+		buffer = (struct buffer*)c->buffers.next;
+#ifndef NDEBUG
+		offset += buffer->consumed;
+#endif
+		buffer->consumed = 0;
+	}
+
+	assert(offset == is->offset);
+
+	/* move all rewind buffers back to the regular buffer list */
+
+	list_splice_init(&c->rewind, &c->buffers);
+	is->offset = 0;
+}
+
+static bool
 input_curl_seek(struct input_stream *is, off_t offset, int whence)
 {
 	struct input_curl *c = is->data;
 	bool ret;
+
+	if (whence == SEEK_SET && offset == 0) {
+		if (is->offset == 0)
+			/* no-op */
+			return true;
+
+		if (input_curl_can_rewind(is)) {
+			/* we have enough rewind buffers left */
+			input_curl_rewind(is);
+			return true;
+		}
+	}
 
 	if (!is->seekable)
 		return false;
@@ -478,6 +589,7 @@ input_curl_open(struct input_stream *is, const char *url)
 	c = g_new0(struct input_curl, 1);
 	c->url = g_strdup(url);
 	INIT_LIST_HEAD(&c->buffers);
+	INIT_LIST_HEAD(&c->rewind);
 
 	is->data = c;
 
