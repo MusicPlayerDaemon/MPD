@@ -28,10 +28,21 @@
 
 struct audio_format;
 
+/**
+ * A chunk of music data.  Its format is defined by the
+ * music_pipe_append() caller.
+ */
 struct music_chunk {
+	/** number of bytes stored in this chunk */
 	uint16_t length;
+
+	/** current bit rate of the source file */
 	uint16_t bit_rate;
+
+	/** the time stamp within the song */
 	float times;
+
+	/** the data (probably PCM) */
 	char data[CHUNK_SIZE];
 };
 
