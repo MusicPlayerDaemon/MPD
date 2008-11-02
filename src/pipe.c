@@ -185,13 +185,34 @@ tail_chunk(float data_time, uint16_t bitRate, size_t frame_size)
 	return chunk;
 }
 
+static size_t
+music_chunk_append(struct music_chunk *chunk, const void *data, size_t length,
+		   size_t frame_size)
+{
+	size_t rest = sizeof(chunk->data) - chunk->chunkSize;
+
+	assert(rest >= frame_size);
+
+	if (length > rest)
+		length = rest;
+
+	/* don't split frames */
+	length /= frame_size;
+	length *= frame_size;
+
+	memcpy(chunk->data + chunk->chunkSize, data, length);
+	chunk->chunkSize += length;
+
+	return length;
+}
+
 size_t music_pipe_append(const void *data0, size_t datalen,
 			 const struct audio_format *audio_format,
 			 float data_time, uint16_t bitRate)
 {
 	const unsigned char *data = data0;
 	const size_t frame_size = audio_format_frame_size(audio_format);
-	size_t ret = 0, dataToSend;
+	size_t ret = 0, nbytes;
 	struct music_chunk *chunk = NULL;
 
 	/* no partial frames allowed */
@@ -202,19 +223,13 @@ size_t music_pipe_append(const void *data0, size_t datalen,
 		if (chunk == NULL)
 			return ret;
 
-		dataToSend = sizeof(chunk->data) - chunk->chunkSize;
-		if (dataToSend > datalen)
-			dataToSend = datalen;
+		nbytes = music_chunk_append(chunk, data, datalen,
+					    frame_size);
+		assert(nbytes > 0);
 
-		/* don't split frames */
-		dataToSend /= frame_size;
-		dataToSend *= frame_size;
-
-		memcpy(chunk->data + chunk->chunkSize, data, dataToSend);
-		chunk->chunkSize += dataToSend;
-		datalen -= dataToSend;
-		data += dataToSend;
-		ret += dataToSend;
+		datalen -= nbytes;
+		data += nbytes;
+		ret += nbytes;
 	}
 
 	if (chunk != NULL && chunk->chunkSize == sizeof(chunk->data))
