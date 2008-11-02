@@ -111,10 +111,6 @@ static int64_t mpdurl_seek(URLContext *h, int64_t pos, int whence)
 
 static int mpdurl_close(URLContext *h)
 {
-	FopsHelper *base = (FopsHelper *) h->priv_data;
-	if (base && base->input->seekable) {
-		(void) input_stream_seek(base->input, 0, SEEK_SET);
-	}
 	h->priv_data = 0;
 	return 0;
 }
