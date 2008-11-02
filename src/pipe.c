@@ -32,7 +32,7 @@ music_pipe_init(unsigned int size, struct notify *notify)
 	assert(size > 0);
 
 	music_pipe.chunks = g_new(struct music_chunk, size);
-	music_pipe.size = size;
+	music_pipe.num_chunks = size;
 	music_pipe.begin = 0;
 	music_pipe.end = 0;
 	music_pipe.lazy = false;
@@ -55,10 +55,10 @@ void music_pipe_clear(void)
 /** return the index of the chunk after i */
 static inline unsigned successor(unsigned i)
 {
-	assert(i <= music_pipe.size);
+	assert(i <= music_pipe.num_chunks);
 
 	++i;
-	return i == music_pipe.size ? 0 : i;
+	return i == music_pipe.num_chunks ? 0 : i;
 }
 
 /**
@@ -69,7 +69,7 @@ static void output_buffer_expand(unsigned i)
 {
 	int was_empty = music_pipe.notify != NULL && (!music_pipe.lazy || music_pipe_is_empty());
 
-	assert(i == (music_pipe.end + 1) % music_pipe.size);
+	assert(i == (music_pipe.end + 1) % music_pipe.num_chunks);
 	assert(i != music_pipe.end);
 
 	music_pipe.end = i;
@@ -105,7 +105,7 @@ void music_pipe_set_lazy(bool lazy)
 void music_pipe_shift(void)
 {
 	assert(music_pipe.begin != music_pipe.end);
-	assert(music_pipe.begin < music_pipe.size);
+	assert(music_pipe.begin < music_pipe.num_chunks);
 
 	music_pipe.begin = successor(music_pipe.begin);
 }
@@ -115,7 +115,7 @@ unsigned int music_pipe_relative(const unsigned i)
 	if (i >= music_pipe.begin)
 		return i - music_pipe.begin;
 	else
-		return i + music_pipe.size - music_pipe.begin;
+		return i + music_pipe.num_chunks - music_pipe.begin;
 }
 
 unsigned music_pipe_available(void)
@@ -129,13 +129,13 @@ int music_pipe_absolute(const unsigned relative)
 
 	max = music_pipe.end;
 	if (max < music_pipe.begin)
-		max += music_pipe.size;
+		max += music_pipe.num_chunks;
 	i = (unsigned)music_pipe.begin + relative;
 	if (i >= max)
 		return -1;
 
-	if (i >= music_pipe.size)
-		i -= music_pipe.size;
+	if (i >= music_pipe.num_chunks)
+		i -= music_pipe.num_chunks;
 
 	return (int)i;
 }
@@ -143,7 +143,7 @@ int music_pipe_absolute(const unsigned relative)
 struct music_chunk *
 music_pipe_get_chunk(const unsigned i)
 {
-	assert(i < music_pipe.size);
+	assert(i < music_pipe.num_chunks);
 
 	return &music_pipe.chunks[i];
 }

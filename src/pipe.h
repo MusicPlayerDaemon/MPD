@@ -41,8 +41,7 @@ struct music_chunk {
  */
 struct music_pipe {
 	struct music_chunk *chunks;
-
-	unsigned int size;
+	unsigned num_chunks;
 
 	/** the index of the first decoded chunk */
 	unsigned int volatile begin;
@@ -79,7 +78,7 @@ void music_pipe_set_lazy(bool lazy);
 static inline unsigned
 music_pipe_size(void)
 {
-	return music_pipe.size;
+	return music_pipe.num_chunks;
 }
 
 /** is the buffer empty? */
