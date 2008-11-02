@@ -28,6 +28,16 @@
 #include "log.h"
 #include "ls.h"
 
+static bool
+decoder_try_decode(const struct decoder_plugin *plugin,
+		   struct input_stream *input_stream)
+{
+	if (plugin->try_decode == NULL)
+		return true;
+
+	return plugin->try_decode(input_stream);
+}
+
 static void decodeStart(void)
 {
 	struct song *song = dc.next_song;
@@ -91,8 +101,7 @@ static void decodeStart(void)
 				continue;
 			if (!(plugin->stream_types & INPUT_PLUGIN_STREAM_URL))
 				continue;
-			if (plugin->try_decode != NULL
-			    && !plugin->try_decode(&inStream))
+			if (!decoder_try_decode(plugin, &inStream))
 				continue;
 			ret = plugin->stream_decode(&decoder, &inStream);
 			break;
@@ -108,8 +117,7 @@ static void decodeStart(void)
 				if (!(plugin->stream_types &
 				      INPUT_PLUGIN_STREAM_URL))
 					continue;
-				if (plugin->try_decode != NULL &&
-				    !plugin->try_decode(&inStream))
+				if (!decoder_try_decode(plugin, &inStream))
 					continue;
 				decoder.plugin = plugin;
 				ret = plugin->stream_decode(&decoder,
@@ -136,8 +144,7 @@ static void decodeStart(void)
 			if (!plugin->stream_types & INPUT_PLUGIN_STREAM_FILE)
 				continue;
 
-			if (plugin->try_decode != NULL &&
-			    !plugin->try_decode(&inStream))
+			if (!decoder_try_decode(plugin, &inStream))
 				continue;
 
 			if (plugin->file_decode != NULL) {
