@@ -155,7 +155,7 @@ music_pipe_get_chunk(const unsigned i)
  * room.
  */
 static struct music_chunk *
-tail_chunk(float data_time, uint16_t bitRate, size_t frame_size)
+tail_chunk(size_t frame_size)
 {
 	unsigned int next;
 	struct music_chunk *chunk;
@@ -172,14 +172,6 @@ tail_chunk(float data_time, uint16_t bitRate, size_t frame_size)
 		output_buffer_expand(next);
 		chunk = music_pipe_get_chunk(next);
 		assert(chunk->chunkSize == 0);
-	}
-
-	if (chunk->chunkSize == 0) {
-		/* if the chunk is empty, nobody has set bitRate and
-		   times yet */
-
-		chunk->bitRate = bitRate;
-		chunk->times = data_time;
 	}
 
 	return chunk;
@@ -219,9 +211,17 @@ size_t music_pipe_append(const void *data0, size_t datalen,
 	assert((datalen % frame_size) == 0);
 
 	while (datalen) {
-		chunk = tail_chunk(data_time, bitRate, frame_size);
+		chunk = tail_chunk(frame_size);
 		if (chunk == NULL)
 			return ret;
+
+		if (chunk->chunkSize == 0) {
+			/* if the chunk is empty, nobody has set bitRate and
+			   times yet */
+
+			chunk->bitRate = bitRate;
+			chunk->times = data_time;
+		}
 
 		nbytes = music_chunk_append(chunk, data, datalen,
 					    frame_size);
