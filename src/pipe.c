@@ -19,6 +19,7 @@
 #include "pipe.h"
 #include "notify.h"
 #include "audio_format.h"
+#include "tag.h"
 
 #include <glib.h>
 #include <assert.h>
@@ -30,12 +31,14 @@ static void
 music_chunk_init(struct music_chunk *chunk)
 {
 	chunk->length = 0;
+	chunk->tag = NULL;
 }
 
 static void
 music_chunk_free(struct music_chunk *chunk)
 {
-	(void)chunk;
+	if (chunk->tag != NULL)
+		tag_free(chunk->tag);
 }
 
 void
@@ -261,6 +264,29 @@ size_t music_pipe_append(const void *data0, size_t datalen,
 		music_pipe_flush();
 
 	return ret;
+}
+
+bool music_pipe_tag(const struct tag *tag)
+{
+	struct music_chunk *chunk;
+
+	chunk = music_pipe_get_chunk(music_pipe.end);
+	if (chunk->length > 0 || chunk->tag != NULL) {
+		/* this chunk is not empty; allocate a new chunk,
+		   because chunk.tag refers to the beginning of the
+		   chunk data */
+		unsigned next = successor(music_pipe.end);
+		if (music_pipe.begin == next)
+			/* no chunks available */
+			return false;
+
+		output_buffer_expand(next);
+		chunk = music_pipe_get_chunk(next);
+		assert(chunk->length == 0 && chunk->tag == NULL);
+	}
+
+	chunk->tag = tag_dup(tag);
+	return true;
 }
 
 void music_pipe_skip(unsigned num)

@@ -42,6 +42,14 @@ struct music_chunk {
 	/** the time stamp within the song */
 	float times;
 
+	/**
+	 * An optional tag associated with this chunk (and the
+	 * following chunks); appears at song boundaries.  The tag
+	 * object is owned by this chunk, and must be freed when this
+	 * chunk is deinitialized in music_chunk_free()
+	 */
+	struct tag *tag;
+
 	/** the data (probably PCM) */
 	char data[CHUNK_SIZE];
 };
@@ -147,6 +155,12 @@ music_pipe_peek(void)
 size_t music_pipe_append(const void *data, size_t datalen,
 			 const struct audio_format *audio_format,
 			 float data_time, uint16_t bit_rate);
+
+/**
+ * Send a tag.  This is usually called when a new song within a stream
+ * begins.
+ */
+bool music_pipe_tag(const struct tag *tag);
 
 void music_pipe_skip(unsigned num);
 
