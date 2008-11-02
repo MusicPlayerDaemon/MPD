@@ -338,7 +338,7 @@ static struct tag *ffmpeg_tag(const char *file)
 	base.tag = tag_new();
 
 	ret = ffmpeg_helper(&input, ffmpeg_tag_internal, &base);
-	if (ret) {
+	if (!ret) {
 		tag_free(base.tag);
 		base.tag = NULL;
 	}
