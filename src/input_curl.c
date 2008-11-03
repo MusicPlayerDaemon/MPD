@@ -143,6 +143,27 @@ input_curl_free(struct input_stream *is)
 	g_free(c);
 }
 
+static bool
+input_curl_multi_info_read(struct input_stream *is)
+{
+	struct input_curl *c = is->data;
+	CURLMsg *msg;
+	int msgs_in_queue;
+
+	while ((msg = curl_multi_info_read(c->multi,
+					   &msgs_in_queue)) != NULL) {
+		if (msg->msg == CURLMSG_DONE &&
+		    msg->data.result != CURLE_OK) {
+			g_warning("curl failed: %s\n",
+				  curl_easy_strerror(msg->data.result));
+			c->eof = true;
+			return false;
+		}
+	}
+
+	return true;
+}
+
 /**
  * Wait for the libcurl socket.
  *
@@ -220,6 +241,7 @@ input_curl_read(struct input_stream *is, void *ptr, size_t size)
 
 	while (!c->eof && list_empty(&c->buffers)) {
 		int running_handles;
+		bool bret;
 
 		if (mcode != CURLM_CALL_MULTI_PERFORM) {
 			/* if we're still here, there is no input yet
@@ -237,6 +259,10 @@ input_curl_read(struct input_stream *is, void *ptr, size_t size)
 			c->eof = true;
 			return 0;
 		}
+
+		bret = input_curl_multi_info_read(is);
+		if (!bret)
+			return -1;
 
 		c->eof = running_handles == 0;
 	}
@@ -292,11 +318,12 @@ input_curl_eof(mpd_unused struct input_stream *is)
 }
 
 static int
-input_curl_buffer(mpd_unused struct input_stream *is)
+input_curl_buffer(struct input_stream *is)
 {
 	struct input_curl *c = is->data;
 	CURLMcode mcode;
 	int running_handles;
+	bool ret;
 
 	c->buffered = false;
 
@@ -310,6 +337,10 @@ input_curl_buffer(mpd_unused struct input_stream *is)
 		c->eof = true;
 		return -1;
 	}
+
+	ret = input_curl_multi_info_read(is);
+	if (!ret)
+		return -1;
 
 	c->eof = running_handles == 0;
 
