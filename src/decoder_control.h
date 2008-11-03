@@ -34,16 +34,18 @@ enum decoder_state {
 	DECODE_STATE_DECODE
 };
 
-#define DECODE_ERROR_NOERROR	0
-#define DECODE_ERROR_UNKTYPE	10
-#define DECODE_ERROR_FILE	20
+enum decoder_error {
+	DECODE_ERROR_NOERROR = 0,
+	DECODE_ERROR_UNKTYPE,
+	DECODE_ERROR_FILE,
+};
 
 struct decoder_control {
 	struct notify notify;
 
 	volatile enum decoder_state state;
 	volatile enum decoder_command command;
-	volatile uint16_t error;
+	volatile enum decoder_error error;
 	bool seek_error;
 	bool seekable;
 	volatile double seek_where;
