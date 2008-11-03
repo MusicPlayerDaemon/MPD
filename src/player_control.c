@@ -34,8 +34,8 @@ void pc_init(unsigned int buffered_before_play)
 	pc.command = PLAYER_COMMAND_NONE;
 	pc.error = PLAYER_ERROR_NOERROR;
 	pc.state = PLAYER_STATE_STOP;
-	pc.crossFade = 0;
-	pc.softwareVolume = 1000;
+	pc.cross_fade_seconds = 0;
+	pc.software_volume = 1000;
 }
 
 void pc_deinit(void)
@@ -112,17 +112,17 @@ void playerSetPause(int pause_flag)
 
 int getPlayerElapsedTime(void)
 {
-	return (int)(pc.elapsedTime + 0.5);
+	return (int)(pc.elapsed_time + 0.5);
 }
 
 unsigned long getPlayerBitRate(void)
 {
-	return pc.bitRate;
+	return pc.bit_rate;
 }
 
 int getPlayerTotalTime(void)
 {
-	return (int)(pc.totalTime + 0.5);
+	return (int)(pc.total_time + 0.5);
 }
 
 enum player_state getPlayerState(void)
@@ -192,7 +192,7 @@ playerSeek(struct song *song, float seek_time)
 	pc.next_song = song;
 
 	if (pc.error == PLAYER_ERROR_NOERROR) {
-		pc.seekWhere = seek_time;
+		pc.seek_where = seek_time;
 		player_command(PLAYER_COMMAND_SEEK);
 
 		idle_add(IDLE_PLAYER);
@@ -203,14 +203,14 @@ playerSeek(struct song *song, float seek_time)
 
 float getPlayerCrossFade(void)
 {
-	return pc.crossFade;
+	return pc.cross_fade_seconds;
 }
 
 void setPlayerCrossFade(float crossFadeInSeconds)
 {
 	if (crossFadeInSeconds < 0)
 		crossFadeInSeconds = 0;
-	pc.crossFade = crossFadeInSeconds;
+	pc.cross_fade_seconds = crossFadeInSeconds;
 
 	idle_add(IDLE_OPTIONS);
 }
@@ -218,12 +218,12 @@ void setPlayerCrossFade(float crossFadeInSeconds)
 void setPlayerSoftwareVolume(int volume)
 {
 	volume = (volume > 1000) ? 1000 : (volume < 0 ? 0 : volume);
-	pc.softwareVolume = volume;
+	pc.software_volume = volume;
 }
 
 double getPlayerTotalPlayTime(void)
 {
-	return pc.totalPlayTime;
+	return pc.total_play_time;
 }
 
 /* this actually creates a dupe of the current metadata */

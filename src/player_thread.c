@@ -82,14 +82,14 @@ static void player_command_finished(void)
 	wakeup_main_task();
 }
 
-static void quitDecode(void)
+static void player_stop_decoder(void)
 {
 	dc_stop(&pc.notify);
 	pc.state = PLAYER_STATE_STOP;
 	wakeup_main_task();
 }
 
-static int waitOnDecode(struct player *player)
+static int player_wait_for_decoder(struct player *player)
 {
 	dc_command_wait(&pc.notify);
 
@@ -100,9 +100,9 @@ static int waitOnDecode(struct player *player)
 		return -1;
 	}
 
-	pc.totalTime = pc.next_song->tag != NULL
+	pc.total_time = pc.next_song->tag != NULL
 		? pc.next_song->tag->time : 0;
-	pc.bitRate = 0;
+	pc.bit_rate = 0;
 	audio_format_clear(&pc.audio_format);
 
 	player->song = pc.next_song;
@@ -113,7 +113,7 @@ static int waitOnDecode(struct player *player)
 	return 0;
 }
 
-static bool decodeSeek(struct player *player)
+static bool player_seek_decoder(struct player *player)
 {
 	double where;
 	bool ret;
@@ -123,25 +123,25 @@ static bool decodeSeek(struct player *player)
 		player->next_song_chunk = -1;
 		music_pipe_clear();
 		dc_start_async(pc.next_song);
-		waitOnDecode(player);
+		player_wait_for_decoder(player);
 	}
 
-	where = pc.seekWhere;
-	if (where > pc.totalTime)
-		where = pc.totalTime - 0.1;
+	where = pc.seek_where;
+	if (where > pc.total_time)
+		where = pc.total_time - 0.1;
 	if (where < 0.0)
 		where = 0.0;
 
 	ret = dc_seek(&pc.notify, where);
 	if (ret)
-		pc.elapsedTime = where;
+		pc.elapsed_time = where;
 
 	player_command_finished();
 
 	return ret;
 }
 
-static void processDecodeInput(struct player *player)
+static void player_process_command(struct player *player)
 {
 	switch (pc.command) {
 	case PLAYER_COMMAND_NONE:
@@ -181,7 +181,7 @@ static void processDecodeInput(struct player *player)
 
 	case PLAYER_COMMAND_SEEK:
 		dropBufferedAudio();
-		if (decodeSeek(player)) {
+		if (player_seek_decoder(player)) {
 			player->xfade = XFADE_UNKNOWN;
 
 			/* abort buffering when the user has requested
@@ -214,11 +214,11 @@ static void processDecodeInput(struct player *player)
 }
 
 static int
-playChunk(struct song *song, struct music_chunk *chunk,
-	  const struct audio_format *format, double sizeToTime)
+play_chunk(struct song *song, struct music_chunk *chunk,
+	   const struct audio_format *format, double sizeToTime)
 {
-	pc.elapsedTime = chunk->times;
-	pc.bitRate = chunk->bit_rate;
+	pc.elapsed_time = chunk->times;
+	pc.bit_rate = chunk->bit_rate;
 
 	if (chunk->tag != NULL) {
 		sendMetadataToAudioDevice(chunk->tag);
@@ -240,12 +240,12 @@ playChunk(struct song *song, struct music_chunk *chunk,
 		return 0;
 
 	pcm_volume(chunk->data, chunk->length,
-		   format, pc.softwareVolume);
+		   format, pc.software_volume);
 
 	if (!playAudio(chunk->data, chunk->length))
 		return -1;
 
-	pc.totalPlayTime += sizeToTime * chunk->length;
+	pc.total_play_time += sizeToTime * chunk->length;
 	return 0;
 }
 
@@ -272,18 +272,18 @@ static void do_play(void)
 	music_pipe_set_lazy(false);
 
 	dc_start(&pc.notify, pc.next_song);
-	if (waitOnDecode(&player) < 0) {
-		quitDecode();
+	if (player_wait_for_decoder(&player) < 0) {
+		player_stop_decoder();
 		player_command_finished();
 		return;
 	}
 
-	pc.elapsedTime = 0;
+	pc.elapsed_time = 0;
 	pc.state = PLAYER_STATE_PLAY;
 	player_command_finished();
 
 	while (1) {
-		processDecodeInput(&player);
+		player_process_command(&player);
 		if (pc.command == PLAYER_COMMAND_STOP ||
 		    pc.command == PLAYER_COMMAND_EXIT ||
 		    pc.command == PLAYER_COMMAND_CLOSE_AUDIO) {
@@ -329,7 +329,7 @@ static void do_play(void)
 				if (player.paused)
 					closeAudioDevice();
 
-				pc.totalTime = dc.total_time;
+				pc.total_time = dc.total_time;
 				pc.audio_format = dc.in_audio_format;
 				play_audio_format = dc.out_audio_format;
 				sizeToTime = audioFormatSizeToTime(&dc.out_audio_format);
@@ -367,7 +367,7 @@ static void do_play(void)
 			   calculate how many chunks will be required
 			   for it */
 			crossFadeChunks =
-				cross_fade_calc(pc.crossFade, dc.total_time,
+				cross_fade_calc(pc.cross_fade_seconds, dc.total_time,
 						&dc.out_audio_format,
 						music_pipe_size() -
 						pc.buffered_before_play);
@@ -426,8 +426,8 @@ static void do_play(void)
 			}
 
 			/* play the current chunk */
-			if (playChunk(player.song, beginChunk,
-				      &play_audio_format, sizeToTime) < 0)
+			if (play_chunk(player.song, beginChunk,
+				       &play_audio_format, sizeToTime) < 0)
 				break;
 			music_pipe_shift();
 
@@ -450,7 +450,7 @@ static void do_play(void)
 			player.xfade = XFADE_UNKNOWN;
 
 			player.next_song_chunk = -1;
-			if (waitOnDecode(&player) < 0)
+			if (player_wait_for_decoder(&player) < 0)
 				return;
 
 			wakeup_main_task();
@@ -469,7 +469,7 @@ static void do_play(void)
 		}
 	}
 
-	quitDecode();
+	player_stop_decoder();
 }
 
 static void * player_task(mpd_unused void *arg)

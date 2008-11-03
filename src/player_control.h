@@ -64,16 +64,16 @@ struct player_control {
 	volatile enum player_command command;
 	volatile enum player_state state;
 	volatile int8_t error;
-	volatile uint16_t bitRate;
+	volatile uint16_t bit_rate;
 	struct audio_format audio_format;
-	volatile float totalTime;
-	volatile float elapsedTime;
+	volatile float total_time;
+	volatile float elapsed_time;
 	struct song *volatile next_song;
 	struct song *errored_song;
-	volatile double seekWhere;
-	volatile float crossFade;
-	volatile uint16_t softwareVolume;
-	volatile double totalPlayTime;
+	volatile double seek_where;
+	volatile float cross_fade_seconds;
+	volatile uint16_t software_volume;
+	volatile double total_play_time;
 };
 
 extern struct player_control pc;
