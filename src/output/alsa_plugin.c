@@ -57,6 +57,7 @@ static AlsaData *newAlsaData(void)
 {
 	AlsaData *ret = xmalloc(sizeof(AlsaData));
 
+	ret->device = NULL;
 	ret->mode = 0;
 	ret->pcmHandle = NULL;
 	ret->writei = snd_pcm_writei;
@@ -80,8 +81,6 @@ alsa_configure(AlsaData *ad, ConfigParam *param)
 
 	if ((bp = getBlockParam(param, "device")))
 		ad->device = xstrdup(bp->value);
-	else
-		ad->device = NULL;
 
 	ad->useMmap = getBoolBlockParam(param, "use_mmap", 1);
 	if (ad->useMmap == CONF_BOOL_UNSET)
