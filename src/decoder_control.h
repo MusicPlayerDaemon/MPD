@@ -44,9 +44,9 @@ struct decoder_control {
 	volatile enum decoder_state state;
 	volatile enum decoder_command command;
 	volatile uint16_t error;
-	bool seekError;
+	bool seek_error;
 	bool seekable;
-	volatile double seekWhere;
+	volatile double seek_where;
 
 	/** the format of the song file */
 	struct audio_format in_audio_format;
@@ -56,7 +56,7 @@ struct decoder_control {
 
 	struct song *current_song;
 	struct song *volatile next_song;
-	volatile float totalTime;
+	volatile float total_time;
 };
 
 extern struct decoder_control dc;

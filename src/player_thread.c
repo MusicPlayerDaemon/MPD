@@ -329,7 +329,7 @@ static void do_play(void)
 				if (player.paused)
 					closeAudioDevice();
 
-				pc.totalTime = dc.totalTime;
+				pc.totalTime = dc.total_time;
 				pc.audio_format = dc.in_audio_format;
 				play_audio_format = dc.out_audio_format;
 				sizeToTime = audioFormatSizeToTime(&dc.out_audio_format);
@@ -367,7 +367,7 @@ static void do_play(void)
 			   calculate how many chunks will be required
 			   for it */
 			crossFadeChunks =
-				cross_fade_calc(pc.crossFade, dc.totalTime,
+				cross_fade_calc(pc.crossFade, dc.total_time,
 						&dc.out_audio_format,
 						music_pipe_size() -
 						pc.buffered_before_play);

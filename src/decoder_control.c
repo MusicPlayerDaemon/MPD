@@ -93,11 +93,11 @@ dc_seek(struct notify *notify, double where)
 	if (dc.state == DECODE_STATE_STOP || !dc.seekable)
 		return false;
 
-	dc.seekWhere = where;
-	dc.seekError = false;
+	dc.seek_where = where;
+	dc.seek_error = false;
 	dc_command(notify, DECODE_COMMAND_SEEK);
 
-	if (dc.seekError)
+	if (dc.seek_error)
 		return false;
 
 	return true;

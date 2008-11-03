@@ -43,7 +43,7 @@ void decoder_initialized(struct decoder * decoder,
 	getOutputAudioFormat(audio_format, &dc.out_audio_format);
 
 	dc.seekable = seekable;
-	dc.totalTime = total_time;
+	dc.total_time = total_time;
 
 	dc.state = DECODE_STATE_DECODE;
 	notify_signal(&pc.notify);
@@ -63,7 +63,7 @@ void decoder_command_finished(mpd_unused struct decoder * decoder)
 {
 	assert(dc.command != DECODE_COMMAND_NONE);
 	assert(dc.command != DECODE_COMMAND_SEEK ||
-	       dc.seekError || decoder->seeking);
+	       dc.seek_error || decoder->seeking);
 
 	if (dc.command == DECODE_COMMAND_SEEK)
 		/* delete frames from the old song position */
@@ -79,14 +79,14 @@ double decoder_seek_where(mpd_unused struct decoder * decoder)
 
 	decoder->seeking = true;
 
-	return dc.seekWhere;
+	return dc.seek_where;
 }
 
 void decoder_seek_error(struct decoder * decoder)
 {
 	assert(dc.command == DECODE_COMMAND_SEEK);
 
-	dc.seekError = true;
+	dc.seek_error = true;
 	decoder_command_finished(decoder);
 }
 

@@ -45,7 +45,7 @@ decoder_try_decode(const struct decoder_plugin *plugin,
 	return ret;
 }
 
-static void decodeStart(void)
+static void decoder_run(void)
 {
 	struct song *song = dc.next_song;
 	char buffer[MPD_PATH_MAX];
@@ -53,7 +53,7 @@ static void decodeStart(void)
 	struct decoder decoder;
 	int ret;
 	bool close_instream = true;
-	struct input_stream inStream;
+	struct input_stream input_stream;
 	const struct decoder_plugin *plugin;
 
 	if (song_is_file(song))
@@ -66,7 +66,7 @@ static void decodeStart(void)
 	}
 
 	dc.current_song = dc.next_song; /* NEED LOCK */
-	if (!input_stream_open(&inStream, uri)) {
+	if (!input_stream_open(&input_stream, uri)) {
 		dc.error = DECODE_ERROR_FILE;
 		return;
 	}
@@ -81,21 +81,21 @@ static void decodeStart(void)
 	/* wait for the input stream to become ready; its metadata
 	   will be available then */
 
-	while (!inStream.ready) {
+	while (!input_stream.ready) {
 		if (dc.command != DECODE_COMMAND_NONE) {
-			input_stream_close(&inStream);
+			input_stream_close(&input_stream);
 			return;
 		}
 
-		ret = input_stream_buffer(&inStream);
+		ret = input_stream_buffer(&input_stream);
 		if (ret < 0) {
-			input_stream_close(&inStream);
+			input_stream_close(&input_stream);
 			return;
 		}
 	}
 
 	if (dc.command == DECODE_COMMAND_STOP) {
-		input_stream_close(&inStream);
+		input_stream_close(&input_stream);
 		return;
 	}
 
@@ -104,14 +104,14 @@ static void decodeStart(void)
 		unsigned int next = 0;
 
 		/* first we try mime types: */
-		while ((plugin = decoder_plugin_from_mime_type(inStream.mime, next++))) {
+		while ((plugin = decoder_plugin_from_mime_type(input_stream.mime, next++))) {
 			if (plugin->stream_decode == NULL)
 				continue;
 			if (!(plugin->stream_types & INPUT_PLUGIN_STREAM_URL))
 				continue;
-			if (!decoder_try_decode(plugin, &inStream))
+			if (!decoder_try_decode(plugin, &input_stream))
 				continue;
-			ret = plugin->stream_decode(&decoder, &inStream);
+			ret = plugin->stream_decode(&decoder, &input_stream);
 			break;
 		}
 
@@ -125,11 +125,11 @@ static void decodeStart(void)
 				if (!(plugin->stream_types &
 				      INPUT_PLUGIN_STREAM_URL))
 					continue;
-				if (!decoder_try_decode(plugin, &inStream))
+				if (!decoder_try_decode(plugin, &input_stream))
 					continue;
 				decoder.plugin = plugin;
 				ret = plugin->stream_decode(&decoder,
-							    &inStream);
+							    &input_stream);
 				break;
 			}
 		}
@@ -142,7 +142,7 @@ static void decodeStart(void)
 			if ((plugin = decoder_plugin_from_name("mp3"))) {
 				decoder.plugin = plugin;
 				ret = plugin->stream_decode(&decoder,
-							    &inStream);
+							    &input_stream);
 			}
 		}
 	} else {
@@ -152,11 +152,11 @@ static void decodeStart(void)
 			if (!plugin->stream_types & INPUT_PLUGIN_STREAM_FILE)
 				continue;
 
-			if (!decoder_try_decode(plugin, &inStream))
+			if (!decoder_try_decode(plugin, &input_stream))
 				continue;
 
 			if (plugin->file_decode != NULL) {
-				input_stream_close(&inStream);
+				input_stream_close(&input_stream);
 				close_instream = false;
 				decoder.plugin = plugin;
 				ret = plugin->file_decode(&decoder, uri);
@@ -164,7 +164,7 @@ static void decodeStart(void)
 			} else if (plugin->stream_decode != NULL) {
 				decoder.plugin = plugin;
 				ret = plugin->stream_decode(&decoder,
-							    &inStream);
+							    &input_stream);
 				break;
 			}
 		}
@@ -179,7 +179,7 @@ static void decodeStart(void)
 	}
 
 	if (close_instream)
-		input_stream_close(&inStream);
+		input_stream_close(&input_stream);
 }
 
 static void * decoder_task(mpd_unused void *arg)
@@ -190,7 +190,7 @@ static void * decoder_task(mpd_unused void *arg)
 		switch (dc.command) {
 		case DECODE_COMMAND_START:
 		case DECODE_COMMAND_SEEK:
-			decodeStart();
+			decoder_run();
 
 			dc.state = DECODE_STATE_STOP;
 			dc.command = DECODE_COMMAND_NONE;
