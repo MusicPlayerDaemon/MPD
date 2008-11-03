@@ -522,7 +522,7 @@ if test x$enable_aac = xyes; then
 		FAAD_LIBS="-L$faad_prefix/lib"
 	fi
 
-	FAAD_LIBS="$FAAD_LIBS -lfaad -lmp4ff"
+	FAAD_LIBS="$FAAD_LIBS -lfaad"
 
 	if test "x$faad_includes" != "x" ; then
 		FAAD_CFLAGS="-I$faad_includes"
@@ -623,6 +623,36 @@ int main() {
 fi
 
 AM_CONDITIONAL(HAVE_FAAD, test x$enable_aac = xyes)
+
+if test x$enable_aac = xyes; then
+	enable_mp4=yes
+	MP4FF_LIBS="-lmp4ff"
+
+	oldcflags=$CFLAGS
+	oldlibs=$LIBS
+	oldcppflags=$CPPFLAGS
+	CFLAGS="$CFLAGS $FAAD_CFLAGS"
+	LIBS="$LIBS $MP4FF_LIBS"
+	CPPFLAGS=$CFLAGS
+
+	AC_CHECK_HEADER(mp4ff.h,,enable_mp4=no)
+
+	if test x$enable_mp4 = xyes; then
+		AC_CHECK_LIB(mp4ff,mp4ff_open_read,,enable_mp4=no)
+	fi
+
+	if test x$enable_mp4 = xyes; then
+		AC_DEFINE(HAVE_MP4, 1, [Define to use FAAD2+mp4ff for MP4 decoding])
+	else
+		AC_MSG_WARN([libmp4ff needed for MP4 support -- disabling MP4 support])
+	fi
+
+	CFLAGS=$oldcflags
+	LIBS=$oldlibs
+	CPPFLAGS=$oldcppflags
+fi
+
+AM_CONDITIONAL(HAVE_MP4, test x$enable_mp4 = xyes)
 
 if test x$use_tremor = xyes; then
 	if test "x$tremor_libraries" != "x" ; then
@@ -996,9 +1026,15 @@ else
 fi
 
 if test x$enable_aac = xyes; then
-	echo " MP4/AAC support ...............enabled"
+	echo " AAC support ...................enabled"
 else
-	echo " MP4/AAC support ...............disabled"
+	echo " AAC support ...................disabled"
+fi
+
+if test x$enable_mp4 = xyes; then
+	echo " MP4 support ...................enabled"
+else
+	echo " MP4 support ...................disabled"
 fi
 
 if test x$enable_mpc = xyes; then

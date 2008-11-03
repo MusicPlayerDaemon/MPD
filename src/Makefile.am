@@ -182,7 +182,11 @@ mpd_SOURCES += decoder/wavpack_plugin.c
 endif
 
 if HAVE_FAAD
-mpd_SOURCES += decoder/aac_plugin.c decoder/mp4_plugin.c
+mpd_SOURCES += decoder/aac_plugin.c
+endif
+
+if HAVE_MP4
+mpd_SOURCES += decoder/mp4_plugin.c
 endif
 
 if HAVE_OGG_COMMON
@@ -293,6 +297,7 @@ mpd_LDADD = $(MPD_LIBS) \
 	$(AUDIOFILE_LIBS) $(LIBMIKMOD_LIBS) \
 	$(ID3TAG_LIBS) \
 	$(MAD_LIBS) \
+	$(MP4FF_LIBS) \
 	$(FFMPEG_LIBS) \
 	$(GLIB_LIBS)
 

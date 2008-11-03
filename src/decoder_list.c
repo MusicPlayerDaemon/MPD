@@ -50,8 +50,10 @@ static const struct decoder_plugin *const decoder_plugins[] = {
 	&audiofilePlugin,
 #endif
 #ifdef HAVE_FAAD
-	&mp4Plugin,
 	&aacPlugin,
+#endif
+#ifdef HAVE_MP4
+	&mp4Plugin,
 #endif
 #ifdef HAVE_MPCDEC
 	&mpcPlugin,
