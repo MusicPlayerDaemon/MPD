@@ -319,6 +319,18 @@ struct tag *tag_dup(const struct tag *tag)
 	return ret;
 }
 
+bool tag_has_type(const struct tag *tag, enum tag_type type)
+{
+	assert(tag != NULL);
+	assert(type < TAG_NUM_OF_ITEM_TYPES);
+
+	for (unsigned i = 0; i < tag->numOfItems; i++)
+		if (tag->items[i]->type == type)
+			return true;
+
+	return false;
+}
+
 int tag_equal(const struct tag *tag1, const struct tag *tag2)
 {
 	int i;

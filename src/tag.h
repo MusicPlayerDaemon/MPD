@@ -23,6 +23,7 @@
 
 #include <stdint.h>
 #include <stddef.h>
+#include <stdbool.h>
 #include <string.h>
 
 enum tag_type {
@@ -87,6 +88,12 @@ static inline void tag_add_item(struct tag *tag, enum tag_type itemType,
 }
 
 struct tag *tag_dup(const struct tag *tag);
+
+/**
+ * Checks whether the tag contains one or more items with
+ * the specified type.
+ */
+bool tag_has_type(const struct tag *tag, enum tag_type type);
 
 int tag_equal(const struct tag *tag1, const struct tag *tag2);
 
