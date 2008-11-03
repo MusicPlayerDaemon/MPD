@@ -176,14 +176,32 @@ decoder_data(struct decoder *decoder,
 	char *data;
 
 	if (is != NULL && !decoder->stream_tag_sent) {
-		struct tag *tag1 = tag_new(), *tag2;
+		const struct tag *src;
+		struct tag *tag1, *tag2;
 
-		tag2 = tag_add_stream_tags(tag1, is);
-		tag_free(tag1);
+		/* base is the current song's tag, or an empty new
+		   tag if the song has no tag */
+		src = dc.current_song->tag;
+		if (src == NULL)
+			src = tag1 = tag_new();
+		else
+			tag1 = NULL;
 
-		if (tag2 != NULL) {
-			music_pipe_tag(tag2);
-			tag_free(tag2);
+		tag2 = tag_add_stream_tags(src, is);
+		if (tag1 != NULL)
+			/* free the empty tag created by tag_new(), we
+			   aren't going to send it */
+			tag_free(tag1);
+
+		if (tag2 != NULL)
+			/* use the composite tag returned by
+			   tag_add_stream_tags() */
+			src = tag2;
+
+		if (src != NULL) {
+			music_pipe_tag(src);
+			if (tag2 != NULL)
+				tag_free(tag2);
 		}
 
 		decoder->stream_tag_sent = true;
