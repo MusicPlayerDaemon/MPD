@@ -942,19 +942,6 @@ mp3_synth_and_send(struct mp3_data *data, ReplayGainInfo *replay_gain_info)
 		return DECODE_COMMAND_STOP;
 	}
 
-	if (data->input_stream->meta_title) {
-		struct tag *tag = tag_new();
-		if (data->input_stream->meta_name) {
-			tag_add_item(tag, TAG_ITEM_NAME,
-				     data->input_stream->meta_name);
-		}
-		tag_add_item(tag, TAG_ITEM_TITLE,
-			     data->input_stream->meta_title);
-		free(data->input_stream->meta_title);
-		data->input_stream->meta_title = NULL;
-		tag_free(tag);
-	}
-
 	if (!data->decoded_first_frame) {
 		i = data->drop_start_samples;
 		data->decoded_first_frame = true;
@@ -1079,36 +1066,13 @@ mp3_decode(struct decoder *decoder, struct input_stream *input_stream)
 
 	mp3_audio_format(&data, &audio_format);
 
-	if (input_stream->meta_title) {
-		if (tag)
-			tag_free(tag);
-		tag = tag_new();
-		tag_add_item(tag, TAG_ITEM_TITLE, input_stream->meta_title);
-		free(input_stream->meta_title);
-		input_stream->meta_title = NULL;
-		if (input_stream->meta_name) {
-			tag_add_item(tag, TAG_ITEM_NAME,
-				     input_stream->meta_name);
-		}
-		tag_free(tag);
-	} else if (tag) {
-		if (input_stream->meta_name) {
-			tag_clear_items_by_type(tag, TAG_ITEM_NAME);
-			tag_add_item(tag, TAG_ITEM_NAME,
-				     input_stream->meta_name);
-		}
-		tag_free(tag);
-	} else if (input_stream->meta_name) {
-		tag = tag_new();
-		if (input_stream->meta_name) {
-			tag_add_item(tag, TAG_ITEM_NAME,
-				     input_stream->meta_name);
-		}
-		tag_free(tag);
-	}
-
 	decoder_initialized(decoder, &audio_format,
 			    data.input_stream->seekable, data.total_time);
+
+	if (tag != NULL) {
+		decoder_tag(decoder, input_stream, tag);
+		tag_free(tag);
+	}
 
 	while (mp3_read(&data, &replay_gain_info)) ;
 

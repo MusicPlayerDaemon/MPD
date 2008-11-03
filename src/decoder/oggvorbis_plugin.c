@@ -181,22 +181,13 @@ static struct tag *oggCommentsParse(char **comments)
 
 static void putOggCommentsIntoOutputBuffer(struct decoder *decoder,
 					   struct input_stream *is,
-					   char *streamName,
 					   char **comments)
 {
 	struct tag *tag;
 
 	tag = oggCommentsParse(comments);
-	if (!tag && streamName) {
-		tag = tag_new();
-	}
 	if (!tag)
 		return;
-
-	if (streamName) {
-		tag_clear_items_by_type(tag, TAG_ITEM_NAME);
-		tag_add_item(tag, TAG_ITEM_NAME, streamName);
-	}
 
 	decoder_tag(decoder, is, tag);
 	tag_free(tag);
@@ -288,7 +279,6 @@ oggvorbis_decode(struct decoder *decoder, struct input_stream *inStream)
 			}
 			comments = ov_comment(&vf, -1)->user_comments;
 			putOggCommentsIntoOutputBuffer(decoder, inStream,
-						       inStream->meta_name,
 						       comments);
 			ogg_getReplayGainInfo(comments, &replayGainInfo);
 		}

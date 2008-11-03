@@ -118,6 +118,33 @@ size_t decoder_read(struct decoder *decoder,
 }
 
 /**
+ * Add the tag items from the input stream (meta_name, meta_title) to
+ * a duplicate of the specified tag.  The return value has to be freed
+ * with tag_free().  If this function returns NULL, then there are no
+ * tags provided by the stream.
+ */
+static struct tag *
+tag_add_stream_tags(const struct tag *src_tag, const struct input_stream *is)
+{
+	struct tag *tag;
+
+	assert(src_tag != NULL);
+	assert(is != NULL);
+
+	if ((is->meta_name == NULL || tag_has_type(src_tag, TAG_ITEM_NAME)) &&
+	    (is->meta_title == NULL || tag_has_type(src_tag, TAG_ITEM_TITLE)))
+	    return NULL;
+
+	tag = tag_dup(src_tag);
+	if (is->meta_name != NULL && !tag_has_type(src_tag, TAG_ITEM_NAME))
+		tag_add_item(tag, TAG_ITEM_NAME, is->meta_name);
+	if (is->meta_title != NULL && !tag_has_type(src_tag, TAG_ITEM_TITLE))
+		tag_add_item(tag, TAG_ITEM_TITLE, is->meta_title);
+
+	return tag;
+}
+
+/**
  * All chunks are full of decoded data; wait for the player to free
  * one.
  */
@@ -147,6 +174,20 @@ decoder_data(struct decoder *decoder,
 	static size_t conv_buffer_size;
 	size_t nbytes;
 	char *data;
+
+	if (is != NULL && !decoder->stream_tag_sent) {
+		struct tag *tag1 = tag_new(), *tag2;
+
+		tag2 = tag_add_stream_tags(tag1, is);
+		tag_free(tag1);
+
+		if (tag2 != NULL) {
+			music_pipe_tag(tag2);
+			tag_free(tag2);
+		}
+
+		decoder->stream_tag_sent = true;
+	}
 
 	if (audio_format_equals(&dc.in_audio_format, &dc.out_audio_format)) {
 		data = _data;
@@ -193,11 +234,21 @@ enum decoder_command
 decoder_tag(mpd_unused struct decoder *decoder, struct input_stream *is,
 	    const struct tag *tag)
 {
+	struct tag *tag2 = is != NULL ? tag_add_stream_tags(tag, is) : NULL;
+
+	if (tag2 != NULL)
+		tag = tag2;
+
 	while (!music_pipe_tag(tag)) {
 		enum decoder_command cmd = need_chunks(is);
 		if (cmd != DECODE_COMMAND_NONE)
 			return cmd;
 	}
+
+	if (tag2 != NULL)
+		tag_free(tag2);
+
+	decoder->stream_tag_sent = true;
 
 	return DECODE_COMMAND_NONE;
 }

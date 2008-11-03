@@ -28,6 +28,9 @@ struct decoder {
 	struct pcm_convert_state conv_state;
 
 	bool seeking;
+
+	/** has the tag from the input stream been sent yet? */
+	bool stream_tag_sent;
 };
 
 #endif

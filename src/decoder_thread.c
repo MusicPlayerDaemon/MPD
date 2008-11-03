@@ -72,6 +72,7 @@ static void decodeStart(void)
 	}
 
 	decoder.seeking = false;
+	decoder.stream_tag_sent = false;
 
 	dc.state = DECODE_STATE_START;
 	dc.command = DECODE_COMMAND_NONE;
