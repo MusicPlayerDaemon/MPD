@@ -642,6 +642,7 @@ if test x$enable_aac = xyes; then
 	fi
 
 	if test x$enable_mp4 = xyes; then
+		AC_SUBST(MP4FF_LIBS)
 		AC_DEFINE(HAVE_MP4, 1, [Define to use FAAD2+mp4ff for MP4 decoding])
 	else
 		AC_MSG_WARN([libmp4ff needed for MP4 support -- disabling MP4 support])
