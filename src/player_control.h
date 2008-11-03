@@ -50,12 +50,14 @@ enum player_command {
 	PLAYER_COMMAND_CANCEL,
 };
 
-#define PLAYER_ERROR_NOERROR		0
-#define PLAYER_ERROR_FILE		1
-#define PLAYER_ERROR_AUDIO		2
-#define PLAYER_ERROR_SYSTEM		3
-#define PLAYER_ERROR_UNKTYPE		4
-#define PLAYER_ERROR_FILENOTFOUND	5
+enum player_error {
+	PLAYER_ERROR_NOERROR = 0,
+	PLAYER_ERROR_FILE,
+	PLAYER_ERROR_AUDIO,
+	PLAYER_ERROR_SYSTEM,
+	PLAYER_ERROR_UNKTYPE,
+	PLAYER_ERROR_FILENOTFOUND,
+};
 
 struct player_control {
 	unsigned int buffered_before_play;
@@ -63,7 +65,7 @@ struct player_control {
 	struct notify notify;
 	volatile enum player_command command;
 	volatile enum player_state state;
-	volatile int8_t error;
+	volatile enum player_error error;
 	uint16_t bit_rate;
 	struct audio_format audio_format;
 	float total_time;
@@ -108,7 +110,7 @@ void clearPlayerError(void);
 
 char *getPlayerErrorStr(void);
 
-int getPlayerError(void);
+enum player_error getPlayerError(void);
 
 void playerWait(void);
 

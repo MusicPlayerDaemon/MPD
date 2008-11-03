@@ -135,7 +135,7 @@ void clearPlayerError(void)
 	pc.error = 0;
 }
 
-int getPlayerError(void)
+enum player_error getPlayerError(void)
 {
 	return pc.error;
 }
@@ -149,6 +149,9 @@ char *getPlayerErrorStr(void)
 	*error = '\0'; /* likely */
 
 	switch (pc.error) {
+	case PLAYER_ERROR_NOERROR:
+		break;
+
 	case PLAYER_ERROR_FILENOTFOUND:
 		snprintf(error, errorlen,
 			 "file \"%s\" does not exist or is inaccessible",
