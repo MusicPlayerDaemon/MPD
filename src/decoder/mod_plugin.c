@@ -92,25 +92,15 @@ static MDRIVER drv_mpd = {
 	VC_VoiceRealVolume
 };
 
-static bool mod_mikModInitiated;
-static bool mod_mikModInitError;
-
 static bool mod_initMikMod(void)
 {
 	static char params[] = "";
 
-	if (mod_mikModInitError)
-		return false;
+	md_device = 0;
+	md_reverb = 0;
 
-	if (!mod_mikModInitiated) {
-		mod_mikModInitiated = true;
-
-		md_device = 0;
-		md_reverb = 0;
-
-		MikMod_RegisterDriver(&drv_mpd);
-		MikMod_RegisterAllLoaders();
-	}
+	MikMod_RegisterDriver(&drv_mpd);
+	MikMod_RegisterAllLoaders();
 
 	md_pansep = 64;
 	md_mixfreq = 44100;
@@ -120,7 +110,6 @@ static bool mod_initMikMod(void)
 	if (MikMod_Init(params)) {
 		ERROR("Could not init MikMod: %s\n",
 		      MikMod_strerror(MikMod_errno));
-		mod_mikModInitError = true;
 		return false;
 	}
 
