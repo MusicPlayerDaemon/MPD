@@ -91,12 +91,12 @@ void decoder_seek_error(struct decoder * decoder)
 }
 
 size_t decoder_read(struct decoder *decoder,
-		    struct input_stream *inStream,
+		    struct input_stream *is,
 		    void *buffer, size_t length)
 {
 	size_t nbytes;
 
-	assert(inStream != NULL);
+	assert(is != NULL);
 	assert(buffer != NULL);
 
 	while (true) {
@@ -107,8 +107,8 @@ size_t decoder_read(struct decoder *decoder,
 		    dc.command != DECODE_COMMAND_NONE)
 			return 0;
 
-		nbytes = input_stream_read(inStream, buffer, length);
-		if (nbytes > 0 || input_stream_eof(inStream))
+		nbytes = input_stream_read(is, buffer, length);
+		if (nbytes > 0 || input_stream_eof(is))
 			return nbytes;
 
 		/* sleep for a fraction of a second! */
@@ -122,14 +122,13 @@ size_t decoder_read(struct decoder *decoder,
  * one.
  */
 static enum decoder_command
-need_chunks(struct input_stream *inStream)
+need_chunks(struct input_stream *is)
 {
 	if (dc.command == DECODE_COMMAND_STOP ||
 	    dc.command == DECODE_COMMAND_SEEK)
 		return dc.command;
 
-	if (!inStream ||
-	    input_stream_buffer(inStream) <= 0) {
+	if (is == NULL || input_stream_buffer(is) <= 0) {
 		notify_wait(&dc.notify);
 		notify_signal(&pc.notify);
 	}
@@ -139,50 +138,49 @@ need_chunks(struct input_stream *inStream)
 
 enum decoder_command
 decoder_data(struct decoder *decoder,
-	     struct input_stream *inStream,
-	     void *dataIn, size_t dataInLen,
+	     struct input_stream *is,
+	     void *_data, size_t length,
 	     float data_time, uint16_t bitRate,
-	     ReplayGainInfo * replayGainInfo)
+	     ReplayGainInfo *replay_gain_info)
 {
+	static char *conv_buffer;
+	static size_t conv_buffer_size;
 	size_t nbytes;
 	char *data;
-	size_t datalen;
-	static char *convBuffer;
-	static size_t convBufferLen;
 
 	if (audio_format_equals(&dc.in_audio_format, &dc.out_audio_format)) {
-		data = dataIn;
-		datalen = dataInLen;
+		data = _data;
 	} else {
-		datalen = pcm_convert_size(&dc.in_audio_format, dataInLen,
-					   &dc.out_audio_format);
-		if (datalen > convBufferLen) {
-			if (convBuffer != NULL)
-				free(convBuffer);
-			convBuffer = xmalloc(datalen);
-			convBufferLen = datalen;
+		length = pcm_convert_size(&dc.in_audio_format, length,
+					  &dc.out_audio_format);
+		if (length > conv_buffer_size) {
+			if (conv_buffer != NULL)
+				free(conv_buffer);
+			conv_buffer = xmalloc(length);
+			conv_buffer_size = length;
 		}
-		data = convBuffer;
-		datalen = pcm_convert(&dc.in_audio_format, dataIn,
-				      dataInLen, &dc.out_audio_format,
-				      data, &decoder->conv_state);
+
+		data = conv_buffer;
+		length = pcm_convert(&dc.in_audio_format, _data,
+				     length, &dc.out_audio_format,
+				     data, &decoder->conv_state);
 	}
 
-	if (replayGainInfo != NULL && (replayGainState != REPLAYGAIN_OFF))
-		doReplayGain(replayGainInfo, data, datalen,
+	if (replay_gain_info != NULL && (replayGainState != REPLAYGAIN_OFF))
+		doReplayGain(replay_gain_info, data, length,
 			     &dc.out_audio_format);
 	else if (normalizationEnabled)
-		normalizeData(data, datalen, &dc.out_audio_format);
+		normalizeData(data, length, &dc.out_audio_format);
 
-	while (datalen > 0) {
-		nbytes = music_pipe_append(data, datalen,
+	while (length > 0) {
+		nbytes = music_pipe_append(data, length,
 					   &dc.out_audio_format,
 					   data_time, bitRate);
-		datalen -= nbytes;
+		length -= nbytes;
 		data += nbytes;
 
-		if (datalen > 0) {
-			enum decoder_command cmd = need_chunks(inStream);
+		if (length > 0) {
+			enum decoder_command cmd = need_chunks(is);
 			if (cmd != DECODE_COMMAND_NONE)
 				return cmd;
 		}
