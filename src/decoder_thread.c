@@ -90,6 +90,7 @@ static void decoder_run(void)
 		ret = input_stream_buffer(&input_stream);
 		if (ret < 0) {
 			input_stream_close(&input_stream);
+			dc.error = DECODE_ERROR_FILE;
 			return;
 		}
 	}
