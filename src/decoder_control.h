@@ -55,8 +55,8 @@ struct decoder_control {
 	struct audio_format out_audio_format;
 
 	struct song *current_song;
-	struct song *volatile next_song;
-	volatile float total_time;
+	struct song *next_song;
+	float total_time;
 };
 
 extern struct decoder_control dc;
