@@ -701,7 +701,7 @@ if test x$enable_flac = xyes; then
 	oldlibs="$LIBS"
 	CFLAGS="$CFLAGS $FLAC_CFLAGS"
 	LIBS="$LIBS $FLAC_LIBS"
-	if test x$enable_flac = xyes; then
+	if test x$enable_flac = xyes && test x$enable_oggflac = xyes; then
 		AC_CHECK_DECL(FLAC_API_SUPPORTS_OGG_FLAC,
 		              [enable_oggflac=flac], [],
 			      [#include <FLAC/export.h>])
