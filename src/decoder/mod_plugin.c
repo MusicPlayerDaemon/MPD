@@ -181,9 +181,6 @@ mod_decode(struct decoder *decoder, const char *path)
 	float secPerByte;
 	enum decoder_command cmd = DECODE_COMMAND_NONE;
 
-	if (!mod_initMikMod())
-		return false;
-
 	if (!(data = mod_open(path))) {
 		ERROR("failed to open mod: %s\n", path);
 		MikMod_Exit();
@@ -221,11 +218,6 @@ static struct tag *modTagDup(const char *file)
 	struct tag *ret = NULL;
 	MODULE *moduleHandle;
 	char *title;
-
-	if (!mod_initMikMod()) {
-		DEBUG("modTagDup: Failed to initialize MikMod\n");
-		return NULL;
-	}
 
 	path2 = g_strdup(file);
 	moduleHandle = Player_Load(path2, 128, 0);
@@ -275,6 +267,7 @@ static const char *const modSuffixes[] = {
 
 const struct decoder_plugin modPlugin = {
 	.name = "mod",
+	.init = mod_initMikMod,
 	.finish = mod_finishMikMod,
 	.file_decode = mod_decode,
 	.tag_dup = modTagDup,
