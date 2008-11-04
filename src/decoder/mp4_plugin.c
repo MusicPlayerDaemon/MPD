@@ -29,6 +29,7 @@
 /* all code here is either based on or copied from FAAD2's frontend code */
 
 struct mp4_context {
+	struct decoder *decoder;
 	struct input_stream *input_stream;
 };
 
@@ -77,7 +78,7 @@ mp4_read(void *user_data, void *buffer, uint32_t length)
 {
 	struct mp4_context *ctx = user_data;
 
-	return input_stream_read(ctx->input_stream, buffer, length);
+	return decoder_read(ctx->decoder, ctx->input_stream, buffer, length);
 }
 
 static uint32_t
@@ -93,6 +94,7 @@ static bool
 mp4_decode(struct decoder *mpd_decoder, struct input_stream *input_stream)
 {
 	struct mp4_context ctx = {
+		.decoder = mpd_decoder,
 		.input_stream = input_stream,
 	};
 	mp4ff_callback_t callback = {
@@ -313,6 +315,7 @@ mp4_load_tag(const char *file)
 	struct tag *ret = NULL;
 	struct input_stream input_stream;
 	struct mp4_context ctx = {
+		.decoder = NULL,
 		.input_stream = &input_stream,
 	};
 	mp4ff_callback_t callback = {
