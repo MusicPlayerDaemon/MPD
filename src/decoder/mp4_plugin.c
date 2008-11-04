@@ -109,7 +109,6 @@ mp4_decode(struct decoder *mpd_decoder, struct input_stream *input_stream)
 	faacDecHandle decoder;
 	faacDecFrameInfo frame_info;
 	faacDecConfigurationPtr config;
-	struct audio_format audio_format;
 	unsigned char *mp4_buffer;
 	unsigned int mp4_buffer_size;
 	uint32_t sample_rate;
@@ -155,8 +154,6 @@ mp4_decode(struct decoder *mpd_decoder, struct input_stream *input_stream)
 #endif
 	faacDecSetConfiguration(decoder, config);
 
-	audio_format.bits = 16;
-
 	mp4_buffer = NULL;
 	mp4_buffer_size = 0;
 	mp4ff_get_decoder_config(mp4fh, track, &mp4_buffer, &mp4_buffer_size);
@@ -169,8 +166,6 @@ mp4_decode(struct decoder *mpd_decoder, struct input_stream *input_stream)
 		return false;
 	}
 
-	audio_format.sample_rate = sample_rate;
-	audio_format.channels = channels;
 	file_time = mp4ff_get_track_duration_use_offsets(mp4fh, track);
 	scale = mp4ff_time_scale(mp4fh, track);
 
@@ -259,12 +254,16 @@ mp4_decode(struct decoder *mpd_decoder, struct input_stream *input_stream)
 		}
 
 		if (!initialized) {
+			struct audio_format audio_format = {
+				.bits = 16,
+				.channels = frame_info.channels,
+			};
+
 			channels = frame_info.channels;
 #ifdef HAVE_FAACDECFRAMEINFO_SAMPLERATE
 			scale = frame_info.samplerate;
 #endif
 			audio_format.sample_rate = scale;
-			audio_format.channels = frame_info.channels;
 			decoder_initialized(mpd_decoder, &audio_format,
 					    input_stream->seekable,
 					    total_time);
