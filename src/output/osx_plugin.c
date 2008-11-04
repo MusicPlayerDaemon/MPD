@@ -33,7 +33,7 @@ typedef struct _OsxData {
 	int started;
 } OsxData;
 
-static OsxData *newOsxData()
+static OsxData *newOsxData(void)
 {
 	OsxData *ret = xmalloc(sizeof(OsxData));
 
@@ -49,7 +49,7 @@ static OsxData *newOsxData()
 	return ret;
 }
 
-static bool osx_testDefault()
+static bool osx_testDefault(void)
 {
 	/*AudioUnit au;
 	   ComponentDescription desc;
@@ -128,11 +128,12 @@ static void osx_closeDevice(void *data)
 	AudioUnitUninitialize(od->au);
 }
 
-static OSStatus osx_render(void *vdata,
-			   AudioUnitRenderActionFlags * ioActionFlags,
-			   const AudioTimeStamp * inTimeStamp,
-			   UInt32 inBusNumber, UInt32 inNumberFrames,
-			   AudioBufferList * bufferList)
+static OSStatus
+osx_render(void *vdata,
+	   mpd_unused AudioUnitRenderActionFlags * ioActionFlags,
+	   mpd_unused const AudioTimeStamp * inTimeStamp,
+	   mpd_unused UInt32 inBusNumber, mpd_unused UInt32 inNumberFrames,
+	   AudioBufferList * bufferList)
 {
 	OsxData *od = (OsxData *) vdata;
 	AudioBuffer *buffer = &bufferList->mBuffers[0];
