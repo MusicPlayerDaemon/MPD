@@ -44,7 +44,6 @@ struct ffmpeg_context {
 	int audio_stream;
 	AVFormatContext *format_context;
 	AVCodecContext *codec_context;
-	AVCodec *codec;
 	struct decoder *decoder;
 	struct input_stream *input;
 	struct tag *tag;
@@ -196,7 +195,6 @@ ffmpeg_helper(struct input_stream *input,
 		ctx->audio_stream = audio_stream;
 		ctx->format_context = format_context;
 		ctx->codec_context = codec_context;
-		ctx->codec = codec;
 
 		ret = callback(ctx);
 	} else
