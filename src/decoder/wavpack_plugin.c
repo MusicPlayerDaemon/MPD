@@ -53,13 +53,14 @@ static struct {
  * wavpack.com. Modifications were required because mpd only handles
  * max 16 bit samples.
  */
-static void format_samples_int(int Bps, void *buffer, uint32_t samcnt)
+static void
+format_samples_int(int bytes_per_sample, void *buffer, uint32_t samcnt)
 {
 	int32_t temp;
 	uchar *dst = (uchar *)buffer;
 	int32_t *src = (int32_t *)buffer;
 
-	switch (Bps) {
+	switch (bytes_per_sample) {
 	case 1:
 		while (samcnt--)
 			*dst++ = *src++;
@@ -109,7 +110,7 @@ static void format_samples_int(int Bps, void *buffer, uint32_t samcnt)
 /*
  * This function converts floating point sample data to 16 bit integer.
  */
-static void format_samples_float(mpd_unused int Bps, void *buffer,
+static void format_samples_float(mpd_unused int bytes_per_sample, void *buffer,
 				 uint32_t samcnt)
 {
 	int16_t *dst = (int16_t *)buffer;
@@ -129,13 +130,14 @@ static void wavpack_decode(struct decoder * decoder,
                            ReplayGainInfo *replayGainInfo)
 {
 	struct audio_format audio_format;
-	void (*format_samples)(int Bps, void *buffer, uint32_t samcnt);
+	void (*format_samples)(int bytes_per_sample,
+			       void *buffer, uint32_t samcnt);
 	char chunk[CHUNK_SIZE];
 	float file_time;
 	int samplesreq, samplesgot;
 	int allsamples;
 	int position, outsamplesize;
-	int Bps;
+	int bytes_per_sample;
 
 	audio_format.sample_rate = WavpackGetSampleRate(wpc);
 	audio_format.channels = WavpackGetReducedChannels(wpc);
@@ -155,9 +157,9 @@ static void wavpack_decode(struct decoder * decoder,
 		ERROR("decoding without wvc\n");
 */
 	allsamples = WavpackGetNumSamples(wpc);
-	Bps = WavpackGetBytesPerSample(wpc);
+	bytes_per_sample = WavpackGetBytesPerSample(wpc);
 
-	outsamplesize = Bps;
+	outsamplesize = bytes_per_sample;
 	if (outsamplesize > 2)
 		outsamplesize = 2;
 	outsamplesize *= audio_format.channels;
@@ -197,7 +199,7 @@ static void wavpack_decode(struct decoder * decoder,
 			position += samplesgot;
 			file_time = (float)position / audio_format.sample_rate;
 
-			format_samples(Bps, chunk,
+			format_samples(bytes_per_sample, chunk,
 			               samplesgot * audio_format.channels);
 
 			decoder_data(decoder, NULL, chunk,
@@ -231,45 +233,45 @@ static ReplayGainInfo *wavpack_replaygain(WavpackContext *wpc)
 	static char replaygain_album_gain[] = "replaygain_album_gain";
 	static char replaygain_track_peak[] = "replaygain_track_peak";
 	static char replaygain_album_peak[] = "replaygain_album_peak";
-	ReplayGainInfo *replayGainInfo;
+	ReplayGainInfo *replay_gain_info;
 	bool found = false;
 	char *value;
 
-	replayGainInfo = newReplayGainInfo();
+	replay_gain_info = newReplayGainInfo();
 
 	value = wavpack_tag(wpc, replaygain_track_gain);
 	if (value) {
-		replayGainInfo->trackGain = atof(value);
+		replay_gain_info->trackGain = atof(value);
 		free(value);
 		found = true;
 	}
 
 	value = wavpack_tag(wpc, replaygain_album_gain);
 	if (value) {
-		replayGainInfo->albumGain = atof(value);
+		replay_gain_info->albumGain = atof(value);
 		free(value);
 		found = true;
 	}
 
 	value = wavpack_tag(wpc, replaygain_track_peak);
 	if (value) {
-		replayGainInfo->trackPeak = atof(value);
+		replay_gain_info->trackPeak = atof(value);
 		free(value);
 		found = true;
 	}
 
 	value = wavpack_tag(wpc, replaygain_album_peak);
 	if (value) {
-		replayGainInfo->albumPeak = atof(value);
+		replay_gain_info->albumPeak = atof(value);
 		free(value);
 		found = true;
 	}
 
 
 	if (found)
-		return replayGainInfo;
+		return replay_gain_info;
 
-	freeReplayGainInfo(replayGainInfo);
+	freeReplayGainInfo(replay_gain_info);
 
 	return NULL;
 }
@@ -333,16 +335,16 @@ static struct tag *wavpack_tagdup(const char *fname)
  */
 
 /* This struct is needed for per-stream last_byte storage. */
-typedef struct {
+struct wavpack_input {
 	struct decoder *decoder;
 	struct input_stream *is;
 	/* Needed for push_back_byte() */
 	int last_byte;
-} InputStreamPlus;
+};
 
 static int32_t read_bytes(void *id, void *data, int32_t bcount)
 {
-	InputStreamPlus *isp = (InputStreamPlus *)id;
+	struct wavpack_input *isp = (struct wavpack_input *)id;
 	uint8_t *buf = (uint8_t *)data;
 	int32_t i = 0;
 
@@ -357,35 +359,35 @@ static int32_t read_bytes(void *id, void *data, int32_t bcount)
 
 static uint32_t get_pos(void *id)
 {
-	return ((InputStreamPlus *)id)->is->offset;
+	return ((struct wavpack_input *)id)->is->offset;
 }
 
 static int set_pos_abs(void *id, uint32_t pos)
 {
-	return input_stream_seek(((InputStreamPlus *)id)->is, pos, SEEK_SET)
+	return input_stream_seek(((struct wavpack_input *)id)->is, pos, SEEK_SET)
 		? 0 : -1;
 }
 
 static int set_pos_rel(void *id, int32_t delta, int mode)
 {
-	return input_stream_seek(((InputStreamPlus *)id)->is, delta, mode)
+	return input_stream_seek(((struct wavpack_input *)id)->is, delta, mode)
 		? 0 : -1;
 }
 
 static int push_back_byte(void *id, int c)
 {
-	((InputStreamPlus *)id)->last_byte = c;
+	((struct wavpack_input *)id)->last_byte = c;
 	return 1;
 }
 
 static uint32_t get_length(void *id)
 {
-	return ((InputStreamPlus *)id)->is->size;
+	return ((struct wavpack_input *)id)->is->size;
 }
 
 static int can_seek(void *id)
 {
-	return ((InputStreamPlus *)id)->is->seekable;
+	return ((struct wavpack_input *)id)->is->seekable;
 }
 
 static WavpackStreamReader mpd_is_reader = {
@@ -400,8 +402,8 @@ static WavpackStreamReader mpd_is_reader = {
 };
 
 static void
-initInputStreamPlus(InputStreamPlus *isp, struct decoder *decoder,
-		    struct input_stream *is)
+wavpack_input_init(struct wavpack_input *isp, struct decoder *decoder,
+		   struct input_stream *is)
 {
 	isp->decoder = decoder;
 	isp->is = is;
@@ -415,9 +417,9 @@ static bool wavpack_trydecode(struct input_stream *is)
 {
 	char error[ERRORLEN];
 	WavpackContext *wpc;
-	InputStreamPlus isp;
+	struct wavpack_input isp;
 
-	initInputStreamPlus(&isp, NULL, is);
+	wavpack_input_init(&isp, NULL, is);
 	wpc = WavpackOpenFileInputEx(&mpd_is_reader, &isp, NULL, error,
 	                             OPEN_STREAMING, 0);
 	if (wpc == NULL)
@@ -501,14 +503,14 @@ wavpack_streamdecode(struct decoder * decoder, struct input_stream *is)
 	WavpackContext *wpc;
 	struct input_stream is_wvc;
 	int open_flags = OPEN_2CH_MAX | OPEN_NORMALIZE /*| OPEN_STREAMING*/;
-	InputStreamPlus isp, isp_wvc;
+	struct wavpack_input isp, isp_wvc;
 
 	if (wavpack_open_wvc(decoder, &is_wvc)) {
-		initInputStreamPlus(&isp_wvc, decoder, &is_wvc);
+		wavpack_input_init(&isp_wvc, decoder, &is_wvc);
 		open_flags |= OPEN_WVC;
 	}
 
-	initInputStreamPlus(&isp, decoder, is);
+	wavpack_input_init(&isp, decoder, is);
 	wpc = WavpackOpenFileInputEx(&mpd_is_reader, &isp, &isp_wvc, error,
 				     open_flags, 15);
 
@@ -535,7 +537,7 @@ wavpack_filedecode(struct decoder *decoder, const char *fname)
 {
 	char error[ERRORLEN];
 	WavpackContext *wpc;
-	ReplayGainInfo *replayGainInfo;
+	ReplayGainInfo *replay_gain_info;
 
 	wpc = WavpackOpenFileInput(fname, error,
 	                           OPEN_TAGS | OPEN_WVC |
@@ -545,28 +547,28 @@ wavpack_filedecode(struct decoder *decoder, const char *fname)
 		return false;
 	}
 
-	replayGainInfo = wavpack_replaygain(wpc);
+	replay_gain_info = wavpack_replaygain(wpc);
 
-	wavpack_decode(decoder, wpc, 1, replayGainInfo);
+	wavpack_decode(decoder, wpc, 1, replay_gain_info);
 
-	if (replayGainInfo)
-		freeReplayGainInfo(replayGainInfo);
+	if (replay_gain_info)
+		freeReplayGainInfo(replay_gain_info);
 
 	WavpackCloseFile(wpc);
 
 	return true;
 }
 
-static char const *const wavpackSuffixes[] = { "wv", NULL };
-static char const *const wavpackMimeTypes[] = { "audio/x-wavpack", NULL };
+static char const *const wavpack_suffixes[] = { "wv", NULL };
+static char const *const wavpack_mime_types[] = { "audio/x-wavpack", NULL };
 
-const struct decoder_plugin wavpackPlugin = {
+const struct decoder_plugin wavpack_plugin = {
 	.name = "wavpack",
 	.try_decode = wavpack_trydecode,
 	.stream_decode = wavpack_streamdecode,
 	.file_decode = wavpack_filedecode,
 	.tag_dup = wavpack_tagdup,
 	.stream_types = INPUT_PLUGIN_STREAM_FILE | INPUT_PLUGIN_STREAM_URL,
-	.suffixes = wavpackSuffixes,
-	.mime_types = wavpackMimeTypes
+	.suffixes = wavpack_suffixes,
+	.mime_types = wavpack_mime_types
 };

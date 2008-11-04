@@ -29,7 +29,7 @@ extern const struct decoder_plugin audiofilePlugin;
 extern const struct decoder_plugin mp4_plugin;
 extern const struct decoder_plugin aacPlugin;
 extern const struct decoder_plugin mpcPlugin;
-extern const struct decoder_plugin wavpackPlugin;
+extern const struct decoder_plugin wavpack_plugin;
 extern const struct decoder_plugin modPlugin;
 extern const struct decoder_plugin ffmpeg_plugin;
 
@@ -59,7 +59,7 @@ static const struct decoder_plugin *const decoder_plugins[] = {
 	&mpcPlugin,
 #endif
 #ifdef HAVE_WAVPACK
-	&wavpackPlugin,
+	&wavpack_plugin,
 #endif
 #ifdef HAVE_MIKMOD
 	&modPlugin,
