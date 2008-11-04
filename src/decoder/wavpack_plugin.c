@@ -1,9 +1,9 @@
 /* the Music Player Daemon (MPD)
  * Copyright (C) 2003-2007 by Warren Dukes (warren.dukes@gmail.com)
  * This project's homepage is: http://www.musicpd.org
- * 
+ *
  * WavPack support added by Laszlo Ashin <kodest@gmail.com>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -34,18 +34,18 @@ static struct {
 	const char *name;
 	int type;
 } tagtypes[] = {
-	{ "artist",     TAG_ITEM_ARTIST },
-	{ "album",      TAG_ITEM_ALBUM },
-	{ "title",      TAG_ITEM_TITLE },
-	{ "track",      TAG_ITEM_TRACK },
-	{ "name",       TAG_ITEM_NAME },
-	{ "genre",      TAG_ITEM_GENRE },
-	{ "date",       TAG_ITEM_DATE },
-	{ "composer",   TAG_ITEM_COMPOSER },
-	{ "performer",  TAG_ITEM_PERFORMER },
-	{ "comment",    TAG_ITEM_COMMENT },
-	{ "disc",       TAG_ITEM_DISC },
-	{ NULL,         0 }
+	{ "artist", TAG_ITEM_ARTIST },
+	{ "album", TAG_ITEM_ALBUM },
+	{ "title", TAG_ITEM_TITLE },
+	{ "track", TAG_ITEM_TRACK },
+	{ "name", TAG_ITEM_NAME },
+	{ "genre", TAG_ITEM_GENRE },
+	{ "date", TAG_ITEM_DATE },
+	{ "composer", TAG_ITEM_COMPOSER },
+	{ "performer", TAG_ITEM_PERFORMER },
+	{ "comment", TAG_ITEM_COMMENT },
+	{ "disc", TAG_ITEM_DISC },
+	{ NULL, 0 }
 };
 
 /*
@@ -60,49 +60,49 @@ static void format_samples_int(int Bps, void *buffer, uint32_t samcnt)
 	int32_t *src = (int32_t *)buffer;
 
 	switch (Bps) {
-		case 1:
-			while (samcnt--)
-				*dst++ = *src++;
-			break;
-		case 2:
-			while (samcnt--) {
-				temp = *src++;
+	case 1:
+		while (samcnt--)
+			*dst++ = *src++;
+		break;
+	case 2:
+		while (samcnt--) {
+			temp = *src++;
 #ifdef WORDS_BIGENDIAN
-				*dst++ = (uchar)(temp >> 8);
-				*dst++ = (uchar)(temp); 
+			*dst++ = (uchar)(temp >> 8);
+			*dst++ = (uchar)(temp);
 #else
-				*dst++ = (uchar)(temp); 
-				*dst++ = (uchar)(temp >> 8);
+			*dst++ = (uchar)(temp);
+			*dst++ = (uchar)(temp >> 8);
 #endif
-			}
-			break;
-		case 3:
-			/* downscale to 16 bits */
-			while (samcnt--) {
-				temp = *src++;
+		}
+		break;
+	case 3:
+		/* downscale to 16 bits */
+		while (samcnt--) {
+			temp = *src++;
 #ifdef WORDS_BIGENDIAN
-				*dst++ = (uchar)(temp >> 16);
-				*dst++ = (uchar)(temp >> 8);
+			*dst++ = (uchar)(temp >> 16);
+			*dst++ = (uchar)(temp >> 8);
 #else
-				*dst++ = (uchar)(temp >> 8);
-				*dst++ = (uchar)(temp >> 16);
+			*dst++ = (uchar)(temp >> 8);
+			*dst++ = (uchar)(temp >> 16);
 #endif
-			}
-			break;
-		case 4:
-			/* downscale to 16 bits */
-			while (samcnt--) {
-				temp = *src++;
+		}
+		break;
+	case 4:
+		/* downscale to 16 bits */
+		while (samcnt--) {
+			temp = *src++;
 #ifdef WORDS_BIGENDIAN
-				*dst++ = (uchar)(temp >> 24);
-				*dst++ = (uchar)(temp >> 16);
+			*dst++ = (uchar)(temp >> 24);
+			*dst++ = (uchar)(temp >> 16);
 
 #else
-				*dst++ = (uchar)(temp >> 16);
-				*dst++ = (uchar)(temp >> 24);
+			*dst++ = (uchar)(temp >> 16);
+			*dst++ = (uchar)(temp >> 24);
 #endif
-			}
-			break;
+		}
+		break;
 	}
 }
 
