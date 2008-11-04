@@ -18,8 +18,6 @@
 
 #include "../decoder_api.h"
 #include "../log.h"
-#include "../utils.h"
-#include "../log.h"
 
 #include <assert.h>
 #include <stdio.h>
@@ -84,19 +82,8 @@ static int mpd_ffmpeg_read(URLContext *h, unsigned char *buf, int size)
 {
 	struct ffmpeg_stream *stream = (struct ffmpeg_stream *) h->priv_data;
 
-	while (true) {
-		size_t ret = decoder_read(stream->decoder, stream->input,
-					  (void *)buf, size);
-		if (ret > 0)
-			return ret;
-
-		if (input_stream_eof(stream->input) ||
-		    (stream->decoder &&
-		     decoder_get_command(stream->decoder) != DECODE_COMMAND_NONE))
-			return 0;
-
-		my_usleep(10000);
-	}
+	return decoder_read(stream->decoder, stream->input,
+			    (void *)buf, size);
 }
 
 static int64_t mpd_ffmpeg_seek(URLContext *h, int64_t pos, int whence)
