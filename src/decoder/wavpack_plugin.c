@@ -431,13 +431,16 @@ static bool wavpack_trydecode(struct input_stream *is)
 }
 
 static bool
-wavpack_open_wvc(struct decoder *decoder, struct input_stream *is_wvc)
+wavpack_open_wvc(struct decoder *decoder, struct input_stream *is_wvc,
+		 struct wavpack_input *wpi)
 {
 	char tmp[MPD_PATH_MAX];
 	const char *utf8url;
 	size_t len;
 	char *wvc_url = NULL;
 	bool ret;
+	char first_byte;
+	size_t nbytes;
 
 	/*
 	 * As we use dc->utf8url, this function will be bad for
@@ -469,28 +472,15 @@ wavpack_open_wvc(struct decoder *decoder, struct input_stream *is_wvc)
 	 * And we try to buffer in order to get know
 	 * about a possible 404 error.
 	 */
-	for (;;) {
-		if (input_stream_eof(is_wvc)) {
-			/*
-			 * EOF is reached even without
-			 * a single byte is read...
-			 * So, this is not good :/
-			 */
-			input_stream_close(is_wvc);
-			return false;
-		}
+	nbytes = decoder_read(decoder, is_wvc,
+			      &first_byte, sizeof(first_byte));
+	if (nbytes == 0)
+		return false;
 
-		if (input_stream_buffer(is_wvc) >= 0)
-			return true;
-
-		if (decoder_get_command(decoder) != DECODE_COMMAND_NONE) {
-			input_stream_close(is_wvc);
-			return false;
-		}
-
-		/* Save some CPU */
-		my_usleep(1000);
-	}
+	/* push it back */
+	wavpack_input_init(wpi, decoder, is_wvc);
+	wpi->last_byte = first_byte;
+	return true;
 }
 
 /*
@@ -505,10 +495,8 @@ wavpack_streamdecode(struct decoder * decoder, struct input_stream *is)
 	int open_flags = OPEN_2CH_MAX | OPEN_NORMALIZE /*| OPEN_STREAMING*/;
 	struct wavpack_input isp, isp_wvc;
 
-	if (wavpack_open_wvc(decoder, &is_wvc)) {
-		wavpack_input_init(&isp_wvc, decoder, &is_wvc);
+	if (wavpack_open_wvc(decoder, &is_wvc, &isp_wvc))
 		open_flags |= OPEN_WVC;
-	}
 
 	wavpack_input_init(&isp, decoder, is);
 	wpc = WavpackOpenFileInputEx(&mpd_is_reader, &isp, &isp_wvc, error,
