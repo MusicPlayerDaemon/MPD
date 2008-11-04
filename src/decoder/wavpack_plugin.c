@@ -126,7 +126,7 @@ static void format_samples_float(mpd_unused int bytes_per_sample, void *buffer,
  * Requires an already opened WavpackContext.
  */
 static void wavpack_decode(struct decoder * decoder,
-                           WavpackContext *wpc, int canseek,
+                           WavpackContext *wpc, bool canseek,
                            ReplayGainInfo *replayGainInfo)
 {
 	struct audio_format audio_format;
@@ -430,8 +430,8 @@ static bool wavpack_trydecode(struct input_stream *is)
 	return true;
 }
 
-static int wavpack_open_wvc(struct decoder *decoder,
-			    struct input_stream *is_wvc)
+static bool
+wavpack_open_wvc(struct decoder *decoder, struct input_stream *is_wvc)
 {
 	char tmp[MPD_PATH_MAX];
 	const char *utf8url;
@@ -445,15 +445,15 @@ static int wavpack_open_wvc(struct decoder *decoder,
 	 */
 	utf8url = decoder_get_url(decoder, tmp);
 	if (utf8url == NULL)
-		return 0;
+		return false;
 
 	len = strlen(utf8url);
 	if (!len)
-		return 0;
+		return false;
 
 	wvc_url = (char *)xmalloc(len + 2); /* +2: 'c' and EOS */
 	if (wvc_url == NULL)
-		return 0;
+		return false;
 
 	memcpy(wvc_url, utf8url, len);
 	wvc_url[len] = 'c';
@@ -463,7 +463,7 @@ static int wavpack_open_wvc(struct decoder *decoder,
 	free(wvc_url);
 
 	if (!ret)
-		return 0;
+		return false;
 
 	/*
 	 * And we try to buffer in order to get know
@@ -477,15 +477,15 @@ static int wavpack_open_wvc(struct decoder *decoder,
 			 * So, this is not good :/
 			 */
 			input_stream_close(is_wvc);
-			return 0;
+			return false;
 		}
 
 		if (input_stream_buffer(is_wvc) >= 0)
-			return 1;
+			return true;
 
 		if (decoder_get_command(decoder) != DECODE_COMMAND_NONE) {
 			input_stream_close(is_wvc);
-			return 0;
+			return false;
 		}
 
 		/* Save some CPU */
@@ -519,7 +519,7 @@ wavpack_streamdecode(struct decoder * decoder, struct input_stream *is)
 		return false;
 	}
 
-	wavpack_decode(decoder, wpc, can_seek(&isp), NULL);
+	wavpack_decode(decoder, wpc, is->seekable, NULL);
 
 	WavpackCloseFile(wpc);
 	if (open_flags & OPEN_WVC)
@@ -549,7 +549,7 @@ wavpack_filedecode(struct decoder *decoder, const char *fname)
 
 	replay_gain_info = wavpack_replaygain(wpc);
 
-	wavpack_decode(decoder, wpc, 1, replay_gain_info);
+	wavpack_decode(decoder, wpc, true, replay_gain_info);
 
 	if (replay_gain_info)
 		freeReplayGainInfo(replay_gain_info);
