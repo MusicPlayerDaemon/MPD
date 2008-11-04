@@ -28,6 +28,10 @@
 
 /* all code here is either based on or copied from FAAD2's frontend code */
 
+struct mp4_context {
+	struct input_stream *input_stream;
+};
+
 static int
 mp4_get_aac_track(mp4ff_t * infile)
 {
@@ -71,25 +75,30 @@ mp4_get_aac_track(mp4ff_t * infile)
 static uint32_t
 mp4_read(void *user_data, void *buffer, uint32_t length)
 {
-	return input_stream_read((struct input_stream *) user_data,
-				   buffer, length);
+	struct mp4_context *ctx = user_data;
+
+	return input_stream_read(ctx->input_stream, buffer, length);
 }
 
 static uint32_t
 mp4_seek(void *user_data, uint64_t position)
 {
-	return input_stream_seek((struct input_stream *) user_data,
-				 position, SEEK_SET)
+	struct mp4_context *ctx = user_data;
+
+	return input_stream_seek(ctx->input_stream, position, SEEK_SET)
 		? 0 : -1;
 }
 
 static bool
 mp4_decode(struct decoder *mpd_decoder, struct input_stream *input_stream)
 {
+	struct mp4_context ctx = {
+		.input_stream = input_stream,
+	};
 	mp4ff_callback_t callback = {
 		.read = mp4_read,
 		.seek = mp4_seek,
-		.user_data = input_stream,
+		.user_data = &ctx,
 	};
 	mp4ff_t *mp4fh;
 	int32_t track;
@@ -118,10 +127,6 @@ mp4_decode(struct decoder *mpd_decoder, struct input_stream *input_stream)
 	bool seeking = false;
 	double seek_where = 0;
 	bool initialized = false;
-
-	callback.read = mp4_read;
-	callback.seek = mp4_seek;
-	callback.user_data = input_stream;
 
 	mp4fh = mp4ff_open_read(&callback);
 	if (!mp4fh) {
@@ -307,10 +312,13 @@ mp4_load_tag(const char *file)
 {
 	struct tag *ret = NULL;
 	struct input_stream input_stream;
+	struct mp4_context ctx = {
+		.input_stream = &input_stream,
+	};
 	mp4ff_callback_t callback = {
 		.read = mp4_read,
 		.seek = mp4_seek,
-		.user_data = &input_stream,
+		.user_data = &ctx,
 	};
 	mp4ff_t *mp4fh;
 	int32_t track;
