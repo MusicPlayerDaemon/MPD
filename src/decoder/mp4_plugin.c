@@ -26,13 +26,14 @@
 #include <faad.h>
 /* all code here is either based on or copied from FAAD2's frontend code */
 
-static int mp4_getAACTrack(mp4ff_t * infile)
+static int
+mp4_get_aac_track(mp4ff_t * infile)
 {
 	/* find AAC track */
 	int i, rc;
-	int numTracks = mp4ff_total_tracks(infile);
+	int num_tracks = mp4ff_total_tracks(infile);
 
-	for (i = 0; i < numTracks; i++) {
+	for (i = 0; i < num_tracks; i++) {
 		unsigned char *buff = NULL;
 		unsigned int buff_size = 0;
 #ifdef HAVE_MP4AUDIOSPECIFICCONFIG
@@ -65,22 +66,23 @@ static int mp4_getAACTrack(mp4ff_t * infile)
 	return -1;
 }
 
-static uint32_t mp4_inputStreamReadCallback(void *inStream, void *buffer,
-					    uint32_t length)
+static uint32_t
+mp4_read(void *user_data, void *buffer, uint32_t length)
 {
-	return input_stream_read((struct input_stream *) inStream,
+	return input_stream_read((struct input_stream *) user_data,
 				   buffer, length);
 }
 
-static uint32_t mp4_inputStreamSeekCallback(void *inStream, uint64_t position)
+static uint32_t
+mp4_seek(void *user_data, uint64_t position)
 {
-	return input_stream_seek((struct input_stream *) inStream,
+	return input_stream_seek((struct input_stream *) user_data,
 				 position, SEEK_SET)
 		? 0 : -1;
 }
 
 static bool
-mp4_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
+mp4_decode(struct decoder *mpd_decoder, struct input_stream *input_stream)
 {
 	mp4ff_t *mp4fh;
 	mp4ff_callback_t *mp4cb;
@@ -88,33 +90,33 @@ mp4_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 	float file_time, total_time;
 	int32_t scale;
 	faacDecHandle decoder;
-	faacDecFrameInfo frameInfo;
+	faacDecFrameInfo frame_info;
 	faacDecConfigurationPtr config;
 	struct audio_format audio_format;
-	unsigned char *mp4Buffer;
-	unsigned int mp4BufferSize;
+	unsigned char *mp4_buffer;
+	unsigned int mp4_buffer_size;
 	uint32_t sample_rate;
 	unsigned char channels;
-	long sampleId;
-	long numSamples;
+	long sample_id;
+	long num_samples;
 	long dur;
-	unsigned int sampleCount;
-	char *sampleBuffer;
-	size_t sampleBufferLen;
+	unsigned int sample_count;
+	char *sample_buffer;
+	size_t sample_buffer_length;
 	unsigned int initial = 1;
-	float *seekTable;
-	long seekTableEnd = -1;
-	bool seekPositionFound = false;
+	float *seek_table;
+	long seek_table_end = -1;
+	bool seek_position_found = false;
 	long offset;
-	uint16_t bitRate = 0;
+	uint16_t bit_rate = 0;
 	bool seeking = false;
 	double seek_where = 0;
 	bool initialized = false;
 
 	mp4cb = xmalloc(sizeof(mp4ff_callback_t));
-	mp4cb->read = mp4_inputStreamReadCallback;
-	mp4cb->seek = mp4_inputStreamSeekCallback;
-	mp4cb->user_data = inStream;
+	mp4cb->read = mp4_read;
+	mp4cb->seek = mp4_seek;
+	mp4cb->user_data = input_stream;
 
 	mp4fh = mp4ff_open_read(mp4cb);
 	if (!mp4fh) {
@@ -123,7 +125,7 @@ mp4_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 		return false;
 	}
 
-	track = mp4_getAACTrack(mp4fh);
+	track = mp4_get_aac_track(mp4fh);
 	if (track < 0) {
 		ERROR("No AAC track found in mp4 stream.\n");
 		mp4ff_close(mp4fh);
@@ -145,12 +147,12 @@ mp4_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 
 	audio_format.bits = 16;
 
-	mp4Buffer = NULL;
-	mp4BufferSize = 0;
-	mp4ff_get_decoder_config(mp4fh, track, &mp4Buffer, &mp4BufferSize);
+	mp4_buffer = NULL;
+	mp4_buffer_size = 0;
+	mp4ff_get_decoder_config(mp4fh, track, &mp4_buffer, &mp4_buffer_size);
 
-	if (faacDecInit2
-	    (decoder, mp4Buffer, mp4BufferSize, &sample_rate, &channels) < 0) {
+	if (faacDecInit2(decoder, mp4_buffer, mp4_buffer_size,
+			 &sample_rate, &channels) < 0) {
 		ERROR("Error not a AAC stream.\n");
 		faacDecClose(decoder);
 		mp4ff_close(mp4fh);
@@ -163,8 +165,8 @@ mp4_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 	file_time = mp4ff_get_track_duration_use_offsets(mp4fh, track);
 	scale = mp4ff_time_scale(mp4fh, track);
 
-	if (mp4Buffer)
-		free(mp4Buffer);
+	if (mp4_buffer)
+		free(mp4_buffer);
 
 	if (scale < 0) {
 		ERROR("Error getting audio format of mp4 AAC track.\n");
@@ -175,8 +177,8 @@ mp4_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 	}
 	total_time = ((float)file_time) / scale;
 
-	numSamples = mp4ff_num_samples(mp4fh, track);
-	if (numSamples > (long)(INT_MAX / sizeof(float))) {
+	num_samples = mp4ff_num_samples(mp4fh, track);
+	if (num_samples > (long)(INT_MAX / sizeof(float))) {
 		 ERROR("Integer overflow.\n");
 		 faacDecClose(decoder);
 		 mp4ff_close(mp4fh);
@@ -186,32 +188,32 @@ mp4_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 
 	file_time = 0.0;
 
-	seekTable = xmalloc(sizeof(float) * numSamples);
+	seek_table = xmalloc(sizeof(float) * num_samples);
 
-	for (sampleId = 0; sampleId < numSamples; sampleId++) {
+	for (sample_id = 0; sample_id < num_samples; sample_id++) {
 		if (decoder_get_command(mpd_decoder) == DECODE_COMMAND_SEEK) {
 			seeking = true;
 			seek_where = decoder_seek_where(mpd_decoder);
 		}
 
-		if (seeking && seekTableEnd > 1 &&
-		    seekTable[seekTableEnd] >= seek_where) {
+		if (seeking && seek_table_end > 1 &&
+		    seek_table[seek_table_end] >= seek_where) {
 			int i = 2;
-			while (seekTable[i] < seek_where)
+			while (seek_table[i] < seek_where)
 				i++;
-			sampleId = i - 1;
-			file_time = seekTable[sampleId];
+			sample_id = i - 1;
+			file_time = seek_table[sample_id];
 		}
 
-		dur = mp4ff_get_sample_duration(mp4fh, track, sampleId);
-		offset = mp4ff_get_sample_offset(mp4fh, track, sampleId);
+		dur = mp4ff_get_sample_duration(mp4fh, track, sample_id);
+		offset = mp4ff_get_sample_offset(mp4fh, track, sample_id);
 
-		if (sampleId > seekTableEnd) {
-			seekTable[sampleId] = file_time;
-			seekTableEnd = sampleId;
+		if (sample_id > seek_table_end) {
+			seek_table[sample_id] = file_time;
+			seek_table_end = sample_id;
 		}
 
-		if (sampleId == 0)
+		if (sample_id == 0)
 			dur = 0;
 		if (offset > dur)
 			dur = 0;
@@ -220,10 +222,10 @@ mp4_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 		file_time += ((float)dur) / scale;
 
 		if (seeking && file_time > seek_where)
-			seekPositionFound = true;
+			seek_position_found = true;
 
-		if (seeking && seekPositionFound) {
-			seekPositionFound = false;
+		if (seeking && seek_position_found) {
+			seek_position_found = false;
 			seeking = 0;
 			decoder_command_finished(mpd_decoder);
 		}
@@ -231,63 +233,64 @@ mp4_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 		if (seeking)
 			continue;
 
-		if (mp4ff_read_sample(mp4fh, track, sampleId, &mp4Buffer,
-				      &mp4BufferSize) == 0)
+		if (mp4ff_read_sample(mp4fh, track, sample_id, &mp4_buffer,
+				      &mp4_buffer_size) == 0)
 			break;
 
 #ifdef HAVE_FAAD_BUFLEN_FUNCS
-		sampleBuffer = faacDecDecode(decoder, &frameInfo, mp4Buffer,
-					     mp4BufferSize);
+		sample_buffer = faacDecDecode(decoder, &frame_info, mp4_buffer,
+					      mp4_buffer_size);
 #else
-		sampleBuffer = faacDecDecode(decoder, &frameInfo, mp4Buffer);
+		sample_buffer = faacDecDecode(decoder, &frame_info, mp4_buffer);
 #endif
 
-		if (mp4Buffer)
-			free(mp4Buffer);
-		if (frameInfo.error > 0) {
+		if (mp4_buffer)
+			free(mp4_buffer);
+		if (frame_info.error > 0) {
 			ERROR("faad2 error: %s\n",
-			      faacDecGetErrorMessage(frameInfo.error));
+			      faacDecGetErrorMessage(frame_info.error));
 			break;
 		}
 
 		if (!initialized) {
-			channels = frameInfo.channels;
+			channels = frame_info.channels;
 #ifdef HAVE_FAACDECFRAMEINFO_SAMPLERATE
-			scale = frameInfo.samplerate;
+			scale = frame_info.samplerate;
 #endif
 			audio_format.sample_rate = scale;
-			audio_format.channels = frameInfo.channels;
+			audio_format.channels = frame_info.channels;
 			decoder_initialized(mpd_decoder, &audio_format,
-					    inStream->seekable, total_time);
+					    input_stream->seekable,
+					    total_time);
 			initialized = true;
 		}
 
-		if (channels * (unsigned long)(dur + offset) > frameInfo.samples) {
-			dur = frameInfo.samples / channels;
+		if (channels * (unsigned long)(dur + offset) > frame_info.samples) {
+			dur = frame_info.samples / channels;
 			offset = 0;
 		}
 
-		sampleCount = (unsigned long)(dur * channels);
+		sample_count = (unsigned long)(dur * channels);
 
-		if (sampleCount > 0) {
+		if (sample_count > 0) {
 			initial = 0;
-			bitRate = frameInfo.bytesconsumed * 8.0 *
-			    frameInfo.channels * scale /
-			    frameInfo.samples / 1000 + 0.5;
+			bit_rate = frame_info.bytesconsumed * 8.0 *
+			    frame_info.channels * scale /
+			    frame_info.samples / 1000 + 0.5;
 		}
 
-		sampleBufferLen = sampleCount * 2;
+		sample_buffer_length = sample_count * 2;
 
-		sampleBuffer += offset * channels * 2;
+		sample_buffer += offset * channels * 2;
 
-		decoder_data(mpd_decoder, inStream, sampleBuffer,
-			     sampleBufferLen, file_time,
-			     bitRate, NULL);
+		decoder_data(mpd_decoder, input_stream, sample_buffer,
+			     sample_buffer_length, file_time,
+			     bit_rate, NULL);
 		if (decoder_get_command(mpd_decoder) == DECODE_COMMAND_STOP)
 			break;
 	}
 
-	free(seekTable);
+	free(seek_table);
 	faacDecClose(decoder);
 	mp4ff_close(mp4fh);
 	free(mp4cb);
@@ -301,10 +304,11 @@ mp4_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 	return true;
 }
 
-static struct tag *mp4DataDup(const char *file, int *mp4MetadataFound)
+static struct tag *
+mp4_load_tag(const char *file, int *tag_found)
 {
 	struct tag *ret = NULL;
-	struct input_stream inStream;
+	struct input_stream input_stream;
 	mp4ff_t *mp4fh;
 	mp4ff_callback_t *callback;
 	int32_t track;
@@ -312,29 +316,29 @@ static struct tag *mp4DataDup(const char *file, int *mp4MetadataFound)
 	int32_t scale;
 	int i;
 
-	*mp4MetadataFound = 0;
+	*tag_found = 0;
 
-	if (!input_stream_open(&inStream, file)) {
-		DEBUG("mp4DataDup: Failed to open file: %s\n", file);
+	if (!input_stream_open(&input_stream, file)) {
+		DEBUG("mp4_load_tag: Failed to open file: %s\n", file);
 		return NULL;
 	}
 
 	callback = xmalloc(sizeof(mp4ff_callback_t));
-	callback->read = mp4_inputStreamReadCallback;
-	callback->seek = mp4_inputStreamSeekCallback;
-	callback->user_data = &inStream;
+	callback->read = mp4_read;
+	callback->seek = mp4_seek;
+	callback->user_data = &input_stream;
 
 	mp4fh = mp4ff_open_read(callback);
 	if (!mp4fh) {
 		free(callback);
-		input_stream_close(&inStream);
+		input_stream_close(&input_stream);
 		return NULL;
 	}
 
-	track = mp4_getAACTrack(mp4fh);
+	track = mp4_get_aac_track(mp4fh);
 	if (track < 0) {
 		mp4ff_close(mp4fh);
-		input_stream_close(&inStream);
+		input_stream_close(&input_stream);
 		free(callback);
 		return NULL;
 	}
@@ -344,7 +348,7 @@ static struct tag *mp4DataDup(const char *file, int *mp4MetadataFound)
 	scale = mp4ff_time_scale(mp4fh, track);
 	if (scale < 0) {
 		mp4ff_close(mp4fh);
-		input_stream_close(&inStream);
+		input_stream_close(&input_stream);
 		free(callback);
 		tag_free(ret);
 		return NULL;
@@ -359,25 +363,25 @@ static struct tag *mp4DataDup(const char *file, int *mp4MetadataFound)
 
 		if (0 == strcasecmp("artist", item)) {
 			tag_add_item(ret, TAG_ITEM_ARTIST, value);
-			*mp4MetadataFound = 1;
+			*tag_found = 1;
 		} else if (0 == strcasecmp("title", item)) {
 			tag_add_item(ret, TAG_ITEM_TITLE, value);
-			*mp4MetadataFound = 1;
+			*tag_found = 1;
 		} else if (0 == strcasecmp("album", item)) {
 			tag_add_item(ret, TAG_ITEM_ALBUM, value);
-			*mp4MetadataFound = 1;
+			*tag_found = 1;
 		} else if (0 == strcasecmp("track", item)) {
 			tag_add_item(ret, TAG_ITEM_TRACK, value);
-			*mp4MetadataFound = 1;
+			*tag_found = 1;
 		} else if (0 == strcasecmp("disc", item)) {	/* Is that the correct id? */
 			tag_add_item(ret, TAG_ITEM_DISC, value);
-			*mp4MetadataFound = 1;
+			*tag_found = 1;
 		} else if (0 == strcasecmp("genre", item)) {
 			tag_add_item(ret, TAG_ITEM_GENRE, value);
-			*mp4MetadataFound = 1;
+			*tag_found = 1;
 		} else if (0 == strcasecmp("date", item)) {
 			tag_add_item(ret, TAG_ITEM_DATE, value);
-			*mp4MetadataFound = 1;
+			*tag_found = 1;
 		}
 
 		free(item);
@@ -385,20 +389,21 @@ static struct tag *mp4DataDup(const char *file, int *mp4MetadataFound)
 	}
 
 	mp4ff_close(mp4fh);
-	input_stream_close(&inStream);
+	input_stream_close(&input_stream);
 
 	return ret;
 }
 
-static struct tag *mp4TagDup(const char *file)
+static struct tag *
+mp4_tag_dup(const char *file)
 {
 	struct tag *ret = NULL;
-	int mp4MetadataFound = 0;
+	int tag_found = 0;
 
-	ret = mp4DataDup(file, &mp4MetadataFound);
+	ret = mp4_load_tag(file, &tag_found);
 	if (!ret)
 		return NULL;
-	if (!mp4MetadataFound) {
+	if (!tag_found) {
 		struct tag *temp = tag_id3_load(file);
 		if (temp) {
 			temp->time = ret->time;
@@ -411,13 +416,13 @@ static struct tag *mp4TagDup(const char *file)
 }
 
 static const char *const mp4_suffixes[] = { "m4a", "mp4", NULL };
-static const char *const mp4_mimeTypes[] = { "audio/mp4", "audio/m4a", NULL };
+static const char *const mp4_mime_types[] = { "audio/mp4", "audio/m4a", NULL };
 
-const struct decoder_plugin mp4Plugin = {
+const struct decoder_plugin mp4_plugin = {
 	.name = "mp4",
 	.stream_decode = mp4_decode,
-	.tag_dup = mp4TagDup,
+	.tag_dup = mp4_tag_dup,
 	.stream_types = INPUT_PLUGIN_STREAM_FILE | INPUT_PLUGIN_STREAM_URL,
 	.suffixes = mp4_suffixes,
-	.mime_types = mp4_mimeTypes,
+	.mime_types = mp4_mime_types,
 };
