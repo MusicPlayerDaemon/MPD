@@ -19,11 +19,10 @@
  */
 
 #include "../decoder_api.h"
-#include "../utils.h"
-#include "../log.h"
 #include "../path.h"
 
 #include <wavpack/wavpack.h>
+#include <glib.h>
 
 /* pick 1020 since its devisible for 8,16,24, and 32-bit audio */
 #define CHUNK_SIZE		1020
@@ -218,9 +217,7 @@ static char *wavpack_tag(WavpackContext *wpc, char *key)
 	size = WavpackGetTagItem(wpc, key, NULL, 0);
 	if (size > 0) {
 		size++;
-		value = xmalloc(size);
-		if (!value)
-			return NULL;
+		value = g_malloc(size);
 		WavpackGetTagItem(wpc, key, value, size);
 	}
 
@@ -290,7 +287,8 @@ static struct tag *wavpack_tagdup(const char *fname)
 
 	wpc = WavpackOpenFileInput(fname, error, OPEN_TAGS, 0);
 	if (wpc == NULL) {
-		ERROR("failed to open WavPack file \"%s\": %s\n", fname, error);
+		g_warning("failed to open WavPack file \"%s\": %s\n",
+			  fname, error);
 		return NULL;
 	}
 
@@ -307,12 +305,10 @@ static struct tag *wavpack_tagdup(const char *fname)
 			++j;
 
 			if (s == NULL) {
-				s = xmalloc(j);
-				if (s == NULL) break;
+				s = g_malloc(j);
 				ssize = j;
 			} else if (j > ssize) {
-				char *t = (char *)xrealloc(s, j);
-				if (t == NULL) break;
+				char *t = (char *)g_realloc(s, j);
 				ssize = j;
 				s = t;
 			}
@@ -322,8 +318,7 @@ static struct tag *wavpack_tagdup(const char *fname)
 		}
 	}
 
-	if (s != NULL)
-		free(s);
+	g_free(s);
 
 	WavpackCloseFile(wpc);
 
@@ -436,7 +431,6 @@ wavpack_open_wvc(struct decoder *decoder, struct input_stream *is_wvc,
 {
 	char tmp[MPD_PATH_MAX];
 	const char *utf8url;
-	size_t len;
 	char *wvc_url = NULL;
 	bool ret;
 	char first_byte;
@@ -450,20 +444,9 @@ wavpack_open_wvc(struct decoder *decoder, struct input_stream *is_wvc,
 	if (utf8url == NULL)
 		return false;
 
-	len = strlen(utf8url);
-	if (!len)
-		return false;
-
-	wvc_url = (char *)xmalloc(len + 2); /* +2: 'c' and EOS */
-	if (wvc_url == NULL)
-		return false;
-
-	memcpy(wvc_url, utf8url, len);
-	wvc_url[len] = 'c';
-	wvc_url[len + 1] = '\0';
-
+	wvc_url = g_strconcat(utf8url, "c", NULL);
 	ret = input_stream_open(is_wvc, wvc_url);
-	free(wvc_url);
+	g_free(wvc_url);
 
 	if (!ret)
 		return false;
@@ -503,7 +486,7 @@ wavpack_streamdecode(struct decoder * decoder, struct input_stream *is)
 				     open_flags, 15);
 
 	if (wpc == NULL) {
-		ERROR("failed to open WavPack stream: %s\n", error);
+		g_warning("failed to open WavPack stream: %s\n", error);
 		return false;
 	}
 
@@ -531,7 +514,8 @@ wavpack_filedecode(struct decoder *decoder, const char *fname)
 	                           OPEN_TAGS | OPEN_WVC |
 	                           OPEN_2CH_MAX | OPEN_NORMALIZE, 15);
 	if (wpc == NULL) {
-		ERROR("failed to open WavPack file \"%s\": %s\n", fname, error);
+		g_warning("failed to open WavPack file \"%s\": %s\n",
+			  fname, error);
 		return false;
 	}
 
