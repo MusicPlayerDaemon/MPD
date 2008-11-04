@@ -302,7 +302,7 @@ mp4_decode(struct decoder *mpd_decoder, struct input_stream *input_stream)
 }
 
 static struct tag *
-mp4_load_tag(const char *file, int *tag_found)
+mp4_load_tag(const char *file)
 {
 	struct tag *ret = NULL;
 	struct input_stream input_stream;
@@ -316,8 +316,6 @@ mp4_load_tag(const char *file, int *tag_found)
 	int32_t file_time;
 	int32_t scale;
 	int i;
-
-	*tag_found = 0;
 
 	if (!input_stream_open(&input_stream, file)) {
 		DEBUG("mp4_load_tag: Failed to open file: %s\n", file);
@@ -356,25 +354,18 @@ mp4_load_tag(const char *file, int *tag_found)
 
 		if (0 == strcasecmp("artist", item)) {
 			tag_add_item(ret, TAG_ITEM_ARTIST, value);
-			*tag_found = 1;
 		} else if (0 == strcasecmp("title", item)) {
 			tag_add_item(ret, TAG_ITEM_TITLE, value);
-			*tag_found = 1;
 		} else if (0 == strcasecmp("album", item)) {
 			tag_add_item(ret, TAG_ITEM_ALBUM, value);
-			*tag_found = 1;
 		} else if (0 == strcasecmp("track", item)) {
 			tag_add_item(ret, TAG_ITEM_TRACK, value);
-			*tag_found = 1;
 		} else if (0 == strcasecmp("disc", item)) {	/* Is that the correct id? */
 			tag_add_item(ret, TAG_ITEM_DISC, value);
-			*tag_found = 1;
 		} else if (0 == strcasecmp("genre", item)) {
 			tag_add_item(ret, TAG_ITEM_GENRE, value);
-			*tag_found = 1;
 		} else if (0 == strcasecmp("date", item)) {
 			tag_add_item(ret, TAG_ITEM_DATE, value);
-			*tag_found = 1;
 		}
 
 		free(item);
@@ -391,12 +382,11 @@ static struct tag *
 mp4_tag_dup(const char *file)
 {
 	struct tag *ret = NULL;
-	int tag_found = 0;
 
-	ret = mp4_load_tag(file, &tag_found);
+	ret = mp4_load_tag(file);
 	if (!ret)
 		return NULL;
-	if (!tag_found) {
+	if (tag_is_empty(ret)) {
 		struct tag *temp = tag_id3_load(file);
 		if (temp) {
 			temp->time = ret->time;
