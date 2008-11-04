@@ -77,15 +77,12 @@ static bool osx_testDefault()
 	return true;
 }
 
-static int osx_initDriver(struct audio_output *audioOutput,
-			  mpd_unused const struct audio_format *audio_format,
-			  ConfigParam * param)
+static void *
+osx_initDriver(mpd_unused struct audio_output *audioOutput,
+	       mpd_unused const struct audio_format *audio_format,
+	       mpd_unused ConfigParam * param)
 {
-	OsxData *od = newOsxData();
-
-	audioOutput->data = od;
-
-	return 0;
+	return newOsxData();
 }
 
 static void freeOsxData(OsxData * od)
@@ -97,24 +94,24 @@ static void freeOsxData(OsxData * od)
 	free(od);
 }
 
-static void osx_finishDriver(struct audio_output *audioOutput)
+static void osx_finishDriver(void *data)
 {
-	OsxData *od = (OsxData *) audioOutput->data;
+	OsxData *od = data;
 	freeOsxData(od);
 }
 
-static void osx_dropBufferedAudio(struct audio_output *audioOutput)
+static void osx_dropBufferedAudio(void *data)
 {
-	OsxData *od = (OsxData *) audioOutput->data;
+	OsxData *od = data;
 
 	pthread_mutex_lock(&od->mutex);
 	od->len = 0;
 	pthread_mutex_unlock(&od->mutex);
 }
 
-static void osx_closeDevice(struct audio_output *audioOutput)
+static void osx_closeDevice(void *data)
 {
-	OsxData *od = (OsxData *) audioOutput->data;
+	OsxData *od = data;
 
 	pthread_mutex_lock(&od->mutex);
 	while (od->len) {
@@ -213,10 +210,9 @@ static OSStatus osx_render(void *vdata,
 }
 
 static bool
-osx_openDevice(struct audio_output *audioOutput,
-	       struct audio_format *audioFormat)
+osx_openDevice(void *data, struct audio_format *audioFormat)
 {
-	OsxData *od = (OsxData *) audioOutput->data;
+	OsxData *od = data;
 	ComponentDescription desc;
 	Component comp;
 	AURenderCallbackStruct callback;
@@ -291,9 +287,9 @@ osx_openDevice(struct audio_output *audioOutput,
 }
 
 static bool
-osx_play(struct audio_output *audioOutput, const char *playChunk, size_t size)
+osx_play(void *data, const char *playChunk, size_t size)
 {
-	OsxData *od = (OsxData *) audioOutput->data;
+	OsxData *od = data;
 	size_t bytesToCopy;
 	size_t curpos;
 
