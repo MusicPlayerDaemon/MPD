@@ -84,8 +84,12 @@ mp4_seek(void *user_data, uint64_t position)
 static bool
 mp4_decode(struct decoder *mpd_decoder, struct input_stream *input_stream)
 {
+	mp4ff_callback_t callback = {
+		.read = mp4_read,
+		.seek = mp4_seek,
+		.user_data = input_stream,
+	};
 	mp4ff_t *mp4fh;
-	mp4ff_callback_t *mp4cb;
 	int32_t track;
 	float file_time, total_time;
 	int32_t scale;
@@ -113,15 +117,13 @@ mp4_decode(struct decoder *mpd_decoder, struct input_stream *input_stream)
 	double seek_where = 0;
 	bool initialized = false;
 
-	mp4cb = xmalloc(sizeof(mp4ff_callback_t));
-	mp4cb->read = mp4_read;
-	mp4cb->seek = mp4_seek;
-	mp4cb->user_data = input_stream;
+	callback.read = mp4_read;
+	callback.seek = mp4_seek;
+	callback.user_data = input_stream;
 
-	mp4fh = mp4ff_open_read(mp4cb);
+	mp4fh = mp4ff_open_read(&callback);
 	if (!mp4fh) {
 		ERROR("Input does not appear to be a mp4 stream.\n");
-		free(mp4cb);
 		return false;
 	}
 
@@ -129,7 +131,6 @@ mp4_decode(struct decoder *mpd_decoder, struct input_stream *input_stream)
 	if (track < 0) {
 		ERROR("No AAC track found in mp4 stream.\n");
 		mp4ff_close(mp4fh);
-		free(mp4cb);
 		return false;
 	}
 
@@ -156,7 +157,6 @@ mp4_decode(struct decoder *mpd_decoder, struct input_stream *input_stream)
 		ERROR("Error not a AAC stream.\n");
 		faacDecClose(decoder);
 		mp4ff_close(mp4fh);
-		free(mp4cb);
 		return false;
 	}
 
@@ -172,7 +172,6 @@ mp4_decode(struct decoder *mpd_decoder, struct input_stream *input_stream)
 		ERROR("Error getting audio format of mp4 AAC track.\n");
 		faacDecClose(decoder);
 		mp4ff_close(mp4fh);
-		free(mp4cb);
 		return false;
 	}
 	total_time = ((float)file_time) / scale;
@@ -182,7 +181,6 @@ mp4_decode(struct decoder *mpd_decoder, struct input_stream *input_stream)
 		 ERROR("Integer overflow.\n");
 		 faacDecClose(decoder);
 		 mp4ff_close(mp4fh);
-		 free(mp4cb);
 		 return false;
 	}
 
@@ -293,7 +291,6 @@ mp4_decode(struct decoder *mpd_decoder, struct input_stream *input_stream)
 	free(seek_table);
 	faacDecClose(decoder);
 	mp4ff_close(mp4fh);
-	free(mp4cb);
 
 	if (!initialized)
 		return false;
@@ -309,8 +306,12 @@ mp4_load_tag(const char *file, int *tag_found)
 {
 	struct tag *ret = NULL;
 	struct input_stream input_stream;
+	mp4ff_callback_t callback = {
+		.read = mp4_read,
+		.seek = mp4_seek,
+		.user_data = &input_stream,
+	};
 	mp4ff_t *mp4fh;
-	mp4ff_callback_t *callback;
 	int32_t track;
 	int32_t file_time;
 	int32_t scale;
@@ -323,14 +324,8 @@ mp4_load_tag(const char *file, int *tag_found)
 		return NULL;
 	}
 
-	callback = xmalloc(sizeof(mp4ff_callback_t));
-	callback->read = mp4_read;
-	callback->seek = mp4_seek;
-	callback->user_data = &input_stream;
-
-	mp4fh = mp4ff_open_read(callback);
+	mp4fh = mp4ff_open_read(&callback);
 	if (!mp4fh) {
-		free(callback);
 		input_stream_close(&input_stream);
 		return NULL;
 	}
@@ -339,7 +334,6 @@ mp4_load_tag(const char *file, int *tag_found)
 	if (track < 0) {
 		mp4ff_close(mp4fh);
 		input_stream_close(&input_stream);
-		free(callback);
 		return NULL;
 	}
 
@@ -349,7 +343,6 @@ mp4_load_tag(const char *file, int *tag_found)
 	if (scale < 0) {
 		mp4ff_close(mp4fh);
 		input_stream_close(&input_stream);
-		free(callback);
 		tag_free(ret);
 		return NULL;
 	}
