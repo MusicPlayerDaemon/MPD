@@ -90,6 +90,16 @@ static inline void tag_add_item(struct tag *tag, enum tag_type itemType,
 struct tag *tag_dup(const struct tag *tag);
 
 /**
+ * Returns true if the tag contains no items.  This ignores the "time"
+ * attribute.
+ */
+static inline bool
+tag_is_empty(const struct tag *tag)
+{
+	return tag->numOfItems == 0;
+}
+
+/**
  * Checks whether the tag contains one or more items with
  * the specified type.
  */
