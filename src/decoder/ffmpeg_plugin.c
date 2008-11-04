@@ -130,6 +130,17 @@ static bool ffmpeg_init(void)
 	return true;
 }
 
+static int
+ffmpeg_find_audio_stream(const AVFormatContext *format_context)
+{
+	for (unsigned i = 0; i < format_context->nb_streams; ++i)
+		if (format_context->streams[i]->codec->codec_type ==
+		    CODEC_TYPE_AUDIO)
+			return i;
+
+	return -1;
+}
+
 static bool
 ffmpeg_helper(struct input_stream *input,
 	      bool (*callback)(struct ffmpeg_context *ctx),
@@ -139,7 +150,6 @@ ffmpeg_helper(struct input_stream *input,
 	AVCodecContext *codec_context;
 	AVCodec *codec;
 	int audio_stream;
-	unsigned i;
 	struct ffmpeg_stream stream = {
 		.url = "mpd://X", /* only the mpd:// prefix matters */
 	};
@@ -163,14 +173,7 @@ ffmpeg_helper(struct input_stream *input,
 		return false;
 	}
 
-	audio_stream = -1;
-	for(i=0; i<format_context->nb_streams; i++) {
-		if (format_context->streams[i]->codec->codec_type==CODEC_TYPE_AUDIO &&
-		    audio_stream < 0) {
-			audio_stream=i;
-		}
-	}
-
+	audio_stream = ffmpeg_find_audio_stream(format_context);
 	if (audio_stream == -1) {
 		ERROR("No audio stream inside!\n");
 		return false;
