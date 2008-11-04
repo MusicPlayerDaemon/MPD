@@ -17,13 +17,15 @@
  */
 
 #include "../decoder_api.h"
-#include "../utils.h"
-#include "../log.h"
 
 #include "mp4ff.h"
 
 #include <limits.h>
 #include <faad.h>
+#include <glib.h>
+#include <stdlib.h>
+#include <unistd.h>
+
 /* all code here is either based on or copied from FAAD2's frontend code */
 
 static int
@@ -123,13 +125,13 @@ mp4_decode(struct decoder *mpd_decoder, struct input_stream *input_stream)
 
 	mp4fh = mp4ff_open_read(&callback);
 	if (!mp4fh) {
-		ERROR("Input does not appear to be a mp4 stream.\n");
+		g_warning("Input does not appear to be a mp4 stream.\n");
 		return false;
 	}
 
 	track = mp4_get_aac_track(mp4fh);
 	if (track < 0) {
-		ERROR("No AAC track found in mp4 stream.\n");
+		g_warning("No AAC track found in mp4 stream.\n");
 		mp4ff_close(mp4fh);
 		return false;
 	}
@@ -154,7 +156,7 @@ mp4_decode(struct decoder *mpd_decoder, struct input_stream *input_stream)
 
 	if (faacDecInit2(decoder, mp4_buffer, mp4_buffer_size,
 			 &sample_rate, &channels) < 0) {
-		ERROR("Error not a AAC stream.\n");
+		g_warning("Not an AAC stream.\n");
 		faacDecClose(decoder);
 		mp4ff_close(mp4fh);
 		return false;
@@ -165,11 +167,10 @@ mp4_decode(struct decoder *mpd_decoder, struct input_stream *input_stream)
 	file_time = mp4ff_get_track_duration_use_offsets(mp4fh, track);
 	scale = mp4ff_time_scale(mp4fh, track);
 
-	if (mp4_buffer)
-		free(mp4_buffer);
+	g_free(mp4_buffer);
 
 	if (scale < 0) {
-		ERROR("Error getting audio format of mp4 AAC track.\n");
+		g_warning("Error getting audio format of mp4 AAC track.\n");
 		faacDecClose(decoder);
 		mp4ff_close(mp4fh);
 		return false;
@@ -178,7 +179,7 @@ mp4_decode(struct decoder *mpd_decoder, struct input_stream *input_stream)
 
 	num_samples = mp4ff_num_samples(mp4fh, track);
 	if (num_samples > (long)(INT_MAX / sizeof(float))) {
-		 ERROR("Integer overflow.\n");
+		 g_warning("Integer overflow.\n");
 		 faacDecClose(decoder);
 		 mp4ff_close(mp4fh);
 		 return false;
@@ -186,7 +187,7 @@ mp4_decode(struct decoder *mpd_decoder, struct input_stream *input_stream)
 
 	file_time = 0.0;
 
-	seek_table = xmalloc(sizeof(float) * num_samples);
+	seek_table = g_malloc(sizeof(float) * num_samples);
 
 	for (sample_id = 0; sample_id < num_samples; sample_id++) {
 		if (decoder_get_command(mpd_decoder) == DECODE_COMMAND_SEEK) {
@@ -245,8 +246,8 @@ mp4_decode(struct decoder *mpd_decoder, struct input_stream *input_stream)
 		if (mp4_buffer)
 			free(mp4_buffer);
 		if (frame_info.error > 0) {
-			ERROR("faad2 error: %s\n",
-			      faacDecGetErrorMessage(frame_info.error));
+			g_warning("faad2 error: %s\n",
+				  faacDecGetErrorMessage(frame_info.error));
 			break;
 		}
 
@@ -318,7 +319,7 @@ mp4_load_tag(const char *file)
 	int i;
 
 	if (!input_stream_open(&input_stream, file)) {
-		DEBUG("mp4_load_tag: Failed to open file: %s\n", file);
+		g_warning("mp4_load_tag: Failed to open file: %s\n", file);
 		return NULL;
 	}
 
