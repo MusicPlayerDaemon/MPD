@@ -128,6 +128,7 @@ mp4_decode(struct decoder *mpd_decoder, struct input_stream *input_stream)
 	bool seeking = false;
 	double seek_where = 0;
 	bool initialized = false;
+	enum decoder_command cmd = DECODE_COMMAND_NONE;
 
 	mp4fh = mp4ff_open_read(&callback);
 	if (!mp4fh) {
@@ -191,8 +192,10 @@ mp4_decode(struct decoder *mpd_decoder, struct input_stream *input_stream)
 
 	seek_table = g_malloc(sizeof(float) * num_samples);
 
-	for (sample_id = 0; sample_id < num_samples; sample_id++) {
-		if (decoder_get_command(mpd_decoder) == DECODE_COMMAND_SEEK) {
+	for (sample_id = 0;
+	     sample_id < num_samples && cmd != DECODE_COMMAND_STOP;
+	     sample_id++) {
+		if (cmd == DECODE_COMMAND_SEEK) {
 			seeking = true;
 			seek_where = decoder_seek_where(mpd_decoder);
 		}
@@ -288,11 +291,9 @@ mp4_decode(struct decoder *mpd_decoder, struct input_stream *input_stream)
 
 		sample_buffer += offset * channels * 2;
 
-		decoder_data(mpd_decoder, input_stream, sample_buffer,
-			     sample_buffer_length, file_time,
-			     bit_rate, NULL);
-		if (decoder_get_command(mpd_decoder) == DECODE_COMMAND_STOP)
-			break;
+		cmd = decoder_data(mpd_decoder, input_stream,
+				   sample_buffer, sample_buffer_length,
+				   file_time, bit_rate, NULL);
 	}
 
 	free(seek_table);
