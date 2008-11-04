@@ -44,7 +44,6 @@ static struct {
 	{ "performer", TAG_ITEM_PERFORMER },
 	{ "comment", TAG_ITEM_COMMENT },
 	{ "disc", TAG_ITEM_DISC },
-	{ NULL, 0 }
 };
 
 /*
@@ -283,7 +282,7 @@ static struct tag *wavpack_tagdup(const char *fname)
 	char error[ERRORLEN];
 	char *s;
 	int ssize;
-	int i, j;
+	int j;
 
 	wpc = WavpackOpenFileInput(fname, error, OPEN_TAGS, 0);
 	if (wpc == NULL) {
@@ -299,7 +298,7 @@ static struct tag *wavpack_tagdup(const char *fname)
 	ssize = 0;
 	s = NULL;
 
-	for (i = 0; tagtypes[i].name != NULL; ++i) {
+	for (unsigned i = 0; i < G_N_ELEMENTS(tagtypes); ++i) {
 		j = WavpackGetTagItem(wpc, tagtypes[i].name, NULL, 0);
 		if (j > 0) {
 			++j;
