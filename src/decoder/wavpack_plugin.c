@@ -31,7 +31,7 @@
 
 static struct {
 	const char *name;
-	int type;
+	enum tag_type type;
 } tagtypes[] = {
 	{ "artist", TAG_ITEM_ARTIST },
 	{ "album", TAG_ITEM_ALBUM },
