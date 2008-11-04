@@ -40,166 +40,167 @@
 #include <libavformat/avio.h>
 #endif
 
-typedef struct {
-	int audioStream;
-	AVFormatContext *pFormatCtx;
-	AVCodecContext *aCodecCtx;
-	AVCodec *aCodec;
+struct ffmpeg_context {
+	int audio_stream;
+	AVFormatContext *format_context;
+	AVCodecContext *codec_context;
+	AVCodec *codec;
 	struct decoder *decoder;
 	struct input_stream *input;
 	struct tag *tag;
-} BasePtrs;
+};
 
-typedef struct {
-	/** hack - see url_to_base() */
+struct ffmpeg_stream {
+	/** hack - see url_to_struct() */
 	char url[8];
 
 	struct decoder *decoder;
 	struct input_stream *input;
-} FopsHelper;
+};
 
 /**
- * Convert a faked mpd:// URL to a FopsHelper structure.  This is a
+ * Convert a faked mpd:// URL to a ffmpeg_stream structure.  This is a
  * hack because ffmpeg does not provide a nice API for passing a
  * user-defined pointer to mpdurl_open().
  */
-static FopsHelper *url_to_base(const char *url)
+static struct ffmpeg_stream *url_to_struct(const char *url)
 {
 	union {
 		const char *in;
-		FopsHelper *out;
+		struct ffmpeg_stream *out;
 	} u = { .in = url };
 	return u.out;
 }
 
-static int mpdurl_open(URLContext *h, const char *filename,
+static int mpd_ffmpeg_open(URLContext *h, const char *filename,
 		       mpd_unused int flags)
 {
-	FopsHelper *base = url_to_base(filename);
-	h->priv_data = base;
-	h->is_streamed = (base->input->seekable ? 0 : 1);
+	struct ffmpeg_stream *stream = url_to_struct(filename);
+	h->priv_data = stream;
+	h->is_streamed = stream->input->seekable ? 0 : 1;
 	return 0;
 }
 
-static int mpdurl_read(URLContext *h, unsigned char *buf, int size)
+static int mpd_ffmpeg_read(URLContext *h, unsigned char *buf, int size)
 {
-	FopsHelper *base = (FopsHelper *) h->priv_data;
+	struct ffmpeg_stream *stream = (struct ffmpeg_stream *) h->priv_data;
 
 	while (true) {
-		size_t ret = decoder_read(base->decoder, base->input,
+		size_t ret = decoder_read(stream->decoder, stream->input,
 					  (void *)buf, size);
 		if (ret > 0)
 			return ret;
 
-		if (input_stream_eof(base->input) ||
-		    (base->decoder &&
-		     decoder_get_command(base->decoder) != DECODE_COMMAND_NONE))
+		if (input_stream_eof(stream->input) ||
+		    (stream->decoder &&
+		     decoder_get_command(stream->decoder) != DECODE_COMMAND_NONE))
 			return 0;
 
 		my_usleep(10000);
 	}
 }
 
-static int64_t mpdurl_seek(URLContext *h, int64_t pos, int whence)
+static int64_t mpd_ffmpeg_seek(URLContext *h, int64_t pos, int whence)
 {
-	FopsHelper *base = (FopsHelper *) h->priv_data;
+	struct ffmpeg_stream *stream = (struct ffmpeg_stream *) h->priv_data;
 	if (whence != AVSEEK_SIZE) { //only ftell
-		(void) input_stream_seek(base->input, pos, whence);
+		(void) input_stream_seek(stream->input, pos, whence);
 	}
-	return base->input->offset;
+	return stream->input->offset;
 }
 
-static int mpdurl_close(URLContext *h)
+static int mpd_ffmpeg_close(URLContext *h)
 {
 	h->priv_data = 0;
 	return 0;
 }
 
-static URLProtocol mpdurl_fileops = {
+static URLProtocol mpd_ffmpeg_fileops = {
 	.name = "mpd",
-	.url_open = mpdurl_open,
-	.url_read = mpdurl_read,
-	.url_seek = mpdurl_seek,
-	.url_close = mpdurl_close,
+	.url_open = mpd_ffmpeg_open,
+	.url_read = mpd_ffmpeg_read,
+	.url_seek = mpd_ffmpeg_seek,
+	.url_close = mpd_ffmpeg_close,
 };
 
 static bool ffmpeg_init(void)
 {
 	av_register_all();
-	register_protocol(&mpdurl_fileops);
+	register_protocol(&mpd_ffmpeg_fileops);
 	return true;
 }
 
 static bool
-ffmpeg_helper(struct input_stream *input, bool (*callback)(BasePtrs *ptrs),
-	      BasePtrs *ptrs)
+ffmpeg_helper(struct input_stream *input,
+	      bool (*callback)(struct ffmpeg_context *ctx),
+	      struct ffmpeg_context *ctx)
 {
-	AVFormatContext *pFormatCtx;
-	AVCodecContext *aCodecCtx;
-	AVCodec *aCodec;
-	int audioStream;
+	AVFormatContext *format_context;
+	AVCodecContext *codec_context;
+	AVCodec *codec;
+	int audio_stream;
 	unsigned i;
-	FopsHelper fopshelp = {
+	struct ffmpeg_stream stream = {
 		.url = "mpd://X", /* only the mpd:// prefix matters */
 	};
 	bool ret;
 
-	fopshelp.input = input;
-	if (ptrs && ptrs->decoder) {
-		fopshelp.decoder = ptrs->decoder; //are we in decoding loop ?
+	stream.input = input;
+	if (ctx && ctx->decoder) {
+		stream.decoder = ctx->decoder; //are we in decoding loop ?
 	} else {
-		fopshelp.decoder = NULL;
+		stream.decoder = NULL;
 	}
 
 	//ffmpeg works with ours "fileops" helper
-	if (av_open_input_file(&pFormatCtx, fopshelp.url, NULL, 0, NULL)!=0) {
+	if (av_open_input_file(&format_context, stream.url, NULL, 0, NULL) != 0) {
 		ERROR("Open failed!\n");
 		return false;
 	}
 
-	if (av_find_stream_info(pFormatCtx)<0) {
+	if (av_find_stream_info(format_context)<0) {
 		ERROR("Couldn't find stream info!\n");
 		return false;
 	}
 
-	audioStream = -1;
-	for(i=0; i<pFormatCtx->nb_streams; i++) {
-		if (pFormatCtx->streams[i]->codec->codec_type==CODEC_TYPE_AUDIO &&
-		    audioStream < 0) {
-			audioStream=i;
+	audio_stream = -1;
+	for(i=0; i<format_context->nb_streams; i++) {
+		if (format_context->streams[i]->codec->codec_type==CODEC_TYPE_AUDIO &&
+		    audio_stream < 0) {
+			audio_stream=i;
 		}
 	}
 
-	if(audioStream==-1) {
+	if (audio_stream == -1) {
 		ERROR("No audio stream inside!\n");
 		return false;
 	}
 
-	aCodecCtx = pFormatCtx->streams[audioStream]->codec;
-	aCodec = avcodec_find_decoder(aCodecCtx->codec_id);
+	codec_context = format_context->streams[audio_stream]->codec;
+	codec = avcodec_find_decoder(codec_context->codec_id);
 
-	if (!aCodec) {
+	if (!codec) {
 		ERROR("Unsupported audio codec!\n");
 		return false;
 	}
 
-	if (avcodec_open(aCodecCtx, aCodec)<0) {
+	if (avcodec_open(codec_context, codec)<0) {
 		ERROR("Could not open codec!\n");
 		return false;
 	}
 
 	if (callback) {
-		ptrs->audioStream = audioStream;
-		ptrs->pFormatCtx = pFormatCtx;
-		ptrs->aCodecCtx = aCodecCtx;
-		ptrs->aCodec = aCodec;
+		ctx->audio_stream = audio_stream;
+		ctx->format_context = format_context;
+		ctx->codec_context = codec_context;
+		ctx->codec = codec;
 
-		ret = (*callback)( ptrs );
+		ret = callback(ctx);
 	} else
 		ret = true;
 
-	avcodec_close(aCodecCtx);
-	av_close_input_file(pFormatCtx);
+	avcodec_close(codec_context);
+	av_close_input_file(format_context);
 
 	return ret;
 }
@@ -243,11 +244,11 @@ ffmpeg_send_packet(struct decoder *decoder, struct input_stream *is,
 }
 
 static bool
-ffmpeg_decode_internal(BasePtrs *base)
+ffmpeg_decode_internal(struct ffmpeg_context *ctx)
 {
-	struct decoder *decoder = base->decoder;
-	AVCodecContext *aCodecCtx = base->aCodecCtx;
-	AVFormatContext *pFormatCtx = base->pFormatCtx;
+	struct decoder *decoder = ctx->decoder;
+	AVCodecContext *codec_context = ctx->codec_context;
+	AVFormatContext *format_context = ctx->format_context;
 	AVPacket packet;
 	struct audio_format audio_format;
 	enum decoder_command cmd;
@@ -255,31 +256,31 @@ ffmpeg_decode_internal(BasePtrs *base)
 
 	total_time = 0;
 
-	if (aCodecCtx->channels > 2) {
-		aCodecCtx->channels = 2;
+	if (codec_context->channels > 2) {
+		codec_context->channels = 2;
 	}
 
 	audio_format.bits = (uint8_t)16;
-	audio_format.sample_rate = (unsigned int)aCodecCtx->sample_rate;
-	audio_format.channels = aCodecCtx->channels;
+	audio_format.sample_rate = (unsigned int)codec_context->sample_rate;
+	audio_format.channels = codec_context->channels;
 
 	//there is some problem with this on some demux (mp3 at least)
-	if (pFormatCtx->duration != (int)AV_NOPTS_VALUE) {
-		total_time = pFormatCtx->duration / AV_TIME_BASE;
+	if (format_context->duration != (int)AV_NOPTS_VALUE) {
+		total_time = format_context->duration / AV_TIME_BASE;
 	}
 
 	decoder_initialized(decoder, &audio_format,
-			    base->input->seekable, total_time);
+			    ctx->input->seekable, total_time);
 
 	do {
-		if (av_read_frame(pFormatCtx, &packet) < 0)
+		if (av_read_frame(format_context, &packet) < 0)
 			/* end of file */
 			break;
 
-		if (packet.stream_index == base->audioStream)
-			cmd = ffmpeg_send_packet(decoder, base->input,
-						 &packet, aCodecCtx,
-						 &pFormatCtx->streams[base->audioStream]->time_base);
+		if (packet.stream_index == ctx->audio_stream)
+			cmd = ffmpeg_send_packet(decoder, ctx->input,
+						 &packet, codec_context,
+						 &format_context->streams[ctx->audio_stream]->time_base);
 		else
 			cmd = decoder_get_command(decoder);
 
@@ -288,7 +289,7 @@ ffmpeg_decode_internal(BasePtrs *base)
 		if (cmd == DECODE_COMMAND_SEEK) {
 			current = decoder_seek_where(decoder) * AV_TIME_BASE;
 
-			if (av_seek_frame(pFormatCtx, -1, current, 0) < 0)
+			if (av_seek_frame(format_context, -1, current, 0) < 0)
 				decoder_seek_error(decoder);
 			else
 				decoder_command_finished(decoder);
@@ -301,20 +302,20 @@ ffmpeg_decode_internal(BasePtrs *base)
 static bool
 ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 {
-	BasePtrs base;
+	struct ffmpeg_context ctx;
 
-	base.input = input;
-	base.decoder = decoder;
+	ctx.input = input;
+	ctx.decoder = decoder;
 
-	return ffmpeg_helper(input, ffmpeg_decode_internal, &base);
+	return ffmpeg_helper(input, ffmpeg_decode_internal, &ctx);
 }
 
-static bool ffmpeg_tag_internal(BasePtrs *base)
+static bool ffmpeg_tag_internal(struct ffmpeg_context *ctx)
 {
-	struct tag *tag = (struct tag *) base->tag;
+	struct tag *tag = (struct tag *) ctx->tag;
 
-	if (base->pFormatCtx->duration != (int)AV_NOPTS_VALUE) {
-		tag->time = base->pFormatCtx->duration / AV_TIME_BASE;
+	if (ctx->format_context->duration != (int)AV_NOPTS_VALUE) {
+		tag->time = ctx->format_context->duration / AV_TIME_BASE;
 	} else {
 		tag->time = 0;
 	}
@@ -326,7 +327,7 @@ static bool ffmpeg_tag_internal(BasePtrs *base)
 static struct tag *ffmpeg_tag(const char *file)
 {
 	struct input_stream input;
-	BasePtrs base;
+	struct ffmpeg_context ctx;
 	bool ret;
 
 	if (!input_stream_open(&input, file)) {
@@ -334,18 +335,18 @@ static struct tag *ffmpeg_tag(const char *file)
 		return NULL;
 	}
 
-	base.decoder = NULL;
-	base.tag = tag_new();
+	ctx.decoder = NULL;
+	ctx.tag = tag_new();
 
-	ret = ffmpeg_helper(&input, ffmpeg_tag_internal, &base);
+	ret = ffmpeg_helper(&input, ffmpeg_tag_internal, &ctx);
 	if (!ret) {
-		tag_free(base.tag);
-		base.tag = NULL;
+		tag_free(ctx.tag);
+		ctx.tag = NULL;
 	}
 
 	input_stream_close(&input);
 
-	return base.tag;
+	return ctx.tag;
 }
 
 /**
@@ -357,14 +358,14 @@ static struct tag *ffmpeg_tag(const char *file)
  * only that files
  */
 
-static const char *const ffmpeg_Suffixes[] = {
+static const char *const ffmpeg_suffixes[] = {
 	"wma", "asf", "wmv", "mpeg", "mpg", "avi", "vob", "mov", "qt", "swf", "rm", "swf",
 	"mp1", "mp2", "mp3", "mp4", "m4a", "flac", "ogg", "wav", "au", "aiff", "aif", "ac3", "aac", "mpc",
 	NULL
 };
 
 //not sure if this is correct...
-static const char *const ffmpeg_Mimetypes[] = {
+static const char *const ffmpeg_mime_types[] = {
 	"video/x-ms-asf",
 	"audio/x-ms-wma",
 	"audio/x-ms-wax",
@@ -378,13 +379,13 @@ static const char *const ffmpeg_Mimetypes[] = {
 	NULL
 };
 
-const struct decoder_plugin ffmpegPlugin = {
+const struct decoder_plugin ffmpeg_plugin = {
 	.name = "ffmpeg",
 	.init = ffmpeg_init,
 	.try_decode = ffmpeg_try_decode,
 	.stream_decode = ffmpeg_decode,
 	.tag_dup = ffmpeg_tag,
 	.stream_types = INPUT_PLUGIN_STREAM_URL | INPUT_PLUGIN_STREAM_FILE,
-	.suffixes = ffmpeg_Suffixes,
-	.mime_types = ffmpeg_Mimetypes
+	.suffixes = ffmpeg_suffixes,
+	.mime_types = ffmpeg_mime_types
 };

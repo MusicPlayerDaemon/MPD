@@ -31,7 +31,7 @@ extern const struct decoder_plugin aacPlugin;
 extern const struct decoder_plugin mpcPlugin;
 extern const struct decoder_plugin wavpackPlugin;
 extern const struct decoder_plugin modPlugin;
-extern const struct decoder_plugin ffmpegPlugin;
+extern const struct decoder_plugin ffmpeg_plugin;
 
 static const struct decoder_plugin *const decoder_plugins[] = {
 #ifdef HAVE_MAD
@@ -65,7 +65,7 @@ static const struct decoder_plugin *const decoder_plugins[] = {
 	&modPlugin,
 #endif
 #ifdef HAVE_FFMPEG
-	&ffmpegPlugin,
+	&ffmpeg_plugin,
 #endif
 };
 
