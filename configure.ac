@@ -756,6 +756,14 @@ if test x$enable_ffmpeg = xyes; then
 fi
 
 if test x$enable_ffmpeg = xyes; then
+	old_LIBS=$LIBS
+	LIBS="$LIBS $FFMPEG_LIBS"
+	AC_CHECK_LIB(avcodec, avcodec_decode_audio2,,
+		enable_ffmpeg=no)
+	LIBS=$old_LIBS
+fi
+
+if test x$enable_ffmpeg = xyes; then
 	# prior to ffmpeg svn12865, you had to specify include files
 	# without path prefix
 	old_CPPCFLAGS=$CPPFLAGS
