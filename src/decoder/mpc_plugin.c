@@ -301,6 +301,5 @@ const struct decoder_plugin mpcPlugin = {
 	.name = "mpc",
 	.stream_decode = mpc_decode,
 	.tag_dup = mpcTagDup,
-	.stream_types = INPUT_PLUGIN_STREAM_URL | INPUT_PLUGIN_STREAM_FILE,
 	.suffixes = mpcSuffixes,
 };

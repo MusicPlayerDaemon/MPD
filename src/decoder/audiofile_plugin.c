@@ -141,6 +141,5 @@ const struct decoder_plugin audiofilePlugin = {
 	.name = "audiofile",
 	.file_decode = audiofile_decode,
 	.tag_dup = audiofileTagDup,
-	.stream_types = INPUT_PLUGIN_STREAM_FILE,
 	.suffixes = audiofileSuffixes,
 };

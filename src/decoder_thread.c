@@ -108,8 +108,6 @@ static void decoder_run(void)
 		while ((plugin = decoder_plugin_from_mime_type(input_stream.mime, next++))) {
 			if (plugin->stream_decode == NULL)
 				continue;
-			if (!(plugin->stream_types & INPUT_PLUGIN_STREAM_URL))
-				continue;
 			if (!decoder_try_decode(plugin, &input_stream))
 				continue;
 			ret = plugin->stream_decode(&decoder, &input_stream);
@@ -122,9 +120,6 @@ static void decoder_run(void)
 			next = 0;
 			while ((plugin = decoder_plugin_from_suffix(s, next++))) {
 				if (plugin->stream_decode == NULL)
-					continue;
-				if (!(plugin->stream_types &
-				      INPUT_PLUGIN_STREAM_URL))
 					continue;
 				if (!decoder_try_decode(plugin, &input_stream))
 					continue;
@@ -150,9 +145,6 @@ static void decoder_run(void)
 		unsigned int next = 0;
 		const char *s = getSuffix(uri);
 		while ((plugin = decoder_plugin_from_suffix(s, next++))) {
-			if (!plugin->stream_types & INPUT_PLUGIN_STREAM_FILE)
-				continue;
-
 			if (!decoder_try_decode(plugin, &input_stream))
 				continue;
 

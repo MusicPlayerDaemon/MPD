@@ -35,11 +35,6 @@
 
 #include <stdbool.h>
 
-/* valid values for streamTypes in the InputPlugin struct: */
-#define INPUT_PLUGIN_STREAM_FILE	0x01
-#define INPUT_PLUGIN_STREAM_URL		0x02
-
-
 enum decoder_command {
 	DECODE_COMMAND_NONE = 0,
 	DECODE_COMMAND_START,
@@ -93,9 +88,6 @@ struct decoder_plugin {
 	 * be found or read
 	 */
 	struct tag *(*tag_dup)(const char *file);
-
-	/* one or more of the INPUT_PLUGIN_STREAM_* values OR'd together */
-	unsigned char stream_types;
 
 	/* last element in these arrays must always be a NULL: */
 	const char *const*suffixes;

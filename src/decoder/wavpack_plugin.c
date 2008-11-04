@@ -539,7 +539,6 @@ const struct decoder_plugin wavpack_plugin = {
 	.stream_decode = wavpack_streamdecode,
 	.file_decode = wavpack_filedecode,
 	.tag_dup = wavpack_tagdup,
-	.stream_types = INPUT_PLUGIN_STREAM_FILE | INPUT_PLUGIN_STREAM_URL,
 	.suffixes = wavpack_suffixes,
 	.mime_types = wavpack_mime_types
 };

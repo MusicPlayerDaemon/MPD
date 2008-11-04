@@ -346,7 +346,6 @@ const struct decoder_plugin oggflacPlugin = {
 	.try_decode = oggflac_try_decode,
 	.stream_decode = oggflac_decode,
 	.tag_dup = oggflac_TagDup,
-	.stream_types = INPUT_PLUGIN_STREAM_URL | INPUT_PLUGIN_STREAM_FILE,
 	.suffixes = oggflac_Suffixes,
 	.mime_types = oggflac_mime_types
 };

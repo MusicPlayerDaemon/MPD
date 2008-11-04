@@ -579,7 +579,6 @@ const struct decoder_plugin aacPlugin = {
 	.stream_decode = aac_stream_decode,
 	.file_decode = aac_decode,
 	.tag_dup = aacTagDup,
-	.stream_types = INPUT_PLUGIN_STREAM_FILE | INPUT_PLUGIN_STREAM_URL,
 	.suffixes = aac_suffixes,
 	.mime_types = aac_mimeTypes
 };

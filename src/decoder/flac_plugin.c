@@ -443,7 +443,6 @@ const struct decoder_plugin oggflacPlugin = {
 	.try_decode = oggflac_try_decode,
 	.stream_decode = oggflac_decode,
 	.tag_dup = oggflac_tag_dup,
-	.stream_types = INPUT_PLUGIN_STREAM_URL | INPUT_PLUGIN_STREAM_FILE,
 	.suffixes = oggflac_suffixes,
 	.mime_types = oggflac_mime_types
 };
@@ -459,7 +458,6 @@ const struct decoder_plugin flacPlugin = {
 	.name = "flac",
 	.stream_decode = flac_decode,
 	.tag_dup = flacTagDup,
-	.stream_types = INPUT_PLUGIN_STREAM_URL | INPUT_PLUGIN_STREAM_FILE,
 	.suffixes = flacSuffixes,
 	.mime_types = flac_mime_types
 };

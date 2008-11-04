@@ -417,7 +417,6 @@ const struct decoder_plugin mp4_plugin = {
 	.name = "mp4",
 	.stream_decode = mp4_decode,
 	.tag_dup = mp4_tag_dup,
-	.stream_types = INPUT_PLUGIN_STREAM_FILE | INPUT_PLUGIN_STREAM_URL,
 	.suffixes = mp4_suffixes,
 	.mime_types = mp4_mime_types,
 };

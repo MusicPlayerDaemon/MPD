@@ -260,6 +260,5 @@ const struct decoder_plugin modPlugin = {
 	.finish = mod_finishMikMod,
 	.file_decode = mod_decode,
 	.tag_dup = modTagDup,
-	.stream_types = INPUT_PLUGIN_STREAM_FILE,
 	.suffixes = modSuffixes,
 };

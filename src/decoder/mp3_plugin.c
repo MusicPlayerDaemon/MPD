@@ -1115,7 +1115,6 @@ const struct decoder_plugin mp3Plugin = {
 	.init = mp3_plugin_init,
 	.stream_decode = mp3_decode,
 	.tag_dup = mp3_tag_dup,
-	.stream_types = INPUT_PLUGIN_STREAM_FILE | INPUT_PLUGIN_STREAM_URL,
 	.suffixes = mp3_suffixes,
 	.mime_types = mp3_mime_types
 };

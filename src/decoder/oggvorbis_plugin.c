@@ -370,7 +370,6 @@ const struct decoder_plugin oggvorbisPlugin = {
 	.try_decode = oggvorbis_try_decode,
 	.stream_decode = oggvorbis_decode,
 	.tag_dup = oggvorbis_TagDup,
-	.stream_types = INPUT_PLUGIN_STREAM_URL | INPUT_PLUGIN_STREAM_FILE,
 	.suffixes = oggvorbis_Suffixes,
 	.mime_types = oggvorbis_MimeTypes
 };

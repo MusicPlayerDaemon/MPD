@@ -373,7 +373,6 @@ const struct decoder_plugin ffmpeg_plugin = {
 	.try_decode = ffmpeg_try_decode,
 	.stream_decode = ffmpeg_decode,
 	.tag_dup = ffmpeg_tag,
-	.stream_types = INPUT_PLUGIN_STREAM_URL | INPUT_PLUGIN_STREAM_FILE,
 	.suffixes = ffmpeg_suffixes,
 	.mime_types = ffmpeg_mime_types
 };
