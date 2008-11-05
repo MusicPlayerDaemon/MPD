@@ -1,5 +1,16 @@
                        Music Player Daemon (MPD) - INSTALL
 
+
+Dependencies
+------------
+
+gcc - http://gcc.gnu.org/
+Any other C99 compliant compiler should also work.
+
+glib - http://www.gtk.org/
+General-purpose utility library.
+
+
 Optional Output Dependencies
 ----------------------------
 
@@ -25,6 +36,8 @@ A low-latency sound daemon.
 
 libshout - http://www.icecast.org/
 For streaming to an Icecast or Shoutcast server.
+You also need an encoder: either libvorbisenc (ogg), or liblame (mp3).
+
 
 Optional Input Dependencies
 ---------------------------
@@ -60,6 +73,10 @@ For Musepack support.
 
 MikMod - http://mikmod.raphnet.net/
 For MOD support.  You will need libmikmod.
+
+libavcodec, libavformat (ffmpeg) - http://ffmpeg.mplayerhq.hu/
+Multi-codec library.
+
 
 Optional Miscellaneous Dependencies
 -----------------------------------
