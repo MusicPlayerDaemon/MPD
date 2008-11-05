@@ -40,6 +40,8 @@
 
 static unsigned int log_threshold = G_LOG_LEVEL_INFO;
 
+static const char *log_charset;
+
 static bool stdout_mode = true;
 static int out_fd = -1;
 static int err_fd = -1;
@@ -71,15 +73,26 @@ mpd_log_func(G_GNUC_UNUSED const gchar *log_domain,
 {
 	FILE *file = log_level <= G_LOG_LEVEL_WARNING
 		? stderr : stdout;
+	char *converted;
+
+	converted = g_convert_with_fallback(message, -1,
+					    log_charset, "utf-8",
+					    NULL, NULL, NULL, NULL);
+	if (converted != NULL)
+		message = converted;
 
 	fprintf(file, "%s%s",
 		stdout_mode ? "" : log_date(),
 		message);
+
+	g_free(converted);
 }
 
 void initLog(bool verbose)
 {
 	ConfigParam *param;
+
+	g_get_charset(&log_charset);
 
 	g_log_set_default_handler(mpd_log_func, NULL);
 
@@ -136,6 +149,7 @@ void setup_log_output(bool use_stdout)
 	if (!use_stdout) {
 		redirect_logs();
 		stdout_mode = false;
+		log_charset = NULL;
 	}
 }
 
