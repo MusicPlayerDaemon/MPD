@@ -89,22 +89,20 @@ const char *path_get_fs_charset(void)
 void path_global_init(void)
 {
 	ConfigParam *fs_charset_param = getConfigParam(CONF_FS_CHARSET);
-
-	char *charset = NULL;
+	const char *charset = NULL;
 
 	if (fs_charset_param) {
-		charset = xstrdup(fs_charset_param->value);
+		charset = fs_charset_param->value;
 	} else {
 		const gchar **encodings;
 		g_get_filename_charsets(&encodings);
 
 		if (encodings[0] != NULL && *encodings[0] != '\0')
-			charset = g_strdup(encodings[0]);
+			charset = encodings[0];
 	}
 
 	if (charset) {
 		path_set_fs_charset(charset);
-		free(charset);
 	} else {
 		WARNING("setting filesystem charset to ISO-8859-1\n");
 		path_set_fs_charset("ISO-8859-1");
