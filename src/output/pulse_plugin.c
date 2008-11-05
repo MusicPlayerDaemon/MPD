@@ -162,6 +162,9 @@ static void pulse_cancel(void *data)
 	struct pulse_data *pd = data;
 	int error;
 
+	if (pd->s == NULL)
+		return;
+
 	if (pa_simple_flush(pd->s, &error) < 0)
 		g_warning("Flush failed in PulseAudio output \"%s\": %s\n",
 			  audio_output_get_name(pd->ao),
