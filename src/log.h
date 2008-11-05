@@ -21,6 +21,8 @@
 
 #include "gcc.h"
 
+#include <stdbool.h>
+
 mpd_printf void ERROR(const char *fmt, ...);
 mpd_printf void LOG(const char *fmt, ...);
 mpd_printf void SECURE(const char *fmt, ...);
@@ -28,11 +30,11 @@ mpd_printf void DEBUG(const char *fmt, ...);
 mpd_printf void WARNING(const char *fmt, ...);
 mpd_printf mpd_noreturn void FATAL(const char *fmt, ...);
 
-void initLog(const int verbose);
+void initLog(bool verbose);
 
-void setup_log_output(const int use_stdout);
+void setup_log_output(bool use_stdout);
 
-void open_log_files(const int use_stdout);
+void open_log_files(bool use_stdout);
 
 int cycle_log_files(void);
 

@@ -40,7 +40,7 @@
 
 static unsigned int log_threshold = G_LOG_LEVEL_INFO;
 
-static int stdout_mode = 1;
+static bool stdout_mode = true;
 static int out_fd = -1;
 static int err_fd = -1;
 static const char *out_filename;
@@ -77,7 +77,7 @@ mpd_log_func(G_GNUC_UNUSED const gchar *log_domain,
 		message);
 }
 
-void initLog(const int verbose)
+void initLog(bool verbose)
 {
 	ConfigParam *param;
 
@@ -104,7 +104,7 @@ void initLog(const int verbose)
 	}
 }
 
-void open_log_files(const int use_stdout)
+void open_log_files(bool use_stdout)
 {
 	mode_t prev;
 	ConfigParam *param;
@@ -130,12 +130,12 @@ void open_log_files(const int use_stdout)
 	umask(prev);
 }
 
-void setup_log_output(const int use_stdout)
+void setup_log_output(bool use_stdout)
 {
 	fflush(NULL);
 	if (!use_stdout) {
 		redirect_logs();
-		stdout_mode = 0;
+		stdout_mode = false;
 	}
 }
 
