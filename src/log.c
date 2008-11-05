@@ -75,11 +75,14 @@ mpd_log_func(G_GNUC_UNUSED const gchar *log_domain,
 		? stderr : stdout;
 	char *converted;
 
-	converted = g_convert_with_fallback(message, -1,
-					    log_charset, "utf-8",
-					    NULL, NULL, NULL, NULL);
-	if (converted != NULL)
-		message = converted;
+	if (log_charset != NULL) {
+		converted = g_convert_with_fallback(message, -1,
+						    log_charset, "utf-8",
+						    NULL, NULL, NULL, NULL);
+		if (converted != NULL)
+			message = converted;
+	} else
+		converted = NULL;
 
 	fprintf(file, "%s%s",
 		stdout_mode ? "" : log_date(),
