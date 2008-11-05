@@ -348,7 +348,22 @@ static int32_t read_bytes(void *id, void *data, int32_t bcount)
 		--bcount;
 		++i;
 	}
-	return i + decoder_read(isp->decoder, isp->is, buf, bcount);
+
+	/* wavpack fails if we return a partial read, so we just wait
+	   until the buffer is full */
+	while (bcount > 0) {
+		size_t nbytes = decoder_read(isp->decoder, isp->is,
+					     buf, bcount);
+		if (nbytes == 0)
+			/* EOF, error or a decoder command */
+			break;
+
+		i += nbytes;
+		bcount -= nbytes;
+		buf += nbytes;
+	}
+
+	return i;
 }
 
 static uint32_t get_pos(void *id)
