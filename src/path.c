@@ -32,7 +32,7 @@
 
 #include <glib.h>
 
-static char *fsCharset;
+static char *fs_charset;
 
 char *fs_charset_to_utf8(char *dst, const char *str)
 {
@@ -40,7 +40,7 @@ char *fs_charset_to_utf8(char *dst, const char *str)
 	GError *error = NULL;
 
 	p = g_convert(str, -1,
-		      fsCharset, "utf-8",
+		      fs_charset, "utf-8",
 		      NULL, NULL, &error);
 	if (p == NULL) {
 		/* no fallback */
@@ -59,7 +59,7 @@ char *utf8_to_fs_charset(char *dst, const char *str)
 	GError *error = NULL;
 
 	p = g_convert(str, -1,
-		      "utf-8", fsCharset,
+		      "utf-8", fs_charset,
 		      NULL, NULL, &error);
 	if (p == NULL) {
 		/* fall back to UTF-8 */
@@ -72,38 +72,36 @@ char *utf8_to_fs_charset(char *dst, const char *str)
 	return dst;
 }
 
-void setFsCharset(const char *charset)
+void path_set_fs_charset(const char *charset)
 {
 	int error = 0;
 
-	if (fsCharset)
-		free(fsCharset);
+	g_free(fs_charset);
+	fs_charset = g_strdup(charset);
 
-	fsCharset = xstrdup(charset);
-
-	DEBUG("setFsCharset: fs charset is: %s\n", fsCharset);
+	DEBUG("path_set_fs_charset: fs charset is: %s\n", fs_charset);
 
 	if (error) {
-		free(fsCharset);
+		free(fs_charset);
 		WARNING("setting fs charset to ISO-8859-1!\n");
-		fsCharset = xstrdup("ISO-8859-1");
+		fs_charset = xstrdup("ISO-8859-1");
 	}
 }
 
-const char *getFsCharset(void)
+const char *path_get_fs_charset(void)
 {
-	return fsCharset;
+	return fs_charset;
 }
 
-void initPaths(void)
+void path_global_init(void)
 {
-	ConfigParam *fsCharsetParam = getConfigParam(CONF_FS_CHARSET);
+	ConfigParam *fs_charset_param = getConfigParam(CONF_FS_CHARSET);
 
 	char *charset = NULL;
 	char *originalLocale;
 
-	if (fsCharsetParam) {
-		charset = xstrdup(fsCharsetParam->value);
+	if (fs_charset_param) {
+		charset = xstrdup(fs_charset_param->value);
 	}
 #ifdef HAVE_LOCALE
 #ifdef HAVE_LANGINFO_CODESET
@@ -138,18 +136,17 @@ void initPaths(void)
 #endif
 
 	if (charset) {
-		setFsCharset(charset);
+		path_set_fs_charset(charset);
 		free(charset);
 	} else {
 		WARNING("setting filesystem charset to ISO-8859-1\n");
-		setFsCharset("ISO-8859-1");
+		path_set_fs_charset("ISO-8859-1");
 	}
 }
 
-void finishPaths(void)
+void path_global_finish(void)
 {
-	free(fsCharset);
-	fsCharset = NULL;
+	g_free(fs_charset);
 }
 
 char *pfx_dir(char *dst,

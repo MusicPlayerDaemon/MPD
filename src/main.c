@@ -403,7 +403,7 @@ int main(int argc, char *argv[])
 
 	open_log_files(options.stdOutput);
 
-	initPaths();
+	path_global_init();
 	mapper_init();
 	initPermissions();
 	initPlaylist();
@@ -474,7 +474,7 @@ int main(int argc, char *argv[])
 	finishAudioConfig();
 	finishVolume();
 	mapper_finish();
-	finishPaths();
+	path_global_finish();
 	finishPermissions();
 	dc_deinit();
 	pc_deinit();

@@ -230,7 +230,7 @@ db_save(void)
 	/* block signals when writing the db so we don't get a corrupted db */
 	fprintf(fp, "%s\n", DIRECTORY_INFO_BEGIN);
 	fprintf(fp, "%s%s\n", DIRECTORY_MPD_VERSION, VERSION);
-	fprintf(fp, "%s%s\n", DIRECTORY_FS_CHARSET, getFsCharset());
+	fprintf(fp, "%s%s\n", DIRECTORY_FS_CHARSET, path_get_fs_charset());
 	fprintf(fp, "%s\n", DIRECTORY_INFO_END);
 
 	if (directory_save(fp, music_root) < 0) {
@@ -302,7 +302,7 @@ db_load(void)
 					fsCharset, tempCharset);
 				WARNING("maybe you need to "
 					"recreate the db?\n");
-				setFsCharset(fsCharset);
+				path_set_fs_charset(fsCharset);
 			}
 		} else
 			FATAL("directory: unknown line in db info: %s\n",

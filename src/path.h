@@ -31,17 +31,17 @@
 #  endif
 #endif
 
-void initPaths(void);
+void path_global_init(void);
 
-void finishPaths(void);
+void path_global_finish(void);
 
 char *fs_charset_to_utf8(char *dst, const char *str);
 
 char *utf8_to_fs_charset(char *dst, const char *str);
 
-void setFsCharset(const char *charset);
+void path_set_fs_charset(const char *charset);
 
-const char *getFsCharset(void);
+const char *path_get_fs_charset(void);
 
 /*
  * pfx_dir - sets dst="$pfx/$path" and returns a pointer to path inside * dst
