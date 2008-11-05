@@ -23,13 +23,6 @@
 #include "playlist.h"
 #include "os_compat.h"
 
-#ifdef HAVE_LOCALE
-#ifdef HAVE_LANGINFO_CODESET
-#include <locale.h>
-#include <langinfo.h>
-#endif
-#endif
-
 #include <glib.h>
 
 static char *fs_charset;
@@ -98,42 +91,16 @@ void path_global_init(void)
 	ConfigParam *fs_charset_param = getConfigParam(CONF_FS_CHARSET);
 
 	char *charset = NULL;
-	char *originalLocale;
 
 	if (fs_charset_param) {
 		charset = xstrdup(fs_charset_param->value);
+	} else {
+		const gchar **encodings;
+		g_get_filename_charsets(&encodings);
+
+		if (encodings[0] != NULL && *encodings[0] != '\0')
+			charset = g_strdup(encodings[0]);
 	}
-#ifdef HAVE_LOCALE
-#ifdef HAVE_LANGINFO_CODESET
-	else if ((originalLocale = setlocale(LC_CTYPE, NULL))) {
-		char *temp;
-		char *currentLocale;
-		originalLocale = xstrdup(originalLocale);
-
-		if (!(currentLocale = setlocale(LC_CTYPE, ""))) {
-			WARNING("problems setting current locale with "
-				"setlocale()\n");
-		} else {
-			if (strcmp(currentLocale, "C") == 0 ||
-			    strcmp(currentLocale, "POSIX") == 0) {
-				WARNING("current locale is \"%s\"\n",
-					currentLocale);
-			} else if ((temp = nl_langinfo(CODESET))) {
-				charset = xstrdup(temp);
-			} else
-				WARNING
-				    ("problems getting charset for locale\n");
-			if (!setlocale(LC_CTYPE, originalLocale)) {
-				WARNING
-				    ("problems resetting locale with setlocale()\n");
-			}
-		}
-
-		free(originalLocale);
-	} else
-		WARNING("problems getting locale with setlocale()\n");
-#endif
-#endif
 
 	if (charset) {
 		path_set_fs_charset(charset);
