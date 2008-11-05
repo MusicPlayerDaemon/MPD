@@ -23,7 +23,6 @@
 #include <pulse/error.h>
 
 #define MPD_PULSE_NAME "mpd"
-#define CONN_ATTEMPT_INTERVAL 60
 
 struct pulse_data {
 	struct audio_output *ao;
@@ -31,8 +30,6 @@ struct pulse_data {
 	pa_simple *s;
 	char *server;
 	char *sink;
-	int num_connect_attempts;
-	time_t last_connect_attempt;
 };
 
 static struct pulse_data *pulse_new_data(void)
@@ -44,8 +41,6 @@ static struct pulse_data *pulse_new_data(void)
 	ret->s = NULL;
 	ret->server = NULL;
 	ret->sink = NULL;
-	ret->num_connect_attempts = 0;
-	ret->last_connect_attempt = 0;
 
 	return ret;
 }
@@ -114,17 +109,7 @@ pulse_open(void *data, struct audio_format *audio_format)
 {
 	struct pulse_data *pd = data;
 	pa_sample_spec ss;
-	time_t t;
 	int error;
-
-	t = time(NULL);
-
-	if (pd->num_connect_attempts != 0 &&
-	    (t - pd->last_connect_attempt) < CONN_ATTEMPT_INTERVAL)
-		return false;
-
-	pd->num_connect_attempts++;
-	pd->last_connect_attempt = t;
 
 	/* MPD doesn't support the other pulseaudio sample formats, so
 	   we just force MPD to send us everything as 16 bit */
@@ -140,13 +125,11 @@ pulse_open(void *data, struct audio_format *audio_format)
 			      &error);
 	if (!pd->s) {
 		g_warning("Cannot connect to server in PulseAudio output "
-			  "\"%s\" (attempt %i): %s\n",
+			  "\"%s\": %s\n",
 			  audio_output_get_name(pd->ao),
-			  pd->num_connect_attempts, pa_strerror(error));
+			  pa_strerror(error));
 		return false;
 	}
-
-	pd->num_connect_attempts = 0;
 
 	g_debug("PulseAudio output \"%s\" connected and playing %i bit, %i "
 		"channel audio at %i Hz\n",
