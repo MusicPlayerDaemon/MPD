@@ -224,15 +224,6 @@ static void parseOptions(int argc, char **argv, Options * options)
 	exit(EXIT_FAILURE);
 }
 
-static void closeAllFDs(void)
-{
-	int i;
-	int fds = getdtablesize();
-
-	for (i = 3; i < fds; i++)
-		close(i);
-}
-
 static void changeToUser(void)
 {
 	ConfigParam *param = getConfigParam(CONF_USER);
@@ -390,8 +381,6 @@ int main(int argc, char *argv[])
 {
 	Options options;
 	clock_t start;
-
-	closeAllFDs();
 
 	initConf();
 
