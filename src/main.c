@@ -111,40 +111,39 @@ static int setenv(const char *name, const char *value, int replace)
 
 static void usage(char *argv[])
 {
-	ERROR("usage:\n");
-	ERROR("   %s [options] <conf file>\n", argv[0]);
-	ERROR("   %s [options]   (searches for ~%s then %s)\n",
-	      argv[0], USER_CONFIG_FILE_LOCATION, SYSTEM_CONFIG_FILE_LOCATION);
-	ERROR("\n");
-	ERROR("options:\n");
-	ERROR("   --help             this usage statement\n");
-	ERROR("   --kill             kill the currently running mpd session\n");
-	ERROR
-	    ("   --create-db        force (re)creation of database and exit\n");
-	ERROR
-	    ("   --no-create-db     don't create database, even if it doesn't exist\n");
-	ERROR("   --no-daemon        don't detach from console\n");
-	ERROR("   --stdout           print messages to stdout and stderr\n");
-	ERROR("   --verbose          verbose logging\n");
-	ERROR("   --version          prints version information\n");
+	printf("usage:\n"
+	       "   %s [options] <conf file>\n"
+	       "   %s [options]   (searches for ~" USER_CONFIG_FILE_LOCATION
+	       " then " SYSTEM_CONFIG_FILE_LOCATION ")\n",
+	       argv[0], argv[0]);
+	puts("\n"
+	     "options:\n"
+	     "   --help             this usage statement\n"
+	     "   --kill             kill the currently running mpd session\n"
+	     "   --create-db        force (re)creation of database and exit\n"
+	     "   --no-create-db     don't create database, even if it doesn't exist\n"
+	     "   --no-daemon        don't detach from console\n"
+	     "   --stdout           print messages to stdout and stderr\n"
+	     "   --verbose          verbose logging\n"
+	     "   --version          prints version information\n");
 }
 
 static void version(void)
 {
-	LOG(PACKAGE " (MPD: Music Player Daemon) %s\n", VERSION);
-	LOG("\n");
-	LOG("Copyright (C) 2003-2007 Warren Dukes <warren.dukes@gmail.com>\n");
-	LOG("Copyright (C) 2008 Max Kellermann <max@duempel.org>\n");
-	LOG("This is free software; see the source for copying conditions.  There is NO\n");
-	LOG("warranty; not even MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n");
-	LOG("\n");
-	LOG("Supported formats:\n");
+	puts(PACKAGE " (MPD: Music Player Daemon) " VERSION " \n"
+	     "\n"
+	     "Copyright (C) 2003-2007 Warren Dukes <warren.dukes@gmail.com>\n"
+	     "Copyright (C) 2008 Max Kellermann <max@duempel.org>\n"
+	     "This is free software; see the source for copying conditions.  There is NO\n"
+	     "warranty; not even MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n"
+	     "\n"
+	     "Supported formats:\n");
 
 	decoder_plugin_init_all();
 	decoder_plugin_print_all_suffixes(stdout);
 
-	LOG("\n");
-	LOG("Supported outputs:\n");
+	puts("\n"
+	     "Supported outputs:\n");
 	printAllOutputPluginTypes(stdout);
 }
 
