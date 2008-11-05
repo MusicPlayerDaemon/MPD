@@ -36,10 +36,7 @@
 #define LOG_DATE_BUF_SIZE 16
 #define LOG_DATE_LEN (LOG_DATE_BUF_SIZE - 1)
 static unsigned int logLevel = LOG_LEVEL_LOW;
-static int warningFlushed;
 static int stdout_mode = 1;
-static char *warningBuffer;
-static pthread_mutex_t warning_buffer_lock = PTHREAD_MUTEX_INITIALIZER;
 static int out_fd = -1;
 static int err_fd = -1;
 static const char *out_filename;
@@ -63,65 +60,11 @@ static const char *log_date(void)
 	return buf;
 }
 
-#define BUFFER_LENGTH	4096
-static void buffer_warning(const char *fmt, va_list args)
-{
-	char buffer[BUFFER_LENGTH];
-	char *tmp = buffer;
-	size_t len = BUFFER_LENGTH;
-
-	if (!stdout_mode) {
-		memcpy(buffer, log_date(), LOG_DATE_LEN);
-		tmp += LOG_DATE_LEN;
-		len -= LOG_DATE_LEN;
-	}
-
-	vsnprintf(tmp, len, fmt, args);
-
-	if (warningBuffer == NULL)
-		warningBuffer = g_strdup(tmp);
-	else {
-		tmp = g_strconcat(warningBuffer, tmp, NULL);
-		g_free(warningBuffer);
-		warningBuffer = tmp;
-	}
-
-	va_end(args);
-}
-
 static void do_log(FILE *fp, const char *fmt, va_list args)
 {
 	if (!stdout_mode)
 		fwrite(log_date(), LOG_DATE_LEN, 1, fp);
 	vfprintf(fp, fmt, args);
-}
-
-void flushWarningLog(void)
-{
-	char *s;
-
-	pthread_mutex_lock(&warning_buffer_lock);
-	s = warningBuffer;
-
-	DEBUG("flushing warning messages\n");
-
-	if (warningBuffer != NULL)
-	{
-		while (s != NULL) {
-			char *next = strchr(s, '\n');
-			if (next == NULL) break;
-			*next = '\0';
-			next++;
-			fprintf(stderr, "%s\n", s);
-			s = next;
-		}
-
-		warningBuffer = NULL;
-	}
-	warningFlushed = 1;
-	pthread_mutex_unlock(&warning_buffer_lock);
-
-	DEBUG("done flushing warning messages\n");
 }
 
 void initLog(const int verbose)
@@ -154,10 +97,8 @@ void open_log_files(const int use_stdout)
 	mode_t prev;
 	ConfigParam *param;
 
-	if (use_stdout) {
-		flushWarningLog();
+	if (use_stdout)
 		return;
-	}
 
 	prev = umask(0066);
 	param = parseConfigFilePath(CONF_LOG_FILE, 1);
@@ -183,7 +124,6 @@ void setup_log_output(const int use_stdout)
 	if (!use_stdout) {
 		redirect_logs();
 		stdout_mode = 0;
-		flushWarningLog();
 	}
 }
 
@@ -199,26 +139,12 @@ mpd_printf void func(const char *fmt, ...) \
 }
 
 log_func(ERROR, 0, stderr)
+log_func(WARNING, 0, stderr)
 log_func(LOG, 0, stdout)
 log_func(SECURE, LOG_LEVEL_SECURE, stdout)
 log_func(DEBUG, LOG_LEVEL_DEBUG, stdout)
 
 #undef log_func
-
-void WARNING(const char *fmt, ...)
-{
-	va_list args;
-	va_start(args, fmt);
-
-	pthread_mutex_lock(&warning_buffer_lock);
-	if (warningFlushed)
-		do_log(stderr, fmt, args);
-	else
-		buffer_warning(fmt, args);
-	pthread_mutex_unlock(&warning_buffer_lock);
-
-	va_end(args);
-}
 
 mpd_printf mpd_noreturn void FATAL(const char *fmt, ...)
 {

@@ -42,6 +42,4 @@ int cycle_log_files(void);
 
 void close_log_files(void);
 
-void flushWarningLog(void);
-
 #endif /* LOG_H */

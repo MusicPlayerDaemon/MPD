@@ -277,7 +277,6 @@ static void openDB(Options * options, char *argv0)
 			      "\"--no-create-db\" command line option\n"
 			      "try running \"%s --create-db\"\n", argv0);
 		}
-		flushWarningLog();
 		if (db_check() < 0)
 			exit(EXIT_FAILURE);
 		db_init();
