@@ -9,12 +9,6 @@ retrieval, and playlist management can all be managed remotely.
 
 To install MPD, see INSTALL.
 
-MPD includes mp4ff in the source, due to licensing issues of the newer 
-version and includes bugfixes with the properly licensed version.  mp4ff is 
-released under the GPL and copyrighted by M. Bakker, Ahead Software AG 
-(http://www.nero.com) and is distributed as a part of the FAAD2 - Freeware 
-Advance Audio (AAC) Decoder.
-
 MPD is released under the GNU Public License.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
