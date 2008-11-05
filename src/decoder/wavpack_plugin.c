@@ -494,7 +494,6 @@ wavpack_streamdecode(struct decoder * decoder, struct input_stream *is)
 	WavpackCloseFile(wpc);
 	if (open_flags & OPEN_WVC)
 		input_stream_close(&is_wvc);
-	input_stream_close(is);
 
 	return true;
 }
