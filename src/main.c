@@ -53,6 +53,10 @@
 
 #include <glib.h>
 
+#ifdef HAVE_LOCALE
+#include <locale.h>
+#endif
+
 #define SYSTEM_CONFIG_FILE_LOCATION	"/etc/mpd.conf"
 #define USER_CONFIG_FILE_LOCATION	"/.mpdconf"
 
@@ -381,6 +385,11 @@ int main(int argc, char *argv[])
 {
 	Options options;
 	clock_t start;
+
+#ifdef HAVE_LOCALE
+	/* initialize locale */
+	setlocale(LC_CTYPE,"");
+#endif
 
 	/* enable GLib's thread safety code */
 	g_thread_init(NULL);
