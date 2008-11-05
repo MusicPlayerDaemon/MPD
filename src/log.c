@@ -33,10 +33,12 @@
 #include <pthread.h>
 #include <glib.h>
 
+#define LOG_LEVEL_SECURE G_LOG_LEVEL_MESSAGE
+
 #define LOG_DATE_BUF_SIZE 16
 #define LOG_DATE_LEN (LOG_DATE_BUF_SIZE - 1)
 
-static unsigned int log_threshold = LOG_LEVEL_LOW;
+static unsigned int log_threshold = G_LOG_LEVEL_INFO;
 
 static int stdout_mode = 1;
 static int out_fd = -1;
@@ -62,13 +64,6 @@ static const char *log_date(void)
 	return buf;
 }
 
-static void do_log(FILE *fp, const char *fmt, va_list args)
-{
-	if (!stdout_mode)
-		fwrite(log_date(), LOG_DATE_LEN, 1, fp);
-	vfprintf(fp, fmt, args);
-}
-
 void initLog(const int verbose)
 {
 	ConfigParam *param;
@@ -77,17 +72,17 @@ void initLog(const int verbose)
 	setvbuf(stdout, (char *)NULL, _IONBF, 0);
 
 	if (verbose) {
-		log_threshold = LOG_LEVEL_DEBUG;
+		log_threshold = G_LOG_LEVEL_DEBUG;
 		return;
 	}
 	if (!(param = getConfigParam(CONF_LOG_LEVEL)))
 		return;
 	if (0 == strcmp(param->value, "default")) {
-		log_threshold = LOG_LEVEL_LOW;
+		log_threshold = G_LOG_LEVEL_INFO;
 	} else if (0 == strcmp(param->value, "secure")) {
 		log_threshold = LOG_LEVEL_SECURE;
 	} else if (0 == strcmp(param->value, "verbose")) {
-		log_threshold = LOG_LEVEL_DEBUG;
+		log_threshold = G_LOG_LEVEL_DEBUG;
 	} else {
 		FATAL("unknown log level \"%s\" at line %i\n",
 		      param->value, param->line);
@@ -129,22 +124,22 @@ void setup_log_output(const int use_stdout)
 	}
 }
 
-#define log_func(func,level,fp) \
+#define log_func(func,level) \
 mpd_printf void func(const char *fmt, ...) \
 { \
-	if ((int)log_threshold >= level) {		\
+	if ((int)log_threshold <= level) {		\
 		va_list args; \
 		va_start(args, fmt); \
-		do_log(fp, fmt, args); \
+		g_logv(NULL, level, fmt, args);	\
 		va_end(args); \
 	} \
 }
 
-log_func(ERROR, 0, stderr)
-log_func(WARNING, 0, stderr)
-log_func(LOG, 0, stdout)
-log_func(SECURE, LOG_LEVEL_SECURE, stdout)
-log_func(DEBUG, LOG_LEVEL_DEBUG, stdout)
+log_func(ERROR, G_LOG_LEVEL_WARNING)
+log_func(WARNING, G_LOG_LEVEL_WARNING)
+log_func(LOG, G_LOG_LEVEL_MESSAGE)
+log_func(SECURE, LOG_LEVEL_SECURE)
+log_func(DEBUG, G_LOG_LEVEL_DEBUG)
 
 #undef log_func
 
@@ -152,7 +147,7 @@ mpd_printf mpd_noreturn void FATAL(const char *fmt, ...)
 {
 	va_list args;
 	va_start(args, fmt);
-	do_log(stderr, fmt, args);
+	g_logv(NULL, G_LOG_LEVEL_ERROR, fmt, args);
 	va_end(args);
 	exit(EXIT_FAILURE);
 }

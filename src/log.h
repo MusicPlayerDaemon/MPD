@@ -21,10 +21,6 @@
 
 #include "gcc.h"
 
-#define LOG_LEVEL_LOW		0
-#define LOG_LEVEL_SECURE	1
-#define LOG_LEVEL_DEBUG		2
-
 mpd_printf void ERROR(const char *fmt, ...);
 mpd_printf void LOG(const char *fmt, ...);
 mpd_printf void SECURE(const char *fmt, ...);
