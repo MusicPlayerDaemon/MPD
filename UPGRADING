@@ -1,5 +1,13 @@
                        Music Player Daemon (MPD) - UPGRADING
 
+Upgrading to 0.14
+-----------------
+
+The filesystem character set is determined by GLib, if it is not
+configured.  GLib has an affinity towards UTF-8, while older MPD
+versions used to choose ISO-Latin-1.
+
+
 Upgrading to 0.13.0
 -------------------
 
