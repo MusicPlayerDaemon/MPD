@@ -64,9 +64,24 @@ static const char *log_date(void)
 	return buf;
 }
 
+static void
+mpd_log_func(G_GNUC_UNUSED const gchar *log_domain,
+	     G_GNUC_UNUSED GLogLevelFlags log_level,
+	     const gchar *message, G_GNUC_UNUSED gpointer user_data)
+{
+	FILE *file = log_level <= G_LOG_LEVEL_WARNING
+		? stderr : stdout;
+
+	fprintf(file, "%s%s",
+		stdout_mode ? "" : log_date(),
+		message);
+}
+
 void initLog(const int verbose)
 {
 	ConfigParam *param;
+
+	g_log_set_default_handler(mpd_log_func, NULL);
 
 	/* unbuffer stdout, stderr is unbuffered by default, leave it */
 	setvbuf(stdout, (char *)NULL, _IONBF, 0);
