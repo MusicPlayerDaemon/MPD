@@ -35,7 +35,9 @@
 
 #define LOG_DATE_BUF_SIZE 16
 #define LOG_DATE_LEN (LOG_DATE_BUF_SIZE - 1)
-static unsigned int logLevel = LOG_LEVEL_LOW;
+
+static unsigned int log_threshold = LOG_LEVEL_LOW;
+
 static int stdout_mode = 1;
 static int out_fd = -1;
 static int err_fd = -1;
@@ -75,17 +77,17 @@ void initLog(const int verbose)
 	setvbuf(stdout, (char *)NULL, _IONBF, 0);
 
 	if (verbose) {
-		logLevel = LOG_LEVEL_DEBUG;
+		log_threshold = LOG_LEVEL_DEBUG;
 		return;
 	}
 	if (!(param = getConfigParam(CONF_LOG_LEVEL)))
 		return;
 	if (0 == strcmp(param->value, "default")) {
-		logLevel = LOG_LEVEL_LOW;
+		log_threshold = LOG_LEVEL_LOW;
 	} else if (0 == strcmp(param->value, "secure")) {
-		logLevel = LOG_LEVEL_SECURE;
+		log_threshold = LOG_LEVEL_SECURE;
 	} else if (0 == strcmp(param->value, "verbose")) {
-		logLevel = LOG_LEVEL_DEBUG;
+		log_threshold = LOG_LEVEL_DEBUG;
 	} else {
 		FATAL("unknown log level \"%s\" at line %i\n",
 		      param->value, param->line);
@@ -130,7 +132,7 @@ void setup_log_output(const int use_stdout)
 #define log_func(func,level,fp) \
 mpd_printf void func(const char *fmt, ...) \
 { \
-	if ((int)logLevel >= level) {		\
+	if ((int)log_threshold >= level) {		\
 		va_list args; \
 		va_start(args, fmt); \
 		do_log(fp, fmt, args); \
