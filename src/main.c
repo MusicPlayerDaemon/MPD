@@ -382,6 +382,9 @@ int main(int argc, char *argv[])
 	Options options;
 	clock_t start;
 
+	/* enable GLib's thread safety code */
+	g_thread_init(NULL);
+
 	initConf();
 
 	parseOptions(argc, argv, &options);
