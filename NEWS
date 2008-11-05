@@ -4,15 +4,27 @@ ver 0.14.0 (????/??/??)
   - null: new plugin
   - shout: block while trying to connect instead of failing
   - shout: new timeout parameter
+  - shout: support mp3 encoding and the shoutcast protocol
+  - shout: send silence during pause, so clients don't get disconnected
 * decoders:
+  - ffmpeg: new plugin
   - wavpack: new plugin
 * commands:
   - "addid" takes optional second argument to specify position
+  - "idle" notifies the client when a notable change occurs
 * Zeroconf support using Bonjour
 * New zeroconf_enabled option so that Zeroconf support can be disabled
 * Stop the player/decode processes when not playing to allow the CPU to sleep
 * Fix a bug where closing an ALSA dmix device could cause MPD to hang
 * Support for reading ReplayGain from LAME tags on MP3s
+* MPD is now threaded, which greatly improves performance and stability
+* memory usage reduced by merging duplicate tags in the database
+* support connecting via unix domain socket
+* allow authenticated local users to add any local file to the playlist
+* 24 bit audio support
+* optimized PCM conversions and dithering
+* much code has been replaced by using GLib
+* the HTTP client has been replaced with libcurl
 
 ver 0.13.0 (2007/5/28)
 * New JACK audio output
