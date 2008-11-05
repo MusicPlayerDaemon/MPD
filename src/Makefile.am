@@ -35,6 +35,7 @@ mpd_headers = \
 	decoder/_ogg_common.h \
 	input_stream.h \
 	input_file.h \
+	input_curl.h \
 	client.h \
 	list.h \
 	dlist.h \
