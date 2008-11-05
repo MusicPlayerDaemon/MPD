@@ -67,18 +67,10 @@ char *utf8_to_fs_charset(char *dst, const char *str)
 
 void path_set_fs_charset(const char *charset)
 {
-	int error = 0;
-
 	g_free(fs_charset);
 	fs_charset = g_strdup(charset);
 
 	DEBUG("path_set_fs_charset: fs charset is: %s\n", fs_charset);
-
-	if (error) {
-		free(fs_charset);
-		WARNING("setting fs charset to ISO-8859-1!\n");
-		fs_charset = xstrdup("ISO-8859-1");
-	}
 }
 
 const char *path_get_fs_charset(void)
