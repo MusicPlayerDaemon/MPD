@@ -70,6 +70,9 @@ struct input_curl {
 
 	/** limited list of old buffers, for rewinding */
 	struct list_head rewind;
+
+	/** error message provided by libcurl */
+	char error[CURL_ERROR_SIZE];
 };
 
 /** libcurl should accept "ICY 200 OK" */
@@ -154,8 +157,7 @@ input_curl_multi_info_read(struct input_stream *is)
 					   &msgs_in_queue)) != NULL) {
 		if (msg->msg == CURLMSG_DONE &&
 		    msg->data.result != CURLE_OK) {
-			g_warning("curl failed: %s\n",
-				  curl_easy_strerror(msg->data.result));
+			g_warning("curl failed: %s\n", c->error);
 			is->error = -1;
 			c->eof = true;
 			return false;
@@ -454,6 +456,7 @@ input_curl_easy_init(struct input_stream *is)
 	curl_easy_setopt(c->easy, CURLOPT_WRITEDATA, is);
 	curl_easy_setopt(c->easy, CURLOPT_HTTP200ALIASES, http_200_aliases);
 	curl_easy_setopt(c->easy, CURLOPT_FAILONERROR, true);
+	curl_easy_setopt(c->easy, CURLOPT_ERRORBUFFER, c->error);
 
 	code = curl_easy_setopt(c->easy, CURLOPT_URL, c->url);
 	if (code != CURLE_OK)
