@@ -493,9 +493,12 @@ wavpack_streamdecode(struct decoder * decoder, struct input_stream *is)
 	struct input_stream is_wvc;
 	int open_flags = OPEN_2CH_MAX | OPEN_NORMALIZE /*| OPEN_STREAMING*/;
 	struct wavpack_input isp, isp_wvc;
+	bool canseek = is->seekable;
 
-	if (wavpack_open_wvc(decoder, &is_wvc, &isp_wvc))
+	if (wavpack_open_wvc(decoder, &is_wvc, &isp_wvc)) {
 		open_flags |= OPEN_WVC;
+		canseek &= is_wvc.seekable;
+	}
 
 	wavpack_input_init(&isp, decoder, is);
 	wpc = WavpackOpenFileInputEx(&mpd_is_reader, &isp, &isp_wvc, error,
@@ -506,7 +509,7 @@ wavpack_streamdecode(struct decoder * decoder, struct input_stream *is)
 		return false;
 	}
 
-	wavpack_decode(decoder, wpc, is->seekable, NULL);
+	wavpack_decode(decoder, wpc, canseek, NULL);
 
 	WavpackCloseFile(wpc);
 	if (open_flags & OPEN_WVC)
