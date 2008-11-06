@@ -156,6 +156,7 @@ input_curl_multi_info_read(struct input_stream *is)
 		    msg->data.result != CURLE_OK) {
 			g_warning("curl failed: %s\n",
 				  curl_easy_strerror(msg->data.result));
+			is->error = -1;
 			c->eof = true;
 			return false;
 		}
@@ -262,7 +263,7 @@ input_curl_read(struct input_stream *is, void *ptr, size_t size)
 
 		bret = input_curl_multi_info_read(is);
 		if (!bret)
-			return -1;
+			return 0;
 
 		c->eof = running_handles == 0;
 	}
