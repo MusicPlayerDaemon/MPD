@@ -471,8 +471,10 @@ wavpack_open_wvc(struct decoder *decoder, struct input_stream *is_wvc,
 	 */
 	nbytes = decoder_read(decoder, is_wvc,
 			      &first_byte, sizeof(first_byte));
-	if (nbytes == 0)
+	if (nbytes == 0) {
+		input_stream_close(is_wvc);
 		return false;
+	}
 
 	/* push it back */
 	wavpack_input_init(wpi, decoder, is_wvc);
