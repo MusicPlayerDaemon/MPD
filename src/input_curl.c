@@ -452,6 +452,7 @@ input_curl_easy_init(struct input_stream *is)
 			 input_curl_writefunction);
 	curl_easy_setopt(c->easy, CURLOPT_WRITEDATA, is);
 	curl_easy_setopt(c->easy, CURLOPT_HTTP200ALIASES, http_200_aliases);
+	curl_easy_setopt(c->easy, CURLOPT_FAILONERROR, true);
 
 	code = curl_easy_setopt(c->easy, CURLOPT_URL, c->url);
 	if (code != CURLE_OK)
