@@ -164,7 +164,7 @@ static void wavpack_decode(struct decoder * decoder,
 
 	samplesreq = sizeof(chunk) / (4 * audio_format.channels);
 
-	decoder_initialized(decoder, &audio_format, false,
+	decoder_initialized(decoder, &audio_format, canseek,
 			    (float)allsamples / audio_format.sample_rate);
 
 	position = 0;
