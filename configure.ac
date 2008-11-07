@@ -724,7 +724,7 @@ fi
 AM_CONDITIONAL(HAVE_OGGFLAC, test x$enable_oggflac = xyes)
 
 AM_CONDITIONAL(HAVE_FLAC_COMMON, test x$enable_flac = xyes || test x$enable_oggflac = xyes)
-AM_CONDITIONAL(HAVE_OGG_COMMON, test x$enable_oggvorbis = xyes || test x$enable_oggflac = xyes)
+AM_CONDITIONAL(HAVE_OGG_COMMON, test x$enable_oggvorbis = xyes || test x$enable_oggflac = xyes || test x$enable_flac = xyes)
 
 if test x$enable_audiofile = xyes; then
 	PKG_CHECK_MODULES(AUDIOFILE, [audiofile >= 0.1.7],
