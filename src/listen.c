@@ -159,19 +159,19 @@ static void parseListenConfigParam(unsigned int port, ConfigParam * param)
 #ifdef HAVE_UN
 	} else if (param->value[0] == '/') {
 		size_t path_length;
-		struct sockaddr_un sun;
+		struct sockaddr_un s_un;
 
 		path_length = strlen(param->value);
-		if (path_length >= sizeof(sun.sun_path))
+		if (path_length >= sizeof(s_un.sun_path))
 			FATAL("unix socket path is too long\n");
 
 		unlink(param->value);
 
-		sun.sun_family = AF_UNIX;
-		memcpy(sun.sun_path, param->value, path_length + 1);
+		s_un.sun_family = AF_UNIX;
+		memcpy(s_un.sun_path, param->value, path_length + 1);
 
-		addrp = (const struct sockaddr *)&sun;
-		addrlen = sizeof(sun);
+		addrp = (const struct sockaddr *)&s_un;
+		addrlen = sizeof(s_un);
 
 		if (establishListen(PF_UNIX, addrp, addrlen) < 0)
 			FATAL("unable to bind to %s: %s\n",
