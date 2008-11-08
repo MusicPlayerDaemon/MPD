@@ -408,8 +408,12 @@ wavpack_input_set_pos_rel(void *id, int32_t delta, int mode)
 static int
 wavpack_input_push_back_byte(void *id, int c)
 {
-	wpin(id)->last_byte = c;
-	return 1;
+	if (wpin(id)->last_byte == EOF) {
+		wpin(id)->last_byte = c;
+		return c;
+	} else {
+		return EOF;
+	}
 }
 
 static uint32_t
