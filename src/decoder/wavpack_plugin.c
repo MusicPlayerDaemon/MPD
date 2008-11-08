@@ -346,16 +346,25 @@ struct wavpack_input {
 	int last_byte;
 };
 
+/**
+ * Little wrapper for struct wavpack_input to cast from void *.
+ */
+static struct wavpack_input *
+wpin(void *id)
+{
+	assert(id);
+	return id;
+}
+
 static int32_t
 wavpack_input_read_bytes(void *id, void *data, int32_t bcount)
 {
-	struct wavpack_input *isp = (struct wavpack_input *)id;
 	uint8_t *buf = (uint8_t *)data;
 	int32_t i = 0;
 
-	if (isp->last_byte != EOF) {
-		*buf++ = isp->last_byte;
-		isp->last_byte = EOF;
+	if (wpin(id)->last_byte != EOF) {
+		*buf++ = wpin(id)->last_byte;
+		wpin(id)->last_byte = EOF;
 		--bcount;
 		++i;
 	}
@@ -363,7 +372,7 @@ wavpack_input_read_bytes(void *id, void *data, int32_t bcount)
 	/* wavpack fails if we return a partial read, so we just wait
 	   until the buffer is full */
 	while (bcount > 0) {
-		size_t nbytes = decoder_read(isp->decoder, isp->is,
+		size_t nbytes = decoder_read(wpin(id)->decoder, wpin(id)->is,
 					     buf, bcount);
 		if (nbytes == 0) {
 			/* EOF, error or a decoder command */
@@ -381,40 +390,38 @@ wavpack_input_read_bytes(void *id, void *data, int32_t bcount)
 static uint32_t
 wavpack_input_get_pos(void *id)
 {
-	return ((struct wavpack_input *)id)->is->offset;
+	return wpin(id)->is->offset;
 }
 
 static int
 wavpack_input_set_pos_abs(void *id, uint32_t pos)
 {
-	return input_stream_seek(((struct wavpack_input *)id)->is, pos, SEEK_SET)
-		? 0 : -1;
+	return input_stream_seek(wpin(id)->is, pos, SEEK_SET) ? 0 : -1;
 }
 
 static int
 wavpack_input_set_pos_rel(void *id, int32_t delta, int mode)
 {
-	return input_stream_seek(((struct wavpack_input *)id)->is, delta, mode)
-		? 0 : -1;
+	return input_stream_seek(wpin(id)->is, delta, mode) ? 0 : -1;
 }
 
 static int
 wavpack_input_push_back_byte(void *id, int c)
 {
-	((struct wavpack_input *)id)->last_byte = c;
+	wpin(id)->last_byte = c;
 	return 1;
 }
 
 static uint32_t
 wavpack_input_get_length(void *id)
 {
-	return ((struct wavpack_input *)id)->is->size;
+	return wpin(id)->is->size;
 }
 
 static int
 wavpack_input_can_seek(void *id)
 {
-	return ((struct wavpack_input *)id)->is->seekable;
+	return wpin(id)->is->seekable;
 }
 
 static WavpackStreamReader mpd_is_reader = {
