@@ -23,8 +23,6 @@
 #include "pcm_utils.h"
 
 struct decoder {
-	const struct decoder_plugin *plugin;
-
 	struct pcm_convert_state conv_state;
 
 	bool seeking;

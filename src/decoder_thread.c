@@ -123,7 +123,6 @@ static void decoder_run(void)
 					continue;
 				if (!decoder_try_decode(plugin, &input_stream))
 					continue;
-				decoder.plugin = plugin;
 				ret = plugin->stream_decode(&decoder,
 							    &input_stream);
 				break;
@@ -136,7 +135,6 @@ static void decoder_run(void)
 			/* we already know our mp3Plugin supports streams, no
 			 * need to check for stream{Types,DecodeFunc} */
 			if ((plugin = decoder_plugin_from_name("mp3"))) {
-				decoder.plugin = plugin;
 				ret = plugin->stream_decode(&decoder,
 							    &input_stream);
 			}
@@ -151,11 +149,9 @@ static void decoder_run(void)
 			if (plugin->file_decode != NULL) {
 				input_stream_close(&input_stream);
 				close_instream = false;
-				decoder.plugin = plugin;
 				ret = plugin->file_decode(&decoder, uri);
 				break;
 			} else if (plugin->stream_decode != NULL) {
-				decoder.plugin = plugin;
 				ret = plugin->stream_decode(&decoder,
 							    &input_stream);
 				break;
