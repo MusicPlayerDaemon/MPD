@@ -341,7 +341,7 @@ struct wavpack_input {
 };
 
 static int32_t
-read_bytes(void *id, void *data, int32_t bcount)
+wavpack_input_read_bytes(void *id, void *data, int32_t bcount)
 {
 	struct wavpack_input *isp = (struct wavpack_input *)id;
 	uint8_t *buf = (uint8_t *)data;
@@ -372,52 +372,52 @@ read_bytes(void *id, void *data, int32_t bcount)
 }
 
 static uint32_t
-get_pos(void *id)
+wavpack_input_get_pos(void *id)
 {
 	return ((struct wavpack_input *)id)->is->offset;
 }
 
 static int
-set_pos_abs(void *id, uint32_t pos)
+wavpack_input_set_pos_abs(void *id, uint32_t pos)
 {
 	return input_stream_seek(((struct wavpack_input *)id)->is, pos, SEEK_SET)
 		? 0 : -1;
 }
 
 static int
-set_pos_rel(void *id, int32_t delta, int mode)
+wavpack_input_set_pos_rel(void *id, int32_t delta, int mode)
 {
 	return input_stream_seek(((struct wavpack_input *)id)->is, delta, mode)
 		? 0 : -1;
 }
 
 static int
-push_back_byte(void *id, int c)
+wavpack_input_push_back_byte(void *id, int c)
 {
 	((struct wavpack_input *)id)->last_byte = c;
 	return 1;
 }
 
 static uint32_t
-get_length(void *id)
+wavpack_input_get_length(void *id)
 {
 	return ((struct wavpack_input *)id)->is->size;
 }
 
 static int
-can_seek(void *id)
+wavpack_input_can_seek(void *id)
 {
 	return ((struct wavpack_input *)id)->is->seekable;
 }
 
 static WavpackStreamReader mpd_is_reader = {
-	.read_bytes = read_bytes,
-	.get_pos = get_pos,
-	.set_pos_abs = set_pos_abs,
-	.set_pos_rel = set_pos_rel,
-	.push_back_byte = push_back_byte,
-	.get_length = get_length,
-	.can_seek = can_seek,
+	.read_bytes = wavpack_input_read_bytes,
+	.get_pos = wavpack_input_get_pos,
+	.set_pos_abs = wavpack_input_set_pos_abs,
+	.set_pos_rel = wavpack_input_set_pos_rel,
+	.push_back_byte = wavpack_input_push_back_byte,
+	.get_length = wavpack_input_get_length,
+	.can_seek = wavpack_input_can_seek,
 	.write_bytes = NULL /* no need to write edited tags */
 };
 
