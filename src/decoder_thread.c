@@ -61,13 +61,13 @@ static void decoder_run(void)
 	else
 		uri = song_get_url(song, buffer);
 	if (uri == NULL) {
-		dc.error = DECODE_ERROR_FILE;
+		dc.state = DECODE_STATE_ERROR;
 		return;
 	}
 
 	dc.current_song = dc.next_song; /* NEED LOCK */
 	if (!input_stream_open(&input_stream, uri)) {
-		dc.error = DECODE_ERROR_FILE;
+		dc.state = DECODE_STATE_ERROR;
 		return;
 	}
 
@@ -84,19 +84,21 @@ static void decoder_run(void)
 	while (!input_stream.ready) {
 		if (dc.command != DECODE_COMMAND_NONE) {
 			input_stream_close(&input_stream);
+			dc.state = DECODE_STATE_STOP;
 			return;
 		}
 
 		ret = input_stream_buffer(&input_stream);
 		if (ret < 0) {
 			input_stream_close(&input_stream);
-			dc.error = DECODE_ERROR_FILE;
+			dc.state = DECODE_STATE_ERROR;
 			return;
 		}
 	}
 
 	if (dc.command == DECODE_COMMAND_STOP) {
 		input_stream_close(&input_stream);
+		dc.state = DECODE_STATE_STOP;
 		return;
 	}
 
@@ -161,27 +163,23 @@ static void decoder_run(void)
 
 	music_pipe_flush();
 
-	if (!ret) {
-		dc.error = plugin == NULL
-			? DECODE_ERROR_UNKTYPE
-			: DECODE_ERROR_FILE;
-	}
-
 	if (close_instream)
 		input_stream_close(&input_stream);
+
+	dc.state = ret ? DECODE_STATE_STOP : DECODE_STATE_ERROR;
 }
 
 static void * decoder_task(mpd_unused void *arg)
 {
 	while (1) {
-		assert(dc.state == DECODE_STATE_STOP);
+		assert(dc.state == DECODE_STATE_STOP ||
+		       dc.state == DECODE_STATE_ERROR);
 
 		switch (dc.command) {
 		case DECODE_COMMAND_START:
 		case DECODE_COMMAND_SEEK:
 			decoder_run();
 
-			dc.state = DECODE_STATE_STOP;
 			dc.command = DECODE_COMMAND_NONE;
 			notify_signal(&pc.notify);
 			break;

@@ -93,7 +93,7 @@ static int player_wait_for_decoder(struct player *player)
 {
 	dc_command_wait(&pc.notify);
 
-	if (dc.error != DECODE_ERROR_NOERROR) {
+	if (decoder_has_failed()) {
 		assert(dc.next_song == NULL || dc.next_song->url != NULL);
 		pc.errored_song = dc.next_song;
 		pc.error = PLAYER_ERROR_FILE;
@@ -305,7 +305,7 @@ static void do_play(void)
 		}
 
 		if (player.decoder_starting) {
-			if (dc.error != DECODE_ERROR_NOERROR) {
+			if (decoder_has_failed()) {
 				/* the decoder failed */
 				assert(dc.next_song == NULL || dc.next_song->url != NULL);
 				pc.errored_song = dc.next_song;

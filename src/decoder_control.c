@@ -27,7 +27,6 @@ void dc_init(void)
 	notify_init(&dc.notify);
 	dc.state = DECODE_STATE_STOP;
 	dc.command = DECODE_COMMAND_NONE;
-	dc.error = DECODE_ERROR_NOERROR;
 }
 
 void dc_deinit(void)
@@ -63,7 +62,6 @@ dc_start(struct notify *notify, struct song *song)
 	assert(song != NULL);
 
 	dc.next_song = song;
-	dc.error = DECODE_ERROR_NOERROR;
 	dc_command(notify, DECODE_COMMAND_START);
 }
 
@@ -73,7 +71,6 @@ dc_start_async(struct song *song)
 	assert(song != NULL);
 
 	dc.next_song = song;
-	dc.error = DECODE_ERROR_NOERROR;
 	dc_command_async(DECODE_COMMAND_START);
 }
 
@@ -81,7 +78,7 @@ void
 dc_stop(struct notify *notify)
 {
 	if (dc.command == DECODE_COMMAND_START ||
-	    dc.state != DECODE_STATE_STOP)
+	    (dc.state != DECODE_STATE_STOP && dc.state != DECODE_STATE_ERROR))
 		dc_command(notify, DECODE_COMMAND_STOP);
 }
 
@@ -90,7 +87,8 @@ dc_seek(struct notify *notify, double where)
 {
 	assert(where >= 0.0);
 
-	if (dc.state == DECODE_STATE_STOP || !dc.seekable)
+	if (dc.state == DECODE_STATE_STOP ||
+	    dc.state == DECODE_STATE_ERROR || !dc.seekable)
 		return false;
 
 	dc.seek_where = where;

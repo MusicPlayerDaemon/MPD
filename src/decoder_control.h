@@ -25,19 +25,23 @@
 #include "audio_format.h"
 #include "notify.h"
 
+#include <assert.h>
+
 #define DECODE_TYPE_FILE	0
 #define DECODE_TYPE_URL		1
 
 enum decoder_state {
 	DECODE_STATE_STOP = 0,
 	DECODE_STATE_START,
-	DECODE_STATE_DECODE
-};
+	DECODE_STATE_DECODE,
 
-enum decoder_error {
-	DECODE_ERROR_NOERROR = 0,
-	DECODE_ERROR_UNKTYPE,
-	DECODE_ERROR_FILE,
+	/**
+	 * The last "START" command failed, because there was an I/O
+	 * error or because no decoder was able to decode the file.
+	 * This state will only come after START; once the state has
+	 * turned to DECODE, by definition no such error can occur.
+	 */
+	DECODE_STATE_ERROR,
 };
 
 struct decoder_control {
@@ -45,7 +49,6 @@ struct decoder_control {
 
 	volatile enum decoder_state state;
 	volatile enum decoder_command command;
-	volatile enum decoder_error error;
 	bool seek_error;
 	bool seekable;
 	volatile double seek_where;
@@ -69,7 +72,8 @@ void dc_deinit(void);
 
 static inline bool decoder_is_idle(void)
 {
-	return dc.state == DECODE_STATE_STOP &&
+	return (dc.state == DECODE_STATE_STOP ||
+		dc.state == DECODE_STATE_ERROR) &&
 		dc.command != DECODE_COMMAND_START;
 }
 
@@ -79,14 +83,28 @@ static inline bool decoder_is_starting(void)
 		dc.state == DECODE_STATE_START;
 }
 
+static inline bool decoder_has_failed(void)
+{
+	assert(dc.command == DECODE_COMMAND_NONE);
+
+	return dc.state == DECODE_STATE_ERROR;
+}
+
 static inline struct song *
 decoder_current_song(void)
 {
-	if (dc.state == DECODE_STATE_STOP ||
-	    dc.error != DECODE_ERROR_NOERROR)
+	switch (dc.state) {
+	case DECODE_STATE_STOP:
+	case DECODE_STATE_ERROR:
 		return NULL;
 
-	return dc.current_song;
+	case DECODE_STATE_START:
+	case DECODE_STATE_DECODE:
+		return dc.current_song;
+	}
+
+	assert(false);
+	return NULL;
 }
 
 void
