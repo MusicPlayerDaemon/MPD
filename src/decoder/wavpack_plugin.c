@@ -108,8 +108,9 @@ format_samples_int(int bytes_per_sample, void *buffer, uint32_t samcnt)
 /*
  * This function converts floating point sample data to 16 bit integer.
  */
-static void format_samples_float(mpd_unused int bytes_per_sample, void *buffer,
-				 uint32_t samcnt)
+static void
+format_samples_float(mpd_unused int bytes_per_sample, void *buffer,
+		     uint32_t samcnt)
 {
 	int16_t *dst = (int16_t *)buffer;
 	float *src = (float *)buffer;
@@ -123,9 +124,9 @@ static void format_samples_float(mpd_unused int bytes_per_sample, void *buffer,
  * This does the main decoding thing.
  * Requires an already opened WavpackContext.
  */
-static void wavpack_decode(struct decoder * decoder,
-                           WavpackContext *wpc, bool canseek,
-                           ReplayGainInfo *replayGainInfo)
+static void
+wavpack_decode(struct decoder * decoder, WavpackContext *wpc, bool canseek,
+	       ReplayGainInfo *replayGainInfo)
 {
 	struct audio_format audio_format;
 	void (*format_samples)(int bytes_per_sample,
@@ -208,7 +209,8 @@ static void wavpack_decode(struct decoder * decoder,
 	} while (samplesgot == samplesreq);
 }
 
-static char *wavpack_tag(WavpackContext *wpc, char *key)
+static char *
+wavpack_tag(WavpackContext *wpc, char *key)
 {
 	char *value = NULL;
 	int size;
@@ -223,7 +225,8 @@ static char *wavpack_tag(WavpackContext *wpc, char *key)
 	return value;
 }
 
-static ReplayGainInfo *wavpack_replaygain(WavpackContext *wpc)
+static ReplayGainInfo *
+wavpack_replaygain(WavpackContext *wpc)
 {
 	static char replaygain_track_gain[] = "replaygain_track_gain";
 	static char replaygain_album_gain[] = "replaygain_album_gain";
@@ -275,7 +278,8 @@ static ReplayGainInfo *wavpack_replaygain(WavpackContext *wpc)
 /*
  * Reads metainfo from the specified file.
  */
-static struct tag *wavpack_tagdup(const char *fname)
+static struct tag *
+wavpack_tagdup(const char *fname)
 {
 	WavpackContext *wpc;
 	struct tag *tag;
@@ -336,7 +340,8 @@ struct wavpack_input {
 	int last_byte;
 };
 
-static int32_t read_bytes(void *id, void *data, int32_t bcount)
+static int32_t
+read_bytes(void *id, void *data, int32_t bcount)
 {
 	struct wavpack_input *isp = (struct wavpack_input *)id;
 	uint8_t *buf = (uint8_t *)data;
@@ -366,35 +371,41 @@ static int32_t read_bytes(void *id, void *data, int32_t bcount)
 	return i;
 }
 
-static uint32_t get_pos(void *id)
+static uint32_t
+get_pos(void *id)
 {
 	return ((struct wavpack_input *)id)->is->offset;
 }
 
-static int set_pos_abs(void *id, uint32_t pos)
+static int
+set_pos_abs(void *id, uint32_t pos)
 {
 	return input_stream_seek(((struct wavpack_input *)id)->is, pos, SEEK_SET)
 		? 0 : -1;
 }
 
-static int set_pos_rel(void *id, int32_t delta, int mode)
+static int
+set_pos_rel(void *id, int32_t delta, int mode)
 {
 	return input_stream_seek(((struct wavpack_input *)id)->is, delta, mode)
 		? 0 : -1;
 }
 
-static int push_back_byte(void *id, int c)
+static int
+push_back_byte(void *id, int c)
 {
 	((struct wavpack_input *)id)->last_byte = c;
 	return 1;
 }
 
-static uint32_t get_length(void *id)
+static uint32_t
+get_length(void *id)
 {
 	return ((struct wavpack_input *)id)->is->size;
 }
 
-static int can_seek(void *id)
+static int
+can_seek(void *id)
 {
 	return ((struct wavpack_input *)id)->is->seekable;
 }
@@ -422,7 +433,8 @@ wavpack_input_init(struct wavpack_input *isp, struct decoder *decoder,
 /*
  * Tries to decode the specified stream, and gives true if managed to do it.
  */
-static bool wavpack_trydecode(struct input_stream *is)
+static bool
+wavpack_trydecode(struct input_stream *is)
 {
 	char error[ERRORLEN];
 	WavpackContext *wpc;
