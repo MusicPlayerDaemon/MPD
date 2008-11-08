@@ -49,74 +49,69 @@ static struct {
 /*
  * This function has been borrowed from the tiny player found on
  * wavpack.com. Modifications were required because mpd only handles
- * max 16 bit samples.
+ * max 24-bit samples.
  */
 static void
 format_samples_int(int bytes_per_sample, void *buffer, uint32_t samcnt)
 {
-	int32_t temp;
-	uchar *dst = (uchar *)buffer;
-	int32_t *src = (int32_t *)buffer;
+	int32_t *src = buffer;
 
 	switch (bytes_per_sample) {
-	case 1:
+	case 1: {
+		uchar *dst = buffer;
+		/*
+		 * The asserts like the following one are because we do the
+		 * formatting of samples within a single buffer. The size
+		 * of the output samples never can be greater than the size
+		 * of the input ones. Otherwise we would have an overflow.
+		 */
+		assert(sizeof(uchar) <= sizeof(uint32_t));
+
+		/* pass through and align 8-bit samples */
 		while (samcnt--) {
 			*dst++ = *src++;
 		}
 		break;
-	case 2:
+	}
+	case 2: {
+		uint16_t *dst = buffer;
+		assert(sizeof(uint16_t) <= sizeof(uint32_t));
+
+		/* pass through and align 16-bit samples */
 		while (samcnt--) {
-			temp = *src++;
-#ifdef WORDS_BIGENDIAN
-			*dst++ = (uchar)(temp >> 8);
-			*dst++ = (uchar)(temp);
-#else
-			*dst++ = (uchar)(temp);
-			*dst++ = (uchar)(temp >> 8);
-#endif
+			*dst++ = *src++;
 		}
 		break;
+	}
 	case 3:
-		/* downscale to 16 bits */
+		/* do nothing */
+		break;
+	case 4: {
+		uint32_t *dst = buffer;
+		assert(sizeof(uint32_t) <= sizeof(uint32_t));
+
+		/* downsample to 24-bit */
 		while (samcnt--) {
-			temp = *src++;
-#ifdef WORDS_BIGENDIAN
-			*dst++ = (uchar)(temp >> 16);
-			*dst++ = (uchar)(temp >> 8);
-#else
-			*dst++ = (uchar)(temp >> 8);
-			*dst++ = (uchar)(temp >> 16);
-#endif
+			*dst++ = *src++ >> 8;
 		}
 		break;
-	case 4:
-		/* downscale to 16 bits */
-		while (samcnt--) {
-			temp = *src++;
-#ifdef WORDS_BIGENDIAN
-			*dst++ = (uchar)(temp >> 24);
-			*dst++ = (uchar)(temp >> 16);
-#else
-			*dst++ = (uchar)(temp >> 16);
-			*dst++ = (uchar)(temp >> 24);
-#endif
-		}
-		break;
+	}
 	}
 }
 
 /*
- * This function converts floating point sample data to 16 bit integer.
+ * This function converts floating point sample data to 24-bit integer.
  */
 static void
 format_samples_float(mpd_unused int bytes_per_sample, void *buffer,
 		     uint32_t samcnt)
 {
-	int16_t *dst = (int16_t *)buffer;
-	float *src = (float *)buffer;
+	int32_t *dst = buffer;
+	float *src = buffer;
+	assert(sizeof(int32_t) <= sizeof(float));
 
 	while (samcnt--) {
-		*dst++ = (int16_t)(*src++);
+		*dst++ = (int32_t)(*src++ + 0.5f);
 	}
 }
 
@@ -142,8 +137,11 @@ wavpack_decode(struct decoder * decoder, WavpackContext *wpc, bool canseek,
 	audio_format.channels = WavpackGetReducedChannels(wpc);
 	audio_format.bits = WavpackGetBitsPerSample(wpc);
 
-	if (audio_format.bits > 16) {
-		audio_format.bits = 16;
+	/* round bitwidth to 8-bit units */
+	audio_format.bits = (audio_format.bits + 7) & (~7);
+	/* mpd handles max 24-bit samples */
+	if (audio_format.bits > 24) {
+		audio_format.bits = 24;
 	}
 
 	if ((WavpackGetMode(wpc) & MODE_FLOAT) == MODE_FLOAT) {
@@ -153,19 +151,20 @@ wavpack_decode(struct decoder * decoder, WavpackContext *wpc, bool canseek,
 	}
 /*
 	if ((WavpackGetMode(wpc) & MODE_WVC) == MODE_WVC)
-		ERROR("decoding WITH wvc!!!\n");
+		printf("decoding WITH wvc!!!\n");
 	else
-		ERROR("decoding without wvc\n");
+		printf("decoding without wvc\n");
 */
 	allsamples = WavpackGetNumSamples(wpc);
 	bytes_per_sample = WavpackGetBytesPerSample(wpc);
 
 	outsamplesize = bytes_per_sample;
-	if (outsamplesize > 2) {
-		outsamplesize = 2;
+	if (outsamplesize == 3) {
+		outsamplesize = 4;
 	}
 	outsamplesize *= audio_format.channels;
 
+	/* wavpack gives us all kind of samples in a 32-bit space */
 	samplesreq = sizeof(chunk) / (4 * audio_format.channels);
 
 	decoder_initialized(decoder, &audio_format, canseek,
@@ -535,7 +534,7 @@ wavpack_streamdecode(struct decoder * decoder, struct input_stream *is)
 
 	wavpack_input_init(&isp, decoder, is);
 	wpc = WavpackOpenFileInputEx(&mpd_is_reader, &isp, &isp_wvc, error,
-				     open_flags, 15);
+				     open_flags, 23);
 
 	if (wpc == NULL) {
 		g_warning("failed to open WavPack stream: %s\n", error);
@@ -564,7 +563,7 @@ wavpack_filedecode(struct decoder *decoder, const char *fname)
 
 	wpc = WavpackOpenFileInput(fname, error,
 	                           OPEN_TAGS | OPEN_WVC |
-	                           OPEN_2CH_MAX | OPEN_NORMALIZE, 15);
+	                           OPEN_2CH_MAX | OPEN_NORMALIZE, 23);
 	if (wpc == NULL) {
 		g_warning("failed to open WavPack file \"%s\": %s\n",
 			  fname, error);
