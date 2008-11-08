@@ -60,8 +60,9 @@ format_samples_int(int bytes_per_sample, void *buffer, uint32_t samcnt)
 
 	switch (bytes_per_sample) {
 	case 1:
-		while (samcnt--)
+		while (samcnt--) {
 			*dst++ = *src++;
+		}
 		break;
 	case 2:
 		while (samcnt--) {
@@ -95,7 +96,6 @@ format_samples_int(int bytes_per_sample, void *buffer, uint32_t samcnt)
 #ifdef WORDS_BIGENDIAN
 			*dst++ = (uchar)(temp >> 24);
 			*dst++ = (uchar)(temp >> 16);
-
 #else
 			*dst++ = (uchar)(temp >> 16);
 			*dst++ = (uchar)(temp >> 24);
@@ -142,13 +142,15 @@ wavpack_decode(struct decoder * decoder, WavpackContext *wpc, bool canseek,
 	audio_format.channels = WavpackGetReducedChannels(wpc);
 	audio_format.bits = WavpackGetBitsPerSample(wpc);
 
-	if (audio_format.bits > 16)
+	if (audio_format.bits > 16) {
 		audio_format.bits = 16;
+	}
 
-	if ((WavpackGetMode(wpc) & MODE_FLOAT) == MODE_FLOAT)
+	if ((WavpackGetMode(wpc) & MODE_FLOAT) == MODE_FLOAT) {
 		format_samples = format_samples_float;
-	else
+	} else {
 		format_samples = format_samples_int;
+	}
 /*
 	if ((WavpackGetMode(wpc) & MODE_WVC) == MODE_WVC)
 		ERROR("decoding WITH wvc!!!\n");
@@ -159,8 +161,9 @@ wavpack_decode(struct decoder * decoder, WavpackContext *wpc, bool canseek,
 	bytes_per_sample = WavpackGetBytesPerSample(wpc);
 
 	outsamplesize = bytes_per_sample;
-	if (outsamplesize > 2)
+	if (outsamplesize > 2) {
 		outsamplesize = 2;
+	}
 	outsamplesize *= audio_format.channels;
 
 	samplesreq = sizeof(chunk) / (4 * audio_format.channels);
@@ -180,15 +183,17 @@ wavpack_decode(struct decoder * decoder, WavpackContext *wpc, bool canseek,
 				if (WavpackSeekSample(wpc, where)) {
 					position = where;
 					decoder_command_finished(decoder);
-				} else
+				} else {
 					decoder_seek_error(decoder);
+				}
 			} else {
 				decoder_seek_error(decoder);
 			}
 		}
 
-		if (decoder_get_command(decoder) == DECODE_COMMAND_STOP)
+		if (decoder_get_command(decoder) == DECODE_COMMAND_STOP) {
 			break;
+		}
 
 		samplesgot = WavpackUnpackSamples(wpc,
 		                                  (int32_t *)chunk, samplesreq);
@@ -267,8 +272,9 @@ wavpack_replaygain(WavpackContext *wpc)
 	}
 
 
-	if (found)
+	if (found) {
 		return replay_gain_info;
+	}
 
 	freeReplayGainInfo(replay_gain_info);
 
@@ -359,9 +365,10 @@ wavpack_input_read_bytes(void *id, void *data, int32_t bcount)
 	while (bcount > 0) {
 		size_t nbytes = decoder_read(isp->decoder, isp->is,
 					     buf, bcount);
-		if (nbytes == 0)
+		if (nbytes == 0) {
 			/* EOF, error or a decoder command */
 			break;
+		}
 
 		i += nbytes;
 		bcount -= nbytes;
@@ -443,8 +450,9 @@ wavpack_trydecode(struct input_stream *is)
 	wavpack_input_init(&isp, NULL, is);
 	wpc = WavpackOpenFileInputEx(&mpd_is_reader, &isp, NULL, error,
 	                             OPEN_STREAMING, 0);
-	if (wpc == NULL)
+	if (wpc == NULL) {
 		return false;
+	}
 
 	WavpackCloseFile(wpc);
 
@@ -467,15 +475,17 @@ wavpack_open_wvc(struct decoder *decoder, struct input_stream *is_wvc,
 	 * single files. utf8url is not absolute file path :/
 	 */
 	utf8url = decoder_get_url(decoder, tmp);
-	if (utf8url == NULL)
+	if (utf8url == NULL) {
 		return false;
+	}
 
 	wvc_url = g_strconcat(utf8url, "c", NULL);
 	ret = input_stream_open(is_wvc, wvc_url);
 	g_free(wvc_url);
 
-	if (!ret)
+	if (!ret) {
 		return false;
+	}
 
 	/*
 	 * And we try to buffer in order to get know
@@ -524,8 +534,9 @@ wavpack_streamdecode(struct decoder * decoder, struct input_stream *is)
 	wavpack_decode(decoder, wpc, canseek, NULL);
 
 	WavpackCloseFile(wpc);
-	if (open_flags & OPEN_WVC)
+	if (open_flags & OPEN_WVC) {
 		input_stream_close(&is_wvc);
+	}
 
 	return true;
 }
@@ -553,8 +564,9 @@ wavpack_filedecode(struct decoder *decoder, const char *fname)
 
 	wavpack_decode(decoder, wpc, true, replay_gain_info);
 
-	if (replay_gain_info)
+	if (replay_gain_info) {
 		freeReplayGainInfo(replay_gain_info);
+	}
 
 	WavpackCloseFile(wpc);
 
