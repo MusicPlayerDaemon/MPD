@@ -70,7 +70,9 @@ struct decoder_plugin {
 	 * this will be used to decode InputStreams, and is
 	 * recommended for files and networked (HTTP) connections.
 	 *
-	 * returns false on error, true on success
+	 * @return false if the plugin cannot decode the stream, and
+	 * true if it was able to do so (even if an error occured
+	 * during playback)
 	 */
 	bool (*stream_decode)(struct decoder *, struct input_stream *);
 
@@ -79,7 +81,9 @@ struct decoder_plugin {
 	 * a filename or handle as input, and will not allow callbacks
 	 * to be set (like Ogg-Vorbis and FLAC libraries allow)
 	 *
-	 * returns -1 on error, 0 on success
+	 * @return false if the plugin cannot decode the file, and
+	 * true if it was able to do so (even if an error occured
+	 * during playback)
 	 */
 	bool (*file_decode)(struct decoder *, const char *path);
 
