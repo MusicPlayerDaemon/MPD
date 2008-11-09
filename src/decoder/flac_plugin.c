@@ -385,6 +385,12 @@ flac_decode(struct decoder * decoder, struct input_stream *inStream)
 	return flac_decode_internal(decoder, inStream, false);
 }
 
+static bool
+oggflac_init(void)
+{
+	return !!FLAC_API_SUPPORTS_OGG_FLAC;
+}
+
 #if defined(FLAC_API_VERSION_CURRENT) && FLAC_API_VERSION_CURRENT > 7 && \
 	!defined(HAVE_OGGFLAC)
 static struct tag *oggflac_tag_dup(const char *file)
@@ -426,8 +432,7 @@ oggflac_decode(struct decoder *decoder, struct input_stream *inStream)
 static bool
 oggflac_try_decode(struct input_stream *inStream)
 {
-	return FLAC_API_SUPPORTS_OGG_FLAC &&
-		ogg_stream_type_detect(inStream) == FLAC;
+	return ogg_stream_type_detect(inStream) == FLAC;
 }
 
 static const char *const oggflac_suffixes[] = { "ogg", "oga", NULL };
@@ -440,6 +445,7 @@ static const char *const oggflac_mime_types[] = {
 
 const struct decoder_plugin oggflacPlugin = {
 	.name = "oggflac",
+	.init = oggflac_init,
 	.try_decode = oggflac_try_decode,
 	.stream_decode = oggflac_decode,
 	.tag_dup = oggflac_tag_dup,
