@@ -447,28 +447,6 @@ wavpack_input_init(struct wavpack_input *isp, struct decoder *decoder,
 	isp->last_byte = EOF;
 }
 
-/*
- * Tries to decode the specified stream, and gives true if managed to do it.
- */
-static bool
-wavpack_trydecode(struct input_stream *is)
-{
-	char error[ERRORLEN];
-	WavpackContext *wpc;
-	struct wavpack_input isp;
-
-	wavpack_input_init(&isp, NULL, is);
-	wpc = WavpackOpenFileInputEx(&mpd_is_reader, &isp, NULL, error,
-	                             OPEN_STREAMING, 0);
-	if (wpc == NULL) {
-		return false;
-	}
-
-	WavpackCloseFile(wpc);
-
-	return true;
-}
-
 static bool
 wavpack_open_wvc(struct decoder *decoder, struct input_stream *is_wvc,
 		 struct wavpack_input *wpi)
@@ -588,7 +566,6 @@ static char const *const wavpack_mime_types[] = { "audio/x-wavpack", NULL };
 
 const struct decoder_plugin wavpack_plugin = {
 	.name = "wavpack",
-	.try_decode = wavpack_trydecode,
 	.stream_decode = wavpack_streamdecode,
 	.file_decode = wavpack_filedecode,
 	.tag_dup = wavpack_tagdup,
