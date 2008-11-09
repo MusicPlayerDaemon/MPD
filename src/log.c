@@ -159,7 +159,7 @@ void setup_log_output(bool use_stdout)
 #define log_func(func,level) \
 mpd_printf void func(const char *fmt, ...) \
 { \
-	if ((int)log_threshold <= level) {		\
+	if (level <= (int)log_threshold) { \
 		va_list args; \
 		va_start(args, fmt); \
 		g_logv(NULL, level, fmt, args);	\
