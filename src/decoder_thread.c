@@ -60,6 +60,9 @@ decoder_stream_decode(const struct decoder_plugin *plugin,
 	assert(input_stream->ready);
 	assert(dc.state == DECODE_STATE_START);
 
+	/* rewind the stream, so each plugin gets a fresh start */
+	input_stream_seek(input_stream, 0, SEEK_SET);
+
 	ret = plugin->stream_decode(decoder, input_stream);
 
 	if (ret) {
@@ -173,7 +176,10 @@ static void decoder_run(void)
 				continue;
 			ret = decoder_stream_decode(plugin, &decoder,
 						    &input_stream);
-			break;
+			if (ret)
+				break;
+
+			plugin = NULL;
 		}
 
 		/* if that fails, try suffix matching the URL: */
@@ -187,7 +193,11 @@ static void decoder_run(void)
 					continue;
 				ret = decoder_stream_decode(plugin, &decoder,
 							    &input_stream);
-				break;
+				if (ret)
+					break;
+
+				assert(dc.state == DECODE_STATE_START);
+				plugin = NULL;
 			}
 		}
 		/* fallback to mp3: */
@@ -213,11 +223,13 @@ static void decoder_run(void)
 				close_instream = false;
 				ret = decoder_file_decode(plugin,
 							  &decoder, uri);
-				break;
+				if (ret)
+					break;
 			} else if (plugin->stream_decode != NULL) {
 				ret = decoder_stream_decode(plugin, &decoder,
 							    &input_stream);
-				break;
+				if (ret)
+					break;
 			}
 		}
 	}
