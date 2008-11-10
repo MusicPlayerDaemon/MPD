@@ -35,7 +35,11 @@ void decoder_initialized(struct decoder * decoder,
 			 bool seekable, float total_time)
 {
 	assert(dc.state == DECODE_STATE_START);
+	assert(decoder != NULL);
+	assert(!decoder->stream_tag_sent);
+	assert(!decoder->seeking);
 	assert(audio_format != NULL);
+	assert(audio_format_defined(audio_format));
 
 	pcm_convert_init(&decoder->conv_state);
 
@@ -96,6 +100,8 @@ size_t decoder_read(struct decoder *decoder,
 {
 	size_t nbytes;
 
+	assert(dc.state == DECODE_STATE_START ||
+	       dc.state == DECODE_STATE_DECODE);
 	assert(is != NULL);
 	assert(buffer != NULL);
 
@@ -175,6 +181,8 @@ decoder_data(struct decoder *decoder,
 	size_t nbytes;
 	char *data;
 
+	assert(dc.state == DECODE_STATE_DECODE);
+
 	if (is != NULL && !decoder->stream_tag_sent) {
 		const struct tag *src;
 		struct tag *tag1, *tag2;
@@ -253,6 +261,8 @@ decoder_tag(mpd_unused struct decoder *decoder, struct input_stream *is,
 	    const struct tag *tag)
 {
 	struct tag *tag2 = is != NULL ? tag_add_stream_tags(tag, is) : NULL;
+
+	assert(dc.state == DECODE_STATE_DECODE);
 
 	if (tag2 != NULL)
 		tag = tag2;
