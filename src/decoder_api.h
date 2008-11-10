@@ -61,12 +61,6 @@ struct decoder_plugin {
 	void (*finish)(void);
 
 	/**
-	 * returns true if the input stream is decodable by the
-	 * decoder plugin, false if not
-	 */
-	bool (*try_decode)(struct input_stream *);
-
-	/**
 	 * this will be used to decode InputStreams, and is
 	 * recommended for files and networked (HTTP) connections.
 	 *

@@ -214,6 +214,13 @@ oggvorbis_decode(struct decoder *decoder, struct input_stream *inStream)
 	const char *errorStr;
 	bool initialized = false;
 
+	if (ogg_stream_type_detect(inStream) != VORBIS)
+		return false;
+
+	/* rewind the stream, because ogg_stream_type_detect() has
+	   moved it */
+	input_stream_seek(inStream, 0, SEEK_SET);
+
 	data.inStream = inStream;
 	data.decoder = decoder;
 
@@ -351,12 +358,6 @@ static struct tag *oggvorbis_TagDup(const char *file)
 	return ret;
 }
 
-static bool
-oggvorbis_try_decode(struct input_stream *inStream)
-{
-	return ogg_stream_type_detect(inStream) == VORBIS;
-}
-
 static const char *const oggvorbis_Suffixes[] = { "ogg","oga", NULL };
 static const char *const oggvorbis_MimeTypes[] = {
 	"application/ogg",
@@ -367,7 +368,6 @@ static const char *const oggvorbis_MimeTypes[] = {
 
 const struct decoder_plugin oggvorbisPlugin = {
 	.name = "oggvorbis",
-	.try_decode = oggvorbis_try_decode,
 	.stream_decode = oggvorbis_decode,
 	.tag_dup = oggvorbis_TagDup,
 	.suffixes = oggvorbis_Suffixes,

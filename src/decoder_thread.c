@@ -29,23 +29,6 @@
 #include "ls.h"
 
 static bool
-decoder_try_decode(const struct decoder_plugin *plugin,
-		   struct input_stream *input_stream)
-{
-	bool ret;
-
-	if (plugin->try_decode == NULL)
-		return true;
-
-	ret = plugin->try_decode(input_stream);
-
-	/* rewind the stream, so the next reader gets a fresh start */
-	input_stream_seek(input_stream, 0, SEEK_SET);
-
-	return ret;
-}
-
-static bool
 decoder_stream_decode(const struct decoder_plugin *plugin,
 		      struct decoder *decoder,
 		      struct input_stream *input_stream)
@@ -172,8 +155,6 @@ static void decoder_run(void)
 		while ((plugin = decoder_plugin_from_mime_type(input_stream.mime, next++))) {
 			if (plugin->stream_decode == NULL)
 				continue;
-			if (!decoder_try_decode(plugin, &input_stream))
-				continue;
 			ret = decoder_stream_decode(plugin, &decoder,
 						    &input_stream);
 			if (ret)
@@ -188,8 +169,6 @@ static void decoder_run(void)
 			next = 0;
 			while ((plugin = decoder_plugin_from_suffix(s, next++))) {
 				if (plugin->stream_decode == NULL)
-					continue;
-				if (!decoder_try_decode(plugin, &input_stream))
 					continue;
 				ret = decoder_stream_decode(plugin, &decoder,
 							    &input_stream);
@@ -215,9 +194,6 @@ static void decoder_run(void)
 		unsigned int next = 0;
 		const char *s = getSuffix(uri);
 		while ((plugin = decoder_plugin_from_suffix(s, next++))) {
-			if (!decoder_try_decode(plugin, &input_stream))
-				continue;
-
 			if (plugin->file_decode != NULL) {
 				input_stream_close(&input_stream);
 				close_instream = false;

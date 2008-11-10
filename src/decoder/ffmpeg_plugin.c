@@ -193,12 +193,6 @@ ffmpeg_helper(struct input_stream *input,
 	return ret;
 }
 
-static bool
-ffmpeg_try_decode(struct input_stream *input)
-{
-	return ffmpeg_helper(input, NULL, NULL);
-}
-
 static enum decoder_command
 ffmpeg_send_packet(struct decoder *decoder, struct input_stream *is,
 		   const AVPacket *packet,
@@ -370,7 +364,6 @@ static const char *const ffmpeg_mime_types[] = {
 const struct decoder_plugin ffmpeg_plugin = {
 	.name = "ffmpeg",
 	.init = ffmpeg_init,
-	.try_decode = ffmpeg_try_decode,
 	.stream_decode = ffmpeg_decode,
 	.tag_dup = ffmpeg_tag,
 	.suffixes = ffmpeg_suffixes,
