@@ -45,6 +45,65 @@ decoder_try_decode(const struct decoder_plugin *plugin,
 	return ret;
 }
 
+static bool
+decoder_stream_decode(const struct decoder_plugin *plugin,
+		      struct decoder *decoder,
+		      struct input_stream *input_stream)
+{
+	bool ret;
+
+	assert(plugin != NULL);
+	assert(plugin->stream_decode != NULL);
+	assert(decoder != NULL);
+	assert(!decoder->stream_tag_sent);
+	assert(input_stream != NULL);
+	assert(input_stream->ready);
+	assert(dc.state == DECODE_STATE_START);
+
+	ret = plugin->stream_decode(decoder, input_stream);
+
+	if (ret) {
+		/* if the method has succeeded, the plugin must have
+		   called decoder_initialized() */
+		assert(dc.state == DECODE_STATE_DECODE);
+	} else {
+		/* no decoder_initialized() allowed when the plugin
+		   hasn't recognized the file format */
+		assert(dc.state == DECODE_STATE_START);
+	}
+
+	return ret;
+}
+
+static bool
+decoder_file_decode(const struct decoder_plugin *plugin,
+		    struct decoder *decoder, const char *path)
+{
+	bool ret;
+
+	assert(plugin != NULL);
+	assert(plugin->stream_decode != NULL);
+	assert(decoder != NULL);
+	assert(!decoder->stream_tag_sent);
+	assert(path != NULL);
+	assert(path[0] == '/');
+	assert(dc.state == DECODE_STATE_START);
+
+	ret = plugin->file_decode(decoder, path);
+
+	if (ret) {
+		/* if the method has succeeded, the plugin must have
+		   called decoder_initialized() */
+		assert(dc.state == DECODE_STATE_DECODE);
+	} else {
+		/* no decoder_initialized() allowed when the plugin
+		   hasn't recognized the file format */
+		assert(dc.state == DECODE_STATE_START);
+	}
+
+	return ret;
+}
+
 static void decoder_run(void)
 {
 	struct song *song = dc.next_song;
@@ -112,7 +171,8 @@ static void decoder_run(void)
 				continue;
 			if (!decoder_try_decode(plugin, &input_stream))
 				continue;
-			ret = plugin->stream_decode(&decoder, &input_stream);
+			ret = decoder_stream_decode(plugin, &decoder,
+						    &input_stream);
 			break;
 		}
 
@@ -125,7 +185,7 @@ static void decoder_run(void)
 					continue;
 				if (!decoder_try_decode(plugin, &input_stream))
 					continue;
-				ret = plugin->stream_decode(&decoder,
+				ret = decoder_stream_decode(plugin, &decoder,
 							    &input_stream);
 				break;
 			}
@@ -137,7 +197,7 @@ static void decoder_run(void)
 			/* we already know our mp3Plugin supports streams, no
 			 * need to check for stream{Types,DecodeFunc} */
 			if ((plugin = decoder_plugin_from_name("mp3"))) {
-				ret = plugin->stream_decode(&decoder,
+				ret = decoder_stream_decode(plugin, &decoder,
 							    &input_stream);
 			}
 		}
@@ -151,10 +211,11 @@ static void decoder_run(void)
 			if (plugin->file_decode != NULL) {
 				input_stream_close(&input_stream);
 				close_instream = false;
-				ret = plugin->file_decode(&decoder, uri);
+				ret = decoder_file_decode(plugin,
+							  &decoder, uri);
 				break;
 			} else if (plugin->stream_decode != NULL) {
-				ret = plugin->stream_decode(&decoder,
+				ret = decoder_stream_decode(plugin, &decoder,
 							    &input_stream);
 				break;
 			}
