@@ -40,7 +40,7 @@ static const struct decoder_plugin *const decoder_plugins[] = {
 #ifdef HAVE_OGGVORBIS
 	&oggvorbisPlugin,
 #endif
-#ifdef HAVE_FLAC_COMMON
+#if defined(HAVE_FLAC) || defined(HAVE_OGGFLAC)
 	&oggflacPlugin,
 #endif
 #ifdef HAVE_FLAC
