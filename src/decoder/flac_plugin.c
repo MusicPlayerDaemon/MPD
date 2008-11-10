@@ -335,10 +335,11 @@ flac_decode_internal(struct decoder * decoder, struct input_stream *inStream,
 			err = "doing init()";
 			goto fail;
 		}
-		if (!flac_process_metadata(flacDec)) {
-			err = "problem reading metadata";
-			goto fail;
-		}
+	}
+
+	if (!flac_process_metadata(flacDec)) {
+		err = "problem reading metadata";
+		goto fail;
 	}
 
 	decoder_initialized(decoder, &data.audio_format,
