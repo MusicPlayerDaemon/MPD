@@ -385,14 +385,21 @@ flac_decode(struct decoder * decoder, struct input_stream *inStream)
 	return flac_decode_internal(decoder, inStream, false);
 }
 
+#ifndef HAVE_OGGFLAC
+
 static bool
 oggflac_init(void)
 {
+#if defined(FLAC_API_VERSION_CURRENT) && FLAC_API_VERSION_CURRENT > 7
 	return !!FLAC_API_SUPPORTS_OGG_FLAC;
+#else
+	/* disable oggflac when libflac is too old */
+	return false;
+#endif
 }
 
-#if defined(FLAC_API_VERSION_CURRENT) && FLAC_API_VERSION_CURRENT > 7 && \
-	!defined(HAVE_OGGFLAC)
+#if defined(FLAC_API_VERSION_CURRENT) && FLAC_API_VERSION_CURRENT > 7
+
 static struct tag *oggflac_tag_dup(const char *file)
 {
 	struct tag *ret = NULL;
@@ -443,17 +450,21 @@ static const char *const oggflac_mime_types[] = {
 	NULL
 };
 
+#endif /* FLAC_API_VERSION_CURRENT >= 7 */
+
 const struct decoder_plugin oggflacPlugin = {
 	.name = "oggflac",
 	.init = oggflac_init,
+#if defined(FLAC_API_VERSION_CURRENT) && FLAC_API_VERSION_CURRENT > 7
 	.try_decode = oggflac_try_decode,
 	.stream_decode = oggflac_decode,
 	.tag_dup = oggflac_tag_dup,
 	.suffixes = oggflac_suffixes,
 	.mime_types = oggflac_mime_types
+#endif
 };
 
-#endif /* FLAC_API_VERSION_CURRENT >= 7 */
+#endif /* HAVE_OGGFLAC */
 
 static const char *const flacSuffixes[] = { "flac", NULL };
 static const char *const flac_mime_types[] = {
