@@ -27,6 +27,11 @@
 
 struct audio_format;
 
+enum {
+	/** this value means "100% volume" */
+	PCM_VOLUME_1 = 1000,
+};
+
 struct pcm_convert_state {
 	struct pcm_resample_state resample;
 
@@ -43,7 +48,7 @@ struct pcm_convert_state {
 static inline int
 pcm_float_to_volume(float volume)
 {
-	return volume * 1000.0 + 0.5;
+	return volume * PCM_VOLUME_1 + 0.5;
 }
 
 void pcm_volume(char *buffer, int bufferSize,

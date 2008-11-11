@@ -53,7 +53,8 @@ pcm_volume_change_8(int8_t *buffer, unsigned num_samples, int volume)
 	while (num_samples > 0) {
 		int32_t sample = *buffer;
 
-		sample = (sample * volume + pcm_dither() + 500) / 1000;
+		sample = (sample * volume + pcm_dither() + PCM_VOLUME_1 / 2)
+			/ PCM_VOLUME_1;
 
 		*buffer++ = pcm_range(sample, 8);
 		--num_samples;
@@ -66,7 +67,8 @@ pcm_volume_change_16(int16_t *buffer, unsigned num_samples, int volume)
 	while (num_samples > 0) {
 		int32_t sample = *buffer;
 
-		sample = (sample * volume + pcm_dither() + 500) / 1000;
+		sample = (sample * volume + pcm_dither() + PCM_VOLUME_1 / 2)
+			/ PCM_VOLUME_1;
 
 		*buffer++ = pcm_range(sample, 16);
 		--num_samples;
@@ -79,7 +81,8 @@ pcm_volume_change_24(int32_t *buffer, unsigned num_samples, int volume)
 	while (num_samples > 0) {
 		int64_t sample = *buffer;
 
-		sample = (sample * volume + pcm_dither() + 500) / 1000;
+		sample = (sample * volume + pcm_dither() + PCM_VOLUME_1 / 2)
+			/ PCM_VOLUME_1;
 
 		*buffer++ = pcm_range(sample, 24);
 		--num_samples;
@@ -90,7 +93,7 @@ void pcm_volume(char *buffer, int bufferSize,
 		const struct audio_format *format,
 		int volume)
 {
-	if (volume >= 1000)
+	if (volume >= PCM_VOLUME_1)
 		return;
 
 	if (volume <= 0) {
@@ -128,7 +131,7 @@ pcm_add_8(int8_t *buffer1, const int8_t *buffer2,
 		int32_t sample2 = *buffer2++;
 
 		sample1 = ((sample1 * volume1 + sample2 * volume2) +
-			   pcm_dither() + 500) / 1000;
+			   pcm_dither() + PCM_VOLUME_1 / 2) / PCM_VOLUME_1;
 
 		*buffer1++ = pcm_range(sample1, 8);
 		--num_samples;
@@ -144,7 +147,7 @@ pcm_add_16(int16_t *buffer1, const int16_t *buffer2,
 		int32_t sample2 = *buffer2++;
 
 		sample1 = ((sample1 * volume1 + sample2 * volume2) +
-			   pcm_dither() + 500) / 1000;
+			   pcm_dither() + PCM_VOLUME_1 / 2) / PCM_VOLUME_1;
 
 		*buffer1++ = pcm_range(sample1, 16);
 		--num_samples;
@@ -160,7 +163,7 @@ pcm_add_24(int32_t *buffer1, const int32_t *buffer2,
 		int64_t sample2 = *buffer2++;
 
 		sample1 = ((sample1 * volume1 + sample2 * volume2) +
-			   pcm_dither() + 500) / 1000;
+			   pcm_dither() + PCM_VOLUME_1 / 2) / PCM_VOLUME_1;
 
 		*buffer1++ = pcm_range(sample1, 24);
 		--num_samples;
@@ -200,10 +203,10 @@ void pcm_mix(char *buffer1, const char *buffer2, size_t size,
 	float s = sin(M_PI_2 * portion1);
 	s *= s;
 
-	vol1 = s * 1000 + 0.5;
-	vol1 = vol1 > 1000 ? 1000 : (vol1 < 0 ? 0 : vol1);
+	vol1 = s * PCM_VOLUME_1 + 0.5;
+	vol1 = vol1 > PCM_VOLUME_1 ? PCM_VOLUME_1 : (vol1 < 0 ? 0 : vol1);
 
-	pcm_add(buffer1, buffer2, size, vol1, 1000 - vol1, format);
+	pcm_add(buffer1, buffer2, size, vol1, PCM_VOLUME_1 - vol1, format);
 }
 
 void pcm_convert_init(struct pcm_convert_state *state)

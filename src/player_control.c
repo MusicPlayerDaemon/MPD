@@ -22,6 +22,7 @@
 #include "tag.h"
 #include "song.h"
 #include "idle.h"
+#include "pcm_utils.h"
 #include "os_compat.h"
 #include "main_notify.h"
 
@@ -35,7 +36,7 @@ void pc_init(unsigned int buffered_before_play)
 	pc.error = PLAYER_ERROR_NOERROR;
 	pc.state = PLAYER_STATE_STOP;
 	pc.cross_fade_seconds = 0;
-	pc.software_volume = 1000;
+	pc.software_volume = PCM_VOLUME_1;
 }
 
 void pc_deinit(void)
@@ -220,7 +221,11 @@ void setPlayerCrossFade(float crossFadeInSeconds)
 
 void setPlayerSoftwareVolume(int volume)
 {
-	volume = (volume > 1000) ? 1000 : (volume < 0 ? 0 : volume);
+	if (volume > PCM_VOLUME_1)
+		volume = PCM_VOLUME_1;
+	else if (volume < 0)
+		volume = 0;
+
 	pc.software_volume = volume;
 }
 

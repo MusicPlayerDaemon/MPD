@@ -480,7 +480,7 @@ static int changeSoftwareVolume(int change, int rel)
 
 	/*new = 100.0*(exp(new/50.0)-1)/(M_E*M_E-1)+0.5; */
 	if (new >= 100)
-		new = 1000;
+		new = PCM_VOLUME_1;
 	else if (new <= 0)
 		new = 0;
 	else
