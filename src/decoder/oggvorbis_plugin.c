@@ -337,7 +337,6 @@ static struct tag *oggvorbis_TagDup(const char *file)
 	g_free(duplicated);
 	if (err < 0)
 		return NULL;
-	}
 
 	ret = oggCommentsParse(ov_comment(&vf, -1)->user_comments);
 
