@@ -25,7 +25,6 @@
 #include "audio_format.h"
 #include "os_compat.h"
 
-/* Added 4/14/2004 by AliasMrJones */
 int replay_gain_mode = REPLAY_GAIN_OFF;
 
 static float replay_gain_preamp = 1.0;
