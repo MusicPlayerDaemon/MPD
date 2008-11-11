@@ -327,17 +327,15 @@ oggvorbis_decode(struct decoder *decoder, struct input_stream *inStream)
 
 static struct tag *oggvorbis_TagDup(const char *file)
 {
+	char *duplicated;
+	int err;
 	struct tag *ret;
-	FILE *fp;
 	OggVorbis_File vf;
 
-	fp = fopen(file, "r");
-	if (!fp) {
-		return NULL;
-	}
-
-	if (ov_open(fp, &vf, NULL, 0) < 0) {
-		fclose(fp);
+	duplicated = g_strdup(file);
+	err = ov_fopen(duplicated, &vf);
+	g_free(duplicated);
+	if (err < 0)
 		return NULL;
 	}
 
