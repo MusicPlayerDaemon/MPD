@@ -20,13 +20,15 @@
 #ifndef MPD_REPLAY_GAIN_H
 #define MPD_REPLAY_GAIN_H
 
-#define REPLAY_GAIN_OFF		0
-#define REPLAY_GAIN_TRACK	1
-#define REPLAY_GAIN_ALBUM	2
+enum replay_gain_mode {
+	REPLAY_GAIN_OFF = -1,
+	REPLAY_GAIN_ALBUM,
+	REPLAY_GAIN_TRACK,
+};
 
 struct audio_format;
 
-extern int replay_gain_mode;
+extern enum replay_gain_mode replay_gain_mode;
 
 struct replay_gain_info {
 	float album_gain;
