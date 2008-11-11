@@ -108,7 +108,6 @@ mpc_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 
 	MPC_SAMPLE_FORMAT sample_buffer[MPC_DECODER_BUFFER_LENGTH];
 
-	bool eof = false;
 	long ret;
 #define MPC_CHUNK_SIZE 4096
 	char chunk[MPC_CHUNK_SIZE];
@@ -162,7 +161,7 @@ mpc_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 			    inStream->seekable,
 			    mpc_streaminfo_get_length(&info));
 
-	while (!eof) {
+	while (true) {
 		if (decoder_get_command(mpd_decoder) == DECODE_COMMAND_SEEK) {
 			samplePos = decoder_seek_where(mpd_decoder) *
 				audio_format.sample_rate;
@@ -179,10 +178,8 @@ mpc_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 		ret = mpc_decoder_decode(&decoder, sample_buffer,
 					 &vbrUpdateAcc, &vbrUpdateBits);
 
-		if (ret <= 0 || decoder_get_command(mpd_decoder) == DECODE_COMMAND_STOP) {
-			eof = true;
+		if (ret <= 0 || decoder_get_command(mpd_decoder) == DECODE_COMMAND_STOP)
 			break;
-		}
 
 		samplePos += ret;
 
@@ -207,10 +204,8 @@ mpc_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 
 				chunkpos = 0;
 				dest = (int32_t *)chunk;
-				if (decoder_get_command(mpd_decoder) == DECODE_COMMAND_STOP) {
-					eof = true;
+				if (decoder_get_command(mpd_decoder) == DECODE_COMMAND_STOP)
 					break;
-				}
 			}
 		}
 	}
