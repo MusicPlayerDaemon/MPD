@@ -214,6 +214,7 @@ oggvorbis_decode(struct decoder *decoder, struct input_stream *inStream)
 	char **comments;
 	const char *errorStr;
 	bool initialized = false;
+	enum decoder_command cmd = DECODE_COMMAND_NONE;
 
 	if (ogg_stream_type_detect(inStream) != VORBIS)
 		return;
@@ -259,8 +260,8 @@ oggvorbis_decode(struct decoder *decoder, struct input_stream *inStream)
 	}
 	audio_format.bits = 16;
 
-	while (true) {
-		if (decoder_get_command(decoder) == DECODE_COMMAND_SEEK) {
+	do {
+		if (cmd == DECODE_COMMAND_SEEK) {
 			double seek_where = decoder_seek_where(decoder);
 			if (0 == ov_time_seek_page(&vf, seek_where)) {
 				decoder_command_finished(decoder);
@@ -309,13 +310,11 @@ oggvorbis_decode(struct decoder *decoder, struct input_stream *inStream)
 		if ((test = ov_bitrate_instant(&vf)) > 0)
 			bitRate = test / 1000;
 
-		decoder_data(decoder, inStream,
-			     chunk, ret,
-			     ov_pcm_tell(&vf) / audio_format.sample_rate,
-			     bitRate, replayGainInfo);
-		if (decoder_get_command(decoder) == DECODE_COMMAND_STOP)
-			break;
-	}
+		cmd = decoder_data(decoder, inStream,
+				   chunk, ret,
+				   ov_pcm_tell(&vf) / audio_format.sample_rate,
+				   bitRate, replayGainInfo);
+	} while (cmd != DECODE_COMMAND_STOP);
 
 	if (replayGainInfo)
 		replay_gain_info_free(replayGainInfo);
