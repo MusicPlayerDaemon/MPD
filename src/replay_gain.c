@@ -18,9 +18,6 @@
  */
 
 #include "replay_gain.h"
-#include "utils.h"
-
-#include "log.h"
 #include "conf.h"
 #include "audio_format.h"
 #include "pcm_utils.h"
@@ -49,8 +46,8 @@ void replay_gain_global_init(void)
 	} else if (strcmp(param->value, "album") == 0) {
 		replay_gain_mode = REPLAY_GAIN_ALBUM;
 	} else {
-		FATAL("replaygain value \"%s\" at line %i is invalid\n",
-		      param->value, param->line);
+		g_error("replaygain value \"%s\" at line %i is invalid\n",
+			param->value, param->line);
 	}
 
 	param = getConfigParam(CONF_REPLAYGAIN_PREAMP);
@@ -60,13 +57,13 @@ void replay_gain_global_init(void)
 		float f = strtod(param->value, &test);
 
 		if (*test != '\0') {
-			FATAL("Replaygain preamp \"%s\" is not a number at "
-			      "line %i\n", param->value, param->line);
+			g_error("Replaygain preamp \"%s\" is not a number at "
+				"line %i\n", param->value, param->line);
 		}
 
 		if (f < -15 || f > 15) {
-			FATAL("Replaygain preamp \"%s\" is not between -15 and"
-			      "15 at line %i\n", param->value, param->line);
+			g_error("Replaygain preamp \"%s\" is not between -15 and"
+				"15 at line %i\n", param->value, param->line);
 		}
 
 		replay_gain_preamp = pow(10, f / 20.0);
@@ -92,7 +89,7 @@ static float calc_replay_gain_scale(float gain, float peak)
 
 struct replay_gain_info *replay_gain_info_new(void)
 {
-	struct replay_gain_info *ret = xmalloc(sizeof(*ret));
+	struct replay_gain_info *ret = g_new(struct replay_gain_info, 1);
 
 	for (unsigned i = 0; i < G_N_ELEMENTS(ret->tuples); ++i) {
 		ret->tuples[i].gain = 0.0;
@@ -107,7 +104,7 @@ struct replay_gain_info *replay_gain_info_new(void)
 
 void replay_gain_info_free(struct replay_gain_info *info)
 {
-	free(info);
+	g_free(info);
 }
 
 void
@@ -121,9 +118,9 @@ replay_gain_apply(struct replay_gain_info *info, char *buffer, int size,
 		const struct replay_gain_tuple *tuple =
 			&info->tuples[replay_gain_mode];
 
-		DEBUG("computing ReplayGain %s scale with gain %f, peak %f\n",
-		      replay_gain_mode_names[replay_gain_mode],
-		      tuple->gain, tuple->peak);
+		g_debug("computing ReplayGain %s scale with gain %f, peak %f\n",
+			replay_gain_mode_names[replay_gain_mode],
+			tuple->gain, tuple->peak);
 
 		info->scale = calc_replay_gain_scale(tuple->gain, tuple->peak);
 	}
