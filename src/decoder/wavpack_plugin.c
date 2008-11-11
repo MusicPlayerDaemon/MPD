@@ -214,7 +214,7 @@ wavpack_decode(struct decoder * decoder, WavpackContext *wpc, bool canseek,
 }
 
 static char *
-wavpack_tag(WavpackContext *wpc, char *key)
+wavpack_tag(WavpackContext *wpc, const char *key)
 {
 	char *value = NULL;
 	int size;
@@ -232,38 +232,34 @@ wavpack_tag(WavpackContext *wpc, char *key)
 static struct replay_gain_info *
 wavpack_replaygain(WavpackContext *wpc)
 {
-	static char replaygain_track_gain[] = "replaygain_track_gain";
-	static char replaygain_album_gain[] = "replaygain_album_gain";
-	static char replaygain_track_peak[] = "replaygain_track_peak";
-	static char replaygain_album_peak[] = "replaygain_album_peak";
 	struct replay_gain_info *replay_gain_info;
 	bool found = false;
 	char *value;
 
 	replay_gain_info = replay_gain_info_new();
 
-	value = wavpack_tag(wpc, replaygain_track_gain);
+	value = wavpack_tag(wpc, "replaygain_track_gain");
 	if (value) {
 		replay_gain_info->track_gain = atof(value);
 		free(value);
 		found = true;
 	}
 
-	value = wavpack_tag(wpc, replaygain_album_gain);
+	value = wavpack_tag(wpc, "replaygain_album_gain");
 	if (value) {
 		replay_gain_info->album_gain = atof(value);
 		free(value);
 		found = true;
 	}
 
-	value = wavpack_tag(wpc, replaygain_track_peak);
+	value = wavpack_tag(wpc, "replaygain_track_peak");
 	if (value) {
 		replay_gain_info->track_peak = atof(value);
 		free(value);
 		found = true;
 	}
 
-	value = wavpack_tag(wpc, replaygain_album_peak);
+	value = wavpack_tag(wpc, "replaygain_album_peak");
 	if (value) {
 		replay_gain_info->album_peak = atof(value);
 		free(value);
