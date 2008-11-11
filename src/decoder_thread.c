@@ -57,7 +57,7 @@ decoder_file_decode(const struct decoder_plugin *plugin,
 		    struct decoder *decoder, const char *path)
 {
 	assert(plugin != NULL);
-	assert(plugin->stream_decode != NULL);
+	assert(plugin->file_decode != NULL);
 	assert(decoder != NULL);
 	assert(!decoder->stream_tag_sent);
 	assert(path != NULL);
