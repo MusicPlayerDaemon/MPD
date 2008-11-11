@@ -225,10 +225,12 @@ play_chunk(struct song *song, struct music_chunk *chunk,
 
 		if (!song_is_file(song)) {
 			/* always update the tag of remote streams */
+			struct tag *old_tag = song->tag;
 
-			if (song->tag != NULL)
-				tag_free(song->tag);
 			song->tag = tag_dup(chunk->tag);
+
+			if (old_tag != NULL)
+				tag_free(old_tag);
 
 			/* notify all clients that the tag of the
 			   current song has changed */
