@@ -54,6 +54,11 @@ typedef struct _Playlist {
 	bool repeat;
 	bool random;
 	uint32_t version;
+
+	/** used by syncCurrentPlayerDecodeMetadata() to detect tag changes */
+	const struct song *prev_song;
+	/** used by syncCurrentPlayerDecodeMetadata() to detect tag changes */
+	const struct tag *prev_tag;
 } Playlist;
 
 extern bool playlist_saveAbsolutePaths;

@@ -830,13 +830,8 @@ enum playlist_result playPlaylistById(int id, int stopOnError)
 
 static void syncCurrentPlayerDecodeMetadata(void)
 {
-	struct song *songPlayer = playerCurrentDecodeSong();
 	struct song *song;
 	int songNum;
-	char path_max_tmp[MPD_PATH_MAX];
-
-	if (!songPlayer)
-		return;
 
 	if (playlist_state != PLAYLIST_STATE_PLAY)
 		return;
@@ -844,16 +839,18 @@ static void syncCurrentPlayerDecodeMetadata(void)
 	songNum = playlist.order[playlist.current];
 	song = playlist.songs[songNum];
 
-	if (!song_is_file(song) &&
-	    0 == strcmp(song_get_url(song, path_max_tmp), songPlayer->url) &&
-	    !tag_equal(song->tag, songPlayer->tag)) {
-		assert(!song_in_database(song));
+	if (song != playlist.prev_song) {
+		/* song change: initialize playlist.prev_{song,tag} */
 
-		if (song->tag)
-			tag_free(song->tag);
-		song->tag = tag_dup(songPlayer->tag);
+		playlist.prev_song = song;
+		playlist.prev_tag = song->tag;
+	} else if (song->tag != playlist.prev_tag) {
+		/* tag change: update playlist */
+
 		playlist.songMod[songNum] = playlist.version;
 		incrPlaylistVersion();
+
+		playlist.prev_tag = song->tag;
 	}
 }
 
