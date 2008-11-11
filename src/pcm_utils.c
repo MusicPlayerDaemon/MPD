@@ -93,7 +93,7 @@ void pcm_volume(char *buffer, int bufferSize,
 		const struct audio_format *format,
 		int volume)
 {
-	if (volume >= PCM_VOLUME_1)
+	if (volume == PCM_VOLUME_1)
 		return;
 
 	if (volume <= 0) {
