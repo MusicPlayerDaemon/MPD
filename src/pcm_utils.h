@@ -36,6 +36,16 @@ struct pcm_convert_state {
 	int error;
 };
 
+/**
+ * Converts a float value (0.0 = silence, 1.0 = 100% volume) to an
+ * integer volume value (1000 = 100%).
+ */
+static inline int
+pcm_float_to_volume(float volume)
+{
+	return volume * 1000.0 + 0.5;
+}
+
 void pcm_volume(char *buffer, int bufferSize,
 		const struct audio_format *format,
 		int volume);

@@ -22,6 +22,7 @@
 #include "player_control.h"
 #include "utils.h"
 #include "idle.h"
+#include "pcm_utils.h"
 #include "os_compat.h"
 
 #include "../config.h"
@@ -483,8 +484,8 @@ static int changeSoftwareVolume(int change, int rel)
 	else if (new <= 0)
 		new = 0;
 	else
-		new =
-		    1000.0 * (exp(new / 25.0) - 1) / (54.5981500331F - 1) + 0.5;
+		new = pcm_float_to_volume((exp(new / 25.0) - 1) /
+					  (54.5981500331F - 1));
 
 	setPlayerSoftwareVolume(new);
 
