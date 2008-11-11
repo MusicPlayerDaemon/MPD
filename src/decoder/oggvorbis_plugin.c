@@ -19,8 +19,6 @@
 /* TODO 'ogg' should probably be replaced with 'oggvorbis' in all instances */
 
 #include "_ogg_common.h"
-#include "../utils.h"
-#include "../log.h"
 
 #ifndef HAVE_TREMOR
 #include <vorbis/vorbisfile.h>
@@ -36,6 +34,10 @@
 #define ov_time_tell(VF) ((double)ov_time_tell(VF)/1000)
 #define ov_time_seek_page(VF, S) (ov_time_seek_page(VF, (S)*1000))
 #endif /* HAVE_TREMOR */
+
+#include <glib.h>
+#include <errno.h>
+#include <stdlib.h>
 
 #ifdef WORDS_BIGENDIAN
 #define OGG_DECODE_USE_BIGENDIAN	1
@@ -254,8 +256,9 @@ oggvorbis_decode(struct decoder *decoder, struct input_stream *inStream)
 			errorStr = "unknown error";
 			break;
 		}
-		ERROR("Error decoding Ogg Vorbis stream: %s\n",
-		      errorStr);
+
+		g_warning("Error decoding Ogg Vorbis stream: %s\n",
+			  errorStr);
 		return;
 	}
 	audio_format.bits = 16;
@@ -330,10 +333,9 @@ static struct tag *oggvorbis_TagDup(const char *file)
 
 	fp = fopen(file, "r");
 	if (!fp) {
-		DEBUG("oggvorbis_TagDup: Failed to open file: '%s', %s\n",
-		      file, strerror(errno));
 		return NULL;
 	}
+
 	if (ov_open(fp, &vf, NULL, 0) < 0) {
 		fclose(fp);
 		return NULL;
