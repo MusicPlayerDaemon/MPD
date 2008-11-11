@@ -1022,8 +1022,15 @@ mp3_read(struct mp3_data *data, struct replay_gain_info **replay_gain_info_r)
 		bool skip = false;
 
 		do {
-			ret = decode_next_frame_header(data, NULL,
+			struct tag *tag = NULL;
+
+			ret = decode_next_frame_header(data, &tag,
 						       replay_gain_info_r);
+
+			if (tag != NULL) {
+				decoder_tag(decoder, data->input_stream, tag);
+				tag_free(tag);
+			}
 		} while (ret == DECODE_CONT);
 		if (ret == DECODE_BREAK)
 			return false;
