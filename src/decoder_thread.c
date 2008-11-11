@@ -33,8 +33,6 @@ decoder_stream_decode(const struct decoder_plugin *plugin,
 		      struct decoder *decoder,
 		      struct input_stream *input_stream)
 {
-	bool ret;
-
 	assert(plugin != NULL);
 	assert(plugin->stream_decode != NULL);
 	assert(decoder != NULL);
@@ -46,27 +44,18 @@ decoder_stream_decode(const struct decoder_plugin *plugin,
 	/* rewind the stream, so each plugin gets a fresh start */
 	input_stream_seek(input_stream, 0, SEEK_SET);
 
-	ret = plugin->stream_decode(decoder, input_stream);
+	plugin->stream_decode(decoder, input_stream);
 
-	if (ret) {
-		/* if the method has succeeded, the plugin must have
-		   called decoder_initialized() */
-		assert(dc.state == DECODE_STATE_DECODE);
-	} else {
-		/* no decoder_initialized() allowed when the plugin
-		   hasn't recognized the file format */
-		assert(dc.state == DECODE_STATE_START);
-	}
+	assert(dc.state == DECODE_STATE_START ||
+	       dc.state == DECODE_STATE_DECODE);
 
-	return ret;
+	return dc.state != DECODE_STATE_START;
 }
 
 static bool
 decoder_file_decode(const struct decoder_plugin *plugin,
 		    struct decoder *decoder, const char *path)
 {
-	bool ret;
-
 	assert(plugin != NULL);
 	assert(plugin->stream_decode != NULL);
 	assert(decoder != NULL);
@@ -75,19 +64,12 @@ decoder_file_decode(const struct decoder_plugin *plugin,
 	assert(path[0] == '/');
 	assert(dc.state == DECODE_STATE_START);
 
-	ret = plugin->file_decode(decoder, path);
+	plugin->file_decode(decoder, path);
 
-	if (ret) {
-		/* if the method has succeeded, the plugin must have
-		   called decoder_initialized() */
-		assert(dc.state == DECODE_STATE_DECODE);
-	} else {
-		/* no decoder_initialized() allowed when the plugin
-		   hasn't recognized the file format */
-		assert(dc.state == DECODE_STATE_START);
-	}
+	assert(dc.state == DECODE_STATE_START ||
+	       dc.state == DECODE_STATE_DECODE);
 
-	return ret;
+	return dc.state != DECODE_STATE_START;
 }
 
 static void decoder_run(void)

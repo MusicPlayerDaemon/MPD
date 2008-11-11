@@ -68,7 +68,7 @@ struct decoder_plugin {
 	 * true if it was able to do so (even if an error occured
 	 * during playback)
 	 */
-	bool (*stream_decode)(struct decoder *, struct input_stream *);
+	void (*stream_decode)(struct decoder *, struct input_stream *);
 
 	/**
 	 * use this if and only if your InputPlugin can only be passed
@@ -79,7 +79,7 @@ struct decoder_plugin {
 	 * true if it was able to do so (even if an error occured
 	 * during playback)
 	 */
-	bool (*file_decode)(struct decoder *, const char *path);
+	void (*file_decode)(struct decoder *, const char *path);
 
 	/**
 	 * file should be the full path!  Returns NULL if a tag cannot

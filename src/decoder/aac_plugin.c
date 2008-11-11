@@ -301,7 +301,7 @@ static int getAacTotalTime(const char *file)
 	return file_time;
 }
 
-static bool
+static void
 aac_stream_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 {
 	float file_time;
@@ -354,7 +354,7 @@ aac_stream_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 		faacDecClose(decoder);
 		if (b.buffer)
 			free(b.buffer);
-		return false;
+		return;
 	}
 
 	audio_format.bits = 16;
@@ -419,15 +419,10 @@ aac_stream_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 	faacDecClose(decoder);
 	if (b.buffer)
 		free(b.buffer);
-
-	if (!initialized)
-		return false;
-
-	return true;
 }
 
 
-static bool
+static void
 aac_decode(struct decoder *mpd_decoder, const char *path)
 {
 	float file_time;
@@ -451,10 +446,10 @@ aac_decode(struct decoder *mpd_decoder, const char *path)
 	bool initialized = false;
 
 	if ((totalTime = getAacFloatTotalTime(path)) < 0)
-		return false;
+		return;
 
 	if (!input_stream_open(&inStream, path))
-		return false;
+		return;
 
 	initAacBuffer(&b, mpd_decoder, &inStream);
 	aac_parse_header(&b, NULL);
@@ -484,7 +479,7 @@ aac_decode(struct decoder *mpd_decoder, const char *path)
 		faacDecClose(decoder);
 		if (b.buffer)
 			free(b.buffer);
-		return false;
+		return;
 	}
 
 	audio_format.bits = 16;
@@ -547,11 +542,6 @@ aac_decode(struct decoder *mpd_decoder, const char *path)
 	faacDecClose(decoder);
 	if (b.buffer)
 		free(b.buffer);
-
-	if (!initialized)
-		return false;
-
-	return true;
 }
 
 static struct tag *aacTagDup(const char *file)

@@ -284,17 +284,15 @@ static bool oggflac_try_decode(struct input_stream *inStream)
 	return ogg_stream_type_detect(inStream) == FLAC;
 }
 
-static bool
+static void
 oggflac_decode(struct decoder * mpd_decoder, struct input_stream *inStream)
 {
 	OggFLAC__SeekableStreamDecoder *decoder = NULL;
 	FlacData data;
-	bool ret = true;
 
 	init_FlacData(&data, mpd_decoder, inStream);
 
 	if (!(decoder = full_decoder_init_and_read_metadata(&data, 0))) {
-		ret = false;
 		goto fail;
 	}
 
@@ -329,8 +327,6 @@ oggflac_decode(struct decoder * mpd_decoder, struct input_stream *inStream)
 
 fail:
 	oggflac_cleanup(&data, decoder);
-
-	return ret;
 }
 
 static const char *const oggflac_Suffixes[] = { "ogg", "oga", NULL };

@@ -301,7 +301,7 @@ static struct tag *flacTagDup(const char *file)
 	return ret;
 }
 
-static bool
+static void
 flac_decode_internal(struct decoder * decoder, struct input_stream *inStream,
 		     bool is_ogg)
 {
@@ -310,7 +310,7 @@ flac_decode_internal(struct decoder * decoder, struct input_stream *inStream,
 	const char *err = NULL;
 
 	if (!(flacDec = flac_new()))
-		return false;
+		return;
 	init_FlacData(&data, decoder, inStream);
 
 #if defined(FLAC_API_VERSION_CURRENT) && FLAC_API_VERSION_CURRENT > 7
@@ -375,15 +375,15 @@ fail:
 
 	if (err) {
 		ERROR("flac %s\n", err);
-		return false;
+		return;
 	}
-	return true;
+	return;
 }
 
-static bool
+static void
 flac_decode(struct decoder * decoder, struct input_stream *inStream)
 {
-	return flac_decode_internal(decoder, inStream, false);
+	flac_decode_internal(decoder, inStream, false);
 }
 
 #ifndef HAVE_OGGFLAC
@@ -431,17 +431,17 @@ out:
 	return ret;
 }
 
-static bool
+static void
 oggflac_decode(struct decoder *decoder, struct input_stream *inStream)
 {
 	if (ogg_stream_type_detect(inStream) != FLAC)
-		return false;
+		return;
 
 	/* rewind the stream, because ogg_stream_type_detect() has
 	   moved it */
 	input_stream_seek(inStream, 0, SEEK_SET);
 
-	return flac_decode_internal(decoder, inStream, true);
+	flac_decode_internal(decoder, inStream, true);
 }
 
 static const char *const oggflac_suffixes[] = { "ogg", "oga", NULL };

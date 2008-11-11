@@ -160,7 +160,7 @@ static void mod_close(mod_Data * data)
 	free(data);
 }
 
-static bool
+static void
 mod_decode(struct decoder *decoder, const char *path)
 {
 	mod_Data *data;
@@ -173,7 +173,7 @@ mod_decode(struct decoder *decoder, const char *path)
 	if (!(data = mod_open(path))) {
 		ERROR("failed to open mod: %s\n", path);
 		MikMod_Exit();
-		return false;
+		return;
 	}
 
 	audio_format.bits = 16;
@@ -197,8 +197,6 @@ mod_decode(struct decoder *decoder, const char *path)
 	mod_close(data);
 
 	MikMod_Exit();
-
-	return true;
 }
 
 static struct tag *modTagDup(const char *file)

@@ -281,7 +281,7 @@ ffmpeg_decode_internal(struct ffmpeg_context *ctx)
 	return true;
 }
 
-static bool
+static void
 ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 {
 	struct ffmpeg_context ctx;
@@ -289,7 +289,7 @@ ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 	ctx.input = input;
 	ctx.decoder = decoder;
 
-	return ffmpeg_helper(input, ffmpeg_decode_internal, &ctx);
+	ffmpeg_helper(input, ffmpeg_decode_internal, &ctx);
 }
 
 static bool ffmpeg_tag_internal(struct ffmpeg_context *ctx)

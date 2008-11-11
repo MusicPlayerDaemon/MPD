@@ -1050,7 +1050,7 @@ static void mp3_audio_format(struct mp3_data *data, struct audio_format *af)
 	af->channels = MAD_NCHANNELS(&(data->frame).header);
 }
 
-static bool
+static void
 mp3_decode(struct decoder *decoder, struct input_stream *input_stream)
 {
 	struct mp3_data data;
@@ -1059,12 +1059,10 @@ mp3_decode(struct decoder *decoder, struct input_stream *input_stream)
 	struct audio_format audio_format;
 
 	if (!mp3_open(input_stream, &data, decoder, &tag, &replay_gain_info)) {
-		if (decoder_get_command(decoder) == DECODE_COMMAND_NONE) {
+		if (decoder_get_command(decoder) == DECODE_COMMAND_NONE)
 			ERROR
 			    ("Input does not appear to be a mp3 bit stream.\n");
-			return false;
-		}
-		return true;
+		return;
 	}
 
 	mp3_audio_format(&data, &audio_format);
@@ -1087,7 +1085,6 @@ mp3_decode(struct decoder *decoder, struct input_stream *input_stream)
 		decoder_command_finished(decoder);
 
 	mp3_data_finish(&data);
-	return true;
 }
 
 static struct tag *mp3_tag_dup(const char *file)

@@ -196,7 +196,7 @@ static void putOggCommentsIntoOutputBuffer(struct decoder *decoder,
 }
 
 /* public */
-static bool
+static void
 oggvorbis_decode(struct decoder *decoder, struct input_stream *inStream)
 {
 	OggVorbis_File vf;
@@ -217,7 +217,7 @@ oggvorbis_decode(struct decoder *decoder, struct input_stream *inStream)
 	bool initialized = false;
 
 	if (ogg_stream_type_detect(inStream) != VORBIS)
-		return false;
+		return;
 
 	/* rewind the stream, because ogg_stream_type_detect() has
 	   moved it */
@@ -232,7 +232,7 @@ oggvorbis_decode(struct decoder *decoder, struct input_stream *inStream)
 	callbacks.tell_func = ogg_tell_cb;
 	if ((ret = ov_open_callbacks(&data, &vf, NULL, 0, callbacks)) < 0) {
 		if (decoder_get_command(decoder) != DECODE_COMMAND_NONE)
-			return true;
+			return;
 
 		switch (ret) {
 		case OV_EREAD:
@@ -256,7 +256,7 @@ oggvorbis_decode(struct decoder *decoder, struct input_stream *inStream)
 		}
 		ERROR("Error decoding Ogg Vorbis stream: %s\n",
 		      errorStr);
-		return false;
+		return;
 	}
 	audio_format.bits = 16;
 
@@ -336,7 +336,6 @@ oggvorbis_decode(struct decoder *decoder, struct input_stream *inStream)
 		replay_gain_info_free(replayGainInfo);
 
 	ov_clear(&vf);
-	return true;
 }
 
 static struct tag *oggvorbis_TagDup(const char *file)

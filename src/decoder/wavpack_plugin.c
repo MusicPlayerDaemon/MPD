@@ -475,7 +475,7 @@ wavpack_open_wvc(struct decoder *decoder, struct input_stream *is_wvc,
 /*
  * Decodes a stream.
  */
-static bool
+static void
 wavpack_streamdecode(struct decoder * decoder, struct input_stream *is)
 {
 	char error[ERRORLEN];
@@ -496,7 +496,7 @@ wavpack_streamdecode(struct decoder * decoder, struct input_stream *is)
 
 	if (wpc == NULL) {
 		g_warning("failed to open WavPack stream: %s\n", error);
-		return false;
+		return;
 	}
 
 	wavpack_decode(decoder, wpc, canseek, NULL);
@@ -505,14 +505,12 @@ wavpack_streamdecode(struct decoder * decoder, struct input_stream *is)
 	if (open_flags & OPEN_WVC) {
 		input_stream_close(&is_wvc);
 	}
-
-	return true;
 }
 
 /*
  * Decodes a file.
  */
-static bool
+static void
 wavpack_filedecode(struct decoder *decoder, const char *fname)
 {
 	char error[ERRORLEN];
@@ -525,7 +523,7 @@ wavpack_filedecode(struct decoder *decoder, const char *fname)
 	if (wpc == NULL) {
 		g_warning("failed to open WavPack file \"%s\": %s\n",
 			  fname, error);
-		return false;
+		return;
 	}
 
 	replay_gain_info = wavpack_replaygain(wpc);
@@ -537,8 +535,6 @@ wavpack_filedecode(struct decoder *decoder, const char *fname)
 	}
 
 	WavpackCloseFile(wpc);
-
-	return true;
 }
 
 static char const *const wavpack_suffixes[] = { "wv", NULL };
