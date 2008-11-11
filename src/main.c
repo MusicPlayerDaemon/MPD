@@ -38,7 +38,7 @@
 #include "volume.h"
 #include "log.h"
 #include "permission.h"
-#include "replayGain.h"
+#include "replay_gain.h"
 #include "decoder_list.h"
 #include "audioOutput.h"
 #include "input_stream.h"
