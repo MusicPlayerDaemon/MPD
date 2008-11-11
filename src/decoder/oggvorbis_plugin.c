@@ -208,7 +208,6 @@ oggvorbis_decode(struct decoder *decoder, struct input_stream *inStream)
 	long ret;
 #define OGG_CHUNK_SIZE 4096
 	char chunk[OGG_CHUNK_SIZE];
-	int chunkpos = 0;
 	long bitRate = 0;
 	long test;
 	struct replay_gain_info *replayGainInfo = NULL;
@@ -264,13 +263,12 @@ oggvorbis_decode(struct decoder *decoder, struct input_stream *inStream)
 		if (decoder_get_command(decoder) == DECODE_COMMAND_SEEK) {
 			double seek_where = decoder_seek_where(decoder);
 			if (0 == ov_time_seek_page(&vf, seek_where)) {
-				chunkpos = 0;
 				decoder_command_finished(decoder);
 			} else
 				decoder_seek_error(decoder);
 		}
-		ret = ov_read(&vf, chunk + chunkpos,
-			      OGG_CHUNK_SIZE - chunkpos,
+
+		ret = ov_read(&vf, chunk, sizeof(chunk),
 			      OGG_DECODE_USE_BIGENDIAN, 2, 1, &current_section);
 		if (current_section != prev_section) {
 			/*printf("new song!\n"); */
@@ -308,28 +306,15 @@ oggvorbis_decode(struct decoder *decoder, struct input_stream *inStream)
 				break;
 		}
 
-		chunkpos += ret;
+		if ((test = ov_bitrate_instant(&vf)) > 0)
+			bitRate = test / 1000;
 
-		if (chunkpos >= OGG_CHUNK_SIZE) {
-			if ((test = ov_bitrate_instant(&vf)) > 0) {
-				bitRate = test / 1000;
-			}
-			decoder_data(decoder, inStream,
-				     chunk, chunkpos,
-				     ov_pcm_tell(&vf) / audio_format.sample_rate,
-				     bitRate, replayGainInfo);
-			chunkpos = 0;
-			if (decoder_get_command(decoder) == DECODE_COMMAND_STOP)
-				break;
-		}
-	}
-
-	if (decoder_get_command(decoder) == DECODE_COMMAND_NONE &&
-	    chunkpos > 0) {
-		decoder_data(decoder, NULL,
-			     chunk, chunkpos,
-			     ov_time_tell(&vf), bitRate,
-			     replayGainInfo);
+		decoder_data(decoder, inStream,
+			     chunk, ret,
+			     ov_pcm_tell(&vf) / audio_format.sample_rate,
+			     bitRate, replayGainInfo);
+		if (decoder_get_command(decoder) == DECODE_COMMAND_STOP)
+			break;
 	}
 
 	if (replayGainInfo)
