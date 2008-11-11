@@ -23,6 +23,7 @@
 #include "log.h"
 #include "conf.h"
 #include "audio_format.h"
+#include "pcm_utils.h"
 #include "os_compat.h"
 
 #include <glib.h>
@@ -113,11 +114,6 @@ void
 replay_gain_apply(struct replay_gain_info *info, char *buffer, int size,
 		  const struct audio_format *format)
 {
-	int16_t *buffer16;
-	int8_t *buffer8;
-	int32_t temp32;
-	float scale;
-
 	if (replay_gain_mode == REPLAY_GAIN_OFF || !info)
 		return;
 
@@ -132,36 +128,5 @@ replay_gain_apply(struct replay_gain_info *info, char *buffer, int size,
 		info->scale = calc_replay_gain_scale(tuple->gain, tuple->peak);
 	}
 
-	if (info->scale <= 1.01 && info->scale >= 0.99)
-		return;
-
-	buffer16 = (int16_t *) buffer;
-	buffer8 = (int8_t *) buffer;
-
-	scale = info->scale;
-
-	switch (format->bits) {
-	case 16:
-		while (size > 0) {
-			temp32 = *buffer16;
-			temp32 *= scale;
-			*buffer16 = temp32 > 32767 ? 32767 :
-			    (temp32 < -32768 ? -32768 : temp32);
-			buffer16++;
-			size -= 2;
-		}
-		break;
-	case 8:
-		while (size > 0) {
-			temp32 = *buffer8;
-			temp32 *= scale;
-			*buffer8 = temp32 > 127 ? 127 :
-			    (temp32 < -128 ? -128 : temp32);
-			buffer8++;
-			size--;
-		}
-		break;
-	default:
-		ERROR("%i bits not supported by doReplaygain!\n", format->bits);
-	}
+	pcm_volume(buffer, size, format, pcm_float_to_volume(info->scale));
 }
