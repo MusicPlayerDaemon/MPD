@@ -93,33 +93,31 @@ static const char *ogg_parseComment(const char *comment, const char *needle)
 	return NULL;
 }
 
-static void
-ogg_getReplayGainInfo(char **comments,
-		      struct replay_gain_info **infoPtr)
+static struct replay_gain_info *
+ogg_getReplayGainInfo(char **comments)
 {
+	struct replay_gain_info *rgi;
 	const char *temp;
 	bool found = false;
 
-	if (*infoPtr)
-		replay_gain_info_free(*infoPtr);
-	*infoPtr = replay_gain_info_new();
+	rgi = replay_gain_info_new();
 
 	while (*comments) {
 		if ((temp =
 		     ogg_parseComment(*comments, "replaygain_track_gain"))) {
-			(*infoPtr)->track_gain = atof(temp);
+			rgi->track_gain = atof(temp);
 			found = true;
 		} else if ((temp = ogg_parseComment(*comments,
 						    "replaygain_album_gain"))) {
-			(*infoPtr)->album_gain = atof(temp);
+			rgi->album_gain = atof(temp);
 			found = true;
 		} else if ((temp = ogg_parseComment(*comments,
 						    "replaygain_track_peak"))) {
-			(*infoPtr)->track_peak = atof(temp);
+			rgi->track_peak = atof(temp);
 			found = true;
 		} else if ((temp = ogg_parseComment(*comments,
 						    "replaygain_album_peak"))) {
-			(*infoPtr)->album_peak = atof(temp);
+			rgi->album_peak = atof(temp);
 			found = true;
 		}
 
@@ -127,9 +125,11 @@ ogg_getReplayGainInfo(char **comments,
 	}
 
 	if (!found) {
-		replay_gain_info_free(*infoPtr);
-		*infoPtr = NULL;
+		replay_gain_info_free(rgi);
+		rgi = NULL;
 	}
+
+	return rgi;
 }
 
 static const char *VORBIS_COMMENT_TRACK_KEY = "tracknumber";
@@ -275,6 +275,8 @@ oggvorbis_decode(struct decoder *decoder, struct input_stream *inStream)
 		if (current_section != prev_section) {
 			/*printf("new song!\n"); */
 			vorbis_info *vi = ov_info(&vf, -1);
+			struct replay_gain_info *new_rgi;
+
 			audio_format.channels = vi->channels;
 			audio_format.sample_rate = vi->rate;
 			if (!initialized) {
@@ -289,7 +291,12 @@ oggvorbis_decode(struct decoder *decoder, struct input_stream *inStream)
 			comments = ov_comment(&vf, -1)->user_comments;
 			putOggCommentsIntoOutputBuffer(decoder, inStream,
 						       comments);
-			ogg_getReplayGainInfo(comments, &replayGainInfo);
+			new_rgi = ogg_getReplayGainInfo(comments);
+			if (new_rgi != NULL) {
+				if (replayGainInfo != NULL)
+					replay_gain_info_free(replayGainInfo);
+				replayGainInfo = new_rgi;
+			}
 		}
 
 		prev_section = current_section;
