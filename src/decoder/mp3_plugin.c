@@ -702,7 +702,6 @@ static bool
 mp3_decode_first_frame(struct mp3_data *data, struct tag **tag,
 		       struct replay_gain_info **replay_gain_info_r)
 {
-	struct decoder *decoder = data->decoder;
 	struct xing xing;
 	struct lame lame;
 	struct mad_bitptr ptr;
@@ -714,17 +713,18 @@ mp3_decode_first_frame(struct mp3_data *data, struct tag **tag,
 	xing.flags = 0;
 
 	while (true) {
-		while ((ret = decode_next_frame_header(data, tag, replay_gain_info_r)) == DECODE_CONT &&
-		       (!decoder || decoder_get_command(decoder) == DECODE_COMMAND_NONE));
-		if (ret == DECODE_BREAK ||
-		    (decoder && decoder_get_command(decoder) != DECODE_COMMAND_NONE))
+		do {
+			ret = decode_next_frame_header(data, tag,
+						       replay_gain_info_r);
+		} while (ret == DECODE_CONT);
+		if (ret == DECODE_BREAK)
 			return false;
 		if (ret == DECODE_SKIP) continue;
 
-		while ((ret = decodeNextFrame(data)) == DECODE_CONT &&
-		       (!decoder || decoder_get_command(decoder) == DECODE_COMMAND_NONE));
-		if (ret == DECODE_BREAK ||
-		    (decoder && decoder_get_command(decoder) != DECODE_COMMAND_NONE))
+		do {
+			ret = decodeNextFrame(data);
+		} while (ret == DECODE_CONT);
+		if (ret == DECODE_BREAK)
 			return false;
 		if (ret == DECODE_OK) break;
 	}
@@ -1021,21 +1021,23 @@ mp3_read(struct mp3_data *data, struct replay_gain_info **replay_gain_info_r)
 	while (true) {
 		bool skip = false;
 
-		while ((ret =
-			decode_next_frame_header(data, NULL,
-						 replay_gain_info_r)) == DECODE_CONT
-		       && decoder_get_command(decoder) == DECODE_COMMAND_NONE) ;
-		if (ret == DECODE_BREAK || decoder_get_command(decoder) != DECODE_COMMAND_NONE)
+		do {
+			ret = decode_next_frame_header(data, NULL,
+						       replay_gain_info_r);
+		} while (ret == DECODE_CONT);
+		if (ret == DECODE_BREAK)
 			return false;
 		else if (ret == DECODE_SKIP)
 			skip = true;
+
 		if (data->mute_frame == MUTEFRAME_NONE) {
-			while ((ret = decodeNextFrame(data)) == DECODE_CONT &&
-			       decoder_get_command(decoder) == DECODE_COMMAND_NONE) ;
-			if (ret == DECODE_BREAK ||
-			    decoder_get_command(decoder) != DECODE_COMMAND_NONE)
+			do {
+				ret = decodeNextFrame(data);
+			} while (ret == DECODE_CONT);
+			if (ret == DECODE_BREAK)
 				return false;
 		}
+
 		if (!skip && ret == DECODE_OK)
 			break;
 	}
