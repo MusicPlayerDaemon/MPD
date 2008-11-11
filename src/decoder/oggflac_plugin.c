@@ -279,16 +279,14 @@ static struct tag *oggflac_TagDup(const char *file)
 	return data.tag;
 }
 
-static bool oggflac_try_decode(struct input_stream *inStream)
-{
-	return ogg_stream_type_detect(inStream) == FLAC;
-}
-
 static void
 oggflac_decode(struct decoder * mpd_decoder, struct input_stream *inStream)
 {
 	OggFLAC__SeekableStreamDecoder *decoder = NULL;
 	FlacData data;
+
+	if (ogg_stream_type_detect(inStream) != FLAC)
+		return;
 
 	init_FlacData(&data, mpd_decoder, inStream);
 
@@ -339,7 +337,6 @@ static const char *const oggflac_mime_types[] = {
 
 const struct decoder_plugin oggflacPlugin = {
 	.name = "oggflac",
-	.try_decode = oggflac_try_decode,
 	.stream_decode = oggflac_decode,
 	.tag_dup = oggflac_TagDup,
 	.suffixes = oggflac_Suffixes,
