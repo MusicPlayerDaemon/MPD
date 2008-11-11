@@ -30,11 +30,13 @@ struct audio_format;
 
 extern enum replay_gain_mode replay_gain_mode;
 
+struct replay_gain_tuple {
+	float gain;
+	float peak;
+};
+
 struct replay_gain_info {
-	float album_gain;
-	float album_peak;
-	float track_gain;
-	float track_peak;
+	struct replay_gain_tuple tuples[2];
 
 	/* used internally by mpd, to mess with it */
 	float scale;

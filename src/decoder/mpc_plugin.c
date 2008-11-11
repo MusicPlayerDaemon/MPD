@@ -157,10 +157,10 @@ mpc_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 	audio_format.sample_rate = info.sample_freq;
 
 	replayGainInfo = replay_gain_info_new();
-	replayGainInfo->album_gain = info.gain_album * 0.01;
-	replayGainInfo->album_peak = info.peak_album / 32767.0;
-	replayGainInfo->track_gain = info.gain_title * 0.01;
-	replayGainInfo->track_peak = info.peak_title / 32767.0;
+	replayGainInfo->tuples[REPLAY_GAIN_ALBUM].gain = info.gain_album * 0.01;
+	replayGainInfo->tuples[REPLAY_GAIN_ALBUM].peak = info.peak_album / 32767.0;
+	replayGainInfo->tuples[REPLAY_GAIN_TRACK].gain = info.gain_title * 0.01;
+	replayGainInfo->tuples[REPLAY_GAIN_TRACK].peak = info.peak_title / 32767.0;
 
 	decoder_initialized(mpd_decoder, &audio_format,
 			    inStream->seekable,

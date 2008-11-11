@@ -105,19 +105,19 @@ ogg_getReplayGainInfo(char **comments)
 	while (*comments) {
 		if ((temp =
 		     ogg_parseComment(*comments, "replaygain_track_gain"))) {
-			rgi->track_gain = atof(temp);
+			rgi->tuples[REPLAY_GAIN_TRACK].gain = atof(temp);
 			found = true;
 		} else if ((temp = ogg_parseComment(*comments,
 						    "replaygain_album_gain"))) {
-			rgi->album_gain = atof(temp);
+			rgi->tuples[REPLAY_GAIN_ALBUM].gain = atof(temp);
 			found = true;
 		} else if ((temp = ogg_parseComment(*comments,
 						    "replaygain_track_peak"))) {
-			rgi->track_peak = atof(temp);
+			rgi->tuples[REPLAY_GAIN_TRACK].peak = atof(temp);
 			found = true;
 		} else if ((temp = ogg_parseComment(*comments,
 						    "replaygain_album_peak"))) {
-			rgi->album_peak = atof(temp);
+			rgi->tuples[REPLAY_GAIN_ALBUM].peak = atof(temp);
 			found = true;
 		}
 

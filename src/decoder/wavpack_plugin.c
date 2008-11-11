@@ -240,16 +240,16 @@ wavpack_replaygain(WavpackContext *wpc)
 	replay_gain_info = replay_gain_info_new();
 
 	found = wavpack_tag_float(wpc, "replaygain_track_gain",
-				  &replay_gain_info->track_gain)
+				  &replay_gain_info->tuples[REPLAY_GAIN_TRACK].gain)
 		||
 		wavpack_tag_float(wpc, "replaygain_track_peak",
-				  &replay_gain_info->track_peak)
+				  &replay_gain_info->tuples[REPLAY_GAIN_TRACK].peak)
 		||
 		wavpack_tag_float(wpc, "replaygain_album_gain",
-				  &replay_gain_info->album_gain)
+				  &replay_gain_info->tuples[REPLAY_GAIN_ALBUM].gain)
 		||
 		wavpack_tag_float(wpc, "replaygain_album_peak",
-				  &replay_gain_info->album_peak);
+				  &replay_gain_info->tuples[REPLAY_GAIN_ALBUM].peak);
 
 	if (found) {
 		return replay_gain_info;

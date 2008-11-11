@@ -228,16 +228,16 @@ parse_id3_replay_gain_info(struct id3_tag *tag)
 					     (&frame->fields[2]));
 
 		if (strcasecmp(key, "replaygain_track_gain") == 0) {
-			replay_gain_info->track_gain = atof(value);
+			replay_gain_info->tuples[REPLAY_GAIN_TRACK].gain = atof(value);
 			found = true;
 		} else if (strcasecmp(key, "replaygain_album_gain") == 0) {
-			replay_gain_info->album_gain = atof(value);
+			replay_gain_info->tuples[REPLAY_GAIN_ALBUM].gain = atof(value);
 			found = true;
 		} else if (strcasecmp(key, "replaygain_track_peak") == 0) {
-			replay_gain_info->track_peak = atof(value);
+			replay_gain_info->tuples[REPLAY_GAIN_TRACK].peak = atof(value);
 			found = true;
 		} else if (strcasecmp(key, "replaygain_album_peak") == 0) {
-			replay_gain_info->album_peak = atof(value);
+			replay_gain_info->tuples[REPLAY_GAIN_ALBUM].peak = atof(value);
 			found = true;
 		}
 
@@ -761,8 +761,8 @@ mp3_decode_first_frame(struct mp3_data *data, struct tag **tag,
 			if (replay_gain_info_r && !*replay_gain_info_r &&
 			    lame.track_gain) {
 				*replay_gain_info_r = replay_gain_info_new();
-				(*replay_gain_info_r)->track_gain = lame.track_gain;
-				(*replay_gain_info_r)->track_peak = lame.peak;
+				(*replay_gain_info_r)->tuples[REPLAY_GAIN_TRACK].gain = lame.track_gain;
+				(*replay_gain_info_r)->tuples[REPLAY_GAIN_TRACK].peak = lame.peak;
 			}
 		}
 	} 

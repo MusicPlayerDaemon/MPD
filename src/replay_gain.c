@@ -25,6 +25,13 @@
 #include "audio_format.h"
 #include "os_compat.h"
 
+#include <glib.h>
+
+static const char *const replay_gain_mode_names[] = {
+	[REPLAY_GAIN_ALBUM] = "album",
+	[REPLAY_GAIN_TRACK] = "track",
+};
+
 enum replay_gain_mode replay_gain_mode = REPLAY_GAIN_OFF;
 
 static float replay_gain_preamp = 1.0;
@@ -86,11 +93,10 @@ struct replay_gain_info *replay_gain_info_new(void)
 {
 	struct replay_gain_info *ret = xmalloc(sizeof(*ret));
 
-	ret->album_gain = 0.0;
-	ret->album_peak = 0.0;
-
-	ret->track_gain = 0.0;
-	ret->track_peak = 0.0;
+	for (unsigned i = 0; i < G_N_ELEMENTS(ret->tuples); ++i) {
+		ret->tuples[i].gain = 0.0;
+		ret->tuples[i].peak = 0.0;
+	}
 
 	/* set to -1 so that we know in replay_gain_apply to compute the scale */
 	ret->scale = -1.0;
@@ -116,20 +122,14 @@ replay_gain_apply(struct replay_gain_info *info, char *buffer, int size,
 		return;
 
 	if (info->scale < 0) {
-		switch (replay_gain_mode) {
-		case REPLAY_GAIN_TRACK:
-			DEBUG("computing ReplayGain track scale with gain %f, "
-			      "peak %f\n", info->track_gain, info->track_peak);
-			info->scale = calc_replay_gain_scale(info->track_gain,
-							     info->track_peak);
-			break;
-		default:
-			DEBUG("computing ReplayGain album scale with gain %f, "
-			      "peak %f\n", info->album_gain, info->album_peak);
-			info->scale = calc_replay_gain_scale(info->album_gain,
-							     info->album_peak);
-			break;
-		}
+		const struct replay_gain_tuple *tuple =
+			&info->tuples[replay_gain_mode];
+
+		DEBUG("computing ReplayGain %s scale with gain %f, peak %f\n",
+		      replay_gain_mode_names[replay_gain_mode],
+		      tuple->gain, tuple->peak);
+
+		info->scale = calc_replay_gain_scale(tuple->gain, tuple->peak);
 	}
 
 	if (info->scale <= 1.01 && info->scale >= 0.99)
