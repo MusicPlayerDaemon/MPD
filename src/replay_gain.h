@@ -17,34 +17,36 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef MPD_REPLAYGAIN_H
-#define MPD_REPLAYGAIN_H
+#ifndef MPD_REPLAY_GAIN_H
+#define MPD_REPLAY_GAIN_H
 
-#define REPLAYGAIN_OFF		0
-#define REPLAYGAIN_TRACK	1
-#define REPLAYGAIN_ALBUM	2
+#define REPLAY_GAIN_OFF		0
+#define REPLAY_GAIN_TRACK	1
+#define REPLAY_GAIN_ALBUM	2
 
 struct audio_format;
 
-extern int replayGainState;
+extern int replay_gain_mode;
 
-typedef struct _ReplayGainInfo {
-	float albumGain;
-	float albumPeak;
-	float trackGain;
-	float trackPeak;
+struct replay_gain_info {
+	float album_gain;
+	float album_peak;
+	float track_gain;
+	float track_peak;
 
 	/* used internally by mpd, to mess with it */
 	float scale;
-} ReplayGainInfo;
+};
 
-ReplayGainInfo *newReplayGainInfo(void);
+struct replay_gain_info *
+replay_gain_info_new(void);
 
-void freeReplayGainInfo(ReplayGainInfo * info);
+void replay_gain_info_free(struct replay_gain_info *info);
 
-void initReplayGainState(void);
+void replay_gain_global_init(void);
 
-void doReplayGain(ReplayGainInfo * info, char *buffer, int bufferSize,
+void
+replay_gain_apply(struct replay_gain_info *info, char *buffer, int bufferSize,
 		  const struct audio_format *format);
 
 #endif

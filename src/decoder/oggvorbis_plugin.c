@@ -93,31 +93,33 @@ static const char *ogg_parseComment(const char *comment, const char *needle)
 	return NULL;
 }
 
-static void ogg_getReplayGainInfo(char **comments, ReplayGainInfo ** infoPtr)
+static void
+ogg_getReplayGainInfo(char **comments,
+		      struct replay_gain_info **infoPtr)
 {
 	const char *temp;
 	bool found = false;
 
 	if (*infoPtr)
-		freeReplayGainInfo(*infoPtr);
-	*infoPtr = newReplayGainInfo();
+		replay_gain_info_free(*infoPtr);
+	*infoPtr = replay_gain_info_new();
 
 	while (*comments) {
 		if ((temp =
 		     ogg_parseComment(*comments, "replaygain_track_gain"))) {
-			(*infoPtr)->trackGain = atof(temp);
+			(*infoPtr)->track_gain = atof(temp);
 			found = true;
 		} else if ((temp = ogg_parseComment(*comments,
 						    "replaygain_album_gain"))) {
-			(*infoPtr)->albumGain = atof(temp);
+			(*infoPtr)->album_gain = atof(temp);
 			found = true;
 		} else if ((temp = ogg_parseComment(*comments,
 						    "replaygain_track_peak"))) {
-			(*infoPtr)->trackPeak = atof(temp);
+			(*infoPtr)->track_peak = atof(temp);
 			found = true;
 		} else if ((temp = ogg_parseComment(*comments,
 						    "replaygain_album_peak"))) {
-			(*infoPtr)->albumPeak = atof(temp);
+			(*infoPtr)->album_peak = atof(temp);
 			found = true;
 		}
 
@@ -125,7 +127,7 @@ static void ogg_getReplayGainInfo(char **comments, ReplayGainInfo ** infoPtr)
 	}
 
 	if (!found) {
-		freeReplayGainInfo(*infoPtr);
+		replay_gain_info_free(*infoPtr);
 		*infoPtr = NULL;
 	}
 }
@@ -209,7 +211,7 @@ oggvorbis_decode(struct decoder *decoder, struct input_stream *inStream)
 	int chunkpos = 0;
 	long bitRate = 0;
 	long test;
-	ReplayGainInfo *replayGainInfo = NULL;
+	struct replay_gain_info *replayGainInfo = NULL;
 	char **comments;
 	const char *errorStr;
 	bool initialized = false;
@@ -324,7 +326,7 @@ oggvorbis_decode(struct decoder *decoder, struct input_stream *inStream)
 	}
 
 	if (replayGainInfo)
-		freeReplayGainInfo(replayGainInfo);
+		replay_gain_info_free(replayGainInfo);
 
 	ov_clear(&vf);
 	return true;

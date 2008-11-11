@@ -145,7 +145,7 @@ typedef struct {
 	FLAC__uint64 position;
 	struct decoder *decoder;
 	struct input_stream *inStream;
-	ReplayGainInfo *replayGainInfo;
+	struct replay_gain_info *replayGainInfo;
 	struct tag *tag;
 } FlacData;
 

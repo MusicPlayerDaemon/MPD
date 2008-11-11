@@ -143,7 +143,7 @@ enum decoder_command
 decoder_data(struct decoder *decoder,
 	     struct input_stream *inStream,
 	     void *data, size_t datalen, float data_time, uint16_t bitRate,
-	     ReplayGainInfo * replayGainInfo);
+	     struct replay_gain_info *replay_gain_info);
 
 /**
  * This function is called by the decoder plugin when it has

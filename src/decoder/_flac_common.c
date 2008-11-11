@@ -70,21 +70,21 @@ static void flacParseReplayGain(const FLAC__StreamMetadata * block,
 	int found = 0;
 
 	if (data->replayGainInfo)
-		freeReplayGainInfo(data->replayGainInfo);
+		replay_gain_info_free(data->replayGainInfo);
 
-	data->replayGainInfo = newReplayGainInfo();
+	data->replayGainInfo = replay_gain_info_new();
 
 	found |= flacFindVorbisCommentFloat(block, "replaygain_album_gain",
-					    &data->replayGainInfo->albumGain);
+					    &data->replayGainInfo->album_gain);
 	found |= flacFindVorbisCommentFloat(block, "replaygain_album_peak",
-					    &data->replayGainInfo->albumPeak);
+					    &data->replayGainInfo->album_peak);
 	found |= flacFindVorbisCommentFloat(block, "replaygain_track_gain",
-					    &data->replayGainInfo->trackGain);
+					    &data->replayGainInfo->track_gain);
 	found |= flacFindVorbisCommentFloat(block, "replaygain_track_peak",
-					    &data->replayGainInfo->trackPeak);
+					    &data->replayGainInfo->track_peak);
 
 	if (!found) {
-		freeReplayGainInfo(data->replayGainInfo);
+		replay_gain_info_free(data->replayGainInfo);
 		data->replayGainInfo = NULL;
 	}
 }

@@ -175,7 +175,7 @@ decoder_data(struct decoder *decoder,
 	     struct input_stream *is,
 	     void *_data, size_t length,
 	     float data_time, uint16_t bitRate,
-	     ReplayGainInfo *replay_gain_info)
+	     struct replay_gain_info *replay_gain_info)
 {
 	static char *conv_buffer;
 	static size_t conv_buffer_size;
@@ -234,8 +234,8 @@ decoder_data(struct decoder *decoder,
 				     data, &decoder->conv_state);
 	}
 
-	if (replay_gain_info != NULL && (replayGainState != REPLAYGAIN_OFF))
-		doReplayGain(replay_gain_info, data, length,
+	if (replay_gain_info != NULL && (replay_gain_mode != REPLAY_GAIN_OFF))
+		replay_gain_apply(replay_gain_info, data, length,
 			     &dc.out_audio_format);
 	else if (normalizationEnabled)
 		normalizeData(data, length, &dc.out_audio_format);

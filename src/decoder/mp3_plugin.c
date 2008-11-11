@@ -204,16 +204,17 @@ mp3_fill_buffer(struct mp3_data *data)
 }
 
 #ifdef HAVE_ID3TAG
-static ReplayGainInfo *parse_id3_replay_gain_info(struct id3_tag *tag)
+static struct replay_gain_info *
+parse_id3_replay_gain_info(struct id3_tag *tag)
 {
 	int i;
 	char *key;
 	char *value;
 	struct id3_frame *frame;
 	bool found = false;
-	ReplayGainInfo *replay_gain_info;
+	struct replay_gain_info *replay_gain_info;
 
-	replay_gain_info = newReplayGainInfo();
+	replay_gain_info = replay_gain_info_new();
 
 	for (i = 0; (frame = id3_tag_findframe(tag, "TXXX", i)); i++) {
 		if (frame->nfields < 3)
@@ -227,16 +228,16 @@ static ReplayGainInfo *parse_id3_replay_gain_info(struct id3_tag *tag)
 					     (&frame->fields[2]));
 
 		if (strcasecmp(key, "replaygain_track_gain") == 0) {
-			replay_gain_info->trackGain = atof(value);
+			replay_gain_info->track_gain = atof(value);
 			found = true;
 		} else if (strcasecmp(key, "replaygain_album_gain") == 0) {
-			replay_gain_info->albumGain = atof(value);
+			replay_gain_info->album_gain = atof(value);
 			found = true;
 		} else if (strcasecmp(key, "replaygain_track_peak") == 0) {
-			replay_gain_info->trackPeak = atof(value);
+			replay_gain_info->track_peak = atof(value);
 			found = true;
 		} else if (strcasecmp(key, "replaygain_album_peak") == 0) {
-			replay_gain_info->albumPeak = atof(value);
+			replay_gain_info->album_peak = atof(value);
 			found = true;
 		}
 
@@ -246,7 +247,7 @@ static ReplayGainInfo *parse_id3_replay_gain_info(struct id3_tag *tag)
 
 	if (found)
 		return replay_gain_info;
-	freeReplayGainInfo(replay_gain_info);
+	replay_gain_info_free(replay_gain_info);
 	return NULL;
 }
 #endif
@@ -254,7 +255,7 @@ static ReplayGainInfo *parse_id3_replay_gain_info(struct id3_tag *tag)
 #ifdef HAVE_ID3TAG
 static void mp3_parse_id3(struct mp3_data *data, size_t tagsize,
 			  struct tag **mpd_tag,
-			  ReplayGainInfo **replay_gain_info_r)
+			  struct replay_gain_info **replay_gain_info_r)
 {
 	struct id3_tag *id3_tag = NULL;
 	id3_length_t count;
@@ -307,10 +308,11 @@ static void mp3_parse_id3(struct mp3_data *data, size_t tagsize,
 	}
 
 	if (replay_gain_info_r) {
-		ReplayGainInfo *tmp_rgi = parse_id3_replay_gain_info(id3_tag);
+		struct replay_gain_info *tmp_rgi =
+			parse_id3_replay_gain_info(id3_tag);
 		if (tmp_rgi != NULL) {
 			if (*replay_gain_info_r)
-				freeReplayGainInfo(*replay_gain_info_r);
+				replay_gain_info_free(*replay_gain_info_r);
 			*replay_gain_info_r = tmp_rgi;
 		}
 	}
@@ -323,7 +325,7 @@ static void mp3_parse_id3(struct mp3_data *data, size_t tagsize,
 
 static enum mp3_action
 decode_next_frame_header(struct mp3_data *data, struct tag **tag,
-			 ReplayGainInfo **replay_gain_info_r)
+			 struct replay_gain_info **replay_gain_info_r)
 {
 	enum mad_layer layer;
 
@@ -698,7 +700,7 @@ mp3_filesize_to_song_length(struct mp3_data *data)
 
 static bool
 mp3_decode_first_frame(struct mp3_data *data, struct tag **tag,
-		       ReplayGainInfo **replay_gain_info_r)
+		       struct replay_gain_info **replay_gain_info_r)
 {
 	struct decoder *decoder = data->decoder;
 	struct xing xing;
@@ -758,9 +760,9 @@ mp3_decode_first_frame(struct mp3_data *data, struct tag **tag,
 			 * parse_lame() for details. -- jat */
 			if (replay_gain_info_r && !*replay_gain_info_r &&
 			    lame.track_gain) {
-				*replay_gain_info_r = newReplayGainInfo();
-				(*replay_gain_info_r)->trackGain = lame.track_gain;
-				(*replay_gain_info_r)->trackPeak = lame.peak;
+				*replay_gain_info_r = replay_gain_info_new();
+				(*replay_gain_info_r)->track_gain = lame.track_gain;
+				(*replay_gain_info_r)->track_peak = lame.peak;
 			}
 		}
 	} 
@@ -813,7 +815,7 @@ static int mp3_total_file_time(const char *file)
 static bool
 mp3_open(struct input_stream *is, struct mp3_data *data,
 	 struct decoder *decoder, struct tag **tag,
-	 ReplayGainInfo **replay_gain_info_r)
+	 struct replay_gain_info **replay_gain_info_r)
 {
 	mp3_data_init(data, decoder, is);
 	*tag = NULL;
@@ -877,7 +879,7 @@ mp3_update_timer_next_frame(struct mp3_data *data)
  */
 static enum decoder_command
 mp3_send_pcm(struct mp3_data *data, unsigned i, unsigned pcm_length,
-	     ReplayGainInfo *replay_gain_info)
+	     struct replay_gain_info *replay_gain_info)
 {
 	unsigned max_samples;
 
@@ -916,7 +918,8 @@ mp3_send_pcm(struct mp3_data *data, unsigned i, unsigned pcm_length,
  * Synthesize the current frame and send it via decoder_data().
  */
 static enum decoder_command
-mp3_synth_and_send(struct mp3_data *data, ReplayGainInfo *replay_gain_info)
+mp3_synth_and_send(struct mp3_data *data,
+		   struct replay_gain_info *replay_gain_info)
 {
 	unsigned i, pcm_length;
 	enum decoder_command cmd;
@@ -971,7 +974,7 @@ mp3_synth_and_send(struct mp3_data *data, ReplayGainInfo *replay_gain_info)
 }
 
 static bool
-mp3_read(struct mp3_data *data, ReplayGainInfo **replay_gain_info_r)
+mp3_read(struct mp3_data *data, struct replay_gain_info **replay_gain_info_r)
 {
 	struct decoder *decoder = data->decoder;
 	int ret;
@@ -1052,7 +1055,7 @@ mp3_decode(struct decoder *decoder, struct input_stream *input_stream)
 {
 	struct mp3_data data;
 	struct tag *tag = NULL;
-	ReplayGainInfo *replay_gain_info = NULL;
+	struct replay_gain_info *replay_gain_info = NULL;
 	struct audio_format audio_format;
 
 	if (!mp3_open(input_stream, &data, decoder, &tag, &replay_gain_info)) {
@@ -1077,7 +1080,7 @@ mp3_decode(struct decoder *decoder, struct input_stream *input_stream)
 	while (mp3_read(&data, &replay_gain_info)) ;
 
 	if (replay_gain_info)
-		freeReplayGainInfo(replay_gain_info);
+		replay_gain_info_free(replay_gain_info);
 
 	if (decoder_get_command(decoder) == DECODE_COMMAND_SEEK &&
 	    data.mute_frame == MUTEFRAME_SEEK)

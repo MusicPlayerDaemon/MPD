@@ -368,7 +368,7 @@ flac_decode_internal(struct decoder * decoder, struct input_stream *inStream,
 
 fail:
 	if (data.replayGainInfo)
-		freeReplayGainInfo(data.replayGainInfo);
+		replay_gain_info_free(data.replayGainInfo);
 
 	if (flacDec)
 		flac_delete(flacDec);

@@ -429,7 +429,7 @@ int main(int argc, char *argv[])
 	initAudioDriver();
 	initVolume();
 	client_manager_init();
-	initReplayGainState();
+	replay_gain_global_init();
 	initNormalization();
 	input_stream_global_init();
 

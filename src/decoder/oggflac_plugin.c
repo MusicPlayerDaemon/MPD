@@ -31,7 +31,7 @@ static void oggflac_cleanup(FlacData * data,
 			    OggFLAC__SeekableStreamDecoder * decoder)
 {
 	if (data->replayGainInfo)
-		freeReplayGainInfo(data->replayGainInfo);
+		replay_gain_info_free(data->replayGainInfo);
 	if (decoder)
 		OggFLAC__seekable_stream_decoder_delete(decoder);
 }

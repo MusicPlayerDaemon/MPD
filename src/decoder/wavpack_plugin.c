@@ -121,7 +121,7 @@ format_samples_float(mpd_unused int bytes_per_sample, void *buffer,
  */
 static void
 wavpack_decode(struct decoder * decoder, WavpackContext *wpc, bool canseek,
-	       ReplayGainInfo *replayGainInfo)
+	       struct replay_gain_info *replayGainInfo)
 {
 	struct audio_format audio_format;
 	void (*format_samples)(int bytes_per_sample,
@@ -229,43 +229,43 @@ wavpack_tag(WavpackContext *wpc, char *key)
 	return value;
 }
 
-static ReplayGainInfo *
+static struct replay_gain_info *
 wavpack_replaygain(WavpackContext *wpc)
 {
 	static char replaygain_track_gain[] = "replaygain_track_gain";
 	static char replaygain_album_gain[] = "replaygain_album_gain";
 	static char replaygain_track_peak[] = "replaygain_track_peak";
 	static char replaygain_album_peak[] = "replaygain_album_peak";
-	ReplayGainInfo *replay_gain_info;
+	struct replay_gain_info *replay_gain_info;
 	bool found = false;
 	char *value;
 
-	replay_gain_info = newReplayGainInfo();
+	replay_gain_info = replay_gain_info_new();
 
 	value = wavpack_tag(wpc, replaygain_track_gain);
 	if (value) {
-		replay_gain_info->trackGain = atof(value);
+		replay_gain_info->track_gain = atof(value);
 		free(value);
 		found = true;
 	}
 
 	value = wavpack_tag(wpc, replaygain_album_gain);
 	if (value) {
-		replay_gain_info->albumGain = atof(value);
+		replay_gain_info->album_gain = atof(value);
 		free(value);
 		found = true;
 	}
 
 	value = wavpack_tag(wpc, replaygain_track_peak);
 	if (value) {
-		replay_gain_info->trackPeak = atof(value);
+		replay_gain_info->track_peak = atof(value);
 		free(value);
 		found = true;
 	}
 
 	value = wavpack_tag(wpc, replaygain_album_peak);
 	if (value) {
-		replay_gain_info->albumPeak = atof(value);
+		replay_gain_info->album_peak = atof(value);
 		free(value);
 		found = true;
 	}
@@ -275,7 +275,7 @@ wavpack_replaygain(WavpackContext *wpc)
 		return replay_gain_info;
 	}
 
-	freeReplayGainInfo(replay_gain_info);
+	replay_gain_info_free(replay_gain_info);
 
 	return NULL;
 }
@@ -537,7 +537,7 @@ wavpack_filedecode(struct decoder *decoder, const char *fname)
 {
 	char error[ERRORLEN];
 	WavpackContext *wpc;
-	ReplayGainInfo *replay_gain_info;
+	struct replay_gain_info *replay_gain_info;
 
 	wpc = WavpackOpenFileInput(fname, error,
 	                           OPEN_TAGS | OPEN_WVC |
@@ -553,7 +553,7 @@ wavpack_filedecode(struct decoder *decoder, const char *fname)
 	wavpack_decode(decoder, wpc, true, replay_gain_info);
 
 	if (replay_gain_info) {
-		freeReplayGainInfo(replay_gain_info);
+		replay_gain_info_free(replay_gain_info);
 	}
 
 	WavpackCloseFile(wpc);

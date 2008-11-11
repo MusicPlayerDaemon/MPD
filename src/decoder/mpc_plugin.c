@@ -120,7 +120,7 @@ mpc_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 	mpc_uint32_t vbrUpdateBits;
 	float total_time;
 	int i;
-	ReplayGainInfo *replayGainInfo = NULL;
+	struct replay_gain_info *replayGainInfo = NULL;
 
 	data.inStream = inStream;
 	data.decoder = mpd_decoder;
@@ -156,11 +156,11 @@ mpc_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 	audio_format.channels = info.channels;
 	audio_format.sample_rate = info.sample_freq;
 
-	replayGainInfo = newReplayGainInfo();
-	replayGainInfo->albumGain = info.gain_album * 0.01;
-	replayGainInfo->albumPeak = info.peak_album / 32767.0;
-	replayGainInfo->trackGain = info.gain_title * 0.01;
-	replayGainInfo->trackPeak = info.peak_title / 32767.0;
+	replayGainInfo = replay_gain_info_new();
+	replayGainInfo->album_gain = info.gain_album * 0.01;
+	replayGainInfo->album_peak = info.peak_album / 32767.0;
+	replayGainInfo->track_gain = info.gain_title * 0.01;
+	replayGainInfo->track_peak = info.peak_title / 32767.0;
 
 	decoder_initialized(mpd_decoder, &audio_format,
 			    inStream->seekable,
@@ -231,7 +231,7 @@ mpc_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 			     replayGainInfo);
 	}
 
-	freeReplayGainInfo(replayGainInfo);
+	replay_gain_info_free(replayGainInfo);
 
 	return true;
 }

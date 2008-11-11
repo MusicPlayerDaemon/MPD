@@ -26,11 +26,11 @@
 #include "os_compat.h"
 
 /* Added 4/14/2004 by AliasMrJones */
-int replayGainState = REPLAYGAIN_OFF;
+int replay_gain_mode = REPLAY_GAIN_OFF;
 
-static float replayGainPreamp = 1.0;
+static float replay_gain_preamp = 1.0;
 
-void initReplayGainState(void)
+void replay_gain_global_init(void)
 {
 	ConfigParam *param = getConfigParam(CONF_REPLAYGAIN);
 
@@ -38,9 +38,9 @@ void initReplayGainState(void)
 		return;
 
 	if (strcmp(param->value, "track") == 0) {
-		replayGainState = REPLAYGAIN_TRACK;
+		replay_gain_mode = REPLAY_GAIN_TRACK;
 	} else if (strcmp(param->value, "album") == 0) {
-		replayGainState = REPLAYGAIN_ALBUM;
+		replay_gain_mode = REPLAY_GAIN_ALBUM;
 	} else {
 		FATAL("replaygain value \"%s\" at line %i is invalid\n",
 		      param->value, param->line);
@@ -62,18 +62,18 @@ void initReplayGainState(void)
 			      "15 at line %i\n", param->value, param->line);
 		}
 
-		replayGainPreamp = pow(10, f / 20.0);
+		replay_gain_preamp = pow(10, f / 20.0);
 	}
 }
 
-static float computeReplayGainScale(float gain, float peak)
+static float calc_replay_gain_scale(float gain, float peak)
 {
 	float scale;
 
 	if (gain == 0.0)
 		return (1);
 	scale = pow(10.0, gain / 20.0);
-	scale *= replayGainPreamp;
+	scale *= replay_gain_preamp;
 	if (scale > 15.0)
 		scale = 15.0;
 
@@ -83,28 +83,29 @@ static float computeReplayGainScale(float gain, float peak)
 	return (scale);
 }
 
-ReplayGainInfo *newReplayGainInfo(void)
+struct replay_gain_info *replay_gain_info_new(void)
 {
-	ReplayGainInfo *ret = xmalloc(sizeof(ReplayGainInfo));
+	struct replay_gain_info *ret = xmalloc(sizeof(*ret));
 
-	ret->albumGain = 0.0;
-	ret->albumPeak = 0.0;
+	ret->album_gain = 0.0;
+	ret->album_peak = 0.0;
 
-	ret->trackGain = 0.0;
-	ret->trackPeak = 0.0;
+	ret->track_gain = 0.0;
+	ret->track_peak = 0.0;
 
-	/* set to -1 so that we know in doReplayGain to compute the scale */
+	/* set to -1 so that we know in replay_gain_apply to compute the scale */
 	ret->scale = -1.0;
 
 	return ret;
 }
 
-void freeReplayGainInfo(ReplayGainInfo * info)
+void replay_gain_info_free(struct replay_gain_info *info)
 {
 	free(info);
 }
 
-void doReplayGain(ReplayGainInfo * info, char *buffer, int bufferSize,
+void
+replay_gain_apply(struct replay_gain_info *info, char *buffer, int size,
 		  const struct audio_format *format)
 {
 	int16_t *buffer16;
@@ -112,22 +113,22 @@ void doReplayGain(ReplayGainInfo * info, char *buffer, int bufferSize,
 	int32_t temp32;
 	float scale;
 
-	if (replayGainState == REPLAYGAIN_OFF || !info)
+	if (replay_gain_mode == REPLAY_GAIN_OFF || !info)
 		return;
 
 	if (info->scale < 0) {
-		switch (replayGainState) {
-		case REPLAYGAIN_TRACK:
+		switch (replay_gain_mode) {
+		case REPLAY_GAIN_TRACK:
 			DEBUG("computing ReplayGain track scale with gain %f, "
-			      "peak %f\n", info->trackGain, info->trackPeak);
-			info->scale = computeReplayGainScale(info->trackGain,
-							     info->trackPeak);
+			      "peak %f\n", info->track_gain, info->track_peak);
+			info->scale = calc_replay_gain_scale(info->track_gain,
+							     info->track_peak);
 			break;
 		default:
 			DEBUG("computing ReplayGain album scale with gain %f, "
-			      "peak %f\n", info->albumGain, info->albumPeak);
-			info->scale = computeReplayGainScale(info->albumGain,
-							     info->albumPeak);
+			      "peak %f\n", info->album_gain, info->album_peak);
+			info->scale = calc_replay_gain_scale(info->album_gain,
+							     info->album_peak);
 			break;
 		}
 	}
@@ -142,23 +143,23 @@ void doReplayGain(ReplayGainInfo * info, char *buffer, int bufferSize,
 
 	switch (format->bits) {
 	case 16:
-		while (bufferSize > 0) {
+		while (size > 0) {
 			temp32 = *buffer16;
 			temp32 *= scale;
 			*buffer16 = temp32 > 32767 ? 32767 :
 			    (temp32 < -32768 ? -32768 : temp32);
 			buffer16++;
-			bufferSize -= 2;
+			size -= 2;
 		}
 		break;
 	case 8:
-		while (bufferSize > 0) {
+		while (size > 0) {
 			temp32 = *buffer8;
 			temp32 *= scale;
 			*buffer8 = temp32 > 127 ? 127 :
 			    (temp32 < -128 ? -128 : temp32);
 			buffer8++;
-			bufferSize--;
+			size--;
 		}
 		break;
 	default:
