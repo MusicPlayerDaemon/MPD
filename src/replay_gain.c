@@ -21,9 +21,11 @@
 #include "conf.h"
 #include "audio_format.h"
 #include "pcm_utils.h"
-#include "os_compat.h"
 
 #include <glib.h>
+#include <stdlib.h>
+#include <string.h>
+#include <math.h>
 
 static const char *const replay_gain_mode_names[] = {
 	[REPLAY_GAIN_ALBUM] = "album",
