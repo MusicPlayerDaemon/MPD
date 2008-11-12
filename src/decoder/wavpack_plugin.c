@@ -158,11 +158,7 @@ wavpack_decode(struct decoder * decoder, WavpackContext *wpc, bool canseek,
 	allsamples = WavpackGetNumSamples(wpc);
 	bytes_per_sample = WavpackGetBytesPerSample(wpc);
 
-	outsamplesize = bytes_per_sample;
-	if (outsamplesize == 3) {
-		outsamplesize = 4;
-	}
-	outsamplesize *= audio_format.channels;
+	outsamplesize = audio_format_frame_size(&audio_format);
 
 	/* wavpack gives us all kind of samples in a 32-bit space */
 	samplesreq = sizeof(chunk) / (4 * audio_format.channels);
