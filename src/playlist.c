@@ -979,11 +979,8 @@ enum playlist_result moveSongInPlaylist(unsigned from, int to)
 		to = (currentSong + abs(to)) % playlist.length;
 	}
 
-	if (playlist_state == PLAYLIST_STATE_PLAY) {
-		int queuedSong = -1;
-
-		if (playlist.queued >= 0)
-			queuedSong = playlist.order[playlist.queued];
+	if (playlist_state == PLAYLIST_STATE_PLAY && playlist.queued >= 0) {
+		int queuedSong = playlist.order[playlist.queued];
 		if (queuedSong == (int)from || queuedSong == to
 		    || currentSong == from || (int)currentSong == to)
 			clearPlayerQueue();
@@ -1062,10 +1059,8 @@ static void orderPlaylist(void)
 	if (playlist.current >= 0 && playlist.current < (int)playlist.length)
 		playlist.current = playlist.order[playlist.current];
 
-	if (playlist_state == PLAYLIST_STATE_PLAY) {
-		if (playlist.queued >= 0)
-			clearPlayerQueue();
-	}
+	if (playlist_state == PLAYLIST_STATE_PLAY && playlist.queued >= 0)
+		clearPlayerQueue();
 
 	for (i = 0; i < playlist.length; i++) {
 		playlist.order[i] = i;
@@ -1087,10 +1082,9 @@ static void randomizeOrder(int start, int end)
 
 	DEBUG("playlist: randomize from %i to %i\n", start, end);
 
-	if (playlist_state == PLAYLIST_STATE_PLAY) {
-		if (playlist.queued >= start && playlist.queued <= end)
-			clearPlayerQueue();
-	}
+	if (playlist_state == PLAYLIST_STATE_PLAY &&
+	    playlist.queued >= start && playlist.queued <= end)
+		clearPlayerQueue();
 
 	for (i = start; i <= end; i++) {
 		ri = random() % (end - start + 1) + start;
@@ -1158,7 +1152,9 @@ void shufflePlaylist(void)
 
 	if (playlist.length > 1) {
 		if (playlist_state == PLAYLIST_STATE_PLAY) {
-			clearPlayerQueue();
+			if (playlist.queued >= 0)
+				clearPlayerQueue();
+
 			/* put current playing song first */
 			swapSongs(0, playlist.order[playlist.current]);
 			if (playlist.random) {
