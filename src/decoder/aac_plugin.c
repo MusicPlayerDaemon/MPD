@@ -53,13 +53,14 @@ static void fillAacBuffer(AacBuffer * b)
 {
 	size_t rest, bread;
 
-	if (b->bytesIntoBuffer >= sizeof(b->buffer))
+	if (b->bytesConsumed > 0)
+		aac_buffer_shift(b, b->bytesConsumed);
+
+	rest = sizeof(b->buffer) - b->bytesIntoBuffer;
+	if (rest == 0)
 		/* buffer already full */
 		return;
 
-	aac_buffer_shift(b, b->bytesConsumed);
-
-	rest = sizeof(b->buffer) - b->bytesIntoBuffer;
 	bread = decoder_read(b->decoder, b->inStream,
 			     (void *)(b->buffer + b->bytesIntoBuffer),
 			     rest);
