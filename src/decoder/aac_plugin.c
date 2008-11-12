@@ -311,7 +311,6 @@ aac_stream_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 	faacDecFrameInfo frameInfo;
 	faacDecConfigurationPtr config;
 	long bread;
-	struct audio_format audio_format;
 	uint32_t sample_rate;
 	unsigned char channels;
 	unsigned int sampleCount;
@@ -359,8 +358,6 @@ aac_stream_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 		return;
 	}
 
-	audio_format.bits = 16;
-
 	file_time = 0.0;
 
 	advanceAacBuffer(&b, bread);
@@ -391,8 +388,12 @@ aac_stream_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 #endif
 
 		if (!initialized) {
-			audio_format.channels = frameInfo.channels;
-			audio_format.sample_rate = sample_rate;
+			const struct audio_format audio_format = {
+				.bits = 16,
+				.channels = frameInfo.channels,
+				.sample_rate = sample_rate,
+			};
+
 			decoder_initialized(mpd_decoder, &audio_format,
 					    false, totalTime);
 			initialized = true;
