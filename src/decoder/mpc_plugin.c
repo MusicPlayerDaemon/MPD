@@ -96,6 +96,14 @@ static inline int32_t convertSample(MPC_SAMPLE_FORMAT sample)
 }
 
 static void
+mpc_to_mpd_buffer(int32_t *dest, const MPC_SAMPLE_FORMAT *src,
+		  unsigned num_samples)
+{
+	while (num_samples-- > 0)
+		*dest++ = convertSample(*src++);
+}
+
+static void
 mpc_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 {
 	mpc_decoder decoder;
@@ -109,14 +117,11 @@ mpc_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 
 	long ret;
 	int32_t chunk[G_N_ELEMENTS(sample_buffer)];
-	int chunkpos = 0;
 	long bitRate = 0;
-	int32_t *dest = chunk;
 	unsigned long samplePos = 0;
 	mpc_uint32_t vbrUpdateAcc;
 	mpc_uint32_t vbrUpdateBits;
 	float total_time;
-	int i;
 	struct replay_gain_info *replayGainInfo = NULL;
 
 	data.inStream = inStream;
@@ -163,11 +168,9 @@ mpc_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 		if (decoder_get_command(mpd_decoder) == DECODE_COMMAND_SEEK) {
 			samplePos = decoder_seek_where(mpd_decoder) *
 				audio_format.sample_rate;
-			if (mpc_decoder_seek_sample(&decoder, samplePos)) {
-				dest = chunk;
-				chunkpos = 0;
+			if (mpc_decoder_seek_sample(&decoder, samplePos))
 				decoder_command_finished(mpd_decoder);
-			} else
+			else
 				decoder_seek_error(mpd_decoder);
 		}
 
@@ -184,21 +187,16 @@ mpc_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 		/* ret is in samples, and we have stereo */
 		ret *= 2;
 
-		for (i = 0; i < ret; i++) {
-			*dest++ = convertSample(sample_buffer[i]);
-			chunkpos += sizeof(*dest);
-		}
+		mpc_to_mpd_buffer(chunk, sample_buffer, ret);
 
 		total_time = ((float)samplePos) / audio_format.sample_rate;
 		bitRate = vbrUpdateBits * audio_format.sample_rate
 			/ 1152 / 1000;
 
 		decoder_data(mpd_decoder, inStream,
-			     chunk, chunkpos,
+			     chunk, ret * sizeof(chunk[0]),
 			     total_time,
 			     bitRate, replayGainInfo);
-
-		dest = chunk;
 
 		if (decoder_get_command(mpd_decoder) == DECODE_COMMAND_STOP)
 			break;
