@@ -205,7 +205,8 @@ static void aac_parse_header(AacBuffer * b, float *length)
 	if (length == NULL)
 		return;
 
-	if (b->bytesIntoBuffer >= 2 &&
+	if (b->inStream->seekable &&
+	    b->bytesIntoBuffer >= 2 &&
 	    (b->buffer[0] == 0xFF) && ((b->buffer[1] & 0xF6) == 0xF0)) {
 		adtsParse(b, length);
 		input_stream_seek(b->inStream, tagsize, SEEK_SET);
