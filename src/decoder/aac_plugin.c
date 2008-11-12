@@ -418,7 +418,9 @@ aac_stream_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 		cmd = decoder_data(mpd_decoder, NULL, sampleBuffer,
 				   sampleBufferLen, file_time,
 				   bitRate, NULL);
-	} while (cmd == DECODE_COMMAND_NONE);
+		if (cmd == DECODE_COMMAND_SEEK)
+			decoder_seek_error(mpd_decoder);
+	} while (cmd != DECODE_COMMAND_STOP);
 
 	faacDecClose(decoder);
 	if (b.buffer)
