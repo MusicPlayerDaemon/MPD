@@ -108,8 +108,7 @@ mpc_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 	MPC_SAMPLE_FORMAT sample_buffer[MPC_DECODER_BUFFER_LENGTH];
 
 	long ret;
-#define MPC_CHUNK_SIZE 4096
-	int32_t chunk[MPC_CHUNK_SIZE / sizeof(int32_t)];
+	int32_t chunk[G_N_ELEMENTS(sample_buffer)];
 	int chunkpos = 0;
 	long bitRate = 0;
 	int32_t *dest = chunk;
@@ -188,37 +187,21 @@ mpc_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 		for (i = 0; i < ret; i++) {
 			*dest++ = convertSample(sample_buffer[i]);
 			chunkpos += sizeof(*dest);
-
-			if (chunkpos >= MPC_CHUNK_SIZE) {
-				total_time = ((float)samplePos) /
-				    audio_format.sample_rate;
-
-				bitRate = vbrUpdateBits *
-				    audio_format.sample_rate / 1152 / 1000;
-
-				decoder_data(mpd_decoder, inStream,
-					     chunk, chunkpos,
-					     total_time,
-					     bitRate, replayGainInfo);
-
-				chunkpos = 0;
-				dest = chunk;
-				if (decoder_get_command(mpd_decoder) == DECODE_COMMAND_STOP)
-					break;
-			}
 		}
-	}
 
-	if (decoder_get_command(mpd_decoder) != DECODE_COMMAND_STOP &&
-	    chunkpos > 0) {
 		total_time = ((float)samplePos) / audio_format.sample_rate;
+		bitRate = vbrUpdateBits * audio_format.sample_rate
+			/ 1152 / 1000;
 
-		bitRate =
-		    vbrUpdateBits * audio_format.sample_rate / 1152 / 1000;
+		decoder_data(mpd_decoder, inStream,
+			     chunk, chunkpos,
+			     total_time,
+			     bitRate, replayGainInfo);
 
-		decoder_data(mpd_decoder, NULL,
-			     chunk, chunkpos, total_time, bitRate,
-			     replayGainInfo);
+		dest = chunk;
+
+		if (decoder_get_command(mpd_decoder) == DECODE_COMMAND_STOP)
+			break;
 	}
 
 	replay_gain_info_free(replayGainInfo);
