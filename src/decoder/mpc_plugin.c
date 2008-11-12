@@ -184,8 +184,7 @@ mpc_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 
 		samplePos += ret;
 
-		/* ret is in samples, and we have stereo */
-		ret *= 2;
+		ret *= info.channels;
 
 		mpc_to_mpd_buffer(chunk, sample_buffer, ret);
 
