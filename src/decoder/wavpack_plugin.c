@@ -149,12 +149,7 @@ wavpack_decode(struct decoder * decoder, WavpackContext *wpc, bool canseek,
 	} else {
 		format_samples = format_samples_int;
 	}
-/*
-	if ((WavpackGetMode(wpc) & MODE_WVC) == MODE_WVC)
-		printf("decoding WITH wvc!!!\n");
-	else
-		printf("decoding without wvc\n");
-*/
+
 	allsamples = WavpackGetNumSamples(wpc);
 	bytes_per_sample = WavpackGetBytesPerSample(wpc);
 
