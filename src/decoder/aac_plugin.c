@@ -33,7 +33,7 @@ typedef struct {
 	size_t bytesIntoBuffer;
 	size_t bytesConsumed;
 	off_t fileOffset;
-	unsigned char *buffer;
+	unsigned char buffer[FAAD_MIN_STREAMSIZE * AAC_MAX_CHANNELS];
 } AacBuffer;
 
 static void aac_buffer_shift(AacBuffer * b, size_t length)
@@ -53,13 +53,13 @@ static void fillAacBuffer(AacBuffer * b)
 {
 	size_t rest, bread;
 
-	if (b->bytesIntoBuffer >= FAAD_MIN_STREAMSIZE * AAC_MAX_CHANNELS)
+	if (b->bytesIntoBuffer >= sizeof(b->buffer))
 		/* buffer already full */
 		return;
 
 	aac_buffer_shift(b, b->bytesConsumed);
 
-	rest = FAAD_MIN_STREAMSIZE * AAC_MAX_CHANNELS - b->bytesIntoBuffer;
+	rest = sizeof(b->buffer) - b->bytesIntoBuffer;
 	bread = decoder_read(b->decoder, b->inStream,
 			     (void *)(b->buffer + b->bytesIntoBuffer),
 			     rest);
@@ -175,9 +175,6 @@ initAacBuffer(AacBuffer * b, struct decoder *decoder,
 
 	b->decoder = decoder;
 	b->inStream = inStream;
-
-	b->buffer = xmalloc(FAAD_MIN_STREAMSIZE * AAC_MAX_CHANNELS);
-	memset(b->buffer, 0, FAAD_MIN_STREAMSIZE * AAC_MAX_CHANNELS);
 }
 
 static void aac_parse_header(AacBuffer * b, float *length)
@@ -336,7 +333,7 @@ aac_stream_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 #endif
 	faacDecSetConfiguration(decoder, config);
 
-	while (b.bytesIntoBuffer < FAAD_MIN_STREAMSIZE * AAC_MAX_CHANNELS &&
+	while (b.bytesIntoBuffer < sizeof(b.buffer) &&
 	       !input_stream_eof(b.inStream) &&
 	       decoder_get_command(mpd_decoder) == DECODE_COMMAND_NONE) {
 	       	fillAacBuffer(&b);
@@ -423,8 +420,6 @@ aac_stream_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 	} while (cmd != DECODE_COMMAND_STOP);
 
 	faacDecClose(decoder);
-	if (b.buffer)
-		free(b.buffer);
 }
 
 static struct tag *aacTagDup(const char *file)
