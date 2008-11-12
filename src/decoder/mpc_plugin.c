@@ -17,10 +17,9 @@
  */
 
 #include "../decoder_api.h"
-#include "../utils.h"
-#include "../log.h"
 
 #include <mpcdec/mpcdec.h>
+#include <glib.h>
 
 typedef struct _MpcCallbackData {
 	struct input_stream *inStream;
@@ -135,7 +134,7 @@ mpc_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 
 	if ((ret = mpc_streaminfo_read(&info, &reader)) != ERROR_CODE_OK) {
 		if (decoder_get_command(mpd_decoder) != DECODE_COMMAND_STOP)
-			ERROR("Not a valid musepack stream\n");
+			g_warning("Not a valid musepack stream\n");
 		return;
 	}
 
@@ -143,7 +142,7 @@ mpc_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 
 	if (!mpc_decoder_initialize(&decoder, &info)) {
 		if (decoder_get_command(mpd_decoder) != DECODE_COMMAND_STOP)
-			ERROR("Not a valid musepack stream\n");
+			g_warning("Not a valid musepack stream\n");
 		return;
 	}
 
@@ -246,10 +245,8 @@ static float mpcGetTime(const char *file)
 
 	mpc_streaminfo_init(&info);
 
-	if (!input_stream_open(&inStream, file)) {
-		DEBUG("mpcGetTime: Failed to open file: %s\n", file);
+	if (!input_stream_open(&inStream, file))
 		return -1;
-	}
 
 	if (mpc_streaminfo_read(&info, &reader) != ERROR_CODE_OK) {
 		input_stream_close(&inStream);
@@ -269,8 +266,8 @@ static struct tag *mpcTagDup(const char *file)
 	float total_time = mpcGetTime(file);
 
 	if (total_time < 0) {
-		DEBUG("mpcTagDup: Failed to get Songlength of file: %s\n",
-		      file);
+		g_debug("mpcTagDup: Failed to get Songlength of file: %s\n",
+			file);
 		return NULL;
 	}
 
