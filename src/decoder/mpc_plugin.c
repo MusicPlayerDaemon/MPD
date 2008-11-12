@@ -123,6 +123,7 @@ mpc_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 	mpc_uint32_t vbrUpdateBits;
 	float total_time;
 	struct replay_gain_info *replayGainInfo = NULL;
+	enum decoder_command cmd = DECODE_COMMAND_NONE;
 
 	data.inStream = inStream;
 	data.decoder = mpd_decoder;
@@ -164,8 +165,8 @@ mpc_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 			    inStream->seekable,
 			    mpc_streaminfo_get_length(&info));
 
-	while (true) {
-		if (decoder_get_command(mpd_decoder) == DECODE_COMMAND_SEEK) {
+	do {
+		if (cmd == DECODE_COMMAND_SEEK) {
 			samplePos = decoder_seek_where(mpd_decoder) *
 				audio_format.sample_rate;
 			if (mpc_decoder_seek_sample(&decoder, samplePos))
@@ -178,8 +179,7 @@ mpc_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 		vbrUpdateBits = 0;
 		ret = mpc_decoder_decode(&decoder, sample_buffer,
 					 &vbrUpdateAcc, &vbrUpdateBits);
-
-		if (ret <= 0 || decoder_get_command(mpd_decoder) == DECODE_COMMAND_STOP)
+		if (ret <= 0)
 			break;
 
 		samplePos += ret;
@@ -193,14 +193,11 @@ mpc_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 		bitRate = vbrUpdateBits * audio_format.sample_rate
 			/ 1152 / 1000;
 
-		decoder_data(mpd_decoder, inStream,
-			     chunk, ret * sizeof(chunk[0]),
-			     total_time,
-			     bitRate, replayGainInfo);
-
-		if (decoder_get_command(mpd_decoder) == DECODE_COMMAND_STOP)
-			break;
-	}
+		cmd = decoder_data(mpd_decoder, inStream,
+				   chunk, ret * sizeof(chunk[0]),
+				   total_time,
+				   bitRate, replayGainInfo);
+	} while (cmd != DECODE_COMMAND_STOP);
 
 	replay_gain_info_free(replayGainInfo);
 }
