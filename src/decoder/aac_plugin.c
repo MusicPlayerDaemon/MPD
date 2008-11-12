@@ -319,6 +319,7 @@ aac_stream_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 	uint16_t bitRate = 0;
 	AacBuffer b;
 	bool initialized = false;
+	enum decoder_command cmd;
 
 	initAacBuffer(&b, mpd_decoder, inStream);
 	aac_parse_header(&b, &totalTime);
@@ -414,10 +415,10 @@ aac_stream_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 
 		sampleBufferLen = sampleCount * 2;
 
-		decoder_data(mpd_decoder, NULL, sampleBuffer,
-			     sampleBufferLen, file_time,
-			     bitRate, NULL);
-	} while (decoder_get_command(mpd_decoder) == DECODE_COMMAND_NONE);
+		cmd = decoder_data(mpd_decoder, NULL, sampleBuffer,
+				   sampleBufferLen, file_time,
+				   bitRate, NULL);
+	} while (cmd == DECODE_COMMAND_NONE);
 
 	faacDecClose(decoder);
 	if (b.buffer)
