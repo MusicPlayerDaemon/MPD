@@ -79,7 +79,7 @@ static void advanceAacBuffer(AacBuffer * b, size_t bytes)
 	b->bytesIntoBuffer -= bytes;
 }
 
-static int adtsSampleRates[] =
+static const unsigned adtsSampleRates[] =
     { 96000, 88200, 64000, 48000, 44100, 32000, 24000, 22050,
 	16000, 12000, 11025, 8000, 7350, 0, 0, 0
 };
@@ -139,7 +139,7 @@ static size_t adts_find_frame(AacBuffer * b)
 static void adtsParse(AacBuffer * b, float *length)
 {
 	unsigned int frames, frameLength;
-	int sample_rate = 0;
+	unsigned sample_rate = 0;
 	float framesPerSec;
 
 	/* Read all frames to ensure correct time and bitrate */
@@ -163,7 +163,7 @@ static void adtsParse(AacBuffer * b, float *length)
 	}
 
 	framesPerSec = (float)sample_rate / 1024.0;
-	if (framesPerSec != 0)
+	if (framesPerSec > 0)
 		*length = (float)frames / framesPerSec;
 }
 
@@ -217,8 +217,9 @@ static void aac_parse_header(AacBuffer * b, float *length)
 
 		fillAacBuffer(b);
 	} else if (memcmp(b->buffer, "ADIF", 4) == 0) {
-		int bitRate;
-		int skipSize = (b->buffer[4] & 0x80) ? 9 : 0;
+		unsigned bitRate;
+		size_t skipSize = (b->buffer[4] & 0x80) ? 9 : 0;
+
 		bitRate =
 		    ((unsigned int)(b->
 				    buffer[4 +
