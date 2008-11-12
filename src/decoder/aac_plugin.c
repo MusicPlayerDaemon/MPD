@@ -220,6 +220,12 @@ static void aac_parse_header(AacBuffer * b, float *length)
 		unsigned bitRate;
 		size_t skipSize = (b->buffer[4] & 0x80) ? 9 : 0;
 
+
+		if (8 + skipSize > b->bytesIntoBuffer)
+			/* not enough data yet; skip parsing this
+			   header */
+			return;
+
 		bitRate =
 		    ((unsigned int)(b->
 				    buffer[4 +
