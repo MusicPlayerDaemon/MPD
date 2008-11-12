@@ -322,6 +322,7 @@ aac_stream_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 	bool initialized = false;
 
 	initAacBuffer(&b, mpd_decoder, inStream);
+	aac_parse_header(&b, &totalTime);
 
 	decoder = faacDecOpen();
 
@@ -422,129 +423,6 @@ aac_stream_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 		free(b.buffer);
 }
 
-
-static void
-aac_decode(struct decoder *mpd_decoder, const char *path)
-{
-	float file_time;
-	float totalTime;
-	faacDecHandle decoder;
-	faacDecFrameInfo frameInfo;
-	faacDecConfigurationPtr config;
-	long bread;
-	struct audio_format audio_format;
-	uint32_t sample_rate;
-	unsigned char channels;
-	unsigned int sampleCount;
-	char *sampleBuffer;
-	size_t sampleBufferLen;
-	/*float * seekTable;
-	   long seekTableEnd = -1;
-	   int seekPositionFound = 0; */
-	uint16_t bitRate = 0;
-	AacBuffer b;
-	struct input_stream inStream;
-	bool initialized = false;
-
-	if ((totalTime = getAacFloatTotalTime(path)) < 0)
-		return;
-
-	if (!input_stream_open(&inStream, path))
-		return;
-
-	initAacBuffer(&b, mpd_decoder, &inStream);
-	aac_parse_header(&b, NULL);
-
-	decoder = faacDecOpen();
-
-	config = faacDecGetCurrentConfiguration(decoder);
-	config->outputFormat = FAAD_FMT_16BIT;
-#ifdef HAVE_FAACDECCONFIGURATION_DOWNMATRIX
-	config->downMatrix = 1;
-#endif
-#ifdef HAVE_FAACDECCONFIGURATION_DONTUPSAMPLEIMPLICITSBR
-	config->dontUpSampleImplicitSBR = 0;
-#endif
-	faacDecSetConfiguration(decoder, config);
-
-	fillAacBuffer(&b);
-
-#ifdef HAVE_FAAD_BUFLEN_FUNCS
-	bread = faacDecInit(decoder, b.buffer, b.bytesIntoBuffer,
-			    &sample_rate, &channels);
-#else
-	bread = faacDecInit(decoder, b.buffer, &sample_rate, &channels);
-#endif
-	if (bread < 0) {
-		ERROR("Error not a AAC stream.\n");
-		faacDecClose(decoder);
-		if (b.buffer)
-			free(b.buffer);
-		return;
-	}
-
-	audio_format.bits = 16;
-
-	file_time = 0.0;
-
-	advanceAacBuffer(&b, bread);
-
-	do {
-		fillAacBuffer(&b);
-
-		if (b.bytesIntoBuffer == 0)
-			break;
-
-#ifdef HAVE_FAAD_BUFLEN_FUNCS
-		sampleBuffer = faacDecDecode(decoder, &frameInfo, b.buffer,
-					     b.bytesIntoBuffer);
-#else
-		sampleBuffer = faacDecDecode(decoder, &frameInfo, b.buffer);
-#endif
-
-		if (frameInfo.error > 0) {
-			ERROR("error decoding AAC file: %s\n", path);
-			ERROR("faad2 error: %s\n",
-			      faacDecGetErrorMessage(frameInfo.error));
-			break;
-		}
-#ifdef HAVE_FAACDECFRAMEINFO_SAMPLERATE
-		sample_rate = frameInfo.samplerate;
-#endif
-
-		if (!initialized) {
-			audio_format.channels = frameInfo.channels;
-			audio_format.sample_rate = sample_rate;
-			decoder_initialized(mpd_decoder, &audio_format,
-					    false, totalTime);
-			initialized = true;
-		}
-
-		advanceAacBuffer(&b, frameInfo.bytesconsumed);
-
-		sampleCount = (unsigned long)(frameInfo.samples);
-
-		if (sampleCount > 0) {
-			bitRate = frameInfo.bytesconsumed * 8.0 *
-			    frameInfo.channels * sample_rate /
-			    frameInfo.samples / 1000 + 0.5;
-			file_time +=
-			    (float)(frameInfo.samples) / frameInfo.channels /
-			    sample_rate;
-		}
-
-		sampleBufferLen = sampleCount * 2;
-
-		decoder_data(mpd_decoder, NULL, sampleBuffer,
-			     sampleBufferLen, file_time,
-			     bitRate, NULL);
-	} while (decoder_get_command(mpd_decoder) == DECODE_COMMAND_NONE);
-
-	faacDecClose(decoder);
-	if (b.buffer)
-		free(b.buffer);
-}
-
 static struct tag *aacTagDup(const char *file)
 {
 	struct tag *ret = NULL;
@@ -568,7 +446,6 @@ static const char *const aac_mimeTypes[] = { "audio/aac", "audio/aacp", NULL };
 const struct decoder_plugin aacPlugin = {
 	.name = "aac",
 	.stream_decode = aac_stream_decode,
-	.file_decode = aac_decode,
 	.tag_dup = aacTagDup,
 	.suffixes = aac_suffixes,
 	.mime_types = aac_mimeTypes
