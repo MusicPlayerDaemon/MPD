@@ -115,7 +115,7 @@ mpc_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 
 	MPC_SAMPLE_FORMAT sample_buffer[MPC_DECODER_BUFFER_LENGTH];
 
-	long ret;
+	mpc_uint32_t ret;
 	int32_t chunk[G_N_ELEMENTS(sample_buffer)];
 	long bitRate = 0;
 	unsigned long samplePos = 0;
@@ -179,7 +179,7 @@ mpc_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 		vbrUpdateBits = 0;
 		ret = mpc_decoder_decode(&decoder, sample_buffer,
 					 &vbrUpdateAcc, &vbrUpdateBits);
-		if (ret <= 0)
+		if (ret == 0 || ret == (mpc_uint32_t)-1)
 			break;
 
 		samplePos += ret;
