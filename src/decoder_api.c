@@ -168,6 +168,9 @@ need_chunks(struct input_stream *is, bool wait)
 	if ((is == NULL || input_stream_buffer(is) <= 0) && wait) {
 		notify_wait(&dc.notify);
 		notify_signal(&pc.notify);
+
+		if (dc.command != DECODE_COMMAND_STOP)
+			return dc.command;
 	}
 
 	return DECODE_COMMAND_NONE;
