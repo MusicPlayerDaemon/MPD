@@ -109,8 +109,11 @@ size_t decoder_read(struct decoder *decoder,
 	while (true) {
 		/* XXX don't allow decoder==NULL */
 		if (decoder != NULL &&
+		    /* ignore the SEEK command during initialization,
+		       the plugin should handle that after it has
+		       initialized successfully */
 		    (dc.command != DECODE_COMMAND_SEEK ||
-		     !decoder->seeking) &&
+		     (dc.state != DECODE_STATE_START && !decoder->seeking)) &&
 		    dc.command != DECODE_COMMAND_NONE)
 			return 0;
 
