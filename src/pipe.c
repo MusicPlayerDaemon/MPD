@@ -300,3 +300,21 @@ void music_pipe_skip(unsigned num)
 	while (music_pipe.begin != (unsigned)i)
 		music_pipe_shift();
 }
+
+#ifndef NDEBUG
+void music_pipe_check_format(const struct audio_format *current,
+			     int next_index, const struct audio_format *next)
+{
+	const struct audio_format *audio_format = current;
+
+	for (unsigned i = music_pipe.begin; i != music_pipe.end;
+	     i = successor(i)) {
+		const struct music_chunk *chunk = music_pipe_get_chunk(i);
+
+		if (next_index > 0 && i == (unsigned)next_index)
+			audio_format = next;
+
+		assert(chunk->length % audio_format_frame_size(audio_format) == 0);
+	}
+}
+#endif
