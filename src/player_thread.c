@@ -203,6 +203,7 @@ static void player_process_command(struct player *player)
 			/* the decoder is already decoding the song -
 			   stop it and reset the position */
 			dc_stop(&pc.notify);
+			music_pipe_chop(player->next_song_chunk);
 			player->next_song_chunk = -1;
 		}
 

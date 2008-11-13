@@ -301,6 +301,18 @@ void music_pipe_skip(unsigned num)
 		music_pipe_shift();
 }
 
+void music_pipe_chop(unsigned first)
+{
+	for (unsigned i = first; i != music_pipe.end; i = successor(i))
+		music_chunk_free(&music_pipe.chunks[i]);
+
+	music_chunk_free(&music_pipe.chunks[music_pipe.end]);
+
+	music_pipe.end = first;
+	music_chunk_init(&music_pipe.chunks[first]);
+
+}
+
 #ifndef NDEBUG
 void music_pipe_check_format(const struct audio_format *current,
 			     int next_index, const struct audio_format *next)

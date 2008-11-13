@@ -164,6 +164,12 @@ bool music_pipe_tag(const struct tag *tag);
 
 void music_pipe_skip(unsigned num);
 
+/**
+ * Chop off the tail of the music pipe, starting with the chunk at
+ * index "first".
+ */
+void music_pipe_chop(unsigned first);
+
 #ifndef NDEBUG
 void music_pipe_check_format(const struct audio_format *current,
 			     int next_index, const struct audio_format *next);
