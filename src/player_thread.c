@@ -357,6 +357,7 @@ static void do_play(void)
 			/* the decoder has finished the current song;
 			   make it decode the next song */
 			assert(pc.next_song != NULL);
+			assert(player.next_song_chunk == -1);
 
 			player.queued = false;
 			player.next_song_chunk = music_pipe_tail_index();
