@@ -159,13 +159,13 @@ tag_add_stream_tags(const struct tag *src_tag, const struct input_stream *is)
  * one.
  */
 static enum decoder_command
-need_chunks(struct input_stream *is)
+need_chunks(struct input_stream *is, bool wait)
 {
 	if (dc.command == DECODE_COMMAND_STOP ||
 	    dc.command == DECODE_COMMAND_SEEK)
 		return dc.command;
 
-	if (is == NULL || input_stream_buffer(is) <= 0) {
+	if ((is == NULL || input_stream_buffer(is) <= 0) && wait) {
 		notify_wait(&dc.notify);
 		notify_signal(&pc.notify);
 	}
@@ -255,7 +255,8 @@ decoder_data(struct decoder *decoder,
 		data += nbytes;
 
 		if (length > 0) {
-			enum decoder_command cmd = need_chunks(is);
+			enum decoder_command cmd =
+				need_chunks(is, nbytes == 0);
 			if (cmd != DECODE_COMMAND_NONE)
 				return cmd;
 		}
@@ -276,7 +277,7 @@ decoder_tag(mpd_unused struct decoder *decoder, struct input_stream *is,
 		tag = tag2;
 
 	while (!music_pipe_tag(tag)) {
-		enum decoder_command cmd = need_chunks(is);
+		enum decoder_command cmd = need_chunks(is, true);
 		if (cmd != DECODE_COMMAND_NONE)
 			return cmd;
 	}
