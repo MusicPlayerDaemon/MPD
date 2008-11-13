@@ -187,6 +187,10 @@ decoder_data(struct decoder *decoder,
 
 	assert(dc.state == DECODE_STATE_DECODE);
 
+	if (dc.command == DECODE_COMMAND_STOP ||
+	    dc.command == DECODE_COMMAND_SEEK)
+		return dc.command;
+
 	if (is != NULL && !decoder->stream_tag_sent) {
 		const struct tag *src;
 		struct tag *tag1, *tag2;
