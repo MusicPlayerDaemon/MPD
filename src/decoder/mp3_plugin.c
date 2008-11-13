@@ -994,10 +994,7 @@ mp3_read(struct mp3_data *data, struct replay_gain_info **replay_gain_info_r)
 		cmd = mp3_synth_and_send(data,
 					 replay_gain_info_r != NULL
 					 ? *replay_gain_info_r : NULL);
-		if (cmd != DECODE_COMMAND_NONE)
-			return false;
-
-		if (decoder_get_command(decoder) == DECODE_COMMAND_SEEK) {
+		if (cmd == DECODE_COMMAND_SEEK) {
 			unsigned long j;
 
 			assert(data->input_stream->seekable);
@@ -1015,7 +1012,8 @@ mp3_read(struct mp3_data *data, struct replay_gain_info **replay_gain_info_r)
 				data->mute_frame = MUTEFRAME_SEEK;
 				decoder_command_finished(decoder);
 			}
-		}
+		} else if (cmd != DECODE_COMMAND_NONE)
+			return false;
 	}
 
 	while (true) {
