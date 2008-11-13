@@ -190,6 +190,8 @@ tail_chunk(size_t frame_size)
 
 	chunk = music_pipe_get_chunk(music_pipe.end);
 	assert(chunk->length <= sizeof(chunk->data));
+	assert((chunk->length % frame_size) == 0);
+
 	if (chunk->length + frame_size > sizeof(chunk->data)) {
 		/* this chunk is full; allocate a new chunk */
 		next = successor(music_pipe.end);
