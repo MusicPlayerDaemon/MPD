@@ -46,13 +46,19 @@ static struct {
 	{ "disc", TAG_ITEM_DISC },
 };
 
+/** A pointer type for format converter function. */
+typedef void (*format_samples_t)(
+	int bytes_per_sample,
+	void *buffer, uint32_t count
+);
+
 /*
  * This function has been borrowed from the tiny player found on
  * wavpack.com. Modifications were required because mpd only handles
  * max 24-bit samples.
  */
 static void
-format_samples_int(int bytes_per_sample, void *buffer, uint32_t samcnt)
+format_samples_int(int bytes_per_sample, void *buffer, uint32_t count)
 {
 	int32_t *src = buffer;
 
@@ -68,7 +74,7 @@ format_samples_int(int bytes_per_sample, void *buffer, uint32_t samcnt)
 		assert(sizeof(uchar) <= sizeof(uint32_t));
 
 		/* pass through and align 8-bit samples */
-		while (samcnt--) {
+		while (count--) {
 			*dst++ = *src++;
 		}
 		break;
@@ -78,7 +84,7 @@ format_samples_int(int bytes_per_sample, void *buffer, uint32_t samcnt)
 		assert(sizeof(uint16_t) <= sizeof(uint32_t));
 
 		/* pass through and align 16-bit samples */
-		while (samcnt--) {
+		while (count--) {
 			*dst++ = *src++;
 		}
 		break;
@@ -91,7 +97,7 @@ format_samples_int(int bytes_per_sample, void *buffer, uint32_t samcnt)
 		assert(sizeof(uint32_t) <= sizeof(uint32_t));
 
 		/* downsample to 24-bit */
-		while (samcnt--) {
+		while (count--) {
 			*dst++ = *src++ >> 8;
 		}
 		break;
@@ -104,13 +110,13 @@ format_samples_int(int bytes_per_sample, void *buffer, uint32_t samcnt)
  */
 static void
 format_samples_float(mpd_unused int bytes_per_sample, void *buffer,
-		     uint32_t samcnt)
+		     uint32_t count)
 {
 	int32_t *dst = buffer;
 	float *src = buffer;
 	assert(sizeof(int32_t) <= sizeof(float));
 
-	while (samcnt--) {
+	while (count--) {
 		*dst++ = (int32_t)(*src++ + 0.5f);
 	}
 }
@@ -120,18 +126,16 @@ format_samples_float(mpd_unused int bytes_per_sample, void *buffer,
  * Requires an already opened WavpackContext.
  */
 static void
-wavpack_decode(struct decoder * decoder, WavpackContext *wpc, bool canseek,
-	       struct replay_gain_info *replayGainInfo)
+wavpack_decode(struct decoder *decoder, WavpackContext *wpc, bool can_seek,
+	       struct replay_gain_info *replay_gain_info)
 {
 	struct audio_format audio_format;
-	void (*format_samples)(int bytes_per_sample,
-			       void *buffer, uint32_t samcnt);
+	format_samples_t format_samples;
 	char chunk[CHUNK_SIZE];
-	float file_time;
-	int samplesreq, samplesgot;
-	int allsamples;
-	int position, outsamplesize;
-	int bytes_per_sample;
+	int samples_requested, samples_got;
+	float total_time, current_time;
+	int bytes_per_sample, output_sample_size;
+	int position;
 
 	audio_format.sample_rate = WavpackGetSampleRate(wpc);
 	audio_format.channels = WavpackGetReducedChannels(wpc);
@@ -150,26 +154,30 @@ wavpack_decode(struct decoder * decoder, WavpackContext *wpc, bool canseek,
 		format_samples = format_samples_int;
 	}
 
-	allsamples = WavpackGetNumSamples(wpc);
+	total_time = WavpackGetNumSamples(wpc);
+	total_time /= audio_format.sample_rate;
 	bytes_per_sample = WavpackGetBytesPerSample(wpc);
 
-	outsamplesize = audio_format_frame_size(&audio_format);
+	output_sample_size = bytes_per_sample;
+	if (output_sample_size == 3) {
+		output_sample_size = 4;
+	}
+	output_sample_size *= audio_format.channels;
 
 	/* wavpack gives us all kind of samples in a 32-bit space */
-	samplesreq = sizeof(chunk) / (4 * audio_format.channels);
+	samples_requested = sizeof(chunk) / (4 * audio_format.channels);
 
-	decoder_initialized(decoder, &audio_format, canseek,
-			    (float)allsamples / audio_format.sample_rate);
+	decoder_initialized(decoder, &audio_format, can_seek, total_time);
 
 	position = 0;
 
 	do {
 		if (decoder_get_command(decoder) == DECODE_COMMAND_SEEK) {
-			if (canseek) {
+			if (can_seek) {
 				int where;
 
-				where = decoder_seek_where(decoder) *
-					audio_format.sample_rate;
+				where = decoder_seek_where(decoder);
+				where *= audio_format.sample_rate;
 				if (WavpackSeekSample(wpc, where)) {
 					position = where;
 					decoder_command_finished(decoder);
@@ -185,23 +193,29 @@ wavpack_decode(struct decoder * decoder, WavpackContext *wpc, bool canseek,
 			break;
 		}
 
-		samplesgot = WavpackUnpackSamples(wpc,
-		                                  (int32_t *)chunk, samplesreq);
-		if (samplesgot > 0) {
+		samples_got = WavpackUnpackSamples(
+			wpc, (int32_t *)chunk, samples_requested
+		);
+		if (samples_got > 0) {
 			int bitrate = (int)(WavpackGetInstantBitrate(wpc) /
 			              1000 + 0.5);
-			position += samplesgot;
-			file_time = (float)position / audio_format.sample_rate;
+			position += samples_got;
+			current_time = position;
+			current_time /= audio_format.sample_rate;
 
-			format_samples(bytes_per_sample, chunk,
-			               samplesgot * audio_format.channels);
+			format_samples(
+				bytes_per_sample, chunk,
+				samples_got * audio_format.channels
+			);
 
-			decoder_data(decoder, NULL, chunk,
-				     samplesgot * outsamplesize,
-				     file_time, bitrate,
-				     replayGainInfo);
+			decoder_data(
+				decoder, NULL, chunk,
+				samples_got * output_sample_size,
+				current_time, bitrate,
+				replay_gain_info
+			);
 		}
-	} while (samplesgot == samplesreq);
+	} while (samples_got != samples_requested);
 }
 
 /**
@@ -230,17 +244,22 @@ wavpack_replaygain(WavpackContext *wpc)
 
 	replay_gain_info = replay_gain_info_new();
 
-	found = wavpack_tag_float(wpc, "replaygain_track_gain",
-				  &replay_gain_info->tuples[REPLAY_GAIN_TRACK].gain)
-		||
-		wavpack_tag_float(wpc, "replaygain_track_peak",
-				  &replay_gain_info->tuples[REPLAY_GAIN_TRACK].peak)
-		||
-		wavpack_tag_float(wpc, "replaygain_album_gain",
-				  &replay_gain_info->tuples[REPLAY_GAIN_ALBUM].gain)
-		||
-		wavpack_tag_float(wpc, "replaygain_album_peak",
-				  &replay_gain_info->tuples[REPLAY_GAIN_ALBUM].peak);
+	found |= wavpack_tag_float(
+		wpc, "replaygain_track_gain",
+		&replay_gain_info->tuples[REPLAY_GAIN_TRACK].gain
+	);
+	found |= wavpack_tag_float(
+		wpc, "replaygain_track_peak",
+		&replay_gain_info->tuples[REPLAY_GAIN_TRACK].peak
+	);
+	found |= wavpack_tag_float(
+		wpc, "replaygain_album_gain",
+		&replay_gain_info->tuples[REPLAY_GAIN_ALBUM].gain
+	);
+	found |= wavpack_tag_float(
+		wpc, "replaygain_album_peak",
+		&replay_gain_info->tuples[REPLAY_GAIN_ALBUM].peak
+	);
 
 	if (found) {
 		return replay_gain_info;
@@ -261,38 +280,39 @@ wavpack_tagdup(const char *fname)
 	struct tag *tag;
 	char error[ERRORLEN];
 	char *s;
-	int ssize;
-	int j;
+	int size, allocated_size;
 
 	wpc = WavpackOpenFileInput(fname, error, OPEN_TAGS, 0);
 	if (wpc == NULL) {
-		g_warning("failed to open WavPack file \"%s\": %s\n",
-			  fname, error);
+		g_warning(
+			"failed to open WavPack file \"%s\": %s\n",
+			fname, error
+		);
 		return NULL;
 	}
 
 	tag = tag_new();
-	tag->time =
-		(float)WavpackGetNumSamples(wpc) / WavpackGetSampleRate(wpc);
+	tag->time = WavpackGetNumSamples(wpc);
+	tag->time /= WavpackGetSampleRate(wpc);
 
-	ssize = 0;
+	allocated_size = 0;
 	s = NULL;
 
 	for (unsigned i = 0; i < G_N_ELEMENTS(tagtypes); ++i) {
-		j = WavpackGetTagItem(wpc, tagtypes[i].name, NULL, 0);
-		if (j > 0) {
-			++j;
+		size = WavpackGetTagItem(wpc, tagtypes[i].name, NULL, 0);
+		if (size > 0) {
+			++size; /* EOS */
 
 			if (s == NULL) {
-				s = g_malloc(j);
-				ssize = j;
-			} else if (j > ssize) {
-				char *t = (char *)g_realloc(s, j);
-				ssize = j;
+				s = g_malloc(size);
+				allocated_size = size;
+			} else if (size > allocated_size) {
+				char *t = (char *)g_realloc(s, size);
+				allocated_size = size;
 				s = t;
 			}
 
-			WavpackGetTagItem(wpc, tagtypes[i].name, s, j);
+			WavpackGetTagItem(wpc, tagtypes[i].name, s, size);
 			tag_add_item(tag, tagtypes[i].type, s);
 		}
 	}
@@ -342,8 +362,9 @@ wavpack_input_read_bytes(void *id, void *data, int32_t bcount)
 	/* wavpack fails if we return a partial read, so we just wait
 	   until the buffer is full */
 	while (bcount > 0) {
-		size_t nbytes = decoder_read(wpin(id)->decoder, wpin(id)->is,
-					     buf, bcount);
+		size_t nbytes = decoder_read(
+			wpin(id)->decoder, wpin(id)->is, buf, bcount
+		);
 		if (nbytes == 0) {
 			/* EOF, error or a decoder command */
 			break;
@@ -450,8 +471,9 @@ wavpack_open_wvc(struct decoder *decoder, struct input_stream *is_wvc,
 	 * And we try to buffer in order to get know
 	 * about a possible 404 error.
 	 */
-	nbytes = decoder_read(decoder, is_wvc,
-			      &first_byte, sizeof(first_byte));
+	nbytes = decoder_read(
+		decoder, is_wvc, &first_byte, sizeof(first_byte)
+	);
 	if (nbytes == 0) {
 		input_stream_close(is_wvc);
 		return false;
@@ -474,23 +496,24 @@ wavpack_streamdecode(struct decoder * decoder, struct input_stream *is)
 	struct input_stream is_wvc;
 	int open_flags = OPEN_2CH_MAX | OPEN_NORMALIZE /*| OPEN_STREAMING*/;
 	struct wavpack_input isp, isp_wvc;
-	bool canseek = is->seekable;
+	bool can_seek = is->seekable;
 
 	if (wavpack_open_wvc(decoder, &is_wvc, &isp_wvc)) {
 		open_flags |= OPEN_WVC;
-		canseek &= is_wvc.seekable;
+		can_seek &= is_wvc.seekable;
 	}
 
 	wavpack_input_init(&isp, decoder, is);
-	wpc = WavpackOpenFileInputEx(&mpd_is_reader, &isp, &isp_wvc, error,
-				     open_flags, 23);
+	wpc = WavpackOpenFileInputEx(
+		&mpd_is_reader, &isp, &isp_wvc, error, open_flags, 23
+	);
 
 	if (wpc == NULL) {
 		g_warning("failed to open WavPack stream: %s\n", error);
 		return;
 	}
 
-	wavpack_decode(decoder, wpc, canseek, NULL);
+	wavpack_decode(decoder, wpc, can_seek, NULL);
 
 	WavpackCloseFile(wpc);
 	if (open_flags & OPEN_WVC) {
@@ -508,12 +531,15 @@ wavpack_filedecode(struct decoder *decoder, const char *fname)
 	WavpackContext *wpc;
 	struct replay_gain_info *replay_gain_info;
 
-	wpc = WavpackOpenFileInput(fname, error,
-	                           OPEN_TAGS | OPEN_WVC |
-	                           OPEN_2CH_MAX | OPEN_NORMALIZE, 23);
+	wpc = WavpackOpenFileInput(
+		fname, error,
+		OPEN_TAGS | OPEN_WVC | OPEN_2CH_MAX | OPEN_NORMALIZE, 23
+	);
 	if (wpc == NULL) {
-		g_warning("failed to open WavPack file \"%s\": %s\n",
-			  fname, error);
+		g_warning(
+			"failed to open WavPack file \"%s\": %s\n",
+			fname, error
+		);
 		return;
 	}
 
@@ -528,8 +554,15 @@ wavpack_filedecode(struct decoder *decoder, const char *fname)
 	WavpackCloseFile(wpc);
 }
 
-static char const *const wavpack_suffixes[] = { "wv", NULL };
-static char const *const wavpack_mime_types[] = { "audio/x-wavpack", NULL };
+static char const *const wavpack_suffixes[] = {
+	"wv",
+	NULL
+};
+
+static char const *const wavpack_mime_types[] = {
+	"audio/x-wavpack",
+	NULL
+};
 
 const struct decoder_plugin wavpack_plugin = {
 	.name = "wavpack",
