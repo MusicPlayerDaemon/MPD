@@ -79,8 +79,6 @@ static int volume_alsaSet = -1;
 
 #ifdef HAVE_OSS
 
-#include <alloca.h> /* only alloca user in mpd atm, may change ... */
-
 static void closeOssMixer(void)
 {
 	while (close(volume_ossFd) && errno == EINTR) ;
@@ -91,17 +89,12 @@ static int
 oss_find_mixer(const char *name)
 {
 	const char *labels[SOUND_MIXER_NRDEVICES] = SOUND_DEVICE_LABELS;
+	size_t name_length = strlen(name);
 
 	for (unsigned i = 0; i < SOUND_MIXER_NRDEVICES; i++) {
-		ssize_t len = strlen(labels[i]);
-		char *duplicated = alloca(len + 1);
-
-		/* eliminate spaces at the end */
-		memcpy(duplicated, labels[i], len + 1);
-		len -= 2;
-		while (len >= 0 && duplicated[len] == ' ')
-			duplicated[len--] = '\0';
-		if (strcasecmp(duplicated, name) == 0)
+		if (strncasecmp(name, labels[i], name_length) == 0 &&
+		    (labels[i][name_length] == 0 ||
+		     labels[i][name_length] == ' '))
 			return i;
 	}
 
