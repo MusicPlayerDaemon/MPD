@@ -153,6 +153,9 @@ static void player_process_command(struct player *player)
 
 	case PLAYER_COMMAND_QUEUE:
 		assert(pc.next_song != NULL);
+		assert(!player->queued);
+		assert(player->next_song_chunk == -1);
+
 		player->queued = true;
 		player_command_finished();
 		break;
@@ -352,10 +355,12 @@ static void do_play(void)
 #endif
 
 		if (decoder_is_idle() && !player.queued &&
+		    player.next_song_chunk < 0 &&
 		    pc.next_song != NULL &&
 		    pc.command == PLAYER_COMMAND_NONE) {
 			/* the decoder has finished the current song;
 			   request the next song from the playlist */
+
 			pc.next_song = NULL;
 			wakeup_main_task();
 		}
