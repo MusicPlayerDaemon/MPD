@@ -87,6 +87,27 @@ static void closeOssMixer(void)
 	volume_ossFd = -1;
 }
 
+static int
+oss_find_mixer(const char *name)
+{
+	const char *labels[SOUND_MIXER_NRDEVICES] = SOUND_DEVICE_LABELS;
+
+	for (unsigned i = 0; i < SOUND_MIXER_NRDEVICES; i++) {
+		ssize_t len = strlen(labels[i]);
+		char *duplicated = alloca(len + 1);
+
+		/* eliminate spaces at the end */
+		memcpy(duplicated, labels[i], len + 1);
+		len -= 2;
+		while (len >= 0 && duplicated[len] == ' ')
+			duplicated[len--] = '\0';
+		if (strcasecmp(duplicated, name) == 0)
+			return i;
+	}
+
+	return -1;
+}
+
 static int prepOssMixer(const char *device)
 {
 	ConfigParam *param;
@@ -97,7 +118,6 @@ static int prepOssMixer(const char *device)
 	}
 
 	if ((param = getConfigParam(CONF_MIXER_CONTROL))) {
-		const char *labels[SOUND_MIXER_NRDEVICES] = SOUND_DEVICE_LABELS;
 		int i;
 		int devmask = 0;
 
@@ -107,20 +127,9 @@ static int prepOssMixer(const char *device)
 			return -1;
 		}
 
-		for (i = 0; i < SOUND_MIXER_NRDEVICES; i++) {
-			ssize_t len = strlen(labels[i]);
-			char *duplicated = alloca(len + 1);
+		i = oss_find_mixer(param->value);
 
-			/* eliminate spaces at the end */
-			memcpy(duplicated, labels[i], len + 1);
-			len -= 2;
-			while (len >= 0 && duplicated[len] == ' ')
-				duplicated[len--] = '\0';
-			if (strcasecmp(duplicated, param->value) == 0)
-				break;
-		}
-
-		if (i >= SOUND_MIXER_NRDEVICES) {
+		if (i < 0) {
 			WARNING("mixer control \"%s\" not found at line %i\n",
 				param->value, param->line);
 			closeOssMixer();
