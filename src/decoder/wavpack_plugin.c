@@ -494,13 +494,17 @@ wavpack_streamdecode(struct decoder * decoder, struct input_stream *is)
 	char error[ERRORLEN];
 	WavpackContext *wpc;
 	struct input_stream is_wvc;
-	int open_flags = OPEN_2CH_MAX | OPEN_NORMALIZE /*| OPEN_STREAMING*/;
+	int open_flags = OPEN_2CH_MAX | OPEN_NORMALIZE;
 	struct wavpack_input isp, isp_wvc;
 	bool can_seek = is->seekable;
 
 	if (wavpack_open_wvc(decoder, &is_wvc, &isp_wvc)) {
 		open_flags |= OPEN_WVC;
 		can_seek &= is_wvc.seekable;
+	}
+
+	if (!can_seek) {
+		open_flags |= OPEN_STREAMING;
 	}
 
 	wavpack_input_init(&isp, decoder, is);
