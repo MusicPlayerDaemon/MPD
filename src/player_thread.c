@@ -429,6 +429,7 @@ static void do_play(void)
 						/* wait for the
 						   decoder */
 						music_pipe_set_lazy(false);
+						notify_signal(&dc.notify);
 						notify_wait(&pc.notify);
 						continue;
 					}
