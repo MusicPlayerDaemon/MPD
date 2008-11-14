@@ -75,6 +75,9 @@ mpd_log_func(G_GNUC_UNUSED const gchar *log_domain,
 		? stderr : stdout;
 	char *converted;
 
+	if (log_level > (int)log_threshold)
+		return;
+
 	if (log_charset != NULL) {
 		converted = g_convert_with_fallback(message, -1,
 						    log_charset, "utf-8",
