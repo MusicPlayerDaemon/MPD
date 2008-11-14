@@ -215,7 +215,7 @@ wavpack_decode(struct decoder *decoder, WavpackContext *wpc, bool can_seek,
 				replay_gain_info
 			);
 		}
-	} while (samples_got != samples_requested);
+	} while (samples_got > 0);
 }
 
 /**
