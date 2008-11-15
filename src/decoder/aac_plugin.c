@@ -282,8 +282,6 @@ static float getAacFloatTotalTime(const char *file)
 		faacDecClose(decoder);
 	}
 
-	if (b.buffer)
-		free(b.buffer);
 	input_stream_close(&inStream);
 
 	return length;
@@ -352,8 +350,6 @@ aac_stream_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 	if (bread < 0) {
 		ERROR("Error not a AAC stream.\n");
 		faacDecClose(decoder);
-		if (b.buffer)
-			free(b.buffer);
 		return;
 	}
 
