@@ -251,7 +251,7 @@ static float getAacFloatTotalTime(const char *file)
 	float length;
 	faacDecHandle decoder;
 	faacDecConfigurationPtr config;
-	uint32_t sample_rate;
+	unsigned long sample_rate;
 	unsigned char channels;
 	struct input_stream inStream;
 	long bread;
@@ -307,7 +307,7 @@ aac_stream_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 	faacDecFrameInfo frameInfo;
 	faacDecConfigurationPtr config;
 	long bread;
-	uint32_t sample_rate;
+	unsigned long sample_rate;
 	unsigned char channels;
 	unsigned int sampleCount;
 	char *sampleBuffer;
