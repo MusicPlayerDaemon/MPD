@@ -106,6 +106,9 @@ size_t decoder_read(struct decoder *decoder,
 	assert(is != NULL);
 	assert(buffer != NULL);
 
+	if (length == 0)
+		return 0;
+
 	while (true) {
 		/* XXX don't allow decoder==NULL */
 		if (decoder != NULL &&

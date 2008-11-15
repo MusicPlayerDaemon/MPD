@@ -26,6 +26,7 @@
 #endif
 
 #include <glib.h>
+#include <assert.h>
 
 static const struct input_plugin *const input_plugins[] = {
 	&input_plugin_file,
@@ -84,6 +85,9 @@ input_stream_seek(struct input_stream *is, off_t offset, int whence)
 size_t
 input_stream_read(struct input_stream *is, void *ptr, size_t size)
 {
+	assert(ptr != NULL);
+	assert(size > 0);
+
 	return is->plugin->read(is, ptr, size);
 }
 
