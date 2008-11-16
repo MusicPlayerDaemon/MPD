@@ -89,9 +89,15 @@ static int mpd_ffmpeg_read(URLContext *h, unsigned char *buf, int size)
 static int64_t mpd_ffmpeg_seek(URLContext *h, int64_t pos, int whence)
 {
 	struct ffmpeg_stream *stream = (struct ffmpeg_stream *) h->priv_data;
-	if (whence != AVSEEK_SIZE) { //only ftell
-		(void) input_stream_seek(stream->input, pos, whence);
-	}
+	bool ret;
+
+	if (whence == AVSEEK_SIZE)
+		return stream->input->size;
+
+	ret = input_stream_seek(stream->input, pos, whence);
+	if (!ret)
+		return -1;
+
 	return stream->input->offset;
 }
 
