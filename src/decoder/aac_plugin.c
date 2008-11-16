@@ -251,7 +251,15 @@ static float getAacFloatTotalTime(const char *file)
 	float length;
 	faacDecHandle decoder;
 	faacDecConfigurationPtr config;
-	unsigned long sample_rate;
+	uint32_t sample_rate;
+#ifdef HAVE_FAAD_LONG
+	/* neaacdec.h declares all arguments as "unsigned long", but
+	   internally expects uint32_t pointers.  To avoid gcc
+	   warnings, use this workaround. */
+	unsigned long *sample_rate_r = (unsigned long*)&sample_rate;
+#else
+	uint32_t *sample_rate_r = &sample_rate;
+#endif
 	unsigned char channels;
 	struct input_stream inStream;
 	long bread;
@@ -272,9 +280,9 @@ static float getAacFloatTotalTime(const char *file)
 		fillAacBuffer(&b);
 #ifdef HAVE_FAAD_BUFLEN_FUNCS
 		bread = faacDecInit(decoder, b.buffer, b.bytesIntoBuffer,
-				    &sample_rate, &channels);
+				    sample_rate_r, &channels);
 #else
-		bread = faacDecInit(decoder, b.buffer, &sample_rate, &channels);
+		bread = faacDecInit(decoder, b.buffer, sample_rate_r, &channels);
 #endif
 		if (bread >= 0 && sample_rate > 0 && channels > 0)
 			length = 0;
@@ -307,7 +315,15 @@ aac_stream_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 	faacDecFrameInfo frameInfo;
 	faacDecConfigurationPtr config;
 	long bread;
-	unsigned long sample_rate;
+	uint32_t sample_rate;
+#ifdef HAVE_FAAD_LONG
+	/* neaacdec.h declares all arguments as "unsigned long", but
+	   internally expects uint32_t pointers.  To avoid gcc
+	   warnings, use this workaround. */
+	unsigned long *sample_rate_r = (unsigned long*)&sample_rate;
+#else
+	uint32_t *sample_rate_r = &sample_rate;
+#endif
 	unsigned char channels;
 	unsigned int sampleCount;
 	char *sampleBuffer;
@@ -343,9 +359,9 @@ aac_stream_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 
 #ifdef HAVE_FAAD_BUFLEN_FUNCS
 	bread = faacDecInit(decoder, b.buffer, b.bytesIntoBuffer,
-			    &sample_rate, &channels);
+			    sample_rate_r, &channels);
 #else
-	bread = faacDecInit(decoder, b.buffer, &sample_rate, &channels);
+	bread = faacDecInit(decoder, b.buffer, sample_rate_r, &channels);
 #endif
 	if (bread < 0) {
 		ERROR("Error not a AAC stream.\n");

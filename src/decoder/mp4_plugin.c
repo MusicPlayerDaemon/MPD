@@ -112,6 +112,14 @@ mp4_decode(struct decoder *mpd_decoder, struct input_stream *input_stream)
 	unsigned char *mp4_buffer;
 	unsigned int mp4_buffer_size;
 	uint32_t sample_rate;
+#ifdef HAVE_FAAD_LONG
+	/* neaacdec.h declares all arguments as "unsigned long", but
+	   internally expects uint32_t pointers.  To avoid gcc
+	   warnings, use this workaround. */
+	unsigned long *sample_rate_r = (unsigned long*)&sample_rate;
+#else
+	uint32_t *sample_rate_r = &sample_rate;
+#endif
 	unsigned char channels;
 	long sample_id;
 	long num_samples;
@@ -160,7 +168,7 @@ mp4_decode(struct decoder *mpd_decoder, struct input_stream *input_stream)
 	mp4ff_get_decoder_config(mp4fh, track, &mp4_buffer, &mp4_buffer_size);
 
 	if (faacDecInit2(decoder, mp4_buffer, mp4_buffer_size,
-			 &sample_rate, &channels) < 0) {
+			 sample_rate_r, &channels) < 0) {
 		g_warning("Not an AAC stream.\n");
 		faacDecClose(decoder);
 		mp4ff_close(mp4fh);
