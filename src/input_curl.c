@@ -581,6 +581,10 @@ input_curl_seek(struct input_stream *is, off_t offset, int whence)
 		break;
 
 	case SEEK_END:
+		if (is->size < 0)
+			/* stream size is not known */
+			return false;
+
 		is->offset = is->size + offset;
 		break;
 

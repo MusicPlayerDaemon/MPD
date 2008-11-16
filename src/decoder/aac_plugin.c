@@ -186,7 +186,7 @@ static void aac_parse_header(AacBuffer * b, float *length)
 	if (length)
 		*length = -1;
 
-	fileread = b->inStream->size;
+	fileread = b->inStream->size >= 0 ? b->inStream->size : 0;
 
 	fillAacBuffer(b);
 

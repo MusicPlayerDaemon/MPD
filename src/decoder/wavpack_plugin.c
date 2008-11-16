@@ -410,6 +410,9 @@ wavpack_input_push_back_byte(void *id, int c)
 static uint32_t
 wavpack_input_get_length(void *id)
 {
+	if (wpin(id)->is->size < 0)
+		return 0;
+
 	return wpin(id)->is->size;
 }
 

@@ -92,6 +92,9 @@ static OggFLAC__SeekableStreamDecoderLengthStatus of_length_cb(mpd_unused const
 {
 	FlacData *data = (FlacData *) fdata;
 
+	if (data->inStream->size < 0)
+		return OggFLAC__SEEKABLE_STREAM_DECODER_LENGTH_STATUS_ERROR;
+
 	*length = (size_t) (data->inStream->size);
 
 	return OggFLAC__SEEKABLE_STREAM_DECODER_LENGTH_STATUS_OK;

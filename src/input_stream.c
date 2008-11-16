@@ -58,7 +58,7 @@ input_stream_open(struct input_stream *is, const char *url)
 	is->seekable = false;
 	is->ready = false;
 	is->offset = 0;
-	is->size = 0;
+	is->size = -1;
 	is->error = 0;
 	is->mime = NULL;
 	is->meta_name = NULL;

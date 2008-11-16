@@ -75,6 +75,9 @@ static flac_length_status flacLength(mpd_unused const flac_decoder * flacDec,
 {
 	FlacData *data = (FlacData *) fdata;
 
+	if (data->inStream->size < 0)
+		return flac_length_status_unsupported;
+
 	*length = (size_t) (data->inStream->size);
 
 	return flac_length_status_ok;
