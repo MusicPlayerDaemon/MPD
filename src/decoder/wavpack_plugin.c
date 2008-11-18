@@ -157,12 +157,7 @@ wavpack_decode(struct decoder *decoder, WavpackContext *wpc, bool can_seek,
 	total_time = WavpackGetNumSamples(wpc);
 	total_time /= audio_format.sample_rate;
 	bytes_per_sample = WavpackGetBytesPerSample(wpc);
-
-	output_sample_size = bytes_per_sample;
-	if (output_sample_size == 3) {
-		output_sample_size = 4;
-	}
-	output_sample_size *= audio_format.channels;
+	output_sample_size = audio_format_frame_size(&audio_format);
 
 	/* wavpack gives us all kind of samples in a 32-bit space */
 	samples_requested = sizeof(chunk) / (4 * audio_format.channels);
