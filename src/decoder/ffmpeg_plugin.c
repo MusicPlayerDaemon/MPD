@@ -301,11 +301,22 @@ ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 static bool ffmpeg_tag_internal(struct ffmpeg_context *ctx)
 {
 	struct tag *tag = (struct tag *) ctx->tag;
+	const AVFormatContext *f = ctx->format_context;
 
-	if (ctx->format_context->duration != (int)AV_NOPTS_VALUE) {
-		tag->time = ctx->format_context->duration / AV_TIME_BASE;
-	} else {
-		tag->time = 0;
+	tag->time = 0;
+	if (f->duration != (int)AV_NOPTS_VALUE)
+		tag->time = f->duration / AV_TIME_BASE;
+	if (f->author[0])
+		tag_add_item(tag, TAG_ITEM_ARTIST, f->author);
+	if (f->title[0])
+		tag_add_item(tag, TAG_ITEM_TITLE, f->title);
+	if (f->album[0])
+		tag_add_item(tag, TAG_ITEM_ALBUM, f->album);
+
+	if (f->track > 0) {
+		char buffer[16];
+		snprintf(buffer, sizeof(buffer), "%d", f->track);
+		tag_add_item(tag, TAG_ITEM_TRACK, buffer);
 	}
 
 	return true;
