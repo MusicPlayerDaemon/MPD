@@ -67,7 +67,7 @@ void music_pipe_free(void)
 /** return the index of the chunk after i */
 static inline unsigned successor(unsigned i)
 {
-	assert(i <= music_pipe.num_chunks);
+	assert(i < music_pipe.num_chunks);
 
 	++i;
 	return i == music_pipe.num_chunks ? 0 : i;
