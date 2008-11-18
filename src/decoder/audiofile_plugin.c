@@ -120,8 +120,7 @@ static struct tag *audiofileTagDup(const char *file)
 	int total_time = getAudiofileTotalTime(file);
 
 	if (total_time >= 0) {
-		if (!ret)
-			ret = tag_new();
+		ret = tag_new();
 		ret->time = total_time;
 	} else {
 		DEBUG
