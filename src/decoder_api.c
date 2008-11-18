@@ -232,13 +232,14 @@ decoder_data(struct decoder *decoder,
 	if (audio_format_equals(&dc.in_audio_format, &dc.out_audio_format)) {
 		data = _data;
 	} else {
-		length = pcm_convert_size(&dc.in_audio_format, length,
-					  &dc.out_audio_format);
-		if (length > conv_buffer_size) {
+		size_t out_length =
+			pcm_convert_size(&dc.in_audio_format, length,
+					 &dc.out_audio_format);
+		if (out_length > conv_buffer_size) {
 			if (conv_buffer != NULL)
 				free(conv_buffer);
-			conv_buffer = xmalloc(length);
-			conv_buffer_size = length;
+			conv_buffer = xmalloc(out_length);
+			conv_buffer_size = out_length;
 		}
 
 		data = conv_buffer;
