@@ -1,0 +1,1064 @@
+<?xml version='1.0' encoding="utf-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+               "docbook/dtd/xml/4.2/docbookx.dtd">
+<book>
+  <title>The Music Player Daemon protocol</title>
+
+  <chapter>
+    <title>General protocol syntax</title>
+
+    <section>
+      <title>Requests</title>
+
+      <para>
+        If arguments contain spaces, they should be surrounded by double quotation
+        marks.
+      </para>
+
+      <cmdsynopsis>
+        <command>COMMAND</command>
+        <arg rep="Repeat"><replaceable>ARG</replaceable></arg>
+      </cmdsynopsis>
+
+      <para>
+        All data between the client and server is encoded in
+        UTF-8. (Note, that in UTF-8 all standard ansi characters,
+        0-127, are the same as a standard ansi encoding.  Also, no
+        ansi character appears in any multi-byte characters.  So, you
+        can use standard C functions like strlen, and strcpy just fine
+        with UTF-8 encoded strings. For example: "OK\n" encoded in
+        UTF-8 is simply "OK\n".  For more information on UTF=8:
+        http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8)
+      </para>
+    </section>
+
+    <section>
+      <title>Responses</title>
+
+      <para>
+        A command returns "OK\n" on completion or "ACK some error\n" on failure.
+        These denote the end of command execution.
+      </para>
+    </section>
+
+    <section>
+      <title>Command lists</title>
+
+      <para>
+        To facilitate faster adding of files, etc, you can pass a list
+        of commands all at once using a command list.  The command
+        list beings with <command>command_list_begin</command> or
+        <command>command_list_ok_begin</command> and ends with
+        <command>command_list_end</command>.
+      </para>
+
+      <para>
+        It does not execute any commands until the list has ended.  The return
+        value is whatever the return for a list of commands is.  On success
+        for all commands, OK is returned.  If a command fails, no more commands
+        are executed and the appropriate ACK error is returned. If
+        "command_list_ok_begin is used", "list_OK\n" is returned for each
+        successful command executed in the command list.
+      </para>
+    </section>
+  </chapter>
+
+  <chapter>
+    <title>Command reference</title>
+
+    <note>
+      <para>
+        For manipulating playlists and playing, there are two sets of commands.  One
+        set uses the song id of a song in the playlist, while another set uses the
+        playlist position of the song.  The commands using song id's should be used
+        instead of the commands that manipulate and control playback based on playlist
+        position.  Using song id's is a safer method when multiple clients are
+        interacting with MPD.
+      </para>
+    </note>
+
+    <section>
+      <title>Querying MPD's status</title>
+
+      <variablelist>
+        <varlistentry id="command_clearerror">
+          <term>
+            <cmdsynopsis>
+              <command>clearerror</command>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Clear the current error message in status (this is also
+              accomplished by any command that starts playback).
+            </para>
+          </listitem>
+        </varlistentry>
+        <varlistentry id="command_currentsong">
+          <term>
+            <cmdsynopsis>
+              <command>currentsong</command>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Displays the song info of current song (same song that
+              is identified in status).
+            </para>
+          </listitem>
+        </varlistentry>
+        <varlistentry id="command_idle">
+          <term>
+            <cmdsynopsis>
+              <command>idle</command>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Waits until there is a noteworthy change in one or more of
+              MPD's subsystems.  As soon as there is one, it lists all
+              changed systems in a line in the format "changed: SUBSYSTEM",
+              where SUBSYSTEM is one of the following:
+            </para>
+            <itemizedlist>
+              <listitem>
+                <para>
+                  <returnvalue>database</returnvalue>: the song database
+                  has been updated
+                </para>
+              </listitem>
+              <listitem>
+                <para>
+                  <returnvalue>stored_playlist</returnvalue>: a stored
+                  playlist has been modified, renamed, created or
+                  deleted
+                </para>
+              </listitem>
+              <listitem>
+                <para>
+                  <returnvalue>playlist</returnvalue>: the current
+                  playlist has been modified
+                </para>
+              </listitem>
+              <listitem>
+                <para>
+                  <returnvalue>player</returnvalue>: the player has been
+                  started, stopped or seeked
+                </para>
+              </listitem>
+              <listitem>
+                <para>
+                  <returnvalue>mixer</returnvalue>: the volume has been
+                  changed
+                </para>
+              </listitem>
+              <listitem>
+                <para>
+                  <returnvalue>output</returnvalue>: an audio output has
+                  been enabled or disabled
+                </para>
+              </listitem>
+              <listitem>
+                <para>
+                  <returnvalue>options</returnvalue>: options like
+                  "repeat", "random", "crossfade"
+                </para>
+              </listitem>
+            </itemizedlist>
+            <para>
+              While a client waits for <command>idle</command>
+              results, the server disables timeouts, allowing a client
+              to wait for events as long as mpd runs.  The
+              <command>idle</command> command can be canceled by
+              sending the command <command>noidle</command> (no other
+              commands are allowed).  MPD will then leave
+              <command>idle</command> mode and print results
+              immediately; might be empty at this time.
+            </para>
+          </listitem>
+        </varlistentry>
+        <varlistentry id="command_status">
+          <term>
+            <cmdsynopsis>
+              <command>status</command>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              reports current status of player, and volume level.
+            </para>
+            <variablelist>
+              <varlistentry>
+                <term>volume</term>
+                <listitem>
+                  <para>0-100</para>
+                </listitem>
+              </varlistentry>
+              <varlistentry>
+                <term>repeat</term>
+                <listitem>
+                  <para>0 or 1</para>
+                </listitem>
+              </varlistentry>
+              <varlistentry>
+                <term>playlist</term>
+                <listitem>
+                  <para>
+                    31-bit unsigned integer, the playlist version
+                    number
+                  </para>
+                </listitem>
+              </varlistentry>
+              <varlistentry>
+                <term>playlistlength</term>
+                <listitem>
+                  <para>
+                    integer, the length of the playlist
+                  </para>
+                </listitem>
+              </varlistentry>
+              <varlistentry>
+                <term>state</term>
+                <listitem>
+                  <para>
+                    "play", "stop", or "pause"
+                  </para>
+                </listitem>
+              </varlistentry>
+              <varlistentry>
+                <term>song</term>
+                <listitem>
+                  <para>
+                    current song stopped on or playing, playlist song
+                    number
+                  </para>
+                </listitem>
+              </varlistentry>
+              <varlistentry>
+                <term>songid</term>
+                <listitem>
+                  <para>
+                    current song stopped on or playing, playlist
+                    songid
+                  </para>
+                </listitem>
+              </varlistentry>
+              <varlistentry>
+                <term>time</term>
+                <listitem>
+                  <para>
+                    elapsed:total (of current playing/paused song)
+                  </para>
+                </listitem>
+              </varlistentry>
+              <varlistentry>
+                <term>bitrate</term>
+                <listitem>
+                  <para>
+                    instantaneous bitrate in kbps
+                  </para>
+                </listitem>
+              </varlistentry>
+              <varlistentry>
+                <term>xfade</term>
+                <listitem>
+                  <para>
+                    crossfade in seconds
+                  </para>
+                </listitem>
+              </varlistentry>
+              <varlistentry>
+                <term>audio</term>
+                <listitem>
+                  <para>
+                    sampleRate:bits:channels
+                  </para>
+                </listitem>
+              </varlistentry>
+              <varlistentry>
+                <term>updatings_db</term>
+                <listitem>
+                  <para>
+                    job id
+                  </para>
+                </listitem>
+              </varlistentry>
+              <varlistentry>
+                <term>error</term>
+                <listitem>
+                  <para>
+                    if there is an error, returns message here
+                  </para>
+                </listitem>
+              </varlistentry>
+            </variablelist>
+          </listitem>
+        </varlistentry>
+        <varlistentry id="command_stats">
+          <term>
+            <cmdsynopsis>
+              <command>stats</command>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Display statistics.
+            </para>
+            <itemizedlist>
+              <listitem>
+                <para>
+                  <varname>artists</varname>: number of artists
+                </para>
+              </listitem>
+              <listitem>
+                <para>
+                  <varname>songs</varname>: number of albums
+                </para>
+              </listitem>
+              <listitem>
+                <para>
+                  <varname>uptime</varname>: daemon uptime in seconds
+                </para>
+              </listitem>
+              <listitem>
+                <para>
+                  <varname>db_playtime</varname>: sum of all song
+                  times in db
+                </para>
+              </listitem>
+              <listitem>
+                <para>
+                  <varname>db_update</varname>: last db update in UNIX
+                  time
+                </para>
+              </listitem>
+              <listitem>
+                <para>
+                  <varname>playtime</varname>: time length of music played
+                </para>
+              </listitem>
+            </itemizedlist>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+    </section>
+
+    <section>
+      <title>Playback options</title>
+
+      <variablelist>
+        <varlistentry id="command_crossfade">
+          <term>
+            <cmdsynopsis>
+              <command>crossfade</command>
+              <arg choice="req"><replaceable>SECONDS</replaceable></arg>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Sets crossfading between songs.
+            </para>
+          </listitem>
+        </varlistentry>
+        <varlistentry id="command_random">
+          <term>
+            <cmdsynopsis>
+              <command>random</command>
+              <arg choice="req"><replaceable>STATE</replaceable></arg>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Set random state to <varname>STATE</varname>, should
+              be 0 or 1.
+            </para>
+          </listitem>
+        </varlistentry>
+        <varlistentry id="command_repeat">
+          <term>
+            <cmdsynopsis>
+              <command>repeat</command>
+              <arg choice="req"><replaceable>STATE</replaceable></arg>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Set repeat state to <varname>STATE</varname>,
+              <varname>STATE</varname> should be 0 or 1.
+            </para>
+          </listitem>
+        </varlistentry>
+        <varlistentry id="command_setvol">
+          <term>
+            <cmdsynopsis>
+              <command>setvol</command>
+              <arg choice="req"><replaceable>VOL</replaceable></arg>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Set volume to <varname>VOL</varname>, the range of
+              volume is 0-100.
+            </para>
+          </listitem>
+        </varlistentry>
+        <varlistentry id="command_volume">
+          <term>
+            <cmdsynopsis>
+              <command>volume</command>
+              <arg choice="req"><replaceable>CHANGE</replaceable></arg>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Change volume by amount <varname>CHANGE</varname>.
+            </para>
+            <note>
+              <para>
+                <command>volume</command> is deprecated, use
+                <command>setvol</command> instead.
+              </para>
+            </note>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+    </section>
+
+    <section>
+      <title>Controlling playback</title>
+
+      <variablelist>
+        <varlistentry id="command_play">
+          <term>
+            <cmdsynopsis>
+              <command>play</command>
+              <arg><replaceable>SONGPOS</replaceable></arg>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Begin playing playlist at song number
+              <varname>SONGPOS</varname>.
+            </para>
+          </listitem>
+        </varlistentry>
+        <varlistentry id="command_playid">
+          <term>
+            <cmdsynopsis>
+              <command>playid</command>
+              <arg><replaceable>SONGID</replaceable></arg>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Begin playing playlist at song
+              <varname>SONGID</varname>.
+            </para>
+          </listitem>
+        </varlistentry>
+        <varlistentry id="command_next">
+          <term>
+            <cmdsynopsis>
+              <command>next</command>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Plays next song in playlist.
+            </para>
+          </listitem>
+        </varlistentry>
+        <varlistentry id="command_previous">
+          <term>
+            <cmdsynopsis>
+              <command>previous</command>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Plays previous song in playlist.
+            </para>
+          </listitem>
+        </varlistentry>
+        <varlistentry id="command_pause">
+          <term>
+            <cmdsynopsis>
+              <command>pause</command>
+              <arg choice="req"><replaceable>PAUSE</replaceable></arg>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Toggle pause/resume playing.  <varname>PAUSE</varname> is 0 or 1.
+            </para>
+            <note>
+              <para>
+                Use of pause command w/o the _pause_ argument is
+                deprecated.
+              </para>
+            </note>
+          </listitem>
+        </varlistentry>
+        <varlistentry id="command_seek">
+          <term>
+            <cmdsynopsis>
+              <command>seek</command>
+              <arg choice="req"><replaceable>SONGPOS</replaceable></arg>
+              <arg choice="req"><replaceable>TIME</replaceable></arg>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Seeks to the position <varname>TIME</varname> (in
+              seconds) of entry <varname>SONGPOS</varname> in the
+              playlist.
+            </para>
+          </listitem>
+        </varlistentry>
+        <varlistentry id="command_seekid">
+          <term>
+            <cmdsynopsis>
+              <command>seekid</command>
+              <arg choice="req"><replaceable>SONGID</replaceable></arg>
+              <arg choice="req"><replaceable>TIME</replaceable></arg>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Seeks to the position <varname>TIME</varname> (in
+              seconds) of song <varname>SONGID</varname>.
+            </para>
+          </listitem>
+        </varlistentry>
+        <varlistentry id="command_stop">
+          <term>
+            <cmdsynopsis>
+              <command>stop</command>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Stop playing.
+            </para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+    </section>
+
+    <section>
+      <title>The current playlist</title>
+
+      <variablelist>
+        <varlistentry id="command_add">
+          <term>
+            <cmdsynopsis>
+              <command>add</command>
+              <arg choice="req"><replaceable>URI</replaceable></arg>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Add the file <varname>URI</varname> to the playlist
+              (directories add recursively).
+              <varname>URI</varname> can also be a single file.
+            </para>
+          </listitem>
+        </varlistentry>
+        <varlistentry id="command_addid">
+          <term>
+            <cmdsynopsis>
+              <command>addid</command>
+              <arg choice="req"><replaceable>URI</replaceable></arg>
+              <arg><replaceable>POSITION</replaceable></arg>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Adds a song to the playlist (non-recursive) and returns the song id.
+            </para>
+            <para>
+              <varname>URI</varname> is always a single file or
+              URL.  <varname>POSITION</varname> is optional, a
+              negative number means it is relative to the currently
+              playing song in the playlist (if there is one).
+              example:
+            </para>
+            <screen>
+addid "foo.mp3"
+Id: 999
+OK
+            </screen>
+          </listitem>
+        </varlistentry>
+        <varlistentry id="command_clear">
+          <term>
+            <cmdsynopsis>
+              <command>clear</command>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Clears the current playlist.
+            </para>
+          </listitem>
+        </varlistentry>
+        <varlistentry id="command_delete">
+          <term>
+            <cmdsynopsis>
+              <command>delete</command>
+              <arg choice="req"><replaceable>SONGPOS</replaceable></arg>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Deletes a song from the playlist.
+            </para>
+          </listitem>
+        </varlistentry>
+        <varlistentry id="command_deleteid">
+          <term>
+            <cmdsynopsis>
+              <command>deleteid</command>
+              <arg choice="req"><replaceable>SONGID</replaceable></arg>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Delete song <varname>SONGID</varname> from playlist
+            </para>
+          </listitem>
+        </varlistentry>
+        <varlistentry id="command_move">
+          <term>
+            <cmdsynopsis>
+              <command>move</command>
+              <arg choice="req"><replaceable>FROM</replaceable></arg>
+              <arg choice="req"><replaceable>TO</replaceable></arg>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Move song at <varname>FROM</varname> to
+              <varname>TO</varname> in the playlist.
+            </para>
+          </listitem>
+        </varlistentry>
+        <varlistentry id="command_moveid">
+          <term>
+            <cmdsynopsis>
+              <command>moveid</command>
+              <arg choice="req"><replaceable>FROM</replaceable></arg>
+              <arg choice="req"><replaceable>TO</replaceable></arg>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Move song with <varname>FROM</varname> to
+              <varname>TO</varname> (both song ids) in the
+              playlist.  If <varname>TO</varname> is negative, it
+              is relative to the current song in the playlist (if
+              there is one).
+            </para>
+          </listitem>
+        </varlistentry>
+        <varlistentry id="command_playlist">
+          <term>
+            <cmdsynopsis>
+              <command>playlist</command>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Displays the current playlist.
+            </para>
+            <note>
+              <para>
+                Do not use this, instead use <command>playlistinfo</command>.
+              </para>
+            </note>
+          </listitem>
+        </varlistentry>
+        <varlistentry id="command_playlistid">
+          <term>
+            <cmdsynopsis>
+              <command>playlistid</command>
+              <arg choice="req"><replaceable>SONGID</replaceable></arg>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Displays list of songs in the playlist.
+              <varname>SONGID</varname> is optional and specifies a
+              single song to display info for.
+            </para>
+          </listitem>
+        </varlistentry>
+        <varlistentry id="command_playlistinfo">
+          <term>
+            <cmdsynopsis>
+              <command>playlistinfo</command>
+              <arg><replaceable>SONGPOS</replaceable></arg>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Displays list of songs in the playlist.
+              <varname>SONGPOS</varname> is optional and specifies
+              a single song to display info for.
+            </para>
+          </listitem>
+        </varlistentry>
+        <varlistentry id="command_plchanges">
+          <term>
+            <cmdsynopsis>
+              <command>plchanges</command>
+              <arg choice="req"><replaceable>VERSION</replaceable></arg>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Displays changed songs currently in the playlist since
+              <varname>VERSION</varname>.
+            </para>
+            <para>
+              To detect songs that were deleted at the end of the
+              playlist, use playlistlength returned by status command.
+            </para>
+          </listitem>
+        </varlistentry>
+        <varlistentry id="command_plchangesposid">
+          <term>
+            <cmdsynopsis>
+              <command>plchangesposid</command>
+              <arg choice="req"><replaceable>VERSION</replaceable></arg>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Displays changed songs currently in the playlist since
+              <varname>VERSION</varname>.  This function only
+              returns the position and the id of the changed song, not
+              the complete metadata. This is more bandwidth efficient.
+            </para>
+            <para>
+              To detect songs that were deleted at the end of the
+              playlist, use playlistlength returned by status command.
+            </para>
+          </listitem>
+        </varlistentry>
+        <varlistentry id="command_shuffle">
+          <term>
+            <cmdsynopsis>
+              <command>shuffle</command>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Shuffles the current playlist.
+            </para>
+          </listitem>
+        </varlistentry>
+        <varlistentry id="command_swap">
+          <term>
+            <cmdsynopsis>
+              <command>swap</command>
+              <arg choice="req"><replaceable>SONG1</replaceable></arg>
+              <arg choice="req"><replaceable>SONG2</replaceable></arg>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Swap positions of <varname>SONG1</varname> and
+              <varname>SONG2</varname>.
+            </para>
+          </listitem>
+        </varlistentry>
+        <varlistentry id="command_swapid">
+          <term>
+            <cmdsynopsis>
+              <command>swapid</command>
+              <arg choice="req"><replaceable>SONG1</replaceable></arg>
+              <arg choice="req"><replaceable>SONG2</replaceable></arg>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Swap positions of of songs of
+              <varname>SONG1</varname> and
+              <varname>SONG2</varname> (both song ids).
+            </para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+    </section>
+
+    <section>
+      <title>Stored playlists</title>
+
+      <variablelist>
+        <varlistentry id="command_load">
+          <term>
+            <cmdsynopsis>
+              <command>load</command>
+              <arg choice="req"><replaceable>NAME</replaceable></arg>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Loads the playlist <filename>NAME.m3u</filename> from
+              the playlist directory.
+            </para>
+          </listitem>
+        </varlistentry>
+        <varlistentry id="command_listplaylists">
+          <term>
+            <cmdsynopsis>
+              <command>listplaylists</command>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Prints a list of the playlist directory.
+            </para>
+            <para>
+              After each playlist name, the server sends its last
+              modification time as attribute "Last-Modified" in ISO
+              8601 format.  To avoid problems due to clock differences
+              between clients and the server, clients should not
+              compare this value with their local clock.
+            </para>
+          </listitem>
+        </varlistentry>
+        <varlistentry id="command_rm">
+          <term>
+            <cmdsynopsis>
+              <command>rm</command>
+              <arg choice="req"><replaceable>NAME</replaceable></arg>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Removes the playlist <filename>NAME.m3u</filename> from
+              the playlist directory.
+            </para>
+          </listitem>
+        </varlistentry>
+        <varlistentry id="command_save">
+          <term>
+            <cmdsynopsis>
+              <command>save</command>
+              <arg choice="req"><replaceable>NAME</replaceable></arg>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Saves the current playlist to
+              <filename>NAME.m3u</filename> in the playlist directory.
+            </para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+    </section>
+
+    <section>
+      <title>The music database</title>
+
+      <variablelist>
+        <varlistentry id="command_find">
+          <term>
+            <cmdsynopsis>
+              <command>find</command>
+              <arg choice="req"><replaceable>TYPE</replaceable></arg>
+              <arg choice="req"><replaceable>WHAT</replaceable></arg>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              finds songs in the db that are exactly
+              <varname>WHAT</varname>.  <varname>TYPE</varname> should
+              be <parameter>album</parameter>,
+              <parameter>artist</parameter>, or
+              <parameter>title</parameter>.  <varname>WHAT</varname>
+              is what to find.
+            </para>
+          </listitem>
+        </varlistentry>
+        <varlistentry id="command_list">
+          <term>
+            <cmdsynopsis>
+              <command>list</command>
+              <arg choice="req"><replaceable>TYPE</replaceable></arg>
+              <arg><replaceable>ARTIST</replaceable></arg>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              List all tags of the specified type.
+              <varname>TYPE</varname> should be "album" or "artist".
+            </para>
+            <para>
+              <varname>ARTIST</varname> is an optional parameter
+              when type is album, this specifies to list albums by a
+              artist.
+            </para>
+          </listitem>
+        </varlistentry>
+        <varlistentry id="command_listall">
+          <term>
+            <cmdsynopsis>
+              <command>listall</command>
+              <arg><replaceable>URI</replaceable></arg>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Lists all songs and directories in
+              <varname>URI</varname>.
+            </para>
+          </listitem>
+        </varlistentry>
+        <varlistentry id="command_listallinfo">
+          <term>
+            <cmdsynopsis>
+              <command>listallinfo</command>
+              <arg><replaceable>URI</replaceable></arg>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Same as <command>listall</command>, except it also
+              returns metadata info in the same format as
+              <command>lsinfo</command>.
+            </para>
+          </listitem>
+        </varlistentry>
+        <varlistentry id="command_lsinfo">
+          <term>
+            <cmdsynopsis>
+              <command>lsinfo</command>
+              <arg><replaceable>URI</replaceable></arg>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              List contents of directory <varname>URI</varname>.
+            </para>
+            <para>
+              When listing the root directory, this currently returns
+              the list of stored playlists.  This behavior is
+              deprecated; use "listplaylists" instead.
+            </para>
+          </listitem>
+        </varlistentry>
+        <varlistentry id="command_search">
+          <term>
+            <cmdsynopsis>
+              <command>search</command>
+              <arg choice="req"><replaceable>TYPE</replaceable></arg>
+              <arg choice="req"><replaceable>WHAT</replaceable></arg>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Searches for any song that contain
+              <varname>WHAT</varname>.  <varname>TYPE</varname> can be
+              <parameter>title</parameter>,
+              <parameter>artist</parameter>,
+              <parameter>album</parameter> or
+              <parameter>filename</parameter>.  Search is not case
+              sensitive.
+            </para>
+          </listitem>
+        </varlistentry>
+        <varlistentry id="command_update">
+          <term>
+            <cmdsynopsis>
+              <command>update</command>
+              <arg><replaceable>URI</replaceable></arg>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Updates the music database.
+            </para>
+            <para>
+              <varname>URI</varname> is a particular directory or
+              song/file to update.
+            </para>
+            <para>
+              Prints "updating_db: JOBID" where
+              <varname>JOBID</varname> is the job id requested for
+              your update, and is displayed in status, while the
+              requested update is happening.
+            </para>
+            <para>
+              To update a number of paths/songs at once, use
+              command_list, it will be much more faster/efficient.
+              Also, if you use a command_list for updating, only one
+              <command>update</command> job id will be returned per
+              sequence of updates.
+            </para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+    </section>
+
+    <section>
+      <title>Connection settings</title>
+
+      <variablelist>
+        <varlistentry id="command_close">
+          <term>
+            <cmdsynopsis>
+              <command>close</command>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Closes the connection to MPD.
+            </para>
+          </listitem>
+        </varlistentry>
+        <varlistentry id="command_kill">
+          <term>
+            <cmdsynopsis>
+              <command>kill</command>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Kill MPD.
+            </para>
+          </listitem>
+        </varlistentry>
+        <varlistentry id="command_password">
+          <term>
+            <cmdsynopsis>
+              <command>password</command>
+              <arg choice="req"><replaceable>PASSWORD</replaceable></arg>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              This is used for authentication with the server.
+              <varname>PASSWORD</varname> is simply the plaintext
+              password.
+            </para>
+          </listitem>
+        </varlistentry>
+        <varlistentry id="command_ping">
+          <term>
+            <cmdsynopsis>
+              <command>ping</command>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Does nothing but return "OK".
+            </para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+    </section>
+  </chapter>
+</book>
