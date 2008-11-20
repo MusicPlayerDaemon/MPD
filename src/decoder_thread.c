@@ -109,7 +109,7 @@ static void decoder_run(void)
 	   will be available then */
 
 	while (!input_stream.ready) {
-		if (dc.command != DECODE_COMMAND_NONE) {
+		if (dc.command == DECODE_COMMAND_STOP) {
 			input_stream_close(&input_stream);
 			dc.state = DECODE_STATE_STOP;
 			return;
