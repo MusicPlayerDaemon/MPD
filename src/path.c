@@ -33,7 +33,7 @@ char *fs_charset_to_utf8(char *dst, const char *str)
 	GError *error = NULL;
 
 	p = g_convert(str, -1,
-		      fs_charset, "utf-8",
+		      "utf-8", fs_charset,
 		      NULL, NULL, &error);
 	if (p == NULL) {
 		/* no fallback */
@@ -52,7 +52,7 @@ char *utf8_to_fs_charset(char *dst, const char *str)
 	GError *error = NULL;
 
 	p = g_convert(str, -1,
-		      "utf-8", fs_charset,
+		      fs_charset, "utf-8",
 		      NULL, NULL, &error);
 	if (p == NULL) {
 		/* fall back to UTF-8 */
