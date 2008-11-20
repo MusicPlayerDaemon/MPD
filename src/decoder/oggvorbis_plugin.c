@@ -214,7 +214,6 @@ oggvorbis_decode(struct decoder *decoder, struct input_stream *inStream)
 	long test;
 	struct replay_gain_info *replayGainInfo = NULL;
 	char **comments;
-	const char *errorStr;
 	bool initialized = false;
 	enum decoder_command cmd = DECODE_COMMAND_NONE;
 
@@ -233,6 +232,8 @@ oggvorbis_decode(struct decoder *decoder, struct input_stream *inStream)
 	callbacks.close_func = ogg_close_cb;
 	callbacks.tell_func = ogg_tell_cb;
 	if ((ret = ov_open_callbacks(&data, &vf, NULL, 0, callbacks)) < 0) {
+		const char *errorStr;
+
 		if (decoder_get_command(decoder) != DECODE_COMMAND_NONE)
 			return;
 
