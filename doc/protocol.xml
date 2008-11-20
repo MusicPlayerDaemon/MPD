@@ -25,9 +25,11 @@
         UTF-8. (Note, that in UTF-8 all standard ansi characters,
         0-127, are the same as a standard ansi encoding.  Also, no
         ansi character appears in any multi-byte characters.  So, you
-        can use standard C functions like strlen, and strcpy just fine
-        with UTF-8 encoded strings. For example: "OK\n" encoded in
-        UTF-8 is simply "OK\n".  For more information on UTF=8:
+        can use standard C functions like <function>strlen</function>,
+        and <function>strcpy</function> just fine with UTF-8 encoded
+        strings. For example: <returnvalue>OK</returnvalue> encoded in
+        UTF-8 is simply <returnvalue>OK</returnvalue>.  For more
+        information on UTF=8:
         http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8)
       </para>
     </section>
@@ -36,7 +38,8 @@
       <title>Responses</title>
 
       <para>
-        A command returns "OK\n" on completion or "ACK some error\n" on failure.
+        A command returns <returnvalue>OK</returnvalue> on completion
+        or <returnvalue>ACK some error</returnvalue> on failure.
         These denote the end of command execution.
       </para>
     </section>
@@ -53,11 +56,14 @@
       </para>
 
       <para>
-        It does not execute any commands until the list has ended.  The return
-        value is whatever the return for a list of commands is.  On success
-        for all commands, OK is returned.  If a command fails, no more commands
-        are executed and the appropriate ACK error is returned. If
-        "command_list_ok_begin is used", "list_OK\n" is returned for each
+        It does not execute any commands until the list has ended.
+        The return value is whatever the return for a list of commands
+        is.  On success for all commands,
+        <returnvalue>OK</returnvalue> is returned.  If a command
+        fails, no more commands are executed and the appropriate
+        <returnvalue>ACK</returnvalue> error is returned. If
+        <command>command_list_begin</command> is used,
+        <returnvalue>list_OK</returnvalue> is returned for each
         successful command executed in the command list.
       </para>
     </section>
@@ -115,10 +121,11 @@
           </term>
           <listitem>
             <para>
-              Waits until there is a noteworthy change in one or more of
-              MPD's subsystems.  As soon as there is one, it lists all
-              changed systems in a line in the format "changed: SUBSYSTEM",
-              where SUBSYSTEM is one of the following:
+              Waits until there is a noteworthy change in one or more
+              of MPD's subsystems.  As soon as there is one, it lists
+              all changed systems in a line in the format
+              <returnvalue>changed: SUBSYSTEM</returnvalue>, where
+              SUBSYSTEM is one of the following:
             </para>
             <itemizedlist>
               <listitem>
@@ -161,7 +168,8 @@
               <listitem>
                 <para>
                   <returnvalue>options</returnvalue>: options like
-                  "repeat", "random", "crossfade"
+                  <option>repeat</option>, <option>random</option>,
+                  <option>crossfade</option>
                 </para>
               </listitem>
             </itemizedlist>
@@ -187,111 +195,93 @@
             <para>
               reports current status of player, and volume level.
             </para>
-            <variablelist>
-              <varlistentry>
-                <term>volume</term>
-                <listitem>
-                  <para>0-100</para>
+            <itemizedlist>
+              <listitem>
+                <para>
+                  <varname>volume</varname>:
+                  <returnvalue>0-100</returnvalue>
+                </para>
+              </listitem>
+              <listitem>
+                <para>
+                  <varname>repeat</varname>:
+                  <returnvalue>0 or 1</returnvalue>
+                </para>
+              </listitem>
+              <listitem>
+                <para>
+                  <varname>playlist</varname>:
+                  <returnvalue>31-bit unsigned integer, the playlist
+                  version number</returnvalue>
+                </para>
+              </listitem>
+              <listitem>
+                <para>
+                  <varname>playlistlength</varname>:
+                  <returnvalue>integer, the length of the
+                  playlist</returnvalue>
+                </para>
+              </listitem>
+              <listitem>
+                <para>
+                  <varname>state</varname>:
+                  <returnvalue>play, stop, or pause</returnvalue>
+                </para>
+              </listitem>
+              <listitem>
+                <para>
+                  <varname>song</varname>:
+                  <returnvalue> current song stopped on or playing,
+                  playlist song number</returnvalue>
+                </para>
+              </listitem>
+              <listitem>
+                <para>
+                  <varname>songid</varname>:
+                  <returnvalue>current song stopped on or playing,
+                  playlist songid</returnvalue>
+                </para>
+              </listitem>
+              <listitem>
+                <para>
+                  <varname>time</varname>:
+                  <returnvalue>elapsed:total (of current
+                  playing/paused song)</returnvalue>
+                </para>
+              </listitem>
+              <listitem>
+                <para>
+                  <varname>bitrate</varname>:
+                  <returnvalue>instantaneous bitrate in
+                  kbps</returnvalue>
+                </para>
+              </listitem>
+              <listitem>
+                <para>
+                  <varname>xfade</varname>:
+                  <returnvalue>crossfade in seconds</returnvalue>
+                </para>
+              </listitem>
+              <listitem>
+                <para>
+                  <varname>audio</varname>:
+                  <returnvalue>sampleRate:bits:channels</returnvalue>
+                </para>
+              </listitem>
+              <listitem>
+                <para>
+                  <varname>updatings_db</varname>:
+                  <returnvalue>job id</returnvalue>
+                </para>
+              </listitem>
+              <listitem>
+                <para>
+                  <varname>error</varname>:
+                  <returnvalue>if there is an error, returns message
+                  here</returnvalue>
+                </para>
                 </listitem>
-              </varlistentry>
-              <varlistentry>
-                <term>repeat</term>
-                <listitem>
-                  <para>0 or 1</para>
-                </listitem>
-              </varlistentry>
-              <varlistentry>
-                <term>playlist</term>
-                <listitem>
-                  <para>
-                    31-bit unsigned integer, the playlist version
-                    number
-                  </para>
-                </listitem>
-              </varlistentry>
-              <varlistentry>
-                <term>playlistlength</term>
-                <listitem>
-                  <para>
-                    integer, the length of the playlist
-                  </para>
-                </listitem>
-              </varlistentry>
-              <varlistentry>
-                <term>state</term>
-                <listitem>
-                  <para>
-                    "play", "stop", or "pause"
-                  </para>
-                </listitem>
-              </varlistentry>
-              <varlistentry>
-                <term>song</term>
-                <listitem>
-                  <para>
-                    current song stopped on or playing, playlist song
-                    number
-                  </para>
-                </listitem>
-              </varlistentry>
-              <varlistentry>
-                <term>songid</term>
-                <listitem>
-                  <para>
-                    current song stopped on or playing, playlist
-                    songid
-                  </para>
-                </listitem>
-              </varlistentry>
-              <varlistentry>
-                <term>time</term>
-                <listitem>
-                  <para>
-                    elapsed:total (of current playing/paused song)
-                  </para>
-                </listitem>
-              </varlistentry>
-              <varlistentry>
-                <term>bitrate</term>
-                <listitem>
-                  <para>
-                    instantaneous bitrate in kbps
-                  </para>
-                </listitem>
-              </varlistentry>
-              <varlistentry>
-                <term>xfade</term>
-                <listitem>
-                  <para>
-                    crossfade in seconds
-                  </para>
-                </listitem>
-              </varlistentry>
-              <varlistentry>
-                <term>audio</term>
-                <listitem>
-                  <para>
-                    sampleRate:bits:channels
-                  </para>
-                </listitem>
-              </varlistentry>
-              <varlistentry>
-                <term>updatings_db</term>
-                <listitem>
-                  <para>
-                    job id
-                  </para>
-                </listitem>
-              </varlistentry>
-              <varlistentry>
-                <term>error</term>
-                <listitem>
-                  <para>
-                    if there is an error, returns message here
-                  </para>
-                </listitem>
-              </varlistentry>
-            </variablelist>
+            </itemizedlist>
           </listitem>
         </varlistentry>
         <varlistentry id="command_stats">
