@@ -268,8 +268,6 @@ input_curl_read(struct input_stream *is, void *ptr, size_t size)
 		bret = input_curl_multi_info_read(is);
 		if (!bret)
 			return 0;
-
-		c->eof = running_handles == 0;
 	}
 
 	/* send buffer contents */
@@ -346,8 +344,6 @@ input_curl_buffer(struct input_stream *is)
 	ret = input_curl_multi_info_read(is);
 	if (!ret)
 		return -1;
-
-	c->eof = running_handles == 0;
 
 	return c->buffered;
 }
@@ -482,8 +478,6 @@ input_curl_send_request(struct input_curl *c)
 		mcode = curl_multi_perform(c->multi, &running_handles);
 	} while (mcode == CURLM_CALL_MULTI_PERFORM);
 
-	c->eof = running_handles == 0;
-
 	if (mcode != CURLM_OK) {
 		g_warning("curl_multi_perform() failed: %s\n",
 			  curl_multi_strerror(mcode));
@@ -616,7 +610,7 @@ input_curl_seek(struct input_stream *is, off_t offset, int whence)
 	if (!ret)
 		return false;
 
-	return true;
+	return input_curl_multi_info_read(is);
 }
 
 static bool
