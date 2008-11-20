@@ -109,7 +109,7 @@ map_directory_child_fs(const struct directory *directory, const char *name,
 	if (parent_fs == NULL)
 		return NULL;
 
-	utf8_to_fs_charset(buffer, name);
+	name = utf8_to_fs_charset(buffer, name);
 	pfx_dir(buffer, name, strlen(name),
 		parent_fs, strlen(parent_fs));
 	return buffer;
