@@ -17,7 +17,7 @@
 
       <cmdsynopsis>
         <command>COMMAND</command>
-        <arg rep="Repeat"><replaceable>ARG</replaceable></arg>
+        <arg rep="repeat"><replaceable>ARG</replaceable></arg>
       </cmdsynopsis>
 
       <para>
