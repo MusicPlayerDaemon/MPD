@@ -389,12 +389,11 @@ updateDirectory(struct directory *directory, const struct stat *st)
 		char *utf8;
 		struct stat st2;
 
-		if (skip_path(ent->d_name) ||
-		    skip_symlink(directory, ent->d_name))
+		if (skip_path(ent->d_name))
 			continue;
 
 		utf8 = fs_charset_to_utf8(path_max_tmp, ent->d_name);
-		if (!utf8)
+		if (utf8 == NULL || skip_symlink(directory, utf8))
 			continue;
 
 		if (stat_directory_child(directory, utf8, &st2) == 0)
