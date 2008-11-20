@@ -274,6 +274,12 @@ oggvorbis_decode(struct decoder *decoder, struct input_stream *inStream)
 
 		ret = ov_read(&vf, chunk, sizeof(chunk),
 			      OGG_DECODE_USE_BIGENDIAN, 2, 1, &current_section);
+		if (ret == OV_HOLE) /* bad packet */
+			ret = 0;
+		else if (ret <= 0)
+			/* break on EOF or other error */
+			break;
+
 		if (current_section != prev_section) {
 			/*printf("new song!\n"); */
 			vorbis_info *vi = ov_info(&vf, -1);
@@ -302,13 +308,6 @@ oggvorbis_decode(struct decoder *decoder, struct input_stream *inStream)
 		}
 
 		prev_section = current_section;
-
-		if (ret <= 0) {
-			if (ret == OV_HOLE) /* bad packet */
-				ret = 0;
-			else /* break on EOF or other error */
-				break;
-		}
 
 		if ((test = ov_bitrate_instant(&vf)) > 0)
 			bitRate = test / 1000;
