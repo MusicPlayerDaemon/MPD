@@ -21,12 +21,12 @@
       </cmdsynopsis>
 
       <para>
-        All data between the client and server is encoded in
-        UTF-8. (Note, that in UTF-8 all standard ansi characters,
-        0-127, are the same as a standard ansi encoding.  Also, no
-        ansi character appears in any multi-byte characters.  So, you
-        can use standard C functions like <function>strlen</function>,
-        and <function>strcpy</function> just fine with UTF-8 encoded
+        All data between the client and the server is encoded in
+        UTF-8. (Note: In UTF-8 all standard ansi characters, 0-127 are
+        the same as a standard ansi encoding.  Also, no ansi character
+        appears in any multi-byte characters.  So, you can use
+        standard C functions like <function>strlen</function>, and
+        <function>strcpy</function> just fine with UTF-8 encoded
         strings. For example: <returnvalue>OK</returnvalue> encoded in
         UTF-8 is simply <returnvalue>OK</returnvalue>.  For more
         information on UTF=8:
@@ -48,7 +48,7 @@
       <title>Command lists</title>
 
       <para>
-        To facilitate faster adding of files, etc, you can pass a list
+        To facilitate faster adding of files etc. you can pass a list
         of commands all at once using a command list.  The command
         list beings with <command>command_list_begin</command> or
         <command>command_list_ok_begin</command> and ends with
@@ -74,12 +74,13 @@
 
     <note>
       <para>
-        For manipulating playlists and playing, there are two sets of commands.  One
-        set uses the song id of a song in the playlist, while another set uses the
-        playlist position of the song.  The commands using song id's should be used
-        instead of the commands that manipulate and control playback based on playlist
-        position.  Using song id's is a safer method when multiple clients are
-        interacting with MPD.
+        For manipulating playlists and playing, there are two sets of
+        commands.  One set uses the song id of a song in the playlist,
+        while another set uses the playlist position of the song. The
+        commands using song ids should be used instead of the commands
+        that manipulate and control playback based on playlist
+        position. Using song ids is a safer method when multiple
+        clients are interacting with MPD.
       </para>
     </note>
 
@@ -95,7 +96,7 @@
           </term>
           <listitem>
             <para>
-              Clear the current error message in status (this is also
+              Clears the current error message in status (this is also
               accomplished by any command that starts playback).
             </para>
           </listitem>
@@ -108,7 +109,7 @@
           </term>
           <listitem>
             <para>
-              Displays the song info of current song (same song that
+              Displays the song info of the current song (same song that
               is identified in status).
             </para>
           </listitem>
@@ -174,12 +175,12 @@
               </listitem>
             </itemizedlist>
             <para>
-              While a client waits for <command>idle</command>
+              While a client is waiting for <command>idle</command>
               results, the server disables timeouts, allowing a client
               to wait for events as long as mpd runs.  The
               <command>idle</command> command can be canceled by
               sending the command <command>noidle</command> (no other
-              commands are allowed).  MPD will then leave
+              commands are allowed). MPD will then leave
               <command>idle</command> mode and print results
               immediately; might be empty at this time.
             </para>
@@ -193,7 +194,7 @@
           </term>
           <listitem>
             <para>
-              reports current status of player, and volume level.
+              Reports the current status of the player and the volume level.
             </para>
             <itemizedlist>
               <listitem>
@@ -231,21 +232,23 @@
               <listitem>
                 <para>
                   <varname>song</varname>:
-                  <returnvalue> current song stopped on or playing,
-                  playlist song number</returnvalue>
+                  <returnvalue> playlist song number of the current
+                  song stopped on or playing
+                  </returnvalue>
                 </para>
               </listitem>
               <listitem>
                 <para>
                   <varname>songid</varname>:
-                  <returnvalue>current song stopped on or playing,
-                  playlist songid</returnvalue>
+                  <returnvalue>playlist songid of the current song
+                  stopped on or playing
+                  </returnvalue>
                 </para>
               </listitem>
               <listitem>
                 <para>
                   <varname>time</varname>:
-                  <returnvalue>elapsed:total (of current
+                  <returnvalue>total time elapsed (of current
                   playing/paused song)</returnvalue>
                 </para>
               </listitem>
@@ -292,7 +295,7 @@
           </term>
           <listitem>
             <para>
-              Display statistics.
+              Displays statistics.
             </para>
             <itemizedlist>
               <listitem>
@@ -313,7 +316,7 @@
               <listitem>
                 <para>
                   <varname>db_playtime</varname>: sum of all song
-                  times in db
+                  times in the db
                 </para>
               </listitem>
               <listitem>
@@ -359,8 +362,8 @@
           </term>
           <listitem>
             <para>
-              Set random state to <varname>STATE</varname>, should
-              be 0 or 1.
+              Sets random state to <varname>STATE</varname>,
+              <varname>STATE</varname> should be 0 or 1.
             </para>
           </listitem>
         </varlistentry>
@@ -373,7 +376,7 @@
           </term>
           <listitem>
             <para>
-              Set repeat state to <varname>STATE</varname>,
+              Sets repeat state to <varname>STATE</varname>,
               <varname>STATE</varname> should be 0 or 1.
             </para>
           </listitem>
@@ -387,7 +390,7 @@
           </term>
           <listitem>
             <para>
-              Set volume to <varname>VOL</varname>, the range of
+              Sets volume to <varname>VOL</varname>, the range of
               volume is 0-100.
             </para>
           </listitem>
@@ -401,7 +404,7 @@
           </term>
           <listitem>
             <para>
-              Change volume by amount <varname>CHANGE</varname>.
+              Changes volume by amount <varname>CHANGE</varname>.
             </para>
             <note>
               <para>
@@ -427,7 +430,7 @@
           </term>
           <listitem>
             <para>
-              Begin playing playlist at song number
+              Begins playing the playlist at song number
               <varname>SONGPOS</varname>.
             </para>
           </listitem>
@@ -441,7 +444,7 @@
           </term>
           <listitem>
             <para>
-              Begin playing playlist at song
+              Begins playing the playlist at song
               <varname>SONGID</varname>.
             </para>
           </listitem>
@@ -454,7 +457,7 @@
           </term>
           <listitem>
             <para>
-              Plays next song in playlist.
+              Plays next song in the playlist.
             </para>
           </listitem>
         </varlistentry>
@@ -466,7 +469,7 @@
           </term>
           <listitem>
             <para>
-              Plays previous song in playlist.
+              Plays previous song in the playlist.
             </para>
           </listitem>
         </varlistentry>
@@ -479,11 +482,11 @@
           </term>
           <listitem>
             <para>
-              Toggle pause/resume playing.  <varname>PAUSE</varname> is 0 or 1.
+              Toggles pause/resumes playing, <varname>PAUSE</varname> is 0 or 1.
             </para>
             <note>
               <para>
-                Use of pause command w/o the _pause_ argument is
+                The use of pause command w/o the PAUSE argument is
                 deprecated.
               </para>
             </note>
@@ -528,7 +531,7 @@
           </term>
           <listitem>
             <para>
-              Stop playing.
+              Stops playing.
             </para>
           </listitem>
         </varlistentry>
@@ -548,9 +551,9 @@
           </term>
           <listitem>
             <para>
-              Add the file <varname>URI</varname> to the playlist
-              (directories add recursively).
-              <varname>URI</varname> can also be a single file.
+              Adds the file <varname>URI</varname> to the playlist
+              (directories add recursively). <varname>URI</varname>
+              can also be a single file.
             </para>
           </listitem>
         </varlistentry>
@@ -571,7 +574,7 @@
               URL.  <varname>POSITION</varname> is optional, a
               negative number means it is relative to the currently
               playing song in the playlist (if there is one).
-              example:
+              For example:
             </para>
             <screen>
 addid "foo.mp3"
@@ -614,7 +617,8 @@ OK
           </term>
           <listitem>
             <para>
-              Delete song <varname>SONGID</varname> from playlist
+              Deletes the song <varname>SONGID</varname> from the
+              playlist
             </para>
           </listitem>
         </varlistentry>
@@ -628,7 +632,7 @@ OK
           </term>
           <listitem>
             <para>
-              Move song at <varname>FROM</varname> to
+              Moves the song at <varname>FROM</varname> to
               <varname>TO</varname> in the playlist.
             </para>
           </listitem>
@@ -643,7 +647,7 @@ OK
           </term>
           <listitem>
             <para>
-              Move song with <varname>FROM</varname> to
+              Moves the song with <varname>FROM</varname> to
               <varname>TO</varname> (both song ids) in the
               playlist.  If <varname>TO</varname> is negative, it
               is relative to the current song in the playlist (if
@@ -677,7 +681,7 @@ OK
           </term>
           <listitem>
             <para>
-              Displays list of songs in the playlist.
+              Displays a list of songs in the playlist.
               <varname>SONGID</varname> is optional and specifies a
               single song to display info for.
             </para>
@@ -692,7 +696,7 @@ OK
           </term>
           <listitem>
             <para>
-              Displays list of songs in the playlist.
+              Displays a list of songs in the playlist.
               <varname>SONGPOS</varname> is optional and specifies
               a single song to display info for.
             </para>
@@ -758,7 +762,7 @@ OK
           </term>
           <listitem>
             <para>
-              Swap positions of <varname>SONG1</varname> and
+              Swaps the positions of <varname>SONG1</varname> and
               <varname>SONG2</varname>.
             </para>
           </listitem>
@@ -773,8 +777,7 @@ OK
           </term>
           <listitem>
             <para>
-              Swap positions of of songs of
-              <varname>SONG1</varname> and
+              Swaps the positions of <varname>SONG1</varname> and
               <varname>SONG2</varname> (both song ids).
             </para>
           </listitem>
@@ -811,7 +814,7 @@ OK
               Prints a list of the playlist directory.
             </para>
             <para>
-              After each playlist name, the server sends its last
+              After each playlist name the server sends its last
               modification time as attribute "Last-Modified" in ISO
               8601 format.  To avoid problems due to clock differences
               between clients and the server, clients should not
@@ -864,7 +867,7 @@ OK
           </term>
           <listitem>
             <para>
-              finds songs in the db that are exactly
+              Finds songs in the db that are exactly
               <varname>WHAT</varname>.  <varname>TYPE</varname> should
               be <parameter>album</parameter>,
               <parameter>artist</parameter>, or
@@ -883,12 +886,12 @@ OK
           </term>
           <listitem>
             <para>
-              List all tags of the specified type.
-              <varname>TYPE</varname> should be "album" or "artist".
+              Lists all tags of the specified type.
+              <varname>TYPE</varname> should be album or artist.
             </para>
             <para>
-              <varname>ARTIST</varname> is an optional parameter
-              when type is album, this specifies to list albums by a
+              <varname>ARTIST</varname> is an optional parameter when
+              type is album, this specifies to list albums by an
               artist.
             </para>
           </listitem>
@@ -931,7 +934,8 @@ OK
           </term>
           <listitem>
             <para>
-              List contents of directory <varname>URI</varname>.
+              Lists the contents of the directory
+              <varname>URI</varname>.
             </para>
             <para>
               When listing the root directory, this currently returns
@@ -950,7 +954,7 @@ OK
           </term>
           <listitem>
             <para>
-              Searches for any song that contain
+              Searches for any song that contains
               <varname>WHAT</varname>.  <varname>TYPE</varname> can be
               <parameter>title</parameter>,
               <parameter>artist</parameter>,
@@ -1017,7 +1021,7 @@ OK
           </term>
           <listitem>
             <para>
-              Kill MPD.
+              Kills MPD.
             </para>
           </listitem>
         </varlistentry>
