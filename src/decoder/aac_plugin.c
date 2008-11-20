@@ -256,7 +256,7 @@ static float getAacFloatTotalTime(const char *file)
 	/* neaacdec.h declares all arguments as "unsigned long", but
 	   internally expects uint32_t pointers.  To avoid gcc
 	   warnings, use this workaround. */
-	unsigned long *sample_rate_r = (unsigned long*)&sample_rate;
+	unsigned long *sample_rate_r = (unsigned long *)(void *)&sample_rate;
 #else
 	uint32_t *sample_rate_r = &sample_rate;
 #endif
@@ -320,7 +320,7 @@ aac_stream_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 	/* neaacdec.h declares all arguments as "unsigned long", but
 	   internally expects uint32_t pointers.  To avoid gcc
 	   warnings, use this workaround. */
-	unsigned long *sample_rate_r = (unsigned long*)&sample_rate;
+	unsigned long *sample_rate_r = (unsigned long *)(void *)&sample_rate;
 #else
 	uint32_t *sample_rate_r = &sample_rate;
 #endif
