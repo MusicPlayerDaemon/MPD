@@ -595,6 +595,14 @@ input_curl_seek(struct input_stream *is, off_t offset, int whence)
 
 	input_curl_easy_free(c);
 
+	if (is->offset == is->size) {
+		/* seek to EOF: simulate empty result; avoid
+		   triggering a "416 Requested Range Not Satisfiable"
+		   response */
+		c->eof = true;
+		return true;
+	}
+
 	ret = input_curl_easy_init(is);
 	if (!ret)
 		return false;
