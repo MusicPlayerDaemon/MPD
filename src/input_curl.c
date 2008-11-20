@@ -155,12 +155,14 @@ input_curl_multi_info_read(struct input_stream *is)
 
 	while ((msg = curl_multi_info_read(c->multi,
 					   &msgs_in_queue)) != NULL) {
-		if (msg->msg == CURLMSG_DONE &&
-		    msg->data.result != CURLE_OK) {
-			g_warning("curl failed: %s\n", c->error);
-			is->error = -1;
+		if (msg->msg == CURLMSG_DONE) {
 			c->eof = true;
-			return false;
+
+			if (msg->data.result != CURLE_OK) {
+				g_warning("curl failed: %s\n", c->error);
+				is->error = -1;
+				return false;
+			}
 		}
 	}
 
