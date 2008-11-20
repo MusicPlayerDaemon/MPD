@@ -853,6 +853,22 @@ AM_CONDITIONAL(HAVE_ZEROCONF, test x$with_zeroconf != xno)
 
 
 dnl
+dnl Documentation
+dnl
+
+AC_MSG_CHECKING([for xmlto (DocBook processing)])
+AC_PATH_PROG(XMLTO, xmlto)
+if test x$XMLTO != x; then
+	AC_SUBST(XMLTO)
+	AC_MSG_RESULT($XMLTO)
+else
+	AC_MSG_RESULT(no)
+fi
+
+AM_CONDITIONAL(HAVE_XMLTO, test x$XMLTO != x)
+
+
+dnl
 dnl build options
 dnl
 
