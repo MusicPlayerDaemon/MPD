@@ -17,7 +17,6 @@
  */
 
 #include "../decoder_api.h"
-#include "../log.h"
 
 #include <assert.h>
 #include <stdio.h>
@@ -27,6 +26,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <glib.h>
 
 #ifdef OLD_FFMPEG_INCLUDES
 #include <avcodec.h>
@@ -37,6 +37,9 @@
 #include <libavformat/avformat.h>
 #include <libavformat/avio.h>
 #endif
+
+#undef G_LOG_DOMAIN
+#define G_LOG_DOMAIN "ffmpeg"
 
 struct ffmpeg_context {
 	int audio_stream;
@@ -156,18 +159,18 @@ ffmpeg_helper(struct input_stream *input,
 
 	//ffmpeg works with ours "fileops" helper
 	if (av_open_input_file(&format_context, stream.url, NULL, 0, NULL) != 0) {
-		ERROR("Open failed!\n");
+		g_warning("Open failed\n");
 		return false;
 	}
 
 	if (av_find_stream_info(format_context)<0) {
-		ERROR("Couldn't find stream info!\n");
+		g_warning("Couldn't find stream info\n");
 		return false;
 	}
 
 	audio_stream = ffmpeg_find_audio_stream(format_context);
 	if (audio_stream == -1) {
-		ERROR("No audio stream inside!\n");
+		g_warning("No audio stream inside\n");
 		return false;
 	}
 
@@ -175,12 +178,12 @@ ffmpeg_helper(struct input_stream *input,
 	codec = avcodec_find_decoder(codec_context->codec_id);
 
 	if (!codec) {
-		ERROR("Unsupported audio codec!\n");
+		g_warning("Unsupported audio codec\n");
 		return false;
 	}
 
 	if (avcodec_open(codec_context, codec)<0) {
-		ERROR("Could not open codec!\n");
+		g_warning("Could not open codec\n");
 		return false;
 	}
 
@@ -219,7 +222,7 @@ ffmpeg_send_packet(struct decoder *decoder, struct input_stream *is,
 				    packet->data, packet->size);
 
 	if (len < 0) {
-		WARNING("skipping frame!\n");
+		g_message("skipping frame\n");
 		return decoder_get_command(decoder);
 	}
 
@@ -330,7 +333,7 @@ static struct tag *ffmpeg_tag(const char *file)
 	bool ret;
 
 	if (!input_stream_open(&input, file)) {
-		ERROR("failed to open %s\n", file);
+		g_warning("failed to open %s\n", file);
 		return NULL;
 	}
 
