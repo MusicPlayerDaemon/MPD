@@ -20,11 +20,13 @@
 
 #define AAC_MAX_CHANNELS	6
 
-#include "../utils.h"
-#include "../log.h"
-
 #include <assert.h>
+#include <unistd.h>
 #include <faad.h>
+#include <glib.h>
+
+#undef G_LOG_DOMAIN
+#define G_LOG_DOMAIN "aac"
 
 /* all code here is either based on or copied from FAAD2's frontend code */
 typedef struct {
@@ -354,7 +356,6 @@ aac_stream_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 	       	fillAacBuffer(&b);
 		adts_find_frame(&b);
 		fillAacBuffer(&b);
-		my_usleep(10000);
 	}
 
 #ifdef HAVE_FAAD_BUFLEN_FUNCS
@@ -364,7 +365,7 @@ aac_stream_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 	bread = faacDecInit(decoder, b.buffer, sample_rate_r, &channels);
 #endif
 	if (bread < 0) {
-		ERROR("Error not a AAC stream.\n");
+		g_warning("Error not a AAC stream.\n");
 		faacDecClose(decoder);
 		return;
 	}
@@ -389,9 +390,8 @@ aac_stream_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 #endif
 
 		if (frameInfo.error > 0) {
-			ERROR("error decoding AAC stream\n");
-			ERROR("faad2 error: %s\n",
-			      faacDecGetErrorMessage(frameInfo.error));
+			g_warning("error decoding AAC stream: %s\n",
+				  faacDecGetErrorMessage(frameInfo.error));
 			break;
 		}
 #ifdef HAVE_FAACDECFRAMEINFO_SAMPLERATE
@@ -445,8 +445,8 @@ static struct tag *aacTagDup(const char *file)
 			ret = tag_new();
 		ret->time = file_time;
 	} else {
-		DEBUG("aacTagDup: Failed to get total song time from: %s\n",
-		      file);
+		g_debug("aacTagDup: Failed to get total song time from: %s\n",
+			file);
 	}
 
 	return ret;
