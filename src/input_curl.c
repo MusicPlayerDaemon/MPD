@@ -569,11 +569,10 @@ input_curl_seek(struct input_stream *is, off_t offset, int whence)
 
 	switch (whence) {
 	case SEEK_SET:
-		is->offset = offset;
 		break;
 
 	case SEEK_CUR:
-		is->offset += offset;
+		offset += is->offset;
 		break;
 
 	case SEEK_END:
@@ -581,20 +580,21 @@ input_curl_seek(struct input_stream *is, off_t offset, int whence)
 			/* stream size is not known */
 			return false;
 
-		is->offset = is->size + offset;
+		offset += is->size;
 		break;
 
 	default:
 		return false;
 	}
 
-	if (is->offset < 0)
+	if (offset < 0)
 		return false;
 
 	/* close the old connection and open a new one */
 
 	input_curl_easy_free(c);
 
+	is->offset = offset;
 	if (is->offset == is->size) {
 		/* seek to EOF: simulate empty result; avoid
 		   triggering a "416 Requested Range Not Satisfiable"
