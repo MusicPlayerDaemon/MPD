@@ -207,6 +207,31 @@ input_curl_select(struct input_curl *c)
 	return ret;
 }
 
+/**
+ * Mark a part of the buffer object as consumed.
+ */
+static void
+consume_buffer(struct buffer *buffer, size_t length,
+	       struct list_head *rewind_head)
+{
+	assert(buffer != NULL);
+	assert(buffer->consumed < buffer->size);
+
+	buffer->consumed += length;
+	if (buffer->consumed < buffer->size)
+		return;
+
+	assert(buffer->consumed == buffer->size);
+
+	list_del(&buffer->siblings);
+
+	if (rewind_head != NULL)
+		/* append this buffer to the rewind buffer list */
+		list_add_tail(&buffer->siblings, rewind_head);
+	else
+		g_free(buffer);
+}
+
 static size_t
 read_from_buffer(struct buffer *buffer, void *dest, size_t length,
 		 struct list_head *rewind_head)
@@ -218,18 +243,7 @@ read_from_buffer(struct buffer *buffer, void *dest, size_t length,
 		length = buffer->size - buffer->consumed;
 
 	memcpy(dest, buffer->data + buffer->consumed, length);
-
-	buffer->consumed += length;
-	if (buffer->consumed == buffer->size) {
-		list_del(&buffer->siblings);
-
-		if (rewind_head != NULL)
-			/* append this buffer to the rewind buffer list */
-			list_add_tail(&buffer->siblings, rewind_head);
-		else
-			g_free(buffer);
-	}
-
+	consume_buffer(buffer, length, rewind_head);
 	return length;
 }
 
