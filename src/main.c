@@ -383,6 +383,7 @@ int main(int argc, char *argv[])
 {
 	Options options;
 	clock_t start;
+	GTimer *save_state_timer;
 
 #ifdef HAVE_LOCALE
 	/* initialize locale */
@@ -446,6 +447,8 @@ int main(int argc, char *argv[])
 	player_create();
 	read_state_file();
 
+	save_state_timer = g_timer_new();
+
 	while (COMMAND_RETURN_KILL != client_manager_io() &&
 	       COMMAND_RETURN_KILL != handlePendingSignals()) {
 		unsigned flags;
@@ -459,6 +462,12 @@ int main(int argc, char *argv[])
 		flags = idle_get();
 		if (flags != 0)
 			client_manager_idle_add(flags);
+
+		if (g_timer_elapsed(save_state_timer, NULL) >= 5 * 60) {
+			g_debug("Saving state file\n");
+			write_state_file();
+			g_timer_start(save_state_timer);
+		}
 	}
 
 	write_state_file();
