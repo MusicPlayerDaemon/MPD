@@ -67,7 +67,7 @@ static const char *log_date(void)
 }
 
 static void
-mpd_log_func(G_GNUC_UNUSED const gchar *log_domain,
+mpd_log_func(const gchar *log_domain,
 	     G_GNUC_UNUSED GLogLevelFlags log_level,
 	     const gchar *message, G_GNUC_UNUSED gpointer user_data)
 {
@@ -87,8 +87,12 @@ mpd_log_func(G_GNUC_UNUSED const gchar *log_domain,
 	} else
 		converted = NULL;
 
-	fprintf(file, "%s%s",
+	if (log_domain == NULL)
+		log_domain = "";
+
+	fprintf(file, "%s%s%s%s",
 		stdout_mode ? "" : log_date(),
+		log_domain, *log_domain == 0 ? "" : ": ",
 		message);
 
 	g_free(converted);
