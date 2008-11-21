@@ -194,7 +194,8 @@ decoder_data(struct decoder *decoder,
 	assert(dc.state == DECODE_STATE_DECODE);
 
 	if (dc.command == DECODE_COMMAND_STOP ||
-	    dc.command == DECODE_COMMAND_SEEK)
+	    dc.command == DECODE_COMMAND_SEEK ||
+	    length == 0)
 		return dc.command;
 
 	if (is != NULL && !decoder->stream_tag_sent) {
