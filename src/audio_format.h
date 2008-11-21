@@ -40,6 +40,17 @@ static inline bool audio_format_defined(const struct audio_format *af)
 	return af->sample_rate != 0;
 }
 
+/**
+ * Returns false if the format is not valid for playback with MPD.
+ * This function performs some basic validity checks.
+ */
+static inline bool audio_format_valid(const struct audio_format *af)
+{
+	return af->sample_rate > 0 &&
+		(af->bits == 8 || af->bits == 16 || af->bits == 24) &&
+		af->channels >= 1;
+}
+
 static inline bool audio_format_equals(const struct audio_format *a,
 				       const struct audio_format *b)
 {
