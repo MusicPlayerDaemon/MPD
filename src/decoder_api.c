@@ -40,6 +40,7 @@ void decoder_initialized(struct decoder * decoder,
 	assert(!decoder->seeking);
 	assert(audio_format != NULL);
 	assert(audio_format_defined(audio_format));
+	assert(audio_format_valid(audio_format));
 
 	pcm_convert_init(&decoder->conv_state);
 

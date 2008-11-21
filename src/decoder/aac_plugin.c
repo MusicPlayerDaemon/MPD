@@ -405,6 +405,11 @@ aac_stream_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 				.sample_rate = sample_rate,
 			};
 
+			if (!audio_format_valid(&audio_format)) {
+				g_warning("aac: invalid audio format\n");
+				break;
+			}
+
 			decoder_initialized(mpd_decoder, &audio_format,
 					    false, totalTime);
 			initialized = true;

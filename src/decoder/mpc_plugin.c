@@ -155,6 +155,14 @@ mpc_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 	audio_format.channels = info.channels;
 	audio_format.sample_rate = info.sample_freq;
 
+	if (!audio_format_valid(&audio_format)) {
+		g_warning("Invalid audio format: %u:%u:%u\n",
+			  audio_format.sample_rate,
+			  audio_format.bits,
+			  audio_format.channels);
+		return;
+	}
+
 	replayGainInfo = replay_gain_info_new();
 	replayGainInfo->tuples[REPLAY_GAIN_ALBUM].gain = info.gain_album * 0.01;
 	replayGainInfo->tuples[REPLAY_GAIN_ALBUM].peak = info.peak_album / 32767.0;

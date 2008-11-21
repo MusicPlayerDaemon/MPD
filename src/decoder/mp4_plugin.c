@@ -275,6 +275,15 @@ mp4_decode(struct decoder *mpd_decoder, struct input_stream *input_stream)
 			scale = frame_info.samplerate;
 #endif
 			audio_format.sample_rate = scale;
+
+			if (!audio_format_valid(&audio_format)) {
+				g_warning("Invalid audio format: %u:%u:%u\n",
+					  audio_format.sample_rate,
+					  audio_format.bits,
+					  audio_format.channels);
+				break;
+			}
+
 			decoder_initialized(mpd_decoder, &audio_format,
 					    input_stream->seekable,
 					    total_time);

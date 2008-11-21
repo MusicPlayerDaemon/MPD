@@ -77,18 +77,19 @@ audiofile_decode(struct decoder *decoder, const char *path)
 	audio_format.channels =
 	              (uint8_t)afGetVirtualChannels(af_fp, AF_DEFAULT_TRACK);
 
+	if (!audio_format_valid(&audio_format)) {
+		g_warning("Invalid audio format: %u:%u:%u\n",
+			  audio_format.sample_rate, audio_format.bits,
+			  audio_format.channels);
+		afCloseFile(af_fp);
+		return;
+	}
+
 	frame_count = afGetFrameCount(af_fp, AF_DEFAULT_TRACK);
 
 	total_time = ((float)frame_count / (float)audio_format.sample_rate);
 
 	bitRate = (uint16_t)(st.st_size * 8.0 / total_time / 1000.0 + 0.5);
-
-	if (audio_format.bits != 8 && audio_format.bits != 16) {
-		g_warning("Only 8 and 16-bit files are supported. %s is %i-bit\n",
-			  path, audio_format.bits);
-		afCloseFile(af_fp);
-		return;
-	}
 
 	fs = (int)afGetVirtualFrameSize(af_fp, AF_DEFAULT_TRACK, 1);
 

@@ -288,6 +288,15 @@ oggvorbis_decode(struct decoder *decoder, struct input_stream *inStream)
 
 			audio_format.channels = vi->channels;
 			audio_format.sample_rate = vi->rate;
+
+			if (!audio_format_valid(&audio_format)) {
+				g_warning("Invalid audio format: %u:%u:%u\n",
+					  audio_format.sample_rate,
+					  audio_format.bits,
+					  audio_format.channels);
+				break;
+			}
+
 			if (!initialized) {
 				float total_time = ov_time_total(&vf, -1);
 				if (total_time < 0)

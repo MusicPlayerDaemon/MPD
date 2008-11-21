@@ -294,6 +294,14 @@ oggflac_decode(struct decoder * mpd_decoder, struct input_stream *inStream)
 		goto fail;
 	}
 
+	if (!audio_format_valid(&data.audio_format)) {
+		g_warning("Invalid audio format: %u:%u:%u\n",
+			  data.audio_format.sample_rate,
+			  data.audio_format.bits,
+			  data.audio_format.channels);
+		goto fail;
+	}
+
 	decoder_initialized(mpd_decoder, &data.audio_format,
 			    inStream->seekable, data.total_time);
 

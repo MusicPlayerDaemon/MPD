@@ -148,6 +148,14 @@ wavpack_decode(struct decoder *decoder, WavpackContext *wpc, bool can_seek,
 		audio_format.bits = 24;
 	}
 
+	if (!audio_format_valid(&audio_format)) {
+		g_warning("Invalid audio format: %u:%u:%u\n",
+			  audio_format.sample_rate,
+			  audio_format.bits,
+			  audio_format.channels);
+		return;
+	}
+
 	if ((WavpackGetMode(wpc) & MODE_FLOAT) == MODE_FLOAT) {
 		format_samples = format_samples_float;
 	} else {

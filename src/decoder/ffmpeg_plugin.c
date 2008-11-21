@@ -255,6 +255,13 @@ ffmpeg_decode_internal(struct ffmpeg_context *ctx)
 	audio_format.sample_rate = (unsigned int)codec_context->sample_rate;
 	audio_format.channels = codec_context->channels;
 
+	if (!audio_format_valid(&audio_format)) {
+		g_warning("Invalid audio format: %u:%u:%u\n",
+			  audio_format.sample_rate, audio_format.bits,
+			  audio_format.channels);
+		return false;
+	}
+
 	//there is some problem with this on some demux (mp3 at least)
 	if (format_context->duration != (int)AV_NOPTS_VALUE) {
 		total_time = format_context->duration / AV_TIME_BASE;

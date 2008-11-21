@@ -343,6 +343,14 @@ flac_decode_internal(struct decoder * decoder, struct input_stream *inStream,
 		goto fail;
 	}
 
+	if (!audio_format_valid(&data.audio_format)) {
+		g_warning("Invalid audio format: %u:%u:%u\n",
+			  data.audio_format.sample_rate,
+			  data.audio_format.bits,
+			  data.audio_format.channels);
+		goto fail;
+	}
+
 	decoder_initialized(decoder, &data.audio_format,
 			    inStream->seekable, data.total_time);
 
