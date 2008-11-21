@@ -604,6 +604,32 @@ input_curl_seek(struct input_stream *is, off_t offset, int whence)
 	if (offset < 0)
 		return false;
 
+	/* check if we can fast-forward the buffer */
+
+	while (offset > is->offset && !list_empty(&c->buffers)) {
+		struct list_head *rewind_head;
+		struct buffer *buffer = (struct buffer *)c->buffers.next;
+		size_t length;
+
+		if (!list_empty(&c->rewind) || is->offset == 0)
+			/* at the beginning or already writing the rewind
+			   buffer list */
+			rewind_head = &c->rewind;
+		else
+			/* we don't need the rewind buffers anymore */
+			rewind_head = NULL;
+
+		length = buffer->size - buffer->consumed;
+		if (offset - is->offset < (off_t)length)
+			length = offset - is->offset;
+
+		consume_buffer(buffer, length, rewind_head);
+		is->offset += length;
+	}
+
+	if (offset == is->offset)
+		return true;
+
 	/* close the old connection and open a new one */
 
 	input_curl_easy_free(c);
