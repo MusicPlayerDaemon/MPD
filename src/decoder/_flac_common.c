@@ -20,7 +20,6 @@
  */
 
 #include "_flac_common.h"
-#include "../log.h"
 
 #include <FLAC/format.h>
 #include <FLAC/metadata.h>
@@ -177,16 +176,16 @@ void flac_error_common_cb(const char *plugin,
 
 	switch (status) {
 	case FLAC__STREAM_DECODER_ERROR_STATUS_LOST_SYNC:
-		ERROR("%s lost sync\n", plugin);
+		g_warning("%s lost sync\n", plugin);
 		break;
 	case FLAC__STREAM_DECODER_ERROR_STATUS_BAD_HEADER:
-		ERROR("bad %s header\n", plugin);
+		g_warning("bad %s header\n", plugin);
 		break;
 	case FLAC__STREAM_DECODER_ERROR_STATUS_FRAME_CRC_MISMATCH:
-		ERROR("%s crc mismatch\n", plugin);
+		g_warning("%s crc mismatch\n", plugin);
 		break;
 	default:
-		ERROR("unknown %s error\n", plugin);
+		g_warning("unknown %s error\n", plugin);
 	}
 }
 

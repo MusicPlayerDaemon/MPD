@@ -24,6 +24,11 @@
 
 #include "../decoder_api.h"
 
+#include <glib.h>
+
+#undef G_LOG_DOMAIN
+#define G_LOG_DOMAIN "flac"
+
 #include <FLAC/export.h>
 #if !defined(FLAC_API_VERSION_CURRENT) || FLAC_API_VERSION_CURRENT <= 7
 #  include <FLAC/seekable_stream_decoder.h>

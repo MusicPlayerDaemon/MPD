@@ -22,9 +22,6 @@
 #include "_flac_common.h"
 #include "_ogg_common.h"
 
-#include "../utils.h"
-#include "../log.h"
-
 #include <OggFLAC/seekable_stream_decoder.h>
 
 static void oggflac_cleanup(FlacData * data,
@@ -120,25 +117,25 @@ static void oggflacPrintErroredState(OggFLAC__SeekableStreamDecoderState state)
 {
 	switch (state) {
 	case OggFLAC__SEEKABLE_STREAM_DECODER_MEMORY_ALLOCATION_ERROR:
-		ERROR("oggflac allocation error\n");
+		g_warning("oggflac allocation error\n");
 		break;
 	case OggFLAC__SEEKABLE_STREAM_DECODER_READ_ERROR:
-		ERROR("oggflac read error\n");
+		g_warning("oggflac read error\n");
 		break;
 	case OggFLAC__SEEKABLE_STREAM_DECODER_SEEK_ERROR:
-		ERROR("oggflac seek error\n");
+		g_warning("oggflac seek error\n");
 		break;
 	case OggFLAC__SEEKABLE_STREAM_DECODER_STREAM_DECODER_ERROR:
-		ERROR("oggflac seekable stream error\n");
+		g_warning("oggflac seekable stream error\n");
 		break;
 	case OggFLAC__SEEKABLE_STREAM_DECODER_ALREADY_INITIALIZED:
-		ERROR("oggflac decoder already initialized\n");
+		g_warning("oggflac decoder already initialized\n");
 		break;
 	case OggFLAC__SEEKABLE_STREAM_DECODER_INVALID_CALLBACK:
-		ERROR("invalid oggflac callback\n");
+		g_warning("invalid oggflac callback\n");
 		break;
 	case OggFLAC__SEEKABLE_STREAM_DECODER_UNINITIALIZED:
-		ERROR("oggflac decoder uninitialized\n");
+		g_warning("oggflac decoder uninitialized\n");
 		break;
 	case OggFLAC__SEEKABLE_STREAM_DECODER_OK:
 	case OggFLAC__SEEKABLE_STREAM_DECODER_SEEKING:
@@ -233,17 +230,17 @@ static OggFLAC__SeekableStreamDecoder
 							      (void *)data);
 
 	if (!s) {
-		ERROR("oggflac problem before init()\n");
+		g_warning("oggflac problem before init()\n");
 		goto fail;
 	}
 	if (OggFLAC__seekable_stream_decoder_init(decoder) !=
 	    OggFLAC__SEEKABLE_STREAM_DECODER_OK) {
-		ERROR("oggflac problem doing init()\n");
+		g_warning("oggflac problem doing init()\n");
 		goto fail;
 	}
 	if (!OggFLAC__seekable_stream_decoder_process_until_end_of_metadata
 	    (decoder)) {
-		ERROR("oggflac problem reading metadata\n");
+		g_warning("oggflac problem reading metadata\n");
 		goto fail;
 	}
 

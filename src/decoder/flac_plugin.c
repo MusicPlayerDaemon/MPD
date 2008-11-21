@@ -17,8 +17,6 @@
  */
 
 #include "_flac_common.h"
-#include "../utils.h"
-#include "../log.h"
 
 #include <assert.h>
 
@@ -128,7 +126,8 @@ static void flacPrintErroredState(FLAC__SeekableStreamDecoderState state)
 	case FLAC__SEEKABLE_STREAM_DECODER_UNINITIALIZED:
 		str = "decoder uninitialized";
 	}
-	ERROR("flac %s\n", str);
+
+	g_warning("%s\n", str);
 }
 
 static int flac_init(FLAC__SeekableStreamDecoder *dec,
@@ -186,7 +185,8 @@ static void flacPrintErroredState(FLAC__StreamDecoderState state)
 	case FLAC__STREAM_DECODER_UNINITIALIZED:
 		str = "decoder uninitialized";
 	}
-	ERROR("flac %s\n", str);
+
+	g_warning("%s\n", str);
 }
 #endif /* FLAC_API_VERSION_CURRENT >= 7 */
 
@@ -251,9 +251,8 @@ flacMetadataDup(const char *file, bool *vorbisCommentFound)
 		default:
 			err = FLAC__Metadata_SimpleIteratorStatusString[s];
 		}
-		DEBUG("flacMetadataDup: Reading '%s' "
-		      "metadata gave the following error: %s\n",
-		      file, err);
+		g_debug("Reading '%s' metadata gave the following error: %s\n",
+			file, err);
 		FLAC__metadata_simple_iterator_delete(it);
 		return ret;
 	}
@@ -288,8 +287,7 @@ static struct tag *flacTagDup(const char *file)
 
 	ret = flacMetadataDup(file, &foundVorbisComment);
 	if (!ret) {
-		DEBUG("flacTagDup: Failed to grab information from: %s\n",
-		      file);
+		g_debug("Failed to grab information from: %s\n", file);
 		return NULL;
 	}
 	if (!foundVorbisComment) {
@@ -319,7 +317,7 @@ flac_decode_internal(struct decoder * decoder, struct input_stream *inStream,
 #if defined(FLAC_API_VERSION_CURRENT) && FLAC_API_VERSION_CURRENT > 7
         if(!FLAC__stream_decoder_set_metadata_respond(flacDec, FLAC__METADATA_TYPE_VORBIS_COMMENT))
         {
-                DEBUG(__FILE__": Failed to set metadata respond\n");
+                g_debug("Failed to set metadata respond\n");
         }
 #endif
 
@@ -376,11 +374,8 @@ fail:
 	if (flacDec)
 		flac_delete(flacDec);
 
-	if (err) {
-		ERROR("flac %s\n", err);
-		return;
-	}
-	return;
+	if (err)
+		g_warning("%s\n", err);
 }
 
 static void
