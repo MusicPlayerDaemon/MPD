@@ -19,10 +19,13 @@
  */
 
 #include "../decoder_api.h"
-#include "../log.h"
 
 #include <sys/stat.h>
 #include <audiofile.h>
+#include <glib.h>
+
+#undef G_LOG_DOMAIN
+#define G_LOG_DOMAIN "audiofile"
 
 /* pick 1020 since its devisible for 8,16,24, and 32-bit audio */
 #define CHUNK_SIZE		1020
@@ -55,13 +58,13 @@ audiofile_decode(struct decoder *decoder, const char *path)
 	char chunk[CHUNK_SIZE];
 
 	if (stat(path, &st) < 0) {
-		ERROR("failed to stat: %s\n", path);
+		g_warning("failed to stat: %s\n", path);
 		return;
 	}
 
 	af_fp = afOpenFile(path, "r", NULL);
 	if (af_fp == AF_NULL_FILEHANDLE) {
-		ERROR("failed to open: %s\n", path);
+		g_warning("failed to open: %s\n", path);
 		return;
 	}
 
@@ -81,8 +84,8 @@ audiofile_decode(struct decoder *decoder, const char *path)
 	bitRate = (uint16_t)(st.st_size * 8.0 / total_time / 1000.0 + 0.5);
 
 	if (audio_format.bits != 8 && audio_format.bits != 16) {
-		ERROR("Only 8 and 16-bit files are supported. %s is %i-bit\n",
-		      path, audio_format.bits);
+		g_warning("Only 8 and 16-bit files are supported. %s is %i-bit\n",
+			  path, audio_format.bits);
 		afCloseFile(af_fp);
 		return;
 	}
@@ -123,9 +126,8 @@ static struct tag *audiofileTagDup(const char *file)
 		ret = tag_new();
 		ret->time = total_time;
 	} else {
-		DEBUG
-		    ("audiofileTagDup: Failed to get total song time from: %s\n",
-		     file);
+		g_debug("Failed to get total song time from: %s\n",
+			file);
 	}
 
 	return ret;
