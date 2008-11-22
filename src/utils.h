@@ -29,6 +29,15 @@
 
 #define ARRAY_SIZE(x) (sizeof(x)/sizeof(x[0]))
 
+#ifndef assert_static
+/* Compile time assertion developed by Ralf Holly */
+/* http://pera-software.com/articles/compile-time-assertions.pdf */
+#define assert_static(e) \
+	do { \
+		enum { assert_static__ = 1/(e) }; \
+	} while (0)
+#endif /* !assert_static */
+
 char *myFgets(char *buffer, int bufferSize, FILE * fp);
 
 void stripReturnChar(char *string);
