@@ -30,6 +30,18 @@
 static unsigned idle_flags;
 static pthread_mutex_t idle_mutex = PTHREAD_MUTEX_INITIALIZER;
 
+static const char *const idle_names[] = {
+	"database",
+	"stored_playlist",
+	"playlist",
+	"player",
+	"mixer",
+	"output",
+	"options",
+	"elapsed",
+        NULL
+};
+
 void
 idle_add(unsigned flags)
 {
@@ -53,4 +65,10 @@ idle_get(void)
 	pthread_mutex_unlock(&idle_mutex);
 
 	return flags;
+}
+
+const char*const*
+idle_get_names(void)
+{
+        return idle_names;
 }

@@ -78,6 +78,6 @@ void client_manager_idle_add(unsigned flags);
  * sent immediately and "true" is returned".  If no, it puts the
  * client into waiting mode and returns false.
  */
-bool client_idle_wait(struct client *client);
+bool client_idle_wait(struct client *client, unsigned flags);
 
 #endif

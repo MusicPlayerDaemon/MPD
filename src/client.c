@@ -91,6 +91,9 @@ struct client {
 	/** idle flags pending on this client, to be sent as soon as
 	    the client enters "idle" */
 	unsigned idle_flags;
+
+	/** idle flags that the client wants to receive */
+	unsigned idle_subscriptions;
 };
 
 static LIST_HEAD(clients);
@@ -766,16 +769,6 @@ mpd_fprintf void client_printf(struct client *client, const char *fmt, ...)
 	va_end(args);
 }
 
-static const char *const idle_names[] = {
-	"database",
-	"stored_playlist",
-	"playlist",
-	"player",
-	"mixer",
-	"output",
-	"options",
-};
-
 /**
  * Send "idle" response to this client.
  */
@@ -783,6 +776,7 @@ static void
 client_idle_notify(struct client *client)
 {
 	unsigned flags, i;
+	const char *const* idle_names;
 
 	assert(client->idle_waiting);
 	assert(client->idle_flags != 0);
@@ -791,10 +785,9 @@ client_idle_notify(struct client *client)
 	client->idle_flags = 0;
 	client->idle_waiting = false;
 
-	for (i = 0; i < sizeof(idle_names) / sizeof(idle_names[0]); ++i) {
-		assert(idle_names[i] != NULL);
-
-		if (flags & (1 << i))
+	idle_names = idle_get_names();
+	for (i = 0; idle_names[i]; ++i) {
+		if (flags & (1 << i) & client->idle_subscriptions)
 			client_printf(client, "changed: %s\n",
 				      idle_names[i]);
 	}
@@ -814,20 +807,22 @@ void client_manager_idle_add(unsigned flags)
 			continue;
 
 		client->idle_flags |= flags;
-		if (client->idle_waiting) {
+		if (client->idle_waiting
+		    && (client->idle_flags & client->idle_subscriptions)) {
 			client_idle_notify(client);
 			client_write_output(client);
 		}
 	}
 }
 
-bool client_idle_wait(struct client *client)
+bool client_idle_wait(struct client *client, unsigned flags)
 {
 	assert(!client->idle_waiting);
 
 	client->idle_waiting = true;
+	client->idle_subscriptions = flags;
 
-	if (client->idle_flags != 0) {
+	if (client->idle_flags & client->idle_subscriptions) {
 		client_idle_notify(client);
 		return true;
 	} else

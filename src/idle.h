@@ -61,4 +61,10 @@ idle_add(unsigned flags);
 unsigned
 idle_get(void);
 
+/**
+ * Get idle names
+ */
+const char*const*
+idle_get_names(void);
+
 #endif

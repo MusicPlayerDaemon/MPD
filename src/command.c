@@ -39,6 +39,7 @@
 #include "tag_print.h"
 #include "path.h"
 #include "os_compat.h"
+#include "idle.h"
 
 #define COMMAND_STATUS_VOLUME           "volume"
 #define COMMAND_STATUS_STATE            "state"
@@ -1253,8 +1254,28 @@ static enum command_return
 handle_idle(struct client *client,
 	    mpd_unused int argc, mpd_unused char *argv[])
 {
+        unsigned flags = 0, j;
+        int i;
+        const char *const* idle_names;
+
+        idle_names = idle_get_names();
+        for (i = 1; i < argc; ++i) {
+                if (!argv[i])
+                        continue;
+
+                for (j = 0; idle_names[j]; ++j) {
+                        if (!strcasecmp(argv[i], idle_names[j])) {
+                                flags |= (1 << j);
+                        }
+                }
+        }
+
+        /* No argument means that the client wants to receive everything */
+        if (flags == 0)
+                flags = ~0;
+
 	/* enable "idle" mode on this client */
-	client_idle_wait(client);
+	client_idle_wait(client, flags);
 
 	/* return value is "1" so the caller won't print "OK" */
 	return 1;
@@ -1280,7 +1301,7 @@ static const struct command commands[] = {
 	{ "disableoutput", PERMISSION_ADMIN, 1, 1, handle_disableoutput },
 	{ "enableoutput", PERMISSION_ADMIN, 1, 1, handle_enableoutput },
 	{ "find", PERMISSION_READ, 2, -1, handle_find },
-	{ "idle", PERMISSION_READ, 0, 0, handle_idle },
+	{ "idle", PERMISSION_READ, 0, -1, handle_idle },
 	{ "kill", PERMISSION_ADMIN, -1, -1, handle_kill },
 	{ "list", PERMISSION_READ, 1, -1, handle_list },
 	{ "listall", PERMISSION_READ, 0, 1, handle_listall },
