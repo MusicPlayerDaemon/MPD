@@ -20,6 +20,7 @@
 
 #include "../decoder_api.h"
 #include "../path.h"
+#include "../utils.h"
 
 #include <wavpack/wavpack.h>
 #include <glib.h>
@@ -71,7 +72,7 @@ format_samples_int(int bytes_per_sample, void *buffer, uint32_t count)
 		 * of the output samples never can be greater than the size
 		 * of the input ones. Otherwise we would have an overflow.
 		 */
-		assert(sizeof(uchar) <= sizeof(uint32_t));
+		assert_static(sizeof(*dst) <= sizeof(*src));
 
 		/* pass through and align 8-bit samples */
 		while (count--) {
@@ -81,7 +82,7 @@ format_samples_int(int bytes_per_sample, void *buffer, uint32_t count)
 	}
 	case 2: {
 		uint16_t *dst = buffer;
-		assert(sizeof(uint16_t) <= sizeof(uint32_t));
+		assert_static(sizeof(*dst) <= sizeof(*src));
 
 		/* pass through and align 16-bit samples */
 		while (count--) {
@@ -94,7 +95,7 @@ format_samples_int(int bytes_per_sample, void *buffer, uint32_t count)
 		break;
 	case 4: {
 		uint32_t *dst = buffer;
-		assert(sizeof(uint32_t) <= sizeof(uint32_t));
+		assert_static(sizeof(*dst) <= sizeof(*src));
 
 		/* downsample to 24-bit */
 		while (count--) {
@@ -114,7 +115,7 @@ format_samples_float(mpd_unused int bytes_per_sample, void *buffer,
 {
 	int32_t *dst = buffer;
 	float *src = buffer;
-	assert(sizeof(int32_t) <= sizeof(float));
+	assert_static(sizeof(*dst) <= sizeof(*src));
 
 	while (count--) {
 		*dst++ = (int32_t)(*src++ + 0.5f);
