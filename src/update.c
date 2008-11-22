@@ -412,7 +412,7 @@ static struct directory *
 directory_make_child_checked(struct directory *parent, const char *path)
 {
 	struct directory *directory;
-	char *basename;
+	char *base;
 	struct stat st;
 	struct song *conflicting;
 
@@ -420,21 +420,21 @@ directory_make_child_checked(struct directory *parent, const char *path)
 	if (directory != NULL)
 		return directory;
 
-	basename = g_path_get_basename(path);
+	base = g_path_get_basename(path);
 
-	if (stat_directory_child(parent, basename, &st) < 0 ||
+	if (stat_directory_child(parent, base, &st) < 0 ||
 	    inodeFoundInParent(parent, st.st_ino, st.st_dev)) {
-		g_free(basename);
+		g_free(base);
 		return NULL;
 	}
 
 	/* if we're adding directory paths, make sure to delete filenames
 	   with potentially the same name */
-	conflicting = songvec_find(&parent->songs, basename);
+	conflicting = songvec_find(&parent->songs, base);
 	if (conflicting)
 		delete_song(parent, conflicting);
 
-	g_free(basename);
+	g_free(base);
 
 	directory = directory_new_child(parent, path);
 	directory_set_stat(directory, &st);
