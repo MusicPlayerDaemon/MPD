@@ -205,7 +205,7 @@ print_playlist_result(struct client *client,
 		return COMMAND_RETURN_OK;
 
 	case PLAYLIST_RESULT_ERRNO:
-		command_error(client, ACK_ERROR_SYSTEM, strerror(errno));
+		command_error(client, ACK_ERROR_SYSTEM, "%s", strerror(errno));
 		return COMMAND_RETURN_ERROR;
 
 	case PLAYLIST_RESULT_DENIED:
