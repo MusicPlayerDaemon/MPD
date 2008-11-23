@@ -118,6 +118,7 @@
           <term>
             <cmdsynopsis>
               <command>idle</command>
+              <arg choice="opt" rep="repeat"><replaceable>SUBSYSTEMS</replaceable></arg>
             </cmdsynopsis>
           </term>
           <listitem>
@@ -183,6 +184,11 @@
               commands are allowed). MPD will then leave
               <command>idle</command> mode and print results
               immediately; might be empty at this time.
+            </para>
+            <para>
+              If the optional <varname>SUBSYSTEMS</varname> argument is used,
+              MPD will only send notifications when something changed in
+              one of the specified subsytems.
             </para>
           </listitem>
         </varlistentry>
