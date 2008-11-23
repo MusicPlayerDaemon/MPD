@@ -349,9 +349,11 @@ static void do_play(void)
 		}
 
 #ifndef NDEBUG
+		/*
 		music_pipe_check_format(&play_audio_format,
 					player.next_song_chunk,
 					&dc.out_audio_format);
+		*/
 #endif
 
 		if (decoder_is_idle() && !player.queued &&
