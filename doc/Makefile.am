@@ -3,7 +3,7 @@ DOCBOOK_HTML = $(patsubst %.xml,%.html,$(DOCBOOK_FILES))
 
 man_MANS = mpd.1 mpd.conf.5
 doc_DATA = mpdconf.example
-EXTRA_DIST = $(man_MANS) $(doc_DATA)
+EXTRA_DIST = $(man_MANS) $(DOCBOOK_FILES) mpdconf.example
 
 MOSTLYCLEANFILES = $(DOCBOOK_HTML)
 
