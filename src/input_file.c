@@ -17,7 +17,6 @@
  */
 
 #include "input_file.h"
-#include "gcc.h"
 
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -117,7 +116,7 @@ input_file_eof(struct input_stream *is)
 }
 
 static int
-input_file_buffer(mpd_unused struct input_stream *is)
+input_file_buffer(G_GNUC_UNUSED struct input_stream *is)
 {
 	return 0;
 }
