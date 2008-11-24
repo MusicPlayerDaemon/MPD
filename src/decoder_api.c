@@ -26,9 +26,9 @@
 #include "utils.h"
 #include "normalize.h"
 #include "pipe.h"
-#include "gcc.h"
 
 #include <assert.h>
+#include <glib.h>
 
 void decoder_initialized(struct decoder * decoder,
 			 const struct audio_format *audio_format,
@@ -54,17 +54,18 @@ void decoder_initialized(struct decoder * decoder,
 	notify_signal(&pc.notify);
 }
 
-const char *decoder_get_url(mpd_unused struct decoder * decoder, char * buffer)
+const char *decoder_get_url(G_GNUC_UNUSED struct decoder * decoder,
+			    char * buffer)
 {
 	return song_get_url(dc.current_song, buffer);
 }
 
-enum decoder_command decoder_get_command(mpd_unused struct decoder * decoder)
+enum decoder_command decoder_get_command(G_GNUC_UNUSED struct decoder * decoder)
 {
 	return dc.command;
 }
 
-void decoder_command_finished(mpd_unused struct decoder * decoder)
+void decoder_command_finished(G_GNUC_UNUSED struct decoder * decoder)
 {
 	assert(dc.command != DECODE_COMMAND_NONE);
 	assert(dc.command != DECODE_COMMAND_SEEK ||
@@ -78,7 +79,7 @@ void decoder_command_finished(mpd_unused struct decoder * decoder)
 	notify_signal(&pc.notify);
 }
 
-double decoder_seek_where(mpd_unused struct decoder * decoder)
+double decoder_seek_where(G_GNUC_UNUSED struct decoder * decoder)
 {
 	assert(dc.command == DECODE_COMMAND_SEEK);
 
@@ -275,7 +276,7 @@ decoder_data(struct decoder *decoder,
 }
 
 enum decoder_command
-decoder_tag(mpd_unused struct decoder *decoder, struct input_stream *is,
+decoder_tag(G_GNUC_UNUSED struct decoder *decoder, struct input_stream *is,
 	    const struct tag *tag)
 {
 	struct tag *tag2 = is != NULL ? tag_add_stream_tags(tag, is) : NULL;
