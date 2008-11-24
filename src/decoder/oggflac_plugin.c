@@ -23,6 +23,7 @@
 #include "_ogg_common.h"
 
 #include <OggFLAC/seekable_stream_decoder.h>
+#include <unistd.h>
 
 static void oggflac_cleanup(FlacData * data,
 			    OggFLAC__SeekableStreamDecoder * decoder)

@@ -19,6 +19,7 @@
 #include "_flac_common.h"
 
 #include <assert.h>
+#include <unistd.h>
 
 /* this code was based on flac123, from flac-tools */
 

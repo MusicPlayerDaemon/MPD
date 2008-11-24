@@ -38,6 +38,7 @@
 #include <glib.h>
 #include <errno.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #ifdef WORDS_BIGENDIAN
 #define OGG_DECODE_USE_BIGENDIAN	1

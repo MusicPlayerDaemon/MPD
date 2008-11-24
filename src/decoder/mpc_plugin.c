@@ -20,6 +20,7 @@
 
 #include <mpcdec/mpcdec.h>
 #include <glib.h>
+#include <unistd.h>
 
 typedef struct _MpcCallbackData {
 	struct input_stream *inStream;
