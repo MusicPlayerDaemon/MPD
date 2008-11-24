@@ -200,7 +200,7 @@ static void decoder_run(void)
 	dc.state = ret ? DECODE_STATE_STOP : DECODE_STATE_ERROR;
 }
 
-static void * decoder_task(mpd_unused void *arg)
+static void * decoder_task(G_GNUC_UNUSED void *arg)
 {
 	while (1) {
 		assert(dc.state == DECODE_STATE_STOP ||
