@@ -28,6 +28,7 @@
 #include <sys/signal.h>
 #include <sys/wait.h>
 #include <errno.h>
+#include <glib.h>
 
 int handlePendingSignals(void)
 {
@@ -50,7 +51,7 @@ int handlePendingSignals(void)
 	return 0;
 }
 
-static void chldSigHandler(mpd_unused int sig)
+static void chldSigHandler(G_GNUC_UNUSED int sig)
 {
 	int status;
 	int pid;
