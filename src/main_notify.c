@@ -22,10 +22,10 @@
 #include "notify.h"
 #include "utils.h"
 #include "ioops.h"
-#include "gcc.h"
 #include "log.h"
 
 #include <assert.h>
+#include <glib.h>
 #include <string.h>
 
 static struct ioOps main_notify_IO;
@@ -35,7 +35,8 @@ static struct notify main_notify;
 static pthread_mutex_t select_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 static int ioops_fdset(fd_set * rfds,
-                       mpd_unused fd_set * wfds, mpd_unused fd_set * efds)
+                       G_GNUC_UNUSED fd_set * wfds,
+		       G_GNUC_UNUSED fd_set * efds)
 {
 	FD_SET(main_pipe[0], rfds);
 	return main_pipe[0];
@@ -51,7 +52,8 @@ static void consume_pipe(void)
 }
 
 static int ioops_consume(int fd_count, fd_set * rfds,
-                         mpd_unused fd_set * wfds, mpd_unused fd_set * efds)
+                         G_GNUC_UNUSED fd_set * wfds,
+			 G_GNUC_UNUSED fd_set * efds)
 {
 	if (FD_ISSET(main_pipe[0], rfds)) {
 		consume_pipe();
