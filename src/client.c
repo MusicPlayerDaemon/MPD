@@ -169,7 +169,7 @@ static void new_cmd_list_ptr(struct client *client, char *s)
 }
 
 static void
-deferred_buffer_free(gpointer data, mpd_unused gpointer user_data)
+deferred_buffer_free(gpointer data, G_GNUC_UNUSED gpointer user_data)
 {
 	struct deferred_buffer *buffer = data;
 	g_free(buffer);
