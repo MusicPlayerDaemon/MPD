@@ -18,18 +18,18 @@
  */
 
 #include "pcm_resample.h"
-#include "gcc.h"
 
 #include <assert.h>
+#include <glib.h>
 
 /* resampling code blatantly ripped from ESD */
 size_t
 pcm_resample_16(uint8_t channels,
 		unsigned src_rate,
-		const int16_t *src_buffer, mpd_unused size_t src_size,
+		const int16_t *src_buffer, G_GNUC_UNUSED size_t src_size,
 		unsigned dest_rate,
 		int16_t *dest_buffer, size_t dest_size,
-		mpd_unused struct pcm_resample_state *state)
+		G_GNUC_UNUSED struct pcm_resample_state *state)
 {
 	unsigned src_pos, dest_pos = 0;
 	unsigned dest_samples = dest_size / sizeof(*dest_buffer);
@@ -62,10 +62,10 @@ pcm_resample_16(uint8_t channels,
 size_t
 pcm_resample_24(uint8_t channels,
 		unsigned src_rate,
-		const int32_t *src_buffer, mpd_unused size_t src_size,
+		const int32_t *src_buffer, G_GNUC_UNUSED size_t src_size,
 		unsigned dest_rate,
 		int32_t *dest_buffer, size_t dest_size,
-		mpd_unused struct pcm_resample_state *state)
+		G_GNUC_UNUSED struct pcm_resample_state *state)
 {
 	unsigned src_pos, dest_pos = 0;
 	unsigned dest_samples = dest_size / sizeof(*dest_buffer);
