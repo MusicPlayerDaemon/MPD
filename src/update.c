@@ -89,7 +89,7 @@ delete_song(struct directory *dir, struct song *del)
 }
 
 static int
-delete_each_song(struct song *song, mpd_unused void *data)
+delete_each_song(struct song *song, G_GNUC_UNUSED void *data)
 {
 	struct directory *directory = data;
 	assert(song->parent == directory);
