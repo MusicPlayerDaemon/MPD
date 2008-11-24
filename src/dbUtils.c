@@ -70,7 +70,7 @@ printDirectoryInDirectory(struct directory *directory, void *data)
 }
 
 static int
-printSongInDirectory(struct song *song, mpd_unused void *data)
+printSongInDirectory(struct song *song, G_GNUC_UNUSED void *data)
 {
 	struct client *client = data;
 	song_print_url(client, song);
@@ -194,7 +194,7 @@ int printAllIn(struct client *client, const char *name)
 }
 
 static int
-directoryAddSongToPlaylist(struct song *song, mpd_unused void *data)
+directoryAddSongToPlaylist(struct song *song, G_GNUC_UNUSED void *data)
 {
 	return addSongToPlaylist(song, NULL);
 }
