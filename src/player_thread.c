@@ -29,6 +29,8 @@
 #include "pipe.h"
 #include "idle.h"
 
+#include <glib.h>
+
 enum xfade_state {
 	XFADE_DISABLED = -1,
 	XFADE_UNKNOWN = 0,
@@ -490,7 +492,7 @@ static void do_play(void)
 	player_stop_decoder();
 }
 
-static void * player_task(mpd_unused void *arg)
+static void * player_task(G_GNUC_UNUSED void *arg)
 {
 	while (1) {
 		switch (pc.command) {
