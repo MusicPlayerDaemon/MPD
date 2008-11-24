@@ -18,7 +18,6 @@
 
 #include "input_curl.h"
 #include "input_stream.h"
-#include "gcc.h"
 #include "dlist.h"
 
 #include <assert.h>
@@ -327,7 +326,7 @@ input_curl_close(struct input_stream *is)
 }
 
 static bool
-input_curl_eof(mpd_unused struct input_stream *is)
+input_curl_eof(G_GNUC_UNUSED struct input_stream *is)
 {
 	struct input_curl *c = is->data;
 
