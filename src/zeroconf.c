@@ -26,6 +26,8 @@
 #include "ioops.h"
 #include "utils.h"
 
+#include <glib.h>
+
 /* The dns-sd service type qualifier to publish */
 #define SERVICE_TYPE		"_mpd._tcp"
 
@@ -92,7 +94,7 @@ struct AvahiTimeout {
 static AvahiWatch *avahiWatchList;
 static AvahiTimeout *avahiTimeoutList;
 
-static AvahiWatch *avahiWatchNew(mpd_unused const AvahiPoll * api, int fd,
+static AvahiWatch *avahiWatchNew(G_GNUC_UNUSED const AvahiPoll * api, int fd,
 				 AvahiWatchEvent event,
 				 AvahiWatchCallback callback, void *userdata)
 {
@@ -175,7 +177,7 @@ static void avahiTimeoutFree(AvahiTimeout * t)
 	free(t);
 }
 
-static AvahiTimeout *avahiTimeoutNew(mpd_unused const AvahiPoll * api,
+static AvahiTimeout *avahiTimeoutNew(G_GNUC_UNUSED const AvahiPoll * api,
 				     const struct timeval *tv,
 				     AvahiTimeoutCallback callback,
 				     void *userdata)
@@ -200,7 +202,7 @@ static AvahiTimeout *avahiTimeoutNew(mpd_unused const AvahiPoll * api,
 /* Callback when the EntryGroup changes state */
 static void avahiGroupCallback(AvahiEntryGroup * g,
 			       AvahiEntryGroupState state,
-			       mpd_unused void *userdata)
+			       G_GNUC_UNUSED void *userdata)
 {
 	char *n;
 	assert(g);
@@ -290,7 +292,7 @@ fail:
 
 /* Callback when avahi changes state */
 static void avahiClientCallback(AvahiClient * c, AvahiClientState state,
-				mpd_unused void *userdata)
+				G_GNUC_UNUSED void *userdata)
 {
 	int reason;
 	assert(c);
