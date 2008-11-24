@@ -31,10 +31,10 @@ struct tag *tag_id3_load(const char *file);
 
 #else
 
-#include "gcc.h"
+#include <glib.h>
 
 static inline struct tag *
-tag_id3_load(mpd_unused const char *file)
+tag_id3_load(G_GNUC_UNUSED const char *file)
 {
 	return NULL;
 }
