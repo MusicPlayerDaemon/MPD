@@ -18,8 +18,6 @@
 
 #include "shout_plugin.h"
 
-#ifdef HAVE_SHOUT
-
 #include "../utils.h"
 
 #include <assert.h>
@@ -582,8 +580,3 @@ const struct audio_output_plugin shoutPlugin = {
 	.close = my_shout_close_device,
 	.send_tag = my_shout_set_tag,
 };
-
-#else
-
-DISABLED_AUDIO_OUTPUT_PLUGIN(shoutPlugin)
-#endif
