@@ -109,6 +109,7 @@ static int player_wait_for_decoder(struct player *player)
 
 	player->song = pc.next_song;
 	pc.next_song = NULL;
+	pc.elapsed_time = 0;
 	player->queued = false;
 	player->decoder_starting = true;
 
