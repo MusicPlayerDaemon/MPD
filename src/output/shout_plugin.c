@@ -18,9 +18,9 @@
 
 #include "shout_plugin.h"
 
-#include "../utils.h"
-
 #include <assert.h>
+#include <stdlib.h>
+#include <stdio.h>
 
 #define CONN_ATTEMPT_INTERVAL 60
 #define DEFAULT_CONN_TIMEOUT  2
@@ -51,7 +51,7 @@ shout_encoder_plugin_get(const char *name)
 
 static struct shout_data *new_shout_data(void)
 {
-	struct shout_data *ret = xmalloc(sizeof(*ret));
+	struct shout_data *ret = g_new(struct shout_data, 1);
 
 	ret->shout_conn = shout_new();
 	ret->shout_meta = shout_metadata_new();
@@ -86,8 +86,8 @@ static void free_shout_data(struct shout_data *sd)
 #define check_block_param(name) {		  \
 		block_param = getBlockParam(param, name);	\
 		if (!block_param) {					\
-			FATAL("no \"%s\" defined for shout device defined at line " \
-			      "%i\n", name, param->line);		\
+			g_error("no \"%s\" defined for shout device defined at line " \
+				"%i\n", name, param->line);		\
 		}							\
 	}
 
@@ -127,8 +127,8 @@ static void *my_shout_init_driver(struct audio_output *audio_output,
 	port = strtol(block_param->value, &test, 10);
 
 	if (*test != '\0' || port <= 0) {
-		FATAL("shout port \"%s\" is not a positive integer, line %i\n",
-		      block_param->value, block_param->line);
+		g_error("shout port \"%s\" is not a positive integer, line %i\n",
+			block_param->value, block_param->line);
 	}
 
 	check_block_param("password");
@@ -155,31 +155,31 @@ static void *my_shout_init_driver(struct audio_output *audio_output,
 		sd->quality = strtod(block_param->value, &test);
 
 		if (*test != '\0' || sd->quality < -1.0 || sd->quality > 10.0) {
-			FATAL("shout quality \"%s\" is not a number in the "
-			      "range -1 to 10, line %i\n", block_param->value,
-			      block_param->line);
+			g_error("shout quality \"%s\" is not a number in the "
+				"range -1 to 10, line %i\n", block_param->value,
+				block_param->line);
 		}
 
 		block_param = getBlockParam(param, "bitrate");
 
 		if (block_param) {
-			FATAL("quality (line %i) and bitrate (line %i) are "
-			      "both defined for shout output\n", line,
-			      block_param->line);
+			g_error("quality (line %i) and bitrate (line %i) are "
+				"both defined for shout output\n", line,
+				block_param->line);
 		}
 	} else {
 		block_param = getBlockParam(param, "bitrate");
 
 		if (!block_param) {
-			FATAL("neither bitrate nor quality defined for shout "
-			      "output at line %i\n", param->line);
+			g_error("neither bitrate nor quality defined for shout "
+				"output at line %i\n", param->line);
 		}
 
 		sd->bitrate = strtol(block_param->value, &test, 10);
 
 		if (*test != '\0' || sd->bitrate <= 0) {
-			FATAL("bitrate at line %i should be a positive integer "
-			      "\n", block_param->line);
+			g_error("bitrate at line %i should be a positive integer "
+				"\n", block_param->line);
 		}
 	}
 
@@ -195,24 +195,24 @@ static void *my_shout_init_driver(struct audio_output *audio_output,
 		else if (0 == strcmp(block_param->value, "ogg"))
 			encoding = block_param->value;
 		else
-			FATAL("shout encoding \"%s\" is not \"ogg\" or "
-			      "\"mp3\", line %i\n", block_param->value,
-			      block_param->line);
+			g_error("shout encoding \"%s\" is not \"ogg\" or "
+				"\"mp3\", line %i\n", block_param->value,
+				block_param->line);
 	} else {
 		encoding = "ogg";
 	}
 
 	sd->encoder = shout_encoder_plugin_get(encoding);
 	if (sd->encoder == NULL)
-		FATAL("couldn't find shout encoder plugin for \"%s\" "
-		      "at line %i\n", encoding, block_param->line);
+		g_error("couldn't find shout encoder plugin for \"%s\" "
+			"at line %i\n", encoding, block_param->line);
 
 	block_param = getBlockParam(param, "protocol");
 	if (block_param) {
 		if (0 == strcmp(block_param->value, "shoutcast") &&
 		    0 != strcmp(encoding, "mp3"))
-			FATAL("you cannot stream \"%s\" to shoutcast, use mp3\n",
-			      encoding);
+			g_error("you cannot stream \"%s\" to shoutcast, use mp3\n",
+				encoding);
 		else if (0 == strcmp(block_param->value, "shoutcast"))
 			protocol = SHOUT_PROTOCOL_ICY;
 		else if (0 == strcmp(block_param->value, "icecast1"))
@@ -220,10 +220,10 @@ static void *my_shout_init_driver(struct audio_output *audio_output,
 		else if (0 == strcmp(block_param->value, "icecast2"))
 			protocol = SHOUT_PROTOCOL_HTTP;
 		else
-			FATAL("shout protocol \"%s\" is not \"shoutcast\" or "
-			      "\"icecast1\"or "
-			      "\"icecast2\", line %i\n", block_param->value,
-			      block_param->line);
+			g_error("shout protocol \"%s\" is not \"shoutcast\" or "
+				"\"icecast1\"or "
+				"\"icecast2\", line %i\n", block_param->value,
+				block_param->line);
 	} else {
 		protocol = SHOUT_PROTOCOL_HTTP;
 	}
@@ -240,8 +240,8 @@ static void *my_shout_init_driver(struct audio_output *audio_output,
 	    != SHOUTERR_SUCCESS ||
 	    shout_set_protocol(sd->shout_conn, protocol) != SHOUTERR_SUCCESS ||
 	    shout_set_agent(sd->shout_conn, "MPD") != SHOUTERR_SUCCESS) {
-		FATAL("error configuring shout defined at line %i: %s\n",
-		      param->line, shout_get_error(sd->shout_conn));
+		g_error("error configuring shout defined at line %i: %s\n",
+			param->line, shout_get_error(sd->shout_conn));
 	}
 
 	/* optional paramters */
@@ -249,22 +249,22 @@ static void *my_shout_init_driver(struct audio_output *audio_output,
 	if (block_param) {
 		sd->timeout = (int)strtol(block_param->value, &test, 10);
 		if (*test != '\0' || sd->timeout <= 0) {
-			FATAL("shout timeout is not a positive integer, "
-			      "line %i\n", block_param->line);
+			g_error("shout timeout is not a positive integer, "
+				"line %i\n", block_param->line);
 		}
 	}
 
 	block_param = getBlockParam(param, "genre");
 	if (block_param && shout_set_genre(sd->shout_conn, block_param->value)) {
-		FATAL("error configuring shout defined at line %i: %s\n",
-		      param->line, shout_get_error(sd->shout_conn));
+		g_error("error configuring shout defined at line %i: %s\n",
+			param->line, shout_get_error(sd->shout_conn));
 	}
 
 	block_param = getBlockParam(param, "description");
 	if (block_param && shout_set_description(sd->shout_conn,
 						 block_param->value)) {
-		FATAL("error configuring shout defined at line %i: %s\n",
-		      param->line, shout_get_error(sd->shout_conn));
+		g_error("error configuring shout defined at line %i: %s\n",
+			param->line, shout_get_error(sd->shout_conn));
 	}
 
 	{
@@ -290,8 +290,8 @@ static void *my_shout_init_driver(struct audio_output *audio_output,
 	}
 
 	if (sd->encoder->init_func(sd) != 0)
-		FATAL("shout: encoder plugin '%s' failed to initialize\n",
-		      sd->encoder->name);
+		g_error("shout: encoder plugin '%s' failed to initialize\n",
+			sd->encoder->name);
 
 	return sd;
 }
@@ -303,17 +303,17 @@ static int handle_shout_error(struct shout_data *sd, int err)
 		break;
 	case SHOUTERR_UNCONNECTED:
 	case SHOUTERR_SOCKET:
-		ERROR("Lost shout connection to %s:%i: %s\n",
-		      shout_get_host(sd->shout_conn),
-		      shout_get_port(sd->shout_conn),
-		      shout_get_error(sd->shout_conn));
+		g_warning("Lost shout connection to %s:%i: %s\n",
+			  shout_get_host(sd->shout_conn),
+			  shout_get_port(sd->shout_conn),
+			  shout_get_error(sd->shout_conn));
 		sd->shout_error = 1;
 		return -1;
 	default:
-		ERROR("shout: connection to %s:%i error: %s\n",
-		      shout_get_host(sd->shout_conn),
-		      shout_get_port(sd->shout_conn),
-		      shout_get_error(sd->shout_conn));
+		g_warning("shout: connection to %s:%i error: %s\n",
+			  shout_get_host(sd->shout_conn),
+			  shout_get_port(sd->shout_conn),
+			  shout_get_error(sd->shout_conn));
 		sd->shout_error = 1;
 		return -1;
 	}
@@ -346,8 +346,8 @@ static void close_shout_conn(struct shout_data * sd)
 
 	if (shout_get_connected(sd->shout_conn) != SHOUTERR_UNCONNECTED &&
 	    shout_close(sd->shout_conn) != SHOUTERR_SUCCESS) {
-		ERROR("problem closing connection to shout server: %s\n",
-		      shout_get_error(sd->shout_conn));
+		g_warning("problem closing connection to shout server: %s\n",
+			  shout_get_error(sd->shout_conn));
 	}
 
 	sd->opened = false;
@@ -401,11 +401,11 @@ static int shout_connect(struct shout_data *sd)
 	if (state == SHOUTERR_BUSY && sd->conn_attempts != 0) {
 		/* timeout waiting to connect */
 		if ((t - sd->last_attempt) > sd->timeout) {
-			ERROR("timeout connecting to shout server %s:%i "
-			      "(attempt %i)\n",
-			      shout_get_host(sd->shout_conn),
-			      shout_get_port(sd->shout_conn),
-			      sd->conn_attempts);
+			g_warning("timeout connecting to shout server %s:%i "
+				  "(attempt %i)\n",
+				  shout_get_host(sd->shout_conn),
+				  shout_get_port(sd->shout_conn),
+				  sd->conn_attempts);
 			return -1;
 		}
 
@@ -435,11 +435,11 @@ static int shout_connect(struct shout_data *sd)
 	case SHOUTERR_BUSY:
 		return 1;
 	default:
-		ERROR("problem opening connection to shout server %s:%i "
-		      "(attempt %i): %s\n",
-		      shout_get_host(sd->shout_conn),
-		      shout_get_port(sd->shout_conn),
-		      sd->conn_attempts, shout_get_error(sd->shout_conn));
+		g_warning("problem opening connection to shout server %s:%i "
+			  "(attempt %i): %s\n",
+			  shout_get_host(sd->shout_conn),
+			  shout_get_port(sd->shout_conn),
+			  sd->conn_attempts, shout_get_error(sd->shout_conn));
 		return -1;
 	}
 }
@@ -496,7 +496,7 @@ static void send_metadata(struct shout_data * sd)
 		shout_metadata_add(sd->shout_meta, "song", song);
 		if (SHOUTERR_SUCCESS != shout_set_metadata(sd->shout_conn,
 							   sd->shout_meta)) {
-			ERROR("error setting shout metadata\n");
+			g_warning("error setting shout metadata\n");
 			return;
 		}
 	}

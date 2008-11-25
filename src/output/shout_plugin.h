@@ -24,6 +24,10 @@
 #include "../timer.h"
 
 #include <shout/shout.h>
+#include <glib.h>
+
+#undef G_LOG_DOMAIN
+#define G_LOG_DOMAIN "shout"
 
 struct shout_data;
 

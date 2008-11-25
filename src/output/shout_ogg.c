@@ -17,9 +17,9 @@
  */
 
 #include "shout_plugin.h"
-#include "../utils.h"
 
 #include <vorbis/vorbisenc.h>
+#include <stdlib.h>
 
 struct ogg_vorbis_data {
 	ogg_stream_state os;
@@ -80,7 +80,7 @@ static int copy_ogg_buffer_to_shout_buffer(ogg_page *og,
 		       og->header, og->header_len);
 		buf->len += og->header_len;
 	} else {
-		ERROR("%s: not enough buffer space!\n", __func__);
+		g_warning("%s: not enough buffer space!\n", __func__);
 		return -1;
 	}
 
@@ -89,7 +89,7 @@ static int copy_ogg_buffer_to_shout_buffer(ogg_page *og,
 		       og->body, og->body_len);
 		buf->len += og->body_len;
 	} else {
-		ERROR("%s: not enough buffer space!\n", __func__);
+		g_warning("%s: not enough buffer space!\n", __func__);
 		return -1;
 	}
 
@@ -167,10 +167,8 @@ static void shout_ogg_encoder_finish(struct shout_data *sd)
 
 static int shout_ogg_encoder_init(struct shout_data *sd)
 {
-	struct ogg_vorbis_data *od;
+	struct ogg_vorbis_data *od = g_new(struct ogg_vorbis_data, 1);
 
-	if (NULL == (od = xmalloc(sizeof(*od))))
-		FATAL("error initializing ogg vorbis encoder data\n");
 	sd->encoder_data = od;
 
 	return 0;
@@ -187,7 +185,7 @@ static int reinit_encoder(struct shout_data *sd)
 						sd->audio_format.channels,
 						sd->audio_format.sample_rate,
 						sd->quality * 0.1)) {
-			ERROR("error initializing vorbis vbr\n");
+			g_warning("error initializing vorbis vbr\n");
 			vorbis_info_clear(&od->vi);
 			return -1;
 		}
@@ -196,7 +194,7 @@ static int reinit_encoder(struct shout_data *sd)
 					    sd->audio_format.channels,
 					    sd->audio_format.sample_rate, -1.0,
 					    sd->bitrate * 1000, -1.0)) {
-			ERROR("error initializing vorbis encoder\n");
+			g_warning("error initializing vorbis encoder\n");
 			vorbis_info_clear(&od->vi);
 			return -1;
 		}
@@ -216,7 +214,7 @@ static int shout_ogg_encoder_init_encoder(struct shout_data *sd)
 		return -1;
 
 	if (send_ogg_vorbis_header(sd)) {
-		ERROR("error sending ogg vorbis header for shout\n");
+		g_warning("error sending ogg vorbis header for shout\n");
 		return -1;
 	}
 

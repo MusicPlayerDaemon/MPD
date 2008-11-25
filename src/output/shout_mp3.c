@@ -17,9 +17,9 @@
  */
 
 #include "shout_plugin.h"
-#include "../utils.h"
 
 #include <lame/lame.h>
+#include <stdlib.h>
 
 struct lame_data {
 	lame_global_flags *gfp;
@@ -28,10 +28,8 @@ struct lame_data {
 
 static int shout_mp3_encoder_init(struct shout_data *sd)
 {
-	struct lame_data *ld;
+	struct lame_data *ld = g_new(struct lame_data, 1);
 
-	if (NULL == (ld = xmalloc(sizeof(*ld))))
-		FATAL("error initializing lame encoder data\n");
 	sd->encoder_data = ld;
 
 	return 0;
@@ -45,7 +43,7 @@ static int shout_mp3_encoder_clear_encoder(struct shout_data *sd)
 
 	if ((ret = lame_encode_flush(ld->gfp, buf->data + buf->len,
 				     buf->len)) < 0)
-		ERROR("error flushing lame buffers\n");
+		g_warning("error flushing lame buffers\n");
 
 	return (ret > 0);
 }
@@ -63,40 +61,40 @@ static int shout_mp3_encoder_init_encoder(struct shout_data *sd)
 	struct lame_data *ld = (struct lame_data *)sd->encoder_data;
 
 	if (NULL == (ld->gfp = lame_init())) {
-		ERROR("error initializing lame encoder for shout\n");
+		g_warning("error initializing lame encoder for shout\n");
 		return -1;
 	}
 
 	if (sd->quality >= -1.0) {
 		if (0 != lame_set_VBR(ld->gfp, vbr_rh)) {
-			ERROR("error setting lame VBR mode\n");
+			g_warning("error setting lame VBR mode\n");
 			return -1;
 		}
 		if (0 != lame_set_VBR_q(ld->gfp, sd->quality)) {
-			ERROR("error setting lame VBR quality\n");
+			g_warning("error setting lame VBR quality\n");
 			return -1;
 		}
 	} else {
 		if (0 != lame_set_brate(ld->gfp, sd->bitrate)) {
-			ERROR("error setting lame bitrate\n");
+			g_warning("error setting lame bitrate\n");
 			return -1;
 		}
 	}
 
 	if (0 != lame_set_num_channels(ld->gfp,
 				       sd->audio_format.channels)) {
-		ERROR("error setting lame num channels\n");
+		g_warning("error setting lame num channels\n");
 		return -1;
 	}
 
 	if (0 != lame_set_in_samplerate(ld->gfp,
 					sd->audio_format.sample_rate)) {
-		ERROR("error setting lame sample rate\n");
+		g_warning("error setting lame sample rate\n");
 		return -1;
 	}
 
 	if (0 > lame_init_params(ld->gfp))
-		FATAL("error initializing lame params\n");
+		g_error("error initializing lame params\n");
 
 	return 0;
 }
@@ -144,7 +142,7 @@ static int shout_mp3_encoder_encode(struct shout_data *sd,
 
 	samples = len / (bytes * sd->audio_format.channels);
 	/* rough estimate, from lame.h */
-	lamebuf = xmalloc(sizeof(float) * (1.25 * samples + 7200));
+	lamebuf = g_malloc(sizeof(float) * (1.25 * samples + 7200));
 
 	/* this is for only 16-bit audio */
 
@@ -161,7 +159,7 @@ static int shout_mp3_encoder_encode(struct shout_data *sd,
 	free(lamebuf);
 
 	if (0 > bytes_out) {
-		ERROR("error encoding lame buffer for shout\n");
+		g_warning("error encoding lame buffer for shout\n");
 		lame_close(ld->gfp);
 		ld->gfp = NULL;
 		return -1;
