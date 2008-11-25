@@ -20,13 +20,18 @@
  */
 
 #include "../output_api.h"
-#include "../utils.h"
-#include "../log.h"
 
+#include <glib.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/ioctl.h>
 #include <fcntl.h>
+#include <errno.h>
+#include <unistd.h>
+#include <stdlib.h>
+
+#undef G_LOG_DOMAIN
+#define G_LOG_DOMAIN "mvp"
 
 typedef struct {
 	unsigned long dsp_status;
@@ -92,8 +97,8 @@ static bool mvp_testDefault(void)
 		return true;
 	}
 
-	WARNING("Error opening PCM device \"/dev/adec_pcm\": %s\n",
-		strerror(errno));
+	g_warning("Error opening PCM device \"/dev/adec_pcm\": %s\n",
+		  strerror(errno));
 
 	return false;
 }
@@ -102,7 +107,7 @@ static void *mvp_initDriver(mpd_unused struct audio_output *audio_output,
 			    mpd_unused const struct audio_format *audio_format,
 			    mpd_unused ConfigParam *param)
 {
-	MvpData *md = xmalloc(sizeof(MvpData));
+	MvpData *md = g_new(MvpData, 1);
 	md->audio_output = audio_output;
 	md->fd = -1;
 
@@ -156,22 +161,23 @@ static int mvp_setPcmParams(MvpData * md, unsigned long rate, int channels,
 	}
 
 	if (iloop >= numfrequencies) {
-		ERROR("Can not find suitable output frequency for %ld\n", rate);
+		g_warning("Can not find suitable output frequency for %ld\n",
+			  rate);
 		return -1;
 	}
 
 	if (ioctl(md->fd, MVP_SET_AUD_FORMAT, &mix) < 0) {
-		ERROR("Can not set audio format\n");
+		g_warning("Can not set audio format\n");
 		return -1;
 	}
 
 	if (ioctl(md->fd, MVP_SET_AUD_SYNC, 2) != 0) {
-		ERROR("Can not set audio sync\n");
+		g_warning("Can not set audio sync\n");
 		return -1;
 	}
 
 	if (ioctl(md->fd, MVP_SET_AUD_PLAY, 0) < 0) {
-		ERROR("Can not set audio play mode\n");
+		g_warning("Can not set audio play mode\n");
 		return -1;
 	}
 
@@ -186,24 +192,29 @@ mvp_openDevice(void *data, struct audio_format *audioFormat)
 	int mix[5] = { 0, 2, 7, 1, 0 };
 
 	if ((md->fd = open("/dev/adec_pcm", O_RDWR | O_NONBLOCK)) < 0) {
-		ERROR("Error opening /dev/adec_pcm: %s\n", strerror(errno));
+		g_warning("Error opening /dev/adec_pcm: %s\n",
+			  strerror(errno));
 		return false;
 	}
 	if (ioctl(md->fd, MVP_SET_AUD_SRC, 1) < 0) {
-		ERROR("Error setting audio source: %s\n", strerror(errno));
+		g_warning("Error setting audio source: %s\n",
+			  strerror(errno));
 		return false;
 	}
 	if (ioctl(md->fd, MVP_SET_AUD_STREAMTYPE, 0) < 0) {
-		ERROR("Error setting audio streamtype: %s\n", strerror(errno));
+		g_warning("Error setting audio streamtype: %s\n",
+			  strerror(errno));
 		return false;
 	}
 	if (ioctl(md->fd, MVP_SET_AUD_FORMAT, &mix) < 0) {
-		ERROR("Error setting audio format: %s\n", strerror(errno));
+		g_warning("Error setting audio format: %s\n",
+			  strerror(errno));
 		return false;
 	}
 	ioctl(md->fd, MVP_SET_AUD_STC, &stc);
 	if (ioctl(md->fd, MVP_SET_AUD_BYPASS, 1) < 0) {
-		ERROR("Error setting audio streamtype: %s\n", strerror(errno));
+		g_warning("Error setting audio streamtype: %s\n",
+			  strerror(errno));
 		return false;
 	}
 #ifdef WORDS_BIGENDIAN
@@ -251,8 +262,8 @@ mvp_playAudio(void *data, const char *playChunk, size_t size)
 		if (ret < 0) {
 			if (errno == EINTR)
 				continue;
-			ERROR("closing mvp PCM device due to write error: "
-			      "%s\n", strerror(errno));
+			g_warning("closing mvp PCM device due to write error: "
+				  "%s\n", strerror(errno));
 			return false;
 		}
 		playChunk += ret;
