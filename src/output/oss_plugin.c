@@ -20,12 +20,17 @@
  */
 
 #include "../output_api.h"
-#include "../utils.h"
-#include "../log.h"
 
+#include <glib.h>
 #include <sys/stat.h>
 #include <sys/ioctl.h>
 #include <fcntl.h>
+#include <errno.h>
+#include <stdlib.h>
+#include <unistd.h>
+
+#undef G_LOG_DOMAIN
+#define G_LOG_DOMAIN "oss"
 
 #if defined(__OpenBSD__) || defined(__NetBSD__)
 # include <soundcard.h>
@@ -153,8 +158,8 @@ static void addSupportedParam(OssData * od, unsigned param, int val)
 	enum oss_param idx = getIndexForParam(param);
 
 	od->numSupported[idx]++;
-	od->supported[idx] = xrealloc(od->supported[idx],
-				      od->numSupported[idx] * sizeof(int));
+	od->supported[idx] = g_realloc(od->supported[idx],
+				       od->numSupported[idx] * sizeof(int));
 	od->supported[idx][od->numSupported[idx] - 1] = val;
 }
 
@@ -163,9 +168,9 @@ static void addUnsupportedParam(OssData * od, unsigned param, int val)
 	enum oss_param idx = getIndexForParam(param);
 
 	od->numUnsupported[idx]++;
-	od->unsupported[idx] = xrealloc(od->unsupported[idx],
-					od->numUnsupported[idx] *
-					sizeof(int));
+	od->unsupported[idx] = g_realloc(od->unsupported[idx],
+					 od->numUnsupported[idx] *
+					 sizeof(int));
 	od->unsupported[idx][od->numUnsupported[idx] - 1] = val;
 }
 
@@ -182,8 +187,8 @@ static void removeSupportedParam(OssData * od, unsigned param, int val)
 	}
 
 	od->numSupported[idx]--;
-	od->supported[idx] = xrealloc(od->supported[idx],
-				      od->numSupported[idx] * sizeof(int));
+	od->supported[idx] = g_realloc(od->supported[idx],
+				       od->numSupported[idx] * sizeof(int));
 }
 
 static void removeUnsupportedParam(OssData * od, unsigned param, int val)
@@ -199,9 +204,9 @@ static void removeUnsupportedParam(OssData * od, unsigned param, int val)
 	}
 
 	od->numUnsupported[idx]--;
-	od->unsupported[idx] = xrealloc(od->unsupported[idx],
-					od->numUnsupported[idx] *
-					sizeof(int));
+	od->unsupported[idx] = g_realloc(od->unsupported[idx],
+					 od->numUnsupported[idx] *
+					 sizeof(int));
 }
 
 static enum oss_support
@@ -244,7 +249,7 @@ static void unsupportParam(OssData * od, unsigned param, int val)
 
 static OssData *newOssData(void)
 {
-	OssData *ret = xmalloc(sizeof(OssData));
+	OssData *ret = g_new(OssData, 1);
 
 	ret->device = NULL;
 	ret->fd = -1;
@@ -273,18 +278,12 @@ static OssData *newOssData(void)
 
 static void freeOssData(OssData * od)
 {
-	if (od->supported[OSS_RATE])
-		free(od->supported[OSS_RATE]);
-	if (od->supported[OSS_CHANNELS])
-		free(od->supported[OSS_CHANNELS]);
-	if (od->supported[OSS_BITS])
-		free(od->supported[OSS_BITS]);
-	if (od->unsupported[OSS_RATE])
-		free(od->unsupported[OSS_RATE]);
-	if (od->unsupported[OSS_CHANNELS])
-		free(od->unsupported[OSS_CHANNELS]);
-	if (od->unsupported[OSS_BITS])
-		free(od->unsupported[OSS_BITS]);
+	g_free(od->supported[OSS_RATE]);
+	g_free(od->supported[OSS_CHANNELS]);
+	g_free(od->supported[OSS_BITS]);
+	g_free(od->unsupported[OSS_RATE]);
+	g_free(od->unsupported[OSS_CHANNELS]);
+	g_free(od->unsupported[OSS_BITS]);
 
 	free(od);
 }
@@ -326,13 +325,13 @@ static bool oss_testDefault(void)
 {
 	int fd, i;
 
-	for (i = ARRAY_SIZE(default_devices); --i >= 0; ) {
+	for (i = G_N_ELEMENTS(default_devices); --i >= 0; ) {
 		if ((fd = open(default_devices[i], O_WRONLY)) >= 0) {
-			xclose(fd);
+			close(fd);
 			return true;
 		}
-		WARNING("Error opening OSS device \"%s\": %s\n",
-		        default_devices[i], strerror(errno));
+		g_warning("Error opening OSS device \"%s\": %s\n",
+			  default_devices[i], strerror(errno));
 	}
 
 	return false;
@@ -341,10 +340,10 @@ static bool oss_testDefault(void)
 static void *oss_open_default(ConfigParam *param)
 {
 	int i;
-	int err[ARRAY_SIZE(default_devices)];
-	int ret[ARRAY_SIZE(default_devices)];
+	int err[G_N_ELEMENTS(default_devices)];
+	int ret[G_N_ELEMENTS(default_devices)];
 
-	for (i = ARRAY_SIZE(default_devices); --i >= 0; ) {
+	for (i = G_N_ELEMENTS(default_devices); --i >= 0; ) {
 		ret[i] = oss_statDevice(default_devices[i], &err[i]);
 		if (ret[i] == 0) {
 			OssData *od = newOssData();
@@ -354,25 +353,26 @@ static void *oss_open_default(ConfigParam *param)
 	}
 
 	if (param)
-		ERROR("error trying to open specified OSS device"
-	              " at line %i\n", param->line);
+		g_warning("error trying to open specified OSS device"
+			  " at line %i\n", param->line);
 	else
-		ERROR("error trying to open default OSS device\n");
+		g_warning("error trying to open default OSS device\n");
 
-	for (i = ARRAY_SIZE(default_devices); --i >= 0; ) {
+	for (i = G_N_ELEMENTS(default_devices); --i >= 0; ) {
 		const char *dev = default_devices[i];
 		switch(ret[i]) {
 		case OSS_STAT_DOESN_T_EXIST:
-			ERROR("%s not found\n", dev);
+			g_warning("%s not found\n", dev);
 			break;
 		case OSS_STAT_NOT_CHAR_DEV:
-			ERROR("%s is not a character device\n", dev);
+			g_warning("%s is not a character device\n", dev);
 			break;
 		case OSS_STAT_NO_PERMS:
-			ERROR("%s: permission denied\n", dev);
+			g_warning("%s: permission denied\n", dev);
 			break;
 		default:
-			ERROR("Error accessing %s: %s\n", dev, strerror(err[i]));
+			g_warning("Error accessing %s: %s\n",
+				  dev, strerror(err[i]));
 		}
 	}
 	exit(EXIT_FAILURE);
@@ -443,24 +443,25 @@ static bool oss_open(OssData *od)
 	int tmp;
 
 	if ((od->fd = open(od->device, O_WRONLY)) < 0) {
-		ERROR("Error opening OSS device \"%s\": %s\n", od->device,
-		      strerror(errno));
+		g_warning("Error opening OSS device \"%s\": %s\n", od->device,
+			  strerror(errno));
 		goto fail;
 	}
 
 	tmp = od->audio_format.channels;
 	if (setParam(od, SNDCTL_DSP_CHANNELS, &tmp)) {
-		ERROR("OSS device \"%s\" does not support %u channels: %s\n",
-		      od->device, od->audio_format.channels, strerror(errno));
+		g_warning("OSS device \"%s\" does not support %u channels: %s\n",
+			  od->device, od->audio_format.channels,
+			  strerror(errno));
 		goto fail;
 	}
 	od->audio_format.channels = tmp;
 
 	tmp = od->audio_format.sample_rate;
 	if (setParam(od, SNDCTL_DSP_SPEED, &tmp)) {
-		ERROR("OSS device \"%s\" does not support %u Hz audio: %s\n",
-		      od->device, od->audio_format.sample_rate,
-		      strerror(errno));
+		g_warning("OSS device \"%s\" does not support %u Hz audio: %s\n",
+			  od->device, od->audio_format.sample_rate,
+			  strerror(errno));
 		goto fail;
 	}
 	od->audio_format.sample_rate = tmp;
@@ -481,8 +482,8 @@ static bool oss_open(OssData *od)
 	}
 
 	if (setParam(od, SNDCTL_DSP_SAMPLESIZE, &tmp)) {
-		ERROR("OSS device \"%s\" does not support %u bit audio: %s\n",
-		      od->device, tmp, strerror(errno));
+		g_warning("OSS device \"%s\" does not support %u bit audio: %s\n",
+			  od->device, tmp, strerror(errno));
 		goto fail;
 	}
 
@@ -507,10 +508,10 @@ oss_openDevice(void *data, struct audio_format *audioFormat)
 
 	*audioFormat = od->audio_format;
 
-	DEBUG("oss device \"%s\" will be playing %u bit %u channel audio at "
-	      "%u Hz\n", od->device,
-	      od->audio_format.bits, od->audio_format.channels,
-	      od->audio_format.sample_rate);
+	g_debug("device \"%s\" will be playing %u bit %u channel audio at "
+		"%u Hz\n", od->device,
+		od->audio_format.bits, od->audio_format.channels,
+		od->audio_format.sample_rate);
 
 	return ret;
 }
@@ -547,8 +548,8 @@ oss_playAudio(void *data, const char *playChunk, size_t size)
 		if (ret < 0) {
 			if (errno == EINTR)
 				continue;
-			ERROR("closing oss device \"%s\" due to write error: "
-			      "%s\n", od->device, strerror(errno));
+			g_warning("closing oss device \"%s\" due to write error: "
+				  "%s\n", od->device, strerror(errno));
 			return false;
 		}
 		playChunk += ret;
