@@ -20,8 +20,9 @@
 #include "output_api.h"
 #include "output_internal.h"
 #include "output_list.h"
-#include "log.h"
 #include "audio.h"
+
+#include <glib.h>
 
 #define AUDIO_OUTPUT_TYPE	"type"
 #define AUDIO_OUTPUT_NAME	"name"
@@ -30,9 +31,9 @@
 #define getBlockParam(name, str, force) { \
 	bp = getBlockParam(param, name); \
 	if(force && bp == NULL) { \
-		FATAL("couldn't find parameter \"%s\" in audio output " \
-				"definition beginning at %i\n", \
-				name, param->line); \
+		g_error("couldn't find parameter \"%s\" in audio output " \
+			"definition beginning at %i\n",			\
+			name, param->line);				\
 	} \
 	if(bp) str = bp->value; \
 }
@@ -53,30 +54,30 @@ int audio_output_init(struct audio_output *ao, ConfigParam * param)
 
 		plugin = audio_output_plugin_get(type);
 		if (plugin == NULL) {
-			FATAL("couldn't find audio output plugin for type "
-			      "\"%s\" at line %i\n", type, param->line);
+			g_error("couldn't find audio output plugin for type "
+				"\"%s\" at line %i\n", type, param->line);
 		}
 	} else {
 		unsigned i;
 
-		WARNING("No \"%s\" defined in config file\n",
-			CONF_AUDIO_OUTPUT);
-		WARNING("Attempt to detect audio output device\n");
+		g_warning("No \"%s\" defined in config file\n",
+			  CONF_AUDIO_OUTPUT);
+		g_warning("Attempt to detect audio output device\n");
 
 		audio_output_plugins_for_each(plugin, i) {
 			if (plugin->test_default_device) {
-				WARNING("Attempting to detect a %s audio "
-					"device\n", plugin->name);
+				g_warning("Attempting to detect a %s audio "
+					  "device\n", plugin->name);
 				if (plugin->test_default_device()) {
-					WARNING("Successfully detected a %s "
-						"audio device\n", plugin->name);
+					g_warning("Successfully detected a %s "
+						  "audio device\n", plugin->name);
 					break;
 				}
 			}
 		}
 
 		if (plugin == NULL) {
-			WARNING("Unable to detect an audio device\n");
+			g_warning("Unable to detect an audio device\n");
 			return 0;
 		}
 
@@ -96,7 +97,7 @@ int audio_output_init(struct audio_output *ao, ConfigParam * param)
 
 	if (format) {
 		if (0 != parseAudioConfig(&ao->reqAudioFormat, format)) {
-			FATAL("error parsing format at line %i\n", bp->line);
+			g_error("error parsing format at line %i\n", bp->line);
 		}
 	} else
 		audio_format_clear(&ao->reqAudioFormat);

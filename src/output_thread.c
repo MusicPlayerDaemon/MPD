@@ -19,9 +19,11 @@
 #include "output_thread.h"
 #include "output_api.h"
 #include "output_internal.h"
-#include "utils.h"
 
+#include <glib.h>
 #include <assert.h>
+#include <stdlib.h>
+#include <errno.h>
 
 enum {
 	/** after a failure, wait this number of seconds before
@@ -46,7 +48,7 @@ static void convertAudioFormat(struct audio_output *audioOutput,
 	if (size > audioOutput->convBufferLen) {
 		if (audioOutput->convBuffer != NULL)
 			free(audioOutput->convBuffer);
-		audioOutput->convBuffer = xmalloc(size);
+		audioOutput->convBuffer = g_malloc(size);
 		audioOutput->convBufferLen = size;
 	}
 
@@ -164,5 +166,5 @@ void audio_output_thread_start(struct audio_output *ao)
 	pthread_attr_init(&attr);
 	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
 	if (pthread_create(&ao->thread, &attr, audio_output_task, ao))
-		FATAL("Failed to spawn output task: %s\n", strerror(errno));
+		g_error("Failed to spawn output task: %s\n", strerror(errno));
 }

@@ -21,7 +21,6 @@
 #include "output_api.h"
 #include "output_control.h"
 #include "output_internal.h"
-#include "log.h"
 #include "path.h"
 #include "client.h"
 #include "idle.h"
@@ -73,21 +72,21 @@ void initAudioDriver(void)
 		if (!audio_output_init(output, param)) {
 			if (param)
 			{
-				FATAL("problems configuring output device "
-				      "defined at line %i\n", param->line);
+				g_error("problems configuring output device "
+					"defined at line %i\n", param->line);
 			}
 			else
 			{
-				FATAL("No audio_output specified and unable to "
-				      "detect a default audio output device\n");
+				g_error("No audio_output specified and unable to "
+					"detect a default audio output device\n");
 			}
 		}
 
 		/* require output names to be unique: */
 		for (j = 0; j < i; j++) {
 			if (!strcmp(output->name, audioOutputArray[j].name)) {
-				FATAL("output devices with identical "
-				      "names: %s\n", output->name);
+				g_error("output devices with identical "
+					"names: %s\n", output->name);
 			}
 		}
 	}
@@ -109,8 +108,8 @@ void initAudioConfig(void)
 		return;
 
 	if (0 != parseAudioConfig(&configured_audio_format, param->value)) {
-		FATAL("error parsing \"%s\" at line %i\n",
-		      CONF_AUDIO_OUTPUT_FORMAT, param->line);
+		g_error("error parsing \"%s\" at line %i\n",
+			CONF_AUDIO_OUTPUT_FORMAT, param->line);
 	}
 }
 
@@ -123,34 +122,34 @@ int parseAudioConfig(struct audio_format *audioFormat, char *conf)
 	audioFormat->sample_rate = strtol(conf, &test, 10);
 
 	if (*test != ':') {
-		ERROR("error parsing audio output format: %s\n", conf);
+		g_warning("error parsing audio output format: %s\n", conf);
 		return -1;
 	}
 
 	if (audioFormat->sample_rate <= 0) {
-		ERROR("sample rate %u is not >= 0\n",
-		      audioFormat->sample_rate);
+		g_warning("sample rate %u is not >= 0\n",
+			  audioFormat->sample_rate);
 		return -1;
 	}
 
 	audioFormat->bits = (uint8_t)strtoul(test + 1, &test, 10);
 
 	if (*test != ':') {
-		ERROR("error parsing audio output format: %s\n", conf);
+		g_warning("error parsing audio output format: %s\n", conf);
 		return -1;
 	}
 
 	if (audioFormat->bits != 16 && audioFormat->bits != 24 &&
 	    audioFormat->bits != 8) {
-		ERROR("bits %u can not be used for audio output\n",
-		      audioFormat->bits);
+		g_warning("bits %u can not be used for audio output\n",
+			  audioFormat->bits);
 		return -1;
 	}
 
 	audioFormat->channels = (uint8_t)strtoul(test + 1, &test, 10);
 
 	if (*test != '\0') {
-		ERROR("error parsing audio output format: %s\n", conf);
+		g_warning("error parsing audio output format: %s\n", conf);
 		return -1;
 	}
 
@@ -159,8 +158,8 @@ int parseAudioConfig(struct audio_format *audioFormat, char *conf)
 	case 2:
 		break;
 	default:
-		ERROR("channels %i can not be used for audio output\n",
-		      (int)audioFormat->channels);
+		g_warning("channels %u can not be used for audio output\n",
+			  audioFormat->channels);
 		return -1;
 	}
 
@@ -418,7 +417,7 @@ void readAudioDevicesState(FILE *fp)
 		continue;
 errline:
 		/* nonfatal */
-		ERROR("invalid line in state_file: %s\n", buffer);
+		g_warning("invalid line in state_file: %s\n", buffer);
 	}
 }
 

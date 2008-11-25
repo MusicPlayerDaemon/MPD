@@ -24,7 +24,6 @@
 #include "audio_format.h"
 #include "tag.h"
 #include "conf.h"
-#include "log.h"
 
 #include <stdbool.h>
 
