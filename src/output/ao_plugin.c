@@ -208,8 +208,10 @@ audioOutputAo_openDevice(void *data, struct audio_format *audio_format)
 
 	ad->device = ao_open_live(ad->driverId, &format, ad->options);
 
-	if (ad->device == NULL)
+	if (ad->device == NULL) {
+		audioOutputAo_error("Failed to open libao");
 		return false;
+	}
 
 	return true;
 }
