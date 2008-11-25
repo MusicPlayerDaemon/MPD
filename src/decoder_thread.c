@@ -28,6 +28,8 @@
 #include "log.h"
 #include "ls.h"
 
+#include <glib.h>
+
 static bool
 decoder_stream_decode(const struct decoder_plugin *plugin,
 		      struct decoder *decoder,
