@@ -42,15 +42,36 @@ static AoData *newAoData(void)
 	return ret;
 }
 
-static void audioOutputAo_error(void)
+static void audioOutputAo_error(const char *msg)
 {
-	if (errno == AO_ENOTLIVE) {
-		g_warning("not a live ao device\n");
-	} else if (errno == AO_EOPENDEVICE) {
-		g_warning("not able to open audio device\n");
-	} else if (errno == AO_EBADOPTION) {
-		g_warning("bad driver option\n");
+	const char *error;
+
+	switch (errno) {
+	case AO_ENODRIVER:
+		error = "No such libao driver";
+		break;
+
+	case AO_ENOTLIVE:
+		error = "This driver is not a libao live device";
+		break;
+
+	case AO_EBADOPTION:
+		error = "Invalid libao option";
+		break;
+
+	case AO_EOPENDEVICE:
+		error = "Cannot open the libao device";
+		break;
+
+	case AO_EFAIL:
+		error = "Generic libao failure";
+		break;
+
+	default:
+		error = strerror(errno);
 	}
+
+	g_warning("%s: %s\n", msg, error);
 }
 
 static void *audioOutputAo_initDriver(struct audio_output *ao,
@@ -224,8 +245,7 @@ audioOutputAo_play(void *data, const char *playChunk, size_t size)
 			? size : (size_t)ad->writeSize;
 
 		if (ao_play_deconst(ad->device, playChunk, chunk_size) == 0) {
-			audioOutputAo_error();
-			g_warning("closing audio device due to write error\n");
+			audioOutputAo_error("Closing libao device due to play error");
 			return false;
 		}
 
