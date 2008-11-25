@@ -17,10 +17,12 @@
  */
 
 #include "../output_api.h"
-#include "../utils.h"
-#include "../log.h"
 
 #include <ao/ao.h>
+#include <glib.h>
+
+#undef G_LOG_DOMAIN
+#define G_LOG_DOMAIN "ao"
 
 static int driverInitCount;
 
@@ -33,7 +35,7 @@ typedef struct _AoData {
 
 static AoData *newAoData(void)
 {
-	AoData *ret = xmalloc(sizeof(AoData));
+	AoData *ret = g_malloc(sizeof(AoData));
 	ret->device = NULL;
 	ret->options = NULL;
 
@@ -43,11 +45,11 @@ static AoData *newAoData(void)
 static void audioOutputAo_error(void)
 {
 	if (errno == AO_ENOTLIVE) {
-		ERROR("not a live ao device\n");
+		g_warning("not a live ao device\n");
 	} else if (errno == AO_EOPENDEVICE) {
-		ERROR("not able to open audio device\n");
+		g_warning("not able to open audio device\n");
 	} else if (errno == AO_EBADOPTION) {
-		ERROR("bad driver option\n");
+		g_warning("bad driver option\n");
 	}
 }
 
@@ -69,8 +71,8 @@ static void *audioOutputAo_initDriver(struct audio_output *ao,
 	if ((blockParam = getBlockParam(param, "write_size"))) {
 		ad->writeSize = strtol(blockParam->value, &test, 10);
 		if (*test != '\0') {
-			FATAL("\"%s\" is not a valid write size at line %i\n",
-			      blockParam->value, blockParam->line);
+			g_error("\"%s\" is not a valid write size at line %i\n",
+				blockParam->value, blockParam->line);
 		}
 	} else
 		ad->writeSize = 1024;
@@ -85,24 +87,24 @@ static void *audioOutputAo_initDriver(struct audio_output *ao,
 	if (!blockParam || 0 == strcmp(blockParam->value, "default")) {
 		ad->driverId = ao_default_driver_id();
 	} else if ((ad->driverId = ao_driver_id(blockParam->value)) < 0) {
-		FATAL("\"%s\" is not a valid ao driver at line %i\n",
-		      blockParam->value, blockParam->line);
+		g_error("\"%s\" is not a valid ao driver at line %i\n",
+			blockParam->value, blockParam->line);
 	}
 
 	if ((ai = ao_driver_info(ad->driverId)) == NULL) {
-		FATAL("problems getting driver info for device defined at line %i\n"
-		      "you may not have permission to the audio device\n", param->line);
+		g_error("problems getting driver info for device defined at line %i\n"
+			"you may not have permission to the audio device\n", param->line);
 	}
 
-	DEBUG("using ao driver \"%s\" for \"%s\"\n", ai->short_name,
-	      audio_output_get_name(ao));
+	g_debug("using ao driver \"%s\" for \"%s\"\n", ai->short_name,
+		audio_output_get_name(ao));
 
 	blockParam = getBlockParam(param, "options");
 
 	if (blockParam) {
-		duplicated = xstrdup(blockParam->value);
+		duplicated = g_strdup(blockParam->value);
 	} else
-		duplicated = xstrdup("");
+		duplicated = g_strdup("");
 
 	if (strlen(duplicated)) {
 		stk1 = NULL;
@@ -111,7 +113,7 @@ static void *audioOutputAo_initDriver(struct audio_output *ao,
 			stk2 = NULL;
 			key = strtok_r(n1, "=", &stk2);
 			if (!key)
-				FATAL("problems parsing options \"%s\"\n", n1);
+				g_error("problems parsing options \"%s\"\n", n1);
 			/*found = 0;
 			   for(i=0;i<ai->option_count;i++) {
 			   if(strcmp(ai->options[i],key)==0) {
@@ -126,7 +128,7 @@ static void *audioOutputAo_initDriver(struct audio_output *ao,
 			   } */
 			value = strtok_r(NULL, "", &stk2);
 			if (!value)
-				FATAL("problems parsing options \"%s\"\n", n1);
+				g_error("problems parsing options \"%s\"\n", n1);
 			ao_append_option(&ad->options, key, value);
 			n1 = strtok_r(NULL, ";", &stk1);
 		}
@@ -223,7 +225,7 @@ audioOutputAo_play(void *data, const char *playChunk, size_t size)
 
 		if (ao_play_deconst(ad->device, playChunk, chunk_size) == 0) {
 			audioOutputAo_error();
-			ERROR("closing audio device due to write error\n");
+			g_warning("closing audio device due to write error\n");
 			return false;
 		}
 
