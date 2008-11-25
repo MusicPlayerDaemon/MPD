@@ -470,6 +470,8 @@ int main(int argc, char *argv[])
 		}
 	}
 
+	g_timer_destroy(save_state_timer);
+
 	write_state_file();
 	playerKill();
 	finishZeroconf();
