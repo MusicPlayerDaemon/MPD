@@ -474,8 +474,10 @@ input_curl_easy_init(struct input_stream *is)
 		return false;
 
 	c->request_headers = NULL;
+	/*
 	c->request_headers = curl_slist_append(c->request_headers,
 					       "Icy-Metadata: 1");
+	*/
 	curl_easy_setopt(c->easy, CURLOPT_HTTPHEADER, c->request_headers);
 
 	return true;
