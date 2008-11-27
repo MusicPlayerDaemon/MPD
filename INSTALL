@@ -91,6 +91,18 @@ libcurl - http://curl.haxx.se/
 For playing HTTP streams.
 
 
+pkg-config
+----------
+
+MPD uses pkg-config to locate most external libraries.  If you do not
+have pkg-config, or if your version of the library does not ship the
+".pc" file, you have to provide the library's build options in
+environment variables.  These variables are documented in "./configure
+--help".  Example:
+
+ FLAC_CFLAGS=-I/usr/include/FLAC FLAC_LIBS=-lFLAC ./configure
+
+
 Download
 --------
 
