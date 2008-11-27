@@ -19,6 +19,8 @@
 #ifndef MPD_CONF_H
 #define MPD_CONF_H
 
+#include <stdbool.h>
+
 #define CONF_MUSIC_DIR                  "music_directory"
 #define CONF_PLAYLIST_DIR               "playlist_directory"
 #define CONF_DB_FILE                    "db_file"
@@ -96,6 +98,8 @@ BlockParam *getBlockParam(ConfigParam * param, const char *name);
 ConfigParam *parseConfigFilePath(const char *name, int force);
 
 int getBoolConfigParam(const char *name, int force);
+
+bool config_get_bool(const char *name, bool default_value);
 
 int getBoolBlockParam(ConfigParam *param, const char *name, int force);
 

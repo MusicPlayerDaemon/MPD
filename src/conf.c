@@ -418,6 +418,16 @@ int getBoolConfigParam(const char *name, int force)
 	return ret;
 }
 
+bool config_get_bool(const char *name, bool default_value)
+{
+	int value = getBoolConfigParam(name, true);
+
+	if (value == CONF_BOOL_UNSET)
+		return default_value;
+
+	return value;
+}
+
 int getBoolBlockParam(ConfigParam *param, const char *name, int force)
 {
 	int ret;
