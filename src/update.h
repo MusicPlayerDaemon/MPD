@@ -20,6 +20,10 @@
 #ifndef MPD_UPDATE_H
 #define MPD_UPDATE_H
 
+void update_global_init(void);
+
+void update_global_finish(void);
+
 unsigned
 isUpdatingDB(void);
 

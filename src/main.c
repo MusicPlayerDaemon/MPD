@@ -416,6 +416,7 @@ int main(int argc, char *argv[])
 	initPermissions();
 	initPlaylist();
 	decoder_plugin_init_all();
+	update_global_init();
 
 	init_main_notify();
 
@@ -497,6 +498,7 @@ int main(int argc, char *argv[])
 	dc_deinit();
 	pc_deinit();
 	command_finish();
+	update_global_finish();
 	decoder_plugin_deinit_all();
 	music_pipe_free();
 	cleanUpPidFile();

@@ -580,3 +580,11 @@ void reap_update_task(void)
 		progress = UPDATE_PROGRESS_IDLE;
 	}
 }
+
+void update_global_init(void)
+{
+}
+
+void update_global_finish(void)
+{
+}
