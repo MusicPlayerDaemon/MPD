@@ -17,7 +17,6 @@
  */
 
 #include "../decoder_api.h"
-#include "../log.h"
 #include "../conf.h"
 
 #include <assert.h>
@@ -284,7 +283,7 @@ static void mp3_parse_id3(struct mp3_data *data, size_t tagsize,
 		}
 
 		if (count != tagsize) {
-			DEBUG("mp3_decode: error parsing ID3 tag\n");
+			g_debug("mp3_decode: error parsing ID3 tag\n");
 			g_free(allocated);
 			return;
 		}
@@ -363,9 +362,9 @@ decode_next_frame_header(struct mp3_data *data, struct tag **tag,
 			if ((data->stream).error == MAD_ERROR_BUFLEN)
 				return DECODE_CONT;
 			else {
-				ERROR("unrecoverable frame level error "
-				      "(%s).\n",
-				      mad_stream_errorstr(&data->stream));
+				g_warning("unrecoverable frame level error "
+					  "(%s).\n",
+					  mad_stream_errorstr(&data->stream));
 				return DECODE_BREAK;
 			}
 		}
@@ -415,9 +414,9 @@ decodeNextFrame(struct mp3_data *data)
 			if ((data->stream).error == MAD_ERROR_BUFLEN)
 				return DECODE_CONT;
 			else {
-				ERROR("unrecoverable frame level error "
-				      "(%s).\n",
-				      mad_stream_errorstr(&data->stream));
+				g_warning("unrecoverable frame level error "
+					  "(%s).\n",
+					  mad_stream_errorstr(&data->stream));
 				return DECODE_BREAK;
 			}
 		}
@@ -588,8 +587,8 @@ parse_lame(struct lame *lame, struct mad_bitptr *ptr, int *bitlen)
 	           &lame->version.major, &lame->version.minor) != 2)
 		return false;
 
-	DEBUG("detected LAME version %i.%i (\"%s\")\n",
-	      lame->version.major, lame->version.minor, lame->encoder);
+	g_debug("detected LAME version %i.%i (\"%s\")\n",
+		lame->version.major, lame->version.minor, lame->encoder);
 
 	/* The reference volume was changed from the 83dB used in the
 	 * ReplayGain spec to 89dB in lame 3.95.1.  Bump the gain for older
@@ -605,7 +604,7 @@ parse_lame(struct lame *lame, struct mad_bitptr *ptr, int *bitlen)
 	mad_bit_read(ptr, 16);
 
 	lame->peak = mad_f_todouble(mad_bit_read(ptr, 32) << 5); /* peak */
-	DEBUG("LAME peak found: %f\n", lame->peak);
+	g_debug("LAME peak found: %f\n", lame->peak);
 
 	lame->track_gain = 0;
 	name = mad_bit_read(ptr, 3); /* gain name */
@@ -614,7 +613,7 @@ parse_lame(struct lame *lame, struct mad_bitptr *ptr, int *bitlen)
 	gain = mad_bit_read(ptr, 9); /* gain*10 */
 	if (gain && name == 1 && orig != 0) {
 		lame->track_gain = ((sign ? -gain : gain) / 10.0) + adj;
-		DEBUG("LAME track gain found: %f\n", lame->track_gain);
+		g_debug("LAME track gain found: %f\n", lame->track_gain);
 	}
 
 	/* tmz reports that this isn't currently written by any version of lame
@@ -629,7 +628,7 @@ parse_lame(struct lame *lame, struct mad_bitptr *ptr, int *bitlen)
 	gain = mad_bit_read(ptr, 9); /* gain*10 */
 	if (gain && name == 2 && orig != 0) {
 		lame->album_gain = ((sign ? -gain : gain) / 10.0) + adj;
-		DEBUG("LAME album gain found: %f\n", lame->track_gain);
+		g_debug("LAME album gain found: %f\n", lame->track_gain);
 	}
 #else
 	mad_bit_read(ptr, 16);
@@ -640,7 +639,7 @@ parse_lame(struct lame *lame, struct mad_bitptr *ptr, int *bitlen)
 	lame->encoder_delay = mad_bit_read(ptr, 12);
 	lame->encoder_padding = mad_bit_read(ptr, 12);
 
-	DEBUG("encoder delay is %i, encoder padding is %i\n",
+	g_debug("encoder delay is %i, encoder padding is %i\n",
 	      lame->encoder_delay, lame->encoder_padding);
 
 	mad_bit_read(ptr, 80);
@@ -771,8 +770,8 @@ mp3_decode_first_frame(struct mp3_data *data, struct tag **tag,
 		return false;
 
 	if (data->max_frames > 8 * 1024 * 1024) {
-		ERROR("mp3 file header indicates too many frames: %lu",
-		      data->max_frames);
+		g_warning("mp3 file header indicates too many frames: %lu\n",
+			  data->max_frames);
 		return false;
 	}
 
@@ -1067,7 +1066,7 @@ mp3_decode(struct decoder *decoder, struct input_stream *input_stream)
 
 	if (!mp3_open(input_stream, &data, decoder, &tag, &replay_gain_info)) {
 		if (decoder_get_command(decoder) == DECODE_COMMAND_NONE)
-			ERROR
+			g_warning
 			    ("Input does not appear to be a mp3 bit stream.\n");
 		return;
 	}
@@ -1107,8 +1106,8 @@ static struct tag *mp3_tag_dup(const char *file)
 			ret = tag_new();
 		ret->time = total_time;
 	} else {
-		DEBUG("mp3_tag_dup: Failed to get total song time from: %s\n",
-		      file);
+		g_debug("mp3_tag_dup: Failed to get total song time from: %s\n",
+			file);
 	}
 
 	return ret;
