@@ -145,6 +145,8 @@ void initConf(void)
 	/* registerConfigParam(name,                   repeatable, block); */
 	registerConfigParam(CONF_MUSIC_DIR,                     0,     0);
 	registerConfigParam(CONF_PLAYLIST_DIR,                  0,     0);
+	registerConfigParam(CONF_FOLLOW_INSIDE_SYMLINKS,        0,     0);
+	registerConfigParam(CONF_FOLLOW_OUTSIDE_SYMLINKS,       0,     0);
 	registerConfigParam(CONF_DB_FILE,                       0,     0);
 	registerConfigParam(CONF_LOG_FILE,                      0,     0);
 	registerConfigParam(CONF_ERROR_FILE,                    0,     0);

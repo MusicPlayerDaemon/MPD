@@ -31,6 +31,7 @@
 #include "condition.h"
 #include "update.h"
 #include "idle.h"
+#include "conf.h"
 
 #include <glib.h>
 
@@ -55,6 +56,14 @@ static unsigned update_task_id;
 static struct song *delete;
 
 static struct condition delete_cond;
+
+enum {
+	DEFAULT_FOLLOW_INSIDE_SYMLINKS = true,
+	DEFAULT_FOLLOW_OUTSIDE_SYMLINKS = false,
+};
+
+static bool follow_inside_symlinks;
+static bool follow_outside_symlinks;
 
 unsigned
 isUpdatingDB(void)
@@ -337,19 +346,28 @@ skip_symlink(const struct directory *directory, const char *utf8_name)
 		/* don't skip if this is not a symlink */
 		return errno != EINVAL;
 
-	if (buffer[0] == '/')
+	if (!follow_inside_symlinks && !follow_outside_symlinks) {
+		/* ignore all symlinks */
+		return true;
+	} else if (follow_inside_symlinks && follow_outside_symlinks) {
+		/* consider all symlinks */
 		return false;
+	}
+
+	if (buffer[0] == '/')
+		return !follow_outside_symlinks;
 
 	p = buffer;
 	while (*p == '.') {
 		if (p[1] == '.' && p[2] == '/') {
 			/* "../" moves to parent directory */
 			directory = directory->parent;
-			if (directory == NULL)
+			if (directory == NULL) {
 				/* we have moved outside the music
-				   directory - don't skip this
-				   symlink */
-				return false;
+				   directory - skip this symlink
+				   if such symlinks are not allowed */
+				return !follow_outside_symlinks;
+			}
 			p += 3;
 		} else if (p[1] == '/')
 			/* eliminate "./" */
@@ -359,8 +377,9 @@ skip_symlink(const struct directory *directory, const char *utf8_name)
 	}
 
 	/* we are still in the music directory, so this symlink points
-	   to a song which is already in the database - skip it */
-	return true;
+	   to a song which is already in the database - skip according
+	   to the follow_inside_symlinks param*/
+	return !follow_inside_symlinks;
 }
 
 static bool
@@ -583,6 +602,13 @@ void reap_update_task(void)
 
 void update_global_init(void)
 {
+	follow_inside_symlinks =
+		config_get_bool(CONF_FOLLOW_INSIDE_SYMLINKS,
+				DEFAULT_FOLLOW_INSIDE_SYMLINKS);
+
+	follow_outside_symlinks =
+		config_get_bool(CONF_FOLLOW_OUTSIDE_SYMLINKS,
+				DEFAULT_FOLLOW_OUTSIDE_SYMLINKS);
 }
 
 void update_global_finish(void)

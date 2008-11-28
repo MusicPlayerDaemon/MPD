@@ -7,6 +7,8 @@ playlist_directory              "~/.mpd/playlists"
 db_file                         "~/.mpd/mpd.db"
 log_file                        "~/.mpd/mpd.log"
 error_file                      "~/.mpd/mpd.error"
+#follow_outside_symlinks         "no"
+#follow_inside_symlinks          "yes"
 ################################################################
 
 

@@ -35,6 +35,17 @@ This specifies the directory where music is located.
 .B playlist_directory <directory>
 This specifies the directory where saved playlists are stored.
 .TP
+.B follow_outside_symlinks <yes or no>
+Control if MPD will follow symbolic links pointing outside the music dir.
+You must recreate the database after changing this option.
+The default is "no".
+.TP
+.B follow_inside_symlinks <yes or no>
+Control if MPD will follow symbolic links pointing outside the music dir, potentially
+adding duplicates to the database.
+You must recreate the database after changing this option.
+The default is "yes".
+.TP
 .B db_file <file>
 This specifies where the db file will be stored.
 .TP

@@ -23,6 +23,8 @@
 
 #define CONF_MUSIC_DIR                  "music_directory"
 #define CONF_PLAYLIST_DIR               "playlist_directory"
+#define CONF_FOLLOW_INSIDE_SYMLINKS     "follow_inside_symlinks"
+#define CONF_FOLLOW_OUTSIDE_SYMLINKS    "follow_outside_symlinks"
 #define CONF_DB_FILE                    "db_file"
 #define CONF_LOG_FILE                   "log_file"
 #define CONF_ERROR_FILE                 "error_file"
