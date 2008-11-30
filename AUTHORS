@@ -3,12 +3,6 @@ Current Developers
 Max Kellermann <max@duempel.org>
 	general
 
-Warren Dukes <warren.dukes@gmail.com>
-	general
-
-J. Alexander Treuman <jat@spatialrift.net>
-	general, MP3, ID3, PulseAudio, format conversion, stored playlists
-
 José Anarch <anarchsss@gmail.com>
 	JACK plugin
 
@@ -30,7 +24,13 @@ Viliam Mateicka <viliam.mateicka@gmail.com>
 Former Developers
 -----------------
 
+Warren Dukes <warren.dukes@gmail.com>
+	general
+
 Niklas Hofer
 	'next' and 'previous' patch
+
+J. Alexander Treuman <jat@spatialrift.net>
+	general, MP3, ID3, PulseAudio, format conversion, stored playlists
 
 Eric Wong
