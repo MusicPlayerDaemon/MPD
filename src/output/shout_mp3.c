@@ -133,8 +133,7 @@ static int shout_mp3_encoder_encode(struct shout_data *sd,
 {
 	const int16_t *src = (const int16_t*)chunk;
 	unsigned int i;
-	int j;
-	float (*lamebuf)[2];
+	float *left, *right;
 	struct shout_buffer *buf = &(sd->buf);
 	unsigned int samples;
 	int bytes = audio_format_sample_size(&sd->audio_format);
@@ -142,21 +141,28 @@ static int shout_mp3_encoder_encode(struct shout_data *sd,
 	int bytes_out;
 
 	samples = len / (bytes * sd->audio_format.channels);
-	/* rough estimate, from lame.h */
-	lamebuf = g_malloc(sizeof(float) * (1.25 * samples + 7200));
+	left = g_malloc(sizeof(left[0]) * samples);
+	if (sd->audio_format.channels > 1)
+		right = g_malloc(sizeof(left[0]) * samples);
+	else
+		right = left;
 
 	/* this is for only 16-bit audio */
 
 	for (i = 0; i < samples; i++) {
-		for (j = 0; j < sd->audio_format.channels; j++) {
-			lamebuf[j][i] = *src++;
-		}
+		left[i] = src[0];
+		if (right != left)
+			right[i] = src[1];
+		src += sd->audio_format.channels;
 	}
 
-	bytes_out = lame_encode_buffer_float(ld->gfp, lamebuf[0], lamebuf[1],
+	bytes_out = lame_encode_buffer_float(ld->gfp, left, right,
 					     samples, buf->data,
 					     sizeof(buf->data) - buf->len);
-	free(lamebuf);
+
+	g_free(left);
+	if (right != left)
+		g_free(right);
 
 	if (0 > bytes_out) {
 		g_warning("error encoding lame buffer for shout\n");
