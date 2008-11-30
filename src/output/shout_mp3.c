@@ -131,6 +131,7 @@ static int shout_mp3_encoder_send_metadata(struct shout_data *sd,
 static int shout_mp3_encoder_encode(struct shout_data *sd,
 				    const char * chunk, size_t len)
 {
+	const int16_t *src = (const int16_t*)chunk;
 	unsigned int i;
 	int j;
 	float (*lamebuf)[2];
@@ -148,8 +149,7 @@ static int shout_mp3_encoder_encode(struct shout_data *sd,
 
 	for (i = 0; i < samples; i++) {
 		for (j = 0; j < sd->audio_format.channels; j++) {
-			lamebuf[j][i] = *((const int16_t *) chunk);
-			chunk += bytes;
+			lamebuf[j][i] = *src++;
 		}
 	}
 
