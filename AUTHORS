@@ -18,9 +18,6 @@ Guus Sliepen <guus@sliepen.eu.org>
 Jim Ramsay <i.am@jimramsay.com>
 	Zerconf/avahi support
 
-Qball Cow <qballcow@gmail.com>
-	Playlist commands
-
 Patrik Weiskircher <pat@icore.at>
 	Stored playlist commands
 
@@ -32,18 +29,8 @@ Viliam Mateicka <viliam.mateicka@gmail.com>
 
 Former Developers
 -----------------
-tw-nym
-
-Nagilum
-	setuid
 
 Niklas Hofer
 	'next' and 'previous' patch
-
-mackstann
-	command.c and signal handling cleanup
-
-AliasMrJones
-	replayGain
 
 Eric Wong
