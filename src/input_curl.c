@@ -469,6 +469,8 @@ input_curl_easy_init(struct input_stream *is)
 			 input_curl_writefunction);
 	curl_easy_setopt(c->easy, CURLOPT_WRITEDATA, is);
 	curl_easy_setopt(c->easy, CURLOPT_HTTP200ALIASES, http_200_aliases);
+	curl_easy_setopt(c->easy, CURLOPT_FOLLOWLOCATION, 1);
+	curl_easy_setopt(c->easy, CURLOPT_MAXREDIRS, 5);
 	curl_easy_setopt(c->easy, CURLOPT_FAILONERROR, true);
 	curl_easy_setopt(c->easy, CURLOPT_ERRORBUFFER, c->error);
 
