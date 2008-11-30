@@ -19,6 +19,7 @@
 #include "input_curl.h"
 #include "input_stream.h"
 #include "dlist.h"
+#include "config.h"
 
 #include <assert.h>
 #include <sys/select.h>
@@ -459,6 +460,8 @@ input_curl_easy_init(struct input_stream *is)
 	if (mcode != CURLM_OK)
 		return false;
 
+	curl_easy_setopt(c->easy, CURLOPT_USERAGENT,
+			 "Music Player Daemon " VERSION);
 	curl_easy_setopt(c->easy, CURLOPT_HEADERFUNCTION,
 			 input_curl_headerfunction);
 	curl_easy_setopt(c->easy, CURLOPT_WRITEHEADER, is);
