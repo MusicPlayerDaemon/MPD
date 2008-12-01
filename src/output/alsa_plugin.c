@@ -28,6 +28,10 @@
 
 static const char default_device[] = "default";
 
+enum {
+	MPD_ALSA_BUFFER_TIME_US = 500000,
+};
+
 #define MPD_ALSA_RETRY_NR 5
 
 typedef snd_pcm_sframes_t alsa_writei_t(snd_pcm_t * pcm, const void *buffer,
@@ -62,7 +66,7 @@ static AlsaData *newAlsaData(void)
 	ret->pcmHandle = NULL;
 	ret->writei = snd_pcm_writei;
 	ret->useMmap = 0;
-	ret->buffer_time = 0;
+	ret->buffer_time = MPD_ALSA_BUFFER_TIME_US;
 	ret->period_time = 0;
 
 	return ret;
