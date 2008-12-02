@@ -47,7 +47,7 @@ static unsigned calc_hash(const char *p) {
 	return hash;
 }
 
-mpd_malloc struct strset *strset_new(void)
+G_GNUC_MALLOC struct strset *strset_new(void)
 {
 	struct strset *set = xcalloc(1, sizeof(*set));
 	return set;

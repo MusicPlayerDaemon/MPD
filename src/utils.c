@@ -76,7 +76,7 @@ int ipv6Supported(void)
 #endif
 }
 
-mpd_malloc char *xstrdup(const char *s)
+G_GNUC_MALLOC char *xstrdup(const char *s)
 {
 	char *ret = strdup(s);
 	if (G_UNLIKELY(!ret))
@@ -86,7 +86,7 @@ mpd_malloc char *xstrdup(const char *s)
 
 /* borrowed from git :) */
 
-mpd_malloc void *xmalloc(size_t size)
+G_GNUC_MALLOC void *xmalloc(size_t size)
 {
 	void *ret;
 
@@ -98,7 +98,7 @@ mpd_malloc void *xmalloc(size_t size)
 	return ret;
 }
 
-mpd_malloc void *xrealloc(void *ptr, size_t size)
+G_GNUC_MALLOC void *xrealloc(void *ptr, size_t size)
 {
 	void *ret = realloc(ptr, size);
 
@@ -113,7 +113,7 @@ mpd_malloc void *xrealloc(void *ptr, size_t size)
 	return ret;
 }
 
-mpd_malloc void *xcalloc(size_t nmemb, size_t size)
+G_GNUC_MALLOC void *xcalloc(size_t nmemb, size_t size)
 {
 	void *ret;
 

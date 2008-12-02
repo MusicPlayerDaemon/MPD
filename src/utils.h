@@ -19,8 +19,7 @@
 #ifndef MPD_UTILS_H
 #define MPD_UTILS_H
 
-#include "gcc.h"
-
+#include <glib.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -74,13 +73,13 @@ static inline ssize_t xwrite(int fd, const void *buf, size_t len)
 	}
 }
 
-mpd_malloc char *xstrdup(const char *s);
+G_GNUC_MALLOC char *xstrdup(const char *s);
 
-mpd_malloc void *xmalloc(size_t size);
+G_GNUC_MALLOC void *xmalloc(size_t size);
 
-mpd_malloc void *xrealloc(void *ptr, size_t size);
+G_GNUC_MALLOC void *xrealloc(void *ptr, size_t size);
 
-mpd_malloc void *xcalloc(size_t nmemb, size_t size);
+G_GNUC_MALLOC void *xcalloc(size_t nmemb, size_t size);
 
 /**
  * free a const pointer - unfortunately free() expects a non-const
