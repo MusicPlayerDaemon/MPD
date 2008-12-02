@@ -19,10 +19,10 @@
 #ifndef MPD_STATE_FILE_H
 #define MPD_STATE_FILE_H
 
-#include "gcc.h"
+#include <glib.h>
 
 void write_state_file(void);
 void read_state_file(void);
-void mpd_noreturn state_file_fatal(void);
+void G_GNUC_NORETURN state_file_fatal(void);
 
 #endif /* STATE_FILE_H */

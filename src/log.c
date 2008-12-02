@@ -182,7 +182,7 @@ log_func(DEBUG, G_LOG_LEVEL_DEBUG)
 
 #undef log_func
 
-mpd_printf mpd_noreturn void FATAL(const char *fmt, ...)
+mpd_printf G_GNUC_NORETURN void FATAL(const char *fmt, ...)
 {
 	va_list args;
 	va_start(args, fmt);

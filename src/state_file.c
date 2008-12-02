@@ -99,7 +99,7 @@ void read_state_file(void)
 	while(fclose(fp) && errno == EINTR) /* nothing */;
 }
 
-void mpd_noreturn state_file_fatal(void)
+void G_GNUC_NORETURN state_file_fatal(void)
 {
 	FATAL("error parsing state file \"%s\"\n", sfpath);
 }
