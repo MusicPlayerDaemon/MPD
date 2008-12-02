@@ -27,6 +27,7 @@
 #include <sys/types.h>
 #include <pwd.h>
 #include <fcntl.h>
+#include <glib.h>
 
 #ifdef HAVE_IPV6
 #include <sys/socket.h>
@@ -78,7 +79,7 @@ int ipv6Supported(void)
 mpd_malloc char *xstrdup(const char *s)
 {
 	char *ret = strdup(s);
-	if (mpd_unlikely(!ret))
+	if (G_UNLIKELY(!ret))
 		FATAL("OOM: strdup\n");
 	return ret;
 }
@@ -89,10 +90,10 @@ mpd_malloc void *xmalloc(size_t size)
 {
 	void *ret;
 
-	assert(mpd_likely(size));
+	assert(G_LIKELY(size));
 
 	ret = malloc(size);
-	if (mpd_unlikely(!ret))
+	if (G_UNLIKELY(!ret))
 		FATAL("OOM: malloc\n");
 	return ret;
 }
@@ -104,10 +105,10 @@ mpd_malloc void *xrealloc(void *ptr, size_t size)
 	/* some C libraries return NULL when size == 0,
 	 * make sure we get a free()-able pointer (free(NULL)
 	 * doesn't work with all C libraries, either) */
-	if (mpd_unlikely(!ret && !size))
+	if (G_UNLIKELY(!ret && !size))
 		ret = realloc(ptr, 1);
 
-	if (mpd_unlikely(!ret))
+	if (G_UNLIKELY(!ret))
 		FATAL("OOM: realloc\n");
 	return ret;
 }
@@ -116,10 +117,10 @@ mpd_malloc void *xcalloc(size_t nmemb, size_t size)
 {
 	void *ret;
 
-	assert(mpd_likely(nmemb && size));
+	assert(G_LIKELY(nmemb && size));
 
 	ret = calloc(nmemb, size);
-	if (mpd_unlikely(!ret))
+	if (G_UNLIKELY(!ret))
 		FATAL("OOM: calloc\n");
 	return ret;
 }

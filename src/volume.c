@@ -526,7 +526,7 @@ void read_sw_volume_state(FILE *fp)
 		if (!g_str_has_prefix(buf, SW_VOLUME_STATE))
 			continue;
 		sv = strtol(buf + strlen(SW_VOLUME_STATE), &end, 10);
-		if (mpd_likely(!*end))
+		if (G_LIKELY(!*end))
 			changeSoftwareVolume(sv, 0);
 		else
 			ERROR("Can't parse software volume: %s\n", buf);

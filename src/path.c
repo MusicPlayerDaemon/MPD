@@ -110,7 +110,7 @@ char *pfx_dir(char *dst,
               const char *path, const size_t path_len,
               const char *pfx, const size_t pfx_len)
 {
-	if (mpd_unlikely((pfx_len + path_len + 1) >= MPD_PATH_MAX))
+	if (G_UNLIKELY((pfx_len + path_len + 1) >= MPD_PATH_MAX))
 		FATAL("Cannot prefix '%s' to '%s', PATH_MAX: %d\n",
 		      pfx, path, MPD_PATH_MAX);
 

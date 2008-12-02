@@ -19,13 +19,13 @@
 #include "../config.h"
 #include "state_file.h"
 #include "conf.h"
-#include "gcc.h"
 #include "log.h"
 #include "audio.h"
 #include "playlist.h"
 #include "utils.h"
 #include "volume.h"
 
+#include <glib.h>
 #include <string.h>
 #include <sys/stat.h>
 
@@ -58,7 +58,7 @@ void write_state_file(void)
 	if (!sfpath)
 		return;
 	fp = fopen(sfpath, "w");
-	if (mpd_unlikely(!fp)) {
+	if (G_UNLIKELY(!fp)) {
 		ERROR("problems opening state file \"%s\" for writing: %s\n",
 		      sfpath, strerror(errno));
 		return;
@@ -87,7 +87,7 @@ void read_state_file(void)
 		FATAL("state file \"%s\" is not a regular file\n", sfpath);
 
 	while (!(fp = fopen(sfpath, "r")) && errno == EINTR);
-	if (mpd_unlikely(!fp)) {
+	if (G_UNLIKELY(!fp)) {
 		FATAL("problems opening state file \"%s\" for reading: %s\n",
 		      sfpath, strerror(errno));
 	}

@@ -52,7 +52,7 @@ static id3_utf8_t * processID3FieldString (int is_id3v1, const id3_ucs4_t *ucs4,
 		GError *error = NULL;
 
 		isostr = id3_ucs4_latin1duplicate(ucs4);
-		if (mpd_unlikely(!isostr)) {
+		if (G_UNLIKELY(!isostr)) {
 			return NULL;
 		}
 
@@ -70,7 +70,7 @@ static id3_utf8_t * processID3FieldString (int is_id3v1, const id3_ucs4_t *ucs4,
 		free(isostr);
 	} else {
 		utf8 = id3_ucs4_utf8duplicate(ucs4);
-		if (mpd_unlikely(!utf8)) {
+		if (G_UNLIKELY(!utf8)) {
 			return NULL;
 		}
 	}

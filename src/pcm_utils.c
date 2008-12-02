@@ -26,6 +26,7 @@
 #include <assert.h>
 #include <string.h>
 #include <math.h>
+#include <glib.h>
 
 static inline int
 pcm_dither(void)
@@ -40,9 +41,9 @@ pcm_dither(void)
 static int32_t
 pcm_range(int32_t sample, unsigned bits)
 {
-	if (mpd_unlikely(sample < (-1 << (bits - 1))))
+	if (G_UNLIKELY(sample < (-1 << (bits - 1))))
 		return -1 << (bits - 1);
-	if (mpd_unlikely(sample >= (1 << (bits - 1))))
+	if (G_UNLIKELY(sample >= (1 << (bits - 1))))
 		return (1 << (bits - 1)) - 1;
 	return sample;
 }
