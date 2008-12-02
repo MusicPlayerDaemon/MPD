@@ -164,7 +164,7 @@ void setup_log_output(bool use_stdout)
 }
 
 #define log_func(func,level) \
-mpd_printf void func(const char *fmt, ...) \
+G_GNUC_PRINTF(1, 2) void func(const char *fmt, ...) \
 { \
 	if (level <= (int)log_threshold) { \
 		va_list args; \
@@ -182,7 +182,7 @@ log_func(DEBUG, G_LOG_LEVEL_DEBUG)
 
 #undef log_func
 
-mpd_printf G_GNUC_NORETURN void FATAL(const char *fmt, ...)
+G_GNUC_PRINTF(1, 2) G_GNUC_NORETURN void FATAL(const char *fmt, ...)
 {
 	va_list args;
 	va_start(args, fmt);

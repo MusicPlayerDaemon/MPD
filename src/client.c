@@ -760,7 +760,7 @@ void client_vprintf(struct client *client, const char *fmt, va_list args)
 	free(buffer);
 }
 
-mpd_fprintf void client_printf(struct client *client, const char *fmt, ...)
+G_GNUC_PRINTF(2, 3) void client_printf(struct client *client, const char *fmt, ...)
 {
 	va_list args;
 

@@ -19,7 +19,6 @@
 #ifndef MPD_COMMAND_H
 #define MPD_COMMAND_H
 
-#include "gcc.h"
 #include "ack.h"
 
 #include <glib.h>
@@ -47,7 +46,7 @@ command_process(struct client *client, char *commandString);
 
 void command_success(struct client *client);
 
-mpd_fprintf_ void command_error(struct client *client, enum ack error,
-				const char *fmt, ...);
+G_GNUC_PRINTF(3, 4) void command_error(struct client *client, enum ack error,
+				       const char *fmt, ...);
 
 #endif

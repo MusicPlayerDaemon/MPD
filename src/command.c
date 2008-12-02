@@ -102,8 +102,8 @@ static void command_error_v(struct client *client, enum ack error,
 	current_command = NULL;
 }
 
-mpd_fprintf_ void command_error(struct client *client, enum ack error,
-				const char *fmt, ...)
+G_GNUC_PRINTF(3, 4) void command_error(struct client *client, enum ack error,
+				       const char *fmt, ...)
 {
 	va_list args;
 	va_start(args, fmt);
@@ -111,7 +111,7 @@ mpd_fprintf_ void command_error(struct client *client, enum ack error,
 	va_end(args);
 }
 
-static bool mpd_fprintf__
+static bool G_GNUC_PRINTF(4, 5)
 check_uint32(struct client *client, uint32_t *dst,
 	     const char *s, const char *fmt, ...)
 {
@@ -128,7 +128,7 @@ check_uint32(struct client *client, uint32_t *dst,
 	return true;
 }
 
-static bool mpd_fprintf__
+static bool G_GNUC_PRINTF(4, 5)
 check_int(struct client *client, int *value_r,
 	  const char *s, const char *fmt, ...)
 {

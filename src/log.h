@@ -19,17 +19,15 @@
 #ifndef MPD_LOG_H
 #define MPD_LOG_H
 
-#include "gcc.h"
-
 #include <glib.h>
 #include <stdbool.h>
 
-mpd_printf void ERROR(const char *fmt, ...);
-mpd_printf void LOG(const char *fmt, ...);
-mpd_printf void SECURE(const char *fmt, ...);
-mpd_printf void DEBUG(const char *fmt, ...);
-mpd_printf void WARNING(const char *fmt, ...);
-mpd_printf G_GNUC_NORETURN void FATAL(const char *fmt, ...);
+G_GNUC_PRINTF(1, 2) void ERROR(const char *fmt, ...);
+G_GNUC_PRINTF(1, 2) void LOG(const char *fmt, ...);
+G_GNUC_PRINTF(1, 2) void SECURE(const char *fmt, ...);
+G_GNUC_PRINTF(1, 2) void DEBUG(const char *fmt, ...);
+G_GNUC_PRINTF(1, 2) void WARNING(const char *fmt, ...);
+G_GNUC_PRINTF(1, 2) G_GNUC_NORETURN void FATAL(const char *fmt, ...);
 
 void initLog(bool verbose);
 

@@ -19,8 +19,7 @@
 #ifndef MPD_CLIENT_H
 #define MPD_CLIENT_H
 
-#include "gcc.h"
-
+#include <glib.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdarg.h>
@@ -65,7 +64,7 @@ void client_vprintf(struct client *client, const char *fmt, va_list args);
 /**
  * Write a printf-like formatted string to the client.
  */
-mpd_fprintf void client_printf(struct client *client, const char *fmt, ...);
+G_GNUC_PRINTF(2, 3) void client_printf(struct client *client, const char *fmt, ...);
 
 /**
  * Adds the specified idle flags to all clients and immediately sends
