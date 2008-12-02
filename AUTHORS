@@ -1,5 +1,9 @@
 Current Developers
 ------------------
+
+Avuton Olrich <avuton@gmail.com>
+	release manager
+
 Max Kellermann <max@duempel.org>
 	general
 
@@ -20,6 +24,10 @@ Laszlo Ashin <kodest@gmail.com>
 
 Viliam Mateicka <viliam.mateicka@gmail.com>
 	FFmpeg support
+
+Eric Wollesen <encoded@xmtp.net>
+	encoder API, shout output
+
 
 Former Developers
 -----------------
