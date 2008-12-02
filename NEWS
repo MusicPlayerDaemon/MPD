@@ -1,5 +1,6 @@
 ver 0.14.0 (????/??/??)
 * audio outputs:
+  - wait 10 seconds before reopening a failed device
   - fifo: new plugin
   - null: new plugin
   - shout: block while trying to connect instead of failing
@@ -9,6 +10,7 @@ ver 0.14.0 (????/??/??)
 * decoders:
   - ffmpeg: new plugin
   - wavpack: new plugin
+  - aac: stream support added
 * commands:
   - "addid" takes optional second argument to specify position
   - "idle" notifies the client when a notable change occurs
@@ -25,6 +27,8 @@ ver 0.14.0 (????/??/??)
 * optimized PCM conversions and dithering
 * much code has been replaced by using GLib
 * the HTTP client has been replaced with libcurl
+* symbolic links in the music directory can be disabled; the default
+  is to ignore symlinks pointing outside the music directory
 
 ver 0.13.0 (2007/5/28)
 * New JACK audio output
