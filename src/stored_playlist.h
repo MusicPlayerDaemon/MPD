@@ -22,6 +22,7 @@
 #include "playlist.h"
 
 #include <glib.h>
+#include <time.h>
 
 struct song;
 
