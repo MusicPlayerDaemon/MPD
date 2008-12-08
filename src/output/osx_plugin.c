@@ -18,9 +18,13 @@
 
 #include "../output_api.h"
 #include "../utils.h"
-#include "../log.h"
 
+#include <glib.h>
+#include <pthread.h>
 #include <AudioUnit/AudioUnit.h>
+
+#undef G_LOG_DOMAIN
+#define G_LOG_DOMAIN "osx"
 
 typedef struct _OsxData {
 	AudioUnit au;
@@ -35,7 +39,7 @@ typedef struct _OsxData {
 
 static OsxData *newOsxData(void)
 {
-	OsxData *ret = xmalloc(sizeof(OsxData));
+	OsxData *ret = g_new(OsxData, 1);
 
 	pthread_mutex_init(&ret->mutex, NULL);
 	pthread_cond_init(&ret->condition, NULL);
@@ -227,18 +231,18 @@ osx_openDevice(void *data, struct audio_format *audioFormat)
 
 	comp = FindNextComponent(NULL, &desc);
 	if (comp == 0) {
-		ERROR("Error finding OS X component\n");
+		g_warning("Error finding OS X component\n");
 		return false;
 	}
 
 	if (OpenAComponent(comp, &od->au) != noErr) {
-		ERROR("Unable to open OS X component\n");
+		g_warning("Unable to open OS X component\n");
 		return false;
 	}
 
 	if (AudioUnitInitialize(od->au) != 0) {
 		CloseComponent(od->au);
-		ERROR("Unable to initialize OS X audio unit\n");
+		g_warning("Unable to initialize OS X audio unit\n");
 		return false;
 	}
 
@@ -250,7 +254,7 @@ osx_openDevice(void *data, struct audio_format *audioFormat)
 				 &callback, sizeof(callback)) != 0) {
 		AudioUnitUninitialize(od->au);
 		CloseComponent(od->au);
-		ERROR("unable to set callback for OS X audio unit\n");
+		g_warning("unable to set callback for OS X audio unit\n");
 		return false;
 	}
 
@@ -272,14 +276,14 @@ osx_openDevice(void *data, struct audio_format *audioFormat)
 				 &streamDesc, sizeof(streamDesc)) != 0) {
 		AudioUnitUninitialize(od->au);
 		CloseComponent(od->au);
-		ERROR("Unable to set format on OS X device\n");
+		g_warning("Unable to set format on OS X device\n");
 		return false;
 	}
 
 	/* create a buffer of 1s */
 	od->bufferSize = (audioFormat->sample_rate) *
 		audio_format_frame_size(audioFormat);
-	od->buffer = xrealloc(od->buffer, od->bufferSize);
+	od->buffer = g_realloc(od->buffer, od->bufferSize);
 
 	od->pos = 0;
 	od->len = 0;
@@ -301,7 +305,7 @@ osx_play(void *data, const char *playChunk, size_t size)
 		od->started = 1;
 		err = AudioOutputUnitStart(od->au);
 		if (err) {
-			ERROR("unable to start audio output: %i\n", err);
+			g_warning("unable to start audio output: %i\n", err);
 			return false;
 		}
 	}
