@@ -223,6 +223,9 @@ osx_openDevice(void *data, struct audio_format *audioFormat)
 	AURenderCallbackStruct callback;
 	AudioStreamBasicDescription streamDesc;
 
+	if (audioFormat->bits > 16)
+		audioFormat->bits = 16;
+
 	desc.componentType = kAudioUnitType_Output;
 	desc.componentSubType = kAudioUnitSubType_DefaultOutput;
 	desc.componentManufacturer = kAudioUnitManufacturer_Apple;
