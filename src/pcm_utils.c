@@ -461,7 +461,7 @@ size_t pcm_convert_size(const struct audio_format *inFormat, size_t src_size,
 	assert((src_size % audio_format_frame_size(inFormat)) == 0);
 
 	dest_size /= audio_format_frame_size(inFormat);
-	dest_size = floor(0.5 + (double)dest_size * ratio);
+	dest_size = ceil((double)dest_size * ratio);
 	dest_size *= audio_format_frame_size(outFormat);
 
 	return dest_size;
