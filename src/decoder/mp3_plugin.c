@@ -705,7 +705,7 @@ mp3_decode_first_frame(struct mp3_data *data, struct tag **tag,
 	struct lame lame;
 	struct mad_bitptr ptr;
 	int bitlen;
-	int ret;
+	enum mp3_action ret;
 
 	/* stfu gcc */
 	memset(&xing, 0, sizeof(struct xing));
@@ -976,7 +976,7 @@ static bool
 mp3_read(struct mp3_data *data, struct replay_gain_info **replay_gain_info_r)
 {
 	struct decoder *decoder = data->decoder;
-	int ret;
+	enum mp3_action ret;
 	enum decoder_command cmd;
 
 	mp3_update_timer_next_frame(data);
