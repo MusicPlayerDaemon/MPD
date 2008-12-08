@@ -59,7 +59,7 @@ static struct condition delete_cond;
 
 enum {
 	DEFAULT_FOLLOW_INSIDE_SYMLINKS = true,
-	DEFAULT_FOLLOW_OUTSIDE_SYMLINKS = false,
+	DEFAULT_FOLLOW_OUTSIDE_SYMLINKS = true,
 };
 
 static bool follow_inside_symlinks;
