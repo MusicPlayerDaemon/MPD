@@ -201,6 +201,12 @@ audioOutputAo_openDevice(void *data, struct audio_format *audio_format)
 		audioOutputAo_closeDevice(ad);
 	}
 
+	/* support for 24 bit samples in libao is currently dubious,
+	   and until we have sorted that out, resample everything to
+	   16 bit */
+	if (audio_format->bits > 16)
+		audio_format->bits = 16;
+
 	format.bits = audio_format->bits;
 	format.rate = audio_format->sample_rate;
 	format.byte_format = AO_FMT_NATIVE;
