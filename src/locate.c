@@ -138,7 +138,7 @@ strstrSearchTag(struct song *song, enum tag_type type, char *str)
 
 		song_get_url(song, path_max_tmp);
 		p = g_utf8_casefold(path_max_tmp, -1);
-		if (strstr(path_max_tmp, str))
+		if (strstr(p, str))
 			ret = 1;
 		g_free(p);
 		if (ret == 1 || type == LOCATE_TAG_FILE_TYPE)
