@@ -1146,6 +1146,14 @@ else
 	echo " Zeroconf support ..............disabled"
 fi
 
+
+if test x$enable_curl != xno; then
+	echo " HTTP streaming (libcurl) ......enabled"
+else
+	echo " HTTP streaming (libcurl) ......disabled"
+fi
+
+
 echo ""
 echo "##########################################"
 echo ""
