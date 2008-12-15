@@ -208,30 +208,46 @@ ffmpeg_send_packet(struct decoder *decoder, struct input_stream *is,
 		   AVCodecContext *codec_context,
 		   const AVRational *time_base)
 {
+	enum decoder_command cmd = DECODE_COMMAND_NONE;
 	int position;
 	uint8_t audio_buf[(AVCODEC_MAX_AUDIO_FRAME_SIZE * 3) / 2];
 	int len, audio_size;
+	uint8_t *packet_data;
+	int packet_size;
 
-	position = av_rescale_q(packet->pts, *time_base,
-				(AVRational){1, 1});
+	packet_data = packet->data;
+	packet_size = packet->size;
 
-	audio_size = sizeof(audio_buf);
-	len = avcodec_decode_audio2(codec_context,
-				    (int16_t *)audio_buf,
-				    &audio_size,
-				    packet->data, packet->size);
+	while ((packet_size > 0) && (cmd == DECODE_COMMAND_NONE)) {
+		audio_size = sizeof(audio_buf);
+		len = avcodec_decode_audio2(codec_context,
+					    (int16_t *)audio_buf,
+					    &audio_size,
+					    packet_data, packet_size);
 
-	if (len < 0) {
-		g_message("skipping frame\n");
-		return decoder_get_command(decoder);
+
+		position = av_rescale_q(packet->pts, *time_base,
+					(AVRational){1, 1});
+
+		if (len < 0) {
+			/* if error, we skip the frame */
+			g_message("decoding failed\n");
+			break;
+		}
+
+		packet_data += len;
+		packet_size -= len;
+
+		if (audio_size <= 0) {
+			g_message("no audio frame\n");
+			continue;
+		}
+		cmd = decoder_data(decoder, is,
+				   audio_buf, audio_size,
+				   position,
+				   codec_context->bit_rate / 1000, NULL);
 	}
-
-	assert(audio_size >= 0);
-
-	return decoder_data(decoder, is,
-			    audio_buf, audio_size,
-			    position,
-			    codec_context->bit_rate / 1000, NULL);
+	return cmd;
 }
 
 static bool
