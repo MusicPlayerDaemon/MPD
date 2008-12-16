@@ -59,15 +59,9 @@ bool isRemoteUrl(const char *url)
 /* suffixes should be ascii only characters */
 const char *getSuffix(const char *utf8file)
 {
-	const char *ret = NULL;
+	const char *dot = strrchr(utf8file, '.');
 
-	while (*utf8file) {
-		if (*utf8file == '.')
-			ret = utf8file + 1;
-		utf8file++;
-	}
-
-	return ret;
+	return dot != NULL ? dot + 1 : NULL;
 }
 
 const struct decoder_plugin *
