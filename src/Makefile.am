@@ -183,6 +183,10 @@ if HAVE_ZIP
 mpd_SOURCES += archive/zip_plugin.c
 endif
 
+if HAVE_ISO
+mpd_SOURCES += archive/iso_plugin.c
+endif
+
 # decoder plugins
 
 if HAVE_MAD
