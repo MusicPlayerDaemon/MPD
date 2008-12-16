@@ -44,46 +44,6 @@ int printRemoteUrlHandlers(struct client *client)
 	return 0;
 }
 
-int isValidRemoteUtf8Url(const char *utf8url)
-{
-	int ret = 0;
-	const char *temp;
-
-	switch (isRemoteUrl(utf8url)) {
-	case 1:
-		ret = 1;
-		temp = utf8url;
-		while (*temp) {
-			if ((*temp >= 'a' && *temp <= 'z') ||
-			    (*temp >= 'A' && *temp <= 'Z') ||
-			    (*temp >= '0' && *temp <= '9') ||
-			    *temp == '$' ||
-			    *temp == '-' ||
-			    *temp == '.' ||
-			    *temp == '+' ||
-			    *temp == '!' ||
-			    *temp == '*' ||
-			    *temp == '\'' ||
-			    *temp == '(' ||
-			    *temp == ')' ||
-			    *temp == ',' ||
-			    *temp == '%' ||
-			    *temp == '/' ||
-			    *temp == ':' ||
-			    *temp == '?' ||
-			    *temp == ';' || *temp == '&' || *temp == '=') {
-			} else {
-				ret = 1;
-				break;
-			}
-			temp++;
-		}
-		break;
-	}
-
-	return ret;
-}
-
 int isRemoteUrl(const char *url)
 {
 	int count = 0;

@@ -46,7 +46,7 @@ playlist_print_uri(FILE *file, const char *uri)
 	char tmp[MPD_PATH_MAX];
 	const char *s;
 
-	if (playlist_saveAbsolutePaths && !isValidRemoteUtf8Url(uri) &&
+	if (playlist_saveAbsolutePaths && !isRemoteUrl(uri) &&
 	    uri[0] != '/')
 		s = map_directory_child_fs(db_get_root(), uri, tmp);
 	else

@@ -537,7 +537,7 @@ song_by_url(const char *url)
 	if (song != NULL)
 		return song;
 
-	if (isValidRemoteUtf8Url(url))
+	if (isRemoteUrl(url))
 		return song_remote_new(url);
 
 	return NULL;

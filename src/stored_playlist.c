@@ -156,7 +156,7 @@ spl_load(const char *utf8path)
 		if (*s == PLAYLIST_COMMENT)
 			continue;
 
-		if (!isValidRemoteUtf8Url(s)) {
+		if (!isRemoteUrl(s)) {
 			struct song *song;
 
 			path_utf8 = map_fs_to_utf8(s, path_max_tmp);
@@ -360,7 +360,7 @@ spl_append_uri(const char *url, const char *utf8file)
 	if (song)
 		return spl_append_song(utf8file, song);
 
-	if (!isValidRemoteUtf8Url(url))
+	if (!isRemoteUrl(url))
 		return PLAYLIST_RESULT_NO_SUCH_SONG;
 
 	song = song_remote_new(url);

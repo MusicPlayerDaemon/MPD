@@ -26,8 +26,6 @@ struct client;
 
 const char *getSuffix(const char *utf8file);
 
-int isValidRemoteUtf8Url(const char *utf8url);
-
 int isRemoteUrl(const char *url);
 
 const struct decoder_plugin *
