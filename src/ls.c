@@ -59,7 +59,7 @@ bool isRemoteUrl(const char *url)
 /* suffixes should be ascii only characters */
 const char *getSuffix(const char *utf8file)
 {
-	const char *dot = strrchr(utf8file, '.');
+	const char *dot = strrchr(g_basename(utf8file), '.');
 
 	return dot != NULL ? dot + 1 : NULL;
 }
