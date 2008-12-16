@@ -276,6 +276,39 @@ make_subdir(struct directory *parent, const char *name)
 	return directory;
 }
 
+static void
+update_archive_tree(struct directory *directory, char *name)
+{
+	struct directory *subdir;
+	struct song *song;
+	char *tmp;
+
+	tmp = strchr(name, '/');
+	if (tmp) {
+		*tmp = 0;
+		//add dir is not there already
+		if ((subdir = dirvec_find(&directory->children, name)) == NULL) {
+		        //create new directory
+		        subdir = make_subdir(directory, name);
+			subdir->device = DEVICE_INARCHIVE;
+		}
+		//create directories first
+		update_archive_tree(subdir, tmp+1);
+	} else {
+		//add file
+		song = songvec_find(&directory->songs, name);
+		if (song == NULL) {
+			song = song_file_load(name, directory);
+			if (song != NULL) {
+				songvec_add(&directory->songs, song);
+				modified = true;
+				LOG("added %s/%s\n",
+					directory_get_path(directory), name);
+			}
+		}
+	}
+}
+
 static bool
 updateDirectory(struct directory *directory, const struct stat *st);
 
@@ -283,6 +316,7 @@ static void
 updateInDirectory(struct directory *directory,
 		  const char *name, const struct stat *st)
 {
+	const struct archive_plugin *archive;
 	assert(strchr(name, '/') == NULL);
 
 	if (S_ISREG(st->st_mode) && hasMusicSuffix(name, 0)) {
@@ -317,8 +351,37 @@ updateInDirectory(struct directory *directory,
 		ret = updateDirectory(subdir, st);
 		if (!ret)
 			delete_directory(subdir);
+	} else if (S_ISREG(st->st_mode) && (archive = get_archive_by_suffix(name))) {
+		struct archive_file *archfile;
+		char pathname[MPD_PATH_MAX];
+
+		map_directory_child_fs(directory, name, pathname);
+		//open archive
+		archfile = archive->open(pathname);
+		if (archfile) {
+			char *filepath;
+			struct directory *archdir;
+
+			g_debug("archive %s opened\n",pathname);
+			archdir = dirvec_find(&directory->children, name);
+			if (archdir == NULL) {
+				g_debug("creating archive directory (%s)\n", name);
+				archdir = make_subdir(directory, name);
+				//mark this directory as archive (we use device for this)
+				archdir->device = DEVICE_INARCHIVE;
+			}
+			archive->scan_reset(archfile);
+			while ((filepath = archive->scan_next(archfile)) != NULL) {
+				//split name into directory and file
+				g_debug("adding archive file: %s\n", filepath);
+				update_archive_tree(archdir, filepath);
+			}
+			archive->close(archfile);
+		} else {
+			g_warning("unable to open archive %s\n", pathname);
+		}
 	} else {
-		DEBUG("update: %s is not a directory or music\n", name);
+		g_debug("update: %s is not a directory, archive or music\n", name);
 	}
 }
 
