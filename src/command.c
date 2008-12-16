@@ -275,7 +275,8 @@ handle_urlhandlers(struct client *client,
 {
 	if (client_get_uid(client) > 0)
 		client_puts(client, "handler: file://\n");
-	return printRemoteUrlHandlers(client);
+	printRemoteUrlHandlers(client);
+	return COMMAND_RETURN_OK;
 }
 
 static enum command_return

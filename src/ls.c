@@ -32,7 +32,7 @@ static const char *remoteUrlPrefixes[] = {
 	NULL
 };
 
-int printRemoteUrlHandlers(struct client *client)
+void printRemoteUrlHandlers(struct client *client)
 {
 	const char **prefixes = remoteUrlPrefixes;
 
@@ -40,8 +40,6 @@ int printRemoteUrlHandlers(struct client *client)
 		client_printf(client, "handler: %s\n", *prefixes);
 		prefixes++;
 	}
-
-	return 0;
 }
 
 int isRemoteUrl(const char *url)

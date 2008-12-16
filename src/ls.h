@@ -31,6 +31,6 @@ int isRemoteUrl(const char *url);
 const struct decoder_plugin *
 hasMusicSuffix(const char *utf8file, unsigned int next);
 
-int printRemoteUrlHandlers(struct client *client);
+void printRemoteUrlHandlers(struct client *client);
 
 #endif
