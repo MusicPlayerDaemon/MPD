@@ -42,6 +42,10 @@ void printRemoteUrlHandlers(struct client *client)
 	}
 }
 
+bool uri_has_scheme(const char *uri)
+{
+	return strstr(uri, "://") != NULL;
+}
 
 bool isRemoteUrl(const char *url)
 {

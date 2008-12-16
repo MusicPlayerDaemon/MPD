@@ -28,6 +28,12 @@ struct client;
 
 const char *getSuffix(const char *utf8file);
 
+/**
+ * Checks whether the specified URI has a schema in the form
+ * "scheme://".
+ */
+bool uri_has_scheme(const char *uri);
+
 bool isRemoteUrl(const char *url);
 
 const struct decoder_plugin *
