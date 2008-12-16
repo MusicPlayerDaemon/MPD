@@ -28,10 +28,14 @@
 #include <glib.h>
 
 extern const struct archive_plugin bz2_plugin;
+extern const struct archive_plugin zip_plugin;
 
 static const struct archive_plugin *const archive_plugins[] = {
 #ifdef HAVE_BZ2
 	&bz2_plugin,
+#endif
+#ifdef HAVE_ZIP
+	&zip_plugin,
 #endif
 	NULL
 };

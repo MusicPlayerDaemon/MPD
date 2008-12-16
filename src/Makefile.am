@@ -179,6 +179,9 @@ if HAVE_BZ2
 mpd_SOURCES += archive/bz2_plugin.c
 endif
 
+if HAVE_ZIP
+mpd_SOURCES += archive/zip_plugin.c
+endif
 
 # decoder plugins
 

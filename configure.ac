@@ -182,11 +182,24 @@ AC_ARG_ENABLE(bz2,
 
 AM_CONDITIONAL(HAVE_BZ2, test x$enable_bz2 = xyes)
 
+AC_ARG_ENABLE(zip,
+	AS_HELP_STRING([--enable-zip],
+		[enable zip archive support (default: disabled)]),
+	enable_zip=$enableval,
+	enable_zip=no)
+
+AM_CONDITIONAL(HAVE_ZIP, test x$enable_zip = xyes)
+
 # archive plugin libraries
 
 AC_CHECK_LIB(bz2, BZ2_bzDecompressInit,[MPD_LIBS="-lbz2";],enable_bz2=no)
 if test x$enable_bz2 = xyes; then
 	AC_DEFINE(HAVE_BZ2, 1, [Define to have bz2 archive support])
+fi
+
+AC_CHECK_LIB(zzip, zzip_dir_open,[MPD_LIBS="-lzzip";],enable_zip=no)
+if test x$enable_zip = xyes; then
+	AC_DEFINE(HAVE_ZIP, 1, [Define to have zip archive support])
 fi
 
 dnl
@@ -1169,6 +1182,12 @@ if test x$enable_bz2 = xyes; then
 	echo " BZ2 archives support ..........enabled"
 else
 	echo " BZ2 archives support ..........disabled"
+fi
+
+if test x$enable_zip = xyes; then
+	echo " ZIP archives support ..........enabled"
+else
+	echo " ZIP archives support ..........disabled"
 fi
 
 echo ""
