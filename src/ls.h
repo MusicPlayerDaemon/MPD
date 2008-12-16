@@ -21,8 +21,6 @@
 
 #include "decoder_list.h"
 
-#include <sys/time.h>
-
 struct stat;
 struct client;
 
