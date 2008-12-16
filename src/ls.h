@@ -20,6 +20,7 @@
 #define MPD_LS_H
 
 #include "decoder_list.h"
+#include "archive_list.h"
 
 #include <sys/time.h>
 
@@ -34,6 +35,9 @@ int isRemoteUrl(const char *url);
 
 const struct decoder_plugin *
 hasMusicSuffix(const char *utf8file, unsigned int next);
+
+const struct archive_plugin *
+get_archive_by_suffix(const char *utf8file);
 
 int printRemoteUrlHandlers(struct client *client);
 
