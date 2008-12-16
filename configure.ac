@@ -171,6 +171,25 @@ AC_ARG_ENABLE(mvp,
 
 
 dnl
+dnl archive plugins
+dnl
+
+AC_ARG_ENABLE(bz2,
+	AS_HELP_STRING([--enable-bz2],
+		[enable rar archive support (default: disabled)]),
+	enable_bz2=$enableval,
+	enable_bz2=no)
+
+AM_CONDITIONAL(HAVE_BZ2, test x$enable_bz2 = xyes)
+
+# archive plugin libraries
+
+AC_CHECK_LIB(bz2, BZ2_bzDecompressInit,[MPD_LIBS="-lbz2";],enable_bz2=no)
+if test x$enable_bz2 = xyes; then
+	AC_DEFINE(HAVE_BZ2, 1, [Define to have bz2 archive support])
+fi
+
+dnl
 dnl decoder plugins
 dnl
 
@@ -1144,6 +1163,12 @@ if test x$with_zeroconf != xno; then
 	echo " Zeroconf support ..............$with_zeroconf"
 else
 	echo " Zeroconf support ..............disabled"
+fi
+
+if test x$enable_bz2 = xyes; then
+	echo " BZ2 archives support ..........enabled"
+else
+	echo " BZ2 archives support ..........disabled"
 fi
 
 echo ""

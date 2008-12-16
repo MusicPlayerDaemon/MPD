@@ -173,6 +173,12 @@ if HAVE_ID3TAG
 mpd_SOURCES += tag_id3.c
 endif
 
+# archive plugins
+
+if HAVE_BZ2
+mpd_SOURCES += archive/bz2_plugin.c
+endif
+
 
 # decoder plugins
 

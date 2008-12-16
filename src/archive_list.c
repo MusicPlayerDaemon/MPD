@@ -1,3 +1,6 @@
+
+
+
 /* the Music Player Daemon (MPD)
  * Copyright (C) 2008 Viliam Mateicka <viliam.mateicka@gmail.com>
  * This project's homepage is: http://www.musicpd.org
@@ -24,7 +27,12 @@
 #include <string.h>
 #include <glib.h>
 
+extern const struct archive_plugin bz2_plugin;
+
 static const struct archive_plugin *const archive_plugins[] = {
+#ifdef HAVE_BZ2
+	&bz2_plugin,
+#endif
 	NULL
 };
 
