@@ -72,6 +72,9 @@ This specifies the user that mpd will run as, if set.
 This specifies which address mpd binds to and listens on.  Multiple
 bind_to_address parameters may be specified.  The default is "any", which binds
 to all available addresses.
+
+To bind to a Unix domain socket, specify an absolute path.  For a
+system-wide MPD, we suggest the path "\fB/var/run/mpd/socket\fP".
 .TP
 .B port <port>
 This specifies the port that mpd listens on.  The default is 6600.

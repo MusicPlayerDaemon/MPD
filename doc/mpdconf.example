@@ -42,6 +42,10 @@ error_file                      "~/.mpd/mpd.error"
 #bind_to_address                 "any"
 #port                            "6600"
 #
+# Bind to a Unix domain socket:
+#
+#bind_to_address                 "/var/run/mpd/socket"
+#
 # Controls the amount of information that is logged.  Can be
 # "default", "secure", or "verbose".
 #
