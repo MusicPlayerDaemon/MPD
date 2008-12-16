@@ -21,12 +21,14 @@
 
 #include "decoder_list.h"
 
+#include <stdbool.h>
+
 struct stat;
 struct client;
 
 const char *getSuffix(const char *utf8file);
 
-int isRemoteUrl(const char *url);
+bool isRemoteUrl(const char *url);
 
 const struct decoder_plugin *
 hasMusicSuffix(const char *utf8file, unsigned int next);

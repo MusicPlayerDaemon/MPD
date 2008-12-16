@@ -42,19 +42,18 @@ void printRemoteUrlHandlers(struct client *client)
 	}
 }
 
-int isRemoteUrl(const char *url)
+
+bool isRemoteUrl(const char *url)
 {
-	int count = 0;
 	const char **urlPrefixes = remoteUrlPrefixes;
 
 	while (*urlPrefixes) {
-		count++;
 		if (g_str_has_prefix(url, *urlPrefixes))
-			return count;
+			return true;
 		urlPrefixes++;
 	}
 
-	return 0;
+	return false;
 }
 
 /* suffixes should be ascii only characters */
