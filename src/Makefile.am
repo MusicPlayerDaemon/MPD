@@ -81,7 +81,10 @@ mpd_headers = \
 	zeroconf.h \
 	locate.h \
 	stored_playlist.h \
-	timer.h
+	timer.h \
+	archive_api.h \
+	archive_list.h \
+	input_archive.h
 
 
 mpd_SOURCES = \
@@ -155,7 +158,10 @@ mpd_SOURCES = \
 	volume.c \
 	locate.c \
 	stored_playlist.c \
-	timer.c
+	timer.c \
+	archive_api.c \
+	archive_list.c \
+	input_archive.c
 
 if HAVE_LIBSAMPLERATE
 mpd_SOURCES += pcm_resample_libsamplerate.c

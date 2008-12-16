@@ -48,6 +48,8 @@ struct input_stream {
 	void *data;
 	char *meta_name;
 	char *meta_title;
+
+	void *archive;
 };
 
 void input_stream_global_init(void);
