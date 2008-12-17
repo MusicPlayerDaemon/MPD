@@ -128,8 +128,8 @@ static void osx_closeDevice(void *data)
 		od->started = 0;
 	}
 
-	CloseComponent(od->au);
 	AudioUnitUninitialize(od->au);
+	CloseComponent(od->au);
 }
 
 static OSStatus
