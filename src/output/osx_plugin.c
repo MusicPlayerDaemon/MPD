@@ -181,7 +181,7 @@ osx_render(void *vdata,
 	   }
 	 */
 
-	bytesToCopy = od->len < bufferSize ? od->len : bufferSize;
+	bytesToCopy = MIN(od->len, bufferSize);
 	bufferSize = bytesToCopy;
 	od->len -= bytesToCopy;
 
@@ -321,7 +321,7 @@ osx_play(void *data, const char *playChunk, size_t size)
 		if (curpos >= od->bufferSize)
 			curpos -= od->bufferSize;
 
-		bytesToCopy = od->bufferSize < size ? od->bufferSize : size;
+		bytesToCopy = MIN(od->bufferSize, size);
 
 		while (od->len > od->bufferSize - bytesToCopy) {
 			/* DEBUG("osx_play: wait\n"); */
