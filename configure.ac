@@ -335,10 +335,9 @@ fi
 AM_CONDITIONAL(HAVE_CURL, test x$enable_curl = xyes)
 
 if test x$enable_shout_ogg = xyes || test x$enable_shout_mp3 = xyes; then
-	enable_shout=yes
-	PKG_CHECK_MODULES([SHOUT], [shout],
-		AC_DEFINE(HAVE_SHOUT, 1, [Define to enable libshout support]),
-		enable_shout=no)
+	PKG_CHECK_MODULES([SHOUT], [shout],,
+		[enable_shout_ogg=no; enable_shout_mp3=no;
+		AC_MSG_WARN([disabling shout streaming support because libshout is not available])])
 fi
 
 if test x$enable_shout_ogg = xyes; then
@@ -348,10 +347,6 @@ if test x$enable_shout_ogg = xyes; then
 	fi
 	if test x$use_tremor = xyes; then
 		AC_MSG_WARN([disabling ogg shout streaming support because tremor does not support vorbis encoding])
-		enable_shout_ogg=no
-	fi
-	if test x$enable_shout = xno; then
-		AC_MSG_WARN([disabling ogg shout streaming support because libshout is not found])
 		enable_shout_ogg=no
 	fi
 	if test x$enable_shout_ogg = xyes; then
@@ -366,13 +361,16 @@ if test x$enable_shout_mp3 = xyes; then
 		AC_MSG_WARN([disabling mp3 shout streaming support because lame is not enabled])
 		enable_shout_mp3=no
 	fi
-	if test x$enable_shout = xno; then
-		AC_MSG_WARN([disabling mp3 shout streaming support because libshout is not found])
-		enable_shout_mp3=no
-	fi
 	if test x$enable_shout_mp3 = xyes; then
 		AC_DEFINE(HAVE_SHOUT_MP3, 1, [Define to enable mp3 streaming support])
 	fi
+fi
+
+if test x$enable_shout_ogg = xyes || test x$enable_shout_mp3 = xyes; then
+	enable_shout=yes
+	AC_DEFINE(HAVE_SHOUT, 1, [Define to enable libshout support])
+else
+	enable_shout=no
 fi
 
 AM_CONDITIONAL(HAVE_SHOUT, test x$enable_shout = xyes)
