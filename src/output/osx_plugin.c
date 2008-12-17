@@ -143,6 +143,7 @@ osx_render(void *vdata,
 	AudioBuffer *buffer = &bufferList->mBuffers[0];
 	size_t bufferSize = buffer->mDataByteSize;
 	size_t bytesToCopy;
+	size_t bytes;
 	int curpos = 0;
 
 	/*DEBUG("osx_render: enter : %i\n", (int)bufferList->mNumberBuffers);
@@ -185,8 +186,8 @@ osx_render(void *vdata,
 	bufferSize = bytesToCopy;
 	od->len -= bytesToCopy;
 
-	if (od->pos + bytesToCopy > od->bufferSize) {
-		size_t bytes = od->bufferSize - od->pos;
+	bytes = od->bufferSize - od->pos;
+	if (bytesToCopy > bytes) {
 		memcpy((unsigned char*)buffer->mData + curpos, od->buffer + od->pos, bytes);
 		od->pos = 0;
 		curpos += bytes;
@@ -299,6 +300,7 @@ osx_play(void *data, const char *playChunk, size_t size)
 {
 	OsxData *od = data;
 	size_t bytesToCopy;
+	size_t bytes;
 	size_t curpos;
 
 	/* DEBUG("osx_play: enter\n"); */
@@ -333,8 +335,8 @@ osx_play(void *data, const char *playChunk, size_t size)
 		size -= bytesToCopy;
 		od->len += bytesToCopy;
 
-		if (curpos + bytesToCopy > od->bufferSize) {
-			size_t bytes = od->bufferSize - curpos;
+		bytes = od->bufferSize - curpos;
+		if (bytesToCopy > bytes) {
 			memcpy(od->buffer + curpos, playChunk, bytes);
 			curpos = 0;
 			playChunk += bytes;
