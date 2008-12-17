@@ -84,6 +84,14 @@ void pc_init(unsigned int buffered_before_play);
 
 void pc_deinit(void);
 
+/**
+ * Call this function when the specified song pointer is about to be
+ * invalidated.  This makes sure that player_control.errored_song does
+ * not point to an invalid pointer.
+ */
+void
+pc_song_deleted(const struct song *song);
+
 void
 playerPlay(struct song *song);
 

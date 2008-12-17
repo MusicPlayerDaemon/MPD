@@ -200,8 +200,10 @@ void clearPlaylist(void)
 	stopPlaylist();
 
 	for (unsigned i = 0; i < playlist.length; i++) {
-		if (!song_in_database(playlist.songs[i]))
+		if (!song_in_database(playlist.songs[i])) {
+			pc_song_deleted(playlist.songs[i]);
 			song_free(playlist.songs[i]);
+		}
 
 		playlist.idToPosition[playlist.positionToId[i]] = -1;
 		playlist.songs[i] = NULL;
@@ -670,8 +672,10 @@ enum playlist_result deleteFromPlaylist(unsigned song)
 		|| playlist.order[playlist.current] == song))
 		clearPlayerQueue();
 
-	if (!song_in_database(playlist.songs[song]))
+	if (!song_in_database(playlist.songs[song])) {
+		pc_song_deleted(playlist.songs[song]);
 		song_free(playlist.songs[song]);
+	}
 
 	playlist.idToPosition[playlist.positionToId[song]] = -1;
 
@@ -738,6 +742,8 @@ deleteASongFromPlaylist(const struct song *song)
 	for (unsigned i = 0; i < playlist.length; i++)
 		if (song == playlist.songs[i])
 			deleteFromPlaylist(i);
+
+	pc_song_deleted(song);
 }
 
 void stopPlaylist(void)

@@ -44,6 +44,13 @@ void pc_deinit(void)
 	notify_deinit(&pc.notify);
 }
 
+void
+pc_song_deleted(const struct song *song)
+{
+	if (pc.errored_song == song)
+		pc.errored_song = NULL;
+}
+
 static void player_command(enum player_command cmd)
 {
 	pc.command = cmd;
