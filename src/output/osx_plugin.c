@@ -330,8 +330,6 @@ osx_play(void *data, const char *playChunk, size_t size)
 			pthread_cond_wait(&od->condition, &od->mutex);
 		}
 
-		bytesToCopy = od->bufferSize - od->len;
-		bytesToCopy = bytesToCopy < size ? bytesToCopy : size;
 		size -= bytesToCopy;
 		od->len += bytesToCopy;
 
