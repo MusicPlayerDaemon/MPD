@@ -344,7 +344,6 @@ osx_play(void *data, const char *playChunk, size_t size)
 		}
 
 		memcpy(od->buffer + curpos, playChunk, bytesToCopy);
-		curpos += bytesToCopy;
 		playChunk += bytesToCopy;
 
 	}
