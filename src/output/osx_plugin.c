@@ -196,7 +196,6 @@ osx_render(void *vdata,
 
 	memcpy((unsigned char*)buffer->mData + curpos, od->buffer + od->pos, bytesToCopy);
 	od->pos += bytesToCopy;
-	curpos += bytesToCopy;
 
 	if (od->pos >= od->bufferSize)
 		od->pos = 0;
