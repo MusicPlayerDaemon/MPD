@@ -356,6 +356,11 @@ if test x$enable_shout_ogg = xyes; then
 	fi
 fi
 
+if test x$enable_lame = xyes; then
+	AM_PATH_LAME([MPD_LIBS="$MPD_LIBS $LAME_LIBS" MPD_CFLAGS="$MPD_CFLAGS $LAME_CFLAGS"],
+		[enable_lame=no; AC_MSG_WARN(You need lame -- disabling lame support)])
+fi
+
 if test x$enable_shout_mp3 = xyes; then
 	if test x$enable_lame = xno; then
 		AC_MSG_WARN([disabling mp3 shout streaming support because lame is not enabled])
@@ -459,11 +464,6 @@ if test x$enable_mp3 = xyes; then
 fi
 
 AM_CONDITIONAL(HAVE_MAD, test x$enable_mp3 = xyes)
-
-if test x$enable_lame = xyes; then
-	AM_PATH_LAME([MPD_LIBS="$MPD_LIBS $LAME_LIBS" MPD_CFLAGS="$MPD_CFLAGS $LAME_CFLAGS"],
-	             [enable_lame=no;AC_MSG_WARN(You need lame -- disabling lame support)])
-fi
 
 
 if test x$enable_mpc = xyes; then
