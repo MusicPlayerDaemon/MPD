@@ -33,12 +33,12 @@
 #include <pthread.h>
 #include <glib.h>
 
-#define LOG_LEVEL_SECURE G_LOG_LEVEL_MESSAGE
+#define LOG_LEVEL_SECURE G_LOG_LEVEL_INFO
 
 #define LOG_DATE_BUF_SIZE 16
 #define LOG_DATE_LEN (LOG_DATE_BUF_SIZE - 1)
 
-static unsigned int log_threshold = G_LOG_LEVEL_INFO;
+static unsigned int log_threshold = G_LOG_LEVEL_MESSAGE;
 
 static const char *log_charset;
 
@@ -116,7 +116,7 @@ void initLog(bool verbose)
 	if (!(param = getConfigParam(CONF_LOG_LEVEL)))
 		return;
 	if (0 == strcmp(param->value, "default")) {
-		log_threshold = G_LOG_LEVEL_INFO;
+		log_threshold = G_LOG_LEVEL_MESSAGE;
 	} else if (0 == strcmp(param->value, "secure")) {
 		log_threshold = LOG_LEVEL_SECURE;
 	} else if (0 == strcmp(param->value, "verbose")) {
