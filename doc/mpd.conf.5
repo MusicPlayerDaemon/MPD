@@ -66,7 +66,10 @@ the "kill" command.  When mpd is restarted, it will read the state file and
 restore the state of mpd (including the playlist).
 .TP
 .B user <username>
-This specifies the user that mpd will run as, if set.
+This specifies the user that MPD will run as, if set.  MPD should
+never run as root, and you may use this option to make MPD change its
+user id after initialization.  Do not use this option if you start MPD
+as an unprivileged user.
 .TP
 .B bind_to_address <ip address or hostname or any>
 This specifies which address mpd binds to and listens on.  Multiple

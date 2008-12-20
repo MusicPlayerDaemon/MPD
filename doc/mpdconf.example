@@ -30,10 +30,10 @@ error_file                      "~/.mpd/mpd.error"
 
 ######################## DAEMON OPTIONS ########################
 #
-# If started as root, MPD will drop root privileges and run as
-# this user instead.  Otherwise, MPD will run as the user it was
-# started by.  If left unspecified, MPD will not drop root
-# privileges at all (not recommended).
+# This specifies the user that MPD will run as, if set.  MPD should
+# never run as root, and you may use this option to make MPD change
+# its user id after initialization.  Do not use this option if you
+# start MPD as an unprivileged user.
 #
 #user                            "nobody"
 #
