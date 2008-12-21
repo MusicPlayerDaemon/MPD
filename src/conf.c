@@ -171,8 +171,6 @@ void initConf(void)
 	registerConfigParam(CONF_SAMPLERATE_CONVERTER,          0,     0);
 	registerConfigParam(CONF_AUDIO_BUFFER_SIZE,             0,     0);
 	registerConfigParam(CONF_BUFFER_BEFORE_PLAY,            0,     0);
-	registerConfigParam(CONF_HTTP_BUFFER_SIZE,              0,     0);
-	registerConfigParam(CONF_HTTP_PREBUFFER_SIZE,           0,     0);
 	registerConfigParam(CONF_HTTP_PROXY_HOST,               0,     0);
 	registerConfigParam(CONF_HTTP_PROXY_PORT,               0,     0);
 	registerConfigParam(CONF_HTTP_PROXY_USER,               0,     0);
