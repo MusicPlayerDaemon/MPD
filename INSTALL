@@ -1,6 +1,12 @@
                        Music Player Daemon (MPD) - INSTALL
 
 
+Introduction
+------------
+This document is a very small amount of documentation about what is needed to 
+install MPD. If more information is desired see the community wiki at 
+http://mpd.wikia.com.
+
 Dependencies
 ------------
 
@@ -27,6 +33,18 @@ doesn't work.  You will need libao.
 ALSA - http://www.alsa-project.org/
 The Advanced Linux Sound Architecture.  Recommended audio output if you use
 Linux.  You will need libasound.
+
+FIFO
+This is a mostly undocumented, developer plugin to transmit raw data.
+
+MVP - http://en.wikipedia.org/wiki/Hauppauge_MediaMVP
+A network media player.
+
+OSS - http://www.opensound.com
+Open Sound System.
+
+OSX - http://www.apple.com
+Necessary if you are on Mac OSX.
 
 PulseAudio - http://www.pulseaudio.org/
 An advanced sound daemon.  You will need libpulse.
@@ -144,16 +162,14 @@ Run
 
 $ mpd <config file>
 
-(if no config file is specified, mpd's looks for ~/.mpdconf then /etc/mpd.conf)
+First default is ~/.mpdconf then /etc/mpd.conf. If neither of these exist
+a mpd configuration file must be specified at runtime. A
 
-an example would be:
+A sample config file is included with the source of MPD, mpdconf.example.
 
-$ mpd playlists/.mpdconf
-
-A sample config file is included with the source of MPD, mpdconf.example .
-
-Note: The first time you run mpd, it will "explore" your mp3 directory for
-mp3's.
+The first time MPD is run it will attempt to discover all music in your
+music root, recursively. This can be affected by the symbolic link 
+options specified in the example mpd.conf.
 
 Using MPD
 ---------
