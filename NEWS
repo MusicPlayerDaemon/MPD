@@ -1,4 +1,6 @@
-This is not a reference log, but a rather random set of things that seemed significant to the person creating this file. For more detailed information on what happened for a certain release, see the developer repository logs.
+This is not a reference log, but a rather random set of things that seemed
+significant to the person creating this file. For more detailed information on
+what happened for a certain release, see the developer repository logs.
 
 ver 0.14.0 (????/??/??)
 * audio outputs:
@@ -107,17 +109,21 @@ ver 0.12.0 (2006/9/22)
 * Lots of bug fixes, cleaned up code, and performance improvements
 
 ver 0.11.5 (2004/11/1)
-1) New id3v1_encoding config option to configure the id3v1 tag encoding (patch from dottedmag)
+1) New id3v1_encoding config option to configure the id3v1 tag encoding (patch
+from dottedmag)
 2) Strip '\r' from m3u playlists (thank you windows)
 3) Use random() instead of rand() for playlist randomizing
 4) Fix a bug trying skipping some commented lines in m3u playlist files
-5) Fix a bug when fetching metadata from streams that may cause certain weirdnesses
+5) Fix a bug when fetching metadata from streams that may cause certain
+weirdnesses
 6) Fix a bug where replaygain preamp was used on files w/o replaygain tags
 7) Fix a busy loop when trying to prebuffer a nonexistant or missing stream
-8) Fix a bug in forgetting to remove leading ' ' in content-type for http streams
+8) Fix a bug in forgetting to remove leading ' ' in content-type for http
+streams
 9) Check for ice-name in http headers
 10) Be sure the strip all '\n' chars in tags
-11) Set $HOME env variable when setuid'ing, this should fix the /root/.mcop errors triggered by arts/libao
+11) Set $HOME env variable when setuid'ing, this should fix the /root/.mcop
+errors triggered by arts/libao
 
 ver 0.11.4 (2004/7/26)
 1) Fixed a segfault when decoding mp3's with corrupt id3v2 tags
@@ -127,13 +133,21 @@ ver 0.11.3 (2004/7/21)
 1) Add support for http authentication for streams
 2) Added replaygain pre-amp support
 3) Better error handling for fread() in inputStream_file
-4) Fixed a bug so that when a freeAllInterfaces is called, it sets max_interface_connections to 0.  This prevents potential segfaults and other nastiness for forked processes, like the player and update-er (do to interfacePrintWithFD()).
-5) Allow blockingWrite() to handle errors more gracefully (for example, if the disc is full, and thus the write() fails or can't be completed, we just skip this write() and continue, instead of getting stuck in an infinite loop until the write() becomes successful)
+4) Fixed a bug so that when a freeAllInterfaces is called, it sets
+max_interface_connections to 0.  This prevents potential segfaults and other
+nastiness for forked processes, like the player and update-er (do to
+interfacePrintWithFD()).
+5) Allow blockingWrite() to handle errors more gracefully (for example, if the
+disc is full, and thus the write() fails or can't be completed, we just skip
+this write() and continue, instead of getting stuck in an infinite loop until
+the write() becomes successful)
 6) Updated mpdconf.example from sbh/avuton
-7) If "user" is specified, then convert ~ in paths to the user's home path specified by "user" config paramter (not the actual current user running mpd).
+7) If "user" is specified, then convert ~ in paths to the user's home path
+specified by "user" config paramter (not the actual current user running mpd).
 
 ver 0.11.2 (2004/7/5) 
-1) Work around in computing total time for mp3's whose first valid mpeg frame is not layer III
+1) Work around in computing total time for mp3's whose first valid mpeg frame is
+not layer III
 2) Fix mp3 and mp4 decoders when seeking past the end of the file
 3) Fix replaygain for flac and vorbis
 4) Fix memory leaks in flac decoder (from normalperson)
@@ -145,16 +159,19 @@ ver 0.11.1 (2004/6/24)
 3) Fix move commands so they don't mess up the song id's
 4) Added support for HTTP Proxy
 5) Detect and skip recursive links in the music directory
-6) Fix addPathToDB() so updating on a specific path doesn't exist correctly adds the parent directories to the DB
+6) Fix addPathToDB() so updating on a specific path doesn't exist correctly adds
+the parent directories to the DB
 
 ver 0.11.0 (2004/6/18)
 1) Support for playing mp3 and Ogg Vorbis streams
 2) Non-blocking Update
 3) Replaygain support for Ogg Vorbis and FLAC (by Eric Moore aka AliasMrJones)
-4) audio_output_format option that allows for all audio output to be converted to a format compatible with any sound card
+4) audio_output_format option that allows for all audio output to be converted
+to a format compatible with any sound card
 5) Own routines for to always support UTF-8 <-> ISO-8859-1 conversion
 6) Added "Id" and "Pos" metadata for songs in playlist
-7) Added commands: plchanges, currentsong, playid, seekid, playlistid, moveid, swapid, deleteid
+7) Added commands: plchanges, currentsong, playid, seekid, playlistid, moveid,
+swapid, deleteid
 8) UTF-8 validation of all tags
 9) Update specific files/directories (for fast, incremental updating)
 10) Added ACK error codes
@@ -174,14 +191,17 @@ ver 0.10.4 (2004/5/26)
 1) Fix configure problems on OpenBSD with langinfo and iconv
 2) Fix an infinte loop when writing to an interface and it has expired
 3) Fix a segfault in decoding flac's
-4) Ingore CRC stuff in mp3's since some encoders did not compute the CRC correctly
+4) Ingore CRC stuff in mp3's since some encoders did not compute the CRC
+correctly
 5) Fix a segfault in processing faulty mp4 metadata
 
 ver 0.10.3 (2004/4/2)
 1) Fix a segfault when a blanck line is sent from a client
 2) Fix for loading playlists on platforms where char is unsigned
-3) When pausing, release audio device after we say pause is successful (this makes pause appear to not lag)
-4) When returning errors for unknown types by player, be sure to copy the filename
+3) When pausing, release audio device after we say pause is successful (this
+makes pause appear to not lag)
+4) When returning errors for unknown types by player, be sure to copy the
+filename
 5) add --disable-alsa for disabling alsa mixer support
 6) Use select() for a portable usleep()
 7) For alsa mixer, default to "Master' element, not first element
@@ -195,13 +215,15 @@ ver 0.10.2 (2004/3/25)
 6) Fix unnecessary big endian byte swapping
 7) If locale is "C" or "POSIX", then use ISO-8859-1 as the fs charset
 8) Fix a bug where alsa mixer wasn't detecting volume changes
-9) For alsa and software mixer, show volume to be the same as it was set (even if its not the exact volume)
+9) For alsa and software mixer, show volume to be the same as it was set (even
+if its not the exact volume)
 10) Report bitrate for wave files
 11) Compute song length of CBR mp3's more accurately
 
 ver 0.10.1 (2004/3/7)
 1) Check to see if we need to add "-lm" when linking mpd
-2) Fix issues with skipping bad frames in an mp3 (this way we get the correct samplerate and such)
+2) Fix issues with skipping bad frames in an mp3 (this way we get the correct
+samplerate and such)
 3) Fix crossfading bug with ogg's
 4) Updated libmad and libid3tag included w/ source to 0.15.1b
 
@@ -221,17 +243,21 @@ ver 0.10.0 (2004/3/3)
 13) Fix a segfault when doing: add ""
 14) Fix a segfault with flac vorbis comments simply being "="
 15) Fix a segfault/bug in queueNextSong with repeat+random
-16) Fix a bug, where one process may segfault, and cause more processes to spawn w/o killing ones that lost their parent.
+16) Fix a bug, where one process may segfault, and cause more processes to spawn
+w/o killing ones that lost their parent.
 17) Fix a bug when the OSS device was unable to fetch the current volume,
-it would close the device (when it maybe previously closed by the exact same code)
+it would close the device (when it maybe previously closed by the exact same
+code)
 18) command.c cleanup by mackstann
 19) directory.c and command.c cleanup by tw-nym
 
 ver 0.9.4 (2004/1/21)
 1) Fix a bug where updated tag info wasn't being detected
-2) Set the default audio write size to 1024 bytes (should decrease cpu load a bit on some machines).
+2) Set the default audio write size to 1024 bytes (should decrease cpu load a
+bit on some machines).
 3) Make audio write size configurable via "audio_write_size" config option
-4) Tweak output buffer size for connections by detecting the kernel output buffer size.
+4) Tweak output buffer size for connections by detecting the kernel output
+buffer size.
 
 ver 0.9.3 (2003/10/31)
 1) Store total time/length of songs in db and display in *info commands
@@ -247,7 +273,8 @@ ver 0.9.3 (2003/10/31)
 ver 0.9.2 (2003/10/6)
 1) Fix FreeBSD Compilation Problems
 2) Fix bug in move command
-3) Add mixer_control options to configure which mixer control/device mpd controls
+3) Add mixer_control options to configure which mixer control/device mpd
+controls
 4) Randomize on play -1
 5) Fix a bug in toggling repeat off and at the end of the playlist
 
@@ -282,7 +309,8 @@ ver 0.8.7 (2003/9/3)
 instead of calling fclose() on the fp that was opened with fdopen().
 
 ver 0.8.6 (2003/8/25)
-1) Fix a memory leak when a buffered existed, and a connection was unexpectedly closed, and i wasn't free'ing the buffer apropriatly.
+1) Fix a memory leak when a buffered existed, and a connection was unexpectedly
+closed, and i wasn't free'ing the buffer apropriatly.
 
 ver 0.8.5 (2003/8/17)
 1) Fix a bug where an extra end of line is returned when attempting to play a
