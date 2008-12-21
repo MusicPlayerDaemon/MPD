@@ -49,8 +49,6 @@
 #define CONF_SAMPLERATE_CONVERTER       "samplerate_converter"
 #define CONF_AUDIO_BUFFER_SIZE          "audio_buffer_size"
 #define CONF_BUFFER_BEFORE_PLAY         "buffer_before_play"
-#define CONF_HTTP_BUFFER_SIZE           "http_buffer_size"
-#define CONF_HTTP_PREBUFFER_SIZE        "http_prebuffer_size"
 #define CONF_HTTP_PROXY_HOST            "http_proxy_host"
 #define CONF_HTTP_PROXY_PORT            "http_proxy_port"
 #define CONF_HTTP_PROXY_USER            "http_proxy_user"
