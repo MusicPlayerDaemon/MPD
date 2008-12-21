@@ -4,7 +4,8 @@
 Introduction
 ------------
 This document is a very small amount of documentation about what is needed to 
-install MPD. If more information is desired see wiki at http://mpd.wikia.com.
+install MPD. If more information is desired see the community wiki at 
+http://mpd.wikia.com.
 
 Dependencies
 ------------
@@ -167,8 +168,8 @@ a mpd configuration file must be specified at runtime. A
 A sample config file is included with the source of MPD, mpdconf.example.
 
 The first time MPD is run it will attempt to discover all music in your
-music root, recursively. This can be affected by the symlink options
-specified in the example mpd.conf.
+music root, recursively. This can be affected by the symbolic link 
+options specified in the example mpd.conf.
 
 Using MPD
 ---------
