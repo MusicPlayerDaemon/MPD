@@ -903,15 +903,6 @@ then
 	MPD_CHECK_FLAG([-pedantic])
 fi
 
-
-dnl
-dnl generate files
-dnl
-
-
-AC_OUTPUT(doc/Makefile src/Makefile Makefile)
-
-
 dnl
 dnl pretty-print result
 dnl
@@ -1151,9 +1142,20 @@ else
 	echo " HTTP streaming (libcurl) ......disabled"
 fi
 
-
 echo ""
 echo "##########################################"
 echo ""
+
+echo "Generating needed files for compilation"
+echo ""
+
+dnl
+dnl generate files
+dnl
+
+AC_OUTPUT(doc/Makefile src/Makefile Makefile)
+
+echo ""
+
 echo "You are now ready to compile MPD"
 echo "Type \"make\" to compile MPD"
