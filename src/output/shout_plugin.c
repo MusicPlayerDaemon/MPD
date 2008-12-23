@@ -203,9 +203,9 @@ static void *my_shout_init_driver(struct audio_output *audio_output,
 	}
 
 	sd->encoder = shout_encoder_plugin_get(encoding);
-	if (sd->encoder == NULL)
-		g_error("couldn't find shout encoder plugin for \"%s\" "
-			"at line %i\n", encoding, block_param->line);
+	if (sd->encoder == NULL) { 
+		g_error("couldn't find shout encoder plugin for \"%s\"\n", encoding);
+	}
 
 	block_param = getBlockParam(param, "protocol");
 	if (block_param) {
