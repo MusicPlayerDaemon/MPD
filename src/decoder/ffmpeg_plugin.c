@@ -106,7 +106,7 @@ static int64_t mpd_ffmpeg_seek(URLContext *h, int64_t pos, int whence)
 
 static int mpd_ffmpeg_close(URLContext *h)
 {
-	h->priv_data = 0;
+	h->priv_data = NULL;
 	return 0;
 }
 
