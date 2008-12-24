@@ -121,14 +121,14 @@ AC_ARG_ENABLE(ao,
 	enable_ao=$enableval,
 	enable_ao=no)
 
-AC_ARG_ENABLE(shout_ogg,
-	AS_HELP_STRING([--disable-shout_ogg],
+AC_ARG_ENABLE(shout-ogg,
+	AS_HELP_STRING([--disable-shout-ogg],
 		[disable support for ogg streaming through shout (default: enable)]),
 	[enable_shout_ogg=$enableval],
 	[enable_shout_ogg=yes])
 
-AC_ARG_ENABLE(shout_mp3,
-	AS_HELP_STRING([--disable-shout_mp3],
+AC_ARG_ENABLE(shout-mp3,
+	AS_HELP_STRING([--disable-shout-mp3],
 		[disable support for mp3 streaming through shout (default: enable)]),
 	[enable_shout_mp3=$enableval],
 	[enable_shout_mp3=yes])
