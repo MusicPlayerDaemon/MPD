@@ -4,7 +4,7 @@ AUTOMAKE_OPTIONS = foreign 1.9 dist-bzip2
 SUBDIRS = src doc
 doc_DATA = AUTHORS COPYING NEWS README TODO UPGRADING
 EXTRA_DIST = $(doc_DATA) autogen.sh \
-	scripts \
+	$(wildcard scripts/*.sh) scripts/mpd.spec \
 	.gitignore
 
 sparse-check test:
