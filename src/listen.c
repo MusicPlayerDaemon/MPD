@@ -112,7 +112,8 @@ static int establishListen(int pf, const struct sockaddr *addrp,
 	return 0;
 }
 
-static void parseListenConfigParam(unsigned int port, ConfigParam * param)
+static void
+parseListenConfigParam(G_GNUC_UNUSED unsigned int port, ConfigParam * param)
 {
 	const struct sockaddr *addrp;
 	socklen_t addrlen;
