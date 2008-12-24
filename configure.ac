@@ -94,8 +94,8 @@ AC_ARG_ENABLE(tcp,
 	[enable_tcp=yes])
 
 AC_ARG_ENABLE(un,
-	AS_HELP_STRING([--enable-un],
-		[enable support for clients connecting via unix domain sockets (default: disable)]),
+	AS_HELP_STRING([--disable-un],
+		[disable support for clients connecting via unix domain sockets (default: enable)]),
 	[enable_un=$enableval],
 	[enable_un=yes])
 
