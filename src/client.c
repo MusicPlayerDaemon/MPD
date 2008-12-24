@@ -700,10 +700,19 @@ static void client_write_output(struct client *client)
 	if (client_is_expired(client) || !client->send_buf_used)
 		return;
 
-	if (!g_queue_is_empty(client->deferred_send))
+	if (!g_queue_is_empty(client->deferred_send)) {
 		client_defer_output(client, client->send_buf,
 				    client->send_buf_used);
-	else
+
+		/* try to flush the deferred buffers now; the current
+		   server command may take too long to finish, and
+		   meanwhile try to feed output to the client,
+		   otherwise it will time out.  One reason why
+		   deferring is slow might be that currently each
+		   client_write() allocates a new deferred buffer.
+		   This should be optimized after MPD 0.14. */
+		client_write_deferred(client);
+	} else
 		client_write_direct(client, client->send_buf,
 				    client->send_buf_used);
 
