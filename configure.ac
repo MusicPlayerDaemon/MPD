@@ -220,7 +220,7 @@ AC_ARG_ENABLE(mod,
 	AS_HELP_STRING([--enable-mod],
 		[enable MOD support (default: disable)]),
 	enable_mod=$enableval,
-	enable_mod=yes)
+	enable_mod=no)
 
 AC_ARG_ENABLE(mpc,
 	AS_HELP_STRING([--disable-mpc],

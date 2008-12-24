@@ -15,6 +15,7 @@ ver 0.14.0 (????/??/??)
   - ffmpeg: new plugin
   - wavpack: new plugin
   - aac: stream support added
+  - mod: disabled by default due to critical bugs in all libmikmod versions
 * commands:
   - "addid" takes optional second argument to specify position
   - "idle" notifies the client when a notable change occurs
