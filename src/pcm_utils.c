@@ -379,8 +379,6 @@ pcm_convert_16(const struct audio_format *src_format,
 				      dest_format->sample_rate,
 				      dest_buffer, dest_size,
 				      &state->resample);
-		if (len == 0)
-			exit(EXIT_FAILURE);
 	}
 
 	return len;
@@ -421,8 +419,6 @@ pcm_convert_24(const struct audio_format *src_format,
 				      dest_format->sample_rate,
 				      (int32_t*)dest_buffer, dest_size,
 				      &state->resample);
-		if (len == 0)
-			exit(EXIT_FAILURE);
 	}
 
 	return len;

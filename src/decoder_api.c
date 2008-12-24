@@ -249,6 +249,13 @@ decoder_data(struct decoder *decoder,
 		length = pcm_convert(&dc.in_audio_format, _data,
 				     length, &dc.out_audio_format,
 				     data, &decoder->conv_state);
+
+		/* under certain circumstances, pcm_convert() may
+		   return an empty buffer - this condition should be
+		   investigated further, but for now, do this check as
+		   a workaround: */
+		if (length == 0)
+			return DECODE_COMMAND_NONE;
 	}
 
 	if (replay_gain_info != NULL && (replay_gain_mode != REPLAY_GAIN_OFF))

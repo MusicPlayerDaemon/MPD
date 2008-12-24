@@ -69,8 +69,16 @@ static void ao_play(struct audio_output *ao)
 
 	assert(size > 0);
 
-	if (!audio_format_equals(&ao->inAudioFormat, &ao->outAudioFormat))
+	if (!audio_format_equals(&ao->inAudioFormat, &ao->outAudioFormat)) {
 		convertAudioFormat(ao, &data, &size);
+
+		/* under certain circumstances, pcm_convert() may
+		   return an empty buffer - this condition should be
+		   investigated further, but for now, do this check as
+		   a workaround: */
+		if (size == 0)
+			return;
+	}
 
 	ret = ao->plugin->play(ao->data, data, size);
 	if (!ret) {
