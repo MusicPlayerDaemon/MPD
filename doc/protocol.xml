@@ -924,12 +924,12 @@ OK
             <cmdsynopsis>
               <command>playlistdelete</command>
               <arg choice="req"><replaceable>NAME</replaceable></arg>
-              <arg choice="req"><replaceable>SONGID</replaceable></arg>
+              <arg choice="req"><replaceable>SONGPOS</replaceable></arg>
             </cmdsynopsis>
           </term>
           <listitem>
             <para>
-              Deletes <varname>SONGID</varname> from the
+              Deletes <varname>SONGPOS</varname> from the
               playlist <filename>NAME.m3u</filename>.
             </para>
           </listitem>
