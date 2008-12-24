@@ -279,7 +279,7 @@ ffmpeg_decode_internal(struct ffmpeg_context *ctx)
 	}
 
 	//there is some problem with this on some demux (mp3 at least)
-	if (format_context->duration != (int)AV_NOPTS_VALUE) {
+	if (format_context->duration != (int64_t)AV_NOPTS_VALUE) {
 		total_time = format_context->duration / AV_TIME_BASE;
 	}
 
@@ -330,7 +330,7 @@ static bool ffmpeg_tag_internal(struct ffmpeg_context *ctx)
 	const AVFormatContext *f = ctx->format_context;
 
 	tag->time = 0;
-	if (f->duration != (int)AV_NOPTS_VALUE)
+	if (f->duration != (int64_t)AV_NOPTS_VALUE)
 		tag->time = f->duration / AV_TIME_BASE;
 	if (f->author[0])
 		tag_add_item(tag, TAG_ITEM_ARTIST, f->author);
