@@ -323,8 +323,8 @@ static void mp3_parse_id3(struct mp3_data *data, size_t tagsize,
 #endif
 
 static enum mp3_action
-decode_next_frame_header(struct mp3_data *data, struct tag **tag,
-			 struct replay_gain_info **replay_gain_info_r)
+decode_next_frame_header(struct mp3_data *data, G_GNUC_UNUSED struct tag **tag,
+			 G_GNUC_UNUSED struct replay_gain_info **replay_gain_info_r)
 {
 	enum mad_layer layer;
 
