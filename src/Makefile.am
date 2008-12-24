@@ -306,10 +306,13 @@ mpd_LDADD = $(MPD_LIBS) \
 # URL: git://www.kernel.org/pub/scm/devel/sparse/sparse.git
 SPARSE = sparse
 SPARSE_FLAGS =
+SPARSE_CPPFLAGS = $(DEFAULT_INCLUDES) \
+	-I$(shell $(CC) -print-file-name=include) \
+	-I$(shell $(CC) -print-file-name=include-fixed)
 sparse-check:
 	for i in $(mpd_SOURCES); \
 	do \
-		$(SPARSE) -I. $(mpd_CFLAGS) $(SPARSE_FLAGS) $(srcdir)/$$i || exit; \
+		$(SPARSE) -I. $(mpd_CFLAGS) $(mpd_CPPFLAGS) $(SPARSE_FLAGS) $(SPARSE_CPPFLAGS) $(srcdir)/$$i || exit; \
 	done
 
 TEST_CFLAGS = -DUNIT_TEST
