@@ -48,7 +48,7 @@ playlist_print_uri(FILE *file, const char *uri)
 
 	if (playlist_saveAbsolutePaths && !isRemoteUrl(uri) &&
 	    uri[0] != '/')
-		s = map_directory_child_fs(db_get_root(), uri, tmp);
+		s = map_uri_fs(uri, tmp);
 	else
 		s = utf8_to_fs_charset(tmp, uri);
 

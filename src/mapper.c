@@ -84,13 +84,23 @@ rmp2amp_r(char *dst, const char *rel_path)
 }
 
 const char *
+map_uri_fs(const char *uri, char *buffer)
+{
+	assert(uri != NULL);
+	assert(*uri != '/');
+	assert(buffer != NULL);
+
+	return rmp2amp_r(buffer, utf8_to_fs_charset(buffer, uri));
+}
+
+const char *
 map_directory_fs(const struct directory *directory, char *buffer)
 {
 	const char *dirname = directory_get_path(directory);
 	if (isRootDirectory(dirname))
 	    return music_dir;
 
-	return rmp2amp_r(buffer, utf8_to_fs_charset(buffer, dirname));
+	return map_uri_fs(dirname, buffer);
 }
 
 const char *

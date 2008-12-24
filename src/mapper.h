@@ -33,6 +33,14 @@ void mapper_init(void);
 void mapper_finish(void);
 
 /**
+ * Determines the absolute file system path of a relative URI.  This
+ * is basically done by converting the URI to the file system charset
+ * and prepending the music directory.
+ */
+const char *
+map_uri_fs(const char *uri, char *buffer);
+
+/**
  * Determines the file system path of a directory object.
  *
  * @param directory the directory object
