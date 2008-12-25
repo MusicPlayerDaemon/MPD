@@ -1,8 +1,4 @@
-This is not a reference log, but a rather random set of things that seemed
-significant to the person creating this file. For more detailed information on
-what happened for a certain release, see the developer repository logs.
-
-ver 0.14.0 (????/??/??)
+ver 0.14 (2008/12/25)
 * audio outputs:
   - wait 10 seconds before reopening a failed device
   - fifo: new plugin
