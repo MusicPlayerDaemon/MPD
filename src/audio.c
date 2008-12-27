@@ -56,6 +56,8 @@ void initAudioDriver(void)
 	ConfigParam *param = NULL;
 	unsigned int i;
 
+	notify_init(&audio_output_client_notify);
+
 	audioOutputArraySize = audio_output_count();
 	audioOutputArray = xmalloc(sizeof(struct audio_output) * audioOutputArraySize);
 
@@ -182,6 +184,8 @@ void finishAudioDriver(void)
 	free(audioOutputArray);
 	audioOutputArray = NULL;
 	audioOutputArraySize = 0;
+
+	notify_deinit(&audio_output_client_notify);
 }
 
 bool

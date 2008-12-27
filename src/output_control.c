@@ -26,7 +26,7 @@
 #include <assert.h>
 #include <stdlib.h>
 
-struct notify audio_output_client_notify = NOTIFY_INITIALIZER;
+struct notify audio_output_client_notify;
 
 static void ao_command_wait(struct audio_output *ao)
 {
