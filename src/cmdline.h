@@ -19,12 +19,14 @@
 #ifndef CMDLINE_H
 #define CMDLINE_H
 
+#include <glib.h>
+
 typedef struct _Options {
-	int kill;
-	int daemon;
-	int stdOutput;
+	gboolean kill;
+	gboolean daemon;
+	gboolean stdOutput;
+	gboolean verbose;
 	int createDB;
-	int verbose;
 } Options;
 
 void parseOptions(int argc, char **argv, Options *options);

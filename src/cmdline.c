@@ -27,8 +27,6 @@
 #include "archive_list.h"
 #endif
 
-#include <glib.h>
-
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -88,11 +86,11 @@ void parseOptions(int argc, char **argv, Options *options)
 {
 	int argcLeft = argc;
 
-	options->verbose = 0;
-	options->daemon = 1;
-	options->stdOutput = 0;
+	options->kill = false;
+	options->daemon = true;
+	options->stdOutput = false;
+	options->verbose = false;
 	options->createDB = 0;
-	options->kill = 0;
 
 	if (argc > 1) {
 		int i = 1;
@@ -102,16 +100,16 @@ void parseOptions(int argc, char **argv, Options *options)
 					usage(argv);
 					exit(EXIT_SUCCESS);
 				} else if (strcmp(argv[i], "--kill") == 0) {
-					options->kill++;
+					options->kill = true;
 					argcLeft--;
 				} else if (strcmp(argv[i], "--no-daemon") == 0) {
-					options->daemon = 0;
+					options->daemon = false;
 					argcLeft--;
 				} else if (strcmp(argv[i], "--stdout") == 0) {
-					options->stdOutput = 1;
+					options->stdOutput = true;
 					argcLeft--;
 				} else if (strcmp(argv[i], "--create-db") == 0) {
-					options->stdOutput = 1;
+					options->stdOutput = true;
 					options->createDB = 1;
 					argcLeft--;
 				} else if (strcmp(argv[i], "--no-create-db") ==
@@ -119,7 +117,7 @@ void parseOptions(int argc, char **argv, Options *options)
 					options->createDB = -1;
 					argcLeft--;
 				} else if (strcmp(argv[i], "--verbose") == 0) {
-					options->verbose = 1;
+					options->verbose = true;
 					argcLeft--;
 				} else if (strcmp(argv[i], "--version") == 0) {
 					version();
