@@ -16,6 +16,7 @@ mpd_headers = \
 	command.h \
 	idle.h \
 	condition.h \
+	cmdline.h \
 	conf.h \
 	crossfade.h \
 	dbUtils.h \
@@ -102,6 +103,7 @@ mpd_SOURCES = \
 	command.c \
 	idle.c \
 	condition.c \
+	cmdline.c \
 	conf.c \
 	crossfade.c \
 	dbUtils.c \

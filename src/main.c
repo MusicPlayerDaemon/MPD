@@ -24,6 +24,7 @@
 #include "update.h"
 #include "player_thread.h"
 #include "listen.h"
+#include "cmdline.h"
 #include "conf.h"
 #include "path.h"
 #include "mapper.h"
@@ -40,7 +41,6 @@
 #include "permission.h"
 #include "replay_gain.h"
 #include "decoder_list.h"
-#include "audioOutput.h"
 #include "input_stream.h"
 #include "state_file.h"
 #include "tag.h"
@@ -60,17 +60,6 @@
 #ifdef HAVE_LOCALE
 #include <locale.h>
 #endif
-
-#define SYSTEM_CONFIG_FILE_LOCATION	"/etc/mpd.conf"
-#define USER_CONFIG_FILE_LOCATION	"/.mpdconf"
-
-typedef struct _Options {
-	int kill;
-	int daemon;
-	int stdOutput;
-	int createDB;
-	int verbose;
-} Options;
 
 /* 
  * from git-1.3.0, needed for solaris
@@ -112,131 +101,6 @@ static int setenv(const char *name, const char *value, int replace)
 	return out;
 }
 #endif /* HAVE_SETENV */
-
-static void usage(char *argv[])
-{
-	printf("usage:\n"
-	       "   %s [options] <conf file>\n"
-	       "   %s [options]   (searches for ~" USER_CONFIG_FILE_LOCATION
-	       " then " SYSTEM_CONFIG_FILE_LOCATION ")\n",
-	       argv[0], argv[0]);
-	puts("\n"
-	     "options:\n"
-	     "   --help             this usage statement\n"
-	     "   --kill             kill the currently running mpd session\n"
-	     "   --create-db        force (re)creation of database and exit\n"
-	     "   --no-create-db     don't create database, even if it doesn't exist\n"
-	     "   --no-daemon        don't detach from console\n"
-	     "   --stdout           print messages to stdout and stderr\n"
-	     "   --verbose          verbose logging\n"
-	     "   --version          prints version information\n");
-}
-
-static void version(void)
-{
-	puts(PACKAGE " (MPD: Music Player Daemon) " VERSION " \n"
-	     "\n"
-	     "Copyright (C) 2003-2007 Warren Dukes <warren.dukes@gmail.com>\n"
-	     "Copyright (C) 2008 Max Kellermann <max@duempel.org>\n"
-	     "This is free software; see the source for copying conditions.  There is NO\n"
-	     "warranty; not even MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n"
-	     "\n"
-	     "Supported formats:\n");
-
-	decoder_plugin_init_all();
-	decoder_plugin_print_all_suffixes(stdout);
-
-	puts("\n"
-	     "Supported outputs:\n");
-	printAllOutputPluginTypes(stdout);
-
-#ifdef ENABLE_ARCHIVE
-	puts("\n"
-	     "Supported archives:\n");
-	archive_plugin_init_all();
-	archive_plugin_print_all_suffixes(stdout);
-#endif
-}
-
-static void parseOptions(int argc, char **argv, Options * options)
-{
-	int argcLeft = argc;
-
-	options->verbose = 0;
-	options->daemon = 1;
-	options->stdOutput = 0;
-	options->createDB = 0;
-	options->kill = 0;
-
-	if (argc > 1) {
-		int i = 1;
-		while (i < argc) {
-			if (g_str_has_prefix(argv[i], "--")) {
-				if (strcmp(argv[i], "--help") == 0) {
-					usage(argv);
-					exit(EXIT_SUCCESS);
-				} else if (strcmp(argv[i], "--kill") == 0) {
-					options->kill++;
-					argcLeft--;
-				} else if (strcmp(argv[i], "--no-daemon") == 0) {
-					options->daemon = 0;
-					argcLeft--;
-				} else if (strcmp(argv[i], "--stdout") == 0) {
-					options->stdOutput = 1;
-					argcLeft--;
-				} else if (strcmp(argv[i], "--create-db") == 0) {
-					options->stdOutput = 1;
-					options->createDB = 1;
-					argcLeft--;
-				} else if (strcmp(argv[i], "--no-create-db") ==
-					   0) {
-					options->createDB = -1;
-					argcLeft--;
-				} else if (strcmp(argv[i], "--verbose") == 0) {
-					options->verbose = 1;
-					argcLeft--;
-				} else if (strcmp(argv[i], "--version") == 0) {
-					version();
-					exit(EXIT_SUCCESS);
-				} else {
-					fprintf(stderr,
-					          "unknown command line option: %s\n",
-						  argv[i]);
-					exit(EXIT_FAILURE);
-				}
-			} else
-				break;
-			i++;
-		}
-	}
-
-	if (argcLeft <= 2) {
-		if (argcLeft == 2) {
-			readConf(argv[argc - 1]);
-			return;
-		} else if (argcLeft == 1) {
-			struct stat st;
-			char *homedir = getenv("HOME");
-			char userfile[MPD_PATH_MAX] = "";
-			if (homedir && (strlen(homedir) +
-					strlen(USER_CONFIG_FILE_LOCATION)) <
-			    MPD_PATH_MAX) {
-				strcpy(userfile, homedir);
-				strcat(userfile, USER_CONFIG_FILE_LOCATION);
-			}
-			if (strlen(userfile) && (0 == stat(userfile, &st))) {
-				readConf(userfile);
-				return;
-			} else if (0 == stat(SYSTEM_CONFIG_FILE_LOCATION, &st)) {
-				readConf(SYSTEM_CONFIG_FILE_LOCATION);
-				return;
-			}
-		}
-	}
-
-	usage(argv);
-	exit(EXIT_FAILURE);
-}
 
 static void changeToUser(void)
 {
