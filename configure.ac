@@ -1181,6 +1181,27 @@ if
 fi
 
 echo ""
+echo " Archive support:"
+
+if test x$enable_bz2 = xyes; then
+	echo " BZ2 archives support ..........enabled"
+else
+	echo " BZ2 archives support ..........disabled"
+fi
+
+if test x$enable_zip = xyes; then
+	echo " ZIP archives support ..........enabled"
+else
+	echo " ZIP archives support ..........disabled"
+fi
+
+if test x$enable_iso = xyes; then
+	echo " ISO 9660 archives support .....enabled"
+else
+	echo " ISO 9660 archives support .....disabled"
+fi
+
+echo ""
 echo " Other features:"
 
 if test x$enable_lsr = xyes; then
@@ -1201,24 +1222,6 @@ if test x$enable_curl != xno; then
 	echo " HTTP streaming (libcurl) ......enabled"
 else
 	echo " HTTP streaming (libcurl) ......disabled"
-fi
-
-if test x$enable_bz2 = xyes; then
-	echo " BZ2 archives support ..........enabled"
-else
-	echo " BZ2 archives support ..........disabled"
-fi
-
-if test x$enable_zip = xyes; then
-	echo " ZIP archives support ..........enabled"
-else
-	echo " ZIP archives support ..........disabled"
-fi
-
-if test x$enable_iso = xyes; then
-	echo " ISO 9660 archives support .....enabled"
-else
-	echo " ISO 9660 archives support .....disabled"
 fi
 
 echo ""
