@@ -22,6 +22,7 @@
 
 #include <audiofile.h>
 #include <af_vfs.h>
+#include <assert.h>
 #include <glib.h>
 
 #undef G_LOG_DOMAIN
@@ -68,9 +69,9 @@ audiofile_file_tell(AFvirtualfile *vfile)
 static void
 audiofile_file_destroy(AFvirtualfile *vfile)
 {
-	struct input_stream *is = (struct input_stream *) vfile->closure;
+	assert(vfile->closure != NULL);
+
 	vfile->closure = NULL;
-	input_stream_close(is);
 }
 
 static long
