@@ -1,5 +1,5 @@
 /* the Music Player Daemon (MPD)
- * Copyright (C) 2003-2007 by Warren Dukes (warren.dukes@gmail.com)
+ * Copyright (C) 2008 Viliam Mateicka <viliam.mateicka@gmail.com>
  * This project's homepage is: http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -16,33 +16,11 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef MPD_LS_H
-#define MPD_LS_H
+#ifndef MPD_ARCHIVE_INTERNAL_H
+#define MPD_ARCHIVE_INTERNAL_H
 
-#include "decoder_list.h"
-#include "archive_list.h"
-
-#include <stdbool.h>
-
-struct stat;
-struct client;
-
-const char *getSuffix(const char *utf8file);
-
-/**
- * Checks whether the specified URI has a schema in the form
- * "scheme://".
- */
-bool uri_has_scheme(const char *uri);
-
-bool isRemoteUrl(const char *url);
-
-const struct decoder_plugin *
-hasMusicSuffix(const char *utf8file, unsigned int next);
-
-const struct archive_plugin *
-get_archive_by_suffix(const char *utf8file);
-
-void printRemoteUrlHandlers(struct client *client);
+struct archive_file {
+	int placeholder;
+};
 
 #endif

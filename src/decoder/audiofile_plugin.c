@@ -20,8 +20,8 @@
 
 #include "../decoder_api.h"
 
-#include <sys/stat.h>
 #include <audiofile.h>
+#include <af_vfs.h>
 #include <glib.h>
 
 #undef G_LOG_DOMAIN
@@ -44,27 +44,79 @@ static int getAudiofileTotalTime(const char *file)
 	return total_time;
 }
 
-static void
-audiofile_decode(struct decoder *decoder, const char *path)
+static ssize_t
+audiofile_file_read(AFvirtualfile *vfile, void *data, size_t nbytes)
 {
+	struct input_stream *is = (struct input_stream *) vfile->closure;
+	return input_stream_read(is, data, nbytes);
+}
+
+static long
+audiofile_file_length(AFvirtualfile *vfile)
+{
+	struct input_stream *is = (struct input_stream *) vfile->closure;
+	return is->size;
+}
+
+static long
+audiofile_file_tell(AFvirtualfile *vfile)
+{
+	struct input_stream *is = (struct input_stream *) vfile->closure;
+	return is->offset;
+}
+
+static void
+audiofile_file_destroy(AFvirtualfile *vfile)
+{
+	struct input_stream *is = (struct input_stream *) vfile->closure;
+	vfile->closure = NULL;
+	input_stream_close(is);
+}
+
+static long
+audiofile_file_seek(AFvirtualfile *vfile, long offset, int is_relative)
+{
+	struct input_stream *is = (struct input_stream *) vfile->closure;
+	int whence = (is_relative ? SEEK_CUR : SEEK_SET);
+	if (input_stream_seek(is, offset, whence)) { 
+		return is->offset;
+	} else {
+		return -1;
+	}
+}
+
+static AFvirtualfile *
+setup_virtual_fops(struct input_stream *stream)
+{
+	AFvirtualfile *vf = g_malloc(sizeof(AFvirtualfile));
+	vf->closure = stream;
+	vf->write   = NULL;
+	vf->read    = audiofile_file_read;
+	vf->length  = audiofile_file_length;
+	vf->destroy = audiofile_file_destroy;
+	vf->seek    = audiofile_file_seek;
+	vf->tell    = audiofile_file_tell;
+	return vf;
+}
+
+static void
+audiofile_streamdecode(struct decoder * decoder, struct input_stream *inStream)
+{
+	AFvirtualfile *vf;
 	int fs, frame_count;
 	AFfilehandle af_fp;
 	int bits;
 	struct audio_format audio_format;
 	float total_time;
 	uint16_t bitRate;
-	struct stat st;
 	int ret, current = 0;
 	char chunk[CHUNK_SIZE];
 
-	if (stat(path, &st) < 0) {
-		g_warning("failed to stat: %s\n", path);
-		return;
-	}
+	vf = setup_virtual_fops(inStream);
 
-	af_fp = afOpenFile(path, "r", NULL);
+	af_fp = afOpenVirtualFile(vf, "r", NULL);
 	if (af_fp == AF_NULL_FILEHANDLE) {
-		g_warning("failed to open: %s\n", path);
+		g_warning("failed to input stream\n");
 		return;
 	}
 
@@ -89,7 +141,7 @@ audiofile_decode(struct decoder *decoder, const char *path)
 
 	total_time = ((float)frame_count / (float)audio_format.sample_rate);
 
-	bitRate = (uint16_t)(st.st_size * 8.0 / total_time / 1000.0 + 0.5);
+	bitRate = (uint16_t)(inStream->size * 8.0 / total_time / 1000.0 + 0.5);
 
 	fs = (int)afGetVirtualFrameSize(af_fp, AF_DEFAULT_TRACK, 1);
 
@@ -118,7 +170,7 @@ audiofile_decode(struct decoder *decoder, const char *path)
 	afCloseFile(af_fp);
 }
 
-static struct tag *audiofileTagDup(const char *file)
+static struct tag *audiofile_tag_dup(const char *file)
 {
 	struct tag *ret = NULL;
 	int total_time = getAudiofileTotalTime(file);
@@ -134,13 +186,20 @@ static struct tag *audiofileTagDup(const char *file)
 	return ret;
 }
 
-static const char *const audiofileSuffixes[] = {
+static const char *const audiofile_suffixes[] = {
 	"wav", "au", "aiff", "aif", NULL
+};
+
+static const char *const audiofile_mime_types[] = {
+	"audio/x-wav",
+	"audio/x-aiff",
+	NULL 
 };
 
 const struct decoder_plugin audiofilePlugin = {
 	.name = "audiofile",
-	.file_decode = audiofile_decode,
-	.tag_dup = audiofileTagDup,
-	.suffixes = audiofileSuffixes,
+	.stream_decode = audiofile_streamdecode,
+	.tag_dup = audiofile_tag_dup,
+	.suffixes = audiofile_suffixes,
+	.mime_types = audiofile_mime_types,
 };

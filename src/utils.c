@@ -235,3 +235,14 @@ void xpthread_cond_destroy(pthread_cond_t *cond)
 	if ((err = pthread_cond_destroy(cond)))
 		FATAL("failed to destroy cond: %s\n", strerror(err));
 }
+
+int stringFoundInStringArray(const char *const*array, const char *suffix)
+{
+	while (array && *array) {
+		if (strcasecmp(*array, suffix) == 0)
+			return 1;
+		array++;
+	}
+
+	return 0;
+}

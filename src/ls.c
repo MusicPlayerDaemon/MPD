@@ -83,3 +83,18 @@ hasMusicSuffix(const char *utf8file, unsigned int next)
 
 	return ret;
 }
+
+const struct archive_plugin *
+get_archive_by_suffix(const char *utf8file)
+{
+	const struct archive_plugin *ret = NULL;
+
+	const char *s = getSuffix(utf8file);
+	if (s) {
+		ret = archive_plugin_from_suffix(s);
+	} else {
+		g_debug("get_archive_by_suffix: The file: %s has no valid suffix\n",
+			utf8file);
+	}
+	return ret;
+}

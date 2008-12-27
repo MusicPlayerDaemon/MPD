@@ -58,6 +58,9 @@ song_free(struct song *song);
 bool
 song_file_update(struct song *song);
 
+bool
+song_file_update_inarchive(struct song *song);
+
 /*
  * song_get_url - Returns a path of a song in UTF8-encoded form
  * path_max_tmp is the argument that the URL is written to, this

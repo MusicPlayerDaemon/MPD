@@ -1,5 +1,5 @@
 /* the Music Player Daemon (MPD)
- * Copyright (C) 2003-2007 by Warren Dukes (warren.dukes@gmail.com)
+ * Copyright (C) 2008 Viliam Mateicka <viliam.mateicka@gmail.com>
  * This project's homepage is: http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -16,33 +16,29 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef MPD_LS_H
-#define MPD_LS_H
+#ifndef MPD_ARCHIVE_LIST_H
+#define MPD_ARCHIVE_LIST_H
 
-#include "decoder_list.h"
-#include "archive_list.h"
+#include "archive_api.h"
 
-#include <stdbool.h>
+#include <stdio.h>
 
-struct stat;
-struct client;
+struct archive_plugin;
 
-const char *getSuffix(const char *utf8file);
-
-/**
- * Checks whether the specified URI has a schema in the form
- * "scheme://".
- */
-bool uri_has_scheme(const char *uri);
-
-bool isRemoteUrl(const char *url);
-
-const struct decoder_plugin *
-hasMusicSuffix(const char *utf8file, unsigned int next);
+/* interface for using plugins */
 
 const struct archive_plugin *
-get_archive_by_suffix(const char *utf8file);
+archive_plugin_from_suffix(const char *suffix);
 
-void printRemoteUrlHandlers(struct client *client);
+const struct archive_plugin *
+archive_plugin_from_name(const char *name);
+
+void archive_plugin_print_all_suffixes(FILE * fp);
+
+/* this is where we "load" all the "plugins" ;-) */
+void archive_plugin_init_all(void);
+
+/* this is where we "unload" all the "plugins" */
+void archive_plugin_deinit_all(void);
 
 #endif

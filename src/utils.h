@@ -108,4 +108,6 @@ void xpthread_mutex_destroy(pthread_mutex_t *mutex);
 
 void xpthread_cond_destroy(pthread_cond_t *cond);
 
+int stringFoundInStringArray(const char *const*array, const char *suffix);
+
 #endif

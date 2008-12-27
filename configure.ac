@@ -171,6 +171,52 @@ AC_ARG_ENABLE(mvp,
 
 
 dnl
+dnl archive plugins
+dnl
+
+AC_ARG_ENABLE(bz2,
+	AS_HELP_STRING([--enable-bz2],
+		[enable rar archive support (default: disabled)]),
+	enable_bz2=$enableval,
+	enable_bz2=no)
+
+AM_CONDITIONAL(HAVE_BZ2, test x$enable_bz2 = xyes)
+
+AC_ARG_ENABLE(zip,
+	AS_HELP_STRING([--enable-zip],
+		[enable zip archive support (default: disabled)]),
+	enable_zip=$enableval,
+	enable_zip=no)
+
+AM_CONDITIONAL(HAVE_ZIP, test x$enable_zip = xyes)
+
+AC_ARG_ENABLE(iso9660,
+	AS_HELP_STRING([--enable-iso9660],
+		[enable iso9660 archive support (default: disabled)]),
+	enable_iso=$enableval,
+	enable_iso=no)
+
+AM_CONDITIONAL(HAVE_ISO, test x$enable_iso = xyes)
+
+# archive plugin libraries
+
+AC_CHECK_LIB(bz2, BZ2_bzDecompressInit,[MPD_LIBS="-lbz2";],enable_bz2=no)
+if test x$enable_bz2 = xyes; then
+	AC_DEFINE(HAVE_BZ2, 1, [Define to have bz2 archive support])
+fi
+
+AC_CHECK_LIB(zzip, zzip_dir_open,[MPD_LIBS="-lzzip";],enable_zip=no)
+if test x$enable_zip = xyes; then
+	AC_DEFINE(HAVE_ZIP, 1, [Define to have zip archive support])
+fi
+
+AC_CHECK_LIB(iso9660, iso9660_ifs_readdir ,,enable_iso=no)
+if test x$enable_iso = xyes; then
+	MPD_LIBS="$MPD_LIBS -liso9660"
+	AC_DEFINE(HAVE_ISO, 1, [Define to have iso archive support])
+fi
+
+dnl
 dnl decoder plugins
 dnl
 
@@ -1143,6 +1189,24 @@ if test x$enable_curl != xno; then
 	echo " HTTP streaming (libcurl) ......enabled"
 else
 	echo " HTTP streaming (libcurl) ......disabled"
+fi
+
+if test x$enable_bz2 = xyes; then
+	echo " BZ2 archives support ..........enabled"
+else
+	echo " BZ2 archives support ..........disabled"
+fi
+
+if test x$enable_zip = xyes; then
+	echo " ZIP archives support ..........enabled"
+else
+	echo " ZIP archives support ..........disabled"
+fi
+
+if test x$enable_iso = xyes; then
+	echo " ISO 9660 archives support .....enabled"
+else
+	echo " ISO 9660 archives support .....disabled"
 fi
 
 echo ""

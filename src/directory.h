@@ -34,6 +34,8 @@
 #define DIRECTORY_MPD_VERSION	"mpd_version: "
 #define DIRECTORY_FS_CHARSET	"fs_charset: "
 
+#define DEVICE_INARCHIVE	(unsigned)(-1)
+
 struct directory {
 	struct dirvec children;
 	struct songvec songs;

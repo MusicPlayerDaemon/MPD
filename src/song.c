@@ -74,7 +74,12 @@ song_file_load(const char *path, struct directory *parent)
 
 	song = song_file_new(path, parent);
 
-	ret = song_file_update(song);
+	//in archive ?
+	if (parent->device == DEVICE_INARCHIVE) {
+		ret = song_file_update_inarchive(song);
+	} else {
+		ret = song_file_update(song);
+	}
 	if (!ret) {
 		song_free(song);
 		return NULL;
@@ -120,6 +125,34 @@ song_file_update(struct song *song)
 	       (plugin = hasMusicSuffix(path_fs, next++)))
 		song->tag = plugin->tag_dup(path_fs);
 
+	return song->tag != NULL;
+}
+
+bool
+song_file_update_inarchive(struct song *song)
+{
+	char buffer[MPD_PATH_MAX];
+	const char *path_fs;
+	const struct decoder_plugin *plugin;
+
+	assert(song_is_file(song));
+
+	path_fs = map_song_fs(song, buffer);
+	if (path_fs == NULL)
+		return false;
+
+	if (song->tag != NULL) {
+		tag_free(song->tag);
+		song->tag = NULL;
+	}
+	//accept every file that has music suffix
+	//because we dont support tag reading throught
+	//input streams
+	plugin = hasMusicSuffix(path_fs, 0);
+	if (plugin) {
+		song->tag = tag_new();
+		//tag_add_item(tag, TAG_ITEM_TITLE, f->title);
+	}
 	return song->tag != NULL;
 }
 

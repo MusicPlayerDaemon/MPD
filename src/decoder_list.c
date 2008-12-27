@@ -18,6 +18,7 @@
 
 #include "decoder_list.h"
 #include "decoder_api.h"
+#include "utils.h"
 
 #include <glib.h>
 
@@ -75,17 +76,6 @@ enum {
 
 /** which plugins have been initialized successfully? */
 static bool decoder_plugins_enabled[num_decoder_plugins];
-
-static int stringFoundInStringArray(const char *const*array, const char *suffix)
-{
-	while (array && *array) {
-		if (strcasecmp(*array, suffix) == 0)
-			return 1;
-		array++;
-	}
-
-	return 0;
-}
 
 const struct decoder_plugin *
 decoder_plugin_from_suffix(const char *suffix, unsigned int next)
