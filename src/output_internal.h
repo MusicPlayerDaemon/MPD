@@ -23,6 +23,7 @@
 #include "pcm_utils.h"
 #include "notify.h"
 
+#include <pthread.h>
 #include <time.h>
 
 struct audio_output {

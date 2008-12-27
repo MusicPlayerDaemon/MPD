@@ -17,42 +17,33 @@
  */
 
 #include "notify.h"
-#include "log.h"
 
 void notify_init(struct notify *notify)
 {
-	int ret;
-
-	ret = pthread_mutex_init(&notify->mutex, NULL);
-	if (ret != 0)
-		FATAL("pthread_mutex_init() failed");
-
-	ret = pthread_cond_init(&notify->cond, NULL);
-	if (ret != 0)
-		FATAL("pthread_mutex_init() failed");
-
+	notify->mutex = g_mutex_new();
+	notify->cond = g_cond_new();
 	notify->pending = false;
 }
 
 void notify_deinit(struct notify *notify)
 {
-	pthread_mutex_destroy(&notify->mutex);
-	pthread_cond_destroy(&notify->cond);
+	g_mutex_free(notify->mutex);
+	g_cond_free(notify->cond);
 }
 
 void notify_wait(struct notify *notify)
 {
-	pthread_mutex_lock(&notify->mutex);
+	g_mutex_lock(notify->mutex);
 	while (!notify->pending)
-		pthread_cond_wait(&notify->cond, &notify->mutex);
+		g_cond_wait(notify->cond, notify->mutex);
 	notify->pending = false;
-	pthread_mutex_unlock(&notify->mutex);
+	g_mutex_unlock(notify->mutex);
 }
 
 void notify_signal(struct notify *notify)
 {
-	pthread_mutex_lock(&notify->mutex);
+	g_mutex_lock(notify->mutex);
 	notify->pending = true;
-	pthread_cond_signal(&notify->cond);
-	pthread_mutex_unlock(&notify->mutex);
+	g_cond_signal(notify->cond);
+	g_mutex_unlock(notify->mutex);
 }

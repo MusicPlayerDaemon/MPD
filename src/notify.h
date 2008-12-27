@@ -19,19 +19,15 @@
 #ifndef MPD_NOTIFY_H
 #define MPD_NOTIFY_H
 
+#include <glib.h>
+
 #include <stdbool.h>
-#include <pthread.h>
 
 struct notify {
-	pthread_mutex_t mutex;
-	pthread_cond_t cond;
+	GMutex *mutex;
+	GCond *cond;
 	bool pending;
 };
-
-#define NOTIFY_INITIALIZER { \
-	.mutex = PTHREAD_MUTEX_INITIALIZER, \
-	.cond = PTHREAD_COND_INITIALIZER, \
-}
 
 void notify_init(struct notify *notify);
 
