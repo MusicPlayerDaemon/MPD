@@ -27,6 +27,8 @@
 #include "archive_list.h"
 #endif
 
+#include <glib.h>
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -36,25 +38,6 @@
 
 #define SYSTEM_CONFIG_FILE_LOCATION	"/etc/mpd.conf"
 #define USER_CONFIG_FILE_LOCATION	"/.mpdconf"
-
-static void usage(char *argv[])
-{
-	printf("usage:\n"
-	       "   %s [options] <conf file>\n"
-	       "   %s [options]   (searches for ~" USER_CONFIG_FILE_LOCATION
-	       " then " SYSTEM_CONFIG_FILE_LOCATION ")\n",
-	       argv[0], argv[0]);
-	puts("\n"
-	     "options:\n"
-	     "   --help             this usage statement\n"
-	     "   --kill             kill the currently running mpd session\n"
-	     "   --create-db        force (re)creation of database and exit\n"
-	     "   --no-create-db     don't create database, even if it doesn't exist\n"
-	     "   --no-daemon        don't detach from console\n"
-	     "   --stdout           print messages to stdout and stderr\n"
-	     "   --verbose          verbose logging\n"
-	     "   --version          prints version information\n");
-}
 
 static void version(void)
 {
@@ -82,9 +65,35 @@ static void version(void)
 #endif
 }
 
+#if GLIB_MAJOR_VERSION > 2 || (GLIB_MAJOR_VERSION == 2 && GLIB_MINOR_VERSION >= 12)
+static const char *summary =
+	"Music Player Daemon - a daemon for playing music.";
+#endif
+
 void parseOptions(int argc, char **argv, Options *options)
 {
-	int argcLeft = argc;
+	GError *error = NULL;
+	GOptionContext *context;
+	bool ret;
+	static gboolean option_version,
+		option_create_db, option_no_create_db, option_no_daemon;
+	const GOptionEntry entries[] = {
+		{ "version", 'V', 0, G_OPTION_ARG_NONE, &option_version,
+		  "print version number", NULL },
+		{ "kill", 0, 0, G_OPTION_ARG_NONE, &options->kill,
+		  "kill the currently running mpd session", NULL },
+		{ "create-db", 0, 0, G_OPTION_ARG_NONE, &option_create_db,
+		  "force (re)creation of database and exit", NULL },
+		{ "no-create-db", 0, 0, G_OPTION_ARG_NONE, &option_no_create_db,
+		  "don't create database, even if it doesn't exist", NULL },
+		{ "no-daemon", 0, 0, G_OPTION_ARG_NONE, &option_no_daemon,
+		  "don't detach from console", NULL },
+		{ "stdout", 0, 0, G_OPTION_ARG_NONE, &options->stdOutput,
+		  "print messages to stdout and stderr", NULL },
+		{ "verbose", 'v', 0, G_OPTION_ARG_NONE, &options->verbose,
+		  "verbose logging", NULL },
+		{ .long_name = NULL }
+	};
 
 	options->kill = false;
 	options->daemon = true;
@@ -92,72 +101,54 @@ void parseOptions(int argc, char **argv, Options *options)
 	options->verbose = false;
 	options->createDB = 0;
 
-	if (argc > 1) {
-		int i = 1;
-		while (i < argc) {
-			if (g_str_has_prefix(argv[i], "--")) {
-				if (strcmp(argv[i], "--help") == 0) {
-					usage(argv);
-					exit(EXIT_SUCCESS);
-				} else if (strcmp(argv[i], "--kill") == 0) {
-					options->kill = true;
-					argcLeft--;
-				} else if (strcmp(argv[i], "--no-daemon") == 0) {
-					options->daemon = false;
-					argcLeft--;
-				} else if (strcmp(argv[i], "--stdout") == 0) {
-					options->stdOutput = true;
-					argcLeft--;
-				} else if (strcmp(argv[i], "--create-db") == 0) {
-					options->stdOutput = true;
-					options->createDB = 1;
-					argcLeft--;
-				} else if (strcmp(argv[i], "--no-create-db") ==
-					   0) {
-					options->createDB = -1;
-					argcLeft--;
-				} else if (strcmp(argv[i], "--verbose") == 0) {
-					options->verbose = true;
-					argcLeft--;
-				} else if (strcmp(argv[i], "--version") == 0) {
-					version();
-					exit(EXIT_SUCCESS);
-				} else {
-					fprintf(stderr,
-						"unknown command line option: %s\n",
-						argv[i]);
-					exit(EXIT_FAILURE);
-				}
-			} else
-				break;
-			i++;
-		}
+	context = g_option_context_new("[path/to/mpd.conf]");
+	g_option_context_add_main_entries(context, entries, NULL);
+
+#if GLIB_MAJOR_VERSION > 2 || (GLIB_MAJOR_VERSION == 2 && GLIB_MINOR_VERSION >= 12)
+	g_option_context_set_summary(context, summary);
+#endif
+
+	ret = g_option_context_parse(context, &argc, &argv, &error);
+	g_option_context_free(context);
+
+	if (!ret) {
+		g_error("option parsing failed: %s\n", error->message);
+		exit(1);
 	}
 
-	if (argcLeft <= 2) {
-		if (argcLeft == 2) {
-			readConf(argv[argc - 1]);
-			return;
-		} else if (argcLeft == 1) {
-			struct stat st;
-			char *homedir = getenv("HOME");
-			char userfile[MPD_PATH_MAX] = "";
-			if (homedir && (strlen(homedir) +
-					strlen(USER_CONFIG_FILE_LOCATION)) <
-			    MPD_PATH_MAX) {
-				strcpy(userfile, homedir);
-				strcat(userfile, USER_CONFIG_FILE_LOCATION);
-			}
-			if (strlen(userfile) && (0 == stat(userfile, &st))) {
-				readConf(userfile);
-				return;
-			} else if (0 == stat(SYSTEM_CONFIG_FILE_LOCATION, &st)) {
-				readConf(SYSTEM_CONFIG_FILE_LOCATION);
-				return;
-			}
-		}
-	}
+	if (option_version)
+		version();
 
-	usage(argv);
-	exit(EXIT_FAILURE);
+	if (option_create_db && option_no_daemon)
+		g_error("Cannot use both --create-db and --no-create-db\n");
+
+	if (option_no_create_db)
+		options->createDB = -1;
+	else if (option_create_db)
+		options->createDB = 1;
+
+	options->daemon = !option_no_daemon;
+
+	if (argc <= 1) {
+		/* default configuration file path */
+		struct stat st;
+		char *homedir = getenv("HOME");
+		char userfile[MPD_PATH_MAX] = "";
+
+		if (homedir && (strlen(homedir) +
+				strlen(USER_CONFIG_FILE_LOCATION)) <
+		    MPD_PATH_MAX) {
+			strcpy(userfile, homedir);
+			strcat(userfile, USER_CONFIG_FILE_LOCATION);
+		}
+
+		if (strlen(userfile) && 0 == stat(userfile, &st))
+			readConf(userfile);
+		else if (0 == stat(SYSTEM_CONFIG_FILE_LOCATION, &st))
+			readConf(SYSTEM_CONFIG_FILE_LOCATION);
+	} else if (argc == 2) {
+		/* specified configuration file */
+		readConf(argv[1]);
+	} else
+		g_error("too many arguments");
 }
