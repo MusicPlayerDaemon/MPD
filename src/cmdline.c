@@ -114,7 +114,7 @@ void parseOptions(int argc, char **argv, Options *options)
 	if (option_version)
 		version();
 
-	if (option_create_db && option_no_daemon)
+	if (option_create_db && option_no_create_db)
 		g_error("Cannot use both --create-db and --no-create-db\n");
 
 	if (option_no_create_db)
