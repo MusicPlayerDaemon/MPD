@@ -158,10 +158,7 @@ mpd_SOURCES = \
 	volume.c \
 	locate.c \
 	stored_playlist.c \
-	timer.c \
-	archive_api.c \
-	archive_list.c \
-	input_archive.c
+	timer.c
 
 if HAVE_LIBSAMPLERATE
 mpd_SOURCES += pcm_resample_libsamplerate.c
@@ -186,6 +183,14 @@ endif
 if HAVE_ISO
 mpd_SOURCES += archive/iso_plugin.c
 endif
+
+if ENABLE_ARCHIVE
+mpd_SOURCES += \
+	archive_api.c \
+	archive_list.c \
+	input_archive.c
+endif
+
 
 # decoder plugins
 

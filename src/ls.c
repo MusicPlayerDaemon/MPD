@@ -84,6 +84,7 @@ hasMusicSuffix(const char *utf8file, unsigned int next)
 	return ret;
 }
 
+#ifdef ENABLE_ARCHIVE
 const struct archive_plugin *
 get_archive_by_suffix(const char *utf8file)
 {
@@ -98,3 +99,4 @@ get_archive_by_suffix(const char *utf8file)
 	}
 	return ret;
 }
+#endif

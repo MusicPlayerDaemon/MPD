@@ -40,7 +40,6 @@
 #include "permission.h"
 #include "replay_gain.h"
 #include "decoder_list.h"
-#include "archive_list.h"
 #include "audioOutput.h"
 #include "input_stream.h"
 #include "state_file.h"
@@ -51,6 +50,10 @@
 #include "zeroconf.h"
 #include "main_notify.h"
 #include "os_compat.h"
+
+#ifdef ENABLE_ARCHIVE
+#include "archive_list.h"
+#endif
 
 #include <glib.h>
 
@@ -147,10 +150,12 @@ static void version(void)
 	     "Supported outputs:\n");
 	printAllOutputPluginTypes(stdout);
 
+#ifdef ENABLE_ARCHIVE
 	puts("\n"
 	     "Supported archives:\n");
 	archive_plugin_init_all();
 	archive_plugin_print_all_suffixes(stdout);
+#endif
 }
 
 static void parseOptions(int argc, char **argv, Options * options)
@@ -421,7 +426,9 @@ int main(int argc, char *argv[])
 	mapper_init();
 	initPermissions();
 	initPlaylist();
+#ifdef ENABLE_ARCHIVE
 	archive_plugin_init_all();
+#endif
 	decoder_plugin_init_all();
 	update_global_init();
 
@@ -507,7 +514,9 @@ int main(int argc, char *argv[])
 	command_finish();
 	update_global_finish();
 	decoder_plugin_deinit_all();
+#ifdef ENABLE_ARCHIVE
 	archive_plugin_deinit_all();
+#endif
 	music_pipe_free();
 	cleanUpPidFile();
 	finishConf();

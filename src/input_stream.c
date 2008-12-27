@@ -20,7 +20,10 @@
 #include "config.h"
 
 #include "input_file.h"
+
+#ifdef ENABLE_ARCHIVE
 #include "input_archive.h"
+#endif
 
 #ifdef HAVE_CURL
 #include "input_curl.h"
@@ -31,7 +34,9 @@
 
 static const struct input_plugin *const input_plugins[] = {
 	&input_plugin_file,
+#ifdef ENABLE_ARCHIVE
 	&input_plugin_archive,
+#endif
 #ifdef HAVE_CURL
 	&input_plugin_curl,
 #endif

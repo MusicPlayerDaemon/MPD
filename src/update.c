@@ -276,6 +276,7 @@ make_subdir(struct directory *parent, const char *name)
 	return directory;
 }
 
+#ifdef ENABLE_ARCHIVE
 static void
 update_archive_tree(struct directory *directory, char *name)
 {
@@ -308,6 +309,7 @@ update_archive_tree(struct directory *directory, char *name)
 		}
 	}
 }
+#endif
 
 static bool
 updateDirectory(struct directory *directory, const struct stat *st);
@@ -316,7 +318,10 @@ static void
 updateInDirectory(struct directory *directory,
 		  const char *name, const struct stat *st)
 {
+#ifdef ENABLE_ARCHIVE
 	const struct archive_plugin *archive;
+#endif
+
 	assert(strchr(name, '/') == NULL);
 
 	if (S_ISREG(st->st_mode) && hasMusicSuffix(name, 0)) {
@@ -351,6 +356,7 @@ updateInDirectory(struct directory *directory,
 		ret = updateDirectory(subdir, st);
 		if (!ret)
 			delete_directory(subdir);
+#ifdef ENABLE_ARCHIVE
 	} else if (S_ISREG(st->st_mode) && (archive = get_archive_by_suffix(name))) {
 		struct archive_file *archfile;
 		char pathname[MPD_PATH_MAX];
@@ -380,6 +386,7 @@ updateInDirectory(struct directory *directory,
 		} else {
 			g_warning("unable to open archive %s\n", pathname);
 		}
+#endif
 	} else {
 		g_debug("update: %s is not a directory, archive or music\n", name);
 	}

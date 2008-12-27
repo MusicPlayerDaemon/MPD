@@ -217,6 +217,16 @@ if test x$enable_iso = xyes; then
 	AC_DEFINE(HAVE_ISO, 1, [Define to have iso archive support])
 fi
 
+dnl archive API
+if test x$enable_bz2 = xyes || test x$enable_zip = xyes || test x$enable_iso = xyes; then
+	enable_archive=yes
+	AC_DEFINE(ENABLE_ARCHIVE, 1, [The archive API is available])
+else
+	enable_archive=no
+fi
+
+AM_CONDITIONAL(ENABLE_ARCHIVE, test x$enable_archive = xyes)
+
 
 dnl
 dnl decoder plugins
