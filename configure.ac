@@ -175,7 +175,7 @@ dnl archive plugins
 dnl
 
 dnl bzip2
-AC_ARG_ENABLE(bz2,
+AC_ARG_ENABLE(bzip2,
 	AS_HELP_STRING([--enable-bz2],
 		[enable bzip2 archive support (default: disabled)]),
 	enable_bz2=$enableval,
