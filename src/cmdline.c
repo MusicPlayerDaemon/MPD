@@ -29,15 +29,10 @@
 
 #include <glib.h>
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
 #define SYSTEM_CONFIG_FILE_LOCATION	"/etc/mpd.conf"
-#define USER_CONFIG_FILE_LOCATION	"/.mpdconf"
+#define USER_CONFIG_FILE_LOCATION	".mpdconf"
 
 static void version(void)
 {
@@ -131,21 +126,16 @@ void parseOptions(int argc, char **argv, Options *options)
 
 	if (argc <= 1) {
 		/* default configuration file path */
-		struct stat st;
-		char *homedir = getenv("HOME");
-		char userfile[MPD_PATH_MAX] = "";
+		char *path;
 
-		if (homedir && (strlen(homedir) +
-				strlen(USER_CONFIG_FILE_LOCATION)) <
-		    MPD_PATH_MAX) {
-			strcpy(userfile, homedir);
-			strcat(userfile, USER_CONFIG_FILE_LOCATION);
-		}
-
-		if (strlen(userfile) && 0 == stat(userfile, &st))
-			readConf(userfile);
-		else if (0 == stat(SYSTEM_CONFIG_FILE_LOCATION, &st))
+		path = g_build_filename(g_get_home_dir(),
+					USER_CONFIG_FILE_LOCATION, NULL);
+		if (g_file_test(path, G_FILE_TEST_IS_REGULAR))
+			readConf(path);
+		else if (g_file_test(SYSTEM_CONFIG_FILE_LOCATION,
+				     G_FILE_TEST_IS_REGULAR))
 			readConf(SYSTEM_CONFIG_FILE_LOCATION);
+		g_free(path);
 	} else if (argc == 2) {
 		/* specified configuration file */
 		readConf(argv[1]);
