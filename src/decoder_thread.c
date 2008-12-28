@@ -28,7 +28,6 @@
 #include "log.h"
 #include "ls.h"
 
-#include <pthread.h>
 #include <glib.h>
 
 static bool
@@ -203,7 +202,7 @@ static void decoder_run(void)
 	dc.state = ret ? DECODE_STATE_STOP : DECODE_STATE_ERROR;
 }
 
-static void * decoder_task(G_GNUC_UNUSED void *arg)
+static gpointer decoder_task(G_GNUC_UNUSED gpointer arg)
 {
 	do {
 		assert(dc.state == DECODE_STATE_STOP ||
@@ -234,11 +233,9 @@ static void * decoder_task(G_GNUC_UNUSED void *arg)
 
 void decoder_thread_start(void)
 {
-	pthread_attr_t attr;
-	pthread_t decoder_thread;
+	GError *e;
+	GThread *t;
 
-	pthread_attr_init(&attr);
-	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
-	if (pthread_create(&decoder_thread, &attr, decoder_task, NULL))
-		FATAL("Failed to spawn decoder task: %s\n", strerror(errno));
+	if (!(t = g_thread_create(decoder_task, NULL, FALSE, &e)))
+		FATAL("Failed to spawn decoder task: %s\n", e->message);
 }
