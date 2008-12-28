@@ -26,7 +26,6 @@ db_file				"~/.mpd/database"
 # settings.
 #
 log_file			"~/.mpd/log"
-error_file			"~/.mpd/error-log"
 ###############################################################################
 
 

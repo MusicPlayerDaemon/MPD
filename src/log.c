@@ -44,17 +44,14 @@ static const char *log_charset;
 
 static bool stdout_mode = true;
 static int out_fd = -1;
-static int err_fd = -1;
 static const char *out_filename;
-static const char *err_filename;
 
 static void redirect_logs(void)
 {
 	assert(out_fd >= 0);
-	assert(err_fd >= 0);
 	if (dup2(out_fd, STDOUT_FILENO) < 0)
 		FATAL("problems dup2 stdout : %s\n", strerror(errno));
-	if (dup2(err_fd, STDERR_FILENO) < 0)
+	if (dup2(out_fd, STDERR_FILENO) < 0)
 		FATAL("problems dup2 stderr : %s\n", strerror(errno));
 }
 
@@ -71,8 +68,6 @@ mpd_log_func(const gchar *log_domain,
 	     G_GNUC_UNUSED GLogLevelFlags log_level,
 	     const gchar *message, G_GNUC_UNUSED gpointer user_data)
 {
-	FILE *file = log_level <= G_LOG_LEVEL_WARNING
-		? stderr : stdout;
 	char *converted;
 
 	if (log_level > (int)log_threshold)
@@ -90,7 +85,7 @@ mpd_log_func(const gchar *log_domain,
 	if (log_domain == NULL)
 		log_domain = "";
 
-	fprintf(file, "%s%s%s%s",
+	fprintf(stderr, "%s%s%s%s",
 		stdout_mode ? "" : log_date(),
 		log_domain, *log_domain == 0 ? "" : ": ",
 		message);
@@ -105,9 +100,6 @@ void initLog(bool verbose)
 	g_get_charset(&log_charset);
 
 	g_log_set_default_handler(mpd_log_func, NULL);
-
-	/* unbuffer stdout, stderr is unbuffered by default, leave it */
-	setvbuf(stdout, (char *)NULL, _IONBF, 0);
 
 	if (verbose) {
 		log_threshold = G_LOG_LEVEL_DEBUG;
@@ -141,13 +133,6 @@ void open_log_files(bool use_stdout)
 	out_fd = open(out_filename, O_CREAT | O_WRONLY | O_APPEND, 0666);
 	if (out_fd < 0)
 		FATAL("problem opening log file \"%s\" (config line %i) for "
-		      "writing\n", param->value, param->line);
-
-	param = parseConfigFilePath(CONF_ERROR_FILE, 1);
-	err_filename = param->value;
-	err_fd = open(err_filename, O_CREAT | O_WRONLY | O_APPEND, 0666);
-	if (err_fd < 0)
-		FATAL("problem opening error file \"%s\" (config line %i) for "
 		      "writing\n", param->value, param->line);
 
 	umask(prev);
@@ -198,7 +183,6 @@ int cycle_log_files(void)
 	if (stdout_mode)
 		return 0;
 	assert(out_filename);
-	assert(err_filename);
 
 	DEBUG("Cycling log files...\n");
 	close_log_files();
@@ -208,12 +192,6 @@ int cycle_log_files(void)
 	out_fd = open(out_filename, O_CREAT | O_WRONLY | O_APPEND, 0666);
 	if (out_fd < 0) {
 		ERROR("error re-opening log file: %s\n", out_filename);
-		return -1;
-	}
-
-	err_fd = open(err_filename, O_CREAT | O_WRONLY | O_APPEND, 0666);
-	if (err_fd < 0) {
-		ERROR("error re-opening error file: %s\n", err_filename);
 		return -1;
 	}
 
@@ -229,8 +207,6 @@ void close_log_files(void)
 	if (stdout_mode)
 		return;
 	assert(out_fd >= 0);
-	assert(err_fd >= 0);
 	close(out_fd);
-	close(err_fd);
 }
 

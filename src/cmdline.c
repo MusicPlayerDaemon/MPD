@@ -84,7 +84,7 @@ void parseOptions(int argc, char **argv, Options *options)
 		{ "no-daemon", 0, 0, G_OPTION_ARG_NONE, &option_no_daemon,
 		  "don't detach from console", NULL },
 		{ "stdout", 0, 0, G_OPTION_ARG_NONE, &options->stdOutput,
-		  "print messages to stdout and stderr", NULL },
+		  "print messages to stderr", NULL },
 		{ "verbose", 'v', 0, G_OPTION_ARG_NONE, &options->verbose,
 		  "verbose logging", NULL },
 		{ .long_name = NULL }
