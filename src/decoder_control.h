@@ -49,6 +49,7 @@ struct decoder_control {
 
 	volatile enum decoder_state state;
 	volatile enum decoder_command command;
+	bool quit;
 	bool seek_error;
 	bool seekable;
 	volatile double seek_where;
@@ -121,5 +122,8 @@ dc_stop(struct notify *notify);
 
 bool
 dc_seek(struct notify *notify, double where);
+
+void
+dc_quit(struct notify *notify);
 
 #endif

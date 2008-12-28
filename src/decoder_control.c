@@ -100,3 +100,10 @@ dc_seek(struct notify *notify, double where)
 
 	return true;
 }
+
+void
+dc_quit(struct notify *notify)
+{
+	dc.quit = true;
+	dc_command(notify, DECODE_COMMAND_STOP);
+}

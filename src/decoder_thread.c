@@ -204,7 +204,7 @@ static void decoder_run(void)
 
 static void * decoder_task(G_GNUC_UNUSED void *arg)
 {
-	while (1) {
+	do {
 		assert(dc.state == DECODE_STATE_STOP ||
 		       dc.state == DECODE_STATE_ERROR);
 
@@ -226,7 +226,7 @@ static void * decoder_task(G_GNUC_UNUSED void *arg)
 			notify_wait(&dc.notify);
 			break;
 		}
-	}
+	} while (dc.command != DECODE_COMMAND_NONE || !dc.quit);
 
 	return NULL;
 }

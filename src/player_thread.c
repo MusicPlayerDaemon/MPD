@@ -514,6 +514,7 @@ static void * player_task(G_GNUC_UNUSED void *arg)
 			break;
 
 		case PLAYER_COMMAND_EXIT:
+			dc_quit(&pc.notify);
 			closeAudioDevice();
 			player_command_finished();
 			pthread_exit(NULL);
