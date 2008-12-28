@@ -280,6 +280,12 @@ AC_ARG_ENABLE(mod,
 	enable_mod=$enableval,
 	enable_mod=no)
 
+AC_ARG_ENABLE(modplug,
+	AS_HELP_STRING([--enable-modplug],
+		[enable MODPLUG support (default: disable)]),
+	enable_modplug=$enableval,
+	enable_modplug=no)
+
 AC_ARG_ENABLE(mpc,
 	AS_HELP_STRING([--disable-mpc],
 		[disable musepack (MPC) support (default: enable)]),
@@ -837,6 +843,14 @@ fi
 
 AM_CONDITIONAL(HAVE_MIKMOD, test x$enable_mod = xyes)
 
+if test x$enable_modplug = xyes; then
+	PKG_CHECK_MODULES(MODPLUG, [libmodplug],
+	    AC_DEFINE(HAVE_MODPLUG, 1, [Define for modplug support]),
+	    enable_modplug=no)
+fi
+
+AM_CONDITIONAL(HAVE_MODPLUG, test x$enable_modplug = xyes)
+
 if test x$enable_ffmpeg = xyes; then
 	PKG_CHECK_MODULES(FFMPEG, [libavformat libavcodec libavutil],
 		AC_DEFINE(HAVE_FFMPEG, 1, [Define for FFMPEG support]),
@@ -1160,6 +1174,12 @@ else
 	echo " MOD support ...................disabled"
 fi
 
+if test x$enable_modplug = xyes; then
+	echo " MODPLUG support ...............enabled"
+else
+	echo " MODPLUG support ...............disabled"
+fi
+
 if test x$enable_ffmpeg = xyes; then
 	echo " FFMPEG support ................enabled"
 else
@@ -1176,6 +1196,7 @@ if
 	test x$enable_mpc = xno &&
 	test x$enable_wavpack = xno &&
 	test x$enable_ffmpeg = xno &&
+	test x$enable_modplug = xno &&
 	test x$enable_mod = xno; then
 	AC_MSG_ERROR([No input plugins supported!])
 fi

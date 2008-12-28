@@ -244,6 +244,10 @@ if HAVE_MIKMOD
 mpd_SOURCES += decoder/mod_plugin.c
 endif
 
+if HAVE_MODPLUG
+mpd_SOURCES += decoder/modplug_plugin.c
+endif
+
 if HAVE_FFMPEG
 mpd_SOURCES += decoder/ffmpeg_plugin.c
 endif
@@ -312,6 +316,7 @@ mpd_CPPFLAGS = \
 	$(OGGVORBIS_CFLAGS) $(VORBISENC_CFLAGS) \
 	$(patsubst -I%/FLAC,-I%,$(FLAC_CFLAGS)) \
 	$(AUDIOFILE_CFLAGS) $(LIBMIKMOD_CFLAGS) \
+	$(MODPLUG_CFLAGS) \
 	$(ID3TAG_CFLAGS) \
 	$(MAD_CFLAGS) \
 	$(FFMPEG_CFLAGS) \
@@ -322,6 +327,7 @@ mpd_LDADD = $(MPD_LIBS) \
 	$(SHOUT_LIBS) \
 	$(OGGVORBIS_LIBS) $(VORBISENC_LIBS) $(FLAC_LIBS) \
 	$(AUDIOFILE_LIBS) $(LIBMIKMOD_LIBS) \
+	$(MODPLUG_LIBS) \
 	$(ID3TAG_LIBS) \
 	$(MAD_LIBS) \
 	$(MP4FF_LIBS) \
