@@ -17,14 +17,10 @@
  */
 
 #include "buffer2array.h"
-#include "os_compat.h"
 
-static inline
-int
-isWhiteSpace(char c)
-{
-	return (c == ' ' || c == '\t');
-}
+#include <glib.h>
+
+#include <string.h>
 
 int buffer2array(char *buffer, char *array[], const int max)
 {
@@ -44,19 +40,20 @@ int buffer2array(char *buffer, char *array[], const int max)
 				}
 			}
 		} else {
-			while (isWhiteSpace(*c))
-				++c;
-			array[i++] = c++;
+			c = g_strchug(c);
 			if (*c == '\0')
 				return i;
-			while (!isWhiteSpace(*c) && *c != '\0')
+
+			array[i++] = c++;
+
+			while (!g_ascii_isspace(*c) && *c != '\0')
 				++c;
 		}
 		if (*c == '\0')
 			return i;
 		*(c++) = '\0';
-		while (isWhiteSpace(*c))
-			++c;
+
+		c = g_strchug(c);
 	}
 	return i;
 }
