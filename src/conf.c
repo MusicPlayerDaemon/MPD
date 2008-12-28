@@ -17,14 +17,13 @@
  */
 
 #include "conf.h"
-
-#include "log.h"
-
 #include "utils.h"
 #include "buffer2array.h"
 #include "list.h"
 #include "path.h"
 #include "os_compat.h"
+
+#include <glib.h>
 
 #define MAX_STRING_SIZE	MPD_PATH_MAX+80
 
@@ -62,12 +61,12 @@ static int get_bool(const char *value)
 
 static ConfigParam *newConfigParam(char *value, int line)
 {
-	ConfigParam *ret = xmalloc(sizeof(ConfigParam));
+	ConfigParam *ret = g_new(ConfigParam, 1);
 
 	if (!value)
 		ret->value = NULL;
 	else
-		ret->value = xstrdup(value);
+		ret->value = g_strdup(value);
 
 	ret->line = line;
 
@@ -101,7 +100,7 @@ static void freeConfigParam(ConfigParam * param)
 
 static ConfigEntry *newConfigEntry(int repeatable, int block)
 {
-	ConfigEntry *ret = xmalloc(sizeof(ConfigEntry));
+	ConfigEntry *ret = g_new(ConfigEntry, 1);
 
 	ret->mask = 0;
 	ret->configParamList =
@@ -126,7 +125,7 @@ static void registerConfigParam(const char *name, int repeatable, int block)
 	ConfigEntry *entry;
 
 	if (findInList(configEntriesList, name, NULL))
-		FATAL("config parameter \"%s\" already registered\n", name);
+		g_error("config parameter \"%s\" already registered\n", name);
 
 	entry = newConfigEntry(repeatable, block);
 
@@ -192,13 +191,13 @@ static void addBlockParam(ConfigParam * param, char *name, char *value,
 {
 	param->numberOfBlockParams++;
 
-	param->blockParams = xrealloc(param->blockParams,
+	param->blockParams = g_realloc(param->blockParams,
 				     param->numberOfBlockParams *
 				     sizeof(BlockParam));
 
-	param->blockParams[param->numberOfBlockParams - 1].name = xstrdup(name);
+	param->blockParams[param->numberOfBlockParams - 1].name = g_strdup(name);
 	param->blockParams[param->numberOfBlockParams - 1].value =
-	    xstrdup(value);
+	    g_strdup(value);
 	param->blockParams[param->numberOfBlockParams - 1].line = line;
 }
 
@@ -234,17 +233,17 @@ static ConfigParam *readConfigBlock(FILE * fp, int *count, char *string)
 		}
 
 		if (2 != argsMinusComment) {
-			FATAL("improperly formatted config file at line %i:"
-			      " %s\n", *count, string);
+			g_error("improperly formatted config file at line %i:"
+				" %s\n", *count, string);
 		}
 
 		if (0 == strcmp(array[0], CONF_BLOCK_BEGIN) ||
 		    0 == strcmp(array[1], CONF_BLOCK_BEGIN) ||
 		    0 == strcmp(array[0], CONF_BLOCK_END) ||
 		    0 == strcmp(array[1], CONF_BLOCK_END)) {
-			FATAL("improperly formatted config file at line %i: %s\n"
-			      "in block beginning at line %i\n",
-			      *count, string, ret->line);
+			g_error("improperly formatted config file at line %i: %s "
+				"in block beginning at line %i\n",
+				*count, string, ret->line);
 		}
 
 		addBlockParam(ret, array[0], array[1], *count);
@@ -266,8 +265,8 @@ void readConf(const char *file)
 	ConfigParam *param;
 
 	if (!(fp = fopen(file, "r"))) {
-		FATAL("problems opening file %s for reading: %s\n", file,
-		      strerror(errno));
+		g_error("problems opening file %s for reading: %s\n",
+			file, strerror(errno));
 	}
 
 	while (fgets(string, MAX_STRING_SIZE, fp)) {
@@ -289,13 +288,13 @@ void readConf(const char *file)
 		}
 
 		if (2 != argsMinusComment) {
-			FATAL("improperly formatted config file at line %i:"
-			      " %s\n", count, string);
+			g_error("improperly formatted config file at line %i:"
+				" %s\n", count, string);
 		}
 
 		if (!findInList(configEntriesList, array[0], &voidPtr)) {
-			FATAL("unrecognized parameter in config file at line "
-			      "%i: %s\n", count, string);
+			g_error("unrecognized parameter in config file at "
+				"line %i: %s\n", count, string);
 		}
 
 		entry = (ConfigEntry *) voidPtr;
@@ -303,15 +302,15 @@ void readConf(const char *file)
 		if (!(entry->mask & CONF_REPEATABLE_MASK) &&
 		    entry->configParamList->numberOfNodes) {
 			param = entry->configParamList->firstNode->data;
-			FATAL("config parameter \"%s\" is first defined on line "
-			     "%i and redefined on line %i\n", array[0],
-			     param->line, count);
+			g_error("config parameter \"%s\" is first defined on "
+				"line %i and redefined on line %i\n",
+				array[0], param->line, count);
 		}
 
 		if (entry->mask & CONF_BLOCK_MASK) {
 			if (0 != strcmp(array[1], CONF_BLOCK_BEGIN)) {
-				FATAL("improperly formatted config file at "
-				      "line %i: %s\n", count, string);
+				g_error("improperly formatted config file at "
+					"line %i: %s\n", count, string);
 			}
 			param = readConfigBlock(fp, &count, string);
 		} else
@@ -371,9 +370,9 @@ BlockParam *getBlockParam(ConfigParam * param, const char *name)
 	for (i = 0; i < param->numberOfBlockParams; i++) {
 		if (0 == strcmp(name, param->blockParams[i].name)) {
 			if (ret) {
-				ERROR("\"%s\" first defined on line %i, and "
-				      "redefined on line %i\n", name,
-				      ret->line, param->blockParams[i].line);
+				g_warning("\"%s\" first defined on line %i, and "
+					  "redefined on line %i\n", name,
+					  ret->line, param->blockParams[i].line);
 			}
 			ret = param->blockParams + i;
 		}
@@ -388,14 +387,15 @@ ConfigParam *parseConfigFilePath(const char *name, int force)
 	char *path;
 
 	if (!param && force)
-		FATAL("config parameter \"%s\" not found\n", name);
+		g_error("config parameter \"%s\" not found\n", name);
 
 	if (!param)
 		return NULL;
 
 	path = parsePath(param->value);
 	if (!path)
-		FATAL("error parsing \"%s\" at line %i\n", name, param->line);
+		g_error("error parsing \"%s\" at line %i\n",
+			name, param->line);
 
 	free(param->value);
 	param->value = path;
@@ -413,9 +413,9 @@ int getBoolConfigParam(const char *name, int force)
 
 	ret = get_bool(param->value);
 	if (force && ret == CONF_BOOL_INVALID)
-		FATAL("%s is not a boolean value (yes, true, 1) or "
-		      "(no, false, 0) on line %i\n",
-		      name, param->line);
+		g_error("%s is not a boolean value (yes, true, 1) or "
+			"(no, false, 0) on line %i\n",
+			name, param->line);
 	return ret;
 }
 
@@ -439,8 +439,9 @@ int getBoolBlockParam(ConfigParam *param, const char *name, int force)
 
 	ret = get_bool(bp->value);
 	if (force && ret == CONF_BOOL_INVALID)
-		FATAL("%s is not a boolean value (yes, true, 1) or "
-		      "(no, false, 0) on line %i\n", bp->value, bp->line);
+		g_error("%s is not a boolean value (yes, true, 1) or "
+			"(no, false, 0) on line %i\n",
+			bp->value, bp->line);
 	return ret;
 }
 
