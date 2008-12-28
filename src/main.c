@@ -50,6 +50,7 @@
 #include "zeroconf.h"
 #include "main_notify.h"
 #include "os_compat.h"
+#include "dirvec.h"
 
 #ifdef ENABLE_ARCHIVE
 #include "archive_list.h"
@@ -269,6 +270,7 @@ int main(int argc, char *argv[])
 	g_thread_init(NULL);
 
 	idle_init();
+	dirvec_init();
 	initConf();
 
 	parseOptions(argc, argv, &options);
@@ -383,6 +385,7 @@ int main(int argc, char *argv[])
 	music_pipe_free();
 	cleanUpPidFile();
 	finishConf();
+	dirvec_deinit();
 	idle_deinit();
 
 	close_log_files();
