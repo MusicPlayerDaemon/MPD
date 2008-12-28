@@ -29,11 +29,9 @@ G_GNUC_PRINTF(1, 2) void DEBUG(const char *fmt, ...);
 G_GNUC_PRINTF(1, 2) void WARNING(const char *fmt, ...);
 G_GNUC_PRINTF(1, 2) G_GNUC_NORETURN void FATAL(const char *fmt, ...);
 
-void initLog(bool verbose);
+void log_init(bool verbose, bool use_stdout);
 
 void setup_log_output(bool use_stdout);
-
-void open_log_files(bool use_stdout);
 
 int cycle_log_files(void);
 

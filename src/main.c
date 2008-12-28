@@ -277,14 +277,12 @@ int main(int argc, char *argv[])
 
 	initStats();
 	tag_lib_init();
-	initLog(options.verbose);
+	log_init(options.verbose, options.stdOutput);
 
 	if (options.createDB <= 0)
 		listenOnPort();
 
 	changeToUser();
-
-	open_log_files(options.stdOutput);
 
 	path_global_init();
 	mapper_init();

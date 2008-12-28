@@ -115,7 +115,7 @@ parse_log_level(const char *value, unsigned line)
 		      value, line);
 }
 
-void initLog(bool verbose)
+void log_init(bool verbose, bool use_stdout)
 {
 	ConfigParam *param;
 
@@ -127,11 +127,6 @@ void initLog(bool verbose)
 		log_threshold = G_LOG_LEVEL_DEBUG;
 	else if ((param = getConfigParam(CONF_LOG_LEVEL)) != NULL)
 		log_threshold = parse_log_level(param->value, param->line);
-}
-
-void open_log_files(bool use_stdout)
-{
-	ConfigParam *param;
 
 	if (use_stdout)
 		return;
