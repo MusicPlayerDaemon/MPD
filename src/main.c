@@ -268,6 +268,7 @@ int main(int argc, char *argv[])
 	/* enable GLib's thread safety code */
 	g_thread_init(NULL);
 
+	idle_init();
 	initConf();
 
 	parseOptions(argc, argv, &options);
@@ -382,6 +383,7 @@ int main(int argc, char *argv[])
 	music_pipe_free();
 	cleanUpPidFile();
 	finishConf();
+	idle_deinit();
 
 	close_log_files();
 	return EXIT_SUCCESS;

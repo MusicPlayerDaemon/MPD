@@ -25,10 +25,10 @@
 #include "main_notify.h"
 
 #include <assert.h>
-#include <pthread.h>
+#include <glib.h>
 
 static unsigned idle_flags;
-static pthread_mutex_t idle_mutex = PTHREAD_MUTEX_INITIALIZER;
+static GMutex *idle_mutex = NULL;
 
 static const char *const idle_names[] = {
 	"database",
@@ -43,13 +43,28 @@ static const char *const idle_names[] = {
 };
 
 void
+idle_init(void)
+{
+	g_assert(idle_mutex == NULL);
+	idle_mutex = g_mutex_new();
+}
+
+void
+idle_deinit(void)
+{
+	g_assert(idle_mutex != NULL);
+	g_mutex_free(idle_mutex);
+	idle_mutex = NULL;
+}
+
+void
 idle_add(unsigned flags)
 {
 	assert(flags != 0);
 
-	pthread_mutex_lock(&idle_mutex);
+	g_mutex_lock(idle_mutex);
 	idle_flags |= flags;
-	pthread_mutex_unlock(&idle_mutex);
+	g_mutex_unlock(idle_mutex);
 
 	wakeup_main_task();
 }
@@ -59,10 +74,10 @@ idle_get(void)
 {
 	unsigned flags;
 
-	pthread_mutex_lock(&idle_mutex);
+	g_mutex_lock(idle_mutex);
 	flags = idle_flags;
 	idle_flags = 0;
-	pthread_mutex_unlock(&idle_mutex);
+	g_mutex_unlock(idle_mutex);
 
 	return flags;
 }
