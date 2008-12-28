@@ -101,6 +101,20 @@ open_log_file(void)
 	return open(out_filename, O_CREAT | O_WRONLY | O_APPEND, 0666);
 }
 
+static inline GLogLevelFlags
+parse_log_level(const char *value, unsigned line)
+{
+	if (0 == strcmp(value, "default"))
+		return G_LOG_LEVEL_MESSAGE;
+	if (0 == strcmp(value, "secure"))
+		return LOG_LEVEL_SECURE;
+	else if (0 == strcmp(value, "verbose"))
+		return G_LOG_LEVEL_DEBUG;
+	else
+		FATAL("unknown log level \"%s\" at line %u\n",
+		      value, line);
+}
+
 void initLog(bool verbose)
 {
 	ConfigParam *param;
@@ -109,22 +123,10 @@ void initLog(bool verbose)
 
 	g_log_set_default_handler(mpd_log_func, NULL);
 
-	if (verbose) {
+	if (verbose)
 		log_threshold = G_LOG_LEVEL_DEBUG;
-		return;
-	}
-	if (!(param = getConfigParam(CONF_LOG_LEVEL)))
-		return;
-	if (0 == strcmp(param->value, "default")) {
-		log_threshold = G_LOG_LEVEL_MESSAGE;
-	} else if (0 == strcmp(param->value, "secure")) {
-		log_threshold = LOG_LEVEL_SECURE;
-	} else if (0 == strcmp(param->value, "verbose")) {
-		log_threshold = G_LOG_LEVEL_DEBUG;
-	} else {
-		FATAL("unknown log level \"%s\" at line %i\n",
-		      param->value, param->line);
-	}
+	else if ((param = getConfigParam(CONF_LOG_LEVEL)) != NULL)
+		log_threshold = parse_log_level(param->value, param->line);
 }
 
 void open_log_files(bool use_stdout)
