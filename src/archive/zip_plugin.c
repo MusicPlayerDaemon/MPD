@@ -56,7 +56,10 @@ zip_open(char * pathname)
 	}
 
 	while (zzip_dir_read(context->dir, &dirent)) {
-		context->list = g_slist_prepend( context->list, xstrdup(dirent.d_name));
+		//add only files
+		if (dirent.st_size > 0) { 
+			context->list = g_slist_prepend( context->list, xstrdup(dirent.d_name));
+		}
 	}
 
 	return (struct archive_file *)context;

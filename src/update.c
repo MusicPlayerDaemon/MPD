@@ -296,6 +296,10 @@ update_archive_tree(struct directory *directory, char *name)
 		//create directories first
 		update_archive_tree(subdir, tmp+1);
 	} else {
+		if (strlen(name) == 0) {
+			g_warning("archive returned directory only\n");
+			return;
+		}
 		//add file
 		song = songvec_find(&directory->songs, name);
 		if (song == NULL) {
