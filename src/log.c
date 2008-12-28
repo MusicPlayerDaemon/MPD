@@ -96,17 +96,9 @@ mpd_log_func(const gchar *log_domain,
 static int
 open_log_file(void)
 {
-	mode_t prev;
-	int fd;
-
 	assert(out_filename != NULL);
 
-	prev = umask(0066);
-	fd = open(out_filename, O_CREAT | O_WRONLY | O_APPEND, 0666);
-
-	umask(prev);
-
-	return fd;
+	return open(out_filename, O_CREAT | O_WRONLY | O_APPEND, 0666);
 }
 
 void initLog(bool verbose)
