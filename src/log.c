@@ -93,6 +93,22 @@ mpd_log_func(const gchar *log_domain,
 	g_free(converted);
 }
 
+static int
+open_log_file(void)
+{
+	mode_t prev;
+	int fd;
+
+	assert(out_filename != NULL);
+
+	prev = umask(0066);
+	fd = open(out_filename, O_CREAT | O_WRONLY | O_APPEND, 0666);
+
+	umask(prev);
+
+	return fd;
+}
+
 void initLog(bool verbose)
 {
 	ConfigParam *param;
@@ -121,21 +137,18 @@ void initLog(bool verbose)
 
 void open_log_files(bool use_stdout)
 {
-	mode_t prev;
 	ConfigParam *param;
 
 	if (use_stdout)
 		return;
 
-	prev = umask(0066);
 	param = parseConfigFilePath(CONF_LOG_FILE, 1);
 	out_filename = param->value;
-	out_fd = open(out_filename, O_CREAT | O_WRONLY | O_APPEND, 0666);
+
+	out_fd = open_log_file();
 	if (out_fd < 0)
 		FATAL("problem opening log file \"%s\" (config line %i) for "
 		      "writing\n", param->value, param->line);
-
-	umask(prev);
 }
 
 void setup_log_output(bool use_stdout)
@@ -178,8 +191,6 @@ G_GNUC_PRINTF(1, 2) G_GNUC_NORETURN void FATAL(const char *fmt, ...)
 
 int cycle_log_files(void)
 {
-	mode_t prev;
-
 	if (stdout_mode)
 		return 0;
 	assert(out_filename);
@@ -187,15 +198,11 @@ int cycle_log_files(void)
 	DEBUG("Cycling log files...\n");
 	close_log_files();
 
-	prev = umask(0066);
-
-	out_fd = open(out_filename, O_CREAT | O_WRONLY | O_APPEND, 0666);
+	out_fd = open_log_file();
 	if (out_fd < 0) {
 		ERROR("error re-opening log file: %s\n", out_filename);
 		return -1;
 	}
-
-	umask(prev);
 
 	redirect_logs();
 	DEBUG("Done cycling log files\n");
