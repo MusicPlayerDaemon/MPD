@@ -21,7 +21,7 @@
 
 #include <assert.h>
 
-pthread_mutex_t tag_pool_lock = PTHREAD_MUTEX_INITIALIZER;
+GMutex *tag_pool_lock = NULL;
 
 #define NUM_SLOTS 4096
 
@@ -78,6 +78,19 @@ static struct slot *slot_alloc(struct slot *next,
 	memcpy(slot->item.value, value, length);
 	slot->item.value[length] = 0;
 	return slot;
+}
+
+void tag_pool_init(void)
+{
+	g_assert(tag_pool_lock == NULL);
+	tag_pool_lock = g_mutex_new();
+}
+
+void tag_pool_deinit(void)
+{
+	g_assert(tag_pool_lock != NULL);
+	g_mutex_free(tag_pool_lock);
+	tag_pool_lock = NULL;
 }
 
 struct tag_item *tag_pool_get_item(enum tag_type type,
