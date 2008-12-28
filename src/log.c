@@ -38,7 +38,7 @@
 #define LOG_DATE_BUF_SIZE 16
 #define LOG_DATE_LEN (LOG_DATE_BUF_SIZE - 1)
 
-static unsigned int log_threshold = G_LOG_LEVEL_MESSAGE;
+static GLogLevelFlags log_threshold = G_LOG_LEVEL_MESSAGE;
 
 static const char *log_charset;
 
@@ -70,7 +70,7 @@ mpd_log_func(const gchar *log_domain,
 {
 	char *converted;
 
-	if (log_level > (int)log_threshold)
+	if (log_level > log_threshold)
 		return;
 
 	if (log_charset != NULL) {
@@ -156,7 +156,7 @@ void setup_log_output(bool use_stdout)
 #define log_func(func,level) \
 G_GNUC_PRINTF(1, 2) void func(const char *fmt, ...) \
 { \
-	if (level <= (int)log_threshold) { \
+	if (level <= log_threshold) { \
 		va_list args; \
 		va_start(args, fmt); \
 		g_logv(NULL, level, fmt, args);	\
