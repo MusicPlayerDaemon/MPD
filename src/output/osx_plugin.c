@@ -20,7 +20,6 @@
 #include "../utils.h"
 
 #include <glib.h>
-#include <pthread.h>
 #include <AudioUnit/AudioUnit.h>
 
 #undef G_LOG_DOMAIN
@@ -28,8 +27,8 @@
 
 typedef struct _OsxData {
 	AudioUnit au;
-	pthread_mutex_t mutex;
-	pthread_cond_t condition;
+	GMutex *mutex;
+	GCond *condition;
 	char *buffer;
 	size_t bufferSize;
 	size_t pos;
@@ -41,8 +40,8 @@ static OsxData *newOsxData(void)
 {
 	OsxData *ret = g_new(OsxData, 1);
 
-	pthread_mutex_init(&ret->mutex, NULL);
-	pthread_cond_init(&ret->condition, NULL);
+	ret->mutex = g_mutex_new();
+	ret->condition = g_cond_new();
 
 	ret->pos = 0;
 	ret->len = 0;
@@ -93,8 +92,8 @@ static void freeOsxData(OsxData * od)
 {
 	if (od->buffer)
 		free(od->buffer);
-	pthread_mutex_destroy(&od->mutex);
-	pthread_cond_destroy(&od->condition);
+	g_mutex_free(od->mutex);
+	g_cond_free(od->condition);
 	free(od);
 }
 
@@ -108,20 +107,20 @@ static void osx_dropBufferedAudio(void *data)
 {
 	OsxData *od = data;
 
-	pthread_mutex_lock(&od->mutex);
+	g_mutex_lock(od->mutex);
 	od->len = 0;
-	pthread_mutex_unlock(&od->mutex);
+	g_mutex_unlock(od->mutex);
 }
 
 static void osx_closeDevice(void *data)
 {
 	OsxData *od = data;
 
-	pthread_mutex_lock(&od->mutex);
+	g_mutex_lock(od->mutex);
 	while (od->len) {
-		pthread_cond_wait(&od->condition, &od->mutex);
+		g_cond_wait(od->condition, od->mutex);
 	}
-	pthread_mutex_unlock(&od->mutex);
+	g_mutex_unlock(od->mutex);
 
 	if (od->started) {
 		AudioOutputUnitStop(od->au);
@@ -171,14 +170,14 @@ osx_render(void *vdata,
 
 	/* while(bufferSize) {
 	   DEBUG("osx_render: lock\n"); */
-	pthread_mutex_lock(&od->mutex);
+	g_mutex_lock(od->mutex);
 	/*
 	   DEBUG("%i:%i\n", bufferSize, od->len);
 	   while(od->go && od->len < bufferSize && 
 	   od->len < od->bufferSize)
 	   {
 	   DEBUG("osx_render: wait\n");
-	   pthread_cond_wait(&od->condition, &od->mutex);
+	   g_cond_wait(od->condition, od->mutex);
 	   }
 	 */
 
@@ -200,8 +199,8 @@ osx_render(void *vdata,
 	if (od->pos >= od->bufferSize)
 		od->pos = 0;
 	/* DEBUG("osx_render: unlock\n"); */
-	pthread_mutex_unlock(&od->mutex);
-	pthread_cond_signal(&od->condition);
+	g_mutex_unlock(od->mutex);
+	g_cond_signal(od->condition);
 	/* } */
 
 	buffer->mDataByteSize = bufferSize;
@@ -314,7 +313,7 @@ osx_play(void *data, const char *playChunk, size_t size)
 		}
 	}
 
-	pthread_mutex_lock(&od->mutex);
+	g_mutex_lock(od->mutex);
 
 	while (size) {
 		/* DEBUG("osx_play: lock\n"); */
@@ -326,7 +325,7 @@ osx_play(void *data, const char *playChunk, size_t size)
 
 		while (od->len > od->bufferSize - bytesToCopy) {
 			/* DEBUG("osx_play: wait\n"); */
-			pthread_cond_wait(&od->condition, &od->mutex);
+			g_cond_wait(od->condition, od->mutex);
 		}
 
 		size -= bytesToCopy;
@@ -345,7 +344,7 @@ osx_play(void *data, const char *playChunk, size_t size)
 
 	}
 	/* DEBUG("osx_play: unlock\n"); */
-	pthread_mutex_unlock(&od->mutex);
+	g_mutex_unlock(od->mutex);
 
 	/* DEBUG("osx_play: leave\n"); */
 	return true;
