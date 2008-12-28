@@ -51,6 +51,7 @@
 #include "main_notify.h"
 #include "os_compat.h"
 #include "dirvec.h"
+#include "songvec.h"
 
 #ifdef ENABLE_ARCHIVE
 #include "archive_list.h"
@@ -271,6 +272,7 @@ int main(int argc, char *argv[])
 
 	idle_init();
 	dirvec_init();
+	songvec_init();
 	initConf();
 
 	parseOptions(argc, argv, &options);
@@ -385,6 +387,7 @@ int main(int argc, char *argv[])
 	music_pipe_free();
 	cleanUpPidFile();
 	finishConf();
+	songvec_deinit();
 	dirvec_deinit();
 	idle_deinit();
 

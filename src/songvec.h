@@ -8,6 +8,10 @@ struct songvec {
 	size_t nr;
 };
 
+void songvec_init(void);
+
+void songvec_deinit(void);
+
 void songvec_sort(struct songvec *sv);
 
 struct song *
