@@ -25,6 +25,10 @@ db_file				"~/.mpd/database"
 # These logs are great for troubleshooting, depending on your log_level
 # settings.
 #
+# The special value "syslog" makes MPD use the local syslog daemon.
+# On most systems, log messages will appear in /var/log/daemon.log
+# then.
+#
 log_file			"~/.mpd/log"
 ###############################################################################
 

@@ -18,6 +18,8 @@
 
 #include "log.h"
 #include "conf.h"
+#include "utils.h"
+#include "config.h"
 
 #include <assert.h>
 #include <sys/types.h>
@@ -32,6 +34,10 @@
 #include <errno.h>
 #include <pthread.h>
 #include <glib.h>
+
+#ifdef HAVE_SYSLOG
+#include <syslog.h>
+#endif
 
 #define LOG_LEVEL_SECURE G_LOG_LEVEL_INFO
 
@@ -119,6 +125,68 @@ log_init_file(const char *path, unsigned line)
 	g_log_set_default_handler(file_log_func, NULL);
 }
 
+#ifdef HAVE_SYSLOG
+
+static int
+glib_to_syslog_level(GLogLevelFlags log_level)
+{
+	switch (log_level & G_LOG_LEVEL_MASK) {
+	case G_LOG_LEVEL_ERROR:
+	case G_LOG_LEVEL_CRITICAL:
+		return LOG_ERR;
+
+	case G_LOG_LEVEL_WARNING:
+		return LOG_WARNING;
+
+	case G_LOG_LEVEL_MESSAGE:
+		return LOG_NOTICE;
+
+	case G_LOG_LEVEL_INFO:
+		return LOG_INFO;
+
+	case G_LOG_LEVEL_DEBUG:
+		return LOG_DEBUG;
+
+	default:
+		return LOG_NOTICE;
+	}
+}
+
+static void
+syslog_log_func(const gchar *log_domain,
+		GLogLevelFlags log_level, const gchar *message,
+		G_GNUC_UNUSED gpointer user_data)
+{
+	if (stdout_mode) {
+		/* fall back to the file log function during
+		   startup */
+		file_log_func(log_domain, log_level,
+			      message, user_data);
+		return;
+	}
+
+	if (log_level > log_threshold)
+		return;
+
+	if (log_domain == NULL)
+		log_domain = "";
+
+	syslog(glib_to_syslog_level(log_level), "%s%s%s",
+	       log_domain, *log_domain == 0 ? "" : ": ",
+	       message);
+}
+
+static void
+log_init_syslog(void)
+{
+	assert(out_filename == NULL);
+
+	openlog(PACKAGE, 0, LOG_DAEMON);
+	g_log_set_default_handler(syslog_log_func, NULL);
+}
+
+#endif
+
 static inline GLogLevelFlags
 parse_log_level(const char *value, unsigned line)
 {
@@ -147,8 +215,31 @@ void log_init(bool verbose, bool use_stdout)
 	if (use_stdout) {
 		log_init_stdout();
 	} else {
-		param = parseConfigFilePath(CONF_LOG_FILE, 1);
-		log_init_file(param->value, param->line);
+		param = getConfigParam(CONF_LOG_FILE);
+		if (param == NULL) {
+#ifdef HAVE_SYSLOG
+			/* no configuration: default to syslog (if
+			   available) */
+			log_init_syslog();
+#else
+			FATAL("config parameter \"%s\" not found\n",
+			      CONF_LOG_FILE);
+#endif
+#ifdef HAVE_SYSLOG
+		} else if (strcmp(param->value, "syslog") == 0) {
+			log_init_syslog();
+#endif
+		} else {
+			char *path = parsePath(param->value);
+			g_free(param->value);
+
+			if (path == NULL)
+				FATAL("error parsing \"%s\" at line %i\n",
+				      CONF_LOG_FILE, param->line);
+			param->value = path;
+
+			log_init_file(param->value, param->line);
+		}
 	}
 }
 
@@ -156,7 +247,8 @@ void setup_log_output(bool use_stdout)
 {
 	fflush(NULL);
 	if (!use_stdout) {
-		redirect_logs();
+		if (out_filename != NULL)
+			redirect_logs();
 		stdout_mode = false;
 		log_charset = NULL;
 	}
@@ -192,7 +284,7 @@ G_GNUC_PRINTF(1, 2) G_GNUC_NORETURN void FATAL(const char *fmt, ...)
 
 int cycle_log_files(void)
 {
-	if (stdout_mode)
+	if (stdout_mode || out_filename == NULL)
 		return 0;
 	assert(out_filename);
 
@@ -214,7 +306,12 @@ void close_log_files(void)
 {
 	if (stdout_mode)
 		return;
-	assert(out_fd >= 0);
-	close(out_fd);
+
+	if (out_filename == NULL)
+		closelog();
+	else {
+		assert(out_fd >= 0);
+		close(out_fd);
+	}
 }
 

@@ -6,6 +6,7 @@ ver 0.15 - (200?/??/??)
 * Add RVA2 tag support
 * the option "error_file" was removed, all messages are logged into
   "log_file"
+* support logging to syslog
 
 ver 0.14 (2008/12/25)
 * audio outputs:
