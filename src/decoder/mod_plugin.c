@@ -17,8 +17,6 @@
  */
 
 #include "../decoder_api.h"
-#include "../utils.h"
-#include "../log.h"
 
 #include <glib.h>
 #include <mikmod.h>
@@ -108,8 +106,8 @@ static bool mod_initMikMod(void)
 		   DMODE_16BITS);
 
 	if (MikMod_Init(params)) {
-		ERROR("Could not init MikMod: %s\n",
-		      MikMod_strerror(MikMod_errno));
+		g_warning("Could not init MikMod: %s\n",
+			  MikMod_strerror(MikMod_errno));
 		return false;
 	}
 
@@ -142,8 +140,7 @@ static mod_Data *mod_open(const char *path)
 	/* Prevent module from looping forever */
 	moduleHandle->loop = 0;
 
-	data = xmalloc(sizeof(mod_Data));
-
+	data = g_new(mod_Data, 1);
 	data->moduleHandle = moduleHandle;
 
 	Player_Start(data->moduleHandle);
@@ -169,7 +166,7 @@ mod_decode(struct decoder *decoder, const char *path)
 	enum decoder_command cmd = DECODE_COMMAND_NONE;
 
 	if (!(data = mod_open(path))) {
-		ERROR("failed to open mod: %s\n", path);
+		g_warning("failed to open mod: %s\n", path);
 		MikMod_Exit();
 		return;
 	}
@@ -209,7 +206,7 @@ static struct tag *modTagDup(const char *file)
 	g_free(path2);
 
 	if (moduleHandle == NULL) {
-		DEBUG("modTagDup: Failed to open file: %s\n", file);
+		g_debug("modTagDup: Failed to open file: %s\n", file);
 		MikMod_Exit();
 		return NULL;
 
@@ -221,7 +218,7 @@ static struct tag *modTagDup(const char *file)
 	ret->time = 0;
 
 	path2 = g_strdup(file);
-	title = xstrdup(Player_LoadTitle(path2));
+	title = g_strdup(Player_LoadTitle(path2));
 	g_free(path2);
 	if (title)
 		tag_add_item(ret, TAG_ITEM_TITLE, title);
