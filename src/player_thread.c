@@ -493,7 +493,7 @@ static void do_play(void)
 	player_stop_decoder();
 }
 
-static void * player_task(G_GNUC_UNUSED void *arg)
+static gpointer player_task(G_GNUC_UNUSED gpointer arg)
 {
 	while (1) {
 		switch (pc.command) {
@@ -517,7 +517,7 @@ static void * player_task(G_GNUC_UNUSED void *arg)
 			dc_quit(&pc.notify);
 			closeAudioDevice();
 			player_command_finished();
-			pthread_exit(NULL);
+			g_thread_exit(NULL);
 			break;
 
 		case PLAYER_COMMAND_CANCEL:
@@ -535,11 +535,9 @@ static void * player_task(G_GNUC_UNUSED void *arg)
 
 void player_create(void)
 {
-	pthread_attr_t attr;
-	pthread_t player_thread;
+	GError *e;
+	GThread *t;
 
-	pthread_attr_init(&attr);
-	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
-	if (pthread_create(&player_thread, &attr, player_task, NULL))
-		FATAL("Failed to spawn player task: %s\n", strerror(errno));
+	if (!(t = g_thread_create(player_task, NULL, FALSE, &e)))
+		FATAL("Failed to spawn player task: %s\n", e->message);
 }
