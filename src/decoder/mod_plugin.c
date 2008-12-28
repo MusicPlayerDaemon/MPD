@@ -123,7 +123,7 @@ static void mod_finishMikMod(void)
 
 typedef struct _mod_Data {
 	MODULE *moduleHandle;
-	SBYTE *audio_buffer;
+	SBYTE audio_buffer[MIKMOD_FRAME_SIZE];
 } mod_Data;
 
 static mod_Data *mod_open(const char *path)
@@ -144,7 +144,6 @@ static mod_Data *mod_open(const char *path)
 
 	data = xmalloc(sizeof(mod_Data));
 
-	data->audio_buffer = xmalloc(MIKMOD_FRAME_SIZE);
 	data->moduleHandle = moduleHandle;
 
 	Player_Start(data->moduleHandle);
@@ -156,7 +155,6 @@ static void mod_close(mod_Data * data)
 {
 	Player_Stop();
 	Player_Free(data->moduleHandle);
-	free(data->audio_buffer);
 	free(data);
 }
 
