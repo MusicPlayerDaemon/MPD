@@ -28,6 +28,7 @@
 #include "log.h"
 #include "ls.h"
 
+#include <pthread.h>
 #include <glib.h>
 
 static bool

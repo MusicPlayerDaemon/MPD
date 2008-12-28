@@ -48,7 +48,6 @@
 #include <errno.h>
 #include <assert.h>
 #include <sys/param.h>
-#include <pthread.h>
 #include <sys/ioctl.h>
 #include <ctype.h>
 #include <stdarg.h>

@@ -22,7 +22,6 @@
 #include "output_thread.h"
 #include "pcm_utils.h"
 
-#include <pthread.h>
 #include <assert.h>
 #include <stdlib.h>
 

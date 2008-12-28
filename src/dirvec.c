@@ -5,6 +5,7 @@
 
 #include <string.h>
 #include <glib.h>
+#include <pthread.h>
 
 static pthread_mutex_t nr_lock = PTHREAD_MUTEX_INITIALIZER;
 
