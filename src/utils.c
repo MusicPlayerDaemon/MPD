@@ -196,34 +196,6 @@ void init_async_pipe(int file_des[2])
 		FATAL("Couldn't set non-blocking I/O: %s\n", strerror(errno));
 }
 
-void xpthread_mutex_init(pthread_mutex_t *m, const pthread_mutexattr_t *a)
-{
-	int err;
-	if ((err = pthread_mutex_init(m, a)))
-		FATAL("failed to init mutex: %s\n", strerror(err));
-}
-
-void xpthread_cond_init(pthread_cond_t *c, pthread_condattr_t *a)
-{
-	int err;
-	if ((err = pthread_cond_init(c, a)))
-		FATAL("failed to init cond: %s\n", strerror(err));
-}
-
-void xpthread_mutex_destroy(pthread_mutex_t *mutex)
-{
-	int err;
-	if ((err = pthread_mutex_destroy(mutex)))
-		FATAL("failed to destroy mutex: %s\n", strerror(err));
-}
-
-void xpthread_cond_destroy(pthread_cond_t *cond)
-{
-	int err;
-	if ((err = pthread_cond_destroy(cond)))
-		FATAL("failed to destroy cond: %s\n", strerror(err));
-}
-
 int stringFoundInStringArray(const char *const*array, const char *suffix)
 {
 	while (array && *array) {

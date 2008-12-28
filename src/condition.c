@@ -26,8 +26,11 @@
 
 void cond_init(struct condition *cond)
 {
-	xpthread_mutex_init(&cond->mutex, NULL);
-	xpthread_cond_init(&cond->cond, NULL);
+	int err;
+	if ((err = pthread_mutex_init(&cond->mutex, NULL)))
+		FATAL("failed to init mutex: %s\n", strerror(err));
+	if ((err = pthread_cond_init(&cond->cond, NULL)))
+		FATAL("failed to init cond: %s\n", strerror(err));
 }
 
 void cond_enter(struct condition *cond)
@@ -82,6 +85,9 @@ void cond_signal_sync(struct condition *cond)
 
 void cond_destroy(struct condition *cond)
 {
-	xpthread_cond_destroy(&cond->cond);
-	xpthread_mutex_destroy(&cond->mutex);
+	int err;
+	if ((err = pthread_cond_destroy(&cond->cond)))
+		FATAL("failed to destroy cond: %s\n", strerror(err));
+	if ((err = pthread_mutex_destroy(&cond->mutex)))
+		FATAL("failed to destroy mutex: %s\n", strerror(err));
 }

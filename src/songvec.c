@@ -3,6 +3,7 @@
 #include "utils.h"
 
 #include <assert.h>
+#include <pthread.h>
 #include <string.h>
 
 static pthread_mutex_t nr_lock = PTHREAD_MUTEX_INITIALIZER;
