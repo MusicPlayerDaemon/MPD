@@ -20,11 +20,11 @@
 #ifndef MPD_CONDITION_H
 #define MPD_CONDITION_H
 
-#include <pthread.h>
+#include <glib.h>
 
 struct condition {
-	pthread_mutex_t mutex;
-	pthread_cond_t cond;
+	GMutex *mutex;
+	GCond *cond;
 };
 
 void cond_init(struct condition *cond);

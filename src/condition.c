@@ -26,53 +26,47 @@
 
 void cond_init(struct condition *cond)
 {
-	int err;
-	if ((err = pthread_mutex_init(&cond->mutex, NULL)))
-		FATAL("failed to init mutex: %s\n", strerror(err));
-	if ((err = pthread_cond_init(&cond->cond, NULL)))
-		FATAL("failed to init cond: %s\n", strerror(err));
+	cond->mutex = g_mutex_new();
+	if (cond->mutex == NULL)
+		FATAL("g_mutex_new failed");
+
+	cond->cond = g_cond_new();
+	if (cond->cond == NULL)
+		FATAL("g_cond_new() failed");
 }
 
 void cond_enter(struct condition *cond)
 {
-	pthread_mutex_lock(&cond->mutex);
+	g_mutex_lock(cond->mutex);
 }
 
 void cond_leave(struct condition *cond)
 {
-	pthread_mutex_unlock(&cond->mutex);
+	g_mutex_unlock(cond->mutex);
 }
 
 void cond_wait(struct condition *cond)
 {
-	pthread_cond_wait(&cond->cond, &cond->mutex);
-}
-
-static struct timespec * ts_timeout(struct timespec *ts, const long sec)
-{
-	struct timeval tv;
-	gettimeofday(&tv, NULL);
-	ts->tv_sec = tv.tv_sec + sec;
-	ts->tv_nsec = tv.tv_usec * 1000;
-	return ts;
+	g_cond_wait(cond->cond, cond->mutex);
 }
 
 int cond_timedwait(struct condition *cond, const long sec)
 {
-	struct timespec ts;
-	int ret = pthread_cond_timedwait(&cond->cond, &cond->mutex,
-	                                 ts_timeout(&ts, sec));
-	if (!ret || ret == ETIMEDOUT)
-		return ret;
-	FATAL("cond_timedwait: %s\n", strerror(ret));
-	return ret;
+	GTimeVal t;
+
+	g_get_current_time(&t);
+	g_time_val_add(&t, sec * 1000000);
+
+	if (g_cond_timed_wait(cond->cond, cond->mutex, &t) == FALSE)
+		return ETIMEDOUT;
+	return 0;
 }
 
 int cond_signal_async(struct condition *cond)
 {
-	if (!pthread_mutex_trylock(&cond->mutex)) {
-		pthread_cond_signal(&cond->cond);
-		pthread_mutex_unlock(&cond->mutex);
+	if (g_mutex_trylock(cond->mutex) == FALSE) {
+		g_cond_signal(cond->cond);
+		g_mutex_unlock(cond->mutex);
 		return 0;
 	}
 	return EBUSY;
@@ -80,14 +74,11 @@ int cond_signal_async(struct condition *cond)
 
 void cond_signal_sync(struct condition *cond)
 {
-	pthread_cond_signal(&cond->cond);
+	g_cond_signal(cond->cond);
 }
 
 void cond_destroy(struct condition *cond)
 {
-	int err;
-	if ((err = pthread_cond_destroy(&cond->cond)))
-		FATAL("failed to destroy cond: %s\n", strerror(err));
-	if ((err = pthread_mutex_destroy(&cond->mutex)))
-		FATAL("failed to destroy mutex: %s\n", strerror(err));
+	g_mutex_free(cond->mutex);
+	g_cond_free(cond->cond);
 }
