@@ -64,9 +64,9 @@ static const char *log_date(void)
 }
 
 static void
-mpd_log_func(const gchar *log_domain,
-	     G_GNUC_UNUSED GLogLevelFlags log_level,
-	     const gchar *message, G_GNUC_UNUSED gpointer user_data)
+file_log_func(const gchar *log_domain,
+	      G_GNUC_UNUSED GLogLevelFlags log_level,
+	      const gchar *message, G_GNUC_UNUSED gpointer user_data)
 {
 	char *converted;
 
@@ -93,12 +93,30 @@ mpd_log_func(const gchar *log_domain,
 	g_free(converted);
 }
 
+static void
+log_init_stdout(void)
+{
+	g_log_set_default_handler(file_log_func, NULL);
+}
+
 static int
 open_log_file(void)
 {
 	assert(out_filename != NULL);
 
 	return open(out_filename, O_CREAT | O_WRONLY | O_APPEND, 0666);
+}
+
+static void
+log_init_file(const char *path, unsigned line)
+{
+	out_filename = path;
+	out_fd = open_log_file();
+	if (out_fd < 0)
+		FATAL("problem opening log file \"%s\" (config line %u) for "
+		      "writing\n", path, line);
+
+	g_log_set_default_handler(file_log_func, NULL);
 }
 
 static inline GLogLevelFlags
@@ -121,23 +139,17 @@ void log_init(bool verbose, bool use_stdout)
 
 	g_get_charset(&log_charset);
 
-	g_log_set_default_handler(mpd_log_func, NULL);
-
 	if (verbose)
 		log_threshold = G_LOG_LEVEL_DEBUG;
 	else if ((param = getConfigParam(CONF_LOG_LEVEL)) != NULL)
 		log_threshold = parse_log_level(param->value, param->line);
 
-	if (use_stdout)
-		return;
-
-	param = parseConfigFilePath(CONF_LOG_FILE, 1);
-	out_filename = param->value;
-
-	out_fd = open_log_file();
-	if (out_fd < 0)
-		FATAL("problem opening log file \"%s\" (config line %i) for "
-		      "writing\n", param->value, param->line);
+	if (use_stdout) {
+		log_init_stdout();
+	} else {
+		param = parseConfigFilePath(CONF_LOG_FILE, 1);
+		log_init_file(param->value, param->line);
+	}
 }
 
 void setup_log_output(bool use_stdout)
