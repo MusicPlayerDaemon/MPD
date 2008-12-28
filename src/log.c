@@ -49,15 +49,15 @@ static GLogLevelFlags log_threshold = G_LOG_LEVEL_MESSAGE;
 static const char *log_charset;
 
 static bool stdout_mode = true;
-static int out_fd = -1;
+static int out_fd;
 static const char *out_filename;
 
-static void redirect_logs(void)
+static void redirect_logs(int fd)
 {
-	assert(out_fd >= 0);
-	if (dup2(out_fd, STDOUT_FILENO) < 0)
+	assert(fd >= 0);
+	if (dup2(fd, STDOUT_FILENO) < 0)
 		FATAL("problems dup2 stdout : %s\n", strerror(errno));
-	if (dup2(out_fd, STDERR_FILENO) < 0)
+	if (dup2(fd, STDERR_FILENO) < 0)
 		FATAL("problems dup2 stderr : %s\n", strerror(errno));
 }
 
@@ -247,8 +247,11 @@ void setup_log_output(bool use_stdout)
 {
 	fflush(NULL);
 	if (!use_stdout) {
-		if (out_filename != NULL)
-			redirect_logs();
+		if (out_filename != NULL) {
+			redirect_logs(out_fd);
+			close(out_fd);
+		}
+
 		stdout_mode = false;
 		log_charset = NULL;
 	}
@@ -284,6 +287,8 @@ G_GNUC_PRINTF(1, 2) G_GNUC_NORETURN void FATAL(const char *fmt, ...)
 
 int cycle_log_files(void)
 {
+	int fd;
+
 	if (stdout_mode || out_filename == NULL)
 		return 0;
 	assert(out_filename);
@@ -291,13 +296,13 @@ int cycle_log_files(void)
 	DEBUG("Cycling log files...\n");
 	close_log_files();
 
-	out_fd = open_log_file();
-	if (out_fd < 0) {
+	fd = open_log_file();
+	if (fd < 0) {
 		ERROR("error re-opening log file: %s\n", out_filename);
 		return -1;
 	}
 
-	redirect_logs();
+	redirect_logs(fd);
 	DEBUG("Done cycling log files\n");
 	return 0;
 }
@@ -309,9 +314,5 @@ void close_log_files(void)
 
 	if (out_filename == NULL)
 		closelog();
-	else {
-		assert(out_fd >= 0);
-		close(out_fd);
-	}
 }
 
