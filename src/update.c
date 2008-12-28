@@ -47,7 +47,7 @@ static bool modified;
 static char *update_paths[32];
 static size_t update_paths_nr;
 
-static pthread_t update_thr;
+static GThread *update_thr;
 
 static const unsigned update_task_id_max = 1 << 15;
 
@@ -595,15 +595,14 @@ static void * update_task(void *_path)
 
 static void spawn_update_task(char *path)
 {
-	pthread_attr_t attr;
+	GError *e;
 
-	assert(pthread_equal(pthread_self(), main_task));
+	assert(g_thread_self() == main_task);
 
 	progress = UPDATE_PROGRESS_RUNNING;
 	modified = false;
-	pthread_attr_init(&attr);
-	if (pthread_create(&update_thr, &attr, update_task, path))
-		FATAL("Failed to spawn update task: %s\n", strerror(errno));
+	if (!(update_thr = g_thread_create(update_task, path, TRUE, &e)))
+		FATAL("Failed to spawn update task: %s\n", e->message);
 	if (++update_task_id > update_task_id_max)
 		update_task_id = 1;
 	DEBUG("spawned thread for update job id %i\n", update_task_id);
@@ -612,7 +611,7 @@ static void spawn_update_task(char *path)
 unsigned
 directory_update_init(char *path)
 {
-	assert(pthread_equal(pthread_self(), main_task));
+	assert(g_thread_self() == main_task);
 
 	if (progress != UPDATE_PROGRESS_IDLE) {
 		unsigned next_task_id;
@@ -635,7 +634,7 @@ directory_update_init(char *path)
 
 void reap_update_task(void)
 {
-	assert(pthread_equal(pthread_self(), main_task));
+	assert(g_thread_self() == main_task);
 
 	if (progress == UPDATE_PROGRESS_IDLE)
 		return;
@@ -652,8 +651,7 @@ void reap_update_task(void)
 
 	if (progress != UPDATE_PROGRESS_DONE)
 		return;
-	if (pthread_join(update_thr, NULL))
-		FATAL("error joining update thread: %s\n", strerror(errno));
+	g_thread_join(update_thr);
 
 	if (modified) {
 		playlistVersionChange();
@@ -679,8 +677,11 @@ void update_global_init(void)
 	follow_outside_symlinks =
 		config_get_bool(CONF_FOLLOW_OUTSIDE_SYMLINKS,
 				DEFAULT_FOLLOW_OUTSIDE_SYMLINKS);
+
+	cond_init(&delete_cond);
 }
 
 void update_global_finish(void)
 {
+	cond_destroy(&delete_cond);
 }

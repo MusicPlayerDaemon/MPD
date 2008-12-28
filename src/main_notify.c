@@ -30,9 +30,9 @@
 
 static struct ioOps main_notify_IO;
 static int main_pipe[2];
-pthread_t main_task;
+GThread *main_task;
 static struct notify main_notify;
-static pthread_mutex_t select_mutex = PTHREAD_MUTEX_INITIALIZER;
+static GMutex *select_mutex = NULL;
 
 static int ioops_fdset(fd_set * rfds,
                        G_GNUC_UNUSED fd_set * wfds,
@@ -65,12 +65,14 @@ static int ioops_consume(int fd_count, fd_set * rfds,
 
 void init_main_notify(void)
 {
-	main_task = pthread_self();
+	g_assert(select_mutex == NULL);
+	select_mutex = g_mutex_new();
+	main_task = g_thread_self();
 	init_async_pipe(main_pipe);
 	main_notify_IO.fdset = ioops_fdset;
 	main_notify_IO.consume = ioops_consume;
 	registerIO(&main_notify_IO);
-	main_task = pthread_self();
+	main_task = g_thread_self();
 	notify_init(&main_notify);
 }
 
@@ -80,19 +82,22 @@ void deinit_main_notify(void)
 	deregisterIO(&main_notify_IO);
 	xclose(main_pipe[0]);
 	xclose(main_pipe[1]);
+	g_assert(select_mutex != NULL);
+	g_mutex_free(select_mutex);
+	select_mutex = NULL;
 }
 
 static int wakeup_via_pipe(void)
 {
-	int ret = pthread_mutex_trylock(&select_mutex);
-	if (ret == EBUSY) {
+	gboolean ret = g_mutex_trylock(select_mutex);
+	if (ret == FALSE) {
 		ssize_t w = write(main_pipe[1], "", 1);
 		if (w < 0 && errno != EAGAIN && errno != EINTR)
 			FATAL("error writing to pipe: %s\n",
 			      strerror(errno));
 		return 1;
 	} else {
-		pthread_mutex_unlock(&select_mutex);
+		g_mutex_unlock(select_mutex);
 		return 0;
 	}
 }
@@ -107,19 +112,19 @@ void wakeup_main_task(void)
 
 void main_notify_lock(void)
 {
-	assert(pthread_equal(main_task, pthread_self()));
-	pthread_mutex_lock(&select_mutex);
+	assert(main_task == g_thread_self());
+	g_mutex_lock(select_mutex);
 }
 
 void main_notify_unlock(void)
 {
-	assert(pthread_equal(main_task, pthread_self()));
-	pthread_mutex_unlock(&select_mutex);
+	assert(main_task == g_thread_self());
+	g_mutex_unlock(select_mutex);
 }
 
 void wait_main_task(void)
 {
-	assert(pthread_equal(main_task, pthread_self()));
+	assert(main_task == g_thread_self());
 
 	notify_wait(&main_notify);
 }

@@ -21,9 +21,9 @@
 #ifndef MPD_MAIN_NOTIFY_H
 #define MPD_MAIN_NOTIFY_H
 
-#include <pthread.h>
+#include <glib.h>
 
-extern pthread_t main_task;
+extern GThread *main_task;
 
 void init_main_notify(void);
 
