@@ -56,9 +56,9 @@ static void redirect_logs(int fd)
 {
 	assert(fd >= 0);
 	if (dup2(fd, STDOUT_FILENO) < 0)
-		FATAL("problems dup2 stdout : %s\n", strerror(errno));
+		g_error("problems dup2 stdout : %s\n", strerror(errno));
 	if (dup2(fd, STDERR_FILENO) < 0)
-		FATAL("problems dup2 stderr : %s\n", strerror(errno));
+		g_error("problems dup2 stderr : %s\n", strerror(errno));
 }
 
 static const char *log_date(void)
@@ -119,8 +119,8 @@ log_init_file(const char *path, unsigned line)
 	out_filename = path;
 	out_fd = open_log_file();
 	if (out_fd < 0)
-		FATAL("problem opening log file \"%s\" (config line %u) for "
-		      "writing\n", path, line);
+		g_error("problem opening log file \"%s\" (config line %u) for "
+			"writing\n", path, line);
 
 	g_log_set_default_handler(file_log_func, NULL);
 }
@@ -197,8 +197,8 @@ parse_log_level(const char *value, unsigned line)
 	else if (0 == strcmp(value, "verbose"))
 		return G_LOG_LEVEL_DEBUG;
 	else
-		FATAL("unknown log level \"%s\" at line %u\n",
-		      value, line);
+		g_error("unknown log level \"%s\" at line %u\n",
+			value, line);
 }
 
 void log_init(bool verbose, bool use_stdout)
@@ -222,8 +222,8 @@ void log_init(bool verbose, bool use_stdout)
 			   available) */
 			log_init_syslog();
 #else
-			FATAL("config parameter \"%s\" not found\n",
-			      CONF_LOG_FILE);
+			g_error("config parameter \"%s\" not found\n",
+				CONF_LOG_FILE);
 #endif
 #ifdef HAVE_SYSLOG
 		} else if (strcmp(param->value, "syslog") == 0) {
@@ -234,8 +234,8 @@ void log_init(bool verbose, bool use_stdout)
 			g_free(param->value);
 
 			if (path == NULL)
-				FATAL("error parsing \"%s\" at line %i\n",
-				      CONF_LOG_FILE, param->line);
+				g_error("error parsing \"%s\" at line %i\n",
+					CONF_LOG_FILE, param->line);
 			param->value = path;
 
 			log_init_file(param->value, param->line);
@@ -293,17 +293,17 @@ int cycle_log_files(void)
 		return 0;
 	assert(out_filename);
 
-	DEBUG("Cycling log files...\n");
+	g_debug("Cycling log files...\n");
 	close_log_files();
 
 	fd = open_log_file();
 	if (fd < 0) {
-		ERROR("error re-opening log file: %s\n", out_filename);
+		g_warning("error re-opening log file: %s\n", out_filename);
 		return -1;
 	}
 
 	redirect_logs(fd);
-	DEBUG("Done cycling log files\n");
+	g_debug("Done cycling log files\n");
 	return 0;
 }
 
