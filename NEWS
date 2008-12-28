@@ -1,4 +1,9 @@
 ver 0.15 - (200?/??/??)
+* Add audio archive extraction support:
+  - bzip2
+  - iso9660
+  - zip
+* Add RVA2 tag support
 
 ver 0.14 (2008/12/25)
 * audio outputs:
