@@ -106,7 +106,7 @@ static void ao_pause(struct audio_output *ao)
 	}
 }
 
-static void *audio_output_task(void *arg)
+static gpointer audio_output_task(gpointer arg)
 {
 	struct audio_output *ao = arg;
 	bool ret;
@@ -167,12 +167,10 @@ static void *audio_output_task(void *arg)
 
 void audio_output_thread_start(struct audio_output *ao)
 {
-	pthread_attr_t attr;
+	GError *e;
 
 	assert(ao->command == AO_COMMAND_NONE);
 
-	pthread_attr_init(&attr);
-	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
-	if (pthread_create(&ao->thread, &attr, audio_output_task, ao))
-		g_error("Failed to spawn output task: %s\n", strerror(errno));
+	if (!(ao->thread = g_thread_create(audio_output_task, ao, FALSE, &e)))
+		g_error("Failed to spawn output task: %s\n", e->message);
 }

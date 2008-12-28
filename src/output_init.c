@@ -102,7 +102,7 @@ int audio_output_init(struct audio_output *ao, ConfigParam * param)
 	} else
 		audio_format_clear(&ao->reqAudioFormat);
 
-	ao->thread = 0;
+	ao->thread = NULL;
 	notify_init(&ao->notify);
 	ao->command = AO_COMMAND_NONE;
 

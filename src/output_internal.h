@@ -23,7 +23,6 @@
 #include "pcm_utils.h"
 #include "notify.h"
 
-#include <pthread.h>
 #include <time.h>
 
 struct audio_output {
@@ -84,10 +83,10 @@ struct audio_output {
 	size_t convBufferLen;
 
 	/**
-	 * The thread handle, or "0" if the output thread isn't
+	 * The thread handle, or NULL if the output thread isn't
 	 * running.
 	 */
-	pthread_t thread;
+	GThread *thread;
 
 	/**
 	 * Notify object for the thread.

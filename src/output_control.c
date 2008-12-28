@@ -77,7 +77,7 @@ audio_output_open(struct audio_output *audioOutput,
 			audio_output_close(audioOutput);
 	}
 
-	if (audioOutput->thread == 0)
+	if (audioOutput->thread == NULL)
 		audio_output_thread_start(audioOutput);
 
 	if (!audioOutput->open)
@@ -135,7 +135,7 @@ void audio_output_close(struct audio_output *audioOutput)
 void audio_output_finish(struct audio_output *audioOutput)
 {
 	audio_output_close(audioOutput);
-	if (audioOutput->thread != 0)
+	if (audioOutput->thread != NULL)
 		ao_command(audioOutput, AO_COMMAND_KILL);
 	if (audioOutput->plugin->finish)
 		audioOutput->plugin->finish(audioOutput->data);
