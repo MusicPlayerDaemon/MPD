@@ -66,25 +66,27 @@ void
 directory_load(FILE *fp, struct directory *directory)
 {
 	char buffer[MPD_PATH_MAX * 2];
-	int bufferSize = MPD_PATH_MAX * 2;
 	char key[MPD_PATH_MAX * 2];
 	char *name;
 
-	while (myFgets(buffer, bufferSize, fp)
+	while (fgets(buffer, sizeof(buffer), fp)
 	       && !g_str_has_prefix(buffer, DIRECTORY_END)) {
 		if (g_str_has_prefix(buffer, DIRECTORY_DIR)) {
 			struct directory *subdir;
 
+			g_strchomp(buffer);
 			strcpy(key, &(buffer[strlen(DIRECTORY_DIR)]));
-			if (!myFgets(buffer, bufferSize, fp))
+			if (!fgets(buffer, sizeof(buffer), fp))
 				FATAL("Error reading db, fgets\n");
 			/* for compatibility with db's prior to 0.11 */
 			if (g_str_has_prefix(buffer, DIRECTORY_MTIME)) {
-				if (!myFgets(buffer, bufferSize, fp))
+				if (!fgets(buffer, sizeof(buffer), fp))
 					FATAL("Error reading db, fgets\n");
 			}
+
 			if (!g_str_has_prefix(buffer, DIRECTORY_BEGIN))
 				FATAL("Error reading db at line: %s\n", buffer);
+			g_strchomp(buffer);
 			name = &(buffer[strlen(DIRECTORY_BEGIN)]);
 			if (!g_str_has_prefix(name, directory->path) != 0)
 				FATAL("Wrong path in database: '%s' in '%s'\n",

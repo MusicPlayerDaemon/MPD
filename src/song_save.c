@@ -104,11 +104,13 @@ void readSongInfoIntoList(FILE *fp, struct songvec *sv,
 			  struct directory *parent)
 {
 	char buffer[MPD_PATH_MAX + 1024];
-	int bufferSize = MPD_PATH_MAX + 1024;
 	struct song *song = NULL;
 	int itemType;
 
-	while (myFgets(buffer, bufferSize, fp) && 0 != strcmp(SONG_END, buffer)) {
+	while (fgets(buffer, sizeof(buffer), fp) &&
+	       !g_str_has_prefix(buffer, SONG_END)) {
+		g_strchomp(buffer);
+
 		if (0 == strncmp(SONG_KEY, buffer, strlen(SONG_KEY))) {
 			if (song)
 				insertSongIntoList(sv, song);

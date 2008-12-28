@@ -268,9 +268,11 @@ static void loadPlaylistFromStateFile(FILE *fp, char *buffer,
 	char *temp;
 	int song;
 
-	if (!myFgets(buffer, PLAYLIST_BUFFER_SIZE, fp))
+	if (!fgets(buffer, PLAYLIST_BUFFER_SIZE, fp))
 		state_file_fatal();
-	while (strcmp(buffer, PLAYLIST_STATE_FILE_PLAYLIST_END)) {
+	while (!g_str_has_prefix(buffer, PLAYLIST_STATE_FILE_PLAYLIST_END)) {
+		g_strchomp(buffer);
+
 		temp = strtok(buffer, ":");
 		if (temp == NULL)
 			state_file_fatal();
@@ -290,7 +292,8 @@ static void loadPlaylistFromStateFile(FILE *fp, char *buffer,
 						   seek_time);
 			}
 		}
-		if (!myFgets(buffer, PLAYLIST_BUFFER_SIZE, fp))
+
+		if (!fgets(buffer, PLAYLIST_BUFFER_SIZE, fp))
 			state_file_fatal();
 	}
 }
@@ -302,7 +305,9 @@ void readPlaylistState(FILE *fp)
 	int state = PLAYER_STATE_STOP;
 	char buffer[PLAYLIST_BUFFER_SIZE];
 
-	while (myFgets(buffer, PLAYLIST_BUFFER_SIZE, fp)) {
+	while (fgets(buffer, sizeof(buffer), fp)) {
+		g_strchomp(buffer);
+
 		if (g_str_has_prefix(buffer, PLAYLIST_STATE_FILE_STATE)) {
 			if (strcmp(&(buffer[strlen(PLAYLIST_STATE_FILE_STATE)]),
 				   PLAYLIST_STATE_FILE_STATE_PLAY) == 0) {

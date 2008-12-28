@@ -396,8 +396,10 @@ void readAudioDevicesState(FILE *fp)
 
 	assert(audioOutputArraySize != 0);
 
-	while (myFgets(buffer, AUDIO_BUFFER_SIZE, fp)) {
+	while (fgets(buffer, sizeof(buffer), fp)) {
 		char *c, *name;
+
+		g_strchomp(buffer);
 
 		if (!g_str_has_prefix(buffer, AUDIO_DEVICE_STATE))
 			continue;

@@ -37,8 +37,6 @@
 	} while (0)
 #endif /* !assert_static */
 
-char *myFgets(char *buffer, int bufferSize, FILE * fp);
-
 void stripReturnChar(char *string);
 
 void my_usleep(long usec);

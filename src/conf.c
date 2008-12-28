@@ -210,7 +210,7 @@ static ConfigParam *readConfigBlock(FILE * fp, int *count, char *string)
 	int numberOfArgs;
 	int argsMinusComment;
 
-	while (myFgets(string, MAX_STRING_SIZE, fp)) {
+	while (fgets(string, MAX_STRING_SIZE, fp)) {
 		char *array[CONF_LINE_TOKEN_MAX] = { NULL };
 
 		(*count)++;
@@ -270,8 +270,9 @@ void readConf(const char *file)
 		      strerror(errno));
 	}
 
-	while (myFgets(string, MAX_STRING_SIZE, fp)) {
+	while (fgets(string, MAX_STRING_SIZE, fp)) {
 		char *array[CONF_LINE_TOKEN_MAX] = { NULL };
+
 		count++;
 
 		numberOfArgs = buffer2array(string, array, CONF_LINE_TOKEN_MAX);

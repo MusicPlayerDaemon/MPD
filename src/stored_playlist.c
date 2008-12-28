@@ -149,12 +149,14 @@ spl_load(const char *utf8path)
 
 	list = g_ptr_array_new();
 
-	while (myFgets(buffer, sizeof(buffer), file)) {
+	while (fgets(buffer, sizeof(buffer), file)) {
 		char *s = buffer;
 		const char *path_utf8;
 
 		if (*s == PLAYLIST_COMMENT)
 			continue;
+
+		g_strchomp(buffer);
 
 		if (!isRemoteUrl(s)) {
 			struct song *song;

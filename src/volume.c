@@ -522,9 +522,11 @@ void read_sw_volume_state(FILE *fp)
 
 	if (volume_mixerType != VOLUME_MIXER_TYPE_SOFTWARE)
 		return;
-	while (myFgets(buf, sizeof(buf), fp)) {
+	while (fgets(buf, sizeof(buf), fp)) {
 		if (!g_str_has_prefix(buf, SW_VOLUME_STATE))
 			continue;
+
+		g_strchomp(buf);
 		sv = strtol(buf + strlen(SW_VOLUME_STATE), &end, 10);
 		if (G_LIKELY(!*end))
 			changeSoftwareVolume(sv, 0);

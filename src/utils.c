@@ -33,18 +33,6 @@
 #include <sys/socket.h>
 #endif
 
-char *myFgets(char *buffer, int bufferSize, FILE * fp)
-{
-	char *ret = fgets(buffer, bufferSize, fp);
-	if (ret && strlen(buffer) > 0 && buffer[strlen(buffer) - 1] == '\n') {
-		buffer[strlen(buffer) - 1] = '\0';
-	}
-	if (ret && strlen(buffer) > 0 && buffer[strlen(buffer) - 1] == '\r') {
-		buffer[strlen(buffer) - 1] = '\0';
-	}
-	return ret;
-}
-
 void stripReturnChar(char *string)
 {
 	while (string && (string = strchr(string, '\n'))) {

@@ -268,8 +268,10 @@ db_load(void)
 	}
 
 	/* get initial info */
-	if (!myFgets(buffer, sizeof(buffer), fp))
+	if (!fgets(buffer, sizeof(buffer), fp))
 		FATAL("Error reading db, fgets\n");
+
+	g_strchomp(buffer);
 
 	if (0 != strcmp(DIRECTORY_INFO_BEGIN, buffer)) {
 		ERROR("db info not found in db file\n");
@@ -278,8 +280,10 @@ db_load(void)
 		return -1;
 	}
 
-	while (myFgets(buffer, sizeof(buffer), fp) &&
-	       0 != strcmp(DIRECTORY_INFO_END, buffer)) {
+	while (fgets(buffer, sizeof(buffer), fp) &&
+	       !g_str_has_prefix(buffer, DIRECTORY_INFO_END)) {
+		g_strchomp(buffer);
+
 		if (g_str_has_prefix(buffer, DIRECTORY_MPD_VERSION)) {
 			if (foundVersion)
 				FATAL("already found version in db\n");
