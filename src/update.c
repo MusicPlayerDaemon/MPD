@@ -21,7 +21,6 @@
 #include "database.h"
 #include "directory.h"
 #include "song.h"
-#include "log.h"
 #include "ls.h"
 #include "mapper.h"
 #include "path.h"
@@ -41,6 +40,9 @@
 #include <unistd.h>
 #include <dirent.h>
 #include <string.h>
+
+#undef G_LOG_DOMAIN
+#define G_LOG_DOMAIN "update"
 
 static enum update_progress {
 	UPDATE_PROGRESS_IDLE = 0,
@@ -196,7 +198,7 @@ removeDeletedFromDirectory(char *path_max_tmp, struct directory *directory)
 		if (path_fs == NULL || (stat(path_fs, &st) == 0 &&
 					S_ISDIR(st.st_mode)))
 			continue;
-		LOG("removing directory: %s\n", dv->base[i]->path);
+		g_debug("removing directory: %s", dv->base[i]->path);
 		dirvec_delete(dv, dv->base[i]);
 		modified = true;
 	}
@@ -252,7 +254,7 @@ inodeFoundInParent(struct directory *parent, ino_t inode, dev_t device)
 		if (!parent->stat && statDirectory(parent) < 0)
 			return -1;
 		if (parent->inode == inode && parent->device == device) {
-			DEBUG("recursive directory found\n");
+			g_debug("recursive directory found");
 			return 1;
 		}
 		parent = parent->parent;
@@ -304,7 +306,7 @@ update_archive_tree(struct directory *directory, char *name)
 		update_archive_tree(subdir, tmp+1);
 	} else {
 		if (strlen(name) == 0) {
-			g_warning("archive returned directory only\n");
+			g_warning("archive returned directory only");
 			return;
 		}
 		//add file
@@ -314,8 +316,8 @@ update_archive_tree(struct directory *directory, char *name)
 			if (song != NULL) {
 				songvec_add(&directory->songs, song);
 				modified = true;
-				LOG("added %s/%s\n",
-					directory_get_path(directory), name);
+				g_message("added %s/%s",
+					  directory_get_path(directory), name);
 			}
 		}
 	}
@@ -345,11 +347,11 @@ updateInDirectory(struct directory *directory,
 
 			songvec_add(&directory->songs, song);
 			modified = true;
-			LOG("added %s/%s\n",
-			    directory_get_path(directory), name);
+			g_message("added %s/%s",
+				  directory_get_path(directory), name);
 		} else if (st->st_mtime != song->mtime) {
-			LOG("updating %s/%s\n",
-			    directory_get_path(directory), name);
+			g_message("updating %s/%s",
+				  directory_get_path(directory), name);
 			if (!song_file_update(song))
 				delete_song(directory, song);
 			modified = true;
@@ -379,10 +381,11 @@ updateInDirectory(struct directory *directory,
 			char *filepath;
 			struct directory *archdir;
 
-			g_debug("archive %s opened\n",pathname);
+			g_debug("archive %s opened",pathname);
 			archdir = dirvec_find(&directory->children, name);
 			if (archdir == NULL) {
-				g_debug("creating archive directory (%s)\n", name);
+				g_debug("creating archive directory (%s)",
+					name);
 				archdir = make_subdir(directory, name);
 				//mark this directory as archive (we use device for this)
 				archdir->device = DEVICE_INARCHIVE;
@@ -390,16 +393,16 @@ updateInDirectory(struct directory *directory,
 			archive->scan_reset(archfile);
 			while ((filepath = archive->scan_next(archfile)) != NULL) {
 				//split name into directory and file
-				g_debug("adding archive file: %s\n", filepath);
+				g_debug("adding archive file: %s", filepath);
 				update_archive_tree(archdir, filepath);
 			}
 			archive->close(archfile);
 		} else {
-			g_warning("unable to open archive %s\n", pathname);
+			g_warning("unable to open archive %s", pathname);
 		}
 #endif
 	} else {
-		g_debug("update: %s is not a directory, archive or music\n", name);
+		g_debug("update: %s is not a directory, archive or music", name);
 	}
 }
 
@@ -613,10 +616,10 @@ static void spawn_update_task(char *path)
 	progress = UPDATE_PROGRESS_RUNNING;
 	modified = false;
 	if (!(update_thr = g_thread_create(update_task, path, TRUE, &e)))
-		FATAL("Failed to spawn update task: %s\n", e->message);
+		g_error("Failed to spawn update task: %s", e->message);
 	if (++update_task_id > update_task_id_max)
 		update_task_id = 1;
-	DEBUG("spawned thread for update job id %i\n", update_task_id);
+	g_debug("spawned thread for update job id %i", update_task_id);
 }
 
 unsigned
@@ -653,7 +656,7 @@ void reap_update_task(void)
 	cond_enter(&delete_cond);
 	if (delete) {
 		char tmp[MPD_PATH_MAX];
-		LOG("removing: %s\n", song_get_url(delete, tmp));
+		g_debug("removing: %s", song_get_url(delete, tmp));
 		deleteASongFromPlaylist(delete);
 		delete = NULL;
 		cond_signal_sync(&delete_cond);
