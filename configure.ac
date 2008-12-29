@@ -196,7 +196,9 @@ AC_ARG_ENABLE(bzip2,
 	enable_bz2=$enableval,
 	enable_bz2=no)
 
-AC_CHECK_LIB(bz2, BZ2_bzDecompressInit,[MPD_LIBS="-lbz2";],enable_bz2=no)
+if test x$enable_bz2 = xyes; then
+	AC_CHECK_LIB(bz2, BZ2_bzDecompressInit,[MPD_LIBS="-lbz2";],enable_bz2=no)
+fi
 
 AM_CONDITIONAL(HAVE_BZ2, test x$enable_bz2 = xyes)
 if test x$enable_bz2 = xyes; then
@@ -210,7 +212,9 @@ AC_ARG_ENABLE(zip,
 	enable_zip=$enableval,
 	enable_zip=no)
 
-AC_CHECK_LIB(zzip, zzip_dir_open,[MPD_LIBS="-lzzip";],enable_zip=no)
+if test x$enable_zip = xyes; then
+	AC_CHECK_LIB(zzip, zzip_dir_open,[MPD_LIBS="-lzzip";],enable_zip=no)
+fi
 
 AM_CONDITIONAL(HAVE_ZIP, test x$enable_zip = xyes)
 if test x$enable_zip = xyes; then
@@ -224,7 +228,9 @@ AC_ARG_ENABLE(iso9660,
 	enable_iso=$enableval,
 	enable_iso=no)
 
-AC_CHECK_LIB(iso9660, iso9660_ifs_readdir ,,enable_iso=no)
+if test x$enable_iso = xyes; then
+	AC_CHECK_LIB(iso9660, iso9660_ifs_readdir ,,enable_iso=no)
+fi
 
 AM_CONDITIONAL(HAVE_ISO, test x$enable_iso = xyes)
 if test x$enable_iso = xyes; then
