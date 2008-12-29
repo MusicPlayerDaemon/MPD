@@ -360,7 +360,6 @@ AC_CHECK_LIB(socket,socket,MPD_LIBS="$MPD_LIBS -lsocket",)
 AC_CHECK_LIB(nsl,gethostbyname,MPD_LIBS="$MPD_LIBS -lnsl",)
 
 AC_CHECK_LIB(m,exp,MPD_LIBS="$MPD_LIBS -lm",)
-AC_CHECK_FUNCS(setenv)
 
 # Check for pkg-config before using it
 PKG_PROG_PKG_CONFIG
