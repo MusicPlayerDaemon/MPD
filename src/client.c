@@ -31,11 +31,17 @@
 
 #include <glib.h>
 #include <assert.h>
+#include <unistd.h>
+#include <string.h>
+
+#ifdef WIN32
+#include <ws2tcpip.h>
+#include <winsock.h>
+#else
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include <unistd.h>
-#include <string.h>
+#endif
 
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "client"

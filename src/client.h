@@ -23,9 +23,9 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdarg.h>
-#include <sys/socket.h>
 
 struct client;
+struct sockaddr;
 
 void client_manager_init(void);
 void client_manager_deinit(void);
