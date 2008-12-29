@@ -22,7 +22,6 @@
 #include "audio.h"
 #include "pcm_utils.h"
 #include "path.h"
-#include "log.h"
 #include "main_notify.h"
 #include "crossfade.h"
 #include "song.h"
@@ -30,6 +29,9 @@
 #include "idle.h"
 
 #include <glib.h>
+
+#undef G_LOG_DOMAIN
+#define G_LOG_DOMAIN "player_thread"
 
 enum xfade_state {
 	XFADE_DISABLED = -1,
@@ -176,9 +178,9 @@ static void player_process_command(struct player *player)
 				assert(dc.next_song == NULL || dc.next_song->url != NULL);
 				pc.errored_song = dc.next_song;
 				pc.error = PLAYER_ERROR_AUDIO;
-				ERROR("problems opening audio device "
-				      "while playing \"%s\"\n",
-				      song_get_url(dc.next_song, tmp));
+				g_warning("problems opening audio device "
+					  "while playing \"%s\"",
+					  song_get_url(dc.next_song, tmp));
 				player->paused = true;
 			}
 		}
@@ -329,9 +331,9 @@ static void do_play(void)
 					assert(dc.next_song == NULL || dc.next_song->url != NULL);
 					pc.errored_song = dc.next_song;
 					pc.error = PLAYER_ERROR_AUDIO;
-					ERROR("problems opening audio device "
-					      "while playing \"%s\"\n",
-					      song_get_url(dc.next_song, tmp));
+					g_warning("problems opening audio device "
+						  "while playing \"%s\"",
+						  song_get_url(dc.next_song, tmp));
 					break;
 				}
 
@@ -539,5 +541,5 @@ void player_create(void)
 	GThread *t;
 
 	if (!(t = g_thread_create(player_task, NULL, FALSE, &e)))
-		FATAL("Failed to spawn player task: %s\n", e->message);
+		g_error("Failed to spawn player task: %s", e->message);
 }
