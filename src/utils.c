@@ -134,14 +134,12 @@ char *parsePath(char *path)
 
 				home = passwd->pw_dir;
 			} else {
-				struct passwd *passwd = getpwuid(geteuid());
-				if (!passwd) {
-					g_warning("problems getting passwd "
-						  "entry for current user");
+				home = g_get_home_dir();
+				if (home == NULL) {
+					g_warning("problems getting home "
+						  "for current user");
 					return NULL;
 				}
-
-				home = passwd->pw_dir;
 			}
 		} else {
 			bool foundSlash = false;
