@@ -282,10 +282,6 @@ G_GNUC_PRINTF(1, 2) void func(const char *fmt, ...) \
 	} \
 }
 
-log_func(ERROR, G_LOG_LEVEL_WARNING)
-log_func(WARNING, G_LOG_LEVEL_WARNING)
-log_func(LOG, G_LOG_LEVEL_MESSAGE)
-log_func(SECURE, LOG_LEVEL_SECURE)
 log_func(DEBUG, G_LOG_LEVEL_DEBUG)
 
 #undef log_func

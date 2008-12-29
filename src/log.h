@@ -22,11 +22,7 @@
 #include <glib.h>
 #include <stdbool.h>
 
-G_GNUC_PRINTF(1, 2) void ERROR(const char *fmt, ...);
-G_GNUC_PRINTF(1, 2) void LOG(const char *fmt, ...);
-G_GNUC_PRINTF(1, 2) void SECURE(const char *fmt, ...);
 G_GNUC_PRINTF(1, 2) void DEBUG(const char *fmt, ...);
-G_GNUC_PRINTF(1, 2) void WARNING(const char *fmt, ...);
 G_GNUC_PRINTF(1, 2) G_GNUC_NORETURN void FATAL(const char *fmt, ...);
 
 void log_init(bool verbose, bool use_stdout);
