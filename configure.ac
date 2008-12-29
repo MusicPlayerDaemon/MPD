@@ -362,10 +362,6 @@ dnl AC_CHECK_HEADER(langinfo.h,[enable_langinfo=yes;AC_DEFINE(HAVE_LANGINFO,1,[D
 AM_LANGINFO_CODESET
 AC_CHECK_HEADER(locale.h,[enable_locale=yes;AC_DEFINE(HAVE_LOCALE,1,[Define if locale.h is present])],enable_locale=no)
 
-ACX_PTHREAD([CC="$PTHREAD_CC"
-             LIBS="$PTHREAD_LIBS $LIBS"
-             CFLAGS="$PTHREAD_CFLAGS $CFLAGS"])
-
 if test x$enable_tcp = xno; then
 	# if we don't support TCP, we don't need IPv6 either
 	enable_ipv6=no
