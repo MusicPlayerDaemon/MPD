@@ -17,7 +17,6 @@
  */
 
 #include "utils.h"
-#include "log.h"
 #include "conf.h"
 
 #include "../config.h"
@@ -68,7 +67,7 @@ G_GNUC_MALLOC char *xstrdup(const char *s)
 {
 	char *ret = strdup(s);
 	if (G_UNLIKELY(!ret))
-		FATAL("OOM: strdup\n");
+		g_error("OOM: strdup");
 	return ret;
 }
 
@@ -82,7 +81,7 @@ G_GNUC_MALLOC void *xmalloc(size_t size)
 
 	ret = malloc(size);
 	if (G_UNLIKELY(!ret))
-		FATAL("OOM: malloc\n");
+		g_error("OOM: malloc");
 	return ret;
 }
 
@@ -97,7 +96,7 @@ G_GNUC_MALLOC void *xrealloc(void *ptr, size_t size)
 		ret = realloc(ptr, 1);
 
 	if (G_UNLIKELY(!ret))
-		FATAL("OOM: realloc\n");
+		g_error("OOM: realloc");
 	return ret;
 }
 
@@ -109,7 +108,7 @@ G_GNUC_MALLOC void *xcalloc(size_t nmemb, size_t size)
 
 	ret = calloc(nmemb, size);
 	if (G_UNLIKELY(!ret))
-		FATAL("OOM: calloc\n");
+		g_error("OOM: calloc");
 	return ret;
 }
 
@@ -123,7 +122,7 @@ char *parsePath(char *path)
 	int pos = 1;
 
 	if (path[0] != '/' && path[0] != '~') {
-		ERROR("\"%s\" is not an absolute path\n", path);
+		g_warning("\"%s\" is not an absolute path", path);
 		return NULL;
 	} else if (path[0] == '~') {
 		if (path[1] == '/' || path[1] == '\0') {
@@ -131,15 +130,15 @@ char *parsePath(char *path)
 			if (param && param->value) {
 				passwd = getpwnam(param->value);
 				if (!passwd) {
-					ERROR("no such user %s\n",
-				              param->value);
+					g_warning("no such user %s",
+						  param->value);
 					return NULL;
 				}
 			} else {
 				passwd = getpwuid(geteuid());
 				if (!passwd) {
-					ERROR("problems getting passwd entry "
-					      "for current user\n");
+					g_warning("problems getting passwd "
+						  "entry for current user");
 					return NULL;
 				}
 			}
@@ -153,7 +152,7 @@ char *parsePath(char *path)
 
 			passwd = getpwnam(path + 1);
 			if (!passwd) {
-				ERROR("user \"%s\" not found\n", path + 1);
+				g_warning("user \"%s\" not found", path + 1);
 				return NULL;
 			}
 
@@ -189,11 +188,11 @@ int set_nonblocking(int fd)
 void init_async_pipe(int file_des[2])
 {
 	if (pipe(file_des) < 0)
-		FATAL("Couldn't open pipe: %s", strerror(errno));
+		g_error("Couldn't open pipe: %s", strerror(errno));
 	if (set_nonblocking(file_des[0]) < 0)
-		FATAL("Couldn't set non-blocking I/O: %s\n", strerror(errno));
+		g_error("Couldn't set non-blocking I/O: %s", strerror(errno));
 	if (set_nonblocking(file_des[1]) < 0)
-		FATAL("Couldn't set non-blocking I/O: %s\n", strerror(errno));
+		g_error("Couldn't set non-blocking I/O: %s", strerror(errno));
 }
 
 int stringFoundInStringArray(const char *const*array, const char *suffix)
