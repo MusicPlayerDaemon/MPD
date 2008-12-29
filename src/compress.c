@@ -20,9 +20,11 @@
  *
  */
 
-#include "os_compat.h"
 #include "compress.h"
 #include "utils.h"
+
+#include <stdint.h>
+#include <string.h>
 
 #ifdef USE_X
 #include <X11/Xlib.h>

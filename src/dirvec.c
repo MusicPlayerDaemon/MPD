@@ -3,8 +3,10 @@
 #include "utils.h"
 #include "path.h"
 
-#include <string.h>
 #include <glib.h>
+
+#include <assert.h>
+#include <string.h>
 
 static GMutex *nr_lock = NULL;
 

@@ -17,14 +17,14 @@
  */
 
 #include "permission.h"
-
 #include "conf.h"
 #include "log.h"
 #include "utils.h"
-#include "os_compat.h"
 
 #include <glib.h>
+
 #include <stdbool.h>
+#include <string.h>
 
 #define PERMISSION_PASSWORD_CHAR	"@"
 #define PERMISSION_SEPERATOR		","

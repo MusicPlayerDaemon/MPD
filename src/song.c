@@ -27,6 +27,11 @@
 #include "decoder_list.h"
 #include "decoder_api.h"
 
+#include <assert.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
 static struct song *
 song_alloc(const char *url, struct directory *parent)
 {

@@ -30,10 +30,15 @@
 #include "dbUtils.h"
 #include "update.h"
 #include "main_notify.h"
+#include "config.h"
 
+#include <glib.h>
+
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 #include <assert.h>
 #include <string.h>
-#include <glib.h>
 
 static struct directory *music_root;
 

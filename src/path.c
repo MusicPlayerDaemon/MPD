@@ -21,9 +21,10 @@
 #include "conf.h"
 #include "utils.h"
 #include "playlist.h"
-#include "os_compat.h"
 
 #include <glib.h>
+
+#include <string.h>
 
 static char *fs_charset;
 

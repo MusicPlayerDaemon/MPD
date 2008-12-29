@@ -49,7 +49,6 @@
 #include "normalize.h"
 #include "zeroconf.h"
 #include "main_notify.h"
-#include "os_compat.h"
 #include "dirvec.h"
 #include "songvec.h"
 #include "tag_pool.h"
@@ -59,6 +58,14 @@
 #endif
 
 #include <glib.h>
+
+#include <unistd.h>
+#include <stdlib.h>
+#include <signal.h>
+#include <errno.h>
+#include <string.h>
+#include <pwd.h>
+#include <grp.h>
 
 #ifdef HAVE_LOCALE
 #include <locale.h>

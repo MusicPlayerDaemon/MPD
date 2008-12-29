@@ -15,21 +15,23 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-#include "volume.h"
 
+#include "volume.h"
 #include "conf.h"
 #include "log.h"
 #include "player_control.h"
 #include "utils.h"
 #include "idle.h"
 #include "pcm_utils.h"
-#include "os_compat.h"
-
-#include "../config.h"
+#include "config.h"
 
 #include <glib.h>
 
+#include <math.h>
+#include <string.h>
+
 #ifdef HAVE_OSS
+#include <sys/ioctl.h>
 #include <sys/soundcard.h>
 #endif
 #ifdef HAVE_ALSA

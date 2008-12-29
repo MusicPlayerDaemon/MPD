@@ -23,8 +23,10 @@
 #include "song.h"
 #include "idle.h"
 #include "pcm_utils.h"
-#include "os_compat.h"
 #include "main_notify.h"
+
+#include <assert.h>
+#include <stdio.h>
 
 struct player_control pc;
 

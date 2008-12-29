@@ -25,9 +25,10 @@
 #include "client.h"
 #include "idle.h"
 #include "utils.h"
-#include "os_compat.h"
 
 #include <glib.h>
+
+#include <assert.h>
 
 #define AUDIO_DEVICE_STATE	"audio_device_state:"
 #define AUDIO_BUFFER_SIZE	2*MPD_PATH_MAX

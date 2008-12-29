@@ -38,8 +38,10 @@
 #include "client.h"
 #include "tag_print.h"
 #include "path.h"
-#include "os_compat.h"
 #include "idle.h"
+
+#include <assert.h>
+#include <time.h>
 
 #define COMMAND_STATUS_VOLUME           "volume"
 #define COMMAND_STATUS_STATE            "state"

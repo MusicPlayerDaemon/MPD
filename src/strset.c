@@ -18,7 +18,9 @@
 
 #include "strset.h"
 #include "utils.h"
-#include "os_compat.h"
+
+#include <assert.h>
+#include <string.h>
 
 #define NUM_SLOTS 16384
 

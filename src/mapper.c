@@ -26,10 +26,14 @@
 #include "path.h"
 #include "conf.h"
 
+#include <glib.h>
+
+#include <assert.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include <glib.h>
+#include <string.h>
+#include <errno.h>
 
 static char *music_dir;
 static size_t music_dir_length;

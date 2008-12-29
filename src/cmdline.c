@@ -30,6 +30,7 @@
 #include <glib.h>
 
 #include <stdio.h>
+#include <stdlib.h>
 
 #define SYSTEM_CONFIG_FILE_LOCATION	"/etc/mpd.conf"
 #define USER_CONFIG_FILE_LOCATION	".mpdconf"

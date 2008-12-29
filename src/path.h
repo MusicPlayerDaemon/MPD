@@ -19,7 +19,8 @@
 #ifndef MPD_PATH_H
 #define MPD_PATH_H
 
-#include "os_compat.h"
+#include <limits.h>
+#include <stddef.h>
 
 #if !defined(MPD_PATH_MAX)
 #  if defined(MAXPATHLEN)

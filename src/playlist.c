@@ -36,9 +36,14 @@
 #include "ack.h"
 #include "idle.h"
 #include "list.h"
-#include "os_compat.h"
 
 #include <glib.h>
+
+#include <assert.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <stdlib.h>
 
 #define PLAYLIST_STATE_STOP		0
 #define PLAYLIST_STATE_PLAY		1

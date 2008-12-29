@@ -25,7 +25,13 @@
 #include "ls.h"
 #include "database.h"
 #include "idle.h"
-#include "os_compat.h"
+
+#include <assert.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <dirent.h>
+#include <string.h>
 
 static struct stored_playlist_info *
 load_playlist_info(const char *parent_path_fs, const char *name_fs)

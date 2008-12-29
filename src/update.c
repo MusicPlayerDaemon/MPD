@@ -35,6 +35,13 @@
 
 #include <glib.h>
 
+#include <assert.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <dirent.h>
+#include <string.h>
+
 static enum update_progress {
 	UPDATE_PROGRESS_IDLE = 0,
 	UPDATE_PROGRESS_RUNNING = 1,

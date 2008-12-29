@@ -21,9 +21,10 @@
 #include "buffer2array.h"
 #include "list.h"
 #include "path.h"
-#include "os_compat.h"
 
 #include <glib.h>
+
+#include <string.h>
 
 #define MAX_STRING_SIZE	MPD_PATH_MAX+80
 

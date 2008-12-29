@@ -23,7 +23,8 @@
 #include "log.h"
 #include "list.h"
 #include "stored_playlist.h"
-#include "os_compat.h"
+
+#include <string.h>
 
 static const char *remoteUrlPrefixes[] = {
 #ifdef HAVE_CURL

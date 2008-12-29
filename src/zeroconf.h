@@ -19,7 +19,7 @@
 #ifndef MPD_ZEROCONF_H
 #define MPD_ZEROCONF_H
 
-#include "../config.h"
+#include "config.h"
 
 #ifdef HAVE_ZEROCONF
 

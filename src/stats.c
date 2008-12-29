@@ -18,14 +18,12 @@
  */
 
 #include "stats.h"
-
 #include "database.h"
 #include "tag.h"
 #include "song.h"
 #include "client.h"
 #include "player_control.h"
 #include "strset.h"
-#include "os_compat.h"
 
 Stats stats;
 

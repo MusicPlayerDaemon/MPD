@@ -46,7 +46,6 @@ mpd_headers = \
 	main_notify.h \
 	normalize.h \
 	compress.h \
-	os_compat.h \
 	pipe.h \
 	path.h \
 	mapper.h \

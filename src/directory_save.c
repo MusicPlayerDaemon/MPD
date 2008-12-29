@@ -26,6 +26,9 @@
 
 #include <glib.h>
 
+#include <assert.h>
+#include <string.h>
+
 /* TODO error checking */
 int
 directory_save(FILE *fp, struct directory *directory)

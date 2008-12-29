@@ -16,10 +16,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "../config.h"
-
 #include "zeroconf.h"
-#include "os_compat.h"
 #include "conf.h"
 #include "log.h"
 #include "listen.h"
@@ -27,6 +24,8 @@
 #include "utils.h"
 
 #include <glib.h>
+
+#include <string.h>
 
 /* The dns-sd service type qualifier to publish */
 #define SERVICE_TYPE		"_mpd._tcp"
