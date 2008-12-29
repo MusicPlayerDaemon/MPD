@@ -257,14 +257,21 @@ print_spl_list(struct client *client, GPtrArray *list)
 		struct stored_playlist_info *playlist =
 			g_ptr_array_index(list, i);
 		time_t t;
+#ifndef WIN32
 		struct tm tm;
+#endif
 		char timestamp[32];
 
 		client_printf(client, "playlist: %s\n", playlist->name);
 
 		t = playlist->mtime;
 		strftime(timestamp, sizeof(timestamp), "%FT%TZ",
-			 gmtime_r(&t, &tm));
+#ifdef WIN32
+			 gmtime(&t)
+#else
+			 gmtime_r(&t, &tm)
+#endif
+			 );
 		client_printf(client, "Last-Modified: %s\n", timestamp);
 	}
 }
