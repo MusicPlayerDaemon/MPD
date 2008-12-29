@@ -19,12 +19,16 @@
 
 #include "pcm_resample.h"
 #include "conf.h"
-#include "log.h"
 #include "utils.h"
+
+#include <glib.h>
 
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
+
+#undef G_LOG_DOMAIN
+#define G_LOG_DOMAIN "pcm"
 
 static int pcm_resample_get_converter(void)
 {
@@ -54,10 +58,10 @@ static int pcm_resample_get_converter(void)
 			goto out;
 	}
 
-	ERROR("unknown samplerate converter \"%s\"\n", conf);
+	g_warning("unknown samplerate converter \"%s\"", conf);
 out:
-	DEBUG("selecting samplerate converter \"%s\"\n",
-	      src_get_name(convalgo));
+	g_debug("selecting samplerate converter \"%s\"",
+		src_get_name(convalgo));
 
 	return convalgo;
 }
@@ -89,15 +93,15 @@ pcm_resample_set(struct pcm_resample_state *state,
 
 	state->state = src_new(convalgo, channels, &error);
 	if (!state->state) {
-		ERROR("cannot create new libsamplerate state: %s\n",
-		      src_strerror(error));
+		g_warning("cannot create new libsamplerate state: %s",
+			  src_strerror(error));
 		state->error = true;
 		return;
 	}
 
 	data->src_ratio = (double)dest_rate / (double)src_rate;
-	DEBUG("setting samplerate conversion ratio to %.2lf\n",
-	      data->src_ratio);
+	g_debug("setting samplerate conversion ratio to %.2lf",
+		data->src_ratio);
 	src_set_ratio(state->state, data->src_ratio);
 }
 
@@ -142,8 +146,8 @@ pcm_resample_16(uint8_t channels,
 
 	error = src_process(state->state, data);
 	if (error) {
-		ERROR("error processing samples with libsamplerate: %s\n",
-		      src_strerror(error));
+		g_warning("error processing samples with libsamplerate: %s",
+			  src_strerror(error));
 		state->error = true;
 		return 0;
 	}
@@ -215,8 +219,8 @@ pcm_resample_24(uint8_t channels,
 
 	error = src_process(state->state, data);
 	if (error) {
-		ERROR("error processing samples with libsamplerate: %s\n",
-		      src_strerror(error));
+		g_warning("error processing samples with libsamplerate: %s",
+			  src_strerror(error));
 		state->error = true;
 		return 0;
 	}

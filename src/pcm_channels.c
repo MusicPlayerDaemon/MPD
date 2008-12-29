@@ -18,9 +18,13 @@
 
 #include "pcm_channels.h"
 #include "utils.h"
-#include "log.h"
+
+#include <glib.h>
 
 #include <assert.h>
+
+#undef G_LOG_DOMAIN
+#define G_LOG_DOMAIN "pcm"
 
 static void
 pcm_convert_channels_16_1_to_2(int16_t *dest, const int16_t *src,
@@ -93,8 +97,8 @@ pcm_convert_channels_16(int8_t dest_channels,
 		pcm_convert_channels_16_n_to_2(buf, src_channels, src,
 					       num_frames);
 	else {
-		ERROR("conversion %u->%u channels is not supported\n",
-		      src_channels, dest_channels);
+		g_warning("conversion %u->%u channels is not supported",
+			  src_channels, dest_channels);
 		return NULL;
 	}
 
@@ -172,8 +176,8 @@ pcm_convert_channels_24(int8_t dest_channels,
 		pcm_convert_channels_24_n_to_2(buf, src_channels, src,
 					       num_frames);
 	else {
-		ERROR("conversion %u->%u channels is not supported\n",
-		      src_channels, dest_channels);
+		g_warning("conversion %u->%u channels is not supported",
+			  src_channels, dest_channels);
 		return NULL;
 	}
 

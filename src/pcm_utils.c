@@ -18,7 +18,6 @@
 
 #include "pcm_utils.h"
 #include "pcm_channels.h"
-#include "log.h"
 #include "utils.h"
 #include "conf.h"
 #include "audio_format.h"
@@ -27,6 +26,9 @@
 #include <string.h>
 #include <math.h>
 #include <glib.h>
+
+#undef G_LOG_DOMAIN
+#define G_LOG_DOMAIN "pcm"
 
 static inline int
 pcm_dither(void)
@@ -118,8 +120,8 @@ void pcm_volume(char *buffer, int bufferSize,
 		break;
 
 	default:
-		FATAL("%u bits not supported by pcm_volume!\n",
-		      format->bits);
+		g_error("%u bits not supported by pcm_volume!\n",
+			format->bits);
 	}
 }
 
@@ -193,7 +195,7 @@ static void pcm_add(char *buffer1, const char *buffer2, size_t size,
 		break;
 
 	default:
-		FATAL("%u bits not supported by pcm_add!\n", format->bits);
+		g_error("%u bits not supported by pcm_add!\n", format->bits);
 	}
 }
 
@@ -278,7 +280,7 @@ pcm_convert_to_16(struct pcm_convert_state *convert,
 		return buf;
 	}
 
-	ERROR("only 8 or 16 bits are supported for conversion!\n");
+	g_warning("only 8 or 16 bits are supported for conversion!\n");
 	return NULL;
 }
 
@@ -340,7 +342,7 @@ pcm_convert_to_24(uint8_t bits, const void *src,
 		return src;
 	}
 
-	ERROR("only 8 or 24 bits are supported for conversion!\n");
+	g_warning("only 8 or 24 bits are supported for conversion!\n");
 	return NULL;
 }
 
@@ -442,7 +444,7 @@ size_t pcm_convert(const struct audio_format *inFormat,
 				      convState);
 
 	default:
-		FATAL("cannot convert to %u bit\n", outFormat->bits);
+		g_error("cannot convert to %u bit\n", outFormat->bits);
 	}
 }
 

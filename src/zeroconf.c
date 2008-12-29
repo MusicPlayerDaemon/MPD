@@ -18,7 +18,6 @@
 
 #include "zeroconf.h"
 #include "conf.h"
-#include "log.h"
 #include "listen.h"
 #include "ioops.h"
 #include "utils.h"
@@ -206,13 +205,13 @@ static void avahiGroupCallback(AvahiEntryGroup * g,
 	char *n;
 	assert(g);
 
-	DEBUG("Avahi: Service group changed to state %d\n", state);
+	g_debug("Avahi: Service group changed to state %d", state);
 
 	switch (state) {
 	case AVAHI_ENTRY_GROUP_ESTABLISHED:
 		/* The entry group has been established successfully */
-		LOG("Avahi: Service '%s' successfully established.\n",
-		    avahiName);
+		g_message("Avahi: Service '%s' successfully established.",
+			  avahiName);
 		break;
 
 	case AVAHI_ENTRY_GROUP_COLLISION:
@@ -221,26 +220,26 @@ static void avahiGroupCallback(AvahiEntryGroup * g,
 		avahi_free(avahiName);
 		avahiName = n;
 
-		LOG("Avahi: Service name collision, renaming service to '%s'\n",
-		    avahiName);
+		g_message("Avahi: Service name collision, renaming service to '%s'",
+			  avahiName);
 
 		/* And recreate the services */
 		avahiRegisterService(avahi_entry_group_get_client(g));
 		break;
 
 	case AVAHI_ENTRY_GROUP_FAILURE:
-		ERROR("Avahi: Entry group failure: %s\n",
-		      avahi_strerror(avahi_client_errno
-				     (avahi_entry_group_get_client(g))));
+		g_warning("Avahi: Entry group failure: %s",
+			  avahi_strerror(avahi_client_errno
+					 (avahi_entry_group_get_client(g))));
 		/* Some kind of failure happened while we were registering our services */
 		avahiRunning = 0;
 		break;
 
 	case AVAHI_ENTRY_GROUP_UNCOMMITED:
-		DEBUG("Avahi: Service group is UNCOMMITED\n");
+		g_debug("Avahi: Service group is UNCOMMITED");
 		break;
 	case AVAHI_ENTRY_GROUP_REGISTERING:
-		DEBUG("Avahi: Service group is REGISTERING\n");
+		g_debug("Avahi: Service group is REGISTERING");
 	}
 }
 
@@ -249,15 +248,15 @@ static void avahiRegisterService(AvahiClient * c)
 {
 	int ret;
 	assert(c);
-	DEBUG("Avahi: Registering service %s/%s\n", SERVICE_TYPE, avahiName);
+	g_debug("Avahi: Registering service %s/%s", SERVICE_TYPE, avahiName);
 
 	/* If this is the first time we're called,
 	 * let's create a new entry group */
 	if (!avahiGroup) {
 		avahiGroup = avahi_entry_group_new(c, avahiGroupCallback, NULL);
 		if (!avahiGroup) {
-			ERROR("Avahi: Failed to create avahi EntryGroup: %s\n",
-			      avahi_strerror(avahi_client_errno(c)));
+			g_warning("Avahi: Failed to create avahi EntryGroup: %s",
+				  avahi_strerror(avahi_client_errno(c)));
 			goto fail;
 		}
 	}
@@ -271,16 +270,16 @@ static void avahiRegisterService(AvahiClient * c)
 					    0, avahiName, SERVICE_TYPE, NULL,
 					    NULL, boundPort, NULL);
 	if (ret < 0) {
-		ERROR("Avahi: Failed to add service %s: %s\n", SERVICE_TYPE,
-		      avahi_strerror(ret));
+		g_warning("Avahi: Failed to add service %s: %s", SERVICE_TYPE,
+			  avahi_strerror(ret));
 		goto fail;
 	}
 
 	/* Tell the server to register the service group */
 	ret = avahi_entry_group_commit(avahiGroup);
 	if (ret < 0) {
-		ERROR("Avahi: Failed to commit service group: %s\n",
-		      avahi_strerror(ret));
+		g_warning("Avahi: Failed to commit service group: %s",
+			  avahi_strerror(ret));
 		goto fail;
 	}
 	return;
@@ -297,11 +296,11 @@ static void avahiClientCallback(AvahiClient * c, AvahiClientState state,
 	assert(c);
 
 	/* Called whenever the client or server state changes */
-	DEBUG("Avahi: Client changed to state %d\n", state);
+	g_debug("Avahi: Client changed to state %d", state);
 
 	switch (state) {
 	case AVAHI_CLIENT_S_RUNNING:
-		DEBUG("Avahi: Client is RUNNING\n");
+		g_debug("Avahi: Client is RUNNING");
 
 		/* The server has startup successfully and registered its host
 		 * name on the network, so it's time to create our services */
@@ -312,8 +311,8 @@ static void avahiClientCallback(AvahiClient * c, AvahiClientState state,
 	case AVAHI_CLIENT_FAILURE:
 		reason = avahi_client_errno(c);
 		if (reason == AVAHI_ERR_DISCONNECTED) {
-			LOG("Avahi: Client Disconnected, "
-			    "will reconnect shortly\n");
+			g_message("Avahi: Client Disconnected, "
+				  "will reconnect shortly");
 			if (avahiGroup) {
 				avahi_entry_group_free(avahiGroup);
 				avahiGroup = NULL;
@@ -326,43 +325,43 @@ static void avahiClientCallback(AvahiClient * c, AvahiClientState state,
 					     avahiClientCallback, NULL,
 					     &reason);
 			if (!avahiClient) {
-				ERROR("Avahi: Could not reconnect: %s\n",
-				      avahi_strerror(reason));
+				g_warning("Avahi: Could not reconnect: %s",
+					  avahi_strerror(reason));
 				avahiRunning = 0;
 			}
 		} else {
-			ERROR("Avahi: Client failure: %s (terminal)\n",
-			      avahi_strerror(reason));
+			g_warning("Avahi: Client failure: %s (terminal)",
+				  avahi_strerror(reason));
 			avahiRunning = 0;
 		}
 		break;
 
 	case AVAHI_CLIENT_S_COLLISION:
-		DEBUG("Avahi: Client is COLLISION\n");
+		g_debug("Avahi: Client is COLLISION");
 		/* Let's drop our registered services. When the server is back
 		 * in AVAHI_SERVER_RUNNING state we will register them
 		 * again with the new host name. */
 		if (avahiGroup) {
-			DEBUG("Avahi: Resetting group\n");
+			g_debug("Avahi: Resetting group");
 			avahi_entry_group_reset(avahiGroup);
 		}
 
 	case AVAHI_CLIENT_S_REGISTERING:
-		DEBUG("Avahi: Client is REGISTERING\n");
+		g_debug("Avahi: Client is REGISTERING");
 		/* The server records are now being established. This
 		 * might be caused by a host name change. We need to wait
 		 * for our own records to register until the host name is
 		 * properly esatblished. */
 
 		if (avahiGroup) {
-			DEBUG("Avahi: Resetting group\n");
+			g_debug("Avahi: Resetting group");
 			avahi_entry_group_reset(avahiGroup);
 		}
 
 		break;
 
 	case AVAHI_CLIENT_CONNECTING:
-		DEBUG("Avahi: Client is CONNECTING\n");
+		g_debug("Avahi: Client is CONNECTING");
 	}
 }
 
@@ -383,7 +382,7 @@ static int avahiFdset(fd_set * rfds, fd_set * wfds, fd_set * efds)
 			FD_SET(w->fd, efds);
 		}
 		if (w->requestedEvent & AVAHI_WATCH_HUP) {
-			ERROR("Avahi: No support for HUP events! (ignoring)\n");
+			g_warning("Avahi: No support for HUP events! (ignoring)");
 		}
 
 		if (w->fd > maxfd)
@@ -447,14 +446,14 @@ static int avahiFdconsume(int fdCount, fd_set * rfds, fd_set * wfds,
 static void init_avahi(const char *serviceName)
 {
 	int error;
-	DEBUG("Avahi: Initializing interface\n");
+	g_debug("Avahi: Initializing interface");
 
 	if (avahi_is_valid_service_name(serviceName)) {
 		avahiName = avahi_strdup(serviceName);
 	} else {
-		ERROR("Invalid zeroconf_name \"%s\", defaulting to "
-		      "\"%s\" instead.\n",
-		      serviceName, SERVICE_NAME);
+		g_warning("Invalid zeroconf_name \"%s\", defaulting to "
+			  "\"%s\" instead.",
+			  serviceName, SERVICE_NAME);
 		avahiName = avahi_strdup(SERVICE_NAME);
 	}
 
@@ -473,8 +472,8 @@ static void init_avahi(const char *serviceName)
 				       avahiClientCallback, NULL, &error);
 
 	if (!avahiClient) {
-		ERROR("Avahi: Failed to create client: %s\n",
-		      avahi_strerror(error));
+		g_warning("Avahi: Failed to create client: %s",
+			  avahi_strerror(error));
 		goto fail;
 	}
 
@@ -535,13 +534,13 @@ static void dnsRegisterCallback(DNSServiceRef sdRef, DNSServiceFlags flags,
 				void *context)
 {
 	if (errorCode != kDNSServiceErr_NoError) {
-		ERROR("Failed to register zeroconf service.\n");
+		g_warning("Failed to register zeroconf service.");
 
 		DNSServiceRefDeallocate(dnsReference);
 		dnsReference = NULL;
 		deregisterIO(&zeroConfIo);
 	} else {
-		DEBUG("Registered zeroconf service with name '%s'\n", name);
+		g_debug("Registered zeroconf service with name '%s'", name);
 	}
 }
 
@@ -556,7 +555,7 @@ static void init_zeroconf_osx(const char *serviceName)
 						       NULL);
 
 	if (error != kDNSServiceErr_NoError) {
-		ERROR("Failed to register zeroconf service.\n");
+		g_warning("Failed to register zeroconf service.");
 
 		if (dnsReference) {
 			DNSServiceRefDeallocate(dnsReference);
@@ -603,7 +602,7 @@ void finishZeroconf(void)
 		return;
 
 #ifdef HAVE_AVAHI
-	DEBUG("Avahi: Shutting down interface\n");
+	g_debug("Avahi: Shutting down interface");
 	deregisterIO(&zeroConfIo);
 
 	if (avahiGroup) {
@@ -625,7 +624,7 @@ void finishZeroconf(void)
 	if (dnsReference != NULL) {
 		DNSServiceRefDeallocate(dnsReference);
 		dnsReference = NULL;
-		DEBUG("Deregistered Zeroconf service.\n");
+		g_debug("Deregistered Zeroconf service.");
 	}
 #endif
 }
