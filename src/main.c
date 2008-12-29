@@ -68,47 +68,6 @@ typedef struct _Options {
 	int verbose;
 } Options;
 
-/* 
- * from git-1.3.0, needed for solaris
- */
-#ifndef HAVE_SETENV
-static int setenv(const char *name, const char *value, int replace)
-{
-	int out;
-	size_t namelen, valuelen;
-	char *envstr;
-
-	if (!name || !value)
-		return -1;
-	if (!replace) {
-		char *oldval = NULL;
-		oldval = getenv(name);
-		if (oldval)
-			return 0;
-	}
-
-	namelen = strlen(name);
-	valuelen = strlen(value);
-	envstr = xmalloc((namelen + valuelen + 2));
-	if (!envstr)
-		return -1;
-
-	memcpy(envstr, name, namelen);
-	envstr[namelen] = '=';
-	memcpy(envstr + namelen + 1, value, valuelen);
-	envstr[namelen + valuelen + 1] = 0;
-
-	out = putenv(envstr);
-	/* putenv(3) makes the argument string part of the environment,
-	 * and changing that string modifies the environment --- which
-	 * means we do not own that storage anymore.  Do not free
-	 * envstr.
-	 */
-
-	return out;
-}
-#endif /* HAVE_SETENV */
-
 static void usage(char *argv[])
 {
 	printf("usage:\n"
@@ -263,7 +222,7 @@ static void changeToUser(void)
 
 		/* this is needed by libs such as arts */
 		if (userpwd->pw_dir) {
-			setenv("HOME", userpwd->pw_dir, 1);
+			g_setenv("HOME", userpwd->pw_dir, true);
 		}
 	}
 }

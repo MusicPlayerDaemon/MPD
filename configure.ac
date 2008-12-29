@@ -270,7 +270,6 @@ AC_CHECK_LIB(socket,socket,MPD_LIBS="$MPD_LIBS -lsocket",)
 AC_CHECK_LIB(nsl,gethostbyname,MPD_LIBS="$MPD_LIBS -lnsl",)
 
 AC_CHECK_LIB(m,exp,MPD_LIBS="$MPD_LIBS -lm",)
-AC_CHECK_FUNCS(setenv)
 
 PKG_CHECK_MODULES([GLIB], [glib-2.0 >= 2.4 gthread-2.0],,
 		  [AC_MSG_ERROR([glib-2.4 is required])])
