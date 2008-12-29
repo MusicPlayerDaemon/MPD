@@ -47,22 +47,6 @@ void cond_leave(struct condition *cond);
 void cond_wait(struct condition *cond);
 
 /**
- * Wait for a condition with timeout
- *
- * @param sec number of seconds to wait for (subject to change)
- *
- * @return ETIMEDOUT if timed out, 0 if notification was received
- */
-int cond_timedwait(struct condition *cond, const long sec);
-
-/**
- * Notify the thread there is a waiter.  This function never blocks.
- *
- * @return EBUSY if it was unable to lock the mutex, 0 on success
- */
-int cond_signal_async(struct condition *cond);
-
-/**
  * Notify the thread synchronously, i.e. wait until it can deliver
  * the notification.
  */

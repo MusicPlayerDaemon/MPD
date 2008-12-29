@@ -50,28 +50,6 @@ void cond_wait(struct condition *cond)
 	g_cond_wait(cond->cond, cond->mutex);
 }
 
-int cond_timedwait(struct condition *cond, const long sec)
-{
-	GTimeVal t;
-
-	g_get_current_time(&t);
-	g_time_val_add(&t, sec * 1000000);
-
-	if (g_cond_timed_wait(cond->cond, cond->mutex, &t) == FALSE)
-		return ETIMEDOUT;
-	return 0;
-}
-
-int cond_signal_async(struct condition *cond)
-{
-	if (g_mutex_trylock(cond->mutex) == FALSE) {
-		g_cond_signal(cond->cond);
-		g_mutex_unlock(cond->mutex);
-		return 0;
-	}
-	return EBUSY;
-}
-
 void cond_signal_sync(struct condition *cond)
 {
 	g_cond_signal(cond->cond);
