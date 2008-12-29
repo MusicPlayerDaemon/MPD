@@ -114,38 +114,43 @@ G_GNUC_MALLOC void *xcalloc(size_t nmemb, size_t size)
 
 char *parsePath(char *path)
 {
-	ConfigParam *param;
-	struct passwd *passwd;
-	char *newPath;
-	char *c;
-	int foundSlash = 0;
-	int pos = 1;
-
 	if (path[0] != '/' && path[0] != '~') {
 		g_warning("\"%s\" is not an absolute path", path);
 		return NULL;
 	} else if (path[0] == '~') {
+		size_t pos = 1;
+		const char *home;
+		char *newPath;
+
 		if (path[1] == '/' || path[1] == '\0') {
-			param = getConfigParam(CONF_USER);
+			ConfigParam *param = getConfigParam(CONF_USER);
 			if (param && param->value) {
-				passwd = getpwnam(param->value);
+				struct passwd *passwd = getpwnam(param->value);
 				if (!passwd) {
 					g_warning("no such user %s",
 						  param->value);
 					return NULL;
 				}
+
+				home = passwd->pw_dir;
 			} else {
-				passwd = getpwuid(geteuid());
+				struct passwd *passwd = getpwuid(geteuid());
 				if (!passwd) {
 					g_warning("problems getting passwd "
 						  "entry for current user");
 					return NULL;
 				}
+
+				home = passwd->pw_dir;
 			}
 		} else {
+			bool foundSlash = false;
+			struct passwd *passwd;
+			char *c;
+
 			for (c = path + 1; *c != '\0' && *c != '/'; c++);
 			if (*c == '/') {
-				foundSlash = 1;
+				foundSlash = true;
 				*c = '\0';
 			}
 			pos = c - path;
@@ -158,16 +163,17 @@ char *parsePath(char *path)
 
 			if (foundSlash)
 				*c = '/';
+
+			home = passwd->pw_dir;
 		}
 
-		newPath = xmalloc(strlen(passwd->pw_dir) + strlen(path + pos) + 1);
-		strcpy(newPath, passwd->pw_dir);
+		newPath = xmalloc(strlen(home) + strlen(path + pos) + 1);
+		strcpy(newPath, home);
 		strcat(newPath, path + pos);
+		return newPath;
 	} else {
-		newPath = xstrdup(path);
+		return xstrdup(path);
 	}
-
-	return newPath;
 }
 
 int set_nonblocking(int fd)
