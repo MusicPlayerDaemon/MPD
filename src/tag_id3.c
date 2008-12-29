@@ -40,7 +40,7 @@
  */
 static id3_utf8_t * processID3FieldString (int is_id3v1, const id3_ucs4_t *ucs4, int type)
 {
-	id3_utf8_t *utf8;
+	id3_utf8_t *utf8, *utf8_stripped;
 	id3_latin1_t *isostr;
 	char *encoding;
 
@@ -74,7 +74,11 @@ static id3_utf8_t * processID3FieldString (int is_id3v1, const id3_ucs4_t *ucs4,
 			return NULL;
 		}
 	}
-	return utf8;
+
+	utf8_stripped = (id3_utf8_t *)g_strdup(g_strstrip((gchar *)utf8));
+	free(utf8);
+
+	return utf8_stripped;
 }
 
 static struct tag *getID3Info(
