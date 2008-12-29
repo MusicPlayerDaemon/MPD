@@ -17,7 +17,6 @@
  */
 
 #include "path.h"
-#include "log.h"
 #include "conf.h"
 #include "utils.h"
 #include "playlist.h"
@@ -25,6 +24,9 @@
 #include <glib.h>
 
 #include <string.h>
+
+#undef G_LOG_DOMAIN
+#define G_LOG_DOMAIN "path"
 
 static char *fs_charset;
 
@@ -71,7 +73,7 @@ void path_set_fs_charset(const char *charset)
 	g_free(fs_charset);
 	fs_charset = g_strdup(charset);
 
-	DEBUG("path_set_fs_charset: fs charset is: %s\n", fs_charset);
+	g_debug("path_set_fs_charset: fs charset is: %s", fs_charset);
 }
 
 const char *path_get_fs_charset(void)
@@ -97,7 +99,7 @@ void path_global_init(void)
 	if (charset) {
 		path_set_fs_charset(charset);
 	} else {
-		WARNING("setting filesystem charset to ISO-8859-1\n");
+		g_message("setting filesystem charset to ISO-8859-1");
 		path_set_fs_charset("ISO-8859-1");
 	}
 }
@@ -112,8 +114,8 @@ char *pfx_dir(char *dst,
               const char *pfx, const size_t pfx_len)
 {
 	if (G_UNLIKELY((pfx_len + path_len + 1) >= MPD_PATH_MAX))
-		FATAL("Cannot prefix '%s' to '%s', PATH_MAX: %d\n",
-		      pfx, path, MPD_PATH_MAX);
+		g_error("Cannot prefix '%s' to '%s', PATH_MAX: %d",
+			pfx, path, MPD_PATH_MAX);
 
 	/* memmove allows dst == path */
 	memmove(dst + pfx_len + 1, path, path_len + 1);
