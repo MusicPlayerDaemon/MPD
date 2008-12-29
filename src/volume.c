@@ -18,7 +18,6 @@
 
 #include "volume.h"
 #include "conf.h"
-#include "log.h"
 #include "player_control.h"
 #include "utils.h"
 #include "idle.h"
@@ -37,6 +36,9 @@
 #ifdef HAVE_ALSA
 #include <alsa/asoundlib.h>
 #endif
+
+#undef G_LOG_DOMAIN
+#define G_LOG_DOMAIN "volume"
 
 #define VOLUME_MIXER_TYPE_SOFTWARE		0
 #define VOLUME_MIXER_TYPE_OSS			1
@@ -108,7 +110,7 @@ static int prepOssMixer(const char *device)
 	ConfigParam *param;
 
 	if ((volume_ossFd = open(device, O_RDONLY)) < 0) {
-		WARNING("unable to open oss mixer \"%s\"\n", device);
+		g_warning("unable to open oss mixer \"%s\"", device);
 		return -1;
 	}
 
@@ -117,7 +119,7 @@ static int prepOssMixer(const char *device)
 		int devmask = 0;
 
 		if (ioctl(volume_ossFd, SOUND_MIXER_READ_DEVMASK, &devmask) < 0) {
-			WARNING("errors getting read_devmask for oss mixer\n");
+			g_warning("errors getting read_devmask for oss mixer");
 			closeOssMixer();
 			return -1;
 		}
@@ -125,13 +127,13 @@ static int prepOssMixer(const char *device)
 		i = oss_find_mixer(param->value);
 
 		if (i < 0) {
-			WARNING("mixer control \"%s\" not found at line %i\n",
-				param->value, param->line);
+			g_warning("mixer control \"%s\" not found at line %i",
+				  param->value, param->line);
 			closeOssMixer();
 			return -1;
 		} else if (!((1 << i) & devmask)) {
-			WARNING("mixer control \"%s\" not usable at line %i\n",
-				param->value, param->line);
+			g_warning("mixer control \"%s\" not usable at line %i",
+				  param->value, param->line);
 			closeOssMixer();
 			return -1;
 		}
@@ -158,7 +160,7 @@ static int getOssVolumeLevel(void)
 
 	if (ioctl(volume_ossFd, MIXER_READ(volume_ossControl), &level) < 0) {
 		closeOssMixer();
-		WARNING("unable to read volume\n");
+		g_warning("unable to read volume");
 		return -1;
 	}
 
@@ -166,8 +168,8 @@ static int getOssVolumeLevel(void)
 	right = (level & 0xff00) >> 8;
 
 	if (left != right) {
-		WARNING("volume for left and right is not the same, \"%i\" and "
-			"\"%i\"\n", left, right);
+		g_warning("volume for left and right is not the same, \"%i\" "
+			  "and \"%i\"", left, right);
 	}
 
 	return left;
@@ -223,14 +225,15 @@ static int prepAlsaMixer(const char *card)
 	err = snd_mixer_open(&volume_alsaMixerHandle, 0);
 	snd_config_update_free_global();
 	if (err < 0) {
-		WARNING("problems opening alsa mixer: %s\n", snd_strerror(err));
+		g_warning("problems opening alsa mixer: %s",
+			  snd_strerror(err));
 		return -1;
 	}
 
 	if ((err = snd_mixer_attach(volume_alsaMixerHandle, card)) < 0) {
 		closeAlsaMixer();
-		WARNING("problems attaching alsa mixer: %s\n",
-			snd_strerror(err));
+		g_warning("problems attaching alsa mixer: %s",
+			  snd_strerror(err));
 		return -1;
 	}
 
@@ -238,15 +241,15 @@ static int prepAlsaMixer(const char *card)
 	     snd_mixer_selem_register(volume_alsaMixerHandle, NULL,
 				      NULL)) < 0) {
 		closeAlsaMixer();
-		WARNING("problems snd_mixer_selem_register'ing: %s\n",
-			snd_strerror(err));
+		g_warning("problems snd_mixer_selem_register'ing: %s",
+			  snd_strerror(err));
 		return -1;
 	}
 
 	if ((err = snd_mixer_load(volume_alsaMixerHandle)) < 0) {
 		closeAlsaMixer();
-		WARNING("problems snd_mixer_selem_register'ing: %s\n",
-			snd_strerror(err));
+		g_warning("problems snd_mixer_selem_register'ing: %s",
+			  snd_strerror(err));
 		return -1;
 	}
 
@@ -276,7 +279,7 @@ static int prepAlsaMixer(const char *card)
 		return 0;
 	}
 
-	WARNING("can't find alsa mixer_control \"%s\"\n", controlName);
+	g_warning("can't find alsa mixer_control \"%s\"", controlName);
 
 	closeAlsaMixer();
 	return -1;
@@ -303,8 +306,8 @@ static int prep_alsa_get_level(long *level)
 	return 0;
 
 error:
-	WARNING("problems getting alsa volume: %s (snd_mixer_%s)\n",
-		snd_strerror(err), cmd);
+	g_warning("problems getting alsa volume: %s (snd_mixer_%s)",
+		  snd_strerror(err), cmd);
 	closeAlsaMixer();
 	return -1;
 }
@@ -361,8 +364,8 @@ static int changeAlsaVolumeLevel(int change, int rel)
 	if ((err =
 	     snd_mixer_selem_set_playback_volume_all(volume_alsaElem,
 						     level)) < 0) {
-		WARNING("problems setting alsa volume: %s\n",
-			snd_strerror(err));
+		g_warning("problems setting alsa volume: %s",
+			  snd_strerror(err));
 		closeAlsaMixer();
 		return -1;
 	}
@@ -425,8 +428,8 @@ void initVolume(void)
 			volume_mixerType = VOLUME_MIXER_TYPE_SOFTWARE;
 			volume_mixerDevice = VOLUME_MIXER_SOFTWARE_DEFAULT;
 		} else {
-			FATAL("unknown mixer type %s at line %i\n",
-			      param->value, param->line);
+			g_error("unknown mixer type %s at line %i",
+				param->value, param->line);
 		}
 	}
 
@@ -440,7 +443,7 @@ void initVolume(void)
 void openVolumeDevice(void)
 {
 	if (prepMixer(volume_mixerDevice) < 0) {
-		WARNING("using software volume\n");
+		g_message("using software volume");
 		volume_mixerType = VOLUME_MIXER_TYPE_SOFTWARE;
 	}
 }
@@ -533,7 +536,7 @@ void read_sw_volume_state(FILE *fp)
 		if (G_LIKELY(!*end))
 			changeSoftwareVolume(sv, 0);
 		else
-			ERROR("Can't parse software volume: %s\n", buf);
+			g_warning("Can't parse software volume: %s", buf);
 		return;
 	}
 }
