@@ -120,30 +120,30 @@ static void changeToUser(void)
 		/* get uid */
 		struct passwd *userpwd;
 		if ((userpwd = getpwnam(param->value)) == NULL) {
-			FATAL("no such user \"%s\" at line %i\n", param->value,
-			      param->line);
+			g_error("no such user \"%s\" at line %i",
+				param->value, param->line);
 		}
 
 		if (setgid(userpwd->pw_gid) == -1) {
-			FATAL("cannot setgid for user \"%s\" at line %i: %s\n",
-			      param->value, param->line, strerror(errno));
+			g_error("cannot setgid for user \"%s\" at line %i: %s",
+				param->value, param->line, strerror(errno));
 		}
 #ifdef _BSD_SOURCE
 		/* init suplementary groups 
 		 * (must be done before we change our uid)
 		 */
 		if (initgroups(param->value, userpwd->pw_gid) == -1) {
-			WARNING("cannot init supplementary groups "
-				"of user \"%s\" at line %i: %s\n",
-				param->value, param->line, strerror(errno));
+			g_warning("cannot init supplementary groups "
+				  "of user \"%s\" at line %i: %s",
+				  param->value, param->line, strerror(errno));
 		}
 #endif
 
 		/* set uid */
 		if (setuid(userpwd->pw_uid) == -1) {
-			FATAL("cannot change to uid of user "
-			      "\"%s\" at line %i: %s\n",
-			      param->value, param->line, strerror(errno));
+			g_error("cannot change to uid of user "
+				"\"%s\" at line %i: %s",
+				param->value, param->line, strerror(errno));
 		}
 
 		/* this is needed by libs such as arts */
@@ -157,9 +157,9 @@ static void openDB(Options * options, char *argv0)
 {
 	if (options->createDB > 0 || db_load() < 0) {
 		if (options->createDB < 0) {
-			FATAL("can't open db file and using "
-			      "\"--no-create-db\" command line option\n"
-			      "try running \"%s --create-db\"\n", argv0);
+			g_error("can't open db file and using "
+				"\"--no-create-db\" command line option; "
+				"try running \"%s --create-db\"", argv0);
 		}
 		if (db_check() < 0)
 			exit(EXIT_FAILURE);
@@ -179,12 +179,12 @@ static void daemonize(Options * options)
 	if (pidFileParam) {
 		/* do this before daemon'izing so we can fail gracefully if we can't
 		 * write to the pid file */
-		DEBUG("opening pid file\n");
+		g_debug("opening pid file");
 		fp = fopen(pidFileParam->value, "w+");
 		if (!fp) {
-			FATAL("could not open %s \"%s\" (at line %i) for writing: %s\n",
-			     CONF_PID_FILE, pidFileParam->value,
-			     pidFileParam->line, strerror(errno));
+			g_error("could not open %s \"%s\" (at line %i) for writing: %s",
+				CONF_PID_FILE, pidFileParam->value,
+				pidFileParam->line, strerror(errno));
 		}
 	}
 
@@ -196,15 +196,15 @@ static void daemonize(Options * options)
 		if (pid > 0)
 			_exit(EXIT_SUCCESS);
 		else if (pid < 0) {
-			FATAL("problems fork'ing for daemon!\n");
+			g_error("problems fork'ing for daemon!");
 		}
 
 		if (chdir("/") < 0) {
-			FATAL("problems changing to root directory\n");
+			g_error("problems changing to root directory");
 		}
 
 		if (setsid() < 0) {
-			FATAL("problems setsid'ing\n");
+			g_error("problems setsid'ing");
 		}
 
 		fflush(NULL);
@@ -212,14 +212,14 @@ static void daemonize(Options * options)
 		if (pid > 0)
 			_exit(EXIT_SUCCESS);
 		else if (pid < 0) {
-			FATAL("problems fork'ing for daemon!\n");
+			g_error("problems fork'ing for daemon!");
 		}
 
-		DEBUG("daemonized!\n");
+		g_debug("daemonized!");
 	}
 
 	if (pidFileParam) {
-		DEBUG("writing pid file\n");
+		g_debug("writing pid file");
 		fprintf(fp, "%lu\n", (unsigned long)getpid());
 		fclose(fp);
 	}
@@ -232,7 +232,7 @@ static void cleanUpPidFile(void)
 	if (!pidFileParam)
 		return;
 
-	DEBUG("cleaning up pid file\n");
+	g_debug("cleaning up pid file");
 
 	unlink(pidFileParam->value);
 }
@@ -244,22 +244,23 @@ static void killFromPidFile(void)
 	int pid;
 
 	if (!pidFileParam) {
-		FATAL("no pid_file specified in the config file\n");
+		g_error("no pid_file specified in the config file");
 	}
 
 	fp = fopen(pidFileParam->value, "r");
 	if (!fp) {
-		FATAL("unable to open %s \"%s\": %s\n",
-		      CONF_PID_FILE, pidFileParam->value, strerror(errno));
+		g_error("unable to open %s \"%s\": %s",
+			CONF_PID_FILE, pidFileParam->value, strerror(errno));
 	}
 	if (fscanf(fp, "%i", &pid) != 1) {
-		FATAL("unable to read the pid from file \"%s\"\n",
-		      pidFileParam->value);
+		g_error("unable to read the pid from file \"%s\"",
+			pidFileParam->value);
 	}
 	fclose(fp);
 
 	if (kill(pid, SIGTERM)) {
-		FATAL("unable to kill proccess %i: %s\n", pid, strerror(errno));
+		g_error("unable to kill proccess %i: %s",
+			pid, strerror(errno));
 	}
 	exit(EXIT_SUCCESS);
 }
@@ -355,7 +356,7 @@ int main(int argc, char *argv[])
 			client_manager_idle_add(flags);
 
 		if (g_timer_elapsed(save_state_timer, NULL) >= 5 * 60) {
-			g_debug("Saving state file\n");
+			g_debug("Saving state file");
 			write_state_file();
 			g_timer_start(save_state_timer);
 		}
@@ -372,8 +373,8 @@ int main(int argc, char *argv[])
 
 	start = clock();
 	db_finish();
-	DEBUG("db_finish took %f seconds\n",
-	      ((float)(clock()-start))/CLOCKS_PER_SEC);
+	g_debug("db_finish took %f seconds",
+		((float)(clock()-start))/CLOCKS_PER_SEC);
 
 	deinit_main_notify();
 
