@@ -19,7 +19,6 @@
 #include "client.h"
 #include "command.h"
 #include "conf.h"
-#include "log.h"
 #include "listen.h"
 #include "permission.h"
 #include "utils.h"
@@ -37,6 +36,10 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <string.h>
+
+#undef G_LOG_DOMAIN
+#define G_LOG_DOMAIN "client"
+#define LOG_LEVEL_SECURE G_LOG_LEVEL_INFO
 
 #define GREETING				"OK MPD " PROTOCOL_VERSION "\n"
 
@@ -192,7 +195,8 @@ static void client_close(struct client *client)
 	g_queue_foreach(client->deferred_send, deferred_buffer_free, NULL);
 	g_queue_free(client->deferred_send);
 
-	SECURE("client %i: closed\n", client->num);
+	g_log(G_LOG_DOMAIN, LOG_LEVEL_SECURE,
+	      "client %i: closed", client->num);
 	free(client);
 }
 
@@ -243,7 +247,7 @@ void client_new(int fd, const struct sockaddr *addr, int uid)
 	struct client *client;
 
 	if (num_clients >= client_max_connections) {
-		ERROR("Max Connections Reached!\n");
+		g_warning("Max Connections Reached!");
 		xclose(fd);
 		return;
 	}
@@ -253,8 +257,9 @@ void client_new(int fd, const struct sockaddr *addr, int uid)
 	++num_clients;
 	client_init(client, fd);
 	client->uid = uid;
-	SECURE("client %i: opened from %s\n", client->num,
-	       sockaddr_to_tmp_string(addr));
+	g_log(G_LOG_DOMAIN, LOG_LEVEL_SECURE,
+	      "client %i: opened from %s\n", client->num,
+	      sockaddr_to_tmp_string(addr));
 }
 
 static int client_process_line(struct client *client, char *line)
@@ -277,15 +282,15 @@ static int client_process_line(struct client *client, char *line)
 	} else if (client->idle_waiting) {
 		/* during idle mode, clients must not send anything
 		   except "noidle" */
-		ERROR("client %i: command \"%s\" during idle\n",
-		      client->num, line);
+		g_warning("client %i: command \"%s\" during idle",
+			  client->num, line);
 		return COMMAND_RETURN_CLOSE;
 	}
 
 	if (client->cmd_list_OK >= 0) {
 		if (strcmp(line, CLIENT_LIST_MODE_END) == 0) {
-			DEBUG("client %i: process command "
-			      "list\n", client->num);
+			g_debug("client %i: process command list",
+				client->num);
 
 			/* for scalability reasons, we have prepended
 			   each new command; now we have to reverse it
@@ -295,8 +300,8 @@ static int client_process_line(struct client *client, char *line)
 			ret = command_process_list(client,
 						   client->cmd_list_OK,
 						   client->cmd_list);
-			DEBUG("client %i: process command "
-			      "list returned %i\n", client->num, ret);
+			g_debug("client %i: process command "
+				"list returned %i", client->num, ret);
 
 			if (ret == COMMAND_RETURN_CLOSE ||
 			    client_is_expired(client))
@@ -314,14 +319,11 @@ static int client_process_line(struct client *client, char *line)
 			client->cmd_list_size += len;
 			if (client->cmd_list_size >
 			    client_max_command_list_size) {
-				ERROR("client %i: command "
-				      "list size (%lu) is "
-				      "larger than the max "
-				      "(%lu)\n",
-				      client->num,
-				      (unsigned long)client->cmd_list_size,
-				      (unsigned long)
-				      client_max_command_list_size);
+				g_warning("client %i: command list size (%lu) "
+					  "is larger than the max (%lu)",
+					  client->num,
+					  (unsigned long)client->cmd_list_size,
+					  (unsigned long)client_max_command_list_size);
 				return COMMAND_RETURN_CLOSE;
 			} else
 				new_cmd_list_ptr(client, line);
@@ -334,11 +336,11 @@ static int client_process_line(struct client *client, char *line)
 			client->cmd_list_OK = 1;
 			ret = 1;
 		} else {
-			DEBUG("client %i: process command \"%s\"\n",
-			      client->num, line);
+			g_debug("client %i: process command \"%s\"",
+				client->num, line);
 			ret = command_process(client, line);
-			DEBUG("client %i: command returned %i\n",
-			      client->num, ret);
+			g_debug("client %i: command returned %i",
+				client->num, ret);
 
 			if (ret == COMMAND_RETURN_CLOSE ||
 			    client_is_expired(client))
@@ -391,8 +393,8 @@ static int client_input_received(struct client *client, size_t bytesRead)
 	   the beginning */
 	if (client->bufferLength == sizeof(client->buffer)) {
 		if (client->bufferPos == 0) {
-			ERROR("client %i: buffer overflow\n",
-			      client->num);
+			g_warning("client %i: buffer overflow",
+				  client->num);
 			return COMMAND_RETURN_CLOSE;
 		}
 		assert(client->bufferLength >= client->bufferPos
@@ -484,7 +486,7 @@ int client_manager_io(void)
 		if (errno == EINTR)
 			return 0;
 
-		FATAL("select() failed: %s\n", strerror(errno));
+		g_error("select() failed: %s", strerror(errno));
 	}
 
 	registered_IO_consume_fds(&ret, &rfds, &wfds, &efds);
@@ -525,9 +527,9 @@ void client_manager_init(void)
 	if (param) {
 		client_timeout = strtol(param->value, &test, 10);
 		if (*test != '\0' || client_timeout <= 0) {
-			FATAL("connection timeout \"%s\" is not a positive "
-			      "integer, line %i\n", CONF_CONN_TIMEOUT,
-			      param->line);
+			g_error("connection timeout \"%s\" is not a positive "
+				"integer, line %i",
+				CONF_CONN_TIMEOUT, param->line);
 		}
 	}
 
@@ -536,8 +538,9 @@ void client_manager_init(void)
 	if (param) {
 		client_max_connections = strtol(param->value, &test, 10);
 		if (*test != '\0' || client_max_connections <= 0) {
-			FATAL("max connections \"%s\" is not a positive integer"
-			      ", line %i\n", param->value, param->line);
+			g_error("max connections \"%s\" is not a positive integer"
+				", line %i",
+				param->value, param->line);
 		}
 	} else
 		client_max_connections = CLIENT_MAX_CONNECTIONS_DEFAULT;
@@ -547,8 +550,9 @@ void client_manager_init(void)
 	if (param) {
 		long tmp = strtol(param->value, &test, 10);
 		if (*test != '\0' || tmp <= 0) {
-			FATAL("max command list size \"%s\" is not a positive "
-			      "integer, line %i\n", param->value, param->line);
+			g_error("max command list size \"%s\" is not a positive "
+				"integer, line %i",
+				param->value, param->line);
 		}
 		client_max_command_list_size = tmp * 1024;
 	}
@@ -558,8 +562,9 @@ void client_manager_init(void)
 	if (param) {
 		long tmp = strtol(param->value, &test, 10);
 		if (*test != '\0' || tmp <= 0) {
-			FATAL("max output buffer size \"%s\" is not a positive "
-			      "integer, line %i\n", param->value, param->line);
+			g_error("max output buffer size \"%s\" is not a positive "
+				"integer, line %i",
+				param->value, param->line);
 		}
 		client_max_output_buffer_size = tmp * 1024;
 	}
@@ -587,13 +592,13 @@ void client_manager_expire(void)
 
 	list_for_each_entry_safe(client, n, &clients, siblings) {
 		if (client_is_expired(client)) {
-			DEBUG("client %i: expired\n", client->num);
+			g_debug("client %i: expired", client->num);
 			client_close(client);
 		} else if (!client->idle_waiting && /* idle clients
 						       never expire */
 			   time(NULL) - client->lastTime >
 			   client_timeout) {
-			DEBUG("client %i: timeout\n", client->num);
+			g_debug("client %i: timeout", client->num);
 			client_close(client);
 		}
 	}
@@ -632,13 +637,13 @@ static void client_write_deferred(struct client *client)
 	}
 
 	if (g_queue_is_empty(client->deferred_send)) {
-		DEBUG("client %i: buffer empty %lu\n", client->num,
-		      (unsigned long)client->deferred_bytes);
+		g_debug("client %i: buffer empty %lu", client->num,
+			(unsigned long)client->deferred_bytes);
 		assert(client->deferred_bytes == 0);
 	} else if (ret < 0 && errno != EAGAIN && errno != EINTR) {
 		/* cause client to close */
-		DEBUG("client %i: problems flushing buffer\n",
-		      client->num);
+		g_debug("client %i: problems flushing buffer",
+			client->num);
 		client_set_expired(client);
 	}
 }
@@ -654,11 +659,11 @@ static void client_defer_output(struct client *client,
 	alloc = sizeof(*buf) - sizeof(buf->data) + length;
 	client->deferred_bytes += alloc;
 	if (client->deferred_bytes > client_max_output_buffer_size) {
-		ERROR("client %i: output buffer size (%lu) is "
-		      "larger than the max (%lu)\n",
-		      client->num,
-		      (unsigned long)client->deferred_bytes,
-		      (unsigned long)client_max_output_buffer_size);
+		g_warning("client %i: output buffer size (%lu) is "
+			  "larger than the max (%lu)",
+			  client->num,
+			  (unsigned long)client->deferred_bytes,
+			  (unsigned long)client_max_output_buffer_size);
 		/* cause client to close */
 		client_set_expired(client);
 		return;
@@ -683,7 +688,7 @@ static void client_write_direct(struct client *client,
 		if (errno == EAGAIN || errno == EINTR) {
 			client_defer_output(client, data, length);
 		} else {
-			DEBUG("client %i: problems writing\n", client->num);
+			g_debug("client %i: problems writing", client->num);
 			client_set_expired(client);
 			return;
 		}
@@ -692,7 +697,7 @@ static void client_write_direct(struct client *client,
 	}
 
 	if (!g_queue_is_empty(client->deferred_send))
-		DEBUG("client %i: buffer created\n", client->num);
+		g_debug("client %i: buffer created", client->num);
 }
 
 static void client_write_output(struct client *client)
