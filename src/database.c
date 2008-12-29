@@ -22,7 +22,6 @@
 #include "directory_save.h"
 #include "song.h"
 #include "conf.h"
-#include "log.h"
 #include "ls.h"
 #include "path.h"
 #include "stats.h"
@@ -40,6 +39,9 @@
 #include <assert.h>
 #include <string.h>
 
+#undef G_LOG_DOMAIN
+#define G_LOG_DOMAIN "database"
+
 static struct directory *music_root;
 
 static time_t directory_dbModTime;
@@ -53,7 +55,7 @@ db_init(void)
 
 	ret = directory_update_init(NULL);
 	if (ret == 0)
-		FATAL("directory update failed\n");
+		g_error("directory update failed");
 
 	do {
 		wait_main_task();
@@ -96,7 +98,7 @@ db_get_song(const char *file)
 	char *duplicated = xstrdup(file);
 	char *shortname = strrchr(duplicated, '/');
 
-	DEBUG("get song: %s\n", file);
+	g_debug("get song: %s", file);
 
 	if (!shortname) {
 		shortname = duplicated;
@@ -162,22 +164,22 @@ db_check(void)
 		/* Check that the parent part of the path is a directory */
 		if (stat(dirPath, &st) < 0) {
 			g_free(dirPath);
-			ERROR("Couldn't stat parent directory of db file "
-			      "\"%s\": %s\n", dbFile, strerror(errno));
+			g_warning("Couldn't stat parent directory of db file "
+				  "\"%s\": %s", dbFile, strerror(errno));
 			return -1;
 		}
 
 		if (!S_ISDIR(st.st_mode)) {
 			g_free(dirPath);
-			ERROR("Couldn't create db file \"%s\" because the "
-			      "parent path is not a directory\n", dbFile);
+			g_warning("Couldn't create db file \"%s\" because the "
+				  "parent path is not a directory", dbFile);
 			return -1;
 		}
 
 		/* Check if we can write to the directory */
 		if (access(dirPath, R_OK | W_OK)) {
-			ERROR("Can't create db file in \"%s\": %s\n", dirPath,
-			      strerror(errno));
+			g_warning("Can't create db file in \"%s\": %s",
+				  dirPath, strerror(errno));
 			g_free(dirPath);
 			return -1;
 		}
@@ -189,20 +191,20 @@ db_check(void)
 
 	/* Path exists, now check if it's a regular file */
 	if (stat(dbFile, &st) < 0) {
-		ERROR("Couldn't stat db file \"%s\": %s\n", dbFile,
-		      strerror(errno));
+		g_warning("Couldn't stat db file \"%s\": %s",
+			  dbFile, strerror(errno));
 		return -1;
 	}
 
 	if (!S_ISREG(st.st_mode)) {
-		ERROR("db file \"%s\" is not a regular file\n", dbFile);
+		g_warning("db file \"%s\" is not a regular file", dbFile);
 		return -1;
 	}
 
 	/* And check that we can write to it */
 	if (access(dbFile, R_OK | W_OK)) {
-		ERROR("Can't open db file \"%s\" for reading/writing: %s\n",
-		      dbFile, strerror(errno));
+		g_warning("Can't open db file \"%s\" for reading/writing: %s",
+			  dbFile, strerror(errno));
 		return -1;
 	}
 
@@ -216,19 +218,19 @@ db_save(void)
 	char *dbFile = db_get_file();
 	struct stat st;
 
-	DEBUG("removing empty directories from DB\n");
+	g_debug("removing empty directories from DB");
 	directory_prune_empty(music_root);
 
-	DEBUG("sorting DB\n");
+	g_debug("sorting DB");
 
 	directory_sort(music_root);
 
-	DEBUG("writing DB\n");
+	g_debug("writing DB");
 
 	fp = fopen(dbFile, "w");
 	if (!fp) {
-		ERROR("unable to write to db file \"%s\": %s\n",
-		      dbFile, strerror(errno));
+		g_warning("unable to write to db file \"%s\": %s",
+			  dbFile, strerror(errno));
 		return -1;
 	}
 
@@ -239,8 +241,8 @@ db_save(void)
 	fprintf(fp, "%s\n", DIRECTORY_INFO_END);
 
 	if (directory_save(fp, music_root) < 0) {
-		ERROR("Failed to write to database file: %s\n",
-		      strerror(errno));
+		g_warning("Failed to write to database file: %s",
+			  strerror(errno));
 		while (fclose(fp) && errno == EINTR);
 		return -1;
 	}
@@ -267,20 +269,20 @@ db_load(void)
 		music_root = directory_new("", NULL);
 	while (!(fp = fopen(dbFile, "r")) && errno == EINTR) ;
 	if (fp == NULL) {
-		ERROR("unable to open db file \"%s\": %s\n",
-		      dbFile, strerror(errno));
+		g_warning("unable to open db file \"%s\": %s",
+			  dbFile, strerror(errno));
 		return -1;
 	}
 
 	/* get initial info */
 	if (!fgets(buffer, sizeof(buffer), fp))
-		FATAL("Error reading db, fgets\n");
+		g_error("Error reading db, fgets");
 
 	g_strchomp(buffer);
 
 	if (0 != strcmp(DIRECTORY_INFO_BEGIN, buffer)) {
-		ERROR("db info not found in db file\n");
-		ERROR("you should recreate the db using --create-db\n");
+		g_warning("db info not found in db file; "
+			  "you should recreate the db using --create-db");
 		while (fclose(fp) && errno == EINTR) ;
 		return -1;
 	}
@@ -291,34 +293,34 @@ db_load(void)
 
 		if (g_str_has_prefix(buffer, DIRECTORY_MPD_VERSION)) {
 			if (foundVersion)
-				FATAL("already found version in db\n");
+				g_error("already found version in db");
 			foundVersion = 1;
 		} else if (g_str_has_prefix(buffer, DIRECTORY_FS_CHARSET)) {
 			char *fsCharset;
 			char *tempCharset;
 
 			if (foundFsCharset)
-				FATAL("already found fs charset in db\n");
+				g_error("already found fs charset in db");
 
 			foundFsCharset = 1;
 
 			fsCharset = &(buffer[strlen(DIRECTORY_FS_CHARSET)]);
 			if ((tempCharset = getConfigParamValue(CONF_FS_CHARSET))
 			    && strcmp(fsCharset, tempCharset)) {
-				WARNING("Using \"%s\" for the "
-					"filesystem charset "
-					"instead of \"%s\"\n",
+				g_message("Using \"%s\" for the "
+					  "filesystem charset "
+					  "instead of \"%s\"; "
+					  "maybe you need to "
+					  "recreate the db?",
 					fsCharset, tempCharset);
-				WARNING("maybe you need to "
-					"recreate the db?\n");
 				path_set_fs_charset(fsCharset);
 			}
 		} else
-			FATAL("directory: unknown line in db info: %s\n",
-			      buffer);
+			g_error("unknown line in db info: %s",
+				buffer);
 	}
 
-	DEBUG("reading DB\n");
+	g_debug("reading DB");
 
 	directory_load(fp, music_root);
 	while (fclose(fp) && errno == EINTR) ;
