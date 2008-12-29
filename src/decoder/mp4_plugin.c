@@ -387,6 +387,8 @@ mp4_load_tag(const char *file)
 			tag_add_item(ret, TAG_ITEM_GENRE, value);
 		} else if (0 == strcasecmp("date", item)) {
 			tag_add_item(ret, TAG_ITEM_DATE, value);
+		} else if (0 == strcasecmp("writer", item)) {
+			tag_add_item(ret, TAG_ITEM_COMPOSER, value);
 		}
 
 		free(item);
