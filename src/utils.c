@@ -21,12 +21,16 @@
 
 #include "../config.h"
 
+#include <glib.h>
+
 #include <assert.h>
 #include <string.h>
 #include <sys/types.h>
-#include <pwd.h>
 #include <fcntl.h>
-#include <glib.h>
+
+#ifndef WIN32
+#include <pwd.h>
+#endif
 
 #ifdef HAVE_IPV6
 #include <sys/socket.h>
@@ -114,6 +118,7 @@ G_GNUC_MALLOC void *xcalloc(size_t nmemb, size_t size)
 
 char *parsePath(char *path)
 {
+#ifndef WIN32
 	if (path[0] != '/' && path[0] != '~') {
 		g_warning("\"%s\" is not an absolute path", path);
 		return NULL;
@@ -170,8 +175,11 @@ char *parsePath(char *path)
 		strcat(newPath, path + pos);
 		return newPath;
 	} else {
+#endif
 		return xstrdup(path);
+#ifndef WIN32
 	}
+#endif
 }
 
 int set_nonblocking(int fd)
