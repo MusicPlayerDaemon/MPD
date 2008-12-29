@@ -17,7 +17,6 @@
 
 #include "../output_api.h"
 #include "../utils.h"
-#include "../log.h"
 
 #include <assert.h>
 
@@ -25,6 +24,9 @@
 #include <jack/jack.h>
 #include <jack/types.h>
 #include <jack/ringbuffer.h>
+
+#undef G_LOG_DOMAIN
+#define G_LOG_DOMAIN "jack"
 
 static const size_t sample_size = sizeof(jack_default_audio_sample_t);
 
@@ -165,7 +167,7 @@ static void
 set_audioformat(struct jack_data *jd, struct audio_format *audio_format)
 {
 	audio_format->sample_rate = jack_get_sample_rate(jd->client);
-	DEBUG("samplerate = %u\n", audio_format->sample_rate);
+	g_debug("samplerate = %u", audio_format->sample_rate);
 	audio_format->channels = 2;
 
 	if (audio_format->bits != 16 && audio_format->bits != 24)
@@ -179,7 +181,7 @@ set_audioformat(struct jack_data *jd, struct audio_format *audio_format)
 static void
 mpd_jack_error(const char *msg)
 {
-	ERROR("jack: %s\n", msg);
+	g_warning("%s", msg);
 }
 
 static void *
@@ -196,33 +198,33 @@ mpd_jack_init(struct audio_output *ao,
 	jd = mpd_jack_new();
 	jd->ao = ao;
 
-	DEBUG("mpd_jack_init (pid=%d)\n", getpid());
+	g_debug("mpd_jack_init (pid=%d)", getpid());
 	if (param == NULL)
 		return jd;
 
 	if ( (bp = getBlockParam(param, "ports")) ) {
-		DEBUG("output_ports=%s\n", bp->value);
+		g_debug("output_ports=%s", bp->value);
 
 		if (!(cp = strchr(bp->value, ',')))
-			FATAL("expected comma and a second value for '%s' "
-			      "at line %d: %s\n",
-			      bp->name, bp->line, bp->value);
+			g_error("expected comma and a second value for '%s' "
+				"at line %d: %s",
+				bp->name, bp->line, bp->value);
 
 		*cp = '\0';
 		jd->output_ports[0] = xstrdup(bp->value);
 		*cp++ = ',';
 
 		if (!*cp)
-			FATAL("expected a second value for '%s' at line %d: "
-			      "%s\n", bp->name, bp->line, bp->value);
+			g_error("expected a second value for '%s' at line %d: %s",
+				bp->name, bp->line, bp->value);
 
 		jd->output_ports[1] = xstrdup(cp);
 
 		if (strchr(cp,','))
-			FATAL("Only %d values are supported for '%s' "
-			      "at line %d\n",
-			      (int)ARRAY_SIZE(jd->output_ports),
-			      bp->name, bp->line);
+			g_error("Only %d values are supported for '%s' "
+				"at line %d",
+				(int)ARRAY_SIZE(jd->output_ports),
+				bp->name, bp->line);
 	}
 
 	if ( (bp = getBlockParam(param, "ringbuffer_size")) ) {
@@ -231,17 +233,17 @@ mpd_jack_init(struct audio_output *ao,
 
 		if ( errno == 0 && endptr != bp->value) {
 			jd->ringbuffer_size = val < 32768 ? 32768 : val;
-			DEBUG("ringbuffer_size=%d\n", jd->ringbuffer_size);
+			g_debug("ringbuffer_size=%d", jd->ringbuffer_size);
 		} else {
-			FATAL("%s is not a number; ringbuf_size=%d\n",
-			      bp->value, jd->ringbuffer_size);
+			g_error("%s is not a number; ringbuf_size=%d",
+				bp->value, jd->ringbuffer_size);
 		}
 	}
 
 	if ( (bp = getBlockParam(param, "name"))
 	     && (strcmp(bp->value, "mpd") != 0) ) {
 		jd->name = xstrdup(bp->value);
-		DEBUG("name=%s\n", jd->name);
+		g_debug("name=%s", jd->name);
 	} else
 		jd->name = NULL;
 
@@ -263,7 +265,7 @@ mpd_jack_connect(struct jack_data *jd, struct audio_format *audio_format)
 	jd->audio_format = audio_format;
 
 	if ((jd->client = jack_client_new(mpd_jack_name(jd))) == NULL) {
-		ERROR("jack server not running?\n");
+		g_warning("jack server not running?");
 		return -1;
 	}
 
@@ -273,7 +275,7 @@ mpd_jack_connect(struct jack_data *jd, struct audio_format *audio_format)
 	jack_on_shutdown(jd->client, mpd_jack_shutdown, jd);
 
 	if ( jack_activate(jd->client) ) {
-		ERROR("cannot activate client\n");
+		g_warning("cannot activate client");
 		return -1;
 	}
 
@@ -281,7 +283,7 @@ mpd_jack_connect(struct jack_data *jd, struct audio_format *audio_format)
 					  JACK_DEFAULT_AUDIO_TYPE,
 					  JackPortIsOutput, 0);
 	if ( !jd->ports[0] ) {
-		ERROR("Cannot register left output port.\n");
+		g_warning("Cannot register left output port.");
 		return -1;
 	}
 
@@ -289,7 +291,7 @@ mpd_jack_connect(struct jack_data *jd, struct audio_format *audio_format)
 					  JACK_DEFAULT_AUDIO_TYPE,
 					  JackPortIsOutput, 0);
 	if ( !jd->ports[1] ) {
-		ERROR("Cannot register right output port.\n");
+		g_warning("Cannot register right output port.");
 		return -1;
 	}
 
@@ -299,7 +301,7 @@ mpd_jack_connect(struct jack_data *jd, struct audio_format *audio_format)
 				     JackPortIsPhysical | JackPortIsInput))) {
 		jd->output_ports[0] = jports[0];
 		jd->output_ports[1] = jports[1] ? jports[1] : jports[0];
-		DEBUG("output_ports: %s %s\n",
+		g_debug("output_ports: %s %s",
 		      jd->output_ports[0], jd->output_ports[1]);
 		free(jports);
 	}
@@ -317,16 +319,16 @@ mpd_jack_connect(struct jack_data *jd, struct audio_format *audio_format)
 		sprintf(port_name, "%s:left", name);
 		if ( (jack_connect(jd->client, port_name,
 				   jd->output_ports[0])) != 0 ) {
-			ERROR("%s is not a valid Jack Client / Port\n",
-			      jd->output_ports[0]);
+			g_warning("%s is not a valid Jack Client / Port",
+				  jd->output_ports[0]);
 			free(port_name);
 			return -1;
 		}
 		sprintf(port_name, "%s:right", name);
 		if ( (jack_connect(jd->client, port_name,
 				   jd->output_ports[1])) != 0 ) {
-			ERROR("%s is not a valid Jack Client / Port\n",
-			      jd->output_ports[1]);
+			g_warning("%s is not a valid Jack Client / Port",
+				  jd->output_ports[1]);
 			free(port_name);
 			return -1;
 		}
@@ -438,7 +440,7 @@ mpd_jack_play(void *data, const char *buff, size_t size)
 	size_t space, space1;
 
 	if (jd->shutdown) {
-		ERROR("Refusing to play, because there is no client thread.\n");
+		g_warning("Refusing to play, because there is no client thread.");
 		mpd_jack_client_free(jd);
 		audio_output_closed(jd->ao);
 		return true;
