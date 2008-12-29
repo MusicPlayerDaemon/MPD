@@ -19,7 +19,6 @@
 #include "../config.h"
 #include "state_file.h"
 #include "conf.h"
-#include "log.h"
 #include "audio.h"
 #include "playlist.h"
 #include "utils.h"
@@ -28,6 +27,9 @@
 #include <glib.h>
 #include <string.h>
 #include <sys/stat.h>
+
+#undef G_LOG_DOMAIN
+#define G_LOG_DOMAIN "state_file"
 
 static struct _sf_cb {
 	void (*reader)(FILE *);
@@ -59,8 +61,8 @@ void write_state_file(void)
 		return;
 	fp = fopen(sfpath, "w");
 	if (G_UNLIKELY(!fp)) {
-		ERROR("problems opening state file \"%s\" for writing: %s\n",
-		      sfpath, strerror(errno));
+		g_warning("failed to create %s: %s",
+			  sfpath, strerror(errno));
 		return;
 	}
 
@@ -80,16 +82,16 @@ void read_state_file(void)
 	if (!sfpath)
 		return;
 	if (stat(sfpath, &st) < 0) {
-		DEBUG("failed to stat state file: %s\n", sfpath);
+		g_debug("failed to stat %s: %s", sfpath, strerror(errno));
 		return;
 	}
 	if (!S_ISREG(st.st_mode))
-		FATAL("state file \"%s\" is not a regular file\n", sfpath);
+		g_error("\"%s\" is not a regular file", sfpath);
 
 	while (!(fp = fopen(sfpath, "r")) && errno == EINTR);
 	if (G_UNLIKELY(!fp)) {
-		FATAL("problems opening state file \"%s\" for reading: %s\n",
-		      sfpath, strerror(errno));
+		g_error("failed to open %s: %s",
+			sfpath, strerror(errno));
 	}
 	for (i = 0; i < ARRAY_SIZE(sf_callbacks); i++) {
 		sf_callbacks[i].reader(fp);
@@ -101,6 +103,6 @@ void read_state_file(void)
 
 void G_GNUC_NORETURN state_file_fatal(void)
 {
-	FATAL("error parsing state file \"%s\"\n", sfpath);
+	g_error("failed to parse %s", sfpath);
 }
 
