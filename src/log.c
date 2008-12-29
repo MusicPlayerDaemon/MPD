@@ -66,6 +66,21 @@ static const char *log_date(void)
 	return buf;
 }
 
+/**
+ * Determines the length of the string excluding trailing whitespace
+ * characters.
+ */
+static int
+chomp_length(const char *p)
+{
+	size_t length = strlen(p);
+
+	while (length > 0 && g_ascii_isspace(p[length - 1]))
+		--length;
+
+	return (int)length;
+}
+
 static void
 mpd_log_func(const gchar *log_domain,
 	     G_GNUC_UNUSED GLogLevelFlags log_level,
@@ -90,10 +105,10 @@ mpd_log_func(const gchar *log_domain,
 	if (log_domain == NULL)
 		log_domain = "";
 
-	fprintf(file, "%s%s%s%s",
+	fprintf(file, "%s%s%s%.*s\n",
 		stdout_mode ? "" : log_date(),
 		log_domain, *log_domain == 0 ? "" : ": ",
-		message);
+		chomp_length(message), message);
 
 	g_free(converted);
 }
