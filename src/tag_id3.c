@@ -19,11 +19,13 @@
 #include "tag_id3.h"
 #include "tag.h"
 #include "utils.h"
-#include "log.h"
 #include "conf.h"
 
 #include <glib.h>
 #include <id3tag.h>
+
+#undef G_LOG_DOMAIN
+#define G_LOG_DOMAIN "id3"
 
 #  define isId3v1(tag) (id3_tag_options(tag, 0, 0) & ID3_TAG_OPTION_ID3V1)
 #  ifndef ID3_FRAME_COMPOSER
@@ -61,8 +63,8 @@ static id3_utf8_t * processID3FieldString (int is_id3v1, const id3_ucs4_t *ucs4,
 						encoding, "utf-8",
 						NULL, NULL, NULL, &error);
 		if (utf8 == NULL) {
-			DEBUG("Unable to convert %s string to UTF-8: "
-			      "'%s'\n", encoding, isostr);
+			g_debug("Unable to convert %s string to UTF-8: '%s'",
+				encoding, isostr);
 			g_error_free(error);
 			free(isostr);
 			return NULL;
@@ -99,7 +101,7 @@ static struct tag *getID3Info(
 	/* Check fields in frame */
 	if(frame->nfields == 0)
 	{
-		DEBUG(__FILE__": Frame has no fields\n");
+		g_debug("Frame has no fields");
 		return mpdTag;
 	}
 
@@ -114,7 +116,8 @@ static struct tag *getID3Info(
 		 */
 		if(frame->nfields != 2) 
 		{
-			DEBUG(__FILE__": Invalid number '%i' of fields for TXX frame\n",frame->nfields);
+			g_debug("Invalid number '%i' of fields for TXX frame",
+				frame->nfields);
 			return mpdTag;
 		}
 		field = &frame->fields[0];
@@ -124,7 +127,8 @@ static struct tag *getID3Info(
 		 */
 		if(field->type != ID3_FIELD_TYPE_TEXTENCODING)
 		{
-			DEBUG(__FILE__": Expected encoding, found: %i\n",field->type);
+			g_debug("Expected encoding, found: %i",
+				field->type);
 		}
 		/* Process remaining fields, should be only one */
 		field = &frame->fields[1];
@@ -147,7 +151,8 @@ static struct tag *getID3Info(
 			}
 		}
 		else {
-			ERROR(__FILE__": Field type not processed: %i\n",(int)id3_field_gettextencoding(field));
+			g_warning("Field type not processed: %i",
+				  (int)id3_field_gettextencoding(field));
 		}
 	}
 	/* A comment frame */
@@ -181,17 +186,19 @@ static struct tag *getID3Info(
 			}
 			else
 			{
-				DEBUG(__FILE__": 4th field in comment frame differs from expected, got '%i': ignoring\n",field->type);
+				g_debug("4th field in comment frame differs from expected, got '%i': ignoring",
+					field->type);
 			}
 		}
 		else
 		{
-			DEBUG(__FILE__": Invalid 'comments' tag, got '%i' fields instead of 4\n", frame->nfields);
+			g_debug("Invalid 'comments' tag, got '%i' fields instead of 4",
+				frame->nfields);
 		}
 	}
 	/* Unsupported */
 	else {
-		DEBUG(__FILE__": Unsupported tag type requrested\n");
+		g_debug("Unsupported tag type requrested");
 		return mpdTag;
 	}
 
@@ -337,8 +344,8 @@ struct tag *tag_id3_load(const char *file)
 
 	stream = fopen(file, "r");
 	if (!stream) {
-		DEBUG("tag_id3_load: Failed to open file: '%s', %s\n", file,
-		      strerror(errno));
+		g_debug("tag_id3_load: Failed to open file: '%s', %s",
+			file, strerror(errno));
 		return NULL;
 	}
 
