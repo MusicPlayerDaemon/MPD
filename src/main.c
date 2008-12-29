@@ -64,8 +64,11 @@
 #include <signal.h>
 #include <errno.h>
 #include <string.h>
+
+#ifndef WIN32
 #include <pwd.h>
 #include <grp.h>
+#endif
 
 #ifdef HAVE_LOCALE
 #include <locale.h>
@@ -73,6 +76,7 @@
 
 static void changeToUser(void)
 {
+#ifndef WIN32
 	ConfigParam *param = getConfigParam(CONF_USER);
 
 	if (param && strlen(param->value)) {
@@ -110,6 +114,7 @@ static void changeToUser(void)
 			g_setenv("HOME", userpwd->pw_dir, true);
 		}
 	}
+#endif
 }
 
 static void openDB(Options * options, char *argv0)
@@ -132,6 +137,7 @@ static void openDB(Options * options, char *argv0)
 
 static void daemonize(Options * options)
 {
+#ifndef WIN32
 	FILE *fp = NULL;
 	ConfigParam *pidFileParam = parseConfigFilePath(CONF_PID_FILE, 0);
 
@@ -182,6 +188,10 @@ static void daemonize(Options * options)
 		fprintf(fp, "%lu\n", (unsigned long)getpid());
 		fclose(fp);
 	}
+#else
+	/* no daemonization on WIN32 */
+	(void)options;
+#endif
 }
 
 static void cleanUpPidFile(void)
@@ -198,6 +208,7 @@ static void cleanUpPidFile(void)
 
 static void killFromPidFile(void)
 {
+#ifndef WIN32
 	FILE *fp;
 	ConfigParam *pidFileParam = parseConfigFilePath(CONF_PID_FILE, 0);
 	int pid;
@@ -222,6 +233,9 @@ static void killFromPidFile(void)
 			pid, strerror(errno));
 	}
 	exit(EXIT_SUCCESS);
+#else
+	g_error("--kill is not available on WIN32");
+#endif
 }
 
 int main(int argc, char *argv[])
