@@ -17,13 +17,15 @@
  */
 
 #include "../output_api.h"
-#include "../log.h"
 #include "../utils.h"
 #include "../timer.h"
 
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+
+#undef G_LOG_DOMAIN
+#define G_LOG_DOMAIN "fifo"
 
 #define FIFO_BUFFER_SIZE 65536 /* pipe capacity on Linux >= 2.6.11 */
 
@@ -63,11 +65,11 @@ static void freeFifoData(FifoData *fd)
 
 static void removeFifo(FifoData *fd)
 {
-	DEBUG("Removing FIFO \"%s\"\n", fd->path);
+	g_debug("Removing FIFO \"%s\"", fd->path);
 
 	if (unlink(fd->path) < 0) {
-		ERROR("Could not remove FIFO \"%s\": %s\n",
-		      fd->path, strerror(errno));
+		g_warning("Could not remove FIFO \"%s\": %s",
+			  fd->path, strerror(errno));
 		return;
 	}
 
@@ -95,8 +97,8 @@ static void closeFifo(FifoData *fd)
 static int makeFifo(FifoData *fd)
 {
 	if (mkfifo(fd->path, 0666) < 0) {
-		ERROR("Couldn't create FIFO \"%s\": %s\n",
-		      fd->path, strerror(errno));
+		g_warning("Couldn't create FIFO \"%s\": %s",
+			  fd->path, strerror(errno));
 		return -1;
 	}
 
@@ -115,13 +117,14 @@ static int checkFifo(FifoData *fd)
 			return makeFifo(fd);
 		}
 
-		ERROR("Failed to stat FIFO \"%s\": %s\n",
-		      fd->path, strerror(errno));
+		g_warning("Failed to stat FIFO \"%s\": %s",
+			  fd->path, strerror(errno));
 		return -1;
 	}
 
 	if (!S_ISFIFO(st.st_mode)) {
-		ERROR("\"%s\" already exists, but is not a FIFO\n", fd->path);
+		g_warning("\"%s\" already exists, but is not a FIFO",
+			  fd->path);
 		return -1;
 	}
 
@@ -135,16 +138,16 @@ static bool openFifo(FifoData *fd)
 
 	fd->input = open(fd->path, O_RDONLY|O_NONBLOCK);
 	if (fd->input < 0) {
-		ERROR("Could not open FIFO \"%s\" for reading: %s\n",
-		      fd->path, strerror(errno));
+		g_warning("Could not open FIFO \"%s\" for reading: %s",
+			  fd->path, strerror(errno));
 		closeFifo(fd);
 		return false;
 	}
 
 	fd->output = open(fd->path, O_WRONLY|O_NONBLOCK);
 	if (fd->output < 0) {
-		ERROR("Could not open FIFO \"%s\" for writing: %s\n",
-		      fd->path, strerror(errno));
+		g_warning("Could not open FIFO \"%s\" for writing: %s",
+			  fd->path, strerror(errno));
 		closeFifo(fd);
 		return false;
 	}
@@ -162,14 +165,14 @@ static void *fifo_initDriver(mpd_unused struct audio_output *ao,
 
 	blockParam = getBlockParam(param, "path");
 	if (!blockParam) {
-		FATAL("No \"path\" parameter specified for fifo output "
-		      "defined at line %i\n", param->line);
+		g_error("No \"path\" parameter specified for fifo output "
+			"defined at line %i", param->line);
 	}
 
 	path = parsePath(blockParam->value);
 	if (!path) {
-		FATAL("Could not parse \"path\" parameter for fifo output "
-		      "at line %i\n", blockParam->line);
+		g_error("Could not parse \"path\" parameter for fifo output "
+			"at line %i", blockParam->line);
 	}
 
 	fd = newFifoData();
@@ -226,8 +229,8 @@ static void fifo_dropBufferedAudio(void *data)
 		bytes = read(fd->input, buf, FIFO_BUFFER_SIZE);
 
 	if (bytes < 0 && errno != EAGAIN) {
-		WARNING("Flush of FIFO \"%s\" failed: %s\n",
-		        fd->path, strerror(errno));
+		g_warning("Flush of FIFO \"%s\" failed: %s",
+			  fd->path, strerror(errno));
 	}
 }
 
@@ -257,8 +260,8 @@ fifo_playAudio(void *data, const char *playChunk, size_t size)
 				continue;
 			}
 
-			ERROR("Closing FIFO output \"%s\" due to write error: "
-			      "%s\n", fd->path, strerror(errno));
+			g_warning("Closing FIFO output \"%s\" due to write error: %s",
+				  fd->path, strerror(errno));
 			return false;
 		}
 
