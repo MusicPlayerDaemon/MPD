@@ -19,7 +19,6 @@
 #include "listen.h"
 #include "client.h"
 #include "conf.h"
-#include "log.h"
 #include "utils.h"
 #include "config.h"
 
@@ -31,6 +30,9 @@
 #include <sys/un.h>
 #include <netdb.h>
 
+#undef G_LOG_DOMAIN
+#define G_LOG_DOMAIN "listen"
+
 #define MAXHOSTNAME 	1024
 
 #define ALLOW_REUSE	1
@@ -38,9 +40,9 @@
 #define DEFAULT_PORT	6600
 
 #define BINDERROR() do { \
-	FATAL("unable to bind port %u: %s\n" \
-	      "maybe MPD is still running?\n", \
-	      port, strerror(errno)); \
+	g_error("unable to bind port %u: %s; " \
+		"maybe MPD is still running?", \
+		port, strerror(errno)); \
 } while (0);
 
 static int *listenSockets;
@@ -60,9 +62,9 @@ static void redirect_stdin(void)
 
 	if ((st = fstat(STDIN_FILENO, &ss)) < 0) {
 		if ((fd = open("/dev/null", O_RDONLY) > 0)) {
-			DEBUG("stdin closed, and could not open /dev/null "
-			      "as fd=0, some external library bugs "
-			      "may be exposed...\n");
+			g_debug("stdin closed, and could not open /dev/null "
+				"as fd=0, some external library bugs "
+				"may be exposed...");
 			close(fd);
 		}
 		return;
@@ -70,9 +72,9 @@ static void redirect_stdin(void)
 	if (!isatty(STDIN_FILENO))
 		return;
 	if ((fd = open("/dev/null", O_RDONLY)) < 0)
-		FATAL("failed to open /dev/null %s\n", strerror(errno));
+		g_error("failed to open /dev/null %s", strerror(errno));
 	if (dup2(fd, STDIN_FILENO) < 0)
-		FATAL("dup2 stdin: %s\n", strerror(errno));
+		g_error("dup2 stdin: %s", strerror(errno));
 }
 
 static int establishListen(int pf, const struct sockaddr *addrp,
@@ -85,16 +87,16 @@ static int establishListen(int pf, const struct sockaddr *addrp,
 #endif
 
 	if ((sock = socket(pf, SOCK_STREAM, 0)) < 0)
-		FATAL("socket < 0\n");
+		g_error("socket < 0");
 
 	if (set_nonblocking(sock) < 0) {
-		FATAL("problems setting nonblocking on listen socket: %s\n",
-		      strerror(errno));
+		g_error("problems setting nonblocking on listen socket: %s",
+			strerror(errno));
 	}
 
 	if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (char *)&allowReuse,
 		       sizeof(allowReuse)) < 0) {
-		FATAL("problems setsockopt'ing: %s\n", strerror(errno));
+		g_error("problems setsockopt'ing: %s", strerror(errno));
 	}
 
 	if (bind(sock, addrp, addrlen) < 0) {
@@ -103,7 +105,7 @@ static int establishListen(int pf, const struct sockaddr *addrp,
 	}
 
 	if (listen(sock, 5) < 0)
-		FATAL("problems listen'ing: %s\n", strerror(errno));
+		g_error("problems listen'ing: %s", strerror(errno));
 
 #ifdef HAVE_STRUCT_UCRED
 	setsockopt(sock, SOL_SOCKET, SO_PASSCRED, &passcred, sizeof(passcred));
@@ -140,7 +142,7 @@ parseListenConfigParam(G_GNUC_UNUSED unsigned int port, ConfigParam * param)
 
 	if (!param || 0 == strcmp(param->value, "any")) {
 #ifdef HAVE_TCP
-		DEBUG("binding to any address\n");
+		g_debug("binding to any address");
 #ifdef HAVE_IPV6
 		if (useIpv6) {
 			sin6.sin6_addr = in6addr_any;
@@ -161,7 +163,7 @@ parseListenConfigParam(G_GNUC_UNUSED unsigned int port, ConfigParam * param)
 			BINDERROR();
 		}
 #else /* HAVE_TCP */
-		FATAL("TCP support is disabled\n");
+		g_error("TCP support is disabled");
 #endif /* HAVE_TCP */
 #ifdef HAVE_UN
 	} else if (param->value[0] == '/') {
@@ -170,7 +172,7 @@ parseListenConfigParam(G_GNUC_UNUSED unsigned int port, ConfigParam * param)
 
 		path_length = strlen(param->value);
 		if (path_length >= sizeof(s_un.sun_path))
-			FATAL("unix socket path is too long\n");
+			g_error("unix socket path is too long");
 
 		unlink(param->value);
 
@@ -181,8 +183,8 @@ parseListenConfigParam(G_GNUC_UNUSED unsigned int port, ConfigParam * param)
 		addrlen = sizeof(s_un);
 
 		if (establishListen(PF_UNIX, addrp, addrlen) < 0)
-			FATAL("unable to bind to %s: %s\n",
-			      param->value, strerror(errno));
+			g_error("unable to bind to %s: %s",
+				param->value, strerror(errno));
 
 		/* allow everybody to connect */
 		chmod(param->value, 0666);
@@ -194,7 +196,7 @@ parseListenConfigParam(G_GNUC_UNUSED unsigned int port, ConfigParam * param)
 		char service[20];
 		int ret;
 
-		DEBUG("binding to address for %s\n", param->value);
+		g_debug("binding to address for %s", param->value);
 
 		memset(&hints, 0, sizeof(hints));
 		hints.ai_flags = AI_PASSIVE;
@@ -209,8 +211,8 @@ parseListenConfigParam(G_GNUC_UNUSED unsigned int port, ConfigParam * param)
 
 		ret = getaddrinfo(param->value, service, &hints, &ai);
 		if (ret != 0)
-			FATAL("can't lookup host \"%s\" at line %i: %s\n",
-			      param->value, param->line, gai_strerror(ret));
+			g_error("can't lookup host \"%s\" at line %i: %s",
+				param->value, param->line, gai_strerror(ret));
 
 		for (i = ai; i != NULL; i = i->ai_next)
 			if (establishListen(i->ai_family, i->ai_addr,
@@ -219,7 +221,7 @@ parseListenConfigParam(G_GNUC_UNUSED unsigned int port, ConfigParam * param)
 
 		freeaddrinfo(ai);
 #else /* HAVE_TCP */
-		FATAL("TCP support is disabled\n");
+		g_error("TCP support is disabled");
 #endif /* HAVE_TCP */
 	}
 }
@@ -234,9 +236,10 @@ void listenOnPort(void)
 		char *test;
 		port = strtol(portParam->value, &test, 10);
 		if (port <= 0 || *test != '\0') {
-			FATAL("%s \"%s\" specified at line %i is not a "
-			      "positive integer", CONF_PORT,
-			      portParam->value, portParam->line);
+			g_error("%s \"%s\" specified at line %i is not a "
+				"positive integer",
+				CONF_PORT,
+				portParam->value, portParam->line);
 		}
 	}
 
@@ -263,10 +266,10 @@ void closeAllListenSockets(void)
 {
 	int i;
 
-	DEBUG("closeAllListenSockets called\n");
+	g_debug("closeAllListenSockets called");
 
 	for (i = 0; i < numberOfListenSockets; i++) {
-		DEBUG("closing listen socket %i\n", i);
+		g_debug("closing listen socket %i", i);
 		while (close(listenSockets[i]) < 0 && errno == EINTR) ;
 	}
 	freeAllListenSockets();
@@ -309,7 +312,7 @@ void getConnections(fd_set * fds)
 				client_new(fd, &sockAddr, get_remote_uid(fd));
 			} else if (fd < 0
 				   && (errno != EAGAIN && errno != EINTR)) {
-				ERROR("Problems accept()'ing\n");
+				g_warning("Problems accept()'ing");
 			}
 		}
 	}
