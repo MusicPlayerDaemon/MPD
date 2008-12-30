@@ -67,11 +67,6 @@ static int establishListen(int pf, const struct sockaddr *addrp,
 	if ((sock = socket(pf, SOCK_STREAM, 0)) < 0)
 		g_error("socket < 0");
 
-	if (set_nonblocking(sock) < 0) {
-		g_error("problems setting nonblocking on listen socket: %s",
-			strerror(errno));
-	}
-
 	if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (char *)&allowReuse,
 		       sizeof(allowReuse)) < 0) {
 		g_error("problems setsockopt'ing: %s", strerror(errno));
@@ -283,8 +278,7 @@ void getConnections(fd_set * fds)
 			if ((fd = accept(listenSockets[i], &sockAddr, &socklen))
 			    >= 0) {
 				client_new(fd, &sockAddr, get_remote_uid(fd));
-			} else if (fd < 0
-				   && (errno != EAGAIN && errno != EINTR)) {
+			} else if (fd < 0 && errno != EINTR) {
 				g_warning("Problems accept()'ing");
 			}
 		}
