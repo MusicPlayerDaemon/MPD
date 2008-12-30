@@ -79,6 +79,7 @@ struct client {
 
 	int fd;	/* file descriptor; -1 if expired */
 	GIOChannel *channel;
+	guint source_id;
 
 	unsigned permission;
 
@@ -136,6 +137,11 @@ void client_set_permission(struct client *client, unsigned permission)
 
 static inline void client_set_expired(struct client *client)
 {
+	if (client->source_id != 0) {
+		g_source_remove(client->source_id);
+		client->source_id = 0;
+	}
+
 	if (client->channel != NULL) {
 		g_io_channel_unref(client->channel);
 		client->channel = NULL;
@@ -164,7 +170,8 @@ static void client_init(struct client *client, int fd)
 	set_nonblocking(fd);
 
 	client->channel = g_io_channel_unix_new(client->fd);
-	g_io_add_watch(client->channel, G_IO_IN, client_in_event, client);
+	client->source_id = g_io_add_watch(client->channel, G_IO_IN,
+					   client_in_event, client);
 
 	client->lastTime = time(NULL);
 	client->cmd_list = NULL;
@@ -463,8 +470,7 @@ client_in_event(G_GNUC_UNUSED GIOChannel *source,
 	struct client *client = data;
 	int ret;
 
-	if (client_is_expired(client))
-		return false;
+	assert(!client_is_expired(client));
 
 	client->lastTime = time(NULL);
 
@@ -487,8 +493,8 @@ client_in_event(G_GNUC_UNUSED GIOChannel *source,
 
 	if (!g_queue_is_empty(client->deferred_send)) {
 		/* deferred buffers exist: schedule write */
-		g_io_add_watch(client->channel, G_IO_OUT,
-			       client_out_event, client);
+		client->source_id = g_io_add_watch(client->channel, G_IO_OUT,
+						   client_out_event, client);
 		return false;
 	}
 
@@ -503,8 +509,7 @@ client_out_event(G_GNUC_UNUSED GIOChannel *source,
 {
 	struct client *client = data;
 
-	if (client_is_expired(client))
-		return false;
+	assert(!client_is_expired(client));
 
 	client_write_deferred(client);
 
@@ -518,8 +523,8 @@ client_out_event(G_GNUC_UNUSED GIOChannel *source,
 	if (g_queue_is_empty(client->deferred_send)) {
 		/* done sending deferred buffers exist: schedule
 		   read */
-		g_io_add_watch(client->channel, G_IO_IN,
-			       client_in_event, client);
+		client->source_id = g_io_add_watch(client->channel, G_IO_IN,
+						   client_in_event, client);
 		return false;
 	}
 
