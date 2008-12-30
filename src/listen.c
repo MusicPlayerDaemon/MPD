@@ -272,11 +272,7 @@ void closeAllListenSockets(void)
 		g_debug("closing listen socket %i", i);
 		while (close(listenSockets[i]) < 0 && errno == EINTR) ;
 	}
-	freeAllListenSockets();
-}
 
-void freeAllListenSockets(void)
-{
 	numberOfListenSockets = 0;
 	free(listenSockets);
 	listenSockets = NULL;

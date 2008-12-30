@@ -28,7 +28,6 @@ void listenOnPort(void);
 void getConnections(fd_set * fds);
 
 void closeAllListenSockets(void);
-void freeAllListenSockets(void);
 
 /* fdmax should be initialized to something */
 void addListenSocketsToFdSet(fd_set * fds, int *fdmax);
