@@ -517,6 +517,7 @@ static void clearPlayerQueue(void)
 	pc_cancel();
 }
 
+#ifndef WIN32
 enum playlist_result
 playlist_append_file(const char *path, int uid, unsigned *added_id)
 {
@@ -542,6 +543,7 @@ playlist_append_file(const char *path, int uid, unsigned *added_id)
 
 	return addSongToPlaylist(song, added_id);
 }
+#endif
 
 static struct song *
 song_by_url(const char *url)

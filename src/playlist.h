@@ -75,12 +75,14 @@ void savePlaylistState(FILE *);
 
 void clearPlaylist(void);
 
+#ifndef WIN32
 /**
  * Appends a local file (outside the music database) to the playlist,
  * but only if the file's owner is equal to the specified uid.
  */
 enum playlist_result
 playlist_append_file(const char *path, int uid, unsigned *added_id);
+#endif
 
 enum playlist_result addToPlaylist(const char *file, unsigned *added_id);
 
