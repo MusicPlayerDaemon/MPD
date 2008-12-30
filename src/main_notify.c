@@ -19,7 +19,6 @@
  */
 
 #include "main_notify.h"
-#include "notify.h"
 #include "utils.h"
 #include "ioops.h"
 #include "log.h"
@@ -31,8 +30,6 @@
 static struct ioOps main_notify_IO;
 static int main_pipe[2];
 GThread *main_task;
-static struct notify main_notify;
-static GMutex *select_mutex = NULL;
 
 static int ioops_fdset(fd_set * rfds,
                        G_GNUC_UNUSED fd_set * wfds,
@@ -44,7 +41,7 @@ static int ioops_fdset(fd_set * rfds,
 
 static void consume_pipe(void)
 {
-	char buffer[2];
+	char buffer[256];
 	ssize_t r = read(main_pipe[0], buffer, sizeof(buffer));
 
 	if (r < 0 && errno != EAGAIN && errno != EINTR)
@@ -65,67 +62,53 @@ static int ioops_consume(int fd_count, fd_set * rfds,
 
 void init_main_notify(void)
 {
-	g_assert(select_mutex == NULL);
-	select_mutex = g_mutex_new();
 	main_task = g_thread_self();
 	init_async_pipe(main_pipe);
 	main_notify_IO.fdset = ioops_fdset;
 	main_notify_IO.consume = ioops_consume;
 	registerIO(&main_notify_IO);
 	main_task = g_thread_self();
-	notify_init(&main_notify);
 }
 
 void deinit_main_notify(void)
 {
-	notify_deinit(&main_notify);
 	deregisterIO(&main_notify_IO);
 	xclose(main_pipe[0]);
 	xclose(main_pipe[1]);
-	g_assert(select_mutex != NULL);
-	g_mutex_free(select_mutex);
-	select_mutex = NULL;
-}
-
-static int wakeup_via_pipe(void)
-{
-	gboolean ret = g_mutex_trylock(select_mutex);
-	if (ret == FALSE) {
-		ssize_t w = write(main_pipe[1], "", 1);
-		if (w < 0 && errno != EAGAIN && errno != EINTR)
-			FATAL("error writing to pipe: %s\n",
-			      strerror(errno));
-		return 1;
-	} else {
-		g_mutex_unlock(select_mutex);
-		return 0;
-	}
 }
 
 void wakeup_main_task(void)
 {
-	main_notify.pending = 1;
-
-	if (!wakeup_via_pipe())
-		notify_signal(&main_notify);
+	ssize_t w = write(main_pipe[1], "", 1);
+	if (w < 0 && errno != EAGAIN && errno != EINTR)
+		g_error("error writing to pipe: %s", strerror(errno));
 }
 
 void main_notify_lock(void)
 {
 	assert(main_task == g_thread_self());
-	g_mutex_lock(select_mutex);
 }
 
 void main_notify_unlock(void)
 {
 	assert(main_task == g_thread_self());
-	g_mutex_unlock(select_mutex);
 }
 
 void wait_main_task(void)
 {
+	fd_set rfds;
+	int ret;
+
 	assert(main_task == g_thread_self());
 
-	notify_wait(&main_notify);
-}
+	do {
+		FD_ZERO(&rfds);
+		FD_SET(main_pipe[0], &rfds);
+		ret = select(main_pipe[0] + 1, &rfds, NULL, NULL, NULL);
+	} while (ret == 0 || (ret < 0 && (errno == EAGAIN || errno == EINTR)));
 
+	if (ret < 0)
+		g_error("select() failed: %s", strerror(errno));
+
+	consume_pipe();
+}
