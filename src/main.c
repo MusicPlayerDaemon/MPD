@@ -75,6 +75,8 @@
 #include <locale.h>
 #endif
 
+GMainLoop *main_loop;
+
 static void changeToUser(void)
 {
 #ifndef WIN32
@@ -207,7 +209,6 @@ main_notify_triggered(void)
 int main(int argc, char *argv[])
 {
 	Options options;
-	GMainLoop *main_loop;
 	clock_t start;
 	GTimer *save_state_timer;
 

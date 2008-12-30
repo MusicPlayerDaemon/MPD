@@ -43,6 +43,7 @@ mpd_headers = \
 	listen.h \
 	log.h \
 	ls.h \
+	main.h \
 	main_notify.h \
 	daemon.h \
 	normalize.h \

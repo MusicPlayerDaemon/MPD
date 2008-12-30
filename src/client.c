@@ -25,6 +25,7 @@
 #include "main_notify.h"
 #include "dlist.h"
 #include "idle.h"
+#include "main.h"
 
 #include "../config.h"
 
@@ -471,7 +472,7 @@ client_in_event(G_GNUC_UNUSED GIOChannel *source,
 	switch (ret) {
 	case COMMAND_RETURN_KILL:
 		client_close(client);
-		g_main_loop_quit(NULL);
+		g_main_loop_quit(main_loop);
 		return false;
 
 	case COMMAND_RETURN_CLOSE:
