@@ -16,6 +16,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#include "daemon.h"
 #include "client.h"
 #include "idle.h"
 #include "command.h"
@@ -133,65 +134,6 @@ static void openDB(Options * options, char *argv0)
 		if (options->createDB)
 			exit(EXIT_SUCCESS);
 	}
-}
-
-static void daemonize(Options * options)
-{
-#ifndef WIN32
-	FILE *fp = NULL;
-	ConfigParam *pidFileParam = parseConfigFilePath(CONF_PID_FILE, 0);
-
-	if (pidFileParam) {
-		/* do this before daemon'izing so we can fail gracefully if we can't
-		 * write to the pid file */
-		g_debug("opening pid file");
-		fp = fopen(pidFileParam->value, "w+");
-		if (!fp) {
-			g_error("could not open %s \"%s\" (at line %i) for writing: %s",
-				CONF_PID_FILE, pidFileParam->value,
-				pidFileParam->line, strerror(errno));
-		}
-	}
-
-	if (options->daemon) {
-		int pid;
-
-		fflush(NULL);
-		pid = fork();
-		if (pid > 0)
-			_exit(EXIT_SUCCESS);
-		else if (pid < 0) {
-			g_error("problems fork'ing for daemon!");
-		}
-
-		if (chdir("/") < 0) {
-			g_error("problems changing to root directory");
-		}
-
-		if (setsid() < 0) {
-			g_error("problems setsid'ing");
-		}
-
-		fflush(NULL);
-		pid = fork();
-		if (pid > 0)
-			_exit(EXIT_SUCCESS);
-		else if (pid < 0) {
-			g_error("problems fork'ing for daemon!");
-		}
-
-		g_debug("daemonized!");
-	}
-
-	if (pidFileParam) {
-		g_debug("writing pid file");
-		fprintf(fp, "%lu\n", (unsigned long)getpid());
-		fclose(fp);
-	}
-#else
-	/* no daemonization on WIN32 */
-	(void)options;
-#endif
 }
 
 static void cleanUpPidFile(void)
