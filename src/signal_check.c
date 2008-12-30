@@ -44,12 +44,6 @@ void signal_handle(int sig)
 	set_signal_handler(sig, mpd_signal_handler);
 }
 
-void signal_unhandle(int sig)
-{
-	signal_clear(sig);
-	set_signal_handler(sig, SIG_DFL);
-}
-
 int signal_is_pending(int sig)
 {
 	return caught_signals[sig];

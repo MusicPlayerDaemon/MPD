@@ -21,7 +21,6 @@
 #define MPD_SIGNAL_CHECK_H
 
 void signal_handle(int sig);
-void signal_unhandle(int sig);
 int signal_is_pending(int sig);
 void signal_clear(int sig);
 

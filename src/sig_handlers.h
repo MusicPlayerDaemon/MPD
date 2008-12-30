@@ -23,16 +23,4 @@ int handlePendingSignals(void);
 
 void initSigHandlers(void);
 
-void finishSigHandlers(void);
-
-void ignoreSignals(void);
-
-void blockSignals(void);
-
-void unblockSignals(void);
-
-void blockTermSignal(void);
-
-void unblockTermSignal(void);
-
 #endif
