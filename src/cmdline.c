@@ -50,6 +50,10 @@ static void version(void)
 	decoder_plugin_print_all_suffixes(stdout);
 
 	puts("\n"
+	     "Supported decoders:\n");
+	decoder_plugin_print_all_decoders(stdout);
+
+	puts("\n"
 	     "Supported outputs:\n");
 	printAllOutputPluginTypes(stdout);
 

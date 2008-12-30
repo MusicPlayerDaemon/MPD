@@ -157,6 +157,19 @@ void decoder_plugin_print_all_suffixes(FILE * fp)
 	fflush(fp);
 }
 
+void decoder_plugin_print_all_decoders(FILE * fp)
+{
+	for (unsigned i = 0; i < num_decoder_plugins; ++i) {
+		const struct decoder_plugin *plugin = decoder_plugins[i];
+		if (!decoder_plugins_enabled[i])
+			continue;
+
+		fprintf(fp, "%s ", plugin->name);
+	}
+	fprintf(fp, "\n");
+	fflush(fp);
+}
+
 void decoder_plugin_init_all(void)
 {
 	for (unsigned i = 0; i < num_decoder_plugins; ++i) {

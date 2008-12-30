@@ -36,6 +36,8 @@ decoder_plugin_from_name(const char *name);
 
 void decoder_plugin_print_all_suffixes(FILE * fp);
 
+void decoder_plugin_print_all_decoders(FILE * fp);
+
 /* this is where we "load" all the "plugins" ;-) */
 void decoder_plugin_init_all(void);
 
