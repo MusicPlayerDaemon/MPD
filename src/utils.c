@@ -192,6 +192,11 @@ char *parsePath(char *path)
 
 int set_nonblocking(int fd)
 {
+#ifdef WIN32
+	u_long val = 0;
+
+	return ioctlsocket(fd, FIONBIO, &val) == 0 ? 0 : -1;
+#else
 	int ret, flags;
 
 	assert(fd >= 0);
@@ -203,6 +208,7 @@ int set_nonblocking(int fd)
 	flags |= O_NONBLOCK;
 	while ((ret = fcntl(fd, F_SETFL, flags)) < 0 && errno == EINTR) ;
 	return ret;
+#endif
 }
 
 void init_async_pipe(int file_des[2])
