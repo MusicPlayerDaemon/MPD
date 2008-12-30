@@ -23,7 +23,6 @@
 #include "log.h"
 
 #include <sys/signal.h>
-#include <sys/wait.h>
 #include <errno.h>
 #include <glib.h>
 
@@ -44,21 +43,6 @@ int handlePendingSignals(void)
 	return 0;
 }
 
-static void chldSigHandler(G_GNUC_UNUSED int sig)
-{
-	int status;
-	int pid;
-	/* DEBUG("main process got SIGCHLD\n"); */
-	while (0 != (pid = wait3(&status, WNOHANG, NULL))) {
-		if (pid < 0) {
-			if (errno == EINTR)
-				continue;
-			else
-				break;
-		}
-	}
-}
-
 void initSigHandlers(void)
 {
 	struct sigaction sa;
@@ -67,8 +51,6 @@ void initSigHandlers(void)
 	sigemptyset(&sa.sa_mask);
 	sa.sa_handler = SIG_IGN;
 	while (sigaction(SIGPIPE, &sa, NULL) < 0 && errno == EINTR) ;
-	sa.sa_handler = chldSigHandler;
-	while (sigaction(SIGCHLD, &sa, NULL) < 0 && errno == EINTR) ;
 	signal_handle(SIGUSR1);
 	signal_handle(SIGINT);
 	signal_handle(SIGTERM);
