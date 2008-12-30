@@ -26,9 +26,15 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <string.h>
+
+#ifdef WIN32
+#include <ws2tcpip.h>
+#include <winsock.h>
+#else
 #include <netinet/in.h>
 #include <sys/un.h>
 #include <netdb.h>
+#endif
 
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "listen"
