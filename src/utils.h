@@ -95,8 +95,6 @@ char *parsePath(char *path);
 
 int set_nonblocking(int fd);
 
-void init_async_pipe(int file_des[2]);
-
 int stringFoundInStringArray(const char *const*array, const char *suffix);
 
 #endif

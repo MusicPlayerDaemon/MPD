@@ -63,7 +63,12 @@ static int ioops_consume(int fd_count, fd_set * rfds,
 void init_main_notify(void)
 {
 	main_task = g_thread_self();
-	init_async_pipe(main_pipe);
+
+	if (pipe(main_pipe) < 0)
+		g_error("Couldn't open pipe: %s", strerror(errno));
+	if (set_nonblocking(main_pipe[1]) < 0)
+		g_error("Couldn't set non-blocking I/O: %s", strerror(errno));
+
 	main_notify_IO.fdset = ioops_fdset;
 	main_notify_IO.consume = ioops_consume;
 	registerIO(&main_notify_IO);
@@ -96,19 +101,5 @@ void main_notify_unlock(void)
 
 void wait_main_task(void)
 {
-	fd_set rfds;
-	int ret;
-
-	assert(main_task == g_thread_self());
-
-	do {
-		FD_ZERO(&rfds);
-		FD_SET(main_pipe[0], &rfds);
-		ret = select(main_pipe[0] + 1, &rfds, NULL, NULL, NULL);
-	} while (ret == 0 || (ret < 0 && (errno == EAGAIN || errno == EINTR)));
-
-	if (ret < 0)
-		g_error("select() failed: %s", strerror(errno));
-
 	consume_pipe();
 }

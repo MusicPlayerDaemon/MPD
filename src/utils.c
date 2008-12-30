@@ -211,16 +211,6 @@ int set_nonblocking(int fd)
 #endif
 }
 
-void init_async_pipe(int file_des[2])
-{
-	if (pipe(file_des) < 0)
-		g_error("Couldn't open pipe: %s", strerror(errno));
-	if (set_nonblocking(file_des[0]) < 0)
-		g_error("Couldn't set non-blocking I/O: %s", strerror(errno));
-	if (set_nonblocking(file_des[1]) < 0)
-		g_error("Couldn't set non-blocking I/O: %s", strerror(errno));
-}
-
 int stringFoundInStringArray(const char *const*array, const char *suffix)
 {
 	while (array && *array) {
