@@ -21,18 +21,28 @@
 #include "command.h"
 #include "signal_check.h"
 #include "log.h"
+#include "main.h"
+
+#include <glib.h>
 
 #include <sys/signal.h>
 #include <errno.h>
-#include <glib.h>
+#include <string.h>
+
+static void exit_signal_handler(G_GNUC_UNUSED int signum)
+{
+	g_main_loop_quit(main_loop);
+}
+
+static void
+x_sigaction(int signum, const struct sigaction *act)
+{
+	if (sigaction(signum, act, NULL) < 0)
+		g_error("sigaction() failed: %s", strerror(errno));
+}
 
 int handlePendingSignals(void)
 {
-	if (signal_is_pending(SIGINT) || signal_is_pending(SIGTERM)) {
-		DEBUG("main process got SIGINT or SIGTERM, exiting\n");
-		return COMMAND_RETURN_KILL;
-	}
-
 	if (signal_is_pending(SIGHUP)) {
 		DEBUG("got SIGHUP, rereading DB\n");
 		signal_clear(SIGHUP);
@@ -51,8 +61,11 @@ void initSigHandlers(void)
 	sigemptyset(&sa.sa_mask);
 	sa.sa_handler = SIG_IGN;
 	while (sigaction(SIGPIPE, &sa, NULL) < 0 && errno == EINTR) ;
+
+	sa.sa_handler = exit_signal_handler;
+	x_sigaction(SIGINT, &sa);
+	x_sigaction(SIGTERM, &sa);
+
 	signal_handle(SIGUSR1);
-	signal_handle(SIGINT);
-	signal_handle(SIGTERM);
 	signal_handle(SIGHUP);
 }
