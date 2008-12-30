@@ -36,6 +36,10 @@
 #include <sys/socket.h>
 #endif
 
+#ifdef WIN32
+#include <windows.h>
+#endif
+
 void stripReturnChar(char *string)
 {
 	while (string && (string = strchr(string, '\n'))) {
@@ -45,12 +49,16 @@ void stripReturnChar(char *string)
 
 void my_usleep(long usec)
 {
+#ifdef WIN32
+	Sleep(usec / 1000);
+#else
 	struct timeval tv;
 
 	tv.tv_sec = 0;
 	tv.tv_usec = usec;
 
 	select(0, NULL, NULL, NULL, &tv);
+#endif
 }
 
 int ipv6Supported(void)
