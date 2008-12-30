@@ -79,16 +79,6 @@ void wakeup_main_task(void)
 		g_error("error writing to pipe: %s", strerror(errno));
 }
 
-void main_notify_lock(void)
-{
-	assert(main_task == g_thread_self());
-}
-
-void main_notify_unlock(void)
-{
-	assert(main_task == g_thread_self());
-}
-
 void wait_main_task(void)
 {
 	consume_pipe();

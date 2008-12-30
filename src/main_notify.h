@@ -33,10 +33,6 @@ void wakeup_main_task(void);
 
 void wait_main_task(void);
 
-void main_notify_lock(void);
-
-void main_notify_unlock(void);
-
 void
 main_notify_triggered(void);
 
