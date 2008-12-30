@@ -31,7 +31,9 @@ static struct ioOps zeroConfIo;
 
 static DNSServiceRef dnsReference;
 
-static int dnsRegisterFdset(fd_set * rfds, fd_set * wfds, fd_set * efds)
+static int
+dnsRegisterFdset(fd_set *rfds, G_GNUC_UNUSED fd_set *wfds,
+		 G_GNUC_UNUSED fd_set *efds)
 {
 	int fd;
 
@@ -47,8 +49,9 @@ static int dnsRegisterFdset(fd_set * rfds, fd_set * wfds, fd_set * efds)
 	return fd;
 }
 
-static int dnsRegisterFdconsume(int fdCount, fd_set * rfds, fd_set * wfds,
-				fd_set * efds)
+static int
+dnsRegisterFdconsume(int fdCount, fd_set *rfds,
+		     G_GNUC_UNUSED fd_set *wfds, G_GNUC_UNUSED fd_set *efds)
 {
 	int fd;
 
@@ -70,10 +73,13 @@ static int dnsRegisterFdconsume(int fdCount, fd_set * rfds, fd_set * wfds,
 	return fdCount;
 }
 
-static void dnsRegisterCallback(DNSServiceRef sdRef, DNSServiceFlags flags,
-				DNSServiceErrorType errorCode, const char *name,
-				const char *regtype, const char *domain,
-				void *context)
+static void
+dnsRegisterCallback(G_GNUC_UNUSED DNSServiceRef sdRef,
+		    G_GNUC_UNUSED DNSServiceFlags flags,
+		    DNSServiceErrorType errorCode, const char *name,
+		    G_GNUC_UNUSED const char *regtype,
+		    G_GNUC_UNUSED const char *domain,
+		    G_GNUC_UNUSED void *context)
 {
 	if (errorCode != kDNSServiceErr_NoError) {
 		g_warning("Failed to register zeroconf service.");
