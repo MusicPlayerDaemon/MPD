@@ -18,9 +18,6 @@
  */
 
 #include "sig_handlers.h"
-#include "playlist.h"
-#include "database.h"
-#include "update.h"
 #include "command.h"
 #include "signal_check.h"
 #include "log.h"
@@ -40,10 +37,6 @@ int handlePendingSignals(void)
 	if (signal_is_pending(SIGHUP)) {
 		DEBUG("got SIGHUP, rereading DB\n");
 		signal_clear(SIGHUP);
-		if (!isUpdatingDB()) {
-			db_load();
-			playlistVersionChange();
-		}
 		if (cycle_log_files() < 0)
 			return COMMAND_RETURN_KILL;
 	}
