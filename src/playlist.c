@@ -43,7 +43,6 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include <stdlib.h>
 
 #define PLAYLIST_STATE_STOP		0
 #define PLAYLIST_STATE_PLAY		1
@@ -70,6 +69,7 @@
 #define DEFAULT_PLAYLIST_MAX_LENGTH		(1024*16)
 #define DEFAULT_PLAYLIST_SAVE_ABSOLUTE_PATHS	false
 
+static GRand *g_rand;
 static Playlist playlist;
 static int playlist_state = PLAYLIST_STATE_STOP;
 unsigned playlist_max_length = DEFAULT_PLAYLIST_MAX_LENGTH;
@@ -124,6 +124,8 @@ void initPlaylist(void)
 	char *test;
 	ConfigParam *param;
 
+	g_rand = g_rand_new();
+
 	playlist.length = 0;
 	playlist.repeat = false;
 	playlist.version = 1;
@@ -157,8 +159,6 @@ void initPlaylist(void)
 					playlist_max_length);
 
 	memset(playlist.songs, 0, sizeof(char *) * playlist_max_length);
-
-	srandom(time(NULL));
 
 	for (unsigned i = 0; i < playlist_max_length * PLAYLIST_HASH_MULT;
 	     i++) {
@@ -198,6 +198,9 @@ void finishPlaylist(void)
 	playlist.idToPosition = NULL;
 	free(playlist.positionToId);
 	playlist.positionToId = NULL;
+
+	g_rand_free(g_rand);
+	g_rand = NULL;
 }
 
 void clearPlaylist(void)
@@ -598,8 +601,8 @@ addSongToPlaylist(struct song *song, unsigned *added_id)
 		else
 			start = playlist.current + 1;
 		if (start < playlist.length) {
-			unsigned swap = random() % (playlist.length - start);
-			swap += start;
+			unsigned swap = g_rand_int_range(g_rand, start,
+							 playlist.length);
 			swapOrder(playlist.length - 1, swap);
 		}
 	}
@@ -1103,7 +1106,7 @@ static void randomizeOrder(int start, int end)
 		clearPlayerQueue();
 
 	for (i = start; i <= end; i++) {
-		ri = random() % (end - start + 1) + start;
+		ri = g_rand_int_range(g_rand, start, end + 1);
 		if (ri == playlist.current)
 			playlist.current = i;
 		else if (i == playlist.current)
@@ -1186,7 +1189,7 @@ void shufflePlaylist(void)
 		}
 		/* shuffle the rest of the list */
 		for (; i < playlist.length; i++) {
-			ri = random() % (playlist.length - 1) + 1;
+			ri = g_rand_int_range(g_rand, 1, playlist.length);
 			swapSongs(i, ri);
 		}
 
