@@ -49,34 +49,6 @@ static int *listenSockets;
 static int numberOfListenSockets;
 int boundPort;
 
-/*
- * redirect stdin to /dev/null to work around a libao bug
- * there are likely other bugs in other libraries (and even our code!)
- * that check for fd > 0, so it's easiest to just keep
- * fd = 0 == /dev/null for now...
- */
-static void redirect_stdin(void)
-{
-	int fd, st;
-	struct stat ss;
-
-	if ((st = fstat(STDIN_FILENO, &ss)) < 0) {
-		if ((fd = open("/dev/null", O_RDONLY) > 0)) {
-			g_debug("stdin closed, and could not open /dev/null "
-				"as fd=0, some external library bugs "
-				"may be exposed...");
-			close(fd);
-		}
-		return;
-	}
-	if (!isatty(STDIN_FILENO))
-		return;
-	if ((fd = open("/dev/null", O_RDONLY)) < 0)
-		g_error("failed to open /dev/null %s", strerror(errno));
-	if (dup2(fd, STDIN_FILENO) < 0)
-		g_error("dup2 stdin: %s", strerror(errno));
-}
-
 static int establishListen(int pf, const struct sockaddr *addrp,
 			   socklen_t addrlen)
 {
@@ -245,7 +217,6 @@ void listenOnPort(void)
 
 	boundPort = port;
 
-	redirect_stdin();
 	do {
 		parseListenConfigParam(port, param);
 	} while ((param = getNextConfigParam(CONF_BIND_TO_ADDRESS, param)));

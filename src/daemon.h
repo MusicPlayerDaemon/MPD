@@ -21,6 +21,12 @@
 
 #include "cmdline.h"
 
+/**
+ * Close stdin (fd 0) and re-open it as /dev/null.
+ */
+void
+daemonize_close_stdin(void);
+
 void
 daemonize(Options *options);
 

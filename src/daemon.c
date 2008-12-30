@@ -24,6 +24,32 @@
 #include <unistd.h>
 #include <errno.h>
 #include <string.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
+void
+daemonize_close_stdin(void)
+{
+	int fd, st;
+	struct stat ss;
+
+	if ((st = fstat(STDIN_FILENO, &ss)) < 0) {
+		if ((fd = open("/dev/null", O_RDONLY) > 0)) {
+			g_debug("stdin closed, and could not open /dev/null "
+				"as fd=0, some external library bugs "
+				"may be exposed...");
+			close(fd);
+		}
+		return;
+	}
+	if (!isatty(STDIN_FILENO))
+		return;
+	if ((fd = open("/dev/null", O_RDONLY)) < 0)
+		g_error("failed to open /dev/null %s", strerror(errno));
+	if (dup2(fd, STDIN_FILENO) < 0)
+		g_error("dup2 stdin: %s", strerror(errno));
+}
 
 void
 daemonize(Options *options)

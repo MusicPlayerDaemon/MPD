@@ -186,6 +186,8 @@ int main(int argc, char *argv[])
 	clock_t start;
 	GTimer *save_state_timer;
 
+	daemonize_close_stdin();
+
 #ifdef HAVE_LOCALE
 	/* initialize locale */
 	setlocale(LC_CTYPE,"");
