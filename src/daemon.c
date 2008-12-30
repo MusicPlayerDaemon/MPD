@@ -31,24 +31,14 @@
 void
 daemonize_close_stdin(void)
 {
-	int fd, st;
-	struct stat ss;
+	int fd = open("/dev/null", O_RDONLY);
 
-	if ((st = fstat(STDIN_FILENO, &ss)) < 0) {
-		if ((fd = open("/dev/null", O_RDONLY) > 0)) {
-			g_debug("stdin closed, and could not open /dev/null "
-				"as fd=0, some external library bugs "
-				"may be exposed...");
-			close(fd);
-		}
-		return;
+	if (fd < 0)
+		close(STDIN_FILENO);
+	else if (fd != STDIN_FILENO) {
+		dup2(fd, STDIN_FILENO);
+		close(fd);
 	}
-	if (!isatty(STDIN_FILENO))
-		return;
-	if ((fd = open("/dev/null", O_RDONLY)) < 0)
-		g_error("failed to open /dev/null %s", strerror(errno));
-	if (dup2(fd, STDIN_FILENO) < 0)
-		g_error("dup2 stdin: %s", strerror(errno));
 }
 
 void
