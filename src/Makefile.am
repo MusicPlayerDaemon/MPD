@@ -78,7 +78,6 @@ mpd_headers = \
 	strset.h \
 	utils.h \
 	volume.h \
-	ioops.h \
 	zeroconf.h zeroconf-internal.h \
 	locate.h \
 	stored_playlist.h \
@@ -120,7 +119,6 @@ mpd_SOURCES = \
 	input_stream.c \
 	input_file.c \
 	client.c \
-	ioops.c \
 	list.c \
 	listen.c \
 	log.c \

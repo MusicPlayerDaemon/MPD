@@ -22,7 +22,6 @@
 #include "listen.h"
 #include "permission.h"
 #include "utils.h"
-#include "ioops.h"
 #include "main_notify.h"
 #include "dlist.h"
 #include "idle.h"
@@ -78,6 +77,8 @@ struct client {
 	size_t bufferPos;
 
 	int fd;	/* file descriptor; -1 if expired */
+	GIOChannel *channel;
+
 	unsigned permission;
 
 	/** the uid of the client process, or -1 if unknown */
@@ -134,11 +135,19 @@ void client_set_permission(struct client *client, unsigned permission)
 
 static inline void client_set_expired(struct client *client)
 {
+	if (client->channel != NULL) {
+		g_io_channel_unref(client->channel);
+		client->channel = NULL;
+	}
+
 	if (client->fd >= 0) {
 		xclose(client->fd);
 		client->fd = -1;
 	}
 }
+
+static gboolean
+client_in_event(GIOChannel *source, GIOCondition condition, gpointer data);
 
 static void client_init(struct client *client, int fd)
 {
@@ -152,6 +161,10 @@ static void client_init(struct client *client, int fd)
 	client->bufferPos = 0;
 	client->fd = fd;
 	set_nonblocking(fd);
+
+	client->channel = g_io_channel_unix_new(client->fd);
+	g_io_add_watch(client->channel, G_IO_IN, client_in_event, client);
+
 	client->lastTime = time(NULL);
 	client->cmd_list = NULL;
 	client->deferred_send = g_queue_new();
@@ -436,91 +449,81 @@ static int client_read(struct client *client)
 		return COMMAND_RETURN_CLOSE;
 }
 
-static void client_manager_register_read_fd(fd_set * fds, int *fdmax)
+static gboolean
+client_out_event(G_GNUC_UNUSED GIOChannel *source,
+		 G_GNUC_UNUSED GIOCondition condition,
+		 gpointer data);
+
+static gboolean
+client_in_event(G_GNUC_UNUSED GIOChannel *source,
+		G_GNUC_UNUSED GIOCondition condition,
+		gpointer data)
 {
-	struct client *client;
-
-	FD_ZERO(fds);
-	addListenSocketsToFdSet(fds, fdmax);
-
-	list_for_each_entry(client, &clients, siblings) {
-		if (!client_is_expired(client) &&
-		    g_queue_is_empty(client->deferred_send)) {
-			FD_SET(client->fd, fds);
-			if (*fdmax < client->fd)
-				*fdmax = client->fd;
-		}
-	}
-}
-
-static void client_manager_register_write_fd(fd_set * fds, int *fdmax)
-{
-	struct client *client;
-
-	FD_ZERO(fds);
-
-	list_for_each_entry(client, &clients, siblings) {
-		if (client->fd >= 0 && !client_is_expired(client)
-		    && !g_queue_is_empty(client->deferred_send)) {
-			FD_SET(client->fd, fds);
-			if (*fdmax < client->fd)
-				*fdmax = client->fd;
-		}
-	}
-}
-
-int client_manager_io(void)
-{
-	fd_set rfds;
-	fd_set wfds;
-	fd_set efds;
-	struct client *client, *n;
+	struct client *client = data;
 	int ret;
-	int fdmax = 0;
 
-	FD_ZERO( &efds );
-	client_manager_register_read_fd(&rfds, &fdmax);
-	client_manager_register_write_fd(&wfds, &fdmax);
+	if (client_is_expired(client))
+		return false;
 
-	registered_IO_add_fds(&fdmax, &rfds, &wfds, &efds);
+	client->lastTime = time(NULL);
 
-	main_notify_lock();
-	ret = select(fdmax + 1, &rfds, &wfds, &efds, NULL);
-	main_notify_unlock();
+	ret = client_read(client);
+	switch (ret) {
+	case COMMAND_RETURN_KILL:
+		client_close(client);
+		g_main_loop_quit(NULL);
+		return false;
 
-	if (ret < 0) {
-		if (errno == EINTR)
-			return 0;
-
-		g_error("select() failed: %s", strerror(errno));
+	case COMMAND_RETURN_CLOSE:
+		client_close(client);
+		return false;
 	}
 
-	registered_IO_consume_fds(&ret, &rfds, &wfds, &efds);
-
-	getConnections(&rfds);
-
-	list_for_each_entry_safe(client, n, &clients, siblings) {
-		if (FD_ISSET(client->fd, &rfds)) {
-			ret = client_read(client);
-			if (ret == COMMAND_RETURN_KILL)
-				return COMMAND_RETURN_KILL;
-			if (ret == COMMAND_RETURN_CLOSE) {
-				client_close(client);
-				continue;
-			}
-
-			assert(!client_is_expired(client));
-
-			client->lastTime = time(NULL);
-		}
-		if (!client_is_expired(client) &&
-		    FD_ISSET(client->fd, &wfds)) {
-			client_write_deferred(client);
-			client->lastTime = time(NULL);
-		}
+	if (client_is_expired(client)) {
+		client_close(client);
+		return false;
 	}
 
-	return 0;
+	if (!g_queue_is_empty(client->deferred_send)) {
+		/* deferred buffers exist: schedule write */
+		g_io_add_watch(client->channel, G_IO_OUT,
+			       client_out_event, client);
+		return false;
+	}
+
+	/* read more */
+	return true;
+}
+
+static gboolean
+client_out_event(G_GNUC_UNUSED GIOChannel *source,
+		 G_GNUC_UNUSED GIOCondition condition,
+		 gpointer data)
+{
+	struct client *client = data;
+
+	if (client_is_expired(client))
+		return false;
+
+	client_write_deferred(client);
+
+	if (client_is_expired(client)) {
+		client_close(client);
+		return false;
+	}
+
+	client->lastTime = time(NULL);
+
+	if (g_queue_is_empty(client->deferred_send)) {
+		/* done sending deferred buffers exist: schedule
+		   read */
+		g_io_add_watch(client->channel, G_IO_IN,
+			       client_in_event, client);
+		return false;
+	}
+
+	/* write more */
+	return true;
 }
 
 void client_manager_init(void)

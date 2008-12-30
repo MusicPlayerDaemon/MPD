@@ -19,7 +19,6 @@
 #include "zeroconf-internal.h"
 #include "listen.h"
 #include "utils.h"
-#include "ioops.h"
 
 #include <glib.h>
 
@@ -31,147 +30,17 @@
 #include <avahi-common/malloc.h>
 #include <avahi-common/error.h>
 
+#include <avahi-glib/glib-watch.h>
+
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "avahi"
 
-static struct ioOps zeroConfIo;
-
 static char *avahiName;
 static int avahiRunning;
-static AvahiPoll avahiPoll;
+static AvahiGLibPoll *avahi_glib_poll;
+static const AvahiPoll *avahi_poll;
 static AvahiClient *avahiClient;
 static AvahiEntryGroup *avahiGroup;
-
-static int avahiFdset(fd_set * rfds, fd_set * wfds, fd_set * efds);
-static int avahiFdconsume(int fdCount, fd_set * rfds, fd_set * wfds,
-			  fd_set * efds);
-
-struct AvahiWatch {
-	struct AvahiWatch *prev;
-	struct AvahiWatch *next;
-	int fd;
-	AvahiWatchEvent requestedEvent;
-	AvahiWatchEvent observedEvent;
-	AvahiWatchCallback callback;
-	void *userdata;
-};
-
-struct AvahiTimeout {
-	struct AvahiTimeout *prev;
-	struct AvahiTimeout *next;
-	struct timeval expiry;
-	int enabled;
-	AvahiTimeoutCallback callback;
-	void *userdata;
-};
-
-static AvahiWatch *avahiWatchList;
-static AvahiTimeout *avahiTimeoutList;
-
-static AvahiWatch *avahiWatchNew(G_GNUC_UNUSED const AvahiPoll * api, int fd,
-				 AvahiWatchEvent event,
-				 AvahiWatchCallback callback, void *userdata)
-{
-	struct AvahiWatch *newWatch = xmalloc(sizeof(struct AvahiWatch));
-
-	newWatch->fd = fd;
-	newWatch->requestedEvent = event;
-	newWatch->observedEvent = 0;
-	newWatch->callback = callback;
-	newWatch->userdata = userdata;
-
-	/* Insert at front of list */
-	newWatch->next = avahiWatchList;
-	avahiWatchList = newWatch;
-	newWatch->prev = NULL;
-	if (newWatch->next)
-		newWatch->next->prev = newWatch;
-
-	return newWatch;
-}
-
-static void avahiWatchUpdate(AvahiWatch * w, AvahiWatchEvent event)
-{
-	assert(w != NULL);
-	w->requestedEvent = event;
-}
-
-static AvahiWatchEvent avahiWatchGetEvents(AvahiWatch * w)
-{
-	assert(w != NULL);
-	return w->observedEvent;
-}
-
-static void avahiWatchFree(AvahiWatch * w)
-{
-	assert(w != NULL);
-
-	if (avahiWatchList == w)
-		avahiWatchList = w->next;
-	else if (w->prev != NULL)
-		w->prev->next = w->next;
-
-	free(w);
-}
-
-static void avahiCheckExpiry(AvahiTimeout * t)
-{
-	assert(t != NULL);
-	if (t->enabled) {
-		struct timeval now;
-		gettimeofday(&now, NULL);
-		if (timercmp(&now, &(t->expiry), >)) {
-			t->enabled = 0;
-			t->callback(t, t->userdata);
-		}
-	}
-}
-
-static void avahiTimeoutUpdate(AvahiTimeout * t, const struct timeval *tv)
-{
-	assert(t != NULL);
-	if (tv) {
-		t->enabled = 1;
-		t->expiry.tv_sec = tv->tv_sec;
-		t->expiry.tv_usec = tv->tv_usec;
-	} else {
-		t->enabled = 0;
-	}
-}
-
-static void avahiTimeoutFree(AvahiTimeout * t)
-{
-	assert(t != NULL);
-
-	if (avahiTimeoutList == t)
-		avahiTimeoutList = t->next;
-	else if (t->prev != NULL)
-		t->prev->next = t->next;
-
-	free(t);
-}
-
-static AvahiTimeout *avahiTimeoutNew(G_GNUC_UNUSED const AvahiPoll * api,
-				     const struct timeval *tv,
-				     AvahiTimeoutCallback callback,
-				     void *userdata)
-{
-	struct AvahiTimeout *newTimeout = xmalloc(sizeof(struct AvahiTimeout));
-
-	newTimeout->callback = callback;
-	newTimeout->userdata = userdata;
-
-	avahiTimeoutUpdate(newTimeout, tv);
-
-	/* Insert at front of list */
-	newTimeout->next = avahiTimeoutList;
-	avahiTimeoutList = newTimeout;
-	newTimeout->prev = NULL;
-	if (newTimeout->next)
-		newTimeout->next->prev = newTimeout;
-
-	return newTimeout;
-}
 
 static void avahiRegisterService(AvahiClient * c);
 
@@ -297,7 +166,7 @@ static void avahiClientCallback(AvahiClient * c, AvahiClientState state,
 			if (avahiClient)
 				avahi_client_free(avahiClient);
 			avahiClient =
-			    avahi_client_new(&avahiPoll,
+			    avahi_client_new(avahi_poll,
 					     AVAHI_CLIENT_NO_FAIL,
 					     avahiClientCallback, NULL,
 					     &reason);
@@ -342,84 +211,6 @@ static void avahiClientCallback(AvahiClient * c, AvahiClientState state,
 	}
 }
 
-static int avahiFdset(fd_set * rfds, fd_set * wfds, fd_set * efds)
-{
-	AvahiWatch *w;
-	int maxfd = -1;
-	if (!avahiRunning)
-		return maxfd;
-	for (w = avahiWatchList; w != NULL; w = w->next) {
-		if (w->requestedEvent & AVAHI_WATCH_IN) {
-			FD_SET(w->fd, rfds);
-		}
-		if (w->requestedEvent & AVAHI_WATCH_OUT) {
-			FD_SET(w->fd, wfds);
-		}
-		if (w->requestedEvent & AVAHI_WATCH_ERR) {
-			FD_SET(w->fd, efds);
-		}
-		if (w->requestedEvent & AVAHI_WATCH_HUP) {
-			g_warning("No support for HUP events! (ignoring)");
-		}
-
-		if (w->fd > maxfd)
-			maxfd = w->fd;
-	}
-	return maxfd;
-}
-
-static int avahiFdconsume(int fdCount, fd_set * rfds, fd_set * wfds,
-			  fd_set * efds)
-{
-	int retval = fdCount;
-	AvahiTimeout *t;
-	AvahiWatch *w = avahiWatchList;
-
-	while (w != NULL && retval > 0) {
-		AvahiWatch *current = w;
-		current->observedEvent = 0;
-		if (FD_ISSET(current->fd, rfds)) {
-			current->observedEvent |= AVAHI_WATCH_IN;
-			FD_CLR(current->fd, rfds);
-			retval--;
-		}
-		if (FD_ISSET(current->fd, wfds)) {
-			current->observedEvent |= AVAHI_WATCH_OUT;
-			FD_CLR(current->fd, wfds);
-			retval--;
-		}
-		if (FD_ISSET(current->fd, efds)) {
-			current->observedEvent |= AVAHI_WATCH_ERR;
-			FD_CLR(current->fd, efds);
-			retval--;
-		}
-
-		/* Advance to the next one right now, in case the callback
-		 * removes itself
-		 */
-		w = w->next;
-
-		if (current->observedEvent && avahiRunning) {
-			current->callback(current, current->fd,
-					  current->observedEvent,
-					  current->userdata);
-		}
-	}
-
-	t = avahiTimeoutList;
-	while (t != NULL && avahiRunning) {
-		AvahiTimeout *current = t;
-
-		/* Advance to the next one right now, in case the callback
-		 * removes itself
-		 */
-		t = t->next;
-		avahiCheckExpiry(current);
-	}
-
-	return retval;
-}
-
 void init_avahi(const char *serviceName)
 {
 	int error;
@@ -432,16 +223,10 @@ void init_avahi(const char *serviceName)
 
 	avahiRunning = 1;
 
-	avahiPoll.userdata = NULL;
-	avahiPoll.watch_new = avahiWatchNew;
-	avahiPoll.watch_update = avahiWatchUpdate;
-	avahiPoll.watch_get_events = avahiWatchGetEvents;
-	avahiPoll.watch_free = avahiWatchFree;
-	avahiPoll.timeout_new = avahiTimeoutNew;
-	avahiPoll.timeout_update = avahiTimeoutUpdate;
-	avahiPoll.timeout_free = avahiTimeoutFree;
+	avahi_glib_poll = avahi_glib_poll_new(NULL, G_PRIORITY_DEFAULT);
+	avahi_poll = avahi_glib_poll_get(avahi_glib_poll);
 
-	avahiClient = avahi_client_new(&avahiPoll, AVAHI_CLIENT_NO_FAIL,
+	avahiClient = avahi_client_new(avahi_poll, AVAHI_CLIENT_NO_FAIL,
 				       avahiClientCallback, NULL, &error);
 
 	if (!avahiClient) {
@@ -449,10 +234,6 @@ void init_avahi(const char *serviceName)
 			  avahi_strerror(error));
 		goto fail;
 	}
-
-	zeroConfIo.fdset = avahiFdset;
-	zeroConfIo.consume = avahiFdconsume;
-	registerIO(&zeroConfIo);
 
 	return;
 
@@ -463,7 +244,6 @@ fail:
 void avahi_finish(void)
 {
 	g_debug("Shutting down interface");
-	deregisterIO(&zeroConfIo);
 
 	if (avahiGroup) {
 		avahi_entry_group_free(avahiGroup);
@@ -473,6 +253,11 @@ void avahi_finish(void)
 	if (avahiClient) {
 		avahi_client_free(avahiClient);
 		avahiClient = NULL;
+	}
+
+	if (avahi_glib_poll != NULL) {
+		avahi_glib_poll_free(avahi_glib_poll);
+		avahi_glib_poll = NULL;
 	}
 
 	avahi_free(avahiName);

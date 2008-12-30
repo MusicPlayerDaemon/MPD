@@ -909,7 +909,7 @@ esac
 
 if test x$with_zeroconf != xno; then
 	if test x$with_zeroconf = xavahi || test x$with_zeroconf = xauto; then
-		PKG_CHECK_MODULES([AVAHI], [avahi-client],
+		PKG_CHECK_MODULES([AVAHI], [avahi-client avahi-glib],
 		                  [found_avahi=1;AC_DEFINE([HAVE_AVAHI], 1, [Define to enable Avahi Zeroconf support])]
 		                  MPD_LIBS="$MPD_LIBS $AVAHI_LIBS" MPD_CFLAGS="$MPD_CFLAGS $AVAHI_CFLAGS",
 		                  [found_avahi=0])

@@ -55,6 +55,9 @@ static int *listenSockets;
 static int numberOfListenSockets;
 int boundPort;
 
+static gboolean
+listen_in_event(GIOChannel *source, GIOCondition condition, gpointer data);
+
 static int establishListen(int pf, const struct sockaddr *addrp,
 			   socklen_t addrlen)
 {
@@ -63,6 +66,7 @@ static int establishListen(int pf, const struct sockaddr *addrp,
 #ifdef HAVE_STRUCT_UCRED
 	int passcred = 1;
 #endif
+	GIOChannel *channel;
 
 	if ((sock = socket(pf, SOCK_STREAM, 0)) < 0)
 		g_error("socket < 0");
@@ -89,6 +93,11 @@ static int establishListen(int pf, const struct sockaddr *addrp,
 	    xrealloc(listenSockets, sizeof(int) * numberOfListenSockets);
 
 	listenSockets[numberOfListenSockets - 1] = sock;
+
+	channel = g_io_channel_unix_new(sock);
+	g_io_add_watch(channel, G_IO_IN,
+		       listen_in_event, GINT_TO_POINTER(sock));
+	g_io_channel_unref(channel);
 
 	return 0;
 }
@@ -223,17 +232,6 @@ void listenOnPort(void)
 	} while ((param = getNextConfigParam(CONF_BIND_TO_ADDRESS, param)));
 }
 
-void addListenSocketsToFdSet(fd_set * fds, int *fdmax)
-{
-	int i;
-
-	for (i = 0; i < numberOfListenSockets; i++) {
-		FD_SET(listenSockets[i], fds);
-		if (listenSockets[i] > *fdmax)
-			*fdmax = listenSockets[i];
-	}
-}
-
 void closeAllListenSockets(void)
 {
 	int i;
@@ -266,21 +264,21 @@ static int get_remote_uid(int fd)
 #endif
 }
 
-void getConnections(fd_set * fds)
+static gboolean
+listen_in_event(G_GNUC_UNUSED GIOChannel *source,
+		G_GNUC_UNUSED GIOCondition condition,
+		gpointer data)
 {
-	int i;
-	int fd = 0;
+	int listen_fd = GPOINTER_TO_INT(data), fd;
 	struct sockaddr sockAddr;
 	socklen_t socklen = sizeof(sockAddr);
 
-	for (i = 0; i < numberOfListenSockets; i++) {
-		if (FD_ISSET(listenSockets[i], fds)) {
-			if ((fd = accept(listenSockets[i], &sockAddr, &socklen))
-			    >= 0) {
-				client_new(fd, &sockAddr, get_remote_uid(fd));
-			} else if (fd < 0 && errno != EINTR) {
-				g_warning("Problems accept()'ing");
-			}
-		}
+	fd = accept(listen_fd, &sockAddr, &socklen);
+	if (fd >= 0) {
+		client_new(fd, &sockAddr, get_remote_uid(fd));
+	} else if (fd < 0 && errno != EINTR) {
+		g_warning("Problems accept()'ing");
 	}
+
+	return true;
 }

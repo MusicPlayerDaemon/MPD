@@ -18,7 +18,6 @@
 
 #include "zeroconf-internal.h"
 #include "listen.h"
-#include "ioops.h"
 
 #include <glib.h>
 
@@ -27,51 +26,8 @@
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "bonjour"
 
-static struct ioOps zeroConfIo;
-
 static DNSServiceRef dnsReference;
-
-static int
-dnsRegisterFdset(fd_set *rfds, G_GNUC_UNUSED fd_set *wfds,
-		 G_GNUC_UNUSED fd_set *efds)
-{
-	int fd;
-
-	if (dnsReference == NULL)
-		return -1;
-
-	fd = DNSServiceRefSockFD(dnsReference);
-	if (fd == -1)
-		return -1;
-
-	FD_SET(fd, rfds);
-
-	return fd;
-}
-
-static int
-dnsRegisterFdconsume(int fdCount, fd_set *rfds,
-		     G_GNUC_UNUSED fd_set *wfds, G_GNUC_UNUSED fd_set *efds)
-{
-	int fd;
-
-	if (dnsReference == NULL)
-		return -1;
-
-	fd = DNSServiceRefSockFD(dnsReference);
-	if (fd == -1)
-		return -1;
-
-	if (FD_ISSET(fd, rfds)) {
-		FD_CLR(fd, rfds);
-
-		DNSServiceProcessResult(dnsReference);
-
-		return fdCount - 1;
-	}
-
-	return fdCount;
-}
+static GIOChannel *bonjour_channel;
 
 static void
 dnsRegisterCallback(G_GNUC_UNUSED DNSServiceRef sdRef,
@@ -84,12 +40,20 @@ dnsRegisterCallback(G_GNUC_UNUSED DNSServiceRef sdRef,
 	if (errorCode != kDNSServiceErr_NoError) {
 		g_warning("Failed to register zeroconf service.");
 
-		DNSServiceRefDeallocate(dnsReference);
-		dnsReference = NULL;
-		deregisterIO(&zeroConfIo);
+		bonjour_finish();
 	} else {
 		g_debug("Registered zeroconf service with name '%s'", name);
 	}
+}
+
+static gboolean
+bonjour_channel_event(G_GNUC_UNUSED GIOChannel *source,
+		      G_GNUC_UNUSED GIOCondition condition,
+		      G_GNUC_UNUSED gpointer data)
+{
+	DNSServiceProcessResult(dnsReference);
+
+	return dnsReference != NULL;
 }
 
 void init_zeroconf_osx(const char *serviceName)
@@ -112,14 +76,17 @@ void init_zeroconf_osx(const char *serviceName)
 		return;
 	}
 
-	zeroConfIo.fdset = dnsRegisterFdset;
-	zeroConfIo.consume = dnsRegisterFdconsume;
-	registerIO(&zeroConfIo);
+	bonjour_channel = g_io_channel_unix_new(DNSServiceRefSockFD(dnsReference));
+	g_io_add_watch(bonjour_channel, G_IO_IN, bonjour_channel_event, NULL);
 }
 
 void bonjour_finish(void)
 {
-	deregisterIO(&zeroConfIo);
+	if (bonjour_channel != NULL) {
+		g_io_channel_unref(bonjour_channel);
+		bonjour_channel = NULL;
+	}
+
 	if (dnsReference != NULL) {
 		DNSServiceRefDeallocate(dnsReference);
 		dnsReference = NULL;

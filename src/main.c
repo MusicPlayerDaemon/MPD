@@ -180,9 +180,34 @@ static void killFromPidFile(void)
 #endif
 }
 
+static gboolean
+timer_save_state_file(G_GNUC_UNUSED gpointer data)
+{
+	g_debug("Saving state file");
+	write_state_file();
+	return true;
+}
+
+void
+main_notify_triggered(void)
+{
+	unsigned flags;
+
+	syncPlayerAndPlaylist();
+	client_manager_expire();
+	reap_update_task();
+
+	/* send "idle" notificaions to all subscribed
+	   clients */
+	flags = idle_get();
+	if (flags != 0)
+		client_manager_idle_add(flags);
+}
+
 int main(int argc, char *argv[])
 {
 	Options options;
+	GMainLoop *main_loop;
 	clock_t start;
 	GTimer *save_state_timer;
 
@@ -215,6 +240,8 @@ int main(int argc, char *argv[])
 		listenOnPort();
 
 	changeToUser();
+
+	main_loop = g_main_loop_new(NULL, FALSE);
 
 	path_global_init();
 	mapper_init();
@@ -258,26 +285,15 @@ int main(int argc, char *argv[])
 
 	save_state_timer = g_timer_new();
 
-	while (COMMAND_RETURN_KILL != client_manager_io() &&
-	       COMMAND_RETURN_KILL != handlePendingSignals()) {
-		unsigned flags;
+	g_timeout_add(5 * 60 * 1000, timer_save_state_file, NULL);
 
-		syncPlayerAndPlaylist();
-		client_manager_expire();
-		reap_update_task();
+	/* run the main loop */
 
-		/* send "idle" notificaions to all subscribed
-		   clients */
-		flags = idle_get();
-		if (flags != 0)
-			client_manager_idle_add(flags);
+	g_main_loop_run(main_loop);
 
-		if (g_timer_elapsed(save_state_timer, NULL) >= 5 * 60) {
-			g_debug("Saving state file");
-			write_state_file();
-			g_timer_start(save_state_timer);
-		}
-	}
+	/* cleanup */
+
+	g_main_loop_unref(main_loop);
 
 	g_timer_destroy(save_state_timer);
 

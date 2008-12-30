@@ -19,17 +19,10 @@
 #ifndef MPD_LISTEN_H
 #define MPD_LISTEN_H
 
-#include <sys/select.h>
-
 extern int boundPort;
 
 void listenOnPort(void);
 
-void getConnections(fd_set * fds);
-
 void closeAllListenSockets(void);
-
-/* fdmax should be initialized to something */
-void addListenSocketsToFdSet(fd_set * fds, int *fdmax);
 
 #endif

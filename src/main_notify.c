@@ -20,24 +20,14 @@
 
 #include "main_notify.h"
 #include "utils.h"
-#include "ioops.h"
 #include "log.h"
 
 #include <assert.h>
 #include <glib.h>
 #include <string.h>
 
-static struct ioOps main_notify_IO;
 static int main_pipe[2];
 GThread *main_task;
-
-static int ioops_fdset(fd_set * rfds,
-                       G_GNUC_UNUSED fd_set * wfds,
-		       G_GNUC_UNUSED fd_set * efds)
-{
-	FD_SET(main_pipe[0], rfds);
-	return main_pipe[0];
-}
 
 static void consume_pipe(void)
 {
@@ -48,20 +38,20 @@ static void consume_pipe(void)
 		FATAL("error reading from pipe: %s\n", strerror(errno));
 }
 
-static int ioops_consume(int fd_count, fd_set * rfds,
-                         G_GNUC_UNUSED fd_set * wfds,
-			 G_GNUC_UNUSED fd_set * efds)
+static gboolean
+main_notify_event(G_GNUC_UNUSED GIOChannel *source,
+		  G_GNUC_UNUSED GIOCondition condition,
+		  G_GNUC_UNUSED gpointer data)
 {
-	if (FD_ISSET(main_pipe[0], rfds)) {
-		consume_pipe();
-		FD_CLR(main_pipe[0], rfds);
-		fd_count--;
-	}
-	return fd_count;
+	consume_pipe();
+	main_notify_triggered();
+	return true;
 }
 
 void init_main_notify(void)
 {
+	GIOChannel *channel;
+
 	main_task = g_thread_self();
 
 	if (pipe(main_pipe) < 0)
@@ -69,15 +59,15 @@ void init_main_notify(void)
 	if (set_nonblocking(main_pipe[1]) < 0)
 		g_error("Couldn't set non-blocking I/O: %s", strerror(errno));
 
-	main_notify_IO.fdset = ioops_fdset;
-	main_notify_IO.consume = ioops_consume;
-	registerIO(&main_notify_IO);
+	channel = g_io_channel_unix_new(main_pipe[0]);
+	g_io_add_watch(channel, G_IO_IN, main_notify_event, NULL);
+	g_io_channel_unref(channel);
+
 	main_task = g_thread_self();
 }
 
 void deinit_main_notify(void)
 {
-	deregisterIO(&main_notify_IO);
 	xclose(main_pipe[0]);
 	xclose(main_pipe[1]);
 }

@@ -37,4 +37,7 @@ void main_notify_lock(void);
 
 void main_notify_unlock(void);
 
+void
+main_notify_triggered(void);
+
 #endif /* MAIN_NOTIFY_H */
