@@ -22,8 +22,6 @@
 
 #include <glib.h>
 
-#include <string.h>
-
 /* The default service name to publish
  * (overridden by 'zeroconf_name' config parameter)
  */
@@ -47,7 +45,7 @@ void initZeroconf(void)
 
 	param = getConfigParam(CONF_ZEROCONF_NAME);
 
-	if (param && strlen(param->value) > 0)
+	if (param && *param->value != 0)
 		serviceName = param->value;
 
 #ifdef HAVE_AVAHI
