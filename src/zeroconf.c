@@ -448,14 +448,10 @@ static void init_avahi(const char *serviceName)
 	int error;
 	g_debug("Avahi: Initializing interface");
 
-	if (avahi_is_valid_service_name(serviceName)) {
-		avahiName = avahi_strdup(serviceName);
-	} else {
-		g_warning("Invalid zeroconf_name \"%s\", defaulting to "
-			  "\"%s\" instead.",
-			  serviceName, SERVICE_NAME);
-		avahiName = avahi_strdup(SERVICE_NAME);
-	}
+	if (!avahi_is_valid_service_name(serviceName))
+		g_error("Invalid zeroconf_name \"%s\"", serviceName);
+
+	avahiName = avahi_strdup(serviceName);
 
 	avahiRunning = 1;
 
