@@ -944,6 +944,8 @@ if test x$with_zeroconf != xno; then
 fi
 
 AM_CONDITIONAL(HAVE_ZEROCONF, test x$with_zeroconf != xno)
+AM_CONDITIONAL(HAVE_AVAHI, test x$with_zeroconf = xavahi)
+AM_CONDITIONAL(HAVE_BONJOUR, test x$with_zeroconf = xbonjour)
 
 
 dnl

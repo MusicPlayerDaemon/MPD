@@ -79,7 +79,7 @@ mpd_headers = \
 	utils.h \
 	volume.h \
 	ioops.h \
-	zeroconf.h \
+	zeroconf.h zeroconf-internal.h \
 	locate.h \
 	stored_playlist.h \
 	timer.h \
@@ -256,6 +256,14 @@ endif
 
 if HAVE_ZEROCONF
 mpd_SOURCES += zeroconf.c
+
+if HAVE_AVAHI
+mpd_SOURCES += zeroconf-avahi.c
+endif
+
+if HAVE_BONJOUR
+mpd_SOURCES += zeroconf-bonjour.c
+endif
 endif
 
 
