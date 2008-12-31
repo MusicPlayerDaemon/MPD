@@ -29,7 +29,6 @@ struct sockaddr;
 
 void client_manager_init(void);
 void client_manager_deinit(void);
-void client_manager_expire(void);
 
 void client_new(int fd, const struct sockaddr *addr, int uid);
 

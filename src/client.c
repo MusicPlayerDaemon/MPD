@@ -110,6 +110,7 @@ struct client {
 
 static LIST_HEAD(clients);
 static unsigned num_clients;
+static guint expire_source_id;
 
 static void client_write_deferred(struct client *client);
 
@@ -135,8 +136,27 @@ void client_set_permission(struct client *client, unsigned permission)
 	client->permission = permission;
 }
 
+static void
+client_manager_expire(void);
+
+/**
+ * An idle event which calls client_manager_expire().
+ */
+static gboolean
+client_manager_expire_event(G_GNUC_UNUSED gpointer data)
+{
+	expire_source_id = 0;
+	client_manager_expire();
+	return false;
+}
+
 static inline void client_set_expired(struct client *client)
 {
+	if (expire_source_id == 0 && client->fd >= 0)
+		/* delayed deletion */
+		expire_source_id = g_idle_add(client_manager_expire_event,
+					      NULL);
+
 	if (client->source_id != 0) {
 		g_source_remove(client->source_id);
 		client->source_id = 0;
@@ -601,7 +621,8 @@ void client_manager_deinit(void)
 	client_max_connections = 0;
 }
 
-void client_manager_expire(void)
+static void
+client_manager_expire(void)
 {
 	struct client *client, *n;
 

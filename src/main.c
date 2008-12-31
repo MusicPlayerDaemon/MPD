@@ -196,7 +196,6 @@ main_notify_triggered(void)
 	unsigned flags;
 
 	syncPlayerAndPlaylist();
-	client_manager_expire();
 	reap_update_task();
 
 	/* send "idle" notificaions to all subscribed
