@@ -39,7 +39,7 @@ static struct audio_format input_audio_format;
 static struct audio_output *audioOutputArray;
 static unsigned int audioOutputArraySize;
 
-static unsigned int audio_output_count(void)
+unsigned int audio_output_count(void)
 {
 	unsigned int nr = 0;
 	ConfigParam *param = NULL;

@@ -28,6 +28,8 @@ struct audio_format;
 struct tag;
 struct client;
 
+unsigned int audio_output_count(void);
+
 void getOutputAudioFormat(const struct audio_format *inFormat,
 			  struct audio_format *outFormat);
 

@@ -60,7 +60,7 @@ static int get_bool(const char *value)
 	return CONF_BOOL_INVALID;
 }
 
-static ConfigParam *newConfigParam(char *value, int line)
+ConfigParam *newConfigParam(const char *value, int line)
 {
 	ConfigParam *ret = g_new(ConfigParam, 1);
 
@@ -187,7 +187,7 @@ void initConf(void)
 	registerConfigParam(CONF_GAPLESS_MP3_PLAYBACK,          0,     0);
 }
 
-static void addBlockParam(ConfigParam * param, char *name, char *value,
+void addBlockParam(ConfigParam * param, const char *name, const char *value,
 			  int line)
 {
 	param->numberOfBlockParams++;

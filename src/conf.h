@@ -103,4 +103,8 @@ bool config_get_bool(const char *name, bool default_value);
 
 int getBoolBlockParam(ConfigParam *param, const char *name, int force);
 
+ConfigParam *newConfigParam(const char *value, int line);
+
+void addBlockParam(ConfigParam * param, const char *name, const char *value, int line);
+
 #endif
