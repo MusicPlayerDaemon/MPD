@@ -23,6 +23,7 @@
 #include "log.h"
 #include "list.h"
 #include "stored_playlist.h"
+#include "config.h"
 
 #include <string.h>
 
