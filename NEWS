@@ -1,4 +1,5 @@
 ver 0.15 - (200?/??/??)
+* Rewritten mixer code to support multiple mixers
 * Add audio archive extraction support:
   - bzip2
   - iso9660

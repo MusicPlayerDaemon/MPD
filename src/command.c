@@ -388,7 +388,7 @@ handle_status(struct client *client,
 		      COMMAND_STATUS_PLAYLIST_LENGTH ": %i\n"
 		      COMMAND_STATUS_CROSSFADE ": %i\n"
 		      COMMAND_STATUS_STATE ": %s\n",
-		      getVolumeLevel(),
+		      volume_level_get(),
 		      getPlaylistRepeatStatus(),
 		      getPlaylistRandomStatus(),
 		      getPlaylistVersion(),
@@ -906,7 +906,7 @@ handle_volume(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 	if (!check_int(client, &change, argv[1], need_integer))
 		return COMMAND_RETURN_ERROR;
 
-	ret = changeVolumeLevel(change, 1);
+	ret = volume_level_change(change, 1);
 	if (ret == -1)
 		command_error(client, ACK_ERROR_SYSTEM,
 			      "problems setting volume");
@@ -922,7 +922,7 @@ handle_setvol(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 	if (!check_int(client, &level, argv[1], need_integer))
 		return COMMAND_RETURN_ERROR;
 
-	ret = changeVolumeLevel(level, 0);
+	ret = volume_level_change(level, 0);
 	if (ret == -1)
 		command_error(client, ACK_ERROR_SYSTEM,
 			      "problems setting volume");

@@ -273,6 +273,7 @@ endif
 
 if HAVE_ALSA
 mpd_SOURCES += output/alsa_plugin.c
+mpd_SOURCES += mixer/alsa_mixer.c
 endif
 
 if HAVE_AO
@@ -293,6 +294,7 @@ endif
 
 if HAVE_OSS
 mpd_SOURCES += output/oss_plugin.c
+mpd_SOURCES += mixer/oss_mixer.c
 endif
 
 if HAVE_OSX
@@ -314,7 +316,6 @@ endif
 if HAVE_SHOUT_OGG
 mpd_SOURCES += output/shout_ogg.c
 endif
-
 
 mpd_CFLAGS = $(MPD_CFLAGS)
 mpd_CPPFLAGS = \

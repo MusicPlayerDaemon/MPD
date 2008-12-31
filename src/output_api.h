@@ -101,6 +101,12 @@ struct audio_output_plugin {
 	void (*close)(void *data);
 
 	/**
+	 * Control the device. Usualy used for implementing
+	 * set and get mixer levels
+	 */
+	bool (*control)(void *data, int cmd, void *arg);
+
+	/**
 	 * Display metadata for the next chunk.  Optional method,
 	 * because not all devices can display metadata.
 	 */
@@ -116,6 +122,12 @@ enum audio_output_command {
 	AO_COMMAND_CANCEL,
 	AO_COMMAND_SEND_TAG,
 	AO_COMMAND_KILL
+};
+
+enum audio_control_command {
+	AC_MIXER_GETVOL = 0,
+	AC_MIXER_SETVOL,
+	AC_MIXER_CONFIGURE,
 };
 
 struct audio_output;

@@ -162,6 +162,8 @@ log_file			"~/.mpd/log"
 #	name			"My ALSA Device"
 #	device			"hw:0,0"	# optional
 #	format			"44100:16:2"	# optional
+#	mix_device		"default"	# optional
+#	mix_control		"PCM"		# optional
 #}
 #
 # An example of an OSS output:
@@ -171,6 +173,8 @@ log_file			"~/.mpd/log"
 #	name			"My OSS Device"
 #	device			"/dev/dsp"	# optional
 #	format			"44100:16:2"	# optional
+#	mix_device		"/dev/mixer"	# optional
+#	mix_control		"PCM"		# optional
 #}
 #
 # An example of a shout output (for streaming to Icecast):
@@ -232,17 +236,9 @@ log_file			"~/.mpd/log"
 # specified it may be autodetected at startup, depending on the dependencies
 # which were compiled into the server.
 #
-# An example for controlling an ALSA mixer:
+# An example for controlling an ALSA or OSS mixer:
 #
-#mixer_type			"alsa"
-#mixer_device			"default"
-#mixer_control			"PCM"
-#
-# An example for controlling an OSS mixer:
-#
-#mixer_type			"oss"
-#mixer_device			"/dev/mixer"
-#mixer_control			"PCM"
+#mixer_type			"hardware"
 #
 # This example is a general volume control mixer, it is used to adjust the 
 # volume of the audio sent to the audio output, and will work with all outputs.

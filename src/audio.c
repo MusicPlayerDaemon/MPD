@@ -25,6 +25,7 @@
 #include "client.h"
 #include "idle.h"
 #include "utils.h"
+#include "mixer.h"
 
 #include <glib.h>
 
@@ -428,3 +429,57 @@ errline:
 	}
 }
 
+bool mixer_control_setvol(unsigned int device, int volume, int rel)
+{
+	struct audio_output *output;
+	if (device >= audioOutputArraySize)
+		return false;
+
+	output = &audioOutputArray[device];
+	if (output->plugin && output->plugin->control) {
+		if (rel) {
+			int cur_volume;
+			if (!output->plugin->control(output->data, AC_MIXER_GETVOL, &cur_volume)) {
+				return false;
+			}
+			volume = volume + cur_volume;
+		}
+		if (volume > 100)
+			volume = 100;
+		else if (volume < 0)
+			volume = 0;
+
+		return output->plugin->control(output->data, AC_MIXER_SETVOL, &volume);
+	}
+	return false;
+}
+
+bool mixer_control_getvol(unsigned int device, int *volume)
+{
+	struct audio_output *output;
+	if (device >= audioOutputArraySize)
+		return false;
+
+	output = &audioOutputArray[device];
+	if (output->plugin && output->plugin->control) {
+		return output->plugin->control(output->data, AC_MIXER_GETVOL, volume);
+	}
+	return false;
+}
+
+bool mixer_configure_legacy(char *name, ConfigParam *param)
+{
+	unsigned i;
+	struct audio_output *output;
+
+	for (i = 0; i < audioOutputArraySize; ++i) {
+		output = &audioOutputArray[i];
+		if (output && output->plugin && !strcmp(name, output->plugin->name)) {
+			if (output->plugin->control) {
+				g_debug("reconfiguring %s mixer\n", name);
+				return output->plugin->control(output->data, AC_MIXER_CONFIGURE, param);
+			}
+		}
+	}
+	return false;
+}

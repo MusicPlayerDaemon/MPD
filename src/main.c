@@ -264,7 +264,7 @@ int main(int argc, char *argv[])
 	dc_init();
 	initAudioConfig();
 	initAudioDriver();
-	initVolume();
+	volume_init();
 	client_manager_init();
 	replay_gain_global_init();
 	initNormalization();
@@ -278,7 +278,6 @@ int main(int argc, char *argv[])
 
 	initZeroconf();
 
-	openVolumeDevice();
 	decoder_thread_start();
 	player_create();
 	read_state_file();
@@ -315,7 +314,7 @@ int main(int argc, char *argv[])
 	finishNormalization();
 	finishAudioDriver();
 	finishAudioConfig();
-	finishVolume();
+	volume_finish();
 	mapper_finish();
 	path_global_finish();
 	finishPermissions();

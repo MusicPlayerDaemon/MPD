@@ -20,6 +20,7 @@
  */
 
 #include "../output_api.h"
+#include "../mixer.h"
 
 #include <glib.h>
 #include <sys/stat.h>
@@ -53,6 +54,7 @@ typedef struct _OssData {
 	int numSupported[3];
 	int *unsupported[3];
 	int numUnsupported[3];
+	struct oss_mixer *mixer;
 } OssData;
 
 enum oss_support {
@@ -273,6 +275,8 @@ static OssData *newOssData(void)
 	supportParam(ret, SNDCTL_DSP_CHANNELS, 2);
 	supportParam(ret, SNDCTL_DSP_SAMPLESIZE, 16);
 
+	ret->mixer = oss_mixer_init();
+
 	return ret;
 }
 
@@ -284,6 +288,8 @@ static void freeOssData(OssData * od)
 	g_free(od->unsupported[OSS_RATE]);
 	g_free(od->unsupported[OSS_CHANNELS]);
 	g_free(od->unsupported[OSS_BITS]);
+
+	oss_mixer_finish(od->mixer);
 
 	free(od);
 }
@@ -348,6 +354,7 @@ static void *oss_open_default(ConfigParam *param)
 		if (ret[i] == 0) {
 			OssData *od = newOssData();
 			od->device = default_devices[i];
+			oss_mixer_configure(od->mixer, param);
 			return od;
 		}
 	}
@@ -388,6 +395,7 @@ static void *oss_initDriver(mpd_unused struct audio_output *audioOutput,
 		if (bp) {
 			OssData *od = newOssData();
 			od->device = bp->value;
+			oss_mixer_configure(od->mixer, param);
 			return od;
 		}
 	}
@@ -513,6 +521,8 @@ oss_openDevice(void *data, struct audio_format *audioFormat)
 		od->audio_format.bits, od->audio_format.channels,
 		od->audio_format.sample_rate);
 
+	oss_mixer_open(od->mixer);
+
 	return ret;
 }
 
@@ -521,6 +531,7 @@ static void oss_closeDevice(void *data)
 	OssData *od = data;
 
 	oss_close(od);
+	oss_mixer_close(od->mixer);
 }
 
 static void oss_dropBufferedAudio(void *data)
@@ -559,6 +570,13 @@ oss_playAudio(void *data, const char *playChunk, size_t size)
 	return true;
 }
 
+static bool
+oss_control(void *data, int cmd, void *arg)
+{
+	OssData *od = data;
+	return oss_mixer_control(od->mixer, cmd, arg);
+}
+
 const struct audio_output_plugin ossPlugin = {
 	.name = "oss",
 	.test_default_device = oss_testDefault,
@@ -568,4 +586,5 @@ const struct audio_output_plugin ossPlugin = {
 	.play = oss_playAudio,
 	.cancel = oss_dropBufferedAudio,
 	.close = oss_closeDevice,
+	.control = oss_control,
 };

@@ -24,16 +24,15 @@
 #define VOLUME_MIXER_OSS	"oss"
 #define VOLUME_MIXER_ALSA	"alsa"
 #define VOLUME_MIXER_SOFTWARE	"software"
+#define VOLUME_MIXER_HARDWARE	"hardware"
 
-void initVolume(void);
+void volume_init(void);
 
-void openVolumeDevice(void);
+void volume_finish(void);
 
-void finishVolume(void);
+int volume_level_get(void);
 
-int getVolumeLevel(void);
-
-int changeVolumeLevel(int change, int rel);
+int volume_level_change(int change, int rel);
 
 void read_sw_volume_state(FILE *fp);
 
