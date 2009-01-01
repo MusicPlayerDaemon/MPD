@@ -20,13 +20,16 @@
 #include "../timer.h"
 #include "../utils.h"
 
+#include <glib.h>
+
 struct null_data {
 	Timer *timer;
 };
 
-static void *null_initDriver(mpd_unused struct audio_output *audioOutput,
-			     mpd_unused const struct audio_format *audio_format,
-			     mpd_unused ConfigParam *param)
+static void *
+null_initDriver(G_GNUC_UNUSED struct audio_output *audioOutput,
+		G_GNUC_UNUSED const struct audio_format *audio_format,
+		G_GNUC_UNUSED ConfigParam *param)
 {
 	struct null_data *nd = xmalloc(sizeof(*nd));
 	nd->timer = NULL;
@@ -53,7 +56,7 @@ static void null_closeDevice(void *data)
 }
 
 static bool
-null_playAudio(void *data, mpd_unused const char *playChunk, size_t size)
+null_playAudio(void *data, G_GNUC_UNUSED const char *playChunk, size_t size)
 {
 	struct null_data *nd = data;
 	Timer *timer = nd->timer;
