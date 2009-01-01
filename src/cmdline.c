@@ -35,6 +35,7 @@
 #define SYSTEM_CONFIG_FILE_LOCATION	"/etc/mpd.conf"
 #define USER_CONFIG_FILE_LOCATION	".mpdconf"
 
+G_GNUC_NORETURN
 static void version(void)
 {
 	puts(PACKAGE " (MPD: Music Player Daemon) " VERSION " \n"
@@ -63,6 +64,8 @@ static void version(void)
 	archive_plugin_init_all();
 	archive_plugin_print_all_suffixes(stdout);
 #endif
+
+	exit(EXIT_SUCCESS);
 }
 
 #if GLIB_MAJOR_VERSION > 2 || (GLIB_MAJOR_VERSION == 2 && GLIB_MINOR_VERSION >= 12)
