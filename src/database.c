@@ -28,7 +28,7 @@
 #include "utils.h"
 #include "dbUtils.h"
 #include "update.h"
-#include "main_notify.h"
+#include "event_pipe.h"
 #include "config.h"
 
 #include <glib.h>

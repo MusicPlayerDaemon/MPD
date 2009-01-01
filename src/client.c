@@ -22,7 +22,7 @@
 #include "listen.h"
 #include "permission.h"
 #include "utils.h"
-#include "main_notify.h"
+#include "event_pipe.h"
 #include "dlist.h"
 #include "idle.h"
 #include "main.h"

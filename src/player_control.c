@@ -23,7 +23,7 @@
 #include "song.h"
 #include "idle.h"
 #include "pcm_utils.h"
-#include "main_notify.h"
+#include "event_pipe.h"
 
 #include <assert.h>
 #include <stdio.h>

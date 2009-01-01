@@ -22,7 +22,7 @@
  */
 
 #include "idle.h"
-#include "main_notify.h"
+#include "event_pipe.h"
 
 #include <assert.h>
 #include <glib.h>

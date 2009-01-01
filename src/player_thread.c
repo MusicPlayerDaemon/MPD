@@ -22,7 +22,7 @@
 #include "audio.h"
 #include "pcm_utils.h"
 #include "path.h"
-#include "main_notify.h"
+#include "event_pipe.h"
 #include "crossfade.h"
 #include "song.h"
 #include "pipe.h"

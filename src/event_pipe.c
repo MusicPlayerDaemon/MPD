@@ -18,7 +18,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "main_notify.h"
+#include "event_pipe.h"
 #include "utils.h"
 #include "log.h"
 

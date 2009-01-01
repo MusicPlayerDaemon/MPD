@@ -26,7 +26,7 @@
 #include "path.h"
 #include "playlist.h"
 #include "utils.h"
-#include "main_notify.h"
+#include "event_pipe.h"
 #include "condition.h"
 #include "update.h"
 #include "idle.h"

@@ -44,7 +44,7 @@ mpd_headers = \
 	log.h \
 	ls.h \
 	main.h \
-	main_notify.h \
+	event_pipe.h \
 	daemon.h \
 	normalize.h \
 	compress.h \
@@ -125,7 +125,7 @@ mpd_SOURCES = \
 	log.c \
 	ls.c \
 	main.c \
-	main_notify.c \
+	event_pipe.c \
 	daemon.c \
 	normalize.c \
 	compress.c \

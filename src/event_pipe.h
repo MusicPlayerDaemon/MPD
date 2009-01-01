@@ -18,8 +18,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef MPD_MAIN_NOTIFY_H
-#define MPD_MAIN_NOTIFY_H
+#ifndef EVENT_PIPE_H
+#define EVENT_PIPE_H
 
 #include <glib.h>
 

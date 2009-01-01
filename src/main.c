@@ -49,7 +49,7 @@
 #include "../config.h"
 #include "normalize.h"
 #include "zeroconf.h"
-#include "main_notify.h"
+#include "event_pipe.h"
 #include "dirvec.h"
 #include "songvec.h"
 #include "tag_pool.h"
