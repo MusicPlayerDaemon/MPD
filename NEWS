@@ -8,6 +8,7 @@ ver 0.15 - (200?/??/??)
 * the option "error_file" was removed, all messages are logged into
   "log_file"
 * support logging to syslog
+* fall back to XDG music directory if no music_directory is configured
 
 ver 0.14 (2008/12/25)
 * audio outputs:

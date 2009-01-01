@@ -43,10 +43,20 @@ static size_t playlist_dir_length;
 
 void mapper_init(void)
 {
-	ConfigParam *music_dir_param = parseConfigFilePath(CONF_MUSIC_DIR, 1);
+	ConfigParam *music_dir_param = parseConfigFilePath(CONF_MUSIC_DIR, false);
 	ConfigParam *playlist_dir_param = parseConfigFilePath(CONF_PLAYLIST_DIR, 1);
 	int ret;
 	struct stat st;
+
+	if (music_dir_param != NULL) {
+		music_dir = g_strdup(music_dir_param->value);
+	} else {
+		music_dir = g_strdup(g_get_user_special_dir(G_USER_DIRECTORY_MUSIC));
+		if (music_dir == NULL)
+			/* GLib failed to determine the XDG music
+			   directory - abort */
+			g_error("config parameter \"%s\" not found\n", CONF_MUSIC_DIR);
+	}
 
 	music_dir = g_strdup(music_dir_param->value);
 	music_dir_length = strlen(music_dir);
