@@ -21,6 +21,8 @@
 
 #include "_flac_common.h"
 
+#include <glib.h>
+
 #include <FLAC/format.h>
 #include <FLAC/metadata.h>
 
@@ -169,7 +171,7 @@ void flac_metadata_common_cb(const FLAC__StreamMetadata * block,
 
 void flac_error_common_cb(const char *plugin,
 			  const FLAC__StreamDecoderErrorStatus status,
-			  mpd_unused FlacData * data)
+			  G_GNUC_UNUSED FlacData * data)
 {
 	if (decoder_get_command(data->decoder) == DECODE_COMMAND_STOP)
 		return;

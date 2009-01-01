@@ -18,6 +18,8 @@
 
 #include "../decoder_api.h"
 
+#include <glib.h>
+
 #include <assert.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -26,7 +28,6 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include <glib.h>
 
 #ifdef OLD_FFMPEG_INCLUDES
 #include <avcodec.h>
@@ -73,7 +74,7 @@ static struct ffmpeg_stream *url_to_struct(const char *url)
 }
 
 static int mpd_ffmpeg_open(URLContext *h, const char *filename,
-		       mpd_unused int flags)
+			   G_GNUC_UNUSED int flags)
 {
 	struct ffmpeg_stream *stream = url_to_struct(filename);
 	h->priv_data = stream;
