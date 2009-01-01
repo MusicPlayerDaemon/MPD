@@ -83,14 +83,14 @@ static void player_command_finished(void)
 	assert(pc.command != PLAYER_COMMAND_NONE);
 
 	pc.command = PLAYER_COMMAND_NONE;
-	wakeup_main_task();
+	event_pipe_signal();
 }
 
 static void player_stop_decoder(void)
 {
 	dc_stop(&pc.notify);
 	pc.state = PLAYER_STATE_STOP;
-	wakeup_main_task();
+	event_pipe_signal();
 }
 
 static int player_wait_for_decoder(struct player *player)
@@ -369,7 +369,7 @@ static void do_play(void)
 			   request the next song from the playlist */
 
 			pc.next_song = NULL;
-			wakeup_main_task();
+			event_pipe_signal();
 		}
 
 		if (decoder_is_idle() && player.queued) {
@@ -476,7 +476,7 @@ static void do_play(void)
 			if (player_wait_for_decoder(&player) < 0)
 				return;
 
-			wakeup_main_task();
+			event_pipe_signal();
 		} else if (decoder_is_idle()) {
 			break;
 		} else {

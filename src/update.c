@@ -98,7 +98,7 @@ delete_song(struct directory *dir, struct song *del)
 	cond_enter(&delete_cond);
 	assert(!delete);
 	delete = del;
-	wakeup_main_task();
+	event_pipe_signal();
 	do { cond_wait(&delete_cond); } while (delete);
 	cond_leave(&delete_cond);
 
@@ -603,7 +603,7 @@ static void * update_task(void *_path)
 	if (modified)
 		db_save();
 	progress = UPDATE_PROGRESS_DONE;
-	wakeup_main_task();
+	event_pipe_signal();
 	return NULL;
 }
 

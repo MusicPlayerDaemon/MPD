@@ -253,7 +253,7 @@ int main(int argc, char *argv[])
 	decoder_plugin_init_all();
 	update_global_init();
 
-	init_main_notify();
+	event_pipe_init();
 
 	openDB(&options, argv[0]);
 
@@ -308,7 +308,7 @@ int main(int argc, char *argv[])
 	g_debug("db_finish took %f seconds",
 		((float)(clock()-start))/CLOCKS_PER_SEC);
 
-	deinit_main_notify();
+	event_pipe_deinit();
 
 	input_stream_global_finish();
 	finishNormalization();

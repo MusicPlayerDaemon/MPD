@@ -26,13 +26,13 @@
 #include <glib.h>
 #include <string.h>
 
-static int main_pipe[2];
 GThread *main_task;
+static int event_pipe[2];
 
 static void consume_pipe(void)
 {
 	char buffer[256];
-	ssize_t r = read(main_pipe[0], buffer, sizeof(buffer));
+	ssize_t r = read(event_pipe[0], buffer, sizeof(buffer));
 
 	if (r < 0 && errno != EAGAIN && errno != EINTR)
 		FATAL("error reading from pipe: %s\n", strerror(errno));
@@ -48,38 +48,38 @@ main_notify_event(G_GNUC_UNUSED GIOChannel *source,
 	return true;
 }
 
-void init_main_notify(void)
+void event_pipe_init(void)
 {
 	GIOChannel *channel;
 
 	main_task = g_thread_self();
 
-	if (pipe(main_pipe) < 0)
+	if (pipe(event_pipe) < 0)
 		g_error("Couldn't open pipe: %s", strerror(errno));
-	if (set_nonblocking(main_pipe[1]) < 0)
+	if (set_nonblocking(event_pipe[1]) < 0)
 		g_error("Couldn't set non-blocking I/O: %s", strerror(errno));
 
-	channel = g_io_channel_unix_new(main_pipe[0]);
+	channel = g_io_channel_unix_new(event_pipe[0]);
 	g_io_add_watch(channel, G_IO_IN, main_notify_event, NULL);
 	g_io_channel_unref(channel);
 
 	main_task = g_thread_self();
 }
 
-void deinit_main_notify(void)
+void event_pipe_deinit(void)
 {
-	xclose(main_pipe[0]);
-	xclose(main_pipe[1]);
+	xclose(event_pipe[0]);
+	xclose(event_pipe[1]);
 }
 
-void wakeup_main_task(void)
+void event_pipe_signal(void)
 {
-	ssize_t w = write(main_pipe[1], "", 1);
+	ssize_t w = write(event_pipe[1], "", 1);
 	if (w < 0 && errno != EAGAIN && errno != EINTR)
 		g_error("error writing to pipe: %s", strerror(errno));
 }
 
-void wait_main_task(void)
+void event_pipe_wait(void)
 {
 	consume_pipe();
 }

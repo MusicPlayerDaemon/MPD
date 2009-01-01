@@ -58,7 +58,7 @@ db_init(void)
 		g_error("directory update failed");
 
 	do {
-		wait_main_task();
+		event_pipe_wait();
 		reap_update_task();
 	} while (isUpdatingDB());
 

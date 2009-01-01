@@ -25,13 +25,13 @@
 
 extern GThread *main_task;
 
-void init_main_notify(void);
+void event_pipe_init(void);
 
-void deinit_main_notify(void);
+void event_pipe_deinit(void);
 
-void wakeup_main_task(void);
+void event_pipe_signal(void);
 
-void wait_main_task(void);
+void event_pipe_wait(void);
 
 void
 main_notify_triggered(void);

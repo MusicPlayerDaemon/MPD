@@ -58,7 +58,7 @@ static void player_command(enum player_command cmd)
 	pc.command = cmd;
 	while (pc.command != PLAYER_COMMAND_NONE) {
 		notify_signal(&pc.notify);
-		wait_main_task();
+		event_pipe_wait();
 	}
 }
 
