@@ -57,12 +57,12 @@ mixer_reconfigure(char *driver)
 	param = getConfigParam(CONF_MIXER_DEVICE);
 	if (param) {
 		g_warning("deprecated option mixer_device found, translating to %s config section\n", driver);
-		addBlockParam(newparam, "mix_device", param->value, -1);
+		addBlockParam(newparam, "mixer_device", param->value, -1);
 	}
 	param = getConfigParam(CONF_MIXER_CONTROL);
 	if (param) {
 		g_warning("deprecated option mixer_control found, translating to %s config section\n", driver);
-		addBlockParam(newparam, "mix_control", param->value, -1);
+		addBlockParam(newparam, "mixer_control", param->value, -1);
 	}
 	if (newparam->numberOfBlockParams > 0) {
 		//call configure method of corrensponding mixer

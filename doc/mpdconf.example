@@ -162,8 +162,8 @@ log_file			"~/.mpd/log"
 #	name			"My ALSA Device"
 #	device			"hw:0,0"	# optional
 #	format			"44100:16:2"	# optional
-#	mix_device		"default"	# optional
-#	mix_control		"PCM"		# optional
+#	mixer_device		"default"	# optional
+#	mixer_control		"PCM"		# optional
 #}
 #
 # An example of an OSS output:
@@ -173,8 +173,8 @@ log_file			"~/.mpd/log"
 #	name			"My OSS Device"
 #	device			"/dev/dsp"	# optional
 #	format			"44100:16:2"	# optional
-#	mix_device		"/dev/mixer"	# optional
-#	mix_control		"PCM"		# optional
+#	mixer_device		"/dev/mixer"	# optional
+#	mixer_control		"PCM"		# optional
 #}
 #
 # An example of a shout output (for streaming to Icecast):

@@ -43,9 +43,9 @@ alsa_mixer_configure(struct alsa_mixer *am, ConfigParam *param)
 {
 	BlockParam *bp;
 
-	if ((bp = getBlockParam(param, "mix_device")))
+	if ((bp = getBlockParam(param, "mixer_device")))
 		am->device = bp->value;
-	if ((bp = getBlockParam(param, "mix_control")))
+	if ((bp = getBlockParam(param, "mixer_control")))
 		am->control = bp->value;
 }
 

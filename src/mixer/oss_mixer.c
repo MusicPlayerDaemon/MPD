@@ -53,11 +53,11 @@ void
 oss_mixer_configure(struct oss_mixer *om, ConfigParam *param)
 {
 	BlockParam *bp;
-	bp = getBlockParam(param, "mix_device");
+	bp = getBlockParam(param, "mixer_device");
 	if (bp) {
 		om->device = bp->value;
 	}
-	bp = getBlockParam(param, "mix_control");
+	bp = getBlockParam(param, "mixer_control");
 	if (bp) {
 		om->control = bp->value;
 	}
