@@ -18,7 +18,6 @@
  */
 
 #include "sig_handlers.h"
-#include "signal_check.h"
 #include "log.h"
 #include "main.h"
 #include "event_pipe.h"
@@ -69,6 +68,4 @@ void initSigHandlers(void)
 	event_pipe_register(PIPE_EVENT_RELOAD, handle_reload_event);
 	sa.sa_handler = reload_signal_handler;
 	x_sigaction(SIGHUP, &sa);
-
-	signal_handle(SIGUSR1);
 }

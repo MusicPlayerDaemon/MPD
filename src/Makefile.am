@@ -62,7 +62,6 @@ mpd_headers = \
 	playlist.h \
 	playlist_save.h \
 	replay_gain.h \
-	signal_check.h \
 	sig_handlers.h \
 	song.h \
 	song_print.h \
@@ -144,7 +143,6 @@ mpd_SOURCES = \
 	playlist_save.c \
 	replay_gain.c \
 	sig_handlers.c \
-	signal_check.c \
 	song.c \
 	song_print.c \
 	song_save.c \
