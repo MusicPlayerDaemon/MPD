@@ -19,8 +19,6 @@
 #ifndef MPD_SIG_HANDLERS_H
 #define MPD_SIG_HANDLERS_H
 
-int handlePendingSignals(void);
-
 void initSigHandlers(void);
 
 #endif

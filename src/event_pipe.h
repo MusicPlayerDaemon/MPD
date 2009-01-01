@@ -40,6 +40,9 @@ enum pipe_event {
 	/** must call syncPlayerAndPlaylist() */
 	PIPE_EVENT_PLAYLIST,
 
+	/** SIGHUP received: reload configuration, roll log file */
+	PIPE_EVENT_RELOAD,
+
 	PIPE_EVENT_MAX
 };
 
