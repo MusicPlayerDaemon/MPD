@@ -90,7 +90,7 @@ static void player_stop_decoder(void)
 {
 	dc_stop(&pc.notify);
 	pc.state = PLAYER_STATE_STOP;
-	event_pipe_signal();
+	event_pipe_emit(PIPE_EVENT_PLAYLIST);
 }
 
 static int player_wait_for_decoder(struct player *player)
@@ -369,7 +369,7 @@ static void do_play(void)
 			   request the next song from the playlist */
 
 			pc.next_song = NULL;
-			event_pipe_signal();
+			event_pipe_emit(PIPE_EVENT_PLAYLIST);
 		}
 
 		if (decoder_is_idle() && player.queued) {
@@ -476,7 +476,7 @@ static void do_play(void)
 			if (player_wait_for_decoder(&player) < 0)
 				return;
 
-			event_pipe_signal();
+			event_pipe_emit(PIPE_EVENT_PLAYLIST);
 		} else if (decoder_is_idle()) {
 			break;
 		} else {

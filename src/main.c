@@ -190,17 +190,15 @@ timer_save_state_file(G_GNUC_UNUSED gpointer data)
 	return true;
 }
 
-void
-main_notify_triggered(void)
+/**
+ * event_pipe callback function for PIPE_EVENT_IDLE
+ */
+static void
+idle_event_emitted(void)
 {
-	unsigned flags;
-
-	syncPlayerAndPlaylist();
-	reap_update_task();
-
 	/* send "idle" notificaions to all subscribed
 	   clients */
-	flags = idle_get();
+	unsigned flags = idle_get();
 	if (flags != 0)
 		client_manager_idle_add(flags);
 }
@@ -243,6 +241,10 @@ int main(int argc, char *argv[])
 
 	main_loop = g_main_loop_new(NULL, FALSE);
 
+	event_pipe_init();
+	event_pipe_register(PIPE_EVENT_IDLE, idle_event_emitted);
+	event_pipe_register(PIPE_EVENT_PLAYLIST, syncPlayerAndPlaylist);
+
 	path_global_init();
 	mapper_init();
 	initPermissions();
@@ -252,8 +254,6 @@ int main(int argc, char *argv[])
 #endif
 	decoder_plugin_init_all();
 	update_global_init();
-
-	event_pipe_init();
 
 	openDB(&options, argv[0]);
 

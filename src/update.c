@@ -98,7 +98,7 @@ delete_song(struct directory *dir, struct song *del)
 	cond_enter(&delete_cond);
 	assert(!delete);
 	delete = del;
-	event_pipe_signal();
+	event_pipe_emit(PIPE_EVENT_DELETE);
 	do { cond_wait(&delete_cond); } while (delete);
 	cond_leave(&delete_cond);
 
@@ -603,7 +603,7 @@ static void * update_task(void *_path)
 	if (modified)
 		db_save();
 	progress = UPDATE_PROGRESS_DONE;
-	event_pipe_signal();
+	event_pipe_emit(PIPE_EVENT_UPDATE);
 	return NULL;
 }
 
@@ -646,7 +646,7 @@ directory_update_init(char *path)
 	return update_task_id;
 }
 
-void reap_update_task(void)
+static void reap_update_task(void)
 {
 	assert(g_thread_self() == main_task);
 
@@ -693,6 +693,9 @@ void update_global_init(void)
 				DEFAULT_FOLLOW_OUTSIDE_SYMLINKS);
 
 	cond_init(&delete_cond);
+
+	event_pipe_register(PIPE_EVENT_DELETE, reap_update_task);
+	event_pipe_register(PIPE_EVENT_UPDATE, reap_update_task);
 }
 
 void update_global_finish(void)

@@ -23,17 +23,41 @@
 
 #include <glib.h>
 
+enum pipe_event {
+	/** the default event: the main thread is waiting for somebody,
+	    and this event wakes up the main thread */
+	PIPE_EVENT_SIGNAL = 0,
+
+	/** database update was finished */
+	PIPE_EVENT_UPDATE,
+
+	/** during database update, a song was deleted */
+	PIPE_EVENT_DELETE,
+
+	/** an idle event was emitted */
+	PIPE_EVENT_IDLE,
+
+	/** must call syncPlayerAndPlaylist() */
+	PIPE_EVENT_PLAYLIST,
+
+	PIPE_EVENT_MAX
+};
+
+typedef void (*event_pipe_callback_t)(void);
+
 extern GThread *main_task;
 
 void event_pipe_init(void);
 
 void event_pipe_deinit(void);
 
+void
+event_pipe_register(enum pipe_event event, event_pipe_callback_t callback);
+
+void event_pipe_emit(enum pipe_event event);
+
 void event_pipe_signal(void);
 
 void event_pipe_wait(void);
-
-void
-main_notify_triggered(void);
 
 #endif /* MAIN_NOTIFY_H */

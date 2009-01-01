@@ -66,7 +66,7 @@ idle_add(unsigned flags)
 	idle_flags |= flags;
 	g_mutex_unlock(idle_mutex);
 
-	event_pipe_signal();
+	event_pipe_emit(PIPE_EVENT_IDLE);
 }
 
 unsigned

@@ -59,7 +59,6 @@ db_init(void)
 
 	do {
 		event_pipe_wait();
-		reap_update_task();
 	} while (isUpdatingDB());
 
 	stats.numberOfSongs = countSongsIn(NULL);

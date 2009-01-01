@@ -35,6 +35,4 @@ isUpdatingDB(void);
 unsigned
 directory_update_init(char *path);
 
-void reap_update_task(void);
-
 #endif
