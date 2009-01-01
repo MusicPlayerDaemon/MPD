@@ -1202,14 +1202,13 @@ void shufflePlaylist(void)
 enum playlist_result savePlaylist(const char *utf8file)
 {
 	FILE *fp;
-	struct stat sb;
 	char *path;
 
 	if (!is_valid_playlist_name(utf8file))
 		return PLAYLIST_RESULT_BAD_NAME;
 
 	path = map_spl_utf8_to_fs(utf8file);
-	if (!stat(path, &sb)) {
+	if (g_file_test(path, G_FILE_TEST_EXISTS)) {
 		g_free(path);
 		return PLAYLIST_RESULT_LIST_EXISTS;
 	}

@@ -386,12 +386,10 @@ spl_append_uri(const char *url, const char *utf8file)
 static enum playlist_result
 spl_rename_internal(const char *from_path_fs, const char *to_path_fs)
 {
-	struct stat st;
-
-	if (stat(from_path_fs, &st) != 0)
+	if (!g_file_test(from_path_fs, G_FILE_TEST_IS_REGULAR))
 		return PLAYLIST_RESULT_NO_SUCH_LIST;
 
-	if (stat(to_path_fs, &st) == 0)
+	if (g_file_test(to_path_fs, G_FILE_TEST_EXISTS))
 		return PLAYLIST_RESULT_LIST_EXISTS;
 
 	if (rename(from_path_fs, to_path_fs) < 0)
