@@ -164,23 +164,20 @@ map_fs_to_utf8(const char *path_fs, char *buffer)
 	return fs_charset_to_utf8(buffer, path_fs);
 }
 
-static char *rpp2app_r(char *dst, const char *rel_path)
-{
-	pfx_dir(dst, rel_path, strlen(rel_path),
-		playlist_dir, playlist_dir_length);
-	return dst;
-}
-
 const char *
 map_spl_path(void)
 {
 	return playlist_dir;
 }
 
-const char *
-map_spl_utf8_to_fs(const char *name, char *buffer)
+char *
+map_spl_utf8_to_fs(const char *name)
 {
-	rpp2app_r(buffer, utf8_to_fs_charset(buffer, name));
-	g_strlcat(buffer, "." PLAYLIST_FILE_SUFFIX, MPD_PATH_MAX);
-	return buffer;
+	char *filename = g_strconcat(name, "." PLAYLIST_FILE_SUFFIX, NULL);
+	char *path;
+
+	path = g_build_filename(playlist_dir, filename, NULL);
+	g_free(filename);
+
+	return path;
 }

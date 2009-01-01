@@ -1203,17 +1203,19 @@ enum playlist_result savePlaylist(const char *utf8file)
 {
 	FILE *fp;
 	struct stat sb;
-	char path_max_tmp[MPD_PATH_MAX];
-	const char *path;
+	char *path;
 
 	if (!is_valid_playlist_name(utf8file))
 		return PLAYLIST_RESULT_BAD_NAME;
 
-	path = map_spl_utf8_to_fs(utf8file, path_max_tmp);
-	if (!stat(path, &sb))
+	path = map_spl_utf8_to_fs(utf8file);
+	if (!stat(path, &sb)) {
+		g_free(path);
 		return PLAYLIST_RESULT_LIST_EXISTS;
+	}
 
 	while (!(fp = fopen(path, "w")) && errno == EINTR);
+	g_free(path);
 
 	if (fp == NULL)
 		return PLAYLIST_RESULT_ERRNO;

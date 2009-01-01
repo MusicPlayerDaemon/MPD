@@ -115,14 +115,14 @@ static enum playlist_result
 spl_save(GPtrArray *list, const char *utf8path)
 {
 	FILE *file;
-	char path_max_tmp[MPD_PATH_MAX];
-	const char *path_fs;
+	char *path_fs;
 
 	assert(utf8path != NULL);
 
-	path_fs = map_spl_utf8_to_fs(utf8path, path_max_tmp);
+	path_fs = map_spl_utf8_to_fs(utf8path);
 
 	while (!(file = fopen(path_fs, "w")) && errno == EINTR);
+	g_free(path_fs);
 	if (file == NULL)
 		return PLAYLIST_RESULT_ERRNO;
 
@@ -142,14 +142,15 @@ spl_load(const char *utf8path)
 	GPtrArray *list;
 	char buffer[MPD_PATH_MAX];
 	char path_max_tmp[MPD_PATH_MAX];
-	const char *path_fs;
+	char *path_fs;
 
 	if (!is_valid_playlist_name(utf8path))
 		return NULL;
 
-	path_fs = map_spl_utf8_to_fs(utf8path, path_max_tmp);
+	path_fs = map_spl_utf8_to_fs(utf8path);
 
 	while (!(file = fopen(path_fs, "r")) && errno == EINTR);
+	g_free(path_fs);
 	if (file == NULL)
 		return NULL;
 
@@ -257,16 +258,16 @@ spl_move_index(const char *utf8path, unsigned src, unsigned dest)
 enum playlist_result
 spl_clear(const char *utf8path)
 {
-	char filename[MPD_PATH_MAX];
-	const char *path_fs;
+	char *path_fs;
 	FILE *file;
 
 	if (!is_valid_playlist_name(utf8path))
 		return PLAYLIST_RESULT_BAD_NAME;
 
-	path_fs = map_spl_utf8_to_fs(utf8path, filename);
+	path_fs = map_spl_utf8_to_fs(utf8path);
 
 	while (!(file = fopen(path_fs, "w")) && errno == EINTR);
+	g_free(path_fs);
 	if (file == NULL)
 		return PLAYLIST_RESULT_ERRNO;
 
@@ -279,12 +280,13 @@ spl_clear(const char *utf8path)
 enum playlist_result
 spl_delete(const char *name_utf8)
 {
-	char filename[MPD_PATH_MAX];
-	const char *path_fs;
+	char *path_fs;
+	int ret;
 
-	path_fs = map_spl_utf8_to_fs(name_utf8, filename);
-
-	if (unlink(path_fs) < 0)
+	path_fs = map_spl_utf8_to_fs(name_utf8);
+	ret = unlink(path_fs);
+	g_free(path_fs);
+	if (ret < 0)
 		return errno == ENOENT
 			? PLAYLIST_RESULT_NO_SUCH_LIST
 			: PLAYLIST_RESULT_ERRNO;
@@ -323,15 +325,15 @@ spl_append_song(const char *utf8path, struct song *song)
 {
 	FILE *file;
 	struct stat st;
-	char path_max_tmp[MPD_PATH_MAX];
-	const char *path_fs;
+	char *path_fs;
 
 	if (!is_valid_playlist_name(utf8path))
 		return PLAYLIST_RESULT_BAD_NAME;
 
-	path_fs = map_spl_utf8_to_fs(utf8path, path_max_tmp);
+	path_fs = map_spl_utf8_to_fs(utf8path);
 
 	while (!(file = fopen(path_fs, "a")) && errno == EINTR);
+	g_free(path_fs);
 	if (file == NULL) {
 		int save_errno = errno;
 		while (fclose(file) != 0 && errno == EINTR);
@@ -381,20 +383,10 @@ spl_append_uri(const char *url, const char *utf8file)
 	return PLAYLIST_RESULT_NO_SUCH_SONG;
 }
 
-enum playlist_result
-spl_rename(const char *utf8from, const char *utf8to)
+static enum playlist_result
+spl_rename_internal(const char *from_path_fs, const char *to_path_fs)
 {
 	struct stat st;
-	char from[MPD_PATH_MAX];
-	char to[MPD_PATH_MAX];
-	const char *from_path_fs, *to_path_fs;
-
-	if (!is_valid_playlist_name(utf8from) ||
-	    !is_valid_playlist_name(utf8to))
-		return PLAYLIST_RESULT_BAD_NAME;
-
-	from_path_fs = map_spl_utf8_to_fs(utf8from, from);
-	to_path_fs = map_spl_utf8_to_fs(utf8to, to);
 
 	if (stat(from_path_fs, &st) != 0)
 		return PLAYLIST_RESULT_NO_SUCH_LIST;
@@ -407,4 +399,25 @@ spl_rename(const char *utf8from, const char *utf8to)
 
 	idle_add(IDLE_STORED_PLAYLIST);
 	return PLAYLIST_RESULT_SUCCESS;
+}
+
+enum playlist_result
+spl_rename(const char *utf8from, const char *utf8to)
+{
+	char *from_path_fs, *to_path_fs;
+	static enum playlist_result ret;
+
+	if (!is_valid_playlist_name(utf8from) ||
+	    !is_valid_playlist_name(utf8to))
+		return PLAYLIST_RESULT_BAD_NAME;
+
+	from_path_fs = map_spl_utf8_to_fs(utf8from);
+	to_path_fs = map_spl_utf8_to_fs(utf8to);
+
+	ret = spl_rename_internal(from_path_fs, to_path_fs);
+
+	g_free(from_path_fs);
+	g_free(to_path_fs);
+
+	return ret;
 }
