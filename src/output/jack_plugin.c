@@ -117,7 +117,7 @@ mpd_jack_finish(void *data)
 }
 
 static int
-mpd_jack_srate(mpd_unused jack_nframes_t rate, void *data)
+mpd_jack_srate(G_GNUC_UNUSED jack_nframes_t rate, void *data)
 {
 	struct jack_data *jd = (struct jack_data *)data;
 	struct audio_format *audioFormat = jd->audio_format;
@@ -186,7 +186,7 @@ mpd_jack_error(const char *msg)
 
 static void *
 mpd_jack_init(struct audio_output *ao,
-	      mpd_unused const struct audio_format *audio_format,
+	      G_GNUC_UNUSED const struct audio_format *audio_format,
 	      ConfigParam *param)
 {
 	struct jack_data *jd;
@@ -356,13 +356,13 @@ mpd_jack_open(void *data, struct audio_format *audio_format)
 }
 
 static void
-mpd_jack_close(mpd_unused void *data)
+mpd_jack_close(G_GNUC_UNUSED void *data)
 {
 	/*mpd_jack_finish(audioOutput);*/
 }
 
 static void
-mpd_jack_cancel (mpd_unused void *data)
+mpd_jack_cancel (G_GNUC_UNUSED void *data)
 {
 }
 

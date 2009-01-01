@@ -222,8 +222,8 @@ static int shout_ogg_encoder_init_encoder(struct shout_data *sd)
 }
 
 static int shout_ogg_encoder_send_metadata(struct shout_data *sd,
-					   mpd_unused char * song,
-					   mpd_unused size_t size)
+					   G_GNUC_UNUSED char * song,
+					   G_GNUC_UNUSED size_t size)
 {
 	struct ogg_vorbis_data *od = (struct ogg_vorbis_data *)sd->encoder_data;
 

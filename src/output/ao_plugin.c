@@ -75,7 +75,7 @@ static void audioOutputAo_error(const char *msg)
 }
 
 static void *audioOutputAo_initDriver(struct audio_output *ao,
-				      mpd_unused const struct audio_format *audio_format,
+				      G_GNUC_UNUSED const struct audio_format *audio_format,
 				      ConfigParam * param)
 {
 	ao_info *ai;
@@ -176,7 +176,7 @@ static void audioOutputAo_finishDriver(void *data)
 		ao_shutdown();
 }
 
-static void audioOutputAo_dropBufferedAudio(mpd_unused void *data)
+static void audioOutputAo_dropBufferedAudio(G_GNUC_UNUSED void *data)
 {
 	/* not supported by libao */
 }

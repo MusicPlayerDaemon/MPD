@@ -23,6 +23,7 @@
 #include "../mixer.h"
 
 #include <glib.h>
+
 #include <sys/stat.h>
 #include <sys/ioctl.h>
 #include <fcntl.h>
@@ -386,8 +387,8 @@ static void *oss_open_default(ConfigParam *param)
 	return NULL; /* some compilers can be dumb... */
 }
 
-static void *oss_initDriver(mpd_unused struct audio_output *audioOutput,
-			    mpd_unused const struct audio_format *audio_format,
+static void *oss_initDriver(G_GNUC_UNUSED struct audio_output *audioOutput,
+			    G_GNUC_UNUSED const struct audio_format *audio_format,
 			    ConfigParam * param)
 {
 	if (param) {

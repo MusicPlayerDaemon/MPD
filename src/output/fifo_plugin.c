@@ -20,6 +20,8 @@
 #include "../utils.h"
 #include "../timer.h"
 
+#include <glib.h>
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -155,8 +157,8 @@ static bool openFifo(FifoData *fd)
 	return true;
 }
 
-static void *fifo_initDriver(mpd_unused struct audio_output *ao,
-			     mpd_unused const struct audio_format *audio_format,
+static void *fifo_initDriver(G_GNUC_UNUSED struct audio_output *ao,
+			     G_GNUC_UNUSED const struct audio_format *audio_format,
 			     ConfigParam *param)
 {
 	FifoData *fd;

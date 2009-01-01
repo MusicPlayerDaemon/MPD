@@ -81,9 +81,9 @@ static bool osx_testDefault(void)
 }
 
 static void *
-osx_initDriver(mpd_unused struct audio_output *audioOutput,
-	       mpd_unused const struct audio_format *audio_format,
-	       mpd_unused ConfigParam * param)
+osx_initDriver(G_GNUC_UNUSED struct audio_output *audioOutput,
+	       G_GNUC_UNUSED const struct audio_format *audio_format,
+	       G_GNUC_UNUSED ConfigParam * param)
 {
 	return newOsxData();
 }
@@ -133,9 +133,10 @@ static void osx_closeDevice(void *data)
 
 static OSStatus
 osx_render(void *vdata,
-	   mpd_unused AudioUnitRenderActionFlags * ioActionFlags,
-	   mpd_unused const AudioTimeStamp * inTimeStamp,
-	   mpd_unused UInt32 inBusNumber, mpd_unused UInt32 inNumberFrames,
+	   G_GNUC_UNUSED AudioUnitRenderActionFlags * ioActionFlags,
+	   G_GNUC_UNUSED const AudioTimeStamp * inTimeStamp,
+	   G_GNUC_UNUSED UInt32 inBusNumber,
+	   G_GNUC_UNUSED UInt32 inNumberFrames,
 	   AudioBufferList * bufferList)
 {
 	OsxData *od = (OsxData *) vdata;

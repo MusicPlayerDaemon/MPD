@@ -22,6 +22,7 @@
 #include "../output_api.h"
 
 #include <glib.h>
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/ioctl.h>
@@ -103,9 +104,9 @@ static bool mvp_testDefault(void)
 	return false;
 }
 
-static void *mvp_initDriver(mpd_unused struct audio_output *audio_output,
-			    mpd_unused const struct audio_format *audio_format,
-			    mpd_unused ConfigParam *param)
+static void *mvp_initDriver(G_GNUC_UNUSED struct audio_output *audio_output,
+			    G_GNUC_UNUSED const struct audio_format *audio_format,
+			    G_GNUC_UNUSED ConfigParam *param)
 {
 	MvpData *md = g_new(MvpData, 1);
 	md->audio_output = audio_output;

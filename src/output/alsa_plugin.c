@@ -119,8 +119,8 @@ alsa_configure(AlsaData *ad, ConfigParam *param)
 #endif
 }
 
-static void *alsa_initDriver(mpd_unused struct audio_output *ao,
-			     mpd_unused const struct audio_format *audio_format,
+static void *alsa_initDriver(G_GNUC_UNUSED struct audio_output *ao,
+			     G_GNUC_UNUSED const struct audio_format *audio_format,
 			     ConfigParam * param)
 {
 	/* no need for pthread_once thread-safety when reading config */
