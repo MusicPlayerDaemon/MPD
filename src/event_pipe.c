@@ -137,6 +137,14 @@ void event_pipe_emit(enum pipe_event event)
 		g_error("error writing to pipe: %s", strerror(errno));
 }
 
+void event_pipe_emit_fast(enum pipe_event event)
+{
+	assert((unsigned)event < PIPE_EVENT_MAX);
+
+	pipe_events[event] = true;
+	write(event_pipe[1], "", 1);
+}
+
 void event_pipe_signal(void)
 {
 	event_pipe_emit(PIPE_EVENT_SIGNAL);

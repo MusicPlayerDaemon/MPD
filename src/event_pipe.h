@@ -56,6 +56,13 @@ event_pipe_register(enum pipe_event event, event_pipe_callback_t callback);
 
 void event_pipe_emit(enum pipe_event event);
 
+/**
+ * Similar to event_pipe_emit(), but aimed for use in signal handlers:
+ * it doesn't lock the mutex, and doesn't log on error.  That makes it
+ * potentially lossy, but for its intended use, that does not matter.
+ */
+void event_pipe_emit_fast(enum pipe_event event);
+
 void event_pipe_signal(void);
 
 void event_pipe_wait(void);
