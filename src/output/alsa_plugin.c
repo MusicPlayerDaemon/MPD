@@ -17,7 +17,6 @@
  */
 
 #include "../output_api.h"
-#include "../utils.h"
 #include "../mixer.h"
 
 #include <glib.h>
@@ -65,7 +64,7 @@ alsa_device(const AlsaData *ad)
 
 static AlsaData *newAlsaData(void)
 {
-	AlsaData *ret = xmalloc(sizeof(AlsaData));
+	AlsaData *ret = g_new(AlsaData, 1);
 
 	ret->device = NULL;
 	ret->mode = 0;
@@ -93,7 +92,7 @@ alsa_configure(AlsaData *ad, ConfigParam *param)
 	BlockParam *bp;
 
 	if ((bp = getBlockParam(param, "device")))
-		ad->device = xstrdup(bp->value);
+		ad->device = g_strdup(bp->value);
 
 	ad->useMmap = getBoolBlockParam(param, "use_mmap", 1);
 	if (ad->useMmap == CONF_BOOL_UNSET)
