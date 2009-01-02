@@ -18,12 +18,13 @@
 
 #include "directory.h"
 #include "song.h"
-#include "utils.h"
 #include "path.h"
+
+#include <glib.h>
 
 #include <assert.h>
 #include <string.h>
-#include <glib.h>
+#include <stdlib.h>
 
 struct directory *
 directory_new(const char *path, struct directory *parent)
@@ -34,8 +35,8 @@ directory_new(const char *path, struct directory *parent)
 	assert(path != NULL);
 	assert((*path == 0) == (parent == NULL));
 
-	directory = xcalloc(1, sizeof(*directory) -
-			    sizeof(directory->path) + pathlen + 1);
+	directory = g_malloc0(sizeof(*directory) -
+			      sizeof(directory->path) + pathlen + 1);
 	directory->parent = parent;
 	memcpy(directory->path, path, pathlen + 1);
 
@@ -92,7 +93,7 @@ directory_get_directory(struct directory *directory, const char *name)
 	if (isRootDirectory(name))
 		return directory;
 
-	duplicated = xstrdup(name);
+	duplicated = g_strdup(name);
 	locate = strchr(duplicated, '/');
 	while (1) {
 		if (locate)
