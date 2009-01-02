@@ -33,7 +33,7 @@ struct jack_data {
 
 	/* configuration */
 	char *name;
-	const char *output_ports[2];
+	char *output_ports[2];
 	int ringbuffer_size;
 
 	/* for srate() only */
@@ -297,8 +297,9 @@ mpd_jack_connect(struct jack_data *jd, struct audio_format *audio_format)
 	if (!jd->output_ports[1] &&
 	    (jports = jack_get_ports(jd->client, NULL, NULL,
 				     JackPortIsPhysical | JackPortIsInput))) {
-		jd->output_ports[0] = jports[0];
-		jd->output_ports[1] = jports[1] ? jports[1] : jports[0];
+		jd->output_ports[0] = g_strdup(jports[0]);
+		jd->output_ports[1] = g_strdup(jports[1] != NULL
+					       ? jports[1] : jports[0]);
 		DEBUG("output_ports: %s %s\n",
 		      jd->output_ports[0], jd->output_ports[1]);
 		free(jports);
