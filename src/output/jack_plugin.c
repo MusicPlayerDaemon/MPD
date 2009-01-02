@@ -25,6 +25,12 @@
 #include <jack/types.h>
 #include <jack/ringbuffer.h>
 
+#include <stdlib.h>
+#include <stdio.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <errno.h>
+
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "jack"
 
@@ -58,9 +64,7 @@ mpd_jack_name(const struct jack_data *jd)
 static struct jack_data *
 mpd_jack_new(void)
 {
-	struct jack_data *ret;
-
-	ret = xcalloc(sizeof(*ret), 1);
+	struct jack_data *ret = g_new(struct jack_data, 1);
 
 	ret->ringbuffer_size = 32768;
 
@@ -92,19 +96,14 @@ mpd_jack_client_free(struct jack_data *jd)
 static void
 mpd_jack_free(struct jack_data *jd)
 {
-	int i;
-
 	assert(jd != NULL);
 
 	mpd_jack_client_free(jd);
 
 	g_free(jd->name);
 
-	for ( i = ARRAY_SIZE(jd->output_ports); --i >= 0; ) {
-		if (!jd->output_ports[i])
-			continue;
-		xfree(jd->output_ports[i]);
-	}
+	for (unsigned i = 0; i < G_N_ELEMENTS(jd->output_ports); ++i)
+		g_free(jd->output_ports[i]);
 
 	free(jd);
 }
@@ -211,19 +210,19 @@ mpd_jack_init(struct audio_output *ao,
 				bp->name, bp->line, bp->value);
 
 		*cp = '\0';
-		jd->output_ports[0] = xstrdup(bp->value);
+		jd->output_ports[0] = g_strdup(bp->value);
 		*cp++ = ',';
 
 		if (!*cp)
 			g_error("expected a second value for '%s' at line %d: %s",
 				bp->name, bp->line, bp->value);
 
-		jd->output_ports[1] = xstrdup(cp);
+		jd->output_ports[1] = g_strdup(cp);
 
 		if (strchr(cp,','))
 			g_error("Only %d values are supported for '%s' "
 				"at line %d",
-				(int)ARRAY_SIZE(jd->output_ports),
+				(int)G_N_ELEMENTS(jd->output_ports),
 				bp->name, bp->line);
 	}
 
@@ -242,7 +241,7 @@ mpd_jack_init(struct audio_output *ao,
 
 	if ( (bp = getBlockParam(param, "name"))
 	     && (strcmp(bp->value, "mpd") != 0) ) {
-		jd->name = xstrdup(bp->value);
+		jd->name = g_strdup(bp->value);
 		g_debug("name=%s", jd->name);
 	} else
 		jd->name = NULL;
@@ -315,7 +314,7 @@ mpd_jack_connect(struct jack_data *jd, struct audio_format *audio_format)
 		memset(jd->ringbuffer[0]->buf, 0, jd->ringbuffer[0]->size);
 		memset(jd->ringbuffer[1]->buf, 0, jd->ringbuffer[1]->size);
 
-		port_name = xmalloc(sizeof(char) * (7 + strlen(name)));
+		port_name = g_malloc(sizeof(port_name[0]) * (7 + strlen(name)));
 
 		sprintf(port_name, "%s:left", name);
 		if ( (jack_connect(jd->client, port_name,
