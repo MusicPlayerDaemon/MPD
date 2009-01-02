@@ -21,7 +21,6 @@
 #include "song.h"
 #include "mapper.h"
 #include "path.h"
-#include "utils.h"
 #include "ls.h"
 #include "database.h"
 #include "idle.h"
@@ -32,6 +31,7 @@
 #include <unistd.h>
 #include <dirent.h>
 #include <string.h>
+#include <errno.h>
 
 static struct stored_playlist_info *
 load_playlist_info(const char *parent_path_fs, const char *name_fs)
@@ -179,7 +179,7 @@ spl_load(const char *utf8path)
 			s = song_get_url(song, path_max_tmp);
 		}
 
-		g_ptr_array_add(list, xstrdup(s));
+		g_ptr_array_add(list, g_strdup(s));
 
 		if (list->len >= playlist_max_length)
 			break;

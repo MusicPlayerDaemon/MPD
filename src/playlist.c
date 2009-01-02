@@ -30,7 +30,6 @@
 #include "log.h"
 #include "mapper.h"
 #include "path.h"
-#include "utils.h"
 #include "state_file.h"
 #include "stored_playlist.h"
 #include "ack.h"
@@ -43,6 +42,8 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <stdlib.h>
+#include <errno.h>
 
 #define PLAYLIST_STATE_STOP		0
 #define PLAYLIST_STATE_PLAY		1
@@ -149,14 +150,17 @@ void initPlaylist(void)
 		playlist_saveAbsolutePaths =
 		                         DEFAULT_PLAYLIST_SAVE_ABSOLUTE_PATHS;
 
-	playlist.songs = xmalloc(sizeof(struct song *) * playlist_max_length);
-	playlist.songMod = xmalloc(sizeof(uint32_t) * playlist_max_length);
-	playlist.order = xmalloc(sizeof(playlist.order[0]) *
-				 playlist_max_length);
-	playlist.idToPosition = xmalloc(sizeof(int) * playlist_max_length *
-				       PLAYLIST_HASH_MULT);
-	playlist.positionToId = xmalloc(sizeof(playlist.positionToId[0]) *
-					playlist_max_length);
+	playlist.songs = g_malloc(sizeof(playlist.songs[0]) *
+				  playlist_max_length);
+	playlist.songMod = g_malloc(sizeof(playlist.songMod[0]) *
+				    playlist_max_length);
+	playlist.order = g_malloc(sizeof(playlist.order[0]) *
+				  playlist_max_length);
+	playlist.idToPosition = g_malloc(sizeof(playlist.idToPosition[0]) *
+					 playlist_max_length *
+					 PLAYLIST_HASH_MULT);
+	playlist.positionToId = g_malloc(sizeof(playlist.positionToId[0]) *
+					 playlist_max_length);
 
 	memset(playlist.songs, 0, sizeof(char *) * playlist_max_length);
 
@@ -1335,7 +1339,7 @@ enum playlist_result loadPlaylist(struct client *client, const char *utf8file)
 		const char *temp = g_ptr_array_index(list, i);
 		if ((addToPlaylist(temp, NULL)) != PLAYLIST_RESULT_SUCCESS) {
 			/* for windows compatibility, convert slashes */
-			char *temp2 = xstrdup(temp);
+			char *temp2 = g_strdup(temp);
 			char *p = temp2;
 			while (*p) {
 				if (*p == '\\')
@@ -1358,7 +1362,7 @@ void searchForSongsInPlaylist(struct client *client,
 			      unsigned numItems, LocateTagItem * items)
 {
 	unsigned i;
-	char **originalNeedles = xmalloc(numItems * sizeof(char *));
+	char **originalNeedles = g_malloc(numItems * sizeof(char *));
 
 	for (i = 0; i < numItems; i++) {
 		originalNeedles[i] = items[i].needle;
