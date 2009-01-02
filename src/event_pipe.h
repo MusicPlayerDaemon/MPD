@@ -24,10 +24,6 @@
 #include <glib.h>
 
 enum pipe_event {
-	/** the default event: the main thread is waiting for somebody,
-	    and this event wakes up the main thread */
-	PIPE_EVENT_SIGNAL = 0,
-
 	/** database update was finished */
 	PIPE_EVENT_UPDATE,
 
@@ -65,8 +61,6 @@ void event_pipe_emit(enum pipe_event event);
  * potentially lossy, but for its intended use, that does not matter.
  */
 void event_pipe_emit_fast(enum pipe_event event);
-
-void event_pipe_signal(void);
 
 void event_pipe_wait(void);
 

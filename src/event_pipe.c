@@ -39,13 +39,13 @@ static void
 event_pipe_invoke(enum pipe_event event)
 {
 	assert((unsigned)event < PIPE_EVENT_MAX);
-	assert(event != PIPE_EVENT_SIGNAL);
 	assert(event_pipe_callbacks[event] != NULL);
 
 	event_pipe_callbacks[event]();
 }
 
-static bool consume_pipe(void)
+static void
+consume_pipe(void)
 {
 	char buffer[256];
 	ssize_t r = read(event_pipe[0], buffer, sizeof(buffer));
@@ -60,13 +60,9 @@ static bool consume_pipe(void)
 	g_mutex_unlock(event_pipe_mutex);
 
 	for (unsigned i = 0; i < PIPE_EVENT_MAX; ++i)
-		if (i != PIPE_EVENT_SIGNAL && events[i])
-			/* invoke the event handler; the SIGNAL event
-			   has no handler, because it is handled by
-			   the event_pipe_wait() caller */
+		if (events[i])
+			/* invoke the event handler */
 			event_pipe_invoke(i);
-
-	return events[PIPE_EVENT_SIGNAL];
 }
 
 static gboolean
@@ -109,7 +105,6 @@ void event_pipe_deinit(void)
 void
 event_pipe_register(enum pipe_event event, event_pipe_callback_t callback)
 {
-	assert(event != PIPE_EVENT_SIGNAL);
 	assert((unsigned)event < PIPE_EVENT_MAX);
 	assert(event_pipe_callbacks[event] == NULL);
 
@@ -143,11 +138,6 @@ void event_pipe_emit_fast(enum pipe_event event)
 
 	pipe_events[event] = true;
 	write(event_pipe[1], "", 1);
-}
-
-void event_pipe_signal(void)
-{
-	event_pipe_emit(PIPE_EVENT_SIGNAL);
 }
 
 void event_pipe_wait(void)

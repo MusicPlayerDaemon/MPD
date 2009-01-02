@@ -27,6 +27,7 @@
 #include "song.h"
 #include "pipe.h"
 #include "idle.h"
+#include "main.h"
 
 #include <glib.h>
 
@@ -83,7 +84,7 @@ static void player_command_finished(void)
 	assert(pc.command != PLAYER_COMMAND_NONE);
 
 	pc.command = PLAYER_COMMAND_NONE;
-	event_pipe_signal();
+	notify_signal(&main_notify);
 }
 
 static void player_stop_decoder(void)

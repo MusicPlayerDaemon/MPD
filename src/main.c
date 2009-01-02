@@ -77,6 +77,8 @@
 
 GMainLoop *main_loop;
 
+struct notify main_notify;
+
 static void changeToUser(void)
 {
 #ifndef WIN32
@@ -240,6 +242,7 @@ int main(int argc, char *argv[])
 	changeToUser();
 
 	main_loop = g_main_loop_new(NULL, FALSE);
+	notify_init(&main_notify);
 
 	event_pipe_init();
 	event_pipe_register(PIPE_EVENT_IDLE, idle_event_emitted);

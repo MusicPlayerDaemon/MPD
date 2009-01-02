@@ -21,4 +21,6 @@
 
 extern GMainLoop *main_loop;
 
+extern struct notify main_notify;
+
 #endif

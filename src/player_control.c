@@ -23,7 +23,7 @@
 #include "song.h"
 #include "idle.h"
 #include "pcm_utils.h"
-#include "event_pipe.h"
+#include "main.h"
 
 #include <assert.h>
 #include <stdio.h>
@@ -58,7 +58,7 @@ static void player_command(enum player_command cmd)
 	pc.command = cmd;
 	while (pc.command != PLAYER_COMMAND_NONE) {
 		notify_signal(&pc.notify);
-		event_pipe_wait();
+		notify_wait(&main_notify);
 	}
 }
 
