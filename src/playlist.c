@@ -34,7 +34,6 @@
 #include "stored_playlist.h"
 #include "ack.h"
 #include "idle.h"
-#include "list.h"
 
 #include <glib.h>
 

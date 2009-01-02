@@ -21,7 +21,6 @@
 #include "path.h"
 #include "client.h"
 #include "log.h"
-#include "list.h"
 #include "stored_playlist.h"
 #include "config.h"
 

@@ -38,7 +38,6 @@ mpd_headers = \
 	input_file.h \
 	input_curl.h \
 	client.h \
-	list.h \
 	dlist.h \
 	listen.h \
 	log.h \
@@ -119,7 +118,6 @@ mpd_SOURCES = \
 	input_stream.c \
 	input_file.c \
 	client.c \
-	list.c \
 	listen.c \
 	log.c \
 	ls.c \
