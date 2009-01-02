@@ -18,11 +18,12 @@
 
 #include "locate.h"
 #include "path.h"
-#include "utils.h"
 #include "tag.h"
 #include "song.h"
 
 #include <glib.h>
+
+#include <stdlib.h>
 
 #define LOCATE_TAG_FILE_KEY     "file"
 #define LOCATE_TAG_FILE_KEY_OLD "filename"
@@ -60,14 +61,14 @@ static int initLocateTagItem(LocateTagItem * item,
 	if (item->tagType < 0)
 		return -1;
 
-	item->needle = xstrdup(needle);
+	item->needle = g_strdup(needle);
 
 	return 0;
 }
 
 LocateTagItem *newLocateTagItem(const char *typeStr, const char *needle)
 {
-	LocateTagItem *ret = xmalloc(sizeof(LocateTagItem));
+	LocateTagItem *ret = g_new(LocateTagItem, 1);
 
 	if (initLocateTagItem(ret, typeStr, needle) < 0) {
 		free(ret);
@@ -99,7 +100,7 @@ int newLocateTagItemArrayFromArgArray(char *argArray[],
 	if (numArgs % 2 != 0)
 		return -1;
 
-	*arrayRet = xmalloc(sizeof(LocateTagItem) * numArgs / 2);
+	*arrayRet = g_new(LocateTagItem, numArgs / 2);
 
 	for (i = 0, item = *arrayRet; i < numArgs / 2; i++, item++) {
 		if (initLocateTagItem
