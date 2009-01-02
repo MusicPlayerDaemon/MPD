@@ -25,7 +25,6 @@
 #include "ls.h"
 #include "path.h"
 #include "stats.h"
-#include "utils.h"
 #include "dbUtils.h"
 #include "update.h"
 #include "event_pipe.h"
@@ -38,6 +37,8 @@
 #include <unistd.h>
 #include <assert.h>
 #include <string.h>
+#include <stdlib.h>
+#include <errno.h>
 
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "database"
@@ -94,7 +95,7 @@ db_get_song(const char *file)
 	struct song *song = NULL;
 	struct directory *directory;
 	char *dir = NULL;
-	char *duplicated = xstrdup(file);
+	char *duplicated = g_strdup(file);
 	char *shortname = strrchr(duplicated, '/');
 
 	g_debug("get song: %s", file);
