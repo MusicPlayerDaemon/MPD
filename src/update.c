@@ -25,7 +25,6 @@
 #include "mapper.h"
 #include "path.h"
 #include "playlist.h"
-#include "utils.h"
 #include "event_pipe.h"
 #include "condition.h"
 #include "update.h"
@@ -40,6 +39,8 @@
 #include <unistd.h>
 #include <dirent.h>
 #include <string.h>
+#include <stdlib.h>
+#include <errno.h>
 
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "update"
@@ -559,7 +560,7 @@ static struct directory *
 addParentPathToDB(const char *utf8path)
 {
 	struct directory *directory = db_get_root();
-	char *duplicated = xstrdup(utf8path);
+	char *duplicated = g_strdup(utf8path);
 	char *slash = duplicated;
 
 	while ((slash = strchr(slash, '/')) != NULL) {
@@ -641,13 +642,13 @@ directory_update_init(char *path)
 	if (progress != UPDATE_PROGRESS_IDLE) {
 		unsigned next_task_id;
 
-		if (update_paths_nr == ARRAY_SIZE(update_paths)) {
+		if (update_paths_nr == G_N_ELEMENTS(update_paths)) {
 			if (path)
 				free(path);
 			return 0;
 		}
 
-		assert(update_paths_nr < ARRAY_SIZE(update_paths));
+		assert(update_paths_nr < G_N_ELEMENTS(update_paths));
 		update_paths[update_paths_nr++] = path;
 		next_task_id = update_task_id + update_paths_nr;
 
