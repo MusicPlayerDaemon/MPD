@@ -192,11 +192,10 @@ removeDeletedFromDirectory(char *path_max_tmp, struct directory *directory)
 
 	for (i = dv->nr; --i >= 0; ) {
 		const char *path_fs;
-		struct stat st;
 
 		path_fs = map_directory_fs(dv->base[i], path_max_tmp);
-		if (path_fs == NULL || (stat(path_fs, &st) == 0 &&
-					S_ISDIR(st.st_mode)))
+		if (path_fs == NULL ||
+		    !g_file_test(path_fs, G_FILE_TEST_IS_DIR))
 			continue;
 		g_debug("removing directory: %s", dv->base[i]->path);
 		dirvec_delete(dv, dv->base[i]);
