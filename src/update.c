@@ -163,7 +163,6 @@ delete_name_in(struct directory *parent, const char *name)
 }
 
 struct delete_data {
-	char *tmp;
 	struct directory *dir;
 };
 
@@ -172,19 +171,21 @@ static int
 delete_song_if_removed(struct song *song, void *_data)
 {
 	struct delete_data *data = _data;
-	const char *path;
+	char *path;
 	struct stat st;
 
-	if ((path = map_song_fs(song, data->tmp)) == NULL ||
-	    stat(data->tmp, &st) < 0 || !S_ISREG(st.st_mode)) {
+	if ((path = map_song_fs(song)) == NULL ||
+	    stat(path, &st) < 0 || !S_ISREG(st.st_mode)) {
 		delete_song(data->dir, song);
 		modified = true;
 	}
+
+	g_free(path);
 	return 0;
 }
 
 static void
-removeDeletedFromDirectory(char *path_max_tmp, struct directory *directory)
+removeDeletedFromDirectory(struct directory *directory)
 {
 	int i;
 	struct dirvec *dv = &directory->children;
@@ -208,7 +209,6 @@ removeDeletedFromDirectory(char *path_max_tmp, struct directory *directory)
 	}
 
 	data.dir = directory;
-	data.tmp = path_max_tmp;
 	songvec_for_each(&directory->songs, delete_song_if_removed, &data);
 }
 
@@ -230,14 +230,16 @@ static int
 stat_directory_child(const struct directory *parent, const char *name,
 		     struct stat *st)
 {
-	char buffer[MPD_PATH_MAX];
-	const char *path_fs;
+	char *path_fs;
+	int ret;
 
-	path_fs = map_directory_child_fs(parent, name, buffer);
+	path_fs = map_directory_child_fs(parent, name);
 	if (path_fs == NULL)
 		return -1;
 
-	return stat(path_fs, st);
+	ret = stat(path_fs, st);
+	g_free(path_fs);
+	return ret;
 }
 
 static int
@@ -424,14 +426,16 @@ static bool
 skip_symlink(const struct directory *directory, const char *utf8_name)
 {
 	char buffer[MPD_PATH_MAX];
+	char *path_fs;
 	const char *p;
 	ssize_t ret;
 
-	p = map_directory_child_fs(directory, utf8_name, buffer);
-	if (p == NULL)
+	path_fs = map_directory_child_fs(directory, utf8_name);
+	if (path_fs == NULL)
 		return true;
 
-	ret = readlink(p, buffer, sizeof(buffer));
+	ret = readlink(path_fs, buffer, sizeof(buffer));
+	g_free(path_fs);
 	if (ret < 0)
 		/* don't skip if this is not a symlink */
 		return errno != EINVAL;
@@ -493,7 +497,7 @@ updateDirectory(struct directory *directory, const struct stat *st)
 	if (!dir)
 		return false;
 
-	removeDeletedFromDirectory(path_max_tmp, directory);
+	removeDeletedFromDirectory(directory);
 
 	while ((ent = readdir(dir))) {
 		char *utf8;

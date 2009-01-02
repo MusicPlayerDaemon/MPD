@@ -74,27 +74,14 @@ decoder_file_decode(const struct decoder_plugin *plugin,
 	return dc.state != DECODE_STATE_START;
 }
 
-static void decoder_run(void)
+static void decoder_run_song(const struct song *song, const char *uri)
 {
-	struct song *song = dc.next_song;
-	char buffer[MPD_PATH_MAX];
-	const char *uri;
 	struct decoder decoder;
 	int ret;
 	bool close_instream = true;
 	struct input_stream input_stream;
 	const struct decoder_plugin *plugin;
 
-	if (song_is_file(song))
-		uri = map_song_fs(song, buffer);
-	else
-		uri = song_get_url(song, buffer);
-	if (uri == NULL) {
-		dc.state = DECODE_STATE_ERROR;
-		return;
-	}
-
-	dc.current_song = dc.next_song; /* NEED LOCK */
 	if (!input_stream_open(&input_stream, uri)) {
 		dc.state = DECODE_STATE_ERROR;
 		return;
@@ -200,6 +187,30 @@ static void decoder_run(void)
 		input_stream_close(&input_stream);
 
 	dc.state = ret ? DECODE_STATE_STOP : DECODE_STATE_ERROR;
+}
+
+static void decoder_run(void)
+{
+	struct song *song = dc.next_song;
+	char *uri;
+
+	if (song_is_file(song))
+		uri = map_song_fs(song);
+	else {
+		char buffer[MPD_PATH_MAX];
+
+		uri = g_strdup(song_get_url(song, buffer));
+	}
+
+	if (uri == NULL) {
+		dc.state = DECODE_STATE_ERROR;
+		return;
+	}
+
+	dc.current_song = dc.next_song; /* NEED LOCK */
+	decoder_run_song(song, uri);
+	g_free(uri);
+
 }
 
 static gpointer decoder_task(G_GNUC_UNUSED gpointer arg)

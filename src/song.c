@@ -104,15 +104,14 @@ song_free(struct song *song)
 bool
 song_file_update(struct song *song)
 {
-	char buffer[MPD_PATH_MAX];
-	const char *path_fs;
+	char *path_fs;
 	const struct decoder_plugin *plugin;
 	unsigned int next = 0;
 	struct stat st;
 
 	assert(song_is_file(song));
 
-	path_fs = map_song_fs(song, buffer);
+	path_fs = map_song_fs(song);
 	if (path_fs == NULL)
 		return false;
 
@@ -121,8 +120,10 @@ song_file_update(struct song *song)
 		song->tag = NULL;
 	}
 
-	if (stat(path_fs, &st) < 0 || !S_ISREG(st.st_mode))
+	if (stat(path_fs, &st) < 0 || !S_ISREG(st.st_mode)) {
+		g_free(path_fs);
 		return false;
+	}
 
 	song->mtime = st.st_mtime;
 
@@ -130,19 +131,19 @@ song_file_update(struct song *song)
 	       (plugin = hasMusicSuffix(path_fs, next++)))
 		song->tag = plugin->tag_dup(path_fs);
 
+	g_free(path_fs);
 	return song->tag != NULL;
 }
 
 bool
 song_file_update_inarchive(struct song *song)
 {
-	char buffer[MPD_PATH_MAX];
-	const char *path_fs;
+	char *path_fs;
 	const struct decoder_plugin *plugin;
 
 	assert(song_is_file(song));
 
-	path_fs = map_song_fs(song, buffer);
+	path_fs = map_song_fs(song);
 	if (path_fs == NULL)
 		return false;
 
@@ -154,6 +155,7 @@ song_file_update_inarchive(struct song *song)
 	//because we dont support tag reading throught
 	//input streams
 	plugin = hasMusicSuffix(path_fs, 0);
+	g_free(path_fs);
 	if (plugin) {
 		song->tag = tag_new();
 		//tag_add_item(tag, TAG_ITEM_TITLE, f->title);

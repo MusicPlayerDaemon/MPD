@@ -59,9 +59,8 @@ map_directory_fs(const struct directory *directory);
  * @param a buffer which is MPD_PATH_MAX bytes long
  * @return the path in file system encoding, or NULL if mapping failed
  */
-const char *
-map_directory_child_fs(const struct directory *directory, const char *name,
-		       char *buffer);
+char *
+map_directory_child_fs(const struct directory *directory, const char *name);
 
 /**
  * Determines the file system path of a song.  This must not be a
@@ -71,8 +70,8 @@ map_directory_child_fs(const struct directory *directory, const char *name,
  * @param a buffer which is MPD_PATH_MAX bytes long
  * @return the path in file system encoding, or NULL if mapping failed
  */
-const char *
-map_song_fs(const struct song *song, char *buffer);
+char *
+map_song_fs(const struct song *song);
 
 /**
  * Maps a file system path (relative to the music directory or
