@@ -19,7 +19,6 @@
 #include "conf.h"
 #include "utils.h"
 #include "buffer2array.h"
-#include "list.h"
 #include "path.h"
 
 #include <glib.h>
@@ -37,11 +36,13 @@
 #define CONF_LINE_TOKEN_MAX	3
 
 typedef struct _configEntry {
+	const char *name;
 	unsigned char mask;
-	List *configParamList;
+
+	GSList *params;
 } ConfigEntry;
 
-static List *configEntriesList;
+static GSList *config_entries;
 
 static int get_bool(const char *value)
 {
@@ -77,8 +78,10 @@ ConfigParam *newConfigParam(const char *value, int line)
 	return ret;
 }
 
-static void freeConfigParam(ConfigParam * param)
+static void
+config_param_free(gpointer data, G_GNUC_UNUSED gpointer user_data)
 {
+	ConfigParam *param = data;
 	int i;
 
 	if (param->value)
@@ -99,13 +102,14 @@ static void freeConfigParam(ConfigParam * param)
 	free(param);
 }
 
-static ConfigEntry *newConfigEntry(int repeatable, int block)
+static ConfigEntry *
+newConfigEntry(const char *name, int repeatable, int block)
 {
 	ConfigEntry *ret = g_new(ConfigEntry, 1);
 
+	ret->name = name;
 	ret->mask = 0;
-	ret->configParamList =
-	    makeList((ListFreeDataFunc *) freeConfigParam, 1);
+	ret->params = NULL;
 
 	if (repeatable)
 		ret->mask |= CONF_REPEATABLE_MASK;
@@ -115,32 +119,53 @@ static ConfigEntry *newConfigEntry(int repeatable, int block)
 	return ret;
 }
 
-static void freeConfigEntry(ConfigEntry * entry)
+static void
+config_entry_free(gpointer data, G_GNUC_UNUSED gpointer user_data)
 {
-	freeList(entry->configParamList);
+	ConfigEntry *entry = data;
+
+	g_slist_foreach(entry->params, config_param_free, NULL);
+	g_slist_free(entry->params);
+
 	free(entry);
+}
+
+static ConfigEntry *
+config_entry_get(const char *name)
+{
+	GSList *list;
+
+	for (list = config_entries; list != NULL;
+	     list = g_slist_next(list)) {
+		ConfigEntry *entry = list->data;
+		if (strcmp(entry->name, name) == 0)
+			return entry;
+	}
+
+	return NULL;
 }
 
 static void registerConfigParam(const char *name, int repeatable, int block)
 {
 	ConfigEntry *entry;
 
-	if (findInList(configEntriesList, name, NULL))
+	entry = config_entry_get(name);
+	if (entry != NULL)
 		g_error("config parameter \"%s\" already registered\n", name);
 
-	entry = newConfigEntry(repeatable, block);
-
-	insertInList(configEntriesList, name, entry);
+	entry = newConfigEntry(name, repeatable, block);
+	config_entries = g_slist_prepend(config_entries, entry);
 }
 
 void finishConf(void)
 {
-	freeList(configEntriesList);
+	g_slist_foreach(config_entries, config_entry_free, NULL);
+	g_slist_free(config_entries);
 }
 
 void initConf(void)
 {
-	configEntriesList = makeList((ListFreeDataFunc *) freeConfigEntry, 1);
+	config_entries = NULL;
 
 	/* registerConfigParam(name,                   repeatable, block); */
 	registerConfigParam(CONF_MUSIC_DIR,                     0,     0);
@@ -262,7 +287,6 @@ void readConf(const char *file)
 	int argsMinusComment;
 	int count = 0;
 	ConfigEntry *entry;
-	void *voidPtr;
 	ConfigParam *param;
 
 	if (!(fp = fopen(file, "r"))) {
@@ -293,16 +317,14 @@ void readConf(const char *file)
 				" %s\n", count, string);
 		}
 
-		if (!findInList(configEntriesList, array[0], &voidPtr)) {
+		entry = config_entry_get(array[0]);
+		if (entry == NULL)
 			g_error("unrecognized parameter in config file at "
 				"line %i: %s\n", count, string);
-		}
-
-		entry = (ConfigEntry *) voidPtr;
 
 		if (!(entry->mask & CONF_REPEATABLE_MASK) &&
-		    entry->configParamList->numberOfNodes) {
-			param = entry->configParamList->firstNode->data;
+		    entry->params != NULL) {
+			param = entry->params->data;
 			g_error("config parameter \"%s\" is first defined on "
 				"line %i and redefined on line %i\n",
 				array[0], param->line, count);
@@ -317,32 +339,29 @@ void readConf(const char *file)
 		} else
 			param = newConfigParam(array[1], count);
 
-		insertInListWithoutKey(entry->configParamList, param);
+		entry->params = g_slist_append(entry->params, param);
 	}
 	fclose(fp);
 }
 
 ConfigParam *getNextConfigParam(const char *name, ConfigParam * last)
 {
-	void *voidPtr;
 	ConfigEntry *entry;
-	ListNode *node;
+	GSList *node;
 	ConfigParam *param;
 
-	if (!findInList(configEntriesList, name, &voidPtr))
+	entry = config_entry_get(name);
+	if (entry == NULL)
 		return NULL;
 
-	entry = voidPtr;
-
-	node = entry->configParamList->firstNode;
+	node = entry->params;
 
 	if (last) {
-		while (node != NULL) {
-			param = node->data;
-			node = node->nextNode;
-			if (param == last)
-				break;
-		}
+		node = g_slist_find(node, last);
+		if (node == NULL)
+			return NULL;
+
+		node = g_slist_next(node);
 	}
 
 	if (node == NULL)
