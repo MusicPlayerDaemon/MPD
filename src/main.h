@@ -19,6 +19,8 @@
 #ifndef MAIN_H
 #define MAIN_H
 
+#include <glib.h>
+
 extern GMainLoop *main_loop;
 
 extern struct notify main_notify;
