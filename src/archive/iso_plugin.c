@@ -22,7 +22,6 @@
 
 #include "archive_api.h"
 #include "input_stream.h"
-#include "utils.h"
 
 #include <cdio/cdio.h>
 #include <cdio/iso9660.h>
@@ -73,7 +72,7 @@ listdir_recur(const char *psz_path, iso_context *context)
 		} else {
 			//remove leading /
 			context->list = g_slist_prepend( context->list,
-				xstrdup(pathname+1));
+				g_strdup(pathname + 1));
 		}
 	}
 	_cdio_list_free (entlist, true);

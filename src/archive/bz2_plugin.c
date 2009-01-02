@@ -22,7 +22,6 @@
 
 #include "archive_api.h"
 #include "input_stream.h"
-#include "utils.h"
 
 #include <stdint.h>
 #include <stddef.h>

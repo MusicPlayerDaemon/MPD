@@ -26,7 +26,6 @@
 #include <errno.h>
 #include <glib.h>
 
-#include "utils.h"
 #include "archive_api.h"
 
 /**

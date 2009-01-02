@@ -23,7 +23,6 @@
 #include "archive_api.h"
 #include "archive_api.h"
 #include "input_stream.h"
-#include "utils.h"
 
 #include <zzip/zzip.h>
 #include <glib.h>
@@ -58,7 +57,8 @@ zip_open(char * pathname)
 	while (zzip_dir_read(context->dir, &dirent)) {
 		//add only files
 		if (dirent.st_size > 0) { 
-			context->list = g_slist_prepend( context->list, xstrdup(dirent.d_name));
+			context->list = g_slist_prepend(context->list,
+							g_strdup(dirent.d_name));
 		}
 	}
 
