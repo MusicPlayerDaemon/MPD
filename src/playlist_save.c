@@ -24,6 +24,8 @@
 #include "ls.h"
 #include "database.h"
 
+#include <glib.h>
+
 void
 playlist_print_song(FILE *file, const struct song *song)
 {
@@ -44,14 +46,16 @@ void
 playlist_print_uri(FILE *file, const char *uri)
 {
 	char tmp[MPD_PATH_MAX];
-	const char *s;
+	char *s;
 
 	if (playlist_saveAbsolutePaths && !isRemoteUrl(uri) &&
 	    uri[0] != '/')
-		s = map_uri_fs(uri, tmp);
+		s = map_uri_fs(uri);
 	else
-		s = utf8_to_fs_charset(tmp, uri);
+		s = g_strdup(utf8_to_fs_charset(tmp, uri));
 
-	if (s != NULL)
+	if (s != NULL) {
 		fprintf(file, "%s\n", s);
+		g_free(s);
+	}
 }

@@ -89,53 +89,44 @@ void mapper_finish(void)
 	g_free(playlist_dir);
 }
 
-static char *
-rmp2amp_r(char *dst, const char *rel_path)
-{
-	pfx_dir(dst, rel_path, strlen(rel_path),
-		(const char *)music_dir, music_dir_length);
-	return dst;
-}
-
-const char *
-map_uri_fs(const char *uri, char *buffer)
+char *
+map_uri_fs(const char *uri)
 {
 	assert(uri != NULL);
 	assert(*uri != '/');
-	assert(buffer != NULL);
 
-	return rmp2amp_r(buffer, utf8_to_fs_charset(buffer, uri));
+	return g_build_filename(music_dir, uri, NULL);
 }
 
-const char *
-map_directory_fs(const struct directory *directory, char *buffer)
+char *
+map_directory_fs(const struct directory *directory)
 {
 	const char *dirname = directory_get_path(directory);
 	if (isRootDirectory(dirname))
-	    return music_dir;
+		return g_strdup(music_dir);
 
-	return map_uri_fs(dirname, buffer);
+	return map_uri_fs(dirname);
 }
 
 const char *
 map_directory_child_fs(const struct directory *directory, const char *name,
 		       char *buffer)
 {
-	char buffer2[MPD_PATH_MAX];
-	const char *parent_fs;
+	char *parent_fs;
 
 	/* check for invalid or unauthorized base names */
 	if (*name == 0 || strchr(name, '/') != NULL ||
 	    strcmp(name, ".") == 0 || strcmp(name, "..") == 0)
 		return NULL;
 
-	parent_fs = map_directory_fs(directory, buffer2);
+	parent_fs = map_directory_fs(directory);
 	if (parent_fs == NULL)
 		return NULL;
 
 	name = utf8_to_fs_charset(buffer, name);
 	pfx_dir(buffer, name, strlen(name),
 		parent_fs, strlen(parent_fs));
+	g_free(parent_fs);
 	return buffer;
 }
 

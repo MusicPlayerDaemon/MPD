@@ -191,11 +191,16 @@ removeDeletedFromDirectory(char *path_max_tmp, struct directory *directory)
 	struct delete_data data;
 
 	for (i = dv->nr; --i >= 0; ) {
-		const char *path_fs;
+		char *path_fs;
+		bool is_dir;
 
-		path_fs = map_directory_fs(dv->base[i], path_max_tmp);
-		if (path_fs == NULL ||
-		    !g_file_test(path_fs, G_FILE_TEST_IS_DIR))
+		path_fs = map_directory_fs(dv->base[i]);
+		if (path_fs == NULL)
+			continue;
+
+		is_dir = g_file_test(path_fs, G_FILE_TEST_IS_DIR);
+		g_free(path_fs);
+		if (!is_dir)
 			continue;
 		g_debug("removing directory: %s", dv->base[i]->path);
 		dirvec_delete(dv, dv->base[i]);
@@ -210,13 +215,15 @@ removeDeletedFromDirectory(char *path_max_tmp, struct directory *directory)
 static int
 stat_directory(const struct directory *directory, struct stat *st)
 {
-	char buffer[MPD_PATH_MAX];
-	const char *path_fs;
+	char *path_fs;
+	int ret;
 
-	path_fs = map_directory_fs(directory, buffer);
+	path_fs = map_directory_fs(directory);
 	if (path_fs == NULL)
 		return -1;
-	return stat(path_fs, st);
+	ret = stat(path_fs, st);
+	g_free(path_fs);
+	return ret;
 }
 
 static int
@@ -471,17 +478,18 @@ updateDirectory(struct directory *directory, const struct stat *st)
 	DIR *dir;
 	struct dirent *ent;
 	char path_max_tmp[MPD_PATH_MAX];
-	const char *path_fs;
+	char *path_fs;
 
 	assert(S_ISDIR(st->st_mode));
 
 	directory_set_stat(directory, st);
 
-	path_fs = map_directory_fs(directory, path_max_tmp);
+	path_fs = map_directory_fs(directory);
 	if (path_fs == NULL)
 		return false;
 
 	dir = opendir(path_fs);
+	g_free(path_fs);
 	if (!dir)
 		return false;
 

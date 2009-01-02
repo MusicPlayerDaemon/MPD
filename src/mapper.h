@@ -37,8 +37,8 @@ void mapper_finish(void);
  * is basically done by converting the URI to the file system charset
  * and prepending the music directory.
  */
-const char *
-map_uri_fs(const char *uri, char *buffer);
+char *
+map_uri_fs(const char *uri);
 
 /**
  * Determines the file system path of a directory object.
@@ -47,8 +47,8 @@ map_uri_fs(const char *uri, char *buffer);
  * @param a buffer which is MPD_PATH_MAX bytes long
  * @return the path in file system encoding, or NULL if mapping failed
  */
-const char *
-map_directory_fs(const struct directory *directory, char *buffer);
+char *
+map_directory_fs(const struct directory *directory);
 
 /**
  * Determines the file system path of a directory's child (may be a
