@@ -21,6 +21,7 @@
 #include "dlist.h"
 #include "config.h"
 #include "tag.h"
+#include "icy_metadata.h"
 
 #include <assert.h>
 #include <sys/select.h>
@@ -74,6 +75,9 @@ struct input_curl {
 
 	/** error message provided by libcurl */
 	char error[CURL_ERROR_SIZE];
+
+	/** parser for icy-metadata */
+	struct icy_metadata icy_metadata;
 
 	/** the stream name from the icy-name response header */
 	char *meta_name;
@@ -147,6 +151,7 @@ input_curl_free(struct input_stream *is)
 
 	if (c->tag != NULL)
 		tag_free(c->tag);
+	g_free(c->meta_name);
 
 	input_curl_easy_free(c);
 
@@ -254,18 +259,66 @@ consume_buffer(struct buffer *buffer, size_t length,
 }
 
 static size_t
-read_from_buffer(struct buffer *buffer, void *dest, size_t length,
+read_from_buffer(struct icy_metadata *icy_metadata, struct buffer *buffer,
+		 void *dest0, size_t length,
 		 struct list_head *rewind_head)
 {
+	uint8_t *dest = dest0;
+	size_t nbytes = 0;
+
 	assert(buffer->size > 0);
 	assert(buffer->consumed < buffer->size);
 
 	if (length > buffer->size - buffer->consumed)
 		length = buffer->size - buffer->consumed;
 
-	memcpy(dest, buffer->data + buffer->consumed, length);
-	consume_buffer(buffer, length, rewind_head);
-	return length;
+	while (true) {
+		size_t chunk;
+
+		chunk = icy_data(icy_metadata, length);
+		if (chunk > 0) {
+			memcpy(dest, buffer->data + buffer->consumed,
+			       chunk);
+			consume_buffer(buffer, chunk, rewind_head);
+
+			nbytes += chunk;
+			dest += chunk;
+			length -= chunk;
+
+			if (length == 0)
+				break;
+		}
+
+		chunk = icy_meta(icy_metadata, buffer->data + buffer->consumed,
+				 length);
+		if (chunk > 0) {
+			consume_buffer(buffer, chunk, rewind_head);
+
+			length -= chunk;
+
+			if (length == 0)
+				break;
+		}
+	}
+
+	return nbytes;
+}
+
+static void
+copy_icy_tag(struct input_curl *c)
+{
+	struct tag *tag = icy_tag(&c->icy_metadata);
+
+	if (tag == NULL)
+		return;
+
+	if (c->tag != NULL)
+		tag_free(c->tag);
+
+	if (c->meta_name != NULL && !tag_has_type(tag, TAG_ITEM_NAME))
+		tag_add_item(tag, TAG_ITEM_NAME, c->meta_name);
+
+	c->tag = tag;
 }
 
 static size_t
@@ -317,12 +370,16 @@ input_curl_read(struct input_stream *is, void *ptr, size_t size)
 
 	while (size > 0 && !list_empty(&c->buffers)) {
 		struct buffer *buffer = (struct buffer *)c->buffers.next;
-		size_t copy = read_from_buffer(buffer, dest + nbytes, size,
+		size_t copy = read_from_buffer(&c->icy_metadata, buffer,
+					       dest + nbytes, size,
 					       rewind_head);
 
 		nbytes += copy;
 		size -= copy;
 	}
+
+	if (icy_defined(&c->icy_metadata))
+		copy_icy_tag(c);
 
 	is->offset += (off_t)nbytes;
 
@@ -414,9 +471,11 @@ input_curl_headerfunction(void *ptr, size_t size, size_t nmemb, void *stream)
 	while (end > value && g_ascii_isspace(end[-1]))
 		--end;
 
-	if (strcasecmp(name, "accept-ranges") == 0)
-		is->seekable = true;
-	else if (strcasecmp(name, "content-length") == 0) {
+	if (strcasecmp(name, "accept-ranges") == 0) {
+		/* a stream with icy-metadata is not seekable */
+		if (!icy_defined(&c->icy_metadata))
+			is->seekable = true;
+	} else if (strcasecmp(name, "content-length") == 0) {
 		char buffer[64];
 
 		if ((size_t)(end - header) >= sizeof(buffer))
@@ -440,6 +499,27 @@ input_curl_headerfunction(void *ptr, size_t size, size_t nmemb, void *stream)
 
 		c->tag = tag_new();
 		tag_add_item(c->tag, TAG_ITEM_NAME, c->meta_name);
+	} else if (strcasecmp(name, "icy-metaint") == 0) {
+		char buffer[64];
+		size_t icy_metaint;
+
+		if ((size_t)(end - header) >= sizeof(buffer) ||
+		    icy_defined(&c->icy_metadata))
+			return size;
+
+		memcpy(buffer, value, end - value);
+		buffer[end - value] = 0;
+
+		icy_metaint = g_ascii_strtoull(buffer, NULL, 10);
+		g_debug("icy-metaint=%zu", icy_metaint);
+
+		if (icy_metaint > 0) {
+			icy_start(&c->icy_metadata, icy_metaint);
+
+			/* a stream with icy-metadata is not
+			   seekable */
+			is->seekable = true;
+		}
 	}
 
 	return size;
@@ -507,10 +587,8 @@ input_curl_easy_init(struct input_stream *is)
 		return false;
 
 	c->request_headers = NULL;
-	/*
 	c->request_headers = curl_slist_append(c->request_headers,
 					       "Icy-Metadata: 1");
-	*/
 	curl_easy_setopt(c->easy, CURLOPT_HTTPHEADER, c->request_headers);
 
 	return true;
@@ -590,6 +668,10 @@ input_curl_rewind(struct input_stream *is)
 
 	list_splice_init(&c->rewind, &c->buffers);
 	is->offset = 0;
+
+	/* rewind the icy_metadata object */
+
+	icy_reset(&c->icy_metadata);
 }
 
 static bool
@@ -719,6 +801,7 @@ input_curl_open(struct input_stream *is, const char *url)
 		return false;
 	}
 
+	icy_clear(&c->icy_metadata);
 	c->tag = NULL;
 
 	ret = input_curl_easy_init(is);

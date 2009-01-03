@@ -52,8 +52,10 @@ icy_reset(struct icy_metadata *im)
 size_t
 icy_data(struct icy_metadata *im, size_t length)
 {
-	assert(icy_defined(im));
 	assert(length > 0);
+
+	if (!icy_defined(im))
+		return length;
 
 	if (im->data_rest == 0)
 		return 0;
@@ -145,7 +147,7 @@ icy_meta(struct icy_metadata *im, const void *data, size_t length)
 	if (length > im->meta_size - im->meta_position)
 		length = im->meta_size - im->meta_position;
 
-	memcpy(im->meta_data + im->meta_position, data, length);
+	memcpy(im->meta_data + im->meta_position, p, length);
 	im->meta_position += length;
 
 	if (p != data)

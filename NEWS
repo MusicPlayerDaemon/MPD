@@ -11,6 +11,7 @@ ver 0.15 - (200?/??/??)
 * fall back to XDG music directory if no music_directory is configured
 * failure to read the state file is non-fatal
 * fix minor memory leak in decoder_tag()
+* added Icy-Metadata support
 
 ver 0.14 (2008/12/25)
 * audio outputs:
