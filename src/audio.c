@@ -24,12 +24,12 @@
 #include "path.h"
 #include "client.h"
 #include "idle.h"
-#include "utils.h"
 #include "mixer.h"
 
 #include <glib.h>
 
 #include <assert.h>
+#include <stdlib.h>
 
 #define AUDIO_DEVICE_STATE	"audio_device_state:"
 #define AUDIO_BUFFER_SIZE	2*MPD_PATH_MAX
@@ -61,7 +61,7 @@ void initAudioDriver(void)
 	notify_init(&audio_output_client_notify);
 
 	audioOutputArraySize = audio_output_count();
-	audioOutputArray = xmalloc(sizeof(struct audio_output) * audioOutputArraySize);
+	audioOutputArray = g_new(struct audio_output, audioOutputArraySize);
 
 	for (i = 0; i < audioOutputArraySize; i++)
 	{
