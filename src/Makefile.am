@@ -37,6 +37,7 @@ mpd_headers = \
 	input_stream.h \
 	input_file.h \
 	input_curl.h \
+	icy_metadata.h \
 	client.h \
 	dlist.h \
 	listen.h \
@@ -264,7 +265,7 @@ endif
 
 
 if HAVE_CURL
-mpd_SOURCES += input_curl.c
+mpd_SOURCES += input_curl.c icy_metadata.c
 endif
 
 
