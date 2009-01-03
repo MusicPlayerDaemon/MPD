@@ -18,6 +18,9 @@
  */
 
 #include "sig_handlers.h"
+
+#ifndef WIN32
+
 #include "log.h"
 #include "main.h"
 #include "event_pipe.h"
@@ -52,8 +55,11 @@ handle_reload_event(void)
 	cycle_log_files();
 }
 
+#endif
+
 void initSigHandlers(void)
 {
+#ifndef WIN32
 	struct sigaction sa;
 
 	sa.sa_flags = 0;
@@ -68,4 +74,5 @@ void initSigHandlers(void)
 	event_pipe_register(PIPE_EVENT_RELOAD, handle_reload_event);
 	sa.sa_handler = reload_signal_handler;
 	x_sigaction(SIGHUP, &sa);
+#endif
 }
