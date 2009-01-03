@@ -26,6 +26,11 @@
 #include <glib.h>
 #include <string.h>
 
+#ifdef WIN32
+/* for _O_BINARY */
+#include <fcntl.h>
+#endif
+
 static int event_pipe[2];
 static GMutex *event_pipe_mutex;
 static bool pipe_events[PIPE_EVENT_MAX];
@@ -76,8 +81,14 @@ main_notify_event(G_GNUC_UNUSED GIOChannel *source,
 void event_pipe_init(void)
 {
 	GIOChannel *channel;
+	int ret;
 
-	if (pipe(event_pipe) < 0)
+#ifdef WIN32
+	ret = _pipe(event_pipe, 512, _O_BINARY);
+#else
+	ret = pipe(event_pipe);
+#endif
+	if (ret < 0)
 		g_error("Couldn't open pipe: %s", strerror(errno));
 	if (set_nonblocking(event_pipe[1]) < 0)
 		g_error("Couldn't set non-blocking I/O: %s", strerror(errno));
