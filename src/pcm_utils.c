@@ -18,6 +18,7 @@
 
 #include "pcm_utils.h"
 #include "pcm_channels.h"
+#include "pcm_prng.h"
 #include "log.h"
 #include "utils.h"
 #include "conf.h"
@@ -31,7 +32,12 @@
 static inline int
 pcm_dither(void)
 {
-	return (rand() & 511) - (rand() & 511);
+	static unsigned long state;
+	uint32_t r;
+
+	r = state = prng(state);
+
+	return (r & 511) - ((r >> 9) & 511);
 }
 
 /**

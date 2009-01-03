@@ -17,11 +17,7 @@
  */
 
 #include "pcm_dither.h"
-
-static unsigned long prng(unsigned long state)
-{
-	return (state * 0x0019660dL + 0x3c6ef35fL) & 0xffffffffL;
-}
+#include "pcm_prng.h"
 
 static int16_t
 pcm_dither_sample_24_to_16(int32_t sample, struct pcm_dither_24 *dither)
