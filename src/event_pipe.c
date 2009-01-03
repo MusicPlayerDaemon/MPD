@@ -19,8 +19,9 @@
  */
 
 #include "event_pipe.h"
-#include "log.h"
+#include "utils.h"
 
+#include <stdbool.h>
 #include <assert.h>
 #include <glib.h>
 #include <string.h>
@@ -55,7 +56,7 @@ consume_pipe(void)
 	bool events[PIPE_EVENT_MAX];
 
 	if (r < 0 && errno != EAGAIN && errno != EINTR)
-		FATAL("error reading from pipe: %s\n", strerror(errno));
+		g_error("error reading from pipe: %s", strerror(errno));
 
 	g_mutex_lock(event_pipe_mutex);
 	memcpy(events, pipe_events, sizeof(events));
