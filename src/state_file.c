@@ -21,11 +21,11 @@
 #include "conf.h"
 #include "audio.h"
 #include "playlist.h"
-#include "utils.h"
 #include "volume.h"
 
 #include <glib.h>
 #include <string.h>
+#include <errno.h>
 
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "state_file"
@@ -65,7 +65,7 @@ void write_state_file(void)
 		return;
 	}
 
-	for (i = 0; i < ARRAY_SIZE(sf_callbacks); i++)
+	for (i = 0; i < G_N_ELEMENTS(sf_callbacks); i++)
 		sf_callbacks[i].writer(fp);
 
 	while(fclose(fp) && errno == EINTR) /* nothing */;
@@ -86,7 +86,7 @@ void read_state_file(void)
 			  sfpath, strerror(errno));
 		return;
 	}
-	for (i = 0; i < ARRAY_SIZE(sf_callbacks); i++) {
+	for (i = 0; i < G_N_ELEMENTS(sf_callbacks); i++) {
 		sf_callbacks[i].reader(fp);
 		rewind(fp);
 	}
