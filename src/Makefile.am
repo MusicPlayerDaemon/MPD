@@ -54,6 +54,7 @@ mpd_headers = \
 	pcm_channels.h \
 	pcm_resample.h \
 	pcm_dither.h \
+	pcm_prng.h \
 	permission.h \
 	player_thread.h \
 	player_control.h \
