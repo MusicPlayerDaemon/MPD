@@ -21,7 +21,6 @@
 #include "conf.h"
 #include "listen.h"
 #include "permission.h"
-#include "utils.h"
 #include "event_pipe.h"
 #include "dlist.h"
 #include "idle.h"
@@ -33,6 +32,9 @@
 #include <assert.h>
 #include <unistd.h>
 #include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <errno.h>
 
 #ifdef WIN32
 #include <ws2tcpip.h>
@@ -168,7 +170,7 @@ static inline void client_set_expired(struct client *client)
 	}
 
 	if (client->fd >= 0) {
-		xclose(client->fd);
+		close(client->fd);
 		client->fd = -1;
 	}
 }
@@ -187,7 +189,6 @@ static void client_init(struct client *client, int fd)
 	client->bufferLength = 0;
 	client->bufferPos = 0;
 	client->fd = fd;
-	set_nonblocking(fd);
 
 	client->channel = g_io_channel_unix_new(client->fd);
 	client->source_id = g_io_add_watch(client->channel, G_IO_IN,
@@ -202,7 +203,7 @@ static void client_init(struct client *client, int fd)
 
 	client->permission = getDefaultPermissions();
 
-	xwrite(fd, GREETING, sizeof(GREETING) - 1);
+	write(fd, GREETING, sizeof(GREETING) - 1);
 }
 
 static void free_cmd_list(GSList *list)
@@ -295,11 +296,11 @@ void client_new(int fd, const struct sockaddr *addr, int uid)
 
 	if (num_clients >= client_max_connections) {
 		g_warning("Max Connections Reached!");
-		xclose(fd);
+		close(fd);
 		return;
 	}
 
-	client = xcalloc(1, sizeof(*client));
+	client = g_new0(struct client, 1);
 	list_add(&client->siblings, &clients);
 	++num_clients;
 	client_init(client, fd);
@@ -804,7 +805,7 @@ void client_vprintf(struct client *client, const char *fmt, va_list args)
 		/* wtf.. */
 		return;
 
-	buffer = xmalloc(length + 1);
+	buffer = g_malloc(length + 1);
 	vsnprintf(buffer, length + 1, fmt, args);
 	client_write(client, buffer, length);
 	free(buffer);

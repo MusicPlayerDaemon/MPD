@@ -293,6 +293,8 @@ listen_in_event(G_GNUC_UNUSED GIOChannel *source,
 
 	fd = accept(listen_fd, &sockAddr, &socklen);
 	if (fd >= 0) {
+		set_nonblocking(fd);
+
 		client_new(fd, &sockAddr, get_remote_uid(fd));
 	} else if (fd < 0 && errno != EINTR) {
 		g_warning("Problems accept()'ing");
