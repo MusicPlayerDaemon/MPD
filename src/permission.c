@@ -38,17 +38,18 @@ static GHashTable *permission_passwords;
 
 static unsigned permission_default;
 
-static unsigned parsePermissions(char *string)
+static unsigned parsePermissions(const char *string)
 {
 	unsigned permission = 0;
-	char *temp;
-	char *tok;
+	gchar **tokens;
 
 	if (!string)
 		return 0;
 
-	temp = strtok_r(string, PERMISSION_SEPERATOR, &tok);
-	while (temp) {
+	tokens = g_strsplit(string, PERMISSION_SEPERATOR, 0);
+	for (unsigned i = 0; tokens[i] != NULL; ++i) {
+		char *temp = tokens[i];
+
 		if (strcmp(temp, PERMISSION_READ_STRING) == 0) {
 			permission |= PERMISSION_READ;
 		} else if (strcmp(temp, PERMISSION_ADD_STRING) == 0) {
@@ -60,9 +61,9 @@ static unsigned parsePermissions(char *string)
 		} else {
 			FATAL("unknown permission \"%s\"\n", temp);
 		}
-
-		temp = strtok_r(NULL, PERMISSION_SEPERATOR, &tok);
 	}
+
+	g_strfreev(tokens);
 
 	return permission;
 }
@@ -85,7 +86,7 @@ void initPermissions(void)
 		permission_default = 0;
 
 		do {
-			char *separator =
+			const char *separator =
 				strchr(param->value, PERMISSION_PASSWORD_CHAR);
 
 			if (separator == NULL)
