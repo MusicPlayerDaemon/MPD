@@ -79,12 +79,6 @@ static void *audioOutputAo_initDriver(struct audio_output *ao,
 				      ConfigParam * param)
 {
 	ao_info *ai;
-	char *duplicated;
-	char *stk1;
-	char *stk2;
-	char *n1;
-	char *key;
-	char *value;
 	char *test;
 	AoData *ad = newAoData();
 	BlockParam *blockParam;
@@ -121,40 +115,24 @@ static void *audioOutputAo_initDriver(struct audio_output *ao,
 		audio_output_get_name(ao));
 
 	blockParam = getBlockParam(param, "options");
-
 	if (blockParam) {
-		duplicated = g_strdup(blockParam->value);
-	} else
-		duplicated = g_strdup("");
+		gchar **options = g_strsplit(blockParam->value, ";", 0);
 
-	if (strlen(duplicated)) {
-		stk1 = NULL;
-		n1 = strtok_r(duplicated, ";", &stk1);
-		while (n1) {
-			stk2 = NULL;
-			key = strtok_r(n1, "=", &stk2);
-			if (!key)
-				g_error("problems parsing options \"%s\"\n", n1);
-			/*found = 0;
-			   for(i=0;i<ai->option_count;i++) {
-			   if(strcmp(ai->options[i],key)==0) {
-			   found = 1;
-			   break;
-			   }
-			   }
-			   if(!found) {
-			   FATAL("\"%s\" is not an option for "
-			   "\"%s\" ao driver\n",key,
-			   ai->short_name);
-			   } */
-			value = strtok_r(NULL, "", &stk2);
-			if (!value)
-				g_error("problems parsing options \"%s\"\n", n1);
-			ao_append_option(&ad->options, key, value);
-			n1 = strtok_r(NULL, ";", &stk1);
+		for (unsigned i = 0; options[i] != NULL; ++i) {
+			gchar **key_value = g_strsplit(options[i], "=", 2);
+
+			if (key_value[0] == NULL || key_value[1] == NULL)
+				g_error("problems parsing options \"%s\"\n",
+					options[i]);
+
+			ao_append_option(&ad->options, key_value[0],
+					 key_value[1]);
+
+			g_strfreev(key_value);
 		}
+
+		g_strfreev(options);
 	}
-	free(duplicated);
 
 	return ad;
 }
