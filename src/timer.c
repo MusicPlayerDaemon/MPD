@@ -20,9 +20,12 @@
 #include "utils.h"
 #include "audio_format.h"
 
+#include <glib.h>
+
 #include <assert.h>
 #include <limits.h>
 #include <sys/time.h>
+#include <stddef.h>
 
 static uint64_t now(void)
 {
@@ -35,9 +38,7 @@ static uint64_t now(void)
 
 Timer *timer_new(const struct audio_format *af)
 {
-	Timer *timer;
-
-	timer = xmalloc(sizeof(Timer));
+	Timer *timer = g_new(Timer, 1);
 	timer->time = 0;
 	timer->started = 0;
 	timer->rate = af->sample_rate * audio_format_frame_size(af);
@@ -47,7 +48,7 @@ Timer *timer_new(const struct audio_format *af)
 
 void timer_free(Timer *timer)
 {
-	free(timer);
+	g_free(timer);
 }
 
 void timer_start(Timer *timer)
