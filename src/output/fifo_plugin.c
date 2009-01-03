@@ -25,6 +25,9 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <errno.h>
+#include <string.h>
+#include <unistd.h>
 
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "fifo"
@@ -43,26 +46,25 @@ static FifoData *newFifoData(void)
 {
 	FifoData *ret;
 
-	ret = xmalloc(sizeof(FifoData));
+	ret = g_new(FifoData, 1);
 
 	ret->path = NULL;
 	ret->input = -1;
 	ret->output = -1;
 	ret->created = 0;
 	ret->timer = NULL;
-	
+
 	return ret;
 }
 
 static void freeFifoData(FifoData *fd)
 {
-	if (fd->path)
-		free(fd->path);
+	g_free(fd->path);
 
 	if (fd->timer)
 		timer_free(fd->timer);
 
-	free(fd);
+	g_free(fd);
 }
 
 static void removeFifo(FifoData *fd)

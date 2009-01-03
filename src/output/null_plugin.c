@@ -18,7 +18,6 @@
 
 #include "../output_api.h"
 #include "../timer.h"
-#include "../utils.h"
 
 #include <glib.h>
 
@@ -31,7 +30,7 @@ null_initDriver(G_GNUC_UNUSED struct audio_output *audioOutput,
 		G_GNUC_UNUSED const struct audio_format *audio_format,
 		G_GNUC_UNUSED ConfigParam *param)
 {
-	struct null_data *nd = xmalloc(sizeof(*nd));
+	struct null_data *nd = g_new(struct null_data, 1);
 	nd->timer = NULL;
 	return nd;
 }
