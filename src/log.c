@@ -322,7 +322,9 @@ void close_log_files(void)
 	if (stdout_mode)
 		return;
 
+#ifdef HAVE_SYSLOG
 	if (out_filename == NULL)
 		closelog();
+#endif
 }
 
