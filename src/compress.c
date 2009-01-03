@@ -21,7 +21,8 @@
  */
 
 #include "compress.h"
-#include "utils.h"
+
+#include <glib.h>
 
 #include <stdint.h>
 #include <string.h>
@@ -66,7 +67,7 @@ void CompressCfg(int show_mon, int anticlip, int target, int gainmax,
 	prefs.buckets = buckets;
 
 	/* Allocate the peak structure */
-	peaks = xrealloc(peaks, sizeof(int)*prefs.buckets);
+	peaks = g_realloc(peaks, sizeof(int)*prefs.buckets);
 
 	if (prefs.buckets > lastsize)
 		memset(peaks + lastsize, 0, sizeof(int)*(prefs.buckets
@@ -165,8 +166,7 @@ void CompressFree(void)
 	}
 #endif
 
-	if (peaks)
-		free(peaks);
+	g_free(peaks);
 }
 
 void CompressDo(void *data, unsigned int length)
