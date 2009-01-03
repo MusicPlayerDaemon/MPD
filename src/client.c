@@ -47,7 +47,7 @@
 #define G_LOG_DOMAIN "client"
 #define LOG_LEVEL_SECURE G_LOG_LEVEL_INFO
 
-#define GREETING				"OK MPD " PROTOCOL_VERSION "\n"
+static const char GREETING[] = "OK MPD " PROTOCOL_VERSION "\n";
 
 #define CLIENT_LIST_MODE_BEGIN			"command_list_begin"
 #define CLIENT_LIST_OK_MODE_BEGIN			"command_list_ok_begin"
@@ -202,7 +202,7 @@ static void client_init(struct client *client, int fd)
 
 	client->permission = getDefaultPermissions();
 
-	xwrite(fd, GREETING, strlen(GREETING));
+	xwrite(fd, GREETING, sizeof(GREETING) - 1);
 }
 
 static void free_cmd_list(GSList *list)
