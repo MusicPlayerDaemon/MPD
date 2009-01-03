@@ -1,9 +1,11 @@
 #include "songvec.h"
 #include "song.h"
-#include "utils.h"
+
+#include <glib.h>
 
 #include <assert.h>
 #include <string.h>
+#include <stdlib.h>
 
 static GMutex *nr_lock = NULL;
 
@@ -68,12 +70,12 @@ songvec_delete(struct songvec *sv, const struct song *del)
 			continue;
 		/* we _don't_ call song_free() here */
 		if (!--sv->nr) {
-			free(sv->base);
+			g_free(sv->base);
 			sv->base = NULL;
 		} else {
 			memmove(&sv->base[i], &sv->base[i + 1],
 				(sv->nr - i) * sizeof(struct song *));
-			sv->base = xrealloc(sv->base, sv_size(sv));
+			sv->base = g_realloc(sv->base, sv_size(sv));
 		}
 		g_mutex_unlock(nr_lock);
 		return i;
@@ -88,7 +90,7 @@ songvec_add(struct songvec *sv, struct song *add)
 {
 	g_mutex_lock(nr_lock);
 	++sv->nr;
-	sv->base = xrealloc(sv->base, sv_size(sv));
+	sv->base = g_realloc(sv->base, sv_size(sv));
 	sv->base[sv->nr - 1] = add;
 	g_mutex_unlock(nr_lock);
 }
@@ -98,10 +100,9 @@ void songvec_destroy(struct songvec *sv)
 	g_mutex_lock(nr_lock);
 	sv->nr = 0;
 	g_mutex_unlock(nr_lock);
-	if (sv->base) {
-		free(sv->base);
-		sv->base = NULL;
-	}
+
+	g_free(sv->base);
+	sv->base = NULL;
 }
 
 int

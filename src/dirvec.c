@@ -1,12 +1,11 @@
 #include "dirvec.h"
 #include "directory.h"
-#include "utils.h"
-#include "path.h"
 
 #include <glib.h>
 
 #include <assert.h>
 #include <string.h>
+#include <stdlib.h>
 
 static GMutex *nr_lock = NULL;
 
@@ -74,13 +73,13 @@ int dirvec_delete(struct dirvec *dv, struct directory *del)
 		/* we _don't_ call directory_free() here */
 		if (!--dv->nr) {
 			g_mutex_unlock(nr_lock);
-			free(dv->base);
+			g_free(dv->base);
 			dv->base = NULL;
 			return i;
 		} else {
 			memmove(&dv->base[i], &dv->base[i + 1],
 				(dv->nr - i) * sizeof(struct directory *));
-			dv->base = xrealloc(dv->base, dv_size(dv));
+			dv->base = g_realloc(dv->base, dv_size(dv));
 		}
 		break;
 	}
@@ -93,7 +92,7 @@ void dirvec_add(struct dirvec *dv, struct directory *add)
 {
 	g_mutex_lock(nr_lock);
 	++dv->nr;
-	dv->base = xrealloc(dv->base, dv_size(dv));
+	dv->base = g_realloc(dv->base, dv_size(dv));
 	dv->base[dv->nr - 1] = add;
 	g_mutex_unlock(nr_lock);
 }
@@ -104,7 +103,7 @@ void dirvec_destroy(struct dirvec *dv)
 	dv->nr = 0;
 	g_mutex_unlock(nr_lock);
 	if (dv->base) {
-		free(dv->base);
+		g_free(dv->base);
 		dv->base = NULL;
 	}
 }
