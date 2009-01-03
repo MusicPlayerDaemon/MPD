@@ -68,6 +68,8 @@ static struct song *delete;
 
 static struct condition delete_cond;
 
+#ifndef WIN32
+
 enum {
 	DEFAULT_FOLLOW_INSIDE_SYMLINKS = true,
 	DEFAULT_FOLLOW_OUTSIDE_SYMLINKS = true,
@@ -75,6 +77,8 @@ enum {
 
 static bool follow_inside_symlinks;
 static bool follow_outside_symlinks;
+
+#endif
 
 unsigned
 isUpdatingDB(void)
@@ -427,6 +431,7 @@ static bool skip_path(const char *path)
 static bool
 skip_symlink(const struct directory *directory, const char *utf8_name)
 {
+#ifndef WIN32
 	char buffer[MPD_PATH_MAX];
 	char *path_fs;
 	const char *p;
@@ -476,6 +481,14 @@ skip_symlink(const struct directory *directory, const char *utf8_name)
 	   to a song which is already in the database - skip according
 	   to the follow_inside_symlinks param*/
 	return !follow_inside_symlinks;
+#else
+	/* no symlink checking on WIN32 */
+
+	(void)directory;
+	(void)utf8_name;
+
+	return false;
+#endif
 }
 
 static bool
@@ -697,6 +710,7 @@ static void reap_update_task(void)
 
 void update_global_init(void)
 {
+#ifndef WIN32
 	follow_inside_symlinks =
 		config_get_bool(CONF_FOLLOW_INSIDE_SYMLINKS,
 				DEFAULT_FOLLOW_INSIDE_SYMLINKS);
@@ -704,6 +718,7 @@ void update_global_init(void)
 	follow_outside_symlinks =
 		config_get_bool(CONF_FOLLOW_OUTSIDE_SYMLINKS,
 				DEFAULT_FOLLOW_OUTSIDE_SYMLINKS);
+#endif
 
 	cond_init(&delete_cond);
 
