@@ -411,19 +411,64 @@ void tag_end_add(struct tag *tag)
 #endif
 }
 
+static bool
+char_is_non_printable(unsigned char ch)
+{
+	return ch < 0x20;
+}
+
+static const char *
+find_non_printable(const char *p, size_t length)
+{
+	for (size_t i = 0; i < length; ++i)
+		if (char_is_non_printable(p[i]))
+			return p + i;
+
+	return NULL;
+}
+
+/**
+ * Clears all non-printable characters, convert them to space.
+ * Returns NULL if nothing needs to be cleared.
+ */
+static char *
+clear_non_printable(const char *p, size_t length)
+{
+	const char *first = find_non_printable(p, length);
+	char *dest;
+
+	if (first == NULL)
+		return NULL;
+
+	/* duplicate and null-terminate the string */
+	dest = g_memdup(p, length);
+	dest[length] = 0;
+
+	for (size_t i = first - p; i < length; ++i)
+		if (char_is_non_printable(dest[i]))
+			dest[i] = ' ';
+
+	return dest;
+}
+
 static char *
 fix_tag_value(const char *p, size_t length)
 {
-	char *utf8, *escaped;
+	char *utf8, *cleared;
 
 	utf8 = fix_utf8(p, length);
-	if (utf8 == NULL)
-		utf8 = g_strndup(p, length);
+	if (utf8 != NULL) {
+		p = utf8;
+		length = strlen(p);
+	}
 
-	escaped = g_strescape(utf8, NULL);
-	g_free(utf8);
+	cleared = clear_non_printable(p, length);
+	if (cleared == NULL)
+		cleared = utf8;
+	else
+		g_free(utf8);
 
-	return escaped;
+	return cleared;
 }
 
 static void appendToTagItems(struct tag *tag, enum tag_type type,
@@ -433,6 +478,10 @@ static void appendToTagItems(struct tag *tag, enum tag_type type,
 	char *p;
 
 	p = fix_tag_value(value, len);
+	if (p != NULL) {
+		value = p;
+		len = strlen(value);
+	}
 
 	tag->numOfItems++;
 
@@ -449,7 +498,7 @@ static void appendToTagItems(struct tag *tag, enum tag_type type,
 	}
 
 	g_mutex_lock(tag_pool_lock);
-	tag->items[i] = tag_pool_get_item(type, p, strlen(p));
+	tag->items[i] = tag_pool_get_item(type, value, len);
 	g_mutex_unlock(tag_pool_lock);
 
 	g_free(p);
