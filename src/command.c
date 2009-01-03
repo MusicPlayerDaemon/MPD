@@ -451,7 +451,7 @@ handle_add(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 	enum playlist_result result;
 
 	if (strncmp(path, "file:///", 8) == 0) {
-#ifndef WIN32
+#ifdef WIN32
 		result = PLAYLIST_RESULT_DENIED;
 #else
 		result = playlist_append_file(path + 7, client_get_uid(client),
@@ -486,9 +486,13 @@ handle_addid(struct client *client, int argc, char *argv[])
 	enum playlist_result result;
 
 	if (strncmp(argv[1], "file:///", 8) == 0)
+#ifdef WIN32
+		result = PLAYLIST_RESULT_DENIED;
+#else
 		result = playlist_append_file(argv[1] + 7,
 					      client_get_uid(client),
 					      &added_id);
+#endif
 	else
 		result = addToPlaylist(argv[1], &added_id);
 
