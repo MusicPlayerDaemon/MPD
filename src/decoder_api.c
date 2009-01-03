@@ -27,8 +27,10 @@
 #include "normalize.h"
 #include "pipe.h"
 
-#include <assert.h>
 #include <glib.h>
+
+#include <assert.h>
+#include <stdlib.h>
 
 void decoder_initialized(struct decoder * decoder,
 			 const struct audio_format *audio_format,
@@ -239,9 +241,8 @@ decoder_data(struct decoder *decoder,
 			pcm_convert_size(&dc.in_audio_format, length,
 					 &dc.out_audio_format);
 		if (out_length > conv_buffer_size) {
-			if (conv_buffer != NULL)
-				free(conv_buffer);
-			conv_buffer = xmalloc(out_length);
+			g_free(conv_buffer);
+			conv_buffer = g_malloc(out_length);
 			conv_buffer_size = out_length;
 		}
 
