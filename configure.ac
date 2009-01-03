@@ -17,6 +17,12 @@ AC_DEFINE(PROTOCOL_VERSION, "0.14.0", [The mpd protocol version])
 MPD_LIBS=""
 MPD_CFLAGS=""
 
+case "$host" in
+*-mingw32* | *-windows*)
+	MPD_LIBS="$MPD_LIBS -lws2_32"
+	;;
+esac
+
 if test -z "$prefix" || test "x$prefix" = xNONE; then
 	local_lib=
 	local_include=
