@@ -76,6 +76,7 @@
 #include <locale.h>
 #endif
 
+GThread *main_task;
 GMainLoop *main_loop;
 
 struct notify main_notify;
@@ -242,6 +243,7 @@ int main(int argc, char *argv[])
 
 	changeToUser();
 
+	main_task = g_thread_self();
 	main_loop = g_main_loop_new(NULL, FALSE);
 	notify_init(&main_notify);
 

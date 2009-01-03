@@ -30,6 +30,7 @@
 #include "update.h"
 #include "idle.h"
 #include "conf.h"
+#include "main.h"
 
 #include <glib.h>
 

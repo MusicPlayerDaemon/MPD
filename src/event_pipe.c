@@ -26,7 +26,6 @@
 #include <glib.h>
 #include <string.h>
 
-GThread *main_task;
 static int event_pipe[2];
 static GMutex *event_pipe_mutex;
 static bool pipe_events[PIPE_EVENT_MAX];
@@ -78,8 +77,6 @@ void event_pipe_init(void)
 {
 	GIOChannel *channel;
 
-	main_task = g_thread_self();
-
 	if (pipe(event_pipe) < 0)
 		g_error("Couldn't open pipe: %s", strerror(errno));
 	if (set_nonblocking(event_pipe[1]) < 0)
@@ -90,8 +87,6 @@ void event_pipe_init(void)
 	g_io_channel_unref(channel);
 
 	event_pipe_mutex = g_mutex_new();
-
-	main_task = g_thread_self();
 }
 
 void event_pipe_deinit(void)

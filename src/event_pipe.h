@@ -44,8 +44,6 @@ enum pipe_event {
 
 typedef void (*event_pipe_callback_t)(void);
 
-extern GThread *main_task;
-
 void event_pipe_init(void);
 
 void event_pipe_deinit(void);

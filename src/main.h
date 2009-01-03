@@ -21,6 +21,8 @@
 
 #include <glib.h>
 
+extern GThread *main_task;
+
 extern GMainLoop *main_loop;
 
 extern struct notify main_notify;
