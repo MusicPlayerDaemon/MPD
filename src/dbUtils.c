@@ -21,7 +21,6 @@
 #include "directory.h"
 #include "database.h"
 #include "client.h"
-#include "utils.h"
 #include "playlist.h"
 #include "song.h"
 #include "song_print.h"
@@ -31,6 +30,8 @@
 #include "stored_playlist.h"
 
 #include <glib.h>
+
+#include <stdlib.h>
 
 typedef struct _ListCommandItem {
 	int8_t tagType;
@@ -100,7 +101,7 @@ int searchForSongsIn(struct client *client, const char *name,
 	int ret;
 	int i;
 
-	char **originalNeedles = xmalloc(numItems * sizeof(char *));
+	char **originalNeedles = g_new(char *, numItems);
 	struct search_data data;
 
 	for (i = 0; i < numItems; i++) {
@@ -275,7 +276,7 @@ unsigned long sumSongTimesIn(const char *name)
 static ListCommandItem *newListCommandItem(int tagType, int numConditionals,
 					   LocateTagItem * conditionals)
 {
-	ListCommandItem *item = xmalloc(sizeof(ListCommandItem));
+	ListCommandItem *item = g_new(ListCommandItem, 1);
 
 	item->tagType = tagType;
 	item->numConditionals = numConditionals;
