@@ -90,6 +90,15 @@ static inline void tag_add_item(struct tag *tag, enum tag_type itemType,
 struct tag *tag_dup(const struct tag *tag);
 
 /**
+ * Merges the data from two tags.  If both tags share data for the
+ * same tag_type, only data from "add" is used.
+ *
+ * @return a newly allocated tag, which must be freed with tag_free()
+ */
+struct tag *
+tag_merge(const struct tag *base, const struct tag *add);
+
+/**
  * Returns true if the tag contains no items.  This ignores the "time"
  * attribute.
  */

@@ -318,6 +318,52 @@ struct tag *tag_dup(const struct tag *tag)
 	return ret;
 }
 
+struct tag *
+tag_merge(const struct tag *base, const struct tag *add)
+{
+	struct tag *ret;
+	unsigned n;
+
+	assert(base != NULL);
+	assert(add != NULL);
+
+	/* allocate new tag object */
+
+	ret = tag_new();
+	ret->time = add->time > 0 ? add->time : base->time;
+	ret->numOfItems = base->numOfItems + add->numOfItems;
+	ret->items = ret->numOfItems > 0 ? g_malloc(items_size(ret)) : NULL;
+
+	g_mutex_lock(tag_pool_lock);
+
+	/* copy all items from "add" */
+
+	for (unsigned i = 0; i < add->numOfItems; ++i)
+		ret->items[i] = tag_pool_dup_item(add->items[i]);
+
+	n = add->numOfItems;
+
+	/* copy additional items from "base" */
+
+	for (unsigned i = 0; i < base->numOfItems; ++i)
+		if (!tag_has_type(add, base->items[i]->type))
+			ret->items[n++] = tag_pool_dup_item(base->items[i]);
+
+	g_mutex_unlock(tag_pool_lock);
+
+	assert(n <= ret->numOfItems);
+
+	if (n < ret->numOfItems) {
+		/* some tags were not copied - shrink ret->items */
+		assert(n > 0);
+
+		ret->numOfItems = n;
+		ret->items = g_realloc(ret->items, items_size(ret));
+	}
+
+	return ret;
+}
+
 bool tag_has_type(const struct tag *tag, enum tag_type type)
 {
 	assert(tag != NULL);
