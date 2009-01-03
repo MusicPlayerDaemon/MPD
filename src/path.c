@@ -18,7 +18,6 @@
 
 #include "path.h"
 #include "conf.h"
-#include "utils.h"
 #include "playlist.h"
 
 #include <glib.h>

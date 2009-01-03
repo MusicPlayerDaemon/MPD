@@ -19,7 +19,6 @@
 #include "permission.h"
 #include "conf.h"
 #include "log.h"
-#include "utils.h"
 
 #include <glib.h>
 

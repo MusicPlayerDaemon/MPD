@@ -29,7 +29,6 @@
 #include "permission.h"
 #include "buffer2array.h"
 #include "log.h"
-#include "utils.h"
 #include "stored_playlist.h"
 #include "ack.h"
 #include "audio.h"
@@ -42,6 +41,8 @@
 
 #include <assert.h>
 #include <time.h>
+#include <stdlib.h>
+#include <errno.h>
 
 #define COMMAND_STATUS_VOLUME           "volume"
 #define COMMAND_STATUS_STATE            "state"

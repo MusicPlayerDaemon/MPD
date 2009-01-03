@@ -18,7 +18,6 @@
 
 #include "zeroconf-internal.h"
 #include "listen.h"
-#include "utils.h"
 
 #include <glib.h>
 

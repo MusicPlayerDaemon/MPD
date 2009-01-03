@@ -21,9 +21,10 @@
 #include "tag_save.h"
 #include "directory.h"
 #include "path.h"
-#include "utils.h"
 #include "tag.h"
 #include "log.h"
+
+#include <stdlib.h>
 
 #define SONG_KEY	"key: "
 #define SONG_MTIME	"mtime: "

@@ -23,7 +23,6 @@
 #include "gcc.h"
 #include "log.h"
 #include "ls.h"
-#include "utils.h"
 
 #include <stdbool.h>
 #include <sys/stat.h>

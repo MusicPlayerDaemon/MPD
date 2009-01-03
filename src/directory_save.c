@@ -21,7 +21,6 @@
 #include "song.h"
 #include "log.h"
 #include "path.h"
-#include "utils.h"
 #include "song_save.h"
 
 #include <glib.h>
