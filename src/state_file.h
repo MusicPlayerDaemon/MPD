@@ -23,6 +23,5 @@
 
 void write_state_file(void);
 void read_state_file(void);
-void G_GNUC_NORETURN state_file_fatal(void);
 
 #endif /* STATE_FILE_H */

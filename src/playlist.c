@@ -30,7 +30,6 @@
 #include "log.h"
 #include "mapper.h"
 #include "path.h"
-#include "state_file.h"
 #include "stored_playlist.h"
 #include "ack.h"
 #include "idle.h"
@@ -279,17 +278,26 @@ static void loadPlaylistFromStateFile(FILE *fp, char *buffer,
 	char *temp;
 	int song;
 
-	if (!fgets(buffer, PLAYLIST_BUFFER_SIZE, fp))
-		state_file_fatal();
+	if (!fgets(buffer, PLAYLIST_BUFFER_SIZE, fp)) {
+		g_warning("No playlist in state file");
+		return;
+	}
+
 	while (!g_str_has_prefix(buffer, PLAYLIST_STATE_FILE_PLAYLIST_END)) {
 		g_strchomp(buffer);
 
 		temp = strtok(buffer, ":");
-		if (temp == NULL)
-			state_file_fatal();
+		if (temp == NULL) {
+			g_warning("Malformed playlist line in state file");
+			break;
+		}
+
 		song = atoi(temp);
-		if (!(temp = strtok(NULL, "")))
-			state_file_fatal();
+		if (!(temp = strtok(NULL, ""))) {
+			g_warning("Malformed playlist line in state file");
+			break;
+		}
+
 		if (addToPlaylist(temp, NULL) == PLAYLIST_RESULT_SUCCESS
 		    && current == song) {
 			if (state != PLAYER_STATE_STOP) {
@@ -304,8 +312,11 @@ static void loadPlaylistFromStateFile(FILE *fp, char *buffer,
 			}
 		}
 
-		if (!fgets(buffer, PLAYLIST_BUFFER_SIZE, fp))
-			state_file_fatal();
+		if (!fgets(buffer, PLAYLIST_BUFFER_SIZE, fp)) {
+			g_warning("'%s' not found in state file",
+				  PLAYLIST_STATE_FILE_PLAYLIST_END);
+			break;
+		}
 	}
 }
 
@@ -357,9 +368,6 @@ void readPlaylistState(FILE *fp)
 			} else
 				setPlaylistRandomStatus(false);
 		} else if (g_str_has_prefix(buffer, PLAYLIST_STATE_FILE_CURRENT)) {
-			if (strlen(buffer) ==
-			    strlen(PLAYLIST_STATE_FILE_CURRENT))
-				state_file_fatal();
 			current = atoi(&(buffer
 					 [strlen
 					  (PLAYLIST_STATE_FILE_CURRENT)]));

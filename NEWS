@@ -9,6 +9,7 @@ ver 0.15 - (200?/??/??)
   "log_file"
 * support logging to syslog
 * fall back to XDG music directory if no music_directory is configured
+* failure to read the state file is non-fatal
 
 ver 0.14 (2008/12/25)
 * audio outputs:

@@ -26,7 +26,6 @@
 
 #include <glib.h>
 #include <string.h>
-#include <sys/stat.h>
 
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "state_file"
@@ -74,24 +73,18 @@ void write_state_file(void)
 
 void read_state_file(void)
 {
-	struct stat st;
 	unsigned int i;
 	FILE *fp;
 
 	get_state_file_path();
 	if (!sfpath)
 		return;
-	if (stat(sfpath, &st) < 0) {
-		g_debug("failed to stat %s: %s", sfpath, strerror(errno));
-		return;
-	}
-	if (!S_ISREG(st.st_mode))
-		g_error("\"%s\" is not a regular file", sfpath);
 
 	while (!(fp = fopen(sfpath, "r")) && errno == EINTR);
 	if (G_UNLIKELY(!fp)) {
-		g_error("failed to open %s: %s",
-			sfpath, strerror(errno));
+		g_warning("failed to open %s: %s",
+			  sfpath, strerror(errno));
+		return;
 	}
 	for (i = 0; i < ARRAY_SIZE(sf_callbacks); i++) {
 		sf_callbacks[i].reader(fp);
@@ -100,9 +93,3 @@ void read_state_file(void)
 
 	while(fclose(fp) && errno == EINTR) /* nothing */;
 }
-
-void G_GNUC_NORETURN state_file_fatal(void)
-{
-	g_error("failed to parse %s", sfpath);
-}
-
