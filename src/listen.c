@@ -174,6 +174,7 @@ parseListenConfigParam(G_GNUC_UNUSED unsigned int port, ConfigParam * param)
 #endif /* HAVE_UN */
 	} else {
 #ifdef HAVE_TCP
+#ifndef WIN32
 		struct addrinfo hints, *ai, *i;
 		char service[20];
 		int ret;
@@ -202,6 +203,23 @@ parseListenConfigParam(G_GNUC_UNUSED unsigned int port, ConfigParam * param)
 				BINDERROR();
 
 		freeaddrinfo(ai);
+#else /* WIN32 */
+		const struct hostent *he;
+
+		g_debug("binding to address for %s", param->value);
+
+		he = gethostbyname(param->value);
+		if (he == NULL)
+			g_error("can't lookup host \"%s\" at line %i",
+				param->value, param->line);
+
+		if (he->h_addrtype != AF_INET)
+			g_error("IPv4 address expected for host \"%s\" at line %i",
+				param->value, param->line);
+
+		if (establishListen(AF_INET, he->h_addr, he->h_length) < 0)
+			BINDERROR();
+#endif /* !WIN32 */
 #else /* HAVE_TCP */
 		g_error("TCP support is disabled");
 #endif /* HAVE_TCP */
