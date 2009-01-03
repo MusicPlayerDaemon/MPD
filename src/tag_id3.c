@@ -18,11 +18,14 @@
 
 #include "tag_id3.h"
 #include "tag.h"
-#include "utils.h"
 #include "conf.h"
 
 #include <glib.h>
 #include <id3tag.h>
+
+#include <stdio.h>
+#include <errno.h>
+#include <string.h>
 
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "id3"
@@ -66,10 +69,10 @@ static id3_utf8_t * processID3FieldString (int is_id3v1, const id3_ucs4_t *ucs4,
 			g_debug("Unable to convert %s string to UTF-8: '%s'",
 				encoding, isostr);
 			g_error_free(error);
-			free(isostr);
+			g_free(isostr);
 			return NULL;
 		}
-		free(isostr);
+		g_free(isostr);
 	} else {
 		utf8 = id3_ucs4_utf8duplicate(ucs4);
 		if (G_UNLIKELY(!utf8)) {
@@ -78,7 +81,7 @@ static id3_utf8_t * processID3FieldString (int is_id3v1, const id3_ucs4_t *ucs4,
 	}
 
 	utf8_stripped = (id3_utf8_t *)g_strdup(g_strstrip((gchar *)utf8));
-	free(utf8);
+	g_free(utf8);
 
 	return utf8_stripped;
 }
@@ -147,7 +150,7 @@ static struct tag *getID3Info(
 				if (mpdTag == NULL)
 					mpdTag = tag_new();
 				tag_add_item(mpdTag, type, (char *)utf8);
-				free(utf8);
+				g_free(utf8);
 			}
 		}
 		else {
@@ -180,7 +183,7 @@ static struct tag *getID3Info(
 						if (mpdTag == NULL)
 							mpdTag = tag_new();
 						tag_add_item(mpdTag, type, (char *)utf8);
-						free(utf8);
+						g_free(utf8);
 					}
 				}
 			}
@@ -259,18 +262,18 @@ static struct id3_tag *getId3Tag(FILE * stream, long offset, int whence)
 	if (tagSize <= 0) return NULL;
 
 	/* Found a tag.  Allocate a buffer and read it in. */
-	tagBuf = xmalloc(tagSize);
+	tagBuf = g_malloc(tagSize);
 	if (!tagBuf) return NULL;
 
 	tagBufSize = fillBuffer(tagBuf, tagSize, stream, offset, whence);
 	if (tagBufSize < tagSize) {
-		free(tagBuf);
+		g_free(tagBuf);
 		return NULL;
 	}
 
 	tag = id3_tag_parse(tagBuf, tagBufSize);
 
-	free(tagBuf);
+	g_free(tagBuf);
 
 	return tag;
 }
