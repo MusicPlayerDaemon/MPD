@@ -19,7 +19,6 @@
 #include "tag.h"
 #include "tag_internal.h"
 #include "tag_pool.h"
-#include "utils.h"
 #include "log.h"
 #include "conf.h"
 #include "song.h"
@@ -358,7 +357,7 @@ int tag_equal(const struct tag *tag1, const struct tag *tag2)
 }
 
 static char *
-fix_utf8(const char *str, size_t *length_r)
+fix_utf8(const char *str, size_t length)
 {
 	char *temp;
 	GError *error = NULL;
@@ -366,18 +365,17 @@ fix_utf8(const char *str, size_t *length_r)
 
 	assert(str != NULL);
 
-	if (g_utf8_validate(str, *length_r, NULL))
+	if (g_utf8_validate(str, length, NULL))
 		return NULL;
 
 	DEBUG("not valid utf8 in tag: %s\n",str);
-	temp = g_convert(str, *length_r, "utf-8", "iso-8859-1",
+	temp = g_convert(str, length, "utf-8", "iso-8859-1",
 			 NULL, &written, &error);
 	if (temp == NULL) {
 		g_error_free(error);
 		return NULL;
 	}
 
-	*length_r = written;
 	return temp;
 }
 
@@ -413,22 +411,28 @@ void tag_end_add(struct tag *tag)
 #endif
 }
 
+static char *
+fix_tag_value(const char *p, size_t length)
+{
+	char *utf8, *escaped;
+
+	utf8 = fix_utf8(p, length);
+	if (utf8 == NULL)
+		utf8 = g_strndup(p, length);
+
+	escaped = g_strescape(utf8, NULL);
+	g_free(utf8);
+
+	return escaped;
+}
+
 static void appendToTagItems(struct tag *tag, enum tag_type type,
 			     const char *value, size_t len)
 {
 	unsigned int i = tag->numOfItems;
-	char *duplicated;
-	const char *p;
+	char *p;
 
-	p = duplicated = fix_utf8(value, &len);
-	if (p == NULL)
-		p = value;
-	if (memchr(p, '\n', len) != NULL) {
-		if (duplicated == NULL)
-			p = duplicated = g_strndup(p, len);
-
-		stripReturnChar(duplicated);
-	}
+	p = fix_tag_value(value, len);
 
 	tag->numOfItems++;
 
@@ -445,10 +449,10 @@ static void appendToTagItems(struct tag *tag, enum tag_type type,
 	}
 
 	g_mutex_lock(tag_pool_lock);
-	tag->items[i] = tag_pool_get_item(type, p, len);
+	tag->items[i] = tag_pool_get_item(type, p, strlen(p));
 	g_mutex_unlock(tag_pool_lock);
 
-	g_free(duplicated);
+	g_free(p);
 }
 
 void tag_add_item_n(struct tag *tag, enum tag_type itemType,

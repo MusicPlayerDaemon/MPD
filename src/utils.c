@@ -40,13 +40,6 @@
 #include <windows.h>
 #endif
 
-void stripReturnChar(char *string)
-{
-	while (string && (string = strchr(string, '\n'))) {
-		*string = ' ';
-	}
-}
-
 void my_usleep(long usec)
 {
 #ifdef WIN32

@@ -36,8 +36,6 @@
 	} while (0)
 #endif /* !assert_static */
 
-void stripReturnChar(char *string);
-
 void my_usleep(long usec);
 
 /* trivial functions, keep them inlined */
