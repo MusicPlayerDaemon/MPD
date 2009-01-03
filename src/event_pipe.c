@@ -19,7 +19,6 @@
  */
 
 #include "event_pipe.h"
-#include "utils.h"
 #include "log.h"
 
 #include <assert.h>
@@ -104,8 +103,8 @@ void event_pipe_deinit(void)
 {
 	g_mutex_free(event_pipe_mutex);
 
-	xclose(event_pipe[0]);
-	xclose(event_pipe[1]);
+	close(event_pipe[0]);
+	close(event_pipe[1]);
 }
 
 void
