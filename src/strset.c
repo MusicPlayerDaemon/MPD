@@ -17,10 +17,10 @@
  */
 
 #include "strset.h"
-#include "utils.h"
 
 #include <assert.h>
 #include <string.h>
+#include <stdlib.h>
 
 #define NUM_SLOTS 16384
 
@@ -51,7 +51,7 @@ static unsigned calc_hash(const char *p) {
 
 G_GNUC_MALLOC struct strset *strset_new(void)
 {
-	struct strset *set = xcalloc(1, sizeof(*set));
+	struct strset *set = g_new0(struct strset, 1);
 	return set;
 }
 
@@ -93,7 +93,7 @@ void strset_add(struct strset *set, const char *value)
 			return;
 
 	/* insert it into the slot chain */
-	slot = xmalloc(sizeof(*slot));
+	slot = g_new(struct strset_slot, 1);
 	slot->next = base_slot->next;
 	slot->value = value;
 	base_slot->next = slot;
