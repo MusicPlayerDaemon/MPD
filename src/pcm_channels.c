@@ -17,7 +17,6 @@
  */
 
 #include "pcm_channels.h"
-#include "utils.h"
 
 #include <glib.h>
 
@@ -84,7 +83,7 @@ pcm_convert_channels_16(int8_t dest_channels,
 
 	if (dest_size > len) {
 		len = dest_size;
-		buf = xrealloc(buf, len);
+		buf = g_realloc(buf, len);
 	}
 
 	*dest_size_r = dest_size;
@@ -163,7 +162,7 @@ pcm_convert_channels_24(int8_t dest_channels,
 
 	if (dest_size > len) {
 		len = dest_size;
-		buf = xrealloc(buf, len);
+		buf = g_realloc(buf, len);
 	}
 
 	*dest_size_r = dest_size;

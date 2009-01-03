@@ -19,7 +19,6 @@
 
 #include "pcm_resample.h"
 #include "conf.h"
-#include "utils.h"
 
 #include <glib.h>
 
@@ -131,14 +130,14 @@ pcm_resample_16(uint8_t channels,
 	data_in_size = data->input_frames * sizeof(float) * channels;
 	if (data_in_size > state->data_in_size) {
 		state->data_in_size = data_in_size;
-		data->data_in = xrealloc(data->data_in, data_in_size);
+		data->data_in = g_realloc(data->data_in, data_in_size);
 	}
 
 	data->output_frames = dest_size / sizeof(*dest_buffer) / channels;
 	data_out_size = data->output_frames * sizeof(float) * channels;
 	if (data_out_size > state->data_out_size) {
 		state->data_out_size = data_out_size;
-		data->data_out = xrealloc(data->data_out, data_out_size);
+		data->data_out = g_realloc(data->data_out, data_out_size);
 	}
 
 	src_short_to_float_array(src_buffer, data->data_in,
@@ -204,14 +203,14 @@ pcm_resample_24(uint8_t channels,
 	data_in_size = data->input_frames * sizeof(float) * channels;
 	if (data_in_size > state->data_in_size) {
 		state->data_in_size = data_in_size;
-		data->data_in = xrealloc(data->data_in, data_in_size);
+		data->data_in = g_realloc(data->data_in, data_in_size);
 	}
 
 	data->output_frames = dest_size / sizeof(*dest_buffer) / channels;
 	data_out_size = data->output_frames * sizeof(float) * channels;
 	if (data_out_size > state->data_out_size) {
 		state->data_out_size = data_out_size;
-		data->data_out = xrealloc(data->data_out, data_out_size);
+		data->data_out = g_realloc(data->data_out, data_out_size);
 	}
 
 	src_int_to_float_array(src_buffer, data->data_in,

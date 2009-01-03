@@ -19,7 +19,6 @@
 #include "pcm_utils.h"
 #include "pcm_channels.h"
 #include "pcm_prng.h"
-#include "utils.h"
 #include "conf.h"
 #include "audio_format.h"
 
@@ -259,7 +258,7 @@ pcm_convert_to_16(struct pcm_convert_state *convert,
 		*dest_size_r = src_size << 1;
 		if (*dest_size_r > len) {
 			len = *dest_size_r;
-			buf = xrealloc(buf, len);
+			buf = g_realloc(buf, len);
 		}
 
 		pcm_convert_8_to_16((int16_t *)buf,
@@ -276,7 +275,7 @@ pcm_convert_to_16(struct pcm_convert_state *convert,
 		*dest_size_r = num_samples * 2;
 		if (*dest_size_r > len) {
 			len = *dest_size_r;
-			buf = xrealloc(buf, len);
+			buf = g_realloc(buf, len);
 		}
 
 		pcm_convert_24_to_16(&convert->dither,
@@ -324,7 +323,7 @@ pcm_convert_to_24(uint8_t bits, const void *src,
 		*dest_size_r = src_size * 4;
 		if (*dest_size_r > len) {
 			len = *dest_size_r;
-			buf = xrealloc(buf, len);
+			buf = g_realloc(buf, len);
 		}
 
 		pcm_convert_8_to_24(buf, (const int8_t *)src,
@@ -336,7 +335,7 @@ pcm_convert_to_24(uint8_t bits, const void *src,
 		*dest_size_r = num_samples * 4;
 		if (*dest_size_r > len) {
 			len = *dest_size_r;
-			buf = xrealloc(buf, len);
+			buf = g_realloc(buf, len);
 		}
 
 		pcm_convert_16_to_24(buf, (const int16_t *)src,
@@ -368,14 +367,14 @@ pcm_convert_16(const struct audio_format *src_format,
 	buf = pcm_convert_to_16(state, src_format->bits,
 				src_buffer, src_size, &len);
 	if (!buf)
-		exit(EXIT_FAILURE);
+		g_error("pcm_convert_to_16() failed");
 
 	if (src_format->channels != dest_format->channels) {
 		buf = pcm_convert_channels_16(dest_format->channels,
 					      src_format->channels,
 					      buf, len, &len);
 		if (!buf)
-			exit(EXIT_FAILURE);
+			g_error("pcm_convert_channels_16() failed");
 	}
 
 	if (src_format->sample_rate == dest_format->sample_rate) {
@@ -408,14 +407,14 @@ pcm_convert_24(const struct audio_format *src_format,
 	buf = pcm_convert_to_24(src_format->bits,
 				src_buffer, src_size, &len);
 	if (!buf)
-		exit(EXIT_FAILURE);
+		g_error("pcm_convert_to_24() failed");
 
 	if (src_format->channels != dest_format->channels) {
 		buf = pcm_convert_channels_24(dest_format->channels,
 					      src_format->channels,
 					      buf, len, &len);
 		if (!buf)
-			exit(EXIT_FAILURE);
+			g_error("pcm_convert_channels_24() failed");
 	}
 
 	if (src_format->sample_rate == dest_format->sample_rate) {
