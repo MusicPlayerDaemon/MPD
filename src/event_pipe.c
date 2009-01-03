@@ -25,6 +25,9 @@
 #include <assert.h>
 #include <glib.h>
 #include <string.h>
+#include <errno.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 #ifdef WIN32
 /* for _O_BINARY */

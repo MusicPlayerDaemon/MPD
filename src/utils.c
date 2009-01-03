@@ -27,6 +27,7 @@
 #include <string.h>
 #include <sys/types.h>
 #include <fcntl.h>
+#include <errno.h>
 
 #ifndef WIN32
 #include <pwd.h>
@@ -54,55 +55,6 @@ void my_usleep(long usec)
 #endif
 }
 
-G_GNUC_MALLOC char *xstrdup(const char *s)
-{
-	char *ret = strdup(s);
-	if (G_UNLIKELY(!ret))
-		g_error("OOM: strdup");
-	return ret;
-}
-
-/* borrowed from git :) */
-
-G_GNUC_MALLOC void *xmalloc(size_t size)
-{
-	void *ret;
-
-	assert(G_LIKELY(size));
-
-	ret = malloc(size);
-	if (G_UNLIKELY(!ret))
-		g_error("OOM: malloc");
-	return ret;
-}
-
-G_GNUC_MALLOC void *xrealloc(void *ptr, size_t size)
-{
-	void *ret = realloc(ptr, size);
-
-	/* some C libraries return NULL when size == 0,
-	 * make sure we get a free()-able pointer (free(NULL)
-	 * doesn't work with all C libraries, either) */
-	if (G_UNLIKELY(!ret && !size))
-		ret = realloc(ptr, 1);
-
-	if (G_UNLIKELY(!ret))
-		g_error("OOM: realloc");
-	return ret;
-}
-
-G_GNUC_MALLOC void *xcalloc(size_t nmemb, size_t size)
-{
-	void *ret;
-
-	assert(G_LIKELY(nmemb && size));
-
-	ret = calloc(nmemb, size);
-	if (G_UNLIKELY(!ret))
-		g_error("OOM: calloc");
-	return ret;
-}
-
 char *parsePath(char *path)
 {
 #ifndef WIN32
@@ -112,7 +64,6 @@ char *parsePath(char *path)
 	} else if (path[0] == '~') {
 		size_t pos = 1;
 		const char *home;
-		char *newPath;
 
 		if (path[1] == '/' || path[1] == '\0') {
 			ConfigParam *param = getConfigParam(CONF_USER);
@@ -157,13 +108,10 @@ char *parsePath(char *path)
 			home = passwd->pw_dir;
 		}
 
-		newPath = xmalloc(strlen(home) + strlen(path + pos) + 1);
-		strcpy(newPath, home);
-		strcat(newPath, path + pos);
-		return newPath;
+		return g_strconcat(home, path + pos, NULL);
 	} else {
 #endif
-		return xstrdup(path);
+		return g_strdup(path);
 #ifndef WIN32
 	}
 #endif

@@ -19,14 +19,6 @@
 #ifndef MPD_UTILS_H
 #define MPD_UTILS_H
 
-#include <glib.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <errno.h>
-
-#define ARRAY_SIZE(x) (sizeof(x)/sizeof(x[0]))
-
 #ifndef assert_static
 /* Compile time assertion developed by Ralf Holly */
 /* http://pera-software.com/articles/compile-time-assertions.pdf */
@@ -37,55 +29,6 @@
 #endif /* !assert_static */
 
 void my_usleep(long usec);
-
-/* trivial functions, keep them inlined */
-static inline void xclose(int fd)
-{
-	while (close(fd) && errno == EINTR);
-}
-
-static inline ssize_t xread(int fd, void *buf, size_t len)
-{
-	ssize_t nr;
-	while (1) {
-		nr = read(fd, buf, len);
-		if ((nr < 0) && (errno == EAGAIN || errno == EINTR))
-			continue;
-		return nr;
-	}
-}
-
-static inline ssize_t xwrite(int fd, const void *buf, size_t len)
-{
-	ssize_t nr;
-	while (1) {
-		nr = write(fd, buf, len);
-		if ((nr < 0) && (errno == EAGAIN || errno == EINTR))
-			continue;
-		return nr;
-	}
-}
-
-G_GNUC_MALLOC char *xstrdup(const char *s);
-
-G_GNUC_MALLOC void *xmalloc(size_t size);
-
-G_GNUC_MALLOC void *xrealloc(void *ptr, size_t size);
-
-G_GNUC_MALLOC void *xcalloc(size_t nmemb, size_t size);
-
-/**
- * free a const pointer - unfortunately free() expects a non-const
- * pointer, for whatever reason
- */
-static inline void xfree(const void *p)
-{
-	union {
-		const void *in;
-		void *out;
-	} deconst = { .in = p };
-	free(deconst.out);
-}
 
 char *parsePath(char *path);
 
