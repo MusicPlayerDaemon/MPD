@@ -24,6 +24,8 @@
 #include <glib.h>
 
 #include <string.h>
+#include <stdio.h>
+#include <errno.h>
 
 #define MAX_STRING_SIZE	MPD_PATH_MAX+80
 
@@ -84,22 +86,17 @@ config_param_free(gpointer data, G_GNUC_UNUSED gpointer user_data)
 	ConfigParam *param = data;
 	int i;
 
-	if (param->value)
-		free(param->value);
+	g_free(param->value);
 
 	for (i = 0; i < param->numberOfBlockParams; i++) {
-		if (param->blockParams[i].name) {
-			free(param->blockParams[i].name);
-		}
-		if (param->blockParams[i].value) {
-			free(param->blockParams[i].value);
-		}
+		g_free(param->blockParams[i].name);
+		g_free(param->blockParams[i].value);
 	}
 
 	if (param->numberOfBlockParams)
-		free(param->blockParams);
+		g_free(param->blockParams);
 
-	free(param);
+	g_free(param);
 }
 
 static ConfigEntry *
@@ -127,7 +124,7 @@ config_entry_free(gpointer data, G_GNUC_UNUSED gpointer user_data)
 	g_slist_foreach(entry->params, config_param_free, NULL);
 	g_slist_free(entry->params);
 
-	free(entry);
+	g_free(entry);
 }
 
 static ConfigEntry *
@@ -417,7 +414,7 @@ ConfigParam *parseConfigFilePath(const char *name, int force)
 		g_error("error parsing \"%s\" at line %i\n",
 			name, param->line);
 
-	free(param->value);
+	g_free(param->value);
 	param->value = path;
 
 	return param;
