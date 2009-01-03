@@ -26,7 +26,7 @@
 #include <stdbool.h>
 #include <string.h>
 
-#define PERMISSION_PASSWORD_CHAR	"@"
+#define PERMISSION_PASSWORD_CHAR	'@'
 #define PERMISSION_SEPERATOR		","
 
 #define PERMISSION_READ_STRING		"read"
@@ -69,8 +69,6 @@ static unsigned parsePermissions(char *string)
 
 void initPermissions(void)
 {
-	char *temp;
-	char *cp2;
 	char *password;
 	unsigned permission;
 	ConfigParam *param;
@@ -87,26 +85,22 @@ void initPermissions(void)
 		permission_default = 0;
 
 		do {
-			if (!strstr(param->value, PERMISSION_PASSWORD_CHAR)) {
-				FATAL("\"%s\" not found in password string "
+			char *separator =
+				strchr(param->value, PERMISSION_PASSWORD_CHAR);
+
+			if (separator == NULL)
+				FATAL("\"%c\" not found in password string "
 				      "\"%s\", line %i\n",
 				      PERMISSION_PASSWORD_CHAR,
 				      param->value, param->line);
-			}
 
-			if (!(temp = strtok_r(param->value,
-					      PERMISSION_PASSWORD_CHAR,
-					      &cp2))) {
-				FATAL("something weird just happened in permission.c\n");
-			}
+			password = g_strndup(param->value,
+					     separator - param->value);
 
-			password = temp;
-
-			permission =
-			    parsePermissions(strtok_r(NULL, "", &cp2));
+			permission = parsePermissions(separator + 1);
 
 			g_hash_table_replace(permission_passwords,
-					     g_strdup(password),
+					     password,
 					     GINT_TO_POINTER(permission));
 		} while ((param = getNextConfigParam(CONF_PASSWORD, param)));
 	}
