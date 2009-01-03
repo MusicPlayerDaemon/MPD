@@ -38,7 +38,8 @@ void decoder_initialized(struct decoder * decoder,
 {
 	assert(dc.state == DECODE_STATE_START);
 	assert(decoder != NULL);
-	assert(!decoder->stream_tag_sent);
+	assert(decoder->stream_tag == NULL);
+	assert(decoder->decoder_tag == NULL);
 	assert(!decoder->seeking);
 	assert(audio_format != NULL);
 	assert(audio_format_defined(audio_format));
@@ -135,33 +136,6 @@ size_t decoder_read(struct decoder *decoder,
 }
 
 /**
- * Add the tag items from the input stream (meta_name, meta_title) to
- * a duplicate of the specified tag.  The return value has to be freed
- * with tag_free().  If this function returns NULL, then there are no
- * tags provided by the stream.
- */
-static struct tag *
-tag_add_stream_tags(const struct tag *src_tag, const struct input_stream *is)
-{
-	struct tag *tag;
-
-	assert(src_tag != NULL);
-	assert(is != NULL);
-
-	if ((is->meta_name == NULL || tag_has_type(src_tag, TAG_ITEM_NAME)) &&
-	    (is->meta_title == NULL || tag_has_type(src_tag, TAG_ITEM_TITLE)))
-	    return NULL;
-
-	tag = tag_dup(src_tag);
-	if (is->meta_name != NULL && !tag_has_type(src_tag, TAG_ITEM_NAME))
-		tag_add_item(tag, TAG_ITEM_NAME, is->meta_name);
-	if (is->meta_title != NULL && !tag_has_type(src_tag, TAG_ITEM_TITLE))
-		tag_add_item(tag, TAG_ITEM_TITLE, is->meta_title);
-
-	return tag;
-}
-
-/**
  * All chunks are full of decoded data; wait for the player to free
  * one.
  */
@@ -195,6 +169,25 @@ do_send_tag(struct input_stream *is, const struct tag *tag)
 	return DECODE_COMMAND_NONE;
 }
 
+static bool
+update_stream_tag(struct decoder *decoder, struct input_stream *is)
+{
+	struct tag *tag;
+
+	if (is == NULL)
+		return false;
+
+	tag = input_stream_tag(is);
+	if (tag == NULL)
+		return false;
+
+	if (decoder->stream_tag != NULL)
+		tag_free(decoder->stream_tag);
+
+	decoder->stream_tag = tag;
+	return true;
+}
+
 enum decoder_command
 decoder_data(struct decoder *decoder,
 	     struct input_stream *is,
@@ -214,36 +207,25 @@ decoder_data(struct decoder *decoder,
 	    length == 0)
 		return dc.command;
 
-	if (is != NULL && !decoder->stream_tag_sent) {
-		const struct tag *src;
-		struct tag *tag1, *tag2;
+	/* send stream tags */
 
-		/* base is the current song's tag, or an empty new
-		   tag if the song has no tag */
-		src = dc.current_song->tag;
-		if (src == NULL)
-			src = tag1 = tag_new();
-		else
-			tag1 = NULL;
+	if (update_stream_tag(decoder, is)) {
+		enum decoder_command cmd;
 
-		tag2 = tag_add_stream_tags(src, is);
-		if (tag1 != NULL)
-			/* free the empty tag created by tag_new(), we
-			   aren't going to send it */
-			tag_free(tag1);
+		if (decoder->decoder_tag != NULL) {
+			/* merge with tag from decoder plugin */
+			struct tag *tag;
 
-		if (tag2 != NULL)
-			/* use the composite tag returned by
-			   tag_add_stream_tags() */
-			src = tag2;
+			tag = tag_merge(decoder->stream_tag,
+					decoder->decoder_tag);
+			cmd = do_send_tag(is, tag);
+			tag_free(tag);
+		} else
+			/* send only the stream tag */
+			cmd = do_send_tag(is, decoder->stream_tag);
 
-		if (src != NULL) {
-			music_pipe_tag(src);
-			if (tag2 != NULL)
-				tag_free(tag2);
-		}
-
-		decoder->stream_tag_sent = true;
+		if (cmd != DECODE_COMMAND_NONE)
+			return cmd;
 	}
 
 	if (audio_format_equals(&dc.in_audio_format, &dc.out_audio_format)) {
@@ -299,21 +281,33 @@ enum decoder_command
 decoder_tag(G_GNUC_UNUSED struct decoder *decoder, struct input_stream *is,
 	    const struct tag *tag)
 {
-	struct tag *tag2 = is != NULL ? tag_add_stream_tags(tag, is) : NULL;
 	enum decoder_command cmd;
 
 	assert(dc.state == DECODE_STATE_DECODE);
+	assert(tag != NULL);
 
-	if (tag2 != NULL)
-		tag = tag2;
+	/* save the tag */
 
-	cmd = do_send_tag(is, tag);
+	if (decoder->decoder_tag != NULL)
+		tag_free(decoder->decoder_tag);
+	decoder->decoder_tag = tag_dup(tag);
 
-	if (tag2 != NULL)
-		tag_free(tag2);
+	/* check for a new stream tag */
 
-	if (cmd == DECODE_COMMAND_NONE)
-		decoder->stream_tag_sent = true;
+	update_stream_tag(decoder, is);
+
+	/* send tag to music pipe */
+
+	if (decoder->stream_tag != NULL) {
+		/* merge with tag from input stream */
+		struct tag *merged;
+
+		merged = tag_merge(decoder->stream_tag, decoder->decoder_tag);
+		cmd = do_send_tag(is, merged);
+		tag_free(merged);
+	} else
+		/* send only the decoder tag */
+		cmd = do_send_tag(is, tag);
 
 	return cmd;
 }

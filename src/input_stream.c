@@ -68,8 +68,6 @@ input_stream_open(struct input_stream *is, const char *url)
 	is->size = -1;
 	is->error = 0;
 	is->mime = NULL;
-	is->meta_name = NULL;
-	is->meta_title = NULL;
 
 	for (unsigned i = 0; i < num_input_plugins; ++i) {
 		const struct input_plugin *plugin = input_plugins[i];
@@ -89,6 +87,16 @@ input_stream_seek(struct input_stream *is, off_t offset, int whence)
 	return is->plugin->seek(is, offset, whence);
 }
 
+struct tag *
+input_stream_tag(struct input_stream *is)
+{
+	assert(is != NULL);
+
+	return is->plugin->tag != NULL
+		? is->plugin->tag(is)
+		: NULL;
+}
+
 size_t
 input_stream_read(struct input_stream *is, void *ptr, size_t size)
 {
@@ -103,8 +111,6 @@ void input_stream_close(struct input_stream *is)
 	is->plugin->close(is);
 
 	g_free(is->mime);
-	g_free(is->meta_name);
-	g_free(is->meta_title);
 }
 
 bool input_stream_eof(struct input_stream *is)

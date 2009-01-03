@@ -38,7 +38,8 @@ decoder_stream_decode(const struct decoder_plugin *plugin,
 	assert(plugin != NULL);
 	assert(plugin->stream_decode != NULL);
 	assert(decoder != NULL);
-	assert(!decoder->stream_tag_sent);
+	assert(decoder->stream_tag == NULL);
+	assert(decoder->decoder_tag == NULL);
 	assert(input_stream != NULL);
 	assert(input_stream->ready);
 	assert(dc.state == DECODE_STATE_START);
@@ -61,7 +62,8 @@ decoder_file_decode(const struct decoder_plugin *plugin,
 	assert(plugin != NULL);
 	assert(plugin->file_decode != NULL);
 	assert(decoder != NULL);
-	assert(!decoder->stream_tag_sent);
+	assert(decoder->stream_tag == NULL);
+	assert(decoder->decoder_tag == NULL);
 	assert(path != NULL);
 	assert(path[0] == '/');
 	assert(dc.state == DECODE_STATE_START);
@@ -88,7 +90,8 @@ static void decoder_run_song(const struct song *song, const char *uri)
 	}
 
 	decoder.seeking = false;
-	decoder.stream_tag_sent = false;
+	decoder.stream_tag = NULL;
+	decoder.decoder_tag = NULL;
 
 	dc.state = DECODE_STATE_START;
 	dc.command = DECODE_COMMAND_NONE;
@@ -185,6 +188,12 @@ static void decoder_run_song(const struct song *song, const char *uri)
 
 	if (close_instream)
 		input_stream_close(&input_stream);
+
+	if (decoder.stream_tag != NULL)
+		tag_free(decoder.stream_tag);
+
+	if (decoder.decoder_tag != NULL)
+		tag_free(decoder.decoder_tag);
 
 	dc.state = ret ? DECODE_STATE_STOP : DECODE_STATE_ERROR;
 }

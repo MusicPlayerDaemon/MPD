@@ -29,6 +29,7 @@ struct input_plugin {
 	bool (*open)(struct input_stream *is, const char *url);
 	void (*close)(struct input_stream *is);
 
+	struct tag *(*tag)(struct input_stream *is);
 	int (*buffer)(struct input_stream *is);
 	size_t (*read)(struct input_stream *is, void *ptr, size_t size);
 	bool (*eof)(struct input_stream *is);
@@ -46,8 +47,6 @@ struct input_stream {
 	char *mime;
 
 	void *data;
-	char *meta_name;
-	char *meta_title;
 
 	void *archive;
 };
@@ -66,6 +65,15 @@ input_stream_seek(struct input_stream *is, off_t offset, int whence);
 
 void input_stream_close(struct input_stream *is);
 bool input_stream_eof(struct input_stream *is);
+
+/**
+ * Reads the tag from the stream.
+ *
+ * @return a tag object which must be freed with tag_free(), or NULL
+ * if the tag has not changed since the last call
+ */
+struct tag *
+input_stream_tag(struct input_stream *is);
 
 /* return value: -1 is error, 1 inidicates stuff was buffered, 0 means nothing
    was buffered */

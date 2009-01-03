@@ -20,6 +20,7 @@
 #include "input_stream.h"
 #include "dlist.h"
 #include "config.h"
+#include "tag.h"
 
 #include <assert.h>
 #include <sys/select.h>
@@ -73,6 +74,13 @@ struct input_curl {
 
 	/** error message provided by libcurl */
 	char error[CURL_ERROR_SIZE];
+
+	/** the stream name from the icy-name response header */
+	char *meta_name;
+
+	/** the tag object ready to be requested via
+	    input_stream_tag() */
+	struct tag *tag;
 };
 
 /** libcurl should accept "ICY 200 OK" */
@@ -137,6 +145,9 @@ input_curl_free(struct input_stream *is)
 {
 	struct input_curl *c = is->data;
 
+	if (c->tag != NULL)
+		tag_free(c->tag);
+
 	input_curl_easy_free(c);
 
 	if (c->multi != NULL)
@@ -144,6 +155,16 @@ input_curl_free(struct input_stream *is)
 
 	g_free(c->url);
 	g_free(c);
+}
+
+static struct tag *
+input_curl_tag(struct input_stream *is)
+{
+	struct input_curl *c = is->data;
+	struct tag *tag = c->tag;
+
+	c->tag = NULL;
+	return tag;
 }
 
 static bool
@@ -367,6 +388,7 @@ static size_t
 input_curl_headerfunction(void *ptr, size_t size, size_t nmemb, void *stream)
 {
 	struct input_stream *is = stream;
+	struct input_curl *c = is->data;
 	const char *header = ptr, *end, *value;
 	char name[64];
 
@@ -410,8 +432,14 @@ input_curl_headerfunction(void *ptr, size_t size, size_t nmemb, void *stream)
 	} else if (strcasecmp(name, "icy-name") == 0 ||
 		   strcasecmp(name, "ice-name") == 0 ||
 		   strcasecmp(name, "x-audiocast-name") == 0) {
-		g_free(is->meta_name);
-		is->meta_name = g_strndup(value, end - value);
+		g_free(c->meta_name);
+		c->meta_name = g_strndup(value, end - value);
+
+		if (c->tag != NULL)
+			tag_free(c->tag);
+
+		c->tag = tag_new();
+		tag_add_item(c->tag, TAG_ITEM_NAME, c->meta_name);
 	}
 
 	return size;
@@ -691,6 +719,8 @@ input_curl_open(struct input_stream *is, const char *url)
 		return false;
 	}
 
+	c->tag = NULL;
+
 	ret = input_curl_easy_init(is);
 	if (!ret) {
 		input_curl_free(is);
@@ -709,6 +739,7 @@ input_curl_open(struct input_stream *is, const char *url)
 const struct input_plugin input_plugin_curl = {
 	.open = input_curl_open,
 	.close = input_curl_close,
+	.tag = input_curl_tag,
 	.buffer = input_curl_buffer,
 	.read = input_curl_read,
 	.eof = input_curl_eof,

@@ -27,8 +27,11 @@ struct decoder {
 
 	bool seeking;
 
-	/** has the tag from the input stream been sent yet? */
-	bool stream_tag_sent;
+	/** the last tag received from the stream */
+	struct tag *stream_tag;
+
+	/** the last tag received from the decoder plugin */
+	struct tag *decoder_tag;
 };
 
 #endif
