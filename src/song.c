@@ -19,13 +19,13 @@
 #include "song.h"
 #include "ls.h"
 #include "directory.h"
-#include "utils.h"
-#include "log.h"
 #include "mapper.h"
 #include "path.h"
 #include "playlist.h"
 #include "decoder_list.h"
 #include "decoder_api.h"
+
+#include <glib.h>
 
 #include <assert.h>
 #include <sys/types.h>
@@ -41,7 +41,7 @@ song_alloc(const char *url, struct directory *parent)
 	assert(url);
 	urllen = strlen(url);
 	assert(urllen);
-	song = xmalloc(sizeof(*song) - sizeof(song->url) + urllen + 1);
+	song = g_malloc(sizeof(*song) - sizeof(song->url) + urllen + 1);
 
 	song->tag = NULL;
 	memcpy(song->url, url, urllen + 1);
@@ -73,7 +73,7 @@ song_file_load(const char *path, struct directory *parent)
 	assert((parent == NULL) == (*path == '/'));
 
 	if (strchr(path, '\n')) {
-		DEBUG("newSong: '%s' is not a valid uri\n", path);
+		g_debug("newSong: '%s' is not a valid uri\n", path);
 		return NULL;
 	}
 
@@ -98,7 +98,7 @@ song_free(struct song *song)
 {
 	if (song->tag)
 		tag_free(song->tag);
-	free(song);
+	g_free(song);
 }
 
 bool
