@@ -61,20 +61,6 @@ void my_usleep(long usec)
 #endif
 }
 
-int ipv6Supported(void)
-{
-#ifdef HAVE_IPV6
-	int s;
-	s = socket(AF_INET6, SOCK_STREAM, 0);
-	if (s == -1)
-		return 0;
-	close(s);
-	return 1;
-#else
-	return 0;
-#endif
-}
-
 G_GNUC_MALLOC char *xstrdup(const char *s)
 {
 	char *ret = strdup(s);

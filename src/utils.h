@@ -40,8 +40,6 @@ void stripReturnChar(char *string);
 
 void my_usleep(long usec);
 
-int ipv6Supported(void);
-
 /* trivial functions, keep them inlined */
 static inline void xclose(int fd)
 {

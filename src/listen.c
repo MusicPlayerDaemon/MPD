@@ -26,6 +26,9 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <string.h>
+#include <errno.h>
+#include <unistd.h>
+#include <stdlib.h>
 
 #ifdef WIN32
 #include <ws2tcpip.h>
@@ -89,8 +92,8 @@ static int establishListen(int pf, const struct sockaddr *addrp,
 #endif
 
 	numberOfListenSockets++;
-	listenSockets =
-	    xrealloc(listenSockets, sizeof(int) * numberOfListenSockets);
+	listenSockets = g_realloc(listenSockets, sizeof(listenSockets[0]) *
+				  numberOfListenSockets);
 
 	listenSockets[numberOfListenSockets - 1] = sock;
 
@@ -100,6 +103,20 @@ static int establishListen(int pf, const struct sockaddr *addrp,
 	g_io_channel_unref(channel);
 
 	return 0;
+}
+
+static bool ipv6Supported(void)
+{
+#ifdef HAVE_IPV6
+	int s;
+	s = socket(AF_INET6, SOCK_STREAM, 0);
+	if (s == -1)
+		return false;
+	close(s);
+	return true;
+#else
+	return false;
+#endif
 }
 
 static void
@@ -190,7 +207,7 @@ parseListenConfigParam(G_GNUC_UNUSED unsigned int port, ConfigParam * param)
 		hints.ai_socktype = SOCK_STREAM;
 		hints.ai_protocol = IPPROTO_TCP;
 
-		snprintf(service, sizeof(service), "%u", port);
+		g_snprintf(service, sizeof(service), "%u", port);
 
 		ret = getaddrinfo(param->value, service, &hints, &ai);
 		if (ret != 0)
@@ -262,7 +279,7 @@ void closeAllListenSockets(void)
 	}
 
 	numberOfListenSockets = 0;
-	free(listenSockets);
+	g_free(listenSockets);
 	listenSockets = NULL;
 }
 
