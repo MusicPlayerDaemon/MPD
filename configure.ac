@@ -271,6 +271,9 @@ AC_CHECK_LIB(nsl,gethostbyname,MPD_LIBS="$MPD_LIBS -lnsl",)
 
 AC_CHECK_LIB(m,exp,MPD_LIBS="$MPD_LIBS -lm",)
 
+# Check for pkg-config before using it
+PKG_PROG_PKG_CONFIG
+
 PKG_CHECK_MODULES([GLIB], [glib-2.0 >= 2.4 gthread-2.0],,
 		  [AC_MSG_ERROR([glib-2.4 is required])])
 
