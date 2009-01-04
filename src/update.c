@@ -31,6 +31,8 @@
 #include "update.h"
 #include "idle.h"
 #include "conf.h"
+#include "stats.h"
+#include "dbUtils.h"
 #include "main.h"
 
 #include <glib.h>
@@ -738,6 +740,9 @@ static void update_finished_event(void)
 		spawn_update_task(path);
 	} else {
 		progress = UPDATE_PROGRESS_IDLE;
+
+		stats.numberOfSongs = countSongsIn(NULL);
+		stats.dbPlayTime = sumSongTimesIn(NULL);
 	}
 }
 
