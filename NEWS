@@ -4,6 +4,8 @@ MPD 0.14.1 - not yet released
   - id3: strip leading and trailing whitespace from ID3 tags
 * audio outputs:
   - jack: allocate default port names (fixes a crash)
+* update:
+  - refresh stats after update
 * log: automatically append newline
 * fix setenv() conflict on Solaris
 * configure.ac: check for pkg-config before using it
