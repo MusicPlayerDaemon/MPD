@@ -24,6 +24,7 @@
 #include "client.h"
 #include "player_control.h"
 #include "strset.h"
+#include "dbUtils.h"
 
 Stats stats;
 
@@ -31,6 +32,12 @@ void initStats(void)
 {
 	stats.daemonStart = time(NULL);
 	stats.numberOfSongs = 0;
+}
+
+void stats_update(void)
+{
+	stats.numberOfSongs = countSongsIn(NULL);
+	stats.dbPlayTime = sumSongTimesIn(NULL);
 }
 
 struct visit_data {

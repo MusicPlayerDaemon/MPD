@@ -25,9 +25,7 @@
 #include "ls.h"
 #include "path.h"
 #include "stats.h"
-#include "dbUtils.h"
 #include "update.h"
-#include "event_pipe.h"
 #include "config.h"
 
 #include <glib.h>
@@ -318,8 +316,7 @@ db_load(void)
 	directory_load(fp, music_root);
 	while (fclose(fp) && errno == EINTR) ;
 
-	stats.numberOfSongs = countSongsIn(NULL);
-	stats.dbPlayTime = sumSongTimesIn(NULL);
+	stats_update();
 
 	if (stat(dbFile, &st) == 0)
 		directory_dbModTime = st.st_mtime;

@@ -33,6 +33,8 @@ extern Stats stats;
 
 void initStats(void);
 
+void stats_update(void);
+
 int printStats(struct client *client);
 
 #endif
