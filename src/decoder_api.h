@@ -108,7 +108,13 @@ void decoder_initialized(struct decoder * decoder,
 			 const struct audio_format *audio_format,
 			 bool seekable, float total_time);
 
-const char *decoder_get_url(struct decoder * decoder, char * buffer);
+/**
+ * Returns the URI of the current song in UTF-8 encoding.
+ *
+ * The return value is allocated on the heap, and must be freed by the
+ * caller.
+ */
+char *decoder_get_uri(struct decoder *decoder);
 
 enum decoder_command decoder_get_command(struct decoder * decoder);
 

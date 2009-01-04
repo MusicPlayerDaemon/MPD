@@ -150,15 +150,10 @@ enum player_error getPlayerError(void)
 	return pc.error;
 }
 
-static const char *
+static char *
 pc_errored_song_uri(void)
 {
-	char path_max_tmp[MPD_PATH_MAX];
-
-	if (pc.errored_song == NULL)
-		return "?";
-
-	return song_get_url(pc.errored_song, path_max_tmp);
+	return song_get_uri(pc.errored_song);
 }
 
 char *getPlayerErrorStr(void)
@@ -166,6 +161,8 @@ char *getPlayerErrorStr(void)
 	/* static OK here, only one user in main task */
 	static char error[MPD_PATH_MAX + 64]; /* still too much */
 	static const size_t errorlen = sizeof(error);
+	char *uri;
+
 	*error = '\0'; /* likely */
 
 	switch (pc.error) {
@@ -173,23 +170,32 @@ char *getPlayerErrorStr(void)
 		break;
 
 	case PLAYER_ERROR_FILENOTFOUND:
+		uri = pc_errored_song_uri();
 		snprintf(error, errorlen,
-			 "file \"%s\" does not exist or is inaccessible",
-			 pc_errored_song_uri());
+			 "file \"%s\" does not exist or is inaccessible", uri);
+		g_free(uri);
 		break;
+
 	case PLAYER_ERROR_FILE:
-		snprintf(error, errorlen, "problems decoding \"%s\"",
-			 pc_errored_song_uri());
+		uri = pc_errored_song_uri();
+		snprintf(error, errorlen, "problems decoding \"%s\"", uri);
+		g_free(uri);
 		break;
+
 	case PLAYER_ERROR_AUDIO:
 		strcpy(error, "problems opening audio device");
 		break;
+
 	case PLAYER_ERROR_SYSTEM:
 		strcpy(error, "system error occured");
 		break;
+
 	case PLAYER_ERROR_UNKTYPE:
-		snprintf(error, errorlen, "file type of \"%s\" is unknown",
-			 pc_errored_song_uri());
+		uri = pc_errored_song_uri();
+		snprintf(error, errorlen,
+			 "file type of \"%s\" is unknown", uri);
+		g_free(uri);
+		break;
 	}
 	return *error ? error : NULL;
 }

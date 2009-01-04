@@ -176,16 +176,14 @@ song_file_update_inarchive(struct song *song)
 }
 
 char *
-song_get_url(const struct song *song, char *path_max_tmp)
+song_get_uri(const struct song *song)
 {
 	assert(song != NULL);
 	assert(*song->url);
 
 	if (!song_in_database(song) || directory_is_root(song->parent))
-		strcpy(path_max_tmp, song->url);
+		return g_strdup(song->url);
 	else
-		pfx_dir(path_max_tmp, song->url, strlen(song->url),
-			directory_get_path(song->parent),
-			strlen(directory_get_path(song->parent)));
-	return path_max_tmp;
+		return g_strconcat(directory_get_path(song->parent),
+				   "/", song->url, NULL);
 }

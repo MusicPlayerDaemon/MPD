@@ -224,20 +224,20 @@ void clearPlaylist(void)
 
 void showPlaylist(struct client *client)
 {
-	char path_max_tmp[MPD_PATH_MAX];
-
-	for (unsigned i = 0; i < playlist.length; i++)
-		client_printf(client, "%i:%s\n", i,
-			      song_get_url(playlist.songs[i], path_max_tmp));
+	for (unsigned i = 0; i < playlist.length; i++) {
+		char *uri = song_get_uri(playlist.songs[i]);
+		client_printf(client, "%i:%s\n", i, uri);
+		g_free(uri);
+	}
 }
 
 static void playlist_save(FILE *fp)
 {
-	char path_max_tmp[MPD_PATH_MAX];
-
-	for (unsigned i = 0; i < playlist.length; i++)
-		fprintf(fp, "%i:%s\n", i,
-			song_get_url(playlist.songs[i], path_max_tmp));
+	for (unsigned i = 0; i < playlist.length; i++) {
+		char *uri = song_get_uri(playlist.songs[i]);
+		fprintf(fp, "%i:%s\n", i, uri);
+		g_free(uri);
+	}
 }
 
 void savePlaylistState(FILE *fp)
@@ -483,26 +483,30 @@ static void swapSongs(unsigned song1, unsigned song2)
 
 static void queueNextSongInPlaylist(void)
 {
-	char path_max_tmp[MPD_PATH_MAX];
-
 	if (playlist.current < (int)playlist.length - 1) {
+		char *uri;
+
 		playlist.queued = playlist.current + 1;
+
+		uri = song_get_uri(playlist. songs[playlist.order[playlist.queued]]);
 		g_debug("playlist: queue song %i:\"%s\"",
-			playlist.queued,
-			song_get_url(playlist.
-				     songs[playlist.order[playlist.queued]],
-				     path_max_tmp));
+			playlist.queued, uri);
+		g_free(uri);
+
 		queueSong(playlist.songs[playlist.order[playlist.queued]]);
 	} else if (playlist.length && playlist.repeat) {
+		char *uri;
+
 		if (playlist.length > 1 && playlist.random) {
 			randomizeOrder(0, playlist.length - 1);
 		}
 		playlist.queued = 0;
+
+		uri = song_get_uri(playlist. songs[playlist.order[playlist.queued]]);
 		g_debug("playlist: queue song %i:\"%s\"",
-			playlist.queued,
-			song_get_url(playlist.
-				     songs[playlist.order[playlist.queued]],
-				     path_max_tmp));
+			playlist.queued, uri);
+		g_free(uri);
+
 		queueSong(playlist.songs[playlist.order[playlist.queued]]);
 	}
 }
@@ -783,15 +787,15 @@ void stopPlaylist(void)
 
 static void playPlaylistOrderNumber(int orderNum)
 {
-	char path_max_tmp[MPD_PATH_MAX];
+	char *uri;
 
 	playlist_state = PLAYLIST_STATE_PLAY;
 	playlist_noGoToNext = 0;
 	playlist.queued = -1;
 
-	g_debug("playlist: play %i:\"%s\"", orderNum,
-		song_get_url(playlist.songs[playlist.order[orderNum]],
-			     path_max_tmp));
+	uri = song_get_uri(playlist.songs[playlist.order[orderNum]]);
+	g_debug("playlist: play %i:\"%s\"", orderNum, uri);
+	g_free(uri);
 
 	playerPlay(playlist.songs[playlist.order[orderNum]]);
 	playlist.current = orderNum;

@@ -135,10 +135,12 @@ strstrSearchTag(struct song *song, enum tag_type type, char *str)
 	int8_t visitedTypes[TAG_NUM_OF_ITEM_TYPES] = { 0 };
 
 	if (type == LOCATE_TAG_FILE_TYPE || type == LOCATE_TAG_ANY_TYPE) {
-		char path_max_tmp[MPD_PATH_MAX], *p;
+		char *uri, *p;
 
-		song_get_url(song, path_max_tmp);
-		p = g_utf8_casefold(path_max_tmp, -1);
+		uri = song_get_uri(song);
+		p = g_utf8_casefold(uri, -1);
+		g_free(uri);
+
 		if (strstr(p, str))
 			ret = 1;
 		g_free(p);
@@ -196,9 +198,13 @@ tagItemFoundAndMatches(struct song *song, enum tag_type type, char *str)
 	int8_t visitedTypes[TAG_NUM_OF_ITEM_TYPES] = { 0 };
 
 	if (type == LOCATE_TAG_FILE_TYPE || type == LOCATE_TAG_ANY_TYPE) {
-		char path_max_tmp[MPD_PATH_MAX];
-		if (0 == strcmp(str, song_get_url(song, path_max_tmp)))
+		char *uri = song_get_uri(song);
+		bool matches = strcmp(str, uri);
+		g_free(uri);
+
+		if (matches)
 			return 1;
+
 		if (type == LOCATE_TAG_FILE_TYPE)
 			return 0;
 	}

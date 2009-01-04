@@ -699,8 +699,10 @@ static void reap_update_task(void)
 
 	cond_enter(&delete_cond);
 	if (delete) {
-		char tmp[MPD_PATH_MAX];
-		g_debug("removing: %s", song_get_url(delete, tmp));
+		char *tmp = song_get_uri(delete);
+		g_debug("removing: %s", tmp);
+		g_free(tmp);
+
 		deleteASongFromPlaylist(delete);
 		delete = NULL;
 		cond_signal_sync(&delete_cond);

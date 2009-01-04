@@ -208,11 +208,8 @@ static void decoder_run(void)
 
 	if (song_is_file(song))
 		uri = map_song_fs(song);
-	else {
-		char buffer[MPD_PATH_MAX];
-
-		uri = g_strdup(song_get_url(song, buffer));
-	}
+	else
+		uri = song_get_uri(song);
 
 	if (uri == NULL) {
 		dc.state = DECODE_STATE_ERROR;

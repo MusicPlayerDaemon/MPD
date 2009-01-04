@@ -57,10 +57,9 @@ void decoder_initialized(struct decoder * decoder,
 	notify_signal(&pc.notify);
 }
 
-const char *decoder_get_url(G_GNUC_UNUSED struct decoder * decoder,
-			    char * buffer)
+char *decoder_get_uri(G_GNUC_UNUSED struct decoder *decoder)
 {
-	return song_get_url(dc.current_song, buffer);
+	return song_get_uri(dc.current_song);
 }
 
 enum decoder_command decoder_get_command(G_GNUC_UNUSED struct decoder * decoder)

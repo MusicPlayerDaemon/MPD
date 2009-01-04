@@ -29,8 +29,6 @@
 void
 playlist_print_song(FILE *file, const struct song *song)
 {
-	char tmp1[MPD_PATH_MAX], tmp2[MPD_PATH_MAX];
-
 	if (playlist_saveAbsolutePaths && song_in_database(song)) {
 		char *path = map_song_fs(song);
 		if (path != NULL) {
@@ -38,9 +36,13 @@ playlist_print_song(FILE *file, const struct song *song)
 			g_free(path);
 		}
 	} else {
-		song_get_url(song, tmp1);
-		utf8_to_fs_charset(tmp2, tmp1);
-		fprintf(file, "%s\n", tmp2);
+		char *uri = song_get_uri(song);
+		char tmp2[MPD_PATH_MAX];
+
+		utf8_to_fs_charset(tmp2, uri);
+		g_free(uri);
+
+		fprintf(file, "%s\n", uri);
 	}
 }
 

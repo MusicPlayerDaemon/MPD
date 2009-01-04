@@ -178,13 +178,15 @@ static void player_process_command(struct player *player)
 			if (openAudioDevice(NULL)) {
 				pc.state = PLAYER_STATE_PLAY;
 			} else {
-				char tmp[MPD_PATH_MAX];
+				char *uri = song_get_uri(dc.next_song);
+				g_warning("problems opening audio device "
+					  "while playing \"%s\"", uri);
+				g_free(uri);
+
 				assert(dc.next_song == NULL || dc.next_song->url != NULL);
 				pc.errored_song = dc.next_song;
 				pc.error = PLAYER_ERROR_AUDIO;
-				g_warning("problems opening audio device "
-					  "while playing \"%s\"",
-					  song_get_url(dc.next_song, tmp));
+
 				player->paused = true;
 			}
 		}
@@ -335,13 +337,14 @@ static void do_play(void)
 				/* the decoder is ready and ok */
 				player.decoder_starting = false;
 				if (!openAudioDevice(&dc.out_audio_format)) {
-					char tmp[MPD_PATH_MAX];
+					char *uri = song_get_uri(dc.next_song);
+					g_warning("problems opening audio device "
+						  "while playing \"%s\"", uri);
+					g_free(uri);
+
 					assert(dc.next_song == NULL || dc.next_song->url != NULL);
 					pc.errored_song = dc.next_song;
 					pc.error = PLAYER_ERROR_AUDIO;
-					g_warning("problems opening audio device "
-						  "while playing \"%s\"",
-						  song_get_url(dc.next_song, tmp));
 					break;
 				}
 

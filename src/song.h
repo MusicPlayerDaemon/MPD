@@ -61,14 +61,15 @@ song_file_update(struct song *song);
 bool
 song_file_update_inarchive(struct song *song);
 
-/*
- * song_get_url - Returns a path of a song in UTF8-encoded form
- * path_max_tmp is the argument that the URL is written to, this
- * buffer is assumed to be MPD_PATH_MAX or greater (including
- * terminating '\0').
+/**
+ * Returns the URI of the song in UTF-8 encoding, including its
+ * location within the music directory.
+ *
+ * The return value is allocated on the heap, and must be freed by the
+ * caller.
  */
 char *
-song_get_url(const struct song *song, char *path_max_tmp);
+song_get_uri(const struct song *song);
 
 static inline bool
 song_in_database(const struct song *song)

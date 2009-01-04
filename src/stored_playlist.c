@@ -141,7 +141,6 @@ spl_load(const char *utf8path)
 	FILE *file;
 	GPtrArray *list;
 	char buffer[MPD_PATH_MAX];
-	char path_max_tmp[MPD_PATH_MAX];
 	char *path_fs;
 
 	if (!is_valid_playlist_name(utf8path))
@@ -177,10 +176,11 @@ spl_load(const char *utf8path)
 			if (song == NULL)
 				continue;
 
-			s = song_get_url(song, path_max_tmp);
-		}
+			s = song_get_uri(song);
+		} else
+			s = g_strdup(s);
 
-		g_ptr_array_add(list, g_strdup(s));
+		g_ptr_array_add(list, s);
 
 		if (list->len >= playlist_max_length)
 			break;
