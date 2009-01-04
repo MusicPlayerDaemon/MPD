@@ -181,6 +181,18 @@ need_chunks(struct input_stream *is, bool wait)
 	return DECODE_COMMAND_NONE;
 }
 
+static enum decoder_command
+do_send_tag(struct input_stream *is, const struct tag *tag)
+{
+	while (!music_pipe_tag(tag)) {
+		enum decoder_command cmd = need_chunks(is, true);
+		if (cmd != DECODE_COMMAND_NONE)
+			return cmd;
+	}
+
+	return DECODE_COMMAND_NONE;
+}
+
 enum decoder_command
 decoder_data(struct decoder *decoder,
 	     struct input_stream *is,
@@ -287,22 +299,20 @@ decoder_tag(G_GNUC_UNUSED struct decoder *decoder, struct input_stream *is,
 	    const struct tag *tag)
 {
 	struct tag *tag2 = is != NULL ? tag_add_stream_tags(tag, is) : NULL;
+	enum decoder_command cmd;
 
 	assert(dc.state == DECODE_STATE_DECODE);
 
 	if (tag2 != NULL)
 		tag = tag2;
 
-	while (!music_pipe_tag(tag)) {
-		enum decoder_command cmd = need_chunks(is, true);
-		if (cmd != DECODE_COMMAND_NONE)
-			return cmd;
-	}
+	cmd = do_send_tag(is, tag);
 
 	if (tag2 != NULL)
 		tag_free(tag2);
 
-	decoder->stream_tag_sent = true;
+	if (cmd == DECODE_COMMAND_NONE)
+		decoder->stream_tag_sent = true;
 
-	return DECODE_COMMAND_NONE;
+	return cmd;
 }
