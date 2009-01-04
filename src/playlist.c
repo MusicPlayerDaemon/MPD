@@ -27,7 +27,6 @@
 #include "client.h"
 #include "conf.h"
 #include "database.h"
-#include "log.h"
 #include "mapper.h"
 #include "path.h"
 #include "stored_playlist.h"
@@ -136,10 +135,9 @@ void initPlaylist(void)
 
 	if (param) {
 		playlist_max_length = strtol(param->value, &test, 10);
-		if (*test != '\0') {
-			FATAL("max playlist length \"%s\" is not an integer, "
-			      "line %i\n", param->value, param->line);
-		}
+		if (*test != '\0')
+			g_error("max playlist length \"%s\" is not an integer, "
+				"line %i", param->value, param->line);
 	}
 
 	playlist_saveAbsolutePaths = getBoolConfigParam(
@@ -489,22 +487,22 @@ static void queueNextSongInPlaylist(void)
 
 	if (playlist.current < (int)playlist.length - 1) {
 		playlist.queued = playlist.current + 1;
-		DEBUG("playlist: queue song %i:\"%s\"\n",
-		      playlist.queued,
-		      song_get_url(playlist.
-				   songs[playlist.order[playlist.queued]],
-				   path_max_tmp));
+		g_debug("playlist: queue song %i:\"%s\"",
+			playlist.queued,
+			song_get_url(playlist.
+				     songs[playlist.order[playlist.queued]],
+				     path_max_tmp));
 		queueSong(playlist.songs[playlist.order[playlist.queued]]);
 	} else if (playlist.length && playlist.repeat) {
 		if (playlist.length > 1 && playlist.random) {
 			randomizeOrder(0, playlist.length - 1);
 		}
 		playlist.queued = 0;
-		DEBUG("playlist: queue song %i:\"%s\"\n",
-		      playlist.queued,
-		      song_get_url(playlist.
-				   songs[playlist.order[playlist.queued]],
-				   path_max_tmp));
+		g_debug("playlist: queue song %i:\"%s\"",
+			playlist.queued,
+			song_get_url(playlist.
+				     songs[playlist.order[playlist.queued]],
+				     path_max_tmp));
 		queueSong(playlist.songs[playlist.order[playlist.queued]]);
 	}
 }
@@ -575,7 +573,7 @@ enum playlist_result addToPlaylist(const char *url, unsigned *added_id)
 {
 	struct song *song;
 
-	DEBUG("add to playlist: %s\n", url);
+	g_debug("add to playlist: %s", url);
 
 	song = song_by_url(url);
 	if (song == NULL)
@@ -774,7 +772,7 @@ deleteASongFromPlaylist(const struct song *song)
 
 void stopPlaylist(void)
 {
-	DEBUG("playlist: stop\n");
+	g_debug("playlist: stop");
 	playerWait();
 	playlist.queued = -1;
 	playlist_state = PLAYLIST_STATE_STOP;
@@ -791,9 +789,9 @@ static void playPlaylistOrderNumber(int orderNum)
 	playlist_noGoToNext = 0;
 	playlist.queued = -1;
 
-	DEBUG("playlist: play %i:\"%s\"\n", orderNum,
-	      song_get_url(playlist.songs[playlist.order[orderNum]],
-			   path_max_tmp));
+	g_debug("playlist: play %i:\"%s\"", orderNum,
+		song_get_url(playlist.songs[playlist.order[orderNum]],
+			     path_max_tmp));
 
 	playerPlay(playlist.songs[playlist.order[orderNum]]);
 	playlist.current = orderNum;
@@ -1112,7 +1110,7 @@ static void randomizeOrder(int start, int end)
 	int i;
 	int ri;
 
-	DEBUG("playlist: randomize from %i to %i\n", start, end);
+	g_debug("playlist: randomize from %i to %i\n", start, end);
 
 	if (playlist_state == PLAYLIST_STATE_PLAY &&
 	    playlist.queued >= start && playlist.queued <= end)
