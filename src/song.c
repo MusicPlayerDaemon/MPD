@@ -71,11 +71,8 @@ song_file_load(const char *path, struct directory *parent)
 	bool ret;
 
 	assert((parent == NULL) == (*path == '/'));
-
-	if (strchr(path, '\n')) {
-		g_debug("newSong: '%s' is not a valid uri\n", path);
-		return NULL;
-	}
+	assert(!uri_has_scheme(path));
+	assert(strchr(path, '\n') == NULL);
 
 	song = song_file_new(path, parent);
 
