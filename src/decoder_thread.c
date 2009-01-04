@@ -20,6 +20,7 @@
 #include "decoder_thread.h"
 #include "decoder_control.h"
 #include "decoder_internal.h"
+#include "decoder_list.h"
 #include "player_control.h"
 #include "pipe.h"
 #include "song.h"
@@ -29,6 +30,8 @@
 #include "ls.h"
 
 #include <glib.h>
+
+#include <unistd.h>
 
 static bool
 decoder_stream_decode(const struct decoder_plugin *plugin,

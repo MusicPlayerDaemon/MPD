@@ -19,9 +19,6 @@
 #ifndef MPD_LS_H
 #define MPD_LS_H
 
-#include "decoder_list.h"
-#include "archive_list.h"
-
 #include <stdbool.h>
 
 struct stat;

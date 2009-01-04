@@ -17,12 +17,10 @@
  */
 
 #include "ls.h"
-#include "playlist.h"
-#include "path.h"
 #include "client.h"
-#include "log.h"
-#include "stored_playlist.h"
 #include "config.h"
+#include "decoder_list.h"
+#include "archive_list.h"
 
 #include <string.h>
 
@@ -78,8 +76,8 @@ hasMusicSuffix(const char *utf8file, unsigned int next)
 	if (s) {
 		ret = decoder_plugin_from_suffix(s, next);
 	} else {
-		DEBUG("hasMusicSuffix: The file: %s has no valid suffix\n",
-		      utf8file);
+		g_debug("hasMusicSuffix: The file: %s has no valid suffix\n",
+			utf8file);
 	}
 
 	return ret;
