@@ -27,7 +27,7 @@
 #include "decoder_list.h"
 #include "playlist.h"
 #include "event_pipe.h"
-#include "condition.h"
+#include "notify.h"
 #include "update.h"
 #include "idle.h"
 #include "conf.h"
@@ -69,7 +69,8 @@ static unsigned update_task_id;
 
 static struct song *delete;
 
-static struct condition delete_cond;
+/** used by the main thread to notify the update thread */
+static struct notify update_notify;
 
 #ifndef WIN32
 
@@ -104,12 +105,13 @@ delete_song(struct directory *dir, struct song *del)
 	songvec_delete(&dir->songs, del);
 
 	/* now take it out of the playlist (in the main_task) */
-	cond_enter(&delete_cond);
 	assert(!delete);
 	delete = del;
 	event_pipe_emit(PIPE_EVENT_DELETE);
-	do { cond_wait(&delete_cond); } while (delete);
-	cond_leave(&delete_cond);
+
+	do {
+		notify_wait(&update_notify);
+	} while (delete != NULL);
 
 	/* finally, all possible references gone, free it */
 	song_free(del);
@@ -703,8 +705,6 @@ static void song_delete_event(void)
 	assert(progress == UPDATE_PROGRESS_RUNNING);
 	assert(delete != NULL);
 
-	cond_enter(&delete_cond);
-
 	uri = song_get_uri(delete);
 	g_debug("removing: %s", uri);
 	g_free(uri);
@@ -712,9 +712,7 @@ static void song_delete_event(void)
 	deleteASongFromPlaylist(delete);
 	delete = NULL;
 
-	cond_signal_sync(&delete_cond);
-
-	cond_leave(&delete_cond);
+	notify_signal(&update_notify);
 }
 
 /**
@@ -758,7 +756,7 @@ void update_global_init(void)
 				DEFAULT_FOLLOW_OUTSIDE_SYMLINKS);
 #endif
 
-	cond_init(&delete_cond);
+	notify_init(&update_notify);
 
 	event_pipe_register(PIPE_EVENT_DELETE, song_delete_event);
 	event_pipe_register(PIPE_EVENT_UPDATE, update_finished_event);
@@ -766,5 +764,5 @@ void update_global_init(void)
 
 void update_global_finish(void)
 {
-	cond_destroy(&delete_cond);
+	notify_deinit(&update_notify);
 }
