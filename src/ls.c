@@ -19,8 +19,6 @@
 #include "ls.h"
 #include "client.h"
 #include "config.h"
-#include "decoder_list.h"
-#include "archive_list.h"
 
 #include <string.h>
 
@@ -66,36 +64,3 @@ const char *getSuffix(const char *utf8file)
 
 	return dot != NULL ? dot + 1 : NULL;
 }
-
-const struct decoder_plugin *
-hasMusicSuffix(const char *utf8file, unsigned int next)
-{
-	const struct decoder_plugin *ret = NULL;
-
-	const char *s = getSuffix(utf8file);
-	if (s) {
-		ret = decoder_plugin_from_suffix(s, next);
-	} else {
-		g_debug("hasMusicSuffix: The file: %s has no valid suffix\n",
-			utf8file);
-	}
-
-	return ret;
-}
-
-#ifdef ENABLE_ARCHIVE
-const struct archive_plugin *
-get_archive_by_suffix(const char *utf8file)
-{
-	const struct archive_plugin *ret = NULL;
-
-	const char *s = getSuffix(utf8file);
-	if (s) {
-		ret = archive_plugin_from_suffix(s);
-	} else {
-		g_debug("get_archive_by_suffix: The file: %s has no valid suffix\n",
-			utf8file);
-	}
-	return ret;
-}
-#endif

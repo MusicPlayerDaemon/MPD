@@ -34,12 +34,6 @@ bool uri_has_scheme(const char *uri);
 
 bool isRemoteUrl(const char *url);
 
-const struct decoder_plugin *
-hasMusicSuffix(const char *utf8file, unsigned int next);
-
-const struct archive_plugin *
-get_archive_by_suffix(const char *utf8file);
-
 void printRemoteUrlHandlers(struct client *client);
 
 #endif

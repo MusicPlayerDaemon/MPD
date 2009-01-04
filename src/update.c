@@ -24,6 +24,7 @@
 #include "ls.h"
 #include "mapper.h"
 #include "path.h"
+#include "decoder_list.h"
 #include "playlist.h"
 #include "event_pipe.h"
 #include "condition.h"
@@ -351,7 +352,12 @@ static void
 update_regular_file(struct directory *directory,
 		    const char *name, const struct stat *st)
 {
-	if (hasMusicSuffix(name, 0)) {
+	const char *suffix = getSuffix(name);
+
+	if (suffix == NULL)
+		return;
+
+	if (decoder_plugin_from_suffix(suffix, false) != NULL) {
 		struct song *song = songvec_find(&directory->songs, name);
 
 		if (song == NULL) {
@@ -371,7 +377,7 @@ update_regular_file(struct directory *directory,
 			modified = true;
 		}
 #ifdef ENABLE_ARCHIVE
-	} else if ((archive = get_archive_by_suffix(name))) {
+	} else if ((archive = archive_plugin_from_suffix(suffix))) {
 		struct archive_file *archfile;
 		char pathname[MPD_PATH_MAX];
 

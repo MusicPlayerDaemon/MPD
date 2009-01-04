@@ -101,12 +101,22 @@ song_free(struct song *song)
 bool
 song_file_update(struct song *song)
 {
+	const char *suffix;
 	char *path_fs;
 	const struct decoder_plugin *plugin;
-	unsigned int next = 0;
 	struct stat st;
 
 	assert(song_is_file(song));
+
+	/* check if there's a suffix and a plugin */
+
+	suffix = getSuffix(song->url);
+	if (suffix == NULL)
+		return false;
+
+	plugin = decoder_plugin_from_suffix(suffix, false);
+	if (plugin == NULL)
+		return false;
 
 	path_fs = map_song_fs(song);
 	if (path_fs == NULL)
@@ -124,9 +134,13 @@ song_file_update(struct song *song)
 
 	song->mtime = st.st_mtime;
 
-	while (song->tag == NULL &&
-	       (plugin = hasMusicSuffix(path_fs, next++)))
+	do {
 		song->tag = plugin->tag_dup(path_fs);
+		if (song->tag != NULL)
+			break;
+
+		plugin = decoder_plugin_from_suffix(suffix, true);
+	} while (plugin != NULL);
 
 	g_free(path_fs);
 	return song->tag != NULL;
@@ -135,29 +149,30 @@ song_file_update(struct song *song)
 bool
 song_file_update_inarchive(struct song *song)
 {
-	char *path_fs;
+	const char *suffix;
 	const struct decoder_plugin *plugin;
 
 	assert(song_is_file(song));
 
-	path_fs = map_song_fs(song);
-	if (path_fs == NULL)
+	/* check if there's a suffix and a plugin */
+
+	suffix = getSuffix(song->url);
+	if (suffix == NULL)
 		return false;
 
-	if (song->tag != NULL) {
+	plugin = decoder_plugin_from_suffix(suffix, false);
+	if (plugin == NULL)
+		return false;
+
+	if (song->tag != NULL)
 		tag_free(song->tag);
-		song->tag = NULL;
-	}
+
 	//accept every file that has music suffix
 	//because we dont support tag reading throught
 	//input streams
-	plugin = hasMusicSuffix(path_fs, 0);
-	g_free(path_fs);
-	if (plugin) {
-		song->tag = tag_new();
-		//tag_add_item(tag, TAG_ITEM_TITLE, f->title);
-	}
-	return song->tag != NULL;
+	song->tag = tag_new();
+
+	return true;
 }
 
 char *
