@@ -128,7 +128,7 @@ static void openDB(Options * options, char *argv0)
 {
 	db_init();
 
-	if (options->createDB > 0 || db_load() < 0) {
+	if (options->createDB > 0 || !db_load()) {
 		unsigned job;
 
 		if (options->createDB < 0) {
@@ -136,7 +136,8 @@ static void openDB(Options * options, char *argv0)
 				"\"--no-create-db\" command line option; "
 				"try running \"%s --create-db\"", argv0);
 		}
-		if (db_check() < 0)
+
+		if (!db_check())
 			exit(EXIT_FAILURE);
 
 		db_clear();

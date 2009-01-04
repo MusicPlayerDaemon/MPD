@@ -131,7 +131,7 @@ db_get_file(void)
 	return param->value;
 }
 
-int
+bool
 db_check(void)
 {
 	struct stat st;
@@ -149,14 +149,14 @@ db_check(void)
 			g_free(dirPath);
 			g_warning("Couldn't stat parent directory of db file "
 				  "\"%s\": %s", dbFile, strerror(errno));
-			return -1;
+			return false;
 		}
 
 		if (!S_ISDIR(st.st_mode)) {
 			g_free(dirPath);
 			g_warning("Couldn't create db file \"%s\" because the "
 				  "parent path is not a directory", dbFile);
-			return -1;
+			return false;
 		}
 
 		/* Check if we can write to the directory */
@@ -164,37 +164,37 @@ db_check(void)
 			g_warning("Can't create db file in \"%s\": %s",
 				  dirPath, strerror(errno));
 			g_free(dirPath);
-			return -1;
+			return false;
 		}
 
 		g_free(dirPath);
 
-		return 0;
+		return true;
 	}
 
 	/* Path exists, now check if it's a regular file */
 	if (stat(dbFile, &st) < 0) {
 		g_warning("Couldn't stat db file \"%s\": %s",
 			  dbFile, strerror(errno));
-		return -1;
+		return false;
 	}
 
 	if (!S_ISREG(st.st_mode)) {
 		g_warning("db file \"%s\" is not a regular file", dbFile);
-		return -1;
+		return false;
 	}
 
 	/* And check that we can write to it */
 	if (access(dbFile, R_OK | W_OK)) {
 		g_warning("Can't open db file \"%s\" for reading/writing: %s",
 			  dbFile, strerror(errno));
-		return -1;
+		return false;
 	}
 
-	return 0;
+	return true;
 }
 
-int
+bool
 db_save(void)
 {
 	FILE *fp;
@@ -214,7 +214,7 @@ db_save(void)
 	if (!fp) {
 		g_warning("unable to write to db file \"%s\": %s",
 			  dbFile, strerror(errno));
-		return -1;
+		return false;
 	}
 
 	/* block signals when writing the db so we don't get a corrupted db */
@@ -227,7 +227,7 @@ db_save(void)
 		g_warning("Failed to write to database file: %s",
 			  strerror(errno));
 		while (fclose(fp) && errno == EINTR);
-		return -1;
+		return false;
 	}
 
 	while (fclose(fp) && errno == EINTR);
@@ -235,18 +235,17 @@ db_save(void)
 	if (stat(dbFile, &st) == 0)
 		directory_dbModTime = st.st_mtime;
 
-	return 0;
+	return true;
 }
 
-int
+bool
 db_load(void)
 {
 	FILE *fp = NULL;
 	char *dbFile = db_get_file();
 	struct stat st;
 	char buffer[100];
-	int foundFsCharset = 0;
-	int foundVersion = 0;
+	bool foundFsCharset = false, foundVersion = false;
 
 	assert(music_root != NULL);
 
@@ -256,7 +255,7 @@ db_load(void)
 	if (fp == NULL) {
 		g_warning("unable to open db file \"%s\": %s",
 			  dbFile, strerror(errno));
-		return -1;
+		return false;
 	}
 
 	/* get initial info */
@@ -269,7 +268,7 @@ db_load(void)
 		g_warning("db info not found in db file; "
 			  "you should recreate the db using --create-db");
 		while (fclose(fp) && errno == EINTR) ;
-		return -1;
+		return false;
 	}
 
 	while (fgets(buffer, sizeof(buffer), fp) &&
@@ -279,7 +278,7 @@ db_load(void)
 		if (g_str_has_prefix(buffer, DIRECTORY_MPD_VERSION)) {
 			if (foundVersion)
 				g_error("already found version in db");
-			foundVersion = 1;
+			foundVersion = true;
 		} else if (g_str_has_prefix(buffer, DIRECTORY_FS_CHARSET)) {
 			char *fsCharset;
 			char *tempCharset;
@@ -287,7 +286,7 @@ db_load(void)
 			if (foundFsCharset)
 				g_error("already found fs charset in db");
 
-			foundFsCharset = 1;
+			foundFsCharset = true;
 
 			fsCharset = &(buffer[strlen(DIRECTORY_FS_CHARSET)]);
 			if ((tempCharset = getConfigParamValue(CONF_FS_CHARSET))
@@ -315,7 +314,7 @@ db_load(void)
 	if (stat(dbFile, &st) == 0)
 		directory_dbModTime = st.st_mtime;
 
-	return 0;
+	return true;
 }
 
 time_t

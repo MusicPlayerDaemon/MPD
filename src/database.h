@@ -21,6 +21,7 @@
 #define MPD_DATABASE_H
 
 #include <sys/time.h>
+#include <stdbool.h>
 
 struct directory;
 
@@ -56,13 +57,13 @@ int db_walk(const char *name,
 	    int (*forEachSong)(struct song *, void *),
 	    int (*forEachDir)(struct directory *, void *), void *data);
 
-int
+bool
 db_check(void);
 
-int
+bool
 db_save(void);
 
-int
+bool
 db_load(void);
 
 time_t
