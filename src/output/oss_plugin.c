@@ -20,7 +20,7 @@
  */
 
 #include "../output_api.h"
-#include "../mixer.h"
+#include "../mixer_api.h"
 
 #include <glib.h>
 

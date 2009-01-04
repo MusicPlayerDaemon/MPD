@@ -24,7 +24,7 @@
 #include "path.h"
 #include "client.h"
 #include "idle.h"
-#include "mixer.h"
+#include "mixer_api.h"
 
 #include <glib.h>
 

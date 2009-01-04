@@ -1,4 +1,7 @@
 
+#include "../output_api.h"
+#include "../mixer_api.h"
+
 #include <glib.h>
 #include <sys/stat.h>
 #include <sys/ioctl.h>
@@ -6,9 +9,6 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <unistd.h>
-
-#include "../output_api.h"
-#include "../mixer.h"
 
 #if defined(__OpenBSD__) || defined(__NetBSD__)
 # include <soundcard.h>
