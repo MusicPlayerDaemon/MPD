@@ -565,7 +565,7 @@ song_by_url(const char *url)
 	if (song != NULL)
 		return song;
 
-	if (isRemoteUrl(url))
+	if (uri_has_scheme(url))
 		return song_remote_new(url);
 
 	return NULL;

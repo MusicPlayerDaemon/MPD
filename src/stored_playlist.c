@@ -165,7 +165,7 @@ spl_load(const char *utf8path)
 
 		g_strchomp(buffer);
 
-		if (!isRemoteUrl(s)) {
+		if (!uri_has_scheme(s)) {
 			struct song *song;
 
 			path_utf8 = map_fs_to_utf8(s, path_max_tmp);
@@ -366,21 +366,20 @@ spl_append_uri(const char *url, const char *utf8file)
 {
 	struct song *song;
 
-	song = db_get_song(url);
-	if (song)
-		return spl_append_song(utf8file, song);
+	if (uri_has_scheme(url)) {
+		enum playlist_result ret;
 
-	if (!isRemoteUrl(url))
-		return PLAYLIST_RESULT_NO_SUCH_SONG;
-
-	song = song_remote_new(url);
-	if (song) {
-		enum playlist_result ret = spl_append_song(utf8file, song);
+		song = song_remote_new(url);
+		ret = spl_append_song(utf8file, song);
 		song_free(song);
 		return ret;
-	}
+	} else {
+		song = db_get_song(url);
+		if (song == NULL)
+			return PLAYLIST_RESULT_NO_SUCH_SONG;
 
-	return PLAYLIST_RESULT_NO_SUCH_SONG;
+		return spl_append_song(utf8file, song);
+	}
 }
 
 static enum playlist_result

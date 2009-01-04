@@ -50,7 +50,7 @@ playlist_print_uri(FILE *file, const char *uri)
 	char tmp[MPD_PATH_MAX];
 	char *s;
 
-	if (playlist_saveAbsolutePaths && !isRemoteUrl(uri) &&
+	if (playlist_saveAbsolutePaths && !uri_has_scheme(uri) &&
 	    uri[0] != '/')
 		s = map_uri_fs(uri);
 	else
