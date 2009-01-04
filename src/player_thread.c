@@ -556,7 +556,7 @@ static gpointer player_task(G_GNUC_UNUSED gpointer arg)
 
 void player_create(void)
 {
-	GError *e;
+	GError *e = NULL;
 	GThread *t;
 
 	if (!(t = g_thread_create(player_task, NULL, FALSE, &e)))

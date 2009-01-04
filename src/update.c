@@ -653,7 +653,7 @@ static void * update_task(void *_path)
 
 static void spawn_update_task(char *path)
 {
-	GError *e;
+	GError *e = NULL;
 
 	assert(g_thread_self() == main_task);
 

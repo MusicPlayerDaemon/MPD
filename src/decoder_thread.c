@@ -253,7 +253,7 @@ static gpointer decoder_task(G_GNUC_UNUSED gpointer arg)
 
 void decoder_thread_start(void)
 {
-	GError *e;
+	GError *e = NULL;
 	GThread *t;
 
 	if (!(t = g_thread_create(decoder_task, NULL, FALSE, &e)))

@@ -167,7 +167,7 @@ static gpointer audio_output_task(gpointer arg)
 
 void audio_output_thread_start(struct audio_output *ao)
 {
-	GError *e;
+	GError *e = NULL;
 
 	assert(ao->command == AO_COMMAND_NONE);
 
