@@ -1,4 +1,13 @@
-ver 0.14.1 (not yet released)
+MPD 0.14.1 - not yet released
+* decoders:
+  - mp4: support the writer/composer tag
+  - id3: strip leading and trailing whitespace from ID3 tags
+* audio outputs:
+  - jack: allocate default port names (fixes a crash)
+* log: automatically append newline
+* fix setenv() conflict on Solaris
+* configure.ac: check for pkg-config before using it
+
 
 ver 0.14 (2008/12/25)
 * audio outputs:
