@@ -24,11 +24,24 @@
 
 struct directory;
 
+/**
+ * Initialize the database library.
+ */
 void
 db_init(void);
 
 void
 db_finish(void);
+
+/**
+ * Clear the database.
+ */
+static inline void
+db_clear(void)
+{
+	db_finish();
+	db_init();
+}
 
 struct directory *
 db_get_root(void);

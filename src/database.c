@@ -22,10 +22,8 @@
 #include "directory_save.h"
 #include "song.h"
 #include "conf.h"
-#include "ls.h"
 #include "path.h"
 #include "stats.h"
-#include "update.h"
 #include "config.h"
 
 #include <glib.h>
@@ -48,13 +46,7 @@ static time_t directory_dbModTime;
 void
 db_init(void)
 {
-	unsigned ret;
-
 	music_root = directory_new("", NULL);
-
-	ret = directory_update_init(NULL);
-	if (ret == 0)
-		g_error("directory update failed");
 }
 
 void
@@ -255,6 +247,8 @@ db_load(void)
 	char buffer[100];
 	int foundFsCharset = 0;
 	int foundVersion = 0;
+
+	assert(music_root != NULL);
 
 	if (!music_root)
 		music_root = directory_new("", NULL);

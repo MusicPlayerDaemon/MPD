@@ -126,7 +126,11 @@ static void changeToUser(void)
 
 static void openDB(Options * options, char *argv0)
 {
+	db_init();
+
 	if (options->createDB > 0 || db_load() < 0) {
+		unsigned job;
+
 		if (options->createDB < 0) {
 			g_error("can't open db file and using "
 				"\"--no-create-db\" command line option; "
@@ -134,7 +138,12 @@ static void openDB(Options * options, char *argv0)
 		}
 		if (db_check() < 0)
 			exit(EXIT_FAILURE);
-		db_init();
+
+		db_clear();
+
+		job = directory_update_init(NULL);
+		if (job == 0)
+			g_error("directory update failed");
 	}
 }
 
