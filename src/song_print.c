@@ -26,7 +26,7 @@
 void
 song_print_url(struct client *client, struct song *song)
 {
-	if (song->parent && !isRootDirectory(song->parent->path)) {
+	if (song_in_database(song) && !directory_is_root(song->parent)) {
 		client_printf(client, "%s%s/%s\n", SONG_FILE,
 			      directory_get_path(song->parent), song->url);
 	} else {

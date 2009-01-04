@@ -64,9 +64,10 @@ static int
 printDirectoryInDirectory(struct directory *directory, void *data)
 {
 	struct client *client = data;
-	if (!isRootDirectory(directory->path)) {
+
+	if (!directory_is_root(directory))
 		client_printf(client, "directory: %s\n", directory_get_path(directory));
-	}
+
 	return 0;
 }
 
@@ -374,7 +375,7 @@ sumSavedFilenameMemoryInDirectory(struct directory *dir, void *data)
 {
 	int *sum = data;
 
-	if (isRootDirectory(dir->path))
+	if (directory_is_root(dir))
 		return 0;
 
 	*sum += (strlen(directory_get_path(dir)) + 1

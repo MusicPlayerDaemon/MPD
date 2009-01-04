@@ -181,7 +181,7 @@ song_get_url(const struct song *song, char *path_max_tmp)
 	assert(song != NULL);
 	assert(*song->url);
 
-	if (!song->parent || isRootDirectory(song->parent->path))
+	if (!song_in_database(song) || directory_is_root(song->parent))
 		strcpy(path_max_tmp, song->url);
 	else
 		pfx_dir(path_max_tmp, song->url, strlen(song->url),

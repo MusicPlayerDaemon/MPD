@@ -71,6 +71,15 @@ directory_get_path(const struct directory *directory)
 }
 
 /**
+ * Is this the root directory of the music database?
+ */
+static inline bool
+directory_is_root(const struct directory *directory)
+{
+	return directory->parent == NULL;
+}
+
+/**
  * Returns the base name of the directory.
  */
 const char *

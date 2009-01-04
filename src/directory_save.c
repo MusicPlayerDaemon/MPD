@@ -36,7 +36,7 @@ directory_save(FILE *fp, struct directory *directory)
 	size_t i;
 	int retv;
 
-	if (!isRootDirectory(directory->path)) {
+	if (!directory_is_root(directory)) {
 		retv = fprintf(fp, "%s%s\n", DIRECTORY_BEGIN,
 			       directory_get_path(directory));
 		if (retv < 0)
@@ -57,7 +57,7 @@ directory_save(FILE *fp, struct directory *directory)
 
 	songvec_save(fp, &directory->songs);
 
-	if (!isRootDirectory(directory->path) &&
+	if (!directory_is_root(directory) &&
 	    fprintf(fp, DIRECTORY_END "%s\n",
 		    directory_get_path(directory)) < 0)
 		return -1;

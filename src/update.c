@@ -290,7 +290,7 @@ make_subdir(struct directory *parent, const char *name)
 	if (directory == NULL) {
 		char path[MPD_PATH_MAX];
 
-		if (isRootDirectory(directory_get_path(parent)))
+		if (directory_is_root(parent))
 			strcpy(path, name);
 		else
 			pfx_dir(path, name, strlen(name),
