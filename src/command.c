@@ -461,13 +461,14 @@ handle_add(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 		return print_playlist_result(client, result);
 	}
 
-	if (isRemoteUrl(uri))
-		return addToPlaylist(uri, NULL);
-
 	if (uri_has_scheme(uri)) {
-		command_error(client, ACK_ERROR_NO_EXIST,
-			      "unsupported URI scheme");
-		return COMMAND_RETURN_ERROR;
+		if (!isRemoteUrl(uri)) {
+			command_error(client, ACK_ERROR_NO_EXIST,
+				      "unsupported URI scheme");
+			return COMMAND_RETURN_ERROR;
+		}
+
+		return addToPlaylist(uri, NULL);
 	}
 
 	result = addAllIn(uri);
@@ -495,8 +496,15 @@ handle_addid(struct client *client, int argc, char *argv[])
 					      client_get_uid(client),
 					      &added_id);
 #endif
-	} else
+	} else {
+		if (uri_has_scheme(uri) && !isRemoteUrl(uri)) {
+			command_error(client, ACK_ERROR_NO_EXIST,
+				      "unsupported URI scheme");
+			return COMMAND_RETURN_ERROR;
+		}
+
 		result = addToPlaylist(uri, &added_id);
+	}
 
 	if (result != PLAYLIST_RESULT_SUCCESS)
 		return print_playlist_result(client, result);
@@ -1249,12 +1257,14 @@ handle_playlistadd(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 	char *uri = argv[2];
 	enum playlist_result result;
 
-	if (isRemoteUrl(uri))
+	if (uri_has_scheme(uri)) {
+		if (!isRemoteUrl(uri)) {
+			command_error(client, ACK_ERROR_NO_EXIST,
+				      "unsupported URI scheme");
+			return COMMAND_RETURN_ERROR;
+		}
+
 		result = spl_append_uri(uri, playlist);
-	else if (uri_has_scheme(uri)) {
-		command_error(client, ACK_ERROR_NO_EXIST,
-			      "unsupported URI scheme");
-		return COMMAND_RETURN_ERROR;
 	} else
 		result = addAllInToStoredPlaylist(uri, playlist);
 
