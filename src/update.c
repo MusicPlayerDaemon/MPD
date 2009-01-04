@@ -169,21 +169,17 @@ delete_name_in(struct directory *parent, const char *name)
 	}
 }
 
-struct delete_data {
-	struct directory *dir;
-};
-
 /* passed to songvec_for_each */
 static int
 delete_song_if_removed(struct song *song, void *_data)
 {
-	struct delete_data *data = _data;
+	struct directory *dir = _data;
 	char *path;
 	struct stat st;
 
 	if ((path = map_song_fs(song)) == NULL ||
 	    stat(path, &st) < 0 || !S_ISREG(st.st_mode)) {
-		delete_song(data->dir, song);
+		delete_song(dir, song);
 		modified = true;
 	}
 
@@ -213,7 +209,6 @@ removeDeletedFromDirectory(struct directory *directory)
 {
 	int i;
 	struct dirvec *dv = &directory->children;
-	struct delete_data data;
 
 	for (i = dv->nr; --i >= 0; ) {
 		if (directory_exists(dv->base[i]))
@@ -224,8 +219,7 @@ removeDeletedFromDirectory(struct directory *directory)
 		modified = true;
 	}
 
-	data.dir = directory;
-	songvec_for_each(&directory->songs, delete_song_if_removed, &data);
+	songvec_for_each(&directory->songs, delete_song_if_removed, directory);
 }
 
 static int
