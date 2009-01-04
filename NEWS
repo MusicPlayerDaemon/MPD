@@ -9,6 +9,7 @@ MPD 0.14.1 - not yet released
 * configure.ac: check for pkg-config before using it
 * fix minor memory leak in decoder_tag()
 * fix cross-fading bug: it used to play some chunks of the new song twice
+* playlist: fix assertion failure during playlist load
 
 
 ver 0.14 (2008/12/25)

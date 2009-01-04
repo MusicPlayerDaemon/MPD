@@ -124,7 +124,7 @@ enum playlist_result swapSongsInPlaylist(unsigned song1, unsigned song2);
 
 enum playlist_result swapSongsInPlaylistById(unsigned id1, unsigned id2);
 
-enum playlist_result loadPlaylist(struct client *client, const char *utf8file);
+enum playlist_result loadPlaylist(const char *utf8file);
 
 bool getPlaylistRepeatStatus(void);
 

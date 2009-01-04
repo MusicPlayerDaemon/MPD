@@ -1308,7 +1308,7 @@ int PlaylistInfo(struct client *client, const char *utf8file, int detail)
 	return 0;
 }
 
-enum playlist_result loadPlaylist(struct client *client, const char *utf8file)
+enum playlist_result loadPlaylist(const char *utf8file)
 {
 	GPtrArray *list;
 
@@ -1327,8 +1327,7 @@ enum playlist_result loadPlaylist(struct client *client, const char *utf8file)
 				p++;
 			}
 			if ((addToPlaylist(temp, NULL)) != PLAYLIST_RESULT_SUCCESS) {
-				command_error(client, ACK_ERROR_PLAYLIST_LOAD,
-					      "can't add file \"%s\"", temp2);
+				g_warning("can't add file \"%s\"", temp2);
 			}
 			free(temp2);
 		}

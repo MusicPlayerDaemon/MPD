@@ -564,7 +564,7 @@ handle_load(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 {
 	enum playlist_result result;
 
-	result = loadPlaylist(client, argv[1]);
+	result = loadPlaylist(argv[1]);
 	return print_playlist_result(client, result);
 }
 
