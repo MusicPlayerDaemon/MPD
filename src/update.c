@@ -288,16 +288,16 @@ make_subdir(struct directory *parent, const char *name)
 
 	directory = directory_get_child(parent, name);
 	if (directory == NULL) {
-		char path[MPD_PATH_MAX];
+		char *path;
 
 		if (directory_is_root(parent))
-			strcpy(path, name);
+			path = NULL;
 		else
-			pfx_dir(path, name, strlen(name),
-				directory_get_path(parent),
-				strlen(directory_get_path(parent)));
+			name = path = g_strconcat(directory_get_path(parent),
+						  "/", name, NULL);
 
-		directory = directory_new_child(parent, path);
+		directory = directory_new_child(parent, name);
+		g_free(path);
 	}
 
 	return directory;

@@ -37,13 +37,12 @@ static struct stored_playlist_info *
 load_playlist_info(const char *parent_path_fs, const char *name_fs)
 {
 	size_t name_length = strlen(name_fs);
-	char buffer[MPD_PATH_MAX], *name, *name_utf8;
+	char buffer[MPD_PATH_MAX], *path_fs, *name, *name_utf8;
 	int ret;
 	struct stat st;
 	struct stored_playlist_info *playlist;
 
 	if (name_length < 1 + sizeof(PLAYLIST_FILE_SUFFIX) ||
-	    strlen(parent_path_fs) + name_length >= sizeof(buffer) ||
 	    memchr(name_fs, '\n', name_length) != NULL)
 		return NULL;
 
@@ -53,10 +52,9 @@ load_playlist_info(const char *parent_path_fs, const char *name_fs)
 		   sizeof(PLAYLIST_FILE_SUFFIX) - 1) != 0)
 		return NULL;
 
-	pfx_dir(buffer, name_fs, name_length,
-		parent_path_fs, strlen(parent_path_fs));
-
-	ret = stat(buffer, &st);
+	path_fs = g_build_filename(parent_path_fs, name_fs, NULL);
+	ret = stat(path_fs, &st);
+	g_free(path_fs);
 	if (ret < 0 || !S_ISREG(st.st_mode))
 		return NULL;
 

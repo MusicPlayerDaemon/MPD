@@ -107,20 +107,3 @@ void path_global_finish(void)
 {
 	g_free(fs_charset);
 }
-
-char *pfx_dir(char *dst,
-              const char *path, const size_t path_len,
-              const char *pfx, const size_t pfx_len)
-{
-	if (G_UNLIKELY((pfx_len + path_len + 1) >= MPD_PATH_MAX))
-		g_error("Cannot prefix '%s' to '%s', PATH_MAX: %d",
-			pfx, path, MPD_PATH_MAX);
-
-	/* memmove allows dst == path */
-	memmove(dst + pfx_len + 1, path, path_len + 1);
-	memcpy(dst, pfx, pfx_len);
-	dst[pfx_len] = '/';
-
-	/* this is weird, but directory.c can use it more safely/efficiently */
-	return (dst + pfx_len + 1);
-}

@@ -44,16 +44,4 @@ void path_set_fs_charset(const char *charset);
 
 const char *path_get_fs_charset(void);
 
-/*
- * pfx_dir - sets dst="$pfx/$path" and returns a pointer to path inside * dst
- * this will unconditionally put a '/' between pfx and path unlike
- * the static pfx_path() function in path.c
- * dst is assumed to be MAXPATHLEN in size
- * dst can point to the same location as path, but not pfx, which makes
- * this better than sprintf(3) in some cases
- */
-char *pfx_dir(char *dst,
-              const char *path, const size_t path_len,
-              const char *pfx, const size_t pfx_len);
-
 #endif
