@@ -690,35 +690,48 @@ directory_update_init(char *path)
 	return update_task_id;
 }
 
-static void reap_update_task(void)
+/**
+ * Safely delete a song from the database.  This must be done in the
+ * main task, to be sure that there is no pointer left to it.
+ */
+static void song_delete_event(void)
 {
-	assert(g_thread_self() == main_task);
+	char *uri;
 
-	if (progress == UPDATE_PROGRESS_IDLE)
-		return;
+	assert(progress == UPDATE_PROGRESS_RUNNING);
+	assert(delete != NULL);
 
 	cond_enter(&delete_cond);
-	if (delete) {
-		char *tmp = song_get_uri(delete);
-		g_debug("removing: %s", tmp);
-		g_free(tmp);
 
-		deleteASongFromPlaylist(delete);
-		delete = NULL;
-		cond_signal_sync(&delete_cond);
-	}
+	uri = song_get_uri(delete);
+	g_debug("removing: %s", uri);
+	g_free(uri);
+
+	deleteASongFromPlaylist(delete);
+	delete = NULL;
+
+	cond_signal_sync(&delete_cond);
+
 	cond_leave(&delete_cond);
+}
 
-	if (progress != UPDATE_PROGRESS_DONE)
-		return;
+/**
+ * Called in the main thread after the database update is finished.
+ */
+static void update_finished_event(void)
+{
+	assert(progress == UPDATE_PROGRESS_DONE);
+
 	g_thread_join(update_thr);
 
 	if (modified) {
+		/* send "idle" events */
 		playlistVersionChange();
 		idle_add(IDLE_DATABASE);
 	}
 
 	if (update_paths_nr) {
+		/* schedule the next path */
 		char *path = update_paths[0];
 		memmove(&update_paths[0], &update_paths[1],
 		        --update_paths_nr * sizeof(char *));
@@ -742,8 +755,8 @@ void update_global_init(void)
 
 	cond_init(&delete_cond);
 
-	event_pipe_register(PIPE_EVENT_DELETE, reap_update_task);
-	event_pipe_register(PIPE_EVENT_UPDATE, reap_update_task);
+	event_pipe_register(PIPE_EVENT_DELETE, song_delete_event);
+	event_pipe_register(PIPE_EVENT_UPDATE, update_finished_event);
 }
 
 void update_global_finish(void)
