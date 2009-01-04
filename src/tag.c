@@ -483,9 +483,7 @@ clear_non_printable(const char *p, size_t length)
 	if (first == NULL)
 		return NULL;
 
-	/* duplicate and null-terminate the string */
-	dest = g_memdup(p, length);
-	dest[length] = 0;
+	dest = g_strndup(p, length);
 
 	for (size_t i = first - p; i < length; ++i)
 		if (char_is_non_printable(dest[i]))
