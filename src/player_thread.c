@@ -451,6 +451,14 @@ static void do_play(void)
 						music_pipe_set_lazy(false);
 						notify_signal(&dc.notify);
 						notify_wait(&pc.notify);
+
+						/* set nextChunk to a
+						   non-negative value
+						   so the next
+						   iteration doesn't
+						   assume crossfading
+						   hasn't begun yet */
+						nextChunk = 0;
 						continue;
 					}
 				}
