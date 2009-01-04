@@ -347,20 +347,11 @@ update_archive_tree(struct directory *directory, char *name)
 }
 #endif
 
-static bool
-updateDirectory(struct directory *directory, const struct stat *st);
-
 static void
-updateInDirectory(struct directory *directory,
-		  const char *name, const struct stat *st)
+update_regular_file(struct directory *directory,
+		    const char *name, const struct stat *st)
 {
-#ifdef ENABLE_ARCHIVE
-	const struct archive_plugin *archive;
-#endif
-
-	assert(strchr(name, '/') == NULL);
-
-	if (S_ISREG(st->st_mode) && hasMusicSuffix(name, 0)) {
+	if (hasMusicSuffix(name, 0)) {
 		struct song *song = songvec_find(&directory->songs, name);
 
 		if (song == NULL) {
@@ -379,21 +370,8 @@ updateInDirectory(struct directory *directory,
 				delete_song(directory, song);
 			modified = true;
 		}
-	} else if (S_ISDIR(st->st_mode)) {
-		struct directory *subdir;
-		bool ret;
-
-		if (inodeFoundInParent(directory, st->st_ino, st->st_dev))
-			return;
-
-		subdir = make_subdir(directory, name);
-		assert(directory == subdir->parent);
-
-		ret = updateDirectory(subdir, st);
-		if (!ret)
-			delete_directory(subdir);
 #ifdef ENABLE_ARCHIVE
-	} else if (S_ISREG(st->st_mode) && (archive = get_archive_by_suffix(name))) {
+	} else if ((archive = get_archive_by_suffix(name))) {
 		struct archive_file *archfile;
 		char pathname[MPD_PATH_MAX];
 
@@ -424,6 +402,37 @@ updateInDirectory(struct directory *directory,
 			g_warning("unable to open archive %s", pathname);
 		}
 #endif
+	}
+}
+
+static bool
+updateDirectory(struct directory *directory, const struct stat *st);
+
+static void
+updateInDirectory(struct directory *directory,
+		  const char *name, const struct stat *st)
+{
+#ifdef ENABLE_ARCHIVE
+	const struct archive_plugin *archive;
+#endif
+
+	assert(strchr(name, '/') == NULL);
+
+	if (S_ISREG(st->st_mode)) {
+		update_regular_file(directory, name, st);
+	} else if (S_ISDIR(st->st_mode)) {
+		struct directory *subdir;
+		bool ret;
+
+		if (inodeFoundInParent(directory, st->st_ino, st->st_dev))
+			return;
+
+		subdir = make_subdir(directory, name);
+		assert(directory == subdir->parent);
+
+		ret = updateDirectory(subdir, st);
+		if (!ret)
+			delete_directory(subdir);
 	} else {
 		g_debug("update: %s is not a directory, archive or music", name);
 	}
