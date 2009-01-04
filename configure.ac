@@ -544,9 +544,14 @@ fi
 AM_CONDITIONAL(HAVE_JACK, test x$enable_jack = xyes)
 
 if test x$enable_id3 = xyes; then
-	PKG_CHECK_MODULES([ID3TAG], [id3tag],
-		AC_DEFINE(HAVE_ID3TAG, 1, [Define to use id3tag]),
-		enable_id3=no)
+	PKG_CHECK_MODULES([ID3TAG], [id3tag],,
+		AC_CHECK_LIB(id3tag, id3_file_open,
+			[ID3TAG_LIBS="-lid3tag -lz" ID3TAG_CFLAGS=""],
+			enable_id3tag=no))
+fi
+
+if test x$enable_id3 = xyes; then
+	AC_DEFINE(HAVE_ID3TAG, 1, [Define to use id3tag])
 fi
 
 AM_CONDITIONAL(HAVE_ID3TAG, test x$enable_id3 = xyes)
