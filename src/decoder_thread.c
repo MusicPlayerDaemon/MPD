@@ -142,7 +142,7 @@ static void decoder_run_song(const struct song *song, const char *uri)
 
 		/* if that fails, try suffix matching the URL: */
 		if (plugin == NULL) {
-			const char *s = getSuffix(uri);
+			const char *s = uri_get_suffix(uri);
 			next = 0;
 			while ((plugin = decoder_plugin_from_suffix(s, next++))) {
 				if (plugin->stream_decode == NULL)
@@ -169,7 +169,7 @@ static void decoder_run_song(const struct song *song, const char *uri)
 		}
 	} else {
 		unsigned int next = 0;
-		const char *s = getSuffix(uri);
+		const char *s = uri_get_suffix(uri);
 		while ((plugin = decoder_plugin_from_suffix(s, next++))) {
 			if (plugin->file_decode != NULL) {
 				input_stream_close(&input_stream);

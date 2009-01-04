@@ -346,7 +346,7 @@ static void
 update_regular_file(struct directory *directory,
 		    const char *name, const struct stat *st)
 {
-	const char *suffix = getSuffix(name);
+	const char *suffix = uri_get_suffix(name);
 
 	if (suffix == NULL)
 		return;

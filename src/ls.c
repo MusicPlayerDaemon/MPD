@@ -20,6 +20,7 @@
 #include "client.h"
 #include "config.h"
 
+#include <assert.h>
 #include <string.h>
 
 static const char *remoteUrlPrefixes[] = {
@@ -29,7 +30,7 @@ static const char *remoteUrlPrefixes[] = {
 	NULL
 };
 
-void printRemoteUrlHandlers(struct client *client)
+void print_supported_uri_schemes(struct client *client)
 {
 	const char **prefixes = remoteUrlPrefixes;
 
@@ -44,12 +45,14 @@ bool uri_has_scheme(const char *uri)
 	return strstr(uri, "://") != NULL;
 }
 
-bool isRemoteUrl(const char *url)
+bool uri_supported_scheme(const char *uri)
 {
 	const char **urlPrefixes = remoteUrlPrefixes;
 
+	assert(uri_has_scheme(uri));
+
 	while (*urlPrefixes) {
-		if (g_str_has_prefix(url, *urlPrefixes))
+		if (g_str_has_prefix(uri, *urlPrefixes))
 			return true;
 		urlPrefixes++;
 	}
@@ -58,7 +61,7 @@ bool isRemoteUrl(const char *url)
 }
 
 /* suffixes should be ascii only characters */
-const char *getSuffix(const char *utf8file)
+const char *uri_get_suffix(const char *utf8file)
 {
 	const char *dot = strrchr(g_basename(utf8file), '.');
 

@@ -110,7 +110,7 @@ song_file_update(struct song *song)
 
 	/* check if there's a suffix and a plugin */
 
-	suffix = getSuffix(song->url);
+	suffix = uri_get_suffix(song->url);
 	if (suffix == NULL)
 		return false;
 
@@ -156,7 +156,7 @@ song_file_update_inarchive(struct song *song)
 
 	/* check if there's a suffix and a plugin */
 
-	suffix = getSuffix(song->url);
+	suffix = uri_get_suffix(song->url);
 	if (suffix == NULL)
 		return false;
 

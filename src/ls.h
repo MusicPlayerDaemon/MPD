@@ -21,10 +21,7 @@
 
 #include <stdbool.h>
 
-struct stat;
 struct client;
-
-const char *getSuffix(const char *utf8file);
 
 /**
  * Checks whether the specified URI has a schema in the form
@@ -32,8 +29,19 @@ const char *getSuffix(const char *utf8file);
  */
 bool uri_has_scheme(const char *uri);
 
-bool isRemoteUrl(const char *url);
+/**
+ * Checks whether the scheme of the specified URI is supported by MPD.
+ * It is not allowed to pass an URI without a scheme, check with
+ * uri_has_scheme() first.
+ */
+bool uri_supported_scheme(const char *url);
 
-void printRemoteUrlHandlers(struct client *client);
+/**
+ * Send a list of supported URI schemes to the client.  This is the
+ * response to the "urlhandlers" command.
+ */
+void print_supported_uri_schemes(struct client *client);
+
+const char *uri_get_suffix(const char *utf8file);
 
 #endif
