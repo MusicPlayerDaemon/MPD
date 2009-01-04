@@ -406,7 +406,6 @@ static char *
 fix_utf8(const char *str, size_t length)
 {
 	char *temp;
-	GError *error = NULL;
 	gsize written;
 
 	assert(str != NULL);
@@ -416,11 +415,9 @@ fix_utf8(const char *str, size_t length)
 
 	DEBUG("not valid utf8 in tag: %s\n",str);
 	temp = g_convert(str, length, "utf-8", "iso-8859-1",
-			 NULL, &written, &error);
-	if (temp == NULL) {
-		g_error_free(error);
+			 NULL, &written, NULL);
+	if (temp == NULL)
 		return NULL;
-	}
 
 	return temp;
 }

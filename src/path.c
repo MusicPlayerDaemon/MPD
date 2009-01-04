@@ -32,16 +32,13 @@ static char *fs_charset;
 char *fs_charset_to_utf8(char *dst, const char *str)
 {
 	gchar *p;
-	GError *error = NULL;
 
 	p = g_convert(str, -1,
 		      "utf-8", fs_charset,
-		      NULL, NULL, &error);
-	if (p == NULL) {
+		      NULL, NULL, NULL);
+	if (p == NULL)
 		/* no fallback */
-		g_error_free(error);
 		return NULL;
-	}
 
 	g_strlcpy(dst, p, MPD_PATH_MAX);
 	g_free(p);
@@ -51,16 +48,13 @@ char *fs_charset_to_utf8(char *dst, const char *str)
 char *utf8_to_fs_charset(char *dst, const char *str)
 {
 	gchar *p;
-	GError *error = NULL;
 
 	p = g_convert(str, -1,
 		      fs_charset, "utf-8",
-		      NULL, NULL, &error);
-	if (p == NULL) {
+		      NULL, NULL, NULL);
+	if (p == NULL)
 		/* fall back to UTF-8 */
-		g_error_free(error);
 		return strcpy(dst, str);
-	}
 
 	g_strlcpy(dst, p, MPD_PATH_MAX);
 	g_free(p);
