@@ -448,29 +448,29 @@ handle_close(G_GNUC_UNUSED struct client *client,
 static enum command_return
 handle_add(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 {
-	char *path = argv[1];
+	char *uri = argv[1];
 	enum playlist_result result;
 
-	if (strncmp(path, "file:///", 8) == 0) {
+	if (strncmp(uri, "file:///", 8) == 0) {
 #ifdef WIN32
 		result = PLAYLIST_RESULT_DENIED;
 #else
-		result = playlist_append_file(path + 7, client_get_uid(client),
+		result = playlist_append_file(uri + 7, client_get_uid(client),
 					      NULL);
 #endif
 		return print_playlist_result(client, result);
 	}
 
-	if (isRemoteUrl(path))
-		return addToPlaylist(path, NULL);
+	if (isRemoteUrl(uri))
+		return addToPlaylist(uri, NULL);
 
-	if (uri_has_scheme(path)) {
+	if (uri_has_scheme(uri)) {
 		command_error(client, ACK_ERROR_NO_EXIST,
 			      "unsupported URI scheme");
 		return COMMAND_RETURN_ERROR;
 	}
 
-	result = addAllIn(path);
+	result = addAllIn(uri);
 	if (result == (enum playlist_result)-1) {
 		command_error(client, ACK_ERROR_NO_EXIST,
 			      "directory or file not found");
@@ -483,19 +483,20 @@ handle_add(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 static enum command_return
 handle_addid(struct client *client, int argc, char *argv[])
 {
+	char *uri = argv[1];
 	unsigned added_id;
 	enum playlist_result result;
 
-	if (strncmp(argv[1], "file:///", 8) == 0)
+	if (strncmp(uri, "file:///", 8) == 0) {
 #ifdef WIN32
 		result = PLAYLIST_RESULT_DENIED;
 #else
-		result = playlist_append_file(argv[1] + 7,
+		result = playlist_append_file(uri + 7,
 					      client_get_uid(client),
 					      &added_id);
 #endif
-	else
-		result = addToPlaylist(argv[1], &added_id);
+	} else
+		result = addToPlaylist(uri, &added_id);
 
 	if (result != PLAYLIST_RESULT_SUCCESS)
 		return print_playlist_result(client, result);
@@ -614,13 +615,16 @@ handle_listplaylistinfo(struct client *client,
 static enum command_return
 handle_lsinfo(struct client *client, int argc, char *argv[])
 {
-	const char *path = "";
+	const char *uri;
 	const struct directory *directory;
 
 	if (argc == 2)
-		path = argv[1];
+		uri = argv[1];
+	else
+		/* default is root directory */
+		uri = "";
 
-	directory = db_get_directory(path);
+	directory = db_get_directory(uri);
 	if (directory == NULL) {
 		command_error(client, ACK_ERROR_NO_EXIST,
 			      "directory not found");
@@ -629,7 +633,7 @@ handle_lsinfo(struct client *client, int argc, char *argv[])
 
 	directory_print(client, directory);
 
-	if (isRootDirectory(path)) {
+	if (isRootDirectory(uri)) {
 		GPtrArray *list = spl_list();
 		if (list != NULL) {
 			print_spl_list(client, list);
@@ -1242,17 +1246,17 @@ static enum command_return
 handle_playlistadd(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 {
 	char *playlist = argv[1];
-	char *path = argv[2];
+	char *uri = argv[2];
 	enum playlist_result result;
 
-	if (isRemoteUrl(path))
-		result = spl_append_uri(path, playlist);
-	else if (uri_has_scheme(path)) {
+	if (isRemoteUrl(uri))
+		result = spl_append_uri(uri, playlist);
+	else if (uri_has_scheme(uri)) {
 		command_error(client, ACK_ERROR_NO_EXIST,
 			      "unsupported URI scheme");
 		return COMMAND_RETURN_ERROR;
 	} else
-		result = addAllInToStoredPlaylist(path, playlist);
+		result = addAllInToStoredPlaylist(uri, playlist);
 
 	if (result == (enum playlist_result)-1) {
 		command_error(client, ACK_ERROR_NO_EXIST,
