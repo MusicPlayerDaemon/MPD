@@ -86,7 +86,7 @@ void parseOptions(int argc, char **argv, Options *options)
 		{ "kill", 0, 0, G_OPTION_ARG_NONE, &options->kill,
 		  "kill the currently running mpd session", NULL },
 		{ "create-db", 0, 0, G_OPTION_ARG_NONE, &option_create_db,
-		  "force (re)creation of database and exit", NULL },
+		  "force (re)creation of database", NULL },
 		{ "no-create-db", 0, 0, G_OPTION_ARG_NONE, &option_no_create_db,
 		  "don't create database, even if it doesn't exist", NULL },
 		{ "no-daemon", 0, 0, G_OPTION_ARG_NONE, &option_no_daemon,

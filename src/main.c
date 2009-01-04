@@ -135,10 +135,6 @@ static void openDB(Options * options, char *argv0)
 		if (db_check() < 0)
 			exit(EXIT_FAILURE);
 		db_init();
-		if (db_save() < 0)
-			exit(EXIT_FAILURE);
-		if (options->createDB)
-			exit(EXIT_SUCCESS);
 	}
 }
 
@@ -238,8 +234,7 @@ int main(int argc, char *argv[])
 	tag_lib_init();
 	log_init(options.verbose, options.stdOutput);
 
-	if (options.createDB <= 0)
-		listenOnPort();
+	listenOnPort();
 
 	changeToUser();
 

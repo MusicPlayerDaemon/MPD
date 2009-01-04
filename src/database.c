@@ -57,13 +57,6 @@ db_init(void)
 	ret = directory_update_init(NULL);
 	if (ret == 0)
 		g_error("directory update failed");
-
-	do {
-		event_pipe_wait();
-	} while (isUpdatingDB());
-
-	stats.numberOfSongs = countSongsIn(NULL);
-	stats.dbPlayTime = sumSongTimesIn(NULL);
 }
 
 void
