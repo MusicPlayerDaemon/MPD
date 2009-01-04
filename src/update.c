@@ -190,6 +190,23 @@ delete_song_if_removed(struct song *song, void *_data)
 	return 0;
 }
 
+static bool
+directory_exists(const struct directory *directory)
+{
+	char *path_fs;
+	bool exists;
+
+	path_fs = map_directory_fs(directory);
+	if (path_fs == NULL)
+		/* invalid path: cannot exist */
+		return false;
+
+	exists = g_file_test(path_fs, G_FILE_TEST_IS_DIR);
+	g_free(path_fs);
+
+	return exists;
+}
+
 static void
 removeDeletedFromDirectory(struct directory *directory)
 {
@@ -198,17 +215,9 @@ removeDeletedFromDirectory(struct directory *directory)
 	struct delete_data data;
 
 	for (i = dv->nr; --i >= 0; ) {
-		char *path_fs;
-		bool is_dir;
-
-		path_fs = map_directory_fs(dv->base[i]);
-		if (path_fs == NULL)
+		if (directory_exists(dv->base[i]))
 			continue;
 
-		is_dir = g_file_test(path_fs, G_FILE_TEST_IS_DIR);
-		g_free(path_fs);
-		if (!is_dir)
-			continue;
 		g_debug("removing directory: %s", dv->base[i]->path);
 		dirvec_delete(dv, dv->base[i]);
 		modified = true;
