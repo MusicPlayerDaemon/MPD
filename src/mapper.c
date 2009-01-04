@@ -142,9 +142,11 @@ map_song_fs(const struct song *song)
 		return g_strdup(utf8_to_fs_charset(buffer, song->url));
 }
 
-const char *
-map_fs_to_utf8(const char *path_fs, char *buffer)
+char *
+map_fs_to_utf8(const char *path_fs)
 {
+	char buffer[MPD_PATH_MAX];
+
 	if (strncmp(path_fs, music_dir, music_dir_length) == 0 &&
 	    path_fs[music_dir_length] == '/')
 		/* remove musicDir prefix */
@@ -153,7 +155,7 @@ map_fs_to_utf8(const char *path_fs, char *buffer)
 		/* not within musicDir */
 		return NULL;
 
-	return fs_charset_to_utf8(buffer, path_fs);
+	return g_strdup(fs_charset_to_utf8(buffer, path_fs));
 }
 
 const char *

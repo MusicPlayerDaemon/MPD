@@ -44,7 +44,6 @@ map_uri_fs(const char *uri);
  * Determines the file system path of a directory object.
  *
  * @param directory the directory object
- * @param a buffer which is MPD_PATH_MAX bytes long
  * @return the path in file system encoding, or NULL if mapping failed
  */
 char *
@@ -56,7 +55,6 @@ map_directory_fs(const struct directory *directory);
  *
  * @param directory the parent directory object
  * @param name the child's name in UTF-8
- * @param a buffer which is MPD_PATH_MAX bytes long
  * @return the path in file system encoding, or NULL if mapping failed
  */
 char *
@@ -67,7 +65,6 @@ map_directory_child_fs(const struct directory *directory, const char *name);
  * remote song.
  *
  * @param song the song object
- * @param a buffer which is MPD_PATH_MAX bytes long
  * @return the path in file system encoding, or NULL if mapping failed
  */
 char *
@@ -78,11 +75,10 @@ map_song_fs(const struct song *song);
  * absolute) to a relative path in UTF-8 encoding.
  *
  * @param path_fs a path in file system encoding
- * @param buffer a buffer which is MPD_PATH_MAX bytes long
  * @return the relative path in UTF-8, or NULL if mapping failed
  */
-const char *
-map_fs_to_utf8(const char *path_fs, char *buffer);
+char *
+map_fs_to_utf8(const char *path_fs);
 
 /**
  * Returns the playlist directory.

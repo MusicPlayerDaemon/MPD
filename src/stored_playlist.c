@@ -158,7 +158,6 @@ spl_load(const char *utf8path)
 
 	while (fgets(buffer, sizeof(buffer), file)) {
 		char *s = buffer;
-		const char *path_utf8;
 
 		if (*s == PLAYLIST_COMMENT)
 			continue;
@@ -166,13 +165,15 @@ spl_load(const char *utf8path)
 		g_strchomp(buffer);
 
 		if (!uri_has_scheme(s)) {
+			char *path_utf8;
 			struct song *song;
 
-			path_utf8 = map_fs_to_utf8(s, path_max_tmp);
+			path_utf8 = map_fs_to_utf8(s);
 			if (path_utf8 == NULL)
 				continue;
 
 			song = db_get_song(path_utf8);
+			g_free(path_utf8);
 			if (song == NULL)
 				continue;
 
