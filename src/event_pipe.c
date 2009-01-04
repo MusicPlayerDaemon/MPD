@@ -51,8 +51,10 @@ event_pipe_invoke(enum pipe_event event)
 	event_pipe_callbacks[event]();
 }
 
-static void
-consume_pipe(void)
+static gboolean
+main_notify_event(G_GNUC_UNUSED GIOChannel *source,
+		  G_GNUC_UNUSED GIOCondition condition,
+		  G_GNUC_UNUSED gpointer data)
 {
 	char buffer[256];
 	ssize_t r = read(event_pipe[0], buffer, sizeof(buffer));
@@ -70,14 +72,7 @@ consume_pipe(void)
 		if (events[i])
 			/* invoke the event handler */
 			event_pipe_invoke(i);
-}
 
-static gboolean
-main_notify_event(G_GNUC_UNUSED GIOChannel *source,
-		  G_GNUC_UNUSED GIOCondition condition,
-		  G_GNUC_UNUSED gpointer data)
-{
-	consume_pipe();
 	return true;
 }
 
@@ -147,9 +142,4 @@ void event_pipe_emit_fast(enum pipe_event event)
 
 	pipe_events[event] = true;
 	write(event_pipe[1], "", 1);
-}
-
-void event_pipe_wait(void)
-{
-	consume_pipe();
 }

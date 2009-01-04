@@ -60,6 +60,4 @@ void event_pipe_emit(enum pipe_event event);
  */
 void event_pipe_emit_fast(enum pipe_event event);
 
-void event_pipe_wait(void);
-
 #endif /* MAIN_NOTIFY_H */
