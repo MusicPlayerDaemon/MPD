@@ -199,7 +199,7 @@ tagItemFoundAndMatches(struct song *song, enum tag_type type, char *str)
 
 	if (type == LOCATE_TAG_FILE_TYPE || type == LOCATE_TAG_ANY_TYPE) {
 		char *uri = song_get_uri(song);
-		bool matches = strcmp(str, uri);
+		bool matches = strcmp(str, uri) == 0;
 		g_free(uri);
 
 		if (matches)
