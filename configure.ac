@@ -358,8 +358,6 @@ AC_ARG_WITH(faad-libraries,[  --with-faad-libraries=DIR   Directory where faad2 
 AC_ARG_WITH(faad-includes,[  --with-faad-includes=DIR    Directory where faad2 header files are installed (optional)], faad_includes="$withval", faad_includes="")
 AC_ARG_WITH(zeroconf,[[  --with-zeroconf=[auto|avahi|bonjour|no]    Enable zeroconf backend (default=auto)]], with_zeroconf="$withval", with_zeroconf="auto")
 
-AC_CHECK_HEADER(sys/inttypes.h,AC_DEFINE(HAVE_SYS_INTTYPES_H,1,[Define if sys/inttypes.h present]),)
-
 AC_CHECK_LIB(socket,socket,MPD_LIBS="$MPD_LIBS -lsocket",)
 AC_CHECK_LIB(nsl,gethostbyname,MPD_LIBS="$MPD_LIBS -lnsl",)
 
@@ -371,9 +369,6 @@ PKG_PROG_PKG_CONFIG
 PKG_CHECK_MODULES([GLIB], [glib-2.0 >= 2.4 gthread-2.0],,
 		  [AC_MSG_ERROR([glib-2.4 is required])])
 
-dnl doesn't work for systems that don't have CODESET like OpenBSD
-dnl AC_CHECK_HEADER(langinfo.h,[enable_langinfo=yes;AC_DEFINE(HAVE_LANGINFO,1,[Define if nl_langinfo.h is present])],enable_langinfo=no)
-AM_LANGINFO_CODESET
 AC_CHECK_HEADER(locale.h,[enable_locale=yes;AC_DEFINE(HAVE_LOCALE,1,[Define if locale.h is present])],enable_locale=no)
 
 if test x$enable_tcp = xno; then
