@@ -106,29 +106,6 @@ PKG_CHECK_MODULES([GLIB], [glib-2.0 >= 2.4 gthread-2.0],,
 
 
 dnl
-dnl build options
-dnl
-
-AC_ARG_ENABLE(werror,
-	AS_HELP_STRING([--enable-werror],
-		[Treat warnings as errors (default: disabled)]),
-	ENABLE_WERROR=$enableval,
-	ENABLE_WERROR=no)
-
-AC_ARG_ENABLE(debug,
-	AS_HELP_STRING([--enable-debug],
-		[Enable debugging (default: disabled)]),
-	ENABLE_DEBUG=$enableval,
-	ENABLE_DEBUG=no)
-
-AC_ARG_ENABLE(gprof,
-	AS_HELP_STRING([--enable-gprof],
-		[Enable profiling via gprof (default: disabled)]),
-	ENABLE_GPROF=$enableval,
-	ENABLE_GPROF=no)
-
-
-dnl
 dnl protocol options
 dnl
 
@@ -989,14 +966,32 @@ dnl
 dnl build options
 dnl
 
+AC_ARG_ENABLE(werror,
+	AS_HELP_STRING([--enable-werror],
+		[Treat warnings as errors (default: disabled)]),
+	ENABLE_WERROR=$enableval,
+	ENABLE_WERROR=no)
+
 if test "x$ENABLE_WERROR" = xyes; then
 	MPD_CFLAGS="$MPD_CFLAGS -Werror -pedantic-errors"
 fi
+
+AC_ARG_ENABLE(debug,
+	AS_HELP_STRING([--enable-debug],
+		[Enable debugging (default: disabled)]),
+	ENABLE_DEBUG=$enableval,
+	ENABLE_DEBUG=no)
 
 #if test "x$ENABLE_DEBUG" = xno; then
 	# don't set NDEBUG for now, until MPD is stable
 	#MPD_CFLAGS="$MPD_CFLAGS -DNDEBUG"
 #fi
+
+AC_ARG_ENABLE(gprof,
+	AS_HELP_STRING([--enable-gprof],
+		[Enable profiling via gprof (default: disabled)]),
+	ENABLE_GPROF=$enableval,
+	ENABLE_GPROF=no)
 
 if test "x$ENABLE_GPROF" = xyes; then
 	MPD_CFLAGS="$MPD_CFLAGS -pg"
