@@ -34,7 +34,7 @@
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "mvp"
 
-#ifdef G_BYTE_ORDER == G_BIG_ENDIAN
+#if G_BYTE_ORDER == G_BIG_ENDIAN
 #define MVP_USE_LITTLE_ENDIAN false
 #else
 #define MVP_USE_LITTLE_ENDIAN true

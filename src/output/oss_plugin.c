@@ -40,7 +40,7 @@
 # include <sys/soundcard.h>
 #endif /* !(defined(__OpenBSD__) || defined(__NetBSD__) */
 
-#ifdef G_BYTE_ORDER == G_BIG_ENDIAN
+#if G_BYTE_ORDER == G_BIG_ENDIAN
 # define	AFMT_S16_MPD	 AFMT_S16_BE
 #else
 # define	AFMT_S16_MPD	 AFMT_S16_LE
