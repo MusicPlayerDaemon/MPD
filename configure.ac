@@ -109,23 +109,56 @@ dnl
 dnl protocol options
 dnl
 
-AC_ARG_ENABLE(ipv6,
-	AS_HELP_STRING([--disable-ipv6],
-		[disable IPv6 support (default: enable)]),
-	[enable_ipv6=$enableval],
-	[enable_ipv6=yes])
-
 AC_ARG_ENABLE(tcp,
 	AS_HELP_STRING([--disable-tcp],
 		[disable support for clients connecting via TCP (default: enable)]),
 	[enable_tcp=$enableval],
 	[enable_tcp=yes])
 
+AC_ARG_ENABLE(ipv6,
+	AS_HELP_STRING([--disable-ipv6],
+		[disable IPv6 support (default: enable)]),
+	[enable_ipv6=$enableval],
+	[enable_ipv6=yes])
+
+if test x$enable_tcp = xno; then
+	# if we don't support TCP, we don't need IPv6 either
+	enable_ipv6=no
+fi
+
+if test x$enable_ipv6 = xyes; then
+	AC_MSG_CHECKING(for ipv6)
+	AC_EGREP_CPP([AP_maGiC_VALUE],
+	[
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netdb.h>
+#ifdef PF_INET6
+#ifdef AF_INET6
+AP_maGiC_VALUE
+#endif
+#endif
+	],
+	AC_DEFINE(HAVE_IPV6, 1, [Define if IPv6 support present])
+	AC_MSG_RESULT([yes]),
+	AC_MSG_RESULT([no])
+)
+fi
+
+if test x$enable_tcp = xyes; then
+	AC_DEFINE(HAVE_TCP, 1, [Define if TCP socket support is enabled])
+fi
+
 AC_ARG_ENABLE(un,
 	AS_HELP_STRING([--disable-un],
 		[disable support for clients connecting via unix domain sockets (default: enable)]),
 	[enable_un=$enableval],
 	[enable_un=yes])
+
+if test x$enable_un = xyes; then
+	AC_DEFINE(HAVE_UN, 1, [Define if unix domain socket support is enabled])
+	STRUCT_UCRED
+fi
 
 
 dnl
@@ -384,39 +417,6 @@ AC_ARG_ENABLE(shout-mp3,
 		[disable support for mp3 streaming through shout (default: enable)]),
 	[enable_shout_mp3=$enableval],
 	[enable_shout_mp3=yes])
-
-if test x$enable_tcp = xno; then
-	# if we don't support TCP, we don't need IPv6 either
-	enable_ipv6=no
-fi
-
-if test x$enable_ipv6 = xyes; then
-	AC_MSG_CHECKING(for ipv6)
-	AC_EGREP_CPP([AP_maGiC_VALUE],
-	[
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netdb.h>
-#ifdef PF_INET6
-#ifdef AF_INET6
-AP_maGiC_VALUE
-#endif
-#endif
-	],
-	AC_DEFINE(HAVE_IPV6, 1, [Define if IPv6 support present])
-	AC_MSG_RESULT([yes]),
-	AC_MSG_RESULT([no])
-)
-fi
-
-if test x$enable_tcp = xyes; then
-	AC_DEFINE(HAVE_TCP, 1, [Define if TCP socket support is enabled])
-fi
-
-if test x$enable_un = xyes; then
-	AC_DEFINE(HAVE_UN, 1, [Define if unix domain socket support is enabled])
-	STRUCT_UCRED
-fi
 
 enable_osx=no
 case $host in
