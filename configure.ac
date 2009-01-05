@@ -547,7 +547,7 @@ if test x$enable_id3 = xyes; then
 	PKG_CHECK_MODULES([ID3TAG], [id3tag],,
 		AC_CHECK_LIB(id3tag, id3_file_open,
 			[ID3TAG_LIBS="-lid3tag -lz" ID3TAG_CFLAGS=""],
-			enable_id3tag=no))
+			enable_id3=no))
 fi
 
 if test x$enable_id3 = xyes; then
