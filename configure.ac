@@ -5,17 +5,22 @@ AM_INIT_AUTOMAKE([foreign 1.9 dist-bzip2])
 AM_CONFIG_HEADER(config.h)
 AC_CONFIG_MACRO_DIR([m4])
 
-AC_SUBST(MPD_LIBS)
-AC_SUBST(MPD_CFLAGS)
+AC_DEFINE(PROTOCOL_VERSION, "0.14.0", [The mpd protocol version])
+
+
+dnl
+dnl programs
+dnl
 
 AC_PROG_CC_C99
 AC_PROG_INSTALL
 AC_PROG_MAKE_SET
+PKG_PROG_PKG_CONFIG
 
-AC_DEFINE(PROTOCOL_VERSION, "0.14.0", [The mpd protocol version])
 
-MPD_LIBS=""
-MPD_CFLAGS=""
+dnl
+dnl OS specific defaults
+dnl
 
 case "$host" in
 *-mingw32* | *-windows*)
@@ -61,6 +66,16 @@ fi
 
 
 dnl
+dnl declare variables
+dnl
+
+AC_SUBST(MPD_LIBS)
+AC_SUBST(MPD_CFLAGS)
+MPD_LIBS=""
+MPD_CFLAGS=""
+
+
+dnl
 dnl libc features
 dnl
 
@@ -73,6 +88,21 @@ if test $ac_cv_func_syslog = no; then
 			LIBS="$LIBS -l$lib"; break])
 	done
 fi
+
+AC_CHECK_LIB(socket,socket,MPD_LIBS="$MPD_LIBS -lsocket",)
+AC_CHECK_LIB(nsl,gethostbyname,MPD_LIBS="$MPD_LIBS -lnsl",)
+
+AC_CHECK_LIB(m,exp,MPD_LIBS="$MPD_LIBS -lm",)
+
+AC_CHECK_HEADER(locale.h,[enable_locale=yes;AC_DEFINE(HAVE_LOCALE,1,[Define if locale.h is present])],enable_locale=no)
+
+
+dnl
+dnl mandatory libraries
+dnl
+
+PKG_CHECK_MODULES([GLIB], [glib-2.0 >= 2.4 gthread-2.0],,
+		  [AC_MSG_ERROR([glib-2.4 is required])])
 
 
 dnl
@@ -357,19 +387,6 @@ AC_ARG_WITH(faad,[  --with-faad=PFX             Prefix where faad2 is installed]
 AC_ARG_WITH(faad-libraries,[  --with-faad-libraries=DIR   Directory where faad2 library is installed (optional)], faad_libraries="$withval", faad_libraries="")
 AC_ARG_WITH(faad-includes,[  --with-faad-includes=DIR    Directory where faad2 header files are installed (optional)], faad_includes="$withval", faad_includes="")
 AC_ARG_WITH(zeroconf,[[  --with-zeroconf=[auto|avahi|bonjour|no]    Enable zeroconf backend (default=auto)]], with_zeroconf="$withval", with_zeroconf="auto")
-
-AC_CHECK_LIB(socket,socket,MPD_LIBS="$MPD_LIBS -lsocket",)
-AC_CHECK_LIB(nsl,gethostbyname,MPD_LIBS="$MPD_LIBS -lnsl",)
-
-AC_CHECK_LIB(m,exp,MPD_LIBS="$MPD_LIBS -lm",)
-
-# Check for pkg-config before using it
-PKG_PROG_PKG_CONFIG
-
-PKG_CHECK_MODULES([GLIB], [glib-2.0 >= 2.4 gthread-2.0],,
-		  [AC_MSG_ERROR([glib-2.4 is required])])
-
-AC_CHECK_HEADER(locale.h,[enable_locale=yes;AC_DEFINE(HAVE_LOCALE,1,[Define if locale.h is present])],enable_locale=no)
 
 if test x$enable_tcp = xno; then
 	# if we don't support TCP, we don't need IPv6 either
