@@ -129,7 +129,14 @@ AC_ARG_ENABLE(un,
 
 
 dnl
-dnl input options
+dnl misc libraries
+dnl
+
+AC_ARG_WITH(zeroconf,[[  --with-zeroconf=[auto|avahi|bonjour|no]    Enable zeroconf backend (default=auto)]], with_zeroconf="$withval", with_zeroconf="auto")
+
+
+dnl
+dnl input plugins
 dnl
 
 AC_ARG_ENABLE(curl,
@@ -137,65 +144,6 @@ AC_ARG_ENABLE(curl,
 		[enable support obtaining song data via HTTP (default: enable)]),
 	[enable_curl=$enableval],
 	[enable_curl=yes])
-
-
-dnl
-dnl audio output plugins
-dnl
-
-AC_ARG_ENABLE(ao,
-	AS_HELP_STRING([--enable-ao],
-		[enable support for libao (default: disable)]),
-	enable_ao=$enableval,
-	enable_ao=no)
-
-AC_ARG_ENABLE(shout-ogg,
-	AS_HELP_STRING([--disable-shout-ogg],
-		[disable support for ogg streaming through shout (default: enable)]),
-	[enable_shout_ogg=$enableval],
-	[enable_shout_ogg=yes])
-
-AC_ARG_ENABLE(shout-mp3,
-	AS_HELP_STRING([--disable-shout-mp3],
-		[disable support for mp3 streaming through shout (default: enable)]),
-	[enable_shout_mp3=$enableval],
-	[enable_shout_mp3=yes])
-
-AC_ARG_ENABLE(oss,
-	AS_HELP_STRING([--disable-oss],
-		[disable OSS support (default: enable)]),
-	enable_oss=$enableval,
-	enable_oss=yes)
-
-AC_ARG_ENABLE(alsa,
-	AS_HELP_STRING([--disable-alsa],
-		[disable ALSA support (default: enable)]),
-	enable_alsa=$enableval,
-	enable_alsa=yes)
-
-AC_ARG_ENABLE(jack,
-	AS_HELP_STRING([--disable-jack],
-		[disable jack support (default: enable)]),
-	enable_jack=$enableval,
-	enable_jack=yes)
-
-AC_ARG_ENABLE(pulse,
-	AS_HELP_STRING([--disable-pulse],
-		[disable support for the PulseAudio sound server (default: enable)]),
-	enable_pulse=$enableval,
-	enable_pulse=yes)
-
-AC_ARG_ENABLE(fifo,
-	AS_HELP_STRING([--disable-fifo],
-		[disable support for writing audio to a FIFO (default: enable)]),
-	enable_fifo=$enableval,
-	enable_fifo=yes)
-
-AC_ARG_ENABLE(mvp,
-	AS_HELP_STRING([--enable-mvp],
-		[enable support for Hauppauge Media MVP (default: disable)]),
-	enable_mvp=$enableval,
-	enable_mvp=no)
 
 
 dnl
@@ -268,38 +216,19 @@ AM_CONDITIONAL(ENABLE_ARCHIVE, test x$enable_archive = xyes)
 
 
 dnl
-dnl decoder plugins
+dnl metadata
 dnl
 
-AC_ARG_ENABLE(oggvorbis,
-	AS_HELP_STRING([--disable-oggvorbis],
-		[disable Ogg Vorbis support (default: enable)]),
-	enable_oggvorbis=$enableval,
-	enable_oggvorbis=yes)
+AC_ARG_ENABLE(id3,
+	AS_HELP_STRING([--disable-id3],
+		[disable id3 support (default: enable)]),
+	enable_id3=$enableval,
+	enable_id3=yes)
 
-AC_ARG_ENABLE(oggflac,
-	AS_HELP_STRING([--disable-oggflac],
-		[disable OggFLAC support (default: enable)]),
-	enable_oggflac=$enableval,
-	enable_oggflac=yes)
 
-AC_ARG_ENABLE(flac,
-	AS_HELP_STRING([--disable-flac],
-		[disable flac support (default: enable)]),
-	enable_flac=$enableval,
-	enable_flac=yes)
-
-AC_ARG_ENABLE(mp3,
-	AS_HELP_STRING([--disable-mp3],
-		[disable mp3 support (default: enable)]),
-	enable_mp3=$enableval,
-	enable_mp3=yes)
-
-AC_ARG_ENABLE(lame,
-	AS_HELP_STRING([--disable-lame],
-		[disable lame support (default: enable)]),
-	enable_lame=$enableval,
-	enable_lame=yes)
+dnl
+dnl decoder plugins
+dnl
 
 AC_ARG_ENABLE(aac,
 	AS_HELP_STRING([--disable-aac],
@@ -307,11 +236,27 @@ AC_ARG_ENABLE(aac,
 	enable_aac=$enableval,
 	enable_aac=yes)
 
+AC_ARG_WITH(faad,[  --with-faad=PFX             Prefix where faad2 is installed], faad_prefix="$withval", faad_prefix="")
+AC_ARG_WITH(faad-libraries,[  --with-faad-libraries=DIR   Directory where faad2 library is installed (optional)], faad_libraries="$withval", faad_libraries="")
+AC_ARG_WITH(faad-includes,[  --with-faad-includes=DIR    Directory where faad2 header files are installed (optional)], faad_includes="$withval", faad_includes="")
+
 AC_ARG_ENABLE(audiofile,
 	AS_HELP_STRING([--disable-audiofile],
 		[disable audiofile support, disables wave support (default: enable)]),
 	enable_audiofile=$enableval,
 	enable_audiofile=yes)
+
+AC_ARG_ENABLE(ffmpeg,
+	AS_HELP_STRING([--disable-ffmpeg],
+		[enable FFMPEG support (default: enable)]),
+	enable_ffmpeg=$enableval,
+	enable_ffmpeg=yes)
+
+AC_ARG_ENABLE(flac,
+	AS_HELP_STRING([--disable-flac],
+		[disable flac support (default: enable)]),
+	enable_flac=$enableval,
+	enable_flac=yes)
 
 AC_ARG_ENABLE(mod,
 	AS_HELP_STRING([--enable-mod],
@@ -325,11 +270,33 @@ AC_ARG_ENABLE(modplug,
 	enable_modplug=$enableval,
 	enable_modplug=no)
 
+AC_ARG_ENABLE(mp3,
+	AS_HELP_STRING([--disable-mp3],
+		[disable mp3 support (default: enable)]),
+	enable_mp3=$enableval,
+	enable_mp3=yes)
+
 AC_ARG_ENABLE(mpc,
 	AS_HELP_STRING([--disable-mpc],
 		[disable musepack (MPC) support (default: enable)]),
 	enable_mpc=$enableval,
 	enable_mpc=yes)
+
+AC_ARG_ENABLE(oggflac,
+	AS_HELP_STRING([--disable-oggflac],
+		[disable OggFLAC support (default: enable)]),
+	enable_oggflac=$enableval,
+	enable_oggflac=yes)
+
+AC_ARG_ENABLE(oggvorbis,
+	AS_HELP_STRING([--disable-oggvorbis],
+		[disable Ogg Vorbis support (default: enable)]),
+	enable_oggvorbis=$enableval,
+	enable_oggvorbis=yes)
+
+AC_ARG_WITH(tremor,[[  --with-tremor[=PFX]         Use Tremor(vorbisidec) integer Ogg-Vorbis decoder (with optional prefix)]], use_tremor=yes; test x$withval != xyes && tremor_prefix="$withval",)
+AC_ARG_WITH(tremor-libraries,[  --with-tremor-libraries=DIR Directory where Tremor library is installed (optional)], tremor_libraries="$withval", tremor_libraries="")
+AC_ARG_WITH(tremor-includes,[  --with-tremor-includes=DIR  Directory where Tremor header files are installed (optional)], tremor_includes="$withval", tremor_includes="")
 
 AC_ARG_ENABLE(wavpack,
 	AS_HELP_STRING([--disable-wavpack],
@@ -337,17 +304,10 @@ AC_ARG_ENABLE(wavpack,
 	enable_wavpack=$enableval,
 	enable_wavpack=yes)
 
-AC_ARG_ENABLE(ffmpeg,
-	AS_HELP_STRING([--disable-ffmpeg],
-		[enable FFMPEG support (default: enable)]),
-	enable_ffmpeg=$enableval,
-	enable_ffmpeg=yes)
 
-AC_ARG_ENABLE(id3,
-	AS_HELP_STRING([--disable-id3],
-		[disable id3 support (default: enable)]),
-	enable_id3=$enableval,
-	enable_id3=yes)
+dnl
+dnl converters
+dnl
 
 AC_ARG_ENABLE(lsr,
 	AS_HELP_STRING([--disable-lsr],
@@ -356,14 +316,74 @@ AC_ARG_ENABLE(lsr,
 	enable_lsr=yes)
 
 
-AC_ARG_WITH(tremor,[[  --with-tremor[=PFX]         Use Tremor(vorbisidec) integer Ogg-Vorbis decoder (with optional prefix)]], use_tremor=yes; test x$withval != xyes && tremor_prefix="$withval",)
-AC_ARG_WITH(tremor-libraries,[  --with-tremor-libraries=DIR Directory where Tremor library is installed (optional)], tremor_libraries="$withval", tremor_libraries="")
-AC_ARG_WITH(tremor-includes,[  --with-tremor-includes=DIR  Directory where Tremor header files are installed (optional)], tremor_includes="$withval", tremor_includes="")
+dnl
+dnl encoder plugins
+dnl
 
-AC_ARG_WITH(faad,[  --with-faad=PFX             Prefix where faad2 is installed], faad_prefix="$withval", faad_prefix="")
-AC_ARG_WITH(faad-libraries,[  --with-faad-libraries=DIR   Directory where faad2 library is installed (optional)], faad_libraries="$withval", faad_libraries="")
-AC_ARG_WITH(faad-includes,[  --with-faad-includes=DIR    Directory where faad2 header files are installed (optional)], faad_includes="$withval", faad_includes="")
-AC_ARG_WITH(zeroconf,[[  --with-zeroconf=[auto|avahi|bonjour|no]    Enable zeroconf backend (default=auto)]], with_zeroconf="$withval", with_zeroconf="auto")
+AC_ARG_ENABLE(lame,
+	AS_HELP_STRING([--disable-lame],
+		[disable lame support (default: enable)]),
+	enable_lame=$enableval,
+	enable_lame=yes)
+
+
+dnl
+dnl audio output plugins
+dnl
+
+AC_ARG_ENABLE(alsa,
+	AS_HELP_STRING([--disable-alsa],
+		[disable ALSA support (default: enable)]),
+	enable_alsa=$enableval,
+	enable_alsa=yes)
+
+AC_ARG_ENABLE(ao,
+	AS_HELP_STRING([--enable-ao],
+		[enable support for libao (default: disable)]),
+	enable_ao=$enableval,
+	enable_ao=no)
+
+AC_ARG_ENABLE(fifo,
+	AS_HELP_STRING([--disable-fifo],
+		[disable support for writing audio to a FIFO (default: enable)]),
+	enable_fifo=$enableval,
+	enable_fifo=yes)
+
+AC_ARG_ENABLE(jack,
+	AS_HELP_STRING([--disable-jack],
+		[disable jack support (default: enable)]),
+	enable_jack=$enableval,
+	enable_jack=yes)
+
+AC_ARG_ENABLE(mvp,
+	AS_HELP_STRING([--enable-mvp],
+		[enable support for Hauppauge Media MVP (default: disable)]),
+	enable_mvp=$enableval,
+	enable_mvp=no)
+
+AC_ARG_ENABLE(oss,
+	AS_HELP_STRING([--disable-oss],
+		[disable OSS support (default: enable)]),
+	enable_oss=$enableval,
+	enable_oss=yes)
+
+AC_ARG_ENABLE(pulse,
+	AS_HELP_STRING([--disable-pulse],
+		[disable support for the PulseAudio sound server (default: enable)]),
+	enable_pulse=$enableval,
+	enable_pulse=yes)
+
+AC_ARG_ENABLE(shout-ogg,
+	AS_HELP_STRING([--disable-shout-ogg],
+		[disable support for ogg streaming through shout (default: enable)]),
+	[enable_shout_ogg=$enableval],
+	[enable_shout_ogg=yes])
+
+AC_ARG_ENABLE(shout-mp3,
+	AS_HELP_STRING([--disable-shout-mp3],
+		[disable support for mp3 streaming through shout (default: enable)]),
+	[enable_shout_mp3=$enableval],
+	[enable_shout_mp3=yes])
 
 if test x$enable_tcp = xno; then
 	# if we don't support TCP, we don't need IPv6 either
