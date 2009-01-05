@@ -167,6 +167,54 @@ dnl
 
 AC_ARG_WITH(zeroconf,[[  --with-zeroconf=[auto|avahi|bonjour|no]    Enable zeroconf backend (default=auto)]], with_zeroconf="$withval", with_zeroconf="auto")
 
+case $with_zeroconf in
+no|avahi|bonjour)
+	;;
+*)
+	with_zeroconf=auto
+	;;
+esac
+
+if test x$with_zeroconf != xno; then
+	if test x$with_zeroconf = xavahi || test x$with_zeroconf = xauto; then
+		PKG_CHECK_MODULES([AVAHI], [avahi-client avahi-glib],
+		                  [found_avahi=1;AC_DEFINE([HAVE_AVAHI], 1, [Define to enable Avahi Zeroconf support])]
+		                  MPD_LIBS="$MPD_LIBS $AVAHI_LIBS" MPD_CFLAGS="$MPD_CFLAGS $AVAHI_CFLAGS",
+		                  [found_avahi=0])
+	fi
+
+	if test x$found_avahi = x1; then
+		with_zeroconf=avahi
+	elif test x$with_zeroconf = xavahi; then
+		AC_MSG_ERROR([Avahi support requested but not found])
+	fi
+
+	if test x$with_zeroconf = xbonjour || test x$with_zeroconf = xauto; then
+		AC_CHECK_HEADER(dns_sd.h,
+		                [found_bonjour=1;AC_DEFINE([HAVE_BONJOUR], 1, [Define to enable Bonjour Zeroconf support])],
+		                [found_bonjour=0])
+		AC_CHECK_LIB(dns_sd, DNSServiceRegister,
+		             MPD_LIBS="$MPD_LIBS -ldns_sd")
+	fi
+
+	if test x$found_bonjour = x1; then
+		with_zeroconf=bonjour
+	elif test x$with_zeroconf = xbonjour; then
+		AC_MSG_ERROR([Bonjour support requested but not found])
+	fi
+
+	if test x$with_zeroconf = xauto; then
+		AC_MSG_WARN([No supported Zeroconf backend found, disabling Zeroconf])
+		with_zeroconf=no
+	else
+		AC_DEFINE([HAVE_ZEROCONF], 1, [Define to enable Zeroconf support])
+	fi
+fi
+
+AM_CONDITIONAL(HAVE_ZEROCONF, test x$with_zeroconf != xno)
+AM_CONDITIONAL(HAVE_AVAHI, test x$with_zeroconf = xavahi)
+AM_CONDITIONAL(HAVE_BONJOUR, test x$with_zeroconf = xbonjour)
+
 
 dnl
 dnl input plugins
@@ -177,6 +225,13 @@ AC_ARG_ENABLE(curl,
 		[enable support obtaining song data via HTTP (default: enable)]),
 	[enable_curl=$enableval],
 	[enable_curl=yes])
+
+if test x$enable_curl = xyes; then
+	PKG_CHECK_MODULES(CURL, [libcurl],
+		AC_DEFINE(HAVE_CURL, 1, [Define when libcurl is used for HTTP streaming]),
+		enable_curl=no)
+fi
+AM_CONDITIONAL(HAVE_CURL, test x$enable_curl = xyes)
 
 
 dnl
@@ -348,6 +403,19 @@ AC_ARG_ENABLE(lsr,
 	enable_lsr=$enableval,
 	enable_lsr=yes)
 
+if test x$enable_lsr = xyes; then
+	PKG_CHECK_MODULES([SAMPLERATE], [samplerate >= 0.0.15],
+	                  [enable_lsr=yes;AC_DEFINE([HAVE_LIBSAMPLERATE], 1, [Define to enable libsamplerate])] MPD_LIBS="$MPD_LIBS $SAMPLERATE_LIBS" MPD_CFLAGS="$MPD_CFLAGS $SAMPLERATE_CFLAGS",
+	                  [enable_lsr=no;AC_MSG_WARN([libsamplerate not found -- disabling])])
+fi
+
+if test x$enable_lsr = xyes; then
+	PKG_CHECK_MODULES([SAMPLERATE_013], [samplerate >= 0.1.3],,
+		[AC_DEFINE([HAVE_LIBSAMPLERATE_NOINT], 1, [libsamplerate doesn't provide src_int_to_float_array() (<0.1.3)])])
+fi
+
+AM_CONDITIONAL(HAVE_LIBSAMPLERATE, test x$enable_lsr = xyes)
+
 
 dnl
 dnl encoder plugins
@@ -428,13 +496,6 @@ esac
 
 AM_CONDITIONAL(HAVE_OSX, test x$enable_osx = xyes)
 
-if test x$enable_curl = xyes; then
-	PKG_CHECK_MODULES(CURL, [libcurl],
-		AC_DEFINE(HAVE_CURL, 1, [Define when libcurl is used for HTTP streaming]),
-		enable_curl=no)
-fi
-AM_CONDITIONAL(HAVE_CURL, test x$enable_curl = xyes)
-
 if test x$enable_shout_ogg = xyes || test x$enable_shout_mp3 = xyes; then
 	PKG_CHECK_MODULES([SHOUT], [shout],,
 		[enable_shout_ogg=no; enable_shout_mp3=no;
@@ -506,19 +567,6 @@ if test x$enable_pulse = xyes; then
 fi
 
 AM_CONDITIONAL(HAVE_PULSE, test x$enable_pulse = xyes)
-
-if test x$enable_lsr = xyes; then
-	PKG_CHECK_MODULES([SAMPLERATE], [samplerate >= 0.0.15],
-	                  [enable_lsr=yes;AC_DEFINE([HAVE_LIBSAMPLERATE], 1, [Define to enable libsamplerate])] MPD_LIBS="$MPD_LIBS $SAMPLERATE_LIBS" MPD_CFLAGS="$MPD_CFLAGS $SAMPLERATE_CFLAGS",
-	                  [enable_lsr=no;AC_MSG_WARN([libsamplerate not found -- disabling])])
-fi
-
-if test x$enable_lsr = xyes; then
-	PKG_CHECK_MODULES([SAMPLERATE_013], [samplerate >= 0.1.3],,
-		[AC_DEFINE([HAVE_LIBSAMPLERATE_NOINT], 1, [libsamplerate doesn't provide src_int_to_float_array() (<0.1.3)])])
-fi
-
-AM_CONDITIONAL(HAVE_LIBSAMPLERATE, test x$enable_lsr = xyes)
 
 if test x$enable_fifo = xyes; then
 	AC_CHECK_FUNC([mkfifo],
@@ -916,54 +964,6 @@ if test x$enable_ffmpeg = xyes; then
 fi
 
 AM_CONDITIONAL(HAVE_FFMPEG, test x$enable_ffmpeg = xyes)
-
-case $with_zeroconf in
-no|avahi|bonjour)
-	;;
-*)
-	with_zeroconf=auto
-	;;
-esac
-
-if test x$with_zeroconf != xno; then
-	if test x$with_zeroconf = xavahi || test x$with_zeroconf = xauto; then
-		PKG_CHECK_MODULES([AVAHI], [avahi-client avahi-glib],
-		                  [found_avahi=1;AC_DEFINE([HAVE_AVAHI], 1, [Define to enable Avahi Zeroconf support])]
-		                  MPD_LIBS="$MPD_LIBS $AVAHI_LIBS" MPD_CFLAGS="$MPD_CFLAGS $AVAHI_CFLAGS",
-		                  [found_avahi=0])
-	fi
-
-	if test x$found_avahi = x1; then
-		with_zeroconf=avahi
-	elif test x$with_zeroconf = xavahi; then
-		AC_MSG_ERROR([Avahi support requested but not found])
-	fi
-
-	if test x$with_zeroconf = xbonjour || test x$with_zeroconf = xauto; then
-		AC_CHECK_HEADER(dns_sd.h,
-		                [found_bonjour=1;AC_DEFINE([HAVE_BONJOUR], 1, [Define to enable Bonjour Zeroconf support])],
-		                [found_bonjour=0])
-		AC_CHECK_LIB(dns_sd, DNSServiceRegister,
-		             MPD_LIBS="$MPD_LIBS -ldns_sd")
-	fi
-
-	if test x$found_bonjour = x1; then
-		with_zeroconf=bonjour
-	elif test x$with_zeroconf = xbonjour; then
-		AC_MSG_ERROR([Bonjour support requested but not found])
-	fi
-
-	if test x$with_zeroconf = xauto; then
-		AC_MSG_WARN([No supported Zeroconf backend found, disabling Zeroconf])
-		with_zeroconf=no
-	else
-		AC_DEFINE([HAVE_ZEROCONF], 1, [Define to enable Zeroconf support])
-	fi
-fi
-
-AM_CONDITIONAL(HAVE_ZEROCONF, test x$with_zeroconf != xno)
-AM_CONDITIONAL(HAVE_AVAHI, test x$with_zeroconf = xavahi)
-AM_CONDITIONAL(HAVE_BONJOUR, test x$with_zeroconf = xbonjour)
 
 
 dnl
