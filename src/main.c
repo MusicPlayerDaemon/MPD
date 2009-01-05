@@ -72,7 +72,7 @@
 #include <grp.h>
 #endif
 
-#ifdef HAVE_LOCALE
+#ifdef HAVE_LOCALE_H
 #include <locale.h>
 #endif
 
@@ -221,7 +221,7 @@ int main(int argc, char *argv[])
 
 	daemonize_close_stdin();
 
-#ifdef HAVE_LOCALE
+#ifdef HAVE_LOCALE_H
 	/* initialize locale */
 	setlocale(LC_CTYPE,"");
 #endif

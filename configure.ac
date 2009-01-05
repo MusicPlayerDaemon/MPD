@@ -94,7 +94,7 @@ AC_CHECK_LIB(nsl,gethostbyname,MPD_LIBS="$MPD_LIBS -lnsl",)
 
 AC_CHECK_LIB(m,exp,MPD_LIBS="$MPD_LIBS -lm",)
 
-AC_CHECK_HEADER(locale.h,[enable_locale=yes;AC_DEFINE(HAVE_LOCALE,1,[Define if locale.h is present])],enable_locale=no)
+AC_CHECK_HEADERS(locale.h)
 
 
 dnl
