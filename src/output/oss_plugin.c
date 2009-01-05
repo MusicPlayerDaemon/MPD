@@ -40,11 +40,11 @@
 # include <sys/soundcard.h>
 #endif /* !(defined(__OpenBSD__) || defined(__NetBSD__) */
 
-#ifdef WORDS_BIGENDIAN
+#ifdef G_BYTE_ORDER == G_BIG_ENDIAN
 # define	AFMT_S16_MPD	 AFMT_S16_BE
 #else
 # define	AFMT_S16_MPD	 AFMT_S16_LE
-#endif /* WORDS_BIGENDIAN */
+#endif
 
 typedef struct _OssData {
 	int fd;

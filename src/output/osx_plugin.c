@@ -264,7 +264,7 @@ osx_openDevice(void *data, struct audio_format *audioFormat)
 	streamDesc.mSampleRate = audioFormat->sample_rate;
 	streamDesc.mFormatID = kAudioFormatLinearPCM;
 	streamDesc.mFormatFlags = kLinearPCMFormatFlagIsSignedInteger;
-#ifdef WORDS_BIGENDIAN
+#ifdef G_BYTE_ORDER == G_BIG_ENDIAN
 	streamDesc.mFormatFlags |= kLinearPCMFormatFlagIsBigEndian;
 #endif
 

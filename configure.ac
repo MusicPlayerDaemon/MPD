@@ -358,8 +358,6 @@ AC_ARG_WITH(faad-libraries,[  --with-faad-libraries=DIR   Directory where faad2 
 AC_ARG_WITH(faad-includes,[  --with-faad-includes=DIR    Directory where faad2 header files are installed (optional)], faad_includes="$withval", faad_includes="")
 AC_ARG_WITH(zeroconf,[[  --with-zeroconf=[auto|avahi|bonjour|no]    Enable zeroconf backend (default=auto)]], with_zeroconf="$withval", with_zeroconf="auto")
 
-AC_C_BIGENDIAN
-
 AC_CHECK_HEADER(sys/inttypes.h,AC_DEFINE(HAVE_SYS_INTTYPES_H,1,[Define if sys/inttypes.h present]),)
 
 AC_CHECK_LIB(socket,socket,MPD_LIBS="$MPD_LIBS -lsocket",)

@@ -40,7 +40,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#ifdef WORDS_BIGENDIAN
+#ifdef G_BYTE_ORDER == G_BIG_ENDIAN
 #define OGG_DECODE_USE_BIGENDIAN	1
 #else
 #define OGG_DECODE_USE_BIGENDIAN	0

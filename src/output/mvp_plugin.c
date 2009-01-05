@@ -34,6 +34,12 @@
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "mvp"
 
+#ifdef G_BYTE_ORDER == G_BIG_ENDIAN
+#define MVP_USE_LITTLE_ENDIAN false
+#else
+#define MVP_USE_LITTLE_ENDIAN true
+#endif
+
 typedef struct {
 	unsigned long dsp_status;
 	unsigned long stream_decode_type;
@@ -218,13 +224,8 @@ mvp_openDevice(void *data, struct audio_format *audioFormat)
 			  strerror(errno));
 		return false;
 	}
-#ifdef WORDS_BIGENDIAN
 	mvp_setPcmParams(md, audioFormat->sample_rate, audioFormat->channels,
-			 0, audioFormat->bits);
-#else
-	mvp_setPcmParams(md, audioFormat->sample_rate, audioFormat->channels,
-			 1, audioFormat->bits);
-#endif
+			 MVP_USE_LITTLE_ENDIAN, audioFormat->bits);
 	md->audio_format = *audioFormat;
 	return true;
 }
