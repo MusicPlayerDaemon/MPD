@@ -19,6 +19,16 @@ PKG_PROG_PKG_CONFIG
 
 
 dnl
+dnl declare variables
+dnl
+
+AC_SUBST(MPD_LIBS)
+AC_SUBST(MPD_CFLAGS)
+MPD_LIBS=""
+MPD_CFLAGS=""
+
+
+dnl
 dnl OS specific defaults
 dnl
 
@@ -63,16 +73,6 @@ if test -z "$prefix" || test "x$prefix" = xNONE; then
 		fi
 	done
 fi
-
-
-dnl
-dnl declare variables
-dnl
-
-AC_SUBST(MPD_LIBS)
-AC_SUBST(MPD_CFLAGS)
-MPD_LIBS=""
-MPD_CFLAGS=""
 
 
 dnl
