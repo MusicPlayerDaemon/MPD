@@ -25,7 +25,7 @@
 
 enum {
 	/** this value means "100% volume" */
-	PCM_VOLUME_1 = 1000,
+	PCM_VOLUME_1 = 1024,
 };
 
 struct audio_format;
