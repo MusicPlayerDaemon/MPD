@@ -51,7 +51,7 @@ pcm_convert_16(const struct audio_format *src_format,
 
 	assert(dest_format->bits == 16);
 
-	buf = pcm_convert_to_16(state, src_format->bits,
+	buf = pcm_convert_to_16(&state->dither, src_format->bits,
 				src_buffer, src_size, &len);
 	if (!buf)
 		g_error("pcm_convert_to_16() failed");

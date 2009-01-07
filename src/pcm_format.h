@@ -22,10 +22,10 @@
 #include <stdint.h>
 #include <stddef.h>
 
-struct pcm_convert_state;
+struct pcm_dither_24;
 
 const int16_t *
-pcm_convert_to_16(struct pcm_convert_state *convert,
+pcm_convert_to_16(struct pcm_dither_24 *dither,
 		  uint8_t bits, const void *src,
 		  size_t src_size, size_t *dest_size_r);
 
