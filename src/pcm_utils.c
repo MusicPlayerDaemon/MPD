@@ -41,20 +41,6 @@ pcm_dither(void)
 	return (r & 511) - ((r >> 9) & 511);
 }
 
-/**
- * Check if the value is within the range of the provided bit size,
- * and caps it if necessary.
- */
-static int32_t
-pcm_range(int32_t sample, unsigned bits)
-{
-	if (G_UNLIKELY(sample < (-1 << (bits - 1))))
-		return -1 << (bits - 1);
-	if (G_UNLIKELY(sample >= (1 << (bits - 1))))
-		return (1 << (bits - 1)) - 1;
-	return sample;
-}
-
 static void
 pcm_volume_change_8(int8_t *buffer, unsigned num_samples, int volume)
 {

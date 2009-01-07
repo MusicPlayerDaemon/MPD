@@ -22,6 +22,8 @@
 #include "pcm_resample.h"
 #include "pcm_dither.h"
 
+#include <glib.h>
+
 #include <stdint.h>
 #include <stddef.h>
 
@@ -40,6 +42,20 @@ struct pcm_convert_state {
 	/* Strict C99 doesn't allow empty structs */
 	int error;
 };
+
+/**
+ * Check if the value is within the range of the provided bit size,
+ * and caps it if necessary.
+ */
+static inline int32_t
+pcm_range(int32_t sample, unsigned bits)
+{
+	if (G_UNLIKELY(sample < (-1 << (bits - 1))))
+		return -1 << (bits - 1);
+	if (G_UNLIKELY(sample >= (1 << (bits - 1))))
+		return (1 << (bits - 1)) - 1;
+	return sample;
+}
 
 /**
  * Converts a float value (0.0 = silence, 1.0 = 100% volume) to an
