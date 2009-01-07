@@ -134,8 +134,12 @@ void audio_output_close(struct audio_output *audioOutput)
 void audio_output_finish(struct audio_output *audioOutput)
 {
 	audio_output_close(audioOutput);
-	if (audioOutput->thread != NULL)
+
+	if (audioOutput->thread != NULL) {
 		ao_command(audioOutput, AO_COMMAND_KILL);
+		g_thread_join(audioOutput->thread);
+	}
+
 	if (audioOutput->plugin->finish)
 		audioOutput->plugin->finish(audioOutput->data);
 	if (audioOutput->convBuffer)
