@@ -518,7 +518,7 @@ input_curl_headerfunction(void *ptr, size_t size, size_t nmemb, void *stream)
 
 			/* a stream with icy-metadata is not
 			   seekable */
-			is->seekable = true;
+			is->seekable = false;
 		}
 	}
 
