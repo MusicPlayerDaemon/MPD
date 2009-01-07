@@ -37,6 +37,7 @@ void pcm_convert_init(struct pcm_convert_state *state)
 	pcm_dither_24_init(&state->dither);
 
 	pcm_buffer_init(&state->format_buffer);
+	pcm_buffer_init(&state->channels_buffer);
 }
 
 void pcm_convert_deinit(struct pcm_convert_state *state)
@@ -44,6 +45,7 @@ void pcm_convert_deinit(struct pcm_convert_state *state)
 	pcm_resample_deinit(&state->resample);
 
 	pcm_buffer_deinit(&state->format_buffer);
+	pcm_buffer_deinit(&state->channels_buffer);
 }
 
 static size_t
@@ -66,7 +68,8 @@ pcm_convert_16(const struct audio_format *src_format,
 		g_error("pcm_convert_to_16() failed");
 
 	if (src_format->channels != dest_format->channels) {
-		buf = pcm_convert_channels_16(dest_format->channels,
+		buf = pcm_convert_channels_16(&state->channels_buffer,
+					      dest_format->channels,
 					      src_format->channels,
 					      buf, len, &len);
 		if (!buf)
@@ -106,7 +109,8 @@ pcm_convert_24(const struct audio_format *src_format,
 		g_error("pcm_convert_to_24() failed");
 
 	if (src_format->channels != dest_format->channels) {
-		buf = pcm_convert_channels_24(dest_format->channels,
+		buf = pcm_convert_channels_24(&state->channels_buffer,
+					      dest_format->channels,
 					      src_format->channels,
 					      buf, len, &len);
 		if (!buf)

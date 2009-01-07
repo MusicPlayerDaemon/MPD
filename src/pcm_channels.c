@@ -17,6 +17,7 @@
  */
 
 #include "pcm_channels.h"
+#include "pcm_buffer.h"
 
 #include <glib.h>
 
@@ -72,28 +73,23 @@ pcm_convert_channels_16_n_to_2(int16_t *dest,
 }
 
 const int16_t *
-pcm_convert_channels_16(int8_t dest_channels,
+pcm_convert_channels_16(struct pcm_buffer *buffer,
+			int8_t dest_channels,
 			int8_t src_channels, const int16_t *src,
 			size_t src_size, size_t *dest_size_r)
 {
-	static int16_t *buf;
-	static size_t len;
 	unsigned num_frames = src_size / src_channels / sizeof(*src);
 	unsigned dest_size = num_frames * dest_channels * sizeof(*src);
-
-	if (dest_size > len) {
-		len = dest_size;
-		buf = g_realloc(buf, len);
-	}
+	int16_t *dest = pcm_buffer_get(buffer, dest_size);
 
 	*dest_size_r = dest_size;
 
 	if (src_channels == 1 && dest_channels == 2)
-		pcm_convert_channels_16_1_to_2(buf, src, num_frames);
+		pcm_convert_channels_16_1_to_2(dest, src, num_frames);
 	else if (src_channels == 2 && dest_channels == 1)
-		pcm_convert_channels_16_2_to_1(buf, src, num_frames);
+		pcm_convert_channels_16_2_to_1(dest, src, num_frames);
 	else if (dest_channels == 2)
-		pcm_convert_channels_16_n_to_2(buf, src_channels, src,
+		pcm_convert_channels_16_n_to_2(dest, src_channels, src,
 					       num_frames);
 	else {
 		g_warning("conversion %u->%u channels is not supported",
@@ -101,7 +97,7 @@ pcm_convert_channels_16(int8_t dest_channels,
 		return NULL;
 	}
 
-	return buf;
+	return dest;
 }
 
 static void
@@ -151,28 +147,23 @@ pcm_convert_channels_24_n_to_2(int32_t *dest,
 }
 
 const int32_t *
-pcm_convert_channels_24(int8_t dest_channels,
+pcm_convert_channels_24(struct pcm_buffer *buffer,
+			int8_t dest_channels,
 			int8_t src_channels, const int32_t *src,
 			size_t src_size, size_t *dest_size_r)
 {
-	static int32_t *buf;
-	static size_t len;
 	unsigned num_frames = src_size / src_channels / sizeof(*src);
 	unsigned dest_size = num_frames * dest_channels * sizeof(*src);
-
-	if (dest_size > len) {
-		len = dest_size;
-		buf = g_realloc(buf, len);
-	}
+	int32_t *dest = pcm_buffer_get(buffer, dest_size);
 
 	*dest_size_r = dest_size;
 
 	if (src_channels == 1 && dest_channels == 2)
-		pcm_convert_channels_24_1_to_2(buf, src, num_frames);
+		pcm_convert_channels_24_1_to_2(dest, src, num_frames);
 	else if (src_channels == 2 && dest_channels == 1)
-		pcm_convert_channels_24_2_to_1(buf, src, num_frames);
+		pcm_convert_channels_24_2_to_1(dest, src, num_frames);
 	else if (dest_channels == 2)
-		pcm_convert_channels_24_n_to_2(buf, src_channels, src,
+		pcm_convert_channels_24_n_to_2(dest, src_channels, src,
 					       num_frames);
 	else {
 		g_warning("conversion %u->%u channels is not supported",
@@ -180,5 +171,5 @@ pcm_convert_channels_24(int8_t dest_channels,
 		return NULL;
 	}
 
-	return buf;
+	return dest;
 }

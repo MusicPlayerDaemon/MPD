@@ -32,6 +32,9 @@ struct pcm_convert_state {
 
 	/** the buffer for converting the sample format */
 	struct pcm_buffer format_buffer;
+
+	/** the buffer for converting the channel count */
+	struct pcm_buffer channels_buffer;
 };
 
 void pcm_convert_init(struct pcm_convert_state *state);
