@@ -46,7 +46,7 @@ pcm_dither(void)
 	static unsigned long state;
 	uint32_t r;
 
-	r = state = prng(state);
+	r = state = pcm_prng(state);
 
 	return (r & 511) - ((r >> 9) & 511);
 }

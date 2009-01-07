@@ -43,7 +43,7 @@ pcm_dither_sample_24_to_16(int32_t sample, struct pcm_dither_24 *dither)
 	/* round */
 	output = sample + round;
 
-	rnd = prng(dither->random);
+	rnd = pcm_prng(dither->random);
 	output += (rnd & mask) - (dither->random & mask);
 
 	dither->random = rnd;
