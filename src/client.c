@@ -22,7 +22,6 @@
 #include "listen.h"
 #include "permission.h"
 #include "event_pipe.h"
-#include "dlist.h"
 #include "idle.h"
 #include "main.h"
 
@@ -73,8 +72,6 @@ struct deferred_buffer {
 };
 
 struct client {
-	struct list_head siblings;
-
 	char buffer[4096];
 	size_t bufferLength;
 	size_t bufferPos;
@@ -110,7 +107,7 @@ struct client {
 	unsigned idle_subscriptions;
 };
 
-static LIST_HEAD(clients);
+static GList *clients;
 static unsigned num_clients;
 static guint expire_source_id;
 
@@ -229,8 +226,9 @@ deferred_buffer_free(gpointer data, G_GNUC_UNUSED gpointer user_data)
 static void client_close(struct client *client)
 {
 	assert(num_clients > 0);
-	assert(!list_empty(&clients));
-	list_del(&client->siblings);
+	assert(clients != NULL);
+
+	clients = g_list_remove(clients, client);
 	--num_clients;
 
 	client_set_expired(client);
@@ -301,8 +299,9 @@ void client_new(int fd, const struct sockaddr *addr, int uid)
 	}
 
 	client = g_new0(struct client, 1);
-	list_add(&client->siblings, &clients);
+	clients = g_list_prepend(clients, client);
 	++num_clients;
+
 	client_init(client, fd);
 	client->uid = uid;
 	g_log(G_LOG_DOMAIN, LOG_LEVEL_SECURE,
@@ -608,11 +607,13 @@ void client_manager_init(void)
 
 static void client_close_all(void)
 {
-	struct client *client, *n;
+	while (clients != NULL) {
+		struct client *client = clients->data;
 
-	list_for_each_entry_safe(client, n, &clients, siblings)
 		client_close(client);
-	num_clients = 0;
+	}
+
+	assert(num_clients == 0);
 }
 
 void client_manager_deinit(void)
@@ -623,22 +624,26 @@ void client_manager_deinit(void)
 }
 
 static void
+client_check_expired_callback(gpointer data, G_GNUC_UNUSED gpointer user_data)
+{
+	struct client *client = data;
+
+	if (client_is_expired(client)) {
+		g_debug("client %i: expired", client->num);
+		client_close(client);
+	} else if (!client->idle_waiting && /* idle clients
+					       never expire */
+		   time(NULL) - client->lastTime >
+		   client_timeout) {
+		g_debug("client %i: timeout", client->num);
+		client_close(client);
+	}
+}
+
+static void
 client_manager_expire(void)
 {
-	struct client *client, *n;
-
-	list_for_each_entry_safe(client, n, &clients, siblings) {
-		if (client_is_expired(client)) {
-			g_debug("client %i: expired", client->num);
-			client_close(client);
-		} else if (!client->idle_waiting && /* idle clients
-						       never expire */
-			   time(NULL) - client->lastTime >
-			   client_timeout) {
-			g_debug("client %i: timeout", client->num);
-			client_close(client);
-		}
-	}
+	g_list_foreach(clients, client_check_expired_callback, NULL);
 }
 
 static void client_write_deferred(struct client *client)
@@ -847,23 +852,28 @@ client_idle_notify(struct client *client)
 	client->lastTime = time(NULL);
 }
 
+static void
+client_idle_callback(gpointer data, gpointer user_data)
+{
+	struct client *client = data;
+	unsigned flags = GPOINTER_TO_UINT(user_data);
+
+	if (client_is_expired(client))
+		return;
+
+	client->idle_flags |= flags;
+	if (client->idle_waiting
+	    && (client->idle_flags & client->idle_subscriptions)) {
+		client_idle_notify(client);
+		client_write_output(client);
+	}
+}
+
 void client_manager_idle_add(unsigned flags)
 {
-	struct client *client;
-
 	assert(flags != 0);
 
-	list_for_each_entry(client, &clients, siblings) {
-		if (client_is_expired(client))
-			continue;
-
-		client->idle_flags |= flags;
-		if (client->idle_waiting
-		    && (client->idle_flags & client->idle_subscriptions)) {
-			client_idle_notify(client);
-			client_write_output(client);
-		}
-	}
+	g_list_foreach(clients, client_idle_callback, GUINT_TO_POINTER(flags));
 }
 
 bool client_idle_wait(struct client *client, unsigned flags)
