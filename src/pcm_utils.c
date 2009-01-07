@@ -18,6 +18,7 @@
 
 #include "pcm_utils.h"
 #include "pcm_channels.h"
+#include "pcm_format.h"
 #include "conf.h"
 #include "audio_format.h"
 
@@ -35,132 +36,6 @@ void pcm_convert_init(struct pcm_convert_state *state)
 
 	pcm_resample_init(&state->resample);
 	pcm_dither_24_init(&state->dither);
-}
-
-static void
-pcm_convert_8_to_16(int16_t *out, const int8_t *in,
-		    unsigned num_samples)
-{
-	while (num_samples > 0) {
-		*out++ = *in++ << 8;
-		--num_samples;
-	}
-}
-
-static void
-pcm_convert_24_to_16(struct pcm_dither_24 *dither,
-		     int16_t *out, const int32_t *in,
-		     unsigned num_samples)
-{
-	pcm_dither_24_to_16(dither, out, in, num_samples);
-}
-
-static const int16_t *
-pcm_convert_to_16(struct pcm_convert_state *convert,
-		  uint8_t bits, const void *src,
-		  size_t src_size, size_t *dest_size_r)
-{
-	static int16_t *buf;
-	static size_t len;
-	unsigned num_samples;
-
-	switch (bits) {
-	case 8:
-		num_samples = src_size;
-		*dest_size_r = src_size << 1;
-		if (*dest_size_r > len) {
-			len = *dest_size_r;
-			buf = g_realloc(buf, len);
-		}
-
-		pcm_convert_8_to_16((int16_t *)buf,
-				    (const int8_t *)src,
-				    num_samples);
-		return buf;
-
-	case 16:
-		*dest_size_r = src_size;
-		return src;
-
-	case 24:
-		num_samples = src_size / 4;
-		*dest_size_r = num_samples * 2;
-		if (*dest_size_r > len) {
-			len = *dest_size_r;
-			buf = g_realloc(buf, len);
-		}
-
-		pcm_convert_24_to_16(&convert->dither,
-				     (int16_t *)buf,
-				     (const int32_t *)src,
-				     num_samples);
-		return buf;
-	}
-
-	g_warning("only 8 or 16 bits are supported for conversion!\n");
-	return NULL;
-}
-
-static void
-pcm_convert_8_to_24(int32_t *out, const int8_t *in,
-		    unsigned num_samples)
-{
-	while (num_samples > 0) {
-		*out++ = *in++ << 16;
-		--num_samples;
-	}
-}
-
-static void
-pcm_convert_16_to_24(int32_t *out, const int16_t *in,
-		     unsigned num_samples)
-{
-	while (num_samples > 0) {
-		*out++ = *in++ << 8;
-		--num_samples;
-	}
-}
-
-static const int32_t *
-pcm_convert_to_24(uint8_t bits, const void *src,
-		  size_t src_size, size_t *dest_size_r)
-{
-	static int32_t *buf;
-	static size_t len;
-	unsigned num_samples;
-
-	switch (bits) {
-	case 8:
-		num_samples = src_size;
-		*dest_size_r = src_size * 4;
-		if (*dest_size_r > len) {
-			len = *dest_size_r;
-			buf = g_realloc(buf, len);
-		}
-
-		pcm_convert_8_to_24(buf, (const int8_t *)src,
-				    num_samples);
-		return buf;
-
-	case 16:
-		num_samples = src_size / 2;
-		*dest_size_r = num_samples * 4;
-		if (*dest_size_r > len) {
-			len = *dest_size_r;
-			buf = g_realloc(buf, len);
-		}
-
-		pcm_convert_16_to_24(buf, (const int16_t *)src,
-				     num_samples);
-		return buf;
-
-	case 24:
-		*dest_size_r = src_size;
-		return src;
-	}
-
-	g_warning("only 8 or 24 bits are supported for conversion!\n");
-	return NULL;
 }
 
 static size_t

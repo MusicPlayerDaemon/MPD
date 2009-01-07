@@ -53,6 +53,7 @@ mpd_headers = \
 	pcm_volume.h \
 	pcm_mix.h \
 	pcm_channels.h \
+	pcm_format.h \
 	pcm_resample.h \
 	pcm_dither.h \
 	pcm_prng.h \
@@ -134,6 +135,7 @@ mpd_SOURCES = \
 	pcm_volume.c \
 	pcm_mix.c \
 	pcm_channels.c \
+	pcm_format.c \
 	pcm_resample.c \
 	pcm_dither.c \
 	permission.c \
