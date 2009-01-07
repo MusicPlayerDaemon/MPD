@@ -23,4 +23,6 @@
 void pcm_resample_init(struct pcm_resample_state *state)
 {
 	memset(state, 0, sizeof(*state));
+
+	pcm_buffer_init(&state->buffer);
 }

@@ -20,6 +20,7 @@
 #ifndef MPD_PCM_RESAMPLE_H
 #define MPD_PCM_RESAMPLE_H
 
+#include "pcm_buffer.h"
 #include "config.h"
 
 #include <stdint.h>
@@ -44,30 +45,29 @@ struct pcm_resample_state {
 	} prev;
 
 	bool error;
-#else
-	/* struct must not be empty */
-	int dummy;
 #endif
+
+	struct pcm_buffer buffer;
 };
 
 void pcm_resample_init(struct pcm_resample_state *state);
 
 void pcm_resample_deinit(struct pcm_resample_state *state);
 
-size_t
-pcm_resample_16(uint8_t channels,
+const int16_t *
+pcm_resample_16(struct pcm_resample_state *state,
+		uint8_t channels,
 		unsigned src_rate,
 		const int16_t *src_buffer, size_t src_size,
 		unsigned dest_rate,
-		int16_t *dest_buffer, size_t dest_size,
-		struct pcm_resample_state *state);
+		size_t *dest_size_r);
 
-size_t
-pcm_resample_24(uint8_t channels,
+const int32_t *
+pcm_resample_24(struct pcm_resample_state *state,
+		uint8_t channels,
 		unsigned src_rate,
 		const int32_t *src_buffer, size_t src_size,
 		unsigned dest_rate,
-		int32_t *dest_buffer, size_t dest_size,
-		struct pcm_resample_state *state);
+		size_t *dest_size_r);
 
 #endif

@@ -29,11 +29,12 @@
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "pcm"
 
-void pcm_resample_deinit(G_GNUC_UNUSED struct pcm_resample_state *state)
+void pcm_resample_deinit(struct pcm_resample_state *state)
 {
 	if (state->state != NULL)
 		state->state = src_delete(state->state);
 
+	pcm_buffer_deinit(&state->buffer);
 }
 
 static int pcm_resample_get_converter(void)
@@ -111,21 +112,21 @@ pcm_resample_set(struct pcm_resample_state *state,
 	src_set_ratio(state->state, data->src_ratio);
 }
 
-size_t
-pcm_resample_16(uint8_t channels,
+const int16_t *
+pcm_resample_16(struct pcm_resample_state *state,
+		uint8_t channels,
 		unsigned src_rate,
 		const int16_t *src_buffer, size_t src_size,
 		unsigned dest_rate,
-		int16_t *dest_buffer, size_t dest_size,
-		struct pcm_resample_state *state)
+		size_t *dest_size_r)
 {
 	SRC_DATA *data = &state->data;
 	size_t data_in_size;
 	size_t data_out_size;
 	int error;
+	int16_t *dest_buffer;
 
 	assert((src_size % (sizeof(*src_buffer) * channels)) == 0);
-	assert((dest_size % (sizeof(*dest_buffer) * channels)) == 0);
 
 	pcm_resample_set(state, channels, src_rate, dest_rate);
 
@@ -140,7 +141,7 @@ pcm_resample_16(uint8_t channels,
 		data->data_in = g_realloc(data->data_in, data_in_size);
 	}
 
-	data->output_frames = dest_size / sizeof(*dest_buffer) / channels;
+	data->output_frames = (src_size * dest_rate + src_rate - 1) / src_rate;
 	data_out_size = data->output_frames * sizeof(float) * channels;
 	if (data_out_size > state->data_out_size) {
 		state->data_out_size = data_out_size;
@@ -158,10 +159,13 @@ pcm_resample_16(uint8_t channels,
 		return 0;
 	}
 
+	*dest_size_r = data->output_frames_gen *
+		sizeof(*dest_buffer) * channels;
+	dest_buffer = pcm_buffer_get(&state->buffer, *dest_size_r);
 	src_float_to_short_array(data->data_out, dest_buffer,
 				 data->output_frames_gen * channels);
 
-	return data->output_frames_gen * sizeof(*dest_buffer) * channels;
+	return dest_buffer;
 }
 
 #ifdef HAVE_LIBSAMPLERATE_NOINT
@@ -184,21 +188,21 @@ src_float_to_int_array (const float *in, int *out, int len)
 
 #endif
 
-size_t
-pcm_resample_24(uint8_t channels,
+const int32_t *
+pcm_resample_24(struct pcm_resample_state *state,
+		uint8_t channels,
 		unsigned src_rate,
 		const int32_t *src_buffer, size_t src_size,
 		unsigned dest_rate,
-		int32_t *dest_buffer, size_t dest_size,
-		struct pcm_resample_state *state)
+		size_t *dest_size_r)
 {
 	SRC_DATA *data = &state->data;
 	size_t data_in_size;
 	size_t data_out_size;
 	int error;
+	int32_t *dest_buffer;
 
 	assert((src_size % (sizeof(*src_buffer) * channels)) == 0);
-	assert((dest_size % (sizeof(*dest_buffer) * channels)) == 0);
 
 	pcm_resample_set(state, channels, src_rate, dest_rate);
 
@@ -213,7 +217,7 @@ pcm_resample_24(uint8_t channels,
 		data->data_in = g_realloc(data->data_in, data_in_size);
 	}
 
-	data->output_frames = dest_size / sizeof(*dest_buffer) / channels;
+	data->output_frames = (src_size * dest_rate + src_rate - 1) / src_rate;
 	data_out_size = data->output_frames * sizeof(float) * channels;
 	if (data_out_size > state->data_out_size) {
 		state->data_out_size = data_out_size;
@@ -231,8 +235,11 @@ pcm_resample_24(uint8_t channels,
 		return 0;
 	}
 
+	*dest_size_r = data->output_frames_gen *
+		sizeof(*dest_buffer) * channels;
+	dest_buffer = pcm_buffer_get(&state->buffer, *dest_size_r);
 	src_float_to_int_array(data->data_out, dest_buffer,
 			       data->output_frames_gen * channels);
 
-	return data->output_frames_gen * sizeof(*dest_buffer) * channels;
+	return dest_buffer;
 }

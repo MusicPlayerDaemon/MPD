@@ -22,25 +22,28 @@
 #include <assert.h>
 #include <glib.h>
 
-void pcm_resample_deinit(G_GNUC_UNUSED struct pcm_resample_state *state)
+void pcm_resample_deinit(struct pcm_resample_state *state)
 {
-	/* no state, nothing to do */
+	pcm_buffer_deinit(&state->buffer);
 }
 
 /* resampling code blatantly ripped from ESD */
-size_t
-pcm_resample_16(uint8_t channels,
+const int16_t *
+pcm_resample_16(struct pcm_resample_state *state,
+		uint8_t channels,
 		unsigned src_rate,
-		const int16_t *src_buffer, G_GNUC_UNUSED size_t src_size,
+		const int16_t *src_buffer, size_t src_size,
 		unsigned dest_rate,
-		int16_t *dest_buffer, size_t dest_size,
-		G_GNUC_UNUSED struct pcm_resample_state *state)
+		size_t *dest_size_r)
 {
 	unsigned src_pos, dest_pos = 0;
-	unsigned dest_samples = dest_size / sizeof(*dest_buffer);
+	unsigned src_samples = src_size / sizeof(*src_buffer);
+	unsigned dest_samples =
+		(src_samples * dest_rate + src_rate - 1) / src_rate;
+	size_t dest_size = dest_samples * sizeof(*src_buffer);
+	int16_t *dest_buffer = pcm_buffer_get(&state->buffer, dest_size);
 
 	assert((src_size % (sizeof(*src_buffer) * channels)) == 0);
-	assert((dest_size % (sizeof(*dest_buffer) * channels)) == 0);
 
 	switch (channels) {
 	case 1:
@@ -61,19 +64,26 @@ pcm_resample_16(uint8_t channels,
 		break;
 	}
 
-	return dest_size;
+	*dest_size_r = dest_size;
+	return dest_buffer;
 }
 
-size_t
-pcm_resample_24(uint8_t channels,
+const int32_t *
+pcm_resample_24(struct pcm_resample_state *state,
+		uint8_t channels,
 		unsigned src_rate,
 		const int32_t *src_buffer, G_GNUC_UNUSED size_t src_size,
 		unsigned dest_rate,
-		int32_t *dest_buffer, size_t dest_size,
-		G_GNUC_UNUSED struct pcm_resample_state *state)
+		size_t *dest_size_r)
 {
 	unsigned src_pos, dest_pos = 0;
-	unsigned dest_samples = dest_size / sizeof(*dest_buffer);
+	unsigned src_samples = src_size / sizeof(*src_buffer);
+	unsigned dest_samples =
+		(src_samples * dest_rate + src_rate - 1) / src_rate;
+	size_t dest_size = dest_samples * sizeof(*src_buffer);
+	int32_t *dest_buffer = pcm_buffer_get(&state->buffer, dest_size);
+
+	assert((src_size % (sizeof(*src_buffer) * channels)) == 0);
 
 	switch (channels) {
 	case 1:
@@ -94,5 +104,6 @@ pcm_resample_24(uint8_t channels,
 		break;
 	}
 
-	return dest_size;
+	*dest_size_r = dest_size;
+	return dest_buffer;
 }

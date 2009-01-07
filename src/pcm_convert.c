@@ -76,16 +76,15 @@ pcm_convert_16(const struct audio_format *src_format,
 			g_error("pcm_convert_channels_16() failed");
 	}
 
-	if (src_format->sample_rate == dest_format->sample_rate) {
-		assert(dest_size >= len);
-		memcpy(dest_buffer, buf, len);
-	} else {
-		len = pcm_resample_16(dest_format->channels,
+	if (src_format->sample_rate != dest_format->sample_rate)
+		buf = pcm_resample_16(&state->resample,
+				      dest_format->channels,
 				      src_format->sample_rate, buf, len,
 				      dest_format->sample_rate,
-				      dest_buffer, dest_size,
-				      &state->resample);
-	}
+				      &len);
+
+	assert(dest_size >= len);
+	memcpy(dest_buffer, buf, len);
 
 	return len;
 }
@@ -117,16 +116,15 @@ pcm_convert_24(const struct audio_format *src_format,
 			g_error("pcm_convert_channels_24() failed");
 	}
 
-	if (src_format->sample_rate == dest_format->sample_rate) {
-		assert(dest_size >= len);
-		memcpy(dest_buffer, buf, len);
-	} else {
-		len = pcm_resample_24(dest_format->channels,
+	if (src_format->sample_rate != dest_format->sample_rate)
+		buf = pcm_resample_24(&state->resample,
+				      dest_format->channels,
 				      src_format->sample_rate, buf, len,
 				      dest_format->sample_rate,
-				      (int32_t*)dest_buffer, dest_size,
-				      &state->resample);
-	}
+				      &len);
+
+	assert(dest_size >= len);
+	memcpy(dest_buffer, buf, len);
 
 	return len;
 }
