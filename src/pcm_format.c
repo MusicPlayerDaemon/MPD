@@ -18,6 +18,7 @@
 
 #include "pcm_format.h"
 #include "pcm_dither.h"
+#include "pcm_buffer.h"
 
 #include <glib.h>
 
@@ -40,27 +41,23 @@ pcm_convert_24_to_16(struct pcm_dither_24 *dither,
 }
 
 const int16_t *
-pcm_convert_to_16(struct pcm_dither_24 *dither,
+pcm_convert_to_16(struct pcm_buffer *buffer, struct pcm_dither_24 *dither,
 		  uint8_t bits, const void *src,
 		  size_t src_size, size_t *dest_size_r)
 {
-	static int16_t *buf;
-	static size_t len;
 	unsigned num_samples;
+	int16_t *dest;
 
 	switch (bits) {
 	case 8:
 		num_samples = src_size;
-		*dest_size_r = src_size << 1;
-		if (*dest_size_r > len) {
-			len = *dest_size_r;
-			buf = g_realloc(buf, len);
-		}
+		*dest_size_r = src_size * sizeof(*dest);
+		dest = pcm_buffer_get(buffer, *dest_size_r);
 
-		pcm_convert_8_to_16((int16_t *)buf,
+		pcm_convert_8_to_16(dest,
 				    (const int8_t *)src,
 				    num_samples);
-		return buf;
+		return dest;
 
 	case 16:
 		*dest_size_r = src_size;
@@ -68,17 +65,13 @@ pcm_convert_to_16(struct pcm_dither_24 *dither,
 
 	case 24:
 		num_samples = src_size / 4;
-		*dest_size_r = num_samples * 2;
-		if (*dest_size_r > len) {
-			len = *dest_size_r;
-			buf = g_realloc(buf, len);
-		}
+		*dest_size_r = num_samples * sizeof(*dest);
+		dest = pcm_buffer_get(buffer, *dest_size_r);
 
-		pcm_convert_24_to_16(dither,
-				     (int16_t *)buf,
+		pcm_convert_24_to_16(dither, dest,
 				     (const int32_t *)src,
 				     num_samples);
-		return buf;
+		return dest;
 	}
 
 	g_warning("only 8 or 16 bits are supported for conversion!\n");
@@ -106,37 +99,31 @@ pcm_convert_16_to_24(int32_t *out, const int16_t *in,
 }
 
 const int32_t *
-pcm_convert_to_24(uint8_t bits, const void *src,
+pcm_convert_to_24(struct pcm_buffer *buffer,
+		  uint8_t bits, const void *src,
 		  size_t src_size, size_t *dest_size_r)
 {
-	static int32_t *buf;
-	static size_t len;
 	unsigned num_samples;
+	int32_t *dest;
 
 	switch (bits) {
 	case 8:
 		num_samples = src_size;
-		*dest_size_r = src_size * 4;
-		if (*dest_size_r > len) {
-			len = *dest_size_r;
-			buf = g_realloc(buf, len);
-		}
+		*dest_size_r = src_size * sizeof(*dest);
+		dest = pcm_buffer_get(buffer, *dest_size_r);
 
-		pcm_convert_8_to_24(buf, (const int8_t *)src,
+		pcm_convert_8_to_24(dest, (const int8_t *)src,
 				    num_samples);
-		return buf;
+		return dest;
 
 	case 16:
 		num_samples = src_size / 2;
-		*dest_size_r = num_samples * 4;
-		if (*dest_size_r > len) {
-			len = *dest_size_r;
-			buf = g_realloc(buf, len);
-		}
+		*dest_size_r = num_samples * sizeof(*dest);
+		dest = pcm_buffer_get(buffer, *dest_size_r);
 
-		pcm_convert_16_to_24(buf, (const int16_t *)src,
+		pcm_convert_16_to_24(dest, (const int16_t *)src,
 				     num_samples);
-		return buf;
+		return dest;
 
 	case 24:
 		*dest_size_r = src_size;

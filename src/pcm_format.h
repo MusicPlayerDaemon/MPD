@@ -22,15 +22,17 @@
 #include <stdint.h>
 #include <stddef.h>
 
+struct pcm_buffer;
 struct pcm_dither_24;
 
 const int16_t *
-pcm_convert_to_16(struct pcm_dither_24 *dither,
+pcm_convert_to_16(struct pcm_buffer *buffer, struct pcm_dither_24 *dither,
 		  uint8_t bits, const void *src,
 		  size_t src_size, size_t *dest_size_r);
 
 const int32_t *
-pcm_convert_to_24(uint8_t bits, const void *src,
+pcm_convert_to_24(struct pcm_buffer *buffer,
+		  uint8_t bits, const void *src,
 		  size_t src_size, size_t *dest_size_r);
 
 #endif

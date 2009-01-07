@@ -21,6 +21,7 @@
 
 #include "pcm_resample.h"
 #include "pcm_dither.h"
+#include "pcm_buffer.h"
 
 struct audio_format;
 
@@ -28,6 +29,9 @@ struct pcm_convert_state {
 	struct pcm_resample_state resample;
 
 	struct pcm_dither_24 dither;
+
+	/** the buffer for converting the sample format */
+	struct pcm_buffer format_buffer;
 };
 
 void pcm_convert_init(struct pcm_convert_state *state);
