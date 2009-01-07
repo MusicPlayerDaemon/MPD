@@ -24,7 +24,7 @@
 struct audio_format;
 
 void
-pcm_mix(char *buffer1, const char *buffer2, size_t size,
+pcm_mix(void *buffer1, const void *buffer2, size_t size,
 	const struct audio_format *format, float portion1);
 
 #endif

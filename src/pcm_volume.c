@@ -74,7 +74,7 @@ pcm_volume_change_24(int32_t *buffer, unsigned num_samples, int volume)
 }
 
 void
-pcm_volume(char *buffer, int bufferSize,
+pcm_volume(void *buffer, int bufferSize,
 	   const struct audio_format *format,
 	   int volume)
 {

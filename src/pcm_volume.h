@@ -52,7 +52,7 @@ pcm_volume_dither(void)
 }
 
 void
-pcm_volume(char *buffer, int bufferSize,
+pcm_volume(void *buffer, int bufferSize,
 	   const struct audio_format *format,
 	   int volume);
 

@@ -117,21 +117,20 @@ pcm_convert_24(const struct audio_format *src_format,
 	return len;
 }
 
-/* outFormat bits must be 16 and channels must be 1 or 2! */
 size_t pcm_convert(const struct audio_format *inFormat,
-		   const char *src, size_t src_size,
+		   const void *src, size_t src_size,
 		   const struct audio_format *outFormat,
-		   char *outBuffer,
+		   void *dest,
 		   struct pcm_convert_state *convState)
 {
 	switch (outFormat->bits) {
 	case 16:
 		return pcm_convert_16(inFormat, src, src_size,
-				      outFormat, (int16_t*)outBuffer,
+				      outFormat, (int16_t*)dest,
 				      convState);
 	case 24:
 		return pcm_convert_24(inFormat, src, src_size,
-				      outFormat, (int32_t*)outBuffer,
+				      outFormat, (int32_t*)dest,
 				      convState);
 
 	default:

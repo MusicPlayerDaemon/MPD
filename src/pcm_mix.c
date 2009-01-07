@@ -80,7 +80,7 @@ pcm_add_24(int32_t *buffer1, const int32_t *buffer2,
 }
 
 static void
-pcm_add(char *buffer1, const char *buffer2, size_t size,
+pcm_add(void *buffer1, const void *buffer2, size_t size,
 	int vol1, int vol2,
 	const struct audio_format *format)
 {
@@ -107,7 +107,7 @@ pcm_add(char *buffer1, const char *buffer2, size_t size,
 }
 
 void
-pcm_mix(char *buffer1, const char *buffer2, size_t size,
+pcm_mix(void *buffer1, const void *buffer2, size_t size,
 	const struct audio_format *format, float portion1)
 {
 	int vol1;
