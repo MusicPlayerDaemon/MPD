@@ -124,6 +124,8 @@ static void decoder_run_song(const struct song *song, const char *uri)
 		return;
 	}
 
+	pcm_convert_init(&decoder.conv_state);
+
 	ret = false;
 	if (!song_is_file(song)) {
 		unsigned int next = 0;
@@ -186,6 +188,8 @@ static void decoder_run_song(const struct song *song, const char *uri)
 			}
 		}
 	}
+
+	pcm_convert_deinit(&decoder.conv_state);
 
 	music_pipe_flush();
 

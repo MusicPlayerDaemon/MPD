@@ -22,6 +22,11 @@
 #include <assert.h>
 #include <glib.h>
 
+void pcm_resample_deinit(G_GNUC_UNUSED struct pcm_resample_state *state)
+{
+	/* no state, nothing to do */
+}
+
 /* resampling code blatantly ripped from ESD */
 size_t
 pcm_resample_16(uint8_t channels,

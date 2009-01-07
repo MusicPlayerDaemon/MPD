@@ -29,6 +29,13 @@
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "pcm"
 
+void pcm_resample_deinit(G_GNUC_UNUSED struct pcm_resample_state *state)
+{
+	if (state->state != NULL)
+		state->state = src_delete(state->state);
+
+}
+
 static int pcm_resample_get_converter(void)
 {
 	const char *conf = getConfigParamValue(CONF_SAMPLERATE_CONVERTER);

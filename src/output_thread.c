@@ -84,6 +84,7 @@ static void ao_play(struct audio_output *ao)
 	if (!ret) {
 		ao->plugin->cancel(ao->data);
 		ao->plugin->close(ao->data);
+		pcm_convert_deinit(&ao->convState);
 		ao->open = false;
 	}
 
@@ -118,6 +119,8 @@ static gpointer audio_output_task(gpointer arg)
 
 		case AO_COMMAND_OPEN:
 			assert(!ao->open);
+
+			pcm_convert_init(&ao->convState);
 			ret = ao->plugin->open(ao->data,
 					       &ao->outAudioFormat);
 
@@ -134,6 +137,7 @@ static gpointer audio_output_task(gpointer arg)
 			assert(ao->open);
 			ao->plugin->cancel(ao->data);
 			ao->plugin->close(ao->data);
+
 			ao->open = false;
 			ao_command_finished(ao);
 			break;

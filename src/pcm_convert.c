@@ -37,6 +37,11 @@ void pcm_convert_init(struct pcm_convert_state *state)
 	pcm_dither_24_init(&state->dither);
 }
 
+void pcm_convert_deinit(struct pcm_convert_state *state)
+{
+	pcm_resample_deinit(&state->resample);
+}
+
 static size_t
 pcm_convert_16(const struct audio_format *src_format,
 	       const void *src_buffer, size_t src_size,

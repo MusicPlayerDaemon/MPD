@@ -45,8 +45,6 @@ void decoder_initialized(struct decoder * decoder,
 	assert(audio_format_defined(audio_format));
 	assert(audio_format_valid(audio_format));
 
-	pcm_convert_init(&decoder->conv_state);
-
 	dc.in_audio_format = *audio_format;
 	getOutputAudioFormat(audio_format, &dc.out_audio_format);
 

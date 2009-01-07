@@ -52,6 +52,8 @@ struct pcm_resample_state {
 
 void pcm_resample_init(struct pcm_resample_state *state);
 
+void pcm_resample_deinit(struct pcm_resample_state *state);
+
 size_t
 pcm_resample_16(uint8_t channels,
 		unsigned src_rate,

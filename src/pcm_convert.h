@@ -32,6 +32,8 @@ struct pcm_convert_state {
 
 void pcm_convert_init(struct pcm_convert_state *state);
 
+void pcm_convert_deinit(struct pcm_convert_state *state);
+
 size_t pcm_convert(const struct audio_format *inFormat,
 		   const void *src, size_t src_size,
 		   const struct audio_format *outFormat,
