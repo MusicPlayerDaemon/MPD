@@ -38,7 +38,6 @@ mpd_headers = \
 	input_curl.h \
 	icy_metadata.h \
 	client.h \
-	dlist.h \
 	listen.h \
 	log.h \
 	ls.h \
