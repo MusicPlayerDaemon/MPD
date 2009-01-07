@@ -58,7 +58,6 @@ void mapper_init(void)
 			g_error("config parameter \"%s\" not found\n", CONF_MUSIC_DIR);
 	}
 
-	music_dir = g_strdup(music_dir_param->value);
 	music_dir_length = strlen(music_dir);
 
 	ret = stat(music_dir, &st);
