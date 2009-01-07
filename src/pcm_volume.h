@@ -41,7 +41,7 @@ pcm_float_to_volume(float volume)
 }
 
 static inline int
-pcm_dither(void)
+pcm_volume_dither(void)
 {
 	static unsigned long state;
 	uint32_t r;

@@ -37,7 +37,8 @@ pcm_add_8(int8_t *buffer1, const int8_t *buffer2,
 		int32_t sample2 = *buffer2++;
 
 		sample1 = ((sample1 * volume1 + sample2 * volume2) +
-			   pcm_dither() + PCM_VOLUME_1 / 2) / PCM_VOLUME_1;
+			   pcm_volume_dither() + PCM_VOLUME_1 / 2)
+			/ PCM_VOLUME_1;
 
 		*buffer1++ = pcm_range(sample1, 8);
 		--num_samples;
@@ -53,7 +54,8 @@ pcm_add_16(int16_t *buffer1, const int16_t *buffer2,
 		int32_t sample2 = *buffer2++;
 
 		sample1 = ((sample1 * volume1 + sample2 * volume2) +
-			   pcm_dither() + PCM_VOLUME_1 / 2) / PCM_VOLUME_1;
+			   pcm_volume_dither() + PCM_VOLUME_1 / 2)
+			/ PCM_VOLUME_1;
 
 		*buffer1++ = pcm_range(sample1, 16);
 		--num_samples;
@@ -69,7 +71,8 @@ pcm_add_24(int32_t *buffer1, const int32_t *buffer2,
 		int64_t sample2 = *buffer2++;
 
 		sample1 = ((sample1 * volume1 + sample2 * volume2) +
-			   pcm_dither() + PCM_VOLUME_1 / 2) / PCM_VOLUME_1;
+			   pcm_volume_dither() + PCM_VOLUME_1 / 2)
+			/ PCM_VOLUME_1;
 
 		*buffer1++ = pcm_range(sample1, 24);
 		--num_samples;
