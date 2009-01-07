@@ -22,7 +22,7 @@
 #include "tag.h"
 #include "song.h"
 #include "idle.h"
-#include "pcm_utils.h"
+#include "pcm_volume.h"
 #include "main.h"
 
 #include <assert.h>

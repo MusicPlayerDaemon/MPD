@@ -29,11 +29,6 @@
 
 struct audio_format;
 
-enum {
-	/** this value means "100% volume" */
-	PCM_VOLUME_1 = 1000,
-};
-
 struct pcm_convert_state {
 	struct pcm_resample_state resample;
 
@@ -56,20 +51,6 @@ pcm_range(int32_t sample, unsigned bits)
 		return (1 << (bits - 1)) - 1;
 	return sample;
 }
-
-/**
- * Converts a float value (0.0 = silence, 1.0 = 100% volume) to an
- * integer volume value (1000 = 100%).
- */
-static inline int
-pcm_float_to_volume(float volume)
-{
-	return volume * PCM_VOLUME_1 + 0.5;
-}
-
-void pcm_volume(char *buffer, int bufferSize,
-		const struct audio_format *format,
-		int volume);
 
 void pcm_mix(char *buffer1, const char *buffer2, size_t size,
              const struct audio_format *format, float portion1);

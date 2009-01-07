@@ -20,7 +20,7 @@
 #include "conf.h"
 #include "player_control.h"
 #include "idle.h"
-#include "pcm_utils.h"
+#include "pcm_volume.h"
 #include "config.h"
 #include "audio.h"
 

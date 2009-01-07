@@ -19,6 +19,7 @@
 #include "pcm_utils.h"
 #include "pcm_channels.h"
 #include "pcm_prng.h"
+#include "pcm_volume.h"
 #include "conf.h"
 #include "audio_format.h"
 
@@ -29,92 +30,6 @@
 
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "pcm"
-
-static inline int
-pcm_dither(void)
-{
-	static unsigned long state;
-	uint32_t r;
-
-	r = state = prng(state);
-
-	return (r & 511) - ((r >> 9) & 511);
-}
-
-static void
-pcm_volume_change_8(int8_t *buffer, unsigned num_samples, int volume)
-{
-	while (num_samples > 0) {
-		int32_t sample = *buffer;
-
-		sample = (sample * volume + pcm_dither() + PCM_VOLUME_1 / 2)
-			/ PCM_VOLUME_1;
-
-		*buffer++ = pcm_range(sample, 8);
-		--num_samples;
-	}
-}
-
-static void
-pcm_volume_change_16(int16_t *buffer, unsigned num_samples, int volume)
-{
-	while (num_samples > 0) {
-		int32_t sample = *buffer;
-
-		sample = (sample * volume + pcm_dither() + PCM_VOLUME_1 / 2)
-			/ PCM_VOLUME_1;
-
-		*buffer++ = pcm_range(sample, 16);
-		--num_samples;
-	}
-}
-
-static void
-pcm_volume_change_24(int32_t *buffer, unsigned num_samples, int volume)
-{
-	while (num_samples > 0) {
-		int64_t sample = *buffer;
-
-		sample = (sample * volume + pcm_dither() + PCM_VOLUME_1 / 2)
-			/ PCM_VOLUME_1;
-
-		*buffer++ = pcm_range(sample, 24);
-		--num_samples;
-	}
-}
-
-void pcm_volume(char *buffer, int bufferSize,
-		const struct audio_format *format,
-		int volume)
-{
-	if (volume == PCM_VOLUME_1)
-		return;
-
-	if (volume <= 0) {
-		memset(buffer, 0, bufferSize);
-		return;
-	}
-
-	switch (format->bits) {
-	case 8:
-		pcm_volume_change_8((int8_t *)buffer, bufferSize, volume);
-		break;
-
-	case 16:
-		pcm_volume_change_16((int16_t *)buffer, bufferSize / 2,
-				     volume);
-		break;
-
-	case 24:
-		pcm_volume_change_24((int32_t*)buffer, bufferSize / 4,
-				     volume);
-		break;
-
-	default:
-		g_error("%u bits not supported by pcm_volume!\n",
-			format->bits);
-	}
-}
 
 static void
 pcm_add_8(int8_t *buffer1, const int8_t *buffer2,

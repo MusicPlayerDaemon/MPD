@@ -20,7 +20,7 @@
 #include "replay_gain.h"
 #include "conf.h"
 #include "audio_format.h"
-#include "pcm_utils.h"
+#include "pcm_volume.h"
 
 #include <glib.h>
 #include <stdlib.h>
