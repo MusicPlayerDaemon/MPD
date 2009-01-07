@@ -140,6 +140,8 @@ void audio_output_finish(struct audio_output *audioOutput)
 		audioOutput->plugin->finish(audioOutput->data);
 	if (audioOutput->convBuffer)
 		free(audioOutput->convBuffer);
+
+	notify_deinit(&audioOutput->notify);
 }
 
 void audio_output_send_tag(struct audio_output *audioOutput,
