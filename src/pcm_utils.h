@@ -52,9 +52,6 @@ pcm_range(int32_t sample, unsigned bits)
 	return sample;
 }
 
-void pcm_mix(char *buffer1, const char *buffer2, size_t size,
-             const struct audio_format *format, float portion1);
-
 void pcm_convert_init(struct pcm_convert_state *state);
 
 size_t pcm_convert(const struct audio_format *inFormat,

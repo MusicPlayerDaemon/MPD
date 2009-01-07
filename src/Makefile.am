@@ -51,6 +51,7 @@ mpd_headers = \
 	mapper.h \
 	pcm_utils.h \
 	pcm_volume.h \
+	pcm_mix.h \
 	pcm_channels.h \
 	pcm_resample.h \
 	pcm_dither.h \
@@ -131,6 +132,7 @@ mpd_SOURCES = \
 	mapper.c \
 	pcm_utils.c \
 	pcm_volume.c \
+	pcm_mix.c \
 	pcm_channels.c \
 	pcm_resample.c \
 	pcm_dither.c \
