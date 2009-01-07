@@ -42,6 +42,7 @@ mpd_headers = \
 	log.h \
 	ls.h \
 	main.h \
+	mixer_api.h \
 	event_pipe.h \
 	daemon.h \
 	normalize.h \
