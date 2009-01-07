@@ -235,7 +235,7 @@ configure_hw:
 
 	err = snd_pcm_hw_params_set_format(ad->pcmHandle, hwparams, bitformat);
 	if (err == -EINVAL && audioFormat->bits != 16) {
-		/* fall back to 16 bit, let pcm_utils.c do the conversion */
+		/* fall back to 16 bit, let pcm_convert.c do the conversion */
 		err = snd_pcm_hw_params_set_format(ad->pcmHandle, hwparams,
 						   SND_PCM_FORMAT_S16);
 		if (err == 0) {

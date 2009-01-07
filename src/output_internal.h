@@ -20,7 +20,7 @@
 #ifndef MPD_OUTPUT_INTERNAL_H
 #define MPD_OUTPUT_INTERNAL_H
 
-#include "pcm_utils.h"
+#include "pcm_convert.h"
 #include "notify.h"
 
 #include <time.h>

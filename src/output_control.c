@@ -20,7 +20,6 @@
 #include "output_api.h"
 #include "output_internal.h"
 #include "output_thread.h"
-#include "pcm_utils.h"
 
 #include <assert.h>
 #include <stdlib.h>

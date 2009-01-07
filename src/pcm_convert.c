@@ -1,6 +1,6 @@
-/* the Music Player Daemon (MPD)
- * Copyright (C) 2003-2007 by Warren Dukes (warren.dukes@gmail.com)
- * This project's homepage is: http://www.musicpd.org
+/*
+ * Copyright (C) 2003-2009 The Music Player Daemon Project
+ * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,10 +16,9 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "pcm_utils.h"
+#include "pcm_convert.h"
 #include "pcm_channels.h"
 #include "pcm_format.h"
-#include "conf.h"
 #include "audio_format.h"
 
 #include <assert.h>

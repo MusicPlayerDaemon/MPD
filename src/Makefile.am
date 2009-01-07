@@ -50,6 +50,7 @@ mpd_headers = \
 	path.h \
 	mapper.h \
 	pcm_utils.h \
+	pcm_convert.h \
 	pcm_volume.h \
 	pcm_mix.h \
 	pcm_channels.h \
@@ -131,7 +132,7 @@ mpd_SOURCES = \
 	pipe.c \
 	path.c \
 	mapper.c \
-	pcm_utils.c \
+	pcm_convert.c \
 	pcm_volume.c \
 	pcm_mix.c \
 	pcm_channels.c \
