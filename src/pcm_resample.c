@@ -17,12 +17,18 @@
  */
 
 #include "pcm_resample.h"
+#include "config.h"
 
 #include <string.h>
 
 void pcm_resample_init(struct pcm_resample_state *state)
 {
 	memset(state, 0, sizeof(*state));
+
+#ifdef HAVE_LIBSAMPLERATE
+	pcm_buffer_init(&state->in);
+	pcm_buffer_init(&state->out);
+#endif
 
 	pcm_buffer_init(&state->buffer);
 }

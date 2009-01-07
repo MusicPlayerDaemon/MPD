@@ -34,6 +34,8 @@ void pcm_resample_deinit(struct pcm_resample_state *state)
 	if (state->state != NULL)
 		state->state = src_delete(state->state);
 
+	pcm_buffer_deinit(&state->in);
+	pcm_buffer_deinit(&state->out);
 	pcm_buffer_deinit(&state->buffer);
 }
 
@@ -136,17 +138,11 @@ pcm_resample_16(struct pcm_resample_state *state,
 
 	data->input_frames = src_size / sizeof(*src_buffer) / channels;
 	data_in_size = data->input_frames * sizeof(float) * channels;
-	if (data_in_size > state->data_in_size) {
-		state->data_in_size = data_in_size;
-		data->data_in = g_realloc(data->data_in, data_in_size);
-	}
+	data->data_in = pcm_buffer_get(&state->in, data_in_size);
 
 	data->output_frames = (src_size * dest_rate + src_rate - 1) / src_rate;
 	data_out_size = data->output_frames * sizeof(float) * channels;
-	if (data_out_size > state->data_out_size) {
-		state->data_out_size = data_out_size;
-		data->data_out = g_realloc(data->data_out, data_out_size);
-	}
+	data->data_out = pcm_buffer_get(&state->out, data_out_size);
 
 	src_short_to_float_array(src_buffer, data->data_in,
 				 data->input_frames * channels);
@@ -212,17 +208,11 @@ pcm_resample_24(struct pcm_resample_state *state,
 
 	data->input_frames = src_size / sizeof(*src_buffer) / channels;
 	data_in_size = data->input_frames * sizeof(float) * channels;
-	if (data_in_size > state->data_in_size) {
-		state->data_in_size = data_in_size;
-		data->data_in = g_realloc(data->data_in, data_in_size);
-	}
+	data->data_in = pcm_buffer_get(&state->in, data_in_size);
 
 	data->output_frames = (src_size * dest_rate + src_rate - 1) / src_rate;
 	data_out_size = data->output_frames * sizeof(float) * channels;
-	if (data_out_size > state->data_out_size) {
-		state->data_out_size = data_out_size;
-		data->data_out = g_realloc(data->data_out, data_out_size);
-	}
+	data->data_out = pcm_buffer_get(&state->out, data_out_size);
 
 	src_int_to_float_array(src_buffer, data->data_in,
 			       data->input_frames * channels);

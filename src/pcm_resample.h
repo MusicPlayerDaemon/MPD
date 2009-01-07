@@ -35,8 +35,8 @@ struct pcm_resample_state {
 #ifdef HAVE_LIBSAMPLERATE
 	SRC_STATE *state;
 	SRC_DATA data;
-	size_t data_in_size;
-	size_t data_out_size;
+
+	struct pcm_buffer in, out;
 
 	struct {
 		unsigned src_rate;
