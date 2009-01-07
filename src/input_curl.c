@@ -18,7 +18,6 @@
 
 #include "input_curl.h"
 #include "input_stream.h"
-#include "dlist.h"
 #include "config.h"
 #include "tag.h"
 #include "icy_metadata.h"
@@ -38,8 +37,6 @@ static const off_t max_rewind_size = 64 * 1024;
  * Buffers created by input_curl_writefunction().
  */
 struct buffer {
-	struct list_head siblings;
-
 	/** size of the payload */
 	size_t size;
 
@@ -62,7 +59,7 @@ struct input_curl {
 
 	/** list of buffers, where input_curl_writefunction() appends
 	    to, and input_curl_read() reads from them */
-	struct list_head buffers;
+	GQueue *buffers;
 
 	/** has something been added to the buffers list? */
 	bool buffered;
@@ -71,7 +68,7 @@ struct input_curl {
 	bool eof;
 
 	/** limited list of old buffers, for rewinding */
-	struct list_head rewind;
+	GQueue *rewind;
 
 	/** error message provided by libcurl */
 	char error[CURL_ERROR_SIZE];
@@ -107,6 +104,16 @@ void input_curl_global_finish(void)
 	curl_global_cleanup();
 }
 
+static void
+buffer_free_callback(gpointer data, G_GNUC_UNUSED gpointer user_data)
+{
+	struct buffer *buffer = data;
+
+	assert(buffer->consumed <= buffer->size);
+
+	g_free(data);
+}
+
 /**
  * Frees the current "libcurl easy" handle, and everything associated
  * with it.
@@ -126,18 +133,12 @@ input_curl_easy_free(struct input_curl *c)
 	g_free(c->range);
 	c->range = NULL;
 
-	while (!list_empty(&c->buffers)) {
-		struct buffer *buffer = (struct buffer *)c->buffers.next;
-		list_del(&buffer->siblings);
+	g_queue_foreach(c->buffers, buffer_free_callback, NULL);
+	g_queue_clear(c->buffers);
 
-		g_free(buffer);
-	}
-
-	while (!list_empty(&c->rewind)) {
-		struct buffer *buffer = (struct buffer *)c->rewind.next;
-		list_del(&buffer->siblings);
-
-		g_free(buffer);
+	if (c->rewind != NULL) {
+		g_queue_foreach(c->rewind, buffer_free_callback, NULL);
+		g_queue_clear(c->rewind);
 	}
 }
 
@@ -157,6 +158,10 @@ input_curl_free(struct input_stream *is)
 
 	if (c->multi != NULL)
 		curl_multi_cleanup(c->multi);
+
+	g_queue_free(c->buffers);
+	if (c->rewind != NULL)
+		g_queue_free(c->rewind);
 
 	g_free(c->url);
 	g_free(c);
@@ -236,33 +241,33 @@ input_curl_select(struct input_curl *c)
 /**
  * Mark a part of the buffer object as consumed.
  */
-static void
-consume_buffer(struct buffer *buffer, size_t length,
-	       struct list_head *rewind_head)
+static struct buffer *
+consume_buffer(struct buffer *buffer, size_t length, GQueue *rewind_buffers)
 {
 	assert(buffer != NULL);
 	assert(buffer->consumed < buffer->size);
 
 	buffer->consumed += length;
 	if (buffer->consumed < buffer->size)
-		return;
+		return buffer;
 
 	assert(buffer->consumed == buffer->size);
 
-	list_del(&buffer->siblings);
-
-	if (rewind_head != NULL)
+	if (rewind_buffers != NULL)
 		/* append this buffer to the rewind buffer list */
-		list_add_tail(&buffer->siblings, rewind_head);
+		g_queue_push_tail(rewind_buffers, buffer);
 	else
 		g_free(buffer);
+
+	return NULL;
 }
 
 static size_t
-read_from_buffer(struct icy_metadata *icy_metadata, struct buffer *buffer,
+read_from_buffer(struct icy_metadata *icy_metadata, GQueue *buffers,
 		 void *dest0, size_t length,
-		 struct list_head *rewind_head)
+		 GQueue *rewind_buffers)
 {
+	struct buffer *buffer = g_queue_pop_head(buffers);
 	uint8_t *dest = dest0;
 	size_t nbytes = 0;
 
@@ -279,7 +284,7 @@ read_from_buffer(struct icy_metadata *icy_metadata, struct buffer *buffer,
 		if (chunk > 0) {
 			memcpy(dest, buffer->data + buffer->consumed,
 			       chunk);
-			consume_buffer(buffer, chunk, rewind_head);
+			buffer = consume_buffer(buffer, chunk, rewind_buffers);
 
 			nbytes += chunk;
 			dest += chunk;
@@ -287,19 +292,26 @@ read_from_buffer(struct icy_metadata *icy_metadata, struct buffer *buffer,
 
 			if (length == 0)
 				break;
+
+			assert(buffer != NULL);
 		}
 
 		chunk = icy_meta(icy_metadata, buffer->data + buffer->consumed,
 				 length);
 		if (chunk > 0) {
-			consume_buffer(buffer, chunk, rewind_head);
+			buffer = consume_buffer(buffer, chunk, rewind_buffers);
 
 			length -= chunk;
 
 			if (length == 0)
 				break;
+
+			assert(buffer != NULL);
 		}
 	}
+
+	if (buffer != NULL)
+		g_queue_push_head(buffers, buffer);
 
 	return nbytes;
 }
@@ -326,13 +338,34 @@ input_curl_read(struct input_stream *is, void *ptr, size_t size)
 {
 	struct input_curl *c = is->data;
 	CURLMcode mcode = CURLM_CALL_MULTI_PERFORM;
-	struct list_head *rewind_head;
+	GQueue *rewind_buffers;
 	size_t nbytes = 0;
 	char *dest = ptr;
 
+#ifndef NDEBUG
+	if (c->rewind != NULL &&
+	    (!g_queue_is_empty(c->rewind) || is->offset == 0)) {
+		off_t offset = 0;
+		struct buffer *buffer;
+
+		for (GList *list = g_queue_peek_head_link(c->rewind);
+		     list != NULL; list = g_list_next(list)) {
+			buffer = list->data;
+			offset += buffer->consumed;
+			assert(offset <= is->offset);
+		}
+
+		buffer = g_queue_peek_head(c->buffers);
+		if (buffer != NULL)
+			offset += buffer->consumed;
+
+		assert(offset == is->offset);
+	}
+#endif
+
 	/* fill the buffer */
 
-	while (!c->eof && list_empty(&c->buffers)) {
+	while (!c->eof && g_queue_is_empty(c->buffers)) {
 		int running_handles;
 		bool bret;
 
@@ -360,19 +393,19 @@ input_curl_read(struct input_stream *is, void *ptr, size_t size)
 
 	/* send buffer contents */
 
-	if (!list_empty(&c->rewind) || is->offset == 0)
+	if (c->rewind != NULL &&
+	    (!g_queue_is_empty(c->rewind) || is->offset == 0))
 		/* at the beginning or already writing the rewind
 		   buffer list */
-		rewind_head = &c->rewind;
+		rewind_buffers = c->rewind;
 	else
 		/* we don't need the rewind buffers anymore */
-		rewind_head = NULL;
+		rewind_buffers = NULL;
 
-	while (size > 0 && !list_empty(&c->buffers)) {
-		struct buffer *buffer = (struct buffer *)c->buffers.next;
-		size_t copy = read_from_buffer(&c->icy_metadata, buffer,
+	while (size > 0 && !g_queue_is_empty(c->buffers)) {
+		size_t copy = read_from_buffer(&c->icy_metadata, c->buffers,
 					       dest + nbytes, size,
-					       rewind_head);
+					       rewind_buffers);
 
 		nbytes += copy;
 		size -= copy;
@@ -383,16 +416,31 @@ input_curl_read(struct input_stream *is, void *ptr, size_t size)
 
 	is->offset += (off_t)nbytes;
 
-	if (rewind_head != NULL && is->offset > max_rewind_size) {
+#ifndef NDEBUG
+	if (rewind_buffers != NULL) {
+		off_t offset = 0;
+		struct buffer *buffer;
+
+		for (GList *list = g_queue_peek_head_link(c->rewind);
+		     list != NULL; list = g_list_next(list)) {
+			buffer = list->data;
+			offset += buffer->consumed;
+			assert(offset <= is->offset);
+		}
+
+		buffer = g_queue_peek_head(c->buffers);
+		if (buffer != NULL)
+			offset += buffer->consumed;
+
+		assert(offset == is->offset);
+	}
+#endif
+
+	if (rewind_buffers != NULL && is->offset > max_rewind_size) {
 		/* drop the rewind buffer, it has grown too large */
 
-		while (!list_empty(&c->rewind)) {
-			struct buffer *buffer =
-				(struct buffer *)c->rewind.next;
-			list_del(&buffer->siblings);
-
-			g_free(buffer);
-		}
+		g_queue_foreach(c->rewind, buffer_free_callback, NULL);
+		g_queue_clear(c->rewind);
 	}
 
 	return nbytes;
@@ -409,7 +457,7 @@ input_curl_eof(G_GNUC_UNUSED struct input_stream *is)
 {
 	struct input_curl *c = is->data;
 
-	return c->eof && list_empty(&c->buffers);
+	return c->eof && g_queue_is_empty(c->buffers);
 }
 
 static int
@@ -424,7 +472,8 @@ input_curl_buffer(struct input_stream *is)
 
 	do {
 		mcode = curl_multi_perform(c->multi, &running_handles);
-	} while (mcode == CURLM_CALL_MULTI_PERFORM && list_empty(&c->buffers));
+	} while (mcode == CURLM_CALL_MULTI_PERFORM &&
+		 g_queue_is_empty(c->buffers));
 
 	if (mcode != CURLM_OK && mcode != CURLM_CALL_MULTI_PERFORM) {
 		g_warning("curl_multi_perform() failed: %s\n",
@@ -519,6 +568,15 @@ input_curl_headerfunction(void *ptr, size_t size, size_t nmemb, void *stream)
 			/* a stream with icy-metadata is not
 			   seekable */
 			is->seekable = false;
+
+			if (c->rewind != NULL) {
+				/* rewinding with icy-metadata is too
+				   hairy for me .. */
+				assert(g_queue_is_empty(c->rewind));
+
+				g_queue_free(c->rewind);
+				c->rewind = NULL;
+			}
 		}
 	}
 
@@ -541,7 +599,7 @@ input_curl_writefunction(void *ptr, size_t size, size_t nmemb, void *stream)
 	buffer->size = size;
 	buffer->consumed = 0;
 	memcpy(buffer->data, ptr, size);
-	list_add_tail(&buffer->siblings, &c->buffers);
+	g_queue_push_tail(c->buffers, buffer);
 
 	c->buffered = true;
 	is->ready = true;
@@ -619,18 +677,21 @@ input_curl_can_rewind(struct input_stream *is)
 	struct input_curl *c = is->data;
 	struct buffer *buffer;
 
-	if (!list_empty(&c->rewind))
+	if (c->rewind == NULL)
+		return false;
+
+	if (!g_queue_is_empty(c->rewind))
 		/* the rewind buffer hasn't been wiped yet */
 		return true;
 
-	if (list_empty(&c->buffers))
+	if (g_queue_is_empty(c->buffers))
 		/* there are no buffers at all - cheap rewind not
 		   possible */
 		return false;
 
 	/* rewind is possible if this is the very first buffer of the
 	   resource */
-	buffer = (struct buffer*)c->buffers.next;
+	buffer = (struct buffer*)g_queue_peek_head(c->buffers);
 	return (off_t)buffer->consumed == is->offset;
 }
 
@@ -638,35 +699,37 @@ static void
 input_curl_rewind(struct input_stream *is)
 {
 	struct input_curl *c = is->data;
-	struct buffer *buffer;
 #ifndef NDEBUG
 	off_t offset = 0;
 #endif
 
-	/* reset all rewind buffers */
+	assert(c->rewind != NULL);
 
-	list_for_each_entry(buffer, &c->rewind, siblings) {
+	/* rewind the current buffer */
+
+	if (!g_queue_is_empty(c->buffers)) {
+		struct buffer *buffer =
+			(struct buffer*)g_queue_peek_head(c->buffers);
 #ifndef NDEBUG
 		offset += buffer->consumed;
 #endif
 		buffer->consumed = 0;
 	}
 
-	/* rewind the current buffer */
+	/* reset and move all rewind buffers back to the regular buffer list */
 
-	if (!list_empty(&c->buffers)) {
-		buffer = (struct buffer*)c->buffers.next;
+	while (!g_queue_is_empty(c->rewind)) {
+		struct buffer *buffer =
+			(struct buffer*)g_queue_pop_tail(c->rewind);
 #ifndef NDEBUG
 		offset += buffer->consumed;
 #endif
 		buffer->consumed = 0;
+		g_queue_push_head(c->buffers, buffer);
 	}
 
 	assert(offset == is->offset);
 
-	/* move all rewind buffers back to the regular buffer list */
-
-	list_splice_init(&c->rewind, &c->buffers);
 	is->offset = 0;
 
 	/* rewind the icy_metadata object */
@@ -722,24 +785,30 @@ input_curl_seek(struct input_stream *is, off_t offset, int whence)
 
 	/* check if we can fast-forward the buffer */
 
-	while (offset > is->offset && !list_empty(&c->buffers)) {
-		struct list_head *rewind_head;
-		struct buffer *buffer = (struct buffer *)c->buffers.next;
+	while (offset > is->offset && !g_queue_is_empty(c->buffers)) {
+		GQueue *rewind_buffers;
+		struct buffer *buffer;
 		size_t length;
 
-		if (!list_empty(&c->rewind) || is->offset == 0)
+		if (c->rewind != NULL &&
+		    (!g_queue_is_empty(c->rewind) || is->offset == 0))
 			/* at the beginning or already writing the rewind
 			   buffer list */
-			rewind_head = &c->rewind;
+			rewind_buffers = c->rewind;
 		else
 			/* we don't need the rewind buffers anymore */
-			rewind_head = NULL;
+			rewind_buffers = NULL;
+
+		buffer = (struct buffer *)g_queue_pop_head(c->buffers);
 
 		length = buffer->size - buffer->consumed;
 		if (offset - is->offset < (off_t)length)
 			length = offset - is->offset;
 
-		consume_buffer(buffer, length, rewind_head);
+		buffer = consume_buffer(buffer, length, rewind_buffers);
+		if (buffer != NULL)
+			g_queue_push_head(c->buffers, buffer);
+
 		is->offset += length;
 	}
 
@@ -788,8 +857,8 @@ input_curl_open(struct input_stream *is, const char *url)
 
 	c = g_new0(struct input_curl, 1);
 	c->url = g_strdup(url);
-	INIT_LIST_HEAD(&c->buffers);
-	INIT_LIST_HEAD(&c->rewind);
+	c->buffers = g_queue_new();
+	c->rewind = g_queue_new();
 
 	is->data = c;
 
