@@ -6,6 +6,7 @@ MPD 0.14.1 - not yet released
   - jack: allocate default port names (fixes a crash)
 * update:
   - refresh stats after update
+  - save the database even if it is empty
 * log: automatically append newline
 * fix setenv() conflict on Solaris
 * configure.ac: check for pkg-config before using it
