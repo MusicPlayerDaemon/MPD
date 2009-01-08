@@ -20,7 +20,6 @@
 #define MPD_PATH_H
 
 #include <limits.h>
-#include <stddef.h>
 
 #if !defined(MPD_PATH_MAX)
 #  if defined(MAXPATHLEN)
