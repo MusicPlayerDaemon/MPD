@@ -520,7 +520,6 @@ updateDirectory(struct directory *directory, const struct stat *st)
 {
 	DIR *dir;
 	struct dirent *ent;
-	char path_max_tmp[MPD_PATH_MAX];
 	char *path_fs;
 
 	assert(S_ISDIR(st->st_mode));
@@ -552,10 +551,9 @@ updateDirectory(struct directory *directory, const struct stat *st)
 		}
 
 		if (stat_directory_child(directory, utf8, &st2) == 0)
-			updateInDirectory(directory,
-					  path_max_tmp, &st2);
+			updateInDirectory(directory, utf8, &st2);
 		else
-			delete_name_in(directory, path_max_tmp);
+			delete_name_in(directory, utf8);
 
 		g_free(utf8);
 	}
