@@ -36,9 +36,19 @@ void path_global_init(void);
 
 void path_global_finish(void);
 
-char *fs_charset_to_utf8(char *dst, const char *str);
+/**
+ * Converts a file name in the filesystem charset to UTF-8.  Returns
+ * NULL on failure.
+ */
+char *
+fs_charset_to_utf8(const char *path_fs);
 
-char *utf8_to_fs_charset(char *dst, const char *str);
+/**
+ * Converts a file name in UTF-8 to the filesystem charset.  Returns a
+ * duplicate of the UTF-8 string on failure.
+ */
+char *
+utf8_to_fs_charset(const char *path_utf8);
 
 void path_set_fs_charset(const char *charset);
 

@@ -91,16 +91,19 @@ void mapper_finish(void)
 char *
 map_uri_fs(const char *uri)
 {
-	char buffer[MPD_PATH_MAX];
+	char *uri_fs, *path_fs;
 
 	assert(uri != NULL);
 	assert(*uri != '/');
 
-	uri = utf8_to_fs_charset(buffer, uri);
-	if (uri == NULL)
+	uri_fs = utf8_to_fs_charset(uri);
+	if (uri_fs == NULL)
 		return NULL;
 
-	return g_build_filename(music_dir, uri, NULL);
+	path_fs = g_build_filename(music_dir, uri_fs, NULL);
+	g_free(uri_fs);
+
+	return path_fs;
 }
 
 char *
@@ -116,8 +119,7 @@ map_directory_fs(const struct directory *directory)
 char *
 map_directory_child_fs(const struct directory *directory, const char *name)
 {
-	char buffer[MPD_PATH_MAX];
-	char *parent_fs, *path;
+	char *name_fs, *parent_fs, *path;
 
 	/* check for invalid or unauthorized base names */
 	if (*name == 0 || strchr(name, '/') != NULL ||
@@ -128,30 +130,33 @@ map_directory_child_fs(const struct directory *directory, const char *name)
 	if (parent_fs == NULL)
 		return NULL;
 
-	name = utf8_to_fs_charset(buffer, name);
-	path = g_build_filename(parent_fs, name, NULL);
+	name_fs = utf8_to_fs_charset(name);
+	if (name_fs == NULL) {
+		g_free(parent_fs);
+		return NULL;
+	}
+
+	path = g_build_filename(parent_fs, name_fs, NULL);
 	g_free(parent_fs);
+	g_free(name_fs);
+
 	return path;
 }
 
 char *
 map_song_fs(const struct song *song)
 {
-	char buffer[MPD_PATH_MAX];
-
 	assert(song_is_file(song));
 
 	if (song_in_database(song))
 		return map_directory_child_fs(song->parent, song->url);
 	else
-		return g_strdup(utf8_to_fs_charset(buffer, song->url));
+		return utf8_to_fs_charset(song->url);
 }
 
 char *
 map_fs_to_utf8(const char *path_fs)
 {
-	char buffer[MPD_PATH_MAX];
-
 	if (strncmp(path_fs, music_dir, music_dir_length) == 0 &&
 	    path_fs[music_dir_length] == '/')
 		/* remove musicDir prefix */
@@ -160,7 +165,7 @@ map_fs_to_utf8(const char *path_fs)
 		/* not within musicDir */
 		return NULL;
 
-	return g_strdup(fs_charset_to_utf8(buffer, path_fs));
+	return fs_charset_to_utf8(path_fs);
 }
 
 const char *

@@ -545,15 +545,19 @@ updateDirectory(struct directory *directory, const struct stat *st)
 		if (skip_path(ent->d_name))
 			continue;
 
-		utf8 = fs_charset_to_utf8(path_max_tmp, ent->d_name);
-		if (utf8 == NULL || skip_symlink(directory, utf8))
+		utf8 = fs_charset_to_utf8(ent->d_name);
+		if (utf8 == NULL || skip_symlink(directory, utf8)) {
+			g_free(utf8);
 			continue;
+		}
 
 		if (stat_directory_child(directory, utf8, &st2) == 0)
 			updateInDirectory(directory,
 					  path_max_tmp, &st2);
 		else
 			delete_name_in(directory, path_max_tmp);
+
+		g_free(utf8);
 	}
 
 	closedir(dir);

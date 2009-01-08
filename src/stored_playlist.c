@@ -37,7 +37,7 @@ static struct stored_playlist_info *
 load_playlist_info(const char *parent_path_fs, const char *name_fs)
 {
 	size_t name_length = strlen(name_fs);
-	char buffer[MPD_PATH_MAX], *path_fs, *name, *name_utf8;
+	char *path_fs, *name, *name_utf8;
 	int ret;
 	struct stat st;
 	struct stored_playlist_info *playlist;
@@ -60,13 +60,13 @@ load_playlist_info(const char *parent_path_fs, const char *name_fs)
 
 	name = g_strdup(name_fs);
 	name[name_length - sizeof(PLAYLIST_FILE_SUFFIX)] = 0;
-	name_utf8 = fs_charset_to_utf8(buffer, name);
+	name_utf8 = fs_charset_to_utf8(name);
 	g_free(name);
 	if (name_utf8 == NULL)
 		return NULL;
 
 	playlist = g_new(struct stored_playlist_info, 1);
-	playlist->name = g_strdup(name_utf8);
+	playlist->name = name_utf8;
 	playlist->mtime = st.st_mtime;
 	return playlist;
 }

@@ -29,36 +29,27 @@
 
 static char *fs_charset;
 
-char *fs_charset_to_utf8(char *dst, const char *str)
+char *
+fs_charset_to_utf8(const char *path_fs)
 {
-	gchar *p;
-
-	p = g_convert(str, -1,
-		      "utf-8", fs_charset,
-		      NULL, NULL, NULL);
-	if (p == NULL)
-		/* no fallback */
-		return NULL;
-
-	g_strlcpy(dst, p, MPD_PATH_MAX);
-	g_free(p);
-	return dst;
+	return g_convert(path_fs, -1,
+			 "utf-8", fs_charset,
+			 NULL, NULL, NULL);
 }
 
-char *utf8_to_fs_charset(char *dst, const char *str)
+char *
+utf8_to_fs_charset(const char *path_utf8)
 {
 	gchar *p;
 
-	p = g_convert(str, -1,
+	p = g_convert(path_utf8, -1,
 		      fs_charset, "utf-8",
 		      NULL, NULL, NULL);
 	if (p == NULL)
 		/* fall back to UTF-8 */
-		return strcpy(dst, str);
+		p = g_strdup(path_utf8);
 
-	g_strlcpy(dst, p, MPD_PATH_MAX);
-	g_free(p);
-	return dst;
+	return p;
 }
 
 void path_set_fs_charset(const char *charset)

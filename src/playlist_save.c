@@ -36,27 +36,26 @@ playlist_print_song(FILE *file, const struct song *song)
 			g_free(path);
 		}
 	} else {
-		char *uri = song_get_uri(song);
-		char tmp2[MPD_PATH_MAX];
+		char *uri = song_get_uri(song), *uri_fs;
 
-		utf8_to_fs_charset(tmp2, uri);
+		uri_fs = utf8_to_fs_charset(uri);
 		g_free(uri);
 
-		fprintf(file, "%s\n", uri);
+		fprintf(file, "%s\n", uri_fs);
+		g_free(uri_fs);
 	}
 }
 
 void
 playlist_print_uri(FILE *file, const char *uri)
 {
-	char tmp[MPD_PATH_MAX];
 	char *s;
 
 	if (playlist_saveAbsolutePaths && !uri_has_scheme(uri) &&
 	    uri[0] != '/')
 		s = map_uri_fs(uri);
 	else
-		s = g_strdup(utf8_to_fs_charset(tmp, uri));
+		s = utf8_to_fs_charset(uri);
 
 	if (s != NULL) {
 		fprintf(file, "%s\n", s);
