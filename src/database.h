@@ -69,4 +69,15 @@ db_load(void);
 time_t
 db_get_mtime(void);
 
+/**
+ * Returns true if there is a valid database file on the disk.
+ */
+static inline bool
+db_exists(void)
+{
+	/* mtime is set only if the database file was loaded or saved
+	   successfully */
+	return db_get_mtime() > 0;
+}
+
 #endif

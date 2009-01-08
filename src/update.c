@@ -647,8 +647,9 @@ static void * update_task(void *_path)
 			updateDirectory(directory, &st);
 	}
 
-	if (modified)
+	if (modified || !db_exists())
 		db_save();
+
 	progress = UPDATE_PROGRESS_DONE;
 	event_pipe_emit(PIPE_EVENT_UPDATE);
 	return NULL;
