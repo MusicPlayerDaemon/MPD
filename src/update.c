@@ -25,6 +25,7 @@
 #include "mapper.h"
 #include "path.h"
 #include "decoder_list.h"
+#include "archive_list.h"
 #include "playlist.h"
 #include "event_pipe.h"
 #include "notify.h"
@@ -33,6 +34,7 @@
 #include "conf.h"
 #include "stats.h"
 #include "main.h"
+#include "config.h"
 
 #include <glib.h>
 
@@ -350,6 +352,9 @@ update_regular_file(struct directory *directory,
 		    const char *name, const struct stat *st)
 {
 	const char *suffix = uri_get_suffix(name);
+#ifdef ENABLE_ARCHIVE
+	const struct archive_plugin *archive;
+#endif
 
 	if (suffix == NULL)
 		return;
@@ -376,9 +381,9 @@ update_regular_file(struct directory *directory,
 #ifdef ENABLE_ARCHIVE
 	} else if ((archive = archive_plugin_from_suffix(suffix))) {
 		struct archive_file *archfile;
-		char pathname[MPD_PATH_MAX];
+		char *pathname;
 
-		map_directory_child_fs(directory, name, pathname);
+		pathname = map_directory_child_fs(directory, name);
 		//open archive
 		archfile = archive->open(pathname);
 		if (archfile) {
@@ -404,6 +409,8 @@ update_regular_file(struct directory *directory,
 		} else {
 			g_warning("unable to open archive %s", pathname);
 		}
+
+		g_free(pathname);
 #endif
 	}
 }
@@ -415,10 +422,6 @@ static void
 updateInDirectory(struct directory *directory,
 		  const char *name, const struct stat *st)
 {
-#ifdef ENABLE_ARCHIVE
-	const struct archive_plugin *archive;
-#endif
-
 	assert(strchr(name, '/') == NULL);
 
 	if (S_ISREG(st->st_mode)) {
