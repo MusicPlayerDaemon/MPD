@@ -47,7 +47,7 @@
 #include "state_file.h"
 #include "tag.h"
 #include "dbUtils.h"
-#include "../config.h"
+#include "config.h"
 #include "normalize.h"
 #include "zeroconf.h"
 #include "event_pipe.h"

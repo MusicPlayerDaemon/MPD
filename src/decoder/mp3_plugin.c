@@ -18,6 +18,7 @@
 
 #include "../decoder_api.h"
 #include "../conf.h"
+#include "config.h"
 
 #include <assert.h>
 #include <unistd.h>

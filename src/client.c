@@ -24,8 +24,7 @@
 #include "event_pipe.h"
 #include "idle.h"
 #include "main.h"
-
-#include "../config.h"
+#include "config.h"
 
 #include <glib.h>
 #include <assert.h>

@@ -19,6 +19,7 @@
 #include "zeroconf.h"
 #include "zeroconf-internal.h"
 #include "conf.h"
+#include "config.h"
 
 #include <glib.h>
 

@@ -18,8 +18,7 @@
 
 #include "utils.h"
 #include "conf.h"
-
-#include "../config.h"
+#include "config.h"
 
 #include <glib.h>
 

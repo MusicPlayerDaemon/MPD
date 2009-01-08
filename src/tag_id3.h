@@ -19,7 +19,7 @@
 #ifndef MPD_TAG_ID3_H
 #define MPD_TAG_ID3_H
 
-#include "../config.h"
+#include "config.h"
 
 struct tag;
 

@@ -19,6 +19,7 @@
 
 #include "pcm_resample.h"
 #include "conf.h"
+#include "config.h"
 
 #include <glib.h>
 

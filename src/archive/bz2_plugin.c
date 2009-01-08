@@ -22,6 +22,7 @@
 
 #include "archive_api.h"
 #include "input_stream.h"
+#include "config.h"
 
 #include <stdint.h>
 #include <stddef.h>

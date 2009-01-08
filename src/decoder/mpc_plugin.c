@@ -17,6 +17,7 @@
  */
 
 #include "../decoder_api.h"
+#include "config.h"
 
 #include <mpcdec/mpcdec.h>
 #include <glib.h>

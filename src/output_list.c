@@ -18,6 +18,7 @@
 
 #include "output_list.h"
 #include "output_api.h"
+#include "config.h"
 
 extern const struct audio_output_plugin shoutPlugin;
 extern const struct audio_output_plugin nullPlugin;

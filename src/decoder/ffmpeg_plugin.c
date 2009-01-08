@@ -17,6 +17,7 @@
  */
 
 #include "../decoder_api.h"
+#include "config.h"
 
 #include <glib.h>
 

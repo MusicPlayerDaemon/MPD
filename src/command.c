@@ -38,6 +38,7 @@
 #include "tag_print.h"
 #include "path.h"
 #include "idle.h"
+#include "config.h"
 
 #include <assert.h>
 #include <time.h>

@@ -1,6 +1,3 @@
-
-
-
 /* the Music Player Daemon (MPD)
  * Copyright (C) 2008 Viliam Mateicka <viliam.mateicka@gmail.com>
  * This project's homepage is: http://www.musicpd.org
@@ -22,7 +19,7 @@
 #include "archive_list.h"
 #include "archive_api.h"
 #include "utils.h"
-#include "../config.h"
+#include "config.h"
 
 #include <string.h>
 #include <glib.h>

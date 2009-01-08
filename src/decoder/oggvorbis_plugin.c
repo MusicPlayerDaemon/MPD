@@ -19,6 +19,7 @@
 /* TODO 'ogg' should probably be replaced with 'oggvorbis' in all instances */
 
 #include "_ogg_common.h"
+#include "config.h"
 
 #ifndef HAVE_TREMOR
 #include <vorbis/vorbisfile.h>
