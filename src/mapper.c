@@ -91,8 +91,14 @@ void mapper_finish(void)
 char *
 map_uri_fs(const char *uri)
 {
+	char buffer[MPD_PATH_MAX];
+
 	assert(uri != NULL);
 	assert(*uri != '/');
+
+	uri = utf8_to_fs_charset(buffer, uri);
+	if (uri == NULL)
+		return NULL;
 
 	return g_build_filename(music_dir, uri, NULL);
 }
