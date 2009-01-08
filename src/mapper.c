@@ -109,11 +109,10 @@ map_uri_fs(const char *uri)
 char *
 map_directory_fs(const struct directory *directory)
 {
-	const char *dirname = directory_get_path(directory);
-	if (isRootDirectory(dirname))
+	if (directory_is_root(directory))
 		return g_strdup(music_dir);
 
-	return map_uri_fs(dirname);
+	return map_uri_fs(directory_get_path(directory));
 }
 
 char *
