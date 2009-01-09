@@ -160,6 +160,54 @@ check_int(struct client *client, int *value_r,
 	return true;
 }
 
+static bool G_GNUC_PRINTF(5, 6)
+check_range(struct client *client, int *value_r1, int *value_r2,
+	    const char *s, const char *fmt, ...)
+{
+	char *test, *test2;
+	long value;
+
+	value = strtol(s, &test, 10);
+	if (*test != '\0' && *test != ':') {
+		va_list args;
+		va_start(args, fmt);
+		command_error_v(client, ACK_ERROR_ARG, fmt, args);
+		va_end(args);
+		return false;
+	}
+
+#if LONG_MAX > INT_MAX
+	if (value < INT_MIN || value > INT_MAX) {
+		command_error(client, ACK_ERROR_ARG,
+			      "Number too large: %s", s);
+		return false;
+	}
+#endif
+
+	*value_r1 = (int)value;
+
+	if (*test == ':') {
+		value = strtol(++test, &test2, 10);
+		if (*test2 != '\0' || test == test2) {
+			va_list args;
+			va_start(args, fmt);
+			command_error_v(client, ACK_ERROR_ARG, fmt, args);
+			va_end(args);
+			return false;
+		}
+#if LONG_MAX > INT_MAX
+		if (value < INT_MIN || value > INT_MAX) {
+			command_error(client, ACK_ERROR_ARG,
+				      "Number too large: %s", s);
+			return false;
+		}
+#endif
+		*value_r2 = (int)value;
+	}
+
+	return true;
+}
+
 static bool
 check_unsigned(struct client *client, unsigned *value_r, const char *s)
 {
