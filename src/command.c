@@ -79,6 +79,7 @@ struct command {
 
 /* this should really be "need a non-negative integer": */
 static const char need_positive[] = "need a positive integer"; /* no-op */
+static const char need_range[] = "need a range";
 
 /* FIXME: redundant error messages */
 static const char check_integer[] = "\"%s\" is not a integer";
@@ -389,7 +390,7 @@ handle_currentsong(struct client *client,
 	if (song < 0)
 		return COMMAND_RETURN_OK;
 
-	result = playlistInfo(client, song);
+	result = playlistInfo(client, song, song);
 	return print_playlist_result(client, result);
 }
 
@@ -742,13 +743,13 @@ handle_plchangesposid(struct client *client, G_GNUC_UNUSED int argc, char *argv[
 static enum command_return
 handle_playlistinfo(struct client *client, int argc, char *argv[])
 {
-	int song = -1;
+	int song = -1, max = -1;
 	enum playlist_result result;
 
-	if (argc == 2 && !check_int(client, &song, argv[1], need_positive))
+	if (argc == 2 && !check_range(client, &song, &max, argv[1], need_range))
 		return COMMAND_RETURN_ERROR;
 
-	result = playlistInfo(client, song);
+	result = playlistInfo(client, song, max);
 	return print_playlist_result(client, result);
 }
 

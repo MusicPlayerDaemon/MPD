@@ -95,7 +95,7 @@ enum playlist_result deleteFromPlaylist(unsigned song);
 
 enum playlist_result deleteFromPlaylistById(unsigned song);
 
-enum playlist_result playlistInfo(struct client *client, int song);
+enum playlist_result playlistInfo(struct client *client, int song, int max);
 
 enum playlist_result playlistId(struct client *client, int song);
 
