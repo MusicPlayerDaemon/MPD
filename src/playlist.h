@@ -95,7 +95,16 @@ enum playlist_result deleteFromPlaylist(unsigned song);
 
 enum playlist_result deleteFromPlaylistById(unsigned song);
 
-enum playlist_result playlistInfo(struct client *client, int song, int max);
+/**
+ * Send detailed information about a range of songs in the playlist to
+ * a client.
+ *
+ * @param client the client which has requested information
+ * @param start the index of the first song (including)
+ * @param end the index of the last song (excluding)
+ */
+enum playlist_result
+playlistInfo(struct client *client, unsigned start, unsigned end);
 
 enum playlist_result playlistId(struct client *client, int song);
 

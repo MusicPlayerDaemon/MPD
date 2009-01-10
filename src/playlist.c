@@ -413,24 +413,16 @@ int playlistChangesPosId(struct client *client, uint32_t version)
 	return 0;
 }
 
-enum playlist_result playlistInfo(struct client *client, int song, int max)
+enum playlist_result
+playlistInfo(struct client *client, unsigned start, unsigned end)
 {
-	unsigned begin = 0;
-	unsigned end = playlist.length;
+	if (end > playlist.length)
+		end = playlist.length;
 
-	if (song >= 0) {
-		begin = song;
-		end = song + 1;
-	}
-	if (song >= (int)playlist.length)
+	if (start > end)
 		return PLAYLIST_RESULT_BAD_RANGE;
-	if (max > 0) {
-		end = MIN((unsigned)max, playlist.length);
-		if (end <= begin)
-			return PLAYLIST_RESULT_BAD_RANGE;
-	}
 
-	for (unsigned i = begin; i < end; i++)
+	for (unsigned i = start; i < end; i++)
 		printPlaylistSongInfo(client, i);
 
 	return PLAYLIST_RESULT_SUCCESS;

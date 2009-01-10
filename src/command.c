@@ -162,7 +162,7 @@ check_int(struct client *client, int *value_r,
 }
 
 static bool G_GNUC_PRINTF(5, 6)
-check_range(struct client *client, int *value_r1, int *value_r2,
+check_range(struct client *client, unsigned *value_r1, unsigned *value_r2,
 	    const char *s, const char *fmt, ...)
 {
 	char *test, *test2;
@@ -177,15 +177,21 @@ check_range(struct client *client, int *value_r1, int *value_r2,
 		return false;
 	}
 
-#if LONG_MAX > INT_MAX
-	if (value < INT_MIN || value > INT_MAX) {
+	if (value < 0) {
+		command_error(client, ACK_ERROR_ARG,
+			      "Number is negative: %s", s);
+		return false;
+	}
+
+#if LONG_MAX > UINT_MAX
+	if (value > UINT_MAX) {
 		command_error(client, ACK_ERROR_ARG,
 			      "Number too large: %s", s);
 		return false;
 	}
 #endif
 
-	*value_r1 = (int)value;
+	*value_r1 = (unsigned)value;
 
 	if (*test == ':') {
 		value = strtol(++test, &test2, 10);
@@ -196,14 +202,23 @@ check_range(struct client *client, int *value_r1, int *value_r2,
 			va_end(args);
 			return false;
 		}
-#if LONG_MAX > INT_MAX
-		if (value < INT_MIN || value > INT_MAX) {
+
+		if (value < 0) {
+			command_error(client, ACK_ERROR_ARG,
+				      "Number is negative: %s", s);
+			return false;
+		}
+
+#if LONG_MAX > UINT_MAX
+		if (value > UINT_MAX) {
 			command_error(client, ACK_ERROR_ARG,
 				      "Number too large: %s", s);
 			return false;
 		}
 #endif
-		*value_r2 = (int)value;
+		*value_r2 = (unsigned)value;
+	} else {
+		*value_r2 = (unsigned)value + 1;
 	}
 
 	return true;
@@ -743,13 +758,14 @@ handle_plchangesposid(struct client *client, G_GNUC_UNUSED int argc, char *argv[
 static enum command_return
 handle_playlistinfo(struct client *client, int argc, char *argv[])
 {
-	int song = -1, max = -1;
+	unsigned start = 0, end = UINT_MAX;
 	enum playlist_result result;
 
-	if (argc == 2 && !check_range(client, &song, &max, argv[1], need_range))
+	if (argc == 2 && !check_range(client, &start, &end,
+				      argv[1], need_range))
 		return COMMAND_RETURN_ERROR;
 
-	result = playlistInfo(client, song, max);
+	result = playlistInfo(client, start, end);
 	return print_playlist_result(client, result);
 }
 
