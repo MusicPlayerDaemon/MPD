@@ -319,6 +319,7 @@ int main(int argc, char *argv[])
 	g_debug("db_finish took %f seconds",
 		((float)(clock()-start))/CLOCKS_PER_SEC);
 
+	notify_deinit(&main_notify);
 	event_pipe_deinit();
 
 	input_stream_global_finish();
