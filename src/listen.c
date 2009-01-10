@@ -54,8 +54,13 @@
 		port, strerror(errno)); \
 } while (0);
 
-static int *listenSockets;
-static int numberOfListenSockets;
+struct listen_socket {
+	struct listen_socket *next;
+
+	int fd;
+};
+
+static struct listen_socket *listen_sockets;
 int boundPort;
 
 static gboolean
@@ -69,6 +74,7 @@ static int establishListen(int pf, const struct sockaddr *addrp,
 #ifdef HAVE_STRUCT_UCRED
 	int passcred = 1;
 #endif
+	struct listen_socket *ls;
 	GIOChannel *channel;
 
 	if ((sock = socket(pf, SOCK_STREAM, 0)) < 0)
@@ -91,16 +97,16 @@ static int establishListen(int pf, const struct sockaddr *addrp,
 	setsockopt(sock, SOL_SOCKET, SO_PASSCRED, &passcred, sizeof(passcred));
 #endif
 
-	numberOfListenSockets++;
-	listenSockets = g_realloc(listenSockets, sizeof(listenSockets[0]) *
-				  numberOfListenSockets);
-
-	listenSockets[numberOfListenSockets - 1] = sock;
+	ls = g_new(struct listen_socket, 1);
+	ls->fd = sock;
 
 	channel = g_io_channel_unix_new(sock);
 	g_io_add_watch(channel, G_IO_IN,
 		       listen_in_event, GINT_TO_POINTER(sock));
 	g_io_channel_unref(channel);
+
+	ls->next = listen_sockets;
+	listen_sockets = ls;
 
 	return 0;
 }
@@ -269,18 +275,15 @@ void listenOnPort(void)
 
 void closeAllListenSockets(void)
 {
-	int i;
-
 	g_debug("closeAllListenSockets called");
 
-	for (i = 0; i < numberOfListenSockets; i++) {
-		g_debug("closing listen socket %i", i);
-		while (close(listenSockets[i]) < 0 && errno == EINTR) ;
-	}
+	while (listen_sockets != NULL) {
+		struct listen_socket *ls = listen_sockets;
+		listen_sockets = ls->next;
 
-	numberOfListenSockets = 0;
-	g_free(listenSockets);
-	listenSockets = NULL;
+		close(ls->fd);
+		g_free(ls);
+	}
 }
 
 static int get_remote_uid(int fd)
