@@ -1,0 +1,445 @@
+# GLib allocates a lot of memory which is never freed, and this makes
+# it too hard to read valgrind memcheck results.  You can pass this
+# file with "--suppressions=valgrind.suppressions" to disable lots of
+# bogus messages.
+
+{
+   g_main_context_dispatch
+   Memcheck:Leak
+   fun:malloc
+   fun:g_malloc
+   fun:g_slice_alloc
+   fun:g_slice_alloc0
+   fun:get_dispatch
+   fun:g_main_context_dispatch
+}
+
+{
+   g_main_context_default
+   Memcheck:Leak
+   fun:malloc
+   fun:g_malloc
+   fun:g_slice_alloc
+   fun:g_slist_append
+   fun:g_main_context_new
+   fun:g_main_context_default
+}
+
+{
+   g_main_context_default
+   Memcheck:Leak
+   fun:malloc
+   fun:g_malloc
+   fun:g_slice_alloc
+   fun:g_ptr_array_sized_new
+   fun:g_main_context_new
+   fun:g_main_context_default
+}
+
+{
+   g_main_context_default
+   Memcheck:Leak
+   fun:calloc
+   fun:g_malloc0
+   fun:g_main_context_new
+   fun:g_main_context_default
+}
+
+{
+   g_main_context_default
+   Memcheck:Leak
+   fun:malloc
+   fun:g_malloc
+   fun:g_slice_alloc
+   fun:g_main_context_add_poll_unlocked
+   fun:g_main_context_new
+   fun:g_main_context_default
+}
+
+{
+   g_main_loop_run
+   Memcheck:Leak
+   fun:malloc
+   fun:g_malloc
+   fun:g_main_context_iterate
+   fun:g_main_loop_run
+   fun:main
+}
+
+{
+   g_main_loop_run
+   Memcheck:Leak
+   fun:malloc
+   fun:realloc
+   fun:g_realloc
+   fun:g_ptr_array_maybe_expand
+   fun:g_ptr_array_add
+   fun:g_main_context_check
+   fun:g_main_context_iterate
+   fun:g_main_loop_run
+}
+
+{
+   g_get_language_names
+   Memcheck:Leak
+   fun:malloc
+   fun:g_malloc
+   fun:g_strdup
+   fun:g_get_language_names
+}
+
+{
+   g_get_language_names
+   Memcheck:Leak
+   fun:malloc
+   fun:g_malloc
+   fun:g_strconcat
+   fun:_g_compute_locale_variants
+   fun:g_get_language_names
+}
+
+{
+   g_get_language_names
+   Memcheck:Leak
+   fun:calloc
+   fun:g_malloc0
+   fun:g_get_language_names
+}
+
+{
+   g_get_language_names
+   Memcheck:Leak
+   fun:malloc
+   fun:g_malloc
+   fun:g_get_language_names
+}
+
+{
+   g_get_language_names
+   Memcheck:Leak
+   fun:realloc
+   fun:g_realloc
+   fun:g_array_maybe_expand
+   fun:g_array_set_size
+   fun:g_static_private_set
+   fun:g_get_language_names
+}
+
+{
+   g_get_language_names
+   Memcheck:Leak
+   fun:calloc
+   fun:g_malloc0
+   fun:g_hash_table_insert_internal
+   fun:g_get_language_names
+}
+
+{
+   g_get_language_names
+   Memcheck:Leak
+   fun:malloc
+   fun:g_malloc
+   fun:g_slice_alloc
+   fun:g_hash_table_insert_internal
+   fun:g_get_language_names
+}
+
+{
+   g_get_language_names
+   Memcheck:Leak
+   fun:malloc
+   fun:g_malloc
+   fun:g_slice_alloc
+   fun:g_hash_table_new_full
+   fun:g_get_language_names
+   fun:main
+}
+
+{
+   g_set_prgname
+   Memcheck:Leak
+   fun:malloc
+   fun:g_malloc
+   fun:g_strdup
+   fun:g_set_prgname
+}
+
+{
+   g_thread_init_glib
+   Memcheck:Leak
+   fun:malloc
+   fun:g_malloc
+   fun:g_private_new_posix_impl
+   fun:_g_messages_thread_init_nomessage
+   fun:g_thread_init_glib
+}
+
+{
+   g_thread_init_glib
+   Memcheck:Leak
+   fun:malloc
+   fun:g_malloc
+   fun:g_private_new_posix_impl
+   fun:_g_slice_thread_init_nomessage
+   fun:g_thread_init_glib
+}
+
+{
+   g_thread_init_glib
+   Memcheck:Leak
+   fun:calloc
+   fun:g_malloc0
+   fun:g_slice_init_nomessage
+   fun:_g_slice_thread_init_nomessage
+   fun:g_thread_init_glib
+}
+
+{
+   g_thread_init_glib
+   Memcheck:Leak
+   fun:malloc
+   fun:g_malloc
+   fun:g_private_new_posix_impl
+   fun:g_thread_init_glib
+}
+
+{
+   g_thread_init_glib
+   Memcheck:Leak
+   fun:malloc
+   fun:g_malloc
+   fun:g_mutex_new_posix_impl
+   fun:_g_messages_thread_init_nomessage
+   fun:g_thread_init_glib
+}
+
+{
+   g_thread_init_glib
+   Memcheck:Leak
+   fun:calloc
+   fun:g_malloc0
+   fun:g_thread_self
+   fun:g_thread_init_glib
+}
+
+{
+   g_thread_init_glib
+   Memcheck:Leak
+   fun:malloc
+   fun:g_malloc
+   fun:g_mutex_new_posix_impl
+   fun:_g_slice_thread_init_nomessage
+   fun:g_thread_init_glib
+}
+
+{
+   g_thread_init_glib
+   Memcheck:Leak
+   fun:malloc
+   fun:g_malloc
+   fun:g_cond_new_posix_impl
+   fun:g_thread_init_glib
+}
+
+{
+   g_thread_init_glib
+   Memcheck:Leak
+   fun:malloc
+   fun:g_malloc
+   fun:g_mutex_new_posix_impl
+   fun:g_thread_init_glib
+}
+
+{
+   g_thread_init_glib
+   Memcheck:Leak
+   fun:malloc
+   fun:g_malloc
+   fun:g_mutex_new_posix_impl
+   fun:_g_mem_thread_init_noprivate_nomessage
+   fun:g_thread_init_glib
+}
+
+{
+   g_get_filename_charsets
+   Memcheck:Leak
+   fun:malloc
+   fun:g_malloc
+   fun:g_strdup
+   fun:g_get_filename_charsets
+}
+
+{
+   g_get_filename_charsets2
+   Memcheck:Leak
+   fun:calloc
+   fun:g_malloc0
+   fun:g_get_filename_charsets
+}
+
+{
+   g_get_filename_charsets3
+   Memcheck:Leak
+   fun:malloc
+   fun:g_malloc
+   fun:g_slice_alloc
+   fun:g_array_sized_new
+   fun:g_static_private_set
+   fun:g_get_filename_charsets
+}
+
+{
+   g_get_charset
+   Memcheck:Leak
+   fun:malloc
+   fun:g_malloc
+   fun:g_strdup
+   fun:g_get_charset
+}
+
+{
+   g_get_charset2
+   Memcheck:Leak
+   fun:calloc
+   fun:g_malloc0
+   fun:g_get_charset
+}
+
+{
+   openssl
+   Memcheck:Leak
+   fun:malloc
+   fun:CRYPTO_malloc
+   fun:engine_cleanup_add_last
+   fun:ENGINE_add
+   fun:ENGINE_load_dynamic
+}
+
+{
+   openssl
+   Memcheck:Leak
+   fun:malloc
+   fun:CRYPTO_malloc
+   fun:ENGINE_new
+   fun:ENGINE_load_dynamic
+}
+
+{
+   openssl
+   Memcheck:Leak
+   fun:malloc
+   fun:CRYPTO_malloc
+   obj:/usr/lib/libssl.so.0.9.8
+   fun:SSL_COMP_get_compression_methods
+   fun:SSL_library_init
+}
+
+{
+   openssl
+   Memcheck:Leak
+   fun:malloc
+   fun:CRYPTO_malloc
+   fun:sk_new
+   obj:/usr/lib/libssl.so.0.9.8
+   fun:SSL_COMP_get_compression_methods
+   fun:SSL_library_init
+}
+
+{
+   openssl
+   Memcheck:Leak
+   fun:malloc
+   fun:CRYPTO_malloc
+   fun:sk_new
+   fun:engine_cleanup_add_last
+   fun:ENGINE_add
+   fun:ENGINE_load_dynamic
+}
+
+{
+   openssl
+   Memcheck:Leak
+   fun:malloc
+   fun:CRYPTO_malloc
+   fun:lh_insert
+   obj:/usr/lib/libcrypto.so.0.9.8
+   fun:ERR_get_state
+   fun:ERR_clear_error
+}
+
+{
+   <insert a suppression name here>
+   Memcheck:Leak
+   fun:malloc
+   fun:_dl_map_object_deps
+   fun:dl_open_worker
+   fun:_dl_catch_error
+   fun:_dl_open
+   fun:do_dlopen
+   fun:_dl_catch_error
+   fun:dlerror_run
+   fun:__libc_dlopen_mode
+   fun:pthread_cancel_init
+}
+
+
+# is that a leak in libdbus?
+
+{
+   <insert a suppression name here>
+   Memcheck:Leak
+   fun:malloc
+   obj:/usr/lib/libdbus-1.so.3.4.0
+   obj:/usr/lib/libdbus-1.so.3.4.0
+   fun:avahi_client_new
+}
+
+{
+   <insert a suppression name here>
+   Memcheck:Leak
+   fun:malloc
+   obj:/usr/lib/libdbus-1.so.3.4.0
+   fun:dbus_message_unref
+   obj:/usr/lib/libdbus-1.so.3.4.0
+   fun:dbus_connection_send_with_reply_and_block
+   fun:dbus_bus_register
+   obj:/usr/lib/libdbus-1.so.3.4.0
+   fun:avahi_client_new
+}
+
+{
+   <insert a suppression name here>
+   Memcheck:Leak
+   fun:malloc
+   obj:/usr/lib/libdbus-1.so.3.4.0
+   fun:dbus_message_new_method_call
+   fun:dbus_bus_register
+   obj:/usr/lib/libdbus-1.so.3.4.0
+   fun:avahi_client_new
+}
+
+{
+   <insert a suppression name here>
+   Memcheck:Leak
+   fun:malloc
+   obj:/usr/lib/libdbus-1.so.3.4.0
+   obj:/usr/lib/libdbus-1.so.3.4.0
+   fun:avahi_client_new
+}
+
+{
+   <insert a suppression name here>
+   Memcheck:Leak
+   fun:malloc
+   obj:/usr/lib/libdbus-1.so.3.4.0
+   fun:dbus_message_new_error
+   obj:/usr/lib/libdbus-1.so.3.4.0
+   fun:dbus_connection_send_with_reply
+   fun:dbus_connection_send_with_reply_and_block
+   obj:/usr/lib/libavahi-client.so.3.2.4
+   fun:avahi_entry_group_new
+   fun:avahiRegisterService
+   fun:avahiClientCallback
+   obj:/usr/lib/libavahi-client.so.3.2.4
+   fun:avahi_client_new
+}
