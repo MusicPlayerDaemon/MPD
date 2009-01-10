@@ -25,14 +25,7 @@ struct oss_mixer {
 	int volume_control;
 };
 
-struct oss_mixer *oss_mixer_init(void);
-void oss_mixer_finish(struct oss_mixer *am);
-void oss_mixer_configure(struct oss_mixer *am, ConfigParam *param);
-bool oss_mixer_open(struct oss_mixer *am);
-bool oss_mixer_control(struct oss_mixer *am, int cmd, void *arg);
-void oss_mixer_close(struct oss_mixer *am);
-
-struct oss_mixer *
+static struct mixer_data *
 oss_mixer_init(void)
 {
 	struct oss_mixer *om = g_malloc(sizeof(struct oss_mixer));
@@ -40,18 +33,20 @@ oss_mixer_init(void)
 	om->control = NULL;
 	om->device_fd = -1;
 	om->volume_control = SOUND_MIXER_PCM;
-	return om;
+	return (struct mixer_data *)om;
 }
 
-void
-oss_mixer_finish(struct oss_mixer *om)
+static void
+oss_mixer_finish(struct mixer_data *data)
 {
+	struct oss_mixer *om = (struct oss_mixer *) data;
 	g_free(om);
 }
 
-void
-oss_mixer_configure(struct oss_mixer *om, ConfigParam *param)
+static void
+oss_mixer_configure(struct mixer_data *data, ConfigParam *param)
 {
+	struct oss_mixer *om = (struct oss_mixer *) data;
 	BlockParam *bp;
 	bp = getBlockParam(param, "mixer_device");
 	if (bp) {
@@ -63,9 +58,10 @@ oss_mixer_configure(struct oss_mixer *om, ConfigParam *param)
 	}
 }
 
-void
-oss_mixer_close(struct oss_mixer *om)
+static void
+oss_mixer_close(struct mixer_data *data)
 {
+	struct oss_mixer *om = (struct oss_mixer *) data;
 	if (om->device_fd != -1)
 		while (close(om->device_fd) && errno == EINTR) ;
 	om->device_fd = -1;
@@ -86,9 +82,10 @@ oss_find_mixer(const char *name)
 	return -1;
 }
 
-bool
-oss_mixer_open(struct oss_mixer *om)
+static bool
+oss_mixer_open(struct mixer_data *data)
 {
+	struct oss_mixer *om = (struct oss_mixer *) data;
 	const char *device = VOLUME_MIXER_OSS_DEFAULT;
 
 	if (om->device) {
@@ -106,7 +103,7 @@ oss_mixer_open(struct oss_mixer *om)
 
 		if (ioctl(om->device_fd, SOUND_MIXER_READ_DEVMASK, &devmask) < 0) {
 			g_warning("errors getting read_devmask for oss mixer\n");
-			oss_mixer_close(om);
+			oss_mixer_close(data);
 			return false;
 		}
 		i = oss_find_mixer(om->control);
@@ -114,12 +111,12 @@ oss_mixer_open(struct oss_mixer *om)
 		if (i < 0) {
 			g_warning("mixer control \"%s\" not found\n",
 				om->control);
-			oss_mixer_close(om);
+			oss_mixer_close(data);
 			return false;
 		} else if (!((1 << i) & devmask)) {
 			g_warning("mixer control \"%s\" not usable\n",
 				om->control);
-			oss_mixer_close(om);
+			oss_mixer_close(data);
 			return false;
 		}
 		om->volume_control = i;
@@ -127,14 +124,15 @@ oss_mixer_open(struct oss_mixer *om)
 	return true;
 }
 
-bool
-oss_mixer_control(struct oss_mixer *om, int cmd, void *arg)
+static bool
+oss_mixer_control(struct mixer_data *data, int cmd, void *arg)
 {
+	struct oss_mixer *om = (struct oss_mixer *) data;
 	switch (cmd) {
 	case AC_MIXER_CONFIGURE:
-		oss_mixer_configure(om, (ConfigParam *)arg);
-		//if (om->device_fd >= 0)
-			oss_mixer_close(om);
+		oss_mixer_configure(data, (ConfigParam *)arg);
+		if (om->device_fd >= 0)
+			oss_mixer_close(data);
 		return true;
 		break;
 	case AC_MIXER_GETVOL:
@@ -142,12 +140,12 @@ oss_mixer_control(struct oss_mixer *om, int cmd, void *arg)
 		int left, right, level;
 		int *ret;
 
-		if (om->device_fd < 0 && !oss_mixer_open(om)) {
+		if (om->device_fd < 0 && !oss_mixer_open(data)) {
 			return false;
 		}
 
 		if (ioctl(om->device_fd, MIXER_READ(om->volume_control), &level) < 0) {
-			oss_mixer_close(om);
+			oss_mixer_close(data);
 			g_warning("unable to read oss volume\n");
 			return false;
 		}
@@ -169,7 +167,7 @@ oss_mixer_control(struct oss_mixer *om, int cmd, void *arg)
 		int level;
 		int *value = arg;
 
-		if (om->device_fd < 0 && !oss_mixer_open(om)) {
+		if (om->device_fd < 0 && !oss_mixer_open(data)) {
 			return false;
 		}
 
@@ -184,7 +182,7 @@ oss_mixer_control(struct oss_mixer *om, int cmd, void *arg)
 
 		if (ioctl(om->device_fd, MIXER_WRITE(om->volume_control), &level) < 0) {
 			g_warning("unable to set oss volume\n");
-			oss_mixer_close(om);
+			oss_mixer_close(data);
 			return false;
 		}
 		return true;
@@ -195,3 +193,12 @@ oss_mixer_control(struct oss_mixer *om, int cmd, void *arg)
 	}
 	return false;
 }
+
+struct mixer_plugin oss_mixer = {
+	.init = oss_mixer_init,
+	.finish = oss_mixer_finish,
+	.configure = oss_mixer_configure,
+	.open = oss_mixer_open,
+	.control = oss_mixer_control,
+	.close = oss_mixer_close
+};

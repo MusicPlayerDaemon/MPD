@@ -4,30 +4,58 @@
 
 #include "conf.h"
 
-/**
- * alsa mixer
+/*
+ * list of currently implemented mixers
  */
 
-struct alsa_mixer;
+extern struct mixer_plugin alsa_mixer;
+extern struct mixer_plugin oss_mixer;
 
-struct alsa_mixer *alsa_mixer_init(void);
-void alsa_mixer_finish(struct alsa_mixer *am);
-void alsa_mixer_configure(struct alsa_mixer *am, ConfigParam *param);
-bool alsa_mixer_open(struct alsa_mixer *am);
-bool alsa_mixer_control(struct alsa_mixer *am, int cmd, void *arg);
-void alsa_mixer_close(struct alsa_mixer *am);
+struct mixer_data;
 
-/**
- * oss mixer
- */
+struct mixer_plugin {
 
-struct oss_mixer;
+        /**
+         * Allocate and initialize mixer data
+	 */
+        struct mixer_data *(*init)(void);
 
-struct oss_mixer *oss_mixer_init(void);
-void oss_mixer_finish(struct oss_mixer *am);
-void oss_mixer_configure(struct oss_mixer *am, ConfigParam *param);
-bool oss_mixer_open(struct oss_mixer *am);
-bool oss_mixer_control(struct oss_mixer *am, int cmd, void *arg);
-void oss_mixer_close(struct oss_mixer *am);
+        /**
+	 * Finish and free mixer data
+         */
+        void (*finish)(struct mixer_data *data);
+
+        /**
+	 * Setup and configure mixer
+         */
+	void (*configure)(struct mixer_data *data, ConfigParam *param);
+
+        /**
+    	 * Open mixer device
+	 */
+	bool (*open)(struct mixer_data *data);
+
+        /**
+	 * Control mixer device.
+         */
+	bool (*control)(struct mixer_data *data, int cmd, void *arg);
+
+        /**
+    	 * Close mixer device
+	 */
+	void (*close)(struct mixer_data *data);
+};
+
+struct mixer {
+	struct mixer_plugin *plugin;
+	struct mixer_data *data;
+};
+
+void mixer_init(struct mixer *mixer, struct mixer_plugin *plugin);
+void mixer_finish(struct mixer *mixer);
+void mixer_configure(struct mixer *mixer, ConfigParam *param);
+bool mixer_open(struct mixer *mixer);
+bool mixer_control(struct mixer *mixer, int cmd, void *arg);
+void mixer_close(struct mixer *mixer);
 
 #endif

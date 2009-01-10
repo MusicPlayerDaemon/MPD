@@ -18,7 +18,7 @@ struct alsa_mixer {
 	int volume_set;
 };
 
-struct alsa_mixer *
+static struct mixer_data *
 alsa_mixer_init(void)
 {
 	struct alsa_mixer *am = g_malloc(sizeof(struct alsa_mixer));
@@ -29,18 +29,20 @@ alsa_mixer_init(void)
 	am->volume_min = 0;
 	am->volume_max = 0;
 	am->volume_set = -1;
-	return am;
+	return (struct mixer_data *)am;
 }
 
-void
-alsa_mixer_finish(struct alsa_mixer *am)
+static void
+alsa_mixer_finish(struct mixer_data *data)
 {
+	struct alsa_mixer *am = (struct alsa_mixer *)data;
 	g_free(am);
 }
 
-void
-alsa_mixer_configure(struct alsa_mixer *am, ConfigParam *param)
+static void
+alsa_mixer_configure(struct mixer_data *data, ConfigParam *param)
 {
+	struct alsa_mixer *am = (struct alsa_mixer *)data;
 	BlockParam *bp;
 
 	if ((bp = getBlockParam(param, "mixer_device")))
@@ -49,16 +51,18 @@ alsa_mixer_configure(struct alsa_mixer *am, ConfigParam *param)
 		am->control = bp->value;
 }
 
-void
-alsa_mixer_close(struct alsa_mixer *am)
+static void
+alsa_mixer_close(struct mixer_data *data)
 {
+	struct alsa_mixer *am = (struct alsa_mixer *)data;
 	if (am->handle) snd_mixer_close(am->handle);
 	am->handle = NULL;
 }
 
-bool
-alsa_mixer_open(struct alsa_mixer *am)
+static bool
+alsa_mixer_open(struct mixer_data *data)
 {
+	struct alsa_mixer *am = (struct alsa_mixer *)data;
 	int err;
 	snd_mixer_elem_t *elem;
 	const char *control_name = VOLUME_MIXER_ALSA_CONTROL_DEFAULT;
@@ -77,7 +81,7 @@ alsa_mixer_open(struct alsa_mixer *am)
 	if ((err = snd_mixer_attach(am->handle, device)) < 0) {
 		g_warning("problems attaching alsa mixer: %s\n",
 			snd_strerror(err));
-		alsa_mixer_close(am);
+		alsa_mixer_close(data);
 		return false;
 	}
 
@@ -85,14 +89,14 @@ alsa_mixer_open(struct alsa_mixer *am)
 		    NULL)) < 0) {
 		g_warning("problems snd_mixer_selem_register'ing: %s\n",
 			snd_strerror(err));
-		alsa_mixer_close(am);
+		alsa_mixer_close(data);
 		return false;
 	}
 
 	if ((err = snd_mixer_load(am->handle)) < 0) {
 		g_warning("problems snd_mixer_selem_register'ing: %s\n",
 			snd_strerror(err));
-		alsa_mixer_close(am);
+		alsa_mixer_close(data);
 		return false;
 	}
 
@@ -122,18 +126,19 @@ alsa_mixer_open(struct alsa_mixer *am)
 
 	g_warning("can't find alsa mixer control \"%s\"\n", control_name);
 
-	alsa_mixer_close(am);
+	alsa_mixer_close(data);
 	return false;
 }
 
-bool
-alsa_mixer_control(struct alsa_mixer *am, int cmd, void *arg)
+static bool
+alsa_mixer_control(struct mixer_data *data, int cmd, void *arg)
 {
+	struct alsa_mixer *am = (struct alsa_mixer *)data;
 	switch (cmd) {
 	case AC_MIXER_CONFIGURE:
-		alsa_mixer_configure(am, (ConfigParam *)arg);
+		alsa_mixer_configure(data, (ConfigParam *)arg);
 		if (am->handle)
-			alsa_mixer_close(am);
+			alsa_mixer_close(data);
 		return true;
 	case AC_MIXER_GETVOL:
 	{
@@ -141,20 +146,20 @@ alsa_mixer_control(struct alsa_mixer *am, int cmd, void *arg)
 		int ret, *volume = arg;
 		long level;
 
-		if (!am->handle && !alsa_mixer_open(am)) {
+		if (!am->handle && !alsa_mixer_open(data)) {
 			return false;
 		}
 		if ((err = snd_mixer_handle_events(am->handle)) < 0) {
 			g_warning("problems getting alsa volume: %s (snd_mixer_%s)\n",
 				snd_strerror(err), "handle_events");
-			alsa_mixer_close(am);
+			alsa_mixer_close(data);
 			return false;
 		}
 		if ((err = snd_mixer_selem_get_playback_volume(am->elem,
 			       SND_MIXER_SCHN_FRONT_LEFT, &level)) < 0) {
 			g_warning("problems getting alsa volume: %s (snd_mixer_%s)\n",
 				snd_strerror(err), "selem_get_playback_volume");
-			alsa_mixer_close(am);
+			alsa_mixer_close(data);
 			return false;
 		}
 		ret = ((am->volume_set / 100.0) * (am->volume_max - am->volume_min)
@@ -175,7 +180,7 @@ alsa_mixer_control(struct alsa_mixer *am, int cmd, void *arg)
 		int *volume = arg;
 		int err;
 
-		if (!am->handle && !alsa_mixer_open(am)) {
+		if (!am->handle && !alsa_mixer_open(data)) {
 			return false;
 		}
 		vol = *volume;
@@ -193,7 +198,7 @@ alsa_mixer_control(struct alsa_mixer *am, int cmd, void *arg)
 								level)) < 0) {
 			g_warning("problems setting alsa volume: %s\n",
 				snd_strerror(err));
-			alsa_mixer_close(am);
+			alsa_mixer_close(data);
 			return false;
 		}
 		return true;
@@ -204,3 +209,12 @@ alsa_mixer_control(struct alsa_mixer *am, int cmd, void *arg)
 	}
 	return false;
 }
+
+struct mixer_plugin alsa_mixer = {
+	.init = alsa_mixer_init,
+	.finish = alsa_mixer_finish,
+	.configure = alsa_mixer_configure,
+	.open = alsa_mixer_open,
+	.control = alsa_mixer_control,
+	.close = alsa_mixer_close
+};

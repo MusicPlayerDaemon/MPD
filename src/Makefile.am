@@ -128,6 +128,7 @@ mpd_SOURCES = \
 	main.c \
 	event_pipe.c \
 	daemon.c \
+	mixer_api.c \
 	normalize.c \
 	compress.c \
 	pipe.c \
