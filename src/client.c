@@ -620,6 +620,9 @@ void client_manager_deinit(void)
 	client_close_all();
 
 	client_max_connections = 0;
+
+	if (expire_source_id != 0)
+		g_source_remove(expire_source_id);
 }
 
 static void
