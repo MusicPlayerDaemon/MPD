@@ -58,6 +58,8 @@ struct listen_socket {
 	struct listen_socket *next;
 
 	int fd;
+
+	guint source_id;
 };
 
 static struct listen_socket *listen_sockets;
@@ -101,8 +103,8 @@ static int establishListen(int pf, const struct sockaddr *addrp,
 	ls->fd = sock;
 
 	channel = g_io_channel_unix_new(sock);
-	g_io_add_watch(channel, G_IO_IN,
-		       listen_in_event, GINT_TO_POINTER(sock));
+	ls->source_id = g_io_add_watch(channel, G_IO_IN,
+				       listen_in_event, GINT_TO_POINTER(sock));
 	g_io_channel_unref(channel);
 
 	ls->next = listen_sockets;
@@ -281,6 +283,7 @@ void closeAllListenSockets(void)
 		struct listen_socket *ls = listen_sockets;
 		listen_sockets = ls->next;
 
+		g_source_remove(ls->source_id);
 		close(ls->fd);
 		g_free(ls);
 	}
