@@ -71,6 +71,8 @@ mixer_reconfigure(char *driver)
 			g_error("Using mixer_type '%s' with not enabled %s output", driver, driver);
 		}
 	}
+	//free parameter list
+	config_param_free(newparam, NULL);
 }
 
 void volume_init(void)

@@ -20,6 +20,7 @@
 #define MPD_CONF_H
 
 #include <stdbool.h>
+#include <glib.h>
 
 #define CONF_MUSIC_DIR                  "music_directory"
 #define CONF_PLAYLIST_DIR               "playlist_directory"
@@ -104,6 +105,8 @@ bool config_get_bool(const char *name, bool default_value);
 int getBoolBlockParam(ConfigParam *param, const char *name, int force);
 
 ConfigParam *newConfigParam(const char *value, int line);
+
+void config_param_free(gpointer data, gpointer user_data);
 
 void addBlockParam(ConfigParam * param, const char *name, const char *value, int line);
 

@@ -80,7 +80,7 @@ ConfigParam *newConfigParam(const char *value, int line)
 	return ret;
 }
 
-static void
+void
 config_param_free(gpointer data, G_GNUC_UNUSED gpointer user_data)
 {
 	ConfigParam *param = data;
