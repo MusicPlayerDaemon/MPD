@@ -35,6 +35,7 @@
 #endif
 
 static int event_pipe[2];
+static guint event_pipe_source_id;
 static GMutex *event_pipe_mutex;
 static bool pipe_events[PIPE_EVENT_MAX];
 static event_pipe_callback_t event_pipe_callbacks[PIPE_EVENT_MAX];
@@ -92,7 +93,8 @@ void event_pipe_init(void)
 		g_error("Couldn't set non-blocking I/O: %s", strerror(errno));
 
 	channel = g_io_channel_unix_new(event_pipe[0]);
-	g_io_add_watch(channel, G_IO_IN, main_notify_event, NULL);
+	event_pipe_source_id = g_io_add_watch(channel, G_IO_IN,
+					      main_notify_event, NULL);
 	g_io_channel_unref(channel);
 
 	event_pipe_mutex = g_mutex_new();
@@ -101,6 +103,8 @@ void event_pipe_init(void)
 void event_pipe_deinit(void)
 {
 	g_mutex_free(event_pipe_mutex);
+
+	g_source_remove(event_pipe_source_id);
 
 	close(event_pipe[0]);
 	close(event_pipe[1]);
