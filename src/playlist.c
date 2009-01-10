@@ -425,7 +425,7 @@ enum playlist_result playlistInfo(struct client *client, int song, int max)
 	if (song >= (int)playlist.length)
 		return PLAYLIST_RESULT_BAD_RANGE;
 	if (max > 0) {
-		end = MIN((unsigned)(max + 1), playlist.length);
+		end = MIN((unsigned)max, playlist.length);
 		if (end <= begin)
 			return PLAYLIST_RESULT_BAD_RANGE;
 	}

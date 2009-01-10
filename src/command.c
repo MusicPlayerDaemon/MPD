@@ -390,7 +390,7 @@ handle_currentsong(struct client *client,
 	if (song < 0)
 		return COMMAND_RETURN_OK;
 
-	result = playlistInfo(client, song, song);
+	result = playlistInfo(client, song, song + 1);
 	return print_playlist_result(client, result);
 }
 
