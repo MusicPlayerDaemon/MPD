@@ -218,6 +218,7 @@ int main(int argc, char *argv[])
 	Options options;
 	clock_t start;
 	GTimer *save_state_timer;
+	guint save_state_source_id;
 
 	daemonize_close_stdin();
 
@@ -295,7 +296,8 @@ int main(int argc, char *argv[])
 
 	save_state_timer = g_timer_new();
 
-	g_timeout_add(5 * 60 * 1000, timer_save_state_file, NULL);
+	save_state_source_id = g_timeout_add(5 * 60 * 1000,
+					     timer_save_state_file, NULL);
 
 	/* run the main loop */
 
@@ -305,6 +307,7 @@ int main(int argc, char *argv[])
 
 	g_main_loop_unref(main_loop);
 
+	g_source_remove(save_state_source_id);
 	g_timer_destroy(save_state_timer);
 
 	write_state_file();
