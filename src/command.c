@@ -177,6 +177,14 @@ check_range(struct client *client, unsigned *value_r1, unsigned *value_r2,
 		return false;
 	}
 
+	if (value == -1 && *test == 0) {
+		/* compatibility with older MPD versions: specifying
+		   "-1" makes MPD display the whole list */
+		*value_r1 = 0;
+		*value_r2 = UINT_MAX;
+		return true;
+	}
+
 	if (value < 0) {
 		command_error(client, ACK_ERROR_ARG,
 			      "Number is negative: %s", s);
