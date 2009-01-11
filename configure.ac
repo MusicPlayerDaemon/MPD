@@ -398,8 +398,6 @@ fi
 
 AM_CONDITIONAL(HAVE_OSS, test x$enable_oss = xyes)
 
-PKG_PROG_PKG_CONFIG
-
 if test x$enable_pulse = xyes; then
 	PKG_CHECK_MODULES([PULSE], [libpulse-simple],
 	                  [enable_pulse=yes;AC_DEFINE([HAVE_PULSE], 1, [Define to enable PulseAudio support])] MPD_LIBS="$MPD_LIBS $PULSE_LIBS" MPD_CFLAGS="$MPD_CFLAGS $PULSE_CFLAGS",
