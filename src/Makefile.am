@@ -1,5 +1,31 @@
 bin_PROGRAMS = mpd
 
+mpd_CFLAGS = $(MPD_CFLAGS)
+mpd_CPPFLAGS = \
+	$(CURL_CFLAGS) \
+	$(AO_CFLAGS) $(ALSA_CFLAGS) \
+	$(SHOUT_CFLAGS) \
+	$(OGGVORBIS_CFLAGS) $(VORBISENC_CFLAGS) \
+	$(patsubst -I%/FLAC,-I%,$(FLAC_CFLAGS)) \
+	$(AUDIOFILE_CFLAGS) $(LIBMIKMOD_CFLAGS) \
+	$(MODPLUG_CFLAGS) \
+	$(ID3TAG_CFLAGS) \
+	$(MAD_CFLAGS) \
+	$(FFMPEG_CFLAGS) \
+	$(GLIB_CFLAGS)
+mpd_LDADD = $(MPD_LIBS) \
+	$(CURL_LIBS) \
+	$(AO_LIBS) $(ALSA_LIBS) \
+	$(SHOUT_LIBS) \
+	$(OGGVORBIS_LIBS) $(VORBISENC_LIBS) $(FLAC_LIBS) \
+	$(AUDIOFILE_LIBS) $(LIBMIKMOD_LIBS) \
+	$(MODPLUG_LIBS) \
+	$(ID3TAG_LIBS) \
+	$(MAD_LIBS) \
+	$(MP4FF_LIBS) \
+	$(FFMPEG_LIBS) \
+	$(GLIB_LIBS)
+
 mpd_headers = \
 	notify.h \
 	ack.h \
@@ -320,32 +346,6 @@ endif
 if HAVE_SHOUT_OGG
 mpd_SOURCES += output/shout_ogg.c
 endif
-
-mpd_CFLAGS = $(MPD_CFLAGS)
-mpd_CPPFLAGS = \
-	$(CURL_CFLAGS) \
-	$(AO_CFLAGS) $(ALSA_CFLAGS) \
-	$(SHOUT_CFLAGS) \
-	$(OGGVORBIS_CFLAGS) $(VORBISENC_CFLAGS) \
-	$(patsubst -I%/FLAC,-I%,$(FLAC_CFLAGS)) \
-	$(AUDIOFILE_CFLAGS) $(LIBMIKMOD_CFLAGS) \
-	$(MODPLUG_CFLAGS) \
-	$(ID3TAG_CFLAGS) \
-	$(MAD_CFLAGS) \
-	$(FFMPEG_CFLAGS) \
-	$(GLIB_CFLAGS)
-mpd_LDADD = $(MPD_LIBS) \
-	$(CURL_LIBS) \
-	$(AO_LIBS) $(ALSA_LIBS) \
-	$(SHOUT_LIBS) \
-	$(OGGVORBIS_LIBS) $(VORBISENC_LIBS) $(FLAC_LIBS) \
-	$(AUDIOFILE_LIBS) $(LIBMIKMOD_LIBS) \
-	$(MODPLUG_LIBS) \
-	$(ID3TAG_LIBS) \
-	$(MAD_LIBS) \
-	$(MP4FF_LIBS) \
-	$(FFMPEG_LIBS) \
-	$(GLIB_LIBS)
 
 # sparse is a semantic parser
 # URL: git://www.kernel.org/pub/scm/devel/sparse/sparse.git
