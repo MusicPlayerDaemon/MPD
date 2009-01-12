@@ -2,6 +2,7 @@ bin_PROGRAMS = mpd
 
 mpd_CFLAGS = $(MPD_CFLAGS)
 mpd_CPPFLAGS = \
+	$(SQLITE_CFLAGS) \
 	$(CURL_CFLAGS) \
 	$(AO_CFLAGS) $(ALSA_CFLAGS) \
 	$(SHOUT_CFLAGS) \
@@ -14,6 +15,7 @@ mpd_CPPFLAGS = \
 	$(FFMPEG_CFLAGS) \
 	$(GLIB_CFLAGS)
 mpd_LDADD = $(MPD_LIBS) \
+	$(SQLITE_LIBS) \
 	$(CURL_LIBS) \
 	$(AO_LIBS) $(ALSA_LIBS) \
 	$(SHOUT_LIBS) \

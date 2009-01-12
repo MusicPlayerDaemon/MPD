@@ -215,6 +215,20 @@ AM_CONDITIONAL(HAVE_ZEROCONF, test x$with_zeroconf != xno)
 AM_CONDITIONAL(HAVE_AVAHI, test x$with_zeroconf = xavahi)
 AM_CONDITIONAL(HAVE_BONJOUR, test x$with_zeroconf = xbonjour)
 
+AC_ARG_ENABLE(sqlite,
+	AS_HELP_STRING([--enable-sqlite],
+		[enable support for the SQLite database (default: disable)]),
+	[enable_sqlite=$enableval],
+	[enable_sqlite=no])
+
+if test x$enable_sqlite = xyes; then
+	PKG_CHECK_MODULES([SQLITE], [sqlite3],,
+		[AC_MSG_ERROR(sqlite not found)])
+	AC_DEFINE([ENABLE_SQLITE], 1, [Define to enable sqlite database support])
+fi
+
+AM_CONDITIONAL(ENABLE_SQLITE, test x$enable_sqlite = xyes)
+
 
 dnl
 dnl input plugins
