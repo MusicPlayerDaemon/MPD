@@ -91,8 +91,10 @@ static int matchesAnMpdTagItemKey(char *buffer, int *itemType)
 	int i;
 
 	for (i = 0; i < TAG_NUM_OF_ITEM_TYPES; i++) {
-		if (0 == strncmp(mpdTagItemKeys[i], buffer,
-				 strlen(mpdTagItemKeys[i]))) {
+		size_t len = strlen(mpdTagItemKeys[i]);
+
+		if (0 == strncmp(mpdTagItemKeys[i], buffer, len) &&
+		    buffer[len] == ':' && buffer[len + 1] == ' ') {
 			*itemType = i;
 			return 1;
 		}
