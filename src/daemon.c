@@ -79,14 +79,6 @@ daemonize(Options *options)
 			g_error("problems setsid'ing");
 		}
 
-		fflush(NULL);
-		pid = fork();
-		if (pid > 0)
-			_exit(EXIT_SUCCESS);
-		else if (pid < 0) {
-			g_error("problems fork'ing for daemon!");
-		}
-
 		g_debug("daemonized!");
 	}
 
