@@ -10,6 +10,7 @@ MPD 0.14.1 - not yet released
 * fix minor memory leak in decoder_tag()
 * fix cross-fading bug: it used to play some chunks of the new song twice
 * playlist: fix assertion failure during playlist load
+* detect libid3tag without pkg-config
 
 
 ver 0.14 (2008/12/25)
