@@ -44,6 +44,7 @@ static struct {
 const char *mpdTagItemKeys[TAG_NUM_OF_ITEM_TYPES] = {
 	"Artist",
 	"Album",
+	"AlbumArtist",
 	"Title",
 	"Track",
 	"Name",
