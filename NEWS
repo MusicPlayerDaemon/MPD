@@ -7,6 +7,8 @@ MPD 0.14.1 - not yet released
 * update:
   - refresh stats after update
   - save the database even if it is empty
+* input_curl:
+  - use select() to eliminate busy loop during connect
 * log: automatically append newline
 * fix setenv() conflict on Solaris
 * configure.ac: check for pkg-config before using it

@@ -344,6 +344,12 @@ input_curl_buffer(struct input_stream *is)
 
 	c->buffered = false;
 
+	if (!is->ready)
+		/* not ready yet means the caller is waiting in a busy
+		   loop; relax that by calling select() on the
+		   socket */
+		input_curl_select(c);
+
 	do {
 		mcode = curl_multi_perform(c->multi, &running_handles);
 	} while (mcode == CURLM_CALL_MULTI_PERFORM && list_empty(&c->buffers));
