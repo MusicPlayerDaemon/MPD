@@ -1097,7 +1097,7 @@ static void randomizeOrder(int start, int end)
 		clearPlayerQueue();
 
 	for (i = start; i <= end; i++) {
-		ri = g_rand_int_range(g_rand, start, end + 1);
+		ri = g_rand_int_range(g_rand, i, end + 1);
 		if (ri == playlist.current)
 			playlist.current = i;
 		else if (i == playlist.current)
@@ -1180,7 +1180,7 @@ void shufflePlaylist(void)
 		}
 		/* shuffle the rest of the list */
 		for (; i < playlist.length; i++) {
-			ri = g_rand_int_range(g_rand, 1, playlist.length);
+			ri = g_rand_int_range(g_rand, i, playlist.length);
 			swapSongs(i, ri);
 		}
 

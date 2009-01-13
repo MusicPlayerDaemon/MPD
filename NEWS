@@ -15,6 +15,7 @@ MPD 0.14.1 - not yet released
 * fix minor memory leak in decoder_tag()
 * fix cross-fading bug: it used to play some chunks of the new song twice
 * playlist: fix assertion failure during playlist load
+* playlist: implement Fisher-Yates shuffle properly
 * use custom PRNG for volume dithering (speedup)
 * detect libid3tag without pkg-config
 
