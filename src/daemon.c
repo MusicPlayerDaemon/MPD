@@ -75,9 +75,7 @@ daemonize(Options *options)
 			g_error("problems changing to root directory");
 		}
 
-		if (setsid() < 0) {
-			g_error("problems setsid'ing");
-		}
+		setsid();
 
 		g_debug("daemonized!");
 	}
