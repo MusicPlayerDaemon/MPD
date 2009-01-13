@@ -14,6 +14,7 @@ ver 0.15 - (200?/??/??)
 * added Icy-Metadata support
 * fix cross-fading bug: it used to play some chunks of the new song twice
 * --create-db starts the MPD daemon instead of exiting
+* input_curl: honour http_proxy_* config directives
 
 ver 0.14 (2008/12/25)
 * audio outputs:
