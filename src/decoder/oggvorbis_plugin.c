@@ -160,25 +160,21 @@ vorbis_copy_comment(struct tag *tag, const char *comment,
 	return false;
 }
 
-static bool
-vorbis_parse_comment(struct tag *tag, char *comment, enum tag_type tag_type)
+static void
+vorbis_parse_comment(struct tag *tag, const char *comment)
 {
-	const char *needle;
-
 	assert(tag != NULL);
 
-	switch (tag_type) {
-	case TAG_ITEM_TRACK:
-		needle = VORBIS_COMMENT_TRACK_KEY;
-		break;
-	case TAG_ITEM_DISC:
-		needle = VORBIS_COMMENT_DISC_KEY;
-		break;
-	default:
-		needle = mpdTagItemKeys[tag_type];
-	}
+	if (vorbis_copy_comment(tag, comment, VORBIS_COMMENT_TRACK_KEY,
+				TAG_ITEM_TRACK) ||
+	    vorbis_copy_comment(tag, comment, VORBIS_COMMENT_DISC_KEY,
+				TAG_ITEM_DISC))
+		return;
 
-	return vorbis_copy_comment(tag, comment, needle, tag_type);
+	for (unsigned i = 0; i < TAG_NUM_OF_ITEM_TYPES; ++i)
+		if (vorbis_copy_comment(tag, comment,
+					mpdTagItemKeys[i], i))
+			return;
 }
 
 static struct tag *
@@ -186,14 +182,8 @@ vorbis_comments_to_tag(char **comments)
 {
 	struct tag *tag = tag_new();
 
-	while (*comments) {
-		int j;
-		for (j = TAG_NUM_OF_ITEM_TYPES; --j >= 0;) {
-			if (vorbis_parse_comment(tag, *comments, j))
-				break;
-		}
-		comments++;
-	}
+	while (*comments)
+		vorbis_parse_comment(tag, *comments++);
 
 	if (tag_is_empty(tag)) {
 		tag_free(tag);
