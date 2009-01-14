@@ -1,5 +1,6 @@
 #include "songvec.h"
 #include "song.h"
+#include "tag.h"
 
 #include <glib.h>
 
@@ -9,11 +10,56 @@
 
 static GMutex *nr_lock = NULL;
 
+/**
+ * Compare two tag values which should contain an integer value
+ * (e.g. disc or track number).  Either one may be NULL.
+ */
+static int
+compare_number_string(const char *a, const char *b)
+{
+	long ai = a == NULL ? 0 : strtol(a, NULL, 10);
+	long bi = b == NULL ? 0 : strtol(b, NULL, 10);
+
+	if (ai <= 0)
+		return bi <= 0 ? 0 : -1;
+
+	if (bi <= 0)
+		return 1;
+
+	return ai - bi;
+}
+
+static int
+compare_tag_item(const struct tag *a, const struct tag *b, enum tag_type type)
+{
+	if (a == NULL)
+		return b == NULL ? 0 : -1;
+
+	if (b == NULL)
+		return 1;
+
+	return compare_number_string(tag_get_value(a, type),
+				     tag_get_value(b, type));
+}
+
 /* Only used for sorting/searchin a songvec, not general purpose compares */
 static int songvec_cmp(const void *s1, const void *s2)
 {
 	const struct song *a = ((const struct song * const *)s1)[0];
 	const struct song *b = ((const struct song * const *)s2)[0];
+	int ret;
+
+	/* first sort by disc */
+	ret = compare_tag_item(a->tag, b->tag, TAG_ITEM_DISC);
+	if (ret != 0)
+		return ret;
+
+	/* then by track number */
+	ret = compare_tag_item(a->tag, b->tag, TAG_ITEM_TRACK);
+	if (ret != 0)
+		return ret;
+
+	/* still no difference?  compare file name */
 	return g_utf8_collate(a->url, b->url);
 }
 
