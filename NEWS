@@ -15,6 +15,13 @@ ver 0.15 - (200?/??/??)
 * fix cross-fading bug: it used to play some chunks of the new song twice
 * --create-db starts the MPD daemon instead of exiting
 * input_curl: honour http_proxy_* config directives
+* playlist
+  - fix assertion failure during playlist load
+  - implement Fisher-Yates shuffle properly
+  - safely search the playlist for deleted song
+* use custom PRNG for volume dithering (speedup)
+* detect libid3tag without pkg-config
+
 
 ver 0.14 (2008/12/25)
 * audio outputs:
