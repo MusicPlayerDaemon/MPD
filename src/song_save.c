@@ -86,7 +86,7 @@ insertSongIntoList(struct songvec *sv, struct song *newsong)
 	}
 }
 
-static int matchesAnMpdTagItemKey(char *buffer, int *itemType)
+static int matchesAnMpdTagItemKey(char *buffer, enum tag_type *itemType)
 {
 	int i;
 
@@ -108,7 +108,7 @@ void readSongInfoIntoList(FILE *fp, struct songvec *sv,
 {
 	char buffer[MPD_PATH_MAX + 1024];
 	struct song *song = NULL;
-	int itemType;
+	enum tag_type itemType;
 
 	while (fgets(buffer, sizeof(buffer), fp) &&
 	       !g_str_has_prefix(buffer, SONG_END)) {
