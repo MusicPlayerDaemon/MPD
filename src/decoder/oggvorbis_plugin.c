@@ -144,8 +144,7 @@ static const char *VORBIS_COMMENT_DISC_KEY = "discnumber";
 static bool
 vorbis_parse_comment(struct tag *tag, char *comment, enum tag_type tag_type)
 {
-	const char *needle;
-	unsigned int len;
+	const char *needle, *value;
 
 	assert(tag != NULL);
 
@@ -159,10 +158,10 @@ vorbis_parse_comment(struct tag *tag, char *comment, enum tag_type tag_type)
 	default:
 		needle = mpdTagItemKeys[tag_type];
 	}
-	len = strlen(needle);
 
-	if (strncasecmp(comment, needle, len) == 0 && *(comment + len) == '=') {
-		tag_add_item(tag, tag_type, comment + len + 1);
+	value = vorbis_comment_value(comment, needle);
+	if (value != NULL) {
+		tag_add_item(tag, tag_type, value);
 
 		return true;
 	}
