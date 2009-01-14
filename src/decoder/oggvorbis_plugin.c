@@ -90,11 +90,11 @@ static long ogg_tell_cb(void *vdata)
 static const char *
 vorbis_comment_value(const char *comment, const char *needle)
 {
-	int len = strlen(needle);
+	size_t len = strlen(needle);
 
-	if (strncasecmp(comment, needle, len) == 0 && *(comment + len) == '=') {
+	if (g_ascii_strncasecmp(comment, needle, len) == 0 &&
+	    comment[len] == '=')
 		return comment + len + 1;
-	}
 
 	return NULL;
 }
