@@ -743,7 +743,7 @@ deleteASongFromPlaylist(const struct song *song)
 	if (NULL == playlist.songs)
 		return;
 
-	for (unsigned i = 0; i < playlist.length; i++)
+	for (int i = playlist.length - 1; i >= 0; --i)
 		if (song == playlist.songs[i])
 			deleteFromPlaylist(i);
 
