@@ -86,7 +86,8 @@ insertSongIntoList(struct songvec *sv, struct song *newsong)
 	}
 }
 
-static int matchesAnMpdTagItemKey(char *buffer, enum tag_type *itemType)
+static char *
+matchesAnMpdTagItemKey(char *buffer, enum tag_type *itemType)
 {
 	int i;
 
@@ -96,11 +97,11 @@ static int matchesAnMpdTagItemKey(char *buffer, enum tag_type *itemType)
 		if (0 == strncmp(mpdTagItemKeys[i], buffer, len) &&
 		    buffer[len] == ':' && buffer[len + 1] == ' ') {
 			*itemType = i;
-			return 1;
+			return buffer + len + 2;
 		}
 	}
 
-	return 0;
+	return NULL;
 }
 
 void readSongInfoIntoList(FILE *fp, struct songvec *sv,
@@ -109,6 +110,7 @@ void readSongInfoIntoList(FILE *fp, struct songvec *sv,
 	char buffer[MPD_PATH_MAX + 1024];
 	struct song *song = NULL;
 	enum tag_type itemType;
+	const char *value;
 
 	while (fgets(buffer, sizeof(buffer), fp) &&
 	       !g_str_has_prefix(buffer, SONG_END)) {
@@ -126,16 +128,14 @@ void readSongInfoIntoList(FILE *fp, struct songvec *sv,
 			FATAL("Problems reading song info\n");
 		} else if (0 == strncmp(SONG_FILE, buffer, strlen(SONG_FILE))) {
 			/* we don't need this info anymore */
-		} else if (matchesAnMpdTagItemKey(buffer, &itemType)) {
+		} else if ((value = matchesAnMpdTagItemKey(buffer,
+							   &itemType)) != NULL) {
 			if (!song->tag) {
 				song->tag = tag_new();
 				tag_begin_add(song->tag);
 			}
 
-			tag_add_item(song->tag, itemType,
-				     &(buffer
-				       [strlen(mpdTagItemKeys[itemType]) +
-					2]));
+			tag_add_item(song->tag, itemType, value);
 		} else if (0 == strncmp(SONG_TIME, buffer, strlen(SONG_TIME))) {
 			if (!song->tag) {
 				song->tag = tag_new();
