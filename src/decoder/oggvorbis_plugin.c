@@ -48,8 +48,8 @@
 #endif
 
 typedef struct _OggCallbackData {
-	struct input_stream *inStream;
 	struct decoder *decoder;
+	struct input_stream *input_stream;
 } OggCallbackData;
 
 static size_t ogg_read_cb(void *ptr, size_t size, size_t nmemb, void *vdata)
@@ -57,10 +57,9 @@ static size_t ogg_read_cb(void *ptr, size_t size, size_t nmemb, void *vdata)
 	size_t ret;
 	OggCallbackData *data = (OggCallbackData *) vdata;
 
-	ret = decoder_read(data->decoder, data->inStream, ptr, size * nmemb);
+	ret = decoder_read(data->decoder, data->input_stream, ptr, size * nmemb);
 
 	errno = 0;
-	/*if(ret<0) errno = ((struct input_stream *)inStream)->error; */
 
 	return ret / size;
 }
@@ -70,7 +69,7 @@ static int ogg_seek_cb(void *vdata, ogg_int64_t offset, int whence)
 	const OggCallbackData *data = (const OggCallbackData *) vdata;
 	if(decoder_get_command(data->decoder) == DECODE_COMMAND_STOP)
 		return -1;
-	return input_stream_seek(data->inStream, offset, whence) ? 0 : -1;
+	return input_stream_seek(data->input_stream, offset, whence) ? 0 : -1;
 }
 
 /* TODO: check Ogg libraries API and see if we can just not have this func */
@@ -83,10 +82,11 @@ static long ogg_tell_cb(void *vdata)
 {
 	const OggCallbackData *data = (const OggCallbackData *) vdata;
 
-	return (long)(data->inStream->offset);
+	return (long)data->input_stream->offset;
 }
 
-static const char *ogg_parseComment(const char *comment, const char *needle)
+static const char *
+vorbis_comment_value(const char *comment, const char *needle)
 {
 	int len = strlen(needle);
 
@@ -98,7 +98,7 @@ static const char *ogg_parseComment(const char *comment, const char *needle)
 }
 
 static struct replay_gain_info *
-ogg_getReplayGainInfo(char **comments)
+vorbis_comments_to_replay_gain(char **comments)
 {
 	struct replay_gain_info *rgi;
 	const char *temp;
@@ -108,19 +108,19 @@ ogg_getReplayGainInfo(char **comments)
 
 	while (*comments) {
 		if ((temp =
-		     ogg_parseComment(*comments, "replaygain_track_gain"))) {
+		     vorbis_comment_value(*comments, "replaygain_track_gain"))) {
 			rgi->tuples[REPLAY_GAIN_TRACK].gain = atof(temp);
 			found = true;
-		} else if ((temp = ogg_parseComment(*comments,
-						    "replaygain_album_gain"))) {
+		} else if ((temp = vorbis_comment_value(*comments,
+							"replaygain_album_gain"))) {
 			rgi->tuples[REPLAY_GAIN_ALBUM].gain = atof(temp);
 			found = true;
-		} else if ((temp = ogg_parseComment(*comments,
-						    "replaygain_track_peak"))) {
+		} else if ((temp = vorbis_comment_value(*comments,
+							"replaygain_track_peak"))) {
 			rgi->tuples[REPLAY_GAIN_TRACK].peak = atof(temp);
 			found = true;
-		} else if ((temp = ogg_parseComment(*comments,
-						    "replaygain_album_peak"))) {
+		} else if ((temp = vorbis_comment_value(*comments,
+							"replaygain_album_peak"))) {
 			rgi->tuples[REPLAY_GAIN_ALBUM].peak = atof(temp);
 			found = true;
 		}
@@ -140,12 +140,12 @@ static const char *VORBIS_COMMENT_TRACK_KEY = "tracknumber";
 static const char *VORBIS_COMMENT_DISC_KEY = "discnumber";
 
 static bool
-ogg_parseCommentAddToTag(char *comment, unsigned int itemType,
-			 struct tag ** tag)
+vorbis_parse_comment(char *comment, enum tag_type tag_type,
+		     struct tag ** tag)
 {
 	const char *needle;
 	unsigned int len;
-	switch (itemType) {
+	switch (tag_type) {
 	case TAG_ITEM_TRACK:
 		needle = VORBIS_COMMENT_TRACK_KEY;
 		break;
@@ -153,7 +153,7 @@ ogg_parseCommentAddToTag(char *comment, unsigned int itemType,
 		needle = VORBIS_COMMENT_DISC_KEY;
 		break;
 	default:
-		needle = mpdTagItemKeys[itemType];
+		needle = mpdTagItemKeys[tag_type];
 	}
 	len = strlen(needle);
 
@@ -161,7 +161,7 @@ ogg_parseCommentAddToTag(char *comment, unsigned int itemType,
 		if (!*tag)
 			*tag = tag_new();
 
-		tag_add_item(*tag, itemType, comment + len + 1);
+		tag_add_item(*tag, tag_type, comment + len + 1);
 
 		return true;
 	}
@@ -169,14 +169,15 @@ ogg_parseCommentAddToTag(char *comment, unsigned int itemType,
 	return false;
 }
 
-static struct tag *oggCommentsParse(char **comments)
+static struct tag *
+vorbis_comments_to_tag(char **comments)
 {
 	struct tag *tag = NULL;
 
 	while (*comments) {
 		int j;
 		for (j = TAG_NUM_OF_ITEM_TYPES; --j >= 0;) {
-			if (ogg_parseCommentAddToTag(*comments, j, &tag))
+			if (vorbis_parse_comment(*comments, j, &tag))
 				break;
 		}
 		comments++;
@@ -185,13 +186,13 @@ static struct tag *oggCommentsParse(char **comments)
 	return tag;
 }
 
-static void putOggCommentsIntoOutputBuffer(struct decoder *decoder,
-					   struct input_stream *is,
-					   char **comments)
+static void
+vorbis_send_comments(struct decoder *decoder, struct input_stream *is,
+		     char **comments)
 {
 	struct tag *tag;
 
-	tag = oggCommentsParse(comments);
+	tag = vorbis_comments_to_tag(comments);
 	if (!tag)
 		return;
 
@@ -201,7 +202,8 @@ static void putOggCommentsIntoOutputBuffer(struct decoder *decoder,
 
 /* public */
 static void
-oggvorbis_decode(struct decoder *decoder, struct input_stream *inStream)
+vorbis_stream_decode(struct decoder *decoder,
+		     struct input_stream *input_stream)
 {
 	OggVorbis_File vf;
 	ov_callbacks callbacks;
@@ -214,19 +216,19 @@ oggvorbis_decode(struct decoder *decoder, struct input_stream *inStream)
 	char chunk[OGG_CHUNK_SIZE];
 	long bitRate = 0;
 	long test;
-	struct replay_gain_info *replayGainInfo = NULL;
+	struct replay_gain_info *replay_gain_info = NULL;
 	char **comments;
 	bool initialized = false;
 	enum decoder_command cmd = DECODE_COMMAND_NONE;
 
-	if (ogg_stream_type_detect(inStream) != VORBIS)
+	if (ogg_stream_type_detect(input_stream) != VORBIS)
 		return;
 
 	/* rewind the stream, because ogg_stream_type_detect() has
 	   moved it */
-	input_stream_seek(inStream, 0, SEEK_SET);
+	input_stream_seek(input_stream, 0, SEEK_SET);
 
-	data.inStream = inStream;
+	data.input_stream = input_stream;
 	data.decoder = decoder;
 
 	callbacks.read_func = ogg_read_cb;
@@ -234,34 +236,33 @@ oggvorbis_decode(struct decoder *decoder, struct input_stream *inStream)
 	callbacks.close_func = ogg_close_cb;
 	callbacks.tell_func = ogg_tell_cb;
 	if ((ret = ov_open_callbacks(&data, &vf, NULL, 0, callbacks)) < 0) {
-		const char *errorStr;
+		const char *error;
 
 		if (decoder_get_command(decoder) != DECODE_COMMAND_NONE)
 			return;
 
 		switch (ret) {
 		case OV_EREAD:
-			errorStr = "read error";
+			error = "read error";
 			break;
 		case OV_ENOTVORBIS:
-			errorStr = "not vorbis stream";
+			error = "not vorbis stream";
 			break;
 		case OV_EVERSION:
-			errorStr = "vorbis version mismatch";
+			error = "vorbis version mismatch";
 			break;
 		case OV_EBADHEADER:
-			errorStr = "invalid vorbis header";
+			error = "invalid vorbis header";
 			break;
 		case OV_EFAULT:
-			errorStr = "internal logic error";
+			error = "internal logic error";
 			break;
 		default:
-			errorStr = "unknown error";
+			error = "unknown error";
 			break;
 		}
 
-		g_warning("Error decoding Ogg Vorbis stream: %s\n",
-			  errorStr);
+		g_warning("Error decoding Ogg Vorbis stream: %s", error);
 		return;
 	}
 	audio_format.bits = 16;
@@ -304,18 +305,17 @@ oggvorbis_decode(struct decoder *decoder, struct input_stream *inStream)
 				if (total_time < 0)
 					total_time = 0;
 				decoder_initialized(decoder, &audio_format,
-						    inStream->seekable,
+						    input_stream->seekable,
 						    total_time);
 				initialized = true;
 			}
 			comments = ov_comment(&vf, -1)->user_comments;
-			putOggCommentsIntoOutputBuffer(decoder, inStream,
-						       comments);
-			new_rgi = ogg_getReplayGainInfo(comments);
+			vorbis_send_comments(decoder, input_stream, comments);
+			new_rgi = vorbis_comments_to_replay_gain(comments);
 			if (new_rgi != NULL) {
-				if (replayGainInfo != NULL)
-					replay_gain_info_free(replayGainInfo);
-				replayGainInfo = new_rgi;
+				if (replay_gain_info != NULL)
+					replay_gain_info_free(replay_gain_info);
+				replay_gain_info = new_rgi;
 			}
 		}
 
@@ -324,19 +324,20 @@ oggvorbis_decode(struct decoder *decoder, struct input_stream *inStream)
 		if ((test = ov_bitrate_instant(&vf)) > 0)
 			bitRate = test / 1000;
 
-		cmd = decoder_data(decoder, inStream,
+		cmd = decoder_data(decoder, input_stream,
 				   chunk, ret,
 				   ov_pcm_tell(&vf) / audio_format.sample_rate,
-				   bitRate, replayGainInfo);
+				   bitRate, replay_gain_info);
 	} while (cmd != DECODE_COMMAND_STOP);
 
-	if (replayGainInfo)
-		replay_gain_info_free(replayGainInfo);
+	if (replay_gain_info)
+		replay_gain_info_free(replay_gain_info);
 
 	ov_clear(&vf);
 }
 
-static struct tag *oggvorbis_TagDup(const char *file)
+static struct tag *
+vorbis_tag_dup(const char *file)
 {
 	struct tag *ret;
 	FILE *fp;
@@ -352,7 +353,7 @@ static struct tag *oggvorbis_TagDup(const char *file)
 		return NULL;
 	}
 
-	ret = oggCommentsParse(ov_comment(&vf, -1)->user_comments);
+	ret = vorbis_comments_to_tag(ov_comment(&vf, -1)->user_comments);
 
 	if (!ret)
 		ret = tag_new();
@@ -363,18 +364,21 @@ static struct tag *oggvorbis_TagDup(const char *file)
 	return ret;
 }
 
-static const char *const oggvorbis_Suffixes[] = { "ogg","oga", NULL };
-static const char *const oggvorbis_MimeTypes[] = {
+static const char *const vorbis_suffixes[] = {
+	"ogg", "oga", NULL
+};
+
+static const char *const vorbis_mime_types[] = {
 	"application/ogg",
 	"audio/x-vorbis+ogg",
 	"application/x-ogg",
 	NULL
 };
 
-const struct decoder_plugin oggvorbisPlugin = {
+const struct decoder_plugin vorbis_decoder_plugin = {
 	.name = "oggvorbis",
-	.stream_decode = oggvorbis_decode,
-	.tag_dup = oggvorbis_TagDup,
-	.suffixes = oggvorbis_Suffixes,
-	.mime_types = oggvorbis_MimeTypes
+	.stream_decode = vorbis_stream_decode,
+	.tag_dup = vorbis_tag_dup,
+	.suffixes = vorbis_suffixes,
+	.mime_types = vorbis_mime_types
 };

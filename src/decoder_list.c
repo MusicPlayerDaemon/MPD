@@ -24,7 +24,7 @@
 #include <glib.h>
 
 extern const struct decoder_plugin mp3Plugin;
-extern const struct decoder_plugin oggvorbisPlugin;
+extern const struct decoder_plugin vorbis_decoder_plugin;
 extern const struct decoder_plugin flacPlugin;
 extern const struct decoder_plugin oggflacPlugin;
 extern const struct decoder_plugin audiofilePlugin;
@@ -41,7 +41,7 @@ static const struct decoder_plugin *const decoder_plugins[] = {
 	&mp3Plugin,
 #endif
 #ifdef HAVE_OGGVORBIS
-	&oggvorbisPlugin,
+	&vorbis_decoder_plugin,
 #endif
 #if defined(HAVE_FLAC) || defined(HAVE_OGGFLAC)
 	&oggflacPlugin,
