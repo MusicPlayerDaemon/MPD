@@ -151,7 +151,9 @@ flac_parse_comment(struct tag *tag,
 	if (flac_copy_comment(tag, entry, VORBIS_COMMENT_TRACK_KEY,
 			      TAG_ITEM_TRACK) ||
 	    flac_copy_comment(tag, entry, VORBIS_COMMENT_DISC_KEY,
-			      TAG_ITEM_DISC))
+			      TAG_ITEM_DISC) ||
+	    flac_copy_comment(tag, entry, "album artist",
+			      TAG_ITEM_ALBUM_ARTIST))
 		return;
 
 	for (unsigned i = 0; i < TAG_NUM_OF_ITEM_TYPES; ++i)
