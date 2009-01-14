@@ -141,10 +141,29 @@ vorbis_comments_to_replay_gain(char **comments)
 static const char *VORBIS_COMMENT_TRACK_KEY = "tracknumber";
 static const char *VORBIS_COMMENT_DISC_KEY = "discnumber";
 
+/**
+ * Check if the comment's name equals the passed name, and if so, copy
+ * the comment value into the tag.
+ */
+static bool
+vorbis_copy_comment(struct tag *tag, const char *comment,
+		    const char *name, enum tag_type tag_type)
+{
+	const char *value;
+
+	value = vorbis_comment_value(comment, name);
+	if (value != NULL) {
+		tag_add_item(tag, tag_type, value);
+		return true;
+	}
+
+	return false;
+}
+
 static bool
 vorbis_parse_comment(struct tag *tag, char *comment, enum tag_type tag_type)
 {
-	const char *needle, *value;
+	const char *needle;
 
 	assert(tag != NULL);
 
@@ -159,14 +178,7 @@ vorbis_parse_comment(struct tag *tag, char *comment, enum tag_type tag_type)
 		needle = mpdTagItemKeys[tag_type];
 	}
 
-	value = vorbis_comment_value(comment, needle);
-	if (value != NULL) {
-		tag_add_item(tag, tag_type, value);
-
-		return true;
-	}
-
-	return false;
+	return vorbis_copy_comment(tag, comment, needle, tag_type);
 }
 
 static struct tag *
