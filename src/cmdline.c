@@ -33,7 +33,8 @@
 #include <stdlib.h>
 
 #define SYSTEM_CONFIG_FILE_LOCATION	"/etc/mpd.conf"
-#define USER_CONFIG_FILE_LOCATION	".mpdconf"
+#define USER_CONFIG_FILE_LOCATION1	".mpdconf"
+#define USER_CONFIG_FILE_LOCATION2	".mpd/mpd.conf"
 
 G_GNUC_NORETURN
 static void version(void)
@@ -134,16 +135,22 @@ void parseOptions(int argc, char **argv, Options *options)
 
 	if (argc <= 1) {
 		/* default configuration file path */
-		char *path;
+		char *path1;
+		char *path2;
 
-		path = g_build_filename(g_get_home_dir(),
-					USER_CONFIG_FILE_LOCATION, NULL);
-		if (g_file_test(path, G_FILE_TEST_IS_REGULAR))
-			readConf(path);
+		path1 = g_build_filename(g_get_home_dir(),
+					USER_CONFIG_FILE_LOCATION1, NULL);
+		path2 = g_build_filename(g_get_home_dir(),
+					USER_CONFIG_FILE_LOCATION2, NULL);
+		if (g_file_test(path1, G_FILE_TEST_IS_REGULAR))
+			readConf(path1);
+		else if (g_file_test(path2, G_FILE_TEST_IS_REGULAR))
+			readConf(path2);
 		else if (g_file_test(SYSTEM_CONFIG_FILE_LOCATION,
 				     G_FILE_TEST_IS_REGULAR))
 			readConf(SYSTEM_CONFIG_FILE_LOCATION);
-		g_free(path);
+		g_free(path1);
+		g_free(path2);
 	} else if (argc == 2) {
 		/* specified configuration file */
 		readConf(argv[1]);
