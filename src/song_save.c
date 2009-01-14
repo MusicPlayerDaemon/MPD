@@ -95,9 +95,9 @@ matchesAnMpdTagItemKey(char *buffer, enum tag_type *itemType)
 		size_t len = strlen(mpdTagItemKeys[i]);
 
 		if (0 == strncmp(mpdTagItemKeys[i], buffer, len) &&
-		    buffer[len] == ':' && buffer[len + 1] == ' ') {
+		    buffer[len] == ':') {
 			*itemType = i;
-			return buffer + len + 2;
+			return g_strchug(buffer + len + 1);
 		}
 	}
 
