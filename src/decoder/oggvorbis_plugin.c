@@ -37,6 +37,8 @@
 #endif /* HAVE_TREMOR */
 
 #include <glib.h>
+
+#include <assert.h>
 #include <errno.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -140,11 +142,13 @@ static const char *VORBIS_COMMENT_TRACK_KEY = "tracknumber";
 static const char *VORBIS_COMMENT_DISC_KEY = "discnumber";
 
 static bool
-vorbis_parse_comment(char *comment, enum tag_type tag_type,
-		     struct tag ** tag)
+vorbis_parse_comment(struct tag *tag, char *comment, enum tag_type tag_type)
 {
 	const char *needle;
 	unsigned int len;
+
+	assert(tag != NULL);
+
 	switch (tag_type) {
 	case TAG_ITEM_TRACK:
 		needle = VORBIS_COMMENT_TRACK_KEY;
@@ -158,10 +162,7 @@ vorbis_parse_comment(char *comment, enum tag_type tag_type,
 	len = strlen(needle);
 
 	if (strncasecmp(comment, needle, len) == 0 && *(comment + len) == '=') {
-		if (!*tag)
-			*tag = tag_new();
-
-		tag_add_item(*tag, tag_type, comment + len + 1);
+		tag_add_item(tag, tag_type, comment + len + 1);
 
 		return true;
 	}
@@ -172,15 +173,20 @@ vorbis_parse_comment(char *comment, enum tag_type tag_type,
 static struct tag *
 vorbis_comments_to_tag(char **comments)
 {
-	struct tag *tag = NULL;
+	struct tag *tag = tag_new();
 
 	while (*comments) {
 		int j;
 		for (j = TAG_NUM_OF_ITEM_TYPES; --j >= 0;) {
-			if (vorbis_parse_comment(*comments, j, &tag))
+			if (vorbis_parse_comment(tag, *comments, j))
 				break;
 		}
 		comments++;
+	}
+
+	if (tag_is_empty(tag)) {
+		tag_free(tag);
+		tag = NULL;
 	}
 
 	return tag;
