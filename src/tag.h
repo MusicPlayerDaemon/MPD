@@ -110,6 +110,13 @@ tag_is_empty(const struct tag *tag)
 }
 
 /**
+ * Returns the first value of the specified tag type, or NULL if none
+ * is present in this tag object.
+ */
+const char *
+tag_get_value(const struct tag *tag, enum tag_type type);
+
+/**
  * Checks whether the tag contains one or more items with
  * the specified type.
  */

@@ -365,16 +365,22 @@ tag_merge(const struct tag *base, const struct tag *add)
 	return ret;
 }
 
-bool tag_has_type(const struct tag *tag, enum tag_type type)
+const char *
+tag_get_value(const struct tag *tag, enum tag_type type)
 {
 	assert(tag != NULL);
 	assert(type < TAG_NUM_OF_ITEM_TYPES);
 
 	for (unsigned i = 0; i < tag->numOfItems; i++)
 		if (tag->items[i]->type == type)
-			return true;
+			return tag->items[i]->value;
 
-	return false;
+	return NULL;
+}
+
+bool tag_has_type(const struct tag *tag, enum tag_type type)
+{
+	return tag_get_value(tag, type) != NULL;
 }
 
 int tag_equal(const struct tag *tag1, const struct tag *tag2)
