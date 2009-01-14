@@ -139,9 +139,9 @@ ogg_getReplayGainInfo(char **comments)
 static const char *VORBIS_COMMENT_TRACK_KEY = "tracknumber";
 static const char *VORBIS_COMMENT_DISC_KEY = "discnumber";
 
-static unsigned int ogg_parseCommentAddToTag(char *comment,
-					     unsigned int itemType,
-					     struct tag ** tag)
+static bool
+ogg_parseCommentAddToTag(char *comment, unsigned int itemType,
+			 struct tag ** tag)
 {
 	const char *needle;
 	unsigned int len;
@@ -163,10 +163,10 @@ static unsigned int ogg_parseCommentAddToTag(char *comment,
 
 		tag_add_item(*tag, itemType, comment + len + 1);
 
-		return 1;
+		return true;
 	}
 
-	return 0;
+	return false;
 }
 
 static struct tag *oggCommentsParse(char **comments)
