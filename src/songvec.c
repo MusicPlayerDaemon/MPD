@@ -14,7 +14,7 @@ static int songvec_cmp(const void *s1, const void *s2)
 {
 	const struct song *a = ((const struct song * const *)s1)[0];
 	const struct song *b = ((const struct song * const *)s2)[0];
-	return strcmp(a->url, b->url);
+	return g_utf8_collate(a->url, b->url);
 }
 
 static size_t sv_size(const struct songvec *sv)

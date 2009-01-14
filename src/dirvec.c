@@ -19,7 +19,7 @@ static int dirvec_cmp(const void *d1, const void *d2)
 {
 	const struct directory *a = ((const struct directory * const *)d1)[0];
 	const struct directory *b = ((const struct directory * const *)d2)[0];
-	return strcmp(a->path, b->path);
+	return g_utf8_collate(a->path, b->path);
 }
 
 void dirvec_init(void)
