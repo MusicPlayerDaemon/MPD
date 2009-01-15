@@ -141,33 +141,37 @@ typedef size_t flac_read_status_size_t;
 
 #define FLAC_CHUNK_SIZE 4080
 
-typedef struct {
+struct flac_data {
 	unsigned char chunk[FLAC_CHUNK_SIZE];
 	float time;
-	unsigned int bitRate;
+	unsigned int bit_rate;
 	struct audio_format audio_format;
 	float total_time;
 	FLAC__uint64 position;
 	struct decoder *decoder;
-	struct input_stream *inStream;
-	struct replay_gain_info *replayGainInfo;
+	struct input_stream *input_stream;
+	struct replay_gain_info *replay_gain_info;
 	struct tag *tag;
-} FlacData;
+};
 
 /* initializes a given FlacData struct */
-void init_FlacData(FlacData * data, struct decoder * decoder,
-		   struct input_stream *inStream);
+void
+flac_data_init(struct flac_data *data, struct decoder * decoder,
+	       struct input_stream *input_stream);
+
 void flac_metadata_common_cb(const FLAC__StreamMetadata * block,
-			     FlacData * data);
+			     struct flac_data *data);
+
 void flac_error_common_cb(const char *plugin,
 			  FLAC__StreamDecoderErrorStatus status,
-			  FlacData * data);
+			  struct flac_data *data);
 
-struct tag *copyVorbisCommentBlockToMpdTag(const FLAC__StreamMetadata * block,
-					   struct tag *tag);
+struct tag *
+flac_vorbis_comments_to_tag(const FLAC__StreamMetadata * block,
+			    struct tag *tag);
 
 FLAC__StreamDecoderWriteStatus
-flac_common_write(FlacData *data, const FLAC__Frame * frame,
+flac_common_write(struct flac_data *data, const FLAC__Frame * frame,
 		  const FLAC__int32 *const buf[]);
 
 #endif /* _FLAC_COMMON_H */

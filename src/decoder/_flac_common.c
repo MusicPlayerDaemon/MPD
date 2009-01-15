@@ -26,20 +26,22 @@
 #include <FLAC/format.h>
 #include <FLAC/metadata.h>
 
-void init_FlacData(FlacData * data, struct decoder * decoder,
-		   struct input_stream *inStream)
+void
+flac_data_init(struct flac_data *data, struct decoder * decoder,
+	       struct input_stream *input_stream)
 {
 	data->time = 0;
 	data->position = 0;
-	data->bitRate = 0;
+	data->bit_rate = 0;
 	data->decoder = decoder;
-	data->inStream = inStream;
-	data->replayGainInfo = NULL;
+	data->input_stream = input_stream;
+	data->replay_gain_info = NULL;
 	data->tag = NULL;
 }
 
-static int flacFindVorbisCommentFloat(const FLAC__StreamMetadata * block,
-				      const char *cmnt, float *fl)
+static int
+flac_find_float_comment(const FLAC__StreamMetadata *block,
+			const char *cmnt, float *fl)
 {
 	int offset =
 	    FLAC__metadata_object_vorbiscomment_find_entry_from(block, 0, cmnt);
@@ -65,28 +67,29 @@ static int flacFindVorbisCommentFloat(const FLAC__StreamMetadata * block,
 }
 
 /* replaygain stuff by AliasMrJones */
-static void flacParseReplayGain(const FLAC__StreamMetadata * block,
-				FlacData * data)
+static void
+flac_parse_replay_gain(const FLAC__StreamMetadata *block,
+		       struct flac_data *data)
 {
 	int found = 0;
 
-	if (data->replayGainInfo)
-		replay_gain_info_free(data->replayGainInfo);
+	if (data->replay_gain_info)
+		replay_gain_info_free(data->replay_gain_info);
 
-	data->replayGainInfo = replay_gain_info_new();
+	data->replay_gain_info = replay_gain_info_new();
 
-	found |= flacFindVorbisCommentFloat(block, "replaygain_album_gain",
-					    &data->replayGainInfo->tuples[REPLAY_GAIN_ALBUM].gain);
-	found |= flacFindVorbisCommentFloat(block, "replaygain_album_peak",
-					    &data->replayGainInfo->tuples[REPLAY_GAIN_ALBUM].peak);
-	found |= flacFindVorbisCommentFloat(block, "replaygain_track_gain",
-					    &data->replayGainInfo->tuples[REPLAY_GAIN_TRACK].gain);
-	found |= flacFindVorbisCommentFloat(block, "replaygain_track_peak",
-					    &data->replayGainInfo->tuples[REPLAY_GAIN_TRACK].peak);
+	found |= flac_find_float_comment(block, "replaygain_album_gain",
+					 &data->replay_gain_info->tuples[REPLAY_GAIN_ALBUM].gain);
+	found |= flac_find_float_comment(block, "replaygain_album_peak",
+					 &data->replay_gain_info->tuples[REPLAY_GAIN_ALBUM].peak);
+	found |= flac_find_float_comment(block, "replaygain_track_gain",
+					 &data->replay_gain_info->tuples[REPLAY_GAIN_TRACK].gain);
+	found |= flac_find_float_comment(block, "replaygain_track_peak",
+					 &data->replay_gain_info->tuples[REPLAY_GAIN_TRACK].peak);
 
 	if (!found) {
-		replay_gain_info_free(data->replayGainInfo);
-		data->replayGainInfo = NULL;
+		replay_gain_info_free(data->replay_gain_info);
+		data->replay_gain_info = NULL;
 	}
 }
 
@@ -95,16 +98,17 @@ static void flacParseReplayGain(const FLAC__StreamMetadata * block,
 static const char *VORBIS_COMMENT_TRACK_KEY = "tracknumber";
 static const char *VORBIS_COMMENT_DISC_KEY = "discnumber";
 
-static unsigned int commentMatchesAddToTag(const
-					   FLAC__StreamMetadata_VorbisComment_Entry
-					   * entry, unsigned int itemType,
-					   struct tag ** tag)
+static unsigned int
+flac_copy_vorbis_comment(const
+			 FLAC__StreamMetadata_VorbisComment_Entry * entry,
+			 enum tag_type type,
+			 struct tag ** tag)
 {
 	const char *str;
 	size_t slen;
 	int vlen;
 
-	switch (itemType) {
+	switch (type) {
 	case TAG_ITEM_TRACK:
 		str = VORBIS_COMMENT_TRACK_KEY;
 		break;
@@ -112,7 +116,7 @@ static unsigned int commentMatchesAddToTag(const
 		str = VORBIS_COMMENT_DISC_KEY;
 		break;
 	default:
-		str = mpdTagItemKeys[itemType];
+		str = mpdTagItemKeys[type];
 	}
 	slen = strlen(str);
 	vlen = entry->length - slen - 1;
@@ -122,7 +126,7 @@ static unsigned int commentMatchesAddToTag(const
 		if (!*tag)
 			*tag = tag_new();
 
-		tag_add_item_n(*tag, itemType,
+		tag_add_item_n(*tag, type,
 			       (char *)(entry->entry + slen + 1), vlen);
 
 		return 1;
@@ -131,8 +135,9 @@ static unsigned int commentMatchesAddToTag(const
 	return 0;
 }
 
-struct tag *copyVorbisCommentBlockToMpdTag(const FLAC__StreamMetadata * block,
-					   struct tag * tag)
+struct tag *
+flac_vorbis_comments_to_tag(const FLAC__StreamMetadata * block,
+			    struct tag * tag)
 {
 	unsigned int i, j;
 	FLAC__StreamMetadata_VorbisComment_Entry *comments;
@@ -141,7 +146,7 @@ struct tag *copyVorbisCommentBlockToMpdTag(const FLAC__StreamMetadata * block,
 
 	for (i = block->data.vorbis_comment.num_comments; i != 0; --i) {
 		for (j = TAG_NUM_OF_ITEM_TYPES; j--;) {
-			if (commentMatchesAddToTag(comments, j, &tag))
+			if (flac_copy_vorbis_comment(comments, j, &tag))
 				break;
 		}
 		comments++;
@@ -151,7 +156,7 @@ struct tag *copyVorbisCommentBlockToMpdTag(const FLAC__StreamMetadata * block,
 }
 
 void flac_metadata_common_cb(const FLAC__StreamMetadata * block,
-			     FlacData * data)
+			     struct flac_data *data)
 {
 	const FLAC__StreamMetadata_StreamInfo *si = &(block->data.stream_info);
 
@@ -163,7 +168,7 @@ void flac_metadata_common_cb(const FLAC__StreamMetadata * block,
 		data->total_time = ((float)si->total_samples) / (si->sample_rate);
 		break;
 	case FLAC__METADATA_TYPE_VORBIS_COMMENT:
-		flacParseReplayGain(block, data);
+		flac_parse_replay_gain(block, data);
 	default:
 		break;
 	}
@@ -171,7 +176,7 @@ void flac_metadata_common_cb(const FLAC__StreamMetadata * block,
 
 void flac_error_common_cb(const char *plugin,
 			  const FLAC__StreamDecoderErrorStatus status,
-			  G_GNUC_UNUSED FlacData * data)
+			  struct flac_data *data)
 {
 	if (decoder_get_command(data->decoder) == DECODE_COMMAND_STOP)
 		return;
@@ -272,7 +277,7 @@ static void flac_convert(unsigned char *dest,
 }
 
 FLAC__StreamDecoderWriteStatus
-flac_common_write(FlacData *data, const FLAC__Frame * frame,
+flac_common_write(struct flac_data *data, const FLAC__Frame * frame,
 		  const FLAC__int32 *const buf[])
 {
 	unsigned int c_samp;
@@ -300,11 +305,11 @@ flac_common_write(FlacData *data, const FLAC__Frame * frame,
 			     num_channels, bytes_per_sample, buf,
 			     c_samp, c_samp + num_samples);
 
-		cmd = decoder_data(data->decoder, data->inStream,
+		cmd = decoder_data(data->decoder, data->input_stream,
 				   data->chunk,
 				   num_samples * bytes_per_channel,
-				   data->time, data->bitRate,
-				   data->replayGainInfo);
+				   data->time, data->bit_rate,
+				   data->replay_gain_info);
 		switch (cmd) {
 		case DECODE_COMMAND_NONE:
 		case DECODE_COMMAND_START:

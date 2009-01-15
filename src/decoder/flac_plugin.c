@@ -25,20 +25,21 @@
 
 /* this code was based on flac123, from flac-tools */
 
-static flac_read_status flacRead(G_GNUC_UNUSED const flac_decoder * flacDec,
-                                  FLAC__byte buf[],
-				  flac_read_status_size_t *bytes,
-				  void *fdata)
+static flac_read_status
+flac_read_cb(G_GNUC_UNUSED const flac_decoder *fd,
+	     FLAC__byte buf[], flac_read_status_size_t *bytes,
+	     void *fdata)
 {
-	FlacData *data = (FlacData *) fdata;
+	struct flac_data *data = fdata;
 	size_t r;
 
-	r = decoder_read(data->decoder, data->inStream, (void *)buf, *bytes);
+	r = decoder_read(data->decoder, data->input_stream,
+			 (void *)buf, *bytes);
 	*bytes = r;
 
 	if (r == 0) {
 		if (decoder_get_command(data->decoder) != DECODE_COMMAND_NONE ||
-		    input_stream_eof(data->inStream))
+		    input_stream_eof(data->input_stream))
 			return flac_read_status_eof;
 		else
 			return flac_read_status_abort;
@@ -47,56 +48,58 @@ static flac_read_status flacRead(G_GNUC_UNUSED const flac_decoder * flacDec,
 	return flac_read_status_continue;
 }
 
-static flac_seek_status flacSeek(G_GNUC_UNUSED const flac_decoder * flacDec,
-				 FLAC__uint64 offset,
-				 void *fdata)
+static flac_seek_status
+flac_seek_cb(G_GNUC_UNUSED const flac_decoder *fd,
+	     FLAC__uint64 offset, void *fdata)
 {
-	FlacData *data = (FlacData *) fdata;
+	struct flac_data *data = (struct flac_data *) fdata;
 
-	if (!input_stream_seek(data->inStream, offset, SEEK_SET))
+	if (!input_stream_seek(data->input_stream, offset, SEEK_SET))
 		return flac_seek_status_error;
 
 	return flac_seek_status_ok;
 }
 
-static flac_tell_status flacTell(G_GNUC_UNUSED const flac_decoder * flacDec,
-				 FLAC__uint64 * offset,
-				 void *fdata)
+static flac_tell_status
+flac_tell_cb(G_GNUC_UNUSED const flac_decoder *fd,
+	     FLAC__uint64 * offset, void *fdata)
 {
-	FlacData *data = (FlacData *) fdata;
+	struct flac_data *data = (struct flac_data *) fdata;
 
-	*offset = (long)(data->inStream->offset);
+	*offset = (long)(data->input_stream->offset);
 
 	return flac_tell_status_ok;
 }
 
-static flac_length_status flacLength(G_GNUC_UNUSED const flac_decoder * flacDec,
-				     FLAC__uint64 * length,
-				     void *fdata)
+static flac_length_status
+flac_length_cb(G_GNUC_UNUSED const flac_decoder *fd,
+	       FLAC__uint64 * length, void *fdata)
 {
-	FlacData *data = (FlacData *) fdata;
+	struct flac_data *data = (struct flac_data *) fdata;
 
-	if (data->inStream->size < 0)
+	if (data->input_stream->size < 0)
 		return flac_length_status_unsupported;
 
-	*length = (size_t) (data->inStream->size);
+	*length = (size_t) (data->input_stream->size);
 
 	return flac_length_status_ok;
 }
 
-static FLAC__bool flacEOF(G_GNUC_UNUSED const flac_decoder * flacDec, void *fdata)
+static FLAC__bool
+flac_eof_cb(G_GNUC_UNUSED const flac_decoder *fd, void *fdata)
 {
-	FlacData *data = (FlacData *) fdata;
+	struct flac_data *data = (struct flac_data *) fdata;
 
 	return (decoder_get_command(data->decoder) != DECODE_COMMAND_NONE &&
 		decoder_get_command(data->decoder) != DECODE_COMMAND_SEEK) ||
-		input_stream_eof(data->inStream);
+		input_stream_eof(data->input_stream);
 }
 
-static void flacError(G_GNUC_UNUSED const flac_decoder *dec,
-		      FLAC__StreamDecoderErrorStatus status, void *fdata)
+static void
+flac_error_cb(G_GNUC_UNUSED const flac_decoder *fd,
+	      FLAC__StreamDecoderErrorStatus status, void *fdata)
 {
-	flac_error_common_cb("flac", status, (FlacData *) fdata);
+	flac_error_common_cb("flac", status, (struct flac_data *) fdata);
 }
 
 #if !defined(FLAC_API_VERSION_CURRENT) || FLAC_API_VERSION_CURRENT <= 7
@@ -196,16 +199,15 @@ static void flacPrintErroredState(FLAC__StreamDecoderState state)
 static void flacMetadata(G_GNUC_UNUSED const flac_decoder * dec,
 			 const FLAC__StreamMetadata * block, void *vdata)
 {
-	flac_metadata_common_cb(block, (FlacData *) vdata);
+	flac_metadata_common_cb(block, (struct flac_data *) vdata);
 }
 
-static FLAC__StreamDecoderWriteStatus flacWrite(const flac_decoder *dec,
-                                                const FLAC__Frame * frame,
-						const FLAC__int32 * const buf[],
-						void *vdata)
+static FLAC__StreamDecoderWriteStatus
+flac_write_cb(const flac_decoder *dec, const FLAC__Frame *frame,
+	      const FLAC__int32 *const buf[], void *vdata)
 {
 	FLAC__uint32 samples = frame->header.blocksize;
-	FlacData *data = (FlacData *) vdata;
+	struct flac_data *data = (struct flac_data *) vdata;
 	float timeChange;
 	FLAC__uint64 newPosition = 0;
 
@@ -216,7 +218,7 @@ static FLAC__StreamDecoderWriteStatus flacWrite(const flac_decoder *dec,
 	if (data->position && newPosition >= data->position) {
 		assert(timeChange >= 0);
 
-		data->bitRate =
+		data->bit_rate =
 		    ((newPosition - data->position) * 8.0 / timeChange)
 		    / 1000 + 0.5;
 	}
@@ -226,13 +228,13 @@ static FLAC__StreamDecoderWriteStatus flacWrite(const flac_decoder *dec,
 }
 
 static struct tag *
-flacMetadataDup(const char *file, bool *vorbisCommentFound)
+flac_tag_load(const char *file, bool *vorbis_comment_found)
 {
 	struct tag *ret = NULL;
 	FLAC__Metadata_SimpleIterator *it;
 	FLAC__StreamMetadata *block = NULL;
 
-	*vorbisCommentFound = false;
+	*vorbis_comment_found = false;
 
 	it = FLAC__metadata_simple_iterator_new();
 	if (!FLAC__metadata_simple_iterator_init(it, file, 1, 0)) {
@@ -265,10 +267,10 @@ flacMetadataDup(const char *file, bool *vorbisCommentFound)
 		if (!block)
 			break;
 		if (block->type == FLAC__METADATA_TYPE_VORBIS_COMMENT) {
-			ret = copyVorbisCommentBlockToMpdTag(block, ret);
+			ret = flac_vorbis_comments_to_tag(block, ret);
 
 			if (ret)
-				*vorbisCommentFound = true;
+				*vorbis_comment_found = true;
 		} else if (block->type == FLAC__METADATA_TYPE_STREAMINFO) {
 			if (!ret)
 				ret = tag_new();
@@ -283,17 +285,18 @@ flacMetadataDup(const char *file, bool *vorbisCommentFound)
 	return ret;
 }
 
-static struct tag *flacTagDup(const char *file)
+static struct tag *
+flac_tag_dup(const char *file)
 {
 	struct tag *ret = NULL;
-	bool foundVorbisComment = false;
+	bool vorbis_comment_found = false;
 
-	ret = flacMetadataDup(file, &foundVorbisComment);
+	ret = flac_tag_load(file, &vorbis_comment_found);
 	if (!ret) {
 		g_debug("Failed to grab information from: %s\n", file);
 		return NULL;
 	}
-	if (!foundVorbisComment) {
+	if (!vorbis_comment_found) {
 		struct tag *temp = tag_id3_load(file);
 		if (temp) {
 			temp->time = ret->time;
@@ -306,19 +309,20 @@ static struct tag *flacTagDup(const char *file)
 }
 
 static void
-flac_decode_internal(struct decoder * decoder, struct input_stream *inStream,
+flac_decode_internal(struct decoder * decoder,
+		     struct input_stream *input_stream,
 		     bool is_ogg)
 {
-	flac_decoder *flacDec;
-	FlacData data;
+	flac_decoder *flac_dec;
+	struct flac_data data;
 	const char *err = NULL;
 
-	if (!(flacDec = flac_new()))
+	if (!(flac_dec = flac_new()))
 		return;
-	init_FlacData(&data, decoder, inStream);
+	flac_data_init(&data, decoder, input_stream);
 
 #if defined(FLAC_API_VERSION_CURRENT) && FLAC_API_VERSION_CURRENT > 7
-        if(!FLAC__stream_decoder_set_metadata_respond(flacDec, FLAC__METADATA_TYPE_VORBIS_COMMENT))
+        if(!FLAC__stream_decoder_set_metadata_respond(flac_dec, FLAC__METADATA_TYPE_VORBIS_COMMENT))
         {
                 g_debug("Failed to set metadata respond\n");
         }
@@ -326,22 +330,26 @@ flac_decode_internal(struct decoder * decoder, struct input_stream *inStream,
 
 
 	if (is_ogg) {
-		if (!flac_ogg_init(flacDec, flacRead, flacSeek, flacTell,
-		                   flacLength, flacEOF, flacWrite, flacMetadata,
-			           flacError, (void *)&data)) {
+		if (!flac_ogg_init(flac_dec, flac_read_cb,
+				   flac_seek_cb, flac_tell_cb,
+				   flac_length_cb, flac_eof_cb,
+				   flac_write_cb, flacMetadata,
+				   flac_error_cb, (void *)&data)) {
 			err = "doing Ogg init()";
 			goto fail;
 		}
 	} else {
-		if (!flac_init(flacDec, flacRead, flacSeek, flacTell,
-		               flacLength, flacEOF, flacWrite, flacMetadata,
-			       flacError, (void *)&data)) {
+		if (!flac_init(flac_dec, flac_read_cb,
+			       flac_seek_cb, flac_tell_cb,
+			       flac_length_cb, flac_eof_cb,
+			       flac_write_cb, flacMetadata,
+			       flac_error_cb, (void *)&data)) {
 			err = "doing init()";
 			goto fail;
 		}
 	}
 
-	if (!flac_process_metadata(flacDec)) {
+	if (!flac_process_metadata(flac_dec)) {
 		err = "problem reading metadata";
 		goto fail;
 	}
@@ -355,44 +363,44 @@ flac_decode_internal(struct decoder * decoder, struct input_stream *inStream,
 	}
 
 	decoder_initialized(decoder, &data.audio_format,
-			    inStream->seekable, data.total_time);
+			    input_stream->seekable, data.total_time);
 
 	while (true) {
-		if (!flac_process_single(flacDec))
+		if (!flac_process_single(flac_dec))
 			break;
 		if (decoder_get_command(decoder) == DECODE_COMMAND_SEEK) {
-			FLAC__uint64 sampleToSeek = decoder_seek_where(decoder) *
+			FLAC__uint64 seek_sample = decoder_seek_where(decoder) *
 			    data.audio_format.sample_rate + 0.5;
-			if (flac_seek_absolute(flacDec, sampleToSeek)) {
-				data.time = ((float)sampleToSeek) /
+			if (flac_seek_absolute(flac_dec, seek_sample)) {
+				data.time = ((float)seek_sample) /
 				    data.audio_format.sample_rate;
 				data.position = 0;
 				decoder_command_finished(decoder);
 			} else
 				decoder_seek_error(decoder);
-		} else if (flac_get_state(flacDec) == flac_decoder_eof)
+		} else if (flac_get_state(flac_dec) == flac_decoder_eof)
 			break;
 	}
 	if (decoder_get_command(decoder) != DECODE_COMMAND_STOP) {
-		flacPrintErroredState(flac_get_state(flacDec));
-		flac_finish(flacDec);
+		flacPrintErroredState(flac_get_state(flac_dec));
+		flac_finish(flac_dec);
 	}
 
 fail:
-	if (data.replayGainInfo)
-		replay_gain_info_free(data.replayGainInfo);
+	if (data.replay_gain_info)
+		replay_gain_info_free(data.replay_gain_info);
 
-	if (flacDec)
-		flac_delete(flacDec);
+	if (flac_dec)
+		flac_delete(flac_dec);
 
 	if (err)
 		g_warning("%s\n", err);
 }
 
 static void
-flac_decode(struct decoder * decoder, struct input_stream *inStream)
+flac_decode(struct decoder * decoder, struct input_stream *input_stream)
 {
-	flac_decode_internal(decoder, inStream, false);
+	flac_decode_internal(decoder, input_stream, false);
 }
 
 #ifndef HAVE_OGGFLAC
@@ -410,7 +418,8 @@ oggflac_init(void)
 
 #if defined(FLAC_API_VERSION_CURRENT) && FLAC_API_VERSION_CURRENT > 7
 
-static struct tag *oggflac_tag_dup(const char *file)
+static struct tag *
+oggflac_tag_dup(const char *file)
 {
 	struct tag *ret = NULL;
 	FLAC__Metadata_Iterator *it;
@@ -425,7 +434,7 @@ static struct tag *oggflac_tag_dup(const char *file)
 		if (!(block = FLAC__metadata_iterator_get_block(it)))
 			break;
 		if (block->type == FLAC__METADATA_TYPE_VORBIS_COMMENT) {
-			ret = copyVorbisCommentBlockToMpdTag(block, ret);
+			ret = flac_vorbis_comments_to_tag(block, ret);
 		} else if (block->type == FLAC__METADATA_TYPE_STREAMINFO) {
 			if (!ret)
 				ret = tag_new();
@@ -441,16 +450,16 @@ out:
 }
 
 static void
-oggflac_decode(struct decoder *decoder, struct input_stream *inStream)
+oggflac_decode(struct decoder *decoder, struct input_stream *input_stream)
 {
-	if (ogg_stream_type_detect(inStream) != FLAC)
+	if (ogg_stream_type_detect(input_stream) != FLAC)
 		return;
 
 	/* rewind the stream, because ogg_stream_type_detect() has
 	   moved it */
-	input_stream_seek(inStream, 0, SEEK_SET);
+	input_stream_seek(input_stream, 0, SEEK_SET);
 
-	flac_decode_internal(decoder, inStream, true);
+	flac_decode_internal(decoder, input_stream, true);
 }
 
 static const char *const oggflac_suffixes[] = { "ogg", "oga", NULL };
@@ -463,7 +472,7 @@ static const char *const oggflac_mime_types[] = {
 
 #endif /* FLAC_API_VERSION_CURRENT >= 7 */
 
-const struct decoder_plugin oggflacPlugin = {
+const struct decoder_plugin oggflac_decoder_plugin = {
 	.name = "oggflac",
 	.init = oggflac_init,
 #if defined(FLAC_API_VERSION_CURRENT) && FLAC_API_VERSION_CURRENT > 7
@@ -476,15 +485,15 @@ const struct decoder_plugin oggflacPlugin = {
 
 #endif /* HAVE_OGGFLAC */
 
-static const char *const flacSuffixes[] = { "flac", NULL };
+static const char *const flac_suffixes[] = { "flac", NULL };
 static const char *const flac_mime_types[] = {
 	"audio/x-flac", "application/x-flac", NULL
 };
 
-const struct decoder_plugin flacPlugin = {
+const struct decoder_plugin flac_decoder_plugin = {
 	.name = "flac",
 	.stream_decode = flac_decode,
-	.tag_dup = flacTagDup,
-	.suffixes = flacSuffixes,
+	.tag_dup = flac_tag_dup,
+	.suffixes = flac_suffixes,
 	.mime_types = flac_mime_types
 };

@@ -25,8 +25,8 @@
 
 extern const struct decoder_plugin mp3Plugin;
 extern const struct decoder_plugin vorbis_decoder_plugin;
-extern const struct decoder_plugin flacPlugin;
-extern const struct decoder_plugin oggflacPlugin;
+extern const struct decoder_plugin flac_decoder_plugin;
+extern const struct decoder_plugin oggflac_decoder_plugin;
 extern const struct decoder_plugin audiofilePlugin;
 extern const struct decoder_plugin mp4_plugin;
 extern const struct decoder_plugin aacPlugin;
@@ -44,10 +44,10 @@ static const struct decoder_plugin *const decoder_plugins[] = {
 	&vorbis_decoder_plugin,
 #endif
 #if defined(HAVE_FLAC) || defined(HAVE_OGGFLAC)
-	&oggflacPlugin,
+	&oggflac_decoder_plugin,
 #endif
 #ifdef HAVE_FLAC
-	&flacPlugin,
+	&flac_decoder_plugin,
 #endif
 #ifdef HAVE_AUDIOFILE
 	&audiofilePlugin,
