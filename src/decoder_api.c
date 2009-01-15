@@ -32,7 +32,7 @@
 #include <assert.h>
 #include <stdlib.h>
 
-void decoder_initialized(struct decoder * decoder,
+void decoder_initialized(G_GNUC_UNUSED struct decoder * decoder,
 			 const struct audio_format *audio_format,
 			 bool seekable, float total_time)
 {
