@@ -210,9 +210,11 @@ parse_log_level(const char *value, unsigned line)
 		return LOG_LEVEL_SECURE;
 	else if (0 == strcmp(value, "verbose"))
 		return G_LOG_LEVEL_DEBUG;
-	else
+	else {
 		g_error("unknown log level \"%s\" at line %u\n",
 			value, line);
+		return G_LOG_LEVEL_MESSAGE;
+	}
 }
 
 void log_init(bool verbose, bool use_stdout)

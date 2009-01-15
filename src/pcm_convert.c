@@ -145,6 +145,7 @@ size_t pcm_convert(const struct audio_format *inFormat,
 
 	default:
 		g_error("cannot convert to %u bit\n", outFormat->bits);
+		return 0;
 	}
 }
 
