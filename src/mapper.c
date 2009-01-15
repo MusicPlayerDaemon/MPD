@@ -51,10 +51,12 @@ void mapper_init(void)
 	if (music_dir_param != NULL) {
 		music_dir = g_strdup(music_dir_param->value);
 	} else {
+#if GLIB_MAJOR_VERSION > 2 || (GLIB_MAJOR_VERSION == 2 && GLIB_MINOR_VERSION >= 14)
 		music_dir = g_strdup(g_get_user_special_dir(G_USER_DIRECTORY_MUSIC));
 		if (music_dir == NULL)
 			/* GLib failed to determine the XDG music
 			   directory - abort */
+#endif
 			g_error("config parameter \"%s\" not found\n", CONF_MUSIC_DIR);
 	}
 
