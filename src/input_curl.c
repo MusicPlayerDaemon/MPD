@@ -225,6 +225,8 @@ input_curl_select(struct input_curl *c)
 		.tv_usec = 0,
 	};
 
+	assert(!c->eof);
+
 	FD_ZERO(&rfds);
 	FD_ZERO(&wfds);
 	FD_ZERO(&efds);
@@ -478,7 +480,7 @@ input_curl_buffer(struct input_stream *is)
 
 	c->buffered = false;
 
-	if (!is->ready)
+	if (!is->ready && !c->eof)
 		/* not ready yet means the caller is waiting in a busy
 		   loop; relax that by calling select() on the
 		   socket */
