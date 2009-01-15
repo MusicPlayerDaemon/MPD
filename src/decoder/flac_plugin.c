@@ -136,34 +136,29 @@ static void flacPrintErroredState(FLAC__SeekableStreamDecoderState state)
 	g_warning("%s\n", str);
 }
 
-static int flac_init(FLAC__SeekableStreamDecoder *dec,
-                     FLAC__SeekableStreamDecoderReadCallback read_cb,
-                     FLAC__SeekableStreamDecoderSeekCallback seek_cb,
-                     FLAC__SeekableStreamDecoderTellCallback tell_cb,
-                     FLAC__SeekableStreamDecoderLengthCallback length_cb,
-                     FLAC__SeekableStreamDecoderEofCallback eof_cb,
-                     FLAC__SeekableStreamDecoderWriteCallback write_cb,
-                     FLAC__SeekableStreamDecoderMetadataCallback metadata_cb,
-                     FLAC__SeekableStreamDecoderErrorCallback error_cb,
-                     void *data)
+static bool
+flac_init(FLAC__SeekableStreamDecoder *dec,
+	  FLAC__SeekableStreamDecoderReadCallback read_cb,
+	  FLAC__SeekableStreamDecoderSeekCallback seek_cb,
+	  FLAC__SeekableStreamDecoderTellCallback tell_cb,
+	  FLAC__SeekableStreamDecoderLengthCallback length_cb,
+	  FLAC__SeekableStreamDecoderEofCallback eof_cb,
+	  FLAC__SeekableStreamDecoderWriteCallback write_cb,
+	  FLAC__SeekableStreamDecoderMetadataCallback metadata_cb,
+	  FLAC__SeekableStreamDecoderErrorCallback error_cb,
+	  void *data)
 {
-	int s = 1;
-	s &= FLAC__seekable_stream_decoder_set_read_callback(dec, read_cb);
-	s &= FLAC__seekable_stream_decoder_set_seek_callback(dec, seek_cb);
-	s &= FLAC__seekable_stream_decoder_set_tell_callback(dec, tell_cb);
-	s &= FLAC__seekable_stream_decoder_set_length_callback(dec, length_cb);
-	s &= FLAC__seekable_stream_decoder_set_eof_callback(dec, eof_cb);
-	s &= FLAC__seekable_stream_decoder_set_write_callback(dec, write_cb);
-	s &= FLAC__seekable_stream_decoder_set_metadata_callback(dec,
-	                                                         metadata_cb);
-	s &= FLAC__seekable_stream_decoder_set_metadata_respond(dec,
-	                                  FLAC__METADATA_TYPE_VORBIS_COMMENT);
-	s &= FLAC__seekable_stream_decoder_set_error_callback(dec, error_cb);
-	s &= FLAC__seekable_stream_decoder_set_client_data(dec, data);
-	if (!s || (FLAC__seekable_stream_decoder_init(dec) !=
-	           FLAC__SEEKABLE_STREAM_DECODER_OK))
-		return 0;
-	return 1;
+	return FLAC__seekable_stream_decoder_set_read_callback(dec, read_cb) &&
+		FLAC__seekable_stream_decoder_set_seek_callback(dec, seek_cb) &&
+		FLAC__seekable_stream_decoder_set_tell_callback(dec, tell_cb) &&
+		FLAC__seekable_stream_decoder_set_length_callback(dec, length_cb) &&
+		FLAC__seekable_stream_decoder_set_eof_callback(dec, eof_cb) &&
+		FLAC__seekable_stream_decoder_set_write_callback(dec, write_cb) &&
+		FLAC__seekable_stream_decoder_set_metadata_callback(dec, metadata_cb) &&
+		FLAC__seekable_stream_decoder_set_metadata_respond(dec, FLAC__METADATA_TYPE_VORBIS_COMMENT) &&
+		FLAC__seekable_stream_decoder_set_error_callback(dec, error_cb) &&
+		FLAC__seekable_stream_decoder_set_client_data(dec, data) &&
+		FLAC__seekable_stream_decoder_init(dec) == FLAC__SEEKABLE_STREAM_DECODER_OK;
 }
 #else /* FLAC_API_VERSION_CURRENT >= 7 */
 static void flacPrintErroredState(FLAC__StreamDecoderState state)

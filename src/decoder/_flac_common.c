@@ -39,7 +39,7 @@ flac_data_init(struct flac_data *data, struct decoder * decoder,
 	data->tag = NULL;
 }
 
-static int
+static bool
 flac_find_float_comment(const FLAC__StreamMetadata *block,
 			const char *cmnt, float *fl)
 {
@@ -59,11 +59,11 @@ flac_find_float_comment(const FLAC__StreamMetadata *block,
 			*fl = (float)atof((char *)p);
 			p[len] = tmp;
 
-			return 1;
+			return true;
 		}
 	}
 
-	return 0;
+	return false;
 }
 
 /* replaygain stuff by AliasMrJones */
@@ -71,21 +71,21 @@ static void
 flac_parse_replay_gain(const FLAC__StreamMetadata *block,
 		       struct flac_data *data)
 {
-	int found = 0;
+	bool found;
 
 	if (data->replay_gain_info)
 		replay_gain_info_free(data->replay_gain_info);
 
 	data->replay_gain_info = replay_gain_info_new();
 
-	found |= flac_find_float_comment(block, "replaygain_album_gain",
-					 &data->replay_gain_info->tuples[REPLAY_GAIN_ALBUM].gain);
-	found |= flac_find_float_comment(block, "replaygain_album_peak",
-					 &data->replay_gain_info->tuples[REPLAY_GAIN_ALBUM].peak);
-	found |= flac_find_float_comment(block, "replaygain_track_gain",
-					 &data->replay_gain_info->tuples[REPLAY_GAIN_TRACK].gain);
-	found |= flac_find_float_comment(block, "replaygain_track_peak",
-					 &data->replay_gain_info->tuples[REPLAY_GAIN_TRACK].peak);
+	found = flac_find_float_comment(block, "replaygain_album_gain",
+					&data->replay_gain_info->tuples[REPLAY_GAIN_ALBUM].gain) ||
+		flac_find_float_comment(block, "replaygain_album_peak",
+					&data->replay_gain_info->tuples[REPLAY_GAIN_ALBUM].peak) ||
+		flac_find_float_comment(block, "replaygain_track_gain",
+					&data->replay_gain_info->tuples[REPLAY_GAIN_TRACK].gain) ||
+		flac_find_float_comment(block, "replaygain_track_peak",
+					&data->replay_gain_info->tuples[REPLAY_GAIN_TRACK].peak);
 
 	if (!found) {
 		replay_gain_info_free(data->replay_gain_info);
@@ -98,7 +98,7 @@ flac_parse_replay_gain(const FLAC__StreamMetadata *block,
 static const char *VORBIS_COMMENT_TRACK_KEY = "tracknumber";
 static const char *VORBIS_COMMENT_DISC_KEY = "discnumber";
 
-static unsigned int
+static bool
 flac_copy_vorbis_comment(const
 			 FLAC__StreamMetadata_VorbisComment_Entry * entry,
 			 enum tag_type type,
@@ -129,10 +129,10 @@ flac_copy_vorbis_comment(const
 		tag_add_item_n(*tag, type,
 			       (char *)(entry->entry + slen + 1), vlen);
 
-		return 1;
+		return true;
 	}
 
-	return 0;
+	return false;
 }
 
 struct tag *
