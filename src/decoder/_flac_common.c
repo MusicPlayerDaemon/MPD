@@ -26,6 +26,8 @@
 #include <FLAC/format.h>
 #include <FLAC/metadata.h>
 
+#include <assert.h>
+
 void
 flac_data_init(struct flac_data *data, struct decoder * decoder,
 	       struct input_stream *input_stream)
@@ -114,60 +116,59 @@ flac_comment_value(const FLAC__StreamMetadata_VorbisComment_Entry *entry,
 	return NULL;
 }
 
-/* tracknumber is used in VCs, MPD uses "track" ..., all the other
- * tag names match */
-static const char *VORBIS_COMMENT_TRACK_KEY = "tracknumber";
-static const char *VORBIS_COMMENT_DISC_KEY = "discnumber";
-
+/**
+ * Check if the comment's name equals the passed name, and if so, copy
+ * the comment value into the tag.
+ */
 static bool
-flac_copy_vorbis_comment(struct tag *tag,
-			 const FLAC__StreamMetadata_VorbisComment_Entry *entry,
-			 enum tag_type type)
+flac_copy_comment(struct tag *tag,
+		  const FLAC__StreamMetadata_VorbisComment_Entry *entry,
+		  const char *name, enum tag_type tag_type)
 {
-	const char *str;
-	size_t slen;
-	int vlen;
 	const char *value;
 	size_t value_length;
 
-	switch (type) {
-	case TAG_ITEM_TRACK:
-		str = VORBIS_COMMENT_TRACK_KEY;
-		break;
-	case TAG_ITEM_DISC:
-		str = VORBIS_COMMENT_DISC_KEY;
-		break;
-	default:
-		str = mpdTagItemKeys[type];
-	}
-	slen = strlen(str);
-	vlen = entry->length - slen - 1;
-
-	value = flac_comment_value(entry, str, &value_length);
+	value = flac_comment_value(entry, name, &value_length);
 	if (value != NULL) {
-		tag_add_item_n(tag, type, value, value_length);
+		tag_add_item_n(tag, tag_type, value, value_length);
 		return true;
 	}
 
 	return false;
 }
 
+/* tracknumber is used in VCs, MPD uses "track" ..., all the other
+ * tag names match */
+static const char *VORBIS_COMMENT_TRACK_KEY = "tracknumber";
+static const char *VORBIS_COMMENT_DISC_KEY = "discnumber";
+
+static void
+flac_parse_comment(struct tag *tag,
+		   const FLAC__StreamMetadata_VorbisComment_Entry *entry)
+{
+	assert(tag != NULL);
+
+	if (flac_copy_comment(tag, entry, VORBIS_COMMENT_TRACK_KEY,
+			      TAG_ITEM_TRACK) ||
+	    flac_copy_comment(tag, entry, VORBIS_COMMENT_DISC_KEY,
+			      TAG_ITEM_DISC))
+		return;
+
+	for (unsigned i = 0; i < TAG_NUM_OF_ITEM_TYPES; ++i)
+		if (flac_copy_comment(tag, entry,
+				      mpdTagItemKeys[i], i))
+			return;
+}
+
 void
 flac_vorbis_comments_to_tag(struct tag *tag,
 			    const FLAC__StreamMetadata *block)
 {
-	unsigned int i, j;
-	FLAC__StreamMetadata_VorbisComment_Entry *comments;
+	FLAC__StreamMetadata_VorbisComment_Entry *comments =
+		block->data.vorbis_comment.comments;
 
-	comments = block->data.vorbis_comment.comments;
-
-	for (i = block->data.vorbis_comment.num_comments; i != 0; --i) {
-		for (j = TAG_NUM_OF_ITEM_TYPES; j--;) {
-			if (flac_copy_vorbis_comment(tag, comments, j))
-				break;
-		}
-		comments++;
-	}
+	for (unsigned i = block->data.vorbis_comment.num_comments; i > 0; --i)
+		flac_parse_comment(tag, comments++);
 }
 
 void flac_metadata_common_cb(const FLAC__StreamMetadata * block,
