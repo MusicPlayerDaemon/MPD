@@ -228,13 +228,11 @@ flac_write_cb(const flac_decoder *dec, const FLAC__Frame *frame,
 }
 
 static struct tag *
-flac_tag_load(const char *file, bool *vorbis_comment_found)
+flac_tag_load(const char *file)
 {
 	struct tag *ret = NULL;
 	FLAC__Metadata_SimpleIterator *it;
 	FLAC__StreamMetadata *block = NULL;
-
-	*vorbis_comment_found = false;
 
 	it = FLAC__metadata_simple_iterator_new();
 	if (!FLAC__metadata_simple_iterator_init(it, file, 1, 0)) {
@@ -267,10 +265,7 @@ flac_tag_load(const char *file, bool *vorbis_comment_found)
 		if (!block)
 			break;
 		if (block->type == FLAC__METADATA_TYPE_VORBIS_COMMENT) {
-			ret = flac_vorbis_comments_to_tag(block, ret);
-
-			if (ret)
-				*vorbis_comment_found = true;
+			flac_vorbis_comments_to_tag(block, ret);
 		} else if (block->type == FLAC__METADATA_TYPE_STREAMINFO) {
 			if (!ret)
 				ret = tag_new();
@@ -289,14 +284,13 @@ static struct tag *
 flac_tag_dup(const char *file)
 {
 	struct tag *ret = NULL;
-	bool vorbis_comment_found = false;
 
-	ret = flac_tag_load(file, &vorbis_comment_found);
+	ret = flac_tag_load(file);
 	if (!ret) {
 		g_debug("Failed to grab information from: %s\n", file);
 		return NULL;
 	}
-	if (!vorbis_comment_found) {
+	if (tag_is_empty(ret)) {
 		struct tag *temp = tag_id3_load(file);
 		if (temp) {
 			temp->time = ret->time;
