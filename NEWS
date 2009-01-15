@@ -10,6 +10,7 @@ MPD 0.14.1 - not yet released
 * input_curl:
   - use select() to eliminate busy loop during connect
   - honour http_proxy_* config directives
+  - fix assertion failure on "connection refused"
 * log: automatically append newline
 * fix setenv() conflict on Solaris
 * configure.ac: check for pkg-config before using it
