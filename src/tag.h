@@ -110,6 +110,15 @@ tag_is_empty(const struct tag *tag)
 }
 
 /**
+ * Returns true if the tag contains any information.
+ */
+static inline bool
+tag_is_defined(const struct tag *tag)
+{
+	return !tag_is_empty(tag) || tag->time >= 0;
+}
+
+/**
  * Returns the first value of the specified tag type, or NULL if none
  * is present in this tag object.
  */
