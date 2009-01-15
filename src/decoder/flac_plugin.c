@@ -225,7 +225,7 @@ flac_write_cb(const flac_decoder *dec, const FLAC__Frame *frame,
 static struct tag *
 flac_tag_load(const char *file)
 {
-	struct tag *ret = NULL;
+	struct tag *tag;
 	FLAC__Metadata_SimpleIterator *it;
 	FLAC__StreamMetadata *block = NULL;
 
@@ -252,27 +252,31 @@ flac_tag_load(const char *file)
 		g_debug("Reading '%s' metadata gave the following error: %s\n",
 			file, err);
 		FLAC__metadata_simple_iterator_delete(it);
-		return ret;
+		return NULL;
 	}
 
+	tag = tag_new();
 	do {
 		block = FLAC__metadata_simple_iterator_get_block(it);
 		if (!block)
 			break;
 		if (block->type == FLAC__METADATA_TYPE_VORBIS_COMMENT) {
-			flac_vorbis_comments_to_tag(block, ret);
+			flac_vorbis_comments_to_tag(tag, block);
 		} else if (block->type == FLAC__METADATA_TYPE_STREAMINFO) {
-			if (!ret)
-				ret = tag_new();
-			ret->time = ((float)block->data.stream_info.
-				     total_samples) /
+			tag->time = ((float)block->data.stream_info.total_samples) /
 			    block->data.stream_info.sample_rate + 0.5;
 		}
 		FLAC__metadata_object_delete(block);
 	} while (FLAC__metadata_simple_iterator_next(it));
 
 	FLAC__metadata_simple_iterator_delete(it);
-	return ret;
+
+	if (!tag_is_defined(tag)) {
+		tag_free(tag);
+		tag = NULL;
+	}
+
+	return tag;
 }
 
 static struct tag *
@@ -419,20 +423,26 @@ oggflac_tag_dup(const char *file)
 		goto out;
 	it = FLAC__metadata_iterator_new();
 	FLAC__metadata_iterator_init(it, chain);
+
+	ret = tag_new();
 	do {
 		if (!(block = FLAC__metadata_iterator_get_block(it)))
 			break;
 		if (block->type == FLAC__METADATA_TYPE_VORBIS_COMMENT) {
-			ret = flac_vorbis_comments_to_tag(block, ret);
+			flac_vorbis_comments_to_tag(ret, block);
 		} else if (block->type == FLAC__METADATA_TYPE_STREAMINFO) {
-			if (!ret)
-				ret = tag_new();
 			ret->time = ((float)block->data.stream_info.
 				     total_samples) /
 			    block->data.stream_info.sample_rate + 0.5;
 		}
 	} while (FLAC__metadata_iterator_next(it));
 	FLAC__metadata_iterator_delete(it);
+
+	if (!tag_is_defined(ret)) {
+		tag_free(ret);
+		ret = NULL;
+	}
+
 out:
 	FLAC__metadata_chain_delete(chain);
 	return ret;

@@ -24,6 +24,7 @@
 
 #include <glib.h>
 #include <OggFLAC/seekable_stream_decoder.h>
+#include <assert.h>
 #include <unistd.h>
 
 static void oggflac_cleanup(struct flac_data *data,
@@ -168,16 +169,16 @@ static void of_metadata_dup_cb(G_GNUC_UNUSED const OggFLAC__SeekableStreamDecode
 {
 	struct flac_data *data = (struct flac_data *) vdata;
 
+	assert(data->tag != NULL);
+
 	switch (block->type) {
 	case FLAC__METADATA_TYPE_STREAMINFO:
-		if (!data->tag)
-			data->tag = tag_new();
 		data->tag->time = ((float)block->data.stream_info.
 				   total_samples) /
 		    block->data.stream_info.sample_rate + 0.5;
 		return;
 	case FLAC__METADATA_TYPE_VORBIS_COMMENT:
-		flac_vorbis_comments_to_tag(block, data->tag);
+		flac_vorbis_comments_to_tag(data->tag, block);
 	default:
 		break;
 	}
@@ -271,12 +272,19 @@ oggflac_tag_dup(const char *file)
 
 	flac_data_init(&data, NULL, &input_stream);
 
+	data.tag = tag_new();
+
 	/* errors here won't matter,
 	 * data.tag will be set or unset, that's all we care about */
 	decoder = full_decoder_init_and_read_metadata(&data, 1);
 
 	oggflac_cleanup(&data, decoder);
 	input_stream_close(&input_stream);
+
+	if (!tag_is_defined(data.tag)) {
+		tag_free(data.tag);
+		data.tag = NULL;
+	}
 
 	return data.tag;
 }

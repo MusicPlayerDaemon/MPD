@@ -99,10 +99,9 @@ static const char *VORBIS_COMMENT_TRACK_KEY = "tracknumber";
 static const char *VORBIS_COMMENT_DISC_KEY = "discnumber";
 
 static bool
-flac_copy_vorbis_comment(const
-			 FLAC__StreamMetadata_VorbisComment_Entry * entry,
-			 enum tag_type type,
-			 struct tag ** tag)
+flac_copy_vorbis_comment(struct tag *tag,
+			 const FLAC__StreamMetadata_VorbisComment_Entry *entry,
+			 enum tag_type type)
 {
 	const char *str;
 	size_t slen;
@@ -123,10 +122,7 @@ flac_copy_vorbis_comment(const
 
 	if ((vlen > 0) && (0 == strncasecmp(str, (char *)entry->entry, slen))
 	    && (*(entry->entry + slen) == '=')) {
-		if (!*tag)
-			*tag = tag_new();
-
-		tag_add_item_n(*tag, type,
+		tag_add_item_n(tag, type,
 			       (char *)(entry->entry + slen + 1), vlen);
 
 		return true;
@@ -135,9 +131,9 @@ flac_copy_vorbis_comment(const
 	return false;
 }
 
-struct tag *
-flac_vorbis_comments_to_tag(const FLAC__StreamMetadata * block,
-			    struct tag * tag)
+void
+flac_vorbis_comments_to_tag(struct tag *tag,
+			    const FLAC__StreamMetadata *block)
 {
 	unsigned int i, j;
 	FLAC__StreamMetadata_VorbisComment_Entry *comments;
@@ -146,13 +142,11 @@ flac_vorbis_comments_to_tag(const FLAC__StreamMetadata * block,
 
 	for (i = block->data.vorbis_comment.num_comments; i != 0; --i) {
 		for (j = TAG_NUM_OF_ITEM_TYPES; j--;) {
-			if (flac_copy_vorbis_comment(comments, j, &tag))
+			if (flac_copy_vorbis_comment(tag, comments, j))
 				break;
 		}
 		comments++;
 	}
-
-	return tag;
 }
 
 void flac_metadata_common_cb(const FLAC__StreamMetadata * block,
