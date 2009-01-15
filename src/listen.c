@@ -113,19 +113,17 @@ static int establishListen(int pf, const struct sockaddr *addrp,
 	return 0;
 }
 
+#ifdef HAVE_IPV6
 static bool ipv6Supported(void)
 {
-#ifdef HAVE_IPV6
 	int s;
 	s = socket(AF_INET6, SOCK_STREAM, 0);
 	if (s == -1)
 		return false;
 	close(s);
 	return true;
-#else
-	return false;
-#endif
 }
+#endif
 
 static void
 parseListenConfigParam(G_GNUC_UNUSED unsigned int port, ConfigParam * param)
