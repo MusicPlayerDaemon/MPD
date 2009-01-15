@@ -926,6 +926,12 @@ input_curl_open(struct input_stream *is, const char *url)
 		return false;
 	}
 
+	ret = input_curl_multi_info_read(is);
+	if (!ret) {
+		input_curl_free(is);
+		return false;
+	}
+
 	return true;
 }
 
