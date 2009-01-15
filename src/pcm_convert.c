@@ -57,7 +57,6 @@ pcm_convert_16(const struct audio_format *src_format,
 {
 	const int16_t *buf;
 	size_t len;
-	size_t dest_size = pcm_convert_size(src_format, src_size, dest_format);
 
 	assert(dest_format->bits == 16);
 
@@ -83,7 +82,7 @@ pcm_convert_16(const struct audio_format *src_format,
 				      dest_format->sample_rate,
 				      &len);
 
-	assert(dest_size >= len);
+	assert(pcm_convert_size(src_format, src_size, dest_format) >= len);
 	memcpy(dest_buffer, buf, len);
 
 	return len;
@@ -98,7 +97,6 @@ pcm_convert_24(const struct audio_format *src_format,
 {
 	const int32_t *buf;
 	size_t len;
-	size_t dest_size = pcm_convert_size(src_format, src_size, dest_format);
 
 	assert(dest_format->bits == 24);
 
@@ -123,7 +121,7 @@ pcm_convert_24(const struct audio_format *src_format,
 				      dest_format->sample_rate,
 				      &len);
 
-	assert(dest_size >= len);
+	assert(pcm_convert_size(src_format, src_size, dest_format) >= len);
 	memcpy(dest_buffer, buf, len);
 
 	return len;
