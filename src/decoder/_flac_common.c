@@ -93,6 +93,27 @@ flac_parse_replay_gain(const FLAC__StreamMetadata *block,
 	}
 }
 
+/**
+ * Checks if the specified name matches the entry's name, and if yes,
+ * returns the comment value (not null-temrinated).
+ */
+static const char *
+flac_comment_value(const FLAC__StreamMetadata_VorbisComment_Entry *entry,
+		   const char *name, size_t *length_r)
+{
+	size_t name_length = strlen(name);
+	const char *comment = (const char*)entry->entry;
+
+	if (entry->length > name_length &&
+	    g_ascii_strncasecmp(comment, name, name_length) == 0 &&
+	    comment[name_length] == '=') {
+		*length_r = entry->length - name_length - 1;
+		return comment + name_length + 1;
+	}
+
+	return NULL;
+}
+
 /* tracknumber is used in VCs, MPD uses "track" ..., all the other
  * tag names match */
 static const char *VORBIS_COMMENT_TRACK_KEY = "tracknumber";
@@ -106,6 +127,8 @@ flac_copy_vorbis_comment(struct tag *tag,
 	const char *str;
 	size_t slen;
 	int vlen;
+	const char *value;
+	size_t value_length;
 
 	switch (type) {
 	case TAG_ITEM_TRACK:
@@ -120,11 +143,9 @@ flac_copy_vorbis_comment(struct tag *tag,
 	slen = strlen(str);
 	vlen = entry->length - slen - 1;
 
-	if ((vlen > 0) && (0 == strncasecmp(str, (char *)entry->entry, slen))
-	    && (*(entry->entry + slen) == '=')) {
-		tag_add_item_n(tag, type,
-			       (char *)(entry->entry + slen + 1), vlen);
-
+	value = flac_comment_value(entry, str, &value_length);
+	if (value != NULL) {
+		tag_add_item_n(tag, type, value, value_length);
 		return true;
 	}
 
