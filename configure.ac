@@ -705,7 +705,9 @@ if test x$use_tremor = xyes; then
 	CFLAGS="$CFLAGS $TREMOR_CFLAGS"
 	LIBS="$LIBS $TREMOR_LIBS"
 	AC_CHECK_LIB(vorbisidec,ov_read,enable_oggvorbis=yes,enable_oggvorbis=no;AC_MSG_WARN([vorbisidec lib needed for ogg support with tremor -- disabling ogg support]))
-	if test x$enable_oggvorbis = xno; then
+	if test x$enable_oggvorbis = xyes; then
+		AC_DEFINE(HAVE_OGGVORBIS, 1, [Define for Ogg Vorbis support]),
+	else
 		CFLAGS="$ac_save_CFLAGS"
 		LIBS="$ac_save_LIBS"
 	fi

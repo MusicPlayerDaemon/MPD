@@ -2,6 +2,7 @@ MPD 0.14.1 - not yet released
 * decoders:
   - mp4: support the writer/composer tag
   - id3: strip leading and trailing whitespace from ID3 tags
+  - oggvorbis: fix tremor support
 * audio outputs:
   - jack: allocate default port names (fixes a crash)
 * update:
