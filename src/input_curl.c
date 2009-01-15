@@ -194,6 +194,7 @@ input_curl_multi_info_read(struct input_stream *is)
 					   &msgs_in_queue)) != NULL) {
 		if (msg->msg == CURLMSG_DONE) {
 			c->eof = true;
+			is->ready = true;
 
 			if (msg->data.result != CURLE_OK) {
 				g_warning("curl failed: %s\n", c->error);
@@ -389,6 +390,7 @@ input_curl_read(struct input_stream *is, void *ptr, size_t size)
 			g_warning("curl_multi_perform() failed: %s\n",
 				  curl_multi_strerror(mcode));
 			c->eof = true;
+			is->ready = true;
 			return 0;
 		}
 
@@ -491,6 +493,7 @@ input_curl_buffer(struct input_stream *is)
 		g_warning("curl_multi_perform() failed: %s\n",
 			  curl_multi_strerror(mcode));
 		c->eof = true;
+		is->ready = true;
 		return -1;
 	}
 
@@ -783,6 +786,8 @@ input_curl_seek(struct input_stream *is, off_t offset, int whence)
 {
 	struct input_curl *c = is->data;
 	bool ret;
+
+	assert(is->ready);
 
 	if (whence == SEEK_SET && offset == 0) {
 		if (is->offset == 0)
