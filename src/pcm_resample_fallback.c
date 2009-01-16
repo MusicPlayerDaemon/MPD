@@ -32,7 +32,8 @@ pcm_resample_16(uint8_t channels,
 		G_GNUC_UNUSED struct pcm_resample_state *state)
 {
 	unsigned src_pos, dest_pos = 0;
-	unsigned dest_samples = dest_size / sizeof(*dest_buffer);
+	unsigned dest_frames = dest_size / channels / sizeof(*dest_buffer);
+	unsigned dest_samples = dest_frames * channels;
 
 	assert((src_size % (sizeof(*src_buffer) * channels)) == 0);
 	assert((dest_size % (sizeof(*dest_buffer) * channels)) == 0);
@@ -68,7 +69,8 @@ pcm_resample_24(uint8_t channels,
 		G_GNUC_UNUSED struct pcm_resample_state *state)
 {
 	unsigned src_pos, dest_pos = 0;
-	unsigned dest_samples = dest_size / sizeof(*dest_buffer);
+	unsigned dest_frames = dest_size / channels / sizeof(*dest_buffer);
+	unsigned dest_samples = dest_frames * channels;
 
 	switch (channels) {
 	case 1:
