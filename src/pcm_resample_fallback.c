@@ -37,9 +37,10 @@ pcm_resample_16(struct pcm_resample_state *state,
 		size_t *dest_size_r)
 {
 	unsigned src_pos, dest_pos = 0;
-	unsigned src_samples = src_size / sizeof(*src_buffer);
-	unsigned dest_samples =
-		(src_samples * dest_rate + src_rate - 1) / src_rate;
+	unsigned src_frames = src_size / channels / sizeof(*src_buffer);
+	unsigned dest_frames =
+		(src_frames * dest_rate + src_rate - 1) / src_rate;
+	unsigned dest_samples = dest_frames * channels;
 	size_t dest_size = dest_samples * sizeof(*src_buffer);
 	int16_t *dest_buffer = pcm_buffer_get(&state->buffer, dest_size);
 
@@ -77,9 +78,10 @@ pcm_resample_24(struct pcm_resample_state *state,
 		size_t *dest_size_r)
 {
 	unsigned src_pos, dest_pos = 0;
-	unsigned src_samples = src_size / sizeof(*src_buffer);
-	unsigned dest_samples =
-		(src_samples * dest_rate + src_rate - 1) / src_rate;
+	unsigned src_frames = src_size / channels / sizeof(*src_buffer);
+	unsigned dest_frames =
+		(src_frames * dest_rate + src_rate - 1) / src_rate;
+	unsigned dest_samples = dest_frames * channels;
 	size_t dest_size = dest_samples * sizeof(*src_buffer);
 	int32_t *dest_buffer = pcm_buffer_get(&state->buffer, dest_size);
 

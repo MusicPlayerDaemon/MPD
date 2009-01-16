@@ -29,6 +29,7 @@ MPD 0.14.1 - not yet released
   - honour http_proxy_* config directives
   - fix assertion failure on "connection refused"
   - fix assertion failure with empty HTTP responses
+* corrected the sample calculation in the fallback resampler
 * log: automatically append newline
 * fix setenv() conflict on Solaris
 * configure.ac: check for pkg-config before using it
