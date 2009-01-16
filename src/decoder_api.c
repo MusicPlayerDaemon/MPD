@@ -205,6 +205,7 @@ decoder_data(struct decoder *decoder,
 	char *data;
 
 	assert(dc.state == DECODE_STATE_DECODE);
+	assert(length % audio_format_frame_size(&dc.in_audio_format) == 0);
 
 	if (dc.command == DECODE_COMMAND_STOP ||
 	    dc.command == DECODE_COMMAND_SEEK ||
