@@ -552,7 +552,7 @@ oss_playAudio(void *data, const char *playChunk, size_t size)
 	ssize_t ret;
 
 	/* reopen the device since it was closed by dropBufferedAudio */
-	if (od->fd < 0 && oss_open(od) < 0)
+	if (od->fd < 0 && !oss_open(od))
 		return false;
 
 	while (size > 0) {
