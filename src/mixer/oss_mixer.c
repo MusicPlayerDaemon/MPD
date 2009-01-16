@@ -52,6 +52,10 @@ oss_mixer_configure(struct mixer_data *data, ConfigParam *param)
 {
 	struct oss_mixer *om = (struct oss_mixer *) data;
 	BlockParam *bp;
+
+	if (param == NULL)
+		return;
+
 	bp = getBlockParam(param, "mixer_device");
 	if (bp) {
 		if (om->device) 

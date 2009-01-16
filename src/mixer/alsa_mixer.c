@@ -49,6 +49,9 @@ alsa_mixer_configure(struct mixer_data *data, ConfigParam *param)
 	struct alsa_mixer *am = (struct alsa_mixer *)data;
 	BlockParam *bp;
 
+	if (param == NULL)
+		return;
+
 	if ((bp = getBlockParam(param, "mixer_device"))) {
 		if (am->device)
 			g_free(am->device);
