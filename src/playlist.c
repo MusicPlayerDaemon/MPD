@@ -121,6 +121,7 @@ void initPlaylist(void)
 {
 	char *test;
 	ConfigParam *param;
+	int value;
 
 	g_rand = g_rand_new();
 
@@ -140,9 +141,10 @@ void initPlaylist(void)
 				"line %i", param->value, param->line);
 	}
 
-	playlist_saveAbsolutePaths = getBoolConfigParam(
-	                                         CONF_SAVE_ABSOLUTE_PATHS, 1);
-	if (playlist_saveAbsolutePaths == CONF_BOOL_UNSET)
+	value = getBoolConfigParam(CONF_SAVE_ABSOLUTE_PATHS, 1);
+	if (value != CONF_BOOL_UNSET)
+		playlist_saveAbsolutePaths = value;
+	else
 		playlist_saveAbsolutePaths =
 		                         DEFAULT_PLAYLIST_SAVE_ABSOLUTE_PATHS;
 
