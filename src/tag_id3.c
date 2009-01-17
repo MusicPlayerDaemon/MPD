@@ -55,13 +55,13 @@ static id3_utf8_t * processID3FieldString (int is_id3v1, const id3_ucs4_t *ucs4,
 {
 	id3_utf8_t *utf8, *utf8_stripped;
 	id3_latin1_t *isostr;
-	char *encoding;
+	const char *encoding;
 
 	if (type == TAG_ITEM_GENRE)
 		ucs4 = id3_genre_name(ucs4);
 	/* use encoding field here? */
 	if (is_id3v1 &&
-	    (encoding = getConfigParamValue(CONF_ID3V1_ENCODING))) {
+	    (encoding = config_get_string(CONF_ID3V1_ENCODING, NULL)) != NULL) {
 		isostr = id3_ucs4_latin1duplicate(ucs4);
 		if (G_UNLIKELY(!isostr)) {
 			return NULL;

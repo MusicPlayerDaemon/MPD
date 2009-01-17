@@ -376,12 +376,13 @@ config_get_next_param(const char *name, struct config_param * last)
 	return param;
 }
 
-char *getConfigParamValue(const char *name)
+const char *
+config_get_string(const char *name, const char *default_value)
 {
 	struct config_param *param = config_get_param(name);
 
-	if (!param)
-		return NULL;
+	if (param == NULL)
+		return default_value;
 
 	return param->value;
 }

@@ -281,7 +281,7 @@ db_load(void)
 			foundVersion = true;
 		} else if (g_str_has_prefix(buffer, DIRECTORY_FS_CHARSET)) {
 			char *fsCharset;
-			char *tempCharset;
+			const char *tempCharset;
 
 			if (foundFsCharset)
 				g_error("already found fs charset in db");
@@ -289,7 +289,8 @@ db_load(void)
 			foundFsCharset = true;
 
 			fsCharset = &(buffer[strlen(DIRECTORY_FS_CHARSET)]);
-			if ((tempCharset = getConfigParamValue(CONF_FS_CHARSET))
+			tempCharset = config_get_string(CONF_FS_CHARSET, NULL);
+			if (tempCharset != NULL
 			    && strcmp(fsCharset, tempCharset)) {
 				g_message("Using \"%s\" for the "
 					  "filesystem charset "

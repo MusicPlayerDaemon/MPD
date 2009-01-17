@@ -98,7 +98,8 @@ config_get_param(const char *name)
 	return config_get_next_param(name, NULL);
 }
 
-char *getConfigParamValue(const char *name);
+const char *
+config_get_string(const char *name, const char *default_value);
 
 struct block_param *
 getBlockParam(struct config_param *param, const char *name);

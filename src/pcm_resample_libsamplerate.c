@@ -42,7 +42,7 @@ void pcm_resample_deinit(struct pcm_resample_state *state)
 
 static int pcm_resample_get_converter(void)
 {
-	const char *conf = getConfigParamValue(CONF_SAMPLERATE_CONVERTER);
+	const char *conf = config_get_string(CONF_SAMPLERATE_CONVERTER, NULL);
 	long convalgo;
 	char *test;
 	const char *test2;
