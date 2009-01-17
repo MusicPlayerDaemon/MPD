@@ -207,25 +207,49 @@ tail_chunk(size_t frame_size)
 	return chunk;
 }
 
-static size_t
-music_chunk_append(struct music_chunk *chunk, const void *data, size_t length,
-		   size_t frame_size)
+void *
+music_pipe_write(const struct audio_format *audio_format,
+		 float data_time, uint16_t bit_rate,
+		 size_t *max_length_r)
 {
-	size_t rest = sizeof(chunk->data) - chunk->length;
+	const size_t frame_size = audio_format_frame_size(audio_format);
+	struct music_chunk *chunk;
+	size_t num_frames;
 
-	assert(rest >= frame_size);
+	chunk = tail_chunk(frame_size);
+	if (chunk == NULL)
+		return NULL;
 
-	if (length > rest)
-		length = rest;
+	if (chunk->length == 0) {
+		/* if the chunk is empty, nobody has set bitRate and
+		   times yet */
 
-	/* don't split frames */
-	length /= frame_size;
-	length *= frame_size;
+		chunk->bit_rate = bit_rate;
+		chunk->times = data_time;
+	}
 
-	memcpy(chunk->data + chunk->length, data, length);
+	num_frames = (sizeof(chunk->data) - chunk->length) / frame_size;
+	*max_length_r = num_frames * frame_size;
+	return chunk->data + chunk->length;
+}
+
+void
+music_pipe_expand(const struct audio_format *audio_format, size_t length)
+{
+	const size_t frame_size = audio_format_frame_size(audio_format);
+	struct music_chunk *chunk;
+
+	/* no partial frames allowed */
+	assert(length % frame_size == 0);
+
+	chunk = tail_chunk(frame_size);
+	assert(chunk != NULL);
+	assert(chunk->length + length <= sizeof(chunk->data));
+
 	chunk->length += length;
 
-	return length;
+	if (chunk->length + frame_size > sizeof(chunk->data))
+		music_pipe_flush();
 }
 
 size_t music_pipe_append(const void *data0, size_t datalen,
@@ -233,37 +257,27 @@ size_t music_pipe_append(const void *data0, size_t datalen,
 			 float data_time, uint16_t bit_rate)
 {
 	const unsigned char *data = data0;
-	const size_t frame_size = audio_format_frame_size(audio_format);
 	size_t ret = 0, nbytes;
-	struct music_chunk *chunk = NULL;
-
-	/* no partial frames allowed */
-	assert((datalen % frame_size) == 0);
+	void *dest;
 
 	while (datalen) {
-		chunk = tail_chunk(frame_size);
-		if (chunk == NULL)
-			return ret;
+		dest = music_pipe_write(audio_format, data_time, bit_rate,
+					&nbytes);
+		if (dest == NULL)
+			break;
 
-		if (chunk->length == 0) {
-			/* if the chunk is empty, nobody has set bitRate and
-			   times yet */
-
-			chunk->bit_rate = bit_rate;
-			chunk->times = data_time;
-		}
-
-		nbytes = music_chunk_append(chunk, data, datalen,
-					    frame_size);
 		assert(nbytes > 0);
+
+		if (nbytes > datalen)
+			nbytes = datalen;
+
+		memcpy(dest, data, nbytes);
+		music_pipe_expand(audio_format, nbytes);
 
 		datalen -= nbytes;
 		data += nbytes;
 		ret += nbytes;
 	}
-
-	if (chunk != NULL && chunk->length == sizeof(chunk->data))
-		music_pipe_flush();
 
 	return ret;
 }

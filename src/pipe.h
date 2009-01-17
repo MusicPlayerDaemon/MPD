@@ -148,6 +148,24 @@ music_pipe_peek(void)
 }
 
 /**
+ * Prepares appending to the music pipe.  Returns a buffer where you
+ * may write into.  After you are finished, call music_pipe_expand().
+ *
+ * @return a writable buffer
+ */
+void *
+music_pipe_write(const struct audio_format *audio_format,
+		 float data_time, uint16_t bit_rate,
+		 size_t *max_length_r);
+
+/**
+ * Tells the music pipe to move the end pointer, after you have
+ * written to the buffer returned by music_pipe_write().
+ */
+void
+music_pipe_expand(const struct audio_format *audio_format, size_t length);
+
+/**
  * Append a data block to the buffer.
  *
  * @return the number of bytes actually written
