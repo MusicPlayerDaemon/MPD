@@ -148,7 +148,8 @@ size_t decoder_read(struct decoder *decoder,
 enum decoder_command
 decoder_data(struct decoder *decoder,
 	     struct input_stream *inStream,
-	     void *data, size_t datalen, float data_time, uint16_t bitRate,
+	     const void *data, size_t datalen,
+	     float data_time, uint16_t bitRate,
 	     struct replay_gain_info *replay_gain_info);
 
 /**

@@ -187,7 +187,7 @@ update_stream_tag(struct decoder *decoder, struct input_stream *is)
 enum decoder_command
 decoder_data(struct decoder *decoder,
 	     struct input_stream *is,
-	     void *_data, size_t length,
+	     const void *_data, size_t length,
 	     float data_time, uint16_t bitRate,
 	     struct replay_gain_info *replay_gain_info)
 {
