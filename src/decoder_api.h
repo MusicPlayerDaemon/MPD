@@ -29,7 +29,6 @@
 #include "input_stream.h"
 #include "replay_gain.h"
 #include "tag.h"
-#include "tag_id3.h"
 #include "audio_format.h"
 #include "playerData.h"
 

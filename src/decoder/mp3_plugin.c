@@ -19,6 +19,7 @@
 #include "../decoder_api.h"
 #include "../conf.h"
 #include "config.h"
+#include "tag_id3.h"
 
 #include <assert.h>
 #include <unistd.h>
@@ -1190,22 +1191,19 @@ mp3_decode(struct decoder *decoder, struct input_stream *input_stream)
 
 static struct tag *mp3_tag_dup(const char *file)
 {
-	struct tag *ret = NULL;
+	struct tag *tag;
 	int total_time;
 
-	ret = tag_id3_load(file);
-
 	total_time = mp3_total_file_time(file);
-	if (total_time >= 0) {
-		if (!ret)
-			ret = tag_new();
-		ret->time = total_time;
-	} else {
+	if (total_time < 0) {
 		g_debug("mp3_tag_dup: Failed to get total song time from: %s\n",
 			file);
+		return NULL;
 	}
 
-	return ret;
+	tag = tag_new();
+	tag->time = total_time;
+	return tag;
 }
 
 static const char *const mp3_suffixes[] = { "mp3", "mp2", NULL };

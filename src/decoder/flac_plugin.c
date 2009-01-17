@@ -282,23 +282,7 @@ flac_tag_load(const char *file)
 static struct tag *
 flac_tag_dup(const char *file)
 {
-	struct tag *ret = NULL;
-
-	ret = flac_tag_load(file);
-	if (!ret) {
-		g_debug("Failed to grab information from: %s\n", file);
-		return NULL;
-	}
-	if (tag_is_empty(ret)) {
-		struct tag *temp = tag_id3_load(file);
-		if (temp) {
-			temp->time = ret->time;
-			tag_free(ret);
-			ret = temp;
-		}
-	}
-
-	return ret;
+	return flac_tag_load(file);
 }
 
 static void

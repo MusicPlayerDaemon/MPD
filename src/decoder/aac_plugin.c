@@ -443,19 +443,18 @@ aac_stream_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 
 static struct tag *aacTagDup(const char *file)
 {
-	struct tag *ret = NULL;
 	int file_time = getAacTotalTime(file);
+	struct tag *tag;
 
-	if (file_time >= 0) {
-		if ((ret = tag_id3_load(file)) == NULL)
-			ret = tag_new();
-		ret->time = file_time;
-	} else {
+	if (file_time < 0) {
 		g_debug("aacTagDup: Failed to get total song time from: %s\n",
 			file);
+		return NULL;
 	}
 
-	return ret;
+	tag = tag_new();
+	tag->time = file_time;
+	return tag;
 }
 
 static const char *const aac_suffixes[] = { "aac", NULL };

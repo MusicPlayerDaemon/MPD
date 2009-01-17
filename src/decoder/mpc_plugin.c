@@ -249,8 +249,8 @@ static float mpcGetTime(const char *file)
 
 static struct tag *mpcTagDup(const char *file)
 {
-	struct tag *ret = NULL;
 	float total_time = mpcGetTime(file);
+	struct tag *tag;
 
 	if (total_time < 0) {
 		g_debug("mpcTagDup: Failed to get Songlength of file: %s\n",
@@ -258,14 +258,9 @@ static struct tag *mpcTagDup(const char *file)
 		return NULL;
 	}
 
-	ret = tag_ape_load(file);
-	if (!ret)
-		ret = tag_id3_load(file);
-	if (!ret)
-		ret = tag_new();
-	ret->time = total_time;
-
-	return ret;
+	tag = tag_new();
+	tag->time = total_time;
+	return tag;
 }
 
 static const char *const mpcSuffixes[] = { "mpc", NULL };

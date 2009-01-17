@@ -405,21 +405,7 @@ mp4_load_tag(const char *file)
 static struct tag *
 mp4_tag_dup(const char *file)
 {
-	struct tag *ret = NULL;
-
-	ret = mp4_load_tag(file);
-	if (!ret)
-		return NULL;
-	if (tag_is_empty(ret)) {
-		struct tag *temp = tag_id3_load(file);
-		if (temp) {
-			temp->time = ret->time;
-			tag_free(ret);
-			ret = temp;
-		}
-	}
-
-	return ret;
+	return mp4_load_tag(file);
 }
 
 static const char *const mp4_suffixes[] = { "m4a", "mp4", NULL };

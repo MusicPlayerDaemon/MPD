@@ -24,6 +24,7 @@
 #include "playlist.h"
 #include "decoder_list.h"
 #include "decoder_api.h"
+#include "tag_id3.h"
 
 #include <glib.h>
 
@@ -98,6 +99,38 @@ song_free(struct song *song)
 	g_free(song);
 }
 
+/**
+ * Attempts to load APE or ID3 tags from the specified file.
+ */
+static struct tag *
+tag_load_fallback(const char *path)
+{
+	struct tag *tag = tag_ape_load(path);
+	if (tag == NULL)
+		tag = tag_id3_load(path);
+	return tag;
+}
+
+/**
+ * The decoder plugin failed to load any tags: fall back to the APE or
+ * ID3 tag loader.
+ */
+static struct tag *
+tag_fallback(const char *path, struct tag *tag)
+{
+	struct tag *fallback = tag_load_fallback(path);
+
+	if (fallback != NULL) {
+		/* tag was successfully loaded: copy the song
+		   duration, and destroy the old (empty) tag */
+		fallback->time = tag->time;
+		tag_free(tag);
+		return fallback;
+	} else
+		/* no APE/ID3 tag found: return the empty tag */
+		return tag;
+}
+
 bool
 song_file_update(struct song *song)
 {
@@ -141,6 +174,9 @@ song_file_update(struct song *song)
 
 		plugin = decoder_plugin_from_suffix(suffix, true);
 	} while (plugin != NULL);
+
+	if (song->tag != NULL && tag_is_empty(song->tag))
+		song->tag = tag_fallback(path_fs, song->tag);
 
 	g_free(path_fs);
 	return song->tag != NULL;
