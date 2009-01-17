@@ -19,6 +19,8 @@
 /* TODO 'ogg' should probably be replaced with 'oggvorbis' in all instances */
 
 #include "_ogg_common.h"
+#include "ls.h"
+#include "path.h"
 
 #ifndef HAVE_TREMOR
 #include <vorbis/vorbisfile.h>
@@ -47,8 +49,10 @@
 #endif
 
 typedef struct _OggCallbackData {
-	struct input_stream *inStream;
 	struct decoder *decoder;
+
+	struct input_stream *inStream;
+	bool seekable;
 } OggCallbackData;
 
 static size_t ogg_read_cb(void *ptr, size_t size, size_t nmemb, void *vdata)
@@ -67,9 +71,11 @@ static size_t ogg_read_cb(void *ptr, size_t size, size_t nmemb, void *vdata)
 static int ogg_seek_cb(void *vdata, ogg_int64_t offset, int whence)
 {
 	const OggCallbackData *data = (const OggCallbackData *) vdata;
-	if(decoder_get_command(data->decoder) == DECODE_COMMAND_STOP)
-		return -1;
-	return input_stream_seek(data->inStream, offset, whence) ? 0 : -1;
+
+	return data->seekable &&
+		decoder_get_command(data->decoder) != DECODE_COMMAND_STOP &&
+		input_stream_seek(data->inStream, offset, whence)
+		? 0 : -1;
 }
 
 /* TODO: check Ogg libraries API and see if we can just not have this func */
@@ -198,6 +204,17 @@ static void putOggCommentsIntoOutputBuffer(struct decoder *decoder,
 	tag_free(tag);
 }
 
+static bool
+oggvorbis_seekable(struct decoder *decoder)
+{
+	char buffer[MPD_PATH_MAX];
+
+	/* disable seeking on remote streams, because libvorbis seeks
+	   around like crazy, and due to being very expensive, this
+	   delays song playback my 10 or 20 seconds */
+	return !uri_has_scheme(decoder_get_url(decoder, buffer));
+}
+
 /* public */
 static void
 oggvorbis_decode(struct decoder *decoder, struct input_stream *inStream)
@@ -225,8 +242,9 @@ oggvorbis_decode(struct decoder *decoder, struct input_stream *inStream)
 	   moved it */
 	input_stream_seek(inStream, 0, SEEK_SET);
 
-	data.inStream = inStream;
 	data.decoder = decoder;
+	data.inStream = inStream;
+	data.seekable = inStream->seekable && oggvorbis_seekable(decoder);
 
 	callbacks.read_func = ogg_read_cb;
 	callbacks.seek_func = ogg_seek_cb;
@@ -303,7 +321,7 @@ oggvorbis_decode(struct decoder *decoder, struct input_stream *inStream)
 				if (total_time < 0)
 					total_time = 0;
 				decoder_initialized(decoder, &audio_format,
-						    inStream->seekable,
+						    data.seekable,
 						    total_time);
 				initialized = true;
 			}
