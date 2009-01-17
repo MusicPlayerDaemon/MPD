@@ -243,8 +243,7 @@ decoder_data(struct decoder *decoder,
 		if (dest == NULL) {
 			/* the music pipe is full: wait for more
 			   room */
-			enum decoder_command cmd =
-				need_chunks(is, nbytes == 0);
+			enum decoder_command cmd = need_chunks(is, true);
 			if (cmd != DECODE_COMMAND_NONE)
 				return cmd;
 			continue;
