@@ -14,7 +14,7 @@ ver 0.15 - (200?/??/??)
 * --create-db starts the MPD daemon instead of exiting
 
 
-MPD 0.14.1 - not yet released
+ver 0.14.1 (2009/01/17)
 * decoders:
   - mp4: support the writer/composer tag
   - id3: strip leading and trailing whitespace from ID3 tags
