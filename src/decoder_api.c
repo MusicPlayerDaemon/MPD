@@ -193,7 +193,6 @@ decoder_data(struct decoder *decoder,
 {
 	static char *conv_buffer;
 	static size_t conv_buffer_size;
-	size_t nbytes;
 	char *data;
 
 	assert(dc.state == DECODE_STATE_DECODE);
@@ -250,25 +249,45 @@ decoder_data(struct decoder *decoder,
 			return DECODE_COMMAND_NONE;
 	}
 
-	if (replay_gain_info != NULL && (replay_gain_mode != REPLAY_GAIN_OFF))
-		replay_gain_apply(replay_gain_info, data, length,
-			     &dc.out_audio_format);
-	else if (normalizationEnabled)
-		normalizeData(data, length, &dc.out_audio_format);
-
 	while (length > 0) {
-		nbytes = music_pipe_append(data, length,
-					   &dc.out_audio_format,
-					   data_time, bitRate);
-		length -= nbytes;
-		data += nbytes;
-
-		if (length > 0) {
+		size_t nbytes;
+		char *dest = music_pipe_write(&dc.out_audio_format,
+					      data_time, bitRate,
+					      &nbytes);
+		if (dest == NULL) {
+			/* the music pipe is full: wait for more
+			   room */
 			enum decoder_command cmd =
 				need_chunks(is, nbytes == 0);
 			if (cmd != DECODE_COMMAND_NONE)
 				return cmd;
+			continue;
 		}
+
+		assert(nbytes > 0);
+
+		if (nbytes > length)
+			nbytes = length;
+
+		/* copy the buffer */
+
+		memcpy(dest, data, nbytes);
+
+		/* apply replay gain or normalization */
+
+		if (replay_gain_info != NULL &&
+		    replay_gain_mode != REPLAY_GAIN_OFF)
+			replay_gain_apply(replay_gain_info, dest, nbytes,
+					  &dc.out_audio_format);
+		else if (normalizationEnabled)
+			normalizeData(dest, nbytes, &dc.out_audio_format);
+
+		/* expand the music pipe chunk */
+
+		music_pipe_expand(&dc.out_audio_format, nbytes);
+
+		data += nbytes;
+		length -= nbytes;
 	}
 
 	return DECODE_COMMAND_NONE;
