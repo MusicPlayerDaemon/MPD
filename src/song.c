@@ -78,7 +78,7 @@ song_file_load(const char *path, struct directory *parent)
 	song = song_file_new(path, parent);
 
 	//in archive ?
-	if (parent->device == DEVICE_INARCHIVE) {
+	if (parent != NULL && parent->device == DEVICE_INARCHIVE) {
 		ret = song_file_update_inarchive(song);
 	} else {
 		ret = song_file_update(song);
