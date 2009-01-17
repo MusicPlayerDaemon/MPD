@@ -37,10 +37,8 @@ void initZeroconf(void)
 	const char *serviceName = SERVICE_NAME;
 	struct config_param *param;
 
-	zeroconfEnabled = getBoolConfigParam(CONF_ZEROCONF_ENABLED, 1);
-	if (zeroconfEnabled == CONF_BOOL_UNSET)
-		zeroconfEnabled = DEFAULT_ZEROCONF_ENABLED;
-
+	zeroconfEnabled = config_get_bool(CONF_ZEROCONF_ENABLED,
+					  DEFAULT_ZEROCONF_ENABLED);
 	if (!zeroconfEnabled)
 		return;
 

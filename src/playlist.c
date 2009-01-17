@@ -121,7 +121,6 @@ void initPlaylist(void)
 {
 	char *test;
 	struct config_param *param;
-	int value;
 
 	g_rand = g_rand_new();
 
@@ -141,12 +140,9 @@ void initPlaylist(void)
 				"line %i", param->value, param->line);
 	}
 
-	value = getBoolConfigParam(CONF_SAVE_ABSOLUTE_PATHS, 1);
-	if (value != CONF_BOOL_UNSET)
-		playlist_saveAbsolutePaths = value;
-	else
-		playlist_saveAbsolutePaths =
-		                         DEFAULT_PLAYLIST_SAVE_ABSOLUTE_PATHS;
+	playlist_saveAbsolutePaths =
+		config_get_bool(CONF_SAVE_ABSOLUTE_PATHS,
+				DEFAULT_PLAYLIST_SAVE_ABSOLUTE_PATHS);
 
 	playlist.songs = g_malloc(sizeof(playlist.songs[0]) *
 				  playlist_max_length);

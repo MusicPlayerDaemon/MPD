@@ -106,8 +106,6 @@ getBlockParam(struct config_param *param, const char *name);
 struct config_param *
 parseConfigFilePath(const char *name, int force);
 
-int getBoolConfigParam(const char *name, int force);
-
 bool config_get_bool(const char *name, bool default_value);
 
 int

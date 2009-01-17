@@ -27,9 +27,8 @@ int normalizationEnabled;
 
 void initNormalization(void)
 {
-	normalizationEnabled = getBoolConfigParam(CONF_VOLUME_NORMALIZATION, 1);
-	if (normalizationEnabled == CONF_BOOL_UNSET)
-		normalizationEnabled = DEFAULT_VOLUME_NORMALIZATION;
+	normalizationEnabled = config_get_bool(CONF_VOLUME_NORMALIZATION,
+					       DEFAULT_VOLUME_NORMALIZATION);
 
 	if (normalizationEnabled)
 		CompressCfg(0, ANTICLIP, TARGET, GAINMAX, GAINSMOOTH, BUCKETS);

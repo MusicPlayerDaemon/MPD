@@ -93,10 +93,8 @@ mad_fixed_to_24_buffer(int32_t *dest, const struct mad_synth *synth,
 
 static bool mp3_plugin_init(void)
 {
-	int ret = getBoolConfigParam(CONF_GAPLESS_MP3_PLAYBACK, true);
-	gapless_playback = ret != CONF_BOOL_UNSET
-		? !!ret
-		: DEFAULT_GAPLESS_MP3_PLAYBACK;
+	gapless_playback = config_get_bool(CONF_GAPLESS_MP3_PLAYBACK,
+					   DEFAULT_GAPLESS_MP3_PLAYBACK);
 	return true;
 }
 

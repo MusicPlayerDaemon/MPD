@@ -429,30 +429,24 @@ parseConfigFilePath(const char *name, int force)
 	return param;
 }
 
-int getBoolConfigParam(const char *name, int force)
+bool config_get_bool(const char *name, bool default_value)
 {
-	int ret;
 	struct config_param *param = config_get_param(name);
+	int value;
 
-	if (!param)
-		return CONF_BOOL_UNSET;
+	if (param == NULL)
+		return default_value;
 
-	ret = get_bool(param->value);
-	if (force && ret == CONF_BOOL_INVALID)
+	value = get_bool(param->value);
+	if (value == CONF_BOOL_INVALID)
 		g_error("%s is not a boolean value (yes, true, 1) or "
 			"(no, false, 0) on line %i\n",
 			name, param->line);
-	return ret;
-}
-
-bool config_get_bool(const char *name, bool default_value)
-{
-	int value = getBoolConfigParam(name, true);
 
 	if (value == CONF_BOOL_UNSET)
 		return default_value;
 
-	return value;
+	return !!value;
 }
 
 int
