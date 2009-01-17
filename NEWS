@@ -33,6 +33,9 @@ ver 0.15 - (200?/??/??)
 * playlist: don't unpause on delete
 
 
+ver 0.14.2 (2009/??/??)
+
+
 ver 0.14.1 (2009/01/17)
 * decoders:
   - mp4: support the writer/composer tag
