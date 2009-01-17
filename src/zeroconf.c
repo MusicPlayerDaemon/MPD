@@ -35,7 +35,7 @@ static int zeroconfEnabled;
 void initZeroconf(void)
 {
 	const char *serviceName = SERVICE_NAME;
-	ConfigParam *param;
+	struct config_param *param;
 
 	zeroconfEnabled = getBoolConfigParam(CONF_ZEROCONF_ENABLED, 1);
 	if (zeroconfEnabled == CONF_BOOL_UNSET)
@@ -44,7 +44,7 @@ void initZeroconf(void)
 	if (!zeroconfEnabled)
 		return;
 
-	param = getConfigParam(CONF_ZEROCONF_NAME);
+	param = config_get_param(CONF_ZEROCONF_NAME);
 
 	if (param && *param->value != 0)
 		serviceName = param->value;

@@ -68,46 +68,57 @@
 #define CONF_BOOL_UNSET         -1
 #define CONF_BOOL_INVALID       -2
 
-typedef struct _BlockParam {
+struct block_param {
 	char *name;
 	char *value;
 	int line;
-} BlockParam;
+};
 
-typedef struct _ConfigParam {
+struct config_param {
 	char *value;
 	unsigned int line;
-	BlockParam *blockParams;
-	int numberOfBlockParams;
-} ConfigParam;
 
-void initConf(void);
-void finishConf(void);
+	struct block_param *block_params;
+	int num_block_params;
+};
 
-void readConf(const char *file);
+void config_global_init(void);
+void config_global_finish(void);
+
+void config_read_file(const char *file);
 
 /* don't free the returned value
    set _last_ to NULL to get first entry */
-ConfigParam *getNextConfigParam(const char *name, ConfigParam * last);
+struct config_param *
+config_get_next_param(const char *name, struct config_param *last);
 
-#define getConfigParam(name) 	getNextConfigParam(name, NULL)
+static inline struct config_param *
+config_get_param(const char *name)
+{
+	return config_get_next_param(name, NULL);
+}
 
 char *getConfigParamValue(const char *name);
 
-BlockParam *getBlockParam(ConfigParam * param, const char *name);
+struct block_param *
+getBlockParam(struct config_param *param, const char *name);
 
-ConfigParam *parseConfigFilePath(const char *name, int force);
+struct config_param *
+parseConfigFilePath(const char *name, int force);
 
 int getBoolConfigParam(const char *name, int force);
 
 bool config_get_bool(const char *name, bool default_value);
 
-int getBoolBlockParam(ConfigParam *param, const char *name, int force);
+int
+getBoolBlockParam(struct config_param *param, const char *name, int force);
 
-ConfigParam *newConfigParam(const char *value, int line);
+struct config_param *
+newConfigParam(const char *value, int line);
 
 void config_param_free(gpointer data, gpointer user_data);
 
-void addBlockParam(ConfigParam * param, const char *name, const char *value, int line);
+void
+addBlockParam(struct config_param *param, const char *name, const char *value, int line);
 
 #endif

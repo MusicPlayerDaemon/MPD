@@ -38,7 +38,7 @@ static float replay_gain_preamp = 1.0;
 
 void replay_gain_global_init(void)
 {
-	ConfigParam *param = getConfigParam(CONF_REPLAYGAIN);
+	struct config_param *param = config_get_param(CONF_REPLAYGAIN);
 
 	if (!param)
 		return;
@@ -52,7 +52,7 @@ void replay_gain_global_init(void)
 			param->value, param->line);
 	}
 
-	param = getConfigParam(CONF_REPLAYGAIN_PREAMP);
+	param = config_get_param(CONF_REPLAYGAIN_PREAMP);
 
 	if (param) {
 		char *test;

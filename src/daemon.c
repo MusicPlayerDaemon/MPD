@@ -46,7 +46,8 @@ daemonize(Options *options)
 {
 #ifndef WIN32
 	FILE *fp = NULL;
-	ConfigParam *pidFileParam = parseConfigFilePath(CONF_PID_FILE, 0);
+	struct config_param *pidFileParam =
+		parseConfigFilePath(CONF_PID_FILE, 0);
 
 	if (pidFileParam) {
 		/* do this before daemon'izing so we can fail gracefully if we can't

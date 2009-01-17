@@ -84,7 +84,7 @@ struct notify main_notify;
 static void changeToUser(void)
 {
 #ifndef WIN32
-	ConfigParam *param = getConfigParam(CONF_USER);
+	struct config_param *param = config_get_param(CONF_USER);
 
 	if (param && strlen(param->value)) {
 		/* get uid */
@@ -150,7 +150,8 @@ static void openDB(Options * options, char *argv0)
 
 static void cleanUpPidFile(void)
 {
-	ConfigParam *pidFileParam = parseConfigFilePath(CONF_PID_FILE, 0);
+	struct config_param *pidFileParam =
+		parseConfigFilePath(CONF_PID_FILE, 0);
 
 	if (!pidFileParam)
 		return;
@@ -164,7 +165,8 @@ static void killFromPidFile(void)
 {
 #ifndef WIN32
 	FILE *fp;
-	ConfigParam *pidFileParam = parseConfigFilePath(CONF_PID_FILE, 0);
+	struct config_param *pidFileParam =
+		parseConfigFilePath(CONF_PID_FILE, 0);
 	int pid;
 
 	if (!pidFileParam) {
@@ -234,7 +236,7 @@ int main(int argc, char *argv[])
 	dirvec_init();
 	songvec_init();
 	tag_pool_init();
-	initConf();
+	config_global_init();
 
 	parseOptions(argc, argv, &options);
 
@@ -343,7 +345,7 @@ int main(int argc, char *argv[])
 #endif
 	music_pipe_free();
 	cleanUpPidFile();
-	finishConf();
+	config_global_finish();
 	tag_pool_deinit();
 	songvec_deinit();
 	dirvec_deinit();

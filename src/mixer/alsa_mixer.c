@@ -44,10 +44,10 @@ alsa_mixer_finish(struct mixer_data *data)
 }
 
 static void
-alsa_mixer_configure(struct mixer_data *data, ConfigParam *param)
+alsa_mixer_configure(struct mixer_data *data, struct config_param *param)
 {
 	struct alsa_mixer *am = (struct alsa_mixer *)data;
-	BlockParam *bp;
+	struct block_param *bp;
 
 	if (param == NULL)
 		return;
@@ -149,7 +149,7 @@ alsa_mixer_control(struct mixer_data *data, int cmd, void *arg)
 	struct alsa_mixer *am = (struct alsa_mixer *)data;
 	switch (cmd) {
 	case AC_MIXER_CONFIGURE:
-		alsa_mixer_configure(data, (ConfigParam *)arg);
+		alsa_mixer_configure(data, (struct config_param *)arg);
 		if (am->handle)
 			alsa_mixer_close(data);
 		return true;

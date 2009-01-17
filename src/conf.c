@@ -37,12 +37,12 @@
 #define CONF_BLOCK_MASK		0x02
 #define CONF_LINE_TOKEN_MAX	3
 
-typedef struct _configEntry {
+struct config_entry {
 	const char *name;
 	unsigned char mask;
 
 	GSList *params;
-} ConfigEntry;
+};
 
 static GSList *config_entries;
 
@@ -63,9 +63,10 @@ static int get_bool(const char *value)
 	return CONF_BOOL_INVALID;
 }
 
-ConfigParam *newConfigParam(const char *value, int line)
+struct config_param *
+newConfigParam(const char *value, int line)
 {
-	ConfigParam *ret = g_new(ConfigParam, 1);
+	struct config_param *ret = g_new(struct config_param, 1);
 
 	if (!value)
 		ret->value = NULL;
@@ -74,8 +75,8 @@ ConfigParam *newConfigParam(const char *value, int line)
 
 	ret->line = line;
 
-	ret->numberOfBlockParams = 0;
-	ret->blockParams = NULL;
+	ret->num_block_params = 0;
+	ret->block_params = NULL;
 
 	return ret;
 }
@@ -83,26 +84,26 @@ ConfigParam *newConfigParam(const char *value, int line)
 void
 config_param_free(gpointer data, G_GNUC_UNUSED gpointer user_data)
 {
-	ConfigParam *param = data;
+	struct config_param *param = data;
 	int i;
 
 	g_free(param->value);
 
-	for (i = 0; i < param->numberOfBlockParams; i++) {
-		g_free(param->blockParams[i].name);
-		g_free(param->blockParams[i].value);
+	for (i = 0; i < param->num_block_params; i++) {
+		g_free(param->block_params[i].name);
+		g_free(param->block_params[i].value);
 	}
 
-	if (param->numberOfBlockParams)
-		g_free(param->blockParams);
+	if (param->num_block_params)
+		g_free(param->block_params);
 
 	g_free(param);
 }
 
-static ConfigEntry *
+static struct config_entry *
 newConfigEntry(const char *name, int repeatable, int block)
 {
-	ConfigEntry *ret = g_new(ConfigEntry, 1);
+	struct config_entry *ret = g_new(struct config_entry, 1);
 
 	ret->name = name;
 	ret->mask = 0;
@@ -119,7 +120,7 @@ newConfigEntry(const char *name, int repeatable, int block)
 static void
 config_entry_free(gpointer data, G_GNUC_UNUSED gpointer user_data)
 {
-	ConfigEntry *entry = data;
+	struct config_entry *entry = data;
 
 	g_slist_foreach(entry->params, config_param_free, NULL);
 	g_slist_free(entry->params);
@@ -127,14 +128,14 @@ config_entry_free(gpointer data, G_GNUC_UNUSED gpointer user_data)
 	g_free(entry);
 }
 
-static ConfigEntry *
+static struct config_entry *
 config_entry_get(const char *name)
 {
 	GSList *list;
 
 	for (list = config_entries; list != NULL;
 	     list = g_slist_next(list)) {
-		ConfigEntry *entry = list->data;
+		struct config_entry *entry = list->data;
 		if (strcmp(entry->name, name) == 0)
 			return entry;
 	}
@@ -144,7 +145,7 @@ config_entry_get(const char *name)
 
 static void registerConfigParam(const char *name, int repeatable, int block)
 {
-	ConfigEntry *entry;
+	struct config_entry *entry;
 
 	entry = config_entry_get(name);
 	if (entry != NULL)
@@ -154,13 +155,13 @@ static void registerConfigParam(const char *name, int repeatable, int block)
 	config_entries = g_slist_prepend(config_entries, entry);
 }
 
-void finishConf(void)
+void config_global_finish(void)
 {
 	g_slist_foreach(config_entries, config_entry_free, NULL);
 	g_slist_free(config_entries);
 }
 
-void initConf(void)
+void config_global_init(void)
 {
 	config_entries = NULL;
 
@@ -209,24 +210,29 @@ void initConf(void)
 	registerConfigParam(CONF_GAPLESS_MP3_PLAYBACK,          0,     0);
 }
 
-void addBlockParam(ConfigParam * param, const char *name, const char *value,
-			  int line)
+void
+addBlockParam(struct config_param * param, const char *name, const char *value,
+	      int line)
 {
-	param->numberOfBlockParams++;
+	struct block_param *bp;
 
-	param->blockParams = g_realloc(param->blockParams,
-				     param->numberOfBlockParams *
-				     sizeof(BlockParam));
+	param->num_block_params++;
 
-	param->blockParams[param->numberOfBlockParams - 1].name = g_strdup(name);
-	param->blockParams[param->numberOfBlockParams - 1].value =
-	    g_strdup(value);
-	param->blockParams[param->numberOfBlockParams - 1].line = line;
+	param->block_params = g_realloc(param->block_params,
+					param->num_block_params *
+					sizeof(param->block_params[0]));
+
+	bp = &param->block_params[param->num_block_params - 1];
+
+	bp->name = g_strdup(name);
+	bp->value = g_strdup(value);
+	bp->line = line;
 }
 
-static ConfigParam *readConfigBlock(FILE * fp, int *count, char *string)
+static struct config_param *
+config_read_fileigBlock(FILE * fp, int *count, char *string)
 {
-	ConfigParam *ret = newConfigParam(NULL, *count);
+	struct config_param *ret = newConfigParam(NULL, *count);
 
 	int i;
 	int numberOfArgs;
@@ -275,7 +281,7 @@ static ConfigParam *readConfigBlock(FILE * fp, int *count, char *string)
 	return ret;
 }
 
-void readConf(const char *file)
+void config_read_file(const char *file)
 {
 	FILE *fp;
 	char string[MAX_STRING_SIZE + 1];
@@ -283,8 +289,8 @@ void readConf(const char *file)
 	int numberOfArgs;
 	int argsMinusComment;
 	int count = 0;
-	ConfigEntry *entry;
-	ConfigParam *param;
+	struct config_entry *entry;
+	struct config_param *param;
 
 	if (!(fp = fopen(file, "r"))) {
 		g_error("problems opening file %s for reading: %s\n",
@@ -332,7 +338,7 @@ void readConf(const char *file)
 				g_error("improperly formatted config file at "
 					"line %i: %s\n", count, string);
 			}
-			param = readConfigBlock(fp, &count, string);
+			param = config_read_fileigBlock(fp, &count, string);
 		} else
 			param = newConfigParam(array[1], count);
 
@@ -341,11 +347,12 @@ void readConf(const char *file)
 	fclose(fp);
 }
 
-ConfigParam *getNextConfigParam(const char *name, ConfigParam * last)
+struct config_param *
+config_get_next_param(const char *name, struct config_param * last)
 {
-	ConfigEntry *entry;
+	struct config_entry *entry;
 	GSList *node;
-	ConfigParam *param;
+	struct config_param *param;
 
 	entry = config_entry_get(name);
 	if (entry == NULL)
@@ -371,7 +378,7 @@ ConfigParam *getNextConfigParam(const char *name, ConfigParam * last)
 
 char *getConfigParamValue(const char *name)
 {
-	ConfigParam *param = getConfigParam(name);
+	struct config_param *param = config_get_param(name);
 
 	if (!param)
 		return NULL;
@@ -379,28 +386,30 @@ char *getConfigParamValue(const char *name)
 	return param->value;
 }
 
-BlockParam *getBlockParam(ConfigParam * param, const char *name)
+struct block_param *
+getBlockParam(struct config_param * param, const char *name)
 {
-	BlockParam *ret = NULL;
+	struct block_param *ret = NULL;
 	int i;
 
-	for (i = 0; i < param->numberOfBlockParams; i++) {
-		if (0 == strcmp(name, param->blockParams[i].name)) {
+	for (i = 0; i < param->num_block_params; i++) {
+		if (0 == strcmp(name, param->block_params[i].name)) {
 			if (ret) {
 				g_warning("\"%s\" first defined on line %i, and "
 					  "redefined on line %i\n", name,
-					  ret->line, param->blockParams[i].line);
+					  ret->line, param->block_params[i].line);
 			}
-			ret = param->blockParams + i;
+			ret = param->block_params + i;
 		}
 	}
 
 	return ret;
 }
 
-ConfigParam *parseConfigFilePath(const char *name, int force)
+struct config_param *
+parseConfigFilePath(const char *name, int force)
 {
-	ConfigParam *param = getConfigParam(name);
+	struct config_param *param = config_get_param(name);
 	char *path;
 
 	if (!param && force)
@@ -423,7 +432,7 @@ ConfigParam *parseConfigFilePath(const char *name, int force)
 int getBoolConfigParam(const char *name, int force)
 {
 	int ret;
-	ConfigParam *param = getConfigParam(name);
+	struct config_param *param = config_get_param(name);
 
 	if (!param)
 		return CONF_BOOL_UNSET;
@@ -446,10 +455,11 @@ bool config_get_bool(const char *name, bool default_value)
 	return value;
 }
 
-int getBoolBlockParam(ConfigParam *param, const char *name, int force)
+int
+getBoolBlockParam(struct config_param *param, const char *name, int force)
 {
 	int ret;
-	BlockParam *bp = getBlockParam(param, name);
+	struct block_param *bp = getBlockParam(param, name);
 
 	if (!bp)
 		return CONF_BOOL_UNSET;

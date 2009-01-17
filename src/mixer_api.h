@@ -28,7 +28,7 @@ struct mixer_plugin {
         /**
 	 * Setup and configure mixer
          */
-	void (*configure)(struct mixer_data *data, ConfigParam *param);
+	void (*configure)(struct mixer_data *data, struct config_param *param);
 
         /**
     	 * Open mixer device
@@ -53,7 +53,7 @@ struct mixer {
 
 void mixer_init(struct mixer *mixer, struct mixer_plugin *plugin);
 void mixer_finish(struct mixer *mixer);
-void mixer_configure(struct mixer *mixer, ConfigParam *param);
+void mixer_configure(struct mixer *mixer, struct config_param *param);
 bool mixer_open(struct mixer *mixer);
 bool mixer_control(struct mixer *mixer, int cmd, void *arg);
 void mixer_close(struct mixer *mixer);

@@ -344,7 +344,7 @@ static bool oss_testDefault(void)
 	return false;
 }
 
-static void *oss_open_default(ConfigParam *param)
+static void *oss_open_default(struct config_param *param)
 {
 	int i;
 	int err[G_N_ELEMENTS(default_devices)];
@@ -387,12 +387,13 @@ static void *oss_open_default(ConfigParam *param)
 	return NULL; /* some compilers can be dumb... */
 }
 
-static void *oss_initDriver(G_GNUC_UNUSED struct audio_output *audioOutput,
-			    G_GNUC_UNUSED const struct audio_format *audio_format,
-			    ConfigParam * param)
+static void *
+oss_initDriver(G_GNUC_UNUSED struct audio_output *audioOutput,
+	       G_GNUC_UNUSED const struct audio_format *audio_format,
+	       struct config_param *param)
 {
 	if (param) {
-		BlockParam *bp = getBlockParam(param, "device");
+		struct block_param *bp = getBlockParam(param, "device");
 		if (bp) {
 			OssData *od = newOssData();
 			od->device = bp->value;

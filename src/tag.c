@@ -69,7 +69,7 @@ void tag_lib_init(void)
 	char *temp;
 	char *s;
 	char *c;
-	ConfigParam *param;
+	struct config_param *param;
 	int i;
 
 	/* parse the "metadata_to_use" config parameter below */
@@ -77,7 +77,7 @@ void tag_lib_init(void)
 	memset(ignoreTagItems, 0, TAG_NUM_OF_ITEM_TYPES);
 	ignoreTagItems[TAG_ITEM_COMMENT] = 1;	/* ignore comments by default */
 
-	param = getConfigParam(CONF_METADATA_TO_USE);
+	param = config_get_param(CONF_METADATA_TO_USE);
 
 	if (!param)
 		return;

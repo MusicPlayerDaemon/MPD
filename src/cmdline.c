@@ -143,17 +143,17 @@ void parseOptions(int argc, char **argv, Options *options)
 		path2 = g_build_filename(g_get_home_dir(),
 					USER_CONFIG_FILE_LOCATION2, NULL);
 		if (g_file_test(path1, G_FILE_TEST_IS_REGULAR))
-			readConf(path1);
+			config_read_file(path1);
 		else if (g_file_test(path2, G_FILE_TEST_IS_REGULAR))
-			readConf(path2);
+			config_read_file(path2);
 		else if (g_file_test(SYSTEM_CONFIG_FILE_LOCATION,
 				     G_FILE_TEST_IS_REGULAR))
-			readConf(SYSTEM_CONFIG_FILE_LOCATION);
+			config_read_file(SYSTEM_CONFIG_FILE_LOCATION);
 		g_free(path1);
 		g_free(path2);
 	} else if (argc == 2) {
 		/* specified configuration file */
-		readConf(argv[1]);
+		config_read_file(argv[1]);
 	} else
 		g_error("too many arguments");
 }

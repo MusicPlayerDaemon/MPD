@@ -28,7 +28,7 @@ struct null_data {
 static void *
 null_initDriver(G_GNUC_UNUSED struct audio_output *audioOutput,
 		G_GNUC_UNUSED const struct audio_format *audio_format,
-		G_GNUC_UNUSED ConfigParam *param)
+		G_GNUC_UNUSED struct config_param *param)
 {
 	struct null_data *nd = g_new(struct null_data, 1);
 	nd->timer = NULL;

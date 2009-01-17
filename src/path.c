@@ -66,7 +66,8 @@ const char *path_get_fs_charset(void)
 
 void path_global_init(void)
 {
-	ConfigParam *fs_charset_param = getConfigParam(CONF_FS_CHARSET);
+	struct config_param *fs_charset_param =
+		config_get_param(CONF_FS_CHARSET);
 	const char *charset = NULL;
 
 	if (fs_charset_param) {

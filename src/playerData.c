@@ -34,9 +34,9 @@ void initPlayerData(void)
 	float perc = DEFAULT_BUFFER_BEFORE_PLAY;
 	char *test;
 	size_t bufferSize = DEFAULT_BUFFER_SIZE;
-	ConfigParam *param;
+	struct config_param *param;
 
-	param = getConfigParam(CONF_AUDIO_BUFFER_SIZE);
+	param = config_get_param(CONF_AUDIO_BUFFER_SIZE);
 
 	if (param) {
 		bufferSize = strtol(param->value, &test, 10);
@@ -54,7 +54,7 @@ void initPlayerData(void)
 		FATAL("buffer size \"%li\" is too big\n", (long)bufferSize);
 	}
 
-	param = getConfigParam(CONF_BUFFER_BEFORE_PLAY);
+	param = config_get_param(CONF_BUFFER_BEFORE_PLAY);
 
 	if (param) {
 		perc = strtod(param->value, &test);

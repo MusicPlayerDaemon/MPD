@@ -219,19 +219,19 @@ parse_log_level(const char *value, unsigned line)
 
 void log_init(bool verbose, bool use_stdout)
 {
-	ConfigParam *param;
+	struct config_param *param;
 
 	g_get_charset(&log_charset);
 
 	if (verbose)
 		log_threshold = G_LOG_LEVEL_DEBUG;
-	else if ((param = getConfigParam(CONF_LOG_LEVEL)) != NULL)
+	else if ((param = config_get_param(CONF_LOG_LEVEL)) != NULL)
 		log_threshold = parse_log_level(param->value, param->line);
 
 	if (use_stdout) {
 		log_init_stdout();
 	} else {
-		param = getConfigParam(CONF_LOG_FILE);
+		param = config_get_param(CONF_LOG_FILE);
 		if (param == NULL) {
 #ifdef HAVE_SYSLOG
 			/* no configuration: default to syslog (if

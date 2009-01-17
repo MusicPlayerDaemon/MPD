@@ -50,22 +50,22 @@ void volume_finish(void)
 static void
 mixer_reconfigure(char *driver)
 {
-	ConfigParam *newparam, *param;
+	struct config_param *newparam, *param;
 
 	//create parameter list
 	newparam = newConfigParam(NULL, -1);
 
-	param = getConfigParam(CONF_MIXER_DEVICE);
+	param = config_get_param(CONF_MIXER_DEVICE);
 	if (param) {
 		g_warning("deprecated option mixer_device found, translating to %s config section\n", driver);
 		addBlockParam(newparam, "mixer_device", param->value, -1);
 	}
-	param = getConfigParam(CONF_MIXER_CONTROL);
+	param = config_get_param(CONF_MIXER_CONTROL);
 	if (param) {
 		g_warning("deprecated option mixer_control found, translating to %s config section\n", driver);
 		addBlockParam(newparam, "mixer_control", param->value, -1);
 	}
-	if (newparam->numberOfBlockParams > 0) {
+	if (newparam->num_block_params > 0) {
 		//call configure method of corrensponding mixer
 		if (!mixer_configure_legacy(driver, newparam)) {
 			g_error("Using mixer_type '%s' with not enabled %s output", driver, driver);
@@ -77,7 +77,7 @@ mixer_reconfigure(char *driver)
 
 void volume_init(void)
 {
-	ConfigParam *param = getConfigParam(CONF_MIXER_TYPE);
+	struct config_param *param = config_get_param(CONF_MIXER_TYPE);
 	//hw mixing is by default
 	if (param) {
 		if (strcmp(param->value, VOLUME_MIXER_SOFTWARE) == 0) {

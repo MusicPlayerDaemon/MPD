@@ -554,9 +554,9 @@ client_out_event(G_GNUC_UNUSED GIOChannel *source,
 void client_manager_init(void)
 {
 	char *test;
-	ConfigParam *param;
+	struct config_param *param;
 
-	param = getConfigParam(CONF_CONN_TIMEOUT);
+	param = config_get_param(CONF_CONN_TIMEOUT);
 
 	if (param) {
 		client_timeout = strtol(param->value, &test, 10);
@@ -567,7 +567,7 @@ void client_manager_init(void)
 		}
 	}
 
-	param = getConfigParam(CONF_MAX_CONN);
+	param = config_get_param(CONF_MAX_CONN);
 
 	if (param) {
 		client_max_connections = strtol(param->value, &test, 10);
@@ -579,7 +579,7 @@ void client_manager_init(void)
 	} else
 		client_max_connections = CLIENT_MAX_CONNECTIONS_DEFAULT;
 
-	param = getConfigParam(CONF_MAX_COMMAND_LIST_SIZE);
+	param = config_get_param(CONF_MAX_COMMAND_LIST_SIZE);
 
 	if (param) {
 		long tmp = strtol(param->value, &test, 10);
@@ -591,7 +591,7 @@ void client_manager_init(void)
 		client_max_command_list_size = tmp * 1024;
 	}
 
-	param = getConfigParam(CONF_MAX_OUTPUT_BUFFER_SIZE);
+	param = config_get_param(CONF_MAX_OUTPUT_BUFFER_SIZE);
 
 	if (param) {
 		long tmp = strtol(param->value, &test, 10);

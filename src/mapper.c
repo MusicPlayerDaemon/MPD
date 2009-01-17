@@ -43,8 +43,10 @@ static size_t playlist_dir_length;
 
 void mapper_init(void)
 {
-	ConfigParam *music_dir_param = parseConfigFilePath(CONF_MUSIC_DIR, false);
-	ConfigParam *playlist_dir_param = parseConfigFilePath(CONF_PLAYLIST_DIR, 1);
+	struct config_param *music_dir_param =
+		parseConfigFilePath(CONF_MUSIC_DIR, false);
+	struct config_param *playlist_dir_param =
+		parseConfigFilePath(CONF_PLAYLIST_DIR, 1);
 	int ret;
 	struct stat st;
 

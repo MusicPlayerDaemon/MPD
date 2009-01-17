@@ -127,7 +127,8 @@ static bool ipv6Supported(void)
 #endif
 
 static void
-parseListenConfigParam(G_GNUC_UNUSED unsigned int port, ConfigParam * param)
+parseListenConfigParam(G_GNUC_UNUSED unsigned int port,
+		       struct config_param *param)
 {
 	const struct sockaddr *addrp;
 	socklen_t addrlen;
@@ -253,8 +254,9 @@ parseListenConfigParam(G_GNUC_UNUSED unsigned int port, ConfigParam * param)
 void listenOnPort(void)
 {
 	int port = DEFAULT_PORT;
-	ConfigParam *param = getNextConfigParam(CONF_BIND_TO_ADDRESS, NULL);
-	ConfigParam *portParam = getConfigParam(CONF_PORT);
+	struct config_param *param =
+		config_get_next_param(CONF_BIND_TO_ADDRESS, NULL);
+	struct config_param *portParam = config_get_param(CONF_PORT);
 
 	if (portParam) {
 		char *test;
@@ -271,7 +273,7 @@ void listenOnPort(void)
 
 	do {
 		parseListenConfigParam(port, param);
-	} while ((param = getNextConfigParam(CONF_BIND_TO_ADDRESS, param)));
+	} while ((param = config_get_next_param(CONF_BIND_TO_ADDRESS, param)));
 }
 
 void closeAllListenSockets(void)

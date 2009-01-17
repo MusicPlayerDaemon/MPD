@@ -60,7 +60,7 @@ struct audio_output_plugin {
 	 */
 	void *(*init)(struct audio_output *ao,
 		      const struct audio_format *audio_format,
-		      ConfigParam *param);
+		      struct config_param *param);
 
 	/**
 	 * Free resources allocated by this device.

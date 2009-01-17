@@ -29,7 +29,8 @@ struct audio_output_plugin;
 struct audio_format;
 struct tag;
 
-int audio_output_init(struct audio_output *, ConfigParam * param);
+int
+audio_output_init(struct audio_output *, struct config_param *param);
 
 bool
 audio_output_open(struct audio_output *audioOutput,

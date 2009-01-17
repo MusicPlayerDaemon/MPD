@@ -43,9 +43,9 @@ static unsigned int audioOutputArraySize;
 unsigned int audio_output_count(void)
 {
 	unsigned int nr = 0;
-	ConfigParam *param = NULL;
+	struct config_param *param = NULL;
 
-	while ((param = getNextConfigParam(CONF_AUDIO_OUTPUT, param)))
+	while ((param = config_get_next_param(CONF_AUDIO_OUTPUT, param)))
 		nr++;
 	if (!nr)
 		nr = 1; /* we'll always have at least one device  */
@@ -55,7 +55,7 @@ unsigned int audio_output_count(void)
 /* make sure initPlayerData is called before this function!! */
 void initAudioDriver(void)
 {
-	ConfigParam *param = NULL;
+	struct config_param *param = NULL;
 	unsigned int i;
 
 	notify_init(&audio_output_client_notify);
@@ -68,7 +68,7 @@ void initAudioDriver(void)
 		struct audio_output *output = &audioOutputArray[i];
 		unsigned int j;
 
-		param = getNextConfigParam(CONF_AUDIO_OUTPUT, param);
+		param = config_get_next_param(CONF_AUDIO_OUTPUT, param);
 
 		/* only allow param to be NULL if there just one audioOutput */
 		assert(param || (audioOutputArraySize == 1));
@@ -106,7 +106,7 @@ void getOutputAudioFormat(const struct audio_format *inAudioFormat,
 
 void initAudioConfig(void)
 {
-	ConfigParam *param = getConfigParam(CONF_AUDIO_OUTPUT_FORMAT);
+	struct config_param *param = config_get_param(CONF_AUDIO_OUTPUT_FORMAT);
 
 	if (NULL == param || NULL == param->value)
 		return;
@@ -467,7 +467,7 @@ bool mixer_control_getvol(unsigned int device, int *volume)
 	return false;
 }
 
-bool mixer_configure_legacy(char *name, ConfigParam *param)
+bool mixer_configure_legacy(char *name, struct config_param *param)
 {
 	unsigned i;
 	struct audio_output *output;

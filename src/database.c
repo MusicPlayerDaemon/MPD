@@ -123,7 +123,7 @@ db_walk(const char *name,
 static char *
 db_get_file(void)
 {
-	ConfigParam *param = parseConfigFilePath(CONF_DB_FILE, 1);
+	struct config_param *param = parseConfigFilePath(CONF_DB_FILE, 1);
 
 	assert(param);
 	assert(param->value);

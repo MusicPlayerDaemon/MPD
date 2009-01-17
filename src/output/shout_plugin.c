@@ -94,7 +94,7 @@ static void free_shout_data(struct shout_data *sd)
 
 static void *my_shout_init_driver(struct audio_output *audio_output,
 				  const struct audio_format *audio_format,
-				  ConfigParam *param)
+				  struct config_param *param)
 {
 	struct shout_data *sd;
 	char *test;
@@ -106,7 +106,7 @@ static void *my_shout_init_driver(struct audio_output *audio_output,
 	unsigned protocol;
 	const char *user;
 	char *name;
-	BlockParam *block_param;
+	struct block_param *block_param;
 	int public;
 
 	sd = new_shout_data();

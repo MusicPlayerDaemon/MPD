@@ -630,10 +630,10 @@ input_curl_easy_init(struct input_stream *is)
 	struct input_curl *c = is->data;
 	CURLcode code;
 	CURLMcode mcode;
-	ConfigParam *proxy_host;
-	ConfigParam *proxy_port;
-	ConfigParam *proxy_user;
-	ConfigParam *proxy_pass;
+	struct config_param *proxy_host;
+	struct config_param *proxy_port;
+	struct config_param *proxy_user;
+	struct config_param *proxy_pass;
 
 	c->eof = false;
 
@@ -661,10 +661,10 @@ input_curl_easy_init(struct input_stream *is)
 	curl_easy_setopt(c->easy, CURLOPT_FAILONERROR, true);
 	curl_easy_setopt(c->easy, CURLOPT_ERRORBUFFER, c->error);
 
-	proxy_host = getConfigParam(CONF_HTTP_PROXY_HOST);
-	proxy_port = getConfigParam(CONF_HTTP_PROXY_PORT);
-	proxy_user = getConfigParam(CONF_HTTP_PROXY_USER);
-	proxy_pass = getConfigParam(CONF_HTTP_PROXY_PASSWORD);
+	proxy_host = config_get_param(CONF_HTTP_PROXY_HOST);
+	proxy_port = config_get_param(CONF_HTTP_PROXY_PORT);
+	proxy_user = config_get_param(CONF_HTTP_PROXY_USER);
+	proxy_pass = config_get_param(CONF_HTTP_PROXY_PASSWORD);
 
 	if (proxy_host != NULL) {
 		char *proxy_host_str;

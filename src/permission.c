@@ -71,7 +71,7 @@ void initPermissions(void)
 {
 	char *password;
 	unsigned permission;
-	ConfigParam *param;
+	struct config_param *param;
 
 	permission_passwords = g_hash_table_new_full(g_str_hash, g_str_equal,
 						     g_free, NULL);
@@ -79,7 +79,7 @@ void initPermissions(void)
 	permission_default = PERMISSION_READ | PERMISSION_ADD |
 	    PERMISSION_CONTROL | PERMISSION_ADMIN;
 
-	param = getNextConfigParam(CONF_PASSWORD, NULL);
+	param = config_get_next_param(CONF_PASSWORD, NULL);
 
 	if (param) {
 		permission_default = 0;
@@ -102,10 +102,10 @@ void initPermissions(void)
 			g_hash_table_replace(permission_passwords,
 					     password,
 					     GINT_TO_POINTER(permission));
-		} while ((param = getNextConfigParam(CONF_PASSWORD, param)));
+		} while ((param = config_get_next_param(CONF_PASSWORD, param)));
 	}
 
-	param = getConfigParam(CONF_DEFAULT_PERMS);
+	param = config_get_param(CONF_DEFAULT_PERMS);
 
 	if (param)
 		permission_default = parsePermissions(param->value);

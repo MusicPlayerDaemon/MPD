@@ -20,7 +20,7 @@ void mixer_finish(struct mixer *mixer)
 	mixer->plugin = NULL;
 }
 
-void mixer_configure(struct mixer *mixer, ConfigParam *param)
+void mixer_configure(struct mixer *mixer, struct config_param *param)
 {
 	assert(mixer != NULL && mixer->plugin != NULL);
 	mixer->plugin->configure(mixer->data, param);

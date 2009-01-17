@@ -65,7 +65,7 @@ char *parsePath(char *path)
 		const char *home;
 
 		if (path[1] == '/' || path[1] == '\0') {
-			ConfigParam *param = getConfigParam(CONF_USER);
+			struct config_param *param = config_get_param(CONF_USER);
 			if (param && param->value) {
 				struct passwd *passwd = getpwnam(param->value);
 				if (!passwd) {

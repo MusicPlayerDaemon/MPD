@@ -38,11 +38,12 @@
 	if(bp) str = bp->value; \
 }
 
-int audio_output_init(struct audio_output *ao, ConfigParam * param)
+int
+audio_output_init(struct audio_output *ao, struct config_param *param)
 {
 	const char *name = NULL;
 	char *format = NULL;
-	BlockParam *bp = NULL;
+	struct block_param *bp = NULL;
 	const struct audio_output_plugin *plugin = NULL;
 
 	if (param) {

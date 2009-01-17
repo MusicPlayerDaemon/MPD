@@ -120,7 +120,7 @@ static void incrPlaylistCurrent(void)
 void initPlaylist(void)
 {
 	char *test;
-	ConfigParam *param;
+	struct config_param *param;
 	int value;
 
 	g_rand = g_rand_new();
@@ -132,7 +132,7 @@ void initPlaylist(void)
 	playlist.queued = -1;
 	playlist.current = -1;
 
-	param = getConfigParam(CONF_MAX_PLAYLIST_LENGTH);
+	param = config_get_param(CONF_MAX_PLAYLIST_LENGTH);
 
 	if (param) {
 		playlist_max_length = strtol(param->value, &test, 10);

@@ -21,13 +21,13 @@
 
 #include <stdbool.h>
 #include <stdio.h>
-#include "conf.h"
 
 #define AUDIO_AO_DRIVER_DEFAULT	"default"
 
 struct audio_format;
 struct tag;
 struct client;
+struct config_param;
 
 unsigned int audio_output_count(void);
 
@@ -73,6 +73,6 @@ void saveAudioDevicesState(FILE *fp);
 
 bool mixer_control_setvol(unsigned int device, int volume, int rel);
 bool mixer_control_getvol(unsigned int device, int *volume);
-bool mixer_configure_legacy(char *name, ConfigParam *param);
+bool mixer_configure_legacy(char *name, struct config_param *param);
 
 #endif

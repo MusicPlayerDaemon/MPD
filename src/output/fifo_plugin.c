@@ -161,10 +161,10 @@ static bool openFifo(FifoData *fd)
 
 static void *fifo_initDriver(G_GNUC_UNUSED struct audio_output *ao,
 			     G_GNUC_UNUSED const struct audio_format *audio_format,
-			     ConfigParam *param)
+			     struct config_param *param)
 {
 	FifoData *fd;
-	BlockParam *blockParam;
+	struct block_param *blockParam;
 	char *path;
 
 	blockParam = getBlockParam(param, "path");

@@ -74,14 +74,15 @@ static void audioOutputAo_error(const char *msg)
 	g_warning("%s: %s\n", msg, error);
 }
 
-static void *audioOutputAo_initDriver(struct audio_output *ao,
-				      G_GNUC_UNUSED const struct audio_format *audio_format,
-				      ConfigParam * param)
+static void *
+audioOutputAo_initDriver(struct audio_output *ao,
+			 G_GNUC_UNUSED const struct audio_format *audio_format,
+			 struct config_param *param)
 {
 	ao_info *ai;
 	char *test;
 	AoData *ad = newAoData();
-	BlockParam *blockParam;
+	struct block_param *blockParam;
 
 	if ((blockParam = getBlockParam(param, "write_size"))) {
 		ad->writeSize = strtol(blockParam->value, &test, 10);

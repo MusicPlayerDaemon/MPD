@@ -88,9 +88,9 @@ static void freeAlsaData(AlsaData * ad)
 }
 
 static void
-alsa_configure(AlsaData *ad, ConfigParam *param)
+alsa_configure(AlsaData *ad, struct config_param *param)
 {
-	BlockParam *bp;
+	struct block_param *bp;
 
 	if ((bp = getBlockParam(param, "device")))
 		ad->device = g_strdup(bp->value);
@@ -119,9 +119,10 @@ alsa_configure(AlsaData *ad, ConfigParam *param)
 #endif
 }
 
-static void *alsa_initDriver(G_GNUC_UNUSED struct audio_output *ao,
-			     G_GNUC_UNUSED const struct audio_format *audio_format,
-			     ConfigParam * param)
+static void *
+alsa_initDriver(G_GNUC_UNUSED struct audio_output *ao,
+		G_GNUC_UNUSED const struct audio_format *audio_format,
+		struct config_param *param)
 {
 	/* no need for pthread_once thread-safety when reading config */
 	static int free_global_registered;

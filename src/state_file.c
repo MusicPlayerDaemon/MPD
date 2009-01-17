@@ -43,7 +43,7 @@ static const char *sfpath;
 
 static void get_state_file_path(void)
 {
-	ConfigParam *param;
+	struct config_param *param;
 	if (sfpath)
 		return;
 	param = parseConfigFilePath(CONF_STATE_FILE, 0);
