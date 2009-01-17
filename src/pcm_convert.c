@@ -48,12 +48,12 @@ void pcm_convert_deinit(struct pcm_convert_state *state)
 	pcm_buffer_deinit(&state->channels_buffer);
 }
 
-static size_t
-pcm_convert_16(const struct audio_format *src_format,
+static const int16_t *
+pcm_convert_16(struct pcm_convert_state *state,
+	       const struct audio_format *src_format,
 	       const void *src_buffer, size_t src_size,
 	       const struct audio_format *dest_format,
-	       int16_t *dest_buffer,
-	       struct pcm_convert_state *state)
+	       size_t *dest_size_r)
 {
 	const int16_t *buf;
 	size_t len;
@@ -82,18 +82,16 @@ pcm_convert_16(const struct audio_format *src_format,
 				      dest_format->sample_rate,
 				      &len);
 
-	assert(pcm_convert_size(src_format, src_size, dest_format) >= len);
-	memcpy(dest_buffer, buf, len);
-
-	return len;
+	*dest_size_r = len;
+	return buf;
 }
 
-static size_t
-pcm_convert_24(const struct audio_format *src_format,
+static const int32_t *
+pcm_convert_24(struct pcm_convert_state *state,
+	       const struct audio_format *src_format,
 	       const void *src_buffer, size_t src_size,
 	       const struct audio_format *dest_format,
-	       int32_t *dest_buffer,
-	       struct pcm_convert_state *state)
+	       size_t *dest_size_r)
 {
 	const int32_t *buf;
 	size_t len;
@@ -121,30 +119,30 @@ pcm_convert_24(const struct audio_format *src_format,
 				      dest_format->sample_rate,
 				      &len);
 
-	assert(pcm_convert_size(src_format, src_size, dest_format) >= len);
-	memcpy(dest_buffer, buf, len);
-
-	return len;
+	*dest_size_r = len;
+	return buf;
 }
 
-size_t pcm_convert(const struct audio_format *inFormat,
-		   const void *src, size_t src_size,
-		   const struct audio_format *outFormat,
-		   void *dest,
-		   struct pcm_convert_state *convState)
+const void *
+pcm_convert(struct pcm_convert_state *state,
+	    const struct audio_format *src_format,
+	    const void *src, size_t src_size,
+	    const struct audio_format *dest_format,
+	    size_t *dest_size_r)
 {
-	switch (outFormat->bits) {
+	switch (dest_format->bits) {
 	case 16:
-		return pcm_convert_16(inFormat, src, src_size,
-				      outFormat, (int16_t*)dest,
-				      convState);
+		return pcm_convert_16(state,
+				      src_format, src, src_size,
+				      dest_format, dest_size_r);
+
 	case 24:
-		return pcm_convert_24(inFormat, src, src_size,
-				      outFormat, (int32_t*)dest,
-				      convState);
+		return pcm_convert_24(state,
+				      src_format, src, src_size,
+				      dest_format, dest_size_r);
 
 	default:
-		g_error("cannot convert to %u bit\n", outFormat->bits);
+		g_error("cannot convert to %u bit\n", dest_format->bits);
 		return 0;
 	}
 }

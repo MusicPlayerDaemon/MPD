@@ -41,11 +41,12 @@ void pcm_convert_init(struct pcm_convert_state *state);
 
 void pcm_convert_deinit(struct pcm_convert_state *state);
 
-size_t pcm_convert(const struct audio_format *inFormat,
-		   const void *src, size_t src_size,
-		   const struct audio_format *outFormat,
-		   void *dest,
-		   struct pcm_convert_state *convState);
+const void *
+pcm_convert(struct pcm_convert_state *state,
+	    const struct audio_format *src_format,
+	    const void *src, size_t src_size,
+	    const struct audio_format *dest_format,
+	    size_t *dest_size_r);
 
 size_t pcm_convert_size(const struct audio_format *inFormat, size_t inSize,
 			const struct audio_format *outFormat);

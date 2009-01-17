@@ -191,9 +191,7 @@ decoder_data(struct decoder *decoder,
 	     float data_time, uint16_t bitRate,
 	     struct replay_gain_info *replay_gain_info)
 {
-	static char *conv_buffer;
-	static size_t conv_buffer_size;
-	char *data;
+	const char *data = _data;
 
 	assert(dc.state == DECODE_STATE_DECODE);
 	assert(length % audio_format_frame_size(&dc.in_audio_format) == 0);
@@ -224,28 +222,16 @@ decoder_data(struct decoder *decoder,
 			return cmd;
 	}
 
-	if (audio_format_equals(&dc.in_audio_format, &dc.out_audio_format)) {
-		data = _data;
-	} else {
-		size_t out_length =
-			pcm_convert_size(&dc.in_audio_format, length,
-					 &dc.out_audio_format);
-		if (out_length > conv_buffer_size) {
-			g_free(conv_buffer);
-			conv_buffer = g_malloc(out_length);
-			conv_buffer_size = out_length;
-		}
-
-		data = conv_buffer;
-		length = pcm_convert(&dc.in_audio_format, _data,
-				     length, &dc.out_audio_format,
-				     data, &decoder->conv_state);
+	if (!audio_format_equals(&dc.in_audio_format, &dc.out_audio_format)) {
+		data = pcm_convert(&decoder->conv_state,
+				   &dc.in_audio_format, data, length,
+				   &dc.out_audio_format, &length);
 
 		/* under certain circumstances, pcm_convert() may
 		   return an empty buffer - this condition should be
 		   investigated further, but for now, do this check as
 		   a workaround: */
-		if (length == 0)
+		if (data == NULL)
 			return DECODE_COMMAND_NONE;
 	}
 

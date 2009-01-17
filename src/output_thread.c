@@ -38,29 +38,6 @@ static void ao_command_finished(struct audio_output *ao)
 	notify_signal(&audio_output_client_notify);
 }
 
-static void convertAudioFormat(struct audio_output *audioOutput,
-			       const char **chunkArgPtr, size_t *sizeArgPtr)
-{
-	size_t size = pcm_convert_size(&(audioOutput->inAudioFormat),
-				       *sizeArgPtr,
-				       &(audioOutput->outAudioFormat));
-
-	if (size > audioOutput->convBufferLen) {
-		if (audioOutput->convBuffer != NULL)
-			free(audioOutput->convBuffer);
-		audioOutput->convBuffer = g_malloc(size);
-		audioOutput->convBufferLen = size;
-	}
-
-	*sizeArgPtr = pcm_convert(&(audioOutput->inAudioFormat),
-				  *chunkArgPtr, *sizeArgPtr,
-				  &(audioOutput->outAudioFormat),
-				  audioOutput->convBuffer,
-				  &audioOutput->convState);
-
-	*chunkArgPtr = audioOutput->convBuffer;
-}
-
 static void ao_play(struct audio_output *ao)
 {
 	const char *data = ao->args.play.data;
@@ -70,13 +47,15 @@ static void ao_play(struct audio_output *ao)
 	assert(size > 0);
 
 	if (!audio_format_equals(&ao->inAudioFormat, &ao->outAudioFormat)) {
-		convertAudioFormat(ao, &data, &size);
+		data = pcm_convert(&ao->convState,
+				   &ao->inAudioFormat, data, size,
+				   &ao->outAudioFormat, &size);
 
 		/* under certain circumstances, pcm_convert() may
 		   return an empty buffer - this condition should be
 		   investigated further, but for now, do this check as
 		   a workaround: */
-		if (size == 0)
+		if (data == NULL)
 			return;
 	}
 

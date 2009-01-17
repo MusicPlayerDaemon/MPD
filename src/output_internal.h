@@ -79,8 +79,6 @@ struct audio_output {
 	struct audio_format reqAudioFormat;
 
 	struct pcm_convert_state convState;
-	char *convBuffer;
-	size_t convBufferLen;
 
 	/**
 	 * The thread handle, or NULL if the output thread isn't

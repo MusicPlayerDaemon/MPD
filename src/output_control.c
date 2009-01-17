@@ -142,8 +142,6 @@ void audio_output_finish(struct audio_output *audioOutput)
 
 	if (audioOutput->plugin->finish)
 		audioOutput->plugin->finish(audioOutput->data);
-	if (audioOutput->convBuffer)
-		free(audioOutput->convBuffer);
 
 	notify_deinit(&audioOutput->notify);
 }
