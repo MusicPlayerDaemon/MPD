@@ -138,9 +138,7 @@ static void *my_shout_init_driver(struct audio_output *audio_output,
 	check_block_param("name");
 	name = block_param->value;
 
-	public = getBoolBlockParam(param, "public", 1);
-	if (public == CONF_BOOL_UNSET)
-		public = 0;
+	public = config_get_block_bool(param, "public", false);
 
 	block_param = getBlockParam(param, "user");
 	if (block_param)

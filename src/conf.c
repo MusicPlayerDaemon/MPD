@@ -449,20 +449,24 @@ bool config_get_bool(const char *name, bool default_value)
 	return !!value;
 }
 
-int
-getBoolBlockParam(struct config_param *param, const char *name, int force)
+bool
+config_get_block_bool(struct config_param *param, const char *name,
+		      bool default_value)
 {
-	int ret;
 	struct block_param *bp = getBlockParam(param, name);
+	int value;
 
-	if (!bp)
-		return CONF_BOOL_UNSET;
+	if (bp == NULL)
+		return default_value;
 
-	ret = get_bool(bp->value);
-	if (force && ret == CONF_BOOL_INVALID)
+	value = get_bool(bp->value);
+	if (value == CONF_BOOL_INVALID)
 		g_error("%s is not a boolean value (yes, true, 1) or "
 			"(no, false, 0) on line %i\n",
-			bp->value, bp->line);
-	return ret;
-}
+			name, bp->line);
 
+	if (value == CONF_BOOL_UNSET)
+		return default_value;
+
+	return !!value;
+}

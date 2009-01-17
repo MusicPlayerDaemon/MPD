@@ -95,26 +95,25 @@ alsa_configure(AlsaData *ad, struct config_param *param)
 	if ((bp = getBlockParam(param, "device")))
 		ad->device = g_strdup(bp->value);
 
-	ad->useMmap = getBoolBlockParam(param, "use_mmap", 1);
-	if (ad->useMmap == CONF_BOOL_UNSET)
-		ad->useMmap = 0;
+	ad->useMmap = config_get_block_bool(param, "use_mmap", false);
+
 	if ((bp = getBlockParam(param, "buffer_time")))
 		ad->buffer_time = atoi(bp->value);
 	if ((bp = getBlockParam(param, "period_time")))
 		ad->period_time = atoi(bp->value);
 
 #ifdef SND_PCM_NO_AUTO_RESAMPLE
-	if (!getBoolBlockParam(param, "auto_resample", true))
+	if (!config_get_block_bool(param, "auto_resample", true))
 		ad->mode |= SND_PCM_NO_AUTO_RESAMPLE;
 #endif
 
 #ifdef SND_PCM_NO_AUTO_CHANNELS
-	if (!getBoolBlockParam(param, "auto_channels", true))
+	if (!config_get_block_bool(param, "auto_channels", true))
 		ad->mode |= SND_PCM_NO_AUTO_CHANNELS;
 #endif
 
 #ifdef SND_PCM_NO_AUTO_FORMAT
-	if (!getBoolBlockParam(param, "auto_format", true))
+	if (!config_get_block_bool(param, "auto_format", true))
 		ad->mode |= SND_PCM_NO_AUTO_FORMAT;
 #endif
 }
