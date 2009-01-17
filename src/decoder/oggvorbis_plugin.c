@@ -20,6 +20,7 @@
 
 #include "_ogg_common.h"
 #include "config.h"
+#include "ls.h"
 
 #ifndef HAVE_TREMOR
 #include <vorbis/vorbisfile.h>
@@ -51,7 +52,9 @@
 
 typedef struct _OggCallbackData {
 	struct decoder *decoder;
+
 	struct input_stream *input_stream;
+	bool seekable;
 } OggCallbackData;
 
 static size_t ogg_read_cb(void *ptr, size_t size, size_t nmemb, void *vdata)
@@ -69,9 +72,11 @@ static size_t ogg_read_cb(void *ptr, size_t size, size_t nmemb, void *vdata)
 static int ogg_seek_cb(void *vdata, ogg_int64_t offset, int whence)
 {
 	const OggCallbackData *data = (const OggCallbackData *) vdata;
-	if(decoder_get_command(data->decoder) == DECODE_COMMAND_STOP)
-		return -1;
-	return input_stream_seek(data->input_stream, offset, whence) ? 0 : -1;
+
+	return data->seekable &&
+		decoder_get_command(data->decoder) != DECODE_COMMAND_STOP &&
+		input_stream_seek(data->input_stream, offset, whence)
+		? 0 : -1;
 }
 
 /* TODO: check Ogg libraries API and see if we can just not have this func */
@@ -209,6 +214,22 @@ vorbis_send_comments(struct decoder *decoder, struct input_stream *is,
 	tag_free(tag);
 }
 
+static bool
+oggvorbis_seekable(struct decoder *decoder)
+{
+	char *uri;
+	bool seekable;
+
+	uri = decoder_get_uri(decoder);
+	/* disable seeking on remote streams, because libvorbis seeks
+	   around like crazy, and due to being very expensive, this
+	   delays song playback my 10 or 20 seconds */
+	seekable = !uri_has_scheme(uri);
+	g_free(uri);
+
+	return seekable;
+}
+
 /* public */
 static void
 vorbis_stream_decode(struct decoder *decoder,
@@ -237,8 +258,9 @@ vorbis_stream_decode(struct decoder *decoder,
 	   moved it */
 	input_stream_seek(input_stream, 0, SEEK_SET);
 
-	data.input_stream = input_stream;
 	data.decoder = decoder;
+	data.input_stream = input_stream;
+	data.seekable = input_stream->seekable && oggvorbis_seekable(decoder);
 
 	callbacks.read_func = ogg_read_cb;
 	callbacks.seek_func = ogg_seek_cb;
@@ -314,7 +336,7 @@ vorbis_stream_decode(struct decoder *decoder,
 				if (total_time < 0)
 					total_time = 0;
 				decoder_initialized(decoder, &audio_format,
-						    input_stream->seekable,
+						    data.seekable,
 						    total_time);
 				initialized = true;
 			}
