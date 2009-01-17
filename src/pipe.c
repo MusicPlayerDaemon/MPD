@@ -252,36 +252,6 @@ music_pipe_expand(const struct audio_format *audio_format, size_t length)
 		music_pipe_flush();
 }
 
-size_t music_pipe_append(const void *data0, size_t datalen,
-			 const struct audio_format *audio_format,
-			 float data_time, uint16_t bit_rate)
-{
-	const unsigned char *data = data0;
-	size_t ret = 0, nbytes;
-	void *dest;
-
-	while (datalen) {
-		dest = music_pipe_write(audio_format, data_time, bit_rate,
-					&nbytes);
-		if (dest == NULL)
-			break;
-
-		assert(nbytes > 0);
-
-		if (nbytes > datalen)
-			nbytes = datalen;
-
-		memcpy(dest, data, nbytes);
-		music_pipe_expand(audio_format, nbytes);
-
-		datalen -= nbytes;
-		data += nbytes;
-		ret += nbytes;
-	}
-
-	return ret;
-}
-
 bool music_pipe_tag(const struct tag *tag)
 {
 	struct music_chunk *chunk;

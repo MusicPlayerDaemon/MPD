@@ -166,15 +166,6 @@ void
 music_pipe_expand(const struct audio_format *audio_format, size_t length);
 
 /**
- * Append a data block to the buffer.
- *
- * @return the number of bytes actually written
- */
-size_t music_pipe_append(const void *data, size_t datalen,
-			 const struct audio_format *audio_format,
-			 float data_time, uint16_t bit_rate);
-
-/**
  * Send a tag.  This is usually called when a new song within a stream
  * begins.
  */
