@@ -425,29 +425,6 @@ getBlockParam(struct config_param * param, const char *name)
 	return ret;
 }
 
-struct config_param *
-parseConfigFilePath(const char *name, int force)
-{
-	struct config_param *param = config_get_param(name);
-	char *path;
-
-	if (!param && force)
-		g_error("config parameter \"%s\" not found\n", name);
-
-	if (!param)
-		return NULL;
-
-	path = parsePath(param->value);
-	if (!path)
-		g_error("error parsing \"%s\" at line %i\n",
-			name, param->line);
-
-	g_free(param->value);
-	param->value = path;
-
-	return param;
-}
-
 bool config_get_bool(const char *name, bool default_value)
 {
 	struct config_param *param = config_get_param(name);

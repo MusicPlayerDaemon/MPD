@@ -41,7 +41,7 @@ static size_t music_dir_length;
 static char *playlist_dir;
 
 static void
-mapper_set_music_dir(const char *path, int line)
+mapper_set_music_dir(const char *path)
 {
 	int ret;
 	struct stat st;
@@ -51,15 +51,15 @@ mapper_set_music_dir(const char *path, int line)
 
 	ret = stat(music_dir, &st);
 	if (ret < 0)
-		g_warning("failed to stat music directory \"%s\" (config line %i): %s\n",
-			  music_dir, line, g_strerror(errno));
+		g_warning("failed to stat music directory \"%s\": %s",
+			  music_dir, g_strerror(errno));
 	else if (!S_ISDIR(st.st_mode))
-		g_warning("music directory is not a directory: \"%s\" (config line %i)\n",
-			  music_dir, line);
+		g_warning("music directory is not a directory: \"%s\"",
+			  music_dir);
 }
 
 static void
-mapper_set_playlist_dir(const char *path, int line)
+mapper_set_playlist_dir(const char *path)
 {
 	int ret;
 	struct stat st;
@@ -68,32 +68,31 @@ mapper_set_playlist_dir(const char *path, int line)
 
 	ret = stat(playlist_dir, &st);
 	if (ret < 0)
-		g_warning("failed to stat playlist directory \"%s\" (config line %i): %s\n",
-			  playlist_dir, line, g_strerror(errno));
+		g_warning("failed to stat playlist directory \"%s\": %s",
+			  playlist_dir, g_strerror(errno));
 	else if (!S_ISDIR(st.st_mode))
-		g_warning("playlist directory is not a directory: \"%s\" (config line %i)\n",
-			  playlist_dir, line);
+		g_warning("playlist directory is not a directory: \"%s\"",
+			  playlist_dir);
 }
 
 void mapper_init(void)
 {
-	struct config_param *param;
+	const char *path;
 
-	param = parseConfigFilePath(CONF_MUSIC_DIR, false);
-	if (param != NULL)
-		mapper_set_music_dir(param->value, param->line);
+	path = config_get_path(CONF_MUSIC_DIR);
+	if (path != NULL)
+		mapper_set_music_dir(path);
 #if GLIB_MAJOR_VERSION > 2 || (GLIB_MAJOR_VERSION == 2 && GLIB_MINOR_VERSION >= 14)
 	else {
-		const char *path =
-			g_get_user_special_dir(G_USER_DIRECTORY_MUSIC);
+		path = g_get_user_special_dir(G_USER_DIRECTORY_MUSIC);
 		if (path != NULL)
-			mapper_set_music_dir(path, -1);
+			mapper_set_music_dir(path);
 	}
 #endif
 
-	param = parseConfigFilePath(CONF_PLAYLIST_DIR, false);
-	if (param != NULL)
-		mapper_set_playlist_dir(param->value, param->line);
+	path = config_get_path(CONF_PLAYLIST_DIR);
+	if (path != NULL)
+		mapper_set_playlist_dir(path);
 }
 
 void mapper_finish(void)
