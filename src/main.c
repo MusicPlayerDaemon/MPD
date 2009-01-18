@@ -262,7 +262,8 @@ int main(int argc, char *argv[])
 
 	decoder_thread_start();
 	player_create();
-	read_state_file();
+
+	state_file_init(config_get_path(CONF_STATE_FILE));
 
 	save_state_timer = g_timer_new();
 
@@ -280,7 +281,7 @@ int main(int argc, char *argv[])
 	g_source_remove(save_state_source_id);
 	g_timer_destroy(save_state_timer);
 
-	write_state_file();
+	state_file_finish();
 	playerKill();
 	finishZeroconf();
 	client_manager_deinit();

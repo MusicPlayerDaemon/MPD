@@ -19,7 +19,12 @@
 #ifndef MPD_STATE_FILE_H
 #define MPD_STATE_FILE_H
 
+void
+state_file_init(const char *path);
+
+void
+state_file_finish(void);
+
 void write_state_file(void);
-void read_state_file(void);
 
 #endif /* STATE_FILE_H */

@@ -17,7 +17,6 @@
  */
 
 #include "state_file.h"
-#include "conf.h"
 #include "audio.h"
 #include "playlist.h"
 #include "volume.h"
@@ -38,29 +37,20 @@ static struct _sf_cb {
 	{ readPlaylistState, savePlaylistState },
 };
 
-static const char *sfpath;
-
-static void get_state_file_path(void)
-{
-	struct config_param *param;
-	if (sfpath)
-		return;
-	param = parseConfigFilePath(CONF_STATE_FILE, 0);
-	if (param)
-		sfpath = (const char *)param->value;
-}
+static char *state_file_path;
 
 void write_state_file(void)
 {
 	unsigned int i;
 	FILE *fp;
 
-	if (!sfpath)
+	if (state_file_path == NULL)
 		return;
-	fp = fopen(sfpath, "w");
+
+	fp = fopen(state_file_path, "w");
 	if (G_UNLIKELY(!fp)) {
 		g_warning("failed to create %s: %s",
-			  sfpath, strerror(errno));
+			  state_file_path, strerror(errno));
 		return;
 	}
 
@@ -70,19 +60,18 @@ void write_state_file(void)
 	while(fclose(fp) && errno == EINTR) /* nothing */;
 }
 
-void read_state_file(void)
+static void
+state_file_read(void)
 {
 	unsigned int i;
 	FILE *fp;
 
-	get_state_file_path();
-	if (!sfpath)
-		return;
+	assert(state_file_path != NULL);
 
-	while (!(fp = fopen(sfpath, "r")) && errno == EINTR);
+	fp = fopen(state_file_path, "r");
 	if (G_UNLIKELY(!fp)) {
 		g_warning("failed to open %s: %s",
-			  sfpath, strerror(errno));
+			  state_file_path, strerror(errno));
 		return;
 	}
 	for (i = 0; i < G_N_ELEMENTS(sf_callbacks); i++) {
@@ -91,4 +80,25 @@ void read_state_file(void)
 	}
 
 	while(fclose(fp) && errno == EINTR) /* nothing */;
+}
+
+void
+state_file_init(const char *path)
+{
+	assert(state_file_path == NULL);
+
+	if (path == NULL)
+		return;
+
+	state_file_path = g_strdup(path);
+	state_file_read();
+}
+
+void
+state_file_finish(void)
+{
+	if (state_file_path != NULL)
+		write_state_file();
+
+	g_free(state_file_path);
 }
