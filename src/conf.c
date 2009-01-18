@@ -387,6 +387,24 @@ config_get_string(const char *name, const char *default_value)
 	return param->value;
 }
 
+const char *
+config_get_path(const char *name)
+{
+	struct config_param *param = config_get_param(name);
+	char *path;
+
+	if (param == NULL)
+		return NULL;
+
+	path = parsePath(param->value);
+	if (path == NULL)
+		g_error("error parsing \"%s\" at line %i\n",
+			name, param->line);
+
+	g_free(param->value);
+	return param->value = path;
+}
+
 struct block_param *
 getBlockParam(struct config_param * param, const char *name)
 {

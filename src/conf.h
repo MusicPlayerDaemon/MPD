@@ -101,6 +101,14 @@ config_get_param(const char *name)
 const char *
 config_get_string(const char *name, const char *default_value);
 
+/**
+ * Returns an optional configuration variable which contains an
+ * absolute path.  If there is a tilde prefix, it is expanded.  Aborts
+ * MPD if the path is not a valid absolute path.
+ */
+const char *
+config_get_path(const char *name);
+
 struct block_param *
 getBlockParam(struct config_param *param, const char *name);
 

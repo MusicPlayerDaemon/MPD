@@ -81,19 +81,20 @@ struct notify main_notify;
 
 static void openDB(Options * options, char *argv0)
 {
-	struct config_param *param;
+	const char *path = config_get_path(CONF_DB_FILE);
 
-	param = parseConfigFilePath(CONF_DB_FILE,
-				    mapper_has_music_directory());
 	if (!mapper_has_music_directory()) {
-		if (param != NULL)
+		if (path != NULL)
 			g_message("Found " CONF_DB_FILE " setting without "
 				  CONF_MUSIC_DIR " - disabling database");
 		db_init(NULL);
 		return;
 	}
 
-	db_init(param->value);
+	if (path == NULL)
+		g_error(CONF_DB_FILE " setting missing");
+
+	db_init(path);
 
 	if (options->createDB > 0 || !db_load()) {
 		unsigned job;
