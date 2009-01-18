@@ -19,8 +19,6 @@
 #ifndef MPD_STATE_FILE_H
 #define MPD_STATE_FILE_H
 
-#include <glib.h>
-
 void write_state_file(void);
 void read_state_file(void);
 
