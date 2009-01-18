@@ -21,7 +21,6 @@
 #include "directory.h"
 #include "directory_save.h"
 #include "song.h"
-#include "conf.h"
 #include "path.h"
 #include "stats.h"
 #include "config.h"
@@ -39,13 +38,17 @@
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "database"
 
+static char *database_path;
+
 static struct directory *music_root;
 
 static time_t directory_dbModTime;
 
 void
-db_init(void)
+db_init(const char *path)
 {
+	database_path = g_strdup(path);
+
 	music_root = directory_new("", NULL);
 }
 
@@ -53,6 +56,15 @@ void
 db_finish(void)
 {
 	directory_free(music_root);
+
+	g_free(database_path);
+}
+
+void
+db_clear(void)
+{
+	directory_free(music_root);
+	music_root = directory_new("", NULL);
 }
 
 struct directory *
@@ -120,42 +132,32 @@ db_walk(const char *name,
 	return directory_walk(directory, forEachSong, forEachDir, data);
 }
 
-static char *
-db_get_file(void)
-{
-	struct config_param *param = parseConfigFilePath(CONF_DB_FILE, 1);
-
-	assert(param);
-	assert(param->value);
-
-	return param->value;
-}
-
 bool
 db_check(void)
 {
 	struct stat st;
-	char *dbFile = db_get_file();
+
+	assert(database_path != NULL);
 
 	/* Check if the file exists */
-	if (access(dbFile, F_OK)) {
+	if (access(database_path, F_OK)) {
 		/* If the file doesn't exist, we can't check if we can write
 		 * it, so we are going to try to get the directory path, and
 		 * see if we can write a file in that */
-		char *dirPath = g_path_get_dirname(dbFile);
+		char *dirPath = g_path_get_dirname(database_path);
 
 		/* Check that the parent part of the path is a directory */
 		if (stat(dirPath, &st) < 0) {
 			g_free(dirPath);
 			g_warning("Couldn't stat parent directory of db file "
-				  "\"%s\": %s", dbFile, strerror(errno));
+				  "\"%s\": %s", database_path, strerror(errno));
 			return false;
 		}
 
 		if (!S_ISDIR(st.st_mode)) {
 			g_free(dirPath);
 			g_warning("Couldn't create db file \"%s\" because the "
-				  "parent path is not a directory", dbFile);
+				  "parent path is not a directory", database_path);
 			return false;
 		}
 
@@ -173,21 +175,21 @@ db_check(void)
 	}
 
 	/* Path exists, now check if it's a regular file */
-	if (stat(dbFile, &st) < 0) {
+	if (stat(database_path, &st) < 0) {
 		g_warning("Couldn't stat db file \"%s\": %s",
-			  dbFile, strerror(errno));
+			  database_path, strerror(errno));
 		return false;
 	}
 
 	if (!S_ISREG(st.st_mode)) {
-		g_warning("db file \"%s\" is not a regular file", dbFile);
+		g_warning("db file \"%s\" is not a regular file", database_path);
 		return false;
 	}
 
 	/* And check that we can write to it */
-	if (access(dbFile, R_OK | W_OK)) {
+	if (access(database_path, R_OK | W_OK)) {
 		g_warning("Can't open db file \"%s\" for reading/writing: %s",
-			  dbFile, strerror(errno));
+			  database_path, strerror(errno));
 		return false;
 	}
 
@@ -198,8 +200,10 @@ bool
 db_save(void)
 {
 	FILE *fp;
-	char *dbFile = db_get_file();
 	struct stat st;
+
+	assert(database_path != NULL);
+	assert(music_root != NULL);
 
 	g_debug("removing empty directories from DB");
 	directory_prune_empty(music_root);
@@ -210,10 +214,10 @@ db_save(void)
 
 	g_debug("writing DB");
 
-	fp = fopen(dbFile, "w");
+	fp = fopen(database_path, "w");
 	if (!fp) {
 		g_warning("unable to write to db file \"%s\": %s",
-			  dbFile, strerror(errno));
+			  database_path, strerror(errno));
 		return false;
 	}
 
@@ -232,7 +236,7 @@ db_save(void)
 
 	while (fclose(fp) && errno == EINTR);
 
-	if (stat(dbFile, &st) == 0)
+	if (stat(database_path, &st) == 0)
 		directory_dbModTime = st.st_mtime;
 
 	return true;
@@ -242,19 +246,19 @@ bool
 db_load(void)
 {
 	FILE *fp = NULL;
-	char *dbFile = db_get_file();
 	struct stat st;
 	char buffer[100];
 	bool foundFsCharset = false, foundVersion = false;
 
+	assert(database_path != NULL);
 	assert(music_root != NULL);
 
 	if (!music_root)
 		music_root = directory_new("", NULL);
-	while (!(fp = fopen(dbFile, "r")) && errno == EINTR) ;
+	while (!(fp = fopen(database_path, "r")) && errno == EINTR) ;
 	if (fp == NULL) {
 		g_warning("unable to open db file \"%s\": %s",
-			  dbFile, strerror(errno));
+			  database_path, strerror(errno));
 		return false;
 	}
 
@@ -289,7 +293,7 @@ db_load(void)
 			foundFsCharset = true;
 
 			fsCharset = &(buffer[strlen(DIRECTORY_FS_CHARSET)]);
-			tempCharset = config_get_string(CONF_FS_CHARSET, NULL);
+			tempCharset = path_get_fs_charset();
 			if (tempCharset != NULL
 			    && strcmp(fsCharset, tempCharset)) {
 				g_message("Using \"%s\" for the "
@@ -312,7 +316,7 @@ db_load(void)
 
 	stats_update();
 
-	if (stat(dbFile, &st) == 0)
+	if (stat(database_path, &st) == 0)
 		directory_dbModTime = st.st_mtime;
 
 	return true;

@@ -27,9 +27,11 @@ struct directory;
 
 /**
  * Initialize the database library.
+ *
+ * @param path the absolute path of the database file
  */
 void
-db_init(void);
+db_init(const char *path);
 
 void
 db_finish(void);
@@ -37,12 +39,8 @@ db_finish(void);
 /**
  * Clear the database.
  */
-static inline void
-db_clear(void)
-{
-	db_finish();
-	db_init();
-}
+void
+db_clear(void);
 
 struct directory *
 db_get_root(void);

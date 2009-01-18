@@ -126,7 +126,10 @@ static void changeToUser(void)
 
 static void openDB(Options * options, char *argv0)
 {
-	db_init();
+	struct config_param *param;
+
+	param = parseConfigFilePath(CONF_DB_FILE, true);
+	db_init(param->value);
 
 	if (options->createDB > 0 || !db_load()) {
 		unsigned job;
