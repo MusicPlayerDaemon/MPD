@@ -102,8 +102,6 @@ daemonize_set_user(void)
 #ifndef WIN32
 	if (user_name != NULL) {
 		/* get uid */
-		struct passwd *userpwd;
-
 		if (setgid(user_gid) == -1) {
 			g_error("cannot setgid for user \"%s\": %s",
 				user_name, g_strerror(errno));
@@ -120,14 +118,9 @@ daemonize_set_user(void)
 #endif
 
 		/* set uid */
-		if (setuid(userpwd->pw_uid) == -1) {
+		if (setuid(user_uid) == -1) {
 			g_error("cannot change to uid of user \"%s\": %s",
 				user_name, g_strerror(errno));
-		}
-
-		/* this is needed by libs such as arts */
-		if (userpwd->pw_dir) {
-			g_setenv("HOME", userpwd->pw_dir, true);
 		}
 	}
 #endif
@@ -193,6 +186,9 @@ daemonize_init(const char *user, const char *_pidfile)
 
 		user_uid = pwd->pw_uid;
 		user_gid = pwd->pw_gid;
+
+		/* this is needed by libs such as arts */
+		g_setenv("HOME", pwd->pw_dir, true);
 	}
 
 	pidfile = g_strdup(_pidfile);
