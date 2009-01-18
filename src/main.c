@@ -245,7 +245,7 @@ int main(int argc, char *argv[])
 	initNormalization();
 	input_stream_global_init();
 
-	daemonize(&options);
+	daemonize(options.daemon);
 
 	setup_log_output(options.stdOutput);
 

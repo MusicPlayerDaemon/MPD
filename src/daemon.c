@@ -18,7 +18,8 @@
 
 #include "daemon.h"
 
-#include <stdbool.h>
+#include <glib.h>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -133,7 +134,7 @@ daemonize_set_user(void)
 }
 
 void
-daemonize(Options *options)
+daemonize(bool detach)
 {
 #ifndef WIN32
 	FILE *fp = NULL;
@@ -149,7 +150,7 @@ daemonize(Options *options)
 		}
 	}
 
-	if (options->daemon) {
+	if (detach) {
 		int pid;
 
 		fflush(NULL);

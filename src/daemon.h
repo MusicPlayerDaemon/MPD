@@ -19,7 +19,7 @@
 #ifndef DAEMON_H
 #define DAEMON_H
 
-#include "cmdline.h"
+#include <stdbool.h>
 
 void
 daemonize_init(const char *user, const char *pidfile);
@@ -47,6 +47,6 @@ void
 daemonize_set_user(void);
 
 void
-daemonize(Options *options);
+daemonize(bool detach);
 
 #endif
