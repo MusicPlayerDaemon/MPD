@@ -165,14 +165,6 @@ initialize_decoder_and_player(void)
 	dc_init();
 }
 
-static gboolean
-timer_save_state_file(G_GNUC_UNUSED gpointer data)
-{
-	g_debug("Saving state file");
-	write_state_file();
-	return true;
-}
-
 /**
  * event_pipe callback function for PIPE_EVENT_IDLE
  */
@@ -190,8 +182,6 @@ int main(int argc, char *argv[])
 {
 	Options options;
 	clock_t start;
-	GTimer *save_state_timer;
-	guint save_state_source_id;
 
 	daemonize_close_stdin();
 
@@ -265,11 +255,6 @@ int main(int argc, char *argv[])
 
 	state_file_init(config_get_path(CONF_STATE_FILE));
 
-	save_state_timer = g_timer_new();
-
-	save_state_source_id = g_timeout_add(5 * 60 * 1000,
-					     timer_save_state_file, NULL);
-
 	/* run the main loop */
 
 	g_main_loop_run(main_loop);
@@ -277,9 +262,6 @@ int main(int argc, char *argv[])
 	/* cleanup */
 
 	g_main_loop_unref(main_loop);
-
-	g_source_remove(save_state_source_id);
-	g_timer_destroy(save_state_timer);
 
 	state_file_finish();
 	playerKill();

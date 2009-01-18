@@ -22,6 +22,7 @@
 #include "volume.h"
 
 #include <glib.h>
+#include <assert.h>
 #include <string.h>
 #include <errno.h>
 
@@ -39,7 +40,11 @@ static struct _sf_cb {
 
 static char *state_file_path;
 
-void write_state_file(void)
+/** the GLib source id for the save timer */
+static guint save_state_source_id;
+
+static void
+state_file_write(void)
 {
 	unsigned int i;
 	FILE *fp;
@@ -68,6 +73,8 @@ state_file_read(void)
 
 	assert(state_file_path != NULL);
 
+	g_debug("Saving state file");
+
 	fp = fopen(state_file_path, "r");
 	if (G_UNLIKELY(!fp)) {
 		g_warning("failed to open %s: %s",
@@ -82,6 +89,17 @@ state_file_read(void)
 	while(fclose(fp) && errno == EINTR) /* nothing */;
 }
 
+/**
+ * This function is called every 5 minutes by the GLib main loop, and
+ * saves the state file.
+ */
+static gboolean
+timer_save_state_file(G_GNUC_UNUSED gpointer data)
+{
+	state_file_write();
+	return true;
+}
+
 void
 state_file_init(const char *path)
 {
@@ -92,13 +110,19 @@ state_file_init(const char *path)
 
 	state_file_path = g_strdup(path);
 	state_file_read();
+
+	save_state_source_id = g_timeout_add(5 * 60 * 1000,
+					     timer_save_state_file, NULL);
 }
 
 void
 state_file_finish(void)
 {
+	if (save_state_source_id != 0)
+		g_source_remove(save_state_source_id);
+
 	if (state_file_path != NULL)
-		write_state_file();
+		state_file_write();
 
 	g_free(state_file_path);
 }
