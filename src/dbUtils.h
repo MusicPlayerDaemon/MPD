@@ -40,8 +40,6 @@ int findSongsIn(struct client *client, const char *name,
 int searchStatsForSongsIn(struct client *client, const char *name,
 			  int numItems, LocateTagItem * items);
 
-int countSongsIn(const char *name);
-
 unsigned long sumSongTimesIn(const char *name);
 
 int listAllUniqueTags(struct client *client, int type, int numConditiionals,

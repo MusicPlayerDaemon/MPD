@@ -24,7 +24,6 @@
 #include "client.h"
 #include "player_control.h"
 #include "strset.h"
-#include "dbUtils.h"
 
 struct stats stats;
 
@@ -34,50 +33,65 @@ void stats_global_init(void)
 }
 
 struct visit_data {
-	enum tag_type type;
-	struct strset *set;
+	struct strset *artists;
+	struct strset *albums;
 };
 
-static int
-visit_tag_items(struct song *song, void *_data)
+static void
+visit_tag(struct visit_data *data, const struct tag *tag)
 {
-	const struct visit_data *data = _data;
-	unsigned i;
+	if (tag->time > 0)
+		stats.song_duration += tag->time;
 
-	if (song->tag == NULL)
-		return 0;
+	for (unsigned i = 0; i < tag->numOfItems; ++i) {
+		const struct tag_item *item = tag->items[i];
 
-	for (i = 0; i < (unsigned)song->tag->numOfItems; ++i) {
-		const struct tag_item *item = song->tag->items[i];
-		if (item->type == data->type)
-			strset_add(data->set, item->value);
+		switch (item->type) {
+		case TAG_ITEM_ARTIST:
+			strset_add(data->artists, item->value);
+			break;
+
+		case TAG_ITEM_ALBUM:
+			strset_add(data->albums, item->value);
+			break;
+
+		default:
+			break;
+		}
 	}
+}
+
+static int
+stats_collect_song(struct song *song, void *_data)
+{
+	struct visit_data *data = _data;
+
+	++stats.song_count;
+
+	if (song->tag != NULL)
+		visit_tag(data, song->tag);
 
 	return 0;
 }
 
-static unsigned int
-getNumberOfTagItems(enum tag_type type)
-{
-	struct visit_data data = {
-		.type = type,
-		.set = strset_new(),
-	};
-	unsigned int ret;
-
-	db_walk(NULL, visit_tag_items, NULL, &data);
-
-	ret = strset_size(data.set);
-	strset_free(data.set);
-	return ret;
-}
-
 void stats_update(void)
 {
-	stats.song_count = countSongsIn(NULL);
-	stats.song_duration = sumSongTimesIn(NULL);
-	stats.artist_count = getNumberOfTagItems(TAG_ITEM_ARTIST);
-	stats.album_count = getNumberOfTagItems(TAG_ITEM_ALBUM);
+	struct visit_data data;
+
+	stats.song_count = 0;
+	stats.song_duration = 0;
+	stats.artist_count = 0;
+
+	data.artists = strset_new();
+	data.albums = strset_new();
+
+	db_walk(NULL, stats_collect_song, NULL, &data);
+
+	stats.artist_count = strset_size(data.artists);
+	stats.album_count = strset_size(data.albums);
+
+	strset_free(data.artists);
+	strset_free(data.albums);
 }
 
 int stats_print(struct client *client)

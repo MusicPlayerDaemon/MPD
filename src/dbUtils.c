@@ -51,16 +51,6 @@ typedef struct _SearchStats {
 } SearchStats;
 
 static int
-countSongsInDirectory(struct directory *directory, void *data)
-{
-	int *count = (int *)data;
-
-	*count += directory->songs.nr;
-
-	return 0;
-}
-
-static int
 printDirectoryInDirectory(struct directory *directory, void *data)
 {
 	struct client *client = data;
@@ -237,41 +227,10 @@ directoryPrintSongInfo(struct song *song, void *data)
 	return 0;
 }
 
-static int
-sumSongTime(struct song *song, void *data)
-{
-	unsigned long *sum_time = (unsigned long *)data;
-
-	if (song->tag && song->tag->time >= 0)
-		*sum_time += song->tag->time;
-
-	return 0;
-}
-
 int printInfoForAllIn(struct client *client, const char *name)
 {
 	return db_walk(name, directoryPrintSongInfo,
 			     printDirectoryInDirectory, client);
-}
-
-int countSongsIn(const char *name)
-{
-	int count = 0;
-	void *ptr = (void *)&count;
-
-	db_walk(name, NULL, countSongsInDirectory, ptr);
-
-	return count;
-}
-
-unsigned long sumSongTimesIn(const char *name)
-{
-	unsigned long dbPlayTime = 0;
-	void *ptr = (void *)&dbPlayTime;
-
-	db_walk(name, sumSongTime, NULL, ptr);
-
-	return dbPlayTime;
 }
 
 static ListCommandItem *newListCommandItem(int tagType, int numConditionals,
