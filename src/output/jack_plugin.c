@@ -187,9 +187,6 @@ mpd_jack_init(struct audio_output *ao,
 {
 	struct jack_data *jd;
 	const char *value;
-	struct block_param *bp;
-	char *endptr;
-	int val;
 
 	jd = mpd_jack_new();
 	jd->ao = ao;
@@ -212,18 +209,8 @@ mpd_jack_init(struct audio_output *ao,
 		g_free(ports);
 	}
 
-	if ( (bp = getBlockParam(param, "ringbuffer_size")) ) {
-		errno = 0;
-		val = strtol(bp->value, &endptr, 10);
-
-		if ( errno == 0 && endptr != bp->value) {
-			jd->ringbuffer_size = val < 32768 ? 32768 : val;
-			g_debug("ringbuffer_size=%d", jd->ringbuffer_size);
-		} else {
-			g_error("%s is not a number; ringbuf_size=%d",
-				bp->value, jd->ringbuffer_size);
-		}
-	}
+	jd->ringbuffer_size =
+		config_get_block_unsigned(param, "ringbuffer_size", 32768);
 
 	return jd;
 }

@@ -25,6 +25,7 @@
 
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <errno.h>
 
 #define MAX_STRING_SIZE	MPD_PATH_MAX+80
@@ -455,6 +456,27 @@ config_get_block_string(struct config_param *param, const char *name,
 		return default_value;
 
 	return bp->value;
+}
+
+unsigned
+config_get_block_unsigned(struct config_param *param, const char *name,
+			  unsigned default_value)
+{
+	struct block_param *bp = getBlockParam(param, name);
+	long value;
+	char *endptr;
+
+	if (bp == NULL)
+		return default_value;
+
+	value = strtol(bp->value, &endptr, 0);
+	if (*endptr != 0)
+		g_error("Not a valid number in line %i", bp->line);
+
+	if (value < 0)
+		g_error("Not a positive number in line %i", bp->line);
+
+	return (unsigned)value;
 }
 
 bool

@@ -125,6 +125,10 @@ config_dup_block_string(struct config_param *param, const char *name,
 	return g_strdup(config_get_block_string(param, name, default_value));
 }
 
+unsigned
+config_get_block_unsigned(struct config_param *param, const char *name,
+			  unsigned default_value);
+
 bool
 config_get_block_bool(struct config_param *param, const char *name,
 		      bool default_value);

@@ -90,16 +90,12 @@ static void freeAlsaData(AlsaData * ad)
 static void
 alsa_configure(AlsaData *ad, struct config_param *param)
 {
-	struct block_param *bp;
-
 	ad->device = config_dup_block_string(param, "device", NULL);
 
 	ad->useMmap = config_get_block_bool(param, "use_mmap", false);
 
-	if ((bp = getBlockParam(param, "buffer_time")))
-		ad->buffer_time = atoi(bp->value);
-	if ((bp = getBlockParam(param, "period_time")))
-		ad->period_time = atoi(bp->value);
+	ad->buffer_time = config_get_block_unsigned(param, "buffer_time", 0);
+	ad->period_time = config_get_block_unsigned(param, "period_time", 0);
 
 #ifdef SND_PCM_NO_AUTO_RESAMPLE
 	if (!config_get_block_bool(param, "auto_resample", true))

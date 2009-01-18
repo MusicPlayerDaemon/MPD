@@ -80,19 +80,10 @@ audioOutputAo_initDriver(struct audio_output *ao,
 			 struct config_param *param)
 {
 	ao_info *ai;
-	char *test;
 	AoData *ad = newAoData();
-	struct block_param *blockParam;
 	const char *value;
 
-	if ((blockParam = getBlockParam(param, "write_size"))) {
-		ad->writeSize = strtol(blockParam->value, &test, 10);
-		if (*test != '\0') {
-			g_error("\"%s\" is not a valid write size at line %i\n",
-				blockParam->value, blockParam->line);
-		}
-	} else
-		ad->writeSize = 1024;
+	ad->writeSize = config_get_block_unsigned(param, "write_size", 1024);
 
 	if (driverInitCount == 0) {
 		ao_initialize();

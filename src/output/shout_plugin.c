@@ -221,14 +221,8 @@ static void *my_shout_init_driver(struct audio_output *audio_output,
 	}
 
 	/* optional paramters */
-	block_param = getBlockParam(param, "timeout");
-	if (block_param) {
-		sd->timeout = (int)strtol(block_param->value, &test, 10);
-		if (*test != '\0' || sd->timeout <= 0) {
-			g_error("shout timeout is not a positive integer, "
-				"line %i\n", block_param->line);
-		}
-	}
+	sd->timeout = config_get_block_unsigned(param, "timeout",
+						DEFAULT_CONN_TIMEOUT);
 
 	value = config_get_block_string(param, "genre", NULL);
 	if (value != NULL && shout_set_genre(sd->shout_conn, value)) {
