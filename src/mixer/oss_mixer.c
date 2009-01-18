@@ -40,10 +40,9 @@ static void
 oss_mixer_finish(struct mixer_data *data)
 {
 	struct oss_mixer *om = (struct oss_mixer *) data;
-	if (om->device) 
-		g_free(om->device);
-	if (om->control) 
-		g_free(om->control);
+
+	g_free(om->device);
+	g_free(om->control);
 	g_free(om);
 }
 
@@ -58,14 +57,13 @@ oss_mixer_configure(struct mixer_data *data, struct config_param *param)
 
 	bp = getBlockParam(param, "mixer_device");
 	if (bp) {
-		if (om->device) 
-			g_free(om->device);
+		g_free(om->device);
 		om->device = g_strdup(bp->value);
 	}
+
 	bp = getBlockParam(param, "mixer_control");
 	if (bp) {
-		if (om->control) 
-			g_free(om->control);
+		g_free(om->control);
 		om->control = g_strdup(bp->value);
 	}
 }

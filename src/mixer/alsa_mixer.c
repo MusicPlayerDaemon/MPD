@@ -36,10 +36,9 @@ static void
 alsa_mixer_finish(struct mixer_data *data)
 {
 	struct alsa_mixer *am = (struct alsa_mixer *)data;
-	if (am->device)
-		g_free(am->device);
-	if (am->control)
-		g_free(am->control);
+
+	g_free(am->device);
+	g_free(am->control);
 	g_free(am);
 }
 
@@ -53,13 +52,11 @@ alsa_mixer_configure(struct mixer_data *data, struct config_param *param)
 		return;
 
 	if ((bp = getBlockParam(param, "mixer_device"))) {
-		if (am->device)
-			g_free(am->device);
+		g_free(am->device);
 		am->device = g_strdup(bp->value);
 	}
 	if ((bp = getBlockParam(param, "mixer_control"))) {
-		if (am->control)
-			g_free(am->control);
+		g_free(am->control);
 		am->control = g_strdup(bp->value);
 	}
 }
