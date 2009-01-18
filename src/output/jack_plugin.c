@@ -186,6 +186,7 @@ mpd_jack_init(struct audio_output *ao,
 	      struct config_param *param)
 {
 	struct jack_data *jd;
+	const char *value;
 	struct block_param *bp;
 	char *endptr;
 	int val;
@@ -197,12 +198,13 @@ mpd_jack_init(struct audio_output *ao,
 	if (param == NULL)
 		return jd;
 
-	if ( (bp = getBlockParam(param, "ports")) ) {
-		char **ports = g_strsplit(bp->value, ",", 0);
+	value = config_get_block_string(param, "ports", NULL);
+	if (value != NULL) {
+		char **ports = g_strsplit(value, ",", 0);
 
 		if (ports[0] == NULL || ports[1] == NULL || ports[2] != NULL)
 			g_error("two port names expected in line %d",
-				bp->line);
+				param->line);
 
 		jd->output_ports[0] = ports[0];
 		jd->output_ports[1] = ports[1];

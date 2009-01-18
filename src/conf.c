@@ -445,6 +445,18 @@ bool config_get_bool(const char *name, bool default_value)
 	return !!value;
 }
 
+const char *
+config_get_block_string(struct config_param *param, const char *name,
+			const char *default_value)
+{
+	struct block_param *bp = getBlockParam(param, name);
+
+	if (bp == NULL)
+		return default_value;
+
+	return bp->value;
+}
+
 bool
 config_get_block_bool(struct config_param *param, const char *name,
 		      bool default_value)

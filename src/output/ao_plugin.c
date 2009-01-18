@@ -83,6 +83,7 @@ audioOutputAo_initDriver(struct audio_output *ao,
 	char *test;
 	AoData *ad = newAoData();
 	struct block_param *blockParam;
+	const char *value;
 
 	if ((blockParam = getBlockParam(param, "write_size"))) {
 		ad->writeSize = strtol(blockParam->value, &test, 10);
@@ -98,14 +99,12 @@ audioOutputAo_initDriver(struct audio_output *ao,
 	}
 	driverInitCount++;
 
-	blockParam = getBlockParam(param, "driver");
-
-	if (!blockParam || 0 == strcmp(blockParam->value, "default")) {
+	value = config_get_block_string(param, "driver", "default");
+	if (0 == strcmp(value, "default")) {
 		ad->driverId = ao_default_driver_id();
-	} else if ((ad->driverId = ao_driver_id(blockParam->value)) < 0) {
+	} else if ((ad->driverId = ao_driver_id(value)) < 0)
 		g_error("\"%s\" is not a valid ao driver at line %i\n",
-			blockParam->value, blockParam->line);
-	}
+			value, param->line);
 
 	if ((ai = ao_driver_info(ad->driverId)) == NULL) {
 		g_error("problems getting driver info for device defined at line %i\n"
@@ -115,9 +114,9 @@ audioOutputAo_initDriver(struct audio_output *ao,
 	g_debug("using ao driver \"%s\" for \"%s\"\n", ai->short_name,
 		audio_output_get_name(ao));
 
-	blockParam = getBlockParam(param, "options");
-	if (blockParam) {
-		gchar **options = g_strsplit(blockParam->value, ";", 0);
+	value = config_get_block_string(param, "options", NULL);
+	if (value != NULL) {
+		gchar **options = g_strsplit(value, ";", 0);
 
 		for (unsigned i = 0; options[i] != NULL; ++i) {
 			gchar **key_value = g_strsplit(options[i], "=", 2);

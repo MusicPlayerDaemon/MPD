@@ -164,19 +164,18 @@ static void *fifo_initDriver(G_GNUC_UNUSED struct audio_output *ao,
 			     struct config_param *param)
 {
 	FifoData *fd;
-	struct block_param *blockParam;
-	char *path;
+	char *value, *path;
 
-	blockParam = getBlockParam(param, "path");
-	if (!blockParam) {
+	value = config_dup_block_string(param, "path", NULL);
+	if (value == NULL)
 		g_error("No \"path\" parameter specified for fifo output "
 			"defined at line %i", param->line);
-	}
 
-	path = parsePath(blockParam->value);
+	path = parsePath(value);
+	g_free(value);
 	if (!path) {
 		g_error("Could not parse \"path\" parameter for fifo output "
-			"at line %i", blockParam->line);
+			"at line %i", param->line);
 	}
 
 	fd = newFifoData();

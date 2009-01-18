@@ -106,6 +106,7 @@ static void *my_shout_init_driver(struct audio_output *audio_output,
 	unsigned protocol;
 	const char *user;
 	char *name;
+	const char *value;
 	struct block_param *block_param;
 	int public;
 
@@ -140,45 +141,34 @@ static void *my_shout_init_driver(struct audio_output *audio_output,
 
 	public = config_get_block_bool(param, "public", false);
 
-	block_param = getBlockParam(param, "user");
-	if (block_param)
-		user = block_param->value;
-	else
-		user = "source";
+	user = config_get_block_string(param, "user", "source");
 
-	block_param = getBlockParam(param, "quality");
-
-	if (block_param) {
-		int line = block_param->line;
-
-		sd->quality = strtod(block_param->value, &test);
+	value = config_get_block_string(param, "quality", NULL);
+	if (value != NULL) {
+		sd->quality = strtod(value, &test);
 
 		if (*test != '\0' || sd->quality < -1.0 || sd->quality > 10.0) {
 			g_error("shout quality \"%s\" is not a number in the "
-				"range -1 to 10, line %i\n", block_param->value,
-				block_param->line);
+				"range -1 to 10, line %i",
+				value, param->line);
 		}
 
-		block_param = getBlockParam(param, "bitrate");
-
-		if (block_param) {
-			g_error("quality (line %i) and bitrate (line %i) are "
-				"both defined for shout output\n", line,
-				block_param->line);
+		if (config_get_block_string(param, "bitrate", NULL) != NULL) {
+			g_error("quality and bitrate are "
+				"both defined for shout output (line %i)",
+				param->line);
 		}
 	} else {
-		block_param = getBlockParam(param, "bitrate");
-
-		if (!block_param) {
+		value = config_get_block_string(param, "bitrate", NULL);
+		if (value == NULL)
 			g_error("neither bitrate nor quality defined for shout "
-				"output at line %i\n", param->line);
-		}
+				"output at line %i", param->line);
 
-		sd->bitrate = strtol(block_param->value, &test, 10);
+		sd->bitrate = strtol(value, &test, 10);
 
 		if (*test != '\0' || sd->bitrate <= 0) {
 			g_error("bitrate at line %i should be a positive integer "
-				"\n", block_param->line);
+				"\n", param->line);
 		}
 	}
 
@@ -187,42 +177,29 @@ static void *my_shout_init_driver(struct audio_output *audio_output,
 	assert(audio_format != NULL);
 	sd->audio_format = *audio_format;
 
-	block_param = getBlockParam(param, "encoding");
-	if (block_param) {
-		if (0 == strcmp(block_param->value, "mp3"))
-			encoding = block_param->value;
-		else if (0 == strcmp(block_param->value, "ogg"))
-			encoding = block_param->value;
-		else
-			g_error("shout encoding \"%s\" is not \"ogg\" or "
-				"\"mp3\", line %i\n", block_param->value,
-				block_param->line);
-	} else {
-		encoding = "ogg";
-	}
-
+	encoding = config_get_block_string(param, "encoding", "ogg");
 	sd->encoder = shout_encoder_plugin_get(encoding);
 	if (sd->encoder == NULL)
 		g_error("couldn't find shout encoder plugin \"%s\"\n",
 			encoding);
 
-	block_param = getBlockParam(param, "protocol");
-	if (block_param) {
-		if (0 == strcmp(block_param->value, "shoutcast") &&
+	value = config_get_block_string(param, "protocol", NULL);
+	if (value != NULL) {
+		if (0 == strcmp(value, "shoutcast") &&
 		    0 != strcmp(encoding, "mp3"))
 			g_error("you cannot stream \"%s\" to shoutcast, use mp3\n",
 				encoding);
-		else if (0 == strcmp(block_param->value, "shoutcast"))
+		else if (0 == strcmp(value, "shoutcast"))
 			protocol = SHOUT_PROTOCOL_ICY;
-		else if (0 == strcmp(block_param->value, "icecast1"))
+		else if (0 == strcmp(value, "icecast1"))
 			protocol = SHOUT_PROTOCOL_XAUDIOCAST;
-		else if (0 == strcmp(block_param->value, "icecast2"))
+		else if (0 == strcmp(value, "icecast2"))
 			protocol = SHOUT_PROTOCOL_HTTP;
 		else
 			g_error("shout protocol \"%s\" is not \"shoutcast\" or "
 				"\"icecast1\"or "
-				"\"icecast2\", line %i\n", block_param->value,
-				block_param->line);
+				"\"icecast2\", line %i\n",
+				value, param->line);
 	} else {
 		protocol = SHOUT_PROTOCOL_HTTP;
 	}
@@ -253,15 +230,14 @@ static void *my_shout_init_driver(struct audio_output *audio_output,
 		}
 	}
 
-	block_param = getBlockParam(param, "genre");
-	if (block_param && shout_set_genre(sd->shout_conn, block_param->value)) {
+	value = config_get_block_string(param, "genre", NULL);
+	if (value != NULL && shout_set_genre(sd->shout_conn, value)) {
 		g_error("error configuring shout defined at line %i: %s\n",
 			param->line, shout_get_error(sd->shout_conn));
 	}
 
-	block_param = getBlockParam(param, "description");
-	if (block_param && shout_set_description(sd->shout_conn,
-						 block_param->value)) {
+	value = config_get_block_string(param, "description", NULL);
+	if (value != NULL && shout_set_description(sd->shout_conn, value)) {
 		g_error("error configuring shout defined at line %i: %s\n",
 			param->line, shout_get_error(sd->shout_conn));
 	}

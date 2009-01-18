@@ -92,8 +92,7 @@ alsa_configure(AlsaData *ad, struct config_param *param)
 {
 	struct block_param *bp;
 
-	if ((bp = getBlockParam(param, "device")))
-		ad->device = g_strdup(bp->value);
+	ad->device = config_dup_block_string(param, "device", NULL);
 
 	ad->useMmap = config_get_block_bool(param, "use_mmap", false);
 

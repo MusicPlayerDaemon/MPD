@@ -57,19 +57,14 @@ pulse_init(struct audio_output *ao,
 	   G_GNUC_UNUSED const struct audio_format *audio_format,
 	   struct config_param *param)
 {
-	struct block_param *server = NULL;
-	struct block_param *sink = NULL;
 	struct pulse_data *pd;
-
-	if (param) {
-		server = getBlockParam(param, "server");
-		sink = getBlockParam(param, "sink");
-	}
 
 	pd = pulse_new_data();
 	pd->ao = ao;
-	pd->server = server != NULL ? g_strdup(server->value) : NULL;
-	pd->sink = sink != NULL ? g_strdup(sink->value) : NULL;
+	pd->server = param != NULL
+		? config_dup_block_string(param, "server", NULL) : NULL;
+	pd->sink = param != NULL
+		? config_dup_block_string(param, "sink", NULL) : NULL;
 
 	return pd;
 }

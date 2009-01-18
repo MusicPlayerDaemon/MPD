@@ -114,6 +114,17 @@ getBlockParam(struct config_param *param, const char *name);
 
 bool config_get_bool(const char *name, bool default_value);
 
+const char *
+config_get_block_string(struct config_param *param, const char *name,
+			const char *default_value);
+
+static inline char *
+config_dup_block_string(struct config_param *param, const char *name,
+			const char *default_value)
+{
+	return g_strdup(config_get_block_string(param, name, default_value));
+}
+
 bool
 config_get_block_bool(struct config_param *param, const char *name,
 		      bool default_value);

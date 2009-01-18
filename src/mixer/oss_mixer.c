@@ -50,21 +50,21 @@ static void
 oss_mixer_configure(struct mixer_data *data, struct config_param *param)
 {
 	struct oss_mixer *om = (struct oss_mixer *) data;
-	struct block_param *bp;
+	const char *value;
 
 	if (param == NULL)
 		return;
 
-	bp = getBlockParam(param, "mixer_device");
-	if (bp) {
+	value = config_get_block_string(param, "mixer_device", NULL);
+	if (value != NULL) {
 		g_free(om->device);
-		om->device = g_strdup(bp->value);
+		om->device = g_strdup(value);
 	}
 
-	bp = getBlockParam(param, "mixer_control");
-	if (bp) {
+	value = config_get_block_string(param, "mixer_control", NULL);
+	if (value != NULL) {
 		g_free(om->control);
-		om->control = g_strdup(bp->value);
+		om->control = g_strdup(value);
 	}
 }
 
