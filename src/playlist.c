@@ -1216,6 +1216,9 @@ enum playlist_result savePlaylist(const char *utf8file)
 		return PLAYLIST_RESULT_BAD_NAME;
 
 	path = map_spl_utf8_to_fs(utf8file);
+	if (path == NULL)
+		return PLAYLIST_RESULT_DISABLED;
+
 	if (g_file_test(path, G_FILE_TEST_EXISTS)) {
 		g_free(path);
 		return PLAYLIST_RESULT_LIST_EXISTS;

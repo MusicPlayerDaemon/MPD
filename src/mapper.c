@@ -39,14 +39,29 @@ static char *music_dir;
 static size_t music_dir_length;
 
 static char *playlist_dir;
-static size_t playlist_dir_length;
+
+static void
+mapper_set_playlist_dir(const char *path, int line)
+{
+	int ret;
+	struct stat st;
+
+	playlist_dir = g_strdup(path);
+
+	ret = stat(playlist_dir, &st);
+	if (ret < 0)
+		g_warning("failed to stat playlist directory \"%s\" (config line %i): %s\n",
+			  playlist_dir, line, g_strerror(errno));
+	else if (!S_ISDIR(st.st_mode))
+		g_warning("playlist directory is not a directory: \"%s\" (config line %i)\n",
+			  playlist_dir, line);
+}
 
 void mapper_init(void)
 {
 	struct config_param *music_dir_param =
 		parseConfigFilePath(CONF_MUSIC_DIR, false);
-	struct config_param *playlist_dir_param =
-		parseConfigFilePath(CONF_PLAYLIST_DIR, 1);
+	struct config_param *param;
 	int ret;
 	struct stat st;
 
@@ -73,17 +88,9 @@ void mapper_init(void)
 		g_warning("music directory is not a directory: \"%s\" (config line %i)\n",
 			  music_dir_param->value, music_dir_param->line);
 
-	playlist_dir = g_strdup(playlist_dir_param->value);
-	playlist_dir_length = strlen(playlist_dir);
-
-	ret = stat(playlist_dir, &st);
-	if (ret < 0)
-		g_warning("failed to stat playlist directory \"%s\" (config line %i): %s\n",
-			  playlist_dir_param->value, playlist_dir_param->line,
-			  strerror(errno));
-	else if (!S_ISDIR(st.st_mode))
-		g_warning("playlist directory is not a directory: \"%s\" (config line %i)\n",
-			  playlist_dir_param->value, playlist_dir_param->line);
+	param = parseConfigFilePath(CONF_PLAYLIST_DIR, false);
+	if (param != NULL)
+		mapper_set_playlist_dir(param->value, param->line);
 }
 
 void mapper_finish(void)
@@ -182,6 +189,9 @@ map_spl_utf8_to_fs(const char *name)
 {
 	char *filename = g_strconcat(name, "." PLAYLIST_FILE_SUFFIX, NULL);
 	char *path;
+
+	if (playlist_dir == NULL)
+		return NULL;
 
 	path = g_build_filename(playlist_dir, filename, NULL);
 	g_free(filename);

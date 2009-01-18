@@ -80,6 +80,9 @@ spl_list(void)
 	GPtrArray *list;
 	struct stored_playlist_info *playlist;
 
+	if (parent_path_fs == NULL)
+		return NULL;
+
 	dir = opendir(parent_path_fs);
 	if (dir == NULL)
 		return NULL;
@@ -118,6 +121,8 @@ spl_save(GPtrArray *list, const char *utf8path)
 	assert(utf8path != NULL);
 
 	path_fs = map_spl_utf8_to_fs(utf8path);
+	if (path_fs == NULL)
+		return PLAYLIST_RESULT_DISABLED;
 
 	while (!(file = fopen(path_fs, "w")) && errno == EINTR);
 	g_free(path_fs);
@@ -145,6 +150,8 @@ spl_load(const char *utf8path)
 		return NULL;
 
 	path_fs = map_spl_utf8_to_fs(utf8path);
+	if (path_fs == NULL)
+		return NULL;
 
 	while (!(file = fopen(path_fs, "r")) && errno == EINTR);
 	g_free(path_fs);
@@ -264,6 +271,8 @@ spl_clear(const char *utf8path)
 		return PLAYLIST_RESULT_BAD_NAME;
 
 	path_fs = map_spl_utf8_to_fs(utf8path);
+	if (path_fs == NULL)
+		return PLAYLIST_RESULT_DISABLED;
 
 	while (!(file = fopen(path_fs, "w")) && errno == EINTR);
 	g_free(path_fs);
@@ -283,6 +292,9 @@ spl_delete(const char *name_utf8)
 	int ret;
 
 	path_fs = map_spl_utf8_to_fs(name_utf8);
+	if (path_fs == NULL)
+		return PLAYLIST_RESULT_DISABLED;
+
 	ret = unlink(path_fs);
 	g_free(path_fs);
 	if (ret < 0)
@@ -330,6 +342,8 @@ spl_append_song(const char *utf8path, struct song *song)
 		return PLAYLIST_RESULT_BAD_NAME;
 
 	path_fs = map_spl_utf8_to_fs(utf8path);
+	if (path_fs == NULL)
+		return PLAYLIST_RESULT_DISABLED;
 
 	while (!(file = fopen(path_fs, "a")) && errno == EINTR);
 	g_free(path_fs);
@@ -410,7 +424,10 @@ spl_rename(const char *utf8from, const char *utf8to)
 	from_path_fs = map_spl_utf8_to_fs(utf8from);
 	to_path_fs = map_spl_utf8_to_fs(utf8to);
 
-	ret = spl_rename_internal(from_path_fs, to_path_fs);
+	if (from_path_fs != NULL && to_path_fs != NULL)
+		ret = spl_rename_internal(from_path_fs, to_path_fs);
+	else
+		ret = PLAYLIST_RESULT_DISABLED;
 
 	g_free(from_path_fs);
 	g_free(to_path_fs);

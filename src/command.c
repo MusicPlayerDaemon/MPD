@@ -320,6 +320,11 @@ print_playlist_result(struct client *client,
 		command_error(client, ACK_ERROR_PLAYLIST_MAX,
 			      "playlist is at the max size");
 		return COMMAND_RETURN_ERROR;
+
+	case PLAYLIST_RESULT_DISABLED:
+		command_error(client, ACK_ERROR_UNKNOWN,
+			      "stored playlist support is disabled");
+		return COMMAND_RETURN_ERROR;
 	}
 
 	assert(0);

@@ -32,9 +32,6 @@ configuration file.
 .B music_directory <directory>
 This specifies the directory where music is located.
 .TP
-.B playlist_directory <directory>
-This specifies the directory where saved playlists are stored.
-.TP
 .B follow_outside_symlinks <yes or no>
 Control if MPD will follow symbolic links pointing outside the music dir.
 You must recreate the database after changing this option.
@@ -56,6 +53,10 @@ The special value "syslog" makes MPD use the local syslog daemon.
 .TP
 .B pid_file <file>
 This specifies the file to save mpd's process ID in.
+.TP
+.B playlist_directory <directory>
+This specifies the directory where saved playlists are stored.
+If you do not configure this, you cannot save playlists.
 .TP
 .B state_file <file>
 This specifies if a state file is used and where it is located.  The state of

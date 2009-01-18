@@ -12,6 +12,7 @@ ver 0.15 - (200?/??/??)
 * failure to read the state file is non-fatal
 * added Icy-Metadata support
 * --create-db starts the MPD daemon instead of exiting
+* playlist_directory is optional
 
 
 ver 0.14.1 (2009/01/17)
