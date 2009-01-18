@@ -19,8 +19,6 @@
 #ifndef MPD_OUTPUT_CONTROL_H
 #define MPD_OUTPUT_CONTROL_H
 
-#include "conf.h"
-
 #include <stddef.h>
 #include <stdbool.h>
 
@@ -28,6 +26,7 @@ struct audio_output;
 struct audio_output_plugin;
 struct audio_format;
 struct tag;
+struct config_param;
 
 int
 audio_output_init(struct audio_output *, struct config_param *param);
