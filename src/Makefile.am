@@ -90,7 +90,6 @@ mpd_headers = \
 	permission.h \
 	player_thread.h \
 	player_control.h \
-	playerData.h \
 	playlist.h \
 	playlist_save.h \
 	replay_gain.h \
@@ -172,7 +171,6 @@ mpd_SOURCES = \
 	permission.c \
 	player_thread.c \
 	player_control.c \
-	playerData.c \
 	playlist.c \
 	playlist_save.c \
 	replay_gain.c \

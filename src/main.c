@@ -30,7 +30,6 @@
 #include "conf.h"
 #include "path.h"
 #include "mapper.h"
-#include "playerData.h"
 #include "pipe.h"
 #include "decoder_thread.h"
 #include "decoder_control.h"
@@ -69,6 +68,11 @@
 #ifdef HAVE_LOCALE_H
 #include <locale.h>
 #endif
+
+enum {
+	DEFAULT_BUFFER_SIZE = 2048,
+	DEFAULT_BUFFER_BEFORE_PLAY = 10,
+};
 
 GThread *main_task;
 GMainLoop *main_loop;
@@ -109,6 +113,55 @@ static void openDB(Options * options, char *argv0)
 		if (job == 0)
 			g_error("directory update failed");
 	}
+}
+
+/**
+ * Initialize the decoder and player core, including the music pipe.
+ */
+static void
+initialize_decoder_and_player(void)
+{
+	struct config_param *param;
+	char *test;
+	size_t buffer_size;
+	float perc;
+	unsigned buffered_chunks;
+	unsigned buffered_before_play;
+
+	param = config_get_param(CONF_AUDIO_BUFFER_SIZE);
+	if (param != NULL) {
+		buffer_size = strtol(param->value, &test, 10);
+		if (*test != '\0' || buffer_size <= 0)
+			g_error("buffer size \"%s\" is not a positive integer, "
+				"line %i\n", param->value, param->line);
+	} else
+		buffer_size = DEFAULT_BUFFER_SIZE;
+
+	buffer_size *= 1024;
+
+	buffered_chunks = buffer_size / CHUNK_SIZE;
+
+	if (buffered_chunks >= 1 << 15)
+		g_error("buffer size \"%li\" is too big\n", (long)buffer_size);
+
+	param = config_get_param(CONF_BUFFER_BEFORE_PLAY);
+	if (param != NULL) {
+		perc = strtod(param->value, &test);
+		if (*test != '%' || perc < 0 || perc > 100) {
+			FATAL("buffered before play \"%s\" is not a positive "
+			      "percentage and less than 100 percent, line %i"
+			      "\n", param->value, param->line);
+		}
+	} else
+		perc = DEFAULT_BUFFER_BEFORE_PLAY;
+
+	buffered_before_play = (perc / 100) * buffered_chunks;
+	if (buffered_before_play > buffered_chunks)
+		buffered_before_play = buffered_chunks;
+
+	pc_init(buffered_before_play);
+	music_pipe_init(buffered_chunks, &pc.notify);
+	dc_init();
 }
 
 static gboolean
@@ -189,10 +242,7 @@ int main(int argc, char *argv[])
 	openDB(&options, argv[0]);
 
 	command_init();
-	initPlayerData();
-	pc_init(buffered_before_play);
-	music_pipe_init(buffered_chunks, &pc.notify);
-	dc_init();
+	initialize_decoder_and_player();
 	initAudioConfig();
 	initAudioDriver();
 	volume_init();
