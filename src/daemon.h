@@ -21,6 +21,12 @@
 
 #include "cmdline.h"
 
+void
+daemonize_init(const char *user, const char *pidfile);
+
+void
+daemonize_finish(void);
+
 /**
  * Kill the MPD which is currently running, pid determined from the
  * pid file.
@@ -42,11 +48,5 @@ daemonize_set_user(void);
 
 void
 daemonize(Options *options);
-
-/**
- * Deletes the pidfile which was created when MPD started.
- */
-void
-daemonize_delete_pidfile(void);
 
 #endif

@@ -17,8 +17,8 @@
  */
 
 #include "daemon.h"
-#include "conf.h"
 
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -34,26 +34,40 @@
 #include <grp.h>
 #endif
 
+#ifndef WIN32
+
+/** the Unix user name which MPD runs as */
+static char *user_name;
+
+/** the Unix user id which MPD runs as */
+static uid_t user_uid;
+
+/** the Unix group id which MPD runs as */
+static gid_t user_gid;
+
+/** the absolute path of the pidfile */
+static char *pidfile;
+
+#endif
+
 void
 daemonize_kill(void)
 {
 #ifndef WIN32
 	FILE *fp;
-	struct config_param *param =
-		parseConfigFilePath(CONF_PID_FILE, 0);
 	int pid, ret;
 
-	if (param == NULL)
+	if (pidfile == NULL)
 		g_error("no pid_file specified in the config file");
 
-	fp = fopen(param->value, "r");
+	fp = fopen(pidfile, "r");
 	if (fp == NULL)
-		g_error("unable to open %s \"%s\": %s",
-			CONF_PID_FILE, param->value, g_strerror(errno));
+		g_error("unable to open pid file \"%s\": %s",
+			pidfile, g_strerror(errno));
 
 	if (fscanf(fp, "%i", &pid) != 1) {
 		g_error("unable to read the pid from file \"%s\"",
-			param->value);
+			pidfile);
 	}
 	fclose(fp);
 
@@ -85,36 +99,29 @@ void
 daemonize_set_user(void)
 {
 #ifndef WIN32
-	struct config_param *param = config_get_param(CONF_USER);
-
-	if (param && strlen(param->value)) {
+	if (user_name != NULL) {
 		/* get uid */
 		struct passwd *userpwd;
-		if ((userpwd = getpwnam(param->value)) == NULL) {
-			g_error("no such user \"%s\" at line %i",
-				param->value, param->line);
-		}
 
-		if (setgid(userpwd->pw_gid) == -1) {
-			g_error("cannot setgid for user \"%s\" at line %i: %s",
-				param->value, param->line, strerror(errno));
+		if (setgid(user_gid) == -1) {
+			g_error("cannot setgid for user \"%s\": %s",
+				user_name, g_strerror(errno));
 		}
 #ifdef _BSD_SOURCE
 		/* init suplementary groups
 		 * (must be done before we change our uid)
 		 */
-		if (initgroups(param->value, userpwd->pw_gid) == -1) {
+		if (initgroups(user_name, user_gid) == -1) {
 			g_warning("cannot init supplementary groups "
-				  "of user \"%s\" at line %i: %s",
-				  param->value, param->line, strerror(errno));
+				  "of user \"%s\": %s",
+				  user_name, g_strerror(errno));
 		}
 #endif
 
 		/* set uid */
 		if (setuid(userpwd->pw_uid) == -1) {
-			g_error("cannot change to uid of user "
-				"\"%s\" at line %i: %s",
-				param->value, param->line, strerror(errno));
+			g_error("cannot change to uid of user \"%s\": %s",
+				user_name, g_strerror(errno));
 		}
 
 		/* this is needed by libs such as arts */
@@ -130,18 +137,15 @@ daemonize(Options *options)
 {
 #ifndef WIN32
 	FILE *fp = NULL;
-	struct config_param *pidFileParam =
-		parseConfigFilePath(CONF_PID_FILE, 0);
 
-	if (pidFileParam) {
+	if (pidfile != NULL) {
 		/* do this before daemon'izing so we can fail gracefully if we can't
 		 * write to the pid file */
 		g_debug("opening pid file");
-		fp = fopen(pidFileParam->value, "w+");
+		fp = fopen(pidfile, "w+");
 		if (!fp) {
-			g_error("could not open %s \"%s\" (at line %i) for writing: %s",
-				CONF_PID_FILE, pidFileParam->value,
-				pidFileParam->line, strerror(errno));
+			g_error("could not create pid file \"%s\": %s",
+				pidfile, g_strerror(errno));
 		}
 	}
 
@@ -165,7 +169,7 @@ daemonize(Options *options)
 		g_debug("daemonized!");
 	}
 
-	if (pidFileParam) {
+	if (pidfile != NULL) {
 		g_debug("writing pid file");
 		fprintf(fp, "%lu\n", (unsigned long)getpid());
 		fclose(fp);
@@ -177,14 +181,34 @@ daemonize(Options *options)
 }
 
 void
-daemonize_delete_pidfile(void)
+daemonize_init(const char *user, const char *_pidfile)
 {
-	struct config_param *param = parseConfigFilePath(CONF_PID_FILE, 0);
+#ifndef WIN32
+	user_name = g_strdup(user);
+	if (user_name != NULL) {
+		struct passwd *pwd = getpwnam(user_name);
+		if (pwd == NULL)
+			g_error("no such user \"%s\"", user_name);
 
-	if (param == NULL)
-		return;
+		user_uid = pwd->pw_uid;
+		user_gid = pwd->pw_gid;
+	}
 
-	g_debug("cleaning up pid file");
+	pidfile = g_strdup(_pidfile);
+#else
+	(void)user;
+	(void)_pidfile;
+#endif
+}
 
-	unlink(param->value);
+void
+daemonize_finish(void)
+{
+#ifndef WIN32
+	if (pidfile != NULL)
+		unlink(pidfile);
+
+	g_free(user_name);
+	g_free(pidfile);
+#endif
 }

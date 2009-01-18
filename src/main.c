@@ -201,6 +201,9 @@ int main(int argc, char *argv[])
 
 	parseOptions(argc, argv, &options);
 
+	daemonize_init(config_get_string(CONF_USER, NULL),
+		       config_get_path(CONF_PID_FILE));
+
 	if (options.kill)
 		daemonize_kill();
 
@@ -295,13 +298,13 @@ int main(int argc, char *argv[])
 	archive_plugin_deinit_all();
 #endif
 	music_pipe_free();
-	daemonize_delete_pidfile();
 	config_global_finish();
 	tag_pool_deinit();
 	songvec_deinit();
 	dirvec_deinit();
 	idle_deinit();
 	stats_global_finish();
+	daemonize_finish();
 
 	close_log_files();
 	return EXIT_SUCCESS;
