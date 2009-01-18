@@ -40,7 +40,6 @@ struct jack_data {
 	struct audio_output *ao;
 
 	/* configuration */
-	char *name;
 	char *output_ports[2];
 	int ringbuffer_size;
 
@@ -58,7 +57,7 @@ struct jack_data {
 static const char *
 mpd_jack_name(const struct jack_data *jd)
 {
-	return jd->name != NULL ? jd->name : "mpd";
+	return audio_output_get_name(jd->ao);
 }
 
 static struct jack_data *
@@ -99,8 +98,6 @@ mpd_jack_free(struct jack_data *jd)
 	assert(jd != NULL);
 
 	mpd_jack_client_free(jd);
-
-	g_free(jd->name);
 
 	for (unsigned i = 0; i < G_N_ELEMENTS(jd->output_ports); ++i)
 		g_free(jd->output_ports[i]);
@@ -238,13 +235,6 @@ mpd_jack_init(struct audio_output *ao,
 				bp->value, jd->ringbuffer_size);
 		}
 	}
-
-	if ( (bp = getBlockParam(param, "name"))
-	     && (strcmp(bp->value, "mpd") != 0) ) {
-		jd->name = g_strdup(bp->value);
-		g_debug("name=%s", jd->name);
-	} else
-		jd->name = NULL;
 
 	return jd;
 }
