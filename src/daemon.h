@@ -22,12 +22,31 @@
 #include "cmdline.h"
 
 /**
+ * Kill the MPD which is currently running, pid determined from the
+ * pid file.
+ */
+void
+daemonize_kill(void);
+
+/**
  * Close stdin (fd 0) and re-open it as /dev/null.
  */
 void
 daemonize_close_stdin(void);
 
+/**
+ * Change to the configured Unix user.
+ */
+void
+daemonize_set_user(void);
+
 void
 daemonize(Options *options);
+
+/**
+ * Deletes the pidfile which was created when MPD started.
+ */
+void
+daemonize_delete_pidfile(void);
 
 #endif

@@ -63,14 +63,8 @@
 
 #include <unistd.h>
 #include <stdlib.h>
-#include <signal.h>
 #include <errno.h>
 #include <string.h>
-
-#ifndef WIN32
-#include <pwd.h>
-#include <grp.h>
-#endif
 
 #ifdef HAVE_LOCALE_H
 #include <locale.h>
@@ -80,49 +74,6 @@ GThread *main_task;
 GMainLoop *main_loop;
 
 struct notify main_notify;
-
-static void changeToUser(void)
-{
-#ifndef WIN32
-	struct config_param *param = config_get_param(CONF_USER);
-
-	if (param && strlen(param->value)) {
-		/* get uid */
-		struct passwd *userpwd;
-		if ((userpwd = getpwnam(param->value)) == NULL) {
-			g_error("no such user \"%s\" at line %i",
-				param->value, param->line);
-		}
-
-		if (setgid(userpwd->pw_gid) == -1) {
-			g_error("cannot setgid for user \"%s\" at line %i: %s",
-				param->value, param->line, strerror(errno));
-		}
-#ifdef _BSD_SOURCE
-		/* init suplementary groups 
-		 * (must be done before we change our uid)
-		 */
-		if (initgroups(param->value, userpwd->pw_gid) == -1) {
-			g_warning("cannot init supplementary groups "
-				  "of user \"%s\" at line %i: %s",
-				  param->value, param->line, strerror(errno));
-		}
-#endif
-
-		/* set uid */
-		if (setuid(userpwd->pw_uid) == -1) {
-			g_error("cannot change to uid of user "
-				"\"%s\" at line %i: %s",
-				param->value, param->line, strerror(errno));
-		}
-
-		/* this is needed by libs such as arts */
-		if (userpwd->pw_dir) {
-			g_setenv("HOME", userpwd->pw_dir, true);
-		}
-	}
-#endif
-}
 
 static void openDB(Options * options, char *argv0)
 {
@@ -158,52 +109,6 @@ static void openDB(Options * options, char *argv0)
 		if (job == 0)
 			g_error("directory update failed");
 	}
-}
-
-static void cleanUpPidFile(void)
-{
-	struct config_param *pidFileParam =
-		parseConfigFilePath(CONF_PID_FILE, 0);
-
-	if (!pidFileParam)
-		return;
-
-	g_debug("cleaning up pid file");
-
-	unlink(pidFileParam->value);
-}
-
-static void killFromPidFile(void)
-{
-#ifndef WIN32
-	FILE *fp;
-	struct config_param *pidFileParam =
-		parseConfigFilePath(CONF_PID_FILE, 0);
-	int pid;
-
-	if (!pidFileParam) {
-		g_error("no pid_file specified in the config file");
-	}
-
-	fp = fopen(pidFileParam->value, "r");
-	if (!fp) {
-		g_error("unable to open %s \"%s\": %s",
-			CONF_PID_FILE, pidFileParam->value, strerror(errno));
-	}
-	if (fscanf(fp, "%i", &pid) != 1) {
-		g_error("unable to read the pid from file \"%s\"",
-			pidFileParam->value);
-	}
-	fclose(fp);
-
-	if (kill(pid, SIGTERM)) {
-		g_error("unable to kill proccess %i: %s",
-			pid, strerror(errno));
-	}
-	exit(EXIT_SUCCESS);
-#else
-	g_error("--kill is not available on WIN32");
-#endif
 }
 
 static gboolean
@@ -253,7 +158,7 @@ int main(int argc, char *argv[])
 	parseOptions(argc, argv, &options);
 
 	if (options.kill)
-		killFromPidFile();
+		daemonize_kill();
 
 	stats_global_init();
 	tag_lib_init();
@@ -261,7 +166,7 @@ int main(int argc, char *argv[])
 
 	listenOnPort();
 
-	changeToUser();
+	daemonize_set_user();
 
 	main_task = g_thread_self();
 	main_loop = g_main_loop_new(NULL, FALSE);
@@ -356,7 +261,7 @@ int main(int argc, char *argv[])
 	archive_plugin_deinit_all();
 #endif
 	music_pipe_free();
-	cleanUpPidFile();
+	daemonize_delete_pidfile();
 	config_global_finish();
 	tag_pool_deinit();
 	songvec_deinit();
