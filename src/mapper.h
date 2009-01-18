@@ -23,6 +23,8 @@
 #ifndef MPD_MAPPER_H
 #define MPD_MAPPER_H
 
+#include <stdbool.h>
+
 #define PLAYLIST_FILE_SUFFIX "m3u"
 
 struct directory;
@@ -31,6 +33,12 @@ struct song;
 void mapper_init(void);
 
 void mapper_finish(void);
+
+/**
+ * Returns true if a music directory was configured.
+ */
+bool
+mapper_has_music_directory(void);
 
 /**
  * Determines the absolute file system path of a relative URI.  This

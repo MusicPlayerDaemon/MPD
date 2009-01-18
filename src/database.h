@@ -42,6 +42,10 @@ db_finish(void);
 void
 db_clear(void);
 
+/**
+ * Returns the root directory object.  Returns NULL if there is no
+ * configured music directory.
+ */
 struct directory *
 db_get_root(void);
 

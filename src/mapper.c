@@ -41,6 +41,24 @@ static size_t music_dir_length;
 static char *playlist_dir;
 
 static void
+mapper_set_music_dir(const char *path, int line)
+{
+	int ret;
+	struct stat st;
+
+	music_dir = g_strdup(path);
+	music_dir_length = strlen(music_dir);
+
+	ret = stat(music_dir, &st);
+	if (ret < 0)
+		g_warning("failed to stat music directory \"%s\" (config line %i): %s\n",
+			  music_dir, line, g_strerror(errno));
+	else if (!S_ISDIR(st.st_mode))
+		g_warning("music directory is not a directory: \"%s\" (config line %i)\n",
+			  music_dir, line);
+}
+
+static void
 mapper_set_playlist_dir(const char *path, int line)
 {
 	int ret;
@@ -59,34 +77,19 @@ mapper_set_playlist_dir(const char *path, int line)
 
 void mapper_init(void)
 {
-	struct config_param *music_dir_param =
-		parseConfigFilePath(CONF_MUSIC_DIR, false);
 	struct config_param *param;
-	int ret;
-	struct stat st;
 
-	if (music_dir_param != NULL) {
-		music_dir = g_strdup(music_dir_param->value);
-	} else {
+	param = parseConfigFilePath(CONF_MUSIC_DIR, false);
+	if (param != NULL)
+		mapper_set_music_dir(param->value, param->line);
 #if GLIB_MAJOR_VERSION > 2 || (GLIB_MAJOR_VERSION == 2 && GLIB_MINOR_VERSION >= 14)
-		music_dir = g_strdup(g_get_user_special_dir(G_USER_DIRECTORY_MUSIC));
-		if (music_dir == NULL)
-			/* GLib failed to determine the XDG music
-			   directory - abort */
-#endif
-			g_error("config parameter \"%s\" not found\n", CONF_MUSIC_DIR);
+	else {
+		const char *path =
+			g_get_user_special_dir(G_USER_DIRECTORY_MUSIC);
+		if (path != NULL)
+			mapper_set_music_dir(path, -1);
 	}
-
-	music_dir_length = strlen(music_dir);
-
-	ret = stat(music_dir, &st);
-	if (ret < 0)
-		g_warning("failed to stat music directory \"%s\" (config line %i): %s\n",
-			  music_dir_param->value, music_dir_param->line,
-			  strerror(errno));
-	else if (!S_ISDIR(st.st_mode))
-		g_warning("music directory is not a directory: \"%s\" (config line %i)\n",
-			  music_dir_param->value, music_dir_param->line);
+#endif
 
 	param = parseConfigFilePath(CONF_PLAYLIST_DIR, false);
 	if (param != NULL)
@@ -99,6 +102,12 @@ void mapper_finish(void)
 	g_free(playlist_dir);
 }
 
+bool
+mapper_has_music_directory(void)
+{
+	return music_dir != NULL;
+}
+
 char *
 map_uri_fs(const char *uri)
 {
@@ -106,6 +115,9 @@ map_uri_fs(const char *uri)
 
 	assert(uri != NULL);
 	assert(*uri != '/');
+
+	if (music_dir == NULL)
+		return NULL;
 
 	uri_fs = utf8_to_fs_charset(uri);
 	if (uri_fs == NULL)
@@ -120,6 +132,8 @@ map_uri_fs(const char *uri)
 char *
 map_directory_fs(const struct directory *directory)
 {
+	assert(music_dir != NULL);
+
 	if (directory_is_root(directory))
 		return g_strdup(music_dir);
 
@@ -130,6 +144,8 @@ char *
 map_directory_child_fs(const struct directory *directory, const char *name)
 {
 	char *name_fs, *parent_fs, *path;
+
+	assert(music_dir != NULL);
 
 	/* check for invalid or unauthorized base names */
 	if (*name == 0 || strchr(name, '/') != NULL ||
@@ -167,7 +183,8 @@ map_song_fs(const struct song *song)
 char *
 map_fs_to_utf8(const char *path_fs)
 {
-	if (strncmp(path_fs, music_dir, music_dir_length) == 0 &&
+	if (music_dir != NULL &&
+	    strncmp(path_fs, music_dir, music_dir_length) == 0 &&
 	    path_fs[music_dir_length] == '/')
 		/* remove musicDir prefix */
 		path_fs += music_dir_length + 1;

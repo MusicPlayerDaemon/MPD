@@ -680,6 +680,9 @@ directory_update_init(char *path)
 {
 	assert(g_thread_self() == main_task);
 
+	if (!mapper_has_music_directory())
+		return 0;
+
 	if (progress != UPDATE_PROGRESS_IDLE) {
 		unsigned next_task_id;
 

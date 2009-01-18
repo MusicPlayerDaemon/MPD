@@ -29,9 +29,6 @@ See \fBdocs/mpdconf.example\fP in the source tarball for an example
 configuration file.
 .SH REQUIRED PARAMETERS
 .TP
-.B music_directory <directory>
-This specifies the directory where music is located.
-.TP
 .B follow_outside_symlinks <yes or no>
 Control if MPD will follow symbolic links pointing outside the music dir.
 You must recreate the database after changing this option.
@@ -53,6 +50,10 @@ The special value "syslog" makes MPD use the local syslog daemon.
 .TP
 .B pid_file <file>
 This specifies the file to save mpd's process ID in.
+.TP
+.B music_directory <directory>
+This specifies the directory where music is located.
+If you do not configure this, you can only play streams.
 .TP
 .B playlist_directory <directory>
 This specifies the directory where saved playlists are stored.

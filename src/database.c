@@ -49,13 +49,17 @@ db_init(const char *path)
 {
 	database_path = g_strdup(path);
 
-	music_root = directory_new("", NULL);
+	if (path != NULL)
+		music_root = directory_new("", NULL);
 }
 
 void
 db_finish(void)
 {
-	directory_free(music_root);
+	assert((database_path == NULL) == (music_root == NULL));
+
+	if (music_root != NULL)
+		directory_free(music_root);
 
 	g_free(database_path);
 }
@@ -63,6 +67,8 @@ db_finish(void)
 void
 db_clear(void)
 {
+	assert(music_root != NULL);
+
 	directory_free(music_root);
 	music_root = directory_new("", NULL);
 }
@@ -78,6 +84,9 @@ db_get_root(void)
 struct directory *
 db_get_directory(const char *name)
 {
+	if (music_root == NULL)
+		return NULL;
+
 	if (name == NULL)
 		return music_root;
 
@@ -89,14 +98,20 @@ db_get_song(const char *file)
 {
 	struct song *song = NULL;
 	struct directory *directory;
-	char *dir = NULL;
-	char *duplicated = g_strdup(file);
-	char *shortname = strrchr(duplicated, '/');
+	char *duplicated, *shortname, *dir;
+
+	assert(file != NULL);
 
 	g_debug("get song: %s", file);
 
+	if (music_root == NULL)
+		return NULL;
+
+	duplicated = g_strdup(file);
+	shortname = strrchr(duplicated, '/');
 	if (!shortname) {
 		shortname = duplicated;
+		dir = NULL;
 	} else {
 		*shortname = '\0';
 		++shortname;
@@ -120,6 +135,9 @@ db_walk(const char *name,
 	int (*forEachDir)(struct directory *, void *), void *data)
 {
 	struct directory *directory;
+
+	if (music_root == NULL)
+		return -1;
 
 	if ((directory = db_get_directory(name)) == NULL) {
 		struct song *song;
