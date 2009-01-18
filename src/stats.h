@@ -19,10 +19,12 @@
 #ifndef MPD_STATS_H
 #define MPD_STATS_H
 
+#include <glib.h>
+
 struct client;
 
 struct stats {
-	unsigned long start_time;
+	GTimer *timer;
 
 	/** number of song files in the music directory */
 	unsigned song_count;
@@ -41,6 +43,8 @@ struct stats {
 extern struct stats stats;
 
 void stats_global_init(void);
+
+void stats_global_finish(void);
 
 void stats_update(void);
 

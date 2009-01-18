@@ -29,7 +29,12 @@ struct stats stats;
 
 void stats_global_init(void)
 {
-	stats.start_time = time(NULL);
+	stats.timer = g_timer_new();
+}
+
+void stats_global_finish(void)
+{
+	g_timer_destroy(stats.timer);
 }
 
 struct visit_data {
@@ -107,7 +112,7 @@ int stats_print(struct client *client)
 		      stats.artist_count,
 		      stats.album_count,
 		      stats.song_count,
-		      time(NULL) - stats.start_time,
+		      (long)g_timer_elapsed(stats.timer, NULL),
 		      (long)(getPlayerTotalPlayTime() + 0.5),
 		      stats.song_duration,
 		      db_get_mtime());

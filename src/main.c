@@ -350,6 +350,7 @@ int main(int argc, char *argv[])
 	songvec_deinit();
 	dirvec_deinit();
 	idle_deinit();
+	stats_global_finish();
 
 	close_log_files();
 	return EXIT_SUCCESS;
