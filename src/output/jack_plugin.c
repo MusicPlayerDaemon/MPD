@@ -189,7 +189,6 @@ mpd_jack_init(struct audio_output *ao,
 	struct block_param *bp;
 	char *endptr;
 	int val;
-	char *cp = NULL;
 
 	jd = mpd_jack_new();
 	jd->ao = ao;
@@ -199,28 +198,16 @@ mpd_jack_init(struct audio_output *ao,
 		return jd;
 
 	if ( (bp = getBlockParam(param, "ports")) ) {
-		g_debug("output_ports=%s", bp->value);
+		char **ports = g_strsplit(bp->value, ",", 0);
 
-		if (!(cp = strchr(bp->value, ',')))
-			g_error("expected comma and a second value for '%s' "
-				"at line %d: %s",
-				bp->name, bp->line, bp->value);
+		if (ports[0] == NULL || ports[1] == NULL || ports[2] != NULL)
+			g_error("two port names expected in line %d",
+				bp->line);
 
-		*cp = '\0';
-		jd->output_ports[0] = g_strdup(bp->value);
-		*cp++ = ',';
+		jd->output_ports[0] = ports[0];
+		jd->output_ports[1] = ports[1];
 
-		if (!*cp)
-			g_error("expected a second value for '%s' at line %d: %s",
-				bp->name, bp->line, bp->value);
-
-		jd->output_ports[1] = g_strdup(cp);
-
-		if (strchr(cp,','))
-			g_error("Only %d values are supported for '%s' "
-				"at line %d",
-				(int)G_N_ELEMENTS(jd->output_ports),
-				bp->name, bp->line);
+		g_free(ports);
 	}
 
 	if ( (bp = getBlockParam(param, "ringbuffer_size")) ) {
