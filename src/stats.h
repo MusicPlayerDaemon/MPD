@@ -30,6 +30,12 @@ struct stats {
 	/** sum of all song durations in the music directory (in
 	    seconds) */
 	unsigned long song_duration;
+
+	/** number of distinct artist names in the music directory */
+	unsigned artist_count;
+
+	/** number of distinct album names in the music directory */
+	unsigned album_count;
 };
 
 extern struct stats stats;

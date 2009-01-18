@@ -33,12 +33,6 @@ void stats_global_init(void)
 	stats.start_time = time(NULL);
 }
 
-void stats_update(void)
-{
-	stats.song_count = countSongsIn(NULL);
-	stats.song_duration = sumSongTimesIn(NULL);
-}
-
 struct visit_data {
 	enum tag_type type;
 	struct strset *set;
@@ -78,6 +72,14 @@ getNumberOfTagItems(enum tag_type type)
 	return ret;
 }
 
+void stats_update(void)
+{
+	stats.song_count = countSongsIn(NULL);
+	stats.song_duration = sumSongTimesIn(NULL);
+	stats.artist_count = getNumberOfTagItems(TAG_ITEM_ARTIST);
+	stats.album_count = getNumberOfTagItems(TAG_ITEM_ALBUM);
+}
+
 int stats_print(struct client *client)
 {
 	client_printf(client,
@@ -88,8 +90,8 @@ int stats_print(struct client *client)
 		      "playtime: %li\n"
 		      "db_playtime: %li\n"
 		      "db_update: %li\n",
-		      getNumberOfTagItems(TAG_ITEM_ARTIST),
-		      getNumberOfTagItems(TAG_ITEM_ALBUM),
+		      stats.artist_count,
+		      stats.album_count,
 		      stats.song_count,
 		      time(NULL) - stats.start_time,
 		      (long)(getPlayerTotalPlayTime() + 0.5),
