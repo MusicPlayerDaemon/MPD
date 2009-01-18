@@ -26,18 +26,17 @@
 #include "strset.h"
 #include "dbUtils.h"
 
-Stats stats;
+struct stats stats;
 
-void initStats(void)
+void stats_global_init(void)
 {
-	stats.daemonStart = time(NULL);
-	stats.numberOfSongs = 0;
+	stats.start_time = time(NULL);
 }
 
 void stats_update(void)
 {
-	stats.numberOfSongs = countSongsIn(NULL);
-	stats.dbPlayTime = sumSongTimesIn(NULL);
+	stats.song_count = countSongsIn(NULL);
+	stats.song_duration = sumSongTimesIn(NULL);
 }
 
 struct visit_data {
@@ -63,7 +62,8 @@ visit_tag_items(struct song *song, void *_data)
 	return 0;
 }
 
-static unsigned int getNumberOfTagItems(int type)
+static unsigned int
+getNumberOfTagItems(enum tag_type type)
 {
 	struct visit_data data = {
 		.type = type,
@@ -78,7 +78,7 @@ static unsigned int getNumberOfTagItems(int type)
 	return ret;
 }
 
-int printStats(struct client *client)
+int stats_print(struct client *client)
 {
 	client_printf(client,
 		      "artists: %u\n"
@@ -90,10 +90,10 @@ int printStats(struct client *client)
 		      "db_update: %li\n",
 		      getNumberOfTagItems(TAG_ITEM_ARTIST),
 		      getNumberOfTagItems(TAG_ITEM_ALBUM),
-		      stats.numberOfSongs,
-		      time(NULL) - stats.daemonStart,
+		      stats.song_count,
+		      time(NULL) - stats.start_time,
 		      (long)(getPlayerTotalPlayTime() + 0.5),
-		      stats.dbPlayTime,
+		      stats.song_duration,
 		      db_get_mtime());
 	return 0;
 }

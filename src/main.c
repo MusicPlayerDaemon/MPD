@@ -243,7 +243,7 @@ int main(int argc, char *argv[])
 	if (options.kill)
 		killFromPidFile();
 
-	initStats();
+	stats_global_init();
 	tag_lib_init();
 	log_init(options.verbose, options.stdOutput);
 

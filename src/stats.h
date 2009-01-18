@@ -21,20 +21,23 @@
 
 struct client;
 
-typedef struct _Stats {
-	unsigned long daemonStart;
-	int numberOfSongs;
-	unsigned long dbPlayTime;
-	/*unsigned long playTime;
-	   unsigned long songsPlayed; */
-} Stats;
+struct stats {
+	unsigned long start_time;
 
-extern Stats stats;
+	/** number of song files in the music directory */
+	unsigned song_count;
 
-void initStats(void);
+	/** sum of all song durations in the music directory (in
+	    seconds) */
+	unsigned long song_duration;
+};
+
+extern struct stats stats;
+
+void stats_global_init(void);
 
 void stats_update(void);
 
-int printStats(struct client *client);
+int stats_print(struct client *client);
 
 #endif
