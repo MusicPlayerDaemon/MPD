@@ -97,6 +97,7 @@ mpd_headers = \
 	song.h \
 	song_print.h \
 	song_save.h \
+	song_sticker.h \
 	songvec.h \
 	state_file.h \
 	stats.h \
@@ -194,7 +195,7 @@ mpd_SOURCES = \
 	timer.c
 
 if ENABLE_SQLITE
-mpd_SOURCES += sticker.c
+mpd_SOURCES += sticker.c song_sticker.c
 endif
 
 if HAVE_LIBSAMPLERATE
