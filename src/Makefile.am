@@ -100,6 +100,7 @@ mpd_headers = \
 	songvec.h \
 	state_file.h \
 	stats.h \
+	sticker.h \
 	tag.h \
 	tag_internal.h \
 	tag_pool.h \
@@ -191,6 +192,10 @@ mpd_SOURCES = \
 	locate.c \
 	stored_playlist.c \
 	timer.c
+
+if ENABLE_SQLITE
+mpd_SOURCES += sticker.c
+endif
 
 if HAVE_LIBSAMPLERATE
 mpd_SOURCES += pcm_resample_libsamplerate.c

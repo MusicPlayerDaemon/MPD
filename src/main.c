@@ -54,6 +54,10 @@
 #include "songvec.h"
 #include "tag_pool.h"
 
+#ifdef ENABLE_SQLITE
+#include "sticker.h"
+#endif
+
 #ifdef ENABLE_ARCHIVE
 #include "archive_list.h"
 #endif
@@ -235,6 +239,10 @@ int main(int argc, char *argv[])
 
 	openDB(&options, argv[0]);
 
+#ifdef ENABLE_SQLITE
+	sticker_global_init(config_get_path(CONF_STICKER_FILE));
+#endif
+
 	command_init();
 	initialize_decoder_and_player();
 	initAudioConfig();
@@ -277,6 +285,10 @@ int main(int argc, char *argv[])
 	db_finish();
 	g_debug("db_finish took %f seconds",
 		((float)(clock()-start))/CLOCKS_PER_SEC);
+
+#ifdef ENABLE_SQLITE
+	sticker_global_finish();
+#endif
 
 	notify_deinit(&main_notify);
 	event_pipe_deinit();

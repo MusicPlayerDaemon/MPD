@@ -172,6 +172,7 @@ void config_global_init(void)
 	registerConfigParam(CONF_FOLLOW_INSIDE_SYMLINKS,        0,     0);
 	registerConfigParam(CONF_FOLLOW_OUTSIDE_SYMLINKS,       0,     0);
 	registerConfigParam(CONF_DB_FILE,                       0,     0);
+	registerConfigParam(CONF_STICKER_FILE, false, false);
 	registerConfigParam(CONF_LOG_FILE,                      0,     0);
 	registerConfigParam(CONF_ERROR_FILE,                    0,     0);
 	registerConfigParam(CONF_PID_FILE,                      0,     0);
