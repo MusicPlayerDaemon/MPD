@@ -36,6 +36,10 @@
 #include "main.h"
 #include "config.h"
 
+#ifdef ENABLE_SQLITE
+#include "song_sticker.h"
+#endif
+
 #include <glib.h>
 
 #include <assert.h>
@@ -716,6 +720,11 @@ static void song_delete_event(void)
 	uri = song_get_uri(delete);
 	g_debug("removing: %s", uri);
 	g_free(uri);
+
+#ifdef ENABLE_SQLITE
+	/* if the song has a sticker, delete it */
+	sticker_song_delete(delete);
+#endif
 
 	deleteASongFromPlaylist(delete);
 	delete = NULL;
