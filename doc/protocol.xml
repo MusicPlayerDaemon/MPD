@@ -1156,6 +1156,73 @@ OK
     </section>
 
     <section>
+      <title>Stickers</title>
+
+      <para>
+        "Stickers" are pieces of information attached to existing MPD
+        objects (e.g. song files, directories, albums).  Clients can
+        create arbitrary name/value pairs.  MPD itself does not assume
+        any special meaning in them.
+      </para>
+
+      <para>
+        The goal is to allow clients to share additional (possibly
+        dynamic) information about songs, which is neither stored on
+        the client (not available to other clients), nor stored in the
+        song files (MPD has no write access).
+      </para>
+
+      <para>
+        Client developers should create a standard for common sticker
+        names, to ensure interoperability.
+      </para>
+
+      <para>
+        Objects which may have stickers are addressed by their object
+        type ("song" for song objects) and their URI (the path within
+        the database for songs).
+      </para>
+
+      <variablelist>
+        <varlistentry id="command_sticker_get">
+          <term>
+            <cmdsynopsis>
+              <command>sticker</command>
+              <arg choice="plain">get</arg>
+              <arg choice="req"><replaceable>TYPE</replaceable></arg>
+              <arg choice="req"><replaceable>URI</replaceable></arg>
+              <arg choice="req"><replaceable>NAME</replaceable></arg>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Reads a sticker value for the specified object.
+            </para>
+          </listitem>
+        </varlistentry>
+        <varlistentry id="command_sticker_set">
+          <term>
+            <cmdsynopsis>
+              <command>sticker</command>
+              <arg choice="plain">set</arg>
+              <arg choice="req"><replaceable>TYPE</replaceable></arg>
+              <arg choice="req"><replaceable>URI</replaceable></arg>
+              <arg choice="req"><replaceable>NAME</replaceable></arg>
+              <arg choice="req"><replaceable>VALUE</replaceable></arg>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Adds a sticker value to the specified object.  If a
+              sticker item with that name already exists, it is
+              replaced.
+            </para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+    </section>
+
+    <section>
       <title>Connection settings</title>
 
       <variablelist>

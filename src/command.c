@@ -40,6 +40,11 @@
 #include "idle.h"
 #include "config.h"
 
+#ifdef ENABLE_SQLITE
+#include "sticker.h"
+#include "song_sticker.h"
+#endif
+
 #include <assert.h>
 #include <time.h>
 #include <stdlib.h>
@@ -1403,6 +1408,70 @@ handle_idle(struct client *client,
 	return 1;
 }
 
+#ifdef ENABLE_SQLITE
+static enum command_return
+handle_sticker_song(struct client *client, int argc, char *argv[])
+{
+	struct song *song = db_get_song(argv[3]);
+
+	if (song == NULL) {
+		command_error(client, ACK_ERROR_NO_EXIST,
+			      "no such song");
+		return COMMAND_RETURN_ERROR;
+	}
+
+	if (argc == 5 && strcmp(argv[1], "get") == 0) {
+		char *value;
+
+		value = sticker_song_get_value(song, argv[4]);
+		if (value == NULL) {
+			command_error(client, ACK_ERROR_NO_EXIST,
+				      "no such sticker");
+			return COMMAND_RETURN_ERROR;
+		}
+
+		client_printf(client, "sticker:%s=%s\n", argv[4], value);
+		g_free(value);
+
+		return COMMAND_RETURN_OK;
+	} else if (argc == 6 && strcmp(argv[1], "set") == 0) {
+		bool ret;
+
+		ret = sticker_song_set_value(song, argv[4], argv[5]);
+		if (!ret) {
+			command_error(client, ACK_ERROR_SYSTEM,
+				      "failed to set sticker vqalue");
+			return COMMAND_RETURN_ERROR;
+		}
+
+		return COMMAND_RETURN_OK;
+	} else {
+		command_error(client, ACK_ERROR_ARG, "bad request");
+		return COMMAND_RETURN_ERROR;
+	}
+}
+
+static enum command_return
+handle_sticker(struct client *client, int argc, char *argv[])
+{
+	assert(argc >= 4);
+
+	if (!sticker_enabled()) {
+		command_error(client, ACK_ERROR_UNKNOWN,
+			      "sticker database is disabled");
+		return COMMAND_RETURN_ERROR;
+	}
+
+	if (strcmp(argv[2], "song") == 0)
+		return handle_sticker_song(client, argc, argv);
+	else {
+		command_error(client, ACK_ERROR_ARG,
+			      "unknown sticker domain");
+		return COMMAND_RETURN_ERROR;
+	}
+}
+#endif
+
 /**
  * The command registry.
  *
@@ -1467,6 +1536,9 @@ static const struct command commands[] = {
 	{ "shuffle", PERMISSION_CONTROL, 0, 0, handle_shuffle },
 	{ "stats", PERMISSION_READ, 0, 0, handle_stats },
 	{ "status", PERMISSION_READ, 0, 0, handle_status },
+#ifdef ENABLE_SQLITE
+	{ "sticker", PERMISSION_ADMIN, 3, -1, handle_sticker },
+#endif
 	{ "stop", PERMISSION_CONTROL, 0, 0, handle_stop },
 	{ "swap", PERMISSION_CONTROL, 2, 2, handle_swap },
 	{ "swapid", PERMISSION_CONTROL, 2, 2, handle_swapid },
