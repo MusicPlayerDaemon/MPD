@@ -23,6 +23,7 @@
 #define MPD_FLAC_COMMON_H
 
 #include "../decoder_api.h"
+#include "config.h"
 
 #include <glib.h>
 
