@@ -494,8 +494,6 @@ static void do_play(void)
 			player.next_song_chunk = -1;
 			if (player_wait_for_decoder(&player) < 0)
 				return;
-
-			event_pipe_emit(PIPE_EVENT_PLAYLIST);
 		} else if (decoder_is_idle()) {
 			break;
 		} else {
