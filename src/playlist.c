@@ -32,6 +32,7 @@
 #include "stored_playlist.h"
 #include "ack.h"
 #include "idle.h"
+#include "event_pipe.h"
 
 #include <glib.h>
 
@@ -117,6 +118,21 @@ static void incrPlaylistCurrent(void)
 		playlist.current++;
 }
 
+static void
+playlist_tag_event(void)
+{
+	unsigned song;
+
+	if (playlist_state != PLAYLIST_STATE_PLAY)
+		return;
+
+	assert(playlist.current >= 0);
+
+	song = playlist.order[playlist.current];
+	playlist.songMod[song] = playlist.version;
+	incrPlaylistVersion();
+}
+
 void initPlaylist(void)
 {
 	char *test;
@@ -162,6 +178,8 @@ void initPlaylist(void)
 	     i++) {
 		playlist.idToPosition[i] = -1;
 	}
+
+	event_pipe_register(PIPE_EVENT_TAG, playlist_tag_event);
 }
 
 static unsigned getNextId(void)
@@ -857,32 +875,6 @@ enum playlist_result playPlaylistById(int id, int stopOnError)
 	return playPlaylist(song, stopOnError);
 }
 
-static void syncCurrentPlayerDecodeMetadata(void)
-{
-	struct song *song;
-	int songNum;
-
-	if (playlist_state != PLAYLIST_STATE_PLAY)
-		return;
-
-	songNum = playlist.order[playlist.current];
-	song = playlist.songs[songNum];
-
-	if (song != playlist.prev_song) {
-		/* song change: initialize playlist.prev_{song,tag} */
-
-		playlist.prev_song = song;
-		playlist.prev_tag = song->tag;
-	} else if (song->tag != playlist.prev_tag) {
-		/* tag change: update playlist */
-
-		playlist.songMod[songNum] = playlist.version;
-		incrPlaylistVersion();
-
-		playlist.prev_tag = song->tag;
-	}
-}
-
 void syncPlayerAndPlaylist(void)
 {
 	if (playlist_state != PLAYLIST_STATE_PLAY)
@@ -895,8 +887,6 @@ void syncPlayerAndPlaylist(void)
 		if (pc.next_song == NULL)
 			queueNextSongInPlaylist();
 	}
-
-	syncCurrentPlayerDecodeMetadata();
 }
 
 static void currentSongInPlaylist(void)

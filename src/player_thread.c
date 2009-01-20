@@ -249,7 +249,7 @@ play_chunk(struct song *song, struct music_chunk *chunk,
 
 			/* the main thread will update the playlist
 			   version when he receives this event */
-			event_pipe_emit(PIPE_EVENT_PLAYLIST);
+			event_pipe_emit(PIPE_EVENT_TAG);
 
 			/* notify all clients that the tag of the
 			   current song has changed */

@@ -36,6 +36,9 @@ enum pipe_event {
 	/** must call syncPlayerAndPlaylist() */
 	PIPE_EVENT_PLAYLIST,
 
+	/** the current song's tag has changed */
+	PIPE_EVENT_TAG,
+
 	/** SIGHUP received: reload configuration, roll log file */
 	PIPE_EVENT_RELOAD,
 
