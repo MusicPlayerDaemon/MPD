@@ -1430,7 +1430,7 @@ handle_sticker_song(struct client *client, int argc, char *argv[])
 			return COMMAND_RETURN_ERROR;
 		}
 
-		client_printf(client, "sticker:%s=%s\n", argv[4], value);
+		client_printf(client, "sticker: %s=%s\n", argv[4], value);
 		g_free(value);
 
 		return COMMAND_RETURN_OK;
