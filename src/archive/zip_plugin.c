@@ -111,8 +111,8 @@ zip_setup_stream(struct archive_file *file, struct input_stream *is)
 	is->plugin = &zip_inputplugin;
 	//insert back reference
 	is->archive = context;
-	//we are not seekable
-	is->seekable = false;
+	//we are seekable (but its not recommendent to do so)
+	is->seekable = true;
 }
 
 
@@ -163,6 +163,12 @@ static bool
 zip_is_seek(G_GNUC_UNUSED struct input_stream *is,
 	G_GNUC_UNUSED off_t offset, G_GNUC_UNUSED int whence)
 {
+	zip_context *context = (zip_context *) is->archive;
+	zzip_off_t ofs = zzip_seek(context->file, offset, whence);
+	if (ofs != -1) {
+		is->offset = ofs;
+		return true;
+	}
 	return false;
 }
 
