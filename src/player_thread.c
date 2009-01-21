@@ -486,7 +486,7 @@ static void do_play(void)
 
 			player.next_song_chunk = -1;
 			if (!player_wait_for_decoder(&player))
-				return;
+				break;
 		} else if (decoder_is_idle()) {
 			break;
 		} else {
