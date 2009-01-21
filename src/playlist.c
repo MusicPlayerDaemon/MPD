@@ -195,16 +195,11 @@ void finishPlaylist(void)
 
 	playlist.length = 0;
 
-	free(playlist.songs);
-	playlist.songs = NULL;
-	free(playlist.songMod);
-	playlist.songMod = NULL;
-	free(playlist.order);
-	playlist.order = NULL;
-	free(playlist.idToPosition);
-	playlist.idToPosition = NULL;
-	free(playlist.positionToId);
-	playlist.positionToId = NULL;
+	g_free(playlist.songs);
+	g_free(playlist.songMod);
+	g_free(playlist.order);
+	g_free(playlist.idToPosition);
+	g_free(playlist.positionToId);
 
 	g_rand_free(g_rand);
 	g_rand = NULL;
