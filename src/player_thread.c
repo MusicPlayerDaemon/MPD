@@ -94,7 +94,8 @@ static void player_stop_decoder(void)
 	event_pipe_emit(PIPE_EVENT_PLAYLIST);
 }
 
-static int player_wait_for_decoder(struct player *player)
+static bool
+player_wait_for_decoder(struct player *player)
 {
 	dc_command_wait(&pc.notify);
 
@@ -102,7 +103,7 @@ static int player_wait_for_decoder(struct player *player)
 		assert(dc.next_song == NULL || dc.next_song->url != NULL);
 		pc.errored_song = dc.next_song;
 		pc.error = PLAYER_ERROR_FILE;
-		return -1;
+		return false;
 	}
 
 	pc.total_time = pc.next_song->tag != NULL
@@ -119,7 +120,7 @@ static int player_wait_for_decoder(struct player *player)
 	/* call syncPlaylistWithQueue() in the main thread */
 	event_pipe_emit(PIPE_EVENT_PLAYLIST);
 
-	return 0;
+	return true;
 }
 
 static bool player_seek_decoder(struct player *player)
@@ -228,7 +229,7 @@ static void player_process_command(struct player *player)
 	}
 }
 
-static int
+static bool
 play_chunk(struct song *song, struct music_chunk *chunk,
 	   const struct audio_format *format, double sizeToTime)
 {
@@ -258,16 +259,16 @@ play_chunk(struct song *song, struct music_chunk *chunk,
 	}
 
 	if (chunk->length == 0)
-		return 0;
+		return true;
 
 	pcm_volume(chunk->data, chunk->length,
 		   format, pc.software_volume);
 
 	if (!playAudio(chunk->data, chunk->length))
-		return -1;
+		return false;
 
 	pc.total_play_time += sizeToTime * chunk->length;
-	return 0;
+	return true;
 }
 
 static void do_play(void)
@@ -293,7 +294,7 @@ static void do_play(void)
 	music_pipe_set_lazy(false);
 
 	dc_start(&pc.notify, pc.next_song);
-	if (player_wait_for_decoder(&player) < 0) {
+	if (!player_wait_for_decoder(&player)) {
 		player_stop_decoder();
 		player_command_finished();
 		return;
@@ -303,7 +304,7 @@ static void do_play(void)
 	pc.state = PLAYER_STATE_PLAY;
 	player_command_finished();
 
-	while (1) {
+	while (true) {
 		player_process_command(&player);
 		if (pc.command == PLAYER_COMMAND_STOP ||
 		    pc.command == PLAYER_COMMAND_EXIT ||
@@ -457,8 +458,8 @@ static void do_play(void)
 			}
 
 			/* play the current chunk */
-			if (play_chunk(player.song, beginChunk,
-				       &play_audio_format, sizeToTime) < 0)
+			if (!play_chunk(player.song, beginChunk,
+					&play_audio_format, sizeToTime))
 				break;
 			music_pipe_shift();
 
@@ -481,7 +482,7 @@ static void do_play(void)
 			player.xfade = XFADE_UNKNOWN;
 
 			player.next_song_chunk = -1;
-			if (player_wait_for_decoder(&player) < 0)
+			if (!player_wait_for_decoder(&player))
 				return;
 		} else if (decoder_is_idle()) {
 			break;
