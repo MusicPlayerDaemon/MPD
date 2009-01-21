@@ -149,8 +149,6 @@ int getPlaylistLength(void);
 
 unsigned long getPlaylistVersion(void);
 
-void playPlaylistIfPlayerStopped(void);
-
 enum playlist_result seekSongInPlaylist(unsigned song, float seek_time);
 
 enum playlist_result seekSongInPlaylistById(unsigned id, float seek_time);

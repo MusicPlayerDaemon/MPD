@@ -861,6 +861,8 @@ enum playlist_result playPlaylistById(int id, int stopOnError)
 	return playPlaylist(song, stopOnError);
 }
 
+static void playPlaylistIfPlayerStopped(void);
+
 void syncPlayerAndPlaylist(void)
 {
 	if (playlist_state != PLAYLIST_STATE_PLAY)
@@ -911,7 +913,7 @@ void nextSongInPlaylist(void)
 	}
 }
 
-void playPlaylistIfPlayerStopped(void)
+static void playPlaylistIfPlayerStopped(void)
 {
 	if (getPlayerState() == PLAYER_STATE_STOP) {
 		enum player_error error = getPlayerError();

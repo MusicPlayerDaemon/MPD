@@ -451,7 +451,6 @@ handle_status(struct client *client,
 	int updateJobId;
 	int song;
 
-	playPlaylistIfPlayerStopped();
 	switch (getPlayerState()) {
 	case PLAYER_STATE_STOP:
 		state = "stop";
