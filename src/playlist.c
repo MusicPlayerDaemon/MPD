@@ -123,10 +123,11 @@ playlist_tag_event(void)
 {
 	unsigned song;
 
-	if (playlist_state != PLAYLIST_STATE_PLAY)
+	if (playlist_state != PLAYLIST_STATE_PLAY ||
+	    playlist.current < 0)
 		return;
 
-	assert(playlist.current >= 0);
+	assert((unsigned)playlist.current < playlist.length);
 
 	song = playlist.order[playlist.current];
 	playlist.songMod[song] = playlist.version;
