@@ -253,23 +253,9 @@ parseListenConfigParam(G_GNUC_UNUSED unsigned int port,
 
 void listenOnPort(void)
 {
-	int port = DEFAULT_PORT;
+	int port = config_get_positive(CONF_PORT, DEFAULT_PORT);
 	struct config_param *param =
 		config_get_next_param(CONF_BIND_TO_ADDRESS, NULL);
-	struct config_param *portParam = config_get_param(CONF_PORT);
-
-	if (portParam) {
-		char *test;
-		port = strtol(portParam->value, &test, 10);
-		if (port <= 0 || *test != '\0') {
-			g_error("%s \"%s\" specified at line %i is not a "
-				"positive integer",
-				CONF_PORT,
-				portParam->value, portParam->line);
-		}
-	}
-
-	boundPort = port;
 
 	do {
 		parseListenConfigParam(port, param);

@@ -59,11 +59,9 @@ static const char GREETING[] = "OK MPD " PROTOCOL_VERSION "\n";
 
 /* set this to zero to indicate we have no possible clients */
 static unsigned int client_max_connections;	/*CLIENT_MAX_CONNECTIONS_DEFAULT; */
-static int client_timeout = CLIENT_TIMEOUT_DEFAULT;
-static size_t client_max_command_list_size =
-    CLIENT_MAX_COMMAND_LIST_DEFAULT;
-static size_t client_max_output_buffer_size =
-    CLIENT_MAX_OUTPUT_BUFFER_SIZE_DEFAULT;
+static int client_timeout;
+static size_t client_max_command_list_size;
+static size_t client_max_output_buffer_size;
 
 struct deferred_buffer {
 	size_t size;
@@ -553,55 +551,20 @@ client_out_event(G_GNUC_UNUSED GIOChannel *source,
 
 void client_manager_init(void)
 {
-	char *test;
-	struct config_param *param;
+	client_timeout = config_get_positive(CONF_CONN_TIMEOUT,
+					     CLIENT_TIMEOUT_DEFAULT);
+	client_max_connections =
+		config_get_positive(CONF_MAX_CONN,
+				    CLIENT_MAX_CONNECTIONS_DEFAULT);
+	client_max_command_list_size =
+		config_get_positive(CONF_MAX_COMMAND_LIST_SIZE,
+				    CLIENT_MAX_COMMAND_LIST_DEFAULT / 1024)
+		* 1024;
 
-	param = config_get_param(CONF_CONN_TIMEOUT);
-
-	if (param) {
-		client_timeout = strtol(param->value, &test, 10);
-		if (*test != '\0' || client_timeout <= 0) {
-			g_error("connection timeout \"%s\" is not a positive "
-				"integer, line %i",
-				CONF_CONN_TIMEOUT, param->line);
-		}
-	}
-
-	param = config_get_param(CONF_MAX_CONN);
-
-	if (param) {
-		client_max_connections = strtol(param->value, &test, 10);
-		if (*test != '\0' || client_max_connections <= 0) {
-			g_error("max connections \"%s\" is not a positive integer"
-				", line %i",
-				param->value, param->line);
-		}
-	} else
-		client_max_connections = CLIENT_MAX_CONNECTIONS_DEFAULT;
-
-	param = config_get_param(CONF_MAX_COMMAND_LIST_SIZE);
-
-	if (param) {
-		long tmp = strtol(param->value, &test, 10);
-		if (*test != '\0' || tmp <= 0) {
-			g_error("max command list size \"%s\" is not a positive "
-				"integer, line %i",
-				param->value, param->line);
-		}
-		client_max_command_list_size = tmp * 1024;
-	}
-
-	param = config_get_param(CONF_MAX_OUTPUT_BUFFER_SIZE);
-
-	if (param) {
-		long tmp = strtol(param->value, &test, 10);
-		if (*test != '\0' || tmp <= 0) {
-			g_error("max output buffer size \"%s\" is not a positive "
-				"integer, line %i",
-				param->value, param->line);
-		}
-		client_max_output_buffer_size = tmp * 1024;
-	}
+	client_max_output_buffer_size =
+		config_get_positive(CONF_MAX_OUTPUT_BUFFER_SIZE,
+				    CLIENT_MAX_OUTPUT_BUFFER_SIZE_DEFAULT / 1024)
+		* 1024;
 }
 
 static void client_close_all(void)

@@ -71,7 +71,7 @@
 static GRand *g_rand;
 static Playlist playlist;
 static int playlist_state = PLAYLIST_STATE_STOP;
-unsigned playlist_max_length = DEFAULT_PLAYLIST_MAX_LENGTH;
+unsigned playlist_max_length;
 static int playlist_stopOnError;
 static unsigned playlist_errorCount;
 static int playlist_noGoToNext;
@@ -135,9 +135,6 @@ playlist_tag_event(void)
 
 void initPlaylist(void)
 {
-	char *test;
-	struct config_param *param;
-
 	g_rand = g_rand_new();
 
 	playlist.length = 0;
@@ -147,14 +144,8 @@ void initPlaylist(void)
 	playlist.queued = -1;
 	playlist.current = -1;
 
-	param = config_get_param(CONF_MAX_PLAYLIST_LENGTH);
-
-	if (param) {
-		playlist_max_length = strtol(param->value, &test, 10);
-		if (*test != '\0')
-			g_error("max playlist length \"%s\" is not an integer, "
-				"line %i", param->value, param->line);
-	}
+	playlist_max_length = config_get_positive(CONF_MAX_PLAYLIST_LENGTH,
+						  DEFAULT_PLAYLIST_MAX_LENGTH);
 
 	playlist_saveAbsolutePaths =
 		config_get_bool(CONF_SAVE_ABSOLUTE_PATHS,
