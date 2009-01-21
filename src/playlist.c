@@ -914,7 +914,7 @@ void nextSongInPlaylist(void)
 void playPlaylistIfPlayerStopped(void)
 {
 	if (getPlayerState() == PLAYER_STATE_STOP) {
-		int error = getPlayerError();
+		enum player_error error = getPlayerError();
 
 		if (error == PLAYER_ERROR_NOERROR)
 			playlist_errorCount = 0;
