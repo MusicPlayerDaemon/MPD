@@ -110,6 +110,9 @@ config_get_string(const char *name, const char *default_value);
 const char *
 config_get_path(const char *name);
 
+unsigned
+config_get_positive(const char *name, unsigned default_value);
+
 struct block_param *
 getBlockParam(struct config_param *param, const char *name);
 

@@ -407,6 +407,26 @@ config_get_path(const char *name)
 	return param->value = path;
 }
 
+unsigned
+config_get_positive(const char *name, unsigned default_value)
+{
+	struct config_param *param = config_get_param(name);
+	long value;
+	char *endptr;
+
+	if (param == NULL)
+		return default_value;
+
+	value = strtol(param->value, &endptr, 0);
+	if (*endptr != 0)
+		g_error("Not a valid number in line %i", param->line);
+
+	if (value <= 0)
+		g_error("Not a positive number in line %i", param->line);
+
+	return (unsigned)value;
+}
+
 struct block_param *
 getBlockParam(struct config_param * param, const char *name)
 {
