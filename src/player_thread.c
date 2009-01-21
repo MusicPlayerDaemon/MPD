@@ -133,7 +133,10 @@ static bool player_seek_decoder(struct player *player)
 		player->next_song_chunk = -1;
 		music_pipe_clear();
 		dc_start_async(pc.next_song);
-		player_wait_for_decoder(player);
+
+		ret = player_wait_for_decoder(player);
+		if (!ret)
+			return false;
 	}
 
 	where = pc.seek_where;
