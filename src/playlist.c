@@ -391,37 +391,34 @@ static void swapSongs(unsigned song1, unsigned song2)
 	queue_swap(&playlist.queue, song1, song2);
 }
 
+static void
+playlist_queue_song_order(unsigned order)
+{
+	struct song *song;
+	char *uri;
+
+	assert(queue_valid_order(&playlist.queue, order));
+
+	playlist.queued = order;
+
+	song = queue_get_order(&playlist.queue, order);
+	uri = song_get_uri(song);
+	g_debug("playlist: queue song %i:\"%s\"",
+		playlist.queued, uri);
+	g_free(uri);
+
+	queueSong(song);
+}
+
 static void queueNextSongInPlaylist(void)
 {
 	if (playlist.current + 1 < (int)queue_length(&playlist.queue)) {
-		struct song *song;
-		char *uri;
-
-		playlist.queued = playlist.current + 1;
-
-		song = queue_get_order(&playlist.queue, playlist.queued);
-		uri = song_get_uri(song);
-		g_debug("playlist: queue song %i:\"%s\"",
-			playlist.queued, uri);
-		g_free(uri);
-
-		queueSong(song);
+		playlist_queue_song_order(playlist.current + 1);
 	} else if (!queue_is_empty(&playlist.queue) && playlist.queue.repeat) {
-		struct song *song;
-		char *uri;
-
 		if (queue_length(&playlist.queue) > 1 && playlist.queue.random)
 			randomizeOrder(0, queue_length(&playlist.queue) - 1);
 
-		playlist.queued = 0;
-
-		song = queue_get_order(&playlist.queue, playlist.queued);
-		uri = song_get_uri(song);
-		g_debug("playlist: queue song %i:\"%s\"",
-			playlist.queued, uri);
-		g_free(uri);
-
-		queueSong(song);
+		playlist_queue_song_order(0);
 	}
 }
 
