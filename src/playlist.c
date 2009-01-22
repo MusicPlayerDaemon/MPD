@@ -89,14 +89,6 @@ void playlistVersionChange(void)
 	idle_add(IDLE_PLAYLIST);
 }
 
-static void incrPlaylistCurrent(void)
-{
-	if (playlist.current < 0)
-		return;
-
-	playlist.current = queue_next_order(&playlist.queue, playlist.current);
-}
-
 static void
 playlist_tag_event(void)
 {
@@ -603,6 +595,11 @@ enum playlist_result deleteFromPlaylist(unsigned song)
 		   else return playPlaylistOrderNumber(fd,playlist.current); */
 		playerWait();
 		playlist_noGoToNext = 1;
+
+		playlist.current = queue_next_order(&playlist.queue,
+						    playlist.current);
+		if (playlist.current == (int)songOrder)
+			playlist.current = -1;
 	}
 
 	if (!song_in_database(queue_get(&playlist.queue, song)))
@@ -614,9 +611,6 @@ enum playlist_result deleteFromPlaylist(unsigned song)
 
 	if (playlist.current > (int)songOrder) {
 		playlist.current--;
-	} else if (playlist.current >= (int)queue_length(&playlist.queue)) {
-		--playlist.current;
-		incrPlaylistCurrent();
 	}
 
 	if (playlist.queued > (int)songOrder) {
