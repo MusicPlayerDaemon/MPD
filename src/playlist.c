@@ -1161,12 +1161,12 @@ void shufflePlaylist(void)
 
 	if (playlist.length > 1) {
 		if (playlist_state == PLAYLIST_STATE_PLAY) {
-			if (playlist.queued >= 0) {
+			if (playlist.queued >= 0)
 				clearPlayerQueue();
 
+			if (playlist.current >= 0)
 				/* put current playing song first */
 				swapSongs(0, playlist.order[playlist.current]);
-			}
 
 			if (playlist.random) {
 				int j;
