@@ -951,6 +951,9 @@ void setPlaylistRandomStatus(bool status)
 	if (status == playlist.queue.random)
 		return;
 
+	if (playlist.queued >= 0)
+		clearPlayerQueue();
+
 	playlist.queue.random = status;
 
 	if (playlist.queue.random) {

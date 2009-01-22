@@ -28,6 +28,7 @@ ver 0.15 - (200?/??/??)
 * failure to read the state file is non-fatal
 * --create-db starts the MPD daemon instead of exiting
 * playlist_directory and music_directory are optional
+* playlist: recalculate the queued song after random is toggled
 
 
 ver 0.14.1 (2009/01/17)
