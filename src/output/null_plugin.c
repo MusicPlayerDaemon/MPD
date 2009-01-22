@@ -24,6 +24,8 @@
 #include <assert.h>
 
 struct null_data {
+	bool sync;
+
 	Timer *timer;
 };
 
@@ -34,6 +36,7 @@ null_init(G_GNUC_UNUSED struct audio_output *audio_output,
 {
 	struct null_data *nd = g_new(struct null_data, 1);
 
+	nd->sync = config_get_block_bool(param, "sync", true);
 	nd->timer = NULL;
 
 	return nd;
@@ -54,7 +57,8 @@ null_open(void *data, struct audio_format *audio_format)
 {
 	struct null_data *nd = data;
 
-	nd->timer = timer_new(audio_format);
+	if (nd->sync)
+		nd->timer = timer_new(audio_format);
 
 	return true;
 }
@@ -76,6 +80,9 @@ null_play(void *data, G_GNUC_UNUSED const char *chunk, size_t size)
 	struct null_data *nd = data;
 	Timer *timer = nd->timer;
 
+	if (!nd->sync)
+		return true;
+
 	if (!timer->started)
 		timer_start(timer);
 	else
@@ -90,6 +97,9 @@ static void
 null_cancel(void *data)
 {
 	struct null_data *nd = data;
+
+	if (!nd->sync)
+		return;
 
 	timer_reset(nd->timer);
 }

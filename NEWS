@@ -11,6 +11,7 @@ ver 0.15 - (200?/??/??)
   - mikmod disabled by default, due to severe security issues in libmikmod
 * audio outputs:
   - shout: enlarged buffer size to 32 kB
+  - null: allow disabling synchronization
 * commands:
   - "playlistinfo" supports a range now
   - added "sticker database", command "sticker", which allows clients
