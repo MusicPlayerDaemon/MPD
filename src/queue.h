@@ -313,6 +313,13 @@ queue_restore_order(struct queue *queue)
 }
 
 /**
+ * Shuffles the virtual order of songs, but does not move them
+ * physically.  This is used in random mode.
+ */
+void
+queue_shuffle_order(struct queue *queue);
+
+/**
  * Shuffles a (position) range in the queue.  The songs are physically
  * shuffled, not by using the "order" mapping.
  */

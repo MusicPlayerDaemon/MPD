@@ -79,7 +79,6 @@ static int playlist_noGoToNext;
 bool playlist_saveAbsolutePaths = DEFAULT_PLAYLIST_SAVE_ABSOLUTE_PATHS;
 
 static void playPlaylistOrderNumber(int orderNum);
-static void randomizeOrder(int start, int end);
 
 static void incrPlaylistVersion(void)
 {
@@ -412,11 +411,20 @@ playlist_queue_song_order(unsigned order)
 
 static void queueNextSongInPlaylist(void)
 {
+	assert(playlist.queued < 0);
+
 	if (playlist.current + 1 < (int)queue_length(&playlist.queue)) {
 		playlist_queue_song_order(playlist.current + 1);
 	} else if (!queue_is_empty(&playlist.queue) && playlist.queue.repeat) {
-		if (queue_length(&playlist.queue) > 1 && playlist.queue.random)
-			randomizeOrder(0, queue_length(&playlist.queue) - 1);
+		if (playlist.queue.random) {
+			unsigned current_position =
+				queue_order_to_position(&playlist.queue,
+							playlist.current);
+			queue_shuffle_order(&playlist.queue);
+			playlist.current =
+				queue_position_to_order(&playlist.queue,
+							current_position);
+		}
 
 		playlist_queue_song_order(0);
 	}
@@ -650,8 +658,16 @@ void stopPlaylist(void)
 	playlist.queued = -1;
 	playlist_state = PLAYLIST_STATE_STOP;
 	playlist_noGoToNext = 0;
-	if (playlist.queue.random)
-		randomizeOrder(0, queue_length(&playlist.queue) - 1);
+
+	if (playlist.queue.random) {
+		unsigned current_position =
+			queue_order_to_position(&playlist.queue,
+						playlist.current);
+		queue_shuffle_order(&playlist.queue);
+		playlist.current =
+			queue_position_to_order(&playlist.queue,
+						current_position);
+	}
 }
 
 static void playPlaylistOrderNumber(int orderNum)
@@ -696,7 +712,7 @@ enum playlist_result playPlaylist(int song, int stopOnError)
 
 	if (playlist.queue.random) {
 		if (song == -1 && playlist_state == PLAYLIST_STATE_PLAY) {
-			randomizeOrder(0, queue_length(&playlist.queue) - 1);
+			queue_shuffle_order(&playlist.queue);
 		} else {
 			if (song >= 0)
 				i = queue_position_to_order(&playlist.queue, song);
@@ -787,7 +803,7 @@ void nextSongInPlaylist(void)
 	if (next_order == 0) {
 		assert(playlist.queue.repeat);
 
-		randomizeOrder(0, queue_length(&playlist.queue) - 1);
+		queue_shuffle_order(&playlist.queue);
 	}
 
 	playPlaylistOrderNumber(next_order);
@@ -928,27 +944,6 @@ static void orderPlaylist(void)
 	queue_restore_order(&playlist.queue);
 }
 
-static void randomizeOrder(int start, int end)
-{
-	int i;
-	int ri;
-
-	g_debug("playlist: randomize from %i to %i\n", start, end);
-
-	if (playlist_state == PLAYLIST_STATE_PLAY &&
-	    playlist.queued >= start && playlist.queued <= end)
-		clearPlayerQueue();
-
-	for (i = start; i <= end; i++) {
-		ri = g_rand_int_range(g_rand, i, end + 1);
-		if (ri == playlist.current)
-			playlist.current = i;
-		else if (i == playlist.current)
-			playlist.current = ri;
-		queue_swap_order(&playlist.queue, i, ri);
-	}
-}
-
 void setPlaylistRandomStatus(bool status)
 {
 	if (status == playlist.queue.random)
@@ -960,13 +955,18 @@ void setPlaylistRandomStatus(bool status)
 	playlist.queue.random = status;
 
 	if (playlist.queue.random) {
-		/*if(playlist_state==PLAYLIST_STATE_PLAY) {
-		  randomizeOrder(playlist.current+1,
-		  playlist.length-1);
-		  }
-		  else */ randomizeOrder(0, queue_length(&playlist.queue) - 1);
-		if (playlist.current >= 0) {
-			queue_swap_order(&playlist.queue, playlist.current, 0);
+		int current_position = playlist.current >= 0
+			? (int)queue_order_to_position(&playlist.queue,
+						       playlist.current)
+			: -1;
+
+		queue_shuffle_order(&playlist.queue);
+
+		if (current_position >= 0) {
+			unsigned current_order =
+				queue_position_to_order(&playlist.queue,
+							current_position);
+			queue_swap_order(&playlist.queue, 0, current_order);
 			playlist.current = 0;
 		}
 	} else
