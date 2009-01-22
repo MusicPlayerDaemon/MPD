@@ -388,7 +388,7 @@ handle_play(struct client *client, int argc, char *argv[])
 
 	if (argc == 2 && !check_int(client, &song, argv[1], need_positive))
 		return COMMAND_RETURN_ERROR;
-	result = playPlaylist(song, 0);
+	result = playPlaylist(song);
 	return print_playlist_result(client, result);
 }
 
@@ -401,7 +401,7 @@ handle_playid(struct client *client, int argc, char *argv[])
 	if (argc == 2 && !check_int(client, &id, argv[1], need_positive))
 		return COMMAND_RETURN_ERROR;
 
-	result = playPlaylistById(id, 0);
+	result = playPlaylistById(id);
 	return print_playlist_result(client, result);
 }
 

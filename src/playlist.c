@@ -224,7 +224,7 @@ static void loadPlaylistFromStateFile(FILE *fp, char *buffer,
 		if (addToPlaylist(temp, NULL) == PLAYLIST_RESULT_SUCCESS
 		    && current == song) {
 			if (state != PLAYER_STATE_STOP) {
-				playPlaylist(queue_length(&playlist.queue) - 1, 0);
+				playPlaylist(queue_length(&playlist.queue) - 1);
 			}
 			if (state == PLAYER_STATE_PAUSE) {
 				playerPause();
@@ -681,7 +681,7 @@ static void playPlaylistOrderNumber(int orderNum)
 	playlist.current = orderNum;
 }
 
-enum playlist_result playPlaylist(int song, int stopOnError)
+enum playlist_result playPlaylist(int song)
 {
 	unsigned i = song;
 
@@ -718,26 +718,26 @@ enum playlist_result playPlaylist(int song, int stopOnError)
 		}
 	}
 
-	playlist_stopOnError = stopOnError;
+	playlist_stopOnError = false;
 	playlist_errorCount = 0;
 
 	playPlaylistOrderNumber(i);
 	return PLAYLIST_RESULT_SUCCESS;
 }
 
-enum playlist_result playPlaylistById(int id, int stopOnError)
+enum playlist_result playPlaylistById(int id)
 {
 	int song;
 
 	if (id == -1) {
-		return playPlaylist(id, stopOnError);
+		return playPlaylist(id);
 	}
 
 	song = song_id_to_position(id);
 	if (song < 0)
 		return PLAYLIST_RESULT_NO_SUCH_SONG;
 
-	return playPlaylist(song, stopOnError);
+	return playPlaylist(song);
 }
 
 static void playPlaylistIfPlayerStopped(void);

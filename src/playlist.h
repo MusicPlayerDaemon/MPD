@@ -118,9 +118,9 @@ enum playlist_result playlistId(struct client *client, int song);
 
 void stopPlaylist(void);
 
-enum playlist_result playPlaylist(int song, int stopOnError);
+enum playlist_result playPlaylist(int song);
 
-enum playlist_result playPlaylistById(int song, int stopOnError);
+enum playlist_result playPlaylistById(int song);
 
 void nextSongInPlaylist(void);
 
