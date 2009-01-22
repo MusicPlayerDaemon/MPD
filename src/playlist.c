@@ -997,33 +997,34 @@ void shufflePlaylist(void)
 {
 	unsigned i;
 
-	if (queue_length(&playlist.queue) > 1) {
-		if (playlist.playing) {
-			if (playlist.queued >= 0)
-				clearPlayerQueue();
+	if (queue_length(&playlist.queue) <= 1)
+		return;
 
-			if (playlist.current >= 0)
-				/* put current playing song first */
-				swapSongs(0, queue_order_to_position(&playlist.queue,
-								     playlist.current));
+	if (playlist.playing) {
+		if (playlist.queued >= 0)
+			clearPlayerQueue();
 
-			if (playlist.queue.random) {
-				playlist.current =
-					queue_position_to_order(&playlist.queue, 0);
-			} else
-				playlist.current = 0;
-			i = 1;
-		} else {
-			i = 0;
-			playlist.current = -1;
-		}
+		if (playlist.current >= 0)
+			/* put current playing song first */
+			swapSongs(0, queue_order_to_position(&playlist.queue,
+							     playlist.current));
 
-		/* shuffle the rest of the list */
-		queue_shuffle_range(&playlist.queue, i,
-				    queue_length(&playlist.queue));
-
-		incrPlaylistVersion();
+		if (playlist.queue.random) {
+			playlist.current =
+				queue_position_to_order(&playlist.queue, 0);
+		} else
+			playlist.current = 0;
+		i = 1;
+	} else {
+		i = 0;
+		playlist.current = -1;
 	}
+
+	/* shuffle the rest of the list */
+	queue_shuffle_range(&playlist.queue, i,
+			    queue_length(&playlist.queue));
+
+	incrPlaylistVersion();
 }
 
 enum playlist_result savePlaylist(const char *utf8file)
