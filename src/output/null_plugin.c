@@ -21,6 +21,8 @@
 
 #include <glib.h>
 
+#include <assert.h>
+
 struct null_data {
 	Timer *timer;
 };
@@ -35,6 +37,16 @@ null_init(G_GNUC_UNUSED struct audio_output *audio_output,
 	nd->timer = NULL;
 
 	return nd;
+}
+
+static void
+null_finish(void *data)
+{
+	struct null_data *nd = data;
+
+	assert(nd->timer == NULL);
+
+	g_free(nd);
 }
 
 static bool
@@ -85,6 +97,7 @@ null_cancel(void *data)
 const struct audio_output_plugin null_output_plugin = {
 	.name = "null",
 	.init = null_init,
+	.finish = null_finish,
 	.open = null_open,
 	.close = null_close,
 	.play = null_play,
