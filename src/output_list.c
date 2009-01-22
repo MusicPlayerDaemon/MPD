@@ -21,7 +21,7 @@
 #include "config.h"
 
 extern const struct audio_output_plugin shoutPlugin;
-extern const struct audio_output_plugin nullPlugin;
+extern const struct audio_output_plugin null_output_plugin;
 extern const struct audio_output_plugin fifoPlugin;
 extern const struct audio_output_plugin alsaPlugin;
 extern const struct audio_output_plugin aoPlugin;
@@ -35,7 +35,7 @@ const struct audio_output_plugin *audio_output_plugins[] = {
 #ifdef HAVE_SHOUT
 	&shoutPlugin,
 #endif
-	&nullPlugin,
+	&null_output_plugin,
 #ifdef HAVE_FIFO
 	&fifoPlugin,
 #endif

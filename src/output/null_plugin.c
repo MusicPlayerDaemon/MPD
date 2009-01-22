@@ -26,25 +26,29 @@ struct null_data {
 };
 
 static void *
-null_initDriver(G_GNUC_UNUSED struct audio_output *audioOutput,
-		G_GNUC_UNUSED const struct audio_format *audio_format,
-		G_GNUC_UNUSED struct config_param *param)
+null_init(G_GNUC_UNUSED struct audio_output *audio_output,
+	  G_GNUC_UNUSED const struct audio_format *audio_format,
+	  G_GNUC_UNUSED struct config_param *param)
 {
 	struct null_data *nd = g_new(struct null_data, 1);
+
 	nd->timer = NULL;
+
 	return nd;
 }
 
 static bool
-null_openDevice(void *data, struct audio_format *audio_format)
+null_open(void *data, struct audio_format *audio_format)
 {
 	struct null_data *nd = data;
 
 	nd->timer = timer_new(audio_format);
+
 	return true;
 }
 
-static void null_closeDevice(void *data)
+static void
+null_close(void *data)
 {
 	struct null_data *nd = data;
 
@@ -55,7 +59,7 @@ static void null_closeDevice(void *data)
 }
 
 static bool
-null_playAudio(void *data, G_GNUC_UNUSED const char *playChunk, size_t size)
+null_play(void *data, G_GNUC_UNUSED const char *chunk, size_t size)
 {
 	struct null_data *nd = data;
 	Timer *timer = nd->timer;
@@ -70,18 +74,19 @@ null_playAudio(void *data, G_GNUC_UNUSED const char *playChunk, size_t size)
 	return true;
 }
 
-static void null_dropBufferedAudio(void *data)
+static void
+null_cancel(void *data)
 {
 	struct null_data *nd = data;
 
 	timer_reset(nd->timer);
 }
 
-const struct audio_output_plugin nullPlugin = {
+const struct audio_output_plugin null_output_plugin = {
 	.name = "null",
-	.init = null_initDriver,
-	.open = null_openDevice,
-	.play = null_playAudio,
-	.cancel = null_dropBufferedAudio,
-	.close = null_closeDevice,
+	.init = null_init,
+	.open = null_open,
+	.close = null_close,
+	.play = null_play,
+	.cancel = null_cancel,
 };
