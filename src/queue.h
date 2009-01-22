@@ -34,6 +34,20 @@ enum {
 };
 
 /**
+ * One element of the queue: basically a song plus some queue specific
+ * information attached.
+ */
+struct queue_item {
+	struct song *song;
+
+	/** the unique id of this item in the queue */
+	unsigned id;
+
+	/** when was this item last changed? */
+	uint32_t version;
+};
+
+/**
  * A queue of songs.  This is the backend of the playlist: it contains
  * an ordered list of songs.
  *
@@ -54,16 +68,10 @@ struct queue {
 	uint32_t version;
 
 	/** all songs in "position" order */
-	struct song **songs;
-
-	/** holds version a song was modified on */
-	uint32_t *songMod;
+	struct queue_item *items;
 
 	/** map order numbers to positions */
 	unsigned *order;
-
-	/** map positions to song ids */
-	unsigned *positionToId;
 
 	/** map song ids to posiitons */
 	int *idToPosition;
@@ -142,7 +150,7 @@ queue_position_to_id(const struct queue *queue, unsigned position)
 {
 	assert(position < queue->length);
 
-	return queue->positionToId[position];
+	return queue->items[position].id;
 }
 
 static inline unsigned
@@ -174,7 +182,7 @@ queue_get(const struct queue *queue, unsigned position)
 {
 	assert(position < queue->length);
 
-	return queue->songs[position];
+	return queue->items[position].song;
 }
 
 /**
@@ -197,8 +205,8 @@ queue_song_newer(const struct queue *queue, unsigned position,
 	assert(position < queue->length);
 
 	return version > queue->version ||
-		queue->songMod[position] >= version ||
-		queue->songMod[position] == 0;
+		queue->items[position].version >= version ||
+		queue->items[position].version == 0;
 }
 
 /**
