@@ -32,18 +32,18 @@ int addAllInToStoredPlaylist(const char *name, const char *utf8file);
 int printInfoForAllIn(struct client *client, const char *name);
 
 int searchForSongsIn(struct client *client, const char *name,
-		     int numItems, LocateTagItem * items);
+		     int numItems, const LocateTagItem * items);
 
 int findSongsIn(struct client *client, const char *name,
-		int numItems, LocateTagItem * items);
+		int numItems, const LocateTagItem * items);
 
 int searchStatsForSongsIn(struct client *client, const char *name,
-			  int numItems, LocateTagItem * items);
+			  int numItems, const LocateTagItem * items);
 
 unsigned long sumSongTimesIn(const char *name);
 
 int listAllUniqueTags(struct client *client, int type, int numConditiionals,
-		      LocateTagItem * conditionals);
+		      const LocateTagItem *conditionals);
 
 void printSavedMemoryFromFilenames(void);
 

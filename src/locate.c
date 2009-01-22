@@ -127,7 +127,7 @@ void freeLocateTagItem(LocateTagItem * item)
 }
 
 static int
-strstrSearchTag(struct song *song, enum tag_type type, char *str)
+strstrSearchTag(const struct song *song, enum tag_type type, const char *str)
 {
 	int i;
 	char *duplicate;
@@ -177,7 +177,8 @@ strstrSearchTag(struct song *song, enum tag_type type, char *str)
 }
 
 int
-strstrSearchTags(struct song *song, int numItems, LocateTagItem *items)
+strstrSearchTags(const struct song *song, int numItems,
+		 const LocateTagItem *items)
 {
 	int i;
 
@@ -192,7 +193,8 @@ strstrSearchTags(struct song *song, int numItems, LocateTagItem *items)
 }
 
 static int
-tagItemFoundAndMatches(struct song *song, enum tag_type type, char *str)
+tagItemFoundAndMatches(const struct song *song, enum tag_type type,
+		       const char *str)
 {
 	int i;
 	int8_t visitedTypes[TAG_NUM_OF_ITEM_TYPES] = { 0 };
@@ -237,8 +239,8 @@ tagItemFoundAndMatches(struct song *song, enum tag_type type, char *str)
 
 
 int
-tagItemsFoundAndMatches(struct song *song, int numItems,
-			LocateTagItem * items)
+tagItemsFoundAndMatches(const struct song *song, int numItems,
+			const LocateTagItem * items)
 {
 	int i;
 

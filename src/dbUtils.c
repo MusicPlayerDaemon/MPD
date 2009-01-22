@@ -36,12 +36,12 @@
 typedef struct _ListCommandItem {
 	int8_t tagType;
 	int numConditionals;
-	LocateTagItem *conditionals;
+	const LocateTagItem *conditionals;
 } ListCommandItem;
 
 typedef struct _LocateTagItemArray {
 	int numItems;
-	LocateTagItem *items;
+	const LocateTagItem *items;
 } LocateTagItemArray;
 
 typedef struct _SearchStats {
@@ -87,31 +87,24 @@ searchInDirectory(struct song *song, void *_data)
 }
 
 int searchForSongsIn(struct client *client, const char *name,
-		     int numItems, LocateTagItem * items)
+		     int numItems, const LocateTagItem * items)
 {
 	int ret;
 	int i;
-
-	char **originalNeedles = g_new(char *, numItems);
+	LocateTagItem *new_items =
+		g_memdup(items, sizeof(LocateTagItem) * numItems);
 	struct search_data data;
 
-	for (i = 0; i < numItems; i++) {
-		originalNeedles[i] = items[i].needle;
-		items[i].needle = g_utf8_casefold(originalNeedles[i], -1);
-	}
+	for (i = 0; i < numItems; i++)
+		new_items[i].needle = g_utf8_casefold(new_items[i].needle, -1);
 
 	data.client = client;
 	data.array.numItems = numItems;
-	data.array.items = items;
+	data.array.items = new_items;
 
 	ret = db_walk(name, searchInDirectory, NULL, &data);
 
-	for (i = 0; i < numItems; i++) {
-		g_free(items[i].needle);
-		items[i].needle = originalNeedles[i];
-	}
-
-	free(originalNeedles);
+	freeLocateTagItemArray(numItems, new_items);
 
 	return ret;
 }
@@ -129,7 +122,7 @@ findInDirectory(struct song *song, void *_data)
 }
 
 int findSongsIn(struct client *client, const char *name,
-		int numItems, LocateTagItem * items)
+		int numItems, const LocateTagItem * items)
 {
 	struct search_data data;
 
@@ -162,7 +155,7 @@ searchStatsInDirectory(struct song *song, void *data)
 }
 
 int searchStatsForSongsIn(struct client *client, const char *name,
-			  int numItems, LocateTagItem * items)
+			  int numItems, const LocateTagItem * items)
 {
 	SearchStats stats;
 	int ret;
@@ -234,7 +227,7 @@ int printInfoForAllIn(struct client *client, const char *name)
 }
 
 static ListCommandItem *newListCommandItem(int tagType, int numConditionals,
-					   LocateTagItem * conditionals)
+					   const LocateTagItem * conditionals)
 {
 	ListCommandItem *item = g_new(ListCommandItem, 1);
 
@@ -295,7 +288,7 @@ listUniqueTagsInDirectory(struct song *song, void *_data)
 }
 
 int listAllUniqueTags(struct client *client, int type, int numConditionals,
-		      LocateTagItem * conditionals)
+		      const LocateTagItem *conditionals)
 {
 	int ret;
 	ListCommandItem *item = newListCommandItem(type, numConditionals,
