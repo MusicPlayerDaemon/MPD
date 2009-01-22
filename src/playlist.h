@@ -44,9 +44,22 @@ enum playlist_result {
 };
 
 typedef struct _Playlist {
+	/**
+	 * The song queue - it contains the "real" playlist.
+	 */
 	struct queue queue;
 
+	/**
+	 * The "current song pointer".  This is the song which is
+	 * played when we get the "play" command.  It is also the song
+	 * which is currently being played.
+	 */
 	int current;
+
+	/**
+	 * The "next" song to be played, when the current one
+	 * finishes.
+	 */
 	int queued;
 } Playlist;
 
