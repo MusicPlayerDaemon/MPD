@@ -20,6 +20,7 @@
 #define MPD_PLAYLIST_H
 
 #include "locate.h"
+#include "queue.h"
 
 #include <stdbool.h>
 #include <stdio.h>
@@ -43,18 +44,10 @@ enum playlist_result {
 };
 
 typedef struct _Playlist {
-	struct song **songs;
-	/* holds version a song was modified on */
-	uint32_t *songMod;
-	unsigned *order;
-	unsigned *positionToId;
-	int *idToPosition;
-	unsigned length;
+	struct queue queue;
+
 	int current;
 	int queued;
-	bool repeat;
-	bool random;
-	uint32_t version;
 } Playlist;
 
 extern bool playlist_saveAbsolutePaths;
