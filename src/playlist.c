@@ -828,8 +828,11 @@ bool getPlaylistRandomStatus(void)
 
 void setPlaylistRepeatStatus(bool status)
 {
+	if (status == playlist.queue.repeat)
+		return;
+
 	if (playlist_state == PLAYLIST_STATE_PLAY &&
-	    playlist.queue.repeat && !status && playlist.queued == 0)
+	    playlist.queue.repeat && playlist.queued == 0)
 		clearPlayerQueue();
 
 	playlist.queue.repeat = status;
