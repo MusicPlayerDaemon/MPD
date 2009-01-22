@@ -43,9 +43,6 @@
 #include <stdlib.h>
 #include <errno.h>
 
-#define PLAYLIST_STATE_STOP		0
-#define PLAYLIST_STATE_PLAY		1
-
 #define PLAYLIST_PREV_UNLESS_ELAPSED    10
 
 #define PLAYLIST_STATE_FILE_STATE		"state: "
@@ -70,7 +67,6 @@
 
 static GRand *g_rand;
 static Playlist playlist;
-static int playlist_state = PLAYLIST_STATE_STOP;
 unsigned playlist_max_length;
 static int playlist_stopOnError;
 static unsigned playlist_errorCount;
@@ -104,9 +100,10 @@ static void incrPlaylistCurrent(void)
 static void
 playlist_tag_event(void)
 {
-	if (playlist_state != PLAYLIST_STATE_PLAY ||
-	    playlist.current < 0)
+	if (!playlist.playing)
 		return;
+
+	assert(playlist.current >= 0);
 
 	queue_modify(&playlist.queue, playlist.current);
 	idle_add(IDLE_PLAYLIST);
@@ -179,8 +176,8 @@ static void playlist_save(FILE *fp)
 void savePlaylistState(FILE *fp)
 {
 	fprintf(fp, "%s", PLAYLIST_STATE_FILE_STATE);
-	switch (playlist_state) {
-	case PLAYLIST_STATE_PLAY:
+
+	if (playlist.playing) {
 		switch (getPlayerState()) {
 		case PLAYER_STATE_PAUSE:
 			fprintf(fp, "%s\n", PLAYLIST_STATE_FILE_STATE_PAUSE);
@@ -193,11 +190,9 @@ void savePlaylistState(FILE *fp)
 						playlist.current));
 		fprintf(fp, "%s%i\n", PLAYLIST_STATE_FILE_TIME,
 		        getPlayerElapsedTime());
-		break;
-	default:
+	} else
 		fprintf(fp, "%s\n", PLAYLIST_STATE_FILE_STATE_STOP);
-		break;
-	}
+
 	fprintf(fp, "%s%i\n", PLAYLIST_STATE_FILE_RANDOM,
 		playlist.queue.random);
 	fprintf(fp, "%s%i\n", PLAYLIST_STATE_FILE_REPEAT,
@@ -513,7 +508,7 @@ addSongToPlaylist(struct song *song, unsigned *added_id)
 	if (queue_is_full(&playlist.queue))
 		return PLAYLIST_RESULT_TOO_LARGE;
 
-	if (playlist_state == PLAYLIST_STATE_PLAY && playlist.queued >= 0 &&
+	if (playlist.playing && playlist.queued >= 0 &&
 	    playlist.current == (int)queue_length(&playlist.queue) - 1)
 		clearPlayerQueue();
 
@@ -548,7 +543,7 @@ enum playlist_result swapSongsInPlaylist(unsigned song1, unsigned song2)
 	    !queue_valid_position(&playlist.queue, song2))
 		return PLAYLIST_RESULT_BAD_RANGE;
 
-	if (playlist_state == PLAYLIST_STATE_PLAY && playlist.queued >= 0) {
+	if (playlist.playing && playlist.queued >= 0) {
 		unsigned queuedSong = queue_order_to_position(&playlist.queue,
 							      playlist.queued);
 		unsigned currentSong = queue_order_to_position(&playlist.queue,
@@ -598,13 +593,12 @@ enum playlist_result deleteFromPlaylist(unsigned song)
 
 	songOrder = queue_position_to_order(&playlist.queue, song);
 
-	if (playlist_state == PLAYLIST_STATE_PLAY && playlist.queued >= 0
+	if (playlist.playing && playlist.queued >= 0
 	    && (playlist.queued == (int)songOrder ||
 		playlist.current == (int)songOrder))
 		clearPlayerQueue();
 
-	if (playlist_state != PLAYLIST_STATE_STOP
-	    && playlist.current == (int)songOrder) {
+	if (playlist.playing && playlist.current == (int)songOrder) {
 		/*if(playlist.current>=playlist.length) return playerStop(fd);
 		   else return playPlaylistOrderNumber(fd,playlist.current); */
 		playerWait();
@@ -656,7 +650,7 @@ void stopPlaylist(void)
 	g_debug("playlist: stop");
 	playerWait();
 	playlist.queued = -1;
-	playlist_state = PLAYLIST_STATE_STOP;
+	playlist.playing = false;
 	playlist_noGoToNext = 0;
 
 	if (playlist.queue.random) {
@@ -675,7 +669,7 @@ static void playPlaylistOrderNumber(int orderNum)
 	struct song *song;
 	char *uri;
 
-	playlist_state = PLAYLIST_STATE_PLAY;
+	playlist.playing = true;
 	playlist_noGoToNext = 0;
 	playlist.queued = -1;
 
@@ -699,7 +693,7 @@ enum playlist_result playPlaylist(int song, int stopOnError)
 		if (queue_is_empty(&playlist.queue))
 			return PLAYLIST_RESULT_SUCCESS;
 
-		if (playlist_state == PLAYLIST_STATE_PLAY) {
+		if (playlist.playing) {
 			playerSetPause(0);
 			return PLAYLIST_RESULT_SUCCESS;
 		}
@@ -711,15 +705,14 @@ enum playlist_result playPlaylist(int song, int stopOnError)
 		return PLAYLIST_RESULT_BAD_RANGE;
 
 	if (playlist.queue.random) {
-		if (song == -1 && playlist_state == PLAYLIST_STATE_PLAY) {
+		if (song == -1 && playlist.playing) {
 			queue_shuffle_order(&playlist.queue);
 		} else {
 			if (song >= 0)
 				i = queue_position_to_order(&playlist.queue, song);
 
-			if (playlist_state == PLAYLIST_STATE_STOP) {
+			if (!playlist.playing)
 				playlist.current = 0;
-			}
 
 			queue_swap_order(&playlist.queue,
 					 i, playlist.current);
@@ -753,7 +746,7 @@ static void playPlaylistIfPlayerStopped(void);
 
 void syncPlayerAndPlaylist(void)
 {
-	if (playlist_state != PLAYLIST_STATE_PLAY)
+	if (!playlist.playing)
 		return;
 
 	if (getPlayerState() == PLAYER_STATE_STOP)
@@ -767,7 +760,7 @@ void syncPlayerAndPlaylist(void)
 
 static void currentSongInPlaylist(void)
 {
-	if (playlist_state != PLAYLIST_STATE_PLAY)
+	if (!playlist.playing)
 		return;
 
 	playlist_stopOnError = 0;
@@ -784,7 +777,7 @@ void nextSongInPlaylist(void)
 {
 	int next_order;
 
-	if (playlist_state != PLAYLIST_STATE_PLAY)
+	if (!playlist.playing)
 		return;
 
 	assert(!queue_is_empty(&playlist.queue));
@@ -819,7 +812,7 @@ static void playPlaylistIfPlayerStopped(void)
 		else
 			playlist_errorCount++;
 
-		if (playlist_state == PLAYLIST_STATE_PLAY
+		if (playlist.playing
 		    && ((playlist_stopOnError && error != PLAYER_ERROR_NOERROR)
 			|| error == PLAYER_ERROR_AUDIO
 			|| error == PLAYER_ERROR_SYSTEM
@@ -847,7 +840,7 @@ void setPlaylistRepeatStatus(bool status)
 	if (status == playlist.queue.repeat)
 		return;
 
-	if (playlist_state == PLAYLIST_STATE_PLAY &&
+	if (playlist.playing &&
 	    playlist.queue.repeat && playlist.queued == 0)
 		clearPlayerQueue();
 
@@ -885,7 +878,7 @@ enum playlist_result moveSongInPlaylist(unsigned from, int to)
 		to = (currentSong + abs(to)) % queue_length(&playlist.queue);
 	}
 
-	if (playlist_state == PLAYLIST_STATE_PLAY && playlist.queued >= 0) {
+	if (playlist.playing && playlist.queued >= 0) {
 		int queuedSong = queue_order_to_position(&playlist.queue,
 							 playlist.queued);
 		if (queuedSong == (int)from || queuedSong == to
@@ -938,7 +931,7 @@ static void orderPlaylist(void)
 		playlist.current = queue_order_to_position(&playlist.queue,
 							   playlist.current);
 
-	if (playlist_state == PLAYLIST_STATE_PLAY && playlist.queued >= 0)
+	if (playlist.playing && playlist.queued >= 0)
 		clearPlayerQueue();
 
 	queue_restore_order(&playlist.queue);
@@ -982,7 +975,7 @@ void previousSongInPlaylist(void)
 
 	lastTime += diff;
 
-	if (playlist_state != PLAYLIST_STATE_PLAY)
+	if (!playlist.playing)
 		return;
 
 	syncPlaylistWithQueue();
@@ -1005,7 +998,7 @@ void shufflePlaylist(void)
 	unsigned i;
 
 	if (queue_length(&playlist.queue) > 1) {
-		if (playlist_state == PLAYLIST_STATE_PLAY) {
+		if (playlist.playing) {
 			if (playlist.queued >= 0)
 				clearPlayerQueue();
 
@@ -1101,7 +1094,7 @@ enum playlist_result seekSongInPlaylist(unsigned song, float seek_time)
 	playlist_stopOnError = 1;
 	playlist_errorCount = 0;
 
-	if (playlist_state == PLAYLIST_STATE_PLAY) {
+	if (playlist.playing) {
 		if (playlist.queued >= 0)
 			clearPlayerQueue();
 	} else

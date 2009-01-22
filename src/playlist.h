@@ -50,6 +50,12 @@ typedef struct _Playlist {
 	struct queue queue;
 
 	/**
+	 * This value is true if the player is currently playing (or
+	 * should be playing).
+	 */
+	bool playing;
+
+	/**
 	 * The "current song pointer".  This is the song which is
 	 * played when we get the "play" command.  It is also the song
 	 * which is currently being played.
