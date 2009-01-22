@@ -963,7 +963,7 @@ enum playlist_result moveSongInPlaylist(unsigned from, int to)
 	unsigned i;
 	struct song *tmpSong;
 	unsigned tmpId;
-	unsigned currentSong;
+	int currentSong;
 
 	if (from >= playlist.length)
 		return PLAYLIST_RESULT_BAD_RANGE;
@@ -979,9 +979,10 @@ enum playlist_result moveSongInPlaylist(unsigned from, int to)
 	 * (to < 0) => move to offset from current song
 	 * (-playlist.length == to) => move to position BEFORE current song
 	 */
-	currentSong = playlist.order[playlist.current];
+	currentSong = playlist.current >= 0
+		? (int)playlist.order[playlist.current] : -1;
 	if (to < 0 && playlist.current >= 0) {
-		if (currentSong == from)
+		if ((unsigned)currentSong == from)
 			/* no-op, can't be moved to offset of itself */
 			return PLAYLIST_RESULT_SUCCESS;
 		to = (currentSong + abs(to)) % playlist.length;
@@ -990,7 +991,7 @@ enum playlist_result moveSongInPlaylist(unsigned from, int to)
 	if (playlist_state == PLAYLIST_STATE_PLAY && playlist.queued >= 0) {
 		int queuedSong = playlist.order[playlist.queued];
 		if (queuedSong == (int)from || queuedSong == to
-		    || currentSong == from || (int)currentSong == to)
+		    || currentSong == (int)from || currentSong == to)
 			clearPlayerQueue();
 	}
 
@@ -1160,11 +1161,13 @@ void shufflePlaylist(void)
 
 	if (playlist.length > 1) {
 		if (playlist_state == PLAYLIST_STATE_PLAY) {
-			if (playlist.queued >= 0)
+			if (playlist.queued >= 0) {
 				clearPlayerQueue();
 
-			/* put current playing song first */
-			swapSongs(0, playlist.order[playlist.current]);
+				/* put current playing song first */
+				swapSongs(0, playlist.order[playlist.current]);
+			}
+
 			if (playlist.random) {
 				int j;
 				for (j = 0; 0 != playlist.order[j]; j++) ;
