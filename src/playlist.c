@@ -70,7 +70,6 @@ static Playlist playlist;
 unsigned playlist_max_length;
 static int playlist_stopOnError;
 static unsigned playlist_errorCount;
-static int playlist_noGoToNext;
 
 bool playlist_saveAbsolutePaths = DEFAULT_PLAYLIST_SAVE_ABSOLUTE_PATHS;
 
@@ -594,12 +593,19 @@ enum playlist_result deleteFromPlaylist(unsigned song)
 		/*if(playlist.current>=playlist.length) return playerStop(fd);
 		   else return playPlaylistOrderNumber(fd,playlist.current); */
 		playerWait();
-		playlist_noGoToNext = 1;
 
 		playlist.current = queue_next_order(&playlist.queue,
 						    playlist.current);
 		if (playlist.current == (int)songOrder)
 			playlist.current = -1;
+
+		if (playlist.current >= 0)
+			/* play the song after the deleted one */
+			playPlaylistOrderNumber(playlist.current);
+		else
+			/* no songs left to play, stop playback
+			   completely */
+			stopPlaylist();
 	}
 
 	if (!song_in_database(queue_get(&playlist.queue, song)))
@@ -645,7 +651,6 @@ void stopPlaylist(void)
 	playerWait();
 	playlist.queued = -1;
 	playlist.playing = false;
-	playlist_noGoToNext = 0;
 
 	if (playlist.queue.random) {
 		unsigned current_position =
@@ -664,7 +669,6 @@ static void playPlaylistOrderNumber(int orderNum)
 	char *uri;
 
 	playlist.playing = true;
-	playlist_noGoToNext = 0;
 	playlist.queued = -1;
 
 	song = queue_get_order(&playlist.queue, orderNum);
@@ -752,21 +756,6 @@ void syncPlayerAndPlaylist(void)
 	}
 }
 
-static void currentSongInPlaylist(void)
-{
-	if (!playlist.playing)
-		return;
-
-	playlist_stopOnError = 0;
-
-	syncPlaylistWithQueue();
-
-	if (playlist.current >= 0)
-		playPlaylistOrderNumber(playlist.current);
-	else
-		stopPlaylist();
-}
-
 void nextSongInPlaylist(void)
 {
 	int next_order;
@@ -812,9 +801,7 @@ static void playPlaylistIfPlayerStopped(void)
 			|| error == PLAYER_ERROR_SYSTEM
 			|| playlist_errorCount >= queue_length(&playlist.queue))) {
 			stopPlaylist();
-		} else if (playlist_noGoToNext)
-			currentSongInPlaylist();
-		else
+		} else
 			nextSongInPlaylist();
 	}
 }
