@@ -91,12 +91,7 @@ mod_decode(struct decoder *decoder, struct input_stream *is)
 		g_warning("could not load stream\n");
 		return;
 	}
-	f = ModPlug_Load(bdatas->data, bdatas->len);
-	g_byte_array_free(bdatas, TRUE);
-	if (!f) {
-		g_warning("could not decode stream\n");
-		return;
-        }
+
 	ModPlug_GetSettings(&settings);
 	/* alter setting */
 	settings.mResamplingMode = MODPLUG_RESAMPLE_FIR; /* RESAMP */
@@ -105,6 +100,13 @@ mod_decode(struct decoder *decoder, struct input_stream *is)
 	settings.mFrequency = 44100;
 	/* insert more setting changes here */
 	ModPlug_SetSettings(&settings);
+
+	f = ModPlug_Load(bdatas->data, bdatas->len);
+	g_byte_array_free(bdatas, TRUE);
+	if (!f) {
+		g_warning("could not decode stream\n");
+		return;
+	}
 
 	audio_format.bits = 16;
 	audio_format.sample_rate = 44100;
