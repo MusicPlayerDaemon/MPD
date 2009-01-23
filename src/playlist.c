@@ -660,6 +660,11 @@ deleteASongFromPlaylist(const struct song *song)
 
 void stopPlaylist(void)
 {
+	if (!playlist.playing)
+		return;
+
+	assert(playlist.current >= 0);
+
 	g_debug("playlist: stop");
 	playerWait();
 	playlist.queued = -1;
