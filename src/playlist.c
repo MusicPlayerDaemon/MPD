@@ -311,18 +311,13 @@ playlistInfo(struct client *client, unsigned start, unsigned end)
 	return PLAYLIST_RESULT_SUCCESS;
 }
 
-static int song_id_to_position(unsigned id)
-{
-	return queue_id_to_position(&playlist.queue, id);
-}
-
 enum playlist_result playlistId(struct client *client, int id)
 {
 	int begin = 0;
 	unsigned end = queue_length(&playlist.queue);
 
 	if (id >= 0) {
-		begin = song_id_to_position(id);
+		begin = queue_id_to_position(&playlist.queue, id);
 		if (begin < 0)
 			return PLAYLIST_RESULT_NO_SUCH_SONG;
 
@@ -568,8 +563,8 @@ enum playlist_result swapSongsInPlaylist(unsigned song1, unsigned song2)
 
 enum playlist_result swapSongsInPlaylistById(unsigned id1, unsigned id2)
 {
-	int song1 = song_id_to_position(id1);
-	int song2 = song_id_to_position(id2);
+	int song1 = queue_id_to_position(&playlist.queue, id1);
+	int song2 = queue_id_to_position(&playlist.queue, id2);
 
 	if (song1 < 0 || song2 < 0)
 		return PLAYLIST_RESULT_NO_SUCH_SONG;
@@ -641,7 +636,7 @@ enum playlist_result deleteFromPlaylist(unsigned song)
 
 enum playlist_result deleteFromPlaylistById(unsigned id)
 {
-	int song = song_id_to_position(id);
+	int song = queue_id_to_position(&playlist.queue, id);
 	if (song < 0)
 		return PLAYLIST_RESULT_NO_SUCH_SONG;
 
@@ -765,7 +760,7 @@ enum playlist_result playPlaylistById(int id)
 		return playPlaylist(id);
 	}
 
-	song = song_id_to_position(id);
+	song = queue_id_to_position(&playlist.queue, id);
 	if (song < 0)
 		return PLAYLIST_RESULT_NO_SUCH_SONG;
 
@@ -966,7 +961,7 @@ enum playlist_result moveSongInPlaylist(unsigned from, int to)
 
 enum playlist_result moveSongInPlaylistById(unsigned id1, int to)
 {
-	int song = song_id_to_position(id1);
+	int song = queue_id_to_position(&playlist.queue, id1);
 	if (song < 0)
 		return PLAYLIST_RESULT_NO_SUCH_SONG;
 
@@ -1186,7 +1181,7 @@ enum playlist_result seekSongInPlaylist(unsigned song, float seek_time)
 
 enum playlist_result seekSongInPlaylistById(unsigned id, float seek_time)
 {
-	int song = song_id_to_position(id);
+	int song = queue_id_to_position(&playlist.queue, id);
 	if (song < 0)
 		return PLAYLIST_RESULT_NO_SUCH_SONG;
 
