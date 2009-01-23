@@ -19,6 +19,7 @@
 #include "playlist.h"
 #include "playlist_save.h"
 #include "queue_print.h"
+#include "queue_save.h"
 #include "player_control.h"
 #include "command.h"
 #include "ls.h"
@@ -158,16 +159,6 @@ void showPlaylist(struct client *client)
 			 0, queue_length(&playlist.queue));
 }
 
-static void playlist_save(FILE *fp)
-{
-	for (unsigned i = 0; i < queue_length(&playlist.queue); i++) {
-		const struct song *song = queue_get(&playlist.queue, i);
-		char *uri = song_get_uri(song);
-		fprintf(fp, "%i:%s\n", i, uri);
-		g_free(uri);
-	}
-}
-
 void savePlaylistState(FILE *fp)
 {
 	fprintf(fp, "%s", PLAYLIST_STATE_FILE_STATE);
@@ -195,14 +186,13 @@ void savePlaylistState(FILE *fp)
 	fprintf(fp, "%s%i\n", PLAYLIST_STATE_FILE_CROSSFADE,
 	        (int)(getPlayerCrossFade()));
 	fprintf(fp, "%s\n", PLAYLIST_STATE_FILE_PLAYLIST_BEGIN);
-	playlist_save(fp);
+	queue_save(fp, &playlist.queue);
 	fprintf(fp, "%s\n", PLAYLIST_STATE_FILE_PLAYLIST_END);
 }
 
 static void loadPlaylistFromStateFile(FILE *fp, char *buffer,
 				      int state, int current, int seek_time)
 {
-	char *temp;
 	int song;
 
 	if (!fgets(buffer, PLAYLIST_BUFFER_SIZE, fp)) {
@@ -213,20 +203,8 @@ static void loadPlaylistFromStateFile(FILE *fp, char *buffer,
 	while (!g_str_has_prefix(buffer, PLAYLIST_STATE_FILE_PLAYLIST_END)) {
 		g_strchomp(buffer);
 
-		temp = strtok(buffer, ":");
-		if (temp == NULL) {
-			g_warning("Malformed playlist line in state file");
-			break;
-		}
-
-		song = atoi(temp);
-		if (!(temp = strtok(NULL, ""))) {
-			g_warning("Malformed playlist line in state file");
-			break;
-		}
-
-		if (addToPlaylist(temp, NULL) == PLAYLIST_RESULT_SUCCESS
-		    && current == song) {
+		song = queue_load_song(&playlist.queue, buffer);
+		if (song >= 0 && song == current) {
 			if (state != PLAYER_STATE_STOP) {
 				playPlaylist(queue_length(&playlist.queue) - 1);
 			}
