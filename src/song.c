@@ -20,8 +20,6 @@
 #include "ls.h"
 #include "directory.h"
 #include "mapper.h"
-#include "path.h"
-#include "playlist.h"
 #include "decoder_list.h"
 #include "decoder_api.h"
 #include "tag_id3.h"
