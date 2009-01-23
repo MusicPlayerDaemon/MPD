@@ -1297,16 +1297,16 @@ enum playlist_result loadPlaylist(const char *utf8file)
 	return PLAYLIST_RESULT_SUCCESS;
 }
 
-void searchForSongsInPlaylist(struct client *client,
-			      unsigned numItems, LocateTagItem * items)
+void
+searchForSongsInPlaylist(struct client *client,
+			 unsigned numItems, const LocateTagItem *items)
 {
 	unsigned i;
-	char **originalNeedles = g_malloc(numItems * sizeof(char *));
+	LocateTagItem *new_items =
+		g_memdup(items, sizeof(LocateTagItem) * numItems);
 
-	for (i = 0; i < numItems; i++) {
-		originalNeedles[i] = items[i].needle;
-		items[i].needle = g_utf8_casefold(originalNeedles[i], -1);
-	}
+	for (i = 0; i < numItems; i++)
+		new_items[i].needle = g_utf8_casefold(new_items[i].needle, -1);
 
 	for (i = 0; i < queue_length(&playlist.queue); i++) {
 		const struct song *song = queue_get(&playlist.queue, i);
@@ -1315,16 +1315,12 @@ void searchForSongsInPlaylist(struct client *client,
 			printPlaylistSongInfo(client, i);
 	}
 
-	for (i = 0; i < numItems; i++) {
-		g_free(items[i].needle);
-		items[i].needle = originalNeedles[i];
-	}
-
-	free(originalNeedles);
+	freeLocateTagItemArray(numItems, new_items);
 }
 
-void findSongsInPlaylist(struct client *client,
-			 unsigned numItems, LocateTagItem * items)
+void
+findSongsInPlaylist(struct client *client,
+		    unsigned numItems, const LocateTagItem *items)
 {
 	for (unsigned i = 0; i < queue_length(&playlist.queue); i++) {
 		const struct song *song = queue_get(&playlist.queue, i);

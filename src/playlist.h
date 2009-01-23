@@ -176,11 +176,13 @@ int playlistChangesPosId(struct client *client, uint32_t version);
 
 int PlaylistInfo(struct client *client, const char *utf8file, int detail);
 
-void searchForSongsInPlaylist(struct client *client,
-			      unsigned numItems, LocateTagItem * items);
+void
+searchForSongsInPlaylist(struct client *client,
+			 unsigned numItems, const LocateTagItem *items);
 
-void findSongsInPlaylist(struct client *client,
-			 unsigned numItems, LocateTagItem * items);
+void
+findSongsInPlaylist(struct client *client,
+		    unsigned numItems, const LocateTagItem *items);
 
 int is_valid_playlist_name(const char *utf8path);
 
