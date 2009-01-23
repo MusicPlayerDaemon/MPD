@@ -131,6 +131,7 @@ queue_move_song_to(struct queue *queue, unsigned from, unsigned to)
 	unsigned from_id = queue->items[from].id;
 
 	queue->items[to] = queue->items[from];
+	queue->items[to].version = queue->version;
 	queue->idToPosition[from_id] = to;
 }
 
