@@ -703,19 +703,15 @@ enum playlist_result playPlaylist(int song)
 		return PLAYLIST_RESULT_BAD_RANGE;
 
 	if (playlist.queue.random) {
-		if (song == -1 && playlist.playing) {
-			queue_shuffle_order(&playlist.queue);
-		} else {
-			if (song >= 0)
-				i = queue_position_to_order(&playlist.queue, song);
+		if (song >= 0)
+			i = queue_position_to_order(&playlist.queue, song);
 
-			if (!playlist.playing)
-				playlist.current = 0;
+		if (!playlist.playing)
+			playlist.current = 0;
 
-			queue_swap_order(&playlist.queue,
-					 i, playlist.current);
-			i = playlist.current;
-		}
+		queue_swap_order(&playlist.queue,
+				 i, playlist.current);
+		i = playlist.current;
 	}
 
 	playlist_stopOnError = false;
