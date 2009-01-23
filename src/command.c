@@ -1550,6 +1550,17 @@ static const struct command commands[] = {
 
 static const unsigned num_commands = sizeof(commands) / sizeof(commands[0]);
 
+static bool
+command_available(const struct command *cmd)
+{
+#ifdef ENABLE_SQLITE
+	if (strcmp(cmd->cmd, "sticker") == 0)
+		return sticker_enabled();
+#endif
+
+	return true;
+}
+
 /* don't be fooled, this is the command handler for "commands" command */
 static enum command_return
 handle_commands(struct client *client,
@@ -1561,7 +1572,8 @@ handle_commands(struct client *client,
 	for (unsigned i = 0; i < num_commands; ++i) {
 		cmd = &commands[i];
 
-		if (cmd->permission == (permission & cmd->permission))
+		if (cmd->permission == (permission & cmd->permission) &&
+		    command_available(cmd))
 			client_printf(client, "command: %s\n", cmd->cmd);
 	}
 
