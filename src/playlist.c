@@ -18,6 +18,7 @@
 
 #include "playlist.h"
 #include "playlist_save.h"
+#include "queue_print.h"
 #include "player_control.h"
 #include "command.h"
 #include "ls.h"
@@ -155,12 +156,8 @@ void clearPlaylist(void)
 
 void showPlaylist(struct client *client)
 {
-	for (unsigned i = 0; i < queue_length(&playlist.queue); i++) {
-		const struct song *song = queue_get(&playlist.queue, i);
-		char *uri = song_get_uri(song);
-		client_printf(client, "%i:%s\n", i, uri);
-		g_free(uri);
-	}
+	queue_print_uris(client, &playlist.queue,
+			 0, queue_length(&playlist.queue));
 }
 
 static void playlist_save(FILE *fp)
@@ -313,31 +310,15 @@ void readPlaylistState(FILE *fp)
 	}
 }
 
-static void printPlaylistSongInfo(struct client *client, unsigned song)
-{
-	song_print_info(client, queue_get(&playlist.queue, song));
-	client_printf(client, "Pos: %u\nId: %u\n",
-		      song, queue_position_to_id(&playlist.queue, song));
-}
-
 int playlistChanges(struct client *client, uint32_t version)
 {
-	for (unsigned i = 0; i < queue_length(&playlist.queue); i++) {
-		if (queue_song_newer(&playlist.queue, i, version))
-			printPlaylistSongInfo(client, i);
-	}
-
+	queue_print_changes_info(client, &playlist.queue, version);
 	return 0;
 }
 
 int playlistChangesPosId(struct client *client, uint32_t version)
 {
-	for (unsigned i = 0; i < queue_length(&playlist.queue); i++) {
-		if (queue_song_newer(&playlist.queue, i, version))
-			client_printf(client, "cpos: %i\nId: %i\n",
-				      i, queue_position_to_id(&playlist.queue, i));
-	}
-
+	queue_print_changes_position(client, &playlist.queue, version);
 	return 0;
 }
 
@@ -350,9 +331,7 @@ playlistInfo(struct client *client, unsigned start, unsigned end)
 	if (start > end)
 		return PLAYLIST_RESULT_BAD_RANGE;
 
-	for (unsigned i = start; i < end; i++)
-		printPlaylistSongInfo(client, i);
-
+	queue_print_info(client, &playlist.queue, start, end);
 	return PLAYLIST_RESULT_SUCCESS;
 }
 
@@ -374,9 +353,7 @@ enum playlist_result playlistId(struct client *client, int id)
 		end = begin + 1;
 	}
 
-	for (unsigned i = begin; i < end; i++)
-		printPlaylistSongInfo(client, i);
-
+	queue_print_info(client, &playlist.queue, begin, end);
 	return PLAYLIST_RESULT_SUCCESS;
 }
 
@@ -1312,7 +1289,7 @@ searchForSongsInPlaylist(struct client *client,
 		const struct song *song = queue_get(&playlist.queue, i);
 
 		if (strstrSearchTags(song, numItems, items))
-			printPlaylistSongInfo(client, i);
+			queue_print_song_info(client, &playlist.queue, i);
 	}
 
 	freeLocateTagItemArray(numItems, new_items);
@@ -1326,7 +1303,7 @@ findSongsInPlaylist(struct client *client,
 		const struct song *song = queue_get(&playlist.queue, i);
 
 		if (tagItemsFoundAndMatches(song, numItems, items))
-			printPlaylistSongInfo(client, i);
+			queue_print_song_info(client, &playlist.queue, i);
 	}
 }
 

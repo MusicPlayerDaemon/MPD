@@ -93,6 +93,7 @@ mpd_headers = \
 	playlist.h \
 	playlist_save.h \
 	queue.h \
+	queue_print.h \
 	replay_gain.h \
 	sig_handlers.h \
 	song.h \
@@ -177,6 +178,7 @@ mpd_SOURCES = \
 	playlist.c \
 	playlist_save.c \
 	queue.c \
+	queue_print.c \
 	replay_gain.c \
 	sig_handlers.c \
 	song.c \
