@@ -647,6 +647,8 @@ enum playlist_result deleteFromPlaylist(unsigned song)
 		clearPlayerQueue();
 
 	if (playlist.playing && playlist.current == (int)songOrder) {
+		bool paused = getPlayerState() == PLAYER_STATE_PAUSE;
+
 		/* the current song is going to be deleted: stop the player */
 
 		playerWait();
@@ -658,7 +660,7 @@ enum playlist_result deleteFromPlaylist(unsigned song)
 		if (playlist.current == (int)songOrder)
 			playlist.current = -1;
 
-		if (playlist.current >= 0)
+		if (playlist.current >= 0 && !paused)
 			/* play the song after the deleted one */
 			playPlaylistOrderNumber(playlist.current);
 		else
