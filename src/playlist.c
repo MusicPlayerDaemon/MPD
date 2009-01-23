@@ -24,8 +24,6 @@
 #include "ls.h"
 #include "tag.h"
 #include "song.h"
-#include "song_print.h"
-#include "client.h"
 #include "conf.h"
 #include "database.h"
 #include "mapper.h"
@@ -1215,34 +1213,6 @@ enum playlist_result seekSongInPlaylistById(unsigned id, float seek_time)
 unsigned getPlaylistSongId(unsigned song)
 {
 	return queue_position_to_id(&playlist.queue, song);
-}
-
-int PlaylistInfo(struct client *client, const char *utf8file, int detail)
-{
-	GPtrArray *list;
-
-	if (!(list = spl_load(utf8file)))
-		return -1;
-
-	for (unsigned i = 0; i < list->len; ++i) {
-		const char *temp = g_ptr_array_index(list, i);
-		int wrote = 0;
-
-		if (detail) {
-			struct song *song = db_get_song(temp);
-			if (song) {
-				song_print_info(client, song);
-				wrote = 1;
-			}
-		}
-
-		if (!wrote) {
-			client_printf(client, SONG_FILE "%s\n", temp);
-		}
-	}
-
-	spl_free(list);
-	return 0;
 }
 
 enum playlist_result loadPlaylist(const char *utf8file)

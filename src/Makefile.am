@@ -91,6 +91,7 @@ mpd_headers = \
 	player_thread.h \
 	player_control.h \
 	playlist.h \
+	playlist_print.h \
 	playlist_save.h \
 	queue.h \
 	queue_print.h \
@@ -176,6 +177,7 @@ mpd_SOURCES = \
 	player_thread.c \
 	player_control.c \
 	playlist.c \
+	playlist_print.c \
 	playlist_save.c \
 	queue.c \
 	queue_print.c \
