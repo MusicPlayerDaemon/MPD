@@ -772,7 +772,7 @@ void nextSongInPlaylist(void)
 		return;
 	}
 
-	if (next_order == 0) {
+	if (next_order == 0 && playlist.queue.random) {
 		assert(playlist.queue.repeat);
 
 		queue_shuffle_order(&playlist.queue);
