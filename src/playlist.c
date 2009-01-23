@@ -43,6 +43,10 @@
 #include <stdlib.h>
 #include <errno.h>
 
+/**
+ * When the "prev" command is received, rewind the current track if
+ * this number of seconds has already elapsed.
+ */
 #define PLAYLIST_PREV_UNLESS_ELAPSED    10
 
 #define PLAYLIST_STATE_FILE_STATE		"state: "
@@ -65,7 +69,10 @@
 #define DEFAULT_PLAYLIST_MAX_LENGTH		(1024*16)
 #define DEFAULT_PLAYLIST_SAVE_ABSOLUTE_PATHS	false
 
+/** random number generator fur shuffling */
 static GRand *g_rand;
+
+/** the global playlist object */
 static Playlist playlist;
 unsigned playlist_max_length;
 static int playlist_stopOnError;
@@ -131,6 +138,8 @@ void clearPlaylist(void)
 {
 	stopPlaylist();
 
+	/* make sure there are no references to allocated songs
+	   anymore */
 	for (unsigned i = 0; i < queue_length(&playlist.queue); i++) {
 		const struct song *song = queue_get(&playlist.queue, i);
 		if (!song_in_database(song))
@@ -376,6 +385,9 @@ static void swapSongs(unsigned song1, unsigned song2)
 	queue_swap(&playlist.queue, song1, song2);
 }
 
+/**
+ * Queue a song, addressed by its order number.
+ */
 static void
 playlist_queue_song_order(unsigned order)
 {
@@ -395,6 +407,10 @@ playlist_queue_song_order(unsigned order)
 	queueSong(song);
 }
 
+/*
+ * Queue the song following after the current one.  If no song is
+ * played currently, start with the first song.
+ */
 static void queueNextSongInPlaylist(void)
 {
 	assert(playlist.queued < 0);
@@ -402,11 +418,22 @@ static void queueNextSongInPlaylist(void)
 	if (playlist.current + 1 < (int)queue_length(&playlist.queue)) {
 		playlist_queue_song_order(playlist.current + 1);
 	} else if (!queue_is_empty(&playlist.queue) && playlist.queue.repeat) {
+		/* end of queue: restart at the first song in repeat
+		   mode */
+
 		if (playlist.queue.random) {
+			/* shuffle the song order again, so we get a
+			   different order each time the playlist is
+			   played completely */
+
 			unsigned current_position =
 				queue_order_to_position(&playlist.queue,
 							playlist.current);
 			queue_shuffle_order(&playlist.queue);
+
+			/* make sure that the playlist.current still
+			   points to the current song, after the song
+			   order has been shuffled */
 			playlist.current =
 				queue_position_to_order(&playlist.queue,
 							current_position);
@@ -416,9 +443,16 @@ static void queueNextSongInPlaylist(void)
 	}
 }
 
+/**
+ * Check if the player thread has already started playing the "queued"
+ * song.
+ */
 static void syncPlaylistWithQueue(void)
 {
 	if (pc.next_song == NULL && playlist.queued != -1) {
+		/* queued song has started: copy queued to current,
+		   and notify the clients */
+
 		playlist.current = playlist.queued;
 		playlist.queued = -1;
 
@@ -426,6 +460,10 @@ static void syncPlaylistWithQueue(void)
 	}
 }
 
+/**
+ * Clears the currently queued song, and tells the player thread to
+ * abort pre-decoding it.
+ */
 static void clearPlayerQueue(void)
 {
 	assert(playlist.queued >= 0);
@@ -501,14 +539,19 @@ addSongToPlaylist(struct song *song, unsigned *added_id)
 
 	if (playlist.playing && playlist.queued >= 0 &&
 	    playlist.current == (int)queue_length(&playlist.queue) - 1)
+		/* currently, we are playing the last song in the
+		   queue - the new song will be the new "queued song",
+		   so we have to clear the old queued song first */
 		clearPlayerQueue();
 
 	id = queue_append(&playlist.queue, song);
 
 	if (playlist.queue.random) {
+		/* shuffle the new song into the list of remaining
+		   songs to play */
+
 		unsigned start;
-		/*if(playlist_state==PLAYLIST_STATE_STOP) start = 0;
-		   else */ if (playlist.queued >= 0)
+		if (playlist.queued >= 0)
 			start = playlist.queued + 1;
 		else
 			start = playlist.current + 1;
@@ -535,6 +578,11 @@ enum playlist_result swapSongsInPlaylist(unsigned song1, unsigned song2)
 		return PLAYLIST_RESULT_BAD_RANGE;
 
 	if (playlist.playing && playlist.queued >= 0) {
+		/* if song1 or song2 equals to the current or the
+		   queued song, we must clear the player queue,
+		   because the swap will result in a different
+		   "queued" song */
+
 		unsigned queuedSong = queue_order_to_position(&playlist.queue,
 							      playlist.queued);
 		unsigned currentSong = queue_order_to_position(&playlist.queue,
@@ -546,13 +594,19 @@ enum playlist_result swapSongsInPlaylist(unsigned song1, unsigned song2)
 	}
 
 	swapSongs(song1, song2);
+
 	if (playlist.queue.random) {
+		/* update the queue order, so that playlist.current
+		   still points to the current song order */
+
 		queue_swap_order(&playlist.queue,
 				 queue_position_to_order(&playlist.queue,
 							 song1),
 				 queue_position_to_order(&playlist.queue,
 							 song2));
 	} else {
+		/* correct the "current" song order */
+
 		if (playlist.current == (int)song1)
 			playlist.current = song2;
 		else if (playlist.current == (int)song2)
@@ -587,12 +641,17 @@ enum playlist_result deleteFromPlaylist(unsigned song)
 	if (playlist.playing && playlist.queued >= 0
 	    && (playlist.queued == (int)songOrder ||
 		playlist.current == (int)songOrder))
+		/* deleting the current or the queued song: clear the
+		   queue, because this function will result in a
+		   different "queued" song */
 		clearPlayerQueue();
 
 	if (playlist.playing && playlist.current == (int)songOrder) {
-		/*if(playlist.current>=playlist.length) return playerStop(fd);
-		   else return playPlaylistOrderNumber(fd,playlist.current); */
+		/* the current song is going to be deleted: stop the player */
+
 		playerWait();
+
+		/* see which song is going to be played instead */
 
 		playlist.current = queue_next_order(&playlist.queue,
 						    playlist.current);
@@ -608,12 +667,16 @@ enum playlist_result deleteFromPlaylist(unsigned song)
 			stopPlaylist();
 	}
 
+	/* now do it: remove the song */
+
 	if (!song_in_database(queue_get(&playlist.queue, song)))
 		pc_song_deleted(queue_get(&playlist.queue, song));
 
 	queue_delete(&playlist.queue, song);
 
 	incrPlaylistVersion();
+
+	/* update the "current" and "queued" variables */
 
 	if (playlist.current > (int)songOrder) {
 		playlist.current--;
@@ -653,10 +716,17 @@ void stopPlaylist(void)
 	playlist.playing = false;
 
 	if (playlist.queue.random) {
+		/* shuffle the playlist, so the next playback will
+		   result in a new random order */
+
 		unsigned current_position =
 			queue_order_to_position(&playlist.queue,
 						playlist.current);
+
 		queue_shuffle_order(&playlist.queue);
+
+		/* make sure that "current" stays valid, and the next
+		   "play" command plays the same song again */
 		playlist.current =
 			queue_position_to_order(&playlist.queue,
 						current_position);
@@ -688,14 +758,19 @@ enum playlist_result playPlaylist(int song)
 	clearPlayerError();
 
 	if (song == -1) {
+		/* play any song ("current" song, or the first song */
+
 		if (queue_is_empty(&playlist.queue))
 			return PLAYLIST_RESULT_SUCCESS;
 
 		if (playlist.playing) {
+			/* already playing: unpause playback, just in
+			   case it was paused, and return */
 			playerSetPause(0);
 			return PLAYLIST_RESULT_SUCCESS;
 		}
 
+		/* select a song: "current" song, or the first one */
 		i = playlist.current >= 0
 			? playlist.current
 			: 0;
@@ -704,11 +779,17 @@ enum playlist_result playPlaylist(int song)
 
 	if (playlist.queue.random) {
 		if (song >= 0)
+			/* "i" is currently the song position (which
+			   would be equal to the order number in
+			   no-random mode); convert it to a order
+			   number, because random mode is enabled */
 			i = queue_position_to_order(&playlist.queue, song);
 
 		if (!playlist.playing)
 			playlist.current = 0;
 
+		/* swap the new song with the previous "current" one,
+		   so playback continues as planned */
 		queue_swap_order(&playlist.queue,
 				 i, playlist.current);
 		i = playlist.current;
@@ -738,15 +819,30 @@ enum playlist_result playPlaylistById(int id)
 
 static void playPlaylistIfPlayerStopped(void);
 
+/**
+ * This is the "PLAYLIST" event handler.  It is invoked by the player
+ * thread whenever it requests a new queued song, or when it exits.
+ */
 void syncPlayerAndPlaylist(void)
 {
 	if (!playlist.playing)
+		/* this event has reached us out of sync: we aren't
+		   playing anymore; ignore the event */
 		return;
 
 	if (getPlayerState() == PLAYER_STATE_STOP)
+		/* the player thread has stopped: check if playback
+		   should be restarted with the next song.  That can
+		   happen if the playlist isn't filling the queue fast
+		   enough */
 		playPlaylistIfPlayerStopped();
 	else {
+		/* check if the player thread has already started
+		   playing the queued song */
 		syncPlaylistWithQueue();
+
+		/* make sure the queued song is always set (if
+		   possible) */
 		if (pc.next_song == NULL)
 			queueNextSongInPlaylist();
 	}
@@ -766,21 +862,36 @@ void nextSongInPlaylist(void)
 
 	playlist_stopOnError = 0;
 
+	/* determine the next song from the queue's order list */
+
 	next_order = queue_next_order(&playlist.queue, playlist.current);
 	if (next_order < 0) {
+		/* no song after this one: stop playback */
 		stopPlaylist();
 		return;
 	}
 
 	if (next_order == 0 && playlist.queue.random) {
+		/* The queue told us that the next song is the first
+		   song.  This means we are in repeat mode.  Shuffle
+		   the queue order, so this time, the user hears the
+		   songs in a different than before */
 		assert(playlist.queue.repeat);
 
 		queue_shuffle_order(&playlist.queue);
+
+		/* note that playlist.current and playlist.queued are
+		   now invalid, but playPlaylistOrderNumber() will
+		   discard them anyway */
 	}
 
 	playPlaylistOrderNumber(next_order);
 }
 
+/**
+ * The player has stopped for some reason.  Check the error, and
+ * decide whether to re-start playback
+ */
 static void playPlaylistIfPlayerStopped(void)
 {
 	enum player_error error;
@@ -797,8 +908,11 @@ static void playPlaylistIfPlayerStopped(void)
 	if ((playlist_stopOnError && error != PLAYER_ERROR_NOERROR) ||
 	    error == PLAYER_ERROR_AUDIO || error == PLAYER_ERROR_SYSTEM ||
 	    playlist_errorCount >= queue_length(&playlist.queue))
+		/* too many errors, or critical error: stop
+		   playback */
 		stopPlaylist();
 	else
+		/* continue playback at the next song */
 		nextSongInPlaylist();
 }
 
@@ -819,6 +933,8 @@ void setPlaylistRepeatStatus(bool status)
 
 	if (playlist.playing &&
 	    playlist.queue.repeat && playlist.queued == 0)
+		/* repeat mode will be switched off now - tell the
+		   player thread not to play the first song again */
 		clearPlayerQueue();
 
 	playlist.queue.repeat = status;
@@ -905,10 +1021,13 @@ enum playlist_result moveSongInPlaylistById(unsigned id1, int to)
 static void orderPlaylist(void)
 {
 	if (playlist.current >= 0)
+		/* update playlist.current, order==position now */
 		playlist.current = queue_order_to_position(&playlist.queue,
 							   playlist.current);
 
 	if (playlist.playing && playlist.queued >= 0)
+		/* clear the queue, because the next song will be
+		   different now */
 		clearPlayerQueue();
 
 	queue_restore_order(&playlist.queue);
@@ -925,6 +1044,9 @@ void setPlaylistRandomStatus(bool status)
 	playlist.queue.random = status;
 
 	if (playlist.queue.random) {
+		/* shuffle the queue order, but preserve
+		   playlist.current */
+
 		int current_position = playlist.current >= 0
 			? (int)queue_order_to_position(&playlist.queue,
 						       playlist.current)
@@ -933,6 +1055,9 @@ void setPlaylistRandomStatus(bool status)
 		queue_shuffle_order(&playlist.queue);
 
 		if (current_position >= 0) {
+			/* make sure the current song is the first in
+			   the order list, so the whole rest of the
+			   playlist is played after that */
 			unsigned current_order =
 				queue_position_to_order(&playlist.queue,
 							current_position);
@@ -958,13 +1083,20 @@ void previousSongInPlaylist(void)
 	syncPlaylistWithQueue();
 
 	if (diff && getPlayerElapsedTime() > PLAYLIST_PREV_UNLESS_ELAPSED) {
+		/* re-start playing the current song (just like the
+		   "prev" button on CD players) */
+
 		playPlaylistOrderNumber(playlist.current);
 	} else {
 		if (playlist.current > 0) {
+			/* play the preceding song */
 			playPlaylistOrderNumber(playlist.current - 1);
 		} else if (playlist.queue.repeat) {
+			/* play the last song in "repeat" mode */
 			playPlaylistOrderNumber(queue_length(&playlist.queue) - 1);
 		} else {
+			/* re-start playing the current song if it's
+			   the first one */
 			playPlaylistOrderNumber(playlist.current);
 		}
 	}
@@ -979,6 +1111,8 @@ void shufflePlaylist(void)
 
 	if (playlist.playing) {
 		if (playlist.queued >= 0)
+			/* queue must be cleared, because the "next"
+			   song will be different after shuffle */
 			clearPlayerQueue();
 
 		if (playlist.current >= 0)
@@ -991,8 +1125,13 @@ void shufflePlaylist(void)
 				queue_position_to_order(&playlist.queue, 0);
 		} else
 			playlist.current = 0;
+
+		/* start shuffle after the current song */
 		i = 1;
 	} else {
+		/* no playback currently: shuffle everything, and
+		   reset playlist.current */
+
 		i = 0;
 		playlist.current = -1;
 	}

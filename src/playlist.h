@@ -64,7 +64,10 @@ typedef struct _Playlist {
 
 	/**
 	 * The "next" song to be played, when the current one
-	 * finishes.
+	 * finishes.  The decoder thread may start decoding and
+	 * buffering it, while the "current" song is still playing.
+	 *
+	 * This variable is only valid if #playing is true.
 	 */
 	int queued;
 } Playlist;
