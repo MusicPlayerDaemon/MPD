@@ -380,11 +380,6 @@ enum playlist_result playlistId(struct client *client, int id)
 	return PLAYLIST_RESULT_SUCCESS;
 }
 
-static void swapSongs(unsigned song1, unsigned song2)
-{
-	queue_swap(&playlist.queue, song1, song2);
-}
-
 /**
  * Queue a song, addressed by its order number.
  */
@@ -593,7 +588,7 @@ enum playlist_result swapSongsInPlaylist(unsigned song1, unsigned song2)
 			clearPlayerQueue();
 	}
 
-	swapSongs(song1, song2);
+	queue_swap(&playlist.queue, song1, song2);
 
 	if (playlist.queue.random) {
 		/* update the queue order, so that playlist.current
@@ -1119,8 +1114,9 @@ void shufflePlaylist(void)
 
 		if (playlist.current >= 0)
 			/* put current playing song first */
-			swapSongs(0, queue_order_to_position(&playlist.queue,
-							     playlist.current));
+			queue_swap(&playlist.queue, 0,
+				   queue_order_to_position(&playlist.queue,
+							   playlist.current));
 
 		if (playlist.queue.random) {
 			playlist.current =
