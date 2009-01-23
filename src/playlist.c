@@ -231,6 +231,7 @@ void readPlaylistState(FILE *fp)
 	int seek_time = 0;
 	int state = PLAYER_STATE_STOP;
 	char buffer[PLAYLIST_BUFFER_SIZE];
+	bool random_mode = false;
 
 	while (fgets(buffer, sizeof(buffer), fp)) {
 		g_strchomp(buffer);
@@ -264,14 +265,9 @@ void readPlaylistState(FILE *fp)
 					     [strlen
 					      (PLAYLIST_STATE_FILE_CROSSFADE)])));
 		} else if (g_str_has_prefix(buffer, PLAYLIST_STATE_FILE_RANDOM)) {
-			if (strcmp
-			    (&
-			     (buffer
-			      [strlen(PLAYLIST_STATE_FILE_RANDOM)]),
-			     "1") == 0) {
-				setPlaylistRandomStatus(true);
-			} else
-				setPlaylistRandomStatus(false);
+			random_mode =
+				strcmp(buffer + strlen(PLAYLIST_STATE_FILE_RANDOM),
+				       "1") == 0;
 		} else if (g_str_has_prefix(buffer, PLAYLIST_STATE_FILE_CURRENT)) {
 			current = atoi(&(buffer
 					 [strlen
@@ -284,6 +280,8 @@ void readPlaylistState(FILE *fp)
 						  current, seek_time);
 		}
 	}
+
+	setPlaylistRandomStatus(random_mode);
 }
 
 int playlistChanges(struct client *client, uint32_t version)
