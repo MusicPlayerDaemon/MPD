@@ -783,23 +783,23 @@ void nextSongInPlaylist(void)
 
 static void playPlaylistIfPlayerStopped(void)
 {
-	if (getPlayerState() == PLAYER_STATE_STOP) {
-		enum player_error error = getPlayerError();
+	enum player_error error;
 
-		if (error == PLAYER_ERROR_NOERROR)
-			playlist_errorCount = 0;
-		else
-			playlist_errorCount++;
+	assert(playlist.playing);
+	assert(getPlayerState() == PLAYER_STATE_STOP);
 
-		if (playlist.playing
-		    && ((playlist_stopOnError && error != PLAYER_ERROR_NOERROR)
-			|| error == PLAYER_ERROR_AUDIO
-			|| error == PLAYER_ERROR_SYSTEM
-			|| playlist_errorCount >= queue_length(&playlist.queue))) {
-			stopPlaylist();
-		} else
-			nextSongInPlaylist();
-	}
+	error = getPlayerError();
+	if (error == PLAYER_ERROR_NOERROR)
+		playlist_errorCount = 0;
+	else
+		playlist_errorCount++;
+
+	if ((playlist_stopOnError && error != PLAYER_ERROR_NOERROR) ||
+	    error == PLAYER_ERROR_AUDIO || error == PLAYER_ERROR_SYSTEM ||
+	    playlist_errorCount >= queue_length(&playlist.queue))
+		stopPlaylist();
+	else
+		nextSongInPlaylist();
 }
 
 bool getPlaylistRepeatStatus(void)
