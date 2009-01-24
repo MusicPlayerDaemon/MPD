@@ -53,7 +53,7 @@ int getLocateTagItemType(const char *str)
 	return -1;
 }
 
-static int initLocateTagItem(LocateTagItem * item,
+static int initLocateTagItem(struct locate_item *item,
 			     const char *typeStr, const char *needle)
 {
 	item->tagType = getLocateTagItemType(typeStr);
@@ -66,9 +66,10 @@ static int initLocateTagItem(LocateTagItem * item,
 	return 0;
 }
 
-LocateTagItem *newLocateTagItem(const char *typeStr, const char *needle)
+struct locate_item *
+newLocateTagItem(const char *typeStr, const char *needle)
 {
-	LocateTagItem *ret = g_new(LocateTagItem, 1);
+	struct locate_item *ret = g_new(struct locate_item, 1);
 
 	if (initLocateTagItem(ret, typeStr, needle) < 0) {
 		free(ret);
@@ -78,7 +79,7 @@ LocateTagItem *newLocateTagItem(const char *typeStr, const char *needle)
 	return ret;
 }
 
-void freeLocateTagItemArray(int count, LocateTagItem * array)
+void freeLocateTagItemArray(int count, struct locate_item *array)
 {
 	int i;
 
@@ -88,11 +89,12 @@ void freeLocateTagItemArray(int count, LocateTagItem * array)
 	free(array);
 }
 
-int newLocateTagItemArrayFromArgArray(char *argArray[],
-				      int numArgs, LocateTagItem ** arrayRet)
+int
+newLocateTagItemArrayFromArgArray(char *argArray[],
+				  int numArgs, struct locate_item **arrayRet)
 {
 	int i, j;
-	LocateTagItem *item;
+	struct locate_item *item;
 
 	if (numArgs == 0)
 		return 0;
@@ -100,7 +102,7 @@ int newLocateTagItemArrayFromArgArray(char *argArray[],
 	if (numArgs % 2 != 0)
 		return -1;
 
-	*arrayRet = g_new(LocateTagItem, numArgs / 2);
+	*arrayRet = g_new(struct locate_item, numArgs / 2);
 
 	for (i = 0, item = *arrayRet; i < numArgs / 2; i++, item++) {
 		if (initLocateTagItem
@@ -120,7 +122,7 @@ fail:
 	return -1;
 }
 
-void freeLocateTagItem(LocateTagItem * item)
+void freeLocateTagItem(struct locate_item *item)
 {
 	free(item->needle);
 	free(item);
@@ -178,7 +180,7 @@ strstrSearchTag(const struct song *song, enum tag_type type, const char *str)
 
 int
 strstrSearchTags(const struct song *song, int numItems,
-		 const LocateTagItem *items)
+		 const struct locate_item *items)
 {
 	int i;
 
@@ -240,7 +242,7 @@ tagItemFoundAndMatches(const struct song *song, enum tag_type type,
 
 int
 tagItemsFoundAndMatches(const struct song *song, int numItems,
-			const LocateTagItem * items)
+			const struct locate_item *items)
 {
 	int i;
 

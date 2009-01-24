@@ -19,9 +19,8 @@
 #ifndef MPD_DB_UTILS_H
 #define MPD_DB_UTILS_H
 
-#include "locate.h"
-
 struct client;
+struct locate_item;
 
 int printAllIn(struct client *client, const char *name);
 
@@ -31,19 +30,23 @@ int addAllInToStoredPlaylist(const char *name, const char *utf8file);
 
 int printInfoForAllIn(struct client *client, const char *name);
 
-int searchForSongsIn(struct client *client, const char *name,
-		     int numItems, const LocateTagItem * items);
+int
+searchForSongsIn(struct client *client, const char *name,
+		 int numItems, const struct locate_item * items);
 
-int findSongsIn(struct client *client, const char *name,
-		int numItems, const LocateTagItem * items);
+int
+findSongsIn(struct client *client, const char *name,
+	    int numItems, const struct locate_item * items);
 
-int searchStatsForSongsIn(struct client *client, const char *name,
-			  int numItems, const LocateTagItem * items);
+int
+searchStatsForSongsIn(struct client *client, const char *name,
+		      int numItems, const struct locate_item * items);
 
 unsigned long sumSongTimesIn(const char *name);
 
-int listAllUniqueTags(struct client *client, int type, int numConditiionals,
-		      const LocateTagItem *conditionals);
+int
+listAllUniqueTags(struct client *client, int type, int numConditiionals,
+		  const struct locate_item *conditionals);
 
 void printSavedMemoryFromFilenames(void);
 

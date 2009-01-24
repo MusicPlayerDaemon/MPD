@@ -20,6 +20,7 @@
 #include "playlist_save.h"
 #include "queue_print.h"
 #include "queue_save.h"
+#include "locate.h"
 #include "player_control.h"
 #include "command.h"
 #include "ls.h"
@@ -1178,11 +1179,11 @@ enum playlist_result loadPlaylist(const char *utf8file)
 
 void
 searchForSongsInPlaylist(struct client *client,
-			 unsigned numItems, const LocateTagItem *items)
+			 unsigned numItems, const struct locate_item *items)
 {
 	unsigned i;
-	LocateTagItem *new_items =
-		g_memdup(items, sizeof(LocateTagItem) * numItems);
+	struct locate_item *new_items =
+		g_memdup(items, sizeof(items[0]) * numItems);
 
 	for (i = 0; i < numItems; i++)
 		new_items[i].needle = g_utf8_casefold(new_items[i].needle, -1);
@@ -1199,7 +1200,7 @@ searchForSongsInPlaylist(struct client *client,
 
 void
 findSongsInPlaylist(struct client *client,
-		    unsigned numItems, const LocateTagItem *items)
+		    unsigned numItems, const struct locate_item *items)
 {
 	for (unsigned i = 0; i < queue_length(&playlist.queue); i++) {
 		const struct song *song = queue_get(&playlist.queue, i);

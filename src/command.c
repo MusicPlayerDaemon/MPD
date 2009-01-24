@@ -34,6 +34,7 @@
 #include "stored_playlist.h"
 #include "ack.h"
 #include "audio.h"
+#include "locate.h"
 #include "dbUtils.h"
 #include "tag.h"
 #include "client.h"
@@ -832,8 +833,7 @@ static enum command_return
 handle_find(struct client *client, int argc, char *argv[])
 {
 	int ret;
-
-	LocateTagItem *items;
+	struct locate_item *items;
 	int numItems = newLocateTagItemArrayFromArgArray(argv + 1,
 							 argc - 1,
 							 &items);
@@ -857,8 +857,7 @@ static enum command_return
 handle_search(struct client *client, int argc, char *argv[])
 {
 	int ret;
-
-	LocateTagItem *items;
+	struct locate_item *items;
 	int numItems = newLocateTagItemArrayFromArgArray(argv + 1,
 							 argc - 1,
 							 &items);
@@ -882,8 +881,7 @@ static enum command_return
 handle_count(struct client *client, int argc, char *argv[])
 {
 	int ret;
-
-	LocateTagItem *items;
+	struct locate_item *items;
 	int numItems = newLocateTagItemArrayFromArgArray(argv + 1,
 							 argc - 1,
 							 &items);
@@ -906,7 +904,7 @@ handle_count(struct client *client, int argc, char *argv[])
 static enum command_return
 handle_playlistfind(struct client *client, int argc, char *argv[])
 {
-	LocateTagItem *items;
+	struct locate_item *items;
 	int numItems = newLocateTagItemArrayFromArgArray(argv + 1,
 							 argc - 1,
 							 &items);
@@ -926,7 +924,7 @@ handle_playlistfind(struct client *client, int argc, char *argv[])
 static enum command_return
 handle_playlistsearch(struct client *client, int argc, char *argv[])
 {
-	LocateTagItem *items;
+	struct locate_item *items;
 	int numItems = newLocateTagItemArrayFromArgArray(argv + 1,
 							 argc - 1,
 							 &items);
@@ -1114,7 +1112,7 @@ static enum command_return
 handle_list(struct client *client, int argc, char *argv[])
 {
 	int numConditionals;
-	LocateTagItem *conditionals = NULL;
+	struct locate_item *conditionals = NULL;
 	int tagType = getLocateTagItemType(argv[1]);
 	int ret;
 
