@@ -75,8 +75,6 @@ static GRand *g_rand;
 /** the global playlist object */
 static Playlist playlist;
 unsigned playlist_max_length;
-static int playlist_stopOnError;
-static unsigned playlist_errorCount;
 
 bool playlist_saveAbsolutePaths = DEFAULT_PLAYLIST_SAVE_ABSOLUTE_PATHS;
 
@@ -743,8 +741,8 @@ enum playlist_result playPlaylist(int song)
 		i = playlist.current;
 	}
 
-	playlist_stopOnError = false;
-	playlist_errorCount = 0;
+	playlist.stop_on_error = false;
+	playlist.error_count = 0;
 
 	playPlaylistOrderNumber(i);
 	return PLAYLIST_RESULT_SUCCESS;
@@ -808,7 +806,7 @@ void nextSongInPlaylist(void)
 
 	syncPlaylistWithQueue();
 
-	playlist_stopOnError = 0;
+	playlist.stop_on_error = false;
 
 	/* determine the next song from the queue's order list */
 
@@ -849,13 +847,13 @@ static void playPlaylistIfPlayerStopped(void)
 
 	error = getPlayerError();
 	if (error == PLAYER_ERROR_NOERROR)
-		playlist_errorCount = 0;
+		playlist.error_count = 0;
 	else
-		playlist_errorCount++;
+		++playlist.error_count;
 
-	if ((playlist_stopOnError && error != PLAYER_ERROR_NOERROR) ||
+	if ((playlist.stop_on_error && error != PLAYER_ERROR_NOERROR) ||
 	    error == PLAYER_ERROR_AUDIO || error == PLAYER_ERROR_SYSTEM ||
-	    playlist_errorCount >= queue_length(&playlist.queue))
+	    playlist.error_count >= queue_length(&playlist.queue))
 		/* too many errors, or critical error: stop
 		   playback */
 		stopPlaylist();
@@ -1157,8 +1155,8 @@ enum playlist_result seekSongInPlaylist(unsigned song, float seek_time)
 		i = song;
 
 	clearPlayerError();
-	playlist_stopOnError = 1;
-	playlist_errorCount = 0;
+	playlist.stop_on_error = true;
+	playlist.error_count = 0;
 
 	if (playlist.playing) {
 		if (playlist.queued >= 0)

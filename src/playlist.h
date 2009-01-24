@@ -56,6 +56,20 @@ typedef struct _Playlist {
 	bool playing;
 
 	/**
+	 * If true, then any error is fatal; if false, MPD will
+	 * attempt to play the next song on non-fatal errors.  During
+	 * seeking, this flag is set.
+	 */
+	bool stop_on_error;
+
+	/**
+	 * Number of errors since playback was started.  If this
+	 * number exceeds the length of the playlist, MPD gives up,
+	 * because all songs have been tried.
+	 */
+	unsigned error_count;
+
+	/**
 	 * The "current song pointer".  This is the song which is
 	 * played when we get the "play" command.  It is also the song
 	 * which is currently being played.
