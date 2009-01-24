@@ -85,11 +85,7 @@ queue_search(struct client *client, const struct queue *queue,
 {
 	unsigned i;
 	struct locate_item_list *new_list =
-		locate_item_list_new(criteria->length);
-
-	for (i = 0; i < criteria->length; i++)
-		new_list->items[i].needle =
-			g_utf8_casefold(criteria->items[i].needle, -1);
+		locate_item_list_casefold(criteria);
 
 	for (i = 0; i < queue_length(queue); i++) {
 		const struct song *song = queue_get(queue, i);

@@ -63,6 +63,13 @@ locate_item_list_new(unsigned length);
 struct locate_item_list *
 locate_item_list_parse(char *argv[], int argc);
 
+/**
+ * Duplicate the struct locate_item_list object and convert all
+ * needles with g_utf8_casefold().
+ */
+struct locate_item_list *
+locate_item_list_casefold(const struct locate_item_list *list);
+
 void
 locate_item_list_free(struct locate_item_list *list);
 

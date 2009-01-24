@@ -84,13 +84,9 @@ searchForSongsIn(struct client *client, const char *name,
 		 const struct locate_item_list *criteria)
 {
 	int ret;
-	struct locate_item_list *new_list;
+	struct locate_item_list *new_list
+		= locate_item_list_casefold(criteria);
 	struct search_data data;
-
-	new_list = locate_item_list_new(criteria->length);
-	for (unsigned i = 0; i < criteria->length; i++)
-		new_list->items[i].needle =
-			g_utf8_casefold(criteria->items[i].needle, -1);
 
 	data.client = client;
 	data.criteria = new_list;
