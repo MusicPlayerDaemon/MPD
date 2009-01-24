@@ -17,8 +17,6 @@
  */
 
 #include "../decoder_api.h"
-#include "../utils.h"
-#include "../log.h"
 
 #include <glib.h>
 #include <modplug.h>
