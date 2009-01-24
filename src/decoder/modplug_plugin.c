@@ -57,19 +57,19 @@ static GByteArray *mod_loadfile(struct decoder *decoder, struct input_stream *is
 	data = g_malloc(MODPLUG_READ_BLOCK);
 	do {
 		ret = decoder_read(decoder, is, data, MODPLUG_READ_BLOCK);
-		if (ret > 0) {
-			g_byte_array_append(bdatas, data, ret);
-		} else {
+		if (ret == 0) {
 			//end of file, or read error
 			break;
 		}
 
-		if (bdatas->len > MODPLUG_FILE_LIMIT) {
+		if (bdatas->len + ret > MODPLUG_FILE_LIMIT) {
 			g_warning("stream too large\n");
 			g_free(data);
 			g_byte_array_free(bdatas, TRUE);
 			return NULL;
 		}
+
+		g_byte_array_append(bdatas, data, ret);
 	} while (input_stream_eof(is));
 	g_free(data);
 
