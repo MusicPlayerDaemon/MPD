@@ -93,7 +93,7 @@ queue_search(struct client *client, const struct queue *queue,
 	for (i = 0; i < queue_length(queue); i++) {
 		const struct song *song = queue_get(queue, i);
 
-		if (strstrSearchTags(song, num_items, items))
+		if (strstrSearchTags(song, num_items, new_items))
 			queue_print_song_info(client, queue, i);
 	}
 
