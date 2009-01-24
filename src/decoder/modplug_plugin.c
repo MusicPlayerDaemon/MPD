@@ -35,7 +35,7 @@ static GByteArray *mod_loadfile(struct decoder *decoder, struct input_stream *is
 {
 	unsigned char *data;
 	GByteArray *bdatas;
-	int ret;
+	size_t ret;
 
 	if (is->size == 0) {
 		g_warning("file is empty");
