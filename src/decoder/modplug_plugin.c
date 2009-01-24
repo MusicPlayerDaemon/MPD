@@ -58,8 +58,14 @@ static GByteArray *mod_loadfile(struct decoder *decoder, struct input_stream *is
 	do {
 		ret = decoder_read(decoder, is, data, MODPLUG_READ_BLOCK);
 		if (ret == 0) {
-			//end of file, or read error
-			break;
+			if (input_stream_eof(is))
+				/* end of file */
+				break;
+
+			/* I/O error - skip this song */
+			g_free(data);
+			g_byte_array_free(bdatas, true);
+			return NULL;
 		}
 
 		if (bdatas->len + ret > MODPLUG_FILE_LIMIT) {
