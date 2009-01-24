@@ -53,7 +53,13 @@ const char *mpdTagItemKeys[TAG_NUM_OF_ITEM_TYPES] = {
 	"Composer",
 	"Performer",
 	"Comment",
-	"Disc"
+	"Disc",
+
+	/* MusicBrainz tags from http://musicbrainz.org/doc/MusicBrainzTag */
+	[TAG_MUSICBRAINZ_ARTISTID] = "MUSICBRAINZ_ARTISTID",
+	[TAG_MUSICBRAINZ_ALBUMID] = "MUSICBRAINZ_ALBUMID",
+	[TAG_MUSICBRAINZ_ALBUMARTISTID] = "MUSICBRAINZ_ALBUMARTISTID",
+	[TAG_MUSICBRAINZ_TRACKID] = "MUSICBRAINZ_TACKID",
 };
 
 int8_t ignoreTagItems[TAG_NUM_OF_ITEM_TYPES];
