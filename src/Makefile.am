@@ -285,7 +285,7 @@ mpd_SOURCES += decoder/audiofile_plugin.c
 endif
 
 if HAVE_MIKMOD
-mpd_SOURCES += decoder/mod_plugin.c
+mpd_SOURCES += decoder/mikmod_plugin.c
 endif
 
 if HAVE_MODPLUG
