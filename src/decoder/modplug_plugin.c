@@ -23,10 +23,12 @@
 #include <glib.h>
 #include <modplug.h>
 
-#define MODPLUG_FRAME_SIZE (4096)
-#define MODPLUG_PREALLOC_BLOCK (256*1024)
-#define MODPLUG_READ_BLOCK (128*1024)
-#define MODPLUG_FILE_LIMIT (1024*1024*100)
+enum {
+	MODPLUG_FRAME_SIZE = 4096,
+	MODPLUG_PREALLOC_BLOCK = 256 * 1024,
+	MODPLUG_READ_BLOCK = 128 * 1024,
+	MODPLUG_FILE_LIMIT = 100 * 1024 * 1024,
+};
 
 static GByteArray *mod_loadfile(struct decoder *decoder, struct input_stream *is)
 {
