@@ -38,16 +38,23 @@ static GByteArray *mod_loadfile(struct decoder *decoder, struct input_stream *is
 	int total_len;
 	int ret;
 
+	if (is->size == 0) {
+		g_warning("file is empty");
+		return NULL;
+	}
+
+	if (is->size > MODPLUG_FILE_LIMIT) {
+		g_warning("file too large");
+		return NULL;
+	}
+
 	//known/unknown size, preallocate array, lets read in chunks
-	if (is->size) {
-		if (is->size > MODPLUG_FILE_LIMIT) {
-			g_warning("file too large\n");
-			return NULL;
-		}
+	if (is->size > 0) {
 		bdatas = g_byte_array_sized_new(is->size);
 	} else {
 		bdatas = g_byte_array_sized_new(MODPLUG_PREALLOC_BLOCK);
 	}
+
 	data = g_malloc(MODPLUG_READ_BLOCK);
 	total_len = 0;
 	do {
