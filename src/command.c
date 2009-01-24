@@ -1551,7 +1551,7 @@ static const struct command commands[] = {
 static const unsigned num_commands = sizeof(commands) / sizeof(commands[0]);
 
 static bool
-command_available(const struct command *cmd)
+command_available(G_GNUC_UNUSED const struct command *cmd)
 {
 #ifdef ENABLE_SQLITE
 	if (strcmp(cmd->cmd, "sticker") == 0)
