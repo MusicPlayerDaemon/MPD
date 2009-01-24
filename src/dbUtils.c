@@ -92,20 +92,21 @@ searchForSongsIn(struct client *client, const char *name,
 {
 	int ret;
 	int i;
-	struct locate_item *new_items =
-		g_memdup(items, sizeof(items[0]) * numItems);
+	struct locate_item_list *new_list;
 	struct search_data data;
 
+	new_list = locate_item_list_new(numItems);
 	for (i = 0; i < numItems; i++)
-		new_items[i].needle = g_utf8_casefold(new_items[i].needle, -1);
+		new_list->items[i].needle =
+			g_utf8_casefold(items[i].needle, -1);
 
 	data.client = client;
 	data.array.numItems = numItems;
-	data.array.items = new_items;
+	data.array.items = new_list->items;
 
 	ret = db_walk(name, searchInDirectory, NULL, &data);
 
-	locate_item_list_free(numItems, new_items);
+	locate_item_list_free(new_list);
 
 	return ret;
 }

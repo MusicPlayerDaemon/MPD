@@ -833,22 +833,23 @@ static enum command_return
 handle_find(struct client *client, int argc, char *argv[])
 {
 	int ret;
-	struct locate_item *items;
-	int numItems = locate_item_list_parse(argv + 1,
-							 argc - 1,
-							 &items);
+	struct locate_item_list *list =
+		locate_item_list_parse(argv + 1, argc - 1);
 
-	if (numItems <= 0) {
+	if (list == NULL || list->length == 0) {
+		if (list != NULL)
+			locate_item_list_free(list);
+
 		command_error(client, ACK_ERROR_ARG, "incorrect arguments");
 		return COMMAND_RETURN_ERROR;
 	}
 
-	ret = findSongsIn(client, NULL, numItems, items);
+	ret = findSongsIn(client, NULL, list->length, list->items);
 	if (ret == -1)
 		command_error(client, ACK_ERROR_NO_EXIST,
 			      "directory or file not found");
 
-	locate_item_list_free(numItems, items);
+	locate_item_list_free(list);
 
 	return ret;
 }
@@ -857,22 +858,23 @@ static enum command_return
 handle_search(struct client *client, int argc, char *argv[])
 {
 	int ret;
-	struct locate_item *items;
-	int numItems = locate_item_list_parse(argv + 1,
-							 argc - 1,
-							 &items);
+	struct locate_item_list *list =
+		locate_item_list_parse(argv + 1, argc - 1);
 
-	if (numItems <= 0) {
+	if (list == NULL || list->length == 0) {
+		if (list != NULL)
+			locate_item_list_free(list);
+
 		command_error(client, ACK_ERROR_ARG, "incorrect arguments");
 		return COMMAND_RETURN_ERROR;
 	}
 
-	ret = searchForSongsIn(client, NULL, numItems, items);
+	ret = searchForSongsIn(client, NULL, list->length, list->items);
 	if (ret == -1)
 		command_error(client, ACK_ERROR_NO_EXIST,
 			      "directory or file not found");
 
-	locate_item_list_free(numItems, items);
+	locate_item_list_free(list);
 
 	return ret;
 }
@@ -881,22 +883,23 @@ static enum command_return
 handle_count(struct client *client, int argc, char *argv[])
 {
 	int ret;
-	struct locate_item *items;
-	int numItems = locate_item_list_parse(argv + 1,
-							 argc - 1,
-							 &items);
+	struct locate_item_list *list =
+		locate_item_list_parse(argv + 1, argc - 1);
 
-	if (numItems <= 0) {
+	if (list == NULL || list->length == 0) {
+		if (list != NULL)
+			locate_item_list_free(list);
+
 		command_error(client, ACK_ERROR_ARG, "incorrect arguments");
 		return COMMAND_RETURN_ERROR;
 	}
 
-	ret = searchStatsForSongsIn(client, NULL, numItems, items);
+	ret = searchStatsForSongsIn(client, NULL, list->length, list->items);
 	if (ret == -1)
 		command_error(client, ACK_ERROR_NO_EXIST,
 			      "directory or file not found");
 
-	locate_item_list_free(numItems, items);
+	locate_item_list_free(list);
 
 	return ret;
 }
@@ -904,19 +907,20 @@ handle_count(struct client *client, int argc, char *argv[])
 static enum command_return
 handle_playlistfind(struct client *client, int argc, char *argv[])
 {
-	struct locate_item *items;
-	int numItems = locate_item_list_parse(argv + 1,
-							 argc - 1,
-							 &items);
+	struct locate_item_list *list =
+		locate_item_list_parse(argv + 1, argc - 1);
 
-	if (numItems <= 0) {
+	if (list == NULL || list->length == 0) {
+		if (list != NULL)
+			locate_item_list_free(list);
+
 		command_error(client, ACK_ERROR_ARG, "incorrect arguments");
 		return COMMAND_RETURN_ERROR;
 	}
 
-	queue_find(client, playlist_get_queue(), numItems, items);
+	queue_find(client, playlist_get_queue(), list->length, list->items);
 
-	locate_item_list_free(numItems, items);
+	locate_item_list_free(list);
 
 	return COMMAND_RETURN_OK;
 }
@@ -924,19 +928,20 @@ handle_playlistfind(struct client *client, int argc, char *argv[])
 static enum command_return
 handle_playlistsearch(struct client *client, int argc, char *argv[])
 {
-	struct locate_item *items;
-	int numItems = locate_item_list_parse(argv + 1,
-							 argc - 1,
-							 &items);
+	struct locate_item_list *list =
+		locate_item_list_parse(argv + 1, argc - 1);
 
-	if (numItems <= 0) {
+	if (list == NULL || list->length == 0) {
+		if (list != NULL)
+			locate_item_list_free(list);
+
 		command_error(client, ACK_ERROR_ARG, "incorrect arguments");
 		return COMMAND_RETURN_ERROR;
 	}
 
-	queue_search(client, playlist_get_queue(), numItems, items);
+	queue_search(client, playlist_get_queue(), list->length, list->items);
 
-	locate_item_list_free(numItems, items);
+	locate_item_list_free(list);
 
 	return COMMAND_RETURN_OK;
 }
@@ -1111,8 +1116,7 @@ handle_clearerror(G_GNUC_UNUSED struct client *client,
 static enum command_return
 handle_list(struct client *client, int argc, char *argv[])
 {
-	int numConditionals;
-	struct locate_item *conditionals = NULL;
+	struct locate_item_list *conditionals;
 	int tagType = locate_parse_type(argv[1]);
 	int ret;
 
@@ -1135,25 +1139,26 @@ handle_list(struct client *client, int argc, char *argv[])
 				      mpdTagItemKeys[TAG_ITEM_ALBUM]);
 			return COMMAND_RETURN_ERROR;
 		}
-		conditionals = locate_item_new(mpdTagItemKeys[TAG_ITEM_ARTIST],
-						argv[2]);
-		numConditionals = 1;
-	} else {
-		numConditionals =
-		    locate_item_list_parse(argv + 2,
-						      argc - 2, &conditionals);
 
-		if (numConditionals < 0) {
+		locate_item_list_parse(argv + 1, argc - 1);
+
+		conditionals = locate_item_list_new(1);
+		conditionals->items[0].tag = TAG_ITEM_ARTIST;
+		conditionals->items[0].needle = g_strdup(argv[2]);
+	} else {
+		conditionals =
+			locate_item_list_parse(argv + 2, argc - 2);
+		if (conditionals == NULL) {
 			command_error(client, ACK_ERROR_ARG,
 				      "not able to parse args");
 			return COMMAND_RETURN_ERROR;
 		}
 	}
 
-	ret = listAllUniqueTags(client, tagType, numConditionals, conditionals);
+	ret = listAllUniqueTags(client, tagType, conditionals->length,
+				conditionals->items);
 
-	if (conditionals)
-		locate_item_list_free(numConditionals, conditionals);
+	locate_item_list_free(conditionals);
 
 	if (ret == -1)
 		command_error(client, ACK_ERROR_NO_EXIST,

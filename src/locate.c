@@ -76,45 +76,45 @@ locate_item_new(const char *type_string, const char *needle)
 }
 
 void
-locate_item_list_free(int count, struct locate_item *array)
+locate_item_list_free(struct locate_item_list *list)
 {
-	int i;
+	for (unsigned i = 0; i < list->length; ++i)
+		g_free(list->items[i].needle);
 
-	for (i = 0; i < count; i++)
-		free(array[i].needle);
-
-	free(array);
+	g_free(list);
 }
 
-int
-locate_item_list_parse(char *argv[], int argc, struct locate_item **arrayRet)
+struct locate_item_list *
+locate_item_list_new(unsigned length)
 {
-	int i, j;
-	struct locate_item *item;
+	struct locate_item_list *list;
 
-	if (argc == 0)
-		return 0;
+	list = g_malloc0(sizeof(*list) - sizeof(list->items[0]) +
+			 length * sizeof(list->items[0]));
+	list->length = length;
+
+	return list;
+}
+
+struct locate_item_list *
+locate_item_list_parse(char *argv[], int argc)
+{
+	struct locate_item_list *list;
 
 	if (argc % 2 != 0)
-		return -1;
+		return NULL;
 
-	*arrayRet = g_new(struct locate_item, argc / 2);
+	list = locate_item_list_new(argc / 2);
 
-	for (i = 0, item = *arrayRet; i < argc / 2; i++, item++) {
-		if (!locate_item_init(item, argv[i * 2], argv[i * 2 + 1]))
-			goto fail;
+	for (unsigned i = 0; i < list->length; ++i) {
+		if (!locate_item_init(&list->items[i], argv[i * 2],
+				      argv[i * 2 + 1])) {
+			locate_item_list_free(list);
+			return NULL;
+		}
 	}
 
-	return argc / 2;
-
-fail:
-	for (j = 0; j < i; j++) {
-		free((*arrayRet)[j].needle);
-	}
-
-	free(*arrayRet);
-	*arrayRet = NULL;
-	return -1;
+	return list;
 }
 
 void

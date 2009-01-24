@@ -34,6 +34,17 @@ struct locate_item {
 	char *needle;
 };
 
+/**
+ * An array of struct locate_item objects.
+ */
+struct locate_item_list {
+	/** number of items */
+	unsigned length;
+
+	/** this is a variable length array */
+	struct locate_item items[1];
+};
+
 int
 locate_parse_type(const char *str);
 
@@ -41,12 +52,19 @@ locate_parse_type(const char *str);
 struct locate_item *
 locate_item_new(const char *type_string, const char *needle);
 
+/**
+ * Allocates a new struct locate_item_list, and initializes all
+ * members with zero bytes.
+ */
+struct locate_item_list *
+locate_item_list_new(unsigned length);
+
 /* return number of items or -1 on error */
-int
-locate_item_list_parse(char *argv[], int argc, struct locate_item **arrayRet);
+struct locate_item_list *
+locate_item_list_parse(char *argv[], int argc);
 
 void
-locate_item_list_free(int count, struct locate_item *array);
+locate_item_list_free(struct locate_item_list *list);
 
 void
 locate_item_free(struct locate_item *item);

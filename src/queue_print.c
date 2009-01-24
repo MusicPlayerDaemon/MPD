@@ -84,20 +84,20 @@ queue_search(struct client *client, const struct queue *queue,
 	     unsigned num_items, const struct locate_item *items)
 {
 	unsigned i;
-	struct locate_item *new_items =
-		g_memdup(items, sizeof(items[0]) * num_items);
+	struct locate_item_list *new_list = locate_item_list_new(num_items);
 
 	for (i = 0; i < num_items; i++)
-		new_items[i].needle = g_utf8_casefold(new_items[i].needle, -1);
+		new_list->items[i].needle =
+			g_utf8_casefold(items[i].needle, -1);
 
 	for (i = 0; i < queue_length(queue); i++) {
 		const struct song *song = queue_get(queue, i);
 
-		if (locate_song_search(song, num_items, new_items))
+		if (locate_song_search(song, num_items, new_list->items))
 			queue_print_song_info(client, queue, i);
 	}
 
-	locate_item_list_free(num_items, new_items);
+	locate_item_list_free(new_list);
 }
 
 void
