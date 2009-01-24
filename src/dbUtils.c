@@ -35,17 +35,11 @@
 
 typedef struct _ListCommandItem {
 	int8_t tagType;
-	int numConditionals;
-	const struct locate_item *conditionals;
+	const struct locate_item_list *criteria;
 } ListCommandItem;
 
-typedef struct _LocateTagItemArray {
-	int numItems;
-	const struct locate_item *items;
-} LocateTagItemArray;
-
 typedef struct _SearchStats {
-	LocateTagItemArray locateArray;
+	const struct locate_item_list *criteria;
 	int numberOfSongs;
 	unsigned long playTime;
 } SearchStats;
@@ -71,16 +65,15 @@ printSongInDirectory(struct song *song, G_GNUC_UNUSED void *data)
 
 struct search_data {
 	struct client *client;
-	LocateTagItemArray array;
+	const struct locate_item_list *criteria;
 };
 
 static int
 searchInDirectory(struct song *song, void *_data)
 {
 	struct search_data *data = _data;
-	LocateTagItemArray *array = &data->array;
 
-	if (locate_song_search(song, array->numItems, array->items))
+	if (locate_song_search(song, data->criteria))
 		return song_print_info(data->client, song);
 
 	return 0;
@@ -88,21 +81,19 @@ searchInDirectory(struct song *song, void *_data)
 
 int
 searchForSongsIn(struct client *client, const char *name,
-		 int numItems, const struct locate_item *items)
+		 const struct locate_item_list *criteria)
 {
 	int ret;
-	int i;
 	struct locate_item_list *new_list;
 	struct search_data data;
 
-	new_list = locate_item_list_new(numItems);
-	for (i = 0; i < numItems; i++)
+	new_list = locate_item_list_new(criteria->length);
+	for (unsigned i = 0; i < criteria->length; i++)
 		new_list->items[i].needle =
-			g_utf8_casefold(items[i].needle, -1);
+			g_utf8_casefold(criteria->items[i].needle, -1);
 
 	data.client = client;
-	data.array.numItems = numItems;
-	data.array.items = new_list->items;
+	data.criteria = new_list;
 
 	ret = db_walk(name, searchInDirectory, NULL, &data);
 
@@ -115,9 +106,8 @@ static int
 findInDirectory(struct song *song, void *_data)
 {
 	struct search_data *data = _data;
-	LocateTagItemArray *array = &data->array;
 
-	if (locate_song_match(song, array->numItems, array->items))
+	if (locate_song_match(song, data->criteria))
 		return song_print_info(data->client, song);
 
 	return 0;
@@ -125,13 +115,12 @@ findInDirectory(struct song *song, void *_data)
 
 int
 findSongsIn(struct client *client, const char *name,
-	    int numItems, const struct locate_item *items)
+	    const struct locate_item_list *criteria)
 {
 	struct search_data data;
 
 	data.client = client;
-	data.array.numItems = numItems;
-	data.array.items = items;
+	data.criteria = criteria;
 
 	return db_walk(name, findInDirectory, NULL, &data);
 }
@@ -147,8 +136,7 @@ searchStatsInDirectory(struct song *song, void *data)
 {
 	SearchStats *stats = data;
 
-	if (locate_song_match(song, stats->locateArray.numItems,
-			      stats->locateArray.items)) {
+	if (locate_song_match(song, stats->criteria)) {
 		stats->numberOfSongs++;
 		if (song->tag->time > 0)
 			stats->playTime += song->tag->time;
@@ -159,13 +147,12 @@ searchStatsInDirectory(struct song *song, void *data)
 
 int
 searchStatsForSongsIn(struct client *client, const char *name,
-		      int numItems, const struct locate_item *items)
+		      const struct locate_item_list *criteria)
 {
 	SearchStats stats;
 	int ret;
 
-	stats.locateArray.numItems = numItems;
-	stats.locateArray.items = items;
+	stats.criteria = criteria;
 	stats.numberOfSongs = 0;
 	stats.playTime = 0;
 
@@ -231,14 +218,12 @@ int printInfoForAllIn(struct client *client, const char *name)
 }
 
 static ListCommandItem *
-newListCommandItem(int tagType, int numConditionals,
-		   const struct locate_item *conditionals)
+newListCommandItem(int tagType, const struct locate_item_list *criteria)
 {
 	ListCommandItem *item = g_new(ListCommandItem, 1);
 
 	item->tagType = tagType;
-	item->numConditionals = numConditionals;
-	item->conditionals = conditionals;
+	item->criteria = criteria;
 
 	return item;
 }
@@ -284,20 +269,17 @@ listUniqueTagsInDirectory(struct song *song, void *_data)
 	struct list_tags_data *data = _data;
 	ListCommandItem *item = data->item;
 
-	if (locate_song_match(song, item->numConditionals,
-			      item->conditionals)) {
+	if (locate_song_match(song, item->criteria))
 		visitTag(data->client, data->set, song, item->tagType);
-	}
 
 	return 0;
 }
 
-int listAllUniqueTags(struct client *client, int type, int numConditionals,
-		      const struct locate_item *conditionals)
+int listAllUniqueTags(struct client *client, int type,
+		      const struct locate_item_list *criteria)
 {
 	int ret;
-	ListCommandItem *item = newListCommandItem(type, numConditionals,
-						   conditionals);
+	ListCommandItem *item = newListCommandItem(type, criteria);
 	struct list_tags_data data = {
 		.client = client,
 		.item = item,

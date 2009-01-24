@@ -844,7 +844,7 @@ handle_find(struct client *client, int argc, char *argv[])
 		return COMMAND_RETURN_ERROR;
 	}
 
-	ret = findSongsIn(client, NULL, list->length, list->items);
+	ret = findSongsIn(client, NULL, list);
 	if (ret == -1)
 		command_error(client, ACK_ERROR_NO_EXIST,
 			      "directory or file not found");
@@ -869,7 +869,7 @@ handle_search(struct client *client, int argc, char *argv[])
 		return COMMAND_RETURN_ERROR;
 	}
 
-	ret = searchForSongsIn(client, NULL, list->length, list->items);
+	ret = searchForSongsIn(client, NULL, list);
 	if (ret == -1)
 		command_error(client, ACK_ERROR_NO_EXIST,
 			      "directory or file not found");
@@ -894,7 +894,7 @@ handle_count(struct client *client, int argc, char *argv[])
 		return COMMAND_RETURN_ERROR;
 	}
 
-	ret = searchStatsForSongsIn(client, NULL, list->length, list->items);
+	ret = searchStatsForSongsIn(client, NULL, list);
 	if (ret == -1)
 		command_error(client, ACK_ERROR_NO_EXIST,
 			      "directory or file not found");
@@ -918,7 +918,7 @@ handle_playlistfind(struct client *client, int argc, char *argv[])
 		return COMMAND_RETURN_ERROR;
 	}
 
-	queue_find(client, playlist_get_queue(), list->length, list->items);
+	queue_find(client, playlist_get_queue(), list);
 
 	locate_item_list_free(list);
 
@@ -939,7 +939,7 @@ handle_playlistsearch(struct client *client, int argc, char *argv[])
 		return COMMAND_RETURN_ERROR;
 	}
 
-	queue_search(client, playlist_get_queue(), list->length, list->items);
+	queue_search(client, playlist_get_queue(), list);
 
 	locate_item_list_free(list);
 
@@ -1155,8 +1155,7 @@ handle_list(struct client *client, int argc, char *argv[])
 		}
 	}
 
-	ret = listAllUniqueTags(client, tagType, conditionals->length,
-				conditionals->items);
+	ret = listAllUniqueTags(client, tagType, conditionals);
 
 	locate_item_list_free(conditionals);
 

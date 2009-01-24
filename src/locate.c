@@ -177,11 +177,12 @@ locate_tag_search(const struct song *song, enum tag_type type, const char *str)
 }
 
 bool
-locate_song_search(const struct song *song, int num_items,
-		   const struct locate_item *items)
+locate_song_search(const struct song *song,
+		   const struct locate_item_list *criteria)
 {
-	for (int i = 0; i < num_items; i++)
-		if (!locate_tag_search(song, items[i].tag, items[i].needle))
+	for (unsigned i = 0; i < criteria->length; i++)
+		if (!locate_tag_search(song, criteria->items[i].tag,
+				       criteria->items[i].needle))
 			return false;
 
 	return true;
@@ -234,11 +235,12 @@ locate_tag_match(const struct song *song, enum tag_type type, const char *str)
 }
 
 bool
-locate_song_match(const struct song *song, int num_items,
-		  const struct locate_item *items)
+locate_song_match(const struct song *song,
+		  const struct locate_item_list *criteria)
 {
-	for (int i = 0; i < num_items; i++)
-		if (!locate_tag_match(song, items[i].tag, items[i].needle))
+	for (unsigned i = 0; i < criteria->length; i++)
+		if (!locate_tag_match(song, criteria->items[i].tag,
+				      criteria->items[i].needle))
 			return false;
 
 	return true;

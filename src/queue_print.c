@@ -81,19 +81,20 @@ queue_print_changes_position(struct client *client, const struct queue *queue,
 
 void
 queue_search(struct client *client, const struct queue *queue,
-	     unsigned num_items, const struct locate_item *items)
+	     const struct locate_item_list *criteria)
 {
 	unsigned i;
-	struct locate_item_list *new_list = locate_item_list_new(num_items);
+	struct locate_item_list *new_list =
+		locate_item_list_new(criteria->length);
 
-	for (i = 0; i < num_items; i++)
+	for (i = 0; i < criteria->length; i++)
 		new_list->items[i].needle =
-			g_utf8_casefold(items[i].needle, -1);
+			g_utf8_casefold(criteria->items[i].needle, -1);
 
 	for (i = 0; i < queue_length(queue); i++) {
 		const struct song *song = queue_get(queue, i);
 
-		if (locate_song_search(song, num_items, new_list->items))
+		if (locate_song_search(song, new_list))
 			queue_print_song_info(client, queue, i);
 	}
 
@@ -102,12 +103,12 @@ queue_search(struct client *client, const struct queue *queue,
 
 void
 queue_find(struct client *client, const struct queue *queue,
-	   unsigned num_items, const struct locate_item *items)
+	   const struct locate_item_list *criteria)
 {
 	for (unsigned i = 0; i < queue_length(queue); i++) {
 		const struct song *song = queue_get(queue, i);
 
-		if (locate_song_match(song, num_items, items))
+		if (locate_song_match(song, criteria))
 			queue_print_song_info(client, queue, i);
 	}
 }

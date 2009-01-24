@@ -70,11 +70,11 @@ void
 locate_item_free(struct locate_item *item);
 
 bool
-locate_song_search(const struct song *song, int numItems,
-		   const struct locate_item *items);
+locate_song_search(const struct song *song,
+		   const struct locate_item_list *criteria);
 
 bool
-locate_song_match(const struct song *song, int numItems,
-		  const struct locate_item *items);
+locate_song_match(const struct song *song,
+		   const struct locate_item_list *criteria);
 
 #endif

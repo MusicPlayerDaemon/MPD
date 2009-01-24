@@ -20,7 +20,7 @@
 #define MPD_DB_UTILS_H
 
 struct client;
-struct locate_item;
+struct locate_item_list;
 
 int printAllIn(struct client *client, const char *name);
 
@@ -32,21 +32,21 @@ int printInfoForAllIn(struct client *client, const char *name);
 
 int
 searchForSongsIn(struct client *client, const char *name,
-		 int numItems, const struct locate_item * items);
+		 const struct locate_item_list *criteria);
 
 int
 findSongsIn(struct client *client, const char *name,
-	    int numItems, const struct locate_item * items);
+	    const struct locate_item_list *criteria);
 
 int
 searchStatsForSongsIn(struct client *client, const char *name,
-		      int numItems, const struct locate_item * items);
+		      const struct locate_item_list *criteria);
 
 unsigned long sumSongTimesIn(const char *name);
 
 int
-listAllUniqueTags(struct client *client, int type, int numConditiionals,
-		  const struct locate_item *conditionals);
+listAllUniqueTags(struct client *client, int type,
+		  const struct locate_item_list *criteria);
 
 void printSavedMemoryFromFilenames(void);
 
