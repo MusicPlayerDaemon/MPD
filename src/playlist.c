@@ -157,12 +157,6 @@ void clearPlaylist(void)
 	incrPlaylistVersion();
 }
 
-void showPlaylist(struct client *client)
-{
-	queue_print_uris(client, &playlist.queue,
-			 0, queue_length(&playlist.queue));
-}
-
 void savePlaylistState(FILE *fp)
 {
 	fprintf(fp, "%s", PLAYLIST_STATE_FILE_STATE);
@@ -286,48 +280,6 @@ void readPlaylistState(FILE *fp)
 	}
 
 	setPlaylistRandomStatus(random_mode);
-}
-
-int playlistChanges(struct client *client, uint32_t version)
-{
-	queue_print_changes_info(client, &playlist.queue, version);
-	return 0;
-}
-
-int playlistChangesPosId(struct client *client, uint32_t version)
-{
-	queue_print_changes_position(client, &playlist.queue, version);
-	return 0;
-}
-
-enum playlist_result
-playlistInfo(struct client *client, unsigned start, unsigned end)
-{
-	if (end > queue_length(&playlist.queue))
-		end = queue_length(&playlist.queue);
-
-	if (start > end)
-		return PLAYLIST_RESULT_BAD_RANGE;
-
-	queue_print_info(client, &playlist.queue, start, end);
-	return PLAYLIST_RESULT_SUCCESS;
-}
-
-enum playlist_result playlistId(struct client *client, int id)
-{
-	int begin = 0;
-	unsigned end = queue_length(&playlist.queue);
-
-	if (id >= 0) {
-		begin = queue_id_to_position(&playlist.queue, id);
-		if (begin < 0)
-			return PLAYLIST_RESULT_NO_SUCH_SONG;
-
-		end = begin + 1;
-	}
-
-	queue_print_info(client, &playlist.queue, begin, end);
-	return PLAYLIST_RESULT_SUCCESS;
 }
 
 /**

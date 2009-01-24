@@ -120,24 +120,9 @@ enum playlist_result addToPlaylist(const char *file, unsigned *added_id);
 enum playlist_result
 addSongToPlaylist(struct song *song, unsigned *added_id);
 
-void showPlaylist(struct client *client);
-
 enum playlist_result deleteFromPlaylist(unsigned song);
 
 enum playlist_result deleteFromPlaylistById(unsigned song);
-
-/**
- * Send detailed information about a range of songs in the playlist to
- * a client.
- *
- * @param client the client which has requested information
- * @param start the index of the first song (including)
- * @param end the index of the last song (excluding)
- */
-enum playlist_result
-playlistInfo(struct client *client, unsigned start, unsigned end);
-
-enum playlist_result playlistId(struct client *client, int song);
 
 void stopPlaylist(void);
 
@@ -189,10 +174,6 @@ enum playlist_result seekSongInPlaylist(unsigned song, float seek_time);
 enum playlist_result seekSongInPlaylistById(unsigned id, float seek_time);
 
 void playlistVersionChange(void);
-
-int playlistChanges(struct client *client, uint32_t version);
-
-int playlistChangesPosId(struct client *client, uint32_t version);
 
 void
 searchForSongsInPlaylist(struct client *client,
