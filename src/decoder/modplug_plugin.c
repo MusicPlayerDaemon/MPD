@@ -48,11 +48,7 @@ static GByteArray *mod_loadfile(struct decoder *decoder, struct input_stream *is
 	data = g_malloc(MODPLUG_READ_BLOCK);
 	total_len = 0;
 	do {
-		if (decoder) {
-			ret = decoder_read(decoder, is, data, MODPLUG_READ_BLOCK);
-		} else {
-			ret = input_stream_read(is, data, MODPLUG_READ_BLOCK);
-		}
+		ret = decoder_read(decoder, is, data, MODPLUG_READ_BLOCK);
 		if (ret > 0) {
 			g_byte_array_append(bdatas, data, ret);
 			total_len += ret;
