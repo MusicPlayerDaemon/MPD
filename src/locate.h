@@ -28,32 +28,34 @@ struct song;
 
 /* struct used for search, find, list queries */
 struct locate_item {
-	int8_t tagType;
+	int8_t tag;
 	/* what we are looking for */
 	char *needle;
 };
 
-int getLocateTagItemType(const char *str);
+int
+locate_parse_type(const char *str);
 
 /* returns NULL if not a known type */
 struct locate_item *
-newLocateTagItem(const char *typeString, const char *needle);
+locate_item_new(const char *type_string, const char *needle);
 
 /* return number of items or -1 on error */
 int
-newLocateTagItemArrayFromArgArray(char *argArray[], int numArgs,
-				  struct locate_item **arrayRet);
+locate_item_list_parse(char *argv[], int argc, struct locate_item **arrayRet);
 
-void freeLocateTagItemArray(int count, struct locate_item *array);
+void
+locate_item_list_free(int count, struct locate_item *array);
 
-void freeLocateTagItem(struct locate_item *item);
-
-int
-strstrSearchTags(const struct song *song, int numItems,
-		 const struct locate_item *items);
+void
+locate_item_free(struct locate_item *item);
 
 int
-tagItemsFoundAndMatches(const struct song *song, int numItems,
-			const struct locate_item *items);
+locate_song_search(const struct song *song, int numItems,
+		   const struct locate_item *items);
+
+int
+locate_song_match(const struct song *song, int numItems,
+		  const struct locate_item *items);
 
 #endif

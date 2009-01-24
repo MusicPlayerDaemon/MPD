@@ -29,36 +29,32 @@
 #define LOCATE_TAG_FILE_KEY_OLD "filename"
 #define LOCATE_TAG_ANY_KEY      "any"
 
-int getLocateTagItemType(const char *str)
+int
+locate_parse_type(const char *str)
 {
 	int i;
 
 	if (0 == strcasecmp(str, LOCATE_TAG_FILE_KEY) ||
-	    0 == strcasecmp(str, LOCATE_TAG_FILE_KEY_OLD)) 
-	{
+	    0 == strcasecmp(str, LOCATE_TAG_FILE_KEY_OLD))
 		return LOCATE_TAG_FILE_TYPE;
-	}
 
-	if (0 == strcasecmp(str, LOCATE_TAG_ANY_KEY)) 
-	{
+	if (0 == strcasecmp(str, LOCATE_TAG_ANY_KEY))
 		return LOCATE_TAG_ANY_TYPE;
-	}
 
-	for (i = 0; i < TAG_NUM_OF_ITEM_TYPES; i++) 
-	{
+	for (i = 0; i < TAG_NUM_OF_ITEM_TYPES; i++)
 		if (0 == strcasecmp(str, mpdTagItemKeys[i]))
 			return i;
-	}
 
 	return -1;
 }
 
-static int initLocateTagItem(struct locate_item *item,
-			     const char *typeStr, const char *needle)
+static int
+locate_item_init(struct locate_item *item,
+		 const char *type_string, const char *needle)
 {
-	item->tagType = getLocateTagItemType(typeStr);
+	item->tag = locate_parse_type(type_string);
 
-	if (item->tagType < 0)
+	if (item->tag < 0)
 		return -1;
 
 	item->needle = g_strdup(needle);
@@ -67,11 +63,11 @@ static int initLocateTagItem(struct locate_item *item,
 }
 
 struct locate_item *
-newLocateTagItem(const char *typeStr, const char *needle)
+locate_item_new(const char *type_string, const char *needle)
 {
 	struct locate_item *ret = g_new(struct locate_item, 1);
 
-	if (initLocateTagItem(ret, typeStr, needle) < 0) {
+	if (locate_item_init(ret, type_string, needle) < 0) {
 		free(ret);
 		ret = NULL;
 	}
@@ -79,7 +75,8 @@ newLocateTagItem(const char *typeStr, const char *needle)
 	return ret;
 }
 
-void freeLocateTagItemArray(int count, struct locate_item *array)
+void
+locate_item_list_free(int count, struct locate_item *array)
 {
 	int i;
 
@@ -90,27 +87,25 @@ void freeLocateTagItemArray(int count, struct locate_item *array)
 }
 
 int
-newLocateTagItemArrayFromArgArray(char *argArray[],
-				  int numArgs, struct locate_item **arrayRet)
+locate_item_list_parse(char *argv[], int argc, struct locate_item **arrayRet)
 {
 	int i, j;
 	struct locate_item *item;
 
-	if (numArgs == 0)
+	if (argc == 0)
 		return 0;
 
-	if (numArgs % 2 != 0)
+	if (argc % 2 != 0)
 		return -1;
 
-	*arrayRet = g_new(struct locate_item, numArgs / 2);
+	*arrayRet = g_new(struct locate_item, argc / 2);
 
-	for (i = 0, item = *arrayRet; i < numArgs / 2; i++, item++) {
-		if (initLocateTagItem
-		    (item, argArray[i * 2], argArray[i * 2 + 1]) < 0)
+	for (i = 0, item = *arrayRet; i < argc / 2; i++, item++) {
+		if (locate_item_init(item, argv[i * 2], argv[i * 2 + 1]) < 0)
 			goto fail;
 	}
 
-	return numArgs / 2;
+	return argc / 2;
 
 fail:
 	for (j = 0; j < i; j++) {
@@ -122,19 +117,20 @@ fail:
 	return -1;
 }
 
-void freeLocateTagItem(struct locate_item *item)
+void
+locate_item_free(struct locate_item *item)
 {
 	free(item->needle);
 	free(item);
 }
 
 static int
-strstrSearchTag(const struct song *song, enum tag_type type, const char *str)
+locate_tag_search(const struct song *song, enum tag_type type, const char *str)
 {
 	int i;
 	char *duplicate;
 	int ret = 0;
-	int8_t visitedTypes[TAG_NUM_OF_ITEM_TYPES] = { 0 };
+	int8_t visited_types[TAG_NUM_OF_ITEM_TYPES] = { 0 };
 
 	if (type == LOCATE_TAG_FILE_TYPE || type == LOCATE_TAG_ANY_TYPE) {
 		char *uri, *p;
@@ -154,7 +150,7 @@ strstrSearchTag(const struct song *song, enum tag_type type, const char *str)
 		return 0;
 
 	for (i = 0; i < song->tag->numOfItems && !ret; i++) {
-		visitedTypes[song->tag->items[i]->type] = 1;
+		visited_types[song->tag->items[i]->type] = 1;
 		if (type != LOCATE_TAG_ANY_TYPE &&
 		    song->tag->items[i]->type != type) {
 			continue;
@@ -172,34 +168,28 @@ strstrSearchTag(const struct song *song, enum tag_type type, const char *str)
 	 *  empty (first char is a \0), then it's a match as well and
 	 *  we should return 1.
 	 */
-	if (!*str && !visitedTypes[type])
+	if (!*str && !visited_types[type])
 		return 1;
 
 	return ret;
 }
 
 int
-strstrSearchTags(const struct song *song, int numItems,
-		 const struct locate_item *items)
+locate_song_search(const struct song *song, int num_items,
+		   const struct locate_item *items)
 {
-	int i;
-
-	for (i = 0; i < numItems; i++) {
-		if (!strstrSearchTag(song, items[i].tagType,
-				     items[i].needle)) {
+	for (int i = 0; i < num_items; i++)
+		if (!locate_tag_search(song, items[i].tag, items[i].needle))
 			return 0;
-		}
-	}
 
 	return 1;
 }
 
 static int
-tagItemFoundAndMatches(const struct song *song, enum tag_type type,
-		       const char *str)
+locate_tag_match(const struct song *song, enum tag_type type, const char *str)
 {
 	int i;
-	int8_t visitedTypes[TAG_NUM_OF_ITEM_TYPES] = { 0 };
+	int8_t visited_types[TAG_NUM_OF_ITEM_TYPES] = { 0 };
 
 	if (type == LOCATE_TAG_FILE_TYPE || type == LOCATE_TAG_ANY_TYPE) {
 		char *uri = song_get_uri(song);
@@ -217,7 +207,7 @@ tagItemFoundAndMatches(const struct song *song, enum tag_type type,
 		return 0;
 
 	for (i = 0; i < song->tag->numOfItems; i++) {
-		visitedTypes[song->tag->items[i]->type] = 1;
+		visited_types[song->tag->items[i]->type] = 1;
 		if (type != LOCATE_TAG_ANY_TYPE &&
 		    song->tag->items[i]->type != type) {
 			continue;
@@ -233,7 +223,7 @@ tagItemFoundAndMatches(const struct song *song, enum tag_type type,
 	 *  empty (first char is a \0), then it's a match as well and
 	 *  we should return 1.
 	 */
-	if (!*str && !visitedTypes[type])
+	if (!*str && !visited_types[type])
 		return 1;
 
 	return 0;
@@ -241,17 +231,12 @@ tagItemFoundAndMatches(const struct song *song, enum tag_type type,
 
 
 int
-tagItemsFoundAndMatches(const struct song *song, int numItems,
-			const struct locate_item *items)
+locate_song_match(const struct song *song, int num_items,
+		  const struct locate_item *items)
 {
-	int i;
-
-	for (i = 0; i < numItems; i++) {
-		if (!tagItemFoundAndMatches(song, items[i].tagType,
-					    items[i].needle)) {
+	for (int i = 0; i < num_items; i++)
+		if (!locate_tag_match(song, items[i].tag, items[i].needle))
 			return 0;
-		}
-	}
 
 	return 1;
 }

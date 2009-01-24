@@ -80,7 +80,7 @@ searchInDirectory(struct song *song, void *_data)
 	struct search_data *data = _data;
 	LocateTagItemArray *array = &data->array;
 
-	if (strstrSearchTags(song, array->numItems, array->items))
+	if (locate_song_search(song, array->numItems, array->items))
 		return song_print_info(data->client, song);
 
 	return 0;
@@ -105,7 +105,7 @@ searchForSongsIn(struct client *client, const char *name,
 
 	ret = db_walk(name, searchInDirectory, NULL, &data);
 
-	freeLocateTagItemArray(numItems, new_items);
+	locate_item_list_free(numItems, new_items);
 
 	return ret;
 }
@@ -116,7 +116,7 @@ findInDirectory(struct song *song, void *_data)
 	struct search_data *data = _data;
 	LocateTagItemArray *array = &data->array;
 
-	if (tagItemsFoundAndMatches(song, array->numItems, array->items))
+	if (locate_song_match(song, array->numItems, array->items))
 		return song_print_info(data->client, song);
 
 	return 0;
@@ -146,8 +146,8 @@ searchStatsInDirectory(struct song *song, void *data)
 {
 	SearchStats *stats = data;
 
-	if (tagItemsFoundAndMatches(song, stats->locateArray.numItems,
-	                                  stats->locateArray.items)) {
+	if (locate_song_match(song, stats->locateArray.numItems,
+			      stats->locateArray.items)) {
 		stats->numberOfSongs++;
 		if (song->tag->time > 0)
 			stats->playTime += song->tag->time;
@@ -283,8 +283,8 @@ listUniqueTagsInDirectory(struct song *song, void *_data)
 	struct list_tags_data *data = _data;
 	ListCommandItem *item = data->item;
 
-	if (tagItemsFoundAndMatches(song, item->numConditionals,
-	                            item->conditionals)) {
+	if (locate_song_match(song, item->numConditionals,
+			      item->conditionals)) {
 		visitTag(data->client, data->set, song, item->tagType);
 	}
 

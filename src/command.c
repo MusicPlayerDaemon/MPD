@@ -834,7 +834,7 @@ handle_find(struct client *client, int argc, char *argv[])
 {
 	int ret;
 	struct locate_item *items;
-	int numItems = newLocateTagItemArrayFromArgArray(argv + 1,
+	int numItems = locate_item_list_parse(argv + 1,
 							 argc - 1,
 							 &items);
 
@@ -848,7 +848,7 @@ handle_find(struct client *client, int argc, char *argv[])
 		command_error(client, ACK_ERROR_NO_EXIST,
 			      "directory or file not found");
 
-	freeLocateTagItemArray(numItems, items);
+	locate_item_list_free(numItems, items);
 
 	return ret;
 }
@@ -858,7 +858,7 @@ handle_search(struct client *client, int argc, char *argv[])
 {
 	int ret;
 	struct locate_item *items;
-	int numItems = newLocateTagItemArrayFromArgArray(argv + 1,
+	int numItems = locate_item_list_parse(argv + 1,
 							 argc - 1,
 							 &items);
 
@@ -872,7 +872,7 @@ handle_search(struct client *client, int argc, char *argv[])
 		command_error(client, ACK_ERROR_NO_EXIST,
 			      "directory or file not found");
 
-	freeLocateTagItemArray(numItems, items);
+	locate_item_list_free(numItems, items);
 
 	return ret;
 }
@@ -882,7 +882,7 @@ handle_count(struct client *client, int argc, char *argv[])
 {
 	int ret;
 	struct locate_item *items;
-	int numItems = newLocateTagItemArrayFromArgArray(argv + 1,
+	int numItems = locate_item_list_parse(argv + 1,
 							 argc - 1,
 							 &items);
 
@@ -896,7 +896,7 @@ handle_count(struct client *client, int argc, char *argv[])
 		command_error(client, ACK_ERROR_NO_EXIST,
 			      "directory or file not found");
 
-	freeLocateTagItemArray(numItems, items);
+	locate_item_list_free(numItems, items);
 
 	return ret;
 }
@@ -905,7 +905,7 @@ static enum command_return
 handle_playlistfind(struct client *client, int argc, char *argv[])
 {
 	struct locate_item *items;
-	int numItems = newLocateTagItemArrayFromArgArray(argv + 1,
+	int numItems = locate_item_list_parse(argv + 1,
 							 argc - 1,
 							 &items);
 
@@ -916,7 +916,7 @@ handle_playlistfind(struct client *client, int argc, char *argv[])
 
 	queue_find(client, playlist_get_queue(), numItems, items);
 
-	freeLocateTagItemArray(numItems, items);
+	locate_item_list_free(numItems, items);
 
 	return COMMAND_RETURN_OK;
 }
@@ -925,7 +925,7 @@ static enum command_return
 handle_playlistsearch(struct client *client, int argc, char *argv[])
 {
 	struct locate_item *items;
-	int numItems = newLocateTagItemArrayFromArgArray(argv + 1,
+	int numItems = locate_item_list_parse(argv + 1,
 							 argc - 1,
 							 &items);
 
@@ -936,7 +936,7 @@ handle_playlistsearch(struct client *client, int argc, char *argv[])
 
 	queue_search(client, playlist_get_queue(), numItems, items);
 
-	freeLocateTagItemArray(numItems, items);
+	locate_item_list_free(numItems, items);
 
 	return COMMAND_RETURN_OK;
 }
@@ -1113,7 +1113,7 @@ handle_list(struct client *client, int argc, char *argv[])
 {
 	int numConditionals;
 	struct locate_item *conditionals = NULL;
-	int tagType = getLocateTagItemType(argv[1]);
+	int tagType = locate_parse_type(argv[1]);
 	int ret;
 
 	if (tagType < 0) {
@@ -1135,12 +1135,12 @@ handle_list(struct client *client, int argc, char *argv[])
 				      mpdTagItemKeys[TAG_ITEM_ALBUM]);
 			return COMMAND_RETURN_ERROR;
 		}
-		conditionals = newLocateTagItem(mpdTagItemKeys[TAG_ITEM_ARTIST],
+		conditionals = locate_item_new(mpdTagItemKeys[TAG_ITEM_ARTIST],
 						argv[2]);
 		numConditionals = 1;
 	} else {
 		numConditionals =
-		    newLocateTagItemArrayFromArgArray(argv + 2,
+		    locate_item_list_parse(argv + 2,
 						      argc - 2, &conditionals);
 
 		if (numConditionals < 0) {
@@ -1153,7 +1153,7 @@ handle_list(struct client *client, int argc, char *argv[])
 	ret = listAllUniqueTags(client, tagType, numConditionals, conditionals);
 
 	if (conditionals)
-		freeLocateTagItemArray(numConditionals, conditionals);
+		locate_item_list_free(numConditionals, conditionals);
 
 	if (ret == -1)
 		command_error(client, ACK_ERROR_NO_EXIST,
