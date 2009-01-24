@@ -122,9 +122,11 @@ locate_item_list_casefold(const struct locate_item_list *list)
 {
 	struct locate_item_list *new_list = locate_item_list_new(list->length);
 
-	for (unsigned i = 0; i < list->length; i++)
+	for (unsigned i = 0; i < list->length; i++){
 		new_list->items[i].needle =
 			g_utf8_casefold(list->items[i].needle, -1);
+		new_list->items[i].tag = list->items[i].tag;
+	}
 
 	return new_list;
 }
