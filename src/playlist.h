@@ -94,6 +94,12 @@ void initPlaylist(void);
 
 void finishPlaylist(void);
 
+/**
+ * Returns the "queue" object of the global playlist instance.
+ */
+const struct queue *
+playlist_get_queue(void);
+
 void readPlaylistState(FILE *);
 
 void savePlaylistState(FILE *);

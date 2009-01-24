@@ -132,6 +132,12 @@ void finishPlaylist(void)
 	g_rand = NULL;
 }
 
+const struct queue *
+playlist_get_queue(void)
+{
+	return &playlist.queue;
+}
+
 void clearPlaylist(void)
 {
 	stopPlaylist();
