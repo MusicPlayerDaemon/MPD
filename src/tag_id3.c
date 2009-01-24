@@ -24,6 +24,7 @@
 #include <id3tag.h>
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <errno.h>
 #include <string.h>
 
@@ -48,6 +49,23 @@
 #ifndef ID3_FRAME_ALBUM_ARTIST
 #define ID3_FRAME_ALBUM_ARTIST "TPE2"
 #endif
+
+static id3_utf8_t *
+tag_id3_getstring(const struct id3_frame *frame, unsigned i)
+{
+	union id3_field *field;
+	const id3_ucs4_t *ucs4;
+
+	field = id3_frame_field(frame, i);
+	if (field == NULL)
+		return NULL;
+
+	ucs4 = id3_field_getstring(field);
+	if (ucs4 == NULL)
+		return NULL;
+
+	return id3_ucs4_utf8duplicate(ucs4);
+}
 
 /* This will try to convert a string to utf-8,
  */
@@ -205,6 +223,65 @@ getID3Info(struct id3_tag *tag, const char *id, int type, struct tag *mpdTag)
 		g_debug("Unsupported tag type requrested");
 }
 
+/**
+ * Parse a TXXX name, and convert it to a tag_type enum value.
+ * Returns TAG_NUM_OF_ITEM_TYPES if the TXXX name is not understood.
+ */
+static enum tag_type
+tag_id3_parse_txxx_name(const char *name)
+{
+	static const struct {
+		enum tag_type type;
+		const char *name;
+	} musicbrainz_txxx[] = {
+		{ TAG_MUSICBRAINZ_ARTISTID, "MusicBrainz Artist Id" },
+		{ TAG_MUSICBRAINZ_ALBUMID, "MusicBrainz Album Id" },
+		{ TAG_MUSICBRAINZ_ALBUMARTISTID,
+		  "MusicBrainz Album Artist Id" },
+		{ TAG_MUSICBRAINZ_TRACKID, "MusicBrainz Track Id" },
+	};
+
+	for (unsigned i = 0; i < G_N_ELEMENTS(musicbrainz_txxx); ++i)
+		if (strcmp(name, musicbrainz_txxx[i].name) == 0)
+			return musicbrainz_txxx[i].type;
+
+	return TAG_NUM_OF_ITEM_TYPES;
+}
+
+/**
+ * Import all known MusicBrainz tags from TXXX frames.
+ */
+static void
+tag_id3_import_musicbrainz(struct tag *mpd_tag, struct id3_tag *id3_tag)
+{
+	for (unsigned i = 0;; ++i) {
+		const struct id3_frame *frame;
+		id3_utf8_t *name, *value;
+		enum tag_type type;
+
+		frame = id3_tag_findframe(id3_tag, "TXXX", i);
+		if (frame == NULL)
+			break;
+
+		name = tag_id3_getstring(frame, 1);
+		if (name == NULL)
+			continue;
+
+		type = tag_id3_parse_txxx_name((const char*)name);
+		free(name);
+
+		if (type == TAG_NUM_OF_ITEM_TYPES)
+			continue;
+
+		value = tag_id3_getstring(frame, 2);
+		if (value == NULL)
+			continue;
+
+		tag_add_item(mpd_tag, type, (const char*)value);
+		free(value);
+	}
+}
+
 struct tag *tag_id3_import(struct id3_tag * tag)
 {
 	struct tag *ret = tag_new();
@@ -223,6 +300,8 @@ struct tag *tag_id3_import(struct id3_tag * tag)
 	getID3Info(tag, ID3_FRAME_PERFORMER, TAG_ITEM_PERFORMER, ret);
 	getID3Info(tag, ID3_FRAME_COMMENT, TAG_ITEM_COMMENT, ret);
 	getID3Info(tag, ID3_FRAME_DISC, TAG_ITEM_DISC, ret);
+
+	tag_id3_import_musicbrainz(ret, tag);
 
 	if (tag_is_empty(ret)) {
 		tag_free(ret);
