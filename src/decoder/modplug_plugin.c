@@ -55,7 +55,8 @@ static GByteArray *mod_loadfile(struct decoder *decoder, struct input_stream *is
 	}
 
 	data = g_malloc(MODPLUG_READ_BLOCK);
-	do {
+
+	while (true) {
 		ret = decoder_read(decoder, is, data, MODPLUG_READ_BLOCK);
 		if (ret == 0) {
 			if (input_stream_eof(is))
@@ -76,7 +77,8 @@ static GByteArray *mod_loadfile(struct decoder *decoder, struct input_stream *is
 		}
 
 		g_byte_array_append(bdatas, data, ret);
-	} while (input_stream_eof(is));
+	}
+
 	g_free(data);
 
 	return bdatas;
