@@ -48,18 +48,18 @@ locate_parse_type(const char *str)
 	return -1;
 }
 
-static int
+static bool
 locate_item_init(struct locate_item *item,
 		 const char *type_string, const char *needle)
 {
 	item->tag = locate_parse_type(type_string);
 
 	if (item->tag < 0)
-		return -1;
+		return false;
 
 	item->needle = g_strdup(needle);
 
-	return 0;
+	return true;
 }
 
 struct locate_item *
@@ -67,7 +67,7 @@ locate_item_new(const char *type_string, const char *needle)
 {
 	struct locate_item *ret = g_new(struct locate_item, 1);
 
-	if (locate_item_init(ret, type_string, needle) < 0) {
+	if (!locate_item_init(ret, type_string, needle)) {
 		free(ret);
 		ret = NULL;
 	}
@@ -101,7 +101,7 @@ locate_item_list_parse(char *argv[], int argc, struct locate_item **arrayRet)
 	*arrayRet = g_new(struct locate_item, argc / 2);
 
 	for (i = 0, item = *arrayRet; i < argc / 2; i++, item++) {
-		if (locate_item_init(item, argv[i * 2], argv[i * 2 + 1]) < 0)
+		if (!locate_item_init(item, argv[i * 2], argv[i * 2 + 1]))
 			goto fail;
 	}
 
@@ -124,13 +124,13 @@ locate_item_free(struct locate_item *item)
 	free(item);
 }
 
-static int
+static bool
 locate_tag_search(const struct song *song, enum tag_type type, const char *str)
 {
 	int i;
 	char *duplicate;
-	int ret = 0;
-	int8_t visited_types[TAG_NUM_OF_ITEM_TYPES] = { 0 };
+	bool ret = false;
+	bool visited_types[TAG_NUM_OF_ITEM_TYPES] = { false };
 
 	if (type == LOCATE_TAG_FILE_TYPE || type == LOCATE_TAG_ANY_TYPE) {
 		char *uri, *p;
@@ -140,17 +140,17 @@ locate_tag_search(const struct song *song, enum tag_type type, const char *str)
 		g_free(uri);
 
 		if (strstr(p, str))
-			ret = 1;
+			ret = true;
 		g_free(p);
 		if (ret == 1 || type == LOCATE_TAG_FILE_TYPE)
 			return ret;
 	}
 
 	if (!song->tag)
-		return 0;
+		return false;
 
 	for (i = 0; i < song->tag->numOfItems && !ret; i++) {
-		visited_types[song->tag->items[i]->type] = 1;
+		visited_types[song->tag->items[i]->type] = true;
 		if (type != LOCATE_TAG_ANY_TYPE &&
 		    song->tag->items[i]->type != type) {
 			continue;
@@ -158,7 +158,7 @@ locate_tag_search(const struct song *song, enum tag_type type, const char *str)
 
 		duplicate = g_utf8_casefold(song->tag->items[i]->value, -1);
 		if (*str && strstr(duplicate, str))
-			ret = 1;
+			ret = true;
 		g_free(duplicate);
 	}
 
@@ -166,30 +166,30 @@ locate_tag_search(const struct song *song, enum tag_type type, const char *str)
 	 * through the song's tag, it means this field is absent from
 	 * the tag or empty. Thus, if the searched string is also
 	 *  empty (first char is a \0), then it's a match as well and
-	 *  we should return 1.
+	 *  we should return true.
 	 */
 	if (!*str && !visited_types[type])
-		return 1;
+		return true;
 
 	return ret;
 }
 
-int
+bool
 locate_song_search(const struct song *song, int num_items,
 		   const struct locate_item *items)
 {
 	for (int i = 0; i < num_items; i++)
 		if (!locate_tag_search(song, items[i].tag, items[i].needle))
-			return 0;
+			return false;
 
-	return 1;
+	return true;
 }
 
-static int
+static bool
 locate_tag_match(const struct song *song, enum tag_type type, const char *str)
 {
 	int i;
-	int8_t visited_types[TAG_NUM_OF_ITEM_TYPES] = { 0 };
+	bool visited_types[TAG_NUM_OF_ITEM_TYPES] = { false };
 
 	if (type == LOCATE_TAG_FILE_TYPE || type == LOCATE_TAG_ANY_TYPE) {
 		char *uri = song_get_uri(song);
@@ -197,46 +197,45 @@ locate_tag_match(const struct song *song, enum tag_type type, const char *str)
 		g_free(uri);
 
 		if (matches)
-			return 1;
+			return true;
 
 		if (type == LOCATE_TAG_FILE_TYPE)
-			return 0;
+			return false;
 	}
 
 	if (!song->tag)
-		return 0;
+		return false;
 
 	for (i = 0; i < song->tag->numOfItems; i++) {
-		visited_types[song->tag->items[i]->type] = 1;
+		visited_types[song->tag->items[i]->type] = true;
 		if (type != LOCATE_TAG_ANY_TYPE &&
 		    song->tag->items[i]->type != type) {
 			continue;
 		}
 
 		if (0 == strcmp(str, song->tag->items[i]->value))
-			return 1;
+			return true;
 	}
 
 	/** If the search critieron was not visited during the sweep
 	 * through the song's tag, it means this field is absent from
 	 * the tag or empty. Thus, if the searched string is also
 	 *  empty (first char is a \0), then it's a match as well and
-	 *  we should return 1.
+	 *  we should return true.
 	 */
 	if (!*str && !visited_types[type])
-		return 1;
+		return true;
 
-	return 0;
+	return false;
 }
 
-
-int
+bool
 locate_song_match(const struct song *song, int num_items,
 		  const struct locate_item *items)
 {
 	for (int i = 0; i < num_items; i++)
 		if (!locate_tag_match(song, items[i].tag, items[i].needle))
-			return 0;
+			return false;
 
-	return 1;
+	return true;
 }

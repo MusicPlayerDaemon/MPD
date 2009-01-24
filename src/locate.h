@@ -20,6 +20,7 @@
 #define MPD_LOCATE_H
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #define LOCATE_TAG_FILE_TYPE	TAG_NUM_OF_ITEM_TYPES+10
 #define LOCATE_TAG_ANY_TYPE     TAG_NUM_OF_ITEM_TYPES+20
@@ -50,11 +51,11 @@ locate_item_list_free(int count, struct locate_item *array);
 void
 locate_item_free(struct locate_item *item);
 
-int
+bool
 locate_song_search(const struct song *song, int numItems,
 		   const struct locate_item *items);
 
-int
+bool
 locate_song_match(const struct song *song, int numItems,
 		  const struct locate_item *items);
 
