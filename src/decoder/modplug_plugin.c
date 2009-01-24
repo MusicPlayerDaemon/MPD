@@ -23,6 +23,9 @@
 #include <glib.h>
 #include <modplug.h>
 
+#undef G_LOG_DOMAIN
+#define G_LOG_DOMAIN "modplug"
+
 enum {
 	MODPLUG_FRAME_SIZE = 4096,
 	MODPLUG_PREALLOC_BLOCK = 256 * 1024,
