@@ -91,8 +91,8 @@ static id3_utf8_t * processID3FieldString (int is_id3v1, const id3_ucs4_t *ucs4,
 	return utf8_stripped;
 }
 
-static struct tag *getID3Info(
-	struct id3_tag *tag, const char *id, int type, struct tag *mpdTag)
+static void
+getID3Info(struct id3_tag *tag, const char *id, int type, struct tag *mpdTag)
 {
 	struct id3_frame const *frame;
 	id3_ucs4_t const *ucs4;
@@ -104,13 +104,13 @@ static struct tag *getID3Info(
 	/* Check frame */
 	if (!frame)
 	{
-		return mpdTag;
+		return;
 	}
 	/* Check fields in frame */
 	if(frame->nfields == 0)
 	{
 		g_debug("Frame has no fields");
-		return mpdTag;
+		return;
 	}
 
 	/* Starting with T is a stringlist */
@@ -126,7 +126,7 @@ static struct tag *getID3Info(
 		{
 			g_debug("Invalid number '%i' of fields for TXX frame",
 				frame->nfields);
-			return mpdTag;
+			return;
 		}
 		field = &frame->fields[0];
 		/**
@@ -152,8 +152,6 @@ static struct tag *getID3Info(
 				if(!utf8)
 					continue;
 
-				if (mpdTag == NULL)
-					mpdTag = tag_new();
 				tag_add_item(mpdTag, type, (char *)utf8);
 				g_free(utf8);
 			}
@@ -185,8 +183,6 @@ static struct tag *getID3Info(
 					utf8 = processID3FieldString(isId3v1(tag),ucs4, type);
 					if(utf8)
 					{
-						if (mpdTag == NULL)
-							mpdTag = tag_new();
 						tag_add_item(mpdTag, type, (char *)utf8);
 						g_free(utf8);
 					}
@@ -205,32 +201,33 @@ static struct tag *getID3Info(
 		}
 	}
 	/* Unsupported */
-	else {
+	else
 		g_debug("Unsupported tag type requrested");
-		return mpdTag;
-	}
-
-	return mpdTag;
 }
 
 struct tag *tag_id3_import(struct id3_tag * tag)
 {
-	struct tag *ret = NULL;
+	struct tag *ret = tag_new();
 
-	ret = getID3Info(tag, ID3_FRAME_ARTIST, TAG_ITEM_ARTIST, ret);
-	ret = getID3Info(tag, ID3_FRAME_ALBUM_ARTIST,
-			 TAG_ITEM_ALBUM_ARTIST, ret);
-	ret = getID3Info(tag, ID3_FRAME_ALBUM_ARTIST_SORT,
-			 TAG_ITEM_ALBUM_ARTIST, ret);
-	ret = getID3Info(tag, ID3_FRAME_TITLE, TAG_ITEM_TITLE, ret);
-	ret = getID3Info(tag, ID3_FRAME_ALBUM, TAG_ITEM_ALBUM, ret);
-	ret = getID3Info(tag, ID3_FRAME_TRACK, TAG_ITEM_TRACK, ret);
-	ret = getID3Info(tag, ID3_FRAME_YEAR, TAG_ITEM_DATE, ret);
-	ret = getID3Info(tag, ID3_FRAME_GENRE, TAG_ITEM_GENRE, ret);
-	ret = getID3Info(tag, ID3_FRAME_COMPOSER, TAG_ITEM_COMPOSER, ret);
-	ret = getID3Info(tag, ID3_FRAME_PERFORMER, TAG_ITEM_PERFORMER, ret);
-	ret = getID3Info(tag, ID3_FRAME_COMMENT, TAG_ITEM_COMMENT, ret);
-	ret = getID3Info(tag, ID3_FRAME_DISC, TAG_ITEM_DISC, ret);
+	getID3Info(tag, ID3_FRAME_ARTIST, TAG_ITEM_ARTIST, ret);
+	getID3Info(tag, ID3_FRAME_ALBUM_ARTIST,
+		   TAG_ITEM_ALBUM_ARTIST, ret);
+	getID3Info(tag, ID3_FRAME_ALBUM_ARTIST_SORT,
+		   TAG_ITEM_ALBUM_ARTIST, ret);
+	getID3Info(tag, ID3_FRAME_TITLE, TAG_ITEM_TITLE, ret);
+	getID3Info(tag, ID3_FRAME_ALBUM, TAG_ITEM_ALBUM, ret);
+	getID3Info(tag, ID3_FRAME_TRACK, TAG_ITEM_TRACK, ret);
+	getID3Info(tag, ID3_FRAME_YEAR, TAG_ITEM_DATE, ret);
+	getID3Info(tag, ID3_FRAME_GENRE, TAG_ITEM_GENRE, ret);
+	getID3Info(tag, ID3_FRAME_COMPOSER, TAG_ITEM_COMPOSER, ret);
+	getID3Info(tag, ID3_FRAME_PERFORMER, TAG_ITEM_PERFORMER, ret);
+	getID3Info(tag, ID3_FRAME_COMMENT, TAG_ITEM_COMMENT, ret);
+	getID3Info(tag, ID3_FRAME_DISC, TAG_ITEM_DISC, ret);
+
+	if (tag_is_empty(ret)) {
+		tag_free(ret);
+		ret = NULL;
+	}
 
 	return ret;
 }
