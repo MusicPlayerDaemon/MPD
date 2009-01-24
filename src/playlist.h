@@ -43,7 +43,7 @@ enum playlist_result {
 	PLAYLIST_RESULT_DISABLED,
 };
 
-typedef struct _Playlist {
+struct playlist {
 	/**
 	 * The song queue - it contains the "real" playlist.
 	 */
@@ -84,7 +84,7 @@ typedef struct _Playlist {
 	 * This variable is only valid if #playing is true.
 	 */
 	int queued;
-} Playlist;
+};
 
 extern bool playlist_saveAbsolutePaths;
 

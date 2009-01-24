@@ -73,7 +73,7 @@
 static GRand *g_rand;
 
 /** the global playlist object */
-static Playlist playlist;
+static struct playlist playlist;
 unsigned playlist_max_length;
 
 bool playlist_saveAbsolutePaths = DEFAULT_PLAYLIST_SAVE_ABSOLUTE_PATHS;
