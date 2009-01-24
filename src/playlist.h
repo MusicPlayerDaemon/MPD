@@ -26,9 +26,6 @@
 
 #define PLAYLIST_COMMENT	'#'
 
-struct client;
-struct locate_item;
-
 enum playlist_result {
 	PLAYLIST_RESULT_SUCCESS,
 	PLAYLIST_RESULT_ERRNO,
@@ -174,14 +171,6 @@ enum playlist_result seekSongInPlaylist(unsigned song, float seek_time);
 enum playlist_result seekSongInPlaylistById(unsigned id, float seek_time);
 
 void playlistVersionChange(void);
-
-void
-searchForSongsInPlaylist(struct client *client,
-			 unsigned numItems, const struct locate_item *items);
-
-void
-findSongsInPlaylist(struct client *client,
-		    unsigned numItems, const struct locate_item *items);
 
 int is_valid_playlist_name(const char *utf8path);
 

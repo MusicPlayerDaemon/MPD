@@ -1177,39 +1177,6 @@ enum playlist_result loadPlaylist(const char *utf8file)
 	return PLAYLIST_RESULT_SUCCESS;
 }
 
-void
-searchForSongsInPlaylist(struct client *client,
-			 unsigned numItems, const struct locate_item *items)
-{
-	unsigned i;
-	struct locate_item *new_items =
-		g_memdup(items, sizeof(items[0]) * numItems);
-
-	for (i = 0; i < numItems; i++)
-		new_items[i].needle = g_utf8_casefold(new_items[i].needle, -1);
-
-	for (i = 0; i < queue_length(&playlist.queue); i++) {
-		const struct song *song = queue_get(&playlist.queue, i);
-
-		if (strstrSearchTags(song, numItems, items))
-			queue_print_song_info(client, &playlist.queue, i);
-	}
-
-	freeLocateTagItemArray(numItems, new_items);
-}
-
-void
-findSongsInPlaylist(struct client *client,
-		    unsigned numItems, const struct locate_item *items)
-{
-	for (unsigned i = 0; i < queue_length(&playlist.queue); i++) {
-		const struct song *song = queue_get(&playlist.queue, i);
-
-		if (tagItemsFoundAndMatches(song, numItems, items))
-			queue_print_song_info(client, &playlist.queue, i);
-	}
-}
-
 /*
  * Not supporting '/' was done out of laziness, and we should really
  * strive to support it in the future.

@@ -914,7 +914,7 @@ handle_playlistfind(struct client *client, int argc, char *argv[])
 		return COMMAND_RETURN_ERROR;
 	}
 
-	findSongsInPlaylist(client, numItems, items);
+	queue_find(client, playlist_get_queue(), numItems, items);
 
 	freeLocateTagItemArray(numItems, items);
 
@@ -934,7 +934,7 @@ handle_playlistsearch(struct client *client, int argc, char *argv[])
 		return COMMAND_RETURN_ERROR;
 	}
 
-	searchForSongsInPlaylist(client, numItems, items);
+	queue_search(client, playlist_get_queue(), numItems, items);
 
 	freeLocateTagItemArray(numItems, items);
 

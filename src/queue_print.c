@@ -20,6 +20,7 @@
 #include "queue.h"
 #include "song.h"
 #include "song_print.h"
+#include "locate.h"
 #include "client.h"
 
 void
@@ -76,4 +77,37 @@ queue_print_changes_position(struct client *client, const struct queue *queue,
 		if (queue_song_newer(queue, i, version))
 			client_printf(client, "cpos: %i\nId: %i\n",
 				      i, queue_position_to_id(queue, i));
+}
+
+void
+queue_search(struct client *client, const struct queue *queue,
+	     unsigned num_items, const struct locate_item *items)
+{
+	unsigned i;
+	struct locate_item *new_items =
+		g_memdup(items, sizeof(items[0]) * num_items);
+
+	for (i = 0; i < num_items; i++)
+		new_items[i].needle = g_utf8_casefold(new_items[i].needle, -1);
+
+	for (i = 0; i < queue_length(queue); i++) {
+		const struct song *song = queue_get(queue, i);
+
+		if (strstrSearchTags(song, num_items, items))
+			queue_print_song_info(client, queue, i);
+	}
+
+	freeLocateTagItemArray(num_items, new_items);
+}
+
+void
+queue_find(struct client *client, const struct queue *queue,
+	   unsigned num_items, const struct locate_item *items)
+{
+	for (unsigned i = 0; i < queue_length(queue); i++) {
+		const struct song *song = queue_get(queue, i);
+
+		if (tagItemsFoundAndMatches(song, num_items, items))
+			queue_print_song_info(client, queue, i);
+	}
 }

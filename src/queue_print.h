@@ -28,6 +28,7 @@
 
 struct client;
 struct queue;
+struct locate_item;
 
 void
 queue_print_song_info(struct client *client, const struct queue *queue,
@@ -56,5 +57,13 @@ queue_print_changes_info(struct client *client, const struct queue *queue,
 void
 queue_print_changes_position(struct client *client, const struct queue *queue,
 			     uint32_t version);
+
+void
+queue_search(struct client *client, const struct queue *queue,
+	     unsigned num_items, const struct locate_item *items);
+
+void
+queue_find(struct client *client, const struct queue *queue,
+	   unsigned num_items, const struct locate_item *items);
 
 #endif
