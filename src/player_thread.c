@@ -526,7 +526,7 @@ static gpointer player_task(G_GNUC_UNUSED gpointer arg)
 			break;
 
 		case PLAYER_COMMAND_EXIT:
-			dc_quit(&pc.notify);
+			dc_quit();
 			closeAudioDevice();
 			player_command_finished();
 			g_thread_exit(NULL);

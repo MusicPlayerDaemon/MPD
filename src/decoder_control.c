@@ -102,8 +102,13 @@ dc_seek(struct notify *notify, double where)
 }
 
 void
-dc_quit(struct notify *notify)
+dc_quit(void)
 {
+	assert(dc.thread != NULL);
+
 	dc.quit = true;
-	dc_command(notify, DECODE_COMMAND_STOP);
+	dc_command_async(DECODE_COMMAND_STOP);
+
+	g_thread_join(dc.thread);
+	dc.thread = NULL;
 }

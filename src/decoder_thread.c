@@ -258,8 +258,10 @@ static gpointer decoder_task(G_GNUC_UNUSED gpointer arg)
 void decoder_thread_start(void)
 {
 	GError *e = NULL;
-	GThread *t;
 
-	if (!(t = g_thread_create(decoder_task, NULL, FALSE, &e)))
+	assert(dc.thread == NULL);
+
+	dc.thread = g_thread_create(decoder_task, NULL, true, &e);
+	if (dc.thread == NULL)
 		FATAL("Failed to spawn decoder task: %s\n", e->message);
 }

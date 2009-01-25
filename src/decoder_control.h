@@ -45,6 +45,10 @@ enum decoder_state {
 };
 
 struct decoder_control {
+	/** the handle of the decoder thread, or NULL if the decoder
+	    thread isn't running */
+	GThread *thread;
+
 	struct notify notify;
 
 	volatile enum decoder_state state;
@@ -124,6 +128,6 @@ bool
 dc_seek(struct notify *notify, double where);
 
 void
-dc_quit(struct notify *notify);
+dc_quit(void);
 
 #endif
