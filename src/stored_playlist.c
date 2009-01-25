@@ -48,6 +48,25 @@ spl_global_init(void)
 				DEFAULT_PLAYLIST_SAVE_ABSOLUTE_PATHS);
 }
 
+bool
+spl_valid_name(const char *name_utf8)
+{
+	/*
+	 * Not supporting '/' was done out of laziness, and we should
+	 * really strive to support it in the future.
+	 *
+	 * Not supporting '\r' and '\n' is done out of protocol
+	 * limitations (and arguably laziness), but bending over head
+	 * over heels to modify the protocol (and compatibility with
+	 * all clients) to support idiots who put '\r' and '\n' in
+	 * filenames isn't going to happen, either.
+	 */
+
+	return strchr(name_utf8, '/') == NULL &&
+		strchr(name_utf8, '\n') == NULL &&
+		strchr(name_utf8, '\r') == NULL;
+}
+
 static struct stored_playlist_info *
 load_playlist_info(const char *parent_path_fs, const char *name_fs)
 {
@@ -158,7 +177,7 @@ spl_load(const char *utf8path)
 	char buffer[MPD_PATH_MAX];
 	char *path_fs;
 
-	if (!is_valid_playlist_name(utf8path))
+	if (!spl_valid_name(utf8path))
 		return NULL;
 
 	path_fs = map_spl_utf8_to_fs(utf8path);
@@ -279,7 +298,7 @@ spl_clear(const char *utf8path)
 	char *path_fs;
 	FILE *file;
 
-	if (!is_valid_playlist_name(utf8path))
+	if (!spl_valid_name(utf8path))
 		return PLAYLIST_RESULT_BAD_NAME;
 
 	path_fs = map_spl_utf8_to_fs(utf8path);
@@ -350,7 +369,7 @@ spl_append_song(const char *utf8path, struct song *song)
 	struct stat st;
 	char *path_fs;
 
-	if (!is_valid_playlist_name(utf8path))
+	if (!spl_valid_name(utf8path))
 		return PLAYLIST_RESULT_BAD_NAME;
 
 	path_fs = map_spl_utf8_to_fs(utf8path);
@@ -429,8 +448,7 @@ spl_rename(const char *utf8from, const char *utf8to)
 	char *from_path_fs, *to_path_fs;
 	static enum playlist_result ret;
 
-	if (!is_valid_playlist_name(utf8from) ||
-	    !is_valid_playlist_name(utf8to))
+	if (!spl_valid_name(utf8from) || !spl_valid_name(utf8to))
 		return PLAYLIST_RESULT_BAD_NAME;
 
 	from_path_fs = map_spl_utf8_to_fs(utf8from);

@@ -1091,19 +1091,3 @@ unsigned getPlaylistSongId(unsigned song)
 {
 	return queue_position_to_id(&playlist.queue, song);
 }
-
-/*
- * Not supporting '/' was done out of laziness, and we should really
- * strive to support it in the future.
- *
- * Not supporting '\r' and '\n' is done out of protocol limitations (and
- * arguably laziness), but bending over head over heels to modify the
- * protocol (and compatibility with all clients) to support idiots who
- * put '\r' and '\n' in filenames isn't going to happen, either.
- */
-int is_valid_playlist_name(const char *utf8path)
-{
-	return strchr(utf8path, '/') == NULL &&
-		strchr(utf8path, '\n') == NULL &&
-		strchr(utf8path, '\r') == NULL;
-}

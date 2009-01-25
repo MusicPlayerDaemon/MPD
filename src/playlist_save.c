@@ -70,7 +70,7 @@ spl_save_queue(const char *name_utf8, const struct queue *queue)
 	char *path_fs;
 	FILE *file;
 
-	if (!is_valid_playlist_name(name_utf8))
+	if (!spl_valid_name(name_utf8))
 		return PLAYLIST_RESULT_BAD_NAME;
 
 	path_fs = map_spl_utf8_to_fs(name_utf8);

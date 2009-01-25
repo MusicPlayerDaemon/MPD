@@ -22,6 +22,7 @@
 #include "playlist.h"
 
 #include <glib.h>
+#include <stdbool.h>
 #include <time.h>
 
 struct song;
@@ -39,6 +40,13 @@ extern bool playlist_saveAbsolutePaths;
  */
 void
 spl_global_init(void);
+
+/**
+ * Determines whether the specified string is a valid name for a
+ * stored playlist.
+ */
+bool
+spl_valid_name(const char *name_utf8);
 
 /**
  * Returns a list of stored_playlist_info struct pointers.  Returns
