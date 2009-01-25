@@ -65,11 +65,6 @@
 
 #define PLAYLIST_BUFFER_SIZE	2*MPD_PATH_MAX
 
-#define PLAYLIST_HASH_MULT	4
-
-/** random number generator fur shuffling */
-static GRand *g_rand;
-
 /** the global playlist object */
 static struct playlist playlist;
 
@@ -102,8 +97,6 @@ playlist_tag_event(void)
 
 void initPlaylist(void)
 {
-	g_rand = g_rand_new();
-
 	queue_init(&playlist.queue,
 		   config_get_positive(CONF_MAX_PLAYLIST_LENGTH,
 				       DEFAULT_PLAYLIST_MAX_LENGTH));
@@ -117,9 +110,6 @@ void initPlaylist(void)
 void finishPlaylist(void)
 {
 	queue_finish(&playlist.queue);
-
-	g_rand_free(g_rand);
-	g_rand = NULL;
 }
 
 const struct queue *
