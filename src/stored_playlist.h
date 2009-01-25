@@ -32,6 +32,14 @@ struct stored_playlist_info {
 	time_t mtime;
 };
 
+extern bool playlist_saveAbsolutePaths;
+
+/**
+ * Perform some global initialization, e.g. load configuration values.
+ */
+void
+spl_global_init(void);
+
 /**
  * Returns a list of stored_playlist_info struct pointers.  Returns
  * NULL if an error occured.

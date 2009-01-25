@@ -17,7 +17,7 @@
  */
 
 #include "playlist_save.h"
-#include "playlist.h"
+#include "stored_playlist.h"
 #include "song.h"
 #include "mapper.h"
 #include "path.h"

@@ -83,10 +83,6 @@ struct playlist {
 	int queued;
 };
 
-extern bool playlist_saveAbsolutePaths;
-
-extern unsigned playlist_max_length;
-
 void initPlaylist(void);
 
 void finishPlaylist(void);

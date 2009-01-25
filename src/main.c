@@ -22,6 +22,7 @@
 #include "idle.h"
 #include "command.h"
 #include "playlist.h"
+#include "stored_playlist.h"
 #include "database.h"
 #include "update.h"
 #include "player_thread.h"
@@ -230,6 +231,7 @@ int main(int argc, char *argv[])
 	mapper_init();
 	initPermissions();
 	initPlaylist();
+	spl_global_init();
 #ifdef ENABLE_ARCHIVE
 	archive_plugin_init_all();
 #endif

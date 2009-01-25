@@ -67,17 +67,11 @@
 
 #define PLAYLIST_HASH_MULT	4
 
-#define DEFAULT_PLAYLIST_MAX_LENGTH		(1024*16)
-#define DEFAULT_PLAYLIST_SAVE_ABSOLUTE_PATHS	false
-
 /** random number generator fur shuffling */
 static GRand *g_rand;
 
 /** the global playlist object */
 static struct playlist playlist;
-unsigned playlist_max_length;
-
-bool playlist_saveAbsolutePaths = DEFAULT_PLAYLIST_SAVE_ABSOLUTE_PATHS;
 
 static void playPlaylistOrderNumber(int orderNum);
 
@@ -110,17 +104,12 @@ void initPlaylist(void)
 {
 	g_rand = g_rand_new();
 
-	playlist_max_length = config_get_positive(CONF_MAX_PLAYLIST_LENGTH,
-						  DEFAULT_PLAYLIST_MAX_LENGTH);
-
-	queue_init(&playlist.queue, playlist_max_length);
+	queue_init(&playlist.queue,
+		   config_get_positive(CONF_MAX_PLAYLIST_LENGTH,
+				       DEFAULT_PLAYLIST_MAX_LENGTH));
 
 	playlist.queued = -1;
 	playlist.current = -1;
-
-	playlist_saveAbsolutePaths =
-		config_get_bool(CONF_SAVE_ABSOLUTE_PATHS,
-				DEFAULT_PLAYLIST_SAVE_ABSOLUTE_PATHS);
 
 	event_pipe_register(PIPE_EVENT_TAG, playlist_tag_event);
 }

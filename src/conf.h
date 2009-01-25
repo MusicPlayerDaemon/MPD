@@ -69,6 +69,9 @@
 #define CONF_BOOL_UNSET         -1
 #define CONF_BOOL_INVALID       -2
 
+#define DEFAULT_PLAYLIST_MAX_LENGTH (1024*16)
+#define DEFAULT_PLAYLIST_SAVE_ABSOLUTE_PATHS false
+
 struct block_param {
 	char *name;
 	char *value;
