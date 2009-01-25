@@ -28,41 +28,42 @@
 extern const struct mixer_plugin alsa_mixer;
 extern const struct mixer_plugin oss_mixer;
 
-struct mixer_data;
-
 struct mixer_plugin {
 	/**
          * Alocates and configures a mixer device.
 	 */
-	struct mixer_data *(*init)(const struct config_param *param);
+	struct mixer *(*init)(const struct config_param *param);
 
         /**
 	 * Finish and free mixer data
          */
-        void (*finish)(struct mixer_data *data);
+        void (*finish)(struct mixer *data);
 
         /**
     	 * Open mixer device
 	 */
-	bool (*open)(struct mixer_data *data);
+	bool (*open)(struct mixer *data);
 
         /**
 	 * Control mixer device.
          */
-	bool (*control)(struct mixer_data *data, int cmd, void *arg);
+	bool (*control)(struct mixer *data, int cmd, void *arg);
 
         /**
     	 * Close mixer device
 	 */
-	void (*close)(struct mixer_data *data);
+	void (*close)(struct mixer *data);
 };
 
 struct mixer {
 	const struct mixer_plugin *plugin;
-	struct mixer_data *data;
 };
 
-void mixer_finish(struct mixer *mixer);
+static inline void
+mixer_init(struct mixer *mixer, const struct mixer_plugin *plugin)
+{
+	mixer->plugin = plugin;
+}
 
 struct mixer *
 mixer_new(const struct mixer_plugin *plugin, const struct config_param *param);

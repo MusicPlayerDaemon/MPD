@@ -36,16 +36,21 @@
 #define VOLUME_MIXER_OSS_DEFAULT		"/dev/mixer"
 
 struct oss_mixer {
+	/** the base mixer class */
+	struct mixer base;
+
 	char *device;
 	char *control;
 	int device_fd;
 	int volume_control;
 };
 
-static struct mixer_data *
+static struct mixer *
 oss_mixer_init(const struct config_param *param)
 {
-	struct oss_mixer *om = g_malloc(sizeof(struct oss_mixer));
+	struct oss_mixer *om = g_new(struct oss_mixer, 1);
+
+	mixer_init(&om->base, &oss_mixer);
 
 	om->device = config_dup_block_string(param, "mixer_device", NULL);
 	om->control = config_dup_block_string(param, "mixer_control", NULL);
@@ -53,11 +58,11 @@ oss_mixer_init(const struct config_param *param)
 	om->device_fd = -1;
 	om->volume_control = SOUND_MIXER_PCM;
 
-	return (struct mixer_data *)om;
+	return &om->base;
 }
 
 static void
-oss_mixer_finish(struct mixer_data *data)
+oss_mixer_finish(struct mixer *data)
 {
 	struct oss_mixer *om = (struct oss_mixer *) data;
 
@@ -67,7 +72,7 @@ oss_mixer_finish(struct mixer_data *data)
 }
 
 static void
-oss_mixer_close(struct mixer_data *data)
+oss_mixer_close(struct mixer *data)
 {
 	struct oss_mixer *om = (struct oss_mixer *) data;
 	if (om->device_fd != -1)
@@ -91,7 +96,7 @@ oss_find_mixer(const char *name)
 }
 
 static bool
-oss_mixer_open(struct mixer_data *data)
+oss_mixer_open(struct mixer *data)
 {
 	struct oss_mixer *om = (struct oss_mixer *) data;
 	const char *device = VOLUME_MIXER_OSS_DEFAULT;
@@ -133,7 +138,7 @@ oss_mixer_open(struct mixer_data *data)
 }
 
 static bool
-oss_mixer_control(struct mixer_data *data, int cmd, void *arg)
+oss_mixer_control(struct mixer *data, int cmd, void *arg)
 {
 	struct oss_mixer *om = (struct oss_mixer *) data;
 	switch (cmd) {

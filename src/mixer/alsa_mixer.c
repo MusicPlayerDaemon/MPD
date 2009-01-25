@@ -26,6 +26,9 @@
 #define VOLUME_MIXER_ALSA_CONTROL_DEFAULT	"PCM"
 
 struct alsa_mixer {
+	/** the base mixer class */
+	struct mixer base;
+
 	char *device;
 	char *control;
 	snd_mixer_t *handle;
@@ -35,10 +38,12 @@ struct alsa_mixer {
 	int volume_set;
 };
 
-static struct mixer_data *
+static struct mixer *
 alsa_mixer_init(const struct config_param *param)
 {
-	struct alsa_mixer *am = g_malloc(sizeof(struct alsa_mixer));
+	struct alsa_mixer *am = g_new(struct alsa_mixer, 1);
+
+	mixer_init(&am->base, &alsa_mixer);
 
 	am->device = config_dup_block_string(param, "mixer_device", NULL);
 	am->control = config_dup_block_string(param, "mixer_control", NULL);
@@ -49,11 +54,11 @@ alsa_mixer_init(const struct config_param *param)
 	am->volume_max = 0;
 	am->volume_set = -1;
 
-	return (struct mixer_data *)am;
+	return &am->base;
 }
 
 static void
-alsa_mixer_finish(struct mixer_data *data)
+alsa_mixer_finish(struct mixer *data)
 {
 	struct alsa_mixer *am = (struct alsa_mixer *)data;
 
@@ -63,7 +68,7 @@ alsa_mixer_finish(struct mixer_data *data)
 }
 
 static void
-alsa_mixer_close(struct mixer_data *data)
+alsa_mixer_close(struct mixer *data)
 {
 	struct alsa_mixer *am = (struct alsa_mixer *)data;
 	if (am->handle) snd_mixer_close(am->handle);
@@ -71,7 +76,7 @@ alsa_mixer_close(struct mixer_data *data)
 }
 
 static bool
-alsa_mixer_open(struct mixer_data *data)
+alsa_mixer_open(struct mixer *data)
 {
 	struct alsa_mixer *am = (struct alsa_mixer *)data;
 	int err;
@@ -142,7 +147,7 @@ alsa_mixer_open(struct mixer_data *data)
 }
 
 static bool
-alsa_mixer_control(struct mixer_data *data, int cmd, void *arg)
+alsa_mixer_control(struct mixer *data, int cmd, void *arg)
 {
 	struct alsa_mixer *am = (struct alsa_mixer *)data;
 	switch (cmd) {

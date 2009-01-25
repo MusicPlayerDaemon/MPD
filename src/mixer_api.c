@@ -21,14 +21,6 @@
 
 #include "mixer_api.h"
 
-void mixer_finish(struct mixer *mixer)
-{
-	assert(mixer != NULL && mixer->plugin != NULL);
-	mixer->plugin->finish(mixer->data);
-	mixer->data = NULL;
-	mixer->plugin = NULL;
-}
-
 struct mixer *
 mixer_new(const struct mixer_plugin *plugin, const struct config_param *param)
 {
@@ -36,33 +28,36 @@ mixer_new(const struct mixer_plugin *plugin, const struct config_param *param)
 
 	assert(plugin != NULL);
 
-	mixer = g_new(struct mixer, 1);
-	mixer->plugin = plugin;
-	mixer->data = mixer->plugin->init(param);
+	mixer = plugin->init(param);
+
+	assert(mixer->plugin == plugin);
+
 	return mixer;
 }
 
 void
 mixer_free(struct mixer *mixer)
 {
-	mixer_finish(mixer);
-	g_free(mixer);
+	assert(mixer != NULL);
+	assert(mixer->plugin != NULL);
+
+	mixer->plugin->finish(mixer);
 }
 
 bool mixer_open(struct mixer *mixer)
 {
 	assert(mixer != NULL && mixer->plugin != NULL);
-	return mixer->plugin->open(mixer->data);
+	return mixer->plugin->open(mixer);
 }
 
 bool mixer_control(struct mixer *mixer, int cmd, void *arg)
 {
 	assert(mixer != NULL && mixer->plugin != NULL);
-	return mixer->plugin->control(mixer->data, cmd, arg);
+	return mixer->plugin->control(mixer, cmd, arg);
 }
 
 void mixer_close(struct mixer *mixer)
 {
 	assert(mixer != NULL && mixer->plugin != NULL);
-	mixer->plugin->close(mixer->data);
+	mixer->plugin->close(mixer);
 }
