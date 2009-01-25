@@ -1,15 +1,19 @@
 DOCBOOK_FILES = protocol.xml
-DOCBOOK_HTML = $(patsubst %.xml,%.html,$(DOCBOOK_FILES))
+DOCBOOK_HTML = $(patsubst %.xml,%/index.html,$(DOCBOOK_FILES))
 
 man_MANS = mpd.1 mpd.conf.5
 doc_DATA = mpdconf.example
 EXTRA_DIST = $(man_MANS) $(DOCBOOK_FILES) mpdconf.example
 
-MOSTLYCLEANFILES = $(DOCBOOK_HTML)
-
 if HAVE_XMLTO
-doc_DATA += $(DOCBOOK_HTML)
+protocoldir = $(docdir)/protocol
+protocol_DATA = $(wildcard protocol/*.html)
 
-$(DOCBOOK_HTML): %.html: %.xml
-	$(XMLTO) html-nochunks $<
+$(DOCBOOK_HTML): %/index.html: %.xml
+	$(XMLTO) -o protocol --stringparam chunker.output.encoding=utf-8 html $<
+
+all-local: $(DOCBOOK_HTML)
+
+clean-local:
+	rm -rf $(patsubst %.xml,%,$(DOCBOOK_FILES))
 endif
