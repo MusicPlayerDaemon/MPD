@@ -392,16 +392,14 @@ oss_initDriver(G_GNUC_UNUSED struct audio_output *audioOutput,
 	       G_GNUC_UNUSED const struct audio_format *audio_format,
 	       const struct config_param *param)
 {
-	if (param) {
-		const char *device =
-			config_get_block_string(param, "device", NULL);
-		if (device != NULL) {
-			OssData *od = newOssData();
-			od->device = device;
-			mixer_configure(&od->mixer, param);
-			return od;
-		}
+	const char *device = config_get_block_string(param, "device", NULL);
+	if (device != NULL) {
+		OssData *od = newOssData();
+		od->device = device;
+		mixer_configure(&od->mixer, param);
+		return od;
 	}
+
 	return oss_open_default(param);
 }
 

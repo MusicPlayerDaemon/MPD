@@ -85,13 +85,9 @@ alsa_data_new(void)
 {
 	struct alsa_data *ret = g_new(struct alsa_data, 1);
 
-	ret->device = NULL;
 	ret->mode = 0;
 	ret->pcm = NULL;
 	ret->writei = snd_pcm_writei;
-	ret->use_mmap = false;
-	ret->buffer_time = MPD_ALSA_BUFFER_TIME_US;
-	ret->period_time = MPD_ALSA_PERIOD_TIME_US;
 
 	//use alsa mixer by default
 	mixer_init(&ret->mixer, &alsa_mixer);
@@ -149,8 +145,9 @@ alsa_init(G_GNUC_UNUSED struct audio_output *ao,
 		free_global_registered = 1;
 	}
 
+	alsa_configure(ad, param);
+
 	if (param) {
-		alsa_configure(ad, param);
 		mixer_configure(&ad->mixer, param);
 	}
 

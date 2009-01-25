@@ -52,9 +52,6 @@ oss_mixer_configure(struct mixer_data *data, const struct config_param *param)
 	struct oss_mixer *om = (struct oss_mixer *) data;
 	const char *value;
 
-	if (param == NULL)
-		return;
-
 	value = config_get_block_string(param, "mixer_device", NULL);
 	if (value != NULL) {
 		g_free(om->device);

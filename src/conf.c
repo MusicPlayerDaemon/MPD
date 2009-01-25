@@ -433,6 +433,9 @@ getBlockParam(const struct config_param * param, const char *name)
 	struct block_param *ret = NULL;
 	int i;
 
+	if (param == NULL)
+		return NULL;
+
 	for (i = 0; i < param->num_block_params; i++) {
 		if (0 == strcmp(name, param->block_params[i].name)) {
 			if (ret) {

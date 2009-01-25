@@ -60,16 +60,6 @@ mpd_jack_name(const struct jack_data *jd)
 	return audio_output_get_name(jd->ao);
 }
 
-static struct jack_data *
-mpd_jack_new(void)
-{
-	struct jack_data *ret = g_new(struct jack_data, 1);
-
-	ret->ringbuffer_size = 32768;
-
-	return ret;
-}
-
 static void
 mpd_jack_client_free(struct jack_data *jd)
 {
@@ -188,12 +178,10 @@ mpd_jack_init(struct audio_output *ao,
 	struct jack_data *jd;
 	const char *value;
 
-	jd = mpd_jack_new();
+	jd = g_new(struct jack_data, 1);
 	jd->ao = ao;
 
 	g_debug("mpd_jack_init (pid=%d)", getpid());
-	if (param == NULL)
-		return jd;
 
 	value = config_get_block_string(param, "ports", NULL);
 	if (value != NULL) {
