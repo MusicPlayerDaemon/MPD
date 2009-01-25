@@ -630,10 +630,10 @@ input_curl_easy_init(struct input_stream *is)
 	struct input_curl *c = is->data;
 	CURLcode code;
 	CURLMcode mcode;
-	struct config_param *proxy_host;
-	struct config_param *proxy_port;
-	struct config_param *proxy_user;
-	struct config_param *proxy_pass;
+	const char *proxy_host;
+	const char *proxy_port;
+	const char *proxy_user;
+	const char *proxy_pass;
 
 	c->eof = false;
 
@@ -661,27 +661,28 @@ input_curl_easy_init(struct input_stream *is)
 	curl_easy_setopt(c->easy, CURLOPT_FAILONERROR, true);
 	curl_easy_setopt(c->easy, CURLOPT_ERRORBUFFER, c->error);
 
-	proxy_host = config_get_param(CONF_HTTP_PROXY_HOST);
-	proxy_port = config_get_param(CONF_HTTP_PROXY_PORT);
-	proxy_user = config_get_param(CONF_HTTP_PROXY_USER);
-	proxy_pass = config_get_param(CONF_HTTP_PROXY_PASSWORD);
+	proxy_host = config_get_string(CONF_HTTP_PROXY_HOST, NULL);
+	proxy_port = config_get_string(CONF_HTTP_PROXY_PORT, NULL);
 
 	if (proxy_host != NULL) {
 		char *proxy_host_str;
 
 		if (proxy_port == NULL) {
-			proxy_host_str = g_strdup(proxy_host->value);
+			proxy_host_str = g_strdup(proxy_host);
 		} else {
 			proxy_host_str =
-				g_strconcat(proxy_host->value, ":", proxy_port->value, NULL);
+				g_strconcat(proxy_host, ":", proxy_port, NULL);
 		}
 		curl_easy_setopt(c->easy, CURLOPT_PROXY, proxy_host_str);
 		g_free(proxy_host_str);
 	}
 
+	proxy_user = config_get_string(CONF_HTTP_PROXY_USER, NULL);
+	proxy_pass = config_get_string(CONF_HTTP_PROXY_PASSWORD, NULL);
+
 	if ((proxy_user != NULL) && (proxy_pass != NULL)) {
 		char *proxy_auth_str =
-			g_strconcat(proxy_user->value, ":", proxy_pass->value, NULL);
+			g_strconcat(proxy_user, ":", proxy_pass, NULL);
 		curl_easy_setopt(c->easy, CURLOPT_PROXYUSERPWD, proxy_auth_str);
 		g_free(proxy_auth_str);
 	}

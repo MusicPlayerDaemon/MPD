@@ -65,12 +65,11 @@ char *parsePath(char *path)
 		const char *home;
 
 		if (path[1] == '/' || path[1] == '\0') {
-			struct config_param *param = config_get_param(CONF_USER);
-			if (param && param->value) {
-				struct passwd *passwd = getpwnam(param->value);
+			const char *user = config_get_string(CONF_USER, NULL);
+			if (user != NULL) {
+				struct passwd *passwd = getpwnam(user);
 				if (!passwd) {
-					g_warning("no such user %s",
-						  param->value);
+					g_warning("no such user %s", user);
 					return NULL;
 				}
 

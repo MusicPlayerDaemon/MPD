@@ -71,6 +71,7 @@ static size_t items_size(const struct tag *tag)
 
 void tag_lib_init(void)
 {
+	const char *value;
 	int quit = 0;
 	char *temp;
 	char *s;
@@ -83,17 +84,16 @@ void tag_lib_init(void)
 	memset(ignoreTagItems, 0, TAG_NUM_OF_ITEM_TYPES);
 	ignoreTagItems[TAG_ITEM_COMMENT] = 1;	/* ignore comments by default */
 
-	param = config_get_param(CONF_METADATA_TO_USE);
-
-	if (!param)
+	value = config_get_string(CONF_METADATA_TO_USE, NULL);
+	if (value == NULL)
 		return;
 
 	memset(ignoreTagItems, 1, TAG_NUM_OF_ITEM_TYPES);
 
-	if (0 == strcasecmp(param->value, "none"))
+	if (0 == strcasecmp(value, "none"))
 		return;
 
-	temp = c = s = g_strdup(param->value);
+	temp = c = s = g_strdup(value);
 	while (!quit) {
 		if (*s == ',' || *s == '\0') {
 			if (*s == '\0')

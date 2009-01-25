@@ -66,13 +66,10 @@ const char *path_get_fs_charset(void)
 
 void path_global_init(void)
 {
-	struct config_param *fs_charset_param =
-		config_get_param(CONF_FS_CHARSET);
 	const char *charset = NULL;
 
-	if (fs_charset_param) {
-		charset = fs_charset_param->value;
-	} else {
+	charset = config_get_string(CONF_FS_CHARSET, NULL);
+	if (charset == NULL) {
 		const gchar **encodings;
 		g_get_filename_charsets(&encodings);
 
