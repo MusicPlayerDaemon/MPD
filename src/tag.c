@@ -76,7 +76,6 @@ void tag_lib_init(void)
 	char *temp;
 	char *s;
 	char *c;
-	const struct config_param *param;
 	int i;
 
 	/* parse the "metadata_to_use" config parameter below */
@@ -106,8 +105,8 @@ void tag_lib_init(void)
 				}
 			}
 			if (strlen(c) && i == TAG_NUM_OF_ITEM_TYPES) {
-				FATAL("error parsing metadata item \"%s\" at "
-				      "line %i\n", c, param->line);
+				FATAL("error parsing metadata item \"%s\"\n",
+				      c);
 			}
 			s++;
 			c = s;
