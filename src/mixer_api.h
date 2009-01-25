@@ -31,22 +31,15 @@ extern const struct mixer_plugin oss_mixer;
 struct mixer_data;
 
 struct mixer_plugin {
-
-        /**
-         * Allocate and initialize mixer data
+	/**
+         * Alocates and configures a mixer device.
 	 */
-        struct mixer_data *(*init)(void);
+	struct mixer_data *(*init)(const struct config_param *param);
 
         /**
 	 * Finish and free mixer data
          */
         void (*finish)(struct mixer_data *data);
-
-        /**
-	 * Setup and configure mixer
-         */
-	void (*configure)(struct mixer_data *data,
-			  const struct config_param *param);
 
         /**
     	 * Open mixer device
@@ -69,7 +62,6 @@ struct mixer {
 	struct mixer_data *data;
 };
 
-void mixer_init(struct mixer *mixer, const struct mixer_plugin *plugin);
 void mixer_finish(struct mixer *mixer);
 
 struct mixer *

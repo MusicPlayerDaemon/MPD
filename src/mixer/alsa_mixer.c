@@ -36,16 +36,19 @@ struct alsa_mixer {
 };
 
 static struct mixer_data *
-alsa_mixer_init(void)
+alsa_mixer_init(const struct config_param *param)
 {
 	struct alsa_mixer *am = g_malloc(sizeof(struct alsa_mixer));
-	am->device = NULL;
-	am->control = NULL;
+
+	am->device = config_dup_block_string(param, "mixer_device", NULL);
+	am->control = config_dup_block_string(param, "mixer_control", NULL);
+
 	am->handle = NULL;
 	am->elem = NULL;
 	am->volume_min = 0;
 	am->volume_max = 0;
 	am->volume_set = -1;
+
 	return (struct mixer_data *)am;
 }
 
@@ -57,25 +60,6 @@ alsa_mixer_finish(struct mixer_data *data)
 	g_free(am->device);
 	g_free(am->control);
 	g_free(am);
-}
-
-static void
-alsa_mixer_configure(struct mixer_data *data, const struct config_param *param)
-{
-	struct alsa_mixer *am = (struct alsa_mixer *)data;
-	const char *value;
-
-	value = config_get_block_string(param, "mixer_device", NULL);
-	if (value != NULL) {
-		g_free(am->device);
-		am->device = g_strdup(value);
-	}
-
-	value = config_get_block_string(param, "mixer_control", NULL);
-	if (value != NULL) {
-		g_free(am->control);
-		am->control = g_strdup(value);
-	}
 }
 
 static void
@@ -235,7 +219,6 @@ alsa_mixer_control(struct mixer_data *data, int cmd, void *arg)
 const struct mixer_plugin alsa_mixer = {
 	.init = alsa_mixer_init,
 	.finish = alsa_mixer_finish,
-	.configure = alsa_mixer_configure,
 	.open = alsa_mixer_open,
 	.control = alsa_mixer_control,
 	.close = alsa_mixer_close

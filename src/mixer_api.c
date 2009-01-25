@@ -21,14 +21,6 @@
 
 #include "mixer_api.h"
 
-void mixer_init(struct mixer *mixer, const struct mixer_plugin *plugin)
-{
-	assert(plugin != NULL);
-	assert(mixer != NULL);
-	mixer->plugin = plugin;
-	mixer->data = mixer->plugin->init();
-}
-
 void mixer_finish(struct mixer *mixer)
 {
 	assert(mixer != NULL && mixer->plugin != NULL);
@@ -40,11 +32,13 @@ void mixer_finish(struct mixer *mixer)
 struct mixer *
 mixer_new(const struct mixer_plugin *plugin, const struct config_param *param)
 {
-	struct mixer *mixer = g_new(struct mixer, 1);
+	struct mixer *mixer;
 
-	mixer_init(mixer, plugin);
-	plugin->configure(mixer->data, param);
+	assert(plugin != NULL);
 
+	mixer = g_new(struct mixer, 1);
+	mixer->plugin = plugin;
+	mixer->data = mixer->plugin->init(param);
 	return mixer;
 }
 

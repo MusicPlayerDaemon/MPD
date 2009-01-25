@@ -43,13 +43,16 @@ struct oss_mixer {
 };
 
 static struct mixer_data *
-oss_mixer_init(void)
+oss_mixer_init(const struct config_param *param)
 {
 	struct oss_mixer *om = g_malloc(sizeof(struct oss_mixer));
-	om->device = NULL;
-	om->control = NULL;
+
+	om->device = config_dup_block_string(param, "mixer_device", NULL);
+	om->control = config_dup_block_string(param, "mixer_control", NULL);
+
 	om->device_fd = -1;
 	om->volume_control = SOUND_MIXER_PCM;
+
 	return (struct mixer_data *)om;
 }
 
@@ -61,25 +64,6 @@ oss_mixer_finish(struct mixer_data *data)
 	g_free(om->device);
 	g_free(om->control);
 	g_free(om);
-}
-
-static void
-oss_mixer_configure(struct mixer_data *data, const struct config_param *param)
-{
-	struct oss_mixer *om = (struct oss_mixer *) data;
-	const char *value;
-
-	value = config_get_block_string(param, "mixer_device", NULL);
-	if (value != NULL) {
-		g_free(om->device);
-		om->device = g_strdup(value);
-	}
-
-	value = config_get_block_string(param, "mixer_control", NULL);
-	if (value != NULL) {
-		g_free(om->control);
-		om->control = g_strdup(value);
-	}
 }
 
 static void
@@ -215,7 +199,6 @@ oss_mixer_control(struct mixer_data *data, int cmd, void *arg)
 const struct mixer_plugin oss_mixer = {
 	.init = oss_mixer_init,
 	.finish = oss_mixer_finish,
-	.configure = oss_mixer_configure,
 	.open = oss_mixer_open,
 	.control = oss_mixer_control,
 	.close = oss_mixer_close
