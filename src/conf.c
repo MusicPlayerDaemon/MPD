@@ -23,6 +23,7 @@
 
 #include <glib.h>
 
+#include <assert.h>
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -347,6 +348,15 @@ void config_read_file(const char *file)
 		entry->params = g_slist_append(entry->params, param);
 	}
 	fclose(fp);
+}
+
+void
+config_add_param(const char *name, struct config_param *param)
+{
+	struct config_entry *entry = config_entry_get(name);
+	assert(entry != NULL);
+
+	entry->params = g_slist_append(entry->params, param);
 }
 
 struct config_param *

@@ -91,6 +91,13 @@ void config_global_finish(void);
 
 void config_read_file(const char *file);
 
+/**
+ * Adds a new configuration parameter.  The name must be registered
+ * with registerConfigParam().
+ */
+void
+config_add_param(const char *name, struct config_param *param);
+
 /* don't free the returned value
    set _last_ to NULL to get first entry */
 struct config_param *
