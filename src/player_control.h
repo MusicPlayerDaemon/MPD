@@ -62,6 +62,10 @@ enum player_error {
 struct player_control {
 	unsigned int buffered_before_play;
 
+	/** the handle of the player thread, or NULL if the player
+	    thread isn't running */
+	GThread *thread;
+
 	struct notify notify;
 	volatile enum player_command command;
 	volatile enum player_state state;

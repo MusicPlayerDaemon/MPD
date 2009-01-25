@@ -548,8 +548,10 @@ static gpointer player_task(G_GNUC_UNUSED gpointer arg)
 void player_create(void)
 {
 	GError *e = NULL;
-	GThread *t;
 
-	if (!(t = g_thread_create(player_task, NULL, FALSE, &e)))
+	assert(pc.thread == NULL);
+
+	pc.thread = g_thread_create(player_task, NULL, true, &e);
+	if (pc.thread == NULL)
 		g_error("Failed to spawn player task: %s", e->message);
 }

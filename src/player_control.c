@@ -90,7 +90,11 @@ void playerWait(void)
 
 void playerKill(void)
 {
+	assert(pc.thread != NULL);
+
 	player_command(PLAYER_COMMAND_EXIT);
+	g_thread_join(pc.thread);
+	pc.thread = NULL;
 
 	idle_add(IDLE_PLAYER);
 }
