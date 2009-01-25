@@ -31,7 +31,6 @@
 #include "path.h"
 #include "mapper.h"
 #include "pipe.h"
-#include "decoder_thread.h"
 #include "decoder_control.h"
 #include "player_control.h"
 #include "stats.h"
@@ -261,7 +260,6 @@ int main(int argc, char *argv[])
 
 	initZeroconf();
 
-	decoder_thread_start();
 	player_create();
 
 	state_file_init(config_get_path(CONF_STATE_FILE));

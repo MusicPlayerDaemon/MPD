@@ -19,6 +19,7 @@
 #include "player_thread.h"
 #include "player_control.h"
 #include "decoder_control.h"
+#include "decoder_thread.h"
 #include "audio.h"
 #include "pcm_volume.h"
 #include "path.h"
@@ -507,6 +508,8 @@ static void do_play(void)
 
 static gpointer player_task(G_GNUC_UNUSED gpointer arg)
 {
+	decoder_thread_start();
+
 	while (1) {
 		switch (pc.command) {
 		case PLAYER_COMMAND_PLAY:
