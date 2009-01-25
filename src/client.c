@@ -73,7 +73,6 @@ struct client {
 	size_t bufferLength;
 	size_t bufferPos;
 
-	int fd;	/* file descriptor; -1 if expired */
 	GIOChannel *channel;
 	guint source_id;
 
@@ -114,7 +113,7 @@ static void client_write_output(struct client *client);
 
 bool client_is_expired(const struct client *client)
 {
-	return client->fd < 0;
+	return client->channel == NULL;
 }
 
 int client_get_uid(const struct client *client)
@@ -148,7 +147,7 @@ client_manager_expire_event(G_GNUC_UNUSED gpointer data)
 
 static inline void client_set_expired(struct client *client)
 {
-	if (expire_source_id == 0 && client->fd >= 0)
+	if (expire_source_id == 0 && !client_is_expired(client))
 		/* delayed deletion */
 		expire_source_id = g_idle_add(client_manager_expire_event,
 					      NULL);
@@ -161,11 +160,6 @@ static inline void client_set_expired(struct client *client)
 	if (client->channel != NULL) {
 		g_io_channel_unref(client->channel);
 		client->channel = NULL;
-	}
-
-	if (client->fd >= 0) {
-		close(client->fd);
-		client->fd = -1;
 	}
 }
 
@@ -182,13 +176,20 @@ static void client_init(struct client *client, int fd)
 	client->cmd_list_OK = -1;
 	client->bufferLength = 0;
 	client->bufferPos = 0;
-	client->fd = fd;
 
 #ifndef G_OS_WIN32
-	client->channel = g_io_channel_unix_new(client->fd);
+	client->channel = g_io_channel_unix_new(fd);
 #else
-	client->channel = g_io_channel_win32_new_socket(client->fd);
+	client->channel = g_io_channel_win32_new_socket(fd);
 #endif
+	/* GLib is responsible for closing the file descriptor */
+	g_io_channel_set_close_on_unref(client->channel, true);
+	/* NULL encoding means the stream is binary safe; the MPD
+	   protocol is UTF-8 only, but we are doing this call anyway
+	   to prevent GLib from messing around with the stream */
+	g_io_channel_set_encoding(client->channel, NULL, NULL);
+	/* we prefer to do buffering */
+	g_io_channel_set_buffered(client->channel, false);
 
 	client->source_id = g_io_add_watch(client->channel, G_IO_IN,
 					   client_in_event, client);
@@ -460,23 +461,40 @@ static int client_input_received(struct client *client, size_t bytesRead)
 
 static int client_read(struct client *client)
 {
-	ssize_t bytesRead;
+	GError *error = NULL;
+	GIOStatus status;
+	gsize bytes_read;
 
 	assert(client->bufferPos <= client->bufferLength);
 	assert(client->bufferLength < sizeof(client->buffer));
 
-	bytesRead = read(client->fd,
-			 client->buffer + client->bufferLength,
-			 sizeof(client->buffer) - client->bufferLength);
+	status = g_io_channel_read_chars
+		(client->channel,
+		 client->buffer + client->bufferLength,
+		 sizeof(client->buffer) - client->bufferLength,
+		 &bytes_read, &error);
+	switch (status) {
+	case G_IO_STATUS_NORMAL:
+		return client_input_received(client, bytes_read);
 
-	if (bytesRead > 0)
-		return client_input_received(client, bytesRead);
-	else if (bytesRead < 0 && errno == EINTR)
+	case G_IO_STATUS_AGAIN:
 		/* try again later, after select() */
 		return 0;
-	else
-		/* peer disconnected or I/O error */
+
+	case G_IO_STATUS_EOF:
+		/* peer disconnected */
 		return COMMAND_RETURN_CLOSE;
+
+	case G_IO_STATUS_ERROR:
+		/* I/O error */
+		g_warning("failed to read from client %d: %s",
+			  client->num, error->message);
+		g_error_free(error);
+		return COMMAND_RETURN_CLOSE;
+	}
+
+	/* unreachable */
+	return COMMAND_RETURN_CLOSE;
 }
 
 static gboolean
@@ -616,9 +634,47 @@ client_manager_expire(void)
 	g_list_foreach(clients, client_check_expired_callback, NULL);
 }
 
+static size_t
+client_write_deferred_buffer(struct client *client,
+			     const struct deferred_buffer *buffer)
+{
+	GError *error = NULL;
+	GIOStatus status;
+	gsize bytes_written;
+
+	status = g_io_channel_write_chars
+		(client->channel, buffer->data, buffer->size,
+		 &bytes_written, &error);
+	switch (status) {
+	case G_IO_STATUS_NORMAL:
+		return bytes_written;
+
+	case G_IO_STATUS_AGAIN:
+		return 0;
+
+	case G_IO_STATUS_EOF:
+		/* client has disconnected */
+
+		client_set_expired(client);
+		return 0;
+
+	case G_IO_STATUS_ERROR:
+		/* I/O error */
+
+		client_set_expired(client);
+		g_warning("failed to flush buffer for %i: %s",
+			  client->num, error->message);
+		g_error_free(error);
+		return 0;
+	}
+
+	/* unreachable */
+	return 0;
+}
+
 static void client_write_deferred(struct client *client)
 {
-	ssize_t ret = 0;
+	size_t ret;
 
 	while (!g_queue_is_empty(client->deferred_send)) {
 		struct deferred_buffer *buf =
@@ -627,10 +683,11 @@ static void client_write_deferred(struct client *client)
 		assert(buf->size > 0);
 		assert(buf->size <= client->deferred_bytes);
 
-		ret = write(client->fd, buf->data, buf->size);
-		if (ret < 0)
+		ret = client_write_deferred_buffer(client, buf);
+		if (ret == 0)
 			break;
-		else if ((size_t)ret < buf->size) {
+
+		if (ret < buf->size) {
 			assert(client->deferred_bytes >= (size_t)ret);
 			client->deferred_bytes -= ret;
 			buf->size -= ret;
@@ -645,6 +702,7 @@ static void client_write_deferred(struct client *client)
 			g_free(buf);
 			g_queue_pop_head(client->deferred_send);
 		}
+
 		client->lastTime = time(NULL);
 	}
 
@@ -652,11 +710,6 @@ static void client_write_deferred(struct client *client)
 		g_debug("client %i: buffer empty %lu", client->num,
 			(unsigned long)client->deferred_bytes);
 		assert(client->deferred_bytes == 0);
-	} else if (ret < 0 && errno != EAGAIN && errno != EINTR) {
-		/* cause client to close */
-		g_debug("client %i: problems flushing buffer",
-			client->num);
-		client_set_expired(client);
 	}
 }
 
@@ -691,22 +744,39 @@ static void client_defer_output(struct client *client,
 static void client_write_direct(struct client *client,
 				const char *data, size_t length)
 {
-	ssize_t ret;
+	GError *error = NULL;
+	GIOStatus status;
+	gsize bytes_written;
 
 	assert(length > 0);
 	assert(g_queue_is_empty(client->deferred_send));
 
-	if ((ret = write(client->fd, data, length)) < 0) {
-		if (errno == EAGAIN || errno == EINTR) {
-			client_defer_output(client, data, length);
-		} else {
-			g_debug("client %i: problems writing", client->num);
-			client_set_expired(client);
-			return;
-		}
-	} else if ((size_t)ret < client->send_buf_used) {
-		client_defer_output(client, data + ret, length - ret);
+	status = g_io_channel_write_chars(client->channel, data, length,
+					  &bytes_written, &error);
+	switch (status) {
+	case G_IO_STATUS_NORMAL:
+	case G_IO_STATUS_AGAIN:
+		break;
+
+	case G_IO_STATUS_EOF:
+		/* client has disconnected */
+
+		client_set_expired(client);
+		return;
+
+	case G_IO_STATUS_ERROR:
+		/* I/O error */
+
+		client_set_expired(client);
+		g_warning("failed to write to %i: %s",
+			  client->num, error->message);
+		g_error_free(error);
+		return;
 	}
+
+	if (bytes_written < length)
+		client_defer_output(client, data + bytes_written,
+				    length - bytes_written);
 
 	if (!g_queue_is_empty(client->deferred_send))
 		g_debug("client %i: buffer created", client->num);
