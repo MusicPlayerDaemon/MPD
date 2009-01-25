@@ -41,18 +41,36 @@ typedef snd_pcm_sframes_t alsa_writei_t(snd_pcm_t * pcm, const void *buffer,
 					snd_pcm_uframes_t size);
 
 struct alsa_data {
+	/** the configured name of the ALSA device; NULL for the
+	    default device */
 	char *device;
+
+	/** use memory mapped I/O? */
+	bool use_mmap;
+
+	/** libasound's buffer_time setting (in microseconds) */
+	unsigned int buffer_time;
+
+	/** libasound's period_time setting (in microseconds) */
+	unsigned int period_time;
 
 	/** the mode flags passed to snd_pcm_open */
 	int mode;
 
+	/** the libasound PCM device handle */
 	snd_pcm_t *pcm;
-	alsa_writei_t *writei;
-	unsigned int buffer_time;
-	unsigned int period_time;
-	size_t frame_size;
-	bool use_mmap;
 
+	/**
+	 * a pointer to the libasound writei() function, which is
+	 * snd_pcm_writei() or snd_pcm_mmap_writei(), depending on the
+	 * use_mmap configuration
+	 */
+	alsa_writei_t *writei;
+
+	/** the size of one audio frame */
+	size_t frame_size;
+
+	/** the mixer object associated with this output */
 	struct mixer mixer;
 };
 
