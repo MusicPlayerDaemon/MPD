@@ -71,7 +71,7 @@ struct alsa_data {
 	size_t frame_size;
 
 	/** the mixer object associated with this output */
-	struct mixer mixer;
+	struct mixer *mixer;
 };
 
 static const char *
@@ -90,7 +90,7 @@ alsa_data_new(void)
 	ret->writei = snd_pcm_writei;
 
 	//use alsa mixer by default
-	mixer_init(&ret->mixer, &alsa_mixer);
+	ret->mixer = mixer_new(&alsa_mixer);
 
 	return ret;
 }
@@ -99,7 +99,7 @@ static void
 alsa_data_free(struct alsa_data *ad)
 {
 	g_free(ad->device);
-	mixer_finish(&ad->mixer);
+	mixer_free(ad->mixer);
 	free(ad);
 }
 
@@ -148,7 +148,7 @@ alsa_init(G_GNUC_UNUSED struct audio_output *ao,
 	alsa_configure(ad, param);
 
 	if (param) {
-		mixer_configure(&ad->mixer, param);
+		mixer_configure(ad->mixer, param);
 	}
 
 	return ad;
@@ -208,7 +208,7 @@ alsa_open(void *data, struct audio_format *audio_format)
 	unsigned int period_time, period_time_ro;
 	unsigned int buffer_time;
 
-	mixer_open(&ad->mixer);
+	mixer_open(ad->mixer);
 
 	if ((bitformat = get_bitformat(audio_format)) == SND_PCM_FORMAT_UNKNOWN)
 		g_warning("ALSA device \"%s\" doesn't support %u bit audio\n",
@@ -436,7 +436,7 @@ alsa_close(void *data)
 		ad->pcm = NULL;
 	}
 
-	mixer_close(&ad->mixer);
+	mixer_close(ad->mixer);
 }
 
 static bool
@@ -475,7 +475,7 @@ static bool
 alsa_control(void *data, int cmd, void *arg)
 {
 	struct alsa_data *ad = data;
-	return mixer_control(&ad->mixer, cmd, arg);
+	return mixer_control(ad->mixer, cmd, arg);
 }
 
 const struct audio_output_plugin alsaPlugin = {
