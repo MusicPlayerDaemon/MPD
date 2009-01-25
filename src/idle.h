@@ -46,6 +46,9 @@ enum {
 
 	/** options have changed: crossfade, random, repeat, ... */
 	IDLE_OPTIONS = 0x40,
+
+	/** a sticker has been modified. */
+	IDLE_STICKER = 0x80,
 };
 
 /**

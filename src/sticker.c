@@ -17,6 +17,7 @@
  */
 
 #include "sticker.h"
+#include "idle.h"
 
 #include <glib.h>
 #include <sqlite3.h>
@@ -239,6 +240,7 @@ sticker_update_value(const char *type, const char *uri,
 	sqlite3_reset(sticker_stmt_update);
 	sqlite3_clear_bindings(sticker_stmt_update);
 
+	idle_add(IDLE_STICKER);
 	return ret > 0;
 }
 
@@ -299,6 +301,8 @@ sticker_insert_value(const char *type, const char *uri,
 	sqlite3_reset(sticker_stmt_insert);
 	sqlite3_clear_bindings(sticker_stmt_insert);
 
+
+	idle_add(IDLE_STICKER);
 	return true;
 }
 
@@ -357,5 +361,6 @@ sticker_delete(const char *type, const char *uri)
 	sqlite3_reset(sticker_stmt_delete);
 	sqlite3_clear_bindings(sticker_stmt_delete);
 
+	idle_add(IDLE_STICKER);
 	return true;
 }
