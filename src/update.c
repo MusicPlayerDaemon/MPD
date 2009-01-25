@@ -618,7 +618,7 @@ addParentPathToDB(const char *utf8path)
 		*slash++ = '/';
 	}
 
-	free(duplicated);
+	g_free(duplicated);
 	return directory;
 }
 
@@ -647,7 +647,7 @@ static void * update_task(void *_path)
 {
 	if (_path != NULL && !isRootDirectory(_path)) {
 		updatePath((char *)_path);
-		free(_path);
+		g_free(_path);
 	} else {
 		struct directory *directory = db_get_root();
 		struct stat st;
@@ -691,8 +691,7 @@ directory_update_init(char *path)
 		unsigned next_task_id;
 
 		if (update_paths_nr == G_N_ELEMENTS(update_paths)) {
-			if (path)
-				free(path);
+			g_free(path);
 			return 0;
 		}
 

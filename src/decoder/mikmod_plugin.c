@@ -152,7 +152,7 @@ static void mod_close(mod_Data * data)
 {
 	Player_Stop();
 	Player_Free(data->moduleHandle);
-	free(data);
+	g_free(data);
 }
 
 static void

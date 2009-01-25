@@ -97,7 +97,7 @@ alsa_data_free(struct alsa_data *ad)
 {
 	g_free(ad->device);
 	mixer_free(ad->mixer);
-	free(ad);
+	g_free(ad);
 }
 
 static void

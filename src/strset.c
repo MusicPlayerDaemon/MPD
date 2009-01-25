@@ -64,12 +64,12 @@ void strset_free(struct strset *set)
 
 		while (slot != NULL) {
 			next = slot->next;
-			free(slot);
+			g_free(slot);
 			slot = next;
 		}
 	}
 
-	free(set);
+	g_free(set);
 }
 
 void strset_add(struct strset *set, const char *value)

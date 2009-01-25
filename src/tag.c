@@ -115,7 +115,7 @@ void tag_lib_init(void)
 		s++;
 	}
 
-	free(temp);
+	g_free(temp);
 }
 
 struct tag *tag_ape_load(const char *file)
@@ -234,8 +234,7 @@ struct tag *tag_ape_load(const char *file)
 fail:
 	if (fp)
 		fclose(fp);
-	if (buffer)
-		free(buffer);
+	g_free(buffer);
 	return ret;
 }
 
@@ -265,7 +264,7 @@ static void deleteItem(struct tag *tag, int idx)
 	if (tag->numOfItems > 0) {
 		tag->items = g_realloc(tag->items, items_size(tag));
 	} else {
-		free(tag->items);
+		g_free(tag->items);
 		tag->items = NULL;
 	}
 }
@@ -297,11 +296,10 @@ void tag_free(struct tag *tag)
 		assert(bulk.busy);
 		bulk.busy = 0;
 #endif
-	} else if (tag->items) {
-		free(tag->items);
-	}
+	} else
+		g_free(tag->items);
 
-	free(tag);
+	g_free(tag);
 }
 
 struct tag *tag_dup(const struct tag *tag)

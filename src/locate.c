@@ -68,7 +68,7 @@ locate_item_new(const char *type_string, const char *needle)
 	struct locate_item *ret = g_new(struct locate_item, 1);
 
 	if (!locate_item_init(ret, type_string, needle)) {
-		free(ret);
+		g_free(ret);
 		ret = NULL;
 	}
 
@@ -134,8 +134,8 @@ locate_item_list_casefold(const struct locate_item_list *list)
 void
 locate_item_free(struct locate_item *item)
 {
-	free(item->needle);
-	free(item);
+	g_free(item->needle);
+	g_free(item);
 }
 
 static bool

@@ -226,7 +226,7 @@ newListCommandItem(int tagType, const struct locate_item_list *criteria)
 
 static void freeListCommandItem(ListCommandItem * item)
 {
-	free(item);
+	g_free(item);
 }
 
 static void

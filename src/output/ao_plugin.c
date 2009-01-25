@@ -131,7 +131,7 @@ audioOutputAo_initDriver(struct audio_output *ao,
 static void freeAoData(AoData * ad)
 {
 	ao_free_options(ad->options);
-	free(ad);
+	g_free(ad);
 }
 
 static void audioOutputAo_finishDriver(void *data)

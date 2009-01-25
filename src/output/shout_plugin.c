@@ -81,7 +81,7 @@ static void free_shout_data(struct shout_data *sd)
 	if (sd->timer)
 		timer_free(sd->timer);
 
-	free(sd);
+	g_free(sd);
 }
 
 #define check_block_param(name) {		  \

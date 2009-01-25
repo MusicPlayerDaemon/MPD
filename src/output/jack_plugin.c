@@ -92,7 +92,7 @@ mpd_jack_free(struct jack_data *jd)
 	for (unsigned i = 0; i < G_N_ELEMENTS(jd->output_ports); ++i)
 		g_free(jd->output_ports[i]);
 
-	free(jd);
+	g_free(jd);
 }
 
 static void
@@ -275,7 +275,7 @@ mpd_jack_connect(struct jack_data *jd, struct audio_format *audio_format)
 				   jd->output_ports[0])) != 0 ) {
 			g_warning("%s is not a valid Jack Client / Port",
 				  jd->output_ports[0]);
-			free(port_name);
+			g_free(port_name);
 			return -1;
 		}
 		sprintf(port_name, "%s:right", name);
@@ -283,10 +283,10 @@ mpd_jack_connect(struct jack_data *jd, struct audio_format *audio_format)
 				   jd->output_ports[1])) != 0 ) {
 			g_warning("%s is not a valid Jack Client / Port",
 				  jd->output_ports[1]);
-			free(port_name);
+			g_free(port_name);
 			return -1;
 		}
-		free(port_name);
+		g_free(port_name);
 	}
 
 	return 1;

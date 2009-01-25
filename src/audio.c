@@ -183,7 +183,7 @@ void finishAudioDriver(void)
 		audio_output_finish(&audioOutputArray[i]);
 	}
 
-	free(audioOutputArray);
+	g_free(audioOutputArray);
 	audioOutputArray = NULL;
 	audioOutputArraySize = 0;
 

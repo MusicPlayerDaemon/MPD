@@ -292,7 +292,7 @@ static void freeOssData(OssData * od)
 
 	mixer_free(od->mixer);
 
-	free(od);
+	g_free(od);
 }
 
 #define OSS_STAT_NO_ERROR 	0

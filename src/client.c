@@ -240,7 +240,7 @@ static void client_close(struct client *client)
 
 	g_log(G_LOG_DOMAIN, LOG_LEVEL_SECURE,
 	      "client %i: closed", client->num);
-	free(client);
+	g_free(client);
 }
 
 static const char *
@@ -637,7 +637,7 @@ static void client_write_deferred(struct client *client)
 
 			assert(client->deferred_bytes >= decr);
 			client->deferred_bytes -= decr;
-			free(buf);
+			g_free(buf);
 			g_queue_pop_head(client->deferred_send);
 		}
 		client->lastTime = time(NULL);
@@ -778,7 +778,7 @@ void client_vprintf(struct client *client, const char *fmt, va_list args)
 	buffer = g_malloc(length + 1);
 	vsnprintf(buffer, length + 1, fmt, args);
 	client_write(client, buffer, length);
-	free(buffer);
+	g_free(buffer);
 }
 
 G_GNUC_PRINTF(2, 3) void client_printf(struct client *client, const char *fmt, ...)

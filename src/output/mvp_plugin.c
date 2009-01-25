@@ -124,7 +124,7 @@ static void *mvp_initDriver(G_GNUC_UNUSED struct audio_output *audio_output,
 static void mvp_finishDriver(void *data)
 {
 	MvpData *md = data;
-	free(md);
+	g_free(md);
 }
 
 static int mvp_setPcmParams(MvpData * md, unsigned long rate, int channels,

@@ -125,7 +125,7 @@ db_get_song(const char *file)
 	assert(song->parent == directory);
 
 out:
-	free(duplicated);
+	g_free(duplicated);
 	return song;
 }
 

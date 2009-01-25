@@ -90,11 +90,10 @@ osx_initDriver(G_GNUC_UNUSED struct audio_output *audioOutput,
 
 static void freeOsxData(OsxData * od)
 {
-	if (od->buffer)
-		free(od->buffer);
+	g_free(od->buffer);
 	g_mutex_free(od->mutex);
 	g_cond_free(od->condition);
-	free(od);
+	g_free(od);
 }
 
 static void osx_finishDriver(void *data)

@@ -54,7 +54,7 @@ directory_free(struct directory *directory)
 
 	dirvec_destroy(&directory->children);
 	songvec_destroy(&directory->songs);
-	free(directory);
+	g_free(directory);
 	/* this resets last dir returned */
 	/*directory_get_path(NULL); */
 }
@@ -108,7 +108,7 @@ directory_get_directory(struct directory *directory, const char *name)
 		locate = strchr(locate + 1, '/');
 	}
 
-	free(duplicated);
+	g_free(duplicated);
 
 	return found;
 }

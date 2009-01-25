@@ -179,7 +179,7 @@ mp4_decode(struct decoder *mpd_decoder, struct input_stream *input_stream)
 	file_time = mp4ff_get_track_duration_use_offsets(mp4fh, track);
 	scale = mp4ff_time_scale(mp4fh, track);
 
-	g_free(mp4_buffer);
+	free(mp4_buffer);
 
 	if (scale < 0) {
 		g_warning("Error getting audio format of mp4 AAC track.\n");
@@ -314,7 +314,7 @@ mp4_decode(struct decoder *mpd_decoder, struct input_stream *input_stream)
 				   file_time, bit_rate, NULL);
 	}
 
-	free(seek_table);
+	g_free(seek_table);
 	faacDecClose(decoder);
 	mp4ff_close(mp4fh);
 }
