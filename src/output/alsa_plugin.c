@@ -89,9 +89,6 @@ alsa_data_new(void)
 	ret->pcm = NULL;
 	ret->writei = snd_pcm_writei;
 
-	//use alsa mixer by default
-	ret->mixer = mixer_new(&alsa_mixer);
-
 	return ret;
 }
 
@@ -146,10 +143,7 @@ alsa_init(G_GNUC_UNUSED struct audio_output *ao,
 	}
 
 	alsa_configure(ad, param);
-
-	if (param) {
-		mixer_configure(ad->mixer, param);
-	}
+	ad->mixer = mixer_new(&alsa_mixer, param);
 
 	return ad;
 }

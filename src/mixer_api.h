@@ -73,12 +73,11 @@ void mixer_init(struct mixer *mixer, const struct mixer_plugin *plugin);
 void mixer_finish(struct mixer *mixer);
 
 struct mixer *
-mixer_new(const struct mixer_plugin *plugin);
+mixer_new(const struct mixer_plugin *plugin, const struct config_param *param);
 
 void
 mixer_free(struct mixer *mixer);
 
-void mixer_configure(struct mixer *mixer, const struct config_param *param);
 bool mixer_open(struct mixer *mixer);
 bool mixer_control(struct mixer *mixer, int cmd, void *arg);
 void mixer_close(struct mixer *mixer);

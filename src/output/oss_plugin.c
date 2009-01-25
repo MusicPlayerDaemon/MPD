@@ -278,8 +278,6 @@ static OssData *newOssData(void)
 	supportParam(ret, SNDCTL_DSP_CHANNELS, 2);
 	supportParam(ret, SNDCTL_DSP_SAMPLESIZE, 16);
 
-	ret->mixer = mixer_new(&oss_mixer);
-
 	return ret;
 }
 
@@ -357,7 +355,7 @@ static void *oss_open_default(const struct config_param *param)
 		if (ret[i] == 0) {
 			OssData *od = newOssData();
 			od->device = default_devices[i];
-			mixer_configure(od->mixer, param);
+			od->mixer = mixer_new(&oss_mixer, param);
 			return od;
 		}
 	}
@@ -398,7 +396,7 @@ oss_initDriver(G_GNUC_UNUSED struct audio_output *audioOutput,
 	if (device != NULL) {
 		OssData *od = newOssData();
 		od->device = device;
-		mixer_configure(od->mixer, param);
+		od->mixer = mixer_new(&oss_mixer, param);
 		return od;
 	}
 

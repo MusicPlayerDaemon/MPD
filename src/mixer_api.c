@@ -38,11 +38,13 @@ void mixer_finish(struct mixer *mixer)
 }
 
 struct mixer *
-mixer_new(const struct mixer_plugin *plugin)
+mixer_new(const struct mixer_plugin *plugin, const struct config_param *param)
 {
 	struct mixer *mixer = g_new(struct mixer, 1);
 
 	mixer_init(mixer, plugin);
+	plugin->configure(mixer->data, param);
+
 	return mixer;
 }
 
@@ -51,12 +53,6 @@ mixer_free(struct mixer *mixer)
 {
 	mixer_finish(mixer);
 	g_free(mixer);
-}
-
-void mixer_configure(struct mixer *mixer, const struct config_param *param)
-{
-	assert(mixer != NULL && mixer->plugin != NULL);
-	mixer->plugin->configure(mixer->data, param);
 }
 
 bool mixer_open(struct mixer *mixer)
