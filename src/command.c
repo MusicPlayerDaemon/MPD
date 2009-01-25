@@ -20,6 +20,7 @@
 #include "player_control.h"
 #include "playlist.h"
 #include "playlist_print.h"
+#include "playlist_save.h"
 #include "queue_print.h"
 #include "ls.h"
 #include "directory.h"
@@ -668,7 +669,7 @@ handle_save(struct client *client,
 {
 	enum playlist_result result;
 
-	result = savePlaylist(argv[1]);
+	result = spl_save_queue(argv[1], playlist_get_queue());
 	return print_playlist_result(client, result);
 }
 
@@ -677,7 +678,7 @@ handle_load(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 {
 	enum playlist_result result;
 
-	result = loadPlaylist(argv[1]);
+	result = playlist_load_spl(argv[1]);
 	return print_playlist_result(client, result);
 }
 

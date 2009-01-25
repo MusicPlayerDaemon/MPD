@@ -1025,38 +1025,6 @@ void shufflePlaylist(void)
 	incrPlaylistVersion();
 }
 
-enum playlist_result savePlaylist(const char *utf8file)
-{
-	FILE *fp;
-	char *path;
-
-	if (!is_valid_playlist_name(utf8file))
-		return PLAYLIST_RESULT_BAD_NAME;
-
-	path = map_spl_utf8_to_fs(utf8file);
-	if (path == NULL)
-		return PLAYLIST_RESULT_DISABLED;
-
-	if (g_file_test(path, G_FILE_TEST_EXISTS)) {
-		g_free(path);
-		return PLAYLIST_RESULT_LIST_EXISTS;
-	}
-
-	while (!(fp = fopen(path, "w")) && errno == EINTR);
-	g_free(path);
-
-	if (fp == NULL)
-		return PLAYLIST_RESULT_ERRNO;
-
-	for (unsigned i = 0; i < queue_length(&playlist.queue); i++)
-		playlist_print_song(fp, queue_get(&playlist.queue, i));
-
-	while (fclose(fp) && errno == EINTR) ;
-
-	idle_add(IDLE_STORED_PLAYLIST);
-	return PLAYLIST_RESULT_SUCCESS;
-}
-
 int getPlaylistCurrentSong(void)
 {
 	if (playlist.current >= 0)
@@ -1122,35 +1090,6 @@ enum playlist_result seekSongInPlaylistById(unsigned id, float seek_time)
 unsigned getPlaylistSongId(unsigned song)
 {
 	return queue_position_to_id(&playlist.queue, song);
-}
-
-enum playlist_result loadPlaylist(const char *utf8file)
-{
-	GPtrArray *list;
-
-	if (!(list = spl_load(utf8file)))
-		return PLAYLIST_RESULT_NO_SUCH_LIST;
-
-	for (unsigned i = 0; i < list->len; ++i) {
-		const char *temp = g_ptr_array_index(list, i);
-		if ((addToPlaylist(temp, NULL)) != PLAYLIST_RESULT_SUCCESS) {
-			/* for windows compatibility, convert slashes */
-			char *temp2 = g_strdup(temp);
-			char *p = temp2;
-			while (*p) {
-				if (*p == '\\')
-					*p = '/';
-				p++;
-			}
-			if ((addToPlaylist(temp, NULL)) != PLAYLIST_RESULT_SUCCESS) {
-				g_warning("can't add file \"%s\"", temp2);
-			}
-			free(temp2);
-		}
-	}
-
-	spl_free(list);
-	return PLAYLIST_RESULT_SUCCESS;
 }
 
 /*

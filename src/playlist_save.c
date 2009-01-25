@@ -23,6 +23,7 @@
 #include "path.h"
 #include "ls.h"
 #include "database.h"
+#include "idle.h"
 
 #include <glib.h>
 
@@ -61,4 +62,68 @@ playlist_print_uri(FILE *file, const char *uri)
 		fprintf(file, "%s\n", s);
 		g_free(s);
 	}
+}
+
+enum playlist_result
+spl_save_queue(const char *name_utf8, const struct queue *queue)
+{
+	char *path_fs;
+	FILE *file;
+
+	if (!is_valid_playlist_name(name_utf8))
+		return PLAYLIST_RESULT_BAD_NAME;
+
+	path_fs = map_spl_utf8_to_fs(name_utf8);
+	if (path_fs == NULL)
+		return PLAYLIST_RESULT_DISABLED;
+
+	if (g_file_test(path_fs, G_FILE_TEST_EXISTS)) {
+		g_free(path_fs);
+		return PLAYLIST_RESULT_LIST_EXISTS;
+	}
+
+	file = fopen(path_fs, "w");
+	g_free(path_fs);
+
+	if (file == NULL)
+		return PLAYLIST_RESULT_ERRNO;
+
+	for (unsigned i = 0; i < queue_length(queue); i++)
+		playlist_print_song(file, queue_get(queue, i));
+
+	fclose(file);
+
+	idle_add(IDLE_STORED_PLAYLIST);
+	return PLAYLIST_RESULT_SUCCESS;
+}
+
+enum playlist_result
+playlist_load_spl(const char *name_utf8)
+{
+	GPtrArray *list;
+
+	list = spl_load(name_utf8);
+	if (list == NULL)
+		return PLAYLIST_RESULT_NO_SUCH_LIST;
+
+	for (unsigned i = 0; i < list->len; ++i) {
+		const char *temp = g_ptr_array_index(list, i);
+		if ((addToPlaylist(temp, NULL)) != PLAYLIST_RESULT_SUCCESS) {
+			/* for windows compatibility, convert slashes */
+			char *temp2 = g_strdup(temp);
+			char *p = temp2;
+			while (*p) {
+				if (*p == '\\')
+					*p = '/';
+				p++;
+			}
+			if ((addToPlaylist(temp, NULL)) != PLAYLIST_RESULT_SUCCESS) {
+				g_warning("can't add file \"%s\"", temp2);
+			}
+			g_free(temp2);
+		}
+	}
+
+	spl_free(list);
+	return PLAYLIST_RESULT_SUCCESS;
 }

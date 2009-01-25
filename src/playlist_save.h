@@ -19,6 +19,8 @@
 #ifndef MPD_PLAYLIST_SAVE_H
 #define MPD_PLAYLIST_SAVE_H
 
+#include "playlist.h"
+
 #include <stdio.h>
 
 struct song;
@@ -28,5 +30,18 @@ playlist_print_song(FILE *fp, const struct song *song);
 
 void
 playlist_print_uri(FILE *fp, const char *uri);
+
+/**
+ * Saves a queue object into a stored playlist file.
+ */
+enum playlist_result
+spl_save_queue(const char *name_utf8, const struct queue *queue);
+
+/**
+ * Loads a stored playlist file, and append all songs to the global
+ * playlist.
+ */
+enum playlist_result
+playlist_load_spl(const char *name_utf8);
 
 #endif
