@@ -32,6 +32,7 @@ static const char default_device[] = "default";
 
 enum {
 	MPD_ALSA_BUFFER_TIME_US = 500000,
+	MPD_ALSA_PERIOD_TIME_US = 125000,
 };
 
 #define MPD_ALSA_RETRY_NR 5
@@ -72,7 +73,7 @@ static AlsaData *newAlsaData(void)
 	ret->writei = snd_pcm_writei;
 	ret->useMmap = 0;
 	ret->buffer_time = MPD_ALSA_BUFFER_TIME_US;
-	ret->period_time = 0;
+	ret->period_time = MPD_ALSA_PERIOD_TIME_US;
 
 	//use alsa mixer by default
 	mixer_init(&ret->mixer, &alsa_mixer);
@@ -94,8 +95,10 @@ alsa_configure(AlsaData *ad, struct config_param *param)
 
 	ad->useMmap = config_get_block_bool(param, "use_mmap", false);
 
-	ad->buffer_time = config_get_block_unsigned(param, "buffer_time", 0);
-	ad->period_time = config_get_block_unsigned(param, "period_time", 0);
+	ad->buffer_time = config_get_block_unsigned(param, "buffer_time",
+			MPD_ALSA_BUFFER_TIME_US);
+	ad->period_time = config_get_block_unsigned(param, "period_time",
+			MPD_ALSA_PERIOD_TIME_US);
 
 #ifdef SND_PCM_NO_AUTO_RESAMPLE
 	if (!config_get_block_bool(param, "auto_resample", true))
