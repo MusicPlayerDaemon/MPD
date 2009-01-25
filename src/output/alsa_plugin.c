@@ -50,7 +50,7 @@ struct alsa_data {
 	alsa_writei_t *writei;
 	unsigned int buffer_time;
 	unsigned int period_time;
-	int frame_size;
+	size_t frame_size;
 	bool use_mmap;
 
 	struct mixer mixer;
