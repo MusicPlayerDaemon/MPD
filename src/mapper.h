@@ -25,7 +25,7 @@
 
 #include <stdbool.h>
 
-#define PLAYLIST_FILE_SUFFIX "m3u"
+#define PLAYLIST_FILE_SUFFIX ".m3u"
 
 struct directory;
 struct song;

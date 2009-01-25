@@ -42,14 +42,11 @@ load_playlist_info(const char *parent_path_fs, const char *name_fs)
 	struct stat st;
 	struct stored_playlist_info *playlist;
 
-	if (name_length < 1 + sizeof(PLAYLIST_FILE_SUFFIX) ||
+	if (name_length < sizeof(PLAYLIST_FILE_SUFFIX) ||
 	    memchr(name_fs, '\n', name_length) != NULL)
 		return NULL;
 
-	if (name_fs[name_length - sizeof(PLAYLIST_FILE_SUFFIX)] != '.' ||
-	    memcmp(name_fs + name_length - sizeof(PLAYLIST_FILE_SUFFIX) + 1,
-		   PLAYLIST_FILE_SUFFIX,
-		   sizeof(PLAYLIST_FILE_SUFFIX) - 1) != 0)
+	if (!g_str_has_suffix(name_fs, PLAYLIST_FILE_SUFFIX))
 		return NULL;
 
 	path_fs = g_build_filename(parent_path_fs, name_fs, NULL);
@@ -58,8 +55,8 @@ load_playlist_info(const char *parent_path_fs, const char *name_fs)
 	if (ret < 0 || !S_ISREG(st.st_mode))
 		return NULL;
 
-	name = g_strdup(name_fs);
-	name[name_length - sizeof(PLAYLIST_FILE_SUFFIX)] = 0;
+	name = g_strndup(name_fs,
+			 name_length + 1 - sizeof(PLAYLIST_FILE_SUFFIX));
 	name_utf8 = fs_charset_to_utf8(name);
 	g_free(name);
 	if (name_utf8 == NULL)

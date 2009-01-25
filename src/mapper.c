@@ -203,7 +203,7 @@ map_spl_path(void)
 char *
 map_spl_utf8_to_fs(const char *name)
 {
-	char *filename = g_strconcat(name, "." PLAYLIST_FILE_SUFFIX, NULL);
+	char *filename = g_strconcat(name, PLAYLIST_FILE_SUFFIX, NULL);
 	char *path;
 
 	if (playlist_dir == NULL)
