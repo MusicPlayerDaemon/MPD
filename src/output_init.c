@@ -39,7 +39,7 @@
 }
 
 int
-audio_output_init(struct audio_output *ao, struct config_param *param)
+audio_output_init(struct audio_output *ao, const struct config_param *param)
 {
 	const char *name = NULL;
 	char *format = NULL;

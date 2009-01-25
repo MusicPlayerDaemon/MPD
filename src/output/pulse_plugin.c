@@ -55,7 +55,7 @@ static void pulse_free_data(struct pulse_data *pd)
 static void *
 pulse_init(struct audio_output *ao,
 	   G_GNUC_UNUSED const struct audio_format *audio_format,
-	   struct config_param *param)
+	   const struct config_param *param)
 {
 	struct pulse_data *pd;
 

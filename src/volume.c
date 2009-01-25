@@ -77,7 +77,7 @@ mixer_reconfigure(char *driver)
 
 void volume_init(void)
 {
-	struct config_param *param = config_get_param(CONF_MIXER_TYPE);
+	const struct config_param *param = config_get_param(CONF_MIXER_TYPE);
 	//hw mixing is by default
 	if (param) {
 		if (strcmp(param->value, VOLUME_MIXER_SOFTWARE) == 0) {

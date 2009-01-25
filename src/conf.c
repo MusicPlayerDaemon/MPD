@@ -350,7 +350,7 @@ void config_read_file(const char *file)
 }
 
 struct config_param *
-config_get_next_param(const char *name, struct config_param * last)
+config_get_next_param(const char *name, const struct config_param * last)
 {
 	struct config_entry *entry;
 	GSList *node;
@@ -381,7 +381,7 @@ config_get_next_param(const char *name, struct config_param * last)
 const char *
 config_get_string(const char *name, const char *default_value)
 {
-	struct config_param *param = config_get_param(name);
+	const struct config_param *param = config_get_param(name);
 
 	if (param == NULL)
 		return default_value;
@@ -410,7 +410,7 @@ config_get_path(const char *name)
 unsigned
 config_get_positive(const char *name, unsigned default_value)
 {
-	struct config_param *param = config_get_param(name);
+	const struct config_param *param = config_get_param(name);
 	long value;
 	char *endptr;
 
@@ -428,7 +428,7 @@ config_get_positive(const char *name, unsigned default_value)
 }
 
 struct block_param *
-getBlockParam(struct config_param * param, const char *name)
+getBlockParam(const struct config_param * param, const char *name)
 {
 	struct block_param *ret = NULL;
 	int i;
@@ -449,7 +449,7 @@ getBlockParam(struct config_param * param, const char *name)
 
 bool config_get_bool(const char *name, bool default_value)
 {
-	struct config_param *param = config_get_param(name);
+	const struct config_param *param = config_get_param(name);
 	int value;
 
 	if (param == NULL)
@@ -468,7 +468,7 @@ bool config_get_bool(const char *name, bool default_value)
 }
 
 const char *
-config_get_block_string(struct config_param *param, const char *name,
+config_get_block_string(const struct config_param *param, const char *name,
 			const char *default_value)
 {
 	struct block_param *bp = getBlockParam(param, name);
@@ -480,7 +480,7 @@ config_get_block_string(struct config_param *param, const char *name,
 }
 
 unsigned
-config_get_block_unsigned(struct config_param *param, const char *name,
+config_get_block_unsigned(const struct config_param *param, const char *name,
 			  unsigned default_value)
 {
 	struct block_param *bp = getBlockParam(param, name);
@@ -501,7 +501,7 @@ config_get_block_unsigned(struct config_param *param, const char *name,
 }
 
 bool
-config_get_block_bool(struct config_param *param, const char *name,
+config_get_block_bool(const struct config_param *param, const char *name,
 		      bool default_value)
 {
 	struct block_param *bp = getBlockParam(param, name);

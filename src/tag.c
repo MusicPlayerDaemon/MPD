@@ -76,7 +76,7 @@ void tag_lib_init(void)
 	char *temp;
 	char *s;
 	char *c;
-	struct config_param *param;
+	const struct config_param *param;
 	int i;
 
 	/* parse the "metadata_to_use" config parameter below */

@@ -94,7 +94,7 @@ static void free_shout_data(struct shout_data *sd)
 
 static void *my_shout_init_driver(struct audio_output *audio_output,
 				  const struct audio_format *audio_format,
-				  struct config_param *param)
+				  const struct config_param *param)
 {
 	struct shout_data *sd;
 	char *test;

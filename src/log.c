@@ -219,7 +219,7 @@ parse_log_level(const char *value, unsigned line)
 
 void log_init(bool verbose, bool use_stdout)
 {
-	struct config_param *param;
+	const struct config_param *param;
 
 	g_get_charset(&log_charset);
 
@@ -252,9 +252,8 @@ void log_init(bool verbose, bool use_stdout)
 			if (path == NULL)
 				g_error("error parsing \"%s\" at line %i\n",
 					CONF_LOG_FILE, param->line);
-			param->value = path;
 
-			log_init_file(param->value, param->line);
+			log_init_file(path, param->line);
 		}
 	}
 }

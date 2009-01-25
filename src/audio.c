@@ -43,7 +43,7 @@ static unsigned int audioOutputArraySize;
 unsigned int audio_output_count(void)
 {
 	unsigned int nr = 0;
-	struct config_param *param = NULL;
+	const struct config_param *param = NULL;
 
 	while ((param = config_get_next_param(CONF_AUDIO_OUTPUT, param)))
 		nr++;
@@ -55,7 +55,7 @@ unsigned int audio_output_count(void)
 /* make sure initPlayerData is called before this function!! */
 void initAudioDriver(void)
 {
-	struct config_param *param = NULL;
+	const struct config_param *param = NULL;
 	unsigned int i;
 
 	notify_init(&audio_output_client_notify);
@@ -106,7 +106,7 @@ void getOutputAudioFormat(const struct audio_format *inAudioFormat,
 
 void initAudioConfig(void)
 {
-	struct config_param *param = config_get_param(CONF_AUDIO_OUTPUT_FORMAT);
+	const struct config_param *param = config_get_param(CONF_AUDIO_OUTPUT_FORMAT);
 
 	if (NULL == param || NULL == param->value)
 		return;

@@ -108,7 +108,7 @@ alsa_data_free(struct alsa_data *ad)
 }
 
 static void
-alsa_configure(struct alsa_data *ad, struct config_param *param)
+alsa_configure(struct alsa_data *ad, const struct config_param *param)
 {
 	ad->device = config_dup_block_string(param, "device", NULL);
 
@@ -138,7 +138,7 @@ alsa_configure(struct alsa_data *ad, struct config_param *param)
 static void *
 alsa_init(G_GNUC_UNUSED struct audio_output *ao,
 	  G_GNUC_UNUSED const struct audio_format *audio_format,
-	  struct config_param *param)
+	  const struct config_param *param)
 {
 	/* no need for pthread_once thread-safety when reading config */
 	static int free_global_registered;

@@ -94,7 +94,7 @@ void config_read_file(const char *file);
 /* don't free the returned value
    set _last_ to NULL to get first entry */
 struct config_param *
-config_get_next_param(const char *name, struct config_param *last);
+config_get_next_param(const char *name, const struct config_param *last);
 
 static inline struct config_param *
 config_get_param(const char *name)
@@ -117,27 +117,27 @@ unsigned
 config_get_positive(const char *name, unsigned default_value);
 
 struct block_param *
-getBlockParam(struct config_param *param, const char *name);
+getBlockParam(const struct config_param *param, const char *name);
 
 bool config_get_bool(const char *name, bool default_value);
 
 const char *
-config_get_block_string(struct config_param *param, const char *name,
+config_get_block_string(const struct config_param *param, const char *name,
 			const char *default_value);
 
 static inline char *
-config_dup_block_string(struct config_param *param, const char *name,
+config_dup_block_string(const struct config_param *param, const char *name,
 			const char *default_value)
 {
 	return g_strdup(config_get_block_string(param, name, default_value));
 }
 
 unsigned
-config_get_block_unsigned(struct config_param *param, const char *name,
+config_get_block_unsigned(const struct config_param *param, const char *name,
 			  unsigned default_value);
 
 bool
-config_get_block_bool(struct config_param *param, const char *name,
+config_get_block_bool(const struct config_param *param, const char *name,
 		      bool default_value);
 
 struct config_param *

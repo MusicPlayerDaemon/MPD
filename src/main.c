@@ -126,7 +126,7 @@ static void openDB(Options * options, char *argv0)
 static void
 initialize_decoder_and_player(void)
 {
-	struct config_param *param;
+	const struct config_param *param;
 	char *test;
 	size_t buffer_size;
 	float perc;

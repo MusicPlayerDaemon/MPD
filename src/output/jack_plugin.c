@@ -183,7 +183,7 @@ mpd_jack_error(const char *msg)
 static void *
 mpd_jack_init(struct audio_output *ao,
 	      G_GNUC_UNUSED const struct audio_format *audio_format,
-	      struct config_param *param)
+	      const struct config_param *param)
 {
 	struct jack_data *jd;
 	const char *value;

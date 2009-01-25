@@ -29,7 +29,7 @@ struct tag;
 struct config_param;
 
 int
-audio_output_init(struct audio_output *, struct config_param *param);
+audio_output_init(struct audio_output *, const struct config_param *param);
 
 bool
 audio_output_open(struct audio_output *audioOutput,

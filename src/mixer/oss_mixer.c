@@ -47,7 +47,7 @@ oss_mixer_finish(struct mixer_data *data)
 }
 
 static void
-oss_mixer_configure(struct mixer_data *data, struct config_param *param)
+oss_mixer_configure(struct mixer_data *data, const struct config_param *param)
 {
 	struct oss_mixer *om = (struct oss_mixer *) data;
 	const char *value;
@@ -140,7 +140,7 @@ oss_mixer_control(struct mixer_data *data, int cmd, void *arg)
 	struct oss_mixer *om = (struct oss_mixer *) data;
 	switch (cmd) {
 	case AC_MIXER_CONFIGURE:
-		oss_mixer_configure(data, (struct config_param *)arg);
+		oss_mixer_configure(data, (const struct config_param *)arg);
 		if (om->device_fd >= 0)
 			oss_mixer_close(data);
 		return true;

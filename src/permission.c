@@ -71,7 +71,7 @@ void initPermissions(void)
 {
 	char *password;
 	unsigned permission;
-	struct config_param *param;
+	const struct config_param *param;
 
 	permission_passwords = g_hash_table_new_full(g_str_hash, g_str_equal,
 						     g_free, NULL);
