@@ -162,11 +162,6 @@ alsa_mixer_control(struct mixer_data *data, int cmd, void *arg)
 {
 	struct alsa_mixer *am = (struct alsa_mixer *)data;
 	switch (cmd) {
-	case AC_MIXER_CONFIGURE:
-		alsa_mixer_configure(data, (const struct config_param *)arg);
-		if (am->handle)
-			alsa_mixer_close(data);
-		return true;
 	case AC_MIXER_GETVOL:
 	{
 		int err;

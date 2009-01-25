@@ -127,7 +127,6 @@ enum audio_output_command {
 enum audio_control_command {
 	AC_MIXER_GETVOL = 0,
 	AC_MIXER_SETVOL,
-	AC_MIXER_CONFIGURE,
 };
 
 struct audio_output;

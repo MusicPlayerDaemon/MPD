@@ -73,6 +73,5 @@ void saveAudioDevicesState(FILE *fp);
 
 bool mixer_control_setvol(unsigned int device, int volume, int rel);
 bool mixer_control_getvol(unsigned int device, int *volume);
-bool mixer_configure_legacy(char *name, struct config_param *param);
 
 #endif

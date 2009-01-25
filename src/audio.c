@@ -466,20 +466,3 @@ bool mixer_control_getvol(unsigned int device, int *volume)
 	}
 	return false;
 }
-
-bool mixer_configure_legacy(char *name, struct config_param *param)
-{
-	unsigned i;
-	struct audio_output *output;
-
-	for (i = 0; i < audioOutputArraySize; ++i) {
-		output = &audioOutputArray[i];
-		if (output && output->plugin && !strcmp(name, output->plugin->name)) {
-			if (output->plugin->control) {
-				g_debug("reconfiguring %s mixer\n", name);
-				return output->plugin->control(output->data, AC_MIXER_CONFIGURE, param);
-			}
-		}
-	}
-	return false;
-}

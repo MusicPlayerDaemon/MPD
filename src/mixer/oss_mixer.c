@@ -153,12 +153,6 @@ oss_mixer_control(struct mixer_data *data, int cmd, void *arg)
 {
 	struct oss_mixer *om = (struct oss_mixer *) data;
 	switch (cmd) {
-	case AC_MIXER_CONFIGURE:
-		oss_mixer_configure(data, (const struct config_param *)arg);
-		if (om->device_fd >= 0)
-			oss_mixer_close(data);
-		return true;
-		break;
 	case AC_MIXER_GETVOL:
 	{
 		int left, right, level;
