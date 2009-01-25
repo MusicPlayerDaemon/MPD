@@ -255,6 +255,13 @@ queue_shuffle_order(struct queue *queue)
 }
 
 void
+queue_shuffle_order_last(struct queue *queue, unsigned start, unsigned end)
+{
+	queue_swap_order(queue, end - 1,
+			 g_rand_int_range(queue->rand, start, end));
+}
+
+void
 queue_shuffle_range(struct queue *queue, unsigned start, unsigned end)
 {
 	assert(start <= end);

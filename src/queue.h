@@ -320,6 +320,14 @@ void
 queue_shuffle_order(struct queue *queue);
 
 /**
+ * Shuffles the virtual order of the last song in the specified
+ * (order) range.  This is used in random mode after a song has been
+ * appended by queue_append().
+ */
+void
+queue_shuffle_order_last(struct queue *queue, unsigned start, unsigned end);
+
+/**
  * Shuffles a (position) range in the queue.  The songs are physically
  * shuffled, not by using the "order" mapping.
  */

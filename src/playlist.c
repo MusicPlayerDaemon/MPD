@@ -442,12 +442,9 @@ addSongToPlaylist(struct song *song, unsigned *added_id)
 			start = playlist.queued + 1;
 		else
 			start = playlist.current + 1;
-		if (start < queue_length(&playlist.queue)) {
-			unsigned swap = g_rand_int_range(g_rand, start,
-							 queue_length(&playlist.queue));
-			queue_swap_order(&playlist.queue,
-					 queue_length(&playlist.queue) - 1, swap);
-		}
+		if (start < queue_length(&playlist.queue))
+			queue_shuffle_order_last(&playlist.queue, start,
+						 queue_length(&playlist.queue));
 	}
 
 	incrPlaylistVersion();
