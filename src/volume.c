@@ -47,32 +47,80 @@ void volume_finish(void)
 {
 }
 
-static void
-mixer_reconfigure(char *driver)
+/**
+ * Finds the first audio_output configuration section with the
+ * specified type.
+ */
+static struct config_param *
+find_output_config(const char *type)
 {
-	struct config_param *newparam, *param;
+	struct config_param *param = NULL;
 
-	//create parameter list
-	newparam = newConfigParam(NULL, -1);
+	while ((param = config_get_next_param(CONF_AUDIO_OUTPUT,
+					      param)) != NULL) {
+		const char *param_type =
+			config_get_block_string(param, "type", NULL);
+		if (param_type != NULL && strcmp(param_type, type) == 0)
+			return param;
+	}
 
-	param = config_get_param(CONF_MIXER_DEVICE);
-	if (param) {
-		g_warning("deprecated option mixer_device found, translating to %s config section\n", driver);
-		addBlockParam(newparam, "mixer_device", param->value, -1);
+	return NULL;
+}
+
+/**
+ * Copy a (top-level) legacy mixer configuration parameter to the
+ * audio_output section.
+ */
+static void
+mixer_copy_legacy_param(const char *type, const char *name)
+{
+	const struct config_param *param;
+	struct config_param *output;
+	const struct block_param *bp;
+
+	/* see if the deprecated configuration exists */
+
+	param = config_get_param(name);
+	if (param == NULL)
+		return;
+
+	g_warning("deprecated option '%s' found, moving to '%s' audio output",
+		  name, type);
+
+	/* determine the configuration section */
+
+	output = find_output_config(type);
+	if (output == NULL) {
+		/* if there is no output configuration at all, create
+		   a new and empty configuration section for the
+		   legacy mixer */
+
+		if (config_get_next_param(CONF_AUDIO_OUTPUT, NULL) != NULL)
+			/* there is an audio_output configuration, but
+			   it does not match the mixer_type setting */
+			g_error("no '%s' audio output found", type);
+
+		output = newConfigParam(NULL, param->line);
+		addBlockParam(output, "type", type, param->line);
+		addBlockParam(output, "name", type, param->line);
+		config_add_param(CONF_AUDIO_OUTPUT, output);
 	}
-	param = config_get_param(CONF_MIXER_CONTROL);
-	if (param) {
-		g_warning("deprecated option mixer_control found, translating to %s config section\n", driver);
-		addBlockParam(newparam, "mixer_control", param->value, -1);
-	}
-	if (newparam->num_block_params > 0) {
-		//call configure method of corrensponding mixer
-		if (!mixer_configure_legacy(driver, newparam)) {
-			g_error("Using mixer_type '%s' with not enabled %s output", driver, driver);
-		}
-	}
-	//free parameter list
-	config_param_free(newparam, NULL);
+
+	bp = getBlockParam(output, name);
+	if (bp != NULL)
+		g_error("the '%s' audio output already has a '%s' setting",
+			type, name);
+
+	/* duplicate the parameter in the configuration section */
+
+	addBlockParam(output, name, param->value, param->line);
+}
+
+static void
+mixer_reconfigure(const char *type)
+{
+	mixer_copy_legacy_param(type, CONF_MIXER_DEVICE);
+	mixer_copy_legacy_param(type, CONF_MIXER_CONTROL);
 }
 
 void volume_init(void)

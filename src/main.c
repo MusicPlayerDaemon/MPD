@@ -246,9 +246,9 @@ int main(int argc, char *argv[])
 
 	command_init();
 	initialize_decoder_and_player();
+	volume_init();
 	initAudioConfig();
 	initAudioDriver();
-	volume_init();
 	client_manager_init();
 	replay_gain_global_init();
 	initNormalization();
