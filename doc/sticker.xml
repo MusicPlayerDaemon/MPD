@@ -23,10 +23,13 @@
       widely used tags.  This way the tags might still work in other
       players, if you sync the database with your original media
       files.
+      Keep in mind that we stick with lower case tags with underscores
+      instead of spaces. If there will be a Sync tool in future
+      its easy to change this on the fly, if needed.
     </para>
 
     <tag>
-      <name>Rating</name>
+      <name>rating</name>
       <value>1-5</value>
       <para>
         Will store a rating value from 1 (worst) to 5 (best) for a given song.
@@ -34,7 +37,7 @@
     </tag>
 
     <tag>
-      <name>Album Rating</name>
+      <name>album_rating</name>
       <value>1-5</value>
       <para>
         Will store a rating value from 1 (worst) to 5 (best) for a given album.
@@ -42,7 +45,7 @@
     </tag>
 
     <tag>
-      <name>Style</name>
+      <name>style</name>
       <value>Keyword</value>
       <para>
         This tag is used to keep the Genre tag clean, by now having 1000's of genres.
@@ -54,7 +57,7 @@
     </tag>
 
     <tag>
-      <name>Lyrics</name>
+      <name>lyrics</name>
       <value>The lyrics of the song, including header with Artist - Title</value>
       <para>
         This one is self explaining. This gives the option to store lyrics of
@@ -63,7 +66,7 @@
     </tag>
 
     <tag>
-      <name>Similar Artists</name>
+      <name>similar_artists</name>
       <value>Comma seperated list of artists</value>
       <para>
         This tag enables a last.fm alike aproach which will still work when being offline
