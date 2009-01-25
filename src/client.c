@@ -184,7 +184,12 @@ static void client_init(struct client *client, int fd)
 	client->bufferPos = 0;
 	client->fd = fd;
 
+#ifndef G_OS_WIN32
 	client->channel = g_io_channel_unix_new(client->fd);
+#else
+	client->channel = g_io_channel_win32_new_socket(client->fd);
+#endif
+
 	client->source_id = g_io_add_watch(client->channel, G_IO_IN,
 					   client_in_event, client);
 
