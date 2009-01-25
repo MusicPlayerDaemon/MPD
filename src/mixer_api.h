@@ -25,8 +25,8 @@
  * list of currently implemented mixers
  */
 
-extern struct mixer_plugin alsa_mixer;
-extern struct mixer_plugin oss_mixer;
+extern const struct mixer_plugin alsa_mixer;
+extern const struct mixer_plugin oss_mixer;
 
 struct mixer_data;
 
@@ -65,11 +65,11 @@ struct mixer_plugin {
 };
 
 struct mixer {
-	struct mixer_plugin *plugin;
+	const struct mixer_plugin *plugin;
 	struct mixer_data *data;
 };
 
-void mixer_init(struct mixer *mixer, struct mixer_plugin *plugin);
+void mixer_init(struct mixer *mixer, const struct mixer_plugin *plugin);
 void mixer_finish(struct mixer *mixer);
 void mixer_configure(struct mixer *mixer, const struct config_param *param);
 bool mixer_open(struct mixer *mixer);

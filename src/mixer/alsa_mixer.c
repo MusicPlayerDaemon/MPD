@@ -237,7 +237,7 @@ alsa_mixer_control(struct mixer_data *data, int cmd, void *arg)
 	return false;
 }
 
-struct mixer_plugin alsa_mixer = {
+const struct mixer_plugin alsa_mixer = {
 	.init = alsa_mixer_init,
 	.finish = alsa_mixer_finish,
 	.configure = alsa_mixer_configure,

@@ -21,7 +21,7 @@
 
 #include "mixer_api.h"
 
-void mixer_init(struct mixer *mixer, struct mixer_plugin *plugin)
+void mixer_init(struct mixer *mixer, const struct mixer_plugin *plugin)
 {
 	assert(plugin != NULL);
 	assert(mixer != NULL);

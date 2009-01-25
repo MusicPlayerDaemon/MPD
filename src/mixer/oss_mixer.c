@@ -218,7 +218,7 @@ oss_mixer_control(struct mixer_data *data, int cmd, void *arg)
 	return false;
 }
 
-struct mixer_plugin oss_mixer = {
+const struct mixer_plugin oss_mixer = {
 	.init = oss_mixer_init,
 	.finish = oss_mixer_finish,
 	.configure = oss_mixer_configure,
