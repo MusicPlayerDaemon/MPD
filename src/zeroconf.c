@@ -34,14 +34,14 @@ static int zeroconfEnabled;
 
 void initZeroconf(void)
 {
-	const char *serviceName = SERVICE_NAME;
+	const char *serviceName;
 
 	zeroconfEnabled = config_get_bool(CONF_ZEROCONF_ENABLED,
 					  DEFAULT_ZEROCONF_ENABLED);
 	if (!zeroconfEnabled)
 		return;
 
-	serviceName = config_get_string(CONF_ZEROCONF_NAME, NULL);
+	serviceName = config_get_string(CONF_ZEROCONF_NAME, SERVICE_NAME);
 
 #ifdef HAVE_AVAHI
 	init_avahi(serviceName);
