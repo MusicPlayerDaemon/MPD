@@ -167,7 +167,6 @@ mod_decode(struct decoder *decoder, const char *path)
 
 	if (!(data = mod_open(path))) {
 		g_warning("failed to open mod: %s\n", path);
-		MikMod_Exit();
 		return;
 	}
 
@@ -190,8 +189,6 @@ mod_decode(struct decoder *decoder, const char *path)
 	}
 
 	mod_close(data);
-
-	MikMod_Exit();
 }
 
 static struct tag *modTagDup(const char *file)
@@ -207,7 +204,6 @@ static struct tag *modTagDup(const char *file)
 
 	if (moduleHandle == NULL) {
 		g_debug("modTagDup: Failed to open file: %s\n", file);
-		MikMod_Exit();
 		return NULL;
 
 	}
@@ -222,8 +218,6 @@ static struct tag *modTagDup(const char *file)
 	g_free(path2);
 	if (title)
 		tag_add_item(ret, TAG_ITEM_TITLE, title);
-
-	MikMod_Exit();
 
 	return ret;
 }
