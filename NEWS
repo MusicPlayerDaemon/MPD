@@ -2,6 +2,7 @@ ver 0.14.2 (2009/??/??)
 * decoders:
   - ffmpeg: added support for the tags comment, genre, year
   - wavpack: pass NULL if the .wvc file fails to open
+  - mikmod: call MikMod_Exit() only in the finish() method
 * audio outputs:
   - jack: allocate ring buffers before connecting
   - jack: clear "shutdown" flag on reconnect
