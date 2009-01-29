@@ -54,7 +54,7 @@ struct jack_data {
 	jack_port_t *ports[2];
 	jack_client_t *client;
 	jack_ringbuffer_t *ringbuffer[2];
-	int bps;
+
 	bool shutdown;
 };
 
@@ -159,10 +159,6 @@ set_audioformat(struct jack_data *jd, struct audio_format *audio_format)
 
 	if (audio_format->bits != 16 && audio_format->bits != 24)
 		audio_format->bits = 24;
-
-	jd->bps = audio_format->channels
-		* sizeof(jack_default_audio_sample_t)
-		* audio_format->sample_rate;
 }
 
 static void
