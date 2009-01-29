@@ -385,9 +385,7 @@ mpd_jack_play(void *data, const char *buff, size_t size)
 
 	if (jd->shutdown) {
 		g_warning("Refusing to play, because there is no client thread.");
-		mpd_jack_client_free(jd);
-		audio_output_closed(jd->ao);
-		return true;
+		return false;
 	}
 
 	assert(size % frame_size == 0);
