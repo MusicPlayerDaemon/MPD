@@ -87,6 +87,7 @@ input_archive_open(struct input_stream *is, const char *pathname)
 	is->plugin = &input_plugin_archive;
 
 	//internal handle
+	is->plugin = &input_plugin_archive;
 	is->data = arch_ctx;
 
 	//open archive

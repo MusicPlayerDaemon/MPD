@@ -62,6 +62,7 @@ input_file_open(struct input_stream *is, const char *filename)
 	posix_fadvise(fd, (off_t)0, is->size, POSIX_FADV_SEQUENTIAL);
 #endif
 
+	is->plugin = &input_plugin_file;
 	is->data = GINT_TO_POINTER(fd);
 	is->ready = true;
 

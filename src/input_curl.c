@@ -909,6 +909,7 @@ input_curl_open(struct input_stream *is, const char *url)
 	c->buffers = g_queue_new();
 	c->rewind = g_queue_new();
 
+	is->plugin = &input_plugin_curl;
 	is->data = c;
 
 	c->multi = curl_multi_init();

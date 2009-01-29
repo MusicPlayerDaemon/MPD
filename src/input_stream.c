@@ -80,7 +80,13 @@ input_stream_open(struct input_stream *is, const char *url)
 		const struct input_plugin *plugin = input_plugins[i];
 
 		if (plugin->open(is, url)) {
-			is->plugin = plugin;
+			assert(is->plugin != NULL);
+			assert(is->plugin->open == NULL ||
+			       is->plugin == plugin);
+			assert(is->plugin->close != NULL);
+			assert(is->plugin->read != NULL);
+			assert(is->plugin->eof != NULL);
+
 			return true;
 		}
 	}
