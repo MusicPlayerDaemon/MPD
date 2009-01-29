@@ -34,6 +34,8 @@ ver 0.15 - (200?/??/??)
 
 
 ver 0.14.2 (2009/??/??)
+* audio outputs:
+  - jack: allocate ring buffers before connecting
 
 
 ver 0.14.1 (2009/01/17)

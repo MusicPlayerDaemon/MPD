@@ -217,6 +217,9 @@ mpd_jack_connect(struct jack_data *jd, struct audio_format *audio_format)
 
 	jd->audio_format = audio_format;
 
+	jd->ringbuffer[0] = jack_ringbuffer_create(jd->ringbuffer_size);
+	jd->ringbuffer[1] = jack_ringbuffer_create(jd->ringbuffer_size);
+
 	if ((jd->client = jack_client_new(mpd_jack_name(jd))) == NULL) {
 		g_warning("jack server not running?");
 		return -1;
@@ -262,11 +265,6 @@ mpd_jack_connect(struct jack_data *jd, struct audio_format *audio_format)
 
 	if ( jd->output_ports[1] ) {
 		const char *name = mpd_jack_name(jd);
-
-		jd->ringbuffer[0] = jack_ringbuffer_create(jd->ringbuffer_size);
-		jd->ringbuffer[1] = jack_ringbuffer_create(jd->ringbuffer_size);
-		memset(jd->ringbuffer[0]->buf, 0, jd->ringbuffer[0]->size);
-		memset(jd->ringbuffer[1]->buf, 0, jd->ringbuffer[1]->size);
 
 		port_name = g_malloc(sizeof(port_name[0]) * (7 + strlen(name)));
 
