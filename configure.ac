@@ -247,6 +247,18 @@ if test x$enable_curl = xyes; then
 fi
 AM_CONDITIONAL(HAVE_CURL, test x$enable_curl = xyes)
 
+AC_ARG_ENABLE(mms,
+	AS_HELP_STRING([--enable-mms],
+		[enable the MMS protocol with libmms (default: disable)]),,
+	[enable_mms=yes])
+
+if test x$enable_mms = xyes; then
+	PKG_CHECK_MODULES(MMS, [libmms],
+		AC_DEFINE(ENABLE_MMS, 1, [Define when libmms is used for the MMS protocol]),
+		AC_MSG_ERROR([libmms not found]))
+fi
+AM_CONDITIONAL(ENABLE_MMS, test x$enable_mms = xyes)
+
 
 dnl
 dnl archive plugins
@@ -1316,6 +1328,12 @@ if test x$enable_curl != xno; then
 	echo " HTTP streaming (libcurl) ......enabled"
 else
 	echo " HTTP streaming (libcurl) ......disabled"
+fi
+
+if test x$enable_mms != xno; then
+	echo " MMS streaming (libmms) ........enabled"
+else
+	echo " MMS streaming (libmms) ........disabled"
 fi
 
 echo ""

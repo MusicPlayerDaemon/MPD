@@ -4,6 +4,7 @@ mpd_CFLAGS = $(MPD_CFLAGS)
 mpd_CPPFLAGS = \
 	$(SQLITE_CFLAGS) \
 	$(CURL_CFLAGS) \
+	$(MMS_CFLAGS) \
 	$(AO_CFLAGS) $(ALSA_CFLAGS) \
 	$(SHOUT_CFLAGS) \
 	$(OGGVORBIS_CFLAGS) $(VORBISENC_CFLAGS) \
@@ -17,6 +18,7 @@ mpd_CPPFLAGS = \
 mpd_LDADD = $(MPD_LIBS) \
 	$(SQLITE_LIBS) \
 	$(CURL_LIBS) \
+	$(MMS_LIBS) \
 	$(AO_LIBS) $(ALSA_LIBS) \
 	$(SHOUT_LIBS) \
 	$(OGGVORBIS_LIBS) $(VORBISENC_LIBS) $(FLAC_LIBS) \
@@ -64,6 +66,7 @@ mpd_headers = \
 	input_stream.h \
 	input_file.h \
 	input_curl.h \
+	input_mms.h \
 	icy_metadata.h \
 	client.h \
 	listen.h \
@@ -312,6 +315,10 @@ endif
 
 if HAVE_CURL
 mpd_SOURCES += input_curl.c icy_metadata.c
+endif
+
+if ENABLE_MMS
+mpd_SOURCES += input_mms.c
 endif
 
 

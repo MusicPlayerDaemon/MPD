@@ -108,6 +108,9 @@ For advanced samplerate conversions.
 libcurl - http://curl.haxx.se/
 For playing HTTP streams.
 
+libmms - https://launchpad.net/libmms
+For playing MMS streams.
+
 
 pkg-config
 ----------

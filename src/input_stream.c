@@ -29,6 +29,10 @@
 #include "input_curl.h"
 #endif
 
+#ifdef ENABLE_MMS
+#include "input_mms.h"
+#endif
+
 #include <glib.h>
 #include <assert.h>
 
@@ -39,6 +43,9 @@ static const struct input_plugin *const input_plugins[] = {
 #endif
 #ifdef HAVE_CURL
 	&input_plugin_curl,
+#endif
+#ifdef ENABLE_MMS
+	&input_plugin_mms,
 #endif
 };
 
