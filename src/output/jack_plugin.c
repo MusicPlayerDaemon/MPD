@@ -215,7 +215,6 @@ static int
 mpd_jack_connect(struct jack_data *jd, struct audio_format *audio_format)
 {
 	const char **jports;
-	char *port_name;
 
 	jd->audio_format = audio_format;
 
@@ -267,27 +266,18 @@ mpd_jack_connect(struct jack_data *jd, struct audio_format *audio_format)
 	}
 
 	if ( jd->output_ports[1] ) {
-		const char *name = mpd_jack_name(jd);
-
-		port_name = g_malloc(sizeof(port_name[0]) * (7 + strlen(name)));
-
-		sprintf(port_name, "%s:left", name);
-		if ( (jack_connect(jd->client, port_name,
+		if ( (jack_connect(jd->client, jack_port_name(jd->ports[0]),
 				   jd->output_ports[0])) != 0 ) {
 			g_warning("%s is not a valid Jack Client / Port",
 				  jd->output_ports[0]);
-			g_free(port_name);
 			return -1;
 		}
-		sprintf(port_name, "%s:right", name);
-		if ( (jack_connect(jd->client, port_name,
+		if ( (jack_connect(jd->client, jack_port_name(jd->ports[0]),
 				   jd->output_ports[1])) != 0 ) {
 			g_warning("%s is not a valid Jack Client / Port",
 				  jd->output_ports[1]);
-			g_free(port_name);
 			return -1;
 		}
-		g_free(port_name);
 	}
 
 	return 1;
