@@ -227,11 +227,6 @@ mpd_jack_connect(struct jack_data *jd, struct audio_format *audio_format)
 	jack_set_sample_rate_callback(jd->client, mpd_jack_srate, jd);
 	jack_on_shutdown(jd->client, mpd_jack_shutdown, jd);
 
-	if ( jack_activate(jd->client) ) {
-		g_warning("cannot activate client");
-		return -1;
-	}
-
 	jd->ports[0] = jack_port_register(jd->client, "left",
 					  JACK_DEFAULT_AUDIO_TYPE,
 					  JackPortIsOutput, 0);
@@ -245,6 +240,11 @@ mpd_jack_connect(struct jack_data *jd, struct audio_format *audio_format)
 					  JackPortIsOutput, 0);
 	if ( !jd->ports[1] ) {
 		g_warning("Cannot register right output port.");
+		return -1;
+	}
+
+	if ( jack_activate(jd->client) ) {
+		g_warning("cannot activate client");
 		return -1;
 	}
 
