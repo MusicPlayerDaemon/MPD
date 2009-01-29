@@ -190,6 +190,9 @@ mpd_jack_init(struct audio_output *ao,
 		jd->output_ports[1] = ports[1];
 
 		g_free(ports);
+	} else {
+		jd->output_ports[0] = NULL;
+		jd->output_ports[1] = NULL;
 	}
 
 	jd->ringbuffer_size =
