@@ -200,6 +200,8 @@ mpd_jack_init(struct audio_output *ao,
 	jd->ringbuffer_size =
 		config_get_block_unsigned(param, "ringbuffer_size", 32768);
 
+	jack_set_error_function(mpd_jack_error);
+
 	return jd;
 }
 
@@ -227,7 +229,6 @@ mpd_jack_connect(struct jack_data *jd, struct audio_format *audio_format)
 		return -1;
 	}
 
-	jack_set_error_function(mpd_jack_error);
 	jack_set_process_callback(jd->client, mpd_jack_process, jd);
 	jack_set_sample_rate_callback(jd->client, mpd_jack_srate, jd);
 	jack_on_shutdown(jd->client, mpd_jack_shutdown, jd);
