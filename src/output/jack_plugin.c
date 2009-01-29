@@ -265,6 +265,8 @@ mpd_jack_connect(struct jack_data *jd, struct audio_format *audio_format)
 	jd->ringbuffer[0] = jack_ringbuffer_create(jd->ringbuffer_size);
 	jd->ringbuffer[1] = jack_ringbuffer_create(jd->ringbuffer_size);
 
+	jd->shutdown = false;
+
 	if ((jd->client = jack_client_new(mpd_jack_name(jd))) == NULL) {
 		ERROR("jack server not running?\n");
 		return -1;
