@@ -37,33 +37,92 @@ struct input_plugin {
 };
 
 struct input_stream {
+	/**
+	 * the plugin which implements this input stream
+	 */
 	const struct input_plugin *plugin;
 
-	bool seekable;
+	/**
+	 * an opaque pointer managed by the plugin
+	 */
+	void *data;
+
+	/**
+	 * indicates whether the stream is ready for reading and
+	 * whether the other attributes in this struct are valid
+	 */
 	bool ready;
 
-	int error;
-	off_t size, offset;
-	char *mime;
+	/**
+	 * if true, then the stream is fully seekable
+	 */
+	bool seekable;
 
-	void *data;
+	/**
+	 * an optional errno error code, set to non-zero after an error occured
+	 */
+	int error;
+
+	/**
+	 * the size of the resource, or -1 if unknown
+	 */
+	off_t size;
+
+	/**
+	 * the current offset within the stream
+	 */
+	off_t offset;
+
+	/**
+	 * the MIME content type of the resource, or NULL if unknown
+	 */
+	char *mime;
 
 	void *archive;
 };
 
+/**
+ * Initializes this library and all input_stream implementations.
+ */
 void input_stream_global_init(void);
 
+/**
+ * Deinitializes this library and all input_stream implementations.
+ */
 void input_stream_global_finish(void);
 
-/* if an error occurs for these 3 functions, then -1 is returned and errno
-   for the input stream is set */
+/**
+ * Opens a new input stream.  You may not access it until the "ready"
+ * flag is set.
+ *
+ * @param is the input_stream object allocated by the caller
+ * @return true on success
+ */
 bool
 input_stream_open(struct input_stream *is, const char *url);
 
+/**
+ * Closes the input stream and free resources.  This does not free the
+ * input_stream pointer itself, because it is assumed to be allocated
+ * by the caller.
+ */
+void
+input_stream_close(struct input_stream *is);
+
+/**
+ * Seeks to the specified position in the stream.  This will most
+ * likely fail if the "seekable" flag is false.
+ *
+ * @param is the input_stream object
+ * @param offset the relative offset
+ * @param whence the base of the seek, one of SEEK_SET, SEEK_CUR, SEEK_END
+ */
 bool
 input_stream_seek(struct input_stream *is, off_t offset, int whence);
 
-void input_stream_close(struct input_stream *is);
+/**
+ * Returns true if the stream has reached end-of-file.
+ */
 bool input_stream_eof(struct input_stream *is);
 
 /**
@@ -75,10 +134,25 @@ bool input_stream_eof(struct input_stream *is);
 struct tag *
 input_stream_tag(struct input_stream *is);
 
-/* return value: -1 is error, 1 inidicates stuff was buffered, 0 means nothing
-   was buffered */
+/**
+ * Reads some of the stream into its buffer.  The following return
+ * codes are defined: -1 = error, 1 = something was buffered, 0 =
+ * nothing was buffered.
+ *
+ * The semantics of this function are not well-defined, and it will
+ * eventually be removed.
+ */
 int input_stream_buffer(struct input_stream *is);
 
+/**
+ * Reads data from the stream into the caller-supplied buffer.
+ * Returns 0 on error or eof (check with input_stream_eof()).
+ *
+ * @param is the input_stream object
+ * @param ptr the buffer to read into
+ * @param size the maximum number of bytes to read
+ * @return the number of bytes read
+ */
 size_t
 input_stream_read(struct input_stream *is, void *ptr, size_t size);
 
