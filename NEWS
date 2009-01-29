@@ -2,6 +2,7 @@ ver 0.14.2 (2009/??/??)
 * audio outputs:
   - jack: allocate ring buffers before connecting
   - jack: clear "shutdown" flag on reconnect
+  - jack: reduced sleep time to 1ms
 
 
 ver 0.14.1 (2009/01/17)

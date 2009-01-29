@@ -466,7 +466,7 @@ mpd_jack_play(void *data, const char *buff, size_t size)
 		} else {
 			/* XXX do something more intelligent to
 			   synchronize */
-			my_usleep(10000);
+			my_usleep(1000);
 		}
 
 	}
