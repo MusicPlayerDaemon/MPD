@@ -250,7 +250,7 @@ AM_CONDITIONAL(HAVE_CURL, test x$enable_curl = xyes)
 AC_ARG_ENABLE(mms,
 	AS_HELP_STRING([--enable-mms],
 		[enable the MMS protocol with libmms (default: disable)]),,
-	[enable_mms=yes])
+	[enable_mms=no])
 
 if test x$enable_mms = xyes; then
 	PKG_CHECK_MODULES(MMS, [libmms],
