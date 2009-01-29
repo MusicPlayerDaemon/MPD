@@ -256,19 +256,6 @@ bz2_is_eof(struct input_stream *is)
 	return false;
 }
 
-static bool
-bz2_is_seek(G_GNUC_UNUSED struct input_stream *is,
-	G_GNUC_UNUSED off_t offset, G_GNUC_UNUSED int whence)
-{
-	return false;
-}
-
-static int
-bz2_is_buffer(G_GNUC_UNUSED struct input_stream *is)
-{
-	return 0;
-}
-
 /* exported structures */
 
 static const char *const bz2_extensions[] = {
@@ -280,8 +267,6 @@ static const struct input_plugin bz2_inputplugin = {
 	.close = bz2_is_close,
 	.read = bz2_is_read,
 	.eof = bz2_is_eof,
-	.seek = bz2_is_seek,
-	.buffer = bz2_is_buffer
 };
 
 const struct archive_plugin bz2_plugin = {

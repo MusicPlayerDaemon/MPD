@@ -116,16 +116,9 @@ input_file_eof(struct input_stream *is)
 	return is->offset >= is->size;
 }
 
-static int
-input_file_buffer(G_GNUC_UNUSED struct input_stream *is)
-{
-	return 0;
-}
-
 const struct input_plugin input_plugin_file = {
 	.open = input_file_open,
 	.close = input_file_close,
-	.buffer = input_file_buffer,
 	.read = input_file_read,
 	.eof = input_file_eof,
 	.seek = input_file_seek,

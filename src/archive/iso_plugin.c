@@ -211,19 +211,6 @@ iso_is_eof(struct input_stream *is)
 	return (context->cur_ofs == context->statbuf->size);
 }
 
-static bool
-iso_is_seek(G_GNUC_UNUSED struct input_stream *is,
-	G_GNUC_UNUSED off_t offset, G_GNUC_UNUSED int whence)
-{
-	return false;
-}
-
-static int
-iso_is_buffer(G_GNUC_UNUSED struct input_stream *is)
-{
-	return 0;
-}
-
 /* exported structures */
 
 static const char *const iso_extensions[] = {
@@ -235,8 +222,6 @@ static const struct input_plugin iso_inputplugin = {
 	.close = iso_is_close,
 	.read = iso_is_read,
 	.eof = iso_is_eof,
-	.seek = iso_is_seek,
-	.buffer = iso_is_buffer
 };
 
 const struct archive_plugin iso_plugin = {

@@ -167,12 +167,6 @@ zip_is_seek(G_GNUC_UNUSED struct input_stream *is,
 	return false;
 }
 
-static int
-zip_is_buffer(G_GNUC_UNUSED struct input_stream *is)
-{
-	return 0;
-}
-
 /* exported structures */
 
 static const char *const zip_extensions[] = {
@@ -185,7 +179,6 @@ static const struct input_plugin zip_inputplugin = {
 	.read = zip_is_read,
 	.eof = zip_is_eof,
 	.seek = zip_is_seek,
-	.buffer = zip_is_buffer
 };
 
 const struct archive_plugin zip_plugin = {

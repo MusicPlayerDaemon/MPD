@@ -86,6 +86,7 @@ input_stream_open(struct input_stream *is, const char *url)
 			assert(is->plugin->close != NULL);
 			assert(is->plugin->read != NULL);
 			assert(is->plugin->eof != NULL);
+			assert(!is->seekable || is->plugin->seek != NULL);
 
 			return true;
 		}
@@ -97,6 +98,9 @@ input_stream_open(struct input_stream *is, const char *url)
 bool
 input_stream_seek(struct input_stream *is, off_t offset, int whence)
 {
+	if (is->plugin->seek == NULL)
+		return false;
+
 	return is->plugin->seek(is, offset, whence);
 }
 
@@ -133,5 +137,8 @@ bool input_stream_eof(struct input_stream *is)
 
 int input_stream_buffer(struct input_stream *is)
 {
+	if (is->plugin->buffer == NULL)
+		return 0;
+
 	return is->plugin->buffer(is);
 }
