@@ -88,8 +88,6 @@ mpd_jack_free(struct jack_data *jd)
 {
 	assert(jd != NULL);
 
-	mpd_jack_client_free(jd);
-
 	for (unsigned i = 0; i < G_N_ELEMENTS(jd->output_ports); ++i)
 		g_free(jd->output_ports[i]);
 
@@ -286,7 +284,7 @@ mpd_jack_open(void *data, struct audio_format *audio_format)
 
 	assert(jd != NULL);
 
-	if (jd->client == NULL && !mpd_jack_connect(jd, audio_format)) {
+	if (!mpd_jack_connect(jd, audio_format)) {
 		mpd_jack_client_free(jd);
 		return false;
 	}
@@ -299,7 +297,9 @@ mpd_jack_open(void *data, struct audio_format *audio_format)
 static void
 mpd_jack_close(G_GNUC_UNUSED void *data)
 {
-	/*mpd_jack_finish(audioOutput);*/
+	struct jack_data *jd = data;
+
+	mpd_jack_client_free(jd);
 }
 
 static void
