@@ -148,22 +148,16 @@ bz2_close(struct archive_file *file)
 
 /* single archive handling */
 
-static void
-bz2_setup_stream(struct archive_file *file, struct input_stream *is)
+static bool
+bz2_open_stream(struct archive_file *file, struct input_stream *is,
+		G_GNUC_UNUSED const char *path)
 {
 	bz2_context *context = (bz2_context *) file;
 	//setup file ops
 	is->plugin = &bz2_inputplugin;
 	//insert back reference
-	is->archive = context;
+	is->data = context;
 	is->seekable = false;
-}
-
-
-static bool
-bz2_is_open(struct input_stream *is, G_GNUC_UNUSED const char *url)
-{
-	bz2_context *context = (bz2_context *) is->archive;
 
 	if (!bz2_alloc(context)) {
 		g_warning("alloc bz2 failed\n");
@@ -175,7 +169,7 @@ bz2_is_open(struct input_stream *is, G_GNUC_UNUSED const char *url)
 static void
 bz2_is_close(struct input_stream *is)
 {
-	bz2_context *context = (bz2_context *) is->archive;
+	bz2_context *context = (bz2_context *) is->data;
 	bz2_destroy(context);
 	is->data = NULL;
 }
@@ -211,7 +205,7 @@ bz2_fillbuffer(bz2_context *context,
 static size_t
 bz2_is_read(struct input_stream *is, void *ptr, size_t size)
 {
-	bz2_context *context = (bz2_context *) is->archive;
+	bz2_context *context = (bz2_context *) is->data;
 	bz_stream *bzstream;
 	int bz_result;
 	size_t numBytes = size;
@@ -253,7 +247,7 @@ bz2_is_read(struct input_stream *is, void *ptr, size_t size)
 static bool
 bz2_is_eof(struct input_stream *is)
 {
-	bz2_context *context = (bz2_context *) is->archive;
+	bz2_context *context = (bz2_context *) is->data;
 
 	if (context->last_bz_result == BZ_STREAM_END) {
 		return true;
@@ -283,7 +277,6 @@ static const char *const bz2_extensions[] = {
 };
 
 static const struct input_plugin bz2_inputplugin = {
-	.open = bz2_is_open,
 	.close = bz2_is_close,
 	.read = bz2_is_read,
 	.eof = bz2_is_eof,
@@ -296,7 +289,7 @@ const struct archive_plugin bz2_plugin = {
 	.open = bz2_open,
 	.scan_reset = bz2_scan_reset,
 	.scan_next = bz2_scan_next,
-	.setup_stream = bz2_setup_stream,
+	.open_stream = bz2_open_stream,
 	.close = bz2_close,
 	.suffixes = bz2_extensions
 };

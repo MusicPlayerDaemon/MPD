@@ -103,24 +103,19 @@ zip_close(struct archive_file *file)
 
 /* single archive handling */
 
-static void
-zip_setup_stream(struct archive_file *file, struct input_stream *is)
+static bool
+zip_open_stream(struct archive_file *file, struct input_stream *is,
+		const char *pathname)
 {
 	zip_context *context = (zip_context *) file;
+	ZZIP_STAT z_stat;
+
 	//setup file ops
 	is->plugin = &zip_inputplugin;
 	//insert back reference
-	is->archive = context;
+	is->data = context;
 	//we are seekable (but its not recommendent to do so)
 	is->seekable = true;
-}
-
-
-static bool
-zip_is_open(struct input_stream *is, const char *pathname)
-{
-	zip_context *context = (zip_context *) is->archive;
-	ZZIP_STAT z_stat;
 
 	context->file = zzip_file_open(context->dir, pathname, 0);
 	if (!context->file) {
@@ -135,14 +130,14 @@ zip_is_open(struct input_stream *is, const char *pathname)
 static void
 zip_is_close(struct input_stream *is)
 {
-	zip_context *context = (zip_context *) is->archive;
+	zip_context *context = (zip_context *) is->data;
 	zzip_file_close (context->file);
 }
 
 static size_t
 zip_is_read(struct input_stream *is, void *ptr, size_t size)
 {
-	zip_context *context = (zip_context *) is->archive;
+	zip_context *context = (zip_context *) is->data;
 	int ret;
 	ret = zzip_file_read(context->file, ptr, size);
 	if (ret < 0) {
@@ -155,7 +150,7 @@ zip_is_read(struct input_stream *is, void *ptr, size_t size)
 static bool
 zip_is_eof(struct input_stream *is)
 {
-	zip_context *context = (zip_context *) is->archive;
+	zip_context *context = (zip_context *) is->data;
 	return ((size_t) zzip_tell(context->file) == context->length);
 }
 
@@ -163,7 +158,7 @@ static bool
 zip_is_seek(G_GNUC_UNUSED struct input_stream *is,
 	G_GNUC_UNUSED off_t offset, G_GNUC_UNUSED int whence)
 {
-	zip_context *context = (zip_context *) is->archive;
+	zip_context *context = (zip_context *) is->data;
 	zzip_off_t ofs = zzip_seek(context->file, offset, whence);
 	if (ofs != -1) {
 		is->offset = ofs;
@@ -186,7 +181,6 @@ static const char *const zip_extensions[] = {
 };
 
 static const struct input_plugin zip_inputplugin = {
-	.open = zip_is_open,
 	.close = zip_is_close,
 	.read = zip_is_read,
 	.eof = zip_is_eof,
@@ -199,7 +193,7 @@ const struct archive_plugin zip_plugin = {
 	.open = zip_open,
 	.scan_reset = zip_scan_reset,
 	.scan_next = zip_scan_next,
-	.setup_stream = zip_setup_stream,
+	.open_stream = zip_open_stream,
 	.close = zip_close,
 	.suffixes = zip_extensions
 };

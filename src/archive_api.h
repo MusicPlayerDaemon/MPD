@@ -70,11 +70,12 @@ struct archive_plugin {
 	char *(*scan_next)(struct archive_file *);
 
 	/**
-	 * this is used to setup input stream handle, to be able to read
-	 * from archive. open method of inputstream can be the used to
-	 * extract particular file
+	 * Opens an input_stream of a file within the archive.
+	 *
+	 * @param path the path within the archive
 	 */
-	void (*setup_stream)(struct archive_file *, struct input_stream *is);
+	bool (*open_stream)(struct archive_file *, struct input_stream *is,
+			    const char *path);
 
 	/**
 	 * closes archive file.

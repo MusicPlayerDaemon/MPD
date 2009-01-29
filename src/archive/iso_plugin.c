@@ -136,23 +136,17 @@ iso_close(struct archive_file *file)
 
 /* single archive handling */
 
-static void
-iso_setup_stream(struct archive_file *file, struct input_stream *is)
+static bool
+iso_open_stream(struct archive_file *file, struct input_stream *is,
+		const char *pathname)
 {
 	iso_context *context = (iso_context *) file;
 	//setup file ops
 	is->plugin = &iso_inputplugin;
 	//insert back reference
-	is->archive = context;
+	is->data = context;
 	//we are not seekable
 	is->seekable = false;
-}
-
-
-static bool
-iso_is_open(struct input_stream *is, const char *pathname)
-{
-	iso_context *context = (iso_context *) is->archive;
 
 	context->statbuf = iso9660_ifs_stat_translate (context->iso, pathname);
 
@@ -168,7 +162,7 @@ iso_is_open(struct input_stream *is, const char *pathname)
 static void
 iso_is_close(struct input_stream *is)
 {
-	iso_context *context = (iso_context *) is->archive;
+	iso_context *context = (iso_context *) is->data;
 	g_free(context->statbuf);
 }
 
@@ -176,7 +170,7 @@ iso_is_close(struct input_stream *is)
 static size_t
 iso_is_read(struct input_stream *is, void *ptr, size_t size)
 {
-	iso_context *context = (iso_context *) is->archive;
+	iso_context *context = (iso_context *) is->data;
 	int toread, readed = 0;
 	int no_blocks, cur_block;
 	size_t left_bytes = context->statbuf->size - context->cur_ofs;
@@ -213,7 +207,7 @@ iso_is_read(struct input_stream *is, void *ptr, size_t size)
 static bool
 iso_is_eof(struct input_stream *is)
 {
-	iso_context *context = (iso_context *) is->archive;
+	iso_context *context = (iso_context *) is->data;
 	return (context->cur_ofs == context->statbuf->size);
 }
 
@@ -238,7 +232,6 @@ static const char *const iso_extensions[] = {
 };
 
 static const struct input_plugin iso_inputplugin = {
-	.open = iso_is_open,
 	.close = iso_is_close,
 	.read = iso_is_read,
 	.eof = iso_is_eof,
@@ -251,7 +244,7 @@ const struct archive_plugin iso_plugin = {
 	.open = iso_open,
 	.scan_reset = iso_scan_reset,
 	.scan_next = iso_scan_next,
-	.setup_stream = iso_setup_stream,
+	.open_stream = iso_open_stream,
 	.close = iso_close,
 	.suffixes = iso_extensions
 };

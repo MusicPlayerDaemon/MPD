@@ -77,8 +77,6 @@ struct input_stream {
 	 * the MIME content type of the resource, or NULL if unknown
 	 */
 	char *mime;
-
-	void *archive;
 };
 
 /**
