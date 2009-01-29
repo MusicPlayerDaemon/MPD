@@ -36,6 +36,10 @@
 
 static const size_t sample_size = sizeof(jack_default_audio_sample_t);
 
+static const char *const port_names[2] = {
+	"left", "right",
+};
+
 struct jack_data {
 	struct audio_output *ao;
 
@@ -71,14 +75,11 @@ mpd_jack_client_free(struct jack_data *jd)
 		jd->client = NULL;
 	}
 
-	if (jd->ringbuffer[0] != NULL) {
-		jack_ringbuffer_free(jd->ringbuffer[0]);
-		jd->ringbuffer[0] = NULL;
-	}
-
-	if (jd->ringbuffer[1] != NULL) {
-		jack_ringbuffer_free(jd->ringbuffer[1]);
-		jd->ringbuffer[1] = NULL;
+	for (unsigned i = 0; i < G_N_ELEMENTS(jd->ringbuffer); ++i) {
+		if (jd->ringbuffer[i] != NULL) {
+			jack_ringbuffer_free(jd->ringbuffer[i]);
+			jd->ringbuffer[i] = NULL;
+		}
 	}
 }
 
@@ -123,7 +124,7 @@ mpd_jack_process(jack_nframes_t nframes, void *arg)
 	if (nframes <= 0)
 		return 0;
 
-	for (unsigned i = 0; i < 2; ++i) {
+	for (unsigned i = 0; i < G_N_ELEMENTS(jd->ringbuffer); ++i) {
 		available = jack_ringbuffer_read_space(jd->ringbuffer[i]);
 		assert(available % sample_size == 0);
 		available /= sample_size;
@@ -216,8 +217,9 @@ mpd_jack_connect(struct jack_data *jd, struct audio_format *audio_format)
 {
 	jd->audio_format = audio_format;
 
-	jd->ringbuffer[0] = jack_ringbuffer_create(jd->ringbuffer_size);
-	jd->ringbuffer[1] = jack_ringbuffer_create(jd->ringbuffer_size);
+	for (unsigned i = 0; i < G_N_ELEMENTS(jd->ringbuffer); ++i)
+		jd->ringbuffer[i] =
+			jack_ringbuffer_create(jd->ringbuffer_size);
 
 	jd->shutdown = false;
 
@@ -230,20 +232,15 @@ mpd_jack_connect(struct jack_data *jd, struct audio_format *audio_format)
 	jack_set_sample_rate_callback(jd->client, mpd_jack_srate, jd);
 	jack_on_shutdown(jd->client, mpd_jack_shutdown, jd);
 
-	jd->ports[0] = jack_port_register(jd->client, "left",
-					  JACK_DEFAULT_AUDIO_TYPE,
-					  JackPortIsOutput, 0);
-	if ( !jd->ports[0] ) {
-		g_warning("Cannot register left output port.");
-		return -1;
-	}
-
-	jd->ports[1] = jack_port_register(jd->client, "right",
-					  JACK_DEFAULT_AUDIO_TYPE,
-					  JackPortIsOutput, 0);
-	if ( !jd->ports[1] ) {
-		g_warning("Cannot register right output port.");
-		return -1;
+	for (unsigned i = 0; i < G_N_ELEMENTS(jd->ports); ++i) {
+		jd->ports[i] = jack_port_register(jd->client, port_names[i],
+						  JACK_DEFAULT_AUDIO_TYPE,
+						  JackPortIsOutput, 0);
+		if (jd->ports[i] == NULL) {
+			g_warning("Cannot register %s output port.",
+				  port_names[i]);
+			return -1;
+		}
 	}
 
 	if ( jack_activate(jd->client) ) {
@@ -271,17 +268,16 @@ mpd_jack_connect(struct jack_data *jd, struct audio_format *audio_format)
 		free(jports);
 	}
 
-	if ( (jack_connect(jd->client, jack_port_name(jd->ports[0]),
-			   jd->output_ports[0])) != 0 ) {
-		g_warning("%s is not a valid Jack Client / Port",
-			  jd->output_ports[0]);
-		return -1;
-	}
-	if ( (jack_connect(jd->client, jack_port_name(jd->ports[0]),
-			   jd->output_ports[1])) != 0 ) {
-		g_warning("%s is not a valid Jack Client / Port",
-			  jd->output_ports[1]);
-		return -1;
+	for (unsigned i = 0; i < G_N_ELEMENTS(jd->ports); ++i) {
+		int ret;
+
+		ret = jack_connect(jd->client, jack_port_name(jd->ports[i]),
+				   jd->output_ports[i]);
+		if (ret != 0) {
+			g_warning("%s is not a valid Jack Client / Port",
+				  jd->output_ports[i]);
+			return -1;
+		}
 	}
 
 	return 1;
