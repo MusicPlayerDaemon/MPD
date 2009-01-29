@@ -10,12 +10,6 @@ Max Kellermann <max@duempel.org>
 José Anarch <anarchsss@gmail.com>
 	JACK plugin
 
-Guus Sliepen <guus@sliepen.eu.org>
-	libsamplerate code
-
-Jim Ramsay <i.am@jimramsay.com>
-	Zerconf/avahi support
-
 Patrik Weiskircher <pat@icore.at>
 	Stored playlist commands
 
@@ -28,6 +22,8 @@ Viliam Mateicka <viliam.mateicka@gmail.com>
 Eric Wollesen <encoded@xmtp.net>
 	encoder API, shout output
 
+Thomas Jansen <mithi@mithi.net>
+
 
 Former Developers
 -----------------
@@ -37,6 +33,12 @@ Warren Dukes <warren.dukes@gmail.com>
 
 Niklas Hofer
 	'next' and 'previous' patch
+
+Jim Ramsay <i.am@jimramsay.com>
+	Zerconf/avahi support
+
+Guus Sliepen <guus@sliepen.eu.org>
+	libsamplerate code
 
 J. Alexander Treuman <jat@spatialrift.net>
 	general, MP3, ID3, PulseAudio, format conversion, stored playlists
