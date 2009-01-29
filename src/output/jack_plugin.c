@@ -214,8 +214,6 @@ mpd_jack_test_default_device(void)
 static int
 mpd_jack_connect(struct jack_data *jd, struct audio_format *audio_format)
 {
-	const char **jports;
-
 	jd->audio_format = audio_format;
 
 	jd->ringbuffer[0] = jack_ringbuffer_create(jd->ringbuffer_size);
@@ -253,10 +251,18 @@ mpd_jack_connect(struct jack_data *jd, struct audio_format *audio_format)
 		return -1;
 	}
 
-	/*  hay que buscar que hay  */
-	if (!jd->output_ports[1] &&
-	    (jports = jack_get_ports(jd->client, NULL, NULL,
-				     JackPortIsPhysical | JackPortIsInput))) {
+	if (jd->output_ports[1] == NULL) {
+		/* no output ports were configured - ask libjack for
+		   defaults */
+		const char **jports;
+
+		jports = jack_get_ports(jd->client, NULL, NULL,
+					JackPortIsPhysical | JackPortIsInput);
+		if (jports == NULL) {
+			g_warning("no ports found");
+			return -1;
+		}
+
 		jd->output_ports[0] = g_strdup(jports[0]);
 		jd->output_ports[1] = g_strdup(jports[1] != NULL
 					       ? jports[1] : jports[0]);
@@ -265,19 +271,17 @@ mpd_jack_connect(struct jack_data *jd, struct audio_format *audio_format)
 		free(jports);
 	}
 
-	if ( jd->output_ports[1] ) {
-		if ( (jack_connect(jd->client, jack_port_name(jd->ports[0]),
-				   jd->output_ports[0])) != 0 ) {
-			g_warning("%s is not a valid Jack Client / Port",
-				  jd->output_ports[0]);
-			return -1;
-		}
-		if ( (jack_connect(jd->client, jack_port_name(jd->ports[0]),
-				   jd->output_ports[1])) != 0 ) {
-			g_warning("%s is not a valid Jack Client / Port",
-				  jd->output_ports[1]);
-			return -1;
-		}
+	if ( (jack_connect(jd->client, jack_port_name(jd->ports[0]),
+			   jd->output_ports[0])) != 0 ) {
+		g_warning("%s is not a valid Jack Client / Port",
+			  jd->output_ports[0]);
+		return -1;
+	}
+	if ( (jack_connect(jd->client, jack_port_name(jd->ports[0]),
+			   jd->output_ports[1])) != 0 ) {
+		g_warning("%s is not a valid Jack Client / Port",
+			  jd->output_ports[1]);
+		return -1;
 	}
 
 	return 1;
