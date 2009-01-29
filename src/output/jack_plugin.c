@@ -55,7 +55,7 @@ struct jack_data {
 	jack_client_t *client;
 	jack_ringbuffer_t *ringbuffer[2];
 	int bps;
-	int shutdown;
+	bool shutdown;
 };
 
 static const char *
@@ -147,7 +147,7 @@ static void
 mpd_jack_shutdown(void *arg)
 {
 	struct jack_data *jd = (struct jack_data *) arg;
-	jd->shutdown = 1;
+	jd->shutdown = true;
 }
 
 static void
@@ -212,7 +212,7 @@ mpd_jack_test_default_device(void)
 	return true;
 }
 
-static int
+static bool
 mpd_jack_connect(struct jack_data *jd, struct audio_format *audio_format)
 {
 	jd->audio_format = audio_format;
@@ -225,7 +225,7 @@ mpd_jack_connect(struct jack_data *jd, struct audio_format *audio_format)
 
 	if ((jd->client = jack_client_new(mpd_jack_name(jd))) == NULL) {
 		g_warning("jack server not running?");
-		return -1;
+		return false;
 	}
 
 	jack_set_process_callback(jd->client, mpd_jack_process, jd);
@@ -239,13 +239,13 @@ mpd_jack_connect(struct jack_data *jd, struct audio_format *audio_format)
 		if (jd->ports[i] == NULL) {
 			g_warning("Cannot register %s output port.",
 				  port_names[i]);
-			return -1;
+			return false;
 		}
 	}
 
 	if ( jack_activate(jd->client) ) {
 		g_warning("cannot activate client");
-		return -1;
+		return false;
 	}
 
 	if (jd->output_ports[1] == NULL) {
@@ -257,7 +257,7 @@ mpd_jack_connect(struct jack_data *jd, struct audio_format *audio_format)
 					JackPortIsPhysical | JackPortIsInput);
 		if (jports == NULL) {
 			g_warning("no ports found");
-			return -1;
+			return false;
 		}
 
 		jd->output_ports[0] = g_strdup(jports[0]);
@@ -276,11 +276,11 @@ mpd_jack_connect(struct jack_data *jd, struct audio_format *audio_format)
 		if (ret != 0) {
 			g_warning("%s is not a valid Jack Client / Port",
 				  jd->output_ports[i]);
-			return -1;
+			return false;
 		}
 	}
 
-	return 1;
+	return true;
 }
 
 static bool
@@ -290,7 +290,7 @@ mpd_jack_open(void *data, struct audio_format *audio_format)
 
 	assert(jd != NULL);
 
-	if (jd->client == NULL && mpd_jack_connect(jd, audio_format) < 0) {
+	if (jd->client == NULL && !mpd_jack_connect(jd, audio_format)) {
 		mpd_jack_client_free(jd);
 		return false;
 	}
