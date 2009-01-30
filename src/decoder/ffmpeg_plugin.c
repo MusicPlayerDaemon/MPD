@@ -347,6 +347,16 @@ static bool ffmpeg_tag_internal(struct ffmpeg_context *ctx)
 		tag_add_item(tag, TAG_ITEM_TRACK, buffer);
 	}
 
+	if (f->comment[0])
+		tag_add_item(tag, TAG_ITEM_COMMENT, f->comment);
+	if (f->genre[0])
+		tag_add_item(tag, TAG_ITEM_GENRE, f->genre);
+	if (f->year > 0) {
+		char buffer[16];
+		snprintf(buffer, sizeof(buffer), "%d", f->year);
+		tag_add_item(tag, TAG_ITEM_DATE, buffer);
+	}
+
 	return true;
 }
 
