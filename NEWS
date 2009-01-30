@@ -1,4 +1,6 @@
 ver 0.14.2 (2009/??/??)
+* decoders:
+  - ffmpeg: added support for the tags comment, genre, year
 * audio outputs:
   - jack: allocate ring buffers before connecting
   - jack: clear "shutdown" flag on reconnect
