@@ -133,8 +133,6 @@ struct audio_output;
 
 const char *audio_output_get_name(const struct audio_output *ao);
 
-void audio_output_closed(struct audio_output *ao);
-
 /**
  * Returns true if there is a command pending.
  */

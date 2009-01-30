@@ -245,7 +245,6 @@ static void mvp_dropBufferedAudio(void *data)
 		ioctl(md->fd, MVP_SET_AUD_RESET, 0x11);
 		close(md->fd);
 		md->fd = -1;
-		audio_output_closed(md->audio_output);
 	}
 }
 

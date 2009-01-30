@@ -26,13 +26,6 @@ const char *audio_output_get_name(const struct audio_output *ao)
 	return ao->name;
 }
 
-void audio_output_closed(struct audio_output *ao)
-{
-	assert(ao->open);
-
-	ao->open = false;
-}
-
 bool audio_output_is_pending(const struct audio_output *ao)
 {
 	return ao->command != AO_COMMAND_NONE;
