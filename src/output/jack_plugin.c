@@ -47,8 +47,8 @@ struct jack_data {
 	char *output_ports[2];
 	int ringbuffer_size;
 
-	/* for srate() only */
-	struct audio_format *audio_format;
+	/* the current audio format */
+	struct audio_format audio_format;
 
 	/* jack library stuff */
 	jack_port_t *ports[2];
@@ -99,17 +99,6 @@ mpd_jack_finish(void *data)
 {
 	struct jack_data *jd = data;
 	mpd_jack_free(jd);
-}
-
-static int
-mpd_jack_srate(G_GNUC_UNUSED jack_nframes_t rate, void *data)
-{
-	struct jack_data *jd = (struct jack_data *)data;
-	struct audio_format *audioFormat = jd->audio_format;
-
-	audioFormat->sample_rate = (int)jack_get_sample_rate(jd->client);
-
-	return 0;
 }
 
 static int
@@ -222,10 +211,8 @@ mpd_jack_test_default_device(void)
 }
 
 static bool
-mpd_jack_connect(struct jack_data *jd, struct audio_format *audio_format)
+mpd_jack_connect(struct jack_data *jd)
 {
-	jd->audio_format = audio_format;
-
 	for (unsigned i = 0; i < G_N_ELEMENTS(jd->ringbuffer); ++i)
 		jd->ringbuffer[i] =
 			jack_ringbuffer_create(jd->ringbuffer_size);
@@ -238,7 +225,6 @@ mpd_jack_connect(struct jack_data *jd, struct audio_format *audio_format)
 	}
 
 	jack_set_process_callback(jd->client, mpd_jack_process, jd);
-	jack_set_sample_rate_callback(jd->client, mpd_jack_srate, jd);
 	jack_on_shutdown(jd->client, mpd_jack_shutdown, jd);
 
 	for (unsigned i = 0; i < G_N_ELEMENTS(jd->ports); ++i) {
@@ -299,12 +285,13 @@ mpd_jack_open(void *data, struct audio_format *audio_format)
 
 	assert(jd != NULL);
 
-	if (!mpd_jack_connect(jd, audio_format)) {
+	if (!mpd_jack_connect(jd)) {
 		mpd_jack_client_free(jd);
 		return false;
 	}
 
 	set_audioformat(jd, audio_format);
+	jd->audio_format = *audio_format;
 
 	return true;
 }
@@ -372,7 +359,7 @@ static void
 mpd_jack_write_samples(struct jack_data *jd, const void *src,
 		       unsigned num_samples)
 {
-	switch (jd->audio_format->bits) {
+	switch (jd->audio_format.bits) {
 	case 16:
 		mpd_jack_write_samples_16(jd, (const int16_t*)src,
 					  num_samples);
@@ -392,7 +379,7 @@ static bool
 mpd_jack_play(void *data, const char *buff, size_t size)
 {
 	struct jack_data *jd = data;
-	const size_t frame_size = audio_format_frame_size(jd->audio_format);
+	const size_t frame_size = audio_format_frame_size(&jd->audio_format);
 	size_t space, space1;
 
 	if (jd->shutdown) {
