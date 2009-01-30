@@ -205,6 +205,9 @@ map_fs_to_utf8(const char *path_fs)
 		/* not within musicDir */
 		return NULL;
 
+	while (path_fs[0] == G_DIR_SEPARATOR)
+		++path_fs;
+
 	return fs_charset_to_utf8(path_fs);
 }
 
