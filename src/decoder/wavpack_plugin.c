@@ -517,7 +517,9 @@ wavpack_streamdecode(struct decoder * decoder, struct input_stream *is)
 
 	wavpack_input_init(&isp, decoder, is);
 	wpc = WavpackOpenFileInputEx(
-		&mpd_is_reader, &isp, &isp_wvc, error, open_flags, 23
+		&mpd_is_reader, &isp,
+		open_flags & OPEN_WVC ? &isp_wvc : NULL,
+		error, open_flags, 23
 	);
 
 	if (wpc == NULL) {
