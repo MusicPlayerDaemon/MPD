@@ -27,8 +27,6 @@
 
 #include <stdbool.h>
 
-#define DISABLED_AUDIO_OUTPUT_PLUGIN(plugin) const struct audio_output_plugin plugin;
-
 struct audio_output;
 
 /**
