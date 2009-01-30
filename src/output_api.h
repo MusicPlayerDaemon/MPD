@@ -84,8 +84,11 @@ struct audio_output_plugin {
 	 * silence during pause, so their clients won't be
 	 * disconnected.  Plugins which do not support pausing will
 	 * simply be closed, and have to be reopened when unpaused.
+	 *
+	 * @return false on error (output will be closed then), true
+	 * for continue to pause
 	 */
-	void (*pause)(void *data);
+	bool (*pause)(void *data);
 
 	/**
 	 * Try to cancel data which may still be in the device's
@@ -130,10 +133,5 @@ enum audio_control_command {
 struct audio_output;
 
 const char *audio_output_get_name(const struct audio_output *ao);
-
-/**
- * Returns true if there is a command pending.
- */
-bool audio_output_is_pending(const struct audio_output *ao);
 
 #endif

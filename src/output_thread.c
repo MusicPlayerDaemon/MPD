@@ -77,7 +77,17 @@ static void ao_pause(struct audio_output *ao)
 	if (ao->plugin->pause != NULL) {
 		/* pause is supported */
 		ao_command_finished(ao);
-		ao->plugin->pause(ao->data);
+
+		do {
+			bool ret;
+
+			ret = ao->plugin->pause(ao->data);
+			if (!ret) {
+				ao->plugin->close(ao->data);
+				pcm_convert_deinit(&ao->convState);
+				ao->open = false;
+			}
+		} while (ao->command == AO_COMMAND_NONE);
 	} else {
 		/* pause is not supported - simply close the device */
 		ao->plugin->close(ao->data);

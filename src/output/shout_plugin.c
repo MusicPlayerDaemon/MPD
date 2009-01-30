@@ -506,19 +506,12 @@ my_shout_play(void *data, const char *chunk, size_t size)
 	return true;
 }
 
-static void my_shout_pause(void *data)
+static bool
+my_shout_pause(void *data)
 {
-	struct shout_data *sd = (struct shout_data *)data;
 	static const char silence[1020];
-	int ret;
 
-	/* play silence until the player thread sends us a command */
-
-	while (sd->opened && !audio_output_is_pending(sd->audio_output)) {
-		ret = my_shout_play(data, silence, sizeof(silence));
-		if (ret != 0)
-			break;
-	}
+	return my_shout_play(data, silence, sizeof(silence));
 }
 
 static void my_shout_set_tag(void *data,

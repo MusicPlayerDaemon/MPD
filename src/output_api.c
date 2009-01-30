@@ -19,14 +19,7 @@
 #include "output_api.h"
 #include "output_internal.h"
 
-#include <assert.h>
-
 const char *audio_output_get_name(const struct audio_output *ao)
 {
 	return ao->name;
-}
-
-bool audio_output_is_pending(const struct audio_output *ao)
-{
-	return ao->command != AO_COMMAND_NONE;
 }
