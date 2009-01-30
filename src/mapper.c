@@ -40,13 +40,27 @@ static size_t music_dir_length;
 
 static char *playlist_dir;
 
+/**
+ * Duplicate a string, chop all trailing slashes.
+ */
+static char *
+strdup_chop_slash(const char *path_fs)
+{
+	size_t length = strlen(path_fs);
+
+	while (length > 0 && path_fs[length - 1] == G_DIR_SEPARATOR)
+		--length;
+
+	return g_strndup(path_fs, length);
+}
+
 static void
 mapper_set_music_dir(const char *path)
 {
 	int ret;
 	struct stat st;
 
-	music_dir = g_strdup(path);
+	music_dir = strdup_chop_slash(path);
 	music_dir_length = strlen(music_dir);
 
 	ret = stat(music_dir, &st);
