@@ -165,6 +165,12 @@ mpd_jack_error(const char *msg)
 	g_warning("%s", msg);
 }
 
+static void
+mpd_jack_info(const char *msg)
+{
+	g_message("%s", msg);
+}
+
 static void *
 mpd_jack_init(struct audio_output *ao,
 	      G_GNUC_UNUSED const struct audio_format *audio_format,
@@ -199,6 +205,7 @@ mpd_jack_init(struct audio_output *ao,
 		config_get_block_unsigned(param, "ringbuffer_size", 32768);
 
 	jack_set_error_function(mpd_jack_error);
+	jack_set_info_function(mpd_jack_info);
 
 	return jd;
 }
