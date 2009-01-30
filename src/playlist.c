@@ -526,6 +526,7 @@ enum playlist_result deleteFromPlaylist(unsigned song)
 		/* the current song is going to be deleted: stop the player */
 
 		playerWait();
+		playlist.playing = false;
 
 		/* see which song is going to be played instead */
 
