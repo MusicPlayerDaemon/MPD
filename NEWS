@@ -5,6 +5,7 @@ ver 0.14.2 (2009/??/??)
   - jack: allocate ring buffers before connecting
   - jack: clear "shutdown" flag on reconnect
   - jack: reduced sleep time to 1ms
+* mapper: remove trailing slashes from music_directory
 
 
 ver 0.14.1 (2009/01/17)

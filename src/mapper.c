@@ -37,6 +37,20 @@ static size_t music_dir_length;
 static char *playlist_dir;
 static size_t playlist_dir_length;
 
+/**
+ * Duplicate a string, chop all trailing slashes.
+ */
+static char *
+strdup_chop_slash(const char *path_fs)
+{
+	size_t length = strlen(path_fs);
+
+	while (length > 0 && path_fs[length - 1] == G_DIR_SEPARATOR)
+		--length;
+
+	return g_strndup(path_fs, length);
+}
+
 void mapper_init(void)
 {
 	ConfigParam *music_dir_param = parseConfigFilePath(CONF_MUSIC_DIR, 1);
@@ -44,7 +58,7 @@ void mapper_init(void)
 	int ret;
 	struct stat st;
 
-	music_dir = g_strdup(music_dir_param->value);
+	music_dir = strdup_chop_slash(music_dir_param->value);
 	music_dir_length = strlen(music_dir);
 
 	ret = stat(music_dir, &st);
