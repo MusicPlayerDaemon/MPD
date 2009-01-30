@@ -165,11 +165,13 @@ mpd_jack_error(const char *msg)
 	g_warning("%s", msg);
 }
 
+#ifdef HAVE_JACK_SET_INFO_FUNCTION
 static void
 mpd_jack_info(const char *msg)
 {
 	g_message("%s", msg);
 }
+#endif
 
 static void *
 mpd_jack_init(struct audio_output *ao,
@@ -205,7 +207,10 @@ mpd_jack_init(struct audio_output *ao,
 		config_get_block_unsigned(param, "ringbuffer_size", 32768);
 
 	jack_set_error_function(mpd_jack_error);
+
+#ifdef HAVE_JACK_SET_INFO_FUNCTION
 	jack_set_info_function(mpd_jack_info);
+#endif
 
 	return jd;
 }

@@ -620,6 +620,16 @@ if test x$enable_jack = xyes; then
 	                  [enable_jack=no;AC_MSG_WARN([JACK not found -- disabling])])
 fi
 
+if test x$enable_jack = xyes; then
+	# check whether jack_set_info_function() is available
+	old_LIBS=$LIBS
+	LIBS="$LIBS $JACK_LIBS"
+
+	AC_CHECK_FUNCS(jack_set_info_function)
+
+	LIBS=$old_LIBS
+fi
+
 AM_CONDITIONAL(HAVE_JACK, test x$enable_jack = xyes)
 
 if test x$enable_id3 = xyes; then
