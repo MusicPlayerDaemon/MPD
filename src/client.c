@@ -191,7 +191,8 @@ static void client_init(struct client *client, int fd)
 	/* we prefer to do buffering */
 	g_io_channel_set_buffered(client->channel, false);
 
-	client->source_id = g_io_add_watch(client->channel, G_IO_IN,
+	client->source_id = g_io_add_watch(client->channel,
+					   G_IO_IN|G_IO_ERR|G_IO_HUP,
 					   client_in_event, client);
 
 	client->lastTime = time(NULL);
@@ -498,19 +499,23 @@ static int client_read(struct client *client)
 }
 
 static gboolean
-client_out_event(G_GNUC_UNUSED GIOChannel *source,
-		 G_GNUC_UNUSED GIOCondition condition,
+client_out_event(G_GNUC_UNUSED GIOChannel *source, GIOCondition condition,
 		 gpointer data);
 
 static gboolean
 client_in_event(G_GNUC_UNUSED GIOChannel *source,
-		G_GNUC_UNUSED GIOCondition condition,
+		GIOCondition condition,
 		gpointer data)
 {
 	struct client *client = data;
 	int ret;
 
 	assert(!client_is_expired(client));
+
+	if (condition != G_IO_IN) {
+		client_set_expired(client);
+		return false;
+	}
 
 	client->lastTime = time(NULL);
 
@@ -533,7 +538,8 @@ client_in_event(G_GNUC_UNUSED GIOChannel *source,
 
 	if (!g_queue_is_empty(client->deferred_send)) {
 		/* deferred buffers exist: schedule write */
-		client->source_id = g_io_add_watch(client->channel, G_IO_OUT,
+		client->source_id = g_io_add_watch(client->channel,
+						   G_IO_OUT|G_IO_ERR|G_IO_HUP,
 						   client_out_event, client);
 		return false;
 	}
@@ -543,13 +549,17 @@ client_in_event(G_GNUC_UNUSED GIOChannel *source,
 }
 
 static gboolean
-client_out_event(G_GNUC_UNUSED GIOChannel *source,
-		 G_GNUC_UNUSED GIOCondition condition,
+client_out_event(G_GNUC_UNUSED GIOChannel *source, GIOCondition condition,
 		 gpointer data)
 {
 	struct client *client = data;
 
 	assert(!client_is_expired(client));
+
+	if (condition != G_IO_OUT) {
+		client_set_expired(client);
+		return false;
+	}
 
 	client_write_deferred(client);
 
@@ -563,7 +573,8 @@ client_out_event(G_GNUC_UNUSED GIOChannel *source,
 	if (g_queue_is_empty(client->deferred_send)) {
 		/* done sending deferred buffers exist: schedule
 		   read */
-		client->source_id = g_io_add_watch(client->channel, G_IO_IN,
+		client->source_id = g_io_add_watch(client->channel,
+						   G_IO_IN|G_IO_ERR|G_IO_HUP,
 						   client_in_event, client);
 		return false;
 	}
