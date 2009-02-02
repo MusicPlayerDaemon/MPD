@@ -83,16 +83,23 @@ GMainLoop *main_loop;
 
 struct notify main_notify;
 
-static void openDB(Options * options, char *argv0)
+/**
+ * Returns the database.  If this function returns false, this has not
+ * succeeded, and the caller should create the database after the
+ * process has been daemonized.
+ */
+static bool
+openDB(Options * options, char *argv0)
 {
 	const char *path = config_get_path(CONF_DB_FILE);
+	bool ret;
 
 	if (!mapper_has_music_directory()) {
 		if (path != NULL)
 			g_message("Found " CONF_DB_FILE " setting without "
 				  CONF_MUSIC_DIR " - disabling database");
 		db_init(NULL);
-		return;
+		return true;
 	}
 
 	if (path == NULL)
@@ -100,9 +107,12 @@ static void openDB(Options * options, char *argv0)
 
 	db_init(path);
 
-	if (options->createDB > 0 || !db_load()) {
-		unsigned job;
+	if (options->createDB > 0)
+		/* don't attempt to load the old database */
+		return false;
 
+	ret = db_load();
+	if (!ret) {
 		if (options->createDB < 0) {
 			g_error("can't open db file and using "
 				"\"--no-create-db\" command line option; "
@@ -114,10 +124,11 @@ static void openDB(Options * options, char *argv0)
 
 		db_clear();
 
-		job = directory_update_init(NULL);
-		if (job == 0)
-			g_error("directory update failed");
+		/* run database update after daemonization */
+		return false;
 	}
+
+	return true;
 }
 
 /**
@@ -186,6 +197,7 @@ int main(int argc, char *argv[])
 {
 	Options options;
 	clock_t start;
+	bool create_db;
 
 	daemonize_close_stdin();
 
@@ -238,7 +250,7 @@ int main(int argc, char *argv[])
 	decoder_plugin_init_all();
 	update_global_init();
 
-	openDB(&options, argv[0]);
+	create_db = !openDB(&options, argv[0]);
 
 #ifdef ENABLE_SQLITE
 	sticker_global_init(config_get_path(CONF_STICKER_FILE));
@@ -263,6 +275,15 @@ int main(int argc, char *argv[])
 	initZeroconf();
 
 	player_create();
+
+	if (create_db) {
+		/* the database failed to load, or MPD was started
+		   with --create-db: recreate a new database */
+		unsigned job = directory_update_init(NULL);
+		if (job == 0)
+			g_error("directory update failed");
+	}
+
 
 	state_file_init(config_get_path(CONF_STATE_FILE));
 
