@@ -89,7 +89,7 @@ struct notify main_notify;
  * process has been daemonized.
  */
 static bool
-openDB(Options * options, char *argv0)
+openDB(const Options *options)
 {
 	const char *path = config_get_path(CONF_DB_FILE);
 	bool ret;
@@ -113,11 +113,9 @@ openDB(Options * options, char *argv0)
 
 	ret = db_load();
 	if (!ret) {
-		if (options->createDB < 0) {
+		if (options->createDB < 0)
 			g_error("can't open db file and using "
-				"\"--no-create-db\" command line option; "
-				"try running \"%s --create-db\"", argv0);
-		}
+				"\"--no-create-db\" command line option");
 
 		if (!db_check())
 			exit(EXIT_FAILURE);
@@ -250,7 +248,7 @@ int main(int argc, char *argv[])
 	decoder_plugin_init_all();
 	update_global_init();
 
-	create_db = !openDB(&options, argv[0]);
+	create_db = !openDB(&options);
 
 #ifdef ENABLE_SQLITE
 	sticker_global_init(config_get_path(CONF_STICKER_FILE));
