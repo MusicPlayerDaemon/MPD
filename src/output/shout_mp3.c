@@ -19,6 +19,8 @@
 #include "shout_plugin.h"
 
 #include <lame/lame.h>
+
+#include <assert.h>
 #include <stdlib.h>
 
 struct lame_data {
@@ -45,6 +47,9 @@ static int shout_mp3_encoder_clear_encoder(struct shout_data *sd)
 				     buf->len)) < 0)
 		g_warning("error flushing lame buffers\n");
 
+	lame_close(ld->gfp);
+	ld->gfp = NULL;
+
 	return (ret > 0);
 }
 
@@ -52,8 +57,7 @@ static void shout_mp3_encoder_finish(struct shout_data *sd)
 {
 	struct lame_data *ld = (struct lame_data *)sd->encoder_data;
 
-	lame_close(ld->gfp);
-	ld->gfp = NULL;
+	assert(ld->gfp == NULL);
 
 	g_free(ld);
 }
