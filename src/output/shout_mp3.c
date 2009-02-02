@@ -54,6 +54,8 @@ static void shout_mp3_encoder_finish(struct shout_data *sd)
 
 	lame_close(ld->gfp);
 	ld->gfp = NULL;
+
+	g_free(ld);
 }
 
 static int shout_mp3_encoder_init_encoder(struct shout_data *sd)
