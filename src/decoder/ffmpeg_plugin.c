@@ -243,10 +243,9 @@ ffmpeg_send_packet(struct decoder *decoder, struct input_stream *is,
 		packet_data += len;
 		packet_size -= len;
 
-		if (audio_size <= 0) {
-			g_message("no audio frame\n");
+		if (audio_size <= 0)
 			continue;
-		}
+
 		cmd = decoder_data(decoder, is,
 				   audio_buf, audio_size,
 				   position,
