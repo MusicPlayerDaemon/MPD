@@ -38,6 +38,7 @@ ver 0.14.2 (2009/??/??)
 * decoders:
   - ffmpeg: added support for the tags comment, genre, year
   - ffmpeg: don't warn of empty packet output
+  - ffmpeg: check if the time stamp is valid
   - wavpack: pass NULL if the .wvc file fails to open
   - mikmod: call MikMod_Exit() only in the finish() method
 * audio outputs:

@@ -230,10 +230,6 @@ ffmpeg_send_packet(struct decoder *decoder, struct input_stream *is,
 					    &audio_size,
 					    packet_data, packet_size);
 
-
-		position = av_rescale_q(packet->pts, *time_base,
-					(AVRational){1, 1});
-
 		if (len < 0) {
 			/* if error, we skip the frame */
 			g_message("decoding failed\n");
@@ -245,6 +241,11 @@ ffmpeg_send_packet(struct decoder *decoder, struct input_stream *is,
 
 		if (audio_size <= 0)
 			continue;
+
+		position = packet->pts != (int64_t)AV_NOPTS_VALUE
+			? av_rescale_q(packet->pts, *time_base,
+				       (AVRational){1, 1})
+			: 0;
 
 		cmd = decoder_data(decoder, is,
 				   audio_buf, audio_size,
