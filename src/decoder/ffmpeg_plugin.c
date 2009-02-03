@@ -177,6 +177,9 @@ ffmpeg_helper(struct input_stream *input,
 	}
 
 	codec_context = format_context->streams[audio_stream]->codec;
+	if (codec_context->codec_name[0] != 0)
+		g_debug("codec '%s'", codec_context->codec_name);
+
 	codec = avcodec_find_decoder(codec_context->codec_id);
 
 	if (!codec) {
