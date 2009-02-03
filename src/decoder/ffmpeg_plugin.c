@@ -264,7 +264,7 @@ ffmpeg_decode_internal(struct ffmpeg_context *ctx)
 	AVPacket packet;
 	struct audio_format audio_format;
 	enum decoder_command cmd;
-	int current, total_time;
+	int total_time;
 
 	total_time = 0;
 
@@ -306,9 +306,10 @@ ffmpeg_decode_internal(struct ffmpeg_context *ctx)
 		av_free_packet(&packet);
 
 		if (cmd == DECODE_COMMAND_SEEK) {
-			current = decoder_seek_where(decoder) * AV_TIME_BASE;
+			int64_t where =
+				decoder_seek_where(decoder) * AV_TIME_BASE;
 
-			if (av_seek_frame(format_context, -1, current, 0) < 0)
+			if (av_seek_frame(format_context, -1, where, 0) < 0)
 				decoder_seek_error(decoder);
 			else
 				decoder_command_finished(decoder);
