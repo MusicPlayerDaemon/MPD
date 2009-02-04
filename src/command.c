@@ -421,12 +421,7 @@ static enum command_return
 handle_currentsong(struct client *client,
 		   G_GNUC_UNUSED int argc, G_GNUC_UNUSED char *argv[])
 {
-	int song = getPlaylistCurrentSong(&g_playlist);
-	const struct queue *queue = playlist_get_queue(&g_playlist);
-
-	if (song >= 0)
-		queue_print_info(client, queue, song, song + 1);
-
+	playlist_print_current(client, &g_playlist);
 	return PLAYLIST_RESULT_SUCCESS;
 }
 
@@ -642,9 +637,7 @@ static enum command_return
 handle_playlist(struct client *client,
 	        G_GNUC_UNUSED int argc, G_GNUC_UNUSED char *argv[])
 {
-	const struct queue *queue = playlist_get_queue(&g_playlist);
-
-	queue_print_uris(client, queue, 0, queue_length(queue));
+	playlist_print_uris(client, &g_playlist);
 	return COMMAND_RETURN_OK;
 }
 
@@ -766,12 +759,11 @@ static enum command_return
 handle_plchanges(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 {
 	uint32_t version;
-	const struct queue *queue = playlist_get_queue(&g_playlist);
 
 	if (!check_uint32(client, &version, argv[1], need_positive))
 		return COMMAND_RETURN_ERROR;
 
-	queue_print_changes_info(client, queue, version);
+	playlist_print_changes_info(client, &g_playlist, version);
 	return COMMAND_RETURN_OK;
 }
 
@@ -779,12 +771,11 @@ static enum command_return
 handle_plchangesposid(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 {
 	uint32_t version;
-	const struct queue *queue = playlist_get_queue(&g_playlist);
 
 	if (!check_uint32(client, &version, argv[1], need_positive))
 		return COMMAND_RETURN_ERROR;
 
-	queue_print_changes_position(client, queue, version);
+	playlist_print_changes_position(client, &g_playlist, version);
 	return COMMAND_RETURN_OK;
 }
 
@@ -792,46 +783,37 @@ static enum command_return
 handle_playlistinfo(struct client *client, int argc, char *argv[])
 {
 	unsigned start = 0, end = UINT_MAX;
-	const struct queue *queue = playlist_get_queue(&g_playlist);
+	bool ret;
 
 	if (argc == 2 && !check_range(client, &start, &end,
 				      argv[1], need_range))
 		return COMMAND_RETURN_ERROR;
 
-	if (end > queue_length(queue))
-		end = queue_length(queue);
-
-	if (start > end)
+	ret = playlist_print_info(client, &g_playlist, start, end);
+	if (!ret)
 		return print_playlist_result(client,
 					     PLAYLIST_RESULT_BAD_RANGE);
 
-	queue_print_info(client, queue, start, end);
 	return COMMAND_RETURN_OK;
 }
 
 static enum command_return
 handle_playlistid(struct client *client, int argc, char *argv[])
 {
-	int id = -1, start;
-	unsigned end;
-	const struct queue *queue = playlist_get_queue(&g_playlist);
+	int id = -1;
 
 	if (argc == 2 && !check_int(client, &id, argv[1], need_positive))
 		return COMMAND_RETURN_ERROR;
 
 	if (id >= 0) {
-		start = queue_id_to_position(queue, id);
-		if (start < 0)
+		bool ret = playlist_print_id(client, &g_playlist, id);
+		if (!ret)
 			return print_playlist_result(client,
 						     PLAYLIST_RESULT_NO_SUCH_SONG);
-
-		end = start + 1;
 	} else {
-		start = 0;
-		end = queue_length(queue);
+		playlist_print_info(client, &g_playlist, 0, UINT_MAX);
 	}
 
-	queue_print_info(client, queue, start, end);
 	return COMMAND_RETURN_OK;
 }
 
@@ -924,7 +906,7 @@ handle_playlistfind(struct client *client, int argc, char *argv[])
 		return COMMAND_RETURN_ERROR;
 	}
 
-	queue_find(client, playlist_get_queue(&g_playlist), list);
+	playlist_print_find(client, &g_playlist, list);
 
 	locate_item_list_free(list);
 
@@ -945,7 +927,7 @@ handle_playlistsearch(struct client *client, int argc, char *argv[])
 		return COMMAND_RETURN_ERROR;
 	}
 
-	queue_search(client, playlist_get_queue(&g_playlist), list);
+	playlist_print_search(client, &g_playlist, list);
 
 	locate_item_list_free(list);
 

@@ -17,11 +17,96 @@
  */
 
 #include "playlist_print.h"
+#include "queue_print.h"
 #include "stored_playlist.h"
 #include "song_print.h"
 #include "song.h"
 #include "database.h"
 #include "client.h"
+
+void
+playlist_print_uris(struct client *client, const struct playlist *playlist)
+{
+	const struct queue *queue = &playlist->queue;
+
+	queue_print_uris(client, queue, 0, queue_length(queue));
+}
+
+bool
+playlist_print_info(struct client *client, const struct playlist *playlist,
+		    unsigned start, unsigned end)
+{
+	const struct queue *queue = &playlist->queue;
+
+	if (end > queue_length(queue))
+		/* correct the "end" offset */
+		end = queue_length(queue);
+
+	if (start > end)
+		/* an invalid "start" offset is fatal */
+		return false;
+
+	queue_print_info(client, queue, start, end);
+	return true;
+}
+
+bool
+playlist_print_id(struct client *client, const struct playlist *playlist,
+		  unsigned id)
+{
+	const struct queue *queue = &playlist->queue;
+	int position;
+
+	position = queue_id_to_position(queue, id);
+	if (position < 0)
+		/* no such song */
+		return false;
+
+	return playlist_print_info(client, playlist, position, position + 1);
+}
+
+bool
+playlist_print_current(struct client *client, const struct playlist *playlist)
+{
+	int current_position = getPlaylistCurrentSong(playlist);
+
+	if (current_position < 0)
+		return false;
+
+	queue_print_info(client, &playlist->queue,
+			 current_position, current_position + 1);
+	return true;
+}
+
+void
+playlist_print_find(struct client *client, const struct playlist *playlist,
+		    const struct locate_item_list *list)
+{
+	queue_find(client, &playlist->queue, list);
+}
+
+void
+playlist_print_search(struct client *client, const struct playlist *playlist,
+		      const struct locate_item_list *list)
+{
+	queue_search(client, &playlist->queue, list);
+}
+
+void
+playlist_print_changes_info(struct client *client,
+			    const struct playlist *playlist,
+			    uint32_t version)
+{
+	queue_print_changes_info(client, &playlist->queue, version);
+}
+
+void
+playlist_print_changes_position(struct client *client,
+				const struct playlist *playlist,
+				uint32_t version)
+{
+	queue_print_changes_position(client, &playlist->queue, version);
+}
 
 bool
 spl_print(struct client *client, const char *name_utf8, bool detail)
