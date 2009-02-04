@@ -18,8 +18,8 @@
 
 #include "playlist.h"
 #include "playlist_save.h"
+#include "playlist_state.h"
 #include "queue_print.h"
-#include "queue_save.h"
 #include "locate.h"
 #include "player_control.h"
 #include "command.h"
@@ -29,7 +29,6 @@
 #include "conf.h"
 #include "database.h"
 #include "mapper.h"
-#include "path.h"
 #include "stored_playlist.h"
 #include "ack.h"
 #include "idle.h"
@@ -49,21 +48,6 @@
  * this number of seconds has already elapsed.
  */
 #define PLAYLIST_PREV_UNLESS_ELAPSED    10
-
-#define PLAYLIST_STATE_FILE_STATE		"state: "
-#define PLAYLIST_STATE_FILE_RANDOM		"random: "
-#define PLAYLIST_STATE_FILE_REPEAT		"repeat: "
-#define PLAYLIST_STATE_FILE_CURRENT		"current: "
-#define PLAYLIST_STATE_FILE_TIME		"time: "
-#define PLAYLIST_STATE_FILE_CROSSFADE		"crossfade: "
-#define PLAYLIST_STATE_FILE_PLAYLIST_BEGIN	"playlist_begin"
-#define PLAYLIST_STATE_FILE_PLAYLIST_END	"playlist_end"
-
-#define PLAYLIST_STATE_FILE_STATE_PLAY		"play"
-#define PLAYLIST_STATE_FILE_STATE_PAUSE		"pause"
-#define PLAYLIST_STATE_FILE_STATE_STOP		"stop"
-
-#define PLAYLIST_BUFFER_SIZE	2*MPD_PATH_MAX
 
 /** the global playlist object */
 static struct playlist playlist;
@@ -139,127 +123,12 @@ void clearPlaylist(void)
 
 void savePlaylistState(FILE *fp)
 {
-	fprintf(fp, "%s", PLAYLIST_STATE_FILE_STATE);
-
-	if (playlist.playing) {
-		switch (getPlayerState()) {
-		case PLAYER_STATE_PAUSE:
-			fprintf(fp, "%s\n", PLAYLIST_STATE_FILE_STATE_PAUSE);
-			break;
-		default:
-			fprintf(fp, "%s\n", PLAYLIST_STATE_FILE_STATE_PLAY);
-		}
-		fprintf(fp, "%s%i\n", PLAYLIST_STATE_FILE_CURRENT,
-			queue_order_to_position(&playlist.queue,
-						playlist.current));
-		fprintf(fp, "%s%i\n", PLAYLIST_STATE_FILE_TIME,
-		        getPlayerElapsedTime());
-	} else
-		fprintf(fp, "%s\n", PLAYLIST_STATE_FILE_STATE_STOP);
-
-	fprintf(fp, "%s%i\n", PLAYLIST_STATE_FILE_RANDOM,
-		playlist.queue.random);
-	fprintf(fp, "%s%i\n", PLAYLIST_STATE_FILE_REPEAT,
-		playlist.queue.repeat);
-	fprintf(fp, "%s%i\n", PLAYLIST_STATE_FILE_CROSSFADE,
-	        (int)(getPlayerCrossFade()));
-	fprintf(fp, "%s\n", PLAYLIST_STATE_FILE_PLAYLIST_BEGIN);
-	queue_save(fp, &playlist.queue);
-	fprintf(fp, "%s\n", PLAYLIST_STATE_FILE_PLAYLIST_END);
-}
-
-static void loadPlaylistFromStateFile(FILE *fp, char *buffer,
-				      int state, int current, int seek_time)
-{
-	int song;
-
-	if (!fgets(buffer, PLAYLIST_BUFFER_SIZE, fp)) {
-		g_warning("No playlist in state file");
-		return;
-	}
-
-	while (!g_str_has_prefix(buffer, PLAYLIST_STATE_FILE_PLAYLIST_END)) {
-		g_strchomp(buffer);
-
-		song = queue_load_song(&playlist.queue, buffer);
-		if (song >= 0 && song == current) {
-			if (state != PLAYER_STATE_STOP) {
-				playPlaylist(queue_length(&playlist.queue) - 1);
-			}
-			if (state == PLAYER_STATE_PAUSE) {
-				playerPause();
-			}
-			if (state != PLAYER_STATE_STOP) {
-				seekSongInPlaylist(queue_length(&playlist.queue) - 1,
-						   seek_time);
-			}
-		}
-
-		if (!fgets(buffer, PLAYLIST_BUFFER_SIZE, fp)) {
-			g_warning("'%s' not found in state file",
-				  PLAYLIST_STATE_FILE_PLAYLIST_END);
-			break;
-		}
-	}
+	playlist_state_save(fp, &playlist);
 }
 
 void readPlaylistState(FILE *fp)
 {
-	int current = -1;
-	int seek_time = 0;
-	int state = PLAYER_STATE_STOP;
-	char buffer[PLAYLIST_BUFFER_SIZE];
-	bool random_mode = false;
-
-	while (fgets(buffer, sizeof(buffer), fp)) {
-		g_strchomp(buffer);
-
-		if (g_str_has_prefix(buffer, PLAYLIST_STATE_FILE_STATE)) {
-			if (strcmp(&(buffer[strlen(PLAYLIST_STATE_FILE_STATE)]),
-				   PLAYLIST_STATE_FILE_STATE_PLAY) == 0) {
-				state = PLAYER_STATE_PLAY;
-			} else
-			    if (strcmp
-				(&(buffer[strlen(PLAYLIST_STATE_FILE_STATE)]),
-				 PLAYLIST_STATE_FILE_STATE_PAUSE)
-				== 0) {
-				state = PLAYER_STATE_PAUSE;
-			}
-		} else if (g_str_has_prefix(buffer, PLAYLIST_STATE_FILE_TIME)) {
-			seek_time =
-			    atoi(&(buffer[strlen(PLAYLIST_STATE_FILE_TIME)]));
-		} else
-		    if (g_str_has_prefix(buffer, PLAYLIST_STATE_FILE_REPEAT)) {
-			if (strcmp
-			    (&(buffer[strlen(PLAYLIST_STATE_FILE_REPEAT)]),
-			     "1") == 0) {
-				setPlaylistRepeatStatus(true);
-			} else
-				setPlaylistRepeatStatus(false);
-		} else if (g_str_has_prefix(buffer, PLAYLIST_STATE_FILE_CROSSFADE)) {
-			setPlayerCrossFade(atoi
-					   (&
-					    (buffer
-					     [strlen
-					      (PLAYLIST_STATE_FILE_CROSSFADE)])));
-		} else if (g_str_has_prefix(buffer, PLAYLIST_STATE_FILE_RANDOM)) {
-			random_mode =
-				strcmp(buffer + strlen(PLAYLIST_STATE_FILE_RANDOM),
-				       "1") == 0;
-		} else if (g_str_has_prefix(buffer, PLAYLIST_STATE_FILE_CURRENT)) {
-			current = atoi(&(buffer
-					 [strlen
-					  (PLAYLIST_STATE_FILE_CURRENT)]));
-		} else if (g_str_has_prefix(buffer,
-					    PLAYLIST_STATE_FILE_PLAYLIST_BEGIN)) {
-			if (state == PLAYER_STATE_STOP)
-				current = -1;
-			loadPlaylistFromStateFile(fp, buffer, state,
-						  current, seek_time);
-		}
-	}
-
-	setPlaylistRandomStatus(random_mode);
+	playlist_state_restore(fp, &playlist);
 }
 
 /**
