@@ -663,7 +663,7 @@ handle_save(struct client *client,
 {
 	enum playlist_result result;
 
-	result = spl_save_queue(argv[1], playlist_get_queue(&g_playlist));
+	result = spl_save_playlist(argv[1], &g_playlist);
 	return print_playlist_result(client, result);
 }
 

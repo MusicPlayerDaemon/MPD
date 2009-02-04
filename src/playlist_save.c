@@ -98,6 +98,12 @@ spl_save_queue(const char *name_utf8, const struct queue *queue)
 }
 
 enum playlist_result
+spl_save_playlist(const char *name_utf8, const struct playlist *playlist)
+{
+	return spl_save_queue(name_utf8, &playlist->queue);
+}
+
+enum playlist_result
 playlist_load_spl(struct playlist *playlist, const char *name_utf8)
 {
 	GPtrArray *list;

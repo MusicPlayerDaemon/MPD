@@ -38,6 +38,12 @@ enum playlist_result
 spl_save_queue(const char *name_utf8, const struct queue *queue);
 
 /**
+ * Saves a playlist object into a stored playlist file.
+ */
+enum playlist_result
+spl_save_playlist(const char *name_utf8, const struct playlist *playlist);
+
+/**
  * Loads a stored playlist file, and append all songs to the global
  * playlist.
  */
