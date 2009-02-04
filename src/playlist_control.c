@@ -24,6 +24,11 @@
 #include "playlist_internal.h"
 #include "player_control.h"
 
+#include <glib.h>
+
+#undef G_LOG_DOMAIN
+#define G_LOG_DOMAIN "playlist"
+
 enum {
 	/**
 	 * When the "prev" command is received, rewind the current
@@ -39,7 +44,7 @@ void stopPlaylist(struct playlist *playlist)
 
 	assert(playlist->current >= 0);
 
-	g_debug("playlist: stop");
+	g_debug("stop");
 	playerWait();
 	playlist->queued = -1;
 	playlist->playing = false;

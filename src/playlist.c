@@ -30,6 +30,9 @@
 
 #include <assert.h>
 
+#undef G_LOG_DOMAIN
+#define G_LOG_DOMAIN "playlist"
+
 void playlistVersionChange(struct playlist *playlist)
 {
 	queue_modify_all(&playlist->queue);
@@ -80,8 +83,7 @@ playlist_queue_song_order(struct playlist *playlist, unsigned order)
 
 	song = queue_get_order(&playlist->queue, order);
 	uri = song_get_uri(song);
-	g_debug("playlist: queue song %i:\"%s\"",
-		playlist->queued, uri);
+	g_debug("queue song %i:\"%s\"", playlist->queued, uri);
 	g_free(uri);
 
 	queueSong(song);
@@ -178,7 +180,7 @@ playPlaylistOrderNumber(struct playlist *playlist, int orderNum)
 	song = queue_get_order(&playlist->queue, orderNum);
 
 	uri = song_get_uri(song);
-	g_debug("playlist: play %i:\"%s\"", orderNum, uri);
+	g_debug("play %i:\"%s\"", orderNum, uri);
 	g_free(uri);
 
 	playerPlay(song);
