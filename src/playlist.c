@@ -608,8 +608,6 @@ nextSongInPlaylist(struct playlist *playlist)
 	assert(!queue_is_empty(&playlist->queue));
 	assert(queue_valid_order(&playlist->queue, playlist->current));
 
-	syncPlaylistWithQueue(playlist);
-
 	playlist->stop_on_error = false;
 
 	/* determine the next song from the queue's order list */
@@ -818,8 +816,6 @@ void previousSongInPlaylist(struct playlist *playlist)
 
 	if (!playlist->playing)
 		return;
-
-	syncPlaylistWithQueue(playlist);
 
 	if (diff && getPlayerElapsedTime() > PLAYLIST_PREV_UNLESS_ELAPSED) {
 		/* re-start playing the current song (just like the
