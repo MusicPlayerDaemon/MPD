@@ -5,7 +5,7 @@ man_MANS = mpd.1 mpd.conf.5
 doc_DATA = mpdconf.example
 EXTRA_DIST = $(man_MANS) $(DOCBOOK_FILES) mpdconf.example
 
-if HAVE_XMLTO
+if ENABLE_DOCUMENTATION
 protocoldir = $(docdir)/protocol
 protocol_DATA = $(wildcard protocol/*.html)
 
