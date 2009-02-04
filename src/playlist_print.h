@@ -19,10 +19,7 @@
 #ifndef PLAYLIST_PRINT_H
 #define PLAYLIST_PRINT_H
 
-#include "playlist_print.h"
-#include "stored_playlist.h"
-#include "song_print.h"
-#include "client.h"
+struct client;
 
 int
 PlaylistInfo(struct client *client, const char *utf8file, int detail);
