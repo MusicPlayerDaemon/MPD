@@ -113,6 +113,8 @@ playlist_state_load(FILE *fp, struct playlist *playlist,
 			break;
 		}
 	}
+
+	queue_increment_version(&playlist->queue);
 }
 
 void
