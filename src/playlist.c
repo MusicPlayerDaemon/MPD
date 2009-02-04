@@ -247,13 +247,13 @@ playPlaylistIfPlayerStopped(struct playlist *playlist)
 }
 
 bool
-getPlaylistRepeatStatus(struct playlist *playlist)
+getPlaylistRepeatStatus(const struct playlist *playlist)
 {
 	return playlist->queue.repeat;
 }
 
 bool
-getPlaylistRandomStatus(struct playlist *playlist)
+getPlaylistRandomStatus(const struct playlist *playlist)
 {
 	return playlist->queue.random;
 }
@@ -323,7 +323,7 @@ void setPlaylistRandomStatus(struct playlist *playlist, bool status)
 	idle_add(IDLE_OPTIONS);
 }
 
-int getPlaylistCurrentSong(struct playlist *playlist)
+int getPlaylistCurrentSong(const struct playlist *playlist)
 {
 	if (playlist->current >= 0)
 		return queue_order_to_position(&playlist->queue,
@@ -333,19 +333,19 @@ int getPlaylistCurrentSong(struct playlist *playlist)
 }
 
 unsigned long
-getPlaylistVersion(struct playlist *playlist)
+getPlaylistVersion(const struct playlist *playlist)
 {
 	return playlist->queue.version;
 }
 
 int
-getPlaylistLength(struct playlist *playlist)
+getPlaylistLength(const struct playlist *playlist)
 {
 	return queue_length(&playlist->queue);
 }
 
 unsigned
-getPlaylistSongId(struct playlist *playlist, unsigned song)
+getPlaylistSongId(const struct playlist *playlist, unsigned song)
 {
 	return queue_position_to_id(&playlist->queue, song);
 }

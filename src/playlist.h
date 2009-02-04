@@ -153,9 +153,6 @@ void previousSongInPlaylist(struct playlist *playlist);
 
 void shufflePlaylist(struct playlist *playlist);
 
-enum playlist_result
-savePlaylist(struct playlist *playlist, const char *utf8file);
-
 void
 deleteASongFromPlaylist(struct playlist *playlist, const struct song *song);
 
@@ -172,24 +169,24 @@ enum playlist_result
 swapSongsInPlaylistById(struct playlist *playlist, unsigned id1, unsigned id2);
 
 bool
-getPlaylistRepeatStatus(struct playlist *playlist);
+getPlaylistRepeatStatus(const struct playlist *playlist);
 
 void setPlaylistRepeatStatus(struct playlist *playlist, bool status);
 
 bool
-getPlaylistRandomStatus(struct playlist *playlist);
+getPlaylistRandomStatus(const struct playlist *playlist);
 
 void setPlaylistRandomStatus(struct playlist *playlist, bool status);
 
-int getPlaylistCurrentSong(struct playlist *playlist);
+int getPlaylistCurrentSong(const struct playlist *playlist);
 
 unsigned
-getPlaylistSongId(struct playlist *playlist, unsigned song);
+getPlaylistSongId(const struct playlist *playlist, unsigned song);
 
-int getPlaylistLength(struct playlist *playlist);
+int getPlaylistLength(const struct playlist *playlist);
 
 unsigned long
-getPlaylistVersion(struct playlist *playlist);
+getPlaylistVersion(const struct playlist *playlist);
 
 enum playlist_result
 seekSongInPlaylist(struct playlist *playlist, unsigned song, float seek_time);
