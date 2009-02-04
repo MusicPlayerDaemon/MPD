@@ -37,6 +37,7 @@
 #include "config.h"
 
 #ifdef ENABLE_SQLITE
+#include "sticker.h"
 #include "song_sticker.h"
 #endif
 
@@ -722,7 +723,8 @@ static void song_delete_event(void)
 
 #ifdef ENABLE_SQLITE
 	/* if the song has a sticker, delete it */
-	sticker_song_delete(delete);
+	if (sticker_enabled())
+		sticker_song_delete(delete);
 #endif
 
 	deleteASongFromPlaylist(&g_playlist, delete);
