@@ -686,26 +686,30 @@ handle_load(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 static enum command_return
 handle_listplaylist(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 {
-	int ret;
+	bool ret;
 
-	ret = spl_print(client, argv[1], 0);
-	if (ret == -1)
+	ret = spl_print(client, argv[1], false);
+	if (!ret) {
 		command_error(client, ACK_ERROR_NO_EXIST, "No such playlist");
+		return COMMAND_RETURN_ERROR;
+	}
 
-	return ret;
+	return COMMAND_RETURN_OK;
 }
 
 static enum command_return
 handle_listplaylistinfo(struct client *client,
 			G_GNUC_UNUSED int argc, char *argv[])
 {
-	int ret;
+	bool ret;
 
-	ret = spl_print(client, argv[1], 1);
-	if (ret == -1)
+	ret = spl_print(client, argv[1], true);
+	if (!ret) {
 		command_error(client, ACK_ERROR_NO_EXIST, "No such playlist");
+		return COMMAND_RETURN_ERROR;
+	}
 
-	return ret;
+	return COMMAND_RETURN_OK;
 }
 
 static enum command_return

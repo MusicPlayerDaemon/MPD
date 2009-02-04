@@ -19,9 +19,11 @@
 #ifndef PLAYLIST_PRINT_H
 #define PLAYLIST_PRINT_H
 
+#include <stdbool.h>
+
 struct client;
 
-int
-spl_print(struct client *client, const char *name_utf8, int detail);
+bool
+spl_print(struct client *client, const char *name_utf8, bool detail);
 
 #endif

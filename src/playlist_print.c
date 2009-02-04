@@ -23,24 +23,24 @@
 #include "database.h"
 #include "client.h"
 
-int
-spl_print(struct client *client, const char *name_utf8, int detail)
+bool
+spl_print(struct client *client, const char *name_utf8, bool detail)
 {
 	GPtrArray *list;
 
 	list = spl_load(name_utf8);
 	if (list == NULL)
-		return -1;
+		return false;
 
 	for (unsigned i = 0; i < list->len; ++i) {
 		const char *temp = g_ptr_array_index(list, i);
-		int wrote = 0;
+		bool wrote = false;
 
 		if (detail) {
 			struct song *song = db_get_song(temp);
 			if (song) {
 				song_print_info(client, song);
-				wrote = 1;
+				wrote = true;
 			}
 		}
 
@@ -50,5 +50,5 @@ spl_print(struct client *client, const char *name_utf8, int detail)
 	}
 
 	spl_free(list);
-	return 0;
+	return true;
 }
