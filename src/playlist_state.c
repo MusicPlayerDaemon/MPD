@@ -95,13 +95,14 @@ playlist_state_load(FILE *fp, struct playlist *playlist,
 		song = queue_load_song(&playlist->queue, buffer);
 		if (song >= 0 && song == current) {
 			if (state != PLAYER_STATE_STOP) {
-				playPlaylist(queue_length(&playlist->queue) - 1);
+				playPlaylist(playlist, queue_length(&playlist->queue) - 1);
 			}
 			if (state == PLAYER_STATE_PAUSE) {
 				playerPause();
 			}
 			if (state != PLAYER_STATE_STOP) {
-				seekSongInPlaylist(queue_length(&playlist->queue) - 1,
+				seekSongInPlaylist(playlist,
+						   queue_length(&playlist->queue) - 1,
 						   seek_time);
 			}
 		}
@@ -145,9 +146,9 @@ playlist_state_restore(FILE *fp, struct playlist *playlist)
 			if (strcmp
 			    (&(buffer[strlen(PLAYLIST_STATE_FILE_REPEAT)]),
 			     "1") == 0) {
-				setPlaylistRepeatStatus(true);
+				setPlaylistRepeatStatus(playlist, true);
 			} else
-				setPlaylistRepeatStatus(false);
+				setPlaylistRepeatStatus(playlist, false);
 		} else if (g_str_has_prefix(buffer, PLAYLIST_STATE_FILE_CROSSFADE)) {
 			setPlayerCrossFade(atoi
 					   (&
@@ -171,5 +172,5 @@ playlist_state_restore(FILE *fp, struct playlist *playlist)
 		}
 	}
 
-	setPlaylistRandomStatus(random_mode);
+	setPlaylistRandomStatus(playlist, random_mode);
 }

@@ -168,7 +168,7 @@ int printAllIn(struct client *client, const char *name)
 static int
 directoryAddSongToPlaylist(struct song *song, G_GNUC_UNUSED void *data)
 {
-	return addSongToPlaylist(song, NULL);
+	return addSongToPlaylist(&g_playlist, song, NULL);
 }
 
 struct add_data {

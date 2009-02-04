@@ -235,7 +235,6 @@ int main(int argc, char *argv[])
 
 	event_pipe_init();
 	event_pipe_register(PIPE_EVENT_IDLE, idle_event_emitted);
-	event_pipe_register(PIPE_EVENT_PLAYLIST, syncPlayerAndPlaylist);
 
 	path_global_init();
 	mapper_init();

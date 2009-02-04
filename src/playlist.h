@@ -83,21 +83,36 @@ struct playlist {
 	int queued;
 };
 
+/** the global playlist object */
+extern struct playlist g_playlist;
+
 void initPlaylist(void);
 
 void finishPlaylist(void);
 
+void
+playlist_init(struct playlist *playlist);
+
+void
+playlist_finish(struct playlist *playlist);
+
+void
+playlist_tag_changed(struct playlist *playlist);
+
 /**
  * Returns the "queue" object of the global playlist instance.
  */
-const struct queue *
-playlist_get_queue(void);
+static inline const struct queue *
+playlist_get_queue(const struct playlist *playlist)
+{
+	return &playlist->queue;
+}
 
 void readPlaylistState(FILE *);
 
 void savePlaylistState(FILE *);
 
-void clearPlaylist(void);
+void clearPlaylist(struct playlist *playlist);
 
 #ifndef WIN32
 /**
@@ -105,66 +120,85 @@ void clearPlaylist(void);
  * but only if the file's owner is equal to the specified uid.
  */
 enum playlist_result
-playlist_append_file(const char *path, int uid, unsigned *added_id);
+playlist_append_file(struct playlist *playlist, const char *path, int uid,
+		     unsigned *added_id);
 #endif
 
-enum playlist_result addToPlaylist(const char *file, unsigned *added_id);
+enum playlist_result
+addToPlaylist(struct playlist *playlist, const char *file, unsigned *added_id);
 
 enum playlist_result
-addSongToPlaylist(struct song *song, unsigned *added_id);
+addSongToPlaylist(struct playlist *playlist,
+		  struct song *song, unsigned *added_id);
 
-enum playlist_result deleteFromPlaylist(unsigned song);
+enum playlist_result
+deleteFromPlaylist(struct playlist *playlist, unsigned song);
 
-enum playlist_result deleteFromPlaylistById(unsigned song);
+enum playlist_result
+deleteFromPlaylistById(struct playlist *playlist, unsigned song);
 
-void stopPlaylist(void);
+void stopPlaylist(struct playlist *playlist);
 
-enum playlist_result playPlaylist(int song);
+enum playlist_result
+playPlaylist(struct playlist *playlist, int song);
 
-enum playlist_result playPlaylistById(int song);
+enum playlist_result
+playPlaylistById(struct playlist *playlist, int song);
 
-void nextSongInPlaylist(void);
+void nextSongInPlaylist(struct playlist *playlist);
 
-void syncPlayerAndPlaylist(void);
+void syncPlayerAndPlaylist(struct playlist *playlist);
 
-void previousSongInPlaylist(void);
+void previousSongInPlaylist(struct playlist *playlist);
 
-void shufflePlaylist(void);
+void shufflePlaylist(struct playlist *playlist);
 
-enum playlist_result savePlaylist(const char *utf8file);
+enum playlist_result
+savePlaylist(struct playlist *playlist, const char *utf8file);
 
 void
-deleteASongFromPlaylist(const struct song *song);
+deleteASongFromPlaylist(struct playlist *playlist, const struct song *song);
 
-enum playlist_result moveSongInPlaylist(unsigned from, int to);
+enum playlist_result
+moveSongInPlaylist(struct playlist *playlist, unsigned from, int to);
 
-enum playlist_result moveSongInPlaylistById(unsigned id, int to);
+enum playlist_result
+moveSongInPlaylistById(struct playlist *playlist, unsigned id, int to);
 
-enum playlist_result swapSongsInPlaylist(unsigned song1, unsigned song2);
+enum playlist_result
+swapSongsInPlaylist(struct playlist *playlist, unsigned song1, unsigned song2);
 
-enum playlist_result swapSongsInPlaylistById(unsigned id1, unsigned id2);
+enum playlist_result
+swapSongsInPlaylistById(struct playlist *playlist, unsigned id1, unsigned id2);
 
-bool getPlaylistRepeatStatus(void);
+bool
+getPlaylistRepeatStatus(struct playlist *playlist);
 
-void setPlaylistRepeatStatus(bool status);
+void setPlaylistRepeatStatus(struct playlist *playlist, bool status);
 
-bool getPlaylistRandomStatus(void);
+bool
+getPlaylistRandomStatus(struct playlist *playlist);
 
-void setPlaylistRandomStatus(bool status);
+void setPlaylistRandomStatus(struct playlist *playlist, bool status);
 
-int getPlaylistCurrentSong(void);
+int getPlaylistCurrentSong(struct playlist *playlist);
 
-unsigned getPlaylistSongId(unsigned song);
+unsigned
+getPlaylistSongId(struct playlist *playlist, unsigned song);
 
-int getPlaylistLength(void);
+int getPlaylistLength(struct playlist *playlist);
 
-unsigned long getPlaylistVersion(void);
+unsigned long
+getPlaylistVersion(struct playlist *playlist);
 
-enum playlist_result seekSongInPlaylist(unsigned song, float seek_time);
+enum playlist_result
+seekSongInPlaylist(struct playlist *playlist, unsigned song, float seek_time);
 
-enum playlist_result seekSongInPlaylistById(unsigned id, float seek_time);
+enum playlist_result
+seekSongInPlaylistById(struct playlist *playlist,
+		       unsigned id, float seek_time);
 
-void playlistVersionChange(void);
+void playlistVersionChange(struct playlist *playlist);
 
 int is_valid_playlist_name(const char *utf8path);
 

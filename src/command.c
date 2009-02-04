@@ -392,7 +392,7 @@ handle_play(struct client *client, int argc, char *argv[])
 
 	if (argc == 2 && !check_int(client, &song, argv[1], need_positive))
 		return COMMAND_RETURN_ERROR;
-	result = playPlaylist(song);
+	result = playPlaylist(&g_playlist, song);
 	return print_playlist_result(client, result);
 }
 
@@ -405,7 +405,7 @@ handle_playid(struct client *client, int argc, char *argv[])
 	if (argc == 2 && !check_int(client, &id, argv[1], need_positive))
 		return COMMAND_RETURN_ERROR;
 
-	result = playPlaylistById(id);
+	result = playPlaylistById(&g_playlist, id);
 	return print_playlist_result(client, result);
 }
 
@@ -413,7 +413,7 @@ static enum command_return
 handle_stop(G_GNUC_UNUSED struct client *client,
 	    G_GNUC_UNUSED int argc, G_GNUC_UNUSED char *argv[])
 {
-	stopPlaylist();
+	stopPlaylist(&g_playlist);
 	return COMMAND_RETURN_OK;
 }
 
@@ -421,8 +421,8 @@ static enum command_return
 handle_currentsong(struct client *client,
 		   G_GNUC_UNUSED int argc, G_GNUC_UNUSED char *argv[])
 {
-	int song = getPlaylistCurrentSong();
-	const struct queue *queue = playlist_get_queue();
+	int song = getPlaylistCurrentSong(&g_playlist);
+	const struct queue *queue = playlist_get_queue(&g_playlist);
 
 	if (song >= 0)
 		queue_print_info(client, queue, song, song + 1);
@@ -475,19 +475,19 @@ handle_status(struct client *client,
 		      COMMAND_STATUS_CROSSFADE ": %i\n"
 		      COMMAND_STATUS_STATE ": %s\n",
 		      volume_level_get(),
-		      getPlaylistRepeatStatus(),
-		      getPlaylistRandomStatus(),
-		      getPlaylistVersion(),
-		      getPlaylistLength(),
+		      getPlaylistRepeatStatus(&g_playlist),
+		      getPlaylistRandomStatus(&g_playlist),
+		      getPlaylistVersion(&g_playlist),
+		      getPlaylistLength(&g_playlist),
 		      (int)(getPlayerCrossFade() + 0.5),
 		      state);
 
-	song = getPlaylistCurrentSong();
+	song = getPlaylistCurrentSong(&g_playlist);
 	if (song >= 0) {
 		client_printf(client,
 			      COMMAND_STATUS_SONG ": %i\n"
 			      COMMAND_STATUS_SONGID ": %u\n",
-			      song, getPlaylistSongId(song));
+			      song, getPlaylistSongId(&g_playlist, song));
 	}
 
 	if (getPlayerState() != PLAYER_STATE_STOP) {
@@ -540,7 +540,8 @@ handle_add(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 #ifdef WIN32
 		result = PLAYLIST_RESULT_DENIED;
 #else
-		result = playlist_append_file(uri + 7, client_get_uid(client),
+		result = playlist_append_file(&g_playlist,
+					      uri + 7, client_get_uid(client),
 					      NULL);
 #endif
 		return print_playlist_result(client, result);
@@ -553,7 +554,7 @@ handle_add(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 			return COMMAND_RETURN_ERROR;
 		}
 
-		return addToPlaylist(uri, NULL);
+		return addToPlaylist(&g_playlist, uri, NULL);
 	}
 
 	result = addAllIn(uri);
@@ -577,7 +578,7 @@ handle_addid(struct client *client, int argc, char *argv[])
 #ifdef WIN32
 		result = PLAYLIST_RESULT_DENIED;
 #else
-		result = playlist_append_file(uri + 7,
+		result = playlist_append_file(&g_playlist, uri + 7,
 					      client_get_uid(client),
 					      &added_id);
 #endif
@@ -588,7 +589,7 @@ handle_addid(struct client *client, int argc, char *argv[])
 			return COMMAND_RETURN_ERROR;
 		}
 
-		result = addToPlaylist(uri, &added_id);
+		result = addToPlaylist(&g_playlist, uri, &added_id);
 	}
 
 	if (result != PLAYLIST_RESULT_SUCCESS)
@@ -598,11 +599,11 @@ handle_addid(struct client *client, int argc, char *argv[])
 		int to;
 		if (!check_int(client, &to, argv[2], check_integer, argv[2]))
 			return COMMAND_RETURN_ERROR;
-		result = moveSongInPlaylistById(added_id, to);
+		result = moveSongInPlaylistById(&g_playlist, added_id, to);
 		if (result != PLAYLIST_RESULT_SUCCESS) {
 			enum command_return ret =
 				print_playlist_result(client, result);
-			deleteFromPlaylistById(added_id);
+			deleteFromPlaylistById(&g_playlist, added_id);
 			return ret;
 		}
 	}
@@ -620,7 +621,7 @@ handle_delete(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 	if (!check_int(client, &song, argv[1], need_positive))
 		return COMMAND_RETURN_ERROR;
 
-	result = deleteFromPlaylist(song);
+	result = deleteFromPlaylist(&g_playlist, song);
 	return print_playlist_result(client, result);
 }
 
@@ -633,7 +634,7 @@ handle_deleteid(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 	if (!check_int(client, &id, argv[1], need_positive))
 		return COMMAND_RETURN_ERROR;
 
-	result = deleteFromPlaylistById(id);
+	result = deleteFromPlaylistById(&g_playlist, id);
 	return print_playlist_result(client, result);
 }
 
@@ -641,7 +642,7 @@ static enum command_return
 handle_playlist(struct client *client,
 	        G_GNUC_UNUSED int argc, G_GNUC_UNUSED char *argv[])
 {
-	const struct queue *queue = playlist_get_queue();
+	const struct queue *queue = playlist_get_queue(&g_playlist);
 
 	queue_print_uris(client, queue, 0, queue_length(queue));
 	return COMMAND_RETURN_OK;
@@ -651,7 +652,7 @@ static enum command_return
 handle_shuffle(G_GNUC_UNUSED struct client *client,
 	       G_GNUC_UNUSED int argc, G_GNUC_UNUSED char *argv[])
 {
-	shufflePlaylist();
+	shufflePlaylist(&g_playlist);
 	return COMMAND_RETURN_OK;
 }
 
@@ -659,7 +660,7 @@ static enum command_return
 handle_clear(G_GNUC_UNUSED struct client *client,
 	     G_GNUC_UNUSED int argc, G_GNUC_UNUSED char *argv[])
 {
-	clearPlaylist();
+	clearPlaylist(&g_playlist);
 	return COMMAND_RETURN_OK;
 }
 
@@ -669,7 +670,7 @@ handle_save(struct client *client,
 {
 	enum playlist_result result;
 
-	result = spl_save_queue(argv[1], playlist_get_queue());
+	result = spl_save_queue(argv[1], playlist_get_queue(&g_playlist));
 	return print_playlist_result(client, result);
 }
 
@@ -678,7 +679,7 @@ handle_load(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 {
 	enum playlist_result result;
 
-	result = playlist_load_spl(argv[1]);
+	result = playlist_load_spl(&g_playlist, argv[1]);
 	return print_playlist_result(client, result);
 }
 
@@ -761,7 +762,7 @@ static enum command_return
 handle_plchanges(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 {
 	uint32_t version;
-	const struct queue *queue = playlist_get_queue();
+	const struct queue *queue = playlist_get_queue(&g_playlist);
 
 	if (!check_uint32(client, &version, argv[1], need_positive))
 		return COMMAND_RETURN_ERROR;
@@ -774,7 +775,7 @@ static enum command_return
 handle_plchangesposid(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 {
 	uint32_t version;
-	const struct queue *queue = playlist_get_queue();
+	const struct queue *queue = playlist_get_queue(&g_playlist);
 
 	if (!check_uint32(client, &version, argv[1], need_positive))
 		return COMMAND_RETURN_ERROR;
@@ -787,7 +788,7 @@ static enum command_return
 handle_playlistinfo(struct client *client, int argc, char *argv[])
 {
 	unsigned start = 0, end = UINT_MAX;
-	const struct queue *queue = playlist_get_queue();
+	const struct queue *queue = playlist_get_queue(&g_playlist);
 
 	if (argc == 2 && !check_range(client, &start, &end,
 				      argv[1], need_range))
@@ -809,7 +810,7 @@ handle_playlistid(struct client *client, int argc, char *argv[])
 {
 	int id = -1, start;
 	unsigned end;
-	const struct queue *queue = playlist_get_queue();
+	const struct queue *queue = playlist_get_queue(&g_playlist);
 
 	if (argc == 2 && !check_int(client, &id, argv[1], need_positive))
 		return COMMAND_RETURN_ERROR;
@@ -919,7 +920,7 @@ handle_playlistfind(struct client *client, int argc, char *argv[])
 		return COMMAND_RETURN_ERROR;
 	}
 
-	queue_find(client, playlist_get_queue(), list);
+	queue_find(client, playlist_get_queue(&g_playlist), list);
 
 	locate_item_list_free(list);
 
@@ -940,7 +941,7 @@ handle_playlistsearch(struct client *client, int argc, char *argv[])
 		return COMMAND_RETURN_ERROR;
 	}
 
-	queue_search(client, playlist_get_queue(), list);
+	queue_search(client, playlist_get_queue(&g_playlist), list);
 
 	locate_item_list_free(list);
 
@@ -1002,7 +1003,7 @@ static enum command_return
 handle_next(G_GNUC_UNUSED struct client *client,
 	    G_GNUC_UNUSED int argc, G_GNUC_UNUSED char *argv[])
 {
-	nextSongInPlaylist();
+	nextSongInPlaylist(&g_playlist);
 	return COMMAND_RETURN_OK;
 }
 
@@ -1010,7 +1011,7 @@ static enum command_return
 handle_previous(G_GNUC_UNUSED struct client *client,
 		G_GNUC_UNUSED int argc, G_GNUC_UNUSED char *argv[])
 {
-	previousSongInPlaylist();
+	previousSongInPlaylist(&g_playlist);
 	return COMMAND_RETURN_OK;
 }
 
@@ -1077,7 +1078,7 @@ handle_repeat(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 		return COMMAND_RETURN_ERROR;
 	}
 
-	setPlaylistRepeatStatus(status);
+	setPlaylistRepeatStatus(&g_playlist, status);
 	return COMMAND_RETURN_OK;
 }
 
@@ -1095,7 +1096,7 @@ handle_random(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 		return COMMAND_RETURN_ERROR;
 	}
 
-	setPlaylistRandomStatus(status);
+	setPlaylistRandomStatus(&g_playlist, status);
 	return COMMAND_RETURN_OK;
 }
 
@@ -1177,7 +1178,7 @@ handle_move(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 		return COMMAND_RETURN_ERROR;
 	if (!check_int(client, &to, argv[2], check_integer, argv[2]))
 		return COMMAND_RETURN_ERROR;
-	result = moveSongInPlaylist(from, to);
+	result = moveSongInPlaylist(&g_playlist, from, to);
 	return print_playlist_result(client, result);
 }
 
@@ -1191,7 +1192,7 @@ handle_moveid(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 		return COMMAND_RETURN_ERROR;
 	if (!check_int(client, &to, argv[2], check_integer, argv[2]))
 		return COMMAND_RETURN_ERROR;
-	result = moveSongInPlaylistById(id, to);
+	result = moveSongInPlaylistById(&g_playlist, id, to);
 	return print_playlist_result(client, result);
 }
 
@@ -1205,7 +1206,7 @@ handle_swap(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 		return COMMAND_RETURN_ERROR;
 	if (!check_int(client, &song2, argv[2], check_integer, argv[2]))
 		return COMMAND_RETURN_ERROR;
-	result = swapSongsInPlaylist(song1, song2);
+	result = swapSongsInPlaylist(&g_playlist, song1, song2);
 	return print_playlist_result(client, result);
 }
 
@@ -1219,7 +1220,7 @@ handle_swapid(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 		return COMMAND_RETURN_ERROR;
 	if (!check_int(client, &id2, argv[2], check_integer, argv[2]))
 		return COMMAND_RETURN_ERROR;
-	result = swapSongsInPlaylistById(id1, id2);
+	result = swapSongsInPlaylistById(&g_playlist, id1, id2);
 	return print_playlist_result(client, result);
 }
 
@@ -1234,7 +1235,7 @@ handle_seek(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 	if (!check_int(client, &seek_time, argv[2], check_integer, argv[2]))
 		return COMMAND_RETURN_ERROR;
 
-	result = seekSongInPlaylist(song, seek_time);
+	result = seekSongInPlaylist(&g_playlist, song, seek_time);
 	return print_playlist_result(client, result);
 }
 
@@ -1249,7 +1250,7 @@ handle_seekid(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 	if (!check_int(client, &seek_time, argv[2], check_integer, argv[2]))
 		return COMMAND_RETURN_ERROR;
 
-	result = seekSongInPlaylistById(id, seek_time);
+	result = seekSongInPlaylistById(&g_playlist, id, seek_time);
 	return print_playlist_result(client, result);
 }
 

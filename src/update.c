@@ -725,7 +725,7 @@ static void song_delete_event(void)
 	sticker_song_delete(delete);
 #endif
 
-	deleteASongFromPlaylist(delete);
+	deleteASongFromPlaylist(&g_playlist, delete);
 	delete = NULL;
 
 	notify_signal(&update_notify);
@@ -742,7 +742,7 @@ static void update_finished_event(void)
 
 	if (modified) {
 		/* send "idle" events */
-		playlistVersionChange();
+		playlistVersionChange(&g_playlist);
 		idle_add(IDLE_DATABASE);
 	}
 
