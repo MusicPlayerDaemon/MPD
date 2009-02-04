@@ -284,42 +284,6 @@ playlist_queue_song_order(unsigned order)
 	queueSong(song);
 }
 
-/*
- * Queue the song following after the current one.  If no song is
- * played currently, start with the first song.
- */
-static void queueNextSongInPlaylist(void)
-{
-	assert(playlist.queued < 0);
-
-	if (playlist.current + 1 < (int)queue_length(&playlist.queue)) {
-		playlist_queue_song_order(playlist.current + 1);
-	} else if (!queue_is_empty(&playlist.queue) && playlist.queue.repeat) {
-		/* end of queue: restart at the first song in repeat
-		   mode */
-
-		if (playlist.queue.random) {
-			/* shuffle the song order again, so we get a
-			   different order each time the playlist is
-			   played completely */
-
-			unsigned current_position =
-				queue_order_to_position(&playlist.queue,
-							playlist.current);
-			queue_shuffle_order(&playlist.queue);
-
-			/* make sure that the playlist.current still
-			   points to the current song, after the song
-			   order has been shuffled */
-			playlist.current =
-				queue_position_to_order(&playlist.queue,
-							current_position);
-		}
-
-		playlist_queue_song_order(0);
-	}
-}
-
 /**
  * Check if the player thread has already started playing the "queued"
  * song.
@@ -338,16 +302,77 @@ static void syncPlaylistWithQueue(void)
 }
 
 /**
- * Clears the currently queued song, and tells the player thread to
- * abort pre-decoding it.
+ * Returns the song object which is currently queued.  Returns none if
+ * there is none (yet?) or if MPD isn't playing.
  */
-static void clearPlayerQueue(void)
+static const struct song *
+playlist_get_queued_song(void)
 {
-	assert(playlist.queued >= 0);
+	if (!playlist.playing || playlist.queued < 0)
+		return NULL;
 
-	playlist.queued = -1;
+	return queue_get_order(&playlist.queue, playlist.queued);
+}
 
-	pc_cancel();
+/**
+ * Updates the "queued song".  Calculates the next song according to
+ * the current one (if MPD isn't playing, it takes the first song),
+ * and queues this song.  Clears the old queued song if there was one.
+ *
+ * @param prev the song which was previously queued, as determined by
+ * playlist_get_queued_song()
+ */
+static void
+playlist_update_queued_song(const struct song *prev)
+{
+	int next_order;
+	const struct song *next_song;
+
+	if (!playlist.playing)
+		return;
+
+	assert(!queue_is_empty(&playlist.queue));
+	assert((playlist.queued < 0) == (prev == NULL));
+
+	next_order = playlist.current >= 0
+		? queue_next_order(&playlist.queue, playlist.current)
+		: 0;
+
+	if (next_order == 0 && playlist.queue.random) {
+		/* shuffle the song order again, so we get a different
+		   order each time the playlist is played
+		   completely */
+		unsigned current_position =
+			queue_order_to_position(&playlist.queue,
+						playlist.current);
+
+		queue_shuffle_order(&playlist.queue);
+
+		/* make sure that the playlist.current still points to
+		   the current song, after the song order has been
+		   shuffled */
+		playlist.current =
+			queue_position_to_order(&playlist.queue,
+						current_position);
+	}
+
+	if (next_order >= 0)
+		next_song = queue_get_order(&playlist.queue, next_order);
+	else
+		next_song = NULL;
+
+	if (prev != NULL && next_song != prev) {
+		/* clear the currently queued song */
+		pc_cancel();
+		playlist.queued = -1;
+	}
+
+	if (next_order >= 0) {
+		if (next_song != prev)
+			playlist_queue_song_order(next_order);
+		else
+			playlist.queued = next_order;
+	}
 }
 
 #ifndef WIN32
@@ -409,17 +434,13 @@ enum playlist_result addToPlaylist(const char *url, unsigned *added_id)
 enum playlist_result
 addSongToPlaylist(struct song *song, unsigned *added_id)
 {
+	const struct song *queued;
 	unsigned id;
 
 	if (queue_is_full(&playlist.queue))
 		return PLAYLIST_RESULT_TOO_LARGE;
 
-	if (playlist.playing && playlist.queued >= 0 &&
-	    playlist.current == (int)queue_length(&playlist.queue) - 1)
-		/* currently, we are playing the last song in the
-		   queue - the new song will be the new "queued song",
-		   so we have to clear the old queued song first */
-		clearPlayerQueue();
+	queued = playlist_get_queued_song();
 
 	id = queue_append(&playlist.queue, song);
 
@@ -439,6 +460,8 @@ addSongToPlaylist(struct song *song, unsigned *added_id)
 
 	incrPlaylistVersion();
 
+	playlist_update_queued_song(queued);
+
 	if (added_id)
 		*added_id = id;
 
@@ -447,25 +470,13 @@ addSongToPlaylist(struct song *song, unsigned *added_id)
 
 enum playlist_result swapSongsInPlaylist(unsigned song1, unsigned song2)
 {
+	const struct song *queued;
+
 	if (!queue_valid_position(&playlist.queue, song1) ||
 	    !queue_valid_position(&playlist.queue, song2))
 		return PLAYLIST_RESULT_BAD_RANGE;
 
-	if (playlist.playing && playlist.queued >= 0) {
-		/* if song1 or song2 equals to the current or the
-		   queued song, we must clear the player queue,
-		   because the swap will result in a different
-		   "queued" song */
-
-		unsigned queuedSong = queue_order_to_position(&playlist.queue,
-							      playlist.queued);
-		unsigned currentSong = queue_order_to_position(&playlist.queue,
-							       playlist.current);
-
-		if (queuedSong == song1 || queuedSong == song2
-		    || currentSong == song1 || currentSong == song2)
-			clearPlayerQueue();
-	}
+	queued = playlist_get_queued_song();
 
 	queue_swap(&playlist.queue, song1, song2);
 
@@ -489,6 +500,8 @@ enum playlist_result swapSongsInPlaylist(unsigned song1, unsigned song2)
 
 	incrPlaylistVersion();
 
+	playlist_update_queued_song(queued);
+
 	return PLAYLIST_RESULT_SUCCESS;
 }
 
@@ -505,20 +518,15 @@ enum playlist_result swapSongsInPlaylistById(unsigned id1, unsigned id2)
 
 enum playlist_result deleteFromPlaylist(unsigned song)
 {
+	const struct song *queued;
 	unsigned songOrder;
 
 	if (song >= queue_length(&playlist.queue))
 		return PLAYLIST_RESULT_BAD_RANGE;
 
-	songOrder = queue_position_to_order(&playlist.queue, song);
+	queued = playlist_get_queued_song();
 
-	if (playlist.playing && playlist.queued >= 0
-	    && (playlist.queued == (int)songOrder ||
-		playlist.current == (int)songOrder))
-		/* deleting the current or the queued song: clear the
-		   queue, because this function will result in a
-		   different "queued" song */
-		clearPlayerQueue();
+	songOrder = queue_position_to_order(&playlist.queue, song);
 
 	if (playlist.playing && playlist.current == (int)songOrder) {
 		bool paused = getPlayerState() == PLAYER_STATE_PAUSE;
@@ -542,6 +550,8 @@ enum playlist_result deleteFromPlaylist(unsigned song)
 			/* no songs left to play, stop playback
 			   completely */
 			stopPlaylist();
+
+		queued = NULL;
 	}
 
 	/* now do it: remove the song */
@@ -559,9 +569,7 @@ enum playlist_result deleteFromPlaylist(unsigned song)
 		playlist.current--;
 	}
 
-	if (playlist.queued > (int)songOrder) {
-		playlist.queued--;
-	}
+	playlist_update_queued_song(queued);
 
 	return PLAYLIST_RESULT_SUCCESS;
 }
@@ -726,7 +734,7 @@ void syncPlayerAndPlaylist(void)
 		/* make sure the queued song is always set (if
 		   possible) */
 		if (pc.next_song == NULL)
-			queueNextSongInPlaylist();
+			playlist_update_queued_song(NULL);
 	}
 }
 
@@ -813,19 +821,18 @@ void setPlaylistRepeatStatus(bool status)
 	if (status == playlist.queue.repeat)
 		return;
 
-	if (playlist.playing &&
-	    playlist.queue.repeat && playlist.queued == 0)
-		/* repeat mode will be switched off now - tell the
-		   player thread not to play the first song again */
-		clearPlayerQueue();
-
 	playlist.queue.repeat = status;
+
+	/* if the last song is currently being played, the "next song"
+	   might change when repeat mode is toggled */
+	playlist_update_queued_song(playlist_get_queued_song());
 
 	idle_add(IDLE_OPTIONS);
 }
 
 enum playlist_result moveSongInPlaylist(unsigned from, int to)
 {
+	const struct song *queued;
 	int currentSong;
 
 	if (!queue_valid_position(&playlist.queue, from))
@@ -837,6 +844,8 @@ enum playlist_result moveSongInPlaylist(unsigned from, int to)
 
 	if ((int)from == to) /* no-op */
 		return PLAYLIST_RESULT_SUCCESS;
+
+	queued = playlist_get_queued_song();
 
 	/*
 	 * (to < 0) => move to offset from current song
@@ -853,14 +862,6 @@ enum playlist_result moveSongInPlaylist(unsigned from, int to)
 		to = (currentSong + abs(to)) % queue_length(&playlist.queue);
 	}
 
-	if (playlist.playing && playlist.queued >= 0) {
-		int queuedSong = queue_order_to_position(&playlist.queue,
-							 playlist.queued);
-		if (queuedSong == (int)from || queuedSong == to
-		    || currentSong == (int)from || currentSong == to)
-			clearPlayerQueue();
-	}
-
 	queue_move(&playlist.queue, from, to);
 
 	if (!playlist.queue.random) {
@@ -874,19 +875,11 @@ enum playlist_result moveSongInPlaylist(unsigned from, int to)
 			   playlist.current < (int)from) {
 			playlist.current++;
 		}
-
-		/* this first if statement isn't necessary since the queue
-		 * would have been cleared out if queued == from */
-		if (playlist.queued == (int)from)
-			playlist.queued = to;
-		else if (playlist.queued > (int)from && playlist.queued <= to) {
-			playlist.queued--;
-		} else if (playlist.queued>= to && playlist.queued < (int)from) {
-			playlist.queued++;
-		}
 	}
 
 	incrPlaylistVersion();
+
+	playlist_update_queued_song(queued);
 
 	return PLAYLIST_RESULT_SUCCESS;
 }
@@ -907,21 +900,17 @@ static void orderPlaylist(void)
 		playlist.current = queue_order_to_position(&playlist.queue,
 							   playlist.current);
 
-	if (playlist.playing && playlist.queued >= 0)
-		/* clear the queue, because the next song will be
-		   different now */
-		clearPlayerQueue();
-
 	queue_restore_order(&playlist.queue);
 }
 
 void setPlaylistRandomStatus(bool status)
 {
+	const struct song *queued;
+
 	if (status == playlist.queue.random)
 		return;
 
-	if (playlist.queued >= 0)
-		clearPlayerQueue();
+	queued = playlist_get_queued_song();
 
 	playlist.queue.random = status;
 
@@ -948,6 +937,8 @@ void setPlaylistRandomStatus(bool status)
 		}
 	} else
 		orderPlaylist();
+
+	playlist_update_queued_song(queued);
 
 	idle_add(IDLE_OPTIONS);
 }
@@ -986,17 +977,15 @@ void previousSongInPlaylist(void)
 
 void shufflePlaylist(void)
 {
+	const struct song *queued;
 	unsigned i;
 
 	if (queue_length(&playlist.queue) <= 1)
 		return;
 
-	if (playlist.playing) {
-		if (playlist.queued >= 0)
-			/* queue must be cleared, because the "next"
-			   song will be different after shuffle */
-			clearPlayerQueue();
+	queued = playlist_get_queued_song();
 
+	if (playlist.playing) {
 		if (playlist.current >= 0)
 			/* put current playing song first */
 			queue_swap(&playlist.queue, 0,
@@ -1024,6 +1013,8 @@ void shufflePlaylist(void)
 			    queue_length(&playlist.queue));
 
 	incrPlaylistVersion();
+
+	playlist_update_queued_song(queued);
 }
 
 int getPlaylistCurrentSong(void)
@@ -1047,11 +1038,14 @@ int getPlaylistLength(void)
 
 enum playlist_result seekSongInPlaylist(unsigned song, float seek_time)
 {
+	const struct song *queued;
 	unsigned i;
 	int ret;
 
 	if (!queue_valid_position(&playlist.queue, song))
 		return PLAYLIST_RESULT_BAD_RANGE;
+
+	queued = playlist_get_queued_song();
 
 	if (playlist.queue.random)
 		i = queue_position_to_order(&playlist.queue, song);
@@ -1062,15 +1056,15 @@ enum playlist_result seekSongInPlaylist(unsigned song, float seek_time)
 	playlist.stop_on_error = true;
 	playlist.error_count = 0;
 
-	if (playlist.playing) {
-		if (playlist.queued >= 0)
-			clearPlayerQueue();
-	} else
-		playPlaylistOrderNumber(i);
+	if (!playlist.playing || (unsigned)playlist.current != i) {
+		/* seeking is not within the current song - first
+		   start playing the new song */
 
-	if (playlist.current != (int)i) {
 		playPlaylistOrderNumber(i);
+		queued = NULL;
 	}
+
+	playlist_update_queued_song(queued);
 
 	ret = playerSeek(queue_get_order(&playlist.queue, i), seek_time);
 	if (ret < 0)
