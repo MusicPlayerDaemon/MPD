@@ -16,7 +16,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "playlist.h"
+#include "playlist_internal.h"
 #include "playlist_save.h"
 #include "queue_print.h"
 #include "locate.h"
@@ -40,15 +40,6 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <errno.h>
-
-/**
- * When the "prev" command is received, rewind the current track if
- * this number of seconds has already elapsed.
- */
-#define PLAYLIST_PREV_UNLESS_ELAPSED    10
-
-static void
-playPlaylistOrderNumber(struct playlist *playlist, int orderNum);
 
 static void incrPlaylistVersion(struct playlist *playlist)
 {
@@ -150,11 +141,7 @@ static void syncPlaylistWithQueue(struct playlist *playlist)
 	}
 }
 
-/**
- * Returns the song object which is currently queued.  Returns none if
- * there is none (yet?) or if MPD isn't playing.
- */
-static const struct song *
+const struct song *
 playlist_get_queued_song(struct playlist *playlist)
 {
 	if (!playlist->playing || playlist->queued < 0)
@@ -163,15 +150,7 @@ playlist_get_queued_song(struct playlist *playlist)
 	return queue_get_order(&playlist->queue, playlist->queued);
 }
 
-/**
- * Updates the "queued song".  Calculates the next song according to
- * the current one (if MPD isn't playing, it takes the first song),
- * and queues this song.  Clears the old queued song if there was one.
- *
- * @param prev the song which was previously queued, as determined by
- * playlist_get_queued_song()
- */
-static void
+void
 playlist_update_queued_song(struct playlist *playlist, const struct song *prev)
 {
 	int next_order;
@@ -449,37 +428,7 @@ deleteASongFromPlaylist(struct playlist *playlist, const struct song *song)
 	pc_song_deleted(song);
 }
 
-void stopPlaylist(struct playlist *playlist)
-{
-	if (!playlist->playing)
-		return;
-
-	assert(playlist->current >= 0);
-
-	g_debug("playlist: stop");
-	playerWait();
-	playlist->queued = -1;
-	playlist->playing = false;
-
-	if (playlist->queue.random) {
-		/* shuffle the playlist, so the next playback will
-		   result in a new random order */
-
-		unsigned current_position =
-			queue_order_to_position(&playlist->queue,
-						playlist->current);
-
-		queue_shuffle_order(&playlist->queue);
-
-		/* make sure that "current" stays valid, and the next
-		   "play" command plays the same song again */
-		playlist->current =
-			queue_position_to_order(&playlist->queue,
-						current_position);
-	}
-}
-
-static void
+void
 playPlaylistOrderNumber(struct playlist *playlist, int orderNum)
 {
 	struct song *song;
@@ -496,73 +445,6 @@ playPlaylistOrderNumber(struct playlist *playlist, int orderNum)
 
 	playerPlay(song);
 	playlist->current = orderNum;
-}
-
-enum playlist_result playPlaylist(struct playlist *playlist, int song)
-{
-	unsigned i = song;
-
-	clearPlayerError();
-
-	if (song == -1) {
-		/* play any song ("current" song, or the first song */
-
-		if (queue_is_empty(&playlist->queue))
-			return PLAYLIST_RESULT_SUCCESS;
-
-		if (playlist->playing) {
-			/* already playing: unpause playback, just in
-			   case it was paused, and return */
-			playerSetPause(0);
-			return PLAYLIST_RESULT_SUCCESS;
-		}
-
-		/* select a song: "current" song, or the first one */
-		i = playlist->current >= 0
-			? playlist->current
-			: 0;
-	} else if (!queue_valid_position(&playlist->queue, song))
-		return PLAYLIST_RESULT_BAD_RANGE;
-
-	if (playlist->queue.random) {
-		if (song >= 0)
-			/* "i" is currently the song position (which
-			   would be equal to the order number in
-			   no-random mode); convert it to a order
-			   number, because random mode is enabled */
-			i = queue_position_to_order(&playlist->queue, song);
-
-		if (!playlist->playing)
-			playlist->current = 0;
-
-		/* swap the new song with the previous "current" one,
-		   so playback continues as planned */
-		queue_swap_order(&playlist->queue,
-				 i, playlist->current);
-		i = playlist->current;
-	}
-
-	playlist->stop_on_error = false;
-	playlist->error_count = 0;
-
-	playPlaylistOrderNumber(playlist, i);
-	return PLAYLIST_RESULT_SUCCESS;
-}
-
-enum playlist_result
-playPlaylistById(struct playlist *playlist, int id)
-{
-	int song;
-
-	if (id == -1) {
-		return playPlaylist(playlist, id);
-	}
-
-	song = queue_id_to_position(&playlist->queue, id);
-	if (song < 0)
-		return PLAYLIST_RESULT_NO_SUCH_SONG;
-
-	return playPlaylist(playlist, song);
 }
 
 static void
@@ -595,45 +477,6 @@ void syncPlayerAndPlaylist(struct playlist *playlist)
 		if (pc.next_song == NULL)
 			playlist_update_queued_song(playlist, NULL);
 	}
-}
-
-void
-nextSongInPlaylist(struct playlist *playlist)
-{
-	int next_order;
-
-	if (!playlist->playing)
-		return;
-
-	assert(!queue_is_empty(&playlist->queue));
-	assert(queue_valid_order(&playlist->queue, playlist->current));
-
-	playlist->stop_on_error = false;
-
-	/* determine the next song from the queue's order list */
-
-	next_order = queue_next_order(&playlist->queue, playlist->current);
-	if (next_order < 0) {
-		/* no song after this one: stop playback */
-		stopPlaylist(playlist);
-		return;
-	}
-
-	if (next_order == 0 && playlist->queue.random) {
-		/* The queue told us that the next song is the first
-		   song.  This means we are in repeat mode.  Shuffle
-		   the queue order, so this time, the user hears the
-		   songs in a different than before */
-		assert(playlist->queue.repeat);
-
-		queue_shuffle_order(&playlist->queue);
-
-		/* note that playlist->current and playlist->queued are
-		   now invalid, but playPlaylistOrderNumber() will
-		   discard them anyway */
-	}
-
-	playPlaylistOrderNumber(playlist, next_order);
 }
 
 /**
@@ -807,38 +650,6 @@ void setPlaylistRandomStatus(struct playlist *playlist, bool status)
 	idle_add(IDLE_OPTIONS);
 }
 
-void previousSongInPlaylist(struct playlist *playlist)
-{
-	static time_t lastTime;
-	time_t diff = time(NULL) - lastTime;
-
-	lastTime += diff;
-
-	if (!playlist->playing)
-		return;
-
-	if (diff && getPlayerElapsedTime() > PLAYLIST_PREV_UNLESS_ELAPSED) {
-		/* re-start playing the current song (just like the
-		   "prev" button on CD players) */
-
-		playPlaylistOrderNumber(playlist, playlist->current);
-	} else {
-		if (playlist->current > 0) {
-			/* play the preceding song */
-			playPlaylistOrderNumber(playlist,
-						playlist->current - 1);
-		} else if (playlist->queue.repeat) {
-			/* play the last song in "repeat" mode */
-			playPlaylistOrderNumber(playlist,
-						queue_length(&playlist->queue) - 1);
-		} else {
-			/* re-start playing the current song if it's
-			   the first one */
-			playPlaylistOrderNumber(playlist, playlist->current);
-		}
-	}
-}
-
 void shufflePlaylist(struct playlist *playlist)
 {
 	const struct song *queued;
@@ -900,54 +711,6 @@ int
 getPlaylistLength(struct playlist *playlist)
 {
 	return queue_length(&playlist->queue);
-}
-
-enum playlist_result
-seekSongInPlaylist(struct playlist *playlist, unsigned song, float seek_time)
-{
-	const struct song *queued;
-	unsigned i;
-	int ret;
-
-	if (!queue_valid_position(&playlist->queue, song))
-		return PLAYLIST_RESULT_BAD_RANGE;
-
-	queued = playlist_get_queued_song(playlist);
-
-	if (playlist->queue.random)
-		i = queue_position_to_order(&playlist->queue, song);
-	else
-		i = song;
-
-	clearPlayerError();
-	playlist->stop_on_error = true;
-	playlist->error_count = 0;
-
-	if (!playlist->playing || (unsigned)playlist->current != i) {
-		/* seeking is not within the current song - first
-		   start playing the new song */
-
-		playPlaylistOrderNumber(playlist, i);
-		queued = NULL;
-	}
-
-	playlist_update_queued_song(playlist, queued);
-
-	ret = playerSeek(queue_get_order(&playlist->queue, i), seek_time);
-	if (ret < 0)
-		return PLAYLIST_RESULT_NOT_PLAYING;
-
-	return PLAYLIST_RESULT_SUCCESS;
-}
-
-enum playlist_result
-seekSongInPlaylistById(struct playlist *playlist, unsigned id, float seek_time)
-{
-	int song = queue_id_to_position(&playlist->queue, id);
-	if (song < 0)
-		return PLAYLIST_RESULT_NO_SUCH_SONG;
-
-	return seekSongInPlaylist(playlist, song, seek_time);
 }
 
 unsigned
