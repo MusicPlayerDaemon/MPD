@@ -185,6 +185,7 @@ mpd_SOURCES = \
 	playlist.c \
 	playlist_global.c \
 	playlist_control.c \
+	playlist_edit.c \
 	playlist_print.c \
 	playlist_save.c \
 	playlist_state.c \
