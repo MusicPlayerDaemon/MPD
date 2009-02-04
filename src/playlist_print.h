@@ -23,6 +23,14 @@
 
 struct client;
 
+/**
+ * Send the stored playlist to the client.
+ *
+ * @param client the client which requested the playlist
+ * @param name_utf8 the name of the stored playlist in UTF-8 encoding
+ * @param detail true if all details should be printed
+ * @return true on success, false if the playlist does not exist
+ */
 bool
 spl_print(struct client *client, const char *name_utf8, bool detail);
 
