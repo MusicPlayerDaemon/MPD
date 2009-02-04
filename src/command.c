@@ -688,7 +688,7 @@ handle_listplaylist(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 {
 	int ret;
 
-	ret = PlaylistInfo(client, argv[1], 0);
+	ret = spl_print(client, argv[1], 0);
 	if (ret == -1)
 		command_error(client, ACK_ERROR_NO_EXIST, "No such playlist");
 
@@ -701,7 +701,7 @@ handle_listplaylistinfo(struct client *client,
 {
 	int ret;
 
-	ret = PlaylistInfo(client, argv[1], 1);
+	ret = spl_print(client, argv[1], 1);
 	if (ret == -1)
 		command_error(client, ACK_ERROR_NO_EXIST, "No such playlist");
 

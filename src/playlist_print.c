@@ -24,11 +24,12 @@
 #include "client.h"
 
 int
-PlaylistInfo(struct client *client, const char *utf8file, int detail)
+spl_print(struct client *client, const char *name_utf8, int detail)
 {
 	GPtrArray *list;
 
-	if (!(list = spl_load(utf8file)))
+	list = spl_load(name_utf8);
+	if (list == NULL)
 		return -1;
 
 	for (unsigned i = 0; i < list->len; ++i) {

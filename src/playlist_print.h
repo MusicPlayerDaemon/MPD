@@ -22,6 +22,6 @@
 struct client;
 
 int
-PlaylistInfo(struct client *client, const char *utf8file, int detail);
+spl_print(struct client *client, const char *name_utf8, int detail);
 
 #endif
