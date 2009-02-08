@@ -334,6 +334,21 @@ int getPlaylistCurrentSong(const struct playlist *playlist)
 	return -1;
 }
 
+int getPlaylistNextSong(const struct playlist *playlist)
+{
+	if (playlist->current >= 0)
+	{
+		if (queue_length(&playlist->queue) > 1)
+			return queue_order_to_position(&playlist->queue,
+					       playlist->current + 1);
+		else if (playlist->queue.repeat == 1)
+			return queue_order_to_position(&playlist->queue,
+					       playlist->current);
+	}
+
+	return -1;
+}
+
 unsigned long
 getPlaylistVersion(const struct playlist *playlist)
 {

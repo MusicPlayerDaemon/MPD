@@ -62,6 +62,8 @@
 #define COMMAND_STATUS_PLAYLIST_LENGTH  "playlistlength"
 #define COMMAND_STATUS_SONG             "song"
 #define COMMAND_STATUS_SONGID           "songid"
+#define COMMAND_STATUS_NEXTSONG         "nextsong"
+#define COMMAND_STATUS_NEXTSONGID       "nextsongid"
 #define COMMAND_STATUS_TIME             "time"
 #define COMMAND_STATUS_BITRATE          "bitrate"
 #define COMMAND_STATUS_ERROR            "error"
@@ -506,6 +508,14 @@ handle_status(struct client *client,
 		client_printf(client,
 			      COMMAND_STATUS_ERROR ": %s\n",
 			      getPlayerErrorStr());
+	}
+
+	song = getPlaylistNextSong(&g_playlist);
+	if (song >= 0) {
+		client_printf(client,
+			      COMMAND_STATUS_NEXTSONG ": %i\n"
+			      COMMAND_STATUS_NEXTSONGID ": %u\n",
+			      song, getPlaylistSongId(&g_playlist, song));
 	}
 
 	return COMMAND_RETURN_OK;

@@ -180,6 +180,8 @@ void setPlaylistRandomStatus(struct playlist *playlist, bool status);
 
 int getPlaylistCurrentSong(const struct playlist *playlist);
 
+int getPlaylistNextSong(const struct playlist *playlist);
+
 unsigned
 getPlaylistSongId(const struct playlist *playlist, unsigned song);
 
