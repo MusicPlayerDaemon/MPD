@@ -48,6 +48,7 @@ ver 0.14.2 (2009/??/??)
   - jack: reduced sleep time to 1ms
   - shout: fixed memory leak in the mp3 encoder
   - shout: switch to blocking mode
+  - shout: use libshout's synchronization
 * mapper: remove trailing slashes from music_directory
 * player: set player error when output device fails
 

@@ -21,7 +21,6 @@
 
 #include "../output_api.h"
 #include "../conf.h"
-#include "../timer.h"
 
 #include <shout/shout.h>
 #include <glib.h>
@@ -71,8 +70,6 @@ struct shout_data {
 	struct tag *tag;
 
 	int timeout;
-
-	Timer *timer;
 
 	/* the configured audio format */
 	struct audio_format audio_format;

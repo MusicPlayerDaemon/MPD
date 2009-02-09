@@ -59,7 +59,6 @@ static struct shout_data *new_shout_data(void)
 	ret->bitrate = -1;
 	ret->quality = -2.0;
 	ret->timeout = DEFAULT_CONN_TIMEOUT;
-	ret->timer = NULL;
 	ret->buf.len = 0;
 
 	return ret;
@@ -73,8 +72,6 @@ static void free_shout_data(struct shout_data *sd)
 		shout_free(sd->shout_conn);
 	if (sd->tag)
 		tag_free(sd->tag);
-	if (sd->timer)
-		timer_free(sd->timer);
 
 	g_free(sd);
 }
@@ -325,8 +322,8 @@ static void my_shout_finish_driver(void *data)
 
 static void my_shout_drop_buffered_audio(void *data)
 {
+	G_GNUC_UNUSED
 	struct shout_data *sd = (struct shout_data *)data;
-	timer_reset(sd->timer);
 
 	/* needs to be implemented for shout */
 }
@@ -336,11 +333,6 @@ static void my_shout_close_device(void *data)
 	struct shout_data *sd = (struct shout_data *)data;
 
 	close_shout_conn(sd);
-
-	if (sd->timer) {
-		timer_free(sd->timer);
-		sd->timer = NULL;
-	}
 }
 
 static int shout_connect(struct shout_data *sd)
@@ -380,18 +372,14 @@ static int open_shout_conn(void *data)
 	return 0;
 }
 
-static bool my_shout_open_device(void *data,
-				struct audio_format *audio_format)
+static bool
+my_shout_open_device(void *data,
+		     G_GNUC_UNUSED struct audio_format *audio_format)
 {
 	struct shout_data *sd = (struct shout_data *)data;
 
 	if (open_shout_conn(sd) < 0)
 		return false;
-
-	if (sd->timer)
-		timer_free(sd->timer);
-
-	sd->timer = timer_new(audio_format);
 
 	return true;
 }
@@ -419,11 +407,6 @@ static bool
 my_shout_play(void *data, const char *chunk, size_t size)
 {
 	struct shout_data *sd = (struct shout_data *)data;
-
-	if (!sd->timer->started)
-		timer_start(sd->timer);
-
-	timer_add(sd->timer, size);
 
 	if (sd->tag != NULL)
 		send_metadata(sd);
