@@ -92,6 +92,7 @@ static void player_stop_decoder(void)
 {
 	dc_stop(&pc.notify);
 	pc.state = PLAYER_STATE_STOP;
+	pc.next_song = NULL;
 	event_pipe_emit(PIPE_EVENT_PLAYLIST);
 }
 
@@ -104,6 +105,7 @@ player_wait_for_decoder(struct player *player)
 		assert(dc.next_song == NULL || dc.next_song->url != NULL);
 		pc.errored_song = dc.next_song;
 		pc.error = PLAYER_ERROR_FILE;
+		pc.next_song = NULL;
 		return false;
 	}
 
@@ -138,6 +140,9 @@ static bool player_seek_decoder(struct player *player)
 		ret = player_wait_for_decoder(player);
 		if (!ret)
 			return false;
+	} else {
+		pc.next_song = NULL;
+		player->queued = false;
 	}
 
 	where = pc.seek_where;
@@ -523,6 +528,7 @@ static gpointer player_task(G_GNUC_UNUSED gpointer arg)
 		case PLAYER_COMMAND_STOP:
 		case PLAYER_COMMAND_SEEK:
 		case PLAYER_COMMAND_PAUSE:
+			pc.next_song = NULL;
 			player_command_finished();
 			break;
 
