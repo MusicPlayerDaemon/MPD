@@ -276,14 +276,12 @@ static int handle_shout_error(struct shout_data *sd, int err)
 			  shout_get_host(sd->shout_conn),
 			  shout_get_port(sd->shout_conn),
 			  shout_get_error(sd->shout_conn));
-		sd->shout_error = 1;
 		return -1;
 	default:
 		g_warning("shout: connection to %s:%i error: %s\n",
 			  shout_get_host(sd->shout_conn),
 			  shout_get_port(sd->shout_conn),
 			  shout_get_error(sd->shout_conn));
-		sd->shout_error = 1;
 		return -1;
 	}
 
@@ -429,7 +427,6 @@ static int open_shout_conn(void *data)
 
 	write_page(sd);
 
-	sd->shout_error = 0;
 	sd->opened = true;
 	sd->tag_to_send = 1;
 	sd->conn_attempts = 0;

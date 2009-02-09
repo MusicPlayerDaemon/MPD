@@ -61,7 +61,6 @@ struct shout_data {
 
 	shout_t *shout_conn;
 	shout_metadata_t *shout_meta;
-	int shout_error;
 
 	const struct shout_encoder_plugin *encoder;
 	void *encoder_data;
