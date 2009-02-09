@@ -338,12 +338,11 @@ int getPlaylistNextSong(const struct playlist *playlist)
 {
 	if (playlist->current >= 0)
 	{
-		if (queue_length(&playlist->queue) > 1)
+		if (playlist->current + 1 < (int)queue_length(&playlist->queue))
 			return queue_order_to_position(&playlist->queue,
 					       playlist->current + 1);
 		else if (playlist->queue.repeat == 1)
-			return queue_order_to_position(&playlist->queue,
-					       playlist->current);
+			return queue_order_to_position(&playlist->queue, 0);
 	}
 
 	return -1;
