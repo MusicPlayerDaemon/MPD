@@ -20,7 +20,7 @@
 #ifndef MPD_OUTPUT_API_H
 #define MPD_OUTPUT_API_H
 
-#include "../config.h"
+#include "config.h"
 #include "audio_format.h"
 #include "tag.h"
 #include "conf.h"
