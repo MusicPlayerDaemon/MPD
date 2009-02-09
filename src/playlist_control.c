@@ -234,11 +234,15 @@ seekSongInPlaylist(struct playlist *playlist, unsigned song, float seek_time)
 		queued = NULL;
 	}
 
-	playlist_update_queued_song(playlist, queued);
-
 	ret = playerSeek(queue_get_order(&playlist->queue, i), seek_time);
-	if (ret < 0)
+	if (ret < 0) {
+		playlist->queued = -1;
+		playlist_update_queued_song(playlist, NULL);
+
 		return PLAYLIST_RESULT_NOT_PLAYING;
+	}
+
+	playlist_update_queued_song(playlist, queued);
 
 	return PLAYLIST_RESULT_SUCCESS;
 }
