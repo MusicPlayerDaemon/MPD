@@ -58,7 +58,6 @@ static struct shout_data *new_shout_data(void)
 	ret->bitrate = -1;
 	ret->quality = -2.0;
 	ret->timeout = DEFAULT_CONN_TIMEOUT;
-	ret->buf.len = 0;
 
 	return ret;
 }
@@ -287,13 +286,14 @@ static int write_page(struct shout_data *sd)
 	err = shout_send(sd->shout_conn, sd->buf.data, sd->buf.len);
 	if (handle_shout_error(sd, err) < 0)
 		return -1;
-	sd->buf.len = 0;
 
 	return 0;
 }
 
 static void close_shout_conn(struct shout_data * sd)
 {
+	sd->buf.len = 0;
+
 	if (sd->encoder->clear_encoder_func(sd))
 		write_page(sd);
 
@@ -359,6 +359,8 @@ static int open_shout_conn(void *data)
 	if (status != 0)
 		return status;
 
+	sd->buf.len = 0;
+
 	if (sd->encoder->init_encoder_func(sd) < 0) {
 		shout_close(sd->shout_conn);
 		return -1;
@@ -386,6 +388,8 @@ my_shout_play(void *data, const char *chunk, size_t size)
 {
 	struct shout_data *sd = (struct shout_data *)data;
 
+	sd->buf.len = 0;
+
 	if (sd->encoder->encode_func(sd, chunk, size))
 		return false;
 
@@ -410,6 +414,7 @@ static void my_shout_set_tag(void *data,
 	char song[1024];
 	bool ret;
 
+	sd->buf.len = 0;
 	sd->tag = tag;
 	ret = sd->encoder->send_metadata_func(sd, song, sizeof(song));
 	if (ret) {

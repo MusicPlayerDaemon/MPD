@@ -50,6 +50,7 @@ ver 0.14.2 (2009/??/??)
   - shout: switch to blocking mode
   - shout: use libshout's synchronization
   - shout: don't postpone metadata
+  - shout: clear buffer before calling the encoder
 * mapper: remove trailing slashes from music_directory
 * player: set player error when output device fails
 

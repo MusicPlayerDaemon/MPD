@@ -75,23 +75,14 @@ static void copy_tag_to_vorbis_comment(struct shout_data *sd)
 static int copy_ogg_buffer_to_shout_buffer(ogg_page *og,
 					   struct shout_buffer *buf)
 {
-	if (sizeof(buf->data) - buf->len >= (size_t)og->header_len) {
-		memcpy(buf->data + buf->len,
-		       og->header, og->header_len);
-		buf->len += og->header_len;
-	} else {
+	if ((size_t)og->header_len + (size_t)og->body_len > sizeof(buf->data)) {
 		g_warning("%s: not enough buffer space!\n", __func__);
 		return -1;
 	}
 
-	if (sizeof(buf->data) - buf->len >= (size_t)og->body_len) {
-		memcpy(buf->data + buf->len,
-		       og->body, og->body_len);
-		buf->len += og->body_len;
-	} else {
-		g_warning("%s: not enough buffer space!\n", __func__);
-		return -1;
-	}
+	memcpy(buf->data, og->header, og->header_len);
+	memcpy(buf->data + og->header_len, og->body, og->body_len);
+	buf->len = og->header_len + og->body_len;
 
 	return 0;
 }

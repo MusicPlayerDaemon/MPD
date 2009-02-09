@@ -43,8 +43,8 @@ static int shout_mp3_encoder_clear_encoder(struct shout_data *sd)
 	struct shout_buffer *buf = &sd->buf;
 	int ret;
 
-	if ((ret = lame_encode_flush(ld->gfp, buf->data + buf->len,
-				     buf->len)) < 0)
+	ret = lame_encode_flush(ld->gfp, buf->data, sizeof(buf->data));
+	if (ret < 0)
 		g_warning("error flushing lame buffers\n");
 
 	lame_close(ld->gfp);
@@ -164,7 +164,7 @@ static int shout_mp3_encoder_encode(struct shout_data *sd,
 
 	bytes_out = lame_encode_buffer_float(ld->gfp, left, right,
 					     samples, buf->data,
-					     sizeof(buf->data) - buf->len);
+					     sizeof(buf->data));
 
 	g_free(left);
 	if (right != left)
