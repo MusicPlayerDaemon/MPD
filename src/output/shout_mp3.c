@@ -111,7 +111,7 @@ static int shout_mp3_encoder_send_metadata(struct shout_data *sd,
 	char artist[size];
 	char title[size];
 	int i;
-	struct tag *tag = sd->tag;
+	const struct tag *tag = sd->tag;
 
 	strncpy(artist, "", size);
 	strncpy(title, "", size);
