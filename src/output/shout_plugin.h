@@ -71,7 +71,6 @@ struct shout_data {
 	bool opened;
 
 	struct tag *tag;
-	int tag_to_send;
 
 	int timeout;
 	int conn_attempts;

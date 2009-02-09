@@ -58,7 +58,6 @@ static struct shout_data *new_shout_data(void)
 	ret->shout_meta = shout_metadata_new();
 	ret->opened = 0;
 	ret->tag = NULL;
-	ret->tag_to_send = 0;
 	ret->bitrate = -1;
 	ret->quality = -2.0;
 	ret->timeout = DEFAULT_CONN_TIMEOUT;
@@ -428,7 +427,6 @@ static int open_shout_conn(void *data)
 	write_page(sd);
 
 	sd->opened = true;
-	sd->tag_to_send = 1;
 	sd->conn_attempts = 0;
 
 	return 0;
@@ -455,7 +453,9 @@ static void send_metadata(struct shout_data * sd)
 	static const int size = 1024;
 	char song[size];
 
-	if (!sd->opened || !sd->tag)
+	assert(sd->tag != NULL);
+
+	if (!sd->opened)
 		return;
 
 	if (sd->encoder->send_metadata_func(sd, song, size)) {
@@ -463,11 +463,11 @@ static void send_metadata(struct shout_data * sd)
 		if (SHOUTERR_SUCCESS != shout_set_metadata(sd->shout_conn,
 							   sd->shout_meta)) {
 			g_warning("error setting shout metadata\n");
-			return;
 		}
 	}
 
-	sd->tag_to_send = 0;
+	tag_free(sd->tag);
+	sd->tag = NULL;
 }
 
 static bool
@@ -481,7 +481,7 @@ my_shout_play(void *data, const char *chunk, size_t size)
 
 	timer_add(sd->timer, size);
 
-	if (sd->opened && sd->tag_to_send)
+	if (sd->opened && sd->tag != NULL)
 		send_metadata(sd);
 
 	if (!sd->opened) {
@@ -519,13 +519,11 @@ static void my_shout_set_tag(void *data,
 	if (sd->tag)
 		tag_free(sd->tag);
 	sd->tag = NULL;
-	sd->tag_to_send = 0;
 
 	if (!tag)
 		return;
 
 	sd->tag = tag_dup(tag);
-	sd->tag_to_send = 1;
 }
 
 const struct audio_output_plugin shoutPlugin = {
