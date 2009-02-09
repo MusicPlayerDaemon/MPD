@@ -155,6 +155,20 @@ queue_move(struct queue *queue, unsigned from, unsigned to)
 	queue->idToPosition[item.id] = to;
 	queue->items[to] = item;
 	queue->items[to].version = queue->version;
+
+	/* now deal with order */
+
+	if (queue->random) {
+		for (unsigned i = 0; i < queue->length; i++) {
+			if (queue->order[i] > from && queue->order[i] <= to)
+				queue->order[i]--;
+			else if (queue->order[i] < from &&
+				 queue->order[i] >= to)
+				queue->order[i]++;
+			else if (from == queue->order[i])
+				queue->order[i] = to;
+		}
+	}
 }
 
 void
