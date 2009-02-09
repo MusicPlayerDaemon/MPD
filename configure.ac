@@ -975,8 +975,7 @@ fi
 AM_CONDITIONAL(HAVE_MODPLUG, test x$enable_modplug = xyes)
 
 if test x$enable_ffmpeg = xyes; then
-	PKG_CHECK_MODULES(FFMPEG, [libavformat libavcodec libavutil],
-		AC_DEFINE(HAVE_FFMPEG, 1, [Define for FFMPEG support]),
+	PKG_CHECK_MODULES(FFMPEG, [libavformat libavcodec libavutil],,
 		enable_ffmpeg=no)
 fi
 
@@ -997,6 +996,10 @@ if test x$enable_ffmpeg = xyes; then
 		AC_DEFINE(OLD_FFMPEG_INCLUDES, 1,
 			[Define if avcodec.h instead of libavcodec/avcodec.h should be included]))
 	CPPCFLAGS=$old_CPPFLAGS
+fi
+
+if test x$enable_ffmpeg = xyes; then
+	AC_DEFINE(HAVE_FFMPEG, 1, [Define for FFMPEG support]),
 fi
 
 AM_CONDITIONAL(HAVE_FFMPEG, test x$enable_ffmpeg = xyes)

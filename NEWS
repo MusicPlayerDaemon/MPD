@@ -35,6 +35,8 @@ ver 0.15 - (200?/??/??)
 
 
 ver 0.14.2 (2009/??/??)
+* configure.ac:
+  - define HAVE_FFMPEG after all checks
 * decoders:
   - ffmpeg: added support for the tags comment, genre, year
   - ffmpeg: don't warn of empty packet output
