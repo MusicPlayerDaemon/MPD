@@ -68,13 +68,9 @@ struct shout_data {
 	float quality;
 	int bitrate;
 
-	bool opened;
-
 	struct tag *tag;
 
 	int timeout;
-	int conn_attempts;
-	time_t last_attempt;
 
 	Timer *timer;
 

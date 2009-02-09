@@ -23,7 +23,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#define CONN_ATTEMPT_INTERVAL 60
 #define DEFAULT_CONN_TIMEOUT  2
 
 static int shout_init_count;
@@ -56,13 +55,10 @@ static struct shout_data *new_shout_data(void)
 
 	ret->shout_conn = shout_new();
 	ret->shout_meta = shout_metadata_new();
-	ret->opened = 0;
 	ret->tag = NULL;
 	ret->bitrate = -1;
 	ret->quality = -2.0;
 	ret->timeout = DEFAULT_CONN_TIMEOUT;
-	ret->conn_attempts = 0;
-	ret->last_attempt = 0;
 	ret->timer = NULL;
 	ret->buf.len = 0;
 
@@ -210,7 +206,6 @@ static void *my_shout_init_driver(struct audio_output *audio_output,
 	    shout_set_name(sd->shout_conn, name) != SHOUTERR_SUCCESS ||
 	    shout_set_user(sd->shout_conn, user) != SHOUTERR_SUCCESS ||
 	    shout_set_public(sd->shout_conn, public) != SHOUTERR_SUCCESS ||
-	    shout_set_nonblocking(sd->shout_conn, 1) != SHOUTERR_SUCCESS ||
 	    shout_set_format(sd->shout_conn, sd->encoder->shout_format)
 	    != SHOUTERR_SUCCESS ||
 	    shout_set_protocol(sd->shout_conn, protocol) != SHOUTERR_SUCCESS ||
@@ -305,25 +300,19 @@ static int write_page(struct shout_data *sd)
 
 static void close_shout_conn(struct shout_data * sd)
 {
-	if (sd->opened) {
-		if (sd->encoder->clear_encoder_func(sd))
-			write_page(sd);
-	}
+	if (sd->encoder->clear_encoder_func(sd))
+		write_page(sd);
 
 	if (shout_get_connected(sd->shout_conn) != SHOUTERR_UNCONNECTED &&
 	    shout_close(sd->shout_conn) != SHOUTERR_SUCCESS) {
 		g_warning("problem closing connection to shout server: %s\n",
 			  shout_get_error(sd->shout_conn));
 	}
-
-	sd->opened = false;
 }
 
 static void my_shout_finish_driver(void *data)
 {
 	struct shout_data *sd = (struct shout_data *)data;
-
-	close_shout_conn(sd);
 
 	sd->encoder->finish_func(sd);
 	free_shout_data(sd);
@@ -356,56 +345,18 @@ static void my_shout_close_device(void *data)
 
 static int shout_connect(struct shout_data *sd)
 {
-	time_t t = time(NULL);
-	int state = shout_get_connected(sd->shout_conn);
-
-	/* already connected */
-	if (state == SHOUTERR_CONNECTED)
-		return 0;
-
-	/* waiting to connect */
-	if (state == SHOUTERR_BUSY && sd->conn_attempts != 0) {
-		/* timeout waiting to connect */
-		if ((t - sd->last_attempt) > sd->timeout) {
-			g_warning("timeout connecting to shout server %s:%i "
-				  "(attempt %i)\n",
-				  shout_get_host(sd->shout_conn),
-				  shout_get_port(sd->shout_conn),
-				  sd->conn_attempts);
-			return -1;
-		}
-
-		return 1;
-	}
-
-	/* we're in some funky state, so just reset it to unconnected */
-	if (state != SHOUTERR_UNCONNECTED)
-		shout_close(sd->shout_conn);
-
-	/* throttle new connection attempts */
-	if (sd->conn_attempts != 0 &&
-	    (t - sd->last_attempt) <= CONN_ATTEMPT_INTERVAL) {
-		return -1;
-	}
-
-	/* initiate a new connection */
-
-	sd->conn_attempts++;
-	sd->last_attempt = t;
+	int state;
 
 	state = shout_open(sd->shout_conn);
 	switch (state) {
 	case SHOUTERR_SUCCESS:
 	case SHOUTERR_CONNECTED:
 		return 0;
-	case SHOUTERR_BUSY:
-		return 1;
 	default:
-		g_warning("problem opening connection to shout server %s:%i "
-			  "(attempt %i): %s\n",
+		g_warning("problem opening connection to shout server %s:%i: %s\n",
 			  shout_get_host(sd->shout_conn),
 			  shout_get_port(sd->shout_conn),
-			  sd->conn_attempts, shout_get_error(sd->shout_conn));
+			  shout_get_error(sd->shout_conn));
 		return -1;
 	}
 }
@@ -426,9 +377,6 @@ static int open_shout_conn(void *data)
 
 	write_page(sd);
 
-	sd->opened = true;
-	sd->conn_attempts = 0;
-
 	return 0;
 }
 
@@ -437,7 +385,7 @@ static bool my_shout_open_device(void *data,
 {
 	struct shout_data *sd = (struct shout_data *)data;
 
-	if (!sd->opened && open_shout_conn(sd) < 0)
+	if (open_shout_conn(sd) < 0)
 		return false;
 
 	if (sd->timer)
@@ -455,9 +403,6 @@ static void send_metadata(struct shout_data * sd)
 
 	assert(sd->tag != NULL);
 
-	if (!sd->opened)
-		return;
-
 	if (sd->encoder->send_metadata_func(sd, song, size)) {
 		shout_metadata_add(sd->shout_meta, "song", song);
 		if (SHOUTERR_SUCCESS != shout_set_metadata(sd->shout_conn,
@@ -474,25 +419,14 @@ static bool
 my_shout_play(void *data, const char *chunk, size_t size)
 {
 	struct shout_data *sd = (struct shout_data *)data;
-	int status;
 
 	if (!sd->timer->started)
 		timer_start(sd->timer);
 
 	timer_add(sd->timer, size);
 
-	if (sd->opened && sd->tag != NULL)
+	if (sd->tag != NULL)
 		send_metadata(sd);
-
-	if (!sd->opened) {
-		status = open_shout_conn(sd);
-		if (status < 0) {
-			return false;
-		} else if (status > 0) {
-			timer_sync(sd->timer);
-			return true;
-		}
-	}
 
 	if (sd->encoder->encode_func(sd, chunk, size))
 		return false;
