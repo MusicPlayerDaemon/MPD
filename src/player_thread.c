@@ -92,7 +92,6 @@ static void player_stop_decoder(void)
 {
 	dc_stop(&pc.notify);
 	pc.state = PLAYER_STATE_STOP;
-	pc.next_song = NULL;
 	event_pipe_emit(PIPE_EVENT_PLAYLIST);
 }
 
@@ -509,6 +508,11 @@ static void do_play(void)
 			if (!playAudio(silence, num_frames * frame_size))
 				break;
 		}
+	}
+
+	if (player.queued) {
+		assert(pc.next_song != NULL);
+		pc.next_song = NULL;
 	}
 
 	player_stop_decoder();
