@@ -57,6 +57,8 @@ pc_song_deleted(const struct song *song)
 
 static void player_command(enum player_command cmd)
 {
+	assert(pc.command == PLAYER_COMMAND_NONE);
+
 	pc.command = cmd;
 	while (pc.command != PLAYER_COMMAND_NONE) {
 		notify_signal(&pc.notify);

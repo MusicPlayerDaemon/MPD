@@ -526,6 +526,8 @@ static gpointer player_task(G_GNUC_UNUSED gpointer arg)
 		switch (pc.command) {
 		case PLAYER_COMMAND_PLAY:
 		case PLAYER_COMMAND_QUEUE:
+			assert(pc.next_song != NULL);
+
 			do_play();
 			break;
 
