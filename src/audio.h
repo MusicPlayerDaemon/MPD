@@ -29,6 +29,10 @@ struct tag;
 struct client;
 struct config_param;
 
+/**
+ * Returns the total number of audio output devices, including those
+ * who are disabled right now.
+ */
 unsigned int audio_output_count(void);
 
 void getOutputAudioFormat(const struct audio_format *inFormat,

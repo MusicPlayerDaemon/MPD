@@ -42,6 +42,12 @@ static unsigned int audioOutputArraySize;
 
 unsigned int audio_output_count(void)
 {
+	return audioOutputArraySize;
+}
+
+static unsigned
+audio_output_config_count(void)
+{
 	unsigned int nr = 0;
 	const struct config_param *param = NULL;
 
@@ -60,7 +66,7 @@ void initAudioDriver(void)
 
 	notify_init(&audio_output_client_notify);
 
-	audioOutputArraySize = audio_output_count();
+	audioOutputArraySize = audio_output_config_count();
 	audioOutputArray = g_new(struct audio_output, audioOutputArraySize);
 
 	for (i = 0; i < audioOutputArraySize; i++)
