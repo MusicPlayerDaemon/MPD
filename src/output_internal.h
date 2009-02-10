@@ -63,23 +63,23 @@ struct audio_output {
 	 * The audio_format in which audio data is received from the
 	 * player thread (which in turn receives it from the decoder).
 	 */
-	struct audio_format inAudioFormat;
+	struct audio_format in_audio_format;
 
 	/**
 	 * The audio_format which is really sent to the device.  This
-	 * is basically reqAudioFormat (if configured) or
-	 * inAudioFormat, but may have been modified by
+	 * is basically config_audio_format (if configured) or
+	 * in_audio_format, but may have been modified by
 	 * plugin->open().
 	 */
-	struct audio_format outAudioFormat;
+	struct audio_format out_audio_format;
 
 	/**
 	 * The audio_format which was configured.  Only set if
 	 * convertAudioFormat is true.
 	 */
-	struct audio_format reqAudioFormat;
+	struct audio_format config_audio_format;
 
-	struct pcm_convert_state convState;
+	struct pcm_convert_state convert_state;
 
 	/**
 	 * The thread handle, or NULL if the output thread isn't

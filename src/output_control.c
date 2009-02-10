@@ -56,22 +56,22 @@ audio_output_open(struct audio_output *audioOutput,
 	audioOutput->reopen_after = 0;
 
 	if (audioOutput->open &&
-	    audio_format_equals(audioFormat, &audioOutput->inAudioFormat)) {
+	    audio_format_equals(audioFormat, &audioOutput->in_audio_format)) {
 		return true;
 	}
 
-	audioOutput->inAudioFormat = *audioFormat;
+	audioOutput->in_audio_format = *audioFormat;
 
-	if (audio_format_defined(&audioOutput->reqAudioFormat)) {
-		/* copy reqAudioFormat to outAudioFormat only if the
+	if (audio_format_defined(&audioOutput->config_audio_format)) {
+		/* copy config_audio_format to out_audio_format only if the
 		   device is not yet open; if it is already open,
-		   plugin->open() may have modified outAudioFormat,
+		   plugin->open() may have modified out_audio_format,
 		   and the value is already ok */
 		if (!audioOutput->open)
-			audioOutput->outAudioFormat =
-				audioOutput->reqAudioFormat;
+			audioOutput->out_audio_format =
+				audioOutput->config_audio_format;
 	} else {
-		audioOutput->outAudioFormat = audioOutput->inAudioFormat;
+		audioOutput->out_audio_format = audioOutput->in_audio_format;
 		if (audioOutput->open)
 			audio_output_close(audioOutput);
 	}

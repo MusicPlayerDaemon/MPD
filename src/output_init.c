@@ -91,20 +91,21 @@ audio_output_init(struct audio_output *ao, const struct config_param *param)
 	ao->open = false;
 	ao->reopen_after = 0;
 
-	pcm_convert_init(&ao->convState);
+	pcm_convert_init(&ao->convert_state);
 
 	if (format) {
-		if (0 != parseAudioConfig(&ao->reqAudioFormat, format)) {
+		if (0 != parseAudioConfig(&ao->config_audio_format, format)) {
 			g_error("error parsing format at line %i\n", bp->line);
 		}
 	} else
-		audio_format_clear(&ao->reqAudioFormat);
+		audio_format_clear(&ao->config_audio_format);
 
 	ao->thread = NULL;
 	notify_init(&ao->notify);
 	ao->command = AO_COMMAND_NONE;
 
-	ao->data = plugin->init(ao, format ? &ao->reqAudioFormat : NULL, param);
+	ao->data = plugin->init(ao, format ? &ao->config_audio_format : NULL,
+				param);
 	if (ao->data == NULL)
 		return 0;
 

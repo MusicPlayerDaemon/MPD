@@ -46,10 +46,10 @@ static void ao_play(struct audio_output *ao)
 
 	assert(size > 0);
 
-	if (!audio_format_equals(&ao->inAudioFormat, &ao->outAudioFormat)) {
-		data = pcm_convert(&ao->convState,
-				   &ao->inAudioFormat, data, size,
-				   &ao->outAudioFormat, &size);
+	if (!audio_format_equals(&ao->in_audio_format, &ao->out_audio_format)) {
+		data = pcm_convert(&ao->convert_state,
+				   &ao->in_audio_format, data, size,
+				   &ao->out_audio_format, &size);
 
 		/* under certain circumstances, pcm_convert() may
 		   return an empty buffer - this condition should be
@@ -63,7 +63,7 @@ static void ao_play(struct audio_output *ao)
 	if (!ret) {
 		ao->plugin->cancel(ao->data);
 		ao->plugin->close(ao->data);
-		pcm_convert_deinit(&ao->convState);
+		pcm_convert_deinit(&ao->convert_state);
 		ao->open = false;
 	}
 
@@ -84,7 +84,7 @@ static void ao_pause(struct audio_output *ao)
 			ret = ao->plugin->pause(ao->data);
 			if (!ret) {
 				ao->plugin->close(ao->data);
-				pcm_convert_deinit(&ao->convState);
+				pcm_convert_deinit(&ao->convert_state);
 				ao->open = false;
 			}
 		} while (ao->command == AO_COMMAND_NONE);
@@ -109,9 +109,9 @@ static gpointer audio_output_task(gpointer arg)
 		case AO_COMMAND_OPEN:
 			assert(!ao->open);
 
-			pcm_convert_init(&ao->convState);
+			pcm_convert_init(&ao->convert_state);
 			ret = ao->plugin->open(ao->data,
-					       &ao->outAudioFormat);
+					       &ao->out_audio_format);
 
 			assert(!ao->open);
 			if (ret == true)
