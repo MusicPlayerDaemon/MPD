@@ -25,6 +25,7 @@ struct music_chunk;
 
 unsigned cross_fade_calc(float duration, float total_time,
 			 const struct audio_format *af,
+			 const struct audio_format *old_format,
 			 unsigned max_chunks);
 
 void cross_fade_apply(struct music_chunk *a, const struct music_chunk *b,

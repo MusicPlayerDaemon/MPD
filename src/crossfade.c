@@ -18,7 +18,6 @@
  */
 
 #include "crossfade.h"
-#include "audio.h"
 #include "pcm_mix.h"
 #include "pipe.h"
 #include "audio_format.h"
@@ -29,12 +28,14 @@
 
 unsigned cross_fade_calc(float duration, float total_time,
 			 const struct audio_format *af,
+			 const struct audio_format *old_format,
 			 unsigned max_chunks)
 {
 	unsigned int chunks;
 
 	if (duration <= 0 || duration >= total_time ||
-	    !isCurrentAudioFormat(af))
+	    /* we can't crossfade when the audio formats are different */
+	    !audio_format_equals(af, old_format))
 		return 0;
 
 	assert(duration > 0);

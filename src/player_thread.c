@@ -403,6 +403,7 @@ static void do_play(void)
 			crossFadeChunks =
 				cross_fade_calc(pc.cross_fade_seconds, dc.total_time,
 						&dc.out_audio_format,
+						&play_audio_format,
 						music_pipe_size() -
 						pc.buffered_before_play);
 			if (crossFadeChunks > 0) {
