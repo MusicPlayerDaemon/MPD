@@ -24,26 +24,26 @@
 
 static struct audio_format input_audio_format;
 
-static struct audio_output *audioOutputArray;
-static unsigned int audioOutputArraySize;
+static struct audio_output *audio_outputs;
+static unsigned int num_audio_outputs;
 
 unsigned int audio_output_count(void)
 {
-	return audioOutputArraySize;
+	return num_audio_outputs;
 }
 
 struct audio_output *
 audio_output_get(unsigned i)
 {
-	assert(i < audioOutputArraySize);
+	assert(i < num_audio_outputs);
 
-	return &audioOutputArray[i];
+	return &audio_outputs[i];
 }
 
 struct audio_output *
 audio_output_find(const char *name)
 {
-	for (unsigned i = 0; i < audioOutputArraySize; ++i) {
+	for (unsigned i = 0; i < num_audio_outputs; ++i) {
 		struct audio_output *ao = audio_output_get(i);
 
 		if (strcmp(ao->name, name) == 0)
@@ -67,26 +67,26 @@ audio_output_config_count(void)
 	return nr;
 }
 
-/* make sure initPlayerData is called before this function!! */
-void initAudioDriver(void)
+void
+audio_output_all_init(void)
 {
 	const struct config_param *param = NULL;
 	unsigned int i;
 
 	notify_init(&audio_output_client_notify);
 
-	audioOutputArraySize = audio_output_config_count();
-	audioOutputArray = g_new(struct audio_output, audioOutputArraySize);
+	num_audio_outputs = audio_output_config_count();
+	audio_outputs = g_new(struct audio_output, num_audio_outputs);
 
-	for (i = 0; i < audioOutputArraySize; i++)
+	for (i = 0; i < num_audio_outputs; i++)
 	{
-		struct audio_output *output = &audioOutputArray[i];
+		struct audio_output *output = &audio_outputs[i];
 		unsigned int j;
 
 		param = config_get_next_param(CONF_AUDIO_OUTPUT, param);
 
 		/* only allow param to be NULL if there just one audioOutput */
-		assert(param || (audioOutputArraySize == 1));
+		assert(param || (num_audio_outputs == 1));
 
 		if (!audio_output_init(output, param)) {
 			if (param)
@@ -103,7 +103,7 @@ void initAudioDriver(void)
 
 		/* require output names to be unique: */
 		for (j = 0; j < i; j++) {
-			if (!strcmp(output->name, audioOutputArray[j].name)) {
+			if (!strcmp(output->name, audio_outputs[j].name)) {
 				g_error("output devices with identical "
 					"names: %s\n", output->name);
 			}
@@ -111,17 +111,18 @@ void initAudioDriver(void)
 	}
 }
 
-void finishAudioDriver(void)
+void
+audio_output_all_finish(void)
 {
 	unsigned int i;
 
-	for (i = 0; i < audioOutputArraySize; i++) {
-		audio_output_finish(&audioOutputArray[i]);
+	for (i = 0; i < num_audio_outputs; i++) {
+		audio_output_finish(&audio_outputs[i]);
 	}
 
-	g_free(audioOutputArray);
-	audioOutputArray = NULL;
-	audioOutputArraySize = 0;
+	g_free(audio_outputs);
+	audio_outputs = NULL;
+	num_audio_outputs = 0;
 
 	notify_deinit(&audio_output_client_notify);
 }
@@ -133,9 +134,9 @@ static void audio_output_wait_all(void)
 	while (1) {
 		int finished = 1;
 
-		for (i = 0; i < audioOutputArraySize; ++i)
-			if (audio_output_is_open(&audioOutputArray[i]) &&
-			    !audio_output_command_is_finished(&audioOutputArray[i]))
+		for (i = 0; i < num_audio_outputs; ++i)
+			if (audio_output_is_open(&audio_outputs[i]) &&
+			    !audio_output_command_is_finished(&audio_outputs[i]))
 				finished = 0;
 
 		if (finished)
@@ -145,18 +146,20 @@ static void audio_output_wait_all(void)
 	};
 }
 
-static void syncAudioDeviceStates(void)
+static void
+audio_output_all_update(void)
 {
 	unsigned int i;
 
 	if (!audio_format_defined(&input_audio_format))
 		return;
 
-	for (i = 0; i < audioOutputArraySize; ++i)
-		audio_output_update(&audioOutputArray[i], &input_audio_format);
+	for (i = 0; i < num_audio_outputs; ++i)
+		audio_output_update(&audio_outputs[i], &input_audio_format);
 }
 
-bool playAudio(const char *buffer, size_t length)
+bool
+audio_output_all_play(const char *buffer, size_t length)
 {
 	bool ret = false;
 	unsigned int i;
@@ -165,18 +168,18 @@ bool playAudio(const char *buffer, size_t length)
 	/* no partial frames allowed */
 	assert((length % audio_format_frame_size(&input_audio_format)) == 0);
 
-	syncAudioDeviceStates();
+	audio_output_all_update();
 
-	for (i = 0; i < audioOutputArraySize; ++i)
-		if (audio_output_is_open(&audioOutputArray[i]))
-			audio_output_play(&audioOutputArray[i],
+	for (i = 0; i < num_audio_outputs; ++i)
+		if (audio_output_is_open(&audio_outputs[i]))
+			audio_output_play(&audio_outputs[i],
 					  buffer, length);
 
 	while (true) {
 		bool finished = true;
 
-		for (i = 0; i < audioOutputArraySize; ++i) {
-			struct audio_output *ao = &audioOutputArray[i];
+		for (i = 0; i < num_audio_outputs; ++i) {
+			struct audio_output *ao = &audio_outputs[i];
 
 			if (!audio_output_is_open(ao))
 				continue;
@@ -198,73 +201,78 @@ bool playAudio(const char *buffer, size_t length)
 	return ret;
 }
 
-bool openAudioDevice(const struct audio_format *audioFormat)
+bool
+audio_output_all_open(const struct audio_format *audio_format)
 {
 	bool ret = false;
 	unsigned int i;
 
-	if (!audioOutputArray)
+	if (!audio_outputs)
 		return false;
 
-	if (audioFormat != NULL)
-		input_audio_format = *audioFormat;
+	if (audio_format != NULL)
+		input_audio_format = *audio_format;
 
-	syncAudioDeviceStates();
+	audio_output_all_update();
 
-	for (i = 0; i < audioOutputArraySize; ++i) {
-		if (audioOutputArray[i].open)
+	for (i = 0; i < num_audio_outputs; ++i) {
+		if (audio_outputs[i].open)
 			ret = true;
 	}
 
 	if (!ret)
 		/* close all devices if there was an error */
-		closeAudioDevice();
+		audio_output_all_close();
 
 	return ret;
 }
 
-void audio_output_pause_all(void)
+void
+audio_output_all_pause(void)
 {
 	unsigned int i;
 
-	syncAudioDeviceStates();
+	audio_output_all_update();
 
-	for (i = 0; i < audioOutputArraySize; ++i)
-		if (audio_output_is_open(&audioOutputArray[i]))
-			audio_output_pause(&audioOutputArray[i]);
+	for (i = 0; i < num_audio_outputs; ++i)
+		if (audio_output_is_open(&audio_outputs[i]))
+			audio_output_pause(&audio_outputs[i]);
 
 	audio_output_wait_all();
 }
 
-void dropBufferedAudio(void)
+void
+audio_output_all_cancel(void)
 {
 	unsigned int i;
 
-	syncAudioDeviceStates();
+	audio_output_all_update();
 
-	for (i = 0; i < audioOutputArraySize; ++i) {
-		if (audio_output_is_open(&audioOutputArray[i]))
-			audio_output_cancel(&audioOutputArray[i]);
+	for (i = 0; i < num_audio_outputs; ++i) {
+		if (audio_output_is_open(&audio_outputs[i]))
+			audio_output_cancel(&audio_outputs[i]);
 	}
 
 	audio_output_wait_all();
 }
 
-void closeAudioDevice(void)
+void
+audio_output_all_close(void)
 {
 	unsigned int i;
 
-	for (i = 0; i < audioOutputArraySize; ++i)
-		audio_output_close(&audioOutputArray[i]);
+	for (i = 0; i < num_audio_outputs; ++i)
+		audio_output_close(&audio_outputs[i]);
 }
 
-void sendMetadataToAudioDevice(const struct tag *tag)
+void
+audio_output_all_tag(const struct tag *tag)
 {
 	unsigned int i;
 
-	for (i = 0; i < audioOutputArraySize; ++i)
-		if (audio_output_is_open(&audioOutputArray[i]))
-			audio_output_send_tag(&audioOutputArray[i], tag);
+	for (i = 0; i < num_audio_outputs; ++i)
+		if (audio_output_is_open(&audio_outputs[i]))
+			audio_output_send_tag(&audio_outputs[i], tag);
 
 	audio_output_wait_all();
 }

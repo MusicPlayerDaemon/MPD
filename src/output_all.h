@@ -31,6 +31,12 @@
 struct audio_format;
 struct tag;
 
+void
+audio_output_all_init(void);
+
+void
+audio_output_all_finish(void);
+
 /**
  * Returns the total number of audio output devices, including those
  * who are disabled right now.
@@ -50,20 +56,22 @@ audio_output_get(unsigned i);
 struct audio_output *
 audio_output_find(const char *name);
 
-void initAudioDriver(void);
+bool
+audio_output_all_open(const struct audio_format *audio_format);
 
-void finishAudioDriver(void);
+void
+audio_output_all_close(void);
 
-bool openAudioDevice(const struct audio_format *audioFormat);
+bool
+audio_output_all_play(const char *data, size_t size);
 
-bool playAudio(const char *playChunk, size_t size);
+void
+audio_output_all_tag(const struct tag *tag);
 
-void audio_output_pause_all(void);
+void
+audio_output_all_pause(void);
 
-void dropBufferedAudio(void);
-
-void closeAudioDevice(void);
-
-void sendMetadataToAudioDevice(const struct tag *tag);
+void
+audio_output_all_cancel(void);
 
 #endif

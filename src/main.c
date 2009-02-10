@@ -258,7 +258,7 @@ int main(int argc, char *argv[])
 	initialize_decoder_and_player();
 	volume_init();
 	initAudioConfig();
-	initAudioDriver();
+	audio_output_all_init();
 	client_manager_init();
 	replay_gain_global_init();
 	initNormalization();
@@ -314,7 +314,7 @@ int main(int argc, char *argv[])
 
 	input_stream_global_finish();
 	finishNormalization();
-	finishAudioDriver();
+	audio_output_all_finish();
 	finishAudioConfig();
 	volume_finish();
 	mapper_finish();

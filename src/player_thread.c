@@ -181,10 +181,10 @@ static void player_process_command(struct player *player)
 	case PLAYER_COMMAND_PAUSE:
 		player->paused = !player->paused;
 		if (player->paused) {
-			audio_output_pause_all();
+			audio_output_all_pause();
 			pc.state = PLAYER_STATE_PAUSE;
 		} else {
-			if (openAudioDevice(NULL)) {
+			if (audio_output_all_open(NULL)) {
 				pc.state = PLAYER_STATE_PLAY;
 			} else {
 				char *uri = song_get_uri(dc.next_song);
@@ -203,7 +203,7 @@ static void player_process_command(struct player *player)
 		break;
 
 	case PLAYER_COMMAND_SEEK:
-		dropBufferedAudio();
+		audio_output_all_cancel();
 		if (player_seek_decoder(player)) {
 			player->xfade = XFADE_UNKNOWN;
 
@@ -245,7 +245,7 @@ play_chunk(struct song *song, struct music_chunk *chunk,
 	pc.bit_rate = chunk->bit_rate;
 
 	if (chunk->tag != NULL) {
-		sendMetadataToAudioDevice(chunk->tag);
+		audio_output_all_tag(chunk->tag);
 
 		if (!song_is_file(song)) {
 			/* always update the tag of remote streams */
@@ -272,7 +272,7 @@ play_chunk(struct song *song, struct music_chunk *chunk,
 	pcm_volume(chunk->data, chunk->length,
 		   format, pc.software_volume);
 
-	if (!playAudio(chunk->data, chunk->length)) {
+	if (!audio_output_all_play(chunk->data, chunk->length)) {
 		pc.errored_song = dc.current_song;
 		pc.error = PLAYER_ERROR_AUDIO;
 		return false;
@@ -320,7 +320,7 @@ static void do_play(void)
 		if (pc.command == PLAYER_COMMAND_STOP ||
 		    pc.command == PLAYER_COMMAND_EXIT ||
 		    pc.command == PLAYER_COMMAND_CLOSE_AUDIO) {
-			dropBufferedAudio();
+			audio_output_all_cancel();
 			break;
 		}
 
@@ -348,7 +348,7 @@ static void do_play(void)
 			else if (!decoder_is_starting()) {
 				/* the decoder is ready and ok */
 				player.decoder_starting = false;
-				if (!openAudioDevice(&dc.out_audio_format)) {
+				if (!audio_output_all_open(&dc.out_audio_format)) {
 					char *uri = song_get_uri(dc.next_song);
 					g_warning("problems opening audio device "
 						  "while playing \"%s\"", uri);
@@ -361,7 +361,7 @@ static void do_play(void)
 				}
 
 				if (player.paused)
-					closeAudioDevice();
+					audio_output_all_close();
 
 				pc.total_time = dc.total_time;
 				pc.audio_format = dc.in_audio_format;
@@ -506,7 +506,7 @@ static void do_play(void)
 			unsigned num_frames = CHUNK_SIZE / frame_size;
 
 			/*DEBUG("waiting for decoded audio, play silence\n");*/
-			if (!playAudio(silence, num_frames * frame_size))
+			if (!audio_output_all_play(silence, num_frames * frame_size))
 				break;
 		}
 	}
@@ -540,13 +540,13 @@ static gpointer player_task(G_GNUC_UNUSED gpointer arg)
 			break;
 
 		case PLAYER_COMMAND_CLOSE_AUDIO:
-			closeAudioDevice();
+			audio_output_all_close();
 			player_command_finished();
 			break;
 
 		case PLAYER_COMMAND_EXIT:
 			dc_quit();
-			closeAudioDevice();
+			audio_output_all_close();
 			player_command_finished();
 			g_thread_exit(NULL);
 			break;
