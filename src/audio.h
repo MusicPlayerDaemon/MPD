@@ -26,7 +26,6 @@
 
 struct audio_format;
 struct tag;
-struct client;
 struct config_param;
 
 /**
@@ -79,8 +78,6 @@ void sendMetadataToAudioDevice(const struct tag *tag);
 int enableAudioDevice(unsigned int device);
 
 int disableAudioDevice(unsigned int device);
-
-void printAudioDevices(struct client *client);
 
 bool mixer_control_setvol(unsigned int device, int volume, int rel);
 bool mixer_control_getvol(unsigned int device, int *volume);

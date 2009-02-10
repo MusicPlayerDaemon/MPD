@@ -22,7 +22,6 @@
 #include "output_control.h"
 #include "output_internal.h"
 #include "path.h"
-#include "client.h"
 #include "idle.h"
 #include "mixer_api.h"
 
@@ -379,21 +378,6 @@ int disableAudioDevice(unsigned int device)
 	idle_add(IDLE_OUTPUT);
 
 	return 0;
-}
-
-void printAudioDevices(struct client *client)
-{
-	unsigned int i;
-
-	for (i = 0; i < audioOutputArraySize; i++) {
-		client_printf(client,
-			      "outputid: %i\n"
-			      "outputname: %s\n"
-			      "outputenabled: %i\n",
-			      i,
-			      audioOutputArray[i].name,
-			      audioOutputArray[i].enabled);
-	}
 }
 
 bool mixer_control_setvol(unsigned int device, int volume, int rel)

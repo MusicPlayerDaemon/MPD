@@ -35,6 +35,7 @@
 #include "stored_playlist.h"
 #include "ack.h"
 #include "audio.h"
+#include "output_print.h"
 #include "locate.h"
 #include "dbUtils.h"
 #include "tag.h"
