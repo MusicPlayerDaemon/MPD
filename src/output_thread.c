@@ -86,6 +86,7 @@ static void ao_pause(struct audio_output *ao)
 				ao->plugin->close(ao->data);
 				pcm_convert_deinit(&ao->convert_state);
 				ao->open = false;
+				break;
 			}
 		} while (ao->command == AO_COMMAND_NONE);
 	} else {
