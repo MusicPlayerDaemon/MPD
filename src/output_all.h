@@ -31,9 +31,16 @@
 struct audio_format;
 struct tag;
 
+/**
+ * Global initialization: load audio outputs from the configuration
+ * file and initialize them.
+ */
 void
 audio_output_all_init(void);
 
+/**
+ * Global finalization: free memory occupied by audio outputs.  All
+ */
 void
 audio_output_all_finish(void);
 
@@ -56,21 +63,47 @@ audio_output_get(unsigned i);
 struct audio_output *
 audio_output_find(const char *name);
 
+/**
+ * Opens all audio outputs which are not disabled.
+ *
+ * @param audio_format the preferred audio format, or NULL to reuse
+ * the previous format
+ * @return true on success, false on failure
+ */
 bool
 audio_output_all_open(const struct audio_format *audio_format);
 
+/**
+ * Closes all audio outputs.
+ */
 void
 audio_output_all_close(void);
 
+/**
+ * Play a chunk of audio data.
+ *
+ * @return true on success, false if no audio output was able to play
+ * (all closed then)
+ */
 bool
 audio_output_all_play(const char *data, size_t size);
 
+/**
+ * Send metadata for the next chunk.
+ */
 void
 audio_output_all_tag(const struct tag *tag);
 
+/**
+ * Puts all audio outputs into pause mode.  Most implementations will
+ * simply close it then.
+ */
 void
 audio_output_all_pause(void);
 
+/**
+ * Try to cancel data which may still be in the device's buffers.
+ */
 void
 audio_output_all_cancel(void);
 
