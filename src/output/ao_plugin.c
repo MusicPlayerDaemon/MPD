@@ -27,7 +27,7 @@
 static int driverInitCount;
 
 typedef struct _AoData {
-	int writeSize;
+	size_t writeSize;
 	int driverId;
 	ao_option *options;
 	ao_device *device;
@@ -218,8 +218,8 @@ audioOutputAo_play(void *data, const char *playChunk, size_t size)
 		return false;
 
 	while (size > 0) {
-		chunk_size = (size_t)ad->writeSize > size
-			? size : (size_t)ad->writeSize;
+		chunk_size = ad->writeSize > size
+			? size : ad->writeSize;
 
 		if (ao_play_deconst(ad->device, playChunk, chunk_size) == 0) {
 			audioOutputAo_error("Closing libao device due to play error");
