@@ -243,7 +243,10 @@ deleteFromPlaylist(struct playlist *playlist, unsigned song)
 			stopPlaylist(playlist);
 
 		queued = NULL;
-	}
+	} else if (playlist->current == (int)songOrder)
+		/* there's a "current song" but we're not playing
+		   currently - clear "current" */
+		playlist->current = -1;
 
 	/* now do it: remove the song */
 
