@@ -145,41 +145,7 @@ osx_render(void *vdata,
 	size_t bytes;
 	int curpos = 0;
 
-	/*DEBUG("osx_render: enter : %i\n", (int)bufferList->mNumberBuffers);
-	   DEBUG("osx_render: ioActionFlags: %p\n", ioActionFlags);
-	   if(ioActionFlags) {
-	   if(*ioActionFlags & kAudioUnitRenderAction_PreRender) {
-	   DEBUG("prerender\n");
-	   }
-	   if(*ioActionFlags & kAudioUnitRenderAction_PostRender) {
-	   DEBUG("post render\n");
-	   }
-	   if(*ioActionFlags & kAudioUnitRenderAction_OutputIsSilence) {
-	   DEBUG("post render\n");
-	   }
-	   if(*ioActionFlags & kAudioOfflineUnitRenderAction_Preflight) {
-	   DEBUG("prefilight\n");
-	   }
-	   if(*ioActionFlags & kAudioOfflineUnitRenderAction_Render) {
-	   DEBUG("render\n");
-	   }
-	   if(*ioActionFlags & kAudioOfflineUnitRenderAction_Complete) {
-	   DEBUG("complete\n");
-	   }
-	   } */
-
-	/* while(bufferSize) {
-	   DEBUG("osx_render: lock\n"); */
 	g_mutex_lock(od->mutex);
-	/*
-	   DEBUG("%i:%i\n", bufferSize, od->len);
-	   while(od->go && od->len < bufferSize && 
-	   od->len < od->bufferSize)
-	   {
-	   DEBUG("osx_render: wait\n");
-	   g_cond_wait(od->condition, od->mutex);
-	   }
-	 */
 
 	bytesToCopy = MIN(od->len, bufferSize);
 	bufferSize = bytesToCopy;
@@ -198,10 +164,9 @@ osx_render(void *vdata,
 
 	if (od->pos >= od->bufferSize)
 		od->pos = 0;
-	/* DEBUG("osx_render: unlock\n"); */
+
 	g_mutex_unlock(od->mutex);
 	g_cond_signal(od->condition);
-	/* } */
 
 	buffer->mDataByteSize = bufferSize;
 
@@ -209,7 +174,6 @@ osx_render(void *vdata,
 		my_usleep(1000);
 	}
 
-	/* DEBUG("osx_render: leave\n"); */
 	return 0;
 }
 
@@ -301,8 +265,6 @@ osx_play(void *data, const char *playChunk, size_t size)
 	size_t bytes;
 	size_t curpos;
 
-	/* DEBUG("osx_play: enter\n"); */
-
 	if (!od->started) {
 		int err;
 		od->started = 1;
@@ -316,7 +278,6 @@ osx_play(void *data, const char *playChunk, size_t size)
 	g_mutex_lock(od->mutex);
 
 	while (size) {
-		/* DEBUG("osx_play: lock\n"); */
 		curpos = od->pos + od->len;
 		if (curpos >= od->bufferSize)
 			curpos -= od->bufferSize;
@@ -324,7 +285,6 @@ osx_play(void *data, const char *playChunk, size_t size)
 		bytesToCopy = MIN(od->bufferSize, size);
 
 		while (od->len > od->bufferSize - bytesToCopy) {
-			/* DEBUG("osx_play: wait\n"); */
 			g_cond_wait(od->condition, od->mutex);
 		}
 
@@ -343,10 +303,9 @@ osx_play(void *data, const char *playChunk, size_t size)
 		playChunk += bytesToCopy;
 
 	}
-	/* DEBUG("osx_play: unlock\n"); */
+
 	g_mutex_unlock(od->mutex);
 
-	/* DEBUG("osx_play: leave\n"); */
 	return true;
 }
 
