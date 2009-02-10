@@ -218,14 +218,6 @@ void finishAudioDriver(void)
 	notify_deinit(&audio_output_client_notify);
 }
 
-bool
-isCurrentAudioFormat(const struct audio_format *audioFormat)
-{
-	assert(audioFormat != NULL);
-
-	return audio_format_equals(audioFormat, &input_audio_format);
-}
-
 static void audio_output_wait_all(void)
 {
 	unsigned i;

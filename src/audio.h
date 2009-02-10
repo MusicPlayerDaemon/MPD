@@ -72,8 +72,6 @@ void dropBufferedAudio(void);
 
 void closeAudioDevice(void);
 
-bool isCurrentAudioFormat(const struct audio_format *audioFormat);
-
 void sendMetadataToAudioDevice(const struct tag *tag);
 
 /* these functions are called in the main parent process while the child
