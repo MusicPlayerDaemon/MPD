@@ -91,6 +91,7 @@ static void ao_pause(struct audio_output *ao)
 	} else {
 		/* pause is not supported - simply close the device */
 		ao->plugin->close(ao->data);
+		pcm_convert_deinit(&ao->convert_state);
 		ao->open = false;
 		ao_command_finished(ao);
 	}
@@ -109,14 +110,14 @@ static gpointer audio_output_task(gpointer arg)
 		case AO_COMMAND_OPEN:
 			assert(!ao->open);
 
-			pcm_convert_init(&ao->convert_state);
 			ret = ao->plugin->open(ao->data,
 					       &ao->out_audio_format);
 
 			assert(!ao->open);
-			if (ret == true)
+			if (ret) {
+				pcm_convert_init(&ao->convert_state);
 				ao->open = true;
-			else
+			} else
 				ao->reopen_after = time(NULL) + REOPEN_AFTER;
 
 			ao_command_finished(ao);
@@ -127,6 +128,7 @@ static gpointer audio_output_task(gpointer arg)
 			ao->plugin->cancel(ao->data);
 			ao->plugin->close(ao->data);
 
+			pcm_convert_deinit(&ao->convert_state);
 			ao->open = false;
 			ao_command_finished(ao);
 			break;
