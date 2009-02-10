@@ -45,6 +45,28 @@ unsigned int audio_output_count(void)
 	return audioOutputArraySize;
 }
 
+struct audio_output *
+audio_output_get(unsigned i)
+{
+	assert(i < audioOutputArraySize);
+
+	return &audioOutputArray[i];
+}
+
+struct audio_output *
+audio_output_find(const char *name)
+{
+	for (unsigned i = 0; i < audioOutputArraySize; ++i) {
+		struct audio_output *ao = audio_output_get(i);
+
+		if (strcmp(ao->name, name) == 0)
+			return ao;
+	}
+
+	/* name not found */
+	return NULL;
+}
+
 static unsigned
 audio_output_config_count(void)
 {

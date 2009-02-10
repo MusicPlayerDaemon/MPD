@@ -35,6 +35,19 @@ struct config_param;
  */
 unsigned int audio_output_count(void);
 
+/**
+ * Returns the "i"th audio output device.
+ */
+struct audio_output *
+audio_output_get(unsigned i);
+
+/**
+ * Returns the audio output device with the specified name.  Returns
+ * NULL if the name does not exist.
+ */
+struct audio_output *
+audio_output_find(const char *name);
+
 void getOutputAudioFormat(const struct audio_format *inFormat,
 			  struct audio_format *outFormat);
 
