@@ -142,11 +142,10 @@ shout_mp3_encoder_encode(struct shout_data *sd, const void *chunk, size_t len)
 	float *left, *right;
 	struct shout_buffer *buf = &(sd->buf);
 	unsigned int samples;
-	int bytes = audio_format_sample_size(&sd->audio_format);
 	struct lame_data *ld = (struct lame_data *)sd->encoder_data;
 	int bytes_out;
 
-	samples = len / (bytes * sd->audio_format.channels);
+	samples = len / audio_format_sample_size(&sd->audio_format);
 	left = g_malloc(sizeof(left[0]) * samples);
 	if (sd->audio_format.channels > 1)
 		right = g_malloc(sizeof(left[0]) * samples);
