@@ -134,8 +134,8 @@ static int shout_mp3_encoder_send_metadata(struct shout_data *sd,
 	return 1;
 }
 
-static int shout_mp3_encoder_encode(struct shout_data *sd,
-				    const char * chunk, size_t len)
+static int
+shout_mp3_encoder_encode(struct shout_data *sd, const void *chunk, size_t len)
 {
 	const int16_t *src = (const int16_t*)chunk;
 	unsigned int i;

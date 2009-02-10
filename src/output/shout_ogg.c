@@ -247,8 +247,9 @@ pcm16_to_ogg_buffer(float **dest, const int16_t *src,
 			dest[j][i] = *src++ / 32768.0;
 }
 
-static int shout_ogg_encoder_encode(struct shout_data *sd,
-				    const char *chunk, size_t size)
+static int
+shout_ogg_encoder_encode(struct shout_data *sd,
+			 const void *chunk, size_t size)
 {
 	struct shout_buffer *buf = &sd->buf;
 	unsigned int samples;

@@ -36,7 +36,7 @@ struct shout_encoder_plugin {
 
 	int (*clear_encoder_func)(struct shout_data *sd);
 	int (*encode_func)(struct shout_data *sd,
-			   const char *chunk, size_t len);
+			   const void *chunk, size_t len);
 	void (*finish_func)(struct shout_data *sd);
 	int (*init_func)(struct shout_data *sd);
 	int (*init_encoder_func) (struct shout_data *sd);
