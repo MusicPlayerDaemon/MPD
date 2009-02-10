@@ -38,6 +38,16 @@ static void ao_command_finished(struct audio_output *ao)
 	notify_signal(&audio_output_client_notify);
 }
 
+static void
+ao_close(struct audio_output *ao)
+{
+	assert(ao->open);
+
+	ao->plugin->close(ao->data);
+	pcm_convert_deinit(&ao->convert_state);
+	ao->open = false;
+}
+
 static void ao_play(struct audio_output *ao)
 {
 	const char *data = ao->args.play.data;
@@ -62,9 +72,7 @@ static void ao_play(struct audio_output *ao)
 	ret = ao->plugin->play(ao->data, data, size);
 	if (!ret) {
 		ao->plugin->cancel(ao->data);
-		ao->plugin->close(ao->data);
-		pcm_convert_deinit(&ao->convert_state);
-		ao->open = false;
+		ao_close(ao);
 	}
 
 	ao_command_finished(ao);
@@ -83,17 +91,13 @@ static void ao_pause(struct audio_output *ao)
 
 			ret = ao->plugin->pause(ao->data);
 			if (!ret) {
-				ao->plugin->close(ao->data);
-				pcm_convert_deinit(&ao->convert_state);
-				ao->open = false;
+				ao_close(ao);
 				break;
 			}
 		} while (ao->command == AO_COMMAND_NONE);
 	} else {
 		/* pause is not supported - simply close the device */
-		ao->plugin->close(ao->data);
-		pcm_convert_deinit(&ao->convert_state);
-		ao->open = false;
+		ao_close(ao);
 		ao_command_finished(ao);
 	}
 }
@@ -127,10 +131,8 @@ static gpointer audio_output_task(gpointer arg)
 		case AO_COMMAND_CLOSE:
 			assert(ao->open);
 			ao->plugin->cancel(ao->data);
-			ao->plugin->close(ao->data);
 
-			pcm_convert_deinit(&ao->convert_state);
-			ao->open = false;
+			ao_close(ao);
 			ao_command_finished(ao);
 			break;
 
