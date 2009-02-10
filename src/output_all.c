@@ -127,23 +127,26 @@ audio_output_all_finish(void)
 	notify_deinit(&audio_output_client_notify);
 }
 
+
+/**
+ * Determine if all (active) outputs have finished the current
+ * command.
+ */
+static bool
+audio_output_all_finished(void)
+{
+	for (unsigned i = 0; i < num_audio_outputs; ++i)
+		if (audio_output_is_open(&audio_outputs[i]) &&
+		    !audio_output_command_is_finished(&audio_outputs[i]))
+			return false;
+
+	return true;
+}
+
 static void audio_output_wait_all(void)
 {
-	unsigned i;
-
-	while (1) {
-		int finished = 1;
-
-		for (i = 0; i < num_audio_outputs; ++i)
-			if (audio_output_is_open(&audio_outputs[i]) &&
-			    !audio_output_command_is_finished(&audio_outputs[i]))
-				finished = 0;
-
-		if (finished)
-			break;
-
+	while (!audio_output_all_finished())
 		notify_wait(&audio_output_client_notify);
-	};
 }
 
 static void
