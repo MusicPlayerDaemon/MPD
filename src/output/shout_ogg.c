@@ -238,28 +238,29 @@ static int shout_ogg_encoder_send_metadata(struct shout_data *sd,
 	return 0;
 }
 
+static void
+pcm16_to_ogg_buffer(float **dest, const int16_t *src,
+		    unsigned num_samples, unsigned num_channels)
+{
+	for (unsigned i = 0; i < num_samples; i++)
+		for (unsigned j = 0; j < num_channels; j++)
+			dest[j][i] = *src++ / 32768.0;
+}
+
 static int shout_ogg_encoder_encode(struct shout_data *sd,
 				    const char *chunk, size_t size)
 {
 	struct shout_buffer *buf = &sd->buf;
-	unsigned int i;
-	int j;
-	float **vorbbuf;
 	unsigned int samples;
-	int bytes = audio_format_sample_size(&sd->audio_format);
 	struct ogg_vorbis_data *od = (struct ogg_vorbis_data *)sd->encoder_data;
 
-	samples = size / (bytes * sd->audio_format.channels);
-	vorbbuf = vorbis_analysis_buffer(&od->vd, samples);
+	samples = size / audio_format_frame_size(&sd->audio_format);
 
 	/* this is for only 16-bit audio */
 
-	for (i = 0; i < samples; i++) {
-		for (j = 0; j < sd->audio_format.channels; j++) {
-			vorbbuf[j][i] = (*((const int16_t *) chunk)) / 32768.0;
-			chunk += bytes;
-		}
-	}
+	pcm16_to_ogg_buffer(vorbis_analysis_buffer(&od->vd, samples),
+			    (const int16_t *)chunk,
+			    samples, sd->audio_format.channels);
 
 	vorbis_analysis_wrote(&od->vd, samples);
 
