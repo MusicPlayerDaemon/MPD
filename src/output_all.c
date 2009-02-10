@@ -149,6 +149,18 @@ static void audio_output_wait_all(void)
 		notify_wait(&audio_output_client_notify);
 }
 
+/**
+ * Resets the "reopen" flag on all audio devices.  MPD should
+ * immediately retry to open the device instead of waiting for the
+ * timeout when the user wants to start playback.
+ */
+static void
+audio_output_all_reset_reopen(void)
+{
+	for (unsigned i = 0; i < num_audio_outputs; ++i)
+		audio_outputs[i].reopen_after = 0;
+}
+
 static void
 audio_output_all_update(void)
 {
@@ -216,6 +228,7 @@ audio_output_all_open(const struct audio_format *audio_format)
 	if (audio_format != NULL)
 		input_audio_format = *audio_format;
 
+	audio_output_all_reset_reopen();
 	audio_output_all_update();
 
 	for (i = 0; i < num_audio_outputs; ++i) {
