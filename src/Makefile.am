@@ -41,6 +41,7 @@ mpd_headers = \
 	output_list.h \
 	output_thread.h \
 	output_control.h \
+	output_state.h \
 	output/shout_plugin.h \
 	buffer2array.h \
 	command.h \
@@ -138,6 +139,7 @@ mpd_SOURCES = \
 	output_list.c \
 	output_thread.c \
 	output_control.c \
+	output_state.c \
 	output_init.c \
 	output/null_plugin.c \
 	buffer2array.c \

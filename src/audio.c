@@ -31,9 +31,6 @@
 #include <assert.h>
 #include <stdlib.h>
 
-#define AUDIO_DEVICE_STATE	"audio_device_state:"
-#define AUDIO_BUFFER_SIZE	2*MPD_PATH_MAX
-
 static struct audio_format configured_audio_format;
 static struct audio_format input_audio_format;
 
@@ -396,56 +393,6 @@ void printAudioDevices(struct client *client)
 			      i,
 			      audioOutputArray[i].name,
 			      audioOutputArray[i].enabled);
-	}
-}
-
-void saveAudioDevicesState(FILE *fp)
-{
-	unsigned int i;
-
-	assert(audioOutputArraySize != 0);
-	for (i = 0; i < audioOutputArraySize; i++) {
-		fprintf(fp, AUDIO_DEVICE_STATE "%d:%s\n",
-			audioOutputArray[i].enabled,
-		        audioOutputArray[i].name);
-	}
-}
-
-void readAudioDevicesState(FILE *fp)
-{
-	char buffer[AUDIO_BUFFER_SIZE];
-	unsigned int i;
-
-	assert(audioOutputArraySize != 0);
-
-	while (fgets(buffer, sizeof(buffer), fp)) {
-		char *c, *name;
-
-		g_strchomp(buffer);
-
-		if (!g_str_has_prefix(buffer, AUDIO_DEVICE_STATE))
-			continue;
-
-		c = strchr(buffer, ':');
-		if (!c || !(++c))
-			goto errline;
-
-		name = strchr(c, ':');
-		if (!name || !(++name))
-			goto errline;
-
-		for (i = 0; i < audioOutputArraySize; ++i) {
-			if (!strcmp(name, audioOutputArray[i].name)) {
-				/* devices default to on */
-				if (!atoi(c))
-					audioOutputArray[i].enabled = false;
-				break;
-			}
-		}
-		continue;
-errline:
-		/* nonfatal */
-		g_warning("invalid line in state_file: %s\n", buffer);
 	}
 }
 

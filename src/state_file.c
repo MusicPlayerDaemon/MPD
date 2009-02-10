@@ -17,7 +17,7 @@
  */
 
 #include "state_file.h"
-#include "audio.h"
+#include "output_state.h"
 #include "playlist.h"
 #include "volume.h"
 

@@ -20,7 +20,7 @@
 #define MPD_AUDIO_H
 
 #include <stdbool.h>
-#include <stdio.h>
+#include <stddef.h>
 
 #define AUDIO_AO_DRIVER_DEFAULT	"default"
 
@@ -81,10 +81,6 @@ int enableAudioDevice(unsigned int device);
 int disableAudioDevice(unsigned int device);
 
 void printAudioDevices(struct client *client);
-
-void readAudioDevicesState(FILE *fp);
-
-void saveAudioDevicesState(FILE *fp);
 
 bool mixer_control_setvol(unsigned int device, int volume, int rel);
 bool mixer_control_getvol(unsigned int device, int *volume);
