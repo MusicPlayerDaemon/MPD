@@ -23,7 +23,7 @@
 
 #include "output_state.h"
 #include "output_internal.h"
-#include "audio.h"
+#include "output_all.h"
 
 #include <glib.h>
 

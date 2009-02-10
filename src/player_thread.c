@@ -20,7 +20,7 @@
 #include "player_control.h"
 #include "decoder_control.h"
 #include "decoder_thread.h"
-#include "audio.h"
+#include "output_all.h"
 #include "pcm_volume.h"
 #include "path.h"
 #include "event_pipe.h"

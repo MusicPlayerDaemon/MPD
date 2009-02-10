@@ -20,32 +20,8 @@
 #define MPD_AUDIO_H
 
 #include <stdbool.h>
-#include <stddef.h>
-
-#define AUDIO_AO_DRIVER_DEFAULT	"default"
 
 struct audio_format;
-struct tag;
-struct config_param;
-
-/**
- * Returns the total number of audio output devices, including those
- * who are disabled right now.
- */
-unsigned int audio_output_count(void);
-
-/**
- * Returns the "i"th audio output device.
- */
-struct audio_output *
-audio_output_get(unsigned i);
-
-/**
- * Returns the audio output device with the specified name.  Returns
- * NULL if the name does not exist.
- */
-struct audio_output *
-audio_output_find(const char *name);
 
 void getOutputAudioFormat(const struct audio_format *inFormat,
 			  struct audio_format *outFormat);
@@ -56,22 +32,6 @@ int parseAudioConfig(struct audio_format *audioFormat, char *conf);
 void initAudioConfig(void);
 
 void finishAudioConfig(void);
-
-void initAudioDriver(void);
-
-void finishAudioDriver(void);
-
-bool openAudioDevice(const struct audio_format *audioFormat);
-
-bool playAudio(const char *playChunk, size_t size);
-
-void audio_output_pause_all(void);
-
-void dropBufferedAudio(void);
-
-void closeAudioDevice(void);
-
-void sendMetadataToAudioDevice(const struct tag *tag);
 
 /* these functions are called in the main parent process while the child
 	process is busy playing to the audio */

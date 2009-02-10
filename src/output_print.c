@@ -23,7 +23,7 @@
 
 #include "output_print.h"
 #include "output_internal.h"
-#include "audio.h"
+#include "output_all.h"
 #include "client.h"
 
 void

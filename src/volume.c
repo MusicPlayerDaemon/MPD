@@ -23,6 +23,7 @@
 #include "pcm_volume.h"
 #include "config.h"
 #include "audio.h"
+#include "output_all.h"
 
 #include <glib.h>
 

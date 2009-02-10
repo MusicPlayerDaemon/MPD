@@ -39,6 +39,7 @@ mpd_headers = \
 	output_internal.h \
 	output_api.h \
 	output_list.h \
+	output_all.h \
 	output_thread.h \
 	output_control.h \
 	output_state.h \
@@ -138,6 +139,7 @@ mpd_SOURCES = \
 	audioOutput.c \
 	output_api.c \
 	output_list.c \
+	output_all.c \
 	output_thread.c \
 	output_control.c \
 	output_state.c \
