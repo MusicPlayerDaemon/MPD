@@ -20,7 +20,7 @@
 #include "output_api.h"
 #include "output_internal.h"
 #include "output_list.h"
-#include "audio.h"
+#include "audio_parser.h"
 
 #include <glib.h>
 
@@ -94,9 +94,14 @@ audio_output_init(struct audio_output *ao, const struct config_param *param)
 	pcm_convert_init(&ao->convert_state);
 
 	if (format) {
-		if (0 != parseAudioConfig(&ao->config_audio_format, format)) {
-			g_error("error parsing format at line %i\n", bp->line);
-		}
+		GError *error = NULL;
+		bool ret;
+
+		ret = audio_format_parse(&ao->config_audio_format, format,
+					 &error);
+		if (!ret)
+			g_error("error parsing format at line %i: %s",
+				bp->line, error->message);
 	} else
 		audio_format_clear(&ao->config_audio_format);
 

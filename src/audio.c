@@ -18,6 +18,7 @@
 
 #include "audio.h"
 #include "audio_format.h"
+#include "audio_parser.h"
 #include "output_api.h"
 #include "output_control.h"
 #include "output_internal.h"
@@ -44,67 +45,17 @@ void getOutputAudioFormat(const struct audio_format *inAudioFormat,
 void initAudioConfig(void)
 {
 	const struct config_param *param = config_get_param(CONF_AUDIO_OUTPUT_FORMAT);
+	GError *error = NULL;
+	bool ret;
 
 	if (NULL == param || NULL == param->value)
 		return;
 
-	if (0 != parseAudioConfig(&configured_audio_format, param->value)) {
-		g_error("error parsing \"%s\" at line %i\n",
-			CONF_AUDIO_OUTPUT_FORMAT, param->line);
-	}
-}
-
-int parseAudioConfig(struct audio_format *audioFormat, char *conf)
-{
-	char *test;
-
-	memset(audioFormat, 0, sizeof(*audioFormat));
-
-	audioFormat->sample_rate = strtol(conf, &test, 10);
-
-	if (*test != ':') {
-		g_warning("error parsing audio output format: %s\n", conf);
-		return -1;
-	}
-
-	if (audioFormat->sample_rate <= 0) {
-		g_warning("sample rate %u is not >= 0\n",
-			  audioFormat->sample_rate);
-		return -1;
-	}
-
-	audioFormat->bits = (uint8_t)strtoul(test + 1, &test, 10);
-
-	if (*test != ':') {
-		g_warning("error parsing audio output format: %s\n", conf);
-		return -1;
-	}
-
-	if (audioFormat->bits != 16 && audioFormat->bits != 24 &&
-	    audioFormat->bits != 8) {
-		g_warning("bits %u can not be used for audio output\n",
-			  audioFormat->bits);
-		return -1;
-	}
-
-	audioFormat->channels = (uint8_t)strtoul(test + 1, &test, 10);
-
-	if (*test != '\0') {
-		g_warning("error parsing audio output format: %s\n", conf);
-		return -1;
-	}
-
-	switch (audioFormat->channels) {
-	case 1:
-	case 2:
-		break;
-	default:
-		g_warning("channels %u can not be used for audio output\n",
-			  audioFormat->channels);
-		return -1;
-	}
-
-	return 0;
+	ret = audio_format_parse(&configured_audio_format, param->value,
+				 &error);
+	if (!ret)
+		g_error("error parsing \"%s\" at line %i: %s",
+			CONF_AUDIO_OUTPUT_FORMAT, param->line, error->message);
 }
 
 void finishAudioConfig(void)

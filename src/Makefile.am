@@ -35,6 +35,7 @@ mpd_headers = \
 	ack.h \
 	audio.h \
 	audio_format.h \
+	audio_parser.h \
 	audioOutput.h \
 	output_internal.h \
 	output_api.h \
@@ -136,6 +137,7 @@ mpd_SOURCES = \
 	$(mpd_headers) \
 	notify.c \
 	audio.c \
+	audio_parser.c \
 	audioOutput.c \
 	output_api.c \
 	output_list.c \

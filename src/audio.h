@@ -26,8 +26,6 @@ struct audio_format;
 void getOutputAudioFormat(const struct audio_format *inFormat,
 			  struct audio_format *outFormat);
 
-int parseAudioConfig(struct audio_format *audioFormat, char *conf);
-
 /* make sure initPlayerData is called before this function!! */
 void initAudioConfig(void);
 
