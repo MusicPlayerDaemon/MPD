@@ -1019,6 +1019,8 @@ if test x$enable_sidplay = xyes; then
 	AC_SUBST(SIDPLAY_CFLAGS,)
 
 	AC_DEFINE(ENABLE_SIDPLAY, 1, [Define for libsidplay2 support]),
+else
+	AM_CONDITIONAL(am__fastdepCXX, false)
 fi
 
 AM_CONDITIONAL(ENABLE_SIDPLAY, test x$enable_sidplay = xyes)
