@@ -1,6 +1,6 @@
-/* the Music Player Daemon (MPD)
- * Copyright (C) 2003-2007 by Warren Dukes (warren.dukes@gmail.com)
- * This project's homepage is: http://www.musicpd.org
+/*
+ * Copyright (C) 2003-2009 The Music Player Daemon Project
+ * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,22 +16,30 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef MPD_AUDIO_H
-#define MPD_AUDIO_H
+/*
+ * Glue functions for controlling the audio outputs over the MPD
+ * protocol.  These functions perform extra validation on all
+ * parameters, because they might be from an untrusted source.
+ *
+ */
+
+#ifndef OUTPUT_COMMAND_H
+#define OUTPUT_COMMAND_H
 
 #include <stdbool.h>
 
-struct audio_format;
+/**
+ * Enables an audio output.  Returns false if the specified output
+ * does not exist.
+ */
+bool
+audio_output_enable_index(unsigned idx);
 
-void getOutputAudioFormat(const struct audio_format *inFormat,
-			  struct audio_format *outFormat);
-
-/* make sure initPlayerData is called before this function!! */
-void initAudioConfig(void);
-
-void finishAudioConfig(void);
-
-bool mixer_control_setvol(unsigned int device, int volume, int rel);
-bool mixer_control_getvol(unsigned int device, int *volume);
+/**
+ * Disables an audio output.  Returns false if the specified output
+ * does not exist.
+ */
+bool
+audio_output_disable_index(unsigned idx);
 
 #endif

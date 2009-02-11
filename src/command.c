@@ -34,7 +34,7 @@
 #include "log.h"
 #include "stored_playlist.h"
 #include "ack.h"
-#include "audio.h"
+#include "output_command.h"
 #include "output_print.h"
 #include "locate.h"
 #include "dbUtils.h"
@@ -1306,34 +1306,38 @@ static enum command_return
 handle_enableoutput(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 {
 	unsigned device;
-	int ret;
+	bool ret;
 
 	if (!check_unsigned(client, &device, argv[1]))
 		return COMMAND_RETURN_ERROR;
 
-	ret = enableAudioDevice(device);
-	if (ret == -1)
+	ret = audio_output_enable_index(device);
+	if (!ret) {
 		command_error(client, ACK_ERROR_NO_EXIST,
 			      "No such audio output");
+		return COMMAND_RETURN_ERROR;
+	}
 
-	return ret;
+	return COMMAND_RETURN_OK;
 }
 
 static enum command_return
 handle_disableoutput(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 {
 	unsigned device;
-	int ret;
+	bool ret;
 
 	if (!check_unsigned(client, &device, argv[1]))
 		return COMMAND_RETURN_ERROR;
 
-	ret = disableAudioDevice(device);
-	if (ret == -1)
+	ret = audio_output_disable_index(device);
+	if (!ret) {
 		command_error(client, ACK_ERROR_NO_EXIST,
 			      "No such audio output");
+		return COMMAND_RETURN_ERROR;
+	}
 
-	return ret;
+	return COMMAND_RETURN_OK;
 }
 
 static enum command_return

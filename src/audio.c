@@ -19,12 +19,8 @@
 #include "audio.h"
 #include "audio_format.h"
 #include "audio_parser.h"
-#include "output_api.h"
-#include "output_control.h"
 #include "output_internal.h"
 #include "output_all.h"
-#include "path.h"
-#include "idle.h"
 #include "mixer_api.h"
 
 #include <glib.h>
@@ -61,37 +57,6 @@ void initAudioConfig(void)
 void finishAudioConfig(void)
 {
 	audio_format_clear(&configured_audio_format);
-}
-
-int enableAudioDevice(unsigned int device)
-{
-	struct audio_output *ao;
-
-	if (device >= audio_output_count())
-		return -1;
-
-	ao = audio_output_get(device);
-
-	ao->reopen_after = 0;
-	ao->enabled = true;
-	idle_add(IDLE_OUTPUT);
-
-	return 0;
-}
-
-int disableAudioDevice(unsigned int device)
-{
-	struct audio_output *ao;
-
-	if (device >= audio_output_count())
-		return -1;
-
-	ao = audio_output_get(device);
-
-	ao->enabled = false;
-	idle_add(IDLE_OUTPUT);
-
-	return 0;
 }
 
 bool mixer_control_setvol(unsigned int device, int volume, int rel)
