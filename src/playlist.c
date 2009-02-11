@@ -300,7 +300,8 @@ void setPlaylistRandomStatus(struct playlist *playlist, bool status)
 		/* shuffle the queue order, but preserve
 		   playlist->current */
 
-		int current_position = playlist->current >= 0
+		int current_position =
+			playlist->playing && playlist->current >= 0
 			? (int)queue_order_to_position(&playlist->queue,
 						       playlist->current)
 			: -1;
@@ -316,7 +317,8 @@ void setPlaylistRandomStatus(struct playlist *playlist, bool status)
 							current_position);
 			queue_swap_order(&playlist->queue, 0, current_order);
 			playlist->current = 0;
-		}
+		} else
+			playlist->current = -1;
 	} else
 		orderPlaylist(playlist);
 
