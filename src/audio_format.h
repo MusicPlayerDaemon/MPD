@@ -41,14 +41,45 @@ static inline bool audio_format_defined(const struct audio_format *af)
 }
 
 /**
+ * Checks whether the sample rate is valid.
+ *
+ * @param sample_rate the sample rate in Hz
+ */
+static inline bool
+audio_valid_sample_rate(unsigned sample_rate)
+{
+	return sample_rate > 0 && sample_rate < (1 << 30);
+}
+
+/**
+ * Checks whether the sample format is valid.
+ *
+ * @param bits the number of significant bits per sample
+ */
+static inline bool
+audio_valid_sample_format(unsigned bits)
+{
+	return bits == 16 || bits == 24 || bits == 8;
+}
+
+/**
+ * Checks whether the number of channels is valid.
+ */
+static inline bool
+audio_valid_channel_count(unsigned channels)
+{
+	return channels == 1 || channels == 2;
+}
+
+/**
  * Returns false if the format is not valid for playback with MPD.
  * This function performs some basic validity checks.
  */
 static inline bool audio_format_valid(const struct audio_format *af)
 {
-	return af->sample_rate > 0 &&
-		(af->bits == 8 || af->bits == 16 || af->bits == 24) &&
-		af->channels >= 1;
+	return audio_valid_sample_rate(af->sample_rate) &&
+		audio_valid_sample_format(af->bits) &&
+		audio_valid_channel_count(af->channels);
 }
 
 static inline bool audio_format_equals(const struct audio_format *a,

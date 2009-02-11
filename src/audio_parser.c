@@ -54,7 +54,7 @@ audio_format_parse(struct audio_format *dest, const char *src, GError **error)
 		g_set_error(error, audio_parser_quark(), 0,
 			    "Sample format missing");
 		return false;
-	} else if (value <= 0 || value > G_MAXINT32) {
+	} else if (!audio_valid_sample_rate(value)) {
 		g_set_error(error, audio_parser_quark(), 0,
 			    "Invalid sample rate: %lu", value);
 		return false;
@@ -74,7 +74,7 @@ audio_format_parse(struct audio_format *dest, const char *src, GError **error)
 		g_set_error(error, audio_parser_quark(), 0,
 			    "Channel count missing");
 		return false;
-	} else if (value != 16 && value != 24 && value != 8) {
+	} else if (!audio_valid_sample_format(value)) {
 		g_set_error(error, audio_parser_quark(), 0,
 			    "Invalid sample format: %lu", value);
 		return false;
@@ -86,7 +86,7 @@ audio_format_parse(struct audio_format *dest, const char *src, GError **error)
 
 	src = endptr + 1;
 	value = strtoul(src, &endptr, 10);
-	if (*endptr != 0 || (value != 1 && value != 2)) {
+	if (*endptr != 0 || !audio_valid_channel_count(value)) {
 		g_set_error(error, audio_parser_quark(), 0,
 			    "Invalid channel count: %s", src);
 		return false;
