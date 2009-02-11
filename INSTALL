@@ -95,6 +95,9 @@ For MOD support.  You will need libmikmod.
 libavcodec, libavformat (ffmpeg) - http://ffmpeg.mplayerhq.hu/
 Multi-codec library.
 
+libsidplay2 - http://sidplay2.sourceforge.net/
+For C64 SID support.
+
 
 Optional Miscellaneous Dependencies
 -----------------------------------

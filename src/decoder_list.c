@@ -34,6 +34,7 @@ extern const struct decoder_plugin mpcPlugin;
 extern const struct decoder_plugin wavpack_plugin;
 extern const struct decoder_plugin modplug_plugin;
 extern const struct decoder_plugin mikmod_decoder_plugin;
+extern const struct decoder_plugin sidplay_decoder_plugin;
 extern const struct decoder_plugin ffmpeg_plugin;
 
 static const struct decoder_plugin *const decoder_plugins[] = {
@@ -69,6 +70,9 @@ static const struct decoder_plugin *const decoder_plugins[] = {
 #endif
 #ifdef HAVE_MIKMOD
 	&mikmod_decoder_plugin,
+#endif
+#ifdef ENABLE_SIDPLAY
+	&sidplay_decoder_plugin,
 #endif
 #ifdef HAVE_FFMPEG
 	&ffmpeg_plugin,
