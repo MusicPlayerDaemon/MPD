@@ -999,7 +999,7 @@ if test x$enable_ffmpeg = xyes; then
 fi
 
 if test x$enable_ffmpeg = xyes; then
-	AC_DEFINE(HAVE_FFMPEG, 1, [Define for FFMPEG support]),
+	AC_DEFINE(HAVE_FFMPEG, 1, [Define for FFMPEG support])
 fi
 
 AM_CONDITIONAL(HAVE_FFMPEG, test x$enable_ffmpeg = xyes)
