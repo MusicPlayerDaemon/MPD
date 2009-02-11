@@ -260,6 +260,7 @@ void listenOnPort(void)
 	do {
 		parseListenConfigParam(port, param);
 	} while ((param = config_get_next_param(CONF_BIND_TO_ADDRESS, param)));
+	boundPort = port;
 }
 
 void closeAllListenSockets(void)
