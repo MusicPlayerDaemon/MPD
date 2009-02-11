@@ -8,7 +8,6 @@ ver 0.15 - (200?/??/??)
   - parse RVA2 tags in mp3 files
 * decoders:
   - audiofile: streaming support added
-  - ffmpeg: enable WAV
   - modplug: another MOD plugin, based on libmodplug
   - mikmod disabled by default, due to severe security issues in libmikmod
 * audio outputs:
@@ -42,6 +41,8 @@ ver 0.14.2 (2009/??/??)
   - ffmpeg: don't warn of empty packet output
   - ffmpeg: check if the time stamp is valid
   - ffmpeg: fixed seek integer overflow
+  - ffmpeg: enable WAV streaming
+  - ffmpeg: added TTA support
   - wavpack: pass NULL if the .wvc file fails to open
   - mikmod: call MikMod_Exit() only in the finish() method
 * audio outputs:

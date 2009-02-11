@@ -403,6 +403,7 @@ static const char *const ffmpeg_suffixes[] = {
 	"wma", "asf", "wmv", "mpeg", "mpg", "avi", "vob", "mov", "qt", "swf",
 	"rm", "swf", "mp1", "mp2", "mp3", "mp4", "m4a", "flac", "ogg", "wav",
 	"au", "aiff", "aif", "ac3", "aac", "mpc", "ape",
+	"tta",
 	NULL
 };
 
@@ -419,6 +420,7 @@ static const char *const ffmpeg_mime_types[] = {
 	"application/x-ms-wmd",
 	"audio/mpeg",
 	"audio/x-wav",
+	"audio/x-tta",
 	NULL
 };
 
