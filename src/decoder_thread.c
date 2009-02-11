@@ -127,7 +127,7 @@ static void decoder_run_song(const struct song *song, const char *uri)
 	pcm_convert_init(&decoder.conv_state);
 
 	ret = false;
-	if (!song_is_file(song) || true) {
+	if (!song_is_file(song)) {
 		unsigned int next = 0;
 
 		/* first we try mime types: */
