@@ -315,13 +315,11 @@ db_load(void)
 			tempCharset = path_get_fs_charset();
 			if (tempCharset != NULL
 			    && strcmp(fsCharset, tempCharset)) {
-				g_message("Using \"%s\" for the "
-					  "filesystem charset "
+				g_message("Existing database has charset \"%s\" "
 					  "instead of \"%s\"; "
-					  "maybe you need to "
-					  "recreate the db?",
-					fsCharset, tempCharset);
-				path_set_fs_charset(fsCharset);
+					  "discarding database file",
+					  fsCharset, tempCharset);
+				return false;
 			}
 		} else
 			g_error("unknown line in db info: %s",
