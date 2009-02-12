@@ -13,6 +13,8 @@ dnl programs
 dnl
 
 AC_PROG_CC_C99
+AC_PROG_CXX
+
 AC_PROG_INSTALL
 AC_PROG_MAKE_SET
 PKG_PROG_PKG_CONFIG
@@ -1020,17 +1022,12 @@ fi
 AM_CONDITIONAL(HAVE_FFMPEG, test x$enable_ffmpeg = xyes)
 
 if test x$enable_sidplay = xyes; then
-	# libsidplay2 exposes a C++ interface
-	AC_PROG_CXX
-
 	# we have no test yet.. we're not using pkg-config here
 	# because libsidplay2's .pc file requires libtool
 	AC_SUBST(SIDPLAY_LIBS,"-lsidplay2 -lresid-builder")
 	AC_SUBST(SIDPLAY_CFLAGS,)
 
 	AC_DEFINE(ENABLE_SIDPLAY, 1, [Define for libsidplay2 support])
-else
-	AM_CONDITIONAL(am__fastdepCXX, false)
 fi
 
 AM_CONDITIONAL(ENABLE_SIDPLAY, test x$enable_sidplay = xyes)
