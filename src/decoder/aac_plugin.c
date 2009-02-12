@@ -431,7 +431,7 @@ aac_stream_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 
 		sampleBufferLen = sampleCount * 2;
 
-		cmd = decoder_data(mpd_decoder, NULL, sampleBuffer,
+		cmd = decoder_data(mpd_decoder, inStream, sampleBuffer,
 				   sampleBufferLen, file_time,
 				   bitRate, NULL);
 		if (cmd == DECODE_COMMAND_SEEK)

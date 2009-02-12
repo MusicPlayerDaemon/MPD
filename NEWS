@@ -48,6 +48,7 @@ ver 0.14.2 (2009/??/??)
   - ffmpeg: added TTA support
   - wavpack: pass NULL if the .wvc file fails to open
   - mikmod: call MikMod_Exit() only in the finish() method
+  - aac: fix stream metadata
 * audio outputs:
   - jack: allocate ring buffers before connecting
   - jack: clear "shutdown" flag on reconnect
