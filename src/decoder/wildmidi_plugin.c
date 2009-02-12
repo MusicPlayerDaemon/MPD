@@ -67,7 +67,7 @@ wildmidi_file_decode(struct decoder *decoder, const char *path_fs)
 		return;
 	}
 
-	decoder_initialized(decoder, &audio_format, false,
+	decoder_initialized(decoder, &audio_format, true,
 			    info->approx_total_samples / WILDMIDI_SAMPLE_RATE);
 
 	do {
@@ -86,6 +86,16 @@ wildmidi_file_decode(struct decoder *decoder, const char *path_fs)
 				   (float)info->current_sample /
 				   (float)WILDMIDI_SAMPLE_RATE,
 				   0, NULL);
+
+		if (cmd == DECODE_COMMAND_SEEK) {
+			unsigned long seek_where = WILDMIDI_SAMPLE_RATE *
+				decoder_seek_where(decoder);
+
+			WildMidi_SampledSeek(wm, &seek_where);
+			decoder_command_finished(decoder);
+			cmd = DECODE_COMMAND_NONE;
+		}
+
 	} while (cmd == DECODE_COMMAND_NONE);
 
 	WildMidi_Close(wm);
