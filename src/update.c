@@ -225,7 +225,7 @@ removeDeletedFromDirectory(struct directory *directory)
 			continue;
 
 		g_debug("removing directory: %s", dv->base[i]->path);
-		dirvec_delete(dv, dv->base[i]);
+		delete_directory(dv->base[i]);
 		modified = true;
 	}
 
