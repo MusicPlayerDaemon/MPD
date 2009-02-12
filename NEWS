@@ -61,6 +61,7 @@ ver 0.14.2 (2009/??/??)
 * mapper: remove trailing slashes from music_directory
 * player: set player error when output device fails
 * update: recursively purge deleted directories
+* update: free deleted subdirectories
 
 
 ver 0.14.1 (2009/01/17)

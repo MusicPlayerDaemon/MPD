@@ -132,6 +132,9 @@ delete_each_song(struct song *song, G_GNUC_UNUSED void *data)
 	return 0;
 }
 
+static void
+delete_directory(struct directory *directory);
+
 /**
  * Recursively remove all sub directories and songs from a directory,
  * leaving an empty directory.
@@ -142,8 +145,9 @@ clear_directory(struct directory *directory)
 	int i;
 
 	for (i = directory->children.nr; --i >= 0;)
-		clear_directory(directory->children.base[i]);
-	dirvec_clear(&directory->children);
+		delete_directory(directory->children.base[i]);
+
+	assert(directory->children.nr == 0);
 
 	songvec_for_each(&directory->songs, delete_each_song, directory);
 }
