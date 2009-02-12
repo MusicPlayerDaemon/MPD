@@ -422,6 +422,11 @@ AC_ARG_ENABLE(fluidsynth,
 		[enable MIDI support via fluidsynth (default: disable)]),,
 	enable_fluidsynth=no)
 
+AC_ARG_ENABLE(wildmidi,
+	AS_HELP_STRING([--enable-wildmidi],
+		[enable MIDI support via wildmidi (default: disable)]),,
+	enable_wildmidi=no)
+
 AC_ARG_ENABLE(wavpack,
 	AS_HELP_STRING([--disable-wavpack],
 		[disable WavPack support (default: enable)]),
@@ -1038,6 +1043,26 @@ fi
 
 AM_CONDITIONAL(ENABLE_FLUIDSYNTH, test x$enable_fluidsynth = xyes)
 
+if test x$enable_wildmidi = xyes; then
+	oldcflags=$CFLAGS
+	oldlibs=$LIBS
+	oldcppflags=$CPPFLAGS
+
+	AC_CHECK_LIB(WildMidi, WildMidi_Init,,
+		AC_MSG_ERROR([libwildmidi not found]))
+
+	CFLAGS=$oldcflags
+	LIBS=$oldlibs
+	CPPFLAGS=$oldcppflags
+
+	AC_SUBST(WILDMIDI_LIBS,-lWildMidi)
+	AC_SUBST(WILDMIDI_CFLAGS,)
+
+	AC_DEFINE(ENABLE_WILDMIDI, 1, [Define for wildmidi support])
+fi
+
+AM_CONDITIONAL(ENABLE_WILDMIDI, test x$enable_wildmidi = xyes)
+
 
 dnl
 dnl Documentation
@@ -1329,6 +1354,12 @@ else
 	echo " fluidsynth MIDI support .......disabled"
 fi
 
+if test x$enable_wildmidi = xyes; then
+	echo " wildmidi MIDI support .........enabled"
+else
+	echo " wildmidi MIDI support .........disabled"
+fi
+
 if test x$enable_ffmpeg = xyes; then
 	echo " FFMPEG support ................enabled"
 else
@@ -1348,6 +1379,7 @@ if
 	test x$enable_modplug = xno &&
 	test x$enable_sidplay = xno &&
 	test x$enable_fluidsynth = xno &&
+	test x$enable_wildmidi = xno &&
 	test x$enable_mod = xno; then
 	AC_MSG_ERROR([No input plugins supported!])
 fi

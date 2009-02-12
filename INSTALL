@@ -101,6 +101,9 @@ For C64 SID support.
 libfluidsynth - http://fluidsynth.resonance.org/
 For MIDI support.
 
+libwildmidi - http://wildmidi.sourceforge.net/
+For MIDI support.
+
 
 Optional Miscellaneous Dependencies
 -----------------------------------

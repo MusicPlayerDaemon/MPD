@@ -13,6 +13,7 @@ mpd_CPPFLAGS = \
 	$(MODPLUG_CFLAGS) \
 	$(SIDPLAY_CFLAGS) \
 	$(FLUIDSYNTH_CFLAGS) \
+	$(WILDMIDI_CFLAGS) \
 	$(ID3TAG_CFLAGS) \
 	$(MAD_CFLAGS) \
 	$(FFMPEG_CFLAGS) \
@@ -28,6 +29,7 @@ mpd_LDADD = $(MPD_LIBS) \
 	$(MODPLUG_LIBS) \
 	$(SIDPLAY_LIBS) \
 	$(FLUIDSYNTH_LIBS) \
+	$(WILDMIDI_LIBS) \
 	$(ID3TAG_LIBS) \
 	$(MAD_LIBS) \
 	$(MP4FF_LIBS) \
@@ -321,6 +323,10 @@ endif
 
 if ENABLE_FLUIDSYNTH
 mpd_SOURCES += decoder/fluidsynth_plugin.c
+endif
+
+if ENABLE_WILDMIDI
+mpd_SOURCES += decoder/wildmidi_plugin.c
 endif
 
 if HAVE_FFMPEG
