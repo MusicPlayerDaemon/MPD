@@ -11,6 +11,7 @@ ver 0.15 - (200?/??/??)
   - modplug: another MOD plugin, based on libmodplug
   - mikmod disabled by default, due to severe security issues in libmikmod
   - sidplay: new decoder plugin for C64 SID (using libsidplay2)
+  - fluidsynth: new decoder plugin for MIDI files (using libfluidsynth)
 * audio outputs:
   - shout: enlarged buffer size to 32 kB
   - null: allow disabling synchronization

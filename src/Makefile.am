@@ -12,6 +12,7 @@ mpd_CPPFLAGS = \
 	$(AUDIOFILE_CFLAGS) $(LIBMIKMOD_CFLAGS) \
 	$(MODPLUG_CFLAGS) \
 	$(SIDPLAY_CFLAGS) \
+	$(FLUIDSYNTH_CFLAGS) \
 	$(ID3TAG_CFLAGS) \
 	$(MAD_CFLAGS) \
 	$(FFMPEG_CFLAGS) \
@@ -26,6 +27,7 @@ mpd_LDADD = $(MPD_LIBS) \
 	$(AUDIOFILE_LIBS) $(LIBMIKMOD_LIBS) \
 	$(MODPLUG_LIBS) \
 	$(SIDPLAY_LIBS) \
+	$(FLUIDSYNTH_LIBS) \
 	$(ID3TAG_LIBS) \
 	$(MAD_LIBS) \
 	$(MP4FF_LIBS) \
@@ -315,6 +317,10 @@ endif
 
 if ENABLE_SIDPLAY
 mpd_SOURCES += decoder/sidplay_plugin.cxx
+endif
+
+if ENABLE_FLUIDSYNTH
+mpd_SOURCES += decoder/fluidsynth_plugin.c
 endif
 
 if HAVE_FFMPEG

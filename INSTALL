@@ -98,6 +98,9 @@ Multi-codec library.
 libsidplay2 - http://sidplay2.sourceforge.net/
 For C64 SID support.
 
+libfluidsynth - http://fluidsynth.resonance.org/
+For MIDI support.
+
 
 Optional Miscellaneous Dependencies
 -----------------------------------

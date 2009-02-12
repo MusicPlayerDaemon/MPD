@@ -417,6 +417,11 @@ AC_ARG_ENABLE(sidplay,
 		[enable C64 SID support via libsidplay2 (default: disable)]),,
 	enable_sidplay=no)
 
+AC_ARG_ENABLE(fluidsynth,
+	AS_HELP_STRING([--enable-fluidsynth],
+		[enable MIDI support via fluidsynth (default: disable)]),,
+	enable_fluidsynth=no)
+
 AC_ARG_ENABLE(wavpack,
 	AS_HELP_STRING([--disable-wavpack],
 		[disable WavPack support (default: enable)]),
@@ -1018,12 +1023,20 @@ if test x$enable_sidplay = xyes; then
 	AC_SUBST(SIDPLAY_LIBS,"-lsidplay2 -lresid-builder")
 	AC_SUBST(SIDPLAY_CFLAGS,)
 
-	AC_DEFINE(ENABLE_SIDPLAY, 1, [Define for libsidplay2 support]),
+	AC_DEFINE(ENABLE_SIDPLAY, 1, [Define for libsidplay2 support])
 else
 	AM_CONDITIONAL(am__fastdepCXX, false)
 fi
 
 AM_CONDITIONAL(ENABLE_SIDPLAY, test x$enable_sidplay = xyes)
+
+if test x$enable_fluidsynth = xyes; then
+	PKG_CHECK_MODULES(FLUIDSYNTH, [fluidsynth],
+		AC_DEFINE(ENABLE_FLUIDSYNTH, 1, [Define for fluidsynth support]),
+		enable_fluidsynth=no)
+fi
+
+AM_CONDITIONAL(ENABLE_FLUIDSYNTH, test x$enable_fluidsynth = xyes)
 
 
 dnl
@@ -1310,6 +1323,12 @@ else
 	echo " C64 SID support ...............disabled"
 fi
 
+if test x$enable_fluidsynth = xyes; then
+	echo " fluidsynth MIDI support .......enabled"
+else
+	echo " fluidsynth MIDI support .......disabled"
+fi
+
 if test x$enable_ffmpeg = xyes; then
 	echo " FFMPEG support ................enabled"
 else
@@ -1328,6 +1347,7 @@ if
 	test x$enable_ffmpeg = xno &&
 	test x$enable_modplug = xno &&
 	test x$enable_sidplay = xno &&
+	test x$enable_fluidsynth = xno &&
 	test x$enable_mod = xno; then
 	AC_MSG_ERROR([No input plugins supported!])
 fi
