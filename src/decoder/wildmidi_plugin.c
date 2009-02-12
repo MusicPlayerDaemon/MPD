@@ -54,23 +54,38 @@ wildmidi_file_decode(struct decoder *decoder, const char *path_fs)
 		.channels = 2,
 	};
 	midi *wm;
+	const struct _WM_Info *info;
 	enum decoder_command cmd;
 
 	wm = WildMidi_Open(path_fs);
 	if (wm == NULL)
 		return;
 
-	decoder_initialized(decoder, &audio_format, false, -1);
+	info = WildMidi_GetInfo(wm);
+	if (info == NULL) {
+		WildMidi_Close(wm);
+		return;
+	}
+
+	decoder_initialized(decoder, &audio_format, false,
+			    info->approx_total_samples / WILDMIDI_SAMPLE_RATE);
 
 	do {
 		char buffer[4096];
 		int len;
 
+		info = WildMidi_GetInfo(wm);
+		if (info == NULL)
+			break;
+
 		len = WildMidi_GetOutput(wm, buffer, sizeof(buffer));
 		if (len <= 0)
 			break;
 
-		cmd = decoder_data(decoder, NULL, buffer, len, 0, 0, NULL);
+		cmd = decoder_data(decoder, NULL, buffer, len,
+				   (float)info->current_sample /
+				   (float)WILDMIDI_SAMPLE_RATE,
+				   0, NULL);
 	} while (cmd == DECODE_COMMAND_NONE);
 
 	WildMidi_Close(wm);
@@ -79,10 +94,24 @@ wildmidi_file_decode(struct decoder *decoder, const char *path_fs)
 static struct tag *
 wildmidi_tag_dup(const char *path_fs)
 {
-	struct tag *tag = tag_new();
+	midi *wm;
+	const struct _WM_Info *info;
+	struct tag *tag;
 
-	/* to be implemented */
-	(void)path_fs;
+	wm = WildMidi_Open(path_fs);
+	if (wm == NULL)
+		return NULL;
+
+	info = WildMidi_GetInfo(wm);
+	if (info == NULL) {
+		WildMidi_Close(wm);
+		return NULL;
+	}
+
+	tag = tag_new();
+	tag->time = info->approx_total_samples / WILDMIDI_SAMPLE_RATE;
+
+	WildMidi_Close(wm);
 
 	return tag;
 }
