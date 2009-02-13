@@ -1,5 +1,5 @@
 AC_PREREQ(2.60)
-AC_INIT(mpd, 0.14.2~git, musicpd-dev-team@lists.sourceforge.net)
+AC_INIT(mpd, 0.14.2, musicpd-dev-team@lists.sourceforge.net)
 AC_CONFIG_SRCDIR([src/main.c])
 AM_INIT_AUTOMAKE([foreign 1.9 dist-bzip2])
 AM_CONFIG_HEADER(config.h)

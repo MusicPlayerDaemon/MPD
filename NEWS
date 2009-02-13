@@ -1,14 +1,17 @@
-ver 0.14.2 (2009/??/??)
+ver 0.14.2 (2009/02/13)
 * decoders:
+  - aac: fix stream metadata
+  - ffmpeg: add TTA support
   - ffmpeg: added support for the tags comment, genre, year
-  - wavpack: pass NULL if the .wvc file fails to open
+  - ffmpeg: enable WAV streaming
+  - ffmpeg: don't show time if invalid time is passed
   - mikmod: call MikMod_Exit() only in the finish() method
+  - wavpack: pass NULL if the .wvc file fails to open
 * audio outputs:
   - jack: allocate ring buffers before connecting
   - jack: clear "shutdown" flag on reconnect
   - jack: reduced sleep time to 1ms
 * mapper: remove trailing slashes from music_directory
-
 
 ver 0.14.1 (2009/01/17)
 * decoders:
@@ -38,7 +41,6 @@ ver 0.14.1 (2009/01/17)
   - safely search the playlist for deleted song
 * use custom PRNG for volume dithering (speedup)
 * detect libid3tag without pkg-config
-
 
 ver 0.14 (2008/12/25)
 * audio outputs:
