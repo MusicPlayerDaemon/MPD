@@ -357,7 +357,12 @@ void shufflePlaylist(struct playlist *playlist, unsigned start, unsigned end)
 {
 	const struct song *queued;
 
-	if (end-1 <= start || end > queue_length(&playlist->queue))
+	if (end > queue_length(&playlist->queue))
+		/* correct the "end" offset */
+		end = queue_length(&playlist->queue);
+
+	if ((start+1) >= end)
+		/* needs at least two entries. */
 		return;
 
 	queued = playlist_get_queued_song(playlist);
