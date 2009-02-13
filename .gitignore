@@ -36,3 +36,5 @@ tags
 *~
 .stgit*
 doc/protocol.html
+doc/protocol
+doc/api

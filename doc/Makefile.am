@@ -12,8 +12,17 @@ protocol_DATA = $(wildcard protocol/*.html)
 $(DOCBOOK_HTML): %/index.html: %.xml
 	$(XMLTO) -o protocol --stringparam chunker.output.encoding=utf-8 html $<
 
-all-local: $(DOCBOOK_HTML)
+api/html/index.html: doxygen.conf
+	$(DOXYGEN) $<
+
+all-local: $(DOCBOOK_HTML) api/html/index.html
 
 clean-local:
 	rm -rf $(patsubst %.xml,%,$(DOCBOOK_FILES))
+	rm -rf api
+
+install-data-local: api/html/index.html
+	$(mkinstalldirs) $(docdir)/api/html
+	$(INSTALL_DATA) -c -m 644 api/html/*.html api/html/*.css api/html/*.png api/html/*.gif $(docdir)/api/html
+
 endif

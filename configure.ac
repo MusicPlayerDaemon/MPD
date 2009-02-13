@@ -1077,6 +1077,13 @@ if test x$enable_documentation = xyes; then
 	fi
 
 	AC_SUBST(XMLTO)
+
+	AC_PATH_PROG(DOXYGEN, doxygen)
+	if test x$DOXYGEN = x; then
+		AC_MSG_ERROR([doxygen not found])
+	fi
+
+	AC_SUBST(DOXYGEN)
 fi
 
 AM_CONDITIONAL(ENABLE_DOCUMENTATION, test x$enable_documentation = xyes)
