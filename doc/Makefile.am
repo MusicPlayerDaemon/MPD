@@ -22,7 +22,7 @@ clean-local:
 	rm -rf api
 
 install-data-local: api/html/index.html
-	$(mkinstalldirs) $(docdir)/api/html
-	$(INSTALL_DATA) -c -m 644 api/html/*.html api/html/*.css api/html/*.png api/html/*.gif $(docdir)/api/html
+	$(mkinstalldirs) $(DESTDIR)$(docdir)/api/html
+	$(INSTALL_DATA) -c -m 644 api/html/*.html api/html/*.css api/html/*.png api/html/*.gif $(DESTDIR)$(docdir)/api/html
 
 endif
