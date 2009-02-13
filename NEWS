@@ -36,7 +36,7 @@ ver 0.15 - (200?/??/??)
 * playlist: don't unpause on delete
 
 
-ver 0.14.2 (2009/??/??)
+ver 0.14.2 (2009/02/13)
 * configure.ac:
   - define HAVE_FFMPEG after all checks
 * decoders:
@@ -62,7 +62,6 @@ ver 0.14.2 (2009/??/??)
 * player: set player error when output device fails
 * update: recursively purge deleted directories
 * update: free deleted subdirectories
-
 
 ver 0.14.1 (2009/01/17)
 * decoders:
@@ -92,7 +91,6 @@ ver 0.14.1 (2009/01/17)
   - safely search the playlist for deleted song
 * use custom PRNG for volume dithering (speedup)
 * detect libid3tag without pkg-config
-
 
 ver 0.14 (2008/12/25)
 * audio outputs:
