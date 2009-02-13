@@ -353,42 +353,40 @@ moveSongInPlaylistById(struct playlist *playlist, unsigned id1, int to)
 	return moveSongInPlaylist(playlist, song, to);
 }
 
-void shufflePlaylist(struct playlist *playlist)
+void shufflePlaylist(struct playlist *playlist, unsigned start, unsigned end)
 {
 	const struct song *queued;
-	unsigned i;
 
-	if (queue_length(&playlist->queue) <= 1)
+	if (end-1 <= start || end > queue_length(&playlist->queue))
 		return;
 
 	queued = playlist_get_queued_song(playlist);
+	if (playlist->playing && playlist->current >= 0) {
+		unsigned current_position;
+		current_position = queue_order_to_position(&playlist->queue,
+	                                                   playlist->current);
 
-	if (playlist->playing) {
-		if (playlist->current >= 0)
+		if (current_position >= start && current_position < end)
+		{
 			/* put current playing song first */
-			queue_swap(&playlist->queue, 0,
-				   queue_order_to_position(&playlist->queue,
-							   playlist->current));
+			queue_swap(&playlist->queue, start, current_position);
 
-		if (playlist->queue.random) {
-			playlist->current =
-				queue_position_to_order(&playlist->queue, 0);
-		} else
-			playlist->current = 0;
+			if (playlist->queue.random) {
+				playlist->current =
+					queue_position_to_order(&playlist->queue, start);
+			} else
+				playlist->current = start;
 
-		/* start shuffle after the current song */
-		i = 1;
+			/* start shuffle after the current song */
+			start++;
+		}
 	} else {
-		/* no playback currently: shuffle everything, and
-		   reset playlist->current */
+		/* no playback currently: reset playlist->current */
 
-		i = 0;
 		playlist->current = -1;
 	}
 
-	/* shuffle the rest of the list */
-	queue_shuffle_range(&playlist->queue, i,
-			    queue_length(&playlist->queue));
+	queue_shuffle_range(&playlist->queue, start, end);
 
 	incrPlaylistVersion(playlist);
 

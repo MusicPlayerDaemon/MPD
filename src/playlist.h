@@ -151,7 +151,7 @@ void syncPlayerAndPlaylist(struct playlist *playlist);
 
 void previousSongInPlaylist(struct playlist *playlist);
 
-void shufflePlaylist(struct playlist *playlist);
+void shufflePlaylist(struct playlist *playlist, unsigned start, unsigned end);
 
 void
 deleteASongFromPlaylist(struct playlist *playlist, const struct song *song);

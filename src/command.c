@@ -656,7 +656,12 @@ static enum command_return
 handle_shuffle(G_GNUC_UNUSED struct client *client,
 	       G_GNUC_UNUSED int argc, G_GNUC_UNUSED char *argv[])
 {
-	shufflePlaylist(&g_playlist);
+	unsigned start = 0, end = queue_length(&g_playlist.queue);
+	if (argc == 2 && !check_range(client, &start, &end,
+	                              argv[1], need_range))
+		return COMMAND_RETURN_ERROR;
+
+	shufflePlaylist(&g_playlist, start, end);
 	return COMMAND_RETURN_OK;
 }
 
@@ -1566,7 +1571,7 @@ static const struct command commands[] = {
 	{ "seek", PERMISSION_CONTROL, 2, 2, handle_seek },
 	{ "seekid", PERMISSION_CONTROL, 2, 2, handle_seekid },
 	{ "setvol", PERMISSION_CONTROL, 1, 1, handle_setvol },
-	{ "shuffle", PERMISSION_CONTROL, 0, 0, handle_shuffle },
+	{ "shuffle", PERMISSION_CONTROL, 0, 1, handle_shuffle },
 	{ "stats", PERMISSION_READ, 0, 0, handle_stats },
 	{ "status", PERMISSION_READ, 0, 0, handle_status },
 #ifdef ENABLE_SQLITE

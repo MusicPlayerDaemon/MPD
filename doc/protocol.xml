@@ -782,11 +782,14 @@ OK
           <term>
             <cmdsynopsis>
               <command>shuffle</command>
+              <arg><replaceable>SONGRANGE</replaceable></arg>
             </cmdsynopsis>
           </term>
           <listitem>
             <para>
               Shuffles the current playlist.
+              <varname>SONGRANGE</varname> is optional and specifies
+              a range of songs.
             </para>
           </listitem>
         </varlistentry>
