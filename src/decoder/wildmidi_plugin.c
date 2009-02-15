@@ -37,6 +37,10 @@ wildmidi_init(const struct config_param *param)
 
 	config_file = config_get_block_string(param, "config_file",
 					      "/etc/timidity/timidity.cfg");
+	if (!g_file_test(config_file, G_FILE_TEST_IS_REGULAR)) {
+		g_debug("configuration file does not exist: %s", config_file);
+		return false;
+	}
 
 	ret = WildMidi_Init(config_file, WILDMIDI_SAMPLE_RATE, 0);
 	return ret == 0;
