@@ -20,8 +20,7 @@
 #ifndef MPD_DECODER_CONTROL_H
 #define MPD_DECODER_CONTROL_H
 
-#include "decoder_api.h"
-
+#include "decoder_command.h"
 #include "audio_format.h"
 #include "notify.h"
 

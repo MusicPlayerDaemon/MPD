@@ -26,6 +26,7 @@
  *
  */
 
+#include "decoder_command.h"
 #include "decoder_plugin.h"
 #include "input_stream.h"
 #include "replay_gain.h"
@@ -33,13 +34,6 @@
 #include "audio_format.h"
 
 #include <stdbool.h>
-
-enum decoder_command {
-	DECODE_COMMAND_NONE = 0,
-	DECODE_COMMAND_START,
-	DECODE_COMMAND_STOP,
-	DECODE_COMMAND_SEEK
-};
 
 
 /**

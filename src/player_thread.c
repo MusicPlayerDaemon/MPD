@@ -26,6 +26,7 @@
 #include "event_pipe.h"
 #include "crossfade.h"
 #include "song.h"
+#include "tag.h"
 #include "pipe.h"
 #include "idle.h"
 #include "main.h"
