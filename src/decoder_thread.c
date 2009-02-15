@@ -50,7 +50,7 @@ decoder_stream_decode(const struct decoder_plugin *plugin,
 	/* rewind the stream, so each plugin gets a fresh start */
 	input_stream_seek(input_stream, 0, SEEK_SET);
 
-	plugin->stream_decode(decoder, input_stream);
+	decoder_plugin_stream_decode(plugin, decoder, input_stream);
 
 	assert(dc.state == DECODE_STATE_START ||
 	       dc.state == DECODE_STATE_DECODE);
@@ -71,7 +71,7 @@ decoder_file_decode(const struct decoder_plugin *plugin,
 	assert(path[0] == '/');
 	assert(dc.state == DECODE_STATE_START);
 
-	plugin->file_decode(decoder, path);
+	decoder_plugin_file_decode(plugin, decoder, path);
 
 	assert(dc.state == DECODE_STATE_START ||
 	       dc.state == DECODE_STATE_DECODE);

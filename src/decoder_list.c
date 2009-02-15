@@ -189,7 +189,8 @@ void decoder_plugin_init_all(void)
 {
 	for (unsigned i = 0; i < num_decoder_plugins; ++i) {
 		const struct decoder_plugin *plugin = decoder_plugins[i];
-		if (plugin->init == NULL || decoder_plugins[i]->init())
+
+		if (decoder_plugin_init(plugin))
 			decoder_plugins_enabled[i] = true;
 	}
 }
@@ -198,7 +199,8 @@ void decoder_plugin_deinit_all(void)
 {
 	for (unsigned i = 0; i < num_decoder_plugins; ++i) {
 		const struct decoder_plugin *plugin = decoder_plugins[i];
-		if (decoder_plugins_enabled[i] && plugin->finish != NULL)
-			decoder_plugins[i]->finish();
+
+		if (decoder_plugins_enabled[i])
+			decoder_plugin_finish(plugin);
 	}
 }

@@ -20,6 +20,7 @@
 #define MPD_DECODER_PLUGIN_H
 
 #include <stdbool.h>
+#include <stddef.h>
 
 struct input_stream;
 struct tag;
@@ -76,5 +77,59 @@ struct decoder_plugin {
 	const char *const*suffixes;
 	const char *const*mime_types;
 };
+
+/**
+ * Initialize a decoder plugin.
+ *
+ * @return true if the plugin was initialized successfully, false if
+ * the plugin is not available
+ */
+static inline bool
+decoder_plugin_init(const struct decoder_plugin *plugin)
+{
+	return plugin->init != NULL
+		? plugin->init()
+		: true;
+}
+
+/**
+ * Deinitialize a decoder plugin which was initialized successfully.
+ */
+static inline void
+decoder_plugin_finish(const struct decoder_plugin *plugin)
+{
+	if (plugin->finish != NULL)
+		plugin->finish();
+}
+
+/**
+ * Decode a stream.
+ */
+static inline void
+decoder_plugin_stream_decode(const struct decoder_plugin *plugin,
+			     struct decoder *decoder, struct input_stream *is)
+{
+	plugin->stream_decode(decoder, is);
+}
+
+/**
+ * Decode a file.
+ */
+static inline void
+decoder_plugin_file_decode(const struct decoder_plugin *plugin,
+			   struct decoder *decoder, const char *path_fs)
+{
+	plugin->file_decode(decoder, path_fs);
+}
+
+/**
+ * Read the tag of a file.
+ */
+static inline struct tag *
+decoder_plugin_tag_dup(const struct decoder_plugin *plugin,
+		       const char *path_fs)
+{
+	return plugin->tag_dup(path_fs);
+}
 
 #endif
