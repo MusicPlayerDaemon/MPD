@@ -134,10 +134,11 @@ daemonize_detach(void)
 	fflush(NULL);
 
 	pid = fork();
+	if (pid < 0)
+		g_error("fork() failed: %s", g_strerror(errno));
+
 	if (pid > 0)
 		_exit(EXIT_SUCCESS);
-	else if (pid < 0)
-		g_error("problems fork'ing for daemon!");
 
 	if (chdir("/") < 0)
 		g_error("problems changing to root directory");
