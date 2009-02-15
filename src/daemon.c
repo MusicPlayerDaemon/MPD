@@ -131,17 +131,26 @@ daemonize_detach(void)
 {
 	pid_t pid;
 
+	/* flush all file handles before duplicating the buffers */
+
 	fflush(NULL);
+
+	/* detach from parent process */
 
 	pid = fork();
 	if (pid < 0)
 		g_error("fork() failed: %s", g_strerror(errno));
 
 	if (pid > 0)
+		/* exit the parent process */
 		_exit(EXIT_SUCCESS);
+
+	/* release the current working directory */
 
 	if (chdir("/") < 0)
 		g_error("problems changing to root directory");
+
+	/* detach from the current session */
 
 	setsid();
 
