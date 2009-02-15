@@ -192,9 +192,12 @@ void
 daemonize_init(const char *user, const char *_pidfile)
 {
 #ifndef WIN32
-	user_name = g_strdup(user);
-	if (user_name != NULL) {
-		struct passwd *pwd = getpwnam(user_name);
+	if (user != NULL && strcmp(user, g_get_user_name()) != 0) {
+		struct passwd *pwd;
+
+		user_name = g_strdup(user);
+
+		pwd = getpwnam(user_name);
 		if (pwd == NULL)
 			g_error("no such user \"%s\"", user_name);
 
