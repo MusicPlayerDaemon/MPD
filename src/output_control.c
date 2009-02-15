@@ -50,39 +50,39 @@ static void ao_command_async(struct audio_output *ao,
 }
 
 bool
-audio_output_open(struct audio_output *audioOutput,
-		  const struct audio_format *audioFormat)
+audio_output_open(struct audio_output *ao,
+		  const struct audio_format *audio_format)
 {
-	audioOutput->reopen_after = 0;
+	ao->reopen_after = 0;
 
-	if (audioOutput->open &&
-	    audio_format_equals(audioFormat, &audioOutput->in_audio_format)) {
+	if (ao->open &&
+	    audio_format_equals(audio_format, &ao->in_audio_format)) {
 		return true;
 	}
 
-	audioOutput->in_audio_format = *audioFormat;
+	ao->in_audio_format = *audio_format;
 
-	if (audio_format_defined(&audioOutput->config_audio_format)) {
+	if (audio_format_defined(&ao->config_audio_format)) {
 		/* copy config_audio_format to out_audio_format only if the
 		   device is not yet open; if it is already open,
 		   plugin->open() may have modified out_audio_format,
 		   and the value is already ok */
-		if (!audioOutput->open)
-			audioOutput->out_audio_format =
-				audioOutput->config_audio_format;
+		if (!ao->open)
+			ao->out_audio_format =
+				ao->config_audio_format;
 	} else {
-		audioOutput->out_audio_format = audioOutput->in_audio_format;
-		if (audioOutput->open)
-			audio_output_close(audioOutput);
+		ao->out_audio_format = ao->in_audio_format;
+		if (ao->open)
+			audio_output_close(ao);
 	}
 
-	if (audioOutput->thread == NULL)
-		audio_output_thread_start(audioOutput);
+	if (ao->thread == NULL)
+		audio_output_thread_start(ao);
 
-	if (!audioOutput->open)
-		ao_command(audioOutput, AO_COMMAND_OPEN);
+	if (!ao->open)
+		ao_command(ao, AO_COMMAND_OPEN);
 
-	return audioOutput->open;
+	return ao->open;
 }
 
 void
@@ -102,56 +102,56 @@ audio_output_signal(struct audio_output *ao)
 	notify_signal(&ao->notify);
 }
 
-void audio_output_play(struct audio_output *audioOutput,
-		       const char *playChunk, size_t size)
+void
+audio_output_play(struct audio_output *ao, const char *chunk, size_t size)
 {
 	assert(size > 0);
 
-	if (!audioOutput->open)
+	if (!ao->open)
 		return;
 
-	audioOutput->args.play.data = playChunk;
-	audioOutput->args.play.size = size;
-	ao_command_async(audioOutput, AO_COMMAND_PLAY);
+	ao->args.play.data = chunk;
+	ao->args.play.size = size;
+	ao_command_async(ao, AO_COMMAND_PLAY);
 }
 
-void audio_output_pause(struct audio_output *audioOutput)
+void audio_output_pause(struct audio_output *ao)
 {
-	ao_command_async(audioOutput, AO_COMMAND_PAUSE);
+	ao_command_async(ao, AO_COMMAND_PAUSE);
 }
 
-void audio_output_cancel(struct audio_output *audioOutput)
+void audio_output_cancel(struct audio_output *ao)
 {
-	ao_command_async(audioOutput, AO_COMMAND_CANCEL);
+	ao_command_async(ao, AO_COMMAND_CANCEL);
 }
 
-void audio_output_close(struct audio_output *audioOutput)
+void audio_output_close(struct audio_output *ao)
 {
-	if (audioOutput->open)
-		ao_command(audioOutput, AO_COMMAND_CLOSE);
+	if (ao->open)
+		ao_command(ao, AO_COMMAND_CLOSE);
 }
 
-void audio_output_finish(struct audio_output *audioOutput)
+void audio_output_finish(struct audio_output *ao)
 {
-	audio_output_close(audioOutput);
+	audio_output_close(ao);
 
-	if (audioOutput->thread != NULL) {
-		ao_command(audioOutput, AO_COMMAND_KILL);
-		g_thread_join(audioOutput->thread);
+	if (ao->thread != NULL) {
+		ao_command(ao, AO_COMMAND_KILL);
+		g_thread_join(ao->thread);
 	}
 
-	if (audioOutput->plugin->finish)
-		audioOutput->plugin->finish(audioOutput->data);
+	if (ao->plugin->finish)
+		ao->plugin->finish(ao->data);
 
-	notify_deinit(&audioOutput->notify);
+	notify_deinit(&ao->notify);
 }
 
-void audio_output_send_tag(struct audio_output *audioOutput,
-			   const struct tag *tag)
+void
+audio_output_send_tag(struct audio_output *ao, const struct tag *tag)
 {
-	if (audioOutput->plugin->send_tag == NULL)
+	if (ao->plugin->send_tag == NULL)
 		return;
 
-	audioOutput->args.tag = tag;
-	ao_command_async(audioOutput, AO_COMMAND_SEND_TAG);
+	ao->args.tag = tag;
+	ao_command_async(ao, AO_COMMAND_SEND_TAG);
 }

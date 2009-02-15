@@ -23,17 +23,16 @@
 #include <stdbool.h>
 
 struct audio_output;
-struct audio_output_plugin;
 struct audio_format;
 struct tag;
 struct config_param;
 
 int
-audio_output_init(struct audio_output *, const struct config_param *param);
+audio_output_init(struct audio_output *ao, const struct config_param *param);
 
 bool
-audio_output_open(struct audio_output *audioOutput,
-		  const struct audio_format *audioFormat);
+audio_output_open(struct audio_output *ao,
+		  const struct audio_format *audio_format);
 
 /**
  * Opens or closes the device, depending on the "enabled" flag.
@@ -50,15 +49,15 @@ audio_output_update(struct audio_output *ao,
 void
 audio_output_signal(struct audio_output *ao);
 
-void audio_output_play(struct audio_output *audioOutput,
-		       const char *playChunk, size_t size);
+void
+audio_output_play(struct audio_output *ao, const char *chunk, size_t size);
 
-void audio_output_pause(struct audio_output *audioOutput);
+void audio_output_pause(struct audio_output *ao);
 
-void audio_output_cancel(struct audio_output *audioOutput);
-void audio_output_close(struct audio_output *audioOutput);
-void audio_output_finish(struct audio_output *audioOutput);
-void audio_output_send_tag(struct audio_output *audioOutput,
-			   const struct tag *tag);
+void audio_output_cancel(struct audio_output *ao);
+void audio_output_close(struct audio_output *ao);
+void audio_output_finish(struct audio_output *ao);
+void
+audio_output_send_tag(struct audio_output *ao, const struct tag *tag);
 
 #endif
