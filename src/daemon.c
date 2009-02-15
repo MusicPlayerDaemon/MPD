@@ -126,6 +126,27 @@ daemonize_set_user(void)
 #endif
 }
 
+static void
+daemonize_detach(void)
+{
+	pid_t pid;
+
+	fflush(NULL);
+
+	pid = fork();
+	if (pid > 0)
+		_exit(EXIT_SUCCESS);
+	else if (pid < 0)
+		g_error("problems fork'ing for daemon!");
+
+	if (chdir("/") < 0)
+		g_error("problems changing to root directory");
+
+	setsid();
+
+	g_debug("daemonized!");
+}
+
 void
 daemonize(bool detach)
 {
@@ -143,25 +164,8 @@ daemonize(bool detach)
 		}
 	}
 
-	if (detach) {
-		int pid;
-
-		fflush(NULL);
-		pid = fork();
-		if (pid > 0)
-			_exit(EXIT_SUCCESS);
-		else if (pid < 0) {
-			g_error("problems fork'ing for daemon!");
-		}
-
-		if (chdir("/") < 0) {
-			g_error("problems changing to root directory");
-		}
-
-		setsid();
-
-		g_debug("daemonized!");
-	}
+	if (detach)
+		daemonize_detach();
 
 	if (pidfile != NULL) {
 		g_debug("writing pid file");
