@@ -26,6 +26,7 @@
  *
  */
 
+#include "decoder_plugin.h"
 #include "input_stream.h"
 #include "replay_gain.h"
 #include "tag.h"
@@ -39,63 +40,6 @@ enum decoder_command {
 	DECODE_COMMAND_STOP,
 	DECODE_COMMAND_SEEK
 };
-
-
-struct decoder;
-
-struct decoder_plugin {
-	const char *name;
-
-	/**
-	 * optional, set this to NULL if the InputPlugin doesn't
-	 * have/need one this must return < 0 if there is an error and
-	 * >= 0 otherwise
-	 */
-	bool (*init)(void);
-
-	/**
-	 * optional, set this to NULL if the InputPlugin doesn't have/need one
-	 */
-	void (*finish)(void);
-
-	/**
-	 * this will be used to decode InputStreams, and is
-	 * recommended for files and networked (HTTP) connections.
-	 *
-	 * @return false if the plugin cannot decode the stream, and
-	 * true if it was able to do so (even if an error occured
-	 * during playback)
-	 */
-	void (*stream_decode)(struct decoder *, struct input_stream *);
-
-	/**
-	 * use this if and only if your InputPlugin can only be passed
-	 * a filename or handle as input, and will not allow callbacks
-	 * to be set (like Ogg-Vorbis and FLAC libraries allow)
-	 *
-	 * @return false if the plugin cannot decode the file, and
-	 * true if it was able to do so (even if an error occured
-	 * during playback)
-	 */
-	void (*file_decode)(struct decoder *, const char *path);
-
-	/**
-	 * file should be the full path!  Returns NULL if a tag cannot
-	 * be found or read
-	 */
-	struct tag *(*tag_dup)(const char *file);
-
-	/* last element in these arrays must always be a NULL: */
-	const char *const*suffixes;
-	const char *const*mime_types;
-};
-
-
-/**
- * Opaque handle which the decoder plugin passes to the functions in
- * this header.
- */
-struct decoder;
 
 
 /**

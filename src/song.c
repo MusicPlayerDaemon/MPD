@@ -21,8 +21,9 @@
 #include "directory.h"
 #include "mapper.h"
 #include "decoder_list.h"
-#include "decoder_api.h"
+#include "decoder_plugin.h"
 #include "tag_id3.h"
+#include "tag.h"
 
 #include <glib.h>
 
@@ -30,6 +31,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <string.h>
 
 static struct song *
 song_alloc(const char *url, struct directory *parent)

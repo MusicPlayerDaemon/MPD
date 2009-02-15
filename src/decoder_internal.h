@@ -19,7 +19,6 @@
 #ifndef MPD_DECODER_INTERNAL_H
 #define MPD_DECODER_INTERNAL_H
 
-#include "decoder_api.h"
 #include "pcm_convert.h"
 
 struct decoder {

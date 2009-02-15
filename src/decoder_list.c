@@ -17,11 +17,13 @@
  */
 
 #include "decoder_list.h"
-#include "decoder_api.h"
+#include "decoder_plugin.h"
 #include "utils.h"
 #include "config.h"
 
 #include <glib.h>
+
+#include <string.h>
 
 extern const struct decoder_plugin mp3Plugin;
 extern const struct decoder_plugin vorbis_decoder_plugin;

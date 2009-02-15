@@ -62,6 +62,7 @@ mpd_headers = \
 	dbUtils.h \
 	decoder_thread.h \
 	decoder_control.h \
+	decoder_plugin.h \
 	decoder_api.h \
 	decoder_internal.h \
 	directory.h \
