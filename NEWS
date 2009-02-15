@@ -13,6 +13,7 @@ ver 0.15 - (200?/??/??)
   - sidplay: new decoder plugin for C64 SID (using libsidplay2)
   - fluidsynth: new decoder plugin for MIDI files (using libfluidsynth)
   - wildmidi: another decoder plugin for MIDI files (using libwildmidi)
+  - added configuration option to disable decoder plugins
 * audio outputs:
   - shout: enlarged buffer size to 32 kB
   - null: allow disabling synchronization

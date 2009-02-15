@@ -218,6 +218,10 @@ void decoder_plugin_init_all(void)
 		const struct config_param *param =
 			decoder_plugin_config(plugin->name);
 
+		if (!config_get_block_bool(param, "enabled", true))
+			/* the plugin is disabled in mpd.conf */
+			continue;
+
 		if (decoder_plugin_init(plugin, param))
 			decoder_plugins_enabled[i] = true;
 	}
