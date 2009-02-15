@@ -100,28 +100,29 @@ void
 daemonize_set_user(void)
 {
 #ifndef WIN32
-	if (user_name != NULL) {
-		/* get uid */
-		if (setgid(user_gid) == -1) {
-			g_error("cannot setgid for user \"%s\": %s",
-				user_name, g_strerror(errno));
-		}
+	if (user_name == NULL)
+		return;
+
+	/* get uid */
+	if (setgid(user_gid) == -1) {
+		g_error("cannot setgid for user \"%s\": %s",
+			user_name, g_strerror(errno));
+	}
 #ifdef _BSD_SOURCE
-		/* init suplementary groups
-		 * (must be done before we change our uid)
-		 */
-		if (initgroups(user_name, user_gid) == -1) {
-			g_warning("cannot init supplementary groups "
-				  "of user \"%s\": %s",
-				  user_name, g_strerror(errno));
-		}
+	/* init suplementary groups
+	 * (must be done before we change our uid)
+	 */
+	if (initgroups(user_name, user_gid) == -1) {
+		g_warning("cannot init supplementary groups "
+			  "of user \"%s\": %s",
+			  user_name, g_strerror(errno));
+	}
 #endif
 
-		/* set uid */
-		if (setuid(user_uid) == -1) {
-			g_error("cannot change to uid of user \"%s\": %s",
-				user_name, g_strerror(errno));
-		}
+	/* set uid */
+	if (setuid(user_uid) == -1) {
+		g_error("cannot change to uid of user \"%s\": %s",
+			user_name, g_strerror(errno));
 	}
 #endif
 }
