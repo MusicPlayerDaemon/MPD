@@ -20,6 +20,7 @@
 #include "decoder_plugin.h"
 #include "utils.h"
 #include "config.h"
+#include "conf.h"
 
 #include <glib.h>
 
@@ -185,12 +186,39 @@ void decoder_plugin_print_all_decoders(FILE * fp)
 	fflush(fp);
 }
 
+/**
+ * Find the "decoder" configuration block for the specified plugin.
+ *
+ * @param plugin_name the name of the decoder plugin
+ * @return the configuration block, or NULL if none was configured
+ */
+static const struct config_param *
+decoder_plugin_config(const char *plugin_name)
+{
+	const struct config_param *param = NULL;
+
+	while ((param = config_get_next_param(CONF_DECODER, param)) != NULL) {
+		const char *name =
+			config_get_block_string(param, "plugin", NULL);
+		if (name == NULL)
+			g_error("decoder configuration without 'plugin' name in line %d",
+				param->line);
+
+		if (strcmp(name, plugin_name) == 0)
+			return param;
+	}
+
+	return NULL;
+}
+
 void decoder_plugin_init_all(void)
 {
 	for (unsigned i = 0; i < num_decoder_plugins; ++i) {
 		const struct decoder_plugin *plugin = decoder_plugins[i];
+		const struct config_param *param =
+			decoder_plugin_config(plugin->name);
 
-		if (decoder_plugin_init(plugin, NULL))
+		if (decoder_plugin_init(plugin, param))
 			decoder_plugins_enabled[i] = true;
 	}
 }
