@@ -26,6 +26,17 @@
 
 #include <time.h>
 
+enum audio_output_command {
+	AO_COMMAND_NONE = 0,
+	AO_COMMAND_OPEN,
+	AO_COMMAND_CLOSE,
+	AO_COMMAND_PLAY,
+	AO_COMMAND_PAUSE,
+	AO_COMMAND_CANCEL,
+	AO_COMMAND_SEND_TAG,
+	AO_COMMAND_KILL
+};
+
 struct audio_output {
 	/**
 	 * The device's configured display name.

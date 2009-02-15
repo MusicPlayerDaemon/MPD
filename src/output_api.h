@@ -114,17 +114,6 @@ struct audio_output_plugin {
 	void (*send_tag)(void *data, const struct tag *tag);
 };
 
-enum audio_output_command {
-	AO_COMMAND_NONE = 0,
-	AO_COMMAND_OPEN,
-	AO_COMMAND_CLOSE,
-	AO_COMMAND_PLAY,
-	AO_COMMAND_PAUSE,
-	AO_COMMAND_CANCEL,
-	AO_COMMAND_SEND_TAG,
-	AO_COMMAND_KILL
-};
-
 enum audio_control_command {
 	AC_MIXER_GETVOL = 0,
 	AC_MIXER_SETVOL,
