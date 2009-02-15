@@ -120,7 +120,8 @@ static URLProtocol mpd_ffmpeg_fileops = {
 	.url_close = mpd_ffmpeg_close,
 };
 
-static bool ffmpeg_init(void)
+static bool
+ffmpeg_init(G_GNUC_UNUSED const struct config_param *param)
 {
 	av_register_all();
 	register_protocol(&mpd_ffmpeg_fileops);

@@ -91,7 +91,8 @@ mad_fixed_to_24_buffer(int32_t *dest, const struct mad_synth *synth,
 	}
 }
 
-static bool mp3_plugin_init(void)
+static bool
+mp3_plugin_init(G_GNUC_UNUSED const struct config_param *param)
 {
 	gapless_playback = config_get_bool(CONF_GAPLESS_MP3_PLAYBACK,
 					   DEFAULT_GAPLESS_MP3_PLAYBACK);

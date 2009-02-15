@@ -64,7 +64,7 @@ fluidsynth_mpd_log_function(int level, char *message, G_GNUC_UNUSED void *data)
 }
 
 static bool
-fluidsynth_init(void)
+fluidsynth_init(G_GNUC_UNUSED const struct config_param *param)
 {
 	fluid_set_log_function(LAST_LOG_LEVEL,
 			       fluidsynth_mpd_log_function, NULL);

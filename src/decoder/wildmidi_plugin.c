@@ -30,7 +30,7 @@ enum {
 };
 
 static bool
-wildmidi_init(void)
+wildmidi_init(G_GNUC_UNUSED const struct config_param *param)
 {
 	int ret;
 

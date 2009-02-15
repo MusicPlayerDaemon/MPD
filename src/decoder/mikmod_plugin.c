@@ -90,7 +90,8 @@ static MDRIVER drv_mpd = {
 	VC_VoiceRealVolume
 };
 
-static bool mod_initMikMod(void)
+static bool
+mod_initMikMod(G_GNUC_UNUSED const struct config_param *param)
 {
 	static char params[] = "";
 

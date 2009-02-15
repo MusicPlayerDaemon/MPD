@@ -22,6 +22,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+struct config_param;
 struct input_stream;
 struct tag;
 
@@ -39,7 +40,7 @@ struct decoder_plugin {
 	 * have/need one this must return < 0 if there is an error and
 	 * >= 0 otherwise
 	 */
-	bool (*init)(void);
+	bool (*init)(const struct config_param *param);
 
 	/**
 	 * optional, set this to NULL if the InputPlugin doesn't have/need one
@@ -81,14 +82,17 @@ struct decoder_plugin {
 /**
  * Initialize a decoder plugin.
  *
+ * @param param a configuration block for this plugin, or NULL if none
+ * is configured
  * @return true if the plugin was initialized successfully, false if
  * the plugin is not available
  */
 static inline bool
-decoder_plugin_init(const struct decoder_plugin *plugin)
+decoder_plugin_init(const struct decoder_plugin *plugin,
+		    const struct config_param *param)
 {
 	return plugin->init != NULL
-		? plugin->init()
+		? plugin->init(param)
 		: true;
 }
 

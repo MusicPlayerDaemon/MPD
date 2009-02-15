@@ -32,6 +32,7 @@
 #include "replay_gain.h"
 #include "tag.h"
 #include "audio_format.h"
+#include "conf.h"
 
 #include <stdbool.h>
 

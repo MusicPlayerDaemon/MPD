@@ -383,7 +383,7 @@ flac_decode(struct decoder * decoder, struct input_stream *input_stream)
 #ifndef HAVE_OGGFLAC
 
 static bool
-oggflac_init(void)
+oggflac_init(G_GNUC_UNUSED const struct config_param *param)
 {
 #if defined(FLAC_API_VERSION_CURRENT) && FLAC_API_VERSION_CURRENT > 7
 	return !!FLAC_API_SUPPORTS_OGG_FLAC;
