@@ -30,12 +30,15 @@ enum {
 };
 
 static bool
-wildmidi_init(G_GNUC_UNUSED const struct config_param *param)
+wildmidi_init(const struct config_param *param)
 {
+	const char *config_file;
 	int ret;
 
-	ret = WildMidi_Init("/etc/timidity/timidity.cfg",
-			    WILDMIDI_SAMPLE_RATE, 0);
+	config_file = config_get_block_string(param, "config_file",
+					      "/etc/timidity/timidity.cfg");
+
+	ret = WildMidi_Init(config_file, WILDMIDI_SAMPLE_RATE, 0);
 	return ret == 0;
 }
 
