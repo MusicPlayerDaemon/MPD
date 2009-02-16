@@ -279,7 +279,7 @@ mpd_SOURCES += decoder/wavpack_plugin.c
 endif
 
 if HAVE_FAAD
-mpd_SOURCES += decoder/aac_plugin.c
+mpd_SOURCES += decoder/faad_plugin.c
 endif
 
 if HAVE_MP4
@@ -295,7 +295,7 @@ mpd_SOURCES += decoder/_flac_common.c
 endif
 
 if HAVE_OGGVORBIS
-mpd_SOURCES += decoder/oggvorbis_plugin.c
+mpd_SOURCES += decoder/vorbis_plugin.c
 endif
 
 if HAVE_FLAC

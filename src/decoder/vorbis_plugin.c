@@ -407,7 +407,7 @@ static const char *const vorbis_mime_types[] = {
 };
 
 const struct decoder_plugin vorbis_decoder_plugin = {
-	.name = "oggvorbis",
+	.name = "vorbis",
 	.stream_decode = vorbis_stream_decode,
 	.tag_dup = vorbis_tag_dup,
 	.suffixes = vorbis_suffixes,
