@@ -20,99 +20,13 @@
 #ifndef MPD_OUTPUT_API_H
 #define MPD_OUTPUT_API_H
 
+#include "output_plugin.h"
 #include "config.h"
 #include "audio_format.h"
 #include "tag.h"
 #include "conf.h"
 
-#include <stdbool.h>
-
 struct audio_output;
-
-/**
- * A plugin which controls an audio output device.
- */
-struct audio_output_plugin {
-	/**
-	 * the plugin's name
-	 */
-	const char *name;
-
-	/**
-	 * Test if this plugin can provide a default output, in case
-	 * none has been configured.  This method is optional.
-	 */
-	bool (*test_default_device)(void);
-
-	/**
-	 * Configure and initialize the device, but do not open it
-	 * yet.
-	 *
-	 * @param ao an opaque pointer to the audio_output structure
-	 * @param audio_format the configured audio format, or NULL if
-	 * none is configured
-	 * @param param the configuration section, or NULL if there is
-	 * no configuration
-	 * @return NULL on error, or an opaque pointer to the plugin's
-	 * data
-	 */
-	void *(*init)(struct audio_output *ao,
-		      const struct audio_format *audio_format,
-		      const struct config_param *param);
-
-	/**
-	 * Free resources allocated by this device.
-	 */
-	void (*finish)(void *data);
-
-	/**
-	 * Really open the device.
-	 * @param audio_format the audio format in which data is going
-	 * to be delivered; may be modified by the plugin
-	 */
-	bool (*open)(void *data, struct audio_format *audio_format);
-
-	/**
-	 * Play a chunk of audio data.
-	 */
-	bool (*play)(void *data, const char *playChunk, size_t size);
-
-	/**
-	 * Pause the device.  If supported, it may perform a special
-	 * action, which keeps the device open, but does not play
-	 * anything.  Output plugins like "shout" might want to play
-	 * silence during pause, so their clients won't be
-	 * disconnected.  Plugins which do not support pausing will
-	 * simply be closed, and have to be reopened when unpaused.
-	 *
-	 * @return false on error (output will be closed then), true
-	 * for continue to pause
-	 */
-	bool (*pause)(void *data);
-
-	/**
-	 * Try to cancel data which may still be in the device's
-	 * buffers.
-	 */
-	void (*cancel)(void *data);
-
-	/**
-	 * Close the device.
-	 */
-	void (*close)(void *data);
-
-	/**
-	 * Control the device. Usualy used for implementing
-	 * set and get mixer levels
-	 */
-	bool (*control)(void *data, int cmd, void *arg);
-
-	/**
-	 * Display metadata for the next chunk.  Optional method,
-	 * because not all devices can display metadata.
-	 */
-	void (*send_tag)(void *data, const struct tag *tag);
-};
 
 enum audio_control_command {
 	AC_MIXER_GETVOL = 0,
