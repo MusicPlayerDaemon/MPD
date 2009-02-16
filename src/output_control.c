@@ -140,8 +140,7 @@ void audio_output_finish(struct audio_output *ao)
 		g_thread_join(ao->thread);
 	}
 
-	if (ao->plugin->finish)
-		ao->plugin->finish(ao->data);
+	ao_plugin_finish(ao->plugin, ao->data);
 
 	notify_deinit(&ao->notify);
 }

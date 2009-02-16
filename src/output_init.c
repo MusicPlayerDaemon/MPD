@@ -69,7 +69,7 @@ audio_output_init(struct audio_output *ao, const struct config_param *param)
 			if (plugin->test_default_device) {
 				g_warning("Attempting to detect a %s audio "
 					  "device\n", plugin->name);
-				if (plugin->test_default_device()) {
+				if (ao_plugin_test_default_device(plugin)) {
 					g_warning("Successfully detected a %s "
 						  "audio device\n", plugin->name);
 					break;
@@ -109,8 +109,9 @@ audio_output_init(struct audio_output *ao, const struct config_param *param)
 	notify_init(&ao->notify);
 	ao->command = AO_COMMAND_NONE;
 
-	ao->data = plugin->init(ao, format ? &ao->config_audio_format : NULL,
-				param);
+	ao->data = ao_plugin_init(plugin, ao,
+				  format ? &ao->config_audio_format : NULL,
+				  param);
 	if (ao->data == NULL)
 		return 0;
 

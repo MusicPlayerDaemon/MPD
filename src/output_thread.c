@@ -43,7 +43,7 @@ ao_close(struct audio_output *ao)
 {
 	assert(ao->open);
 
-	ao->plugin->close(ao->data);
+	ao_plugin_close(ao->plugin, ao->data);
 	pcm_convert_deinit(&ao->convert_state);
 	ao->open = false;
 }
@@ -69,9 +69,9 @@ static void ao_play(struct audio_output *ao)
 			return;
 	}
 
-	ret = ao->plugin->play(ao->data, data, size);
+	ret = ao_plugin_play(ao->plugin, ao->data, data, size);
 	if (!ret) {
-		ao->plugin->cancel(ao->data);
+		ao_plugin_cancel(ao->plugin, ao->data);
 		ao_close(ao);
 	}
 
@@ -80,26 +80,18 @@ static void ao_play(struct audio_output *ao)
 
 static void ao_pause(struct audio_output *ao)
 {
-	ao->plugin->cancel(ao->data);
+	bool ret;
 
-	if (ao->plugin->pause != NULL) {
-		/* pause is supported */
-		ao_command_finished(ao);
+	ao_plugin_cancel(ao->plugin, ao->data);
+	ao_command_finished(ao);
 
-		do {
-			bool ret;
-
-			ret = ao->plugin->pause(ao->data);
-			if (!ret) {
-				ao_close(ao);
-				break;
-			}
-		} while (ao->command == AO_COMMAND_NONE);
-	} else {
-		/* pause is not supported - simply close the device */
-		ao_close(ao);
-		ao_command_finished(ao);
-	}
+	do {
+		ret = ao_plugin_pause(ao->plugin, ao->data);
+		if (!ret) {
+			ao_close(ao);
+			break;
+		}
+	} while (ao->command == AO_COMMAND_NONE);
 }
 
 static gpointer audio_output_task(gpointer arg)
@@ -115,8 +107,8 @@ static gpointer audio_output_task(gpointer arg)
 		case AO_COMMAND_OPEN:
 			assert(!ao->open);
 
-			ret = ao->plugin->open(ao->data,
-					       &ao->out_audio_format);
+			ret = ao_plugin_open(ao->plugin, ao->data,
+					     &ao->out_audio_format);
 
 			assert(!ao->open);
 			if (ret) {
@@ -130,8 +122,8 @@ static gpointer audio_output_task(gpointer arg)
 
 		case AO_COMMAND_CLOSE:
 			assert(ao->open);
-			ao->plugin->cancel(ao->data);
 
+			ao_plugin_cancel(ao->plugin, ao->data);
 			ao_close(ao);
 			ao_command_finished(ao);
 			break;
@@ -145,12 +137,12 @@ static gpointer audio_output_task(gpointer arg)
 			break;
 
 		case AO_COMMAND_CANCEL:
-			ao->plugin->cancel(ao->data);
+			ao_plugin_cancel(ao->plugin, ao->data);
 			ao_command_finished(ao);
 			break;
 
 		case AO_COMMAND_SEND_TAG:
-			ao->plugin->send_tag(ao->data, ao->args.tag);
+			ao_plugin_send_tag(ao->plugin, ao->data, ao->args.tag);
 			ao_command_finished(ao);
 			break;
 

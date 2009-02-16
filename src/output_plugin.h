@@ -112,4 +112,70 @@ struct audio_output_plugin {
 	bool (*control)(void *data, int cmd, void *arg);
 };
 
+static inline bool
+ao_plugin_test_default_device(const struct audio_output_plugin *plugin)
+{
+	return plugin->test_default_device != NULL
+		? plugin->test_default_device()
+		: false;
+}
+
+static inline void *
+ao_plugin_init(const struct audio_output_plugin *plugin,
+	       struct audio_output *ao,
+	       const struct audio_format *audio_format,
+	       const struct config_param *param)
+{
+	return plugin->init(ao, audio_format, param);
+}
+
+static inline void
+ao_plugin_finish(const struct audio_output_plugin *plugin, void *data)
+{
+	plugin->finish(data);
+}
+
+static inline bool
+ao_plugin_open(const struct audio_output_plugin *plugin,
+	       void *data, struct audio_format *audio_format)
+{
+	return plugin->open(data, audio_format);
+}
+
+static inline void
+ao_plugin_close(const struct audio_output_plugin *plugin, void *data)
+{
+	plugin->close(data);
+}
+
+static inline void
+ao_plugin_send_tag(const struct audio_output_plugin *plugin,
+		   void *data, const struct tag *tag)
+{
+	if (plugin->send_tag != NULL)
+		plugin->send_tag(data, tag);
+}
+
+static inline bool
+ao_plugin_play(const struct audio_output_plugin *plugin,
+	       void *data, const void *chunk, size_t size)
+{
+	return plugin->play(data, chunk, size);
+}
+
+static inline void
+ao_plugin_cancel(const struct audio_output_plugin *plugin, void *data)
+{
+	if (plugin->cancel != NULL)
+		plugin->cancel(data);
+}
+
+static inline bool
+ao_plugin_pause(const struct audio_output_plugin *plugin, void *data)
+{
+	return plugin->pause != NULL
+		? plugin->pause(data)
+		: false;
+}
+
 #endif
