@@ -71,10 +71,10 @@ bool mixer_control_setvol(unsigned int device, int volume, int rel)
 	mixer = ao_plugin_get_mixer(output->plugin, output->data);
 	if (mixer != NULL) {
 		if (rel) {
-			int cur_volume;
-			if (!mixer_control(mixer, AC_MIXER_GETVOL, &cur_volume)) {
+			int cur_volume = mixer_get_volume(mixer);
+			if (cur_volume < 0)
 				return false;
-			}
+
 			volume = volume + cur_volume;
 		}
 		if (volume > 100)
@@ -82,7 +82,7 @@ bool mixer_control_setvol(unsigned int device, int volume, int rel)
 		else if (volume < 0)
 			volume = 0;
 
-		return mixer_control(mixer, AC_MIXER_SETVOL, &volume);
+		return mixer_set_volume(mixer, volume);
 	}
 	return false;
 }
@@ -97,8 +97,16 @@ bool mixer_control_getvol(unsigned int device, int *volume)
 
 	output = audio_output_get(device);
 	mixer = ao_plugin_get_mixer(output->plugin, output->data);
-	if (mixer != NULL)
-		return mixer_control(mixer, AC_MIXER_GETVOL, volume);
+	if (mixer != NULL) {
+		int volume2;
+
+		volume2 = mixer_get_volume(mixer);
+		if (volume2 < 0)
+			return false;
+
+		*volume = volume2;
+		return true;
+	}
 
 	return false;
 }

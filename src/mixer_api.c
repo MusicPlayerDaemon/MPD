@@ -50,12 +50,6 @@ bool mixer_open(struct mixer *mixer)
 	return mixer->plugin->open(mixer);
 }
 
-bool mixer_control(struct mixer *mixer, int cmd, void *arg)
-{
-	assert(mixer != NULL && mixer->plugin != NULL);
-	return mixer->plugin->control(mixer, cmd, arg);
-}
-
 void mixer_close(struct mixer *mixer)
 {
 	assert(mixer != NULL && mixer->plugin != NULL);

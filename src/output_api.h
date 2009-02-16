@@ -28,13 +28,6 @@
 
 struct audio_output;
 
-enum audio_control_command {
-	AC_MIXER_GETVOL = 0,
-	AC_MIXER_SETVOL,
-};
-
-struct audio_output;
-
 const char *audio_output_get_name(const struct audio_output *ao);
 
 #endif

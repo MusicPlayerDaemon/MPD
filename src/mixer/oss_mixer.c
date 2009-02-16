@@ -137,74 +137,64 @@ oss_mixer_open(struct mixer *data)
 	return true;
 }
 
-static bool
-oss_mixer_control(struct mixer *data, int cmd, void *arg)
+static int
+oss_mixer_get_volume(struct mixer *mixer)
 {
-	struct oss_mixer *om = (struct oss_mixer *) data;
-	switch (cmd) {
-	case AC_MIXER_GETVOL:
-	{
-		int left, right, level;
-		int *ret;
+	struct oss_mixer *om = (struct oss_mixer *)mixer;
+	int left, right, level;
+	int ret;
 
-		if (om->device_fd < 0 && !oss_mixer_open(data)) {
-			return false;
-		}
+	if (om->device_fd < 0 && !oss_mixer_open(mixer))
+		return false;
 
-		if (ioctl(om->device_fd, MIXER_READ(om->volume_control), &level) < 0) {
-			oss_mixer_close(data);
-			g_warning("unable to read oss volume\n");
-			return false;
-		}
-
-		left = level & 0xff;
-		right = (level & 0xff00) >> 8;
-
-		if (left != right) {
-			g_warning("volume for left and right is not the same, \"%i\" and "
-				"\"%i\"\n", left, right);
-		}
-		ret = (int *) arg;
-		*ret = left;
-		return true;
+	ret = ioctl(om->device_fd, MIXER_READ(om->volume_control), &level);
+	if (ret < 0) {
+		oss_mixer_close(mixer);
+		g_warning("unable to read oss volume\n");
+		return false;
 	}
-	case AC_MIXER_SETVOL:
-	{
-		int new;
-		int level;
-		int *value = arg;
 
-		if (om->device_fd < 0 && !oss_mixer_open(data)) {
-			return false;
-		}
+	left = level & 0xff;
+	right = (level & 0xff00) >> 8;
 
-		new = *value;
-		if (new < 0) {
-			new = 0;
-		} else if (new > 100) {
-			new = 100;
-		}
-
-		level = (new << 8) + new;
-
-		if (ioctl(om->device_fd, MIXER_WRITE(om->volume_control), &level) < 0) {
-			g_warning("unable to set oss volume\n");
-			oss_mixer_close(data);
-			return false;
-		}
-		return true;
+	if (left != right) {
+		g_warning("volume for left and right is not the same, \"%i\" and "
+			  "\"%i\"\n", left, right);
 	}
-	default:
-		g_warning("Unsuported oss control\n");
-		break;
+
+	return left;
+}
+
+static bool
+oss_mixer_set_volume(struct mixer *mixer, unsigned volume)
+{
+	struct oss_mixer *om = (struct oss_mixer *)mixer;
+	int level;
+	int ret;
+
+	if (om->device_fd < 0 && !oss_mixer_open(mixer))
+		return false;
+
+	if (volume > 100)
+		volume = 100;
+
+	level = (volume << 8) + volume;
+
+	ret = ioctl(om->device_fd, MIXER_WRITE(om->volume_control), &level);
+	if (ret < 0) {
+		g_warning("unable to set oss volume\n");
+		oss_mixer_close(mixer);
+		return false;
 	}
-	return false;
+
+	return true;
 }
 
 const struct mixer_plugin oss_mixer = {
 	.init = oss_mixer_init,
 	.finish = oss_mixer_finish,
 	.open = oss_mixer_open,
-	.control = oss_mixer_control,
-	.close = oss_mixer_close
+	.close = oss_mixer_close,
+	.get_volume = oss_mixer_get_volume,
+	.set_volume = oss_mixer_set_volume,
 };

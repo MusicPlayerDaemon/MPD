@@ -45,14 +45,25 @@ struct mixer_plugin {
 	bool (*open)(struct mixer *data);
 
         /**
-	 * Control mixer device.
-         */
-	bool (*control)(struct mixer *data, int cmd, void *arg);
-
-        /**
     	 * Close mixer device
 	 */
 	void (*close)(struct mixer *data);
+
+	/**
+	 * Reads the current volume.
+	 *
+	 * @return the current volume (0..100 including) or -1 on
+	 * error
+	 */
+	int (*get_volume)(struct mixer *mixer);
+
+	/**
+	 * Sets the volume.
+	 *
+	 * @param volume the new volume (0..100 including)
+	 * @return true on success
+	 */
+	bool (*set_volume)(struct mixer *mixer, unsigned volume);
 };
 
 struct mixer {
@@ -72,7 +83,18 @@ void
 mixer_free(struct mixer *mixer);
 
 bool mixer_open(struct mixer *mixer);
-bool mixer_control(struct mixer *mixer, int cmd, void *arg);
 void mixer_close(struct mixer *mixer);
+
+static inline int
+mixer_get_volume(struct mixer *mixer)
+{
+	return mixer->plugin->get_volume(mixer);
+}
+
+static inline bool
+mixer_set_volume(struct mixer *mixer, unsigned volume)
+{
+	return mixer->plugin->set_volume(mixer, volume);
+}
 
 #endif

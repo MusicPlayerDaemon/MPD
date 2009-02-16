@@ -146,85 +146,87 @@ alsa_mixer_open(struct mixer *data)
 	return false;
 }
 
-static bool
-alsa_mixer_control(struct mixer *data, int cmd, void *arg)
+static int
+alsa_mixer_get_volume(struct mixer *mixer)
 {
-	struct alsa_mixer *am = (struct alsa_mixer *)data;
-	switch (cmd) {
-	case AC_MIXER_GETVOL:
-	{
-		int err;
-		int ret, *volume = arg;
-		long level;
+	struct alsa_mixer *am = (struct alsa_mixer *)mixer;
+	int err;
+	int ret;
+	long level;
 
-		if (!am->handle && !alsa_mixer_open(data)) {
-			return false;
-		}
-		if ((err = snd_mixer_handle_events(am->handle)) < 0) {
-			g_warning("problems getting alsa volume: %s (snd_mixer_%s)\n",
-				snd_strerror(err), "handle_events");
-			alsa_mixer_close(data);
-			return false;
-		}
-		if ((err = snd_mixer_selem_get_playback_volume(am->elem,
-			       SND_MIXER_SCHN_FRONT_LEFT, &level)) < 0) {
-			g_warning("problems getting alsa volume: %s (snd_mixer_%s)\n",
-				snd_strerror(err), "selem_get_playback_volume");
-			alsa_mixer_close(data);
-			return false;
-		}
-		ret = ((am->volume_set / 100.0) * (am->volume_max - am->volume_min)
-			+ am->volume_min) + 0.5;
-		if (am->volume_set > 0 && ret == level) {
-			ret = am->volume_set;
-		} else {
-			ret = (int)(100 * (((float)(level - am->volume_min)) /
-				(am->volume_max - am->volume_min)) + 0.5);
-		}
-		*volume = ret;
-		return true;
+	if (am->handle == NULL && !alsa_mixer_open(mixer))
+		return -1;
+
+	err = snd_mixer_handle_events(am->handle);
+	if (err < 0) {
+		g_warning("problems getting alsa volume: %s (snd_mixer_%s)\n",
+			  snd_strerror(err), "handle_events");
+		alsa_mixer_close(mixer);
+		return false;
 	}
-	case AC_MIXER_SETVOL:
-	{
-		float vol;
-		long level;
-		int *volume = arg;
-		int err;
 
-		if (!am->handle && !alsa_mixer_open(data)) {
-			return false;
-		}
-		vol = *volume;
-
-		am->volume_set = vol + 0.5;
-		am->volume_set = am->volume_set > 100 ? 100 :
-			    (am->volume_set < 0 ? 0 : am->volume_set);
-
-		level = (long)(((vol / 100.0) * (am->volume_max - am->volume_min) +
-			 am->volume_min) + 0.5);
-		level = level > am->volume_max ? am->volume_max : level;
-		level = level < am->volume_min ? am->volume_min : level;
-
-		if ((err = snd_mixer_selem_set_playback_volume_all(am->elem,
-								level)) < 0) {
-			g_warning("problems setting alsa volume: %s\n",
-				snd_strerror(err));
-			alsa_mixer_close(data);
-			return false;
-		}
-		return true;
+	err = snd_mixer_selem_get_playback_volume(am->elem,
+						  SND_MIXER_SCHN_FRONT_LEFT,
+						  &level);
+	if (err < 0) {
+		g_warning("problems getting alsa volume: %s (snd_mixer_%s)\n",
+			  snd_strerror(err), "selem_get_playback_volume");
+		alsa_mixer_close(mixer);
+		return false;
 	}
-	default:
-		g_warning("Unsuported alsa control\n");
-		break;
+
+	ret = ((am->volume_set / 100.0) * (am->volume_max - am->volume_min)
+	       + am->volume_min) + 0.5;
+	if (am->volume_set > 0 && ret == level) {
+		ret = am->volume_set;
+	} else {
+		ret = (int)(100 * (((float)(level - am->volume_min)) /
+				   (am->volume_max - am->volume_min)) + 0.5);
 	}
-	return false;
+
+	return ret;
+}
+
+static bool
+alsa_mixer_set_volume(struct mixer *mixer, unsigned volume)
+{
+	struct alsa_mixer *am = (struct alsa_mixer *)mixer;
+	float vol;
+	long level;
+	int err;
+
+	if (am->handle == NULL && !alsa_mixer_open(mixer))
+		return false;
+
+	vol = volume;
+
+	am->volume_set = vol + 0.5;
+	am->volume_set = am->volume_set > 100
+		? 100 :
+		(am->volume_set < 0
+		 ? 0 : am->volume_set);
+
+	level = (long)(((vol / 100.0) * (am->volume_max - am->volume_min) +
+			am->volume_min) + 0.5);
+	level = level > am->volume_max ? am->volume_max : level;
+	level = level < am->volume_min ? am->volume_min : level;
+
+	err = snd_mixer_selem_set_playback_volume_all(am->elem, level);
+	if (err < 0) {
+		g_warning("problems setting alsa volume: %s\n",
+			  snd_strerror(err));
+		alsa_mixer_close(mixer);
+		return false;
+	}
+
+	return true;
 }
 
 const struct mixer_plugin alsa_mixer = {
 	.init = alsa_mixer_init,
 	.finish = alsa_mixer_finish,
 	.open = alsa_mixer_open,
-	.control = alsa_mixer_control,
-	.close = alsa_mixer_close
+	.close = alsa_mixer_close,
+	.get_volume = alsa_mixer_get_volume,
+	.set_volume = alsa_mixer_set_volume,
 };
