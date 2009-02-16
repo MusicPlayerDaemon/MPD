@@ -35,7 +35,6 @@ typedef struct {
 	struct input_stream *inStream;
 	size_t bytesIntoBuffer;
 	size_t bytesConsumed;
-	off_t fileOffset;
 	unsigned char buffer[FAAD_MIN_STREAMSIZE * AAC_MAX_CHANNELS];
 } AacBuffer;
 
@@ -78,7 +77,6 @@ static void fillAacBuffer(AacBuffer * b)
 
 static void advanceAacBuffer(AacBuffer * b, size_t bytes)
 {
-	b->fileOffset += bytes;
 	b->bytesConsumed = bytes;
 	b->bytesIntoBuffer -= bytes;
 }
@@ -214,7 +212,6 @@ static void aac_parse_header(AacBuffer * b, float *length)
 
 		b->bytesIntoBuffer = 0;
 		b->bytesConsumed = 0;
-		b->fileOffset = tagsize;
 
 		fillAacBuffer(b);
 	} else if (memcmp(b->buffer, "ADIF", 4) == 0) {
