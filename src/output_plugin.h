@@ -71,9 +71,26 @@ struct audio_output_plugin {
 	bool (*open)(void *data, struct audio_format *audio_format);
 
 	/**
+	 * Close the device.
+	 */
+	void (*close)(void *data);
+
+	/**
+	 * Display metadata for the next chunk.  Optional method,
+	 * because not all devices can display metadata.
+	 */
+	void (*send_tag)(void *data, const struct tag *tag);
+
+	/**
 	 * Play a chunk of audio data.
 	 */
 	bool (*play)(void *data, const char *playChunk, size_t size);
+
+	/**
+	 * Try to cancel data which may still be in the device's
+	 * buffers.
+	 */
+	void (*cancel)(void *data);
 
 	/**
 	 * Pause the device.  If supported, it may perform a special
@@ -89,27 +106,10 @@ struct audio_output_plugin {
 	bool (*pause)(void *data);
 
 	/**
-	 * Try to cancel data which may still be in the device's
-	 * buffers.
-	 */
-	void (*cancel)(void *data);
-
-	/**
-	 * Close the device.
-	 */
-	void (*close)(void *data);
-
-	/**
 	 * Control the device. Usualy used for implementing
 	 * set and get mixer levels
 	 */
 	bool (*control)(void *data, int cmd, void *arg);
-
-	/**
-	 * Display metadata for the next chunk.  Optional method,
-	 * because not all devices can display metadata.
-	 */
-	void (*send_tag)(void *data, const struct tag *tag);
 };
 
 #endif
