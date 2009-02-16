@@ -20,7 +20,7 @@
 #ifndef MPD_OUTPUT_INTERNAL_H
 #define MPD_OUTPUT_INTERNAL_H
 
-#include "output_api.h"
+#include "audio_format.h"
 #include "pcm_convert.h"
 #include "notify.h"
 

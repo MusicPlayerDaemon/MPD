@@ -20,6 +20,7 @@
 #include "audio_format.h"
 #include "audio_parser.h"
 #include "output_internal.h"
+#include "output_plugin.h"
 #include "output_all.h"
 #include "mixer_api.h"
 

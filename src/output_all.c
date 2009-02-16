@@ -19,8 +19,10 @@
 #include "output_all.h"
 #include "output_internal.h"
 #include "output_control.h"
+#include "conf.h"
 
 #include <assert.h>
+#include <string.h>
 
 static struct audio_format input_audio_format;
 

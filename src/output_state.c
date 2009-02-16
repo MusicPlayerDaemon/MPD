@@ -28,8 +28,8 @@
 #include <glib.h>
 
 #include <assert.h>
-#include <stdbool.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define AUDIO_DEVICE_STATE "audio_device_state:"
 
