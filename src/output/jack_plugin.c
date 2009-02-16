@@ -17,6 +17,7 @@
 
 #include "../output_api.h"
 #include "../utils.h"
+#include "config.h"
 
 #include <assert.h>
 

@@ -21,7 +21,6 @@
 #define MPD_OUTPUT_API_H
 
 #include "output_plugin.h"
-#include "config.h"
 #include "audio_format.h"
 #include "tag.h"
 #include "conf.h"
