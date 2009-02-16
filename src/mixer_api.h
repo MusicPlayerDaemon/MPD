@@ -19,7 +19,7 @@
 #ifndef MPD_MIXER_H
 #define MPD_MIXER_H
 
-#include "conf.h"
+#include <stdbool.h>
 
 /*
  * list of currently implemented mixers
@@ -27,6 +27,8 @@
 
 extern const struct mixer_plugin alsa_mixer;
 extern const struct mixer_plugin oss_mixer;
+
+struct config_param;
 
 struct mixer_plugin {
 	/**

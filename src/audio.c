@@ -23,6 +23,7 @@
 #include "output_plugin.h"
 #include "output_all.h"
 #include "mixer_api.h"
+#include "conf.h"
 
 #include <glib.h>
 
