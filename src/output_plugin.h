@@ -64,6 +64,15 @@ struct audio_output_plugin {
 	void (*finish)(void *data);
 
 	/**
+	 * Returns the mixer device associated with this audio output.
+	 * This does not actually open the mixer device yet.
+	 *
+	 * @return the mixer object, or NULL if there is no mixer
+	 * attached to this audio output
+	 */
+	struct mixer *(*get_mixer)(void *data);
+
+	/**
 	 * Really open the device.
 	 * @param audio_format the audio format in which data is going
 	 * to be delivered; may be modified by the plugin
@@ -104,12 +113,6 @@ struct audio_output_plugin {
 	 * for continue to pause
 	 */
 	bool (*pause)(void *data);
-
-	/**
-	 * Control the device. Usualy used for implementing
-	 * set and get mixer levels
-	 */
-	bool (*control)(void *data, int cmd, void *arg);
 };
 
 static inline bool
@@ -133,6 +136,14 @@ static inline void
 ao_plugin_finish(const struct audio_output_plugin *plugin, void *data)
 {
 	plugin->finish(data);
+}
+
+static inline struct mixer *
+ao_plugin_get_mixer(const struct audio_output_plugin *plugin, void *data)
+{
+	return plugin->get_mixer != NULL
+		? plugin->get_mixer(data)
+		: NULL;
 }
 
 static inline bool

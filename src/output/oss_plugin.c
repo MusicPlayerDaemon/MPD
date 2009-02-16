@@ -410,6 +410,14 @@ static void oss_finishDriver(void *data)
 	freeOssData(od);
 }
 
+static struct mixer *
+oss_get_mixer(void *data)
+{
+	OssData *od = data;
+
+	return od->mixer;
+}
+
 static int setParam(OssData * od, unsigned param, int *value)
 {
 	int val = *value;
@@ -571,21 +579,14 @@ oss_playAudio(void *data, const char *playChunk, size_t size)
 	return true;
 }
 
-static bool
-oss_control(void *data, int cmd, void *arg)
-{
-	OssData *od = data;
-	return mixer_control(od->mixer, cmd, arg);
-}
-
 const struct audio_output_plugin ossPlugin = {
 	.name = "oss",
 	.test_default_device = oss_testDefault,
 	.init = oss_initDriver,
 	.finish = oss_finishDriver,
+	.get_mixer = oss_get_mixer,
 	.open = oss_openDevice,
 	.play = oss_playAudio,
 	.cancel = oss_dropBufferedAudio,
 	.close = oss_closeDevice,
-	.control = oss_control,
 };

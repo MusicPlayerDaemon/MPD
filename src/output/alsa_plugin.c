@@ -156,6 +156,14 @@ alsa_finish(void *data)
 	alsa_data_free(ad);
 }
 
+static struct mixer *
+alsa_get_mixer(void *data)
+{
+	struct alsa_data *ad = data;
+
+	return ad->mixer;
+}
+
 static bool
 alsa_test_default_device(void)
 {
@@ -465,21 +473,14 @@ alsa_play(void *data, const char *chunk, size_t size)
 	return true;
 }
 
-static bool
-alsa_control(void *data, int cmd, void *arg)
-{
-	struct alsa_data *ad = data;
-	return mixer_control(ad->mixer, cmd, arg);
-}
-
 const struct audio_output_plugin alsaPlugin = {
 	.name = "alsa",
 	.test_default_device = alsa_test_default_device,
 	.init = alsa_init,
 	.finish = alsa_finish,
+	.get_mixer = alsa_get_mixer,
 	.open = alsa_open,
 	.play = alsa_play,
 	.cancel = alsa_cancel,
 	.close = alsa_close,
-	.control = alsa_control
 };

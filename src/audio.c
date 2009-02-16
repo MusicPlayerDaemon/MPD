@@ -62,15 +62,17 @@ void finishAudioConfig(void)
 bool mixer_control_setvol(unsigned int device, int volume, int rel)
 {
 	struct audio_output *output;
+	struct mixer *mixer;
 
 	if (device >= audio_output_count())
 		return false;
 
 	output = audio_output_get(device);
-	if (output->plugin && output->plugin->control) {
+	mixer = ao_plugin_get_mixer(output->plugin, output->data);
+	if (mixer != NULL) {
 		if (rel) {
 			int cur_volume;
-			if (!output->plugin->control(output->data, AC_MIXER_GETVOL, &cur_volume)) {
+			if (!mixer_control(mixer, AC_MIXER_GETVOL, &cur_volume)) {
 				return false;
 			}
 			volume = volume + cur_volume;
@@ -80,7 +82,7 @@ bool mixer_control_setvol(unsigned int device, int volume, int rel)
 		else if (volume < 0)
 			volume = 0;
 
-		return output->plugin->control(output->data, AC_MIXER_SETVOL, &volume);
+		return mixer_control(mixer, AC_MIXER_SETVOL, &volume);
 	}
 	return false;
 }
@@ -88,13 +90,15 @@ bool mixer_control_setvol(unsigned int device, int volume, int rel)
 bool mixer_control_getvol(unsigned int device, int *volume)
 {
 	struct audio_output *output;
+	struct mixer *mixer;
 
 	if (device >= audio_output_count())
 		return false;
 
 	output = audio_output_get(device);
-	if (output->plugin && output->plugin->control) {
-		return output->plugin->control(output->data, AC_MIXER_GETVOL, volume);
-	}
+	mixer = ao_plugin_get_mixer(output->plugin, output->data);
+	if (mixer != NULL)
+		return mixer_control(mixer, AC_MIXER_GETVOL, volume);
+
 	return false;
 }
