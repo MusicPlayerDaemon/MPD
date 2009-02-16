@@ -1208,8 +1208,8 @@ static struct tag *mp3_tag_dup(const char *file)
 static const char *const mp3_suffixes[] = { "mp3", "mp2", NULL };
 static const char *const mp3_mime_types[] = { "audio/mpeg", NULL };
 
-const struct decoder_plugin mp3Plugin = {
-	.name = "mp3",
+const struct decoder_plugin mad_decoder_plugin = {
+	.name = "mad",
 	.init = mp3_plugin_init,
 	.stream_decode = mp3_decode,
 	.tag_dup = mp3_tag_dup,

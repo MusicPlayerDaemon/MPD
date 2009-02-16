@@ -267,7 +267,7 @@ endif
 # decoder plugins
 
 if HAVE_MAD
-mpd_SOURCES += decoder/mp3_plugin.c
+mpd_SOURCES += decoder/mad_plugin.c
 endif
 
 if HAVE_MPCDEC
