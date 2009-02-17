@@ -39,7 +39,7 @@ struct faad_buffer {
 };
 
 static void
-aac_buffer_shift(struct faad_buffer *b, size_t length)
+faad_buffer_shift(struct faad_buffer *b, size_t length)
 {
 	assert(length >= b->consumed);
 	assert(length <= b->consumed + b->length);
@@ -58,7 +58,7 @@ faad_buffer_fill(struct faad_buffer *b)
 	size_t rest, bread;
 
 	if (b->consumed > 0)
-		aac_buffer_shift(b, b->consumed);
+		faad_buffer_shift(b, b->consumed);
 
 	rest = sizeof(b->data) - b->length;
 	if (rest == 0)
@@ -120,7 +120,7 @@ adts_find_frame(struct faad_buffer *b)
 	while ((p = memchr(b->data, 0xff, b->length)) != NULL) {
 		/* discard data before 0xff */
 		if (p > b->data)
-			aac_buffer_shift(b, p - b->data);
+			faad_buffer_shift(b, p - b->data);
 
 		if (b->length <= 7)
 			/* not enough data yet */
@@ -134,16 +134,16 @@ adts_find_frame(struct faad_buffer *b)
 
 		/* it's just some random 0xff byte; discard and and
 		   continue searching */
-		aac_buffer_shift(b, 1);
+		faad_buffer_shift(b, 1);
 	}
 
 	/* nothing at all; discard the whole buffer */
-	aac_buffer_shift(b, b->length);
+	faad_buffer_shift(b, b->length);
 	return 0;
 }
 
 static void
-adtsParse(struct faad_buffer *b, float *length)
+adts_song_duration(struct faad_buffer *b, float *length)
 {
 	unsigned int frames, frame_length;
 	unsigned sample_rate = 0;
@@ -183,7 +183,7 @@ faad_buffer_init(struct faad_buffer *buffer, struct decoder *decoder,
 }
 
 static void
-aac_parse_header(struct faad_buffer *b, float *length)
+faad_song_duration(struct faad_buffer *b, float *length)
 {
 	size_t fileread;
 	size_t tagsize;
@@ -210,7 +210,7 @@ aac_parse_header(struct faad_buffer *b, float *length)
 
 	if (b->is->seekable && b->length >= 2 &&
 	    (b->data[0] == 0xFF) && ((b->data[1] & 0xF6) == 0xF0)) {
-		adtsParse(b, length);
+		adts_song_duration(b, length);
 		input_stream_seek(b->is, tagsize, SEEK_SET);
 
 		b->length = 0;
@@ -263,7 +263,7 @@ faad_get_file_time_float(const char *file)
 		return -1;
 
 	faad_buffer_init(&buffer, NULL, &is);
-	aac_parse_header(&buffer, &length);
+	faad_song_duration(&buffer, &length);
 
 	if (length < 0) {
 		decoder = faacDecOpen();
@@ -304,7 +304,7 @@ faad_get_file_time(const char *file)
 }
 
 static void
-aac_stream_decode(struct decoder *mpd_decoder, struct input_stream *is)
+faad_stream_decode(struct decoder *mpd_decoder, struct input_stream *is)
 {
 	float file_time;
 	float total_time = 0;
@@ -331,7 +331,7 @@ aac_stream_decode(struct decoder *mpd_decoder, struct input_stream *is)
 	enum decoder_command cmd;
 
 	faad_buffer_init(&buffer, mpd_decoder, is);
-	aac_parse_header(&buffer, &total_time);
+	faad_song_duration(&buffer, &total_time);
 
 	decoder = faacDecOpen();
 
@@ -458,7 +458,7 @@ static const char *const faad_mime_types[] = {
 
 const struct decoder_plugin faad_decoder_plugin = {
 	.name = "faad",
-	.stream_decode = aac_stream_decode,
+	.stream_decode = faad_stream_decode,
 	.tag_dup = faad_tag_dup,
 	.suffixes = faad_suffixes,
 	.mime_types = faad_mime_types,
