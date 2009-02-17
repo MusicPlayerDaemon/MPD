@@ -204,13 +204,14 @@ static void player_process_command(struct player *player)
 		break;
 
 	case PLAYER_COMMAND_SEEK:
-		audio_output_all_cancel();
 		if (player_seek_decoder(player)) {
 			player->xfade = XFADE_UNKNOWN;
 
 			/* abort buffering when the user has requested
 			   a seek */
 			player->buffering = false;
+
+			audio_output_all_cancel();
 		}
 		break;
 
