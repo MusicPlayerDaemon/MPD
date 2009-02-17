@@ -283,7 +283,7 @@ mpd_SOURCES += decoder/faad_plugin.c
 endif
 
 if HAVE_MP4
-mpd_SOURCES += decoder/mp4_plugin.c
+mpd_SOURCES += decoder/mp4ff_plugin.c
 endif
 
 if HAVE_OGG_COMMON

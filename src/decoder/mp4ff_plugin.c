@@ -411,7 +411,7 @@ mp4_tag_dup(const char *file)
 static const char *const mp4_suffixes[] = { "m4a", "mp4", NULL };
 static const char *const mp4_mime_types[] = { "audio/mp4", "audio/m4a", NULL };
 
-const struct decoder_plugin mp4_plugin = {
+const struct decoder_plugin mp4ff_decoder_plugin = {
 	.name = "mp4",
 	.stream_decode = mp4_decode,
 	.tag_dup = mp4_tag_dup,
