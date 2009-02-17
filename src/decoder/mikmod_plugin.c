@@ -21,6 +21,9 @@
 #include <glib.h>
 #include <mikmod.h>
 
+#undef G_LOG_DOMAIN
+#define G_LOG_DOMAIN "mikmod"
+
 /* this is largely copied from alsaplayer */
 
 #define MIKMOD_FRAME_SIZE	4096
@@ -204,7 +207,7 @@ static struct tag *modTagDup(const char *file)
 	g_free(path2);
 
 	if (moduleHandle == NULL) {
-		g_debug("modTagDup: Failed to open file: %s\n", file);
+		g_debug("Failed to open file: %s", file);
 		return NULL;
 
 	}

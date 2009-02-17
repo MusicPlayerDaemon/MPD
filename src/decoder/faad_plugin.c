@@ -27,7 +27,7 @@
 #include <glib.h>
 
 #undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "aac"
+#define G_LOG_DOMAIN "faad"
 
 /* all code here is either based on or copied from FAAD2's frontend code */
 struct faad_buffer {
@@ -402,7 +402,7 @@ aac_stream_decode(struct decoder *mpd_decoder, struct input_stream *is)
 			};
 
 			if (!audio_format_valid(&audio_format)) {
-				g_warning("aac: invalid audio format\n");
+				g_warning("invalid audio format\n");
 				break;
 			}
 

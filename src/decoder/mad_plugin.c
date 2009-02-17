@@ -32,6 +32,9 @@
 #include <id3tag.h>
 #endif
 
+#undef G_LOG_DOMAIN
+#define G_LOG_DOMAIN "mad"
+
 #define FRAMES_CUSHION    2000
 
 #define READ_BUFFER_SIZE  40960
@@ -378,7 +381,7 @@ static void mp3_parse_id3(struct mp3_data *data, size_t tagsize,
 		}
 
 		if (count != tagsize) {
-			g_debug("mp3_decode: error parsing ID3 tag\n");
+			g_debug("error parsing ID3 tag");
 			g_free(allocated);
 			return;
 		}
@@ -1195,8 +1198,7 @@ static struct tag *mp3_tag_dup(const char *file)
 
 	total_time = mp3_total_file_time(file);
 	if (total_time < 0) {
-		g_debug("mp3_tag_dup: Failed to get total song time from: %s\n",
-			file);
+		g_debug("Failed to get total song time from: %s", file);
 		return NULL;
 	}
 

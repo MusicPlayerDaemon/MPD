@@ -23,6 +23,9 @@
 #include <glib.h>
 #include <unistd.h>
 
+#undef G_LOG_DOMAIN
+#define G_LOG_DOMAIN "mpcdec"
+
 typedef struct _MpcCallbackData {
 	struct input_stream *inStream;
 	struct decoder *decoder;
@@ -253,8 +256,7 @@ static struct tag *mpcTagDup(const char *file)
 	struct tag *tag;
 
 	if (total_time < 0) {
-		g_debug("mpcTagDup: Failed to get Songlength of file: %s\n",
-			file);
+		g_debug("Failed to get duration of file: %s", file);
 		return NULL;
 	}
 

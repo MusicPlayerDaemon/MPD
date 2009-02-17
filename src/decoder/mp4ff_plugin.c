@@ -27,6 +27,9 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+#undef G_LOG_DOMAIN
+#define G_LOG_DOMAIN "mp4ff"
+
 /* all code here is either based on or copied from FAAD2's frontend code */
 
 struct mp4_context {
@@ -340,7 +343,7 @@ mp4_load_tag(const char *file)
 	int i;
 
 	if (!input_stream_open(&input_stream, file)) {
-		g_warning("mp4_load_tag: Failed to open file: %s\n", file);
+		g_warning("Failed to open file: %s", file);
 		return NULL;
 	}
 

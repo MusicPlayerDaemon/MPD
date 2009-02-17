@@ -44,6 +44,9 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+#undef G_LOG_DOMAIN
+#define G_LOG_DOMAIN "vorbis"
+
 #if G_BYTE_ORDER == G_BIG_ENDIAN
 #define OGG_DECODE_USE_BIGENDIAN	1
 #else
