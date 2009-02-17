@@ -30,6 +30,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#undef G_LOG_DOMAIN
+#define G_LOG_DOMAIN "wavpack"
+
 /* pick 1020 since its devisible for 8,16,24, and 32-bit audio */
 #define CHUNK_SIZE		1020
 
