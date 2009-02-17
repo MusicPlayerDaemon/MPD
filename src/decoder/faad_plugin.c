@@ -348,6 +348,7 @@ faad_stream_decode(struct decoder *mpd_decoder, struct input_stream *is)
 	float file_time;
 	float total_time = 0;
 	faacDecHandle decoder;
+	struct audio_format audio_format;
 	faacDecFrameInfo frame_info;
 	faacDecConfigurationPtr config;
 	uint32_t sample_rate;
@@ -358,7 +359,6 @@ faad_stream_decode(struct decoder *mpd_decoder, struct input_stream *is)
 	size_t decoded_length;
 	uint16_t bit_rate = 0;
 	struct decoder_buffer *buffer;
-	bool initialized = false;
 	enum decoder_command cmd;
 
 	buffer = decoder_buffer_new(mpd_decoder, is,
@@ -392,6 +392,20 @@ faad_stream_decode(struct decoder *mpd_decoder, struct input_stream *is)
 		return;
 	}
 
+	audio_format = (struct audio_format){
+		.bits = 16,
+		.channels = channels,
+		.sample_rate = sample_rate,
+	};
+
+	if (!audio_format_valid(&audio_format)) {
+		g_warning("invalid audio format\n");
+		faacDecClose(decoder);
+		return;
+	}
+
+	decoder_initialized(mpd_decoder, &audio_format, false, total_time);
+
 	file_time = 0.0;
 
 	do {
@@ -406,26 +420,21 @@ faad_stream_decode(struct decoder *mpd_decoder, struct input_stream *is)
 				  faacDecGetErrorMessage(frame_info.error));
 			break;
 		}
-#ifdef HAVE_FAACDECFRAMEINFO_SAMPLERATE
-		sample_rate = frame_info.samplerate;
-#endif
 
-		if (!initialized) {
-			const struct audio_format audio_format = {
-				.bits = 16,
-				.channels = frame_info.channels,
-				.sample_rate = sample_rate,
-			};
-
-			if (!audio_format_valid(&audio_format)) {
-				g_warning("invalid audio format\n");
-				break;
-			}
-
-			decoder_initialized(mpd_decoder, &audio_format,
-					    false, total_time);
-			initialized = true;
+		if (frame_info.channels != channels) {
+			g_warning("channel count changed from %u to %u",
+				  channels, frame_info.channels);
+			break;
 		}
+
+#ifdef HAVE_FAACDECFRAMEINFO_SAMPLERATE
+		if (frame_info.samplerate != sample_rate) {
+			g_warning("sample rate changed from %u to %lu",
+				  sample_rate,
+				  (unsigned long)frame_info.samplerate);
+			break;
+		}
+#endif
 
 		decoder_buffer_consume(buffer, frame_info.bytesconsumed);
 
