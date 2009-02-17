@@ -171,6 +171,8 @@ faad_song_duration(struct decoder_buffer *buffer, struct input_stream *is)
 
 	tagsize = 0;
 	if (length >= 10 && !memcmp(data, "ID3", 3)) {
+		/* skip the ID3 tag */
+
 		tagsize = (data[6] << 21) | (data[7] << 14) |
 		    (data[8] << 7) | (data[9] << 0);
 
@@ -185,6 +187,7 @@ faad_song_duration(struct decoder_buffer *buffer, struct input_stream *is)
 
 	if (is->seekable && length >= 2 &&
 	    data[0] == 0xFF && ((data[1] & 0xF6) == 0xF0)) {
+		/* obtain the duration from the ADTS header */
 		float song_length = adts_song_duration(buffer);
 
 		input_stream_seek(is, tagsize, SEEK_SET);
@@ -196,6 +199,7 @@ faad_song_duration(struct decoder_buffer *buffer, struct input_stream *is)
 
 		return song_length;
 	} else if (length >= 5 && memcmp(data, "ADIF", 4) == 0) {
+		/* obtain the duration from the ADIF header */
 		unsigned bit_rate;
 		size_t skip_size = (data[4] & 0x80) ? 9 : 0;
 
@@ -296,6 +300,11 @@ faad_decoder_decode(faacDecHandle decoder, struct decoder_buffer *buffer,
 	return result;
 }
 
+/**
+ * Get a song file's total playing time in seconds, as a float.
+ * Returns 0 if the duration is unknown, and a negative value if the
+ * file is invalid.
+ */
 static float
 faad_get_file_time_float(const char *file)
 {
@@ -337,6 +346,11 @@ faad_get_file_time_float(const char *file)
 	return length;
 }
 
+/**
+ * Get a song file's total playing time in seconds, as an int.
+ * Returns 0 if the duration is unknown, and a negative value if the
+ * file is invalid.
+ */
 static int
 faad_get_file_time(const char *file)
 {
@@ -370,6 +384,8 @@ faad_stream_decode(struct decoder *mpd_decoder, struct input_stream *is)
 				    FAAD_MIN_STREAMSIZE * AAC_MAX_CHANNELS);
 	total_time = faad_song_duration(buffer, is);
 
+	/* create the libfaad decoder */
+
 	decoder = faacDecOpen();
 
 	config = faacDecGetCurrentConfiguration(decoder);
@@ -389,6 +405,8 @@ faad_stream_decode(struct decoder *mpd_decoder, struct input_stream *is)
 		decoder_buffer_fill(buffer);
 	}
 
+	/* initialize it */
+
 	ret = faad_decoder_init(decoder, buffer, &audio_format);
 	if (!ret) {
 		g_warning("Error not a AAC stream.\n");
@@ -402,14 +420,25 @@ faad_stream_decode(struct decoder *mpd_decoder, struct input_stream *is)
 		return;
 	}
 
+	/* initialize the MPD core */
+
 	decoder_initialized(mpd_decoder, &audio_format, false, total_time);
+
+	/* the decoder loop */
 
 	file_time = 0.0;
 
 	do {
-		size_t frame_size = adts_find_frame(buffer);
+		size_t frame_size;
+
+		/* find the next frame */
+
+		frame_size = adts_find_frame(buffer);
 		if (frame_size == 0)
+			/* end of file */
 			break;
+
+		/* decode it */
 
 		decoded = faad_decoder_decode(decoder, buffer, &frame_info);
 
@@ -436,6 +465,8 @@ faad_stream_decode(struct decoder *mpd_decoder, struct input_stream *is)
 
 		decoder_buffer_consume(buffer, frame_info.bytesconsumed);
 
+		/* update bit rate and position */
+
 		sample_count = (unsigned long)frame_info.samples;
 		if (sample_count > 0) {
 			bit_rate = frame_info.bytesconsumed * 8.0 *
@@ -446,12 +477,16 @@ faad_stream_decode(struct decoder *mpd_decoder, struct input_stream *is)
 			    audio_format.sample_rate;
 		}
 
+		/* send PCM samples to MPD */
+
 		decoded_length = sample_count * 2;
 
 		cmd = decoder_data(mpd_decoder, is, decoded,
 				   decoded_length, file_time,
 				   bit_rate, NULL);
 	} while (cmd != DECODE_COMMAND_STOP);
+
+	/* cleanup */
 
 	faacDecClose(decoder);
 }
