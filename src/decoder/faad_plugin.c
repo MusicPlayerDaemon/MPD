@@ -143,8 +143,8 @@ adts_find_frame(struct faad_buffer *b)
 	return 0;
 }
 
-static void
-adts_song_duration(struct faad_buffer *b, float *length)
+static float
+adts_song_duration(struct faad_buffer *b)
 {
 	unsigned int frames, frame_length;
 	unsigned sample_rate = 0;
@@ -167,8 +167,10 @@ adts_song_duration(struct faad_buffer *b, float *length)
 	}
 
 	frames_per_second = (float)sample_rate / 1024.0;
-	if (frames_per_second > 0)
-		*length = (float)frames / frames_per_second;
+	if (frames_per_second <= 0)
+		return -1;
+
+	return (float)frames / frames_per_second;
 }
 
 static void
@@ -181,13 +183,11 @@ faad_buffer_init(struct faad_buffer *buffer, struct decoder *decoder,
 	buffer->is = is;
 }
 
-static void
-faad_song_duration(struct faad_buffer *b, float *length)
+static float
+faad_song_duration(struct faad_buffer *b)
 {
 	size_t fileread;
 	size_t tagsize;
-
-	*length = -1;
 
 	fileread = b->is->size >= 0 ? b->is->size : 0;
 
@@ -205,13 +205,15 @@ faad_song_duration(struct faad_buffer *b, float *length)
 
 	if (b->is->seekable && b->length >= 2 &&
 	    (b->data[0] == 0xFF) && ((b->data[1] & 0xF6) == 0xF0)) {
-		adts_song_duration(b, length);
+		float length = adts_song_duration(b);
 		input_stream_seek(b->is, tagsize, SEEK_SET);
 
 		b->length = 0;
 		b->consumed = 0;
 
 		faad_buffer_fill(b);
+
+		return length;
 	} else if (b->length >= 5 && memcmp(b->data, "ADIF", 4) == 0) {
 		unsigned bit_rate;
 		size_t skip_size = (b->data[4] & 0x80) ? 9 : 0;
@@ -220,7 +222,7 @@ faad_song_duration(struct faad_buffer *b, float *length)
 		if (8 + skip_size > b->length)
 			/* not enough data yet; skip parsing this
 			   header */
-			return;
+			return -1;
 
 		bit_rate = ((unsigned)(b->data[4 + skip_size] & 0x0F) << 19) |
 			((unsigned)b->data[5 + skip_size] << 11) |
@@ -228,10 +230,11 @@ faad_song_duration(struct faad_buffer *b, float *length)
 			((unsigned)b->data[7 + skip_size] & 0xE0);
 
 		if (fileread != 0 && bit_rate != 0)
-			*length = fileread * 8.0 / bit_rate;
+			return fileread * 8.0 / bit_rate;
 		else
-			*length = fileread;
-	}
+			return fileread;
+	} else
+		return -1;
 }
 
 static float
@@ -258,7 +261,7 @@ faad_get_file_time_float(const char *file)
 		return -1;
 
 	faad_buffer_init(&buffer, NULL, &is);
-	faad_song_duration(&buffer, &length);
+	length = faad_song_duration(&buffer);
 
 	if (length < 0) {
 		decoder = faacDecOpen();
@@ -326,7 +329,7 @@ faad_stream_decode(struct decoder *mpd_decoder, struct input_stream *is)
 	enum decoder_command cmd;
 
 	faad_buffer_init(&buffer, mpd_decoder, is);
-	faad_song_duration(&buffer, &total_time);
+	total_time = faad_song_duration(&buffer);
 
 	decoder = faacDecOpen();
 
