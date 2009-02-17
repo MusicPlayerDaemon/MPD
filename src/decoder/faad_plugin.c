@@ -217,7 +217,7 @@ faad_song_duration(struct faad_buffer *b, float *length)
 		b->consumed = 0;
 
 		faad_buffer_fill(b);
-	} else if (memcmp(b->data, "ADIF", 4) == 0) {
+	} else if (b->length >= 5 && memcmp(b->data, "ADIF", 4) == 0) {
 		unsigned bit_rate;
 		size_t skip_size = (b->data[4] & 0x80) ? 9 : 0;
 
