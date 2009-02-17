@@ -223,7 +223,7 @@ faad_song_duration(struct decoder_buffer *buffer, struct input_stream *is)
  */
 static bool
 faad_decoder_init(faacDecHandle decoder, struct decoder_buffer *buffer,
-		  uint32_t *sample_rate, uint8_t *channels)
+		  struct audio_format *audio_format)
 {
 	union {
 		/* deconst hack for libfaad */
@@ -232,13 +232,15 @@ faad_decoder_init(faacDecHandle decoder, struct decoder_buffer *buffer,
 	} u;
 	size_t length;
 	int32_t nbytes;
+	uint32_t sample_rate;
+	uint8_t channels;
 #ifdef HAVE_FAAD_LONG
 	/* neaacdec.h declares all arguments as "unsigned long", but
 	   internally expects uint32_t pointers.  To avoid gcc
 	   warnings, use this workaround. */
-	unsigned long *sample_rate_r = (unsigned long *)(void *)sample_rate;
+	unsigned long *sample_rate_r = (unsigned long *)(void *)&sample_rate;
 #else
-	uint32_t *sample_rate_r = sample_rate;
+	uint32_t *sample_rate_r = &sample_rate;
 #endif
 
 	u.in = decoder_buffer_read(buffer, &length);
@@ -249,11 +251,18 @@ faad_decoder_init(faacDecHandle decoder, struct decoder_buffer *buffer,
 #ifdef HAVE_FAAD_BUFLEN_FUNCS
 			     length,
 #endif
-			     sample_rate_r, channels);
+			     sample_rate_r, &channels);
 	if (nbytes < 0)
 		return false;
 
 	decoder_buffer_consume(buffer, nbytes);
+
+	*audio_format = (struct audio_format){
+		.bits = 16,
+		.channels = channels,
+		.sample_rate = sample_rate,
+	};
+
 	return true;
 }
 
@@ -294,8 +303,6 @@ faad_get_file_time_float(const char *file)
 	float length;
 	faacDecHandle decoder;
 	faacDecConfigurationPtr config;
-	uint32_t sample_rate;
-	unsigned char channels;
 	struct input_stream is;
 
 	if (!input_stream_open(&is, file))
@@ -307,6 +314,7 @@ faad_get_file_time_float(const char *file)
 
 	if (length < 0) {
 		bool ret;
+		struct audio_format audio_format;
 
 		decoder = faacDecOpen();
 
@@ -316,9 +324,8 @@ faad_get_file_time_float(const char *file)
 
 		decoder_buffer_fill(buffer);
 
-		ret = faad_decoder_init(decoder, buffer,
-					&sample_rate, &channels);
-		if (ret && sample_rate > 0 && channels > 0)
+		ret = faad_decoder_init(decoder, buffer, &audio_format);
+		if (ret && audio_format_valid(&audio_format))
 			length = 0;
 
 		faacDecClose(decoder);
@@ -351,8 +358,6 @@ faad_stream_decode(struct decoder *mpd_decoder, struct input_stream *is)
 	struct audio_format audio_format;
 	faacDecFrameInfo frame_info;
 	faacDecConfigurationPtr config;
-	uint32_t sample_rate;
-	unsigned char channels;
 	unsigned long sample_count;
 	bool ret;
 	const void *decoded;
@@ -384,19 +389,12 @@ faad_stream_decode(struct decoder *mpd_decoder, struct input_stream *is)
 		decoder_buffer_fill(buffer);
 	}
 
-	ret = faad_decoder_init(decoder, buffer,
-				&sample_rate, &channels);
+	ret = faad_decoder_init(decoder, buffer, &audio_format);
 	if (!ret) {
 		g_warning("Error not a AAC stream.\n");
 		faacDecClose(decoder);
 		return;
 	}
-
-	audio_format = (struct audio_format){
-		.bits = 16,
-		.channels = channels,
-		.sample_rate = sample_rate,
-	};
 
 	if (!audio_format_valid(&audio_format)) {
 		g_warning("invalid audio format\n");
@@ -421,16 +419,16 @@ faad_stream_decode(struct decoder *mpd_decoder, struct input_stream *is)
 			break;
 		}
 
-		if (frame_info.channels != channels) {
+		if (frame_info.channels != audio_format.channels) {
 			g_warning("channel count changed from %u to %u",
-				  channels, frame_info.channels);
+				  audio_format.channels, frame_info.channels);
 			break;
 		}
 
 #ifdef HAVE_FAACDECFRAMEINFO_SAMPLERATE
-		if (frame_info.samplerate != sample_rate) {
+		if (frame_info.samplerate != audio_format.sample_rate) {
 			g_warning("sample rate changed from %u to %lu",
-				  sample_rate,
+				  audio_format.sample_rate,
 				  (unsigned long)frame_info.samplerate);
 			break;
 		}
@@ -441,11 +439,11 @@ faad_stream_decode(struct decoder *mpd_decoder, struct input_stream *is)
 		sample_count = (unsigned long)frame_info.samples;
 		if (sample_count > 0) {
 			bit_rate = frame_info.bytesconsumed * 8.0 *
-			    frame_info.channels * sample_rate /
+			    frame_info.channels * audio_format.sample_rate /
 			    frame_info.samples / 1000 + 0.5;
 			file_time +=
 			    (float)(frame_info.samples) / frame_info.channels /
-			    sample_rate;
+			    audio_format.sample_rate;
 		}
 
 		decoded_length = sample_count * 2;
