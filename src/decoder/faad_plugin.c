@@ -116,6 +116,8 @@ adts_find_frame(struct faad_buffer *b)
 	const unsigned char *p;
 	size_t frame_length;
 
+	faad_buffer_fill(b);
+
 	while ((p = memchr(b->data, 0xff, b->length)) != NULL) {
 		/* discard data before 0xff */
 		if (p > b->data)
@@ -150,8 +152,6 @@ adts_song_duration(struct faad_buffer *b, float *length)
 
 	/* Read all frames to ensure correct time and bitrate */
 	for (frames = 0;; frames++) {
-		faad_buffer_fill(b);
-
 		frame_length = adts_find_frame(b);
 		if (frame_length > 0) {
 			if (frames == 0) {
@@ -347,7 +347,6 @@ faad_stream_decode(struct decoder *mpd_decoder, struct input_stream *is)
 	while (buffer.length < sizeof(buffer.data) &&
 	       !input_stream_eof(buffer.is) &&
 	       decoder_get_command(mpd_decoder) == DECODE_COMMAND_NONE) {
-		faad_buffer_fill(&buffer);
 		adts_find_frame(&buffer);
 		faad_buffer_fill(&buffer);
 	}
@@ -369,7 +368,6 @@ faad_stream_decode(struct decoder *mpd_decoder, struct input_stream *is)
 	faad_buffer_consume(&buffer, bread);
 
 	do {
-		faad_buffer_fill(&buffer);
 		adts_find_frame(&buffer);
 		faad_buffer_fill(&buffer);
 
