@@ -17,6 +17,7 @@
  */
 
 #include "../decoder_api.h"
+#include "decoder_buffer.h"
 #include "config.h"
 
 #define AAC_MAX_CHANNELS	6
@@ -29,60 +30,6 @@
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "faad"
 
-/* all code here is either based on or copied from FAAD2's frontend code */
-struct faad_buffer {
-	struct decoder *decoder;
-	struct input_stream *is;
-	size_t length;
-	size_t consumed;
-	unsigned char data[FAAD_MIN_STREAMSIZE * AAC_MAX_CHANNELS];
-};
-
-static void
-faad_buffer_shift(struct faad_buffer *b, size_t length)
-{
-	assert(length >= b->consumed);
-	assert(length <= b->consumed + b->length);
-
-	memmove(b->data, b->data + length,
-		b->consumed + b->length - length);
-
-	length -= b->consumed;
-	b->consumed = 0;
-	b->length -= length;
-}
-
-static void
-faad_buffer_fill(struct faad_buffer *b)
-{
-	size_t rest, bread;
-
-	if (b->consumed > 0)
-		faad_buffer_shift(b, b->consumed);
-
-	rest = sizeof(b->data) - b->length;
-	if (rest == 0)
-		/* buffer already full */
-		return;
-
-	bread = decoder_read(b->decoder, b->is,
-			     b->data + b->length, rest);
-	b->length += bread;
-
-	if ((b->length > 3 && memcmp(b->data, "TAG", 3) == 0) ||
-	    (b->length > 11 &&
-	     memcmp(b->data, "LYRICSBEGIN", 11) == 0) ||
-	    (b->length > 8 && memcmp(b->data, "APETAGEX", 8) == 0))
-		b->length = 0;
-}
-
-static void
-faad_buffer_consume(struct faad_buffer *b, size_t bytes)
-{
-	b->consumed = bytes;
-	b->length -= bytes;
-}
-
 static const unsigned adts_sample_rates[] =
     { 96000, 88200, 64000, 48000, 44100, 32000, 24000, 22050,
 	16000, 12000, 11025, 8000, 7350, 0, 0, 0
@@ -93,17 +40,15 @@ static const unsigned adts_sample_rates[] =
  * length.  Returns 0 if it is not a frame.
  */
 static size_t
-adts_check_frame(struct faad_buffer *b)
+adts_check_frame(const unsigned char *data)
 {
-	assert(b->length >= 8);
-
 	/* check syncword */
-	if (!((b->data[0] == 0xFF) && ((b->data[1] & 0xF6) == 0xF0)))
+	if (!((data[0] == 0xFF) && ((data[1] & 0xF6) == 0xF0)))
 		return 0;
 
-	return (((unsigned int)b->data[3] & 0x3) << 11) |
-		(((unsigned int)b->data[4]) << 3) |
-		(b->data[5] >> 5);
+	return (((unsigned int)data[3] & 0x3) << 11) |
+		(((unsigned int)data[4]) << 3) |
+		(data[5] >> 5);
 }
 
 /**
@@ -111,40 +56,71 @@ adts_check_frame(struct faad_buffer *b)
  * found or if not enough data is available.
  */
 static size_t
-adts_find_frame(struct faad_buffer *b)
+adts_find_frame(struct decoder_buffer *buffer)
 {
-	const unsigned char *p;
-	size_t frame_length;
+	const unsigned char *data, *p;
+	size_t length, frame_length;
+	bool ret;
 
-	faad_buffer_fill(b);
-
-	while ((p = memchr(b->data, 0xff, b->length)) != NULL) {
-		/* discard data before 0xff */
-		if (p > b->data)
-			faad_buffer_shift(b, p - b->data);
-
-		if (b->length < 8)
+	while (true) {
+		data = decoder_buffer_read(buffer, &length);
+		if (data == NULL || length < 8) {
 			/* not enough data yet */
-			return 0;
+			ret = decoder_buffer_fill(buffer);
+			if (!ret)
+				/* failed */
+				return 0;
+
+			continue;
+		}
+
+		/* find the 0xff marker */
+		p = memchr(data, 0xff, length);
+		if (p == NULL) {
+			/* no marker - discard the buffer */
+			decoder_buffer_consume(buffer, length);
+			continue;
+		}
+
+		if (p > data) {
+			/* discard data before 0xff */
+			decoder_buffer_consume(buffer, p - data);
+			continue;
+		}
 
 		/* is it a frame? */
-		frame_length = adts_check_frame(b);
-		if (frame_length > 0)
-			/* yes, it is */
-			return frame_length;
+		frame_length = adts_check_frame(data);
+		if (frame_length == 0) {
+			/* it's just some random 0xff byte; discard it
+			   and continue searching */
+			decoder_buffer_consume(buffer, 1);
+			continue;
+		}
 
-		/* it's just some random 0xff byte; discard and and
-		   continue searching */
-		faad_buffer_shift(b, 1);
+		if (length < frame_length) {
+			/* available buffer size is smaller than the
+			   frame will be - attempt to read more
+			   data */
+			ret = decoder_buffer_fill(buffer);
+			if (!ret) {
+				/* not enough data; discard this frame
+				   to prevent a possible buffer
+				   overflow */
+				data = decoder_buffer_read(buffer, &length);
+				if (data != NULL)
+					decoder_buffer_consume(buffer, length);
+			}
+
+			continue;
+		}
+
+		/* found a full frame! */
+		return frame_length;
 	}
-
-	/* nothing at all; discard the whole buffer */
-	faad_buffer_shift(b, b->length);
-	return 0;
 }
 
 static float
-adts_song_duration(struct faad_buffer *b)
+adts_song_duration(struct decoder_buffer *buffer)
 {
 	unsigned int frames, frame_length;
 	unsigned sample_rate = 0;
@@ -152,18 +128,23 @@ adts_song_duration(struct faad_buffer *b)
 
 	/* Read all frames to ensure correct time and bitrate */
 	for (frames = 0;; frames++) {
-		frame_length = adts_find_frame(b);
-		if (frame_length > 0) {
-			if (frames == 0) {
-				sample_rate = adts_sample_rates[(b->data[2] & 0x3c) >> 2];
-			}
-
-			if (frame_length > b->length)
-				break;
-
-			faad_buffer_consume(b, frame_length);
-		} else
+		frame_length = adts_find_frame(buffer);
+		if (frame_length == 0)
 			break;
+
+
+		if (frames == 0) {
+			const unsigned char *data;
+			size_t buffer_length;
+
+			data = decoder_buffer_read(buffer, &buffer_length);
+			assert(data != NULL);
+			assert(frame_length <= buffer_length);
+
+			sample_rate = adts_sample_rates[(data[2] & 0x3c) >> 2];
+		}
+
+		decoder_buffer_consume(buffer, frame_length);
 	}
 
 	frames_per_second = (float)sample_rate / 1024.0;
@@ -173,61 +154,60 @@ adts_song_duration(struct faad_buffer *b)
 	return (float)frames / frames_per_second;
 }
 
-static void
-faad_buffer_init(struct faad_buffer *buffer, struct decoder *decoder,
-		 struct input_stream *is)
-{
-	memset(buffer, 0, sizeof(*buffer));
-
-	buffer->decoder = decoder;
-	buffer->is = is;
-}
-
 static float
-faad_song_duration(struct faad_buffer *b)
+faad_song_duration(struct decoder_buffer *buffer, struct input_stream *is)
 {
 	size_t fileread;
 	size_t tagsize;
+	const unsigned char *data;
+	size_t length;
 
-	fileread = b->is->size >= 0 ? b->is->size : 0;
+	fileread = is->size >= 0 ? is->size : 0;
 
-	faad_buffer_fill(b);
+	decoder_buffer_fill(buffer);
+	data = decoder_buffer_read(buffer, &length);
+	if (data == NULL)
+		return -1;
 
 	tagsize = 0;
-	if (b->length >= 10 && !memcmp(b->data, "ID3", 3)) {
-		tagsize = (b->data[6] << 21) | (b->data[7] << 14) |
-		    (b->data[8] << 7) | (b->data[9] << 0);
+	if (length >= 10 && !memcmp(data, "ID3", 3)) {
+		tagsize = (data[6] << 21) | (data[7] << 14) |
+		    (data[8] << 7) | (data[9] << 0);
 
 		tagsize += 10;
-		faad_buffer_consume(b, tagsize);
-		faad_buffer_fill(b);
+
+		decoder_buffer_consume(buffer, tagsize);
+		decoder_buffer_fill(buffer);
+		data = decoder_buffer_read(buffer, &length);
+		if (data == NULL)
+			return -1;
 	}
 
-	if (b->is->seekable && b->length >= 2 &&
-	    (b->data[0] == 0xFF) && ((b->data[1] & 0xF6) == 0xF0)) {
-		float length = adts_song_duration(b);
-		input_stream_seek(b->is, tagsize, SEEK_SET);
+	if (is->seekable && length >= 2 &&
+	    data[0] == 0xFF && ((data[1] & 0xF6) == 0xF0)) {
+		float song_length = adts_song_duration(buffer);
 
-		b->length = 0;
-		b->consumed = 0;
+		input_stream_seek(is, tagsize, SEEK_SET);
 
-		faad_buffer_fill(b);
+		data = decoder_buffer_read(buffer, &length);
+		if (data != NULL)
+			decoder_buffer_consume(buffer, length);
+		decoder_buffer_fill(buffer);
 
-		return length;
-	} else if (b->length >= 5 && memcmp(b->data, "ADIF", 4) == 0) {
+		return song_length;
+	} else if (length >= 5 && memcmp(data, "ADIF", 4) == 0) {
 		unsigned bit_rate;
-		size_t skip_size = (b->data[4] & 0x80) ? 9 : 0;
+		size_t skip_size = (data[4] & 0x80) ? 9 : 0;
 
-
-		if (8 + skip_size > b->length)
+		if (8 + skip_size > length)
 			/* not enough data yet; skip parsing this
 			   header */
 			return -1;
 
-		bit_rate = ((unsigned)(b->data[4 + skip_size] & 0x0F) << 19) |
-			((unsigned)b->data[5 + skip_size] << 11) |
-			((unsigned)b->data[6 + skip_size] << 3) |
-			((unsigned)b->data[7 + skip_size] & 0xE0);
+		bit_rate = ((data[4 + skip_size] & 0x0F) << 19) |
+			(data[5 + skip_size] << 11) |
+			(data[6 + skip_size] << 3) |
+			(data[7 + skip_size] & 0xE0);
 
 		if (fileread != 0 && bit_rate != 0)
 			return fileread * 8.0 / bit_rate;
@@ -242,9 +222,15 @@ faad_song_duration(struct faad_buffer *b)
  * inconsistencies in libfaad.
  */
 static bool
-faad_decoder_init(faacDecHandle decoder, struct faad_buffer *buffer,
+faad_decoder_init(faacDecHandle decoder, struct decoder_buffer *buffer,
 		  uint32_t *sample_rate, uint8_t *channels)
 {
+	union {
+		/* deconst hack for libfaad */
+		const void *in;
+		void *out;
+	} u;
+	size_t length;
 	int32_t nbytes;
 #ifdef HAVE_FAAD_LONG
 	/* neaacdec.h declares all arguments as "unsigned long", but
@@ -255,15 +241,19 @@ faad_decoder_init(faacDecHandle decoder, struct faad_buffer *buffer,
 	uint32_t *sample_rate_r = sample_rate;
 #endif
 
-	nbytes = faacDecInit(decoder, buffer->data,
+	u.in = decoder_buffer_read(buffer, &length);
+	if (u.in == NULL)
+		return false;
+
+	nbytes = faacDecInit(decoder, u.out,
 #ifdef HAVE_FAAD_BUFLEN_FUNCS
-			     buffer->length,
+			     length,
 #endif
 			     sample_rate_r, channels);
 	if (nbytes < 0)
 		return false;
 
-	faad_buffer_consume(buffer, nbytes);
+	decoder_buffer_consume(buffer, nbytes);
 	return true;
 }
 
@@ -272,15 +262,25 @@ faad_decoder_init(faacDecHandle decoder, struct faad_buffer *buffer,
  * inconsistencies in libfaad.
  */
 static const void *
-faad_decoder_decode(faacDecHandle decoder, struct faad_buffer *buffer,
+faad_decoder_decode(faacDecHandle decoder, struct decoder_buffer *buffer,
 		    NeAACDecFrameInfo *frame_info)
 {
+	union {
+		/* deconst hack for libfaad */
+		const void *in;
+		void *out;
+	} u;
+	size_t length;
 	void *result;
 
+	u.in = decoder_buffer_read(buffer, &length);
+	if (u.in == NULL)
+		return false;
+
 	result = faacDecDecode(decoder, frame_info,
-			       buffer->data
+			       u.out
 #ifdef HAVE_FAAD_BUFLEN_FUNCS
-			       , buffer->length
+			       , length
 #endif
 			       );
 
@@ -290,7 +290,7 @@ faad_decoder_decode(faacDecHandle decoder, struct faad_buffer *buffer,
 static float
 faad_get_file_time_float(const char *file)
 {
-	struct faad_buffer buffer;
+	struct decoder_buffer *buffer;
 	float length;
 	faacDecHandle decoder;
 	faacDecConfigurationPtr config;
@@ -301,8 +301,9 @@ faad_get_file_time_float(const char *file)
 	if (!input_stream_open(&is, file))
 		return -1;
 
-	faad_buffer_init(&buffer, NULL, &is);
-	length = faad_song_duration(&buffer);
+	buffer = decoder_buffer_new(NULL, &is,
+				    FAAD_MIN_STREAMSIZE * AAC_MAX_CHANNELS);
+	length = faad_song_duration(buffer, &is);
 
 	if (length < 0) {
 		bool ret;
@@ -313,9 +314,9 @@ faad_get_file_time_float(const char *file)
 		config->outputFormat = FAAD_FMT_16BIT;
 		faacDecSetConfiguration(decoder, config);
 
-		faad_buffer_fill(&buffer);
+		decoder_buffer_fill(buffer);
 
-		ret = faad_decoder_init(decoder, &buffer,
+		ret = faad_decoder_init(decoder, buffer,
 					&sample_rate, &channels);
 		if (ret && sample_rate > 0 && channels > 0)
 			length = 0;
@@ -323,6 +324,7 @@ faad_get_file_time_float(const char *file)
 		faacDecClose(decoder);
 	}
 
+	decoder_buffer_free(buffer);
 	input_stream_close(&is);
 
 	return length;
@@ -355,12 +357,13 @@ faad_stream_decode(struct decoder *mpd_decoder, struct input_stream *is)
 	const void *decoded;
 	size_t decoded_length;
 	uint16_t bit_rate = 0;
-	struct faad_buffer buffer;
+	struct decoder_buffer *buffer;
 	bool initialized = false;
 	enum decoder_command cmd;
 
-	faad_buffer_init(&buffer, mpd_decoder, is);
-	total_time = faad_song_duration(&buffer);
+	buffer = decoder_buffer_new(mpd_decoder, is,
+				    FAAD_MIN_STREAMSIZE * AAC_MAX_CHANNELS);
+	total_time = faad_song_duration(buffer, is);
 
 	decoder = faacDecOpen();
 
@@ -374,14 +377,14 @@ faad_stream_decode(struct decoder *mpd_decoder, struct input_stream *is)
 #endif
 	faacDecSetConfiguration(decoder, config);
 
-	while (buffer.length < sizeof(buffer.data) &&
-	       !input_stream_eof(buffer.is) &&
+	while (!decoder_buffer_is_full(buffer) &&
+	       !input_stream_eof(is) &&
 	       decoder_get_command(mpd_decoder) == DECODE_COMMAND_NONE) {
-		adts_find_frame(&buffer);
-		faad_buffer_fill(&buffer);
+		adts_find_frame(buffer);
+		decoder_buffer_fill(buffer);
 	}
 
-	ret = faad_decoder_init(decoder, &buffer,
+	ret = faad_decoder_init(decoder, buffer,
 				&sample_rate, &channels);
 	if (!ret) {
 		g_warning("Error not a AAC stream.\n");
@@ -392,11 +395,11 @@ faad_stream_decode(struct decoder *mpd_decoder, struct input_stream *is)
 	file_time = 0.0;
 
 	do {
-		size_t frame_size = adts_find_frame(&buffer);
+		size_t frame_size = adts_find_frame(buffer);
 		if (frame_size == 0)
 			break;
 
-		decoded = faad_decoder_decode(decoder, &buffer, &frame_info);
+		decoded = faad_decoder_decode(decoder, buffer, &frame_info);
 
 		if (frame_info.error > 0) {
 			g_warning("error decoding AAC stream: %s\n",
@@ -424,7 +427,7 @@ faad_stream_decode(struct decoder *mpd_decoder, struct input_stream *is)
 			initialized = true;
 		}
 
-		faad_buffer_consume(&buffer, frame_info.bytesconsumed);
+		decoder_buffer_consume(buffer, frame_info.bytesconsumed);
 
 		sample_count = (unsigned long)frame_info.samples;
 		if (sample_count > 0) {
