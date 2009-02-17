@@ -95,8 +95,7 @@ static const unsigned adts_sample_rates[] =
 static size_t
 adts_check_frame(struct faad_buffer *b)
 {
-	if (b->length <= 7)
-		return 0;
+	assert(b->length >= 8);
 
 	/* check syncword */
 	if (!((b->data[0] == 0xFF) && ((b->data[1] & 0xF6) == 0xF0)))
@@ -122,7 +121,7 @@ adts_find_frame(struct faad_buffer *b)
 		if (p > b->data)
 			faad_buffer_shift(b, p - b->data);
 
-		if (b->length <= 7)
+		if (b->length < 8)
 			/* not enough data yet */
 			return 0;
 
