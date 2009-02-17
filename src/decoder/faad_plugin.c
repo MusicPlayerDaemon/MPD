@@ -444,8 +444,6 @@ faad_stream_decode(struct decoder *mpd_decoder, struct input_stream *is)
 		cmd = decoder_data(mpd_decoder, is, decoded,
 				   decoded_length, file_time,
 				   bit_rate, NULL);
-		if (cmd == DECODE_COMMAND_SEEK)
-			decoder_seek_error(mpd_decoder);
 	} while (cmd != DECODE_COMMAND_STOP);
 
 	faacDecClose(decoder);
