@@ -392,10 +392,8 @@ faad_stream_decode(struct decoder *mpd_decoder, struct input_stream *is)
 	file_time = 0.0;
 
 	do {
-		adts_find_frame(&buffer);
-		faad_buffer_fill(&buffer);
-
-		if (buffer.length == 0)
+		size_t frame_size = adts_find_frame(&buffer);
+		if (frame_size == 0)
 			break;
 
 		decoded = faad_decoder_decode(decoder, &buffer, &frame_info);
