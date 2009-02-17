@@ -187,8 +187,7 @@ faad_song_duration(struct faad_buffer *b, float *length)
 	size_t fileread;
 	size_t tagsize;
 
-	if (length)
-		*length = -1;
+	*length = -1;
 
 	fileread = b->is->size >= 0 ? b->is->size : 0;
 
@@ -203,9 +202,6 @@ faad_song_duration(struct faad_buffer *b, float *length)
 		faad_buffer_consume(b, tagsize);
 		faad_buffer_fill(b);
 	}
-
-	if (length == NULL)
-		return;
 
 	if (b->is->seekable && b->length >= 2 &&
 	    (b->data[0] == 0xFF) && ((b->data[1] & 0xF6) == 0xF0)) {
