@@ -271,7 +271,7 @@ mpd_SOURCES += decoder/mad_plugin.c
 endif
 
 if HAVE_MPCDEC
-mpd_SOURCES += decoder/mpc_plugin.c
+mpd_SOURCES += decoder/mpcdec_plugin.c
 endif
 
 if HAVE_WAVPACK

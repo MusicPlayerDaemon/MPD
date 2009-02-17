@@ -265,7 +265,7 @@ static struct tag *mpcTagDup(const char *file)
 
 static const char *const mpcSuffixes[] = { "mpc", NULL };
 
-const struct decoder_plugin mpcPlugin = {
+const struct decoder_plugin mpcdec_decoder_plugin = {
 	.name = "mpc",
 	.stream_decode = mpc_decode,
 	.tag_dup = mpcTagDup,
