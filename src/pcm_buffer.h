@@ -65,7 +65,8 @@ pcm_buffer_get(struct pcm_buffer *buffer, size_t size)
 		g_free(buffer->buffer);
 
 		/* allocate a new buffer; align at 64kB boundaries */
-		buffer->buffer = g_malloc((size | 0xffff) + 1);
+		buffer->size = (size | 0xffff) + 1;
+		buffer->buffer = g_malloc(buffer->size);
 	}
 
 	return buffer->buffer;
