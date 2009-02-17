@@ -237,6 +237,56 @@ faad_song_duration(struct faad_buffer *b)
 		return -1;
 }
 
+/**
+ * Wrapper for faacDecInit() which works around some API
+ * inconsistencies in libfaad.
+ */
+static bool
+faad_decoder_init(faacDecHandle decoder, struct faad_buffer *buffer,
+		  uint32_t *sample_rate, uint8_t *channels)
+{
+	int32_t nbytes;
+#ifdef HAVE_FAAD_LONG
+	/* neaacdec.h declares all arguments as "unsigned long", but
+	   internally expects uint32_t pointers.  To avoid gcc
+	   warnings, use this workaround. */
+	unsigned long *sample_rate_r = (unsigned long *)(void *)sample_rate;
+#else
+	uint32_t *sample_rate_r = sample_rate;
+#endif
+
+	nbytes = faacDecInit(decoder, buffer->data,
+#ifdef HAVE_FAAD_BUFLEN_FUNCS
+			     buffer->length,
+#endif
+			     sample_rate_r, channels);
+	if (nbytes < 0)
+		return false;
+
+	faad_buffer_consume(buffer, nbytes);
+	return true;
+}
+
+/**
+ * Wrapper for faacDecDecode() which works around some API
+ * inconsistencies in libfaad.
+ */
+static const void *
+faad_decoder_decode(faacDecHandle decoder, struct faad_buffer *buffer,
+		    NeAACDecFrameInfo *frame_info)
+{
+	void *result;
+
+	result = faacDecDecode(decoder, frame_info,
+			       buffer->data
+#ifdef HAVE_FAAD_BUFLEN_FUNCS
+			       , buffer->length
+#endif
+			       );
+
+	return result;
+}
+
 static float
 faad_get_file_time_float(const char *file)
 {
@@ -245,17 +295,8 @@ faad_get_file_time_float(const char *file)
 	faacDecHandle decoder;
 	faacDecConfigurationPtr config;
 	uint32_t sample_rate;
-#ifdef HAVE_FAAD_LONG
-	/* neaacdec.h declares all arguments as "unsigned long", but
-	   internally expects uint32_t pointers.  To avoid gcc
-	   warnings, use this workaround. */
-	unsigned long *sample_rate_r = (unsigned long *)(void *)&sample_rate;
-#else
-	uint32_t *sample_rate_r = &sample_rate;
-#endif
 	unsigned char channels;
 	struct input_stream is;
-	long bread;
 
 	if (!input_stream_open(&is, file))
 		return -1;
@@ -264,6 +305,8 @@ faad_get_file_time_float(const char *file)
 	length = faad_song_duration(&buffer);
 
 	if (length < 0) {
+		bool ret;
+
 		decoder = faacDecOpen();
 
 		config = faacDecGetCurrentConfiguration(decoder);
@@ -271,14 +314,10 @@ faad_get_file_time_float(const char *file)
 		faacDecSetConfiguration(decoder, config);
 
 		faad_buffer_fill(&buffer);
-#ifdef HAVE_FAAD_BUFLEN_FUNCS
-		bread = faacDecInit(decoder, buffer.data, buffer.length,
-				    sample_rate_r, &channels);
-#else
-		bread = faacDecInit(decoder, buffer.data,
-				    sample_rate_r, &channels);
-#endif
-		if (bread >= 0 && sample_rate > 0 && channels > 0)
+
+		ret = faad_decoder_init(decoder, &buffer,
+					&sample_rate, &channels);
+		if (ret && sample_rate > 0 && channels > 0)
 			length = 0;
 
 		faacDecClose(decoder);
@@ -309,18 +348,10 @@ faad_stream_decode(struct decoder *mpd_decoder, struct input_stream *is)
 	faacDecHandle decoder;
 	faacDecFrameInfo frame_info;
 	faacDecConfigurationPtr config;
-	long bread;
 	uint32_t sample_rate;
-#ifdef HAVE_FAAD_LONG
-	/* neaacdec.h declares all arguments as "unsigned long", but
-	   internally expects uint32_t pointers.  To avoid gcc
-	   warnings, use this workaround. */
-	unsigned long *sample_rate_r = (unsigned long *)(void *)&sample_rate;
-#else
-	uint32_t *sample_rate_r = &sample_rate;
-#endif
 	unsigned char channels;
 	unsigned long sample_count;
+	bool ret;
 	const void *decoded;
 	size_t decoded_length;
 	uint16_t bit_rate = 0;
@@ -350,21 +381,15 @@ faad_stream_decode(struct decoder *mpd_decoder, struct input_stream *is)
 		faad_buffer_fill(&buffer);
 	}
 
-#ifdef HAVE_FAAD_BUFLEN_FUNCS
-	bread = faacDecInit(decoder, buffer.data, buffer.length,
-			    sample_rate_r, &channels);
-#else
-	bread = faacDecInit(decoder, buffer.data, sample_rate_r, &channels);
-#endif
-	if (bread < 0) {
+	ret = faad_decoder_init(decoder, &buffer,
+				&sample_rate, &channels);
+	if (!ret) {
 		g_warning("Error not a AAC stream.\n");
 		faacDecClose(decoder);
 		return;
 	}
 
 	file_time = 0.0;
-
-	faad_buffer_consume(&buffer, bread);
 
 	do {
 		adts_find_frame(&buffer);
@@ -373,13 +398,7 @@ faad_stream_decode(struct decoder *mpd_decoder, struct input_stream *is)
 		if (buffer.length == 0)
 			break;
 
-#ifdef HAVE_FAAD_BUFLEN_FUNCS
-		decoded = faacDecDecode(decoder, &frame_info,
-					buffer.data, buffer.length);
-#else
-		decoded = faacDecDecode(decoder, &frame_info,
-					buffer.data);
-#endif
+		decoded = faad_decoder_decode(decoder, &buffer, &frame_info);
 
 		if (frame_info.error > 0) {
 			g_warning("error decoding AAC stream: %s\n",
