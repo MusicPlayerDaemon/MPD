@@ -146,20 +146,3 @@ pcm_convert(struct pcm_convert_state *state,
 		return 0;
 	}
 }
-
-size_t pcm_convert_size(const struct audio_format *inFormat, size_t src_size,
-			const struct audio_format *outFormat)
-{
-	const double ratio = (double)outFormat->sample_rate /
-	                     (double)inFormat->sample_rate;
-	size_t dest_size = src_size;
-
-	/* no partial frames allowed */
-	assert((src_size % audio_format_frame_size(inFormat)) == 0);
-
-	dest_size /= audio_format_frame_size(inFormat);
-	dest_size = ceil((double)dest_size * ratio);
-	dest_size *= audio_format_frame_size(outFormat);
-
-	return dest_size;
-}
