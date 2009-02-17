@@ -25,6 +25,9 @@
 #include <string.h>
 #include <glib.h>
 
+#undef G_LOG_DOMAIN
+#define G_LOG_DOMAIN "input_file"
+
 static bool
 input_file_open(struct input_stream *is, const char *filename)
 {

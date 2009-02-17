@@ -31,6 +31,9 @@
 #include <curl/curl.h>
 #include <glib.h>
 
+#undef G_LOG_DOMAIN
+#define G_LOG_DOMAIN "input_curl"
+
 /** rewinding is possible after up to 64 kB */
 static const off_t max_rewind_size = 64 * 1024;
 

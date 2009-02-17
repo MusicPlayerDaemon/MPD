@@ -24,6 +24,9 @@
 #include <assert.h>
 #include <string.h>
 
+#undef G_LOG_DOMAIN
+#define G_LOG_DOMAIN "icy_metadata"
+
 void
 icy_deinit(struct icy_metadata *im)
 {
