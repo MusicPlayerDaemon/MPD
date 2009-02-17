@@ -63,6 +63,7 @@ mpd_headers = \
 	decoder_thread.h \
 	decoder_control.h \
 	decoder_plugin.h \
+	decoder_buffer.h \
 	decoder_api.h \
 	decoder_internal.h \
 	directory.h \
@@ -166,6 +167,7 @@ mpd_SOURCES = \
 	dbUtils.c \
 	decoder_thread.c \
 	decoder_control.c \
+	decoder_buffer.c \
 	decoder_api.c \
 	directory.c \
 	directory_save.c \
