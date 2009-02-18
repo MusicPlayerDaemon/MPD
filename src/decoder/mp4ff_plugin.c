@@ -323,7 +323,7 @@ mp4_decode(struct decoder *mpd_decoder, struct input_stream *input_stream)
 }
 
 static struct tag *
-mp4_load_tag(const char *file)
+mp4_tag_dup(const char *file)
 {
 	struct tag *ret = NULL;
 	struct input_stream input_stream;
@@ -403,12 +403,6 @@ mp4_load_tag(const char *file)
 	input_stream_close(&input_stream);
 
 	return ret;
-}
-
-static struct tag *
-mp4_tag_dup(const char *file)
-{
-	return mp4_load_tag(file);
 }
 
 static const char *const mp4_suffixes[] = { "m4a", "mp4", NULL };
