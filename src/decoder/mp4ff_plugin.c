@@ -94,6 +94,65 @@ mp4_seek(void *user_data, uint64_t position)
 		? 0 : -1;
 }
 
+static faacDecHandle
+mp4_faad_new(mp4ff_t *mp4fh, int track, struct audio_format *audio_format)
+{
+	faacDecHandle decoder;
+	faacDecConfigurationPtr config;
+	unsigned char *mp4_buffer;
+	unsigned int mp4_buffer_size;
+	uint32_t sample_rate;
+#ifdef HAVE_FAAD_LONG
+	/* neaacdec.h declares all arguments as "unsigned long", but
+	   internally expects uint32_t pointers.  To avoid gcc
+	   warnings, use this workaround. */
+	unsigned long *sample_rate_r = (unsigned long*)&sample_rate;
+#else
+	uint32_t *sample_rate_r = &sample_rate;
+#endif
+	unsigned char channels;
+
+	decoder = faacDecOpen();
+
+	config = faacDecGetCurrentConfiguration(decoder);
+	config->outputFormat = FAAD_FMT_16BIT;
+#ifdef HAVE_FAACDECCONFIGURATION_DOWNMATRIX
+	config->downMatrix = 1;
+#endif
+#ifdef HAVE_FAACDECCONFIGURATION_DONTUPSAMPLEIMPLICITSBR
+	config->dontUpSampleImplicitSBR = 0;
+#endif
+	faacDecSetConfiguration(decoder, config);
+
+	mp4_buffer = NULL;
+	mp4_buffer_size = 0;
+	mp4ff_get_decoder_config(mp4fh, track, &mp4_buffer, &mp4_buffer_size);
+
+	if (faacDecInit2(decoder, mp4_buffer, mp4_buffer_size,
+			 sample_rate_r, &channels) < 0) {
+		g_warning("Not an AAC stream.\n");
+		faacDecClose(decoder);
+		return NULL;
+	}
+
+	*audio_format = (struct audio_format){
+		.bits = 16,
+		.channels = channels,
+		.sample_rate = sample_rate,
+	};
+
+	if (!audio_format_valid(audio_format)) {
+		g_warning("Invalid audio format: %u:%u:%u\n",
+			  audio_format->sample_rate,
+			  audio_format->bits,
+			  audio_format->channels);
+		faacDecClose(decoder);
+		return NULL;
+	}
+
+	return decoder;
+}
+
 static void
 mp4_decode(struct decoder *mpd_decoder, struct input_stream *input_stream)
 {
@@ -113,19 +172,8 @@ mp4_decode(struct decoder *mpd_decoder, struct input_stream *input_stream)
 	faacDecHandle decoder;
 	struct audio_format audio_format;
 	faacDecFrameInfo frame_info;
-	faacDecConfigurationPtr config;
 	unsigned char *mp4_buffer;
 	unsigned int mp4_buffer_size;
-	uint32_t sample_rate;
-#ifdef HAVE_FAAD_LONG
-	/* neaacdec.h declares all arguments as "unsigned long", but
-	   internally expects uint32_t pointers.  To avoid gcc
-	   warnings, use this workaround. */
-	unsigned long *sample_rate_r = (unsigned long*)&sample_rate;
-#else
-	uint32_t *sample_rate_r = &sample_rate;
-#endif
-	unsigned char channels;
 	long sample_id;
 	long num_samples;
 	long dur;
@@ -155,34 +203,14 @@ mp4_decode(struct decoder *mpd_decoder, struct input_stream *input_stream)
 		return;
 	}
 
-	decoder = faacDecOpen();
-
-	config = faacDecGetCurrentConfiguration(decoder);
-	config->outputFormat = FAAD_FMT_16BIT;
-#ifdef HAVE_FAACDECCONFIGURATION_DOWNMATRIX
-	config->downMatrix = 1;
-#endif
-#ifdef HAVE_FAACDECCONFIGURATION_DONTUPSAMPLEIMPLICITSBR
-	config->dontUpSampleImplicitSBR = 0;
-#endif
-	faacDecSetConfiguration(decoder, config);
-
-	mp4_buffer = NULL;
-	mp4_buffer_size = 0;
-	mp4ff_get_decoder_config(mp4fh, track, &mp4_buffer, &mp4_buffer_size);
-
-	if (faacDecInit2(decoder, mp4_buffer, mp4_buffer_size,
-			 sample_rate_r, &channels) < 0) {
-		g_warning("Not an AAC stream.\n");
-		faacDecClose(decoder);
+	decoder = mp4_faad_new(mp4fh, track, &audio_format);
+	if (decoder == NULL) {
 		mp4ff_close(mp4fh);
 		return;
 	}
 
 	file_time = mp4ff_get_track_duration_use_offsets(mp4fh, track);
 	scale = mp4ff_time_scale(mp4fh, track);
-
-	free(mp4_buffer);
 
 	if (scale < 0) {
 		g_warning("Error getting audio format of mp4 AAC track.\n");
@@ -203,22 +231,6 @@ mp4_decode(struct decoder *mpd_decoder, struct input_stream *input_stream)
 	file_time = 0.0;
 
 	seek_table = g_malloc(sizeof(float) * num_samples);
-
-	audio_format = (struct audio_format){
-		.bits = 16,
-		.channels = channels,
-		.sample_rate = sample_rate,
-	};
-
-	if (!audio_format_valid(&audio_format)) {
-		g_warning("Invalid audio format: %u:%u:%u\n",
-			  audio_format.sample_rate,
-			  audio_format.bits,
-			  audio_format.channels);
-		faacDecClose(decoder);
-		mp4ff_close(mp4fh);
-		return;
-	}
 
 	decoder_initialized(mpd_decoder, &audio_format,
 			    input_stream->seekable,
@@ -303,12 +315,12 @@ mp4_decode(struct decoder *mpd_decoder, struct input_stream *input_stream)
 		}
 #endif
 
-		if (channels * (unsigned long)(dur + offset) > frame_info.samples) {
-			dur = frame_info.samples / channels;
+		if (audio_format.channels * (unsigned long)(dur + offset) > frame_info.samples) {
+			dur = frame_info.samples / audio_format.channels;
 			offset = 0;
 		}
 
-		sample_count = (unsigned long)(dur * channels);
+		sample_count = (unsigned long)(dur * audio_format.channels);
 
 		if (sample_count > 0) {
 			initial = 0;
@@ -319,7 +331,7 @@ mp4_decode(struct decoder *mpd_decoder, struct input_stream *input_stream)
 
 		sample_buffer_length = sample_count * 2;
 
-		sample_buffer += offset * channels * 2;
+		sample_buffer += offset * audio_format.channels * 2;
 
 		cmd = decoder_data(mpd_decoder, input_stream,
 				   sample_buffer, sample_buffer_length,
