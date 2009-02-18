@@ -287,8 +287,8 @@ mp4_decode(struct decoder *mpd_decoder, struct input_stream *input_stream)
 		sample_buffer = faacDecDecode(decoder, &frame_info, mp4_buffer);
 #endif
 
-		if (mp4_buffer)
-			free(mp4_buffer);
+		free(mp4_buffer);
+
 		if (frame_info.error > 0) {
 			g_warning("faad2 error: %s\n",
 				  faacDecGetErrorMessage(frame_info.error));
