@@ -111,6 +111,7 @@ mp4_decode(struct decoder *mpd_decoder, struct input_stream *input_stream)
 	float file_time, total_time;
 	int32_t scale;
 	faacDecHandle decoder;
+	struct audio_format audio_format;
 	faacDecFrameInfo frame_info;
 	faacDecConfigurationPtr config;
 	unsigned char *mp4_buffer;
@@ -139,7 +140,6 @@ mp4_decode(struct decoder *mpd_decoder, struct input_stream *input_stream)
 	uint16_t bit_rate = 0;
 	bool seeking = false;
 	double seek_where = 0;
-	bool initialized = false;
 	enum decoder_command cmd = DECODE_COMMAND_NONE;
 
 	mp4fh = mp4ff_open_read(&callback);
@@ -203,6 +203,26 @@ mp4_decode(struct decoder *mpd_decoder, struct input_stream *input_stream)
 	file_time = 0.0;
 
 	seek_table = g_malloc(sizeof(float) * num_samples);
+
+	audio_format = (struct audio_format){
+		.bits = 16,
+		.channels = channels,
+		.sample_rate = sample_rate,
+	};
+
+	if (!audio_format_valid(&audio_format)) {
+		g_warning("Invalid audio format: %u:%u:%u\n",
+			  audio_format.sample_rate,
+			  audio_format.bits,
+			  audio_format.channels);
+		faacDecClose(decoder);
+		mp4ff_close(mp4fh);
+		return;
+	}
+
+	decoder_initialized(mpd_decoder, &audio_format,
+			    input_stream->seekable,
+			    total_time);
 
 	for (sample_id = 0;
 	     sample_id < num_samples && cmd != DECODE_COMMAND_STOP;
@@ -268,31 +288,20 @@ mp4_decode(struct decoder *mpd_decoder, struct input_stream *input_stream)
 			break;
 		}
 
-		if (!initialized) {
-			struct audio_format audio_format = {
-				.bits = 16,
-				.channels = frame_info.channels,
-			};
-
-			channels = frame_info.channels;
-#ifdef HAVE_FAACDECFRAMEINFO_SAMPLERATE
-			scale = frame_info.samplerate;
-#endif
-			audio_format.sample_rate = scale;
-
-			if (!audio_format_valid(&audio_format)) {
-				g_warning("Invalid audio format: %u:%u:%u\n",
-					  audio_format.sample_rate,
-					  audio_format.bits,
-					  audio_format.channels);
-				break;
-			}
-
-			decoder_initialized(mpd_decoder, &audio_format,
-					    input_stream->seekable,
-					    total_time);
-			initialized = true;
+		if (frame_info.channels != audio_format.channels) {
+			g_warning("channel count changed from %u to %u",
+				  audio_format.channels, frame_info.channels);
+			break;
 		}
+
+#ifdef HAVE_FAACDECFRAMEINFO_SAMPLERATE
+		if (frame_info.samplerate != audio_format.sample_rate) {
+			g_warning("sample rate changed from %u to %lu",
+				  audio_format.sample_rate,
+				  (unsigned long)frame_info.samplerate);
+			break;
+		}
+#endif
 
 		if (channels * (unsigned long)(dur + offset) > frame_info.samples) {
 			dur = frame_info.samples / channels;
