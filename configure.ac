@@ -34,6 +34,8 @@ dnl
 dnl OS specific defaults
 dnl
 
+AC_CANONICAL_HOST
+
 case "$host" in
 *-mingw32* | *-windows*)
 	MPD_LIBS="$MPD_LIBS -lws2_32"
