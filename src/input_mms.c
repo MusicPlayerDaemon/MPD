@@ -56,6 +56,7 @@ input_mms_open(struct input_stream *is, const char *url)
 	   decoder, which seems to work fine*/
 	is->mime = g_strdup("audio/x-ms-wma");
 
+	is->plugin = &input_plugin_mms;
 	is->data = m;
 	is->ready = true;
 	return true;
