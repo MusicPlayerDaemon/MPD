@@ -24,6 +24,7 @@
 #include <mp4ff.h>
 #include <faad.h>
 
+#include <assert.h>
 #include <stdlib.h>
 #include <unistd.h>
 
@@ -217,7 +218,9 @@ mp4_decode(struct decoder *mpd_decoder, struct input_stream *input_stream)
 
 	file_time = 0.0;
 
-	seek_table = g_malloc(sizeof(float) * num_samples);
+	seek_table = input_stream->seekable
+		? g_malloc(sizeof(float) * num_samples)
+		: NULL;
 
 	decoder_initialized(mpd_decoder, &audio_format,
 			    input_stream->seekable,
@@ -227,6 +230,8 @@ mp4_decode(struct decoder *mpd_decoder, struct input_stream *input_stream)
 	     sample_id < num_samples && cmd != DECODE_COMMAND_STOP;
 	     sample_id++) {
 		if (cmd == DECODE_COMMAND_SEEK) {
+			assert(seek_table != NULL);
+
 			seeking = true;
 			seek_where = decoder_seek_where(mpd_decoder);
 		}
@@ -234,6 +239,9 @@ mp4_decode(struct decoder *mpd_decoder, struct input_stream *input_stream)
 		if (seeking && seek_table_end > 1 &&
 		    seek_table[seek_table_end] >= seek_where) {
 			int i = 2;
+
+			assert(seek_table != NULL);
+
 			while (seek_table[i] < seek_where)
 				i++;
 			sample_id = i - 1;
@@ -243,7 +251,7 @@ mp4_decode(struct decoder *mpd_decoder, struct input_stream *input_stream)
 		dur = mp4ff_get_sample_duration(mp4fh, track, sample_id);
 		offset = mp4ff_get_sample_offset(mp4fh, track, sample_id);
 
-		if (sample_id > seek_table_end) {
+		if (seek_table != NULL && sample_id > seek_table_end) {
 			seek_table[sample_id] = file_time;
 			seek_table_end = sample_id;
 		}
