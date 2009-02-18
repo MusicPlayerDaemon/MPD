@@ -8,6 +8,7 @@
 *.lo
 *.o
 .deps
+.dirstamp
 Makefile
 Makefile.in
 aclocal.m4
@@ -38,3 +39,4 @@ tags
 doc/protocol.html
 doc/protocol
 doc/api
+test/software_volume
