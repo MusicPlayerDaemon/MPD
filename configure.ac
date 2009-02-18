@@ -812,7 +812,6 @@ int main() {
 		])
 	fi
 	if test x$enable_aac = xyes; then
-		AC_CHECK_TYPES(mp4AudioSpecificConfig,,,[#include <faad.h>])
 		AC_CHECK_MEMBERS([faacDecConfiguration.downMatrix,faacDecConfiguration.dontUpSampleImplicitSBR,faacDecFrameInfo.samplerate],,,[#include <faad.h>])
 		AC_DEFINE(HAVE_FAAD,1,[Define to use FAAD2 for AAC decoding])
 	else

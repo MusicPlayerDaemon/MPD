@@ -38,39 +38,45 @@ struct mp4_context {
 };
 
 static int
-mp4_get_aac_track(mp4ff_t * infile)
+mp4_get_aac_track(mp4ff_t * infile, faacDecHandle decoder,
+		  uint32_t *sample_rate, unsigned char *channels_r)
 {
-	/* find AAC track */
+#ifdef HAVE_FAAD_LONG
+	/* neaacdec.h declares all arguments as "unsigned long", but
+	   internally expects uint32_t pointers.  To avoid gcc
+	   warnings, use this workaround. */
+	unsigned long *sample_rate_r = (unsigned long*)sample_rate;
+#else
+	uint32_t *sample_rate_r = sample_rate;
+#endif
 	int i, rc;
 	int num_tracks = mp4ff_total_tracks(infile);
 
 	for (i = 0; i < num_tracks; i++) {
 		unsigned char *buff = NULL;
 		unsigned int buff_size = 0;
-#ifdef HAVE_MP4AUDIOSPECIFICCONFIG
-		mp4AudioSpecificConfig mp4ASC;
-#else
-		unsigned long dummy1_32;
-		unsigned char dummy2_8, dummy3_8, dummy4_8, dummy5_8, dummy6_8,
-		    dummy7_8, dummy8_8;
-#endif
+
+		if (mp4ff_get_track_type(infile, i) != 1)
+			/* not an audio track */
+			continue;
+
+		if (decoder == NULL)
+			/* have don't have a decoder to initialize -
+			   we're done now, because we found an audio
+			   track */
+			return i;
 
 		mp4ff_get_decoder_config(infile, i, &buff, &buff_size);
+		if (buff == NULL)
+			continue;
 
-		if (buff) {
-#ifdef HAVE_MP4AUDIOSPECIFICCONFIG
-			rc = AudioSpecificConfig(buff, buff_size, &mp4ASC);
-#else
-			rc = AudioSpecificConfig(buff, &dummy1_32, &dummy2_8,
-						 &dummy3_8, &dummy4_8,
-						 &dummy5_8, &dummy6_8,
-						 &dummy7_8, &dummy8_8);
-#endif
-			free(buff);
-			if (rc < 0)
-				continue;
+		rc = faacDecInit2(decoder, buff, buff_size,
+				  sample_rate_r, channels_r);
+		free(buff);
+
+		if (rc >= 0)
+			/* found a valid AAC track */
 			return i;
-		}
 	}
 
 	/* can't decode this */
@@ -95,21 +101,12 @@ mp4_seek(void *user_data, uint64_t position)
 }
 
 static faacDecHandle
-mp4_faad_new(mp4ff_t *mp4fh, int track, struct audio_format *audio_format)
+mp4_faad_new(mp4ff_t *mp4fh, int *track_r, struct audio_format *audio_format)
 {
 	faacDecHandle decoder;
 	faacDecConfigurationPtr config;
-	unsigned char *mp4_buffer;
-	unsigned int mp4_buffer_size;
+	int track;
 	uint32_t sample_rate;
-#ifdef HAVE_FAAD_LONG
-	/* neaacdec.h declares all arguments as "unsigned long", but
-	   internally expects uint32_t pointers.  To avoid gcc
-	   warnings, use this workaround. */
-	unsigned long *sample_rate_r = (unsigned long*)&sample_rate;
-#else
-	uint32_t *sample_rate_r = &sample_rate;
-#endif
 	unsigned char channels;
 
 	decoder = faacDecOpen();
@@ -124,17 +121,14 @@ mp4_faad_new(mp4ff_t *mp4fh, int track, struct audio_format *audio_format)
 #endif
 	faacDecSetConfiguration(decoder, config);
 
-	mp4_buffer = NULL;
-	mp4_buffer_size = 0;
-	mp4ff_get_decoder_config(mp4fh, track, &mp4_buffer, &mp4_buffer_size);
-
-	if (faacDecInit2(decoder, mp4_buffer, mp4_buffer_size,
-			 sample_rate_r, &channels) < 0) {
-		g_warning("Not an AAC stream.\n");
+	track = mp4_get_aac_track(mp4fh, decoder, &sample_rate, &channels);
+	if (track < 0) {
+		g_warning("No AAC track found");
 		faacDecClose(decoder);
 		return NULL;
 	}
 
+	*track_r = track;
 	*audio_format = (struct audio_format){
 		.bits = 16,
 		.channels = channels,
@@ -196,14 +190,7 @@ mp4_decode(struct decoder *mpd_decoder, struct input_stream *input_stream)
 		return;
 	}
 
-	track = mp4_get_aac_track(mp4fh);
-	if (track < 0) {
-		g_warning("No AAC track found in mp4 stream.\n");
-		mp4ff_close(mp4fh);
-		return;
-	}
-
-	decoder = mp4_faad_new(mp4fh, track, &audio_format);
+	decoder = mp4_faad_new(mp4fh, &track, &audio_format);
 	if (decoder == NULL) {
 		mp4ff_close(mp4fh);
 		return;
@@ -374,7 +361,7 @@ mp4_tag_dup(const char *file)
 		return NULL;
 	}
 
-	track = mp4_get_aac_track(mp4fh);
+	track = mp4_get_aac_track(mp4fh, NULL, NULL, NULL);
 	if (track < 0) {
 		mp4ff_close(mp4fh);
 		input_stream_close(&input_stream);
