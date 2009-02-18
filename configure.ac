@@ -36,8 +36,8 @@ dnl
 
 AC_CANONICAL_HOST
 
-case "$host" in
-*-mingw32* | *-windows*)
+case "$host_os" in
+mingw32* | windows*)
 	MPD_LIBS="$MPD_LIBS -lws2_32"
 	;;
 esac
@@ -532,8 +532,8 @@ AC_ARG_ENABLE(shout-mp3,
 	[enable_shout_mp3=yes])
 
 enable_osx=no
-case $host in
-	*-darwin*)
+case "$host_os" in
+	darwin*)
                 AC_DEFINE(HAVE_OSX, 1, [Define for compiling OS X support])
 		MPD_LIBS="$MPD_LIBS -framework AudioUnit -framework CoreServices"
 		enable_osx=yes ;;
