@@ -58,16 +58,55 @@ pcm_volume_change_16(int16_t *buffer, unsigned num_samples, int volume)
 	}
 }
 
+#if __i386__
+/**
+ * Optimized volume function for i386.  Use the EDX:EAX 2*32 bit
+ * multiplication result instead of emulating 64 bit multiplication.
+ */
+static inline int32_t
+pcm_volume_sample_24(int32_t sample, int32_t volume, int32_t dither)
+{
+	int32_t result;
+
+	asm(/* edx:eax = sample * volume */
+	    "imul %2\n"
+
+	    /* "add %3, %1\n"  dithering disabled for now, because we
+	       have no overflow check - is dithering really important
+	       here? */
+
+	    /* eax = edx:eax / PCM_VOLUME_1 */
+	    "sal $22, %%edx\n"
+	    "shr $10, %1\n"
+	    "or %%edx, %1\n"
+
+	    : "=a"(result)
+	    : "0"(sample), "r"(volume) /* , "r"(dither) */
+	    : "edx"
+	    );
+
+	return result;
+}
+#endif
+
 static void
 pcm_volume_change_24(int32_t *buffer, unsigned num_samples, int volume)
 {
 	while (num_samples > 0) {
+#if __i386__
+		/* assembly version for i386 */
+		int32_t sample = *buffer;
+
+		sample = pcm_volume_sample_24(sample, volume,
+					      pcm_volume_dither());
+#else
+		/* portable version */
 		int64_t sample = *buffer;
 
 		sample = (sample * volume + pcm_volume_dither() +
 			  PCM_VOLUME_1 / 2)
 			/ PCM_VOLUME_1;
-
+#endif
 		*buffer++ = pcm_range(sample, 24);
 		--num_samples;
 	}
