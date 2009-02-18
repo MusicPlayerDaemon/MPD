@@ -7,6 +7,22 @@ EXTRA_DIST = $(doc_DATA) autogen.sh \
 	$(wildcard scripts/*.sh) scripts/mpd.spec \
 	.gitignore
 
+
+AM_CFLAGS = -I$(srcdir)/src $(GLIB_CFLAGS)
+AM_LDFLAGS = $(GLIB_LIBS)
+
+
+#
+# Test programs
+#
+
+if ENABLE_TEST
+
+noinst_PROGRAMS =
+
+endif
+
+
 sparse-check test:
 	$(MAKE) -C src $@
 

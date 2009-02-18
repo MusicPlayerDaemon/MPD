@@ -1123,6 +1123,13 @@ if test "x$ENABLE_GPROF" = xyes; then
 	MPD_CFLAGS="$MPD_CFLAGS -pg"
 fi
 
+AC_ARG_ENABLE(test,
+	AS_HELP_STRING([--enable-test],
+		[Build the test programs (default: disabled)]),,
+	enable_test=no)
+
+AM_CONDITIONAL(ENABLE_TEST, test "x$enable_test" = xyes)
+
 
 dnl
 dnl CFLAGS
