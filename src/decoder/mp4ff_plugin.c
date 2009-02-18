@@ -19,11 +19,11 @@
 #include "../decoder_api.h"
 #include "config.h"
 
-#include "mp4ff.h"
-
-#include <limits.h>
-#include <faad.h>
 #include <glib.h>
+
+#include <mp4ff.h>
+#include <faad.h>
+
 #include <stdlib.h>
 #include <unistd.h>
 
@@ -208,7 +208,7 @@ mp4_decode(struct decoder *mpd_decoder, struct input_stream *input_stream)
 	total_time = ((float)file_time) / scale;
 
 	num_samples = mp4ff_num_samples(mp4fh, track);
-	if (num_samples > (long)(INT_MAX / sizeof(float))) {
+	if (num_samples > (long)(G_MAXINT / sizeof(float))) {
 		 g_warning("Integer overflow.\n");
 		 faacDecClose(decoder);
 		 mp4ff_close(mp4fh);
