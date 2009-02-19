@@ -276,7 +276,7 @@ faad_decoder_init(faacDecHandle decoder, struct decoder_buffer *buffer,
  */
 static const void *
 faad_decoder_decode(faacDecHandle decoder, struct decoder_buffer *buffer,
-		    NeAACDecFrameInfo *frame_info)
+		    faacDecFrameInfo *frame_info)
 {
 	union {
 		/* deconst hack for libfaad */
