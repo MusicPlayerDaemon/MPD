@@ -25,6 +25,17 @@
 G_GNUC_PRINTF(1, 2) void DEBUG(const char *fmt, ...);
 G_GNUC_PRINTF(1, 2) G_GNUC_NORETURN void FATAL(const char *fmt, ...);
 
+/**
+ * Configure a logging destination for daemon startup, before the
+ * configuration file is read.  This allows the daemon to use the
+ * logging library (and the command line verbose level) before it's
+ * daemonized.
+ *
+ * @param verbose true when the program is started with --verbose
+ */
+void
+log_early_init(bool verbose);
+
 void log_init(bool verbose, bool use_stdout);
 
 void setup_log_output(bool use_stdout);

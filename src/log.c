@@ -217,6 +217,15 @@ parse_log_level(const char *value, unsigned line)
 	}
 }
 
+void
+log_early_init(bool verbose)
+{
+	if (verbose)
+		log_threshold = G_LOG_LEVEL_DEBUG;
+
+	log_init_stdout();
+}
+
 void log_init(bool verbose, bool use_stdout)
 {
 	const struct config_param *param;

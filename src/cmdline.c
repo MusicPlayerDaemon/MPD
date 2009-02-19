@@ -18,6 +18,7 @@
 
 #include "cmdline.h"
 #include "path.h"
+#include "log.h"
 #include "conf.h"
 #include "decoder_list.h"
 #include "config.h"
@@ -122,6 +123,10 @@ void parseOptions(int argc, char **argv, Options *options)
 
 	if (option_version)
 		version();
+
+	/* initialize the logging library, so the configuration file
+	   parser can use it already */
+	log_early_init(options->verbose);
 
 	if (option_create_db && option_no_create_db)
 		g_error("Cannot use both --create-db and --no-create-db\n");
