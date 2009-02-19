@@ -38,6 +38,9 @@
 #include <syslog.h>
 #endif
 
+#undef G_LOG_DOMAIN
+#define G_LOG_DOMAIN "log"
+
 #define LOG_LEVEL_SECURE G_LOG_LEVEL_INFO
 
 #define LOG_DATE_BUF_SIZE 16

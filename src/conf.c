@@ -29,6 +29,9 @@
 #include <stdlib.h>
 #include <errno.h>
 
+#undef G_LOG_DOMAIN
+#define G_LOG_DOMAIN "config"
+
 #define MAX_STRING_SIZE	MPD_PATH_MAX+80
 
 #define CONF_COMMENT		'#'

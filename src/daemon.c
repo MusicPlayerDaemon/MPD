@@ -35,6 +35,9 @@
 #include <grp.h>
 #endif
 
+#undef G_LOG_DOMAIN
+#define G_LOG_DOMAIN "daemon"
+
 #ifndef WIN32
 
 /** the Unix user name which MPD runs as */

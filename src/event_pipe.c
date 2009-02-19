@@ -34,6 +34,9 @@
 #include <fcntl.h>
 #endif
 
+#undef G_LOG_DOMAIN
+#define G_LOG_DOMAIN "event_pipe"
+
 static int event_pipe[2];
 static guint event_pipe_source_id;
 static GMutex *event_pipe_mutex;
