@@ -16,7 +16,6 @@
  */
 
 #include "../output_api.h"
-#include "../utils.h"
 #include "config.h"
 
 #include <assert.h>
@@ -421,7 +420,7 @@ mpd_jack_play(void *data, const char *buff, size_t size)
 		} else {
 			/* XXX do something more intelligent to
 			   synchronize */
-			my_usleep(1000);
+			g_usleep(1000);
 		}
 
 	}

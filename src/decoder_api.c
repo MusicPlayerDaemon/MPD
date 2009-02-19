@@ -24,7 +24,6 @@
 #include "audio.h"
 #include "song.h"
 
-#include "utils.h"
 #include "normalize.h"
 #include "pipe.h"
 
@@ -129,7 +128,7 @@ size_t decoder_read(struct decoder *decoder,
 
 		/* sleep for a fraction of a second! */
 		/* XXX don't sleep, wait for an event instead */
-		my_usleep(10000);
+		g_usleep(10000);
 	}
 }
 

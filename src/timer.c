@@ -17,7 +17,6 @@
  */
 
 #include "timer.h"
-#include "utils.h"
 #include "audio_format.h"
 
 #include <glib.h>
@@ -78,5 +77,5 @@ void timer_sync(Timer *timer)
 
 	sleep_duration = timer->time - now();
 	if (sleep_duration > 0)
-		my_usleep(sleep_duration);
+		g_usleep(sleep_duration);
 }

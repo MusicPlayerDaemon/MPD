@@ -17,7 +17,6 @@
  */
 
 #include "../output_api.h"
-#include "../utils.h"
 
 #include <glib.h>
 #include <AudioUnit/AudioUnit.h>
@@ -171,7 +170,7 @@ osx_render(void *vdata,
 	buffer->mDataByteSize = bufferSize;
 
 	if (!bufferSize) {
-		my_usleep(1000);
+		g_usleep(1000);
 	}
 
 	return 0;

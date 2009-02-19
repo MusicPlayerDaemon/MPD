@@ -28,8 +28,6 @@
 	} while (0)
 #endif /* !assert_static */
 
-void my_usleep(long usec);
-
 char *parsePath(char *path);
 
 int set_nonblocking(int fd);

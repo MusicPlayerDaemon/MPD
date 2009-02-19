@@ -40,20 +40,6 @@
 #include <windows.h>
 #endif
 
-void my_usleep(long usec)
-{
-#ifdef WIN32
-	Sleep(usec / 1000);
-#else
-	struct timeval tv;
-
-	tv.tv_sec = 0;
-	tv.tv_usec = usec;
-
-	select(0, NULL, NULL, NULL, &tv);
-#endif
-}
-
 char *parsePath(char *path)
 {
 #ifndef WIN32
