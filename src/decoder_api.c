@@ -137,13 +137,13 @@ size_t decoder_read(struct decoder *decoder,
  * one.
  */
 static enum decoder_command
-need_chunks(struct input_stream *is, bool wait)
+need_chunks(struct input_stream *is, bool do_wait)
 {
 	if (dc.command == DECODE_COMMAND_STOP ||
 	    dc.command == DECODE_COMMAND_SEEK)
 		return dc.command;
 
-	if ((is == NULL || input_stream_buffer(is) <= 0) && wait) {
+	if ((is == NULL || input_stream_buffer(is) <= 0) && do_wait) {
 		notify_wait(&dc.notify);
 		notify_signal(&pc.notify);
 
