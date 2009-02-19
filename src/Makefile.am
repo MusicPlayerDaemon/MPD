@@ -45,6 +45,7 @@ mpd_headers = \
 	audioOutput.h \
 	output_internal.h \
 	output_api.h \
+	output_plugin.h \
 	output_list.h \
 	output_all.h \
 	output_thread.h \
@@ -63,8 +64,10 @@ mpd_headers = \
 	decoder_thread.h \
 	decoder_control.h \
 	decoder_plugin.h \
+	decoder_command.h \
 	decoder_buffer.h \
 	decoder_api.h \
+	decoder_plugin.h \
 	decoder_internal.h \
 	directory.h \
 	directory_save.h \
@@ -94,6 +97,7 @@ mpd_headers = \
 	pipe.h \
 	path.h \
 	mapper.h \
+	pcm_buffer.h \
 	pcm_utils.h \
 	pcm_convert.h \
 	pcm_volume.h \
@@ -138,6 +142,7 @@ mpd_headers = \
 	stored_playlist.h \
 	timer.h \
 	archive_api.h \
+	archive_internal.h \
 	archive_list.h \
 	input_archive.h
 
