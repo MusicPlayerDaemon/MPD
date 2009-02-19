@@ -296,6 +296,8 @@ void config_read_file(const char *file)
 	struct config_entry *entry;
 	struct config_param *param;
 
+	g_debug("loading file %s", file);
+
 	if (!(fp = fopen(file, "r"))) {
 		g_error("problems opening file %s for reading: %s\n",
 			file, strerror(errno));
