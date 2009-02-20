@@ -21,6 +21,7 @@
 
 #include <glib.h>
 
+#include <assert.h>
 #include <string.h>
 
 #undef G_LOG_DOMAIN
@@ -53,6 +54,16 @@ utf8_to_fs_charset(const char *path_utf8)
 
 void path_set_fs_charset(const char *charset)
 {
+	char *test;
+
+	assert(charset != NULL);
+
+	/* convert a space to ensure that the charset is valid */
+	test = g_convert(" ", 1, charset, "UTF-8", NULL, NULL, NULL);
+	if (test == NULL)
+		g_error("invalid filesystem charset: %s", charset);
+	g_free(test);
+
 	g_free(fs_charset);
 	fs_charset = g_strdup(charset);
 
