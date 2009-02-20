@@ -52,7 +52,8 @@ utf8_to_fs_charset(const char *path_utf8)
 	return p;
 }
 
-void path_set_fs_charset(const char *charset)
+static void
+path_set_fs_charset(const char *charset)
 {
 	char *test;
 
