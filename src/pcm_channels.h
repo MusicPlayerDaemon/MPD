@@ -24,12 +24,35 @@
 
 struct pcm_buffer;
 
+/**
+ * Changes the number of channels in 16 bit PCM data.
+ *
+ * @param buffer the destination pcm_buffer object
+ * @param dest_channels the number of channels requested
+ * @param src_channels the number of channels in the source buffer
+ * @param src the source PCM buffer
+ * @param src_size the number of bytes in #src
+ * @param dest_size_r returns the number of bytes of the destination buffer
+ * @return the destination buffer
+ */
 const int16_t *
 pcm_convert_channels_16(struct pcm_buffer *buffer,
 			int8_t dest_channels,
 			int8_t src_channels, const int16_t *src,
 			size_t src_size, size_t *dest_size_r);
 
+/**
+ * Changes the number of channels in 24 bit PCM data (aligned at 32
+ * bit boundaries).
+ *
+ * @param buffer the destination pcm_buffer object
+ * @param dest_channels the number of channels requested
+ * @param src_channels the number of channels in the source buffer
+ * @param src the source PCM buffer
+ * @param src_size the number of bytes in #src
+ * @param dest_size_r returns the number of bytes of the destination buffer
+ * @return the destination buffer
+ */
 const int32_t *
 pcm_convert_channels_24(struct pcm_buffer *buffer,
 			int8_t dest_channels,

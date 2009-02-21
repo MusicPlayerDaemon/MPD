@@ -23,6 +23,19 @@
 
 struct audio_format;
 
+/*
+ * Linearly mixes two PCM buffers.  Both must have the same length and
+ * the same audio format.  The formula is:
+ *
+ *   s1 := s1 * portion1 + s2 * (1 - portion1)
+ *
+ * @param buffer1 the first PCM buffer, and the destination buffer
+ * @param buffer2 the second PCM buffer
+ * @param size the size of both buffers in bytes
+ * @param format the audio format of both buffers
+ * @param portion1 a number between 0.0 and 1.0 specifying the portion
+ * of the first buffer in the mix; portion2 = (1.0 - portion1)
+ */
 void
 pcm_mix(void *buffer1, const void *buffer2, size_t size,
 	const struct audio_format *format, float portion1);

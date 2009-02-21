@@ -31,6 +31,10 @@
 #include <samplerate.h>
 #endif
 
+/**
+ * This object is statically allocated (within another struct), and
+ * holds buffer allocations and the state for the resampler.
+ */
 struct pcm_resample_state {
 #ifdef HAVE_LIBSAMPLERATE
 	SRC_STATE *state;
@@ -50,10 +54,29 @@ struct pcm_resample_state {
 	struct pcm_buffer buffer;
 };
 
+/**
+ * Initializes a pcm_resample_state object.
+ */
 void pcm_resample_init(struct pcm_resample_state *state);
 
+/**
+ * Deinitializes a pcm_resample_state object and frees allocated
+ * memory.
+ */
 void pcm_resample_deinit(struct pcm_resample_state *state);
 
+/**
+ * Resamples 16 bit PCM data.
+ *
+ * @param state an initialized pcm_resample_state object
+ * @param channels the number of channels
+ * @param src_rate the source sample rate
+ * @param src the source PCM buffer
+ * @param src_size the size of #src in bytes
+ * @param dest_rate the requested destination sample rate
+ * @param dest_size_r returns the number of bytes of the destination buffer
+ * @return the destination buffer
+ */
 const int16_t *
 pcm_resample_16(struct pcm_resample_state *state,
 		uint8_t channels,
@@ -62,6 +85,18 @@ pcm_resample_16(struct pcm_resample_state *state,
 		unsigned dest_rate,
 		size_t *dest_size_r);
 
+/**
+ * Resamples 24 bit PCM data.
+ *
+ * @param state an initialized pcm_resample_state object
+ * @param channels the number of channels
+ * @param src_rate the source sample rate
+ * @param src the source PCM buffer
+ * @param src_size the size of #src in bytes
+ * @param dest_rate the requested destination sample rate
+ * @param dest_size_r returns the number of bytes of the destination buffer
+ * @return the destination buffer
+ */
 const int32_t *
 pcm_resample_24(struct pcm_resample_state *state,
 		uint8_t channels,

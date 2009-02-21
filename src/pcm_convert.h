@@ -25,6 +25,11 @@
 
 struct audio_format;
 
+/**
+ * This object is statically allocated (within another struct), and
+ * holds buffer allocations and the state for all kinds of PCM
+ * conversions.
+ */
 struct pcm_convert_state {
 	struct pcm_resample_state resample;
 
@@ -37,10 +42,28 @@ struct pcm_convert_state {
 	struct pcm_buffer channels_buffer;
 };
 
+/**
+ * Initializes a pcm_convert_state object.
+ */
 void pcm_convert_init(struct pcm_convert_state *state);
 
+/**
+ * Deinitializes a pcm_convert_state object and frees allocated
+ * memory.
+ */
 void pcm_convert_deinit(struct pcm_convert_state *state);
 
+/**
+ * Converts PCM data between two audio formats.
+ *
+ * @param state an initialized pcm_convert_state object
+ * @param src_format the source audio format
+ * @param src the source PCM buffer
+ * @param src_size the size of #src in bytes
+ * @param dest_format the requested destination audio format
+ * @param dest_size_r returns the number of bytes of the destination buffer
+ * @return the destination buffer
+ */
 const void *
 pcm_convert(struct pcm_convert_state *state,
 	    const struct audio_format *src_format,

@@ -40,6 +40,10 @@ pcm_float_to_volume(float volume)
 	return volume * PCM_VOLUME_1 + 0.5;
 }
 
+/**
+ * Returns the next volume dithering number, between -511 and +511.
+ * This number is taken from a global PRNG, see pcm_prng().
+ */
 static inline int
 pcm_volume_dither(void)
 {
@@ -51,8 +55,16 @@ pcm_volume_dither(void)
 	return (r & 511) - ((r >> 9) & 511);
 }
 
+/**
+ * Adjust the volume of the specified PCM buffer.
+ *
+ * @param buffer the PCM buffer
+ * @param length the length of the PCM buffer
+ * @param format the audio format of the PCM buffer
+ * @param volume the volume between 0 and #PCM_VOLUME_1
+ */
 void
-pcm_volume(void *buffer, int bufferSize,
+pcm_volume(void *buffer, int length,
 	   const struct audio_format *format,
 	   int volume);
 
