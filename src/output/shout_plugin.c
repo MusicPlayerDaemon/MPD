@@ -19,7 +19,6 @@
 #include "shout_plugin.h"
 #include "encoder_plugin.h"
 #include "encoder_list.h"
-#include "config.h"
 
 #include <assert.h>
 #include <stdlib.h>
@@ -28,16 +27,6 @@
 #define DEFAULT_CONN_TIMEOUT  2
 
 static int shout_init_count;
-
-static const struct shout_encoder_plugin *const shout_encoder_plugins[] = {
-#ifdef HAVE_SHOUT_MP3
-	&shout_mp3_encoder,
-#endif
-#ifdef HAVE_SHOUT_OGG
-	&shout_ogg_encoder,
-#endif
-	NULL
-};
 
 static const struct encoder_plugin *
 shout_encoder_plugin_get(const char *name)
