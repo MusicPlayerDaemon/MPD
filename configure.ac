@@ -594,6 +594,10 @@ AM_CONDITIONAL(ENABLE_VORBIS_ENCODER, test x$enable_shout_ogg = xyes)
 if test x$enable_shout_ogg = xyes; then
 	AC_DEFINE(ENABLE_VORBIS_ENCODER, 1, [Define to enable the vorbis encoder plugin]),
 fi
+AM_CONDITIONAL(ENABLE_LAME_ENCODER, test x$enable_shout_mp3 = xyes)
+if test x$enable_shout_mp3 = xyes; then
+	AC_DEFINE(ENABLE_LAME_ENCODER, 1, [Define to enable the lame encoder plugin]),
+fi
 
 if test x$enable_ao = xyes; then
 	PKG_CHECK_MODULES(AO, [ao],

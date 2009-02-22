@@ -352,6 +352,10 @@ mpd_SOURCES += encoder_list.c
 if ENABLE_VORBIS_ENCODER
 mpd_SOURCES += encoder/vorbis_encoder.c
 endif
+
+if ENABLE_LAME_ENCODER
+mpd_SOURCES += encoder/lame_encoder.c
+endif
 endif
 
 
