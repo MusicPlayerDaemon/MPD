@@ -252,42 +252,46 @@ static void *my_shout_init_driver(struct audio_output *audio_output,
 	return sd;
 }
 
-static int handle_shout_error(struct shout_data *sd, int err)
+static bool
+handle_shout_error(struct shout_data *sd, int err)
 {
 	switch (err) {
 	case SHOUTERR_SUCCESS:
 		break;
+
 	case SHOUTERR_UNCONNECTED:
 	case SHOUTERR_SOCKET:
 		g_warning("Lost shout connection to %s:%i: %s\n",
 			  shout_get_host(sd->shout_conn),
 			  shout_get_port(sd->shout_conn),
 			  shout_get_error(sd->shout_conn));
-		return -1;
+		return false;
+
 	default:
 		g_warning("shout: connection to %s:%i error: %s\n",
 			  shout_get_host(sd->shout_conn),
 			  shout_get_port(sd->shout_conn),
 			  shout_get_error(sd->shout_conn));
-		return -1;
+		return false;
 	}
 
-	return 0;
+	return true;
 }
 
-static int write_page(struct shout_data *sd)
+static bool
+write_page(struct shout_data *sd)
 {
 	int err;
 
 	if (sd->buf.len == 0)
-		return 0;
+		return true;
 
 	shout_sync(sd->shout_conn);
 	err = shout_send(sd->shout_conn, sd->buf.data, sd->buf.len);
-	if (handle_shout_error(sd, err) < 0)
-		return -1;
+	if (!handle_shout_error(sd, err))
+		return false;
 
-	return 0;
+	return true;
 }
 
 static void close_shout_conn(struct shout_data * sd)
@@ -332,7 +336,8 @@ static void my_shout_close_device(void *data)
 	close_shout_conn(sd);
 }
 
-static int shout_connect(struct shout_data *sd)
+static bool
+shout_connect(struct shout_data *sd)
 {
 	int state;
 
@@ -340,35 +345,37 @@ static int shout_connect(struct shout_data *sd)
 	switch (state) {
 	case SHOUTERR_SUCCESS:
 	case SHOUTERR_CONNECTED:
-		return 0;
+		return true;
+
 	default:
 		g_warning("problem opening connection to shout server %s:%i: %s\n",
 			  shout_get_host(sd->shout_conn),
 			  shout_get_port(sd->shout_conn),
 			  shout_get_error(sd->shout_conn));
-		return -1;
+		return false;
 	}
 }
 
-static int open_shout_conn(void *data)
+static bool
+open_shout_conn(void *data)
 {
 	struct shout_data *sd = (struct shout_data *)data;
-	int status;
+	bool ret;
 
-	status = shout_connect(sd);
-	if (status != 0)
-		return status;
+	ret = shout_connect(sd);
+	if (!ret)
+		return false;
 
 	sd->buf.len = 0;
 
 	if (sd->encoder->init_encoder_func(sd) < 0) {
 		shout_close(sd->shout_conn);
-		return -1;
+		return false;
 	}
 
 	write_page(sd);
 
-	return 0;
+	return true;
 }
 
 static bool
@@ -377,10 +384,7 @@ my_shout_open_device(void *data,
 {
 	struct shout_data *sd = (struct shout_data *)data;
 
-	if (open_shout_conn(sd) < 0)
-		return false;
-
-	return true;
+	return open_shout_conn(sd);
 }
 
 static bool
@@ -393,10 +397,7 @@ my_shout_play(void *data, const char *chunk, size_t size)
 	if (sd->encoder->encode_func(sd, chunk, size))
 		return false;
 
-	if (write_page(sd) < 0)
-		return false;
-
-	return true;
+	return write_page(sd);
 }
 
 static bool
