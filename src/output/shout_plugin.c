@@ -17,6 +17,8 @@
  */
 
 #include "shout_plugin.h"
+#include "encoder_plugin.h"
+#include "encoder_list.h"
 #include "config.h"
 
 #include <assert.h>
@@ -37,16 +39,15 @@ static const struct shout_encoder_plugin *const shout_encoder_plugins[] = {
 	NULL
 };
 
-static const struct shout_encoder_plugin *
+static const struct encoder_plugin *
 shout_encoder_plugin_get(const char *name)
 {
-	unsigned i;
+	if (strcmp(name, "ogg") == 0)
+		name = "vorbis";
+	else if (strcmp(name, "mp3") == 0)
+		name = "lame";
 
-	for (i = 0; shout_encoder_plugins[i] != NULL; ++i)
-		if (strcmp(shout_encoder_plugins[i]->name, name) == 0)
-			return shout_encoder_plugins[i];
-
-	return NULL;
+	return encoder_plugin_get(name);
 }
 
 static struct shout_data *new_shout_data(void)
@@ -91,6 +92,9 @@ static void *my_shout_init_driver(struct audio_output *audio_output,
 	char *mount;
 	char *passwd;
 	const char *encoding;
+	const struct encoder_plugin *encoder_plugin;
+	GError *error = NULL;
+	unsigned shout_format;
 	unsigned protocol;
 	const char *user;
 	char *name;
@@ -162,14 +166,20 @@ static void *my_shout_init_driver(struct audio_output *audio_output,
 
 	check_block_param("format");
 
-	assert(audio_format != NULL);
-	sd->audio_format = *audio_format;
-
 	encoding = config_get_block_string(param, "encoding", "ogg");
-	sd->encoder = shout_encoder_plugin_get(encoding);
-	if (sd->encoder == NULL)
+	encoder_plugin = shout_encoder_plugin_get(encoding);
+	if (encoder_plugin == NULL)
 		g_error("couldn't find shout encoder plugin \"%s\"\n",
 			encoding);
+
+	sd->encoder = encoder_init(encoder_plugin, param, &error);
+	if (sd->encoder == NULL)
+		g_error("%s", error->message);
+
+	if (strcmp(encoding, "mp3") == 0 || strcmp(encoding, "lame") == 0)
+		shout_format = SHOUT_FORMAT_MP3;
+	else
+		shout_format = SHOUT_FORMAT_OGG;
 
 	value = config_get_block_string(param, "protocol", NULL);
 	if (value != NULL) {
@@ -199,7 +209,7 @@ static void *my_shout_init_driver(struct audio_output *audio_output,
 	    shout_set_name(sd->shout_conn, name) != SHOUTERR_SUCCESS ||
 	    shout_set_user(sd->shout_conn, user) != SHOUTERR_SUCCESS ||
 	    shout_set_public(sd->shout_conn, public) != SHOUTERR_SUCCESS ||
-	    shout_set_format(sd->shout_conn, sd->encoder->shout_format)
+	    shout_set_format(sd->shout_conn, shout_format)
 	    != SHOUTERR_SUCCESS ||
 	    shout_set_protocol(sd->shout_conn, protocol) != SHOUTERR_SUCCESS ||
 	    shout_set_agent(sd->shout_conn, "MPD") != SHOUTERR_SUCCESS) {
@@ -227,10 +237,10 @@ static void *my_shout_init_driver(struct audio_output *audio_output,
 		char temp[11];
 		memset(temp, 0, sizeof(temp));
 
-		snprintf(temp, sizeof(temp), "%u", sd->audio_format.channels);
+		snprintf(temp, sizeof(temp), "%u", audio_format->channels);
 		shout_set_audio_info(sd->shout_conn, SHOUT_AI_CHANNELS, temp);
 
-		snprintf(temp, sizeof(temp), "%u", sd->audio_format.sample_rate);
+		snprintf(temp, sizeof(temp), "%u", audio_format->sample_rate);
 
 		shout_set_audio_info(sd->shout_conn, SHOUT_AI_SAMPLERATE, temp);
 
@@ -244,10 +254,6 @@ static void *my_shout_init_driver(struct audio_output *audio_output,
 					     temp);
 		}
 	}
-
-	if (sd->encoder->init_func(sd) != 0)
-		g_error("shout: encoder plugin '%s' failed to initialize\n",
-			sd->encoder->name);
 
 	return sd;
 }
@@ -283,6 +289,10 @@ write_page(struct shout_data *sd)
 {
 	int err;
 
+	assert(sd->encoder != NULL);
+
+	sd->buf.len = encoder_read(sd->encoder,
+				   sd->buf.data, sizeof(sd->buf.data));
 	if (sd->buf.len == 0)
 		return true;
 
@@ -298,8 +308,12 @@ static void close_shout_conn(struct shout_data * sd)
 {
 	sd->buf.len = 0;
 
-	if (sd->encoder->clear_encoder_func(sd))
-		write_page(sd);
+	if (sd->encoder != NULL) {
+		if (encoder_flush(sd->encoder, NULL))
+			write_page(sd);
+
+		encoder_close(sd->encoder);
+	}
 
 	if (shout_get_connected(sd->shout_conn) != SHOUTERR_UNCONNECTED &&
 	    shout_close(sd->shout_conn) != SHOUTERR_SUCCESS) {
@@ -312,7 +326,8 @@ static void my_shout_finish_driver(void *data)
 {
 	struct shout_data *sd = (struct shout_data *)data;
 
-	sd->encoder->finish_func(sd);
+	encoder_finish(sd->encoder);
+
 	free_shout_data(sd);
 
 	shout_init_count--;
@@ -357,11 +372,11 @@ shout_connect(struct shout_data *sd)
 }
 
 static bool
-my_shout_open_device(void *data,
-		     G_GNUC_UNUSED struct audio_format *audio_format)
+my_shout_open_device(void *data, struct audio_format *audio_format)
 {
 	struct shout_data *sd = (struct shout_data *)data;
 	bool ret;
+	GError *error = NULL;
 
 	ret = shout_connect(sd);
 	if (!ret)
@@ -369,8 +384,11 @@ my_shout_open_device(void *data,
 
 	sd->buf.len = 0;
 
-	if (sd->encoder->init_encoder_func(sd) < 0) {
+	ret = encoder_open(sd->encoder, audio_format, &error);
+	if (!ret) {
 		shout_close(sd->shout_conn);
+		g_warning("%s", error->message);
+		g_error_free(error);
 		return false;
 	}
 
@@ -383,11 +401,15 @@ static bool
 my_shout_play(void *data, const char *chunk, size_t size)
 {
 	struct shout_data *sd = (struct shout_data *)data;
+	bool ret;
+	GError *error = NULL;
 
-	sd->buf.len = 0;
-
-	if (sd->encoder->encode_func(sd, chunk, size))
+	ret = encoder_write(sd->encoder, chunk, size, &error);
+	if (!ret) {
+		g_warning("%s", error->message);
+		g_error_free(error);
 		return false;
+	}
 
 	return write_page(sd);
 }
@@ -400,17 +422,63 @@ my_shout_pause(void *data)
 	return my_shout_play(data, silence, sizeof(silence));
 }
 
+static void
+shout_tag_to_metadata(const struct tag *tag, char *dest, size_t size)
+{
+	char artist[size];
+	char title[size];
+	int i;
+
+	artist[0] = 0;
+	title[0] = 0;
+
+	for (i = 0; i < tag->numOfItems; i++) {
+		switch (tag->items[i]->type) {
+		case TAG_ITEM_ARTIST:
+			strncpy(artist, tag->items[i]->value, size);
+			break;
+		case TAG_ITEM_TITLE:
+			strncpy(title, tag->items[i]->value, size);
+			break;
+
+		default:
+			break;
+		}
+	}
+
+	snprintf(dest, size, "%s - %s", title, artist);
+}
+
 static void my_shout_set_tag(void *data,
 			     const struct tag *tag)
 {
 	struct shout_data *sd = (struct shout_data *)data;
-	char song[1024];
 	bool ret;
+	GError *error = NULL;
 
-	sd->buf.len = 0;
-	sd->tag = tag;
-	ret = sd->encoder->send_metadata_func(sd, song, sizeof(song));
-	if (ret) {
+	if (sd->encoder->plugin->tag != NULL) {
+		/* encoder plugin supports stream tags */
+
+		ret = encoder_flush(sd->encoder, &error);
+		if (!ret) {
+			g_warning("%s", error->message);
+			g_error_free(error);
+			return;
+		}
+
+		write_page(sd);
+
+		ret = encoder_tag(sd->encoder, tag, &error);
+		if (!ret) {
+			g_warning("%s", error->message);
+			g_error_free(error);
+		}
+	} else {
+		/* no stream tag support: fall back to icy-metadata */
+		char song[1024];
+
+		shout_tag_to_metadata(tag, song, sizeof(song));
+
 		shout_metadata_add(sd->shout_meta, "song", song);
 		if (SHOUTERR_SUCCESS != shout_set_metadata(sd->shout_conn,
 							   sd->shout_meta)) {

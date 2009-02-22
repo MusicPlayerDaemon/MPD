@@ -557,8 +557,7 @@ if test x$enable_shout_ogg = xyes; then
 		enable_shout_ogg=no
 	fi
 	if test x$enable_shout_ogg = xyes; then
-		PKG_CHECK_MODULES(VORBISENC, [vorbisenc],
-			AC_DEFINE(HAVE_SHOUT_OGG, 1, [Define to enable ogg streaming support]),
+		PKG_CHECK_MODULES(VORBISENC, [vorbisenc],,
 			enable_shout_ogg=no)
 	fi
 fi
@@ -573,9 +572,6 @@ if test x$enable_shout_mp3 = xyes; then
 		AC_MSG_WARN([disabling mp3 shout streaming support because lame is not enabled])
 		enable_shout_mp3=no
 	fi
-	if test x$enable_shout_mp3 = xyes; then
-		AC_DEFINE(HAVE_SHOUT_MP3, 1, [Define to enable mp3 streaming support])
-	fi
 fi
 
 if test x$enable_shout_ogg = xyes || test x$enable_shout_mp3 = xyes; then
@@ -586,8 +582,6 @@ else
 fi
 
 AM_CONDITIONAL(HAVE_SHOUT, test x$enable_shout = xyes)
-AM_CONDITIONAL(HAVE_SHOUT_OGG, test x$enable_shout_ogg = xyes)
-AM_CONDITIONAL(HAVE_SHOUT_MP3, test x$enable_shout_mp3 = xyes)
 
 AM_CONDITIONAL(ENABLE_ENCODER, test x$enable_shout = xyes)
 AM_CONDITIONAL(ENABLE_VORBIS_ENCODER, test x$enable_shout_ogg = xyes)

@@ -419,14 +419,6 @@ if HAVE_SHOUT
 mpd_SOURCES += output/shout_plugin.c
 endif
 
-if HAVE_SHOUT_MP3
-mpd_SOURCES += output/shout_mp3.c
-endif
-
-if HAVE_SHOUT_OGG
-mpd_SOURCES += output/shout_ogg.c
-endif
-
 # sparse is a semantic parser
 # URL: git://www.kernel.org/pub/scm/devel/sparse/sparse.git
 SPARSE = sparse

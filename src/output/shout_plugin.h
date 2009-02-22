@@ -28,28 +28,6 @@
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "shout"
 
-struct shout_data;
-
-struct shout_encoder_plugin {
-	const char *name;
-	unsigned int shout_format;
-
-	int (*clear_encoder_func)(struct shout_data *sd);
-	int (*encode_func)(struct shout_data *sd,
-			   const void *chunk, size_t len);
-	void (*finish_func)(struct shout_data *sd);
-	int (*init_func)(struct shout_data *sd);
-	int (*init_encoder_func) (struct shout_data *sd);
-	/* Called when there is a new MpdTag to encode into the
-	   stream.  If this function returns non-zero, then the
-	   resulting song will be passed to the shout server as
-	   metadata.  This allows the Ogg encoder to send metadata via
-	   Vorbis comments in the stream, while an MP3 encoder can use
-	   the Shout Server's metadata API. */
-	int (*send_metadata_func)(struct shout_data *sd,
-				  char *song, size_t size);
-};
-
 struct shout_buffer {
 	unsigned char data[32768];
 	size_t len;
@@ -61,23 +39,14 @@ struct shout_data {
 	shout_t *shout_conn;
 	shout_metadata_t *shout_meta;
 
-	const struct shout_encoder_plugin *encoder;
-	void *encoder_data;
+	struct encoder *encoder;
 
 	float quality;
 	int bitrate;
 
-	const struct tag *tag;
-
 	int timeout;
-
-	/* the configured audio format */
-	struct audio_format audio_format;
 
 	struct shout_buffer buf;
 };
-
-extern const struct shout_encoder_plugin shout_mp3_encoder;
-extern const struct shout_encoder_plugin shout_ogg_encoder;
 
 #endif
