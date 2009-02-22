@@ -73,6 +73,9 @@ mpd_headers = \
 	directory_save.h \
 	directory_print.h \
 	database.h \
+	encoder_plugin.h \
+	encoder_list.h \
+	encoder_api.h \
 	update.h \
 	dirvec.h \
 	gcc.h \
@@ -339,6 +342,12 @@ endif
 
 if HAVE_FFMPEG
 mpd_SOURCES += decoder/ffmpeg_plugin.c
+endif
+
+# encoder plugins
+
+if ENABLE_ENCODER
+mpd_SOURCES += encoder_list.c
 endif
 
 

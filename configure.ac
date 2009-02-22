@@ -589,6 +589,8 @@ AM_CONDITIONAL(HAVE_SHOUT, test x$enable_shout = xyes)
 AM_CONDITIONAL(HAVE_SHOUT_OGG, test x$enable_shout_ogg = xyes)
 AM_CONDITIONAL(HAVE_SHOUT_MP3, test x$enable_shout_mp3 = xyes)
 
+AM_CONDITIONAL(ENABLE_ENCODER, test x$enable_shout = xyes)
+
 if test x$enable_ao = xyes; then
 	PKG_CHECK_MODULES(AO, [ao],
 		AC_DEFINE(HAVE_AO, 1, [Define to play with ao]),
