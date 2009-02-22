@@ -357,7 +357,8 @@ shout_connect(struct shout_data *sd)
 }
 
 static bool
-open_shout_conn(void *data)
+my_shout_open_device(void *data,
+		     G_GNUC_UNUSED struct audio_format *audio_format)
 {
 	struct shout_data *sd = (struct shout_data *)data;
 	bool ret;
@@ -376,15 +377,6 @@ open_shout_conn(void *data)
 	write_page(sd);
 
 	return true;
-}
-
-static bool
-my_shout_open_device(void *data,
-		     G_GNUC_UNUSED struct audio_format *audio_format)
-{
-	struct shout_data *sd = (struct shout_data *)data;
-
-	return open_shout_conn(sd);
 }
 
 static bool
