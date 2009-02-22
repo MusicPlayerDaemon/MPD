@@ -16,15 +16,42 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "shout_plugin.h"
+#include "output_api.h"
 #include "encoder_plugin.h"
 #include "encoder_list.h"
+
+#include <shout/shout.h>
+#include <glib.h>
 
 #include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
 
+#undef G_LOG_DOMAIN
+#define G_LOG_DOMAIN "shout"
+
 #define DEFAULT_CONN_TIMEOUT  2
+
+struct shout_buffer {
+	unsigned char data[32768];
+	size_t len;
+};
+
+struct shout_data {
+	struct audio_output *audio_output;
+
+	shout_t *shout_conn;
+	shout_metadata_t *shout_meta;
+
+	struct encoder *encoder;
+
+	float quality;
+	int bitrate;
+
+	int timeout;
+
+	struct shout_buffer buf;
+};
 
 static int shout_init_count;
 

@@ -53,7 +53,6 @@ mpd_headers = \
 	output_state.h \
 	output_print.h \
 	output_command.h \
-	output/shout_plugin.h \
 	buffer2array.h \
 	command.h \
 	idle.h \
