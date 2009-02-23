@@ -52,9 +52,9 @@ static void ao_play(struct audio_output *ao)
 {
 	const char *data = ao->args.play.data;
 	size_t size = ao->args.play.size;
-	bool ret;
 
 	assert(size > 0);
+	assert(size % audio_format_frame_size(&ao->out_audio_format) == 0);
 
 	if (!audio_format_equals(&ao->in_audio_format, &ao->out_audio_format)) {
 		data = pcm_convert(&ao->convert_state,
@@ -69,10 +69,22 @@ static void ao_play(struct audio_output *ao)
 			return;
 	}
 
-	ret = ao_plugin_play(ao->plugin, ao->data, data, size);
-	if (!ret) {
-		ao_plugin_cancel(ao->plugin, ao->data);
-		ao_close(ao);
+	while (size > 0) {
+		size_t nbytes;
+
+		nbytes = ao_plugin_play(ao->plugin, ao->data, data, size);
+		if (nbytes == 0) {
+			/* play()==0 means failure */
+			ao_plugin_cancel(ao->plugin, ao->data);
+			ao_close(ao);
+			break;
+		}
+
+		assert(nbytes <= size);
+		assert(nbytes % audio_format_frame_size(&ao->out_audio_format) == 0);
+
+		data += nbytes;
+		size -= nbytes;
 	}
 
 	ao_command_finished(ao);

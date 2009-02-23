@@ -160,7 +160,7 @@ static void pulse_close(void *data)
 	}
 }
 
-static bool
+static size_t
 pulse_play(void *data, const char *playChunk, size_t size)
 {
 	struct pulse_data *pd = data;
@@ -172,10 +172,10 @@ pulse_play(void *data, const char *playChunk, size_t size)
 			  audio_output_get_name(pd->ao),
 			  pa_strerror(error));
 		pulse_close(pd);
-		return false;
+		return 0;
 	}
 
-	return true;
+	return size;
 }
 
 const struct audio_output_plugin pulse_plugin = {

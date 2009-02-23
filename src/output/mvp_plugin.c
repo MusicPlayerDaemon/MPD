@@ -248,7 +248,7 @@ static void mvp_dropBufferedAudio(void *data)
 	}
 }
 
-static bool
+static size_t
 mvp_playAudio(void *data, const char *playChunk, size_t size)
 {
 	MvpData *md = data;
@@ -258,19 +258,19 @@ mvp_playAudio(void *data, const char *playChunk, size_t size)
 	if (md->fd < 0)
 		mvp_openDevice(md, &md->audio_format);
 
-	while (size > 0) {
+	while (true) {
 		ret = write(md->fd, playChunk, size);
+		if (ret > 0)
+			return (size_t)ret;
+
 		if (ret < 0) {
 			if (errno == EINTR)
 				continue;
 			g_warning("closing mvp PCM device due to write error: "
 				  "%s\n", strerror(errno));
-			return false;
+			return 0;
 		}
-		playChunk += ret;
-		size -= ret;
 	}
-	return true;
 }
 
 const struct audio_output_plugin mvpPlugin = {

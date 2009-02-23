@@ -256,13 +256,11 @@ osx_openDevice(void *data, struct audio_format *audioFormat)
 	return true;
 }
 
-static bool
+static size_t
 osx_play(void *data, const char *playChunk, size_t size)
 {
 	OsxData *od = data;
-	size_t bytesToCopy;
-	size_t bytes;
-	size_t curpos;
+	size_t start, nbytes;
 
 	if (!od->started) {
 		int err;
@@ -270,42 +268,35 @@ osx_play(void *data, const char *playChunk, size_t size)
 		err = AudioOutputUnitStart(od->au);
 		if (err) {
 			g_warning("unable to start audio output: %i\n", err);
-			return false;
+			return 0;
 		}
 	}
 
 	g_mutex_lock(od->mutex);
 
-	while (size) {
-		curpos = od->pos + od->len;
-		if (curpos >= od->bufferSize)
-			curpos -= od->bufferSize;
+	while (od->len >= od->bufferSize)
+		/* wait for some free space in the buffer */
+		g_cond_wait(od->condition, od->mutex);
 
-		bytesToCopy = MIN(od->bufferSize, size);
+	start = od->pos + od->len;
+	if (start >= od->bufferSize)
+		start -= od->bufferSize;
 
-		while (od->len > od->bufferSize - bytesToCopy) {
-			g_cond_wait(od->condition, od->mutex);
-		}
+	nbytes = start < od->pos
+		? od->pos - start
+		: od->bufferSize - start;
 
-		size -= bytesToCopy;
-		od->len += bytesToCopy;
+	assert(nbytes > 0);
 
-		bytes = od->bufferSize - curpos;
-		if (bytesToCopy > bytes) {
-			memcpy(od->buffer + curpos, playChunk, bytes);
-			curpos = 0;
-			playChunk += bytes;
-			bytesToCopy -= bytes;
-		}
+	if (nbytes > size)
+		nbytes = size;
 
-		memcpy(od->buffer + curpos, playChunk, bytesToCopy);
-		playChunk += bytesToCopy;
-
-	}
+	memcpy(od->buffer + start, playChunk, nbytes);
+	od->len += nbytes;
 
 	g_mutex_unlock(od->mutex);
 
-	return true;
+	return nbytes;
 }
 
 const struct audio_output_plugin osxPlugin = {

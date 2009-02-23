@@ -413,7 +413,7 @@ my_shout_open_device(void *data, struct audio_format *audio_format)
 	return true;
 }
 
-static bool
+static size_t
 my_shout_play(void *data, const char *chunk, size_t size)
 {
 	struct shout_data *sd = (struct shout_data *)data;
@@ -427,7 +427,10 @@ my_shout_play(void *data, const char *chunk, size_t size)
 		return false;
 	}
 
-	return write_page(sd);
+	if (!write_page(sd))
+		return 0;
+
+	return size;
 }
 
 static bool

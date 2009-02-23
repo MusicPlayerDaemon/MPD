@@ -441,7 +441,7 @@ alsa_close(void *data)
 	mixer_close(ad->mixer);
 }
 
-static bool
+static size_t
 alsa_play(void *data, const char *chunk, size_t size)
 {
 	struct alsa_data *ad = data;
@@ -449,28 +449,19 @@ alsa_play(void *data, const char *chunk, size_t size)
 
 	size /= ad->frame_size;
 
-	while (size > 0) {
+	while (true) {
 		ret = ad->writei(ad->pcm, chunk, size);
+		if (ret > 0)
+			return ret * ad->frame_size;
 
-		if (ret == -EAGAIN || ret == -EINTR)
-			continue;
-
-		if (ret < 0) {
-			if (alsa_recover(ad, ret) < 0) {
-				g_warning("closing ALSA device \"%s\" due to write "
-					  "error: %s\n",
-					  alsa_device(ad), snd_strerror(-errno));
-				return false;
-			}
-
-			continue;
+		if (ret < 0 && ret != -EAGAIN && ret != -EINTR &&
+		    alsa_recover(ad, ret) < 0) {
+			g_warning("closing ALSA device \"%s\" due to write "
+				  "error: %s\n",
+				  alsa_device(ad), snd_strerror(-errno));
+			return 0;
 		}
-
-		chunk += ret * ad->frame_size;
-		size -= ret;
 	}
-
-	return true;
 }
 
 const struct audio_output_plugin alsaPlugin = {

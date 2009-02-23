@@ -387,7 +387,7 @@ mpd_jack_write_samples(struct jack_data *jd, const void *src,
 	}
 }
 
-static bool
+static size_t
 mpd_jack_play(void *data, const char *buff, size_t size)
 {
 	struct jack_data *jd = data;
@@ -396,36 +396,33 @@ mpd_jack_play(void *data, const char *buff, size_t size)
 
 	if (jd->shutdown) {
 		g_warning("Refusing to play, because there is no client thread.");
-		return false;
+		return 0;
 	}
 
 	assert(size % frame_size == 0);
 	size /= frame_size;
-	while (size > 0 && !jd->shutdown) {
+
+	while (!jd->shutdown) {
 		space = jack_ringbuffer_write_space(jd->ringbuffer[0]);
 		space1 = jack_ringbuffer_write_space(jd->ringbuffer[1]);
 		if (space > space1)
 			/* send data symmetrically */
 			space = space1;
 
-		space /= sample_size;
-		if (space > 0) {
-			if (space > size)
-				space = size;
+		if (space >= frame_size)
+			break;
 
-			mpd_jack_write_samples(jd, buff, space);
-
-			buff += space * frame_size;
-			size -= space;
-		} else {
-			/* XXX do something more intelligent to
-			   synchronize */
-			g_usleep(1000);
-		}
-
+		/* XXX do something more intelligent to
+		   synchronize */
+		g_usleep(1000);
 	}
 
-	return true;
+	space /= sample_size;
+	if (space < size)
+		size = space;
+
+	mpd_jack_write_samples(jd, buff, size);
+	return size * frame_size;
 }
 
 const struct audio_output_plugin jackPlugin = {

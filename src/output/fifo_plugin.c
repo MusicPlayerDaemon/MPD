@@ -237,11 +237,10 @@ static void fifo_dropBufferedAudio(void *data)
 	}
 }
 
-static bool
+static size_t
 fifo_playAudio(void *data, const char *playChunk, size_t size)
 {
 	FifoData *fd = (FifoData *)data;
-	size_t offset = 0;
 	ssize_t bytes;
 
 	if (!fd->timer->started)
@@ -251,8 +250,11 @@ fifo_playAudio(void *data, const char *playChunk, size_t size)
 
 	timer_add(fd->timer, size);
 
-	while (size) {
-		bytes = write(fd->output, playChunk + offset, size);
+	while (true) {
+		bytes = write(fd->output, playChunk, size);
+		if (bytes > 0)
+			return (size_t)bytes;
+
 		if (bytes < 0) {
 			switch (errno) {
 			case EAGAIN:
@@ -265,14 +267,9 @@ fifo_playAudio(void *data, const char *playChunk, size_t size)
 
 			g_warning("Closing FIFO output \"%s\" due to write error: %s",
 				  fd->path, strerror(errno));
-			return false;
+			return 0;
 		}
-
-		size -= bytes;
-		offset += bytes;
 	}
-
-	return true;
 }
 
 const struct audio_output_plugin fifoPlugin = {

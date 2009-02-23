@@ -553,7 +553,7 @@ static void oss_dropBufferedAudio(void *data)
 	}
 }
 
-static bool
+static size_t
 oss_playAudio(void *data, const char *playChunk, size_t size)
 {
 	OssData *od = data;
@@ -563,20 +563,17 @@ oss_playAudio(void *data, const char *playChunk, size_t size)
 	if (od->fd < 0 && !oss_open(od))
 		return false;
 
-	while (size > 0) {
+	while (true) {
 		ret = write(od->fd, playChunk, size);
-		if (ret < 0) {
-			if (errno == EINTR)
-				continue;
+		if (ret > 0)
+			return (size_t)ret;
+
+		if (ret < 0 && errno != EINTR) {
 			g_warning("closing oss device \"%s\" due to write error: "
 				  "%s\n", od->device, strerror(errno));
-			return false;
+			return 0;
 		}
-		playChunk += ret;
-		size -= ret;
 	}
-
-	return true;
 }
 
 const struct audio_output_plugin ossPlugin = {

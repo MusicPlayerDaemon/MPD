@@ -92,8 +92,10 @@ struct audio_output_plugin {
 
 	/**
 	 * Play a chunk of audio data.
+	 *
+	 * @return the number of bytes played, or 0 on error
 	 */
-	bool (*play)(void *data, const char *playChunk, size_t size);
+	size_t (*play)(void *data, const char *chunk, size_t size);
 
 	/**
 	 * Try to cancel data which may still be in the device's
@@ -167,7 +169,7 @@ ao_plugin_send_tag(const struct audio_output_plugin *plugin,
 		plugin->send_tag(data, tag);
 }
 
-static inline bool
+static inline size_t
 ao_plugin_play(const struct audio_output_plugin *plugin,
 	       void *data, const void *chunk, size_t size)
 {

@@ -208,29 +208,23 @@ static int ao_play_deconst(ao_device *device, const void *output_samples,
 	return ao_play(device, u.out, num_bytes);
 }
 
-static bool
+static size_t
 audioOutputAo_play(void *data, const char *playChunk, size_t size)
 {
 	AoData *ad = (AoData *)data;
-	size_t chunk_size;
 
 	if (ad->device == NULL)
 		return false;
 
-	while (size > 0) {
-		chunk_size = ad->writeSize > size
-			? size : ad->writeSize;
+	if (size > ad->writeSize)
+		size = ad->writeSize;
 
-		if (ao_play_deconst(ad->device, playChunk, chunk_size) == 0) {
-			audioOutputAo_error("Closing libao device due to play error");
-			return false;
-		}
-
-		playChunk += chunk_size;
-		size -= chunk_size;
+	if (ao_play_deconst(ad->device, playChunk, size) == 0) {
+		audioOutputAo_error("Closing libao device due to play error");
+		return 0;
 	}
 
-	return true;
+	return size;
 }
 
 const struct audio_output_plugin aoPlugin = {

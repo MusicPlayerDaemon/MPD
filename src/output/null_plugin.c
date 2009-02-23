@@ -74,14 +74,14 @@ null_close(void *data)
 	}
 }
 
-static bool
+static size_t
 null_play(void *data, G_GNUC_UNUSED const char *chunk, size_t size)
 {
 	struct null_data *nd = data;
 	Timer *timer = nd->timer;
 
 	if (!nd->sync)
-		return true;
+		return size;
 
 	if (!timer->started)
 		timer_start(timer);
@@ -90,7 +90,7 @@ null_play(void *data, G_GNUC_UNUSED const char *chunk, size_t size)
 
 	timer_add(timer, size);
 
-	return true;
+	return size;
 }
 
 static void
