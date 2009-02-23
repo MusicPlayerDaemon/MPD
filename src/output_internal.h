@@ -113,7 +113,7 @@ struct audio_output {
 	 */
 	union {
 		struct {
-			const char *data;
+			const void *data;
 			size_t size;
 		} play;
 

@@ -209,7 +209,7 @@ static int ao_play_deconst(ao_device *device, const void *output_samples,
 }
 
 static size_t
-audioOutputAo_play(void *data, const char *playChunk, size_t size)
+audioOutputAo_play(void *data, const void *chunk, size_t size)
 {
 	AoData *ad = (AoData *)data;
 
@@ -219,7 +219,7 @@ audioOutputAo_play(void *data, const char *playChunk, size_t size)
 	if (size > ad->writeSize)
 		size = ad->writeSize;
 
-	if (ao_play_deconst(ad->device, playChunk, size) == 0) {
+	if (ao_play_deconst(ad->device, chunk, size) == 0) {
 		audioOutputAo_error("Closing libao device due to play error");
 		return 0;
 	}

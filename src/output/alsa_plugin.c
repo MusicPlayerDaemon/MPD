@@ -442,7 +442,7 @@ alsa_close(void *data)
 }
 
 static size_t
-alsa_play(void *data, const char *chunk, size_t size)
+alsa_play(void *data, const void *chunk, size_t size)
 {
 	struct alsa_data *ad = data;
 	int ret;

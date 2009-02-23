@@ -388,7 +388,7 @@ mpd_jack_write_samples(struct jack_data *jd, const void *src,
 }
 
 static size_t
-mpd_jack_play(void *data, const char *buff, size_t size)
+mpd_jack_play(void *data, const void *chunk, size_t size)
 {
 	struct jack_data *jd = data;
 	const size_t frame_size = audio_format_frame_size(&jd->audio_format);
@@ -421,7 +421,7 @@ mpd_jack_play(void *data, const char *buff, size_t size)
 	if (space < size)
 		size = space;
 
-	mpd_jack_write_samples(jd, buff, size);
+	mpd_jack_write_samples(jd, chunk, size);
 	return size * frame_size;
 }
 

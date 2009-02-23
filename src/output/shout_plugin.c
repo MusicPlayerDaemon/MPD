@@ -414,7 +414,7 @@ my_shout_open_device(void *data, struct audio_format *audio_format)
 }
 
 static size_t
-my_shout_play(void *data, const char *chunk, size_t size)
+my_shout_play(void *data, const void *chunk, size_t size)
 {
 	struct shout_data *sd = (struct shout_data *)data;
 	bool ret;

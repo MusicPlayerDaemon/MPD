@@ -95,7 +95,7 @@ struct audio_output_plugin {
 	 *
 	 * @return the number of bytes played, or 0 on error
 	 */
-	size_t (*play)(void *data, const char *chunk, size_t size);
+	size_t (*play)(void *data, const void *chunk, size_t size);
 
 	/**
 	 * Try to cancel data which may still be in the device's

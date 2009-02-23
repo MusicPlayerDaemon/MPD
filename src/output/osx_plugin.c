@@ -257,7 +257,7 @@ osx_openDevice(void *data, struct audio_format *audioFormat)
 }
 
 static size_t
-osx_play(void *data, const char *playChunk, size_t size)
+osx_play(void *data, const void *chunk, size_t size)
 {
 	OsxData *od = data;
 	size_t start, nbytes;
@@ -291,7 +291,7 @@ osx_play(void *data, const char *playChunk, size_t size)
 	if (nbytes > size)
 		nbytes = size;
 
-	memcpy(od->buffer + start, playChunk, nbytes);
+	memcpy(od->buffer + start, chunk, nbytes);
 	od->len += nbytes;
 
 	g_mutex_unlock(od->mutex);

@@ -249,7 +249,7 @@ static void mvp_dropBufferedAudio(void *data)
 }
 
 static size_t
-mvp_playAudio(void *data, const char *playChunk, size_t size)
+mvp_playAudio(void *data, const void *chunk, size_t size)
 {
 	MvpData *md = data;
 	ssize_t ret;
@@ -259,7 +259,7 @@ mvp_playAudio(void *data, const char *playChunk, size_t size)
 		mvp_openDevice(md, &md->audio_format);
 
 	while (true) {
-		ret = write(md->fd, playChunk, size);
+		ret = write(md->fd, chunk, size);
 		if (ret > 0)
 			return (size_t)ret;
 

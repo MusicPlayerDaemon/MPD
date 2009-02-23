@@ -103,7 +103,7 @@ audio_output_signal(struct audio_output *ao)
 }
 
 void
-audio_output_play(struct audio_output *ao, const char *chunk, size_t size)
+audio_output_play(struct audio_output *ao, const void *chunk, size_t size)
 {
 	assert(size > 0);
 

@@ -161,12 +161,12 @@ static void pulse_close(void *data)
 }
 
 static size_t
-pulse_play(void *data, const char *playChunk, size_t size)
+pulse_play(void *data, const void *chunk, size_t size)
 {
 	struct pulse_data *pd = data;
 	int error;
 
-	if (pa_simple_write(pd->s, playChunk, size, &error) < 0) {
+	if (pa_simple_write(pd->s, chunk, size, &error) < 0) {
 		g_warning("PulseAudio output \"%s\" disconnecting due to "
 			  "write error: %s\n",
 			  audio_output_get_name(pd->ao),

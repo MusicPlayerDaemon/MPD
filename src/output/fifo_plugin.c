@@ -238,7 +238,7 @@ static void fifo_dropBufferedAudio(void *data)
 }
 
 static size_t
-fifo_playAudio(void *data, const char *playChunk, size_t size)
+fifo_playAudio(void *data, const void *chunk, size_t size)
 {
 	FifoData *fd = (FifoData *)data;
 	ssize_t bytes;
@@ -251,7 +251,7 @@ fifo_playAudio(void *data, const char *playChunk, size_t size)
 	timer_add(fd->timer, size);
 
 	while (true) {
-		bytes = write(fd->output, playChunk, size);
+		bytes = write(fd->output, chunk, size);
 		if (bytes > 0)
 			return (size_t)bytes;
 

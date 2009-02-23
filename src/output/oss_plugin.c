@@ -554,7 +554,7 @@ static void oss_dropBufferedAudio(void *data)
 }
 
 static size_t
-oss_playAudio(void *data, const char *playChunk, size_t size)
+oss_playAudio(void *data, const void *chunk, size_t size)
 {
 	OssData *od = data;
 	ssize_t ret;
@@ -564,7 +564,7 @@ oss_playAudio(void *data, const char *playChunk, size_t size)
 		return false;
 
 	while (true) {
-		ret = write(od->fd, playChunk, size);
+		ret = write(od->fd, chunk, size);
 		if (ret > 0)
 			return (size_t)ret;
 
