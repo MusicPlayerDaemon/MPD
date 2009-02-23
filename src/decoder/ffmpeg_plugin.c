@@ -392,36 +392,95 @@ static struct tag *ffmpeg_tag(const char *file)
 }
 
 /**
- * ffmpeg can decode almost everything from open codecs
- * and also some of propietary codecs
- * its hard to tell what can ffmpeg decode
- * we can later put this into configure script
- * to be sure ffmpeg is used to handle
- * only that files
+ * A list of extensions found for the formats supported by ffmpeg.
+ * This list is current as of 02-23-09; To find out if there are more
+ * supported formats, check the ffmpeg changelog since this date for
+ * more formats.
  */
-
 static const char *const ffmpeg_suffixes[] = {
-	"wma", "asf", "wmv", "mpeg", "mpg", "avi", "vob", "mov", "qt", "swf",
-	"rm", "swf", "mp1", "mp2", "mp3", "mp4", "m4a", "flac", "ogg", "wav",
-	"au", "aiff", "aif", "ac3", "aac", "mpc", "ape",
-	"tta",
+	"16sv", "3g2", "3gp", "4xm", "8svx", "aa3", "aac", "ac3", "afc", "aif",
+	"aifc", "aiff", "al", "alaw", "amr", "anim", "apc", "ape", "asf",
+	"atrac", "au", "aud", "avi", "avm2", "avs", "bap", "bfi", "c93", "cak",
+	"cin", "cmv", "cpk", "daud", "dct", "divx", "dts", "dv", "dvd", "dxa",
+	"eac3", "film", "flac", "flc", "fli", "fll", "flx", "flv", "g726",
+	"gsm", "gxf", "iss", "m1v", "m2v", "m2t", "m2ts", "m4a", "m4v", "mad",
+	"mj2", "mjpeg", "mjpg", "mka", "mkv", "mlp", "mm", "mmf", "mov", "mp+",
+	"mp1", "mp2", "mp3", "mp4", "mpc", "mpeg", "mpg", "mpga", "mpp", "mpu",
+	"mve", "mvi", "mxf", "nc", "nsv", "nut", "nuv", "oga", "ogm", "ogv",
+	"ogx", "oma", "ogg", "omg", "psp", "pva", "qcp", "qt", "r3d", "ra",
+	"ram", "rl2", "rm", "rmvb", "roq", "rpl", "rvc", "shn", "smk", "snd",
+	"sol", "son", "spx", "str", "swf", "tgi", "tgq", "tgv", "thp", "ts",
+	"tsp", "tta", "xa", "xvid", "uv", "uv2", "vb", "vid", "vob", "voc",
+	"vp6", "vmd", "wav", "wma", "wmv", "wsaud", "wsvga", "wv", "wve",
 	NULL
 };
 
-//not sure if this is correct...
 static const char *const ffmpeg_mime_types[] = {
-	"video/x-ms-asf",
+	"application/mp4",
+	"application/octet-stream",
+	"application/ogg",
+	"application/x-ms-wmz",
+	"application/x-ms-wmd",
+	"application/x-shockwave-flash",
+	"application/x-shorten",
+	"audio/8svx",
+	"audio/16sv",
+	"audio/aac",
+	"audio/ac3",
+	"audio/amr",
+	"audio/basic",
+	"audio/flac",
+	"audio/mpeg",
+	"audio/musepack",
+	"audio/ogg",
+	"audio/qcelp",
+	"audio/vorbis",
+	"audio/x-8svx",
+	"audio/x-16sv",
+	"audio/x-aac",
+	"audio/x-ac3",
+	"audio/x-aiff"
+	"audio/x-alaw",
+	"audio/x-au",
+	"audio/x-dca",
+	"audio/x-eac3",
+	"audio/x-flac",
+	"audio/x-gsm",
+	"audio/x-mace",
+	"audio/x-monkeys-audio",
+	"audio/x-mpeg",
 	"audio/x-ms-wma",
 	"audio/x-ms-wax",
+	"audio/x-musepack",
+	"audio/x-pn-realaudio",
+	"audio/x-pn-multirate-realaudio",
+	"audio/x-speex",
+	"audio/x-tta"
+	"audio/x-wav",
+	"audio/x-wma",
+	"audio/x-wv",
+	"video/anim",
+	"video/quicktime",
+	"video/msvideo",
+	"video/ogg",
+	"video/theora",
+	"video/x-dv",
+	"video/x-flv",
+	"video/x-matroska",
+	"video/x-mjpeg",
+	"video/x-mpeg",
+	"video/x-ms-asf",
+	"video/x-msvideo",
 	"video/x-ms-wmv",
 	"video/x-ms-wvx",
 	"video/x-ms-wm",
 	"video/x-ms-wmx",
-	"application/x-ms-wmz",
-	"application/x-ms-wmd",
-	"audio/mpeg",
-	"audio/x-wav",
-	"audio/x-tta",
+	"video/x-nut",
+	"video/x-pva",
+	"video/x-theora",
+	"video/x-vid",
+	"video/x-wmv",
+	"video/x-xvid",
 	NULL
 };
 
