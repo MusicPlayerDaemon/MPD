@@ -1461,7 +1461,7 @@ dnl
 dnl generate files
 dnl
 
-AC_OUTPUT(doc/Makefile src/Makefile Makefile)
+AC_OUTPUT(Makefile)
 
 echo ""
 
