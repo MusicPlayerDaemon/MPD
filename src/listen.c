@@ -136,19 +136,6 @@ listen_add_address(int pf, const struct sockaddr *addrp, socklen_t addrlen,
 	return true;
 }
 
-#ifdef HAVE_IPV6
-static bool
-is_ipv6_enabled(void)
-{
-	int s;
-	s = socket(AF_INET6, SOCK_STREAM, 0);
-	if (s == -1)
-		return false;
-	close(s);
-	return true;
-}
-#endif
-
 #ifdef HAVE_TCP
 
 /**
@@ -211,24 +198,32 @@ listen_add_port(unsigned int port, GError **error)
 #ifdef HAVE_TCP
 	bool success;
 #ifdef HAVE_IPV6
-	int ipv6_enabled = is_ipv6_enabled();
-
+	bool success6;
+	GError *error2 = NULL;
 #endif
 
 	g_debug("binding to any address");
 
 #ifdef HAVE_IPV6
-	if (ipv6_enabled) {
-		success = listen_add_port_ipv6(port, error);
-		if (!success)
+	success6 = listen_add_port_ipv6(port, &error2);
+	if (!success6) {
+		if (error2->domain != listen_quark() ||
+		    (error2->code != EAFNOSUPPORT && error2->code != EINVAL &&
+		     error2->code != EPROTONOSUPPORT)) {
+			g_propagate_error(error, error2);
 			return false;
+		}
+
+		/* although MPD was compiled with IPv6 support, this
+		   host does not have it - ignore this error */
+		g_error_free(error2);
 	}
 #endif
 
 	success = listen_add_port_ipv4(port, error);
 	if (!success) {
 #ifdef HAVE_IPV6
-		if (ipv6_enabled)
+		if (success6)
 			/* non-critical: IPv6 listener is
 			   already set up */
 			g_clear_error(error);
