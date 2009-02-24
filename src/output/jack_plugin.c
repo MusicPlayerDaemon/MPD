@@ -392,7 +392,7 @@ mpd_jack_play(void *data, const void *chunk, size_t size)
 {
 	struct jack_data *jd = data;
 	const size_t frame_size = audio_format_frame_size(&jd->audio_format);
-	size_t space, space1;
+	size_t space = 0, space1;
 
 	if (jd->shutdown) {
 		g_warning("Refusing to play, because there is no client thread.");
