@@ -214,6 +214,83 @@ listen_add_port(unsigned int port, GError **error)
 #endif /* HAVE_TCP */
 }
 
+/**
+ * Resolves a host name, and adds listeners on all addresses in the
+ * result set.
+ *
+ * @param hostname the host name to be resolved
+ * @param port the TCP port
+ * @param error location to store the error occuring, or NULL to ignore errors
+ * @return true on success
+ */
+static bool
+listen_add_host(const char *hostname, unsigned port, GError **error)
+{
+#ifdef HAVE_TCP
+#ifndef WIN32
+	struct addrinfo hints, *ai, *i;
+	char service[20];
+	int ret;
+	bool success;
+
+	g_debug("binding to address for %s", hostname);
+
+	memset(&hints, 0, sizeof(hints));
+	hints.ai_flags = AI_PASSIVE;
+#ifdef AI_ADDRCONFIG
+	hints.ai_flags |= AI_ADDRCONFIG;
+#endif
+	hints.ai_family = PF_UNSPEC;
+	hints.ai_socktype = SOCK_STREAM;
+	hints.ai_protocol = IPPROTO_TCP;
+
+	g_snprintf(service, sizeof(service), "%u", port);
+
+	ret = getaddrinfo(hostname, service, &hints, &ai);
+	if (ret != 0) {
+		g_set_error(error, listen_quark(), ret,
+			    "Failed to look up host \"%s\": %s",
+			    hostname, gai_strerror(ret));
+		return false;
+	}
+
+	for (i = ai; i != NULL; i = i->ai_next) {
+		success = listen_add_address(i->ai_family, i->ai_addr,
+					     i->ai_addrlen, error);
+		if (!success)
+			return false;
+	}
+
+	freeaddrinfo(ai);
+
+	return true;
+#else /* WIN32 */
+	const struct hostent *he;
+
+	g_debug("binding to address for %s", param->value);
+
+	he = gethostbyname(param->value);
+	if (he == NULL) {
+		g_set_error(error, listen_quark(), 0,
+			    "Failed to look up host \"%s\"", hostname);
+		return false;
+	}
+
+	if (he->h_addrtype != AF_INET)
+		g_error("IPv4 address expected for host \"%s\" at line %i",
+			param->value, param->line);
+
+	return listen_add_address(AF_INET, he->h_addr, he->h_length,
+				  error);
+#endif /* !WIN32 */
+#else /* HAVE_TCP */
+
+	g_set_error(error, listen_quark(), 0,
+		    "TCP support is disabled");
+	return false;
+#endif /* HAVE_TCP */
+}
+
 #ifdef HAVE_UN
 /**
  * Add a listener on a Unix domain socket.
@@ -256,8 +333,6 @@ listen_add_config_param(unsigned int port,
 			const struct config_param *param,
 			GError **error)
 {
-	bool success;
-
 	if (!param || 0 == strcmp(param->value, "any")) {
 		return listen_add_port(port, error);
 #ifdef HAVE_UN
@@ -265,62 +340,7 @@ listen_add_config_param(unsigned int port,
 		return listen_add_path(param->value, error);
 #endif /* HAVE_UN */
 	} else {
-#ifdef HAVE_TCP
-#ifndef WIN32
-		struct addrinfo hints, *ai, *i;
-		char service[20];
-		int ret;
-
-		g_debug("binding to address for %s", param->value);
-
-		memset(&hints, 0, sizeof(hints));
-		hints.ai_flags = AI_PASSIVE;
-#ifdef AI_ADDRCONFIG
-		hints.ai_flags |= AI_ADDRCONFIG;
-#endif
-		hints.ai_family = PF_UNSPEC;
-		hints.ai_socktype = SOCK_STREAM;
-		hints.ai_protocol = IPPROTO_TCP;
-
-		g_snprintf(service, sizeof(service), "%u", port);
-
-		ret = getaddrinfo(param->value, service, &hints, &ai);
-		if (ret != 0)
-			g_error("can't lookup host \"%s\" at line %i: %s",
-				param->value, param->line, gai_strerror(ret));
-
-		for (i = ai; i != NULL; i = i->ai_next) {
-			success = listen_add_address(i->ai_family, i->ai_addr,
-						     i->ai_addrlen, error);
-			if (!success)
-				return false;
-		}
-
-		freeaddrinfo(ai);
-
-		return true;
-#else /* WIN32 */
-		const struct hostent *he;
-
-		g_debug("binding to address for %s", param->value);
-
-		he = gethostbyname(param->value);
-		if (he == NULL)
-			g_error("can't lookup host \"%s\" at line %i",
-				param->value, param->line);
-
-		if (he->h_addrtype != AF_INET)
-			g_error("IPv4 address expected for host \"%s\" at line %i",
-				param->value, param->line);
-
-		return listen_add_address(AF_INET, he->h_addr, he->h_length,
-					  error);
-#endif /* !WIN32 */
-#else /* HAVE_TCP */
-		g_set_error(error, listen_quark(), 0,
-			    "TCP support is disabled");
-		return false;
-#endif /* HAVE_TCP */
+		return listen_add_host(param->value, port, error);
 	}
 }
 
