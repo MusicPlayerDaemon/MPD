@@ -64,13 +64,20 @@ struct listen_socket {
 static struct listen_socket *listen_sockets;
 int listen_port;
 
+static GQuark
+listen_quark(void)
+{
+	return g_quark_from_static_string("listen");
+}
+
 static gboolean
 listen_in_event(GIOChannel *source, GIOCondition condition, gpointer data);
 
-static int
-listen_add_address(int pf, const struct sockaddr *addrp, socklen_t addrlen)
+static bool
+listen_add_address(int pf, const struct sockaddr *addrp, socklen_t addrlen,
+		   GError **error)
 {
-	int sock;
+	int fd, ret;
 	const int reuse = ALLOW_REUSE;
 #ifdef HAVE_STRUCT_UCRED
 	int passcred = 1;
@@ -78,38 +85,54 @@ listen_add_address(int pf, const struct sockaddr *addrp, socklen_t addrlen)
 	struct listen_socket *ls;
 	GIOChannel *channel;
 
-	if ((sock = socket(pf, SOCK_STREAM, 0)) < 0)
-		g_error("socket < 0");
-
-	if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR,
-		       &reuse, sizeof(reuse)) < 0) {
-		g_error("problems setsockopt'ing: %s", strerror(errno));
+	fd = socket(pf, SOCK_STREAM, 0);
+	if (fd < 0) {
+		g_set_error(error, listen_quark(), errno,
+			    "Failed to create socket: %s", strerror(errno));
+		return false;
 	}
 
-	if (bind(sock, addrp, addrlen) < 0) {
-		close(sock);
-		return -1;
+	ret = setsockopt(fd, SOL_SOCKET, SO_REUSEADDR,
+			 &reuse, sizeof(reuse));
+	if (ret < 0) {
+		g_set_error(error, listen_quark(), errno,
+			    "setsockopt() failed: %s", strerror(errno));
+		close(fd);
+		return false;
 	}
 
-	if (listen(sock, 5) < 0)
-		g_error("problems listen'ing: %s", strerror(errno));
+	ret = bind(fd, addrp, addrlen);
+	if (ret < 0) {
+		g_set_error(error, listen_quark(), errno,
+			    "%s", strerror(errno));
+		close(fd);
+		return false;
+	}
+
+	ret = listen(fd, 5);
+	if (ret < 0) {
+		g_set_error(error, listen_quark(), errno,
+			    "listen() failed: %s", strerror(errno));
+		close(fd);
+		return false;
+	}
 
 #ifdef HAVE_STRUCT_UCRED
-	setsockopt(sock, SOL_SOCKET, SO_PASSCRED, &passcred, sizeof(passcred));
+	setsockopt(fd, SOL_SOCKET, SO_PASSCRED, &passcred, sizeof(passcred));
 #endif
 
 	ls = g_new(struct listen_socket, 1);
-	ls->fd = sock;
+	ls->fd = fd;
 
-	channel = g_io_channel_unix_new(sock);
+	channel = g_io_channel_unix_new(fd);
 	ls->source_id = g_io_add_watch(channel, G_IO_IN,
-				       listen_in_event, GINT_TO_POINTER(sock));
+				       listen_in_event, GINT_TO_POINTER(fd));
 	g_io_channel_unref(channel);
 
 	ls->next = listen_sockets;
 	listen_sockets = ls;
 
-	return 0;
+	return true;
 }
 
 #ifdef HAVE_IPV6
@@ -125,10 +148,12 @@ is_ipv6_enabled(void)
 }
 #endif
 
-static void
+static bool
 listen_add_config_param(G_GNUC_UNUSED unsigned int port,
-			const struct config_param *param)
+			const struct config_param *param,
+			GError **error)
 {
+	bool success;
 	const struct sockaddr *addrp;
 	socklen_t addrlen;
 #ifdef HAVE_TCP
@@ -154,22 +179,34 @@ listen_add_config_param(G_GNUC_UNUSED unsigned int port,
 			sin6.sin6_addr = in6addr_any;
 			addrp = (const struct sockaddr *)&sin6;
 			addrlen = sizeof(struct sockaddr_in6);
-			if (listen_add_address(PF_INET6, addrp, addrlen) < 0)
-				BINDERROR();
+
+			success = listen_add_address(PF_INET6, addrp, addrlen,
+						     error);
+			if (!success)
+				return false;
 		}
 #endif
 		sin4.sin_addr.s_addr = INADDR_ANY;
 		addrp = (const struct sockaddr *)&sin4;
 		addrlen = sizeof(struct sockaddr_in);
+
+		success = listen_add_address(PF_INET, addrp, addrlen, error);
+		if (!success) {
 #ifdef HAVE_IPV6
-		if ((listen_add_address(PF_INET, addrp, addrlen) < 0) && !ipv6_enabled) {
-#else
-		if (listen_add_address(PF_INET, addrp, addrlen) < 0) {
+			if (ipv6_enabled)
+				/* non-critical: IPv6 listener is
+				   already set up */
+				g_clear_error(error);
+			else
 #endif
-			BINDERROR();
+				return false;
 		}
+
+		return true;
 #else /* HAVE_TCP */
-		g_error("TCP support is disabled");
+		g_set_error(error, listen_quark(), 0,
+			    "TCP support is disabled");
+		return false;
 #endif /* HAVE_TCP */
 #ifdef HAVE_UN
 	} else if (param->value[0] == '/') {
@@ -188,13 +225,14 @@ listen_add_config_param(G_GNUC_UNUSED unsigned int port,
 		addrp = (const struct sockaddr *)&s_un;
 		addrlen = sizeof(s_un);
 
-		if (listen_add_address(PF_UNIX, addrp, addrlen) < 0)
-			g_error("unable to bind to %s: %s",
-				param->value, strerror(errno));
+		success = listen_add_address(PF_UNIX, addrp, addrlen, error);
+		if (!success)
+			return false;
 
 		/* allow everybody to connect */
 		chmod(param->value, 0666);
 
+		return true;
 #endif /* HAVE_UN */
 	} else {
 #ifdef HAVE_TCP
@@ -221,12 +259,16 @@ listen_add_config_param(G_GNUC_UNUSED unsigned int port,
 			g_error("can't lookup host \"%s\" at line %i: %s",
 				param->value, param->line, gai_strerror(ret));
 
-		for (i = ai; i != NULL; i = i->ai_next)
-			if (listen_add_address(i->ai_family, i->ai_addr,
-					       i->ai_addrlen) < 0)
-				BINDERROR();
+		for (i = ai; i != NULL; i = i->ai_next) {
+			success = listen_add_address(i->ai_family, i->ai_addr,
+						     i->ai_addrlen, error);
+			if (!success)
+				return false;
+		}
 
 		freeaddrinfo(ai);
+
+		return true;
 #else /* WIN32 */
 		const struct hostent *he;
 
@@ -241,11 +283,13 @@ listen_add_config_param(G_GNUC_UNUSED unsigned int port,
 			g_error("IPv4 address expected for host \"%s\" at line %i",
 				param->value, param->line);
 
-		if (listen_add_address(AF_INET, he->h_addr, he->h_length) < 0)
-			BINDERROR();
+		return listen_add_address(AF_INET, he->h_addr, he->h_length,
+					  error);
 #endif /* !WIN32 */
 #else /* HAVE_TCP */
-		g_error("TCP support is disabled");
+		g_set_error(error, listen_quark(), 0,
+			    "TCP support is disabled");
+		return false;
 #endif /* HAVE_TCP */
 	}
 }
@@ -255,9 +299,20 @@ void listen_global_init(void)
 	int port = config_get_positive(CONF_PORT, DEFAULT_PORT);
 	const struct config_param *param =
 		config_get_next_param(CONF_BIND_TO_ADDRESS, NULL);
+	bool success;
+	GError *error = NULL;
 
 	do {
-		listen_add_config_param(port, param);
+		success = listen_add_config_param(port, param, &error);
+		if (!success) {
+			if (param != NULL)
+				g_error("Failed to listen on %s (line %i): %s",
+					param->value, param->line,
+					error->message);
+			else
+				g_error("Failed to listen on *:%d: %s",
+					port, error->message);
+		}
 	} while ((param = config_get_next_param(CONF_BIND_TO_ADDRESS, param)));
 	listen_port = port;
 }
