@@ -214,42 +214,55 @@ listen_add_port(unsigned int port, GError **error)
 #endif /* HAVE_TCP */
 }
 
+#ifdef HAVE_UN
+/**
+ * Add a listener on a Unix domain socket.
+ *
+ * @param path the absolute socket path
+ * @param error location to store the error occuring, or NULL to ignore errors
+ * @return true on success
+ */
+static bool
+listen_add_path(const char *path, GError **error)
+{
+	size_t path_length;
+	struct sockaddr_un s_un;
+	const struct sockaddr *addrp = (const struct sockaddr *)&s_un;
+	socklen_t addrlen = sizeof(s_un);
+	bool success;
+
+	path_length = strlen(path);
+	if (path_length >= sizeof(s_un.sun_path))
+		g_error("unix socket path is too long");
+
+	unlink(path);
+
+	s_un.sun_family = AF_UNIX;
+	memcpy(s_un.sun_path, path, path_length + 1);
+
+	success = listen_add_address(PF_UNIX, addrp, addrlen, error);
+	if (!success)
+		return false;
+
+	/* allow everybody to connect */
+	chmod(path, 0666);
+
+	return true;
+}
+#endif /* HAVE_UN */
+
 static bool
 listen_add_config_param(unsigned int port,
 			const struct config_param *param,
 			GError **error)
 {
 	bool success;
-	const struct sockaddr *addrp;
-	socklen_t addrlen;
 
 	if (!param || 0 == strcmp(param->value, "any")) {
 		return listen_add_port(port, error);
 #ifdef HAVE_UN
 	} else if (param->value[0] == '/') {
-		size_t path_length;
-		struct sockaddr_un s_un;
-
-		path_length = strlen(param->value);
-		if (path_length >= sizeof(s_un.sun_path))
-			g_error("unix socket path is too long");
-
-		unlink(param->value);
-
-		s_un.sun_family = AF_UNIX;
-		memcpy(s_un.sun_path, param->value, path_length + 1);
-
-		addrp = (const struct sockaddr *)&s_un;
-		addrlen = sizeof(s_un);
-
-		success = listen_add_address(PF_UNIX, addrp, addrlen, error);
-		if (!success)
-			return false;
-
-		/* allow everybody to connect */
-		chmod(param->value, 0666);
-
-		return true;
+		return listen_add_path(param->value, error);
 #endif /* HAVE_UN */
 	} else {
 #ifdef HAVE_TCP
