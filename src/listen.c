@@ -148,15 +148,20 @@ is_ipv6_enabled(void)
 }
 #endif
 
+/**
+ * Add a listener on a port on all interfaces.
+ *
+ * @param port the TCP port
+ * @param error location to store the error occuring, or NULL to ignore errors
+ * @return true on success
+ */
 static bool
-listen_add_config_param(G_GNUC_UNUSED unsigned int port,
-			const struct config_param *param,
-			GError **error)
+listen_add_port(unsigned int port, GError **error)
 {
+#ifdef HAVE_TCP
 	bool success;
 	const struct sockaddr *addrp;
 	socklen_t addrlen;
-#ifdef HAVE_TCP
 	struct sockaddr_in sin4;
 #ifdef HAVE_IPV6
 	struct sockaddr_in6 sin6;
@@ -169,45 +174,57 @@ listen_add_config_param(G_GNUC_UNUSED unsigned int port,
 	memset(&sin4, 0, sizeof(struct sockaddr_in));
 	sin4.sin_port = htons(port);
 	sin4.sin_family = AF_INET;
+
+	g_debug("binding to any address");
+#ifdef HAVE_IPV6
+	if (ipv6_enabled) {
+		sin6.sin6_addr = in6addr_any;
+		addrp = (const struct sockaddr *)&sin6;
+		addrlen = sizeof(struct sockaddr_in6);
+
+		success = listen_add_address(PF_INET6, addrp, addrlen,
+					     error);
+		if (!success)
+			return false;
+	}
+#endif
+	sin4.sin_addr.s_addr = INADDR_ANY;
+	addrp = (const struct sockaddr *)&sin4;
+	addrlen = sizeof(struct sockaddr_in);
+
+	success = listen_add_address(PF_INET, addrp, addrlen, error);
+	if (!success) {
+#ifdef HAVE_IPV6
+		if (ipv6_enabled)
+			/* non-critical: IPv6 listener is
+			   already set up */
+			g_clear_error(error);
+		else
+#endif
+			return false;
+	}
+
+	return true;
+#else /* HAVE_TCP */
+	(void)port;
+
+	g_set_error(error, listen_quark(), 0,
+		    "TCP support is disabled");
+	return false;
 #endif /* HAVE_TCP */
+}
+
+static bool
+listen_add_config_param(unsigned int port,
+			const struct config_param *param,
+			GError **error)
+{
+	bool success;
+	const struct sockaddr *addrp;
+	socklen_t addrlen;
 
 	if (!param || 0 == strcmp(param->value, "any")) {
-#ifdef HAVE_TCP
-		g_debug("binding to any address");
-#ifdef HAVE_IPV6
-		if (ipv6_enabled) {
-			sin6.sin6_addr = in6addr_any;
-			addrp = (const struct sockaddr *)&sin6;
-			addrlen = sizeof(struct sockaddr_in6);
-
-			success = listen_add_address(PF_INET6, addrp, addrlen,
-						     error);
-			if (!success)
-				return false;
-		}
-#endif
-		sin4.sin_addr.s_addr = INADDR_ANY;
-		addrp = (const struct sockaddr *)&sin4;
-		addrlen = sizeof(struct sockaddr_in);
-
-		success = listen_add_address(PF_INET, addrp, addrlen, error);
-		if (!success) {
-#ifdef HAVE_IPV6
-			if (ipv6_enabled)
-				/* non-critical: IPv6 listener is
-				   already set up */
-				g_clear_error(error);
-			else
-#endif
-				return false;
-		}
-
-		return true;
-#else /* HAVE_TCP */
-		g_set_error(error, listen_quark(), 0,
-			    "TCP support is disabled");
-		return false;
-#endif /* HAVE_TCP */
+		return listen_add_port(port, error);
 #ifdef HAVE_UN
 	} else if (param->value[0] == '/') {
 		size_t path_length;
