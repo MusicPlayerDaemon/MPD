@@ -43,8 +43,6 @@
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "listen"
 
-#define MAXHOSTNAME 	1024
-
 #define ALLOW_REUSE	1
 
 #define DEFAULT_PORT	6600
