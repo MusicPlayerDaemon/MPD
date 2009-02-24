@@ -313,6 +313,9 @@ listen_add_host(const char *hostname, unsigned port, GError **error)
 #endif /* !WIN32 */
 #else /* HAVE_TCP */
 
+	(void)hostname;
+	(void)port;
+
 	g_set_error(error, listen_quark(), 0,
 		    "TCP support is disabled");
 	return false;
