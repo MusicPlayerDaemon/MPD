@@ -214,18 +214,14 @@ vorbis_encoder_open(struct encoder *_encoder,
 	return true;
 }
 
-static bool
+static void
 vorbis_encoder_clear(struct vorbis_encoder *encoder)
 {
-	bool ret;
-
 	vorbis_comment_clear(&encoder->vc);
 	ogg_stream_clear(&encoder->os);
 	vorbis_block_clear(&encoder->vb);
 	vorbis_dsp_clear(&encoder->vd);
 	vorbis_info_clear(&encoder->vi);
-
-	return ret;
 }
 
 static void
