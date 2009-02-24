@@ -19,10 +19,10 @@
 #ifndef MPD_LISTEN_H
 #define MPD_LISTEN_H
 
-extern int boundPort;
+extern int listen_port;
 
-void listenOnPort(void);
+void listen_global_init(void);
 
-void closeAllListenSockets(void);
+void listen_global_finish(void);
 
 #endif

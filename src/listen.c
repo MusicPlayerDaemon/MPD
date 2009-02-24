@@ -64,16 +64,16 @@ struct listen_socket {
 };
 
 static struct listen_socket *listen_sockets;
-int boundPort;
+int listen_port;
 
 static gboolean
 listen_in_event(GIOChannel *source, GIOCondition condition, gpointer data);
 
-static int establishListen(int pf, const struct sockaddr *addrp,
-			   socklen_t addrlen)
+static int
+listen_add_address(int pf, const struct sockaddr *addrp, socklen_t addrlen)
 {
 	int sock;
-	int allowReuse = ALLOW_REUSE;
+	const int reuse = ALLOW_REUSE;
 #ifdef HAVE_STRUCT_UCRED
 	int passcred = 1;
 #endif
@@ -83,8 +83,8 @@ static int establishListen(int pf, const struct sockaddr *addrp,
 	if ((sock = socket(pf, SOCK_STREAM, 0)) < 0)
 		g_error("socket < 0");
 
-	if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (char *)&allowReuse,
-		       sizeof(allowReuse)) < 0) {
+	if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR,
+		       &reuse, sizeof(reuse)) < 0) {
 		g_error("problems setsockopt'ing: %s", strerror(errno));
 	}
 
@@ -115,7 +115,8 @@ static int establishListen(int pf, const struct sockaddr *addrp,
 }
 
 #ifdef HAVE_IPV6
-static bool ipv6Supported(void)
+static bool
+is_ipv6_enabled(void)
 {
 	int s;
 	s = socket(AF_INET6, SOCK_STREAM, 0);
@@ -127,8 +128,8 @@ static bool ipv6Supported(void)
 #endif
 
 static void
-parseListenConfigParam(G_GNUC_UNUSED unsigned int port,
-		       const struct config_param *param)
+listen_add_config_param(G_GNUC_UNUSED unsigned int port,
+			const struct config_param *param)
 {
 	const struct sockaddr *addrp;
 	socklen_t addrlen;
@@ -136,7 +137,7 @@ parseListenConfigParam(G_GNUC_UNUSED unsigned int port,
 	struct sockaddr_in sin4;
 #ifdef HAVE_IPV6
 	struct sockaddr_in6 sin6;
-	int useIpv6 = ipv6Supported();
+	int ipv6_enabled = is_ipv6_enabled();
 
 	memset(&sin6, 0, sizeof(struct sockaddr_in6));
 	sin6.sin6_port = htons(port);
@@ -151,11 +152,11 @@ parseListenConfigParam(G_GNUC_UNUSED unsigned int port,
 #ifdef HAVE_TCP
 		g_debug("binding to any address");
 #ifdef HAVE_IPV6
-		if (useIpv6) {
+		if (ipv6_enabled) {
 			sin6.sin6_addr = in6addr_any;
 			addrp = (const struct sockaddr *)&sin6;
 			addrlen = sizeof(struct sockaddr_in6);
-			if (establishListen(PF_INET6, addrp, addrlen) < 0)
+			if (listen_add_address(PF_INET6, addrp, addrlen) < 0)
 				BINDERROR();
 		}
 #endif
@@ -163,9 +164,9 @@ parseListenConfigParam(G_GNUC_UNUSED unsigned int port,
 		addrp = (const struct sockaddr *)&sin4;
 		addrlen = sizeof(struct sockaddr_in);
 #ifdef HAVE_IPV6
-		if ((establishListen(PF_INET, addrp, addrlen) < 0) && !useIpv6) {
+		if ((listen_add_address(PF_INET, addrp, addrlen) < 0) && !ipv6_enabled) {
 #else
-		if (establishListen(PF_INET, addrp, addrlen) < 0) {
+		if (listen_add_address(PF_INET, addrp, addrlen) < 0) {
 #endif
 			BINDERROR();
 		}
@@ -189,7 +190,7 @@ parseListenConfigParam(G_GNUC_UNUSED unsigned int port,
 		addrp = (const struct sockaddr *)&s_un;
 		addrlen = sizeof(s_un);
 
-		if (establishListen(PF_UNIX, addrp, addrlen) < 0)
+		if (listen_add_address(PF_UNIX, addrp, addrlen) < 0)
 			g_error("unable to bind to %s: %s",
 				param->value, strerror(errno));
 
@@ -223,8 +224,8 @@ parseListenConfigParam(G_GNUC_UNUSED unsigned int port,
 				param->value, param->line, gai_strerror(ret));
 
 		for (i = ai; i != NULL; i = i->ai_next)
-			if (establishListen(i->ai_family, i->ai_addr,
-					    i->ai_addrlen) < 0)
+			if (listen_add_address(i->ai_family, i->ai_addr,
+					       i->ai_addrlen) < 0)
 				BINDERROR();
 
 		freeaddrinfo(ai);
@@ -242,7 +243,7 @@ parseListenConfigParam(G_GNUC_UNUSED unsigned int port,
 			g_error("IPv4 address expected for host \"%s\" at line %i",
 				param->value, param->line);
 
-		if (establishListen(AF_INET, he->h_addr, he->h_length) < 0)
+		if (listen_add_address(AF_INET, he->h_addr, he->h_length) < 0)
 			BINDERROR();
 #endif /* !WIN32 */
 #else /* HAVE_TCP */
@@ -251,21 +252,21 @@ parseListenConfigParam(G_GNUC_UNUSED unsigned int port,
 	}
 }
 
-void listenOnPort(void)
+void listen_global_init(void)
 {
 	int port = config_get_positive(CONF_PORT, DEFAULT_PORT);
 	const struct config_param *param =
 		config_get_next_param(CONF_BIND_TO_ADDRESS, NULL);
 
 	do {
-		parseListenConfigParam(port, param);
+		listen_add_config_param(port, param);
 	} while ((param = config_get_next_param(CONF_BIND_TO_ADDRESS, param)));
-	boundPort = port;
+	listen_port = port;
 }
 
-void closeAllListenSockets(void)
+void listen_global_finish(void)
 {
-	g_debug("closeAllListenSockets called");
+	g_debug("listen_global_finish called");
 
 	while (listen_sockets != NULL) {
 		struct listen_socket *ls = listen_sockets;

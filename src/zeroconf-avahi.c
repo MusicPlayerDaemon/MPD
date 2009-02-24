@@ -114,7 +114,7 @@ static void avahiRegisterService(AvahiClient * c)
 	ret = avahi_entry_group_add_service(avahiGroup,
 					    AVAHI_IF_UNSPEC, AVAHI_PROTO_UNSPEC,
 					    0, avahiName, SERVICE_TYPE, NULL,
-					    NULL, boundPort, NULL);
+					    NULL, listen_port, NULL);
 	if (ret < 0) {
 		g_warning("Failed to add service %s: %s", SERVICE_TYPE,
 			  avahi_strerror(ret));

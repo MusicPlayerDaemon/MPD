@@ -226,7 +226,7 @@ int main(int argc, char *argv[])
 	tag_lib_init();
 	log_init(options.verbose, options.stdOutput);
 
-	listenOnPort();
+	listen_global_init();
 
 	daemonize_set_user();
 
@@ -297,7 +297,7 @@ int main(int argc, char *argv[])
 	playerKill();
 	finishZeroconf();
 	client_manager_deinit();
-	closeAllListenSockets();
+	listen_global_finish();
 	finishPlaylist();
 
 	start = clock();
