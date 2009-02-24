@@ -29,6 +29,7 @@
 #include <errno.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <assert.h>
 
 #ifdef WIN32
 #include <ws2tcpip.h>
@@ -333,7 +334,9 @@ listen_add_config_param(unsigned int port,
 			const struct config_param *param,
 			GError **error)
 {
-	if (!param || 0 == strcmp(param->value, "any")) {
+	assert(param != NULL);
+
+	if (0 == strcmp(param->value, "any")) {
 		return listen_add_port(port, error);
 #ifdef HAVE_UN
 	} else if (param->value[0] == '/') {
@@ -352,18 +355,30 @@ void listen_global_init(void)
 	bool success;
 	GError *error = NULL;
 
-	do {
-		success = listen_add_config_param(port, param, &error);
-		if (!success) {
-			if (param != NULL)
+	if (param != NULL) {
+		/* "bind_to_address" is configured, create listeners
+		   for all values */
+
+		do {
+			success = listen_add_config_param(port, param, &error);
+			if (!success)
 				g_error("Failed to listen on %s (line %i): %s",
 					param->value, param->line,
 					error->message);
-			else
-				g_error("Failed to listen on *:%d: %s",
-					port, error->message);
-		}
-	} while ((param = config_get_next_param(CONF_BIND_TO_ADDRESS, param)));
+
+			param = config_get_next_param(CONF_BIND_TO_ADDRESS,
+						      param);
+		} while (param != NULL);
+	} else {
+		/* no "bind_to_address" configured, bind the
+		   configured port on all interfaces */
+
+		success = listen_add_port(port, &error);
+		if (!success)
+			g_error("Failed to listen on *:%d: %s",
+				port, error->message);
+	}
+
 	listen_port = port;
 }
 
