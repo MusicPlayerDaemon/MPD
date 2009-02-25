@@ -34,19 +34,19 @@
 
 #define FIFO_BUFFER_SIZE 65536 /* pipe capacity on Linux >= 2.6.11 */
 
-typedef struct _FifoData {
+struct fifo_data {
 	char *path;
 	int input;
 	int output;
 	int created;
 	Timer *timer;
-} FifoData;
+};
 
-static FifoData *newFifoData(void)
+static struct fifo_data *fifo_data_new(void)
 {
-	FifoData *ret;
+	struct fifo_data *ret;
 
-	ret = g_new(FifoData, 1);
+	ret = g_new(struct fifo_data, 1);
 
 	ret->path = NULL;
 	ret->input = -1;
@@ -56,13 +56,13 @@ static FifoData *newFifoData(void)
 	return ret;
 }
 
-static void freeFifoData(FifoData *fd)
+static void fifo_data_free(struct fifo_data *fd)
 {
 	g_free(fd->path);
 	g_free(fd);
 }
 
-static void removeFifo(FifoData *fd)
+static void fifo_delete(struct fifo_data *fd)
 {
 	g_debug("Removing FIFO \"%s\"", fd->path);
 
@@ -75,7 +75,8 @@ static void removeFifo(FifoData *fd)
 	fd->created = 0;
 }
 
-static void closeFifo(FifoData *fd)
+static void
+fifo_close(struct fifo_data *fd)
 {
 	struct stat st;
 
@@ -90,10 +91,11 @@ static void closeFifo(FifoData *fd)
 	}
 
 	if (fd->created && (stat(fd->path, &st) == 0))
-		removeFifo(fd);
+		fifo_delete(fd);
 }
 
-static int makeFifo(FifoData *fd)
+static int
+fifo_make(struct fifo_data *fd)
 {
 	if (mkfifo(fd->path, 0666) < 0) {
 		g_warning("Couldn't create FIFO \"%s\": %s",
@@ -106,14 +108,15 @@ static int makeFifo(FifoData *fd)
 	return 0;
 }
 
-static int checkFifo(FifoData *fd)
+static int
+fifo_check(struct fifo_data *fd)
 {
 	struct stat st;
 
 	if (stat(fd->path, &st) < 0) {
 		if (errno == ENOENT) {
 			/* Path doesn't exist */
-			return makeFifo(fd);
+			return fifo_make(fd);
 		}
 
 		g_warning("Failed to stat FIFO \"%s\": %s",
@@ -130,16 +133,17 @@ static int checkFifo(FifoData *fd)
 	return 0;
 }
 
-static bool openFifo(FifoData *fd)
+static bool
+fifo_open(struct fifo_data *fd)
 {
-	if (checkFifo(fd) < 0)
+	if (fifo_check(fd) < 0)
 		return false;
 
 	fd->input = open(fd->path, O_RDONLY|O_NONBLOCK);
 	if (fd->input < 0) {
 		g_warning("Could not open FIFO \"%s\" for reading: %s",
 			  fd->path, strerror(errno));
-		closeFifo(fd);
+		fifo_close(fd);
 		return false;
 	}
 
@@ -147,7 +151,7 @@ static bool openFifo(FifoData *fd)
 	if (fd->output < 0) {
 		g_warning("Could not open FIFO \"%s\" for writing: %s",
 			  fd->path, strerror(errno));
-		closeFifo(fd);
+		fifo_close(fd);
 		return false;
 	}
 
@@ -155,10 +159,10 @@ static bool openFifo(FifoData *fd)
 }
 
 static void *
-fifo_initDriver(G_GNUC_UNUSED const struct audio_format *audio_format,
-		const struct config_param *param)
+fifo_output_init(G_GNUC_UNUSED const struct audio_format *audio_format,
+		 const struct config_param *param)
 {
-	FifoData *fd;
+	struct fifo_data *fd;
 	char *value, *path;
 
 	value = config_dup_block_string(param, "path", NULL);
@@ -173,45 +177,48 @@ fifo_initDriver(G_GNUC_UNUSED const struct audio_format *audio_format,
 			"at line %i", param->line);
 	}
 
-	fd = newFifoData();
+	fd = fifo_data_new();
 	fd->path = path;
 
-	if (!openFifo(fd)) {
-		freeFifoData(fd);
+	if (!fifo_open(fd)) {
+		fifo_data_free(fd);
 		return NULL;
 	}
 
 	return fd;
 }
 
-static void fifo_finishDriver(void *data)
+static void
+fifo_output_finish(void *data)
 {
-	FifoData *fd = (FifoData *)data;
+	struct fifo_data *fd = (struct fifo_data *)data;
 
-	closeFifo(fd);
-	freeFifoData(fd);
+	fifo_close(fd);
+	fifo_data_free(fd);
 }
 
-static bool fifo_openDevice(void *data,
-			   struct audio_format *audio_format)
+static bool
+fifo_output_open(void *data, struct audio_format *audio_format)
 {
-	FifoData *fd = (FifoData *)data;
+	struct fifo_data *fd = (struct fifo_data *)data;
 
 	fd->timer = timer_new(audio_format);
 
 	return true;
 }
 
-static void fifo_closeDevice(void *data)
+static void
+fifo_output_close(void *data)
 {
-	FifoData *fd = (FifoData *)data;
+	struct fifo_data *fd = (struct fifo_data *)data;
 
 	timer_free(fd->timer);
 }
 
-static void fifo_dropBufferedAudio(void *data)
+static void
+fifo_output_cancel(void *data)
 {
-	FifoData *fd = (FifoData *)data;
+	struct fifo_data *fd = (struct fifo_data *)data;
 	char buf[FIFO_BUFFER_SIZE];
 	int bytes = 1;
 
@@ -227,9 +234,9 @@ static void fifo_dropBufferedAudio(void *data)
 }
 
 static size_t
-fifo_playAudio(void *data, const void *chunk, size_t size)
+fifo_output_play(void *data, const void *chunk, size_t size)
 {
-	FifoData *fd = (FifoData *)data;
+	struct fifo_data *fd = (struct fifo_data *)data;
 	ssize_t bytes;
 
 	if (!fd->timer->started)
@@ -248,7 +255,7 @@ fifo_playAudio(void *data, const void *chunk, size_t size)
 			switch (errno) {
 			case EAGAIN:
 				/* The pipe is full, so empty it */
-				fifo_dropBufferedAudio(fd);
+				fifo_output_cancel(fd);
 				continue;
 			case EINTR:
 				continue;
@@ -261,12 +268,12 @@ fifo_playAudio(void *data, const void *chunk, size_t size)
 	}
 }
 
-const struct audio_output_plugin fifoPlugin = {
+const struct audio_output_plugin fifo_output_plugin = {
 	.name = "fifo",
-	.init = fifo_initDriver,
-	.finish = fifo_finishDriver,
-	.open = fifo_openDevice,
-	.play = fifo_playAudio,
-	.cancel = fifo_dropBufferedAudio,
-	.close = fifo_closeDevice,
+	.init = fifo_output_init,
+	.finish = fifo_output_finish,
+	.open = fifo_output_open,
+	.close = fifo_output_close,
+	.play = fifo_output_play,
+	.cancel = fifo_output_cancel,
 };
