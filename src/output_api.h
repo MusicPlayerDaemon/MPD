@@ -25,8 +25,4 @@
 #include "tag.h"
 #include "conf.h"
 
-struct audio_output;
-
-const char *audio_output_get_name(const struct audio_output *ao);
-
 #endif

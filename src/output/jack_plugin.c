@@ -41,7 +41,7 @@ static const char *const port_names[2] = {
 };
 
 struct jack_data {
-	struct audio_output *ao;
+	const char *name;
 
 	/* configuration */
 	char *output_ports[2];
@@ -57,12 +57,6 @@ struct jack_data {
 
 	bool shutdown;
 };
-
-static const char *
-mpd_jack_name(const struct jack_data *jd)
-{
-	return audio_output_get_name(jd->ao);
-}
 
 static void
 mpd_jack_client_free(struct jack_data *jd)
@@ -163,7 +157,7 @@ mpd_jack_info(const char *msg)
 #endif
 
 static void *
-mpd_jack_init(struct audio_output *ao,
+mpd_jack_init(G_GNUC_UNUSED struct audio_output *ao,
 	      G_GNUC_UNUSED const struct audio_format *audio_format,
 	      const struct config_param *param)
 {
@@ -171,7 +165,7 @@ mpd_jack_init(struct audio_output *ao,
 	const char *value;
 
 	jd = g_new(struct jack_data, 1);
-	jd->ao = ao;
+	jd->name = config_get_block_string(param, "name", "mpd_jack");
 
 	g_debug("mpd_jack_init (pid=%d)", getpid());
 
@@ -221,7 +215,7 @@ mpd_jack_connect(struct jack_data *jd)
 
 	jd->shutdown = false;
 
-	if ((jd->client = jack_client_new(mpd_jack_name(jd))) == NULL) {
+	if ((jd->client = jack_client_new(jd->name)) == NULL) {
 		g_warning("jack server not running?");
 		return false;
 	}

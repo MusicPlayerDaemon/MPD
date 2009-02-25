@@ -422,7 +422,6 @@ OUTPUT_LIBS = \
 	$(SHOUT_LIBS)
 
 OUTPUT_SRC = \
-	src/output_api.c \
 	src/output_list.c \
 	src/output_all.c \
 	src/output_thread.c \

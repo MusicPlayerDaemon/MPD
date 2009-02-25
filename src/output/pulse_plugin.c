@@ -25,7 +25,7 @@
 #define MPD_PULSE_NAME "mpd"
 
 struct pulse_data {
-	struct audio_output *ao;
+	const char *name;
 
 	pa_simple *s;
 	char *server;
@@ -53,14 +53,14 @@ static void pulse_free_data(struct pulse_data *pd)
 }
 
 static void *
-pulse_init(struct audio_output *ao,
+pulse_init(G_GNUC_UNUSED struct audio_output *ao,
 	   G_GNUC_UNUSED const struct audio_format *audio_format,
 	   const struct config_param *param)
 {
 	struct pulse_data *pd;
 
 	pd = pulse_new_data();
-	pd->ao = ao;
+	pd->name = config_get_block_string(param, "name", "mpd_pulse");
 	pd->server = param != NULL
 		? config_dup_block_string(param, "server", NULL) : NULL;
 	pd->sink = param != NULL
@@ -115,20 +115,19 @@ pulse_open(void *data, struct audio_format *audio_format)
 	ss.channels = audio_format->channels;
 
 	pd->s = pa_simple_new(pd->server, MPD_PULSE_NAME, PA_STREAM_PLAYBACK,
-			      pd->sink, audio_output_get_name(pd->ao),
+			      pd->sink, pd->name,
 			      &ss, NULL, NULL,
 			      &error);
 	if (!pd->s) {
 		g_warning("Cannot connect to server in PulseAudio output "
 			  "\"%s\": %s\n",
-			  audio_output_get_name(pd->ao),
-			  pa_strerror(error));
+			  pd->name, pa_strerror(error));
 		return false;
 	}
 
 	g_debug("PulseAudio output \"%s\" connected and playing %i bit, %i "
 		"channel audio at %i Hz\n",
-		audio_output_get_name(pd->ao),
+		pd->name,
 		audio_format->bits,
 		audio_format->channels, audio_format->sample_rate);
 
@@ -145,8 +144,7 @@ static void pulse_cancel(void *data)
 
 	if (pa_simple_flush(pd->s, &error) < 0)
 		g_warning("Flush failed in PulseAudio output \"%s\": %s\n",
-			  audio_output_get_name(pd->ao),
-			  pa_strerror(error));
+			  pd->name, pa_strerror(error));
 }
 
 static void pulse_close(void *data)
@@ -169,8 +167,7 @@ pulse_play(void *data, const void *chunk, size_t size)
 	if (pa_simple_write(pd->s, chunk, size, &error) < 0) {
 		g_warning("PulseAudio output \"%s\" disconnecting due to "
 			  "write error: %s\n",
-			  audio_output_get_name(pd->ao),
-			  pa_strerror(error));
+			  pd->name, pa_strerror(error));
 		pulse_close(pd);
 		return 0;
 	}

@@ -75,7 +75,7 @@ static void audioOutputAo_error(const char *msg)
 }
 
 static void *
-audioOutputAo_initDriver(struct audio_output *ao,
+audioOutputAo_initDriver(G_GNUC_UNUSED struct audio_output *ao,
 			 G_GNUC_UNUSED const struct audio_format *audio_format,
 			 const struct config_param *param)
 {
@@ -103,7 +103,7 @@ audioOutputAo_initDriver(struct audio_output *ao,
 	}
 
 	g_debug("using ao driver \"%s\" for \"%s\"\n", ai->short_name,
-		audio_output_get_name(ao));
+		config_get_block_string(param, "name", NULL));
 
 	value = config_get_block_string(param, "options", NULL);
 	if (value != NULL) {
