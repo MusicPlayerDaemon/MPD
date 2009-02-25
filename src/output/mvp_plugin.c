@@ -152,7 +152,11 @@ mvp_set_pcm_params(struct mvp_data *md, struct audio_format *audio_format)
 		break;
 
 	default:
-		return false;
+		g_debug("unsupported sample format %u - falling back to stereo",
+			audio_format->bits);
+		audio_format->bits = 16;
+		mix[1] = 2;
+		break;
 	}
 
 	mix[3] = 0;	/* stream type? */
