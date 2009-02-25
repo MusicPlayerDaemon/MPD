@@ -504,6 +504,7 @@ if ENABLE_TEST
 
 noinst_PROGRAMS = \
 	test/run_decoder \
+	test/run_encoder \
 	test/software_volume
 
 test_run_decoder_CPPFLAGS = $(AM_CPPFLAGS) \
@@ -520,6 +521,14 @@ test_run_decoder_SOURCES = test/run_decoder.c \
 	$(ARCHIVE_SRC) \
 	$(INPUT_SRC) \
 	$(DECODER_SRC)
+
+test_run_encoder_SOURCES = test/run_encoder.c \
+	src/conf.c src/buffer2array.c \
+	src/utils.c \
+	src/audio_parser.c \
+	$(ENCODER_SRC)
+test_run_encoder_LDADD = $(MPD_LIBS) \
+	$(ENCODER_LIBS)
 
 test_software_volume_SOURCES = test/software_volume.c \
 	src/audio_parser.c \

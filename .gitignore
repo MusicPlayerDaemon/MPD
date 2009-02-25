@@ -41,3 +41,4 @@ doc/protocol
 doc/api
 test/software_volume
 test/run_decoder
+test/run_encoder
