@@ -52,7 +52,6 @@ static FifoData *newFifoData(void)
 	ret->input = -1;
 	ret->output = -1;
 	ret->created = 0;
-	ret->timer = NULL;
 
 	return ret;
 }
@@ -60,10 +59,6 @@ static FifoData *newFifoData(void)
 static void freeFifoData(FifoData *fd)
 {
 	g_free(fd->path);
-
-	if (fd->timer)
-		timer_free(fd->timer);
-
 	g_free(fd);
 }
 
@@ -202,9 +197,6 @@ static bool fifo_openDevice(void *data,
 {
 	FifoData *fd = (FifoData *)data;
 
-	if (fd->timer)
-		timer_free(fd->timer);
-
 	fd->timer = timer_new(audio_format);
 
 	return true;
@@ -214,10 +206,7 @@ static void fifo_closeDevice(void *data)
 {
 	FifoData *fd = (FifoData *)data;
 
-	if (fd->timer) {
-		timer_free(fd->timer);
-		fd->timer = NULL;
-	}
+	timer_free(fd->timer);
 }
 
 static void fifo_dropBufferedAudio(void *data)
