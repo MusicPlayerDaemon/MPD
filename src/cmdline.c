@@ -81,7 +81,8 @@ void parseOptions(int argc, char **argv, Options *options)
 	GOptionContext *context;
 	bool ret;
 	static gboolean option_version,
-		option_create_db, option_no_create_db, option_no_daemon;
+		option_create_db, option_no_create_db, option_no_daemon,
+		option_no_config;
 	const GOptionEntry entries[] = {
 		{ "version", 'V', 0, G_OPTION_ARG_NONE, &option_version,
 		  "print version number", NULL },
@@ -97,6 +98,8 @@ void parseOptions(int argc, char **argv, Options *options)
 		  "print messages to stderr", NULL },
 		{ "verbose", 'v', 0, G_OPTION_ARG_NONE, &options->verbose,
 		  "verbose logging", NULL },
+		{ "no-config", 0, 0, G_OPTION_ARG_NONE, &option_no_config,
+		  "don't read from config", NULL },
 		{ .long_name = NULL }
 	};
 
@@ -138,7 +141,9 @@ void parseOptions(int argc, char **argv, Options *options)
 
 	options->daemon = !option_no_daemon;
 
-	if (argc <= 1) {
+	if (option_no_config) {
+		g_debug("Ignoring config, using daemon defaults\n");
+	} else if (argc <= 1) {
 		/* default configuration file path */
 		char *path1;
 		char *path2;
