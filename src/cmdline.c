@@ -84,12 +84,12 @@ void parseOptions(int argc, char **argv, Options *options)
 		option_create_db, option_no_create_db, option_no_daemon,
 		option_no_config;
 	const GOptionEntry entries[] = {
-		{ "version", 'V', 0, G_OPTION_ARG_NONE, &option_version,
-		  "print version number", NULL },
-		{ "kill", 0, 0, G_OPTION_ARG_NONE, &options->kill,
-		  "kill the currently running mpd session", NULL },
 		{ "create-db", 0, 0, G_OPTION_ARG_NONE, &option_create_db,
 		  "force (re)creation of database", NULL },
+		{ "kill", 0, 0, G_OPTION_ARG_NONE, &options->kill,
+		  "kill the currently running mpd session", NULL },
+		{ "no-config", 0, 0, G_OPTION_ARG_NONE, &option_no_config,
+		  "don't read from config", NULL },
 		{ "no-create-db", 0, 0, G_OPTION_ARG_NONE, &option_no_create_db,
 		  "don't create database, even if it doesn't exist", NULL },
 		{ "no-daemon", 0, 0, G_OPTION_ARG_NONE, &option_no_daemon,
@@ -98,8 +98,8 @@ void parseOptions(int argc, char **argv, Options *options)
 		  "print messages to stderr", NULL },
 		{ "verbose", 'v', 0, G_OPTION_ARG_NONE, &options->verbose,
 		  "verbose logging", NULL },
-		{ "no-config", 0, 0, G_OPTION_ARG_NONE, &option_no_config,
-		  "don't read from config", NULL },
+		{ "version", 'V', 0, G_OPTION_ARG_NONE, &option_version,
+		  "print version number", NULL },
 		{ .long_name = NULL }
 	};
 
