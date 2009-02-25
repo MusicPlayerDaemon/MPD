@@ -83,6 +83,21 @@ static const unsigned mvp_sample_rates[][3] = {
 	{15, 96000, 48000}
 };
 
+/**
+ * Translate a sample rate to a MVP sample rate.
+ *
+ * @param sample_rate the sample rate in Hz
+ */
+static unsigned
+mvp_find_sample_rate(unsigned sample_rate)
+{
+	for (unsigned i = 0; i < G_N_ELEMENTS(mvp_sample_rates); ++i)
+		if (mvp_sample_rates[i][1] == sample_rate)
+			return mvp_sample_rates[i][0];
+
+	return (unsigned)-1;
+}
+
 static bool
 mvp_output_test_default_device(void)
 {
@@ -121,7 +136,6 @@ mvp_output_finish(void *data)
 static bool
 mvp_set_pcm_params(struct mvp_data *md, struct audio_format *audio_format)
 {
-	unsigned iloop;
 	unsigned mix[5];
 
 	switch (audio_format->channels) {
@@ -165,14 +179,8 @@ mvp_set_pcm_params(struct mvp_data *md, struct audio_format *audio_format)
 	/*
 	 * if there is an exact match for the frequency, use it.
 	 */
-	for (iloop = 0; iloop < G_N_ELEMENTS(mvp_sample_rates); iloop++) {
-		if (audio_format->sample_rate == mvp_sample_rates[iloop][1]) {
-			mix[2] = mvp_sample_rates[iloop][0];
-			break;
-		}
-	}
-
-	if (iloop >= G_N_ELEMENTS(mvp_sample_rates)) {
+	mix[2] = mvp_find_sample_rate(audio_format->sample_rate);
+	if (mix[2] == (unsigned)-1) {
 		g_warning("Can not find suitable output frequency for %u\n",
 			  audio_format->sample_rate);
 		return false;
