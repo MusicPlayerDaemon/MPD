@@ -69,12 +69,12 @@ typedef struct {
 #define MVP_SET_AUD_DAC_CLK	_IOW('a',27,int)
 #define MVP_GET_AUD_REGS		_IOW('a',28,aud_ctl_regs_t*)
 
-typedef struct _MvpData {
+struct mvp_data {
 	struct audio_format audio_format;
 	int fd;
-} MvpData;
+};
 
-static unsigned pcmfrequencies[][3] = {
+static unsigned mvp_sample_rates[][3] = {
 	{9, 8000, 32000},
 	{10, 11025, 44100},
 	{11, 12000, 48000},
@@ -90,9 +90,10 @@ static unsigned pcmfrequencies[][3] = {
 };
 
 static const unsigned numfrequencies =
-	sizeof(pcmfrequencies) / sizeof(pcmfrequencies[0]);
+	sizeof(mvp_sample_rates) / sizeof(mvp_sample_rates[0]);
 
-static bool mvp_testDefault(void)
+static bool
+mvp_output_test_default_device(void)
 {
 	int fd;
 
@@ -110,23 +111,25 @@ static bool mvp_testDefault(void)
 }
 
 static void *
-mvp_initDriver(G_GNUC_UNUSED const struct audio_format *audio_format,
-	       G_GNUC_UNUSED const struct config_param *param)
+mvp_output_init(G_GNUC_UNUSED const struct audio_format *audio_format,
+		G_GNUC_UNUSED const struct config_param *param)
 {
-	MvpData *md = g_new(MvpData, 1);
+	struct mvp_data *md = g_new(struct mvp_data, 1);
 	md->fd = -1;
 
 	return md;
 }
 
-static void mvp_finishDriver(void *data)
+static void
+mvp_output_finish(void *data)
 {
-	MvpData *md = data;
+	struct mvp_data *md = data;
 	g_free(md);
 }
 
-static int mvp_setPcmParams(MvpData * md, unsigned long rate, int channels,
-			    int big_endian, unsigned bits)
+static int
+mvp_set_pcm_params(struct mvp_data *md, unsigned long rate, int channels,
+		   int big_endian, unsigned bits)
 {
 	unsigned iloop;
 	unsigned mix[5];
@@ -159,8 +162,8 @@ static int mvp_setPcmParams(MvpData * md, unsigned long rate, int channels,
 	 * if there is an exact match for the frequency, use it.
 	 */
 	for (iloop = 0; iloop < numfrequencies; iloop++) {
-		if (rate == pcmfrequencies[iloop][1]) {
-			mix[2] = pcmfrequencies[iloop][0];
+		if (rate == mvp_sample_rates[iloop][1]) {
+			mix[2] = mvp_sample_rates[iloop][0];
 			break;
 		}
 	}
@@ -190,9 +193,9 @@ static int mvp_setPcmParams(MvpData * md, unsigned long rate, int channels,
 }
 
 static bool
-mvp_openDevice(void *data, struct audio_format *audioFormat)
+mvp_output_open(void *data, struct audio_format *audio_format)
 {
-	MvpData *md = data;
+	struct mvp_data *md = data;
 	long long int stc = 0;
 	int mix[5] = { 0, 2, 7, 1, 0 };
 
@@ -222,23 +225,24 @@ mvp_openDevice(void *data, struct audio_format *audioFormat)
 			  strerror(errno));
 		return false;
 	}
-	mvp_setPcmParams(md, audioFormat->sample_rate, audioFormat->channels,
-			 MVP_USE_LITTLE_ENDIAN, audioFormat->bits);
-	md->audio_format = *audioFormat;
+	mvp_set_pcm_params(md, audio_format->sample_rate,
+			   audio_format->channels,
+			   MVP_USE_LITTLE_ENDIAN, audio_format->bits);
+	md->audio_format = *audio_format;
 	return true;
 }
 
-static void mvp_closeDevice(void *data)
+static void mvp_output_close(void *data)
 {
-	MvpData *md = data;
+	struct mvp_data *md = data;
 	if (md->fd >= 0)
 		close(md->fd);
 	md->fd = -1;
 }
 
-static void mvp_dropBufferedAudio(void *data)
+static void mvp_output_cancel(void *data)
 {
-	MvpData *md = data;
+	struct mvp_data *md = data;
 	if (md->fd >= 0) {
 		ioctl(md->fd, MVP_SET_AUD_RESET, 0x11);
 		close(md->fd);
@@ -247,14 +251,14 @@ static void mvp_dropBufferedAudio(void *data)
 }
 
 static size_t
-mvp_playAudio(void *data, const void *chunk, size_t size)
+mvp_output_play(void *data, const void *chunk, size_t size)
 {
-	MvpData *md = data;
+	struct mvp_data *md = data;
 	ssize_t ret;
 
 	/* reopen the device since it was closed by dropBufferedAudio */
 	if (md->fd < 0)
-		mvp_openDevice(md, &md->audio_format);
+		mvp_output_open(md, &md->audio_format);
 
 	while (true) {
 		ret = write(md->fd, chunk, size);
@@ -271,13 +275,13 @@ mvp_playAudio(void *data, const void *chunk, size_t size)
 	}
 }
 
-const struct audio_output_plugin mvpPlugin = {
+const struct audio_output_plugin mvp_output_plugin = {
 	.name = "mvp",
-	.test_default_device = mvp_testDefault,
-	.init = mvp_initDriver,
-	.finish = mvp_finishDriver,
-	.open = mvp_openDevice,
-	.play = mvp_playAudio,
-	.cancel = mvp_dropBufferedAudio,
-	.close = mvp_closeDevice,
+	.test_default_device = mvp_output_test_default_device,
+	.init = mvp_output_init,
+	.finish = mvp_output_finish,
+	.open = mvp_output_open,
+	.close = mvp_output_close,
+	.play = mvp_output_play,
+	.cancel = mvp_output_cancel,
 };

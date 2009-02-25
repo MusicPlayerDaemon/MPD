@@ -28,7 +28,7 @@ extern const struct audio_output_plugin ao_output_plugin;
 extern const struct audio_output_plugin ossPlugin;
 extern const struct audio_output_plugin osxPlugin;
 extern const struct audio_output_plugin pulse_plugin;
-extern const struct audio_output_plugin mvpPlugin;
+extern const struct audio_output_plugin mvp_output_plugin;
 extern const struct audio_output_plugin jackPlugin;
 
 const struct audio_output_plugin *audio_output_plugins[] = {
@@ -55,7 +55,7 @@ const struct audio_output_plugin *audio_output_plugins[] = {
 	&pulse_plugin,
 #endif
 #ifdef HAVE_MVP
-	&mvpPlugin,
+	&mvp_output_plugin,
 #endif
 #ifdef HAVE_JACK
 	&jackPlugin,
