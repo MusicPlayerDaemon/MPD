@@ -119,26 +119,37 @@ mvp_output_finish(void *data)
 }
 
 static int
-mvp_set_pcm_params(struct mvp_data *md, unsigned long rate, int channels,
-		   unsigned bits)
+mvp_set_pcm_params(struct mvp_data *md, struct audio_format *audio_format)
 {
 	unsigned iloop;
 	unsigned mix[5];
 
-	if (channels == 1)
+	switch (audio_format->channels) {
+	case 1:
 		mix[0] = 1;
-	else if (channels == 2)
+		break;
+
+	case 2:
 		mix[0] = 0;
-	else
+		break;
+
+	default:
 		return -1;
+	}
 
 	/* 0,1=24bit(24) , 2,3=16bit */
-	if (bits == 16)
+	switch (audio_format->bits) {
+	case 16:
 		mix[1] = 2;
-	else if (bits == 24)
+		break;
+
+	case 24:
 		mix[1] = 0;
-	else
+		break;
+
+	default:
 		return -1;
+	}
 
 	mix[3] = 0;	/* stream type? */
 	mix[4] = G_BYTE_ORDER == G_LITTLE_ENDIAN;
@@ -147,15 +158,15 @@ mvp_set_pcm_params(struct mvp_data *md, unsigned long rate, int channels,
 	 * if there is an exact match for the frequency, use it.
 	 */
 	for (iloop = 0; iloop < G_N_ELEMENTS(mvp_sample_rates); iloop++) {
-		if (rate == mvp_sample_rates[iloop][1]) {
+		if (audio_format->sample_rate == mvp_sample_rates[iloop][1]) {
 			mix[2] = mvp_sample_rates[iloop][0];
 			break;
 		}
 	}
 
 	if (iloop >= G_N_ELEMENTS(mvp_sample_rates)) {
-		g_warning("Can not find suitable output frequency for %ld\n",
-			  rate);
+		g_warning("Can not find suitable output frequency for %u\n",
+			  audio_format->sample_rate);
 		return -1;
 	}
 
@@ -210,8 +221,7 @@ mvp_output_open(void *data, struct audio_format *audio_format)
 			  strerror(errno));
 		return false;
 	}
-	mvp_set_pcm_params(md, audio_format->sample_rate,
-			   audio_format->channels, audio_format->bits);
+	mvp_set_pcm_params(md, audio_format);
 	md->audio_format = *audio_format;
 	return true;
 }
