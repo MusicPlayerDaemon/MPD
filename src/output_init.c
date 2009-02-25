@@ -24,6 +24,9 @@
 
 #include <glib.h>
 
+#undef G_LOG_DOMAIN
+#define G_LOG_DOMAIN "output"
+
 #define AUDIO_OUTPUT_TYPE	"type"
 #define AUDIO_OUTPUT_NAME	"name"
 #define AUDIO_OUTPUT_FORMAT	"format"

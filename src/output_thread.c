@@ -21,9 +21,13 @@
 #include "output_internal.h"
 
 #include <glib.h>
+
 #include <assert.h>
 #include <stdlib.h>
 #include <errno.h>
+
+#undef G_LOG_DOMAIN
+#define G_LOG_DOMAIN "output"
 
 enum {
 	/** after a failure, wait this number of seconds before

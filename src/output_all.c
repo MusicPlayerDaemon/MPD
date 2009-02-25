@@ -24,6 +24,9 @@
 #include <assert.h>
 #include <string.h>
 
+#undef G_LOG_DOMAIN
+#define G_LOG_DOMAIN "output"
+
 static struct audio_format input_audio_format;
 
 static struct audio_output *audio_outputs;
