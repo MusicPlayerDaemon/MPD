@@ -41,7 +41,7 @@
 	if(bp) str = bp->value; \
 }
 
-int
+bool
 audio_output_init(struct audio_output *ao, const struct config_param *param)
 {
 	const char *name = NULL;
@@ -82,7 +82,7 @@ audio_output_init(struct audio_output *ao, const struct config_param *param)
 
 		if (plugin == NULL) {
 			g_warning("Unable to detect an audio device\n");
-			return 0;
+			return false;
 		}
 
 		name = "default detected output";
@@ -116,7 +116,7 @@ audio_output_init(struct audio_output *ao, const struct config_param *param)
 				  format ? &ao->config_audio_format : NULL,
 				  param);
 	if (ao->data == NULL)
-		return 0;
+		return false;
 
-	return 1;
+	return true;
 }

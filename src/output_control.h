@@ -27,7 +27,7 @@ struct audio_format;
 struct tag;
 struct config_param;
 
-int
+bool
 audio_output_init(struct audio_output *ao, const struct config_param *param);
 
 bool
