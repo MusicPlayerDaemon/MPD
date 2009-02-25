@@ -388,8 +388,7 @@ static void *oss_open_default(const struct config_param *param)
 }
 
 static void *
-oss_initDriver(G_GNUC_UNUSED struct audio_output *audioOutput,
-	       G_GNUC_UNUSED const struct audio_format *audio_format,
+oss_initDriver(G_GNUC_UNUSED const struct audio_format *audio_format,
 	       const struct config_param *param)
 {
 	const char *device = config_get_block_string(param, "device", NULL);

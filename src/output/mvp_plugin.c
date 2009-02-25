@@ -70,7 +70,6 @@ typedef struct {
 #define MVP_GET_AUD_REGS		_IOW('a',28,aud_ctl_regs_t*)
 
 typedef struct _MvpData {
-	struct audio_output *audio_output;
 	struct audio_format audio_format;
 	int fd;
 } MvpData;
@@ -110,12 +109,11 @@ static bool mvp_testDefault(void)
 	return false;
 }
 
-static void *mvp_initDriver(G_GNUC_UNUSED struct audio_output *audio_output,
-			    G_GNUC_UNUSED const struct audio_format *audio_format,
-			    G_GNUC_UNUSED const struct config_param *param)
+static void *
+mvp_initDriver(G_GNUC_UNUSED const struct audio_format *audio_format,
+	       G_GNUC_UNUSED const struct config_param *param)
 {
 	MvpData *md = g_new(MvpData, 1);
-	md->audio_output = audio_output;
 	md->fd = -1;
 
 	return md;

@@ -75,8 +75,7 @@ static void audioOutputAo_error(const char *msg)
 }
 
 static void *
-audioOutputAo_initDriver(G_GNUC_UNUSED struct audio_output *ao,
-			 G_GNUC_UNUSED const struct audio_format *audio_format,
+audioOutputAo_initDriver(G_GNUC_UNUSED const struct audio_format *audio_format,
 			 const struct config_param *param)
 {
 	ao_info *ai;

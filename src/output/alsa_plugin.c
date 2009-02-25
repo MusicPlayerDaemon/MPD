@@ -129,8 +129,7 @@ alsa_configure(struct alsa_data *ad, const struct config_param *param)
 }
 
 static void *
-alsa_init(G_GNUC_UNUSED struct audio_output *ao,
-	  G_GNUC_UNUSED const struct audio_format *audio_format,
+alsa_init(G_GNUC_UNUSED const struct audio_format *audio_format,
 	  const struct config_param *param)
 {
 	/* no need for pthread_once thread-safety when reading config */

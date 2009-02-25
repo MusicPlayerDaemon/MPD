@@ -22,7 +22,6 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-struct audio_output;
 struct config_param;
 struct audio_format;
 struct tag;
@@ -54,8 +53,7 @@ struct audio_output_plugin {
 	 * @return NULL on error, or an opaque pointer to the plugin's
 	 * data
 	 */
-	void *(*init)(struct audio_output *ao,
-		      const struct audio_format *audio_format,
+	void *(*init)(const struct audio_format *audio_format,
 		      const struct config_param *param);
 
 	/**
@@ -127,11 +125,10 @@ ao_plugin_test_default_device(const struct audio_output_plugin *plugin)
 
 static inline void *
 ao_plugin_init(const struct audio_output_plugin *plugin,
-	       struct audio_output *ao,
 	       const struct audio_format *audio_format,
 	       const struct config_param *param)
 {
-	return plugin->init(ao, audio_format, param);
+	return plugin->init(audio_format, param);
 }
 
 static inline void

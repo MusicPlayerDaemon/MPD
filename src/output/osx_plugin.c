@@ -80,8 +80,7 @@ static bool osx_testDefault(void)
 }
 
 static void *
-osx_initDriver(G_GNUC_UNUSED struct audio_output *audioOutput,
-	       G_GNUC_UNUSED const struct audio_format *audio_format,
+osx_initDriver(G_GNUC_UNUSED const struct audio_format *audio_format,
 	       G_GNUC_UNUSED const struct config_param *param)
 {
 	return newOsxData();

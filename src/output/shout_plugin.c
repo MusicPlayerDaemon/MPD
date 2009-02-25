@@ -38,8 +38,6 @@ struct shout_buffer {
 };
 
 struct shout_data {
-	struct audio_output *audio_output;
-
 	shout_t *shout_conn;
 	shout_metadata_t *shout_meta;
 
@@ -97,9 +95,9 @@ static void free_shout_data(struct shout_data *sd)
 		}							\
 	}
 
-static void *my_shout_init_driver(struct audio_output *audio_output,
-				  const struct audio_format *audio_format,
-				  const struct config_param *param)
+static void *
+my_shout_init_driver(const struct audio_format *audio_format,
+		     const struct config_param *param)
 {
 	struct shout_data *sd;
 	char *test;
@@ -119,7 +117,6 @@ static void *my_shout_init_driver(struct audio_output *audio_output,
 	int public;
 
 	sd = new_shout_data();
-	sd->audio_output = audio_output;
 
 	if (shout_init_count == 0)
 		shout_init();

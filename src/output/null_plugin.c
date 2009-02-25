@@ -30,8 +30,7 @@ struct null_data {
 };
 
 static void *
-null_init(G_GNUC_UNUSED struct audio_output *audio_output,
-	  G_GNUC_UNUSED const struct audio_format *audio_format,
+null_init(G_GNUC_UNUSED const struct audio_format *audio_format,
 	  G_GNUC_UNUSED const struct config_param *param)
 {
 	struct null_data *nd = g_new(struct null_data, 1);
