@@ -364,9 +364,14 @@ alsa_open(void *data, struct audio_format *audio_format)
 
 	mixer_open(ad->mixer);
 
-	if ((bitformat = get_bitformat(audio_format)) == SND_PCM_FORMAT_UNKNOWN)
-		g_warning("ALSA device \"%s\" doesn't support %u bit audio\n",
-			  alsa_device(ad), audio_format->bits);
+	bitformat = get_bitformat(audio_format);
+	if (bitformat == SND_PCM_FORMAT_UNKNOWN) {
+		/* sample format is not supported by this plugin -
+		   fall back to 16 bit samples */
+
+		audio_format->bits = 16;
+		bitformat = SND_PCM_FORMAT_S16;
+	}
 
 	err = snd_pcm_open(&ad->pcm, alsa_device(ad),
 			   SND_PCM_STREAM_PLAYBACK, ad->mode);
