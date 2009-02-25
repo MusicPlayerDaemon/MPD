@@ -9,38 +9,20 @@ bin_PROGRAMS = src/mpd
 src_mpd_CFLAGS = $(MPD_CFLAGS)
 src_mpd_CPPFLAGS = -I$(srcdir)/src \
 	$(SQLITE_CFLAGS) \
-	$(CURL_CFLAGS) \
-	$(MMS_CFLAGS) \
-	$(AO_CFLAGS) $(ALSA_CFLAGS) \
-	$(SHOUT_CFLAGS) \
-	$(OGGVORBIS_CFLAGS) $(VORBISENC_CFLAGS) \
-	$(patsubst -I%/FLAC,-I%,$(FLAC_CFLAGS)) \
-	$(AUDIOFILE_CFLAGS) $(LIBMIKMOD_CFLAGS) \
-	$(MODPLUG_CFLAGS) \
-	$(SIDPLAY_CFLAGS) \
-	$(FLUIDSYNTH_CFLAGS) \
-	$(WILDMIDI_CFLAGS) \
 	$(ID3TAG_CFLAGS) \
-	$(MAD_CFLAGS) \
-	$(FFMPEG_CFLAGS) \
-	$(GLIB_CFLAGS)
+	$(GLIB_CFLAGS) \
+	$(INPUT_CFLAGS) \
+	$(DECODER_CFLAGS) \
+	$(ENCODER_CFLAGS) \
+	$(OUTPUT_CFLAGS)
 src_mpd_LDADD = $(MPD_LIBS) \
 	$(SQLITE_LIBS) \
-	$(CURL_LIBS) \
-	$(MMS_LIBS) \
-	$(AO_LIBS) $(ALSA_LIBS) \
-	$(SHOUT_LIBS) \
-	$(OGGVORBIS_LIBS) $(VORBISENC_LIBS) $(FLAC_LIBS) \
-	$(AUDIOFILE_LIBS) $(LIBMIKMOD_LIBS) \
-	$(MODPLUG_LIBS) \
-	$(SIDPLAY_LIBS) \
-	$(FLUIDSYNTH_LIBS) \
-	$(WILDMIDI_LIBS) \
 	$(ID3TAG_LIBS) \
-	$(MAD_LIBS) \
-	$(MP4FF_LIBS) \
-	$(FFMPEG_LIBS) \
-	$(GLIB_LIBS)
+	$(GLIB_LIBS) \
+	$(INPUT_LIBS) \
+	$(DECODER_LIBS) \
+	$(ENCODER_LIBS) \
+	$(OUTPUT_LIBS)
 
 mpd_headers = \
 	src/notify.h \
@@ -157,20 +139,16 @@ mpd_headers = \
 
 src_mpd_SOURCES = \
 	$(mpd_headers) \
+	$(ARCHIVE_SRC) \
+	$(INPUT_SRC) \
+	$(DECODER_SRC) \
+	$(ENCODER_SRC) \
+	$(OUTPUT_SRC) \
+	$(MIXER_SRC) \
 	src/notify.c \
 	src/audio.c \
 	src/audio_parser.c \
 	src/audioOutput.c \
-	src/output_api.c \
-	src/output_list.c \
-	src/output_all.c \
-	src/output_thread.c \
-	src/output_control.c \
-	src/output_state.c \
-	src/output_print.c \
-	src/output_command.c \
-	src/output_init.c \
-	src/output/null_plugin.c \
 	src/buffer2array.c \
 	src/command.c \
 	src/idle.c \
@@ -180,7 +158,6 @@ src_mpd_SOURCES = \
 	src/dbUtils.c \
 	src/decoder_thread.c \
 	src/decoder_control.c \
-	src/decoder_buffer.c \
 	src/decoder_api.c \
 	src/directory.c \
 	src/directory_save.c \
@@ -188,9 +165,6 @@ src_mpd_SOURCES = \
 	src/database.c \
 	src/dirvec.c \
 	src/update.c \
-	src/decoder_list.c \
-	src/input_stream.c \
-	src/input_file.c \
 	src/client.c \
 	src/listen.c \
 	src/log.c \
@@ -198,7 +172,6 @@ src_mpd_SOURCES = \
 	src/main.c \
 	src/event_pipe.c \
 	src/daemon.c \
-	src/mixer_api.c \
 	src/normalize.c \
 	src/compress.c \
 	src/pipe.c \
@@ -260,20 +233,22 @@ endif
 
 # archive plugins
 
+ARCHIVE_SRC =
+
 if HAVE_BZ2
-src_mpd_SOURCES += src/archive/bz2_plugin.c
+ARCHIVE_SRC += src/archive/bz2_plugin.c
 endif
 
 if HAVE_ZIP
-src_mpd_SOURCES += src/archive/zip_plugin.c
+ARCHIVE_SRC += src/archive/zip_plugin.c
 endif
 
 if HAVE_ISO
-src_mpd_SOURCES += src/archive/iso_plugin.c
+ARCHIVE_SRC += src/archive/iso_plugin.c
 endif
 
 if ENABLE_ARCHIVE
-src_mpd_SOURCES += \
+ARCHIVE_SRC += \
 	src/archive_api.c \
 	src/archive_list.c \
 	src/input_archive.c
@@ -282,85 +257,120 @@ endif
 
 # decoder plugins
 
+DECODER_CFLAGS = \
+	$(OGGVORBIS_CFLAGS) \
+	$(patsubst -I%/FLAC,-I%,$(FLAC_CFLAGS)) \
+	$(AUDIOFILE_CFLAGS) \
+	$(LIBMIKMOD_CFLAGS) \
+	$(MODPLUG_CFLAGS) \
+	$(SIDPLAY_CFLAGS) \
+	$(FLUIDSYNTH_CFLAGS) \
+	$(WILDMIDI_CFLAGS) \
+	$(MAD_CFLAGS) \
+	$(FFMPEG_CFLAGS)
+
+DECODER_LIBS = \
+	$(OGGVORBIS_LIBS) $(FLAC_LIBS) \
+	$(AUDIOFILE_LIBS) $(LIBMIKMOD_LIBS) \
+	$(MODPLUG_LIBS) \
+	$(SIDPLAY_LIBS) \
+	$(FLUIDSYNTH_LIBS) \
+	$(WILDMIDI_LIBS) \
+	$(MAD_LIBS) \
+	$(MP4FF_LIBS) \
+	$(FFMPEG_LIBS)
+
+DECODER_SRC = \
+	src/decoder_buffer.c \
+	src/decoder_list.c
+
 if HAVE_MAD
-src_mpd_SOURCES += src/decoder/mad_plugin.c
+DECODER_SRC += src/decoder/mad_plugin.c
 endif
 
 if HAVE_MPCDEC
-src_mpd_SOURCES += src/decoder/mpcdec_plugin.c
+DECODER_SRC += src/decoder/mpcdec_plugin.c
 endif
 
 if HAVE_WAVPACK
-src_mpd_SOURCES += src/decoder/wavpack_plugin.c
+DECODER_SRC += src/decoder/wavpack_plugin.c
 endif
 
 if HAVE_FAAD
-src_mpd_SOURCES += src/decoder/faad_plugin.c
+DECODER_SRC += src/decoder/faad_plugin.c
 endif
 
 if HAVE_MP4
-src_mpd_SOURCES += src/decoder/mp4ff_plugin.c
+DECODER_SRC += src/decoder/mp4ff_plugin.c
 endif
 
 if HAVE_OGG_COMMON
-src_mpd_SOURCES += src/decoder/_ogg_common.c
+DECODER_SRC += src/decoder/_ogg_common.c
 endif
 
 if HAVE_FLAC_COMMON
-src_mpd_SOURCES += src/decoder/_flac_common.c
+DECODER_SRC += src/decoder/_flac_common.c
 endif
 
 if HAVE_OGGVORBIS
-src_mpd_SOURCES += src/decoder/vorbis_plugin.c
+DECODER_SRC += src/decoder/vorbis_plugin.c
 endif
 
 if HAVE_FLAC
-src_mpd_SOURCES += src/decoder/flac_plugin.c
+DECODER_SRC += src/decoder/flac_plugin.c
 endif
 
 if HAVE_OGGFLAC
-src_mpd_SOURCES += src/decoder/oggflac_plugin.c
+DECODER_SRC += src/decoder/oggflac_plugin.c
 endif
 
 if HAVE_AUDIOFILE
-src_mpd_SOURCES += src/decoder/audiofile_plugin.c
+DECODER_SRC += src/decoder/audiofile_plugin.c
 endif
 
 if HAVE_MIKMOD
-src_mpd_SOURCES += src/decoder/mikmod_plugin.c
+DECODER_SRC += src/decoder/mikmod_plugin.c
 endif
 
 if HAVE_MODPLUG
-src_mpd_SOURCES += src/decoder/modplug_plugin.c
+DECODER_SRC += src/decoder/modplug_plugin.c
 endif
 
 if ENABLE_SIDPLAY
-src_mpd_SOURCES += src/decoder/sidplay_plugin.cxx
+DECODER_SRC += src/decoder/sidplay_plugin.cxx
 endif
 
 if ENABLE_FLUIDSYNTH
-src_mpd_SOURCES += src/decoder/fluidsynth_plugin.c
+DECODER_SRC += src/decoder/fluidsynth_plugin.c
 endif
 
 if ENABLE_WILDMIDI
-src_mpd_SOURCES += src/decoder/wildmidi_plugin.c
+DECODER_SRC += src/decoder/wildmidi_plugin.c
 endif
 
 if HAVE_FFMPEG
-src_mpd_SOURCES += src/decoder/ffmpeg_plugin.c
+DECODER_SRC += src/decoder/ffmpeg_plugin.c
 endif
 
 # encoder plugins
 
+ENCODER_CFLAGS = \
+	$(VORBISENC_CFLAGS)
+
+ENCODER_LIBS = \
+	$(VORBISENC_LIBS)
+
+ENCODER_SRC =
+
 if ENABLE_ENCODER
-src_mpd_SOURCES += src/encoder_list.c
+ENCODER_SRC += src/encoder_list.c
 
 if ENABLE_VORBIS_ENCODER
-src_mpd_SOURCES += src/encoder/vorbis_encoder.c
+ENCODER_SRC += src/encoder/vorbis_encoder.c
 endif
 
 if ENABLE_LAME_ENCODER
-src_mpd_SOURCES += src/encoder/lame_encoder.c
+ENCODER_SRC += src/encoder/lame_encoder.c
 endif
 endif
 
@@ -378,51 +388,92 @@ endif
 endif
 
 
+#
+# input plugins
+#
+
+INPUT_CFLAGS = \
+	$(CURL_CFLAGS) \
+	$(MMS_CFLAGS)
+
+INPUT_LIBS = \
+	$(CURL_LIBS) \
+	$(MMS_LIBS)
+
+INPUT_SRC = \
+	src/input_stream.c \
+	src/input_file.c
+
 if HAVE_CURL
-src_mpd_SOURCES += src/input_curl.c src/icy_metadata.c
+INPUT_SRC += src/input_curl.c src/icy_metadata.c
 endif
 
 if ENABLE_MMS
-src_mpd_SOURCES += src/input_mms.c
+INPUT_SRC += src/input_mms.c
 endif
 
 
+OUTPUT_CFLAGS = \
+	$(AO_CFLAGS) \
+	$(ALSA_CFLAGS) \
+	$(SHOUT_CFLAGS)
+
+OUTPUT_LIBS = \
+	$(AO_LIBS) \
+	$(ALSA_LIBS) \
+	$(SHOUT_LIBS)
+
+OUTPUT_SRC = \
+	src/output_api.c \
+	src/output_list.c \
+	src/output_all.c \
+	src/output_thread.c \
+	src/output_control.c \
+	src/output_state.c \
+	src/output_print.c \
+	src/output_command.c \
+	src/output_init.c \
+	src/output/null_plugin.c
+
+MIXER_SRC = \
+	src/mixer_api.c
+
 if HAVE_ALSA
-src_mpd_SOURCES += src/output/alsa_plugin.c
-src_mpd_SOURCES += src/mixer/alsa_mixer.c
+OUTPUT_SRC += src/output/alsa_plugin.c
+MIXER_SRC += src/mixer/alsa_mixer.c
 endif
 
 if HAVE_AO
-src_mpd_SOURCES += src/output/ao_plugin.c
+OUTPUT_SRC += src/output/ao_plugin.c
 endif
 
 if HAVE_FIFO
-src_mpd_SOURCES += src/output/fifo_plugin.c
+OUTPUT_SRC += src/output/fifo_plugin.c
 endif
 
 if HAVE_JACK
-src_mpd_SOURCES += src/output/jack_plugin.c
+OUTPUT_SRC += src/output/jack_plugin.c
 endif
 
 if HAVE_MVP
-src_mpd_SOURCES += src/output/mvp_plugin.c
+OUTPUT_SRC += src/output/mvp_plugin.c
 endif
 
 if HAVE_OSS
-src_mpd_SOURCES += src/output/oss_plugin.c
-src_mpd_SOURCES += src/mixer/oss_mixer.c
+OUTPUT_SRC += src/output/oss_plugin.c
+MIXER_SRC += src/mixer/oss_mixer.c
 endif
 
 if HAVE_OSX
-src_mpd_SOURCES += src/output/osx_plugin.c
+OUTPUT_SRC += src/output/osx_plugin.c
 endif
 
 if HAVE_PULSE
-src_mpd_SOURCES += src/output/pulse_plugin.c
+OUTPUT_SRC += src/output/pulse_plugin.c
 endif
 
 if HAVE_SHOUT
-src_mpd_SOURCES += src/output/shout_plugin.c
+OUTPUT_SRC += src/output/shout_plugin.c
 endif
 
 
