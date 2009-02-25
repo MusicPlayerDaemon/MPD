@@ -34,12 +34,6 @@
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "mvp"
 
-#if G_BYTE_ORDER == G_BIG_ENDIAN
-#define MVP_USE_LITTLE_ENDIAN false
-#else
-#define MVP_USE_LITTLE_ENDIAN true
-#endif
-
 typedef struct {
 	unsigned long dsp_status;
 	unsigned long stream_decode_type;
@@ -126,7 +120,7 @@ mvp_output_finish(void *data)
 
 static int
 mvp_set_pcm_params(struct mvp_data *md, unsigned long rate, int channels,
-		   int big_endian, unsigned bits)
+		   unsigned bits)
 {
 	unsigned iloop;
 	unsigned mix[5];
@@ -147,13 +141,7 @@ mvp_set_pcm_params(struct mvp_data *md, unsigned long rate, int channels,
 		return -1;
 
 	mix[3] = 0;	/* stream type? */
-
-	if (big_endian == 1)
-		mix[4] = 1;
-	else if (big_endian == 0)
-		mix[4] = 0;
-	else
-		return -1;
+	mix[4] = G_BYTE_ORDER == G_LITTLE_ENDIAN;
 
 	/*
 	 * if there is an exact match for the frequency, use it.
@@ -223,8 +211,7 @@ mvp_output_open(void *data, struct audio_format *audio_format)
 		return false;
 	}
 	mvp_set_pcm_params(md, audio_format->sample_rate,
-			   audio_format->channels,
-			   MVP_USE_LITTLE_ENDIAN, audio_format->bits);
+			   audio_format->channels, audio_format->bits);
 	md->audio_format = *audio_format;
 	return true;
 }
