@@ -38,7 +38,7 @@ struct fifo_data {
 	char *path;
 	int input;
 	int output;
-	int created;
+	bool created;
 	Timer *timer;
 };
 
@@ -51,7 +51,7 @@ static struct fifo_data *fifo_data_new(void)
 	ret->path = NULL;
 	ret->input = -1;
 	ret->output = -1;
-	ret->created = 0;
+	ret->created = false;
 
 	return ret;
 }
@@ -72,7 +72,7 @@ static void fifo_delete(struct fifo_data *fd)
 		return;
 	}
 
-	fd->created = 0;
+	fd->created = false;
 }
 
 static void
@@ -94,21 +94,21 @@ fifo_close(struct fifo_data *fd)
 		fifo_delete(fd);
 }
 
-static int
+static bool
 fifo_make(struct fifo_data *fd)
 {
 	if (mkfifo(fd->path, 0666) < 0) {
 		g_warning("Couldn't create FIFO \"%s\": %s",
 			  fd->path, strerror(errno));
-		return -1;
+		return false;
 	}
 
-	fd->created = 1;
+	fd->created = true;
 
-	return 0;
+	return true;
 }
 
-static int
+static bool
 fifo_check(struct fifo_data *fd)
 {
 	struct stat st;
@@ -121,22 +121,22 @@ fifo_check(struct fifo_data *fd)
 
 		g_warning("Failed to stat FIFO \"%s\": %s",
 			  fd->path, strerror(errno));
-		return -1;
+		return false;
 	}
 
 	if (!S_ISFIFO(st.st_mode)) {
 		g_warning("\"%s\" already exists, but is not a FIFO",
 			  fd->path);
-		return -1;
+		return false;
 	}
 
-	return 0;
+	return true;
 }
 
 static bool
 fifo_open(struct fifo_data *fd)
 {
-	if (fifo_check(fd) < 0)
+	if (!fifo_check(fd))
 		return false;
 
 	fd->input = open(fd->path, O_RDONLY|O_NONBLOCK);
