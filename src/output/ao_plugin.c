@@ -36,7 +36,6 @@ typedef struct _AoData {
 static AoData *newAoData(void)
 {
 	AoData *ret = g_malloc(sizeof(AoData));
-	ret->device = NULL;
 	ret->options = NULL;
 
 	return ret;
@@ -148,10 +147,7 @@ static void audioOutputAo_closeDevice(void *data)
 {
 	AoData *ad = (AoData *)data;
 
-	if (ad->device) {
-		ao_close(ad->device);
-		ad->device = NULL;
-	}
+	ao_close(ad->device);
 }
 
 static bool
@@ -159,10 +155,6 @@ audioOutputAo_openDevice(void *data, struct audio_format *audio_format)
 {
 	ao_sample_format format;
 	AoData *ad = (AoData *)data;
-
-	if (ad->device) {
-		audioOutputAo_closeDevice(ad);
-	}
 
 	/* support for 24 bit samples in libao is currently dubious,
 	   and until we have sorted that out, resample everything to
@@ -206,9 +198,6 @@ static size_t
 audioOutputAo_play(void *data, const void *chunk, size_t size)
 {
 	AoData *ad = (AoData *)data;
-
-	if (ad->device == NULL)
-		return false;
 
 	if (size > ad->writeSize)
 		size = ad->writeSize;
