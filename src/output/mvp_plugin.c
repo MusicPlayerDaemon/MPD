@@ -89,9 +89,6 @@ static unsigned mvp_sample_rates[][3] = {
 	{15, 96000, 48000}
 };
 
-static const unsigned numfrequencies =
-	sizeof(mvp_sample_rates) / sizeof(mvp_sample_rates[0]);
-
 static bool
 mvp_output_test_default_device(void)
 {
@@ -161,14 +158,14 @@ mvp_set_pcm_params(struct mvp_data *md, unsigned long rate, int channels,
 	/*
 	 * if there is an exact match for the frequency, use it.
 	 */
-	for (iloop = 0; iloop < numfrequencies; iloop++) {
+	for (iloop = 0; iloop < G_N_ELEMENTS(mvp_sample_rates); iloop++) {
 		if (rate == mvp_sample_rates[iloop][1]) {
 			mix[2] = mvp_sample_rates[iloop][0];
 			break;
 		}
 	}
 
-	if (iloop >= numfrequencies) {
+	if (iloop >= G_N_ELEMENTS(mvp_sample_rates)) {
 		g_warning("Can not find suitable output frequency for %ld\n",
 			  rate);
 		return -1;
