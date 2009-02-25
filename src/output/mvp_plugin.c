@@ -118,7 +118,7 @@ mvp_output_finish(void *data)
 	g_free(md);
 }
 
-static int
+static bool
 mvp_set_pcm_params(struct mvp_data *md, struct audio_format *audio_format)
 {
 	unsigned iloop;
@@ -134,7 +134,7 @@ mvp_set_pcm_params(struct mvp_data *md, struct audio_format *audio_format)
 		break;
 
 	default:
-		return -1;
+		return false;
 	}
 
 	/* 0,1=24bit(24) , 2,3=16bit */
@@ -148,7 +148,7 @@ mvp_set_pcm_params(struct mvp_data *md, struct audio_format *audio_format)
 		break;
 
 	default:
-		return -1;
+		return false;
 	}
 
 	mix[3] = 0;	/* stream type? */
@@ -167,25 +167,25 @@ mvp_set_pcm_params(struct mvp_data *md, struct audio_format *audio_format)
 	if (iloop >= G_N_ELEMENTS(mvp_sample_rates)) {
 		g_warning("Can not find suitable output frequency for %u\n",
 			  audio_format->sample_rate);
-		return -1;
+		return false;
 	}
 
 	if (ioctl(md->fd, MVP_SET_AUD_FORMAT, &mix) < 0) {
 		g_warning("Can not set audio format\n");
-		return -1;
+		return false;
 	}
 
 	if (ioctl(md->fd, MVP_SET_AUD_SYNC, 2) != 0) {
 		g_warning("Can not set audio sync\n");
-		return -1;
+		return false;
 	}
 
 	if (ioctl(md->fd, MVP_SET_AUD_PLAY, 0) < 0) {
 		g_warning("Can not set audio play mode\n");
-		return -1;
+		return false;
 	}
 
-	return 0;
+	return true;
 }
 
 static bool
@@ -194,6 +194,7 @@ mvp_output_open(void *data, struct audio_format *audio_format)
 	struct mvp_data *md = data;
 	long long int stc = 0;
 	int mix[5] = { 0, 2, 7, 1, 0 };
+	bool success;
 
 	if ((md->fd = open("/dev/adec_pcm", O_RDWR | O_NONBLOCK)) < 0) {
 		g_warning("Error opening /dev/adec_pcm: %s\n",
@@ -221,7 +222,11 @@ mvp_output_open(void *data, struct audio_format *audio_format)
 			  strerror(errno));
 		return false;
 	}
-	mvp_set_pcm_params(md, audio_format);
+
+	success = mvp_set_pcm_params(md, audio_format);
+	if (!success)
+		return false;
+
 	md->audio_format = *audio_format;
 	return true;
 }
