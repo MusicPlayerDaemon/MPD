@@ -24,24 +24,17 @@
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "ao"
 
-static int driverInitCount;
+static unsigned ao_output_ref;
 
-typedef struct _AoData {
-	size_t writeSize;
-	int driverId;
+struct ao_data {
+	size_t write_size;
+	int driver;
 	ao_option *options;
 	ao_device *device;
 } AoData;
 
-static AoData *newAoData(void)
-{
-	AoData *ret = g_malloc(sizeof(AoData));
-	ret->options = NULL;
-
-	return ret;
-}
-
-static void audioOutputAo_error(const char *msg)
+static void
+ao_output_error(const char *msg)
 {
 	const char *error;
 
@@ -74,28 +67,30 @@ static void audioOutputAo_error(const char *msg)
 }
 
 static void *
-audioOutputAo_initDriver(G_GNUC_UNUSED const struct audio_format *audio_format,
-			 const struct config_param *param)
+ao_output_init(G_GNUC_UNUSED const struct audio_format *audio_format,
+	       const struct config_param *param)
 {
+	struct ao_data *ad = g_new(struct ao_data, 1);
 	ao_info *ai;
-	AoData *ad = newAoData();
 	const char *value;
 
-	ad->writeSize = config_get_block_unsigned(param, "write_size", 1024);
+	ad->options = NULL;
 
-	if (driverInitCount == 0) {
+	ad->write_size = config_get_block_unsigned(param, "write_size", 1024);
+
+	if (ao_output_ref == 0) {
 		ao_initialize();
 	}
-	driverInitCount++;
+	ao_output_ref++;
 
 	value = config_get_block_string(param, "driver", "default");
 	if (0 == strcmp(value, "default")) {
-		ad->driverId = ao_default_driver_id();
-	} else if ((ad->driverId = ao_driver_id(value)) < 0)
+		ad->driver = ao_default_driver_id();
+	} else if ((ad->driver = ao_driver_id(value)) < 0)
 		g_error("\"%s\" is not a valid ao driver at line %i\n",
 			value, param->line);
 
-	if ((ai = ao_driver_info(ad->driverId)) == NULL) {
+	if ((ai = ao_driver_info(ad->driver)) == NULL) {
 		g_error("problems getting driver info for device defined at line %i\n"
 			"you may not have permission to the audio device\n", param->line);
 	}
@@ -126,35 +121,33 @@ audioOutputAo_initDriver(G_GNUC_UNUSED const struct audio_format *audio_format,
 	return ad;
 }
 
-static void freeAoData(AoData * ad)
+static void
+ao_output_finish(void *data)
 {
+	struct ao_data *ad = (struct ao_data *)data;
+
 	ao_free_options(ad->options);
 	g_free(ad);
-}
 
-static void audioOutputAo_finishDriver(void *data)
-{
-	AoData *ad = (AoData *)data;
-	freeAoData(ad);
+	ao_output_ref--;
 
-	driverInitCount--;
-
-	if (driverInitCount == 0)
+	if (ao_output_ref == 0)
 		ao_shutdown();
 }
 
-static void audioOutputAo_closeDevice(void *data)
+static void
+ao_output_close(void *data)
 {
-	AoData *ad = (AoData *)data;
+	struct ao_data *ad = (struct ao_data *)data;
 
 	ao_close(ad->device);
 }
 
 static bool
-audioOutputAo_openDevice(void *data, struct audio_format *audio_format)
+ao_output_open(void *data, struct audio_format *audio_format)
 {
 	ao_sample_format format;
-	AoData *ad = (AoData *)data;
+	struct ao_data *ad = (struct ao_data *)data;
 
 	/* support for 24 bit samples in libao is currently dubious,
 	   and until we have sorted that out, resample everything to
@@ -167,10 +160,10 @@ audioOutputAo_openDevice(void *data, struct audio_format *audio_format)
 	format.byte_format = AO_FMT_NATIVE;
 	format.channels = audio_format->channels;
 
-	ad->device = ao_open_live(ad->driverId, &format, ad->options);
+	ad->device = ao_open_live(ad->driver, &format, ad->options);
 
 	if (ad->device == NULL) {
-		audioOutputAo_error("Failed to open libao");
+		ao_output_error("Failed to open libao");
 		return false;
 	}
 
@@ -195,26 +188,26 @@ static int ao_play_deconst(ao_device *device, const void *output_samples,
 }
 
 static size_t
-audioOutputAo_play(void *data, const void *chunk, size_t size)
+ao_output_play(void *data, const void *chunk, size_t size)
 {
-	AoData *ad = (AoData *)data;
+	struct ao_data *ad = (struct ao_data *)data;
 
-	if (size > ad->writeSize)
-		size = ad->writeSize;
+	if (size > ad->write_size)
+		size = ad->write_size;
 
 	if (ao_play_deconst(ad->device, chunk, size) == 0) {
-		audioOutputAo_error("Closing libao device due to play error");
+		ao_output_error("Closing libao device due to play error");
 		return 0;
 	}
 
 	return size;
 }
 
-const struct audio_output_plugin aoPlugin = {
+const struct audio_output_plugin ao_output_plugin = {
 	.name = "ao",
-	.init = audioOutputAo_initDriver,
-	.finish = audioOutputAo_finishDriver,
-	.open = audioOutputAo_openDevice,
-	.play = audioOutputAo_play,
-	.close = audioOutputAo_closeDevice,
+	.init = ao_output_init,
+	.finish = ao_output_finish,
+	.open = ao_output_open,
+	.close = ao_output_close,
+	.play = ao_output_play,
 };
