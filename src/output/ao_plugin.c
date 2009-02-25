@@ -144,11 +144,6 @@ static void audioOutputAo_finishDriver(void *data)
 		ao_shutdown();
 }
 
-static void audioOutputAo_dropBufferedAudio(G_GNUC_UNUSED void *data)
-{
-	/* not supported by libao */
-}
-
 static void audioOutputAo_closeDevice(void *data)
 {
 	AoData *ad = (AoData *)data;
@@ -232,6 +227,5 @@ const struct audio_output_plugin aoPlugin = {
 	.finish = audioOutputAo_finishDriver,
 	.open = audioOutputAo_openDevice,
 	.play = audioOutputAo_play,
-	.cancel = audioOutputAo_dropBufferedAudio,
 	.close = audioOutputAo_closeDevice,
 };
