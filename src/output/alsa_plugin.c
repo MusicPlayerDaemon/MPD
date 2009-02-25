@@ -192,11 +192,14 @@ get_bitformat(const struct audio_format *af)
 	return SND_PCM_FORMAT_UNKNOWN;
 }
 
+/**
+ * Set up the snd_pcm_t object which was opened by the caller.  Set up
+ * the configured settings and the audio format.
+ */
 static bool
-alsa_open(void *data, struct audio_format *audio_format)
+alsa_setup(struct alsa_data *ad, struct audio_format *audio_format,
+	   snd_pcm_format_t bitformat)
 {
-	struct alsa_data *ad = data;
-	snd_pcm_format_t bitformat;
 	snd_pcm_hw_params_t *hwparams;
 	snd_pcm_sw_params_t *swparams;
 	unsigned int sample_rate = audio_format->sample_rate;
@@ -208,19 +211,6 @@ alsa_open(void *data, struct audio_format *audio_format)
 	int retry = MPD_ALSA_RETRY_NR;
 	unsigned int period_time, period_time_ro;
 	unsigned int buffer_time;
-
-	mixer_open(ad->mixer);
-
-	if ((bitformat = get_bitformat(audio_format)) == SND_PCM_FORMAT_UNKNOWN)
-		g_warning("ALSA device \"%s\" doesn't support %u bit audio\n",
-			  alsa_device(ad), audio_format->bits);
-
-	err = snd_pcm_open(&ad->pcm, alsa_device(ad),
-			   SND_PCM_STREAM_PLAYBACK, ad->mode);
-	if (err < 0) {
-		ad->pcm = NULL;
-		goto error;
-	}
 
 	period_time_ro = period_time = ad->period_time;
 configure_hw:
@@ -268,7 +258,7 @@ configure_hw:
 	if (err < 0) {
 		g_warning("ALSA device \"%s\" does not support %u bit audio: %s\n",
 			  alsa_device(ad), audio_format->bits, snd_strerror(-err));
-		goto fail;
+		return false;
 	}
 
 	err = snd_pcm_hw_params_set_channels_near(ad->pcm, hwparams,
@@ -277,7 +267,7 @@ configure_hw:
 		g_warning("ALSA device \"%s\" does not support %i channels: %s\n",
 			  alsa_device(ad), (int)audio_format->channels,
 		      snd_strerror(-err));
-		goto fail;
+		return false;
 	}
 	audio_format->channels = (int8_t)channels;
 
@@ -286,7 +276,7 @@ configure_hw:
 	if (err < 0 || sample_rate == 0) {
 		g_warning("ALSA device \"%s\" does not support %u Hz audio\n",
 			  alsa_device(ad), audio_format->sample_rate);
-		goto fail;
+		return false;
 	}
 	audio_format->sample_rate = sample_rate;
 
@@ -355,26 +345,53 @@ configure_hw:
 	if (err < 0)
 		goto error;
 
-	ad->frame_size = audio_format_frame_size(audio_format);
-
-	g_debug("ALSA device \"%s\" will be playing %i bit, %u channel audio at %u Hz\n",
-		alsa_device(ad), audio_format->bits, channels, sample_rate);
-
 	return true;
 
 error:
-	if (cmd) {
-		g_warning("Error opening ALSA device \"%s\" (%s): %s\n",
-			  alsa_device(ad), cmd, snd_strerror(-err));
-	} else {
+	g_warning("Error opening ALSA device \"%s\" (%s): %s\n",
+		  alsa_device(ad), cmd, snd_strerror(-err));
+
+	return false;
+}
+
+static bool
+alsa_open(void *data, struct audio_format *audio_format)
+{
+	struct alsa_data *ad = data;
+	snd_pcm_format_t bitformat;
+	int err;
+	bool success;
+
+	mixer_open(ad->mixer);
+
+	if ((bitformat = get_bitformat(audio_format)) == SND_PCM_FORMAT_UNKNOWN)
+		g_warning("ALSA device \"%s\" doesn't support %u bit audio\n",
+			  alsa_device(ad), audio_format->bits);
+
+	err = snd_pcm_open(&ad->pcm, alsa_device(ad),
+			   SND_PCM_STREAM_PLAYBACK, ad->mode);
+	if (err < 0) {
+		ad->pcm = NULL;
+
 		g_warning("Error opening ALSA device \"%s\": %s\n",
 			  alsa_device(ad), snd_strerror(-err));
+		return false;
 	}
-fail:
-	if (ad->pcm)
+
+	success = alsa_setup(ad, audio_format, bitformat);
+	if (!success) {
 		snd_pcm_close(ad->pcm);
-	ad->pcm = NULL;
-	return false;
+		ad->pcm = NULL;
+		return false;
+	}
+
+	ad->frame_size = audio_format_frame_size(audio_format);
+
+	g_debug("ALSA device \"%s\" will be playing %i bit, %u channel audio at %u Hz\n",
+		alsa_device(ad), audio_format->bits, audio_format->channels,
+		audio_format->sample_rate);
+
+	return true;
 }
 
 static int
