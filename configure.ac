@@ -24,6 +24,8 @@ dnl
 dnl declare variables
 dnl
 
+AC_SUBST(AM_CFLAGS,"")
+
 AC_SUBST(MPD_LIBS)
 AC_SUBST(MPD_CFLAGS)
 MPD_LIBS=""
@@ -1105,7 +1107,7 @@ AC_ARG_ENABLE(werror,
 	ENABLE_WERROR=no)
 
 if test "x$ENABLE_WERROR" = xyes; then
-	MPD_CFLAGS="$MPD_CFLAGS -Werror -pedantic-errors"
+	AM_CFLAGS="$AM_CFLAGS -Werror -pedantic-errors"
 fi
 
 AC_ARG_ENABLE(debug,
@@ -1116,7 +1118,7 @@ AC_ARG_ENABLE(debug,
 
 #if test "x$ENABLE_DEBUG" = xno; then
 	# don't set NDEBUG for now, until MPD is stable
-	#MPD_CFLAGS="$MPD_CFLAGS -DNDEBUG"
+	#AM_CFLAGS="$AM_CFLAGS -DNDEBUG"
 #fi
 
 AC_ARG_ENABLE(gprof,

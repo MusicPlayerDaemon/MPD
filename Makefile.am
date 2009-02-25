@@ -6,7 +6,7 @@ AM_LDFLAGS = $(GLIB_LIBS)
 
 bin_PROGRAMS = src/mpd
 
-src_mpd_CFLAGS = $(MPD_CFLAGS)
+src_mpd_CFLAGS = $(AM_CFLAGS) $(MPD_CFLAGS)
 src_mpd_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(SQLITE_CFLAGS) \
 	$(ID3TAG_CFLAGS) \

@@ -12,7 +12,7 @@ AC_DEFUN([MPD_CHECK_FLAG],[
   ])
   if eval "test x`echo '$mpd_check_cflag_'$var` = xyes"
   then
-    MPD_CFLAGS="$MPD_CFLAGS $1"
+    AM_CFLAGS="$AM_CFLAGS $1"
   fi
   ])
 ])
