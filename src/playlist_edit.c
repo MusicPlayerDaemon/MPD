@@ -25,7 +25,7 @@
 #include "playlist_internal.h"
 #include "player_control.h"
 #include "database.h"
-#include "ls.h"
+#include "uri.h"
 #include "song.h"
 #include "idle.h"
 

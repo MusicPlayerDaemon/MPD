@@ -1,6 +1,6 @@
-/* the Music Player Daemon (MPD)
- * Copyright (C) 2003-2007 by Warren Dukes (warren.dukes@gmail.com)
- * This project's homepage is: http://www.musicpd.org
+/*
+ * Copyright (C) 2003-2009 The Music Player Daemon Project
+ * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,24 +16,18 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef MPD_LS_H
-#define MPD_LS_H
+#ifndef MPD_URI_H
+#define MPD_URI_H
 
 #include <stdbool.h>
 
-struct client;
-
 /**
- * Checks whether the scheme of the specified URI is supported by MPD.
- * It is not allowed to pass an URI without a scheme, check with
- * uri_has_scheme() first.
+ * Checks whether the specified URI has a schema in the form
+ * "scheme://".
  */
-bool uri_supported_scheme(const char *url);
+bool uri_has_scheme(const char *uri);
 
-/**
- * Send a list of supported URI schemes to the client.  This is the
- * response to the "urlhandlers" command.
- */
-void print_supported_uri_schemes(struct client *client);
+const char *
+uri_get_suffix(const char *uri);
 
 #endif

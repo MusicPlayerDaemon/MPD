@@ -19,7 +19,7 @@
 #include "queue_save.h"
 #include "queue.h"
 #include "song.h"
-#include "ls.h"
+#include "uri.h"
 #include "database.h"
 
 #include <stdlib.h>

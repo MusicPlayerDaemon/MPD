@@ -30,7 +30,7 @@
 #include "mapper.h"
 #include "path.h"
 #include "log.h"
-#include "ls.h"
+#include "uri.h"
 
 #include <glib.h>
 

@@ -20,7 +20,7 @@
 
 #include "_ogg_common.h"
 #include "config.h"
-#include "ls.h"
+#include "uri.h"
 
 #ifndef HAVE_TREMOR
 #include <vorbis/vorbisfile.h>

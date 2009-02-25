@@ -17,6 +17,7 @@
  */
 
 #include "ls.h"
+#include "uri.h"
 #include "client.h"
 #include "config.h"
 
@@ -46,11 +47,6 @@ void print_supported_uri_schemes(struct client *client)
 	}
 }
 
-bool uri_has_scheme(const char *uri)
-{
-	return strstr(uri, "://") != NULL;
-}
-
 bool uri_supported_scheme(const char *uri)
 {
 	const char **urlPrefixes = remoteUrlPrefixes;
@@ -64,12 +60,4 @@ bool uri_supported_scheme(const char *uri)
 	}
 
 	return false;
-}
-
-/* suffixes should be ascii only characters */
-const char *uri_get_suffix(const char *utf8file)
-{
-	const char *dot = strrchr(g_basename(utf8file), '.');
-
-	return dot != NULL ? dot + 1 : NULL;
 }

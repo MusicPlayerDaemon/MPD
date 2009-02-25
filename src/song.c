@@ -17,7 +17,7 @@
  */
 
 #include "song.h"
-#include "ls.h"
+#include "uri.h"
 #include "directory.h"
 #include "mapper.h"
 #include "decoder_list.h"

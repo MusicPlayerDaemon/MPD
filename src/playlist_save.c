@@ -21,7 +21,7 @@
 #include "song.h"
 #include "mapper.h"
 #include "path.h"
-#include "ls.h"
+#include "uri.h"
 #include "database.h"
 #include "idle.h"
 

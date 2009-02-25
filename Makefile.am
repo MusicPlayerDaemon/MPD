@@ -143,6 +143,7 @@ mpd_headers = \
 	src/tag_print.h \
 	src/tag_save.h \
 	src/strset.h \
+	src/uri.h \
 	src/utils.h \
 	src/volume.h \
 	src/zeroconf.h src/zeroconf-internal.h \
@@ -236,6 +237,7 @@ src_mpd_SOURCES = \
 	src/tag_print.c \
 	src/tag_save.c \
 	src/strset.c \
+	src/uri.c \
 	src/utils.c \
 	src/volume.c \
 	src/locate.c \

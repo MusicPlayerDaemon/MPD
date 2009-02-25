@@ -21,7 +21,7 @@
 #include "database.h"
 #include "directory.h"
 #include "song.h"
-#include "ls.h"
+#include "uri.h"
 #include "mapper.h"
 #include "path.h"
 #include "decoder_list.h"

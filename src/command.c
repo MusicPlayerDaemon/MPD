@@ -23,6 +23,7 @@
 #include "playlist_save.h"
 #include "queue_print.h"
 #include "ls.h"
+#include "uri.h"
 #include "directory.h"
 #include "directory_print.h"
 #include "database.h"
