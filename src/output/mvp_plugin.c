@@ -272,8 +272,13 @@ mvp_output_play(void *data, const void *chunk, size_t size)
 	ssize_t ret;
 
 	/* reopen the device since it was closed by dropBufferedAudio */
-	if (md->fd < 0)
-		mvp_output_open(md, &md->audio_format);
+	if (md->fd < 0) {
+		bool success;
+
+		success = mvp_output_open(md, &md->audio_format);
+		if (!success)
+			return 0;
+	}
 
 	while (true) {
 		ret = write(md->fd, chunk, size);
