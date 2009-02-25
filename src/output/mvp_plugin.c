@@ -134,7 +134,11 @@ mvp_set_pcm_params(struct mvp_data *md, struct audio_format *audio_format)
 		break;
 
 	default:
-		return false;
+		g_debug("unsupported channel count %u - falling back to stereo",
+			audio_format->channels);
+		audio_format->channels = 2;
+		mix[0] = 0;
+		break;
 	}
 
 	/* 0,1=24bit(24) , 2,3=16bit */

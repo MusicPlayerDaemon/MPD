@@ -17,6 +17,7 @@ ver 0.15 - (200?/??/??)
 * audio outputs:
   - shout: enlarged buffer size to 32 kB
   - null: allow disabling synchronization
+  - mvp: fall back to stereo
 * commands:
   - "playlistinfo" supports a range now
   - added "sticker database", command "sticker", which allows clients
