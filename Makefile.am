@@ -502,7 +502,24 @@ sparse-check:
 
 if ENABLE_TEST
 
-noinst_PROGRAMS = test/software_volume
+noinst_PROGRAMS = \
+	test/run_decoder \
+	test/software_volume
+
+test_run_decoder_CPPFLAGS = $(AM_CPPFLAGS) \
+	$(ID3TAG_CFLAGS) \
+	$(INPUT_CFLAGS) $(DECODER_CFLAGS)
+test_run_decoder_LDADD = $(MPD_LIBS) \
+	$(ID3TAG_LIBS) \
+	$(INPUT_LIBS) $(DECODER_LIBS)
+test_run_decoder_SOURCES = test/run_decoder.c \
+	src/conf.c src/buffer2array.c src/utils.c src/log.c \
+	src/tag.c src/tag_pool.c src/tag_id3.c \
+	src/replay_gain.c \
+	src/uri.c \
+	$(ARCHIVE_SRC) \
+	$(INPUT_SRC) \
+	$(DECODER_SRC)
 
 test_software_volume_SOURCES = test/software_volume.c \
 	src/audio_parser.c \

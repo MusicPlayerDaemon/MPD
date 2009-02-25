@@ -40,3 +40,4 @@ doc/protocol.html
 doc/protocol
 doc/api
 test/software_volume
+test/run_decoder
