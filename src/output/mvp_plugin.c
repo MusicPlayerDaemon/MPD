@@ -68,7 +68,7 @@ struct mvp_data {
 	int fd;
 };
 
-static unsigned mvp_sample_rates[][3] = {
+static const unsigned mvp_sample_rates[][3] = {
 	{9, 8000, 32000},
 	{10, 11025, 44100},
 	{11, 12000, 48000},
