@@ -1,16 +1,15 @@
 ACLOCAL_AMFLAGS = -I m4
 AUTOMAKE_OPTIONS = foreign 1.9 dist-bzip2
 
-AM_CFLAGS = -I$(srcdir)/src $(GLIB_CFLAGS)
+AM_CPPFLAGS = -I$(srcdir)/src $(GLIB_CFLAGS)
 AM_LDFLAGS = $(GLIB_LIBS)
 
 bin_PROGRAMS = src/mpd
 
 src_mpd_CFLAGS = $(MPD_CFLAGS)
-src_mpd_CPPFLAGS = -I$(srcdir)/src \
+src_mpd_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(SQLITE_CFLAGS) \
 	$(ID3TAG_CFLAGS) \
-	$(GLIB_CFLAGS) \
 	$(INPUT_CFLAGS) \
 	$(DECODER_CFLAGS) \
 	$(ENCODER_CFLAGS) \
@@ -18,7 +17,6 @@ src_mpd_CPPFLAGS = -I$(srcdir)/src \
 src_mpd_LDADD = $(MPD_LIBS) \
 	$(SQLITE_LIBS) \
 	$(ID3TAG_LIBS) \
-	$(GLIB_LIBS) \
 	$(INPUT_LIBS) \
 	$(DECODER_LIBS) \
 	$(ENCODER_LIBS) \
