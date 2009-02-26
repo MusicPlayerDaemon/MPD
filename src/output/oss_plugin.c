@@ -469,23 +469,20 @@ oss_close(struct oss_data *od)
 	od->fd = -1;
 }
 
+/**
+ * Sets up the OSS device which was opened before.
+ */
 static bool
-oss_open(struct oss_data *od)
+oss_setup(struct oss_data *od)
 {
 	int tmp;
-
-	if ((od->fd = open(od->device, O_WRONLY)) < 0) {
-		g_warning("Error opening OSS device \"%s\": %s\n", od->device,
-			  strerror(errno));
-		goto fail;
-	}
 
 	tmp = od->audio_format.channels;
 	if (oss_set_param(od, SNDCTL_DSP_CHANNELS, &tmp)) {
 		g_warning("OSS device \"%s\" does not support %u channels: %s\n",
 			  od->device, od->audio_format.channels,
 			  strerror(errno));
-		goto fail;
+		return false;
 	}
 	od->audio_format.channels = tmp;
 
@@ -494,7 +491,7 @@ oss_open(struct oss_data *od)
 		g_warning("OSS device \"%s\" does not support %u Hz audio: %s\n",
 			  od->device, od->audio_format.sample_rate,
 			  strerror(errno));
-		goto fail;
+		return false;
 	}
 	od->audio_format.sample_rate = tmp;
 
@@ -516,14 +513,30 @@ oss_open(struct oss_data *od)
 	if (oss_set_param(od, SNDCTL_DSP_SAMPLESIZE, &tmp)) {
 		g_warning("OSS device \"%s\" does not support %u bit audio: %s\n",
 			  od->device, tmp, strerror(errno));
-		goto fail;
+		return false;
 	}
 
 	return true;
+}
 
-fail:
-	oss_close(od);
-	return false;
+static bool
+oss_open(struct oss_data *od)
+{
+	bool success;
+
+	if ((od->fd = open(od->device, O_WRONLY)) < 0) {
+		g_warning("Error opening OSS device \"%s\": %s\n", od->device,
+			  strerror(errno));
+		return false;
+	}
+
+	success = oss_setup(od);
+	if (!success) {
+		oss_close(od);
+		return false;
+	}
+
+	return true;
 }
 
 static bool
