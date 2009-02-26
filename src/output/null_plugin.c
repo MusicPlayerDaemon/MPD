@@ -31,7 +31,8 @@ struct null_data {
 
 static void *
 null_init(G_GNUC_UNUSED const struct audio_format *audio_format,
-	  G_GNUC_UNUSED const struct config_param *param)
+	  G_GNUC_UNUSED const struct config_param *param,
+	  G_GNUC_UNUSED GError **error)
 {
 	struct null_data *nd = g_new(struct null_data, 1);
 
@@ -52,7 +53,8 @@ null_finish(void *data)
 }
 
 static bool
-null_open(void *data, struct audio_format *audio_format)
+null_open(void *data, struct audio_format *audio_format,
+	  G_GNUC_UNUSED GError **error)
 {
 	struct null_data *nd = data;
 
@@ -74,7 +76,8 @@ null_close(void *data)
 }
 
 static size_t
-null_play(void *data, G_GNUC_UNUSED const void *chunk, size_t size)
+null_play(void *data, G_GNUC_UNUSED const void *chunk, size_t size,
+	  G_GNUC_UNUSED GError **error)
 {
 	struct null_data *nd = data;
 	Timer *timer = nd->timer;

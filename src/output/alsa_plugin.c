@@ -74,6 +74,15 @@ struct alsa_data {
 	struct mixer *mixer;
 };
 
+/**
+ * The quark used for GError.domain.
+ */
+static inline GQuark
+alsa_output_quark(void)
+{
+	return g_quark_from_static_string("alsa_output");
+}
+
 static const char *
 alsa_device(const struct alsa_data *ad)
 {
@@ -130,7 +139,8 @@ alsa_configure(struct alsa_data *ad, const struct config_param *param)
 
 static void *
 alsa_init(G_GNUC_UNUSED const struct audio_format *audio_format,
-	  const struct config_param *param)
+	  const struct config_param *param,
+	  G_GNUC_UNUSED GError **error)
 {
 	/* no need for pthread_once thread-safety when reading config */
 	static int free_global_registered;
@@ -198,7 +208,8 @@ get_bitformat(const struct audio_format *af)
  */
 static bool
 alsa_setup(struct alsa_data *ad, struct audio_format *audio_format,
-	   snd_pcm_format_t bitformat)
+	   snd_pcm_format_t bitformat,
+	   GError **error)
 {
 	snd_pcm_hw_params_t *hwparams;
 	snd_pcm_sw_params_t *swparams;
@@ -256,17 +267,20 @@ configure_hw:
 	}
 
 	if (err < 0) {
-		g_warning("ALSA device \"%s\" does not support %u bit audio: %s\n",
-			  alsa_device(ad), audio_format->bits, snd_strerror(-err));
+		g_set_error(error, alsa_output_quark(), err,
+			    "ALSA device \"%s\" does not support %u bit audio: %s",
+			    alsa_device(ad), audio_format->bits,
+			    snd_strerror(-err));
 		return false;
 	}
 
 	err = snd_pcm_hw_params_set_channels_near(ad->pcm, hwparams,
 						  &channels);
 	if (err < 0) {
-		g_warning("ALSA device \"%s\" does not support %i channels: %s\n",
-			  alsa_device(ad), (int)audio_format->channels,
-		      snd_strerror(-err));
+		g_set_error(error, alsa_output_quark(), err,
+			    "ALSA device \"%s\" does not support %i channels: %s",
+			    alsa_device(ad), (int)audio_format->channels,
+			    snd_strerror(-err));
 		return false;
 	}
 	audio_format->channels = (int8_t)channels;
@@ -274,8 +288,9 @@ configure_hw:
 	err = snd_pcm_hw_params_set_rate_near(ad->pcm, hwparams,
 					      &sample_rate, NULL);
 	if (err < 0 || sample_rate == 0) {
-		g_warning("ALSA device \"%s\" does not support %u Hz audio\n",
-			  alsa_device(ad), audio_format->sample_rate);
+		g_set_error(error, alsa_output_quark(), err,
+			    "ALSA device \"%s\" does not support %u Hz audio",
+			    alsa_device(ad), audio_format->sample_rate);
 		return false;
 	}
 	audio_format->sample_rate = sample_rate;
@@ -348,14 +363,14 @@ configure_hw:
 	return true;
 
 error:
-	g_warning("Error opening ALSA device \"%s\" (%s): %s\n",
-		  alsa_device(ad), cmd, snd_strerror(-err));
-
+	g_set_error(error, alsa_output_quark(), err,
+		    "Error opening ALSA device \"%s\" (%s): %s",
+		    alsa_device(ad), cmd, snd_strerror(-err));
 	return false;
 }
 
 static bool
-alsa_open(void *data, struct audio_format *audio_format)
+alsa_open(void *data, struct audio_format *audio_format, GError **error)
 {
 	struct alsa_data *ad = data;
 	snd_pcm_format_t bitformat;
@@ -378,12 +393,13 @@ alsa_open(void *data, struct audio_format *audio_format)
 	if (err < 0) {
 		ad->pcm = NULL;
 
-		g_warning("Error opening ALSA device \"%s\": %s\n",
-			  alsa_device(ad), snd_strerror(-err));
+		g_set_error(error, alsa_output_quark(), err,
+			    "Failed to open ALSA device \"%s\": %s",
+			    alsa_device(ad), snd_strerror(err));
 		return false;
 	}
 
-	success = alsa_setup(ad, audio_format, bitformat);
+	success = alsa_setup(ad, audio_format, bitformat, error);
 	if (!success) {
 		snd_pcm_close(ad->pcm);
 		ad->pcm = NULL;
@@ -463,7 +479,7 @@ alsa_close(void *data)
 }
 
 static size_t
-alsa_play(void *data, const void *chunk, size_t size)
+alsa_play(void *data, const void *chunk, size_t size, GError **error)
 {
 	struct alsa_data *ad = data;
 	int ret;
@@ -477,9 +493,8 @@ alsa_play(void *data, const void *chunk, size_t size)
 
 		if (ret < 0 && ret != -EAGAIN && ret != -EINTR &&
 		    alsa_recover(ad, ret) < 0) {
-			g_warning("closing ALSA device \"%s\" due to write "
-				  "error: %s\n",
-				  alsa_device(ad), snd_strerror(-errno));
+			g_set_error(error, alsa_output_quark(), errno,
+				    "%s", snd_strerror(-errno));
 			return 0;
 		}
 	}

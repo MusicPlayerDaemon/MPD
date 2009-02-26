@@ -58,6 +58,15 @@ struct jack_data {
 	bool shutdown;
 };
 
+/**
+ * The quark used for GError.domain.
+ */
+static inline GQuark
+jack_output_quark(void)
+{
+	return g_quark_from_static_string("jack_output");
+}
+
 static void
 mpd_jack_client_free(struct jack_data *jd)
 {
@@ -158,7 +167,7 @@ mpd_jack_info(const char *msg)
 
 static void *
 mpd_jack_init(G_GNUC_UNUSED const struct audio_format *audio_format,
-	      const struct config_param *param)
+	      const struct config_param *param, GError **error)
 {
 	struct jack_data *jd;
 	const char *value;
@@ -172,9 +181,12 @@ mpd_jack_init(G_GNUC_UNUSED const struct audio_format *audio_format,
 	if (value != NULL) {
 		char **ports = g_strsplit(value, ",", 0);
 
-		if (ports[0] == NULL || ports[1] == NULL || ports[2] != NULL)
-			g_error("two port names expected in line %d",
-				param->line);
+		if (ports[0] == NULL || ports[1] == NULL || ports[2] != NULL) {
+			g_set_error(error, jack_output_quark(), 0,
+				    "two port names expected in line %d",
+				    param->line);
+			return NULL;
+		}
 
 		jd->output_ports[0] = ports[0];
 		jd->output_ports[1] = ports[1];
@@ -204,7 +216,7 @@ mpd_jack_test_default_device(void)
 }
 
 static bool
-mpd_jack_connect(struct jack_data *jd)
+mpd_jack_connect(struct jack_data *jd, GError **error)
 {
 	const char *output_ports[2], **jports;
 
@@ -215,7 +227,8 @@ mpd_jack_connect(struct jack_data *jd)
 	jd->shutdown = false;
 
 	if ((jd->client = jack_client_new(jd->name)) == NULL) {
-		g_warning("jack server not running?");
+		g_set_error(error, jack_output_quark(), 0,
+			    "Failed to connect to JACK server");
 		return false;
 	}
 
@@ -227,14 +240,16 @@ mpd_jack_connect(struct jack_data *jd)
 						  JACK_DEFAULT_AUDIO_TYPE,
 						  JackPortIsOutput, 0);
 		if (jd->ports[i] == NULL) {
-			g_warning("Cannot register %s output port.",
-				  port_names[i]);
+			g_set_error(error, jack_output_quark(), 0,
+				    "Cannot register output port \"%s\"",
+				    port_names[i]);
 			return false;
 		}
 	}
 
 	if ( jack_activate(jd->client) ) {
-		g_warning("cannot activate client");
+		g_set_error(error, jack_output_quark(), 0,
+			    "cannot activate client");
 		return false;
 	}
 
@@ -244,7 +259,8 @@ mpd_jack_connect(struct jack_data *jd)
 		jports = jack_get_ports(jd->client, NULL, NULL,
 					JackPortIsPhysical | JackPortIsInput);
 		if (jports == NULL) {
-			g_warning("no ports found");
+			g_set_error(error, jack_output_quark(), 0,
+				    "no ports found");
 			return false;
 		}
 
@@ -267,8 +283,9 @@ mpd_jack_connect(struct jack_data *jd)
 		ret = jack_connect(jd->client, jack_port_name(jd->ports[i]),
 				   output_ports[i]);
 		if (ret != 0) {
-			g_warning("%s is not a valid Jack Client / Port",
-				  output_ports[i]);
+			g_set_error(error, jack_output_quark(), 0,
+				    "Not a valid JACK port: %s",
+				    output_ports[i]);
 
 			if (jports != NULL)
 				free(jports);
@@ -284,13 +301,13 @@ mpd_jack_connect(struct jack_data *jd)
 }
 
 static bool
-mpd_jack_open(void *data, struct audio_format *audio_format)
+mpd_jack_open(void *data, struct audio_format *audio_format, GError **error)
 {
 	struct jack_data *jd = data;
 
 	assert(jd != NULL);
 
-	if (!mpd_jack_connect(jd)) {
+	if (!mpd_jack_connect(jd, error)) {
 		mpd_jack_client_free(jd);
 		return false;
 	}
@@ -381,21 +398,23 @@ mpd_jack_write_samples(struct jack_data *jd, const void *src,
 }
 
 static size_t
-mpd_jack_play(void *data, const void *chunk, size_t size)
+mpd_jack_play(void *data, const void *chunk, size_t size, GError **error)
 {
 	struct jack_data *jd = data;
 	const size_t frame_size = audio_format_frame_size(&jd->audio_format);
 	size_t space = 0, space1;
 
-	if (jd->shutdown) {
-		g_warning("Refusing to play, because there is no client thread.");
-		return 0;
-	}
-
 	assert(size % frame_size == 0);
 	size /= frame_size;
 
-	while (!jd->shutdown) {
+	while (true) {
+		if (jd->shutdown) {
+			g_set_error(error, jack_output_quark(), 0,
+				    "Refusing to play, because "
+				    "there is no client thread");
+			return 0;
+		}
+
 		space = jack_ringbuffer_write_space(jd->ringbuffer[0]);
 		space1 = jack_ringbuffer_write_space(jd->ringbuffer[1]);
 		if (space > space1)

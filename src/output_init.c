@@ -48,6 +48,7 @@ audio_output_init(struct audio_output *ao, const struct config_param *param)
 	char *format = NULL;
 	struct block_param *bp = NULL;
 	const struct audio_output_plugin *plugin = NULL;
+	GError *error = NULL;
 
 	if (param) {
 		const char *type = NULL;
@@ -97,7 +98,6 @@ audio_output_init(struct audio_output *ao, const struct config_param *param)
 	pcm_convert_init(&ao->convert_state);
 
 	if (format) {
-		GError *error = NULL;
 		bool ret;
 
 		ret = audio_format_parse(&ao->config_audio_format, format,
@@ -114,9 +114,14 @@ audio_output_init(struct audio_output *ao, const struct config_param *param)
 
 	ao->data = ao_plugin_init(plugin,
 				  format ? &ao->config_audio_format : NULL,
-				  param);
-	if (ao->data == NULL)
+				  param, &error);
+	if (ao->data == NULL) {
+		g_warning("Failed to initialize \"%s\" [%s]: %s",
+			  ao->name, ao->plugin->name,
+			  error->message);
+		g_error_free(error);
 		return false;
+	}
 
 	return true;
 }

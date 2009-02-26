@@ -72,6 +72,15 @@ enum oss_param {
 	OSS_BITS = 2,
 };
 
+/**
+ * The quark used for GError.domain.
+ */
+static inline GQuark
+oss_output_quark(void)
+{
+	return g_quark_from_static_string("oss_output");
+}
+
 static enum oss_param
 oss_param_from_ioctl(unsigned param)
 {
@@ -353,7 +362,7 @@ oss_output_test_default_device(void)
 }
 
 static void *
-oss_open_default(const struct config_param *param)
+oss_open_default(GError **error)
 {
 	int i;
 	int err[G_N_ELEMENTS(default_devices)];
@@ -364,16 +373,10 @@ oss_open_default(const struct config_param *param)
 		if (ret[i] == OSS_STAT_NO_ERROR) {
 			struct oss_data *od = oss_data_new();
 			od->device = default_devices[i];
-			od->mixer = mixer_new(&oss_mixer, param);
+			od->mixer = mixer_new(&oss_mixer, NULL);
 			return od;
 		}
 	}
-
-	if (param)
-		g_warning("error trying to open specified OSS device"
-			  " at line %i\n", param->line);
-	else
-		g_warning("error trying to open default OSS device\n");
 
 	for (i = G_N_ELEMENTS(default_devices); --i >= 0; ) {
 		const char *dev = default_devices[i];
@@ -395,13 +398,16 @@ oss_open_default(const struct config_param *param)
 				  dev, strerror(err[i]));
 		}
 	}
-	exit(EXIT_FAILURE);
-	return NULL; /* some compilers can be dumb... */
+
+	g_set_error(error, oss_output_quark(), 0,
+		    "error trying to open default OSS device");
+	return NULL;
 }
 
 static void *
 oss_output_init(G_GNUC_UNUSED const struct audio_format *audio_format,
-		const struct config_param *param)
+		const struct config_param *param,
+		GError **error)
 {
 	const char *device = config_get_block_string(param, "device", NULL);
 	if (device != NULL) {
@@ -411,7 +417,7 @@ oss_output_init(G_GNUC_UNUSED const struct audio_format *audio_format,
 		return od;
 	}
 
-	return oss_open_default(param);
+	return oss_open_default(error);
 }
 
 static void
@@ -473,24 +479,26 @@ oss_close(struct oss_data *od)
  * Sets up the OSS device which was opened before.
  */
 static bool
-oss_setup(struct oss_data *od)
+oss_setup(struct oss_data *od, GError **error)
 {
 	int tmp;
 
 	tmp = od->audio_format.channels;
 	if (oss_set_param(od, SNDCTL_DSP_CHANNELS, &tmp)) {
-		g_warning("OSS device \"%s\" does not support %u channels: %s\n",
-			  od->device, od->audio_format.channels,
-			  strerror(errno));
+		g_set_error(error, oss_output_quark(), errno,
+			    "OSS device \"%s\" does not support %u channels: %s",
+			    od->device, od->audio_format.channels,
+			    strerror(errno));
 		return false;
 	}
 	od->audio_format.channels = tmp;
 
 	tmp = od->audio_format.sample_rate;
 	if (oss_set_param(od, SNDCTL_DSP_SPEED, &tmp)) {
-		g_warning("OSS device \"%s\" does not support %u Hz audio: %s\n",
-			  od->device, od->audio_format.sample_rate,
-			  strerror(errno));
+		g_set_error(error, oss_output_quark(), errno,
+			    "OSS device \"%s\" does not support %u Hz audio: %s",
+			    od->device, od->audio_format.sample_rate,
+			    strerror(errno));
 		return false;
 	}
 	od->audio_format.sample_rate = tmp;
@@ -511,8 +519,9 @@ oss_setup(struct oss_data *od)
 	}
 
 	if (oss_set_param(od, SNDCTL_DSP_SAMPLESIZE, &tmp)) {
-		g_warning("OSS device \"%s\" does not support %u bit audio: %s\n",
-			  od->device, tmp, strerror(errno));
+		g_set_error(error, oss_output_quark(), errno,
+			    "OSS device \"%s\" does not support %u bit audio: %s",
+			    od->device, tmp, strerror(errno));
 		return false;
 	}
 
@@ -520,17 +529,18 @@ oss_setup(struct oss_data *od)
 }
 
 static bool
-oss_open(struct oss_data *od)
+oss_open(struct oss_data *od, GError **error)
 {
 	bool success;
 
 	if ((od->fd = open(od->device, O_WRONLY)) < 0) {
-		g_warning("Error opening OSS device \"%s\": %s\n", od->device,
-			  strerror(errno));
+		g_set_error(error, oss_output_quark(), errno,
+			    "Error opening OSS device \"%s\": %s",
+			    od->device, strerror(errno));
 		return false;
 	}
 
-	success = oss_setup(od);
+	success = oss_setup(od, error);
 	if (!success) {
 		oss_close(od);
 		return false;
@@ -540,14 +550,14 @@ oss_open(struct oss_data *od)
 }
 
 static bool
-oss_output_open(void *data, struct audio_format *audio_format)
+oss_output_open(void *data, struct audio_format *audio_format, GError **error)
 {
 	bool ret;
 	struct oss_data *od = data;
 
 	od->audio_format = *audio_format;
 
-	ret = oss_open(od);
+	ret = oss_open(od, error);
 	if (!ret)
 		return false;
 
@@ -584,14 +594,14 @@ oss_output_cancel(void *data)
 }
 
 static size_t
-oss_output_play(void *data, const void *chunk, size_t size)
+oss_output_play(void *data, const void *chunk, size_t size, GError **error)
 {
 	struct oss_data *od = data;
 	ssize_t ret;
 
 	/* reopen the device since it was closed by dropBufferedAudio */
-	if (od->fd < 0 && !oss_open(od))
-		return false;
+	if (od->fd < 0 && !oss_open(od, error))
+		return 0;
 
 	while (true) {
 		ret = write(od->fd, chunk, size);
@@ -599,8 +609,9 @@ oss_output_play(void *data, const void *chunk, size_t size)
 			return (size_t)ret;
 
 		if (ret < 0 && errno != EINTR) {
-			g_warning("closing oss device \"%s\" due to write error: "
-				  "%s\n", od->device, strerror(errno));
+			g_set_error(error, oss_output_quark(), errno,
+				    "Write error on %s: %s",
+				    od->device, strerror(errno));
 			return 0;
 		}
 	}

@@ -32,6 +32,15 @@ struct pulse_data {
 	char *sink;
 };
 
+/**
+ * The quark used for GError.domain.
+ */
+static inline GQuark
+pulse_output_quark(void)
+{
+	return g_quark_from_static_string("pulse_output");
+}
+
 static struct pulse_data *pulse_new_data(void)
 {
 	struct pulse_data *ret;
@@ -53,7 +62,7 @@ static void pulse_free_data(struct pulse_data *pd)
 
 static void *
 pulse_init(G_GNUC_UNUSED const struct audio_format *audio_format,
-	   const struct config_param *param)
+	   const struct config_param *param, G_GNUC_UNUSED GError **error)
 {
 	struct pulse_data *pd;
 
@@ -98,7 +107,7 @@ static bool pulse_test_default_device(void)
 }
 
 static bool
-pulse_open(void *data, struct audio_format *audio_format)
+pulse_open(void *data, struct audio_format *audio_format, GError **error_r)
 {
 	struct pulse_data *pd = data;
 	pa_sample_spec ss;
@@ -117,9 +126,9 @@ pulse_open(void *data, struct audio_format *audio_format)
 			      &ss, NULL, NULL,
 			      &error);
 	if (!pd->s) {
-		g_warning("Cannot connect to server in PulseAudio output "
-			  "\"%s\": %s\n",
-			  pd->name, pa_strerror(error));
+		g_set_error(error_r, pulse_output_quark(), error,
+			    "Cannot connect to PulseAudio server: %s",
+			    pa_strerror(error));
 		return false;
 	}
 
@@ -151,15 +160,14 @@ static void pulse_close(void *data)
 }
 
 static size_t
-pulse_play(void *data, const void *chunk, size_t size)
+pulse_play(void *data, const void *chunk, size_t size, GError **error_r)
 {
 	struct pulse_data *pd = data;
 	int error;
 
 	if (pa_simple_write(pd->s, chunk, size, &error) < 0) {
-		g_warning("PulseAudio output \"%s\" disconnecting due to "
-			  "write error: %s\n",
-			  pd->name, pa_strerror(error));
+		g_set_error(error_r, pulse_output_quark(), error,
+			    "%s", pa_strerror(error));
 		return 0;
 	}
 

@@ -34,6 +34,15 @@ struct osx_output {
 	size_t len;
 };
 
+/**
+ * The quark used for GError.domain.
+ */
+static inline GQuark
+osx_output_quark(void)
+{
+	return g_quark_from_static_string("osx_output");
+}
+
 static bool
 osx_output_test_default_device(void)
 {
@@ -44,7 +53,8 @@ osx_output_test_default_device(void)
 
 static void *
 osx_output_init(G_GNUC_UNUSED const struct audio_format *audio_format,
-		G_GNUC_UNUSED const struct config_param *param)
+		G_GNUC_UNUSED const struct config_param *param,
+		G_GNUC_UNUSED GError **error)
 {
 	struct osx_output *oo = g_new(struct osx_output, 1);
 
@@ -143,7 +153,7 @@ osx_render(void *vdata,
 }
 
 static bool
-osx_output_open(void *data, struct audio_format *audio_format)
+osx_output_open(void *data, struct audio_format *audio_format, GError **error)
 {
 	struct osx_output *od = data;
 	ComponentDescription desc;
@@ -164,22 +174,25 @@ osx_output_open(void *data, struct audio_format *audio_format)
 
 	comp = FindNextComponent(NULL, &desc);
 	if (comp == 0) {
-		g_warning("Error finding OS X component\n");
+		g_set_error(error, osx_output_quark(), 0,
+			    "Error finding OS X component");
 		return false;
 	}
 
 	status = OpenAComponent(comp, &od->au);
 	if (status != noErr) {
-		g_warning("Unable to open OS X component: %s",
-			  GetMacOSStatusCommentString(status));
+		g_set_error(error, osx_output_quark(), 0,
+			    "Unable to open OS X component: %s",
+			    GetMacOSStatusCommentString(status));
 		return false;
 	}
 
 	status = AudioUnitInitialize(od->au);
 	if (status != noErr) {
 		CloseComponent(od->au);
-		g_warning("Unable to initialize OS X audio unit: %s",
-			  GetMacOSStatusCommentString(status));
+		g_set_error(error, osx_output_quark(), 0,
+			    "Unable to initialize OS X audio unit: %s",
+			    GetMacOSStatusCommentString(status));
 		return false;
 	}
 
@@ -193,7 +206,8 @@ osx_output_open(void *data, struct audio_format *audio_format)
 	if (result != noErr) {
 		AudioUnitUninitialize(od->au);
 		CloseComponent(od->au);
-		g_warning("unable to set callback for OS X audio unit\n");
+		g_set_error(error, osx_output_quark(), 0,
+			    "unable to set callback for OS X audio unit");
 		return false;
 	}
 
@@ -218,7 +232,8 @@ osx_output_open(void *data, struct audio_format *audio_format)
 	if (result != noErr) {
 		AudioUnitUninitialize(od->au);
 		CloseComponent(od->au);
-		g_warning("Unable to set format on OS X device\n");
+		g_set_error(error, osx_output_quark(), 0,
+			    "Unable to set format on OS X device");
 		return false;
 	}
 
@@ -232,8 +247,9 @@ osx_output_open(void *data, struct audio_format *audio_format)
 
 	status = AudioOutputUnitStart(od->au);
 	if (status != 0) {
-		g_warning("unable to start audio output: %s",
-			  GetMacOSStatusCommentString(status));
+		g_set_error(error, osx_output_quark(), 0,
+			    "unable to start audio output: %s",
+			    GetMacOSStatusCommentString(status));
 		return false;
 	}
 
@@ -241,7 +257,8 @@ osx_output_open(void *data, struct audio_format *audio_format)
 }
 
 static size_t
-osx_output_play(void *data, const void *chunk, size_t size)
+osx_output_play(void *data, const void *chunk, size_t size,
+		G_GNUC_UNUSED GError **error)
 {
 	struct osx_output *od = data;
 	size_t start, nbytes;

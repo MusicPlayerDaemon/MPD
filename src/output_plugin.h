@@ -19,6 +19,8 @@
 #ifndef MPD_OUTPUT_PLUGIN_H
 #define MPD_OUTPUT_PLUGIN_H
 
+#include <glib.h>
+
 #include <stdbool.h>
 #include <stddef.h>
 
@@ -45,16 +47,18 @@ struct audio_output_plugin {
 	 * Configure and initialize the device, but do not open it
 	 * yet.
 	 *
-	 * @param ao an opaque pointer to the audio_output structure
 	 * @param audio_format the configured audio format, or NULL if
 	 * none is configured
 	 * @param param the configuration section, or NULL if there is
 	 * no configuration
+	 * @param error location to store the error occuring, or NULL
+	 * to ignore errors
 	 * @return NULL on error, or an opaque pointer to the plugin's
 	 * data
 	 */
 	void *(*init)(const struct audio_format *audio_format,
-		      const struct config_param *param);
+		      const struct config_param *param,
+		      GError **error);
 
 	/**
 	 * Free resources allocated by this device.
@@ -72,10 +76,14 @@ struct audio_output_plugin {
 
 	/**
 	 * Really open the device.
+	 *
 	 * @param audio_format the audio format in which data is going
 	 * to be delivered; may be modified by the plugin
+	 * @param error location to store the error occuring, or NULL
+	 * to ignore errors
 	 */
-	bool (*open)(void *data, struct audio_format *audio_format);
+	bool (*open)(void *data, struct audio_format *audio_format,
+		     GError **error);
 
 	/**
 	 * Close the device.
@@ -91,9 +99,12 @@ struct audio_output_plugin {
 	/**
 	 * Play a chunk of audio data.
 	 *
+	 * @param error location to store the error occuring, or NULL
+	 * to ignore errors
 	 * @return the number of bytes played, or 0 on error
 	 */
-	size_t (*play)(void *data, const void *chunk, size_t size);
+	size_t (*play)(void *data, const void *chunk, size_t size,
+		       GError **error);
 
 	/**
 	 * Try to cancel data which may still be in the device's
@@ -126,9 +137,10 @@ ao_plugin_test_default_device(const struct audio_output_plugin *plugin)
 static inline void *
 ao_plugin_init(const struct audio_output_plugin *plugin,
 	       const struct audio_format *audio_format,
-	       const struct config_param *param)
+	       const struct config_param *param,
+	       GError **error)
 {
-	return plugin->init(audio_format, param);
+	return plugin->init(audio_format, param, error);
 }
 
 static inline void
@@ -147,9 +159,10 @@ ao_plugin_get_mixer(const struct audio_output_plugin *plugin, void *data)
 
 static inline bool
 ao_plugin_open(const struct audio_output_plugin *plugin,
-	       void *data, struct audio_format *audio_format)
+	       void *data, struct audio_format *audio_format,
+	       GError **error)
 {
-	return plugin->open(data, audio_format);
+	return plugin->open(data, audio_format, error);
 }
 
 static inline void
@@ -168,9 +181,10 @@ ao_plugin_send_tag(const struct audio_output_plugin *plugin,
 
 static inline size_t
 ao_plugin_play(const struct audio_output_plugin *plugin,
-	       void *data, const void *chunk, size_t size)
+	       void *data, const void *chunk, size_t size,
+	       GError **error)
 {
-	return plugin->play(data, chunk, size);
+	return plugin->play(data, chunk, size, error);
 }
 
 static inline void

@@ -33,8 +33,14 @@ struct ao_data {
 	ao_device *device;
 } AoData;
 
+static inline GQuark
+ao_output_quark(void)
+{
+	return g_quark_from_static_string("ao_output");
+}
+
 static void
-ao_output_error(const char *msg)
+ao_output_error(GError **error_r)
 {
 	const char *error;
 
@@ -63,12 +69,14 @@ ao_output_error(const char *msg)
 		error = strerror(errno);
 	}
 
-	g_warning("%s: %s\n", msg, error);
+	g_set_error(error_r, ao_output_quark(), errno,
+		    "%s", error);
 }
 
 static void *
 ao_output_init(G_GNUC_UNUSED const struct audio_format *audio_format,
-	       const struct config_param *param)
+	       const struct config_param *param,
+	       GError **error)
 {
 	struct ao_data *ad = g_new(struct ao_data, 1);
 	ao_info *ai;
@@ -84,15 +92,22 @@ ao_output_init(G_GNUC_UNUSED const struct audio_format *audio_format,
 	ao_output_ref++;
 
 	value = config_get_block_string(param, "driver", "default");
-	if (0 == strcmp(value, "default")) {
+	if (0 == strcmp(value, "default"))
 		ad->driver = ao_default_driver_id();
-	} else if ((ad->driver = ao_driver_id(value)) < 0)
-		g_error("\"%s\" is not a valid ao driver at line %i\n",
-			value, param->line);
+	else
+		ad->driver = ao_driver_id(value);
+
+	if (ad->driver < 0) {
+		g_set_error(error, ao_output_quark(), 0,
+			    "\"%s\" is not a valid ao driver",
+			    value);
+		return NULL;
+	}
 
 	if ((ai = ao_driver_info(ad->driver)) == NULL) {
-		g_error("problems getting driver info for device defined at line %i\n"
-			"you may not have permission to the audio device\n", param->line);
+		g_set_error(error, ao_output_quark(), 0,
+			    "problems getting driver info");
+		return NULL;
 	}
 
 	g_debug("using ao driver \"%s\" for \"%s\"\n", ai->short_name,
@@ -105,9 +120,12 @@ ao_output_init(G_GNUC_UNUSED const struct audio_format *audio_format,
 		for (unsigned i = 0; options[i] != NULL; ++i) {
 			gchar **key_value = g_strsplit(options[i], "=", 2);
 
-			if (key_value[0] == NULL || key_value[1] == NULL)
-				g_error("problems parsing options \"%s\"\n",
-					options[i]);
+			if (key_value[0] == NULL || key_value[1] == NULL) {
+				g_set_error(error, ao_output_quark(), 0,
+					    "problems parsing options \"%s\"",
+					    options[i]);
+				return NULL;
+			}
 
 			ao_append_option(&ad->options, key_value[0],
 					 key_value[1]);
@@ -144,7 +162,8 @@ ao_output_close(void *data)
 }
 
 static bool
-ao_output_open(void *data, struct audio_format *audio_format)
+ao_output_open(void *data, struct audio_format *audio_format,
+	       GError **error)
 {
 	ao_sample_format format;
 	struct ao_data *ad = (struct ao_data *)data;
@@ -163,7 +182,7 @@ ao_output_open(void *data, struct audio_format *audio_format)
 	ad->device = ao_open_live(ad->driver, &format, ad->options);
 
 	if (ad->device == NULL) {
-		ao_output_error("Failed to open libao");
+		ao_output_error(error);
 		return false;
 	}
 
@@ -188,7 +207,8 @@ static int ao_play_deconst(ao_device *device, const void *output_samples,
 }
 
 static size_t
-ao_output_play(void *data, const void *chunk, size_t size)
+ao_output_play(void *data, const void *chunk, size_t size,
+	       GError **error)
 {
 	struct ao_data *ad = (struct ao_data *)data;
 
@@ -196,7 +216,7 @@ ao_output_play(void *data, const void *chunk, size_t size)
 		size = ad->write_size;
 
 	if (ao_play_deconst(ad->device, chunk, size) == 0) {
-		ao_output_error("Closing libao device due to play error");
+		ao_output_error(error);
 		return 0;
 	}
 

@@ -84,6 +84,15 @@ static const unsigned mvp_sample_rates[][3] = {
 };
 
 /**
+ * The quark used for GError.domain.
+ */
+static inline GQuark
+mvp_output_quark(void)
+{
+	return g_quark_from_static_string("mvp_output");
+}
+
+/**
  * Translate a sample rate to a MVP sample rate.
  *
  * @param sample_rate the sample rate in Hz
@@ -118,7 +127,8 @@ mvp_output_test_default_device(void)
 
 static void *
 mvp_output_init(G_GNUC_UNUSED const struct audio_format *audio_format,
-		G_GNUC_UNUSED const struct config_param *param)
+		G_GNUC_UNUSED const struct config_param *param,
+		G_GNUC_UNUSED GError **error)
 {
 	struct mvp_data *md = g_new(struct mvp_data, 1);
 	md->fd = -1;
@@ -134,7 +144,8 @@ mvp_output_finish(void *data)
 }
 
 static bool
-mvp_set_pcm_params(struct mvp_data *md, struct audio_format *audio_format)
+mvp_set_pcm_params(struct mvp_data *md, struct audio_format *audio_format,
+		   GError **error)
 {
 	unsigned mix[5];
 
@@ -181,23 +192,27 @@ mvp_set_pcm_params(struct mvp_data *md, struct audio_format *audio_format)
 	 */
 	mix[2] = mvp_find_sample_rate(audio_format->sample_rate);
 	if (mix[2] == (unsigned)-1) {
-		g_warning("Can not find suitable output frequency for %u\n",
-			  audio_format->sample_rate);
+		g_set_error(error, mvp_output_quark(), 0,
+			    "Can not find suitable output frequency for %u",
+			    audio_format->sample_rate);
 		return false;
 	}
 
 	if (ioctl(md->fd, MVP_SET_AUD_FORMAT, &mix) < 0) {
-		g_warning("Can not set audio format\n");
+		g_set_error(error, mvp_output_quark(), errno,
+			    "Can not set audio format");
 		return false;
 	}
 
 	if (ioctl(md->fd, MVP_SET_AUD_SYNC, 2) != 0) {
-		g_warning("Can not set audio sync\n");
+		g_set_error(error, mvp_output_quark(), errno,
+			    "Can not set audio sync");
 		return false;
 	}
 
 	if (ioctl(md->fd, MVP_SET_AUD_PLAY, 0) < 0) {
-		g_warning("Can not set audio play mode\n");
+		g_set_error(error, mvp_output_quark(), errno,
+			    "Can not set audio play mode");
 		return false;
 	}
 
@@ -205,7 +220,7 @@ mvp_set_pcm_params(struct mvp_data *md, struct audio_format *audio_format)
 }
 
 static bool
-mvp_output_open(void *data, struct audio_format *audio_format)
+mvp_output_open(void *data, struct audio_format *audio_format, GError **error)
 {
 	struct mvp_data *md = data;
 	long long int stc = 0;
@@ -213,33 +228,38 @@ mvp_output_open(void *data, struct audio_format *audio_format)
 	bool success;
 
 	if ((md->fd = open("/dev/adec_pcm", O_RDWR | O_NONBLOCK)) < 0) {
-		g_warning("Error opening /dev/adec_pcm: %s\n",
-			  strerror(errno));
+		g_set_error(error, mvp_output_quark(), errno,
+			    "Error opening /dev/adec_pcm: %s",
+			    strerror(errno));
 		return false;
 	}
 	if (ioctl(md->fd, MVP_SET_AUD_SRC, 1) < 0) {
-		g_warning("Error setting audio source: %s\n",
-			  strerror(errno));
+		g_set_error(error, mvp_output_quark(), errno,
+			    "Error setting audio source: %s",
+			    strerror(errno));
 		return false;
 	}
 	if (ioctl(md->fd, MVP_SET_AUD_STREAMTYPE, 0) < 0) {
-		g_warning("Error setting audio streamtype: %s\n",
-			  strerror(errno));
+		g_set_error(error, mvp_output_quark(), errno,
+			    "Error setting audio streamtype: %s",
+			    strerror(errno));
 		return false;
 	}
 	if (ioctl(md->fd, MVP_SET_AUD_FORMAT, &mix) < 0) {
-		g_warning("Error setting audio format: %s\n",
-			  strerror(errno));
+		g_set_error(error, mvp_output_quark(), errno,
+			    "Error setting audio format: %s",
+			    strerror(errno));
 		return false;
 	}
 	ioctl(md->fd, MVP_SET_AUD_STC, &stc);
 	if (ioctl(md->fd, MVP_SET_AUD_BYPASS, 1) < 0) {
-		g_warning("Error setting audio streamtype: %s\n",
-			  strerror(errno));
+		g_set_error(error, mvp_output_quark(), errno,
+			    "Error setting audio streamtype: %s",
+			    strerror(errno));
 		return false;
 	}
 
-	success = mvp_set_pcm_params(md, audio_format);
+	success = mvp_set_pcm_params(md, audio_format, error);
 	if (!success)
 		return false;
 
@@ -266,7 +286,7 @@ static void mvp_output_cancel(void *data)
 }
 
 static size_t
-mvp_output_play(void *data, const void *chunk, size_t size)
+mvp_output_play(void *data, const void *chunk, size_t size, GError **error)
 {
 	struct mvp_data *md = data;
 	ssize_t ret;
@@ -275,7 +295,7 @@ mvp_output_play(void *data, const void *chunk, size_t size)
 	if (md->fd < 0) {
 		bool success;
 
-		success = mvp_output_open(md, &md->audio_format);
+		success = mvp_output_open(md, &md->audio_format, error);
 		if (!success)
 			return 0;
 	}
@@ -288,8 +308,9 @@ mvp_output_play(void *data, const void *chunk, size_t size)
 		if (ret < 0) {
 			if (errno == EINTR)
 				continue;
-			g_warning("closing mvp PCM device due to write error: "
-				  "%s\n", strerror(errno));
+
+			g_set_error(error, mvp_output_quark(), errno,
+				    "Failed to write: %s", strerror(errno));
 			return 0;
 		}
 	}

@@ -56,6 +56,7 @@ static void ao_play(struct audio_output *ao)
 {
 	const char *data = ao->args.play.data;
 	size_t size = ao->args.play.size;
+	GError *error = NULL;
 
 	assert(size > 0);
 	assert(size % audio_format_frame_size(&ao->in_audio_format) == 0);
@@ -76,9 +77,14 @@ static void ao_play(struct audio_output *ao)
 	while (size > 0) {
 		size_t nbytes;
 
-		nbytes = ao_plugin_play(ao->plugin, ao->data, data, size);
+		nbytes = ao_plugin_play(ao->plugin, ao->data, data, size,
+					&error);
 		if (nbytes == 0) {
 			/* play()==0 means failure */
+			g_warning("\"%s\" [%s] failed to play: %s",
+				  ao->name, ao->plugin->name, error->message);
+			g_error_free(error);
+
 			ao_plugin_cancel(ao->plugin, ao->data);
 			ao_close(ao);
 			break;
@@ -114,6 +120,7 @@ static gpointer audio_output_task(gpointer arg)
 {
 	struct audio_output *ao = arg;
 	bool ret;
+	GError *error;
 
 	while (1) {
 		switch (ao->command) {
@@ -123,15 +130,23 @@ static gpointer audio_output_task(gpointer arg)
 		case AO_COMMAND_OPEN:
 			assert(!ao->open);
 
+			error = NULL;
 			ret = ao_plugin_open(ao->plugin, ao->data,
-					     &ao->out_audio_format);
+					     &ao->out_audio_format,
+					     &error);
 
 			assert(!ao->open);
 			if (ret) {
 				pcm_convert_init(&ao->convert_state);
 				ao->open = true;
-			} else
+			} else {
+				g_warning("Failed to open \"%s\" [%s]: %s",
+					  ao->name, ao->plugin->name,
+					  error->message);
+				g_error_free(error);
+
 				ao->reopen_after = time(NULL) + REOPEN_AFTER;
+			}
 
 			ao_command_finished(ao);
 			break;

@@ -42,6 +42,15 @@ struct fifo_data {
 	Timer *timer;
 };
 
+/**
+ * The quark used for GError.domain.
+ */
+static inline GQuark
+fifo_output_quark(void)
+{
+	return g_quark_from_static_string("fifo_output");
+}
+
 static struct fifo_data *fifo_data_new(void)
 {
 	struct fifo_data *ret;
@@ -95,11 +104,12 @@ fifo_close(struct fifo_data *fd)
 }
 
 static bool
-fifo_make(struct fifo_data *fd)
+fifo_make(struct fifo_data *fd, GError **error)
 {
 	if (mkfifo(fd->path, 0666) < 0) {
-		g_warning("Couldn't create FIFO \"%s\": %s",
-			  fd->path, strerror(errno));
+		g_set_error(error, fifo_output_quark(), errno,
+			    "Couldn't create FIFO \"%s\": %s",
+			    fd->path, strerror(errno));
 		return false;
 	}
 
@@ -109,24 +119,26 @@ fifo_make(struct fifo_data *fd)
 }
 
 static bool
-fifo_check(struct fifo_data *fd)
+fifo_check(struct fifo_data *fd, GError **error)
 {
 	struct stat st;
 
 	if (stat(fd->path, &st) < 0) {
 		if (errno == ENOENT) {
 			/* Path doesn't exist */
-			return fifo_make(fd);
+			return fifo_make(fd, error);
 		}
 
-		g_warning("Failed to stat FIFO \"%s\": %s",
-			  fd->path, strerror(errno));
+		g_set_error(error, fifo_output_quark(), errno,
+			    "Failed to stat FIFO \"%s\": %s",
+			    fd->path, strerror(errno));
 		return false;
 	}
 
 	if (!S_ISFIFO(st.st_mode)) {
-		g_warning("\"%s\" already exists, but is not a FIFO",
-			  fd->path);
+		g_set_error(error, fifo_output_quark(), 0,
+			    "\"%s\" already exists, but is not a FIFO",
+			    fd->path);
 		return false;
 	}
 
@@ -134,23 +146,25 @@ fifo_check(struct fifo_data *fd)
 }
 
 static bool
-fifo_open(struct fifo_data *fd)
+fifo_open(struct fifo_data *fd, GError **error)
 {
-	if (!fifo_check(fd))
+	if (!fifo_check(fd, error))
 		return false;
 
 	fd->input = open(fd->path, O_RDONLY|O_NONBLOCK);
 	if (fd->input < 0) {
-		g_warning("Could not open FIFO \"%s\" for reading: %s",
-			  fd->path, strerror(errno));
+		g_set_error(error, fifo_output_quark(), errno,
+			    "Could not open FIFO \"%s\" for reading: %s",
+			    fd->path, strerror(errno));
 		fifo_close(fd);
 		return false;
 	}
 
 	fd->output = open(fd->path, O_WRONLY|O_NONBLOCK);
 	if (fd->output < 0) {
-		g_warning("Could not open FIFO \"%s\" for writing: %s",
-			  fd->path, strerror(errno));
+		g_set_error(error, fifo_output_quark(), errno,
+			    "Could not open FIFO \"%s\" for writing: %s",
+			    fd->path, strerror(errno));
 		fifo_close(fd);
 		return false;
 	}
@@ -160,27 +174,31 @@ fifo_open(struct fifo_data *fd)
 
 static void *
 fifo_output_init(G_GNUC_UNUSED const struct audio_format *audio_format,
-		 const struct config_param *param)
+		 const struct config_param *param,
+		 GError **error)
 {
 	struct fifo_data *fd;
 	char *value, *path;
 
 	value = config_dup_block_string(param, "path", NULL);
-	if (value == NULL)
-		g_error("No \"path\" parameter specified for fifo output "
-			"defined at line %i", param->line);
+	if (value == NULL) {
+		g_set_error(error, fifo_output_quark(), errno,
+			    "No \"path\" parameter specified");
+		return NULL;
+	}
 
 	path = parsePath(value);
 	g_free(value);
 	if (!path) {
-		g_error("Could not parse \"path\" parameter for fifo output "
-			"at line %i", param->line);
+		g_set_error(error, fifo_output_quark(), errno,
+			    "Could not parse \"path\" parameter");
+		return NULL;
 	}
 
 	fd = fifo_data_new();
 	fd->path = path;
 
-	if (!fifo_open(fd)) {
+	if (!fifo_open(fd, error)) {
 		fifo_data_free(fd);
 		return NULL;
 	}
@@ -198,7 +216,8 @@ fifo_output_finish(void *data)
 }
 
 static bool
-fifo_output_open(void *data, struct audio_format *audio_format)
+fifo_output_open(void *data, struct audio_format *audio_format,
+		 G_GNUC_UNUSED GError **error)
 {
 	struct fifo_data *fd = (struct fifo_data *)data;
 
@@ -234,7 +253,8 @@ fifo_output_cancel(void *data)
 }
 
 static size_t
-fifo_output_play(void *data, const void *chunk, size_t size)
+fifo_output_play(void *data, const void *chunk, size_t size,
+		 GError **error)
 {
 	struct fifo_data *fd = (struct fifo_data *)data;
 	ssize_t bytes;
@@ -261,8 +281,9 @@ fifo_output_play(void *data, const void *chunk, size_t size)
 				continue;
 			}
 
-			g_warning("Closing FIFO output \"%s\" due to write error: %s",
-				  fd->path, strerror(errno));
+			g_set_error(error, fifo_output_quark(), errno,
+				    "Failed to write to FIFO %s: %s",
+				    fd->path, g_strerror(errno));
 			return 0;
 		}
 	}
