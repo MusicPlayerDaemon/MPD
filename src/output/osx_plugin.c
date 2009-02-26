@@ -38,29 +38,8 @@ struct osx_output {
 static bool
 osx_output_test_default_device(void)
 {
-	/*AudioUnit au;
-	   ComponentDescription desc;
-	   Component comp;
-
-	   desc.componentType = kAudioUnitType_Output;
-	   desc.componentSubType = kAudioUnitSubType_Output;
-	   desc.componentManufacturer = kAudioUnitManufacturer_Apple;
-	   desc.componentFlags = 0;
-	   desc.componentFlagsMask = 0;
-
-	   comp = FindNextComponent(NULL, &desc);
-	   if(!comp) {
-	   ERROR("Unable to open default OS X defice\n");
-	   return -1;
-	   }
-
-	   if(OpenAComponent(comp, &au) != noErr) {
-	   ERROR("Unable to open default OS X defice\n");
-	   return -1;
-	   }
-
-	   CloseComponent(au); */
-
+	/* on a Mac, this is always the default plugin, if nothing
+	   else is configured */
 	return true;
 }
 
