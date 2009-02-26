@@ -101,7 +101,7 @@ my_shout_init_driver(const struct audio_format *audio_format,
 {
 	struct shout_data *sd;
 	char *test;
-	int port;
+	unsigned port;
 	char *host;
 	char *mount;
 	char *passwd;
@@ -129,11 +129,8 @@ my_shout_init_driver(const struct audio_format *audio_format,
 	check_block_param("mount");
 	mount = block_param->value;
 
-	check_block_param("port");
-
-	port = strtol(block_param->value, &test, 10);
-
-	if (*test != '\0' || port <= 0) {
+	port = config_get_block_unsigned(param, "port", 0);
+	if (port == 0) {
 		g_error("shout port \"%s\" is not a positive integer, line %i\n",
 			block_param->value, block_param->line);
 	}
