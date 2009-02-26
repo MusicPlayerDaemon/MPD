@@ -150,7 +150,8 @@ osx_output_open(void *data, struct audio_format *audio_format)
 	Component comp;
 	AURenderCallbackStruct callback;
 	AudioStreamBasicDescription stream_description;
-	int err;
+	OSStatus status;
+	ComponentResult result;
 
 	if (audio_format->bits > 16)
 		audio_format->bits = 16;
@@ -167,23 +168,29 @@ osx_output_open(void *data, struct audio_format *audio_format)
 		return false;
 	}
 
-	if (OpenAComponent(comp, &od->au) != noErr) {
-		g_warning("Unable to open OS X component\n");
+	status = OpenAComponent(comp, &od->au);
+	if (status != noErr) {
+		g_warning("Unable to open OS X component: %s",
+			  GetMacOSStatusCommentString(status));
 		return false;
 	}
 
-	if (AudioUnitInitialize(od->au) != 0) {
+	status = AudioUnitInitialize(od->au);
+	if (status != noErr) {
 		CloseComponent(od->au);
-		g_warning("Unable to initialize OS X audio unit\n");
+		g_warning("Unable to initialize OS X audio unit: %s",
+			  GetMacOSStatusCommentString(status));
 		return false;
 	}
 
 	callback.inputProc = osx_render;
 	callback.inputProcRefCon = od;
 
-	if (AudioUnitSetProperty(od->au, kAudioUnitProperty_SetRenderCallback,
-				 kAudioUnitScope_Input, 0,
-				 &callback, sizeof(callback)) != 0) {
+	result = AudioUnitSetProperty(od->au,
+				      kAudioUnitProperty_SetRenderCallback,
+				      kAudioUnitScope_Input, 0,
+				      &callback, sizeof(callback));
+	if (result != noErr) {
 		AudioUnitUninitialize(od->au);
 		CloseComponent(od->au);
 		g_warning("unable to set callback for OS X audio unit\n");
@@ -204,10 +211,11 @@ osx_output_open(void *data, struct audio_format *audio_format)
 	stream_description.mChannelsPerFrame = audio_format->channels;
 	stream_description.mBitsPerChannel = audio_format->bits;
 
-	if (AudioUnitSetProperty(od->au, kAudioUnitProperty_StreamFormat,
-				 kAudioUnitScope_Input, 0,
-				 &stream_description,
-				 sizeof(stream_description)) != 0) {
+	result = AudioUnitSetProperty(od->au, kAudioUnitProperty_StreamFormat,
+				      kAudioUnitScope_Input, 0,
+				      &stream_description,
+				      sizeof(stream_description));
+	if (result != noErr) {
 		AudioUnitUninitialize(od->au);
 		CloseComponent(od->au);
 		g_warning("Unable to set format on OS X device\n");
@@ -222,9 +230,10 @@ osx_output_open(void *data, struct audio_format *audio_format)
 	od->pos = 0;
 	od->len = 0;
 
-	err = AudioOutputUnitStart(od->au);
-	if (err != 0) {
-		g_warning("unable to start audio output: %i", err);
+	status = AudioOutputUnitStart(od->au);
+	if (status != 0) {
+		g_warning("unable to start audio output: %s",
+			  GetMacOSStatusCommentString(status));
 		return false;
 	}
 
