@@ -188,11 +188,6 @@ static void player_process_command(struct player *player)
 			if (audio_output_all_open(NULL)) {
 				pc.state = PLAYER_STATE_PLAY;
 			} else {
-				char *uri = song_get_uri(dc.next_song);
-				g_warning("problems opening audio device "
-					  "while playing \"%s\"", uri);
-				g_free(uri);
-
 				assert(dc.next_song == NULL || dc.next_song->url != NULL);
 				pc.errored_song = dc.next_song;
 				pc.error = PLAYER_ERROR_AUDIO;
