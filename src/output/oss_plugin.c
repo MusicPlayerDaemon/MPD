@@ -52,9 +52,9 @@ struct oss_data {
 	struct audio_format audio_format;
 	int bitFormat;
 	int *supported[3];
-	int num_supported[3];
+	unsigned num_supported[3];
 	int *unsupported[3];
-	int num_unsupported[3];
+	unsigned num_unsupported[3];
 
 	/** the mixer object associated with this output */
 	struct mixer *mixer;
@@ -95,10 +95,9 @@ oss_param_from_ioctl(unsigned param)
 static int
 oss_find_supported_param(struct oss_data *od, unsigned param, int val)
 {
-	int i;
 	enum oss_param idx = oss_param_from_ioctl(param);
 
-	for (i = 0; i < od->num_supported[idx]; i++)
+	for (unsigned i = 0; i < od->num_supported[idx]; i++)
 		if (od->supported[idx][i] == val)
 			return 1;
 
@@ -125,13 +124,12 @@ oss_can_convert(int idx, int val)
 static int
 oss_get_supported_param(struct oss_data *od, unsigned param, int val)
 {
-	int i;
 	enum oss_param idx = oss_param_from_ioctl(param);
 	int ret = -1;
 	int least = val;
 	int diff;
 
-	for (i = 0; i < od->num_supported[idx]; i++) {
+	for (unsigned i = 0; i < od->num_supported[idx]; i++) {
 		diff = od->supported[idx][i] - val;
 		if (diff < 0)
 			diff = -diff;
@@ -150,10 +148,9 @@ oss_get_supported_param(struct oss_data *od, unsigned param, int val)
 static int
 oss_find_unsupported_param(struct oss_data *od, unsigned param, int val)
 {
-	int i;
 	enum oss_param idx = oss_param_from_ioctl(param);
 
-	for (i = 0; i < od->num_unsupported[idx]; i++) {
+	for (unsigned i = 0; i < od->num_unsupported[idx]; i++) {
 		if (od->unsupported[idx][i] == val)
 			return 1;
 	}
@@ -187,11 +184,10 @@ oss_add_unsupported_param(struct oss_data *od, unsigned param, int val)
 static void
 oss_remove_supported_param(struct oss_data *od, unsigned param, int val)
 {
-	int i;
-	int j = 0;
+	unsigned j = 0;
 	enum oss_param idx = oss_param_from_ioctl(param);
 
-	for (i = 0; i < od->num_supported[idx] - 1; i++) {
+	for (unsigned i = 0; i < od->num_supported[idx] - 1; i++) {
 		if (od->supported[idx][i] == val)
 			j = 1;
 		od->supported[idx][i] = od->supported[idx][i + j];
@@ -205,11 +201,10 @@ oss_remove_supported_param(struct oss_data *od, unsigned param, int val)
 static void
 oss_remove_unsupported_param(struct oss_data *od, unsigned param, int val)
 {
-	int i;
-	int j = 0;
+	unsigned j = 0;
 	enum oss_param idx = oss_param_from_ioctl(param);
 
-	for (i = 0; i < od->num_unsupported[idx] - 1; i++) {
+	for (unsigned i = 0; i < od->num_unsupported[idx] - 1; i++) {
 		if (od->unsupported[idx][i] == val)
 			j = 1;
 		od->unsupported[idx][i] = od->unsupported[idx][i + j];
