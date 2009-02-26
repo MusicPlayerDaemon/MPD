@@ -20,6 +20,7 @@ ver 0.15 - (200?/??/??)
   - mvp: fall back to stereo
   - mvp: fall back to 16 bit audio samples
   - mvp: check for reopen errors
+  - mvp: fixed default device detection
 * commands:
   - "playlistinfo" supports a range now
   - added "sticker database", command "sticker", which allows clients

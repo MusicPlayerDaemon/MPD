@@ -114,7 +114,7 @@ mvp_output_test_default_device(void)
 
 	fd = open("/dev/adec_pcm", O_WRONLY);
 
-	if (fd) {
+	if (fd >= 0) {
 		close(fd);
 		return true;
 	}
