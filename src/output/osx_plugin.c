@@ -24,34 +24,19 @@
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "osx"
 
-typedef struct _OsxData {
+struct osx_output {
 	AudioUnit au;
 	GMutex *mutex;
 	GCond *condition;
 	char *buffer;
-	size_t bufferSize;
+	size_t buffer_size;
 	size_t pos;
 	size_t len;
 	int started;
-} OsxData;
+};
 
-static OsxData *newOsxData(void)
-{
-	OsxData *ret = g_new(OsxData, 1);
-
-	ret->mutex = g_mutex_new();
-	ret->condition = g_cond_new();
-
-	ret->pos = 0;
-	ret->len = 0;
-	ret->started = 0;
-	ret->buffer = NULL;
-	ret->bufferSize = 0;
-
-	return ret;
-}
-
-static bool osx_testDefault(void)
+static bool
+osx_output_test_default_device(void)
 {
 	/*AudioUnit au;
 	   ComponentDescription desc;
@@ -80,38 +65,45 @@ static bool osx_testDefault(void)
 }
 
 static void *
-osx_initDriver(G_GNUC_UNUSED const struct audio_format *audio_format,
-	       G_GNUC_UNUSED const struct config_param *param)
+osx_output_init(G_GNUC_UNUSED const struct audio_format *audio_format,
+		G_GNUC_UNUSED const struct config_param *param)
 {
-	return newOsxData();
+	struct osx_output *oo = g_new(struct osx_output, 1);
+
+	oo->mutex = g_mutex_new();
+	oo->condition = g_cond_new();
+
+	oo->pos = 0;
+	oo->len = 0;
+	oo->started = 0;
+	oo->buffer = NULL;
+	oo->buffer_size = 0;
+
+	return oo;
 }
 
-static void freeOsxData(OsxData * od)
+static void osx_output_finish(void *data)
 {
+	struct osx_output *od = data;
+
 	g_free(od->buffer);
 	g_mutex_free(od->mutex);
 	g_cond_free(od->condition);
 	g_free(od);
 }
 
-static void osx_finishDriver(void *data)
+static void osx_output_cancel(void *data)
 {
-	OsxData *od = data;
-	freeOsxData(od);
-}
-
-static void osx_dropBufferedAudio(void *data)
-{
-	OsxData *od = data;
+	struct osx_output *od = data;
 
 	g_mutex_lock(od->mutex);
 	od->len = 0;
 	g_mutex_unlock(od->mutex);
 }
 
-static void osx_closeDevice(void *data)
+static void osx_output_close(void *data)
 {
-	OsxData *od = data;
+	struct osx_output *od = data;
 
 	g_mutex_lock(od->mutex);
 	while (od->len) {
@@ -130,45 +122,47 @@ static void osx_closeDevice(void *data)
 
 static OSStatus
 osx_render(void *vdata,
-	   G_GNUC_UNUSED AudioUnitRenderActionFlags * ioActionFlags,
-	   G_GNUC_UNUSED const AudioTimeStamp * inTimeStamp,
-	   G_GNUC_UNUSED UInt32 inBusNumber,
-	   G_GNUC_UNUSED UInt32 inNumberFrames,
-	   AudioBufferList * bufferList)
+	   G_GNUC_UNUSED AudioUnitRenderActionFlags *io_action_flags,
+	   G_GNUC_UNUSED const AudioTimeStamp *in_timestamp,
+	   G_GNUC_UNUSED UInt32 in_bus_number,
+	   G_GNUC_UNUSED UInt32 in_number_frames,
+	   AudioBufferList *buffer_list)
 {
-	OsxData *od = (OsxData *) vdata;
-	AudioBuffer *buffer = &bufferList->mBuffers[0];
-	size_t bufferSize = buffer->mDataByteSize;
-	size_t bytesToCopy;
-	size_t bytes;
-	int curpos = 0;
+	struct osx_output *od = (struct osx_output *) vdata;
+	AudioBuffer *buffer = &buffer_list->mBuffers[0];
+	size_t buffer_size = buffer->mDataByteSize;
+	size_t bytes_to_copy;
+	size_t trailer_length;
+	size_t dest_pos = 0;
 
 	g_mutex_lock(od->mutex);
 
-	bytesToCopy = MIN(od->len, bufferSize);
-	bufferSize = bytesToCopy;
-	od->len -= bytesToCopy;
+	bytes_to_copy = MIN(od->len, buffer_size);
+	buffer_size = bytes_to_copy;
+	od->len -= bytes_to_copy;
 
-	bytes = od->bufferSize - od->pos;
-	if (bytesToCopy > bytes) {
-		memcpy((unsigned char*)buffer->mData + curpos, od->buffer + od->pos, bytes);
+	trailer_length = od->buffer_size - od->pos;
+	if (bytes_to_copy > trailer_length) {
+		memcpy((unsigned char*)buffer->mData + dest_pos,
+		       od->buffer + od->pos, trailer_length);
 		od->pos = 0;
-		curpos += bytes;
-		bytesToCopy -= bytes;
+		dest_pos += trailer_length;
+		bytes_to_copy -= trailer_length;
 	}
 
-	memcpy((unsigned char*)buffer->mData + curpos, od->buffer + od->pos, bytesToCopy);
-	od->pos += bytesToCopy;
+	memcpy((unsigned char*)buffer->mData + dest_pos,
+	       od->buffer + od->pos, bytes_to_copy);
+	od->pos += bytes_to_copy;
 
-	if (od->pos >= od->bufferSize)
+	if (od->pos >= od->buffer_size)
 		od->pos = 0;
 
 	g_mutex_unlock(od->mutex);
 	g_cond_signal(od->condition);
 
-	buffer->mDataByteSize = bufferSize;
+	buffer->mDataByteSize = buffer_size;
 
-	if (!bufferSize) {
+	if (!buffer_size) {
 		g_usleep(1000);
 	}
 
@@ -176,16 +170,16 @@ osx_render(void *vdata,
 }
 
 static bool
-osx_openDevice(void *data, struct audio_format *audioFormat)
+osx_output_open(void *data, struct audio_format *audio_format)
 {
-	OsxData *od = data;
+	struct osx_output *od = data;
 	ComponentDescription desc;
 	Component comp;
 	AURenderCallbackStruct callback;
-	AudioStreamBasicDescription streamDesc;
+	AudioStreamBasicDescription stream_description;
 
-	if (audioFormat->bits > 16)
-		audioFormat->bits = 16;
+	if (audio_format->bits > 16)
+		audio_format->bits = 16;
 
 	desc.componentType = kAudioUnitType_Output;
 	desc.componentSubType = kAudioUnitSubType_DefaultOutput;
@@ -222,22 +216,24 @@ osx_openDevice(void *data, struct audio_format *audioFormat)
 		return false;
 	}
 
-	streamDesc.mSampleRate = audioFormat->sample_rate;
-	streamDesc.mFormatID = kAudioFormatLinearPCM;
-	streamDesc.mFormatFlags = kLinearPCMFormatFlagIsSignedInteger;
+	stream_description.mSampleRate = audio_format->sample_rate;
+	stream_description.mFormatID = kAudioFormatLinearPCM;
+	stream_description.mFormatFlags = kLinearPCMFormatFlagIsSignedInteger;
 #if G_BYTE_ORDER == G_BIG_ENDIAN
-	streamDesc.mFormatFlags |= kLinearPCMFormatFlagIsBigEndian;
+	stream_description.mFormatFlags |= kLinearPCMFormatFlagIsBigEndian;
 #endif
 
-	streamDesc.mBytesPerPacket = audio_format_frame_size(audioFormat);
-	streamDesc.mFramesPerPacket = 1;
-	streamDesc.mBytesPerFrame = streamDesc.mBytesPerPacket;
-	streamDesc.mChannelsPerFrame = audioFormat->channels;
-	streamDesc.mBitsPerChannel = audioFormat->bits;
+	stream_description.mBytesPerPacket =
+		audio_format_frame_size(audio_format);
+	stream_description.mFramesPerPacket = 1;
+	stream_description.mBytesPerFrame = stream_description.mBytesPerPacket;
+	stream_description.mChannelsPerFrame = audio_format->channels;
+	stream_description.mBitsPerChannel = audio_format->bits;
 
 	if (AudioUnitSetProperty(od->au, kAudioUnitProperty_StreamFormat,
 				 kAudioUnitScope_Input, 0,
-				 &streamDesc, sizeof(streamDesc)) != 0) {
+				 &stream_description,
+				 sizeof(stream_description)) != 0) {
 		AudioUnitUninitialize(od->au);
 		CloseComponent(od->au);
 		g_warning("Unable to set format on OS X device\n");
@@ -245,9 +241,9 @@ osx_openDevice(void *data, struct audio_format *audioFormat)
 	}
 
 	/* create a buffer of 1s */
-	od->bufferSize = (audioFormat->sample_rate) *
-		audio_format_frame_size(audioFormat);
-	od->buffer = g_realloc(od->buffer, od->bufferSize);
+	od->buffer_size = (audio_format->sample_rate) *
+		audio_format_frame_size(audio_format);
+	od->buffer = g_realloc(od->buffer, od->buffer_size);
 
 	od->pos = 0;
 	od->len = 0;
@@ -256,9 +252,9 @@ osx_openDevice(void *data, struct audio_format *audioFormat)
 }
 
 static size_t
-osx_play(void *data, const void *chunk, size_t size)
+osx_output_play(void *data, const void *chunk, size_t size)
 {
-	OsxData *od = data;
+	struct osx_output *od = data;
 	size_t start, nbytes;
 
 	if (!od->started) {
@@ -273,17 +269,17 @@ osx_play(void *data, const void *chunk, size_t size)
 
 	g_mutex_lock(od->mutex);
 
-	while (od->len >= od->bufferSize)
+	while (od->len >= od->buffer_size)
 		/* wait for some free space in the buffer */
 		g_cond_wait(od->condition, od->mutex);
 
 	start = od->pos + od->len;
-	if (start >= od->bufferSize)
-		start -= od->bufferSize;
+	if (start >= od->buffer_size)
+		start -= od->buffer_size;
 
 	nbytes = start < od->pos
 		? od->pos - start
-		: od->bufferSize - start;
+		: od->buffer_size - start;
 
 	assert(nbytes > 0);
 
@@ -300,11 +296,11 @@ osx_play(void *data, const void *chunk, size_t size)
 
 const struct audio_output_plugin osxPlugin = {
 	.name = "osx",
-	.test_default_device = osx_testDefault,
-	.init = osx_initDriver,
-	.finish = osx_finishDriver,
-	.open = osx_openDevice,
-	.play = osx_play,
-	.cancel = osx_dropBufferedAudio,
-	.close = osx_closeDevice,
+	.test_default_device = osx_output_test_default_device,
+	.init = osx_output_init,
+	.finish = osx_output_finish,
+	.open = osx_output_open,
+	.close = osx_output_close,
+	.play = osx_output_play,
+	.cancel = osx_output_cancel,
 };
