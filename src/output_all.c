@@ -227,9 +227,6 @@ audio_output_all_open(const struct audio_format *audio_format)
 	bool ret = false;
 	unsigned int i;
 
-	if (!audio_outputs)
-		return false;
-
 	if (audio_format != NULL)
 		input_audio_format = *audio_format;
 
