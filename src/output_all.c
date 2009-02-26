@@ -224,7 +224,7 @@ audio_output_all_play(const char *buffer, size_t length)
 bool
 audio_output_all_open(const struct audio_format *audio_format)
 {
-	bool ret = false;
+	bool ret = false, enabled = false;
 	unsigned int i;
 
 	if (audio_format != NULL)
@@ -234,9 +234,15 @@ audio_output_all_open(const struct audio_format *audio_format)
 	audio_output_all_update();
 
 	for (i = 0; i < num_audio_outputs; ++i) {
+		if (audio_outputs[i].enabled)
+			enabled = true;
+
 		if (audio_outputs[i].open)
 			ret = true;
 	}
+
+	if (!enabled)
+		g_warning("All audio outputs are disabled");
 
 	if (!ret)
 		/* close all devices if there was an error */
