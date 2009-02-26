@@ -58,7 +58,7 @@ static void ao_play(struct audio_output *ao)
 	size_t size = ao->args.play.size;
 
 	assert(size > 0);
-	assert(size % audio_format_frame_size(&ao->out_audio_format) == 0);
+	assert(size % audio_format_frame_size(&ao->in_audio_format) == 0);
 
 	if (!audio_format_equals(&ao->in_audio_format, &ao->out_audio_format)) {
 		data = pcm_convert(&ao->convert_state,
