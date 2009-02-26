@@ -46,19 +46,19 @@
 # define	AFMT_S16_MPD	 AFMT_S16_LE
 #endif
 
-typedef struct _OssData {
+struct oss_data {
 	int fd;
 	const char *device;
 	struct audio_format audio_format;
 	int bitFormat;
 	int *supported[3];
-	int numSupported[3];
+	int num_supported[3];
 	int *unsupported[3];
-	int numUnsupported[3];
+	int num_unsupported[3];
 
 	/** the mixer object associated with this output */
 	struct mixer *mixer;
-} OssData;
+};
 
 enum oss_support {
 	OSS_SUPPORTED = 1,
@@ -73,7 +73,7 @@ enum oss_param {
 };
 
 static enum oss_param
-getIndexForParam(unsigned param)
+oss_param_from_ioctl(unsigned param)
 {
 	enum oss_param idx = OSS_RATE;
 
@@ -92,20 +92,21 @@ getIndexForParam(unsigned param)
 	return idx;
 }
 
-static int findSupportedParam(OssData * od, unsigned param, int val)
+static int
+oss_find_supported_param(struct oss_data *od, unsigned param, int val)
 {
 	int i;
-	enum oss_param idx = getIndexForParam(param);
+	enum oss_param idx = oss_param_from_ioctl(param);
 
-	for (i = 0; i < od->numSupported[idx]; i++) {
+	for (i = 0; i < od->num_supported[idx]; i++)
 		if (od->supported[idx][i] == val)
 			return 1;
-	}
 
 	return 0;
 }
 
-static int canConvert(int idx, int val)
+static int
+oss_can_convert(int idx, int val)
 {
 	switch (idx) {
 	case OSS_BITS:
@@ -121,22 +122,23 @@ static int canConvert(int idx, int val)
 	return 1;
 }
 
-static int getSupportedParam(OssData * od, unsigned param, int val)
+static int
+oss_get_supported_param(struct oss_data *od, unsigned param, int val)
 {
 	int i;
-	enum oss_param idx = getIndexForParam(param);
+	enum oss_param idx = oss_param_from_ioctl(param);
 	int ret = -1;
 	int least = val;
 	int diff;
 
-	for (i = 0; i < od->numSupported[idx]; i++) {
+	for (i = 0; i < od->num_supported[idx]; i++) {
 		diff = od->supported[idx][i] - val;
 		if (diff < 0)
 			diff = -diff;
 		if (diff < least) {
-			if (!canConvert(idx, od->supported[idx][i])) {
+			if (!oss_can_convert(idx, od->supported[idx][i]))
 				continue;
-			}
+
 			least = diff;
 			ret = od->supported[idx][i];
 		}
@@ -145,12 +147,13 @@ static int getSupportedParam(OssData * od, unsigned param, int val)
 	return ret;
 }
 
-static int findUnsupportedParam(OssData * od, unsigned param, int val)
+static int
+oss_find_unsupported_param(struct oss_data *od, unsigned param, int val)
 {
 	int i;
-	enum oss_param idx = getIndexForParam(param);
+	enum oss_param idx = oss_param_from_ioctl(param);
 
-	for (i = 0; i < od->numUnsupported[idx]; i++) {
+	for (i = 0; i < od->num_unsupported[idx]; i++) {
 		if (od->unsupported[idx][i] == val)
 			return 1;
 	}
@@ -158,103 +161,108 @@ static int findUnsupportedParam(OssData * od, unsigned param, int val)
 	return 0;
 }
 
-static void addSupportedParam(OssData * od, unsigned param, int val)
+static void
+oss_add_supported_param(struct oss_data *od, unsigned param, int val)
 {
-	enum oss_param idx = getIndexForParam(param);
+	enum oss_param idx = oss_param_from_ioctl(param);
 
-	od->numSupported[idx]++;
+	od->num_supported[idx]++;
 	od->supported[idx] = g_realloc(od->supported[idx],
-				       od->numSupported[idx] * sizeof(int));
-	od->supported[idx][od->numSupported[idx] - 1] = val;
+				       od->num_supported[idx] * sizeof(int));
+	od->supported[idx][od->num_supported[idx] - 1] = val;
 }
 
-static void addUnsupportedParam(OssData * od, unsigned param, int val)
+static void
+oss_add_unsupported_param(struct oss_data *od, unsigned param, int val)
 {
-	enum oss_param idx = getIndexForParam(param);
+	enum oss_param idx = oss_param_from_ioctl(param);
 
-	od->numUnsupported[idx]++;
+	od->num_unsupported[idx]++;
 	od->unsupported[idx] = g_realloc(od->unsupported[idx],
-					 od->numUnsupported[idx] *
+					 od->num_unsupported[idx] *
 					 sizeof(int));
-	od->unsupported[idx][od->numUnsupported[idx] - 1] = val;
+	od->unsupported[idx][od->num_unsupported[idx] - 1] = val;
 }
 
-static void removeSupportedParam(OssData * od, unsigned param, int val)
+static void
+oss_remove_supported_param(struct oss_data *od, unsigned param, int val)
 {
 	int i;
 	int j = 0;
-	enum oss_param idx = getIndexForParam(param);
+	enum oss_param idx = oss_param_from_ioctl(param);
 
-	for (i = 0; i < od->numSupported[idx] - 1; i++) {
+	for (i = 0; i < od->num_supported[idx] - 1; i++) {
 		if (od->supported[idx][i] == val)
 			j = 1;
 		od->supported[idx][i] = od->supported[idx][i + j];
 	}
 
-	od->numSupported[idx]--;
+	od->num_supported[idx]--;
 	od->supported[idx] = g_realloc(od->supported[idx],
-				       od->numSupported[idx] * sizeof(int));
+				       od->num_supported[idx] * sizeof(int));
 }
 
-static void removeUnsupportedParam(OssData * od, unsigned param, int val)
+static void
+oss_remove_unsupported_param(struct oss_data *od, unsigned param, int val)
 {
 	int i;
 	int j = 0;
-	enum oss_param idx = getIndexForParam(param);
+	enum oss_param idx = oss_param_from_ioctl(param);
 
-	for (i = 0; i < od->numUnsupported[idx] - 1; i++) {
+	for (i = 0; i < od->num_unsupported[idx] - 1; i++) {
 		if (od->unsupported[idx][i] == val)
 			j = 1;
 		od->unsupported[idx][i] = od->unsupported[idx][i + j];
 	}
 
-	od->numUnsupported[idx]--;
+	od->num_unsupported[idx]--;
 	od->unsupported[idx] = g_realloc(od->unsupported[idx],
-					 od->numUnsupported[idx] *
+					 od->num_unsupported[idx] *
 					 sizeof(int));
 }
 
 static enum oss_support
-isSupportedParam(OssData * od, unsigned param, int val)
+oss_param_is_supported(struct oss_data *od, unsigned param, int val)
 {
-	if (findSupportedParam(od, param, val))
+	if (oss_find_supported_param(od, param, val))
 		return OSS_SUPPORTED;
-	if (findUnsupportedParam(od, param, val))
+	if (oss_find_unsupported_param(od, param, val))
 		return OSS_UNSUPPORTED;
 	return OSS_UNKNOWN;
 }
 
-static void supportParam(OssData * od, unsigned param, int val)
+static void
+oss_set_supported(struct oss_data *od, unsigned param, int val)
 {
-	enum oss_support supported = isSupportedParam(od, param, val);
+	enum oss_support supported = oss_param_is_supported(od, param, val);
 
 	if (supported == OSS_SUPPORTED)
 		return;
 
-	if (supported == OSS_UNSUPPORTED) {
-		removeUnsupportedParam(od, param, val);
-	}
+	if (supported == OSS_UNSUPPORTED)
+		oss_remove_unsupported_param(od, param, val);
 
-	addSupportedParam(od, param, val);
+	oss_add_supported_param(od, param, val);
 }
 
-static void unsupportParam(OssData * od, unsigned param, int val)
+static void
+oss_set_unsupported(struct oss_data *od, unsigned param, int val)
 {
-	enum oss_support supported = isSupportedParam(od, param, val);
+	enum oss_support supported = oss_param_is_supported(od, param, val);
 
 	if (supported == OSS_UNSUPPORTED)
 		return;
 
-	if (supported == OSS_SUPPORTED) {
-		removeSupportedParam(od, param, val);
-	}
+	if (supported == OSS_SUPPORTED)
+		oss_remove_supported_param(od, param, val);
 
-	addUnsupportedParam(od, param, val);
+	oss_add_unsupported_param(od, param, val);
 }
 
-static OssData *newOssData(void)
+static struct oss_data *
+oss_data_new(void)
 {
-	OssData *ret = g_new(OssData, 1);
+	struct oss_data *ret = g_new(struct oss_data, 1);
 
 	ret->device = NULL;
 	ret->fd = -1;
@@ -266,22 +274,23 @@ static OssData *newOssData(void)
 	ret->unsupported[OSS_CHANNELS] = NULL;
 	ret->unsupported[OSS_BITS] = NULL;
 
-	ret->numSupported[OSS_RATE] = 0;
-	ret->numSupported[OSS_CHANNELS] = 0;
-	ret->numSupported[OSS_BITS] = 0;
-	ret->numUnsupported[OSS_RATE] = 0;
-	ret->numUnsupported[OSS_CHANNELS] = 0;
-	ret->numUnsupported[OSS_BITS] = 0;
+	ret->num_supported[OSS_RATE] = 0;
+	ret->num_supported[OSS_CHANNELS] = 0;
+	ret->num_supported[OSS_BITS] = 0;
+	ret->num_unsupported[OSS_RATE] = 0;
+	ret->num_unsupported[OSS_CHANNELS] = 0;
+	ret->num_unsupported[OSS_BITS] = 0;
 
-	supportParam(ret, SNDCTL_DSP_SPEED, 48000);
-	supportParam(ret, SNDCTL_DSP_SPEED, 44100);
-	supportParam(ret, SNDCTL_DSP_CHANNELS, 2);
-	supportParam(ret, SNDCTL_DSP_SAMPLESIZE, 16);
+	oss_set_supported(ret, SNDCTL_DSP_SPEED, 48000);
+	oss_set_supported(ret, SNDCTL_DSP_SPEED, 44100);
+	oss_set_supported(ret, SNDCTL_DSP_CHANNELS, 2);
+	oss_set_supported(ret, SNDCTL_DSP_SAMPLESIZE, 16);
 
 	return ret;
 }
 
-static void freeOssData(OssData * od)
+static void
+oss_data_free(struct oss_data *od)
 {
 	g_free(od->supported[OSS_RATE]);
 	g_free(od->supported[OSS_CHANNELS]);
@@ -301,7 +310,8 @@ static void freeOssData(OssData * od)
 #define OSS_STAT_DOESN_T_EXIST	-3
 #define OSS_STAT_OTHER		-4
 
-static int oss_statDevice(const char *device, int *stErrno)
+static int
+oss_stat_device(const char *device, int *errno_r)
 {
 	struct stat st;
 
@@ -310,7 +320,7 @@ static int oss_statDevice(const char *device, int *stErrno)
 			return OSS_STAT_NOT_CHAR_DEV;
 		}
 	} else {
-		*stErrno = errno;
+		*errno_r = errno;
 
 		switch (errno) {
 		case ENOENT:
@@ -328,7 +338,8 @@ static int oss_statDevice(const char *device, int *stErrno)
 
 static const char *default_devices[] = { "/dev/sound/dsp", "/dev/dsp" };
 
-static bool oss_testDefault(void)
+static bool
+oss_output_test_default_device(void)
 {
 	int fd, i;
 
@@ -344,16 +355,17 @@ static bool oss_testDefault(void)
 	return false;
 }
 
-static void *oss_open_default(const struct config_param *param)
+static void *
+oss_open_default(const struct config_param *param)
 {
 	int i;
 	int err[G_N_ELEMENTS(default_devices)];
 	int ret[G_N_ELEMENTS(default_devices)];
 
 	for (i = G_N_ELEMENTS(default_devices); --i >= 0; ) {
-		ret[i] = oss_statDevice(default_devices[i], &err[i]);
+		ret[i] = oss_stat_device(default_devices[i], &err[i]);
 		if (ret[i] == 0) {
-			OssData *od = newOssData();
+			struct oss_data *od = oss_data_new();
 			od->device = default_devices[i];
 			od->mixer = mixer_new(&oss_mixer, param);
 			return od;
@@ -388,12 +400,12 @@ static void *oss_open_default(const struct config_param *param)
 }
 
 static void *
-oss_initDriver(G_GNUC_UNUSED const struct audio_format *audio_format,
-	       const struct config_param *param)
+oss_output_init(G_GNUC_UNUSED const struct audio_format *audio_format,
+		const struct config_param *param)
 {
 	const char *device = config_get_block_string(param, "device", NULL);
 	if (device != NULL) {
-		OssData *od = newOssData();
+		struct oss_data *od = oss_data_new();
 		od->device = device;
 		od->mixer = mixer_new(&oss_mixer, param);
 		return od;
@@ -402,40 +414,42 @@ oss_initDriver(G_GNUC_UNUSED const struct audio_format *audio_format,
 	return oss_open_default(param);
 }
 
-static void oss_finishDriver(void *data)
+static void
+oss_output_finish(void *data)
 {
-	OssData *od = data;
+	struct oss_data *od = data;
 
-	freeOssData(od);
+	oss_data_free(od);
 }
 
 static struct mixer *
 oss_get_mixer(void *data)
 {
-	OssData *od = data;
+	struct oss_data *od = data;
 
 	return od->mixer;
 }
 
-static int setParam(OssData * od, unsigned param, int *value)
+static int
+oss_set_param(struct oss_data *od, unsigned param, int *value)
 {
 	int val = *value;
 	int copy;
-	enum oss_support supported = isSupportedParam(od, param, val);
+	enum oss_support supported = oss_param_is_supported(od, param, val);
 
 	do {
 		if (supported == OSS_UNSUPPORTED) {
-			val = getSupportedParam(od, param, val);
+			val = oss_get_supported_param(od, param, val);
 			if (copy < 0)
 				return -1;
 		}
 		copy = val;
 		if (ioctl(od->fd, param, &copy)) {
-			unsupportParam(od, param, val);
+			oss_set_unsupported(od, param, val);
 			supported = OSS_UNSUPPORTED;
 		} else {
 			if (supported == OSS_UNKNOWN) {
-				supportParam(od, param, val);
+				oss_set_supported(od, param, val);
 				supported = OSS_SUPPORTED;
 			}
 			val = copy;
@@ -447,14 +461,16 @@ static int setParam(OssData * od, unsigned param, int *value)
 	return 0;
 }
 
-static void oss_close(OssData * od)
+static void
+oss_close(struct oss_data *od)
 {
 	if (od->fd >= 0)
 		while (close(od->fd) && errno == EINTR) ;
 	od->fd = -1;
 }
 
-static bool oss_open(OssData *od)
+static bool
+oss_open(struct oss_data *od)
 {
 	int tmp;
 
@@ -465,7 +481,7 @@ static bool oss_open(OssData *od)
 	}
 
 	tmp = od->audio_format.channels;
-	if (setParam(od, SNDCTL_DSP_CHANNELS, &tmp)) {
+	if (oss_set_param(od, SNDCTL_DSP_CHANNELS, &tmp)) {
 		g_warning("OSS device \"%s\" does not support %u channels: %s\n",
 			  od->device, od->audio_format.channels,
 			  strerror(errno));
@@ -474,7 +490,7 @@ static bool oss_open(OssData *od)
 	od->audio_format.channels = tmp;
 
 	tmp = od->audio_format.sample_rate;
-	if (setParam(od, SNDCTL_DSP_SPEED, &tmp)) {
+	if (oss_set_param(od, SNDCTL_DSP_SPEED, &tmp)) {
 		g_warning("OSS device \"%s\" does not support %u Hz audio: %s\n",
 			  od->device, od->audio_format.sample_rate,
 			  strerror(errno));
@@ -497,7 +513,7 @@ static bool oss_open(OssData *od)
 		break;
 	}
 
-	if (setParam(od, SNDCTL_DSP_SAMPLESIZE, &tmp)) {
+	if (oss_set_param(od, SNDCTL_DSP_SAMPLESIZE, &tmp)) {
 		g_warning("OSS device \"%s\" does not support %u bit audio: %s\n",
 			  od->device, tmp, strerror(errno));
 		goto fail;
@@ -511,18 +527,18 @@ fail:
 }
 
 static bool
-oss_openDevice(void *data, struct audio_format *audioFormat)
+oss_output_open(void *data, struct audio_format *audio_format)
 {
 	bool ret;
-	OssData *od = data;
+	struct oss_data *od = data;
 
-	od->audio_format = *audioFormat;
+	od->audio_format = *audio_format;
 
 	ret = oss_open(od);
 	if (!ret)
 		return false;
 
-	*audioFormat = od->audio_format;
+	*audio_format = od->audio_format;
 
 	g_debug("device \"%s\" will be playing %u bit %u channel audio at "
 		"%u Hz\n", od->device,
@@ -534,17 +550,19 @@ oss_openDevice(void *data, struct audio_format *audioFormat)
 	return ret;
 }
 
-static void oss_closeDevice(void *data)
+static void
+oss_output_close(void *data)
 {
-	OssData *od = data;
+	struct oss_data *od = data;
 
 	oss_close(od);
 	mixer_close(od->mixer);
 }
 
-static void oss_dropBufferedAudio(void *data)
+static void
+oss_output_cancel(void *data)
 {
-	OssData *od = data;
+	struct oss_data *od = data;
 
 	if (od->fd >= 0) {
 		ioctl(od->fd, SNDCTL_DSP_RESET, 0);
@@ -553,9 +571,9 @@ static void oss_dropBufferedAudio(void *data)
 }
 
 static size_t
-oss_playAudio(void *data, const void *chunk, size_t size)
+oss_output_play(void *data, const void *chunk, size_t size)
 {
-	OssData *od = data;
+	struct oss_data *od = data;
 	ssize_t ret;
 
 	/* reopen the device since it was closed by dropBufferedAudio */
@@ -575,14 +593,14 @@ oss_playAudio(void *data, const void *chunk, size_t size)
 	}
 }
 
-const struct audio_output_plugin ossPlugin = {
+const struct audio_output_plugin oss_output_plugin = {
 	.name = "oss",
-	.test_default_device = oss_testDefault,
-	.init = oss_initDriver,
-	.finish = oss_finishDriver,
+	.test_default_device = oss_output_test_default_device,
+	.init = oss_output_init,
+	.finish = oss_output_finish,
 	.get_mixer = oss_get_mixer,
-	.open = oss_openDevice,
-	.play = oss_playAudio,
-	.cancel = oss_dropBufferedAudio,
-	.close = oss_closeDevice,
+	.open = oss_output_open,
+	.close = oss_output_close,
+	.play = oss_output_play,
+	.cancel = oss_output_cancel,
 };
