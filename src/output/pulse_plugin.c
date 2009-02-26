@@ -38,7 +38,6 @@ static struct pulse_data *pulse_new_data(void)
 
 	ret = g_new(struct pulse_data, 1);
 
-	ret->s = NULL;
 	ret->server = NULL;
 	ret->sink = NULL;
 
@@ -138,9 +137,6 @@ static void pulse_cancel(void *data)
 	struct pulse_data *pd = data;
 	int error;
 
-	if (pd->s == NULL)
-		return;
-
 	if (pa_simple_flush(pd->s, &error) < 0)
 		g_warning("Flush failed in PulseAudio output \"%s\": %s\n",
 			  pd->name, pa_strerror(error));
@@ -150,11 +146,8 @@ static void pulse_close(void *data)
 {
 	struct pulse_data *pd = data;
 
-	if (pd->s) {
-		pa_simple_drain(pd->s, NULL);
-		pa_simple_free(pd->s);
-		pd->s = NULL;
-	}
+	pa_simple_drain(pd->s, NULL);
+	pa_simple_free(pd->s);
 }
 
 static size_t
@@ -167,7 +160,6 @@ pulse_play(void *data, const void *chunk, size_t size)
 		g_warning("PulseAudio output \"%s\" disconnecting due to "
 			  "write error: %s\n",
 			  pd->name, pa_strerror(error));
-		pulse_close(pd);
 		return 0;
 	}
 
