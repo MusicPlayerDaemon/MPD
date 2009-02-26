@@ -92,33 +92,33 @@ oss_param_from_ioctl(unsigned param)
 	return idx;
 }
 
-static int
+static bool
 oss_find_supported_param(struct oss_data *od, unsigned param, int val)
 {
 	enum oss_param idx = oss_param_from_ioctl(param);
 
 	for (unsigned i = 0; i < od->num_supported[idx]; i++)
 		if (od->supported[idx][i] == val)
-			return 1;
+			return true;
 
-	return 0;
+	return false;
 }
 
-static int
+static bool
 oss_can_convert(int idx, int val)
 {
 	switch (idx) {
 	case OSS_BITS:
 		if (val != 16)
-			return 0;
+			return false;
 		break;
 	case OSS_CHANNELS:
 		if (val != 2)
-			return 0;
+			return false;
 		break;
 	}
 
-	return 1;
+	return true;
 }
 
 static int
@@ -145,17 +145,17 @@ oss_get_supported_param(struct oss_data *od, unsigned param, int val)
 	return ret;
 }
 
-static int
+static bool
 oss_find_unsupported_param(struct oss_data *od, unsigned param, int val)
 {
 	enum oss_param idx = oss_param_from_ioctl(param);
 
 	for (unsigned i = 0; i < od->num_unsupported[idx]; i++) {
 		if (od->unsupported[idx][i] == val)
-			return 1;
+			return true;
 	}
 
-	return 0;
+	return false;
 }
 
 static void
