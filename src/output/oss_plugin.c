@@ -299,13 +299,15 @@ oss_data_free(struct oss_data *od)
 	g_free(od);
 }
 
-#define OSS_STAT_NO_ERROR 	0
-#define OSS_STAT_NOT_CHAR_DEV	-1
-#define OSS_STAT_NO_PERMS	-2
-#define OSS_STAT_DOESN_T_EXIST	-3
-#define OSS_STAT_OTHER		-4
+enum oss_stat {
+	OSS_STAT_NO_ERROR = 0,
+	OSS_STAT_NOT_CHAR_DEV = -1,
+	OSS_STAT_NO_PERMS = -2,
+	OSS_STAT_DOESN_T_EXIST = -3,
+	OSS_STAT_OTHER = -4,
+};
 
-static int
+static enum oss_stat
 oss_stat_device(const char *device, int *errno_r)
 {
 	struct stat st;
@@ -328,7 +330,7 @@ oss_stat_device(const char *device, int *errno_r)
 		}
 	}
 
-	return 0;
+	return OSS_STAT_NO_ERROR;
 }
 
 static const char *default_devices[] = { "/dev/sound/dsp", "/dev/dsp" };
@@ -355,11 +357,11 @@ oss_open_default(const struct config_param *param)
 {
 	int i;
 	int err[G_N_ELEMENTS(default_devices)];
-	int ret[G_N_ELEMENTS(default_devices)];
+	enum oss_stat ret[G_N_ELEMENTS(default_devices)];
 
 	for (i = G_N_ELEMENTS(default_devices); --i >= 0; ) {
 		ret[i] = oss_stat_device(default_devices[i], &err[i]);
-		if (ret[i] == 0) {
+		if (ret[i] == OSS_STAT_NO_ERROR) {
 			struct oss_data *od = oss_data_new();
 			od->device = default_devices[i];
 			od->mixer = mixer_new(&oss_mixer, param);
@@ -376,6 +378,9 @@ oss_open_default(const struct config_param *param)
 	for (i = G_N_ELEMENTS(default_devices); --i >= 0; ) {
 		const char *dev = default_devices[i];
 		switch(ret[i]) {
+		case OSS_STAT_NO_ERROR:
+			/* never reached */
+			break;
 		case OSS_STAT_DOESN_T_EXIST:
 			g_warning("%s not found\n", dev);
 			break;
@@ -385,7 +390,7 @@ oss_open_default(const struct config_param *param)
 		case OSS_STAT_NO_PERMS:
 			g_warning("%s: permission denied\n", dev);
 			break;
-		default:
+		case OSS_STAT_OTHER:
 			g_warning("Error accessing %s: %s\n",
 				  dev, strerror(err[i]));
 		}
