@@ -36,6 +36,7 @@
 
 #define VOLUME_MIXER_TYPE_SOFTWARE		0
 #define VOLUME_MIXER_TYPE_HARDWARE		1
+#define VOLUME_MIXER_TYPE_DISABLED		2
 
 #define VOLUME_MIXER_SOFTWARE_DEFAULT		""
 #define SW_VOLUME_STATE                         "sw_volume: "
@@ -131,6 +132,8 @@ void volume_init(void)
 	if (param) {
 		if (strcmp(param->value, VOLUME_MIXER_SOFTWARE) == 0) {
 			volume_mixer_type = VOLUME_MIXER_TYPE_SOFTWARE;
+		} else if (strcmp(param->value, VOLUME_MIXER_DISABLED) == 0) {
+			volume_mixer_type = VOLUME_MIXER_TYPE_DISABLED;
 		} else if (strcmp(param->value, VOLUME_MIXER_HARDWARE) == 0) {
 			//nothing to do
 		} else {

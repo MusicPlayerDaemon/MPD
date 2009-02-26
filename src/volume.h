@@ -25,6 +25,7 @@
 #define VOLUME_MIXER_ALSA	"alsa"
 #define VOLUME_MIXER_SOFTWARE	"software"
 #define VOLUME_MIXER_HARDWARE	"hardware"
+#define VOLUME_MIXER_DISABLED	"disabled"
 
 void volume_init(void);
 

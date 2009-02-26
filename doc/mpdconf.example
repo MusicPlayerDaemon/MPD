@@ -245,6 +245,10 @@ log_file			"~/.mpd/log"
 #
 #mixer_type			"software"
 #
+# This example will not allow MPD to touch the mixer at all.
+#
+#mixer_type			"disabled"
+#
 ###############################################################################
 
 
