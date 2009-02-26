@@ -32,7 +32,6 @@ struct osx_output {
 	size_t buffer_size;
 	size_t pos;
 	size_t len;
-	int started;
 };
 
 static bool
@@ -54,7 +53,6 @@ osx_output_init(G_GNUC_UNUSED const struct audio_format *audio_format,
 
 	oo->pos = 0;
 	oo->len = 0;
-	oo->started = 0;
 	oo->buffer = NULL;
 	oo->buffer_size = 0;
 
@@ -90,11 +88,7 @@ static void osx_output_close(void *data)
 	}
 	g_mutex_unlock(od->mutex);
 
-	if (od->started) {
-		AudioOutputUnitStop(od->au);
-		od->started = 0;
-	}
-
+	AudioOutputUnitStop(od->au);
 	AudioUnitUninitialize(od->au);
 	CloseComponent(od->au);
 }
@@ -156,6 +150,7 @@ osx_output_open(void *data, struct audio_format *audio_format)
 	Component comp;
 	AURenderCallbackStruct callback;
 	AudioStreamBasicDescription stream_description;
+	int err;
 
 	if (audio_format->bits > 16)
 		audio_format->bits = 16;
@@ -227,6 +222,12 @@ osx_output_open(void *data, struct audio_format *audio_format)
 	od->pos = 0;
 	od->len = 0;
 
+	err = AudioOutputUnitStart(od->au);
+	if (err != 0) {
+		g_warning("unable to start audio output: %i", err);
+		return false;
+	}
+
 	return true;
 }
 
@@ -235,16 +236,6 @@ osx_output_play(void *data, const void *chunk, size_t size)
 {
 	struct osx_output *od = data;
 	size_t start, nbytes;
-
-	if (!od->started) {
-		int err;
-		od->started = 1;
-		err = AudioOutputUnitStart(od->au);
-		if (err) {
-			g_warning("unable to start audio output: %i\n", err);
-			return 0;
-		}
-	}
 
 	g_mutex_lock(od->mutex);
 
