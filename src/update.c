@@ -540,9 +540,14 @@ updateDirectory(struct directory *directory, const struct stat *st)
 		return false;
 
 	dir = opendir(path_fs);
-	g_free(path_fs);
-	if (!dir)
+	if (!dir) {
+		g_warning("Failed to open directory %s: %s",
+			  path_fs, g_strerror(errno));
+		g_free(path_fs);
 		return false;
+	}
+
+	g_free(path_fs);
 
 	removeDeletedFromDirectory(directory);
 
