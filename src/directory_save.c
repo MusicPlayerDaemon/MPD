@@ -28,6 +28,10 @@
 #include <assert.h>
 #include <string.h>
 
+#define DIRECTORY_MTIME "mtime: " /* DEPRECATED, noop-read-only */
+#define DIRECTORY_BEGIN "begin: "
+#define DIRECTORY_END "end: "
+
 /* TODO error checking */
 int
 directory_save(FILE *fp, struct directory *directory)

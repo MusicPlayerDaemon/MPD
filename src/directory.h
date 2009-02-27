@@ -26,13 +26,6 @@
 #include <sys/types.h>
 
 #define DIRECTORY_DIR		"directory: "
-#define DIRECTORY_MTIME		"mtime: " /* DEPRECATED, noop-read-only */
-#define DIRECTORY_BEGIN		"begin: "
-#define DIRECTORY_END		"end: "
-#define DIRECTORY_INFO_BEGIN	"info_begin"
-#define DIRECTORY_INFO_END	"info_end"
-#define DIRECTORY_MPD_VERSION	"mpd_version: "
-#define DIRECTORY_FS_CHARSET	"fs_charset: "
 
 #define DEVICE_INARCHIVE	(unsigned)(-1)
 

@@ -38,6 +38,11 @@
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "database"
 
+#define DIRECTORY_INFO_BEGIN "info_begin"
+#define DIRECTORY_INFO_END "info_end"
+#define DIRECTORY_MPD_VERSION "mpd_version: "
+#define DIRECTORY_FS_CHARSET "fs_charset: "
+
 static char *database_path;
 
 static struct directory *music_root;
