@@ -2,6 +2,7 @@ ver 0.15 - (200?/??/??)
 * input:
   - parse Icy-Metadata
   - added support for the MMS protocol
+  - hide HTTP password in playlist
 * tags:
   - support the "album artist" tag
   - support MusicBrainz tags

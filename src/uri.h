@@ -30,4 +30,13 @@ bool uri_has_scheme(const char *uri);
 const char *
 uri_get_suffix(const char *uri);
 
+/**
+ * Removes HTTP username and password from the URI.  This may be
+ * useful for displaying an URI without disclosing secrets.  Returns
+ * NULL if nothing needs to be removed, or if the URI is not
+ * recognized.
+ */
+char *
+uri_remove_auth(const char *uri);
+
 #endif

@@ -35,3 +35,35 @@ uri_get_suffix(const char *uri)
 
 	return dot != NULL ? dot + 1 : NULL;
 }
+
+char *
+uri_remove_auth(const char *uri)
+{
+	const char *auth, *slash, *at;
+	char *p;
+
+	if (strncmp(uri, "http://", 7) == 0)
+		auth = uri + 7;
+	else if (strncmp(uri, "https://", 8) == 0)
+		auth = uri + 8;
+	else
+		/* unrecognized URI */
+		return NULL;
+
+	slash = strchr(auth, '/');
+	if (slash == NULL)
+		slash = auth + strlen(auth);
+
+	at = memchr(auth, '@', slash - auth);
+	if (at == NULL)
+		/* no auth info present, do nothing */
+		return NULL;
+
+	/* duplicate the full URI and then delete the auth
+	   information */
+	p = g_strdup(uri);
+	memmove(p + (auth - uri), p + (at + 1 - uri),
+		strlen(at));
+
+	return p;
+}

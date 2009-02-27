@@ -22,6 +22,7 @@
 #include "directory.h"
 #include "tag_print.h"
 #include "client.h"
+#include "uri.h"
 
 void
 song_print_url(struct client *client, struct song *song)
@@ -30,7 +31,16 @@ song_print_url(struct client *client, struct song *song)
 		client_printf(client, "%s%s/%s\n", SONG_FILE,
 			      directory_get_path(song->parent), song->url);
 	} else {
-		client_printf(client, "%s%s\n", SONG_FILE, song->url);
+		char *allocated;
+		const char *uri;
+
+		uri = allocated = uri_remove_auth(song->url);
+		if (uri == NULL)
+			uri = song->url;
+
+		client_printf(client, "%s%s\n", SONG_FILE, uri);
+
+		g_free(allocated);
 	}
 }
 
