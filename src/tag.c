@@ -246,7 +246,7 @@ struct tag *tag_new(void)
 	return ret;
 }
 
-static void tag_delete_item(struct tag *tag, int idx)
+static void tag_delete_item(struct tag *tag, unsigned idx)
 {
 	assert(idx < tag->num_items);
 	tag->num_items--;
@@ -270,9 +270,7 @@ static void tag_delete_item(struct tag *tag, int idx)
 
 void tag_clear_items_by_type(struct tag *tag, enum tag_type type)
 {
-	int i;
-
-	for (i = 0; i < tag->num_items; i++) {
+	for (unsigned i = 0; i < tag->num_items; i++) {
 		if (tag->items[i]->type == type) {
 			tag_delete_item(tag, i);
 			/* decrement since when just deleted this node */
@@ -304,7 +302,6 @@ void tag_free(struct tag *tag)
 struct tag *tag_dup(const struct tag *tag)
 {
 	struct tag *ret;
-	int i;
 
 	if (!tag)
 		return NULL;
@@ -315,7 +312,7 @@ struct tag *tag_dup(const struct tag *tag)
 	ret->items = ret->num_items > 0 ? g_malloc(items_size(tag)) : NULL;
 
 	g_mutex_lock(tag_pool_lock);
-	for (i = 0; i < tag->num_items; i++)
+	for (unsigned i = 0; i < tag->num_items; i++)
 		ret->items[i] = tag_pool_dup_item(tag->items[i]);
 	g_mutex_unlock(tag_pool_lock);
 
@@ -388,8 +385,6 @@ bool tag_has_type(const struct tag *tag, enum tag_type type)
 
 bool tag_equal(const struct tag *tag1, const struct tag *tag2)
 {
-	int i;
-
 	if (tag1 == NULL && tag2 == NULL)
 		return true;
 	else if (!tag1 || !tag2)
@@ -401,7 +396,7 @@ bool tag_equal(const struct tag *tag1, const struct tag *tag2)
 	if (tag1->num_items != tag2->num_items)
 		return false;
 
-	for (i = 0; i < tag1->num_items; i++) {
+	for (unsigned i = 0; i < tag1->num_items; i++) {
 		if (tag1->items[i]->type != tag2->items[i]->type)
 			return false;
 		if (strcmp(tag1->items[i]->value, tag2->items[i]->value)) {
@@ -564,10 +559,6 @@ void tag_add_item_n(struct tag *tag, enum tag_type itemType,
 		return;
 	}
 	if (!value || !len)
-		return;
-
-	/* we can't hold more than 255 items */
-	if (tag->num_items == 255)
 		return;
 
 	tag_add_item_internal(tag, itemType, value, len);

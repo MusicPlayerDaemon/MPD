@@ -141,7 +141,6 @@ locate_item_free(struct locate_item *item)
 static bool
 locate_tag_search(const struct song *song, enum tag_type type, const char *str)
 {
-	int i;
 	char *duplicate;
 	bool ret = false;
 	bool visited_types[TAG_NUM_OF_ITEM_TYPES];
@@ -165,7 +164,7 @@ locate_tag_search(const struct song *song, enum tag_type type, const char *str)
 
 	memset(visited_types, 0, sizeof(visited_types));
 
-	for (i = 0; i < song->tag->num_items && !ret; i++) {
+	for (unsigned i = 0; i < song->tag->num_items && !ret; i++) {
 		visited_types[song->tag->items[i]->type] = true;
 		if (type != LOCATE_TAG_ANY_TYPE &&
 		    song->tag->items[i]->type != type) {
