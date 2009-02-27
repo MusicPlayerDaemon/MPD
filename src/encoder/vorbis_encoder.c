@@ -274,7 +274,7 @@ static void
 copy_tag_to_vorbis_comment(struct vorbis_encoder *encoder,
 			   const struct tag *tag)
 {
-	for (unsigned i = 0; i < tag->numOfItems; i++) {
+	for (unsigned i = 0; i < tag->num_items; i++) {
 		switch (tag->items[i]->type) {
 		case TAG_ITEM_ARTIST:
 			add_tag(encoder, "ARTIST", tag->items[i]->value);

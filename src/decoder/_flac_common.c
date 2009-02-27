@@ -158,7 +158,7 @@ flac_parse_comment(struct tag *tag,
 
 	for (unsigned i = 0; i < TAG_NUM_OF_ITEM_TYPES; ++i)
 		if (flac_copy_comment(tag, entry,
-				      mpdTagItemKeys[i], i))
+				      tag_item_names[i], i))
 			return;
 }
 

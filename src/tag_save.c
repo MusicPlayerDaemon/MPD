@@ -23,13 +23,11 @@
 
 void tag_save(FILE *file, const struct tag *tag)
 {
-	int i;
-
 	if (tag->time >= 0)
 		fprintf(file, SONG_TIME "%i\n", tag->time);
 
-	for (i = 0; i < tag->numOfItems; i++)
+	for (unsigned i = 0; i < tag->num_items; i++)
 		fprintf(file, "%s: %s\n",
-			mpdTagItemKeys[tag->items[i]->type],
+			tag_item_names[tag->items[i]->type],
 			tag->items[i]->value);
 }

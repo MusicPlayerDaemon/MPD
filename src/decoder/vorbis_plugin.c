@@ -183,7 +183,7 @@ vorbis_parse_comment(struct tag *tag, const char *comment)
 
 	for (unsigned i = 0; i < TAG_NUM_OF_ITEM_TYPES; ++i)
 		if (vorbis_copy_comment(tag, comment,
-					mpdTagItemKeys[i], i))
+					tag_item_names[i], i))
 			return;
 }
 

@@ -42,7 +42,7 @@ locate_parse_type(const char *str)
 		return LOCATE_TAG_ANY_TYPE;
 
 	for (i = 0; i < TAG_NUM_OF_ITEM_TYPES; i++)
-		if (0 == strcasecmp(str, mpdTagItemKeys[i]))
+		if (0 == strcasecmp(str, tag_item_names[i]))
 			return i;
 
 	return -1;
@@ -165,7 +165,7 @@ locate_tag_search(const struct song *song, enum tag_type type, const char *str)
 
 	memset(visited_types, 0, sizeof(visited_types));
 
-	for (i = 0; i < song->tag->numOfItems && !ret; i++) {
+	for (i = 0; i < song->tag->num_items && !ret; i++) {
 		visited_types[song->tag->items[i]->type] = true;
 		if (type != LOCATE_TAG_ANY_TYPE &&
 		    song->tag->items[i]->type != type) {
@@ -205,7 +205,6 @@ locate_song_search(const struct song *song,
 static bool
 locate_tag_match(const struct song *song, enum tag_type type, const char *str)
 {
-	int i;
 	bool visited_types[TAG_NUM_OF_ITEM_TYPES];
 
 	if (type == LOCATE_TAG_FILE_TYPE || type == LOCATE_TAG_ANY_TYPE) {
@@ -225,7 +224,7 @@ locate_tag_match(const struct song *song, enum tag_type type, const char *str)
 
 	memset(visited_types, 0, sizeof(visited_types));
 
-	for (i = 0; i < song->tag->numOfItems; i++) {
+	for (unsigned i = 0; i < song->tag->num_items; i++) {
 		visited_types[song->tag->items[i]->type] = true;
 		if (type != LOCATE_TAG_ANY_TYPE &&
 		    song->tag->items[i]->type != type) {

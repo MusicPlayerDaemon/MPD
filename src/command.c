@@ -1141,7 +1141,7 @@ handle_list(struct client *client, int argc, char *argv[])
 		if (tagType != TAG_ITEM_ALBUM) {
 			command_error(client, ACK_ERROR_ARG,
 				      "should be \"%s\" for 3 arguments",
-				      mpdTagItemKeys[TAG_ITEM_ALBUM]);
+				      tag_item_names[TAG_ITEM_ALBUM]);
 			return COMMAND_RETURN_ERROR;
 		}
 

@@ -48,7 +48,7 @@ visit_tag(struct visit_data *data, const struct tag *tag)
 	if (tag->time > 0)
 		stats.song_duration += tag->time;
 
-	for (unsigned i = 0; i < tag->numOfItems; ++i) {
+	for (unsigned i = 0; i < tag->num_items; ++i) {
 		const struct tag_item *item = tag->items[i];
 
 		switch (item->type) {

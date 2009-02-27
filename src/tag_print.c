@@ -29,20 +29,18 @@ void tag_print_types(struct client *client)
 	for (i = 0; i < TAG_NUM_OF_ITEM_TYPES; i++) {
 		if (ignoreTagItems[i] == 0)
 			client_printf(client, "tagtype: %s\n",
-				      mpdTagItemKeys[i]);
+				      tag_item_names[i]);
 	}
 }
 
 void tag_print(struct client *client, const struct tag *tag)
 {
-	int i;
-
 	if (tag->time >= 0)
 		client_printf(client, SONG_TIME "%i\n", tag->time);
 
-	for (i = 0; i < tag->numOfItems; i++) {
+	for (unsigned i = 0; i < tag->num_items; i++) {
 		client_printf(client, "%s: %s\n",
-			      mpdTagItemKeys[tag->items[i]->type],
+			      tag_item_names[tag->items[i]->type],
 			      tag->items[i]->value);
 	}
 }

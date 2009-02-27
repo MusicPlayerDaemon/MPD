@@ -233,7 +233,6 @@ static void
 visitTag(struct client *client, struct strset *set,
 	 struct song *song, enum tag_type tagType)
 {
-	int i;
 	struct tag *tag = song->tag;
 
 	if (tagType == LOCATE_TAG_FILE_TYPE) {
@@ -244,12 +243,13 @@ visitTag(struct client *client, struct strset *set,
 	if (!tag)
 		return;
 
-	for (i = 0; i < tag->numOfItems; i++) {
+	for (unsigned i = 0; i < tag->num_items; i++) {
 		if (tag->items[i]->type == tagType) {
 			strset_add(set, tag->items[i]->value);
 			return;
 		}
 	}
+
 	strset_add(set, "");
 }
 
@@ -294,7 +294,7 @@ int listAllUniqueTags(struct client *client, int type,
 
 		while ((value = strset_next(data.set)) != NULL)
 			client_printf(client, "%s: %s\n",
-				      mpdTagItemKeys[type],
+				      tag_item_names[type],
 				      value);
 
 		strset_free(data.set);

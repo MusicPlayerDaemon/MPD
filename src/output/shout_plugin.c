@@ -457,12 +457,11 @@ shout_tag_to_metadata(const struct tag *tag, char *dest, size_t size)
 {
 	char artist[size];
 	char title[size];
-	int i;
 
 	artist[0] = 0;
 	title[0] = 0;
 
-	for (i = 0; i < tag->numOfItems; i++) {
+	for (unsigned i = 0; i < tag->num_items; i++) {
 		switch (tag->items[i]->type) {
 		case TAG_ITEM_ARTIST:
 			strncpy(artist, tag->items[i]->value, size);

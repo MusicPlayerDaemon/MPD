@@ -41,7 +41,7 @@ static struct {
 	struct tag_item *items[BULK_MAX];
 } bulk;
 
-const char *mpdTagItemKeys[TAG_NUM_OF_ITEM_TYPES] = {
+const char *tag_item_names[TAG_NUM_OF_ITEM_TYPES] = {
 	"Artist",
 	"Album",
 	"AlbumArtist",
@@ -66,7 +66,7 @@ int8_t ignoreTagItems[TAG_NUM_OF_ITEM_TYPES];
 
 static size_t items_size(const struct tag *tag)
 {
-	return (tag->numOfItems * sizeof(struct tag_item *));
+	return tag->num_items * sizeof(struct tag_item *);
 }
 
 void tag_lib_init(void)
@@ -99,7 +99,7 @@ void tag_lib_init(void)
 				quit = 1;
 			*s = '\0';
 			for (i = 0; i < TAG_NUM_OF_ITEM_TYPES; i++) {
-				if (strcasecmp(c, mpdTagItemKeys[i]) == 0) {
+				if (strcasecmp(c, tag_item_names[i]) == 0) {
 					ignoreTagItems[i] = 0;
 					break;
 				}
@@ -242,25 +242,25 @@ struct tag *tag_new(void)
 	struct tag *ret = g_new(struct tag, 1);
 	ret->items = NULL;
 	ret->time = -1;
-	ret->numOfItems = 0;
+	ret->num_items = 0;
 	return ret;
 }
 
-static void deleteItem(struct tag *tag, int idx)
+static void tag_delete_item(struct tag *tag, int idx)
 {
-	assert(idx < tag->numOfItems);
-	tag->numOfItems--;
+	assert(idx < tag->num_items);
+	tag->num_items--;
 
 	g_mutex_lock(tag_pool_lock);
 	tag_pool_put_item(tag->items[idx]);
 	g_mutex_unlock(tag_pool_lock);
 
-	if (tag->numOfItems - idx > 0) {
+	if (tag->num_items - idx > 0) {
 		memmove(tag->items + idx, tag->items + idx + 1,
-			tag->numOfItems - idx);
+			tag->num_items - idx);
 	}
 
-	if (tag->numOfItems > 0) {
+	if (tag->num_items > 0) {
 		tag->items = g_realloc(tag->items, items_size(tag));
 	} else {
 		g_free(tag->items);
@@ -272,9 +272,9 @@ void tag_clear_items_by_type(struct tag *tag, enum tag_type type)
 {
 	int i;
 
-	for (i = 0; i < tag->numOfItems; i++) {
+	for (i = 0; i < tag->num_items; i++) {
 		if (tag->items[i]->type == type) {
-			deleteItem(tag, i);
+			tag_delete_item(tag, i);
 			/* decrement since when just deleted this node */
 			i--;
 		}
@@ -286,7 +286,7 @@ void tag_free(struct tag *tag)
 	int i;
 
 	g_mutex_lock(tag_pool_lock);
-	for (i = tag->numOfItems; --i >= 0; )
+	for (i = tag->num_items; --i >= 0; )
 		tag_pool_put_item(tag->items[i]);
 	g_mutex_unlock(tag_pool_lock);
 
@@ -311,11 +311,11 @@ struct tag *tag_dup(const struct tag *tag)
 
 	ret = tag_new();
 	ret->time = tag->time;
-	ret->numOfItems = tag->numOfItems;
-	ret->items = ret->numOfItems > 0 ? g_malloc(items_size(tag)) : NULL;
+	ret->num_items = tag->num_items;
+	ret->items = ret->num_items > 0 ? g_malloc(items_size(tag)) : NULL;
 
 	g_mutex_lock(tag_pool_lock);
-	for (i = 0; i < tag->numOfItems; i++)
+	for (i = 0; i < tag->num_items; i++)
 		ret->items[i] = tag_pool_dup_item(tag->items[i]);
 	g_mutex_unlock(tag_pool_lock);
 
@@ -335,33 +335,33 @@ tag_merge(const struct tag *base, const struct tag *add)
 
 	ret = tag_new();
 	ret->time = add->time > 0 ? add->time : base->time;
-	ret->numOfItems = base->numOfItems + add->numOfItems;
-	ret->items = ret->numOfItems > 0 ? g_malloc(items_size(ret)) : NULL;
+	ret->num_items = base->num_items + add->num_items;
+	ret->items = ret->num_items > 0 ? g_malloc(items_size(ret)) : NULL;
 
 	g_mutex_lock(tag_pool_lock);
 
 	/* copy all items from "add" */
 
-	for (unsigned i = 0; i < add->numOfItems; ++i)
+	for (unsigned i = 0; i < add->num_items; ++i)
 		ret->items[i] = tag_pool_dup_item(add->items[i]);
 
-	n = add->numOfItems;
+	n = add->num_items;
 
 	/* copy additional items from "base" */
 
-	for (unsigned i = 0; i < base->numOfItems; ++i)
+	for (unsigned i = 0; i < base->num_items; ++i)
 		if (!tag_has_type(add, base->items[i]->type))
 			ret->items[n++] = tag_pool_dup_item(base->items[i]);
 
 	g_mutex_unlock(tag_pool_lock);
 
-	assert(n <= ret->numOfItems);
+	assert(n <= ret->num_items);
 
-	if (n < ret->numOfItems) {
+	if (n < ret->num_items) {
 		/* some tags were not copied - shrink ret->items */
 		assert(n > 0);
 
-		ret->numOfItems = n;
+		ret->num_items = n;
 		ret->items = g_realloc(ret->items, items_size(ret));
 	}
 
@@ -374,7 +374,7 @@ tag_get_value(const struct tag *tag, enum tag_type type)
 	assert(tag != NULL);
 	assert(type < TAG_NUM_OF_ITEM_TYPES);
 
-	for (unsigned i = 0; i < tag->numOfItems; i++)
+	for (unsigned i = 0; i < tag->num_items; i++)
 		if (tag->items[i]->type == type)
 			return tag->items[i]->value;
 
@@ -398,10 +398,10 @@ bool tag_equal(const struct tag *tag1, const struct tag *tag2)
 	if (tag1->time != tag2->time)
 		return false;
 
-	if (tag1->numOfItems != tag2->numOfItems)
+	if (tag1->num_items != tag2->num_items)
 		return false;
 
-	for (i = 0; i < tag1->numOfItems; i++) {
+	for (i = 0; i < tag1->num_items; i++) {
 		if (tag1->items[i]->type != tag2->items[i]->type)
 			return false;
 		if (strcmp(tag1->items[i]->value, tag2->items[i]->value)) {
@@ -437,7 +437,7 @@ void tag_begin_add(struct tag *tag)
 	assert(!bulk.busy);
 	assert(tag != NULL);
 	assert(tag->items == NULL);
-	assert(tag->numOfItems == 0);
+	assert(tag->num_items == 0);
 
 #ifndef NDEBUG
 	bulk.busy = true;
@@ -448,9 +448,9 @@ void tag_begin_add(struct tag *tag)
 void tag_end_add(struct tag *tag)
 {
 	if (tag->items == bulk.items) {
-		assert(tag->numOfItems <= BULK_MAX);
+		assert(tag->num_items <= BULK_MAX);
 
-		if (tag->numOfItems > 0) {
+		if (tag->num_items > 0) {
 			/* copy the tag items from the bulk list over
 			   to a new list (which fits exactly) */
 			tag->items = g_malloc(items_size(tag));
@@ -522,10 +522,11 @@ fix_tag_value(const char *p, size_t length)
 	return cleared;
 }
 
-static void appendToTagItems(struct tag *tag, enum tag_type type,
-			     const char *value, size_t len)
+static void
+tag_add_item_internal(struct tag *tag, enum tag_type type,
+		      const char *value, size_t len)
 {
-	unsigned int i = tag->numOfItems;
+	unsigned int i = tag->num_items;
 	char *p;
 
 	p = fix_tag_value(value, len);
@@ -534,12 +535,12 @@ static void appendToTagItems(struct tag *tag, enum tag_type type,
 		len = strlen(value);
 	}
 
-	tag->numOfItems++;
+	tag->num_items++;
 
 	if (tag->items != bulk.items)
 		/* bulk mode disabled */
 		tag->items = g_realloc(tag->items, items_size(tag));
-	else if (tag->numOfItems >= BULK_MAX) {
+	else if (tag->num_items >= BULK_MAX) {
 		/* bulk list already full - switch back to non-bulk */
 		assert(bulk.busy);
 
@@ -566,8 +567,8 @@ void tag_add_item_n(struct tag *tag, enum tag_type itemType,
 		return;
 
 	/* we can't hold more than 255 items */
-	if (tag->numOfItems == 255)
+	if (tag->num_items == 255)
 		return;
 
-	appendToTagItems(tag, itemType, value, len);
+	tag_add_item_internal(tag, itemType, value, len);
 }

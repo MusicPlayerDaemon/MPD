@@ -48,7 +48,7 @@ enum tag_type {
 	TAG_NUM_OF_ITEM_TYPES
 };
 
-extern const char *mpdTagItemKeys[];
+extern const char *tag_item_names[];
 
 struct tag_item {
 	enum tag_type type;
@@ -58,7 +58,7 @@ struct tag_item {
 struct tag {
 	int time;
 	struct tag_item **items;
-	uint8_t numOfItems;
+	uint8_t num_items;
 };
 
 struct tag *tag_ape_load(const char *file);
@@ -112,7 +112,7 @@ tag_merge(const struct tag *base, const struct tag *add);
 static inline bool
 tag_is_empty(const struct tag *tag)
 {
-	return tag->numOfItems == 0;
+	return tag->num_items == 0;
 }
 
 /**
