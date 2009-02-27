@@ -407,24 +407,46 @@ bool tag_equal(const struct tag *tag1, const struct tag *tag2)
 	return true;
 }
 
+/**
+ * Replace invalid sequences with the question mark.
+ */
+static char *
+patch_utf8(const char *src, size_t length, const gchar *end)
+{
+	/* duplicate the string, and replace invalid bytes in that
+	   buffer */
+	char *dest = g_strdup(src);
+
+	do {
+		dest[end - src] = '?';
+	} while (!g_utf8_validate(end + 1, (src + length) - (end + 1), &end));
+
+	return dest;
+}
+
 static char *
 fix_utf8(const char *str, size_t length)
 {
+	const gchar *end;
 	char *temp;
 	gsize written;
 
 	assert(str != NULL);
 
-	if (g_utf8_validate(str, length, NULL))
+	/* check if the string is already valid UTF-8 */
+	if (g_utf8_validate(str, length, &end))
 		return NULL;
 
-	DEBUG("not valid utf8 in tag: %s\n",str);
+	/* no, it's not - try to import it from ISO-Latin-1 */
 	temp = g_convert(str, length, "utf-8", "iso-8859-1",
 			 NULL, &written, NULL);
-	if (temp == NULL)
-		return NULL;
+	if (temp != NULL)
+		/* success! */
+		return temp;
 
-	return temp;
+	/* no, still broken - there's no medication, just patch
+	   invalid sequences */
+	return patch_utf8(str, length, end);
 }
 
 void tag_begin_add(struct tag *tag)
