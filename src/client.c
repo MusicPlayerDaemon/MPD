@@ -246,7 +246,7 @@ static void client_close(struct client *client)
 	g_queue_free(client->deferred_send);
 
 	g_log(G_LOG_DOMAIN, LOG_LEVEL_SECURE,
-	      "client %i: closed", client->num);
+	      "[%u] closed", client->num);
 	g_free(client);
 }
 
@@ -309,7 +309,7 @@ void client_new(int fd, const struct sockaddr *addr, int uid)
 	client_init(client, fd);
 	client->uid = uid;
 	g_log(G_LOG_DOMAIN, LOG_LEVEL_SECURE,
-	      "client %i: opened from %s\n", client->num,
+	      "[%u] opened from %s", client->num,
 	      sockaddr_to_tmp_string(addr));
 }
 
@@ -333,14 +333,14 @@ static int client_process_line(struct client *client, char *line)
 	} else if (client->idle_waiting) {
 		/* during idle mode, clients must not send anything
 		   except "noidle" */
-		g_warning("client %i: command \"%s\" during idle",
+		g_warning("[%u] command \"%s\" during idle",
 			  client->num, line);
 		return COMMAND_RETURN_CLOSE;
 	}
 
 	if (client->cmd_list_OK >= 0) {
 		if (strcmp(line, CLIENT_LIST_MODE_END) == 0) {
-			g_debug("client %i: process command list",
+			g_debug("[%u] process command list",
 				client->num);
 
 			/* for scalability reasons, we have prepended
@@ -351,7 +351,7 @@ static int client_process_line(struct client *client, char *line)
 			ret = command_process_list(client,
 						   client->cmd_list_OK,
 						   client->cmd_list);
-			g_debug("client %i: process command "
+			g_debug("[%u] process command "
 				"list returned %i", client->num, ret);
 
 			if (ret == COMMAND_RETURN_CLOSE ||
@@ -370,7 +370,7 @@ static int client_process_line(struct client *client, char *line)
 			client->cmd_list_size += len;
 			if (client->cmd_list_size >
 			    client_max_command_list_size) {
-				g_warning("client %i: command list size (%lu) "
+				g_warning("[%u] command list size (%lu) "
 					  "is larger than the max (%lu)",
 					  client->num,
 					  (unsigned long)client->cmd_list_size,
@@ -387,10 +387,10 @@ static int client_process_line(struct client *client, char *line)
 			client->cmd_list_OK = 1;
 			ret = 1;
 		} else {
-			g_debug("client %i: process command \"%s\"",
+			g_debug("[%u] process command \"%s\"",
 				client->num, line);
 			ret = command_process(client, line);
-			g_debug("client %i: command returned %i",
+			g_debug("[%u] command returned %i",
 				client->num, ret);
 
 			if (ret == COMMAND_RETURN_CLOSE ||
@@ -444,7 +444,7 @@ static int client_input_received(struct client *client, size_t bytesRead)
 	   the beginning */
 	if (client->bufferLength == sizeof(client->buffer)) {
 		if (client->bufferPos == 0) {
-			g_warning("client %i: buffer overflow",
+			g_warning("[%u] buffer overflow",
 				  client->num);
 			return COMMAND_RETURN_CLOSE;
 		}
@@ -628,13 +628,13 @@ client_check_expired_callback(gpointer data, G_GNUC_UNUSED gpointer user_data)
 	struct client *client = data;
 
 	if (client_is_expired(client)) {
-		g_debug("client %i: expired", client->num);
+		g_debug("[%u] expired", client->num);
 		client_close(client);
 	} else if (!client->idle_waiting && /* idle clients
 					       never expire */
 		   time(NULL) - client->lastTime >
 		   client_timeout) {
-		g_debug("client %i: timeout", client->num);
+		g_debug("[%u] timeout", client->num);
 		client_close(client);
 	}
 }
@@ -718,7 +718,7 @@ static void client_write_deferred(struct client *client)
 	}
 
 	if (g_queue_is_empty(client->deferred_send)) {
-		g_debug("client %i: buffer empty %lu", client->num,
+		g_debug("[%u] buffer empty %lu", client->num,
 			(unsigned long)client->deferred_bytes);
 		assert(client->deferred_bytes == 0);
 	}
@@ -735,7 +735,7 @@ static void client_defer_output(struct client *client,
 	alloc = sizeof(*buf) - sizeof(buf->data) + length;
 	client->deferred_bytes += alloc;
 	if (client->deferred_bytes > client_max_output_buffer_size) {
-		g_warning("client %i: output buffer size (%lu) is "
+		g_warning("[%u] output buffer size (%lu) is "
 			  "larger than the max (%lu)",
 			  client->num,
 			  (unsigned long)client->deferred_bytes,
@@ -790,7 +790,7 @@ static void client_write_direct(struct client *client,
 				    length - bytes_written);
 
 	if (!g_queue_is_empty(client->deferred_send))
-		g_debug("client %i: buffer created", client->num);
+		g_debug("[%u] buffer created", client->num);
 }
 
 static void client_write_output(struct client *client)
