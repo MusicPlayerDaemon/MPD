@@ -36,7 +36,7 @@
 
 static struct {
 #ifndef NDEBUG
-	int busy;
+	bool busy;
 #endif
 	struct tag_item *items[BULK_MAX];
 } bulk;
@@ -293,7 +293,7 @@ void tag_free(struct tag *tag)
 	if (tag->items == bulk.items) {
 #ifndef NDEBUG
 		assert(bulk.busy);
-		bulk.busy = 0;
+		bulk.busy = false;
 #endif
 	} else
 		g_free(tag->items);
@@ -386,30 +386,30 @@ bool tag_has_type(const struct tag *tag, enum tag_type type)
 	return tag_get_value(tag, type) != NULL;
 }
 
-int tag_equal(const struct tag *tag1, const struct tag *tag2)
+bool tag_equal(const struct tag *tag1, const struct tag *tag2)
 {
 	int i;
 
 	if (tag1 == NULL && tag2 == NULL)
-		return 1;
+		return true;
 	else if (!tag1 || !tag2)
-		return 0;
+		return false;
 
 	if (tag1->time != tag2->time)
-		return 0;
+		return false;
 
 	if (tag1->numOfItems != tag2->numOfItems)
-		return 0;
+		return false;
 
 	for (i = 0; i < tag1->numOfItems; i++) {
 		if (tag1->items[i]->type != tag2->items[i]->type)
-			return 0;
+			return false;
 		if (strcmp(tag1->items[i]->value, tag2->items[i]->value)) {
-			return 0;
+			return false;
 		}
 	}
 
-	return 1;
+	return true;
 }
 
 static char *
@@ -440,7 +440,7 @@ void tag_begin_add(struct tag *tag)
 	assert(tag->numOfItems == 0);
 
 #ifndef NDEBUG
-	bulk.busy = 1;
+	bulk.busy = true;
 #endif
 	tag->items = bulk.items;
 }
@@ -460,7 +460,7 @@ void tag_end_add(struct tag *tag)
 	}
 
 #ifndef NDEBUG
-	bulk.busy = 0;
+	bulk.busy = false;
 #endif
 }
 

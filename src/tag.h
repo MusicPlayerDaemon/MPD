@@ -137,6 +137,6 @@ tag_get_value(const struct tag *tag, enum tag_type type);
  */
 bool tag_has_type(const struct tag *tag, enum tag_type type);
 
-int tag_equal(const struct tag *tag1, const struct tag *tag2);
+bool tag_equal(const struct tag *tag1, const struct tag *tag2);
 
 #endif
