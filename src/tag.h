@@ -26,6 +26,9 @@
 #include <stdbool.h>
 #include <string.h>
 
+/**
+ * Codes for the type of a tag item.
+ */
 enum tag_type {
 	TAG_ITEM_ARTIST,
 	TAG_ITEM_ALBUM,
@@ -48,25 +51,65 @@ enum tag_type {
 	TAG_NUM_OF_ITEM_TYPES
 };
 
+/**
+ * An array of strings, which map the #tag_type to its machine
+ * readable name (specific to the MPD protocol).
+ */
 extern const char *tag_item_names[];
 
+/**
+ * One tag value.  It is a mapping of #tag_type to am arbitrary string
+ * value.  Each tag can have multiple items of one tag type (although
+ * few clients support that).
+ */
 struct tag_item {
+	/** the type of this item */
 	enum tag_type type;
+
+	/**
+	 * the value of this tag; this is a variable length string
+	 */
 	char value[sizeof(long)];
 } mpd_packed;
 
+/**
+ * The meta information about a song file.  It is a MPD specific
+ * subset of tags (e.g. from ID3, vorbis comments, ...).
+ */
 struct tag {
+	/**
+	 * The duration of the song (in seconds).  A value of zero
+	 * means that the length is unknown.  If the duration is
+	 * really between zero and one second, you should round up to
+	 * 1.
+	 */
 	int time;
+
+	/** an array of tag items */
 	struct tag_item **items;
+
+	/** the total number of tag items in the #items array */
 	unsigned num_items;
 };
 
+/**
+ * Creates an empty #tag.
+ */
 struct tag *tag_new(void);
 
+/**
+ * Initializes the tag library.
+ */
 void tag_lib_init(void);
 
+/**
+ * Clear all tag items with the specified type.
+ */
 void tag_clear_items_by_type(struct tag *tag, enum tag_type type);
 
+/**
+ * Frees a #tag object and all its items.
+ */
 void tag_free(struct tag *tag);
 
 /**
@@ -83,15 +126,33 @@ void tag_begin_add(struct tag *tag);
  */
 void tag_end_add(struct tag *tag);
 
+/**
+ * Appends a new tag item.
+ *
+ * @param tag the #tag object
+ * @param type the type of the new tag item
+ * @param value the value of the tag item (not null-terminated)
+ * @param len the length of #value
+ */
 void tag_add_item_n(struct tag *tag, enum tag_type type,
 		    const char *value, size_t len);
 
+/**
+ * Appends a new tag item.
+ *
+ * @param tag the #tag object
+ * @param type the type of the new tag item
+ * @param value the value of the tag item (null-terminated)
+ */
 static inline void
 tag_add_item(struct tag *tag, enum tag_type type, const char *value)
 {
 	tag_add_item_n(tag, type, value, strlen(value));
 }
 
+/**
+ * Duplicates a #tag object.
+ */
 struct tag *tag_dup(const struct tag *tag);
 
 /**
@@ -135,6 +196,10 @@ tag_get_value(const struct tag *tag, enum tag_type type);
  */
 bool tag_has_type(const struct tag *tag, enum tag_type type);
 
+/**
+ * Compares two tags, including the duration and all tag items.  The
+ * order of the tag items matters.
+ */
 bool tag_equal(const struct tag *tag1, const struct tag *tag2);
 
 #endif
