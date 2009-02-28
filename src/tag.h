@@ -61,8 +61,6 @@ struct tag {
 	unsigned num_items;
 };
 
-struct tag *tag_ape_load(const char *file);
-
 struct tag *tag_new(void);
 
 void tag_lib_init(void);

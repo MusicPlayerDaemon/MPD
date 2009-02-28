@@ -22,6 +22,7 @@
 #include "mapper.h"
 #include "decoder_list.h"
 #include "decoder_plugin.h"
+#include "tag_ape.h"
 #include "tag_id3.h"
 #include "tag.h"
 

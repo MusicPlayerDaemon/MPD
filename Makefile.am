@@ -120,6 +120,7 @@ mpd_headers = \
 	src/tag.h \
 	src/tag_internal.h \
 	src/tag_pool.h \
+	src/tag_ape.h \
 	src/tag_id3.h \
 	src/tag_print.h \
 	src/tag_save.h \
@@ -209,6 +210,7 @@ src_mpd_SOURCES = \
 	src/tag_pool.c \
 	src/tag_print.c \
 	src/tag_save.c \
+	src/tag_ape.c \
 	src/strset.c \
 	src/uri.c \
 	src/utils.c \
