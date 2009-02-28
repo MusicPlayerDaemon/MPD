@@ -511,6 +511,7 @@ if ENABLE_TEST
 
 noinst_PROGRAMS = \
 	test/run_decoder \
+	test/read_tags \
 	test/run_encoder \
 	test/software_volume
 
@@ -522,7 +523,22 @@ test_run_decoder_LDADD = $(MPD_LIBS) \
 	$(INPUT_LIBS) $(DECODER_LIBS)
 test_run_decoder_SOURCES = test/run_decoder.c \
 	src/conf.c src/buffer2array.c src/utils.c src/log.c \
-	src/tag.c src/tag_pool.c src/tag_id3.c \
+	src/tag.c src/tag_pool.c \
+	src/replay_gain.c \
+	src/uri.c \
+	$(ARCHIVE_SRC) \
+	$(INPUT_SRC) \
+	$(DECODER_SRC)
+
+test_read_tags_CPPFLAGS = $(AM_CPPFLAGS) \
+	$(ID3TAG_CFLAGS) \
+	$(INPUT_CFLAGS) $(DECODER_CFLAGS)
+test_read_tags_LDADD = $(MPD_LIBS) \
+	$(ID3TAG_LIBS) \
+	$(INPUT_LIBS) $(DECODER_LIBS)
+test_read_tags_SOURCES = test/read_tags.c \
+	src/conf.c src/buffer2array.c src/utils.c src/log.c \
+	src/tag.c src/tag_pool.c src/tag_ape.c \
 	src/replay_gain.c \
 	src/uri.c \
 	$(ARCHIVE_SRC) \
@@ -540,6 +556,12 @@ test_run_encoder_LDADD = $(MPD_LIBS) \
 test_software_volume_SOURCES = test/software_volume.c \
 	src/audio_parser.c \
 	src/pcm_volume.c
+
+if HAVE_ID3TAG
+test_run_decoder_SOURCES += src/tag_id3.c
+test_read_tags_SOURCES += src/tag_id3.c
+endif
+
 endif
 
 

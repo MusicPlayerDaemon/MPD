@@ -41,4 +41,5 @@ doc/protocol
 doc/api
 test/software_volume
 test/run_decoder
+test/read_tags
 test/run_encoder
