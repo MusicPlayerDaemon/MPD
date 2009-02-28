@@ -499,7 +499,7 @@ AC_ARG_ENABLE(fifo,
 
 AC_ARG_ENABLE(pipe-output,
 	AS_HELP_STRING([--enable-pipe-output],
-		[disable support for writing audio to a pipe (default: disable)]),,
+		[enable support for writing audio to a pipe (default: disable)]),,
 	enable_pipe_output=no)
 
 if test x$enable_pipe_output = xyes; then
@@ -1232,6 +1232,12 @@ if test x$enable_osx = xyes; then
 	echo " OS X support ..................enabled"
 else
 	echo " OS X support ..................disabled"
+fi
+
+if test x$enable_pipe_output = xyes; then
+	echo " Pipeline output support .......enabled"
+else
+	echo " Pipeline output support .......disabled"
 fi
 
 if test x$enable_pulse = xyes; then
