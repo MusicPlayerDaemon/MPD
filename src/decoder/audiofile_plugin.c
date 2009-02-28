@@ -113,6 +113,11 @@ audiofile_stream_decode(struct decoder *decoder, struct input_stream *is)
 	int ret, current = 0;
 	char chunk[CHUNK_SIZE];
 
+	if (!is->seekable) {
+		g_warning("not seekable");
+		return;
+	}
+
 	vf = setup_virtual_fops(is);
 
 	af_fp = afOpenVirtualFile(vf, "r", NULL);
