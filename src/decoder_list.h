@@ -34,8 +34,6 @@ decoder_plugin_from_mime_type(const char *mimeType, unsigned int next);
 const struct decoder_plugin *
 decoder_plugin_from_name(const char *name);
 
-void decoder_plugin_print_all_suffixes(FILE * fp);
-
 void decoder_plugin_print_all_decoders(FILE * fp);
 
 /* this is where we "load" all the "plugins" ;-) */

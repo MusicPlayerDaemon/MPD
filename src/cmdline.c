@@ -47,13 +47,9 @@ static void version(void)
 	     "This is free software; see the source for copying conditions.  There is NO\n"
 	     "warranty; not even MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n"
 	     "\n"
-	     "Supported formats:\n");
+	     "Supported decoders:\n");
 
 	decoder_plugin_init_all();
-	decoder_plugin_print_all_suffixes(stdout);
-
-	puts("\n"
-	     "Supported decoders:\n");
 	decoder_plugin_print_all_decoders(stdout);
 
 	puts("\n"

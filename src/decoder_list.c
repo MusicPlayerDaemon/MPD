@@ -154,36 +154,25 @@ decoder_plugin_from_name(const char *name)
 	return NULL;
 }
 
-void decoder_plugin_print_all_suffixes(FILE * fp)
-{
-	const char *const*suffixes;
-
-	for (unsigned i = 0; i < num_decoder_plugins; ++i) {
-		const struct decoder_plugin *plugin = decoder_plugins[i];
-		if (!decoder_plugins_enabled[i])
-			continue;
-
-		suffixes = plugin->suffixes;
-		while (suffixes && *suffixes) {
-			fprintf(fp, "%s ", *suffixes);
-			suffixes++;
-		}
-	}
-	fprintf(fp, "\n");
-	fflush(fp);
-}
-
 void decoder_plugin_print_all_decoders(FILE * fp)
 {
 	for (unsigned i = 0; i < num_decoder_plugins; ++i) {
 		const struct decoder_plugin *plugin = decoder_plugins[i];
+		const char *const*suffixes;
+
 		if (!decoder_plugins_enabled[i])
 			continue;
 
-		fprintf(fp, "%s ", plugin->name);
+		fprintf(fp, "[%s]", plugin->name);
+
+		for (suffixes = plugin->suffixes;
+		     suffixes != NULL && *suffixes != NULL;
+		     ++suffixes) {
+			fprintf(fp, " %s", *suffixes);
+		}
+
+		fprintf(fp, "\n");
 	}
-	fprintf(fp, "\n");
-	fflush(fp);
 }
 
 /**
