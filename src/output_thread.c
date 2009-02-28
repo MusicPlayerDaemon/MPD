@@ -29,12 +29,6 @@
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "output"
 
-enum {
-	/** after a failure, wait this number of seconds before
-	    automatically reopening the device */
-	REOPEN_AFTER = 10,
-};
-
 static void ao_command_finished(struct audio_output *ao)
 {
 	assert(ao->command != AO_COMMAND_NONE);
@@ -129,6 +123,7 @@ static gpointer audio_output_task(gpointer arg)
 
 		case AO_COMMAND_OPEN:
 			assert(!ao->open);
+			assert(ao->fail_timer == NULL);
 
 			error = NULL;
 			ret = ao_plugin_open(ao->plugin, ao->data,
@@ -145,7 +140,7 @@ static gpointer audio_output_task(gpointer arg)
 					  error->message);
 				g_error_free(error);
 
-				ao->reopen_after = time(NULL) + REOPEN_AFTER;
+				ao->fail_timer = g_timer_new();
 			}
 
 			ao_command_finished(ao);

@@ -38,7 +38,6 @@ audio_output_enable_index(unsigned idx)
 
 	ao = audio_output_get(idx);
 
-	ao->reopen_after = 0;
 	ao->enabled = true;
 	idle_add(IDLE_OUTPUT);
 

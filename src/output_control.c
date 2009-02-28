@@ -24,6 +24,12 @@
 #include <assert.h>
 #include <stdlib.h>
 
+enum {
+	/** after a failure, wait this number of seconds before
+	    automatically reopening the device */
+	REOPEN_AFTER = 10,
+};
+
 struct notify audio_output_client_notify;
 
 static void ao_command_wait(struct audio_output *ao)
@@ -53,7 +59,10 @@ bool
 audio_output_open(struct audio_output *ao,
 		  const struct audio_format *audio_format)
 {
-	ao->reopen_after = 0;
+	if (ao->fail_timer != NULL) {
+		g_timer_destroy(ao->fail_timer);
+		ao->fail_timer = NULL;
+	}
 
 	if (ao->open &&
 	    audio_format_equals(audio_format, &ao->in_audio_format)) {
@@ -90,7 +99,8 @@ audio_output_update(struct audio_output *ao,
 		    const struct audio_format *audio_format)
 {
 	if (ao->enabled) {
-		if (ao->reopen_after == 0 || time(NULL) > ao->reopen_after)
+		if (ao->fail_timer == NULL ||
+		    g_timer_elapsed(ao->fail_timer, NULL) > REOPEN_AFTER)
 			audio_output_open(ao, audio_format);
 	} else if (audio_output_is_open(ao))
 		audio_output_close(ao);
@@ -127,13 +137,21 @@ void audio_output_cancel(struct audio_output *ao)
 
 void audio_output_close(struct audio_output *ao)
 {
+	assert(!ao->open || ao->fail_timer == NULL);
+
 	if (ao->open)
 		ao_command(ao, AO_COMMAND_CLOSE);
+	else if (ao->fail_timer != NULL) {
+		g_timer_destroy(ao->fail_timer);
+		ao->fail_timer = NULL;
+	}
 }
 
 void audio_output_finish(struct audio_output *ao)
 {
 	audio_output_close(ao);
+
+	assert(ao->fail_timer == NULL);
 
 	if (ao->thread != NULL) {
 		ao_command(ao, AO_COMMAND_KILL);

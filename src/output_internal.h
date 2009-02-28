@@ -65,10 +65,11 @@ struct audio_output {
 	bool open;
 
 	/**
-	 * If not zero, the device has failed, and should not be
-	 * reopened automatically before this time stamp.
+	 * If not NULL, the device has failed, and this timer is used
+	 * to estimate how long it should stay disabled (unless
+	 * explicitly reopened with "play").
 	 */
-	time_t reopen_after;
+	GTimer *fail_timer;
 
 	/**
 	 * The audio_format in which audio data is received from the

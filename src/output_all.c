@@ -162,8 +162,14 @@ static void audio_output_wait_all(void)
 static void
 audio_output_all_reset_reopen(void)
 {
-	for (unsigned i = 0; i < num_audio_outputs; ++i)
-		audio_outputs[i].reopen_after = 0;
+	for (unsigned i = 0; i < num_audio_outputs; ++i) {
+		struct audio_output *ao = &audio_outputs[i];
+
+		if (!ao->open && ao->fail_timer != NULL) {
+			g_timer_destroy(ao->fail_timer);
+			ao->fail_timer = NULL;
+		}
+	}
 }
 
 static void
