@@ -119,7 +119,7 @@ buffer_free_callback(gpointer data, G_GNUC_UNUSED gpointer user_data)
 }
 
 /* g_queue_clear() was introduced in GLib 2.14 */
-#if GLIB_MAJOR_VERSION == 2 && GLIB_MINOR_VERSION < 14
+#if GLIB_CHECK_VERSION(2,14,0)
 #define g_queue_clear(q) do { g_queue_free(q); q = g_queue_new(); } while (0)
 #endif
 

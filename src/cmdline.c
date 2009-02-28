@@ -66,7 +66,7 @@ static void version(void)
 	exit(EXIT_SUCCESS);
 }
 
-#if GLIB_MAJOR_VERSION > 2 || (GLIB_MAJOR_VERSION == 2 && GLIB_MINOR_VERSION >= 12)
+#if GLIB_CHECK_VERSION(2,12,0)
 static const char *summary =
 	"Music Player Daemon - a daemon for playing music.";
 #endif
@@ -108,7 +108,7 @@ void parseOptions(int argc, char **argv, Options *options)
 	context = g_option_context_new("[path/to/mpd.conf]");
 	g_option_context_add_main_entries(context, entries, NULL);
 
-#if GLIB_MAJOR_VERSION > 2 || (GLIB_MAJOR_VERSION == 2 && GLIB_MINOR_VERSION >= 12)
+#if GLIB_CHECK_VERSION(2,12,0)
 	g_option_context_set_summary(context, summary);
 #endif
 

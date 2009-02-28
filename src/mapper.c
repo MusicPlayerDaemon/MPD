@@ -96,7 +96,7 @@ void mapper_init(void)
 	path = config_get_path(CONF_MUSIC_DIR);
 	if (path != NULL)
 		mapper_set_music_dir(path);
-#if GLIB_MAJOR_VERSION > 2 || (GLIB_MAJOR_VERSION == 2 && GLIB_MINOR_VERSION >= 14)
+#if GLIB_CHECK_VERSION(2,14,0)
 	else {
 		path = g_get_user_special_dir(G_USER_DIRECTORY_MUSIC);
 		if (path != NULL)
