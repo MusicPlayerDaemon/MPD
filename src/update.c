@@ -373,6 +373,12 @@ update_archive_file(struct directory *parent, const char *name,
 	struct directory *directory;
 	char *filepath;
 
+	directory = dirvec_find(&parent->children, name);
+	if (directory != NULL && directory->mtime == st->st_mtime)
+		/* MPD has already scanned the archive, and it hasn't
+		   changed since - don't consider updating it */
+		return;
+
 	path_fs = map_directory_child_fs(parent, name);
 
 	/* open archive */
@@ -386,7 +392,6 @@ update_archive_file(struct directory *parent, const char *name,
 	g_debug("archive %s opened", path_fs);
 	g_free(path_fs);
 
-	directory = dirvec_find(&parent->children, name);
 	if (directory == NULL) {
 		g_debug("creating archive directory: %s", name);
 		directory = make_subdir(parent, name);
