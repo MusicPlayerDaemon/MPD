@@ -20,6 +20,7 @@
 #include "command.h"
 #include "conf.h"
 #include "listen.h"
+#include "socket_util.h"
 #include "permission.h"
 #include "event_pipe.h"
 #include "idle.h"
@@ -250,51 +251,10 @@ static void client_close(struct client *client)
 	g_free(client);
 }
 
-static const char *
-sockaddr_to_tmp_string(const struct sockaddr *addr)
-{
-	const char *hostname;
-
-	switch (addr->sa_family) {
-#ifdef HAVE_TCP
-	case AF_INET:
-		hostname = (const char *)inet_ntoa(((const struct sockaddr_in *)
-						    addr)->sin_addr);
-		if (!hostname)
-			hostname = "error getting ipv4 address";
-		break;
-#ifdef HAVE_IPV6
-	case AF_INET6:
-		{
-			static char host[INET6_ADDRSTRLEN + 1];
-			memset(host, 0, INET6_ADDRSTRLEN + 1);
-			if (inet_ntop(AF_INET6, (const void *)
-				      &(((const struct sockaddr_in6 *)addr)->
-					sin6_addr), host,
-				      INET6_ADDRSTRLEN)) {
-				hostname = (const char *)host;
-			} else {
-				hostname = "error getting ipv6 address";
-			}
-		}
-		break;
-#endif
-#endif /* HAVE_TCP */
-#ifdef HAVE_UN
-	case AF_UNIX:
-		hostname = "local connection";
-		break;
-#endif /* HAVE_UN */
-	default:
-		hostname = "unknown";
-	}
-
-	return hostname;
-}
-
-void client_new(int fd, const struct sockaddr *addr, int uid)
+void client_new(int fd, const struct sockaddr *sa, size_t sa_length, int uid)
 {
 	struct client *client;
+	char *remote;
 
 	if (num_clients >= client_max_connections) {
 		g_warning("Max Connections Reached!");
@@ -308,9 +268,11 @@ void client_new(int fd, const struct sockaddr *addr, int uid)
 
 	client_init(client, fd);
 	client->uid = uid;
+
+	remote = sockaddr_to_string(sa, sa_length, NULL);
 	g_log(G_LOG_DOMAIN, LOG_LEVEL_SECURE,
-	      "[%u] opened from %s", client->num,
-	      sockaddr_to_tmp_string(addr));
+	      "[%u] opened from %s", client->num, remote);
+	g_free(remote);
 }
 
 static int client_process_line(struct client *client, char *line)
