@@ -1281,6 +1281,7 @@ if test x$enable_ao = xno &&
    test x$enable_pulse = xno &&
    test x$enable_jack = xno &&
    test x$enable_fifo = xno &&
+   test x$enable_pipe_output = xno &&
    test x$enable_mvp = xno; then
 	AC_MSG_ERROR([No Audio Output types configured!])
 fi
