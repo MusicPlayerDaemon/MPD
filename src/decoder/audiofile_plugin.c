@@ -112,6 +112,7 @@ audiofile_stream_decode(struct decoder *decoder, struct input_stream *is)
 	uint16_t bit_rate;
 	int ret, current = 0;
 	char chunk[CHUNK_SIZE];
+	enum decoder_command cmd;
 
 	if (!is->seekable) {
 		g_warning("not seekable");
@@ -154,24 +155,27 @@ audiofile_stream_decode(struct decoder *decoder, struct input_stream *is)
 	decoder_initialized(decoder, &audio_format, true, total_time);
 
 	do {
-		if (decoder_get_command(decoder) == DECODE_COMMAND_SEEK) {
-			current = decoder_seek_where(decoder) *
-				audio_format.sample_rate;
-			afSeekFrame(af_fp, AF_DEFAULT_TRACK, current);
-			decoder_command_finished(decoder);
-		}
-
 		ret = afReadFrames(af_fp, AF_DEFAULT_TRACK, chunk,
 				   CHUNK_SIZE / fs);
 		if (ret <= 0)
 			break;
 
 		current += ret;
-		decoder_data(decoder, NULL,
-			     chunk, ret * fs,
-			     (float)current / (float)audio_format.sample_rate,
-			     bit_rate, NULL);
-	} while (decoder_get_command(decoder) != DECODE_COMMAND_STOP);
+		cmd = decoder_data(decoder, NULL,
+				   chunk, ret * fs,
+				   (float)current /
+				   (float)audio_format.sample_rate,
+				   bit_rate, NULL);
+
+		if (cmd == DECODE_COMMAND_SEEK) {
+			current = decoder_seek_where(decoder) *
+				audio_format.sample_rate;
+			afSeekFrame(af_fp, AF_DEFAULT_TRACK, current);
+
+			decoder_command_finished(decoder);
+			cmd = DECODE_COMMAND_NONE;
+		}
+	} while (cmd == DECODE_COMMAND_NONE);
 
 	afCloseFile(af_fp);
 }
