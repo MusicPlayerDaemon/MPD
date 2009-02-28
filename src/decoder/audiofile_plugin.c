@@ -31,7 +31,7 @@
 /* pick 1020 since its devisible for 8,16,24, and 32-bit audio */
 #define CHUNK_SIZE		1020
 
-static int getAudiofileTotalTime(const char *file)
+static int audiofile_get_duration(const char *file)
 {
 	int total_time;
 	AFfilehandle af_fp = afOpenFile(file, "r", NULL);
@@ -79,7 +79,7 @@ audiofile_file_seek(AFvirtualfile *vfile, long offset, int is_relative)
 {
 	struct input_stream *is = (struct input_stream *) vfile->closure;
 	int whence = (is_relative ? SEEK_CUR : SEEK_SET);
-	if (input_stream_seek(is, offset, whence)) { 
+	if (input_stream_seek(is, offset, whence)) {
 		return is->offset;
 	} else {
 		return -1;
@@ -101,7 +101,7 @@ setup_virtual_fops(struct input_stream *stream)
 }
 
 static void
-audiofile_streamdecode(struct decoder * decoder, struct input_stream *inStream)
+audiofile_stream_decode(struct decoder *decoder, struct input_stream *is)
 {
 	AFvirtualfile *vf;
 	int fs, frame_count;
@@ -109,11 +109,11 @@ audiofile_streamdecode(struct decoder * decoder, struct input_stream *inStream)
 	int bits;
 	struct audio_format audio_format;
 	float total_time;
-	uint16_t bitRate;
+	uint16_t bit_rate;
 	int ret, current = 0;
 	char chunk[CHUNK_SIZE];
 
-	vf = setup_virtual_fops(inStream);
+	vf = setup_virtual_fops(is);
 
 	af_fp = afOpenVirtualFile(vf, "r", NULL);
 	if (af_fp == AF_NULL_FILEHANDLE) {
@@ -142,7 +142,7 @@ audiofile_streamdecode(struct decoder * decoder, struct input_stream *inStream)
 
 	total_time = ((float)frame_count / (float)audio_format.sample_rate);
 
-	bitRate = (uint16_t)(inStream->size * 8.0 / total_time / 1000.0 + 0.5);
+	bit_rate = (uint16_t)(is->size * 8.0 / total_time / 1000.0 + 0.5);
 
 	fs = (int)afGetVirtualFrameSize(af_fp, AF_DEFAULT_TRACK, 1);
 
@@ -165,7 +165,7 @@ audiofile_streamdecode(struct decoder * decoder, struct input_stream *inStream)
 		decoder_data(decoder, NULL,
 			     chunk, ret * fs,
 			     (float)current / (float)audio_format.sample_rate,
-			     bitRate, NULL);
+			     bit_rate, NULL);
 	} while (decoder_get_command(decoder) != DECODE_COMMAND_STOP);
 
 	afCloseFile(af_fp);
@@ -174,7 +174,7 @@ audiofile_streamdecode(struct decoder * decoder, struct input_stream *inStream)
 static struct tag *audiofile_tag_dup(const char *file)
 {
 	struct tag *ret = NULL;
-	int total_time = getAudiofileTotalTime(file);
+	int total_time = audiofile_get_duration(file);
 
 	if (total_time >= 0) {
 		ret = tag_new();
@@ -199,7 +199,7 @@ static const char *const audiofile_mime_types[] = {
 
 const struct decoder_plugin audiofilePlugin = {
 	.name = "audiofile",
-	.stream_decode = audiofile_streamdecode,
+	.stream_decode = audiofile_stream_decode,
 	.tag_dup = audiofile_tag_dup,
 	.suffixes = audiofile_suffixes,
 	.mime_types = audiofile_mime_types,
