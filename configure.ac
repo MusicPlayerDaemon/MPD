@@ -1416,6 +1416,7 @@ if
 	test x$enable_sidplay = xno &&
 	test x$enable_fluidsynth = xno &&
 	test x$enable_wildmidi = xno &&
+	test x$enable_mp4 = xno &&
 	test x$enable_mod = xno; then
 	AC_MSG_ERROR([No input plugins supported!])
 fi
