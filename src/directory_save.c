@@ -28,7 +28,7 @@
 #include <assert.h>
 #include <string.h>
 
-#define DIRECTORY_MTIME "mtime: " /* DEPRECATED, noop-read-only */
+#define DIRECTORY_MTIME "mtime: "
 #define DIRECTORY_BEGIN "begin: "
 #define DIRECTORY_END "end: "
 
@@ -41,6 +41,9 @@ directory_save(FILE *fp, struct directory *directory)
 	int retv;
 
 	if (!directory_is_root(directory)) {
+		fprintf(fp, DIRECTORY_MTIME "%lu\n",
+			(unsigned long)directory->mtime);
+
 		retv = fprintf(fp, "%s%s\n", DIRECTORY_BEGIN,
 			       directory_get_path(directory));
 		if (retv < 0)
@@ -84,8 +87,12 @@ directory_load(FILE *fp, struct directory *directory)
 			strcpy(key, &(buffer[strlen(DIRECTORY_DIR)]));
 			if (!fgets(buffer, sizeof(buffer), fp))
 				FATAL("Error reading db, fgets\n");
-			/* for compatibility with db's prior to 0.11 */
+
 			if (g_str_has_prefix(buffer, DIRECTORY_MTIME)) {
+				directory->mtime =
+					g_ascii_strtoull(buffer + sizeof(DIRECTORY_MTIME) - 1,
+							 NULL, 10);
+
 				if (!fgets(buffer, sizeof(buffer), fp))
 					FATAL("Error reading db, fgets\n");
 			}

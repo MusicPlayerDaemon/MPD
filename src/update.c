@@ -360,10 +360,12 @@ update_archive_tree(struct directory *directory, char *name)
  *
  * @param parent the parent directory the archive file resides in
  * @param name the UTF-8 encoded base name of the archive file
+ * @param st stat() information on the archive file
  * @param plugin the archive plugin which fits this archive type
  */
 static void
 update_archive_file(struct directory *parent, const char *name,
+		    const struct stat *st,
 		    const struct archive_plugin *plugin)
 {
 	char *path_fs;
@@ -392,6 +394,8 @@ update_archive_file(struct directory *parent, const char *name,
 		   this) */
 		directory->device = DEVICE_INARCHIVE;
 	}
+
+	directory->mtime = st->st_mtime;
 
 	plugin->scan_reset(file);
 
@@ -438,7 +442,7 @@ update_regular_file(struct directory *directory,
 		}
 #ifdef ENABLE_ARCHIVE
 	} else if ((archive = archive_plugin_from_suffix(suffix))) {
-		update_archive_file(directory, name, archive);
+		update_archive_file(directory, name, st, archive);
 #endif
 	}
 }
@@ -592,6 +596,8 @@ updateDirectory(struct directory *directory, const struct stat *st)
 	}
 
 	closedir(dir);
+
+	directory->mtime = st->st_mtime;
 
 	return true;
 }

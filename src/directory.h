@@ -33,6 +33,7 @@ struct directory {
 	struct dirvec children;
 	struct songvec songs;
 	struct directory *parent;
+	time_t mtime;
 	ino_t inode;
 	dev_t device;
 	unsigned stat; /* not needed if ino_t == dev_t == 0 is impossible */
