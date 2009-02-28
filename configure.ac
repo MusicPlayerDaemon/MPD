@@ -497,6 +497,16 @@ AC_ARG_ENABLE(fifo,
 	enable_fifo=$enableval,
 	enable_fifo=yes)
 
+AC_ARG_ENABLE(pipe-output,
+	AS_HELP_STRING([--enable-pipe-output],
+		[disable support for writing audio to a pipe (default: disable)]),,
+	enable_pipe_output=no)
+
+if test x$enable_pipe_output = xyes; then
+	AC_DEFINE([ENABLE_PIPE_OUTPUT], 1, [Define to enable support for writing audio to a pipe])
+fi
+AM_CONDITIONAL(ENABLE_PIPE_OUTPUT, test x$enable_pipe_output = xyes)
+
 AC_ARG_ENABLE(jack,
 	AS_HELP_STRING([--disable-jack],
 		[disable jack support (default: enable)]),

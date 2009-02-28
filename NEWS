@@ -22,6 +22,7 @@ ver 0.15 - (200?/??/??)
   - mvp: fall back to 16 bit audio samples
   - mvp: check for reopen errors
   - mvp: fixed default device detection
+  - pipe: new audio output plugin which runs a command
 * commands:
   - "playlistinfo" supports a range now
   - added "sticker database", command "sticker", which allows clients

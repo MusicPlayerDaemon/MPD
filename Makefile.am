@@ -450,6 +450,10 @@ if HAVE_FIFO
 OUTPUT_SRC += src/output/fifo_plugin.c
 endif
 
+if ENABLE_PIPE_OUTPUT
+OUTPUT_SRC += src/output/pipe_output_plugin.c
+endif
+
 if HAVE_JACK
 OUTPUT_SRC += src/output/jack_plugin.c
 endif

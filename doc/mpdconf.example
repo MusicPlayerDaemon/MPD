@@ -207,6 +207,19 @@ log_file			"~/.mpd/log"
 #	sink			"remote_server_sink"
 #}
 #
+## Example "pipe" output:
+#
+#audio_output {
+#	type		"pipe"
+#	name		"my pipe"
+#	command		"aplay -f cd 2>/dev/null"
+## Or if you're want to use AudioCompress
+#	command		"AudioCompress -m | aplay -f cd 2>/dev/null"
+## Or to send raw PCM stream through PCM:
+#	command		"nc example.org 8765"
+#	format		"44100:16:2"
+#}
+#
 ## An example of a null output (for no audio output):
 #
 #audio_output {
