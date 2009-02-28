@@ -41,6 +41,7 @@ ver 0.15 - (200?/??/??)
 * playlist: recalculate the queued song after random is toggled
 * playlist: don't unpause on delete
 * daemon: ignore "user" setting if already running as that user
+* listen: fix broken client IP addresses in log
 
 
 ver 0.14.2 (2009/02/13)

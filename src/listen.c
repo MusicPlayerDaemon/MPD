@@ -448,14 +448,15 @@ listen_in_event(G_GNUC_UNUSED GIOChannel *source,
 		gpointer data)
 {
 	int listen_fd = GPOINTER_TO_INT(data), fd;
-	struct sockaddr sockAddr;
-	socklen_t socklen = sizeof(sockAddr);
+	struct sockaddr_storage sa;
+	socklen_t sa_length = sizeof(sa);
 
-	fd = accept(listen_fd, &sockAddr, &socklen);
+	fd = accept(listen_fd, (struct sockaddr*)&sa, &sa_length);
 	if (fd >= 0) {
 		set_nonblocking(fd);
 
-		client_new(fd, &sockAddr, socklen, get_remote_uid(fd));
+		client_new(fd, (struct sockaddr*)&sa, sa_length,
+			   get_remote_uid(fd));
 	} else if (fd < 0 && errno != EINTR) {
 		g_warning("Problems accept()'ing");
 	}
