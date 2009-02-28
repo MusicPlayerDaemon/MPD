@@ -62,7 +62,7 @@ const char *tag_item_names[TAG_NUM_OF_ITEM_TYPES] = {
 	[TAG_MUSICBRAINZ_TRACKID] = "MUSICBRAINZ_TRACKID",
 };
 
-int8_t ignoreTagItems[TAG_NUM_OF_ITEM_TYPES];
+int8_t ignore_tag_items[TAG_NUM_OF_ITEM_TYPES];
 
 static size_t items_size(const struct tag *tag)
 {
@@ -80,14 +80,14 @@ void tag_lib_init(void)
 
 	/* parse the "metadata_to_use" config parameter below */
 
-	memset(ignoreTagItems, 0, TAG_NUM_OF_ITEM_TYPES);
-	ignoreTagItems[TAG_ITEM_COMMENT] = 1;	/* ignore comments by default */
+	memset(ignore_tag_items, 0, TAG_NUM_OF_ITEM_TYPES);
+	ignore_tag_items[TAG_ITEM_COMMENT] = 1;	/* ignore comments by default */
 
 	value = config_get_string(CONF_METADATA_TO_USE, NULL);
 	if (value == NULL)
 		return;
 
-	memset(ignoreTagItems, 1, TAG_NUM_OF_ITEM_TYPES);
+	memset(ignore_tag_items, 1, TAG_NUM_OF_ITEM_TYPES);
 
 	if (0 == strcasecmp(value, "none"))
 		return;
@@ -100,7 +100,7 @@ void tag_lib_init(void)
 			*s = '\0';
 			for (i = 0; i < TAG_NUM_OF_ITEM_TYPES; i++) {
 				if (strcasecmp(c, tag_item_names[i]) == 0) {
-					ignoreTagItems[i] = 0;
+					ignore_tag_items[i] = 0;
 					break;
 				}
 			}
@@ -453,15 +453,15 @@ tag_add_item_internal(struct tag *tag, enum tag_type type,
 	g_free(p);
 }
 
-void tag_add_item_n(struct tag *tag, enum tag_type itemType,
+void tag_add_item_n(struct tag *tag, enum tag_type type,
 		    const char *value, size_t len)
 {
-	if (ignoreTagItems[itemType])
+	if (ignore_tag_items[type])
 	{
 		return;
 	}
 	if (!value || !len)
 		return;
 
-	tag_add_item_internal(tag, itemType, value, len);
+	tag_add_item_internal(tag, type, value, len);
 }

@@ -21,6 +21,6 @@
 
 #include <stdint.h>
 
-extern int8_t ignoreTagItems[TAG_NUM_OF_ITEM_TYPES];
+extern int8_t ignore_tag_items[TAG_NUM_OF_ITEM_TYPES];
 
 #endif

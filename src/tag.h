@@ -65,7 +65,7 @@ struct tag *tag_new(void);
 
 void tag_lib_init(void);
 
-void tag_clear_items_by_type(struct tag *tag, enum tag_type itemType);
+void tag_clear_items_by_type(struct tag *tag, enum tag_type type);
 
 void tag_free(struct tag *tag);
 
@@ -83,13 +83,13 @@ void tag_begin_add(struct tag *tag);
  */
 void tag_end_add(struct tag *tag);
 
-void tag_add_item_n(struct tag *tag, enum tag_type itemType,
+void tag_add_item_n(struct tag *tag, enum tag_type type,
 		    const char *value, size_t len);
 
-static inline void tag_add_item(struct tag *tag, enum tag_type itemType,
-				const char *value)
+static inline void
+tag_add_item(struct tag *tag, enum tag_type type, const char *value)
 {
-	tag_add_item_n(tag, itemType, value, strlen(value));
+	tag_add_item_n(tag, type, value, strlen(value));
 }
 
 struct tag *tag_dup(const struct tag *tag);
