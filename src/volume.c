@@ -27,6 +27,7 @@
 
 #include <glib.h>
 
+#include <assert.h>
 #include <math.h>
 #include <string.h>
 #include <stdlib.h>
@@ -45,8 +46,15 @@ const struct audio_output_plugin *default_mixer;
 static int volume_mixer_type = VOLUME_MIXER_TYPE_HARDWARE;
 static int volume_software_set = 100;
 
+/** the cached hardware mixer value; invalid if negative */
+static int last_hardware_volume = -1;
+/** the age of #last_hardware_volume */
+static GTimer *hardware_volume_timer;
+
 void volume_finish(void)
 {
+	if (volume_mixer_type == VOLUME_MIXER_TYPE_HARDWARE)
+		g_timer_destroy(hardware_volume_timer);
 }
 
 /**
@@ -148,12 +156,22 @@ void volume_init(void)
 			}
 		}
 	}
+
+	if (volume_mixer_type == VOLUME_MIXER_TYPE_HARDWARE)
+		hardware_volume_timer = g_timer_new();
 }
 
 static int hardware_volume_get(void)
 {
 	int device, count;
 	int volume, volume_total, volume_ok;
+
+	assert(hardware_volume_timer != NULL);
+
+	if (last_hardware_volume >= 0 &&
+	    g_timer_elapsed(hardware_volume_timer, NULL) < 1.0)
+		/* throttle access to hardware mixers */
+		return last_hardware_volume;
 
 	volume_total = 0;
 	volume_ok = 0;
@@ -168,7 +186,9 @@ static int hardware_volume_get(void)
 	}
 	if (volume_ok > 0) {
 		//return average
-		return volume_total / volume_ok;
+		last_hardware_volume = volume_total / volume_ok;
+		g_timer_start(hardware_volume_timer);
+		return last_hardware_volume;
 	} else {
 		return -1;
 	}
@@ -223,6 +243,9 @@ static int software_volume_change(int change, int rel)
 static int hardware_volume_change(int change, int rel)
 {
 	int device, count;
+
+	/* reset the cache */
+	last_hardware_volume = -1;
 
 	count = audio_output_count();
 	for (device=0; device<count ;device++) {
