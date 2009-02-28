@@ -205,6 +205,7 @@ static bool
 directory_exists(const struct directory *directory)
 {
 	char *path_fs;
+	GFileTest test;
 	bool exists;
 
 	path_fs = map_directory_fs(directory);
@@ -212,7 +213,11 @@ directory_exists(const struct directory *directory)
 		/* invalid path: cannot exist */
 		return false;
 
-	exists = g_file_test(path_fs, G_FILE_TEST_IS_DIR);
+	test = directory->device == DEVICE_INARCHIVE
+		? G_FILE_TEST_IS_REGULAR
+		: G_FILE_TEST_IS_DIR;
+
+	exists = g_file_test(path_fs, test);
 	g_free(path_fs);
 
 	return exists;
