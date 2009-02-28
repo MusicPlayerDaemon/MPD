@@ -27,7 +27,7 @@ void tag_print_types(struct client *client)
 	int i;
 
 	for (i = 0; i < TAG_NUM_OF_ITEM_TYPES; i++) {
-		if (ignore_tag_items[i] == 0)
+		if (!ignore_tag_items[i])
 			client_printf(client, "tagtype: %s\n",
 				      tag_item_names[i]);
 	}

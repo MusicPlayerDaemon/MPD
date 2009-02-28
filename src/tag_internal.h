@@ -19,8 +19,8 @@
 #ifndef MPD_TAG_INTERNAL_H
 #define MPD_TAG_INTERNAL_H
 
-#include <stdint.h>
+#include <stdbool.h>
 
-extern int8_t ignore_tag_items[TAG_NUM_OF_ITEM_TYPES];
+extern bool ignore_tag_items[TAG_NUM_OF_ITEM_TYPES];
 
 #endif

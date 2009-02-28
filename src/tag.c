@@ -62,7 +62,7 @@ const char *tag_item_names[TAG_NUM_OF_ITEM_TYPES] = {
 	[TAG_MUSICBRAINZ_TRACKID] = "MUSICBRAINZ_TRACKID",
 };
 
-int8_t ignore_tag_items[TAG_NUM_OF_ITEM_TYPES];
+bool ignore_tag_items[TAG_NUM_OF_ITEM_TYPES];
 
 static size_t items_size(const struct tag *tag)
 {
@@ -80,14 +80,14 @@ void tag_lib_init(void)
 
 	/* parse the "metadata_to_use" config parameter below */
 
-	memset(ignore_tag_items, 0, TAG_NUM_OF_ITEM_TYPES);
-	ignore_tag_items[TAG_ITEM_COMMENT] = 1;	/* ignore comments by default */
+	/* ignore comments by default */
+	ignore_tag_items[TAG_ITEM_COMMENT] = true;
 
 	value = config_get_string(CONF_METADATA_TO_USE, NULL);
 	if (value == NULL)
 		return;
 
-	memset(ignore_tag_items, 1, TAG_NUM_OF_ITEM_TYPES);
+	memset(ignore_tag_items, true, TAG_NUM_OF_ITEM_TYPES);
 
 	if (0 == strcasecmp(value, "none"))
 		return;
@@ -100,7 +100,7 @@ void tag_lib_init(void)
 			*s = '\0';
 			for (i = 0; i < TAG_NUM_OF_ITEM_TYPES; i++) {
 				if (strcasecmp(c, tag_item_names[i]) == 0) {
-					ignore_tag_items[i] = 0;
+					ignore_tag_items[i] = false;
 					break;
 				}
 			}
