@@ -354,6 +354,55 @@ update_archive_tree(struct directory *directory, char *name)
 		}
 	}
 }
+
+/**
+ * Updates the file listing from an archive file.
+ *
+ * @param parent the parent directory the archive file resides in
+ * @param name the UTF-8 encoded base name of the archive file
+ * @param plugin the archive plugin which fits this archive type
+ */
+static void
+update_archive_file(struct directory *parent, const char *name,
+		    const struct archive_plugin *plugin)
+{
+	char *path_fs;
+	struct archive_file *file;
+	struct directory *directory;
+	char *filepath;
+
+	path_fs = map_directory_child_fs(parent, name);
+
+	/* open archive */
+	file = plugin->open(path_fs);
+	if (file == NULL) {
+		g_warning("unable to open archive %s", path_fs);
+		g_free(path_fs);
+		return;
+	}
+
+	g_debug("archive %s opened", path_fs);
+	g_free(path_fs);
+
+	directory = dirvec_find(&parent->children, name);
+	if (directory == NULL) {
+		g_debug("creating archive directory: %s", name);
+		directory = make_subdir(parent, name);
+		/* mark this directory as archive (we use device for
+		   this) */
+		directory->device = DEVICE_INARCHIVE;
+	}
+
+	plugin->scan_reset(file);
+
+	while ((filepath = plugin->scan_next(file)) != NULL) {
+		/* split name into directory and file */
+		g_debug("adding archive file: %s", filepath);
+		update_archive_tree(directory, filepath);
+	}
+
+	plugin->close(file);
+}
 #endif
 
 static void
@@ -389,37 +438,7 @@ update_regular_file(struct directory *directory,
 		}
 #ifdef ENABLE_ARCHIVE
 	} else if ((archive = archive_plugin_from_suffix(suffix))) {
-		struct archive_file *archfile;
-		char *pathname;
-
-		pathname = map_directory_child_fs(directory, name);
-		//open archive
-		archfile = archive->open(pathname);
-		if (archfile) {
-			char *filepath;
-			struct directory *archdir;
-
-			g_debug("archive %s opened",pathname);
-			archdir = dirvec_find(&directory->children, name);
-			if (archdir == NULL) {
-				g_debug("creating archive directory (%s)",
-					name);
-				archdir = make_subdir(directory, name);
-				//mark this directory as archive (we use device for this)
-				archdir->device = DEVICE_INARCHIVE;
-			}
-			archive->scan_reset(archfile);
-			while ((filepath = archive->scan_next(archfile)) != NULL) {
-				//split name into directory and file
-				g_debug("adding archive file: %s", filepath);
-				update_archive_tree(archdir, filepath);
-			}
-			archive->close(archfile);
-		} else {
-			g_warning("unable to open archive %s", pathname);
-		}
-
-		g_free(pathname);
+		update_archive_file(directory, name, archive);
 #endif
 	}
 }
