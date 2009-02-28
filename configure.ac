@@ -1177,16 +1177,16 @@ echo "########### MPD CONFIGURATION ############"
 echo ""
 
 echo " Client Support:"
-if test x$enable_tcp = xyes; then
-	echo " TCP support ...................enabled"
-else
-	echo " TCP support ...................disabled"
-fi
-
 if test x$enable_ipv6 = xyes; then
 	echo " IPv6 support ..................enabled"
 else
 	echo " IPv6 support ..................disabled"
+fi
+
+if test x$enable_tcp = xyes; then
+	echo " TCP support ...................enabled"
+else
+	echo " TCP support ...................disabled"
 fi
 
 if test x$enable_un = xyes; then
@@ -1204,6 +1204,24 @@ if
 fi
 
 echo " Playback Support:"
+if test x$enable_alsa = xyes; then
+	echo " ALSA support ..................enabled"
+else
+	echo " ALSA support ..................disabled"
+fi
+
+if test x$enable_fifo = xyes; then
+	echo " FIFO support ..................enabled"
+else
+	echo " FIFO support ..................disabled"
+fi
+
+if test x$enable_jack = xyes; then
+	echo " JACK support ..................enabled"
+else
+	echo " JACK support ..................disabled"
+fi
+
 if test x$enable_ao = xyes; then
 	echo " libao support .................enabled"
 else
@@ -1214,18 +1232,6 @@ if test x$enable_oss = xyes; then
 	echo " OSS support ...................enabled"
 else
 	echo " OSS support ...................disabled"
-fi
-
-if test x$enable_alsa = xyes; then
-	echo " ALSA support ..................enabled"
-else
-	echo " ALSA support ..................disabled"
-fi
-
-if test x$enable_jack = xyes; then
-	echo " JACK support ..................enabled"
-else
-	echo " JACK support ..................disabled"
 fi
 
 if test x$enable_osx = xyes; then
@@ -1244,12 +1250,6 @@ if test x$enable_pulse = xyes; then
 	echo " PulseAudio support ............enabled"
 else
 	echo " PulseAudio support ............disabled"
-fi
-
-if test x$enable_fifo = xyes; then
-	echo " FIFO support ..................enabled"
-else
-	echo " FIFO support ..................disabled"
 fi
 
 if test x$enable_mvp = xyes; then
@@ -1287,33 +1287,22 @@ fi
 
 echo " File Format Support:"
 
-if test x$enable_id3 = xyes; then
-	echo " ID3 tag support ...............enabled"
+if test x$enable_aac = xyes; then
+	echo " AAC support ...................enabled"
 else
-	echo " ID3 tag support ...............disabled"
+	echo " AAC support ...................disabled"
 fi
 
-if test x$enable_mp3 = xyes; then
-	echo " mp3 support ...................enabled"
+if test x$enable_sidplay = xyes; then
+	echo " C64 SID support ...............enabled"
 else
-	echo " mp3 support ...................disabled"
+	echo " C64 SID support ...............disabled"
 fi
 
-if test x$enable_lame = xyes; then
-        echo " lame support ..................enabled"
+if test x$enable_ffmpeg = xyes; then
+	echo " FFMPEG support ................enabled"
 else
-        echo " lame support ..................disabled"
-fi
-
-if test x$enable_oggvorbis = xyes; then
-	echo " Ogg Vorbis support ............enabled"
-	if test x$use_tremor = xyes; then
-		echo "   using tremor.................yes"
-	else
-		echo "   using tremor.................no"
-	fi
-else
-	echo " Ogg Vorbis support ............disabled"
+	echo " FFMPEG support ................disabled"
 fi
 
 if test x$enable_flac = xyes; then
@@ -1322,46 +1311,22 @@ else
 	echo " FLAC support ..................disabled"
 fi
 
-case $enable_oggflac in
-yes)
-	echo " OggFLAC support ...............enabled"
-	;;
-flac)
-	echo " OggFLAC support ...............enabled(FLAC 1.1.3)"
-	;;
-*)
-	echo " OggFLAC support ...............disabled"
-	;;
-esac
-
-if test x$enable_audiofile = xyes; then
-	echo " Wave file support .............enabled"
+if test x$enable_fluidsynth = xyes; then
+	echo " fluidsynth MIDI support .......enabled"
 else
-	echo " Wave file support .............disabled"
+	echo " fluidsynth MIDI support .......disabled"
 fi
 
-if test x$enable_aac = xyes; then
-	echo " AAC support ...................enabled"
+if test x$enable_id3 = xyes; then
+	echo " ID3 tag support ...............enabled"
 else
-	echo " AAC support ...................disabled"
+	echo " ID3 tag support ...............disabled"
 fi
 
-if test x$enable_mp4 = xyes; then
-	echo " MP4 support ...................enabled"
+if test x$enable_lame = xyes; then
+	echo " lame support ..................enabled"
 else
-	echo " MP4 support ...................disabled"
-fi
-
-if test x$enable_mpc = xyes; then
-	echo " Musepack (MPC) support ........enabled"
-else
-	echo " Musepack (MPC) support ........disabled"
-fi
-
-if test x$enable_wavpack = xyes; then
-	echo " WavPack support ...............enabled"
-else
-	echo " WavPack support ...............disabled"
+	echo " lame support ..................disabled"
 fi
 
 if test x$enable_mod = xyes; then
@@ -1376,16 +1341,57 @@ else
 	echo " MODPLUG support ...............disabled"
 fi
 
-if test x$enable_sidplay = xyes; then
-	echo " C64 SID support ...............enabled"
+if test x$enable_mp3 = xyes; then
+	echo " mp3 support ...................enabled"
 else
-	echo " C64 SID support ...............disabled"
+	echo " mp3 support ...................disabled"
 fi
 
-if test x$enable_fluidsynth = xyes; then
-	echo " fluidsynth MIDI support .......enabled"
+if test x$enable_mp4 = xyes; then
+	echo " MP4 support ...................enabled"
 else
-	echo " fluidsynth MIDI support .......disabled"
+	echo " MP4 support ...................disabled"
+fi
+
+if test x$enable_mpc = xyes; then
+	echo " Musepack (MPC) support ........enabled"
+else
+	echo " Musepack (MPC) support ........disabled"
+fi
+
+case $enable_oggflac in
+yes)
+	echo " OggFLAC support ...............enabled"
+	;;
+flac)
+	echo " OggFLAC support ...............enabled(FLAC 1.1.3)"
+	;;
+*)
+	echo " OggFLAC support ...............disabled"
+	;;
+esac
+
+if test x$enable_oggvorbis = xyes; then
+	echo " Ogg Vorbis support ............enabled"
+	if test x$use_tremor = xyes; then
+		echo "   using tremor.................yes"
+	else
+		echo "   using tremor.................no"
+	fi
+else
+	echo " Ogg Vorbis support ............disabled"
+fi
+
+if test x$enable_audiofile = xyes; then
+	echo " Wave file support .............enabled"
+else
+	echo " Wave file support .............disabled"
+fi
+
+if test x$enable_wavpack = xyes; then
+	echo " WavPack support ...............enabled"
+else
+	echo " WavPack support ...............disabled"
 fi
 
 if test x$enable_wildmidi = xyes; then
@@ -1394,11 +1400,7 @@ else
 	echo " wildmidi MIDI support .........disabled"
 fi
 
-if test x$enable_ffmpeg = xyes; then
-	echo " FFMPEG support ................enabled"
-else
-	echo " FFMPEG support ................disabled"
-fi
+
 
 if
 	test x$enable_mp3 = xno &&
@@ -1427,34 +1429,20 @@ else
 	echo " BZ2 archives support ..........disabled"
 fi
 
-if test x$enable_zip = xyes; then
-	echo " ZIP archives support ..........enabled"
-else
-	echo " ZIP archives support ..........disabled"
-fi
-
 if test x$enable_iso = xyes; then
 	echo " ISO 9660 archives support .....enabled"
 else
 	echo " ISO 9660 archives support .....disabled"
 fi
 
+if test x$enable_zip = xyes; then
+	echo " ZIP archives support ..........enabled"
+else
+	echo " ZIP archives support ..........disabled"
+fi
+
 echo ""
 echo " Other features:"
-
-if test x$enable_lsr = xyes; then
-        echo " libsamplerate support .........enabled"
-else
-	echo " libsamplerate support .........disabled"
-fi
-                
-
-if test x$with_zeroconf != xno; then
-	echo " Zeroconf support ..............$with_zeroconf"
-else
-	echo " Zeroconf support ..............disabled"
-fi
-
 
 if test x$enable_curl != xno; then
 	echo " HTTP streaming (libcurl) ......enabled"
@@ -1462,10 +1450,22 @@ else
 	echo " HTTP streaming (libcurl) ......disabled"
 fi
 
+if test x$enable_lsr = xyes; then
+        echo " libsamplerate support .........enabled"
+else
+	echo " libsamplerate support .........disabled"
+fi
+
 if test x$enable_mms != xno; then
 	echo " MMS streaming (libmms) ........enabled"
 else
 	echo " MMS streaming (libmms) ........disabled"
+fi
+
+if test x$with_zeroconf != xno; then
+	echo " Zeroconf support ..............$with_zeroconf"
+else
+	echo " Zeroconf support ..............disabled"
 fi
 
 echo ""
