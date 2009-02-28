@@ -16,6 +16,7 @@ ver 0.15 - (200?/??/??)
   - wildmidi: another decoder plugin for MIDI files (using libwildmidi)
   - added configuration option to disable decoder plugins
 * audio outputs:
+  - added option to disable audio outputs by default
   - shout: enlarged buffer size to 32 kB
   - null: allow disabling synchronization
   - mvp: fall back to stereo
