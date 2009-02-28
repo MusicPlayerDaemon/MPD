@@ -1317,18 +1317,6 @@ else
 	echo " fluidsynth MIDI support .......disabled"
 fi
 
-if test x$enable_id3 = xyes; then
-	echo " ID3 tag support ...............enabled"
-else
-	echo " ID3 tag support ...............disabled"
-fi
-
-if test x$enable_lame = xyes; then
-	echo " lame support ..................enabled"
-else
-	echo " lame support ..................disabled"
-fi
-
 if test x$enable_mod = xyes; then
 	echo " MOD support ...................enabled"
 else
@@ -1449,6 +1437,18 @@ if test x$enable_curl != xno; then
 	echo " HTTP streaming (libcurl) ......enabled"
 else
 	echo " HTTP streaming (libcurl) ......disabled"
+fi
+
+if test x$enable_id3 = xyes; then
+	echo " ID3 tag support ...............enabled"
+else
+	echo " ID3 tag support ...............disabled"
+fi
+
+if test x$enable_lame = xyes; then
+	echo " lame support ..................enabled"
+else
+	echo " lame support ..................disabled"
 fi
 
 if test x$enable_lsr = xyes; then
