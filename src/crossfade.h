@@ -39,7 +39,7 @@ unsigned cross_fade_calc(float duration, float total_time,
 			 const struct audio_format *old_format,
 			 unsigned max_chunks);
 
-/*
+/**
  * Applies cross fading to two chunks, i.e. mixes these chunks.
  * Internally, this calls pcm_mix().
  *
