@@ -569,9 +569,6 @@ endif
 # Documentation
 #
 
-DOCBOOK_FILES = doc/protocol.xml
-DOCBOOK_HTML = $(patsubst %.xml,%/index.html,$(DOCBOOK_FILES))
-
 man_MANS = doc/mpd.1 doc/mpd.conf.5
 doc_DATA = AUTHORS COPYING NEWS README TODO UPGRADING doc/mpdconf.example
 
@@ -579,11 +576,23 @@ if ENABLE_DOCUMENTATION
 protocoldir = $(docdir)/protocol
 protocol_DATA = $(wildcard doc/protocol/*.html)
 
+if HAVE_XMLTO
+
+DOCBOOK_FILES = doc/protocol.xml
+DOCBOOK_HTML = $(patsubst %.xml,%/index.html,$(DOCBOOK_FILES))
+
 $(DOCBOOK_HTML): %/index.html: %.xml
 	$(XMLTO) -o $(@D) --stringparam chunker.output.encoding=utf-8 html $<
 
 doc/api/html/index.html: doc/doxygen.conf
 	$(DOXYGEN) $<
+
+else
+
+DOCBOOK_FILES =
+DOCBOOK_HTML =
+
+endif
 
 all-local: $(DOCBOOK_HTML) doc/api/html/index.html
 
