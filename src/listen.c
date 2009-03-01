@@ -337,8 +337,11 @@ listen_add_path(const char *path, GError **error)
 	bool success;
 
 	path_length = strlen(path);
-	if (path_length >= sizeof(s_un.sun_path))
-		g_error("unix socket path is too long");
+	if (path_length >= sizeof(s_un.sun_path)) {
+		g_set_error(error, listen_quark(), 0,
+			    "unix socket path is too long");
+		return false;
+	}
 
 	unlink(path);
 
