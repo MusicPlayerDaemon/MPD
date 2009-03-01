@@ -48,12 +48,6 @@
 
 #define DEFAULT_PORT	6600
 
-#define BINDERROR() do { \
-	g_error("unable to bind port %u: %s; " \
-		"maybe MPD is still running?", \
-		port, strerror(errno)); \
-} while (0);
-
 struct listen_socket {
 	struct listen_socket *next;
 
