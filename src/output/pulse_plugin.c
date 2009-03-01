@@ -132,12 +132,6 @@ pulse_open(void *data, struct audio_format *audio_format, GError **error_r)
 		return false;
 	}
 
-	g_debug("PulseAudio output \"%s\" connected and playing %i bit, %i "
-		"channel audio at %i Hz\n",
-		pd->name,
-		audio_format->bits,
-		audio_format->channels, audio_format->sample_rate);
-
 	return true;
 }
 

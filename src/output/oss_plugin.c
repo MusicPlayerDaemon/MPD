@@ -563,11 +563,6 @@ oss_output_open(void *data, struct audio_format *audio_format, GError **error)
 
 	*audio_format = od->audio_format;
 
-	g_debug("device \"%s\" will be playing %u bit %u channel audio at "
-		"%u Hz\n", od->device,
-		od->audio_format.bits, od->audio_format.channels,
-		od->audio_format.sample_rate);
-
 	mixer_open(od->mixer);
 
 	return ret;

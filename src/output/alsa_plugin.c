@@ -408,10 +408,6 @@ alsa_open(void *data, struct audio_format *audio_format, GError **error)
 
 	ad->frame_size = audio_format_frame_size(audio_format);
 
-	g_debug("ALSA device \"%s\" will be playing %i bit, %u channel audio at %u Hz\n",
-		alsa_device(ad), audio_format->bits, audio_format->channels,
-		audio_format->sample_rate);
-
 	return true;
 }
 

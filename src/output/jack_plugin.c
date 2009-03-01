@@ -144,7 +144,6 @@ static void
 set_audioformat(struct jack_data *jd, struct audio_format *audio_format)
 {
 	audio_format->sample_rate = jack_get_sample_rate(jd->client);
-	g_debug("samplerate = %u", audio_format->sample_rate);
 	audio_format->channels = 2;
 
 	if (audio_format->bits != 16 && audio_format->bits != 24)
