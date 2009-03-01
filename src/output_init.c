@@ -42,7 +42,7 @@
 }
 
 static const struct audio_output_plugin *
-audio_output_detect(void)
+audio_output_detect(GError **error)
 {
 	const struct audio_output_plugin *plugin;
 	unsigned i;
@@ -59,17 +59,19 @@ audio_output_detect(void)
 			return plugin;
 	}
 
+	g_set_error(error, audio_output_quark(), 0,
+		    "Unable to detect an audio device");
 	return NULL;
 }
 
 bool
-audio_output_init(struct audio_output *ao, const struct config_param *param)
+audio_output_init(struct audio_output *ao, const struct config_param *param,
+		  GError **error)
 {
 	const char *name = NULL;
 	char *format = NULL;
 	struct block_param *bp = NULL;
 	const struct audio_output_plugin *plugin = NULL;
-	GError *error = NULL;
 
 	if (param) {
 		const char *type = NULL;
@@ -80,18 +82,18 @@ audio_output_init(struct audio_output *ao, const struct config_param *param)
 
 		plugin = audio_output_plugin_get(type);
 		if (plugin == NULL) {
-			g_error("couldn't find audio output plugin for type "
-				"\"%s\" at line %i\n", type, param->line);
+			g_set_error(error, audio_output_quark(), 0,
+				    "No such audio output plugin: %s",
+				    type);
+			return false;
 		}
 	} else {
 		g_warning("No \"%s\" defined in config file\n",
 			  CONF_AUDIO_OUTPUT);
 
-		plugin = audio_output_detect();
-		if (plugin == NULL) {
-			g_warning("Unable to detect an audio device");
+		plugin = audio_output_detect(error);
+		if (plugin == NULL)
 			return false;
-		}
 
 		g_message("Successfully detected a %s audio device",
 			  plugin->name);
@@ -111,10 +113,9 @@ audio_output_init(struct audio_output *ao, const struct config_param *param)
 		bool ret;
 
 		ret = audio_format_parse(&ao->config_audio_format, format,
-					 &error);
+					 error);
 		if (!ret)
-			g_error("error parsing format at line %i: %s",
-				bp->line, error->message);
+			return false;
 	} else
 		audio_format_clear(&ao->config_audio_format);
 
@@ -124,14 +125,9 @@ audio_output_init(struct audio_output *ao, const struct config_param *param)
 
 	ao->data = ao_plugin_init(plugin,
 				  format ? &ao->config_audio_format : NULL,
-				  param, &error);
-	if (ao->data == NULL) {
-		g_warning("Failed to initialize \"%s\" [%s]: %s",
-			  ao->name, ao->plugin->name,
-			  error->message);
-		g_error_free(error);
+				  param, error);
+	if (ao->data == NULL)
 		return false;
-	}
 
 	return true;
 }

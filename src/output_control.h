@@ -19,6 +19,8 @@
 #ifndef MPD_OUTPUT_CONTROL_H
 #define MPD_OUTPUT_CONTROL_H
 
+#include <glib.h>
+
 #include <stddef.h>
 #include <stdbool.h>
 
@@ -27,8 +29,15 @@ struct audio_format;
 struct tag;
 struct config_param;
 
+static inline GQuark
+audio_output_quark(void)
+{
+	return g_quark_from_static_string("audio_output");
+}
+
 bool
-audio_output_init(struct audio_output *ao, const struct config_param *param);
+audio_output_init(struct audio_output *ao, const struct config_param *param,
+		  GError **error);
 
 bool
 audio_output_open(struct audio_output *ao,

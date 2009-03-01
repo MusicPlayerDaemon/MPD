@@ -77,6 +77,7 @@ audio_output_all_init(void)
 {
 	const struct config_param *param = NULL;
 	unsigned int i;
+	GError *error = NULL;
 
 	notify_init(&audio_output_client_notify);
 
@@ -93,18 +94,8 @@ audio_output_all_init(void)
 		/* only allow param to be NULL if there just one audioOutput */
 		assert(param || (num_audio_outputs == 1));
 
-		if (!audio_output_init(output, param)) {
-			if (param)
-			{
-				g_error("problems configuring output device "
-					"defined at line %i\n", param->line);
-			}
-			else
-			{
-				g_error("No audio_output specified and unable to "
-					"detect a default audio output device\n");
-			}
-		}
+		if (!audio_output_init(output, param, &error))
+			g_error("line %i: %s", param->line, error->message);
 
 		/* require output names to be unique: */
 		for (j = 0; j < i; j++) {
