@@ -295,18 +295,21 @@ listen_add_host(const char *hostname, unsigned port, GError **error)
 #else /* WIN32 */
 	const struct hostent *he;
 
-	g_debug("binding to address for %s", param->value);
+	g_debug("binding to address for %s", hostname);
 
-	he = gethostbyname(param->value);
+	he = gethostbyname(hostname);
 	if (he == NULL) {
 		g_set_error(error, listen_quark(), 0,
 			    "Failed to look up host \"%s\"", hostname);
 		return false;
 	}
 
-	if (he->h_addrtype != AF_INET)
-		g_error("IPv4 address expected for host \"%s\" at line %i",
-			param->value, param->line);
+	if (he->h_addrtype != AF_INET) {
+		g_set_error(error, listen_quark(), 0,
+			    "IPv4 address expected for host \"%s\"",
+			    hostname);
+		return false;
+	}
 
 	return listen_add_address(AF_INET, he->h_addr, he->h_length,
 				  error);
