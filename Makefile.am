@@ -580,7 +580,7 @@ protocoldir = $(docdir)/protocol
 protocol_DATA = $(wildcard doc/protocol/*.html)
 
 $(DOCBOOK_HTML): %/index.html: %.xml
-	$(XMLTO) -o protocol --stringparam chunker.output.encoding=utf-8 html $<
+	$(XMLTO) -o $(@D) --stringparam chunker.output.encoding=utf-8 html $<
 
 doc/api/html/index.html: doc/doxygen.conf
 	$(DOXYGEN) $<
