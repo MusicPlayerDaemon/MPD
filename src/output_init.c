@@ -41,6 +41,27 @@
 	if(bp) str = bp->value; \
 }
 
+static const struct audio_output_plugin *
+audio_output_detect(void)
+{
+	const struct audio_output_plugin *plugin;
+	unsigned i;
+
+	g_warning("Attempt to detect audio output device");
+
+	audio_output_plugins_for_each(plugin, i) {
+		if (plugin->test_default_device == NULL)
+			continue;
+
+		g_warning("Attempting to detect a %s audio device",
+			  plugin->name);
+		if (ao_plugin_test_default_device(plugin))
+			return plugin;
+	}
+
+	return NULL;
+}
+
 bool
 audio_output_init(struct audio_output *ao, const struct config_param *param)
 {
@@ -63,28 +84,17 @@ audio_output_init(struct audio_output *ao, const struct config_param *param)
 				"\"%s\" at line %i\n", type, param->line);
 		}
 	} else {
-		unsigned i;
-
 		g_warning("No \"%s\" defined in config file\n",
 			  CONF_AUDIO_OUTPUT);
-		g_warning("Attempt to detect audio output device\n");
 
-		audio_output_plugins_for_each(plugin, i) {
-			if (plugin->test_default_device) {
-				g_warning("Attempting to detect a %s audio "
-					  "device\n", plugin->name);
-				if (ao_plugin_test_default_device(plugin)) {
-					g_warning("Successfully detected a %s "
-						  "audio device\n", plugin->name);
-					break;
-				}
-			}
-		}
-
+		plugin = audio_output_detect();
 		if (plugin == NULL) {
-			g_warning("Unable to detect an audio device\n");
+			g_warning("Unable to detect an audio device");
 			return false;
 		}
+
+		g_message("Successfully detected a %s audio device",
+			  plugin->name);
 
 		name = "default detected output";
 	}
