@@ -15,6 +15,7 @@ ver 0.15 - (200?/??/??)
   - sidplay: new decoder plugin for C64 SID (using libsidplay2)
   - fluidsynth: new decoder plugin for MIDI files (using libfluidsynth)
   - wildmidi: another decoder plugin for MIDI files (using libwildmidi)
+  - flac: parse stream tags
   - added configuration option to disable decoder plugins
 * audio outputs:
   - added option to disable audio outputs by default

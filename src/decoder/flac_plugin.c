@@ -292,6 +292,7 @@ flac_decode_internal(struct decoder * decoder,
 {
 	flac_decoder *flac_dec;
 	struct flac_data data;
+	enum decoder_command cmd;
 	const char *err = NULL;
 
 	if (!(flac_dec = flac_new()))
@@ -326,6 +327,8 @@ flac_decode_internal(struct decoder * decoder,
 		}
 	}
 
+	data.tag = tag_new();
+
 	if (!flac_process_metadata(flac_dec)) {
 		err = "problem reading metadata";
 		goto fail;
@@ -343,9 +346,17 @@ flac_decode_internal(struct decoder * decoder,
 			    input_stream->seekable, data.total_time);
 
 	while (true) {
+		if (!tag_is_empty(data.tag)) {
+			cmd = decoder_tag(decoder, input_stream, data.tag);
+			tag_free(data.tag);
+			data.tag = tag_new();
+		} else
+			cmd = decoder_get_command(decoder);
+
 		if (!flac_process_single(flac_dec))
 			break;
-		if (decoder_get_command(decoder) == DECODE_COMMAND_SEEK) {
+
+		if (cmd == DECODE_COMMAND_SEEK) {
 			FLAC__uint64 seek_sample = decoder_seek_where(decoder) *
 			    data.audio_format.sample_rate + 0.5;
 			if (flac_seek_absolute(flac_dec, seek_sample)) {
@@ -358,7 +369,7 @@ flac_decode_internal(struct decoder * decoder,
 		} else if (flac_get_state(flac_dec) == flac_decoder_eof)
 			break;
 	}
-	if (decoder_get_command(decoder) != DECODE_COMMAND_STOP) {
+	if (cmd != DECODE_COMMAND_STOP) {
 		flacPrintErroredState(flac_get_state(flac_dec));
 		flac_finish(flac_dec);
 	}
@@ -366,6 +377,8 @@ flac_decode_internal(struct decoder * decoder,
 fail:
 	if (data.replay_gain_info)
 		replay_gain_info_free(data.replay_gain_info);
+
+	tag_free(data.tag);
 
 	if (flac_dec)
 		flac_delete(flac_dec);

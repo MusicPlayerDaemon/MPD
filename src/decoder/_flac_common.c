@@ -187,6 +187,10 @@ void flac_metadata_common_cb(const FLAC__StreamMetadata * block,
 		break;
 	case FLAC__METADATA_TYPE_VORBIS_COMMENT:
 		flac_parse_replay_gain(block, data);
+
+		if (data->tag != NULL)
+			flac_vorbis_comments_to_tag(data->tag, block);
+
 	default:
 		break;
 	}
