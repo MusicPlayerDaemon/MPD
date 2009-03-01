@@ -134,6 +134,22 @@ static gpointer audio_output_task(gpointer arg)
 			if (ret) {
 				pcm_convert_init(&ao->convert_state);
 				ao->open = true;
+
+
+				g_debug("opened plugin=%s name=\"%s\" "
+					"audio_format=%u:%u:%u",
+					ao->plugin->name,
+					ao->name,
+					ao->out_audio_format.sample_rate,
+					ao->out_audio_format.bits,
+					ao->out_audio_format.channels);
+
+				if (!audio_format_equals(&ao->in_audio_format,
+							 &ao->out_audio_format))
+					g_debug("converting from %u:%u:%u",
+						ao->in_audio_format.sample_rate,
+						ao->in_audio_format.bits,
+						ao->in_audio_format.channels);
 			} else {
 				g_warning("Failed to open \"%s\" [%s]: %s",
 					  ao->name, ao->plugin->name,
