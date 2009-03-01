@@ -127,8 +127,15 @@ audiofile_stream_decode(struct decoder *decoder, struct input_stream *is)
 		return;
 	}
 
+	afGetSampleFormat(af_fp, AF_DEFAULT_TRACK, &fs, &bits);
+	if (!audio_valid_sample_format(bits)) {
+		g_debug("input file has %d bit samples, converting to 16",
+			bits);
+		bits = 16;
+	}
+
 	afSetVirtualSampleFormat(af_fp, AF_DEFAULT_TRACK,
-	                         AF_SAMPFMT_TWOSCOMP, 16);
+	                         AF_SAMPFMT_TWOSCOMP, bits);
 	afGetVirtualSampleFormat(af_fp, AF_DEFAULT_TRACK, &fs, &bits);
 	audio_format.bits = (uint8_t)bits;
 	audio_format.sample_rate =
