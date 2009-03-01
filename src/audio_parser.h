@@ -16,9 +16,9 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-/*
- * Parser functions for audio related objects.
+/** \file
  *
+ * Parser functions for audio related objects.
  */
 
 #ifndef AUDIO_PARSER_H
@@ -30,6 +30,16 @@
 
 struct audio_format;
 
+/**
+ * Parses a string in the form "SAMPLE_RATE:BITS:CHANNELS" into an
+ * #audio_format.
+ *
+ * @param dest the destination #audio_format struct
+ * @param src the input string
+ * @param error location to store the error occuring, or NULL to
+ * ignore errors
+ * @return true on success
+ */
 bool
 audio_format_parse(struct audio_format *dest, const char *src, GError **error);
 
