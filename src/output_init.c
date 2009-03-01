@@ -31,16 +31,6 @@
 #define AUDIO_OUTPUT_NAME	"name"
 #define AUDIO_OUTPUT_FORMAT	"format"
 
-#define getBlockParam(name, str, force) { \
-	bp = getBlockParam(param, name); \
-	if(force && bp == NULL) { \
-		g_error("couldn't find parameter \"%s\" in audio output " \
-			"definition beginning at %i\n",			\
-			name, param->line);				\
-	} \
-	if(bp) str = bp->value; \
-}
-
 static const struct audio_output_plugin *
 audio_output_detect(GError **error)
 {
@@ -68,17 +58,18 @@ bool
 audio_output_init(struct audio_output *ao, const struct config_param *param,
 		  GError **error)
 {
-	const char *name = NULL;
-	char *format = NULL;
-	struct block_param *bp = NULL;
+	const char *format;
 	const struct audio_output_plugin *plugin = NULL;
 
 	if (param) {
 		const char *type = NULL;
 
-		getBlockParam(AUDIO_OUTPUT_NAME, name, 1);
-		getBlockParam(AUDIO_OUTPUT_TYPE, type, 1);
-		getBlockParam(AUDIO_OUTPUT_FORMAT, format, 0);
+		type = config_get_block_string(param, AUDIO_OUTPUT_TYPE, NULL);
+		if (type == NULL) {
+			g_set_error(error, audio_output_quark(), 0,
+				    "Missing \"type\" configuration");
+			return false;
+		}
 
 		plugin = audio_output_plugin_get(type);
 		if (plugin == NULL) {
@@ -87,6 +78,17 @@ audio_output_init(struct audio_output *ao, const struct config_param *param,
 				    type);
 			return false;
 		}
+
+		ao->name = config_get_block_string(param, AUDIO_OUTPUT_NAME,
+						   NULL);
+		if (ao->name == NULL) {
+			g_set_error(error, audio_output_quark(), 0,
+				    "Missing \"name\" configuration");
+			return false;
+		}
+
+		format = config_get_block_string(param, AUDIO_OUTPUT_FORMAT,
+						 NULL);
 	} else {
 		g_warning("No \"%s\" defined in config file\n",
 			  CONF_AUDIO_OUTPUT);
@@ -98,10 +100,10 @@ audio_output_init(struct audio_output *ao, const struct config_param *param,
 		g_message("Successfully detected a %s audio device",
 			  plugin->name);
 
-		name = "default detected output";
+		ao->name = "default detected output";
+		format = NULL;
 	}
 
-	ao->name = name;
 	ao->plugin = plugin;
 	ao->enabled = config_get_block_bool(param, "enabled", true);
 	ao->open = false;
