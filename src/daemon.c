@@ -130,6 +130,7 @@ daemonize_set_user(void)
 #endif
 }
 
+#ifndef G_OS_WIN32
 static void
 daemonize_detach(void)
 {
@@ -160,6 +161,7 @@ daemonize_detach(void)
 
 	g_debug("daemonized!");
 }
+#endif
 
 void
 daemonize(bool detach)
@@ -188,7 +190,7 @@ daemonize(bool detach)
 	}
 #else
 	/* no daemonization on WIN32 */
-	(void)options;
+	(void)detach;
 #endif
 }
 
