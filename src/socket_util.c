@@ -19,8 +19,12 @@
 #include "socket_util.h"
 #include "config.h"
 
+#ifndef G_OS_WIN32
 #include <sys/socket.h>
 #include <netdb.h>
+#else /* G_OS_WIN32 */
+#include <ws2tcpip.h>
+#endif /* G_OS_WIN32 */
 
 #ifdef HAVE_IPV6
 #include <string.h>
