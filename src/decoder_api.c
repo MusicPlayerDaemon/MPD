@@ -32,6 +32,9 @@
 #include <assert.h>
 #include <stdlib.h>
 
+#undef G_LOG_DOMAIN
+#define G_LOG_DOMAIN "decoder"
+
 void decoder_initialized(G_GNUC_UNUSED struct decoder * decoder,
 			 const struct audio_format *audio_format,
 			 bool seekable, float total_time)
@@ -53,6 +56,17 @@ void decoder_initialized(G_GNUC_UNUSED struct decoder * decoder,
 
 	dc.state = DECODE_STATE_DECODE;
 	notify_signal(&pc.notify);
+
+	g_debug("audio_format=%u:%u:%u, seekable=%s",
+		dc.in_audio_format.sample_rate, dc.in_audio_format.bits,
+		dc.in_audio_format.channels,
+		seekable ? "true" : "false");
+
+	if (!audio_format_equals(&dc.in_audio_format, &dc.out_audio_format))
+		g_debug("converting to %u:%u:%u",
+			dc.out_audio_format.sample_rate,
+			dc.out_audio_format.bits,
+			dc.out_audio_format.channels);
 }
 
 char *decoder_get_uri(G_GNUC_UNUSED struct decoder *decoder)
