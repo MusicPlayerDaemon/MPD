@@ -113,7 +113,7 @@ pcm_volume_change_24(int32_t *buffer, unsigned num_samples, int volume)
 }
 
 void
-pcm_volume(void *buffer, int bufferSize,
+pcm_volume(void *buffer, int length,
 	   const struct audio_format *format,
 	   int volume)
 {
@@ -121,22 +121,22 @@ pcm_volume(void *buffer, int bufferSize,
 		return;
 
 	if (volume <= 0) {
-		memset(buffer, 0, bufferSize);
+		memset(buffer, 0, length);
 		return;
 	}
 
 	switch (format->bits) {
 	case 8:
-		pcm_volume_change_8((int8_t *)buffer, bufferSize, volume);
+		pcm_volume_change_8((int8_t *)buffer, length, volume);
 		break;
 
 	case 16:
-		pcm_volume_change_16((int16_t *)buffer, bufferSize / 2,
+		pcm_volume_change_16((int16_t *)buffer, length / 2,
 				     volume);
 		break;
 
 	case 24:
-		pcm_volume_change_24((int32_t*)buffer, bufferSize / 4,
+		pcm_volume_change_24((int32_t*)buffer, length / 4,
 				     volume);
 		break;
 
