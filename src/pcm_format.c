@@ -40,6 +40,14 @@ pcm_convert_24_to_16(struct pcm_dither *dither,
 	pcm_dither_24_to_16(dither, out, in, num_samples);
 }
 
+static void
+pcm_convert_32_to_16(struct pcm_dither *dither,
+		     int16_t *out, const int32_t *in,
+		     unsigned num_samples)
+{
+	pcm_dither_32_to_16(dither, out, in, num_samples);
+}
+
 const int16_t *
 pcm_convert_to_16(struct pcm_buffer *buffer, struct pcm_dither *dither,
 		  uint8_t bits, const void *src,
@@ -72,6 +80,16 @@ pcm_convert_to_16(struct pcm_buffer *buffer, struct pcm_dither *dither,
 				     (const int32_t *)src,
 				     num_samples);
 		return dest;
+
+	case 32:
+		num_samples = src_size / 4;
+		*dest_size_r = num_samples * sizeof(*dest);
+		dest = pcm_buffer_get(buffer, *dest_size_r);
+
+		pcm_convert_32_to_16(dither, dest,
+				     (const int32_t *)src,
+				     num_samples);
+		return dest;
 	}
 
 	g_warning("only 8 or 16 bits are supported for conversion!\n");
@@ -94,6 +112,16 @@ pcm_convert_16_to_24(int32_t *out, const int16_t *in,
 {
 	while (num_samples > 0) {
 		*out++ = *in++ << 8;
+		--num_samples;
+	}
+}
+
+static void
+pcm_convert_32_to_24(int32_t *out, const int16_t *in,
+		     unsigned num_samples)
+{
+	while (num_samples > 0) {
+		*out++ = *in++ >> 8;
 		--num_samples;
 	}
 }
@@ -128,6 +156,15 @@ pcm_convert_to_24(struct pcm_buffer *buffer,
 	case 24:
 		*dest_size_r = src_size;
 		return src;
+
+	case 32:
+		num_samples = src_size / 4;
+		*dest_size_r = num_samples * sizeof(*dest);
+		dest = pcm_buffer_get(buffer, *dest_size_r);
+
+		pcm_convert_32_to_24(dest, (const int16_t *)src,
+				     num_samples);
+		return dest;
 	}
 
 	g_warning("only 8 or 24 bits are supported for conversion!\n");
