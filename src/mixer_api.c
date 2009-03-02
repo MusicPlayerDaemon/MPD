@@ -19,13 +19,30 @@
 #include <stdio.h>
 #include <assert.h>
 
+#include <glib.h>
+
 #include "mixer_api.h"
+
+#undef G_LOG_DOMAIN
+#define G_LOG_DOMAIN "mixer"
+
+static bool mixers_enabled = true;
+
+void mixer_disable_all(void)
+{
+	g_debug("mixer api is disabled\n");
+	mixers_enabled = false;
+}
 
 struct mixer *
 mixer_new(const struct mixer_plugin *plugin, const struct config_param *param)
 {
 	struct mixer *mixer;
 
+	//mixers are disabled (by using software volume)
+	if (!mixers_enabled) {
+		return NULL;
+	}
 	assert(plugin != NULL);
 
 	mixer = plugin->init(param);
@@ -38,7 +55,9 @@ mixer_new(const struct mixer_plugin *plugin, const struct config_param *param)
 void
 mixer_free(struct mixer *mixer)
 {
-	assert(mixer != NULL);
+	if (!mixer) {
+		return;
+	}
 	assert(mixer->plugin != NULL);
 
 	mixer->plugin->finish(mixer);
@@ -46,12 +65,18 @@ mixer_free(struct mixer *mixer)
 
 bool mixer_open(struct mixer *mixer)
 {
-	assert(mixer != NULL && mixer->plugin != NULL);
+	if (!mixer) {
+		return false;
+	}
+	assert(mixer->plugin != NULL);
 	return mixer->plugin->open(mixer);
 }
 
 void mixer_close(struct mixer *mixer)
 {
-	assert(mixer != NULL && mixer->plugin != NULL);
+	if (!mixer) {
+		return;
+	}
+	assert(mixer->plugin != NULL);
 	mixer->plugin->close(mixer);
 }

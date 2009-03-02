@@ -24,6 +24,7 @@
 #include "config.h"
 #include "audio.h"
 #include "output_all.h"
+#include "mixer_api.h"
 
 #include <glib.h>
 
@@ -140,8 +141,10 @@ void volume_init(void)
 	if (param) {
 		if (strcmp(param->value, VOLUME_MIXER_SOFTWARE) == 0) {
 			volume_mixer_type = VOLUME_MIXER_TYPE_SOFTWARE;
+			mixer_disable_all();
 		} else if (strcmp(param->value, VOLUME_MIXER_DISABLED) == 0) {
 			volume_mixer_type = VOLUME_MIXER_TYPE_DISABLED;
+			mixer_disable_all();
 		} else if (strcmp(param->value, VOLUME_MIXER_HARDWARE) == 0) {
 			//nothing to do
 		} else {

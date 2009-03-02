@@ -99,4 +99,6 @@ mixer_set_volume(struct mixer *mixer, unsigned volume)
 	return mixer->plugin->set_volume(mixer, volume);
 }
 
+void mixer_disable_all(void);
+
 #endif
