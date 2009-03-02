@@ -20,6 +20,8 @@
 #ifndef MPD_DATABASE_H
 #define MPD_DATABASE_H
 
+#include <glib.h>
+
 #include <sys/time.h>
 #include <stdbool.h>
 
@@ -66,7 +68,7 @@ bool
 db_save(void);
 
 bool
-db_load(void);
+db_load(GError **error);
 
 time_t
 db_get_mtime(void);

@@ -49,6 +49,15 @@ static struct directory *music_root;
 
 static time_t database_mtime;
 
+/**
+ * The quark used for GError.domain.
+ */
+static inline GQuark
+db_quark(void)
+{
+	return g_quark_from_static_string("database");
+}
+
 void
 db_init(const char *path)
 {
@@ -267,7 +276,7 @@ db_save(void)
 }
 
 bool
-db_load(void)
+db_load(GError **error)
 {
 	FILE *fp = NULL;
 	struct stat st;
@@ -281,21 +290,24 @@ db_load(void)
 		music_root = directory_new("", NULL);
 	while (!(fp = fopen(database_path, "r")) && errno == EINTR) ;
 	if (fp == NULL) {
-		g_warning("unable to open db file \"%s\": %s",
-			  database_path, strerror(errno));
+		g_set_error(error, db_quark(), errno,
+			    "Failed to open database file \"%s\": %s",
+			    database_path, strerror(errno));
 		return false;
 	}
 
 	/* get initial info */
-	if (!fgets(buffer, sizeof(buffer), fp))
-		g_error("Error reading db, fgets");
+	if (!fgets(buffer, sizeof(buffer), fp)) {
+		fclose(fp);
+		g_set_error(error, db_quark(), 0, "Unexpected end of file");
+		return false;
+	}
 
 	g_strchomp(buffer);
 
 	if (0 != strcmp(DIRECTORY_INFO_BEGIN, buffer)) {
-		g_warning("db info not found in db file; "
-			  "you should recreate the db using --create-db");
-		while (fclose(fp) && errno == EINTR) ;
+		fclose(fp);
+		g_set_error(error, db_quark(), 0, "Database corrupted");
 		return false;
 	}
 
@@ -304,14 +316,23 @@ db_load(void)
 		g_strchomp(buffer);
 
 		if (g_str_has_prefix(buffer, DIRECTORY_MPD_VERSION)) {
-			if (found_version)
-				g_error("already found version in db");
+			if (found_version) {
+				fclose(fp);
+				g_set_error(error, db_quark(), 0,
+					    "Duplicate version line");
+				return false;
+			}
+
 			found_version = true;
 		} else if (g_str_has_prefix(buffer, DIRECTORY_FS_CHARSET)) {
 			const char *new_charset, *old_charset;
 
-			if (found_charset)
-				g_error("already found fs charset in db");
+			if (found_charset) {
+				fclose(fp);
+				g_set_error(error, db_quark(), 0,
+					    "Duplicate charset line");
+				return false;
+			}
 
 			found_charset = true;
 
@@ -319,15 +340,19 @@ db_load(void)
 			old_charset = path_get_fs_charset();
 			if (old_charset != NULL
 			    && strcmp(new_charset, old_charset)) {
+				fclose(fp);
 				g_message("Existing database has charset \"%s\" "
 					  "instead of \"%s\"; "
 					  "discarding database file",
 					  new_charset, old_charset);
 				return false;
 			}
-		} else
-			g_error("unknown line in db info: %s",
-				buffer);
+		} else {
+			fclose(fp);
+			g_set_error(error, db_quark(), 0,
+				    "Malformed line: %s", buffer);
+			return false;
+		}
 	}
 
 	g_debug("reading DB");

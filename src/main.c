@@ -94,6 +94,7 @@ openDB(const Options *options)
 {
 	const char *path = config_get_path(CONF_DB_FILE);
 	bool ret;
+	GError *error = NULL;
 
 	if (!mapper_has_music_directory()) {
 		if (path != NULL)
@@ -112,8 +113,11 @@ openDB(const Options *options)
 		/* don't attempt to load the old database */
 		return false;
 
-	ret = db_load();
+	ret = db_load(&error);
 	if (!ret) {
+		g_warning("Failed to load database: %s", error->message);
+		g_error_free(error);
+
 		if (options->createDB < 0)
 			g_error("can't open db file and using "
 				"\"--no-create-db\" command line option");
