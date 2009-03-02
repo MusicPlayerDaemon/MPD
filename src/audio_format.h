@@ -59,7 +59,7 @@ audio_valid_sample_rate(unsigned sample_rate)
 static inline bool
 audio_valid_sample_format(unsigned bits)
 {
-	return bits == 16 || bits == 24 || bits == 8;
+	return bits == 16 || bits == 24 || bits == 32 || bits == 8;
 }
 
 /**
