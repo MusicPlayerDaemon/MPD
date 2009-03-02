@@ -173,3 +173,72 @@ pcm_convert_channels_24(struct pcm_buffer *buffer,
 
 	return dest;
 }
+
+static void
+pcm_convert_channels_32_1_to_2(int32_t *dest, const int32_t *src,
+			       unsigned num_frames)
+{
+	pcm_convert_channels_24_1_to_2(dest, src, num_frames);
+}
+
+static void
+pcm_convert_channels_32_2_to_1(int32_t *dest, const int32_t *src,
+			       unsigned num_frames)
+{
+	while (num_frames-- > 0) {
+		int64_t a = *src++, b = *src++;
+
+		*dest++ = (a + b) / 2;
+	}
+}
+
+static void
+pcm_convert_channels_32_n_to_2(int32_t *dest,
+			       unsigned src_channels, const int32_t *src,
+			       unsigned num_frames)
+{
+	unsigned c;
+
+	assert(src_channels > 0);
+
+	while (num_frames-- > 0) {
+		int64_t sum = 0;
+		int32_t value;
+
+		for (c = 0; c < src_channels; ++c)
+			sum += *src++;
+		value = sum / (int64_t)src_channels;
+
+		/* XXX this is actually only mono ... */
+		*dest++ = value;
+		*dest++ = value;
+	}
+}
+
+const int32_t *
+pcm_convert_channels_32(struct pcm_buffer *buffer,
+			int8_t dest_channels,
+			int8_t src_channels, const int32_t *src,
+			size_t src_size, size_t *dest_size_r)
+{
+	unsigned num_frames = src_size / src_channels / sizeof(*src);
+	unsigned dest_size = num_frames * dest_channels * sizeof(*src);
+	int32_t *dest = pcm_buffer_get(buffer, dest_size);
+
+	*dest_size_r = dest_size;
+
+	if (src_channels == 1 && dest_channels == 2)
+		pcm_convert_channels_32_1_to_2(dest, src, num_frames);
+	else if (src_channels == 2 && dest_channels == 1)
+		pcm_convert_channels_32_2_to_1(dest, src, num_frames);
+	else if (dest_channels == 2)
+		pcm_convert_channels_32_n_to_2(dest, src_channels, src,
+					       num_frames);
+	else {
+		g_warning("conversion %u->%u channels is not supported",
+			  src_channels, dest_channels);
+		return NULL;
+	}
+
+	return dest;
+}
