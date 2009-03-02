@@ -68,7 +68,7 @@ audio_valid_sample_format(unsigned bits)
 static inline bool
 audio_valid_channel_count(unsigned channels)
 {
-	return channels == 1 || channels == 2;
+	return channels >= 1 && channels <= 8;
 }
 
 /**
