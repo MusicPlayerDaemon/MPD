@@ -57,4 +57,19 @@ pcm_convert_to_24(struct pcm_buffer *buffer,
 		  uint8_t bits, const void *src,
 		  size_t src_size, size_t *dest_size_r);
 
+/**
+ * Converts PCM samples to 32 bit.
+ *
+ * @param buffer a pcm_buffer object
+ * @param bits the number of in the source buffer
+ * @param src the source PCM buffer
+ * @param src_size the size of #src in bytes
+ * @param dest_size_r returns the number of bytes of the destination buffer
+ * @return the destination buffer
+ */
+const int32_t *
+pcm_convert_to_32(struct pcm_buffer *buffer,
+		  uint8_t bits, const void *src,
+		  size_t src_size, size_t *dest_size_r);
+
 #endif
