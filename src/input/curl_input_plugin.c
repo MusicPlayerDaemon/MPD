@@ -91,17 +91,23 @@ struct input_curl {
 /** libcurl should accept "ICY 200 OK" */
 static struct curl_slist *http_200_aliases;
 
-void input_curl_global_init(void)
+static bool
+input_curl_init(void)
 {
 	CURLcode code = curl_global_init(CURL_GLOBAL_ALL);
-	if (code != CURLE_OK)
+	if (code != CURLE_OK) {
 		g_warning("curl_global_init() failed: %s\n",
 			  curl_easy_strerror(code));
+		return false;
+	}
 
 	http_200_aliases = curl_slist_append(http_200_aliases, "ICY 200 OK");
+
+	return true;
 }
 
-void input_curl_global_finish(void)
+static void
+input_curl_finish(void)
 {
 	curl_slist_free_all(http_200_aliases);
 
@@ -948,6 +954,9 @@ input_curl_open(struct input_stream *is, const char *url)
 }
 
 const struct input_plugin input_plugin_curl = {
+	.init = input_curl_init,
+	.finish = input_curl_finish,
+
 	.open = input_curl_open,
 	.close = input_curl_close,
 	.tag = input_curl_tag,

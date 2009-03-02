@@ -28,6 +28,20 @@
 struct input_stream;
 
 struct input_plugin {
+	/**
+	 * Global initialization.  This method is called when MPD starts.
+	 *
+	 * @return true on success, false if the plugin should be
+	 * disabled
+	 */
+	bool (*init)(void);
+
+	/**
+	 * Global deinitialization.  Called once before MPD shuts
+	 * down (only if init() has returned true).
+	 */
+	void (*finish)(void);
+
 	bool (*open)(struct input_stream *is, const char *url);
 	void (*close)(struct input_stream *is);
 

@@ -49,21 +49,24 @@ static const struct input_plugin *const input_plugins[] = {
 #endif
 };
 
+static bool input_plugins_enabled[G_N_ELEMENTS(input_plugins)];
+
 static const unsigned num_input_plugins =
 	sizeof(input_plugins) / sizeof(input_plugins[0]);
 
 void input_stream_global_init(void)
 {
-#ifdef HAVE_CURL
-	input_curl_global_init();
-#endif
+	for (unsigned i = 0; i < num_input_plugins; ++i)
+		if (input_plugins[i]->init == NULL || input_plugins[i]->init())
+			input_plugins_enabled[i] = true;
 }
 
 void input_stream_global_finish(void)
 {
-#ifdef HAVE_CURL
-	input_curl_global_finish();
-#endif
+	for (unsigned i = 0; i < num_input_plugins; ++i)
+		if (input_plugins_enabled[i] &&
+		    input_plugins[i]->finish != NULL)
+			input_plugins[i]->finish();
 }
 
 bool
