@@ -70,7 +70,7 @@ aiff_seek_id3(FILE *file)
 	size = fread(&header, sizeof(header), 1, file);
 	if (size != 1 ||
 	    memcmp(header.id, "FORM", 4) != 0 ||
-	    GUINT32_FROM_BE(header.size) > st.st_size ||
+	    GUINT32_FROM_BE(header.size) > (uint32_t)st.st_size ||
 	    memcmp(header.format, "AIFF", 4) != 0)
 		/* not a AIFF file */
 		return 0;
