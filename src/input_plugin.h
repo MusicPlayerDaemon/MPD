@@ -25,16 +25,19 @@
 #include <stdbool.h>
 #include <sys/types.h>
 
+struct config_param;
 struct input_stream;
 
 struct input_plugin {
+	const char *name;
+
 	/**
 	 * Global initialization.  This method is called when MPD starts.
 	 *
 	 * @return true on success, false if the plugin should be
 	 * disabled
 	 */
-	bool (*init)(void);
+	bool (*init)(const struct config_param *param);
 
 	/**
 	 * Global deinitialization.  Called once before MPD shuts

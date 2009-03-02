@@ -73,5 +73,6 @@ input_archive_open(struct input_stream *is, const char *pathname)
 }
 
 const struct input_plugin input_plugin_archive = {
+	.name = "archive",
 	.open = input_archive_open,
 };

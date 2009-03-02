@@ -115,6 +115,7 @@ input_mms_seek(G_GNUC_UNUSED struct input_stream *is,
 }
 
 const struct input_plugin input_plugin_mms = {
+	.name = "mms",
 	.open = input_mms_open,
 	.close = input_mms_close,
 	.buffer = input_mms_buffer,

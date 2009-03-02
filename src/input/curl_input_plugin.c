@@ -92,7 +92,7 @@ struct input_curl {
 static struct curl_slist *http_200_aliases;
 
 static bool
-input_curl_init(void)
+input_curl_init(G_GNUC_UNUSED const struct config_param *param)
 {
 	CURLcode code = curl_global_init(CURL_GLOBAL_ALL);
 	if (code != CURLE_OK) {
@@ -954,6 +954,7 @@ input_curl_open(struct input_stream *is, const char *url)
 }
 
 const struct input_plugin input_plugin_curl = {
+	.name = "curl",
 	.init = input_curl_init,
 	.finish = input_curl_finish,
 

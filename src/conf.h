@@ -65,6 +65,7 @@
 #define CONF_METADATA_TO_USE            "metadata_to_use"
 #define CONF_SAVE_ABSOLUTE_PATHS        "save_absolute_paths_in_playlists"
 #define CONF_DECODER "decoder"
+#define CONF_INPUT "input"
 #define CONF_GAPLESS_MP3_PLAYBACK	"gapless_mp3_playback"
 
 #define CONF_BOOL_UNSET         -1

@@ -121,6 +121,7 @@ input_file_eof(struct input_stream *is)
 }
 
 const struct input_plugin input_plugin_file = {
+	.name = "file",
 	.open = input_file_open,
 	.close = input_file_close,
 	.read = input_file_read,
