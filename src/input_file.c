@@ -17,6 +17,7 @@
  */
 
 #include "input_file.h"
+#include "input_plugin.h"
 
 #include <sys/stat.h>
 #include <fcntl.h>

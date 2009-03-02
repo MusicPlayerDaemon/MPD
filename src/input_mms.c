@@ -17,7 +17,7 @@
  */
 
 #include "input_mms.h"
-#include "input_stream.h"
+#include "input_plugin.h"
 
 #include <glib.h>
 #include <libmms/mmsx.h>

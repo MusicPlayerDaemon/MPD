@@ -21,7 +21,7 @@
   */
 
 #include "archive_api.h"
-#include "input_stream.h"
+#include "input_plugin.h"
 
 #include <cdio/cdio.h>
 #include <cdio/iso9660.h>

@@ -17,7 +17,7 @@
  */
 
 #include "input_curl.h"
-#include "input_stream.h"
+#include "input_plugin.h"
 #include "conf.h"
 #include "config.h"
 #include "tag.h"

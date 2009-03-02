@@ -19,7 +19,7 @@
 #include "input_archive.h"
 #include "archive_api.h"
 #include "archive_list.h"
-#include "input_stream.h"
+#include "input_plugin.h"
 
 #include <glib.h>
 

@@ -22,7 +22,7 @@
 
 #include "archive_api.h"
 #include "archive_api.h"
-#include "input_stream.h"
+#include "input_plugin.h"
 
 #include <zzip/zzip.h>
 #include <glib.h>

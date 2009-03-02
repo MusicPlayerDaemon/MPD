@@ -1,6 +1,6 @@
-/* the Music Player Daemon (MPD)
- * Copyright (C) 2003-2007 by Warren Dukes (warren.dukes@gmail.com)
- * This project's homepage is: http://www.musicpd.org
+/*
+ * Copyright (C) 2003-2009 The Music Player Daemon Project
+ * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,9 +16,26 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef MPD_INPUT_FILE_H
-#define MPD_INPUT_FILE_H
+#ifndef MPD_INPUT_PLUGIN_H
+#define MPD_INPUT_PLUGIN_H
 
-extern const struct input_plugin input_plugin_file;
+#include "input_stream.h"
+
+#include <stddef.h>
+#include <stdbool.h>
+#include <sys/types.h>
+
+struct input_stream;
+
+struct input_plugin {
+	bool (*open)(struct input_stream *is, const char *url);
+	void (*close)(struct input_stream *is);
+
+	struct tag *(*tag)(struct input_stream *is);
+	int (*buffer)(struct input_stream *is);
+	size_t (*read)(struct input_stream *is, void *ptr, size_t size);
+	bool (*eof)(struct input_stream *is);
+	bool (*seek)(struct input_stream *is, off_t offset, int whence);
+};
 
 #endif

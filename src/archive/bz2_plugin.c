@@ -21,7 +21,7 @@
   */
 
 #include "archive_api.h"
-#include "input_stream.h"
+#include "input_plugin.h"
 #include "config.h"
 
 #include <stdint.h>

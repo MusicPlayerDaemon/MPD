@@ -67,6 +67,7 @@ mpd_headers = \
 	src/decoder_list.h \
 	src/decoder/_flac_common.h \
 	src/decoder/_ogg_common.h \
+	src/input_plugin.h \
 	src/input_stream.h \
 	src/input_file.h \
 	src/input_curl.h \

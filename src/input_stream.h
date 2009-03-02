@@ -25,17 +25,6 @@
 
 struct input_stream;
 
-struct input_plugin {
-	bool (*open)(struct input_stream *is, const char *url);
-	void (*close)(struct input_stream *is);
-
-	struct tag *(*tag)(struct input_stream *is);
-	int (*buffer)(struct input_stream *is);
-	size_t (*read)(struct input_stream *is, void *ptr, size_t size);
-	bool (*eof)(struct input_stream *is);
-	bool (*seek)(struct input_stream *is, off_t offset, int whence);
-};
-
 struct input_stream {
 	/**
 	 * the plugin which implements this input stream
