@@ -123,6 +123,43 @@ pcm_convert_24(struct pcm_convert_state *state,
 	return buf;
 }
 
+static const int32_t *
+pcm_convert_32(struct pcm_convert_state *state,
+	       const struct audio_format *src_format,
+	       const void *src_buffer, size_t src_size,
+	       const struct audio_format *dest_format,
+	       size_t *dest_size_r)
+{
+	const int32_t *buf;
+	size_t len;
+
+	assert(dest_format->bits == 32);
+
+	buf = pcm_convert_to_32(&state->format_buffer, src_format->bits,
+				src_buffer, src_size, &len);
+	if (!buf)
+		g_error("pcm_convert_to_32() failed");
+
+	if (src_format->channels != dest_format->channels) {
+		buf = pcm_convert_channels_32(&state->channels_buffer,
+					      dest_format->channels,
+					      src_format->channels,
+					      buf, len, &len);
+		if (!buf)
+			g_error("pcm_convert_channels_32() failed");
+	}
+
+	if (src_format->sample_rate != dest_format->sample_rate)
+		buf = pcm_resample_32(&state->resample,
+				      dest_format->channels,
+				      src_format->sample_rate, buf, len,
+				      dest_format->sample_rate,
+				      &len);
+
+	*dest_size_r = len;
+	return buf;
+}
+
 const void *
 pcm_convert(struct pcm_convert_state *state,
 	    const struct audio_format *src_format,
@@ -138,6 +175,11 @@ pcm_convert(struct pcm_convert_state *state,
 
 	case 24:
 		return pcm_convert_24(state,
+				      src_format, src, src_size,
+				      dest_format, dest_size_r);
+
+	case 32:
+		return pcm_convert_32(state,
 				      src_format, src, src_size,
 				      dest_format, dest_size_r);
 
