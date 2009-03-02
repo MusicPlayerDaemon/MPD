@@ -19,6 +19,7 @@
 #include "tag_id3.h"
 #include "tag.h"
 #include "riff.h"
+#include "aiff.h"
 #include "conf.h"
 
 #include <glib.h>
@@ -426,7 +427,7 @@ static struct id3_tag *findId3TagFromEnd(FILE * stream)
 }
 
 static struct id3_tag *
-tag_id3_riff_load(FILE *file)
+tag_id3_riff_aiff_load(FILE *file)
 {
 	size_t size;
 	void *buffer;
@@ -435,9 +436,11 @@ tag_id3_riff_load(FILE *file)
 
 	size = riff_seek_id3(file);
 	if (size == 0)
+		size = aiff_seek_id3(file);
+	if (size == 0)
 		return NULL;
 
-	if (size > 65536)
+	if (size > 256 * 1024)
 		/* too large, don't allocate so much memory */
 		return NULL;
 
@@ -469,7 +472,7 @@ struct tag *tag_id3_load(const char *file)
 
 	tag = findId3TagFromBeginning(stream);
 	if (tag == NULL)
-		tag = tag_id3_riff_load(stream);
+		tag = tag_id3_riff_aiff_load(stream);
 	if (!tag)
 		tag = findId3TagFromEnd(stream);
 

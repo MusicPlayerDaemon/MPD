@@ -104,6 +104,7 @@ mpd_headers = \
 	src/playlist_save.h \
 	src/playlist_state.h \
 	src/riff.h \
+	src/aiff.h \
 	src/queue.h \
 	src/queue_print.h \
 	src/queue_save.h \
@@ -232,7 +233,7 @@ endif
 
 if HAVE_ID3TAG
 src_mpd_SOURCES += src/tag_id3.c \
-	src/riff.c
+	src/riff.c src/aiff.c
 endif
 
 # archive plugins
@@ -560,8 +561,8 @@ test_software_volume_SOURCES = test/software_volume.c \
 	src/pcm_volume.c
 
 if HAVE_ID3TAG
-test_run_decoder_SOURCES += src/tag_id3.c src/riff.c
-test_read_tags_SOURCES += src/tag_id3.c src/riff.c
+test_run_decoder_SOURCES += src/tag_id3.c src/riff.c src/aiff.c
+test_read_tags_SOURCES += src/tag_id3.c src/riff.c src/aiff.c
 endif
 
 endif

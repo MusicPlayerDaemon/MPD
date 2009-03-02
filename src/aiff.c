@@ -16,7 +16,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "riff.h"
+#include "aiff.h"
 
 #include <glib.h>
 
@@ -28,26 +28,26 @@
 #include <string.h>
 
 #undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "riff"
+#define G_LOG_DOMAIN "aiff"
 
-struct riff_header {
+struct aiff_header {
 	char id[4];
 	uint32_t size;
 	char format[4];
 };
 
-struct riff_chunk_header {
+struct aiff_chunk_header {
 	char id[4];
 	uint32_t size;
 };
 
 size_t
-riff_seek_id3(FILE *file)
+aiff_seek_id3(FILE *file)
 {
 	int ret;
 	struct stat st;
-	struct riff_header header;
-	struct riff_chunk_header chunk;
+	struct aiff_header header;
+	struct aiff_chunk_header chunk;
 	size_t size;
 
 	/* determine the file size */
@@ -59,7 +59,7 @@ riff_seek_id3(FILE *file)
 		return 0;
 	}
 
-	/* seek to the beginning and read the RIFF header */
+	/* seek to the beginning and read the AIFF header */
 
 	ret = fseek(file, 0, SEEK_SET);
 	if (ret != 0) {
@@ -69,9 +69,10 @@ riff_seek_id3(FILE *file)
 
 	size = fread(&header, sizeof(header), 1, file);
 	if (size != 1 ||
-	    memcmp(header.id, "RIFF", 4) != 0 ||
-	    GUINT32_FROM_LE(header.size) > st.st_size)
-		/* not a RIFF file */
+	    memcmp(header.id, "FORM", 4) != 0 ||
+	    GUINT32_FROM_BE(header.size) > st.st_size ||
+	    memcmp(header.format, "AIFF", 4) != 0)
+		/* not a AIFF file */
 		return 0;
 
 	while (true) {
@@ -81,12 +82,12 @@ riff_seek_id3(FILE *file)
 		if (size != 1)
 			return 0;
 
-		size = GUINT32_FROM_LE(chunk.size);
+		size = GUINT32_FROM_BE(chunk.size);
 		if (size % 2 != 0)
 			/* pad byte */
 			++size;
 
-		if (memcmp(chunk.id, "id3 ", 4) == 0)
+		if (memcmp(chunk.id, "ID3 ", 4) == 0)
 			/* found it! */
 			return size;
 
