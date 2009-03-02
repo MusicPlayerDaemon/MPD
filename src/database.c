@@ -47,7 +47,7 @@ static char *database_path;
 
 static struct directory *music_root;
 
-static time_t directory_dbModTime;
+static time_t database_mtime;
 
 void
 db_init(const char *path)
@@ -261,7 +261,7 @@ db_save(void)
 	while (fclose(fp) && errno == EINTR);
 
 	if (stat(database_path, &st) == 0)
-		directory_dbModTime = st.st_mtime;
+		database_mtime = st.st_mtime;
 
 	return true;
 }
@@ -272,7 +272,7 @@ db_load(void)
 	FILE *fp = NULL;
 	struct stat st;
 	char buffer[100];
-	bool foundFsCharset = false, foundVersion = false;
+	bool found_charset = false, found_version = false;
 
 	assert(database_path != NULL);
 	assert(music_root != NULL);
@@ -304,26 +304,25 @@ db_load(void)
 		g_strchomp(buffer);
 
 		if (g_str_has_prefix(buffer, DIRECTORY_MPD_VERSION)) {
-			if (foundVersion)
+			if (found_version)
 				g_error("already found version in db");
-			foundVersion = true;
+			found_version = true;
 		} else if (g_str_has_prefix(buffer, DIRECTORY_FS_CHARSET)) {
-			char *fsCharset;
-			const char *tempCharset;
+			const char *new_charset, *old_charset;
 
-			if (foundFsCharset)
+			if (found_charset)
 				g_error("already found fs charset in db");
 
-			foundFsCharset = true;
+			found_charset = true;
 
-			fsCharset = &(buffer[strlen(DIRECTORY_FS_CHARSET)]);
-			tempCharset = path_get_fs_charset();
-			if (tempCharset != NULL
-			    && strcmp(fsCharset, tempCharset)) {
+			new_charset = &(buffer[strlen(DIRECTORY_FS_CHARSET)]);
+			old_charset = path_get_fs_charset();
+			if (old_charset != NULL
+			    && strcmp(new_charset, old_charset)) {
 				g_message("Existing database has charset \"%s\" "
 					  "instead of \"%s\"; "
 					  "discarding database file",
-					  fsCharset, tempCharset);
+					  new_charset, old_charset);
 				return false;
 			}
 		} else
@@ -339,7 +338,7 @@ db_load(void)
 	stats_update();
 
 	if (stat(database_path, &st) == 0)
-		directory_dbModTime = st.st_mtime;
+		database_mtime = st.st_mtime;
 
 	return true;
 }
@@ -347,5 +346,5 @@ db_load(void)
 time_t
 db_get_mtime(void)
 {
-	return directory_dbModTime;
+	return database_mtime;
 }
