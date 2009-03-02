@@ -115,14 +115,24 @@
 }
 
 {
-   g_get_language_names
+   g_static_private_set
    Memcheck:Leak
    fun:realloc
    fun:g_realloc
    fun:g_array_maybe_expand
    fun:g_array_set_size
    fun:g_static_private_set
-   fun:g_get_language_names
+}
+
+{
+   g_static_private_set
+   Memcheck:Leak
+   fun:malloc
+   fun:realloc
+   fun:g_realloc
+   fun:g_array_maybe_expand
+   fun:g_array_set_size
+   fun:g_static_private_set
 }
 
 {
@@ -185,13 +195,11 @@
 }
 
 {
-   g_thread_init_glib
+   g_slice_init_nomessage
    Memcheck:Leak
    fun:calloc
    fun:g_malloc0
    fun:g_slice_init_nomessage
-   fun:_g_slice_thread_init_nomessage
-   fun:g_thread_init_glib
 }
 
 {
@@ -278,14 +286,22 @@
 }
 
 {
-   g_get_filename_charsets3
+   g_static_private_set
    Memcheck:Leak
    fun:malloc
    fun:g_malloc
    fun:g_slice_alloc
    fun:g_array_sized_new
    fun:g_static_private_set
-   fun:g_get_filename_charsets
+}
+
+{
+   g_static_private_get
+   Memcheck:Leak
+   fun:calloc
+   fun:g_malloc0
+   fun:g_thread_self
+   fun:g_static_private_get
 }
 
 {
@@ -442,4 +458,20 @@
    fun:avahiClientCallback
    obj:/usr/lib/libavahi-client.so.3.2.4
    fun:avahi_client_new
+}
+
+{
+   inet_ntoa
+   Memcheck:Leak
+   fun:malloc
+   fun:inet_ntoa
+}
+
+{
+   wildmidi
+   Memcheck:Leak
+   fun:malloc
+   fun:realloc
+   fun:init_gauss
+   fun:WildMidi_Init
 }
