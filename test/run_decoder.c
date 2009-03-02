@@ -126,6 +126,7 @@ int main(int argc, char **argv)
 	decoder_name = argv[1];
 	decoder.uri = argv[2];
 
+	input_stream_global_init();
 	decoder_plugin_init_all();
 
 	decoder.plugin = decoder_plugin_from_name(decoder_name);
@@ -153,6 +154,7 @@ int main(int argc, char **argv)
 	}
 
 	decoder_plugin_deinit_all();
+	input_stream_global_finish();
 
 	if (!decoder.initialized) {
 		g_printerr("Decoding failed\n");
