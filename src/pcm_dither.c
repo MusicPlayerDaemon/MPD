@@ -20,7 +20,7 @@
 #include "pcm_prng.h"
 
 static int16_t
-pcm_dither_sample_24_to_16(int32_t sample, struct pcm_dither_24 *dither)
+pcm_dither_sample_24_to_16(int32_t sample, struct pcm_dither *dither)
 {
 	int32_t output, rnd;
 
@@ -69,7 +69,7 @@ pcm_dither_sample_24_to_16(int32_t sample, struct pcm_dither_24 *dither)
 }
 
 void
-pcm_dither_24_to_16(struct pcm_dither_24 *dither,
+pcm_dither_24_to_16(struct pcm_dither *dither,
 		    int16_t *dest, const int32_t *src,
 		    unsigned num_samples)
 {

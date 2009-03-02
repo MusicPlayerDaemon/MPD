@@ -21,20 +21,20 @@
 
 #include <stdint.h>
 
-struct pcm_dither_24 {
+struct pcm_dither {
 	int32_t error[3];
 	int32_t random;
 };
 
 static inline void
-pcm_dither_24_init(struct pcm_dither_24 *dither)
+pcm_dither_24_init(struct pcm_dither *dither)
 {
 	dither->error[0] = dither->error[1] = dither->error[2] = 0;
 	dither->random = 0;
 }
 
 void
-pcm_dither_24_to_16(struct pcm_dither_24 *dither,
+pcm_dither_24_to_16(struct pcm_dither *dither,
 		    int16_t *dest, const int32_t *src,
 		    unsigned num_samples);
 

@@ -23,14 +23,14 @@
 #include <stddef.h>
 
 struct pcm_buffer;
-struct pcm_dither_24;
+struct pcm_dither;
 
 /**
  * Converts PCM samples to 16 bit.  If the source format is 24 bit,
  * then dithering is applied.
  *
  * @param buffer a pcm_buffer object
- * @param dither a pcm_dither_24 object for 24-to-16 conversion
+ * @param dither a pcm_dither object for 24-to-16 conversion
  * @param bits the number of in the source buffer
  * @param src the source PCM buffer
  * @param src_size the size of #src in bytes
@@ -38,7 +38,7 @@ struct pcm_dither_24;
  * @return the destination buffer
  */
 const int16_t *
-pcm_convert_to_16(struct pcm_buffer *buffer, struct pcm_dither_24 *dither,
+pcm_convert_to_16(struct pcm_buffer *buffer, struct pcm_dither *dither,
 		  uint8_t bits, const void *src,
 		  size_t src_size, size_t *dest_size_r);
 
@@ -46,7 +46,6 @@ pcm_convert_to_16(struct pcm_buffer *buffer, struct pcm_dither_24 *dither,
  * Converts PCM samples to 24 bit (32 bit alignment).
  *
  * @param buffer a pcm_buffer object
- * @param dither a pcm_dither_24 object for 24-to-16 conversion
  * @param bits the number of in the source buffer
  * @param src the source PCM buffer
  * @param src_size the size of #src in bytes

@@ -33,7 +33,7 @@ struct audio_format;
 struct pcm_convert_state {
 	struct pcm_resample_state resample;
 
-	struct pcm_dither_24 dither;
+	struct pcm_dither dither;
 
 	/** the buffer for converting the sample format */
 	struct pcm_buffer format_buffer;

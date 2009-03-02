@@ -33,7 +33,7 @@ pcm_convert_8_to_16(int16_t *out, const int8_t *in,
 }
 
 static void
-pcm_convert_24_to_16(struct pcm_dither_24 *dither,
+pcm_convert_24_to_16(struct pcm_dither *dither,
 		     int16_t *out, const int32_t *in,
 		     unsigned num_samples)
 {
@@ -41,7 +41,7 @@ pcm_convert_24_to_16(struct pcm_dither_24 *dither,
 }
 
 const int16_t *
-pcm_convert_to_16(struct pcm_buffer *buffer, struct pcm_dither_24 *dither,
+pcm_convert_to_16(struct pcm_buffer *buffer, struct pcm_dither *dither,
 		  uint8_t bits, const void *src,
 		  size_t src_size, size_t *dest_size_r)
 {
