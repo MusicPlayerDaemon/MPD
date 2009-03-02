@@ -28,6 +28,9 @@ static const char *remoteUrlPrefixes[] = {
 #ifdef HAVE_CURL
 	"http://",
 #endif
+#ifdef ENABLE_LASTFM
+	"lastfm://",
+#endif
 #ifdef ENABLE_MMS
 	"mms://",
 	"mmsh://",

@@ -71,6 +71,7 @@ mpd_headers = \
 	src/input_stream.h \
 	src/input/file_input_plugin.h \
 	src/input/curl_input_plugin.h \
+	src/input/lastfm_input_plugin.h \
 	src/input/mms_input_plugin.h \
 	src/icy_metadata.h \
 	src/client.h \
@@ -412,6 +413,10 @@ INPUT_SRC = \
 
 if HAVE_CURL
 INPUT_SRC += src/input/curl_input_plugin.c src/icy_metadata.c
+endif
+
+if ENABLE_LASTFM
+INPUT_SRC += src/input/lastfm_input_plugin.c
 endif
 
 if ENABLE_MMS

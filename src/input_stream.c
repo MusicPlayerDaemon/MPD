@@ -30,6 +30,8 @@
 #include "input/curl_input_plugin.h"
 #endif
 
+#include "input/lastfm_input_plugin.h"
+
 #ifdef ENABLE_MMS
 #include "input/mms_input_plugin.h"
 #endif
@@ -45,6 +47,9 @@ static const struct input_plugin *const input_plugins[] = {
 #endif
 #ifdef HAVE_CURL
 	&input_plugin_curl,
+#endif
+#ifdef ENABLE_LASTFM
+	&lastfm_input_plugin,
 #endif
 #ifdef ENABLE_MMS
 	&input_plugin_mms,

@@ -253,6 +253,20 @@ if test x$enable_curl = xyes; then
 fi
 AM_CONDITIONAL(HAVE_CURL, test x$enable_curl = xyes)
 
+AC_ARG_ENABLE(lastfm,
+	AS_HELP_STRING([--enable-lastfm],
+		[enable support for last.fm radio (default: disable)]),,
+	[enable_lastfm=no])
+
+if test x$enable_lastfm = xyes; then
+	if test x$enable_curl != xyes; then
+		AC_MSG_ERROR([Cannot enable last.fm radio without curl])
+	fi
+
+	AC_DEFINE(ENABLE_LASTFM, 1, [Define when last.fm radio is enabled]),
+fi
+AM_CONDITIONAL(ENABLE_LASTFM, test x$enable_lastfm = xyes)
+
 AC_ARG_ENABLE(mms,
 	AS_HELP_STRING([--enable-mms],
 		[enable the MMS protocol with libmms (default: disable)]),,
