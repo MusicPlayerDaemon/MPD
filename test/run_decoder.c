@@ -135,6 +135,8 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
+	decoder.initialized = false;
+
 	if (decoder.plugin->file_decode != NULL) {
 		decoder_plugin_file_decode(decoder.plugin, &decoder,
 					   decoder.uri);
