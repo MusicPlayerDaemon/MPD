@@ -282,6 +282,7 @@ db_load(GError **error)
 	struct stat st;
 	char buffer[100];
 	bool found_charset = false, found_version = false;
+	bool success;
 
 	assert(database_path != NULL);
 	assert(music_root != NULL);
@@ -357,8 +358,11 @@ db_load(GError **error)
 
 	g_debug("reading DB");
 
-	directory_load(fp, music_root);
+	success = directory_load(fp, music_root, error);
 	while (fclose(fp) && errno == EINTR) ;
+
+	if (!success)
+		return false;
 
 	stats_update();
 

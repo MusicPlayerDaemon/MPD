@@ -19,6 +19,9 @@
 #ifndef MPD_DIRECTORY_SAVE_H
 #define MPD_DIRECTORY_SAVE_H
 
+#include <glib.h>
+
+#include <stdbool.h>
 #include <stdio.h>
 
 struct directory;
@@ -26,7 +29,7 @@ struct directory;
 int
 directory_save(FILE *fp, struct directory *directory);
 
-void
-directory_load(FILE *fp, struct directory *directory);
+bool
+directory_load(FILE *fp, struct directory *directory, GError **error);
 
 #endif

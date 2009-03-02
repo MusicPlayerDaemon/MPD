@@ -19,11 +19,8 @@
 #include "directory_save.h"
 #include "directory.h"
 #include "song.h"
-#include "log.h"
 #include "path.h"
 #include "song_save.h"
-
-#include <glib.h>
 
 #include <assert.h>
 #include <string.h>
@@ -31,6 +28,15 @@
 #define DIRECTORY_MTIME "mtime: "
 #define DIRECTORY_BEGIN "begin: "
 #define DIRECTORY_END "end: "
+
+/**
+ * The quark used for GError.domain.
+ */
+static inline GQuark
+directory_quark(void)
+{
+	return g_quark_from_static_string("directory");
+}
 
 /* TODO error checking */
 int
@@ -71,12 +77,13 @@ directory_save(FILE *fp, struct directory *directory)
 	return 0;
 }
 
-void
-directory_load(FILE *fp, struct directory *directory)
+bool
+directory_load(FILE *fp, struct directory *directory, GError **error)
 {
 	char buffer[MPD_PATH_MAX * 2];
 	char key[MPD_PATH_MAX * 2];
 	char *name;
+	bool success;
 
 	while (fgets(buffer, sizeof(buffer), fp)
 	       && !g_str_has_prefix(buffer, DIRECTORY_END)) {
@@ -85,25 +92,38 @@ directory_load(FILE *fp, struct directory *directory)
 
 			g_strchomp(buffer);
 			strcpy(key, &(buffer[strlen(DIRECTORY_DIR)]));
-			if (!fgets(buffer, sizeof(buffer), fp))
-				FATAL("Error reading db, fgets\n");
+			if (!fgets(buffer, sizeof(buffer), fp)) {
+				g_set_error(error, directory_quark(), 0,
+					    "Unexpected end of file");
+				return false;
+			}
 
 			if (g_str_has_prefix(buffer, DIRECTORY_MTIME)) {
 				directory->mtime =
 					g_ascii_strtoull(buffer + sizeof(DIRECTORY_MTIME) - 1,
 							 NULL, 10);
 
-				if (!fgets(buffer, sizeof(buffer), fp))
-					FATAL("Error reading db, fgets\n");
+				if (!fgets(buffer, sizeof(buffer), fp)) {
+					g_set_error(error, directory_quark(), 0,
+						    "Unexpected end of file");
+					return false;
+				}
 			}
 
-			if (!g_str_has_prefix(buffer, DIRECTORY_BEGIN))
-				FATAL("Error reading db at line: %s\n", buffer);
+			if (!g_str_has_prefix(buffer, DIRECTORY_BEGIN)) {
+				g_set_error(error, directory_quark(), 0,
+					    "Malformed line: %s", buffer);
+				return false;
+			}
+
 			g_strchomp(buffer);
 			name = &(buffer[strlen(DIRECTORY_BEGIN)]);
-			if (!g_str_has_prefix(name, directory->path) != 0)
-				FATAL("Wrong path in database: '%s' in '%s'\n",
-				      name, directory->path);
+			if (!g_str_has_prefix(name, directory->path) != 0) {
+				g_set_error(error, directory_quark(), 0,
+					    "Wrong path in database: '%s' in '%s'",
+					    name, directory->path);
+				return false;
+			}
 
 			subdir = directory_get_child(directory, name);
 			if (subdir != NULL) {
@@ -112,11 +132,18 @@ directory_load(FILE *fp, struct directory *directory)
 				subdir = directory_new(name, directory);
 				dirvec_add(&directory->children, subdir);
 			}
-			directory_load(fp, subdir);
+
+			success = directory_load(fp, subdir, error);
+			if (!success)
+				return false;
 		} else if (g_str_has_prefix(buffer, SONG_BEGIN)) {
 			readSongInfoIntoList(fp, &directory->songs, directory);
 		} else {
-			FATAL("Unknown line in db: %s\n", buffer);
+			g_set_error(error, directory_quark(), 0,
+				    "Malformed line: %s", buffer);
+			return false;
 		}
 	}
+
+	return true;
 }
