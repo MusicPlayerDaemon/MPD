@@ -19,18 +19,18 @@
 #include "input_plugin.h"
 #include "config.h"
 
-#include "input_file.h"
+#include "input/file_input_plugin.h"
 
 #ifdef ENABLE_ARCHIVE
-#include "input_archive.h"
+#include "input/archive_input_plugin.h"
 #endif
 
 #ifdef HAVE_CURL
-#include "input_curl.h"
+#include "input/curl_input_plugin.h"
 #endif
 
 #ifdef ENABLE_MMS
-#include "input_mms.h"
+#include "input/mms_input_plugin.h"
 #endif
 
 #include <glib.h>

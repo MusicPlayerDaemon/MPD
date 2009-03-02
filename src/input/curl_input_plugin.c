@@ -16,7 +16,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "input_curl.h"
+#include "input/curl_input_plugin.h"
 #include "input_plugin.h"
 #include "conf.h"
 #include "config.h"

@@ -16,7 +16,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "input_archive.h"
+#include "input/archive_input_plugin.h"
 #include "archive_api.h"
 #include "archive_list.h"
 #include "input_plugin.h"

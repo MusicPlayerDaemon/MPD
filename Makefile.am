@@ -69,9 +69,9 @@ mpd_headers = \
 	src/decoder/_ogg_common.h \
 	src/input_plugin.h \
 	src/input_stream.h \
-	src/input_file.h \
-	src/input_curl.h \
-	src/input_mms.h \
+	src/input/file_input_plugin.h \
+	src/input/curl_input_plugin.h \
+	src/input/mms_input_plugin.h \
 	src/icy_metadata.h \
 	src/client.h \
 	src/listen.h \
@@ -138,7 +138,7 @@ mpd_headers = \
 	src/archive_api.h \
 	src/archive_internal.h \
 	src/archive_list.h \
-	src/input_archive.h
+	src/input/archive_input_plugin.h
 
 src_mpd_SOURCES = \
 	$(mpd_headers) \
@@ -257,7 +257,7 @@ if ENABLE_ARCHIVE
 ARCHIVE_SRC += \
 	src/archive_api.c \
 	src/archive_list.c \
-	src/input_archive.c
+	src/input/archive_input_plugin.c
 endif
 
 
@@ -408,14 +408,14 @@ INPUT_LIBS = \
 
 INPUT_SRC = \
 	src/input_stream.c \
-	src/input_file.c
+	src/input/file_input_plugin.c
 
 if HAVE_CURL
-INPUT_SRC += src/input_curl.c src/icy_metadata.c
+INPUT_SRC += src/input/curl_input_plugin.c src/icy_metadata.c
 endif
 
 if ENABLE_MMS
-INPUT_SRC += src/input_mms.c
+INPUT_SRC += src/input/mms_input_plugin.c
 endif
 
 
