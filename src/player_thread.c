@@ -238,6 +238,8 @@ static bool
 play_chunk(struct song *song, struct music_chunk *chunk,
 	   const struct audio_format *format, double sizeToTime)
 {
+	bool success;
+
 	pc.elapsed_time = chunk->times;
 	pc.bit_rate = chunk->bit_rate;
 
@@ -266,8 +268,15 @@ play_chunk(struct song *song, struct music_chunk *chunk,
 	if (chunk->length == 0)
 		return true;
 
-	pcm_volume(chunk->data, chunk->length,
-		   format, pc.software_volume);
+	success = pcm_volume(chunk->data, chunk->length,
+			     format, pc.software_volume);
+	if (!success) {
+		g_warning("pcm_volume() failed on %u:%u:%u",
+			  format->sample_rate, format->bits, format->channels);
+		pc.errored_song = dc.current_song;
+		pc.error = PLAYER_ERROR_AUDIO;
+		return false;
+	}
 
 	if (!audio_output_all_play(chunk->data, chunk->length)) {
 		pc.errored_song = dc.current_song;

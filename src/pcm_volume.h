@@ -22,6 +22,7 @@
 #include "pcm_prng.h"
 
 #include <stdint.h>
+#include <stdbool.h>
 
 enum {
 	/** this value means "100% volume" */
@@ -62,8 +63,9 @@ pcm_volume_dither(void)
  * @param length the length of the PCM buffer
  * @param format the audio format of the PCM buffer
  * @param volume the volume between 0 and #PCM_VOLUME_1
+ * @return true on success, false if the audio format is not supported
  */
-void
+bool
 pcm_volume(void *buffer, int length,
 	   const struct audio_format *format,
 	   int volume);

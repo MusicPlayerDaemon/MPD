@@ -112,36 +112,35 @@ pcm_volume_change_24(int32_t *buffer, unsigned num_samples, int volume)
 	}
 }
 
-void
+bool
 pcm_volume(void *buffer, int length,
 	   const struct audio_format *format,
 	   int volume)
 {
 	if (volume == PCM_VOLUME_1)
-		return;
+		return true;
 
 	if (volume <= 0) {
 		memset(buffer, 0, length);
-		return;
+		return true;
 	}
 
 	switch (format->bits) {
 	case 8:
 		pcm_volume_change_8((int8_t *)buffer, length, volume);
-		break;
+		return true;
 
 	case 16:
 		pcm_volume_change_16((int16_t *)buffer, length / 2,
 				     volume);
-		break;
+		return true;
 
 	case 24:
 		pcm_volume_change_24((int32_t*)buffer, length / 4,
 				     volume);
-		break;
+		return true;
 
 	default:
-		g_error("%u bits not supported by pcm_volume!\n",
-			format->bits);
+		return false;
 	}
 }
