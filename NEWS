@@ -7,6 +7,7 @@ ver 0.15 - (200?/??/??)
   - support the "album artist" tag
   - support MusicBrainz tags
   - parse RVA2 tags in mp3 files
+  - parse ID3 tags in RIFF/WAV files
 * decoders:
   - audiofile: streaming support added
   - audiofile: added 24 bit support

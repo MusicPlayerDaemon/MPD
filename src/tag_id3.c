@@ -18,6 +18,7 @@
 
 #include "tag_id3.h"
 #include "tag.h"
+#include "riff.h"
 #include "conf.h"
 
 #include <glib.h>
@@ -424,6 +425,35 @@ static struct id3_tag *findId3TagFromEnd(FILE * stream)
 	return tag;
 }
 
+static struct id3_tag *
+tag_id3_riff_load(FILE *file)
+{
+	size_t size;
+	void *buffer;
+	size_t ret;
+	struct id3_tag *tag;
+
+	size = riff_seek_id3(file);
+	if (size == 0)
+		return NULL;
+
+	if (size > 65536)
+		/* too large, don't allocate so much memory */
+		return NULL;
+
+	buffer = g_malloc(size);
+	ret = fread(buffer, size, 1, file);
+	if (ret != 1) {
+		g_warning("Failed to read RIFF chunk");
+		g_free(buffer);
+		return NULL;
+	}
+
+	tag = id3_tag_parse(buffer, size);
+	g_free(buffer);
+	return tag;
+}
+
 struct tag *tag_id3_load(const char *file)
 {
 	struct tag *ret;
@@ -438,6 +468,8 @@ struct tag *tag_id3_load(const char *file)
 	}
 
 	tag = findId3TagFromBeginning(stream);
+	if (tag == NULL)
+		tag = tag_id3_riff_load(stream);
 	if (!tag)
 		tag = findId3TagFromEnd(stream);
 
