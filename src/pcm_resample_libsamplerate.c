@@ -186,7 +186,7 @@ src_float_to_int_array (const float *in, int *out, int len)
 #endif
 
 const int32_t *
-pcm_resample_24(struct pcm_resample_state *state,
+pcm_resample_32(struct pcm_resample_state *state,
 		uint8_t channels,
 		unsigned src_rate,
 		const int32_t *src_buffer, size_t src_size,

@@ -70,7 +70,7 @@ pcm_resample_16(struct pcm_resample_state *state,
 }
 
 const int32_t *
-pcm_resample_24(struct pcm_resample_state *state,
+pcm_resample_32(struct pcm_resample_state *state,
 		uint8_t channels,
 		unsigned src_rate,
 		const int32_t *src_buffer, G_GNUC_UNUSED size_t src_size,

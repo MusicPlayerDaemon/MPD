@@ -86,7 +86,7 @@ pcm_resample_16(struct pcm_resample_state *state,
 		size_t *dest_size_r);
 
 /**
- * Resamples 24 bit PCM data.
+ * Resamples 32 bit PCM data.
  *
  * @param state an initialized pcm_resample_state object
  * @param channels the number of channels
@@ -98,11 +98,38 @@ pcm_resample_16(struct pcm_resample_state *state,
  * @return the destination buffer
  */
 const int32_t *
-pcm_resample_24(struct pcm_resample_state *state,
+pcm_resample_32(struct pcm_resample_state *state,
 		uint8_t channels,
 		unsigned src_rate,
 		const int32_t *src_buffer, size_t src_size,
 		unsigned dest_rate,
 		size_t *dest_size_r);
+
+/**
+ * Resamples 24 bit PCM data.
+ *
+ * @param state an initialized pcm_resample_state object
+ * @param channels the number of channels
+ * @param src_rate the source sample rate
+ * @param src the source PCM buffer
+ * @param src_size the size of #src in bytes
+ * @param dest_rate the requested destination sample rate
+ * @param dest_size_r returns the number of bytes of the destination buffer
+ * @return the destination buffer
+ */
+static inline const int32_t *
+pcm_resample_24(struct pcm_resample_state *state,
+		uint8_t channels,
+		unsigned src_rate,
+		const int32_t *src_buffer, size_t src_size,
+		unsigned dest_rate,
+		size_t *dest_size_r)
+{
+	/* reuse the 32 bit code - the resampler code doesn't care if
+	   the upper 8 bits are actually used */
+	return pcm_resample_32(state, channels,
+			       src_rate, src_buffer, src_size,
+			       dest_rate, dest_size_r);
+}
 
 #endif
