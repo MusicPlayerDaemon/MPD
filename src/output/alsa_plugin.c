@@ -255,7 +255,8 @@ configure_hw:
 	}
 
 	err = snd_pcm_hw_params_set_format(ad->pcm, hwparams, bitformat);
-	if (err == -EINVAL && audio_format->bits == 24) {
+	if (err == -EINVAL && (audio_format->bits == 24 ||
+			       audio_format->bits == 16)) {
 		/* fall back to 32 bit, let pcm_convert.c do the conversion */
 		err = snd_pcm_hw_params_set_format(ad->pcm, hwparams,
 						   SND_PCM_FORMAT_S32);
