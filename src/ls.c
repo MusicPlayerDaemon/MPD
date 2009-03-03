@@ -57,7 +57,7 @@ void print_supported_uri_schemes_to_fp(FILE *fp)
 		fprintf(fp, "%s ", *prefixes);
 		prefixes++;
 	}
-	puts("\n");
+	fprintf(fp,"\n");
 }
 
 void print_supported_uri_schemes(struct client *client)
