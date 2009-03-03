@@ -369,6 +369,9 @@ configure_hw:
 	if (err < 0)
 		goto error;
 
+	g_debug("buffer_size=%u period_size=%u",
+		(unsigned)alsa_buffer_size, (unsigned)alsa_period_size);
+
 	return true;
 
 error:
