@@ -20,6 +20,7 @@
 #define SONG_STICKER_H
 
 #include <stdbool.h>
+#include <glib.h>
 
 struct song;
 
@@ -37,6 +38,15 @@ sticker_song_get_value(const struct song *song, const char *name);
 bool
 sticker_song_set_value(const struct song *song,
 		       const char *name, const char *value);
+
+/**
+ * Returns a list of key value pairs from a song's sticker record.
+ * The caller must free each GPtrArray element of the returned list
+ * with g_ptr_array_free(), as well as the returned GList with
+ * g_list_free().
+ */
+GList *
+sticker_song_list_values(const struct song *song);
 
 /**
  * Deletes a sticker from the database.  All values are deleted.

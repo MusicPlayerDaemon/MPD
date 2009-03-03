@@ -41,6 +41,8 @@
 #ifndef STICKER_H
 #define STICKER_H
 
+#include <glib.h>
+
 #include <stdbool.h>
 
 /**
@@ -60,6 +62,15 @@ sticker_global_finish(void);
  */
 bool
 sticker_enabled(void);
+
+/**
+ * Populates a GList with GPtrArrays of sticker names and values from
+ * an object's sticker record.  The caller must free each GPtrArray
+ * element of the returned list with g_ptr_array_free(), as well as
+ * the returned GList with g_list_free().
+ */
+GList *
+sticker_list_values(const char *type, const char *uri);
 
 /**
  * Returns one value from an object's sticker record.  The caller must

@@ -1222,6 +1222,21 @@ OK
             </para>
           </listitem>
         </varlistentry>
+        <varlistentry id="command_sticker_list">
+          <term>
+            <cmdsynopsis>
+              <command>sticker</command>
+              <arg choice="plain">list</arg>
+              <arg choice="req"><replaceable>TYPE</replaceable></arg>
+              <arg choice="req"><replaceable>URI</replaceable></arg>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Lists the stickers for the specified object.
+            </para>
+          </listitem>
+        </varlistentry>
       </variablelist>
     </section>
 

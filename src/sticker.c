@@ -40,6 +40,9 @@ static const char sticker_sql_create[] =
 static const char sticker_sql_get[] =
 	"SELECT value FROM sticker WHERE type=? AND uri=? AND name=?";
 
+static const char sticker_sql_list[] =
+	"SELECT name,value FROM sticker WHERE type=? AND uri=?";
+
 static const char sticker_sql_update[] =
 	"UPDATE sticker SET value=? WHERE type=? AND uri=? AND name=?";
 
@@ -50,8 +53,9 @@ static const char sticker_sql_delete[] =
 	"DELETE FROM sticker WHERE type=? AND uri=?";
 
 static sqlite3 *sticker_db;
-static sqlite3_stmt *sticker_stmt_get, *sticker_stmt_update,
-	*sticker_stmt_insert, *sticker_stmt_delete;
+static sqlite3_stmt *sticker_stmt_get, *sticker_stmt_list,
+	*sticker_stmt_update, *sticker_stmt_insert,
+	*sticker_stmt_delete;
 
 static sqlite3_stmt *
 sticker_prepare(const char *sql)
@@ -93,12 +97,14 @@ sticker_global_init(const char *path)
 	/* prepare the statements we're going to use */
 
 	sticker_stmt_get = sticker_prepare(sticker_sql_get);
+	sticker_stmt_list = sticker_prepare(sticker_sql_list);
 	sticker_stmt_update = sticker_prepare(sticker_sql_update);
 	sticker_stmt_insert = sticker_prepare(sticker_sql_insert);
 	sticker_stmt_delete = sticker_prepare(sticker_sql_delete);
 
 	if (sticker_stmt_get == NULL || sticker_stmt_update == NULL ||
-	    sticker_stmt_insert == NULL || sticker_stmt_delete == NULL)
+	    sticker_stmt_insert == NULL || sticker_stmt_delete == NULL ||
+	    sticker_stmt_list == NULL)
 		g_error("Failed to prepare sqlite statements");
 }
 
@@ -112,6 +118,8 @@ sticker_global_finish(void)
 	sqlite3_finalize(sticker_stmt_delete);
 	sqlite3_finalize(sticker_stmt_update);
 	sqlite3_finalize(sticker_stmt_insert);
+	sqlite3_finalize(sticker_stmt_list);
+	sqlite3_finalize(sticker_stmt_get);
 	sqlite3_close(sticker_db);
 }
 
@@ -179,6 +187,67 @@ sticker_load_value(const char *type, const char *uri, const char *name)
 	sqlite3_clear_bindings(sticker_stmt_get);
 
 	return value;
+}
+
+GList *
+sticker_list_values(const char *type, const char *uri)
+{
+	int ret;
+	char *name, *value;
+	GPtrArray *arr;
+	GList *list;
+
+	list = NULL;
+	assert(type != NULL);
+	assert(uri != NULL);
+
+	assert(sticker_enabled());
+
+	sqlite3_reset(sticker_stmt_list);
+
+	ret = sqlite3_bind_text(sticker_stmt_list, 1, type, -1, NULL);
+	if (ret != SQLITE_OK) {
+		g_warning("sqlite3_bind_text() failed: %s",
+			  sqlite3_errmsg(sticker_db));
+		return NULL;
+	}
+
+	ret = sqlite3_bind_text(sticker_stmt_list, 2, uri, -1, NULL);
+	if (ret != SQLITE_OK) {
+		g_warning("sqlite3_bind_text() failed: %s",
+			  sqlite3_errmsg(sticker_db));
+		return NULL;
+	}
+
+	do {
+		ret = sqlite3_step(sticker_stmt_list);
+		switch (ret) {
+		case SQLITE_ROW:
+			name = g_strdup((const char*)sqlite3_column_text(sticker_stmt_list, 0));
+			value = g_strdup((const char*)sqlite3_column_text(sticker_stmt_list, 1));
+			arr = g_ptr_array_new();
+			g_ptr_array_add(arr, name);
+			g_ptr_array_add(arr, value);
+			list = g_list_prepend(list, arr);
+			break;
+		case SQLITE_DONE:
+			break;
+		case SQLITE_BUSY:
+			/* no op */
+			break;
+		default:
+			g_warning("sqlite3_step() failed: %s",
+				  sqlite3_errmsg(sticker_db));
+			return NULL;
+		}
+	} while (ret != SQLITE_DONE);
+
+	list = g_list_reverse(list);
+
+	sqlite3_reset(sticker_stmt_list);
+	sqlite3_clear_bindings(sticker_stmt_list);
+
+	return list;
 }
 
 static bool

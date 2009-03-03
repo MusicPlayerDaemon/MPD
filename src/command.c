@@ -1473,13 +1473,41 @@ handle_sticker_song(struct client *client, int argc, char *argv[])
 		g_free(value);
 
 		return COMMAND_RETURN_OK;
+	} else if (argc == 4 && strcmp(argv[1], "list") == 0) {
+		GList *list;
+		GPtrArray *values;
+		unsigned int x;
+
+		list = sticker_song_list_values(song);
+		if (NULL == list) {
+			command_error(client, ACK_ERROR_NO_EXIST,
+				      "no stickers found");
+			return COMMAND_RETURN_ERROR;
+		}
+
+		for (x = 0; x < g_list_length(list); x++) {
+			values = g_list_nth_data(list, x);
+			if (NULL == values) {
+				g_warning("NULL sticker found");
+				continue;
+			}
+			client_printf(client, "sticker: %s=%s\n",
+				      (char *)g_ptr_array_index(values, 0),
+				      (char *)g_ptr_array_index(values, 1));
+			g_free(g_ptr_array_index(values, 0));
+			g_free(g_ptr_array_index(values, 1));
+			g_ptr_array_free(values, TRUE);
+		}
+		g_list_free(list);
+
+		return COMMAND_RETURN_OK;
 	} else if (argc == 6 && strcmp(argv[1], "set") == 0) {
 		bool ret;
 
 		ret = sticker_song_set_value(song, argv[4], argv[5]);
 		if (!ret) {
 			command_error(client, ACK_ERROR_SYSTEM,
-				      "failed to set sticker vqalue");
+				      "failed to set sticker value");
 			return COMMAND_RETURN_ERROR;
 		}
 
