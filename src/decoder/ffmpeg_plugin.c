@@ -344,6 +344,44 @@ static bool ffmpeg_tag_internal(struct ffmpeg_context *ctx)
 	tag->time = 0;
 	if (f->duration != (int64_t)AV_NOPTS_VALUE)
 		tag->time = f->duration / AV_TIME_BASE;
+
+#if LIBAVFORMAT_VERSION_INT >= ((52<<16)+(31<<8)+0)
+	{
+		AVMetadataTag *title, *author, *album, *genre, *comment, *track, *year;
+
+		g_warning("using new metadata api\n");
+
+		title     = av_metadata_get(f->metadata, "title",     NULL, 0);
+		author    = av_metadata_get(f->metadata, "author",    NULL, 0);
+		album     = av_metadata_get(f->metadata, "album",     NULL, 0);
+	        comment   = av_metadata_get(f->metadata, "comment",   NULL, 0);
+		genre     = av_metadata_get(f->metadata, "genre",     NULL, 0);
+	        track     = av_metadata_get(f->metadata, "track",     NULL, 0);
+	        year      = av_metadata_get(f->metadata, "year",      NULL, 0);
+
+		if (title) {
+			tag_add_item(tag, TAG_ITEM_TITLE, title->value);
+		}
+		if (author) {
+			tag_add_item(tag, TAG_ITEM_ARTIST, author->value);
+		}
+		if (album) {
+			tag_add_item(tag, TAG_ITEM_ALBUM, album->value);
+		}
+		if (comment) {
+			tag_add_item(tag, TAG_ITEM_COMMENT, comment->value);
+		}
+		if (genre) {
+			tag_add_item(tag, TAG_ITEM_GENRE, genre->value);
+		}
+		if (track) {
+			tag_add_item(tag, TAG_ITEM_TRACK, track->value);
+		}
+		if (year) {
+			tag_add_item(tag, TAG_ITEM_DATE, year->value);
+		}
+	}
+#else
 	if (f->author[0])
 		tag_add_item(tag, TAG_ITEM_ARTIST, f->author);
 	if (f->title[0])
@@ -367,6 +405,7 @@ static bool ffmpeg_tag_internal(struct ffmpeg_context *ctx)
 		tag_add_item(tag, TAG_ITEM_DATE, buffer);
 	}
 
+#endif
 	return true;
 }
 
