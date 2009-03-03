@@ -20,6 +20,7 @@
 #define MPD_LS_H
 
 #include <stdbool.h>
+#include <stdio.h>
 
 struct client;
 
@@ -35,5 +36,10 @@ bool uri_supported_scheme(const char *url);
  * response to the "urlhandlers" command.
  */
 void print_supported_uri_schemes(struct client *client);
+
+/**
+ * Send a list of supported URI schemes to a file pointer.
+ */
+void print_supported_uri_schemes_to_fp(FILE *fp);
 
 #endif

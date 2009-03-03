@@ -24,6 +24,12 @@
 #include <assert.h>
 #include <string.h>
 
+
+/**
+  * file:// is not included in remoteUrlPrefixes, the connection method
+  * is detected at runtime and displayed as a urlhandler if the client is
+  * connected by IPC socket.
+  */
 static const char *remoteUrlPrefixes[] = {
 #ifdef HAVE_CURL
 	"http://",
@@ -39,6 +45,20 @@ static const char *remoteUrlPrefixes[] = {
 #endif
 	NULL
 };
+
+void print_supported_uri_schemes_to_fp(FILE *fp)
+{
+	const char **prefixes = remoteUrlPrefixes;
+
+#ifdef HAVE_UN
+	fprintf(fp, "file:// ");
+#endif
+	while (*prefixes) {
+		fprintf(fp, "%s ", *prefixes);
+		prefixes++;
+	}
+	puts("\n");
+}
 
 void print_supported_uri_schemes(struct client *client)
 {

@@ -23,6 +23,7 @@
 #include "decoder_list.h"
 #include "config.h"
 #include "audioOutput.h"
+#include "ls.h"
 
 #ifdef ENABLE_ARCHIVE
 #include "archive_list.h"
@@ -62,6 +63,10 @@ static void version(void)
 	archive_plugin_init_all();
 	archive_plugin_print_all_suffixes(stdout);
 #endif
+
+	puts("\n"
+	      "Supported protocols:\n");
+	print_supported_uri_schemes_to_fp(stdout);
 
 	exit(EXIT_SUCCESS);
 }

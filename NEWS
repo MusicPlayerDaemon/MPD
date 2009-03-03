@@ -49,6 +49,7 @@ ver 0.15 - (200?/??/??)
 * daemon: ignore "user" setting if already running as that user
 * listen: fix broken client IP addresses in log
 * 32 bit audio support
+* Print available protocols in --version
 
 
 ver 0.14.2 (2009/02/13)
