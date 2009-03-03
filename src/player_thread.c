@@ -28,6 +28,7 @@
 #include "song.h"
 #include "tag.h"
 #include "pipe.h"
+#include "chunk.h"
 #include "idle.h"
 #include "main.h"
 

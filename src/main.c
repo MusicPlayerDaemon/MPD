@@ -32,6 +32,7 @@
 #include "path.h"
 #include "mapper.h"
 #include "pipe.h"
+#include "chunk.h"
 #include "decoder_control.h"
 #include "player_control.h"
 #include "stats.h"

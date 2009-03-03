@@ -17,6 +17,7 @@
  */
 
 #include "pipe.h"
+#include "chunk.h"
 #include "notify.h"
 #include "audio_format.h"
 #include "tag.h"
@@ -26,20 +27,6 @@
 #include <string.h>
 
 struct music_pipe music_pipe;
-
-static void
-music_chunk_init(struct music_chunk *chunk)
-{
-	chunk->length = 0;
-	chunk->tag = NULL;
-}
-
-static void
-music_chunk_free(struct music_chunk *chunk)
-{
-	if (chunk->tag != NULL)
-		tag_free(chunk->tag);
-}
 
 void
 music_pipe_init(unsigned int size, struct notify *notify)

@@ -19,7 +19,7 @@
 
 #include "crossfade.h"
 #include "pcm_mix.h"
-#include "pipe.h"
+#include "chunk.h"
 #include "audio_format.h"
 #include "tag.h"
 

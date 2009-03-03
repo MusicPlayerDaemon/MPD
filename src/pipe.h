@@ -23,36 +23,9 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-/* pick 1020 since its devisible for 8,16,24, and 32-bit audio */
-#define CHUNK_SIZE		1020
-
 struct audio_format;
-
-/**
- * A chunk of music data.  Its format is defined by the
- * music_pipe_append() caller.
- */
-struct music_chunk {
-	/** number of bytes stored in this chunk */
-	uint16_t length;
-
-	/** current bit rate of the source file */
-	uint16_t bit_rate;
-
-	/** the time stamp within the song */
-	float times;
-
-	/**
-	 * An optional tag associated with this chunk (and the
-	 * following chunks); appears at song boundaries.  The tag
-	 * object is owned by this chunk, and must be freed when this
-	 * chunk is deinitialized in music_chunk_free()
-	 */
-	struct tag *tag;
-
-	/** the data (probably PCM) */
-	char data[CHUNK_SIZE];
-};
+struct tag;
+struct music_chunk;
 
 /**
  * A ring set of buffers where the decoder appends data after the end,

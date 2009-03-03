@@ -85,6 +85,7 @@ mpd_headers = \
 	src/normalize.h \
 	src/compress.h \
 	src/pipe.h \
+	src/chunk.h \
 	src/path.h \
 	src/mapper.h \
 	src/pcm_buffer.h \
@@ -179,6 +180,7 @@ src_mpd_SOURCES = \
 	src/normalize.c \
 	src/compress.c \
 	src/pipe.c \
+	src/chunk.c \
 	src/path.c \
 	src/mapper.c \
 	src/pcm_convert.c \
