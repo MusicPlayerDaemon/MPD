@@ -475,3 +475,62 @@
    fun:init_gauss
    fun:WildMidi_Init
 }
+
+{
+   g_quark_from_static_string
+   Memcheck:Leak
+   fun:calloc
+   fun:g_malloc0
+   fun:g_hash_table_new_full
+   fun:g_quark_from_static_string
+}
+
+{
+   g_quark_from_static_string
+   Memcheck:Leak
+   fun:malloc
+   fun:realloc
+   fun:g_realloc
+   fun:g_quark_from_static_string
+}
+
+{
+   g_get_any_init_do
+   Memcheck:Leak
+   fun:malloc
+   fun:g_malloc
+   fun:g_strdup
+   fun:g_get_any_init_do
+}
+
+{
+   g_get_any_init_do
+   Memcheck:Leak
+   fun:malloc
+   fun:g_malloc
+   fun:g_strjoinv
+   fun:g_get_any_init_do
+}
+
+{
+   nss
+   Memcheck:Leak
+   fun:malloc
+   fun:__nss_lookup_function
+}
+
+{
+   nss
+   Memcheck:Leak
+   fun:malloc
+   fun:tsearch
+   fun:__nss_lookup_function
+}
+
+{
+   nss
+   Memcheck:Leak
+   fun:malloc
+   fun:nss_parse_service_list
+   fun:__nss_database_lookup
+}
