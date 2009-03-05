@@ -57,8 +57,6 @@ void music_pipe_free(void);
 
 void music_pipe_clear(void);
 
-void music_pipe_flush(void);
-
 /**
  * When a chunk is decoded, we wake up the player thread to tell him
  * about it.  In "lazy" mode, we only wake him up when the buffer was
@@ -121,6 +119,32 @@ music_pipe_peek(void)
 }
 
 /**
+ * Allocates a chunk for writing.  When you are finished, append it
+ * with music_pipe_push().
+ *
+ * @return an empty chunk
+ */
+struct music_chunk *
+music_pipe_allocate(void);
+
+/**
+ * Appends a chunk at the end of the music pipe.
+ *
+ * @param chunk a chunk allocated with music_pipe_allocate()
+ * @return true on success, false if there is no room
+ */
+bool
+music_pipe_push(struct music_chunk *chunk);
+
+/**
+ * Cancels a chunk that has been allocated with music_pipe_allocate().
+ *
+ * @param chunk a chunk allocated with music_pipe_allocate()
+ */
+void
+music_pipe_cancel(struct music_chunk *chunk);
+
+/**
  * Prepares appending to the music pipe.  Returns a buffer where you
  * may write into.  After you are finished, call music_pipe_expand().
  *
@@ -137,12 +161,6 @@ music_pipe_write(const struct audio_format *audio_format,
  */
 void
 music_pipe_expand(const struct audio_format *audio_format, size_t length);
-
-/**
- * Send a tag.  This is usually called when a new song within a stream
- * begins.
- */
-bool music_pipe_tag(const struct tag *tag);
 
 void music_pipe_skip(unsigned num);
 

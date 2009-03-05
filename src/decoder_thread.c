@@ -98,6 +98,7 @@ static void decoder_run_song(const struct song *song, const char *uri)
 	decoder.seeking = false;
 	decoder.stream_tag = NULL;
 	decoder.decoder_tag = NULL;
+	decoder.chunk = NULL;
 
 	dc.state = DECODE_STATE_START;
 	dc.command = DECODE_COMMAND_NONE;
@@ -194,7 +195,10 @@ static void decoder_run_song(const struct song *song, const char *uri)
 
 	pcm_convert_deinit(&decoder.conv_state);
 
-	music_pipe_flush();
+	/* flush the last chunk */
+	if (decoder.chunk != NULL &&
+	    decoder_flush_chunk(&decoder, NULL) != DECODE_COMMAND_NONE)
+		music_pipe_cancel(decoder.chunk);
 
 	if (close_instream)
 		input_stream_close(&input_stream);

@@ -19,7 +19,10 @@
 #ifndef MPD_DECODER_INTERNAL_H
 #define MPD_DECODER_INTERNAL_H
 
+#include "decoder_command.h"
 #include "pcm_convert.h"
+
+struct input_stream;
 
 struct decoder {
 	struct pcm_convert_state conv_state;
@@ -31,6 +34,25 @@ struct decoder {
 
 	/** the last tag received from the decoder plugin */
 	struct tag *decoder_tag;
+
+	/** the chunk currently being written to */
+	struct music_chunk *chunk;
 };
+
+/**
+ * Returns the current chunk the decoder writes to, or allocates a new
+ * chunk if there is none.
+ */
+struct music_chunk *
+decoder_get_chunk(struct decoder *decoder);
+
+/**
+ * Flushes a chunk.  Waits for room in the music pipe if required.
+ *
+ * @return DECODE_COMMAND_NONE on success, any other command if we
+ * have received a decoder command while waiting
+ */
+enum decoder_command
+decoder_flush_chunk(struct decoder *decoder, struct input_stream *is);
 
 #endif

@@ -26,6 +26,7 @@
 
 #include "normalize.h"
 #include "pipe.h"
+#include "chunk.h"
 
 #include <glib.h>
 
@@ -85,9 +86,16 @@ void decoder_command_finished(G_GNUC_UNUSED struct decoder * decoder)
 	assert(dc.command != DECODE_COMMAND_SEEK ||
 	       dc.seek_error || decoder->seeking);
 
-	if (dc.command == DECODE_COMMAND_SEEK)
+	if (dc.command == DECODE_COMMAND_SEEK) {
 		/* delete frames from the old song position */
+
+		if (decoder->chunk != NULL) {
+			music_pipe_cancel(decoder->chunk);
+			decoder->chunk = NULL;
+		}
+
 		music_pipe_clear();
+	}
 
 	dc.command = DECODE_COMMAND_NONE;
 	notify_signal(&pc.notify);
@@ -147,35 +155,28 @@ size_t decoder_read(struct decoder *decoder,
 }
 
 /**
- * All chunks are full of decoded data; wait for the player to free
- * one.
+ * Sends a #tag as-is to the music pipe.  Flushes the current chunk
+ * (decoder.chunk) if there is one.
  */
 static enum decoder_command
-need_chunks(struct input_stream *is, bool do_wait)
+do_send_tag(struct decoder *decoder, struct input_stream *is,
+	    const struct tag *tag)
 {
-	if (dc.command == DECODE_COMMAND_STOP ||
-	    dc.command == DECODE_COMMAND_SEEK)
-		return dc.command;
+	struct music_chunk *chunk;
 
-	if ((is == NULL || input_stream_buffer(is) <= 0) && do_wait) {
-		notify_wait(&dc.notify);
-		notify_signal(&pc.notify);
-
-		return dc.command;
-	}
-
-	return DECODE_COMMAND_NONE;
-}
-
-static enum decoder_command
-do_send_tag(struct input_stream *is, const struct tag *tag)
-{
-	while (!music_pipe_tag(tag)) {
-		enum decoder_command cmd = need_chunks(is, true);
+	if (decoder->chunk != NULL) {
+		/* there is a partial chunk - flush it, we want the
+		   tag in a new chunk */
+		enum decoder_command cmd =
+			decoder_flush_chunk(decoder, is);
 		if (cmd != DECODE_COMMAND_NONE)
 			return cmd;
 	}
 
+	assert(decoder->chunk == NULL);
+
+	chunk = decoder_get_chunk(decoder);
+	chunk->tag = tag_dup(tag);
 	return DECODE_COMMAND_NONE;
 }
 
@@ -226,11 +227,11 @@ decoder_data(struct decoder *decoder,
 
 			tag = tag_merge(decoder->stream_tag,
 					decoder->decoder_tag);
-			cmd = do_send_tag(is, tag);
+			cmd = do_send_tag(decoder, is, tag);
 			tag_free(tag);
 		} else
 			/* send only the stream tag */
-			cmd = do_send_tag(is, decoder->stream_tag);
+			cmd = do_send_tag(decoder, is, decoder->stream_tag);
 
 		if (cmd != DECODE_COMMAND_NONE)
 			return cmd;
@@ -250,14 +251,18 @@ decoder_data(struct decoder *decoder,
 	}
 
 	while (length > 0) {
+		struct music_chunk *chunk;
+		char *dest;
 		size_t nbytes;
-		char *dest = music_pipe_write(&dc.out_audio_format,
-					      data_time, bitRate,
-					      &nbytes);
+		bool full;
+
+		chunk = decoder_get_chunk(decoder);
+		dest = music_chunk_write(chunk, &dc.out_audio_format,
+					 data_time, bitRate, &nbytes);
 		if (dest == NULL) {
-			/* the music pipe is full: wait for more
-			   room */
-			enum decoder_command cmd = need_chunks(is, true);
+			/* the chunk is full, flush it */
+			enum decoder_command cmd =
+				decoder_flush_chunk(decoder, is);
 			if (cmd != DECODE_COMMAND_NONE)
 				return cmd;
 			continue;
@@ -283,7 +288,14 @@ decoder_data(struct decoder *decoder,
 
 		/* expand the music pipe chunk */
 
-		music_pipe_expand(&dc.out_audio_format, nbytes);
+		full = music_chunk_expand(chunk, &dc.out_audio_format, nbytes);
+		if (full) {
+			/* the chunk is full, flush it */
+			enum decoder_command cmd =
+				decoder_flush_chunk(decoder, is);
+			if (cmd != DECODE_COMMAND_NONE)
+				return cmd;
+		}
 
 		data += nbytes;
 		length -= nbytes;
@@ -318,11 +330,11 @@ decoder_tag(G_GNUC_UNUSED struct decoder *decoder, struct input_stream *is,
 		struct tag *merged;
 
 		merged = tag_merge(decoder->stream_tag, decoder->decoder_tag);
-		cmd = do_send_tag(is, merged);
+		cmd = do_send_tag(decoder, is, merged);
 		tag_free(merged);
 	} else
 		/* send only the decoder tag */
-		cmd = do_send_tag(is, tag);
+		cmd = do_send_tag(decoder, is, tag);
 
 	return cmd;
 }

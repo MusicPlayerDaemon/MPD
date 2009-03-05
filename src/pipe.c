@@ -94,22 +94,6 @@ static void output_buffer_expand(unsigned i)
 		notify_signal(music_pipe.notify);
 }
 
-void music_pipe_flush(void)
-{
-	struct music_chunk *chunk = music_pipe_get_chunk(music_pipe.end);
-
-	if (chunk->length > 0) {
-		unsigned int next = successor(music_pipe.end);
-		if (next == music_pipe.begin)
-			/* all buffers are full; we have to wait for
-			   the player to free one, so don't flush
-			   right now */
-			return;
-
-		output_buffer_expand(next);
-	}
-}
-
 void music_pipe_set_lazy(bool lazy)
 {
 	music_pipe.lazy = lazy;
@@ -163,92 +147,40 @@ music_pipe_get_chunk(const unsigned i)
 	return &music_pipe.chunks[i];
 }
 
-/**
- * Return the tail chunk which has room for additional data.
- *
- * @return the chunk which has room for more data; NULL if there is no
- * room.
- */
-static struct music_chunk *
-tail_chunk(size_t frame_size)
+struct music_chunk *
+music_pipe_allocate(void)
 {
-	unsigned int next;
 	struct music_chunk *chunk;
 
+	/* the music_pipe.end chunk is always kept initialized */
 	chunk = music_pipe_get_chunk(music_pipe.end);
-	assert(chunk->length <= sizeof(chunk->data));
-	assert((chunk->length % frame_size) == 0);
-
-	if (chunk->length + frame_size > sizeof(chunk->data)) {
-		/* this chunk is full; allocate a new chunk */
-		next = successor(music_pipe.end);
-		if (music_pipe.begin == next)
-			/* no chunks available */
-			return NULL;
-
-		output_buffer_expand(next);
-		chunk = music_pipe_get_chunk(next);
-		assert(chunk->length == 0);
-	}
+	assert(chunk->length == 0);
 
 	return chunk;
 }
 
-void *
-music_pipe_write(const struct audio_format *audio_format,
-		 float data_time, uint16_t bit_rate,
-		 size_t *max_length_r)
+bool
+music_pipe_push(struct music_chunk *chunk)
 {
-	const size_t frame_size = audio_format_frame_size(audio_format);
-	struct music_chunk *chunk;
+	unsigned int next;
 
-	chunk = tail_chunk(frame_size);
-	if (chunk == NULL)
-		return NULL;
+	assert(chunk == music_pipe_get_chunk(music_pipe.end));
 
-	return music_chunk_write(chunk, audio_format, data_time, bit_rate,
-				 max_length_r);
+	next = successor(music_pipe.end);
+	if (music_pipe.begin == next)
+		/* no room */
+		return false;
+
+	output_buffer_expand(next);
+	return true;
 }
 
 void
-music_pipe_expand(const struct audio_format *audio_format, size_t length)
+music_pipe_cancel(struct music_chunk *chunk)
 {
-	const size_t frame_size = audio_format_frame_size(audio_format);
-	struct music_chunk *chunk;
-	bool full;
+	assert(chunk == music_pipe_get_chunk(music_pipe.end));
 
-	/* no partial frames allowed */
-	assert(length % frame_size == 0);
-
-	chunk = tail_chunk(frame_size);
-	assert(chunk != NULL);
-
-	full = music_chunk_expand(chunk, audio_format, length);
-	if (full)
-		music_pipe_flush();
-}
-
-bool music_pipe_tag(const struct tag *tag)
-{
-	struct music_chunk *chunk;
-
-	chunk = music_pipe_get_chunk(music_pipe.end);
-	if (chunk->length > 0 || chunk->tag != NULL) {
-		/* this chunk is not empty; allocate a new chunk,
-		   because chunk.tag refers to the beginning of the
-		   chunk data */
-		unsigned next = successor(music_pipe.end);
-		if (music_pipe.begin == next)
-			/* no chunks available */
-			return false;
-
-		output_buffer_expand(next);
-		chunk = music_pipe_get_chunk(next);
-		assert(chunk->length == 0 && chunk->tag == NULL);
-	}
-
-	chunk->tag = tag_dup(tag);
-	return true;
+	music_chunk_free(chunk);
 }
 
 void music_pipe_skip(unsigned num)

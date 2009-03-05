@@ -164,6 +164,7 @@ src_mpd_SOURCES = \
 	src/decoder_thread.c \
 	src/decoder_control.c \
 	src/decoder_api.c \
+	src/decoder_internal.c \
 	src/directory.c \
 	src/directory_save.c \
 	src/directory_print.c \
