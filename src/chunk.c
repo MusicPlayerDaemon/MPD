@@ -17,7 +17,10 @@
  */
 
 #include "chunk.h"
+#include "audio_format.h"
 #include "tag.h"
+
+#include <assert.h>
 
 void
 music_chunk_init(struct music_chunk *chunk)
@@ -31,4 +34,43 @@ music_chunk_free(struct music_chunk *chunk)
 {
 	if (chunk->tag != NULL)
 		tag_free(chunk->tag);
+}
+
+void *
+music_chunk_write(struct music_chunk *chunk,
+		  const struct audio_format *audio_format,
+		  float data_time, uint16_t bit_rate,
+		  size_t *max_length_r)
+{
+	const size_t frame_size = audio_format_frame_size(audio_format);
+	size_t num_frames;
+
+	if (chunk->length == 0) {
+		/* if the chunk is empty, nobody has set bitRate and
+		   times yet */
+
+		chunk->bit_rate = bit_rate;
+		chunk->times = data_time;
+	}
+
+	num_frames = (sizeof(chunk->data) - chunk->length) / frame_size;
+	if (num_frames == 0)
+		return NULL;
+
+	*max_length_r = num_frames * frame_size;
+	return chunk->data + chunk->length;
+}
+
+bool
+music_chunk_expand(struct music_chunk *chunk,
+		   const struct audio_format *audio_format, size_t length)
+{
+	const size_t frame_size = audio_format_frame_size(audio_format);
+
+	assert(chunk != NULL);
+	assert(chunk->length + length <= sizeof(chunk->data));
+
+	chunk->length += length;
+
+	return chunk->length + frame_size > sizeof(chunk->data);
 }

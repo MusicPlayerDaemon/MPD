@@ -201,23 +201,13 @@ music_pipe_write(const struct audio_format *audio_format,
 {
 	const size_t frame_size = audio_format_frame_size(audio_format);
 	struct music_chunk *chunk;
-	size_t num_frames;
 
 	chunk = tail_chunk(frame_size);
 	if (chunk == NULL)
 		return NULL;
 
-	if (chunk->length == 0) {
-		/* if the chunk is empty, nobody has set bitRate and
-		   times yet */
-
-		chunk->bit_rate = bit_rate;
-		chunk->times = data_time;
-	}
-
-	num_frames = (sizeof(chunk->data) - chunk->length) / frame_size;
-	*max_length_r = num_frames * frame_size;
-	return chunk->data + chunk->length;
+	return music_chunk_write(chunk, audio_format, data_time, bit_rate,
+				 max_length_r);
 }
 
 void
@@ -225,17 +215,16 @@ music_pipe_expand(const struct audio_format *audio_format, size_t length)
 {
 	const size_t frame_size = audio_format_frame_size(audio_format);
 	struct music_chunk *chunk;
+	bool full;
 
 	/* no partial frames allowed */
 	assert(length % frame_size == 0);
 
 	chunk = tail_chunk(frame_size);
 	assert(chunk != NULL);
-	assert(chunk->length + length <= sizeof(chunk->data));
 
-	chunk->length += length;
-
-	if (chunk->length + frame_size > sizeof(chunk->data))
+	full = music_chunk_expand(chunk, audio_format, length);
+	if (full)
 		music_pipe_flush();
 }
 
