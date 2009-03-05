@@ -35,6 +35,9 @@ struct audio_format;
  * music_pipe_append() caller.
  */
 struct music_chunk {
+	/** the next chunk in a linked list */
+	struct music_chunk *next;
+
 	/** number of bytes stored in this chunk */
 	uint16_t length;
 

@@ -31,7 +31,6 @@
 #include "conf.h"
 #include "path.h"
 #include "mapper.h"
-#include "pipe.h"
 #include "chunk.h"
 #include "decoder_control.h"
 #include "player_control.h"
@@ -179,8 +178,7 @@ initialize_decoder_and_player(void)
 	if (buffered_before_play > buffered_chunks)
 		buffered_before_play = buffered_chunks;
 
-	pc_init(buffered_before_play);
-	music_pipe_init(buffered_chunks, &pc.notify);
+	pc_init(buffered_chunks, buffered_before_play);
 	dc_init();
 }
 
@@ -333,7 +331,6 @@ int main(int argc, char *argv[])
 #ifdef ENABLE_ARCHIVE
 	archive_plugin_deinit_all();
 #endif
-	music_pipe_free();
 	config_global_finish();
 	tag_pool_deinit();
 	songvec_deinit();

@@ -19,160 +19,51 @@
 #ifndef MPD_PIPE_H
 #define MPD_PIPE_H
 
-#include <stddef.h>
-#include <stdint.h>
-#include <stdbool.h>
-
-struct audio_format;
-struct tag;
 struct music_chunk;
+struct music_buffer;
 
 /**
- * A ring set of buffers where the decoder appends data after the end,
- * and the player consumes data from the beginning.
+ * A queue of #music_chunk objects.  One party appends chunks at the
+ * tail, and the other consumes them from the head.
  */
-struct music_pipe {
-	struct music_chunk *chunks;
-	unsigned num_chunks;
+struct music_pipe;
 
-	/** the index of the first decoded chunk */
-	unsigned begin;
+/**
+ * Creates a new #music_pipe object.  It is empty.
+ */
+struct music_pipe *
+music_pipe_new(void);
 
-	/** the index after the last decoded chunk */
-	unsigned end;
-
-	/** non-zero if the player thread should only we woken up if
-	    the buffer becomes non-empty */
-	bool lazy;
-
-	struct notify *notify;
-};
-
-extern struct music_pipe music_pipe;
-
+/**
+ * Frees the object.  It must be empty now.
+ */
 void
-music_pipe_init(unsigned int size, struct notify *notify);
-
-void music_pipe_free(void);
-
-void music_pipe_clear(void);
+music_pipe_free(struct music_pipe *mp);
 
 /**
- * When a chunk is decoded, we wake up the player thread to tell him
- * about it.  In "lazy" mode, we only wake him up when the buffer was
- * previously empty, i.e. when the player thread has really been
- * waiting for us.
- */
-void music_pipe_set_lazy(bool lazy);
-
-static inline unsigned
-music_pipe_size(void)
-{
-	return music_pipe.num_chunks;
-}
-
-/** is the buffer empty? */
-static inline bool music_pipe_is_empty(void)
-{
-	return music_pipe.begin == music_pipe.end;
-}
-
-static inline bool
-music_pipe_head_is(unsigned i)
-{
-	return !music_pipe_is_empty() && music_pipe.begin == i;
-}
-
-static inline unsigned
-music_pipe_tail_index(void)
-{
-	return music_pipe.end;
-}
-
-void music_pipe_shift(void);
-
-/**
- * what is the position of the specified chunk number, relative to
- * the first chunk in use?
- */
-unsigned int music_pipe_relative(const unsigned i);
-
-/** determine the number of decoded chunks */
-unsigned music_pipe_available(void);
-
-/**
- * Get the absolute index of the nth used chunk after the first one.
- * Returns -1 if there is no such chunk.
- */
-int music_pipe_absolute(const unsigned relative);
-
-struct music_chunk *
-music_pipe_get_chunk(const unsigned i);
-
-static inline struct music_chunk *
-music_pipe_peek(void)
-{
-	if (music_pipe_is_empty())
-		return NULL;
-
-	return music_pipe_get_chunk(music_pipe.begin);
-}
-
-/**
- * Allocates a chunk for writing.  When you are finished, append it
- * with music_pipe_push().
- *
- * @return an empty chunk
+ * Removes the first chunk from the head, and returns it.
  */
 struct music_chunk *
-music_pipe_allocate(void);
+music_pipe_shift(struct music_pipe *mp);
 
 /**
- * Appends a chunk at the end of the music pipe.
+ * Clears the whole pipe and returns the chunks to the buffer.
  *
- * @param chunk a chunk allocated with music_pipe_allocate()
- * @return true on success, false if there is no room
- */
-bool
-music_pipe_push(struct music_chunk *chunk);
-
-/**
- * Cancels a chunk that has been allocated with music_pipe_allocate().
- *
- * @param chunk a chunk allocated with music_pipe_allocate()
+ * @param buffer the buffer object to return the chunks to
  */
 void
-music_pipe_cancel(struct music_chunk *chunk);
+music_pipe_clear(struct music_pipe *mp, struct music_buffer *buffer);
 
 /**
- * Prepares appending to the music pipe.  Returns a buffer where you
- * may write into.  After you are finished, call music_pipe_expand().
- *
- * @return a writable buffer
- */
-void *
-music_pipe_write(const struct audio_format *audio_format,
-		 float data_time, uint16_t bit_rate,
-		 size_t *max_length_r);
-
-/**
- * Tells the music pipe to move the end pointer, after you have
- * written to the buffer returned by music_pipe_write().
+ * Pushes a chunk to the tail of the pipe.
  */
 void
-music_pipe_expand(const struct audio_format *audio_format, size_t length);
-
-void music_pipe_skip(unsigned num);
+music_pipe_push(struct music_pipe *mp, struct music_chunk *chunk);
 
 /**
- * Chop off the tail of the music pipe, starting with the chunk at
- * index "first".
+ * Returns the number of chunks currently in this pipe.
  */
-void music_pipe_chop(unsigned first);
-
-#ifndef NDEBUG
-void music_pipe_check_format(const struct audio_format *current,
-			     int next_index, const struct audio_format *next);
-#endif
+unsigned
+music_pipe_size(const struct music_pipe *mp);
 
 #endif

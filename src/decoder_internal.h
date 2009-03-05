@@ -42,17 +42,16 @@ struct decoder {
 /**
  * Returns the current chunk the decoder writes to, or allocates a new
  * chunk if there is none.
+ *
+ * @return the chunk, or NULL if we have received a decoder command
  */
 struct music_chunk *
-decoder_get_chunk(struct decoder *decoder);
+decoder_get_chunk(struct decoder *decoder, struct input_stream *is);
 
 /**
- * Flushes a chunk.  Waits for room in the music pipe if required.
- *
- * @return DECODE_COMMAND_NONE on success, any other command if we
- * have received a decoder command while waiting
+ * Flushes the current chunk.
  */
-enum decoder_command
-decoder_flush_chunk(struct decoder *decoder, struct input_stream *is);
+void
+decoder_flush_chunk(struct decoder *decoder);
 
 #endif

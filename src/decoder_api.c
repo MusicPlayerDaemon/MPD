@@ -23,6 +23,7 @@
 #include "player_control.h"
 #include "audio.h"
 #include "song.h"
+#include "buffer.h"
 
 #include "normalize.h"
 #include "pipe.h"
@@ -90,11 +91,11 @@ void decoder_command_finished(G_GNUC_UNUSED struct decoder * decoder)
 		/* delete frames from the old song position */
 
 		if (decoder->chunk != NULL) {
-			music_pipe_cancel(decoder->chunk);
+			music_buffer_return(dc.buffer, decoder->chunk);
 			decoder->chunk = NULL;
 		}
 
-		music_pipe_clear();
+		music_pipe_clear(dc.pipe, dc.buffer);
 	}
 
 	dc.command = DECODE_COMMAND_NONE;
@@ -167,15 +168,18 @@ do_send_tag(struct decoder *decoder, struct input_stream *is,
 	if (decoder->chunk != NULL) {
 		/* there is a partial chunk - flush it, we want the
 		   tag in a new chunk */
-		enum decoder_command cmd =
-			decoder_flush_chunk(decoder, is);
-		if (cmd != DECODE_COMMAND_NONE)
-			return cmd;
+		decoder_flush_chunk(decoder);
+		notify_signal(&pc.notify);
 	}
 
 	assert(decoder->chunk == NULL);
 
-	chunk = decoder_get_chunk(decoder);
+	chunk = decoder_get_chunk(decoder, is);
+	if (chunk == NULL) {
+		assert(dc.command != DECODE_COMMAND_NONE);
+		return dc.command;
+	}
+
 	chunk->tag = tag_dup(tag);
 	return DECODE_COMMAND_NONE;
 }
@@ -256,15 +260,18 @@ decoder_data(struct decoder *decoder,
 		size_t nbytes;
 		bool full;
 
-		chunk = decoder_get_chunk(decoder);
+		chunk = decoder_get_chunk(decoder, is);
+		if (chunk == NULL) {
+			assert(dc.command != DECODE_COMMAND_NONE);
+			return dc.command;
+		}
+
 		dest = music_chunk_write(chunk, &dc.out_audio_format,
 					 data_time, bitRate, &nbytes);
 		if (dest == NULL) {
 			/* the chunk is full, flush it */
-			enum decoder_command cmd =
-				decoder_flush_chunk(decoder, is);
-			if (cmd != DECODE_COMMAND_NONE)
-				return cmd;
+			decoder_flush_chunk(decoder);
+			notify_signal(&pc.notify);
 			continue;
 		}
 
@@ -291,10 +298,8 @@ decoder_data(struct decoder *decoder,
 		full = music_chunk_expand(chunk, &dc.out_audio_format, nbytes);
 		if (full) {
 			/* the chunk is full, flush it */
-			enum decoder_command cmd =
-				decoder_flush_chunk(decoder, is);
-			if (cmd != DECODE_COMMAND_NONE)
-				return cmd;
+			decoder_flush_chunk(decoder);
+			notify_signal(&pc.notify);
 		}
 
 		data += nbytes;

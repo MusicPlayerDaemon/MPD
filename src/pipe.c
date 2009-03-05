@@ -17,208 +17,103 @@
  */
 
 #include "pipe.h"
+#include "buffer.h"
 #include "chunk.h"
-#include "notify.h"
-#include "audio_format.h"
-#include "tag.h"
 
 #include <glib.h>
-#include <assert.h>
-#include <string.h>
 
-struct music_pipe music_pipe;
+#include <assert.h>
+
+struct music_pipe {
+	/** the first chunk */
+	struct music_chunk *head;
+
+	/** a pointer to the tail of the chunk */
+	struct music_chunk **tail_r;
+
+	/** the current number of chunks */
+	unsigned size;
+
+	/** a mutex which protects #head and #tail_r */
+	GMutex *mutex;
+};
+
+struct music_pipe *
+music_pipe_new(void)
+{
+	struct music_pipe *mp = g_new(struct music_pipe, 1);
+
+	mp->head = NULL;
+	mp->tail_r = &mp->head;
+	mp->size = 0;
+	mp->mutex = g_mutex_new();
+
+	return mp;
+}
 
 void
-music_pipe_init(unsigned int size, struct notify *notify)
+music_pipe_free(struct music_pipe *mp)
 {
-	assert(size > 0);
+	assert(mp->head == NULL);
+	assert(mp->tail_r == &mp->head);
 
-	music_pipe.chunks = g_new(struct music_chunk, size);
-	music_pipe.num_chunks = size;
-	music_pipe.begin = 0;
-	music_pipe.end = 0;
-	music_pipe.lazy = false;
-	music_pipe.notify = notify;
-	music_chunk_init(&music_pipe.chunks[0]);
-}
-
-void music_pipe_free(void)
-{
-	assert(music_pipe.chunks != NULL);
-
-	music_pipe_clear();
-
-	g_free(music_pipe.chunks);
-}
-
-/** return the index of the chunk after i */
-static inline unsigned successor(unsigned i)
-{
-	assert(i < music_pipe.num_chunks);
-
-	++i;
-	return i == music_pipe.num_chunks ? 0 : i;
-}
-
-void music_pipe_clear(void)
-{
-	unsigned i;
-
-	for (i = music_pipe.begin; i != music_pipe.end; i = successor(i))
-		music_chunk_free(&music_pipe.chunks[i]);
-
-	music_chunk_free(&music_pipe.chunks[music_pipe.end]);
-
-	music_pipe.end = music_pipe.begin;
-	music_chunk_init(&music_pipe.chunks[music_pipe.end]);
-}
-
-/**
- * Mark the tail chunk as "full" and wake up the player if is waiting
- * for the decoder.
- */
-static void output_buffer_expand(unsigned i)
-{
-	int was_empty = music_pipe.notify != NULL && (!music_pipe.lazy || music_pipe_is_empty());
-
-	assert(i == (music_pipe.end + 1) % music_pipe.num_chunks);
-	assert(i != music_pipe.end);
-
-	music_pipe.end = i;
-	music_chunk_init(&music_pipe.chunks[i]);
-
-	if (was_empty)
-		/* if the buffer was empty, the player thread might be
-		   waiting for us; wake it up now that another decoded
-		   buffer has become available. */
-		notify_signal(music_pipe.notify);
-}
-
-void music_pipe_set_lazy(bool lazy)
-{
-	music_pipe.lazy = lazy;
-}
-
-void music_pipe_shift(void)
-{
-	assert(music_pipe.begin != music_pipe.end);
-	assert(music_pipe.begin < music_pipe.num_chunks);
-
-	music_chunk_free(&music_pipe.chunks[music_pipe.begin]);
-
-	music_pipe.begin = successor(music_pipe.begin);
-}
-
-unsigned int music_pipe_relative(const unsigned i)
-{
-	if (i >= music_pipe.begin)
-		return i - music_pipe.begin;
-	else
-		return i + music_pipe.num_chunks - music_pipe.begin;
-}
-
-unsigned music_pipe_available(void)
-{
-	return music_pipe_relative(music_pipe.end);
-}
-
-int music_pipe_absolute(const unsigned relative)
-{
-	unsigned i, max;
-
-	max = music_pipe.end;
-	if (max < music_pipe.begin)
-		max += music_pipe.num_chunks;
-	i = (unsigned)music_pipe.begin + relative;
-	if (i >= max)
-		return -1;
-
-	if (i >= music_pipe.num_chunks)
-		i -= music_pipe.num_chunks;
-
-	return (int)i;
+	g_mutex_free(mp->mutex);
+	g_free(mp);
 }
 
 struct music_chunk *
-music_pipe_get_chunk(const unsigned i)
-{
-	assert(i < music_pipe.num_chunks);
-
-	return &music_pipe.chunks[i];
-}
-
-struct music_chunk *
-music_pipe_allocate(void)
+music_pipe_shift(struct music_pipe *mp)
 {
 	struct music_chunk *chunk;
 
-	/* the music_pipe.end chunk is always kept initialized */
-	chunk = music_pipe_get_chunk(music_pipe.end);
-	assert(chunk->length == 0);
+	g_mutex_lock(mp->mutex);
+
+	chunk = mp->head;
+	if (chunk != NULL) {
+		mp->head = chunk->next;
+		--mp->size;
+
+		if (mp->head == NULL) {
+			assert(mp->size == 0);
+			assert(mp->tail_r == &chunk->next);
+
+			mp->tail_r = &mp->head;
+		} else {
+			assert(mp->size > 0);
+			assert(mp->tail_r != &chunk->next);
+		}
+	}
+
+	g_mutex_unlock(mp->mutex);
 
 	return chunk;
 }
 
-bool
-music_pipe_push(struct music_chunk *chunk)
+void
+music_pipe_clear(struct music_pipe *mp, struct music_buffer *buffer)
 {
-	unsigned int next;
+	struct music_chunk *chunk;
 
-	assert(chunk == music_pipe_get_chunk(music_pipe.end));
-
-	next = successor(music_pipe.end);
-	if (music_pipe.begin == next)
-		/* no room */
-		return false;
-
-	output_buffer_expand(next);
-	return true;
+	while ((chunk = music_pipe_shift(mp)) != NULL)
+		music_buffer_return(buffer, chunk);
 }
 
 void
-music_pipe_cancel(struct music_chunk *chunk)
+music_pipe_push(struct music_pipe *mp, struct music_chunk *chunk)
 {
-	assert(chunk == music_pipe_get_chunk(music_pipe.end));
+	g_mutex_lock(mp->mutex);
 
-	music_chunk_free(chunk);
+	chunk->next = NULL;
+	*mp->tail_r = chunk;
+	mp->tail_r = &chunk->next;
+
+	++mp->size;
+
+	g_mutex_unlock(mp->mutex);
 }
 
-void music_pipe_skip(unsigned num)
+unsigned
+music_pipe_size(const struct music_pipe *mp)
 {
-	int i = music_pipe_absolute(num);
-	if (i < 0)
-		return;
-
-	while (music_pipe.begin != (unsigned)i)
-		music_pipe_shift();
+	return mp->size;
 }
-
-void music_pipe_chop(unsigned first)
-{
-	for (unsigned i = first; i != music_pipe.end; i = successor(i))
-		music_chunk_free(&music_pipe.chunks[i]);
-
-	music_chunk_free(&music_pipe.chunks[music_pipe.end]);
-
-	music_pipe.end = first;
-	music_chunk_init(&music_pipe.chunks[first]);
-
-}
-
-#ifndef NDEBUG
-void music_pipe_check_format(const struct audio_format *current,
-			     int next_index, const struct audio_format *next)
-{
-	const struct audio_format *audio_format = current;
-
-	for (unsigned i = music_pipe.begin; i != music_pipe.end;
-	     i = successor(i)) {
-		const struct music_chunk *chunk = music_pipe_get_chunk(i);
-
-		if (next_index > 0 && i == (unsigned)next_index)
-			audio_format = next;
-
-		assert(chunk->length % audio_format_frame_size(audio_format) == 0);
-	}
-}
-#endif

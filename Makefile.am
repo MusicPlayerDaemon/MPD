@@ -84,6 +84,7 @@ mpd_headers = \
 	src/daemon.h \
 	src/normalize.h \
 	src/compress.h \
+	src/buffer.h \
 	src/pipe.h \
 	src/chunk.h \
 	src/path.h \
@@ -180,6 +181,7 @@ src_mpd_SOURCES = \
 	src/daemon.c \
 	src/normalize.c \
 	src/compress.c \
+	src/buffer.c \
 	src/pipe.c \
 	src/chunk.c \
 	src/path.c \

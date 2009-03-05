@@ -31,6 +31,7 @@
 #include "chunk.h"
 #include "idle.h"
 #include "main.h"
+#include "buffer.h"
 
 #include <glib.h>
 
@@ -44,6 +45,9 @@ enum xfade_state {
 };
 
 struct player {
+	struct music_buffer *buffer;
+	struct music_pipe *pipe;
+
 	/**
 	 * are we waiting for buffered_before_play?
 	 */
@@ -74,12 +78,6 @@ struct player {
 	 * is cross fading enabled?
 	 */
 	enum xfade_state xfade;
-
-	/**
-	 * index of the first chunk of the next song, -1 if there is
-	 * no next song
-	 */
-	int next_song_chunk;
 };
 
 static void player_command_finished(void)
@@ -88,6 +86,21 @@ static void player_command_finished(void)
 
 	pc.command = PLAYER_COMMAND_NONE;
 	notify_signal(&main_notify);
+}
+
+static void
+player_dc_stop(struct player *player)
+{
+	dc_stop(&pc.notify);
+
+	if (dc.pipe != NULL) {
+		music_pipe_clear(dc.pipe, player->buffer);
+
+		if (dc.pipe != player->pipe)
+			music_pipe_free(dc.pipe);
+
+		dc.pipe = NULL;
+	}
 }
 
 static void player_stop_decoder(void)
@@ -133,9 +146,10 @@ static bool player_seek_decoder(struct player *player)
 	bool ret;
 
 	if (decoder_current_song() != pc.next_song) {
-		dc_stop(&pc.notify);
-		player->next_song_chunk = -1;
-		music_pipe_clear();
+		player_dc_stop(player);
+
+		music_pipe_clear(player->pipe, player->buffer);
+		dc.pipe = player->pipe;
 		dc_start_async(pc.next_song);
 
 		ret = player_wait_for_decoder(player);
@@ -174,7 +188,7 @@ static void player_process_command(struct player *player)
 	case PLAYER_COMMAND_QUEUE:
 		assert(pc.next_song != NULL);
 		assert(!player->queued);
-		assert(player->next_song_chunk == -1);
+		assert(dc.pipe == NULL || dc.pipe == player->pipe);
 
 		player->queued = true;
 		player_command_finished();
@@ -220,12 +234,11 @@ static void player_process_command(struct player *player)
 			return;
 		}
 
-		if (player->next_song_chunk != -1) {
+		if (dc.pipe != NULL && dc.pipe != player->pipe) {
 			/* the decoder is already decoding the song -
 			   stop it and reset the position */
+			player_dc_stop(player);
 			dc_stop(&pc.notify);
-			music_pipe_chop(player->next_song_chunk);
-			player->next_song_chunk = -1;
 		}
 
 		pc.next_song = NULL;
@@ -298,23 +311,25 @@ static void do_play(void)
 		.queued = false,
 		.song = NULL,
 		.xfade = XFADE_UNKNOWN,
-		.next_song_chunk = -1,
 	};
 	unsigned int crossFadeChunks = 0;
-	/** the position of the next cross-faded chunk in the next
-	    song */
-	int nextChunk = 0;
+	/** has cross-fading begun? */
+	bool cross_fading = false;
 	static const char silence[CHUNK_SIZE];
 	struct audio_format play_audio_format;
 	double sizeToTime = 0.0;
 
-	music_pipe_clear();
-	music_pipe_set_lazy(false);
+	player.buffer = music_buffer_new(pc.buffer_chunks);
+	player.pipe = music_pipe_new();
 
+	dc.buffer = player.buffer;
+	dc.pipe = player.pipe;
 	dc_start(&pc.notify, pc.next_song);
 	if (!player_wait_for_decoder(&player)) {
 		player_stop_decoder();
 		player_command_finished();
+		music_pipe_free(player.pipe);
+		music_buffer_free(player.buffer);
 		return;
 	}
 
@@ -332,7 +347,7 @@ static void do_play(void)
 		}
 
 		if (player.buffering) {
-			if (music_pipe_available() < pc.buffered_before_play &&
+			if (music_pipe_size(player.pipe) < pc.buffered_before_play &&
 			    !decoder_is_idle()) {
 				/* not enough decoded buffer space yet */
 				notify_wait(&pc.notify);
@@ -340,7 +355,6 @@ static void do_play(void)
 			} else {
 				/* buffering is complete */
 				player.buffering = false;
-				music_pipe_set_lazy(true);
 			}
 		}
 
@@ -395,13 +409,14 @@ static void do_play(void)
 			/* the decoder has finished the current song;
 			   make it decode the next song */
 			assert(pc.next_song != NULL);
-			assert(player.next_song_chunk == -1);
+			assert(dc.pipe == NULL || dc.pipe == player.pipe);
 
 			player.queued = false;
-			player.next_song_chunk = music_pipe_tail_index();
+			dc.pipe = music_pipe_new();
 			dc_start_async(pc.next_song);
 		}
-		if (player.next_song_chunk >= 0 &&
+
+		if (dc.pipe != NULL && dc.pipe != player.pipe &&
 		    player.xfade == XFADE_UNKNOWN &&
 		    !decoder_is_starting()) {
 			/* enable cross fading in this song?  if yes,
@@ -411,11 +426,11 @@ static void do_play(void)
 				cross_fade_calc(pc.cross_fade_seconds, dc.total_time,
 						&dc.out_audio_format,
 						&play_audio_format,
-						music_pipe_size() -
+						music_buffer_size(player.buffer) -
 						pc.buffered_before_play);
 			if (crossFadeChunks > 0) {
 				player.xfade = XFADE_ENABLED;
-				nextChunk = -1;
+				cross_fading = false;
 			} else
 				/* cross fading is disabled or the
 				   next song is too short */
@@ -424,31 +439,36 @@ static void do_play(void)
 
 		if (player.paused)
 			notify_wait(&pc.notify);
-		else if (!music_pipe_is_empty() &&
-			 !music_pipe_head_is(player.next_song_chunk)) {
-			struct music_chunk *beginChunk = music_pipe_peek();
+		else if (music_pipe_size(player.pipe) > 0) {
+			struct music_chunk *chunk = NULL;
 			unsigned int fadePosition;
+			bool success;
+
 			if (player.xfade == XFADE_ENABLED &&
-			    player.next_song_chunk >= 0 &&
-			    (fadePosition = music_pipe_relative(player.next_song_chunk))
+			    dc.pipe != NULL && dc.pipe != player.pipe &&
+			    (fadePosition = music_pipe_size(player.pipe))
 			    <= crossFadeChunks) {
 				/* perform cross fade */
-				if (nextChunk < 0) {
+				struct music_chunk *other_chunk =
+					music_pipe_shift(dc.pipe);
+
+				if (!cross_fading) {
 					/* beginning of the cross fade
 					   - adjust crossFadeChunks
 					   which might be bigger than
 					   the remaining number of
 					   chunks in the old song */
 					crossFadeChunks = fadePosition;
+					cross_fading = true;
 				}
-				nextChunk = music_pipe_absolute(crossFadeChunks);
-				if (nextChunk >= 0) {
-					music_pipe_set_lazy(true);
-					cross_fade_apply(beginChunk,
-							 music_pipe_get_chunk(nextChunk),
+
+				if (other_chunk != NULL) {
+					chunk = music_pipe_shift(player.pipe);
+					cross_fade_apply(chunk, other_chunk,
 							 &dc.out_audio_format,
 							 fadePosition,
 							 crossFadeChunks);
+					music_buffer_return(player.buffer, other_chunk);
 				} else {
 					/* there are not enough
 					   decoded chunks yet */
@@ -460,47 +480,42 @@ static void do_play(void)
 					} else {
 						/* wait for the
 						   decoder */
-						music_pipe_set_lazy(false);
 						notify_signal(&dc.notify);
 						notify_wait(&pc.notify);
 
-						/* set nextChunk to a
-						   non-negative value
-						   so the next
-						   iteration doesn't
-						   assume crossfading
-						   hasn't begun yet */
-						nextChunk = 0;
 						continue;
 					}
 				}
 			}
 
+			if (chunk == NULL)
+				chunk = music_pipe_shift(player.pipe);
+
 			/* play the current chunk */
-			if (!play_chunk(player.song, beginChunk,
-					&play_audio_format, sizeToTime))
+
+			success = play_chunk(player.song, chunk,
+					     &play_audio_format, sizeToTime);
+			music_buffer_return(player.buffer, chunk);
+
+			if (!success)
 				break;
-			music_pipe_shift();
 
 			/* this formula should prevent that the
 			   decoder gets woken up with each chunk; it
 			   is more efficient to make it decode a
 			   larger block at a time */
-			if (music_pipe_available() <= (pc.buffered_before_play + music_pipe_size() * 3) / 4)
+			if (!decoder_is_idle() &&
+			    music_pipe_size(dc.pipe) <= (pc.buffered_before_play +
+							 music_buffer_size(player.buffer) * 3) / 4)
 				notify_signal(&dc.notify);
-		} else if (music_pipe_head_is(player.next_song_chunk)) {
+		} else if (dc.pipe != NULL && dc.pipe != player.pipe) {
 			/* at the beginning of a new song */
-
-			if (player.xfade == XFADE_ENABLED && nextChunk >= 0) {
-				/* the cross-fade is finished; skip
-				   the section which was cross-faded
-				   (and thus already played) */
-				music_pipe_skip(crossFadeChunks);
-			}
 
 			player.xfade = XFADE_UNKNOWN;
 
-			player.next_song_chunk = -1;
+			music_pipe_free(player.pipe);
+			player.pipe = dc.pipe;
+
 			if (!player_wait_for_decoder(&player))
 				break;
 		} else if (decoder_is_idle()) {
@@ -524,6 +539,16 @@ static void do_play(void)
 	}
 
 	player_stop_decoder();
+
+	if (dc.pipe != NULL && dc.pipe != player.pipe) {
+		music_pipe_clear(dc.pipe, player.buffer);
+		music_pipe_free(dc.pipe);
+	}
+
+	music_pipe_clear(player.pipe, player.buffer);
+	music_pipe_free(player.pipe);
+
+	music_buffer_free(player.buffer);
 }
 
 static gpointer player_task(G_GNUC_UNUSED gpointer arg)

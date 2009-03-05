@@ -21,6 +21,7 @@
 #include "player_control.h"
 #include "pipe.h"
 #include "input_stream.h"
+#include "buffer.h"
 
 #include <assert.h>
 
@@ -46,35 +47,32 @@ need_chunks(struct input_stream *is, bool do_wait)
 }
 
 struct music_chunk *
-decoder_get_chunk(struct decoder *decoder)
+decoder_get_chunk(struct decoder *decoder, struct input_stream *is)
 {
+	enum decoder_command cmd;
+
 	assert(decoder != NULL);
 
 	if (decoder->chunk != NULL)
 		return decoder->chunk;
 
-	decoder->chunk = music_pipe_allocate();
-	return decoder->chunk;
+	do {
+		decoder->chunk = music_buffer_allocate(dc.buffer);
+		if (decoder->chunk != NULL)
+			return decoder->chunk;
+
+		cmd = need_chunks(is, true);
+	} while (cmd == DECODE_COMMAND_NONE);
+
+	return NULL;
 }
 
-enum decoder_command
-decoder_flush_chunk(struct decoder *decoder, struct input_stream *is)
+void
+decoder_flush_chunk(struct decoder *decoder)
 {
-	bool success;
-	enum decoder_command cmd;
-
 	assert(decoder != NULL);
 	assert(decoder->chunk != NULL);
 
-	while (true) {
-		success = music_pipe_push(decoder->chunk);
-		if (success) {
-			decoder->chunk = NULL;
-			return DECODE_COMMAND_NONE;
-		}
-
-		cmd = need_chunks(is, true);
-		if (cmd != DECODE_COMMAND_NONE)
-			return cmd;
-	}
+	music_pipe_push(dc.pipe, decoder->chunk);
+	decoder->chunk = NULL;
 }

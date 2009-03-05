@@ -30,8 +30,9 @@
 
 struct player_control pc;
 
-void pc_init(unsigned int buffered_before_play)
+void pc_init(unsigned buffer_chunks, unsigned int buffered_before_play)
 {
+	pc.buffer_chunks = buffer_chunks;
 	pc.buffered_before_play = buffered_before_play;
 	notify_init(&pc.notify);
 	pc.command = PLAYER_COMMAND_NONE;

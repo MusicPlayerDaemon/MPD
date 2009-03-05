@@ -66,6 +66,12 @@ struct decoder_control {
 	struct song *current_song;
 	struct song *next_song;
 	float total_time;
+
+	/** the #music_chunk allocator */
+	struct music_buffer *buffer;
+
+	/** the destination pipe for decoded chunks */
+	struct music_pipe *pipe;
 };
 
 extern struct decoder_control dc;

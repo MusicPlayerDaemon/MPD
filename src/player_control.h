@@ -60,6 +60,8 @@ enum player_error {
 };
 
 struct player_control {
+	unsigned buffer_chunks;
+
 	unsigned int buffered_before_play;
 
 	/** the handle of the player thread, or NULL if the player
@@ -84,7 +86,7 @@ struct player_control {
 
 extern struct player_control pc;
 
-void pc_init(unsigned int _buffered_before_play);
+void pc_init(unsigned buffer_chunks, unsigned buffered_before_play);
 
 void pc_deinit(void);
 
