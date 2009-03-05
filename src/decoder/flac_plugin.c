@@ -363,7 +363,8 @@ flac_decode_internal(struct decoder * decoder,
 				decoder_command_finished(decoder);
 			} else
 				decoder_seek_error(decoder);
-		} else if (flac_get_state(flac_dec) == flac_decoder_eof)
+		} else if (cmd == DECODE_COMMAND_STOP ||
+			   flac_get_state(flac_dec) == flac_decoder_eof)
 			break;
 
 		if (!flac_process_single(flac_dec)) {
