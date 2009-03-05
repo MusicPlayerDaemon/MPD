@@ -353,9 +353,6 @@ flac_decode_internal(struct decoder * decoder,
 		} else
 			cmd = decoder_get_command(decoder);
 
-		if (!flac_process_single(flac_dec))
-			break;
-
 		if (cmd == DECODE_COMMAND_SEEK) {
 			FLAC__uint64 seek_sample = decoder_seek_where(decoder) *
 			    data.audio_format.sample_rate + 0.5;
@@ -368,6 +365,12 @@ flac_decode_internal(struct decoder * decoder,
 				decoder_seek_error(decoder);
 		} else if (flac_get_state(flac_dec) == flac_decoder_eof)
 			break;
+
+		if (!flac_process_single(flac_dec)) {
+			cmd = decoder_get_command(decoder);
+			if (cmd != DECODE_COMMAND_SEEK)
+				break;
+		}
 	}
 	if (cmd != DECODE_COMMAND_STOP) {
 		flacPrintErroredState(flac_get_state(flac_dec));
