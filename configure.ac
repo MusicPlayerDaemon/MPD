@@ -263,7 +263,7 @@ if test x$enable_lastfm = xyes; then
 		AC_MSG_ERROR([Cannot enable last.fm radio without curl])
 	fi
 
-	AC_DEFINE(ENABLE_LASTFM, 1, [Define when last.fm radio is enabled]),
+	AC_DEFINE(ENABLE_LASTFM, 1, [Define when last.fm radio is enabled])
 fi
 AM_CONDITIONAL(ENABLE_LASTFM, test x$enable_lastfm = xyes)
 
