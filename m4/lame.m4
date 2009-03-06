@@ -6,10 +6,22 @@ AC_DEFUN([AM_PATH_LAME],
 [dnl
 dnl Get the cflags and libraries
 dnl
-AC_ARG_WITH(lame,[  --with-lame=PFX   Prefix where liblame is installed (optional)], lame_prefix="$withval", lame_prefix="")
-AC_ARG_WITH(lame-libraries,[  --with-lame-libraries=DIR   Directory where liblame library is installed (optional)], lame_libraries="$withval", lame_libraries="")
-AC_ARG_WITH(lame-includes,[  --with-lame-includes=DIR   Directory where liblame header files are installed (optional)], lame_includes="$withval", lame_includes="")
-AC_ARG_ENABLE(lametest, [  --disable-lametest       Do not try to compile and run a test liblame program],, enable_lametest=yes)
+AC_ARG_WITH(lame,
+	AS_HELP_STRING([--with-lame=PFX],
+		[prefix where liblame is installed (optional)]),,
+	lame_prefix="")
+AC_ARG_WITH(lame-libraries,
+	AS_HELP_STRING([--with-lame-libraries=DIR],
+		[directory where liblame library is installed (optional)]),,
+	lame_libraries="")
+AC_ARG_WITH(lame-includes,
+	AS_HELP_STRING([--with-lame-includes=DIR],
+		[directory where liblame header files are installed (optional)]),,
+	lame_includes="")
+AC_ARG_ENABLE(lametest,
+	AS_HELP_STRING([--disable-lametest],
+		[do not try to compile and run a test liblame program]),,
+	enable_lametest=yes)
 
 if test "x$lame_prefix" != "xno" ; then
 
