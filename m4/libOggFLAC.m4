@@ -8,10 +8,22 @@ AC_DEFUN([AM_PATH_LIBOGGFLAC],
 [dnl 
 dnl Get the cflags and libraries
 dnl
-AC_ARG_WITH(libOggFLAC,[  --with-libOggFLAC=PFX   Prefix where libOggFLAC is installed (optional)], libOggFLAC_prefix="$withval", libOggFLAC_prefix="")
-AC_ARG_WITH(libOggFLAC-libraries,[  --with-libOggFLAC-libraries=DIR   Directory where libOggFLAC library is installed (optional)], libOggFLAC_libraries="$withval", libOggFLAC_libraries="")
-AC_ARG_WITH(libOggFLAC-includes,[  --with-libOggFLAC-includes=DIR   Directory where libOggFLAC header files are installed (optional)], libOggFLAC_includes="$withval", libOggFLAC_includes="")
-AC_ARG_ENABLE(libOggFLACtest, [  --disable-libOggFLACtest       Do not try to compile and run a test libOggFLAC program],, enable_libOggFLACtest=yes)
+AC_ARG_WITH(libOggFLAC,
+	AS_HELP_STRING([--with-libOggFLAC=PFX],
+		[Prefix where libOggFLAC is installed (optional)]),,
+	libOggFLAC_prefix="")
+AC_ARG_WITH(libOggFLAC-libraries,
+	AS_HELP_STRING([--with-libOggFLAC-libraries=DIR],
+		[Directory where libOggFLAC library is installed (optional)]),,
+	libOggFLAC_libraries="")
+AC_ARG_WITH(libOggFLAC-includes,
+	AS_HELP_STRING([--with-libOggFLAC-includes=DIR],
+		[Directory where libOggFLAC header files are installed (optional)]),,
+	libOggFLAC_includes="")
+AC_ARG_ENABLE(libOggFLACtest,
+	AS_HELP_STRING([--disable-libOggFLACtest],
+		[Do not try to compile and run a test libOggFLAC program]),,
+	enable_libOggFLACtest=yes)
 
   if test "x$libOggFLAC_libraries" != "x" ; then
     LIBOGGFLAC_LIBS="-L$libOggFLAC_libraries"
