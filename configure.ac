@@ -371,7 +371,7 @@ dnl faad
 dnl ##
 AC_ARG_WITH(faad,
 	AS_HELP_STRING([--with-faad=PFX],
-		[Prefix where faad2 is installed]),,
+		[Prefix where faad2 is installed (optional)]),,
 	faad_prefix="")
 AC_ARG_WITH(faad-libraries,
 	AS_HELP_STRING([--with-faad-libraries=DIR],
