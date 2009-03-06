@@ -382,6 +382,7 @@ AC_ARG_ENABLE(flac,
 dnl ###
 dnl MAD mp3 decoder
 dnl ###
+
 dnl Depreciated option, available for backwards compatibility
 AC_ARG_ENABLE(mp3,,
 		enable_mad=$enableval,
@@ -397,7 +398,6 @@ if test x$enable_mad = xyes; then
 		AC_DEFINE(HAVE_MAD, 1, [Define to use libmad]),
 		enable_mad=no)
 fi
-
 AM_CONDITIONAL(HAVE_MAD, test x$enable_mad = xyes)
 
 AC_ARG_ENABLE(mod,
@@ -409,8 +409,6 @@ AC_ARG_ENABLE(modplug,
 	AS_HELP_STRING([--enable-modplug],
 		[enable MODPLUG support (default: disable)]),,
 	enable_modplug=no)
-
-
 
 AC_ARG_ENABLE(mpc,
 	AS_HELP_STRING([--disable-mpc],
@@ -427,9 +425,24 @@ AC_ARG_ENABLE(oggvorbis,
 		[disable Ogg Vorbis support (default: enable)]),,
 	enable_oggvorbis=yes)
 
-AC_ARG_WITH(tremor,[[  --with-tremor[=PFX]         Use Tremor(vorbisidec) integer Ogg-Vorbis decoder (with optional prefix)]], use_tremor=yes; test x$withval != xyes && tremor_prefix="$withval",)
-AC_ARG_WITH(tremor-libraries,[  --with-tremor-libraries=DIR Directory where Tremor library is installed (optional)], tremor_libraries="$withval", tremor_libraries="")
-AC_ARG_WITH(tremor-includes,[  --with-tremor-includes=DIR  Directory where Tremor header files are installed (optional)], tremor_includes="$withval", tremor_includes="")
+dnl ###
+dnl Ogg Tremor
+dnl ###
+AC_ARG_WITH(tremor,
+	AS_HELP_STRING([--with-tremor=PFX],
+		[use Tremor (vorbisidec) integer Ogg Vorbis decoder (with optional prefix)]),
+	use_tremor=yes; test x$withval != xyes && tremor_prefix="$withval",
+	)
+
+AC_ARG_WITH(tremor-libraries,
+	AS_HELP_STRING([--with-tremor-libraries=DIR],
+		[directory where Tremor library is installed (optional)]),,
+	tremor_libraries="")
+
+AC_ARG_WITH(tremor-includes,
+	AS_HELP_STRING([--with-tremor-includes=DIR],
+		[directory where Tremor header files are installed (optional)]),,
+	tremor_includes="")
 
 AC_ARG_ENABLE(sidplay,
 	AS_HELP_STRING([--enable-sidplay],
