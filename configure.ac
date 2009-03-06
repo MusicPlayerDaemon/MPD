@@ -1445,13 +1445,34 @@ else
 fi
 
 echo ""
-echo " Other features:"
+echo " Streaming support:"
+
+if test x$enable_lame = xyes; then
+        echo " lame support (mp3 output) .....enabled"
+else
+        echo " lame support (mp3 output) .....disabled"
+fi
+
+if test x$enable_lastfm = xyes; then
+        echo " last.fm radio support .........enabled"
+else
+        echo " last.fm radio support .........disabled"
+fi
 
 if test x$enable_curl != xno; then
-	echo " HTTP streaming (libcurl) ......enabled"
+        echo " libcurl support (streaming) ...enabled"
 else
-	echo " HTTP streaming (libcurl) ......disabled"
+        echo " libcurl support (streaming) ...disabled"
 fi
+
+if test x$enable_mms != xno; then
+        echo " libmms support ................enabled"
+else
+        echo " libmms support ................disabled"
+fi
+
+echo ""
+echo " Other features:"
 
 if test x$enable_id3 = xyes; then
 	echo " ID3 tag support ...............enabled"
@@ -1459,28 +1480,10 @@ else
 	echo " ID3 tag support ...............disabled"
 fi
 
-if test x$enable_lame = xyes; then
-	echo " lame support ..................enabled"
-else
-	echo " lame support ..................disabled"
-fi
-
-if test x$enable_lastfm = xyes; then
-	echo " lastfm radio support ..........enabled"
-else
-	echo " lastfm radio support ..........disabled"
-fi
-
 if test x$enable_lsr = xyes; then
         echo " libsamplerate support .........enabled"
 else
 	echo " libsamplerate support .........disabled"
-fi
-
-if test x$enable_mms != xno; then
-	echo " MMS streaming (libmms) ........enabled"
-else
-	echo " MMS streaming (libmms) ........disabled"
 fi
 
 if test x$with_zeroconf != xno; then
