@@ -164,11 +164,17 @@ if test x$enable_un = xyes; then
 fi
 
 
-dnl
+dnl ##
 dnl misc libraries
-dnl
+dnl ##
 
-AC_ARG_WITH(zeroconf,[[  --with-zeroconf=[auto|avahi|bonjour|no]    Enable zeroconf backend (default=auto)]], with_zeroconf="$withval", with_zeroconf="auto")
+dnl ##
+dnl Avahi / Zeroconf
+dnl ##
+AC_ARG_WITH(zeroconf,
+	AS_HELP_STRING([--with-zeroconf=@<:@auto|avahi|bonjour|no@:>@],
+		   [Enable zeroconf backend (default=auto)]),,
+	with_zeroconf="auto")
 
 case $with_zeroconf in
 no|avahi|bonjour)
