@@ -1459,13 +1459,13 @@ else
         echo " last.fm radio support .........disabled"
 fi
 
-if test x$enable_curl != xno; then
+if test x$enable_curl = xyes; then
         echo " libcurl support (streaming) ...enabled"
 else
         echo " libcurl support (streaming) ...disabled"
 fi
 
-if test x$enable_mms != xno; then
+if test x$enable_mms = xyes; then
         echo " libmms support ................enabled"
 else
         echo " libmms support ................disabled"
