@@ -1465,6 +1465,12 @@ else
 	echo " lame support ..................disabled"
 fi
 
+if test x$enable_lastfm = xyes; then
+	echo " lastfm radio support ..........enabled"
+else
+	echo " lastfm radio support ..........disabled"
+fi
+
 if test x$enable_lsr = xyes; then
         echo " libsamplerate support .........enabled"
 else
