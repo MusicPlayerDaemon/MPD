@@ -173,7 +173,7 @@ dnl Avahi / Zeroconf
 dnl ##
 AC_ARG_WITH(zeroconf,
 	AS_HELP_STRING([--with-zeroconf=@<:@auto|avahi|bonjour|no@:>@],
-		   [Enable zeroconf backend (default=auto)]),,
+		   [enable zeroconf backend (default=auto)]),,
 	with_zeroconf="auto")
 
 case $with_zeroconf in
@@ -371,15 +371,15 @@ dnl faad
 dnl ##
 AC_ARG_WITH(faad,
 	AS_HELP_STRING([--with-faad=PFX],
-		[Prefix where faad2 is installed (optional)]),,
+		[prefix where faad2 is installed (optional)]),,
 	faad_prefix="")
 AC_ARG_WITH(faad-libraries,
 	AS_HELP_STRING([--with-faad-libraries=DIR],
-		[Directory where faad2 library is installed (optional)]),,
+		[directory where faad2 library is installed (optional)]),,
 	faad_libraries="")
 AC_ARG_WITH(faad-includes,
 	AS_HELP_STRING([--with-faad-includes=DIR],
-		[Directory where faad2 header files are installed (optional)]),,
+		[directory where faad2 header files are installed (optional)]),,
 	faad_includes="")
 
 AC_ARG_ENABLE(audiofile,
@@ -1134,7 +1134,7 @@ dnl
 
 AC_ARG_ENABLE(werror,
 	AS_HELP_STRING([--enable-werror],
-		[Treat warnings as errors (default: disabled)]),,
+		[treat warnings as errors (default: disabled)]),,
 	ENABLE_WERROR=no)
 
 if test "x$ENABLE_WERROR" = xyes; then
@@ -1143,7 +1143,7 @@ fi
 
 AC_ARG_ENABLE(debug,
 	AS_HELP_STRING([--enable-debug],
-		[Enable debugging (default: disabled)]),,
+		[enable debugging (default: disabled)]),,
 	ENABLE_DEBUG=no)
 
 #if test "x$ENABLE_DEBUG" = xno; then
@@ -1153,7 +1153,7 @@ AC_ARG_ENABLE(debug,
 
 AC_ARG_ENABLE(gprof,
 	AS_HELP_STRING([--enable-gprof],
-		[Enable profiling via gprof (default: disabled)]),,
+		[enable profiling via gprof (default: disabled)]),,
 	ENABLE_GPROF=no)
 
 if test "x$ENABLE_GPROF" = xyes; then
@@ -1162,7 +1162,7 @@ fi
 
 AC_ARG_ENABLE(test,
 	AS_HELP_STRING([--enable-test],
-		[Build the test programs (default: disabled)]),,
+		[build the test programs (default: disabled)]),,
 	enable_test=no)
 
 AM_CONDITIONAL(ENABLE_TEST, test "x$enable_test" = xyes)

@@ -10,19 +10,19 @@ dnl Get the cflags and libraries
 dnl
 AC_ARG_WITH(libOggFLAC,
 	AS_HELP_STRING([--with-libOggFLAC=PFX],
-		[Prefix where libOggFLAC is installed (optional)]),,
+		[prefix where libOggFLAC is installed (optional)]),,
 	libOggFLAC_prefix="")
 AC_ARG_WITH(libOggFLAC-libraries,
 	AS_HELP_STRING([--with-libOggFLAC-libraries=DIR],
-		[Directory where libOggFLAC library is installed (optional)]),,
+		[directory where libOggFLAC library is installed (optional)]),,
 	libOggFLAC_libraries="")
 AC_ARG_WITH(libOggFLAC-includes,
 	AS_HELP_STRING([--with-libOggFLAC-includes=DIR],
-		[Directory where libOggFLAC header files are installed (optional)]),,
+		[directory where libOggFLAC header files are installed (optional)]),,
 	libOggFLAC_includes="")
 AC_ARG_ENABLE(libOggFLACtest,
 	AS_HELP_STRING([--disable-libOggFLACtest],
-		[Do not try to compile and run a test libOggFLAC program]),,
+		[do not try to compile and run a test libOggFLAC program]),,
 	enable_libOggFLACtest=yes)
 
   if test "x$libOggFLAC_libraries" != "x" ; then
