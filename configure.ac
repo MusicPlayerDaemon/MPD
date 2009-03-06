@@ -379,6 +379,27 @@ AC_ARG_ENABLE(flac,
 		[disable flac support (default: enable)]),,
 	enable_flac=yes)
 
+dnl ###
+dnl MAD mp3 decoder
+dnl ###
+dnl Depreciated option, available for backwards compatibility
+AC_ARG_ENABLE(mp3,,
+		enable_mad=$enableval,
+		enable_mad=yes)
+
+AC_ARG_ENABLE(mad,
+	AS_HELP_STRING([--disable-mad],
+		[disable mad mp3 decoder support (default: enable)]),enable_mad=$enableval,
+	enable_mad=yes)
+
+if test x$enable_mad = xyes; then
+	PKG_CHECK_MODULES([MAD], [mad],
+		AC_DEFINE(HAVE_MAD, 1, [Define to use libmad]),
+		enable_mad=no)
+fi
+
+AM_CONDITIONAL(HAVE_MAD, test x$enable_mad = xyes)
+
 AC_ARG_ENABLE(mod,
 	AS_HELP_STRING([--enable-mod],
 		[enable MOD support (default: disable)]),,
@@ -389,10 +410,7 @@ AC_ARG_ENABLE(modplug,
 		[enable MODPLUG support (default: disable)]),,
 	enable_modplug=no)
 
-AC_ARG_ENABLE(mp3,
-	AS_HELP_STRING([--disable-mp3],
-		[disable mp3 support (default: enable)]),,
-	enable_mp3=yes)
+
 
 AC_ARG_ENABLE(mpc,
 	AS_HELP_STRING([--disable-mpc],
@@ -662,15 +680,6 @@ if test x$enable_id3 = xyes; then
 fi
 
 AM_CONDITIONAL(HAVE_ID3TAG, test x$enable_id3 = xyes)
-
-if test x$enable_mp3 = xyes; then
-	PKG_CHECK_MODULES([MAD], [mad],
-		AC_DEFINE(HAVE_MAD, 1, [Define to use libmad]),
-		enable_mp3=no)
-fi
-
-AM_CONDITIONAL(HAVE_MAD, test x$enable_mp3 = xyes)
-
 
 if test x$enable_mpc = xyes; then
   	if test "x$mpcdec_libraries" != "x" ; then
@@ -1315,10 +1324,10 @@ else
 	echo " MODPLUG support ...............disabled"
 fi
 
-if test x$enable_mp3 = xyes; then
-	echo " mp3 support ...................enabled"
+if test x$enable_mad = xyes; then
+	echo " MAD mp3 decoder support .......enabled"
 else
-	echo " mp3 support ...................disabled"
+	echo " MAD mp3 decoder support .......disabled"
 fi
 
 if test x$enable_mp4 = xyes; then
@@ -1377,7 +1386,7 @@ fi
 
 
 if
-	test x$enable_mp3 = xno &&
+	test x$enable_mad = xno &&
 	test x$enable_oggvorbis = xno &&
 	test x$enable_flac = xno && 
 	test x$enable_oggflac = xno &&
