@@ -1271,16 +1271,22 @@ else
 	echo " Media MVP support .............disabled"
 fi
 
-if test x$enable_shout_ogg = xyes; then
-	echo " Shout ogg streaming support ...enabled"
-else
-	echo " Shout ogg streaming support ...disabled"
-fi
+if test x$enable_shout = xyes; then
+	echo " SHOUTcast support .............enabled"
 
-if test x$enable_shout_mp3 = xyes; then
-	echo " Shout mp3 streaming support ...enabled"
+	if test x$enable_shout_mp3 = xyes; then
+		echo "   with LAME mp3 encoder .......enabled"
+	else
+		echo "   with LAME mp3 encoder .......disabled"
+	fi
+
+	if test x$enable_shout_ogg = xyes; then
+		echo "   with Ogg Vorbis encoder .....enabled"
+	else
+		echo "   with Ogg Vorbis encoder .....disabled"
+	fi
 else
-	echo " Shout mp3 streaming support ...disabled"
+	echo " SHOUTcast support .............disabled"
 fi
 
 echo ""
@@ -1446,12 +1452,6 @@ fi
 
 echo ""
 echo " Streaming support:"
-
-if test x$enable_lame = xyes; then
-        echo " lame support (mp3 output) .....enabled"
-else
-        echo " lame support (mp3 output) .....disabled"
-fi
 
 if test x$enable_lastfm = xyes; then
         echo " last.fm radio support .........enabled"
