@@ -366,9 +366,21 @@ AC_ARG_ENABLE(aac,
 		[disable AAC support (default: enable)]),,
 	enable_aac=yes)
 
-AC_ARG_WITH(faad,[  --with-faad=PFX             Prefix where faad2 is installed], faad_prefix="$withval", faad_prefix="")
-AC_ARG_WITH(faad-libraries,[  --with-faad-libraries=DIR   Directory where faad2 library is installed (optional)], faad_libraries="$withval", faad_libraries="")
-AC_ARG_WITH(faad-includes,[  --with-faad-includes=DIR    Directory where faad2 header files are installed (optional)], faad_includes="$withval", faad_includes="")
+dnl ##
+dnl faad
+dnl ##
+AC_ARG_WITH(faad,
+	AS_HELP_STRING([--with-faad=PFX],
+		[Prefix where faad2 is installed]),,
+	faad_prefix="")
+AC_ARG_WITH(faad-libraries,
+	AS_HELP_STRING([--with-faad-libraries=DIR],
+		[Directory where faad2 library is installed (optional)]),,
+	faad_libraries="")
+AC_ARG_WITH(faad-includes,
+	AS_HELP_STRING([--with-faad-includes=DIR],
+		[Directory where faad2 header files are installed (optional)]),,
+	faad_includes="")
 
 AC_ARG_ENABLE(audiofile,
 	AS_HELP_STRING([--disable-audiofile],
