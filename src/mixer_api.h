@@ -27,6 +27,7 @@
 
 extern const struct mixer_plugin alsa_mixer;
 extern const struct mixer_plugin oss_mixer;
+extern const struct mixer_plugin pulse_mixer;
 
 struct config_param;
 

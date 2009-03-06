@@ -489,6 +489,7 @@ endif
 
 if HAVE_PULSE
 OUTPUT_SRC += src/output/pulse_plugin.c
+MIXER_SRC += src/mixer/pulse_mixer.c
 endif
 
 if HAVE_SHOUT
