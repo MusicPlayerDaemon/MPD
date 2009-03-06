@@ -117,14 +117,12 @@ dnl
 
 AC_ARG_ENABLE(tcp,
 	AS_HELP_STRING([--disable-tcp],
-		[disable support for clients connecting via TCP (default: enable)]),
-	[enable_tcp=$enableval],
+		[disable support for clients connecting via TCP (default: enable)]),,
 	[enable_tcp=yes])
 
 AC_ARG_ENABLE(ipv6,
 	AS_HELP_STRING([--disable-ipv6],
-		[disable IPv6 support (default: enable)]),
-	[enable_ipv6=$enableval],
+		[disable IPv6 support (default: enable)]),,
 	[enable_ipv6=yes])
 
 if test x$enable_tcp = xno; then
@@ -157,8 +155,7 @@ fi
 
 AC_ARG_ENABLE(un,
 	AS_HELP_STRING([--disable-un],
-		[disable support for clients connecting via unix domain sockets (default: enable)]),
-	[enable_un=$enableval],
+		[disable support for clients connecting via unix domain sockets (default: enable)]),,
 	[enable_un=yes])
 
 if test x$enable_un = xyes; then
@@ -223,8 +220,7 @@ AM_CONDITIONAL(HAVE_BONJOUR, test x$with_zeroconf = xbonjour)
 
 AC_ARG_ENABLE(sqlite,
 	AS_HELP_STRING([--enable-sqlite],
-		[enable support for the SQLite database (default: disable)]),
-	[enable_sqlite=$enableval],
+		[enable support for the SQLite database (default: disable)]),,
 	[enable_sqlite=no])
 
 if test x$enable_sqlite = xyes; then
@@ -242,8 +238,7 @@ dnl
 
 AC_ARG_ENABLE(curl,
 	AS_HELP_STRING([--disable-curl],
-		[enable support obtaining song data via HTTP (default: enable)]),
-	[enable_curl=$enableval],
+		[enable support obtaining song data via HTTP (default: enable)]),,
 	[enable_curl=yes])
 
 if test x$enable_curl = xyes; then
@@ -287,8 +282,7 @@ dnl
 dnl bzip2
 AC_ARG_ENABLE(bzip2,
 	AS_HELP_STRING([--enable-bzip2],
-		[enable bzip2 archive support (default: disabled)]),
-	enable_bz2=$enableval,
+		[enable bzip2 archive support (default: disabled)]),,
 	enable_bz2=no)
 
 if test x$enable_bz2 = xyes; then
@@ -305,8 +299,7 @@ fi
 dnl zip
 AC_ARG_ENABLE(zip,
 	AS_HELP_STRING([--enable-zip],
-		[enable zip archive support (default: disabled)]),
-	enable_zip=$enableval,
+		[enable zip archive support (default: disabled)]),,
 	enable_zip=no)
 
 if test x$enable_zip = xyes; then
@@ -323,8 +316,7 @@ fi
 dnl iso9660
 AC_ARG_ENABLE(iso9660,
 	AS_HELP_STRING([--enable-iso9660],
-		[enable iso9660 archive support (default: disabled)]),
-	enable_iso=$enableval,
+		[enable iso9660 archive support (default: disabled)]),,
 	enable_iso=no)
 
 if test x$enable_iso = xyes; then
@@ -355,8 +347,7 @@ dnl
 
 AC_ARG_ENABLE(id3,
 	AS_HELP_STRING([--disable-id3],
-		[disable id3 support (default: enable)]),
-	enable_id3=$enableval,
+		[disable id3 support (default: enable)]),,
 	enable_id3=yes)
 
 
@@ -366,8 +357,7 @@ dnl
 
 AC_ARG_ENABLE(aac,
 	AS_HELP_STRING([--disable-aac],
-		[disable AAC support (default: enable)]),
-	enable_aac=$enableval,
+		[disable AAC support (default: enable)]),,
 	enable_aac=yes)
 
 AC_ARG_WITH(faad,[  --with-faad=PFX             Prefix where faad2 is installed], faad_prefix="$withval", faad_prefix="")
@@ -376,56 +366,47 @@ AC_ARG_WITH(faad-includes,[  --with-faad-includes=DIR    Directory where faad2 h
 
 AC_ARG_ENABLE(audiofile,
 	AS_HELP_STRING([--disable-audiofile],
-		[disable audiofile support, disables wave support (default: enable)]),
-	enable_audiofile=$enableval,
+		[disable audiofile support, disables wave support (default: enable)]),,
 	enable_audiofile=yes)
 
 AC_ARG_ENABLE(ffmpeg,
 	AS_HELP_STRING([--disable-ffmpeg],
-		[enable FFMPEG support (default: enable)]),
-	enable_ffmpeg=$enableval,
+		[enable FFMPEG support (default: enable)]),,
 	enable_ffmpeg=yes)
 
 AC_ARG_ENABLE(flac,
 	AS_HELP_STRING([--disable-flac],
-		[disable flac support (default: enable)]),
-	enable_flac=$enableval,
+		[disable flac support (default: enable)]),,
 	enable_flac=yes)
 
 AC_ARG_ENABLE(mod,
 	AS_HELP_STRING([--enable-mod],
-		[enable MOD support (default: disable)]),
-	enable_mod=$enableval,
+		[enable MOD support (default: disable)]),,
 	enable_mod=no)
 
 AC_ARG_ENABLE(modplug,
 	AS_HELP_STRING([--enable-modplug],
-		[enable MODPLUG support (default: disable)]),
-	enable_modplug=$enableval,
+		[enable MODPLUG support (default: disable)]),,
 	enable_modplug=no)
 
 AC_ARG_ENABLE(mp3,
 	AS_HELP_STRING([--disable-mp3],
-		[disable mp3 support (default: enable)]),
-	enable_mp3=$enableval,
+		[disable mp3 support (default: enable)]),,
 	enable_mp3=yes)
 
 AC_ARG_ENABLE(mpc,
 	AS_HELP_STRING([--disable-mpc],
-		[disable musepack (MPC) support (default: enable)]),
-	enable_mpc=$enableval,
+		[disable musepack (MPC) support (default: enable)]),,
 	enable_mpc=yes)
 
 AC_ARG_ENABLE(oggflac,
 	AS_HELP_STRING([--disable-oggflac],
-		[disable OggFLAC support (default: enable)]),
-	enable_oggflac=$enableval,
+		[disable OggFLAC support (default: enable)]),,
 	enable_oggflac=yes)
 
 AC_ARG_ENABLE(oggvorbis,
 	AS_HELP_STRING([--disable-oggvorbis],
-		[disable Ogg Vorbis support (default: enable)]),
-	enable_oggvorbis=$enableval,
+		[disable Ogg Vorbis support (default: enable)]),,
 	enable_oggvorbis=yes)
 
 AC_ARG_WITH(tremor,[[  --with-tremor[=PFX]         Use Tremor(vorbisidec) integer Ogg-Vorbis decoder (with optional prefix)]], use_tremor=yes; test x$withval != xyes && tremor_prefix="$withval",)
@@ -449,8 +430,7 @@ AC_ARG_ENABLE(wildmidi,
 
 AC_ARG_ENABLE(wavpack,
 	AS_HELP_STRING([--disable-wavpack],
-		[disable WavPack support (default: enable)]),
-	enable_wavpack=$enableval,
+		[disable WavPack support (default: enable)]),,
 	enable_wavpack=yes)
 
 
@@ -460,8 +440,7 @@ dnl
 
 AC_ARG_ENABLE(lsr,
 	AS_HELP_STRING([--disable-lsr],
-		[disable libsamplerate support (default: enable)]),
-	enable_lsr=$enableval,
+		[disable libsamplerate support (default: enable)]),,
 	enable_lsr=yes)
 
 if test x$enable_lsr = xyes; then
@@ -484,8 +463,7 @@ dnl
 
 AC_ARG_ENABLE(lame,
 	AS_HELP_STRING([--disable-lame],
-		[disable lame support (default: enable)]),
-	enable_lame=$enableval,
+		[disable lame support (default: enable)]),,
 	enable_lame=yes)
 
 
@@ -495,20 +473,17 @@ dnl
 
 AC_ARG_ENABLE(alsa,
 	AS_HELP_STRING([--disable-alsa],
-		[disable ALSA support (default: enable)]),
-	enable_alsa=$enableval,
+		[disable ALSA support (default: enable)]),,
 	enable_alsa=yes)
 
 AC_ARG_ENABLE(ao,
 	AS_HELP_STRING([--enable-ao],
-		[enable support for libao (default: disable)]),
-	enable_ao=$enableval,
+		[enable support for libao (default: disable)]),,
 	enable_ao=no)
 
 AC_ARG_ENABLE(fifo,
 	AS_HELP_STRING([--disable-fifo],
-		[disable support for writing audio to a FIFO (default: enable)]),
-	enable_fifo=$enableval,
+		[disable support for writing audio to a FIFO (default: enable)]),,
 	enable_fifo=yes)
 
 AC_ARG_ENABLE(pipe-output,
@@ -523,38 +498,32 @@ AM_CONDITIONAL(ENABLE_PIPE_OUTPUT, test x$enable_pipe_output = xyes)
 
 AC_ARG_ENABLE(jack,
 	AS_HELP_STRING([--disable-jack],
-		[disable jack support (default: enable)]),
-	enable_jack=$enableval,
+		[disable jack support (default: enable)]),,
 	enable_jack=yes)
 
 AC_ARG_ENABLE(mvp,
 	AS_HELP_STRING([--enable-mvp],
-		[enable support for Hauppauge Media MVP (default: disable)]),
-	enable_mvp=$enableval,
+		[enable support for Hauppauge Media MVP (default: disable)]),,
 	enable_mvp=no)
 
 AC_ARG_ENABLE(oss,
 	AS_HELP_STRING([--disable-oss],
-		[disable OSS support (default: enable)]),
-	enable_oss=$enableval,
+		[disable OSS support (default: enable)]),,
 	enable_oss=yes)
 
 AC_ARG_ENABLE(pulse,
 	AS_HELP_STRING([--disable-pulse],
-		[disable support for the PulseAudio sound server (default: enable)]),
-	enable_pulse=$enableval,
+		[disable support for the PulseAudio sound server (default: enable)]),,
 	enable_pulse=yes)
 
 AC_ARG_ENABLE(shout-ogg,
 	AS_HELP_STRING([--disable-shout-ogg],
-		[disable support for ogg streaming through shout (default: enable)]),
-	[enable_shout_ogg=$enableval],
+		[disable support for ogg streaming through shout (default: enable)]),,
 	[enable_shout_ogg=yes])
 
 AC_ARG_ENABLE(shout-mp3,
 	AS_HELP_STRING([--disable-shout-mp3],
-		[disable support for mp3 streaming through shout (default: enable)]),
-	[enable_shout_mp3=$enableval],
+		[disable support for mp3 streaming through shout (default: enable)]),,
 	[enable_shout_mp3=yes])
 
 enable_osx=no
@@ -1125,8 +1094,7 @@ dnl
 
 AC_ARG_ENABLE(werror,
 	AS_HELP_STRING([--enable-werror],
-		[Treat warnings as errors (default: disabled)]),
-	ENABLE_WERROR=$enableval,
+		[Treat warnings as errors (default: disabled)]),,
 	ENABLE_WERROR=no)
 
 if test "x$ENABLE_WERROR" = xyes; then
@@ -1135,8 +1103,7 @@ fi
 
 AC_ARG_ENABLE(debug,
 	AS_HELP_STRING([--enable-debug],
-		[Enable debugging (default: disabled)]),
-	ENABLE_DEBUG=$enableval,
+		[Enable debugging (default: disabled)]),,
 	ENABLE_DEBUG=no)
 
 #if test "x$ENABLE_DEBUG" = xno; then
@@ -1146,8 +1113,7 @@ AC_ARG_ENABLE(debug,
 
 AC_ARG_ENABLE(gprof,
 	AS_HELP_STRING([--enable-gprof],
-		[Enable profiling via gprof (default: disabled)]),
-	ENABLE_GPROF=$enableval,
+		[Enable profiling via gprof (default: disabled)]),,
 	ENABLE_GPROF=no)
 
 if test "x$ENABLE_GPROF" = xyes; then
