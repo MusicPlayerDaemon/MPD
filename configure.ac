@@ -108,7 +108,7 @@ dnl mandatory libraries
 dnl
 
 PKG_CHECK_MODULES([GLIB], [glib-2.0 >= 2.4 gthread-2.0],,
-		  [AC_MSG_ERROR([glib-2.4 is required])])
+		[AC_MSG_ERROR([glib-2.4 is required])])
 
 
 dnl
@@ -173,7 +173,7 @@ dnl Avahi / Zeroconf
 dnl ##
 AC_ARG_WITH(zeroconf,
 	AS_HELP_STRING([--with-zeroconf=@<:@auto|avahi|bonjour|no@:>@],
-		   [enable zeroconf backend (default=auto)]),,
+		[enable zeroconf backend (default=auto)]),,
 	with_zeroconf="auto")
 
 case $with_zeroconf in
@@ -187,9 +187,9 @@ esac
 if test x$with_zeroconf != xno; then
 	if test x$with_zeroconf = xavahi || test x$with_zeroconf = xauto; then
 		PKG_CHECK_MODULES([AVAHI], [avahi-client avahi-glib],
-		                  [found_avahi=1;AC_DEFINE([HAVE_AVAHI], 1, [Define to enable Avahi Zeroconf support])]
-		                  MPD_LIBS="$MPD_LIBS $AVAHI_LIBS" MPD_CFLAGS="$MPD_CFLAGS $AVAHI_CFLAGS",
-		                  [found_avahi=0])
+			 [found_avahi=1;AC_DEFINE([HAVE_AVAHI], 1, [Define to enable Avahi Zeroconf support])]
+			 MPD_LIBS="$MPD_LIBS $AVAHI_LIBS" MPD_CFLAGS="$MPD_CFLAGS $AVAHI_CFLAGS",
+			 [found_avahi=0])
 	fi
 
 	if test x$found_avahi = x1; then
@@ -200,10 +200,10 @@ if test x$with_zeroconf != xno; then
 
 	if test x$with_zeroconf = xbonjour || test x$with_zeroconf = xauto; then
 		AC_CHECK_HEADER(dns_sd.h,
-		                [found_bonjour=1;AC_DEFINE([HAVE_BONJOUR], 1, [Define to enable Bonjour Zeroconf support])],
-		                [found_bonjour=0])
+			[found_bonjour=1;AC_DEFINE([HAVE_BONJOUR], 1, [Define to enable Bonjour Zeroconf support])],
+			[found_bonjour=0])
 		AC_CHECK_LIB(dns_sd, DNSServiceRegister,
-		             MPD_LIBS="$MPD_LIBS -ldns_sd")
+			MPD_LIBS="$MPD_LIBS -ldns_sd")
 	fi
 
 	if test x$found_bonjour = x1; then
@@ -275,7 +275,8 @@ AC_ARG_ENABLE(mms,
 
 if test x$enable_mms = xyes; then
 	PKG_CHECK_MODULES(MMS, [libmms],
-		AC_DEFINE(ENABLE_MMS, 1, [Define when libmms is used for the MMS protocol]),
+		AC_DEFINE(ENABLE_MMS, 1,
+			[Define when libmms is used for the MMS protocol]),
 		AC_MSG_ERROR([libmms not found]))
 fi
 AM_CONDITIONAL(ENABLE_MMS, test x$enable_mms = xyes)
@@ -337,9 +338,12 @@ if test x$enable_iso = xyes; then
 fi
 
 dnl archive API
-if test x$enable_bz2 = xyes || test x$enable_zip = xyes || test x$enable_iso = xyes; then
-	enable_archive=yes
-	AC_DEFINE(ENABLE_ARCHIVE, 1, [The archive API is available])
+if
+	test x$enable_bz2 = xyes ||
+	test x$enable_zip = xyes ||
+	test x$enable_iso = xyes; then
+		enable_archive=yes
+		AC_DEFINE(ENABLE_ARCHIVE, 1, [The archive API is available])
 else
 	enable_archive=no
 fi
@@ -383,13 +387,14 @@ dnl MAD mp3 decoder
 dnl ###
 
 dnl Depreciated option, available for backwards compatibility
+dnl Also, will not work without the enableval
 AC_ARG_ENABLE(mp3,,
-		enable_mad=$enableval,
-		enable_mad=yes)
+	enable_mad=$enableval,
+	enable_mad=yes)
 
 AC_ARG_ENABLE(mad,
 	AS_HELP_STRING([--disable-mad],
-		[disable mad mp3 decoder support (default: enable)]),enable_mad=$enableval,
+		[disable mad mp3 decoder support (default: enable)]),,
 	enable_mad=yes)
 
 if test x$enable_mad = xyes; then
@@ -475,13 +480,18 @@ AC_ARG_ENABLE(lsr,
 
 if test x$enable_lsr = xyes; then
 	PKG_CHECK_MODULES([SAMPLERATE], [samplerate >= 0.0.15],
-	                  [enable_lsr=yes;AC_DEFINE([HAVE_LIBSAMPLERATE], 1, [Define to enable libsamplerate])] MPD_LIBS="$MPD_LIBS $SAMPLERATE_LIBS" MPD_CFLAGS="$MPD_CFLAGS $SAMPLERATE_CFLAGS",
-	                  [enable_lsr=no;AC_MSG_WARN([libsamplerate not found -- disabling])])
+		[enable_lsr=yes;AC_DEFINE([HAVE_LIBSAMPLERATE], 1,
+		[Define to enable libsamplerate])]
+			MPD_LIBS="$MPD_LIBS $SAMPLERATE_LIBS"
+			MPD_CFLAGS="$MPD_CFLAGS $SAMPLERATE_CFLAGS",
+		[enable_lsr=no;AC_MSG_WARN([libsamplerate not found -- disabling])])
 fi
 
 if test x$enable_lsr = xyes; then
-	PKG_CHECK_MODULES([SAMPLERATE_013], [samplerate >= 0.1.3],,
-		[AC_DEFINE([HAVE_LIBSAMPLERATE_NOINT], 1, [libsamplerate doesn't provide src_int_to_float_array() (<0.1.3)])])
+	PKG_CHECK_MODULES([SAMPLERATE_013],
+		[samplerate >= 0.1.3],,
+		[AC_DEFINE([HAVE_LIBSAMPLERATE_NOINT], 1,
+		[libsamplerate doesn't provide src_int_to_float_array() (<0.1.3)])])
 fi
 
 AM_CONDITIONAL(HAVE_LIBSAMPLERATE, test x$enable_lsr = xyes)
@@ -522,7 +532,8 @@ AC_ARG_ENABLE(pipe-output,
 	enable_pipe_output=no)
 
 if test x$enable_pipe_output = xyes; then
-	AC_DEFINE([ENABLE_PIPE_OUTPUT], 1, [Define to enable support for writing audio to a pipe])
+	AC_DEFINE([ENABLE_PIPE_OUTPUT], 1,
+		[Define to enable support for writing audio to a pipe])
 fi
 AM_CONDITIONAL(ENABLE_PIPE_OUTPUT, test x$enable_pipe_output = xyes)
 
@@ -559,7 +570,7 @@ AC_ARG_ENABLE(shout-mp3,
 enable_osx=no
 case "$host_os" in
 	darwin*)
-                AC_DEFINE(HAVE_OSX, 1, [Define for compiling OS X support])
+		AC_DEFINE(HAVE_OSX, 1, [Define for compiling OS X support])
 		MPD_LIBS="$MPD_LIBS -framework AudioUnit -framework CoreServices"
 		enable_osx=yes ;;
 esac
@@ -569,7 +580,7 @@ AM_CONDITIONAL(HAVE_OSX, test x$enable_osx = xyes)
 if test x$enable_shout_ogg = xyes || test x$enable_shout_mp3 = xyes; then
 	PKG_CHECK_MODULES([SHOUT], [shout],,
 		[enable_shout_ogg=no; enable_shout_mp3=no;
-		AC_MSG_WARN([disabling shout streaming support because libshout is not available])])
+			AC_MSG_WARN([disabling shout streaming support because libshout is not available])])
 fi
 
 if test x$enable_shout_ogg = xyes; then
@@ -588,8 +599,10 @@ if test x$enable_shout_ogg = xyes; then
 fi
 
 if test x$enable_lame = xyes; then
-	AM_PATH_LAME([MPD_LIBS="$MPD_LIBS $LAME_LIBS" MPD_CFLAGS="$MPD_CFLAGS $LAME_CFLAGS"],
-		[enable_lame=no; AC_MSG_WARN(You need lame -- disabling lame support)])
+	AM_PATH_LAME([MPD_LIBS="$MPD_LIBS $LAME_LIBS"
+		MPD_CFLAGS="$MPD_CFLAGS $LAME_CFLAGS"],
+		[enable_lame=no;
+			AC_MSG_WARN(You need lame -- disabling lame support)])
 fi
 
 if test x$enable_shout_mp3 = xyes; then
@@ -611,11 +624,13 @@ AM_CONDITIONAL(HAVE_SHOUT, test x$enable_shout = xyes)
 AM_CONDITIONAL(ENABLE_ENCODER, test x$enable_shout = xyes)
 AM_CONDITIONAL(ENABLE_VORBIS_ENCODER, test x$enable_shout_ogg = xyes)
 if test x$enable_shout_ogg = xyes; then
-	AC_DEFINE(ENABLE_VORBIS_ENCODER, 1, [Define to enable the vorbis encoder plugin])
+	AC_DEFINE(ENABLE_VORBIS_ENCODER, 1,
+		[Define to enable the vorbis encoder plugin])
 fi
 AM_CONDITIONAL(ENABLE_LAME_ENCODER, test x$enable_shout_mp3 = xyes)
 if test x$enable_shout_mp3 = xyes; then
-	AC_DEFINE(ENABLE_LAME_ENCODER, 1, [Define to enable the lame encoder plugin])
+	AC_DEFINE(ENABLE_LAME_ENCODER, 1,
+		[Define to enable the lame encoder plugin])
 fi
 
 if test x$enable_ao = xyes; then
@@ -627,23 +642,30 @@ fi
 AM_CONDITIONAL(HAVE_AO, test x$enable_ao = xyes)
 
 if test x$enable_oss = xyes; then
-        AC_CHECK_HEADER(sys/soundcard.h,[enable_oss=yes;AC_DEFINE(HAVE_OSS,1,[Define to enable OSS])],[AC_MSG_WARN(Soundcard headers not found -- disabling OSS support);enable_oss=no])
+	AC_CHECK_HEADER(sys/soundcard.h,
+		[enable_oss=yes;AC_DEFINE(HAVE_OSS,1,[Define to enable OSS])],
+		[AC_MSG_WARN(Soundcard headers not found -- disabling OSS support);
+			enable_oss=no])
 fi
 
 AM_CONDITIONAL(HAVE_OSS, test x$enable_oss = xyes)
 
 if test x$enable_pulse = xyes; then
 	PKG_CHECK_MODULES([PULSE], [libpulse-simple],
-	                  [enable_pulse=yes;AC_DEFINE([HAVE_PULSE], 1, [Define to enable PulseAudio support])] MPD_LIBS="$MPD_LIBS $PULSE_LIBS" MPD_CFLAGS="$MPD_CFLAGS $PULSE_CFLAGS",
-	                  [enable_pulse=no;AC_MSG_WARN([PulseAudio not found -- disabling])])
+		[enable_pulse=yes;AC_DEFINE([HAVE_PULSE], 1, 
+		[Define to enable PulseAudio support])]
+			MPD_LIBS="$MPD_LIBS $PULSE_LIBS"
+			MPD_CFLAGS="$MPD_CFLAGS $PULSE_CFLAGS",
+		[enable_pulse=no;AC_MSG_WARN([PulseAudio not found -- disabling])])
 fi
 
 AM_CONDITIONAL(HAVE_PULSE, test x$enable_pulse = xyes)
 
 if test x$enable_fifo = xyes; then
 	AC_CHECK_FUNC([mkfifo],
-	              [enable_fifo=yes;AC_DEFINE([HAVE_FIFO], 1, [Define to enable support for writing audio to a FIFO])],
-	              [enable_fifo=no;AC_MSG_WARN([mkfifo not found -- disabling support for writing audio to a FIFO])])
+		[enable_fifo=yes;AC_DEFINE([HAVE_FIFO], 1,
+			[Define to enable support for writing audio to a FIFO])],
+		[enable_fifo=no;AC_MSG_WARN([mkfifo not found -- disabling support for writing audio to a FIFO])])
 fi
 
 AM_CONDITIONAL(HAVE_FIFO, test x$enable_fifo = xyes)
@@ -663,9 +685,14 @@ fi
 AM_CONDITIONAL(HAVE_ALSA, test x$enable_alsa = xyes)
 
 if test x$enable_jack = xyes; then
-	PKG_CHECK_MODULES([JACK], [jack >= 0.4],
-	                  [enable_jack=yes;AC_DEFINE([HAVE_JACK], 1, [Define to enable JACK support])] MPD_LIBS="$MPD_LIBS $JACK_LIBS" MPD_CFLAGS="$MPD_CFLAGS $JACK_CFLAGS",
-	                  [enable_jack=no;AC_MSG_WARN([JACK not found -- disabling])])
+	PKG_CHECK_MODULES([JACK],
+		[jack >= 0.4],
+		[enable_jack=yes;
+			AC_DEFINE([HAVE_JACK], 1,
+				[Define to enable JACK support])]
+		MPD_LIBS="$MPD_LIBS $JACK_LIBS"
+		MPD_CFLAGS="$MPD_CFLAGS $JACK_CFLAGS",
+	        [enable_jack=no;AC_MSG_WARN([JACK not found -- disabling])])
 fi
 
 if test x$enable_jack = xyes; then
@@ -694,19 +721,19 @@ fi
 AM_CONDITIONAL(HAVE_ID3TAG, test x$enable_id3 = xyes)
 
 if test x$enable_mpc = xyes; then
-  	if test "x$mpcdec_libraries" != "x" ; then
-  		MPCDEC_LIBS="-L$mpcdec_libraries"
-  	elif test "x$mpcdec_prefix" != "x" ; then
+	if test "x$mpcdec_libraries" != "x" ; then
+		MPCDEC_LIBS="-L$mpcdec_libraries"
+	elif test "x$mpcdec_prefix" != "x" ; then
 		MPCDEC_LIBS="-L$mpcdec_prefix/lib"
-  	fi
+	fi
 
- 	MPCDEC_LIBS="$MPCDEC_LIBS -lmpcdec"
+	MPCDEC_LIBS="$MPCDEC_LIBS -lmpcdec"
 
-  	if test "x$mpcdec_includes" != "x" ; then
-  		MPCDEC_CFLAGS="-I$mpcdec_includes"
-  	elif test "x$mpcdec_prefix" != "x" ; then
-    		MPCDEC_CFLAGS="-I$mpcdec_prefix/include"
-  	fi
+	if test "x$mpcdec_includes" != "x" ; then
+		MPCDEC_CFLAGS="-I$mpcdec_includes"
+	elif test "x$mpcdec_prefix" != "x" ; then
+		MPCDEC_CFLAGS="-I$mpcdec_prefix/include"
+	fi
 
 	oldcflags=$CFLAGS
 	oldlibs=$LIBS
@@ -716,10 +743,14 @@ if test x$enable_mpc = xyes; then
 	CPPFLAGS=$CFLAGS
 	AC_CHECK_HEADER(mpcdec/mpcdec.h,,enable_mpc=no)
 	if test x$enable_mpc = xyes; then
-		AC_CHECK_LIB(mpcdec,main,[MPD_LIBS="$MPD_LIBS $MPCDEC_LIBS";MPD_CFLAGS="$MPD_CFLAGS $MPCDEC_CFLAGS";],enable_mpc=no)
+		AC_CHECK_LIB(mpcdec,main,
+			[MPD_LIBS="$MPD_LIBS $MPCDEC_LIBS";
+			MPD_CFLAGS="$MPD_CFLAGS $MPCDEC_CFLAGS";],
+			enable_mpc=no)
 	fi
 	if test x$enable_mpc = xyes; then
-		AC_DEFINE(HAVE_MPCDEC,1,[Define to use libmpcdec for MPC decoding])
+		AC_DEFINE(HAVE_MPCDEC,1,
+			[Define to use libmpcdec for MPC decoding])
 	else
 		AC_MSG_WARN([mpcdec lib needed for MPC support -- disabling MPC support])
 	fi
@@ -732,8 +763,13 @@ AM_CONDITIONAL(HAVE_MPCDEC, test x$enable_mpc = xyes)
 
 if test x$enable_wavpack = xyes; then
 	PKG_CHECK_MODULES([WAVPACK], [wavpack],
-	                  [enable_wavpack=yes;AC_DEFINE([HAVE_WAVPACK], 1, [Define to enable WavPack support])] MPD_LIBS="$MPD_LIBS $WAVPACK_LIBS" MPD_CFLAGS="$MPD_CFLAGS $WAVPACK_CFLAGS",
-	                  [enable_wavpack=no;AC_MSG_WARN([WavPack not found -- disabling])])
+		[enable_wavpack=yes;
+			AC_DEFINE([HAVE_WAVPACK], 1,
+				[Define to enable WavPack support])]
+		MPD_LIBS="$MPD_LIBS $WAVPACK_LIBS"
+		MPD_CFLAGS="$MPD_CFLAGS $WAVPACK_CFLAGS",
+		[enable_wavpack=no;
+			AC_MSG_WARN([WavPack not found -- disabling])])
 fi
 
 AM_CONDITIONAL(HAVE_WAVPACK, test x$enable_wavpack = xyes)
@@ -760,7 +796,8 @@ if test x$use_tremor = xyes; then
 	ac_save_LIBS="$LIBS"
 	CFLAGS="$CFLAGS $TREMOR_CFLAGS"
 	LIBS="$LIBS $TREMOR_LIBS"
-	AC_CHECK_LIB(vorbisidec,ov_read,enable_oggvorbis=yes,enable_oggvorbis=no;AC_MSG_WARN([vorbisidec lib needed for ogg support with tremor -- disabling ogg support]))
+	AC_CHECK_LIB(vorbisidec,ov_read,enable_oggvorbis=yes,enable_oggvorbis=no;
+		AC_MSG_WARN([vorbisidec lib needed for ogg support with tremor -- disabling ogg support]))
 	if test x$enable_oggvorbis = xyes; then
 		AC_DEFINE(HAVE_OGGVORBIS, 1, [Define for Ogg Vorbis support]),
 	else
@@ -776,7 +813,8 @@ fi
 AM_CONDITIONAL(HAVE_OGGVORBIS, test x$enable_oggvorbis = xyes)
 
 if test x$use_tremor = xyes; then
-	AC_DEFINE(HAVE_TREMOR,1,[Define to use tremor (libvorbisidec) for ogg support])
+	AC_DEFINE(HAVE_TREMOR,1,
+		[Define to use tremor (libvorbisidec) for ogg support])
 	if test x$enable_oggflac = xyes; then
 		AC_MSG_WARN([disabling OggFLAC support because it is incompatible with tremor])
 		enable_oggflac=no
@@ -794,8 +832,8 @@ if test x$enable_flac = xyes; then
 	LIBS="$LIBS $FLAC_LIBS"
 	if test x$enable_flac = xyes && test x$enable_oggflac = xyes; then
 		AC_CHECK_DECL(FLAC_API_SUPPORTS_OGG_FLAC,
-		              [enable_oggflac=flac], [],
-			      [#include <FLAC/export.h>])
+			[enable_oggflac=flac], [],
+			[#include <FLAC/export.h>])
 	fi
 	CFLAGS="$oldcflags"
 	LIBS="$oldlibs"
@@ -806,7 +844,9 @@ AM_CONDITIONAL(HAVE_FLAC, test x$enable_flac = xyes)
 if test x$enable_oggflac = xyes; then
 	oldmpdcflags="$MPD_CFLAGS"
 	oldmpdlibs="$MPD_LIBS"
-	AM_PATH_LIBOGGFLAC(MPD_LIBS="$MPD_LIBS $LIBOGGFLAC_LIBS" MPD_CFLAGS="$MPD_CFLAGS $LIBOGGFLAC_CFLAGS",enable_oggflac=no)
+	AM_PATH_LIBOGGFLAC(MPD_LIBS="$MPD_LIBS $LIBOGGFLAC_LIBS"
+				MPD_CFLAGS="$MPD_CFLAGS $LIBOGGFLAC_CFLAGS",
+			   enable_oggflac=no)
 fi
 
 if test x$enable_oggflac = xyes; then
@@ -815,8 +855,10 @@ fi
 
 AM_CONDITIONAL(HAVE_OGGFLAC, test x$enable_oggflac = xyes)
 
-AM_CONDITIONAL(HAVE_FLAC_COMMON, test x$enable_flac = xyes || test x$enable_oggflac = xyes)
-AM_CONDITIONAL(HAVE_OGG_COMMON, test x$enable_oggvorbis = xyes || test x$enable_oggflac = xyes || test x$enable_flac = xyes)
+AM_CONDITIONAL(HAVE_FLAC_COMMON,
+	  test x$enable_flac = xyes || test x$enable_oggflac = xyes)
+AM_CONDITIONAL(HAVE_OGG_COMMON,
+	  test x$enable_oggvorbis = xyes || test x$enable_oggflac = xyes || test x$enable_flac = xyes)
 
 if test x$enable_audiofile = xyes; then
 	PKG_CHECK_MODULES(AUDIOFILE, [audiofile >= 0.1.7],
@@ -841,8 +883,8 @@ AM_CONDITIONAL(HAVE_MIKMOD, test x$enable_mod = xyes)
 
 if test x$enable_modplug = xyes; then
 	PKG_CHECK_MODULES(MODPLUG, [libmodplug],
-	    AC_DEFINE(HAVE_MODPLUG, 1, [Define for modplug support]),
-	    enable_modplug=no)
+		AC_DEFINE(HAVE_MODPLUG, 1, [Define for modplug support]),
+		enable_modplug=no)
 fi
 
 AM_CONDITIONAL(HAVE_MODPLUG, test x$enable_modplug = xyes)
@@ -1113,18 +1155,19 @@ fi
 
 echo ""
 
-if test x$enable_ao = xno &&
-   test x$enable_oss = xno &&
-   test x$enable_shout_ogg = xno &&
-   test x$enable_shout_mp3 = xno &&
-   test x$enable_alsa = xno &&
-   test x$enable_osx = xno &&
-   test x$enable_pulse = xno &&
-   test x$enable_jack = xno &&
-   test x$enable_fifo = xno &&
-   test x$enable_pipe_output = xno &&
-   test x$enable_mvp = xno; then
-	AC_MSG_ERROR([No Audio Output types configured!])
+if
+	test x$enable_ao = xno &&
+	test x$enable_oss = xno &&
+	test x$enable_shout_ogg = xno &&
+	test x$enable_shout_mp3 = xno &&
+	test x$enable_alsa = xno &&
+	test x$enable_osx = xno &&
+	test x$enable_pulse = xno &&
+	test x$enable_jack = xno &&
+	test x$enable_fifo = xno &&
+	test x$enable_pipe_output = xno &&
+	test x$enable_mvp = xno; then
+		AC_MSG_ERROR([No Audio Output types configured!])
 fi
 
 echo " File Format Support:"
@@ -1248,7 +1291,7 @@ if
 	test x$enable_wildmidi = xno &&
 	test x$enable_mp4 = xno &&
 	test x$enable_mod = xno; then
-	AC_MSG_ERROR([No input plugins supported!])
+		AC_MSG_ERROR([No input plugins supported!])
 fi
 
 echo ""
