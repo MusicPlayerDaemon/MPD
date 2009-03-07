@@ -78,6 +78,17 @@ struct player {
 	 * is cross fading enabled?
 	 */
 	enum xfade_state xfade;
+
+	/**
+	 * The current audio format for the audio outputs.
+	 */
+	struct audio_format play_audio_format;
+
+	/**
+	 * Coefficient for converting a PCM buffer size into a time
+	 * span.
+	 */
+	double size_to_time;
 };
 
 static void player_command_finished(void)
@@ -138,6 +149,54 @@ player_wait_for_decoder(struct player *player)
 	event_pipe_emit(PIPE_EVENT_PLAYLIST);
 
 	return true;
+}
+
+static bool
+player_check_decoder_startup(struct player *player)
+{
+	assert(player->decoder_starting);
+
+	if (decoder_has_failed()) {
+		/* the decoder failed */
+		assert(dc.next_song == NULL || dc.next_song->url != NULL);
+
+		pc.errored_song = dc.next_song;
+		pc.error = PLAYER_ERROR_FILE;
+
+		return false;
+	} else if (!decoder_is_starting()) {
+		/* the decoder is ready and ok */
+		player->decoder_starting = false;
+
+		if (!audio_output_all_open(&dc.out_audio_format)) {
+			char *uri = song_get_uri(dc.next_song);
+			g_warning("problems opening audio device "
+				  "while playing \"%s\"", uri);
+			g_free(uri);
+
+			assert(dc.next_song == NULL || dc.next_song->url != NULL);
+			pc.errored_song = dc.next_song;
+			pc.error = PLAYER_ERROR_AUDIO;
+			return false;
+		}
+
+		if (player->paused)
+			audio_output_all_close();
+
+		pc.total_time = dc.total_time;
+		pc.audio_format = dc.in_audio_format;
+		player->play_audio_format = dc.out_audio_format;
+		player->size_to_time =
+			audioFormatSizeToTime(&dc.out_audio_format);
+
+		return true;
+	} else {
+		/* the decoder is not yet ready; wait
+		   some more */
+		notify_wait(&pc.notify);
+
+		return true;
+	}
 }
 
 static bool player_seek_decoder(struct player *player)
@@ -311,13 +370,12 @@ static void do_play(void)
 		.queued = false,
 		.song = NULL,
 		.xfade = XFADE_UNKNOWN,
+		.size_to_time = 0.0,
 	};
 	unsigned int crossFadeChunks = 0;
 	/** has cross-fading begun? */
 	bool cross_fading = false;
 	static const char silence[CHUNK_SIZE];
-	struct audio_format play_audio_format;
-	double sizeToTime = 0.0;
 
 	player.buffer = music_buffer_new(pc.buffer_chunks);
 	player.pipe = music_pipe_new();
@@ -359,42 +417,12 @@ static void do_play(void)
 		}
 
 		if (player.decoder_starting) {
-			if (decoder_has_failed()) {
-				/* the decoder failed */
-				assert(dc.next_song == NULL || dc.next_song->url != NULL);
-				pc.errored_song = dc.next_song;
-				pc.error = PLAYER_ERROR_FILE;
+			bool success;
+
+			success = player_check_decoder_startup(&player);
+			if (!success)
 				break;
-			}
-			else if (!decoder_is_starting()) {
-				/* the decoder is ready and ok */
-				player.decoder_starting = false;
-				if (!audio_output_all_open(&dc.out_audio_format)) {
-					char *uri = song_get_uri(dc.next_song);
-					g_warning("problems opening audio device "
-						  "while playing \"%s\"", uri);
-					g_free(uri);
-
-					assert(dc.next_song == NULL || dc.next_song->url != NULL);
-					pc.errored_song = dc.next_song;
-					pc.error = PLAYER_ERROR_AUDIO;
-					break;
-				}
-
-				if (player.paused)
-					audio_output_all_close();
-
-				pc.total_time = dc.total_time;
-				pc.audio_format = dc.in_audio_format;
-				play_audio_format = dc.out_audio_format;
-				sizeToTime = audioFormatSizeToTime(&dc.out_audio_format);
-			}
-			else {
-				/* the decoder is not yet ready; wait
-				   some more */
-				notify_wait(&pc.notify);
-				continue;
-			}
+			continue;
 		}
 
 #ifndef NDEBUG
@@ -425,7 +453,7 @@ static void do_play(void)
 			crossFadeChunks =
 				cross_fade_calc(pc.cross_fade_seconds, dc.total_time,
 						&dc.out_audio_format,
-						&play_audio_format,
+						&player.play_audio_format,
 						music_buffer_size(player.buffer) -
 						pc.buffered_before_play);
 			if (crossFadeChunks > 0) {
@@ -494,7 +522,8 @@ static void do_play(void)
 			/* play the current chunk */
 
 			success = play_chunk(player.song, chunk,
-					     &play_audio_format, sizeToTime);
+					     &player.play_audio_format,
+					     player.size_to_time);
 			music_buffer_return(player.buffer, chunk);
 
 			if (!success)
@@ -522,7 +551,7 @@ static void do_play(void)
 			break;
 		} else {
 			size_t frame_size =
-				audio_format_frame_size(&play_audio_format);
+				audio_format_frame_size(&player.play_audio_format);
 			/* this formula ensures that we don't send
 			   partial frames */
 			unsigned num_frames = CHUNK_SIZE / frame_size;
