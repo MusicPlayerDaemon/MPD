@@ -47,7 +47,7 @@ mixer_new(const struct mixer_plugin *plugin, const struct config_param *param)
 
 	mixer = plugin->init(param);
 
-	assert(mixer->plugin == plugin);
+	assert(mixer == NULL || mixer->plugin == plugin);
 
 	return mixer;
 }
