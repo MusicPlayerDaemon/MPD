@@ -88,6 +88,11 @@ music_pipe_shift(struct music_pipe *mp)
 			assert(mp->size > 0);
 			assert(mp->tail_r != &chunk->next);
 		}
+
+#ifndef NDEBUG
+		/* poison the "next" reference */
+		chunk->next = (void*)0x01010101;
+#endif
 	}
 
 	g_mutex_unlock(mp->mutex);
