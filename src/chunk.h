@@ -65,6 +65,12 @@ music_chunk_init(struct music_chunk *chunk);
 void
 music_chunk_free(struct music_chunk *chunk);
 
+static inline bool
+music_chunk_is_empty(const struct music_chunk *chunk)
+{
+	return chunk->length == 0 && chunk->tag == NULL;
+}
+
 /**
  * Prepares appending to the music chunk.  Returns a buffer where you
  * may write into.  After you are finished, call music_chunk_expand().
