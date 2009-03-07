@@ -7,6 +7,9 @@
 
 #include <string.h>
 
+#undef G_LOG_DOMAIN
+#define G_LOG_DOMAIN "pulse_mixer"
+
 struct pulse_mixer {
 	struct mixer base;
 	char *server;
@@ -69,7 +72,7 @@ subscribe_cb(G_GNUC_UNUSED pa_context *c, pa_subscription_event_type_t t,
 {
 
 	struct pulse_mixer *pm = userdata;
-	g_debug("pulse_mixer: subscribe call back");
+	g_debug("subscribe call back");
 	switch (t & PA_SUBSCRIPTION_EVENT_FACILITY_MASK) {
 	case PA_SUBSCRIPTION_EVENT_SINK_INPUT:
 		if ((t & PA_SUBSCRIPTION_EVENT_TYPE_MASK) ==
@@ -79,7 +82,7 @@ subscribe_cb(G_GNUC_UNUSED pa_context *c, pa_subscription_event_type_t t,
 			pa_operation *o;
 
 			if (!(o = pa_context_get_sink_input_info(pm->context, idx, sink_input_cb, pm))) {
-				g_debug("pulse_mixer: pa_context_get_sink_input_info() failed");
+				g_debug("pa_context_get_sink_input_info() failed");
 				return;
 			}
 
@@ -101,14 +104,14 @@ context_state_cb(pa_context *context, void *userdata)
 
 		if (!(o = pa_context_subscribe(context, (pa_subscription_mask_t)
 					       (PA_SUBSCRIPTION_MASK_SINK_INPUT), NULL, NULL))) {
-			g_debug("pulse_mixer: pa_context_subscribe() failed");
+			g_debug("pa_context_subscribe() failed");
 			return;
 		}
 		pa_operation_unref(o);
 
 
 		if (!(o = pa_context_get_sink_input_info_list(context, sink_input_cb, pm))) {
-			g_debug("pulse_mixer: pa_context_get_sink_input_info_list() failed");
+			g_debug("pa_context_get_sink_input_info_list() failed");
 			return;
 		}
 		pa_operation_unref(o);
@@ -154,18 +157,17 @@ pulse_mixer_init(const struct config_param *param)
 	pm->output_name = param != NULL
 		? config_dup_block_string(param, "name", NULL) : NULL;
 
-
-	g_debug("pulse_mixer: init");
+	g_debug("init");
 
 	if(!(pm->mainloop = pa_threaded_mainloop_new())) {
-		g_debug("pulse_mixer: failed mainloop");
+		g_debug("failed mainloop");
 		g_free(pm);
 		return NULL;
 	}
 
 	if(!(pm->context = pa_context_new(pa_threaded_mainloop_get_api(pm->mainloop),
 					  "Mixer mpd"))) {
-		g_debug("pulse_mixer: failed context");
+		g_debug("failed context");
 		g_free(pm);
 		return NULL;
 	}
@@ -174,14 +176,14 @@ pulse_mixer_init(const struct config_param *param)
 
 	if (pa_context_connect(pm->context, pm->server,
 			       (pa_context_flags_t)0, NULL) < 0) {
-		g_debug("pulse_mixer: context server fail");
+		g_debug("context server fail");
 		g_free(pm);
 		return NULL;
 	}
 
 	pa_threaded_mainloop_lock(pm->mainloop);
 	if (pa_threaded_mainloop_start(pm->mainloop) < 0) {
-		g_debug("pulse_mixer: error start mainloop");
+		g_debug("error start mainloop");
 		g_free(pm);
 		return NULL;
 	}
@@ -189,7 +191,7 @@ pulse_mixer_init(const struct config_param *param)
 	pa_threaded_mainloop_wait(pm->mainloop);
 
 	if (pa_context_get_state(pm->context) != PA_CONTEXT_READY) {
-		g_debug("pulse_mixer: error context not ready");
+		g_debug("error context not ready");
 		g_free(pm);
 		return NULL;
 	}
@@ -230,7 +232,7 @@ pulse_mixer_get_volume(struct mixer *mixer)
 	int ret;
 	pa_operation *o;
 
-	g_debug("pulse_mixer: get_volume %s",
+	g_debug("get_volume %s",
 		pm->online == TRUE ? "online" : "offline");
 	if(pm->online) {
 		if (!(o = pa_context_get_sink_input_info(pm->context, pm->index,
@@ -241,7 +243,7 @@ pulse_mixer_get_volume(struct mixer *mixer)
 		pa_operation_unref(o);
 
 		ret = (int)((100*(pa_cvolume_avg(pm->volume)+1))/PA_VOLUME_NORM);
-		g_debug("pulse_mixer: volume %d", ret);
+		g_debug("volume %d", ret);
 		return ret;
 	}
 
@@ -259,7 +261,7 @@ pulse_mixer_set_volume(struct mixer *mixer, unsigned volume)
 
 		if (!(o = pa_context_set_sink_input_volume(pm->context, pm->index,
 							   pm->volume, NULL, NULL))) {
-			g_debug("pulse_mixer: pa_context_set_sink_input_volume() failed");
+			g_debug("pa_context_set_sink_input_volume() failed");
 			return false;
 		}
 
