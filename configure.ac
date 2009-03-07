@@ -290,16 +290,16 @@ dnl bzip2
 AC_ARG_ENABLE(bzip2,
 	AS_HELP_STRING([--enable-bzip2],
 		[enable bzip2 archive support (default: disabled)]),,
-	enable_bz2=no)
+	enable_bzip2=no)
 
-if test x$enable_bz2 = xyes; then
+if test x$enable_bzip2 = xyes; then
 	AC_CHECK_LIB(bz2, BZ2_bzDecompressInit,
 		[MPD_LIBS="$MPD_LIBS -lbz2"],
-		enable_bz2=no)
+		enable_bzip2=no)
 fi
 
-AM_CONDITIONAL(HAVE_BZ2, test x$enable_bz2 = xyes)
-if test x$enable_bz2 = xyes; then
+AM_CONDITIONAL(HAVE_BZ2, test x$enable_bzip2 = xyes)
+if test x$enable_bzip2 = xyes; then
 	AC_DEFINE(HAVE_BZ2, 1, [Define to have bz2 archive support])
 fi
 
@@ -324,24 +324,24 @@ dnl iso9660
 AC_ARG_ENABLE(iso9660,
 	AS_HELP_STRING([--enable-iso9660],
 		[enable iso9660 archive support (default: disabled)]),,
-	enable_iso=no)
+	enable_iso9660=no)
 
-if test x$enable_iso = xyes; then
+if test x$enable_iso9660 = xyes; then
 	AC_CHECK_LIB(iso9660, iso9660_ifs_readdir,
 		[MPD_LIBS="$MPD_LIBS -liso9660"],
-		enable_iso=no)
+		enable_iso9660=no)
 fi
 
-AM_CONDITIONAL(HAVE_ISO, test x$enable_iso = xyes)
-if test x$enable_iso = xyes; then
+AM_CONDITIONAL(HAVE_ISO, test x$enable_iso9660 = xyes)
+if test x$enable_iso9660 = xyes; then
 	AC_DEFINE(HAVE_ISO, 1, [Define to have iso archive support])
 fi
 
 dnl archive API
 if
-	test x$enable_bz2 = xyes ||
+	test x$enable_bzip2 = xyes ||
 	test x$enable_zip = xyes ||
-	test x$enable_iso = xyes; then
+	test x$enable_iso9660 = xyes; then
 		enable_archive=yes
 		AC_DEFINE(ENABLE_ARCHIVE, 1, [The archive API is available])
 else
@@ -1297,13 +1297,13 @@ fi
 echo ""
 echo " Archive support:"
 
-if test x$enable_bz2 = xyes; then
+if test x$enable_bzip2 = xyes; then
 	echo " BZ2 archives support ..........enabled"
 else
 	echo " BZ2 archives support ..........disabled"
 fi
 
-if test x$enable_iso = xyes; then
+if test x$enable_iso9660 = xyes; then
 	echo " ISO 9660 archives support .....enabled"
 else
 	echo " ISO 9660 archives support .....disabled"
