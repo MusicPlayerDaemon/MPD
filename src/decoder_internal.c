@@ -22,6 +22,7 @@
 #include "pipe.h"
 #include "input_stream.h"
 #include "buffer.h"
+#include "chunk.h"
 
 #include <assert.h>
 
@@ -73,6 +74,10 @@ decoder_flush_chunk(struct decoder *decoder)
 	assert(decoder != NULL);
 	assert(decoder->chunk != NULL);
 
-	music_pipe_push(dc.pipe, decoder->chunk);
+	if (music_chunk_is_empty(decoder->chunk))
+		music_buffer_return(dc.buffer, decoder->chunk);
+	else
+		music_pipe_push(dc.pipe, decoder->chunk);
+
 	decoder->chunk = NULL;
 }
