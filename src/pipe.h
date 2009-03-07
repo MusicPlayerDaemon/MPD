@@ -41,6 +41,13 @@ void
 music_pipe_free(struct music_pipe *mp);
 
 /**
+ * Returns the first #music_chunk from the pipe.  Returns NULL if the
+ * pipe is empty.
+ */
+const struct music_chunk *
+music_pipe_peek(const struct music_pipe *mp);
+
+/**
  * Removes the first chunk from the head, and returns it.
  */
 struct music_chunk *

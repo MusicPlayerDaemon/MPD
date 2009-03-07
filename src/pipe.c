@@ -61,6 +61,12 @@ music_pipe_free(struct music_pipe *mp)
 	g_free(mp);
 }
 
+const struct music_chunk *
+music_pipe_peek(const struct music_pipe *mp)
+{
+	return mp->head;
+}
+
 struct music_chunk *
 music_pipe_shift(struct music_pipe *mp)
 {
