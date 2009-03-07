@@ -178,8 +178,8 @@ audio_output_all_update(void)
 		return false;
 
 	for (i = 0; i < num_audio_outputs; ++i)
-		ret = ret || audio_output_update(&audio_outputs[i],
-						 &input_audio_format);
+		ret = audio_output_update(&audio_outputs[i],
+					  &input_audio_format) || ret;
 
 	return ret;
 }
