@@ -175,48 +175,7 @@ pulse_mixer_init(const struct config_param *param)
 	pm->output_name = param != NULL
 		? config_dup_block_string(param, "name", NULL) : NULL;
 
-	g_debug("init");
-
-	if(!(pm->mainloop = pa_threaded_mainloop_new())) {
-		g_debug("failed mainloop");
-		g_free(pm);
-		return NULL;
-	}
-
-	if(!(pm->context = pa_context_new(pa_threaded_mainloop_get_api(pm->mainloop),
-					  "Mixer mpd"))) {
-		g_debug("failed context");
-		g_free(pm);
-		return NULL;
-	}
-
-	pa_context_set_state_callback(pm->context, context_state_cb, pm);
-
-	if (pa_context_connect(pm->context, pm->server,
-			       (pa_context_flags_t)0, NULL) < 0) {
-		g_debug("context server fail");
-		g_free(pm);
-		return NULL;
-	}
-
-	pa_threaded_mainloop_lock(pm->mainloop);
-	if (pa_threaded_mainloop_start(pm->mainloop) < 0) {
-		g_debug("error start mainloop");
-		g_free(pm);
-		return NULL;
-	}
-
-	pa_threaded_mainloop_wait(pm->mainloop);
-
-	if (pa_context_get_state(pm->context) != PA_CONTEXT_READY) {
-		g_debug("error context not ready");
-		g_free(pm);
-		return NULL;
-	}
-
-	pa_threaded_mainloop_unlock(pm->mainloop);
-	return &pm->base ;
-
+	return &pm->base;
 }
 
 static void
@@ -233,7 +192,43 @@ pulse_mixer_finish(struct mixer *data)
 static bool
 pulse_mixer_open(G_GNUC_UNUSED struct mixer *data)
 {
+	struct pulse_mixer *pm = (struct pulse_mixer *) data;
 	g_debug("pulse mixer open");
+
+	if(!(pm->mainloop = pa_threaded_mainloop_new())) {
+		g_debug("failed mainloop");
+		return false;
+	}
+
+	if(!(pm->context = pa_context_new(pa_threaded_mainloop_get_api(pm->mainloop),
+					  "Mixer mpd"))) {
+		g_debug("failed context");
+		return false;
+	}
+
+	pa_context_set_state_callback(pm->context, context_state_cb, pm);
+
+	if (pa_context_connect(pm->context, pm->server,
+			       (pa_context_flags_t)0, NULL) < 0) {
+		g_debug("context server fail");
+		return false;
+	}
+
+	pa_threaded_mainloop_lock(pm->mainloop);
+	if (pa_threaded_mainloop_start(pm->mainloop) < 0) {
+		g_debug("error start mainloop");
+		return false;
+	}
+
+	pa_threaded_mainloop_wait(pm->mainloop);
+
+	if (pa_context_get_state(pm->context) != PA_CONTEXT_READY) {
+		g_debug("error context not ready");
+		return false;
+	}
+
+	pa_threaded_mainloop_unlock(pm->mainloop);
+
 	return true;
 }
 
