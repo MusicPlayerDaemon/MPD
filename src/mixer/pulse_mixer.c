@@ -1,9 +1,11 @@
-#include "../output_api.h"
-#include "../mixer_api.h"
+#include "mixer_api.h"
+#include "conf.h"
 
 #include <glib.h>
 #include <pulse/volume.h>
 #include <pulse/pulseaudio.h>
+
+#include <string.h>
 
 struct pulse_mixer {
 	struct mixer base;
