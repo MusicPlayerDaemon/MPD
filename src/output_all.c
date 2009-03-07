@@ -163,16 +163,25 @@ audio_output_all_reset_reopen(void)
 	}
 }
 
-static void
+/**
+ * Opens all output devices which are enabled, but closed.
+ *
+ * @return true if there is at least open output device which is open
+ */
+static bool
 audio_output_all_update(void)
 {
 	unsigned int i;
+	bool ret = false;
 
 	if (!audio_format_defined(&input_audio_format))
-		return;
+		return false;
 
 	for (i = 0; i < num_audio_outputs; ++i)
-		audio_output_update(&audio_outputs[i], &input_audio_format);
+		ret = ret || audio_output_update(&audio_outputs[i],
+						 &input_audio_format);
+
+	return ret;
 }
 
 bool

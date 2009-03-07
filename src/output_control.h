@@ -45,8 +45,10 @@ audio_output_open(struct audio_output *ao,
 
 /**
  * Opens or closes the device, depending on the "enabled" flag.
+ *
+ * @return true if the device is open
  */
-void
+bool
 audio_output_update(struct audio_output *ao,
 		    const struct audio_format *audio_format);
 

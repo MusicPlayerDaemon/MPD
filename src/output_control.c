@@ -94,16 +94,18 @@ audio_output_open(struct audio_output *ao,
 	return ao->open;
 }
 
-void
+bool
 audio_output_update(struct audio_output *ao,
 		    const struct audio_format *audio_format)
 {
 	if (ao->enabled) {
 		if (ao->fail_timer == NULL ||
 		    g_timer_elapsed(ao->fail_timer, NULL) > REOPEN_AFTER)
-			audio_output_open(ao, audio_format);
+			return audio_output_open(ao, audio_format);
 	} else if (audio_output_is_open(ao))
 		audio_output_close(ao);
+
+	return false;
 }
 
 void
