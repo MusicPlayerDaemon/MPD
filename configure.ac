@@ -993,18 +993,18 @@ dnl
 AC_ARG_ENABLE(werror,
 	AS_HELP_STRING([--enable-werror],
 		[treat warnings as errors (default: disabled)]),,
-	ENABLE_WERROR=no)
+	enable_werror=no)
 
-if test "x$ENABLE_WERROR" = xyes; then
+if test "x$enable_werror" = xyes; then
 	AM_CFLAGS="$AM_CFLAGS -Werror -pedantic-errors"
 fi
 
 AC_ARG_ENABLE(debug,
 	AS_HELP_STRING([--enable-debug],
 		[enable debugging (default: disabled)]),,
-	ENABLE_DEBUG=no)
+	enable_debug=no)
 
-#if test "x$ENABLE_DEBUG" = xno; then
+#if test "x$enable_debug" = xno; then
 	# don't set NDEBUG for now, until MPD is stable
 	#AM_CFLAGS="$AM_CFLAGS -DNDEBUG"
 #fi
@@ -1012,9 +1012,9 @@ AC_ARG_ENABLE(debug,
 AC_ARG_ENABLE(gprof,
 	AS_HELP_STRING([--enable-gprof],
 		[enable profiling via gprof (default: disabled)]),,
-	ENABLE_GPROF=no)
+	enable_gprof=no)
 
-if test "x$ENABLE_GPROF" = xyes; then
+if test "x$enable_gprof" = xyes; then
 	MPD_CFLAGS="$MPD_CFLAGS -pg"
 fi
 
