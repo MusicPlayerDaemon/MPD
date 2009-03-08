@@ -309,6 +309,11 @@ configure_hw:
 							     &buffer_time, NULL);
 		if (err < 0)
 			goto error;
+	} else {
+		err = snd_pcm_hw_params_get_buffer_time(hwparams, &buffer_time,
+							NULL);
+		if (err < 0)
+			buffer_time = 0;
 	}
 
 	if (period_time_ro == 0 && buffer_time >= 10000) {
