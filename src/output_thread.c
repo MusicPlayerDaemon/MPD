@@ -44,6 +44,8 @@ ao_close(struct audio_output *ao)
 	ao_plugin_close(ao->plugin, ao->data);
 	pcm_convert_deinit(&ao->convert_state);
 	ao->open = false;
+
+	g_debug("closed plugin=%s name=\"%s\"", ao->plugin->name, ao->name);
 }
 
 static void ao_play(struct audio_output *ao)
