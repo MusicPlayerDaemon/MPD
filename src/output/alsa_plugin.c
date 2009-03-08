@@ -32,7 +32,6 @@ static const char default_device[] = "default";
 
 enum {
 	MPD_ALSA_BUFFER_TIME_US = 500000,
-	MPD_ALSA_PERIOD_TIME_US = 125000,
 };
 
 #define MPD_ALSA_RETRY_NR 5
@@ -118,8 +117,7 @@ alsa_configure(struct alsa_data *ad, const struct config_param *param)
 
 	ad->buffer_time = config_get_block_unsigned(param, "buffer_time",
 			MPD_ALSA_BUFFER_TIME_US);
-	ad->period_time = config_get_block_unsigned(param, "period_time",
-			MPD_ALSA_PERIOD_TIME_US);
+	ad->period_time = config_get_block_unsigned(param, "period_time", 0);
 
 #ifdef SND_PCM_NO_AUTO_RESAMPLE
 	if (!config_get_block_bool(param, "auto_resample", true))
@@ -311,6 +309,13 @@ configure_hw:
 							     &buffer_time, NULL);
 		if (err < 0)
 			goto error;
+	}
+
+	if (period_time_ro == 0 && buffer_time >= 10000) {
+		period_time_ro = period_time = buffer_time / 4;
+
+		g_debug("default period_time = buffer_time/4 = %u/4 = %u",
+			buffer_time, period_time);
 	}
 
 	if (period_time_ro > 0) {
