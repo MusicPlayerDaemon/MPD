@@ -52,6 +52,8 @@
 #include <stdlib.h>
 #include <errno.h>
 
+#include "decoder_plugin.h"
+
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "update"
 
@@ -213,7 +215,8 @@ directory_exists(const struct directory *directory)
 		/* invalid path: cannot exist */
 		return false;
 
-	test = directory->device == DEVICE_INARCHIVE
+	test = directory->device == DEVICE_INARCHIVE ||
+		directory->device == DEVICE_CONTAINER
 		? G_FILE_TEST_IS_REGULAR
 		: G_FILE_TEST_IS_DIR;
 
@@ -423,32 +426,105 @@ static void
 update_regular_file(struct directory *directory,
 		    const char *name, const struct stat *st)
 {
+	bool no_container = true;
 	const char *suffix = uri_get_suffix(name);
+	const struct decoder_plugin* plugin;
 #ifdef ENABLE_ARCHIVE
 	const struct archive_plugin *archive;
 #endif
 
 	if (suffix == NULL)
 		return;
+	else
+		plugin = decoder_plugin_from_suffix(suffix, false);
 
-	if (decoder_plugin_from_suffix(suffix, false) != NULL) {
-		struct song *song = songvec_find(&directory->songs, name);
+	if (plugin != NULL) {
+		if (plugin->container_scan != NULL)
+		{
+			unsigned int tnum = 0;
+			char* vtrack = NULL;
+			struct song *song = songvec_find(&directory->songs, name);
+			const char* pathname = map_directory_child_fs(directory, name);
+			struct directory* contdir = dirvec_find(&directory->children, name);
 
-		if (song == NULL) {
-			song = song_file_load(name, directory);
-			if (song == NULL)
-				return;
-
-			songvec_add(&directory->songs, song);
-			modified = true;
-			g_message("added %s/%s",
-				  directory_get_path(directory), name);
-		} else if (st->st_mtime != song->mtime) {
-			g_message("updating %s/%s",
-				  directory_get_path(directory), name);
-			if (!song_file_update(song))
+			// is there already a song for this file?
+			if (song != NULL)
+			{
 				delete_song(directory, song);
-			modified = true;
+				song = NULL;
+			}
+
+			// directory exists already
+			if (contdir != NULL)
+			{
+				no_container = false;
+
+				// modification time not eq. file mod. time
+				if (contdir->mtime != st->st_mtime)
+				{
+					g_message("removing directory: %s", pathname);
+					delete_directory(contdir);
+					contdir = NULL;
+				}
+			}
+
+			// contdir doesn't yet exist
+			if (contdir == NULL)
+			{
+				// reset flag if there are no vtracks
+				no_container = true;
+
+				contdir = make_subdir(directory, name);
+				contdir->mtime = st->st_mtime;
+				contdir->device = DEVICE_CONTAINER;
+
+				while ((vtrack = plugin->container_scan(pathname, ++tnum)) != NULL)
+				{
+					song = songvec_find(&contdir->songs, vtrack);
+
+					if (song == NULL)
+					{
+						song = song_file_new(vtrack, contdir);
+						if (song == NULL)
+							return;
+
+						// shouldn't be necessary but it's there..
+						song->mtime = st->st_mtime;
+
+						song->tag = plugin->tag_dup(
+								map_directory_child_fs(contdir, vtrack));
+
+						songvec_add(&contdir->songs, song);
+						song = NULL;
+
+						modified = true;
+					}
+					no_container = false;
+					g_free(vtrack);
+				}
+			}
+		}
+
+		if (no_container == true)
+		{
+			struct song *song = songvec_find(&directory->songs, name);
+
+			if (song == NULL) {
+				song = song_file_load(name, directory);
+				if (song == NULL)
+					return;
+
+				songvec_add(&directory->songs, song);
+				modified = true;
+				g_message("added %s/%s",
+					  directory_get_path(directory), name);
+			} else if (st->st_mtime != song->mtime) {
+				g_message("updating %s/%s",
+					  directory_get_path(directory), name);
+				if (!song_file_update(song))
+					delete_song(directory, song);
+				modified = true;
+			}
 		}
 #ifdef ENABLE_ARCHIVE
 	} else if ((archive = archive_plugin_from_suffix(suffix))) {

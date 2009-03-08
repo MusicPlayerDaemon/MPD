@@ -74,6 +74,18 @@ struct decoder_plugin {
 	 */
 	struct tag *(*tag_dup)(const char *file);
 
+	/**
+	 * @brief Return a "virtual" filename for subtracks in
+	 * container formats like flac
+	 * @param const char* pathname full pathname for the file on fs
+	 * @param const unsigned int tnum track number
+	 *
+	 * @return NULL if there are no multiple files
+	 * a filename for every single track according to tnum (param 2)
+	 * do not include full pathname here, just the "virtual" file
+	 */
+	char* (*container_scan)(const char* pathname, const unsigned int tnum);
+
 	/* last element in these arrays must always be a NULL: */
 	const char *const*suffixes;
 	const char *const*mime_types;
@@ -134,6 +146,17 @@ decoder_plugin_tag_dup(const struct decoder_plugin *plugin,
 		       const char *path_fs)
 {
 	return plugin->tag_dup(path_fs);
+}
+
+/**
+ * return "virtual" tracks in a container
+ */
+static inline char *
+decoder_plugin_container_scan(	const struct decoder_plugin *plugin,
+				const char* pathname,
+				const unsigned int tnum)
+{
+	return plugin->container_scan(pathname, tnum);
 }
 
 #endif

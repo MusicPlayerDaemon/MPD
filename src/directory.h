@@ -28,6 +28,7 @@
 #define DIRECTORY_DIR		"directory: "
 
 #define DEVICE_INARCHIVE	(unsigned)(-1)
+#define DEVICE_CONTAINER	(unsigned)(-2)
 
 struct directory {
 	struct dirvec children;
