@@ -23,6 +23,9 @@
 #include <assert.h>
 #include <unistd.h>
 
+#include <sys/stat.h>
+#include <sys/types.h>
+
 /* this code was based on flac123, from flac-tools */
 
 static flac_read_status
@@ -279,10 +282,74 @@ flac_tag_load(const char *file)
 	return tag;
 }
 
+#if defined(FLAC_API_VERSION_CURRENT) && FLAC_API_VERSION_CURRENT > 7
+
+static struct tag *
+flac_cue_tag_load(const char *file)
+{
+	struct tag* tag = NULL;
+	char* char_tnum = NULL;
+	char* slash = NULL;
+	unsigned int tnum = 0;
+	unsigned int sample_rate = 0;
+	FLAC__uint64 track_time = 0;
+	FLAC__StreamMetadata* si = FLAC__metadata_object_new(FLAC__METADATA_TYPE_STREAMINFO);
+	FLAC__StreamMetadata* cs = FLAC__metadata_object_new(FLAC__METADATA_TYPE_CUESHEET);
+
+	tnum = flac_vtrack_tnum(file);
+
+	slash = strrchr(file, '/');
+	*slash = '\0';
+
+	tag = flac_tag_load(file);
+
+	char_tnum = g_strdup_printf("%u", tnum);
+	if (char_tnum != NULL)
+	{
+		tag_add_item(	tag,
+				TAG_ITEM_TRACK,
+				char_tnum);
+		g_free(char_tnum);
+	}
+
+	if (FLAC__metadata_get_streaminfo(file, si))
+	{
+		sample_rate = si->data.stream_info.sample_rate;
+	}
+
+	if (FLAC__metadata_get_cuesheet(file, &cs))
+	{
+		if (cs->data.cue_sheet.tracks != NULL
+				&& (tnum <= cs->data.cue_sheet.num_tracks - 1))
+		{
+			track_time = cs->data.cue_sheet.tracks[tnum].offset - 1
+				- cs->data.cue_sheet.tracks[tnum - 1].offset;
+		}
+
+		FLAC__metadata_object_delete(cs);
+	}
+
+	if (sample_rate != 0)
+	{
+		tag->time = (unsigned int)(track_time/sample_rate);
+	}
+
+	return tag;
+}
+
+#endif /* FLAC_API_VERSION_CURRENT >= 7 */
+
 static struct tag *
 flac_tag_dup(const char *file)
 {
-	return flac_tag_load(file);
+#if defined(FLAC_API_VERSION_CURRENT) && FLAC_API_VERSION_CURRENT > 7
+	struct stat st;
+
+	if (stat(file, &st) < 0)
+		return flac_cue_tag_load(file);
+	else
+#endif /* FLAC_API_VERSION_CURRENT >= 7 */
+		return flac_tag_load(file);
 }
 
 static void
@@ -305,7 +372,6 @@ flac_decode_internal(struct decoder * decoder,
                 g_debug("Failed to set metadata respond\n");
         }
 #endif
-
 
 	if (is_ogg) {
 		if (!flac_ogg_init(flac_dec, flac_read_cb,
@@ -396,6 +462,332 @@ flac_decode(struct decoder * decoder, struct input_stream *input_stream)
 {
 	flac_decode_internal(decoder, input_stream, false);
 }
+
+#if defined(FLAC_API_VERSION_CURRENT) && FLAC_API_VERSION_CURRENT > 7
+
+/**
+ * @brief Decode a flac file with embedded cue sheets
+ * @param const char* fname filename on fs
+ */
+static void
+flac_container_decode(struct decoder* decoder,
+		     const char* fname,
+		     bool is_ogg)
+{
+	unsigned int tnum = 0;
+	FLAC__uint64 t_start = 0;
+	FLAC__uint64 t_end = 0;
+	FLAC__uint64 track_time = 0;
+	FLAC__StreamMetadata* cs = NULL;
+
+	flac_decoder *flac_dec;
+	struct flac_data data;
+	const char *err = NULL;
+
+	char* pathname = g_strdup(fname);
+	char* slash = strrchr(pathname, '/');
+	*slash = '\0';
+
+	tnum = flac_vtrack_tnum(fname);
+
+	cs = FLAC__metadata_object_new(FLAC__METADATA_TYPE_CUESHEET);
+
+	FLAC__metadata_get_cuesheet(pathname, &cs);
+
+	if (cs != NULL)
+	{
+		if (cs->data.cue_sheet.tracks != NULL
+				&& (tnum <= cs->data.cue_sheet.num_tracks - 1))
+		{
+			t_start = cs->data.cue_sheet.tracks[tnum - 1].offset;
+			t_end = cs->data.cue_sheet.tracks[tnum].offset - 1;
+			track_time = cs->data.cue_sheet.tracks[tnum].offset - 1
+				- cs->data.cue_sheet.tracks[tnum - 1].offset;
+		}
+
+		FLAC__metadata_object_delete(cs);
+	}
+	else
+	{
+		g_free(pathname);
+		return;
+	}
+
+	if (!(flac_dec = flac_new()))
+	{
+		g_free(pathname);
+		return;
+	}
+
+	flac_data_init(&data, decoder, NULL);
+
+#if defined(FLAC_API_VERSION_CURRENT) && FLAC_API_VERSION_CURRENT > 7
+        if(!FLAC__stream_decoder_set_metadata_respond(flac_dec, FLAC__METADATA_TYPE_VORBIS_COMMENT))
+        {
+                g_debug("Failed to set metadata respond\n");
+        }
+#endif
+
+
+	if (is_ogg)
+	{
+		if (FLAC__stream_decoder_init_ogg_file(	flac_dec,
+							pathname,
+							flac_write_cb,
+							flacMetadata,
+							flac_error_cb,
+							(void*) &data	)
+			!= FLAC__STREAM_DECODER_INIT_STATUS_OK		)
+		{
+			err = "doing Ogg init()";
+			goto fail;
+		}
+	}
+	else
+	{
+		if (FLAC__stream_decoder_init_file(	flac_dec,
+							pathname,
+							flac_write_cb,
+							flacMetadata,
+							flac_error_cb,
+							(void*) &data	)
+			!= FLAC__STREAM_DECODER_INIT_STATUS_OK		)
+		{
+			err = "doing init()";
+			goto fail;
+		}
+	}
+
+	if (!flac_process_metadata(flac_dec))
+	{
+		err = "problem reading metadata";
+		goto fail;
+	}
+
+	if (!audio_format_valid(&data.audio_format))
+	{
+		g_warning("Invalid audio format: %u:%u:%u\n",
+			  data.audio_format.sample_rate,
+			  data.audio_format.bits,
+			  data.audio_format.channels);
+		goto fail;
+	}
+
+	// set track time (order is important: after stream init)
+	data.total_time = (float)(track_time / data.audio_format.sample_rate);
+	data.position = 0;
+
+	decoder_initialized(decoder, &data.audio_format,
+			    true, data.total_time);
+
+	// seek to song start (order is important: after decoder init)
+	flac_seek_absolute(flac_dec, (FLAC__uint64)t_start);
+
+	while (true)
+	{
+		if (!flac_process_single(flac_dec))
+			break;
+
+		// we only need to break at the end of track if we are in "cue mode"
+		if (data.time >= data.total_time)
+		{
+			flacPrintErroredState(flac_get_state(flac_dec));
+			flac_finish(flac_dec);
+		}
+
+		if (decoder_get_command(decoder) == DECODE_COMMAND_SEEK)
+		{
+			FLAC__uint64 seek_sample = t_start +
+				(decoder_seek_where(decoder) * data.audio_format.sample_rate);
+
+			//if (seek_sample >= t_start && seek_sample <= t_end && data.total_time > 30)
+			if (seek_sample >= t_start && seek_sample <= t_end)
+			{
+				if (flac_seek_absolute(flac_dec, (FLAC__uint64)seek_sample))
+				{
+					data.time = (float)(seek_sample - t_start) /
+					    data.audio_format.sample_rate;
+					data.position = 0;
+
+					decoder_command_finished(decoder);
+				}
+				else
+					decoder_seek_error(decoder);
+					//decoder_command_finished(decoder);
+			}
+		}
+		else if (flac_get_state(flac_dec) == flac_decoder_eof)
+			break;
+	}
+
+	if (decoder_get_command(decoder) != DECODE_COMMAND_STOP)
+	{
+		flacPrintErroredState(flac_get_state(flac_dec));
+		flac_finish(flac_dec);
+	}
+
+fail:
+	if (pathname)
+		g_free(pathname);
+
+	if (data.replay_gain_info)
+		replay_gain_info_free(data.replay_gain_info);
+
+	if (flac_dec)
+		flac_delete(flac_dec);
+
+	if (err)
+		g_warning("%s\n", err);
+}
+
+/**
+ * @brief Open a flac file for decoding
+ * @param const char* fname filename on fs
+ */
+static void
+flac_filedecode_internal(struct decoder* decoder,
+		     const char* fname,
+		     bool is_ogg)
+{
+	flac_decoder *flac_dec;
+	struct flac_data data;
+	const char *err = NULL;
+	unsigned int flac_err_state = 0;
+
+	if (!(flac_dec = flac_new()))
+		return;
+
+	flac_data_init(&data, decoder, NULL);
+
+#if defined(FLAC_API_VERSION_CURRENT) && FLAC_API_VERSION_CURRENT > 7
+        if(!FLAC__stream_decoder_set_metadata_respond(flac_dec, FLAC__METADATA_TYPE_VORBIS_COMMENT))
+        {
+                g_debug("Failed to set metadata respond\n");
+        }
+#endif
+
+
+	if (is_ogg)
+	{
+		if (	(flac_err_state = FLAC__stream_decoder_init_ogg_file(	flac_dec,
+										fname,
+										flac_write_cb,
+										flacMetadata,
+										flac_error_cb,
+										(void*) &data	))
+			== FLAC__STREAM_DECODER_INIT_STATUS_ERROR_OPENING_FILE)
+		{
+			flac_container_decode(decoder, fname, is_ogg);
+		}
+		else if (flac_err_state != FLAC__STREAM_DECODER_INIT_STATUS_OK)
+		{
+			err = "doing Ogg init()";
+			goto fail;
+		}
+	}
+	else
+	{
+		if (	(flac_err_state = FLAC__stream_decoder_init_file(	flac_dec,
+										fname,
+										flac_write_cb,
+										flacMetadata,
+										flac_error_cb,
+										(void*) &data	))
+			== FLAC__STREAM_DECODER_INIT_STATUS_ERROR_OPENING_FILE)
+		{
+			flac_container_decode(decoder, fname, is_ogg);
+		}
+		else if (flac_err_state != FLAC__STREAM_DECODER_INIT_STATUS_OK)
+		{
+			err = "doing init()";
+			goto fail;
+		}
+	}
+
+	if (!flac_process_metadata(flac_dec))
+	{
+		err = "problem reading metadata";
+		goto fail;
+	}
+
+	if (!audio_format_valid(&data.audio_format))
+	{
+		g_warning("Invalid audio format: %u:%u:%u\n",
+			  data.audio_format.sample_rate,
+			  data.audio_format.bits,
+			  data.audio_format.channels);
+		goto fail;
+	}
+
+	decoder_initialized(decoder, &data.audio_format,
+			    true, data.total_time);
+
+	while (true)
+	{
+		if (!flac_process_single(flac_dec))
+			break;
+
+		if (decoder_get_command(decoder) == DECODE_COMMAND_SEEK)
+		{
+			FLAC__uint64 seek_sample = decoder_seek_where(decoder) *
+			    data.audio_format.sample_rate + 0.5;
+			if (flac_seek_absolute(flac_dec, seek_sample))
+			{
+				data.time = ((float)seek_sample) /
+				    data.audio_format.sample_rate;
+				data.position = 0;
+				decoder_command_finished(decoder);
+			}
+			else
+				decoder_seek_error(decoder);
+
+		}
+		else if (flac_get_state(flac_dec) == flac_decoder_eof)
+			break;
+	}
+
+	if (decoder_get_command(decoder) != DECODE_COMMAND_STOP)
+	{
+		flacPrintErroredState(flac_get_state(flac_dec));
+		flac_finish(flac_dec);
+	}
+
+fail:
+	if (data.replay_gain_info)
+		replay_gain_info_free(data.replay_gain_info);
+
+	if (flac_dec)
+		flac_delete(flac_dec);
+
+	if (err)
+		g_warning("%s\n", err);
+}
+
+/**
+ * @brief	wrapper function for
+ * 		flac_filedecode_internal method
+ * 		for decoding without ogg
+ */
+static void
+flac_filedecode(struct decoder *decoder, const char *fname)
+{
+	struct stat st;
+
+	if (stat(fname, &st) < 0) {
+		flac_container_decode(decoder, fname, false);
+	} else 
+		flac_filedecode_internal(decoder, fname, false);
+
+	/*
+	if (directory->device == CONTAINER)
+	{
+		flac_container_decode(decoder, fname, is_ogg);
+		return;
+	}
+	*/
+}
+
+#endif /* FLAC_API_VERSION_CURRENT >= 7 */
 
 #ifndef HAVE_OGGFLAC
 
@@ -493,7 +885,13 @@ static const char *const flac_mime_types[] = {
 const struct decoder_plugin flac_decoder_plugin = {
 	.name = "flac",
 	.stream_decode = flac_decode,
+#if defined(FLAC_API_VERSION_CURRENT) && FLAC_API_VERSION_CURRENT > 7
+	.file_decode = flac_filedecode,
+#endif /* FLAC_API_VERSION_CURRENT >= 7 */
 	.tag_dup = flac_tag_dup,
 	.suffixes = flac_suffixes,
-	.mime_types = flac_mime_types
+	.mime_types = flac_mime_types,
+#if defined(FLAC_API_VERSION_CURRENT) && FLAC_API_VERSION_CURRENT > 7
+	.container_scan = flac_cue_track,
+#endif /* FLAC_API_VERSION_CURRENT >= 7 */
 };

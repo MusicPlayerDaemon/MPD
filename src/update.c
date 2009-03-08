@@ -505,7 +505,7 @@ update_regular_file(struct directory *directory,
 			}
 		}
 
-		if (no_container == true)
+		if (no_container)
 		{
 			struct song *song = songvec_find(&directory->songs, name);
 

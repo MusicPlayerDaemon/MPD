@@ -23,9 +23,6 @@
 
 #include <glib.h>
 
-#include <FLAC/format.h>
-#include <FLAC/metadata.h>
-
 #include <assert.h>
 
 void
@@ -349,3 +346,54 @@ flac_common_write(struct flac_data *data, const FLAC__Frame * frame,
 
 	return FLAC__STREAM_DECODER_WRITE_STATUS_CONTINUE;
 }
+
+#if defined(FLAC_API_VERSION_CURRENT) && FLAC_API_VERSION_CURRENT > 7
+
+char*
+flac_cue_track(	const char* pathname,
+		const unsigned int tnum)
+{
+	FLAC__StreamMetadata* cs = FLAC__metadata_object_new(FLAC__METADATA_TYPE_CUESHEET);
+
+	FLAC__metadata_get_cuesheet(pathname, &cs);
+
+	if (cs == NULL)
+		return NULL;
+
+	if (cs->data.cue_sheet.num_tracks <= 1)
+	{
+		FLAC__metadata_object_delete(cs);
+		return NULL;
+	}
+
+	if (tnum > 0 && tnum < cs->data.cue_sheet.num_tracks)
+	{
+		char* track = g_strdup_printf("track_%03u.flac", tnum);
+
+		FLAC__metadata_object_delete(cs);
+
+		return track;
+	}
+	else
+	{
+		FLAC__metadata_object_delete(cs);
+		return NULL;
+	}
+}
+
+unsigned int
+flac_vtrack_tnum(const char* fname)
+{
+	/* find last occurrence of '_' in fname
+	 * which is hopefully something like track_xxx.flac
+	 * another/better way would be to use tag struct
+	 */
+	char* ptr = strrchr(fname, '_');
+
+	// copy ascii tracknumber to int
+	char vtrack[4];
+	g_strlcpy(vtrack, ++ptr, 4);
+	return (unsigned int)strtol(vtrack, NULL, 10);
+}
+
+#endif /* FLAC_API_VERSION_CURRENT >= 7 */
