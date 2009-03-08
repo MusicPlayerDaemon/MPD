@@ -36,6 +36,19 @@ music_chunk_free(struct music_chunk *chunk)
 		tag_free(chunk->tag);
 }
 
+#ifndef NDEBUG
+bool
+music_chunk_check_format(const struct music_chunk *chunk,
+			 const struct audio_format *audio_format)
+{
+	assert(chunk != NULL);
+	assert(audio_format != NULL);
+
+	return chunk->length == 0 ||
+		audio_format_equals(&chunk->audio_format, audio_format);
+}
+#endif
+
 void *
 music_chunk_write(struct music_chunk *chunk,
 		  const struct audio_format *audio_format,
@@ -44,6 +57,8 @@ music_chunk_write(struct music_chunk *chunk,
 {
 	const size_t frame_size = audio_format_frame_size(audio_format);
 	size_t num_frames;
+
+	assert(music_chunk_check_format(chunk, audio_format));
 
 	if (chunk->length == 0) {
 		/* if the chunk is empty, nobody has set bitRate and
@@ -57,6 +72,10 @@ music_chunk_write(struct music_chunk *chunk,
 	if (num_frames == 0)
 		return NULL;
 
+#ifndef NDEBUG
+	chunk->audio_format = *audio_format;
+#endif
+
 	*max_length_r = num_frames * frame_size;
 	return chunk->data + chunk->length;
 }
@@ -69,6 +88,7 @@ music_chunk_expand(struct music_chunk *chunk,
 
 	assert(chunk != NULL);
 	assert(chunk->length + length <= sizeof(chunk->data));
+	assert(audio_format_equals(&chunk->audio_format, audio_format));
 
 	chunk->length += length;
 

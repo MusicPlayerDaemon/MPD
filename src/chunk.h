@@ -19,6 +19,10 @@
 #ifndef MPD_CHUNK_H
 #define MPD_CHUNK_H
 
+#ifndef NDEBUG
+#include "audio_format.h"
+#endif
+
 #include <stdbool.h>
 #include <stdint.h>
 #include <stddef.h>
@@ -57,6 +61,10 @@ struct music_chunk {
 
 	/** the data (probably PCM) */
 	char data[CHUNK_SIZE];
+
+#ifndef NDEBUG
+	struct audio_format audio_format;
+#endif
 };
 
 void
@@ -70,6 +78,16 @@ music_chunk_is_empty(const struct music_chunk *chunk)
 {
 	return chunk->length == 0 && chunk->tag == NULL;
 }
+
+#ifndef NDEBUG
+/**
+ * Checks if the audio format if the chunk is equal to the specified
+ * audio_format.
+ */
+bool
+music_chunk_check_format(const struct music_chunk *chunk,
+			 const struct audio_format *audio_format);
+#endif
 
 /**
  * Prepares appending to the music chunk.  Returns a buffer where you

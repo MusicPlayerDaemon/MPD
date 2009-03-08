@@ -36,6 +36,10 @@ struct music_pipe {
 
 	/** a mutex which protects #head and #tail_r */
 	GMutex *mutex;
+
+#ifndef NDEBUG
+	struct audio_format audio_format;
+#endif
 };
 
 struct music_pipe *
@@ -47,6 +51,10 @@ music_pipe_new(void)
 	mp->tail_r = &mp->head;
 	mp->size = 0;
 	mp->mutex = g_mutex_new();
+
+#ifndef NDEBUG
+	audio_format_clear(&mp->audio_format);
+#endif
 
 	return mp;
 }
@@ -60,6 +68,19 @@ music_pipe_free(struct music_pipe *mp)
 	g_mutex_free(mp->mutex);
 	g_free(mp);
 }
+
+#ifndef NDEBUG
+bool
+music_pipe_check_format(const struct music_pipe *pipe,
+			const struct audio_format *audio_format)
+{
+	assert(pipe != NULL);
+	assert(audio_format != NULL);
+
+	return !audio_format_defined(&pipe->audio_format) ||
+		audio_format_equals(&pipe->audio_format, audio_format);
+}
+#endif
 
 const struct music_chunk *
 music_pipe_peek(const struct music_pipe *mp)
@@ -94,6 +115,9 @@ music_pipe_shift(struct music_pipe *mp)
 #ifndef NDEBUG
 		/* poison the "next" reference */
 		chunk->next = (void*)0x01010101;
+
+		if (mp->size == 0)
+			audio_format_clear(&mp->audio_format);
 #endif
 	}
 
@@ -117,6 +141,15 @@ music_pipe_push(struct music_pipe *mp, struct music_chunk *chunk)
 	assert(!music_chunk_is_empty(chunk));
 
 	g_mutex_lock(mp->mutex);
+
+	assert(mp->size > 0 || !audio_format_defined(&mp->audio_format));
+	assert(!audio_format_defined(&mp->audio_format) ||
+	       music_chunk_check_format(chunk, &mp->audio_format));
+
+#ifndef NDEBUG
+	if (!audio_format_defined(&mp->audio_format) && chunk->length > 0)
+		mp->audio_format = chunk->audio_format;
+#endif
 
 	chunk->next = NULL;
 	*mp->tail_r = chunk;

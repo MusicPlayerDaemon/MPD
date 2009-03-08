@@ -313,6 +313,8 @@ play_chunk(struct song *song, struct music_chunk *chunk,
 {
 	bool success;
 
+	assert(music_chunk_check_format(chunk, format));
+
 	pc.elapsed_time = chunk->times;
 	pc.bit_rate = chunk->bit_rate;
 

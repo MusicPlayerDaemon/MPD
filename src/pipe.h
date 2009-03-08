@@ -19,6 +19,12 @@
 #ifndef MPD_PIPE_H
 #define MPD_PIPE_H
 
+#ifndef NDEBUG
+#include <stdbool.h>
+
+struct audio_format;
+#endif
+
 struct music_chunk;
 struct music_buffer;
 
@@ -39,6 +45,16 @@ music_pipe_new(void);
  */
 void
 music_pipe_free(struct music_pipe *mp);
+
+#ifndef NDEBUG
+/**
+ * Checks if the audio format if the chunk is equal to the specified
+ * audio_format.
+ */
+bool
+music_pipe_check_format(const struct music_pipe *pipe,
+			const struct audio_format *audio_format);
+#endif
 
 /**
  * Returns the first #music_chunk from the pipe.  Returns NULL if the
