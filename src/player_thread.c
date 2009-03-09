@@ -459,6 +459,24 @@ play_next_chunk(struct player *player)
 	return true;
 }
 
+/**
+ * This is called at the border between two songs: the audio output
+ * has consumed all chunks of the current song, and we should start
+ * sending chunks from the next one.
+ *
+ * @return true on success, false on error (playback will be stopped)
+ */
+static bool
+player_song_border(struct player *player)
+{
+	player->xfade = XFADE_UNKNOWN;
+
+	music_pipe_free(player->pipe);
+	player->pipe = dc.pipe;
+
+	return player_wait_for_decoder(player);
+}
+
 static void do_play(void)
 {
 	struct player player = {
@@ -572,12 +590,7 @@ static void do_play(void)
 		} else if (dc.pipe != NULL && dc.pipe != player.pipe) {
 			/* at the beginning of a new song */
 
-			player.xfade = XFADE_UNKNOWN;
-
-			music_pipe_free(player.pipe);
-			player.pipe = dc.pipe;
-
-			if (!player_wait_for_decoder(&player))
+			if (!player_song_border(&player))
 				break;
 		} else if (decoder_is_idle()) {
 			break;
