@@ -101,6 +101,7 @@ AC_CHECK_LIB(nsl,gethostbyname,MPD_LIBS="$MPD_LIBS -lnsl",)
 AC_CHECK_LIB(m,exp,MPD_LIBS="$MPD_LIBS -lm",)
 
 AC_CHECK_HEADERS(locale.h)
+AC_CHECK_HEADERS(valgrind/memcheck.h)
 
 
 dnl
