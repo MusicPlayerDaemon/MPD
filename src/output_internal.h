@@ -30,10 +30,8 @@ enum audio_output_command {
 	AO_COMMAND_NONE = 0,
 	AO_COMMAND_OPEN,
 	AO_COMMAND_CLOSE,
-	AO_COMMAND_PLAY,
 	AO_COMMAND_PAUSE,
 	AO_COMMAND_CANCEL,
-	AO_COMMAND_SEND_TAG,
 	AO_COMMAND_KILL
 };
 
@@ -110,16 +108,27 @@ struct audio_output {
 	enum audio_output_command command;
 
 	/**
-	 * Command arguments, depending on the command.
+	 * The music pipe which provides music chunks to be played.
 	 */
-	union {
-		struct {
-			const void *data;
-			size_t size;
-		} play;
+	const struct music_pipe *pipe;
 
-		const struct tag *tag;
-	} args;
+	/**
+	 * This mutex protects #chunk and #chunk_finished.
+	 */
+	GMutex *mutex;
+
+	/**
+	 * The #music_chunk which is currently being played.  All
+	 * chunks before this one may be returned to the
+	 * #music_buffer, because they are not going to be used by
+	 * this output anymore.
+	 */
+	const struct music_chunk *chunk;
+
+	/**
+	 * Has the output finished playing #chunk?
+	 */
+	bool chunk_finished;
 };
 
 /**

@@ -57,8 +57,11 @@ static void ao_command_async(struct audio_output *ao,
 
 static bool
 audio_output_open(struct audio_output *ao,
-		  const struct audio_format *audio_format)
+		  const struct audio_format *audio_format,
+		  const struct music_pipe *mp)
 {
+	assert(mp != NULL);
+
 	if (ao->fail_timer != NULL) {
 		g_timer_destroy(ao->fail_timer);
 		ao->fail_timer = NULL;
@@ -66,10 +69,13 @@ audio_output_open(struct audio_output *ao,
 
 	if (ao->open &&
 	    audio_format_equals(audio_format, &ao->in_audio_format)) {
+		assert(ao->pipe == mp);
+
 		return true;
 	}
 
 	ao->in_audio_format = *audio_format;
+	ao->chunk = NULL;
 
 	if (audio_format_defined(&ao->config_audio_format)) {
 		/* copy config_audio_format to out_audio_format only if the
@@ -85,6 +91,8 @@ audio_output_open(struct audio_output *ao,
 			audio_output_close(ao);
 	}
 
+	ao->pipe = mp;
+
 	if (ao->thread == NULL)
 		audio_output_thread_start(ao);
 
@@ -96,12 +104,15 @@ audio_output_open(struct audio_output *ao,
 
 bool
 audio_output_update(struct audio_output *ao,
-		    const struct audio_format *audio_format)
+		    const struct audio_format *audio_format,
+		    const struct music_pipe *mp)
 {
+	assert(mp != NULL);
+
 	if (ao->enabled) {
 		if (ao->fail_timer == NULL ||
 		    g_timer_elapsed(ao->fail_timer, NULL) > REOPEN_AFTER)
-			return audio_output_open(ao, audio_format);
+			return audio_output_open(ao, audio_format, mp);
 	} else if (audio_output_is_open(ao))
 		audio_output_close(ao);
 
@@ -115,16 +126,12 @@ audio_output_signal(struct audio_output *ao)
 }
 
 void
-audio_output_play(struct audio_output *ao, const void *chunk, size_t size)
+audio_output_play(struct audio_output *ao)
 {
-	assert(size > 0);
-
 	if (!ao->open)
 		return;
 
-	ao->args.play.data = chunk;
-	ao->args.play.size = size;
-	ao_command_async(ao, AO_COMMAND_PLAY);
+	notify_signal(&ao->notify);
 }
 
 void audio_output_pause(struct audio_output *ao)
@@ -163,14 +170,5 @@ void audio_output_finish(struct audio_output *ao)
 	ao_plugin_finish(ao->plugin, ao->data);
 
 	notify_deinit(&ao->notify);
-}
-
-void
-audio_output_send_tag(struct audio_output *ao, const struct tag *tag)
-{
-	if (ao->plugin->send_tag == NULL)
-		return;
-
-	ao->args.tag = tag;
-	ao_command_async(ao, AO_COMMAND_SEND_TAG);
+	g_mutex_free(ao->mutex);
 }

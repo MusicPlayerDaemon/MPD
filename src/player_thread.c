@@ -177,10 +177,22 @@ player_check_decoder_startup(struct player *player)
 		return false;
 	} else if (!decoder_is_starting()) {
 		/* the decoder is ready and ok */
+
+		if (audio_format_defined(&player->play_audio_format) &&
+		    audio_output_all_check() > 0) {
+			/* the output devices havn't finished playing
+			   all chunks yet - wait for that */
+
+			/* XXX synchronize in a better way */
+			g_usleep(1000);
+			return true;
+		}
+
 		player->decoder_starting = false;
 
 		if (!player->paused &&
-		    !audio_output_all_open(&dc.out_audio_format)) {
+		    !audio_output_all_open(&dc.out_audio_format,
+					   player_buffer)) {
 			char *uri = song_get_uri(dc.next_song);
 			g_warning("problems opening audio device "
 				  "while playing \"%s\"", uri);
@@ -268,7 +280,7 @@ static void player_process_command(struct player *player)
 			audio_output_all_pause();
 			pc.state = PLAYER_STATE_PAUSE;
 		} else {
-			if (audio_output_all_open(NULL)) {
+			if (audio_output_all_open(NULL, player_buffer)) {
 				pc.state = PLAYER_STATE_PLAY;
 			} else {
 				assert(dc.next_song == NULL || dc.next_song->url != NULL);
@@ -328,8 +340,6 @@ play_chunk(struct song *song, struct music_chunk *chunk,
 	pc.bit_rate = chunk->bit_rate;
 
 	if (chunk->tag != NULL) {
-		audio_output_all_tag(chunk->tag);
-
 		if (!song_is_file(song)) {
 			/* always update the tag of remote streams */
 			struct tag *old_tag = song->tag;
@@ -349,9 +359,6 @@ play_chunk(struct song *song, struct music_chunk *chunk,
 		}
 	}
 
-	if (chunk->length == 0)
-		return true;
-
 	success = pcm_volume(chunk->data, chunk->length,
 			     format, pc.software_volume);
 	if (!success) {
@@ -362,7 +369,7 @@ play_chunk(struct song *song, struct music_chunk *chunk,
 		return false;
 	}
 
-	if (!audio_output_all_play(chunk->data, chunk->length)) {
+	if (!audio_output_all_play(chunk)) {
 		pc.errored_song = dc.current_song;
 		pc.error = PLAYER_ERROR_AUDIO;
 		return false;
@@ -384,6 +391,15 @@ play_next_chunk(struct player *player)
 	struct music_chunk *chunk = NULL;
 	unsigned cross_fade_position;
 	bool success;
+
+	if (audio_output_all_check() >= 64) {
+		/* the output pipe is still large
+		   enough, don't send another chunk */
+
+		/* XXX synchronize in a better way */
+		g_usleep(1000);
+		return true;
+	}
 
 	if (player->xfade == XFADE_ENABLED &&
 	    dc.pipe != NULL && dc.pipe != player->pipe &&
@@ -440,10 +456,11 @@ play_next_chunk(struct player *player)
 
 	success = play_chunk(player->song, chunk, &player->play_audio_format,
 			     player->size_to_time);
-	music_buffer_return(player_buffer, chunk);
 
-	if (!success)
+	if (!success) {
+		music_buffer_return(player_buffer, chunk);
 		return false;
+	}
 
 	/* this formula should prevent that the
 	   decoder gets woken up with each chunk; it
@@ -472,7 +489,10 @@ player_song_border(struct player *player)
 	music_pipe_free(player->pipe);
 	player->pipe = dc.pipe;
 
-	return player_wait_for_decoder(player);
+	if (!player_wait_for_decoder(player))
+		return false;
+
+	return true;
 }
 
 static void do_play(void)
@@ -488,7 +508,6 @@ static void do_play(void)
 		.cross_fade_chunks = 0,
 		.size_to_time = 0.0,
 	};
-	static const char silence[CHUNK_SIZE];
 
 	player.pipe = music_pipe_new();
 
@@ -585,6 +604,13 @@ static void do_play(void)
 
 			if (!play_next_chunk(&player))
 				break;
+		} else if (audio_output_all_check() > 0) {
+			/* not enough data from decoder, but the
+			   output thread is still busy, so it's
+			   okay */
+
+			/* XXX synchronize in a better way */
+			g_usleep(10000);
 		} else if (dc.pipe != NULL && dc.pipe != player.pipe) {
 			/* at the beginning of a new song */
 
@@ -593,15 +619,32 @@ static void do_play(void)
 		} else if (decoder_is_idle()) {
 			break;
 		} else {
+			/* the decoder is too busy and hasn't provided
+			   new PCM data in time: send silence (if the
+			   output pipe is empty) */
+			struct music_chunk *chunk;
 			size_t frame_size =
 				audio_format_frame_size(&player.play_audio_format);
 			/* this formula ensures that we don't send
 			   partial frames */
 			unsigned num_frames = CHUNK_SIZE / frame_size;
 
+			chunk = music_buffer_allocate(player_buffer);
+			if (chunk == NULL)
+				continue;
+
+#ifndef NDEBUG
+			chunk->audio_format = player.play_audio_format;
+#endif
+
+			chunk->length = num_frames * frame_size;
+			memset(chunk->data, 0, chunk->length);
+
 			/*DEBUG("waiting for decoded audio, play silence\n");*/
-			if (!audio_output_all_play(silence, num_frames * frame_size))
+			if (!audio_output_all_play(chunk)) {
+				music_buffer_return(player_buffer, chunk);
 				break;
+			}
 		}
 	}
 
@@ -637,6 +680,9 @@ static gpointer player_task(G_GNUC_UNUSED gpointer arg)
 			break;
 
 		case PLAYER_COMMAND_STOP:
+			audio_output_all_cancel();
+			/* fall through */
+
 		case PLAYER_COMMAND_SEEK:
 		case PLAYER_COMMAND_PAUSE:
 			pc.next_song = NULL;

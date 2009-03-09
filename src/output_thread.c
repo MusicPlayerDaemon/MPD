@@ -19,6 +19,8 @@
 #include "output_thread.h"
 #include "output_api.h"
 #include "output_internal.h"
+#include "chunk.h"
+#include "pipe.h"
 
 #include <glib.h>
 
@@ -41,6 +43,12 @@ ao_close(struct audio_output *ao)
 {
 	assert(ao->open);
 
+	ao->pipe = NULL;
+
+	g_mutex_lock(ao->mutex);
+	ao->chunk = NULL;
+	g_mutex_unlock(ao->mutex);
+
 	ao_plugin_close(ao->plugin, ao->data);
 	pcm_convert_deinit(&ao->convert_state);
 	ao->open = false;
@@ -48,16 +56,25 @@ ao_close(struct audio_output *ao)
 	g_debug("closed plugin=%s name=\"%s\"", ao->plugin->name, ao->name);
 }
 
-static void ao_play(struct audio_output *ao)
+static bool
+ao_play_chunk(struct audio_output *ao, const struct music_chunk *chunk)
 {
-	const char *data = ao->args.play.data;
-	size_t size = ao->args.play.size;
+	const char *data = chunk->data;
+	size_t size = chunk->length;
 	GError *error = NULL;
 
-	assert(size > 0);
+	assert(!music_chunk_is_empty(chunk));
+	assert(music_chunk_check_format(chunk, &ao->in_audio_format));
 	assert(size % audio_format_frame_size(&ao->in_audio_format) == 0);
 
-	if (!audio_format_equals(&ao->in_audio_format, &ao->out_audio_format)) {
+	if (chunk->tag != NULL)
+		ao_plugin_send_tag(ao->plugin, ao->data, chunk->tag);
+
+	if (size == 0)
+		return true;
+
+	if (!audio_format_equals(&ao->in_audio_format,
+				 &ao->out_audio_format)) {
 		data = pcm_convert(&ao->convert_state,
 				   &ao->in_audio_format, data, size,
 				   &ao->out_audio_format, &size);
@@ -67,7 +84,7 @@ static void ao_play(struct audio_output *ao)
 		   investigated further, but for now, do this check as
 		   a workaround: */
 		if (data == NULL)
-			return;
+			return true;
 	}
 
 	while (size > 0) {
@@ -87,7 +104,7 @@ static void ao_play(struct audio_output *ao)
 			/* don't automatically reopen this device for
 			   10 seconds */
 			ao->fail_timer = g_timer_new();
-			break;
+			return false;
 		}
 
 		assert(nbytes <= size);
@@ -97,7 +114,46 @@ static void ao_play(struct audio_output *ao)
 		size -= nbytes;
 	}
 
-	ao_command_finished(ao);
+	return true;
+}
+
+static void ao_play(struct audio_output *ao)
+{
+	bool success;
+	const struct music_chunk *chunk;
+
+	assert(ao->pipe != NULL);
+
+	g_mutex_lock(ao->mutex);
+	chunk = ao->chunk;
+	if (chunk != NULL)
+		/* continue the previous play() call */
+		chunk = chunk->next;
+	else
+		chunk = music_pipe_peek(ao->pipe);
+	ao->chunk_finished = false;
+
+	while (chunk != NULL && ao->command == AO_COMMAND_NONE) {
+		assert(!ao->chunk_finished);
+
+		ao->chunk = chunk;
+		g_mutex_unlock(ao->mutex);
+
+		success = ao_play_chunk(ao, chunk);
+
+		g_mutex_lock(ao->mutex);
+
+		if (!success) {
+			assert(ao->chunk == NULL);
+			break;
+		}
+
+		assert(ao->chunk == chunk);
+		chunk = chunk->next;
+	}
+
+	ao->chunk_finished = true;
+	g_mutex_unlock(ao->mutex);
 }
 
 static void ao_pause(struct audio_output *ao)
@@ -130,6 +186,8 @@ static gpointer audio_output_task(gpointer arg)
 		case AO_COMMAND_OPEN:
 			assert(!ao->open);
 			assert(ao->fail_timer == NULL);
+			assert(ao->pipe != NULL);
+			assert(ao->chunk == NULL);
 
 			error = NULL;
 			ret = ao_plugin_open(ao->plugin, ao->data,
@@ -170,14 +228,14 @@ static gpointer audio_output_task(gpointer arg)
 
 		case AO_COMMAND_CLOSE:
 			assert(ao->open);
+			assert(ao->pipe != NULL);
+
+			ao->pipe = NULL;
+			ao->chunk = NULL;
 
 			ao_plugin_cancel(ao->plugin, ao->data);
 			ao_close(ao);
 			ao_command_finished(ao);
-			break;
-
-		case AO_COMMAND_PLAY:
-			ao_play(ao);
 			break;
 
 		case AO_COMMAND_PAUSE:
@@ -185,19 +243,24 @@ static gpointer audio_output_task(gpointer arg)
 			break;
 
 		case AO_COMMAND_CANCEL:
+			ao->chunk = NULL;
 			ao_plugin_cancel(ao->plugin, ao->data);
 			ao_command_finished(ao);
-			break;
 
-		case AO_COMMAND_SEND_TAG:
-			ao_plugin_send_tag(ao->plugin, ao->data, ao->args.tag);
-			ao_command_finished(ao);
-			break;
+			/* the player thread will now clear our music
+			   pipe - wait for a notify, to give it some
+			   time */
+			notify_wait(&ao->notify);
+			continue;
 
 		case AO_COMMAND_KILL:
+			ao->chunk = NULL;
 			ao_command_finished(ao);
 			return NULL;
 		}
+
+		if (ao->open)
+			ao_play(ao);
 
 		notify_wait(&ao->notify);
 	}

@@ -29,7 +29,8 @@
 #include <stddef.h>
 
 struct audio_format;
-struct tag;
+struct music_buffer;
+struct music_chunk;
 
 /**
  * Global initialization: load audio outputs from the configuration
@@ -68,10 +69,13 @@ audio_output_find(const char *name);
  *
  * @param audio_format the preferred audio format, or NULL to reuse
  * the previous format
+ * @param buffer the #music_buffer where consumed #music_chunk objects
+ * should be returned
  * @return true on success, false on failure
  */
 bool
-audio_output_all_open(const struct audio_format *audio_format);
+audio_output_all_open(const struct audio_format *audio_format,
+		      struct music_buffer *buffer);
 
 /**
  * Closes all audio outputs.
@@ -80,19 +84,24 @@ void
 audio_output_all_close(void);
 
 /**
- * Play a chunk of audio data.
+ * Enqueue a #music_chunk object for playing, i.e. pushes it to a
+ * #music_pipe.
  *
+ * @param chunk the #music_chunk object to be played
  * @return true on success, false if no audio output was able to play
  * (all closed then)
  */
 bool
-audio_output_all_play(const char *data, size_t size);
+audio_output_all_play(struct music_chunk *chunk);
 
 /**
- * Send metadata for the next chunk.
+ * Checks if the output devices have drained their music pipe, and
+ * returns the consumed music chunks to the #music_buffer.
+ *
+ * @return the number of chunks to play left in the #music_pipe
  */
-void
-audio_output_all_tag(const struct tag *tag);
+unsigned
+audio_output_all_check(void);
 
 /**
  * Puts all audio outputs into pause mode.  Most implementations will
