@@ -47,6 +47,7 @@ void
 music_pipe_free(struct music_pipe *mp);
 
 #ifndef NDEBUG
+
 /**
  * Checks if the audio format if the chunk is equal to the specified
  * audio_format.
@@ -54,6 +55,14 @@ music_pipe_free(struct music_pipe *mp);
 bool
 music_pipe_check_format(const struct music_pipe *pipe,
 			const struct audio_format *audio_format);
+
+/**
+ * Checks if the specified chunk is enqueued in the music pipe.
+ */
+bool
+music_pipe_contains(const struct music_pipe *mp,
+		    const struct music_chunk *chunk);
+
 #endif
 
 /**

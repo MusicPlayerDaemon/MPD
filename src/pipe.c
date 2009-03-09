@@ -70,6 +70,7 @@ music_pipe_free(struct music_pipe *mp)
 }
 
 #ifndef NDEBUG
+
 bool
 music_pipe_check_format(const struct music_pipe *pipe,
 			const struct audio_format *audio_format)
@@ -80,6 +81,26 @@ music_pipe_check_format(const struct music_pipe *pipe,
 	return !audio_format_defined(&pipe->audio_format) ||
 		audio_format_equals(&pipe->audio_format, audio_format);
 }
+
+bool
+music_pipe_contains(const struct music_pipe *mp,
+		    const struct music_chunk *chunk)
+{
+	g_mutex_lock(mp->mutex);
+
+	for (const struct music_chunk *i = mp->head;
+	     i != NULL; i = i->next) {
+		if (i == chunk) {
+			g_mutex_unlock(mp->mutex);
+			return true;
+		}
+	}
+
+	g_mutex_unlock(mp->mutex);
+
+	return false;
+}
+
 #endif
 
 const struct music_chunk *
