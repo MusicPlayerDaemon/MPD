@@ -179,7 +179,8 @@ player_check_decoder_startup(struct player *player)
 		/* the decoder is ready and ok */
 		player->decoder_starting = false;
 
-		if (!audio_output_all_open(&dc.out_audio_format)) {
+		if (!player->paused &&
+		    !audio_output_all_open(&dc.out_audio_format)) {
 			char *uri = song_get_uri(dc.next_song);
 			g_warning("problems opening audio device "
 				  "while playing \"%s\"", uri);
@@ -190,9 +191,6 @@ player_check_decoder_startup(struct player *player)
 			pc.error = PLAYER_ERROR_AUDIO;
 			return false;
 		}
-
-		if (player->paused)
-			audio_output_all_close();
 
 		pc.total_time = dc.total_time;
 		pc.audio_format = dc.in_audio_format;
