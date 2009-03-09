@@ -447,13 +447,6 @@ update_regular_file(struct directory *directory,
 			const char* pathname = map_directory_child_fs(directory, name);
 			struct directory* contdir = dirvec_find(&directory->children, name);
 
-			// is there already a song for this file?
-			if (song != NULL)
-			{
-				delete_song(directory, song);
-				song = NULL;
-			}
-
 			// directory exists already
 			if (contdir != NULL)
 			{
@@ -471,6 +464,13 @@ update_regular_file(struct directory *directory,
 			// contdir doesn't yet exist
 			if (contdir == NULL)
 			{
+				// is there already a song for this file?
+				if (song != NULL && (plugin->container_scan(pathname, 1) != NULL))
+				{
+					delete_song(directory, song);
+					song = NULL;
+				}
+
 				// reset flag if there are no vtracks
 				no_container = true;
 
