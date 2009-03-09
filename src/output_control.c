@@ -55,7 +55,7 @@ static void ao_command_async(struct audio_output *ao,
 	notify_signal(&ao->notify);
 }
 
-bool
+static bool
 audio_output_open(struct audio_output *ao,
 		  const struct audio_format *audio_format)
 {
