@@ -79,6 +79,16 @@ struct player {
 	enum xfade_state xfade;
 
 	/**
+	 * has cross-fading begun?
+	 */
+	bool cross_fading;
+
+	/**
+	 * The number of chunks used for crossfading.
+	 */
+	unsigned cross_fade_chunks;
+
+	/**
 	 * The current audio format for the audio outputs.
 	 */
 	struct audio_format play_audio_format;
@@ -364,6 +374,91 @@ play_chunk(struct song *song, struct music_chunk *chunk,
 	return true;
 }
 
+/**
+ * Obtains the next chunk from the music pipe, optionally applies
+ * cross-fading, and sends it to all audio outputs.
+ *
+ * @return true on success, false on error (playback will be stopped)
+ */
+static bool
+play_next_chunk(struct player *player)
+{
+	struct music_chunk *chunk = NULL;
+	unsigned cross_fade_position;
+	bool success;
+
+	if (player->xfade == XFADE_ENABLED &&
+	    dc.pipe != NULL && dc.pipe != player->pipe &&
+	    (cross_fade_position = music_pipe_size(player->pipe))
+	    <= player->cross_fade_chunks) {
+		/* perform cross fade */
+		struct music_chunk *other_chunk =
+			music_pipe_shift(dc.pipe);
+
+		if (!player->cross_fading) {
+			/* beginning of the cross fade
+			   - adjust crossFadeChunks
+			   which might be bigger than
+			   the remaining number of
+			   chunks in the old song */
+			player->cross_fade_chunks = cross_fade_position;
+			player->cross_fading = true;
+		}
+
+		if (other_chunk != NULL) {
+			chunk = music_pipe_shift(player->pipe);
+			assert(chunk != NULL);
+
+			cross_fade_apply(chunk, other_chunk,
+					 &dc.out_audio_format,
+					 cross_fade_position,
+					 player->cross_fade_chunks);
+			music_buffer_return(player_buffer, other_chunk);
+		} else {
+			/* there are not enough
+			   decoded chunks yet */
+			if (decoder_is_idle()) {
+				/* the decoder isn't
+				   running, abort
+				   cross fading */
+				player->xfade = XFADE_DISABLED;
+			} else {
+				/* wait for the
+				   decoder */
+				notify_signal(&dc.notify);
+				notify_wait(&pc.notify);
+
+				return true;
+			}
+		}
+	}
+
+	if (chunk == NULL)
+		chunk = music_pipe_shift(player->pipe);
+
+	assert(chunk != NULL);
+
+	/* play the current chunk */
+
+	success = play_chunk(player->song, chunk, &player->play_audio_format,
+			     player->size_to_time);
+	music_buffer_return(player_buffer, chunk);
+
+	if (!success)
+		return false;
+
+	/* this formula should prevent that the
+	   decoder gets woken up with each chunk; it
+	   is more efficient to make it decode a
+	   larger block at a time */
+	if (!decoder_is_idle() &&
+	    music_pipe_size(dc.pipe) <= (pc.buffered_before_play +
+					 music_buffer_size(player_buffer) * 3) / 4)
+		notify_signal(&dc.notify);
+
+	return true;
+}
+
 static void do_play(void)
 {
 	struct player player = {
@@ -373,11 +468,10 @@ static void do_play(void)
 		.queued = false,
 		.song = NULL,
 		.xfade = XFADE_UNKNOWN,
+		.cross_fading = false,
+		.cross_fade_chunks = 0,
 		.size_to_time = 0.0,
 	};
-	unsigned int crossFadeChunks = 0;
-	/** has cross-fading begun? */
-	bool cross_fading = false;
 	static const char silence[CHUNK_SIZE];
 
 	player.pipe = music_pipe_new();
@@ -452,15 +546,15 @@ static void do_play(void)
 			/* enable cross fading in this song?  if yes,
 			   calculate how many chunks will be required
 			   for it */
-			crossFadeChunks =
+			player.cross_fade_chunks =
 				cross_fade_calc(pc.cross_fade_seconds, dc.total_time,
 						&dc.out_audio_format,
 						&player.play_audio_format,
 						music_buffer_size(player_buffer) -
 						pc.buffered_before_play);
-			if (crossFadeChunks > 0) {
+			if (player.cross_fade_chunks > 0) {
 				player.xfade = XFADE_ENABLED;
-				cross_fading = false;
+				player.cross_fading = false;
 			} else
 				/* cross fading is disabled or the
 				   next song is too short */
@@ -470,75 +564,11 @@ static void do_play(void)
 		if (player.paused)
 			notify_wait(&pc.notify);
 		else if (music_pipe_size(player.pipe) > 0) {
-			struct music_chunk *chunk = NULL;
-			unsigned int fadePosition;
-			bool success;
+			/* at least one music chunk is ready - send it
+			   to the audio output */
 
-			if (player.xfade == XFADE_ENABLED &&
-			    dc.pipe != NULL && dc.pipe != player.pipe &&
-			    (fadePosition = music_pipe_size(player.pipe))
-			    <= crossFadeChunks) {
-				/* perform cross fade */
-				struct music_chunk *other_chunk =
-					music_pipe_shift(dc.pipe);
-
-				if (!cross_fading) {
-					/* beginning of the cross fade
-					   - adjust crossFadeChunks
-					   which might be bigger than
-					   the remaining number of
-					   chunks in the old song */
-					crossFadeChunks = fadePosition;
-					cross_fading = true;
-				}
-
-				if (other_chunk != NULL) {
-					chunk = music_pipe_shift(player.pipe);
-					cross_fade_apply(chunk, other_chunk,
-							 &dc.out_audio_format,
-							 fadePosition,
-							 crossFadeChunks);
-					music_buffer_return(player_buffer, other_chunk);
-				} else {
-					/* there are not enough
-					   decoded chunks yet */
-					if (decoder_is_idle()) {
-						/* the decoder isn't
-						   running, abort
-						   cross fading */
-						player.xfade = XFADE_DISABLED;
-					} else {
-						/* wait for the
-						   decoder */
-						notify_signal(&dc.notify);
-						notify_wait(&pc.notify);
-
-						continue;
-					}
-				}
-			}
-
-			if (chunk == NULL)
-				chunk = music_pipe_shift(player.pipe);
-
-			/* play the current chunk */
-
-			success = play_chunk(player.song, chunk,
-					     &player.play_audio_format,
-					     player.size_to_time);
-			music_buffer_return(player_buffer, chunk);
-
-			if (!success)
+			if (!play_next_chunk(&player))
 				break;
-
-			/* this formula should prevent that the
-			   decoder gets woken up with each chunk; it
-			   is more efficient to make it decode a
-			   larger block at a time */
-			if (!decoder_is_idle() &&
-			    music_pipe_size(dc.pipe) <= (pc.buffered_before_play +
-							 music_buffer_size(player_buffer) * 3) / 4)
-				notify_signal(&dc.notify);
 		} else if (dc.pipe != NULL && dc.pipe != player.pipe) {
 			/* at the beginning of a new song */
 
