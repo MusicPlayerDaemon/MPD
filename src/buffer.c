@@ -18,6 +18,7 @@
 
 #include "buffer.h"
 #include "chunk.h"
+#include "poison.h"
 
 #include <glib.h>
 
@@ -51,10 +52,12 @@ music_buffer_new(unsigned num_chunks)
 	buffer->num_chunks = num_chunks;
 
 	chunk = buffer->available = buffer->chunks;
+	poison_undefined(chunk, sizeof(*chunk));
 
 	for (unsigned i = 1; i < num_chunks; ++i) {
 		chunk->next = &buffer->chunks[i];
 		chunk = chunk->next;
+		poison_undefined(chunk, sizeof(*chunk));
 	}
 
 	chunk->next = NULL;
@@ -116,6 +119,8 @@ music_buffer_return(struct music_buffer *buffer, struct music_chunk *chunk)
 	g_mutex_lock(buffer->mutex);
 
 	music_chunk_free(chunk);
+	poison_undefined(chunk, sizeof(*chunk));
+
 	chunk->next = buffer->available;
 	buffer->available = chunk;
 
