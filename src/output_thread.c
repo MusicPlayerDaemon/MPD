@@ -83,6 +83,10 @@ static void ao_play(struct audio_output *ao)
 
 			ao_plugin_cancel(ao->plugin, ao->data);
 			ao_close(ao);
+
+			/* don't automatically reopen this device for
+			   10 seconds */
+			ao->fail_timer = g_timer_new();
 			break;
 		}
 

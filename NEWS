@@ -21,6 +21,7 @@ ver 0.15 - (200?/??/??)
   - added configuration option to disable decoder plugins
 * audio outputs:
   - added option to disable audio outputs by default
+  - wait 10 seconds before reopening after play failure
   - shout: enlarged buffer size to 32 kB
   - null: allow disabling synchronization
   - mvp: fall back to stereo
