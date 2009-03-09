@@ -107,6 +107,7 @@ mpd_headers = \
 	src/playlist_print.h \
 	src/playlist_save.h \
 	src/playlist_state.h \
+	src/poison.h \
 	src/riff.h \
 	src/aiff.h \
 	src/queue.h \
