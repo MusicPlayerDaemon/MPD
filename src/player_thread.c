@@ -226,6 +226,8 @@ static bool player_seek_decoder(struct player *player)
 	double where;
 	bool ret;
 
+	assert(pc.next_song != NULL);
+
 	if (decoder_current_song() != pc.next_song) {
 		player_dc_stop(player);
 
@@ -234,8 +236,10 @@ static bool player_seek_decoder(struct player *player)
 		dc_start_async(pc.next_song);
 
 		ret = player_wait_for_decoder(player);
-		if (!ret)
+		if (!ret) {
+			player_command_finished();
 			return false;
+		}
 	} else {
 		pc.next_song = NULL;
 		player->queued = false;
