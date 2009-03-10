@@ -518,7 +518,6 @@ static void do_play(void)
 		player_stop_decoder();
 		player_command_finished();
 		music_pipe_free(player.pipe);
-		music_buffer_free(player_buffer);
 		return;
 	}
 
