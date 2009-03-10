@@ -490,12 +490,11 @@ static size_t
 alsa_play(void *data, const void *chunk, size_t size, GError **error)
 {
 	struct alsa_data *ad = data;
-	int ret;
 
 	size /= ad->frame_size;
 
 	while (true) {
-		ret = ad->writei(ad->pcm, chunk, size);
+		snd_pcm_sframes_t ret = ad->writei(ad->pcm, chunk, size);
 		if (ret > 0)
 			return ret * ad->frame_size;
 
