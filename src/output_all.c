@@ -232,6 +232,7 @@ audio_output_all_open(const struct audio_format *audio_format,
 	bool ret = false, enabled = false;
 	unsigned int i;
 
+	assert(audio_format != NULL);
 	assert(buffer != NULL);
 	assert(g_music_buffer == NULL || g_music_buffer == buffer);
 	assert((g_mp == NULL) == (g_music_buffer == NULL));
@@ -240,8 +241,7 @@ audio_output_all_open(const struct audio_format *audio_format,
 
 	/* the audio format must be the same as existing chunks in the
 	   pipe */
-	assert(audio_format == NULL || g_mp == NULL ||
-	       music_pipe_check_format(g_mp, audio_format));
+	assert(g_mp == NULL || music_pipe_check_format(g_mp, audio_format));
 
 	if (g_mp == NULL)
 		g_mp = music_pipe_new();
@@ -249,12 +249,10 @@ audio_output_all_open(const struct audio_format *audio_format,
 		/* if the pipe hasn't been cleared, the the audio
 		   format must not have changed */
 		assert(music_pipe_size(g_mp) == 0 ||
-		       audio_format == NULL ||
 		       audio_format_equals(audio_format,
 					   &input_audio_format));
 
-	if (audio_format != NULL)
-		input_audio_format = *audio_format;
+	input_audio_format = *audio_format;
 
 	audio_output_all_reset_reopen();
 	audio_output_all_update();
