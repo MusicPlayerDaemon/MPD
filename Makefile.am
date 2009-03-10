@@ -150,7 +150,7 @@ src_mpd_SOURCES = \
 	$(INPUT_SRC) \
 	$(DECODER_SRC) \
 	$(ENCODER_SRC) \
-	$(OUTPUT_SRC) \
+	$(OUTPUT_API_SRC) $(OUTPUT_SRC) \
 	$(MIXER_SRC) \
 	src/notify.c \
 	src/audio.c \
@@ -440,7 +440,7 @@ OUTPUT_LIBS = \
 	$(ALSA_LIBS) \
 	$(SHOUT_LIBS)
 
-OUTPUT_SRC = \
+OUTPUT_API_SRC = \
 	src/output_list.c \
 	src/output_all.c \
 	src/output_thread.c \
@@ -448,7 +448,9 @@ OUTPUT_SRC = \
 	src/output_state.c \
 	src/output_print.c \
 	src/output_command.c \
-	src/output_init.c \
+	src/output_init.c
+
+OUTPUT_SRC = \
 	src/output/null_plugin.c
 
 MIXER_SRC = \
