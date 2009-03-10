@@ -87,7 +87,7 @@ ao_play_chunk(struct audio_output *ao, const struct music_chunk *chunk)
 			return true;
 	}
 
-	while (size > 0) {
+	while (size > 0 && ao->command == AO_COMMAND_NONE) {
 		size_t nbytes;
 
 		nbytes = ao_plugin_play(ao->plugin, ao->data, data, size,
