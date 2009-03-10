@@ -28,8 +28,7 @@
 #include <stddef.h>
 
 enum {
-	/* pick 1020 since its devisible for 8,16,24, and 32-bit audio */
-	CHUNK_SIZE = 1020,
+	CHUNK_SIZE = 4096,
 };
 
 struct audio_format;
