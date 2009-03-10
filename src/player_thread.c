@@ -333,17 +333,21 @@ static void player_process_command(struct player *player)
 		if (player->paused) {
 			audio_output_all_pause();
 			pc.state = PLAYER_STATE_PAUSE;
-		} else {
-			if (audio_output_all_open(NULL, player_buffer)) {
-				pc.state = PLAYER_STATE_PLAY;
-			} else {
-				assert(dc.next_song == NULL || dc.next_song->url != NULL);
-				pc.errored_song = dc.next_song;
-				pc.error = PLAYER_ERROR_AUDIO;
+		} else if (!audio_format_defined(&player->play_audio_format)) {
+			/* the decoder hasn't provided an audio format
+			   yet - don't open the audio device yet */
 
-				player->paused = true;
-			}
+			pc.state = PLAYER_STATE_PLAY;
+		} else if (audio_output_all_open(&player->play_audio_format, player_buffer)) {
+			pc.state = PLAYER_STATE_PLAY;
+		} else {
+			assert(dc.next_song == NULL || dc.next_song->url != NULL);
+			pc.errored_song = dc.next_song;
+			pc.error = PLAYER_ERROR_AUDIO;
+
+			player->paused = true;
 		}
+
 		player_command_finished();
 		break;
 
