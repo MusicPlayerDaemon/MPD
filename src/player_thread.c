@@ -142,6 +142,7 @@ player_wait_for_decoder(struct player *player)
 		pc.errored_song = dc.next_song;
 		pc.error = PLAYER_ERROR_FILE;
 		pc.next_song = NULL;
+		player->queued = false;
 		return false;
 	}
 
