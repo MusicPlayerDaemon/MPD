@@ -49,14 +49,6 @@ audio_output_update(struct audio_output *ao,
 		    const struct audio_format *audio_format,
 		    const struct music_pipe *mp);
 
-/**
- * Wakes up the audio output thread.  This is part of a workaround for
- * a deadlock bug, and should be removed as soon as the real cause is
- * fixed.  XXX
- */
-void
-audio_output_signal(struct audio_output *ao);
-
 void
 audio_output_play(struct audio_output *ao);
 

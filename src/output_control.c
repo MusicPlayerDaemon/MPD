@@ -120,12 +120,6 @@ audio_output_update(struct audio_output *ao,
 }
 
 void
-audio_output_signal(struct audio_output *ao)
-{
-	notify_signal(&ao->notify);
-}
-
-void
 audio_output_play(struct audio_output *ao)
 {
 	if (!ao->open)
