@@ -443,4 +443,6 @@ audio_output_all_close(void)
 	}
 
 	g_music_buffer = NULL;
+
+	audio_format_clear(&input_audio_format);
 }
