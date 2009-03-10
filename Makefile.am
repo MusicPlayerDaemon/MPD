@@ -531,6 +531,7 @@ noinst_PROGRAMS = \
 	test/run_decoder \
 	test/read_tags \
 	test/run_encoder \
+	test/run_output \
 	test/software_volume
 
 test_run_decoder_CPPFLAGS = $(AM_CPPFLAGS) \
@@ -574,6 +575,21 @@ test_run_encoder_LDADD = $(MPD_LIBS) \
 test_software_volume_SOURCES = test/software_volume.c \
 	src/audio_parser.c \
 	src/pcm_volume.c
+
+test_run_output_CPPFLAGS = $(AM_CPPFLAGS) \
+	$(ENCODER_CFLAGS) \
+	$(OUTPUT_CFLAGS)
+test_run_output_LDADD = $(MPD_LIBS) \
+	$(ENCODER_LIBS) \
+	$(OUTPUT_LIBS)
+test_run_output_SOURCES = test/run_output.c \
+	src/conf.c src/buffer2array.c src/utils.c src/log.c \
+	src/audio_parser.c \
+	src/timer.c \
+	src/output_init.c src/output_list.c \
+	$(ENCODER_SRC) \
+	$(MIXER_SRC) \
+	$(OUTPUT_SRC)
 
 if HAVE_ID3TAG
 test_run_decoder_SOURCES += src/tag_id3.c src/riff.c src/aiff.c
