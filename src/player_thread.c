@@ -221,6 +221,44 @@ player_check_decoder_startup(struct player *player)
 	}
 }
 
+/**
+ * Sends a chunk of silence to the audio outputs.  This is called when
+ * there is not enough decoded data in the pipe yet, to prevent
+ * underruns in the hardware buffers.
+ */
+static bool
+player_send_silence(struct player *player)
+{
+	struct music_chunk *chunk;
+	size_t frame_size =
+		audio_format_frame_size(&player->play_audio_format);
+	/* this formula ensures that we don't send
+	   partial frames */
+	unsigned num_frames = sizeof(chunk->data) / frame_size;
+
+	assert(audio_format_defined(&player->play_audio_format));
+
+	chunk = music_buffer_allocate(player_buffer);
+	if (chunk == NULL) {
+		g_warning("Failed to allocate silence buffer");
+		return false;
+	}
+
+#ifndef NDEBUG
+	chunk->audio_format = player->play_audio_format;
+#endif
+
+	chunk->length = num_frames * frame_size;
+	memset(chunk->data, 0, chunk->length);
+
+	if (!audio_output_all_play(chunk)) {
+		music_buffer_return(player_buffer, chunk);
+		return false;
+	}
+
+	return true;
+}
+
 static bool player_seek_decoder(struct player *player)
 {
 	double where;
@@ -629,29 +667,8 @@ static void do_play(void)
 			/* the decoder is too busy and hasn't provided
 			   new PCM data in time: send silence (if the
 			   output pipe is empty) */
-			struct music_chunk *chunk;
-			size_t frame_size =
-				audio_format_frame_size(&player.play_audio_format);
-			/* this formula ensures that we don't send
-			   partial frames */
-			unsigned num_frames = CHUNK_SIZE / frame_size;
-
-			chunk = music_buffer_allocate(player_buffer);
-			if (chunk == NULL)
-				continue;
-
-#ifndef NDEBUG
-			chunk->audio_format = player.play_audio_format;
-#endif
-
-			chunk->length = num_frames * frame_size;
-			memset(chunk->data, 0, chunk->length);
-
-			/*DEBUG("waiting for decoded audio, play silence\n");*/
-			if (!audio_output_all_play(chunk)) {
-				music_buffer_return(player_buffer, chunk);
+			if (!player_send_silence(&player))
 				break;
-			}
 		}
 	}
 
