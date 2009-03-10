@@ -300,9 +300,8 @@ static bool player_seek_decoder(struct player *player)
 
 	player->xfade = XFADE_UNKNOWN;
 
-	/* abort buffering when the user has requested
-	   a seek */
-	player->buffering = false;
+	/* re-fill the buffer after seeking */
+	player->buffering = true;
 
 	audio_output_all_cancel();
 
@@ -588,6 +587,13 @@ static void do_play(void)
 			if (music_pipe_size(player.pipe) < pc.buffered_before_play &&
 			    !decoder_is_idle()) {
 				/* not enough decoded buffer space yet */
+
+				if (!player.paused &&
+				    audio_format_defined(&player.play_audio_format) &&
+				    audio_output_all_check() < 4 &&
+				    !player_send_silence(&player))
+					break;
+
 				notify_wait(&pc.notify);
 				continue;
 			} else {
