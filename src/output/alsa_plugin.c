@@ -94,7 +94,6 @@ alsa_data_new(void)
 	struct alsa_data *ret = g_new(struct alsa_data, 1);
 
 	ret->mode = 0;
-	ret->pcm = NULL;
 	ret->writei = snd_pcm_writei;
 
 	return ret;
@@ -413,8 +412,6 @@ alsa_open(void *data, struct audio_format *audio_format, GError **error)
 	err = snd_pcm_open(&ad->pcm, alsa_device(ad),
 			   SND_PCM_STREAM_PLAYBACK, ad->mode);
 	if (err < 0) {
-		ad->pcm = NULL;
-
 		g_set_error(error, alsa_output_quark(), err,
 			    "Failed to open ALSA device \"%s\": %s",
 			    alsa_device(ad), snd_strerror(err));
@@ -424,7 +421,6 @@ alsa_open(void *data, struct audio_format *audio_format, GError **error)
 	success = alsa_setup(ad, audio_format, bitformat, error);
 	if (!success) {
 		snd_pcm_close(ad->pcm);
-		ad->pcm = NULL;
 		return false;
 	}
 
@@ -456,9 +452,6 @@ alsa_recover(struct alsa_data *ad, int err)
 		err = snd_pcm_prepare(ad->pcm);
 		break;
 	case SND_PCM_STATE_DISCONNECTED:
-		/* so alsa_closeDevice won't try to drain: */
-		snd_pcm_close(ad->pcm);
-		ad->pcm = NULL;
 		break;
 	/* this is no error, so just keep running */
 	case SND_PCM_STATE_RUNNING:
@@ -485,13 +478,10 @@ alsa_close(void *data)
 {
 	struct alsa_data *ad = data;
 
-	if (ad->pcm != NULL) {
-		if (snd_pcm_state(ad->pcm) == SND_PCM_STATE_RUNNING)
-			snd_pcm_drain(ad->pcm);
+	if (snd_pcm_state(ad->pcm) == SND_PCM_STATE_RUNNING)
+		snd_pcm_drain(ad->pcm);
 
-		snd_pcm_close(ad->pcm);
-		ad->pcm = NULL;
-	}
+	snd_pcm_close(ad->pcm);
 
 	mixer_close(ad->mixer);
 }
