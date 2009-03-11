@@ -450,42 +450,36 @@ update_container_file(	struct directory* directory,
 			return true;
 	}
 
-	// contdir doesn't yet exist
-	if (contdir == NULL)
+	contdir = make_subdir(directory, name);
+	contdir->mtime = st->st_mtime;
+	contdir->device = DEVICE_CONTAINER;
+
+	while ((vtrack = plugin->container_scan(pathname, ++tnum)) != NULL)
 	{
-		contdir = make_subdir(directory, name);
-		contdir->mtime = st->st_mtime;
-		contdir->device = DEVICE_CONTAINER;
-
-		while ((vtrack = plugin->container_scan(pathname, ++tnum)) != NULL)
-		{
-			struct song* song = song_file_new(vtrack, contdir);
-			if (song == NULL)
-				return true;
-
-			// shouldn't be necessary but it's there..
-			song->mtime = st->st_mtime;
-
-			song->tag = plugin->tag_dup(map_directory_child_fs(contdir, vtrack));
-
-			songvec_add(&contdir->songs, song);
-			song = NULL;
-
-			modified = true;
-
-			g_free(vtrack);
-		}
-
-		if (tnum == 1)
-		{
-			delete_directory(contdir);
-			return false;
-		}
-		else
+		struct song* song = song_file_new(vtrack, contdir);
+		if (song == NULL)
 			return true;
+
+		// shouldn't be necessary but it's there..
+		song->mtime = st->st_mtime;
+
+		song->tag = plugin->tag_dup(map_directory_child_fs(contdir, vtrack));
+
+		songvec_add(&contdir->songs, song);
+		song = NULL;
+
+		modified = true;
+
+		g_free(vtrack);
 	}
-	// something went wrong, so return true to return update_regular_file
-	return true;
+
+	if (tnum == 1)
+	{
+		delete_directory(contdir);
+		return false;
+	}
+	else
+		return true;
 }
 
 static void
