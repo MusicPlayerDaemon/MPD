@@ -2,7 +2,6 @@ ACLOCAL_AMFLAGS = -I m4
 AUTOMAKE_OPTIONS = foreign 1.9 dist-bzip2
 
 AM_CPPFLAGS = -I$(srcdir)/src $(GLIB_CFLAGS)
-AM_LDFLAGS = $(GLIB_LIBS)
 
 bin_PROGRAMS = src/mpd
 
@@ -20,7 +19,8 @@ src_mpd_LDADD = $(MPD_LIBS) \
 	$(INPUT_LIBS) \
 	$(DECODER_LIBS) \
 	$(ENCODER_LIBS) \
-	$(OUTPUT_LIBS)
+	$(OUTPUT_LIBS) \
+	$(GLIB_LIBS)
 
 mpd_headers = \
 	src/notify.h \
@@ -539,7 +539,8 @@ test_run_decoder_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(INPUT_CFLAGS) $(DECODER_CFLAGS)
 test_run_decoder_LDADD = $(MPD_LIBS) \
 	$(ID3TAG_LIBS) \
-	$(INPUT_LIBS) $(DECODER_LIBS)
+	$(INPUT_LIBS) $(DECODER_LIBS) \
+	$(GLIB_LIBS)
 test_run_decoder_SOURCES = test/run_decoder.c \
 	src/conf.c src/buffer2array.c src/utils.c src/log.c \
 	src/tag.c src/tag_pool.c \
@@ -554,7 +555,8 @@ test_read_tags_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(INPUT_CFLAGS) $(DECODER_CFLAGS)
 test_read_tags_LDADD = $(MPD_LIBS) \
 	$(ID3TAG_LIBS) \
-	$(INPUT_LIBS) $(DECODER_LIBS)
+	$(INPUT_LIBS) $(DECODER_LIBS) \
+	$(GLIB_LIBS)
 test_read_tags_SOURCES = test/read_tags.c \
 	src/conf.c src/buffer2array.c src/utils.c src/log.c \
 	src/tag.c src/tag_pool.c src/tag_ape.c \
@@ -570,7 +572,8 @@ test_run_encoder_SOURCES = test/run_encoder.c \
 	src/audio_parser.c \
 	$(ENCODER_SRC)
 test_run_encoder_LDADD = $(MPD_LIBS) \
-	$(ENCODER_LIBS)
+	$(ENCODER_LIBS) \
+	$(GLIB_LIBS)
 
 test_software_volume_SOURCES = test/software_volume.c \
 	src/audio_parser.c \
@@ -581,7 +584,8 @@ test_run_output_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(OUTPUT_CFLAGS)
 test_run_output_LDADD = $(MPD_LIBS) \
 	$(ENCODER_LIBS) \
-	$(OUTPUT_LIBS)
+	$(OUTPUT_LIBS) \
+	$(GLIB_LIBS)
 test_run_output_SOURCES = test/run_output.c \
 	src/conf.c src/buffer2array.c src/utils.c src/log.c \
 	src/audio_parser.c \
