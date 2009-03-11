@@ -189,15 +189,14 @@ sticker_load_value(const char *type, const char *uri, const char *name)
 	return value;
 }
 
-GList *
+GHashTable *
 sticker_list_values(const char *type, const char *uri)
 {
 	int ret;
 	char *name, *value;
-	GPtrArray *arr;
-	GList *list;
+	GHashTable *hash;
 
-	list = NULL;
+	hash = NULL;
 	assert(type != NULL);
 	assert(uri != NULL);
 
@@ -223,12 +222,14 @@ sticker_list_values(const char *type, const char *uri)
 		ret = sqlite3_step(sticker_stmt_list);
 		switch (ret) {
 		case SQLITE_ROW:
+			if (!hash)
+				hash = g_hash_table_new_full(g_str_hash,
+							     g_str_equal,
+							     (GDestroyNotify)g_free,
+							     (GDestroyNotify)g_free);
 			name = g_strdup((const char*)sqlite3_column_text(sticker_stmt_list, 0));
 			value = g_strdup((const char*)sqlite3_column_text(sticker_stmt_list, 1));
-			arr = g_ptr_array_new();
-			g_ptr_array_add(arr, name);
-			g_ptr_array_add(arr, value);
-			list = g_list_prepend(list, arr);
+			g_hash_table_insert(hash, name, value);
 			break;
 		case SQLITE_DONE:
 			break;
@@ -242,12 +243,10 @@ sticker_list_values(const char *type, const char *uri)
 		}
 	} while (ret != SQLITE_DONE);
 
-	list = g_list_reverse(list);
-
 	sqlite3_reset(sticker_stmt_list);
 	sqlite3_clear_bindings(sticker_stmt_list);
 
-	return list;
+	return hash;
 }
 
 static bool

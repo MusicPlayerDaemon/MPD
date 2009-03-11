@@ -1448,6 +1448,13 @@ handle_idle(struct client *client,
 }
 
 #ifdef ENABLE_SQLITE
+static void print_sticker(GString *name, GString *value,
+			  struct client *client)
+{
+	client_printf(client, "sticker: %s=%s\n",
+		      (char *)name, (char *)value);
+}
+
 static enum command_return
 handle_sticker_song(struct client *client, int argc, char *argv[])
 {
@@ -1474,31 +1481,17 @@ handle_sticker_song(struct client *client, int argc, char *argv[])
 
 		return COMMAND_RETURN_OK;
 	} else if (argc == 4 && strcmp(argv[1], "list") == 0) {
-		GList *list;
-		GPtrArray *values;
-		unsigned int x;
+		GHashTable *hash;
 
-		list = sticker_song_list_values(song);
-		if (NULL == list) {
+		hash = sticker_song_list_values(song);
+		if (NULL == hash) {
 			command_error(client, ACK_ERROR_NO_EXIST,
 				      "no stickers found");
 			return COMMAND_RETURN_ERROR;
 		}
-
-		for (x = 0; x < g_list_length(list); x++) {
-			values = g_list_nth_data(list, x);
-			if (NULL == values) {
-				g_warning("NULL sticker found");
-				continue;
-			}
-			client_printf(client, "sticker: %s=%s\n",
-				      (char *)g_ptr_array_index(values, 0),
-				      (char *)g_ptr_array_index(values, 1));
-			g_free(g_ptr_array_index(values, 0));
-			g_free(g_ptr_array_index(values, 1));
-			g_ptr_array_free(values, TRUE);
-		}
-		g_list_free(list);
+		g_hash_table_foreach(hash, (GHFunc)print_sticker,
+				     client);
+		g_hash_table_destroy(hash);
 
 		return COMMAND_RETURN_OK;
 	} else if (argc == 6 && strcmp(argv[1], "set") == 0) {

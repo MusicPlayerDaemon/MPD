@@ -64,12 +64,11 @@ bool
 sticker_enabled(void);
 
 /**
- * Populates a GList with GPtrArrays of sticker names and values from
- * an object's sticker record.  The caller must free each GPtrArray
- * element of the returned list with g_ptr_array_free(), as well as
- * the returned GList with g_list_free().
+ * Populates a GHashTable with GStrings of sticker keys and values
+ * from an object's sticker record.  The caller must free the returned
+ * GHashTable with g_hash_list_destroy().
  */
-GList *
+GHashTable *
 sticker_list_values(const char *type, const char *uri);
 
 /**

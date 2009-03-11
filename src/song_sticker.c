@@ -39,20 +39,20 @@ sticker_song_get_value(const struct song *song, const char *name)
 	return value;
 }
 
-GList *
+GHashTable *
 sticker_song_list_values(const struct song *song)
 {
 	char *uri;
-	GList *list;
+	GHashTable *hash;
 
 	assert(song != NULL);
 	assert(song_in_database(song));
 
 	uri = song_get_uri(song);
-	list = sticker_list_values("song", uri);
+	hash = sticker_list_values("song", uri);
 	g_free(uri);
 
-	return list;
+	return hash;
 }
 
 bool

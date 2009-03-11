@@ -40,12 +40,10 @@ sticker_song_set_value(const struct song *song,
 		       const char *name, const char *value);
 
 /**
- * Returns a list of key value pairs from a song's sticker record.
- * The caller must free each GPtrArray element of the returned list
- * with g_ptr_array_free(), as well as the returned GList with
- * g_list_free().
+ * Returns a hash table of key value pairs from a song's sticker record.
+ * The caller must free the GHashTable with g_hash_table_destroy().
  */
-GList *
+GHashTable *
 sticker_song_list_values(const struct song *song);
 
 /**
