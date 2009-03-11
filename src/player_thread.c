@@ -363,12 +363,10 @@ static void player_process_command(struct player *player)
 			return;
 		}
 
-		if (dc.pipe != NULL && dc.pipe != player->pipe) {
+		if (dc.pipe != NULL && dc.pipe != player->pipe)
 			/* the decoder is already decoding the song -
 			   stop it and reset the position */
 			player_dc_stop(player);
-			dc_stop(&pc.notify);
-		}
 
 		pc.next_song = NULL;
 		player->queued = false;
