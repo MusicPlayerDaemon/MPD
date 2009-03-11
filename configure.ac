@@ -1017,6 +1017,7 @@ AC_ARG_ENABLE(gprof,
 
 if test "x$enable_gprof" = xyes; then
 	MPD_CFLAGS="$MPD_CFLAGS -pg"
+	MPD_LIBS="$MPD_LIBS -pg"
 fi
 
 AC_ARG_ENABLE(test,
