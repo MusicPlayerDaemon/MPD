@@ -125,13 +125,6 @@ player_dc_stop(struct player *player)
 	}
 }
 
-static void player_stop_decoder(void)
-{
-	dc_stop(&pc.notify);
-	pc.state = PLAYER_STATE_STOP;
-	event_pipe_emit(PIPE_EVENT_PLAYLIST);
-}
-
 static bool
 player_wait_for_decoder(struct player *player)
 {
@@ -562,9 +555,10 @@ static void do_play(void)
 	dc.pipe = player.pipe;
 	dc_start(&pc.notify, pc.next_song);
 	if (!player_wait_for_decoder(&player)) {
-		player_stop_decoder();
+		player_dc_stop(&player);
 		player_command_finished();
 		music_pipe_free(player.pipe);
+		event_pipe_emit(PIPE_EVENT_PLAYLIST);
 		return;
 	}
 
@@ -685,15 +679,13 @@ static void do_play(void)
 		pc.next_song = NULL;
 	}
 
-	player_stop_decoder();
-
-	if (dc.pipe != NULL && dc.pipe != player.pipe) {
-		music_pipe_clear(dc.pipe, player_buffer);
-		music_pipe_free(dc.pipe);
-	}
+	player_dc_stop(&player);
 
 	music_pipe_clear(player.pipe, player_buffer);
 	music_pipe_free(player.pipe);
+
+	pc.state = PLAYER_STATE_STOP;
+	event_pipe_emit(PIPE_EVENT_PLAYLIST);
 }
 
 static gpointer player_task(G_GNUC_UNUSED gpointer arg)
