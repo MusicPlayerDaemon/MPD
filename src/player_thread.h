@@ -1,6 +1,6 @@
-/* the Music Player Daemon (MPD)
- * Copyright (C) 2008 Max Kellermann <max@duempel.org>
- * This project's homepage is: http://www.musicpd.org
+/*
+ * Copyright (C) 2003-2009 The Music Player Daemon Project
+ * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -14,6 +14,23 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
+/* \file
+ *
+ * The player thread controls the playback.  It acts as a bridge
+ * between the decoder thread and the output thread(s): it receives
+ * #music_chunk objects from the decoder, optionally mixes them
+ * (cross-fading), applies software volume, and sends them to the
+ * audio outputs via audio_output_all_play().
+ *
+ * It is controlled by the main thread (the playlist code), see
+ * player_control.h.  The playlist enqueues new songs into the player
+ * thread and sends it commands.
+ *
+ * The player thread itself does not do any I/O.  It synchronizes with
+ * other threads via #GMutex and #GCond objects, and passes
+ * #music_chunk instances around in #music_pipe objects.
  */
 
 #ifndef MPD_PLAYER_THREAD_H

@@ -1,6 +1,6 @@
-/* the Music Player Daemon (MPD)
- * Copyright (C) 2003-2007 by Warren Dukes (warren.dukes@gmail.com)
- * This project's homepage is: http://www.musicpd.org
+/*
+ * Copyright (C) 2003-2009 The Music Player Daemon Project
+ * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -110,12 +110,17 @@ static void player_command_finished(void)
 	notify_signal(&main_notify);
 }
 
+/**
+ * Stop the decoder and clears (and frees) its music pipe.
+ */
 static void
 player_dc_stop(struct player *player)
 {
 	dc_stop(&pc.notify);
 
 	if (dc.pipe != NULL) {
+		/* clear and free the decoder pipe */
+
 		music_pipe_clear(dc.pipe, player_buffer);
 
 		if (dc.pipe != player->pipe)
@@ -125,6 +130,11 @@ player_dc_stop(struct player *player)
 	}
 }
 
+/**
+ * After the decoder has been started asynchronously, wait for the
+ * "START" command to finish.  The decoder may not be initialized yet,
+ * i.e. there is no audio_format information yet.
+ */
 static bool
 player_wait_for_decoder(struct player *player)
 {
@@ -148,6 +158,9 @@ player_wait_for_decoder(struct player *player)
 	pc.next_song = NULL;
 	pc.elapsed_time = 0;
 	player->queued = false;
+
+	/* set the "starting" flag, which will be cleared by
+	   player_check_decoder_startup() */
 	player->decoder_starting = true;
 
 	/* call syncPlaylistWithQueue() in the main thread */
@@ -156,6 +169,11 @@ player_wait_for_decoder(struct player *player)
 	return true;
 }
 
+/**
+ * The decoder has acknowledged the "START" command (see
+ * player_wait_for_decoder()).  This function checks if the decoder
+ * initialization has completed yet.
+ */
 static bool
 player_check_decoder_startup(struct player *player)
 {
@@ -252,6 +270,9 @@ player_send_silence(struct player *player)
 	return true;
 }
 
+/**
+ * This is the handler for the #PLAYER_COMMAND_SEEK command.
+ */
 static bool player_seek_decoder(struct player *player)
 {
 	double where;
@@ -260,14 +281,21 @@ static bool player_seek_decoder(struct player *player)
 	assert(pc.next_song != NULL);
 
 	if (decoder_current_song() != pc.next_song) {
+		/* the decoder is already decoding the "next" song -
+		   stop it and start the previous song again */
+
 		player_dc_stop(player);
 
+		/* clear music chunks which might still reside in the
+		   pipe */
 		music_pipe_clear(player->pipe, player_buffer);
 		dc.pipe = player->pipe;
-		dc_start_async(pc.next_song);
 
+		/* re-start the decoder */
+		dc_start_async(pc.next_song);
 		ret = player_wait_for_decoder(player);
 		if (!ret) {
+			/* decoder failure */
 			player_command_finished();
 			return false;
 		}
@@ -275,6 +303,8 @@ static bool player_seek_decoder(struct player *player)
 		pc.next_song = NULL;
 		player->queued = false;
 	}
+
+	/* send the SEEK command */
 
 	where = pc.seek_where;
 	if (where > pc.total_time)
@@ -284,6 +314,7 @@ static bool player_seek_decoder(struct player *player)
 
 	ret = dc_seek(&pc.notify, where);
 	if (!ret) {
+		/* decoder failure */
 		player_command_finished();
 		return false;
 	}
@@ -331,8 +362,11 @@ static void player_process_command(struct player *player)
 
 			pc.state = PLAYER_STATE_PLAY;
 		} else if (audio_output_all_open(&player->play_audio_format, player_buffer)) {
+			/* unpaused, continue playing */
 			pc.state = PLAYER_STATE_PLAY;
 		} else {
+			/* the audio device has failed - rollback to
+			   pause mode */
 			assert(dc.next_song == NULL || dc.next_song->url != NULL);
 			pc.errored_song = dc.next_song;
 			pc.error = PLAYER_ERROR_AUDIO;
@@ -349,7 +383,7 @@ static void player_process_command(struct player *player)
 
 	case PLAYER_COMMAND_CANCEL:
 		if (pc.next_song == NULL) {
-			/* the cancel request arrived too later, we're
+			/* the cancel request arrived too late, we're
 			   already playing the queued song...  stop
 			   everything now */
 			pc.command = PLAYER_COMMAND_STOP;
@@ -368,6 +402,11 @@ static void player_process_command(struct player *player)
 	}
 }
 
+/**
+ * Plays a #music_chunk object (after applying software volume).  If
+ * it contains a (stream) tag, copy it to the current song, so MPD's
+ * playlist reflects the new stream tag.
+ */
 static bool
 play_chunk(struct song *song, struct music_chunk *chunk,
 	   const struct audio_format *format, double sizeToTime)
@@ -399,6 +438,8 @@ play_chunk(struct song *song, struct music_chunk *chunk,
 		}
 	}
 
+	/* apply software volume */
+
 	success = pcm_volume(chunk->data, chunk->length,
 			     format, pc.software_volume);
 	if (!success) {
@@ -408,6 +449,8 @@ play_chunk(struct song *song, struct music_chunk *chunk,
 		pc.error = PLAYER_ERROR_AUDIO;
 		return false;
 	}
+
+	/* send the chunk to the audio outputs */
 
 	if (!audio_output_all_play(chunk)) {
 		pc.errored_song = dc.current_song;
@@ -433,8 +476,8 @@ play_next_chunk(struct player *player)
 	bool success;
 
 	if (audio_output_all_check() >= 64) {
-		/* the output pipe is still large
-		   enough, don't send another chunk */
+		/* the output pipe is still large enough, don't send
+		   another chunk */
 
 		/* XXX synchronize in a better way */
 		g_usleep(1000);
@@ -450,11 +493,10 @@ play_next_chunk(struct player *player)
 			music_pipe_shift(dc.pipe);
 
 		if (!player->cross_fading) {
-			/* beginning of the cross fade
-			   - adjust crossFadeChunks
-			   which might be bigger than
-			   the remaining number of
-			   chunks in the old song */
+			/* beginning of the cross fade - adjust
+			   crossFadeChunks which might be bigger than
+			   the remaining number of chunks in the old
+			   song */
 			player->cross_fade_chunks = cross_fade_position;
 			player->cross_fading = true;
 		}
@@ -469,16 +511,13 @@ play_next_chunk(struct player *player)
 					 player->cross_fade_chunks);
 			music_buffer_return(player_buffer, other_chunk);
 		} else {
-			/* there are not enough
-			   decoded chunks yet */
+			/* there are not enough decoded chunks yet */
 			if (decoder_is_idle()) {
-				/* the decoder isn't
-				   running, abort
+				/* the decoder isn't running, abort
 				   cross fading */
 				player->xfade = XFADE_DISABLED;
 			} else {
-				/* wait for the
-				   decoder */
+				/* wait for the decoder */
 				notify_signal(&dc.notify);
 				notify_wait(&pc.notify);
 
@@ -502,9 +541,8 @@ play_next_chunk(struct player *player)
 		return false;
 	}
 
-	/* this formula should prevent that the
-	   decoder gets woken up with each chunk; it
-	   is more efficient to make it decode a
+	/* this formula should prevent that the decoder gets woken up
+	   with each chunk; it is more efficient to make it decode a
 	   larger block at a time */
 	if (!decoder_is_idle() &&
 	    music_pipe_size(dc.pipe) <= (pc.buffered_before_play +
@@ -535,6 +573,11 @@ player_song_border(struct player *player)
 	return true;
 }
 
+/*
+ * The main loop of the player thread, during playback.  This is
+ * basically a state machine, which multiplexes data between the
+ * decoder thread and the output threads.
+ */
 static void do_play(void)
 {
 	struct player player = {
@@ -576,6 +619,10 @@ static void do_play(void)
 		}
 
 		if (player.buffering) {
+			/* buffering at the start of the song - wait
+			   until the buffer is large enough, to
+			   prevent stuttering on slow machines */
+
 			if (music_pipe_size(player.pipe) < pc.buffered_before_play &&
 			    !decoder_is_idle()) {
 				/* not enough decoded buffer space yet */
@@ -595,6 +642,7 @@ static void do_play(void)
 		}
 
 		if (player.decoder_starting) {
+			/* wait until the decoder is initialized completely */
 			bool success;
 
 			success = player_check_decoder_startup(&player);
