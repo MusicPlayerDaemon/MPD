@@ -582,6 +582,8 @@ test_run_encoder_LDADD = $(MPD_LIBS) \
 test_software_volume_SOURCES = test/software_volume.c \
 	src/audio_parser.c \
 	src/pcm_volume.c
+test_software_volume_LDADD = \
+	$(GLIB_LIBS)
 
 test_run_output_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(ENCODER_CFLAGS) \
