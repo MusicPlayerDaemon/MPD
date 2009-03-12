@@ -61,7 +61,7 @@ void cross_fade_apply(struct music_chunk *a, const struct music_chunk *b,
 	assert(a != NULL);
 	assert(b != NULL);
 	assert(a->length == 0 || b->length == 0 ||
-	       audio_format_equals(&a->audio_format, b->audio_format));
+	       audio_format_equals(&a->audio_format, &b->audio_format));
 	assert(current_chunk <= num_chunks);
 
 	if (a->tag == NULL && b->tag != NULL)
