@@ -614,9 +614,12 @@ if ENABLE_DOCUMENTATION
 protocoldir = $(docdir)/protocol
 protocol_DATA = $(wildcard doc/protocol/*.html)
 
+userdir = $(docdir)/user
+user_DATA = $(wildcard doc/user/*.html)
+
 if HAVE_XMLTO
 
-DOCBOOK_FILES = doc/protocol.xml
+DOCBOOK_FILES = doc/protocol.xml doc/user.xml
 DOCBOOK_HTML = $(patsubst %.xml,%/index.html,$(DOCBOOK_FILES))
 
 $(DOCBOOK_HTML): %/index.html: %.xml

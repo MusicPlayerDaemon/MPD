@@ -38,6 +38,7 @@ tags
 .stgit*
 doc/protocol.html
 doc/protocol
+doc/user
 doc/api
 test/software_volume
 test/run_decoder

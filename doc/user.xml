@@ -1,0 +1,38 @@
+<?xml version='1.0' encoding="utf-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+               "docbook/dtd/xml/4.2/docbookx.dtd">
+<book>
+  <title>The Music Player Daemon - User's Manual</title>
+
+  <chapter>
+    <title>Introduction</title>
+
+    <para>
+    </para>
+  </chapter>
+
+  <chapter>
+    <title>Installation</title>
+
+    <section>
+      <title>Compiling from source</title>
+
+      <para>
+      </para>
+    </section>
+  </chapter>
+
+  <chapter>
+    <title>Configuration</title>
+
+    <para>
+    </para>
+  </chapter>
+
+  <chapter>
+    <title>Plugin reference</title>
+
+    <para>
+    </para>
+  </chapter>
+</book>
