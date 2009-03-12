@@ -26,6 +26,8 @@
 #include "output_command.h"
 #include "output_all.h"
 #include "output_internal.h"
+#include "output_plugin.h"
+#include "mixer_api.h"
 #include "idle.h"
 
 bool
@@ -48,6 +50,7 @@ bool
 audio_output_disable_index(unsigned idx)
 {
 	struct audio_output *ao;
+	struct mixer *mixer;
 
 	if (idx >= audio_output_count())
 		return false;
@@ -56,6 +59,12 @@ audio_output_disable_index(unsigned idx)
 
 	ao->enabled = false;
 	idle_add(IDLE_OUTPUT);
+
+	mixer = ao_plugin_get_mixer(ao->plugin, ao->data);
+	if (mixer != NULL) {
+		mixer_close(mixer);
+		idle_add(IDLE_MIXER);
+	}
 
 	return true;
 }

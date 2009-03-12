@@ -33,6 +33,9 @@ mixer_control_setvol(unsigned int device, int volume, int rel)
 	assert(device < audio_output_count());
 
 	output = audio_output_get(device);
+	if (!output->enabled)
+		return false;
+
 	mixer = ao_plugin_get_mixer(output->plugin, output->data);
 	if (mixer != NULL) {
 		if (rel) {
@@ -61,6 +64,9 @@ mixer_control_getvol(unsigned int device, int *volume)
 	assert(device < audio_output_count());
 
 	output = audio_output_get(device);
+	if (!output->enabled)
+		return false;
+
 	mixer = ao_plugin_get_mixer(output->plugin, output->data);
 	if (mixer != NULL) {
 		int volume2;
