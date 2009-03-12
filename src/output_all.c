@@ -364,7 +364,7 @@ audio_output_all_check(void)
 		if (!chunk_is_consumed(chunk))
 			/* at least one output is not finished playing
 			   this chunk */
-			return music_pipe_size(g_mp) - 1;
+			return music_pipe_size(g_mp);
 
 		is_tail = chunk->next == NULL;
 		if (is_tail)
