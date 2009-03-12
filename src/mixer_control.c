@@ -22,14 +22,15 @@
 #include "output_plugin.h"
 #include "output_internal.h"
 
+#include <assert.h>
+
 bool
 mixer_control_setvol(unsigned int device, int volume, int rel)
 {
 	struct audio_output *output;
 	struct mixer *mixer;
 
-	if (device >= audio_output_count())
-		return false;
+	assert(device < audio_output_count());
 
 	output = audio_output_get(device);
 	mixer = ao_plugin_get_mixer(output->plugin, output->data);
@@ -57,8 +58,7 @@ mixer_control_getvol(unsigned int device, int *volume)
 	struct audio_output *output;
 	struct mixer *mixer;
 
-	if (device >= audio_output_count())
-		return false;
+	assert(device < audio_output_count());
 
 	output = audio_output_get(device);
 	mixer = ao_plugin_get_mixer(output->plugin, output->data);
