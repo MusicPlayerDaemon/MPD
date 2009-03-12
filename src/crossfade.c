@@ -58,6 +58,10 @@ void cross_fade_apply(struct music_chunk *a, const struct music_chunk *b,
 {
 	size_t size;
 
+	assert(a != NULL);
+	assert(b != NULL);
+	assert(a->length == 0 || b->length == 0 ||
+	       audio_format_equals(&a->audio_format, b->audio_format));
 	assert(current_chunk <= num_chunks);
 
 	if (a->tag == NULL && b->tag != NULL)
@@ -79,6 +83,12 @@ void cross_fade_apply(struct music_chunk *a, const struct music_chunk *b,
 		   there is unmixed rest at the end.  Copy it over.
 		   The output buffer API guarantees that there is
 		   enough room in a->data. */
+
+#ifndef NDEBUG
+		if (a->length == 0)
+			a->audio_format = b->audio_format;
+#endif
+
 		memcpy(a->data + a->length,
 		       b->data + a->length,
 		       b->length - a->length);
