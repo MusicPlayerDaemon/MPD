@@ -80,6 +80,7 @@ mpd_headers = \
 	src/ls.h \
 	src/main.h \
 	src/mixer_api.h \
+	src/mixer_control.h \
 	src/event_pipe.h \
 	src/daemon.h \
 	src/normalize.h \
@@ -151,7 +152,7 @@ src_mpd_SOURCES = \
 	$(DECODER_SRC) \
 	$(ENCODER_SRC) \
 	$(OUTPUT_API_SRC) $(OUTPUT_SRC) \
-	$(MIXER_SRC) \
+	$(MIXER_API_SRC) $(MIXER_SRC) \
 	src/notify.c \
 	src/audio.c \
 	src/audio_parser.c \
@@ -453,8 +454,11 @@ OUTPUT_API_SRC = \
 OUTPUT_SRC = \
 	src/output/null_plugin.c
 
-MIXER_SRC = \
+MIXER_API_SRC = \
+	src/mixer_control.c \
 	src/mixer_api.c
+
+MIXER_SRC =
 
 if HAVE_ALSA
 OUTPUT_SRC += src/output/alsa_plugin.c
@@ -592,6 +596,7 @@ test_run_output_SOURCES = test/run_output.c \
 	src/timer.c \
 	src/output_init.c src/output_list.c \
 	$(ENCODER_SRC) \
+	src/mixer_api.c \
 	$(MIXER_SRC) \
 	$(OUTPUT_SRC)
 

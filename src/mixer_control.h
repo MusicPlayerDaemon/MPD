@@ -1,6 +1,6 @@
-/* the Music Player Daemon (MPD)
- * Copyright (C) 2003-2007 by Warren Dukes (warren.dukes@gmail.com)
- * This project's homepage is: http://www.musicpd.org
+/*
+ * Copyright (C) 2003-2009 The Music Player Daemon Project
+ * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,19 +16,15 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef MPD_AUDIO_H
-#define MPD_AUDIO_H
+#ifndef MPD_MIXER_CONTROL_H
+#define MPD_MIXER_CONTROL_H
 
 #include <stdbool.h>
 
-struct audio_format;
+bool
+mixer_control_setvol(unsigned int device, int volume, int rel);
 
-void getOutputAudioFormat(const struct audio_format *inFormat,
-			  struct audio_format *outFormat);
-
-/* make sure initPlayerData is called before this function!! */
-void initAudioConfig(void);
-
-void finishAudioConfig(void);
+bool
+mixer_control_getvol(unsigned int device, int *volume);
 
 #endif
