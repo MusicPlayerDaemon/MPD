@@ -14,11 +14,58 @@
   <chapter>
     <title>Installation</title>
 
+    <para>
+      We recommend that you use the software installation routines of
+      your distribution to install MPD.  Most operating systems have a
+      MPD package, which is very easy to install.
+    </para>
+
+    <section>
+      <title>Installing on Debian/Ubuntu</title>
+
+      <para>
+        Install the package <filename>mpd</filename>:
+      </para>
+
+      <programlisting>apt-get install mpd</programlisting>
+    </section>
+
     <section>
       <title>Compiling from source</title>
 
       <para>
+        Download the source tarball from <ulink
+        url="http://mpd.wikia.com/wiki/Server">the MPD home
+        page</ulink> and unpack it:
       </para>
+
+      <programlisting>tar xjf mpd-0.14.2.tar.bz
+cd mpd-0.14.2</programlisting>
+
+      <para>
+        Make sure that all the required libraries and build tools are
+        installed.  The <filename>INSTALL</filename> file has a list.
+      </para>
+
+      <para>
+        Now configure the source tree:
+      </para>
+
+      <programlisting>./configure</programlisting>
+
+      <para>
+        The <parameter>--help</parameter> argument shows a list of
+        compile-time options.  When everything is ready and
+        configured, compile:
+      </para>
+
+      <programlisting>make</programlisting>
+
+      <para>
+        And install:
+      </para>
+
+      <programlisting>make install</programlisting>
     </section>
   </chapter>
 
