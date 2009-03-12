@@ -43,7 +43,6 @@
 #define VOLUME_MIXER_SOFTWARE_DEFAULT		""
 #define SW_VOLUME_STATE                         "sw_volume: "
 
-const struct audio_output_plugin *default_mixer;
 static int volume_mixer_type = VOLUME_MIXER_TYPE_HARDWARE;
 static int volume_software_set = 100;
 
