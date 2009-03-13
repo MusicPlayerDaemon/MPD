@@ -43,6 +43,7 @@ Guus Sliepen <guus@sliepen.eu.org>
 
 J. Alexander Treuman <jat@spatialrift.net>
 	general, MP3, ID3, PulseAudio, format conversion, stored playlists
+	AudioCompress, much much more...
 
 Eric Wong
 	former lead developer
@@ -52,3 +53,6 @@ José Anarch <anarchsss@gmail.com>
 
 Patrik Weiskircher <pat@icore.at>
 	Stored playlist commands
+
+Nick Welch <mack@incise.org>
+	Sighandlers
