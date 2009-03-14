@@ -17,20 +17,16 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_MIXER_H
-#define MPD_MIXER_H
+/** \file
+ *
+ * This header provides "extern" declarations for all mixer plugins.
+ */
 
-#include "mixer_plugin.h"
-#include "mixer_list.h"
+#ifndef MPD_MIXER_LIST_H
+#define MPD_MIXER_LIST_H
 
-struct mixer {
-	const struct mixer_plugin *plugin;
-};
-
-static inline void
-mixer_init(struct mixer *mixer, const struct mixer_plugin *plugin)
-{
-	mixer->plugin = plugin;
-}
+extern const struct mixer_plugin alsa_mixer;
+extern const struct mixer_plugin oss_mixer;
+extern const struct mixer_plugin pulse_mixer;
 
 #endif

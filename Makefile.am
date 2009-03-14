@@ -82,6 +82,7 @@ mpd_headers = \
 	src/mixer_all.h \
 	src/mixer_api.h \
 	src/mixer_control.h \
+	src/mixer_list.h \
 	src/event_pipe.h \
 	src/mixer_plugin.h \
 	src/daemon.h \
