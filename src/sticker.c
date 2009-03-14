@@ -154,21 +154,21 @@ sticker_load_value(const char *type, const char *uri, const char *name)
 	if (ret != SQLITE_OK) {
 		g_warning("sqlite3_bind_text() failed: %s",
 			  sqlite3_errmsg(sticker_db));
-		return false;
+		return NULL;
 	}
 
 	ret = sqlite3_bind_text(sticker_stmt_get, 2, uri, -1, NULL);
 	if (ret != SQLITE_OK) {
 		g_warning("sqlite3_bind_text() failed: %s",
 			  sqlite3_errmsg(sticker_db));
-		return false;
+		return NULL;
 	}
 
 	ret = sqlite3_bind_text(sticker_stmt_get, 3, name, -1, NULL);
 	if (ret != SQLITE_OK) {
 		g_warning("sqlite3_bind_text() failed: %s",
 			  sqlite3_errmsg(sticker_db));
-		return false;
+		return NULL;
 	}
 
 	do {
@@ -185,7 +185,7 @@ sticker_load_value(const char *type, const char *uri, const char *name)
 		/* error */
 		g_warning("sqlite3_step() failed: %s",
 			  sqlite3_errmsg(sticker_db));
-		return false;
+		return NULL;
 	}
 
 	sqlite3_reset(sticker_stmt_get);
