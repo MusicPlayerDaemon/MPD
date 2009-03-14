@@ -17,9 +17,39 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+/** \file
+ *
+ * Functions which manipulate a #mixer object.
+ */
+
 #ifndef MPD_MIXER_CONTROL_H
 #define MPD_MIXER_CONTROL_H
 
 #include <stdbool.h>
+
+struct mixer;
+struct mixer_plugin;
+struct config_param;
+
+void
+mixer_disable_all(void);
+
+struct mixer *
+mixer_new(const struct mixer_plugin *plugin, const struct config_param *param);
+
+void
+mixer_free(struct mixer *mixer);
+
+bool
+mixer_open(struct mixer *mixer);
+
+void
+mixer_close(struct mixer *mixer);
+
+int
+mixer_get_volume(struct mixer *mixer);
+
+bool
+mixer_set_volume(struct mixer *mixer, unsigned volume);
 
 #endif

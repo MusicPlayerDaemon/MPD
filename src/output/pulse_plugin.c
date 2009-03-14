@@ -19,6 +19,7 @@
 
 #include "../output_api.h"
 #include "../mixer_api.h"
+#include "mixer_control.h"
 
 #include <glib.h>
 #include <pulse/simple.h>

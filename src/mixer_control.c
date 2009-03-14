@@ -20,4 +20,80 @@
 #include "mixer_control.h"
 #include "mixer_api.h"
 
+#include <glib.h>
+
 #include <assert.h>
+#include <stddef.h>
+
+#undef G_LOG_DOMAIN
+#define G_LOG_DOMAIN "mixer"
+
+static bool mixers_enabled = true;
+
+void
+mixer_disable_all(void)
+{
+	g_debug("mixer api is disabled");
+	mixers_enabled = false;
+}
+
+struct mixer *
+mixer_new(const struct mixer_plugin *plugin, const struct config_param *param)
+{
+	struct mixer *mixer;
+
+	//mixers are disabled (by using software volume)
+	if (!mixers_enabled) {
+		return NULL;
+	}
+	assert(plugin != NULL);
+
+	mixer = plugin->init(param);
+
+	assert(mixer == NULL || mixer->plugin == plugin);
+
+	return mixer;
+}
+
+void
+mixer_free(struct mixer *mixer)
+{
+	if (!mixer) {
+		return;
+	}
+	assert(mixer->plugin != NULL);
+
+	mixer->plugin->finish(mixer);
+}
+
+bool
+mixer_open(struct mixer *mixer)
+{
+	if (!mixer) {
+		return false;
+	}
+	assert(mixer->plugin != NULL);
+	return mixer->plugin->open(mixer);
+}
+
+void
+mixer_close(struct mixer *mixer)
+{
+	if (!mixer) {
+		return;
+	}
+	assert(mixer->plugin != NULL);
+	mixer->plugin->close(mixer);
+}
+
+int
+mixer_get_volume(struct mixer *mixer)
+{
+	return mixer->plugin->get_volume(mixer);
+}
+
+bool
+mixer_set_volume(struct mixer *mixer, unsigned volume)
+{
+	return mixer->plugin->set_volume(mixer, volume);
+}

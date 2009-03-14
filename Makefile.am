@@ -602,6 +602,7 @@ test_run_output_SOURCES = test/run_output.c \
 	src/output_init.c src/output_list.c \
 	$(ENCODER_SRC) \
 	src/mixer_api.c \
+	src/mixer_control.c \
 	$(MIXER_SRC) \
 	$(OUTPUT_SRC)
 

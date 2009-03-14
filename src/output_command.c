@@ -28,7 +28,7 @@
 #include "output_all.h"
 #include "output_internal.h"
 #include "output_plugin.h"
-#include "mixer_api.h"
+#include "mixer_control.h"
 #include "idle.h"
 
 bool

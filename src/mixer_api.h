@@ -40,27 +40,4 @@ mixer_init(struct mixer *mixer, const struct mixer_plugin *plugin)
 	mixer->plugin = plugin;
 }
 
-struct mixer *
-mixer_new(const struct mixer_plugin *plugin, const struct config_param *param);
-
-void
-mixer_free(struct mixer *mixer);
-
-bool mixer_open(struct mixer *mixer);
-void mixer_close(struct mixer *mixer);
-
-static inline int
-mixer_get_volume(struct mixer *mixer)
-{
-	return mixer->plugin->get_volume(mixer);
-}
-
-static inline bool
-mixer_set_volume(struct mixer *mixer, unsigned volume)
-{
-	return mixer->plugin->set_volume(mixer, volume);
-}
-
-void mixer_disable_all(void);
-
 #endif

@@ -24,7 +24,7 @@
 #include "pcm_volume.h"
 #include "config.h"
 #include "output_all.h"
-#include "mixer_api.h"
+#include "mixer_control.h"
 #include "mixer_all.h"
 
 #include <glib.h>
