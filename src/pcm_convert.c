@@ -186,6 +186,6 @@ pcm_convert(struct pcm_convert_state *state,
 
 	default:
 		g_error("cannot convert to %u bit\n", dest_format->bits);
-		return 0;
+		return NULL;
 	}
 }
