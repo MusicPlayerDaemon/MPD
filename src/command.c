@@ -618,7 +618,7 @@ handle_addid(struct client *client, int argc, char *argv[])
 	}
 
 	client_printf(client, "Id: %u\n", added_id);
-	return result;
+	return COMMAND_RETURN_OK;
 }
 
 static enum command_return
