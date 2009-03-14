@@ -31,7 +31,7 @@ struct slot {
 	struct tag_item item;
 } mpd_packed;
 
-struct slot *slots[NUM_SLOTS];
+static struct slot *slots[NUM_SLOTS];
 
 static inline unsigned
 calc_hash_n(enum tag_type type, const char *p, size_t length)
