@@ -27,10 +27,7 @@ struct mixer {
 	const struct mixer_plugin *plugin;
 };
 
-static inline void
-mixer_init(struct mixer *mixer, const struct mixer_plugin *plugin)
-{
-	mixer->plugin = plugin;
-}
+void
+mixer_init(struct mixer *mixer, const struct mixer_plugin *plugin);
 
 #endif
