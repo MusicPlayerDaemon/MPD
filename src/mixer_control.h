@@ -22,10 +22,4 @@
 
 #include <stdbool.h>
 
-bool
-mixer_control_setvol(unsigned int device, int volume, int rel);
-
-bool
-mixer_control_getvol(unsigned int device, int *volume);
-
 #endif
