@@ -67,14 +67,6 @@ bool
 sticker_enabled(void);
 
 /**
- * Populates a GHashTable with GStrings of sticker keys and values
- * from an object's sticker record.  The caller must free the returned
- * GHashTable with g_hash_list_destroy().
- */
-GHashTable *
-sticker_list_values(const char *type, const char *uri);
-
-/**
  * Returns one value from an object's sticker record.  The caller must
  * free the return value with g_free().
  */

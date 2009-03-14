@@ -194,7 +194,7 @@ sticker_load_value(const char *type, const char *uri, const char *name)
 	return value;
 }
 
-GHashTable *
+static GHashTable *
 sticker_list_values(const char *type, const char *uri)
 {
 	int ret;

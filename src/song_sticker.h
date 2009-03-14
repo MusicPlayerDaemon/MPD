@@ -42,13 +42,6 @@ sticker_song_set_value(const struct song *song,
 		       const char *name, const char *value);
 
 /**
- * Returns a hash table of key value pairs from a song's sticker record.
- * The caller must free the GHashTable with g_hash_table_destroy().
- */
-GHashTable *
-sticker_song_list_values(const struct song *song);
-
-/**
  * Deletes a sticker from the database.  All values are deleted.
  */
 bool
