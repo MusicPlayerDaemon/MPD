@@ -289,7 +289,7 @@ faad_decoder_decode(faacDecHandle decoder, struct decoder_buffer *buffer,
 
 	u.in = decoder_buffer_read(buffer, &length);
 	if (u.in == NULL)
-		return false;
+		return NULL;
 
 	result = faacDecDecode(decoder, frame_info,
 			       u.out
