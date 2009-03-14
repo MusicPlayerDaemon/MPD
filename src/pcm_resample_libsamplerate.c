@@ -135,7 +135,7 @@ pcm_resample_16(struct pcm_resample_state *state,
 
 	/* there was an error previously, and nothing has changed */
 	if (state->error)
-		return 0;
+		return NULL;
 
 	data->input_frames = src_size / sizeof(*src_buffer) / channels;
 	data_in_size = data->input_frames * sizeof(float) * channels;
@@ -153,7 +153,7 @@ pcm_resample_16(struct pcm_resample_state *state,
 		g_warning("error processing samples with libsamplerate: %s",
 			  src_strerror(error));
 		state->error = true;
-		return 0;
+		return NULL;
 	}
 
 	*dest_size_r = data->output_frames_gen *
@@ -205,7 +205,7 @@ pcm_resample_32(struct pcm_resample_state *state,
 
 	/* there was an error previously, and nothing has changed */
 	if (state->error)
-		return 0;
+		return NULL;
 
 	data->input_frames = src_size / sizeof(*src_buffer) / channels;
 	data_in_size = data->input_frames * sizeof(float) * channels;
@@ -223,7 +223,7 @@ pcm_resample_32(struct pcm_resample_state *state,
 		g_warning("error processing samples with libsamplerate: %s",
 			  src_strerror(error));
 		state->error = true;
-		return 0;
+		return NULL;
 	}
 
 	*dest_size_r = data->output_frames_gen *
