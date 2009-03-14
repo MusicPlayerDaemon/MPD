@@ -72,14 +72,287 @@ cd mpd-0.14.2</programlisting>
   <chapter>
     <title>Configuration</title>
 
-    <para>
-    </para>
+    <section>
+      <title>Configuring audio outputs</title>
+
+      <para>
+        Audio outputs are devices which actually play the audio chunks
+        produced by MPD.  You can configure any number of audio output
+        devices, but there must be at least one.  If none is
+        configured, MPD attempts to auto-detect.  Usually, this works
+        quite well with ALSA, OSS and on Mac OS X.
+      </para>
+
+      <para>
+        To configure an audio output manually, add an
+        <varname>audio_output</varname> block to
+        <filename>mpd.conf</filename>:
+      </para>
+
+      <programlisting>audio_output {
+    type "alsa"
+    name "my ALSA device"
+    device "hw:0"
+}
+</programlisting>
+    </section>
   </chapter>
 
   <chapter>
     <title>Plugin reference</title>
 
-    <para>
-    </para>
+    <section>
+      <title>Output plugins</title>
+
+      <section>
+        <title><varname>alsa</varname></title>
+
+        <para>
+          The "Advanced Linux Sound Architecture" plugin uses
+          <filename>libasound</filename>.  It is recommended if you
+          are using Linux.
+        </para>
+
+        <informaltable>
+          <tgroup cols="2">
+            <thead>
+              <row>
+                <entry>Setting</entry>
+                <entry>Description</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>
+                  <varname>device</varname>
+                  <parameter>NAME</parameter>
+                </entry>
+                <entry>
+                  Sets the device which should be used.  This can be
+                  any valid ALSA device name.  The default value is
+                  "default", which makes
+                  <filename>libasound</filename> choose a device.  It
+                  is recommended to use a "hw" or "plughw" device,
+                  because otherwise, <filename>libasound</filename>
+                  automatically enables "dmix", which has major
+                  disadvantages (fixed sample rate, poor resampler,
+                  ...).
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <varname>use_mmap</varname>
+                  <parameter>yes|no</parameter>
+                </entry>
+                <entry>
+                  If set to <parameter>yes</parameter>, then
+                  <filename>libasound</filename> will try to use
+                  memory mapped I/O.
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <varname>buffer_time</varname>
+                  <parameter>US</parameter>
+                </entry>
+                <entry>
+                  Sets the device's buffer time in microseconds.
+                  Don't change unless you know what you're doing.
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <varname>period_time</varname>
+                  <parameter>US</parameter>
+                </entry>
+                <entry>
+                  Sets the device's period time in microseconds.
+                  Don't change unless you really know what you're
+                  doing.
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <varname>auto_resample</varname>
+                  <parameter>yes|no</parameter>
+                </entry>
+                <entry>
+                  If set to <parameter>no</parameter>, then
+                  <filename>libasound</filename> will not attempt to
+                  resample, handing the responsibility over to MPD.
+                  It is recommended to let MPD resample (with
+                  libsamplerate), because ALSA is quite poor at doing
+                  so.
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <varname>auto_channels</varname>
+                  <parameter>yes|no</parameter>
+                </entry>
+                <entry>
+                  If set to <parameter>no</parameter>, then
+                  <filename>libasound</filename> will not attempt to
+                  convert between different channel numbers.
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <varname>auto_format</varname>
+                  <parameter>yes|no</parameter>
+                </entry>
+                <entry>
+                  If set to <parameter>no</parameter>, then
+                  <filename>libasound</filename> will not attempt to
+                  convert between different sample formats (16 bit, 24
+                  bit, floating point, ...).
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
+      </section>
+
+      <section>
+        <title><varname>ao</varname></title>
+
+        <para>
+          The <varname>ao</varname> plugin uses the portable
+          <filename>libao</filename> library.
+        </para>
+      </section>
+
+      <section>
+        <title><varname>fifo</varname></title>
+
+        <para>
+          The <varname>fifo</varname> plugin writes raw PCM data to a
+          FIFO (First In, First Out) file.  The data can be read by
+          another program.
+        </para>
+      </section>
+
+      <section>
+        <title><varname>jack</varname></title>
+
+        <para>
+          The <varname>jack</varname> plugin connects to a JACK
+          server.
+        </para>
+      </section>
+
+      <section>
+        <title><varname>mvp</varname></title>
+
+        <para>
+          The <varname>mvp</varname> plugin uses the proprietary
+          Hauppauge Media MVP interface.  We do not know any user of
+          this plugin, and we do not know if it actually works.
+        </para>
+      </section>
+
+      <section>
+        <title><varname>null</varname></title>
+
+        <para>
+          The <varname>null</varname> plugin does nothing.  It
+          discards everything sent to it.
+        </para>
+
+        <informaltable>
+          <tgroup cols="2">
+            <thead>
+              <row>
+                <entry>Setting</entry>
+                <entry>Description</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>
+                  <varname>sync</varname>
+                  <parameter>yes|no</parameter>
+                </entry>
+                <entry>
+                  If set to <parameter>no</parameter>, then the timer
+                  is disabled - the device will accept PCM chunks at
+                  arbitrary rate (useful for benchmarking).  The
+                  default behaviour is to play in real time.
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
+      </section>
+
+      <section>
+        <title><varname>oss</varname></title>
+
+        <para>
+          The "Open Sound System" plugin is supported on most Unix
+          platforms.
+        </para>
+
+        <informaltable>
+          <tgroup cols="2">
+            <thead>
+              <row>
+                <entry>Setting</entry>
+                <entry>Description</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>
+                  <varname>device</varname>
+                  <parameter>PATH</parameter>
+                </entry>
+                <entry>
+                  Sets the path of the PCM device.  If not specified,
+                  then MPD will attempt to open
+                  <filename>/dev/sound/dsp</filename> and
+                  <filename>/dev/dsp</filename>.
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
+      </section>
+
+      <section>
+        <title><varname>osx</varname></title>
+
+        <para>
+          The "Mac OS X" plugin uses Apple's CoreAudio API.
+        </para>
+      </section>
+
+      <section>
+        <title><varname>pipe</varname></title>
+
+        <para>
+          The <varname>pipe</varname> plugin starts a program and
+          writes raw PCM data into its standard input.
+        </para>
+      </section>
+
+      <section>
+        <title><varname>pulse</varname></title>
+
+        <para>
+          The <varname>pulse</varname> plugin connects to a PulseAudio
+          server.
+        </para>
+      </section>
+
+      <section>
+        <title><varname>shout</varname></title>
+
+        <para>
+          The <varname>shout</varname> plugin connects to a ShoutCast
+          or IceCast server.  It forwards tags to this server.
+        </para>
+      </section>
+    </section>
   </chapter>
 </book>
