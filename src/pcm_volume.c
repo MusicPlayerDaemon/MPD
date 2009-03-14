@@ -59,7 +59,7 @@ pcm_volume_change_16(int16_t *buffer, unsigned num_samples, int volume)
 	}
 }
 
-#if __i386__
+#ifdef __i386__
 /**
  * Optimized volume function for i386.  Use the EDX:EAX 2*32 bit
  * multiplication result instead of emulating 64 bit multiplication.
@@ -94,7 +94,7 @@ static void
 pcm_volume_change_24(int32_t *buffer, unsigned num_samples, int volume)
 {
 	while (num_samples > 0) {
-#if __i386__
+#ifdef __i386__
 		/* assembly version for i386 */
 		int32_t sample = *buffer;
 
