@@ -20,16 +20,26 @@
 #include "socket_util.h"
 #include "config.h"
 
+#include <errno.h>
+#include <unistd.h>
+
 #ifndef G_OS_WIN32
 #include <sys/socket.h>
 #include <netdb.h>
 #else /* G_OS_WIN32 */
 #include <ws2tcpip.h>
+#include <winsock.h>
 #endif /* G_OS_WIN32 */
 
 #ifdef HAVE_IPV6
 #include <string.h>
 #endif
+
+static GQuark
+listen_quark(void)
+{
+	return g_quark_from_static_string("listen");
+}
 
 char *
 sockaddr_to_string(const struct sockaddr *sa, size_t length, GError **error)
@@ -78,4 +88,55 @@ sockaddr_to_string(const struct sockaddr *sa, size_t length, GError **error)
 #endif
 
 	return g_strconcat(host, ":", serv, NULL);
+}
+
+int
+socket_bind_listen(int domain, int type, int protocol,
+		   const struct sockaddr *address, size_t address_length,
+		   int backlog,
+		   GError **error)
+{
+	int fd, ret;
+	const int reuse = 1;
+#ifdef HAVE_STRUCT_UCRED
+	int passcred = 1;
+#endif
+
+	fd = socket(domain, type, protocol);
+	if (fd < 0) {
+		g_set_error(error, listen_quark(), errno,
+			    "Failed to create socket: %s", g_strerror(errno));
+		return -1;
+	}
+
+	ret = setsockopt(fd, SOL_SOCKET, SO_REUSEADDR,
+			 &reuse, sizeof(reuse));
+	if (ret < 0) {
+		g_set_error(error, listen_quark(), errno,
+			    "setsockopt() failed: %s", g_strerror(errno));
+		close(fd);
+		return -1;
+	}
+
+	ret = bind(fd, address, address_length);
+	if (ret < 0) {
+		g_set_error(error, listen_quark(), errno,
+			    "%s", strerror(errno));
+		close(fd);
+		return -1;
+	}
+
+	ret = listen(fd, backlog);
+	if (ret < 0) {
+		g_set_error(error, listen_quark(), errno,
+			    "listen() failed: %s", g_strerror(errno));
+		close(fd);
+		return -1;
+	}
+
+#ifdef HAVE_STRUCT_UCRED
+	setsockopt(fd, SOL_SOCKET, SO_PASSCRED, &passcred, sizeof(passcred));
+#endif
+
+	return fd;
 }

@@ -18,6 +18,7 @@
  */
 
 #include "listen.h"
+#include "socket_util.h"
 #include "client.h"
 #include "conf.h"
 #include "utils.h"
@@ -45,8 +46,6 @@
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "listen"
 
-#define ALLOW_REUSE	1
-
 #define DEFAULT_PORT	6600
 
 struct listen_socket {
@@ -73,49 +72,13 @@ static bool
 listen_add_address(int pf, const struct sockaddr *addrp, socklen_t addrlen,
 		   GError **error)
 {
-	int fd, ret;
-	const int reuse = ALLOW_REUSE;
-#ifdef HAVE_STRUCT_UCRED
-	int passcred = 1;
-#endif
+	int fd;
 	struct listen_socket *ls;
 	GIOChannel *channel;
 
-	fd = socket(pf, SOCK_STREAM, 0);
-	if (fd < 0) {
-		g_set_error(error, listen_quark(), errno,
-			    "Failed to create socket: %s", strerror(errno));
+	fd = socket_bind_listen(pf, SOCK_STREAM, 0, addrp, addrlen, 5, error);
+	if (fd < 0)
 		return false;
-	}
-
-	ret = setsockopt(fd, SOL_SOCKET, SO_REUSEADDR,
-			 &reuse, sizeof(reuse));
-	if (ret < 0) {
-		g_set_error(error, listen_quark(), errno,
-			    "setsockopt() failed: %s", strerror(errno));
-		close(fd);
-		return false;
-	}
-
-	ret = bind(fd, addrp, addrlen);
-	if (ret < 0) {
-		g_set_error(error, listen_quark(), errno,
-			    "%s", strerror(errno));
-		close(fd);
-		return false;
-	}
-
-	ret = listen(fd, 5);
-	if (ret < 0) {
-		g_set_error(error, listen_quark(), errno,
-			    "listen() failed: %s", strerror(errno));
-		close(fd);
-		return false;
-	}
-
-#ifdef HAVE_STRUCT_UCRED
-	setsockopt(fd, SOL_SOCKET, SO_PASSCRED, &passcred, sizeof(passcred));
-#endif
 
 	ls = g_new(struct listen_socket, 1);
 	ls->fd = fd;
