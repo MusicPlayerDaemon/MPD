@@ -23,8 +23,16 @@
 #include "mixer_plugin.h"
 #include "mixer_list.h"
 
+#include <glib.h>
+
 struct mixer {
 	const struct mixer_plugin *plugin;
+
+	/**
+	 * This mutex protects all of the mixer struct, including its
+	 * implementation, so plugins don't have to deal with that.
+	 */
+	GMutex *mutex;
 };
 
 void

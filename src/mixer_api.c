@@ -19,8 +19,6 @@
 
 #include "mixer_api.h"
 
-#include <glib.h>
-
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "mixer"
 
@@ -28,4 +26,5 @@ void
 mixer_init(struct mixer *mixer, const struct mixer_plugin *plugin)
 {
 	mixer->plugin = plugin;
+	mixer->mutex = g_mutex_new();
 }
