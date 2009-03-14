@@ -18,6 +18,7 @@
  */
 
 #include "client.h"
+#include "fifo_buffer.h"
 #include "command.h"
 #include "conf.h"
 #include "listen.h"
@@ -71,12 +72,11 @@ struct deferred_buffer {
 };
 
 struct client {
-	char buffer[4096];
-	size_t bufferLength;
-	size_t bufferPos;
-
 	GIOChannel *channel;
 	guint source_id;
+
+	/** the buffer for reading lines from the #channel */
+	struct fifo_buffer *input;
 
 	unsigned permission;
 
@@ -176,8 +176,6 @@ static void client_init(struct client *client, int fd)
 
 	client->cmd_list_size = 0;
 	client->cmd_list_OK = -1;
-	client->bufferLength = 0;
-	client->bufferPos = 0;
 
 #ifndef G_OS_WIN32
 	client->channel = g_io_channel_unix_new(fd);
@@ -196,6 +194,8 @@ static void client_init(struct client *client, int fd)
 	client->source_id = g_io_add_watch(client->channel,
 					   G_IO_IN|G_IO_ERR|G_IO_HUP,
 					   client_in_event, client);
+
+	client->input = fifo_buffer_new(4096);
 
 	client->lastTime = time(NULL);
 	client->cmd_list = NULL;
@@ -370,54 +370,45 @@ static int client_process_line(struct client *client, char *line)
 	return ret;
 }
 
+static char *
+client_read_line(struct client *client)
+{
+	const char *p, *newline;
+	size_t length;
+	char *line;
+
+	p = fifo_buffer_read(client->input, &length);
+	if (p == NULL)
+		return NULL;
+
+	newline = memchr(p, '\n', length);
+	if (newline == NULL)
+		return NULL;
+
+	line = g_strndup(p, newline - p);
+	fifo_buffer_consume(client->input, newline - p + 1);
+
+	return g_strchomp(line);
+}
+
 static int client_input_received(struct client *client, size_t bytesRead)
 {
-	char *start = client->buffer + client->bufferPos, *end;
-	char *newline, *next;
+	char *line;
 	int ret;
 
-	assert(client->bufferPos <= client->bufferLength);
-	assert(client->bufferLength + bytesRead <= sizeof(client->buffer));
-
-	client->bufferLength += bytesRead;
-	end = client->buffer + client->bufferLength;
+	fifo_buffer_append(client->input, bytesRead);
 
 	/* process all lines */
-	while ((newline = memchr(start, '\n', end - start)) != NULL) {
-		next = newline + 1;
 
-		if (newline > start && newline[-1] == '\r')
-			--newline;
-		*newline = 0;
+	while ((line = client_read_line(client)) != NULL) {
+		ret = client_process_line(client, line);
+		g_free(line);
 
-		ret = client_process_line(client, start);
 		if (ret == COMMAND_RETURN_KILL ||
 		    ret == COMMAND_RETURN_CLOSE)
 			return ret;
 		if (client_is_expired(client))
 			return COMMAND_RETURN_CLOSE;
-
-		start = next;
-	}
-
-	/* mark consumed lines */
-	client->bufferPos = start - client->buffer;
-
-	/* if we're have reached the buffer's end, close the gab at
-	   the beginning */
-	if (client->bufferLength == sizeof(client->buffer)) {
-		if (client->bufferPos == 0) {
-			g_warning("[%u] buffer overflow",
-				  client->num);
-			return COMMAND_RETURN_CLOSE;
-		}
-		assert(client->bufferLength >= client->bufferPos
-		       && "bufferLength >= bufferPos");
-		client->bufferLength -= client->bufferPos;
-		memmove(client->buffer,
-			client->buffer + client->bufferPos,
-			client->bufferLength);
-		client->bufferPos = 0;
 	}
 
 	return 0;
@@ -425,18 +416,20 @@ static int client_input_received(struct client *client, size_t bytesRead)
 
 static int client_read(struct client *client)
 {
+	char *p;
+	size_t max_length;
 	GError *error = NULL;
 	GIOStatus status;
 	gsize bytes_read;
 
-	assert(client->bufferPos <= client->bufferLength);
-	assert(client->bufferLength < sizeof(client->buffer));
+	p = fifo_buffer_write(client->input, &max_length);
+	if (p == NULL) {
+		g_warning("[%u] buffer overflow", client->num);
+		return COMMAND_RETURN_CLOSE;
+	}
 
-	status = g_io_channel_read_chars
-		(client->channel,
-		 client->buffer + client->bufferLength,
-		 sizeof(client->buffer) - client->bufferLength,
-		 &bytes_read, &error);
+	status = g_io_channel_read_chars(client->channel, p, max_length,
+					 &bytes_read, &error);
 	switch (status) {
 	case G_IO_STATUS_NORMAL:
 		return client_input_received(client, bytes_read);
