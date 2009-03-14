@@ -1455,11 +1455,12 @@ handle_idle(struct client *client,
 }
 
 #ifdef ENABLE_SQLITE
-static void print_sticker(GString *name, GString *value,
-			  struct client *client)
+static void
+print_sticker(const char *name, const char *value, gpointer data)
 {
-	client_printf(client, "sticker: %s=%s\n",
-		      (char *)name, (char *)value);
+	struct client *client = data;
+
+	client_printf(client, "sticker: %s=%s\n", name, value);
 }
 
 static enum command_return
@@ -1488,17 +1489,15 @@ handle_sticker_song(struct client *client, int argc, char *argv[])
 
 		return COMMAND_RETURN_OK;
 	} else if (argc == 4 && strcmp(argv[1], "list") == 0) {
-		GHashTable *hash;
-
-		hash = sticker_song_list_values(song);
-		if (NULL == hash) {
+		struct sticker *sticker = sticker_song_get(song);
+		if (NULL == sticker) {
 			command_error(client, ACK_ERROR_NO_EXIST,
 				      "no stickers found");
 			return COMMAND_RETURN_ERROR;
 		}
-		g_hash_table_foreach(hash, (GHFunc)print_sticker,
-				     client);
-		g_hash_table_destroy(hash);
+
+		sticker_foreach(sticker, print_sticker, client);
+		sticker_free(sticker);
 
 		return COMMAND_RETURN_OK;
 	} else if (argc == 6 && strcmp(argv[1], "set") == 0) {
