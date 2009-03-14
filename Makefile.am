@@ -520,6 +520,8 @@ SPARSE_FLAGS =
 SPARSE_CPPFLAGS = $(DEFAULT_INCLUDES) \
 	-I$(shell $(CC) -print-file-name=include) \
 	-I$(shell $(CC) -print-file-name=include-fixed)
+SPARSE_CPPFLAGS += -D__SCHAR_MAX__=127 -D__SHRT_MAX__=32767 \
+	-D__INT_MAX__=2147483647 -D__LONG_MAX__=2147483647
 sparse-check:
 	for i in $(src_mpd_SOURCES); \
 	do \
