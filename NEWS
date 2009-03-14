@@ -53,6 +53,7 @@ ver 0.15 - (200?/??/??)
 * 32 bit audio support
 * Print available protocols in --version
 * fill buffer after seeking
+* choose the fallback resampler at runtime
 
 
 ver 0.14.2 (2009/02/13)

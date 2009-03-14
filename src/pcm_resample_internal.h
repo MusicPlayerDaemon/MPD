@@ -52,7 +52,7 @@ pcm_resample_lsr_32(struct pcm_resample_state *state,
 		    unsigned dest_rate,
 		    size_t *dest_size_r);
 
-#else
+#endif
 
 void
 pcm_resample_fallback_deinit(struct pcm_resample_state *state);
@@ -73,7 +73,5 @@ pcm_resample_fallback_32(struct pcm_resample_state *state,
 			 G_GNUC_UNUSED size_t src_size,
 			 unsigned dest_rate,
 			 size_t *dest_size_r);
-
-#endif
 
 #endif

@@ -158,6 +158,11 @@ distortions.
 Linear Interpolator (4)
 
 Linear interpolator, very fast, poor quality.
+.TP
+internal
+
+Poor quality, no floating point operations.  This is the default (and
+only choice) if MPD was compiled without libsamplerate.
 .RE
 .IP
 For an up-to-date list of available converters, please see the libsamplerate

@@ -198,6 +198,7 @@ src_mpd_SOURCES = \
 	src/pcm_channels.c \
 	src/pcm_format.c \
 	src/pcm_resample.c \
+	src/pcm_resample_fallback.c \
 	src/pcm_dither.c \
 	src/permission.c \
 	src/player_thread.c \
@@ -240,8 +241,6 @@ endif
 
 if HAVE_LIBSAMPLERATE
 src_mpd_SOURCES += src/pcm_resample_libsamplerate.c
-else
-src_mpd_SOURCES += src/pcm_resample_fallback.c
 endif
 
 if HAVE_ID3TAG
