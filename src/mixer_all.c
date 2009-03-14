@@ -57,7 +57,6 @@ mixer_all_get_volume(void)
 
 	for (unsigned i = 0; i < count; i++) {
 		volume = output_mixer_get_volume(i);
-		g_debug("device %d: volume=%d", i, volume);
 		if (volume >= 0) {
 			total += volume;
 			++ok;
