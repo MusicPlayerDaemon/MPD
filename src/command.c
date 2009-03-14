@@ -562,7 +562,8 @@ handle_add(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 			return COMMAND_RETURN_ERROR;
 		}
 
-		return addToPlaylist(&g_playlist, uri, NULL);
+		result = addToPlaylist(&g_playlist, uri, NULL);
+		return print_playlist_result(client, result);
 	}
 
 	result = addAllIn(uri);
