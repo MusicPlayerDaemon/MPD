@@ -20,6 +20,7 @@
 #include "output_all.h"
 #include "output_internal.h"
 #include "output_control.h"
+#include "chunk.h"
 #include "conf.h"
 #include "pipe.h"
 #include "buffer.h"
