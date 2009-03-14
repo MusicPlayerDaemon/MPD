@@ -20,7 +20,7 @@
 #ifndef MPD_MIXER_H
 #define MPD_MIXER_H
 
-#include <stdbool.h>
+#include "mixer_plugin.h"
 
 /*
  * list of currently implemented mixers
@@ -29,46 +29,6 @@
 extern const struct mixer_plugin alsa_mixer;
 extern const struct mixer_plugin oss_mixer;
 extern const struct mixer_plugin pulse_mixer;
-
-struct config_param;
-
-struct mixer_plugin {
-	/**
-         * Alocates and configures a mixer device.
-	 */
-	struct mixer *(*init)(const struct config_param *param);
-
-        /**
-	 * Finish and free mixer data
-         */
-        void (*finish)(struct mixer *data);
-
-        /**
-    	 * Open mixer device
-	 */
-	bool (*open)(struct mixer *data);
-
-        /**
-    	 * Close mixer device
-	 */
-	void (*close)(struct mixer *data);
-
-	/**
-	 * Reads the current volume.
-	 *
-	 * @return the current volume (0..100 including) or -1 on
-	 * error
-	 */
-	int (*get_volume)(struct mixer *mixer);
-
-	/**
-	 * Sets the volume.
-	 *
-	 * @param volume the new volume (0..100 including)
-	 * @return true on success
-	 */
-	bool (*set_volume)(struct mixer *mixer, unsigned volume);
-};
 
 struct mixer {
 	const struct mixer_plugin *plugin;
