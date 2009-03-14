@@ -79,6 +79,7 @@ mpd_headers = \
 	src/log.h \
 	src/ls.h \
 	src/main.h \
+	src/mixer_all.h \
 	src/mixer_api.h \
 	src/mixer_control.h \
 	src/event_pipe.h \
@@ -457,6 +458,7 @@ OUTPUT_SRC = \
 
 MIXER_API_SRC = \
 	src/mixer_control.c \
+	src/mixer_all.c \
 	src/mixer_api.c
 
 MIXER_SRC =

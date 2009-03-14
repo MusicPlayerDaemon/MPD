@@ -23,9 +23,9 @@
 #include "idle.h"
 #include "pcm_volume.h"
 #include "config.h"
-#include "mixer_control.h"
 #include "output_all.h"
 #include "mixer_api.h"
+#include "mixer_all.h"
 
 #include <glib.h>
 
@@ -166,9 +166,6 @@ void volume_init(void)
 
 static int hardware_volume_get(void)
 {
-	int device, count;
-	int volume, volume_total, volume_ok;
-
 	assert(hardware_volume_timer != NULL);
 
 	if (last_hardware_volume >= 0 &&
@@ -176,25 +173,9 @@ static int hardware_volume_get(void)
 		/* throttle access to hardware mixers */
 		return last_hardware_volume;
 
-	volume_total = 0;
-	volume_ok = 0;
-
-	count = audio_output_count();
-	for (device=0; device<count ;device++) {
-		if (mixer_control_getvol(device, &volume)) {
-			g_debug("device %d: volume: %d\n", device, volume);
-			volume_total += volume;
-			volume_ok++;
-		}
-	}
-	if (volume_ok > 0) {
-		//return average
-		last_hardware_volume = volume_total / volume_ok;
-		g_timer_start(hardware_volume_timer);
-		return last_hardware_volume;
-	} else {
-		return -1;
-	}
+	last_hardware_volume = mixer_all_get_volume();
+	g_timer_start(hardware_volume_timer);
+	return last_hardware_volume;
 }
 
 static int software_volume_get(void)
@@ -245,16 +226,10 @@ static bool software_volume_change(int change, bool rel)
 
 static bool hardware_volume_change(int change, bool rel)
 {
-	int device, count;
-
 	/* reset the cache */
 	last_hardware_volume = -1;
 
-	count = audio_output_count();
-	for (device=0; device<count ;device++) {
-		mixer_control_setvol(device, change, rel);
-	}
-	return true;
+	return mixer_all_set_volume(change, rel);
 }
 
 bool volume_level_change(int change, bool rel)
