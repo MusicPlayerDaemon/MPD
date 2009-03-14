@@ -61,6 +61,7 @@ mpd_headers = \
 	src/encoder_plugin.h \
 	src/encoder_list.h \
 	src/encoder_api.h \
+	src/fifo_buffer.h \
 	src/update.h \
 	src/dirvec.h \
 	src/gcc.h \
@@ -177,6 +178,7 @@ src_mpd_SOURCES = \
 	src/directory_print.c \
 	src/database.c \
 	src/dirvec.c \
+	src/fifo_buffer.c \
 	src/update.c \
 	src/client.c \
 	src/listen.c \
