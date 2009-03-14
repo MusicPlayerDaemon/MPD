@@ -17,7 +17,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "pcm_resample.h"
+#include "pcm_resample_internal.h"
 #include "conf.h"
 #include "config.h"
 
@@ -30,7 +30,8 @@
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "pcm"
 
-void pcm_resample_deinit(struct pcm_resample_state *state)
+void
+pcm_resample_lsr_deinit(struct pcm_resample_state *state)
 {
 	if (state->state != NULL)
 		state->state = src_delete(state->state);
@@ -116,12 +117,12 @@ pcm_resample_set(struct pcm_resample_state *state,
 }
 
 const int16_t *
-pcm_resample_16(struct pcm_resample_state *state,
-		uint8_t channels,
-		unsigned src_rate,
-		const int16_t *src_buffer, size_t src_size,
-		unsigned dest_rate,
-		size_t *dest_size_r)
+pcm_resample_lsr_16(struct pcm_resample_state *state,
+		    uint8_t channels,
+		    unsigned src_rate,
+		    const int16_t *src_buffer, size_t src_size,
+		    unsigned dest_rate,
+		    size_t *dest_size_r)
 {
 	SRC_DATA *data = &state->data;
 	size_t data_in_size;
@@ -186,12 +187,12 @@ src_float_to_int_array (const float *in, int *out, int len)
 #endif
 
 const int32_t *
-pcm_resample_32(struct pcm_resample_state *state,
-		uint8_t channels,
-		unsigned src_rate,
-		const int32_t *src_buffer, size_t src_size,
-		unsigned dest_rate,
-		size_t *dest_size_r)
+pcm_resample_lsr_32(struct pcm_resample_state *state,
+		    uint8_t channels,
+		    unsigned src_rate,
+		    const int32_t *src_buffer, size_t src_size,
+		    unsigned dest_rate,
+		    size_t *dest_size_r)
 {
 	SRC_DATA *data = &state->data;
 	size_t data_in_size;

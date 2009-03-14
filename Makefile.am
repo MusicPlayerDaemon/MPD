@@ -101,6 +101,7 @@ mpd_headers = \
 	src/pcm_channels.h \
 	src/pcm_format.h \
 	src/pcm_resample.h \
+	src/pcm_resample_internal.h \
 	src/pcm_dither.h \
 	src/pcm_prng.h \
 	src/permission.h \

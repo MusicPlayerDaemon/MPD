@@ -17,24 +17,25 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "pcm_resample.h"
+#include "pcm_resample_internal.h"
 
 #include <assert.h>
 #include <glib.h>
 
-void pcm_resample_deinit(struct pcm_resample_state *state)
+void
+pcm_resample_fallback_deinit(struct pcm_resample_state *state)
 {
 	pcm_buffer_deinit(&state->buffer);
 }
 
 /* resampling code blatantly ripped from ESD */
 const int16_t *
-pcm_resample_16(struct pcm_resample_state *state,
-		uint8_t channels,
-		unsigned src_rate,
-		const int16_t *src_buffer, size_t src_size,
-		unsigned dest_rate,
-		size_t *dest_size_r)
+pcm_resample_fallback_16(struct pcm_resample_state *state,
+			 uint8_t channels,
+			 unsigned src_rate,
+			 const int16_t *src_buffer, size_t src_size,
+			 unsigned dest_rate,
+			 size_t *dest_size_r)
 {
 	unsigned src_pos, dest_pos = 0;
 	unsigned src_frames = src_size / channels / sizeof(*src_buffer);
@@ -70,12 +71,13 @@ pcm_resample_16(struct pcm_resample_state *state,
 }
 
 const int32_t *
-pcm_resample_32(struct pcm_resample_state *state,
-		uint8_t channels,
-		unsigned src_rate,
-		const int32_t *src_buffer, G_GNUC_UNUSED size_t src_size,
-		unsigned dest_rate,
-		size_t *dest_size_r)
+pcm_resample_fallback_32(struct pcm_resample_state *state,
+			 uint8_t channels,
+			 unsigned src_rate,
+			 const int32_t *src_buffer,
+			 G_GNUC_UNUSED size_t src_size,
+			 unsigned dest_rate,
+			 size_t *dest_size_r)
 {
 	unsigned src_pos, dest_pos = 0;
 	unsigned src_frames = src_size / channels / sizeof(*src_buffer);

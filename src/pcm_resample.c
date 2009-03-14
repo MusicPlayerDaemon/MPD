@@ -17,7 +17,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "pcm_resample.h"
+#include "pcm_resample_internal.h"
 #include "config.h"
 
 #include <string.h>
@@ -32,4 +32,51 @@ void pcm_resample_init(struct pcm_resample_state *state)
 #endif
 
 	pcm_buffer_init(&state->buffer);
+}
+
+void pcm_resample_deinit(struct pcm_resample_state *state)
+{
+#ifdef HAVE_LIBSAMPLERATE
+	pcm_resample_lsr_deinit(state);
+#else
+	pcm_resample_fallback_deinit(state);
+#endif
+}
+
+const int16_t *
+pcm_resample_16(struct pcm_resample_state *state,
+		uint8_t channels,
+		unsigned src_rate,
+		const int16_t *src_buffer, size_t src_size,
+		unsigned dest_rate,
+		size_t *dest_size_r)
+{
+#ifdef HAVE_LIBSAMPLERATE
+	return pcm_resample_lsr_16(state, channels,
+				   src_rate, src_buffer, src_size,
+				   dest_rate, dest_size_r);
+#else
+	return pcm_resample_fallback_16(state, channels,
+					src_rate, src_buffer, src_size,
+					dest_rate, dest_size_r);
+#endif
+}
+
+const int32_t *
+pcm_resample_32(struct pcm_resample_state *state,
+		uint8_t channels,
+		unsigned src_rate,
+		const int32_t *src_buffer, size_t src_size,
+		unsigned dest_rate,
+		size_t *dest_size_r)
+{
+#ifdef HAVE_LIBSAMPLERATE
+	return pcm_resample_lsr_32(state, channels,
+				   src_rate, src_buffer, src_size,
+				   dest_rate, dest_size_r);
+#else
+	return pcm_resample_fallback_32(state, channels,
+					src_rate, src_buffer, src_size,
+					dest_rate, dest_size_r);
+#endif
 }
