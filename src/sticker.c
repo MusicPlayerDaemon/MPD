@@ -194,17 +194,15 @@ sticker_load_value(const char *type, const char *uri, const char *name)
 	return value;
 }
 
-static GHashTable *
-sticker_list_values(const char *type, const char *uri)
+static bool
+sticker_list_values(GHashTable *hash, const char *type, const char *uri)
 {
 	int ret;
 	char *name, *value;
-	GHashTable *hash;
 
-	hash = NULL;
+	assert(hash != NULL);
 	assert(type != NULL);
 	assert(uri != NULL);
-
 	assert(sticker_enabled());
 
 	sqlite3_reset(sticker_stmt_list);
@@ -213,25 +211,20 @@ sticker_list_values(const char *type, const char *uri)
 	if (ret != SQLITE_OK) {
 		g_warning("sqlite3_bind_text() failed: %s",
 			  sqlite3_errmsg(sticker_db));
-		return NULL;
+		return false;
 	}
 
 	ret = sqlite3_bind_text(sticker_stmt_list, 2, uri, -1, NULL);
 	if (ret != SQLITE_OK) {
 		g_warning("sqlite3_bind_text() failed: %s",
 			  sqlite3_errmsg(sticker_db));
-		return NULL;
+		return false;
 	}
 
 	do {
 		ret = sqlite3_step(sticker_stmt_list);
 		switch (ret) {
 		case SQLITE_ROW:
-			if (!hash)
-				hash = g_hash_table_new_full(g_str_hash,
-							     g_str_equal,
-							     (GDestroyNotify)g_free,
-							     (GDestroyNotify)g_free);
 			name = g_strdup((const char*)sqlite3_column_text(sticker_stmt_list, 0));
 			value = g_strdup((const char*)sqlite3_column_text(sticker_stmt_list, 1));
 			g_hash_table_insert(hash, name, value);
@@ -244,14 +237,14 @@ sticker_list_values(const char *type, const char *uri)
 		default:
 			g_warning("sqlite3_step() failed: %s",
 				  sqlite3_errmsg(sticker_db));
-			return NULL;
+			return false;
 		}
 	} while (ret != SQLITE_DONE);
 
 	sqlite3_reset(sticker_stmt_list);
 	sqlite3_clear_bindings(sticker_stmt_list);
 
-	return hash;
+	return true;
 }
 
 static bool
@@ -438,6 +431,16 @@ sticker_delete(const char *type, const char *uri)
 	return true;
 }
 
+static struct sticker *
+sticker_new(void)
+{
+	struct sticker *sticker = g_new(struct sticker, 1);
+
+	sticker->table = g_hash_table_new_full(g_str_hash, g_str_equal,
+					       g_free, g_free);
+	return sticker;
+}
+
 void
 sticker_free(struct sticker *sticker)
 {
@@ -485,11 +488,16 @@ sticker_foreach(struct sticker *sticker,
 struct sticker *
 sticker_load(const char *type, const char *uri)
 {
-	struct sticker *sticker = g_new(struct sticker, 1);
+	struct sticker *sticker = sticker_new();
+	bool success;
 
-	sticker->table = sticker_list_values(type, uri);
-	if (sticker->table == NULL) {
-		g_free(sticker);
+	success = sticker_list_values(sticker->table, type, uri);
+	if (!success)
+		return NULL;
+
+	if (g_hash_table_size(sticker->table) == 0) {
+		/* don't return empty sticker objects */
+		sticker_free(sticker);
 		return NULL;
 	}
 
