@@ -27,6 +27,10 @@
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "sticker"
 
+struct sticker {
+	GHashTable *table;
+};
+
 static const char sticker_sql_create[] =
 	"CREATE TABLE IF NOT EXISTS sticker("
 	"  type VARCHAR NOT NULL, "
@@ -432,4 +436,62 @@ sticker_delete(const char *type, const char *uri)
 
 	idle_add(IDLE_STICKER);
 	return true;
+}
+
+void
+sticker_free(struct sticker *sticker)
+{
+	assert(sticker != NULL);
+	assert(sticker->table != NULL);
+
+	g_hash_table_destroy(sticker->table);
+	g_free(sticker);
+}
+
+const char *
+sticker_get_value(struct sticker *sticker, const char *name)
+{
+	return g_hash_table_lookup(sticker->table, name);
+}
+
+struct sticker_foreach_data {
+	void (*func)(const char *name, const char *value,
+		     gpointer user_data);
+	gpointer user_data;
+};
+
+static void
+sticker_foreach_func(gpointer key, gpointer value, gpointer user_data)
+{
+	struct sticker_foreach_data *data = user_data;
+
+	data->func(key, value, data->user_data);
+}
+
+void
+sticker_foreach(struct sticker *sticker,
+		void (*func)(const char *name, const char *value,
+			     gpointer user_data),
+		gpointer user_data)
+{
+	struct sticker_foreach_data data = {
+		.func = func,
+		.user_data = user_data,
+	};
+
+	g_hash_table_foreach(sticker->table, sticker_foreach_func, &data);
+}
+
+struct sticker *
+sticker_load(const char *type, const char *uri)
+{
+	struct sticker *sticker = g_new(struct sticker, 1);
+
+	sticker->table = sticker_list_values(type, uri);
+	if (sticker->table == NULL) {
+		g_free(sticker);
+		return NULL;
+	}
+
+	return sticker;
 }

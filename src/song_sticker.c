@@ -88,3 +88,19 @@ sticker_song_delete(const struct song *song)
 
 	return ret;
 }
+
+struct sticker *
+sticker_song_get(const struct song *song)
+{
+	char *uri;
+	struct sticker *sticker;
+
+	assert(song != NULL);
+	assert(song_in_database(song));
+
+	uri = song_get_uri(song);
+	sticker = sticker_load("song", uri);
+	g_free(uri);
+
+	return sticker;
+}

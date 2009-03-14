@@ -24,6 +24,7 @@
 #include <glib.h>
 
 struct song;
+struct sticker;
 
 /**
  * Returns one value from a song's sticker record.  The caller must
@@ -52,5 +53,14 @@ sticker_song_list_values(const struct song *song);
  */
 bool
 sticker_song_delete(const struct song *song);
+
+/**
+ * Loads the sticker for the specified song.
+ *
+ * @param song the song object
+ * @return a sticker object, or NULL on error or if there is no sticker
+ */
+struct sticker *
+sticker_song_get(const struct song *song);
 
 #endif

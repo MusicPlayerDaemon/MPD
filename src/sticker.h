@@ -46,6 +46,8 @@
 
 #include <stdbool.h>
 
+struct sticker;
+
 /**
  * Opens the sticker database (if path is not NULL).
  */
@@ -93,5 +95,46 @@ sticker_store_value(const char *type, const char *uri,
  */
 bool
 sticker_delete(const char *type, const char *uri);
+
+/**
+ * Frees resources held by the sticker object.
+ *
+ * @param sticker the sticker object to be freed
+ */
+void
+sticker_free(struct sticker *sticker);
+
+/**
+ * Determines a single value in a sticker.
+ *
+ * @param sticker the sticker object
+ * @param name the name of the sticker
+ * @return the sticker value, or NULL if none was found
+ */
+const char *
+sticker_get_value(struct sticker *sticker, const char *name);
+
+/**
+ * Iterates over all sticker items in a sticker.
+ *
+ * @param sticker the sticker object
+ * @param func a callback function
+ * @param user_data an opaque pointer for the callback function
+ */
+void
+sticker_foreach(struct sticker *sticker,
+		void (*func)(const char *name, const char *value,
+			     gpointer user_data),
+		gpointer user_data);
+
+/**
+ * Loads the sticker for the specified resource.
+ *
+ * @param type the resource type, e.g. "song"
+ * @param uri the URI of the resource, e.g. the song path
+ * @return a sticker object, or NULL on error or if there is no sticker
+ */
+struct sticker *
+sticker_load(const char *type, const char *uri);
 
 #endif
