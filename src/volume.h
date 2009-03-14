@@ -20,6 +20,7 @@
 #ifndef MPD_VOLUME_H
 #define MPD_VOLUME_H
 
+#include <stdbool.h>
 #include <stdio.h>
 
 #define VOLUME_MIXER_OSS	"oss"
@@ -34,7 +35,7 @@ void volume_finish(void);
 
 int volume_level_get(void);
 
-int volume_level_change(int change, int rel);
+bool volume_level_change(int change, bool rel);
 
 void read_sw_volume_state(FILE *fp);
 

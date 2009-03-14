@@ -215,7 +215,7 @@ int volume_level_get(void)
 	return -1;
 }
 
-static int software_volume_change(int change, int rel)
+static bool software_volume_change(int change, bool rel)
 {
 	int new = change;
 
@@ -240,10 +240,10 @@ static int software_volume_change(int change, int rel)
 
 	setPlayerSoftwareVolume(new);
 
-	return 0;
+	return true;
 }
 
-static int hardware_volume_change(int change, int rel)
+static bool hardware_volume_change(int change, bool rel)
 {
 	int device, count;
 
@@ -254,10 +254,10 @@ static int hardware_volume_change(int change, int rel)
 	for (device=0; device<count ;device++) {
 		mixer_control_setvol(device, change, rel);
 	}
-	return 0;
+	return true;
 }
 
-int volume_level_change(int change, int rel)
+bool volume_level_change(int change, bool rel)
 {
 	idle_add(IDLE_MIXER);
 
@@ -267,7 +267,7 @@ int volume_level_change(int change, int rel)
 	case VOLUME_MIXER_TYPE_SOFTWARE:
 		return software_volume_change(change, rel);
 	default:
-		return 0;
+		return true;
 	}
 }
 

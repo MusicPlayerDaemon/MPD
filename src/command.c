@@ -1039,33 +1039,39 @@ handle_listall(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 static enum command_return
 handle_volume(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 {
-	int change, ret;
+	int change;
+	bool success;
 
 	if (!check_int(client, &change, argv[1], need_integer))
 		return COMMAND_RETURN_ERROR;
 
-	ret = volume_level_change(change, 1);
-	if (ret == -1)
+	success = volume_level_change(change, true);
+	if (!success) {
 		command_error(client, ACK_ERROR_SYSTEM,
 			      "problems setting volume");
+		return COMMAND_RETURN_ERROR;
+	}
 
-	return ret;
+	return COMMAND_RETURN_OK;
 }
 
 static enum command_return
 handle_setvol(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 {
-	int level, ret;
+	int level;
+	bool success;
 
 	if (!check_int(client, &level, argv[1], need_integer))
 		return COMMAND_RETURN_ERROR;
 
-	ret = volume_level_change(level, 0);
-	if (ret == -1)
+	success = volume_level_change(level, 0);
+	if (!success) {
 		command_error(client, ACK_ERROR_SYSTEM,
 			      "problems setting volume");
+		return COMMAND_RETURN_ERROR;
+	}
 
-	return ret;
+	return COMMAND_RETURN_OK;
 }
 
 static enum command_return
