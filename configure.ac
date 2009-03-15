@@ -1192,6 +1192,12 @@ if
 			echo " Ogg Vorbis encoder ............disabled"
 		fi
 		echo ""
+
+	if
+		test x$enable_oggvorbis_encoder = xno &&
+		test x$enable_lame_encoder = xno; then
+		AC_MSG_ERROR([Cannot enable a streaming output without an encoder.])
+	fi
 fi
 
 echo " File Format Support:"
