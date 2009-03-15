@@ -264,34 +264,34 @@ vorbis_encoder_flush(struct encoder *_encoder, G_GNUC_UNUSED GError **error)
 	return true;
 }
 
-static void add_tag(struct vorbis_encoder *encoder,
-		    const char *name, char *value)
+static void
+add_tag(vorbis_comment *vc, const char *name, char *value)
 {
 	if (value) {
 		union {
 			const char *in;
 			char *out;
 		} u = { .in = name };
-		vorbis_comment_add_tag(&encoder->vc, u.out, value);
+
+		vorbis_comment_add_tag(vc, u.out, value);
 	}
 }
 
 static void
-copy_tag_to_vorbis_comment(struct vorbis_encoder *encoder,
-			   const struct tag *tag)
+copy_tag_to_vorbis_comment(vorbis_comment *vc, const struct tag *tag)
 {
 	for (unsigned i = 0; i < tag->num_items; i++) {
 		switch (tag->items[i]->type) {
 		case TAG_ITEM_ARTIST:
-			add_tag(encoder, "ARTIST", tag->items[i]->value);
+			add_tag(vc, "ARTIST", tag->items[i]->value);
 			break;
 
 		case TAG_ITEM_ALBUM:
-			add_tag(encoder, "ALBUM", tag->items[i]->value);
+			add_tag(vc, "ALBUM", tag->items[i]->value);
 			break;
 
 		case TAG_ITEM_TITLE:
-			add_tag(encoder, "TITLE", tag->items[i]->value);
+			add_tag(vc, "TITLE", tag->items[i]->value);
 			break;
 
 		default:
@@ -310,7 +310,7 @@ vorbis_encoder_tag(struct encoder *_encoder, const struct tag *tag,
 	if (!vorbis_encoder_reinit(encoder, error))
 		return false;
 
-	copy_tag_to_vorbis_comment(encoder, tag);
+	copy_tag_to_vorbis_comment(&encoder->vc, tag);
 
 	vorbis_encoder_send_header(encoder);
 
