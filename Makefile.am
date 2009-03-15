@@ -676,6 +676,14 @@ install-data-local: doc/api/html/index.html
 		doc/api/html/*.png doc/api/html/*.gif \
 		$(DESTDIR)$(docdir)/api/html
 
+upload: $(DOCBOOK_HTML) doc/api/html/index.html
+	rsync -vpruz --delete doc/ cirrus@www.musicpd.org:/var/www/musicpd.org/www/doc/ \
+		--chmod=Dug+rwx,Do+rx,Fug+rw,Fo+r \
+		--include=protocol --include=protocol/** \
+		--include=user --include=user/** \
+		--include=api --include=api/** \
+		--exclude=*
+
 endif
 
 
