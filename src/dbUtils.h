@@ -49,6 +49,4 @@ int
 listAllUniqueTags(struct client *client, int type,
 		  const struct locate_item_list *criteria);
 
-void printSavedMemoryFromFilenames(void);
-
 #endif

@@ -27,7 +27,6 @@
 #include "song_print.h"
 #include "tag.h"
 #include "strset.h"
-#include "log.h"
 #include "stored_playlist.h"
 
 #include <glib.h>
@@ -304,38 +303,4 @@ int listAllUniqueTags(struct client *client, int type,
 	freeListCommandItem(item);
 
 	return ret;
-}
-
-static int
-sumSavedFilenameMemoryInDirectory(struct directory *dir, void *data)
-{
-	int *sum = data;
-
-	if (directory_is_root(dir))
-		return 0;
-
-	*sum += (strlen(directory_get_path(dir)) + 1
-		 - sizeof(struct directory *)) * dir->songs.nr;
-
-	return 0;
-}
-
-static int
-sumSavedFilenameMemoryInSong(struct song *song, void *data)
-{
-	int *sum = data;
-
-	*sum += strlen(song->url) + 1;
-
-	return 0;
-}
-
-void printSavedMemoryFromFilenames(void)
-{
-	int sum = 0;
-
-	db_walk(NULL, sumSavedFilenameMemoryInSong,
-		sumSavedFilenameMemoryInDirectory, (void *)&sum);
-
-	DEBUG("saved memory from filenames: %i\n", sum);
 }
