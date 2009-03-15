@@ -568,6 +568,16 @@ AC_ARG_ENABLE(shout-mp3,
 		[disable support for mp3 streaming through shout (default: enable)]),,
 	[enable_shout_mp3=yes])
 
+AC_ARG_ENABLE(httpd-output,
+	AS_HELP_STRING([--enable-httpd-output],
+		[enables the HTTP server output (default: disable)]),,
+	[enable_httpd_output=no])
+
+AM_CONDITIONAL(ENABLE_HTTPD_OUTPUT, test x$enable_httpd_output = xyes)
+if test x$enable_httpd_output = xyes; then
+	AC_DEFINE(ENABLE_HTTPD_OUTPUT, 1, [Define to enable the HTTP server output])
+fi
+
 enable_osx=no
 case "$host_os" in
 	darwin*)
@@ -1153,6 +1163,12 @@ if test x$enable_shout = xyes; then
 	fi
 else
 	echo " SHOUTcast support .............disabled"
+fi
+
+if test x$enable_httpd_output = xyes; then
+	echo " HTTP daemon support ...........enabled"
+else
+	echo " HTTP daemon support ...........disabled"
 fi
 
 echo ""

@@ -252,6 +252,77 @@ cd mpd-0.14.2</programlisting>
       </section>
 
       <section>
+        <title><varname>httpd</varname></title>
+
+        <para>
+          The <varname>httpd</varname> plugin creates a HTTP server,
+          similar to ShoutCast / IceCast.  HTTP streaming clients like
+          <filename>mplayer</filename> can connect to it.
+        </para>
+
+        <para>
+          You must configure either <varname>quality</varname> or
+          <varname>bitrate</varname>.  It is highly recommended to
+          configure a fixed <varname>format</varname>, because a
+          stream cannot switch its audio format on-the-fly when the
+          song changes.
+        </para>
+
+        <informaltable>
+          <tgroup cols="2">
+            <thead>
+              <row>
+                <entry>Setting</entry>
+                <entry>Description</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>
+                  <varname>port</varname>
+                  <parameter>P</parameter>
+                </entry>
+                <entry>
+                  Binds the HTTP server to the specified port (on all
+                  interfaces).
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <varname>encoder</varname>
+                  <parameter>NAME</parameter>
+                </entry>
+                <entry>
+                  Chooses an encoder plugin,
+                  e.g. <parameter>vorbis</parameter>.
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <varname>quality</varname>
+                  <parameter>Q</parameter>
+                </entry>
+                <entry>
+                  Configures the encoder quality (for VBR) in the
+                  range -1 .. 10.
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <varname>bitrate</varname>
+                  <parameter>BR</parameter>
+                </entry>
+                <entry>
+                  Sets a constant encoder bit rate, in kilobit per
+                  second.
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
+      </section>
+
+      <section>
         <title><varname>null</varname></title>
 
         <para>

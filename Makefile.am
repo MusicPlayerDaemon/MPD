@@ -94,6 +94,8 @@ mpd_headers = \
 	src/chunk.h \
 	src/path.h \
 	src/mapper.h \
+	src/output/httpd_client.h \
+	src/output/httpd_internal.h \
 	src/page.h \
 	src/pcm_buffer.h \
 	src/pcm_utils.h \
@@ -511,6 +513,12 @@ if HAVE_SHOUT
 OUTPUT_SRC += src/output/shout_plugin.c
 endif
 
+if ENABLE_HTTPD_OUTPUT
+OUTPUT_SRC += \
+	src/output/httpd_client.c \
+	src/output/httpd_output_plugin.c
+endif
+
 
 #
 # Sparse code analysis
@@ -606,6 +614,9 @@ test_run_output_SOURCES = test/run_output.c \
 	src/conf.c src/buffer2array.c src/utils.c src/log.c \
 	src/audio_parser.c \
 	src/timer.c \
+	src/fifo_buffer.c \
+	src/page.c \
+	src/socket_util.c \
 	src/output_init.c src/output_list.c \
 	$(ENCODER_SRC) \
 	src/mixer_api.c \

@@ -32,6 +32,7 @@ extern const struct audio_output_plugin osxPlugin;
 extern const struct audio_output_plugin pulse_plugin;
 extern const struct audio_output_plugin mvp_output_plugin;
 extern const struct audio_output_plugin jackPlugin;
+extern const struct audio_output_plugin httpd_output_plugin;
 
 const struct audio_output_plugin *audio_output_plugins[] = {
 #ifdef HAVE_SHOUT
@@ -64,6 +65,9 @@ const struct audio_output_plugin *audio_output_plugins[] = {
 #endif
 #ifdef HAVE_JACK
 	&jackPlugin,
+#endif
+#ifdef ENABLE_HTTPD_OUTPUT
+	&httpd_output_plugin,
 #endif
 	NULL
 };

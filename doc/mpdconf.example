@@ -198,6 +198,18 @@ log_file			"~/.mpd/log"
 #	timeout			"2"			# optional
 #}
 #
+# An example of a httpd output (built-in HTTP streaming server):
+#
+#audio_output {
+#	type			"httpd"
+#	name			"My HTTP Stream"
+#	encoder			"ogg"			# optional
+#	port			"8000"
+#	quality			"5.0"
+#	bitrate			"128"
+#	format			"44100:16:1"
+#}
+#
 # An example of a pulseaudio output (streaming to a remote pulseaudio server)
 #
 #audio_output {
