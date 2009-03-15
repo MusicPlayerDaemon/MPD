@@ -558,15 +558,15 @@ AC_ARG_ENABLE(pulse,
 		[disable support for the PulseAudio sound server (default: enable)]),,
 	enable_pulse=yes)
 
-AC_ARG_ENABLE(shout-ogg,
-	AS_HELP_STRING([--disable-shout-ogg],
-		[disable support for ogg streaming through shout (default: enable)]),,
-	[enable_shout_ogg=yes])
+AC_ARG_ENABLE(oggvorbis-encoder,
+	AS_HELP_STRING([--disable-oggvorbis-encoder],
+		[disable support for ogg streaming (default: enable)]),,
+	[enable_oggvorbis_encoder=yes])
 
-AC_ARG_ENABLE(shout-mp3,
-	AS_HELP_STRING([--disable-shout-mp3],
-		[disable support for mp3 streaming through shout (default: enable)]),,
-	[enable_shout_mp3=yes])
+AC_ARG_ENABLE(lame-encoder,
+	AS_HELP_STRING([--disable-lame-encoder],
+		[disable support for mp3 streaming (default: enable)]),,
+	[enable_lame_encoder=yes])
 
 AC_ARG_ENABLE(httpd-output,
 	AS_HELP_STRING([--enable-httpd-output],
@@ -588,24 +588,24 @@ esac
 
 AM_CONDITIONAL(HAVE_OSX, test x$enable_osx = xyes)
 
-if test x$enable_shout_ogg = xyes || test x$enable_shout_mp3 = xyes; then
+if test x$enable_oggvorbis_encoder = xyes || test x$enable_lame_encoder = xyes; then
 	PKG_CHECK_MODULES([SHOUT], [shout],,
-		[enable_shout_ogg=no; enable_shout_mp3=no;
+		[enable_oggvorbis_encoder=no; enable_lame_encoder=no;
 			AC_MSG_WARN([disabling shout streaming support because libshout is not available])])
 fi
 
-if test x$enable_shout_ogg = xyes; then
+if test x$enable_oggvorbis_encoder = xyes; then
 	if test x$enable_oggvorbis = xno; then
 		AC_MSG_WARN([disabling ogg shout streaming support because vorbis is not enabled])
-		enable_shout_ogg=no
+		enable_oggvorbis_encoder=no
 	fi
 	if test x$use_tremor = xyes; then
 		AC_MSG_WARN([disabling ogg shout streaming support because tremor does not support vorbis encoding])
-		enable_shout_ogg=no
+		enable_oggvorbis_encoder=no
 	fi
-	if test x$enable_shout_ogg = xyes; then
+	if test x$enable_oggvorbis_encoder = xyes; then
 		PKG_CHECK_MODULES(VORBISENC, [vorbisenc],,
-			enable_shout_ogg=no)
+			enable_oggvorbis_encoder=no)
 	fi
 fi
 
@@ -616,14 +616,14 @@ if test x$enable_lame = xyes; then
 			AC_MSG_WARN(You need lame -- disabling lame support)])
 fi
 
-if test x$enable_shout_mp3 = xyes; then
+if test x$enable_lame_encoder = xyes; then
 	if test x$enable_lame = xno; then
 		AC_MSG_WARN([disabling mp3 shout streaming support because lame is not enabled])
-		enable_shout_mp3=no
+		enable_lame_encoder=no
 	fi
 fi
 
-if test x$enable_shout_ogg = xyes || test x$enable_shout_mp3 = xyes; then
+if test x$enable_oggvorbis_encoder = xyes || test x$enable_lame_encoder = xyes; then
 	enable_shout=yes
 	AC_DEFINE(HAVE_SHOUT, 1, [Define to enable libshout support])
 else
@@ -633,13 +633,13 @@ fi
 AM_CONDITIONAL(HAVE_SHOUT, test x$enable_shout = xyes)
 
 AM_CONDITIONAL(ENABLE_ENCODER, test x$enable_shout = xyes || test x$enable_httpd_output = xyes)
-AM_CONDITIONAL(ENABLE_VORBIS_ENCODER, test x$enable_shout_ogg = xyes)
-if test x$enable_shout_ogg = xyes; then
+AM_CONDITIONAL(ENABLE_VORBIS_ENCODER, test x$enable_oggvorbis_encoder = xyes)
+if test x$enable_oggvorbis_encoder = xyes; then
 	AC_DEFINE(ENABLE_VORBIS_ENCODER, 1,
 		[Define to enable the vorbis encoder plugin])
 fi
-AM_CONDITIONAL(ENABLE_LAME_ENCODER, test x$enable_shout_mp3 = xyes)
-if test x$enable_shout_mp3 = xyes; then
+AM_CONDITIONAL(ENABLE_LAME_ENCODER, test x$enable_lame_encoder = xyes)
+if test x$enable_lame_encoder = xyes; then
 	AC_DEFINE(ENABLE_LAME_ENCODER, 1,
 		[Define to enable the lame encoder plugin])
 fi
@@ -1150,13 +1150,13 @@ fi
 if test x$enable_shout = xyes; then
 	echo " SHOUTcast support .............enabled"
 
-	if test x$enable_shout_mp3 = xyes; then
+	if test x$enable_lame_encoder = xyes; then
 		echo "   with LAME mp3 encoder .......enabled"
 	else
 		echo "   with LAME mp3 encoder .......disabled"
 	fi
 
-	if test x$enable_shout_ogg = xyes; then
+	if test x$enable_oggvorbis_encoder = xyes; then
 		echo "   with Ogg Vorbis encoder .....enabled"
 	else
 		echo "   with Ogg Vorbis encoder .....disabled"
@@ -1176,8 +1176,8 @@ echo ""
 if
 	test x$enable_ao = xno &&
 	test x$enable_oss = xno &&
-	test x$enable_shout_ogg = xno &&
-	test x$enable_shout_mp3 = xno &&
+	test x$enable_oggvorbis_encoder = xno &&
+	test x$enable_lame_encoder = xno &&
 	test x$enable_alsa = xno &&
 	test x$enable_osx = xno &&
 	test x$enable_pulse = xno &&
