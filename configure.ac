@@ -632,7 +632,7 @@ fi
 
 AM_CONDITIONAL(HAVE_SHOUT, test x$enable_shout = xyes)
 
-AM_CONDITIONAL(ENABLE_ENCODER, test x$enable_shout = xyes)
+AM_CONDITIONAL(ENABLE_ENCODER, test x$enable_shout = xyes || test x$enable_httpd_output = xyes)
 AM_CONDITIONAL(ENABLE_VORBIS_ENCODER, test x$enable_shout_ogg = xyes)
 if test x$enable_shout_ogg = xyes; then
 	AC_DEFINE(ENABLE_VORBIS_ENCODER, 1,
