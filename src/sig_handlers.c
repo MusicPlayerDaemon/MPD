@@ -27,7 +27,7 @@
 
 #include <glib.h>
 
-#include <sys/signal.h>
+#include <signal.h>
 #include <errno.h>
 #include <string.h>
 
