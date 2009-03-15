@@ -302,17 +302,26 @@ copy_tag_to_vorbis_comment(vorbis_comment *vc, const struct tag *tag)
 
 static bool
 vorbis_encoder_tag(struct encoder *_encoder, const struct tag *tag,
-		   GError **error)
+		   G_GNUC_UNUSED GError **error)
 {
 	struct vorbis_encoder *encoder = (struct vorbis_encoder *)_encoder;
+	vorbis_comment comment;
+	ogg_packet packet;
 
-	vorbis_encoder_clear(encoder);
-	if (!vorbis_encoder_reinit(encoder, error))
-		return false;
+	/* write the vorbis_comment object */
 
-	copy_tag_to_vorbis_comment(&encoder->vc, tag);
+	vorbis_comment_init(&comment);
+	copy_tag_to_vorbis_comment(&comment, tag);
 
-	vorbis_encoder_send_header(encoder);
+	/* convert that vorbis_comment into a ogg_packet */
+
+	vorbis_commentheader_out(&comment, &packet);
+	vorbis_comment_clear(&comment);
+
+	/* .. and send it into the ogg_stream_state */
+
+	ogg_stream_packetin(&encoder->os, &packet);
+	ogg_packet_clear(&packet);
 
 	return true;
 }
