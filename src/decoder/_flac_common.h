@@ -170,7 +170,7 @@ void flac_error_common_cb(const char *plugin,
 			  struct flac_data *data);
 
 void
-flac_vorbis_comments_to_tag(struct tag *tag,
+flac_vorbis_comments_to_tag(struct tag *tag, const char *char_tnum,
 			    const FLAC__StreamMetadata *block);
 
 FLAC__StreamDecoderWriteStatus

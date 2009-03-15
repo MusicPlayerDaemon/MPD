@@ -227,7 +227,7 @@ flac_write_cb(const flac_decoder *dec, const FLAC__Frame *frame,
 }
 
 static struct tag *
-flac_tag_load(const char *file)
+flac_tag_load(const char *file, const char *char_tnum)
 {
 	struct tag *tag;
 	FLAC__Metadata_SimpleIterator *it;
@@ -265,7 +265,7 @@ flac_tag_load(const char *file)
 		if (!block)
 			break;
 		if (block->type == FLAC__METADATA_TYPE_VORBIS_COMMENT) {
-			flac_vorbis_comments_to_tag(tag, block);
+			flac_vorbis_comments_to_tag(tag, char_tnum, block);
 		} else if (block->type == FLAC__METADATA_TYPE_STREAMINFO) {
 			tag->time = ((float)block->data.stream_info.total_samples) /
 			    block->data.stream_info.sample_rate + 0.5;
@@ -298,13 +298,13 @@ flac_cue_tag_load(const char *file)
 	FLAC__StreamMetadata* cs = FLAC__metadata_object_new(FLAC__METADATA_TYPE_CUESHEET);
 
 	tnum = flac_vtrack_tnum(file);
+	char_tnum = g_strdup_printf("%u", tnum);
 
 	slash = strrchr(file, '/');
 	*slash = '\0';
 
-	tag = flac_tag_load(file);
+	tag = flac_tag_load(file, char_tnum);
 
-	char_tnum = g_strdup_printf("%u", tnum);
 	if (char_tnum != NULL)
 	{
 		tag_add_item(	tag,
@@ -350,7 +350,7 @@ flac_tag_dup(const char *file)
 		return flac_cue_tag_load(file);
 	else
 #endif /* FLAC_API_VERSION_CURRENT >= 7 */
-		return flac_tag_load(file);
+		return flac_tag_load(file, NULL);
 }
 
 static void
@@ -823,7 +823,7 @@ oggflac_tag_dup(const char *file)
 		if (!(block = FLAC__metadata_iterator_get_block(it)))
 			break;
 		if (block->type == FLAC__METADATA_TYPE_VORBIS_COMMENT) {
-			flac_vorbis_comments_to_tag(ret, block);
+			flac_vorbis_comments_to_tag(ret, NULL, block);
 		} else if (block->type == FLAC__METADATA_TYPE_STREAMINFO) {
 			ret->time = ((float)block->data.stream_info.
 				     total_samples) /

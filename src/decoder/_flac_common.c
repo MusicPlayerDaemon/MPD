@@ -100,16 +100,24 @@ flac_parse_replay_gain(const FLAC__StreamMetadata *block,
  */
 static const char *
 flac_comment_value(const FLAC__StreamMetadata_VorbisComment_Entry *entry,
-		   const char *name, size_t *length_r)
+		   const char *name, const char *char_tnum, size_t *length_r)
 {
 	size_t name_length = strlen(name);
+	size_t char_tnum_length = strlen(char_tnum);
 	const char *comment = (const char*)entry->entry;
 
 	if (entry->length > name_length &&
-	    g_ascii_strncasecmp(comment, name, name_length) == 0 &&
-	    comment[name_length] == '=') {
-		*length_r = entry->length - name_length - 1;
-		return comment + name_length + 1;
+	    g_ascii_strncasecmp(comment, name, name_length) == 0) {
+	        if (char_tnum != NULL) {
+	            char_tnum_length = strlen(char_tnum);
+		    if (g_ascii_strncasecmp(comment + name_length,
+		        char_tnum, char_tnum_length) == 0)
+			    name_length = name_length + char_tnum_length;
+	        }
+	        if (comment[name_length] == '=') {
+		    *length_r = entry->length - name_length - 1;
+		    return comment + name_length + 1;
+		}
 	}
 
 	return NULL;
@@ -122,12 +130,13 @@ flac_comment_value(const FLAC__StreamMetadata_VorbisComment_Entry *entry,
 static bool
 flac_copy_comment(struct tag *tag,
 		  const FLAC__StreamMetadata_VorbisComment_Entry *entry,
-		  const char *name, enum tag_type tag_type)
+		  const char *name, enum tag_type tag_type,
+		  const char *char_tnum)
 {
 	const char *value;
 	size_t value_length;
 
-	value = flac_comment_value(entry, name, &value_length);
+	value = flac_comment_value(entry, name, char_tnum, &value_length);
 	if (value != NULL) {
 		tag_add_item_n(tag, tag_type, value, value_length);
 		return true;
@@ -142,34 +151,34 @@ static const char *VORBIS_COMMENT_TRACK_KEY = "tracknumber";
 static const char *VORBIS_COMMENT_DISC_KEY = "discnumber";
 
 static void
-flac_parse_comment(struct tag *tag,
+flac_parse_comment(struct tag *tag, const char *char_tnum,
 		   const FLAC__StreamMetadata_VorbisComment_Entry *entry)
 {
 	assert(tag != NULL);
 
 	if (flac_copy_comment(tag, entry, VORBIS_COMMENT_TRACK_KEY,
-			      TAG_ITEM_TRACK) ||
+			      TAG_ITEM_TRACK, char_tnum) ||
 	    flac_copy_comment(tag, entry, VORBIS_COMMENT_DISC_KEY,
-			      TAG_ITEM_DISC) ||
+			      TAG_ITEM_DISC, char_tnum) ||
 	    flac_copy_comment(tag, entry, "album artist",
-			      TAG_ITEM_ALBUM_ARTIST))
+			      TAG_ITEM_ALBUM_ARTIST, char_tnum))
 		return;
 
 	for (unsigned i = 0; i < TAG_NUM_OF_ITEM_TYPES; ++i)
 		if (flac_copy_comment(tag, entry,
-				      tag_item_names[i], i))
+				      tag_item_names[i], i, char_tnum))
 			return;
 }
 
 void
-flac_vorbis_comments_to_tag(struct tag *tag,
+flac_vorbis_comments_to_tag(struct tag *tag, const char *char_tnum,
 			    const FLAC__StreamMetadata *block)
 {
 	FLAC__StreamMetadata_VorbisComment_Entry *comments =
 		block->data.vorbis_comment.comments;
 
 	for (unsigned i = block->data.vorbis_comment.num_comments; i > 0; --i)
-		flac_parse_comment(tag, comments++);
+		flac_parse_comment(tag, char_tnum, comments++);
 }
 
 void flac_metadata_common_cb(const FLAC__StreamMetadata * block,
@@ -188,7 +197,7 @@ void flac_metadata_common_cb(const FLAC__StreamMetadata * block,
 		flac_parse_replay_gain(block, data);
 
 		if (data->tag != NULL)
-			flac_vorbis_comments_to_tag(data->tag, block);
+			flac_vorbis_comments_to_tag(data->tag, NULL, block);
 
 	default:
 		break;
