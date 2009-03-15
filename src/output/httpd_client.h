@@ -54,7 +54,7 @@ httpd_client_queue_size(const struct httpd_client *client);
  * Clears the page queue.
  */
 void
-httpd_client_cancel(const struct httpd_client *client);
+httpd_client_cancel(struct httpd_client *client);
 
 /**
  * Appends a page to the client's queue.

@@ -409,13 +409,24 @@ httpd_client_queue_size(const struct httpd_client *client)
 	return size;
 }
 
+/* g_queue_clear() was introduced in GLib 2.14 */
+#if !GLIB_CHECK_VERSION(2,14,0)
+#define g_queue_clear(q) do { g_queue_free(q); q = g_queue_new(); } while (0)
+#endif
+
 void
-httpd_client_cancel(const struct httpd_client *client)
+httpd_client_cancel(struct httpd_client *client)
 {
 	if (client->state != RESPONSE)
 		return;
 
 	g_queue_foreach(client->pages, httpd_client_unref_page, NULL);
+	g_queue_clear(client->pages);
+
+	if (client->write_source_id != 0 && client->current_page == NULL) {
+		g_source_remove(client->write_source_id);
+		client->write_source_id = 0;
+	}
 }
 
 static GIOStatus
