@@ -43,7 +43,6 @@ struct vorbis_encoder {
 	struct audio_format audio_format;
 
 	ogg_stream_state os;
-	ogg_page page;
 
 	vorbis_dsp_state vd;
 	vorbis_block vb;
@@ -207,7 +206,6 @@ vorbis_encoder_open(struct encoder *_encoder,
 	audio_format->bits = 16;
 
 	encoder->audio_format = *audio_format;
-	memset(&encoder->page, 0, sizeof(encoder->page));
 
 	ret = vorbis_encoder_reinit(encoder, error);
 	if (!ret)
@@ -336,8 +334,6 @@ vorbis_encoder_write(struct encoder *_encoder,
 	struct vorbis_encoder *encoder = (struct vorbis_encoder *)_encoder;
 	unsigned num_frames;
 
-	assert(encoder->page.header_len == 0 && encoder->page.body_len == 0);
-
 	num_frames = length / audio_format_frame_size(&encoder->audio_format);
 
 	/* this is for only 16-bit audio */
@@ -356,37 +352,30 @@ static size_t
 vorbis_encoder_read(struct encoder *_encoder, void *_dest, size_t length)
 {
 	struct vorbis_encoder *encoder = (struct vorbis_encoder *)_encoder;
+	ogg_page page;
+	int ret;
 	unsigned char *dest = _dest;
 	size_t nbytes;
 
-	if (encoder->page.header_len == 0 && encoder->page.body_len == 0) {
-		int ret;
-
-		ret = ogg_stream_pageout(&encoder->os, &encoder->page);
-		if (ret == 0 && encoder->flush) {
-			encoder->flush = false;
-			ret = ogg_stream_flush(&encoder->os, &encoder->page);
-		}
-
-		if (ret == 0)
-			return 0;
-
-		assert(encoder->page.header_len > 0 ||
-		       encoder->page.body_len > 0);
+	ret = ogg_stream_pageout(&encoder->os, &page);
+	if (ret == 0 && encoder->flush) {
+		encoder->flush = false;
+		ret = ogg_stream_flush(&encoder->os, &page);
 	}
 
-	nbytes = (size_t)encoder->page.header_len +
-		(size_t)encoder->page.body_len;
+	if (ret == 0)
+		return 0;
+
+	assert(page.header_len > 0 || page.body_len > 0);
+
+	nbytes = (size_t)page.header_len + (size_t)page.body_len;
 
 	if (nbytes > length)
 		/* XXX better error handling */
 		g_error("buffer too small");
 
-	memcpy(dest, encoder->page.header, encoder->page.header_len);
-	memcpy(dest + encoder->page.header_len, encoder->page.body,
-	       encoder->page.body_len);
-
-	memset(&encoder->page, 0, sizeof(encoder->page));
+	memcpy(dest, page.header, page.header_len);
+	memcpy(dest + page.header_len, page.body, page.body_len);
 
 	return nbytes;
 }
