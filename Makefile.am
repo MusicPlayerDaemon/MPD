@@ -94,6 +94,7 @@ mpd_headers = \
 	src/chunk.h \
 	src/path.h \
 	src/mapper.h \
+	src/page.h \
 	src/pcm_buffer.h \
 	src/pcm_utils.h \
 	src/pcm_convert.h \
@@ -194,6 +195,7 @@ src_mpd_SOURCES = \
 	src/chunk.c \
 	src/path.c \
 	src/mapper.c \
+	src/page.c \
 	src/pcm_convert.c \
 	src/pcm_volume.c \
 	src/pcm_mix.c \
