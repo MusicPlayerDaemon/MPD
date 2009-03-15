@@ -49,6 +49,8 @@ struct vorbis_encoder {
 	vorbis_block vb;
 	vorbis_info vi;
 	vorbis_comment vc;
+
+	bool flush;
 };
 
 extern const struct encoder_plugin vorbis_encoder_plugin;
@@ -212,6 +214,11 @@ vorbis_encoder_open(struct encoder *_encoder,
 		return false;
 
 	vorbis_encoder_send_header(encoder);
+
+	/* set "flush" to true, so the caller gets the full headers on
+	   the first read() */
+	encoder->flush = true;
+
 	return true;
 }
 
@@ -254,8 +261,8 @@ vorbis_encoder_flush(struct encoder *_encoder, G_GNUC_UNUSED GError **error)
 
 	vorbis_analysis_wrote(&encoder->vd, 0);
 	vorbis_encoder_blockout(encoder);
-	ogg_stream_flush(&encoder->os, &encoder->page);
 
+	encoder->flush = true;
 	return true;
 }
 
@@ -342,7 +349,6 @@ vorbis_encoder_write(struct encoder *_encoder,
 
 	vorbis_analysis_wrote(&encoder->vd, num_frames);
 	vorbis_encoder_blockout(encoder);
-	ogg_stream_pageout(&encoder->os, &encoder->page);
 	return true;
 }
 
@@ -353,8 +359,21 @@ vorbis_encoder_read(struct encoder *_encoder, void *_dest, size_t length)
 	unsigned char *dest = _dest;
 	size_t nbytes;
 
-	if (encoder->page.header_len == 0 && encoder->page.body_len == 0)
-		return 0;
+	if (encoder->page.header_len == 0 && encoder->page.body_len == 0) {
+		int ret;
+
+		ret = ogg_stream_pageout(&encoder->os, &encoder->page);
+		if (ret == 0 && encoder->flush) {
+			encoder->flush = false;
+			ret = ogg_stream_flush(&encoder->os, &encoder->page);
+		}
+
+		if (ret == 0)
+			return 0;
+
+		assert(encoder->page.header_len > 0 ||
+		       encoder->page.body_len > 0);
+	}
 
 	nbytes = (size_t)encoder->page.header_len +
 		(size_t)encoder->page.body_len;
