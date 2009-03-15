@@ -1105,6 +1105,12 @@ else
 	echo " FIFO support ..................disabled"
 fi
 
+if test x$enable_httpd_output = xyes; then
+	echo " HTTP daemon support ...........enabled"
+else
+	echo " HTTP daemon support ...........disabled"
+fi
+
 if test x$enable_jack = xyes; then
 	echo " JACK support ..................enabled"
 else
@@ -1149,26 +1155,8 @@ fi
 
 if test x$enable_shout = xyes; then
 	echo " SHOUTcast support .............enabled"
-
-	if test x$enable_lame_encoder = xyes; then
-		echo "   with LAME mp3 encoder .......enabled"
-	else
-		echo "   with LAME mp3 encoder .......disabled"
-	fi
-
-	if test x$enable_oggvorbis_encoder = xyes; then
-		echo "   with Ogg Vorbis encoder .....enabled"
-	else
-		echo "   with Ogg Vorbis encoder .....disabled"
-	fi
 else
 	echo " SHOUTcast support .............disabled"
-fi
-
-if test x$enable_httpd_output = xyes; then
-	echo " HTTP daemon support ...........enabled"
-else
-	echo " HTTP daemon support ...........disabled"
 fi
 
 echo ""
@@ -1186,6 +1174,24 @@ if
 	test x$enable_pipe_output = xno &&
 	test x$enable_mvp = xno; then
 		AC_MSG_ERROR([No Audio Output types configured!])
+fi
+
+if
+	test x$enable_shout = xyes ||
+	test x$enable_httpd_output = xyes; then
+		echo " Streaming Encoder Support:"
+		if test x$enable_lame_encoder = xyes; then
+			echo " LAME mp3 encoder ..............enabled"
+		else
+			echo " LAME mp3 encoder ..............disabled"
+		fi
+
+		if test x$enable_oggvorbis_encoder = xyes; then
+			echo " Ogg Vorbis encoder ............enabled"
+		else
+			echo " Ogg Vorbis encoder ............disabled"
+		fi
+		echo ""
 fi
 
 echo " File Format Support:"
