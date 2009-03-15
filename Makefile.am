@@ -591,6 +591,7 @@ test_read_tags_SOURCES = test/read_tags.c \
 test_run_encoder_SOURCES = test/run_encoder.c \
 	src/conf.c src/buffer2array.c \
 	src/utils.c \
+	src/tag.c src/tag_pool.c \
 	src/audio_parser.c \
 	$(ENCODER_SRC)
 test_run_encoder_LDADD = $(MPD_LIBS) \
@@ -614,6 +615,7 @@ test_run_output_SOURCES = test/run_output.c \
 	src/conf.c src/buffer2array.c src/utils.c src/log.c \
 	src/audio_parser.c \
 	src/timer.c \
+	src/tag.c src/tag_pool.c \
 	src/fifo_buffer.c \
 	src/page.c \
 	src/socket_util.c \

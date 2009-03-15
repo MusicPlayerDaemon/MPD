@@ -267,38 +267,13 @@ vorbis_encoder_flush(struct encoder *_encoder, G_GNUC_UNUSED GError **error)
 }
 
 static void
-add_tag(vorbis_comment *vc, const char *name, char *value)
-{
-	if (value) {
-		union {
-			const char *in;
-			char *out;
-		} u = { .in = name };
-
-		vorbis_comment_add_tag(vc, u.out, value);
-	}
-}
-
-static void
 copy_tag_to_vorbis_comment(vorbis_comment *vc, const struct tag *tag)
 {
 	for (unsigned i = 0; i < tag->num_items; i++) {
-		switch (tag->items[i]->type) {
-		case TAG_ITEM_ARTIST:
-			add_tag(vc, "ARTIST", tag->items[i]->value);
-			break;
-
-		case TAG_ITEM_ALBUM:
-			add_tag(vc, "ALBUM", tag->items[i]->value);
-			break;
-
-		case TAG_ITEM_TITLE:
-			add_tag(vc, "TITLE", tag->items[i]->value);
-			break;
-
-		default:
-			break;
-		}
+		struct tag_item *item = tag->items[i];
+		char *name = g_ascii_strup(tag_item_names[item->type], -1);
+		vorbis_comment_add_tag(vc, name, item->value);
+		g_free(name);
 	}
 }
 
