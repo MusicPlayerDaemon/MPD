@@ -23,9 +23,6 @@
 #include <glib.h>
 #include <stdbool.h>
 
-G_GNUC_PRINTF(1, 2) void DEBUG(const char *fmt, ...);
-G_GNUC_PRINTF(1, 2) G_GNUC_NORETURN void FATAL(const char *fmt, ...);
-
 /**
  * Configure a logging destination for daemon startup, before the
  * configuration file is read.  This allows the daemon to use the

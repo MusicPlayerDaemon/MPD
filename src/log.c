@@ -285,30 +285,6 @@ void setup_log_output(bool use_stdout)
 	}
 }
 
-#define log_func(func,level) \
-G_GNUC_PRINTF(1, 2) void func(const char *fmt, ...) \
-{ \
-	if (level <= log_threshold) { \
-		va_list args; \
-		va_start(args, fmt); \
-		g_logv(NULL, level, fmt, args);	\
-		va_end(args); \
-	} \
-}
-
-log_func(DEBUG, G_LOG_LEVEL_DEBUG)
-
-#undef log_func
-
-G_GNUC_PRINTF(1, 2) G_GNUC_NORETURN void FATAL(const char *fmt, ...)
-{
-	va_list args;
-	va_start(args, fmt);
-	g_logv(NULL, G_LOG_LEVEL_ERROR, fmt, args);
-	va_end(args);
-	exit(EXIT_FAILURE);
-}
-
 int cycle_log_files(void)
 {
 	int fd;

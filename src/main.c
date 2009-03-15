@@ -168,9 +168,9 @@ initialize_decoder_and_player(void)
 	if (param != NULL) {
 		perc = strtod(param->value, &test);
 		if (*test != '%' || perc < 0 || perc > 100) {
-			FATAL("buffered before play \"%s\" is not a positive "
-			      "percentage and less than 100 percent, line %i"
-			      "\n", param->value, param->line);
+			g_error("buffered before play \"%s\" is not a positive "
+				"percentage and less than 100 percent, line %i",
+				param->value, param->line);
 		}
 	} else
 		perc = DEFAULT_BUFFER_BEFORE_PLAY;

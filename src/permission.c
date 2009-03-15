@@ -19,7 +19,6 @@
 
 #include "permission.h"
 #include "conf.h"
-#include "log.h"
 
 #include <glib.h>
 
@@ -59,7 +58,7 @@ static unsigned parsePermissions(const char *string)
 		} else if (strcmp(temp, PERMISSION_ADMIN_STRING) == 0) {
 			permission |= PERMISSION_ADMIN;
 		} else {
-			FATAL("unknown permission \"%s\"\n", temp);
+			g_error("unknown permission \"%s\"", temp);
 		}
 	}
 
@@ -90,10 +89,10 @@ void initPermissions(void)
 				strchr(param->value, PERMISSION_PASSWORD_CHAR);
 
 			if (separator == NULL)
-				FATAL("\"%c\" not found in password string "
-				      "\"%s\", line %i\n",
-				      PERMISSION_PASSWORD_CHAR,
-				      param->value, param->line);
+				g_error("\"%c\" not found in password string "
+					"\"%s\", line %i",
+					PERMISSION_PASSWORD_CHAR,
+					param->value, param->line);
 
 			password = g_strndup(param->value,
 					     separator - param->value);

@@ -33,7 +33,6 @@
 #include "stats.h"
 #include "permission.h"
 #include "buffer2array.h"
-#include "log.h"
 #include "stored_playlist.h"
 #include "ack.h"
 #include "output_command.h"
@@ -1797,10 +1796,10 @@ command_process_list(struct client *client,
 	for (GSList *cur = list; cur != NULL; cur = g_slist_next(cur)) {
 		char *cmd = cur->data;
 
-		DEBUG("command_process_list: process command \"%s\"\n",
-		      cmd);
+		g_debug("command_process_list: process command \"%s\"",
+			cmd);
 		ret = command_process(client, cmd);
-		DEBUG("command_process_list: command returned %i\n", ret);
+		g_debug("command_process_list: command returned %i", ret);
 		if (ret != COMMAND_RETURN_OK || client_is_expired(client))
 			break;
 		else if (list_ok)

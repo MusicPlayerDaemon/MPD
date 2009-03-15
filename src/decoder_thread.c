@@ -29,7 +29,6 @@
 #include "tag.h"
 #include "mapper.h"
 #include "path.h"
-#include "log.h"
 #include "uri.h"
 
 #include <glib.h>
@@ -269,5 +268,5 @@ void decoder_thread_start(void)
 
 	dc.thread = g_thread_create(decoder_task, NULL, true, &e);
 	if (dc.thread == NULL)
-		FATAL("Failed to spawn decoder task: %s\n", e->message);
+		g_error("Failed to spawn decoder task: %s", e->message);
 }

@@ -51,7 +51,7 @@ x_sigaction(int signum, const struct sigaction *act)
 static void
 handle_reload_event(void)
 {
-	DEBUG("got SIGHUP, rereading DB\n");
+	g_debug("got SIGHUP, reopening log files");
 	cycle_log_files();
 }
 

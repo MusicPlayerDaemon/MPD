@@ -23,9 +23,13 @@
 #include "directory.h"
 #include "path.h"
 #include "tag.h"
-#include "log.h"
+
+#include <glib.h>
 
 #include <stdlib.h>
+
+#undef G_LOG_DOMAIN
+#define G_LOG_DOMAIN "song"
 
 #define SONG_KEY	"key: "
 #define SONG_MTIME	"mtime: "
@@ -126,7 +130,7 @@ void readSongInfoIntoList(FILE *fp, struct songvec *sv,
 		} else if (*buffer == 0) {
 			/* ignore empty lines (starting with '\0') */
 		} else if (song == NULL) {
-			FATAL("Problems reading song info\n");
+			g_error("Problems reading song info");
 		} else if (0 == strncmp(SONG_FILE, buffer, strlen(SONG_FILE))) {
 			/* we don't need this info anymore */
 		} else if ((value = matchesAnMpdTagItemKey(buffer,
@@ -148,7 +152,7 @@ void readSongInfoIntoList(FILE *fp, struct songvec *sv,
 			song->mtime = atoi(&(buffer[strlen(SONG_MTIME)]));
 		}
 		else
-			FATAL("songinfo: unknown line in db: %s\n", buffer);
+			g_error("unknown line in db: %s", buffer);
 	}
 
 	if (song)

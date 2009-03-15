@@ -20,7 +20,6 @@
 #include "tag.h"
 #include "tag_internal.h"
 #include "tag_pool.h"
-#include "log.h"
 #include "conf.h"
 #include "song.h"
 
@@ -106,8 +105,8 @@ void tag_lib_init(void)
 				}
 			}
 			if (strlen(c) && i == TAG_NUM_OF_ITEM_TYPES) {
-				FATAL("error parsing metadata item \"%s\"\n",
-				      c);
+				g_error("error parsing metadata item \"%s\"",
+					c);
 			}
 			s++;
 			c = s;
