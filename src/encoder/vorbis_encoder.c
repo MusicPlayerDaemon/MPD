@@ -47,7 +47,6 @@ struct vorbis_encoder {
 	vorbis_dsp_state vd;
 	vorbis_block vb;
 	vorbis_info vi;
-	vorbis_comment vc;
 
 	bool flush;
 };
@@ -177,7 +176,6 @@ vorbis_encoder_reinit(struct vorbis_encoder *encoder, GError **error)
 	vorbis_analysis_init(&encoder->vd, &encoder->vi);
 	vorbis_block_init(&encoder->vd, &encoder->vb);
 	ogg_stream_init(&encoder->os, g_random_int());
-	vorbis_comment_init(&encoder->vc);
 
 	return true;
 }
@@ -185,14 +183,19 @@ vorbis_encoder_reinit(struct vorbis_encoder *encoder, GError **error)
 static void
 vorbis_encoder_send_header(struct vorbis_encoder *encoder)
 {
+	vorbis_comment vc;
 	ogg_packet packet, comments, codebooks;
 
-	vorbis_analysis_headerout(&encoder->vd, &encoder->vc,
+	vorbis_comment_init(&vc);
+
+	vorbis_analysis_headerout(&encoder->vd, &vc,
 				  &packet, &comments, &codebooks);
 
 	ogg_stream_packetin(&encoder->os, &packet);
 	ogg_stream_packetin(&encoder->os, &comments);
 	ogg_stream_packetin(&encoder->os, &codebooks);
+
+	vorbis_comment_clear(&vc);
 }
 
 static bool
@@ -223,7 +226,6 @@ vorbis_encoder_open(struct encoder *_encoder,
 static void
 vorbis_encoder_clear(struct vorbis_encoder *encoder)
 {
-	vorbis_comment_clear(&encoder->vc);
 	ogg_stream_clear(&encoder->os);
 	vorbis_block_clear(&encoder->vb);
 	vorbis_dsp_clear(&encoder->vd);
