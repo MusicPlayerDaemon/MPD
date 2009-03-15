@@ -459,6 +459,13 @@ httpd_client_out_event(GIOChannel *source,
 	assert(condition == G_IO_OUT);
 	assert(client->state == RESPONSE);
 
+	if (client->write_source_id == 0) {
+		/* another thread has removed the event source while
+		   this thread was waiting for httpd->mutex */
+		g_mutex_unlock(httpd->mutex);
+		return false;
+	}
+
 	if (client->current_page == NULL) {
 		client->current_page = g_queue_pop_head(client->pages);
 		client->current_position = 0;
