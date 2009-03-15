@@ -588,6 +588,11 @@ esac
 
 AM_CONDITIONAL(HAVE_OSX, test x$enable_osx = xyes)
 
+AC_ARG_ENABLE(shout,
+	AS_HELP_STRING([--enable-shout],
+		[enables the shoutcast streaming output (default: disable)]),,
+	[enable_shout=no])
+
 if test x$enable_oggvorbis_encoder = xyes || test x$enable_lame_encoder = xyes; then
 	PKG_CHECK_MODULES([SHOUT], [shout],,
 		[enable_oggvorbis_encoder=no; enable_lame_encoder=no;
