@@ -593,10 +593,10 @@ AC_ARG_ENABLE(shout,
 		[enables the shoutcast streaming output (default: disable)]),,
 	[enable_shout=no])
 
-if test x$enable_oggvorbis_encoder = xyes || test x$enable_lame_encoder = xyes; then
-	PKG_CHECK_MODULES([SHOUT], [shout],,
-		[enable_oggvorbis_encoder=no; enable_lame_encoder=no;
-			AC_MSG_WARN([disabling shout streaming support because libshout is not available])])
+if test x$enable_shout = xyes; then
+	PKG_CHECK_MODULES([SHOUT], [shout],
+		AC_DEFINE(HAVE_SHOUT, 1, [Define to enable libshout support]),
+		enable_shout=no)
 fi
 
 if test x$enable_oggvorbis_encoder = xyes; then
@@ -626,13 +626,6 @@ if test x$enable_lame_encoder = xyes; then
 		AC_MSG_WARN([disabling mp3 shout streaming support because lame is not enabled])
 		enable_lame_encoder=no
 	fi
-fi
-
-if test x$enable_oggvorbis_encoder = xyes || test x$enable_lame_encoder = xyes; then
-	enable_shout=yes
-	AC_DEFINE(HAVE_SHOUT, 1, [Define to enable libshout support])
-else
-	enable_shout=no
 fi
 
 AM_CONDITIONAL(HAVE_SHOUT, test x$enable_shout = xyes)
