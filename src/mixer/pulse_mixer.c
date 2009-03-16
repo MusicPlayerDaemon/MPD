@@ -236,7 +236,20 @@ pulse_mixer_open(G_GNUC_UNUSED struct mixer *data)
 static void
 pulse_mixer_close(G_GNUC_UNUSED struct mixer *data)
 {
-	return;
+	struct pulse_mixer *pm=(struct pulse_mixer *) data;
+	if (pm->mainloop)
+		pa_threaded_mainloop_stop(pm->mainloop);
+
+	if (pm->context) {
+		pa_context_disconnect(pm->context);
+		pa_context_unref(pm->context);
+		pm->context = NULL;
+	}
+
+	if (pm->mainloop) {
+		pa_threaded_mainloop_free(pm->mainloop);
+		pm->mainloop = NULL;
+	}
 }
 
 static int
