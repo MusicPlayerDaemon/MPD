@@ -1162,8 +1162,8 @@ echo ""
 if
 	test x$enable_ao = xno &&
 	test x$enable_oss = xno &&
-	test x$enable_oggvorbis_encoder = xno &&
-	test x$enable_lame_encoder = xno &&
+	test x$enable_shout = xno &&
+	test x$enable_httpd_output = xno &&
 	test x$enable_alsa = xno &&
 	test x$enable_osx = xno &&
 	test x$enable_pulse = xno &&
