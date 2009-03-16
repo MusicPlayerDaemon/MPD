@@ -701,7 +701,7 @@ if test x$enable_jack = xyes; then
 				[Define to enable JACK support])]
 		MPD_LIBS="$MPD_LIBS $JACK_LIBS"
 		MPD_CFLAGS="$MPD_CFLAGS $JACK_CFLAGS",
-	        [enable_jack=no;AC_MSG_WARN([JACK not found -- disabling])])
+	        enable_jack=no)
 fi
 
 if test x$enable_jack = xyes; then
@@ -777,8 +777,7 @@ if test x$enable_wavpack = xyes; then
 				[Define to enable WavPack support])]
 		MPD_LIBS="$MPD_LIBS $WAVPACK_LIBS"
 		MPD_CFLAGS="$MPD_CFLAGS $WAVPACK_CFLAGS",
-		[enable_wavpack=no;
-			AC_MSG_WARN([WavPack not found -- disabling])])
+		enable_wavpack=no)
 fi
 
 AM_CONDITIONAL(HAVE_WAVPACK, test x$enable_wavpack = xyes)
