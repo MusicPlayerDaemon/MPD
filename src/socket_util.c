@@ -121,7 +121,7 @@ socket_bind_listen(int domain, int type, int protocol,
 	ret = bind(fd, address, address_length);
 	if (ret < 0) {
 		g_set_error(error, listen_quark(), errno,
-			    "%s", strerror(errno));
+			    "%s", g_strerror(errno));
 		close(fd);
 		return -1;
 	}
