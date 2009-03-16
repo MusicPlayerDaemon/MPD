@@ -424,6 +424,38 @@ cd mpd-0.14.2</programlisting>
           or IceCast server.  It forwards tags to this server.
         </para>
       </section>
+
+      <section>
+        <title><varname>solaris</varname></title>
+
+        <para>
+          The "Solaris" plugin runs only on SUN Solaris, and plays via
+          <filename>/dev/audio</filename>.
+        </para>
+
+        <informaltable>
+          <tgroup cols="2">
+            <thead>
+              <row>
+                <entry>Setting</entry>
+                <entry>Description</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>
+                  <varname>device</varname>
+                  <parameter>PATH</parameter>
+                </entry>
+                <entry>
+                  Sets the path of the audio device, defaults to
+                  <filename>/dev/audio</filename>.
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
+      </section>
     </section>
   </chapter>
 </book>

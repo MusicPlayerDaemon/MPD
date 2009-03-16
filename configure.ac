@@ -594,6 +594,20 @@ if test x$enable_shout = xyes; then
 		enable_shout=no)
 fi
 
+case "$host_os" in
+	solaris*)
+		AC_DEFINE(ENABLE_SOLARIS_OUTPUT, 1, [Define to enable Solaris /dev/audio support])
+		enable_solaris_output=yes
+		;;
+
+	*)
+		enable_solaris_output=no
+		;;
+esac
+echo "HOST_OS=$host_os"
+
+AM_CONDITIONAL(ENABLE_SOLARIS_OUTPUT, test x$enable_solaris_output = xyes)
+
 if test x$enable_oggvorbis_encoder = xyes; then
 	if test x$enable_oggvorbis = xno; then
 		AC_MSG_WARN([disabling ogg shout streaming support because vorbis is not enabled])
@@ -1144,6 +1158,12 @@ else
 	echo " SHOUTcast support .............disabled"
 fi
 
+if test x$enable_solaris_output = xyes; then
+	echo " Solaris /dev/audio support ....enabled"
+else
+	echo " Solaris /dev/audio support ....disabled"
+fi
+
 echo ""
 
 if
@@ -1151,6 +1171,7 @@ if
 	test x$enable_oss = xno &&
 	test x$enable_shout = xno &&
 	test x$enable_httpd_output = xno &&
+	test x$enable_solaris_output = xno &&
 	test x$enable_alsa = xno &&
 	test x$enable_osx = xno &&
 	test x$enable_pulse = xno &&
