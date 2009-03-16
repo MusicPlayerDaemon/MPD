@@ -113,8 +113,13 @@ audio_output_all_init(void)
 		/* only allow param to be NULL if there just one audioOutput */
 		assert(param || (num_audio_outputs == 1));
 
-		if (!audio_output_init(output, param, &error))
-			g_error("line %i: %s", param->line, error->message);
+		if (!audio_output_init(output, param, &error)) {
+			if (param != NULL)
+				g_error("line %i: %s",
+					param->line, error->message);
+			else
+				g_error("%s", error->message);
+		}
 
 		/* require output names to be unique: */
 		for (j = 0; j < i; j++) {
