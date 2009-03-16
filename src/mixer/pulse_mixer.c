@@ -95,7 +95,8 @@ subscribe_cb(G_GNUC_UNUSED pa_context *c, pa_subscription_event_type_t t,
 	switch (t & PA_SUBSCRIPTION_EVENT_FACILITY_MASK) {
 	case PA_SUBSCRIPTION_EVENT_SINK_INPUT:
 		if ((t & PA_SUBSCRIPTION_EVENT_TYPE_MASK) ==
-		    PA_SUBSCRIPTION_EVENT_REMOVE)
+		    PA_SUBSCRIPTION_EVENT_REMOVE &&
+		    pm->index == idx)
 			pm->online =false;
 		else {
 			pa_operation *o;
