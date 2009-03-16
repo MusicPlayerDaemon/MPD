@@ -504,7 +504,7 @@ dnl
 
 AC_ARG_ENABLE(lame,
 	AS_HELP_STRING([--disable-lame],
-		[disable lame support (default: enable)]),,
+		[disable support for mp3 streaming (default: enable)]),,
 	enable_lame=yes)
 
 
@@ -563,11 +563,6 @@ AC_ARG_ENABLE(oggvorbis-encoder,
 		[disable support for ogg streaming (default: enable)]),,
 	[enable_oggvorbis_encoder=yes])
 
-AC_ARG_ENABLE(lame-encoder,
-	AS_HELP_STRING([--disable-lame-encoder],
-		[disable support for mp3 streaming (default: enable)]),,
-	[enable_lame_encoder=yes])
-
 AC_ARG_ENABLE(httpd-output,
 	AS_HELP_STRING([--enable-httpd-output],
 		[enables the HTTP server output (default: disable)]),,
@@ -621,13 +616,6 @@ if test x$enable_lame = xyes; then
 			AC_MSG_WARN(You need lame -- disabling lame support)])
 fi
 
-if test x$enable_lame_encoder = xyes; then
-	if test x$enable_lame = xno; then
-		AC_MSG_WARN([disabling mp3 shout streaming support because lame is not enabled])
-		enable_lame_encoder=no
-	fi
-fi
-
 AM_CONDITIONAL(HAVE_SHOUT, test x$enable_shout = xyes)
 
 AM_CONDITIONAL(ENABLE_ENCODER, test x$enable_shout = xyes || test x$enable_httpd_output = xyes)
@@ -636,8 +624,8 @@ if test x$enable_oggvorbis_encoder = xyes; then
 	AC_DEFINE(ENABLE_VORBIS_ENCODER, 1,
 		[Define to enable the vorbis encoder plugin])
 fi
-AM_CONDITIONAL(ENABLE_LAME_ENCODER, test x$enable_lame_encoder = xyes)
-if test x$enable_lame_encoder = xyes; then
+AM_CONDITIONAL(ENABLE_LAME_ENCODER, test x$enable_lame = xyes)
+if test x$enable_lame = xyes; then
 	AC_DEFINE(ENABLE_LAME_ENCODER, 1,
 		[Define to enable the lame encoder plugin])
 fi
@@ -1177,7 +1165,7 @@ if
 	test x$enable_shout = xyes ||
 	test x$enable_httpd_output = xyes; then
 		echo " Streaming Encoder Support:"
-		if test x$enable_lame_encoder = xyes; then
+		if test x$enable_lame = xyes; then
 			echo " LAME mp3 encoder ..............enabled"
 		else
 			echo " LAME mp3 encoder ..............disabled"
@@ -1192,7 +1180,7 @@ if
 
 	if
 		test x$enable_oggvorbis_encoder = xno &&
-		test x$enable_lame_encoder = xno; then
+		test x$enable_lame = xno; then
 		AC_MSG_ERROR([Cannot enable a streaming output without an encoder.])
 	fi
 fi
