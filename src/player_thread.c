@@ -416,9 +416,6 @@ play_chunk(struct song *song, struct music_chunk *chunk,
 
 	assert(music_chunk_check_format(chunk, format));
 
-	pc.elapsed_time = chunk->times;
-	pc.bit_rate = chunk->bit_rate;
-
 	if (chunk->tag != NULL) {
 		if (!song_is_file(song)) {
 			/* always update the tag of remote streams */
@@ -438,6 +435,12 @@ play_chunk(struct song *song, struct music_chunk *chunk,
 			idle_add(IDLE_PLAYER);
 		}
 	}
+
+	if (chunk->length == 0)
+		return true;
+
+	pc.elapsed_time = chunk->times;
+	pc.bit_rate = chunk->bit_rate;
 
 	/* apply software volume */
 
