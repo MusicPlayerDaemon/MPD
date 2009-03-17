@@ -203,10 +203,10 @@ log_file			"~/.mpd/log"
 #audio_output {
 #	type			"httpd"
 #	name			"My HTTP Stream"
-#	encoder			"ogg"			# optional
+#	encoder			"vorbis"		# optional, vorbis or lame
 #	port			"8000"
-#	quality			"5.0"
-#	bitrate			"128"
+#	#quality			"5.0"		# do not define if bitrate is defined
+#	bitrate			"128"			# do not define if quality is defined
 #	format			"44100:16:1"
 #}
 #
