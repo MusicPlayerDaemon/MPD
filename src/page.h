@@ -65,6 +65,15 @@ struct page *
 page_new_copy(const void *data, size_t size);
 
 /**
+ * Concatenates two pages to a new page.
+ *
+ * @param a the first page
+ * @param b the second page, which is appended
+ */
+struct page *
+page_new_concat(const struct page *a, const struct page *b);
+
+/**
  * Increases the reference counter.
  *
  * @param page the #page object

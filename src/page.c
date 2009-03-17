@@ -51,6 +51,17 @@ page_new_copy(const void *data, size_t size)
 	return page;
 }
 
+struct page *
+page_new_concat(const struct page *a, const struct page *b)
+{
+	struct page *page = page_new(a->size + b->size);
+
+	memcpy(page->data, a->data, a->size);
+	memcpy(page->data + a->size, b->data, b->size);
+
+	return page;
+}
+
 void
 page_ref(struct page *page)
 {
