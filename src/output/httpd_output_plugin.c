@@ -61,7 +61,7 @@ httpd_output_init(G_GNUC_UNUSED const struct audio_format *audio_format,
 
 	encoder_name = config_get_block_string(param, "encoder", "vorbis");
 	encoder_plugin = encoder_plugin_get(encoder_name);
-	if (encoder_plugin_get == NULL) {
+	if (encoder_plugin == NULL) {
 		g_set_error(error, httpd_output_quark(), 0,
 			    "No such encoder: %s", encoder_name);
 		return NULL;
