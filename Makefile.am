@@ -28,7 +28,6 @@ mpd_headers = \
 	src/audio.h \
 	src/audio_format.h \
 	src/audio_parser.h \
-	src/audioOutput.h \
 	src/output_internal.h \
 	src/output_api.h \
 	src/output_plugin.h \
@@ -164,7 +163,6 @@ src_mpd_SOURCES = \
 	src/notify.c \
 	src/audio.c \
 	src/audio_parser.c \
-	src/audioOutput.c \
 	src/buffer2array.c \
 	src/command.c \
 	src/idle.c \

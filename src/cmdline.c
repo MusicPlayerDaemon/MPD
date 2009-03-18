@@ -23,7 +23,7 @@
 #include "conf.h"
 #include "decoder_list.h"
 #include "config.h"
-#include "audioOutput.h"
+#include "output_list.h"
 #include "ls.h"
 
 #ifdef ENABLE_ARCHIVE
@@ -56,7 +56,7 @@ static void version(void)
 
 	puts("\n"
 	     "Supported outputs:\n");
-	printAllOutputPluginTypes(stdout);
+	audio_output_plugin_print_all_types(stdout);
 
 #ifdef ENABLE_ARCHIVE
 	puts("\n"

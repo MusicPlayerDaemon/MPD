@@ -88,3 +88,15 @@ audio_output_plugin_get(const char *name)
 
 	return NULL;
 }
+
+void audio_output_plugin_print_all_types(FILE * fp)
+{
+	unsigned i;
+	const struct audio_output_plugin *plugin;
+
+	audio_output_plugins_for_each(plugin, i)
+		fprintf(fp, "%s ", plugin->name);
+
+	fprintf(fp, "\n");
+	fflush(fp);
+}
