@@ -112,15 +112,15 @@ audio_output_init(struct audio_output *ao, const struct config_param *param,
 
 	pcm_convert_init(&ao->convert_state);
 
-	if (format) {
+	ao->config_audio_format = format != NULL;
+	if (ao->config_audio_format) {
 		bool ret;
 
-		ret = audio_format_parse(&ao->config_audio_format, format,
+		ret = audio_format_parse(&ao->out_audio_format, format,
 					 error);
 		if (!ret)
 			return false;
-	} else
-		audio_format_clear(&ao->config_audio_format);
+	}
 
 	ao->thread = NULL;
 	notify_init(&ao->notify);
@@ -128,7 +128,8 @@ audio_output_init(struct audio_output *ao, const struct config_param *param,
 	ao->mutex = g_mutex_new();
 
 	ao->data = ao_plugin_init(plugin,
-				  format ? &ao->config_audio_format : NULL,
+				  ao->config_audio_format
+				  ? &ao->out_audio_format : NULL,
 				  param, error);
 	if (ao->data == NULL)
 		return false;

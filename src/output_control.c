@@ -78,16 +78,12 @@ audio_output_open(struct audio_output *ao,
 	ao->in_audio_format = *audio_format;
 	ao->chunk = NULL;
 
-	if (audio_format_defined(&ao->config_audio_format)) {
-		/* copy config_audio_format to out_audio_format only if the
-		   device is not yet open; if it is already open,
-		   plugin->open() may have modified out_audio_format,
-		   and the value is already ok */
-		if (!ao->open)
-			ao->out_audio_format =
-				ao->config_audio_format;
-	} else {
+	if (!ao->config_audio_format) {
+		/* no audio format is configured: copy in->out, let
+		   the output's open() method determine the effective
+		   out_audio_format */
 		ao->out_audio_format = ao->in_audio_format;
+
 		if (ao->open)
 			audio_output_close(ao);
 	}

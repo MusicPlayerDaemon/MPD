@@ -53,6 +53,12 @@ struct audio_output {
 	void *data;
 
 	/**
+	 * This flag is true, when the audio_format of this device is
+	 * configured in mpd.conf.
+	 */
+	bool config_audio_format;
+
+	/**
 	 * Has the user enabled this device?
 	 */
 	bool enabled;
@@ -82,12 +88,6 @@ struct audio_output {
 	 * plugin->open().
 	 */
 	struct audio_format out_audio_format;
-
-	/**
-	 * The audio_format which was configured.  Only set if
-	 * convertAudioFormat is true.
-	 */
-	struct audio_format config_audio_format;
 
 	struct pcm_convert_state convert_state;
 
