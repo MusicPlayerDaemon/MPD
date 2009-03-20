@@ -79,13 +79,13 @@ audio_output_open(struct audio_output *ao,
 	ao->chunk = NULL;
 
 	if (!ao->config_audio_format) {
+		if (ao->open)
+			audio_output_close(ao);
+
 		/* no audio format is configured: copy in->out, let
 		   the output's open() method determine the effective
 		   out_audio_format */
 		ao->out_audio_format = ao->in_audio_format;
-
-		if (ao->open)
-			audio_output_close(ao);
 	}
 
 	ao->pipe = mp;
