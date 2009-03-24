@@ -655,8 +655,8 @@ OK
           </term>
           <listitem>
             <para>
-              Moves the song with <varname>FROM</varname> to
-              <varname>TO</varname> (both song ids) in the
+              Moves the song with <varname>FROM</varname> (songid) to
+              <varname>TO</varname> (playlist index) in the
               playlist.  If <varname>TO</varname> is negative, it
               is relative to the current song in the playlist (if
               there is one).
