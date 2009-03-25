@@ -192,14 +192,10 @@ player_check_decoder_startup(struct player *player)
 		/* the decoder is ready and ok */
 
 		if (audio_format_defined(&player->play_audio_format) &&
-		    audio_output_all_check() > 0) {
+		    !audio_output_all_wait(1))
 			/* the output devices havn't finished playing
 			   all chunks yet - wait for that */
-
-			/* XXX synchronize in a better way */
-			g_usleep(1000);
 			return true;
-		}
 
 		player->decoder_starting = false;
 
@@ -479,14 +475,10 @@ play_next_chunk(struct player *player)
 	unsigned cross_fade_position;
 	bool success;
 
-	if (audio_output_all_check() >= 64) {
+	if (!audio_output_all_wait(64))
 		/* the output pipe is still large enough, don't send
 		   another chunk */
-
-		/* XXX synchronize in a better way */
-		g_usleep(1000);
 		return true;
-	}
 
 	if (player->xfade == XFADE_ENABLED &&
 	    dc.pipe != NULL && dc.pipe != player->pipe &&

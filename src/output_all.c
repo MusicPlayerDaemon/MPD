@@ -408,6 +408,18 @@ audio_output_all_check(void)
 	return 0;
 }
 
+bool
+audio_output_all_wait(unsigned threshold)
+{
+	if (audio_output_all_check() < threshold)
+		return true;
+
+	/* XXX synchronize in a better way */
+	g_usleep(1000);
+
+	return audio_output_all_check() < threshold;
+}
+
 void
 audio_output_all_pause(void)
 {

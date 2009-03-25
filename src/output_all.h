@@ -105,6 +105,17 @@ unsigned
 audio_output_all_check(void);
 
 /**
+ * Checks if the size of the #music_pipe is below the #threshold.  If
+ * not, it attempts to synchronize with all output threads, and waits
+ * until another #music_chunk is finished.
+ *
+ * @param threshold the maximum number of chunks in the pipe
+ * @return true if there are less than #threshold chunks in the pipe
+ */
+bool
+audio_output_all_wait(unsigned threshold);
+
+/**
  * Puts all audio outputs into pause mode.  Most implementations will
  * simply close it then.
  */
