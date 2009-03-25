@@ -86,6 +86,7 @@ dc_stop(struct notify *notify)
 bool
 dc_seek(struct notify *notify, double where)
 {
+	assert(dc.state != DECODE_STATE_START);
 	assert(where >= 0.0);
 
 	if (dc.state == DECODE_STATE_STOP ||

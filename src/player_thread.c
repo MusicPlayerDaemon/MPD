@@ -301,6 +301,17 @@ static bool player_seek_decoder(struct player *player)
 		player->queued = false;
 	}
 
+	/* wait for the decoder to complete initialization */
+
+	while (player->decoder_starting) {
+		ret = player_check_decoder_startup(player);
+		if (!ret) {
+			/* decoder failure */
+			player_command_finished();
+			return false;
+		}
+	}
+
 	/* send the SEEK command */
 
 	where = pc.seek_where;
