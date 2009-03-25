@@ -79,9 +79,7 @@ playlist_state_save(FILE *fp, const struct playlist *playlist)
 }
 
 static void
-playlist_state_load(FILE *fp, struct playlist *playlist,
-		    char *buffer,
-		    int state, int current, int seek_time)
+playlist_state_load(FILE *fp, struct playlist *playlist, char *buffer)
 {
 	int song;
 
@@ -94,19 +92,6 @@ playlist_state_load(FILE *fp, struct playlist *playlist,
 		g_strchomp(buffer);
 
 		song = queue_load_song(&playlist->queue, buffer);
-		if (song >= 0 && song == current) {
-			if (state != PLAYER_STATE_STOP) {
-				playPlaylist(playlist, queue_length(&playlist->queue) - 1);
-			}
-			if (state == PLAYER_STATE_PAUSE) {
-				playerPause();
-			}
-			if (state != PLAYER_STATE_STOP) {
-				seekSongInPlaylist(playlist,
-						   queue_length(&playlist->queue) - 1,
-						   seek_time);
-			}
-		}
 
 		if (!fgets(buffer, PLAYLIST_BUFFER_SIZE, fp)) {
 			g_warning("'%s' not found in state file",
@@ -170,10 +155,24 @@ playlist_state_restore(FILE *fp, struct playlist *playlist)
 					    PLAYLIST_STATE_FILE_PLAYLIST_BEGIN)) {
 			if (state == PLAYER_STATE_STOP)
 				current = -1;
-			playlist_state_load(fp, playlist, buffer, state,
-					    current, seek_time);
+			playlist_state_load(fp, playlist, buffer);
 		}
 	}
 
 	setPlaylistRandomStatus(playlist, random_mode);
+
+	if (state != PLAYER_STATE_STOP && !queue_is_empty(&playlist->queue)) {
+		if (!queue_valid_position(&playlist->queue, current))
+			current = 0;
+
+		current = queue_position_to_order(&playlist->queue, current);
+
+		if (seek_time == 0)
+			playPlaylist(playlist, current);
+		else
+			seekSongInPlaylist(playlist, current, seek_time);
+
+		if (state == PLAYER_STATE_PAUSE)
+			playerPause();
+	}
 }
