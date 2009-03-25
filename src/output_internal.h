@@ -65,6 +65,11 @@ struct audio_output {
 
 	/**
 	 * Is the device (already) open and functional?
+	 *
+	 * This attribute may only be modified by the output thread.
+	 * It is protected with #mutex: write accesses inside the
+	 * output thread and read accesses outside of it may only be
+	 * performed while the lock is held.
 	 */
 	bool open;
 
@@ -113,7 +118,7 @@ struct audio_output {
 	const struct music_pipe *pipe;
 
 	/**
-	 * This mutex protects #chunk and #chunk_finished.
+	 * This mutex protects #open, #chunk and #chunk_finished.
 	 */
 	GMutex *mutex;
 

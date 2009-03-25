@@ -48,11 +48,11 @@ ao_close(struct audio_output *ao)
 
 	g_mutex_lock(ao->mutex);
 	ao->chunk = NULL;
+	ao->open = false;
 	g_mutex_unlock(ao->mutex);
 
 	ao_plugin_close(ao->plugin, ao->data);
 	pcm_convert_deinit(&ao->convert_state);
-	ao->open = false;
 
 	g_debug("closed plugin=%s name=\"%s\"", ao->plugin->name, ao->name);
 }
@@ -198,8 +198,10 @@ static gpointer audio_output_task(gpointer arg)
 			assert(!ao->open);
 			if (ret) {
 				pcm_convert_init(&ao->convert_state);
-				ao->open = true;
 
+				g_mutex_lock(ao->mutex);
+				ao->open = true;
+				g_mutex_unlock(ao->mutex);
 
 				g_debug("opened plugin=%s name=\"%s\" "
 					"audio_format=%u:%u:%u",

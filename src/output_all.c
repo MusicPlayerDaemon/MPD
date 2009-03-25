@@ -169,6 +169,19 @@ static void audio_output_wait_all(void)
 		notify_wait(&audio_output_client_notify);
 }
 
+static void
+audio_output_reset_reopen(struct audio_output *ao)
+{
+	g_mutex_lock(ao->mutex);
+
+	if (!ao->open && ao->fail_timer != NULL) {
+		g_timer_destroy(ao->fail_timer);
+		ao->fail_timer = NULL;
+	}
+
+	g_mutex_unlock(ao->mutex);
+}
+
 /**
  * Resets the "reopen" flag on all audio devices.  MPD should
  * immediately retry to open the device instead of waiting for the
@@ -180,10 +193,7 @@ audio_output_all_reset_reopen(void)
 	for (unsigned i = 0; i < num_audio_outputs; ++i) {
 		struct audio_output *ao = &audio_outputs[i];
 
-		if (!ao->open && ao->fail_timer != NULL) {
-			g_timer_destroy(ao->fail_timer);
-			ao->fail_timer = NULL;
-		}
+		audio_output_reset_reopen(ao);
 	}
 }
 
@@ -289,6 +299,9 @@ static bool
 chunk_is_consumed_in(const struct audio_output *ao,
 		     const struct music_chunk *chunk)
 {
+	if (!ao->open)
+		return true;
+
 	if (ao->chunk == NULL)
 		return false;
 
@@ -311,9 +324,6 @@ chunk_is_consumed(const struct music_chunk *chunk)
 	for (unsigned i = 0; i < num_audio_outputs; ++i) {
 		const struct audio_output *ao = &audio_outputs[i];
 		bool consumed;
-
-		if (!ao->open)
-			continue;
 
 		g_mutex_lock(ao->mutex);
 		consumed = chunk_is_consumed_in(ao, chunk);
@@ -339,14 +349,15 @@ clear_tail_chunk(G_GNUC_UNUSED const struct music_chunk *chunk, bool *locked)
 	for (unsigned i = 0; i < num_audio_outputs; ++i) {
 		struct audio_output *ao = &audio_outputs[i];
 
-		locked[i] = ao->open;
-
-		if (!locked[i])
-			continue;
-
 		/* this mutex will be unlocked by the caller when it's
 		   ready */
 		g_mutex_lock(ao->mutex);
+		locked[i] = ao->open;
+
+		if (!locked[i]) {
+			g_mutex_unlock(ao->mutex);
+			continue;
+		}
 
 		assert(ao->chunk == chunk);
 		assert(ao->chunk_finished);
