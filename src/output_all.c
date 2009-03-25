@@ -414,8 +414,7 @@ audio_output_all_wait(unsigned threshold)
 	if (audio_output_all_check() < threshold)
 		return true;
 
-	/* XXX synchronize in a better way */
-	g_usleep(1000);
+	notify_wait(&audio_output_client_notify);
 
 	return audio_output_all_check() < threshold;
 }

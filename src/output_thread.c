@@ -155,6 +155,8 @@ static void ao_play(struct audio_output *ao)
 
 	ao->chunk_finished = true;
 	g_mutex_unlock(ao->mutex);
+
+	notify_signal(&audio_output_client_notify);
 }
 
 static void ao_pause(struct audio_output *ao)
