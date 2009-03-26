@@ -21,6 +21,8 @@
 #include "../mixer_api.h"
 
 #include <glib.h>
+
+#include <assert.h>
 #include <sys/stat.h>
 #include <sys/ioctl.h>
 #include <fcntl.h>
@@ -58,7 +60,6 @@ oss_mixer_init(const struct config_param *param)
 					     VOLUME_MIXER_OSS_DEFAULT);
 	om->control = config_get_block_string(param, "mixer_control", NULL);
 
-	om->device_fd = -1;
 	om->volume_control = SOUND_MIXER_PCM;
 
 	return &om->base;
@@ -76,9 +77,10 @@ static void
 oss_mixer_close(struct mixer *data)
 {
 	struct oss_mixer *om = (struct oss_mixer *) data;
-	if (om->device_fd != -1)
-		while (close(om->device_fd) && errno == EINTR) ;
-	om->device_fd = -1;
+
+	assert(om->device_fd >= 0);
+
+	close(om->device_fd);
 }
 
 static int
@@ -141,8 +143,7 @@ oss_mixer_get_volume(struct mixer *mixer)
 	int left, right, level;
 	int ret;
 
-	if (om->device_fd < 0 && !oss_mixer_open(mixer))
-		return false;
+	assert(om->device_fd >= 0);
 
 	ret = ioctl(om->device_fd, MIXER_READ(om->volume_control), &level);
 	if (ret < 0) {
@@ -168,8 +169,7 @@ oss_mixer_set_volume(struct mixer *mixer, unsigned volume)
 	int level;
 	int ret;
 
-	if (om->device_fd < 0 && !oss_mixer_open(mixer))
-		return false;
+	assert(om->device_fd >= 0);
 
 	if (volume > 100)
 		volume = 100;
