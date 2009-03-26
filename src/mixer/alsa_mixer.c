@@ -52,8 +52,6 @@ alsa_mixer_init(const struct config_param *param)
 	am->control = config_get_block_string(param, "mixer_control",
 					      VOLUME_MIXER_ALSA_CONTROL_DEFAULT);
 
-	am->volume_set = -1;
-
 	return &am->base;
 }
 
@@ -81,6 +79,8 @@ alsa_mixer_open(struct mixer *data)
 	struct alsa_mixer *am = (struct alsa_mixer *)data;
 	int err;
 	snd_mixer_elem_t *elem;
+
+	am->volume_set = -1;
 
 	err = snd_mixer_open(&am->handle, 0);
 	snd_config_update_free_global();
