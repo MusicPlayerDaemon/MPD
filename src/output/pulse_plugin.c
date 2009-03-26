@@ -70,10 +70,8 @@ pulse_init(G_GNUC_UNUSED const struct audio_format *audio_format,
 
 	pd = pulse_new_data();
 	pd->name = config_get_block_string(param, "name", "mpd_pulse");
-	pd->server = param != NULL
-		? config_dup_block_string(param, "server", NULL) : NULL;
-	pd->sink = param != NULL
-		? config_dup_block_string(param, "sink", NULL) : NULL;
+	pd->server = config_dup_block_string(param, "server", NULL);
+	pd->sink = config_dup_block_string(param, "sink", NULL);
 
 	return pd;
 }

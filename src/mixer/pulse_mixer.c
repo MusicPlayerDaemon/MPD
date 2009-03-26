@@ -170,12 +170,9 @@ pulse_mixer_init(const struct config_param *param)
 
 	pm->volume = g_new(struct pa_cvolume,1);
 
-	pm->server = param != NULL
-		? config_dup_block_string(param, "server", NULL) : NULL;
-	pm->sink = param != NULL
-		? config_dup_block_string(param, "sink", NULL) : NULL;
-	pm->output_name = param != NULL
-		? config_dup_block_string(param, "name", NULL) : NULL;
+	pm->server = config_dup_block_string(param, "server", NULL);
+	pm->sink = config_dup_block_string(param, "sink", NULL);
+	pm->output_name = config_dup_block_string(param, "name", NULL);
 
 	return &pm->base;
 }
