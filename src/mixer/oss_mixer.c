@@ -54,7 +54,8 @@ oss_mixer_init(const struct config_param *param)
 
 	mixer_init(&om->base, &oss_mixer);
 
-	om->device = config_get_block_string(param, "mixer_device", NULL);
+	om->device = config_get_block_string(param, "mixer_device",
+					     VOLUME_MIXER_OSS_DEFAULT);
 	om->control = config_get_block_string(param, "mixer_control", NULL);
 
 	om->device_fd = -1;
@@ -99,14 +100,10 @@ static bool
 oss_mixer_open(struct mixer *data)
 {
 	struct oss_mixer *om = (struct oss_mixer *) data;
-	const char *device = VOLUME_MIXER_OSS_DEFAULT;
 
-	if (om->device) {
-		device = om->device;
-	}
-
-	if ((om->device_fd = open(device, O_RDONLY)) < 0) {
-		g_warning("Unable to open oss mixer \"%s\"\n", device);
+	om->device_fd = open(om->device, O_RDONLY);
+	if (om->device_fd < 0) {
+		g_warning("Unable to open oss mixer \"%s\"\n", om->device);
 		return false;
 	}
 
