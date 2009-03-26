@@ -49,6 +49,21 @@ struct oss_mixer {
 	int volume_control;
 };
 
+static int
+oss_find_mixer(const char *name)
+{
+	const char *labels[SOUND_MIXER_NRDEVICES] = SOUND_DEVICE_LABELS;
+	size_t name_length = strlen(name);
+
+	for (unsigned i = 0; i < SOUND_MIXER_NRDEVICES; i++) {
+		if (g_ascii_strncasecmp(name, labels[i], name_length) == 0 &&
+		    (labels[i][name_length] == 0 ||
+		     labels[i][name_length] == ' '))
+			return i;
+	}
+	return -1;
+}
+
 static struct mixer *
 oss_mixer_init(const struct config_param *param)
 {
@@ -60,7 +75,16 @@ oss_mixer_init(const struct config_param *param)
 					     VOLUME_MIXER_OSS_DEFAULT);
 	om->control = config_get_block_string(param, "mixer_control", NULL);
 
-	om->volume_control = SOUND_MIXER_PCM;
+	if (om->control != NULL) {
+		om->volume_control = oss_find_mixer(om->control);
+		if (om->volume_control < 0) {
+			g_warning("mixer control \"%s\" not found",
+				  om->control);
+			g_free(om);
+			return NULL;
+		}
+	} else
+		om->volume_control = SOUND_MIXER_PCM;
 
 	return &om->base;
 }
@@ -83,21 +107,6 @@ oss_mixer_close(struct mixer *data)
 	close(om->device_fd);
 }
 
-static int
-oss_find_mixer(const char *name)
-{
-	const char *labels[SOUND_MIXER_NRDEVICES] = SOUND_DEVICE_LABELS;
-	size_t name_length = strlen(name);
-
-	for (unsigned i = 0; i < SOUND_MIXER_NRDEVICES; i++) {
-		if (g_ascii_strncasecmp(name, labels[i], name_length) == 0 &&
-		    (labels[i][name_length] == 0 ||
-		     labels[i][name_length] == ' '))
-			return i;
-	}
-	return -1;
-}
-
 static bool
 oss_mixer_open(struct mixer *data)
 {
@@ -110,7 +119,6 @@ oss_mixer_open(struct mixer *data)
 	}
 
 	if (om->control) {
-		int i;
 		int devmask = 0;
 
 		if (ioctl(om->device_fd, SOUND_MIXER_READ_DEVMASK, &devmask) < 0) {
@@ -118,20 +126,13 @@ oss_mixer_open(struct mixer *data)
 			oss_mixer_close(data);
 			return false;
 		}
-		i = oss_find_mixer(om->control);
 
-		if (i < 0) {
-			g_warning("mixer control \"%s\" not found\n",
-				om->control);
-			oss_mixer_close(data);
-			return false;
-		} else if (!((1 << i) & devmask)) {
+		if (((1 << om->volume_control) & devmask) == 0) {
 			g_warning("mixer control \"%s\" not usable\n",
 				om->control);
 			oss_mixer_close(data);
 			return false;
 		}
-		om->volume_control = i;
 	}
 	return true;
 }
