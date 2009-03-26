@@ -52,10 +52,6 @@ alsa_mixer_init(const struct config_param *param)
 	am->control = config_get_block_string(param, "mixer_control",
 					      VOLUME_MIXER_ALSA_CONTROL_DEFAULT);
 
-	am->handle = NULL;
-	am->elem = NULL;
-	am->volume_min = 0;
-	am->volume_max = 0;
 	am->volume_set = -1;
 
 	return &am->base;
@@ -73,8 +69,10 @@ static void
 alsa_mixer_close(struct mixer *data)
 {
 	struct alsa_mixer *am = (struct alsa_mixer *)data;
-	if (am->handle) snd_mixer_close(am->handle);
-	am->handle = NULL;
+
+	assert(am->handle != NULL);
+
+	snd_mixer_close(am->handle);
 }
 
 static bool
@@ -147,8 +145,7 @@ alsa_mixer_get_volume(struct mixer *mixer)
 	int ret;
 	long level;
 
-	if (am->handle == NULL && !alsa_mixer_open(mixer))
-		return -1;
+	assert(am->handle != NULL);
 
 	err = snd_mixer_handle_events(am->handle);
 	if (err < 0) {
@@ -186,8 +183,7 @@ alsa_mixer_set_volume(struct mixer *mixer, unsigned volume)
 	long level;
 	int err;
 
-	if (am->handle == NULL && !alsa_mixer_open(mixer))
-		return false;
+	assert(am->handle != NULL);
 
 	vol = volume;
 
