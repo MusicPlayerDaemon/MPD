@@ -30,8 +30,9 @@ struct alsa_mixer {
 	/** the base mixer class */
 	struct mixer base;
 
-	char *device;
-	char *control;
+	const char *device;
+	const char *control;
+
 	snd_mixer_t *handle;
 	snd_mixer_elem_t *elem;
 	long volume_min;
@@ -46,8 +47,8 @@ alsa_mixer_init(const struct config_param *param)
 
 	mixer_init(&am->base, &alsa_mixer);
 
-	am->device = config_dup_block_string(param, "mixer_device", NULL);
-	am->control = config_dup_block_string(param, "mixer_control", NULL);
+	am->device = config_get_block_string(param, "mixer_device", NULL);
+	am->control = config_get_block_string(param, "mixer_control", NULL);
 
 	am->handle = NULL;
 	am->elem = NULL;
@@ -63,8 +64,6 @@ alsa_mixer_finish(struct mixer *data)
 {
 	struct alsa_mixer *am = (struct alsa_mixer *)data;
 
-	g_free(am->device);
-	g_free(am->control);
 	g_free(am);
 }
 
