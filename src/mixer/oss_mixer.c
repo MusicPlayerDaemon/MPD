@@ -150,7 +150,6 @@ oss_mixer_get_volume(struct mixer *mixer)
 
 	ret = ioctl(om->device_fd, MIXER_READ(om->volume_control), &level);
 	if (ret < 0) {
-		oss_mixer_close(mixer);
 		g_warning("unable to read oss volume\n");
 		return false;
 	}
@@ -184,7 +183,6 @@ oss_mixer_set_volume(struct mixer *mixer, unsigned volume)
 	ret = ioctl(om->device_fd, MIXER_WRITE(om->volume_control), &level);
 	if (ret < 0) {
 		g_warning("unable to set oss volume\n");
-		oss_mixer_close(mixer);
 		return false;
 	}
 

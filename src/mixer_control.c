@@ -110,6 +110,18 @@ mixer_auto_close(struct mixer *mixer)
 		mixer_close(mixer);
 }
 
+/*
+ * Close the mixer due to failure.  The mutex must be locked before
+ * calling this function.
+ */
+static void
+mixer_failed(struct mixer *mixer)
+{
+	assert(mixer->open);
+
+	mixer_close(mixer);
+}
+
 int
 mixer_get_volume(struct mixer *mixer)
 {
@@ -124,6 +136,8 @@ mixer_get_volume(struct mixer *mixer)
 
 	if (mixer->open) {
 		volume = mixer->plugin->get_volume(mixer);
+		if (volume < 0)
+			mixer_failed(mixer);
 	} else
 		volume = -1;
 
@@ -146,6 +160,8 @@ mixer_set_volume(struct mixer *mixer, unsigned volume)
 
 	if (mixer->open) {
 		success = mixer->plugin->set_volume(mixer, volume);
+		if (!success)
+			mixer_failed(mixer);
 	} else
 		success = false;
 

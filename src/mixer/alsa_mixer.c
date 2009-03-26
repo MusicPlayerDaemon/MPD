@@ -162,7 +162,6 @@ alsa_mixer_get_volume(struct mixer *mixer)
 	if (err < 0) {
 		g_warning("problems getting alsa volume: %s (snd_mixer_%s)\n",
 			  snd_strerror(err), "handle_events");
-		alsa_mixer_close(mixer);
 		return false;
 	}
 
@@ -172,7 +171,6 @@ alsa_mixer_get_volume(struct mixer *mixer)
 	if (err < 0) {
 		g_warning("problems getting alsa volume: %s (snd_mixer_%s)\n",
 			  snd_strerror(err), "selem_get_playback_volume");
-		alsa_mixer_close(mixer);
 		return false;
 	}
 
@@ -216,7 +214,6 @@ alsa_mixer_set_volume(struct mixer *mixer, unsigned volume)
 	if (err < 0) {
 		g_warning("problems setting alsa volume: %s\n",
 			  snd_strerror(err));
-		alsa_mixer_close(mixer);
 		return false;
 	}
 
