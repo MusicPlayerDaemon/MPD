@@ -165,8 +165,6 @@ playlist_state_restore(FILE *fp, struct playlist *playlist)
 		if (!queue_valid_position(&playlist->queue, current))
 			current = 0;
 
-		current = queue_position_to_order(&playlist->queue, current);
-
 		if (seek_time == 0)
 			playPlaylist(playlist, current);
 		else
