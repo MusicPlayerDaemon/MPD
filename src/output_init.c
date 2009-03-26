@@ -22,6 +22,7 @@
 #include "output_internal.h"
 #include "output_list.h"
 #include "audio_parser.h"
+#include "mixer_control.h"
 
 #include <glib.h>
 
@@ -133,6 +134,11 @@ audio_output_init(struct audio_output *ao, const struct config_param *param,
 				  param, error);
 	if (ao->data == NULL)
 		return false;
+
+	if (plugin->mixer_plugin != NULL)
+		ao->mixer = mixer_new(plugin->mixer_plugin, param);
+	else
+		ao->mixer = NULL;
 
 	return true;
 }

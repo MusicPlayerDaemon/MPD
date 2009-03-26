@@ -42,7 +42,7 @@ output_mixer_get_volume(unsigned i)
 	if (!output->enabled)
 		return -1;
 
-	mixer = ao_plugin_get_mixer(output->plugin, output->data);
+	mixer = output->mixer;
 	if (mixer == NULL)
 		return -1;
 
@@ -81,7 +81,7 @@ output_mixer_set_volume(unsigned i, int volume, bool relative)
 	if (!output->enabled)
 		return false;
 
-	mixer = ao_plugin_get_mixer(output->plugin, output->data);
+	mixer = output->mixer;
 	if (mixer == NULL)
 		return false;
 

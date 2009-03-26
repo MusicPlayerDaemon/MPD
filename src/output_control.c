@@ -21,6 +21,7 @@
 #include "output_api.h"
 #include "output_internal.h"
 #include "output_thread.h"
+#include "mixer_control.h"
 
 #include <assert.h>
 #include <stdlib.h>
@@ -61,6 +62,8 @@ audio_output_open(struct audio_output *ao,
 		  const struct audio_format *audio_format,
 		  const struct music_pipe *mp)
 {
+	bool open;
+
 	assert(mp != NULL);
 
 	if (ao->fail_timer != NULL) {
@@ -93,10 +96,16 @@ audio_output_open(struct audio_output *ao,
 	if (ao->thread == NULL)
 		audio_output_thread_start(ao);
 
-	if (!ao->open)
+	open = ao->open;
+	if (!open) {
 		ao_command(ao, AO_COMMAND_OPEN);
+		open = ao->open;
+	}
 
-	return ao->open;
+	if (open && ao->mixer != NULL)
+		mixer_open(ao->mixer);
+
+	return open;
 }
 
 bool
@@ -139,6 +148,9 @@ void audio_output_close(struct audio_output *ao)
 {
 	assert(!ao->open || ao->fail_timer == NULL);
 
+	if (ao->mixer != NULL)
+		mixer_close(ao->mixer);
+
 	if (ao->open)
 		ao_command(ao, AO_COMMAND_CLOSE);
 	else if (ao->fail_timer != NULL) {
@@ -157,6 +169,9 @@ void audio_output_finish(struct audio_output *ao)
 		ao_command(ao, AO_COMMAND_KILL);
 		g_thread_join(ao->thread);
 	}
+
+	if (ao->mixer != NULL)
+		mixer_free(ao->mixer);
 
 	ao_plugin_finish(ao->plugin, ao->data);
 

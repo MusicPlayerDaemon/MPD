@@ -19,7 +19,6 @@
 
 #include "../output_api.h"
 #include "mixer_list.h"
-#include "mixer_control.h"
 
 #include <glib.h>
 #include <pulse/simple.h>
@@ -29,7 +28,6 @@
 
 struct pulse_data {
 	const char *name;
-	struct mixer *mixer;
 
 	pa_simple *s;
 	char *server;
@@ -62,7 +60,6 @@ static void pulse_free_data(struct pulse_data *pd)
 	g_free(pd->server);
 	g_free(pd->sink);
 	g_free(pd);
-	mixer_free(pd->mixer);
 }
 
 static void *
@@ -78,8 +75,6 @@ pulse_init(G_GNUC_UNUSED const struct audio_format *audio_format,
 	pd->sink = param != NULL
 		? config_dup_block_string(param, "sink", NULL) : NULL;
 
-	pd->mixer=mixer_new(&pulse_mixer, param);
-
 	return pd;
 }
 
@@ -89,15 +84,6 @@ static void pulse_finish(void *data)
 
 	pulse_free_data(pd);
 }
-
-static struct mixer *
-pulse_get_mixer(void *data)
-{
-	struct pulse_data *pd = data;
-
-	return pd->mixer;
-}
-
 
 static bool pulse_test_default_device(void)
 {
@@ -147,7 +133,6 @@ pulse_open(void *data, struct audio_format *audio_format, GError **error_r)
 			    pa_strerror(error));
 		return false;
 	}
-	mixer_open(pd->mixer);
 
 	return true;
 }
@@ -190,9 +175,9 @@ const struct audio_output_plugin pulse_plugin = {
 	.test_default_device = pulse_test_default_device,
 	.init = pulse_init,
 	.finish = pulse_finish,
-	.get_mixer = pulse_get_mixer,
 	.open = pulse_open,
 	.play = pulse_play,
 	.cancel = pulse_cancel,
 	.close = pulse_close,
+	.mixer_plugin = &pulse_mixer,
 };

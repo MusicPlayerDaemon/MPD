@@ -61,7 +61,7 @@ audio_output_disable_index(unsigned idx)
 	ao->enabled = false;
 	idle_add(IDLE_OUTPUT);
 
-	mixer = ao_plugin_get_mixer(ao->plugin, ao->data);
+	mixer = ao->mixer;
 	if (mixer != NULL) {
 		mixer_close(mixer);
 		idle_add(IDLE_MIXER);

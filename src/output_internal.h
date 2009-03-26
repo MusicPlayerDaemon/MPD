@@ -53,6 +53,13 @@ struct audio_output {
 	void *data;
 
 	/**
+	 * The #mixer object associated with this audio output device.
+	 * May be NULL if none is available, or if software volume is
+	 * configured.
+	 */
+	struct mixer *mixer;
+
+	/**
 	 * This flag is true, when the audio_format of this device is
 	 * configured in mpd.conf.
 	 */

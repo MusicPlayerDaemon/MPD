@@ -19,7 +19,6 @@
 
 #include "../output_api.h"
 #include "mixer_list.h"
-#include "mixer_control.h"
 
 #include <glib.h>
 #include <alsa/asoundlib.h>
@@ -70,9 +69,6 @@ struct alsa_data {
 
 	/** the size of one audio frame */
 	size_t frame_size;
-
-	/** the mixer object associated with this output */
-	struct mixer *mixer;
 };
 
 /**
@@ -105,7 +101,6 @@ static void
 alsa_data_free(struct alsa_data *ad)
 {
 	g_free(ad->device);
-	mixer_free(ad->mixer);
 	g_free(ad);
 }
 
@@ -151,7 +146,6 @@ alsa_init(G_GNUC_UNUSED const struct audio_format *audio_format,
 	}
 
 	alsa_configure(ad, param);
-	ad->mixer = mixer_new(&alsa_mixer, param);
 
 	return ad;
 }
@@ -162,14 +156,6 @@ alsa_finish(void *data)
 	struct alsa_data *ad = data;
 
 	alsa_data_free(ad);
-}
-
-static struct mixer *
-alsa_get_mixer(void *data)
-{
-	struct alsa_data *ad = data;
-
-	return ad->mixer;
 }
 
 static bool
@@ -400,8 +386,6 @@ alsa_open(void *data, struct audio_format *audio_format, GError **error)
 	int err;
 	bool success;
 
-	mixer_open(ad->mixer);
-
 	bitformat = get_bitformat(audio_format);
 	if (bitformat == SND_PCM_FORMAT_UNKNOWN) {
 		/* sample format is not supported by this plugin -
@@ -484,8 +468,6 @@ alsa_close(void *data)
 		snd_pcm_drain(ad->pcm);
 
 	snd_pcm_close(ad->pcm);
-
-	mixer_close(ad->mixer);
 }
 
 static size_t
@@ -514,9 +496,9 @@ const struct audio_output_plugin alsaPlugin = {
 	.test_default_device = alsa_test_default_device,
 	.init = alsa_init,
 	.finish = alsa_finish,
-	.get_mixer = alsa_get_mixer,
 	.open = alsa_open,
 	.play = alsa_play,
 	.cancel = alsa_cancel,
 	.close = alsa_close,
+	.mixer_plugin = &alsa_mixer,
 };

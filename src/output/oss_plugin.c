@@ -19,7 +19,6 @@
 
 #include "../output_api.h"
 #include "mixer_list.h"
-#include "mixer_control.h"
 
 #include <glib.h>
 
@@ -54,9 +53,6 @@ struct oss_data {
 	unsigned num_supported[3];
 	int *unsupported[3];
 	unsigned num_unsupported[3];
-
-	/** the mixer object associated with this output */
-	struct mixer *mixer;
 };
 
 enum oss_support {
@@ -302,8 +298,6 @@ oss_data_free(struct oss_data *od)
 	g_free(od->unsupported[OSS_CHANNELS]);
 	g_free(od->unsupported[OSS_BITS]);
 
-	mixer_free(od->mixer);
-
 	g_free(od);
 }
 
@@ -372,7 +366,6 @@ oss_open_default(GError **error)
 		if (ret[i] == OSS_STAT_NO_ERROR) {
 			struct oss_data *od = oss_data_new();
 			od->device = default_devices[i];
-			od->mixer = mixer_new(&oss_mixer, NULL);
 			return od;
 		}
 	}
@@ -412,7 +405,6 @@ oss_output_init(G_GNUC_UNUSED const struct audio_format *audio_format,
 	if (device != NULL) {
 		struct oss_data *od = oss_data_new();
 		od->device = device;
-		od->mixer = mixer_new(&oss_mixer, param);
 		return od;
 	}
 
@@ -425,14 +417,6 @@ oss_output_finish(void *data)
 	struct oss_data *od = data;
 
 	oss_data_free(od);
-}
-
-static struct mixer *
-oss_get_mixer(void *data)
-{
-	struct oss_data *od = data;
-
-	return od->mixer;
 }
 
 static int
@@ -562,8 +546,6 @@ oss_output_open(void *data, struct audio_format *audio_format, GError **error)
 
 	*audio_format = od->audio_format;
 
-	mixer_open(od->mixer);
-
 	return ret;
 }
 
@@ -573,7 +555,6 @@ oss_output_close(void *data)
 	struct oss_data *od = data;
 
 	oss_close(od);
-	mixer_close(od->mixer);
 }
 
 static void
@@ -616,9 +597,9 @@ const struct audio_output_plugin oss_output_plugin = {
 	.test_default_device = oss_output_test_default_device,
 	.init = oss_output_init,
 	.finish = oss_output_finish,
-	.get_mixer = oss_get_mixer,
 	.open = oss_output_open,
 	.close = oss_output_close,
 	.play = oss_output_play,
 	.cancel = oss_output_cancel,
+	.mixer_plugin = &oss_mixer,
 };
