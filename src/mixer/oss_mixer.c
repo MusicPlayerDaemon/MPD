@@ -88,7 +88,7 @@ oss_find_mixer(const char *name)
 	size_t name_length = strlen(name);
 
 	for (unsigned i = 0; i < SOUND_MIXER_NRDEVICES; i++) {
-		if (strncasecmp(name, labels[i], name_length) == 0 &&
+		if (g_ascii_strncasecmp(name, labels[i], name_length) == 0 &&
 		    (labels[i][name_length] == 0 ||
 		     labels[i][name_length] == ' '))
 			return i;
