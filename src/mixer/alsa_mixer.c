@@ -47,8 +47,10 @@ alsa_mixer_init(const struct config_param *param)
 
 	mixer_init(&am->base, &alsa_mixer);
 
-	am->device = config_get_block_string(param, "mixer_device", NULL);
-	am->control = config_get_block_string(param, "mixer_control", NULL);
+	am->device = config_get_block_string(param, "mixer_device",
+					     VOLUME_MIXER_ALSA_DEFAULT);
+	am->control = config_get_block_string(param, "mixer_control",
+					      VOLUME_MIXER_ALSA_CONTROL_DEFAULT);
 
 	am->handle = NULL;
 	am->elem = NULL;
@@ -81,12 +83,7 @@ alsa_mixer_open(struct mixer *data)
 	struct alsa_mixer *am = (struct alsa_mixer *)data;
 	int err;
 	snd_mixer_elem_t *elem;
-	const char *control_name = VOLUME_MIXER_ALSA_CONTROL_DEFAULT;
-	const char *device = VOLUME_MIXER_ALSA_DEFAULT;
 
-	if (am->device) {
-		device = am->device;
-	}
 	err = snd_mixer_open(&am->handle, 0);
 	snd_config_update_free_global();
 	if (err < 0) {
@@ -94,7 +91,7 @@ alsa_mixer_open(struct mixer *data)
 		return false;
 	}
 
-	if ((err = snd_mixer_attach(am->handle, device)) < 0) {
+	if ((err = snd_mixer_attach(am->handle, am->device)) < 0) {
 		g_warning("problems attaching alsa mixer: %s\n",
 			snd_strerror(err));
 		alsa_mixer_close(data);
@@ -118,13 +115,9 @@ alsa_mixer_open(struct mixer *data)
 
 	elem = snd_mixer_first_elem(am->handle);
 
-	if (am->control) {
-		control_name = am->control;
-	}
-
 	while (elem) {
 		if (snd_mixer_elem_get_type(elem) == SND_MIXER_ELEM_SIMPLE) {
-			if (strcasecmp(control_name,
+			if (strcasecmp(am->control,
 				       snd_mixer_selem_get_name(elem)) == 0) {
 				break;
 			}
@@ -140,7 +133,7 @@ alsa_mixer_open(struct mixer *data)
 		return true;
 	}
 
-	g_warning("can't find alsa mixer control \"%s\"\n", control_name);
+	g_warning("can't find alsa mixer control \"%s\"\n", am->control);
 
 	alsa_mixer_close(data);
 	return false;
