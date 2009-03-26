@@ -192,6 +192,36 @@ pulse_mixer_finish(struct mixer *data)
 }
 
 static bool
+pulse_mixer_setup(struct pulse_mixer *pm)
+{
+	pa_context_set_state_callback(pm->context, context_state_cb, pm);
+
+	if (pa_context_connect(pm->context, pm->server,
+			       (pa_context_flags_t)0, NULL) < 0) {
+		g_debug("context server fail");
+		return false;
+	}
+
+	pa_threaded_mainloop_lock(pm->mainloop);
+
+	if (pa_threaded_mainloop_start(pm->mainloop) < 0) {
+		g_debug("error start mainloop");
+		return false;
+	}
+
+	pa_threaded_mainloop_wait(pm->mainloop);
+
+	if (pa_context_get_state(pm->context) != PA_CONTEXT_READY) {
+		g_debug("error context not ready");
+		return false;
+	}
+
+	pa_threaded_mainloop_unlock(pm->mainloop);
+
+	return true;
+}
+
+static bool
 pulse_mixer_open(G_GNUC_UNUSED struct mixer *data)
 {
 	struct pulse_mixer *pm = (struct pulse_mixer *) data;
@@ -208,28 +238,9 @@ pulse_mixer_open(G_GNUC_UNUSED struct mixer *data)
 		return false;
 	}
 
-	pa_context_set_state_callback(pm->context, context_state_cb, pm);
-
-	if (pa_context_connect(pm->context, pm->server,
-			       (pa_context_flags_t)0, NULL) < 0) {
-		g_debug("context server fail");
+	if (!pulse_mixer_setup(pm)) {
 		return false;
 	}
-
-	pa_threaded_mainloop_lock(pm->mainloop);
-	if (pa_threaded_mainloop_start(pm->mainloop) < 0) {
-		g_debug("error start mainloop");
-		return false;
-	}
-
-	pa_threaded_mainloop_wait(pm->mainloop);
-
-	if (pa_context_get_state(pm->context) != PA_CONTEXT_READY) {
-		g_debug("error context not ready");
-		return false;
-	}
-
-	pa_threaded_mainloop_unlock(pm->mainloop);
 
 	return true;
 }
