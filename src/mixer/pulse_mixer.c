@@ -38,7 +38,7 @@ struct pulse_mixer {
 	bool	online;
 	struct pa_context *context;
 	struct pa_threaded_mainloop *mainloop;
-	struct pa_cvolume *volume;
+	struct pa_cvolume volume;
 
 };
 
@@ -61,7 +61,7 @@ sink_input_cb(G_GNUC_UNUSED pa_context *context, const pa_sink_input_info *i,
 	if(strcmp(i->name,pm->output_name)==0) {
 		pm->index=i->index;
 		pm->online=true;
-		*pm->volume=i->volume;
+		pm->volume = i->volume;
 	} else
 		g_debug("bad name");
 }
@@ -82,7 +82,7 @@ sink_input_vol(G_GNUC_UNUSED pa_context *context, const pa_sink_input_info *i,
 		return;
 	}
 	g_debug("sink input vol %s, index %d ", i->name, i->index);
-	*pm->volume=i->volume;
+	pm->volume = i->volume;
 }
 
 static void
@@ -163,11 +163,8 @@ pulse_mixer_init(const struct config_param *param)
 	pm->sink = NULL;
 	pm->context=NULL;
 	pm->mainloop=NULL;
-	pm->volume=NULL;
 	pm->output_name=NULL;
 	pm->online=false;
-
-	pm->volume = g_new(struct pa_cvolume,1);
 
 	pm->server = config_get_block_string(param, "server", NULL);
 	pm->sink = config_get_block_string(param, "sink", NULL);
@@ -182,7 +179,6 @@ pulse_mixer_finish(struct mixer *data)
 	struct pulse_mixer *pm = (struct pulse_mixer *) data;
 	pm->context  = NULL;
 	pm->mainloop = NULL;
-	pm->volume   = NULL;
 	g_free(pm);
 }
 
@@ -281,7 +277,7 @@ pulse_mixer_get_volume(struct mixer *mixer)
 		}
 		pa_operation_unref(o);
 
-		ret = (int)((100*(pa_cvolume_avg(pm->volume)+1))/PA_VOLUME_NORM);
+		ret = (int)((100*(pa_cvolume_avg(&pm->volume)+1))/PA_VOLUME_NORM);
 		g_debug("volume %d", ret);
 		return ret;
 	}
@@ -295,11 +291,11 @@ pulse_mixer_set_volume(struct mixer *mixer, unsigned volume)
 	struct pulse_mixer *pm=(struct pulse_mixer *) mixer;
 	pa_operation *o;
 	if (pm->online) {
-		pa_cvolume_set(pm->volume, (pm->volume)->channels,
+		pa_cvolume_set(&pm->volume, pm->volume.channels,
 				(pa_volume_t)(volume)*PA_VOLUME_NORM/100+0.5);
 
 		if (!(o = pa_context_set_sink_input_volume(pm->context, pm->index,
-							   pm->volume, NULL, NULL))) {
+							   &pm->volume, NULL, NULL))) {
 			g_debug("pa_context_set_sink_input_volume() failed");
 			return false;
 		}
