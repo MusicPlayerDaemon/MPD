@@ -38,6 +38,12 @@ struct mixer {
 	 * Is the mixer device currently open?
 	 */
 	bool open;
+
+	/**
+	 * Has this mixer failed, and should not be reopened
+	 * automatically?
+	 */
+	bool failed;
 };
 
 void

@@ -82,6 +82,8 @@ mixer_open(struct mixer *mixer)
 	else
 		success = mixer->open = mixer->plugin->open(mixer);
 
+	mixer->failed = !success;
+
 	g_mutex_unlock(mixer->mutex);
 
 	return success;
@@ -120,6 +122,8 @@ mixer_failed(struct mixer *mixer)
 	assert(mixer->open);
 
 	mixer_close(mixer);
+
+	mixer->failed = true;
 }
 
 int
@@ -129,7 +133,7 @@ mixer_get_volume(struct mixer *mixer)
 
 	assert(mixer != NULL);
 
-	if (mixer->plugin->global && !mixer_open(mixer))
+	if (mixer->plugin->global && !mixer->failed && !mixer_open(mixer))
 		return -1;
 
 	g_mutex_lock(mixer->mutex);
@@ -153,7 +157,7 @@ mixer_set_volume(struct mixer *mixer, unsigned volume)
 
 	assert(mixer != NULL);
 
-	if (mixer->plugin->global && !mixer_open(mixer))
+	if (mixer->plugin->global && !mixer->failed && !mixer_open(mixer))
 		return false;
 
 	g_mutex_lock(mixer->mutex);

@@ -28,4 +28,5 @@ mixer_init(struct mixer *mixer, const struct mixer_plugin *plugin)
 	mixer->plugin = plugin;
 	mixer->mutex = g_mutex_new();
 	mixer->open = false;
+	mixer->failed = false;
 }
