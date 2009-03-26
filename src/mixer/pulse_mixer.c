@@ -205,6 +205,7 @@ pulse_mixer_setup(struct pulse_mixer *pm)
 	pa_threaded_mainloop_lock(pm->mainloop);
 
 	if (pa_threaded_mainloop_start(pm->mainloop) < 0) {
+		pa_threaded_mainloop_unlock(pm->mainloop);
 		g_debug("error start mainloop");
 		return false;
 	}
@@ -212,6 +213,7 @@ pulse_mixer_setup(struct pulse_mixer *pm)
 	pa_threaded_mainloop_wait(pm->mainloop);
 
 	if (pa_context_get_state(pm->context) != PA_CONTEXT_READY) {
+		pa_threaded_mainloop_unlock(pm->mainloop);
 		g_debug("error context not ready");
 		return false;
 	}
