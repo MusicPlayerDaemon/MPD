@@ -165,7 +165,6 @@ pulse_mixer_init(const struct config_param *param)
 	pm->mainloop=NULL;
 	pm->volume=NULL;
 	pm->output_name=NULL;
-	pm->index=0;
 	pm->online=false;
 
 	pm->volume = g_new(struct pa_cvolume,1);
@@ -184,7 +183,6 @@ pulse_mixer_finish(struct mixer *data)
 	pm->context  = NULL;
 	pm->mainloop = NULL;
 	pm->volume   = NULL;
-	pm->online   = false;
 	g_free(pm);
 }
 
@@ -225,6 +223,9 @@ pulse_mixer_open(G_GNUC_UNUSED struct mixer *data)
 {
 	struct pulse_mixer *pm = (struct pulse_mixer *) data;
 	g_debug("pulse mixer open");
+
+	pm->index = 0;
+	pm->online = false;
 
 	if(!(pm->mainloop = pa_threaded_mainloop_new())) {
 		g_debug("failed mainloop");
@@ -267,6 +268,8 @@ pulse_mixer_close(G_GNUC_UNUSED struct mixer *data)
 		pa_threaded_mainloop_free(pm->mainloop);
 		pm->mainloop = NULL;
 	}
+
+	pm->online = false;
 }
 
 static int
