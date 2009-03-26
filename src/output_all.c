@@ -24,6 +24,7 @@
 #include "conf.h"
 #include "pipe.h"
 #include "buffer.h"
+#include "player_control.h"
 
 #ifndef NDEBUG
 #include "chunk.h"
@@ -414,7 +415,7 @@ audio_output_all_wait(unsigned threshold)
 	if (audio_output_all_check() < threshold)
 		return true;
 
-	notify_wait(&audio_output_client_notify);
+	notify_wait(&pc.notify);
 
 	return audio_output_all_check() < threshold;
 }

@@ -22,6 +22,7 @@
 #include "output_internal.h"
 #include "chunk.h"
 #include "pipe.h"
+#include "player_control.h"
 
 #include <glib.h>
 
@@ -156,7 +157,7 @@ static void ao_play(struct audio_output *ao)
 	ao->chunk_finished = true;
 	g_mutex_unlock(ao->mutex);
 
-	notify_signal(&audio_output_client_notify);
+	notify_signal(&pc.notify);
 }
 
 static void ao_pause(struct audio_output *ao)
