@@ -28,10 +28,10 @@
 
 struct pulse_data {
 	const char *name;
+	const char *server;
+	const char *sink;
 
 	pa_simple *s;
-	char *server;
-	char *sink;
 };
 
 /**
@@ -57,8 +57,6 @@ static struct pulse_data *pulse_new_data(void)
 
 static void pulse_free_data(struct pulse_data *pd)
 {
-	g_free(pd->server);
-	g_free(pd->sink);
 	g_free(pd);
 }
 
@@ -70,8 +68,8 @@ pulse_init(G_GNUC_UNUSED const struct audio_format *audio_format,
 
 	pd = pulse_new_data();
 	pd->name = config_get_block_string(param, "name", "mpd_pulse");
-	pd->server = config_dup_block_string(param, "server", NULL);
-	pd->sink = config_dup_block_string(param, "sink", NULL);
+	pd->server = config_get_block_string(param, "server", NULL);
+	pd->sink = config_get_block_string(param, "sink", NULL);
 
 	return pd;
 }

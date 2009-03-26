@@ -31,9 +31,9 @@
 
 struct pulse_mixer {
 	struct mixer base;
-	char *server;
-	char *sink;
-	char *output_name;
+	const char *server;
+	const char *sink;
+	const char *output_name;
 	uint32_t index;
 	bool	online;
 	struct pa_context *context;
@@ -170,9 +170,9 @@ pulse_mixer_init(const struct config_param *param)
 
 	pm->volume = g_new(struct pa_cvolume,1);
 
-	pm->server = config_dup_block_string(param, "server", NULL);
-	pm->sink = config_dup_block_string(param, "sink", NULL);
-	pm->output_name = config_dup_block_string(param, "name", NULL);
+	pm->server = config_get_block_string(param, "server", NULL);
+	pm->sink = config_get_block_string(param, "sink", NULL);
+	pm->output_name = config_get_block_string(param, "name", NULL);
 
 	return &pm->base;
 }
