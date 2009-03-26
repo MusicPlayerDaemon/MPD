@@ -292,6 +292,12 @@ void
 queue_move(struct queue *queue, unsigned from, unsigned to);
 
 /**
+ * Moves a range of songs to a new position.
+ */
+void
+queue_move_range(struct queue *queue, unsigned start, unsigned end, unsigned to);
+
+/**
  * Removes a song from the playlist.
  */
 void

@@ -173,6 +173,48 @@ queue_move(struct queue *queue, unsigned from, unsigned to)
 }
 
 void
+queue_move_range(struct queue *queue, unsigned start, unsigned end, unsigned to)
+{
+	struct queue_item items[end - start];
+	// Copy the original block [start,end-1]
+	for (unsigned i = start; i < end; i++)
+		items[i - start] = queue->items[i];
+
+	// If to > start, we need to move to-start items to start, starting from end
+	for (unsigned i = end; i < end + to - start; i++)
+		queue_move_song_to(queue, i, start + i - end);
+
+	// If to < start, we need to move start-to items to newend (= end + to - start), starting from to
+	// This is the same as moving items from start-1 to to (decreasing), with start-1 going to end-1
+	// We have to iterate in this order to avoid writing over something we haven't yet moved
+	for (unsigned i = start - 1; i >= to && i != G_MAXUINT; i--)
+		queue_move_song_to(queue, i, i + end - start);
+
+	// Copy the original block back in, starting at to.
+	for (unsigned i = start; i< end; i++)
+	{
+		queue->idToPosition[items[i-start].id] = to + i - start;
+		queue->items[to + i - start] = items[i-start];
+		queue->items[to + i - start].version = queue->version;
+	}
+
+	if (queue->random) {
+		// Update the positions in the queue.
+		// Note that the ranges for these cases are the same as the ranges of
+		// the loops above.
+		for (unsigned i = 0; i < queue->length; i++) {
+			if (queue->order[i] >= end && queue->order[i] < to + end - start)
+				queue->order[i] -= end - start;
+			else if (queue->order[i] < start &&
+				 queue->order[i] >= to)
+				queue->order[i] += end - start;
+			else if (start <= queue->order[i] && queue->order[i] < end)
+				queue->order[i] += to - start;
+		}
+	}
+}
+
+void
 queue_delete(struct queue *queue, unsigned position)
 {
 	struct song *song;

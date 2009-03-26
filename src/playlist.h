@@ -158,7 +158,7 @@ void
 deleteASongFromPlaylist(struct playlist *playlist, const struct song *song);
 
 enum playlist_result
-moveSongInPlaylist(struct playlist *playlist, unsigned from, int to);
+moveSongRangeInPlaylist(struct playlist *playlist, unsigned start, unsigned end, int to);
 
 enum playlist_result
 moveSongInPlaylistById(struct playlist *playlist, unsigned id, int to);

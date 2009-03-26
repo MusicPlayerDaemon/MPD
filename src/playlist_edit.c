@@ -290,19 +290,21 @@ deleteASongFromPlaylist(struct playlist *playlist, const struct song *song)
 }
 
 enum playlist_result
-moveSongInPlaylist(struct playlist *playlist, unsigned from, int to)
+moveSongRangeInPlaylist(struct playlist *playlist, unsigned start, unsigned end, int to)
 {
 	const struct song *queued;
 	int currentSong;
 
-	if (!queue_valid_position(&playlist->queue, from))
+	if (!queue_valid_position(&playlist->queue, start) ||
+		!queue_valid_position(&playlist->queue, end - 1))
 		return PLAYLIST_RESULT_BAD_RANGE;
 
-	if ((to >= 0 && to >= (int)queue_length(&playlist->queue)) ||
+	if ((to >= 0 && to + end - start - 1 >= queue_length(&playlist->queue)) ||
 	    (to < 0 && abs(to) > (int)queue_length(&playlist->queue)))
 		return PLAYLIST_RESULT_BAD_RANGE;
 
-	if ((int)from == to) /* no-op */
+	if ((int)start == to)
+		/* nothing happens */
 		return PLAYLIST_RESULT_SUCCESS;
 
 	queued = playlist_get_queued_song(playlist);
@@ -316,24 +318,27 @@ moveSongInPlaylist(struct playlist *playlist, unsigned from, int to)
 					      playlist->current)
 		: -1;
 	if (to < 0 && playlist->current >= 0) {
-		if ((unsigned)currentSong == from)
+		if (start <= (unsigned)currentSong && (unsigned)currentSong <= end)
 			/* no-op, can't be moved to offset of itself */
 			return PLAYLIST_RESULT_SUCCESS;
 		to = (currentSong + abs(to)) % queue_length(&playlist->queue);
+		if (start < (unsigned)to)
+			to--;
 	}
 
-	queue_move(&playlist->queue, from, to);
+	queue_move_range(&playlist->queue, start, end, to);
 
 	if (!playlist->queue.random) {
 		/* update current/queued */
-		if (playlist->current == (int)from)
-			playlist->current = to;
-		else if (playlist->current > (int)from &&
+		if ((int)start <= playlist->current &&
+		    (unsigned)playlist->current < end)
+			playlist->current += to - start;
+		else if (playlist->current >= (int)end &&
 			 playlist->current <= to) {
-			playlist->current--;
+			playlist->current -= end - start;
 		} else if (playlist->current >= to &&
-			   playlist->current < (int)from) {
-			playlist->current++;
+			   playlist->current < (int)start) {
+			playlist->current += end - start;
 		}
 	}
 
@@ -351,7 +356,7 @@ moveSongInPlaylistById(struct playlist *playlist, unsigned id1, int to)
 	if (song < 0)
 		return PLAYLIST_RESULT_NO_SUCH_SONG;
 
-	return moveSongInPlaylist(playlist, song, to);
+	return moveSongRangeInPlaylist(playlist, song, song+1, to);
 }
 
 void shufflePlaylist(struct playlist *playlist, unsigned start, unsigned end)

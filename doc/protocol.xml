@@ -634,14 +634,18 @@ OK
           <term>
             <cmdsynopsis>
               <command>move</command>
-              <arg choice="req"><replaceable>FROM</replaceable></arg>
+              <group>
+                  <arg choice="req"><replaceable>FROM</replaceable></arg>
+                  <arg choice="req"><replaceable>START:END</replaceable></arg>
+              </group>
               <arg choice="req"><replaceable>TO</replaceable></arg>
             </cmdsynopsis>
           </term>
           <listitem>
             <para>
-              Moves the song at <varname>FROM</varname> to
-              <varname>TO</varname> in the playlist.
+              Moves the song at <varname>FROM</varname> or range of songs
+              at <varname>START:END</varname> to <varname>TO</varname>
+              in the playlist.
             </para>
           </listitem>
         </varlistentry>

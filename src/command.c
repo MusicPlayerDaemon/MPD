@@ -1181,14 +1181,16 @@ handle_list(struct client *client, int argc, char *argv[])
 static enum command_return
 handle_move(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 {
-	int from, to;
+	unsigned start, end;
+	int to;
 	enum playlist_result result;
 
-	if (!check_int(client, &from, argv[1], check_integer, argv[1]))
+	if (!check_range(client, &start, &end,
+				      argv[1], need_range))
 		return COMMAND_RETURN_ERROR;
 	if (!check_int(client, &to, argv[2], check_integer, argv[2]))
 		return COMMAND_RETURN_ERROR;
-	result = moveSongInPlaylist(&g_playlist, from, to);
+	result = moveSongRangeInPlaylist(&g_playlist, start, end, to);
 	return print_playlist_result(client, result);
 }
 
