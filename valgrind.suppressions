@@ -398,6 +398,26 @@
    fun:pthread_cancel_init
 }
 
+{
+   dlopen
+   Memcheck:Leak
+   fun:calloc
+   fun:_dlerror_run
+}
+
+{
+   dlopen
+   Memcheck:Leak
+   fun:malloc
+   fun:_dl_scope_free
+   fun:_dl_map_object_deps
+   fun:dl_open_worker
+   fun:_dl_catch_error
+   fun:_dl_open
+   fun:do_dlopen
+   fun:_dl_catch_error
+   fun:dlerror_run
+}
 
 # is that a leak in libdbus?
 
@@ -492,6 +512,33 @@
    fun:realloc
    fun:g_realloc
    fun:g_quark_from_static_string
+}
+
+{
+   g_quark_from_string
+   Memcheck:Leak
+   fun:malloc
+   fun:g_malloc
+   fun:g_strdup
+   fun:g_quark_from_string
+}
+
+{
+   g_quark_from_string
+   Memcheck:Leak
+   fun:calloc
+   fun:g_malloc0
+   fun:g_hash_table_new_full
+   fun:g_quark_from_string
+}
+
+{
+   g_quark_from_string
+   Memcheck:Leak
+   fun:malloc
+   fun:realloc
+   fun:g_realloc
+   fun:g_quark_from_string
 }
 
 {
