@@ -40,8 +40,9 @@ struct oss_mixer {
 	/** the base mixer class */
 	struct mixer base;
 
-	char *device;
-	char *control;
+	const char *device;
+	const char *control;
+
 	int device_fd;
 	int volume_control;
 };
@@ -53,8 +54,8 @@ oss_mixer_init(const struct config_param *param)
 
 	mixer_init(&om->base, &oss_mixer);
 
-	om->device = config_dup_block_string(param, "mixer_device", NULL);
-	om->control = config_dup_block_string(param, "mixer_control", NULL);
+	om->device = config_get_block_string(param, "mixer_device", NULL);
+	om->control = config_get_block_string(param, "mixer_control", NULL);
 
 	om->device_fd = -1;
 	om->volume_control = SOUND_MIXER_PCM;
@@ -67,8 +68,6 @@ oss_mixer_finish(struct mixer *data)
 {
 	struct oss_mixer *om = (struct oss_mixer *) data;
 
-	g_free(om->device);
-	g_free(om->control);
 	g_free(om);
 }
 
