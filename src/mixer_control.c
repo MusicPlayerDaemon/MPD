@@ -58,9 +58,7 @@ mixer_new(const struct mixer_plugin *plugin, const struct config_param *param)
 void
 mixer_free(struct mixer *mixer)
 {
-	if (!mixer) {
-		return;
-	}
+	assert(mixer != NULL);
 	assert(mixer->plugin != NULL);
 	assert(mixer->mutex != NULL);
 
@@ -74,9 +72,7 @@ mixer_open(struct mixer *mixer)
 {
 	bool success;
 
-	if (!mixer) {
-		return false;
-	}
+	assert(mixer != NULL);
 	assert(mixer->plugin != NULL);
 
 	g_mutex_lock(mixer->mutex);
@@ -89,9 +85,7 @@ mixer_open(struct mixer *mixer)
 void
 mixer_close(struct mixer *mixer)
 {
-	if (!mixer) {
-		return;
-	}
+	assert(mixer != NULL);
 	assert(mixer->plugin != NULL);
 
 	g_mutex_lock(mixer->mutex);
@@ -104,6 +98,8 @@ mixer_get_volume(struct mixer *mixer)
 {
 	int volume;
 
+	assert(mixer != NULL);
+
 	g_mutex_lock(mixer->mutex);
 	volume = mixer->plugin->get_volume(mixer);
 	g_mutex_unlock(mixer->mutex);
@@ -115,6 +111,8 @@ bool
 mixer_set_volume(struct mixer *mixer, unsigned volume)
 {
 	bool success;
+
+	assert(mixer != NULL);
 
 	g_mutex_lock(mixer->mutex);
 	success = mixer->plugin->set_volume(mixer, volume);
