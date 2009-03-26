@@ -714,14 +714,18 @@ OK
           <term>
             <cmdsynopsis>
               <command>playlistinfo</command>
-              <arg><replaceable>SONGPOS</replaceable></arg>
+              <group>
+                  <arg><replaceable>SONGPOS</replaceable></arg>
+                  <arg><replaceable>START:END</replaceable></arg>
+              </group>
             </cmdsynopsis>
           </term>
           <listitem>
             <para>
-              Displays a list of songs in the playlist.
-              <varname>SONGPOS</varname> is optional and specifies
-              a single song to display info for.
+              Displays a list of all songs in the playlist, or if the optional
+              argument is given, displays information only for the song
+              <varname>SONGPOS</varname> or the range of songs
+              <varname>START:END</varname>
             </para>
           </listitem>
         </varlistentry>
@@ -782,13 +786,13 @@ OK
           <term>
             <cmdsynopsis>
               <command>shuffle</command>
-              <arg><replaceable>SONGRANGE</replaceable></arg>
+              <arg><replaceable>START:END</replaceable></arg>
             </cmdsynopsis>
           </term>
           <listitem>
             <para>
               Shuffles the current playlist.
-              <varname>SONGRANGE</varname> is optional and specifies
+              <varname>START:END</varname> is optional and specifies
               a range of songs.
             </para>
           </listitem>
