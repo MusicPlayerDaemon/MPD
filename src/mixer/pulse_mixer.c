@@ -236,11 +236,17 @@ pulse_mixer_open(G_GNUC_UNUSED struct mixer *data)
 
 	if(!(pm->context = pa_context_new(pa_threaded_mainloop_get_api(pm->mainloop),
 					  "Mixer mpd"))) {
+		pa_threaded_mainloop_stop(pm->mainloop);
+		pa_threaded_mainloop_free(pm->mainloop);
 		g_debug("failed context");
 		return false;
 	}
 
 	if (!pulse_mixer_setup(pm)) {
+		pa_threaded_mainloop_stop(pm->mainloop);
+		pa_context_disconnect(pm->context);
+		pa_context_unref(pm->context);
+		pa_threaded_mainloop_free(pm->mainloop);
 		return false;
 	}
 
