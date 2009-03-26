@@ -46,6 +46,13 @@ mixer_open(struct mixer *mixer);
 void
 mixer_close(struct mixer *mixer);
 
+/**
+ * Close the mixer unless the plugin's "global" flag is set.  This is
+ * called when the #audio_output is closed.
+ */
+void
+mixer_auto_close(struct mixer *mixer);
+
 int
 mixer_get_volume(struct mixer *mixer);
 

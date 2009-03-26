@@ -68,6 +68,13 @@ struct mixer_plugin {
 	 * @return true on success
 	 */
 	bool (*set_volume)(struct mixer *mixer, unsigned volume);
+
+	/**
+	 * If true, then the mixer is automatically opened, even if
+	 * its audio output is not open.  If false, then the mixer is
+	 * disabled as long as its audio output is closed.
+	 */
+	bool global;
 };
 
 #endif

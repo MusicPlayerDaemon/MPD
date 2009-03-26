@@ -22,6 +22,7 @@
 #include "output_internal.h"
 #include "output_thread.h"
 #include "mixer_control.h"
+#include "mixer_plugin.h"
 
 #include <assert.h>
 #include <stdlib.h>
@@ -149,7 +150,7 @@ void audio_output_close(struct audio_output *ao)
 	assert(!ao->open || ao->fail_timer == NULL);
 
 	if (ao->mixer != NULL)
-		mixer_close(ao->mixer);
+		mixer_auto_close(ao->mixer);
 
 	if (ao->open)
 		ao_command(ao, AO_COMMAND_CLOSE);

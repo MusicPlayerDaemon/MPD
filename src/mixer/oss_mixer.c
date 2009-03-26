@@ -198,4 +198,5 @@ const struct mixer_plugin oss_mixer = {
 	.close = oss_mixer_close,
 	.get_volume = oss_mixer_get_volume,
 	.set_volume = oss_mixer_set_volume,
+	.global = true,
 };

@@ -33,6 +33,11 @@ struct mixer {
 	 * implementation, so plugins don't have to deal with that.
 	 */
 	GMutex *mutex;
+
+	/**
+	 * Is the mixer device currently open?
+	 */
+	bool open;
 };
 
 void

@@ -230,4 +230,5 @@ const struct mixer_plugin alsa_mixer = {
 	.close = alsa_mixer_close,
 	.get_volume = alsa_mixer_get_volume,
 	.set_volume = alsa_mixer_set_volume,
+	.global = true,
 };
