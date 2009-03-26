@@ -159,11 +159,7 @@ pulse_mixer_init(const struct config_param *param)
 {
 	struct pulse_mixer *pm = g_new(struct pulse_mixer,1);
 	mixer_init(&pm->base, &pulse_mixer);
-	pm->server = NULL;
-	pm->sink = NULL;
-	pm->context=NULL;
-	pm->mainloop=NULL;
-	pm->output_name=NULL;
+
 	pm->online=false;
 
 	pm->server = config_get_block_string(param, "server", NULL);
@@ -177,8 +173,7 @@ static void
 pulse_mixer_finish(struct mixer *data)
 {
 	struct pulse_mixer *pm = (struct pulse_mixer *) data;
-	pm->context  = NULL;
-	pm->mainloop = NULL;
+
 	g_free(pm);
 }
 
