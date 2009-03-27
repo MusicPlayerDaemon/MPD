@@ -105,9 +105,18 @@ char *parsePath(char *path)
 int set_nonblocking(int fd)
 {
 #ifdef WIN32
-	u_long val = 0;
-
-	return ioctlsocket(fd, FIONBIO, &val) == 0 ? 0 : -1;
+	u_long val = 1;
+	int retval;
+	int lasterr = 0;
+	retval = ioctlsocket(fd, FIONBIO, &val);
+	if(retval == SOCKET_ERROR)
+		g_error("Error: ioctlsocket could not set FIONBIO;"
+		" Error %d on socket %d", lasterr = WSAGetLastError(), fd);
+	if(lasterr == 10038)
+		g_debug("Code-up error! Attempt to set non-blocking I/O on "
+			"something that is not a Winsock2 socket. This can't "
+			"be done on Windows!\n");
+	return retval;
 #else
 	int ret, flags;
 
