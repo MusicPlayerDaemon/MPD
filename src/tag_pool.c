@@ -93,8 +93,8 @@ void tag_pool_deinit(void)
 	tag_pool_lock = NULL;
 }
 
-struct tag_item *tag_pool_get_item(enum tag_type type,
-				   const char *value, int length)
+struct tag_item *
+tag_pool_get_item(enum tag_type type, const char *value, size_t length)
 {
 	struct slot **slot_p, *slot;
 

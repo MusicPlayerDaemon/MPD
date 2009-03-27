@@ -32,8 +32,8 @@ void tag_pool_init(void);
 
 void tag_pool_deinit(void);
 
-struct tag_item *tag_pool_get_item(enum tag_type type,
-				   const char *value, int length);
+struct tag_item *
+tag_pool_get_item(enum tag_type type, const char *value, size_t length);
 
 struct tag_item *tag_pool_dup_item(struct tag_item *item);
 
