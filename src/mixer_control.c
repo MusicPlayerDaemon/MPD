@@ -165,6 +165,7 @@ mixer_set_volume(struct mixer *mixer, unsigned volume)
 	bool success;
 
 	assert(mixer != NULL);
+	assert(volume <= 100);
 
 	if (mixer->plugin->global && !mixer->failed && !mixer_open(mixer))
 		return false;

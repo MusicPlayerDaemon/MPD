@@ -171,9 +171,7 @@ oss_mixer_set_volume(struct mixer *mixer, unsigned volume)
 	int ret;
 
 	assert(om->device_fd >= 0);
-
-	if (volume > 100)
-		volume = 100;
+	assert(volume <= 100);
 
 	level = (volume << 8) + volume;
 

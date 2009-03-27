@@ -188,10 +188,6 @@ alsa_mixer_set_volume(struct mixer *mixer, unsigned volume)
 	vol = volume;
 
 	am->volume_set = vol + 0.5;
-	am->volume_set = am->volume_set > 100
-		? 100 :
-		(am->volume_set < 0
-		 ? 0 : am->volume_set);
 
 	level = (long)(((vol / 100.0) * (am->volume_max - am->volume_min) +
 			am->volume_min) + 0.5);
