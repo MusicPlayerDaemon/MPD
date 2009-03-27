@@ -342,12 +342,13 @@ pulse_mixer_set_volume(struct mixer *mixer, unsigned volume)
 
 	if (pm->online) {
 		pa_operation *o;
+		struct pa_cvolume cvolume;
 
-		pa_cvolume_set(&pm->volume, pm->volume.channels,
+		pa_cvolume_set(&cvolume, pm->volume.channels,
 				(pa_volume_t)volume * PA_VOLUME_NORM / 100 + 0.5);
 
 		o = pa_context_set_sink_input_volume(pm->context, pm->index,
-						     &pm->volume, NULL, NULL);
+						     &cvolume, NULL, NULL);
 		if (o == NULL) {
 			g_debug("pa_context_set_sink_input_volume() failed");
 			return false;
