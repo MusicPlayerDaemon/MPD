@@ -217,6 +217,12 @@
                 </para>
               </listitem>
               <listitem>
+               <para>
+                <varname>smartstop</varname>:
+                <returnvalue>0 or 1</returnvalue>
+               </para>
+              </listitem>
+              <listitem>
                 <para>
                   <varname>playlist</varname>:
                   <returnvalue>31-bit unsigned integer, the playlist
@@ -399,6 +405,21 @@
             <para>
               Sets volume to <varname>VOL</varname>, the range of
               volume is 0-100.
+            </para>
+          </listitem>
+        </varlistentry>
+        <varlistentry id="command_smartstop">
+          <term>
+            <cmdsynopsis>
+              <command>smartstop</command>
+              <arg choice="req"><replaceable>STATE</replaceable></arg>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Sets smartstop state to <varname>STATE</varname>,
+              <varname>STATE</varname> should be 0 or 1.
+	      When smartstop is activated, playback is stopped after current song.
             </para>
           </listitem>
         </varlistentry>

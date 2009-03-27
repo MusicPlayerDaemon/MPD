@@ -34,6 +34,7 @@
 #define PLAYLIST_STATE_FILE_STATE		"state: "
 #define PLAYLIST_STATE_FILE_RANDOM		"random: "
 #define PLAYLIST_STATE_FILE_REPEAT		"repeat: "
+#define PLAYLIST_STATE_FILE_SMARTSTOP		"smartstop: "
 #define PLAYLIST_STATE_FILE_CURRENT		"current: "
 #define PLAYLIST_STATE_FILE_TIME		"time: "
 #define PLAYLIST_STATE_FILE_CROSSFADE		"crossfade: "
@@ -71,6 +72,8 @@ playlist_state_save(FILE *fp, const struct playlist *playlist)
 		playlist->queue.random);
 	fprintf(fp, "%s%i\n", PLAYLIST_STATE_FILE_REPEAT,
 		playlist->queue.repeat);
+	fprintf(fp, "%s%i\n", PLAYLIST_STATE_FILE_SMARTSTOP,
+		playlist->queue.smartstop);
 	fprintf(fp, "%s%i\n", PLAYLIST_STATE_FILE_CROSSFADE,
 		(int)(getPlayerCrossFade()));
 	fprintf(fp, "%s\n", PLAYLIST_STATE_FILE_PLAYLIST_BEGIN);
@@ -129,14 +132,20 @@ playlist_state_restore(FILE *fp, struct playlist *playlist)
 		} else if (g_str_has_prefix(buffer, PLAYLIST_STATE_FILE_TIME)) {
 			seek_time =
 			    atoi(&(buffer[strlen(PLAYLIST_STATE_FILE_TIME)]));
-		} else
-		    if (g_str_has_prefix(buffer, PLAYLIST_STATE_FILE_REPEAT)) {
+		} else if (g_str_has_prefix(buffer, PLAYLIST_STATE_FILE_REPEAT)) {
 			if (strcmp
 			    (&(buffer[strlen(PLAYLIST_STATE_FILE_REPEAT)]),
 			     "1") == 0) {
 				setPlaylistRepeatStatus(playlist, true);
 			} else
 				setPlaylistRepeatStatus(playlist, false);
+		} else if (g_str_has_prefix(buffer, PLAYLIST_STATE_FILE_SMARTSTOP)) {
+			if (strcmp
+			    (&(buffer[strlen(PLAYLIST_STATE_FILE_SMARTSTOP)]),
+			     "1") == 0) {
+				setPlaylistSmartstopStatus(playlist, true);
+			} else
+				setPlaylistSmartstopStatus(playlist, false);
 		} else if (g_str_has_prefix(buffer, PLAYLIST_STATE_FILE_CROSSFADE)) {
 			setPlayerCrossFade(atoi
 					   (&

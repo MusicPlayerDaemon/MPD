@@ -179,6 +179,11 @@ getPlaylistRandomStatus(const struct playlist *playlist);
 
 void setPlaylistRandomStatus(struct playlist *playlist, bool status);
 
+bool
+getPlaylistSmartstopStatus(const struct playlist *playlist);
+
+void setPlaylistSmartstopStatus(struct playlist *playlist, bool status);
+
 int getPlaylistCurrentSong(const struct playlist *playlist);
 
 int getPlaylistNextSong(const struct playlist *playlist);
