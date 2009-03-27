@@ -75,6 +75,11 @@
 #include <locale.h>
 #endif
 
+#ifdef WIN32
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#endif
+
 enum {
 	DEFAULT_BUFFER_SIZE = 2048,
 	DEFAULT_BUFFER_BEFORE_PLAY = 10,
@@ -134,6 +139,31 @@ openDB(const Options *options)
 
 	return true;
 }
+
+/**
+ * Windows-only initialization of the Winsock2 library.
+ */
+#ifdef WIN32
+static void winsock_init(void)
+{
+	WSADATA sockinfo;
+	int retval;
+
+	retval = WSAStartup(MAKEWORD(2, 2), &sockinfo);
+	if(retval != 0)
+	{
+		g_error("Attempt to open Winsock2 failed; error code %d\n",
+			retval);
+	}
+
+	if (LOBYTE(sockinfo.wVersion) != 2)
+	{
+		g_error("We use Winsock2 but your version is either too new or "
+			"old; please install Winsock 2.x\n");
+	}
+
+}
+#endif
 
 /**
  * Initialize the decoder and player core, including the music pipe.
@@ -212,6 +242,9 @@ int main(int argc, char *argv[])
 	/* enable GLib's thread safety code */
 	g_thread_init(NULL);
 
+#ifdef WIN32
+	winsock_init();
+#endif
 	idle_init();
 	dirvec_init();
 	songvec_init();
@@ -339,6 +372,9 @@ int main(int argc, char *argv[])
 	idle_deinit();
 	stats_global_finish();
 	daemonize_finish();
+#ifdef WIN32
+	WSACleanup();
+#endif
 
 	close_log_files();
 	return EXIT_SUCCESS;
