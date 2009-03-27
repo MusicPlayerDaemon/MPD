@@ -89,6 +89,17 @@ mixer_open(struct mixer *mixer)
 	return success;
 }
 
+static void
+mixer_close_internal(struct mixer *mixer)
+{
+	assert(mixer != NULL);
+	assert(mixer->plugin != NULL);
+	assert(mixer->open);
+
+	mixer->plugin->close(mixer);
+	mixer->open = false;
+}
+
 void
 mixer_close(struct mixer *mixer)
 {
@@ -97,10 +108,8 @@ mixer_close(struct mixer *mixer)
 
 	g_mutex_lock(mixer->mutex);
 
-	if (mixer->open) {
-		mixer->plugin->close(mixer);
-		mixer->open = false;
-	}
+	if (mixer->open)
+		mixer_close_internal(mixer);
 
 	g_mutex_unlock(mixer->mutex);
 }
@@ -121,7 +130,7 @@ mixer_failed(struct mixer *mixer)
 {
 	assert(mixer->open);
 
-	mixer_close(mixer);
+	mixer_close_internal(mixer);
 
 	mixer->failed = true;
 }
