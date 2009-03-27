@@ -314,48 +314,46 @@ pulse_mixer_get_volume(struct mixer *mixer)
 	int ret;
 	pa_operation *o;
 
-	g_debug("get_volume %s",
-		pm->online == TRUE ? "online" : "offline");
-	if (pm->online) {
-		o = pa_context_get_sink_input_info(pm->context, pm->index,
-						   sink_input_vol, pm);
-		if (o == NULL) {
-			g_debug("pa_context_get_sink_input_info() failed");
-			return false;
-		}
-
-		if (!pulse_wait_for_operation(pm->mainloop, o))
-			return false;
-
-		ret = (int)((100*(pa_cvolume_avg(&pm->volume)+1))/PA_VOLUME_NORM);
-		g_debug("volume %d", ret);
-		return ret;
+	if (!pm->online) {
+		return false;
 	}
 
-	return false;
+	o = pa_context_get_sink_input_info(pm->context, pm->index,
+					   sink_input_vol, pm);
+	if (o == NULL) {
+		g_debug("pa_context_get_sink_input_info() failed");
+		return false;
+	}
+
+	if (!pulse_wait_for_operation(pm->mainloop, o))
+		return false;
+
+	ret = (int)((100*(pa_cvolume_avg(&pm->volume)+1))/PA_VOLUME_NORM);
+	return ret;
 }
 
 static bool
 pulse_mixer_set_volume(struct mixer *mixer, unsigned volume)
 {
 	struct pulse_mixer *pm = (struct pulse_mixer *) mixer;
+	struct pa_cvolume cvolume;
+	pa_operation *o;
 
-	if (pm->online) {
-		pa_operation *o;
-		struct pa_cvolume cvolume;
-
-		pa_cvolume_set(&cvolume, pm->volume.channels,
-				(pa_volume_t)volume * PA_VOLUME_NORM / 100 + 0.5);
-
-		o = pa_context_set_sink_input_volume(pm->context, pm->index,
-						     &cvolume, NULL, NULL);
-		if (o == NULL) {
-			g_debug("pa_context_set_sink_input_volume() failed");
-			return false;
-		}
-
-		pa_operation_unref(o);
+	if (!pm->online) {
+		return false;
 	}
+
+	pa_cvolume_set(&cvolume, pm->volume.channels,
+		       (pa_volume_t)volume * PA_VOLUME_NORM / 100 + 0.5);
+
+	o = pa_context_set_sink_input_volume(pm->context, pm->index,
+					     &cvolume, NULL, NULL);
+	if (o == NULL) {
+		g_debug("pa_context_set_sink_input_volume() failed");
+		return false;
+	}
+
+	pa_operation_unref(o);
 
 	return true;
 }
