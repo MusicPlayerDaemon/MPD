@@ -31,6 +31,27 @@ struct sticker {
 	GHashTable *table;
 };
 
+enum sticker_sql {
+	STICKER_SQL_GET,
+	STICKER_SQL_LIST,
+	STICKER_SQL_UPDATE,
+	STICKER_SQL_INSERT,
+	STICKER_SQL_DELETE,
+};
+
+static const char *const sticker_sql[] = {
+	[STICKER_SQL_GET] =
+	"SELECT value FROM sticker WHERE type=? AND uri=? AND name=?",
+	[STICKER_SQL_LIST] =
+	"SELECT name,value FROM sticker WHERE type=? AND uri=?",
+	[STICKER_SQL_UPDATE] =
+	"UPDATE sticker SET value=? WHERE type=? AND uri=? AND name=?",
+	[STICKER_SQL_INSERT] =
+	"INSERT INTO sticker(type,uri,name,value) VALUES(?, ?, ?, ?)",
+	[STICKER_SQL_DELETE] =
+	"DELETE FROM sticker WHERE type=? AND uri=?",
+};
+
 static const char sticker_sql_create[] =
 	"CREATE TABLE IF NOT EXISTS sticker("
 	"  type VARCHAR NOT NULL, "
@@ -42,25 +63,8 @@ static const char sticker_sql_create[] =
 	" sticker_value ON sticker(type, uri, name);"
 	"";
 
-static const char sticker_sql_get[] =
-	"SELECT value FROM sticker WHERE type=? AND uri=? AND name=?";
-
-static const char sticker_sql_list[] =
-	"SELECT name,value FROM sticker WHERE type=? AND uri=?";
-
-static const char sticker_sql_update[] =
-	"UPDATE sticker SET value=? WHERE type=? AND uri=? AND name=?";
-
-static const char sticker_sql_insert[] =
-	"INSERT INTO sticker(type,uri,name,value) VALUES(?, ?, ?, ?)";
-
-static const char sticker_sql_delete[] =
-	"DELETE FROM sticker WHERE type=? AND uri=?";
-
 static sqlite3 *sticker_db;
-static sqlite3_stmt *sticker_stmt_get, *sticker_stmt_list,
-	*sticker_stmt_update, *sticker_stmt_insert,
-	*sticker_stmt_delete;
+static sqlite3_stmt *sticker_stmt[G_N_ELEMENTS(sticker_sql)];
 
 static sqlite3_stmt *
 sticker_prepare(const char *sql)
@@ -101,16 +105,11 @@ sticker_global_init(const char *path)
 
 	/* prepare the statements we're going to use */
 
-	sticker_stmt_get = sticker_prepare(sticker_sql_get);
-	sticker_stmt_list = sticker_prepare(sticker_sql_list);
-	sticker_stmt_update = sticker_prepare(sticker_sql_update);
-	sticker_stmt_insert = sticker_prepare(sticker_sql_insert);
-	sticker_stmt_delete = sticker_prepare(sticker_sql_delete);
+	for (unsigned i = 0; i < G_N_ELEMENTS(sticker_sql); ++i) {
+		assert(sticker_sql[i] != NULL);
 
-	if (sticker_stmt_get == NULL || sticker_stmt_update == NULL ||
-	    sticker_stmt_insert == NULL || sticker_stmt_delete == NULL ||
-	    sticker_stmt_list == NULL)
-		g_error("Failed to prepare sqlite statements");
+		sticker_stmt[i] = sticker_prepare(sticker_sql[i]);
+	}
 }
 
 void
@@ -120,11 +119,12 @@ sticker_global_finish(void)
 		/* not configured */
 		return;
 
-	sqlite3_finalize(sticker_stmt_delete);
-	sqlite3_finalize(sticker_stmt_update);
-	sqlite3_finalize(sticker_stmt_insert);
-	sqlite3_finalize(sticker_stmt_list);
-	sqlite3_finalize(sticker_stmt_get);
+	for (unsigned i = 0; i < G_N_ELEMENTS(sticker_stmt); ++i) {
+		assert(sticker_stmt[i] != NULL);
+
+		sqlite3_finalize(sticker_stmt[i]);
+	}
+
 	sqlite3_close(sticker_db);
 }
 
@@ -137,6 +137,7 @@ sticker_enabled(void)
 char *
 sticker_load_value(const char *type, const char *uri, const char *name)
 {
+	sqlite3_stmt *const stmt = sticker_stmt[STICKER_SQL_GET];
 	int ret;
 	char *value;
 
@@ -148,23 +149,23 @@ sticker_load_value(const char *type, const char *uri, const char *name)
 	if (*name == 0)
 		return NULL;
 
-	sqlite3_reset(sticker_stmt_get);
+	sqlite3_reset(stmt);
 
-	ret = sqlite3_bind_text(sticker_stmt_get, 1, type, -1, NULL);
+	ret = sqlite3_bind_text(stmt, 1, type, -1, NULL);
 	if (ret != SQLITE_OK) {
 		g_warning("sqlite3_bind_text() failed: %s",
 			  sqlite3_errmsg(sticker_db));
 		return NULL;
 	}
 
-	ret = sqlite3_bind_text(sticker_stmt_get, 2, uri, -1, NULL);
+	ret = sqlite3_bind_text(stmt, 2, uri, -1, NULL);
 	if (ret != SQLITE_OK) {
 		g_warning("sqlite3_bind_text() failed: %s",
 			  sqlite3_errmsg(sticker_db));
 		return NULL;
 	}
 
-	ret = sqlite3_bind_text(sticker_stmt_get, 3, name, -1, NULL);
+	ret = sqlite3_bind_text(stmt, 3, name, -1, NULL);
 	if (ret != SQLITE_OK) {
 		g_warning("sqlite3_bind_text() failed: %s",
 			  sqlite3_errmsg(sticker_db));
@@ -172,12 +173,12 @@ sticker_load_value(const char *type, const char *uri, const char *name)
 	}
 
 	do {
-		ret = sqlite3_step(sticker_stmt_get);
+		ret = sqlite3_step(stmt);
 	} while (ret == SQLITE_BUSY);
 
 	if (ret == SQLITE_ROW) {
 		/* record found */
-		value = g_strdup((const char*)sqlite3_column_text(sticker_stmt_get, 0));
+		value = g_strdup((const char*)sqlite3_column_text(stmt, 0));
 	} else if (ret == SQLITE_DONE) {
 		/* no record found */
 		value = NULL;
@@ -188,8 +189,8 @@ sticker_load_value(const char *type, const char *uri, const char *name)
 		return NULL;
 	}
 
-	sqlite3_reset(sticker_stmt_get);
-	sqlite3_clear_bindings(sticker_stmt_get);
+	sqlite3_reset(stmt);
+	sqlite3_clear_bindings(stmt);
 
 	return value;
 }
@@ -197,6 +198,7 @@ sticker_load_value(const char *type, const char *uri, const char *name)
 static bool
 sticker_list_values(GHashTable *hash, const char *type, const char *uri)
 {
+	sqlite3_stmt *const stmt = sticker_stmt[STICKER_SQL_LIST];
 	int ret;
 	char *name, *value;
 
@@ -205,16 +207,16 @@ sticker_list_values(GHashTable *hash, const char *type, const char *uri)
 	assert(uri != NULL);
 	assert(sticker_enabled());
 
-	sqlite3_reset(sticker_stmt_list);
+	sqlite3_reset(stmt);
 
-	ret = sqlite3_bind_text(sticker_stmt_list, 1, type, -1, NULL);
+	ret = sqlite3_bind_text(stmt, 1, type, -1, NULL);
 	if (ret != SQLITE_OK) {
 		g_warning("sqlite3_bind_text() failed: %s",
 			  sqlite3_errmsg(sticker_db));
 		return false;
 	}
 
-	ret = sqlite3_bind_text(sticker_stmt_list, 2, uri, -1, NULL);
+	ret = sqlite3_bind_text(stmt, 2, uri, -1, NULL);
 	if (ret != SQLITE_OK) {
 		g_warning("sqlite3_bind_text() failed: %s",
 			  sqlite3_errmsg(sticker_db));
@@ -222,11 +224,11 @@ sticker_list_values(GHashTable *hash, const char *type, const char *uri)
 	}
 
 	do {
-		ret = sqlite3_step(sticker_stmt_list);
+		ret = sqlite3_step(stmt);
 		switch (ret) {
 		case SQLITE_ROW:
-			name = g_strdup((const char*)sqlite3_column_text(sticker_stmt_list, 0));
-			value = g_strdup((const char*)sqlite3_column_text(sticker_stmt_list, 1));
+			name = g_strdup((const char*)sqlite3_column_text(stmt, 0));
+			value = g_strdup((const char*)sqlite3_column_text(stmt, 1));
 			g_hash_table_insert(hash, name, value);
 			break;
 		case SQLITE_DONE:
@@ -241,8 +243,8 @@ sticker_list_values(GHashTable *hash, const char *type, const char *uri)
 		}
 	} while (ret != SQLITE_DONE);
 
-	sqlite3_reset(sticker_stmt_list);
-	sqlite3_clear_bindings(sticker_stmt_list);
+	sqlite3_reset(stmt);
+	sqlite3_clear_bindings(stmt);
 
 	return true;
 }
@@ -251,6 +253,7 @@ static bool
 sticker_update_value(const char *type, const char *uri,
 		     const char *name, const char *value)
 {
+	sqlite3_stmt *const stmt = sticker_stmt[STICKER_SQL_UPDATE];
 	int ret;
 
 	assert(type != NULL);
@@ -261,30 +264,30 @@ sticker_update_value(const char *type, const char *uri,
 
 	assert(sticker_enabled());
 
-	sqlite3_reset(sticker_stmt_update);
+	sqlite3_reset(stmt);
 
-	ret = sqlite3_bind_text(sticker_stmt_update, 1, value, -1, NULL);
+	ret = sqlite3_bind_text(stmt, 1, value, -1, NULL);
 	if (ret != SQLITE_OK) {
 		g_warning("sqlite3_bind_text() failed: %s",
 			  sqlite3_errmsg(sticker_db));
 		return false;
 	}
 
-	ret = sqlite3_bind_text(sticker_stmt_update, 2, type, -1, NULL);
+	ret = sqlite3_bind_text(stmt, 2, type, -1, NULL);
 	if (ret != SQLITE_OK) {
 		g_warning("sqlite3_bind_text() failed: %s",
 			  sqlite3_errmsg(sticker_db));
 		return false;
 	}
 
-	ret = sqlite3_bind_text(sticker_stmt_update, 3, uri, -1, NULL);
+	ret = sqlite3_bind_text(stmt, 3, uri, -1, NULL);
 	if (ret != SQLITE_OK) {
 		g_warning("sqlite3_bind_text() failed: %s",
 			  sqlite3_errmsg(sticker_db));
 		return false;
 	}
 
-	ret = sqlite3_bind_text(sticker_stmt_update, 4, name, -1, NULL);
+	ret = sqlite3_bind_text(stmt, 4, name, -1, NULL);
 	if (ret != SQLITE_OK) {
 		g_warning("sqlite3_bind_text() failed: %s",
 			  sqlite3_errmsg(sticker_db));
@@ -292,7 +295,7 @@ sticker_update_value(const char *type, const char *uri,
 	}
 
 	do {
-		ret = sqlite3_step(sticker_stmt_update);
+		ret = sqlite3_step(stmt);
 	} while (ret == SQLITE_BUSY);
 
 	if (ret != SQLITE_DONE) {
@@ -303,8 +306,8 @@ sticker_update_value(const char *type, const char *uri,
 
 	ret = sqlite3_changes(sticker_db);
 
-	sqlite3_reset(sticker_stmt_update);
-	sqlite3_clear_bindings(sticker_stmt_update);
+	sqlite3_reset(stmt);
+	sqlite3_clear_bindings(stmt);
 
 	idle_add(IDLE_STICKER);
 	return ret > 0;
@@ -314,6 +317,7 @@ static bool
 sticker_insert_value(const char *type, const char *uri,
 		     const char *name, const char *value)
 {
+	sqlite3_stmt *const stmt = sticker_stmt[STICKER_SQL_INSERT];
 	int ret;
 
 	assert(type != NULL);
@@ -324,30 +328,30 @@ sticker_insert_value(const char *type, const char *uri,
 
 	assert(sticker_enabled());
 
-	sqlite3_reset(sticker_stmt_insert);
+	sqlite3_reset(stmt);
 
-	ret = sqlite3_bind_text(sticker_stmt_insert, 1, type, -1, NULL);
+	ret = sqlite3_bind_text(stmt, 1, type, -1, NULL);
 	if (ret != SQLITE_OK) {
 		g_warning("sqlite3_bind_text() failed: %s",
 			  sqlite3_errmsg(sticker_db));
 		return false;
 	}
 
-	ret = sqlite3_bind_text(sticker_stmt_insert, 2, uri, -1, NULL);
+	ret = sqlite3_bind_text(stmt, 2, uri, -1, NULL);
 	if (ret != SQLITE_OK) {
 		g_warning("sqlite3_bind_text() failed: %s",
 			  sqlite3_errmsg(sticker_db));
 		return false;
 	}
 
-	ret = sqlite3_bind_text(sticker_stmt_insert, 3, name, -1, NULL);
+	ret = sqlite3_bind_text(stmt, 3, name, -1, NULL);
 	if (ret != SQLITE_OK) {
 		g_warning("sqlite3_bind_text() failed: %s",
 			  sqlite3_errmsg(sticker_db));
 		return false;
 	}
 
-	ret = sqlite3_bind_text(sticker_stmt_insert, 4, value, -1, NULL);
+	ret = sqlite3_bind_text(stmt, 4, value, -1, NULL);
 	if (ret != SQLITE_OK) {
 		g_warning("sqlite3_bind_text() failed: %s",
 			  sqlite3_errmsg(sticker_db));
@@ -355,7 +359,7 @@ sticker_insert_value(const char *type, const char *uri,
 	}
 
 	do {
-		ret = sqlite3_step(sticker_stmt_insert);
+		ret = sqlite3_step(stmt);
 	} while (ret == SQLITE_BUSY);
 
 	if (ret != SQLITE_DONE) {
@@ -364,8 +368,8 @@ sticker_insert_value(const char *type, const char *uri,
 		return false;
 	}
 
-	sqlite3_reset(sticker_stmt_insert);
-	sqlite3_clear_bindings(sticker_stmt_insert);
+	sqlite3_reset(stmt);
+	sqlite3_clear_bindings(stmt);
 
 
 	idle_add(IDLE_STICKER);
@@ -392,22 +396,23 @@ sticker_store_value(const char *type, const char *uri,
 bool
 sticker_delete(const char *type, const char *uri)
 {
+	sqlite3_stmt *const stmt = sticker_stmt[STICKER_SQL_DELETE];
 	int ret;
 
 	assert(sticker_enabled());
 	assert(type != NULL);
 	assert(uri != NULL);
 
-	sqlite3_reset(sticker_stmt_delete);
+	sqlite3_reset(stmt);
 
-	ret = sqlite3_bind_text(sticker_stmt_delete, 1, type, -1, NULL);
+	ret = sqlite3_bind_text(stmt, 1, type, -1, NULL);
 	if (ret != SQLITE_OK) {
 		g_warning("sqlite3_bind_text() failed: %s",
 			  sqlite3_errmsg(sticker_db));
 		return false;
 	}
 
-	ret = sqlite3_bind_text(sticker_stmt_delete, 2, uri, -1, NULL);
+	ret = sqlite3_bind_text(stmt, 2, uri, -1, NULL);
 	if (ret != SQLITE_OK) {
 		g_warning("sqlite3_bind_text() failed: %s",
 			  sqlite3_errmsg(sticker_db));
@@ -415,7 +420,7 @@ sticker_delete(const char *type, const char *uri)
 	}
 
 	do {
-		ret = sqlite3_step(sticker_stmt_delete);
+		ret = sqlite3_step(stmt);
 	} while (ret == SQLITE_BUSY);
 
 	if (ret != SQLITE_DONE) {
@@ -424,8 +429,8 @@ sticker_delete(const char *type, const char *uri)
 		return false;
 	}
 
-	sqlite3_reset(sticker_stmt_delete);
-	sqlite3_clear_bindings(sticker_stmt_delete);
+	sqlite3_reset(stmt);
+	sqlite3_clear_bindings(stmt);
 
 	idle_add(IDLE_STICKER);
 	return true;
