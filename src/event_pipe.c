@@ -91,8 +91,10 @@ void event_pipe_init(void)
 #endif
 	if (ret < 0)
 		g_error("Couldn't open pipe: %s", strerror(errno));
+#ifndef WIN32
 	if (set_nonblocking(event_pipe[1]) < 0)
 		g_error("Couldn't set non-blocking I/O: %s", strerror(errno));
+#endif
 
 	channel = g_io_channel_unix_new(event_pipe[0]);
 	event_pipe_source_id = g_io_add_watch(channel, G_IO_IN,
