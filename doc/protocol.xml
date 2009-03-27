@@ -218,7 +218,7 @@
               </listitem>
               <listitem>
                <para>
-                <varname>smartstop</varname>:
+                <varname>single</varname>:
                 <returnvalue>0 or 1</returnvalue>
                </para>
               </listitem>
@@ -408,18 +408,19 @@
             </para>
           </listitem>
         </varlistentry>
-        <varlistentry id="command_smartstop">
+        <varlistentry id="command_single">
           <term>
             <cmdsynopsis>
-              <command>smartstop</command>
+              <command>single</command>
               <arg choice="req"><replaceable>STATE</replaceable></arg>
             </cmdsynopsis>
           </term>
           <listitem>
             <para>
-              Sets smartstop state to <varname>STATE</varname>,
+              Sets single state to <varname>STATE</varname>,
               <varname>STATE</varname> should be 0 or 1.
-	      When smartstop is activated, playback is stopped after current song.
+	      When single is activated, playback is stopped after current song, or
+	      song is repeated if the 'repeat' mode is enabled.
             </para>
           </listitem>
         </varlistentry>

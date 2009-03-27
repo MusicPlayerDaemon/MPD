@@ -40,8 +40,13 @@ queue_next_order(const struct queue *queue, unsigned order)
 {
 	assert(order < queue->length);
 
-	if (queue->smartstop)
-		return -1;
+	if (queue->single)
+	{
+		if (queue->repeat)
+			return order;
+		else
+			return -1;
+	}
 	if (order + 1 < queue->length)
 		return order + 1;
 	else if (queue->repeat)
@@ -277,7 +282,7 @@ queue_init(struct queue *queue, unsigned max_length)
 	queue->version = 1;
 	queue->repeat = false;
 	queue->random = false;
-	queue->smartstop = false;
+	queue->single = false;
 
 	queue->items = g_new(struct queue_item, max_length);
 	queue->order = g_malloc(sizeof(queue->order[0]) *

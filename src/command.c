@@ -59,7 +59,7 @@
 #define COMMAND_STATUS_VOLUME           "volume"
 #define COMMAND_STATUS_STATE            "state"
 #define COMMAND_STATUS_REPEAT           "repeat"
-#define COMMAND_STATUS_SMARTSTOP	"smartstop"
+#define COMMAND_STATUS_SINGLE	"single"
 #define COMMAND_STATUS_RANDOM           "random"
 #define COMMAND_STATUS_PLAYLIST         "playlist"
 #define COMMAND_STATUS_PLAYLIST_LENGTH  "playlistlength"
@@ -470,7 +470,7 @@ handle_status(struct client *client,
 		      COMMAND_STATUS_VOLUME ": %i\n"
 		      COMMAND_STATUS_REPEAT ": %i\n"
 		      COMMAND_STATUS_RANDOM ": %i\n"
-		      COMMAND_STATUS_SMARTSTOP ": %i\n"
+		      COMMAND_STATUS_SINGLE ": %i\n"
 		      COMMAND_STATUS_PLAYLIST ": %li\n"
 		      COMMAND_STATUS_PLAYLIST_LENGTH ": %i\n"
 		      COMMAND_STATUS_CROSSFADE ": %i\n"
@@ -478,7 +478,7 @@ handle_status(struct client *client,
 		      volume_level_get(),
 		      getPlaylistRepeatStatus(&g_playlist),
 		      getPlaylistRandomStatus(&g_playlist),
-		      getPlaylistSmartstopStatus(&g_playlist),
+		      getPlaylistSingleStatus(&g_playlist),
 		      getPlaylistVersion(&g_playlist),
 		      getPlaylistLength(&g_playlist),
 		      (int)(getPlayerCrossFade() + 0.5),
@@ -1096,7 +1096,7 @@ handle_repeat(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 }
 
 static enum command_return
-handle_smartstop(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
+handle_single(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 {
 	int status;
 
@@ -1109,7 +1109,7 @@ handle_smartstop(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 		return COMMAND_RETURN_ERROR;
 	}
 
-	setPlaylistSmartstopStatus(&g_playlist, status);
+	setPlaylistSingleStatus(&g_playlist, status);
 	return COMMAND_RETURN_OK;
 }
 
@@ -1623,7 +1623,7 @@ static const struct command commands[] = {
 	{ "seekid", PERMISSION_CONTROL, 2, 2, handle_seekid },
 	{ "setvol", PERMISSION_CONTROL, 1, 1, handle_setvol },
 	{ "shuffle", PERMISSION_CONTROL, 0, 1, handle_shuffle },
-	{ "smartstop", PERMISSION_CONTROL, 1, 1, handle_smartstop },
+	{ "single", PERMISSION_CONTROL, 1, 1, handle_single },
 	{ "stats", PERMISSION_READ, 0, 0, handle_stats },
 	{ "status", PERMISSION_READ, 0, 0, handle_status },
 #ifdef ENABLE_SQLITE

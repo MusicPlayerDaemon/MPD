@@ -81,8 +81,8 @@ struct queue {
 	    reached? */
 	bool repeat;
 
-	/** stop playing after that song. */
-	bool smartstop;
+	/** play only current song. */
+	bool single;
 
 	/** play back songs in random order? */
 	bool random;

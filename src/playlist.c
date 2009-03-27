@@ -262,9 +262,9 @@ getPlaylistRandomStatus(const struct playlist *playlist)
 }
 
 bool
-getPlaylistSmartstopStatus(const struct playlist *playlist)
+getPlaylistSingleStatus(const struct playlist *playlist)
 {
-	return playlist->queue.smartstop;
+	return playlist->queue.single;
 }
 
 void setPlaylistRepeatStatus(struct playlist *playlist, bool status)
@@ -292,12 +292,15 @@ static void orderPlaylist(struct playlist *playlist)
 	queue_restore_order(&playlist->queue);
 }
 
-void setPlaylistSmartstopStatus(struct playlist *playlist, bool status)
+void setPlaylistSingleStatus(struct playlist *playlist, bool status)
 {
-	playlist->queue.smartstop = status;
+	if (status == playlist->queue.single)
+		return;
+
+	playlist->queue.single = status;
 
 	/* if the last song is currently being played, the "next song"
-	   might change when repeat mode is toggled */
+	   might change when single mode is toggled */
 	playlist_update_queued_song(playlist,
 				    playlist_get_queued_song(playlist));
 
@@ -359,8 +362,14 @@ int getPlaylistNextSong(const struct playlist *playlist)
 {
 	if (playlist->current >= 0)
 	{
-		if (playlist->queue.smartstop == 1)
-			return -1;
+		if (playlist->queue.single == 1)
+		{
+			if (playlist->queue.repeat == 1)
+				return queue_order_to_position(&playlist->queue,
+			                              playlist->current);
+			else
+				return -1;
+		}
 		if (playlist->current + 1 < (int)queue_length(&playlist->queue))
 			return queue_order_to_position(&playlist->queue,
 					       playlist->current + 1);
