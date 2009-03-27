@@ -126,7 +126,7 @@ sink_input_vol(G_GNUC_UNUSED pa_context *context, const pa_sink_input_info *i,
 }
 
 static void
-subscribe_cb(G_GNUC_UNUSED pa_context *c, pa_subscription_event_type_t t,
+subscribe_cb(pa_context *c, pa_subscription_event_type_t t,
 	     uint32_t idx, void *userdata)
 {
 
@@ -143,7 +143,7 @@ subscribe_cb(G_GNUC_UNUSED pa_context *c, pa_subscription_event_type_t t,
 		else {
 			pa_operation *o;
 
-			o = pa_context_get_sink_input_info(pm->context, idx,
+			o = pa_context_get_sink_input_info(c, idx,
 							   sink_input_cb, pm);
 			if (o == NULL) {
 				g_debug("pa_context_get_sink_input_info() failed");
@@ -259,7 +259,7 @@ pulse_mixer_setup(struct pulse_mixer *pm)
 }
 
 static bool
-pulse_mixer_open(G_GNUC_UNUSED struct mixer *data)
+pulse_mixer_open(struct mixer *data)
 {
 	struct pulse_mixer *pm = (struct pulse_mixer *) data;
 
@@ -295,7 +295,7 @@ pulse_mixer_open(G_GNUC_UNUSED struct mixer *data)
 }
 
 static void
-pulse_mixer_close(G_GNUC_UNUSED struct mixer *data)
+pulse_mixer_close(struct mixer *data)
 {
 	struct pulse_mixer *pm = (struct pulse_mixer *) data;
 
