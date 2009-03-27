@@ -45,6 +45,36 @@ struct pulse_mixer {
 
 };
 
+/**
+ * \brief waits for a pulseaudio operation to finish, frees it and
+ *     unlocks the mainloop
+ * \param operation the operation to wait for
+ * \return true if operation has finished normally (DONE state),
+ *     false otherwise
+ */
+static bool
+pulse_wait_for_operation(struct pa_threaded_mainloop *mainloop,
+			 struct pa_operation *operation)
+{
+	pa_operation_state_t state;
+
+	assert(mainloop != NULL);
+	assert(operation != NULL);
+
+	pa_threaded_mainloop_lock(mainloop);
+
+	state = pa_operation_get_state(operation);
+	while (state == PA_OPERATION_RUNNING) {
+		pa_threaded_mainloop_wait(mainloop);
+		state = pa_operation_get_state(operation);
+	}
+
+	pa_operation_unref(operation);
+	pa_threaded_mainloop_unlock(mainloop);
+
+	return state == PA_OPERATION_DONE;
+}
+
 static void
 sink_input_cb(G_GNUC_UNUSED pa_context *context, const pa_sink_input_info *i,
 	      int eol, void *userdata)
@@ -91,6 +121,8 @@ sink_input_vol(G_GNUC_UNUSED pa_context *context, const pa_sink_input_info *i,
 
 	g_debug("sink input vol %s, index %d ", i->name, i->index);
 	pm->volume = i->volume;
+
+	pa_threaded_mainloop_signal(pm->mainloop, 0);
 }
 
 static void
@@ -292,7 +324,8 @@ pulse_mixer_get_volume(struct mixer *mixer)
 			return false;
 		}
 
-		pa_operation_unref(o);
+		if (!pulse_wait_for_operation(pm->mainloop, o))
+			return false;
 
 		ret = (int)((100*(pa_cvolume_avg(&pm->volume)+1))/PA_VOLUME_NORM);
 		g_debug("volume %d", ret);
