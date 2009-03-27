@@ -752,7 +752,11 @@ if test x$enable_mpc = xyes; then
 	CFLAGS="$CFLAGS $MPD_CFLAGS $MPCDEC_CFLAGS -I."
 	LIBS="$LIBS $MPD_LIBS $MPCDEC_LIBS"
 	CPPFLAGS=$CFLAGS
-	AC_CHECK_HEADER(mpcdec/mpcdec.h,,enable_mpc=no)
+	AC_CHECK_HEADER(mpc/mpcdec.h,
+		old_mpcdec=no,
+		[AC_CHECK_HEADER(mpcdec/mpcdec.h,
+			old_mpcdec=yes,
+			enable_mpc=no)])
 	if test x$enable_mpc = xyes; then
 		AC_CHECK_LIB(mpcdec,main,
 			[MPD_LIBS="$MPD_LIBS $MPCDEC_LIBS";
@@ -762,6 +766,10 @@ if test x$enable_mpc = xyes; then
 	if test x$enable_mpc = xyes; then
 		AC_DEFINE(HAVE_MPCDEC,1,
 			[Define to use libmpcdec for MPC decoding])
+		if test x$old_mpcdec = xyes; then
+			AC_DEFINE(MPC_IS_OLD_API, 1,
+				[Define if an old pre-SV8 libmpcdec is used])
+		fi
 	else
 		AC_MSG_WARN([mpcdec lib needed for MPC support -- disabling MPC support])
 	fi

@@ -18,6 +18,7 @@ ver 0.15 - (200?/??/??)
   - fluidsynth: new decoder plugin for MIDI files (using libfluidsynth)
   - wildmidi: another decoder plugin for MIDI files (using libwildmidi)
   - flac: parse stream tags
+  - mpcdec: support the new libmpcdec SV8 API
   - added configuration option to disable decoder plugins
 * audio outputs:
   - added option to disable audio outputs by default

@@ -20,7 +20,12 @@
 #include "../decoder_api.h"
 #include "config.h"
 
+#ifdef MPC_IS_OLD_API
 #include <mpcdec/mpcdec.h>
+#else
+#include <mpc/mpcdec.h>
+#endif
+
 #include <glib.h>
 #include <unistd.h>
 
@@ -32,42 +37,50 @@ struct mpc_decoder_data {
 	struct decoder *decoder;
 };
 
+#ifdef MPC_IS_OLD_API
+#define cb_first_arg void *vdata
+#define cb_data vdata
+#else
+#define cb_first_arg mpc_reader *reader
+#define cb_data reader->data
+#endif
+
 static mpc_int32_t
-mpc_read_cb(void *vdata, void *ptr, mpc_int32_t size)
+mpc_read_cb(cb_first_arg, void *ptr, mpc_int32_t size)
 {
-	struct mpc_decoder_data *data = (struct mpc_decoder_data *) vdata;
+	struct mpc_decoder_data *data = (struct mpc_decoder_data *) cb_data;
 
 	return decoder_read(data->decoder, data->is, ptr, size);
 }
 
 static mpc_bool_t
-mpc_seek_cb(void *vdata, mpc_int32_t offset)
+mpc_seek_cb(cb_first_arg, mpc_int32_t offset)
 {
-	struct mpc_decoder_data *data = (struct mpc_decoder_data *) vdata;
+	struct mpc_decoder_data *data = (struct mpc_decoder_data *) cb_data;
 
 	return input_stream_seek(data->is, offset, SEEK_SET);
 }
 
 static mpc_int32_t
-mpc_tell_cb(void *vdata)
+mpc_tell_cb(cb_first_arg)
 {
-	struct mpc_decoder_data *data = (struct mpc_decoder_data *) vdata;
+	struct mpc_decoder_data *data = (struct mpc_decoder_data *) cb_data;
 
 	return (long)(data->is->offset);
 }
 
 static mpc_bool_t
-mpc_canseek_cb(void *vdata)
+mpc_canseek_cb(cb_first_arg)
 {
-	struct mpc_decoder_data *data = (struct mpc_decoder_data *) vdata;
+	struct mpc_decoder_data *data = (struct mpc_decoder_data *) cb_data;
 
 	return data->is->seekable;
 }
 
 static mpc_int32_t
-mpc_getsize_cb(void *vdata)
+mpc_getsize_cb(cb_first_arg)
 {
-	struct mpc_decoder_data *data = (struct mpc_decoder_data *) vdata;
+	struct mpc_decoder_data *data = (struct mpc_decoder_data *) cb_data;
 
 	return data->is->size;
 }
@@ -118,7 +131,13 @@ mpc_to_mpd_buffer(int32_t *dest, const MPC_SAMPLE_FORMAT *src,
 static void
 mpc_decode(struct decoder *mpd_decoder, struct input_stream *is)
 {
+#ifdef MPC_IS_OLD_API
 	mpc_decoder decoder;
+#else
+	mpc_demux *demux;
+	mpc_frame_info frame;
+	mpc_status status;
+#endif
 	mpc_reader reader;
 	mpc_streaminfo info;
 	struct audio_format audio_format;
@@ -147,6 +166,7 @@ mpc_decode(struct decoder *mpd_decoder, struct input_stream *is)
 	reader.canseek = mpc_canseek_cb;
 	reader.data = &data;
 
+#ifdef MPC_IS_OLD_API
 	mpc_streaminfo_init(&info);
 
 	if ((ret = mpc_streaminfo_read(&info, &reader)) != ERROR_CODE_OK) {
@@ -162,12 +182,25 @@ mpc_decode(struct decoder *mpd_decoder, struct input_stream *is)
 			g_warning("Not a valid musepack stream\n");
 		return;
 	}
+#else
+	demux = mpc_demux_init(&reader);
+	if (demux == NULL) {
+		if (decoder_get_command(mpd_decoder) != DECODE_COMMAND_STOP)
+			g_warning("Not a valid musepack stream");
+		return;
+	}
+
+	mpc_demux_get_info(demux, &info);
+#endif
 
 	audio_format.bits = 24;
 	audio_format.channels = info.channels;
 	audio_format.sample_rate = info.sample_freq;
 
 	if (!audio_format_valid(&audio_format)) {
+#ifndef MPC_IS_OLD_API
+		mpc_demux_exit(demux);
+#endif
 		g_warning("Invalid audio format: %u:%u:%u\n",
 			  audio_format.sample_rate,
 			  audio_format.bits,
@@ -187,9 +220,19 @@ mpc_decode(struct decoder *mpd_decoder, struct input_stream *is)
 
 	do {
 		if (cmd == DECODE_COMMAND_SEEK) {
+			bool success;
+
 			sample_pos = decoder_seek_where(mpd_decoder) *
 				audio_format.sample_rate;
-			if (mpc_decoder_seek_sample(&decoder, sample_pos))
+
+#ifdef MPC_IS_OLD_API
+			success = mpc_decoder_seek_sample(&decoder,
+							  sample_pos);
+#else
+			success = mpc_demux_seek_sample(demux, sample_pos)
+				== MPC_STATUS_OK;
+#endif
+			if (success)
 				decoder_command_finished(mpd_decoder);
 			else
 				decoder_seek_error(mpd_decoder);
@@ -197,10 +240,25 @@ mpc_decode(struct decoder *mpd_decoder, struct input_stream *is)
 
 		vbr_update_acc = 0;
 		vbr_update_bits = 0;
+
+#ifdef MPC_IS_OLD_API
 		ret = mpc_decoder_decode(&decoder, sample_buffer,
 					 &vbr_update_acc, &vbr_update_bits);
 		if (ret == 0 || ret == (mpc_uint32_t)-1)
 			break;
+#else
+		frame.buffer = (MPC_SAMPLE_FORMAT *)sample_buffer;
+		status = mpc_demux_decode(demux, &frame);
+		if (status != MPC_STATUS_OK) {
+			g_warning("Failed to decode sample");
+			break;
+		}
+
+		if (frame.bits == -1)
+			break;
+
+		ret = frame.samples;
+#endif
 
 		sample_pos += ret;
 
@@ -219,6 +277,10 @@ mpc_decode(struct decoder *mpd_decoder, struct input_stream *is)
 	} while (cmd != DECODE_COMMAND_STOP);
 
 	replay_gain_info_free(replay_gain_info);
+
+#ifndef MPC_IS_OLD_API
+	mpc_demux_exit(demux);
+#endif
 }
 
 static float
@@ -228,8 +290,14 @@ mpcdec_get_file_duration(const char *file)
 	float total_time = -1;
 
 	mpc_reader reader;
+#ifndef MPC_IS_OLD_API
+	mpc_demux *demux;
+#endif
 	mpc_streaminfo info;
 	struct mpc_decoder_data data;
+
+	if (!input_stream_open(&is, file))
+		return -1;
 
 	data.is = &is;
 	data.decoder = NULL;
@@ -241,15 +309,23 @@ mpcdec_get_file_duration(const char *file)
 	reader.canseek = mpc_canseek_cb;
 	reader.data = &data;
 
+#ifdef MPC_IS_OLD_API
 	mpc_streaminfo_init(&info);
-
-	if (!input_stream_open(&is, file))
-		return -1;
 
 	if (mpc_streaminfo_read(&info, &reader) != ERROR_CODE_OK) {
 		input_stream_close(&is);
 		return -1;
 	}
+#else
+	demux = mpc_demux_init(&reader);
+	if (demux == NULL) {
+		input_stream_close(&is);
+		return -1;
+	}
+
+	mpc_demux_get_info(demux, &info);
+	mpc_demux_exit(demux);
+#endif
 
 	total_time = mpc_streaminfo_get_length(&info);
 
