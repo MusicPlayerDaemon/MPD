@@ -129,7 +129,7 @@ mpc_to_mpd_buffer(int32_t *dest, const MPC_SAMPLE_FORMAT *src,
 }
 
 static void
-mpc_decode(struct decoder *mpd_decoder, struct input_stream *is)
+mpcdec_decode(struct decoder *mpd_decoder, struct input_stream *is)
 {
 #ifdef MPC_IS_OLD_API
 	mpc_decoder decoder;
@@ -353,8 +353,8 @@ mpcdec_tag_dup(const char *file)
 static const char *const mpcdec_suffixes[] = { "mpc", NULL };
 
 const struct decoder_plugin mpcdec_decoder_plugin = {
-	.name = "mpc",
-	.stream_decode = mpc_decode,
+	.name = "mpcdec",
+	.stream_decode = mpcdec_decode,
 	.tag_dup = mpcdec_tag_dup,
 	.suffixes = mpcdec_suffixes,
 };
