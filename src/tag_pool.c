@@ -101,7 +101,9 @@ tag_pool_get_item(enum tag_type type, const char *value, size_t length)
 	slot_p = &slots[calc_hash_n(type, value, length) % NUM_SLOTS];
 	for (slot = *slot_p; slot != NULL; slot = slot->next) {
 		if (slot->item.type == type &&
-		    strcmp(value, slot->item.value) == 0 && slot->ref < 0xff) {
+		    length == strlen(slot->item.value) &&
+		    memcmp(value, slot->item.value, length) == 0 &&
+		    slot->ref < 0xff) {
 			assert(slot->ref > 0);
 			++slot->ref;
 			return &slot->item;
