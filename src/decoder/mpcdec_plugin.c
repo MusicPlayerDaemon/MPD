@@ -27,48 +27,54 @@
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "mpcdec"
 
-typedef struct _MpcCallbackData {
-	struct input_stream *inStream;
+struct mpc_decoder_data {
+	struct input_stream *is;
 	struct decoder *decoder;
-} MpcCallbackData;
+};
 
-static mpc_int32_t mpc_read_cb(void *vdata, void *ptr, mpc_int32_t size)
+static mpc_int32_t
+mpc_read_cb(void *vdata, void *ptr, mpc_int32_t size)
 {
-	MpcCallbackData *data = (MpcCallbackData *) vdata;
+	struct mpc_decoder_data *data = (struct mpc_decoder_data *) vdata;
 
-	return decoder_read(data->decoder, data->inStream, ptr, size);
+	return decoder_read(data->decoder, data->is, ptr, size);
 }
 
-static mpc_bool_t mpc_seek_cb(void *vdata, mpc_int32_t offset)
+static mpc_bool_t
+mpc_seek_cb(void *vdata, mpc_int32_t offset)
 {
-	MpcCallbackData *data = (MpcCallbackData *) vdata;
+	struct mpc_decoder_data *data = (struct mpc_decoder_data *) vdata;
 
-	return input_stream_seek(data->inStream, offset, SEEK_SET);
+	return input_stream_seek(data->is, offset, SEEK_SET);
 }
 
-static mpc_int32_t mpc_tell_cb(void *vdata)
+static mpc_int32_t
+mpc_tell_cb(void *vdata)
 {
-	MpcCallbackData *data = (MpcCallbackData *) vdata;
+	struct mpc_decoder_data *data = (struct mpc_decoder_data *) vdata;
 
-	return (long)(data->inStream->offset);
+	return (long)(data->is->offset);
 }
 
-static mpc_bool_t mpc_canseek_cb(void *vdata)
+static mpc_bool_t
+mpc_canseek_cb(void *vdata)
 {
-	MpcCallbackData *data = (MpcCallbackData *) vdata;
+	struct mpc_decoder_data *data = (struct mpc_decoder_data *) vdata;
 
-	return data->inStream->seekable;
+	return data->is->seekable;
 }
 
-static mpc_int32_t mpc_getsize_cb(void *vdata)
+static mpc_int32_t
+mpc_getsize_cb(void *vdata)
 {
-	MpcCallbackData *data = (MpcCallbackData *) vdata;
+	struct mpc_decoder_data *data = (struct mpc_decoder_data *) vdata;
 
-	return data->inStream->size;
+	return data->is->size;
 }
 
 /* this _looks_ performance-critical, don't de-inline -- eric */
-static inline int32_t convertSample(MPC_SAMPLE_FORMAT sample)
+static inline int32_t
+mpc_to_mpd_sample(MPC_SAMPLE_FORMAT sample)
 {
 	/* only doing 16-bit audio for now */
 	int32_t val;
@@ -106,32 +112,32 @@ mpc_to_mpd_buffer(int32_t *dest, const MPC_SAMPLE_FORMAT *src,
 		  unsigned num_samples)
 {
 	while (num_samples-- > 0)
-		*dest++ = convertSample(*src++);
+		*dest++ = mpc_to_mpd_sample(*src++);
 }
 
 static void
-mpc_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
+mpc_decode(struct decoder *mpd_decoder, struct input_stream *is)
 {
 	mpc_decoder decoder;
 	mpc_reader reader;
 	mpc_streaminfo info;
 	struct audio_format audio_format;
 
-	MpcCallbackData data;
+	struct mpc_decoder_data data;
 
 	MPC_SAMPLE_FORMAT sample_buffer[MPC_DECODER_BUFFER_LENGTH];
 
 	mpc_uint32_t ret;
 	int32_t chunk[G_N_ELEMENTS(sample_buffer)];
-	long bitRate = 0;
-	unsigned long samplePos = 0;
-	mpc_uint32_t vbrUpdateAcc;
-	mpc_uint32_t vbrUpdateBits;
+	long bit_rate = 0;
+	unsigned long sample_pos = 0;
+	mpc_uint32_t vbr_update_acc;
+	mpc_uint32_t vbr_update_bits;
 	float total_time;
-	struct replay_gain_info *replayGainInfo = NULL;
+	struct replay_gain_info *replay_gain_info = NULL;
 	enum decoder_command cmd = DECODE_COMMAND_NONE;
 
-	data.inStream = inStream;
+	data.is = is;
 	data.decoder = mpd_decoder;
 
 	reader.read = mpc_read_cb;
@@ -169,62 +175,63 @@ mpc_decode(struct decoder *mpd_decoder, struct input_stream *inStream)
 		return;
 	}
 
-	replayGainInfo = replay_gain_info_new();
-	replayGainInfo->tuples[REPLAY_GAIN_ALBUM].gain = info.gain_album * 0.01;
-	replayGainInfo->tuples[REPLAY_GAIN_ALBUM].peak = info.peak_album / 32767.0;
-	replayGainInfo->tuples[REPLAY_GAIN_TRACK].gain = info.gain_title * 0.01;
-	replayGainInfo->tuples[REPLAY_GAIN_TRACK].peak = info.peak_title / 32767.0;
+	replay_gain_info = replay_gain_info_new();
+	replay_gain_info->tuples[REPLAY_GAIN_ALBUM].gain = info.gain_album * 0.01;
+	replay_gain_info->tuples[REPLAY_GAIN_ALBUM].peak = info.peak_album / 32767.0;
+	replay_gain_info->tuples[REPLAY_GAIN_TRACK].gain = info.gain_title * 0.01;
+	replay_gain_info->tuples[REPLAY_GAIN_TRACK].peak = info.peak_title / 32767.0;
 
 	decoder_initialized(mpd_decoder, &audio_format,
-			    inStream->seekable,
+			    is->seekable,
 			    mpc_streaminfo_get_length(&info));
 
 	do {
 		if (cmd == DECODE_COMMAND_SEEK) {
-			samplePos = decoder_seek_where(mpd_decoder) *
+			sample_pos = decoder_seek_where(mpd_decoder) *
 				audio_format.sample_rate;
-			if (mpc_decoder_seek_sample(&decoder, samplePos))
+			if (mpc_decoder_seek_sample(&decoder, sample_pos))
 				decoder_command_finished(mpd_decoder);
 			else
 				decoder_seek_error(mpd_decoder);
 		}
 
-		vbrUpdateAcc = 0;
-		vbrUpdateBits = 0;
+		vbr_update_acc = 0;
+		vbr_update_bits = 0;
 		ret = mpc_decoder_decode(&decoder, sample_buffer,
-					 &vbrUpdateAcc, &vbrUpdateBits);
+					 &vbr_update_acc, &vbr_update_bits);
 		if (ret == 0 || ret == (mpc_uint32_t)-1)
 			break;
 
-		samplePos += ret;
+		sample_pos += ret;
 
 		ret *= info.channels;
 
 		mpc_to_mpd_buffer(chunk, sample_buffer, ret);
 
-		total_time = ((float)samplePos) / audio_format.sample_rate;
-		bitRate = vbrUpdateBits * audio_format.sample_rate
+		total_time = ((float)sample_pos) / audio_format.sample_rate;
+		bit_rate = vbr_update_bits * audio_format.sample_rate
 			/ 1152 / 1000;
 
-		cmd = decoder_data(mpd_decoder, inStream,
+		cmd = decoder_data(mpd_decoder, is,
 				   chunk, ret * sizeof(chunk[0]),
 				   total_time,
-				   bitRate, replayGainInfo);
+				   bit_rate, replay_gain_info);
 	} while (cmd != DECODE_COMMAND_STOP);
 
-	replay_gain_info_free(replayGainInfo);
+	replay_gain_info_free(replay_gain_info);
 }
 
-static float mpcGetTime(const char *file)
+static float
+mpcdec_get_file_duration(const char *file)
 {
-	struct input_stream inStream;
+	struct input_stream is;
 	float total_time = -1;
 
 	mpc_reader reader;
 	mpc_streaminfo info;
-	MpcCallbackData data;
+	struct mpc_decoder_data data;
 
-	data.inStream = &inStream;
+	data.is = &is;
 	data.decoder = NULL;
 
 	reader.read = mpc_read_cb;
@@ -236,24 +243,25 @@ static float mpcGetTime(const char *file)
 
 	mpc_streaminfo_init(&info);
 
-	if (!input_stream_open(&inStream, file))
+	if (!input_stream_open(&is, file))
 		return -1;
 
 	if (mpc_streaminfo_read(&info, &reader) != ERROR_CODE_OK) {
-		input_stream_close(&inStream);
+		input_stream_close(&is);
 		return -1;
 	}
 
 	total_time = mpc_streaminfo_get_length(&info);
 
-	input_stream_close(&inStream);
+	input_stream_close(&is);
 
 	return total_time;
 }
 
-static struct tag *mpcTagDup(const char *file)
+static struct tag *
+mpcdec_tag_dup(const char *file)
 {
-	float total_time = mpcGetTime(file);
+	float total_time = mpcdec_get_file_duration(file);
 	struct tag *tag;
 
 	if (total_time < 0) {
@@ -266,11 +274,11 @@ static struct tag *mpcTagDup(const char *file)
 	return tag;
 }
 
-static const char *const mpcSuffixes[] = { "mpc", NULL };
+static const char *const mpcdec_suffixes[] = { "mpc", NULL };
 
 const struct decoder_plugin mpcdec_decoder_plugin = {
 	.name = "mpc",
 	.stream_decode = mpc_decode,
-	.tag_dup = mpcTagDup,
-	.suffixes = mpcSuffixes,
+	.tag_dup = mpcdec_tag_dup,
+	.suffixes = mpcdec_suffixes,
 };
