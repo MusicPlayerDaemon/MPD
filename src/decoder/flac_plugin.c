@@ -501,8 +501,8 @@ flac_container_decode(struct decoder* decoder,
 				&& (tnum <= cs->data.cue_sheet.num_tracks - 1))
 		{
 			t_start = cs->data.cue_sheet.tracks[tnum - 1].offset;
-			t_end = cs->data.cue_sheet.tracks[tnum].offset - 1;
-			track_time = cs->data.cue_sheet.tracks[tnum].offset - 1
+			t_end = cs->data.cue_sheet.tracks[tnum].offset;
+			track_time = cs->data.cue_sheet.tracks[tnum].offset
 				- cs->data.cue_sheet.tracks[tnum - 1].offset;
 		}
 
@@ -575,7 +575,7 @@ flac_container_decode(struct decoder* decoder,
 	}
 
 	// set track time (order is important: after stream init)
-	data.total_time = (float)(track_time / data.audio_format.sample_rate);
+	data.total_time = ((float)track_time / (float)data.audio_format.sample_rate);
 	data.position = 0;
 
 	decoder_initialized(decoder, &data.audio_format,
