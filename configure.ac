@@ -682,12 +682,8 @@ fi
 
 AM_CONDITIONAL(HAVE_MVP, test x$enable_mvp = xyes)
 
-if test x$enable_alsa != xno; then
-	PKG_CHECK_MODULES(ALSA, [alsa >= 0.9.0],
-		found_alsa=yes, found_alsa=no)
-fi
-
-MPD_AUTO_RESULT([alsa], [ALSA output plugin], [libasound not found])
+MPD_AUTO_PKG(alsa, ALSA, [alsa >= 0.9.0],
+	[ALSA output plugin], [libasound not found])
 
 if test x$enable_alsa = xyes; then
 	AC_DEFINE(HAVE_ALSA, 1, [Define to enable ALSA support])

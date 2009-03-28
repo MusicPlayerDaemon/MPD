@@ -38,3 +38,13 @@ AC_DEFUN([MPD_AUTO_RESULT], [
                 MPD_AUTO_DISABLED([$name], [$feature], [$msg])
 	fi
 ])
+
+AC_DEFUN([MPD_AUTO_PKG], [
+	if eval "test x`echo '$'enable_$1` != xno"; then
+		PKG_CHECK_MODULES([$2], [$3],
+			[eval "found_$1=yes"],
+			[eval "found_$1=no"])
+	fi
+
+	MPD_AUTO_RESULT([$1], [$4], [$5])
+])
