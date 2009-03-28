@@ -604,7 +604,6 @@ case "$host_os" in
 		enable_solaris_output=no
 		;;
 esac
-echo "HOST_OS=$host_os"
 
 AM_CONDITIONAL(ENABLE_SOLARIS_OUTPUT, test x$enable_solaris_output = xyes)
 
