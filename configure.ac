@@ -481,10 +481,8 @@ AC_ARG_ENABLE(lsr,
 
 if test x$enable_lsr = xyes; then
 	PKG_CHECK_MODULES([SAMPLERATE], [samplerate >= 0.0.15],
-		[enable_lsr=yes;AC_DEFINE([HAVE_LIBSAMPLERATE], 1,
-		[Define to enable libsamplerate])]
-			MPD_LIBS="$MPD_LIBS $SAMPLERATE_LIBS"
-			MPD_CFLAGS="$MPD_CFLAGS $SAMPLERATE_CFLAGS",
+		[AC_DEFINE([HAVE_LIBSAMPLERATE], 1,
+		[Define to enable libsamplerate])],
 		[enable_lsr=no;AC_MSG_WARN([libsamplerate not found -- disabling])])
 fi
 

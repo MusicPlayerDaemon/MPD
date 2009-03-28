@@ -12,6 +12,7 @@ src_mpd_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(INPUT_CFLAGS) \
 	$(DECODER_CFLAGS) \
 	$(ENCODER_CFLAGS) \
+	$(FILTER_CFLAGS) \
 	$(OUTPUT_CFLAGS)
 src_mpd_LDADD = $(MPD_LIBS) \
 	$(SQLITE_LIBS) \
@@ -20,6 +21,7 @@ src_mpd_LDADD = $(MPD_LIBS) \
 	$(DECODER_LIBS) \
 	$(ENCODER_LIBS) \
 	$(OUTPUT_LIBS) \
+	$(FILTER_LIBS) \
 	$(GLIB_LIBS)
 
 mpd_headers = \
@@ -242,6 +244,11 @@ src_mpd_SOURCES = \
 if ENABLE_SQLITE
 src_mpd_SOURCES += src/sticker.c src/song_sticker.c
 endif
+
+FILTER_CFLAGS = \
+	$(SAMPLERATE_CFLAGS)
+FILTER_LIBS = \
+	$(SAMPLERATE_LIBS)
 
 if HAVE_LIBSAMPLERATE
 src_mpd_SOURCES += src/pcm_resample_libsamplerate.c
