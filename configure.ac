@@ -227,12 +227,12 @@ AM_CONDITIONAL(HAVE_BONJOUR, test x$with_zeroconf = xbonjour)
 
 AC_ARG_ENABLE(sqlite,
 	AS_HELP_STRING([--enable-sqlite],
-		[enable support for the SQLite database (default: disable)]),,
-	[enable_sqlite=no])
+		[enable support for the SQLite database]),,
+	[enable_sqlite=auto])
 
+MPD_AUTO_PKG(sqlite, SQLITE, [sqlite3],
+	[SQLite database support], [sqlite not found])
 if test x$enable_sqlite = xyes; then
-	PKG_CHECK_MODULES([SQLITE], [sqlite3],,
-		[AC_MSG_ERROR(sqlite not found)])
 	AC_DEFINE([ENABLE_SQLITE], 1, [Define to enable sqlite database support])
 fi
 
@@ -244,14 +244,14 @@ dnl input plugins
 dnl
 
 AC_ARG_ENABLE(curl,
-	AS_HELP_STRING([--disable-curl],
-		[enable support obtaining song data via HTTP (default: enable)]),,
-	[enable_curl=yes])
+	AS_HELP_STRING([--enable-curl],
+		[enable support for libcurl HTTP streaming (default: auti)]),,
+	[enable_curl=auto])
 
+MPD_AUTO_PKG(curl, CURL, [libcurl],
+	[libcurl HTTP streaming], [libcurl not found])
 if test x$enable_curl = xyes; then
-	PKG_CHECK_MODULES(CURL, [libcurl],
-		AC_DEFINE(HAVE_CURL, 1, [Define when libcurl is used for HTTP streaming]),
-		enable_curl=no)
+	AC_DEFINE(HAVE_CURL, 1, [Define when libcurl is used for HTTP streaming])
 fi
 AM_CONDITIONAL(HAVE_CURL, test x$enable_curl = xyes)
 
@@ -271,14 +271,14 @@ AM_CONDITIONAL(ENABLE_LASTFM, test x$enable_lastfm = xyes)
 
 AC_ARG_ENABLE(mms,
 	AS_HELP_STRING([--enable-mms],
-		[enable the MMS protocol with libmms (default: disable)]),,
-	[enable_mms=no])
+		[enable the MMS protocol with libmms]),,
+	[enable_mms=auto])
 
+MPD_AUTO_PKG(mms, MMS, [libmms],
+	[libmms mms:// protocol support], [libmms not found])
 if test x$enable_mms = xyes; then
-	PKG_CHECK_MODULES(MMS, [libmms],
-		AC_DEFINE(ENABLE_MMS, 1,
-			[Define when libmms is used for the MMS protocol]),
-		AC_MSG_ERROR([libmms not found]))
+	AC_DEFINE(ENABLE_MMS, 1,
+		[Define when libmms is used for the MMS protocol])
 fi
 AM_CONDITIONAL(ENABLE_MMS, test x$enable_mms = xyes)
 
@@ -394,14 +394,14 @@ AC_ARG_ENABLE(mp3,,
 	enable_mad=yes)
 
 AC_ARG_ENABLE(mad,
-	AS_HELP_STRING([--disable-mad],
-		[disable mad mp3 decoder support (default: enable)]),,
-	enable_mad=yes)
+	AS_HELP_STRING([--enable-mad],
+		[enable libmad mp3 decoder plugin]),,
+	enable_mad=auto)
 
+MPD_AUTO_PKG(mad, MAD, [mad],
+	[libmad MP3 decoder plugin], [libmad not found])
 if test x$enable_mad = xyes; then
-	PKG_CHECK_MODULES([MAD], [mad],
-		AC_DEFINE(HAVE_MAD, 1, [Define to use libmad]),
-		enable_mad=no)
+	AC_DEFINE(HAVE_MAD, 1, [Define to use libmad])
 fi
 AM_CONDITIONAL(HAVE_MAD, test x$enable_mad = xyes)
 
@@ -412,8 +412,15 @@ AC_ARG_ENABLE(mod,
 
 AC_ARG_ENABLE(modplug,
 	AS_HELP_STRING([--enable-modplug],
-		[enable MODPLUG support (default: disable)]),,
-	enable_modplug=no)
+		[enable modplug decoder plugin]),,
+	enable_modplug=auto)
+
+MPD_AUTO_PKG(modplug, MODPLUG, [libmodplug],
+	[modplug decoder plugin], [libmodplug not found])
+AM_CONDITIONAL(HAVE_MODPLUG, test x$enable_modplug = xyes)
+if test x$enable_modplug = xyes; then
+	AC_DEFINE(HAVE_MODPLUG, 1, [Define for modplug support])
+fi
 
 AC_ARG_ENABLE(mpc,
 	AS_HELP_STRING([--disable-mpc],
@@ -475,15 +482,15 @@ dnl converters
 dnl
 
 AC_ARG_ENABLE(lsr,
-	AS_HELP_STRING([--disable-lsr],
-		[disable libsamplerate support (default: enable)]),,
-	enable_lsr=yes)
+	AS_HELP_STRING([--enable-lsr],
+		[enable libsamplerate support]),,
+	enable_lsr=auto)
 
+MPD_AUTO_PKG(lsr, SAMPLERATE, [samplerate >= 0.0.15],
+	[libsamplerate resampling], [libsamplerate not found])
 if test x$enable_lsr = xyes; then
-	PKG_CHECK_MODULES([SAMPLERATE], [samplerate >= 0.0.15],
-		[AC_DEFINE([HAVE_LIBSAMPLERATE], 1,
-		[Define to enable libsamplerate])],
-		[enable_lsr=no;AC_MSG_WARN([libsamplerate not found -- disabling])])
+	AC_DEFINE([HAVE_LIBSAMPLERATE], 1,
+		[Define to enable libsamplerate])
 fi
 
 if test x$enable_lsr = xyes; then
@@ -511,14 +518,22 @@ dnl audio output plugins
 dnl
 
 AC_ARG_ENABLE(alsa,
-	AS_HELP_STRING([--disable-alsa],
-		[disable ALSA support (default: enable)]),,
+	AS_HELP_STRING([--enable-alsa],
+		[disable ALSA support]),,
 	enable_alsa=auto)
 
 AC_ARG_ENABLE(ao,
 	AS_HELP_STRING([--enable-ao],
-		[enable support for libao (default: disable)]),,
-	enable_ao=no)
+		[enable support for libao]),,
+	enable_ao=auto)
+
+MPD_AUTO_PKG(ao, AO, [ao],
+	[libao output plugin], [libao not found])
+if test x$enable_ao = xyes; then
+	AC_DEFINE(HAVE_AO, 1, [Define to play with ao])
+fi
+
+AM_CONDITIONAL(HAVE_AO, test x$enable_ao = xyes)
 
 AC_ARG_ENABLE(fifo,
 	AS_HELP_STRING([--disable-fifo],
@@ -537,9 +552,27 @@ fi
 AM_CONDITIONAL(ENABLE_PIPE_OUTPUT, test x$enable_pipe_output = xyes)
 
 AC_ARG_ENABLE(jack,
-	AS_HELP_STRING([--disable-jack],
-		[disable jack support (default: enable)]),,
-	enable_jack=yes)
+	AS_HELP_STRING([--enable-jack],
+		[enable jack support]),,
+	enable_jack=auto)
+
+MPD_AUTO_PKG(jack, JACK, [jack >= 0.4],
+	[JACK output plugin], [libjack not found])
+if test x$enable_jack = xyes; then
+	AC_DEFINE([HAVE_JACK], 1, [Define to enable JACK support])
+fi
+
+if test x$enable_jack = xyes; then
+	# check whether jack_set_info_function() is available
+	old_LIBS=$LIBS
+	LIBS="$LIBS $JACK_LIBS"
+
+	AC_CHECK_FUNCS(jack_set_info_function)
+
+	LIBS=$old_LIBS
+fi
+
+AM_CONDITIONAL(HAVE_JACK, test x$enable_jack = xyes)
 
 AC_ARG_ENABLE(mvp,
 	AS_HELP_STRING([--enable-mvp],
@@ -552,9 +585,18 @@ AC_ARG_ENABLE(oss,
 	enable_oss=yes)
 
 AC_ARG_ENABLE(pulse,
-	AS_HELP_STRING([--disable-pulse],
-		[disable support for the PulseAudio sound server (default: enable)]),,
-	enable_pulse=yes)
+	AS_HELP_STRING([--enable-pulse],
+		[enable support for the PulseAudio sound server]),,
+	enable_pulse=auto)
+
+MPD_AUTO_PKG(pulse, PULSE, [libpulse-simple],
+	[PulseAudio output plugin], [libpulse not found])
+if test x$enable_pulse = xyes; then
+	AC_DEFINE([HAVE_PULSE], 1,
+		[Define to enable PulseAudio support])
+fi
+
+AM_CONDITIONAL(HAVE_PULSE, test x$enable_pulse = xyes)
 
 AC_ARG_ENABLE(oggvorbis-encoder,
 	AS_HELP_STRING([--disable-oggvorbis-encoder],
@@ -641,14 +683,6 @@ if test x$enable_lame = xyes; then
 		[Define to enable the lame encoder plugin])
 fi
 
-if test x$enable_ao = xyes; then
-	PKG_CHECK_MODULES(AO, [ao],
-		AC_DEFINE(HAVE_AO, 1, [Define to play with ao]),
-		enable_ao=no)
-fi
-
-AM_CONDITIONAL(HAVE_AO, test x$enable_ao = xyes)
-
 if test x$enable_oss = xyes; then
 	AC_CHECK_HEADER(sys/soundcard.h,
 		[enable_oss=yes;AC_DEFINE(HAVE_OSS,1,[Define to enable OSS])],
@@ -657,15 +691,6 @@ if test x$enable_oss = xyes; then
 fi
 
 AM_CONDITIONAL(HAVE_OSS, test x$enable_oss = xyes)
-
-if test x$enable_pulse = xyes; then
-	PKG_CHECK_MODULES([PULSE], [libpulse-simple],
-		[AC_DEFINE([HAVE_PULSE], 1,
-		[Define to enable PulseAudio support])],
-		[enable_pulse=no;AC_MSG_WARN([PulseAudio not found -- disabling])])
-fi
-
-AM_CONDITIONAL(HAVE_PULSE, test x$enable_pulse = xyes)
 
 if test x$enable_fifo = xyes; then
 	AC_CHECK_FUNC([mkfifo],
@@ -690,26 +715,6 @@ if test x$enable_alsa = xyes; then
 fi
 
 AM_CONDITIONAL(HAVE_ALSA, test x$enable_alsa = xyes)
-
-if test x$enable_jack = xyes; then
-	PKG_CHECK_MODULES([JACK],
-		[jack >= 0.4],
-		[AC_DEFINE([HAVE_JACK], 1,
-			[Define to enable JACK support])],
-	        enable_jack=no)
-fi
-
-if test x$enable_jack = xyes; then
-	# check whether jack_set_info_function() is available
-	old_LIBS=$LIBS
-	LIBS="$LIBS $JACK_LIBS"
-
-	AC_CHECK_FUNCS(jack_set_info_function)
-
-	LIBS=$old_LIBS
-fi
-
-AM_CONDITIONAL(HAVE_JACK, test x$enable_jack = xyes)
 
 if test x$enable_id3 = xyes; then
 	PKG_CHECK_MODULES([ID3TAG], [id3tag],,
@@ -891,14 +896,6 @@ if test x$enable_mod = xyes; then
 fi
 
 AM_CONDITIONAL(HAVE_MIKMOD, test x$enable_mod = xyes)
-
-if test x$enable_modplug = xyes; then
-	PKG_CHECK_MODULES(MODPLUG, [libmodplug],
-		AC_DEFINE(HAVE_MODPLUG, 1, [Define for modplug support]),
-		enable_modplug=no)
-fi
-
-AM_CONDITIONAL(HAVE_MODPLUG, test x$enable_modplug = xyes)
 
 if test x$enable_ffmpeg = xyes; then
 	PKG_CHECK_MODULES(FFMPEG, [libavformat libavcodec libavutil],,
