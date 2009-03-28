@@ -515,7 +515,7 @@ dnl
 AC_ARG_ENABLE(alsa,
 	AS_HELP_STRING([--disable-alsa],
 		[disable ALSA support (default: enable)]),,
-	enable_alsa=yes)
+	enable_alsa=auto)
 
 AC_ARG_ENABLE(ao,
 	AS_HELP_STRING([--enable-ao],
@@ -687,10 +687,15 @@ fi
 
 AM_CONDITIONAL(HAVE_MVP, test x$enable_mvp = xyes)
 
-if test x$enable_alsa = xyes; then
+if test x$enable_alsa != xno; then
 	PKG_CHECK_MODULES(ALSA, [alsa >= 0.9.0],
-		AC_DEFINE(HAVE_ALSA, 1, [Define to enable ALSA support]),
-		enable_alsa=no)
+		found_alsa=yes, found_alsa=no)
+fi
+
+MPD_AUTO_RESULT([alsa], [ALSA output plugin], [libasound not found])
+
+if test x$enable_alsa = xyes; then
+	AC_DEFINE(HAVE_ALSA, 1, [Define to enable ALSA support])
 fi
 
 AM_CONDITIONAL(HAVE_ALSA, test x$enable_alsa = xyes)
