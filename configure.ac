@@ -700,11 +700,8 @@ AM_CONDITIONAL(HAVE_ALSA, test x$enable_alsa = xyes)
 if test x$enable_jack = xyes; then
 	PKG_CHECK_MODULES([JACK],
 		[jack >= 0.4],
-		[enable_jack=yes;
-			AC_DEFINE([HAVE_JACK], 1,
-				[Define to enable JACK support])]
-		MPD_LIBS="$MPD_LIBS $JACK_LIBS"
-		MPD_CFLAGS="$MPD_CFLAGS $JACK_CFLAGS",
+		[AC_DEFINE([HAVE_JACK], 1,
+			[Define to enable JACK support])],
 	        enable_jack=no)
 fi
 
