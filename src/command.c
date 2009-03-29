@@ -122,7 +122,7 @@ static void command_error_v(struct client *client, enum ack error,
 	current_command = NULL;
 }
 
-G_GNUC_PRINTF(3, 4) void command_error(struct client *client, enum ack error,
+G_GNUC_PRINTF(3, 4) static void command_error(struct client *client, enum ack error,
 				       const char *fmt, ...)
 {
 	va_list args;

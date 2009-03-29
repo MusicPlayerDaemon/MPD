@@ -47,7 +47,4 @@ command_process(struct client *client, char *commandString);
 
 void command_success(struct client *client);
 
-G_GNUC_PRINTF(3, 4) void command_error(struct client *client, enum ack error,
-				       const char *fmt, ...);
-
 #endif
