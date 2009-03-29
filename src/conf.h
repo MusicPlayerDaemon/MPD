@@ -153,8 +153,6 @@ config_get_block_bool(const struct config_param *param, const char *name,
 struct config_param *
 newConfigParam(const char *value, int line);
 
-void config_param_free(gpointer data, gpointer user_data);
-
 void
 addBlockParam(struct config_param *param, const char *name, const char *value, int line);
 

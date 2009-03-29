@@ -87,7 +87,7 @@ newConfigParam(const char *value, int line)
 	return ret;
 }
 
-void
+static void
 config_param_free(gpointer data, G_GNUC_UNUSED gpointer user_data)
 {
 	struct config_param *param = data;
