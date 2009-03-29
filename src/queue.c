@@ -20,7 +20,10 @@
 #include "queue.h"
 #include "song.h"
 
-unsigned
+/**
+ * Generate a non-existing id number.
+ */
+static unsigned
 queue_generate_id(const struct queue *queue)
 {
 	static unsigned cur = (unsigned)-1;

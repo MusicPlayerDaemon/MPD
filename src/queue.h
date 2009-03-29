@@ -230,12 +230,6 @@ void
 queue_finish(struct queue *queue);
 
 /**
- * Generate a non-existing id number.
- */
-unsigned
-queue_generate_id(const struct queue *queue);
-
-/**
  * Returns the order number following the specified one.  This takes
  * end of queue and "repeat" mode into account.
  *
