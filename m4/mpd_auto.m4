@@ -16,7 +16,7 @@ AC_DEFUN([MPD_AUTO_DISABLED], [
 	if eval "test x`echo '$'$var` = xauto"; then
 		AC_MSG_WARN([$msg -- disabling $feature])
 		eval "$var=no"
-	else
+	elif eval "test x`echo '$'$var` = xyes"; then
 		AC_MSG_ERROR([$msg])
 	fi
 ])
