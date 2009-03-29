@@ -4,20 +4,25 @@
 # Files and directories #######################################################
 #
 # This setting controls the top directory which MPD will search to discover the
-# available audio files and add them to the daemon's online database.
+# available audio files and add them to the daemon's online database. This 
+# setting defaults to the XDG directory, otherwise the music directory will be
+# be disabled and audio files will only be accepted over ipc socket (using
+# file:// protocol) or streaming files over an accepted protocol.
 #
 #music_directory		"~/music"
 #
 # This setting sets the MPD internal playlist directory. The purpose of this
 # directory is storage for playlists created by MPD. The server will use 
 # playlist files not created by the server but only if they are in the MPD
-# format.
+# format. This setting defaults to playlist saving being disabled.
 #
 #playlist_directory		"~/.mpd/playlists"
 #
 # This setting sets the location of the MPD database. This file is used to
 # load the database at server start up and store the database while the 
-# server is not up.
+# server is not up. This setting defaults to disabled which will allow
+# MPD to accept files over ipc socket (using file:// protocol) or streaming
+# files over an accepted protocol.
 #
 #db_file			"~/.mpd/database"
 # 
@@ -25,21 +30,21 @@
 # These logs are great for troubleshooting, depending on your log_level
 # settings.
 #
-# The special value "syslog" makes MPD use the local syslog daemon.
-# On most systems, log messages will appear in /var/log/daemon.log
-# then.
+# The special value "syslog" makes MPD use the local syslog daemon. This
+# setting defaults to logging to syslog, otherwise logging is disabled.
 #
 #log_file			"~/.mpd/log"
 #
 # This setting sets the location of the file which stores the process ID
 # for use of mpd --kill and some init scripts. This setting is disabled by
-# default.
+# default and the pid file will not be stored.
 #
 #pid_file			"~/.mpd/pid"
 #
 # This setting sets the location of the file which contains information about
 # most variables to get MPD back into the same general shape it was in before
-# it was brought down. This setting is disabled by default.
+# it was brought down. This setting is disabled by default and the server 
+# state will be reset on server start up.
 #
 #state_file			"~/.mpd/state"
 #
@@ -48,11 +53,10 @@
 
 # General music daemon options ################################################
 #
-# This setting specifies the user that MPD will run as, if set. MPD should
-# never run as root and you may use this setting to make MPD change its user 
-# id after initialization. Do not use this setting if you start MPD as an
-# unprivileged user. This setting is disabled by default, and the server will
-# run as root.
+# This setting specifies the user that MPD will run as. MPD should never run as
+# root and you may use this setting to make MPD change its user ID after
+# initialization. This setting is disabled by default and MPD is run as the
+# current user.
 #
 #user				"nobody"
 #
@@ -66,7 +70,8 @@
 # And for Unix Socket
 #bind_to_address		"~/.mpd/socket"
 #
-# This setting is the port that is desired for the daemon to get assigned to.
+# This setting is the TCP port that is desired for the daemon to get assigned
+# to.
 #
 #port				"6600"
 #
@@ -105,7 +110,7 @@
 #
 #follow_outside_symlinks	"yes"
 #
-# If this setting is set to "yes, MPD will discover audio files by following
+# If this setting is set to "yes", MPD will discover audio files by following
 # symbolic links inside of the configured music_directory.
 #
 #follow_inside_symlinks		"yes"
@@ -154,65 +159,65 @@
 # An example of an ALSA output:
 #
 #audio_output {
-#	type			"alsa"
-#	name			"My ALSA Device"
-#	device			"hw:0,0"	# optional
-#	format			"44100:16:2"	# optional
-#	mixer_device		"default"	# optional
-#	mixer_control		"PCM"		# optional
+#	type		"alsa"
+#	name		"My ALSA Device"
+#	device		"hw:0,0"	# optional
+#	format		"44100:16:2"	# optional
+#	mixer_device	"default"	# optional
+#	mixer_control	"PCM"		# optional
 #}
 #
 # An example of an OSS output:
 #
 #audio_output {
-#	type			"oss"
-#	name			"My OSS Device"
-#	device			"/dev/dsp"	# optional
-#	format			"44100:16:2"	# optional
-#	mixer_device		"/dev/mixer"	# optional
-#	mixer_control		"PCM"		# optional
+#	type		"oss"
+#	name		"My OSS Device"
+#	device		"/dev/dsp"	# optional
+#	format		"44100:16:2"	# optional
+#	mixer_device	"/dev/mixer"	# optional
+#	mixer_control	"PCM"		# optional
 #}
 #
 # An example of a shout output (for streaming to Icecast):
 #
 #audio_output {
-#	type			"shout"
-#	encoding		"ogg"			# optional
-#	name			"My Shout Stream"
-#	host			"localhost"
-#	port			"8000"
-#	mount			"/mpd.ogg"
-#	password		"hackme"
-#	quality			"5.0"
-#	bitrate			"128"
-#	format			"44100:16:1"
-#	protocol		"icecast2"		# optional
-#	user			"source"		# optional
-#	description		"My Stream Description"	# optional
-#	genre			"jazz"			# optional
-#	public			"no"			# optional
-#	timeout			"2"			# optional
+#	type		"shout"
+#	encoding	"ogg"			# optional
+#	name		"My Shout Stream"
+#	host		"localhost"
+#	port		"8000"
+#	mount		"/mpd.ogg"
+#	password	"hackme"
+#	quality		"5.0"
+#	bitrate		"128"
+#	format		"44100:16:1"
+#	protocol	"icecast2"		# optional
+#	user		"source"		# optional
+#	description	"My Stream Description"	# optional
+#	genre		"jazz"			# optional
+#	public		"no"			# optional
+#	timeout		"2"			# optional
 #}
 #
 # An example of a httpd output (built-in HTTP streaming server):
 #
 #audio_output {
-#	type			"httpd"
-#	name			"My HTTP Stream"
-#	encoder			"vorbis"		# optional, vorbis or lame
-#	port			"8000"
-#	#quality			"5.0"		# do not define if bitrate is defined
-#	bitrate			"128"			# do not define if quality is defined
-#	format			"44100:16:1"
+#	type		"httpd"
+#	name		"My HTTP Stream"
+#	encoder		"vorbis"		# optional, vorbis or lame
+#	port		"8000"
+#	quality		"5.0"			# do not define if bitrate is defined
+#	bitrate		"128"			# do not define if quality is defined
+#	format		"44100:16:1"
 #}
 #
 # An example of a pulseaudio output (streaming to a remote pulseaudio server)
 #
 #audio_output {
-#	type			"pulse"
-#	name			"My Pulse Output"
-#	server			"remote_server"
-#	sink			"remote_server_sink"
+#	type		"pulse"
+#	name		"My Pulse Output"
+#	server		"remote_server"		# optional
+#	sink		"remote_server_sink"	# optional
 #}
 #
 ## Example "pipe" output:
@@ -231,8 +236,8 @@
 ## An example of a null output (for no audio output):
 #
 #audio_output {
-#	type			"null"
-#	name			"My Null Output"
+#	type		"null"
+#	name		"My Null Output"
 #}
 #
 # This setting will change all decoded audio to be converted to the specified
@@ -277,7 +282,7 @@
 #
 # This setting specifies the type of ReplayGain to use. This setting can have
 # the argument "album" or "track". See <http://www.replaygain.org> for more
-# details. By default this setting is disabled.
+# details. This setting is disabled by default.
 #
 #replaygain			"album"
 #
@@ -288,7 +293,7 @@
 #
 # This setting enables on-the-fly normalization volume adjustment. This will
 # result in the volume of all playing audio to be adjusted so the output has 
-# equal "loudness".
+# equal "loudness". This setting is disabled by default.
 #
 #volume_normalization		"no"
 #
@@ -314,8 +319,8 @@
 
 # HTTP Streaming Proxy ########################################################
 #
-# This setting specifies the HTTP proxy to use for playing HTTP streams. By
-# default, these settings will be disabled.
+# This setting specifies the HTTP proxy to use for playing HTTP streams. These
+# settings will be disabled by default.
 #
 #http_proxy_host		"proxy.isp.com"
 #http_proxy_port		"8080"
