@@ -773,7 +773,10 @@ static void client_write_output(struct client *client)
 	client->send_buf_used = 0;
 }
 
-void client_write(struct client *client, const char *buffer, size_t buflen)
+/**
+ * Write a block of data to the client.
+ */
+static void client_write(struct client *client, const char *buffer, size_t buflen)
 {
 	/* if the client is going to be closed, do nothing */
 	if (client_is_expired(client))

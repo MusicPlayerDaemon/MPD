@@ -46,11 +46,6 @@ unsigned client_get_permission(const struct client *client);
 void client_set_permission(struct client *client, unsigned permission);
 
 /**
- * Write a block of data to the client.
- */
-void client_write(struct client *client, const char *data, size_t length);
-
-/**
  * Write a C string to the client.
  */
 void client_puts(struct client *client, const char *s);
