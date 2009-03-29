@@ -6,20 +6,20 @@
 # This setting controls the top directory which MPD will search to discover the
 # available audio files and add them to the daemon's online database.
 #
-music_directory			"~/music"
+#music_directory		"~/music"
 #
 # This setting sets the MPD internal playlist directory. The purpose of this
 # directory is storage for playlists created by MPD. The server will use 
 # playlist files not created by the server but only if they are in the MPD
 # format.
 #
-playlist_directory		"~/.mpd/playlists"
+#playlist_directory		"~/.mpd/playlists"
 #
 # This setting sets the location of the MPD database. This file is used to
 # load the database at server start up and store the database while the 
 # server is not up.
 #
-db_file				"~/.mpd/database"
+#db_file			"~/.mpd/database"
 # 
 # These settings are the locations for the daemon log files for the daemon.
 # These logs are great for troubleshooting, depending on your log_level
@@ -29,7 +29,7 @@ db_file				"~/.mpd/database"
 # On most systems, log messages will appear in /var/log/daemon.log
 # then.
 #
-log_file			"~/.mpd/log"
+#log_file			"~/.mpd/log"
 #
 # This setting sets the location of the file which stores the process ID
 # for use of mpd --kill and some init scripts. This setting is disabled by
