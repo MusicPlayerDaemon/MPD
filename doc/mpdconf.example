@@ -1,7 +1,7 @@
 # An example configuration file for MPD
 # See the mpd.conf man page for a more detailed description of each parameter.
 
-# Required files and directories ##############################################
+# Files and directories #######################################################
 #
 # This setting controls the top directory which MPD will search to discover the
 # available audio files and add them to the daemon's online database.
@@ -30,10 +30,6 @@ db_file				"~/.mpd/database"
 # then.
 #
 log_file			"~/.mpd/log"
-###############################################################################
-
-
-# Optional files ##############################################################
 #
 # This setting sets the location of the file which stores the process ID
 # for use of mpd --kill and some init scripts. This setting is disabled by
