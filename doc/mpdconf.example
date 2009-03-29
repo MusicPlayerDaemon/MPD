@@ -258,20 +258,25 @@
 
 # Volume control mixer ########################################################
 #
-# MPD has limited volume controls, to use them pick one below. If one is not
-# specified it may be autodetected at startup, depending on the dependencies
-# which were compiled into the server.
+# These are the global volume control settings. By default, this setting will
+# be detected to the available audio output device, with preference going to 
+# hardware mixing. Hardware and software mixers for individual audio_output
+# sections cannot yet be mixed.
 #
-# An example for controlling an ALSA or OSS mixer:
+# An example for controlling an ALSA, OSS or Pulseaudio mixer; If this
+# setting is used other sound applications will be affected by the volume
+# being controlled by MPD.
 #
 #mixer_type			"hardware"
 #
-# This example is a general volume control mixer, it is used to adjust the 
-# volume of the audio sent to the audio output, and will work with all outputs.
+# An example for controlling all mixers through software. This will control
+# all controls, even if the mixer is not supported by the device and will not
+# affect any other sound producing applications.
 #
 #mixer_type			"software"
 #
-# This example will not allow MPD to touch the mixer at all.
+# This example will not allow MPD to touch the mixer at all and will disable
+# all volume controls.
 #
 #mixer_type			"disabled"
 #
