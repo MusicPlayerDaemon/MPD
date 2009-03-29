@@ -113,6 +113,11 @@ static void client_write_deferred(struct client *client);
 
 static void client_write_output(struct client *client);
 
+static void client_manager_expire(void);
+
+static gboolean
+client_in_event(GIOChannel *source, GIOCondition condition, gpointer data);
+
 bool client_is_expired(const struct client *client)
 {
 	return client->channel == NULL;
@@ -132,9 +137,6 @@ void client_set_permission(struct client *client, unsigned permission)
 {
 	client->permission = permission;
 }
-
-static void
-client_manager_expire(void);
 
 /**
  * An idle event which calls client_manager_expire().
@@ -164,9 +166,6 @@ static inline void client_set_expired(struct client *client)
 		client->channel = NULL;
 	}
 }
-
-static gboolean
-client_in_event(GIOChannel *source, GIOCondition condition, gpointer data);
 
 static void client_init(struct client *client, int fd)
 {
