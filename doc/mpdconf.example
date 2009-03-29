@@ -1,6 +1,7 @@
 # An example configuration file for MPD
 # See the mpd.conf man page for a more detailed description of each parameter.
 
+
 # Files and directories #######################################################
 #
 # This setting controls the top directory which MPD will search to discover the
@@ -103,6 +104,7 @@
 #
 ###############################################################################
 
+
 # Symbolic link behavior ######################################################
 #
 # If this setting is set to "yes", MPD will discover audio files by following 
@@ -116,6 +118,7 @@
 #follow_inside_symlinks		"yes"
 #
 ###############################################################################
+
 
 # Zeroconf / Avahi Service Discovery ##########################################
 #
