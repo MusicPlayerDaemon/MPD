@@ -268,10 +268,3 @@ double getPlayerTotalPlayTime(void)
 {
 	return pc.total_play_time;
 }
-
-/* this actually creates a dupe of the current metadata */
-struct song *
-playerCurrentDecodeSong(void)
-{
-	return NULL;
-}

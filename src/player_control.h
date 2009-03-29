@@ -149,9 +149,6 @@ player_get_audio_format(void)
 	return &pc.audio_format;
 }
 
-struct song *
-playerCurrentDecodeSong(void);
-
 void playerInit(void);
 
 #endif
