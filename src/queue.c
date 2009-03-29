@@ -283,6 +283,7 @@ queue_init(struct queue *queue, unsigned max_length)
 	queue->repeat = false;
 	queue->random = false;
 	queue->single = false;
+	queue->consume = false;
 
 	queue->items = g_new(struct queue_item, max_length);
 	queue->order = g_malloc(sizeof(queue->order[0]) *

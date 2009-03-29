@@ -184,6 +184,11 @@ getPlaylistSingleStatus(const struct playlist *playlist);
 
 void setPlaylistSingleStatus(struct playlist *playlist, bool status);
 
+bool
+getPlaylistConsumeStatus(const struct playlist *playlist);
+
+void setPlaylistConsumeStatus(struct playlist *playlist, bool status);
+
 int getPlaylistCurrentSong(const struct playlist *playlist);
 
 int getPlaylistNextSong(const struct playlist *playlist);

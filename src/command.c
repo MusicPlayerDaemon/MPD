@@ -59,7 +59,8 @@
 #define COMMAND_STATUS_VOLUME           "volume"
 #define COMMAND_STATUS_STATE            "state"
 #define COMMAND_STATUS_REPEAT           "repeat"
-#define COMMAND_STATUS_SINGLE	"single"
+#define COMMAND_STATUS_SINGLE           "single"
+#define COMMAND_STATUS_CONSUME          "consume"
 #define COMMAND_STATUS_RANDOM           "random"
 #define COMMAND_STATUS_PLAYLIST         "playlist"
 #define COMMAND_STATUS_PLAYLIST_LENGTH  "playlistlength"
@@ -471,6 +472,7 @@ handle_status(struct client *client,
 		      COMMAND_STATUS_REPEAT ": %i\n"
 		      COMMAND_STATUS_RANDOM ": %i\n"
 		      COMMAND_STATUS_SINGLE ": %i\n"
+		      COMMAND_STATUS_CONSUME ": %i\n"
 		      COMMAND_STATUS_PLAYLIST ": %li\n"
 		      COMMAND_STATUS_PLAYLIST_LENGTH ": %i\n"
 		      COMMAND_STATUS_CROSSFADE ": %i\n"
@@ -479,6 +481,7 @@ handle_status(struct client *client,
 		      getPlaylistRepeatStatus(&g_playlist),
 		      getPlaylistRandomStatus(&g_playlist),
 		      getPlaylistSingleStatus(&g_playlist),
+		      getPlaylistConsumeStatus(&g_playlist),
 		      getPlaylistVersion(&g_playlist),
 		      getPlaylistLength(&g_playlist),
 		      (int)(getPlayerCrossFade() + 0.5),
@@ -1114,6 +1117,24 @@ handle_single(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 }
 
 static enum command_return
+handle_consume(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
+{
+	int status;
+
+	if (!check_int(client, &status, argv[1], need_integer))
+		return COMMAND_RETURN_ERROR;
+
+	if (status != 0 && status != 1) {
+		command_error(client, ACK_ERROR_ARG,
+			      "\"%i\" is not 0 or 1", status);
+		return COMMAND_RETURN_ERROR;
+	}
+
+	setPlaylistConsumeStatus(&g_playlist, status);
+	return COMMAND_RETURN_OK;
+}
+
+static enum command_return
 handle_random(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 {
 	int status;
@@ -1573,6 +1594,7 @@ static const struct command commands[] = {
 	{ "clearerror", PERMISSION_CONTROL, 0, 0, handle_clearerror },
 	{ "close", PERMISSION_NONE, -1, -1, handle_close },
 	{ "commands", PERMISSION_NONE, 0, 0, handle_commands },
+	{ "consume", PERMISSION_CONTROL, 1, 1, handle_consume },
 	{ "count", PERMISSION_READ, 2, -1, handle_count },
 	{ "crossfade", PERMISSION_CONTROL, 1, 1, handle_crossfade },
 	{ "currentsong", PERMISSION_READ, 0, 0, handle_currentsong },

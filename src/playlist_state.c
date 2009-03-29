@@ -35,6 +35,7 @@
 #define PLAYLIST_STATE_FILE_RANDOM		"random: "
 #define PLAYLIST_STATE_FILE_REPEAT		"repeat: "
 #define PLAYLIST_STATE_FILE_SINGLE		"single: "
+#define PLAYLIST_STATE_FILE_CONSUME		"consume: "
 #define PLAYLIST_STATE_FILE_CURRENT		"current: "
 #define PLAYLIST_STATE_FILE_TIME		"time: "
 #define PLAYLIST_STATE_FILE_CROSSFADE		"crossfade: "
@@ -74,6 +75,8 @@ playlist_state_save(FILE *fp, const struct playlist *playlist)
 		playlist->queue.repeat);
 	fprintf(fp, "%s%i\n", PLAYLIST_STATE_FILE_SINGLE,
 		playlist->queue.single);
+	fprintf(fp, "%s%i\n", PLAYLIST_STATE_FILE_CONSUME,
+		playlist->queue.consume);
 	fprintf(fp, "%s%i\n", PLAYLIST_STATE_FILE_CROSSFADE,
 		(int)(getPlayerCrossFade()));
 	fprintf(fp, "%s\n", PLAYLIST_STATE_FILE_PLAYLIST_BEGIN);
@@ -146,6 +149,13 @@ playlist_state_restore(FILE *fp, struct playlist *playlist)
 				setPlaylistSingleStatus(playlist, true);
 			} else
 				setPlaylistSingleStatus(playlist, false);
+		} else if (g_str_has_prefix(buffer, PLAYLIST_STATE_FILE_CONSUME)) {
+			if (strcmp
+			    (&(buffer[strlen(PLAYLIST_STATE_FILE_CONSUME)]),
+			     "1") == 0) {
+				setPlaylistConsumeStatus(playlist, true);
+			} else
+				setPlaylistConsumeStatus(playlist, false);
 		} else if (g_str_has_prefix(buffer, PLAYLIST_STATE_FILE_CROSSFADE)) {
 			setPlayerCrossFade(atoi
 					   (&

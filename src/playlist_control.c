@@ -139,6 +139,7 @@ void
 nextSongInPlaylist(struct playlist *playlist)
 {
 	int next_order;
+	int current;
 
 	if (!playlist->playing)
 		return;
@@ -146,6 +147,7 @@ nextSongInPlaylist(struct playlist *playlist)
 	assert(!queue_is_empty(&playlist->queue));
 	assert(queue_valid_order(&playlist->queue, playlist->current));
 
+	current = playlist->current;
 	playlist->stop_on_error = false;
 
 	/* determine the next song from the queue's order list */
@@ -156,24 +158,29 @@ nextSongInPlaylist(struct playlist *playlist)
 		playlist->queue.single = false;
 		/* no song after this one: stop playback */
 		stopPlaylist(playlist);
-		return;
+	}
+	else
+	{
+		if (next_order == 0 && playlist->queue.random) {
+			/* The queue told us that the next song is the first
+			   song.  This means we are in repeat mode.  Shuffle
+			   the queue order, so this time, the user hears the
+			   songs in a different than before */
+			assert(playlist->queue.repeat);
+
+			queue_shuffle_order(&playlist->queue);
+
+			/* note that playlist->current and playlist->queued are
+			   now invalid, but playPlaylistOrderNumber() will
+			   discard them anyway */
+		}
+
+		playPlaylistOrderNumber(playlist, next_order);
 	}
 
-	if (next_order == 0 && playlist->queue.random) {
-		/* The queue told us that the next song is the first
-		   song.  This means we are in repeat mode.  Shuffle
-		   the queue order, so this time, the user hears the
-		   songs in a different than before */
-		assert(playlist->queue.repeat);
-
-		queue_shuffle_order(&playlist->queue);
-
-		/* note that playlist->current and playlist->queued are
-		   now invalid, but playPlaylistOrderNumber() will
-		   discard them anyway */
-	}
-
-	playPlaylistOrderNumber(playlist, next_order);
+	/* Consume mode removes each played songs. */
+	if(playlist->queue.consume)
+		deleteFromPlaylist(playlist, queue_order_to_position(&playlist->queue, current));
 }
 
 void previousSongInPlaylist(struct playlist *playlist)

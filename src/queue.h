@@ -84,6 +84,9 @@ struct queue {
 	/** play only current song. */
 	bool single;
 
+	/** remove each played files. */
+	bool consume;
+
 	/** play back songs in random order? */
 	bool random;
 

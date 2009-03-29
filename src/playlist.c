@@ -100,8 +100,12 @@ static void syncPlaylistWithQueue(struct playlist *playlist)
 		/* queued song has started: copy queued to current,
 		   and notify the clients */
 
+		int current = playlist->current;
 		playlist->current = playlist->queued;
 		playlist->queued = -1;
+
+		if(playlist->queue.consume)
+			deleteFromPlaylist(playlist, queue_order_to_position(&playlist->queue, current));
 
 		idle_add(IDLE_PLAYER);
 	}
@@ -267,6 +271,12 @@ getPlaylistSingleStatus(const struct playlist *playlist)
 	return playlist->queue.single;
 }
 
+bool
+getPlaylistConsumeStatus(const struct playlist *playlist)
+{
+	return playlist->queue.consume;
+}
+
 void setPlaylistRepeatStatus(struct playlist *playlist, bool status)
 {
 	if (status == playlist->queue.repeat)
@@ -304,6 +314,15 @@ void setPlaylistSingleStatus(struct playlist *playlist, bool status)
 	playlist_update_queued_song(playlist,
 				    playlist_get_queued_song(playlist));
 
+	idle_add(IDLE_OPTIONS);
+}
+
+void setPlaylistConsumeStatus(struct playlist *playlist, bool status)
+{
+	if (status == playlist->queue.consume)
+		return;
+
+	playlist->queue.consume = status;
 	idle_add(IDLE_OPTIONS);
 }
 

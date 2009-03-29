@@ -223,6 +223,12 @@
                </para>
               </listitem>
               <listitem>
+               <para>
+                <varname>consume</varname>:
+                <returnvalue>0 or 1</returnvalue>
+               </para>
+              </listitem>
+              <listitem>
                 <para>
                   <varname>playlist</varname>:
                   <returnvalue>31-bit unsigned integer, the playlist
@@ -352,6 +358,21 @@
     <section>
       <title>Playback options</title>
 
+        <varlistentry id="command_consume">
+          <term>
+            <cmdsynopsis>
+              <command>consume</command>
+              <arg choice="req"><replaceable>STATE</replaceable></arg>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Sets consume state to <varname>STATE</varname>,
+              <varname>STATE</varname> should be 0 or 1.
+	      When consume is activated, each song played is removed from playlist.
+            </para>
+          </listitem>
+        </varlistentry>
       <variablelist>
         <varlistentry id="command_crossfade">
           <term>
