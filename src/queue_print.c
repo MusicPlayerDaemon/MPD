@@ -24,7 +24,15 @@
 #include "locate.h"
 #include "client.h"
 
-void
+/**
+ * Send detailed information about a range of songs in the queue to a
+ * client.
+ *
+ * @param client the client which has requested information
+ * @param start the index of the first song (including)
+ * @param end the index of the last song (excluding)
+ */
+static void
 queue_print_song_info(struct client *client, const struct queue *queue,
 		      unsigned position)
 {

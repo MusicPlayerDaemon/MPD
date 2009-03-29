@@ -32,18 +32,6 @@ struct queue;
 struct locate_item_list;
 
 void
-queue_print_song_info(struct client *client, const struct queue *queue,
-		      unsigned position);
-
-/**
- * Send detailed information about a range of songs in the queue to a
- * client.
- *
- * @param client the client which has requested information
- * @param start the index of the first song (including)
- * @param end the index of the last song (excluding)
- */
-void
 queue_print_info(struct client *client, const struct queue *queue,
 		 unsigned start, unsigned end);
 
