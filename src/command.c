@@ -1013,7 +1013,14 @@ static enum command_return
 handle_next(G_GNUC_UNUSED struct client *client,
 	    G_GNUC_UNUSED int argc, G_GNUC_UNUSED char *argv[])
 {
+	/* single mode is not considered when this is user who
+	 * wants to change song. */
+	int single = g_playlist.queue.single;
+	g_playlist.queue.single = false;
+
 	nextSongInPlaylist(&g_playlist);
+
+	g_playlist.queue.single = single;
 	return COMMAND_RETURN_OK;
 }
 
