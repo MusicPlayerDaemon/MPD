@@ -169,6 +169,20 @@ dnl ##
 dnl misc libraries
 dnl ##
 
+AC_ARG_ENABLE(cue,
+	AS_HELP_STRING([--enable-cue],
+		[enable support for libcue support]),,
+	enable_cue=auto)
+
+MPD_AUTO_PKG(cue, CUE, [libcue],
+	[libcue parsing library], [libcue not found])
+if test x$enable_cue = xyes; then
+	AC_DEFINE([HAVE_CUE], 1,
+		[Define to enable libcue support])
+fi
+
+AM_CONDITIONAL(HAVE_CUE, test x$enable_cue = xyes)
+
 dnl ##
 dnl Avahi / Zeroconf
 dnl ##
@@ -1389,6 +1403,12 @@ if test x$with_zeroconf != xno; then
 	echo " Zeroconf support ..............$with_zeroconf"
 else
 	echo " Zeroconf support ..............disabled"
+fi
+
+if test x$enable_cue = xyes; then
+        echo " libcue support ................enabled"
+else
+        echo " libcue support ................disabled"
 fi
 
 echo ""
