@@ -324,10 +324,9 @@ flac_cue_tag_load(const char *file)
 		if (cs->data.cue_sheet.tracks != NULL
 				&& (tnum <= cs->data.cue_sheet.num_tracks - 1))
 		{
-			track_time = cs->data.cue_sheet.tracks[tnum].offset - 1
+			track_time = cs->data.cue_sheet.tracks[tnum].offset
 				- cs->data.cue_sheet.tracks[tnum - 1].offset;
 		}
-
 		FLAC__metadata_object_delete(cs);
 	}
 
