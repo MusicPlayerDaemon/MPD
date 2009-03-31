@@ -316,6 +316,7 @@ flac_cue_tag_load(const char *file)
 	if (FLAC__metadata_get_streaminfo(file, si))
 	{
 		sample_rate = si->data.stream_info.sample_rate;
+		FLAC__metadata_object_delete(si);
 	}
 
 	if (FLAC__metadata_get_cuesheet(file, &cs))
