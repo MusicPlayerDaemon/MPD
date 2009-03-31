@@ -778,14 +778,6 @@ flac_filedecode(struct decoder *decoder, const char *fname)
 		flac_container_decode(decoder, fname, false);
 	} else 
 		flac_filedecode_internal(decoder, fname, false);
-
-	/*
-	if (directory->device == CONTAINER)
-	{
-		flac_container_decode(decoder, fname, is_ogg);
-		return;
-	}
-	*/
 }
 
 #endif /* FLAC_API_VERSION_CURRENT >= 7 */
