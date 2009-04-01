@@ -41,6 +41,7 @@ CFLAGS="$CFLAGS -DNDEBUG" \
     --disable-shout-ogg --disable-shout-mp3 --disable-lame \
     --disable-ffmpeg --disable-wavpack --disable-mpc --disable-aac \
     --disable-flac --disable-oggvorbis --disable-oggflac --disable-audiofile \
+    --disable-cue \
     --with-zeroconf=no
 $MAKE install
 $MAKE distclean
