@@ -960,6 +960,14 @@ if test x$enable_lame = xyes; then
 			AC_MSG_WARN(You need lame -- disabling lame support)])
 fi
 
+if test x$enable_oggvorbis_encoder != xno || test x$enable_lame != xno; then
+	# at least one encoder plugin is enabled
+	enable_encoder=yes
+else
+	# no encoder plugin is enabled: disable the whole encoder API
+	enable_encoder=no
+fi
+
 AM_CONDITIONAL(HAVE_SHOUT, test x$enable_shout = xyes)
 
 AM_CONDITIONAL(ENABLE_HTTPD_OUTPUT, test x$enable_httpd_output = xyes)
@@ -967,7 +975,7 @@ if test x$enable_httpd_output = xyes; then
 	AC_DEFINE(ENABLE_HTTPD_OUTPUT, 1, [Define to enable the HTTP server output])
 fi
 
-AM_CONDITIONAL(ENABLE_ENCODER, test x$enable_shout = xyes || test x$enable_httpd_output = xyes)
+AM_CONDITIONAL(ENABLE_ENCODER, test x$enable_encoder = xyes)
 
 AM_CONDITIONAL(ENABLE_VORBIS_ENCODER, test x$enable_oggvorbis_encoder = xyes)
 if test x$enable_oggvorbis_encoder = xyes; then
@@ -1212,9 +1220,7 @@ if
 		fi
 		echo ""
 
-	if
-		test x$enable_oggvorbis_encoder = xno &&
-		test x$enable_lame = xno; then
+	if test x$enable_encoder = xno; then
 		AC_MSG_ERROR([Cannot enable a streaming output without an encoder.])
 	fi
 fi
