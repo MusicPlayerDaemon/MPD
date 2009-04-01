@@ -387,12 +387,6 @@ dnl ###
 dnl MAD mp3 decoder
 dnl ###
 
-dnl Depreciated option, available for backwards compatibility
-dnl Also, will not work without the enableval
-AC_ARG_ENABLE(mp3,,
-	enable_mad=$enableval,
-	enable_mad=yes)
-
 AC_ARG_ENABLE(mad,
 	AS_HELP_STRING([--enable-mad],
 		[enable libmad mp3 decoder plugin]),,
