@@ -939,6 +939,20 @@ dnl
 dnl Encoder API and shout/httpd output plugin
 dnl
 
+if test x$enable_shout = xyes || test x$enable_httpd_output = xyes; then
+	# at least one output using encoders is explicitly enabled
+	need_encoder=yes
+elif test x$enable_shout = xauto || test x$enable_httpd_output = xauto; then
+	need_encoder=auto
+else
+	# all outputs using encoders are disabled
+	need_encoder=no
+
+	# don't bother to check for encoder plugins
+	enable_oggvorbis_encoder=no
+	enable_lame=no
+fi
+
 if test x$enable_oggvorbis_encoder = xyes; then
 	if test x$enable_oggvorbis = xno; then
 		AC_MSG_WARN([disabling ogg shout streaming support because vorbis is not enabled])
@@ -967,7 +981,12 @@ if test x$enable_oggvorbis_encoder != xno || test x$enable_lame != xno; then
 else
 	# no encoder plugin is enabled: disable the whole encoder API
 	enable_encoder=no
+
+	if test x$need_encoder = xyes; then
+		AC_MSG_ERROR([No encoder plugin found])
+	fi
 fi
+
 
 if test x$enable_shout = xauto; then
 	# handle shout auto-detection: disable if no encoder is
@@ -1242,10 +1261,6 @@ if
 			echo " Ogg Vorbis encoder ............disabled"
 		fi
 		echo ""
-
-	if test x$enable_encoder = xno; then
-		AC_MSG_ERROR([Cannot enable a streaming output without an encoder.])
-	fi
 fi
 
 echo " File Format Support:"
