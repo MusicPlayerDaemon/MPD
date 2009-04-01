@@ -515,6 +515,11 @@ dnl
 dnl encoder plugins
 dnl
 
+AC_ARG_ENABLE(oggvorbis-encoder,
+	AS_HELP_STRING([--disable-oggvorbis-encoder],
+		[disable support for ogg streaming (default: enable)]),,
+	[enable_oggvorbis_encoder=yes])
+
 AC_ARG_ENABLE(lame,
 	AS_HELP_STRING([--disable-lame],
 		[disable support for mp3 streaming (default: enable)]),,
@@ -606,20 +611,10 @@ fi
 
 AM_CONDITIONAL(HAVE_PULSE, test x$enable_pulse = xyes)
 
-AC_ARG_ENABLE(oggvorbis-encoder,
-	AS_HELP_STRING([--disable-oggvorbis-encoder],
-		[disable support for ogg streaming (default: enable)]),,
-	[enable_oggvorbis_encoder=yes])
-
 AC_ARG_ENABLE(httpd-output,
 	AS_HELP_STRING([--enable-httpd-output],
 		[enables the HTTP server output (default: disable)]),,
 	[enable_httpd_output=no])
-
-AM_CONDITIONAL(ENABLE_HTTPD_OUTPUT, test x$enable_httpd_output = xyes)
-if test x$enable_httpd_output = xyes; then
-	AC_DEFINE(ENABLE_HTTPD_OUTPUT, 1, [Define to enable the HTTP server output])
-fi
 
 enable_osx=no
 case "$host_os" in
@@ -654,42 +649,6 @@ case "$host_os" in
 esac
 
 AM_CONDITIONAL(ENABLE_SOLARIS_OUTPUT, test x$enable_solaris_output = xyes)
-
-if test x$enable_oggvorbis_encoder = xyes; then
-	if test x$enable_oggvorbis = xno; then
-		AC_MSG_WARN([disabling ogg shout streaming support because vorbis is not enabled])
-		enable_oggvorbis_encoder=no
-	fi
-	if test x$use_tremor = xyes; then
-		AC_MSG_WARN([disabling ogg shout streaming support because tremor does not support vorbis encoding])
-		enable_oggvorbis_encoder=no
-	fi
-	if test x$enable_oggvorbis_encoder = xyes; then
-		PKG_CHECK_MODULES(VORBISENC, [vorbisenc],,
-			enable_oggvorbis_encoder=no)
-	fi
-fi
-
-if test x$enable_lame = xyes; then
-	AM_PATH_LAME([MPD_LIBS="$MPD_LIBS $LAME_LIBS"
-		MPD_CFLAGS="$MPD_CFLAGS $LAME_CFLAGS"],
-		[enable_lame=no;
-			AC_MSG_WARN(You need lame -- disabling lame support)])
-fi
-
-AM_CONDITIONAL(HAVE_SHOUT, test x$enable_shout = xyes)
-
-AM_CONDITIONAL(ENABLE_ENCODER, test x$enable_shout = xyes || test x$enable_httpd_output = xyes)
-AM_CONDITIONAL(ENABLE_VORBIS_ENCODER, test x$enable_oggvorbis_encoder = xyes)
-if test x$enable_oggvorbis_encoder = xyes; then
-	AC_DEFINE(ENABLE_VORBIS_ENCODER, 1,
-		[Define to enable the vorbis encoder plugin])
-fi
-AM_CONDITIONAL(ENABLE_LAME_ENCODER, test x$enable_lame = xyes)
-if test x$enable_lame = xyes; then
-	AC_DEFINE(ENABLE_LAME_ENCODER, 1,
-		[Define to enable the lame encoder plugin])
-fi
 
 if test x$enable_oss = xyes; then
 	AC_CHECK_HEADER(sys/soundcard.h,
@@ -973,6 +932,54 @@ if test x$enable_wildmidi = xyes; then
 fi
 
 AM_CONDITIONAL(ENABLE_WILDMIDI, test x$enable_wildmidi = xyes)
+
+
+dnl
+dnl Encoder API and shout/httpd output plugin
+dnl
+
+if test x$enable_oggvorbis_encoder = xyes; then
+	if test x$enable_oggvorbis = xno; then
+		AC_MSG_WARN([disabling ogg shout streaming support because vorbis is not enabled])
+		enable_oggvorbis_encoder=no
+	fi
+	if test x$use_tremor = xyes; then
+		AC_MSG_WARN([disabling ogg shout streaming support because tremor does not support vorbis encoding])
+		enable_oggvorbis_encoder=no
+	fi
+	if test x$enable_oggvorbis_encoder = xyes; then
+		PKG_CHECK_MODULES(VORBISENC, [vorbisenc],,
+			enable_oggvorbis_encoder=no)
+	fi
+fi
+
+if test x$enable_lame = xyes; then
+	AM_PATH_LAME([MPD_LIBS="$MPD_LIBS $LAME_LIBS"
+		MPD_CFLAGS="$MPD_CFLAGS $LAME_CFLAGS"],
+		[enable_lame=no;
+			AC_MSG_WARN(You need lame -- disabling lame support)])
+fi
+
+AM_CONDITIONAL(HAVE_SHOUT, test x$enable_shout = xyes)
+
+AM_CONDITIONAL(ENABLE_HTTPD_OUTPUT, test x$enable_httpd_output = xyes)
+if test x$enable_httpd_output = xyes; then
+	AC_DEFINE(ENABLE_HTTPD_OUTPUT, 1, [Define to enable the HTTP server output])
+fi
+
+AM_CONDITIONAL(ENABLE_ENCODER, test x$enable_shout = xyes || test x$enable_httpd_output = xyes)
+
+AM_CONDITIONAL(ENABLE_VORBIS_ENCODER, test x$enable_oggvorbis_encoder = xyes)
+if test x$enable_oggvorbis_encoder = xyes; then
+	AC_DEFINE(ENABLE_VORBIS_ENCODER, 1,
+		[Define to enable the vorbis encoder plugin])
+fi
+
+AM_CONDITIONAL(ENABLE_LAME_ENCODER, test x$enable_lame = xyes)
+if test x$enable_lame = xyes; then
+	AC_DEFINE(ENABLE_LAME_ENCODER, 1,
+		[Define to enable the lame encoder plugin])
+fi
 
 
 dnl
