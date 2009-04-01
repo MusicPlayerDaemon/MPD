@@ -114,6 +114,36 @@ directory_lookup_directory(struct directory *directory, const char *uri)
 	return found;
 }
 
+struct song *
+directory_lookup_song(struct directory *directory, const char *uri)
+{
+	char *duplicated, *base;
+	struct song *song;
+
+	assert(directory != NULL);
+	assert(uri != NULL);
+
+	duplicated = g_strdup(uri);
+	base = strrchr(duplicated, '/');
+
+	if (base != NULL) {
+		*base++ = 0;
+		directory = directory_lookup_directory(directory, duplicated);
+		if (directory == NULL) {
+			g_free(duplicated);
+			return NULL;
+		}
+	} else
+		base = duplicated;
+
+	song = songvec_find(&directory->songs, base);
+	assert(song == NULL || song->parent == directory);
+
+	g_free(duplicated);
+	return song;
+
+}
+
 void
 directory_sort(struct directory *directory)
 {

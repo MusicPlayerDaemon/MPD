@@ -108,6 +108,16 @@ directory_prune_empty(struct directory *directory);
 struct directory *
 directory_lookup_directory(struct directory *directory, const char *uri);
 
+/**
+ * Looks up a song by its relative URI.
+ *
+ * @param directory the parent (or grandparent, ...) directory
+ * @param uri the relative URI
+ * @return the song, or NULL if none was found
+ */
+struct song *
+directory_lookup_song(struct directory *directory, const char *uri);
+
 void
 directory_sort(struct directory *directory);
 

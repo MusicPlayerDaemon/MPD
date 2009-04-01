@@ -110,10 +110,6 @@ db_get_directory(const char *name)
 struct song *
 db_get_song(const char *file)
 {
-	struct song *song;
-	struct directory *directory;
-	char *duplicated, *shortname, *dir;
-
 	assert(file != NULL);
 
 	g_debug("get song: %s", file);
@@ -121,27 +117,7 @@ db_get_song(const char *file)
 	if (music_root == NULL)
 		return NULL;
 
-	duplicated = g_strdup(file);
-	shortname = strrchr(duplicated, '/');
-	if (!shortname) {
-		shortname = duplicated;
-		dir = NULL;
-	} else {
-		*shortname = '\0';
-		++shortname;
-		dir = duplicated;
-	}
-
-	directory = db_get_directory(dir);
-	if (directory != NULL)
-		song = songvec_find(&directory->songs, shortname);
-	else
-		song = NULL;
-
-	assert(song == NULL || song->parent == directory);
-
-	g_free(duplicated);
-	return song;
+	return directory_lookup_song(music_root, file);
 }
 
 int
