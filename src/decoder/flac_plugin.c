@@ -27,6 +27,10 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+#ifdef HAVE_CUE /* libcue */
+#include "../cue/cue_tag.h"
+#endif
+
 /* this code was based on flac123, from flac-tools */
 
 static flac_read_status
@@ -290,20 +294,44 @@ flac_cue_tag_load(const char *file)
 {
 	struct tag* tag = NULL;
 	char* char_tnum = NULL;
-	char* slash = NULL;
+	char* ptr = NULL;
+	unsigned int i = 0;
 	unsigned int tnum = 0;
 	unsigned int sample_rate = 0;
 	FLAC__uint64 track_time = 0;
+#ifdef HAVE_CUE /* libcue */
+	FLAC__StreamMetadata* vc = FLAC__metadata_object_new(FLAC__METADATA_TYPE_VORBIS_COMMENT);
+#endif /* libcue */
 	FLAC__StreamMetadata* si = FLAC__metadata_object_new(FLAC__METADATA_TYPE_STREAMINFO);
 	FLAC__StreamMetadata* cs = FLAC__metadata_object_new(FLAC__METADATA_TYPE_CUESHEET);
 
 	tnum = flac_vtrack_tnum(file);
 	char_tnum = g_strdup_printf("%u", tnum);
 
-	slash = strrchr(file, '/');
-	*slash = '\0';
+	ptr = strrchr(file, '/');
+	*ptr = '\0';
 
-	tag = flac_tag_load(file, char_tnum);
+#ifdef HAVE_CUE /* libcue */
+	if (FLAC__metadata_get_tags(file, &vc))
+	{
+		for (i = 0; i < vc->data.vorbis_comment.num_comments; i++)
+		{
+			if ((ptr = (char*)vc->data.vorbis_comment.comments[i].entry) != NULL)
+			{
+				if (g_ascii_strncasecmp(ptr, "cuesheet", 8) == 0)
+				{
+					while (*(++ptr) != '=');
+					tag = cue_tag_string(   ++ptr,
+								tnum);
+				}
+			}
+		}
+		FLAC__metadata_object_delete(vc);
+	}
+#endif /* libcue */
+
+	if (tag == NULL)
+		tag = flac_tag_load(file, char_tnum);
 
 	if (char_tnum != NULL)
 	{
@@ -316,6 +344,7 @@ flac_cue_tag_load(const char *file)
 	if (FLAC__metadata_get_streaminfo(file, si))
 	{
 		sample_rate = si->data.stream_info.sample_rate;
+		FLAC__metadata_object_delete(si);
 	}
 
 	if (FLAC__metadata_get_cuesheet(file, &cs))
@@ -323,10 +352,9 @@ flac_cue_tag_load(const char *file)
 		if (cs->data.cue_sheet.tracks != NULL
 				&& (tnum <= cs->data.cue_sheet.num_tracks - 1))
 		{
-			track_time = cs->data.cue_sheet.tracks[tnum].offset - 1
+			track_time = cs->data.cue_sheet.tracks[tnum].offset
 				- cs->data.cue_sheet.tracks[tnum - 1].offset;
 		}
-
 		FLAC__metadata_object_delete(cs);
 	}
 
@@ -778,14 +806,6 @@ flac_filedecode(struct decoder *decoder, const char *fname)
 		flac_container_decode(decoder, fname, false);
 	} else 
 		flac_filedecode_internal(decoder, fname, false);
-
-	/*
-	if (directory->device == CONTAINER)
-	{
-		flac_container_decode(decoder, fname, is_ogg);
-		return;
-	}
-	*/
 }
 
 #endif /* FLAC_API_VERSION_CURRENT >= 7 */

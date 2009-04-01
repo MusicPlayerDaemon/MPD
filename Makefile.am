@@ -152,7 +152,8 @@ mpd_headers = \
 	src/archive_api.h \
 	src/archive_internal.h \
 	src/archive_list.h \
-	src/input/archive_input_plugin.h
+	src/input/archive_input_plugin.h \
+	src/cue/cue_tag.h
 
 src_mpd_SOURCES = \
 	$(mpd_headers) \
@@ -295,7 +296,8 @@ DECODER_CFLAGS = \
 	$(FLUIDSYNTH_CFLAGS) \
 	$(WILDMIDI_CFLAGS) \
 	$(MAD_CFLAGS) \
-	$(FFMPEG_CFLAGS)
+	$(FFMPEG_CFLAGS) \
+	$(CUE_CFLAGS)
 
 DECODER_LIBS = \
 	$(OGGVORBIS_LIBS) $(FLAC_LIBS) \
@@ -306,7 +308,8 @@ DECODER_LIBS = \
 	$(WILDMIDI_LIBS) \
 	$(MAD_LIBS) \
 	$(MP4FF_LIBS) \
-	$(FFMPEG_LIBS)
+	$(FFMPEG_LIBS) \
+	$(CUE_LIBS)
 
 DECODER_SRC = \
 	src/decoder_buffer.c \
@@ -415,6 +418,9 @@ src_mpd_SOURCES += src/zeroconf-bonjour.c
 endif
 endif
 
+if HAVE_CUE
+DECODER_SRC += src/cue/cue_tag.c
+endif
 
 #
 # input plugins
