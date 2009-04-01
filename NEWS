@@ -39,7 +39,9 @@ ver 0.15 (200?/??/??)
   - added "consume" command which removes a song after play
   - added "single" command, if activated, stops playback after current song or
      repeats the song if "repeat" is active.
-* Rewritten mixer code to support multiple mixers
+* mixers:
+  - rewritten mixer code to support multiple mixers
+  - new pulseaudio mixer
 * Add audio archive extraction support:
   - bzip2
   - iso9660
