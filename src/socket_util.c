@@ -71,7 +71,7 @@ sockaddr_to_string(const struct sockaddr *sa, size_t length, GError **error)
 			  NI_NUMERICHOST|NI_NUMERICSERV);
 	if (ret != 0) {
 		g_set_error(error, g_quark_from_static_string("netdb"), ret,
-			    gai_strerror(ret));
+			    "%s", gai_strerror(ret));
 		return NULL;
 	}
 
