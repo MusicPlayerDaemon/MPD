@@ -516,9 +516,9 @@ dnl encoder plugins
 dnl
 
 AC_ARG_ENABLE(oggvorbis-encoder,
-	AS_HELP_STRING([--disable-oggvorbis-encoder],
-		[disable support for ogg streaming (default: enable)]),,
-	[enable_oggvorbis_encoder=yes])
+	AS_HELP_STRING([--enable-oggvorbis-encoder],
+		[enable support for ogg streaming]),,
+	[enable_oggvorbis_encoder=auto])
 
 AC_ARG_ENABLE(lame,
 	AS_HELP_STRING([--disable-lame],
@@ -953,20 +953,8 @@ else
 	enable_lame=no
 fi
 
-if test x$enable_oggvorbis_encoder = xyes; then
-	if test x$enable_oggvorbis = xno; then
-		AC_MSG_WARN([disabling ogg shout streaming support because vorbis is not enabled])
-		enable_oggvorbis_encoder=no
-	fi
-	if test x$use_tremor = xyes; then
-		AC_MSG_WARN([disabling ogg shout streaming support because tremor does not support vorbis encoding])
-		enable_oggvorbis_encoder=no
-	fi
-	if test x$enable_oggvorbis_encoder = xyes; then
-		PKG_CHECK_MODULES(VORBISENC, [vorbisenc],,
-			enable_oggvorbis_encoder=no)
-	fi
-fi
+MPD_AUTO_PKG(oggvorbis_encoder, VORBISENC, [vorbisenc],
+	[Ogg Vorbis encoder], [libvorbisenc not found])
 
 if test x$enable_lame = xyes; then
 	AM_PATH_LAME([MPD_LIBS="$MPD_LIBS $LAME_LIBS"
