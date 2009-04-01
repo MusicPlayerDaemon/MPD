@@ -98,8 +98,15 @@ directory_new_child(struct directory *directory, const char *name)
 void
 directory_prune_empty(struct directory *directory);
 
+/**
+ * Looks up a directory by its relative URI.
+ *
+ * @param directory the parent (or grandparent, ...) directory
+ * @param uri the relative URI
+ * @return the directory, or NULL if none was found
+ */
 struct directory *
-directory_get_directory(struct directory *directory, const char *name);
+directory_lookup_directory(struct directory *directory, const char *uri);
 
 void
 directory_sort(struct directory *directory);

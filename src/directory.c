@@ -82,19 +82,19 @@ directory_prune_empty(struct directory *directory)
 }
 
 struct directory *
-directory_get_directory(struct directory *directory, const char *name)
+directory_lookup_directory(struct directory *directory, const char *uri)
 {
 	struct directory *cur = directory;
 	struct directory *found = NULL;
 	char *duplicated;
 	char *locate;
 
-	assert(name != NULL);
+	assert(uri != NULL);
 
-	if (isRootDirectory(name))
+	if (isRootDirectory(uri))
 		return directory;
 
-	duplicated = g_strdup(name);
+	duplicated = g_strdup(uri);
 	locate = strchr(duplicated, '/');
 	while (1) {
 		if (locate)
