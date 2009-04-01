@@ -19,11 +19,13 @@
 
 #include "song_sticker.h"
 #include "song.h"
+#include "directory.h"
 #include "sticker.h"
 
 #include <glib.h>
 
 #include <assert.h>
+#include <string.h>
 
 char *
 sticker_song_get_value(const struct song *song, const char *name)
@@ -87,4 +89,62 @@ sticker_song_get(const struct song *song)
 	g_free(uri);
 
 	return sticker;
+}
+
+struct sticker_song_find_data {
+	struct directory *directory;
+	const char *base_uri;
+	size_t base_uri_length;
+
+	void (*func)(struct song *song, const char *value,
+		     gpointer user_data);
+	gpointer user_data;
+};
+
+static void
+sticker_song_find_cb(const char *uri, const char *value, gpointer user_data)
+{
+	struct sticker_song_find_data *data = user_data;
+	struct song *song;
+
+	if (memcmp(uri, data->base_uri, data->base_uri_length) != 0)
+		/* should not happen, ignore silently */
+		return;
+
+	song = directory_lookup_song(data->directory,
+				     uri + data->base_uri_length);
+	if (song != NULL)
+		data->func(song, value, data->user_data);
+}
+
+bool
+sticker_song_find(struct directory *directory, const char *name,
+		  void (*func)(struct song *song, const char *value,
+			       gpointer user_data),
+		  gpointer user_data)
+{
+	struct sticker_song_find_data data = {
+		.directory = directory,
+		.func = func,
+		.user_data = user_data,
+	};
+	char *allocated;
+	bool success;
+
+	data.base_uri = directory_get_path(directory);
+	if (*data.base_uri != 0)
+		/* append slash to base_uri */
+		data.base_uri = allocated =
+			g_strconcat(data.base_uri, "/", NULL);
+	else
+		/* searching in root directory - no trailing slash */
+		allocated = NULL;
+
+	data.base_uri_length = strlen(data.base_uri);
+
+	success = sticker_find("song", data.base_uri, name,
+			       sticker_song_find_cb, &data);
+	g_free(allocated);
+
+	return success;
 }

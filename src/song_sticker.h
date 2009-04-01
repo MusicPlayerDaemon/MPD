@@ -24,6 +24,7 @@
 #include <glib.h>
 
 struct song;
+struct directory;
 struct sticker;
 
 /**
@@ -55,5 +56,20 @@ sticker_song_delete(const struct song *song);
  */
 struct sticker *
 sticker_song_get(const struct song *song);
+
+/**
+ * Finds stickers with the specified name below the specified
+ * directory.
+ *
+ * @param directory the base directory to search in
+ * @param name the name of the sticker
+ * @return true on success (even if no sticker was found), false on
+ * failure
+ */
+bool
+sticker_song_find(struct directory *directory, const char *name,
+		  void (*func)(struct song *song, const char *value,
+			       gpointer user_data),
+		  gpointer user_data);
 
 #endif
