@@ -8,6 +8,8 @@
 PREFIX=/tmp/mpd
 rm -rf $PREFIX
 
+test "x$MAKE" != x || MAKE=make
+
 export CFLAGS="-Os"
 
 test -x configure || NOCONFIGURE=1 ./autogen.sh
@@ -17,16 +19,16 @@ test -x configure || NOCONFIGURE=1 ./autogen.sh
     --disable-dependency-tracking --enable-debug --enable-werror \
     --enable-un \
     --enable-ao --enable-mod --enable-mvp
-make -j2 install
-make distclean
+$MAKE install
+$MAKE distclean
 
 # no UN, no oggvorbis, no flac, enable oggflac
 ./configure --prefix=$PREFIX/small \
     --disable-dependency-tracking --enable-debug --enable-werror \
     --disable-un \
     --disable-flac --disable-oggvorbis --enable-oggflac
-make -j2 install
-make distclean
+$MAKE install
+$MAKE distclean
 
 # strip down (disable TCP, disable nearly all plugins)
 CFLAGS="$CFLAGS -DNDEBUG" \
@@ -40,8 +42,8 @@ CFLAGS="$CFLAGS -DNDEBUG" \
     --disable-ffmpeg --disable-wavpack --disable-mpc --disable-aac \
     --disable-flac --disable-oggvorbis --disable-oggflac --disable-audiofile \
     --with-zeroconf=no
-make -j2 install
-make distclean
+$MAKE install
+$MAKE distclean
 
 # shout: ogg without mp3
 ./configure --prefix=$PREFIX/shout_ogg \
@@ -54,8 +56,8 @@ make distclean
     --disable-ffmpeg --disable-wavpack --disable-mpc --disable-aac \
     --disable-flac --enable-oggvorbis --disable-oggflac --disable-audiofile \
     --with-zeroconf=no
-make -j2 install
-make distclean
+$MAKE install
+$MAKE distclean
 
 # shout: mp3 without ogg
 ./configure --prefix=$PREFIX/shout_mp3 \
@@ -68,8 +70,8 @@ make distclean
     --disable-ffmpeg --disable-wavpack --disable-mpc --disable-aac \
     --disable-flac --disable-oggvorbis --disable-oggflac --disable-audiofile \
     --with-zeroconf=no
-make -j2 install
-make distclean
+$MAKE install
+$MAKE distclean
 
 # oggvorbis + oggflac
 ./configure --prefix=$PREFIX/oggvorbisflac \
@@ -83,5 +85,5 @@ make distclean
     --disable-ffmpeg --disable-wavpack --disable-mpc --disable-aac \
     --disable-flac --enable-oggvorbis --enable-oggflac --disable-audiofile \
     --with-zeroconf=no
-make -j2 install
-make distclean
+$MAKE install
+$MAKE distclean
