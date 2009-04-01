@@ -957,11 +957,13 @@ MPD_AUTO_PKG(oggvorbis_encoder, VORBISENC, [vorbisenc],
 	[Ogg Vorbis encoder], [libvorbisenc not found])
 
 if test x$enable_lame = xyes; then
-	AM_PATH_LAME([MPD_LIBS="$MPD_LIBS $LAME_LIBS"
-		MPD_CFLAGS="$MPD_CFLAGS $LAME_CFLAGS"],
+	AM_PATH_LAME(,
 		[enable_lame=no;
 			AC_MSG_WARN(You need lame -- disabling lame support)])
 fi
+
+AC_SUBST(LAME_CFLAGS)
+AC_SUBST(LAME_LIBS)
 
 if test x$enable_oggvorbis_encoder != xno || test x$enable_lame != xno; then
 	# at least one encoder plugin is enabled

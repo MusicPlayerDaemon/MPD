@@ -390,9 +390,11 @@ endif
 # encoder plugins
 
 ENCODER_CFLAGS = \
+	$(LAME_CFLAGS) \
 	$(VORBISENC_CFLAGS)
 
 ENCODER_LIBS = \
+	$(LAME_LIBS) \
 	$(VORBISENC_LIBS)
 
 ENCODER_SRC =
