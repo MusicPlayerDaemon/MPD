@@ -1510,16 +1510,16 @@ handle_idle(struct client *client,
 static enum command_return
 handle_sticker_song(struct client *client, int argc, char *argv[])
 {
-	struct song *song = db_get_song(argv[3]);
-
-	if (song == NULL) {
-		command_error(client, ACK_ERROR_NO_EXIST,
-			      "no such song");
-		return COMMAND_RETURN_ERROR;
-	}
-
 	if (argc == 5 && strcmp(argv[1], "get") == 0) {
+		struct song *song;
 		char *value;
+
+		song = db_get_song(argv[3]);
+		if (song == NULL) {
+			command_error(client, ACK_ERROR_NO_EXIST,
+				      "no such song");
+			return COMMAND_RETURN_ERROR;
+		}
 
 		value = sticker_song_get_value(song, argv[4]);
 		if (value == NULL) {
@@ -1533,7 +1533,17 @@ handle_sticker_song(struct client *client, int argc, char *argv[])
 
 		return COMMAND_RETURN_OK;
 	} else if (argc == 4 && strcmp(argv[1], "list") == 0) {
-		struct sticker *sticker = sticker_song_get(song);
+		struct song *song;
+		struct sticker *sticker;
+
+		song = db_get_song(argv[3]);
+		if (song == NULL) {
+			command_error(client, ACK_ERROR_NO_EXIST,
+				      "no such song");
+			return COMMAND_RETURN_ERROR;
+		}
+
+		sticker = sticker_song_get(song);
 		if (NULL == sticker) {
 			command_error(client, ACK_ERROR_NO_EXIST,
 				      "no stickers found");
@@ -1545,7 +1555,15 @@ handle_sticker_song(struct client *client, int argc, char *argv[])
 
 		return COMMAND_RETURN_OK;
 	} else if (argc == 6 && strcmp(argv[1], "set") == 0) {
+		struct song *song;
 		bool ret;
+
+		song = db_get_song(argv[3]);
+		if (song == NULL) {
+			command_error(client, ACK_ERROR_NO_EXIST,
+				      "no such song");
+			return COMMAND_RETURN_ERROR;
+		}
 
 		ret = sticker_song_set_value(song, argv[4], argv[5]);
 		if (!ret) {
