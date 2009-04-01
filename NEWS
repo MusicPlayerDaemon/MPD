@@ -35,14 +35,17 @@ ver 0.15 (200?/??/??)
 * commands:
   - "playlistinfo" supports a range now
   - added "sticker database", command "sticker", which allows clients
-    to implement features like "song rating"
+     to implement features like "song rating"
+  - added "consume" command which removes a song after play
+  - added "single" command, if activated, stops playback after current song or
+     repeats the song if "repeat" is active.
 * Rewritten mixer code to support multiple mixers
 * Add audio archive extraction support:
   - bzip2
   - iso9660
   - zip
 * the option "error_file" was removed, all messages are logged into
-  "log_file"
+   "log_file"
 * support logging to syslog
 * fall back to XDG music directory if no music_directory is configured
 * failure to read the state file is non-fatal
