@@ -8,7 +8,9 @@ ver 0.15 (200?/??/??)
   - support the "album artist" tag
   - support MusicBrainz tags
   - parse RVA2 tags in mp3 files
-  - parse ID3 tags in RIFF/WAV files
+  - parse ID3 tags in AIFF/RIFF/WAV files
+  - ffmpeg: support new metadata API
+  - ffmpeg: added support for the tags comment, genre, year
 * decoders:
   - audiofile: streaming support added
   - audiofile: added 24 bit support
@@ -20,6 +22,8 @@ ver 0.15 (200?/??/??)
   - flac: parse stream tags
   - mpcdec: support the new libmpcdec SV8 API
   - added configuration option to disable decoder plugins
+  - flac: support embedded cuesheets
+  - ffmpeg: updated list of supported formats
 * audio outputs:
   - added option to disable audio outputs by default
   - wait 10 seconds before reopening after play failure
@@ -32,6 +36,8 @@ ver 0.15 (200?/??/??)
   - pipe: new audio output plugin which runs a command
   - alsa: better period_time default value for high sample rates
   - solaris: new audio output plugin for Solaris /dev/audio
+  - httpd: new audio output plugin for web based streaming, similar to icecast
+     but built in.
 * commands:
   - "playlistinfo" and "move" supports a range now
   - added "sticker database", command "sticker", which allows clients
@@ -57,10 +63,13 @@ ver 0.15 (200?/??/??)
 * playlist: don't unpause on delete
 * daemon: ignore "user" setting if already running as that user
 * listen: fix broken client IP addresses in log
-* 32 bit audio support
-* Print available protocols in --version
+* 24/32 bit audio support
+* print available protocols in --version
 * fill buffer after seeking
 * choose the fallback resampler at runtime
+* steps taken towards win32 compatibility
+* require glib 2.6 or greater
+* built-in documentation using doxygen and docbook
 
 
 ver 0.14.2 (2009/02/13)
