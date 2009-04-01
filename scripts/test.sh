@@ -26,7 +26,7 @@ $MAKE distclean
 ./configure --prefix=$PREFIX/small \
     --disable-dependency-tracking --enable-debug --enable-werror \
     --disable-un \
-    --disable-flac --disable-oggvorbis --enable-oggflac
+    --disable-flac --disable-vorbis --enable-oggflac
 $MAKE install
 $MAKE distclean
 
@@ -40,7 +40,7 @@ CFLAGS="$CFLAGS -DNDEBUG" \
     --disable-ao --disable-alsa --disable-jack --disable-pulse --disable-fifo \
     --disable-shout-ogg --disable-shout-mp3 --disable-lame-encoder \
     --disable-ffmpeg --disable-wavpack --disable-mpc --disable-aac \
-    --disable-flac --disable-oggvorbis --disable-oggflac --disable-audiofile \
+    --disable-flac --disable-vorbis --disable-oggflac --disable-audiofile \
     --disable-cue \
     --with-zeroconf=no
 $MAKE install
@@ -55,7 +55,7 @@ $MAKE distclean
     --disable-ao --disable-alsa --disable-jack --disable-pulse --disable-fifo \
     --enable-shout-ogg --disable-shout-mp3 --disable-lame-encoder \
     --disable-ffmpeg --disable-wavpack --disable-mpc --disable-aac \
-    --disable-flac --enable-oggvorbis --disable-oggflac --disable-audiofile \
+    --disable-flac --enable-vorbis --disable-oggflac --disable-audiofile \
     --with-zeroconf=no
 $MAKE install
 $MAKE distclean
@@ -69,7 +69,7 @@ $MAKE distclean
     --disable-ao --disable-alsa --disable-jack --disable-pulse --disable-fifo \
     --disable-shout-ogg --enable-shout-mp3 --enable-lame-encoder \
     --disable-ffmpeg --disable-wavpack --disable-mpc --disable-aac \
-    --disable-flac --disable-oggvorbis --disable-oggflac --disable-audiofile \
+    --disable-flac --disable-vorbis --disable-oggflac --disable-audiofile \
     --with-zeroconf=no
 $MAKE install
 $MAKE distclean
@@ -84,7 +84,7 @@ $MAKE distclean
     --disable-ao --disable-alsa --disable-jack --disable-pulse --disable-fifo \
     --disable-shout-ogg --disable-shout-mp3 --disable-lame-encoder \
     --disable-ffmpeg --disable-wavpack --disable-mpc --disable-aac \
-    --disable-flac --enable-oggvorbis --enable-oggflac --disable-audiofile \
+    --disable-flac --enable-vorbis --enable-oggflac --disable-audiofile \
     --with-zeroconf=no
 $MAKE install
 $MAKE distclean

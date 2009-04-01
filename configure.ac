@@ -440,10 +440,10 @@ AC_ARG_ENABLE(oggflac,
 		[disable OggFLAC support (default: enable)]),,
 	enable_oggflac=yes)
 
-AC_ARG_ENABLE(oggvorbis,
-	AS_HELP_STRING([--disable-oggvorbis],
+AC_ARG_ENABLE(vorbis,
+	AS_HELP_STRING([--disable-vorbis],
 		[disable Ogg Vorbis support (default: enable)]),,
-	enable_oggvorbis=yes)
+	enable_vorbis=yes)
 
 dnl ###
 dnl Ogg Tremor
@@ -780,20 +780,20 @@ if test x$use_tremor = xyes; then
 	ac_save_LIBS="$LIBS"
 	CFLAGS="$CFLAGS $TREMOR_CFLAGS"
 	LIBS="$LIBS $TREMOR_LIBS"
-	AC_CHECK_LIB(vorbisidec,ov_read,enable_oggvorbis=yes,enable_oggvorbis=no;
+	AC_CHECK_LIB(vorbisidec,ov_read,enable_vorbis=yes,enable_vorbis=no;
 		AC_MSG_WARN([vorbisidec lib needed for ogg support with tremor -- disabling ogg support]))
 	CFLAGS="$ac_save_CFLAGS"
 	LIBS="$ac_save_LIBS"
-	if test x$enable_oggvorbis = xyes; then
-		AC_DEFINE(HAVE_OGGVORBIS, 1, [Define for Ogg Vorbis support])
+	if test x$enable_vorbis = xyes; then
+		AC_DEFINE(ENABLE_VORBIS_DECODER, 1, [Define for Ogg Vorbis support])
 	fi
-elif test x$enable_oggvorbis = xyes; then
-	PKG_CHECK_MODULES(OGGVORBIS, [ogg vorbis vorbisfile],
-		AC_DEFINE(HAVE_OGGVORBIS, 1, [Define for Ogg Vorbis support]),
-		enable_oggvorbis=no)
+elif test x$enable_vorbis = xyes; then
+	PKG_CHECK_MODULES(VORBIS, [ogg vorbis vorbisfile],
+		AC_DEFINE(ENABLE_VORBIS_DECODER, 1, [Define for Ogg Vorbis support]),
+		enable_vorbis=no)
 fi
 
-AM_CONDITIONAL(HAVE_OGGVORBIS, test x$enable_oggvorbis = xyes)
+AM_CONDITIONAL(ENABLE_VORBIS_DECODER, test x$enable_vorbis = xyes)
 
 if test x$use_tremor = xyes; then
 	AC_DEFINE(HAVE_TREMOR,1,
@@ -844,7 +844,7 @@ AM_CONDITIONAL(HAVE_OGGFLAC, test x$enable_oggflac = xyes)
 AM_CONDITIONAL(HAVE_FLAC_COMMON,
 	  test x$enable_flac = xyes || test x$enable_oggflac = xyes)
 AM_CONDITIONAL(HAVE_OGG_COMMON,
-	  test x$enable_oggvorbis = xyes || test x$enable_oggflac = xyes || test x$enable_flac = xyes)
+	  test x$enable_vorbis = xyes || test x$enable_oggflac = xyes || test x$enable_flac = xyes)
 
 if test x$enable_audiofile = xyes; then
 	PKG_CHECK_MODULES(AUDIOFILE, [audiofile >= 0.1.7],
@@ -1330,7 +1330,7 @@ flac)
 	;;
 esac
 
-if test x$enable_oggvorbis = xyes; then
+if test x$enable_vorbis = xyes; then
 	echo " Ogg Vorbis support ............enabled"
 	if test x$use_tremor = xyes; then
 		echo "   using tremor.................yes"
@@ -1363,7 +1363,7 @@ fi
 
 if
 	test x$enable_mad = xno &&
-	test x$enable_oggvorbis = xno &&
+	test x$enable_vorbis = xno &&
 	test x$enable_flac = xno && 
 	test x$enable_oggflac = xno &&
 	test x$enable_audiofile = xno && 

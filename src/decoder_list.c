@@ -47,7 +47,7 @@ static const struct decoder_plugin *const decoder_plugins[] = {
 #ifdef HAVE_MAD
 	&mad_decoder_plugin,
 #endif
-#ifdef HAVE_OGGVORBIS
+#ifdef ENABLE_VORBIS_DECODER
 	&vorbis_decoder_plugin,
 #endif
 #if defined(HAVE_FLAC) || defined(HAVE_OGGFLAC)

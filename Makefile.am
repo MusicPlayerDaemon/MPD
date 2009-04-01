@@ -291,7 +291,7 @@ endif
 # decoder plugins
 
 DECODER_CFLAGS = \
-	$(OGGVORBIS_CFLAGS) $(TREMOR_CFLAGS) \
+	$(VORBIS_CFLAGS) $(TREMOR_CFLAGS) \
 	$(patsubst -I%/FLAC,-I%,$(FLAC_CFLAGS)) \
 	$(AUDIOFILE_CFLAGS) \
 	$(LIBMIKMOD_CFLAGS) \
@@ -304,7 +304,7 @@ DECODER_CFLAGS = \
 	$(CUE_CFLAGS)
 
 DECODER_LIBS = \
-	$(OGGVORBIS_LIBS) $(TREMOR_LIBS) \
+	$(VORBIS_LIBS) $(TREMOR_LIBS) \
 	$(FLAC_LIBS) \
 	$(AUDIOFILE_LIBS) $(LIBMIKMOD_LIBS) \
 	$(MODPLUG_LIBS) \
@@ -348,7 +348,7 @@ if HAVE_FLAC_COMMON
 DECODER_SRC += src/decoder/_flac_common.c
 endif
 
-if HAVE_OGGVORBIS
+if ENABLE_VORBIS_DECODER
 DECODER_SRC += src/decoder/vorbis_plugin.c
 endif
 
