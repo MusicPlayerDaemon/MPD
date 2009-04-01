@@ -515,10 +515,10 @@ dnl
 dnl encoder plugins
 dnl
 
-AC_ARG_ENABLE(oggvorbis-encoder,
-	AS_HELP_STRING([--enable-oggvorbis-encoder],
-		[enable support for ogg streaming]),,
-	[enable_oggvorbis_encoder=auto])
+AC_ARG_ENABLE(vorbis-encoder,
+	AS_HELP_STRING([--enable-vorbis-encoder],
+		[enable the Ogg Vorbis encoder]),,
+	[enable_vorbis_encoder=auto])
 
 AC_ARG_ENABLE(lame-encoder,
 	AS_HELP_STRING([--enable-lame-encoder],
@@ -949,11 +949,11 @@ else
 	need_encoder=no
 
 	# don't bother to check for encoder plugins
-	enable_oggvorbis_encoder=no
+	enable_vorbis_encoder=no
 	enable_lame_encoder=no
 fi
 
-MPD_AUTO_PKG(oggvorbis_encoder, VORBISENC, [vorbisenc],
+MPD_AUTO_PKG(vorbis_encoder, VORBISENC, [vorbisenc],
 	[Ogg Vorbis encoder], [libvorbisenc not found])
 
 if test x$enable_lame_encoder != xno; then
@@ -965,7 +965,7 @@ fi
 AC_SUBST(LAME_CFLAGS)
 AC_SUBST(LAME_LIBS)
 
-if test x$enable_oggvorbis_encoder != xno ||
+if test x$enable_vorbis_encoder != xno ||
 	test x$enable_lame_encoder != xno; then
 	# at least one encoder plugin is enabled
 	enable_encoder=yes
@@ -1010,8 +1010,8 @@ fi
 
 AM_CONDITIONAL(ENABLE_ENCODER, test x$enable_encoder = xyes)
 
-AM_CONDITIONAL(ENABLE_VORBIS_ENCODER, test x$enable_oggvorbis_encoder = xyes)
-if test x$enable_oggvorbis_encoder = xyes; then
+AM_CONDITIONAL(ENABLE_VORBIS_ENCODER, test x$enable_vorbis_encoder = xyes)
+if test x$enable_vorbis_encoder = xyes; then
 	AC_DEFINE(ENABLE_VORBIS_ENCODER, 1,
 		[Define to enable the vorbis encoder plugin])
 fi
@@ -1246,7 +1246,7 @@ if
 			echo " LAME mp3 encoder ..............disabled"
 		fi
 
-		if test x$enable_oggvorbis_encoder = xyes; then
+		if test x$enable_vorbis_encoder = xyes; then
 			echo " Ogg Vorbis encoder ............enabled"
 		else
 			echo " Ogg Vorbis encoder ............disabled"
