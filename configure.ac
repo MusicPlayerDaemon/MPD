@@ -418,6 +418,19 @@ AC_ARG_ENABLE(mikmod,
 		[enable the mikmod decoder (default: disable)]),,
 	enable_mod=no)
 
+if test x$enable_mikmod = xyes; then
+	AC_PATH_PROG(LIBMIKMOD_CONFIG, libmikmod-config)
+	if test x$LIBMIKMOD_CONFIG != x ; then
+		AC_SUBST(LIBMIKMOD_CFLAGS, `$LIBMIKMOD_CONFIG --cflags`)
+		AC_SUBST(LIBMIKMOD_LIBS, `$LIBMIKMOD_CONFIG --libs`)
+		AC_DEFINE(ENABLE_MIKMOD_DECODER, 1, [Define for mikmod support])
+	else
+		enable_mikmod=no
+	fi
+fi
+
+AM_CONDITIONAL(ENABLE_MIKMOD_DECODER, test x$enable_mikmod = xyes)
+
 AC_ARG_ENABLE(modplug,
 	AS_HELP_STRING([--enable-modplug],
 		[enable modplug decoder plugin]),,
@@ -853,19 +866,6 @@ if test x$enable_audiofile = xyes; then
 fi
 
 AM_CONDITIONAL(HAVE_AUDIOFILE, test x$enable_audiofile = xyes)
-
-if test x$enable_mikmod = xyes; then
-	AC_PATH_PROG(LIBMIKMOD_CONFIG, libmikmod-config)
-	if test x$LIBMIKMOD_CONFIG != x ; then
-		AC_SUBST(LIBMIKMOD_CFLAGS, `$LIBMIKMOD_CONFIG --cflags`)
-		AC_SUBST(LIBMIKMOD_LIBS, `$LIBMIKMOD_CONFIG --libs`)
-		AC_DEFINE(ENABLE_MIKMOD_DECODER, 1, [Define for mikmod support])
-	else
-		enable_mikmod=no
-	fi
-fi
-
-AM_CONDITIONAL(ENABLE_MIKMOD_DECODER, test x$enable_mikmod = xyes)
 
 if test x$enable_ffmpeg = xyes; then
 	PKG_CHECK_MODULES(FFMPEG, [libavformat libavcodec libavutil],,
