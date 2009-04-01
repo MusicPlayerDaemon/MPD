@@ -38,7 +38,7 @@ CFLAGS="$CFLAGS -DNDEBUG" \
     --disable-curl \
     --disable-id3 --disable-lsr \
     --disable-ao --disable-alsa --disable-jack --disable-pulse --disable-fifo \
-    --disable-shout-ogg --disable-shout-mp3 --disable-lame \
+    --disable-shout-ogg --disable-shout-mp3 --disable-lame-encoder \
     --disable-ffmpeg --disable-wavpack --disable-mpc --disable-aac \
     --disable-flac --disable-oggvorbis --disable-oggflac --disable-audiofile \
     --disable-cue \
@@ -53,7 +53,7 @@ $MAKE distclean
     --disable-curl \
     --disable-id3 --disable-lsr \
     --disable-ao --disable-alsa --disable-jack --disable-pulse --disable-fifo \
-    --enable-shout-ogg --disable-shout-mp3 --disable-lame \
+    --enable-shout-ogg --disable-shout-mp3 --disable-lame-encoder \
     --disable-ffmpeg --disable-wavpack --disable-mpc --disable-aac \
     --disable-flac --enable-oggvorbis --disable-oggflac --disable-audiofile \
     --with-zeroconf=no
@@ -67,7 +67,7 @@ $MAKE distclean
     --disable-curl \
     --disable-id3 --disable-lsr \
     --disable-ao --disable-alsa --disable-jack --disable-pulse --disable-fifo \
-    --disable-shout-ogg --enable-shout-mp3 --enable-lame \
+    --disable-shout-ogg --enable-shout-mp3 --enable-lame-encoder \
     --disable-ffmpeg --disable-wavpack --disable-mpc --disable-aac \
     --disable-flac --disable-oggvorbis --disable-oggflac --disable-audiofile \
     --with-zeroconf=no
@@ -82,7 +82,7 @@ $MAKE distclean
     --disable-id3 --disable-lsr \
     --disable-mp3 \
     --disable-ao --disable-alsa --disable-jack --disable-pulse --disable-fifo \
-    --disable-shout-ogg --disable-shout-mp3 --disable-lame \
+    --disable-shout-ogg --disable-shout-mp3 --disable-lame-encoder \
     --disable-ffmpeg --disable-wavpack --disable-mpc --disable-aac \
     --disable-flac --enable-oggvorbis --enable-oggflac --disable-audiofile \
     --with-zeroconf=no

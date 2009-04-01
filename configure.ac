@@ -520,10 +520,10 @@ AC_ARG_ENABLE(oggvorbis-encoder,
 		[enable support for ogg streaming]),,
 	[enable_oggvorbis_encoder=auto])
 
-AC_ARG_ENABLE(lame,
-	AS_HELP_STRING([--enable-lame],
-		[disable support for mp3 streaming]),,
-	enable_lame=auto)
+AC_ARG_ENABLE(lame-encoder,
+	AS_HELP_STRING([--enable-lame-encoder],
+		[enable the LAME mp3 encoder]),,
+	enable_lame_encoder=auto)
 
 
 dnl
@@ -950,22 +950,23 @@ else
 
 	# don't bother to check for encoder plugins
 	enable_oggvorbis_encoder=no
-	enable_lame=no
+	enable_lame_encoder=no
 fi
 
 MPD_AUTO_PKG(oggvorbis_encoder, VORBISENC, [vorbisenc],
 	[Ogg Vorbis encoder], [libvorbisenc not found])
 
-if test x$enable_lame != xno; then
-	AM_PATH_LAME([found_lame=yes], [found_lame=no])
-	MPD_AUTO_RESULT(lame, [LAME encoder plugin],
+if test x$enable_lame_encoder != xno; then
+	AM_PATH_LAME([found_lame_encoder=yes], [found_lame_encoder=no])
+	MPD_AUTO_RESULT(lame_encoder, [LAME encoder plugin],
 		[LAME not found])
 fi
 
 AC_SUBST(LAME_CFLAGS)
 AC_SUBST(LAME_LIBS)
 
-if test x$enable_oggvorbis_encoder != xno || test x$enable_lame != xno; then
+if test x$enable_oggvorbis_encoder != xno ||
+	test x$enable_lame_encoder != xno; then
 	# at least one encoder plugin is enabled
 	enable_encoder=yes
 else
@@ -1015,8 +1016,8 @@ if test x$enable_oggvorbis_encoder = xyes; then
 		[Define to enable the vorbis encoder plugin])
 fi
 
-AM_CONDITIONAL(ENABLE_LAME_ENCODER, test x$enable_lame = xyes)
-if test x$enable_lame = xyes; then
+AM_CONDITIONAL(ENABLE_LAME_ENCODER, test x$enable_lame_encoder = xyes)
+if test x$enable_lame_encoder = xyes; then
 	AC_DEFINE(ENABLE_LAME_ENCODER, 1,
 		[Define to enable the lame encoder plugin])
 fi
@@ -1239,7 +1240,7 @@ if
 	test x$enable_shout = xyes ||
 	test x$enable_httpd_output = xyes; then
 		echo " Streaming Encoder Support:"
-		if test x$enable_lame = xyes; then
+		if test x$enable_lame_encoder = xyes; then
 			echo " LAME mp3 encoder ..............enabled"
 		else
 			echo " LAME mp3 encoder ..............disabled"
