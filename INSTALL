@@ -120,6 +120,9 @@ For playing HTTP streams.
 libmms - https://launchpad.net/libmms
 For playing MMS streams.
 
+SQLite - http://www.sqlite.org/
+For the sticker database.
+
 
 pkg-config
 ----------
