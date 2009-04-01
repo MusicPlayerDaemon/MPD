@@ -613,8 +613,8 @@ AM_CONDITIONAL(HAVE_PULSE, test x$enable_pulse = xyes)
 
 AC_ARG_ENABLE(httpd-output,
 	AS_HELP_STRING([--enable-httpd-output],
-		[enables the HTTP server output (default: disable)]),,
-	[enable_httpd_output=no])
+		[enables the HTTP server output]),,
+	[enable_httpd_output=auto])
 
 enable_osx=no
 case "$host_os" in
@@ -977,6 +977,17 @@ if test x$enable_shout = xauto; then
 	else
 		AC_MSG_WARN([No encoder plugin -- disabling the shout output plugin])
 		enable_shout=no
+	fi
+fi
+
+if test x$enable_httpd_output = xauto; then
+	# handle HTTPD auto-detection: disable if no encoder is
+	# available
+	if test x$enable_encoder = xyes; then
+		enable_httpd_output=yes
+	else
+		AC_MSG_WARN([No encoder plugin -- disabling the HTTP output plugin])
+		enable_httpd_output=no
 	fi
 fi
 
