@@ -33,7 +33,7 @@ ver 0.15 (200?/??/??)
   - alsa: better period_time default value for high sample rates
   - solaris: new audio output plugin for Solaris /dev/audio
 * commands:
-  - "playlistinfo" supports a range now
+  - "playlistinfo" and "move" supports a range now
   - added "sticker database", command "sticker", which allows clients
      to implement features like "song rating"
   - added "consume" command which removes a song after play
