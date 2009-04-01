@@ -295,7 +295,6 @@ flac_cue_tag_load(const char *file)
 	struct tag* tag = NULL;
 	char* char_tnum = NULL;
 	char* ptr = NULL;
-	unsigned int i = 0;
 	unsigned int tnum = 0;
 	unsigned int sample_rate = 0;
 	FLAC__uint64 track_time = 0;
@@ -314,7 +313,8 @@ flac_cue_tag_load(const char *file)
 #ifdef HAVE_CUE /* libcue */
 	if (FLAC__metadata_get_tags(file, &vc))
 	{
-		for (i = 0; i < vc->data.vorbis_comment.num_comments; i++)
+		for (unsigned i = 0; i < vc->data.vorbis_comment.num_comments;
+		     i++)
 		{
 			if ((ptr = (char*)vc->data.vorbis_comment.comments[i].entry) != NULL)
 			{
