@@ -50,6 +50,7 @@
 #include "sticker.h"
 #include "sticker_print.h"
 #include "song_sticker.h"
+#include "song_print.h"
 #endif
 
 #include <assert.h>
@@ -1507,6 +1508,21 @@ handle_idle(struct client *client,
 }
 
 #ifdef ENABLE_SQLITE
+struct sticker_song_find_data {
+	struct client *client;
+	const char *name;
+};
+
+static void
+sticker_song_find_print_cb(struct song *song, const char *value,
+			   gpointer user_data)
+{
+	struct sticker_song_find_data *data = user_data;
+
+	song_print_url(data->client, song);
+	sticker_print_value(data->client, data->name, value);
+}
+
 static enum command_return
 handle_sticker_song(struct client *client, int argc, char *argv[])
 {
@@ -1569,6 +1585,31 @@ handle_sticker_song(struct client *client, int argc, char *argv[])
 		if (!ret) {
 			command_error(client, ACK_ERROR_SYSTEM,
 				      "failed to set sticker value");
+			return COMMAND_RETURN_ERROR;
+		}
+
+		return COMMAND_RETURN_OK;
+	} else if (argc == 5 && strcmp(argv[1], "find") == 0) {
+		/* "sticker find song a/directory name" */
+		struct directory *directory;
+		bool success;
+		struct sticker_song_find_data data = {
+			.client = client,
+			.name = argv[4],
+		};
+
+		directory = db_get_directory(argv[3]);
+		if (directory == NULL) {
+			command_error(client, ACK_ERROR_NO_EXIST,
+				      "no such directory");
+			return COMMAND_RETURN_ERROR;
+		}
+
+		success = sticker_song_find(directory, data.name,
+					    sticker_song_find_print_cb, &data);
+		if (!success) {
+			command_error(client, ACK_ERROR_SYSTEM,
+				      "failed to set search sticker database");
 			return COMMAND_RETURN_ERROR;
 		}
 

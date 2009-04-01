@@ -1288,6 +1288,25 @@ OK
             </para>
           </listitem>
         </varlistentry>
+        <varlistentry id="command_sticker_find">
+          <term>
+            <cmdsynopsis>
+              <command>sticker</command>
+              <arg choice="plain">find</arg>
+              <arg choice="req"><replaceable>TYPE</replaceable></arg>
+              <arg choice="req"><replaceable>URI</replaceable></arg>
+              <arg choice="req"><replaceable>NAME</replaceable></arg>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Searches the sticker database for stickers with the
+              specified name, below the specified directory (URI).
+              For each matching song, it prints the URI and that one
+              sticker's value.
+            </para>
+          </listitem>
+        </varlistentry>
       </variablelist>
     </section>
 
