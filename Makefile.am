@@ -134,6 +134,7 @@ mpd_headers = \
 	src/state_file.h \
 	src/stats.h \
 	src/sticker.h \
+	src/sticker_print.h \
 	src/tag.h \
 	src/tag_internal.h \
 	src/tag_pool.h \
@@ -243,7 +244,10 @@ src_mpd_SOURCES = \
 	src/timer.c
 
 if ENABLE_SQLITE
-src_mpd_SOURCES += src/sticker.c src/song_sticker.c
+src_mpd_SOURCES += \
+	src/sticker.c \
+	src/sticker_print.c \
+	src/song_sticker.c
 endif
 
 FILTER_CFLAGS = \

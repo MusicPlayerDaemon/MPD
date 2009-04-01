@@ -48,6 +48,7 @@
 
 #ifdef ENABLE_SQLITE
 #include "sticker.h"
+#include "sticker_print.h"
 #include "song_sticker.h"
 #endif
 
@@ -1506,14 +1507,6 @@ handle_idle(struct client *client,
 }
 
 #ifdef ENABLE_SQLITE
-static void
-print_sticker(const char *name, const char *value, gpointer data)
-{
-	struct client *client = data;
-
-	client_printf(client, "sticker: %s=%s\n", name, value);
-}
-
 static enum command_return
 handle_sticker_song(struct client *client, int argc, char *argv[])
 {
@@ -1535,7 +1528,7 @@ handle_sticker_song(struct client *client, int argc, char *argv[])
 			return COMMAND_RETURN_ERROR;
 		}
 
-		client_printf(client, "sticker: %s=%s\n", argv[4], value);
+		sticker_print_value(client, argv[4], value);
 		g_free(value);
 
 		return COMMAND_RETURN_OK;
@@ -1547,7 +1540,7 @@ handle_sticker_song(struct client *client, int argc, char *argv[])
 			return COMMAND_RETURN_ERROR;
 		}
 
-		sticker_foreach(sticker, print_sticker, client);
+		sticker_print(client, sticker);
 		sticker_free(sticker);
 
 		return COMMAND_RETURN_OK;
