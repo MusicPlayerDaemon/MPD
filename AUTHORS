@@ -25,6 +25,18 @@ Rasmus Steinke <rasi1979@googlemail.com>
 Romain Bignon <romain@peerfuse.org>
 	playlist manipulation
 
+David Guibert <david.guibert@gmail.com>
+	PulseAudio mixer
+
+Jochen Keil <jochen.keil@gmail.com>
+	CUE sheet support
+
+Jeffrey Middleton <jefromi@gmail.com>
+	playlist manipulation
+
+Sean McNamara <smcnam@gmail.com>
+	WIN32 compatibility
+
 
 Former Developers
 -----------------
