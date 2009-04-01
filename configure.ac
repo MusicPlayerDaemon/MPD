@@ -259,7 +259,7 @@ dnl
 
 AC_ARG_ENABLE(curl,
 	AS_HELP_STRING([--enable-curl],
-		[enable support for libcurl HTTP streaming (default: auti)]),,
+		[enable support for libcurl HTTP streaming (default: auto)]),,
 	[enable_curl=auto])
 
 MPD_AUTO_PKG(curl, CURL, [libcurl],
