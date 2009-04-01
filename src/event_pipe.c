@@ -149,5 +149,5 @@ void event_pipe_emit_fast(enum pipe_event event)
 	assert((unsigned)event < PIPE_EVENT_MAX);
 
 	pipe_events[event] = true;
-	write(event_pipe[1], "", 1);
+	(void)write(event_pipe[1], "", 1);
 }

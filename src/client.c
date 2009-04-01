@@ -205,7 +205,7 @@ static void client_init(struct client *client, int fd)
 
 	client->permission = getDefaultPermissions();
 
-	write(fd, GREETING, sizeof(GREETING) - 1);
+	(void)write(fd, GREETING, sizeof(GREETING) - 1);
 }
 
 static void free_cmd_list(GSList *list)
