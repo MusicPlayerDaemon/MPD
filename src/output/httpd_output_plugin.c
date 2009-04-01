@@ -309,7 +309,7 @@ httpd_output_encode_and_play(struct httpd_output *httpd,
 		return false;
 
 	g_mutex_lock(httpd->mutex);
-	g_list_foreach(httpd->clients, httpd_client_check_queue, page);
+	g_list_foreach(httpd->clients, httpd_client_check_queue, NULL);
 	g_mutex_unlock(httpd->mutex);
 
 	while ((page = httpd_output_read_page(httpd)) != NULL) {
