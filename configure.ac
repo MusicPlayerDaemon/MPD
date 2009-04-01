@@ -782,11 +782,10 @@ if test x$use_tremor = xyes; then
 	LIBS="$LIBS $TREMOR_LIBS"
 	AC_CHECK_LIB(vorbisidec,ov_read,enable_oggvorbis=yes,enable_oggvorbis=no;
 		AC_MSG_WARN([vorbisidec lib needed for ogg support with tremor -- disabling ogg support]))
+	CFLAGS="$ac_save_CFLAGS"
+	LIBS="$ac_save_LIBS"
 	if test x$enable_oggvorbis = xyes; then
-		AC_DEFINE(HAVE_OGGVORBIS, 1, [Define for Ogg Vorbis support]),
-	else
-		CFLAGS="$ac_save_CFLAGS"
-		LIBS="$ac_save_LIBS"
+		AC_DEFINE(HAVE_OGGVORBIS, 1, [Define for Ogg Vorbis support])
 	fi
 elif test x$enable_oggvorbis = xyes; then
 	PKG_CHECK_MODULES(OGGVORBIS, [ogg vorbis vorbisfile],
@@ -804,6 +803,9 @@ if test x$use_tremor = xyes; then
 		enable_oggflac=no
 	fi
 fi
+
+AC_SUBST(TREMOR_CFLAGS)
+AC_SUBST(TREMOR_LIBS)
 
 if test x$enable_flac = xyes; then
 	PKG_CHECK_MODULES(FLAC, [flac >= 1.1],
