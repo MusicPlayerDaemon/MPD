@@ -628,13 +628,14 @@ AM_CONDITIONAL(HAVE_OSX, test x$enable_osx = xyes)
 
 AC_ARG_ENABLE(shout,
 	AS_HELP_STRING([--enable-shout],
-		[enables the shoutcast streaming output (default: disable)]),,
-	[enable_shout=no])
+		[enables the shoutcast streaming output]),,
+	[enable_shout=auto])
 
-if test x$enable_shout = xyes; then
-	PKG_CHECK_MODULES([SHOUT], [shout],
-		AC_DEFINE(HAVE_SHOUT, 1, [Define to enable libshout support]),
-		enable_shout=no)
+enable_shout2="$enable_shout"
+MPD_AUTO_PKG(shout, SHOUT, [shout],
+	[shout output plugin], [libshout not found])
+if test x$enable_shout = xyes && test x$enable_shout2 = xauto; then
+	enable_shout=auto
 fi
 
 case "$host_os" in
@@ -966,6 +967,17 @@ if test x$enable_oggvorbis_encoder != xno || test x$enable_lame != xno; then
 else
 	# no encoder plugin is enabled: disable the whole encoder API
 	enable_encoder=no
+fi
+
+if test x$enable_shout = xauto; then
+	# handle shout auto-detection: disable if no encoder is
+	# available
+	if test x$enable_encoder = xyes; then
+		enable_shout=yes
+	else
+		AC_MSG_WARN([No encoder plugin -- disabling the shout output plugin])
+		enable_shout=no
+	fi
 fi
 
 AM_CONDITIONAL(HAVE_SHOUT, test x$enable_shout = xyes)
