@@ -104,7 +104,7 @@ sticker_free(struct sticker *sticker);
  * @return the sticker value, or NULL if none was found
  */
 const char *
-sticker_get_value(struct sticker *sticker, const char *name);
+sticker_get_value(const struct sticker *sticker, const char *name);
 
 /**
  * Iterates over all sticker items in a sticker.
@@ -114,7 +114,7 @@ sticker_get_value(struct sticker *sticker, const char *name);
  * @param user_data an opaque pointer for the callback function
  */
 void
-sticker_foreach(struct sticker *sticker,
+sticker_foreach(const struct sticker *sticker,
 		void (*func)(const char *name, const char *value,
 			     gpointer user_data),
 		gpointer user_data);

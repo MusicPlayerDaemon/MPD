@@ -457,7 +457,7 @@ sticker_free(struct sticker *sticker)
 }
 
 const char *
-sticker_get_value(struct sticker *sticker, const char *name)
+sticker_get_value(const struct sticker *sticker, const char *name)
 {
 	return g_hash_table_lookup(sticker->table, name);
 }
@@ -477,7 +477,7 @@ sticker_foreach_func(gpointer key, gpointer value, gpointer user_data)
 }
 
 void
-sticker_foreach(struct sticker *sticker,
+sticker_foreach(const struct sticker *sticker,
 		void (*func)(const char *name, const char *value,
 			     gpointer user_data),
 		gpointer user_data)
