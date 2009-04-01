@@ -129,4 +129,20 @@ sticker_foreach(const struct sticker *sticker,
 struct sticker *
 sticker_load(const char *type, const char *uri);
 
+/**
+ * Finds stickers with the specified name below the specified URI.
+ *
+ * @param type the resource type, e.g. "song"
+ * @param base_uri the URI prefix of the resources, or NULL if all
+ * resources should be searched
+ * @param name the name of the sticker
+ * @return true on success (even if no sticker was found), false on
+ * failure
+ */
+bool
+sticker_find(const char *type, const char *base_uri, const char *name,
+	     void (*func)(const char *uri, const char *value,
+			  gpointer user_data),
+	     gpointer user_data);
+
 #endif

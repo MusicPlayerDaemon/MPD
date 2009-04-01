@@ -37,6 +37,7 @@ enum sticker_sql {
 	STICKER_SQL_UPDATE,
 	STICKER_SQL_INSERT,
 	STICKER_SQL_DELETE,
+	STICKER_SQL_FIND,
 };
 
 static const char *const sticker_sql[] = {
@@ -50,6 +51,8 @@ static const char *const sticker_sql[] = {
 	"INSERT INTO sticker(type,uri,name,value) VALUES(?, ?, ?, ?)",
 	[STICKER_SQL_DELETE] =
 	"DELETE FROM sticker WHERE type=? AND uri=?",
+	[STICKER_SQL_FIND] =
+	"SELECT uri,value FROM sticker WHERE type=? AND uri LIKE (? || '%') AND name=?",
 };
 
 static const char sticker_sql_create[] =
@@ -507,4 +510,70 @@ sticker_load(const char *type, const char *uri)
 	}
 
 	return sticker;
+}
+
+bool
+sticker_find(const char *type, const char *base_uri, const char *name,
+	     void (*func)(const char *uri, const char *value,
+			  gpointer user_data),
+	     gpointer user_data)
+{
+	sqlite3_stmt *const stmt = sticker_stmt[STICKER_SQL_FIND];
+	int ret;
+
+	assert(type != NULL);
+	assert(name != NULL);
+	assert(func != NULL);
+	assert(sticker_enabled());
+
+	sqlite3_reset(stmt);
+
+	ret = sqlite3_bind_text(stmt, 1, type, -1, NULL);
+	if (ret != SQLITE_OK) {
+		g_warning("sqlite3_bind_text() failed: %s",
+			  sqlite3_errmsg(sticker_db));
+		return false;
+	}
+
+	if (base_uri == NULL)
+		base_uri = "";
+
+	ret = sqlite3_bind_text(stmt, 2, base_uri, -1, NULL);
+	if (ret != SQLITE_OK) {
+		g_warning("sqlite3_bind_text() failed: %s",
+			  sqlite3_errmsg(sticker_db));
+		return false;
+	}
+
+	ret = sqlite3_bind_text(stmt, 3, name, -1, NULL);
+	if (ret != SQLITE_OK) {
+		g_warning("sqlite3_bind_text() failed: %s",
+			  sqlite3_errmsg(sticker_db));
+		return false;
+	}
+
+	do {
+		ret = sqlite3_step(stmt);
+		switch (ret) {
+		case SQLITE_ROW:
+			func((const char*)sqlite3_column_text(stmt, 0),
+			     (const char*)sqlite3_column_text(stmt, 1),
+			     user_data);
+			break;
+		case SQLITE_DONE:
+			break;
+		case SQLITE_BUSY:
+			/* no op */
+			break;
+		default:
+			g_warning("sqlite3_step() failed: %s",
+				  sqlite3_errmsg(sticker_db));
+			return false;
+		}
+	} while (ret != SQLITE_DONE);
+
+	sqlite3_reset(stmt);
+	sqlite3_clear_bindings(stmt);
+
+	return true;
 }
