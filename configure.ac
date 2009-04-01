@@ -521,9 +521,9 @@ AC_ARG_ENABLE(oggvorbis-encoder,
 	[enable_oggvorbis_encoder=auto])
 
 AC_ARG_ENABLE(lame,
-	AS_HELP_STRING([--disable-lame],
-		[disable support for mp3 streaming (default: enable)]),,
-	enable_lame=yes)
+	AS_HELP_STRING([--enable-lame],
+		[disable support for mp3 streaming]),,
+	enable_lame=auto)
 
 
 dnl
@@ -956,10 +956,10 @@ fi
 MPD_AUTO_PKG(oggvorbis_encoder, VORBISENC, [vorbisenc],
 	[Ogg Vorbis encoder], [libvorbisenc not found])
 
-if test x$enable_lame = xyes; then
-	AM_PATH_LAME(,
-		[enable_lame=no;
-			AC_MSG_WARN(You need lame -- disabling lame support)])
+if test x$enable_lame != xno; then
+	AM_PATH_LAME([found_lame=yes], [found_lame=no])
+	MPD_AUTO_RESULT(lame, [LAME encoder plugin],
+		[LAME not found])
 fi
 
 AC_SUBST(LAME_CFLAGS)
