@@ -413,9 +413,9 @@ if test x$enable_mad = xyes; then
 fi
 AM_CONDITIONAL(HAVE_MAD, test x$enable_mad = xyes)
 
-AC_ARG_ENABLE(mod,
-	AS_HELP_STRING([--enable-mod],
-		[enable MOD support (default: disable)]),,
+AC_ARG_ENABLE(mikmod,
+	AS_HELP_STRING([--enable-mikmod],
+		[enable the mikmod decoder (default: disable)]),,
 	enable_mod=no)
 
 AC_ARG_ENABLE(modplug,
@@ -854,18 +854,18 @@ fi
 
 AM_CONDITIONAL(HAVE_AUDIOFILE, test x$enable_audiofile = xyes)
 
-if test x$enable_mod = xyes; then
+if test x$enable_mikmod = xyes; then
 	AC_PATH_PROG(LIBMIKMOD_CONFIG, libmikmod-config)
 	if test x$LIBMIKMOD_CONFIG != x ; then
 		AC_SUBST(LIBMIKMOD_CFLAGS, `$LIBMIKMOD_CONFIG --cflags`)
 		AC_SUBST(LIBMIKMOD_LIBS, `$LIBMIKMOD_CONFIG --libs`)
-		AC_DEFINE(HAVE_MIKMOD, 1, [Define for mikmod support])
+		AC_DEFINE(ENABLE_MIKMOD_DECODER, 1, [Define for mikmod support])
 	else
-		enable_mod=no
+		enable_mikmod=no
 	fi
 fi
 
-AM_CONDITIONAL(HAVE_MIKMOD, test x$enable_mod = xyes)
+AM_CONDITIONAL(ENABLE_MIKMOD_DECODER, test x$enable_mikmod = xyes)
 
 if test x$enable_ffmpeg = xyes; then
 	PKG_CHECK_MODULES(FFMPEG, [libavformat libavcodec libavutil],,
@@ -1288,10 +1288,10 @@ else
 	echo " fluidsynth MIDI support .......disabled"
 fi
 
-if test x$enable_mod = xyes; then
-	echo " MOD support ...................enabled"
+if test x$enable_mikmod = xyes; then
+	echo " MikMod support ................enabled"
 else
-	echo " MOD support ...................disabled"
+	echo " MikMod support ................disabled"
 fi
 
 if test x$enable_modplug = xyes; then
@@ -1376,7 +1376,7 @@ if
 	test x$enable_fluidsynth = xno &&
 	test x$enable_wildmidi = xno &&
 	test x$enable_mp4 = xno &&
-	test x$enable_mod = xno; then
+	test x$enable_mikmod = xno; then
 		AC_MSG_ERROR([No input plugins supported!])
 fi
 

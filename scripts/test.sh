@@ -18,7 +18,7 @@ test -x configure || NOCONFIGURE=1 ./autogen.sh
 ./configure --prefix=$PREFIX/full \
     --disable-dependency-tracking --enable-debug --enable-werror \
     --enable-un \
-    --enable-ao --enable-mod --enable-mvp
+    --enable-ao --enable-mikmod --enable-mvp
 $MAKE install
 $MAKE distclean
 

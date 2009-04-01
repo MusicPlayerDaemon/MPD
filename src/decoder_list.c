@@ -74,7 +74,7 @@ static const struct decoder_plugin *const decoder_plugins[] = {
 #ifdef HAVE_MODPLUG
 	&modplug_plugin,
 #endif
-#ifdef HAVE_MIKMOD
+#ifdef ENABLE_MIKMOD_DECODER
 	&mikmod_decoder_plugin,
 #endif
 #ifdef ENABLE_SIDPLAY

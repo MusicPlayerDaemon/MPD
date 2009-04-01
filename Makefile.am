@@ -364,7 +364,7 @@ if HAVE_AUDIOFILE
 DECODER_SRC += src/decoder/audiofile_plugin.c
 endif
 
-if HAVE_MIKMOD
+if ENABLE_MIKMOD_DECODER
 DECODER_SRC += src/decoder/mikmod_plugin.c
 endif
 
