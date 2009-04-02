@@ -47,6 +47,7 @@
 
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "vorbis"
+#define OGG_CHUNK_SIZE 4096
 
 #if G_BYTE_ORDER == G_BIG_ENDIAN
 #define OGG_DECODE_USE_BIGENDIAN	1
@@ -246,7 +247,6 @@ vorbis_stream_decode(struct decoder *decoder,
 	int current_section;
 	int prev_section = -1;
 	long ret;
-#define OGG_CHUNK_SIZE 4096
 	char chunk[OGG_CHUNK_SIZE];
 	long bitRate = 0;
 	long test;
