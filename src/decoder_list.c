@@ -31,17 +31,17 @@ extern const struct decoder_plugin mad_decoder_plugin;
 extern const struct decoder_plugin vorbis_decoder_plugin;
 extern const struct decoder_plugin flac_decoder_plugin;
 extern const struct decoder_plugin oggflac_decoder_plugin;
-extern const struct decoder_plugin audiofilePlugin;
+extern const struct decoder_plugin audiofile_decoder_plugin;
 extern const struct decoder_plugin mp4ff_decoder_plugin;
 extern const struct decoder_plugin faad_decoder_plugin;
 extern const struct decoder_plugin mpcdec_decoder_plugin;
-extern const struct decoder_plugin wavpack_plugin;
-extern const struct decoder_plugin modplug_plugin;
+extern const struct decoder_plugin wavpack_decoder_plugin;
+extern const struct decoder_plugin modplug_decoder_plugin;
 extern const struct decoder_plugin mikmod_decoder_plugin;
 extern const struct decoder_plugin sidplay_decoder_plugin;
 extern const struct decoder_plugin fluidsynth_decoder_plugin;
 extern const struct decoder_plugin wildmidi_decoder_plugin;
-extern const struct decoder_plugin ffmpeg_plugin;
+extern const struct decoder_plugin ffmpeg_decoder_plugin;
 
 static const struct decoder_plugin *const decoder_plugins[] = {
 #ifdef HAVE_MAD
@@ -57,7 +57,7 @@ static const struct decoder_plugin *const decoder_plugins[] = {
 	&flac_decoder_plugin,
 #endif
 #ifdef HAVE_AUDIOFILE
-	&audiofilePlugin,
+	&audiofile_decoder_plugin,
 #endif
 #ifdef HAVE_FAAD
 	&faad_decoder_plugin,
@@ -69,10 +69,10 @@ static const struct decoder_plugin *const decoder_plugins[] = {
 	&mpcdec_decoder_plugin,
 #endif
 #ifdef HAVE_WAVPACK
-	&wavpack_plugin,
+	&wavpack_decoder_plugin,
 #endif
 #ifdef HAVE_MODPLUG
-	&modplug_plugin,
+	&modplug_decoder_plugin,
 #endif
 #ifdef ENABLE_MIKMOD_DECODER
 	&mikmod_decoder_plugin,
@@ -87,7 +87,7 @@ static const struct decoder_plugin *const decoder_plugins[] = {
 	&wildmidi_decoder_plugin,
 #endif
 #ifdef HAVE_FFMPEG
-	&ffmpeg_plugin,
+	&ffmpeg_decoder_plugin,
 #endif
 };
 

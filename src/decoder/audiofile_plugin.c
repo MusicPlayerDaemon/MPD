@@ -212,7 +212,7 @@ static const char *const audiofile_mime_types[] = {
 	NULL 
 };
 
-const struct decoder_plugin audiofilePlugin = {
+const struct decoder_plugin audiofile_decoder_plugin = {
 	.name = "audiofile",
 	.stream_decode = audiofile_stream_decode,
 	.tag_dup = audiofile_tag_dup,

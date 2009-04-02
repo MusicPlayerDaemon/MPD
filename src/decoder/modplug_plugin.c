@@ -207,7 +207,7 @@ static const char *const mod_suffixes[] = {
 	NULL
 };
 
-const struct decoder_plugin modplug_plugin = {
+const struct decoder_plugin modplug_decoder_plugin = {
 	.name = "modplug",
 	.stream_decode = mod_decode,
 	.tag_dup = mod_tagdup,

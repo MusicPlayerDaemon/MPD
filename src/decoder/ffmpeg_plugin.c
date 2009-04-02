@@ -529,7 +529,7 @@ static const char *const ffmpeg_mime_types[] = {
 	NULL
 };
 
-const struct decoder_plugin ffmpeg_plugin = {
+const struct decoder_plugin ffmpeg_decoder_plugin = {
 	.name = "ffmpeg",
 	.init = ffmpeg_init,
 	.stream_decode = ffmpeg_decode,
