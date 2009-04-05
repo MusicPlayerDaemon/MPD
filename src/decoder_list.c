@@ -39,8 +39,8 @@ extern const struct decoder_plugin wavpack_decoder_plugin;
 extern const struct decoder_plugin modplug_decoder_plugin;
 extern const struct decoder_plugin mikmod_decoder_plugin;
 extern const struct decoder_plugin sidplay_decoder_plugin;
-extern const struct decoder_plugin fluidsynth_decoder_plugin;
 extern const struct decoder_plugin wildmidi_decoder_plugin;
+extern const struct decoder_plugin fluidsynth_decoder_plugin;
 extern const struct decoder_plugin ffmpeg_decoder_plugin;
 
 static const struct decoder_plugin *const decoder_plugins[] = {
@@ -80,11 +80,11 @@ static const struct decoder_plugin *const decoder_plugins[] = {
 #ifdef ENABLE_SIDPLAY
 	&sidplay_decoder_plugin,
 #endif
-#ifdef ENABLE_FLUIDSYNTH
-	&fluidsynth_decoder_plugin,
-#endif
 #ifdef ENABLE_WILDMIDI
 	&wildmidi_decoder_plugin,
+#endif
+#ifdef ENABLE_FLUIDSYNTH
+	&fluidsynth_decoder_plugin,
 #endif
 #ifdef HAVE_FFMPEG
 	&ffmpeg_decoder_plugin,
