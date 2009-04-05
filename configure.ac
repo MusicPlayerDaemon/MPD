@@ -1004,6 +1004,9 @@ if test x$enable_httpd_output = xauto; then
 fi
 
 AM_CONDITIONAL(HAVE_SHOUT, test x$enable_shout = xyes)
+if test x$enable_shout = xyes; then
+	AC_DEFINE(HAVE_SHOUT, 1, [Define to enable the shoutcast output])
+fi
 
 AM_CONDITIONAL(ENABLE_HTTPD_OUTPUT, test x$enable_httpd_output = xyes)
 if test x$enable_httpd_output = xyes; then
