@@ -358,6 +358,7 @@
     <section>
       <title>Playback options</title>
 
+      <variablelist>
         <varlistentry id="command_consume">
           <term>
             <cmdsynopsis>
@@ -373,7 +374,6 @@
             </para>
           </listitem>
         </varlistentry>
-      <variablelist>
         <varlistentry id="command_crossfade">
           <term>
             <cmdsynopsis>
