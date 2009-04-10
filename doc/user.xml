@@ -73,6 +73,25 @@ cd mpd-0.14.2</programlisting>
     <title>Configuration</title>
 
     <section>
+      <title>Configuring the music directory</title>
+
+      <para>
+        When you play local files, you should organize them within a
+        directory called the "music directory".  This is configured in
+        MPD with the <varname>music_directory</varname> setting.
+      </para>
+
+      <para>
+        By default, MPD follows symbolic links in the music directory.
+        This behavior can be switched off:
+        <varname>follow_outside_symlinks</varname> controls whether
+        MPD follows links pointing to files outside of the music
+        directory, and <varname>follow_inside_symlinks</varname> lets
+        you disable symlinks to files inside the music directory.
+      </para>
+    </section>
+
+    <section>
       <title>Configuring audio outputs</title>
 
       <para>
