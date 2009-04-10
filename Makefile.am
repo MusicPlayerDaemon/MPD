@@ -576,11 +576,19 @@ sparse-check:
 if ENABLE_TEST
 
 noinst_PROGRAMS = \
+	test/read_conf \
 	test/run_decoder \
 	test/read_tags \
 	test/run_encoder \
 	test/run_output \
 	test/software_volume
+
+test_read_conf_CPPFLAGS = $(AM_CPPFLAGS) \
+	$(GLIB_CFLAGS)
+test_read_conf_LDADD = $(MPD_LIBS) \
+	$(GLIB_LIBS)
+test_read_conf_SOURCES = test/read_conf.c \
+	src/conf.c src/buffer2array.c src/utils.c
 
 test_run_decoder_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(ID3TAG_CFLAGS) \

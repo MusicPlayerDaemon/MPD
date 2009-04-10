@@ -45,3 +45,4 @@ test/run_decoder
 test/read_tags
 test/run_encoder
 test/run_output
+test/read_conf
