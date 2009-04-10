@@ -673,7 +673,7 @@ endif
 #
 
 man_MANS = doc/mpd.1 doc/mpd.conf.5
-doc_DATA = AUTHORS COPYING NEWS README TODO UPGRADING doc/mpdconf.example
+doc_DATA = AUTHORS COPYING NEWS README UPGRADING doc/mpdconf.example
 
 if ENABLE_DOCUMENTATION
 protocoldir = $(docdir)/protocol
