@@ -89,7 +89,7 @@ chomp_length(const char *p)
 
 static void
 file_log_func(const gchar *log_domain,
-	      G_GNUC_UNUSED GLogLevelFlags log_level,
+	      GLogLevelFlags log_level,
 	      const gchar *message, G_GNUC_UNUSED gpointer user_data)
 {
 	char *converted;
