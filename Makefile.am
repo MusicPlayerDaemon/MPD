@@ -270,9 +270,11 @@ endif
 # archive plugins
 
 ARCHIVE_CFLAGS = \
+	$(ISO9660_CFLAGS) \
 	$(ZZIP_CFLAGS)
 
 ARCHIVE_LIBS = \
+	$(ISO9660_LIBS) \
 	$(ZZIP_LIBS)
 
 ARCHIVE_SRC =

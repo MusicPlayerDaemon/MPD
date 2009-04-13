@@ -338,11 +338,8 @@ AC_ARG_ENABLE(iso9660,
 		[enable iso9660 archive support (default: disabled)]),,
 	enable_iso9660=no)
 
-if test x$enable_iso9660 = xyes; then
-	AC_CHECK_LIB(iso9660, iso9660_ifs_readdir,
-		[MPD_LIBS="$MPD_LIBS -liso9660"],
-		enable_iso9660=no)
-fi
+MPD_AUTO_PKG(iso9660, ISO9660, [libiso9660],
+	[libiso9660 archive library], [libiso9660 not found])
 
 AM_CONDITIONAL(HAVE_ISO, test x$enable_iso9660 = xyes)
 if test x$enable_iso9660 = xyes; then
