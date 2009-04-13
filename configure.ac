@@ -324,11 +324,8 @@ AC_ARG_ENABLE(zip,
 		[enable zip archive support (default: disabled)]),,
 	enable_zip=no)
 
-if test x$enable_zip = xyes; then
-	AC_CHECK_LIB(zzip, zzip_dir_open,
-		[MPD_LIBS="$MPD_LIBS -lzzip"],
-		enable_zip=no)
-fi
+MPD_AUTO_PKG(zip, ZZIP, [zziplib],
+	[libzzip archive library], [libzzip not found])
 
 AM_CONDITIONAL(HAVE_ZIP, test x$enable_zip = xyes)
 if test x$enable_zip = xyes; then

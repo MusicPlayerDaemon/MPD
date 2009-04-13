@@ -9,6 +9,7 @@ src_mpd_CFLAGS = $(AM_CFLAGS) $(MPD_CFLAGS)
 src_mpd_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(SQLITE_CFLAGS) \
 	$(ID3TAG_CFLAGS) \
+	$(ARCHIVE_CFLAGS) \
 	$(INPUT_CFLAGS) \
 	$(DECODER_CFLAGS) \
 	$(ENCODER_CFLAGS) \
@@ -17,6 +18,7 @@ src_mpd_CPPFLAGS = $(AM_CPPFLAGS) \
 src_mpd_LDADD = $(MPD_LIBS) \
 	$(SQLITE_LIBS) \
 	$(ID3TAG_LIBS) \
+	$(ARCHIVE_LIBS) \
 	$(INPUT_LIBS) \
 	$(DECODER_LIBS) \
 	$(ENCODER_LIBS) \
@@ -266,6 +268,12 @@ src_mpd_SOURCES += src/tag_id3.c \
 endif
 
 # archive plugins
+
+ARCHIVE_CFLAGS = \
+	$(ZZIP_CFLAGS)
+
+ARCHIVE_LIBS = \
+	$(ZZIP_LIBS)
 
 ARCHIVE_SRC =
 
@@ -594,8 +602,10 @@ test_read_conf_SOURCES = test/read_conf.c \
 	src/conf.c src/buffer2array.c src/utils.c
 
 test_run_input_CPPFLAGS = $(AM_CPPFLAGS) \
+	$(ARCHIVE_CFLAGS) \
 	$(INPUT_CFLAGS)
 test_run_input_LDADD = $(MPD_LIBS) \
+	$(ARCHIVE_LIBS) \
 	$(INPUT_LIBS) \
 	$(GLIB_LIBS)
 test_run_input_SOURCES = test/run_input.c \
@@ -606,9 +616,11 @@ test_run_input_SOURCES = test/run_input.c \
 
 test_run_decoder_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(ID3TAG_CFLAGS) \
+	$(ARCHIVE_CFLAGS) \
 	$(INPUT_CFLAGS) $(DECODER_CFLAGS)
 test_run_decoder_LDADD = $(MPD_LIBS) \
 	$(ID3TAG_LIBS) \
+	$(ARCHIVE_LIBS) \
 	$(INPUT_LIBS) $(DECODER_LIBS) \
 	$(GLIB_LIBS)
 test_run_decoder_SOURCES = test/run_decoder.c \
@@ -622,9 +634,11 @@ test_run_decoder_SOURCES = test/run_decoder.c \
 
 test_read_tags_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(ID3TAG_CFLAGS) \
+	$(ARCHIVE_CFLAGS) \
 	$(INPUT_CFLAGS) $(DECODER_CFLAGS)
 test_read_tags_LDADD = $(MPD_LIBS) \
 	$(ID3TAG_LIBS) \
+	$(ARCHIVE_LIBS) \
 	$(INPUT_LIBS) $(DECODER_LIBS) \
 	$(GLIB_LIBS)
 test_read_tags_SOURCES = test/read_tags.c \
