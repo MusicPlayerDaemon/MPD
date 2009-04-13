@@ -208,7 +208,7 @@ httpd_client_handle_line(struct httpd_client *client, const char *line)
 			return true;
 		}
 
-		if (strncmp(line, "Icy-MetaData: 1", 15) == 0) {
+		if (g_ascii_strncasecmp(line, "Icy-MetaData: 1", 15) == 0) {
 			/* Send icy metadata */
 			client->metadata_requested = TRUE;
 			return true;
