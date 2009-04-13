@@ -30,9 +30,6 @@ icy_server_metadata_header(const char *name,
 			   const char *genre, const char *url,
 			   const char *content_type, int metaint);
 
-char*
-icy_server_metadata_string(const char *stream_title, const char* stream_url);
-
 struct page*
 icy_server_metadata_page(const struct tag *tag, ...);
 
