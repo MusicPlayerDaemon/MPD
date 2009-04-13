@@ -577,6 +577,7 @@ if ENABLE_TEST
 
 noinst_PROGRAMS = \
 	test/read_conf \
+	test/run_input \
 	test/run_decoder \
 	test/read_tags \
 	test/run_encoder \
@@ -589,6 +590,17 @@ test_read_conf_LDADD = $(MPD_LIBS) \
 	$(GLIB_LIBS)
 test_read_conf_SOURCES = test/read_conf.c \
 	src/conf.c src/buffer2array.c src/utils.c
+
+test_run_input_CPPFLAGS = $(AM_CPPFLAGS) \
+	$(INPUT_CFLAGS)
+test_run_input_LDADD = $(MPD_LIBS) \
+	$(INPUT_LIBS) \
+	$(GLIB_LIBS)
+test_run_input_SOURCES = test/run_input.c \
+	src/conf.c src/buffer2array.c src/utils.c \
+	src/tag.c src/tag_pool.c src/tag_save.c \
+	$(ARCHIVE_SRC) \
+	$(INPUT_SRC)
 
 test_run_decoder_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(ID3TAG_CFLAGS) \

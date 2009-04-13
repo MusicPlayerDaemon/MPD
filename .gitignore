@@ -46,3 +46,4 @@ test/read_tags
 test/run_encoder
 test/run_output
 test/read_conf
+test/run_input
