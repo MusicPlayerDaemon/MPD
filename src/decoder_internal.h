@@ -30,6 +30,13 @@ struct decoder {
 
 	bool seeking;
 
+	/**
+	 * The tag from the song object.  This is only used for local
+	 * files, because we expect the stream server to send us a new
+	 * tag each time we play it.
+	 */
+	struct tag *song_tag;
+
 	/** the last tag received from the stream */
 	struct tag *stream_tag;
 

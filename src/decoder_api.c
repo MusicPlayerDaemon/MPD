@@ -189,12 +189,18 @@ update_stream_tag(struct decoder *decoder, struct input_stream *is)
 {
 	struct tag *tag;
 
-	if (is == NULL)
-		return false;
+	tag = is != NULL
+		? input_stream_tag(is)
+		: NULL;
+	if (tag == NULL) {
+		tag = decoder->song_tag;
+		if (tag == NULL)
+			return false;
 
-	tag = input_stream_tag(is);
-	if (tag == NULL)
-		return false;
+		/* no stream tag present - submit the song tag
+		   instead */
+		decoder->song_tag = NULL;
+	}
 
 	if (decoder->stream_tag != NULL)
 		tag_free(decoder->stream_tag);

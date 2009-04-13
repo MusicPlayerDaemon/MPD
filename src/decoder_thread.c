@@ -95,6 +95,8 @@ static void decoder_run_song(const struct song *song, const char *uri)
 	}
 
 	decoder.seeking = false;
+	decoder.song_tag = song->tag != NULL && song_is_file(song)
+		? tag_dup(song->tag) : NULL;
 	decoder.stream_tag = NULL;
 	decoder.decoder_tag = NULL;
 	decoder.chunk = NULL;
@@ -200,6 +202,9 @@ static void decoder_run_song(const struct song *song, const char *uri)
 
 	if (close_instream)
 		input_stream_close(&input_stream);
+
+	if (decoder.song_tag != NULL)
+		tag_free(decoder.song_tag);
 
 	if (decoder.stream_tag != NULL)
 		tag_free(decoder.stream_tag);
