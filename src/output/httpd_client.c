@@ -92,12 +92,12 @@ struct httpd_client {
 	/**
 	 * If we should sent icy metadata.
 	 */
-	gboolean metadata_requested;
+	bool metadata_requested;
 
 	/**
 	 * If the current metadata was already sent to the client.
 	 */
-	gboolean metadata_sent;
+	bool metadata_sent;
 
 	/**
 	 * The amount of streaming data between each metadata block
@@ -210,7 +210,7 @@ httpd_client_handle_line(struct httpd_client *client, const char *line)
 
 		if (g_ascii_strncasecmp(line, "Icy-MetaData: 1", 15) == 0) {
 			/* Send icy metadata */
-			client->metadata_requested = TRUE;
+			client->metadata_requested = true;
 			return true;
 		}
 
@@ -443,8 +443,8 @@ httpd_client_new(struct httpd_output *httpd, int fd)
 	client->input = fifo_buffer_new(4096);
 	client->state = REQUEST;
 
-	client->metadata_requested = FALSE;
-	client->metadata_sent = TRUE;
+	client->metadata_requested = false;
+	client->metadata_sent = true;
 	client->metaint = 8192; /*TODO: just a std value */
 	client->metadata = NULL;
 	client->metadata_current_position = 0;
@@ -592,7 +592,7 @@ httpd_client_out_event(GIOChannel *source,
 			    - client->metadata_current_position == 0) {
 				client->metadata_fill = 0;
 				client->metadata_current_position = 0;
-				client->metadata_sent = TRUE;
+				client->metadata_sent = true;
 			}
 		} else {
 			struct page *empty_meta;
@@ -702,5 +702,5 @@ httpd_client_send_metadata(struct httpd_client *client, struct page *page)
 
 	page_ref(page);
 	client->metadata = page;
-	client->metadata_sent = FALSE;
+	client->metadata_sent = false;
 }
