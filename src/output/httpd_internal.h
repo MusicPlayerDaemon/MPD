@@ -82,6 +82,11 @@ struct httpd_output {
 	struct page *header;
 
 	/**
+	 * The metadata, which is sent to every client.
+	 */
+	struct page *metadata;
+
+	/**
 	 * A linked list containing all clients which are currently
 	 * connected.
 	 */

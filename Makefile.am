@@ -75,6 +75,7 @@ mpd_headers = \
 	src/input/curl_input_plugin.h \
 	src/input/lastfm_input_plugin.h \
 	src/input/mms_input_plugin.h \
+	src/icy_server.h \
 	src/icy_metadata.h \
 	src/client.h \
 	src/listen.h \
@@ -537,6 +538,7 @@ endif
 
 if ENABLE_HTTPD_OUTPUT
 OUTPUT_SRC += \
+	src/icy_server.c \
 	src/output/httpd_client.c \
 	src/output/httpd_output_plugin.c
 endif

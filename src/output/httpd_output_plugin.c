@@ -24,6 +24,7 @@
 #include "encoder_list.h"
 #include "socket_util.h"
 #include "page.h"
+#include "icy_server.h"
 
 #include <assert.h>
 
@@ -83,6 +84,9 @@ httpd_output_init(G_GNUC_UNUSED const struct audio_format *audio_format,
 	sin->sin_addr.s_addr = INADDR_ANY;
 	httpd->address_size = sizeof(*sin);
 
+	/* initialize metadata */
+	httpd->metadata = NULL;
+
 	/* initialize encoder */
 
 	httpd->encoder = encoder_init(encoder_plugin, param, error);
@@ -99,6 +103,9 @@ httpd_output_finish(void *data)
 {
 	struct httpd_output *httpd = data;
 
+	if (httpd->metadata)
+		page_unref(httpd->metadata);
+
 	encoder_finish(httpd->encoder);
 	g_mutex_free(httpd->mutex);
 	g_free(httpd);
@@ -114,6 +121,10 @@ httpd_client_add(struct httpd_output *httpd, int fd)
 	struct httpd_client *client = httpd_client_new(httpd, fd);
 
 	httpd->clients = g_list_prepend(httpd->clients, client);
+
+	/* pass metadata to client */
+	if (httpd->metadata)
+		httpd_client_send_metadata(client, httpd->metadata);
 }
 
 static gboolean
@@ -354,11 +365,35 @@ httpd_output_play(void *data, const void *chunk, size_t size, GError **error)
 }
 
 static void
+httpd_send_metadata(gpointer data, gpointer user_data)
+{
+	struct httpd_client *client = data;
+	struct page *icy_metadata = user_data;
+
+	httpd_client_send_metadata(client, icy_metadata);
+}
+
+static void
 httpd_output_tag(void *data, const struct tag *tag)
 {
 	struct httpd_output *httpd = data;
 
-	/* XXX add suport for icy-metadata */
+	if (httpd->metadata) {
+		page_unref (httpd->metadata);
+		httpd->metadata = NULL;
+	}
+
+	if (tag)
+		httpd->metadata = icy_server_metadata_page(tag, TAG_ITEM_ALBUM,
+							   TAG_ITEM_ARTIST,
+							   TAG_ITEM_TITLE,
+							   TAG_NUM_OF_ITEM_TYPES);
+
+	if (httpd->metadata) {
+		g_mutex_lock(httpd->mutex);
+		g_list_foreach(httpd->clients, httpd_send_metadata, httpd->metadata);
+		g_mutex_unlock(httpd->mutex);
+	}
 
 	encoder_tag(httpd->encoder, tag, NULL);
 }

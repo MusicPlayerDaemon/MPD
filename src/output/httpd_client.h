@@ -62,4 +62,10 @@ httpd_client_cancel(struct httpd_client *client);
 void
 httpd_client_send(struct httpd_client *client, struct page *page);
 
+/**
+ * Sends the passed metadata.
+ */
+void
+httpd_client_send_metadata(struct httpd_client *client, struct page *page);
+
 #endif

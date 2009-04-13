@@ -21,6 +21,7 @@
 #include "httpd_internal.h"
 #include "fifo_buffer.h"
 #include "page.h"
+#include "icy_server.h"
 
 #include <stdbool.h>
 #include <assert.h>
@@ -85,6 +86,39 @@ struct httpd_client {
 	 * #current_page.
 	 */
 	size_t current_position;
+
+	/* ICY */
+
+	/**
+	 * If we should sent icy metadata.
+	 */
+	gboolean metadata_requested;
+
+	/**
+	 * If the current metadata was already sent to the client.
+	 */
+	gboolean metadata_sent;
+
+	/**
+	 * The amount of streaming data between each metadata block
+	 */
+	guint metaint;
+
+	/**
+	 * The metadata as #page which is currently being sent to the client.
+	 */
+	struct page *metadata;
+
+	/*
+	 * The amount of bytes which were already sent from the metadata.
+	 */
+	size_t metadata_current_position;
+
+	/**
+	 * The amount of streaming data sent to the client
+	 * since the last icy information was sent.
+	 */
+	guint metadata_fill;
 };
 
 static void
@@ -109,6 +143,9 @@ httpd_client_free(struct httpd_client *client)
 		g_queue_free(client->pages);
 	} else
 		fifo_buffer_free(client->input);
+
+	if (client->metadata)
+		page_unref (client->metadata);
 
 	g_source_remove(client->read_source_id);
 	g_io_channel_unref(client->channel);
@@ -171,6 +208,12 @@ httpd_client_handle_line(struct httpd_client *client, const char *line)
 			return true;
 		}
 
+		if (strncmp(line, "Icy-MetaData: 1", 15) == 0) {
+			/* Send icy metadata */
+			client->metadata_requested = TRUE;
+			return true;
+		}
+
 		/* expect more request headers */
 		return true;
 	}
@@ -218,18 +261,33 @@ httpd_client_send_response(struct httpd_client *client)
 
 	assert(client->state == RESPONSE);
 
-	g_snprintf(buffer, sizeof(buffer),
-		   "HTTP/1.1 200 OK\r\n"
-		   "Content-Type: %s\r\n"
-		   "Connection: close\r\n"
-		   "Pragma: no-cache\r\n"
-		   "Cache-Control: no-cache, no-store\r\n"
-		   "\r\n",
-		   client->httpd->content_type);
+	if (!client->metadata_requested) {
+		g_snprintf(buffer, sizeof(buffer),
+			   "HTTP/1.1 200 OK\r\n"
+			   "Content-Type: %s\r\n"
+			   "Connection: close\r\n"
+			   "Pragma: no-cache\r\n"
+			   "Cache-Control: no-cache, no-store\r\n"
+			   "\r\n",
+			   client->httpd->content_type);
+	} else {
+		gchar *metadata_header;
+
+		metadata_header = icy_server_metadata_header("Add config information here!", /* TODO */
+							     "Add config information here!", /* TODO */
+							     "Add config information here!", /* TODO */
+							     client->httpd->content_type,
+							     client->metaint);
+
+		g_strlcpy(buffer, metadata_header, sizeof(buffer));
+
+		g_free(metadata_header);
+	}
 
 	status = g_io_channel_write_chars(client->channel,
 					  buffer, strlen(buffer),
 					  &bytes_written, &error);
+
 	switch (status) {
 	case G_IO_STATUS_NORMAL:
 	case G_IO_STATUS_AGAIN:
@@ -385,6 +443,13 @@ httpd_client_new(struct httpd_output *httpd, int fd)
 	client->input = fifo_buffer_new(4096);
 	client->state = REQUEST;
 
+	client->metadata_requested = FALSE;
+	client->metadata_sent = TRUE;
+	client->metaint = 8192; /*TODO: just a std value */
+	client->metadata = NULL;
+	client->metadata_current_position = 0;
+	client->metadata_fill = 0;
+
 	return client;
 }
 
@@ -444,6 +509,42 @@ write_page_to_channel(GIOChannel *channel,
 					bytes_written_r, error);
 }
 
+static GIOStatus
+write_n_bytes_to_channel(GIOChannel *channel, const struct page *page,
+			 size_t position, gint n,
+			 gsize *bytes_written_r, GError **error)
+{
+	GIOStatus status;
+
+	assert(channel != NULL);
+	assert(page != NULL);
+	assert(position < page->size);
+
+	if (n == -1) {
+		status =  write_page_to_channel (channel, page, position,
+						 bytes_written_r, error);
+	} else {
+		status = g_io_channel_write_chars(channel,
+						  (const gchar*)page->data + position,
+						  n, bytes_written_r, error);
+	}
+
+	return status;
+}
+
+static gint
+bytes_left_till_metadata (struct httpd_client *client)
+{
+	assert(client != NULL);
+
+	if (client->metadata_requested &&
+	    client->current_page->size - client->current_position
+	    > client->metaint - client->metadata_fill)
+		return client->metaint - client->metadata_fill;
+
+	return -1;
+}
+
 static gboolean
 httpd_client_out_event(GIOChannel *source,
 		       G_GNUC_UNUSED GIOCondition condition, gpointer data)
@@ -453,6 +554,7 @@ httpd_client_out_event(GIOChannel *source,
 	GError *error = NULL;
 	GIOStatus status;
 	gsize bytes_written;
+	gint bytes_to_write;
 
 	g_mutex_lock(httpd->mutex);
 
@@ -471,13 +573,61 @@ httpd_client_out_event(GIOChannel *source,
 		client->current_position = 0;
 	}
 
-	status = write_page_to_channel(source, client->current_page,
-				       client->current_position,
-				       &bytes_written, &error);
+	bytes_to_write = bytes_left_till_metadata(client);
+
+	if (bytes_to_write == 0) {
+		gint metadata_to_write;
+
+		metadata_to_write = client->metadata_current_position;
+
+		if (!client->metadata_sent) {
+			status = write_page_to_channel(source,
+						       client->metadata,
+						       metadata_to_write,
+						       &bytes_written, &error);
+
+			client->metadata_current_position += bytes_written;
+
+			if (client->metadata->size
+			    - client->metadata_current_position == 0) {
+				client->metadata_fill = 0;
+				client->metadata_current_position = 0;
+				client->metadata_sent = TRUE;
+			}
+		} else {
+			struct page *empty_meta;
+			guchar empty_data = 0;
+
+			empty_meta = page_new_copy(&empty_data, 1);
+
+			status = write_page_to_channel(source,
+						       empty_meta,
+						       metadata_to_write,
+						       &bytes_written, &error);
+
+			client->metadata_current_position += bytes_written;
+
+			if (empty_meta->size
+			    - client->metadata_current_position == 0) {
+				client->metadata_fill = 0;
+				client->metadata_current_position = 0;
+			}
+		}
+
+		bytes_written = 0;
+	} else {
+		status = write_n_bytes_to_channel(source, client->current_page,
+						  client->current_position, bytes_to_write,
+						  &bytes_written, &error);
+	}
+
 	switch (status) {
 	case G_IO_STATUS_NORMAL:
 		client->current_position += bytes_written;
 		assert(client->current_position <= client->current_page->size);
+
+		if (client->metadata_requested)
+			client->metadata_fill += bytes_written;
 
 		if (client->current_position >= client->current_page->size) {
 			page_unref(client->current_page);
@@ -538,4 +688,19 @@ httpd_client_send(struct httpd_client *client, struct page *page)
 		client->write_source_id =
 			g_io_add_watch(client->channel, G_IO_OUT,
 				       httpd_client_out_event, client);
+}
+
+void
+httpd_client_send_metadata(struct httpd_client *client, struct page *page)
+{
+	if (client->metadata) {
+		page_unref(client->metadata);
+		client->metadata = NULL;
+	}
+
+	g_return_if_fail (page);
+
+	page_ref(page);
+	client->metadata = page;
+	client->metadata_sent = FALSE;
 }
