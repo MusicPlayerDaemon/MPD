@@ -310,7 +310,7 @@ AC_ARG_ENABLE(bzip2,
 if test x$enable_bzip2 = xyes; then
 	AC_CHECK_LIB(bz2, BZ2_bzDecompressInit,
 		[MPD_LIBS="$MPD_LIBS -lbz2"],
-		enable_bzip2=no)
+		[AC_MSG_ERROR([libbz2 not found])])
 fi
 
 AM_CONDITIONAL(HAVE_BZ2, test x$enable_bzip2 = xyes)
