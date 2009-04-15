@@ -15,6 +15,21 @@ dnl
 AC_PROG_CC_C99
 AC_PROG_CXX
 
+HAVE_CXX=yes
+if test x$CXX = xg++; then
+	# CXX=g++ probably means that autoconf hasn't found any C++
+	# compiler; to be sure, we check again
+	AC_PATH_PROG(CXX, $CXX, no)
+	if test x$CXX = xno; then
+		# no, we don't have C++ - the following hack is
+		# required because automake insists on using $(CXX)
+		# for linking the MPD binary
+		AC_MSG_NOTICE([Disabling C++ support])
+		CXX="$CC"
+		HAVE_CXX=no
+	fi
+fi
+
 AC_PROG_INSTALL
 AC_PROG_MAKE_SET
 PKG_PROG_PKG_CONFIG
@@ -430,6 +445,9 @@ AC_ARG_ENABLE(modplug,
 		[enable modplug decoder plugin]),,
 	enable_modplug=auto)
 
+found_modplug=$HAVE_CXX
+MPD_AUTO_PRE(modplug, [modplug decoder plugin], [No C++ compiler found])
+
 MPD_AUTO_PKG(modplug, MODPLUG, [libmodplug],
 	[modplug decoder plugin], [libmodplug not found])
 AM_CONDITIONAL(HAVE_MODPLUG, test x$enable_modplug = xyes)
@@ -475,6 +493,9 @@ AC_ARG_ENABLE(sidplay,
 	AS_HELP_STRING([--enable-sidplay],
 		[enable C64 SID support via libsidplay2]),,
 	enable_sidplay=auto)
+
+found_sidplay=$HAVE_CXX
+MPD_AUTO_PRE(sidplay, [sidplay decoder plugin], [No C++ compiler found])
 
 if test x$enable_sidplay != xno; then
 	# we're not using pkg-config here
