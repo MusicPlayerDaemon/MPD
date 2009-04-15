@@ -476,6 +476,17 @@ AC_ARG_ENABLE(sidplay,
 		[enable C64 SID support via libsidplay2 (default: disable)]),,
 	enable_sidplay=no)
 
+if test x$enable_sidplay = xyes; then
+	# we have no test yet.. we're not using pkg-config here
+	# because libsidplay2's .pc file requires libtool
+	AC_SUBST(SIDPLAY_LIBS,"-lsidplay2 -lresid-builder")
+	AC_SUBST(SIDPLAY_CFLAGS,)
+
+	AC_DEFINE(ENABLE_SIDPLAY, 1, [Define for libsidplay2 support])
+fi
+
+AM_CONDITIONAL(ENABLE_SIDPLAY, test x$enable_sidplay = xyes)
+
 AC_ARG_ENABLE(fluidsynth,
 	AS_HELP_STRING([--enable-fluidsynth],
 		[enable MIDI support via fluidsynth (default: disable)]),,
@@ -890,17 +901,6 @@ if test x$enable_ffmpeg = xyes; then
 fi
 
 AM_CONDITIONAL(HAVE_FFMPEG, test x$enable_ffmpeg = xyes)
-
-if test x$enable_sidplay = xyes; then
-	# we have no test yet.. we're not using pkg-config here
-	# because libsidplay2's .pc file requires libtool
-	AC_SUBST(SIDPLAY_LIBS,"-lsidplay2 -lresid-builder")
-	AC_SUBST(SIDPLAY_CFLAGS,)
-
-	AC_DEFINE(ENABLE_SIDPLAY, 1, [Define for libsidplay2 support])
-fi
-
-AM_CONDITIONAL(ENABLE_SIDPLAY, test x$enable_sidplay = xyes)
 
 if test x$enable_fluidsynth = xyes; then
 	PKG_CHECK_MODULES(FLUIDSYNTH, [fluidsynth],
