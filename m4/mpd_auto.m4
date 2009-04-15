@@ -21,6 +21,21 @@ AC_DEFUN([MPD_AUTO_DISABLED], [
 	fi
 ])
 
+dnl Check whether a prerequisite for a feature was found.  This is
+dnl very similar to MPD_AUTO_RESULT, but does not finalize the
+dnl detection; it assumes that more checks will follow.
+AC_DEFUN([MPD_AUTO_PRE], [
+	name="$1"
+	var="enable_$1"
+	found="found_$name"
+	feature="$2"
+	msg="$3"
+
+	if eval "test x`echo '$'$var` != xno" && eval "test x`echo '$'$found` = xno"; then
+                MPD_AUTO_DISABLED([$name], [$feature], [$msg])
+	fi
+])
+
 AC_DEFUN([MPD_AUTO_RESULT], [
 	name="$1"
 	var="enable_$1"
