@@ -473,10 +473,10 @@ AC_ARG_WITH(tremor-includes,
 
 AC_ARG_ENABLE(sidplay,
 	AS_HELP_STRING([--enable-sidplay],
-		[enable C64 SID support via libsidplay2 (default: disable)]),,
-	enable_sidplay=no)
+		[enable C64 SID support via libsidplay2]),,
+	enable_sidplay=auto)
 
-if test x$enable_sidplay = xyes; then
+if test x$enable_sidplay != xno; then
 	# we're not using pkg-config here
 	# because libsidplay2's .pc file requires libtool
 	AC_HAVE_LIBRARY(sidplay2, [found_sidplay=yes], [found_sidplay=no])
