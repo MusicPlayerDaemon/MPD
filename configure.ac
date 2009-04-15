@@ -477,8 +477,23 @@ AC_ARG_ENABLE(sidplay,
 	enable_sidplay=no)
 
 if test x$enable_sidplay = xyes; then
-	# we have no test yet.. we're not using pkg-config here
+	# we're not using pkg-config here
 	# because libsidplay2's .pc file requires libtool
+	AC_HAVE_LIBRARY(sidplay2, [found_sidplay=yes], [found_sidplay=no])
+	MPD_AUTO_PRE(sidplay, [sidplay decoder plugin],
+		[libsidplay2 not found])
+fi
+
+if test x$enable_sidplay != xno; then
+	# can't use AC_HAVE_LIBRARY here, because the dash in the
+	# library name triggers an autoconf bug
+	AC_CHECK_LIB(resid-builder, main,
+		[found_sidplay=yes], [found_sidplay=no])
+	MPD_AUTO_RESULT(sidplay, [sidplay decoder plugin],
+		[libresid-builder not found])
+fi
+
+if test x$enable_sidplay = xyes; then
 	AC_SUBST(SIDPLAY_LIBS,"-lsidplay2 -lresid-builder")
 	AC_SUBST(SIDPLAY_CFLAGS,)
 
