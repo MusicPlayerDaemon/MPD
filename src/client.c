@@ -246,6 +246,8 @@ static void client_close(struct client *client)
 	g_queue_foreach(client->deferred_send, deferred_buffer_free, NULL);
 	g_queue_free(client->deferred_send);
 
+	fifo_buffer_free(client->input);
+
 	g_log(G_LOG_DOMAIN, LOG_LEVEL_SECURE,
 	      "[%u] closed", client->num);
 	g_free(client);
