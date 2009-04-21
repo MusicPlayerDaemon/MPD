@@ -61,6 +61,9 @@ alsa_mixer_finish(struct mixer *data)
 	struct alsa_mixer *am = (struct alsa_mixer *)data;
 
 	g_free(am);
+
+	/* free libasound's config cache */
+	snd_config_update_free_global();
 }
 
 static void
@@ -83,7 +86,6 @@ alsa_mixer_open(struct mixer *data)
 	am->volume_set = -1;
 
 	err = snd_mixer_open(&am->handle, 0);
-	snd_config_update_free_global();
 	if (err < 0) {
 		g_warning("problems opening alsa mixer: %s\n", snd_strerror(err));
 		return false;
