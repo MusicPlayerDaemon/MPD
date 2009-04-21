@@ -136,14 +136,7 @@ alsa_init(G_GNUC_UNUSED const struct audio_format *audio_format,
 	  const struct config_param *param,
 	  G_GNUC_UNUSED GError **error)
 {
-	/* no need for pthread_once thread-safety when reading config */
-	static int free_global_registered;
 	struct alsa_data *ad = alsa_data_new();
-
-	if (!free_global_registered) {
-		atexit((void(*)(void))snd_config_update_free_global);
-		free_global_registered = 1;
-	}
 
 	alsa_configure(ad, param);
 
@@ -156,6 +149,9 @@ alsa_finish(void *data)
 	struct alsa_data *ad = data;
 
 	alsa_data_free(ad);
+
+	/* free libasound's config cache */
+	snd_config_update_free_global();
 }
 
 static bool
