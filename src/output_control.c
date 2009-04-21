@@ -137,6 +137,12 @@ audio_output_play(struct audio_output *ao)
 
 void audio_output_pause(struct audio_output *ao)
 {
+	if (ao->mixer != NULL && ao->plugin->pause == NULL)
+		/* the device has no pause mode: close the mixer,
+		   unless its "global" flag is set (checked by
+		   mixer_auto_close()) */
+		mixer_auto_close(ao->mixer);
+
 	ao_command_async(ao, AO_COMMAND_PAUSE);
 }
 
