@@ -594,6 +594,7 @@ noinst_PROGRAMS = \
 	test/read_tags \
 	test/run_encoder \
 	test/run_output \
+	test/read_mixer \
 	test/software_volume
 
 test_read_conf_CPPFLAGS = $(AM_CPPFLAGS) \
@@ -690,10 +691,15 @@ test_run_output_SOURCES = test/run_output.c \
 	$(MIXER_SRC) \
 	$(OUTPUT_SRC)
 
-if HAVE_ID3TAG
-test_run_decoder_SOURCES += src/tag_id3.c src/riff.c src/aiff.c
-test_read_tags_SOURCES += src/tag_id3.c src/riff.c src/aiff.c
-endif
+test_read_mixer_CPPFLAGS = $(AM_CPPFLAGS) \
+	$(OUTPUT_CFLAGS)
+test_read_mixer_LDADD = $(MPD_LIBS) \
+	$(OUTPUT_LIBS) \
+	$(GLIB_LIBS)
+test_read_mixer_SOURCES = test/read_mixer.c \
+	src/conf.c src/buffer2array.c src/utils.c src/log.c \
+	src/mixer_control.c src/mixer_api.c \
+	$(MIXER_SRC)
 
 endif
 

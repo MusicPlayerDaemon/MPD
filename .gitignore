@@ -47,3 +47,4 @@ test/run_encoder
 test/run_output
 test/read_conf
 test/run_input
+test/read_mixer
