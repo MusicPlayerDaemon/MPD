@@ -379,12 +379,8 @@ spl_append_song(const char *utf8path, struct song *song)
 
 	while (!(file = fopen(path_fs, "a")) && errno == EINTR);
 	g_free(path_fs);
-	if (file == NULL) {
-		int save_errno = errno;
-		while (fclose(file) != 0 && errno == EINTR);
-		errno = save_errno;
+	if (file == NULL)
 		return PLAYLIST_RESULT_ERRNO;
-	}
 
 	if (fstat(fileno(file), &st) < 0) {
 		int save_errno = errno;
