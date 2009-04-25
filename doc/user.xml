@@ -113,7 +113,69 @@ cd mpd-0.14.2</programlisting>
     name "my ALSA device"
     device "hw:0"
 }
-</programlisting>
+      </programlisting>
+
+      <para>
+        The following table lists the <varname>audio_output</varname>
+        options valid for all plugins:
+      </para>
+
+      <informaltable>
+        <tgroup cols="2">
+          <thead>
+            <row>
+              <entry>
+                Name
+              </entry>
+              <entry>
+                Description
+              </entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry>
+                <varname>type</varname>
+              </entry>
+              <entry>
+                The name of the plugin.
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <varname>name</varname>
+              </entry>
+              <entry>
+                The name of the audio output.  It is visible to the
+                client.  Some plugins also use it internally, e.g. as
+                a name registered in the PULSE server.
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <varname>format</varname>
+              </entry>
+              <entry>
+                Always open the audio output with the specified audio
+                format (samplerate:bits:channels), regardless of the
+                format of the input file.  This is optional for most
+                plugins.
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <varname>enabled</varname>
+                  <parameter>yes|no</parameter>
+              </entry>
+              <entry>
+                Specifies whether this audio output is enabled when
+                MPD is started.  By default, all audio outputs are
+                enabled.
+              </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
     </section>
   </chapter>
 
