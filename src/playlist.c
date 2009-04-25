@@ -61,12 +61,16 @@ playlist_init(struct playlist *playlist)
 
 	playlist->queued = -1;
 	playlist->current = -1;
+
+	playlist->prev_elapsed = g_timer_new();
 }
 
 void
 playlist_finish(struct playlist *playlist)
 {
 	queue_finish(&playlist->queue);
+
+	g_timer_destroy(playlist->prev_elapsed);
 }
 
 /**

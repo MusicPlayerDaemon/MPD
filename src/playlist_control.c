@@ -185,15 +185,11 @@ nextSongInPlaylist(struct playlist *playlist)
 
 void previousSongInPlaylist(struct playlist *playlist)
 {
-	static time_t lastTime;
-	time_t diff = time(NULL) - lastTime;
-
-	lastTime += diff;
-
 	if (!playlist->playing)
 		return;
 
-	if (diff && getPlayerElapsedTime() > PLAYLIST_PREV_UNLESS_ELAPSED) {
+	if (g_timer_elapsed(playlist->prev_elapsed, NULL) >= 1.0 &&
+	    getPlayerElapsedTime() > PLAYLIST_PREV_UNLESS_ELAPSED) {
 		/* re-start playing the current song (just like the
 		   "prev" button on CD players) */
 
@@ -213,6 +209,8 @@ void previousSongInPlaylist(struct playlist *playlist)
 			playPlaylistOrderNumber(playlist, playlist->current);
 		}
 	}
+
+	g_timer_start(playlist->prev_elapsed);
 }
 
 enum playlist_result
