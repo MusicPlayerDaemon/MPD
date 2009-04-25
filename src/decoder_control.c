@@ -80,8 +80,14 @@ dc_start_async(struct song *song)
 void
 dc_stop(struct notify *notify)
 {
-	if (dc.command == DECODE_COMMAND_START ||
-	    (dc.state != DECODE_STATE_STOP && dc.state != DECODE_STATE_ERROR))
+	if (dc.command != DECODE_COMMAND_NONE)
+		/* Attempt to cancel the current command.  If it's too
+		   late and the decoder thread is already executing
+		   the old command, we'll call STOP again in this
+		   function (see below). */
+		dc_command(notify, DECODE_COMMAND_STOP);
+
+	if (dc.state != DECODE_STATE_STOP && dc.state != DECODE_STATE_ERROR)
 		dc_command(notify, DECODE_COMMAND_STOP);
 }
 
