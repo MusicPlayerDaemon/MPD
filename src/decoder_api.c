@@ -42,6 +42,7 @@ void decoder_initialized(G_GNUC_UNUSED struct decoder * decoder,
 			 bool seekable, float total_time)
 {
 	assert(dc.state == DECODE_STATE_START);
+	assert(dc.pipe != NULL);
 	assert(decoder != NULL);
 	assert(decoder->stream_tag == NULL);
 	assert(decoder->decoder_tag == NULL);
@@ -73,11 +74,15 @@ void decoder_initialized(G_GNUC_UNUSED struct decoder * decoder,
 
 char *decoder_get_uri(G_GNUC_UNUSED struct decoder *decoder)
 {
+	assert(dc.pipe != NULL);
+
 	return song_get_uri(dc.current_song);
 }
 
 enum decoder_command decoder_get_command(G_GNUC_UNUSED struct decoder * decoder)
 {
+	assert(dc.pipe != NULL);
+
 	return dc.command;
 }
 
@@ -86,6 +91,7 @@ void decoder_command_finished(G_GNUC_UNUSED struct decoder * decoder)
 	assert(dc.command != DECODE_COMMAND_NONE);
 	assert(dc.command != DECODE_COMMAND_SEEK ||
 	       dc.seek_error || decoder->seeking);
+	assert(dc.pipe != NULL);
 
 	if (dc.command == DECODE_COMMAND_SEEK) {
 		/* delete frames from the old song position */
@@ -105,6 +111,7 @@ void decoder_command_finished(G_GNUC_UNUSED struct decoder * decoder)
 double decoder_seek_where(G_GNUC_UNUSED struct decoder * decoder)
 {
 	assert(dc.command == DECODE_COMMAND_SEEK);
+	assert(dc.pipe != NULL);
 
 	decoder->seeking = true;
 
@@ -114,6 +121,7 @@ double decoder_seek_where(G_GNUC_UNUSED struct decoder * decoder)
 void decoder_seek_error(struct decoder * decoder)
 {
 	assert(dc.command == DECODE_COMMAND_SEEK);
+	assert(dc.pipe != NULL);
 
 	dc.seek_error = true;
 	decoder_command_finished(decoder);
@@ -128,6 +136,7 @@ size_t decoder_read(struct decoder *decoder,
 	assert(decoder == NULL ||
 	       dc.state == DECODE_STATE_START ||
 	       dc.state == DECODE_STATE_DECODE);
+	assert(dc.pipe != NULL);
 	assert(is != NULL);
 	assert(buffer != NULL);
 
@@ -219,6 +228,7 @@ decoder_data(struct decoder *decoder,
 	const char *data = _data;
 
 	assert(dc.state == DECODE_STATE_DECODE);
+	assert(dc.pipe != NULL);
 	assert(length % audio_format_frame_size(&dc.in_audio_format) == 0);
 
 	if (dc.command == DECODE_COMMAND_STOP ||
@@ -322,6 +332,7 @@ decoder_tag(G_GNUC_UNUSED struct decoder *decoder, struct input_stream *is,
 	enum decoder_command cmd;
 
 	assert(dc.state == DECODE_STATE_DECODE);
+	assert(dc.pipe != NULL);
 	assert(tag != NULL);
 
 	/* save the tag */

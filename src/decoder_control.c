@@ -60,6 +60,7 @@ static void dc_command_async(enum decoder_command cmd)
 void
 dc_start(struct notify *notify, struct song *song)
 {
+	assert(dc.pipe != NULL);
 	assert(song != NULL);
 
 	dc.next_song = song;
@@ -69,6 +70,7 @@ dc_start(struct notify *notify, struct song *song)
 void
 dc_start_async(struct song *song)
 {
+	assert(dc.pipe != NULL);
 	assert(song != NULL);
 
 	dc.next_song = song;
