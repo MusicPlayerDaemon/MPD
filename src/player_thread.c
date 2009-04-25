@@ -549,6 +549,12 @@ play_next_chunk(struct player *player)
 
 	if (!success) {
 		music_buffer_return(player_buffer, chunk);
+
+		/* pause: the user may resume playback as soon as an
+		   audio output becomes available */
+		pc.state = PLAYER_STATE_PAUSE;
+		player->paused = true;
+
 		return false;
 	}
 
@@ -708,8 +714,7 @@ static void do_play(void)
 			/* at least one music chunk is ready - send it
 			   to the audio output */
 
-			if (!play_next_chunk(&player))
-				break;
+			play_next_chunk(&player);
 		} else if (audio_output_all_check() > 0) {
 			/* not enough data from decoder, but the
 			   output thread is still busy, so it's

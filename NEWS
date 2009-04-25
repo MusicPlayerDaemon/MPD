@@ -62,6 +62,7 @@ ver 0.15 (200?/??/??)
 * playlist_directory and music_directory are optional
 * playlist: recalculate the queued song after random is toggled
 * playlist: don't unpause on delete
+* pause when all audio outputs fail to play
 * daemon: ignore "user" setting if already running as that user
 * listen: fix broken client IP addresses in log
 * 24/32 bit audio support
