@@ -36,8 +36,6 @@ struct pulse_mixer {
 	const char *sink;
 	const char *output_name;
 
-	GMutex *mutex;
-
 	uint32_t index;
 	bool online;
 
@@ -63,8 +61,6 @@ pulse_wait_for_operation(struct pa_threaded_mainloop *mainloop,
 	assert(mainloop != NULL);
 	assert(operation != NULL);
 
-	pa_threaded_mainloop_lock(mainloop);
-
 	state = pa_operation_get_state(operation);
 	while (state == PA_OPERATION_RUNNING) {
 		pa_threaded_mainloop_wait(mainloop);
@@ -72,7 +68,6 @@ pulse_wait_for_operation(struct pa_threaded_mainloop *mainloop,
 	}
 
 	pa_operation_unref(operation);
-	pa_threaded_mainloop_unlock(mainloop);
 
 	return state == PA_OPERATION_DONE;
 }
@@ -97,13 +92,9 @@ sink_input_cb(G_GNUC_UNUSED pa_context *context, const pa_sink_input_info *i,
 	g_debug("sink input cb %s, index %d ",i->name,i->index);
 
 	if (strcmp(i->name,pm->output_name) == 0) {
-		g_mutex_lock(pm->mutex);
-
 		pm->index = i->index;
 		pm->online = true;
 		pm->volume = i->volume;
-
-		g_mutex_unlock(pm->mutex);
 	} else
 		g_debug("bad name");
 }
@@ -127,9 +118,7 @@ sink_input_vol(G_GNUC_UNUSED pa_context *context, const pa_sink_input_info *i,
 
 	g_debug("sink input vol %s, index %d ", i->name, i->index);
 
-	g_mutex_lock(pm->mutex);
 	pm->volume = i->volume;
-	g_mutex_unlock(pm->mutex);
 
 	pa_threaded_mainloop_signal(pm->mainloop, 0);
 }
@@ -145,8 +134,6 @@ subscribe_cb(pa_context *c, pa_subscription_event_type_t t,
 
 	switch (t & PA_SUBSCRIPTION_EVENT_FACILITY_MASK) {
 	case PA_SUBSCRIPTION_EVENT_SINK_INPUT:
-		g_mutex_lock(pm->mutex);
-
 		if ((t & PA_SUBSCRIPTION_EVENT_TYPE_MASK) ==
 		    PA_SUBSCRIPTION_EVENT_REMOVE &&
 		    pm->index == idx)
@@ -157,7 +144,6 @@ subscribe_cb(pa_context *c, pa_subscription_event_type_t t,
 			o = pa_context_get_sink_input_info(c, idx,
 							   sink_input_cb, pm);
 			if (o == NULL) {
-				g_mutex_unlock(pm->mutex);
 				g_debug("pa_context_get_sink_input_info() failed");
 				return;
 			}
@@ -165,7 +151,6 @@ subscribe_cb(pa_context *c, pa_subscription_event_type_t t,
 			pa_operation_unref(o);
 		}
 
-		g_mutex_unlock(pm->mutex);
 		break;
 	}
 }
@@ -229,8 +214,6 @@ pulse_mixer_init(const struct config_param *param)
 	pm->sink = config_get_block_string(param, "sink", NULL);
 	pm->output_name = config_get_block_string(param, "name", NULL);
 
-	pm->mutex = g_mutex_new();
-
 	return &pm->base;
 }
 
@@ -239,7 +222,6 @@ pulse_mixer_finish(struct mixer *data)
 {
 	struct pulse_mixer *pm = (struct pulse_mixer *) data;
 
-	g_mutex_free(pm->mutex);
 	g_free(pm);
 }
 
@@ -331,28 +313,31 @@ pulse_mixer_get_volume(struct mixer *mixer)
 	int ret;
 	pa_operation *o;
 
-	g_mutex_lock(pm->mutex);
+	pa_threaded_mainloop_lock(pm->mainloop);
+
 	if (!pm->online) {
-		g_mutex_unlock(pm->mutex);
+		pa_threaded_mainloop_unlock(pm->mainloop);
 		return false;
 	}
 
 	o = pa_context_get_sink_input_info(pm->context, pm->index,
 					   sink_input_vol, pm);
-	g_mutex_unlock(pm->mutex);
 	if (o == NULL) {
+		pa_threaded_mainloop_unlock(pm->mainloop);
 		g_debug("pa_context_get_sink_input_info() failed");
 		return false;
 	}
 
-	if (!pulse_wait_for_operation(pm->mainloop, o))
+	if (!pulse_wait_for_operation(pm->mainloop, o)) {
+		pa_threaded_mainloop_unlock(pm->mainloop);
 		return false;
+	}
 
-	g_mutex_lock(pm->mutex);
 	ret = pm->online
 		? (int)((100*(pa_cvolume_avg(&pm->volume)+1))/PA_VOLUME_NORM)
 		: -1;
-	g_mutex_unlock(pm->mutex);
+
+	pa_threaded_mainloop_unlock(pm->mainloop);
 
 	return ret;
 }
@@ -364,9 +349,10 @@ pulse_mixer_set_volume(struct mixer *mixer, unsigned volume)
 	struct pa_cvolume cvolume;
 	pa_operation *o;
 
-	g_mutex_lock(pm->mutex);
+	pa_threaded_mainloop_lock(pm->mainloop);
+
 	if (!pm->online) {
-		g_mutex_unlock(pm->mutex);
+		pa_threaded_mainloop_unlock(pm->mainloop);
 		return false;
 	}
 
@@ -375,7 +361,7 @@ pulse_mixer_set_volume(struct mixer *mixer, unsigned volume)
 
 	o = pa_context_set_sink_input_volume(pm->context, pm->index,
 					     &cvolume, NULL, NULL);
-	g_mutex_unlock(pm->mutex);
+	pa_threaded_mainloop_unlock(pm->mainloop);
 	if (o == NULL) {
 		g_debug("pa_context_set_sink_input_volume() failed");
 		return false;
