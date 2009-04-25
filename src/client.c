@@ -83,7 +83,11 @@ struct client {
 	/** the uid of the client process, or -1 if unknown */
 	int uid;
 
-	time_t lastTime;
+	/**
+	 * How long since the last activity from this client?
+	 */
+	GTimer *last_activity;
+
 	GSList *cmd_list;	/* for when in list mode */
 	int cmd_list_OK;	/* print OK after each command execution */
 	size_t cmd_list_size;	/* mem cmd_list consumes */
@@ -196,7 +200,6 @@ static void client_init(struct client *client, int fd)
 
 	client->input = fifo_buffer_new(4096);
 
-	client->lastTime = time(NULL);
 	client->cmd_list = NULL;
 	client->deferred_send = g_queue_new();
 	client->deferred_bytes = 0;
@@ -238,6 +241,8 @@ static void client_close(struct client *client)
 
 	client_set_expired(client);
 
+	g_timer_destroy(client->last_activity);
+
 	if (client->cmd_list) {
 		free_cmd_list(client->cmd_list);
 		client->cmd_list = NULL;
@@ -270,6 +275,8 @@ void client_new(int fd, const struct sockaddr *sa, size_t sa_length, int uid)
 
 	client_init(client, fd);
 	client->uid = uid;
+
+	client->last_activity = g_timer_new();
 
 	remote = sockaddr_to_string(sa, sa_length, NULL);
 	g_log(G_LOG_DOMAIN, LOG_LEVEL_SECURE,
@@ -474,7 +481,7 @@ client_in_event(G_GNUC_UNUSED GIOChannel *source,
 		return false;
 	}
 
-	client->lastTime = time(NULL);
+	g_timer_start(client->last_activity);
 
 	ret = client_read(client);
 	switch (ret) {
@@ -525,7 +532,7 @@ client_out_event(G_GNUC_UNUSED GIOChannel *source, GIOCondition condition,
 		return false;
 	}
 
-	client->lastTime = time(NULL);
+	g_timer_start(client->last_activity);
 
 	if (g_queue_is_empty(client->deferred_send)) {
 		/* done sending deferred buffers exist: schedule
@@ -589,7 +596,7 @@ client_check_expired_callback(gpointer data, G_GNUC_UNUSED gpointer user_data)
 		client_close(client);
 	} else if (!client->idle_waiting && /* idle clients
 					       never expire */
-		   time(NULL) - client->lastTime >
+		   (int)g_timer_elapsed(client->last_activity, NULL) >
 		   client_timeout) {
 		g_debug("[%u] timeout", client->num);
 		client_close(client);
@@ -671,7 +678,7 @@ static void client_write_deferred(struct client *client)
 			g_queue_pop_head(client->deferred_send);
 		}
 
-		client->lastTime = time(NULL);
+		g_timer_start(client->last_activity);
 	}
 
 	if (g_queue_is_empty(client->deferred_send)) {
@@ -860,7 +867,7 @@ client_idle_notify(struct client *client)
 	}
 
 	client_puts(client, "OK\n");
-	client->lastTime = time(NULL);
+	g_timer_start(client->last_activity);
 }
 
 static void
