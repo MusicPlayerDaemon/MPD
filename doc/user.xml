@@ -92,6 +92,62 @@ cd mpd-0.14.2</programlisting>
     </section>
 
     <section>
+      <title>Configuring input plugins</title>
+
+      <para>
+        To configure an input plugin, add a <varname>input</varname>
+        block to <filename>mpd.conf</filename>:
+      </para>
+
+      <programlisting>input {
+    plugin "lastfm"
+    user "foo"
+    password "bar"
+}
+      </programlisting>
+
+      <para>
+        The following table lists the <varname>input</varname> options
+        valid for all plugins:
+      </para>
+
+      <informaltable>
+        <tgroup cols="2">
+          <thead>
+            <row>
+              <entry>
+                Name
+              </entry>
+              <entry>
+                Description
+              </entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry>
+                <varname>plugin</varname>
+              </entry>
+              <entry>
+                The name of the plugin.
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <varname>enabled</varname>
+                <parameter>yes|no</parameter>
+              </entry>
+              <entry>
+                Allows you to disable a input plugin without
+                recompiling.  By default, all plugins are enabled.
+              </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+    </section>
+
+    <section>
       <title>Configuring decoder plugins</title>
 
       <para>
@@ -237,6 +293,43 @@ cd mpd-0.14.2</programlisting>
 
   <chapter>
     <title>Plugin reference</title>
+
+    <section>
+      <title>Input plugins</title>
+
+      <section>
+        <title><varname>curl</varname></title>
+
+        <para>
+          Opens remote files or streams over HTTP.
+        </para>
+      </section>
+
+      <section>
+        <title><varname>file</varname></title>
+
+        <para>
+          Opens local files.
+        </para>
+      </section>
+
+      <section>
+        <title><varname>lastfm</varname></title>
+
+        <para>
+          Plays last.fm radio.  This plugin is experimental, and will
+          be superseded by a better solution in MPD 0.16.
+        </para>
+      </section>
+
+      <section>
+        <title><varname>mms</varname></title>
+
+        <para>
+          Plays streams with the MMS protocol.
+        </para>
+      </section>
+    </section>
 
     <section>
       <title>Output plugins</title>
