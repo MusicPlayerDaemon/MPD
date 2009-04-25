@@ -197,6 +197,11 @@ player_check_decoder_startup(struct player *player)
 			   all chunks yet - wait for that */
 			return true;
 
+		pc.total_time = dc.total_time;
+		pc.audio_format = dc.in_audio_format;
+		player->play_audio_format = dc.out_audio_format;
+		player->size_to_time =
+			audioFormatSizeToTime(&dc.out_audio_format);
 		player->decoder_starting = false;
 
 		if (!player->paused &&
@@ -210,14 +215,13 @@ player_check_decoder_startup(struct player *player)
 			assert(dc.next_song == NULL || dc.next_song->url != NULL);
 			pc.errored_song = dc.next_song;
 			pc.error = PLAYER_ERROR_AUDIO;
-			return false;
-		}
 
-		pc.total_time = dc.total_time;
-		pc.audio_format = dc.in_audio_format;
-		player->play_audio_format = dc.out_audio_format;
-		player->size_to_time =
-			audioFormatSizeToTime(&dc.out_audio_format);
+			/* pause: the user may resume playback as soon
+			   as an audio output becomes available */
+			pc.state = PLAYER_STATE_PAUSE;
+			player->paused = true;
+			return true;
+		}
 
 		return true;
 	} else {
