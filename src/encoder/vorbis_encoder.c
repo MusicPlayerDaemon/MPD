@@ -262,6 +262,13 @@ vorbis_encoder_flush(struct encoder *_encoder, G_GNUC_UNUSED GError **error)
 	vorbis_analysis_wrote(&encoder->vd, 0);
 	vorbis_encoder_blockout(encoder);
 
+	/* reinitialize vorbis_dsp_state and vorbis_block to reset the
+	   end-of-stream marker */
+	vorbis_block_clear(&encoder->vb);
+	vorbis_dsp_clear(&encoder->vd);
+	vorbis_analysis_init(&encoder->vd, &encoder->vi);
+	vorbis_block_init(&encoder->vd, &encoder->vb);
+
 	encoder->flush = true;
 	return true;
 }
