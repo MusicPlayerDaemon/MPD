@@ -149,6 +149,19 @@
 ###############################################################################
 
 
+# Input #######################################################################
+#
+
+input {
+        plugin "curl"
+#       proxy "proxy.isp.com:8080"
+#       proxy_user "user"
+#       proxy_password "password"
+}
+
+#
+###############################################################################
+
 # Audio Output ################################################################
 #
 # MPD supports various audio output types, as well as playing through multiple 
@@ -321,19 +334,6 @@
 # at the cost of increased time prior to audio playback.
 #
 #buffer_before_play		"10%"
-#
-###############################################################################
-
-
-# HTTP Streaming Proxy ########################################################
-#
-# This setting specifies the HTTP proxy to use for playing HTTP streams. These
-# settings will be disabled by default.
-#
-#http_proxy_host		"proxy.isp.com"
-#http_proxy_port		"8080"
-#http_proxy_user		"user"
-#http_proxy_password		"password"
 #
 ###############################################################################
 

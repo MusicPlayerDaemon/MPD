@@ -210,16 +210,8 @@ The default is 10%, a little over 1 second of CD-quality audio with the default
 buffer size.
 .TP
 .B http_proxy_host <hostname>
-Use to specify the proxy host used for HTTP connections.
-.TP
-.B http_proxy_port <port>
-The port that the HTTP proxy host uses.
-.TP
-.B http_proxy_user <username>
-If the HTTP proxy server requires authentication, this specifies the username.
-.TP
-.B http_proxy_password <password>
-If the HTTP proxy server requires authentication, this specifies the password.
+This setting is deprecated.  Use the "proxy" setting in the "curl"
+input block.  See MPD user manual for details.
 .TP
 .B connection_timeout <seconds>
 If a client does not send any new data in this time period, the connection is
