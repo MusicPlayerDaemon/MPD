@@ -8,18 +8,18 @@ bin_PROGRAMS = src/mpd
 src_mpd_CFLAGS = $(AM_CFLAGS) $(MPD_CFLAGS)
 src_mpd_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(SQLITE_CFLAGS) \
-	$(ID3TAG_CFLAGS) \
 	$(ARCHIVE_CFLAGS) \
 	$(INPUT_CFLAGS) \
+	$(TAG_CFLAGS) \
 	$(DECODER_CFLAGS) \
 	$(ENCODER_CFLAGS) \
 	$(FILTER_CFLAGS) \
 	$(OUTPUT_CFLAGS)
 src_mpd_LDADD = $(MPD_LIBS) \
 	$(SQLITE_LIBS) \
-	$(ID3TAG_LIBS) \
 	$(ARCHIVE_LIBS) \
 	$(INPUT_LIBS) \
+	$(TAG_LIBS) \
 	$(DECODER_LIBS) \
 	$(ENCODER_LIBS) \
 	$(OUTPUT_LIBS) \
@@ -163,6 +163,7 @@ src_mpd_SOURCES = \
 	$(mpd_headers) \
 	$(ARCHIVE_SRC) \
 	$(INPUT_SRC) \
+	$(TAG_SRC) \
 	$(DECODER_SRC) \
 	$(ENCODER_SRC) \
 	$(OUTPUT_API_SRC) $(OUTPUT_SRC) \
@@ -237,7 +238,6 @@ src_mpd_SOURCES = \
 	src/tag_pool.c \
 	src/tag_print.c \
 	src/tag_save.c \
-	src/tag_ape.c \
 	src/strset.c \
 	src/uri.c \
 	src/utils.c \
@@ -260,11 +260,6 @@ FILTER_LIBS = \
 
 if HAVE_LIBSAMPLERATE
 src_mpd_SOURCES += src/pcm_resample_libsamplerate.c
-endif
-
-if HAVE_ID3TAG
-src_mpd_SOURCES += src/tag_id3.c \
-	src/riff.c src/aiff.c
 endif
 
 # archive plugins
@@ -298,6 +293,21 @@ ARCHIVE_SRC += \
 	src/input/archive_input_plugin.c
 endif
 
+
+# tag plugins
+
+TAG_CFLAGS = \
+	$(ID3TAG_CFLAGS)
+TAG_LIBS = \
+	$(ID3TAG_LIBS)
+
+TAG_SRC = \
+	src/tag_ape.c
+
+if HAVE_ID3TAG
+TAG_SRC += src/tag_id3.c \
+	src/riff.c src/aiff.c
+endif
 
 # decoder plugins
 
@@ -618,11 +628,11 @@ test_run_input_SOURCES = test/run_input.c \
 	$(INPUT_SRC)
 
 test_run_decoder_CPPFLAGS = $(AM_CPPFLAGS) \
-	$(ID3TAG_CFLAGS) \
+	$(TAG_CFLAGS) \
 	$(ARCHIVE_CFLAGS) \
 	$(INPUT_CFLAGS) $(DECODER_CFLAGS)
 test_run_decoder_LDADD = $(MPD_LIBS) \
-	$(ID3TAG_LIBS) \
+	$(TAG_LIBS) \
 	$(ARCHIVE_LIBS) \
 	$(INPUT_LIBS) $(DECODER_LIBS) \
 	$(GLIB_LIBS)
@@ -633,24 +643,26 @@ test_run_decoder_SOURCES = test/run_decoder.c \
 	src/uri.c \
 	$(ARCHIVE_SRC) \
 	$(INPUT_SRC) \
+	$(TAG_SRC) \
 	$(DECODER_SRC)
 
 test_read_tags_CPPFLAGS = $(AM_CPPFLAGS) \
-	$(ID3TAG_CFLAGS) \
+	$(TAG_CFLAGS) \
 	$(ARCHIVE_CFLAGS) \
 	$(INPUT_CFLAGS) $(DECODER_CFLAGS)
 test_read_tags_LDADD = $(MPD_LIBS) \
-	$(ID3TAG_LIBS) \
+	$(TAG_LIBS) \
 	$(ARCHIVE_LIBS) \
 	$(INPUT_LIBS) $(DECODER_LIBS) \
 	$(GLIB_LIBS)
 test_read_tags_SOURCES = test/read_tags.c \
 	src/conf.c src/buffer2array.c src/utils.c src/log.c \
-	src/tag.c src/tag_pool.c src/tag_ape.c \
+	src/tag.c src/tag_pool.c \
 	src/replay_gain.c \
 	src/uri.c \
 	$(ARCHIVE_SRC) \
 	$(INPUT_SRC) \
+	$(TAG_SRC) \
 	$(DECODER_SRC)
 
 test_run_encoder_SOURCES = test/run_encoder.c \
