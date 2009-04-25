@@ -92,6 +92,62 @@ cd mpd-0.14.2</programlisting>
     </section>
 
     <section>
+      <title>Configuring decoder plugins</title>
+
+      <para>
+        Most decoder plugins do not need any special configuration.
+        To configure a decoder, add a <varname>decoder</varname> block
+        to <filename>mpd.conf</filename>:
+      </para>
+
+      <programlisting>decoder {
+    plugin "wildmidi"
+    config_file "/etc/timidity/timidity.cfg"
+}
+      </programlisting>
+
+      <para>
+        The following table lists the <varname>decoder</varname>
+        options valid for all plugins:
+      </para>
+
+      <informaltable>
+        <tgroup cols="2">
+          <thead>
+            <row>
+              <entry>
+                Name
+              </entry>
+              <entry>
+                Description
+              </entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry>
+                <varname>plugin</varname>
+              </entry>
+              <entry>
+                The name of the plugin.
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <varname>enabled</varname>
+                <parameter>yes|no</parameter>
+              </entry>
+              <entry>
+                Allows you to disable a decoder plugin without
+                recompiling.  By default, all plugins are enabled.
+              </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+    </section>
+
+    <section>
       <title>Configuring audio outputs</title>
 
       <para>
