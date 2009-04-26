@@ -738,15 +738,15 @@ DOCBOOK_HTML = $(patsubst %.xml,%/index.html,$(DOCBOOK_FILES))
 $(DOCBOOK_HTML): %/index.html: %.xml
 	$(XMLTO) -o $(@D) --stringparam chunker.output.encoding=utf-8 html $<
 
-doc/api/html/index.html: doc/doxygen.conf
-	$(DOXYGEN) $<
-
 else
 
 DOCBOOK_FILES =
 DOCBOOK_HTML =
 
 endif
+
+doc/api/html/index.html: doc/doxygen.conf
+	$(DOXYGEN) $<
 
 all-local: $(DOCBOOK_HTML) doc/api/html/index.html
 
