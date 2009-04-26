@@ -136,7 +136,6 @@ size_t decoder_read(struct decoder *decoder,
 	assert(decoder == NULL ||
 	       dc.state == DECODE_STATE_START ||
 	       dc.state == DECODE_STATE_DECODE);
-	assert(dc.pipe != NULL);
 	assert(is != NULL);
 	assert(buffer != NULL);
 
