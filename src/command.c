@@ -1490,7 +1490,7 @@ handle_idle(struct client *client,
                         continue;
 
                 for (j = 0; idle_names[j]; ++j) {
-                        if (!strcasecmp(argv[i], idle_names[j])) {
+                        if (!g_ascii_strcasecmp(argv[i], idle_names[j])) {
                                 flags |= (1 << j);
                         }
                 }
