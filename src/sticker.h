@@ -89,6 +89,13 @@ bool
 sticker_delete(const char *type, const char *uri);
 
 /**
+ * Deletes a sticker value.  Fails if no sticker with this name
+ * exists.
+ */
+bool
+sticker_delete_value(const char *type, const char *uri, const char *name);
+
+/**
  * Frees resources held by the sticker object.
  *
  * @param sticker the sticker object to be freed

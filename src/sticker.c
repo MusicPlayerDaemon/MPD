@@ -37,6 +37,7 @@ enum sticker_sql {
 	STICKER_SQL_UPDATE,
 	STICKER_SQL_INSERT,
 	STICKER_SQL_DELETE,
+	STICKER_SQL_DELETE_VALUE,
 	STICKER_SQL_FIND,
 };
 
@@ -51,6 +52,8 @@ static const char *const sticker_sql[] = {
 	"INSERT INTO sticker(type,uri,name,value) VALUES(?, ?, ?, ?)",
 	[STICKER_SQL_DELETE] =
 	"DELETE FROM sticker WHERE type=? AND uri=?",
+	[STICKER_SQL_DELETE_VALUE] =
+	"DELETE FROM sticker WHERE type=? AND uri=? AND name=?",
 	[STICKER_SQL_FIND] =
 	"SELECT uri,value FROM sticker WHERE type=? AND uri LIKE (? || '%') AND name=?",
 };
@@ -437,6 +440,58 @@ sticker_delete(const char *type, const char *uri)
 
 	idle_add(IDLE_STICKER);
 	return true;
+}
+
+bool
+sticker_delete_value(const char *type, const char *uri, const char *name)
+{
+	sqlite3_stmt *const stmt = sticker_stmt[STICKER_SQL_DELETE_VALUE];
+	int ret;
+
+	assert(sticker_enabled());
+	assert(type != NULL);
+	assert(uri != NULL);
+
+	sqlite3_reset(stmt);
+
+	ret = sqlite3_bind_text(stmt, 1, type, -1, NULL);
+	if (ret != SQLITE_OK) {
+		g_warning("sqlite3_bind_text() failed: %s",
+			  sqlite3_errmsg(sticker_db));
+		return false;
+	}
+
+	ret = sqlite3_bind_text(stmt, 2, uri, -1, NULL);
+	if (ret != SQLITE_OK) {
+		g_warning("sqlite3_bind_text() failed: %s",
+			  sqlite3_errmsg(sticker_db));
+		return false;
+	}
+
+	ret = sqlite3_bind_text(stmt, 3, name, -1, NULL);
+	if (ret != SQLITE_OK) {
+		g_warning("sqlite3_bind_text() failed: %s",
+			  sqlite3_errmsg(sticker_db));
+		return false;
+	}
+
+	do {
+		ret = sqlite3_step(stmt);
+	} while (ret == SQLITE_BUSY);
+
+	if (ret != SQLITE_DONE) {
+		g_warning("sqlite3_step() failed: %s",
+			  sqlite3_errmsg(sticker_db));
+		return false;
+	}
+
+	ret = sqlite3_changes(sticker_db);
+
+	sqlite3_reset(stmt);
+	sqlite3_clear_bindings(stmt);
+
+	idle_add(IDLE_STICKER);
+	return ret > 0;
 }
 
 static struct sticker *

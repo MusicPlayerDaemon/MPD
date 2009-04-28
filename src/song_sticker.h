@@ -49,6 +49,13 @@ bool
 sticker_song_delete(const struct song *song);
 
 /**
+ * Deletes a sticker value.  Does nothing if the sticker did not
+ * exist.
+ */
+bool
+sticker_song_delete_value(const struct song *song, const char *name);
+
+/**
  * Loads the sticker for the specified song.
  *
  * @param song the song object
