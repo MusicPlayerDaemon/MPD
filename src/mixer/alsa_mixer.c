@@ -121,8 +121,8 @@ alsa_mixer_open(struct mixer *data)
 
 	while (elem) {
 		if (snd_mixer_elem_get_type(elem) == SND_MIXER_ELEM_SIMPLE) {
-			if ((strcasecmp(am->control,
-					snd_mixer_selem_get_name(elem)) == 0) &&
+			if ((g_ascii_strcasecmp(am->control,
+						snd_mixer_selem_get_name(elem)) == 0) &&
 			    (am->index == snd_mixer_selem_get_index(elem))) {
 				break;
 			}
