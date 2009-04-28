@@ -35,15 +35,15 @@ locate_parse_type(const char *str)
 {
 	int i;
 
-	if (0 == strcasecmp(str, LOCATE_TAG_FILE_KEY) ||
-	    0 == strcasecmp(str, LOCATE_TAG_FILE_KEY_OLD))
+	if (0 == g_ascii_strcasecmp(str, LOCATE_TAG_FILE_KEY) ||
+	    0 == g_ascii_strcasecmp(str, LOCATE_TAG_FILE_KEY_OLD))
 		return LOCATE_TAG_FILE_TYPE;
 
-	if (0 == strcasecmp(str, LOCATE_TAG_ANY_KEY))
+	if (0 == g_ascii_strcasecmp(str, LOCATE_TAG_ANY_KEY))
 		return LOCATE_TAG_ANY_TYPE;
 
 	for (i = 0; i < TAG_NUM_OF_ITEM_TYPES; i++)
-		if (0 == strcasecmp(str, tag_item_names[i]))
+		if (0 == g_ascii_strcasecmp(str, tag_item_names[i]))
 			return i;
 
 	return -1;
