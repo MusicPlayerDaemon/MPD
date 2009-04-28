@@ -89,7 +89,7 @@ void tag_lib_init(void)
 
 	memset(ignore_tag_items, true, TAG_NUM_OF_ITEM_TYPES);
 
-	if (0 == strcasecmp(value, "none"))
+	if (0 == g_ascii_strcasecmp(value, "none"))
 		return;
 
 	temp = c = s = g_strdup(value);
@@ -99,7 +99,7 @@ void tag_lib_init(void)
 				quit = 1;
 			*s = '\0';
 			for (i = 0; i < TAG_NUM_OF_ITEM_TYPES; i++) {
-				if (strcasecmp(c, tag_item_names[i]) == 0) {
+				if (g_ascii_strcasecmp(c, tag_item_names[i]) == 0) {
 					ignore_tag_items[i] = false;
 					break;
 				}

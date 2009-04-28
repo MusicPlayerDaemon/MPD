@@ -126,7 +126,7 @@ tag_ape_load(const char *file)
 		/* we only care about utf-8 text tags */
 		if (!(flags & (0x3 << 1))) {
 			for (i = 0; i < 7; i++) {
-				if (strcasecmp(key, apeItems[i]) == 0) {
+				if (g_ascii_strcasecmp(key, apeItems[i]) == 0) {
 					if (!ret)
 						ret = tag_new();
 					tag_add_item_n(ret, tagItems[i],
