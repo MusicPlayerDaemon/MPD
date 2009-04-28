@@ -320,16 +320,16 @@ parse_id3_replay_gain_info(struct id3_tag *tag)
 		    id3_ucs4_latin1duplicate(id3_field_getstring
 					     (&frame->fields[2]));
 
-		if (strcasecmp(key, "replaygain_track_gain") == 0) {
+		if (g_ascii_strcasecmp(key, "replaygain_track_gain") == 0) {
 			replay_gain_info->tuples[REPLAY_GAIN_TRACK].gain = atof(value);
 			found = true;
-		} else if (strcasecmp(key, "replaygain_album_gain") == 0) {
+		} else if (g_ascii_strcasecmp(key, "replaygain_album_gain") == 0) {
 			replay_gain_info->tuples[REPLAY_GAIN_ALBUM].gain = atof(value);
 			found = true;
-		} else if (strcasecmp(key, "replaygain_track_peak") == 0) {
+		} else if (g_ascii_strcasecmp(key, "replaygain_track_peak") == 0) {
 			replay_gain_info->tuples[REPLAY_GAIN_TRACK].peak = atof(value);
 			found = true;
-		} else if (strcasecmp(key, "replaygain_album_peak") == 0) {
+		} else if (g_ascii_strcasecmp(key, "replaygain_album_peak") == 0) {
 			replay_gain_info->tuples[REPLAY_GAIN_ALBUM].peak = atof(value);
 			found = true;
 		}
