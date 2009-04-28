@@ -59,11 +59,11 @@ static int get_bool(const char *value)
 	static const char *f[] = { "no", "false", "0", NULL };
 
 	for (x = t; *x; x++) {
-		if (!strcasecmp(*x, value))
+		if (!g_ascii_strcasecmp(*x, value))
 			return 1;
 	}
 	for (x = f; *x; x++) {
-		if (!strcasecmp(*x, value))
+		if (!g_ascii_strcasecmp(*x, value))
 			return 0;
 	}
 	return CONF_BOOL_INVALID;
