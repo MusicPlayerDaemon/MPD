@@ -181,6 +181,7 @@ input {
 #	format		"44100:16:2"	# optional
 #	mixer_device	"default"	# optional
 #	mixer_control	"PCM"		# optional
+#	mixer_index	"0"		# optional
 #}
 #
 # An example of an OSS output:

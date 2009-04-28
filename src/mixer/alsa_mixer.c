@@ -25,6 +25,7 @@
 
 #define VOLUME_MIXER_ALSA_DEFAULT		"default"
 #define VOLUME_MIXER_ALSA_CONTROL_DEFAULT	"PCM"
+#define VOLUME_MIXER_ALSA_INDEX_DEFAULT		0
 
 struct alsa_mixer {
 	/** the base mixer class */
@@ -32,6 +33,7 @@ struct alsa_mixer {
 
 	const char *device;
 	const char *control;
+	unsigned int index;
 
 	snd_mixer_t *handle;
 	snd_mixer_elem_t *elem;
@@ -51,6 +53,8 @@ alsa_mixer_init(const struct config_param *param)
 					     VOLUME_MIXER_ALSA_DEFAULT);
 	am->control = config_get_block_string(param, "mixer_control",
 					      VOLUME_MIXER_ALSA_CONTROL_DEFAULT);
+	am->index = config_get_block_unsigned(param, "mixer_index",
+					      VOLUME_MIXER_ALSA_INDEX_DEFAULT);
 
 	return &am->base;
 }
@@ -117,8 +121,9 @@ alsa_mixer_open(struct mixer *data)
 
 	while (elem) {
 		if (snd_mixer_elem_get_type(elem) == SND_MIXER_ELEM_SIMPLE) {
-			if (strcasecmp(am->control,
-				       snd_mixer_selem_get_name(elem)) == 0) {
+			if ((strcasecmp(am->control,
+					snd_mixer_selem_get_name(elem)) == 0) &&
+			    (am->index == snd_mixer_selem_get_index(elem))) {
 				break;
 			}
 		}

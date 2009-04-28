@@ -293,6 +293,12 @@ This specifies which mixer control to use (sometimes referred to as the
 "device").  Examples of mixer controls are PCM, Line1, Master, etc.  An example
 for OSS is "Pcm", and an example for alsa is "PCM".
 .TP
+.B mixer_index <mixer index>
+A number identifying the index of the named mixer control.  This is
+probably only useful if your alsa device has more than one
+identically\-named mixer control.  The default is "0".  (Use "amixer
+scontrols" to see the list of controls with their indexes)
+.TP
 .B use_mmap <yes or no>
 Setting this allows you to use memory-mapped I/O.  Certain hardware setups may
 benefit from this, but most do not.  Most users do not need to set this.  The
