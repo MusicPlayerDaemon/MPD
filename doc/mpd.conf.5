@@ -175,16 +175,17 @@ legacy and should not be used in new configs, but when set mixer_device
 and mixer_control will apply.
 .TP
 .B mixer_device <mixer dev>
-This specifies which mixer to use.  The default for oss is "/dev/mixer"; the
-default for alsa is "default". This option is deprecated and should not be
-used.  Look at the mixer_device option of corresponding output device instead.
+This specifies which mixer to use.  The default for oss is
+"/dev/mixer"; the default for alsa is "default". This global option is
+deprecated and should not be used.  Look at the mixer_device option of
+corresponding output device instead.
 .TP
 .B mixer_control <mixer ctrl>
-This specifies which mixer control to use (sometimes referred to as the
-"device").  Examples of mixer controls are PCM, Line1, Master, etc.  An example
-for OSS is "Pcm", and an example for alsa is "PCM". This option is deprecated
-and should not be used. Look at the mixer_control option of corresponding
-output device instead.
+This specifies which mixer control to use (sometimes referred to as
+the "device").  Examples of mixer controls are PCM, Line1, Master,
+etc.  An example for OSS is "Pcm", and an example for alsa is
+"PCM". This global option is deprecated and should not be used. Look
+at the mixer_control option of corresponding output device instead.
 .TP
 .B replaygain <album or track>
 If specified, mpd will adjust the volume of songs played using ReplayGain tags
@@ -285,19 +286,19 @@ whatever audio format is passed to the audio output.
 This specifies the device to use for audio output.  The default is "default".
 .TP
 .B mixer_device <mixer dev>
-This specifies which mixer to use.  The default for oss is "/dev/mixer"; the
-default for alsa is "default".
+This specifies which mixer to use.  The default is "default".  To use
+the second sound card in a system, use "hw:1".
 .TP
 .B mixer_control <mixer ctrl>
-This specifies which mixer control to use (sometimes referred to as the
-"device").  Examples of mixer controls are PCM, Line1, Master, etc.  An example
-for OSS is "Pcm", and an example for alsa is "PCM".
+This specifies which mixer control to use (sometimes referred to as
+the "device").  The default is "PCM".  Use "amixer scontrols" to see
+the list of possible controls.
 .TP
 .B mixer_index <mixer index>
 A number identifying the index of the named mixer control.  This is
 probably only useful if your alsa device has more than one
-identically\-named mixer control.  The default is "0".  (Use "amixer
-scontrols" to see the list of controls with their indexes)
+identically\-named mixer control.  The default is "0".  Use "amixer
+scontrols" to see the list of controls with their indexes.
 .TP
 .B use_mmap <yes or no>
 Setting this allows you to use memory-mapped I/O.  Certain hardware setups may
@@ -333,6 +334,13 @@ or 5804 microseconds for CD-quality audio.
 .TP
 .B device <dev>
 This specifies the device to use for audio output.  The default is "/dev/dsp".
+.TP
+.B mixer_device <mixer dev>
+This specifies which mixer to use.  The default is "/dev/mixer".
+.TP
+.B mixer_control <mixer ctrl>
+This specifies which mixer control to use (sometimes referred to as the
+"device").  The default is to use the main PCM mixer.  An example is "Pcm".
 .SH OPTIONAL PULSE OUTPUT PARAMETERS
 .TP
 .B server <server list>
