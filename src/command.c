@@ -1589,6 +1589,28 @@ handle_sticker_song(struct client *client, int argc, char *argv[])
 		}
 
 		return COMMAND_RETURN_OK;
+	} else if ((argc == 4 || argc == 5) &&
+		   strcmp(argv[1], "delete") == 0) {
+		struct song *song;
+		bool ret;
+
+		song = db_get_song(argv[3]);
+		if (song == NULL) {
+			command_error(client, ACK_ERROR_NO_EXIST,
+				      "no such song");
+			return COMMAND_RETURN_ERROR;
+		}
+
+		ret = argc == 4
+			? sticker_song_delete(song)
+			: sticker_song_delete_value(song, argv[4]);
+		if (!ret) {
+			command_error(client, ACK_ERROR_SYSTEM,
+				      "no such sticker");
+			return COMMAND_RETURN_ERROR;
+		}
+
+		return COMMAND_RETURN_OK;
 	} else if (argc == 5 && strcmp(argv[1], "find") == 0) {
 		/* "sticker find song a/directory name" */
 		struct directory *directory;
