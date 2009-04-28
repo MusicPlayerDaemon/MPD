@@ -572,11 +572,11 @@ input_curl_headerfunction(void *ptr, size_t size, size_t nmemb, void *stream)
 	while (end > value && g_ascii_isspace(end[-1]))
 		--end;
 
-	if (strcasecmp(name, "accept-ranges") == 0) {
+	if (g_ascii_strcasecmp(name, "accept-ranges") == 0) {
 		/* a stream with icy-metadata is not seekable */
 		if (!icy_defined(&c->icy_metadata))
 			is->seekable = true;
-	} else if (strcasecmp(name, "content-length") == 0) {
+	} else if (g_ascii_strcasecmp(name, "content-length") == 0) {
 		char buffer[64];
 
 		if ((size_t)(end - header) >= sizeof(buffer))
@@ -586,12 +586,12 @@ input_curl_headerfunction(void *ptr, size_t size, size_t nmemb, void *stream)
 		buffer[end - value] = 0;
 
 		is->size = is->offset + g_ascii_strtoull(buffer, NULL, 10);
-	} else if (strcasecmp(name, "content-type") == 0) {
+	} else if (g_ascii_strcasecmp(name, "content-type") == 0) {
 		g_free(is->mime);
 		is->mime = g_strndup(value, end - value);
-	} else if (strcasecmp(name, "icy-name") == 0 ||
-		   strcasecmp(name, "ice-name") == 0 ||
-		   strcasecmp(name, "x-audiocast-name") == 0) {
+	} else if (g_ascii_strcasecmp(name, "icy-name") == 0 ||
+		   g_ascii_strcasecmp(name, "ice-name") == 0 ||
+		   g_ascii_strcasecmp(name, "x-audiocast-name") == 0) {
 		g_free(c->meta_name);
 		c->meta_name = g_strndup(value, end - value);
 
@@ -600,7 +600,7 @@ input_curl_headerfunction(void *ptr, size_t size, size_t nmemb, void *stream)
 
 		c->tag = tag_new();
 		tag_add_item(c->tag, TAG_ITEM_NAME, c->meta_name);
-	} else if (strcasecmp(name, "icy-metaint") == 0) {
+	} else if (g_ascii_strcasecmp(name, "icy-metaint") == 0) {
 		char buffer[64];
 		size_t icy_metaint;
 
