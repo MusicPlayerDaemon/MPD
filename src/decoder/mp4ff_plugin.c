@@ -394,21 +394,22 @@ mp4_tag_dup(const char *file)
 
 		mp4ff_meta_get_by_index(mp4fh, i, &item, &value);
 
-		if (0 == strcasecmp("artist", item)) {
+		if (0 == g_ascii_strcasecmp("artist", item)) {
 			tag_add_item(ret, TAG_ITEM_ARTIST, value);
-		} else if (0 == strcasecmp("title", item)) {
+		} else if (0 == g_ascii_strcasecmp("title", item)) {
 			tag_add_item(ret, TAG_ITEM_TITLE, value);
-		} else if (0 == strcasecmp("album", item)) {
+		} else if (0 == g_ascii_strcasecmp("album", item)) {
 			tag_add_item(ret, TAG_ITEM_ALBUM, value);
-		} else if (0 == strcasecmp("track", item)) {
+		} else if (0 == g_ascii_strcasecmp("track", item)) {
 			tag_add_item(ret, TAG_ITEM_TRACK, value);
-		} else if (0 == strcasecmp("disc", item)) {	/* Is that the correct id? */
+		} else if (0 == g_ascii_strcasecmp("disc", item)) {
+			/* Is that the correct id? */
 			tag_add_item(ret, TAG_ITEM_DISC, value);
-		} else if (0 == strcasecmp("genre", item)) {
+		} else if (0 == g_ascii_strcasecmp("genre", item)) {
 			tag_add_item(ret, TAG_ITEM_GENRE, value);
-		} else if (0 == strcasecmp("date", item)) {
+		} else if (0 == g_ascii_strcasecmp("date", item)) {
 			tag_add_item(ret, TAG_ITEM_DATE, value);
-		} else if (0 == strcasecmp("writer", item)) {
+		} else if (0 == g_ascii_strcasecmp("writer", item)) {
 			tag_add_item(ret, TAG_ITEM_COMPOSER, value);
 		}
 
