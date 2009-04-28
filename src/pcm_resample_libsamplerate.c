@@ -65,7 +65,7 @@ static int pcm_resample_get_converter(void)
 			convalgo = SRC_SINC_FASTEST;
 			break;
 		}
-		if (strncasecmp(test2, conf, len) == 0)
+		if (g_ascii_strncasecmp(test2, conf, len) == 0)
 			goto out;
 	}
 
