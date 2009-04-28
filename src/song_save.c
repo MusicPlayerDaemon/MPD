@@ -80,7 +80,8 @@ insertSongIntoList(struct songvec *sv, struct song *newsong)
 			tag_end_add(newsong->tag);
 	} else { /* prevent dupes, just update the existing song info */
 		if (existing->mtime != newsong->mtime) {
-			tag_free(existing->tag);
+			if (existing->tag != NULL)
+				tag_free(existing->tag);
 			if (newsong->tag)
 				tag_end_add(newsong->tag);
 			existing->tag = newsong->tag;

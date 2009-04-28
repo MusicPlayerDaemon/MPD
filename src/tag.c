@@ -163,6 +163,8 @@ void tag_free(struct tag *tag)
 {
 	int i;
 
+	assert(tag != NULL);
+
 	g_mutex_lock(tag_pool_lock);
 	for (i = tag->num_items; --i >= 0; )
 		tag_pool_put_item(tag->items[i]);
