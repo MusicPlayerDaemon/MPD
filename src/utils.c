@@ -135,7 +135,7 @@ int set_nonblocking(int fd)
 int stringFoundInStringArray(const char *const*array, const char *suffix)
 {
 	while (array && *array) {
-		if (strcasecmp(*array, suffix) == 0)
+		if (g_ascii_strcasecmp(*array, suffix) == 0)
 			return 1;
 		array++;
 	}
