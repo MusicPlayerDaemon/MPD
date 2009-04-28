@@ -135,7 +135,8 @@ audio_output_init(struct audio_output *ao, const struct config_param *param,
 	if (ao->data == NULL)
 		return false;
 
-	if (plugin->mixer_plugin != NULL)
+	if (plugin->mixer_plugin != NULL &&
+	    config_get_block_bool(param, "mixer_enabled", true))
 		ao->mixer = mixer_new(plugin->mixer_plugin, param);
 	else
 		ao->mixer = NULL;
