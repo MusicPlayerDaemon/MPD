@@ -186,5 +186,7 @@ if test x$enable_aac = xyes; then
 	CFLAGS=$oldcflags
 	LIBS=$oldlibs
 	CPPFLAGS=$oldcppflags
+else
+	enable_mp4=no
 fi
 ])
