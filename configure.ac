@@ -425,7 +425,7 @@ AM_CONDITIONAL(HAVE_MAD, test x$enable_mad = xyes)
 AC_ARG_ENABLE(mikmod,
 	AS_HELP_STRING([--enable-mikmod],
 		[enable the mikmod decoder (default: disable)]),,
-	enable_mod=no)
+	enable_mikmod=no)
 
 if test x$enable_mikmod = xyes; then
 	AC_PATH_PROG(LIBMIKMOD_CONFIG, libmikmod-config)
