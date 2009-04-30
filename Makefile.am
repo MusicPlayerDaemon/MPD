@@ -723,6 +723,8 @@ endif
 man_MANS = doc/mpd.1 doc/mpd.conf.5
 doc_DATA = AUTHORS COPYING NEWS README UPGRADING doc/mpdconf.example
 
+DOCBOOK_FILES = doc/protocol.xml doc/user.xml
+
 if ENABLE_DOCUMENTATION
 protocoldir = $(docdir)/protocol
 protocol_DATA = $(wildcard doc/protocol/*.html)
@@ -732,7 +734,6 @@ user_DATA = $(wildcard doc/user/*.html)
 
 if HAVE_XMLTO
 
-DOCBOOK_FILES = doc/protocol.xml doc/user.xml
 DOCBOOK_HTML = $(patsubst %.xml,%/index.html,$(DOCBOOK_FILES))
 
 $(DOCBOOK_HTML): %/index.html: %.xml
@@ -740,7 +741,6 @@ $(DOCBOOK_HTML): %/index.html: %.xml
 
 else
 
-DOCBOOK_FILES =
 DOCBOOK_HTML =
 
 endif
