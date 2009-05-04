@@ -49,7 +49,7 @@ zip_open(char * pathname)
 
 	// open archive
 	context->list = NULL;
-	context->dir = zzip_dir_open(pathname, 0);
+	context->dir = zzip_dir_open(pathname, NULL);
 	if (context->dir  == NULL) {
 		g_warning("zipfile %s open failed\n", pathname);
 		return NULL;
@@ -57,7 +57,7 @@ zip_open(char * pathname)
 
 	while (zzip_dir_read(context->dir, &dirent)) {
 		//add only files
-		if (dirent.st_size > 0) { 
+		if (dirent.st_size > 0) {
 			context->list = g_slist_prepend(context->list,
 							g_strdup(dirent.d_name));
 		}
