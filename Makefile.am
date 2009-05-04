@@ -583,10 +583,7 @@ SPARSE_CPPFLAGS = $(DEFAULT_INCLUDES) \
 SPARSE_CPPFLAGS += -D__SCHAR_MAX__=127 -D__SHRT_MAX__=32767 \
 	-D__INT_MAX__=2147483647 -D__LONG_MAX__=2147483647
 sparse-check:
-	for i in $(filter-out %.cxx,$(src_mpd_SOURCES)); \
-	do \
-		$(SPARSE) -I. $(src_mpd_CFLAGS) $(src_mpd_CPPFLAGS) $(SPARSE_FLAGS) $(SPARSE_CPPFLAGS) $(srcdir)/$$i || exit; \
-	done
+	$(SPARSE) -I. $(src_mpd_CFLAGS) $(src_mpd_CPPFLAGS) $(SPARSE_FLAGS) $(SPARSE_CPPFLAGS) $(filter-out %.cxx,$(src_mpd_SOURCES))
 
 .PHONY: sparse-check
 
