@@ -310,30 +310,48 @@ httpd_client_send_page(gpointer data, gpointer user_data)
 	httpd_client_send(client, page);
 }
 
-static bool
-httpd_output_encode_and_play(struct httpd_output *httpd,
-			     const void *chunk, size_t size, GError **error)
+/**
+ * Broadcasts a page struct to all clients.
+ */
+static void
+httpd_output_broadcast_page(struct httpd_output *httpd, struct page *page)
 {
-	bool success;
-	struct page *page;
+	assert(page != NULL);
 
-	success = encoder_write(httpd->encoder, chunk, size, error);
-	if (!success)
-		return false;
+	g_mutex_lock(httpd->mutex);
+	g_list_foreach(httpd->clients, httpd_client_send_page, page);
+	g_mutex_unlock(httpd->mutex);
+}
+
+/**
+ * Broadcasts data from the encoder to all clients.
+ */
+static void
+httpd_output_encoder_to_clients(struct httpd_output *httpd)
+{
+	struct page *page;
 
 	g_mutex_lock(httpd->mutex);
 	g_list_foreach(httpd->clients, httpd_client_check_queue, NULL);
 	g_mutex_unlock(httpd->mutex);
 
 	while ((page = httpd_output_read_page(httpd)) != NULL) {
-		g_mutex_lock(httpd->mutex);
-
-		g_list_foreach(httpd->clients,
-			       httpd_client_send_page, page);
-
-		g_mutex_unlock(httpd->mutex);
+		httpd_output_broadcast_page(httpd, page);
 		page_unref(page);
 	}
+}
+
+static bool
+httpd_output_encode_and_play(struct httpd_output *httpd,
+			     const void *chunk, size_t size, GError **error)
+{
+	bool success;
+
+	success = encoder_write(httpd->encoder, chunk, size, error);
+	if (!success)
+		return false;
+
+	httpd_output_encoder_to_clients(httpd);
 
 	return true;
 }
