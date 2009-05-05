@@ -35,7 +35,7 @@ struct page;
  * @param fd the socket file descriptor
  */
 struct httpd_client *
-httpd_client_new(struct httpd_output *httpd, int fd);
+httpd_client_new(struct httpd_output *httpd, int fd, bool metadata_supported);
 
 /**
  * Frees memory and resources allocated by the #httpd_client object.

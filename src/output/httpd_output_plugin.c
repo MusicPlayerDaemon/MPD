@@ -118,7 +118,9 @@ httpd_output_finish(void *data)
 static void
 httpd_client_add(struct httpd_output *httpd, int fd)
 {
-	struct httpd_client *client = httpd_client_new(httpd, fd);
+	struct httpd_client *client =
+		httpd_client_new(httpd, fd,
+				 httpd->encoder->plugin->tag == NULL);
 
 	httpd->clients = g_list_prepend(httpd->clients, client);
 
@@ -380,21 +382,28 @@ httpd_output_tag(void *data, const struct tag *tag)
 
 	assert(tag != NULL);
 
-	if (httpd->metadata != NULL)
-		page_unref (httpd->metadata);
+	if (httpd->encoder->plugin->tag != NULL) {
+		/* embed encoder tags */
 
-	httpd->metadata = icy_server_metadata_page(tag, TAG_ITEM_ALBUM,
-						   TAG_ITEM_ARTIST,
-						   TAG_ITEM_TITLE,
-						   TAG_NUM_OF_ITEM_TYPES);
+		encoder_tag(httpd->encoder, tag, NULL);
+	} else {
+		/* use Icy-Metadata */
 
-	if (httpd->metadata) {
-		g_mutex_lock(httpd->mutex);
-		g_list_foreach(httpd->clients, httpd_send_metadata, httpd->metadata);
-		g_mutex_unlock(httpd->mutex);
+		if (httpd->metadata != NULL)
+			page_unref (httpd->metadata);
+
+		httpd->metadata =
+			icy_server_metadata_page(tag, TAG_ITEM_ALBUM,
+						 TAG_ITEM_ARTIST,
+						 TAG_ITEM_TITLE,
+						 TAG_NUM_OF_ITEM_TYPES);
+		if (httpd->metadata != NULL) {
+			g_mutex_lock(httpd->mutex);
+			g_list_foreach(httpd->clients,
+				       httpd_send_metadata, httpd->metadata);
+			g_mutex_unlock(httpd->mutex);
+		}
 	}
-
-	encoder_tag(httpd->encoder, tag, NULL);
 }
 
 static void

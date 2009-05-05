@@ -90,6 +90,12 @@ struct httpd_client {
 	/* ICY */
 
 	/**
+	 * Do we support sending Icy-Metadata to the client?  This is
+	 * disabled if the httpd audio output uses encoder tags.
+	 */
+	bool metadata_supported;
+
+	/**
 	 * If we should sent icy metadata.
 	 */
 	bool metadata_requested;
@@ -210,7 +216,8 @@ httpd_client_handle_line(struct httpd_client *client, const char *line)
 
 		if (g_ascii_strncasecmp(line, "Icy-MetaData: 1", 15) == 0) {
 			/* Send icy metadata */
-			client->metadata_requested = true;
+			client->metadata_requested =
+				client->metadata_supported;
 			return true;
 		}
 
@@ -417,7 +424,7 @@ httpd_client_in_event(G_GNUC_UNUSED GIOChannel *source, GIOCondition condition,
 }
 
 struct httpd_client *
-httpd_client_new(struct httpd_output *httpd, int fd)
+httpd_client_new(struct httpd_output *httpd, int fd, bool metadata_supported)
 {
 	struct httpd_client *client = g_new(struct httpd_client, 1);
 
@@ -443,6 +450,7 @@ httpd_client_new(struct httpd_output *httpd, int fd)
 	client->input = fifo_buffer_new(4096);
 	client->state = REQUEST;
 
+	client->metadata_supported = metadata_supported;
 	client->metadata_requested = false;
 	client->metadata_sent = true;
 	client->metaint = 8192; /*TODO: just a std value */
