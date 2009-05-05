@@ -295,22 +295,25 @@ vorbis_encoder_tag(struct encoder *_encoder, const struct tag *tag,
 {
 	struct vorbis_encoder *encoder = (struct vorbis_encoder *)_encoder;
 	vorbis_comment comment;
-	ogg_packet packet;
 
 	/* write the vorbis_comment object */
 
 	vorbis_comment_init(&comment);
 	copy_tag_to_vorbis_comment(&comment, tag);
 
-	/* convert that vorbis_comment into a ogg_packet */
+	/* reset ogg_stream_state and begin a new stream */
 
-	vorbis_commentheader_out(&comment, &packet);
+	ogg_stream_reset_serialno(&encoder->os, g_random_int());
+
+	/* send that vorbis_comment to the ogg_stream_state */
+
+	vorbis_encoder_headerout(encoder, &comment);
 	vorbis_comment_clear(&comment);
 
-	/* .. and send it into the ogg_stream_state */
+	/* the next vorbis_encoder_read() call should flush the
+	   ogg_stream_state */
 
-	ogg_stream_packetin(&encoder->os, &packet);
-	ogg_packet_clear(&packet);
+	encoder->flush = true;
 
 	return true;
 }
