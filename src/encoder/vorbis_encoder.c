@@ -181,20 +181,25 @@ vorbis_encoder_reinit(struct vorbis_encoder *encoder, GError **error)
 }
 
 static void
-vorbis_encoder_send_header(struct vorbis_encoder *encoder)
+vorbis_encoder_headerout(struct vorbis_encoder *encoder, vorbis_comment *vc)
 {
-	vorbis_comment vc;
 	ogg_packet packet, comments, codebooks;
 
-	vorbis_comment_init(&vc);
-
-	vorbis_analysis_headerout(&encoder->vd, &vc,
+	vorbis_analysis_headerout(&encoder->vd, vc,
 				  &packet, &comments, &codebooks);
 
 	ogg_stream_packetin(&encoder->os, &packet);
 	ogg_stream_packetin(&encoder->os, &comments);
 	ogg_stream_packetin(&encoder->os, &codebooks);
+}
 
+static void
+vorbis_encoder_send_header(struct vorbis_encoder *encoder)
+{
+	vorbis_comment vc;
+
+	vorbis_comment_init(&vc);
+	vorbis_encoder_headerout(encoder, &vc);
 	vorbis_comment_clear(&vc);
 }
 
