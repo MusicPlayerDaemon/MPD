@@ -28,6 +28,16 @@
 #include <stddef.h>
 #include <unistd.h>
 
+static void
+encoder_to_stdout(struct encoder *encoder)
+{
+	size_t length;
+	static char buffer[32768];
+
+	while ((length = encoder_read(encoder, buffer, sizeof(buffer))) > 0)
+		write(1, buffer, length);
+}
+
 int main(int argc, char **argv)
 {
 	GError *error = NULL;
@@ -98,8 +108,6 @@ int main(int argc, char **argv)
 	/* do it */
 
 	while ((nbytes = read(0, buffer, sizeof(buffer))) > 0) {
-		size_t length;
-
 		ret = encoder_write(encoder, buffer, nbytes, &error);
 		if (!ret) {
 			g_printerr("encoder_write() failed: %s\n",
@@ -108,8 +116,16 @@ int main(int argc, char **argv)
 			return 1;
 		}
 
-		length = encoder_read(encoder, buffer, sizeof(buffer));
-		if (length > 0)
-			write(1, buffer, length);
+		encoder_to_stdout(encoder);
 	}
+
+	ret = encoder_flush(encoder, &error);
+	if (!ret) {
+		g_printerr("encoder_flush() failed: %s\n",
+			   error->message);
+		g_error_free(error);
+		return 1;
+	}
+
+	encoder_to_stdout(encoder);
 }
