@@ -285,6 +285,45 @@ tag_id3_import_musicbrainz(struct tag *mpd_tag, struct id3_tag *id3_tag)
 	}
 }
 
+/**
+ * Imports the MusicBrainz TrackId from the UFID tag.
+ */
+static void
+tag_id3_import_ufid(struct tag *mpd_tag, struct id3_tag *id3_tag)
+{
+	for (unsigned i = 0;; ++i) {
+		const struct id3_frame *frame;
+		union id3_field *field;
+		const id3_latin1_t *name;
+		const id3_byte_t *value;
+		id3_length_t length;
+
+		frame = id3_tag_findframe(id3_tag, "UFID", i);
+		if (frame == NULL)
+			break;
+
+		field = id3_frame_field(frame, 0);
+		if (field == NULL)
+			continue;
+
+		name = id3_field_getlatin1(field);
+		if (name == NULL ||
+		    strcmp((const char *)name, "http://musicbrainz.org") != 0)
+			continue;
+
+		field = id3_frame_field(frame, 1);
+		if (field == NULL)
+			continue;
+
+		value = id3_field_getbinarydata(field, &length);
+		if (value == NULL || length == 0)
+			continue;
+
+		tag_add_item_n(mpd_tag, TAG_MUSICBRAINZ_TRACKID,
+			       (const char*)value, length);
+	}
+}
+
 struct tag *tag_id3_import(struct id3_tag * tag)
 {
 	struct tag *ret = tag_new();
@@ -305,6 +344,7 @@ struct tag *tag_id3_import(struct id3_tag * tag)
 	getID3Info(tag, ID3_FRAME_DISC, TAG_ITEM_DISC, ret);
 
 	tag_id3_import_musicbrainz(ret, tag);
+	tag_id3_import_ufid(ret, tag);
 
 	if (tag_is_empty(ret)) {
 		tag_free(ret);
