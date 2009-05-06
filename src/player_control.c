@@ -220,13 +220,13 @@ queueSong(struct song *song)
 	player_command(PLAYER_COMMAND_QUEUE);
 }
 
-int
-playerSeek(struct song *song, float seek_time)
+bool
+pc_seek(struct song *song, float seek_time)
 {
 	assert(song != NULL);
 
 	if (pc.state == PLAYER_STATE_STOP)
-		return -1;
+		return false;
 
 	pc.next_song = song;
 
@@ -237,7 +237,7 @@ playerSeek(struct song *song, float seek_time)
 		idle_add(IDLE_PLAYER);
 	}
 
-	return 0;
+	return true;
 }
 
 float getPlayerCrossFade(void)

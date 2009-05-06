@@ -132,8 +132,14 @@ void playerWait(void);
 void
 queueSong(struct song *song);
 
-int
-playerSeek(struct song *song, float seek_time);
+/**
+ * Makes the player thread seek the specified song to a position.
+ *
+ * @return true on success, false on failure (e.g. if MPD isn't
+ * playing currently)
+ */
+bool
+pc_seek(struct song *song, float seek_time);
 
 void setPlayerCrossFade(float crossFadeInSeconds);
 

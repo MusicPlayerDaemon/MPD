@@ -218,7 +218,7 @@ seekSongInPlaylist(struct playlist *playlist, unsigned song, float seek_time)
 {
 	const struct song *queued;
 	unsigned i;
-	int ret;
+	bool success;
 
 	if (!queue_valid_position(&playlist->queue, song))
 		return PLAYLIST_RESULT_BAD_RANGE;
@@ -242,8 +242,8 @@ seekSongInPlaylist(struct playlist *playlist, unsigned song, float seek_time)
 		queued = NULL;
 	}
 
-	ret = playerSeek(queue_get_order(&playlist->queue, i), seek_time);
-	if (ret < 0) {
+	success = pc_seek(queue_get_order(&playlist->queue, i), seek_time);
+	if (!success) {
 		playlist_update_queued_song(playlist, queued);
 
 		return PLAYLIST_RESULT_NOT_PLAYING;
