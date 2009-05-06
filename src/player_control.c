@@ -232,6 +232,8 @@ pc_seek(struct song *song, float seek_time)
 	pc.seek_where = seek_time;
 	player_command(PLAYER_COMMAND_SEEK);
 
+	assert(pc.next_song == NULL);
+
 	idle_add(IDLE_PLAYER);
 
 	return true;
