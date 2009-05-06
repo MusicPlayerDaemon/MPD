@@ -229,13 +229,10 @@ pc_seek(struct song *song, float seek_time)
 		return false;
 
 	pc.next_song = song;
+	pc.seek_where = seek_time;
+	player_command(PLAYER_COMMAND_SEEK);
 
-	if (pc.error == PLAYER_ERROR_NOERROR) {
-		pc.seek_where = seek_time;
-		player_command(PLAYER_COMMAND_SEEK);
-
-		idle_add(IDLE_PLAYER);
-	}
+	idle_add(IDLE_PLAYER);
 
 	return true;
 }
