@@ -31,7 +31,7 @@ static bool
 pcm_resample_lsr_enabled(void)
 {
 	return strcmp(config_get_string(CONF_SAMPLERATE_CONVERTER, ""),
-		      "internal") == 0;
+		      "internal") != 0;
 }
 #endif
 
