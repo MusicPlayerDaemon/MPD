@@ -161,6 +161,7 @@ void
 music_pipe_push(struct music_pipe *mp, struct music_chunk *chunk)
 {
 	assert(!music_chunk_is_empty(chunk));
+	assert(chunk->length == 0 || audio_format_valid(&chunk->audio_format));
 
 	g_mutex_lock(mp->mutex);
 
