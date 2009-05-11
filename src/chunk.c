@@ -44,6 +44,7 @@ music_chunk_check_format(const struct music_chunk *chunk,
 {
 	assert(chunk != NULL);
 	assert(audio_format != NULL);
+	assert(audio_format_valid(audio_format));
 
 	return chunk->length == 0 ||
 		audio_format_equals(&chunk->audio_format, audio_format);
@@ -60,6 +61,7 @@ music_chunk_write(struct music_chunk *chunk,
 	size_t num_frames;
 
 	assert(music_chunk_check_format(chunk, audio_format));
+	assert(chunk->length == 0 || audio_format_valid(&chunk->audio_format));
 
 	if (chunk->length == 0) {
 		/* if the chunk is empty, nobody has set bitRate and
