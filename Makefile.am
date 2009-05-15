@@ -774,4 +774,4 @@ endif
 
 EXTRA_DIST = $(doc_DATA) autogen.sh \
 	$(wildcard scripts/*.sh) \
-	$(man_MANS) $(DOCBOOK_FILES) doc/mpdconf.example
+	$(man_MANS) $(DOCBOOK_FILES) doc/mpdconf.example doc/doxygen.conf
