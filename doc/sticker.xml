@@ -28,51 +28,64 @@
       its easy to change this on the fly, if needed.
     </para>
 
-    <tag>
-      <name>rating</name>
-      <value>1-5</value>
-      <para>
-        Will store a rating value from 1 (worst) to 5 (best) for a given song.
-      </para>
-    </tag>
+    <variablelist>
+      <varlistentry>
+        <term><varname>rating</varname></term>
+        <listitem>
+          <para>
+            Will store a rating value from 1 (worst) to 5 (best) for a
+            given song.
+          </para>
+        </listitem>
+      </varlistentry>
 
-    <tag>
-      <name>album_rating</name>
-      <value>1-5</value>
-      <para>
-        Will store a rating value from 1 (worst) to 5 (best) for a given album.
-      </para>
-    </tag>
+      <varlistentry>
+        <term><varname>album_rating</varname></term>
+        <listitem>
+          <para>
+            Will store a rating value from 1 (worst) to 5 (best) for a
+            given album.
+          </para>
+        </listitem>
+      </varlistentry>
 
-    <tag>
-      <name>style</name>
-      <value>Keyword</value>
-      <para>
-        This tag is used to keep the Genre tag clean, by now having 1000's of genres.
-        Instead you define a Main Genre for each file and can make a more specific
-        description. This should be one Keyword like "Post Punk" or "Progressive Death Metal"
-        An Alternative name for this tag is "Subgenre", time will tell which one gets
-        more support.
-      </para>
-    </tag>
+      <varlistentry>
+        <term><varname>style</varname></term>
+        <listitem>
+          <para>
+            This tag is used to keep the Genre tag clean, by now
+            having 1000's of genres.  Instead you define a Main Genre
+            for each file and can make a more specific
+            description. This should be one Keyword like "Post Punk"
+            or "Progressive Death Metal" An Alternative name for this
+            tag is "Subgenre", time will tell which one gets more
+            support.
+          </para>
+        </listitem>
+      </varlistentry>
 
-    <tag>
-      <name>lyrics</name>
-      <value>The lyrics of the song, including header with Artist - Title</value>
-      <para>
-        This one is self explaining. This gives the option to store lyrics of
-        a song where they belong to: mapped to the song
-      </para>
-    </tag>
+      <varlistentry>
+        <term><varname>lyrics</varname></term>
+        <listitem>
+          <para>
+            This one is self explaining. This gives the option to
+            store lyrics of a song where they belong to: mapped to the
+            song
+          </para>
+        </listitem>
+      </varlistentry>
 
-    <tag>
-      <name>similar_artists</name>
-      <value>Comma seperated list of artists</value>
-      <para>
-        This tag enables a last.fm alike aproach which will still work when being offline
-        Keep in mind, that this tag is absolutely non-standard! I am not aware of any
-        other player that uses a comparable tag.
-      </para>
-    </tag>
+      <varlistentry>
+        <term><varname>similar_artists</varname> (Comma seperated list of artists)</term>
+        <listitem>
+          <para>
+            This tag enables a last.fm alike aproach which will still
+            work when being offline Keep in mind, that this tag is
+            absolutely non-standard! I am not aware of any other
+            player that uses a comparable tag.
+          </para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
   </chapter>
 </book>

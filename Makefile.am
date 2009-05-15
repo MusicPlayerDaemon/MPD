@@ -720,7 +720,7 @@ endif
 man_MANS = doc/mpd.1 doc/mpd.conf.5
 doc_DATA = AUTHORS COPYING NEWS README UPGRADING doc/mpdconf.example
 
-DOCBOOK_FILES = doc/protocol.xml doc/user.xml
+DOCBOOK_FILES = doc/protocol.xml doc/user.xml doc/sticker.xml
 
 if ENABLE_DOCUMENTATION
 protocoldir = $(docdir)/protocol
