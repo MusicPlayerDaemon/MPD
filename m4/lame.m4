@@ -18,10 +18,6 @@ AC_ARG_WITH(lame-includes,
 	AS_HELP_STRING([--with-lame-includes=DIR],
 		[directory where liblame header files are installed (optional)]),,
 	lame_includes="")
-AC_ARG_ENABLE(lametest,
-	AS_HELP_STRING([--disable-lametest],
-		[do not try to compile and run a test liblame program]),,
-	enable_lametest=yes)
 
 if test "x$lame_prefix" != "xno" ; then
 
@@ -47,7 +43,6 @@ if test "x$lame_prefix" != "xno" ; then
   no_lame=""
 
 
-  if test "x$enable_lametest" = "xyes" ; then
     ac_save_CFLAGS="$CFLAGS"
     ac_save_LIBS="$LIBS"
     CFLAGS="$CFLAGS $LAME_CFLAGS"
@@ -109,10 +104,6 @@ int main ()
   fi
   AC_DEFINE(HAVE_LAME, 1, [Define if you have liblame.])
   use_lame="1"
-else
-  LAME_CFLAGS=""
-  LAME_LIBS=""
-fi
   AC_SUBST(LAME_CFLAGS)
   AC_SUBST(LAME_LIBS)
   rm -f conf.lametest
