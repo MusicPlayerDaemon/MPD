@@ -166,7 +166,7 @@ if test x$enable_aac = xyes; then
 	oldlibs=$LIBS
 	oldcppflags=$CPPFLAGS
 	CFLAGS="$CFLAGS $FAAD_CFLAGS"
-	LIBS="$LIBS $MP4FF_LIBS"
+	LIBS="$LIBS $FAAD_LIBS $MP4FF_LIBS"
 	CPPFLAGS=$CFLAGS
 
 	AC_CHECK_HEADER(mp4ff.h,,enable_mp4=no)
