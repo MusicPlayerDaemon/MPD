@@ -475,9 +475,15 @@ dnl Ogg Tremor
 dnl ###
 AC_ARG_WITH(tremor,
 	AS_HELP_STRING([--with-tremor=PFX],
-		[use Tremor (vorbisidec) integer Ogg Vorbis decoder (with optional prefix)]),
-	use_tremor=yes; test x$withval != xyes && tremor_prefix="$withval",
-	)
+		[use Tremor (vorbisidec) integer Ogg Vorbis decoder (with optional prefix)]),,
+	with_tremor=no)
+
+if test x$with_tremor = xyes || test x$with_tremor = xno; then
+	use_tremor="$with_tremor"
+else
+	tremor_prefix="$with_tremor"
+	use_tremor=yes
+fi
 
 AC_ARG_WITH(tremor-libraries,
 	AS_HELP_STRING([--with-tremor-libraries=DIR],
