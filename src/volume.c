@@ -41,7 +41,6 @@
 #define VOLUME_MIXER_TYPE_HARDWARE		1
 #define VOLUME_MIXER_TYPE_DISABLED		2
 
-#define VOLUME_MIXER_SOFTWARE_DEFAULT		""
 #define SW_VOLUME_STATE                         "sw_volume: "
 
 static int volume_mixer_type = VOLUME_MIXER_TYPE_HARDWARE;
