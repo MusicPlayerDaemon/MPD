@@ -158,6 +158,9 @@ nextSongInPlaylist(struct playlist *playlist)
 		playlist->queue.single = false;
 		/* no song after this one: stop playback */
 		stopPlaylist(playlist);
+
+		/* reset "current song" */
+		playlist->current = -1;
 	}
 	else
 	{
