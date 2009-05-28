@@ -190,9 +190,12 @@ int volume_level_get(void)
 		return software_volume_get();
 	case VOLUME_MIXER_TYPE_HARDWARE:
 		return hardware_volume_get();
-	default:
+	case VOLUME_MIXER_TYPE_DISABLED:
 		return -1;
 	}
+
+	/* unreachable */
+	assert(false);
 	return -1;
 }
 
