@@ -52,6 +52,8 @@ input_file_open(struct input_stream *is, const char *filename)
 	fd = open(pathname, O_RDONLY);
 	if (fd < 0) {
 		is->error = errno;
+		g_debug("Failed to open \"%s\": %s",
+			pathname, g_strerror(errno));
 		g_free(pathname);
 		return false;
 	}
