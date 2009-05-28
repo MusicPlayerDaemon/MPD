@@ -37,13 +37,14 @@
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "volume"
 
-#define VOLUME_MIXER_TYPE_SOFTWARE		0
-#define VOLUME_MIXER_TYPE_HARDWARE		1
-#define VOLUME_MIXER_TYPE_DISABLED		2
-
 #define SW_VOLUME_STATE                         "sw_volume: "
 
-static int volume_mixer_type = VOLUME_MIXER_TYPE_HARDWARE;
+static enum {
+	VOLUME_MIXER_TYPE_SOFTWARE,
+	VOLUME_MIXER_TYPE_HARDWARE,
+	VOLUME_MIXER_TYPE_DISABLED,
+} volume_mixer_type = VOLUME_MIXER_TYPE_HARDWARE;
+
 static int volume_software_set = 100;
 
 /** the cached hardware mixer value; invalid if negative */
