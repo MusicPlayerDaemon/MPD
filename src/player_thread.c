@@ -780,6 +780,15 @@ static gpointer player_task(G_GNUC_UNUSED gpointer arg)
 		case PLAYER_COMMAND_CLOSE_AUDIO:
 			audio_output_all_close();
 			player_command_finished();
+
+#ifndef NDEBUG
+			/* in the DEBUG build, check for leaked
+			   music_chunk objects by freeing the
+			   music_buffer */
+			music_buffer_free(player_buffer);
+			player_buffer = music_buffer_new(pc.buffer_chunks);
+#endif
+
 			break;
 
 		case PLAYER_COMMAND_EXIT:
