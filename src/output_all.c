@@ -240,7 +240,7 @@ audio_output_all_play(struct music_chunk *chunk)
 		if (audio_output_is_open(&audio_outputs[i]))
 			audio_output_play(&audio_outputs[i]);
 
-	return ret;
+	return true;
 }
 
 bool
