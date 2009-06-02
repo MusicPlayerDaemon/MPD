@@ -730,7 +730,11 @@ static void do_play(void)
 			if (!player_song_border(&player))
 				break;
 		} else if (decoder_is_idle()) {
-			break;
+			/* check the size of the pipe again, because
+			   the decoder thread may have added something
+			   since we last checked */
+			if (music_pipe_size(player.pipe) == 0)
+				break;
 		} else {
 			/* the decoder is too busy and hasn't provided
 			   new PCM data in time: send silence (if the
