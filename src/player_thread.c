@@ -447,8 +447,10 @@ play_chunk(struct song *song, struct music_chunk *chunk,
 		}
 	}
 
-	if (chunk->length == 0)
+	if (chunk->length == 0) {
+		music_buffer_return(player_buffer, chunk);
 		return true;
+	}
 
 	pc.elapsed_time = chunk->times;
 	pc.bit_rate = chunk->bit_rate;
