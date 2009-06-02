@@ -123,6 +123,7 @@
           </term>
           <listitem>
             <para>
+              <footnote id="since_0_14"><simpara>Since MPD 0.14</simpara></footnote>
               Waits until there is a noteworthy change in one or more
               of MPD's subsystems.  As soon as there is one, it lists
               all changed systems in a line in the format
@@ -190,6 +191,9 @@
               MPD will only send notifications when something changed in
               one of the specified subsytems.
             </para>
+            <simpara>
+              Since <application>MPD</application> 0.14
+            </simpara>
           </listitem>
         </varlistentry>
         <varlistentry id="command_status">
@@ -220,12 +224,14 @@
                <para>
                 <varname>single</varname>:
                 <returnvalue>0 or 1</returnvalue>
+                <footnote id="since_0_15"><simpara>Since MPD 0.15</simpara></footnote>
                </para>
               </listitem>
               <listitem>
                <para>
                 <varname>consume</varname>:
                 <returnvalue>0 or 1</returnvalue>
+                <footnoteref linkend="since_0_15"/>
                </para>
               </listitem>
               <listitem>
@@ -368,6 +374,7 @@
           </term>
           <listitem>
             <para>
+              <footnoteref linkend="since_0_15"/>
               Sets consume state to <varname>STATE</varname>,
               <varname>STATE</varname> should be 0 or 1.
 	      When consume is activated, each song played is removed from playlist.
@@ -438,6 +445,7 @@
           </term>
           <listitem>
             <para>
+              <footnoteref linkend="since_0_15"/>
               Sets single state to <varname>STATE</varname>,
               <varname>STATE</varname> should be 0 or 1.
 	      When single is activated, playback is stopped after current song, or
@@ -689,6 +697,9 @@ OK
               Moves the song at <varname>FROM</varname> or range of songs
               at <varname>START:END</varname> to <varname>TO</varname>
               in the playlist.
+              <footnote id="range_since_0_15">
+                <simpara>Ranges are supported since MPD 0.15</simpara>
+              </footnote>
             </para>
           </listitem>
         </varlistentry>
@@ -773,6 +784,7 @@ OK
               argument is given, displays information only for the song
               <varname>SONGPOS</varname> or the range of songs
               <varname>START:END</varname>
+              <footnoteref linkend="range_since_0_15"/>
             </para>
           </listitem>
         </varlistentry>
@@ -1213,10 +1225,11 @@ OK
       <title>Stickers</title>
 
       <para>
-        "Stickers" are pieces of information attached to existing MPD
-        objects (e.g. song files, directories, albums).  Clients can
-        create arbitrary name/value pairs.  MPD itself does not assume
-        any special meaning in them.
+        "Stickers"<footnoteref linkend="since_0_15"/> are pieces of
+        information attached to existing MPD objects (e.g. song files,
+        directories, albums).  Clients can create arbitrary name/value
+        pairs.  MPD itself does not assume any special meaning in
+        them.
       </para>
 
       <para>
