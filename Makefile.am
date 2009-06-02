@@ -720,7 +720,7 @@ endif
 man_MANS = doc/mpd.1 doc/mpd.conf.5
 doc_DATA = AUTHORS COPYING NEWS README UPGRADING doc/mpdconf.example
 
-DOCBOOK_FILES = doc/protocol.xml doc/user.xml doc/sticker.xml
+DOCBOOK_FILES = doc/protocol.xml doc/user.xml doc/developer.xml doc/sticker.xml
 
 if ENABLE_DOCUMENTATION
 protocoldir = $(docdir)/protocol
@@ -728,6 +728,9 @@ protocol_DATA = $(wildcard doc/protocol/*.html)
 
 userdir = $(docdir)/user
 user_DATA = $(wildcard doc/user/*.html)
+
+developerdir = $(docdir)/developer
+developer_DATA = $(wildcard doc/developer/*.html)
 
 if HAVE_XMLTO
 
@@ -762,6 +765,7 @@ upload: $(DOCBOOK_HTML) doc/api/html/index.html
 		--chmod=Dug+rwx,Do+rx,Fug+rw,Fo+r \
 		--include=protocol --include=protocol/** \
 		--include=user --include=user/** \
+		--include=developer --include=developer/** \
 		--include=api --include=api/** \
 		--exclude=*
 

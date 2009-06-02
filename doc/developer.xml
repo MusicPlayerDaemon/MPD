@@ -1,0 +1,105 @@
+<?xml version='1.0' encoding="utf-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+               "docbook/dtd/xml/4.2/docbookx.dtd">
+<book>
+  <title>The Music Player Daemon - Developer's Manual</title>
+
+  <chapter>
+    <title>Introduction</title>
+
+    <para>
+      This is a guide for those who wish to hack on the MPD source
+      code.  MPD is an open project, and we are always happy about
+      contributions.  So far, more than 50 people have contributed
+      patches.
+    </para>
+
+    <para>
+      This document is work in progress.  Most of it may be incomplete
+      yet.  Please help!
+    </para>
+  </chapter>
+
+  <chapter>
+    <title>Code Style</title>
+
+    <itemizedlist>
+      <listitem>
+        <para>
+          indent with tabs (width 8)
+        </para>
+      </listitem>
+
+      <listitem>
+        <para>
+          don't write CPP when you can write C: use inline functions
+          and enums instead of macros
+        </para>
+      </listitem>
+
+      <listitem>
+        <para>
+          the code should be C99 compliant, and must compile with
+          <application>GCC</application>;
+          <application>clang</application> support is highly desirable
+        </para>
+      </listitem>
+
+      <listitem>
+        <para>
+          C++ is ok (for integrating C++ only libraries), but it
+          should be avoided
+        </para>
+      </listitem>
+
+      <listitem>
+        <para>
+          Some example code:
+        </para>
+
+        <programlisting lang="C">static inline bool
+foo(const char *abc, int xyz)
+{
+        if (abc == NULL) {
+                g_warning("Foo happened!\n");
+                return -1;
+        }
+
+        return xyz;
+}
+        </programlisting>
+      </listitem>
+    </itemizedlist>
+  </chapter>
+
+  <chapter>
+    <title>Hacking The Source</title>
+
+    <para>
+      Always write your code against the latest git:
+    </para>
+
+    <programlisting>git clone git://git.musicpd.org/master/mpd.git</programlisting>
+
+    <para>
+      Configure with the options <option>--enable-debug
+      --enable-werror</option>.  Enable as many plugins as possible,
+      to be sure that you don't break any disabled code.
+    </para>
+
+    <para>
+      Don't mix several changes in one single patch.  Create a
+      separate patch for every change.  Tools like
+      <application>stgit</application> help you with that.
+    </para>
+  </chapter>
+
+  <chapter>
+    <title>Submitting Patches</title>
+
+    <para>
+      Send your patches to the mailing list:
+      musicpd-dev-team@lists.sourceforge.net
+    </para>
+  </chapter>
+</book>
