@@ -37,43 +37,44 @@ struct decoder_plugin {
 	const char *name;
 
 	/**
-	 * optional, set this to NULL if the InputPlugin doesn't
-	 * have/need one this must return < 0 if there is an error and
-	 * >= 0 otherwise
+	 * Initialize the decoder plugin.  Optional method.
+	 *
+	 * @param param a configuration block for this plugin, or NULL
+	 * if none is configured
+	 * @return true if the plugin was initialized successfully,
+	 * false if the plugin is not available
 	 */
 	bool (*init)(const struct config_param *param);
 
 	/**
-	 * optional, set this to NULL if the InputPlugin doesn't have/need one
+	 * Deinitialize a decoder plugin which was initialized
+	 * successfully.  Optional method.
 	 */
 	void (*finish)(void);
 
 	/**
-	 * this will be used to decode InputStreams, and is
-	 * recommended for files and networked (HTTP) connections.
+	 * Decode a stream (data read from an #input_stream object).
 	 *
-	 * @return false if the plugin cannot decode the stream, and
-	 * true if it was able to do so (even if an error occured
-	 * during playback)
+	 * Either implement this method or file_decode().  If
+	 * possible, it is recommended to implement this method,
+	 * because it is more versatile.
 	 */
-	void (*stream_decode)(struct decoder *, struct input_stream *);
+	void (*stream_decode)(struct decoder *decoder,
+			      struct input_stream *is);
 
 	/**
-	 * use this if and only if your InputPlugin can only be passed
-	 * a filename or handle as input, and will not allow callbacks
-	 * to be set (like Ogg-Vorbis and FLAC libraries allow)
+	 * Decode a local file.
 	 *
-	 * @return false if the plugin cannot decode the file, and
-	 * true if it was able to do so (even if an error occured
-	 * during playback)
+	 * Either implement this method or stream_decode().
 	 */
-	void (*file_decode)(struct decoder *, const char *path);
+	void (*file_decode)(struct decoder *decoder, const char *path_fs);
 
 	/**
-	 * file should be the full path!  Returns NULL if a tag cannot
-	 * be found or read
+	 * Read the tags of a local file.
+	 *
+	 * @return NULL if the operation has failed
 	 */
-	struct tag *(*tag_dup)(const char *file);
+	struct tag *(*tag_dup)(const char *path_fs);
 
 	/**
 	 * @brief Return a "virtual" filename for subtracks in
@@ -85,7 +86,7 @@ struct decoder_plugin {
 	 * a filename for every single track according to tnum (param 2)
 	 * do not include full pathname here, just the "virtual" file
 	 */
-	char* (*container_scan)(const char* pathname, const unsigned int tnum);
+	char* (*container_scan)(const char *path_fs, const unsigned int tnum);
 
 	/* last element in these arrays must always be a NULL: */
 	const char *const*suffixes;
