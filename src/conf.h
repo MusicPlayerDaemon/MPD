@@ -86,7 +86,7 @@ struct config_param {
 	unsigned int line;
 
 	struct block_param *block_params;
-	int num_block_params;
+	unsigned num_block_params;
 };
 
 void config_global_init(void);

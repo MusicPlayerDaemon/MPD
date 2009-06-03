@@ -91,11 +91,10 @@ static void
 config_param_free(gpointer data, G_GNUC_UNUSED gpointer user_data)
 {
 	struct config_param *param = data;
-	int i;
 
 	g_free(param->value);
 
-	for (i = 0; i < param->num_block_params; i++) {
+	for (unsigned i = 0; i < param->num_block_params; i++) {
 		g_free(param->block_params[i].name);
 		g_free(param->block_params[i].value);
 	}
@@ -449,12 +448,11 @@ struct block_param *
 config_get_block_param(const struct config_param * param, const char *name)
 {
 	struct block_param *ret = NULL;
-	int i;
 
 	if (param == NULL)
 		return NULL;
 
-	for (i = 0; i < param->num_block_params; i++) {
+	for (unsigned i = 0; i < param->num_block_params; i++) {
 		if (0 == strcmp(name, param->block_params[i].name)) {
 			if (ret) {
 				g_warning("\"%s\" first defined on line %i, and "
