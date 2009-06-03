@@ -70,7 +70,7 @@ static int get_bool(const char *value)
 }
 
 struct config_param *
-newConfigParam(const char *value, int line)
+config_new_param(const char *value, int line)
 {
 	struct config_param *ret = g_new(struct config_param, 1);
 
@@ -220,8 +220,8 @@ void config_global_init(void)
 }
 
 void
-addBlockParam(struct config_param * param, const char *name, const char *value,
-	      int line)
+config_add_block_param(struct config_param * param, const char *name,
+		       const char *value, int line)
 {
 	struct block_param *bp;
 
@@ -239,9 +239,9 @@ addBlockParam(struct config_param * param, const char *name, const char *value,
 }
 
 static struct config_param *
-config_read_fileigBlock(FILE * fp, int *count, char *string)
+config_read_block(FILE *fp, int *count, char *string)
 {
-	struct config_param *ret = newConfigParam(NULL, *count);
+	struct config_param *ret = config_new_param(NULL, *count);
 
 	int i;
 	int numberOfArgs;
@@ -284,7 +284,7 @@ config_read_fileigBlock(FILE * fp, int *count, char *string)
 				*count, string, ret->line);
 		}
 
-		addBlockParam(ret, array[0], array[1], *count);
+		config_add_block_param(ret, array[0], array[1], *count);
 	}
 
 	return ret;
@@ -349,9 +349,9 @@ void config_read_file(const char *file)
 				g_error("improperly formatted config file at "
 					"line %i: %s\n", count, string);
 			}
-			param = config_read_fileigBlock(fp, &count, string);
+			param = config_read_block(fp, &count, string);
 		} else
-			param = newConfigParam(array[1], count);
+			param = config_new_param(array[1], count);
 
 		entry->params = g_slist_append(entry->params, param);
 	}
@@ -446,7 +446,7 @@ config_get_positive(const char *name, unsigned default_value)
 }
 
 struct block_param *
-getBlockParam(const struct config_param * param, const char *name)
+config_get_block_param(const struct config_param * param, const char *name)
 {
 	struct block_param *ret = NULL;
 	int i;
@@ -492,7 +492,7 @@ const char *
 config_get_block_string(const struct config_param *param, const char *name,
 			const char *default_value)
 {
-	struct block_param *bp = getBlockParam(param, name);
+	struct block_param *bp = config_get_block_param(param, name);
 
 	if (bp == NULL)
 		return default_value;
@@ -504,7 +504,7 @@ unsigned
 config_get_block_unsigned(const struct config_param *param, const char *name,
 			  unsigned default_value)
 {
-	struct block_param *bp = getBlockParam(param, name);
+	struct block_param *bp = config_get_block_param(param, name);
 	long value;
 	char *endptr;
 
@@ -525,7 +525,7 @@ bool
 config_get_block_bool(const struct config_param *param, const char *name,
 		      bool default_value)
 {
-	struct block_param *bp = getBlockParam(param, name);
+	struct block_param *bp = config_get_block_param(param, name);
 	int value;
 
 	if (bp == NULL)

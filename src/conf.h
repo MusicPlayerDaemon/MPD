@@ -127,7 +127,7 @@ unsigned
 config_get_positive(const char *name, unsigned default_value);
 
 struct block_param *
-getBlockParam(const struct config_param *param, const char *name);
+config_get_block_param(const struct config_param *param, const char *name);
 
 bool config_get_bool(const char *name, bool default_value);
 
@@ -151,9 +151,10 @@ config_get_block_bool(const struct config_param *param, const char *name,
 		      bool default_value);
 
 struct config_param *
-newConfigParam(const char *value, int line);
+config_new_param(const char *value, int line);
 
 void
-addBlockParam(struct config_param *param, const char *name, const char *value, int line);
+config_add_block_param(struct config_param *param, const char *name,
+		       const char *value, int line);
 
 #endif

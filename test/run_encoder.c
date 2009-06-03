@@ -74,8 +74,8 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
-	param = newConfigParam(NULL, -1);
-	addBlockParam(param, "quality", "5.0", -1);
+	param = config_new_param(NULL, -1);
+	config_add_block_param(param, "quality", "5.0", -1);
 
 	encoder = encoder_init(plugin, param, &error);
 	if (encoder == NULL) {

@@ -98,7 +98,7 @@ static void free_shout_data(struct shout_data *sd)
 }
 
 #define check_block_param(name) {		  \
-		block_param = getBlockParam(param, name);	\
+		block_param = config_get_block_param(param, name);	\
 		if (!block_param) {					\
 			g_error("no \"%s\" defined for shout device defined at line " \
 				"%i\n", name, param->line);		\

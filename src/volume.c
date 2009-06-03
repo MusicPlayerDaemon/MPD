@@ -111,20 +111,20 @@ mixer_copy_legacy_param(const char *type, const char *name)
 			   it does not match the mixer_type setting */
 			g_error("no '%s' audio output found", type);
 
-		output = newConfigParam(NULL, param->line);
-		addBlockParam(output, "type", type, param->line);
-		addBlockParam(output, "name", type, param->line);
+		output = config_new_param(NULL, param->line);
+		config_add_block_param(output, "type", type, param->line);
+		config_add_block_param(output, "name", type, param->line);
 		config_add_param(CONF_AUDIO_OUTPUT, output);
 	}
 
-	bp = getBlockParam(output, name);
+	bp = config_get_block_param(output, name);
 	if (bp != NULL)
 		g_error("the '%s' audio output already has a '%s' setting",
 			type, name);
 
 	/* duplicate the parameter in the configuration section */
 
-	addBlockParam(output, name, param->value, param->line);
+	config_add_block_param(output, name, param->value, param->line);
 }
 
 static void
