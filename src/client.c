@@ -430,6 +430,9 @@ static int client_read(struct client *client)
 	GIOStatus status;
 	gsize bytes_read;
 
+	assert(client != NULL);
+	assert(client->channel != NULL);
+
 	p = fifo_buffer_write(client->input, &max_length);
 	if (p == NULL) {
 		g_warning("[%u] buffer overflow", client->num);
@@ -617,6 +620,10 @@ client_write_deferred_buffer(struct client *client,
 	GIOStatus status;
 	gsize bytes_written;
 
+	assert(client != NULL);
+	assert(client->channel != NULL);
+	assert(buffer != NULL);
+
 	status = g_io_channel_write_chars
 		(client->channel, buffer->data, buffer->size,
 		 &bytes_written, &error);
@@ -723,6 +730,9 @@ static void client_write_direct(struct client *client,
 	GIOStatus status;
 	gsize bytes_written;
 
+	assert(client != NULL);
+	assert(client->channel != NULL);
+	assert(data != NULL);
 	assert(length > 0);
 	assert(g_queue_is_empty(client->deferred_send));
 
