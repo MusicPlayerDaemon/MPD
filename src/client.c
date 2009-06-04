@@ -776,6 +776,9 @@ static void client_write_output(struct client *client)
 		client_defer_output(client, client->send_buf,
 				    client->send_buf_used);
 
+		if (client_is_expired(client))
+			return;
+
 		/* try to flush the deferred buffers now; the current
 		   server command may take too long to finish, and
 		   meanwhile try to feed output to the client,
