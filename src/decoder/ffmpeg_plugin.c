@@ -337,6 +337,17 @@ ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 	ffmpeg_helper(input, ffmpeg_decode_internal, &ctx);
 }
 
+#if LIBAVFORMAT_VERSION_INT >= ((52<<16)+(31<<8)+0)
+static void
+ffmpeg_copy_metadata(struct tag *tag, AVMetadata *m,
+		     enum tag_type type, const char *name)
+{
+	AVMetadataTag *mt = av_metadata_get(m, name, NULL, 0);
+	if (mt != NULL)
+		tag_add_item(tag, type, mt->value);
+}
+#endif
+
 static bool ffmpeg_tag_internal(struct ffmpeg_context *ctx)
 {
 	struct tag *tag = (struct tag *) ctx->tag;
@@ -347,39 +358,13 @@ static bool ffmpeg_tag_internal(struct ffmpeg_context *ctx)
 		tag->time = f->duration / AV_TIME_BASE;
 
 #if LIBAVFORMAT_VERSION_INT >= ((52<<16)+(31<<8)+0)
-	{
-		AVMetadataTag *title, *author, *album, *genre, *comment, *track, *year;
-
-		title     = av_metadata_get(f->metadata, "title",     NULL, 0);
-		author    = av_metadata_get(f->metadata, "author",    NULL, 0);
-		album     = av_metadata_get(f->metadata, "album",     NULL, 0);
-	        comment   = av_metadata_get(f->metadata, "comment",   NULL, 0);
-		genre     = av_metadata_get(f->metadata, "genre",     NULL, 0);
-	        track     = av_metadata_get(f->metadata, "track",     NULL, 0);
-	        year      = av_metadata_get(f->metadata, "year",      NULL, 0);
-
-		if (title) {
-			tag_add_item(tag, TAG_ITEM_TITLE, title->value);
-		}
-		if (author) {
-			tag_add_item(tag, TAG_ITEM_ARTIST, author->value);
-		}
-		if (album) {
-			tag_add_item(tag, TAG_ITEM_ALBUM, album->value);
-		}
-		if (comment) {
-			tag_add_item(tag, TAG_ITEM_COMMENT, comment->value);
-		}
-		if (genre) {
-			tag_add_item(tag, TAG_ITEM_GENRE, genre->value);
-		}
-		if (track) {
-			tag_add_item(tag, TAG_ITEM_TRACK, track->value);
-		}
-		if (year) {
-			tag_add_item(tag, TAG_ITEM_DATE, year->value);
-		}
-	}
+	ffmpeg_copy_metadata(tag, f->metadata, TAG_ITEM_TITLE, "title");
+	ffmpeg_copy_metadata(tag, f->metadata, TAG_ITEM_ARTIST, "author");
+	ffmpeg_copy_metadata(tag, f->metadata, TAG_ITEM_ALBUM, "album");
+	ffmpeg_copy_metadata(tag, f->metadata, TAG_ITEM_COMMENT, "comment");
+	ffmpeg_copy_metadata(tag, f->metadata, TAG_ITEM_GENRE, "genre");
+	ffmpeg_copy_metadata(tag, f->metadata, TAG_ITEM_TRACK, "track");
+	ffmpeg_copy_metadata(tag, f->metadata, TAG_ITEM_DATE, "year");
 #else
 	if (f->author[0])
 		tag_add_item(tag, TAG_ITEM_ARTIST, f->author);
