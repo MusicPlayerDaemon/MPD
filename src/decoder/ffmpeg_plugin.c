@@ -350,8 +350,6 @@ static bool ffmpeg_tag_internal(struct ffmpeg_context *ctx)
 	{
 		AVMetadataTag *title, *author, *album, *genre, *comment, *track, *year;
 
-		g_warning("using new metadata api\n");
-
 		title     = av_metadata_get(f->metadata, "title",     NULL, 0);
 		author    = av_metadata_get(f->metadata, "author",    NULL, 0);
 		album     = av_metadata_get(f->metadata, "album",     NULL, 0);
