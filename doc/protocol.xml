@@ -50,7 +50,7 @@
       <para>
         To facilitate faster adding of files etc. you can pass a list
         of commands all at once using a command list.  The command
-        list beings with <command>command_list_begin</command> or
+        list begins with <command>command_list_begin</command> or
         <command>command_list_ok_begin</command> and ends with
         <command>command_list_end</command>.
       </para>
