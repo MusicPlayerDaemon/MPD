@@ -62,7 +62,7 @@
         <returnvalue>OK</returnvalue> is returned.  If a command
         fails, no more commands are executed and the appropriate
         <returnvalue>ACK</returnvalue> error is returned. If
-        <command>command_list_begin</command> is used,
+        <command>command_list_ok_begin</command> is used,
         <returnvalue>list_OK</returnvalue> is returned for each
         successful command executed in the command list.
       </para>
