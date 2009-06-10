@@ -72,9 +72,16 @@ static bool
 listen_add_address(int pf, const struct sockaddr *addrp, socklen_t addrlen,
 		   GError **error)
 {
+	char *address_string;
 	int fd;
 	struct listen_socket *ls;
 	GIOChannel *channel;
+
+	address_string = sockaddr_to_string(addrp, addrlen, NULL);
+	if (address_string != NULL) {
+		g_debug("binding to socket address %s", address_string);
+		g_free(address_string);
+	}
 
 	fd = socket_bind_listen(pf, SOCK_STREAM, 0, addrp, addrlen, 5, error);
 	if (fd < 0)
