@@ -247,10 +247,32 @@ listen_add_host(const char *hostname, unsigned port, GError **error_r)
 	}
 
 	for (i = ai; i != NULL; i = i->ai_next) {
+		GError *error = NULL;
+
 		success = listen_add_address(i->ai_family, i->ai_addr,
-					     i->ai_addrlen, error_r);
-		if (!success)
-			return false;
+					     i->ai_addrlen, &error);
+		if (!success) {
+			if (i == ai) {
+				/* first bind has failed: fatal
+				   error */
+				g_propagate_error(error_r, error);
+				return false;
+			} else {
+				char *address_string =
+					sockaddr_to_string(i->ai_addr,
+							   i->ai_addrlen,
+							   NULL);
+				if (address_string == NULL)
+					address_string = g_strdup("[unknown]");
+
+				g_warning("bind to %s failed: %s "
+					  "(continuing anyway, because at "
+					  "least one address is bound)",
+					  address_string, error->message);
+				g_free(address_string);
+				g_error_free(error);
+			}
+		}
 	}
 
 	freeaddrinfo(ai);

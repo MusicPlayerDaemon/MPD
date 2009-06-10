@@ -68,6 +68,7 @@ ver 0.15 (200?/??/??)
 * pause when all audio outputs fail to play
 * daemon: ignore "user" setting if already running as that user
 * listen: fix broken client IP addresses in log
+* listen: bind failure on secondary address is non-fatal
 * 24/32 bit audio support
 * print available protocols in --version
 * fill buffer after seeking
