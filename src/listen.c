@@ -217,7 +217,7 @@ listen_add_port(unsigned int port, GError **error)
  * @return true on success
  */
 static bool
-listen_add_host(const char *hostname, unsigned port, GError **error)
+listen_add_host(const char *hostname, unsigned port, GError **error_r)
 {
 #ifdef HAVE_TCP
 	struct addrinfo hints, *ai, *i;
@@ -240,7 +240,7 @@ listen_add_host(const char *hostname, unsigned port, GError **error)
 
 	ret = getaddrinfo(hostname, service, &hints, &ai);
 	if (ret != 0) {
-		g_set_error(error, listen_quark(), ret,
+		g_set_error(error_r, listen_quark(), ret,
 			    "Failed to look up host \"%s\": %s",
 			    hostname, gai_strerror(ret));
 		return false;
@@ -248,7 +248,7 @@ listen_add_host(const char *hostname, unsigned port, GError **error)
 
 	for (i = ai; i != NULL; i = i->ai_next) {
 		success = listen_add_address(i->ai_family, i->ai_addr,
-					     i->ai_addrlen, error);
+					     i->ai_addrlen, error_r);
 		if (!success)
 			return false;
 	}
@@ -261,7 +261,7 @@ listen_add_host(const char *hostname, unsigned port, GError **error)
 	(void)hostname;
 	(void)port;
 
-	g_set_error(error, listen_quark(), 0,
+	g_set_error(error_r, listen_quark(), 0,
 		    "TCP support is disabled");
 	return false;
 #endif /* HAVE_TCP */
