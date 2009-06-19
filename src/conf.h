@@ -68,9 +68,6 @@
 #define CONF_INPUT "input"
 #define CONF_GAPLESS_MP3_PLAYBACK	"gapless_mp3_playback"
 
-#define CONF_BOOL_UNSET         -1
-#define CONF_BOOL_INVALID       -2
-
 #define DEFAULT_PLAYLIST_MAX_LENGTH (1024*16)
 #define DEFAULT_PLAYLIST_SAVE_ABSOLUTE_PATHS false
 

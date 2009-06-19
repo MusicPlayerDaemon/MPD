@@ -106,18 +106,23 @@ string_array_contains(const char *const* array, const char *value)
 	return false;
 }
 
-static int get_bool(const char *value)
+static bool
+get_bool(const char *value, bool *value_r)
 {
 	static const char *t[] = { "yes", "true", "1", NULL };
 	static const char *f[] = { "no", "false", "0", NULL };
 
-	if (string_array_contains(t, value))
+	if (string_array_contains(t, value)) {
+		*value_r = true;
 		return true;
+	}
 
-	if (string_array_contains(f, value))
-		return false;
+	if (string_array_contains(f, value)) {
+		*value_r = false;
+		return true;
+	}
 
-	return CONF_BOOL_INVALID;
+	return false;
 }
 
 struct config_param *
@@ -423,21 +428,18 @@ config_get_block_param(const struct config_param * param, const char *name)
 bool config_get_bool(const char *name, bool default_value)
 {
 	const struct config_param *param = config_get_param(name);
-	int value;
+	bool success, value;
 
 	if (param == NULL)
 		return default_value;
 
-	value = get_bool(param->value);
-	if (value == CONF_BOOL_INVALID)
+	success = get_bool(param->value, &value);
+	if (!success)
 		g_error("%s is not a boolean value (yes, true, 1) or "
 			"(no, false, 0) on line %i\n",
 			name, param->line);
 
-	if (value == CONF_BOOL_UNSET)
-		return default_value;
-
-	return !!value;
+	return value;
 }
 
 const char *
@@ -478,19 +480,16 @@ config_get_block_bool(const struct config_param *param, const char *name,
 		      bool default_value)
 {
 	struct block_param *bp = config_get_block_param(param, name);
-	int value;
+	bool success, value;
 
 	if (bp == NULL)
 		return default_value;
 
-	value = get_bool(bp->value);
-	if (value == CONF_BOOL_INVALID)
+	success = get_bool(param->value, &value);
+	if (!success)
 		g_error("%s is not a boolean value (yes, true, 1) or "
 			"(no, false, 0) on line %i\n",
 			name, bp->line);
 
-	if (value == CONF_BOOL_UNSET)
-		return default_value;
-
-	return !!value;
+	return value;
 }
