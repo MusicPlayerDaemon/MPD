@@ -48,6 +48,7 @@
 #define CONF_MIXER_CONTROL              "mixer_control"
 #define CONF_REPLAYGAIN                 "replaygain"
 #define CONF_REPLAYGAIN_PREAMP          "replaygain_preamp"
+#define CONF_REPLAYGAIN_MISSING_PREAMP  "replaygain_missing_preamp"
 #define CONF_VOLUME_NORMALIZATION       "volume_normalization"
 #define CONF_SAMPLERATE_CONVERTER       "samplerate_converter"
 #define CONF_AUDIO_BUFFER_SIZE          "audio_buffer_size"

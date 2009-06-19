@@ -38,6 +38,7 @@ static const char *const replay_gain_mode_names[] = {
 enum replay_gain_mode replay_gain_mode = REPLAY_GAIN_OFF;
 
 static float replay_gain_preamp = 1.0;
+static float replay_gain_missing_preamp = 1.0;
 
 void replay_gain_global_init(void)
 {
@@ -72,6 +73,25 @@ void replay_gain_global_init(void)
 		}
 
 		replay_gain_preamp = pow(10, f / 20.0);
+	}
+
+	param = config_get_param(CONF_REPLAYGAIN_MISSING_PREAMP);
+
+	if (param) {
+		char *test;
+		float f = strtod(param->value, &test);
+
+		if (*test != '\0') {
+			g_error("Replaygain missing preamp \"%s\" is not a number at "
+				"line %i\n", param->value, param->line);
+		}
+
+		if (f < -15 || f > 15) {
+			g_error("Replaygain missing preamp \"%s\" is not between -15 and"
+				"15 at line %i\n", param->value, param->line);
+		}
+
+		replay_gain_missing_preamp = pow(10, f / 20.0);
 	}
 }
 
@@ -116,19 +136,28 @@ void
 replay_gain_apply(struct replay_gain_info *info, char *buffer, int size,
 		  const struct audio_format *format)
 {
-	if (replay_gain_mode == REPLAY_GAIN_OFF || !info)
+	float scale;
+
+	if (replay_gain_mode == REPLAY_GAIN_OFF)
 		return;
 
-	if (info->scale < 0) {
-		const struct replay_gain_tuple *tuple =
-			&info->tuples[replay_gain_mode];
+	if (info) {
+	    if (info->scale < 0) {
+		    const struct replay_gain_tuple *tuple =
+			    &info->tuples[replay_gain_mode];
 
-		g_debug("computing ReplayGain %s scale with gain %f, peak %f\n",
-			replay_gain_mode_names[replay_gain_mode],
-			tuple->gain, tuple->peak);
+		    g_debug("computing ReplayGain %s scale with gain %f, peak %f\n",
+			    replay_gain_mode_names[replay_gain_mode],
+			    tuple->gain, tuple->peak);
 
-		info->scale = calc_replay_gain_scale(tuple->gain, tuple->peak);
+		    info->scale = calc_replay_gain_scale(tuple->gain, tuple->peak);
+	    }
+	    scale = info->scale;
+	}
+	else {
+	    scale = replay_gain_missing_preamp;
+	    g_debug("ReplayGain is missing, computing scale %f\n", scale);
 	}
 
-	pcm_volume(buffer, size, format, pcm_float_to_volume(info->scale));
+	pcm_volume(buffer, size, format, pcm_float_to_volume(scale));
 }

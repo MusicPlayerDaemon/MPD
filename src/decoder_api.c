@@ -301,8 +301,7 @@ decoder_data(struct decoder *decoder,
 
 		/* apply replay gain or normalization */
 
-		if (replay_gain_info != NULL &&
-		    replay_gain_mode != REPLAY_GAIN_OFF)
+		if (replay_gain_mode != REPLAY_GAIN_OFF)
 			replay_gain_apply(replay_gain_info, dest, nbytes,
 					  &dc.out_audio_format);
 		else if (normalizationEnabled)
