@@ -186,6 +186,17 @@ static void decoder_run_song(const struct song *song, const char *uri)
 				if (ret)
 					break;
 			} else if (plugin->stream_decode != NULL) {
+				if (!close_instream) {
+					/* the input_stream object has
+					   been closed before
+					   decoder_file_decode() -
+					   reopen it */
+					if (input_stream_open(&input_stream, uri))
+						close_instream = true;
+					else
+						continue;
+				}
+
 				ret = decoder_stream_decode(plugin, &decoder,
 							    &input_stream);
 				if (ret)
