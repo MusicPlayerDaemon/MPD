@@ -193,6 +193,12 @@ config_add_block_param(struct config_param * param, const char *name,
 {
 	struct block_param *bp;
 
+	bp = config_get_block_param(param, name);
+	if (bp != NULL)
+		g_error("\"%s\" first defined on line %i, and "
+			"redefined on line %i\n", name,
+			bp->line, line);
+
 	param->num_block_params++;
 
 	param->block_params = g_realloc(param->block_params,
@@ -406,23 +412,17 @@ config_get_positive(const char *name, unsigned default_value)
 struct block_param *
 config_get_block_param(const struct config_param * param, const char *name)
 {
-	struct block_param *ret = NULL;
-
 	if (param == NULL)
 		return NULL;
 
 	for (unsigned i = 0; i < param->num_block_params; i++) {
 		if (0 == strcmp(name, param->block_params[i].name)) {
-			if (ret) {
-				g_warning("\"%s\" first defined on line %i, and "
-					  "redefined on line %i\n", name,
-					  ret->line, param->block_params[i].line);
-			}
-			ret = param->block_params + i;
+			struct block_param *bp = &param->block_params[i];
+			return bp;
 		}
 	}
 
-	return ret;
+	return NULL;
 }
 
 bool config_get_bool(const char *name, bool default_value)
