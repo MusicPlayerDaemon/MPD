@@ -100,6 +100,12 @@ struct config_param {
 void config_global_init(void);
 void config_global_finish(void);
 
+/**
+ * Call this function after all configuration has been evaluated.  It
+ * checks for unused parameters, and logs warnings.
+ */
+void config_global_check(void);
+
 void config_read_file(const char *file);
 
 /* don't free the returned value

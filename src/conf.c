@@ -188,6 +188,35 @@ void config_global_init(void)
 {
 }
 
+static void
+config_param_check(gpointer data, G_GNUC_UNUSED gpointer user_data)
+{
+	struct config_param *param = data;
+
+	if (!param->used)
+		/* this whole config_param was not queried at all -
+		   the feature might be disabled at compile time?
+		   Silently ignore it here. */
+		return;
+
+	for (unsigned i = 0; i < param->num_block_params; i++) {
+		struct block_param *bp = &param->block_params[i];
+
+		if (!bp->used)
+			g_warning("option '%s' on line %i was not recognized",
+				  bp->name, bp->line);
+	}
+}
+
+void config_global_check(void)
+{
+	for (unsigned i = 0; i < G_N_ELEMENTS(config_entries); ++i) {
+		struct config_entry *entry = &config_entries[i];
+
+		g_slist_foreach(entry->params, config_param_check, NULL);
+	}
+}
+
 void
 config_add_block_param(struct config_param * param, const char *name,
 		       const char *value, int line)

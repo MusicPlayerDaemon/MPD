@@ -322,6 +322,8 @@ int main(int argc, char *argv[])
 
 	state_file_init(config_get_path(CONF_STATE_FILE));
 
+	config_global_check();
+
 	/* run the main loop */
 
 	g_main_loop_run(main_loop);

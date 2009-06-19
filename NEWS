@@ -3,6 +3,7 @@ ver 0.16 (20??/??/??)
   - removed support for legacy mixer configuration
 * commands:
   - added new "status" line with more precise "elapsed time"
+* log unused/unknown block parameters
 
 
 ver 0.15 (2009/06/23)
