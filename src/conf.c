@@ -350,15 +350,6 @@ void config_read_file(const char *file)
 	fclose(fp);
 }
 
-void
-config_add_param(const char *name, struct config_param *param)
-{
-	struct config_entry *entry = config_entry_get(name);
-	assert(entry != NULL);
-
-	entry->params = g_slist_append(entry->params, param);
-}
-
 struct config_param *
 config_get_next_param(const char *name, const struct config_param * last)
 {
