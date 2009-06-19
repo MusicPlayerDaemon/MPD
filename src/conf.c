@@ -139,6 +139,7 @@ config_new_param(const char *value, int line)
 
 	ret->num_block_params = 0;
 	ret->block_params = NULL;
+	ret->used = false;
 
 	return ret;
 }
@@ -210,6 +211,7 @@ config_add_block_param(struct config_param * param, const char *name,
 	bp->name = g_strdup(name);
 	bp->value = g_strdup(value);
 	bp->line = line;
+	bp->used = false;
 }
 
 static struct config_param *
@@ -356,7 +358,7 @@ config_get_next_param(const char *name, const struct config_param * last)
 		return NULL;
 
 	param = node->data;
-
+	param->used = true;
 	return param;
 }
 
@@ -418,6 +420,7 @@ config_get_block_param(const struct config_param * param, const char *name)
 	for (unsigned i = 0; i < param->num_block_params; i++) {
 		if (0 == strcmp(name, param->block_params[i].name)) {
 			struct block_param *bp = &param->block_params[i];
+			bp->used = true;
 			return bp;
 		}
 	}

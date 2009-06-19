@@ -75,6 +75,12 @@ struct block_param {
 	char *name;
 	char *value;
 	int line;
+
+	/**
+	 * This flag is false when nobody has queried the value of
+	 * this option yet.
+	 */
+	bool used;
 };
 
 struct config_param {
@@ -83,6 +89,12 @@ struct config_param {
 
 	struct block_param *block_params;
 	unsigned num_block_params;
+
+	/**
+	 * This flag is false when nobody has queried the value of
+	 * this option yet.
+	 */
+	bool used;
 };
 
 void config_global_init(void);
