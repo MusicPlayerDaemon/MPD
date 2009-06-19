@@ -39,13 +39,12 @@
 #define CONF_BLOCK_BEGIN	"{"
 #define CONF_BLOCK_END		"}"
 
-#define CONF_REPEATABLE_MASK	0x01
-#define CONF_BLOCK_MASK		0x02
 #define CONF_LINE_TOKEN_MAX	3
 
 struct config_entry {
 	const char *name;
-	unsigned char mask;
+	bool repeatable;
+	bool block;
 
 	GSList *params;
 };
@@ -111,13 +110,9 @@ newConfigEntry(const char *name, int repeatable, int block)
 	struct config_entry *ret = g_new(struct config_entry, 1);
 
 	ret->name = name;
-	ret->mask = 0;
+	ret->repeatable = repeatable;
+	ret->block = block;
 	ret->params = NULL;
-
-	if (repeatable)
-		ret->mask |= CONF_REPEATABLE_MASK;
-	if (block)
-		ret->mask |= CONF_BLOCK_MASK;
 
 	return ret;
 }
@@ -334,15 +329,14 @@ void config_read_file(const char *file)
 			g_error("unrecognized parameter in config file at "
 				"line %i: %s\n", count, string);
 
-		if (!(entry->mask & CONF_REPEATABLE_MASK) &&
-		    entry->params != NULL) {
+		if (entry->params != NULL && !entry->repeatable) {
 			param = entry->params->data;
 			g_error("config parameter \"%s\" is first defined on "
 				"line %i and redefined on line %i\n",
 				array[0], param->line, count);
 		}
 
-		if (entry->mask & CONF_BLOCK_MASK) {
+		if (entry->block) {
 			if (0 != strcmp(array[1], CONF_BLOCK_BEGIN)) {
 				g_error("improperly formatted config file at "
 					"line %i: %s\n", count, string);
