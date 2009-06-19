@@ -96,20 +96,27 @@ static struct config_entry config_entries[] = {
 	{ .name = CONF_GAPLESS_MP3_PLAYBACK, false, false },
 };
 
+static bool
+string_array_contains(const char *const* array, const char *value)
+{
+	for (const char *const* x = array; *x; x++)
+		if (g_ascii_strcasecmp(*x, value) == 0)
+			return true;
+
+	return false;
+}
+
 static int get_bool(const char *value)
 {
-	const char **x;
 	static const char *t[] = { "yes", "true", "1", NULL };
 	static const char *f[] = { "no", "false", "0", NULL };
 
-	for (x = t; *x; x++) {
-		if (!g_ascii_strcasecmp(*x, value))
-			return 1;
-	}
-	for (x = f; *x; x++) {
-		if (!g_ascii_strcasecmp(*x, value))
-			return 0;
-	}
+	if (string_array_contains(t, value))
+		return true;
+
+	if (string_array_contains(f, value))
+		return false;
+
 	return CONF_BOOL_INVALID;
 }
 
