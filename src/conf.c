@@ -42,14 +42,59 @@
 #define CONF_LINE_TOKEN_MAX	3
 
 struct config_entry {
-	const char *name;
-	bool repeatable;
-	bool block;
+	const char *const name;
+	const bool repeatable;
+	const bool block;
 
 	GSList *params;
 };
 
-static GSList *config_entries;
+static struct config_entry config_entries[] = {
+	{ .name = CONF_MUSIC_DIR, false, false },
+	{ .name = CONF_PLAYLIST_DIR, false, false },
+	{ .name = CONF_FOLLOW_INSIDE_SYMLINKS, false, false },
+	{ .name = CONF_FOLLOW_OUTSIDE_SYMLINKS, false, false },
+	{ .name = CONF_DB_FILE, false, false },
+	{ .name = CONF_STICKER_FILE, false, false },
+	{ .name = CONF_LOG_FILE, false, false },
+	{ .name = CONF_ERROR_FILE, false, false },
+	{ .name = CONF_PID_FILE, false, false },
+	{ .name = CONF_STATE_FILE, false, false },
+	{ .name = CONF_USER, false, false },
+	{ .name = CONF_BIND_TO_ADDRESS, true, false },
+	{ .name = CONF_PORT, false, false },
+	{ .name = CONF_LOG_LEVEL, false, false },
+	{ .name = CONF_ZEROCONF_NAME, false, false },
+	{ .name = CONF_ZEROCONF_ENABLED, false, false },
+	{ .name = CONF_PASSWORD, true, false },
+	{ .name = CONF_DEFAULT_PERMS, false, false },
+	{ .name = CONF_AUDIO_OUTPUT, true, true },
+	{ .name = CONF_AUDIO_OUTPUT_FORMAT, false, false },
+	{ .name = CONF_MIXER_TYPE, false, false },
+	{ .name = CONF_REPLAYGAIN, false, false },
+	{ .name = CONF_REPLAYGAIN_PREAMP, false, false },
+	{ .name = CONF_REPLAYGAIN_MISSING_PREAMP, false, false },
+	{ .name = CONF_VOLUME_NORMALIZATION, false, false },
+	{ .name = CONF_SAMPLERATE_CONVERTER, false, false },
+	{ .name = CONF_AUDIO_BUFFER_SIZE, false, false },
+	{ .name = CONF_BUFFER_BEFORE_PLAY, false, false },
+	{ .name = CONF_HTTP_PROXY_HOST, false, false },
+	{ .name = CONF_HTTP_PROXY_PORT, false, false },
+	{ .name = CONF_HTTP_PROXY_USER, false, false },
+	{ .name = CONF_HTTP_PROXY_PASSWORD, false, false },
+	{ .name = CONF_CONN_TIMEOUT, false, false },
+	{ .name = CONF_MAX_CONN, false, false },
+	{ .name = CONF_MAX_PLAYLIST_LENGTH, false, false },
+	{ .name = CONF_MAX_COMMAND_LIST_SIZE, false, false },
+	{ .name = CONF_MAX_OUTPUT_BUFFER_SIZE, false, false },
+	{ .name = CONF_FS_CHARSET, false, false },
+	{ .name = CONF_ID3V1_ENCODING, false, false },
+	{ .name = CONF_METADATA_TO_USE, false, false },
+	{ .name = CONF_SAVE_ABSOLUTE_PATHS, false, false },
+	{ .name = CONF_DECODER, true, true },
+	{ .name = CONF_INPUT, true, true },
+	{ .name = CONF_GAPLESS_MP3_PLAYBACK, false, false },
+};
 
 static int get_bool(const char *value)
 {
@@ -105,37 +150,10 @@ config_param_free(gpointer data, G_GNUC_UNUSED gpointer user_data)
 }
 
 static struct config_entry *
-newConfigEntry(const char *name, int repeatable, int block)
-{
-	struct config_entry *ret = g_new(struct config_entry, 1);
-
-	ret->name = name;
-	ret->repeatable = repeatable;
-	ret->block = block;
-	ret->params = NULL;
-
-	return ret;
-}
-
-static void
-config_entry_free(gpointer data, G_GNUC_UNUSED gpointer user_data)
-{
-	struct config_entry *entry = data;
-
-	g_slist_foreach(entry->params, config_param_free, NULL);
-	g_slist_free(entry->params);
-
-	g_free(entry);
-}
-
-static struct config_entry *
 config_entry_get(const char *name)
 {
-	GSList *list;
-
-	for (list = config_entries; list != NULL;
-	     list = g_slist_next(list)) {
-		struct config_entry *entry = list->data;
+	for (unsigned i = 0; i < G_N_ELEMENTS(config_entries); ++i) {
+		struct config_entry *entry = &config_entries[i];
 		if (strcmp(entry->name, name) == 0)
 			return entry;
 	}
@@ -143,73 +161,18 @@ config_entry_get(const char *name)
 	return NULL;
 }
 
-static void registerConfigParam(const char *name, int repeatable, int block)
-{
-	struct config_entry *entry;
-
-	entry = config_entry_get(name);
-	if (entry != NULL)
-		g_error("config parameter \"%s\" already registered\n", name);
-
-	entry = newConfigEntry(name, repeatable, block);
-	config_entries = g_slist_prepend(config_entries, entry);
-}
-
 void config_global_finish(void)
 {
-	g_slist_foreach(config_entries, config_entry_free, NULL);
-	g_slist_free(config_entries);
+	for (unsigned i = 0; i < G_N_ELEMENTS(config_entries); ++i) {
+		struct config_entry *entry = &config_entries[i];
+
+		g_slist_foreach(entry->params, config_param_free, NULL);
+		g_slist_free(entry->params);
+	}
 }
 
 void config_global_init(void)
 {
-	config_entries = NULL;
-
-	/* registerConfigParam(name,                   repeatable, block); */
-	registerConfigParam(CONF_MUSIC_DIR,                     0,     0);
-	registerConfigParam(CONF_PLAYLIST_DIR,                  0,     0);
-	registerConfigParam(CONF_FOLLOW_INSIDE_SYMLINKS,        0,     0);
-	registerConfigParam(CONF_FOLLOW_OUTSIDE_SYMLINKS,       0,     0);
-	registerConfigParam(CONF_DB_FILE,                       0,     0);
-	registerConfigParam(CONF_STICKER_FILE, false, false);
-	registerConfigParam(CONF_LOG_FILE,                      0,     0);
-	registerConfigParam(CONF_ERROR_FILE,                    0,     0);
-	registerConfigParam(CONF_PID_FILE,                      0,     0);
-	registerConfigParam(CONF_STATE_FILE,                    0,     0);
-	registerConfigParam(CONF_USER,                          0,     0);
-	registerConfigParam(CONF_BIND_TO_ADDRESS,               1,     0);
-	registerConfigParam(CONF_PORT,                          0,     0);
-	registerConfigParam(CONF_LOG_LEVEL,                     0,     0);
-	registerConfigParam(CONF_ZEROCONF_NAME,                 0,     0);
-	registerConfigParam(CONF_ZEROCONF_ENABLED,              0,     0);
-	registerConfigParam(CONF_PASSWORD,                      1,     0);
-	registerConfigParam(CONF_DEFAULT_PERMS,                 0,     0);
-	registerConfigParam(CONF_AUDIO_OUTPUT,                  1,     1);
-	registerConfigParam(CONF_AUDIO_OUTPUT_FORMAT,           0,     0);
-	registerConfigParam(CONF_MIXER_TYPE,                    0,     0);
-	registerConfigParam(CONF_REPLAYGAIN,                    0,     0);
-	registerConfigParam(CONF_REPLAYGAIN_PREAMP,             0,     0);
-	registerConfigParam(CONF_REPLAYGAIN_MISSING_PREAMP,     0,     0);
-	registerConfigParam(CONF_VOLUME_NORMALIZATION,          0,     0);
-	registerConfigParam(CONF_SAMPLERATE_CONVERTER,          0,     0);
-	registerConfigParam(CONF_AUDIO_BUFFER_SIZE,             0,     0);
-	registerConfigParam(CONF_BUFFER_BEFORE_PLAY,            0,     0);
-	registerConfigParam(CONF_HTTP_PROXY_HOST,               0,     0);
-	registerConfigParam(CONF_HTTP_PROXY_PORT,               0,     0);
-	registerConfigParam(CONF_HTTP_PROXY_USER,               0,     0);
-	registerConfigParam(CONF_HTTP_PROXY_PASSWORD,           0,     0);
-	registerConfigParam(CONF_CONN_TIMEOUT,                  0,     0);
-	registerConfigParam(CONF_MAX_CONN,                      0,     0);
-	registerConfigParam(CONF_MAX_PLAYLIST_LENGTH,           0,     0);
-	registerConfigParam(CONF_MAX_COMMAND_LIST_SIZE,         0,     0);
-	registerConfigParam(CONF_MAX_OUTPUT_BUFFER_SIZE,        0,     0);
-	registerConfigParam(CONF_FS_CHARSET,                    0,     0);
-	registerConfigParam(CONF_ID3V1_ENCODING,                0,     0);
-	registerConfigParam(CONF_METADATA_TO_USE,               0,     0);
-	registerConfigParam(CONF_SAVE_ABSOLUTE_PATHS,           0,     0);
-	registerConfigParam(CONF_DECODER, true, true);
-	registerConfigParam(CONF_INPUT, true, true);
-	registerConfigParam(CONF_GAPLESS_MP3_PLAYBACK,          0,     0);
 }
 
 void
